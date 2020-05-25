@@ -20,11 +20,13 @@ import org.matheclipse.core.eval.TeXUtilities;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.form.Documentation;
 import org.matheclipse.core.interfaces.IAST;
+import org.matheclipse.core.interfaces.IBuiltInSymbol;
+import org.matheclipse.core.interfaces.IDiscreteDistribution;
+import org.matheclipse.core.interfaces.IDistribution;
+import org.matheclipse.core.interfaces.IEvaluator;
 import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.interfaces.IFraction;
 import org.matheclipse.core.interfaces.IInteger;
-import org.matheclipse.core.parser.ExprParser;
-import org.matheclipse.core.parser.ExprParserFactory;
 import org.matheclipse.parser.client.FEConfig;
 import org.matheclipse.parser.client.SyntaxError;
 import org.matheclipse.parser.trie.Trie;
@@ -451,6 +453,25 @@ public class Pods {
 							resultStatistics(queryresult, error, numpods, podsArray);
 							return messageJSON;
 						}
+						if (list.argSize() == 2) {
+							VariablesSet varSet = new VariablesSet(list);
+							IAST variables = varSet.getVarList();
+							if (variables.argSize() == 1) {
+								IExpr arg1 = list.arg1();
+								IExpr arg2 = list.arg2();
+								if (arg1.isNumericFunction(varSet) && arg2.isNumericFunction(varSet)) {
+									boolean isPoly1 = arg1.isPolynomial(variables);
+									boolean isPoly2 = arg2.isPolynomial(variables);
+									if (isPoly1 && isPoly2) {
+										inExpr = F.PolynomialQuotientRemainder(arg1, arg2, variables.arg1());
+										IExpr podOut = engine.evaluate(inExpr);
+										addSymjaPod(podsArray, inExpr, podOut, "Polynomial quotient and remainder",
+												"Polynomial", formats, mapper, engine);
+										numpods++;
+									}
+								}
+							}
+						}
 					}
 
 					if (inExpr.isSymbol() || inExpr.isString()) {
@@ -520,6 +541,18 @@ public class Pods {
 								addSymjaPod(podsArray, inExpr, podOut, "Input", "Identity", formats, mapper, engine);
 								numpods++;
 
+								IExpr head = outExpr.head();
+								if (head instanceof IBuiltInSymbol) {
+									IEvaluator evaluator = ((IBuiltInSymbol) head).getEvaluator();
+									if (evaluator instanceof IDistribution) {
+//										if (evaluator instanceof IDiscreteDistribution) {
+										int snumpods = statisticsPods(podsArray, inExpr, podOut, formats, mapper,
+												engine);
+										
+										numpods+=snumpods;
+									}
+								}
+
 								VariablesSet varSet = new VariablesSet(outExpr);
 								IAST variables = varSet.getVarList();
 								if (outExpr.isAST(F.Equal, 3)) {
@@ -559,7 +592,7 @@ public class Pods {
 
 								boolean isNumericFunction = outExpr.isNumericFunction(varSet);
 								if (isNumericFunction) {
-									if (variables.size() == 2) {
+									if (variables.argSize() == 1) {
 										IExpr plot2D = F.Plot(outExpr, F.List(variables.arg1(), F.num(-7), F.num(7)));
 										podOut = engine.evaluate(plot2D);
 										if (podOut.isAST(F.JSFormData, 3)) {
@@ -568,7 +601,7 @@ public class Pods {
 													"Plotter", form, mapper, engine);
 											numpods++;
 										}
-									} else if (variables.size() == 3) {
+									} else if (variables.argSize() == 2) {
 										IExpr plot3D = F.Plot3D(outExpr,
 												F.List(variables.arg1(), F.num(-3.5), F.num(3.5)),
 												F.List(variables.arg2(), F.num(-3.5), F.num(3.5)));
@@ -591,7 +624,14 @@ public class Pods {
 									}
 								}
 
-								if (isNumericFunction && variables.size() == 2) {
+								if (isNumericFunction && variables.argSize() == 1) {
+									if (outExpr.isPolynomial(variables)) {
+										inExpr = F.Factor(outExpr);
+										podOut = engine.evaluate(inExpr);
+										addSymjaPod(podsArray, inExpr, podOut, "Factor", "Polynomial", formats, mapper,
+												engine);
+										numpods++;
+									}
 									inExpr = F.D(outExpr, variables.arg1());
 									podOut = engine.evaluate(inExpr);
 									addSymjaPod(podsArray, inExpr, podOut, "Derivative", "Derivative", formats, mapper,
@@ -620,6 +660,23 @@ public class Pods {
 
 		queryresult.put("error", error ? "true" : "false");
 		return messageJSON;
+	}
+
+	private static int statisticsPods(ArrayNode podsArray, IExpr inExpr, IExpr outExpr, int formats,
+			ObjectMapper mapper, EvalEngine engine) {
+		int numpods=0;
+		  inExpr  = F.PDF(outExpr,F.x);
+		IExpr podOut  = engine.evaluate(inExpr);
+		addSymjaPod(podsArray, inExpr, podOut, "Probability density function (PDF)", "Statistics", formats, mapper,
+				engine);
+		numpods++;
+		
+		inExpr = F.CDF(outExpr,F.x);
+		podOut = engine.evaluate(inExpr);
+		addSymjaPod(podsArray, inExpr, podOut, "Cumulative distribution function (CDF)", "Statistics", formats, mapper,
+				engine);
+		numpods++;
+		return numpods;
 	}
 
 	private static class LevenshteinDistanceComparator implements Comparator<IPod> {
@@ -795,8 +852,10 @@ public class Pods {
 	 * @param json
 	 * @param engine
 	 * @param outExpr
-	 * @param plainText text which should obligatory be used for plaintext format
-	 * @param sinput    Symja input string
+	 * @param plainText
+	 *            text which should obligatory be used for plaintext format
+	 * @param sinput
+	 *            Symja input string
 	 * @param formats
 	 */
 	private static void createJSONFormat(ObjectNode json, EvalEngine engine, IExpr outExpr, String plainText,

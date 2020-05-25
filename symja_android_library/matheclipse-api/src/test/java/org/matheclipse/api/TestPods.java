@@ -45,23 +45,14 @@ public class TestPods {
 		System.out.println(jsonStr);
 		if (s.contains("Windows")) {
 			assertEquals(jsonStr, //
-					"{\r\n" + 
-					"  \"queryresult\" : {\r\n" + 
-					"    \"success\" : \"true\",\r\n" + 
-					"    \"error\" : \"false\",\r\n" + 
-					"    \"numpods\" : 1,\r\n" + 
-					"    \"version\" : \"0.1\",\r\n" + 
-					"    \"pods\" : [ {\r\n" + 
-					"      \"title\" : \"documentation\",\r\n" + 
-					"      \"scanner\" : \"help\",\r\n" + 
-					"      \"error\" : \"false\",\r\n" + 
-					"      \"numsubpods\" : 1,\r\n" + 
-					"      \"subpods\" : [ {\r\n" + 
-					"        \"markdown\" : \"## Sin\\n\\nSin(expr)\\n\\n> returns the sine of `expr` (measured in radians).\\n \\n`Sin(expr)` will evaluate automatically in the case `expr` is a multiple of `Pi, Pi/2, Pi/3, Pi/4` and `Pi/6`.\\n\\nSee\\n* [Wikipedia - Sine](https://en.wikipedia.org/wiki/Sine)\\n\\n### Examples\\n\\n>> Sin(0)\\n0\\n\\n>> Sin(0.5)\\n0.479425538604203\\n\\n>> Sin(3*Pi)\\n0\\n\\n>> Sin(1.0 + I)\\n1.2984575814159773+I*0.6349639147847361\\n \\n\"\r\n" + 
-					"      } ]\r\n" + 
-					"    } ]\r\n" + 
-					"  }\r\n" + 
-					"}");//
+					"{\r\n" + "  \"queryresult\" : {\r\n" + "    \"success\" : \"true\",\r\n"
+							+ "    \"error\" : \"false\",\r\n" + "    \"numpods\" : 1,\r\n"
+							+ "    \"version\" : \"0.1\",\r\n" + "    \"pods\" : [ {\r\n"
+							+ "      \"title\" : \"documentation\",\r\n" + "      \"scanner\" : \"help\",\r\n"
+							+ "      \"error\" : \"false\",\r\n" + "      \"numsubpods\" : 1,\r\n"
+							+ "      \"subpods\" : [ {\r\n"
+							+ "        \"markdown\" : \"## Sin\\n\\nSin(expr)\\n\\n> returns the sine of `expr` (measured in radians).\\n \\n`Sin(expr)` will evaluate automatically in the case `expr` is a multiple of `Pi, Pi/2, Pi/3, Pi/4` and `Pi/6`.\\n\\nSee\\n* [Wikipedia - Sine](https://en.wikipedia.org/wiki/Sine)\\n\\n### Examples\\n\\n>> Sin(0)\\n0\\n\\n>> Sin(0.5)\\n0.479425538604203\\n\\n>> Sin(3*Pi)\\n0\\n\\n>> Sin(1.0 + I)\\n1.2984575814159773+I*0.6349639147847361\\n \\n\"\r\n"
+							+ "      } ]\r\n" + "    } ]\r\n" + "  }\r\n" + "}");//
 		}
 	}
 
@@ -503,6 +494,84 @@ public class TestPods {
 	}
 
 	@Test
+	public void testPolynomialQuotientRemainder() {
+		String s = System.getProperty("os.name");
+		ObjectNode messageJSON = Pods.createResult(" x**2-4,x-2", formatsTEX);
+		final String jsonStr = messageJSON.toPrettyString();
+		System.out.println(jsonStr);
+		if (s.contains("Windows")) {
+			assertEquals(jsonStr, //
+					"{\r\n" + //
+					"  \"queryresult\" : {\r\n" + //
+					"    \"success\" : \"true\",\r\n" + //
+					"    \"error\" : \"false\",\r\n" + //
+					"    \"numpods\" : 6,\r\n" + //
+					"    \"version\" : \"0.1\",\r\n" + //
+					"    \"pods\" : [ {\r\n" + //
+					"      \"title\" : \"Polynomial quotient and remainder\",\r\n" + //
+					"      \"scanner\" : \"Polynomial\",\r\n" + //
+					"      \"error\" : \"false\",\r\n" + //
+					"      \"numsubpods\" : 1,\r\n" + //
+					"      \"subpods\" : [ {\r\n" + //
+					"        \"plaintext\" : \"{2+x,0}\",\r\n" + //
+					"        \"sinput\" : \"PolynomialQuotientRemainder(-4+x^2,-2+x,x)\",\r\n" + //
+					"        \"latex\" : \"\\\\{2+x,0\\\\}\"\r\n" + //
+					"      } ]\r\n" + //
+					"    }, {\r\n" + //
+					"      \"title\" : \"Input\",\r\n" + //
+					"      \"scanner\" : \"Identity\",\r\n" + //
+					"      \"error\" : \"false\",\r\n" + //
+					"      \"numsubpods\" : 1,\r\n" + //
+					"      \"subpods\" : [ {\r\n" + //
+					"        \"plaintext\" : \"{2+x,0}\",\r\n" + //
+					"        \"sinput\" : \"PolynomialQuotientRemainder(-4+x^2,-2+x,x)\",\r\n" + //
+					"        \"latex\" : \"\\\\{2+x,0\\\\}\"\r\n" + //
+					"      } ]\r\n" + //
+					"    }, {\r\n" + //
+					"      \"title\" : \"Function\",\r\n" + //
+					"      \"scanner\" : \"Plotter\",\r\n" + //
+					"      \"error\" : \"false\",\r\n" + //
+					"      \"numsubpods\" : 1,\r\n" + //
+					"      \"subpods\" : [ {\r\n" + //
+					"        \"jsxgraph\" : \"<iframe srcdoc=\\\"&lt;?xml version=&quot;1.0&quot; encoding=&quot;UTF-8&quot;?&gt;\\n\\n&lt;!DOCTYPE html PUBLIC\\n  &quot;-//W3C//DTD XHTML 1.1 plus MathML 2.0 plus SVG 1.1//EN&quot;\\n  &quot;http://www.w3.org/2002/04/xhtml-math-svg/xhtml-math-svg.dtd&quot;&gt;\\n\\n&lt;html xmlns=&quot;http://www.w3.org/1999/xhtml&quot; style=&quot;width: 100%; height: 100%; margin: 0; padding: 0&quot;&gt;\\n&lt;head&gt;\\n&lt;meta charset=&quot;utf-8&quot;&gt;\\n&lt;title&gt;JSXGraph&lt;/title&gt;\\n\\n&lt;body style=&quot;width: 100%; height: 100%; margin: 0; padding: 0&quot;&gt;\\n\\n&lt;link rel=&quot;stylesheet&quot; type=&quot;text/css&quot; href=&quot;https://cdnjs.cloudflare.com/ajax/libs/jsxgraph/0.99.7/jsxgraphcore.css&quot; /&gt;\\n&lt;script src=&quot;https://cdn.jsdelivr.net/gh/paulmasson/math@1.2.8/build/math.js&quot;&gt;&lt;/script&gt;\\n&lt;script src=&quot;https://cdnjs.cloudflare.com/ajax/libs/jsxgraph/0.99.7/jsxgraphcore.js&quot;\\n        type=&quot;text/javascript&quot;&gt;&lt;/script&gt;\\n&lt;script src=&quot;https://cdnjs.cloudflare.com/ajax/libs/jsxgraph/0.99.7/geonext.min.js&quot;\\n        type=&quot;text/javascript&quot;&gt;&lt;/script&gt;\\n\\n&lt;div id=&quot;jxgbox&quot; class=&quot;jxgbox&quot; style=&quot;display: flex; width:99%; height:99%; margin: 0; flex-direction: column; overflow: hidden&quot;&gt;\\n&lt;script&gt;\\nvar board = JXG.JSXGraph.initBoard('jxgbox', {axis:true,boundingbox:[-7.7,5.5,7.7,-5.5]});\\nboard.suspendUpdate();\\n\\nfunction z1(x) { return add(2,x); }\\nfunction z2(x) { return 0; }\\nvar p1 = board.create('functiongraph',[z1, -7.0, 7.0]);\\nvar p2 = board.create('functiongraph',[z2, -7.0, 7.0]);\\nvar data = [ p1, p2 ];\\n\\n\\nboard.unsuspendUpdate();\\n\\n&lt;/script&gt;\\n&lt;/div&gt;\\n\\n&lt;/body&gt;\\n&lt;/html&gt;\\\" style=\\\"display: block; width: 100%; height: 100%; border: none;\\\" ></iframe>\"\r\n" + //
+					"      } ]\r\n" + //
+					"    }, {\r\n" + //
+					"      \"title\" : \"Alternate form\",\r\n" + //
+					"      \"scanner\" : \"Simplification\",\r\n" + //
+					"      \"error\" : \"false\",\r\n" + //
+					"      \"numsubpods\" : 1,\r\n" + //
+					"      \"subpods\" : [ {\r\n" + //
+					"        \"plaintext\" : \"{2+x,0}\",\r\n" + //
+					"        \"sinput\" : \"TrigToExp({2+x,0})\",\r\n" + //
+					"        \"latex\" : \"\\\\{2+x,0\\\\}\"\r\n" + //
+					"      } ]\r\n" + //
+					"    }, {\r\n" + //
+					"      \"title\" : \"Derivative\",\r\n" + //
+					"      \"scanner\" : \"Derivative\",\r\n" + //
+					"      \"error\" : \"false\",\r\n" + //
+					"      \"numsubpods\" : 1,\r\n" + //
+					"      \"subpods\" : [ {\r\n" + //
+					"        \"plaintext\" : \"{1,0}\",\r\n" + //
+					"        \"sinput\" : \"D({2+x,0},x)\",\r\n" + //
+					"        \"latex\" : \"\\\\{1,0\\\\}\"\r\n" + //
+					"      } ]\r\n" + //
+					"    }, {\r\n" + //
+					"      \"title\" : \"Indefinite integral\",\r\n" + //
+					"      \"scanner\" : \"Integral\",\r\n" + //
+					"      \"error\" : \"false\",\r\n" + //
+					"      \"numsubpods\" : 1,\r\n" + //
+					"      \"subpods\" : [ {\r\n" + //
+					"        \"plaintext\" : \"{2*x+x^2/2,0}\",\r\n" + //
+					"        \"sinput\" : \"Integrate({2+x,0},x)\",\r\n" + //
+					"        \"latex\" : \"\\\\{2\\\\,x+\\\\frac{{x}^{2}}{2},0\\\\}\"\r\n" + //
+					"      } ]\r\n" + //
+					"    } ]\r\n" + //
+					"  }\r\n" + //
+					"}");//
+		}
+	}
+
+	@Test
 	public void testSinXY() {
 		String s = System.getProperty("os.name");
 		ObjectNode messageJSON = Pods.createResult("Sin(x*y)", formatsTEX);
@@ -745,49 +814,79 @@ public class TestPods {
 		System.out.println(jsonStr);
 		if (s.contains("Windows")) {
 			assertEquals(jsonStr, //
-					"{\r\n" + 
-					"  \"queryresult\" : {\r\n" + 
-					"    \"success\" : \"true\",\r\n" + 
-					"    \"error\" : \"false\",\r\n" + 
-					"    \"numpods\" : 4,\r\n" + 
-					"    \"version\" : \"0.1\",\r\n" + 
-					"    \"pods\" : [ {\r\n" + 
-					"      \"title\" : \"Binary form\",\r\n" + 
-					"      \"scanner\" : \"Integer\",\r\n" + 
-					"      \"error\" : \"false\",\r\n" + 
-					"      \"numsubpods\" : 1,\r\n" + 
-					"      \"subpods\" : [ {\r\n" + 
-					"        \"plaintext\" : \"Subscript(11111111111111111111111111111111,2)\",\r\n" + 
-					"        \"mathml\" : \"<math xmlns=\\\"http://www.w3.org/1999/xhtml\\\"><msub><mtext>11111111111111111111111111111111</mtext><mn>2</mn></msub></math>\"\r\n" + 
-					"      } ]\r\n" + 
-					"    }, {\r\n" + 
-					"      \"title\" : \"Prime factorization\",\r\n" + 
-					"      \"scanner\" : \"Integer\",\r\n" + 
-					"      \"error\" : \"false\",\r\n" + 
-					"      \"numsubpods\" : 1,\r\n" + 
-					"      \"subpods\" : [ {\r\n" + 
-					"        \"plaintext\" : \"{{3,1},{5,1},{17,1},{257,1},{65537,1}}\",\r\n" + 
-					"        \"mathml\" : \"<math xmlns=\\\"http://www.w3.org/1999/xhtml\\\"><mrow><mo>{</mo><mrow><mrow><mo>{</mo><mrow><mn>3</mn><mo>,</mo><mn>1</mn></mrow><mo>}</mo></mrow><mo>,</mo><mrow><mo>{</mo><mrow><mn>5</mn><mo>,</mo><mn>1</mn></mrow><mo>}</mo></mrow><mo>,</mo><mrow><mo>{</mo><mrow><mn>17</mn><mo>,</mo><mn>1</mn></mrow><mo>}</mo></mrow><mo>,</mo><mrow><mo>{</mo><mrow><mn>257</mn><mo>,</mo><mn>1</mn></mrow><mo>}</mo></mrow><mo>,</mo><mrow><mo>{</mo><mrow><mn>65537</mn><mo>,</mo><mn>1</mn></mrow><mo>}</mo></mrow></mrow><mo>}</mo></mrow></math>\"\r\n" + 
-					"      } ]\r\n" + 
-					"    }, {\r\n" + 
-					"      \"title\" : \"Residues modulo small integers\",\r\n" + 
-					"      \"scanner\" : \"Integer\",\r\n" + 
-					"      \"error\" : \"false\",\r\n" + 
-					"      \"numsubpods\" : 1,\r\n" + 
-					"      \"subpods\" : [ {\r\n" + 
-					"        \"plaintext\" : \"{1,0,3,0,3,3,7,3}\",\r\n" + 
-					"        \"mathml\" : \"<math xmlns=\\\"http://www.w3.org/1999/xhtml\\\"><mrow><mo>{</mo><mrow><mn>1</mn><mo>,</mo><mn>0</mn><mo>,</mo><mn>3</mn><mo>,</mo><mn>0</mn><mo>,</mo><mn>3</mn><mo>,</mo><mn>3</mn><mo>,</mo><mn>7</mn><mo>,</mo><mn>3</mn></mrow><mo>}</mo></mrow></math>\"\r\n" + 
-					"      } ]\r\n" + 
-					"    }, {\r\n" + 
-					"      \"title\" : \"Properties\",\r\n" + 
-					"      \"scanner\" : \"Integer\",\r\n" + 
-					"      \"error\" : \"false\",\r\n" + 
-					"      \"numsubpods\" : 1,\r\n" + 
-					"      \"subpods\" : [ {\r\n" + 
-					"        \"plaintext\" : \"4294967295 is an odd number.\"\r\n" + 
-					"      } ]\r\n" + 
-					"    } ]\r\n" + 
-					"  }\r\n" + 
+					"{\r\n" + "  \"queryresult\" : {\r\n" + "    \"success\" : \"true\",\r\n"
+							+ "    \"error\" : \"false\",\r\n" + "    \"numpods\" : 4,\r\n"
+							+ "    \"version\" : \"0.1\",\r\n" + "    \"pods\" : [ {\r\n"
+							+ "      \"title\" : \"Binary form\",\r\n" + "      \"scanner\" : \"Integer\",\r\n"
+							+ "      \"error\" : \"false\",\r\n" + "      \"numsubpods\" : 1,\r\n"
+							+ "      \"subpods\" : [ {\r\n"
+							+ "        \"plaintext\" : \"Subscript(11111111111111111111111111111111,2)\",\r\n"
+							+ "        \"mathml\" : \"<math xmlns=\\\"http://www.w3.org/1999/xhtml\\\"><msub><mtext>11111111111111111111111111111111</mtext><mn>2</mn></msub></math>\"\r\n"
+							+ "      } ]\r\n" + "    }, {\r\n" + "      \"title\" : \"Prime factorization\",\r\n"
+							+ "      \"scanner\" : \"Integer\",\r\n" + "      \"error\" : \"false\",\r\n"
+							+ "      \"numsubpods\" : 1,\r\n" + "      \"subpods\" : [ {\r\n"
+							+ "        \"plaintext\" : \"{{3,1},{5,1},{17,1},{257,1},{65537,1}}\",\r\n"
+							+ "        \"mathml\" : \"<math xmlns=\\\"http://www.w3.org/1999/xhtml\\\"><mrow><mo>{</mo><mrow><mrow><mo>{</mo><mrow><mn>3</mn><mo>,</mo><mn>1</mn></mrow><mo>}</mo></mrow><mo>,</mo><mrow><mo>{</mo><mrow><mn>5</mn><mo>,</mo><mn>1</mn></mrow><mo>}</mo></mrow><mo>,</mo><mrow><mo>{</mo><mrow><mn>17</mn><mo>,</mo><mn>1</mn></mrow><mo>}</mo></mrow><mo>,</mo><mrow><mo>{</mo><mrow><mn>257</mn><mo>,</mo><mn>1</mn></mrow><mo>}</mo></mrow><mo>,</mo><mrow><mo>{</mo><mrow><mn>65537</mn><mo>,</mo><mn>1</mn></mrow><mo>}</mo></mrow></mrow><mo>}</mo></mrow></math>\"\r\n"
+							+ "      } ]\r\n" + "    }, {\r\n"
+							+ "      \"title\" : \"Residues modulo small integers\",\r\n"
+							+ "      \"scanner\" : \"Integer\",\r\n" + "      \"error\" : \"false\",\r\n"
+							+ "      \"numsubpods\" : 1,\r\n" + "      \"subpods\" : [ {\r\n"
+							+ "        \"plaintext\" : \"{1,0,3,0,3,3,7,3}\",\r\n"
+							+ "        \"mathml\" : \"<math xmlns=\\\"http://www.w3.org/1999/xhtml\\\"><mrow><mo>{</mo><mrow><mn>1</mn><mo>,</mo><mn>0</mn><mo>,</mo><mn>3</mn><mo>,</mo><mn>0</mn><mo>,</mo><mn>3</mn><mo>,</mo><mn>3</mn><mo>,</mo><mn>7</mn><mo>,</mo><mn>3</mn></mrow><mo>}</mo></mrow></math>\"\r\n"
+							+ "      } ]\r\n" + "    }, {\r\n" + "      \"title\" : \"Properties\",\r\n"
+							+ "      \"scanner\" : \"Integer\",\r\n" + "      \"error\" : \"false\",\r\n"
+							+ "      \"numsubpods\" : 1,\r\n" + "      \"subpods\" : [ {\r\n"
+							+ "        \"plaintext\" : \"4294967295 is an odd number.\"\r\n" + "      } ]\r\n"
+							+ "    } ]\r\n" + "  }\r\n" + "}");//
+		}
+	}
+	
+	@Test
+	public void testNormalDistribution() {
+		String s = System.getProperty("os.name");
+		ObjectNode messageJSON = Pods.createResult("NormalDistribution(a,b)", formatsTEX);
+		final String jsonStr = messageJSON.toPrettyString();
+		System.out.println(jsonStr);
+		if (s.contains("Windows")) {
+			assertEquals(jsonStr, //
+					"{\r\n" + //
+					"  \"queryresult\" : {\r\n" + //
+					"    \"success\" : \"true\",\r\n" + //
+					"    \"error\" : \"false\",\r\n" + //
+					"    \"numpods\" : 3,\r\n" + //
+					"    \"version\" : \"0.1\",\r\n" + //
+					"    \"pods\" : [ {\r\n" + //
+					"      \"title\" : \"Input\",\r\n" + //
+					"      \"scanner\" : \"Identity\",\r\n" + //
+					"      \"error\" : \"false\",\r\n" + //
+					"      \"numsubpods\" : 1,\r\n" + //
+					"      \"subpods\" : [ {\r\n" + //
+					"        \"plaintext\" : \"NormalDistribution(a,b)\",\r\n" + //
+					"        \"sinput\" : \"NormalDistribution(a,b)\",\r\n" + //
+					"        \"latex\" : \"\\\\text{NormalDistribution}(a,b)\"\r\n" + //
+					"      } ]\r\n" + //
+					"    }, {\r\n" + //
+					"      \"title\" : \"Probability density function (PDF)\",\r\n" + //
+					"      \"scanner\" : \"Statistics\",\r\n" + //
+					"      \"error\" : \"false\",\r\n" + //
+					"      \"numsubpods\" : 1,\r\n" + //
+					"      \"subpods\" : [ {\r\n" + //
+					"        \"plaintext\" : \"1/(b*E^((-a+x)^2/(2*b^2))*Sqrt(2*Pi))\",\r\n" + //
+					"        \"sinput\" : \"PDF(NormalDistribution(a,b),x)\",\r\n" + //
+					"        \"latex\" : \"\\\\frac{1}{b\\\\,{e}^{\\\\frac{{\\\\left(  - a+x\\\\right) }^{2}}{2\\\\,{b}^{2}}}\\\\,\\\\sqrt{\\\\left( 2\\\\,\\\\pi\\\\right) }}\"\r\n" + //
+					"      } ]\r\n" + //
+					"    }, {\r\n" + //
+					"      \"title\" : \"Cumulative distribution function (CDF)\",\r\n" + //
+					"      \"scanner\" : \"Statistics\",\r\n" + //
+					"      \"error\" : \"false\",\r\n" + //
+					"      \"numsubpods\" : 1,\r\n" + //
+					"      \"subpods\" : [ {\r\n" + //
+					"        \"plaintext\" : \"Erfc((a-x)/(Sqrt(2)*b))/2\",\r\n" + //
+					"        \"sinput\" : \"CDF(NormalDistribution(a,b),x)\",\r\n" + //
+					"        \"latex\" : \"\\\\frac{\\\\text{Erfc}(\\\\frac{a - x}{\\\\sqrt{2}\\\\,b})}{2}\"\r\n" + //
+					"      } ]\r\n" + //
+					"    } ]\r\n" + //
+					"  }\r\n" + //
 					"}");//
 		}
 	}
