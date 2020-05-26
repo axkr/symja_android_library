@@ -922,9 +922,9 @@ public class TestPods {
 					"      \"error\" : \"false\",\r\n" + // 
 					"      \"numsubpods\" : 1,\r\n" + // 
 					"      \"subpods\" : [ {\r\n" + // 
-					"        \"plaintext\" : \"{{True,True,True,True},{True,True,False,True},{True,False,True,True},{True,False,False,False},{False,True,True,True},{False,True,False,False},{False,False,True,True},{False,False,False,False}}\",\r\n" + // 
+					"        \"plaintext\" : \"a | b | c | (a&&b)||c\\nT | T | T | T\\nT | T | F | T\\nT | F | T | T\\nT | F | F | F\\nF | T | T | T\\nF | T | F | F\\nF | F | T | T\\nF | F | F | F\",\r\n" + // 
 					"        \"sinput\" : \"BooleanTable(Append({a,b,c},(a&&b)||c),{a,b,c})\",\r\n" + // 
-					"        \"latex\" : \"\\\\{\\\\{True,True,True,True\\\\},\\\\{True,True,False,True\\\\},\\\\{True,False,True,True\\\\},\\\\{True,False,False,False\\\\},\\\\{False,True,True,True\\\\},\\\\{False,True,False,False\\\\},\\\\{False,False,True,True\\\\},\\\\{False,False,False,False\\\\}\\\\}\"\r\n" + // 
+					"        \"latex\" : \"\\\\begin{pmatrix}\\n True & True & True & True \\\\\\\\\\n True & True & False & True \\\\\\\\\\n True & False & True & True \\\\\\\\\\n True & False & False & False \\\\\\\\\\n False & True & True & True \\\\\\\\\\n False & True & False & False \\\\\\\\\\n False & False & True & True \\\\\\\\\\n False & False & False & False \\\\\\\\\\n\\\\end{pmatrix}\"\r\n" + // 
 					"      } ]\r\n" + // 
 					"    } ]\r\n" + // 
 					"  }\r\n" + // 

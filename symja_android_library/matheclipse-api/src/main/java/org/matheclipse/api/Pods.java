@@ -11,6 +11,7 @@ import org.apache.commons.codec.language.Soundex;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.text.StringEscapeUtils;
 import org.apache.commons.text.similarity.LevenshteinDistance;
+import org.matheclipse.core.builtin.OutputFunctions;
 import org.matheclipse.core.convert.AST2Expr;
 import org.matheclipse.core.convert.VariablesSet;
 import org.matheclipse.core.data.ElementData1;
@@ -21,12 +22,12 @@ import org.matheclipse.core.expression.F;
 import org.matheclipse.core.form.Documentation;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IBuiltInSymbol;
-import org.matheclipse.core.interfaces.IDiscreteDistribution;
 import org.matheclipse.core.interfaces.IDistribution;
 import org.matheclipse.core.interfaces.IEvaluator;
 import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.interfaces.IFraction;
 import org.matheclipse.core.interfaces.IInteger;
+import org.matheclipse.core.interfaces.IStringX;
 import org.matheclipse.parser.client.FEConfig;
 import org.matheclipse.parser.client.SyntaxError;
 import org.matheclipse.parser.trie.Trie;
@@ -668,7 +669,7 @@ public class Pods {
 	 * Create a truth table for logic formulas with less equal 5 variables
 	 * 
 	 * @param podsArray
-	 * @param inExpr
+	 * @param outExpr
 	 * @param variables
 	 * @param formats
 	 * @param mapper
@@ -679,11 +680,23 @@ public class Pods {
 			EvalEngine engine) {
 		int numpods = 0;
 		if (variables.argSize() > 0 && variables.argSize() <= 5) {
-			IExpr podOut;
-			inExpr = F.BooleanTable(F.Append(variables, inExpr), variables);
-			podOut = engine.evaluate(inExpr);
-			// TODO generate plain text truth table
-			addSymjaPod(podsArray, inExpr, podOut, "Truth table", "Boolean", formats, mapper, engine);
+			IExpr outExpr = F.BooleanTable(F.Append(variables, inExpr), variables);
+			IExpr podOut = engine.evaluate(outExpr);
+			StringBuilder tableForm = new StringBuilder();
+			for (int i = 1; i < variables.size(); i++) {
+				tableForm.append(variables.get(i).toString());
+				tableForm.append(" | ");
+			}
+			tableForm.append(inExpr.toString());
+			tableForm.append("\n");
+			if (OutputFunctions.plaintextTable(tableForm, podOut, " | ", //
+					x -> x.isTrue() ? "T" : x.isFalse() ? "F" : x.toString() //
+			)) {
+				addSymjaPod(podsArray, outExpr, podOut, tableForm.toString(), "Truth table", "Boolean", formats, mapper,
+						engine);
+			} else {
+				addSymjaPod(podsArray, outExpr, podOut, "Truth table", "Boolean", formats, mapper, engine);
+			}
 			numpods++;
 		}
 		return numpods;
