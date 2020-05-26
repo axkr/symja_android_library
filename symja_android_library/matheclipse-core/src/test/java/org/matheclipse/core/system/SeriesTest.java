@@ -512,10 +512,14 @@ public class SeriesTest extends AbstractTestCase {
 	public void testLogSeries() {
 		check("SeriesCoefficient(Log(x), {x, a, n})", //
 				"Piecewise({{(-1)^(1+n)/(a^n*n),n>=1},{Log(a),n==0}},0)");
+		check("SeriesCoefficient(Log(b+c*x), {x, a, n})", //
+				"Piecewise({{-(-c/(b+a*c))^n/n,n>0},{Log(b+a*c),n==0}},0)");
 		check("Series(Log(x), {x, 0, 3})", //
 				"Log(x)+O(x)^4");
 		check("Series(Exp(2*x)*Log(x), {x, 0, 2})", //
 				"Log(x)+2*Log(x)*x+2*Log(x)*x^2+O(x)^3");
+		check("Series(Log(x), {x, 0, 3})", //
+				"Log(x)+O(x)^4");
 
 	}
 	
