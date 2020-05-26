@@ -543,12 +543,12 @@ public class Pods {
 								numpods++;
 
 								IExpr head = outExpr.head();
-								if (head instanceof IBuiltInSymbol) {
+								if (head instanceof IBuiltInSymbol && outExpr.size() > 1) {
 									IEvaluator evaluator = ((IBuiltInSymbol) head).getEvaluator();
 									if (evaluator instanceof IDistribution) {
 										// if (evaluator instanceof IDiscreteDistribution) {
-										int snumpods = statisticsPods(podsArray, inExpr, podOut, formats, mapper,
-												engine);
+										int snumpods = statisticsPods(podsArray, (IAST) outExpr, podOut, formats,
+												mapper, engine);
 										numpods += snumpods;
 									}
 								}
@@ -691,6 +691,7 @@ public class Pods {
 			tableForm.append("\n");
 			if (OutputFunctions.plaintextTable(tableForm, podOut, " | ", //
 					x -> x.isTrue() ? "T" : x.isFalse() ? "F" : x.toString() //
+, true
 			)) {
 				addSymjaPod(podsArray, outExpr, podOut, tableForm.toString(), "Truth table", "Boolean", formats, mapper,
 						engine);
@@ -702,19 +703,38 @@ public class Pods {
 		return numpods;
 	}
 
-	private static int statisticsPods(ArrayNode podsArray, IExpr inExpr, IExpr outExpr, int formats,
-			ObjectMapper mapper, EvalEngine engine) {
+	private static int statisticsPods(ArrayNode podsArray, IAST inExpr, IExpr outExpr, int formats, ObjectMapper mapper,
+			EvalEngine engine) {
 		int numpods = 0;
-		inExpr = F.PDF(outExpr, F.x);
-		IExpr podOut = engine.evaluate(inExpr);
-		addSymjaPod(podsArray, inExpr, podOut, "Probability density function (PDF)", "Statistics", formats, mapper,
-				engine);
-		numpods++;
 
-		inExpr = F.CDF(outExpr, F.x);
-		podOut = engine.evaluate(inExpr);
-		addSymjaPod(podsArray, inExpr, podOut, "Cumulative distribution function (CDF)", "Statistics", formats, mapper,
-				engine);
+		IExpr mean = F.Mean.ofNIL(engine, inExpr);
+		if (mean.isPresent()) {
+			// IExpr mode = F.Mode.of(engine, inExpr);
+			IExpr standardDeviation = F.StandardDeviation.of(engine, inExpr);
+			IExpr variance = F.Variance.of(engine, inExpr);
+			IExpr skewness = F.Skewness.of(engine, inExpr);
+			inExpr = F.List(//
+					F.List(F.stringx("mean"), mean), //
+					F.List(F.stringx("standard deviation"), standardDeviation), //
+					F.List(F.stringx("variance"), variance), //
+					F.List(F.stringx("skewness"), skewness));
+			StringBuilder result = new StringBuilder();
+			OutputFunctions.plaintextTable(result, inExpr, " | ", x -> x.toString(), false);
+
+			addSymjaPod(podsArray, inExpr, inExpr, result.toString(), "Statistical properties",
+					"Statistics", formats, mapper, engine);
+			numpods++;
+
+			IExpr podOut = engine.evaluate(inExpr);
+			addSymjaPod(podsArray, inExpr, podOut, "Probability density function (PDF)", "Statistics", formats, mapper,
+					engine);
+			numpods++;
+
+			inExpr = F.CDF(outExpr, F.x);
+			podOut = engine.evaluate(inExpr);
+			addSymjaPod(podsArray, inExpr, podOut, "Cumulative distribution function (CDF)", "Statistics", formats,
+					mapper, engine);
+		}
 		numpods++;
 		return numpods;
 	}

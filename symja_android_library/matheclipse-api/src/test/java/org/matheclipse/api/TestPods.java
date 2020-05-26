@@ -849,44 +849,54 @@ public class TestPods {
 		System.out.println(jsonStr);
 		if (s.contains("Windows")) {
 			assertEquals(jsonStr, //
-					"{\r\n" + //
-					"  \"queryresult\" : {\r\n" + //
-					"    \"success\" : \"true\",\r\n" + //
-					"    \"error\" : \"false\",\r\n" + //
-					"    \"numpods\" : 3,\r\n" + //
-					"    \"version\" : \"0.1\",\r\n" + //
-					"    \"pods\" : [ {\r\n" + //
-					"      \"title\" : \"Input\",\r\n" + //
-					"      \"scanner\" : \"Identity\",\r\n" + //
-					"      \"error\" : \"false\",\r\n" + //
-					"      \"numsubpods\" : 1,\r\n" + //
-					"      \"subpods\" : [ {\r\n" + //
-					"        \"plaintext\" : \"NormalDistribution(a,b)\",\r\n" + //
-					"        \"sinput\" : \"NormalDistribution(a,b)\",\r\n" + //
-					"        \"latex\" : \"\\\\text{NormalDistribution}(a,b)\"\r\n" + //
-					"      } ]\r\n" + //
-					"    }, {\r\n" + //
-					"      \"title\" : \"Probability density function (PDF)\",\r\n" + //
-					"      \"scanner\" : \"Statistics\",\r\n" + //
-					"      \"error\" : \"false\",\r\n" + //
-					"      \"numsubpods\" : 1,\r\n" + //
-					"      \"subpods\" : [ {\r\n" + //
-					"        \"plaintext\" : \"1/(b*E^((-a+x)^2/(2*b^2))*Sqrt(2*Pi))\",\r\n" + //
-					"        \"sinput\" : \"PDF(NormalDistribution(a,b),x)\",\r\n" + //
-					"        \"latex\" : \"\\\\frac{1}{b\\\\,{e}^{\\\\frac{{\\\\left(  - a+x\\\\right) }^{2}}{2\\\\,{b}^{2}}}\\\\,\\\\sqrt{\\\\left( 2\\\\,\\\\pi\\\\right) }}\"\r\n" + //
-					"      } ]\r\n" + //
-					"    }, {\r\n" + //
-					"      \"title\" : \"Cumulative distribution function (CDF)\",\r\n" + //
-					"      \"scanner\" : \"Statistics\",\r\n" + //
-					"      \"error\" : \"false\",\r\n" + //
-					"      \"numsubpods\" : 1,\r\n" + //
-					"      \"subpods\" : [ {\r\n" + //
-					"        \"plaintext\" : \"Erfc((a-x)/(Sqrt(2)*b))/2\",\r\n" + //
-					"        \"sinput\" : \"CDF(NormalDistribution(a,b),x)\",\r\n" + //
-					"        \"latex\" : \"\\\\frac{\\\\text{Erfc}(\\\\frac{a - x}{\\\\sqrt{2}\\\\,b})}{2}\"\r\n" + //
-					"      } ]\r\n" + //
-					"    } ]\r\n" + //
-					"  }\r\n" + //
+					"{\r\n" + 
+					"  \"queryresult\" : {\r\n" + 
+					"    \"success\" : \"true\",\r\n" + 
+					"    \"error\" : \"false\",\r\n" + 
+					"    \"numpods\" : 4,\r\n" + 
+					"    \"version\" : \"0.1\",\r\n" + 
+					"    \"pods\" : [ {\r\n" + 
+					"      \"title\" : \"Input\",\r\n" + 
+					"      \"scanner\" : \"Identity\",\r\n" + 
+					"      \"error\" : \"false\",\r\n" + 
+					"      \"numsubpods\" : 1,\r\n" + 
+					"      \"subpods\" : [ {\r\n" + 
+					"        \"plaintext\" : \"NormalDistribution(a,b)\",\r\n" + 
+					"        \"sinput\" : \"NormalDistribution(a,b)\",\r\n" + 
+					"        \"latex\" : \"\\\\text{NormalDistribution}(a,b)\"\r\n" + 
+					"      } ]\r\n" + 
+					"    }, {\r\n" + 
+					"      \"title\" : \"Statistical properties\",\r\n" + 
+					"      \"scanner\" : \"Statistics\",\r\n" + 
+					"      \"error\" : \"false\",\r\n" + 
+					"      \"numsubpods\" : 1,\r\n" + 
+					"      \"subpods\" : [ {\r\n" + 
+					"        \"plaintext\" : \"mean | a\\nstandard deviation | b\\nvariance | b^2\\nskewness | Skewness(NormalDistribution(a,b))\",\r\n" + 
+					"        \"sinput\" : \"{{mean,a},\\n {standard deviation,b},\\n {variance,b^2},\\n {skewness,Skewness(NormalDistribution(a,b))}}\",\r\n" + 
+					"        \"latex\" : \"\\\\begin{pmatrix}\\n \\\\textnormal{mean} & a \\\\\\\\\\n \\\\textnormal{standard deviation} & b \\\\\\\\\\n \\\\textnormal{variance} & {b}^{2} \\\\\\\\\\n \\\\textnormal{skewness} & \\\\text{Skewness}(\\\\text{NormalDistribution}(a,b)) \\\\\\\\\\n\\\\end{pmatrix}\"\r\n" + 
+					"      } ]\r\n" + 
+					"    }, {\r\n" + 
+					"      \"title\" : \"Probability density function (PDF)\",\r\n" + 
+					"      \"scanner\" : \"Statistics\",\r\n" + 
+					"      \"error\" : \"false\",\r\n" + 
+					"      \"numsubpods\" : 1,\r\n" + 
+					"      \"subpods\" : [ {\r\n" + 
+					"        \"plaintext\" : \"{{mean,a},\\n {standard deviation,b},\\n {variance,b^2},\\n {skewness,Skewness(NormalDistribution(a,b))}}\",\r\n" + 
+					"        \"sinput\" : \"{{mean,a},\\n {standard deviation,b},\\n {variance,b^2},\\n {skewness,Skewness(NormalDistribution(a,b))}}\",\r\n" + 
+					"        \"latex\" : \"\\\\begin{pmatrix}\\n \\\\textnormal{mean} & a \\\\\\\\\\n \\\\textnormal{standard deviation} & b \\\\\\\\\\n \\\\textnormal{variance} & {b}^{2} \\\\\\\\\\n \\\\textnormal{skewness} & \\\\text{Skewness}(\\\\text{NormalDistribution}(a,b)) \\\\\\\\\\n\\\\end{pmatrix}\"\r\n" + 
+					"      } ]\r\n" + 
+					"    }, {\r\n" + 
+					"      \"title\" : \"Cumulative distribution function (CDF)\",\r\n" + 
+					"      \"scanner\" : \"Statistics\",\r\n" + 
+					"      \"error\" : \"false\",\r\n" + 
+					"      \"numsubpods\" : 1,\r\n" + 
+					"      \"subpods\" : [ {\r\n" + 
+					"        \"plaintext\" : \"Erfc((a-x)/(Sqrt(2)*b))/2\",\r\n" + 
+					"        \"sinput\" : \"CDF(NormalDistribution(a,b),x)\",\r\n" + 
+					"        \"latex\" : \"\\\\frac{\\\\text{Erfc}(\\\\frac{a - x}{\\\\sqrt{2}\\\\,b})}{2}\"\r\n" + 
+					"      } ]\r\n" + 
+					"    } ]\r\n" + 
+					"  }\r\n" + 
 					"}");//
 		}
 	}

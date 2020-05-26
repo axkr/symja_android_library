@@ -153,7 +153,7 @@ public final class OutputFunctions {
 			if (ast.isAST1()) {
 				IExpr arg1 = engine.evaluate(ast.arg1());
 				StringBuilder tableForm = new StringBuilder();
-				if (plaintextTable(tableForm, arg1, " ", x -> x.toString())) {
+				if (plaintextTable(tableForm, arg1, " ", x -> x.toString(), true)) {
 					return F.stringx(tableForm.toString(), IStringX.TEXT_PLAIN);
 				}
 				if (arg1.isList()) {
@@ -620,7 +620,7 @@ public final class OutputFunctions {
 	}
 
 	public static boolean plaintextTable(StringBuilder result, IExpr expr, String delimiter,
-			java.util.function.Function<IExpr, String> function) {
+			java.util.function.Function<IExpr, String> function, boolean fillUpWithSPACE) {
 		int[] dim = expr.isMatrix();
 		if (dim != null) {
 			IAST matrix = (IAST) expr;
@@ -649,10 +649,12 @@ public final class OutputFunctions {
 				} else {
 					rowLength += columnLength;
 				}
-				for (int j = 0; j < rowDimension; j++) {
-					int rest = rowLength - sb[j].length();
-					for (int k = 0; k < rest; k++) {
-						sb[j].append(' ');
+				if (fillUpWithSPACE) {
+					for (int j = 0; j < rowDimension; j++) {
+						int rest = rowLength - sb[j].length();
+						for (int k = 0; k < rest; k++) {
+							sb[j].append(' ');
+						}
 					}
 				}
 			}
