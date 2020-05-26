@@ -38,7 +38,7 @@ public class TestPods {
 							"}");//
 		}
 	}
-
+	
 	@Test
 	public void testMarkdownHelp() {
 		String s = System.getProperty("os.name");
@@ -68,6 +68,53 @@ public class TestPods {
 		}
 	}
 
+	@Test
+	public void testTeXParser() {
+		String s = System.getProperty("os.name");
+		ObjectNode messageJSON = Pods.createResult("\\sin 30 ^ { \\circ }", formatsHTML);
+		final String jsonStr = messageJSON.toPrettyString();
+		System.out.println(jsonStr);
+		if (s.contains("Windows")) {
+			assertEquals(jsonStr, //
+					"{\r\n" + // 
+					"  \"queryresult\" : {\r\n" + // 
+					"    \"success\" : \"true\",\r\n" + // 
+					"    \"error\" : \"false\",\r\n" + // 
+					"    \"numpods\" : 3,\r\n" + // 
+					"    \"version\" : \"0.1\",\r\n" + // 
+					"    \"pods\" : [ {\r\n" + // 
+					"      \"title\" : \"Input\",\r\n" + // 
+					"      \"scanner\" : \"Identity\",\r\n" + // 
+					"      \"error\" : \"false\",\r\n" + // 
+					"      \"numsubpods\" : 1,\r\n" + // 
+					"      \"subpods\" : [ {\r\n" + // 
+					"        \"plaintext\" : \"Sin(30*Degree)\",\r\n" + // 
+					"        \"sinput\" : \"Sin(30*Degree)\"\r\n" + // 
+					"      } ]\r\n" + // 
+					"    }, {\r\n" + // 
+					"      \"title\" : \"Exact result\",\r\n" + // 
+					"      \"scanner\" : \"Rational\",\r\n" + // 
+					"      \"error\" : \"false\",\r\n" + // 
+					"      \"numsubpods\" : 1,\r\n" + // 
+					"      \"subpods\" : [ {\r\n" + // 
+					"        \"plaintext\" : \"1/2\",\r\n" + // 
+					"        \"sinput\" : \"Sin(30*Degree)\"\r\n" + // 
+					"      } ]\r\n" + // 
+					"    }, {\r\n" + // 
+					"      \"title\" : \"Decimal form\",\r\n" + // 
+					"      \"scanner\" : \"Numeric\",\r\n" + // 
+					"      \"error\" : \"false\",\r\n" + // 
+					"      \"numsubpods\" : 1,\r\n" + // 
+					"      \"subpods\" : [ {\r\n" + // 
+					"        \"plaintext\" : \"0.5\",\r\n" + // 
+					"        \"sinput\" : \"N(1/2)\"\r\n" + // 
+					"      } ]\r\n" + // 
+					"    } ]\r\n" + // 
+					"  }\r\n" + // 
+					"}");//
+		}
+	}
+	
 	@Test
 	public void testSoundexHelp() {
 		String s = System.getProperty("os.name");

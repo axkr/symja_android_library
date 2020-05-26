@@ -20,6 +20,7 @@ import org.matheclipse.core.eval.MathMLUtilities;
 import org.matheclipse.core.eval.TeXUtilities;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.form.Documentation;
+import org.matheclipse.core.form.tex.TeXParser;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IBuiltInSymbol;
 import org.matheclipse.core.interfaces.IDistribution;
@@ -773,27 +774,33 @@ public class Pods {
 	private static IExpr parseInput(String inputStr, EvalEngine engine) {
 		engine.setPackageMode(false);
 		final FuzzyParser parser = new FuzzyParser(engine);
+		IExpr inExpr = F.NIL;
 		try {
-			IExpr inExpr = parser.parse(inputStr);
-			if (inExpr.isList() && inExpr.size() == 2) {
-				return inExpr.first();
+			inExpr = parser.parse(inputStr);
+		} catch (RuntimeException rex1) {
+			// this includes syntax errors
+			if (FEConfig.SHOW_STACKTRACE) {
+				rex1.printStackTrace();
 			}
-			return inExpr;
-		} catch (SyntaxError se) {
 			try {
-				IExpr inExpr = parser.parseFuzzyList(inputStr);
-				if (inExpr.isList() && inExpr.size() == 2) {
-					return inExpr.first();
+				inExpr = parser.parseFuzzyList(inputStr);
+			} catch (RuntimeException rex2) {
+				// this includes syntax errors
+				if (FEConfig.SHOW_STACKTRACE) {
+					rex2.printStackTrace();
 				}
-				return inExpr;
-			} catch (SyntaxError syntaxError) {
-			} catch (RuntimeException rex) {
-				rex.printStackTrace();
+				TeXParser texConverter = new TeXParser(engine);
+				inExpr = texConverter.toExpression(inputStr);
 			}
-		} catch (RuntimeException rex) {
-			rex.printStackTrace();
 		}
-		return F.NIL;
+		if (inExpr == F.$Aborted) {
+			return F.NIL;
+		}
+		if (inExpr.isList() && inExpr.size() == 2) {
+			return inExpr.first();
+		}
+		return inExpr;
+
 	}
 
 	private static int integerPods(ArrayNode podsArray, IInteger intExpr, IExpr outExpr, int formats,
