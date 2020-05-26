@@ -2084,13 +2084,13 @@ public class LowercaseTestCase extends AbstractTestCase {
 	public void testBooleanTable() {
 		check("BooleanTable({a,b,c,(a&&b)||c},{a,b,c}) // TableForm", //
 				"True  True  True  True \n" + //
-				"True  True  False True \n" + //
-				"True  False True  True \n" + //
-				"True  False False False\n" + //
-				"False True  True  True \n" + //
-				"False True  False False\n" + //
-				"False False True  True \n" + //
-				"False False False False");
+						"True  True  False True \n" + //
+						"True  False True  True \n" + //
+						"True  False False False\n" + //
+						"False True  True  True \n" + //
+						"False True  False False\n" + //
+						"False False True  True \n" + //
+						"False False False False");
 		check("BooleanTable(Xor(p, q, r))", //
 				"{True,False,False,True,False,True,True,False}");
 		check("BooleanTable(Xor(p, q, r), {p, q, r})", //
@@ -21040,6 +21040,45 @@ public class LowercaseTestCase extends AbstractTestCase {
 	}
 
 	public void testSkewness() {
+		check("Skewness(WeibullDistribution(n,m))", //
+				"(2*Gamma(1+1/n)^3-3*Gamma(1+1/n)*Gamma(1+2/n)+Gamma(1+3/n))/(-Gamma(1+1/n)^2+Gamma(\n" + //
+						"1+2/n))^(3/2)");
+		check("Skewness(UniformDistribution())", //
+				"0");
+		check("Skewness(StudentTDistribution(n ))", //
+				"Piecewise({{0,n>3}},Indeterminate)");
+		check("Skewness(PoissonDistribution(n ))", //
+				"1/Sqrt(n)");
+		check("Skewness(NormalDistribution(n,m))", //
+				"0");
+		check("Skewness(NakagamiDistribution(n,m))", //
+				"(Pochhammer(n,1/2)*(1/2-2*(n-Pochhammer(n,1/2)^2)))/(n-Pochhammer(n,1/2)^2)^(3/2)");
+		check("Skewness(LogNormalDistribution(n,m))", //
+				"(2+E^m^2)*Sqrt(-1+E^m^2)");
+		check("Skewness(GumbelDistribution(n,m))", //
+				"(-12*Sqrt(6)*Zeta(3))/Pi^3");
+		check("Skewness(GeometricDistribution(n))", //
+				"(2-n)/Sqrt(1-n)");
+		check("Skewness(GammaDistribution(n,m))", //
+				"2/Sqrt(n)");
+		check("Skewness(FrechetDistribution(n,m))", //
+				"Piecewise({{(Gamma(1-3/n)-3*Gamma(1-2/n)*Gamma(1-1/n)+2*Gamma(1-1/n)^3)/(Gamma(1\n" + //
+						"-2/n)-Gamma(1-1/n)^2)^(3/2),n>3}},Infinity)");
+		check("Skewness(FRatioDistribution(n,m))", //
+				"Piecewise({{(2*Sqrt(2)*Sqrt(-4+m)*(-2+m+2*n))/((-6+m)*Sqrt(n)*Sqrt(-2+m+n)),m>6}},Indeterminate)");
+		check("Skewness(ExponentialDistribution(n))", //
+				"2");
+		check("Skewness(ErlangDistribution(n,m))", //
+				"2/Sqrt(n)");
+		check("Skewness(DiscreteUniformDistribution({n,m}))", //
+				"0");
+		check("Skewness(BinomialDistribution(n,m))", //
+				"(1-2*m)/Sqrt((1-m)*m*n)");
+		check("Skewness(BernoulliDistribution(a))", //
+				"(1-2*a)/Sqrt((1-a)*a)");
+		check("Skewness(ChiSquareDistribution(a))", //
+				"2*Sqrt(2)*Sqrt(1/a)");
+
 		check("Skewness({1.1, 1.2, 1.4, 2.1, 2.4})", //
 				"0.407041");
 	}

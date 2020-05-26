@@ -871,9 +871,9 @@ public class TestPods {
 					"      \"error\" : \"false\",\r\n" + 
 					"      \"numsubpods\" : 1,\r\n" + 
 					"      \"subpods\" : [ {\r\n" + 
-					"        \"plaintext\" : \"mean | a\\nstandard deviation | b\\nvariance | b^2\\nskewness | Skewness(NormalDistribution(a,b))\",\r\n" + 
-					"        \"sinput\" : \"{{mean,a},\\n {standard deviation,b},\\n {variance,b^2},\\n {skewness,Skewness(NormalDistribution(a,b))}}\",\r\n" + 
-					"        \"latex\" : \"\\\\begin{pmatrix}\\n \\\\textnormal{mean} & a \\\\\\\\\\n \\\\textnormal{standard deviation} & b \\\\\\\\\\n \\\\textnormal{variance} & {b}^{2} \\\\\\\\\\n \\\\textnormal{skewness} & \\\\text{Skewness}(\\\\text{NormalDistribution}(a,b)) \\\\\\\\\\n\\\\end{pmatrix}\"\r\n" + 
+					"        \"plaintext\" : \"mean | a\\nstandard deviation | b\\nvariance | b^2\\nskewness | 0\",\r\n" + 
+					"        \"sinput\" : \"{{mean,a},\\n {standard deviation,b},\\n {variance,b^2},\\n {skewness,0}}\",\r\n" + 
+					"        \"latex\" : \"\\\\begin{pmatrix}\\n \\\\textnormal{mean} & a \\\\\\\\\\n \\\\textnormal{standard deviation} & b \\\\\\\\\\n \\\\textnormal{variance} & {b}^{2} \\\\\\\\\\n \\\\textnormal{skewness} & 0 \\\\\\\\\\n\\\\end{pmatrix}\"\r\n" + 
 					"      } ]\r\n" + 
 					"    }, {\r\n" + 
 					"      \"title\" : \"Probability density function (PDF)\",\r\n" + 
@@ -881,9 +881,9 @@ public class TestPods {
 					"      \"error\" : \"false\",\r\n" + 
 					"      \"numsubpods\" : 1,\r\n" + 
 					"      \"subpods\" : [ {\r\n" + 
-					"        \"plaintext\" : \"{{mean,a},\\n {standard deviation,b},\\n {variance,b^2},\\n {skewness,Skewness(NormalDistribution(a,b))}}\",\r\n" + 
-					"        \"sinput\" : \"{{mean,a},\\n {standard deviation,b},\\n {variance,b^2},\\n {skewness,Skewness(NormalDistribution(a,b))}}\",\r\n" + 
-					"        \"latex\" : \"\\\\begin{pmatrix}\\n \\\\textnormal{mean} & a \\\\\\\\\\n \\\\textnormal{standard deviation} & b \\\\\\\\\\n \\\\textnormal{variance} & {b}^{2} \\\\\\\\\\n \\\\textnormal{skewness} & \\\\text{Skewness}(\\\\text{NormalDistribution}(a,b)) \\\\\\\\\\n\\\\end{pmatrix}\"\r\n" + 
+					"        \"plaintext\" : \"{{mean,a},\\n {standard deviation,b},\\n {variance,b^2},\\n {skewness,0}}\",\r\n" + 
+					"        \"sinput\" : \"{{mean,a},\\n {standard deviation,b},\\n {variance,b^2},\\n {skewness,0}}\",\r\n" + 
+					"        \"latex\" : \"\\\\begin{pmatrix}\\n \\\\textnormal{mean} & a \\\\\\\\\\n \\\\textnormal{standard deviation} & b \\\\\\\\\\n \\\\textnormal{variance} & {b}^{2} \\\\\\\\\\n \\\\textnormal{skewness} & 0 \\\\\\\\\\n\\\\end{pmatrix}\"\r\n" + 
 					"      } ]\r\n" + 
 					"    }, {\r\n" + 
 					"      \"title\" : \"Cumulative distribution function (CDF)\",\r\n" + 
