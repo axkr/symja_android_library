@@ -691,8 +691,7 @@ public class Pods {
 			tableForm.append("\n");
 			if (OutputFunctions.plaintextTable(tableForm, podOut, " | ", //
 					x -> x.isTrue() ? "T" : x.isFalse() ? "F" : x.toString() //
-, true
-			)) {
+					, true)) {
 				addSymjaPod(podsArray, outExpr, podOut, tableForm.toString(), "Truth table", "Boolean", formats, mapper,
 						engine);
 			} else {
@@ -713,19 +712,20 @@ public class Pods {
 			IExpr standardDeviation = F.StandardDeviation.of(engine, inExpr);
 			IExpr variance = F.Variance.of(engine, inExpr);
 			IExpr skewness = F.Skewness.of(engine, inExpr);
-			inExpr = F.List(//
+			IExpr podOut = F.List(//
 					F.List(F.stringx("mean"), mean), //
 					F.List(F.stringx("standard deviation"), standardDeviation), //
 					F.List(F.stringx("variance"), variance), //
 					F.List(F.stringx("skewness"), skewness));
 			StringBuilder result = new StringBuilder();
-			OutputFunctions.plaintextTable(result, inExpr, " | ", x -> x.toString(), false);
+			OutputFunctions.plaintextTable(result, podOut, " | ", x -> x.toString(), false);
 
-			addSymjaPod(podsArray, inExpr, inExpr, result.toString(), "Statistical properties",
-					"Statistics", formats, mapper, engine);
+			addSymjaPod(podsArray, podOut, podOut, result.toString(), "Statistical properties", "Statistics", formats,
+					mapper, engine);
 			numpods++;
 
-			IExpr podOut = engine.evaluate(inExpr);
+			inExpr = F.PDF(outExpr, F.x);
+			podOut = engine.evaluate(inExpr);
 			addSymjaPod(podsArray, inExpr, podOut, "Probability density function (PDF)", "Statistics", formats, mapper,
 					engine);
 			numpods++;
