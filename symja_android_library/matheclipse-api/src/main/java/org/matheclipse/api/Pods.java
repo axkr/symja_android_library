@@ -478,7 +478,7 @@ public class Pods {
 					if (inExpr.isSymbol() || inExpr.isString()) {
 						String inputWord = inExpr.toString();
 						StringBuilder buf = new StringBuilder();
-						if (Documentation.printDocumentation(buf, inputWord)) {
+						if (Documentation.getMarkdown(buf, inputWord)) {
 							DocumentationPod.addDocumentationPod(mapper, podsArray, buf, formats);
 							numpods++;
 							resultStatistics(queryresult, error, numpods, podsArray);

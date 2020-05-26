@@ -13,6 +13,8 @@ public class TestPods {
 	final static String[] formatsMATHML = new String[] { "mathml", "plaintext" };
 
 	final static String[] formatsTEX = new String[] { "latex", "plaintext", "sinput" };
+	
+	final static String[] formatsHTML = new String[] { "html", "plaintext", "sinput" };
 
 	static {
 		Config.FUZZY_PARSER = true;
@@ -40,19 +42,29 @@ public class TestPods {
 	@Test
 	public void testMarkdownHelp() {
 		String s = System.getProperty("os.name");
-		ObjectNode messageJSON = Pods.createResult("Sin", formatsTEX);
+		ObjectNode messageJSON = Pods.createResult("Sin", formatsHTML);
 		final String jsonStr = messageJSON.toPrettyString();
 		System.out.println(jsonStr);
 		if (s.contains("Windows")) {
 			assertEquals(jsonStr, //
-					"{\r\n" + "  \"queryresult\" : {\r\n" + "    \"success\" : \"true\",\r\n"
-							+ "    \"error\" : \"false\",\r\n" + "    \"numpods\" : 1,\r\n"
-							+ "    \"version\" : \"0.1\",\r\n" + "    \"pods\" : [ {\r\n"
-							+ "      \"title\" : \"documentation\",\r\n" + "      \"scanner\" : \"help\",\r\n"
-							+ "      \"error\" : \"false\",\r\n" + "      \"numsubpods\" : 1,\r\n"
-							+ "      \"subpods\" : [ {\r\n"
-							+ "        \"markdown\" : \"## Sin\\n\\nSin(expr)\\n\\n> returns the sine of `expr` (measured in radians).\\n \\n`Sin(expr)` will evaluate automatically in the case `expr` is a multiple of `Pi, Pi/2, Pi/3, Pi/4` and `Pi/6`.\\n\\nSee\\n* [Wikipedia - Sine](https://en.wikipedia.org/wiki/Sine)\\n\\n### Examples\\n\\n>> Sin(0)\\n0\\n\\n>> Sin(0.5)\\n0.479425538604203\\n\\n>> Sin(3*Pi)\\n0\\n\\n>> Sin(1.0 + I)\\n1.2984575814159773+I*0.6349639147847361\\n \\n\"\r\n"
-							+ "      } ]\r\n" + "    } ]\r\n" + "  }\r\n" + "}");//
+					"{\r\n" + //
+					"  \"queryresult\" : {\r\n" + //
+					"    \"success\" : \"true\",\r\n" + //
+					"    \"error\" : \"false\",\r\n" + //
+					"    \"numpods\" : 1,\r\n" + //
+					"    \"version\" : \"0.1\",\r\n" + //
+					"    \"pods\" : [ {\r\n" + //
+					"      \"title\" : \"documentation\",\r\n" + //
+					"      \"scanner\" : \"help\",\r\n" + //
+					"      \"error\" : \"false\",\r\n" + //
+					"      \"numsubpods\" : 1,\r\n" + //
+					"      \"subpods\" : [ {\r\n" + //
+					"        \"markdown\" : \"## Sin\\n\\n```\\nSin(expr)\\n```\\n\\n> returns the sine of `expr` (measured in radians).\\n \\n`Sin(expr)` will evaluate automatically in the case `expr` is a multiple of `Pi, Pi/2, Pi/3, Pi/4` and `Pi/6`.\\n\\nSee\\n* [Wikipedia - Sine](https://en.wikipedia.org/wiki/Sine)\\n\\n### Examples\\n\\n```\\n>> Sin(0)\\n0\\n\\n>> Sin(0.5)\\n0.479425538604203\\n\\n>> Sin(3*Pi)\\n0\\n\\n>> Sin(1.0 + I)\\n1.2984575814159773+I*0.6349639147847361\\n```\\n \\n\",\r\n" + //
+					"        \"html\" : \"<h2>Sin</h2>\\n<pre><code>Sin(expr)\\n</code></pre>\\n<blockquote>\\n<p>returns the sine of <code>expr</code> (measured in radians).</p>\\n</blockquote>\\n<p><code>Sin(expr)</code> will evaluate automatically in the case <code>expr</code> is a multiple of <code>Pi, Pi/2, Pi/3, Pi/4</code> and <code>Pi/6</code>.</p>\\n<p>See</p>\\n<ul>\\n<li><a href=\\\"https://en.wikipedia.org/wiki/Sine\\\">Wikipedia - Sine</a></li>\\n</ul>\\n<h3>Examples</h3>\\n<pre><code>&gt;&gt; Sin(0)\\n0\\n\\n&gt;&gt; Sin(0.5)\\n0.479425538604203\\n\\n&gt;&gt; Sin(3*Pi)\\n0\\n\\n&gt;&gt; Sin(1.0 + I)\\n1.2984575814159773+I*0.6349639147847361\\n</code></pre>\\n\"\r\n" + //
+					"      } ]\r\n" + //
+					"    } ]\r\n" + //
+					"  }\r\n" + //
+					"}");//
 		}
 	}
 
