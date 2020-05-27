@@ -1353,4 +1353,72 @@ public class TestPods {
 					"}");//
 		}
 	}
+	
+	@Test
+	public void testTimes() {
+		String s = System.getProperty("os.name");
+		ObjectNode messageJSON = Pods.createResult("10*11*12", formatsTEX);
+		final String jsonStr = messageJSON.toPrettyString();
+		System.out.println(jsonStr);
+		if (s.contains("Windows")) {
+			assertEquals(jsonStr, //
+					"{\r\n" + 
+					"  \"queryresult\" : {\r\n" + 
+					"    \"success\" : \"true\",\r\n" + 
+					"    \"error\" : \"false\",\r\n" + 
+					"    \"numpods\" : 5,\r\n" + 
+					"    \"version\" : \"0.1\",\r\n" + 
+					"    \"pods\" : [ {\r\n" + 
+					"      \"title\" : \"Input\",\r\n" + 
+					"      \"scanner\" : \"Identity\",\r\n" + 
+					"      \"error\" : \"false\",\r\n" + 
+					"      \"numsubpods\" : 1,\r\n" + 
+					"      \"subpods\" : [ {\r\n" + 
+					"        \"plaintext\" : \"10*11*12\",\r\n" + 
+					"        \"sinput\" : \"10*11*12\",\r\n" + 
+					"        \"latex\" : \"10\\\\cdot 11\\\\cdot 12\"\r\n" + 
+					"      } ]\r\n" + 
+					"    }, {\r\n" + 
+					"      \"title\" : \"Binary form\",\r\n" + 
+					"      \"scanner\" : \"Integer\",\r\n" + 
+					"      \"error\" : \"false\",\r\n" + 
+					"      \"numsubpods\" : 1,\r\n" + 
+					"      \"subpods\" : [ {\r\n" + 
+					"        \"plaintext\" : \"Subscript(10100101000,2)\",\r\n" + 
+					"        \"sinput\" : \"BaseForm(1320,2)\",\r\n" + 
+					"        \"latex\" : \"{\\\\textnormal{10100101000}}_{2}\"\r\n" + 
+					"      } ]\r\n" + 
+					"    }, {\r\n" + 
+					"      \"title\" : \"Prime factorization\",\r\n" + 
+					"      \"scanner\" : \"Integer\",\r\n" + 
+					"      \"error\" : \"false\",\r\n" + 
+					"      \"numsubpods\" : 1,\r\n" + 
+					"      \"subpods\" : [ {\r\n" + 
+					"        \"plaintext\" : \"{{2,3},{3,1},{5,1},{11,1}}\",\r\n" + 
+					"        \"sinput\" : \"FactorInteger(1320)\",\r\n" + 
+					"        \"latex\" : \"\\\\{\\\\{2,3\\\\},\\\\{3,1\\\\},\\\\{5,1\\\\},\\\\{11,1\\\\}\\\\}\"\r\n" + 
+					"      } ]\r\n" + 
+					"    }, {\r\n" + 
+					"      \"title\" : \"Residues modulo small integers\",\r\n" + 
+					"      \"scanner\" : \"Integer\",\r\n" + 
+					"      \"error\" : \"false\",\r\n" + 
+					"      \"numsubpods\" : 1,\r\n" + 
+					"      \"subpods\" : [ {\r\n" + 
+					"        \"plaintext\" : \"{0,0,0,0,0,4,0,6}\",\r\n" + 
+					"        \"sinput\" : \"Mod(1320,Range(2,9))\",\r\n" + 
+					"        \"latex\" : \"\\\\{0,0,0,0,0,4,0,6\\\\}\"\r\n" + 
+					"      } ]\r\n" + 
+					"    }, {\r\n" + 
+					"      \"title\" : \"Properties\",\r\n" + 
+					"      \"scanner\" : \"Integer\",\r\n" + 
+					"      \"error\" : \"false\",\r\n" + 
+					"      \"numsubpods\" : 1,\r\n" + 
+					"      \"subpods\" : [ {\r\n" + 
+					"        \"plaintext\" : \"1320 is an even number.\"\r\n" + 
+					"      } ]\r\n" + 
+					"    } ]\r\n" + 
+					"  }\r\n" + 
+					"}");//
+		}
+	}
 }

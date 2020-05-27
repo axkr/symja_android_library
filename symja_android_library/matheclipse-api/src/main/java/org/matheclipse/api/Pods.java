@@ -794,9 +794,10 @@ public class Pods {
 		}
 		if (inExpr.isList() && inExpr.size() == 2) {
 			inExpr = inExpr.first();
-			if (inExpr.isTimes()) {
+			if (inExpr.isTimes() && //
+					!inExpr.isNumericFunction()) {
 				// is this a unit conversion question?
-				inExpr = EvalAttributes.flattenDeep((IAST) inExpr);
+				inExpr = EvalAttributes.flattenDeep((IAST) inExpr).orElse(inExpr);
 				IAST rest = ((IAST) inExpr).setAtClone(0, F.List());
 				if (rest.arg1().toString().equalsIgnoreCase("convert")) {
 					rest = inExpr.rest();
