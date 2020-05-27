@@ -409,7 +409,7 @@ public class ExprParser extends Scanner {
 				if (!fExplicitTimes) {
 					Operator oper = fFactory.get("Times");
 					if (FEConfig.DOMINANT_IMPLICIT_TIMES || oper.getPrecedence() >= min_precedence) {
-						return getTimes(temp);
+						return getTimesImplicit(temp);
 					}
 				}
 			}
@@ -520,7 +520,7 @@ public class ExprParser extends Scanner {
 					if (!fExplicitTimes) {
 						Operator oper = fFactory.get("Times");
 						if (FEConfig.DOMINANT_IMPLICIT_TIMES || oper.getPrecedence() >= min_precedence) {
-							return getTimes(temp);
+							return getTimesImplicit(temp);
 						}
 					}
 				}
@@ -1107,8 +1107,7 @@ public class ExprParser extends Scanner {
 		return symbol;
 	}
 
-	private IExpr getTimes(IExpr temp) throws SyntaxError {
-		// FunctionNode func = fFactory.createAST(new SymbolNode("Times"));
+	private IExpr getTimesImplicit(IExpr temp) throws SyntaxError {
 		IASTAppendable func = F.TimesAlloc(8);
 		func.append(temp);
 		do {
@@ -1120,6 +1119,7 @@ public class ExprParser extends Scanner {
 			}
 			getNextToken();
 		} while (fToken == TT_PRECEDENCE_OPEN);
+		func.addEvalFlags(IAST.TIMES_PARSED_IMPLICIT);
 		return func;
 	}
 
@@ -1163,8 +1163,6 @@ public class ExprParser extends Scanner {
 		}
 		return temp;
 	}
-
-	
 
 	private IExpr parseArguments(IExpr head) {
 		boolean localHoldExpression = fHoldExpression;
@@ -1297,8 +1295,13 @@ public class ExprParser extends Scanner {
 					// lazy evaluation of multiplication
 					oper = fFactory.get("Times");
 					if (FEConfig.DOMINANT_IMPLICIT_TIMES || oper.getPrecedence() >= min_precedence) {
-						rhs = parseLookaheadOperator(oper.getPrecedence());
-						lhs = F.$(F.$s(oper.getFunctionName()), lhs, rhs);
+						if (Config.FUZZY_PARSER && fToken == TT_IDENTIFIER) {
+							rhs = parseExpression();
+						} else {
+							rhs = parseLookaheadOperator(oper.getPrecedence());
+						}
+						lhs = F.$(F.Times, lhs, rhs);
+						((IAST) lhs).addEvalFlags(IAST.TIMES_PARSED_IMPLICIT);
 						continue;
 					}
 				}

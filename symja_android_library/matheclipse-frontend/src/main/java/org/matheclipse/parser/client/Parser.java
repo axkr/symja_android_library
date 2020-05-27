@@ -238,7 +238,7 @@ public class Parser extends Scanner {
 				if (!FEConfig.EXPLICIT_TIMES_OPERATOR) {
 					Operator oper = fFactory.get("Times");
 					if (FEConfig.DOMINANT_IMPLICIT_TIMES || oper.getPrecedence() >= min_precedence) {
-						return getTimes(temp);
+						return getTimesImplicit(temp);
 					}
 				}
 			}
@@ -330,7 +330,7 @@ public class Parser extends Scanner {
 					if (!fExplicitTimes) {
 						Operator oper = fFactory.get("Times");
 						if (FEConfig.DOMINANT_IMPLICIT_TIMES || oper.getPrecedence() >= min_precedence) {
-							return getTimes(temp);
+							return getTimesImplicit(temp);
 						}
 					}
 				}
@@ -807,7 +807,7 @@ public class Parser extends Scanner {
 		return symbol;
 	}
 
-	private ASTNode getTimes(ASTNode temp) throws SyntaxError {
+	private ASTNode getTimesImplicit(ASTNode temp) throws SyntaxError {
 		FunctionNode func = fFactory.createAST(new SymbolNode("Times"));
 		func.add(temp);
 		do {

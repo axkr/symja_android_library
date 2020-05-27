@@ -1,16 +1,25 @@
 package org.matheclipse.api;
 
+import java.io.IOException;
+import java.io.StringReader;
 import java.io.StringWriter;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
+import java.util.HashSet;
 import java.util.Map;
+import java.util.Set;
 import java.util.function.Supplier;
 
 import org.apache.commons.codec.language.Soundex;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.text.StringEscapeUtils;
 import org.apache.commons.text.similarity.LevenshteinDistance;
+import org.apache.lucene.analysis.TokenStream;
+import org.apache.lucene.analysis.en.EnglishAnalyzer;
+import org.apache.lucene.analysis.en.PorterStemFilter;
+import org.apache.lucene.analysis.standard.StandardTokenizer;
+import org.apache.lucene.analysis.tokenattributes.CharTermAttribute;
 import org.matheclipse.core.builtin.OutputFunctions;
 import org.matheclipse.core.convert.AST2Expr;
 import org.matheclipse.core.convert.VariablesSet;
@@ -23,15 +32,14 @@ import org.matheclipse.core.expression.F;
 import org.matheclipse.core.form.Documentation;
 import org.matheclipse.core.form.tex.TeXParser;
 import org.matheclipse.core.interfaces.IAST;
+import org.matheclipse.core.interfaces.IASTAppendable;
 import org.matheclipse.core.interfaces.IBuiltInSymbol;
 import org.matheclipse.core.interfaces.IDistribution;
 import org.matheclipse.core.interfaces.IEvaluator;
 import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.interfaces.IFraction;
 import org.matheclipse.core.interfaces.IInteger;
-import org.matheclipse.core.interfaces.IStringX;
 import org.matheclipse.parser.client.FEConfig;
-import org.matheclipse.parser.client.SyntaxError;
 import org.matheclipse.parser.trie.Trie;
 import org.matheclipse.parser.trie.Tries;
 
@@ -41,6 +49,18 @@ import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.google.common.base.Suppliers;
 
 public class Pods {
+
+	public static final Object[] STEMS = new Object[] { //
+			"convert", F.UnitConvert, "convers", F.UnitConvert, //
+			"expand", F.ExpandAll, "expans", F.ExpandAll, //
+			"deriv", F.D, "differenti", F.D, //
+			"factor", F.Factor, //
+			"integr", F.Integrate, //
+			"simplif", F.FullSimplify, "simplifi", F.FullSimplify, //
+			"solv", F.Solve //
+	};
+
+	public static final Trie<String, IBuiltInSymbol> STEM_MAP = Tries.forStrings();
 	// output formats
 	public static final String HTML_STR = "html";
 	public static final String PLAIN_STR = "plaintext";
@@ -67,6 +87,11 @@ public class Pods {
 	public static final Soundex SOUNDEX = new Soundex();
 	public static final Trie<String, ArrayList<IPod>> SOUNDEX_MAP = Tries.forStrings();
 
+	static {
+		for (int i = 0; i < STEMS.length; i += 2) {
+			STEM_MAP.put((String) STEMS[i], (IBuiltInSymbol) STEMS[i + 1]);
+		}
+	}
 	private static Supplier<Trie<String, ArrayList<IPod>>> LAZY_SOUNDEX = Suppliers.memoize(Pods::initSoundex);
 
 	private static Trie<String, ArrayList<IPod>> initSoundex() {
@@ -399,7 +424,8 @@ public class Pods {
 				// addSymjaPod(podsArray, inExpr, podOut, "Input", "Identity", formats, mapper, engine);
 				// }
 				numpods++;
-				if (outExpr.isNumber() || outExpr.isQuantity()) {
+				if (outExpr.isNumber() || //
+						outExpr.isQuantity()) {
 					if (outExpr.isInteger()) {
 						numpods += integerPods(podsArray, (IInteger) outExpr, outExpr, formats, mapper, engine);
 						resultStatistics(queryresult, error, numpods, podsArray);
@@ -538,7 +564,8 @@ public class Pods {
 							resultStatistics(queryresult, error, numpods, podsArray);
 							return messageJSON;
 						} else {
-							outExpr = engine.evaluate(inExpr);
+							IExpr expr = inExpr;
+							outExpr = engine.evaluate(expr);
 							if (outExpr.isAST(F.JSFormData, 3)) {
 								podOut = outExpr;
 								int form = internFormat(0, podOut.second().toString());
@@ -651,6 +678,12 @@ public class Pods {
 											mapper, engine);
 									numpods++;
 								}
+							}
+							if (numpods == 1) {
+								// only Identity pod was appended
+								addSymjaPod(podsArray, expr, outExpr, "Evaluated result", "Expreesion", formats, mapper,
+										engine);
+								numpods++;
 							}
 
 							resultStatistics(queryresult, error, numpods, podsArray);
@@ -774,7 +807,8 @@ public class Pods {
 		return soundsLike;
 	}
 
-	private static IExpr parseInput(String inputStr, EvalEngine engine) {
+	/** package private */
+	static IExpr parseInput(String inputStr, EvalEngine engine) {
 		engine.setPackageMode(false);
 		final FuzzyParser parser = new FuzzyParser(engine);
 		IExpr inExpr = F.NIL;
@@ -794,32 +828,95 @@ public class Pods {
 		}
 		if (inExpr.isList() && inExpr.size() == 2) {
 			inExpr = inExpr.first();
-			if (inExpr.isTimes() && //
-					!inExpr.isNumericFunction()) {
-				// is this a unit conversion question?
+		}
+		if (inExpr.isTimes() && //
+				!inExpr.isNumericFunction() && //
+				inExpr.argSize() <= 4) {
+			if (((IAST) inExpr).isEvalFlagOn(IAST.TIMES_PARSED_IMPLICIT)) {
+
 				inExpr = EvalAttributes.flattenDeep((IAST) inExpr).orElse(inExpr);
-				IAST rest = ((IAST) inExpr).setAtClone(0, F.List());
+				IAST rest = ((IAST) inExpr).setAtClone(0, F.List);
+				IASTAppendable specialFunction = F.NIL;
+				String stemForm = getStemForm(rest.arg1().toString().toLowerCase());
+				IExpr head = rest.head();
+				if (stemForm != null) {
+					head = STEM_MAP.get(stemForm);
+					if (head != null) {
+						specialFunction = rest.setAtClone(0, head);
+						specialFunction.remove(1);
+					}
+				}
+				if (!specialFunction.isPresent()) {
+					stemForm = getStemForm(rest.last().toString().toLowerCase());
+					if (stemForm != null) {
+						head = STEM_MAP.get(stemForm);
+						if (head != null) {
+							specialFunction = rest.setAtClone(0, head);
+							specialFunction.remove(rest.size() - 1);
+						}
+					}
+				}
+				if (specialFunction.isPresent()) {
+
+					if (head != null) {
+						if (head == F.UnitConvert) {
+							IExpr temp = unitConvert(engine, rest.rest());
+							if (temp.isPresent()) {
+								return temp;
+							}
+						} else {
+
+							int i = 1;
+							while (i < specialFunction.size()) {
+								String argStr = specialFunction.get(i).toString().toLowerCase();
+								if (argStr.equalsIgnoreCase("by") || //
+										argStr.equalsIgnoreCase("for")) {
+									specialFunction.remove(i);
+									continue;
+								}
+								i++;
+							}
+
+							return specialFunction;
+						}
+					}
+				}
+
 				if (rest.arg1().toString().equalsIgnoreCase("convert")) {
 					rest = inExpr.rest();
 				}
 				if (rest.argSize() > 2) {
 					rest = rest.removeIf(x -> x.toString().equals("in"));
 				}
-				if (rest.argSize() == 3) {
-					// check("UnitConvert(Quantity(10^(-6), \"MOhm\"),\"Ohm\" )", //
-					// "1[Ohm]");
-					// check("UnitConvert(Quantity(1, \"nmi\"),\"km\" )", //
-					// "463/250[km]");
-					IExpr q1 = F.Quantity.of(engine, rest.arg1(), F.stringx(rest.arg2().toString()));
-					if (q1.isQuantity()) {
-						return F.UnitConvert(q1, F.stringx(rest.last().toString()));
-					}
+				IExpr temp = unitConvert(engine, rest);
+				if (temp.isPresent()) {
+					return temp;
 				}
 			}
-			return inExpr;
 		}
 		return inExpr;
 
+	}
+
+	/**
+	 * Test if this is a unit conversion question? If YES return <code>F.UnitConvert(...)</code> expression
+	 * 
+	 * @param engine
+	 * @param rest
+	 * @return <code>F.NIL</code> if it's not a <code>F.UnitConvert(...)</code> expression
+	 */
+	private static IExpr unitConvert(EvalEngine engine, IAST rest) {
+		if (rest.argSize() == 3) {
+			// check("UnitConvert(Quantity(10^(-6), \"MOhm\"),\"Ohm\" )", //
+			// "1[Ohm]");
+			// check("UnitConvert(Quantity(1, \"nmi\"),\"km\" )", //
+			// "463/250[km]");
+			IExpr q1 = F.Quantity.of(engine, rest.arg1(), F.stringx(rest.arg2().toString()));
+			if (q1.isQuantity()) {
+				return F.UnitConvert(q1, F.stringx(rest.last().toString()));
+			}
+		}
+		return F.NIL;
 	}
 
 	private static int integerPods(ArrayNode podsArray, IInteger intExpr, IExpr outExpr, int formats,
@@ -1051,4 +1148,50 @@ public class Pods {
 		}
 	}
 
+	private static String getStemForm(String term) {
+
+		TokenStream tokenStream = null;
+
+		try {
+			StandardTokenizer stdToken = new StandardTokenizer();
+			stdToken.setReader(new StringReader(term));
+
+			tokenStream = new PorterStemFilter(stdToken);
+			tokenStream.reset();
+
+			// eliminate duplicate tokens by adding them to a set
+			Set<String> stems = new HashSet<>();
+
+			CharTermAttribute token = tokenStream.getAttribute(CharTermAttribute.class);
+
+			while (tokenStream.incrementToken()) {
+				stems.add(token.toString());
+			}
+
+			// if stem form was not found or more than 2 stems have been found, return null
+			if (stems.size() != 1) {
+				return null;
+			}
+
+			String stem = stems.iterator().next();
+
+			// if the stem form has non-alphanumerical chars, return null
+			if (!stem.matches("[a-zA-Z0-9-]+")) {
+				return null;
+			}
+
+			return stem;
+		} catch (IOException ioe) {
+
+		} finally {
+			if (tokenStream != null) {
+				try {
+					tokenStream.close();
+				} catch (IOException e) {
+					e.printStackTrace();
+				}
+			}
+		}
+		return null;
+	}
 }

@@ -170,6 +170,11 @@ public interface IAST extends IExpr, Cloneable, Iterable<IExpr> {
 	 */
 	public final static int OUTPUT_MULTILINE = 0x00100000;
 
+	/**
+	 * The <code>Times(...)</code> expression was determined implicitly in the expression parser.
+	 */
+	public final static int TIMES_PARSED_IMPLICIT = 0x00200000;
+
 	default IExpr acceptChecked(IVisitor visitor) {
 		try {
 			return accept(visitor);
@@ -387,7 +392,7 @@ public interface IAST extends IExpr, Cloneable, Iterable<IExpr> {
 	}
 
 	/**
-	 * Returns a shallow copy of this <code>IAST</code> instance (the elements themselves are not copied). 
+	 * Returns a shallow copy of this <code>IAST</code> instance (the elements themselves are not copied).
 	 * 
 	 * @return a copy of this <code>IAST</code> instance.
 	 */

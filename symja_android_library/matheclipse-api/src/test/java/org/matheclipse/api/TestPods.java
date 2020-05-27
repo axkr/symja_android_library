@@ -1421,4 +1421,46 @@ public class TestPods {
 					"}");//
 		}
 	}
+	
+	
+	@Test
+	public void testSimplify() {
+		String s = System.getProperty("os.name");
+		ObjectNode messageJSON = Pods.createResult("simplificate Sqrt(9-4*Sqrt(5))", formatsTEX);
+		final String jsonStr = messageJSON.toPrettyString();
+		System.out.println(jsonStr);
+		if (s.contains("Windows")) {
+			assertEquals(jsonStr, //
+					"{\r\n" + 
+					"  \"queryresult\" : {\r\n" + 
+					"    \"success\" : \"true\",\r\n" + 
+					"    \"error\" : \"false\",\r\n" + 
+					"    \"numpods\" : 2,\r\n" + 
+					"    \"version\" : \"0.1\",\r\n" + 
+					"    \"pods\" : [ {\r\n" + 
+					"      \"title\" : \"Input\",\r\n" + 
+					"      \"scanner\" : \"Identity\",\r\n" + 
+					"      \"error\" : \"false\",\r\n" + 
+					"      \"numsubpods\" : 1,\r\n" + 
+					"      \"subpods\" : [ {\r\n" + 
+					"        \"plaintext\" : \"FullSimplify(Sqrt(9-4*Sqrt(5)))\",\r\n" + 
+					"        \"sinput\" : \"FullSimplify(Sqrt(9-4*Sqrt(5)))\",\r\n" + 
+					"        \"latex\" : \"\\\\text{FullSimplify}(\\\\sqrt{\\\\left( 9 - 4\\\\,\\\\sqrt{5}\\\\right) })\"\r\n" + 
+					"      } ]\r\n" + 
+					"    }, {\r\n" + 
+					"      \"title\" : \"Evaluated result\",\r\n" + 
+					"      \"scanner\" : \"Expreesion\",\r\n" + 
+					"      \"error\" : \"false\",\r\n" + 
+					"      \"numsubpods\" : 1,\r\n" + 
+					"      \"subpods\" : [ {\r\n" + 
+					"        \"plaintext\" : \"-2+Sqrt(5)\",\r\n" + 
+					"        \"sinput\" : \"FullSimplify(Sqrt(9-4*Sqrt(5)))\",\r\n" + 
+					"        \"latex\" : \"-2+\\\\sqrt{5}\"\r\n" + 
+					"      } ]\r\n" + 
+					"    } ]\r\n" + 
+					"  }\r\n" + 
+					"}");//
+		}
+	}
+	
 }

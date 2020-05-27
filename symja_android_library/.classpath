@@ -80,5 +80,7 @@
 	<classpathentry kind="lib" path="lib/commonmark-0.15.0.jar"/>
 	<classpathentry kind="lib" path="lib/commonmark-ext-gfm-tables-0.15.0.jar"/>
 	<classpathentry kind="lib" path="lib/commons-codec-1.14.jar"/>
+	<classpathentry kind="lib" path="lib/lucene-analyzers-common-8.5.1.jar"/>
+	<classpathentry kind="lib" path="lib/lucene-core-8.5.1.jar"/>
 	<classpathentry kind="output" path="bin/classes"/>
 </classpath>
