@@ -6,7 +6,7 @@ import ch.ethz.idsc.tensor.io.ResourceData;
 /* package */ enum BuiltIn {
   SI;
   // ---
-  final UnitSystem unitSystem = SimpleUnitSystem.from(ResourceData.properties("/unit/si.properties"));
-  final UnitConvert unitConvert = new UnitConvert(unitSystem);
-  final QuantityMagnitude quantityMagnitude = new QuantityMagnitude(unitSystem);
+  final static UnitSystem unitSystem = SimpleUnitSystem.from(ResourceData.properties("/unit/si.properties"));
+  final static UnitConvert unitConvert = new UnitConvert(unitSystem);
+  final static QuantityMagnitude quantityMagnitude = new QuantityMagnitude(unitSystem);
 }

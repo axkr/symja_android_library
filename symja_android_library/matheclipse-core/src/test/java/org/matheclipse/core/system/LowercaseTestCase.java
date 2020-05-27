@@ -17951,6 +17951,9 @@ public class LowercaseTestCase extends AbstractTestCase {
 
 	public void testQuantity() {
 		if (ToggleFeature.QUANTITY) {
+			check("N(Quantity(2/3,\"m\"))", //
+					"0.6666666666666666[m]");
+
 			check("1/Quantity(0,\"s\")^I", //
 					"1/0[s]()^I");
 			check("Quantity(50, \"s\") + Quantity(1, \"min\")", //
@@ -24279,6 +24282,9 @@ public class LowercaseTestCase extends AbstractTestCase {
 
 	public void testUnitConvert() {
 		if (ToggleFeature.QUANTITY) {
+			check("UnitConvert(Quantity(111, \"cm\"),\"m\" )", //
+					"111/100[m]");
+
 			check("UnitConvert(Quantity(Pi, \"deg\"), \"rad\")", //
 					"Pi^2/180[rad]");
 			check("UnitConvert(Quantity(Pi, \"rad\"), \"deg\")", //

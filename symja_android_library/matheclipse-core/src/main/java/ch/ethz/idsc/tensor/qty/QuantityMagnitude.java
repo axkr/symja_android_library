@@ -19,7 +19,7 @@ public class QuantityMagnitude {
 	 * @param unit
 	 * @return operator that extracts the value from a Quantity of given unit
 	 */
-	public static UnaryOperator<IExpr> singleton(IUnit unit) {
+	private static UnaryOperator<IExpr> singleton(IUnit unit) {
 		return EMPTY.in(unit);
 	}
 
@@ -27,8 +27,8 @@ public class QuantityMagnitude {
 	 * @param string
 	 * @return operator that extracts the value from a Quantity of unit specified by given string
 	 */
-	public static UnaryOperator<IExpr> singleton(String string) {
-		return singleton(IUnit.of(string));
+	private static UnaryOperator<IExpr> singleton(String string) {
+		return singleton(IUnit.ofPutIfAbsent(string));
 	}
 
 	// ---
@@ -70,14 +70,5 @@ public class QuantityMagnitude {
 				return result;
 			}
 		};
-	}
-
-	/**
-	 * @param string
-	 * @return
-	 * @see #in(IUnit)
-	 */
-	public UnaryOperator<IExpr> in(String string) {
-		return in(IUnit.of(string));
-	}
+	} 
 }

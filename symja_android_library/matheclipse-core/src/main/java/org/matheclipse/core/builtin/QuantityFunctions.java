@@ -242,14 +242,22 @@ public class QuantityFunctions {
 				if (ast.size() == 2) {
 					IExpr arg1 = engine.evaluate(ast.arg1());
 					if (arg1.isString()) {
-						return IQuantity.of(F.C1, IUnit.of(arg1.toString()));
+						IUnit unit = IUnit.of(arg1.toString());
+						if (unit==null) {
+							return F.NIL;
+						}
+						return IQuantity.of(F.C1, unit);
 					}
 				}
 				if (ast.size() == 3) {
 					IExpr arg1 = engine.evaluate(ast.arg1());
 					IExpr arg2 = engine.evaluate(ast.arg2());
 					if (arg2.isString()) {
-						return IQuantity.of(arg1, IUnit.of(arg2.toString()));
+						IUnit unit = IUnit.of(arg2.toString());
+						if (unit==null) {
+							return F.NIL;
+						}
+						return IQuantity.of(arg1, unit);
 					}
 				}
 			} catch (RuntimeException e) {
@@ -306,6 +314,9 @@ public class QuantityFunctions {
 						ch.ethz.idsc.tensor.qty.QuantityMagnitude quantityMagnitude = ch.ethz.idsc.tensor.qty.QuantityMagnitude
 								.SI();
 						IUnit unit = IUnit.of(arg2.toString());
+						if (unit==null) {
+							return F.NIL;
+						}
 						UnaryOperator<IExpr> suo = quantityMagnitude.in(unit);
 						return suo.apply(arg1);
 					}
@@ -362,6 +373,9 @@ public class QuantityFunctions {
 					IExpr arg2 = engine.evaluate(ast.arg2());
 					if (arg1.isQuantity()) {
 						IUnit unit = IUnit.of(arg2.toString());
+						if (unit==null) {
+							return F.NIL;
+						}
 						return unitConvert((IQuantity) arg1, unit);
 					}
 				}

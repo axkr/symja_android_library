@@ -8,8 +8,8 @@ import org.matheclipse.core.interfaces.IExpr;
 import ch.ethz.idsc.tensor.qty.IQuantity;
 import ch.ethz.idsc.tensor.qty.IUnit;
 
-public enum QuantityParser {
-	;
+public class QuantityParser {
+	 
 	/**
 	 * Example: "9.81[m*s^-2]" -> Quantity.of(9.81, "m*s^-2")
 	 * 
@@ -23,7 +23,7 @@ public enum QuantityParser {
 			if (index < last && string.substring(last + 1).trim().isEmpty())
 				return IQuantity.of( //
 						F.fromString(string.substring(0, index)), //
-						IUnit.of(string.substring(index + 1, last)));
+						IUnit.ofPutIfAbsent(string.substring(index + 1, last)));
 			throw new IllegalArgumentException(string);
 		}
 		try {
