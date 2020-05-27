@@ -1164,35 +1164,7 @@ public class ExprParser extends Scanner {
 		return temp;
 	}
 
-	/**
-	 * Parse a list of comma separated expressions
-	 * 
-	 * @param expression
-	 * @return
-	 * @throws SyntaxError
-	 */
-	public IExpr parseFuzzyList(final String expression) throws SyntaxError {
-		initialize(expression);
-		fRecursionDepth++;
-		IASTAppendable function = null;
-		try {
-			function = F.ListAlloc(16);
-			do {
-				function.append(parseExpression());
-				if (fToken != TT_COMMA) {
-					break;
-				}
-				getNextToken();
-				if (fToken == TT_EOF) {
-					break;
-				}
-			} while (true);
-
-		} finally {
-			fRecursionDepth--;
-		}
-		return function;
-	}
+	
 
 	private IExpr parseArguments(IExpr head) {
 		boolean localHoldExpression = fHoldExpression;
@@ -1240,7 +1212,7 @@ public class ExprParser extends Scanner {
 		return null;
 	}
 
-	private IExpr parseExpression() {
+	protected IExpr parseExpression() {
 		if (fToken == TT_SPAN) {
 			IASTAppendable span = F.ast(F.Span);
 			span.append(F.C1);

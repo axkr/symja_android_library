@@ -15,6 +15,7 @@ import org.matheclipse.core.builtin.OutputFunctions;
 import org.matheclipse.core.convert.AST2Expr;
 import org.matheclipse.core.convert.VariablesSet;
 import org.matheclipse.core.data.ElementData1;
+import org.matheclipse.core.eval.EvalAttributes;
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.MathMLUtilities;
 import org.matheclipse.core.eval.TeXUtilities;
@@ -386,19 +387,25 @@ public class Pods {
 			ArrayNode podsArray = mapper.createArrayNode();
 			inExpr = parseInput(inputStr, engine);
 			if (inExpr.isPresent()) {
-				outExpr = inExpr;
-				if (inExpr.isNumericFunction()) {
-					outExpr = engine.evaluate(inExpr);
-				}
-				if (outExpr.isNumber()) {
+				outExpr = engine.evaluate(inExpr);
+				// if (inExpr.isNumericFunction()) {
+				// outExpr = engine.evaluate(inExpr);
+				// }
+
+				IExpr podOut = outExpr;
+				// if (podOut.isAST(F.JSFormData)) {
+				addSymjaPod(podsArray, inExpr, inExpr, "Input", "Identity", formats, mapper, engine);
+				// } else {
+				// addSymjaPod(podsArray, inExpr, podOut, "Input", "Identity", formats, mapper, engine);
+				// }
+				numpods++;
+				if (outExpr.isNumber() || outExpr.isQuantity()) {
 					if (outExpr.isInteger()) {
-						numpods = integerPods(podsArray, (IInteger) outExpr, outExpr, formats, mapper, engine);
+						numpods += integerPods(podsArray, (IInteger) outExpr, outExpr, formats, mapper, engine);
 						resultStatistics(queryresult, error, numpods, podsArray);
 						return messageJSON;
 					} else {
-						IExpr podOut = outExpr;
-						addSymjaPod(podsArray, inExpr, inExpr, "Input", "Identity", formats, mapper, engine);
-						numpods++;
+						podOut = outExpr;
 						if (outExpr.isRational()) {
 							addSymjaPod(podsArray, inExpr, podOut, "Exact result", "Rational", formats, mapper, engine);
 							numpods++;
@@ -451,7 +458,7 @@ public class Pods {
 						boolean intList = list.forAll(x -> x.isInteger());
 						outExpr = inExpr;
 						if (intList) {
-							numpods = integerListPods(podsArray, inExpr, list, formats, mapper, engine);
+							numpods += integerListPods(podsArray, inExpr, list, formats, mapper, engine);
 							resultStatistics(queryresult, error, numpods, podsArray);
 							return messageJSON;
 						}
@@ -466,7 +473,7 @@ public class Pods {
 									boolean isPoly2 = arg2.isPolynomial(variables);
 									if (isPoly1 && isPoly2) {
 										inExpr = F.PolynomialQuotientRemainder(arg1, arg2, variables.arg1());
-										IExpr podOut = engine.evaluate(inExpr);
+										podOut = engine.evaluate(inExpr);
 										addSymjaPod(podsArray, inExpr, podOut, "Polynomial quotient and remainder",
 												"Polynomial", formats, mapper, engine);
 										numpods++;
@@ -515,7 +522,7 @@ public class Pods {
 					} else {
 						if (inExpr.isAST(F.D, 3)) {
 							outExpr = engine.evaluate(inExpr);
-							IExpr podOut = outExpr;
+							podOut = outExpr;
 							addSymjaPod(podsArray, inExpr, podOut, "Derivative", "Derivative", formats, mapper, engine);
 							numpods++;
 
@@ -533,16 +540,12 @@ public class Pods {
 						} else {
 							outExpr = engine.evaluate(inExpr);
 							if (outExpr.isAST(F.JSFormData, 3)) {
-								IExpr podOut = outExpr;
+								podOut = outExpr;
 								int form = internFormat(0, podOut.second().toString());
 								addPod(podsArray, inExpr, podOut, podOut.first().toString(), "Function", "Plotter",
 										form, mapper, engine);
 								numpods++;
 							} else {
-								IExpr podOut = outExpr;
-								addSymjaPod(podsArray, inExpr, podOut, "Input", "Identity", formats, mapper, engine);
-								numpods++;
-
 								IExpr head = outExpr.head();
 								if (head instanceof IBuiltInSymbol && outExpr.size() > 1) {
 									IEvaluator evaluator = ((IBuiltInSymbol) head).getEvaluator();
@@ -776,28 +779,43 @@ public class Pods {
 		final FuzzyParser parser = new FuzzyParser(engine);
 		IExpr inExpr = F.NIL;
 		try {
-			inExpr = parser.parse(inputStr);
-		} catch (RuntimeException rex1) {
+			inExpr = parser.parseFuzzyList(inputStr);
+		} catch (RuntimeException rex2) {
 			// this includes syntax errors
 			if (FEConfig.SHOW_STACKTRACE) {
-				rex1.printStackTrace();
+				rex2.printStackTrace();
 			}
-			try {
-				inExpr = parser.parseFuzzyList(inputStr);
-			} catch (RuntimeException rex2) {
-				// this includes syntax errors
-				if (FEConfig.SHOW_STACKTRACE) {
-					rex2.printStackTrace();
-				}
-				TeXParser texConverter = new TeXParser(engine);
-				inExpr = texConverter.toExpression(inputStr);
-			}
+			TeXParser texConverter = new TeXParser(engine);
+			inExpr = texConverter.toExpression(inputStr);
 		}
+
 		if (inExpr == F.$Aborted) {
 			return F.NIL;
 		}
 		if (inExpr.isList() && inExpr.size() == 2) {
-			return inExpr.first();
+			inExpr = inExpr.first();
+			if (inExpr.isTimes()) {
+				// is this a unit conversion question?
+				inExpr = EvalAttributes.flattenDeep((IAST) inExpr);
+				IAST rest = ((IAST) inExpr).setAtClone(0, F.List());
+				if (rest.arg1().toString().equalsIgnoreCase("convert")) {
+					rest = inExpr.rest();
+				}
+				if (rest.argSize() > 2) {
+					rest = rest.removeIf(x -> x.toString().equals("in"));
+				}
+				if (rest.argSize() == 3) {
+					// check("UnitConvert(Quantity(10^(-6), \"MOhm\"),\"Ohm\" )", //
+					// "1[Ohm]");
+					// check("UnitConvert(Quantity(1, \"nmi\"),\"km\" )", //
+					// "463/250[km]");
+					IExpr q1 = F.Quantity.of(engine, rest.arg1(), F.stringx(rest.arg2().toString()));
+					if (q1.isQuantity()) {
+						return F.UnitConvert(q1, F.stringx(rest.last().toString()));
+					}
+				}
+			}
+			return inExpr;
 		}
 		return inExpr;
 
@@ -847,8 +865,6 @@ public class Pods {
 	private static int integerListPods(ArrayNode podsArray, IExpr inExpr, IAST list, int formats, ObjectMapper mapper,
 			EvalEngine engine) {
 		int numpods = 0;
-		addSymjaPod(podsArray, inExpr, list, "Input", "Identity", formats, mapper, engine);
-		numpods++;
 
 		inExpr = F.Total(list);
 		IExpr podOut = engine.evaluate(inExpr);
