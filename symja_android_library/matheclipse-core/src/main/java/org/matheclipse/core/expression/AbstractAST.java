@@ -3647,6 +3647,21 @@ public abstract class AbstractAST implements IASTMutable {
 		}
 		return engine.evalRules(symbol, this).isPresent();
 	}
+	
+	/** {@inheritDoc} */
+	@Override
+	public final boolean isVariable() {
+		if (!head().isSymbol()||headID()>=0) {
+			return false;
+		} 
+		for (int i = 1; i < size(); i++) {
+			IExpr arg = get(i);
+			if (!arg.isVariable()) {
+				return false;
+			}
+		}
+		return true; 
+	}
 
 	/** {@inheritDoc} */
 	@Override

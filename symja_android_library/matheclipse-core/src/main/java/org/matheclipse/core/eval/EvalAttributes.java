@@ -265,7 +265,7 @@ public class EvalAttributes {
 		return false;
 	}
 
-	private static int flattenAlloc(final ISymbol head, final IAST ast) {
+	public static int flattenAlloc(final ISymbol head, final IAST ast) {
 		int[] newSize = new int[1];
 		ast.forEach(expr -> {
 			if (expr.isAST(head)) {

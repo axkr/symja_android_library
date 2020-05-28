@@ -39,6 +39,7 @@ import org.matheclipse.core.interfaces.IEvaluator;
 import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.interfaces.IFraction;
 import org.matheclipse.core.interfaces.IInteger;
+import org.matheclipse.core.interfaces.ISymbol;
 import org.matheclipse.parser.client.FEConfig;
 import org.matheclipse.parser.trie.Trie;
 import org.matheclipse.parser.trie.Tries;
@@ -397,15 +398,6 @@ public class Pods {
 		queryresult.put("numpods", 0);
 		queryresult.put("version", "0.1");
 
-		inputStr = inputStr.trim();
-		if (inputStr.length() > Short.MAX_VALUE) {
-			queryresult.put("error", "false");
-			return messageJSON;
-		} else if (inputStr.length() == 0) {
-			queryresult.put("error", "false");
-			return messageJSON;
-		}
-
 		boolean error = false;
 		int numpods = 0;
 		IExpr inExpr = F.Null;
@@ -553,9 +545,9 @@ public class Pods {
 							if (inExpr.isAST1()) {
 								VariablesSet varSet = new VariablesSet(inExpr.first());
 								IAST variables = varSet.getVarList();
-								IASTAppendable result=((IAST)inExpr).copyAppendable();
+								IASTAppendable result = ((IAST) inExpr).copyAppendable();
 								result.appendArgs(variables);
-								inExpr=result;
+								inExpr = result;
 							}
 							outExpr = engine.evaluate(inExpr);
 							podOut = outExpr;
@@ -577,9 +569,9 @@ public class Pods {
 							if (inExpr.isAST1()) {
 								VariablesSet varSet = new VariablesSet(inExpr.first());
 								IAST variables = varSet.getVarList();
-								IASTAppendable result=((IAST)inExpr).copyAppendable();
+								IASTAppendable result = ((IAST) inExpr).copyAppendable();
 								result.appendArgs(variables);
-								inExpr=result;
+								inExpr = result;
 							}
 							outExpr = engine.evaluate(inExpr);
 							podOut = outExpr;
@@ -597,13 +589,13 @@ public class Pods {
 							}
 							resultStatistics(queryresult, error, numpods, podsArray);
 							return messageJSON;
-						} else if (inExpr.isAST(F.Solve , 2, 4)) {
+						} else if (inExpr.isAST(F.Solve, 2, 4)) {
 							if (inExpr.isAST1()) {
 								VariablesSet varSet = new VariablesSet(inExpr.first());
 								IAST variables = varSet.getVarList();
-								IASTAppendable result=((IAST)inExpr).copyAppendable();
+								IASTAppendable result = ((IAST) inExpr).copyAppendable();
 								result.append(variables);
-								inExpr=result;
+								inExpr = result;
 							}
 							outExpr = engine.evaluate(inExpr);
 							podOut = outExpr;
@@ -865,6 +857,44 @@ public class Pods {
 		return soundsLike;
 	}
 
+	private static IASTAppendable flattenTimes(final IAST ast) {
+		if (ast.isTimes() && ast.isEvalFlagOn(IAST.TIMES_PARSED_IMPLICIT)) {
+			IASTAppendable result = flattenTimesRecursive(ast);
+			if (result.isPresent()) {
+				result.addEvalFlags(IAST.IS_FLATTENED);
+				return result;
+			}
+		}
+		ast.addEvalFlags(IAST.IS_FLATTENED);
+		return F.NIL;
+	}
+
+	public static IASTAppendable flattenTimesRecursive(final IAST ast) {
+		int[] newSize = new int[1];
+		newSize[0] = 0;
+		boolean[] flattened = new boolean[] { false };
+		ast.forEach(expr -> {
+			if (ast.isTimes() && ast.isEvalFlagOn(IAST.TIMES_PARSED_IMPLICIT)) {
+				flattened[0] = true;
+				newSize[0] += ast.size();
+			} else {
+				newSize[0]++;
+			}
+		});
+		if (flattened[0]) {
+			IASTAppendable result = F.ast(ast.head(), newSize[0], false);
+			ast.forEach(expr -> {
+				if (expr.isTimes() && ((IAST) expr).isEvalFlagOn(IAST.TIMES_PARSED_IMPLICIT)) {
+					result.appendArgs(flattenTimesRecursive( (IAST) expr).orElse((IAST) expr));
+				} else {
+					result.append(expr);
+				}
+			});
+			return result;
+		}
+		return F.NIL;
+	}
+
 	/** package private */
 	static IExpr parseInput(String inputStr, EvalEngine engine) {
 		engine.setPackageMode(false);
@@ -891,8 +921,7 @@ public class Pods {
 				!inExpr.isNumericFunction() && //
 				inExpr.argSize() <= 4) {
 			if (((IAST) inExpr).isEvalFlagOn(IAST.TIMES_PARSED_IMPLICIT)) {
-
-				inExpr = EvalAttributes.flattenDeep((IAST) inExpr).orElse(inExpr);
+				inExpr = flattenTimes((IAST) inExpr).orElse(inExpr);
 				IAST rest = ((IAST) inExpr).setAtClone(0, F.List);
 				IASTAppendable specialFunction = F.NIL;
 				String stemForm = getStemForm(rest.arg1().toString().toLowerCase());
