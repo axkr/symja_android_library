@@ -30,13 +30,23 @@ import org.matheclipse.core.interfaces.ISymbol;
 import org.matheclipse.core.polynomials.HornerScheme;
 import org.matheclipse.parser.client.FEConfig;
 
+import net.numericalchameleon.util.spokennumbers.DutchNumber;
 import net.numericalchameleon.util.spokennumbers.EsperantoNumber;
+import net.numericalchameleon.util.spokennumbers.FinnishNumber;
 import net.numericalchameleon.util.spokennumbers.FrenchNumber;
 import net.numericalchameleon.util.spokennumbers.GermanNumber;
+import net.numericalchameleon.util.spokennumbers.HungarianNumber;
 import net.numericalchameleon.util.spokennumbers.ItalianNumber;
 import net.numericalchameleon.util.spokennumbers.LatinNumber;
+import net.numericalchameleon.util.spokennumbers.PolishNumber;
+import net.numericalchameleon.util.spokennumbers.PortugueseNumber;
+import net.numericalchameleon.util.spokennumbers.RomanianNumber;
+import net.numericalchameleon.util.spokennumbers.RussianNumber;
 import net.numericalchameleon.util.spokennumbers.SpanishNumber;
 import net.numericalchameleon.util.spokennumbers.SpokenNumber;
+import net.numericalchameleon.util.spokennumbers.SwedishNumber;
+import net.numericalchameleon.util.spokennumbers.TonganNumber;
+import net.numericalchameleon.util.spokennumbers.TurkishNumber;
 import net.numericalchameleon.util.spokennumbers.USEnglishNumber;
 
 public final class OutputFunctions {
@@ -371,13 +381,23 @@ public final class OutputFunctions {
 						return F.NIL;
 					}
 					IStringX arg2 = (IStringX) ast.arg2();
-					if (arg2.isString("English") || //
+					if (arg2.isString("Dutch") || //
+							arg2.isString("Finnish") || //
+							arg2.isString("English") || //
 							arg2.isString("Esperanto") || //
 							arg2.isString("French") || //
 							arg2.isString("German") || //
+							arg2.isString("Hungarian") || //
 							arg2.isString("Italian") || //
 							arg2.isString("Latin") || //
-							arg2.isString("Spanish")) {
+							arg2.isString("Polish") || //
+							arg2.isString("Portuguese") || //
+							arg2.isString("Romanian") || //
+							arg2.isString("Russian") || //
+							arg2.isString("Spanish") || //
+							arg2.isString("Swedish") || //
+							arg2.isString("Tongan") || //
+							arg2.isString("Turkish")) {
 						language = (IStringX) arg2;
 					} else {
 						qual = (IStringX) arg2;
@@ -387,21 +407,40 @@ public final class OutputFunctions {
 					long value = ((IInteger) arg1).toLong();
 					if (qual.isString("Words")) {
 						SpokenNumber spokenNumber = null;
-
-						if (language.isString("English")) {
+						if (language.isString("Dutch")) {
+							spokenNumber = new DutchNumber(value);
+						} else if (language.isString("English")) {
 							spokenNumber = new USEnglishNumber(value);
 						} else if (language.isString("Esperanto")) {
 							spokenNumber = new EsperantoNumber(value);
+						} else if (language.isString("Finnish")) {
+							spokenNumber = new FinnishNumber(value);
 						} else if (language.isString("French")) {
 							spokenNumber = new FrenchNumber(value);
 						} else if (language.isString("German")) {
 							spokenNumber = new GermanNumber(value);
+						} else if (language.isString("Hungarian")) {
+							spokenNumber = new HungarianNumber(value);
 						} else if (language.isString("Italian")) {
 							spokenNumber = new ItalianNumber(value);
 						} else if (language.isString("Latin")) {
 							spokenNumber = new LatinNumber(value);
+						} else if (language.isString("Polish")) {
+							spokenNumber = new PolishNumber(value);
+						} else if (language.isString("Portuguese")) {
+							spokenNumber = new PortugueseNumber(value);
+						} else if (language.isString("Romanian")) {
+							spokenNumber = new RomanianNumber(value);
+						} else if (language.isString("Russian")) {
+							spokenNumber = new RussianNumber(value);
 						} else if (language.isString("Spanish")) {
 							spokenNumber = new SpanishNumber(value);
+						} else if (language.isString("Swedish")) {
+							spokenNumber = new SwedishNumber(value);
+						} else if (language.isString("Tongan")) {
+							spokenNumber = new TonganNumber(value);
+						} else if (language.isString("Turkish")) {
+							spokenNumber = new TurkishNumber(value);
 						}
 						if (spokenNumber != null) {
 							return F.stringx(spokenNumber.toString());
