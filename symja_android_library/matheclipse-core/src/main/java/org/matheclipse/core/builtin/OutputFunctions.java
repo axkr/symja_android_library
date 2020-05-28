@@ -371,13 +371,13 @@ public final class OutputFunctions {
 						return F.NIL;
 					}
 					IStringX arg2 = (IStringX) ast.arg2();
-					if (language.isString("English") || //
-							language.isString("Esperanto") || //
-							language.isString("French") || //
-							language.isString("German") || //
-							language.isString("Italian") || //
-							language.isString("Latin") || //
-							language.isString("Spanish")) {
+					if (arg2.isString("English") || //
+							arg2.isString("Esperanto") || //
+							arg2.isString("French") || //
+							arg2.isString("German") || //
+							arg2.isString("Italian") || //
+							arg2.isString("Latin") || //
+							arg2.isString("Spanish")) {
 						language = (IStringX) arg2;
 					} else {
 						qual = (IStringX) arg2;
