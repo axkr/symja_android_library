@@ -1543,4 +1543,103 @@ public class TestPods {
 		}
 	}
 	
+	@Test
+	public void testIntegrate001() {
+		String s = System.getProperty("os.name");
+		ObjectNode messageJSON = Pods.createResult("Integral Sin(x)", formatsTEX);
+		final String jsonStr = messageJSON.toPrettyString();
+		System.out.println(jsonStr);
+		if (s.contains("Windows")) {
+			assertEquals(jsonStr, //
+					"{\r\n" + 
+					"  \"queryresult\" : {\r\n" + 
+					"    \"success\" : \"true\",\r\n" + 
+					"    \"error\" : \"false\",\r\n" + 
+					"    \"numpods\" : 3,\r\n" + 
+					"    \"version\" : \"0.1\",\r\n" + 
+					"    \"pods\" : [ {\r\n" + 
+					"      \"title\" : \"Input\",\r\n" + 
+					"      \"scanner\" : \"Identity\",\r\n" + 
+					"      \"error\" : \"false\",\r\n" + 
+					"      \"numsubpods\" : 1,\r\n" + 
+					"      \"subpods\" : [ {\r\n" + 
+					"        \"plaintext\" : \"Integrate(Sin(x))\",\r\n" + 
+					"        \"sinput\" : \"Integrate(Sin(x))\",\r\n" + 
+					"        \"latex\" : \"\\\\text{Integrate}(\\\\sin (x))\"\r\n" + 
+					"      } ]\r\n" + 
+					"    }, {\r\n" + 
+					"      \"title\" : \"Integration\",\r\n" + 
+					"      \"scanner\" : \"Integral\",\r\n" + 
+					"      \"error\" : \"false\",\r\n" + 
+					"      \"numsubpods\" : 1,\r\n" + 
+					"      \"subpods\" : [ {\r\n" + 
+					"        \"plaintext\" : \"-Cos(x)\",\r\n" + 
+					"        \"sinput\" : \"Integrate(Sin(x),x)\",\r\n" + 
+					"        \"latex\" : \" - \\\\cos (x)\"\r\n" + 
+					"      } ]\r\n" + 
+					"    }, {\r\n" + 
+					"      \"title\" : \"Alternate form\",\r\n" + 
+					"      \"scanner\" : \"Simplification\",\r\n" + 
+					"      \"error\" : \"false\",\r\n" + 
+					"      \"numsubpods\" : 1,\r\n" + 
+					"      \"subpods\" : [ {\r\n" + 
+					"        \"plaintext\" : \"-1/(2*E^(I*x))-E^(I*x)/2\",\r\n" + 
+					"        \"sinput\" : \"TrigToExp(-Cos(x))\",\r\n" + 
+					"        \"latex\" : \"\\\\frac{-1}{2\\\\,{e}^{i \\\\,x}}+\\\\frac{ - {e}^{i \\\\,x}}{2}\"\r\n" + 
+					"      } ]\r\n" + 
+					"    } ]\r\n" + 
+					"  }\r\n" + 
+					"}");//
+		}
+	}
+	
+	@Test
+	public void testDerivative001() {
+		String s = System.getProperty("os.name");
+		ObjectNode messageJSON = Pods.createResult("derive tan(x^3)", formatsTEX);
+		final String jsonStr = messageJSON.toPrettyString();
+		System.out.println(jsonStr);
+		if (s.contains("Windows")) {
+			assertEquals(jsonStr, //
+					"{\r\n" + 
+					"  \"queryresult\" : {\r\n" + 
+					"    \"success\" : \"true\",\r\n" + 
+					"    \"error\" : \"false\",\r\n" + 
+					"    \"numpods\" : 3,\r\n" + 
+					"    \"version\" : \"0.1\",\r\n" + 
+					"    \"pods\" : [ {\r\n" + 
+					"      \"title\" : \"Input\",\r\n" + 
+					"      \"scanner\" : \"Identity\",\r\n" + 
+					"      \"error\" : \"false\",\r\n" + 
+					"      \"numsubpods\" : 1,\r\n" + 
+					"      \"subpods\" : [ {\r\n" + 
+					"        \"plaintext\" : \"D(Tan(x^3))\",\r\n" + 
+					"        \"sinput\" : \"D(Tan(x^3))\",\r\n" + 
+					"        \"latex\" : \"D(\\\\tan ({x}^{3}))\"\r\n" + 
+					"      } ]\r\n" + 
+					"    }, {\r\n" + 
+					"      \"title\" : \"Derivative\",\r\n" + 
+					"      \"scanner\" : \"Derivative\",\r\n" + 
+					"      \"error\" : \"false\",\r\n" + 
+					"      \"numsubpods\" : 1,\r\n" + 
+					"      \"subpods\" : [ {\r\n" + 
+					"        \"plaintext\" : \"3*x^2*Sec(x^3)^2\",\r\n" + 
+					"        \"sinput\" : \"D(Tan(x^3),x)\",\r\n" + 
+					"        \"latex\" : \"3\\\\,{x}^{2}\\\\,{\\\\sec ({x}^{3})}^{2}\"\r\n" + 
+					"      } ]\r\n" + 
+					"    }, {\r\n" + 
+					"      \"title\" : \"Alternate form\",\r\n" + 
+					"      \"scanner\" : \"Simplification\",\r\n" + 
+					"      \"error\" : \"false\",\r\n" + 
+					"      \"numsubpods\" : 1,\r\n" + 
+					"      \"subpods\" : [ {\r\n" + 
+					"        \"plaintext\" : \"(12*x^2)/(E^(-I*x^3)+E^(I*x^3))^2\",\r\n" + 
+					"        \"sinput\" : \"TrigToExp(3*x^2*Sec(x^3)^2)\",\r\n" + 
+					"        \"latex\" : \"\\\\frac{12\\\\,{x}^{2}}{{\\\\left( {e}^{\\\\left(  - i \\\\right) \\\\,{x}^{3}}+{e}^{i \\\\,{x}^{3}}\\\\right) }^{2}}\"\r\n" + 
+					"      } ]\r\n" + 
+					"    } ]\r\n" + 
+					"  }\r\n" + 
+					"}");//
+		}
+	}
 }
