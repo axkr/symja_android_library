@@ -10050,48 +10050,48 @@ public class LowercaseTestCase extends AbstractTestCase {
 
 	public void testIntegerName() {
 		check("IntegerName(0,\"Latin\")", //
-				"nihil"); 
+				"nihil");
 		check("IntegerName(99,\"Latin\")", //
-				"nonaginta novem"); 
+				"nonaginta novem");
 		check("IntegerName(-99,\"Latin\")", //
-				"- nonaginta novem"); 
-//		check("IntegerName(123007,\"Latin\")", //
-//				"ciento veintitrés mil  siete"); 
-//		check("IntegerName(-123007,\"Latin\")", //
-//				"menos     ciento veintitrés mil  siete"); 
-		
+				"- nonaginta novem");
+		// check("IntegerName(123007,\"Latin\")", //
+		// "ciento veintitrés mil siete");
+		// check("IntegerName(-123007,\"Latin\")", //
+		// "menos ciento veintitrés mil siete");
+
 		check("IntegerName(0,\"Esperanto\")", //
-				"nulo"); 
+				"nulo");
 		check("IntegerName(99,\"Esperanto\")", //
-				"naŭdek naŭ"); 
+				"naŭdek naŭ");
 		check("IntegerName(4711,\"Esperanto\")", //
-				"IntegerName(4711,Esperanto)"); 
-//		check("IntegerName(-123007,\"Esperanto\")", //
-//				"menos     ciento veintitrés mil  siete"); 
-		
+				"IntegerName(4711,Esperanto)");
+		// check("IntegerName(-123007,\"Esperanto\")", //
+		// "menos ciento veintitrés mil siete");
+
 		check("IntegerName(0,\"Spanish\")", //
-				"cero"); 
+				"cero");
 		check("IntegerName(123007,\"Spanish\")", //
-				"ciento veintitrés mil  siete"); 
+				"ciento veintitrés mil  siete");
 		check("IntegerName(-123007,\"Spanish\")", //
-				"menos     ciento veintitrés mil  siete"); 
-		
+				"menos     ciento veintitrés mil  siete");
+
 		check("IntegerName(0,\"German\")", //
-				"null"); 
+				"null");
 		check("IntegerName(123007,\"German\")", //
-				"einhundertdreiundzwanzigtausendsieben"); 
+				"einhundertdreiundzwanzigtausendsieben");
 		check("IntegerName(-123007,\"German\")", //
-				"minus einhundertdreiundzwanzigtausendsieben"); 
-		
+				"minus einhundertdreiundzwanzigtausendsieben");
+
 		check("IntegerName(0)", //
 				"zero");
 		check("IntegerName(42)", //
 				"forty-two");
 		check("IntegerName(-42)", //
 				"minus forty-two");
-		
+
 	}
-	
+
 	public void testIntegerPartitions() {
 		// https://oeis.org/A214772 - McNugget partitions - Number of partitions of n into parts 6, 9 or 20.
 		check("Table(Length(IntegerPartitions(i, All, {6, 9, 20})), {i,0, 100, 1})", //
@@ -10129,6 +10129,8 @@ public class LowercaseTestCase extends AbstractTestCase {
 	}
 
 	public void testIntegrate() {
+		check("Integrate(Tan(x),Cos(x))", //
+				"Integrate(Tan(x),Cos(x))");
 		check("Integrate(Piecewise({{1/(2 x^2), Abs(x) > 1} },4),x)", //
 				"Piecewise({{-1/(2*x),Abs(x)>1}},4*x)");
 		check("Integrate(Piecewise({{x^2, x <= 0}, {x, x > 0}}),x)", //
