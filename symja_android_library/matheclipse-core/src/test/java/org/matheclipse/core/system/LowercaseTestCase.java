@@ -19324,6 +19324,16 @@ public class LowercaseTestCase extends AbstractTestCase {
 				"1");
 	}
 
+	public void testRomanNumeral() {
+		// zero as special case represented by 'N'
+		check("RomanNumeral(0)", //
+				"N");
+		check("RomanNumeral({4548,3267,3603,1929,2575,746,666,4108,1457,3828})", //
+				"{MↁDXLVIII,MMMCCLXVII,MMMDCIII,MCMXXIX,MMDLXXV,DCCXLVI,DCLXVI,MↁCVIII,MCDLVII,MMMDCCCXXVIII}");
+		check("RomanNumeral({1, 2, 3, 4, 5, 10, 50, 60, 100, 250, 500, 1000, 1500, 2600})", //
+				"{I,II,III,IV,V,X,L,LX,C,CCL,D,M,MD,MMDC}");
+	}
+
 	public void testRoot() {
 		check("Root((#^2 - 3*# - 1)&, 2)", //
 				"3/2+Sqrt(13)/2");

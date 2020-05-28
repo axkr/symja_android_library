@@ -7,7 +7,6 @@ import java.math.BigInteger;
 import java.util.AbstractMap.SimpleImmutableEntry;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
 
 import org.matheclipse.core.convert.VariablesSet;
 import org.matheclipse.core.eval.EvalEngine;
@@ -31,6 +30,8 @@ import org.matheclipse.core.interfaces.ISymbol;
 import org.matheclipse.core.polynomials.HornerScheme;
 import org.matheclipse.parser.client.FEConfig;
 
+import net.numericalchameleon.util.romannumerals.RomanNumeralException;
+
 public final class OutputFunctions {
 
 	/**
@@ -50,6 +51,7 @@ public final class OutputFunctions {
 			F.JavaForm.setEvaluator(new JavaForm());
 			F.JSForm.setEvaluator(new JSForm());
 			F.MathMLForm.setEvaluator(new MathMLForm());
+			F.RomanNumeral.setEvaluator(new RomanNumeral());
 			F.TableForm.setEvaluator(new TableForm());
 			F.TeXForm.setEvaluator(new TeXForm());
 			F.TreeForm.setEvaluator(new TreeForm());
@@ -144,6 +146,49 @@ public final class OutputFunctions {
 		@Override
 		public void setUp(ISymbol newSymbol) {
 		}
+	}
+
+	private static class RomanNumeral extends AbstractFunctionEvaluator {
+
+		@Override
+		public IExpr evaluate(final IAST ast, EvalEngine engine) {
+			IExpr arg1 = ast.arg1();
+			if (arg1.isInteger()) {
+				try {
+					long value = ((IInteger) arg1).toLong();
+					if (value == 0) {
+						return F.stringx("N");
+					}
+					net.numericalchameleon.util.romannumerals.RomanNumeral romanNumeral = //
+							new net.numericalchameleon.util.romannumerals.RomanNumeral(value);
+					return F.stringx(romanNumeral.toRoman());
+				} catch (net.numericalchameleon.util.romannumerals.RomanNumeralException rne) {
+					// Integer expected in range `1` to `2`.
+					return IOFunctions.printMessage(//
+							ast.topHead(), //
+							"intrange", //
+							F.List(F.ZZ(net.numericalchameleon.util.romannumerals.RomanNumeral.MIN_VALUE), //
+									F.ZZ(net.numericalchameleon.util.romannumerals.RomanNumeral.MAX_VALUE)), //
+							engine);
+				} catch (RuntimeException rex) {
+					if (FEConfig.SHOW_STACKTRACE) {
+						rex.printStackTrace();
+					}
+				}
+			}
+			return F.NIL;
+		}
+
+		@Override
+		public int[] expectedArgSize() {
+			return IOFunctions.ARGS_1_1;
+		}
+
+		@Override
+		public void setUp(final ISymbol newSymbol) {
+			newSymbol.setAttributes(ISymbol.LISTABLE);
+		}
+
 	}
 
 	private static class TableForm extends AbstractCoreFunctionEvaluator {

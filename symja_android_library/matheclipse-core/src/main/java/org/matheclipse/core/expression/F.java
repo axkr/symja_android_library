@@ -3144,6 +3144,9 @@ public class F {
 			ID.RogersTanimotoDissimilarity);
 
 	/***/
+	public final static IBuiltInSymbol RomanNumeral = F.initFinalSymbol("RomanNumeral", ID.RomanNumeral);
+	
+	/***/
 	public final static IBuiltInSymbol Root = F.initFinalSymbol("Root", ID.Root);
 
 	/***/

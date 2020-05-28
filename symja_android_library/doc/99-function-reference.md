@@ -572,6 +572,7 @@
 * [Reverse](functions/Reverse.md)
 * [Riffle](functions/Riffle.md)
 * [RogersTanimotoDissimilarity](functions/RogersTanimotoDissimilarity.md)
+* [RomanNumeral](functions/RomanNumeral.md)
 * [Roots](functions/Roots.md)
 * [RotateLeft](functions/RotateLeft.md)
 * [RotateRight](functions/RotateRight.md)
