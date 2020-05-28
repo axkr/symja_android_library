@@ -2674,11 +2674,15 @@ public abstract class AbstractAST implements IASTMutable {
 	/** {@inheritDoc} */
 	@Override
 	public final boolean isFreeAST(Predicate<IExpr> predicate) {
+		if (predicate.test(this)) {
+			return false;
+		}
 		if (predicate.test(head())) {
 			return false;
 		}
 		for (int i = 1; i < size(); i++) {
-			if (get(i).isAST() && !get(i).isFreeAST(predicate)) {
+			IExpr arg = get(i);
+			if (arg.isAST() && !arg.isFreeAST(predicate)) {
 				return false;
 			}
 		}
