@@ -60,7 +60,7 @@ public class Pods {
 			"factor", F.Factor, //
 			"integr", F.Integrate, //
 			"simplif", F.FullSimplify, "simplifi", F.FullSimplify, //
-			"solv", F.Solve //
+			"solv", F.Solve, "solver", F.Solve //
 	};
 
 	public static final Trie<String, IBuiltInSymbol> STEM_MAP = Tries.forStrings();
@@ -562,7 +562,7 @@ public class Pods {
 							addSymjaPod(podsArray, inExpr, podOut, "Derivative", "Derivative", formats, mapper, engine);
 							numpods++;
 
-							if (outExpr.isFreeAST(x -> x.isTrigFunction())) {
+							if (!outExpr.isFreeAST(x -> x.isTrigFunction())) {
 								inExpr = F.TrigToExp(outExpr);
 								podOut = engine.evaluate(inExpr);
 								if (!F.PossibleZeroQ.ofQ(engine, F.Subtract(podOut, outExpr))) {
@@ -586,7 +586,31 @@ public class Pods {
 							addSymjaPod(podsArray, inExpr, podOut, "Integration", "Integral", formats, mapper, engine);
 							numpods++;
 
-							if (outExpr.isFreeAST(x -> x.isTrigFunction())) {
+							if (!outExpr.isFreeAST(x -> x.isTrigFunction())) {
+								inExpr = F.TrigToExp(outExpr);
+								podOut = engine.evaluate(inExpr);
+								if (!F.PossibleZeroQ.ofQ(engine, F.Subtract(podOut, outExpr))) {
+									addSymjaPod(podsArray, inExpr, podOut, "Alternate form", "Simplification", formats,
+											mapper, engine);
+									numpods++;
+								}
+							}
+							resultStatistics(queryresult, error, numpods, podsArray);
+							return messageJSON;
+						} else if (inExpr.isAST(F.Solve , 2, 4)) {
+							if (inExpr.isAST1()) {
+								VariablesSet varSet = new VariablesSet(inExpr.first());
+								IAST variables = varSet.getVarList();
+								IASTAppendable result=((IAST)inExpr).copyAppendable();
+								result.append(variables);
+								inExpr=result;
+							}
+							outExpr = engine.evaluate(inExpr);
+							podOut = outExpr;
+							addSymjaPod(podsArray, inExpr, podOut, "Solve equation", "Solver", formats, mapper, engine);
+							numpods++;
+
+							if (!outExpr.isFreeAST(x -> x.isTrigFunction())) {
 								inExpr = F.TrigToExp(outExpr);
 								podOut = engine.evaluate(inExpr);
 								if (!F.PossibleZeroQ.ofQ(engine, F.Subtract(podOut, outExpr))) {
@@ -682,7 +706,7 @@ public class Pods {
 										}
 									}
 								}
-								if (outExpr.isFreeAST(x -> x.isTrigFunction())) {
+								if (!outExpr.isFreeAST(x -> x.isTrigFunction())) {
 									inExpr = F.TrigToExp(outExpr);
 									podOut = engine.evaluate(inExpr);
 									if (!F.PossibleZeroQ.ofQ(engine, F.Subtract(podOut, outExpr))) {

@@ -834,7 +834,7 @@ public class TestPods {
 					"  \"queryresult\" : {\r\n" + 
 					"    \"success\" : \"true\",\r\n" + 
 					"    \"error\" : \"false\",\r\n" + 
-					"    \"numpods\" : 6,\r\n" + 
+					"    \"numpods\" : 5,\r\n" + 
 					"    \"version\" : \"0.1\",\r\n" + 
 					"    \"pods\" : [ {\r\n" + 
 					"      \"title\" : \"Input\",\r\n" + 
@@ -863,16 +863,6 @@ public class TestPods {
 					"      \"numsubpods\" : 1,\r\n" + 
 					"      \"subpods\" : [ {\r\n" + 
 					"        \"jsxgraph\" : \"<iframe srcdoc=\\\"&lt;?xml version=&quot;1.0&quot; encoding=&quot;UTF-8&quot;?&gt;\\n\\n&lt;!DOCTYPE html PUBLIC\\n  &quot;-//W3C//DTD XHTML 1.1 plus MathML 2.0 plus SVG 1.1//EN&quot;\\n  &quot;http://www.w3.org/2002/04/xhtml-math-svg/xhtml-math-svg.dtd&quot;&gt;\\n\\n&lt;html xmlns=&quot;http://www.w3.org/1999/xhtml&quot; style=&quot;width: 100%; height: 100%; margin: 0; padding: 0&quot;&gt;\\n&lt;head&gt;\\n&lt;meta charset=&quot;utf-8&quot;&gt;\\n&lt;title&gt;JSXGraph&lt;/title&gt;\\n\\n&lt;body style=&quot;width: 100%; height: 100%; margin: 0; padding: 0&quot;&gt;\\n\\n&lt;link rel=&quot;stylesheet&quot; type=&quot;text/css&quot; href=&quot;https://cdnjs.cloudflare.com/ajax/libs/jsxgraph/0.99.7/jsxgraphcore.css&quot; /&gt;\\n&lt;script src=&quot;https://cdn.jsdelivr.net/gh/paulmasson/math@1.2.8/build/math.js&quot;&gt;&lt;/script&gt;\\n&lt;script src=&quot;https://cdnjs.cloudflare.com/ajax/libs/jsxgraph/0.99.7/jsxgraphcore.js&quot;\\n        type=&quot;text/javascript&quot;&gt;&lt;/script&gt;\\n&lt;script src=&quot;https://cdnjs.cloudflare.com/ajax/libs/jsxgraph/0.99.7/geonext.min.js&quot;\\n        type=&quot;text/javascript&quot;&gt;&lt;/script&gt;\\n\\n&lt;div id=&quot;jxgbox&quot; class=&quot;jxgbox&quot; style=&quot;display: flex; width:99%; height:99%; margin: 0; flex-direction: column; overflow: hidden&quot;&gt;\\n&lt;script&gt;\\nvar board = JXG.JSXGraph.initBoard('jxgbox', {axis:true,boundingbox:[-7.7,5.5,7.7,-5.5]});\\nboard.suspendUpdate();\\n\\nfunction z1(x) { return add(2,x); }\\nfunction z2(x) { return 0; }\\nvar p1 = board.create('functiongraph',[z1, -7.0, 7.0]);\\nvar p2 = board.create('functiongraph',[z2, -7.0, 7.0]);\\nvar data = [ p1, p2 ];\\n\\n\\nboard.unsuspendUpdate();\\n\\n&lt;/script&gt;\\n&lt;/div&gt;\\n\\n&lt;/body&gt;\\n&lt;/html&gt;\\\" style=\\\"display: block; width: 100%; height: 100%; border: none;\\\" ></iframe>\"\r\n" + 
-					"      } ]\r\n" + 
-					"    }, {\r\n" + 
-					"      \"title\" : \"Alternate form\",\r\n" + 
-					"      \"scanner\" : \"Simplification\",\r\n" + 
-					"      \"error\" : \"false\",\r\n" + 
-					"      \"numsubpods\" : 1,\r\n" + 
-					"      \"subpods\" : [ {\r\n" + 
-					"        \"plaintext\" : \"{2+x,0}\",\r\n" + 
-					"        \"sinput\" : \"TrigToExp({2+x,0})\",\r\n" + 
-					"        \"latex\" : \"\\\\{2+x,0\\\\}\"\r\n" + 
 					"      } ]\r\n" + 
 					"    }, {\r\n" + 
 					"      \"title\" : \"Derivative\",\r\n" + 
@@ -1177,6 +1167,46 @@ public class TestPods {
 		}
 	}
 
+	@Test
+	public void testSolve003() {
+		String s = System.getProperty("os.name");
+		ObjectNode messageJSON = Pods.createResult("Solver x+3=10", formatsTEX);
+		final String jsonStr = messageJSON.toPrettyString();
+		System.out.println(jsonStr);
+		if (s.contains("Windows")) {
+			assertEquals(jsonStr, //
+					"{\r\n" + 
+					"  \"queryresult\" : {\r\n" + 
+					"    \"success\" : \"true\",\r\n" + 
+					"    \"error\" : \"false\",\r\n" + 
+					"    \"numpods\" : 2,\r\n" + 
+					"    \"version\" : \"0.1\",\r\n" + 
+					"    \"pods\" : [ {\r\n" + 
+					"      \"title\" : \"Input\",\r\n" + 
+					"      \"scanner\" : \"Identity\",\r\n" + 
+					"      \"error\" : \"false\",\r\n" + 
+					"      \"numsubpods\" : 1,\r\n" + 
+					"      \"subpods\" : [ {\r\n" + 
+					"        \"plaintext\" : \"Solve(3+x==10)\",\r\n" + 
+					"        \"sinput\" : \"Solve(3+x==10)\",\r\n" + 
+					"        \"latex\" : \"\\\\text{Solve}(3+x == 10)\"\r\n" + 
+					"      } ]\r\n" + 
+					"    }, {\r\n" + 
+					"      \"title\" : \"Solve equation\",\r\n" + 
+					"      \"scanner\" : \"Solver\",\r\n" + 
+					"      \"error\" : \"false\",\r\n" + 
+					"      \"numsubpods\" : 1,\r\n" + 
+					"      \"subpods\" : [ {\r\n" + 
+					"        \"plaintext\" : \"{{x->7}}\",\r\n" + 
+					"        \"sinput\" : \"Solve(3+x==10,{x})\",\r\n" + 
+					"        \"latex\" : \"\\\\{\\\\{x\\\\to 7\\\\}\\\\}\"\r\n" + 
+					"      } ]\r\n" + 
+					"    } ]\r\n" + 
+					"  }\r\n" + 
+					"}");//
+		}
+	}
+	
 	@Test
 	public void testInteger4294967295() {
 		String s = System.getProperty("os.name");
