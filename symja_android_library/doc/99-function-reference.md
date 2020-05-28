@@ -331,6 +331,7 @@
 * [IntegerDigits](functions/IntegerDigits.md)
 * [IntegerExponent](functions/IntegerExponent.md)
 * [IntegerLength](functions/IntegerLength.md)
+* [IntegerName](functions/IntegerName.md)
 * [IntegerPart](functions/IntegerPart.md)
 * [IntegerPartitions](functions/IntegerPartitions.md)
 * [IntegerQ](functions/IntegerQ.md)
