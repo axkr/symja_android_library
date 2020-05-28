@@ -30,7 +30,14 @@ import org.matheclipse.core.interfaces.ISymbol;
 import org.matheclipse.core.polynomials.HornerScheme;
 import org.matheclipse.parser.client.FEConfig;
 
-import net.numericalchameleon.util.romannumerals.RomanNumeralException;
+import net.numericalchameleon.util.spokennumbers.EsperantoNumber;
+import net.numericalchameleon.util.spokennumbers.FrenchNumber;
+import net.numericalchameleon.util.spokennumbers.GermanNumber;
+import net.numericalchameleon.util.spokennumbers.ItalianNumber;
+import net.numericalchameleon.util.spokennumbers.LatinNumber;
+import net.numericalchameleon.util.spokennumbers.SpanishNumber;
+import net.numericalchameleon.util.spokennumbers.SpokenNumber;
+import net.numericalchameleon.util.spokennumbers.USEnglishNumber;
 
 public final class OutputFunctions {
 
@@ -48,6 +55,7 @@ public final class OutputFunctions {
 			F.HoldForm.setEvaluator(new HoldForm());
 			F.HornerForm.setEvaluator(new HornerForm());
 			F.InputForm.setEvaluator(new InputForm());
+			F.IntegerName.setEvaluator(new IntegerName());
 			F.JavaForm.setEvaluator(new JavaForm());
 			F.JSForm.setEvaluator(new JSForm());
 			F.MathMLForm.setEvaluator(new MathMLForm());
@@ -348,6 +356,76 @@ public final class OutputFunctions {
 		@Override
 		public void setUp(ISymbol newSymbol) {
 		}
+	}
+
+	private static class IntegerName extends AbstractFunctionEvaluator {
+
+		@Override
+		public IExpr evaluate(final IAST ast, EvalEngine engine) {
+			IExpr arg1 = ast.arg1();
+			if (arg1.isInteger()) {
+				IStringX language = F.stringx("English");
+				IStringX qual = F.stringx("Words");
+				if (ast.isAST2()) {
+					if (!ast.arg2().isString()) {
+						return F.NIL;
+					}
+					IStringX arg2 = (IStringX) ast.arg2();
+					if (language.isString("English") || //
+							language.isString("Esperanto") || //
+							language.isString("French") || //
+							language.isString("German") || //
+							language.isString("Italian") || //
+							language.isString("Latin") || //
+							language.isString("Spanish")) {
+						language = (IStringX) arg2;
+					} else {
+						qual = (IStringX) arg2;
+					}
+				}
+				try {
+					long value = ((IInteger) arg1).toLong();
+					if (qual.isString("Words")) {
+						SpokenNumber spokenNumber = null;
+
+						if (language.isString("English")) {
+							spokenNumber = new USEnglishNumber(value);
+						} else if (language.isString("Esperanto")) {
+							spokenNumber = new EsperantoNumber(value);
+						} else if (language.isString("French")) {
+							spokenNumber = new FrenchNumber(value);
+						} else if (language.isString("German")) {
+							spokenNumber = new GermanNumber(value);
+						} else if (language.isString("Italian")) {
+							spokenNumber = new ItalianNumber(value);
+						} else if (language.isString("Latin")) {
+							spokenNumber = new LatinNumber(value);
+						} else if (language.isString("Spanish")) {
+							spokenNumber = new SpanishNumber(value);
+						}
+						if (spokenNumber != null) {
+							return F.stringx(spokenNumber.toString());
+						}
+					}
+				} catch (Exception ex) {
+//					if (FEConfig.SHOW_STACKTRACE) {
+						ex.printStackTrace();
+//					}
+				}
+			}
+			return F.NIL;
+		}
+
+		@Override
+		public int[] expectedArgSize() {
+			return IOFunctions.ARGS_1_2;
+		}
+
+		@Override
+		public void setUp(final ISymbol newSymbol) {
+			newSymbol.setAttributes(ISymbol.LISTABLE);
+		}
+
 	}
 
 	/**

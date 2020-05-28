@@ -1229,7 +1229,6 @@ public class F {
 	/***/
 	public final static IBuiltInSymbol Entity = F.initFinalSymbol("Entity", ID.Entity);
 
-	
 	/**
 	 * Equal(x, y) - yields `True` if `x` and `y` are known to be equal, or `False` if `x` and `y` are known to be
 	 * unequal.
@@ -1886,6 +1885,9 @@ public class F {
 
 	/** IntegerLength(x) - gives the number of digits in the base-10 representation of `x`. */
 	public final static IBuiltInSymbol IntegerLength = F.initFinalSymbol("IntegerLength", ID.IntegerLength);
+
+	/***/
+	public final static IBuiltInSymbol IntegerName = F.initFinalSymbol("IntegerName", ID.IntegerName);
 
 	/** IntegerPart(expr) - for real `expr` return the integer part of `expr`. */
 	public final static IBuiltInSymbol IntegerPart = F.initFinalSymbol("IntegerPart", ID.IntegerPart);
@@ -3145,7 +3147,7 @@ public class F {
 
 	/***/
 	public final static IBuiltInSymbol RomanNumeral = F.initFinalSymbol("RomanNumeral", ID.RomanNumeral);
-	
+
 	/***/
 	public final static IBuiltInSymbol Root = F.initFinalSymbol("Root", ID.Root);
 
@@ -5417,11 +5419,11 @@ public class F {
 	public static IASTMutable ApplyListC1(final IExpr a0, final IExpr a1) {
 		return new AST3(Apply, a0, a1, CListC1);
 	}
-	
+
 	public static IAST AiryAi(final IExpr a0) {
 		return new AST1(AiryAi, a0);
 	}
-	
+
 	public static IAST AiryAiPrime(final IExpr a0) {
 		return new AST1(AiryAiPrime, a0);
 	}
@@ -5429,11 +5431,11 @@ public class F {
 	public static IAST AiryBi(final IExpr a0) {
 		return new AST1(AiryBi, a0);
 	}
-	
+
 	public static IAST AiryBiPrime(final IExpr a0) {
 		return new AST1(AiryBiPrime, a0);
 	}
-	
+
 	public static IAST Array(final IExpr a0, final IExpr a1) {
 		return new AST2(Array, a0, a1);
 	}
@@ -5737,11 +5739,11 @@ public class F {
 	public static IAST Attributes(final IExpr a) {
 		return new AST1(Attributes, a);
 	}
-	
+
 	public static IAST BaseForm(final IExpr a0, final IExpr a1) {
 		return new AST2(F.BaseForm, a0, a1);
 	}
-	
+
 	/**
 	 * Bell number.
 	 * 
@@ -5871,8 +5873,7 @@ public class F {
 	public static IAST BooleanTable(final IExpr a0, final IExpr a1) {
 		return new AST2(BooleanTable, a0, a1);
 	}
-	
-	
+
 	public static IAST BesselI(final IExpr a0, final IExpr a1) {
 		return new AST2(BesselI, a0, a1);
 	}
@@ -6391,7 +6392,7 @@ public class F {
 	public static IAST ContinuedFraction(final IExpr a0) {
 		return new AST1(ContinuedFraction, a0);
 	}
-	
+
 	public static IAST CoprimeQ(final IExpr a0, final IExpr a1) {
 		return new AST2(CoprimeQ, a0, a1);
 	}
@@ -6674,11 +6675,11 @@ public class F {
 	public static IAST Element(final IExpr a0, final IExpr a1) {
 		return new AST2(Element, a0, a1);
 	}
-	
+
 	public static IAST ElementData(final IExpr a0) {
 		return new AST1(ElementData, a0);
 	}
-	
+
 	public static IAST ElementData(final IExpr a0, final IExpr a1) {
 		return new AST2(ElementData, a0, a1);
 	}
@@ -7691,6 +7692,14 @@ public class F {
 
 	public static IAST IntegerPart(final IExpr a0) {
 		return new AST1(IntegerPart, a0);
+	}
+
+	public static IAST IntegerName(final IExpr a0) {
+		return new AST1(IntegerName, a0);
+	}
+
+	public static IAST IntegerName(final IExpr a0, final IExpr a1) {
+		return new AST2(IntegerName, a0, a1);
 	}
 
 	/**
@@ -9653,7 +9662,7 @@ public class F {
 	public static IAST RomanNumeral(final IExpr a) {
 		return new AST1(RomanNumeral, a);
 	}
-	
+
 	public static IAST Root(final IExpr a0, final IExpr a1) {
 		return new AST2(Root, a0, a1);
 	}
@@ -9705,8 +9714,8 @@ public class F {
 	public static IAST Select(final IExpr a0, final IExpr a1, final IExpr a2) {
 		return new AST3(Select, a0, a1, a2);
 	}
-	
-	public static IAST Select(final IExpr a0, final IExpr a1 ) {
+
+	public static IAST Select(final IExpr a0, final IExpr a1) {
 		return new AST2(Select, a0, a1);
 	}
 
@@ -10335,11 +10344,11 @@ public class F {
 	public static IAST Union(final IExpr a0) {
 		return new AST1(Union, a0);
 	}
-	
+
 	public static IAST Union(final IExpr a0, final IExpr a1) {
 		return new AST2(Union, a0, a1);
 	}
-	
+
 	public static IAST Unique(final IExpr a0) {
 		return new AST1(Unique, a0);
 	}

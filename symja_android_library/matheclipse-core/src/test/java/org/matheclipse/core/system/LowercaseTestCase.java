@@ -10048,6 +10048,50 @@ public class LowercaseTestCase extends AbstractTestCase {
 				"{-2,-2,-3}");
 	}
 
+	public void testIntegerName() {
+		check("IntegerName(0,\"Latin\")", //
+				"nihil"); 
+		check("IntegerName(99,\"Latin\")", //
+				"nonaginta novem"); 
+		check("IntegerName(-99,\"Latin\")", //
+				"- nonaginta novem"); 
+//		check("IntegerName(123007,\"Latin\")", //
+//				"ciento veintitrés mil  siete"); 
+//		check("IntegerName(-123007,\"Latin\")", //
+//				"menos     ciento veintitrés mil  siete"); 
+		
+		check("IntegerName(0,\"Esperanto\")", //
+				"nulo"); 
+		check("IntegerName(99,\"Esperanto\")", //
+				"naŭdek naŭ"); 
+		check("IntegerName(4711,\"Esperanto\")", //
+				"IntegerName(4711,Esperanto)"); 
+//		check("IntegerName(-123007,\"Esperanto\")", //
+//				"menos     ciento veintitrés mil  siete"); 
+		
+		check("IntegerName(0,\"Spanish\")", //
+				"cero"); 
+		check("IntegerName(123007,\"Spanish\")", //
+				"ciento veintitrés mil  siete"); 
+		check("IntegerName(-123007,\"Spanish\")", //
+				"menos     ciento veintitrés mil  siete"); 
+		
+		check("IntegerName(0,\"German\")", //
+				"null"); 
+		check("IntegerName(123007,\"German\")", //
+				"einhundertdreiundzwanzigtausendsieben"); 
+		check("IntegerName(-123007,\"German\")", //
+				"minus einhundertdreiundzwanzigtausendsieben"); 
+		
+		check("IntegerName(0)", //
+				"zero");
+		check("IntegerName(42)", //
+				"forty-two");
+		check("IntegerName(-42)", //
+				"minus forty-two");
+		
+	}
+	
 	public void testIntegerPartitions() {
 		// https://oeis.org/A214772 - McNugget partitions - Number of partitions of n into parts 6, 9 or 20.
 		check("Table(Length(IntegerPartitions(i, All, {6, 9, 20})), {i,0, 100, 1})", //
