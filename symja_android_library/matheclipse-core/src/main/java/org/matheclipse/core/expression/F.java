@@ -9650,6 +9650,10 @@ public class F {
 		return new AST1(Reverse, a);
 	}
 
+	public static IAST RomanNumeral(final IExpr a) {
+		return new AST1(RomanNumeral, a);
+	}
+	
 	public static IAST Root(final IExpr a0, final IExpr a1) {
 		return new AST2(Root, a0, a1);
 	}

@@ -48,6 +48,9 @@ import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.google.common.base.Suppliers;
 
+import net.numericalchameleon.util.romannumerals.RomanNumeralException;
+import net.numericalchameleon.util.romannumerals.RomanNumeral.Errors;
+
 public class Pods {
 
 	public static final Object[] STEMS = new Object[] { //
@@ -427,7 +430,7 @@ public class Pods {
 				if (outExpr.isNumber() || //
 						outExpr.isQuantity()) {
 					if (outExpr.isInteger()) {
-						numpods += integerPods(podsArray, (IInteger) outExpr, outExpr, formats, mapper, engine);
+						numpods += integerPods(podsArray, inExpr, (IInteger) outExpr, formats, mapper, engine);
 						resultStatistics(queryresult, error, numpods, podsArray);
 						return messageJSON;
 					} else {
@@ -919,26 +922,94 @@ public class Pods {
 		return F.NIL;
 	}
 
-	private static int integerPods(ArrayNode podsArray, IInteger intExpr, IExpr outExpr, int formats,
+	private static int integerPods(ArrayNode podsArray, IExpr inExpr, final IInteger outExpr, int formats,
 			ObjectMapper mapper, EvalEngine engine) {
 		int numpods = 0;
-		IInteger n = intExpr;
-		IExpr inExpr = F.BaseForm(intExpr, F.C2);
+		int intValue = outExpr.toIntDefault();
+		IInteger n = outExpr;
+
+		if (!inExpr.equals(outExpr)) { 
+			addSymjaPod(podsArray, inExpr, outExpr, "Result", "Simplification", formats, mapper, engine);
+			numpods++;
+		}
+		inExpr = outExpr;
+		if (intValue >= net.numericalchameleon.util.romannumerals.RomanNumeral.MIN_VALUE && //
+				intValue <= net.numericalchameleon.util.romannumerals.RomanNumeral.MAX_VALUE) {
+			inExpr = F.RomanNumeral(n);
+			IExpr podOut = engine.evaluate(inExpr);
+			addSymjaPod(podsArray, inExpr, podOut, "Roman numerals", "Integer", formats, mapper, engine);
+			numpods++;
+		}
+
+		inExpr = F.BaseForm(outExpr, F.C2);
 		IExpr podOut = engine.evaluate(inExpr);
-		addSymjaPod(podsArray, inExpr, podOut, "Binary form", "Integer", formats, mapper, engine);
+		StringBuilder plainText = new StringBuilder();
+		if (podOut.isAST(F.Subscript,3)) {
+			plainText.append(podOut.first().toString());
+			plainText.append("_");
+			plainText.append(podOut.second().toString());
+		}
+		addSymjaPod(podsArray, inExpr, podOut,plainText.toString(), "Binary form", "Integer", formats, mapper, engine);
 		numpods++;
 
 		inExpr = F.FactorInteger(n);
 		podOut = engine.evaluate(inExpr);
-		addSymjaPod(podsArray, inExpr, podOut, "Prime factorization", "Integer", formats, mapper, engine);
+		int[] dim = podOut.isMatrix();
+		  plainText = new StringBuilder();
+		if (n.isProbablePrime()) {
+			plainText.append(n.toString());
+			plainText.append(" is a prime number.");
+		} else {
+			if (dim[1] == 2) {
+				IAST list = (IAST) podOut;
+				for (int i = 1; i < list.size(); i++) {
+					IExpr arg1 = list.get(i).first();
+					IExpr arg2 = list.get(i).second();
+					plainText.append(arg1.toString());
+					if (!arg2.isOne()) {
+						plainText.append("^");
+						plainText.append(arg2.toString());
+					}
+					if (i < list.size() - 1) {
+						plainText.append("*");
+					}
+				}
+			}
+		}
+		addSymjaPod(podsArray, inExpr, podOut, plainText.toString(), "Prime factorization", "Integer", formats, mapper,
+				engine);
 		numpods++;
 
-		inExpr = F.Mod(n, F.Range(F.C2, F.C9));
+		IAST range = (IAST) F.Range.of(F.C2, F.C9);
+		inExpr = F.Mod(n, range);
 		podOut = engine.evaluate(inExpr);
-		addSymjaPod(podsArray, inExpr, podOut, "Residues modulo small integers", "Integer", formats, mapper, engine);
+		StringBuilder tableForm = new StringBuilder();
+		if (podOut.isList()) {
+			IAST list=(IAST)podOut;
+			tableForm.append("m | ");
+			for (int i = 1; i < range.size(); i++) {
+				tableForm.append(range.get(i).toString());
+				if (i < range.size() - 1) {
+					tableForm.append(" | ");
+				}
+			}
+			tableForm.append("\n");
+			tableForm.append(n.toString());
+			tableForm.append(" mod m | ");
+			
+			for (int i = 1; i < list.size(); i++) {
+				tableForm.append(list.get(i).toString());
+				if (i < range.size() - 1) {
+					tableForm.append(" | ");
+				}
+			}
+		}
+
+		addSymjaPod(podsArray, inExpr, podOut, tableForm.toString(), "Residues modulo small integers", "Integer",
+				formats, mapper, engine);
 		numpods++;
 
-		integerPropertiesPod(podsArray, intExpr, podOut, "Properties", "Integer", formats, mapper, engine);
+		integerPropertiesPod(podsArray, outExpr, podOut, "Properties", "Integer", formats, mapper, engine);
 		numpods++;
 
 		if (n.isPositive() && n.isLT(F.ZZ(100))) {
