@@ -496,7 +496,7 @@ public class TestPods {
 					"  \"queryresult\" : {\r\n" + 
 					"    \"success\" : \"true\",\r\n" + 
 					"    \"error\" : \"false\",\r\n" + 
-					"    \"numpods\" : 8,\r\n" + 
+					"    \"numpods\" : 9,\r\n" + 
 					"    \"version\" : \"0.1\",\r\n" + 
 					"    \"pods\" : [ {\r\n" + 
 					"      \"title\" : \"Input\",\r\n" + 
@@ -507,6 +507,16 @@ public class TestPods {
 					"        \"plaintext\" : \"17\",\r\n" + 
 					"        \"sinput\" : \"17\",\r\n" + 
 					"        \"latex\" : \"17\"\r\n" + 
+					"      } ]\r\n" + 
+					"    }, {\r\n" + 
+					"      \"title\" : \"Number name\",\r\n" + 
+					"      \"scanner\" : \"Integer\",\r\n" + 
+					"      \"error\" : \"false\",\r\n" + 
+					"      \"numsubpods\" : 1,\r\n" + 
+					"      \"subpods\" : [ {\r\n" + 
+					"        \"plaintext\" : \"seventeen\",\r\n" + 
+					"        \"sinput\" : \"IntegerName(17,Words)\",\r\n" + 
+					"        \"latex\" : \"\\\\textnormal{seventeen}\"\r\n" + 
 					"      } ]\r\n" + 
 					"    }, {\r\n" + 
 					"      \"title\" : \"Roman numerals\",\r\n" + 
@@ -1179,7 +1189,7 @@ public class TestPods {
 					"  \"queryresult\" : {\r\n" + 
 					"    \"success\" : \"true\",\r\n" + 
 					"    \"error\" : \"false\",\r\n" + 
-					"    \"numpods\" : 6,\r\n" + 
+					"    \"numpods\" : 7,\r\n" + 
 					"    \"version\" : \"0.1\",\r\n" + 
 					"    \"pods\" : [ {\r\n" + 
 					"      \"title\" : \"Input\",\r\n" + 
@@ -1200,6 +1210,16 @@ public class TestPods {
 					"        \"plaintext\" : \"4294967295\",\r\n" + 
 					"        \"sinput\" : \"-1+2^32\",\r\n" + 
 					"        \"latex\" : \"4294967295\"\r\n" + 
+					"      } ]\r\n" + 
+					"    }, {\r\n" + 
+					"      \"title\" : \"Number name\",\r\n" + 
+					"      \"scanner\" : \"Integer\",\r\n" + 
+					"      \"error\" : \"false\",\r\n" + 
+					"      \"numsubpods\" : 1,\r\n" + 
+					"      \"subpods\" : [ {\r\n" + 
+					"        \"plaintext\" : \"four billion two hundred ninety-four million nine hundred sixty-seven thousand two hundred ninety-five\",\r\n" + 
+					"        \"sinput\" : \"IntegerName(4294967295,Words)\",\r\n" + 
+					"        \"latex\" : \"\\\\textnormal{four billion two hundred ninety-four million nine hundred sixty-seven thousand two hundred ninety-five}\"\r\n" + 
 					"      } ]\r\n" + 
 					"    }, {\r\n" + 
 					"      \"title\" : \"Binary form\",\r\n" + 
@@ -1396,7 +1416,7 @@ public class TestPods {
 					"  \"queryresult\" : {\r\n" + 
 					"    \"success\" : \"true\",\r\n" + 
 					"    \"error\" : \"false\",\r\n" + 
-					"    \"numpods\" : 7,\r\n" + 
+					"    \"numpods\" : 8,\r\n" + 
 					"    \"version\" : \"0.1\",\r\n" + 
 					"    \"pods\" : [ {\r\n" + 
 					"      \"title\" : \"Input\",\r\n" + 
@@ -1417,6 +1437,16 @@ public class TestPods {
 					"        \"plaintext\" : \"1320\",\r\n" + 
 					"        \"sinput\" : \"10*11*12\",\r\n" + 
 					"        \"latex\" : \"1320\"\r\n" + 
+					"      } ]\r\n" + 
+					"    }, {\r\n" + 
+					"      \"title\" : \"Number name\",\r\n" + 
+					"      \"scanner\" : \"Integer\",\r\n" + 
+					"      \"error\" : \"false\",\r\n" + 
+					"      \"numsubpods\" : 1,\r\n" + 
+					"      \"subpods\" : [ {\r\n" + 
+					"        \"plaintext\" : \"one thousand three hundred twenty\",\r\n" + 
+					"        \"sinput\" : \"IntegerName(1320,Words)\",\r\n" + 
+					"        \"latex\" : \"\\\\textnormal{one thousand three hundred twenty}\"\r\n" + 
 					"      } ]\r\n" + 
 					"    }, {\r\n" + 
 					"      \"title\" : \"Roman numerals\",\r\n" + 

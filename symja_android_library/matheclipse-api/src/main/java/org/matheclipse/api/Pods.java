@@ -928,34 +928,42 @@ public class Pods {
 		int intValue = outExpr.toIntDefault();
 		IInteger n = outExpr;
 
-		if (!inExpr.equals(outExpr)) { 
+		if (!inExpr.equals(outExpr)) {
 			addSymjaPod(podsArray, inExpr, outExpr, "Result", "Simplification", formats, mapper, engine);
 			numpods++;
 		}
 		inExpr = outExpr;
+
+		inExpr = F.IntegerName(n, F.stringx("Words"));
+		IExpr podOut = engine.evaluateNull(inExpr);
+		if (podOut.isPresent()) {
+			addSymjaPod(podsArray, inExpr, podOut, "Number name", "Integer", formats, mapper, engine);
+			numpods++;
+		}
+
 		if (intValue >= net.numericalchameleon.util.romannumerals.RomanNumeral.MIN_VALUE && //
 				intValue <= net.numericalchameleon.util.romannumerals.RomanNumeral.MAX_VALUE) {
 			inExpr = F.RomanNumeral(n);
-			IExpr podOut = engine.evaluate(inExpr);
+			podOut = engine.evaluate(inExpr);
 			addSymjaPod(podsArray, inExpr, podOut, "Roman numerals", "Integer", formats, mapper, engine);
 			numpods++;
 		}
 
 		inExpr = F.BaseForm(outExpr, F.C2);
-		IExpr podOut = engine.evaluate(inExpr);
+		podOut = engine.evaluate(inExpr);
 		StringBuilder plainText = new StringBuilder();
-		if (podOut.isAST(F.Subscript,3)) {
+		if (podOut.isAST(F.Subscript, 3)) {
 			plainText.append(podOut.first().toString());
 			plainText.append("_");
 			plainText.append(podOut.second().toString());
 		}
-		addSymjaPod(podsArray, inExpr, podOut,plainText.toString(), "Binary form", "Integer", formats, mapper, engine);
+		addSymjaPod(podsArray, inExpr, podOut, plainText.toString(), "Binary form", "Integer", formats, mapper, engine);
 		numpods++;
 
 		inExpr = F.FactorInteger(n);
 		podOut = engine.evaluate(inExpr);
 		int[] dim = podOut.isMatrix();
-		  plainText = new StringBuilder();
+		plainText = new StringBuilder();
 		if (n.isProbablePrime()) {
 			plainText.append(n.toString());
 			plainText.append(" is a prime number.");
@@ -985,7 +993,7 @@ public class Pods {
 		podOut = engine.evaluate(inExpr);
 		StringBuilder tableForm = new StringBuilder();
 		if (podOut.isList()) {
-			IAST list=(IAST)podOut;
+			IAST list = (IAST) podOut;
 			tableForm.append("m | ");
 			for (int i = 1; i < range.size(); i++) {
 				tableForm.append(range.get(i).toString());
@@ -996,7 +1004,7 @@ public class Pods {
 			tableForm.append("\n");
 			tableForm.append(n.toString());
 			tableForm.append(" mod m | ");
-			
+
 			for (int i = 1; i < list.size(); i++) {
 				tableForm.append(list.get(i).toString());
 				if (i < range.size() - 1) {
