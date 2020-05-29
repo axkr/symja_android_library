@@ -9,7 +9,7 @@ public interface IPod {
 	public final static short DOCUMENTATION = 1;
 	public final static short ELEMENT_DATA = 2;
 	public final static short CONSTANT_DATA = 3;
-
+	public final static short LIST_DATA = 4;
 	/**
 	 * Get the type of this pod
 	 * 
@@ -29,7 +29,7 @@ public interface IPod {
 	 * 
 	 * @param mapper
 	 * @param podsArray
-	 * @return
+	 * @return the number of pods; <code>0</code> if no pod was appended
 	 */
 	public int addJSON(ObjectMapper mapper, ArrayNode podsArray,int formats, EvalEngine engine);
 }

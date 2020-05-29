@@ -8372,6 +8372,10 @@ public class F {
 	public static IAST ListConvolve(final IExpr a0, final IExpr a1) {
 		return new AST2(ListConvolve, a0, a1);
 	}
+	
+	public static IAST ListPlot(final IExpr a) {
+		return new AST1(ListPlot, a);
+	}
 
 	/**
 	 * <pre>
@@ -8399,7 +8403,7 @@ public class F {
 	public static IAST ListQ(final IExpr a) {
 		return new AST1(ListQ, a);
 	}
-
+	
 	/**
 	 * 
 	 * @param a0

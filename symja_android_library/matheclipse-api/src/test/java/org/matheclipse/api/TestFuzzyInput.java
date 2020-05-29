@@ -34,4 +34,10 @@ public class TestFuzzyInput {
 		IExpr expr = Pods.parseInput("Simplify x^2+4*x+4", EvalEngine.get());
 		assertEquals("FullSimplify(x^2+4*x+4)", expr.toString());
 	}
+	
+	@Test
+	public void testList001() {
+		IExpr expr = Pods.parseInput("3,Sin(1),Pi,3/4,42,1.2", EvalEngine.get());
+		assertEquals("{3,Sin(1),Pi,3/4,42,1.2}", expr.toString());
+	}
 }

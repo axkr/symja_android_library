@@ -244,8 +244,8 @@ public class Pods {
 					"</body>\n" + //
 					"</html>";//
 
-	static void addSymjaPod(ArrayNode podsArray, IExpr inExpr, IExpr outExpr, String title, String scanner, int formats,
-			ObjectMapper mapper, EvalEngine engine) {
+	/** package private */ static void addSymjaPod(ArrayNode podsArray, IExpr inExpr, IExpr outExpr, String title, String scanner,
+			int formats, ObjectMapper mapper, EvalEngine engine) {
 		ArrayNode temp = mapper.createArrayNode();
 		ObjectNode subpodsResult = mapper.createObjectNode();
 		subpodsResult.put("title", title);
@@ -260,7 +260,7 @@ public class Pods {
 		createJSONFormat(node, engine, inExpr.toString(), outExpr, formats);
 	}
 
-	static void addSymjaPod(ArrayNode podsArray, IExpr inExpr, IExpr outExpr, String plaintext, String title,
+	/** package private */ static void addSymjaPod(ArrayNode podsArray, IExpr inExpr, IExpr outExpr, String plaintext, String title,
 			String scanner, int formats, ObjectMapper mapper, EvalEngine engine) {
 		ArrayNode temp = mapper.createArrayNode();
 		ObjectNode subpodsResult = mapper.createObjectNode();
@@ -276,7 +276,7 @@ public class Pods {
 		createJSONFormat(node, engine, plaintext, inExpr.toString(), outExpr, formats);
 	}
 
-	static void addPod(ArrayNode podsArray, IExpr inExpr, IExpr outExpr, String title, String scanner, int formats,
+	/** package private */ static void addPod(ArrayNode podsArray, IExpr inExpr, IExpr outExpr, String title, String scanner, int formats,
 			ObjectMapper mapper, EvalEngine engine) {
 		ArrayNode temp = mapper.createArrayNode();
 		ObjectNode subpodsResult = mapper.createObjectNode();
@@ -292,7 +292,7 @@ public class Pods {
 		createJSONFormat(node, engine, outExpr, formats);
 	}
 
-	static void addPod(ArrayNode podsArray, IExpr inExpr, IExpr outExpr, String plaintext, String title, String scanner,
+	/** package private */ static void addPod(ArrayNode podsArray, IExpr inExpr, IExpr outExpr, String plaintext, String title, String scanner,
 			int formats, ObjectMapper mapper, EvalEngine engine) {
 		ArrayNode temp = mapper.createArrayNode();
 		ObjectNode subpodsResult = mapper.createObjectNode();
@@ -362,7 +362,7 @@ public class Pods {
 		return intern;
 	}
 
-	private static int internFormat(int intern, String str) {
+	/** package private */ static int internFormat(int intern, String str) {
 		if (str.equals(HTML_STR)) {
 			intern |= HTML;
 		} else if (str.equals(PLAIN_STR)) {
@@ -474,38 +474,14 @@ public class Pods {
 						return messageJSON;
 					}
 				} else {
-					if (inExpr.isList()) {
-						IAST list = (IAST) inExpr;
-						boolean intList = list.forAll(x -> x.isInteger());
-						outExpr = inExpr;
-						if (intList) {
-							numpods += integerListPods(podsArray, inExpr, list, formats, mapper, engine);
-							resultStatistics(queryresult, error, numpods, podsArray);
-							return messageJSON;
-						}
-						if (list.argSize() == 2) {
-							VariablesSet varSet = new VariablesSet(list);
-							IAST variables = varSet.getVarList();
-							if (variables.argSize() == 1) {
-								IExpr arg1 = list.arg1();
-								IExpr arg2 = list.arg2();
-								if (arg1.isNumericFunction(varSet) && arg2.isNumericFunction(varSet)) {
-									boolean isPoly1 = arg1.isPolynomial(variables);
-									boolean isPoly2 = arg2.isPolynomial(variables);
-									if (isPoly1 && isPoly2) {
-										inExpr = F.PolynomialQuotientRemainder(arg1, arg2, variables.arg1());
-										podOut = engine.evaluate(inExpr);
-										addSymjaPod(podsArray, inExpr, podOut, "Polynomial quotient and remainder",
-												"Polynomial", formats, mapper, engine);
-										numpods++;
-									}
-								}
-							}
-						}
+					if (outExpr.isList()) {
+						IAST list = (IAST) outExpr;
+						ListPod listPod = new ListPod(list);
+						numpods += listPod.addJSON(mapper, podsArray, formats, engine);
 					}
 
-					if (inExpr.isSymbol() || inExpr.isString()) {
-						String inputWord = inExpr.toString();
+					if (outExpr.isSymbol() || outExpr.isString()) {
+						String inputWord = outExpr.toString();
 						StringBuilder buf = new StringBuilder();
 						if (Documentation.getMarkdown(buf, inputWord)) {
 							DocumentationPod.addDocumentationPod(mapper, podsArray, buf, formats);
@@ -741,6 +717,10 @@ public class Pods {
 						}
 					}
 				}
+				if (numpods > 0) {
+					resultStatistics(queryresult, error, numpods, podsArray);
+					return messageJSON;
+				}
 			}
 		} catch (RuntimeException rex) {
 			rex.printStackTrace();
@@ -885,7 +865,7 @@ public class Pods {
 			IASTAppendable result = F.ast(ast.head(), newSize[0], false);
 			ast.forEach(expr -> {
 				if (expr.isTimes() && ((IAST) expr).isEvalFlagOn(IAST.TIMES_PARSED_IMPLICIT)) {
-					result.appendArgs(flattenTimesRecursive( (IAST) expr).orElse((IAST) expr));
+					result.appendArgs(flattenTimesRecursive((IAST) expr).orElse((IAST) expr));
 				} else {
 					result.append(expr);
 				}
