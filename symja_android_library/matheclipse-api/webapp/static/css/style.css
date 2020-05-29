@@ -849,10 +849,10 @@ td .false {
   }
 }
 
-/* Tablets and base for desktops */
+/* Tablets and base for desktops old width: 600px */
 @media screen and (min-device-width: 768px) {
   .result, #footer {
-    width: 600px;
+    width: 100%;
     margin: 10px auto;
   }
 
