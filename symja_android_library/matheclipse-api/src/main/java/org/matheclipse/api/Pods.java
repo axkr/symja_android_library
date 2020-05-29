@@ -354,7 +354,7 @@ public class Pods {
 		}
 	}
 
-	private static int internFormat(String[] formats) {
+	public static int internFormat(String[] formats) {
 		int intern = 0;
 		for (String str : formats) {
 			intern = internFormat(intern, str);
@@ -385,9 +385,7 @@ public class Pods {
 		return intern;
 	}
 
-	public static ObjectNode createResult(String inputStr, String[] formatStrs) {
-		int formats = internFormat(formatStrs);
-
+	public static ObjectNode createResult(String inputStr, int formats) {
 		ObjectMapper mapper = new ObjectMapper();
 		ObjectNode messageJSON = mapper.createObjectNode();
 
@@ -707,7 +705,7 @@ public class Pods {
 							}
 							if (numpods == 1) {
 								// only Identity pod was appended
-								addSymjaPod(podsArray, expr, outExpr, "Evaluated result", "Expreesion", formats, mapper,
+								addSymjaPod(podsArray, expr, outExpr, "Evaluated result", "Expression", formats, mapper,
 										engine);
 								numpods++;
 							}

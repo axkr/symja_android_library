@@ -64,6 +64,6 @@ public class DocumentationPod implements IPod {
 		Parser parser = Parser.builder().extensions(EXTENSIONS).build();
 		Node document = parser.parse(markdownStr);
 		HtmlRenderer renderer = HtmlRenderer.builder().extensions(EXTENSIONS).build();
-		return renderer.render(document); // "<p>This is <em>Sparta</em></p>\n"
+		return renderer.render(document);  
 	}
 }

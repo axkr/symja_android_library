@@ -31,8 +31,8 @@ public class SymjaServer {
 
 			Map<String, Deque<String>> queryParameters = exchange.getQueryParameters();
 			String inputStr = SymjaServer.getParam(queryParameters, "input", "i", "");
-			String[] formats = SymjaServer.getParams(queryParameters, "format", "f", Pods.PLAIN_STR);
-
+			String[] formformatStrs = SymjaServer.getParams(queryParameters, "format", "f", Pods.PLAIN_STR);
+			int formats = Pods.internFormat(formformatStrs);
 			// exchange.getResponseSender().send(createJSONJavaScript(inExpr.toString()));
 			ObjectNode messageJSON = Pods.createResult(inputStr, formats);
 			final String jsonStr = messageJSON.toString();
@@ -54,7 +54,7 @@ public class SymjaServer {
 		Config.MAX_BIT_LENGTH = ((int) Short.MAX_VALUE) * 8;
 		EvalEngine.get().setPackageMode(true);
 		F.initSymbols(null, null, false);// new SymbolObserver(), false);
-	    
+
 		final APIHandler apiHandler = new APIHandler();
 		Undertow server = Undertow.builder().//
 				addHttpListener(8080, "localhost").//
