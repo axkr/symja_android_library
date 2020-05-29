@@ -566,7 +566,7 @@ public class TestPods {
 					"      \"subpods\" : [ {\r\n" + 
 					"        \"plaintext\" : \"17 is an odd number.\"\r\n" + 
 					"      }, {\r\n" + 
-					"        \"plaintext\" : \"17 the 7th prime number.\"\r\n" + 
+					"        \"plaintext\" : \"17 is the 7th prime number.\"\r\n" + 
 					"      } ]\r\n" + 
 					"    }, {\r\n" + 
 					"      \"title\" : \"Quadratic residues modulo 17\",\r\n" + 
@@ -1739,7 +1739,7 @@ public class TestPods {
 					"  \"queryresult\" : {\r\n" + 
 					"    \"success\" : \"true\",\r\n" + 
 					"    \"error\" : \"false\",\r\n" + 
-					"    \"numpods\" : 3,\r\n" + 
+					"    \"numpods\" : 6,\r\n" + 
 					"    \"version\" : \"0.1\",\r\n" + 
 					"    \"pods\" : [ {\r\n" + 
 					"      \"title\" : \"Input\",\r\n" + 
@@ -1750,6 +1750,36 @@ public class TestPods {
 					"        \"plaintext\" : \"{3,Sin(1),Pi,3/4,42,1.2}\",\r\n" + 
 					"        \"sinput\" : \"{3,Sin(1),Pi,3/4,42,1.2}\",\r\n" + 
 					"        \"latex\" : \"\\\\{3,\\\\sin (1),\\\\pi,\\\\frac{3}{4},42,1.2\\\\}\"\r\n" + 
+					"      } ]\r\n" + 
+					"    }, {\r\n" + 
+					"      \"title\" : \"Total\",\r\n" + 
+					"      \"scanner\" : \"List\",\r\n" + 
+					"      \"error\" : \"false\",\r\n" + 
+					"      \"numsubpods\" : 1,\r\n" + 
+					"      \"subpods\" : [ {\r\n" + 
+					"        \"plaintext\" : \"50.93306363839769\",\r\n" + 
+					"        \"sinput\" : \"Total({3.0,0.8414709848078965,3.141592653589793,0.75,42.0,1.2})\",\r\n" + 
+					"        \"latex\" : \"50.93306\"\r\n" + 
+					"      } ]\r\n" + 
+					"    }, {\r\n" + 
+					"      \"title\" : \"Vector length\",\r\n" + 
+					"      \"scanner\" : \"List\",\r\n" + 
+					"      \"error\" : \"false\",\r\n" + 
+					"      \"numsubpods\" : 1,\r\n" + 
+					"      \"subpods\" : [ {\r\n" + 
+					"        \"plaintext\" : \"42.256125920620825\",\r\n" + 
+					"        \"sinput\" : \"Norm({3.0,0.8414709848078965,3.141592653589793,0.75,42.0,1.2})\",\r\n" + 
+					"        \"latex\" : \"42.25613\"\r\n" + 
+					"      } ]\r\n" + 
+					"    }, {\r\n" + 
+					"      \"title\" : \"Normalized vector\",\r\n" + 
+					"      \"scanner\" : \"List\",\r\n" + 
+					"      \"error\" : \"false\",\r\n" + 
+					"      \"numsubpods\" : 1,\r\n" + 
+					"      \"subpods\" : [ {\r\n" + 
+					"        \"plaintext\" : \"{0.0709956233478567,0.01991358569852382,0.07434644291555152,0.017748905836964174,0.9939387268699937,0.028398249339142676}\",\r\n" + 
+					"        \"sinput\" : \"Normalize({3.0,0.8414709848078965,3.141592653589793,0.75,42.0,1.2})\",\r\n" + 
+					"        \"latex\" : \"\\\\{0.0709956,0.0199136,0.0743464,0.0177489,0.993939,0.0283982\\\\}\"\r\n" + 
 					"      } ]\r\n" + 
 					"    }, {\r\n" + 
 					"      \"title\" : \"Plot points\",\r\n" + 
