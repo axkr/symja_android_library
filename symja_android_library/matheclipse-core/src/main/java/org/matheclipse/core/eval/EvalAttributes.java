@@ -589,7 +589,11 @@ public class EvalAttributes {
 		for (int j = 1; j < listLength + 1; j++) {
 			final IASTAppendable subResult = F.ast(argHead, listSize - 1, true);
 			for (int i = 1; i < listSize; i++) {
-				if (ast.get(i).isAST(listHead)) {
+				if (listHead == F.List && //
+						ast.get(i).isList()) {
+					final IAST arg = (IAST) ast.get(i);
+					subResult.set(i, arg.get(j));
+				} else if (ast.get(i).isAST(listHead)) {
 					final IAST arg = (IAST) ast.get(i);
 					subResult.set(i, arg.get(j));
 				} else {
