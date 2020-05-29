@@ -340,7 +340,7 @@ public class Pods {
 					ObjectNode node = mapper.createObjectNode();
 					temp.add(node);
 					createJSONFormat(node, engine, F.NIL,
-							inExpr.toString() + " the " + primePi.toString() + "th prime number.", "", PLAIN);
+							inExpr.toString() + " is the " + primePi.toString() + "th prime number.", "", PLAIN);
 					numsubpods++;
 				} else {
 					ObjectNode node = mapper.createObjectNode();
