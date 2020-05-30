@@ -387,7 +387,7 @@ public class TensorFunctions {
 				if (n == Integer.MIN_VALUE) {
 					return F.NIL;
 				}
-				return F.List(n, indexes);
+				return F.tensorList(n, indexes);
 			}
 			return F.NIL;
 		}

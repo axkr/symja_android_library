@@ -897,6 +897,8 @@ public class F {
 	/** ContinuedFraction(number) - get the continued fraction representation of `number`. */
 	public final static IBuiltInSymbol ContinuedFraction = F.initFinalSymbol("ContinuedFraction", ID.ContinuedFraction);
 
+	/***/
+	public final static IBuiltInSymbol ContourPlot = F.initFinalSymbol("ContourPlot", ID.ContourPlot);
 	/**
 	 * Convergents({n1, n2, ...}) - return the list of convergents which represents the continued fraction list `{n1,
 	 * n2, ...}`.
@@ -2156,6 +2158,9 @@ public class F {
 
 	/** ListConvolve(kernel-list, tensor-list) - create the convolution of the `kernel-list` with `tensor-list`. */
 	public final static IBuiltInSymbol ListConvolve = F.initFinalSymbol("ListConvolve", ID.ListConvolve);
+
+	/***/
+	public final static IBuiltInSymbol ListContourPlot = F.initFinalSymbol("ListContourPlot", ID.ListContourPlot);
 
 	/** ListCorrelate(kernel-list, tensor-list) - create the correlation of the `kernel-list` with `tensor-list`. */
 	public final static IBuiltInSymbol ListCorrelate = F.initFinalSymbol("ListCorrelate", ID.ListCorrelate);
@@ -8255,7 +8260,7 @@ public class F {
 	 * @param numbers
 	 * @return
 	 */
-	public static IAST List(final int n, final Integer... numbers) {
+	public static IAST tensorList(final int n, final Integer... numbers) {
 		int nPositive = n;
 		if (n < 0) {
 			nPositive = -n;
@@ -8372,7 +8377,7 @@ public class F {
 	public static IAST ListConvolve(final IExpr a0, final IExpr a1) {
 		return new AST2(ListConvolve, a0, a1);
 	}
-	
+
 	public static IAST ListPlot(final IExpr a) {
 		return new AST1(ListPlot, a);
 	}
@@ -8403,7 +8408,7 @@ public class F {
 	public static IAST ListQ(final IExpr a) {
 		return new AST1(ListQ, a);
 	}
-	
+
 	/**
 	 * 
 	 * @param a0
@@ -8529,6 +8534,10 @@ public class F {
 		return new AST1(MathMLForm, a0);
 	}
 
+	public static IAST MatrixForm(final IExpr a0) {
+		return new AST1(MatrixForm, a0);
+	}
+	
 	public static IAST MatrixPower(final IExpr a0, final IExpr a1) {
 
 		return new AST2(MatrixPower, a0, a1);

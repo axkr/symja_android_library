@@ -720,10 +720,12 @@ public class SpecialFunctions {
 						aDouble = a.evalDouble();
 					} catch (ValidateException ve) {
 					}
-					if (Double.isNaN(sDouble) || Double.isNaN(aDouble)) {
+					if (aDouble < 0.0 || //
+							Double.isNaN(sDouble) || //
+							Double.isNaN(aDouble)) {
+						// TODO
 						// Complex sc = s.evalComplex();
 						// Complex ac = a.evalComplex();
-						//
 						// return F.complexNum(ZetaJS.hurwitzZeta(sc, ac));
 					} else {
 						if (aDouble >= 0 && sDouble != 1.0) {

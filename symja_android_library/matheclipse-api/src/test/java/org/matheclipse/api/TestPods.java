@@ -326,60 +326,105 @@ public class TestPods {
 		System.out.println(jsonStr);
 		if (s.contains("Windows")) {
 			assertEquals(jsonStr, //
-					"{\r\n" + "  \"queryresult\" : {\r\n" + "    \"success\" : \"true\",\r\n"
-							+ "    \"error\" : \"false\",\r\n" + "    \"numpods\" : 9,\r\n"
-							+ "    \"version\" : \"0.1\",\r\n" + "    \"pods\" : [ {\r\n"
-							+ "      \"title\" : \"Input\",\r\n" + "      \"scanner\" : \"Identity\",\r\n"
-							+ "      \"error\" : \"false\",\r\n" + "      \"numsubpods\" : 1,\r\n"
-							+ "      \"subpods\" : [ {\r\n" + "        \"plaintext\" : \"17\",\r\n"
-							+ "        \"sinput\" : \"17\",\r\n" + "        \"latex\" : \"17\"\r\n" + "      } ]\r\n"
-							+ "    }, {\r\n" + "      \"title\" : \"Number name\",\r\n"
-							+ "      \"scanner\" : \"Integer\",\r\n" + "      \"error\" : \"false\",\r\n"
-							+ "      \"numsubpods\" : 1,\r\n" + "      \"subpods\" : [ {\r\n"
-							+ "        \"plaintext\" : \"seventeen\",\r\n"
-							+ "        \"sinput\" : \"IntegerName(17,Words)\",\r\n"
-							+ "        \"latex\" : \"\\\\textnormal{seventeen}\"\r\n" + "      } ]\r\n" + "    }, {\r\n"
-							+ "      \"title\" : \"Roman numerals\",\r\n" + "      \"scanner\" : \"Integer\",\r\n"
-							+ "      \"error\" : \"false\",\r\n" + "      \"numsubpods\" : 1,\r\n"
-							+ "      \"subpods\" : [ {\r\n" + "        \"plaintext\" : \"XVII\",\r\n"
-							+ "        \"sinput\" : \"RomanNumeral(17)\",\r\n"
-							+ "        \"latex\" : \"\\\\textnormal{XVII}\"\r\n" + "      } ]\r\n" + "    }, {\r\n"
-							+ "      \"title\" : \"Binary form\",\r\n" + "      \"scanner\" : \"Integer\",\r\n"
-							+ "      \"error\" : \"false\",\r\n" + "      \"numsubpods\" : 1,\r\n"
-							+ "      \"subpods\" : [ {\r\n" + "        \"plaintext\" : \"10001_2\",\r\n"
-							+ "        \"sinput\" : \"BaseForm(17,2)\",\r\n"
-							+ "        \"latex\" : \"{\\\\textnormal{10001}}_{2}\"\r\n" + "      } ]\r\n"
-							+ "    }, {\r\n" + "      \"title\" : \"Prime factorization\",\r\n"
-							+ "      \"scanner\" : \"Integer\",\r\n" + "      \"error\" : \"false\",\r\n"
-							+ "      \"numsubpods\" : 1,\r\n" + "      \"subpods\" : [ {\r\n"
-							+ "        \"plaintext\" : \"17 is a prime number.\",\r\n"
-							+ "        \"sinput\" : \"FactorInteger(17)\",\r\n"
-							+ "        \"latex\" : \"\\\\begin{pmatrix}\\n 17 & 1 \\\\\\\\\\n\\\\end{pmatrix}\"\r\n"
-							+ "      } ]\r\n" + "    }, {\r\n"
-							+ "      \"title\" : \"Residues modulo small integers\",\r\n"
-							+ "      \"scanner\" : \"Integer\",\r\n" + "      \"error\" : \"false\",\r\n"
-							+ "      \"numsubpods\" : 1,\r\n" + "      \"subpods\" : [ {\r\n"
-							+ "        \"plaintext\" : \"m | 2 | 3 | 4 | 5 | 6 | 7 | 8 | 9\\n17 mod m | 1 | 2 | 1 | 2 | 5 | 3 | 1 | 8\",\r\n"
-							+ "        \"sinput\" : \"Mod(17,{2,3,4,5,6,7,8,9})\",\r\n"
-							+ "        \"latex\" : \"\\\\{1,2,1,2,5,3,1,8\\\\}\"\r\n" + "      } ]\r\n" + "    }, {\r\n"
-							+ "      \"title\" : \"Properties\",\r\n" + "      \"scanner\" : \"Integer\",\r\n"
-							+ "      \"error\" : \"false\",\r\n" + "      \"numsubpods\" : 2,\r\n"
-							+ "      \"subpods\" : [ {\r\n" + "        \"plaintext\" : \"17 is an odd number.\"\r\n"
-							+ "      }, {\r\n" + "        \"plaintext\" : \"17 is the 7th prime number.\"\r\n"
-							+ "      } ]\r\n" + "    }, {\r\n"
-							+ "      \"title\" : \"Quadratic residues modulo 17\",\r\n"
-							+ "      \"scanner\" : \"Integer\",\r\n" + "      \"error\" : \"false\",\r\n"
-							+ "      \"numsubpods\" : 1,\r\n" + "      \"subpods\" : [ {\r\n"
-							+ "        \"plaintext\" : \"{0,1,2,4,8,9,13,15,16}\",\r\n"
-							+ "        \"sinput\" : \"Union(PowerMod(Range(0,17/2),2,17))\",\r\n"
-							+ "        \"latex\" : \"\\\\{0,1,2,4,8,9,13,15,16\\\\}\"\r\n" + "      } ]\r\n"
-							+ "    }, {\r\n" + "      \"title\" : \"Primitive roots modulo 17\",\r\n"
-							+ "      \"scanner\" : \"Integer\",\r\n" + "      \"error\" : \"false\",\r\n"
-							+ "      \"numsubpods\" : 1,\r\n" + "      \"subpods\" : [ {\r\n"
-							+ "        \"plaintext\" : \"{3,5,6,7,10,11,12,14}\",\r\n"
-							+ "        \"sinput\" : \"Select(Range(16),MultiplicativeOrder(#1,17)==EulerPhi(17)&)\",\r\n"
-							+ "        \"latex\" : \"\\\\{3,5,6,7,10,11,12,14\\\\}\"\r\n" + "      } ]\r\n"
-							+ "    } ]\r\n" + "  }\r\n" + "}");//
+					"{\r\n" + 
+					"  \"queryresult\" : {\r\n" + 
+					"    \"success\" : \"true\",\r\n" + 
+					"    \"error\" : \"false\",\r\n" + 
+					"    \"numpods\" : 9,\r\n" + 
+					"    \"version\" : \"0.1\",\r\n" + 
+					"    \"pods\" : [ {\r\n" + 
+					"      \"title\" : \"Input\",\r\n" + 
+					"      \"scanner\" : \"Identity\",\r\n" + 
+					"      \"error\" : \"false\",\r\n" + 
+					"      \"numsubpods\" : 1,\r\n" + 
+					"      \"subpods\" : [ {\r\n" + 
+					"        \"plaintext\" : \"17\",\r\n" + 
+					"        \"sinput\" : \"17\",\r\n" + 
+					"        \"latex\" : \"17\"\r\n" + 
+					"      } ]\r\n" + 
+					"    }, {\r\n" + 
+					"      \"title\" : \"Number name\",\r\n" + 
+					"      \"scanner\" : \"Integer\",\r\n" + 
+					"      \"error\" : \"false\",\r\n" + 
+					"      \"numsubpods\" : 1,\r\n" + 
+					"      \"subpods\" : [ {\r\n" + 
+					"        \"plaintext\" : \"seventeen\",\r\n" + 
+					"        \"sinput\" : \"IntegerName(17,Words)\",\r\n" + 
+					"        \"latex\" : \"\\\\textnormal{seventeen}\"\r\n" + 
+					"      } ]\r\n" + 
+					"    }, {\r\n" + 
+					"      \"title\" : \"Roman numerals\",\r\n" + 
+					"      \"scanner\" : \"Integer\",\r\n" + 
+					"      \"error\" : \"false\",\r\n" + 
+					"      \"numsubpods\" : 1,\r\n" + 
+					"      \"subpods\" : [ {\r\n" + 
+					"        \"plaintext\" : \"XVII\",\r\n" + 
+					"        \"sinput\" : \"RomanNumeral(17)\",\r\n" + 
+					"        \"latex\" : \"\\\\textnormal{XVII}\"\r\n" + 
+					"      } ]\r\n" + 
+					"    }, {\r\n" + 
+					"      \"title\" : \"Binary form\",\r\n" + 
+					"      \"scanner\" : \"Integer\",\r\n" + 
+					"      \"error\" : \"false\",\r\n" + 
+					"      \"numsubpods\" : 1,\r\n" + 
+					"      \"subpods\" : [ {\r\n" + 
+					"        \"plaintext\" : \"10001_2\",\r\n" + 
+					"        \"sinput\" : \"BaseForm(17,2)\",\r\n" + 
+					"        \"latex\" : \"{\\\\textnormal{10001}}_{2}\"\r\n" + 
+					"      } ]\r\n" + 
+					"    }, {\r\n" + 
+					"      \"title\" : \"Prime factorization\",\r\n" + 
+					"      \"scanner\" : \"Integer\",\r\n" + 
+					"      \"error\" : \"false\",\r\n" + 
+					"      \"numsubpods\" : 1,\r\n" + 
+					"      \"subpods\" : [ {\r\n" + 
+					"        \"plaintext\" : \"17 is a prime number.\",\r\n" + 
+					"        \"sinput\" : \"FactorInteger(17)\",\r\n" + 
+					"        \"latex\" : \"\\\\left(\\n\\\\begin{array}{cc}\\n17 & 1 \\\\\\n\\\\\\\\\\n\\\\end{array}\\n\\\\right) \"\r\n" + 
+					"      } ]\r\n" + 
+					"    }, {\r\n" + 
+					"      \"title\" : \"Residues modulo small integers\",\r\n" + 
+					"      \"scanner\" : \"Integer\",\r\n" + 
+					"      \"error\" : \"false\",\r\n" + 
+					"      \"numsubpods\" : 1,\r\n" + 
+					"      \"subpods\" : [ {\r\n" + 
+					"        \"plaintext\" : \"m | 2 | 3 | 4 | 5 | 6 | 7 | 8 | 9\\n17 mod m | 1 | 2 | 1 | 2 | 5 | 3 | 1 | 8\",\r\n" + 
+					"        \"sinput\" : \"Mod(17,{2,3,4,5,6,7,8,9})\",\r\n" + 
+					"        \"latex\" : \"\\\\{1,2,1,2,5,3,1,8\\\\}\"\r\n" + 
+					"      } ]\r\n" + 
+					"    }, {\r\n" + 
+					"      \"title\" : \"Properties\",\r\n" + 
+					"      \"scanner\" : \"Integer\",\r\n" + 
+					"      \"error\" : \"false\",\r\n" + 
+					"      \"numsubpods\" : 2,\r\n" + 
+					"      \"subpods\" : [ {\r\n" + 
+					"        \"plaintext\" : \"17 is an odd number.\"\r\n" + 
+					"      }, {\r\n" + 
+					"        \"plaintext\" : \"17 is the 7th prime number.\"\r\n" + 
+					"      } ]\r\n" + 
+					"    }, {\r\n" + 
+					"      \"title\" : \"Quadratic residues modulo 17\",\r\n" + 
+					"      \"scanner\" : \"Integer\",\r\n" + 
+					"      \"error\" : \"false\",\r\n" + 
+					"      \"numsubpods\" : 1,\r\n" + 
+					"      \"subpods\" : [ {\r\n" + 
+					"        \"plaintext\" : \"{0,1,2,4,8,9,13,15,16}\",\r\n" + 
+					"        \"sinput\" : \"Union(PowerMod(Range(0,17/2),2,17))\",\r\n" + 
+					"        \"latex\" : \"\\\\{0,1,2,4,8,9,13,15,16\\\\}\"\r\n" + 
+					"      } ]\r\n" + 
+					"    }, {\r\n" + 
+					"      \"title\" : \"Primitive roots modulo 17\",\r\n" + 
+					"      \"scanner\" : \"Integer\",\r\n" + 
+					"      \"error\" : \"false\",\r\n" + 
+					"      \"numsubpods\" : 1,\r\n" + 
+					"      \"subpods\" : [ {\r\n" + 
+					"        \"plaintext\" : \"{3,5,6,7,10,11,12,14}\",\r\n" + 
+					"        \"sinput\" : \"Select(Range(16),MultiplicativeOrder(#1,17)==EulerPhi(17)&)\",\r\n" + 
+					"        \"latex\" : \"\\\\{3,5,6,7,10,11,12,14\\\\}\"\r\n" + 
+					"      } ]\r\n" + 
+					"    } ]\r\n" + 
+					"  }\r\n" + 
+					"}");//
 		}
 	}
 
@@ -931,48 +976,83 @@ public class TestPods {
 		System.out.println(jsonStr);
 		if (s.contains("Windows")) {
 			assertEquals(jsonStr, //
-					"{\r\n" + "  \"queryresult\" : {\r\n" + "    \"success\" : \"true\",\r\n"
-							+ "    \"error\" : \"false\",\r\n" + "    \"numpods\" : 7,\r\n"
-							+ "    \"version\" : \"0.1\",\r\n" + "    \"pods\" : [ {\r\n"
-							+ "      \"title\" : \"Input\",\r\n" + "      \"scanner\" : \"Identity\",\r\n"
-							+ "      \"error\" : \"false\",\r\n" + "      \"numsubpods\" : 1,\r\n"
-							+ "      \"subpods\" : [ {\r\n" + "        \"plaintext\" : \"-1+2^32\",\r\n"
-							+ "        \"sinput\" : \"-1+2^32\",\r\n" + "        \"latex\" : \"-1+{2}^{32}\"\r\n"
-							+ "      } ]\r\n" + "    }, {\r\n" + "      \"title\" : \"Result\",\r\n"
-							+ "      \"scanner\" : \"Simplification\",\r\n" + "      \"error\" : \"false\",\r\n"
-							+ "      \"numsubpods\" : 1,\r\n" + "      \"subpods\" : [ {\r\n"
-							+ "        \"plaintext\" : \"4294967295\",\r\n" + "        \"sinput\" : \"-1+2^32\",\r\n"
-							+ "        \"latex\" : \"4294967295\"\r\n" + "      } ]\r\n" + "    }, {\r\n"
-							+ "      \"title\" : \"Number name\",\r\n" + "      \"scanner\" : \"Integer\",\r\n"
-							+ "      \"error\" : \"false\",\r\n" + "      \"numsubpods\" : 1,\r\n"
-							+ "      \"subpods\" : [ {\r\n"
-							+ "        \"plaintext\" : \"four billion two hundred ninety-four million nine hundred sixty-seven thousand two hundred ninety-five\",\r\n"
-							+ "        \"sinput\" : \"IntegerName(4294967295,Words)\",\r\n"
-							+ "        \"latex\" : \"\\\\textnormal{four billion two hundred ninety-four million nine hundred sixty-seven thousand two hundred ninety-five}\"\r\n"
-							+ "      } ]\r\n" + "    }, {\r\n" + "      \"title\" : \"Binary form\",\r\n"
-							+ "      \"scanner\" : \"Integer\",\r\n" + "      \"error\" : \"false\",\r\n"
-							+ "      \"numsubpods\" : 1,\r\n" + "      \"subpods\" : [ {\r\n"
-							+ "        \"plaintext\" : \"11111111111111111111111111111111_2\",\r\n"
-							+ "        \"sinput\" : \"BaseForm(4294967295,2)\",\r\n"
-							+ "        \"latex\" : \"{\\\\textnormal{11111111111111111111111111111111}}_{2}\"\r\n"
-							+ "      } ]\r\n" + "    }, {\r\n" + "      \"title\" : \"Prime factorization\",\r\n"
-							+ "      \"scanner\" : \"Integer\",\r\n" + "      \"error\" : \"false\",\r\n"
-							+ "      \"numsubpods\" : 1,\r\n" + "      \"subpods\" : [ {\r\n"
-							+ "        \"plaintext\" : \"3*5*17*257*65537\",\r\n"
-							+ "        \"sinput\" : \"FactorInteger(4294967295)\",\r\n"
-							+ "        \"latex\" : \"\\\\begin{pmatrix}\\n 3 & 1 \\\\\\\\\\n 5 & 1 \\\\\\\\\\n 17 & 1 \\\\\\\\\\n 257 & 1 \\\\\\\\\\n 65537 & 1 \\\\\\\\\\n\\\\end{pmatrix}\"\r\n"
-							+ "      } ]\r\n" + "    }, {\r\n"
-							+ "      \"title\" : \"Residues modulo small integers\",\r\n"
-							+ "      \"scanner\" : \"Integer\",\r\n" + "      \"error\" : \"false\",\r\n"
-							+ "      \"numsubpods\" : 1,\r\n" + "      \"subpods\" : [ {\r\n"
-							+ "        \"plaintext\" : \"m | 2 | 3 | 4 | 5 | 6 | 7 | 8 | 9\\n4294967295 mod m | 1 | 0 | 3 | 0 | 3 | 3 | 7 | 3\",\r\n"
-							+ "        \"sinput\" : \"Mod(4294967295,{2,3,4,5,6,7,8,9})\",\r\n"
-							+ "        \"latex\" : \"\\\\{1,0,3,0,3,3,7,3\\\\}\"\r\n" + "      } ]\r\n" + "    }, {\r\n"
-							+ "      \"title\" : \"Properties\",\r\n" + "      \"scanner\" : \"Integer\",\r\n"
-							+ "      \"error\" : \"false\",\r\n" + "      \"numsubpods\" : 1,\r\n"
-							+ "      \"subpods\" : [ {\r\n"
-							+ "        \"plaintext\" : \"4294967295 is an odd number.\"\r\n" + "      } ]\r\n"
-							+ "    } ]\r\n" + "  }\r\n" + "}");//
+					"{\r\n" + 
+					"  \"queryresult\" : {\r\n" + 
+					"    \"success\" : \"true\",\r\n" + 
+					"    \"error\" : \"false\",\r\n" + 
+					"    \"numpods\" : 7,\r\n" + 
+					"    \"version\" : \"0.1\",\r\n" + 
+					"    \"pods\" : [ {\r\n" + 
+					"      \"title\" : \"Input\",\r\n" + 
+					"      \"scanner\" : \"Identity\",\r\n" + 
+					"      \"error\" : \"false\",\r\n" + 
+					"      \"numsubpods\" : 1,\r\n" + 
+					"      \"subpods\" : [ {\r\n" + 
+					"        \"plaintext\" : \"-1+2^32\",\r\n" + 
+					"        \"sinput\" : \"-1+2^32\",\r\n" + 
+					"        \"latex\" : \"-1+{2}^{32}\"\r\n" + 
+					"      } ]\r\n" + 
+					"    }, {\r\n" + 
+					"      \"title\" : \"Result\",\r\n" + 
+					"      \"scanner\" : \"Simplification\",\r\n" + 
+					"      \"error\" : \"false\",\r\n" + 
+					"      \"numsubpods\" : 1,\r\n" + 
+					"      \"subpods\" : [ {\r\n" + 
+					"        \"plaintext\" : \"4294967295\",\r\n" + 
+					"        \"sinput\" : \"-1+2^32\",\r\n" + 
+					"        \"latex\" : \"4294967295\"\r\n" + 
+					"      } ]\r\n" + 
+					"    }, {\r\n" + 
+					"      \"title\" : \"Number name\",\r\n" + 
+					"      \"scanner\" : \"Integer\",\r\n" + 
+					"      \"error\" : \"false\",\r\n" + 
+					"      \"numsubpods\" : 1,\r\n" + 
+					"      \"subpods\" : [ {\r\n" + 
+					"        \"plaintext\" : \"four billion two hundred ninety-four million nine hundred sixty-seven thousand two hundred ninety-five\",\r\n" + 
+					"        \"sinput\" : \"IntegerName(4294967295,Words)\",\r\n" + 
+					"        \"latex\" : \"\\\\textnormal{four billion two hundred ninety-four million nine hundred sixty-seven thousand two hundred ninety-five}\"\r\n" + 
+					"      } ]\r\n" + 
+					"    }, {\r\n" + 
+					"      \"title\" : \"Binary form\",\r\n" + 
+					"      \"scanner\" : \"Integer\",\r\n" + 
+					"      \"error\" : \"false\",\r\n" + 
+					"      \"numsubpods\" : 1,\r\n" + 
+					"      \"subpods\" : [ {\r\n" + 
+					"        \"plaintext\" : \"11111111111111111111111111111111_2\",\r\n" + 
+					"        \"sinput\" : \"BaseForm(4294967295,2)\",\r\n" + 
+					"        \"latex\" : \"{\\\\textnormal{11111111111111111111111111111111}}_{2}\"\r\n" + 
+					"      } ]\r\n" + 
+					"    }, {\r\n" + 
+					"      \"title\" : \"Prime factorization\",\r\n" + 
+					"      \"scanner\" : \"Integer\",\r\n" + 
+					"      \"error\" : \"false\",\r\n" + 
+					"      \"numsubpods\" : 1,\r\n" + 
+					"      \"subpods\" : [ {\r\n" + 
+					"        \"plaintext\" : \"3*5*17*257*65537\",\r\n" + 
+					"        \"sinput\" : \"FactorInteger(4294967295)\",\r\n" + 
+					"        \"latex\" : \"\\\\left(\\n\\\\begin{array}{cc}\\n3 & 1 \\\\\\\\\\n5 & 1 \\\\\\\\\\n17 & 1 \\\\\\\\\\n257 & 1 \\\\\\\\\\n65537 & 1 \\\\\\n\\\\\\\\\\n\\\\end{array}\\n\\\\right) \"\r\n" + 
+					"      } ]\r\n" + 
+					"    }, {\r\n" + 
+					"      \"title\" : \"Residues modulo small integers\",\r\n" + 
+					"      \"scanner\" : \"Integer\",\r\n" + 
+					"      \"error\" : \"false\",\r\n" + 
+					"      \"numsubpods\" : 1,\r\n" + 
+					"      \"subpods\" : [ {\r\n" + 
+					"        \"plaintext\" : \"m | 2 | 3 | 4 | 5 | 6 | 7 | 8 | 9\\n4294967295 mod m | 1 | 0 | 3 | 0 | 3 | 3 | 7 | 3\",\r\n" + 
+					"        \"sinput\" : \"Mod(4294967295,{2,3,4,5,6,7,8,9})\",\r\n" + 
+					"        \"latex\" : \"\\\\{1,0,3,0,3,3,7,3\\\\}\"\r\n" + 
+					"      } ]\r\n" + 
+					"    }, {\r\n" + 
+					"      \"title\" : \"Properties\",\r\n" + 
+					"      \"scanner\" : \"Integer\",\r\n" + 
+					"      \"error\" : \"false\",\r\n" + 
+					"      \"numsubpods\" : 1,\r\n" + 
+					"      \"subpods\" : [ {\r\n" + 
+					"        \"plaintext\" : \"4294967295 is an odd number.\"\r\n" + 
+					"      } ]\r\n" + 
+					"    } ]\r\n" + 
+					"  }\r\n" + 
+					"}");//
 		}
 	}
 
@@ -984,35 +1064,55 @@ public class TestPods {
 		System.out.println(jsonStr);
 		if (s.contains("Windows")) {
 			assertEquals(jsonStr, //
-					"{\r\n" + "  \"queryresult\" : {\r\n" + "    \"success\" : \"true\",\r\n"
-							+ "    \"error\" : \"false\",\r\n" + "    \"numpods\" : 4,\r\n"
-							+ "    \"version\" : \"0.1\",\r\n" + "    \"pods\" : [ {\r\n"
-							+ "      \"title\" : \"Input\",\r\n" + "      \"scanner\" : \"Identity\",\r\n"
-							+ "      \"error\" : \"false\",\r\n" + "      \"numsubpods\" : 1,\r\n"
-							+ "      \"subpods\" : [ {\r\n" + "        \"plaintext\" : \"NormalDistribution(a,b)\",\r\n"
-							+ "        \"sinput\" : \"NormalDistribution(a,b)\",\r\n"
-							+ "        \"latex\" : \"\\\\text{NormalDistribution}(a,b)\"\r\n" + "      } ]\r\n"
-							+ "    }, {\r\n" + "      \"title\" : \"Statistical properties\",\r\n"
-							+ "      \"scanner\" : \"Statistics\",\r\n" + "      \"error\" : \"false\",\r\n"
-							+ "      \"numsubpods\" : 1,\r\n" + "      \"subpods\" : [ {\r\n"
-							+ "        \"plaintext\" : \"mean | a\\nstandard deviation | b\\nvariance | b^2\\nskewness | 0\",\r\n"
-							+ "        \"sinput\" : \"{{mean,a},\\n {standard deviation,b},\\n {variance,b^2},\\n {skewness,0}}\",\r\n"
-							+ "        \"latex\" : \"\\\\begin{pmatrix}\\n \\\\textnormal{mean} & a \\\\\\\\\\n \\\\textnormal{standard deviation} & b \\\\\\\\\\n \\\\textnormal{variance} & {b}^{2} \\\\\\\\\\n \\\\textnormal{skewness} & 0 \\\\\\\\\\n\\\\end{pmatrix}\"\r\n"
-							+ "      } ]\r\n" + "    }, {\r\n"
-							+ "      \"title\" : \"Probability density function (PDF)\",\r\n"
-							+ "      \"scanner\" : \"Statistics\",\r\n" + "      \"error\" : \"false\",\r\n"
-							+ "      \"numsubpods\" : 1,\r\n" + "      \"subpods\" : [ {\r\n"
-							+ "        \"plaintext\" : \"1/(b*E^((-a+x)^2/(2*b^2))*Sqrt(2*Pi))\",\r\n"
-							+ "        \"sinput\" : \"PDF(NormalDistribution(a,b),x)\",\r\n"
-							+ "        \"latex\" : \"\\\\frac{1}{b\\\\,{e}^{\\\\frac{{\\\\left(  - a+x\\\\right) }^{2}}{2\\\\,{b}^{2}}}\\\\,\\\\sqrt{\\\\left( 2\\\\,\\\\pi\\\\right) }}\"\r\n"
-							+ "      } ]\r\n" + "    }, {\r\n"
-							+ "      \"title\" : \"Cumulative distribution function (CDF)\",\r\n"
-							+ "      \"scanner\" : \"Statistics\",\r\n" + "      \"error\" : \"false\",\r\n"
-							+ "      \"numsubpods\" : 1,\r\n" + "      \"subpods\" : [ {\r\n"
-							+ "        \"plaintext\" : \"Erfc((a-x)/(Sqrt(2)*b))/2\",\r\n"
-							+ "        \"sinput\" : \"CDF(NormalDistribution(a,b),x)\",\r\n"
-							+ "        \"latex\" : \"\\\\frac{\\\\text{Erfc}(\\\\frac{a - x}{\\\\sqrt{2}\\\\,b})}{2}\"\r\n"
-							+ "      } ]\r\n" + "    } ]\r\n" + "  }\r\n" + "}");//
+					"{\r\n" + 
+					"  \"queryresult\" : {\r\n" + 
+					"    \"success\" : \"true\",\r\n" + 
+					"    \"error\" : \"false\",\r\n" + 
+					"    \"numpods\" : 4,\r\n" + 
+					"    \"version\" : \"0.1\",\r\n" + 
+					"    \"pods\" : [ {\r\n" + 
+					"      \"title\" : \"Input\",\r\n" + 
+					"      \"scanner\" : \"Identity\",\r\n" + 
+					"      \"error\" : \"false\",\r\n" + 
+					"      \"numsubpods\" : 1,\r\n" + 
+					"      \"subpods\" : [ {\r\n" + 
+					"        \"plaintext\" : \"NormalDistribution(a,b)\",\r\n" + 
+					"        \"sinput\" : \"NormalDistribution(a,b)\",\r\n" + 
+					"        \"latex\" : \"\\\\text{NormalDistribution}(a,b)\"\r\n" + 
+					"      } ]\r\n" + 
+					"    }, {\r\n" + 
+					"      \"title\" : \"Statistical properties\",\r\n" + 
+					"      \"scanner\" : \"Statistics\",\r\n" + 
+					"      \"error\" : \"false\",\r\n" + 
+					"      \"numsubpods\" : 1,\r\n" + 
+					"      \"subpods\" : [ {\r\n" + 
+					"        \"plaintext\" : \"mean | a\\nstandard deviation | b\\nvariance | b^2\\nskewness | 0\",\r\n" + 
+					"        \"sinput\" : \"{{mean,a},\\n {standard deviation,b},\\n {variance,b^2},\\n {skewness,0}}\",\r\n" + 
+					"        \"latex\" : \"\\\\left(\\n\\\\begin{array}{cc}\\n\\\\textnormal{mean} & a \\\\\\\\\\n\\\\textnormal{standard deviation} & b \\\\\\\\\\n\\\\textnormal{variance} & {b}^{2} \\\\\\\\\\n\\\\textnormal{skewness} & 0 \\\\\\n\\\\\\\\\\n\\\\end{array}\\n\\\\right) \"\r\n" + 
+					"      } ]\r\n" + 
+					"    }, {\r\n" + 
+					"      \"title\" : \"Probability density function (PDF)\",\r\n" + 
+					"      \"scanner\" : \"Statistics\",\r\n" + 
+					"      \"error\" : \"false\",\r\n" + 
+					"      \"numsubpods\" : 1,\r\n" + 
+					"      \"subpods\" : [ {\r\n" + 
+					"        \"plaintext\" : \"1/(b*E^((-a+x)^2/(2*b^2))*Sqrt(2*Pi))\",\r\n" + 
+					"        \"sinput\" : \"PDF(NormalDistribution(a,b),x)\",\r\n" + 
+					"        \"latex\" : \"\\\\frac{1}{b\\\\,{e}^{\\\\frac{{\\\\left(  - a+x\\\\right) }^{2}}{2\\\\,{b}^{2}}}\\\\,\\\\sqrt{\\\\left( 2\\\\,\\\\pi\\\\right) }}\"\r\n" + 
+					"      } ]\r\n" + 
+					"    }, {\r\n" + 
+					"      \"title\" : \"Cumulative distribution function (CDF)\",\r\n" + 
+					"      \"scanner\" : \"Statistics\",\r\n" + 
+					"      \"error\" : \"false\",\r\n" + 
+					"      \"numsubpods\" : 1,\r\n" + 
+					"      \"subpods\" : [ {\r\n" + 
+					"        \"plaintext\" : \"Erfc((a-x)/(Sqrt(2)*b))/2\",\r\n" + 
+					"        \"sinput\" : \"CDF(NormalDistribution(a,b),x)\",\r\n" + 
+					"        \"latex\" : \"\\\\frac{\\\\text{Erfc}(\\\\frac{a - x}{\\\\sqrt{2}\\\\,b})}{2}\"\r\n" + 
+					"      } ]\r\n" + 
+					"    } ]\r\n" + 
+					"  }\r\n" + 
+					"}");//
 		}
 	}
 
@@ -1024,37 +1124,35 @@ public class TestPods {
 		System.out.println(jsonStr);
 		if (s.contains("Windows")) {
 			assertEquals(jsonStr, //
-					"{\r\n" + //
-							"  \"queryresult\" : {\r\n" + //
-							"    \"success\" : \"true\",\r\n" + //
-							"    \"error\" : \"false\",\r\n" + //
-							"    \"numpods\" : 2,\r\n" + //
-							"    \"version\" : \"0.1\",\r\n" + //
-							"    \"pods\" : [ {\r\n" + //
-							"      \"title\" : \"Input\",\r\n" + //
-							"      \"scanner\" : \"Identity\",\r\n" + //
-							"      \"error\" : \"false\",\r\n" + //
-							"      \"numsubpods\" : 1,\r\n" + //
-							"      \"subpods\" : [ {\r\n" + //
-							"        \"plaintext\" : \"(a&&b)||c\",\r\n" + //
-							"        \"sinput\" : \"(a&&b)||c\",\r\n" + //
-							"        \"latex\" : \"\\\\left( a \\\\land b\\\\right)  \\\\lor c\"\r\n" + //
-							"      } ]\r\n" + //
-							"    }, {\r\n" + //
-							"      \"title\" : \"Truth table\",\r\n" + //
-							"      \"scanner\" : \"Boolean\",\r\n" + //
-							"      \"error\" : \"false\",\r\n" + //
-							"      \"numsubpods\" : 1,\r\n" + //
-							"      \"subpods\" : [ {\r\n" + //
-							"        \"plaintext\" : \"a | b | c | (a&&b)||c\\nT | T | T | T\\nT | T | F | T\\nT | F | T | T\\nT | F | F | F\\nF | T | T | T\\nF | T | F | F\\nF | F | T | T\\nF | F | F | F\",\r\n"
-							+ //
-							"        \"sinput\" : \"BooleanTable(Append({a,b,c},(a&&b)||c),{a,b,c})\",\r\n" + //
-							"        \"latex\" : \"\\\\begin{pmatrix}\\n True & True & True & True \\\\\\\\\\n True & True & False & True \\\\\\\\\\n True & False & True & True \\\\\\\\\\n True & False & False & False \\\\\\\\\\n False & True & True & True \\\\\\\\\\n False & True & False & False \\\\\\\\\\n False & False & True & True \\\\\\\\\\n False & False & False & False \\\\\\\\\\n\\\\end{pmatrix}\"\r\n"
-							+ //
-							"      } ]\r\n" + //
-							"    } ]\r\n" + //
-							"  }\r\n" + //
-							"}");//
+					"{\r\n" + 
+					"  \"queryresult\" : {\r\n" + 
+					"    \"success\" : \"true\",\r\n" + 
+					"    \"error\" : \"false\",\r\n" + 
+					"    \"numpods\" : 2,\r\n" + 
+					"    \"version\" : \"0.1\",\r\n" + 
+					"    \"pods\" : [ {\r\n" + 
+					"      \"title\" : \"Input\",\r\n" + 
+					"      \"scanner\" : \"Identity\",\r\n" + 
+					"      \"error\" : \"false\",\r\n" + 
+					"      \"numsubpods\" : 1,\r\n" + 
+					"      \"subpods\" : [ {\r\n" + 
+					"        \"plaintext\" : \"(a&&b)||c\",\r\n" + 
+					"        \"sinput\" : \"(a&&b)||c\",\r\n" + 
+					"        \"latex\" : \"\\\\left( a \\\\land b\\\\right)  \\\\lor c\"\r\n" + 
+					"      } ]\r\n" + 
+					"    }, {\r\n" + 
+					"      \"title\" : \"Truth table\",\r\n" + 
+					"      \"scanner\" : \"Boolean\",\r\n" + 
+					"      \"error\" : \"false\",\r\n" + 
+					"      \"numsubpods\" : 1,\r\n" + 
+					"      \"subpods\" : [ {\r\n" + 
+					"        \"plaintext\" : \"a | b | c | (a&&b)||c\\nT | T | T | T\\nT | T | F | T\\nT | F | T | T\\nT | F | F | F\\nF | T | T | T\\nF | T | F | F\\nF | F | T | T\\nF | F | F | F\",\r\n" + 
+					"        \"sinput\" : \"BooleanTable(Append({a,b,c},(a&&b)||c),{a,b,c})\",\r\n" + 
+					"        \"latex\" : \"\\\\left(\\n\\\\begin{array}{cccc}\\nTrue & True & True & True \\\\\\\\\\nTrue & True & False & True \\\\\\\\\\nTrue & False & True & True \\\\\\\\\\nTrue & False & False & False \\\\\\\\\\nFalse & True & True & True \\\\\\\\\\nFalse & True & False & False \\\\\\\\\\nFalse & False & True & True \\\\\\\\\\nFalse & False & False & False \\\\\\n\\\\\\\\\\n\\\\end{array}\\n\\\\right) \"\r\n" + 
+					"      } ]\r\n" + 
+					"    } ]\r\n" + 
+					"  }\r\n" + 
+					"}");//
 		}
 	}
 
@@ -1089,52 +1187,93 @@ public class TestPods {
 		System.out.println(jsonStr);
 		if (s.contains("Windows")) {
 			assertEquals(jsonStr, //
-					"{\r\n" + "  \"queryresult\" : {\r\n" + "    \"success\" : \"true\",\r\n"
-							+ "    \"error\" : \"false\",\r\n" + "    \"numpods\" : 8,\r\n"
-							+ "    \"version\" : \"0.1\",\r\n" + "    \"pods\" : [ {\r\n"
-							+ "      \"title\" : \"Input\",\r\n" + "      \"scanner\" : \"Identity\",\r\n"
-							+ "      \"error\" : \"false\",\r\n" + "      \"numsubpods\" : 1,\r\n"
-							+ "      \"subpods\" : [ {\r\n" + "        \"plaintext\" : \"10*11*12\",\r\n"
-							+ "        \"sinput\" : \"10*11*12\",\r\n"
-							+ "        \"latex\" : \"10\\\\cdot 11\\\\cdot 12\"\r\n" + "      } ]\r\n" + "    }, {\r\n"
-							+ "      \"title\" : \"Result\",\r\n" + "      \"scanner\" : \"Simplification\",\r\n"
-							+ "      \"error\" : \"false\",\r\n" + "      \"numsubpods\" : 1,\r\n"
-							+ "      \"subpods\" : [ {\r\n" + "        \"plaintext\" : \"1320\",\r\n"
-							+ "        \"sinput\" : \"10*11*12\",\r\n" + "        \"latex\" : \"1320\"\r\n"
-							+ "      } ]\r\n" + "    }, {\r\n" + "      \"title\" : \"Number name\",\r\n"
-							+ "      \"scanner\" : \"Integer\",\r\n" + "      \"error\" : \"false\",\r\n"
-							+ "      \"numsubpods\" : 1,\r\n" + "      \"subpods\" : [ {\r\n"
-							+ "        \"plaintext\" : \"one thousand three hundred twenty\",\r\n"
-							+ "        \"sinput\" : \"IntegerName(1320,Words)\",\r\n"
-							+ "        \"latex\" : \"\\\\textnormal{one thousand three hundred twenty}\"\r\n"
-							+ "      } ]\r\n" + "    }, {\r\n" + "      \"title\" : \"Roman numerals\",\r\n"
-							+ "      \"scanner\" : \"Integer\",\r\n" + "      \"error\" : \"false\",\r\n"
-							+ "      \"numsubpods\" : 1,\r\n" + "      \"subpods\" : [ {\r\n"
-							+ "        \"plaintext\" : \"MCCCXX\",\r\n"
-							+ "        \"sinput\" : \"RomanNumeral(1320)\",\r\n"
-							+ "        \"latex\" : \"\\\\textnormal{MCCCXX}\"\r\n" + "      } ]\r\n" + "    }, {\r\n"
-							+ "      \"title\" : \"Binary form\",\r\n" + "      \"scanner\" : \"Integer\",\r\n"
-							+ "      \"error\" : \"false\",\r\n" + "      \"numsubpods\" : 1,\r\n"
-							+ "      \"subpods\" : [ {\r\n" + "        \"plaintext\" : \"10100101000_2\",\r\n"
-							+ "        \"sinput\" : \"BaseForm(1320,2)\",\r\n"
-							+ "        \"latex\" : \"{\\\\textnormal{10100101000}}_{2}\"\r\n" + "      } ]\r\n"
-							+ "    }, {\r\n" + "      \"title\" : \"Prime factorization\",\r\n"
-							+ "      \"scanner\" : \"Integer\",\r\n" + "      \"error\" : \"false\",\r\n"
-							+ "      \"numsubpods\" : 1,\r\n" + "      \"subpods\" : [ {\r\n"
-							+ "        \"plaintext\" : \"2^3*3*5*11\",\r\n"
-							+ "        \"sinput\" : \"FactorInteger(1320)\",\r\n"
-							+ "        \"latex\" : \"\\\\begin{pmatrix}\\n 2 & 3 \\\\\\\\\\n 3 & 1 \\\\\\\\\\n 5 & 1 \\\\\\\\\\n 11 & 1 \\\\\\\\\\n\\\\end{pmatrix}\"\r\n"
-							+ "      } ]\r\n" + "    }, {\r\n"
-							+ "      \"title\" : \"Residues modulo small integers\",\r\n"
-							+ "      \"scanner\" : \"Integer\",\r\n" + "      \"error\" : \"false\",\r\n"
-							+ "      \"numsubpods\" : 1,\r\n" + "      \"subpods\" : [ {\r\n"
-							+ "        \"plaintext\" : \"m | 2 | 3 | 4 | 5 | 6 | 7 | 8 | 9\\n1320 mod m | 0 | 0 | 0 | 0 | 0 | 4 | 0 | 6\",\r\n"
-							+ "        \"sinput\" : \"Mod(1320,{2,3,4,5,6,7,8,9})\",\r\n"
-							+ "        \"latex\" : \"\\\\{0,0,0,0,0,4,0,6\\\\}\"\r\n" + "      } ]\r\n" + "    }, {\r\n"
-							+ "      \"title\" : \"Properties\",\r\n" + "      \"scanner\" : \"Integer\",\r\n"
-							+ "      \"error\" : \"false\",\r\n" + "      \"numsubpods\" : 1,\r\n"
-							+ "      \"subpods\" : [ {\r\n" + "        \"plaintext\" : \"1320 is an even number.\"\r\n"
-							+ "      } ]\r\n" + "    } ]\r\n" + "  }\r\n" + "}");//
+					"{\r\n" + 
+					"  \"queryresult\" : {\r\n" + 
+					"    \"success\" : \"true\",\r\n" + 
+					"    \"error\" : \"false\",\r\n" + 
+					"    \"numpods\" : 8,\r\n" + 
+					"    \"version\" : \"0.1\",\r\n" + 
+					"    \"pods\" : [ {\r\n" + 
+					"      \"title\" : \"Input\",\r\n" + 
+					"      \"scanner\" : \"Identity\",\r\n" + 
+					"      \"error\" : \"false\",\r\n" + 
+					"      \"numsubpods\" : 1,\r\n" + 
+					"      \"subpods\" : [ {\r\n" + 
+					"        \"plaintext\" : \"10*11*12\",\r\n" + 
+					"        \"sinput\" : \"10*11*12\",\r\n" + 
+					"        \"latex\" : \"10\\\\cdot 11\\\\cdot 12\"\r\n" + 
+					"      } ]\r\n" + 
+					"    }, {\r\n" + 
+					"      \"title\" : \"Result\",\r\n" + 
+					"      \"scanner\" : \"Simplification\",\r\n" + 
+					"      \"error\" : \"false\",\r\n" + 
+					"      \"numsubpods\" : 1,\r\n" + 
+					"      \"subpods\" : [ {\r\n" + 
+					"        \"plaintext\" : \"1320\",\r\n" + 
+					"        \"sinput\" : \"10*11*12\",\r\n" + 
+					"        \"latex\" : \"1320\"\r\n" + 
+					"      } ]\r\n" + 
+					"    }, {\r\n" + 
+					"      \"title\" : \"Number name\",\r\n" + 
+					"      \"scanner\" : \"Integer\",\r\n" + 
+					"      \"error\" : \"false\",\r\n" + 
+					"      \"numsubpods\" : 1,\r\n" + 
+					"      \"subpods\" : [ {\r\n" + 
+					"        \"plaintext\" : \"one thousand three hundred twenty\",\r\n" + 
+					"        \"sinput\" : \"IntegerName(1320,Words)\",\r\n" + 
+					"        \"latex\" : \"\\\\textnormal{one thousand three hundred twenty}\"\r\n" + 
+					"      } ]\r\n" + 
+					"    }, {\r\n" + 
+					"      \"title\" : \"Roman numerals\",\r\n" + 
+					"      \"scanner\" : \"Integer\",\r\n" + 
+					"      \"error\" : \"false\",\r\n" + 
+					"      \"numsubpods\" : 1,\r\n" + 
+					"      \"subpods\" : [ {\r\n" + 
+					"        \"plaintext\" : \"MCCCXX\",\r\n" + 
+					"        \"sinput\" : \"RomanNumeral(1320)\",\r\n" + 
+					"        \"latex\" : \"\\\\textnormal{MCCCXX}\"\r\n" + 
+					"      } ]\r\n" + 
+					"    }, {\r\n" + 
+					"      \"title\" : \"Binary form\",\r\n" + 
+					"      \"scanner\" : \"Integer\",\r\n" + 
+					"      \"error\" : \"false\",\r\n" + 
+					"      \"numsubpods\" : 1,\r\n" + 
+					"      \"subpods\" : [ {\r\n" + 
+					"        \"plaintext\" : \"10100101000_2\",\r\n" + 
+					"        \"sinput\" : \"BaseForm(1320,2)\",\r\n" + 
+					"        \"latex\" : \"{\\\\textnormal{10100101000}}_{2}\"\r\n" + 
+					"      } ]\r\n" + 
+					"    }, {\r\n" + 
+					"      \"title\" : \"Prime factorization\",\r\n" + 
+					"      \"scanner\" : \"Integer\",\r\n" + 
+					"      \"error\" : \"false\",\r\n" + 
+					"      \"numsubpods\" : 1,\r\n" + 
+					"      \"subpods\" : [ {\r\n" + 
+					"        \"plaintext\" : \"2^3*3*5*11\",\r\n" + 
+					"        \"sinput\" : \"FactorInteger(1320)\",\r\n" + 
+					"        \"latex\" : \"\\\\left(\\n\\\\begin{array}{cc}\\n2 & 3 \\\\\\\\\\n3 & 1 \\\\\\\\\\n5 & 1 \\\\\\\\\\n11 & 1 \\\\\\n\\\\\\\\\\n\\\\end{array}\\n\\\\right) \"\r\n" + 
+					"      } ]\r\n" + 
+					"    }, {\r\n" + 
+					"      \"title\" : \"Residues modulo small integers\",\r\n" + 
+					"      \"scanner\" : \"Integer\",\r\n" + 
+					"      \"error\" : \"false\",\r\n" + 
+					"      \"numsubpods\" : 1,\r\n" + 
+					"      \"subpods\" : [ {\r\n" + 
+					"        \"plaintext\" : \"m | 2 | 3 | 4 | 5 | 6 | 7 | 8 | 9\\n1320 mod m | 0 | 0 | 0 | 0 | 0 | 4 | 0 | 6\",\r\n" + 
+					"        \"sinput\" : \"Mod(1320,{2,3,4,5,6,7,8,9})\",\r\n" + 
+					"        \"latex\" : \"\\\\{0,0,0,0,0,4,0,6\\\\}\"\r\n" + 
+					"      } ]\r\n" + 
+					"    }, {\r\n" + 
+					"      \"title\" : \"Properties\",\r\n" + 
+					"      \"scanner\" : \"Integer\",\r\n" + 
+					"      \"error\" : \"false\",\r\n" + 
+					"      \"numsubpods\" : 1,\r\n" + 
+					"      \"subpods\" : [ {\r\n" + 
+					"        \"plaintext\" : \"1320 is an even number.\"\r\n" + 
+					"      } ]\r\n" + 
+					"    } ]\r\n" + 
+					"  }\r\n" + 
+					"}");//
 		}
 	}
 

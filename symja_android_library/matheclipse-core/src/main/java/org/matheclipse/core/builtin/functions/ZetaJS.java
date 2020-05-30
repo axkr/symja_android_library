@@ -105,20 +105,79 @@ public class ZetaJS {
 	//
 	// }
 
+	/**
+	 * 
+	 * @param x
+	 * @param a
+	 * @return
+	 * @deprecated INVALID at the moment
+	 */
+	public static Complex hurwitzZeta(final Complex x, final Complex a) {
+		// TODO INVALID at the moment
+		if (x.getReal() == 1.0 && x.getImaginary() == 0.0) {
+			throw new ArgumentTypeException("Hurwitz zeta pole");
+		}
+
+		// dlmf.nist.gov/25.11.4
+
+		if (a.getReal() > 1.0) {
+			double m = Math.floor(a.getReal());
+			Complex aValue = a.subtract(m);
+			return hurwitzZeta(x, aValue).subtract(summation(i -> aValue.add(i).pow(x.negate()), 0, m - 1.0));
+			// return sub( hurwitzZeta(x,a), summation( i => pow( add(a,i), neg(x) ), [0,m-1] ) );
+		}
+
+		if (a.getReal() < 0.0) {
+			double m = -Math.floor(a.getReal());
+			return hurwitzZeta(x, a.add(m)).add(summation(i -> a.add(i).pow(x.negate()), 0, m - 1.0));
+		}
+
+		// Euler-Maclaurin has differences of large values in left-hand plane
+		// but different summation (dlmf.nist.gov/25.11.9) does not converge for complex a
+		// to be improved...
+
+		double switchForms = -5.0;
+
+		if (x.getReal() < switchForms) {
+			throw new ArgumentTypeException("Currently unsuppported complex Hurwitz zeta");
+		}
+
+		// Johansson arxiv.org/abs/1309.2877
+
+		int n = 15; // recommendation of Vepstas, Efficient Algorithm, p.12
+
+		Complex S = summation(i -> a.add(i).pow(x.negate()), 0, n - 1);
+
+		Complex I = a.add(n).pow(x.add(-1.0)).divide(x.subtract(1.0));
+
+		Complex p = x.multiply(0.5).multiply(a.add(n).reciprocal());
+		Complex t = p.multiply(bernoulliInt(2));
+		int i = 1;
+
+		// converges rather quickly
+		while (Math.abs(p.getReal()) > Config.SPECIAL_FUNCTIONS_TOLERANCE || //
+				Math.abs(p.getImaginary()) > Config.SPECIAL_FUNCTIONS_TOLERANCE) {
+			i++;
+			if (i > MAX_VALUE_HALF) {
+				throw new ArgumentTypeException("Hurwitz zeta: i > MAX_VALUE_HALF");
+			}
+			int iPlusi = i + i;
+			p = p.multiply(x.add(iPlusi - 2.0).multiply(x.add(iPlusi - 3.0))
+					.multiply(a.add(n).pow(2.0).multiply(iPlusi * (iPlusi - 1)).reciprocal()));
+			t = t.add(p.multiply(bernoulliInt(iPlusi)));
+		}
+
+		Complex T = t.add(0.5).divide(a.add(n).pow(x));
+
+		return S.add(I).add(T);
+	}
+
 	public static double hurwitzZeta(final double x, final double a) {
 
 		// Johansson arxiv.org/abs/1309.2877
 
-		// if ( isComplex(x) || isComplex(a) ) {
-		//
-		//
-		// } else {
-
 		if (x == 1.0) {
 			throw new ArgumentTypeException("Hurwitz zeta pole");
-		}
-		if (a < 0.0) {
-			throw new ArgumentTypeException("Hurwitz zeta a < 0.0 ");
 		}
 
 		// dlmf.nist.gov/25.11.4
@@ -129,9 +188,10 @@ public class ZetaJS {
 			return hurwitzZeta(x, aValue) - sumDouble(i -> 1.0 / Math.pow(aValue + i, x), 0, m - 1);
 		}
 
-		// if ( a < 0.0 ) {
-		// return hurwitzZeta( x, complex(a) );
-		// }
+		if (a < 0.0) {
+			throw new ArgumentTypeException("Hurwitz zeta a < 0.0 ");
+			// return hurwitzZeta( x, complex(a) );
+		}
 
 		// Euler-Maclaurin has differences of large values in left-hand plane
 		// swith to difference summation: dlmf.nist.gov/25.11.9
@@ -140,7 +200,6 @@ public class ZetaJS {
 
 		if (x < switchForms) {
 
-			// x = 1 - x;
 			final double xValue = 1 - x;
 			double t = Math.cos(Math.PI * xValue / 2.0 - 2.0 * Math.PI * a);
 			double s = t;
