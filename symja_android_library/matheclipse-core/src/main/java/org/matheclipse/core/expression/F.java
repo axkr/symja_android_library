@@ -76,6 +76,7 @@ import org.matheclipse.core.eval.interfaces.AbstractCoreFunctionEvaluator;
 import org.matheclipse.core.eval.interfaces.ICoreFunctionEvaluator;
 import org.matheclipse.core.eval.util.IAssumptions;
 import org.matheclipse.core.eval.util.Lambda;
+import org.matheclipse.core.expression.data.GraphExpr;
 import org.matheclipse.core.form.Documentation;
 import org.matheclipse.core.generic.Functors;
 import org.matheclipse.core.graphics.Show2SVG;
@@ -86,7 +87,6 @@ import org.matheclipse.core.interfaces.IAssociation;
 import org.matheclipse.core.interfaces.IBuiltInSymbol;
 import org.matheclipse.core.interfaces.IComplex;
 import org.matheclipse.core.interfaces.IComplexNum;
-import org.matheclipse.core.interfaces.IDataExpr;
 import org.matheclipse.core.interfaces.IEvaluator;
 import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.interfaces.IFraction;
@@ -8537,7 +8537,7 @@ public class F {
 	public static IAST MatrixForm(final IExpr a0) {
 		return new AST1(MatrixForm, a0);
 	}
-	
+
 	public static IAST MatrixPower(final IExpr a0, final IExpr a1) {
 
 		return new AST2(MatrixPower, a0, a1);
@@ -9048,7 +9048,7 @@ public class F {
 	public static IAST Plot(final IExpr a0, final IExpr a1) {
 		return new AST2(Plot, a0, a1);
 	}
-	
+
 	public static IAST Plot(final IExpr a0, final IExpr a1, final IExpr a2) {
 		return new AST3(Plot, a0, a1, a2);
 	}
@@ -10615,8 +10615,8 @@ public class F {
 				if (show.size() > 1 && show.arg1().isSameHeadSizeGE(Graphics, 2)) {
 					return openSVGOnDesktop(show);
 				}
-			} else if (expr.head().equals(Graph) && expr instanceof IDataExpr) {
-				String javaScriptStr = GraphFunctions.graphToJSForm((IDataExpr) expr);
+			} else if (expr instanceof GraphExpr) {
+				String javaScriptStr = GraphFunctions.graphToJSForm((GraphExpr) expr);
 				if (javaScriptStr != null) {
 					String html = Config.VISJS_PAGE;
 					html = StringUtils.replace(html, "`1`", javaScriptStr);

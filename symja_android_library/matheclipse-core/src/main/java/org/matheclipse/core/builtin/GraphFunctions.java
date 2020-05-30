@@ -1603,7 +1603,7 @@ public class GraphFunctions {
 	 * @param graphExpr
 	 * @return
 	 */
-	public static String graphToJSForm(IDataExpr graphExpr) {
+	public static String graphToJSForm(GraphExpr graphExpr) {
 
 		GraphExpr<ExprEdge> gex = (GraphExpr<ExprEdge>) graphExpr;
 		AbstractBaseGraph<IExpr, ?> g = (AbstractBaseGraph<IExpr, ?>) gex.toData();

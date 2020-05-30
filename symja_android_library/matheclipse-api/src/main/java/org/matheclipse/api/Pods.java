@@ -19,6 +19,7 @@ import org.apache.lucene.analysis.TokenStream;
 import org.apache.lucene.analysis.en.PorterStemFilter;
 import org.apache.lucene.analysis.standard.StandardTokenizer;
 import org.apache.lucene.analysis.tokenattributes.CharTermAttribute;
+import org.matheclipse.core.builtin.GraphFunctions;
 import org.matheclipse.core.builtin.OutputFunctions;
 import org.matheclipse.core.convert.AST2Expr;
 import org.matheclipse.core.convert.VariablesSet;
@@ -28,6 +29,7 @@ import org.matheclipse.core.eval.MathMLUtilities;
 import org.matheclipse.core.eval.TeXUtilities;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.expression.ID;
+import org.matheclipse.core.expression.data.GraphExpr;
 import org.matheclipse.core.form.Documentation;
 import org.matheclipse.core.form.tex.TeXParser;
 import org.matheclipse.core.interfaces.IAST;
@@ -52,12 +54,17 @@ public class Pods {
 
 	public static final Object[] STEMS = new Object[] { //
 			"convert", F.UnitConvert, "convers", F.UnitConvert, //
-			"expand", F.ExpandAll, "expans", F.ExpandAll, //
+			"expandal", F.ExpandAll, "expand", F.ExpandAll, "expans", F.ExpandAll, //
 			"deriv", F.D, "differenti", F.D, //
 			"factor", F.Factor, //
+			"fullform", F.FullForm, //
+			"hornerform", F.HornerForm, "horner", F.HornerForm, //
 			"integr", F.Integrate, //
+			"mathmlform", F.MathMLForm, "mathml", F.MathMLForm, //
 			"simplif", F.FullSimplify, "simplifi", F.FullSimplify, //
-			"solv", F.Solve, "solver", F.Solve //
+			"solv", F.Solve, "solver", F.Solve, //
+			"texform", F.TeXForm, "tex", F.TeXForm, //
+			"treeform", F.TreeForm, "tree", F.TreeForm,//
 	};
 
 	public static final Trie<String, IBuiltInSymbol> STEM_MAP = Tries.forStrings();
@@ -639,6 +646,20 @@ public class Pods {
 								addPod(podsArray, inExpr, podOut, podOut.first().toString(), "Function", "Plotter",
 										form, mapper, engine);
 								numpods++;
+							} else if (outExpr instanceof GraphExpr) {
+								String javaScriptStr = GraphFunctions.graphToJSForm((GraphExpr) outExpr);
+								if (javaScriptStr != null) {
+									String html = VISJS_IFRAME;
+									html = StringUtils.replace(html, "`1`", javaScriptStr);
+									html = StringUtils.replace(html, "`2`", //
+											"  var options = { };\n" //
+									);
+									// html = StringEscapeUtils.escapeHtml4(html);
+									int form = internFormat(0, "visjs");
+									addPod(podsArray, inExpr, podOut, html, "Graph data", "Graph", form, mapper,
+											engine);
+									numpods++;
+								}
 							} else {
 								IExpr head = outExpr.head();
 								if (head instanceof IBuiltInSymbol && outExpr.size() > 1) {

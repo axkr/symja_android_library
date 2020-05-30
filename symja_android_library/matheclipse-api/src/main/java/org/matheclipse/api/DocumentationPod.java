@@ -71,6 +71,23 @@ public class DocumentationPod implements IPod, PodDefaultsRules {
 
 	protected static int addDocumentationPod(DocumentationPod pod, ObjectMapper mapper, ArrayNode podsArray,
 			StringBuilder buf, int formats) {
+		int numpods = 0;
+		if (pod.parameters != null) {
+			IExpr plot2D = F.Manipulate(F.Plot(F.unaryAST1(pod.symbol, F.Times(F.a, F.x)), //
+					F.List(F.x, F.num(-10.0), F.num(10.0)), //
+					F.Rule(F.PlotRange, //
+							F.List(pod.parameters.arg1(), pod.parameters.arg2()))), //
+					F.List(F.a, F.C1, F.C10));
+			EvalEngine engine = EvalEngine.get();
+			IExpr podOut = engine.evaluate(plot2D);
+			if (podOut.isAST(F.JSFormData, 3)) {
+				int form = Pods.internFormat(0, podOut.second().toString());
+				Pods.addPod(podsArray, plot2D, podOut, podOut.first().toString(), "Plot", "Plotter", form, mapper,
+						engine);
+				numpods++;
+			}
+		}
+
 		ArrayNode temp = mapper.createArrayNode();
 		ObjectNode subpodsResult = mapper.createObjectNode();
 		subpodsResult.put("title", "documentation");
@@ -79,22 +96,6 @@ public class DocumentationPod implements IPod, PodDefaultsRules {
 		subpodsResult.put("numsubpods", 1);
 		subpodsResult.putPOJO("subpods", temp);
 		podsArray.add(subpodsResult);
-
-		int numpods = 0;
-		if (pod.parameters != null) {
-			IExpr plot2D = F.Plot(F.unaryAST1(pod.symbol, F.x), //
-					F.List(F.x, F.num(-10.0), F.num(10.0)), //
-					F.Rule(F.PlotRange, //
-							F.List(pod.parameters.arg1(), pod.parameters.arg2())));
-			EvalEngine engine = EvalEngine.get();
-			IExpr podOut = engine.evaluate(plot2D);
-			if (podOut.isAST(F.JSFormData, 3)) {
-				int form = Pods.internFormat(0, podOut.second().toString());
-				Pods.addPod(podsArray, plot2D, podOut, podOut.first().toString(), "Function", "Plotter", form, mapper,
-						engine);
-				numpods++;
-			}
-		}
 		ObjectNode node = mapper.createObjectNode();
 		// if ((formats & HTML) != 0x00) {
 		temp.add(node);
