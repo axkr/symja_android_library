@@ -16,7 +16,6 @@ import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.text.StringEscapeUtils;
 import org.apache.commons.text.similarity.LevenshteinDistance;
 import org.apache.lucene.analysis.TokenStream;
-import org.apache.lucene.analysis.en.EnglishAnalyzer;
 import org.apache.lucene.analysis.en.PorterStemFilter;
 import org.apache.lucene.analysis.standard.StandardTokenizer;
 import org.apache.lucene.analysis.tokenattributes.CharTermAttribute;
@@ -24,11 +23,11 @@ import org.matheclipse.core.builtin.OutputFunctions;
 import org.matheclipse.core.convert.AST2Expr;
 import org.matheclipse.core.convert.VariablesSet;
 import org.matheclipse.core.data.ElementData1;
-import org.matheclipse.core.eval.EvalAttributes;
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.MathMLUtilities;
 import org.matheclipse.core.eval.TeXUtilities;
 import org.matheclipse.core.expression.F;
+import org.matheclipse.core.expression.ID;
 import org.matheclipse.core.form.Documentation;
 import org.matheclipse.core.form.tex.TeXParser;
 import org.matheclipse.core.interfaces.IAST;
@@ -48,9 +47,6 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.google.common.base.Suppliers;
-
-import net.numericalchameleon.util.romannumerals.RomanNumeralException;
-import net.numericalchameleon.util.romannumerals.RomanNumeral.Errors;
 
 public class Pods {
 
@@ -107,19 +103,22 @@ public class Pods {
 			addElementData(list[i].arg2().toString().toLowerCase(), keyWord);
 			soundexElementData(list[i].arg3().toString(), keyWord);
 		}
-
-		for (Map.Entry<String, String> entry : map.entrySet()) {
-			soundexHelp(entry.getKey(), entry.getKey());
+		for (int i = 0; i < ID.Zeta; i++) {
+			ISymbol sym = F.symbol(i);
+			soundexHelp(sym.toString().toLowerCase(), sym);
 		}
+		// for (Map.Entry<String, String> entry : map.entrySet()) {
+		// soundexHelp(entry.getKey(), entry.getKey());
+		// }
 		// appendSoundex();
-		soundexHelp("cosine", "Cos");
-		soundexHelp("sine", "Sin");
-		soundexHelp("integral", "Integrate");
+		soundexHelp("cosine", F.Cos);
+		soundexHelp("sine", F.Sin);
+		soundexHelp("integral", F.Integrate);
 
 		return SOUNDEX_MAP;
 	}
 
-	private static void soundexHelp(String key, String value) {
+	private static void soundexHelp(String key, ISymbol value) {
 		String soundex = SOUNDEX.encode(key);
 		ArrayList<IPod> list = SOUNDEX_MAP.get(soundex);
 		if (list == null) {
@@ -244,8 +243,9 @@ public class Pods {
 					"</body>\n" + //
 					"</html>";//
 
-	/** package private */ static void addSymjaPod(ArrayNode podsArray, IExpr inExpr, IExpr outExpr, String title, String scanner,
-			int formats, ObjectMapper mapper, EvalEngine engine) {
+	/** package private */
+	static void addSymjaPod(ArrayNode podsArray, IExpr inExpr, IExpr outExpr, String title, String scanner, int formats,
+			ObjectMapper mapper, EvalEngine engine) {
 		ArrayNode temp = mapper.createArrayNode();
 		ObjectNode subpodsResult = mapper.createObjectNode();
 		subpodsResult.put("title", title);
@@ -260,7 +260,8 @@ public class Pods {
 		createJSONFormat(node, engine, inExpr.toString(), outExpr, formats);
 	}
 
-	/** package private */ static void addSymjaPod(ArrayNode podsArray, IExpr inExpr, IExpr outExpr, String plaintext, String title,
+	/** package private */
+	static void addSymjaPod(ArrayNode podsArray, IExpr inExpr, IExpr outExpr, String plaintext, String title,
 			String scanner, int formats, ObjectMapper mapper, EvalEngine engine) {
 		ArrayNode temp = mapper.createArrayNode();
 		ObjectNode subpodsResult = mapper.createObjectNode();
@@ -276,7 +277,8 @@ public class Pods {
 		createJSONFormat(node, engine, plaintext, inExpr.toString(), outExpr, formats);
 	}
 
-	/** package private */ static void addPod(ArrayNode podsArray, IExpr inExpr, IExpr outExpr, String title, String scanner, int formats,
+	/** package private */
+	static void addPod(ArrayNode podsArray, IExpr inExpr, IExpr outExpr, String title, String scanner, int formats,
 			ObjectMapper mapper, EvalEngine engine) {
 		ArrayNode temp = mapper.createArrayNode();
 		ObjectNode subpodsResult = mapper.createObjectNode();
@@ -292,7 +294,8 @@ public class Pods {
 		createJSONFormat(node, engine, outExpr, formats);
 	}
 
-	/** package private */ static void addPod(ArrayNode podsArray, IExpr inExpr, IExpr outExpr, String plaintext, String title, String scanner,
+	/** package private */
+	static void addPod(ArrayNode podsArray, IExpr inExpr, IExpr outExpr, String plaintext, String title, String scanner,
 			int formats, ObjectMapper mapper, EvalEngine engine) {
 		ArrayNode temp = mapper.createArrayNode();
 		ObjectNode subpodsResult = mapper.createObjectNode();
@@ -362,7 +365,8 @@ public class Pods {
 		return intern;
 	}
 
-	/** package private */ static int internFormat(int intern, String str) {
+	/** package private */
+	static int internFormat(int intern, String str) {
 		if (str.equals(HTML_STR)) {
 			intern |= HTML;
 		} else if (str.equals(PLAIN_STR)) {
@@ -482,7 +486,8 @@ public class Pods {
 						String inputWord = outExpr.toString();
 						StringBuilder buf = new StringBuilder();
 						if (Documentation.getMarkdown(buf, inputWord)) {
-							DocumentationPod.addDocumentationPod(mapper, podsArray, buf, formats);
+							DocumentationPod.addDocumentationPod(new DocumentationPod((ISymbol) outExpr), mapper,
+									podsArray, buf, formats);
 							numpods++;
 							resultStatistics(queryresult, error, numpods, podsArray);
 							return messageJSON;

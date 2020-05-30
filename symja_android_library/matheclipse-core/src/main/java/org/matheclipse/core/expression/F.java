@@ -9048,6 +9048,10 @@ public class F {
 	public static IAST Plot(final IExpr a0, final IExpr a1) {
 		return new AST2(Plot, a0, a1);
 	}
+	
+	public static IAST Plot(final IExpr a0, final IExpr a1, final IExpr a2) {
+		return new AST3(Plot, a0, a1, a2);
+	}
 
 	public static IAST Plot3D(final IExpr a0, final IExpr a1, final IExpr a2) {
 		return new AST3(Plot3D, a0, a1, a2);

@@ -311,7 +311,7 @@ public class RulePreprocessor {
 									}
 								}
 								System.out.println(className);
-								if (className.equals("FunctionExpandRules")) {
+								if (className.equals("FunctionExpandRules")||className.equals("PodDefaultsRules")) {
 									out = new PrintWriter(targetFile.getCanonicalPath());
 									out.print(HEADER);
 									out.print(className);

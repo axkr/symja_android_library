@@ -1,7 +1,10 @@
 package org.matheclipse.api;
 
 import java.util.Collections;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.Set;
+import java.util.function.Supplier;
 
 import org.commonmark.Extension;
 import org.commonmark.ext.gfm.tables.TablesExtension;
@@ -9,17 +12,45 @@ import org.commonmark.node.Node;
 import org.commonmark.parser.Parser;
 import org.commonmark.renderer.html.HtmlRenderer;
 import org.matheclipse.core.eval.EvalEngine;
+import org.matheclipse.core.expression.F;
 import org.matheclipse.core.form.Documentation;
+import org.matheclipse.core.interfaces.IAST;
+import org.matheclipse.core.interfaces.IExpr;
+import org.matheclipse.core.interfaces.ISymbol;
+import org.matheclipse.core.reflection.system.rules.PodDefaultsRules;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
+import com.google.common.base.Suppliers;
 
-public class DocumentationPod implements IPod {
-	String word;
+public class DocumentationPod implements IPod, PodDefaultsRules {
 
-	public DocumentationPod(String word) {
-		this.word = word;
+	private static Supplier<Map<IExpr, IAST>> LAZY_DEFAULTS = Suppliers.memoize(DocumentationPod::init);
+
+	private static Map<IExpr, IAST> init() {
+		HashMap<IExpr, IAST> defaultParameters = new HashMap<IExpr, IAST>();
+		for (int i = 1; i < RULES.size(); i++) {
+			IExpr arg = RULES.get(i);
+			if (arg.isAST(F.SetDelayed, 3)) {
+				defaultParameters.put(arg.first(), (IAST) arg.second());
+			} else if (arg.isAST(F.Set, 3)) {
+				defaultParameters.put(arg.first(), (IAST) arg.second());
+			}
+		}
+		return defaultParameters;
+	}
+
+	private static Map<IExpr, IAST> getMap() {
+		return LAZY_DEFAULTS.get();
+	}
+
+	ISymbol symbol;
+	IAST parameters;
+
+	public DocumentationPod(ISymbol symbol) {
+		this.symbol = symbol;// F.symbol(word, Context.SYSTEM_CONTEXT_NAME, null, EvalEngine.get());
+		this.parameters = getMap().get(symbol);
 	}
 
 	public short podType() {
@@ -27,19 +58,19 @@ public class DocumentationPod implements IPod {
 	}
 
 	public String keyWord() {
-		return word;
+		return symbol.toString();
 	}
 
 	public int addJSON(ObjectMapper mapper, ArrayNode podsArray, int formats, EvalEngine engine) {
 		StringBuilder buf = new StringBuilder();
-		if (Documentation.getMarkdown(buf, word)) {
-			addDocumentationPod(mapper, podsArray, buf, formats);
-			return 1;
+		if (Documentation.getMarkdown(buf, keyWord())) {
+			return addDocumentationPod(this, mapper, podsArray, buf, formats);
 		}
-		return -1;
+		return 0;
 	}
 
-	protected static void addDocumentationPod(ObjectMapper mapper, ArrayNode podsArray, StringBuilder buf, int formats) {
+	protected static int addDocumentationPod(DocumentationPod pod, ObjectMapper mapper, ArrayNode podsArray,
+			StringBuilder buf, int formats) {
 		ArrayNode temp = mapper.createArrayNode();
 		ObjectNode subpodsResult = mapper.createObjectNode();
 		subpodsResult.put("title", "documentation");
@@ -49,6 +80,21 @@ public class DocumentationPod implements IPod {
 		subpodsResult.putPOJO("subpods", temp);
 		podsArray.add(subpodsResult);
 
+		int numpods = 0;
+		if (pod.parameters != null) {
+			IExpr plot2D = F.Plot(F.unaryAST1(pod.symbol, F.x), //
+					F.List(F.x, F.num(-10.0), F.num(10.0)), //
+					F.Rule(F.PlotRange, //
+							F.List(pod.parameters.arg1(), pod.parameters.arg2())));
+			EvalEngine engine = EvalEngine.get();
+			IExpr podOut = engine.evaluate(plot2D);
+			if (podOut.isAST(F.JSFormData, 3)) {
+				int form = Pods.internFormat(0, podOut.second().toString());
+				Pods.addPod(podsArray, plot2D, podOut, podOut.first().toString(), "Function", "Plotter", form, mapper,
+						engine);
+				numpods++;
+			}
+		}
 		ObjectNode node = mapper.createObjectNode();
 		// if ((formats & HTML) != 0x00) {
 		temp.add(node);
@@ -57,6 +103,7 @@ public class DocumentationPod implements IPod {
 		if ((formats & Pods.HTML) != 0x00) {
 			node.put("html", generateHTMLString(buf.toString()));
 		}
+		return numpods++;
 	}
 
 	private static String generateHTMLString(final String markdownStr) {
@@ -64,6 +111,6 @@ public class DocumentationPod implements IPod {
 		Parser parser = Parser.builder().extensions(EXTENSIONS).build();
 		Node document = parser.parse(markdownStr);
 		HtmlRenderer renderer = HtmlRenderer.builder().extensions(EXTENSIONS).build();
-		return renderer.render(document);  
+		return renderer.render(document);
 	}
 }

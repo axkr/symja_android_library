@@ -51,35 +51,41 @@ public class TestPods {
 		System.out.println(jsonStr);
 		if (s.contains("Windows")) {
 			assertEquals(jsonStr, //
-					"{\r\n" + //
-							"  \"queryresult\" : {\r\n" + //
-							"    \"success\" : \"true\",\r\n" + //
-							"    \"error\" : \"false\",\r\n" + //
-							"    \"numpods\" : 2,\r\n" + //
-							"    \"version\" : \"0.1\",\r\n" + //
-							"    \"pods\" : [ {\r\n" + //
-							"      \"title\" : \"Input\",\r\n" + //
-							"      \"scanner\" : \"Identity\",\r\n" + //
-							"      \"error\" : \"false\",\r\n" + //
-							"      \"numsubpods\" : 1,\r\n" + //
-							"      \"subpods\" : [ {\r\n" + //
-							"        \"plaintext\" : \"Sin\",\r\n" + //
-							"        \"sinput\" : \"Sin\"\r\n" + //
-							"      } ]\r\n" + //
-							"    }, {\r\n" + //
-							"      \"title\" : \"documentation\",\r\n" + //
-							"      \"scanner\" : \"help\",\r\n" + //
-							"      \"error\" : \"false\",\r\n" + //
-							"      \"numsubpods\" : 1,\r\n" + //
-							"      \"subpods\" : [ {\r\n" + //
-							"        \"markdown\" : \"## Sin\\n\\n```\\nSin(expr)\\n```\\n\\n> returns the sine of `expr` (measured in radians).\\n \\n`Sin(expr)` will evaluate automatically in the case `expr` is a multiple of `Pi, Pi/2, Pi/3, Pi/4` and `Pi/6`.\\n\\nSee\\n* [Wikipedia - Sine](https://en.wikipedia.org/wiki/Sine)\\n\\n### Examples\\n\\n```\\n>> Sin(0)\\n0\\n\\n>> Sin(0.5)\\n0.479425538604203\\n\\n>> Sin(3*Pi)\\n0\\n\\n>> Sin(1.0 + I)\\n1.2984575814159773+I*0.6349639147847361\\n```\\n \\n\",\r\n"
-							+ //
-							"        \"html\" : \"<h2>Sin</h2>\\n<pre><code>Sin(expr)\\n</code></pre>\\n<blockquote>\\n<p>returns the sine of <code>expr</code> (measured in radians).</p>\\n</blockquote>\\n<p><code>Sin(expr)</code> will evaluate automatically in the case <code>expr</code> is a multiple of <code>Pi, Pi/2, Pi/3, Pi/4</code> and <code>Pi/6</code>.</p>\\n<p>See</p>\\n<ul>\\n<li><a href=\\\"https://en.wikipedia.org/wiki/Sine\\\">Wikipedia - Sine</a></li>\\n</ul>\\n<h3>Examples</h3>\\n<pre><code>&gt;&gt; Sin(0)\\n0\\n\\n&gt;&gt; Sin(0.5)\\n0.479425538604203\\n\\n&gt;&gt; Sin(3*Pi)\\n0\\n\\n&gt;&gt; Sin(1.0 + I)\\n1.2984575814159773+I*0.6349639147847361\\n</code></pre>\\n\"\r\n"
-							+ //
-							"      } ]\r\n" + //
-							"    } ]\r\n" + //
-							"  }\r\n" + //
-							"}");//
+					"{\r\n" + 
+					"  \"queryresult\" : {\r\n" + 
+					"    \"success\" : \"true\",\r\n" + 
+					"    \"error\" : \"false\",\r\n" + 
+					"    \"numpods\" : 2,\r\n" + 
+					"    \"version\" : \"0.1\",\r\n" + 
+					"    \"pods\" : [ {\r\n" + 
+					"      \"title\" : \"Input\",\r\n" + 
+					"      \"scanner\" : \"Identity\",\r\n" + 
+					"      \"error\" : \"false\",\r\n" + 
+					"      \"numsubpods\" : 1,\r\n" + 
+					"      \"subpods\" : [ {\r\n" + 
+					"        \"plaintext\" : \"Sin\",\r\n" + 
+					"        \"sinput\" : \"Sin\"\r\n" + 
+					"      } ]\r\n" + 
+					"    }, {\r\n" + 
+					"      \"title\" : \"documentation\",\r\n" + 
+					"      \"scanner\" : \"help\",\r\n" + 
+					"      \"error\" : \"false\",\r\n" + 
+					"      \"numsubpods\" : 1,\r\n" + 
+					"      \"subpods\" : [ {\r\n" + 
+					"        \"markdown\" : \"## Sin\\n\\n```\\nSin(expr)\\n```\\n\\n> returns the sine of `expr` (measured in radians).\\n \\n`Sin(expr)` will evaluate automatically in the case `expr` is a multiple of `Pi, Pi/2, Pi/3, Pi/4` and `Pi/6`.\\n\\nSee\\n* [Wikipedia - Sine](https://en.wikipedia.org/wiki/Sine)\\n\\n### Examples\\n\\n```\\n>> Sin(0)\\n0\\n\\n>> Sin(0.5)\\n0.479425538604203\\n\\n>> Sin(3*Pi)\\n0\\n\\n>> Sin(1.0 + I)\\n1.2984575814159773+I*0.6349639147847361\\n```\\n \\n\",\r\n" + 
+					"        \"html\" : \"<h2>Sin</h2>\\n<pre><code>Sin(expr)\\n</code></pre>\\n<blockquote>\\n<p>returns the sine of <code>expr</code> (measured in radians).</p>\\n</blockquote>\\n<p><code>Sin(expr)</code> will evaluate automatically in the case <code>expr</code> is a multiple of <code>Pi, Pi/2, Pi/3, Pi/4</code> and <code>Pi/6</code>.</p>\\n<p>See</p>\\n<ul>\\n<li><a href=\\\"https://en.wikipedia.org/wiki/Sine\\\">Wikipedia - Sine</a></li>\\n</ul>\\n<h3>Examples</h3>\\n<pre><code>&gt;&gt; Sin(0)\\n0\\n\\n&gt;&gt; Sin(0.5)\\n0.479425538604203\\n\\n&gt;&gt; Sin(3*Pi)\\n0\\n\\n&gt;&gt; Sin(1.0 + I)\\n1.2984575814159773+I*0.6349639147847361\\n</code></pre>\\n\"\r\n" + 
+					"      } ]\r\n" + 
+					"    }, {\r\n" + 
+					"      \"title\" : \"Function\",\r\n" + 
+					"      \"scanner\" : \"Plotter\",\r\n" + 
+					"      \"error\" : \"false\",\r\n" + 
+					"      \"numsubpods\" : 1,\r\n" + 
+					"      \"subpods\" : [ {\r\n" + 
+					"        \"jsxgraph\" : \"<iframe srcdoc=\\\"&lt;?xml version=&quot;1.0&quot; encoding=&quot;UTF-8&quot;?&gt;\\n\\n&lt;!DOCTYPE html PUBLIC\\n  &quot;-//W3C//DTD XHTML 1.1 plus MathML 2.0 plus SVG 1.1//EN&quot;\\n  &quot;http://www.w3.org/2002/04/xhtml-math-svg/xhtml-math-svg.dtd&quot;&gt;\\n\\n&lt;html xmlns=&quot;http://www.w3.org/1999/xhtml&quot; style=&quot;width: 100%; height: 100%; margin: 0; padding: 0&quot;&gt;\\n&lt;head&gt;\\n&lt;meta charset=&quot;utf-8&quot;&gt;\\n&lt;title&gt;JSXGraph&lt;/title&gt;\\n\\n&lt;body style=&quot;width: 100%; height: 100%; margin: 0; padding: 0&quot;&gt;\\n\\n&lt;link rel=&quot;stylesheet&quot; type=&quot;text/css&quot; href=&quot;https://cdnjs.cloudflare.com/ajax/libs/jsxgraph/0.99.7/jsxgraphcore.css&quot; /&gt;\\n&lt;script src=&quot;https://cdn.jsdelivr.net/gh/paulmasson/math@1.2.8/build/math.js&quot;&gt;&lt;/script&gt;\\n&lt;script src=&quot;https://cdnjs.cloudflare.com/ajax/libs/jsxgraph/0.99.7/jsxgraphcore.js&quot;\\n        type=&quot;text/javascript&quot;&gt;&lt;/script&gt;\\n&lt;script src=&quot;https://cdnjs.cloudflare.com/ajax/libs/jsxgraph/0.99.7/geonext.min.js&quot;\\n        type=&quot;text/javascript&quot;&gt;&lt;/script&gt;\\n\\n&lt;div id=&quot;jxgbox&quot; class=&quot;jxgbox&quot; style=&quot;display: flex; width:99%; height:99%; margin: 0; flex-direction: column; overflow: hidden&quot;&gt;\\n&lt;script&gt;\\nvar board = JXG.JSXGraph.initBoard('jxgbox', {axis:true,boundingbox:[-11.0,2.2,11.0,-2.2]});\\nboard.suspendUpdate();\\n\\nfunction z1(x) { return sin(x); }\\nvar p1 = board.create('functiongraph',[z1, -10.0, 10.0]);\\nvar data = [ p1 ];\\n\\n\\nboard.unsuspendUpdate();\\n\\n&lt;/script&gt;\\n&lt;/div&gt;\\n\\n&lt;/body&gt;\\n&lt;/html&gt;\\\" style=\\\"display: block; width: 100%; height: 100%; border: none;\\\" ></iframe>\"\r\n" + 
+					"      } ]\r\n" + 
+					"    } ]\r\n" + 
+					"  }\r\n" + 
+					"}");//
 		}
 	}
 
