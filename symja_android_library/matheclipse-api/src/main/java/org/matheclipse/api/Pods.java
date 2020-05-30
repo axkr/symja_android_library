@@ -71,6 +71,7 @@ public class Pods {
 	public static final String MATHCELL_STR = "mathcell";
 	public static final String JSXGRAPH_STR = "jsxgraph";
 	public static final String PLOTLY_STR = "plotly";
+	public static final String VISJS_STR = "visjs";
 
 	public static final int HTML = 0x0001;
 	public static final int PLAIN = 0x0002;
@@ -81,6 +82,7 @@ public class Pods {
 	public static final int MATHCELL = 0x0040;
 	public static final int JSXGRAPH = 0x0080;
 	public static final int PLOTLY = 0x0100;
+	public static final int VISJS = 0x0200;
 	// output
 	public static final String JSON = "JSON";
 
@@ -243,6 +245,40 @@ public class Pods {
 					"</body>\n" + //
 					"</html>";//
 
+	protected final static String VISJS_IFRAME = //
+			"<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n" + //
+					"\n" + //
+					"<!DOCTYPE html PUBLIC\n" + //
+					"  \"-//W3C//DTD XHTML 1.1 plus MathML 2.0 plus SVG 1.1//EN\"\n" + //
+					"  \"http://www.w3.org/2002/04/xhtml-math-svg/xhtml-math-svg.dtd\">\n" + //
+					"\n" + //
+					"<html xmlns=\"http://www.w3.org/1999/xhtml\" style=\"width: 100%; height: 100%; margin: 0; padding: 0\">\n"
+					+ //
+					"<head>\n" + //
+					"<meta charset=\"utf-8\">\n" + //
+					"<title>VIS-NetWork</title>\n" + //
+					"\n" + //
+					"  <script type=\"text/javascript\" src=\"https://cdn.jsdelivr.net/npm/vis-network@6.0.0/dist/vis-network.min.js\"></script>\n"
+					+ //
+					"</head>\n" + //
+					"<body>\n" + //
+					"\n" + //
+					"<div id=\"vis\" style=\"width: 600px; height: 400px; margin: 0;  padding: .25in .5in .5in .5in; flex-direction: column; overflow: hidden\">\n"
+					+ //
+					"<script type=\"text/javascript\">\n" + //
+					"`1`\n" + //
+					"  var container = document.getElementById('vis');\n" + //
+					"  var data = {\n" + //
+					"    nodes: nodes,\n" + //
+					"    edges: edges\n" + //
+					"  };\n" + //
+					"`2`\n" + //
+					"  var network = new vis.Network(container, data, options);\n" + //
+					"</script>\n" + //
+					"</div>\n" + //
+					"</body>\n" + //
+					"</html>";//
+
 	/** package private */
 	static void addSymjaPod(ArrayNode podsArray, IExpr inExpr, IExpr outExpr, String title, String scanner, int formats,
 			ObjectMapper mapper, EvalEngine engine) {
@@ -385,6 +421,8 @@ public class Pods {
 			intern |= JSXGRAPH;
 		} else if (str.equals(PLOTLY_STR)) {
 			intern |= PLOTLY;
+		} else if (str.equals(VISJS_STR) || str.equals("treeform")) {
+			intern |= VISJS;
 		}
 		return intern;
 	}
@@ -1282,6 +1320,26 @@ public class Pods {
 					html = "<iframe srcdoc=\"" + html
 							+ "\" style=\"display: block; width: 100%; height: 100%; border: none;\" ></iframe>";
 					json.put(PLOTLY_STR, html);
+				} catch (Exception ex) {
+					if (FEConfig.SHOW_STACKTRACE) {
+						ex.printStackTrace();
+					}
+				}
+
+			} else {
+
+			}
+		}
+
+		if ((formats & VISJS) != 0x00) {
+			if (plainText != null && plainText.length() > 0) {
+				try {
+					String html = VISJS_IFRAME;
+					html = StringUtils.replace(html, "`1`", plainText);
+					html = StringEscapeUtils.escapeHtml4(html);
+					html = "<iframe srcdoc=\"" + html
+							+ "\" style=\"display: block; width: 100%; height: 100%; border: none;\" ></iframe>";
+					json.put(VISJS_STR, html);
 				} catch (Exception ex) {
 					if (FEConfig.SHOW_STACKTRACE) {
 						ex.printStackTrace();

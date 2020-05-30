@@ -12,6 +12,12 @@ public interface PodDefaultsRules {
     // Abs={-20.0,20.0}
     Set(Abs,
       List(num(-20.0),num(20.0))),
+    // Exp={-0.1,125000.0}
+    Set(Exp,
+      List(num(-0.1),num(125000.0))),
+    // Log={-3.0,3.0}
+    Set(Log,
+      List(num(-3.0),num(3.0))),
     // Sin={-2.0,2.0}
     Set(Sin,
       List(num(-2.0),num(2.0))),
@@ -36,24 +42,24 @@ public interface PodDefaultsRules {
     // Tanh={-20.0,20.0}
     Set(Tanh,
       List(num(-20.0),num(20.0))),
-    // ArcSin={-2.0,2.0}
+    // ArcSin={-20.0,20.0}
     Set(ArcSin,
-      List(num(-2.0),num(2.0))),
-    // ArcCos={-2.0,2.0}
+      List(num(-20.0),num(20.0))),
+    // ArcCos={-20.0,20.0}
     Set(ArcCos,
-      List(num(-2.0),num(2.0))),
-    // ArcCot={-20.0,20.0}
+      List(num(-20.0),num(20.0))),
+    // ArcCot={-3.5,3.5}
     Set(ArcCot,
-      List(num(-20.0),num(20.0))),
-    // ArcTan={-20.0,20.0}
+      List(num(-3.5),num(3.5))),
+    // ArcTan={-3.5,3.5}
     Set(ArcTan,
-      List(num(-20.0),num(20.0))),
-    // ArcSinh={-2.0,2.0}
+      List(num(-3.5),num(3.5))),
+    // ArcSinh={-3.5,3.5}
     Set(ArcSinh,
-      List(num(-2.0),num(2.0))),
-    // ArcCosh={-2.0,2.0}
+      List(num(-3.5),num(3.5))),
+    // ArcCosh={-3.5,3.5}
     Set(ArcCosh,
-      List(num(-2.0),num(2.0))),
+      List(num(-3.5),num(3.5))),
     // ArcCoth={-20.0,20.0}
     Set(ArcCoth,
       List(num(-20.0),num(20.0))),
