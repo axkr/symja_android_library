@@ -1003,9 +1003,9 @@ public class ASTSeriesData extends AbstractAST implements Cloneable, Externaliza
 				nMin = k;
 			} else if (k >= nMax) {
 				nMax = k + 1;
-				if (k >= truncate) {
-					truncate = k + 1;
-				}
+//				if (k >= truncate) {
+//					truncate = k + 1;
+//				}
 			}
 		}
 	}

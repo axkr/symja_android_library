@@ -204,20 +204,4 @@ public class SpanishNumber extends SpokenNumber {
         return thousands(t) + hundreds(h) + specialTenths(h % 100) + prefixGillions[magnitude];
     }
 
-    // Test drive from the JVM...
-    // Run as: java -cp nc.jar net.numericalchameleon.SpokenNumbers.SpanishNumber.main
-    public static void main(String args[]) {
-        boolean t = true;
-        java.io.BufferedReader b = new java.io.BufferedReader(new java.io.InputStreamReader(System.in));
-        while (t) {
-            System.out.print("Dame un número :");
-            try {
-                String some = b.readLine();
-                SpanishNumber sp = new SpanishNumber(some);
-                System.out.println("Tu número fué : " + sp.toString());
-            } catch (Exception e) {
-                System.out.println("Exception :" + e.toString());
-            }
-        }
-    }
 }

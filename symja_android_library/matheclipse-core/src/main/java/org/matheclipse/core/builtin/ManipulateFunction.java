@@ -1041,7 +1041,8 @@ public class ManipulateFunction {
 	 * @param ast
 	 * @param plot
 	 * @param plotRangeX
-	 * @param plotRangeY
+	 * @param engine
+	 *            the evaluation engine
 	 * @return
 	 * @throws IOException
 	 */

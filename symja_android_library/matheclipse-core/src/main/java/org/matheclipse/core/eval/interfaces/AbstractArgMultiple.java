@@ -45,12 +45,12 @@ public abstract class AbstractArgMultiple extends AbstractArg2 {
 
 			while (i < tempAST.size()) {
 
-				tres = binaryOperator(null, temp, tempAST.get(i), engine);
+				tres = binaryOperator(ast, temp, tempAST.get(i), engine);
 
 				if (!tres.isPresent()) {
 
 					for (int j = i + 1; j < tempAST.size(); j++) {
-						tres = binaryOperator(null, temp, tempAST.get(j), engine);
+						tres = binaryOperator(ast, temp, tempAST.get(j), engine);
 
 						if (tres.isPresent()) {
 							evaled = true;

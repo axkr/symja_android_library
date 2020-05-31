@@ -51,8 +51,8 @@ public class ExprID implements IExpr {
 	 * ExprID is especially used in the serialization and deserialization of an <code>IExpr</code> object, by
 	 * representing an index entry in the <code>F.GLOBAL_IDS[]</code> array.
 	 *
-	 * @param the
-	 *            index in array <code>F.GLOBAL_IDS</code>
+	 * @param exprID
+	 *            the index in array <code>F.GLOBAL_IDS</code>
 	 * @see F#GLOBAL_IDS
 	 */
 	public ExprID(short exprID) {

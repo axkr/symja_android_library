@@ -160,7 +160,7 @@ public class RomanianNumber extends SpokenNumber {
      * @param nUnits the units to convert
      * @param nTens the tens to convert
      * @param nHundreds the hundreds to convert
-     * @param nGenger the gender of the converted number should be one of
+     * @param nGender the gender of the converted number should be one of
      * (MASCULIN, FEMININ or NEUTRU)
      * @param bFirstGroup should be true if this the first group of three digits
      * of a larger number

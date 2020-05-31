@@ -1500,33 +1500,6 @@ public class SymbolicPolynomialRing implements RingFactory<SymbolicPolynomial> {
 	}
 
 	/**
-	 * Permutation of polynomial ring variables.
-	 * 
-	 * @param P
-	 *            permutation.
-	 * @return P(this).
-	 */
-	// public GenPolynomialRing permutation(List<Integer> P) {
-	// if (nvar <= 1) {
-	// return this;
-	// }
-	// TermOrder tp = tord.permutation(P);
-	// if (vars == null) {
-	// return new GenPolynomialRing(coFac, nvar, tp);
-	// }
-	// IExpr[] v1 = new IExpr[vars.argSize()];
-	// for (int i = 0; i < v1.length; i++) {
-	// v1[i] = vars.get(v1.length - i);
-	// }
-	// String[] vp = permuteVars(P, v1);
-	// String[] v2 = new String[vp.length];
-	// for (int i = 0; i < vp.length; i++) {
-	// v2[i] = vp[vp.length - 1 - i];
-	// }
-	// return new GenPolynomialRing(coFac, nvar, tp, v2);
-	// }
-
-	/**
 	 * Get a GenPolynomial iterator.
 	 * 
 	 * @return an iterator over all polynomials.

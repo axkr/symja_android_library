@@ -604,7 +604,7 @@ public abstract class AbstractAST implements IASTMutable {
 		public final boolean isNumericFunction() {
 			return false;
 		}
-		
+
 		/** {@inheritDoc} */
 		@Override
 		public final boolean isNumericFunction(VariablesSet varSet) {
@@ -1297,9 +1297,7 @@ public abstract class AbstractAST implements IASTMutable {
 		if (isAST(F.N, 3)) {
 			long determinedPrecision = arg1().determinePrecision();
 			if (determinedPrecision > 0) {
-				if (determinedPrecision >= precision) {
-					return determinedPrecision;
-				}
+				return determinedPrecision;
 			}
 			int p = arg2().toIntDefault();
 			if (p >= Config.MACHINE_PRECISION) {
@@ -3086,7 +3084,7 @@ public abstract class AbstractAST implements IASTMutable {
 		}
 		return false;
 	}
-	 
+
 	/** {@inheritDoc} */
 	@Override
 	public boolean isNumericMode() {
@@ -3647,20 +3645,20 @@ public abstract class AbstractAST implements IASTMutable {
 		}
 		return engine.evalRules(symbol, this).isPresent();
 	}
-	
+
 	/** {@inheritDoc} */
 	@Override
 	public final boolean isVariable() {
-		if (!head().isSymbol()||headID()>=0) {
+		if (!head().isSymbol() || headID() >= 0) {
 			return false;
-		} 
+		}
 		for (int i = 1; i < size(); i++) {
 			IExpr arg = get(i);
 			if (!arg.isVariable()) {
 				return false;
 			}
 		}
-		return true; 
+		return true;
 	}
 
 	/** {@inheritDoc} */

@@ -9597,8 +9597,8 @@ public class F {
 	/**
 	 * Create a unique dummy symbol with prefix "$", which is retrieved from the evaluation engines DUMMY context.
 	 * 
-	 * @param symbolName
-	 *            the name of the symbol
+	 * @param engine
+	 *            the evaluation engine
 	 * @return the symbol object from the context path
 	 */
 	public static ISymbol Dummy(EvalEngine engine) {

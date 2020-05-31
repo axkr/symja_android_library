@@ -804,7 +804,7 @@ public class Pods {
 	 * Create a truth table for logic formulas with less equal 5 variables
 	 * 
 	 * @param podsArray
-	 * @param outExpr
+	 * @param inExpr
 	 * @param variables
 	 * @param formats
 	 * @param mapper
