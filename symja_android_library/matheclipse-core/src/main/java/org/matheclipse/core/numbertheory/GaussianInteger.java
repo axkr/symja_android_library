@@ -21,6 +21,7 @@ import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IASTAppendable;
 import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.interfaces.IInteger;
+import org.matheclipse.core.interfaces.IRational;
 
 public final class GaussianInteger {
 
@@ -86,8 +87,8 @@ public final class GaussianInteger {
 				p = Primes[index];
 				if (p.equals(BigInt2)) {
 					for (index2 = 0; index2 < Exponents[index]; index2++) {
-						DivideGaussian(BigInteger.ONE, BigInteger.ONE, complexMap); /* Divide by 1+i */
-						DivideGaussian(BigInteger.ONE, BigInteger.ONE.negate(), complexMap); /* Divide by 1-i */
+						divideGaussian(BigInteger.ONE, BigInteger.ONE, complexMap); /* Divide by 1+i */
+						divideGaussian(BigInteger.ONE, BigInteger.ONE.negate(), complexMap); /* Divide by 1-i */
 					}
 				} else if (p.testBit(1) == false) { /* if p = 1 (mod 4) */
 					q = p.subtract(BigInteger.ONE); /* q = p-1 */
@@ -120,20 +121,20 @@ public final class GaussianInteger {
 						Mult2 = Tmp;
 					}
 					for (index2 = 0; index2 < Exponents[index]; index2++) {
-						DivideGaussian(Mult1, Mult2, complexMap);
-						DivideGaussian(Mult1, Mult2.negate(), complexMap);
+						divideGaussian(Mult1, Mult2, complexMap);
+						divideGaussian(Mult1, Mult2.negate(), complexMap);
 					}
 					/* end p = 1 (mod 4) */
 				} else { /* if p = 3 (mod 4) */
 					for (index2 = 0; index2 < Exponents[index]; index2++) {
-						DivideGaussian(Primes[index], BigInteger.ZERO, complexMap);
+						divideGaussian(Primes[index], BigInteger.ZERO, complexMap);
 					} /* end p = 3 (mod 4) */
 				}
 			}
-		} 
+		}
 	}
 
-	private void DivideGaussian(BigInteger real, BigInteger imag, SortedMap<ComplexSym, Integer> complexMap) {
+	private void divideGaussian(BigInteger real, BigInteger imag, SortedMap<ComplexSym, Integer> complexMap) {
 		real = real.abs();
 		BigInteger temp;
 		BigInteger norm = real.multiply(real).add(imag.multiply(imag));
@@ -166,4 +167,97 @@ public final class GaussianInteger {
 			}
 		}
 	}
+
+	/**
+	 * <p>
+	 * Return the quotient and remainder as an array <code>[quotient, remainder]</code> of the division of the gaussian
+	 * <code>IInteger</code> numbers <code>c1 / c2</code>.
+	 * </p>
+	 * <p>
+	 * See
+	 * </p>
+	 * <ul>
+	 * <li><a href="https://en.wikipedia.org/wiki/Gaussian_integer">Wikipedia - Gaussian integer</a></li>
+	 * <li><a href="http://fermatslasttheorem.blogspot.com/2005/06/division-algorithm-for-gaussian.html">Division
+	 * Algorithm for Gaussian Integers </a></li>
+	 * </ul>
+	 * 
+	 * @param c1
+	 * @param c2
+	 * @return the quotient and remainder as an array <code>[quotient, remainder]</code>
+	 */
+	public static IInteger[] quotientRemainder(final IInteger[] c1, final IInteger[] c2) {
+		final IInteger fReal = c1[0];
+		final IInteger fImaginary = c1[1];
+		final IInteger re = c2[0];
+		final IInteger im = c2[1];
+		IInteger numeratorReal = fReal.multiply(re).add(//
+				fImaginary.multiply(im));
+
+		IInteger numeratorImaginary = fReal.multiply(im.negate()).add(//
+				re.multiply(fImaginary));
+
+		IInteger denominator = re.multiply(re).add(//
+				im.multiply(im));
+
+		if (denominator.isZero()) {
+			throw new IllegalArgumentException("Denominator can not be zero.");
+		}
+
+		IInteger divisionReal = numeratorReal.divideBy(denominator).round();
+		IInteger divisionImaginary = numeratorImaginary.divideBy(denominator).round();
+
+		IInteger remainderReal = fReal.subtract(re.multiply(divisionReal)).add(im.multiply(divisionImaginary));
+		IInteger remainderImaginary = fImaginary.subtract(re.multiply(divisionImaginary))
+				.subtract(im.multiply(divisionReal));
+
+		return new IInteger[] { (IInteger) divisionReal, (IInteger) divisionImaginary, (IInteger) remainderReal,
+				(IInteger) remainderImaginary };
+
+	}
+
+	/**
+	 * Greatest common divisor of the gaussian <code>IInteger</code> numbers <code>g1, g2</code>.
+	 * 
+	 * @param g1
+	 * @param g2
+	 * @return
+	 */
+	public static IInteger[] gcd(final IInteger[] g1, final IInteger[] g2) {
+		final IInteger fReal = g1[0];
+		final IInteger fImaginary = g1[1];
+		if ((fReal.isZero() && fImaginary.isZero()) || //
+				(g2[0].isZero() && g2[1].isZero())) {
+			return new IInteger[] { F.C0, F.C0 };
+		}
+
+		IInteger[] integerAndRemainder;
+
+		IInteger dividendRe = fReal;
+		IInteger dividendIm = fImaginary;
+		IInteger dividersRe = g2[0];
+		IInteger dividersIm = g2[1];
+		while (!dividersRe.isZero() || !dividersIm.isZero()) {
+			integerAndRemainder = //
+					GaussianInteger.quotientRemainder(//
+							new IInteger[] { dividendRe, dividendIm }, //
+							new IInteger[] { dividersRe, dividersIm });
+
+			dividendRe = dividersRe;
+			dividendIm = dividersIm;
+
+			dividersRe = integerAndRemainder[2];
+			dividersIm = integerAndRemainder[3];
+		}
+
+		if ((dividendRe.isMinusOne() && dividendIm.isZero()) || //
+				(dividendRe.isZero() && dividendIm.isOne()) || //
+				(dividendRe.isZero() && dividendIm.isMinusOne())) {
+			return new IInteger[] { F.C1, F.C0 };
+		}
+
+		return new IInteger[] { dividendRe, dividendIm };
+
+	}
+
 }

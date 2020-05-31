@@ -22,8 +22,16 @@ public interface IComplex extends IBigNumber {
 	 */
 	public IRational getRealPart();
 
+	/**
+	 * Returns the imaginary part of a complex number
+	 * 
+	 * @return real part
+	 */
+	@Override
+	public IRational im();
+
 	public IComplex inverse();
-	
+
 	public IComplex multiply(IComplex val);
 
 	/**
@@ -38,11 +46,21 @@ public interface IComplex extends IBigNumber {
 	 */
 	public IComplex pow(long n);
 
+	public IComplex[] quotientRemainder(final IComplex c2);
+
 	/**
-	 * Return the normalized form of this number (i.e. if the imaginary part equals zero, return the real part as a fractional or
-	 * integer number).
+	 * Return the normalized form of this number (i.e. if the imaginary part equals zero, return the real part as a
+	 * fractional or integer number).
 	 * 
 	 * @return
 	 */
 	public INumber normalize();
+
+	/**
+	 * Returns the real part of a complex number
+	 * 
+	 * @return real part
+	 */
+	@Override
+	public IRational re();
 }

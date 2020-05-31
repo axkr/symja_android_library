@@ -538,13 +538,34 @@ public class ComplexSym implements IComplex {
 				fReal.multiply(parm1.getImaginaryPart()).add(parm1.getRealPart().multiply(fImaginary)));
 	}
 
-	public IInteger[] integerAndRemainderDivisionGuassian(final IInteger[] parm1) {
+	/**
+	 * <p>
+	 * Return the quotient and remainder as an array <code>[quotient, remainder]</code> of the division of
+	 * <code>IComplex</code> numbers <code>this / c2</code>.
+	 * </p>
+	 * <p>
+	 * See
+	 * </p>
+	 * <ul>
+	 * <li><a href="https://en.wikipedia.org/wiki/Gaussian_integer">Wikipedia - Gaussian integer</a></li>
+	 * <li><a href="http://fermatslasttheorem.blogspot.com/2005/06/division-algorithm-for-gaussian.html">Division
+	 * Algorithm for Gaussian Integers </a></li>
+	 * </ul>
+	 * 
+	 * @param c2
+	 * @return the quotient and remainder as an array <code>[quotient, remainder]</code>
+	 */
+	public IComplex[] quotientRemainder(final IComplex c2) {
+		final IRational re = c2.re();
+		final IRational im = c2.im();
+		IRational numeratorReal = fReal.multiply(re).subtract(//
+				fImaginary.multiply(im.negate()));
 
-		IRational numeratorReal = fReal.multiply(parm1[0]).subtract(fImaginary.multiply(parm1[1].negate()));
+		IRational numeratorImaginary = fReal.multiply(im.negate()).add(//
+				re.multiply(fImaginary));
 
-		IRational numeratorImaginary = fReal.multiply(parm1[1].negate()).add(parm1[0].multiply(fImaginary));
-
-		IRational denominator = parm1[0].multiply(parm1[0]).add(parm1[1].multiply(parm1[1]));
+		IRational denominator = re.multiply(re).add(//
+				im.multiply(im));
 
 		if (denominator.isZero()) {
 			throw new IllegalArgumentException("Denominator can not be zero.");
@@ -553,47 +574,14 @@ public class ComplexSym implements IComplex {
 		IRational divisionReal = numeratorReal.divideBy(denominator).round();
 		IRational divisionImaginary = numeratorImaginary.divideBy(denominator).round();
 
-		IRational remainderReal = fReal.subtract(parm1[0].multiply(divisionReal))
-				.subtract(parm1[1].multiply(divisionImaginary).negate());
-		IRational remainderImaginary = fImaginary.subtract(parm1[0].multiply(divisionImaginary))
-				.subtract(parm1[1].multiply(divisionReal));
+		IRational remainderReal = fReal.subtract(re.multiply(divisionReal))
+				.subtract(im.multiply(divisionImaginary).negate());
+		IRational remainderImaginary = fImaginary.subtract(re.multiply(divisionImaginary))
+				.subtract(im.multiply(divisionReal));
 
-		return new IInteger[] { (IInteger) divisionReal, (IInteger) divisionImaginary, (IInteger) remainderReal,
-				(IInteger) remainderImaginary };
-
-	}
-
-	public IInteger[] gcd(final IInteger[] dividers) {
-
-		if ((fReal.isZero() && fImaginary.isZero()) || //
-				(dividers[0].isZero() && dividers[1].isZero())) {
-			return new IInteger[] { F.C0, F.C0 };
-		}
-
-		IInteger[] integerAndRemainder;
-
-		ComplexSym dividend = ComplexSym.valueOf(this.fReal, this.fImaginary);
-
-		while (!dividers[0].isZero() || !dividers[1].isZero()) {
-			integerAndRemainder = dividend.integerAndRemainderDivisionGuassian(dividers);
-
-			dividend.fReal = dividers[0];
-			dividend.fImaginary = dividers[1];
-
-			dividers[0] = integerAndRemainder[2];
-			dividers[1] = integerAndRemainder[3];
-		}
-
-		IInteger fRealResult = (IInteger) dividend.fReal;
-		IInteger fImaginaryResult = (IInteger) dividend.fImaginary;
-
-		if ((fRealResult.isMinusOne() && fImaginaryResult.isZero()) || //
-				(fRealResult.isZero() && fImaginaryResult.isOne()) || //
-				(fRealResult.isZero() && fImaginaryResult.isMinusOne())) {
-			return new IInteger[] { F.C1, F.C0 };
-		}
-
-		return new IInteger[] { (IInteger) dividend.fReal, (IInteger) dividend.fImaginary };
+		return new ComplexSym[] { //
+				valueOf(divisionReal, divisionImaginary), //
+				valueOf(remainderReal, remainderImaginary) };
 
 	}
 

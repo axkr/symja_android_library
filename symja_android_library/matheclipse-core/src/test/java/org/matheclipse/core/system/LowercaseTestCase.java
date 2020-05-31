@@ -18206,6 +18206,14 @@ public class LowercaseTestCase extends AbstractTestCase {
 	}
 
 	public void testQuotientRemainder() {
+		check("QuotientRemainder(-1/2+I*1/2, 1/2-I*1/2)", //
+				"{-1,0}");
+		check("QuotientRemainder(-15/4+I*1/3, 2/33*I)", //
+				"{6+I*62,1/132-I*1/33}");
+		check("QuotientRemainder(-15/4+I*1/3, 2/3)", //
+				"{-6,1/4+I*1/3}");
+		check("QuotientRemainder(26+120*I,37+226*I)", //
+				"{1,-11-I*106}");
 		check("QuotientRemainder(13, 0)", //
 				"QuotientRemainder(13,0)");
 		check("QuotientRemainder(-17, 7)", //
