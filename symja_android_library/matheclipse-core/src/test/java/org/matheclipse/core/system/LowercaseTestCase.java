@@ -18157,6 +18157,19 @@ public class LowercaseTestCase extends AbstractTestCase {
 	}
 
 	public void testQuotient() {
+		check("Quotient(4.56, 2.5)", //
+				"1");
+		check("Quotient(E^E^E, Pi)", //
+				"1214122");
+		check("Table(Quotient(x + y*I, 3.0 - I*2.0), {x, -5, 5}, {y, -5, 5})", //
+				"{{-I*2,-1-I*2,-1-I,-1-I,-1-I,-1-I,-1-I,-1,-2,-2,-2},{-I*2,-I*2,-I,-1-I,-1-I,-1-I,\n" + //
+						"-1,-1,-1,-2,-2+I},{-I*2,-I,-I,-I,-1-I,-1,-1,-1,-1,-1,-1+I},{-I,-I,-I,-I,-I,0,-1,\n" + //
+						"-1,-1,-1+I,-1+I},{1-I,-I,-I,-I,0,0,0,-1,-1+I,-1+I,-1+I},{1-I,1-I,-I,0,0,0,0,0,I,\n" + //
+						"-1+I,-1+I},{1-I,1-I,1-I,1,0,0,0,I,I,I,-1+I},{1-I,1-I,1,1,1,0,I,I,I,I,I},{1-I,1,1,\n" + //
+						"1,1,1,1+I,I,I,I,I*2},{2-I,2,1,1,1,1+I,1+I,1+I,I,I*2,I*2},{2,2,2,1,1+I,1+I,1+I,1+I,\n" + //
+						"1+I,1+I*2,I*2}}");
+		check("Quotient(10.4 + I*8.0, 4.0 + I*5.0)", //
+				"2");
 		check("Quotient(Sqrt(-113), 2)", //
 				"I*5");
 		check("Quotient(42,Pi)", //
@@ -18206,6 +18219,10 @@ public class LowercaseTestCase extends AbstractTestCase {
 	}
 
 	public void testQuotientRemainder() {
+		check("QuotientRemainder(-5.1*Pi,Pi)", //
+				"{-6,2.82743}");
+		check("QuotientRemainder(5-Pi,Pi)", //
+				"{0,5-Pi}");
 		check("QuotientRemainder(-1/2+I*1/2, 1/2-I*1/2)", //
 				"{-1,0}");
 		check("QuotientRemainder(-15/4+I*1/3, 2/33*I)", //
