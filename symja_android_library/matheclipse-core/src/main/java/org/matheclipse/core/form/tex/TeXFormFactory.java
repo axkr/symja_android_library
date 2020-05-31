@@ -1655,9 +1655,6 @@ public class TeXFormFactory {
 			return;
 		}
 		final boolean isNegative = d.isNegative();
-		if (isNegative && (precedence > plusPrec)) {
-			buf.append("\\left( ");
-		}
 		if (d instanceof Num) {
 			convertDoubleString(buf, convertDoubleToFormattedString(d.getRealPart()), precedence, isNegative);
 		} else {

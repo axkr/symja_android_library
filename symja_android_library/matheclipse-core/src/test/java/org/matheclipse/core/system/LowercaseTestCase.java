@@ -23205,7 +23205,9 @@ public class LowercaseTestCase extends AbstractTestCase {
 	}
 
 	public void testTeXForm() {
-		check("TeXForm( f(#,#3)&  )", //
+		check("TeXForm(-2.12 * x )", //
+				"\\left( -2.12\\right) \\,x");
+		check("TeXForm( f(#,#3)&  )", // 
 				"f(\\text{$\\#$1},\\text{$\\#$3})\\&");
 		check("TeXForm( f(#,#3)*2&  )", //
 				"f(\\text{$\\#$1},\\text{$\\#$3})\\,2\\&");
