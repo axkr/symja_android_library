@@ -5984,7 +5984,7 @@ public class F {
 	 * @param im
 	 * @return
 	 */
-	public static IComplex CC(final IFraction re, final IFraction im) {
+	public static IComplex CC(final IRational re, final IRational im) {
 		return ComplexSym.valueOf(re, im);
 	}
 

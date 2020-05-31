@@ -9,62 +9,122 @@ import org.matheclipse.core.interfaces.IAST;
  */
 public interface PodDefaultsRules {
   final public static IAST RULES = List(
-    // Abs={-20.0,20.0}
+    // Abs={-10.0,10.0,-20.0,20.0}
     Set(Abs,
-      List(num(-20.0),num(20.0))),
-    // Exp={-0.1,125000.0}
+      List(num(-10.0),num(10.0),num(-20.0),num(20.0))),
+    // Ceiling={-5.0,5.0,-5.0,5.0}
+    Set(Ceiling,
+      List(num(-5.0),num(5.0),num(-5.0),num(5.0))),
+    // Conjugate={-10.0,10.0,-10.0,10.0}
+    Set(Conjugate,
+      List(num(-10.0),num(10.0),num(-10.0),num(10.0))),
+    // EllipticK={-10.0,10.0,-1.0,5.0}
+    Set(EllipticK,
+      List(num(-10.0),num(10.0),num(-1.0),num(5.0))),
+    // Exp={-10.0,10.0,-0.1,125000.0}
     Set(Exp,
-      List(num(-0.1),num(125000.0))),
-    // Log={-3.0,3.0}
+      List(num(-10.0),num(10.0),num(-0.1),num(125000.0))),
+    // Floor={-5.0,5.0,-5.0,5.0}
+    Set(Floor,
+      List(num(-5.0),num(5.0),num(-5.0),num(5.0))),
+    // Gamma={-5.0,7.0,-30.0,30.0}
+    Set(Gamma,
+      List(num(-5.0),num(7.0),num(-30.0),num(30.0))),
+    // Haversine={-10.0,10.0,-1.0,2.0}
+    Set(Haversine,
+      List(num(-10.0),num(10.0),num(-1.0),num(2.0))),
+    // InverseHaversine={-3.0,4.0,-1.0,5.0}
+    Set(InverseHaversine,
+      List(num(-3.0),num(4.0),num(-1.0),num(5.0))),
+    // Log={-10.0,10.0,-3.0,3.0}
     Set(Log,
-      List(num(-3.0),num(3.0))),
-    // Sin={-2.0,2.0}
+      List(num(-10.0),num(10.0),num(-3.0),num(3.0))),
+    // LogisticSigmoid={-3.0,3.0,0.0,2.0}
+    Set(LogisticSigmoid,
+      List(num(-3.0),num(3.0),num(0.0),num(2.0))),
+    // Sign={-5.0,5.0,-2.0,2.0}
+    Set(Sign,
+      List(num(-5.0),num(5.0),num(-2.0),num(2.0))),
+    // Sqrt={-20.0,20.0,-1.0,5.0}
+    Set(Sqrt,
+      List(num(-20.0),num(20.0),num(-1.0),num(5.0))),
+    // Surd={-10.0,10.0,-10.0,10.0}
+    Set(Surd,
+      List(num(-10.0),num(10.0),num(-10.0),num(10.0))),
+    // Sin={-10.0,10.0,-2.0,2.0}
     Set(Sin,
-      List(num(-2.0),num(2.0))),
-    // Cos={-2.0,2.0}
+      List(num(-10.0),num(10.0),num(-2.0),num(2.0))),
+    // Sinc={-10.0,10.0,-2.0,2.0}
+    Set(Sinc,
+      List(num(-10.0),num(10.0),num(-2.0),num(2.0))),
+    // Cos={-10.0,10.0,-2.0,2.0}
     Set(Cos,
-      List(num(-2.0),num(2.0))),
-    // Cot={-20.0,20.0}
+      List(num(-10.0),num(10.0),num(-2.0),num(2.0))),
+    // Cot={-10.0,10.0,-20.0,20.0}
     Set(Cot,
-      List(num(-20.0),num(20.0))),
-    // Tan={-20.0,20.0}
+      List(num(-10.0),num(10.0),num(-20.0),num(20.0))),
+    // Tan={-10.0,10.0,-20.0,20.0}
     Set(Tan,
-      List(num(-20.0),num(20.0))),
-    // Sinh={-2.0,2.0}
+      List(num(-10.0),num(10.0),num(-20.0),num(20.0))),
+    // Sinh={-10.0,10.0,-6000.0,6000.0}
     Set(Sinh,
-      List(num(-2.0),num(2.0))),
-    // Cosh={-2.0,2.0}
+      List(num(-10.0),num(10.0),num(-6000.0),num(6000.0))),
+    // Cosh={-10.0,10.0,-1.0,30000.0}
     Set(Cosh,
-      List(num(-2.0),num(2.0))),
-    // Coth={-20.0,20.0}
+      List(num(-10.0),num(10.0),num(-1.0),num(30000.0))),
+    // Coth={-10.0,10.0,-5.0,5.0}
     Set(Coth,
-      List(num(-20.0),num(20.0))),
-    // Tanh={-20.0,20.0}
+      List(num(-10.0),num(10.0),num(-5.0),num(5.0))),
+    // Tanh={-10.0,10.0,-2.0,2.0}
     Set(Tanh,
-      List(num(-20.0),num(20.0))),
-    // ArcSin={-20.0,20.0}
+      List(num(-10.0),num(10.0),num(-2.0),num(2.0))),
+    // ArcSin={-2.0,2.0,-20.0,20.0}
     Set(ArcSin,
-      List(num(-20.0),num(20.0))),
-    // ArcCos={-20.0,20.0}
+      List(num(-2.0),num(2.0),num(-20.0),num(20.0))),
+    // ArcCos={-2.0,2.0,-20.0,20.0}
     Set(ArcCos,
-      List(num(-20.0),num(20.0))),
-    // ArcCot={-3.5,3.5}
+      List(num(-2.0),num(2.0),num(-20.0),num(20.0))),
+    // ArcCot={-10.0,10.0,-3.0,3.0}
     Set(ArcCot,
-      List(num(-3.5),num(3.5))),
-    // ArcTan={-3.5,3.5}
+      List(num(-10.0),num(10.0),num(-3.0),num(3.0))),
+    // ArcTan={-10.0,10.0,-3.5,3.5}
     Set(ArcTan,
-      List(num(-3.5),num(3.5))),
-    // ArcSinh={-3.5,3.5}
+      List(num(-10.0),num(10.0),num(-3.5),num(3.5))),
+    // ArcSinh={-10.0,10.0,-10.0,10.0}
     Set(ArcSinh,
-      List(num(-3.5),num(3.5))),
-    // ArcCosh={-3.5,3.5}
+      List(num(-10.0),num(10.0),num(-10.0),num(10.0))),
+    // ArcCosh={-20.0,20.0,-1.0,10.0}
     Set(ArcCosh,
-      List(num(-3.5),num(3.5))),
-    // ArcCoth={-20.0,20.0}
+      List(num(-20.0),num(20.0),num(-1.0),num(10.0))),
+    // ArcCoth={-12.0,12.0,-10.0,10.0}
     Set(ArcCoth,
-      List(num(-20.0),num(20.0))),
-    // ArcTanh={-20.0,20.0}
+      List(num(-12.0),num(12.0),num(-10.0),num(10.0))),
+    // ArcTanh={-2.0,2.0,-10.0,10.0}
     Set(ArcTanh,
-      List(num(-20.0),num(20.0)))
+      List(num(-2.0),num(2.0),num(-10.0),num(10.0))),
+    // Csc={-10.0,10.0,-10.0,10.0}
+    Set(Csc,
+      List(num(-10.0),num(10.0),num(-10.0),num(10.0))),
+    // Csch={-10.0,10.0,-5.0,5.0}
+    Set(Csch,
+      List(num(-10.0),num(10.0),num(-5.0),num(5.0))),
+    // ArcCsc={-10.0,10.0,-5.0,5.0}
+    Set(ArcCsc,
+      List(num(-10.0),num(10.0),num(-5.0),num(5.0))),
+    // ArcCsch={-10.0,10.0,-5.0,5.0}
+    Set(ArcCsch,
+      List(num(-10.0),num(10.0),num(-5.0),num(5.0))),
+    // Sec={-10.0,10.0,-10.0,10.0}
+    Set(Sec,
+      List(num(-10.0),num(10.0),num(-10.0),num(10.0))),
+    // Sech={-10.0,10.0,-1.0,1.0}
+    Set(Sech,
+      List(num(-10.0),num(10.0),num(-1.0),num(1.0))),
+    // ArcSec={-10.0,10.0,-1.0,5.0}
+    Set(ArcSec,
+      List(num(-10.0),num(10.0),num(-1.0),num(5.0))),
+    // ArcSech={-1.5,1.5,-5.0,5.0}
+    Set(ArcSech,
+      List(num(-1.5),num(1.5),num(-5.0),num(5.0)))
   );
 }

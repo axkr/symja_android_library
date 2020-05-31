@@ -74,9 +74,9 @@ public class DocumentationPod implements IPod, PodDefaultsRules {
 		int numpods = 0;
 		if (pod.parameters != null) {
 			IExpr plot2D = F.Manipulate(F.Plot(F.unaryAST1(pod.symbol, F.Times(F.a, F.x)), //
-					F.List(F.x, F.num(-10.0), F.num(10.0)), //
+					F.List(F.x, pod.parameters.arg1(), pod.parameters.arg2()), //
 					F.Rule(F.PlotRange, //
-							F.List(pod.parameters.arg1(), pod.parameters.arg2()))), //
+							F.List(pod.parameters.arg3(), pod.parameters.arg4()))), //
 					F.List(F.a, F.C1, F.C10));
 			EvalEngine engine = EvalEngine.get();
 			IExpr podOut = engine.evaluate(plot2D);

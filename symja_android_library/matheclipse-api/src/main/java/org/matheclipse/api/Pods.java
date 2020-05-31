@@ -639,7 +639,8 @@ public class Pods {
 							return messageJSON;
 						} else {
 							IExpr expr = inExpr;
-							outExpr = engine.evaluate(expr);
+//							outExpr = engine.evaluate(expr);
+
 							if (outExpr.isAST(F.JSFormData, 3)) {
 								podOut = outExpr;
 								int form = internFormat(0, podOut.second().toString());
@@ -710,6 +711,11 @@ public class Pods {
 
 									resultStatistics(queryresult, error, numpods, podsArray);
 									return messageJSON;
+								} else {
+									if (!inExpr.equals(outExpr)) {
+										addSymjaPod(podsArray, inExpr, outExpr, "Result", "Identity", formats, mapper, engine);
+										numpods++;
+									}
 								}
 
 								boolean isNumericFunction = outExpr.isNumericFunction(varSet);

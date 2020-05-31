@@ -12,11 +12,11 @@ import java.util.function.Function;
 
 import org.hipparchus.complex.Complex;
 import org.matheclipse.core.eval.EvalEngine;
-import org.matheclipse.core.eval.interfaces.AbstractArg2;
 import org.matheclipse.core.eval.interfaces.AbstractCoreFunctionEvaluator;
 import org.matheclipse.core.eval.interfaces.AbstractEvaluator;
 import org.matheclipse.core.eval.interfaces.AbstractFunctionEvaluator;
 import org.matheclipse.core.eval.interfaces.INumeric;
+import org.matheclipse.core.expression.ComplexSym;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.expression.IntervalSym;
 import org.matheclipse.core.expression.StringX;
@@ -28,6 +28,7 @@ import org.matheclipse.core.interfaces.IComplexNum;
 import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.interfaces.IInteger;
 import org.matheclipse.core.interfaces.INumber;
+import org.matheclipse.core.interfaces.IRational;
 import org.matheclipse.core.interfaces.ISignedNumber;
 import org.matheclipse.core.interfaces.ISymbol;
 import org.matheclipse.parser.client.FEConfig;
@@ -1163,7 +1164,7 @@ public class IntegerFunctions {
 	 */
 	private static class Quotient extends AbstractFunctionEvaluator {
 
-		public IExpr evaluate(final IAST ast,  EvalEngine engine) {
+		public IExpr evaluate(final IAST ast, EvalEngine engine) {
 			IExpr z = ast.arg1();
 			IExpr n = ast.arg2();
 			if (n.isZero()) {
@@ -1239,26 +1240,60 @@ public class IntegerFunctions {
 	 * {-5,-1}
 	 * </pre>
 	 */
-	private static class QuotientRemainder extends AbstractArg2 {
+	private static class QuotientRemainder extends AbstractFunctionEvaluator {
 
 		@Override
-		public IExpr e2IntArg(final IInteger i0, final IInteger i1) {
+		public IExpr evaluate(IAST ast, EvalEngine engine) {
+
 			try {
-				if (i1.isZero()) {
-					return EvalEngine.get().printMessage("QuotientRemainder: division by zero");
-				}
-				IASTMutable list = F.ListAlloc(F.Null, F.Null);
-				list.set(1, i0.quotient(i1));
-				if (i1.isNegative()) {
-					list.set(2, i0.negate().mod(i1.negate()).negate());
+				if (ast.arg1().isInteger() && ast.arg2().isInteger()) {
+					final IInteger i0 = (IInteger) ast.arg1();
+					final IInteger i1 = (IInteger) ast.arg2();
+					if (i1.isZero()) {
+						return EvalEngine.get().printMessage("QuotientRemainder: division by zero");
+					}
+					IASTMutable list = F.ListAlloc(F.Null, F.Null);
+
+					list.set(1, i0.quotient(i1));
+					if (i1.isNegative()) {
+						list.set(2, i0.negate().mod(i1.negate()).negate());
+						return list;
+					}
+					list.set(2, i0.mod(i1));
 					return list;
+				} else if (ast.arg1().isComplex() || ast.arg2().isComplex()) {
+					IComplex arg1;
+					if (ast.arg1().isComplex()) {
+						arg1 = (IComplex) ast.arg1();
+					} else if (ast.arg1().isRational()) {
+						arg1 = F.complex((IRational) ast.arg1());
+					} else {
+						return F.NIL;
+					}
+					IComplex arg2;
+					if (ast.arg2().isComplex()) {
+						arg2 = (ComplexSym) ast.arg2();
+					} else if (ast.arg2().isRational()) {
+						arg2 = F.complex((IRational) ast.arg2());
+					} else {
+						return F.NIL;
+					}
+
+					IComplex[] result = arg1.quotientRemainder(arg2);
+					if (result != null) {
+						return F.List(result[0], result[1]);
+					}
+
 				}
-				list.set(2, i0.mod(i1));
-				return list;
-			} catch (ArithmeticException ae) {
+			} catch (RuntimeException ae) {
 				return EvalEngine.get().printMessage("QuotientRemainder: " + ae.getMessage());
 			}
+			return F.NIL;
+		}
 
+		@Override
+		public int[] expectedArgSize() {
+			return IOFunctions.ARGS_1_2;
 		}
 
 		@Override
