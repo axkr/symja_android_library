@@ -53,12 +53,7 @@ import org.matheclipse.core.interfaces.IStringX;
 import org.matheclipse.core.interfaces.ISymbol;
 import org.matheclipse.core.reflection.system.rules.QuantileRules;
 import org.matheclipse.core.reflection.system.rules.StandardDeviationRules;
-import org.matheclipse.parser.client.FEConfig;
-import org.uncommons.maths.random.BinomialGenerator;
-import org.uncommons.maths.random.DiscreteUniformGenerator;
-import org.uncommons.maths.random.ExponentialGenerator;
-import org.uncommons.maths.random.GaussianGenerator;
-import org.uncommons.maths.random.PoissonGenerator;
+import org.matheclipse.parser.client.FEConfig; 
 
 public class StatisticsFunctions {
 	// avoid result -Infinity when reference is close to 1.0
@@ -139,9 +134,11 @@ public class StatisticsFunctions {
 		/**
 		 * @param distribution
 		 *            the distribution
+		 * @param size
+		 *            the size of the sample
 		 * @return sample generated using the given random generator
 		 */
-		IExpr randomVariate(Random random, IAST distribution);
+		public IExpr randomVariate(Random random, IAST distribution, int size);
 	}
 
 	/**
@@ -151,7 +148,7 @@ public class StatisticsFunctions {
 		/** @return lowest value a random variable from this distribution may attain */
 		IExpr lowerBound(IAST dist);
 
-		IExpr randomVariate(Random random, IAST dist);
+		IExpr randomVariate(Random random, IAST dist, int size);
 
 		/**
 		 * @param n
@@ -658,11 +655,16 @@ public class StatisticsFunctions {
 		}
 
 		@Override
-		public IExpr randomVariate(Random random, IAST dist) {
+		public IExpr randomVariate(Random random, IAST dist, int size) {
 			if (dist.isAST1()) {
+				// see exception handling in RandonmVariate() function
 				double p = dist.arg1().evalDouble();
 				if (0 <= p && p <= 1) {
-					return F.ZZ(new BinomialGenerator(1, p, random).nextValue());
+//					return F.ZZ(new BinomialGenerator(1, p, random).nextValue());
+					RandomDataGenerator rdg = new RandomDataGenerator();
+					int[] vector = rdg.nextDeviates(
+							new org.hipparchus.distribution.discrete.BinomialDistribution(1, p), size);
+					return F.List(vector);
 				}
 			}
 			return F.NIL;
@@ -764,15 +766,16 @@ public class StatisticsFunctions {
 		}
 
 		@Override
-		public IExpr randomVariate(Random random, IAST dist) {
+		public IExpr randomVariate(Random random, IAST dist, int size) {
 			if (dist.isAST2()) {
-				//
+				// exception handling in RandonmVariate() function
 				ISignedNumber a = dist.arg1().evalReal();
 				ISignedNumber b = dist.arg2().evalReal();
 				if (a != null && b != null) {
-					// TODO cache RejectionLogLogistic instance
-					RejectionLogLogistic rng = new RejectionLogLogistic(a.doubleValue(), b.doubleValue());
-					return F.num(rng.rand());
+					RandomDataGenerator rdg = new RandomDataGenerator();
+					double[] vector = rdg.nextDeviates(new org.hipparchus.distribution.continuous.BetaDistribution(
+							a.doubleValue(), b.doubleValue()), size);
+					return new ASTRealVector(vector, false); 
 				}
 			}
 			return F.NIL;
@@ -836,165 +839,6 @@ public class StatisticsFunctions {
 		public void setUp(final ISymbol newSymbol) {
 		}
 
-		/**
-		 * Implements <EM>Beta</EM> random variate generators using the rejection method with log-logistic envelopes.
-		 * The method draws the first two uniforms from the main stream and uses the auxiliary stream for the remaining
-		 * uniforms, when more than two are needed (i.e., when rejection occurs).
-		 *
-		 */
-		class RejectionLogLogistic {
-
-			private static final int BB = 0;
-			private static final int BC = 1;
-			private final double alpha;
-			private int method;
-			private double am;
-			private double bm;
-			private double al;
-			private double alnam;
-			private double be;
-			private double ga;
-			private double si;
-			private double rk1;
-			private double rk2;
-
-			/**
-			 * Creates a beta random variate generator.
-			 */
-			public RejectionLogLogistic(double alpha, double beta) {
-				this.alpha = alpha;
-				if (alpha > 1.0 && beta > 1.0) {
-					method = BB;
-					am = (alpha < beta) ? alpha : beta;
-					bm = (alpha > beta) ? alpha : beta;
-					al = am + bm;
-					be = Math.sqrt((al - 2.0) / (2.0 * alpha * beta - al));
-					ga = am + 1.0 / be;
-				} else {
-					method = BC;
-					am = (alpha > beta) ? alpha : beta;
-					bm = (alpha < beta) ? alpha : beta;
-					al = am + bm;
-					alnam = al * Math.log(al / am) - 1.386294361;
-					be = 1.0 / bm;
-					si = 1.0 + am - bm;
-					rk1 = si * (0.013888889 + 0.041666667 * bm) / (am * be - 0.77777778);
-					rk2 = 0.25 + (0.5 + 0.25 / si) * bm;
-				}
-			}
-
-			public double rand() {
-				double X = 0.0;
-				double u1, u2, v, w, y, z, r, s, t;
-				switch (method) {
-				case BB:
-					/* -X- generator code -X- */
-					while (true) {
-						/* Step 1 */
-						u1 = Math.random();
-						u2 = Math.random();
-						v = be * Math.log(u1 / (1.0 - u1));
-						w = am * Math.exp(v);
-						z = u1 * u1 * u2;
-						r = ga * v - 1.386294361;
-						s = am + r - w;
-
-						/* Step 2 */
-						if (s + 2.609437912 < 5.0 * z) {
-							/* Step 3 */
-							t = Math.log(z);
-							if (s < t) /* Step 4 */ {
-								if (r + al * Math.log(al / (bm + w)) < t) {
-									continue;
-								}
-							}
-						}
-
-						/* Step 5 */
-						X = F.isEqual(am, alpha) ? w / (bm + w) : bm / (bm + w);
-						break;
-					}
-					/* -X- end of generator code -X- */
-					break;
-
-				case BC:
-					while (true) {
-						/* Step 1 */
-						u1 = Math.random();
-						u2 = Math.random();
-
-						if (u1 < 0.5) {
-							/* Step 2 */
-							y = u1 * u2;
-							z = u1 * y;
-
-							if ((0.25 * u2 - y + z) >= rk1) {
-								continue; /* goto 1 */
-							}
-
-							/* Step 5 */
-							v = be * Math.log(u1 / (1.0 - u1));
-							if (v > 80.0) {
-								if (alnam < Math.log(z)) {
-									continue;
-								}
-								X = F.isEqual(am, alpha) ? 1.0 : 0.0;
-								break;
-							} else {
-								w = am * Math.exp(v);
-								if ((al * (Math.log(al / (bm + w)) + v) - 1.386294361) < Math.log(z)) {
-									continue; /* goto 1 */
-								}
-
-								/* Step 6_a */
-								X = !F.isEqual(am, alpha) ? bm / (bm + w) : w / (bm + w);
-								break;
-							}
-						} else {
-							/* Step 3 */
-							z = u1 * u1 * u2;
-							if (z < 0.25) {
-								/* Step 5 */
-								v = be * Math.log(u1 / (1.0 - u1));
-								if (v > 80.0) {
-									X = F.isEqual(am, alpha) ? 1.0 : 0.0;
-									break;
-								}
-
-								w = am * Math.exp(v);
-								X = !F.isEqual(am, alpha) ? bm / (bm + w) : w / (bm + w);
-								break;
-							} else {
-								if (z >= rk2) {
-									continue;
-								}
-								v = be * Math.log(u1 / (1.0 - u1));
-								if (v > 80.0) {
-									if (alnam < Math.log(z)) {
-										continue;
-									}
-									X = F.isEqual(am, alpha) ? 1.0 : 0.0;
-									break;
-								}
-								w = am * Math.exp(v);
-								if ((al * (Math.log(al / (bm + w)) + v) - 1.386294361) < Math.log(z)) {
-									continue; /* goto 1 */
-								}
-
-								/* Step 6_b */
-								X = !F.isEqual(am, alpha) ? bm / (bm + w) : w / (bm + w);
-								break;
-							}
-						}
-					}
-					break;
-				default:
-					throw new IllegalStateException();
-				}
-
-				return X;
-			}
-		}
 	}
 
 	/**
@@ -1295,13 +1139,18 @@ public class StatisticsFunctions {
 		}
 
 		@Override
-		public IExpr randomVariate(Random random, IAST dist) {
+		public IExpr randomVariate(Random random, IAST dist, int size) {
 			if (dist.isAST2()) {
 				int n = dist.arg1().toIntDefault(-1);
 				if (n > 0) {
+					// see exception handling in RandonmVariate() function
 					double p = dist.arg2().evalDouble();
 					if (0 <= p && p <= 1) {
-						return F.ZZ(new BinomialGenerator(n, p, random).nextValue());
+						RandomDataGenerator rdg = new RandomDataGenerator();
+						int[] vector = rdg.nextDeviates(
+								new org.hipparchus.distribution.discrete.BinomialDistribution(n, p), size);
+						return F.List(vector);
+						// return F.ZZ(new BinomialGenerator(n, p, random).nextValue());
 					}
 				}
 			}
@@ -1914,7 +1763,7 @@ public class StatisticsFunctions {
 		}
 
 		@Override
-		public IExpr randomVariate(Random random, IAST dist) {
+		public IExpr randomVariate(Random random, IAST dist, int size) {
 			if (dist.isAST2()) {
 				IExpr n = dist.arg1();
 				IExpr m = dist.arg2();
@@ -2077,16 +1926,19 @@ public class StatisticsFunctions {
 		}
 
 		@Override
-		public IExpr randomVariate(Random random, IAST dist) {
+		public IExpr randomVariate(Random random, IAST dist, int size) {
 			if (dist.isAST2()) {
-				//
-				ISignedNumber a = dist.arg1().evalReal();
-				ISignedNumber b = dist.arg2().evalReal();
-				if (a != null && b != null) {
-					// TODO cache RandomDataGenerator instance
-					RandomDataGenerator rdg = new RandomDataGenerator();
-					return F.num(rdg.nextGamma(a.doubleValue(), b.doubleValue()));
-				}
+				// see exception handling in RandonmVariate() function
+				double a = dist.arg1().evalDouble();
+				double b = dist.arg2().evalDouble();
+
+				// TODO cache RandomDataGenerator instance
+				RandomDataGenerator rdg = new RandomDataGenerator();
+				double[] vector = rdg.nextDeviates(//
+						new org.hipparchus.distribution.continuous.GammaDistribution(a, b), //
+						size);
+				return new ASTRealVector(vector, false);
+
 			}
 			return F.NIL;
 		}
@@ -2414,18 +2266,15 @@ public class StatisticsFunctions {
 		}
 
 		@Override
-		public IExpr randomVariate(Random random, IAST dist) {
+		public IExpr randomVariate(Random random, IAST dist, int size) {
 			if (dist.isAST2()) {
-				IExpr n = dist.arg1();
-				IExpr m = dist.arg2();
-				if (n.isReal() && m.isReal()) {
-					double lambda = n.evalDouble();
-					double xi = m.evalDouble();
-					double reference = random.nextDouble();
-					double uniform = Math.nextUp(reference);
-					double result = Math.log((xi - Math.log(uniform)) / xi) / lambda;
-					return F.num(result);
-				}
+				// see exception handling in RandonmVariate() function
+				double lambda = dist.arg1().evalDouble();
+				double xi = dist.arg2().evalDouble();
+				double reference = random.nextDouble();
+				double uniform = Math.nextUp(reference);
+				double result = Math.log((xi - Math.log(uniform)) / xi) / lambda;
+				return F.num(result);
 			}
 			return F.NIL;
 		}
@@ -2606,17 +2455,21 @@ public class StatisticsFunctions {
 		}
 
 		@Override
-		public IExpr randomVariate(Random random, IAST dist) {
+		public IExpr randomVariate(Random random, IAST dist, int size) {
 			if (dist.isAST2()) {
-				IExpr n = dist.arg1();
-				IExpr m = dist.arg2();
-				if (n.isReal() && m.isReal()) {
-					// avoid result -Infinity when reference is close to 1.0
-					double reference = random.nextDouble();
-					double uniform = reference == NEXTDOWNONE ? NEXTDOWNONE : Math.nextUp(reference);
-					uniform = Math.log(-Math.log(uniform));
-					return m.add(n.times(F.num(uniform)));
-				}
+				// see exception handling in RandonmVariate() function
+				double n = dist.arg1().evalDouble();
+				double m = dist.arg2().evalDouble();
+				// avoid result -Infinity when reference is close to 1.0
+				// double reference = random.nextDouble();
+				// double uniform = reference == NEXTDOWNONE ? NEXTDOWNONE : Math.nextUp(reference);
+				// uniform = Math.log(-Math.log(uniform));
+				// return m.add(n.times(F.num(uniform)));
+				RandomDataGenerator rdg = new RandomDataGenerator();
+				double[] vector = rdg.nextDeviates(new org.hipparchus.distribution.continuous.GumbelDistribution(n, m),
+						size);
+				return new ASTRealVector(vector, false);
+
 			}
 			return F.NIL;
 		}
@@ -3110,13 +2963,17 @@ public class StatisticsFunctions {
 		}
 
 		@Override
-		public IExpr randomVariate(Random random, IAST dist) {
+		public IExpr randomVariate(Random random, IAST dist, int size) {
 			IExpr[] minMax = minmax(dist);
 			if (minMax != null) {
 				int min = minMax[0].toIntDefault(Integer.MIN_VALUE);
 				int max = minMax[1].toIntDefault(Integer.MIN_VALUE);
 				if (min < max && min != Integer.MIN_VALUE) {
-					return F.ZZ(new DiscreteUniformGenerator(min, max, random).nextValue());
+					RandomDataGenerator rdg = new RandomDataGenerator();
+					int[] vector = rdg.nextDeviates(
+							new org.hipparchus.distribution.discrete.UniformIntegerDistribution(min, max), size);
+					return F.List(vector);
+					// return F.ZZ(new DiscreteUniformGenerator(min, max, random).nextValue());
 				}
 			}
 			return F.NIL;
@@ -3489,11 +3346,16 @@ public class StatisticsFunctions {
 		}
 
 		@Override
-		public IExpr randomVariate(Random random, IAST dist) {
+		public IExpr randomVariate(Random random, IAST dist, int size) {
 			if (dist.isAST1()) {
-				if (dist.arg1().isReal() && dist.arg1().isPositiveResult()) {
-					double rate = dist.arg1().evalDouble();
-					return F.num(new ExponentialGenerator(rate, random).nextValue());
+				// see exception handling in RandonmVariate() function
+				double rate = dist.arg1().evalDouble();
+				if (rate > 0.0) {
+					// return F.num(new ExponentialGenerator(rate, random).nextValue());
+					RandomDataGenerator rdg = new RandomDataGenerator();
+					double[] vector = rdg.nextDeviates(
+							new org.hipparchus.distribution.continuous.ExponentialDistribution(rate), size);
+					return new ASTRealVector(vector, false);
 				}
 			}
 			return F.NIL;
@@ -3855,13 +3717,19 @@ public class StatisticsFunctions {
 		}
 
 		@Override
-		public IExpr randomVariate(Random random, IAST dist) {
+		public IExpr randomVariate(Random random, IAST dist, int size) {
 			if (dist.isAST2()) {
-				if (dist.arg1().isReal() && dist.arg2().isPositiveResult()) {
-					double mean = dist.arg1().evalDouble();
-					double sigma = dist.arg2().evalDouble();
-					return F.num(Math.exp(new GaussianGenerator(mean, sigma, random).nextValue()));
+				// see exception handling in RandonmVariate() function
+				double mean = dist.arg1().evalDouble();
+				double sigma = dist.arg2().evalDouble();
+				if (sigma > 0) {
+					RandomDataGenerator rdg = new RandomDataGenerator();
+					double[] vector = rdg.nextDeviates(
+							new org.hipparchus.distribution.continuous.LogNormalDistribution(mean, sigma), size);
+					return new ASTRealVector(vector, false);
+					// return F.num(Math.exp(new GaussianGenerator(mean, sigma, random).nextValue()));
 				}
+
 			}
 			return F.NIL;
 		}
@@ -4598,15 +4466,22 @@ public class StatisticsFunctions {
 		}
 
 		@Override
-		public IExpr randomVariate(Random random, IAST dist) {
+		public IExpr randomVariate(Random random, IAST dist, int size) {
 			if (dist.isAST0()) {
 				return F.num(random.nextGaussian());
 			}
 			if (dist.isAST2()) {
-				if (dist.arg1().isReal() && dist.arg2().isPositiveResult()) {
-					double mean = dist.arg1().evalDouble();
-					double sigma = dist.arg2().evalDouble();
-					return F.num(new GaussianGenerator(mean, sigma, random).nextValue());
+				// see exception handling in RandonmVariate() function
+				double mean = dist.arg1().evalDouble();
+				double sigma = dist.arg2().evalDouble();
+				if (sigma > 0) {
+					// double mean = dist.arg1().evalDouble();
+					// double sigma = dist.arg2().evalDouble();
+					// return F.num(new GaussianGenerator(mean, sigma, random).nextValue());
+					RandomDataGenerator rdg = new RandomDataGenerator();
+					double[] vector = rdg.nextDeviates(
+							new org.hipparchus.distribution.continuous.NormalDistribution(mean, sigma), size);
+					return new ASTRealVector(vector, false);
 				}
 			}
 			return F.NIL;
@@ -4911,10 +4786,15 @@ public class StatisticsFunctions {
 		}
 
 		@Override
-		public IExpr randomVariate(Random random, IAST dist) {
+		public IExpr randomVariate(Random random, IAST dist, int size) {
 			if (dist.isAST1()) {
+				// see exception handling in RandonmVariate() function
 				double mean = dist.arg1().evalDouble();
-				return F.ZZ(new PoissonGenerator(mean, random).nextValue());
+				// return F.ZZ(new PoissonGenerator(mean, random).nextValue());
+				RandomDataGenerator rdg = new RandomDataGenerator();
+				int[] vector = rdg.nextDeviates(new org.hipparchus.distribution.discrete.PoissonDistribution(mean),
+						size);
+				return F.List(vector);
 			}
 			return F.NIL;
 		}
@@ -5140,29 +5020,28 @@ public class StatisticsFunctions {
 									IExpr arg2 = ast.arg2();
 									if (arg2.isList()) {
 										int[] indx = Validate.checkListOfInts(ast, arg2, 0, Integer.MAX_VALUE, engine);
-										if (indx == null) {
+										if (indx == null || indx.length == 0) {
 											return F.NIL;
 										}
+										if (indx.length == 1) {
+											// create a list
+											return variate.randomVariate(random, dist, indx[0]);
+										}
+										// create a tensor
+										int sampleSize = indx[indx.length - 1];
+										System.arraycopy(indx, 0, indx, 1, indx.length - 1);
 										IASTAppendable list = F.ListAlloc(indx[0]);
-										return createArray(indx, 0, list, () -> variate.randomVariate(random, dist));
+										return createArray(indx, 1, list,
+												() -> variate.randomVariate(random, dist, sampleSize));
 									} else {
 										int n = arg2.toIntDefault(Integer.MIN_VALUE);
 										if (n >= 0) {
-											IASTAppendable result = F.ListAlloc(n);
-											for (int i = 0; i < n; i++) {
-												IExpr temp = variate.randomVariate(random, dist);
-												if (temp.isPresent()) {
-													result.append(variate.randomVariate(random, dist));
-												} else {
-													return F.NIL;
-												}
-											}
-											return result;
+											return variate.randomVariate(random, dist, n);
 										}
 									}
 									return F.NIL;
 								}
-								return variate.randomVariate(random, dist);
+								return variate.randomVariate(random, dist, 1);
 							}
 						}
 					} catch (ValidateException ve) {
@@ -5859,13 +5738,16 @@ public class StatisticsFunctions {
 		}
 
 		@Override
-		public IExpr randomVariate(Random random, IAST dist) {
+		public IExpr randomVariate(Random random, IAST dist, int size) {
 			IExpr[] minMax = minmax(dist);
 			if (minMax != null) {
+				// see exception handling in RandonmVariate() function
 				double min = minMax[0].evalDouble();
 				double max = minMax[1].evalDouble();
 				RandomDataGenerator rdg = new RandomDataGenerator();
-				return F.num(rdg.nextUniform(min, max));
+				double[] vector = rdg.nextDeviates(
+						new org.hipparchus.distribution.continuous.UniformRealDistribution(min, max), size);
+				return new ASTRealVector(vector, false);
 			}
 			return F.NIL;
 		}

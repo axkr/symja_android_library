@@ -18298,6 +18298,26 @@ public class LowercaseTestCase extends AbstractTestCase {
 	}
 
 	public void testRandomVariate() {
+		// check("RandomVariate(GammaDistribution(0.5,0.6), {2,3,4})", //
+		// "{{{0.000793278,0.0921714,0.0523716,0.100137},"//
+		// + "{0.104185,0.0459276,3.79475,0.247275},"//
+		// + "{0.0363476,0.843459,0.662268,0.0752151}},"//
+		// //
+		// + "{{0.00037008,0.125594,0.0058051,0.158089},"
+		// + "{0.573566,0.128191,0.00204638,0.819725},"//
+		// + "{0.407606,0.00820377,0.0115433,0.107513}}}");
+		// check("RandomVariate(DiscreteUniformDistribution({1,15}), 10^1)", //
+		// "{14,1,9,11,5,11,11,5,13,9}");
+		// check("RandomVariate(ExponentialDistribution(1), 10^1)", //
+		// "{0.304049,0.242275,0.291415,1.28545,0.567106,1.02787,3.29483,4.40819,9.03388,0.375482}");
+		//
+		// check("RandomVariate(BetaDistribution(0.25,0.75), 10^1)", //
+		// "{0.0598983,0.109825,0.00899438,0.127621,0.000186889,0.00620042,0.213545,0.82361,0.0000629664,0.465407}");
+		// check("RandomVariate(UniformDistribution({0,2}), 10^1)", //
+		// "{1.95015,1.42461,0.379616,0.828009,1.29886,1.74158,0.792286,0.651039,1.32392,1.71367}");
+		// check("RandomVariate(BinomialDistribution(100,0.25), 10^1)", //
+		// "{28,25,30,25,25,26,29,17,33,20}");
+
 		// check("RandomVariate(BetaDistribution(0.5,0.6), {10})", //
 		// "{0.651565,0.0687826,0.53907,0.511176,0.0419515,0.946387,0.995215,0.0896617,0.00242461,0.607517}");
 		// check("RandomVariate(FrechetDistribution(0.5,0.6), {10})", //
@@ -23207,7 +23227,7 @@ public class LowercaseTestCase extends AbstractTestCase {
 	public void testTeXForm() {
 		check("TeXForm(-2.12 * x )", //
 				"\\left( -2.12\\right) \\,x");
-		check("TeXForm( f(#,#3)&  )", // 
+		check("TeXForm( f(#,#3)&  )", //
 				"f(\\text{$\\#$1},\\text{$\\#$3})\\&");
 		check("TeXForm( f(#,#3)*2&  )", //
 				"f(\\text{$\\#$1},\\text{$\\#$3})\\,2\\&");
