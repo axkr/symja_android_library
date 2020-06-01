@@ -144,183 +144,355 @@ public class TestPods {
 		System.out.println(jsonStr);
 		if (s.contains("Windows")) {
 			assertEquals(jsonStr, //
-					"{\r\n" + "  \"queryresult\" : {\r\n" + "    \"success\" : \"true\",\r\n"
-							+ "    \"error\" : \"false\",\r\n" + "    \"numpods\" : 34,\r\n"
-							+ "    \"version\" : \"0.1\",\r\n" + "    \"pods\" : [ {\r\n"
-							+ "      \"title\" : \"Input\",\r\n" + "      \"scanner\" : \"Identity\",\r\n"
-							+ "      \"error\" : \"false\",\r\n" + "      \"numsubpods\" : 1,\r\n"
-							+ "      \"subpods\" : [ {\r\n" + "        \"plaintext\" : \"cs\",\r\n"
-							+ "        \"sinput\" : \"cs\",\r\n" + "        \"latex\" : \"cs\"\r\n" + "      } ]\r\n"
-							+ "    }, {\r\n" + "      \"title\" : \"Standard Name\",\r\n"
-							+ "      \"scanner\" : \"Data\",\r\n" + "      \"error\" : \"false\",\r\n"
-							+ "      \"numsubpods\" : 1,\r\n" + "      \"subpods\" : [ {\r\n"
-							+ "        \"plaintext\" : \"Caesium\",\r\n"
-							+ "        \"sinput\" : \"ElementData(Caesium,StandardName)\",\r\n"
-							+ "        \"latex\" : \"\\\\textnormal{Caesium}\"\r\n" + "      } ]\r\n" + "    }, {\r\n"
-							+ "      \"title\" : \"Atomic Number\",\r\n" + "      \"scanner\" : \"Data\",\r\n"
-							+ "      \"error\" : \"false\",\r\n" + "      \"numsubpods\" : 1,\r\n"
-							+ "      \"subpods\" : [ {\r\n" + "        \"plaintext\" : \"55\",\r\n"
-							+ "        \"sinput\" : \"ElementData(Caesium,AtomicNumber)\",\r\n"
-							+ "        \"latex\" : \"55\"\r\n" + "      } ]\r\n" + "    }, {\r\n"
-							+ "      \"title\" : \"Abbreviation\",\r\n" + "      \"scanner\" : \"Data\",\r\n"
-							+ "      \"error\" : \"false\",\r\n" + "      \"numsubpods\" : 1,\r\n"
-							+ "      \"subpods\" : [ {\r\n" + "        \"plaintext\" : \"Cs\",\r\n"
-							+ "        \"sinput\" : \"ElementData(Caesium,Abbreviation)\",\r\n"
-							+ "        \"latex\" : \"\\\\textnormal{Cs}\"\r\n" + "      } ]\r\n" + "    }, {\r\n"
-							+ "      \"title\" : \"Absolute Boiling Point\",\r\n" + "      \"scanner\" : \"Data\",\r\n"
-							+ "      \"error\" : \"false\",\r\n" + "      \"numsubpods\" : 1,\r\n"
-							+ "      \"subpods\" : [ {\r\n" + "        \"plaintext\" : \"944\",\r\n"
-							+ "        \"sinput\" : \"ElementData(Caesium,AbsoluteBoilingPoint)\",\r\n"
-							+ "        \"latex\" : \"944\"\r\n" + "      } ]\r\n" + "    }, {\r\n"
-							+ "      \"title\" : \"Absolute Melting Point\",\r\n" + "      \"scanner\" : \"Data\",\r\n"
-							+ "      \"error\" : \"false\",\r\n" + "      \"numsubpods\" : 1,\r\n"
-							+ "      \"subpods\" : [ {\r\n" + "        \"plaintext\" : \"301.7\",\r\n"
-							+ "        \"sinput\" : \"ElementData(Caesium,AbsoluteMeltingPoint)\",\r\n"
-							+ "        \"latex\" : \"301.7\"\r\n" + "      } ]\r\n" + "    }, {\r\n"
-							+ "      \"title\" : \"Atomic Radius\",\r\n" + "      \"scanner\" : \"Data\",\r\n"
-							+ "      \"error\" : \"false\",\r\n" + "      \"numsubpods\" : 1,\r\n"
-							+ "      \"subpods\" : [ {\r\n" + "        \"plaintext\" : \"260\",\r\n"
-							+ "        \"sinput\" : \"ElementData(Caesium,AtomicRadius)\",\r\n"
-							+ "        \"latex\" : \"260\"\r\n" + "      } ]\r\n" + "    }, {\r\n"
-							+ "      \"title\" : \"Atomic Weight\",\r\n" + "      \"scanner\" : \"Data\",\r\n"
-							+ "      \"error\" : \"false\",\r\n" + "      \"numsubpods\" : 1,\r\n"
-							+ "      \"subpods\" : [ {\r\n" + "        \"plaintext\" : \"132.91\",\r\n"
-							+ "        \"sinput\" : \"ElementData(Caesium,AtomicWeight)\",\r\n"
-							+ "        \"latex\" : \"132.91\"\r\n" + "      } ]\r\n" + "    }, {\r\n"
-							+ "      \"title\" : \"Block\",\r\n" + "      \"scanner\" : \"Data\",\r\n"
-							+ "      \"error\" : \"false\",\r\n" + "      \"numsubpods\" : 1,\r\n"
-							+ "      \"subpods\" : [ {\r\n" + "        \"plaintext\" : \"s\",\r\n"
-							+ "        \"sinput\" : \"ElementData(Caesium,Block)\",\r\n"
-							+ "        \"latex\" : \"\\\\textnormal{s}\"\r\n" + "      } ]\r\n" + "    }, {\r\n"
-							+ "      \"title\" : \"Boiling Point\",\r\n" + "      \"scanner\" : \"Data\",\r\n"
-							+ "      \"error\" : \"false\",\r\n" + "      \"numsubpods\" : 1,\r\n"
-							+ "      \"subpods\" : [ {\r\n" + "        \"plaintext\" : \"670.85\",\r\n"
-							+ "        \"sinput\" : \"ElementData(Caesium,BoilingPoint)\",\r\n"
-							+ "        \"latex\" : \"670.85\"\r\n" + "      } ]\r\n" + "    }, {\r\n"
-							+ "      \"title\" : \"Brinell Hardness\",\r\n" + "      \"scanner\" : \"Data\",\r\n"
-							+ "      \"error\" : \"false\",\r\n" + "      \"numsubpods\" : 1,\r\n"
-							+ "      \"subpods\" : [ {\r\n" + "        \"plaintext\" : \"0.14\",\r\n"
-							+ "        \"sinput\" : \"ElementData(Caesium,BrinellHardness)\",\r\n"
-							+ "        \"latex\" : \"0.14\"\r\n" + "      } ]\r\n" + "    }, {\r\n"
-							+ "      \"title\" : \"Bulk Modulus\",\r\n" + "      \"scanner\" : \"Data\",\r\n"
-							+ "      \"error\" : \"false\",\r\n" + "      \"numsubpods\" : 1,\r\n"
-							+ "      \"subpods\" : [ {\r\n" + "        \"plaintext\" : \"1.6\",\r\n"
-							+ "        \"sinput\" : \"ElementData(Caesium,BulkModulus)\",\r\n"
-							+ "        \"latex\" : \"1.6\"\r\n" + "      } ]\r\n" + "    }, {\r\n"
-							+ "      \"title\" : \"Covalent Radius\",\r\n" + "      \"scanner\" : \"Data\",\r\n"
-							+ "      \"error\" : \"false\",\r\n" + "      \"numsubpods\" : 1,\r\n"
-							+ "      \"subpods\" : [ {\r\n" + "        \"plaintext\" : \"225\",\r\n"
-							+ "        \"sinput\" : \"ElementData(Caesium,CovalentRadius)\",\r\n"
-							+ "        \"latex\" : \"225\"\r\n" + "      } ]\r\n" + "    }, {\r\n"
-							+ "      \"title\" : \"Crust Abundance\",\r\n" + "      \"scanner\" : \"Data\",\r\n"
-							+ "      \"error\" : \"false\",\r\n" + "      \"numsubpods\" : 1,\r\n"
-							+ "      \"subpods\" : [ {\r\n" + "        \"plaintext\" : \"0\",\r\n"
-							+ "        \"sinput\" : \"ElementData(Caesium,CrustAbundance)\",\r\n"
-							+ "        \"latex\" : \"0\"\r\n" + "      } ]\r\n" + "    }, {\r\n"
-							+ "      \"title\" : \"Density\",\r\n" + "      \"scanner\" : \"Data\",\r\n"
-							+ "      \"error\" : \"false\",\r\n" + "      \"numsubpods\" : 1,\r\n"
-							+ "      \"subpods\" : [ {\r\n" + "        \"plaintext\" : \"1873\",\r\n"
-							+ "        \"sinput\" : \"ElementData(Caesium,Density)\",\r\n"
-							+ "        \"latex\" : \"1873\"\r\n" + "      } ]\r\n" + "    }, {\r\n"
-							+ "      \"title\" : \"Discovery Year\",\r\n" + "      \"scanner\" : \"Data\",\r\n"
-							+ "      \"error\" : \"false\",\r\n" + "      \"numsubpods\" : 1,\r\n"
-							+ "      \"subpods\" : [ {\r\n" + "        \"plaintext\" : \"1860\",\r\n"
-							+ "        \"sinput\" : \"ElementData(Caesium,DiscoveryYear)\",\r\n"
-							+ "        \"latex\" : \"1860\"\r\n" + "      } ]\r\n" + "    }, {\r\n"
-							+ "      \"title\" : \"Electro Negativity\",\r\n" + "      \"scanner\" : \"Data\",\r\n"
-							+ "      \"error\" : \"false\",\r\n" + "      \"numsubpods\" : 1,\r\n"
-							+ "      \"subpods\" : [ {\r\n" + "        \"plaintext\" : \"0.79\",\r\n"
-							+ "        \"sinput\" : \"ElementData(Caesium,ElectroNegativity)\",\r\n"
-							+ "        \"latex\" : \"0.79\"\r\n" + "      } ]\r\n" + "    }, {\r\n"
-							+ "      \"title\" : \"Electron Affinity\",\r\n" + "      \"scanner\" : \"Data\",\r\n"
-							+ "      \"error\" : \"false\",\r\n" + "      \"numsubpods\" : 1,\r\n"
-							+ "      \"subpods\" : [ {\r\n" + "        \"plaintext\" : \"45.51\",\r\n"
-							+ "        \"sinput\" : \"ElementData(Caesium,ElectronAffinity)\",\r\n"
-							+ "        \"latex\" : \"45.51\"\r\n" + "      } ]\r\n" + "    }, {\r\n"
-							+ "      \"title\" : \"Electron Configuration\",\r\n" + "      \"scanner\" : \"Data\",\r\n"
-							+ "      \"error\" : \"false\",\r\n" + "      \"numsubpods\" : 1,\r\n"
-							+ "      \"subpods\" : [ {\r\n" + "        \"plaintext\" : \"[Xe] 6s1\",\r\n"
-							+ "        \"sinput\" : \"ElementData(Caesium,ElectronConfiguration)\",\r\n"
-							+ "        \"latex\" : \"\\\\textnormal{[Xe] 6s1}\"\r\n" + "      } ]\r\n" + "    }, {\r\n"
-							+ "      \"title\" : \"Electron Configuration String\",\r\n"
-							+ "      \"scanner\" : \"Data\",\r\n" + "      \"error\" : \"false\",\r\n"
-							+ "      \"numsubpods\" : 1,\r\n" + "      \"subpods\" : [ {\r\n"
-							+ "        \"plaintext\" : \"{2,8,18,18,8,1}\",\r\n"
-							+ "        \"sinput\" : \"ElementData(Caesium,ElectronConfigurationString)\",\r\n"
-							+ "        \"latex\" : \"\\\\{2,8,18,18,8,1\\\\}\"\r\n" + "      } ]\r\n" + "    }, {\r\n"
-							+ "      \"title\" : \"Fusion Heat\",\r\n" + "      \"scanner\" : \"Data\",\r\n"
-							+ "      \"error\" : \"false\",\r\n" + "      \"numsubpods\" : 1,\r\n"
-							+ "      \"subpods\" : [ {\r\n" + "        \"plaintext\" : \"2.09\",\r\n"
-							+ "        \"sinput\" : \"ElementData(Caesium,FusionHeat)\",\r\n"
-							+ "        \"latex\" : \"2.09\"\r\n" + "      } ]\r\n" + "    }, {\r\n"
-							+ "      \"title\" : \"Group\",\r\n" + "      \"scanner\" : \"Data\",\r\n"
-							+ "      \"error\" : \"false\",\r\n" + "      \"numsubpods\" : 1,\r\n"
-							+ "      \"subpods\" : [ {\r\n" + "        \"plaintext\" : \"1\",\r\n"
-							+ "        \"sinput\" : \"ElementData(Caesium,Group)\",\r\n"
-							+ "        \"latex\" : \"1\"\r\n" + "      } ]\r\n" + "    }, {\r\n"
-							+ "      \"title\" : \"Ionization Energies\",\r\n" + "      \"scanner\" : \"Data\",\r\n"
-							+ "      \"error\" : \"false\",\r\n" + "      \"numsubpods\" : 1,\r\n"
-							+ "      \"subpods\" : [ {\r\n" + "        \"plaintext\" : \"{375.7,2234.3,3400}\",\r\n"
-							+ "        \"sinput\" : \"ElementData(Caesium,IonizationEnergies)\",\r\n"
-							+ "        \"latex\" : \"\\\\{375.7,2234.3,3400\\\\}\"\r\n" + "      } ]\r\n"
-							+ "    }, {\r\n" + "      \"title\" : \"Liquid Density\",\r\n"
-							+ "      \"scanner\" : \"Data\",\r\n" + "      \"error\" : \"false\",\r\n"
-							+ "      \"numsubpods\" : 1,\r\n" + "      \"subpods\" : [ {\r\n"
-							+ "        \"plaintext\" : \"1843\",\r\n"
-							+ "        \"sinput\" : \"ElementData(Caesium,LiquidDensity)\",\r\n"
-							+ "        \"latex\" : \"1843\"\r\n" + "      } ]\r\n" + "    }, {\r\n"
-							+ "      \"title\" : \"Melting Point\",\r\n" + "      \"scanner\" : \"Data\",\r\n"
-							+ "      \"error\" : \"false\",\r\n" + "      \"numsubpods\" : 1,\r\n"
-							+ "      \"subpods\" : [ {\r\n" + "        \"plaintext\" : \"28.55\",\r\n"
-							+ "        \"sinput\" : \"ElementData(Caesium,MeltingPoint)\",\r\n"
-							+ "        \"latex\" : \"28.55\"\r\n" + "      } ]\r\n" + "    }, {\r\n"
-							+ "      \"title\" : \"Mohs Hardness\",\r\n" + "      \"scanner\" : \"Data\",\r\n"
-							+ "      \"error\" : \"false\",\r\n" + "      \"numsubpods\" : 1,\r\n"
-							+ "      \"subpods\" : [ {\r\n" + "        \"plaintext\" : \"0.2\",\r\n"
-							+ "        \"sinput\" : \"ElementData(Caesium,MohsHardness)\",\r\n"
-							+ "        \"latex\" : \"0.2\"\r\n" + "      } ]\r\n" + "    }, {\r\n"
-							+ "      \"title\" : \"Name\",\r\n" + "      \"scanner\" : \"Data\",\r\n"
-							+ "      \"error\" : \"false\",\r\n" + "      \"numsubpods\" : 1,\r\n"
-							+ "      \"subpods\" : [ {\r\n" + "        \"plaintext\" : \"caesium\",\r\n"
-							+ "        \"sinput\" : \"ElementData(Caesium,Name)\",\r\n"
-							+ "        \"latex\" : \"\\\\textnormal{caesium}\"\r\n" + "      } ]\r\n" + "    }, {\r\n"
-							+ "      \"title\" : \"Period\",\r\n" + "      \"scanner\" : \"Data\",\r\n"
-							+ "      \"error\" : \"false\",\r\n" + "      \"numsubpods\" : 1,\r\n"
-							+ "      \"subpods\" : [ {\r\n" + "        \"plaintext\" : \"6\",\r\n"
-							+ "        \"sinput\" : \"ElementData(Caesium,Period)\",\r\n"
-							+ "        \"latex\" : \"6\"\r\n" + "      } ]\r\n" + "    }, {\r\n"
-							+ "      \"title\" : \"Series\",\r\n" + "      \"scanner\" : \"Data\",\r\n"
-							+ "      \"error\" : \"false\",\r\n" + "      \"numsubpods\" : 1,\r\n"
-							+ "      \"subpods\" : [ {\r\n" + "        \"plaintext\" : \"AlkaliMetal\",\r\n"
-							+ "        \"sinput\" : \"ElementData(Caesium,Series)\",\r\n"
-							+ "        \"latex\" : \"\\\\textnormal{AlkaliMetal}\"\r\n" + "      } ]\r\n"
-							+ "    }, {\r\n" + "      \"title\" : \"Shear Modulus\",\r\n"
-							+ "      \"scanner\" : \"Data\",\r\n" + "      \"error\" : \"false\",\r\n"
-							+ "      \"numsubpods\" : 1,\r\n" + "      \"subpods\" : [ {\r\n"
-							+ "        \"plaintext\" : \"{{2},{2,6},{2,6,10},{2,6,10},{2,6},{1}}\",\r\n"
-							+ "        \"sinput\" : \"ElementData(Caesium,ShearModulus)\",\r\n"
-							+ "        \"latex\" : \"\\\\{\\\\{2\\\\},\\\\{2,6\\\\},\\\\{2,6,10\\\\},\\\\{2,6,10\\\\},\\\\{2,6\\\\},\\\\{1\\\\}\\\\}\"\r\n"
-							+ "      } ]\r\n" + "    }, {\r\n" + "      \"title\" : \"Specific Heat\",\r\n"
-							+ "      \"scanner\" : \"Data\",\r\n" + "      \"error\" : \"false\",\r\n"
-							+ "      \"numsubpods\" : 1,\r\n" + "      \"subpods\" : [ {\r\n"
-							+ "        \"plaintext\" : \"242\",\r\n"
-							+ "        \"sinput\" : \"ElementData(Caesium,SpecificHeat)\",\r\n"
-							+ "        \"latex\" : \"242\"\r\n" + "      } ]\r\n" + "    }, {\r\n"
-							+ "      \"title\" : \"Thermal Conductivity\",\r\n" + "      \"scanner\" : \"Data\",\r\n"
-							+ "      \"error\" : \"false\",\r\n" + "      \"numsubpods\" : 1,\r\n"
-							+ "      \"subpods\" : [ {\r\n" + "        \"plaintext\" : \"35.9\",\r\n"
-							+ "        \"sinput\" : \"ElementData(Caesium,ThermalConductivity)\",\r\n"
-							+ "        \"latex\" : \"35.9\"\r\n" + "      } ]\r\n" + "    }, {\r\n"
-							+ "      \"title\" : \"Vaporization Heat\",\r\n" + "      \"scanner\" : \"Data\",\r\n"
-							+ "      \"error\" : \"false\",\r\n" + "      \"numsubpods\" : 1,\r\n"
-							+ "      \"subpods\" : [ {\r\n" + "        \"plaintext\" : \"63.9\",\r\n"
-							+ "        \"sinput\" : \"ElementData(Caesium,VaporizationHeat)\",\r\n"
-							+ "        \"latex\" : \"63.9\"\r\n" + "      } ]\r\n" + "    }, {\r\n"
-							+ "      \"title\" : \"Young Modulus\",\r\n" + "      \"scanner\" : \"Data\",\r\n"
-							+ "      \"error\" : \"false\",\r\n" + "      \"numsubpods\" : 1,\r\n"
-							+ "      \"subpods\" : [ {\r\n" + "        \"plaintext\" : \"37\",\r\n"
-							+ "        \"sinput\" : \"ElementData(Caesium,YoungModulus)\",\r\n"
-							+ "        \"latex\" : \"37\"\r\n" + "      } ]\r\n" + "    } ]\r\n" + "  }\r\n" + "}");//
+					"{\r\n" + 
+					"  \"queryresult\" : {\r\n" + 
+					"    \"success\" : \"true\",\r\n" + 
+					"    \"error\" : \"false\",\r\n" + 
+					"    \"numpods\" : 34,\r\n" + 
+					"    \"version\" : \"0.1\",\r\n" + 
+					"    \"pods\" : [ {\r\n" + 
+					"      \"title\" : \"Input\",\r\n" + 
+					"      \"scanner\" : \"Identity\",\r\n" + 
+					"      \"error\" : \"false\",\r\n" + 
+					"      \"numsubpods\" : 1,\r\n" + 
+					"      \"subpods\" : [ {\r\n" + 
+					"        \"plaintext\" : \"cs\",\r\n" + 
+					"        \"sinput\" : \"cs\",\r\n" + 
+					"        \"latex\" : \"cs\"\r\n" + 
+					"      } ]\r\n" + 
+					"    }, {\r\n" + 
+					"      \"title\" : \"Standard Name\",\r\n" + 
+					"      \"scanner\" : \"Data\",\r\n" + 
+					"      \"error\" : \"false\",\r\n" + 
+					"      \"numsubpods\" : 1,\r\n" + 
+					"      \"subpods\" : [ {\r\n" + 
+					"        \"plaintext\" : \"Caesium\",\r\n" + 
+					"        \"sinput\" : \"ElementData(\\\"Caesium\\\",\\\"StandardName\\\")\",\r\n" + 
+					"        \"latex\" : \"\\\\textnormal{Caesium}\"\r\n" + 
+					"      } ]\r\n" + 
+					"    }, {\r\n" + 
+					"      \"title\" : \"Atomic Number\",\r\n" + 
+					"      \"scanner\" : \"Data\",\r\n" + 
+					"      \"error\" : \"false\",\r\n" + 
+					"      \"numsubpods\" : 1,\r\n" + 
+					"      \"subpods\" : [ {\r\n" + 
+					"        \"plaintext\" : \"55\",\r\n" + 
+					"        \"sinput\" : \"ElementData(\\\"Caesium\\\",\\\"AtomicNumber\\\")\",\r\n" + 
+					"        \"latex\" : \"55\"\r\n" + 
+					"      } ]\r\n" + 
+					"    }, {\r\n" + 
+					"      \"title\" : \"Abbreviation\",\r\n" + 
+					"      \"scanner\" : \"Data\",\r\n" + 
+					"      \"error\" : \"false\",\r\n" + 
+					"      \"numsubpods\" : 1,\r\n" + 
+					"      \"subpods\" : [ {\r\n" + 
+					"        \"plaintext\" : \"Cs\",\r\n" + 
+					"        \"sinput\" : \"ElementData(\\\"Caesium\\\",\\\"Abbreviation\\\")\",\r\n" + 
+					"        \"latex\" : \"\\\\textnormal{Cs}\"\r\n" + 
+					"      } ]\r\n" + 
+					"    }, {\r\n" + 
+					"      \"title\" : \"Absolute Boiling Point\",\r\n" + 
+					"      \"scanner\" : \"Data\",\r\n" + 
+					"      \"error\" : \"false\",\r\n" + 
+					"      \"numsubpods\" : 1,\r\n" + 
+					"      \"subpods\" : [ {\r\n" + 
+					"        \"plaintext\" : \"944\",\r\n" + 
+					"        \"sinput\" : \"ElementData(\\\"Caesium\\\",\\\"AbsoluteBoilingPoint\\\")\",\r\n" + 
+					"        \"latex\" : \"944\"\r\n" + 
+					"      } ]\r\n" + 
+					"    }, {\r\n" + 
+					"      \"title\" : \"Absolute Melting Point\",\r\n" + 
+					"      \"scanner\" : \"Data\",\r\n" + 
+					"      \"error\" : \"false\",\r\n" + 
+					"      \"numsubpods\" : 1,\r\n" + 
+					"      \"subpods\" : [ {\r\n" + 
+					"        \"plaintext\" : \"301.7\",\r\n" + 
+					"        \"sinput\" : \"ElementData(\\\"Caesium\\\",\\\"AbsoluteMeltingPoint\\\")\",\r\n" + 
+					"        \"latex\" : \"301.7\"\r\n" + 
+					"      } ]\r\n" + 
+					"    }, {\r\n" + 
+					"      \"title\" : \"Atomic Radius\",\r\n" + 
+					"      \"scanner\" : \"Data\",\r\n" + 
+					"      \"error\" : \"false\",\r\n" + 
+					"      \"numsubpods\" : 1,\r\n" + 
+					"      \"subpods\" : [ {\r\n" + 
+					"        \"plaintext\" : \"260\",\r\n" + 
+					"        \"sinput\" : \"ElementData(\\\"Caesium\\\",\\\"AtomicRadius\\\")\",\r\n" + 
+					"        \"latex\" : \"260\"\r\n" + 
+					"      } ]\r\n" + 
+					"    }, {\r\n" + 
+					"      \"title\" : \"Atomic Weight\",\r\n" + 
+					"      \"scanner\" : \"Data\",\r\n" + 
+					"      \"error\" : \"false\",\r\n" + 
+					"      \"numsubpods\" : 1,\r\n" + 
+					"      \"subpods\" : [ {\r\n" + 
+					"        \"plaintext\" : \"132.91\",\r\n" + 
+					"        \"sinput\" : \"ElementData(\\\"Caesium\\\",\\\"AtomicWeight\\\")\",\r\n" + 
+					"        \"latex\" : \"132.91\"\r\n" + 
+					"      } ]\r\n" + 
+					"    }, {\r\n" + 
+					"      \"title\" : \"Block\",\r\n" + 
+					"      \"scanner\" : \"Data\",\r\n" + 
+					"      \"error\" : \"false\",\r\n" + 
+					"      \"numsubpods\" : 1,\r\n" + 
+					"      \"subpods\" : [ {\r\n" + 
+					"        \"plaintext\" : \"s\",\r\n" + 
+					"        \"sinput\" : \"ElementData(\\\"Caesium\\\",\\\"Block\\\")\",\r\n" + 
+					"        \"latex\" : \"\\\\textnormal{s}\"\r\n" + 
+					"      } ]\r\n" + 
+					"    }, {\r\n" + 
+					"      \"title\" : \"Boiling Point\",\r\n" + 
+					"      \"scanner\" : \"Data\",\r\n" + 
+					"      \"error\" : \"false\",\r\n" + 
+					"      \"numsubpods\" : 1,\r\n" + 
+					"      \"subpods\" : [ {\r\n" + 
+					"        \"plaintext\" : \"670.85\",\r\n" + 
+					"        \"sinput\" : \"ElementData(\\\"Caesium\\\",\\\"BoilingPoint\\\")\",\r\n" + 
+					"        \"latex\" : \"670.85\"\r\n" + 
+					"      } ]\r\n" + 
+					"    }, {\r\n" + 
+					"      \"title\" : \"Brinell Hardness\",\r\n" + 
+					"      \"scanner\" : \"Data\",\r\n" + 
+					"      \"error\" : \"false\",\r\n" + 
+					"      \"numsubpods\" : 1,\r\n" + 
+					"      \"subpods\" : [ {\r\n" + 
+					"        \"plaintext\" : \"0.14\",\r\n" + 
+					"        \"sinput\" : \"ElementData(\\\"Caesium\\\",\\\"BrinellHardness\\\")\",\r\n" + 
+					"        \"latex\" : \"0.14\"\r\n" + 
+					"      } ]\r\n" + 
+					"    }, {\r\n" + 
+					"      \"title\" : \"Bulk Modulus\",\r\n" + 
+					"      \"scanner\" : \"Data\",\r\n" + 
+					"      \"error\" : \"false\",\r\n" + 
+					"      \"numsubpods\" : 1,\r\n" + 
+					"      \"subpods\" : [ {\r\n" + 
+					"        \"plaintext\" : \"1.6\",\r\n" + 
+					"        \"sinput\" : \"ElementData(\\\"Caesium\\\",\\\"BulkModulus\\\")\",\r\n" + 
+					"        \"latex\" : \"1.6\"\r\n" + 
+					"      } ]\r\n" + 
+					"    }, {\r\n" + 
+					"      \"title\" : \"Covalent Radius\",\r\n" + 
+					"      \"scanner\" : \"Data\",\r\n" + 
+					"      \"error\" : \"false\",\r\n" + 
+					"      \"numsubpods\" : 1,\r\n" + 
+					"      \"subpods\" : [ {\r\n" + 
+					"        \"plaintext\" : \"225\",\r\n" + 
+					"        \"sinput\" : \"ElementData(\\\"Caesium\\\",\\\"CovalentRadius\\\")\",\r\n" + 
+					"        \"latex\" : \"225\"\r\n" + 
+					"      } ]\r\n" + 
+					"    }, {\r\n" + 
+					"      \"title\" : \"Crust Abundance\",\r\n" + 
+					"      \"scanner\" : \"Data\",\r\n" + 
+					"      \"error\" : \"false\",\r\n" + 
+					"      \"numsubpods\" : 1,\r\n" + 
+					"      \"subpods\" : [ {\r\n" + 
+					"        \"plaintext\" : \"0\",\r\n" + 
+					"        \"sinput\" : \"ElementData(\\\"Caesium\\\",\\\"CrustAbundance\\\")\",\r\n" + 
+					"        \"latex\" : \"0\"\r\n" + 
+					"      } ]\r\n" + 
+					"    }, {\r\n" + 
+					"      \"title\" : \"Density\",\r\n" + 
+					"      \"scanner\" : \"Data\",\r\n" + 
+					"      \"error\" : \"false\",\r\n" + 
+					"      \"numsubpods\" : 1,\r\n" + 
+					"      \"subpods\" : [ {\r\n" + 
+					"        \"plaintext\" : \"1873\",\r\n" + 
+					"        \"sinput\" : \"ElementData(\\\"Caesium\\\",\\\"Density\\\")\",\r\n" + 
+					"        \"latex\" : \"1873\"\r\n" + 
+					"      } ]\r\n" + 
+					"    }, {\r\n" + 
+					"      \"title\" : \"Discovery Year\",\r\n" + 
+					"      \"scanner\" : \"Data\",\r\n" + 
+					"      \"error\" : \"false\",\r\n" + 
+					"      \"numsubpods\" : 1,\r\n" + 
+					"      \"subpods\" : [ {\r\n" + 
+					"        \"plaintext\" : \"1860\",\r\n" + 
+					"        \"sinput\" : \"ElementData(\\\"Caesium\\\",\\\"DiscoveryYear\\\")\",\r\n" + 
+					"        \"latex\" : \"1860\"\r\n" + 
+					"      } ]\r\n" + 
+					"    }, {\r\n" + 
+					"      \"title\" : \"Electro Negativity\",\r\n" + 
+					"      \"scanner\" : \"Data\",\r\n" + 
+					"      \"error\" : \"false\",\r\n" + 
+					"      \"numsubpods\" : 1,\r\n" + 
+					"      \"subpods\" : [ {\r\n" + 
+					"        \"plaintext\" : \"0.79\",\r\n" + 
+					"        \"sinput\" : \"ElementData(\\\"Caesium\\\",\\\"ElectroNegativity\\\")\",\r\n" + 
+					"        \"latex\" : \"0.79\"\r\n" + 
+					"      } ]\r\n" + 
+					"    }, {\r\n" + 
+					"      \"title\" : \"Electron Affinity\",\r\n" + 
+					"      \"scanner\" : \"Data\",\r\n" + 
+					"      \"error\" : \"false\",\r\n" + 
+					"      \"numsubpods\" : 1,\r\n" + 
+					"      \"subpods\" : [ {\r\n" + 
+					"        \"plaintext\" : \"45.51\",\r\n" + 
+					"        \"sinput\" : \"ElementData(\\\"Caesium\\\",\\\"ElectronAffinity\\\")\",\r\n" + 
+					"        \"latex\" : \"45.51\"\r\n" + 
+					"      } ]\r\n" + 
+					"    }, {\r\n" + 
+					"      \"title\" : \"Electron Configuration\",\r\n" + 
+					"      \"scanner\" : \"Data\",\r\n" + 
+					"      \"error\" : \"false\",\r\n" + 
+					"      \"numsubpods\" : 1,\r\n" + 
+					"      \"subpods\" : [ {\r\n" + 
+					"        \"plaintext\" : \"[Xe] 6s1\",\r\n" + 
+					"        \"sinput\" : \"ElementData(\\\"Caesium\\\",\\\"ElectronConfiguration\\\")\",\r\n" + 
+					"        \"latex\" : \"\\\\textnormal{[Xe] 6s1}\"\r\n" + 
+					"      } ]\r\n" + 
+					"    }, {\r\n" + 
+					"      \"title\" : \"Electron Configuration String\",\r\n" + 
+					"      \"scanner\" : \"Data\",\r\n" + 
+					"      \"error\" : \"false\",\r\n" + 
+					"      \"numsubpods\" : 1,\r\n" + 
+					"      \"subpods\" : [ {\r\n" + 
+					"        \"plaintext\" : \"{2,8,18,18,8,1}\",\r\n" + 
+					"        \"sinput\" : \"ElementData(\\\"Caesium\\\",\\\"ElectronConfigurationString\\\")\",\r\n" + 
+					"        \"latex\" : \"\\\\{2,8,18,18,8,1\\\\}\"\r\n" + 
+					"      } ]\r\n" + 
+					"    }, {\r\n" + 
+					"      \"title\" : \"Fusion Heat\",\r\n" + 
+					"      \"scanner\" : \"Data\",\r\n" + 
+					"      \"error\" : \"false\",\r\n" + 
+					"      \"numsubpods\" : 1,\r\n" + 
+					"      \"subpods\" : [ {\r\n" + 
+					"        \"plaintext\" : \"2.09\",\r\n" + 
+					"        \"sinput\" : \"ElementData(\\\"Caesium\\\",\\\"FusionHeat\\\")\",\r\n" + 
+					"        \"latex\" : \"2.09\"\r\n" + 
+					"      } ]\r\n" + 
+					"    }, {\r\n" + 
+					"      \"title\" : \"Group\",\r\n" + 
+					"      \"scanner\" : \"Data\",\r\n" + 
+					"      \"error\" : \"false\",\r\n" + 
+					"      \"numsubpods\" : 1,\r\n" + 
+					"      \"subpods\" : [ {\r\n" + 
+					"        \"plaintext\" : \"1\",\r\n" + 
+					"        \"sinput\" : \"ElementData(\\\"Caesium\\\",\\\"Group\\\")\",\r\n" + 
+					"        \"latex\" : \"1\"\r\n" + 
+					"      } ]\r\n" + 
+					"    }, {\r\n" + 
+					"      \"title\" : \"Ionization Energies\",\r\n" + 
+					"      \"scanner\" : \"Data\",\r\n" + 
+					"      \"error\" : \"false\",\r\n" + 
+					"      \"numsubpods\" : 1,\r\n" + 
+					"      \"subpods\" : [ {\r\n" + 
+					"        \"plaintext\" : \"{375.7,2234.3,3400}\",\r\n" + 
+					"        \"sinput\" : \"ElementData(\\\"Caesium\\\",\\\"IonizationEnergies\\\")\",\r\n" + 
+					"        \"latex\" : \"\\\\{375.7,2234.3,3400\\\\}\"\r\n" + 
+					"      } ]\r\n" + 
+					"    }, {\r\n" + 
+					"      \"title\" : \"Liquid Density\",\r\n" + 
+					"      \"scanner\" : \"Data\",\r\n" + 
+					"      \"error\" : \"false\",\r\n" + 
+					"      \"numsubpods\" : 1,\r\n" + 
+					"      \"subpods\" : [ {\r\n" + 
+					"        \"plaintext\" : \"1843\",\r\n" + 
+					"        \"sinput\" : \"ElementData(\\\"Caesium\\\",\\\"LiquidDensity\\\")\",\r\n" + 
+					"        \"latex\" : \"1843\"\r\n" + 
+					"      } ]\r\n" + 
+					"    }, {\r\n" + 
+					"      \"title\" : \"Melting Point\",\r\n" + 
+					"      \"scanner\" : \"Data\",\r\n" + 
+					"      \"error\" : \"false\",\r\n" + 
+					"      \"numsubpods\" : 1,\r\n" + 
+					"      \"subpods\" : [ {\r\n" + 
+					"        \"plaintext\" : \"28.55\",\r\n" + 
+					"        \"sinput\" : \"ElementData(\\\"Caesium\\\",\\\"MeltingPoint\\\")\",\r\n" + 
+					"        \"latex\" : \"28.55\"\r\n" + 
+					"      } ]\r\n" + 
+					"    }, {\r\n" + 
+					"      \"title\" : \"Mohs Hardness\",\r\n" + 
+					"      \"scanner\" : \"Data\",\r\n" + 
+					"      \"error\" : \"false\",\r\n" + 
+					"      \"numsubpods\" : 1,\r\n" + 
+					"      \"subpods\" : [ {\r\n" + 
+					"        \"plaintext\" : \"0.2\",\r\n" + 
+					"        \"sinput\" : \"ElementData(\\\"Caesium\\\",\\\"MohsHardness\\\")\",\r\n" + 
+					"        \"latex\" : \"0.2\"\r\n" + 
+					"      } ]\r\n" + 
+					"    }, {\r\n" + 
+					"      \"title\" : \"Name\",\r\n" + 
+					"      \"scanner\" : \"Data\",\r\n" + 
+					"      \"error\" : \"false\",\r\n" + 
+					"      \"numsubpods\" : 1,\r\n" + 
+					"      \"subpods\" : [ {\r\n" + 
+					"        \"plaintext\" : \"caesium\",\r\n" + 
+					"        \"sinput\" : \"ElementData(\\\"Caesium\\\",\\\"Name\\\")\",\r\n" + 
+					"        \"latex\" : \"\\\\textnormal{caesium}\"\r\n" + 
+					"      } ]\r\n" + 
+					"    }, {\r\n" + 
+					"      \"title\" : \"Period\",\r\n" + 
+					"      \"scanner\" : \"Data\",\r\n" + 
+					"      \"error\" : \"false\",\r\n" + 
+					"      \"numsubpods\" : 1,\r\n" + 
+					"      \"subpods\" : [ {\r\n" + 
+					"        \"plaintext\" : \"6\",\r\n" + 
+					"        \"sinput\" : \"ElementData(\\\"Caesium\\\",\\\"Period\\\")\",\r\n" + 
+					"        \"latex\" : \"6\"\r\n" + 
+					"      } ]\r\n" + 
+					"    }, {\r\n" + 
+					"      \"title\" : \"Series\",\r\n" + 
+					"      \"scanner\" : \"Data\",\r\n" + 
+					"      \"error\" : \"false\",\r\n" + 
+					"      \"numsubpods\" : 1,\r\n" + 
+					"      \"subpods\" : [ {\r\n" + 
+					"        \"plaintext\" : \"AlkaliMetal\",\r\n" + 
+					"        \"sinput\" : \"ElementData(\\\"Caesium\\\",\\\"Series\\\")\",\r\n" + 
+					"        \"latex\" : \"\\\\textnormal{AlkaliMetal}\"\r\n" + 
+					"      } ]\r\n" + 
+					"    }, {\r\n" + 
+					"      \"title\" : \"Shear Modulus\",\r\n" + 
+					"      \"scanner\" : \"Data\",\r\n" + 
+					"      \"error\" : \"false\",\r\n" + 
+					"      \"numsubpods\" : 1,\r\n" + 
+					"      \"subpods\" : [ {\r\n" + 
+					"        \"plaintext\" : \"{{2},{2,6},{2,6,10},{2,6,10},{2,6},{1}}\",\r\n" + 
+					"        \"sinput\" : \"ElementData(\\\"Caesium\\\",\\\"ShearModulus\\\")\",\r\n" + 
+					"        \"latex\" : \"\\\\{\\\\{2\\\\},\\\\{2,6\\\\},\\\\{2,6,10\\\\},\\\\{2,6,10\\\\},\\\\{2,6\\\\},\\\\{1\\\\}\\\\}\"\r\n" + 
+					"      } ]\r\n" + 
+					"    }, {\r\n" + 
+					"      \"title\" : \"Specific Heat\",\r\n" + 
+					"      \"scanner\" : \"Data\",\r\n" + 
+					"      \"error\" : \"false\",\r\n" + 
+					"      \"numsubpods\" : 1,\r\n" + 
+					"      \"subpods\" : [ {\r\n" + 
+					"        \"plaintext\" : \"242\",\r\n" + 
+					"        \"sinput\" : \"ElementData(\\\"Caesium\\\",\\\"SpecificHeat\\\")\",\r\n" + 
+					"        \"latex\" : \"242\"\r\n" + 
+					"      } ]\r\n" + 
+					"    }, {\r\n" + 
+					"      \"title\" : \"Thermal Conductivity\",\r\n" + 
+					"      \"scanner\" : \"Data\",\r\n" + 
+					"      \"error\" : \"false\",\r\n" + 
+					"      \"numsubpods\" : 1,\r\n" + 
+					"      \"subpods\" : [ {\r\n" + 
+					"        \"plaintext\" : \"35.9\",\r\n" + 
+					"        \"sinput\" : \"ElementData(\\\"Caesium\\\",\\\"ThermalConductivity\\\")\",\r\n" + 
+					"        \"latex\" : \"35.9\"\r\n" + 
+					"      } ]\r\n" + 
+					"    }, {\r\n" + 
+					"      \"title\" : \"Vaporization Heat\",\r\n" + 
+					"      \"scanner\" : \"Data\",\r\n" + 
+					"      \"error\" : \"false\",\r\n" + 
+					"      \"numsubpods\" : 1,\r\n" + 
+					"      \"subpods\" : [ {\r\n" + 
+					"        \"plaintext\" : \"63.9\",\r\n" + 
+					"        \"sinput\" : \"ElementData(\\\"Caesium\\\",\\\"VaporizationHeat\\\")\",\r\n" + 
+					"        \"latex\" : \"63.9\"\r\n" + 
+					"      } ]\r\n" + 
+					"    }, {\r\n" + 
+					"      \"title\" : \"Young Modulus\",\r\n" + 
+					"      \"scanner\" : \"Data\",\r\n" + 
+					"      \"error\" : \"false\",\r\n" + 
+					"      \"numsubpods\" : 1,\r\n" + 
+					"      \"subpods\" : [ {\r\n" + 
+					"        \"plaintext\" : \"37\",\r\n" + 
+					"        \"sinput\" : \"ElementData(\\\"Caesium\\\",\\\"YoungModulus\\\")\",\r\n" + 
+					"        \"latex\" : \"37\"\r\n" + 
+					"      } ]\r\n" + 
+					"    } ]\r\n" + 
+					"  }\r\n" + 
+					"}");//
 		}
 	}
 
@@ -355,7 +527,7 @@ public class TestPods {
 					"      \"numsubpods\" : 1,\r\n" + 
 					"      \"subpods\" : [ {\r\n" + 
 					"        \"plaintext\" : \"seventeen\",\r\n" + 
-					"        \"sinput\" : \"IntegerName(17,Words)\",\r\n" + 
+					"        \"sinput\" : \"IntegerName(17,\\\"Words\\\")\",\r\n" + 
 					"        \"latex\" : \"\\\\textnormal{seventeen}\"\r\n" + 
 					"      } ]\r\n" + 
 					"    }, {\r\n" + 
@@ -1015,7 +1187,7 @@ public class TestPods {
 					"      \"numsubpods\" : 1,\r\n" + 
 					"      \"subpods\" : [ {\r\n" + 
 					"        \"plaintext\" : \"four billion two hundred ninety-four million nine hundred sixty-seven thousand two hundred ninety-five\",\r\n" + 
-					"        \"sinput\" : \"IntegerName(4294967295,Words)\",\r\n" + 
+					"        \"sinput\" : \"IntegerName(4294967295,\\\"Words\\\")\",\r\n" + 
 					"        \"latex\" : \"\\\\textnormal{four billion two hundred ninety-four million nine hundred sixty-seven thousand two hundred ninety-five}\"\r\n" + 
 					"      } ]\r\n" + 
 					"    }, {\r\n" + 
@@ -1093,7 +1265,7 @@ public class TestPods {
 					"      \"numsubpods\" : 1,\r\n" + 
 					"      \"subpods\" : [ {\r\n" + 
 					"        \"plaintext\" : \"mean | a\\nstandard deviation | b\\nvariance | b^2\\nskewness | 0\",\r\n" + 
-					"        \"sinput\" : \"{{mean,a},\\n {standard deviation,b},\\n {variance,b^2},\\n {skewness,0}}\",\r\n" + 
+					"        \"sinput\" : \"{{\\\"mean\\\",a}, {\\\"standard deviation\\\",b}, {\\\"variance\\\",b^2}, {\\\"skewness\\\",0}}\",\r\n" + 
 					"        \"latex\" : \"\\\\left(\\n\\\\begin{array}{cc}\\n\\\\textnormal{mean} & a \\\\\\\\\\n\\\\textnormal{standard deviation} & b \\\\\\\\\\n\\\\textnormal{variance} & {b}^{2} \\\\\\\\\\n\\\\textnormal{skewness} & 0 \\\\\\n\\\\\\\\\\n\\\\end{array}\\n\\\\right) \"\r\n" + 
 					"      } ]\r\n" + 
 					"    }, {\r\n" + 
@@ -1170,18 +1342,33 @@ public class TestPods {
 		System.out.println(jsonStr);
 		if (s.contains("Windows")) {
 			assertEquals(jsonStr, //
-					"{\r\n" + "  \"queryresult\" : {\r\n" + "    \"success\" : \"true\",\r\n"
-							+ "    \"error\" : \"false\",\r\n" + "    \"numpods\" : 2,\r\n"
-							+ "    \"version\" : \"0.1\",\r\n" + "    \"pods\" : [ {\r\n"
-							+ "      \"title\" : \"Input\",\r\n" + "      \"scanner\" : \"Identity\",\r\n"
-							+ "      \"error\" : \"false\",\r\n" + "      \"numsubpods\" : 1,\r\n"
-							+ "      \"subpods\" : [ {\r\n" + "        \"plaintext\" : \"UnitConvert(111[cm],m)\",\r\n"
-							+ "        \"sinput\" : \"UnitConvert(111[cm],m)\"\r\n" + "      } ]\r\n" + "    }, {\r\n"
-							+ "      \"title\" : \"Decimal form\",\r\n" + "      \"scanner\" : \"Numeric\",\r\n"
-							+ "      \"error\" : \"false\",\r\n" + "      \"numsubpods\" : 1,\r\n"
-							+ "      \"subpods\" : [ {\r\n" + "        \"plaintext\" : \"1.11[m]\",\r\n"
-							+ "        \"sinput\" : \"N(111/100[m])\"\r\n" + "      } ]\r\n" + "    } ]\r\n" + "  }\r\n"
-							+ "}");//
+					"{\r\n" + 
+					"  \"queryresult\" : {\r\n" + 
+					"    \"success\" : \"true\",\r\n" + 
+					"    \"error\" : \"false\",\r\n" + 
+					"    \"numpods\" : 2,\r\n" + 
+					"    \"version\" : \"0.1\",\r\n" + 
+					"    \"pods\" : [ {\r\n" + 
+					"      \"title\" : \"Input\",\r\n" + 
+					"      \"scanner\" : \"Identity\",\r\n" + 
+					"      \"error\" : \"false\",\r\n" + 
+					"      \"numsubpods\" : 1,\r\n" + 
+					"      \"subpods\" : [ {\r\n" + 
+					"        \"plaintext\" : \"UnitConvert(111[cm],m)\",\r\n" + 
+					"        \"sinput\" : \"UnitConvert(111[cm],\\\"m\\\")\"\r\n" + 
+					"      } ]\r\n" + 
+					"    }, {\r\n" + 
+					"      \"title\" : \"Decimal form\",\r\n" + 
+					"      \"scanner\" : \"Numeric\",\r\n" + 
+					"      \"error\" : \"false\",\r\n" + 
+					"      \"numsubpods\" : 1,\r\n" + 
+					"      \"subpods\" : [ {\r\n" + 
+					"        \"plaintext\" : \"1.11[m]\",\r\n" + 
+					"        \"sinput\" : \"N(111/100[m])\"\r\n" + 
+					"      } ]\r\n" + 
+					"    } ]\r\n" + 
+					"  }\r\n" + 
+					"}");//
 		}
 	}
 
@@ -1226,7 +1413,7 @@ public class TestPods {
 					"      \"numsubpods\" : 1,\r\n" + 
 					"      \"subpods\" : [ {\r\n" + 
 					"        \"plaintext\" : \"one thousand three hundred twenty\",\r\n" + 
-					"        \"sinput\" : \"IntegerName(1320,Words)\",\r\n" + 
+					"        \"sinput\" : \"IntegerName(1320,\\\"Words\\\")\",\r\n" + 
 					"        \"latex\" : \"\\\\textnormal{one thousand three hundred twenty}\"\r\n" + 
 					"      } ]\r\n" + 
 					"    }, {\r\n" + 

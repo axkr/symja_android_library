@@ -21,6 +21,7 @@ import org.apache.lucene.analysis.standard.StandardTokenizer;
 import org.apache.lucene.analysis.tokenattributes.CharTermAttribute;
 import org.matheclipse.core.builtin.GraphFunctions;
 import org.matheclipse.core.builtin.OutputFunctions;
+import org.matheclipse.core.builtin.StringFunctions;
 import org.matheclipse.core.convert.AST2Expr;
 import org.matheclipse.core.convert.VariablesSet;
 import org.matheclipse.core.data.ElementData1;
@@ -300,7 +301,7 @@ public class Pods {
 
 		ObjectNode node = mapper.createObjectNode();
 		temp.add(node);
-		createJSONFormat(node, engine, inExpr.toString(), outExpr, formats);
+		createJSONFormat(node, engine, StringFunctions.inputForm(inExpr), outExpr, formats);
 	}
 
 	/** package private */
@@ -317,7 +318,7 @@ public class Pods {
 
 		ObjectNode node = mapper.createObjectNode();
 		temp.add(node);
-		createJSONFormat(node, engine, plaintext, inExpr.toString(), outExpr, formats);
+		createJSONFormat(node, engine, plaintext, StringFunctions.inputForm(inExpr), outExpr, formats);
 	}
 
 	/** package private */
@@ -639,7 +640,7 @@ public class Pods {
 							return messageJSON;
 						} else {
 							IExpr expr = inExpr;
-//							outExpr = engine.evaluate(expr);
+							// outExpr = engine.evaluate(expr);
 
 							if (outExpr.isAST(F.JSFormData, 3)) {
 								podOut = outExpr;
@@ -713,7 +714,8 @@ public class Pods {
 									return messageJSON;
 								} else {
 									if (!inExpr.equals(outExpr)) {
-										addSymjaPod(podsArray, inExpr, outExpr, "Result", "Identity", formats, mapper, engine);
+										addSymjaPod(podsArray, inExpr, outExpr, "Result", "Identity", formats, mapper,
+												engine);
 										numpods++;
 									}
 								}

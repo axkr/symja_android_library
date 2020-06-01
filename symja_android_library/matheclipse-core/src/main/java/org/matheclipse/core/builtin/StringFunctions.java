@@ -841,7 +841,7 @@ public final class StringFunctions {
 
 		public static IAST toCharacterCode(final String unicodeInput, final String inputEncoding) {
 			try {
-				
+
 				final String utf8String = new String(unicodeInput.getBytes(inputEncoding), "UTF-8");
 				int characterCode;
 				final int length = utf8String.length();
@@ -911,7 +911,7 @@ public final class StringFunctions {
 			if (ast.arg1().isString()) {
 				return ast.arg1();
 			}
-			return F.stringx(inputForm(ast.arg1(), true));
+			return F.stringx(inputForm(ast.arg1()));
 		}
 
 		@Override
@@ -1036,6 +1036,13 @@ public final class StringFunctions {
 			}
 		}
 		return null;
+	}
+
+	public static String inputForm(final IExpr expression) {
+		if (FEConfig.PARSER_USE_LOWERCASE_SYMBOLS) {
+			return StringFunctions.inputForm(expression, true);
+		}
+		return StringFunctions.inputForm(expression, false);
 	}
 
 	public static void initialize() {
