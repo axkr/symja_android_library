@@ -467,6 +467,13 @@ public class Pods {
 				// addSymjaPod(podsArray, inExpr, podOut, "Input", "Identity", formats, mapper, engine);
 				// }
 				numpods++;
+
+				IExpr numExpr = F.NIL;
+				IExpr evaledNumExpr = F.NIL;
+				if (outExpr.isNumericFunction()) {
+					numExpr = F.N(outExpr);
+					evaledNumExpr = engine.evaluate(numExpr);
+				}
 				if (outExpr.isNumber() || //
 						outExpr.isQuantity()) {
 					if (outExpr.isInteger()) {
@@ -480,10 +487,11 @@ public class Pods {
 							numpods++;
 						}
 
-						inExpr = F.N(outExpr);
-						podOut = engine.evaluate(inExpr);
-						addSymjaPod(podsArray, inExpr, podOut, "Decimal form", "Numeric", formats, mapper, engine);
-						numpods++;
+						if (evaledNumExpr.isInexactNumber()) {
+							addSymjaPod(podsArray, numExpr, evaledNumExpr, "Decimal form", "Numeric", formats, mapper,
+									engine);
+							numpods++;
+						}
 
 						if (outExpr.isFraction()) {
 							IFraction frac = (IFraction) outExpr;
@@ -526,6 +534,13 @@ public class Pods {
 						IAST list = (IAST) outExpr;
 						ListPod listPod = new ListPod(list);
 						numpods += listPod.addJSON(mapper, podsArray, formats, engine);
+					}
+
+					if (evaledNumExpr.isInexactNumber() || //
+							evaledNumExpr.isQuantity()) {
+						addSymjaPod(podsArray, numExpr, evaledNumExpr, "Decimal form", "Numeric", formats, mapper,
+								engine);
+						numpods++;
 					}
 
 					if (outExpr.isSymbol() || outExpr.isString()) {

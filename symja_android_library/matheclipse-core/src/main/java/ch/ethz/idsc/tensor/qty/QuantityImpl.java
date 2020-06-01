@@ -291,7 +291,19 @@ public class QuantityImpl extends AbstractAST implements IQuantity, Externalizab
 	public boolean isNonNegativeResult() {
 		return arg1.isNonNegativeResult();
 	}
+	
+	/** {@inheritDoc} */
+	@Override
+	public boolean isNumericFunction() {
+		return arg1.isNumericFunction();
+	}
 
+	/** {@inheritDoc} */
+	@Override
+	public boolean isInexactNumber()  {
+		return arg1.isInexactNumber();
+	}
+	
 	/** {@inheritDoc} */
 	@Override
 	public boolean isOne() {

@@ -1482,7 +1482,7 @@ public class TestPods {
 					"  \"queryresult\" : {\r\n" + 
 					"    \"success\" : \"true\",\r\n" + 
 					"    \"error\" : \"false\",\r\n" + 
-					"    \"numpods\" : 2,\r\n" + 
+					"    \"numpods\" : 3,\r\n" + 
 					"    \"version\" : \"0.1\",\r\n" + 
 					"    \"pods\" : [ {\r\n" + 
 					"      \"title\" : \"Input\",\r\n" + 
@@ -1493,6 +1493,16 @@ public class TestPods {
 					"        \"plaintext\" : \"FullSimplify(Sqrt(9-4*Sqrt(5)))\",\r\n" + 
 					"        \"sinput\" : \"FullSimplify(Sqrt(9-4*Sqrt(5)))\",\r\n" + 
 					"        \"latex\" : \"\\\\text{FullSimplify}(\\\\sqrt{\\\\left( 9 - 4\\\\,\\\\sqrt{5}\\\\right) })\"\r\n" + 
+					"      } ]\r\n" + 
+					"    }, {\r\n" + 
+					"      \"title\" : \"Decimal form\",\r\n" + 
+					"      \"scanner\" : \"Numeric\",\r\n" + 
+					"      \"error\" : \"false\",\r\n" + 
+					"      \"numsubpods\" : 1,\r\n" + 
+					"      \"subpods\" : [ {\r\n" + 
+					"        \"plaintext\" : \"0.2360679774997898\",\r\n" + 
+					"        \"sinput\" : \"N(-2+Sqrt(5))\",\r\n" + 
+					"        \"latex\" : \"0.236068\"\r\n" + 
 					"      } ]\r\n" + 
 					"    }, {\r\n" + 
 					"      \"title\" : \"Result\",\r\n" + 
@@ -1817,6 +1827,49 @@ public class TestPods {
 					"        \"plaintext\" : \"x^3/3+x^4/4+2/15*x^15\",\r\n" + 
 					"        \"sinput\" : \"Integrate(x^2*(1+x*(1+2*x^11)),x)\",\r\n" + 
 					"        \"latex\" : \"\\\\frac{{x}^{3}}{3}+\\\\frac{{x}^{4}}{4}+\\\\frac{2\\\\,{x}^{15}}{15}\"\r\n" + 
+					"      } ]\r\n" + 
+					"    } ]\r\n" + 
+					"  }\r\n" + 
+					"}");//
+		}
+	}
+
+	@Test
+	public void testETimesPi001() {
+		String s = System.getProperty("os.name"); 
+		ObjectNode messageJSON = Pods.createResult(//
+				"E*Pi", //
+				formatsTEX);
+		
+		final String jsonStr = messageJSON.toPrettyString();
+		System.out.println(jsonStr);
+		if (s.contains("Windows")) {
+			assertEquals(jsonStr, //
+					"{\r\n" + 
+					"  \"queryresult\" : {\r\n" + 
+					"    \"success\" : \"true\",\r\n" + 
+					"    \"error\" : \"false\",\r\n" + 
+					"    \"numpods\" : 2,\r\n" + 
+					"    \"version\" : \"0.1\",\r\n" + 
+					"    \"pods\" : [ {\r\n" + 
+					"      \"title\" : \"Input\",\r\n" + 
+					"      \"scanner\" : \"Identity\",\r\n" + 
+					"      \"error\" : \"false\",\r\n" + 
+					"      \"numsubpods\" : 1,\r\n" + 
+					"      \"subpods\" : [ {\r\n" + 
+					"        \"plaintext\" : \"E*Pi\",\r\n" + 
+					"        \"sinput\" : \"E*Pi\",\r\n" + 
+					"        \"latex\" : \"e\\\\,\\\\pi\"\r\n" + 
+					"      } ]\r\n" + 
+					"    }, {\r\n" + 
+					"      \"title\" : \"Decimal form\",\r\n" + 
+					"      \"scanner\" : \"Numeric\",\r\n" + 
+					"      \"error\" : \"false\",\r\n" + 
+					"      \"numsubpods\" : 1,\r\n" + 
+					"      \"subpods\" : [ {\r\n" + 
+					"        \"plaintext\" : \"8.539734222673566\",\r\n" + 
+					"        \"sinput\" : \"N(E*Pi)\",\r\n" + 
+					"        \"latex\" : \"8.53973\"\r\n" + 
 					"      } ]\r\n" + 
 					"    } ]\r\n" + 
 					"  }\r\n" + 
