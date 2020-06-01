@@ -354,6 +354,23 @@ public class Pods {
 		temp.add(node);
 		createJSONFormat(node, engine, outExpr, plaintext, "", formats);
 	}
+	
+	/** package private */
+	static void addPod(ArrayNode podsArray, IExpr inExpr, IExpr outExpr, String plaintext,String sinput,  String title, String scanner,
+			int formats, ObjectMapper mapper, EvalEngine engine) {
+		ArrayNode temp = mapper.createArrayNode();
+		ObjectNode subpodsResult = mapper.createObjectNode();
+		subpodsResult.put("title", title);
+		subpodsResult.put("scanner", scanner);
+		subpodsResult.put("error", "false");
+		subpodsResult.put("numsubpods", 1);
+		subpodsResult.putPOJO("subpods", temp);
+		podsArray.add(subpodsResult);
+
+		ObjectNode node = mapper.createObjectNode();
+		temp.add(node);
+		createJSONFormat(node, engine, outExpr, plaintext, sinput, formats);
+	}
 
 	static void integerPropertiesPod(ArrayNode podsArray, IInteger inExpr, IExpr outExpr, String title, String scanner,
 			int formats, ObjectMapper mapper, EvalEngine engine) {
