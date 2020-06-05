@@ -3636,7 +3636,12 @@ public final class BooleanFunctions {
 				String method = "SAT";
 				int maxChoices = 1;
 				if (ast.size() > 2) {
-					userDefinedVariables = ast.arg2().orNewList();
+					if (ast.arg2().equals(F.All)) {
+						maxChoices = Integer.MAX_VALUE;
+						userDefinedVariables = variablesInFormula;
+					} else {
+						userDefinedVariables = ast.arg2().orNewList();
+					}
 					IExpr complement = F.Complement.of(engine, userDefinedVariables, variablesInFormula);
 					if (complement.size() > 1 && complement.isList()) {
 						IASTAppendable or = F.Or();
@@ -3644,6 +3649,7 @@ public final class BooleanFunctions {
 						arg1 = or;
 						or.appendArgs((IAST) complement);
 					}
+
 					if (ast.size() > 3) {
 						final OptionArgs options = new OptionArgs(ast.topHead(), ast, 3, engine);
 						// "BDD" (binary decision diagram), "SAT", "TREE" ?
