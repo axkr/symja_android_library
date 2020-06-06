@@ -15,6 +15,7 @@ EllipticPi(n,m,z)
 
 See
 * [Wikipedia - Elliptic integral - Complete elliptic integral of the third kind](https://en.wikipedia.org/wiki/Elliptic_integral#Complete_elliptic_integral_of_the_third_kind)
+* [Fungrim - Legendre elliptic integrals](http://fungrim.org/topic/Legendre_elliptic_integrals/)
 
 ### Examples
 

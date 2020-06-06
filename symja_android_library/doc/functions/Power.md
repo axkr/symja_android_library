@@ -35,6 +35,7 @@ Here's an example for a hexadecimal number:
 
 See
 * [Wikipedia - Exponentiation](https://en.wikipedia.org/wiki/Exponentiation)
+* [Fungrim - Powers](http://fungrim.org/topic/Powers/)
 
 ### Examples
  

@@ -9,3 +9,4 @@ Hypergeometric1F1(a, b, z)
 See:
 * [Wikipedia - Confluent hypergeometric function](https://en.wikipedia.org/wiki/Confluent_hypergeometric_function)
 * [Wikipedia - Generalized hypergeometric function](https://en.wikipedia.org/wiki/Generalized_hypergeometric_function)
+* [Fungrim - Confluent hypergeometric functions](http://fungrim.org/topic/Confluent_hypergeometric_functions/)

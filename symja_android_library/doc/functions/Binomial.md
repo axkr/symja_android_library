@@ -12,6 +12,7 @@ See:
 * [Wikipedia - Binomial coefficient](http://en.wikipedia.org/wiki/Binomial_coefficient)
 * [John D. Cook - Binomial coefficients definition](https://www.johndcook.com/blog/binomial_coefficients/)
 * [Kronenburg 2011 - The Binomial Coefficient for Negative Arguments](https://arxiv.org/pdf/1105.3689.pdf)
+* [Fungrim - Factorials and binomial coefficients](http://fungrim.org/topic/Factorials_and_binomial_coefficients/)
 
 ### Examples
 

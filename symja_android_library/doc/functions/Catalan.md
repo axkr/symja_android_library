@@ -8,6 +8,7 @@ Catalan
 
 See:
 * [Wikipedia - Catalan's constant](http://en.wikipedia.org/wiki/Catalan%27s_constant)
+* [Fungrim - Catalan's constant](http://fungrim.org/topic/Catalan's_constant/)
 
 ### Examples
 

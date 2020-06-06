@@ -10,6 +10,7 @@ Sin(expr)
 
 See
 * [Wikipedia - Sine](https://en.wikipedia.org/wiki/Sine)
+* [Fungrim - Sine](http://fungrim.org/topic/Sine/)
 
 ### Examples
 

@@ -9,3 +9,5 @@ Hypergeometric0F1(b, z)
 See: 
 * [Wikipedia - Generalized hypergeometric function](https://en.wikipedia.org/wiki/Generalized_hypergeometric_function)
 * [Wikipedia - Bessel function - Relation to hypergeometric series](https://en.wikipedia.org/wiki/Generalized_hypergeometric_function)https://en.wikipedia.org/wiki/Bessel_function#Relation_to_hypergeometric_series)
+* [Fungrim - Confluent hypergeometric functions](http://fungrim.org/topic/Confluent_hypergeometric_functions/)
+

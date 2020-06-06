@@ -16,6 +16,7 @@ PolyGamma(m, value)
 See
 * [Wikipedia: Polygamma function](https://en.wikipedia.org/wiki/Polygamma_function)
 * [Wikipedia: Digamma function](https://en.wikipedia.org/wiki/Digamma_function)
+* [Fungrim - Digamma function](http://fungrim.org/topic/Digamma_function/)
 
 ### Examples
 

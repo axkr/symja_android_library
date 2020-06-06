@@ -14,6 +14,8 @@ Beta(x, a, b)
 
 See
 * [Wikipedia - Beta function](https://en.wikipedia.org/wiki/Beta_function)
+* [Fungrim - Beta function](http://fungrim.org/topic/Beta_function/)
+
 
 ### Examples
 

@@ -9,6 +9,7 @@ Gamma(z)
 
 See
 * [Wikipedia - Gamma function](https://en.wikipedia.org/wiki/Gamma_function) 
+* [Fungrim - Gamma function](http://fungrim.org/topic/Gamma_function/)
 
 ### Examples
 

@@ -8,6 +8,7 @@ StirlingS1(n, k)
  
 See
 * [Wikipedia - Stirling numbers of the first kind](https://en.wikipedia.org/wiki/Stirling_numbers_of_the_first_kind)
+* [Fungrim - Stirling numbers](http://fungrim.org/topic/Stirling_numbers/)
 
 ### Examples
 
