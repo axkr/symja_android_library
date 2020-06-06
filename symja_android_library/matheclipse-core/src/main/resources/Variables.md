@@ -1,7 +1,7 @@
 ## Variables
 
 ```
-Variables[expr]
+Variables(expr)
 ```
 
 > gives a list of the variables that appear in the polynomial `expr`.

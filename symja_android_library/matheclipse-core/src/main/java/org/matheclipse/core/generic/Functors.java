@@ -7,8 +7,6 @@ import java.util.Map;
 import java.util.function.Function;
 import java.util.function.Predicate;
 
-import javax.annotation.Nonnull;
-
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.exception.ArgumentTypeException;
 import org.matheclipse.core.eval.util.OpenFixedSizeMap;
@@ -39,7 +37,6 @@ public class Functors {
 		}
 
 		@Override
-		@Nonnull
 		public IExpr apply(final IExpr arg) {
 			return lhs.equals(arg) ? rhs : F.NIL;
 		}
@@ -54,7 +51,6 @@ public class Functors {
 		}
 
 		@Override
-		@Nonnull
 		public IExpr apply(final IExpr arg) {
 			IExpr temp = fEqualRules.get(arg);
 			return temp != null ? temp : F.NIL;
@@ -68,14 +64,13 @@ public class Functors {
 		private final EvalEngine fEngine;
 
 		public RulesPatternFunctor(Map<IExpr, IExpr> equalRules, List<PatternMatcherAndEvaluator> matchers,
-				@Nonnull EvalEngine engine) {
+				EvalEngine engine) {
 			fEqualRules = equalRules;
 			fMatchers = matchers;
 			fEngine = engine;
 		}
 
 		@Override
-		@Nonnull
 		public IExpr apply(final IExpr arg) {
 			IExpr temp = fEqualRules.get(arg);
 			if (temp != null) {
@@ -99,13 +94,13 @@ public class Functors {
 
 		/**
 		 * 
-		 * @param equalRules 
-		 * @param matchers 
-		 * @param result 
-		 * @param engine 
+		 * @param equalRules
+		 * @param matchers
+		 * @param result
+		 * @param engine
 		 */
 		public ListRulesPatternFunctor(Map<IExpr, IExpr> equalRules, List<PatternMatcherList> matchers,
-				IASTAppendable result, @Nonnull EvalEngine engine) {
+				IASTAppendable result, EvalEngine engine) {
 			fEqualRules = equalRules;
 			fMatchers = matchers;
 			fResult = result;
@@ -120,7 +115,6 @@ public class Functors {
 		}
 
 		@Override
-		@Nonnull
 		public IExpr apply(final IExpr arg) {
 			IExpr temp = fEqualRules.get(arg);
 			if (temp != null) {
@@ -176,7 +170,7 @@ public class Functors {
 	 *            array of rules of the form &quot;<code>x-&gt;y</code>&quot;
 	 * @return
 	 */
-	public static Function<IExpr, IExpr> rules(@Nonnull String[] strRules) {
+	public static Function<IExpr, IExpr> rules(String[] strRules) {
 		IASTAppendable astRules = F.ListAlloc(strRules.length);
 		final EvalEngine engine = EvalEngine.get();
 		ExprParser parser = new ExprParser(engine);
@@ -196,7 +190,7 @@ public class Functors {
 	 * @param astRules
 	 * @return
 	 */
-	public static Function<IExpr, IExpr> rules(@Nonnull IAST astRules, @Nonnull EvalEngine engine) {
+	public static Function<IExpr, IExpr> rules(IAST astRules, EvalEngine engine) {
 		final Map<IExpr, IExpr> equalRules;
 		IAST rule;
 		List<PatternMatcherAndEvaluator> matchers = new ArrayList<PatternMatcherAndEvaluator>();
@@ -246,8 +240,7 @@ public class Functors {
 
 	}
 
-	public static Function<IExpr, IExpr> listRules(@Nonnull IAST astRules, IASTAppendable result,
-			@Nonnull EvalEngine engine) {
+	public static Function<IExpr, IExpr> listRules(IAST astRules, IASTAppendable result, EvalEngine engine) {
 		final Map<IExpr, IExpr> equalRules;
 		List<PatternMatcherList> matchers = new ArrayList<PatternMatcherList>();
 		if (astRules.isList()) {

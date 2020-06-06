@@ -8,6 +8,7 @@ UnitStep(expr)
 
 See
 * [Wikipedia - Heaviside step function](https://en.wikipedia.org/wiki/Heaviside_step_function)  
+* [Wikipedia - Step function](https://en.wikipedia.org/wiki/Step_function)
 
 ### Examples
 
@@ -15,3 +16,6 @@ See
 >> UnitStep(-42)
 0
 ```
+
+### Related terms 
+[Piecewise](Piecewise.md)

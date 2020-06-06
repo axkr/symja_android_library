@@ -7,6 +7,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.SortedSet;
+import java.util.function.Function;
 
 import org.logicng.datastructures.Assignment;
 import org.logicng.datastructures.Tristate;
@@ -20,7 +21,6 @@ import org.logicng.formulas.Variable;
 import org.logicng.solvers.MiniSat;
 import org.logicng.solvers.SATSolver;
 import org.logicng.transformations.cnf.BDDCNFTransformation;
-import org.logicng.transformations.cnf.CNFSubsumption;
 import org.logicng.transformations.dnf.DNFFactorization;
 import org.logicng.transformations.qmc.QuineMcCluskeyAlgorithm;
 import org.matheclipse.core.convert.VariablesSet;
@@ -34,6 +34,7 @@ import org.matheclipse.core.eval.interfaces.AbstractArg1;
 import org.matheclipse.core.eval.interfaces.AbstractCoreFunctionEvaluator;
 import org.matheclipse.core.eval.interfaces.AbstractEvaluator;
 import org.matheclipse.core.eval.interfaces.AbstractFunctionEvaluator;
+import org.matheclipse.core.eval.util.AbstractAssumptions;
 import org.matheclipse.core.eval.util.OptionArgs;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.expression.ID;
@@ -273,7 +274,7 @@ public final class BooleanFunctions {
 		// }return factory.or(factory.and(arg1,factory.not(arg2)),factory.and(factory.not(arg1),arg2));
 		// }
 
-		public Formula expr2BooleanFunction(final IExpr logicExpr) {
+		public Formula expr2BooleanFunction(final IExpr logicExpr) throws ArgumentTypeException {
 			if (logicExpr instanceof IAST) {
 				final IAST ast = (IAST) logicExpr;
 				int functionID = ast.headID();
@@ -1008,8 +1009,18 @@ public final class BooleanFunctions {
 
 			public IAST booleanTable(IExpr expr, int position) {
 				if (variables.size() <= position) {
-					resultList.append(engine.evalTrue(expr) ? F.True : F.False);
-					return resultList;
+					if (expr.isList()) {
+						IAST list = (IAST) expr;
+						IASTAppendable newList = F.ListAlloc(list.size());
+						for (int i = 1; i < list.size(); i++) {
+							newList.append(engine.evalTrue(list.get(i)) ? F.True : F.False);
+						}
+						resultList.append(newList);
+						return resultList;
+					} else {
+						resultList.append(engine.evalTrue(expr) ? F.True : F.False);
+						return resultList;
+					}
 				}
 				IExpr sym = variables.get(position);
 				if (sym.isSymbol()) {
@@ -1628,10 +1639,11 @@ public final class BooleanFunctions {
 		 * @param arg1
 		 *            the left-hand-side of the comparison
 		 * @param arg2
-		 *            the right-hand-side of the comparison
+		 *            the right-hand-side of the comparison which is tested with {@link IExpr#isNumericFunction()}
+		 *            equals <code>true</code>.
 		 * @return
 		 */
-		protected IExpr checkAssumptions(IExpr arg1, ISignedNumber arg2) {
+		protected IExpr checkAssumptions(IExpr arg1, IExpr arg2) {
 			if (arg2.isNegative()) {
 				// arg1 > "negative number"
 				if (arg1.isNonNegativeResult() || arg1.isPositiveResult()) {
@@ -1650,6 +1662,10 @@ public final class BooleanFunctions {
 				if (arg1.isNegativeResult() || arg1.isZero()) {
 					return F.False;
 				}
+			}
+			ISignedNumber a2 = arg2.evalReal();
+			if (a2 != null && AbstractAssumptions.assumeGreaterThan(arg1, a2)) {
+				return F.True;
 			}
 			return F.NIL;
 		}
@@ -1782,11 +1798,11 @@ public final class BooleanFunctions {
 					// (i.e. Less instead of Greater)
 					return result;
 				}
-				if (arg2.isReal()) {
+				if (arg2.isNumericFunction()) {
 					// this part is used in other comparator operations like
 					// Less,
 					// GreaterEqual,...
-					IExpr temp2 = checkAssumptions(arg1, (ISignedNumber) arg2);
+					IExpr temp2 = checkAssumptions(arg1, arg2);
 					if (temp2.isPresent()) {
 						return temp2;
 					}
@@ -1992,7 +2008,7 @@ public final class BooleanFunctions {
 
 		/** {@inheritDoc} */
 		@Override
-		protected IExpr checkAssumptions(IExpr arg1, ISignedNumber arg2) {
+		protected IExpr checkAssumptions(IExpr arg1, IExpr arg2) {
 			if (arg2.isNegative()) {
 				// arg1 >= "negative number"
 				if (arg1.isNonNegativeResult() || arg1.isPositiveResult()) {
@@ -2011,6 +2027,10 @@ public final class BooleanFunctions {
 				if (arg1.isNegativeResult() || arg1.isZero()) {
 					return F.False;
 				}
+			}
+			ISignedNumber a2 = arg2.evalReal();
+			if (a2 != null && AbstractAssumptions.assumeGreaterEqual(arg1, a2)) {
+				return F.True;
 			}
 			return F.NIL;
 		}
@@ -2280,7 +2300,7 @@ public final class BooleanFunctions {
 
 		/** {@inheritDoc} */
 		@Override
-		protected IExpr checkAssumptions(IExpr arg1, ISignedNumber arg2) {
+		protected IExpr checkAssumptions(IExpr arg1, IExpr arg2) {
 			if (arg2.isNegative()) {
 				// arg1 < "negative number"
 				if (arg1.isPositiveResult()) {
@@ -2300,6 +2320,10 @@ public final class BooleanFunctions {
 				if (arg1.isNegativeResult() || arg1.isZero()) {
 					return F.True;
 				}
+			}
+			ISignedNumber a2 = arg2.evalReal();
+			if (a2 != null && AbstractAssumptions.assumeLessThan(arg1, a2)) {
+				return F.True;
 			}
 			return F.NIL;
 		}
@@ -2361,7 +2385,7 @@ public final class BooleanFunctions {
 
 		/** {@inheritDoc} */
 		@Override
-		protected IExpr checkAssumptions(IExpr arg1, ISignedNumber arg2) {
+		protected IExpr checkAssumptions(IExpr arg1, IExpr arg2) {
 			if (arg2.isNegative()) {
 				// arg1 <= "negative number"
 				if (arg1.isNonNegativeResult() || arg1.isPositiveResult()) {
@@ -2380,6 +2404,10 @@ public final class BooleanFunctions {
 				if (arg1.isNegativeResult() || arg1.isZero()) {
 					return F.True;
 				}
+			}
+			ISignedNumber a2 = arg2.evalReal();
+			if (a2 != null && AbstractAssumptions.assumeLessEqual(arg1, a2)) {
+				return F.True;
 			}
 			return F.NIL;
 		}
@@ -2420,31 +2448,35 @@ public final class BooleanFunctions {
 		public IExpr evaluate(final IAST ast, EvalEngine engine) {
 			IExpr arg1 = ast.arg1();
 			if (ast.arg1().isAST()) {
-				IExpr subst = ast.arg1().replaceAll(x -> {
-					if (x.isAST()) {
-						IAST formula = (IAST) x;
-						if (x.isNot() && x.first().isOr()) {
-							IASTMutable result = ((IAST) x.first()).apply(F.And);
-							for (int i = 1; i < result.size(); i++) {
-								result.set(i, F.Not(result.get(i)));
-							}
-							return engine.evaluate(result);
-						}
-						if (formula.isSameHeadSizeGE(F.Xor, 3)) {
-							return xorToDNF(formula);
-						}
-						try { 
-							return booleanConvert(F.BooleanConvert(formula,F.stringx("DNF")), engine);
-						} catch (final ValidateException ve) { 
-						}
-					}
-					return F.NIL;
-				});
+				IExpr subst = ast.arg1().replaceAll(logicalExpand(engine));
 				if (subst.isPresent()) {
 					return subst;
 				}
 			}
 			return arg1;
+		}
+
+		private static Function<IExpr, IExpr> logicalExpand(EvalEngine engine) {
+			return x -> {
+				if (x.isAST()) {
+					IAST formula = (IAST) x;
+					if (x.isNot() && x.first().isOr()) {
+						IASTMutable result = ((IAST) x.first()).apply(F.And);
+						for (int i = 1; i < result.size(); i++) {
+							result.set(i, F.Not(result.get(i)));
+						}
+						return engine.evaluate(result);
+					}
+					if (formula.isSameHeadSizeGE(F.Xor, 3)) {
+						return xorToDNF(formula);
+					}
+					try {
+						return booleanConvert(F.BooleanConvert(formula, F.stringx("DNF")), engine);
+					} catch (final ValidateException ve) {
+					}
+				}
+				return F.NIL;
+			};
 		}
 
 		public int[] expectedArgSize() {
@@ -3604,7 +3636,12 @@ public final class BooleanFunctions {
 				String method = "SAT";
 				int maxChoices = 1;
 				if (ast.size() > 2) {
-					userDefinedVariables = ast.arg2().orNewList();
+					if (ast.arg2().equals(F.All)) {
+						maxChoices = Integer.MAX_VALUE;
+						userDefinedVariables = variablesInFormula;
+					} else {
+						userDefinedVariables = ast.arg2().orNewList();
+					}
 					IExpr complement = F.Complement.of(engine, userDefinedVariables, variablesInFormula);
 					if (complement.size() > 1 && complement.isList()) {
 						IASTAppendable or = F.Or();
@@ -3612,6 +3649,7 @@ public final class BooleanFunctions {
 						arg1 = or;
 						or.appendArgs((IAST) complement);
 					}
+
 					if (ast.size() > 3) {
 						final OptionArgs options = new OptionArgs(ast.topHead(), ast, 3, engine);
 						// "BDD" (binary decision diagram), "SAT", "TREE" ?
@@ -4402,7 +4440,7 @@ public final class BooleanFunctions {
 		EvalAttributes.sort(list, Comparators.ExprReverseComparator.CONS);
 		return list;
 	}
-	
+
 	/**
 	 * Get the transformation from the ast options. Default is DNF.
 	 * 
@@ -4421,12 +4459,12 @@ public final class BooleanFunctions {
 				return new BDDCNFTransformation();// new CNFFactorization( );
 			}
 			// `1` currently not supported in `2`.
-			IOFunctions.printMessage(ast.topHead(), "unsupported", F.List(arg2,F.Method), engine);
+			IOFunctions.printMessage(ast.topHead(), "unsupported", F.List(arg2, F.Method), engine);
 			return null;
 		}
 		return new DNFFactorization();
 	}
-	
+
 	private static IExpr booleanConvert(final IAST ast, EvalEngine engine) throws ValidateException {
 		FormulaTransformation transformation = transformation(ast, engine);
 		if (transformation != null) {

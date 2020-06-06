@@ -1,4 +1,5 @@
 {
+ ArcCoth(Undefined)=Undefined,
  ArcCoth(0)=I*Pi/2,
  ArcCoth(I/Sqrt(3))=(-1/3)*Pi*I,
  ArcCoth(I)=(-1/4)*Pi*I,

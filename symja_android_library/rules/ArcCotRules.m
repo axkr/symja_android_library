@@ -1,4 +1,5 @@
 {
+ArcCot(Undefined)=Undefined,
 ArcCot(0)=Pi/2,
 ArcCot(2-Sqrt(3))=5/12*Pi,
 ArcCot(Sqrt(3)-2)=-5/12*Pi,

@@ -13,15 +13,24 @@ public interface StieltjesGammaRules {
    * <li>index 0 - number of equal rules in <code>RULES</code></li>
 	 * </ul>
 	 */
-  final public static int[] SIZES = { 1, 1 };
+  final public static int[] SIZES = { 2, 2 };
 
   final public static IAST RULES = List(
     IInit(StieltjesGamma, SIZES),
+    // StieltjesGamma(Undefined)=Undefined
+    ISet(StieltjesGamma(Undefined),
+      Undefined),
     // StieltjesGamma(0)=EulerGamma
     ISet(StieltjesGamma(C0),
       EulerGamma),
     // StieltjesGamma(0,a_):=-PolyGamma(0,a)
     ISetDelayed(StieltjesGamma(C0,a_),
-      Negate(PolyGamma(C0,a)))
+      Negate(PolyGamma(C0,a))),
+    // StieltjesGamma(Undefined,y_):=Undefined
+    ISetDelayed(StieltjesGamma(Undefined,y_),
+      Undefined),
+    // StieltjesGamma(x_,Undefined):=Undefined
+    ISetDelayed(StieltjesGamma(x_,Undefined),
+      Undefined)
   );
 }

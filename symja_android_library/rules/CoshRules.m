@@ -1,4 +1,5 @@
  {
+ Cosh(Undefined)=Undefined,
  Cosh(0)=1,
  Cosh(1/6*Pi*I)=1/2*Sqrt(3),
  Cosh(1/5*Pi*I)=1/4*(Sqrt(5)+1),

@@ -3,8 +3,6 @@ package org.matheclipse.core.expression;
 import java.io.ObjectStreamException;
 import java.util.List;
 
-import javax.annotation.Nonnull;
-
 import org.matheclipse.core.basic.Config;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IExpr;
@@ -20,7 +18,7 @@ import org.matheclipse.parser.client.FEConfig;
  */
 public class Pattern extends Blank {
 
-	public static IPattern valueOf(@Nonnull final ISymbol symbol) {
+	public static IPattern valueOf(final ISymbol symbol) {
 		if (symbol.getContext().equals(Context.DUMMY)) {
 			IPattern value = F.PREDEFINED_PATTERN_MAP.get(symbol.toString());
 			if (value != null) {
@@ -37,7 +35,7 @@ public class Pattern extends Blank {
 	 * @param check
 	 * @return
 	 */
-	public static IPattern valueOf(@Nonnull final ISymbol symbol, final IExpr check) {
+	public static IPattern valueOf(final ISymbol symbol, final IExpr check) {
 		return new Pattern(symbol, check);
 	}
 
@@ -49,7 +47,7 @@ public class Pattern extends Blank {
 	 *            if <code>true</code> use a default value, if matching isn't possible
 	 * @return
 	 */
-	public static IPattern valueOf(@Nonnull final ISymbol symbol, final IExpr check, final boolean def) {
+	public static IPattern valueOf(final ISymbol symbol, final IExpr check, final boolean def) {
 		return new Pattern(symbol, check, def);
 	}
 
@@ -61,17 +59,17 @@ public class Pattern extends Blank {
 	final private ISymbol fSymbol;
 
 	/** package private */
-	Pattern(@Nonnull final ISymbol symbol) {
+	Pattern(final ISymbol symbol) {
 		this(symbol, null, false);
 	}
 
 	/** package private */
-	Pattern(@Nonnull final ISymbol symbol, IExpr condition) {
+	Pattern(final ISymbol symbol, IExpr condition) {
 		this(symbol, condition, false);
 	}
 
 	/** package private */
-	public Pattern(@Nonnull final ISymbol symbol, IExpr condition, boolean def) {
+	public Pattern(final ISymbol symbol, IExpr condition, boolean def) {
 		super(condition, def);
 		fSymbol = symbol;
 	}
@@ -175,7 +173,7 @@ public class Pattern extends Blank {
 			return expr.equals(value);
 		}
 		return patternMap.setValue(this, expr);
-//		return true;
+		// return true;
 	}
 
 	@Override

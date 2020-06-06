@@ -13,7 +13,7 @@ public interface PolyLogRules {
    * <li>index 0 - number of equal rules in <code>RULES</code></li>
 	 * </ul>
 	 */
-  final public static int[] SIZES = { 8, 0 };
+  final public static int[] SIZES = { 8, 1 };
 
   final public static IAST RULES = List(
     IInit(PolyLog, SIZES),
@@ -40,6 +40,12 @@ public interface PolyLogRules {
       Plus(Times(CNI,Catalan),Times(QQ(1L,16L),Sqr(Pi)),Times(CC(0L,1L,-1L,4L),Pi,Log(C2)))),
     // PolyLog(2,1+I)=Pi^2/16+I*Catalan+I*Pi*Log(2)/4
     ISet(PolyLog(C2,CC(1L,1L,1L,1L)),
-      Plus(Times(CI,Catalan),Times(QQ(1L,16L),Sqr(Pi)),Times(CC(0L,1L,1L,4L),Pi,Log(C2))))
+      Plus(Times(CI,Catalan),Times(QQ(1L,16L),Sqr(Pi)),Times(CC(0L,1L,1L,4L),Pi,Log(C2)))),
+    // PolyLog(Undefined,y_):=Undefined
+    ISetDelayed(PolyLog(Undefined,y_),
+      Undefined),
+    // PolyLog(x_,Undefined):=Undefined
+    ISetDelayed(PolyLog(x_,Undefined),
+      Undefined)
   );
 }

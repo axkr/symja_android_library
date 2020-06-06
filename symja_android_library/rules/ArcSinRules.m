@@ -1,4 +1,5 @@
 {  
+ ArcSin(Undefined)=Undefined,
  ArcSin(0)=0,
  ArcSin((Sqrt(3)-1)/(2*Sqrt(2)))=1/12*Pi,
  ArcSin(1/4*(Sqrt(5)-1))=1/10*Pi,

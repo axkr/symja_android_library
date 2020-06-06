@@ -13,10 +13,13 @@ public interface GammaRules {
    * <li>index 0 - number of equal rules in <code>RULES</code></li>
 	 * </ul>
 	 */
-  final public static int[] SIZES = { 11, 3 };
+  final public static int[] SIZES = { 12, 4 };
 
   final public static IAST RULES = List(
     IInit(Gamma, SIZES),
+    // Gamma(Undefined)=Undefined
+    ISet(Gamma(Undefined),
+      Undefined),
     // Gamma(-5/2)=(-1)*1/15*8*Sqrt(Pi)
     ISet(Gamma(QQ(-5L,2L)),
       Times(QQ(-8L,15L),Sqrt(Pi))),
@@ -50,6 +53,12 @@ public interface GammaRules {
     // Gamma(ComplexInfinity)=Indeterminate
     ISet(Gamma(CComplexInfinity),
       Indeterminate),
+    // Gamma(Undefined,y_):=Undefined
+    ISetDelayed(Gamma(Undefined,y_),
+      Undefined),
+    // Gamma(x_,Undefined):=Undefined
+    ISetDelayed(Gamma(x_,Undefined),
+      Undefined),
     // Gamma(a_,-1):=E*Subfactorial(-1+a)
     ISetDelayed(Gamma(a_,CN1),
       Times(E,Subfactorial(Plus(CN1,a)))),

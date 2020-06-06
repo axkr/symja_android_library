@@ -1,4 +1,5 @@
 {
+ Sec(Undefined)=Undefined,
  Sec(0)=1,
  Sec(Pi/12)=Sqrt(6)-Sqrt(2),
  Sec(Pi/10)=Sqrt(2-2/Sqrt(5)),

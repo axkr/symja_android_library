@@ -1,4 +1,5 @@
- { 
+ {
+  ArcCsch(Undefined)=Undefined,
   ArcCsch(0)=ComplexInfinity,
   ArcCsch(I)=(-1/2)*Pi*I,
   ArcCsch(2*I/Sqrt(3))=(-1/3)*Pi*I,

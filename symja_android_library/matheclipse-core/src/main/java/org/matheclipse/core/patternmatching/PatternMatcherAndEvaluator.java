@@ -5,8 +5,6 @@ import java.io.IOException;
 import java.io.ObjectInput;
 import java.io.ObjectOutput;
 
-import javax.annotation.Nonnull;
-
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.exception.ConditionException;
 import org.matheclipse.core.eval.exception.ReturnException;
@@ -237,11 +235,11 @@ public class PatternMatcherAndEvaluator extends PatternMatcher implements Extern
 
 	/** {@inheritDoc} */
 	@Override
-	public IExpr eval(final IExpr leftHandSide, @Nonnull EvalEngine engine) {
+	public IExpr eval(final IExpr leftHandSide, EvalEngine engine) {
 		return replace(leftHandSide, engine, true);
 	}
 
-	public IExpr replace(final IExpr leftHandSide, @Nonnull EvalEngine engine, boolean evaluate) {
+	public IExpr replace(final IExpr leftHandSide, EvalEngine engine, boolean evaluate) {
 		IPatternMap patternMap = null;
 		if (isRuleWithoutPatterns()) {
 			// no patterns found match equally:

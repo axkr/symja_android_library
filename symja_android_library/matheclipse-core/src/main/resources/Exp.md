@@ -8,6 +8,7 @@ Exp(z)
  
 See
 * [Wikipedia - Exponential function](https://en.wikipedia.org/wiki/Exponential_function)
+* [Fungrim - Exponential function](http://fungrim.org/topic/Exponential_function/)
 
 
 ### Examples

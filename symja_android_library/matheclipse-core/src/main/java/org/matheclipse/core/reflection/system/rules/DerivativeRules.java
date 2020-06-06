@@ -9,6 +9,18 @@ import org.matheclipse.core.interfaces.IAST;
  */
 public interface DerivativeRules {
   final public static IAST RULES1 = List(
+    // AiryAi->AiryAiPrime(#1)
+    Rule(AiryAi,
+      AiryAiPrime(Slot1)),
+    // AiryAiPrime->AiryAi(#1)*#1
+    Rule(AiryAiPrime,
+      Times(AiryAi(Slot1),Slot1)),
+    // AiryBi->AiryBiPrime(#1)
+    Rule(AiryBi,
+      AiryBiPrime(Slot1)),
+    // AiryBiPrime->AiryBi(#1)*#1
+    Rule(AiryBiPrime,
+      Times(AiryBi(Slot1),Slot1)),
     // ArcCos->-1/Sqrt(1-#1^2)
     Rule(ArcCos,
       Negate(Power(Subtract(C1,Sqr(Slot1)),CN1D2))),
@@ -87,6 +99,9 @@ public interface DerivativeRules {
     // HarmonicNumber->Pi^2/6-HarmonicNumber(#1,2)
     Rule(HarmonicNumber,
       Subtract(Times(QQ(1L,6L),Sqr(Pi)),HarmonicNumber(Slot1,C2))),
+    // Haversine->Sin(#1)/2
+    Rule(Haversine,
+      Times(C1D2,Sin(Slot1))),
     // HeavisideTheta->DiracDelta(#1)
     Rule(HeavisideTheta,
       DiracDelta(Slot1)),
@@ -99,6 +114,9 @@ public interface DerivativeRules {
     // InverseErfc->-1/2*E^InverseErfc(#1)^2*Sqrt(Pi)
     Rule(InverseErfc,
       Times(CN1D2,Exp(Sqr(InverseErfc(Slot1))),Sqrt(Pi))),
+    // InverseHaversine->1/Sqrt((1-#1)*#1)
+    Rule(InverseHaversine,
+      Power(Times(Subtract(C1,Slot1),Slot1),CN1D2)),
     // Log->1/#1
     Rule(Log,
       Power(Slot1,CN1)),

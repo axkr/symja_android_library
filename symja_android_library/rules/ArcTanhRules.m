@@ -1,4 +1,5 @@
 {
+ ArcTanh(Undefined)=Undefined,
  ArcTanh(0)=0,
  ArcTanh(I/Sqrt(3))=Pi*I/6,
  ArcTanh(I)=Pi*I/4,

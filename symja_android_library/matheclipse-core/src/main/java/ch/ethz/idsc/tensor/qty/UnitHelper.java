@@ -30,13 +30,29 @@ import org.matheclipse.core.interfaces.IExpr;
 	/**
 	 * @param str
 	 *            for instance "A*kg^-1*s^2"
-	 * @return unit
+	 * @return unit <code>null</code> if unit couldn't be found
 	 */
 	IUnit lookup(String str) {
 		IUnit unit = map.get(str);
 		if (Objects.isNull(unit)) {
 			unit = create(str);
-			map.put(str, unit);
+			// map.put(str, unit);
+		}
+		return unit;
+	}
+
+	/**
+	 * @param str
+	 *            for instance "A*kg^-1*s^2"
+	 * @return unit <code>null</code> if unit couldn't be found
+	 */
+	IUnit lookupAndPutIfAbsent(String str) {
+		IUnit unit = map.get(str);
+		if (Objects.isNull(unit)) {
+			unit = create(str);
+			if (unit != null) {
+				map.put(str, unit);
+			}
 		}
 		return unit;
 	}
@@ -56,10 +72,10 @@ import org.matheclipse.core.interfaces.IExpr;
 		IExpr value = F.NIL;
 		String key = string.trim();
 		NavigableMap<String, IExpr> map = new TreeMap<>();
-		if (key.length() == 0) {
-			value = F.C1;
-			map.put(key, value);
-		} else {
+		if (key.length() != 0) {
+			// value = F.C1;
+			// map.put(key, value);
+			// } else {
 			// key = requireValid(key);
 			value = ENGINE.parse(key);
 			if (value.isTimes()) {
@@ -91,6 +107,9 @@ import org.matheclipse.core.interfaces.IExpr;
 			} else {
 				map.put(key, F.C1);
 			}
+		}
+		if (map.size() == 0) {
+			return null;
 		}
 		return new UnitImpl(map);
 	}

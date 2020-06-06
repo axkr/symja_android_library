@@ -11,6 +11,7 @@ ArcTan(expr)
 See:
 * [Wikipedia - Inverse trigonometric functions](https://en.wikipedia.org/wiki/Inverse_trigonometric_functions)
 * [Wikipedia - Atan2](https://en.wikipedia.org/wiki/Atan2)
+* [Fungrim - Inverse tangent](http://fungrim.org/topic/Inverse_tangent/)
 
 ### Examples
 

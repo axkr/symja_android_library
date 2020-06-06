@@ -8,6 +8,7 @@ Sqrt(expr)
  
 See
 * [Wikipedia - Square root](https://en.wikipedia.org/wiki/Square_root)
+* [Fungrim - Square roots](http://fungrim.org/topic/Square_roots/)
 
 ### Examples
 

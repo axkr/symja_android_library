@@ -13,7 +13,7 @@ public interface PolyGammaRules {
    * <li>index 0 - number of equal rules in <code>RULES</code></li>
 	 * </ul>
 	 */
-  final public static int[] SIZES = { 7, 1 };
+  final public static int[] SIZES = { 7, 2 };
 
   final public static IAST RULES = List(
     IInit(PolyGamma, SIZES),
@@ -40,6 +40,12 @@ public interface PolyGammaRules {
       Plus(Times(C4,CSqrt3,Power(Pi,C3)),Times(ZZ(-182L),Zeta(C3)))),
     // PolyGamma(0,n_Integer):=-EulerGamma+HarmonicNumber(-1+n)/;n>0
     ISetDelayed(PolyGamma(C0,$p(n, Integer)),
-      Condition(Plus(Negate(EulerGamma),HarmonicNumber(Plus(CN1,n))),Greater(n,C0)))
+      Condition(Plus(Negate(EulerGamma),HarmonicNumber(Plus(CN1,n))),Greater(n,C0))),
+    // PolyGamma(Undefined,y_):=Undefined
+    ISetDelayed(PolyGamma(Undefined,y_),
+      Undefined),
+    // PolyGamma(x_,Undefined):=Undefined
+    ISetDelayed(PolyGamma(x_,Undefined),
+      Undefined)
   );
 }

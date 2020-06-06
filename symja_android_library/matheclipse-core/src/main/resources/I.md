@@ -10,6 +10,7 @@ I
  
 See
 * [Wikipedia - Imaginary unit](https://en.wikipedia.org/wiki/Imaginary_unit)
+* [Fungrim - Imaginary unit](http://fungrim.org/topic/Imaginary_unit/)
 
 ### Examples
 

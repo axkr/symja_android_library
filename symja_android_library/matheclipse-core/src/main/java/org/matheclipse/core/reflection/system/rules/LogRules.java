@@ -13,10 +13,13 @@ public interface LogRules {
    * <li>index 0 - number of equal rules in <code>RULES</code></li>
 	 * </ul>
 	 */
-  final public static int[] SIZES = { 17, 4 };
+  final public static int[] SIZES = { 18, 4 };
 
   final public static IAST RULES = List(
     IInit(Log, SIZES),
+    // Log(Undefined)=Undefined
+    ISet(Log(Undefined),
+      Undefined),
     // Log(1)=0
     ISet(Log(C1),
       C0),

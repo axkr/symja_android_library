@@ -62,7 +62,7 @@ public class FrobeniusSolve extends AbstractEvaluator {
 		if (ast.arg1().isList() && ast.arg2().isInteger()) {
 			IAST list = ast.getAST(1);
 			try {
-				int[] listInt = Validate.checkListOfInts(ast, list, true,engine);
+				int[] listInt = Validate.checkListOfInts(ast, list, true, engine);
 				if (listInt != null) {
 					for (int i = 0; i < listInt.length; i++) {
 						if (listInt[i] < 0 && ast.size() < 4) {
@@ -79,11 +79,6 @@ public class FrobeniusSolve extends AbstractEvaluator {
 					while ((solution = solver.take()) != null) {
 						if (result.size() >= Config.MAX_AST_SIZE) {
 							throw new ASTElementLimitExceeded(result.size());
-						}
-						if (numberOfSolutions > 0) {
-							if (--numberOfSolutions < 0) {
-								break;
-							}
 						}
 						result.append(F.List(solution));
 					}

@@ -1,4 +1,5 @@
 { 
+ ArcSec(Undefined)=Undefined,
  ArcSec(0)=ComplexInfinity,
  ArcSec(1)=0,
  ArcSec(-1)=Pi,

@@ -1,7 +1,5 @@
 package org.matheclipse.core.patternmatching;
 
-import javax.annotation.Nonnull;
-
 import org.matheclipse.core.combinatoric.IStepVisitor;
 import org.matheclipse.core.combinatoric.MultisetPartitionsIterator;
 import org.matheclipse.core.expression.F;
@@ -32,7 +30,7 @@ public class OrderlessStepVisitor extends FlatOrderlessStepVisitor implements IS
 	}
 
 	@Override
-	protected boolean matchSinglePartition(int[][] result, @Nonnull StackMatcher stackMatcher) {
+	protected boolean matchSinglePartition(int[][] result, StackMatcher stackMatcher) {
 		int lastStackSize = stackMatcher.size();
 		IExpr[] patternValues = fPatternMap.copyPattern();
 		boolean matched = true;

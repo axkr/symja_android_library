@@ -1,4 +1,5 @@
 {
+Tan(Undefined)=Undefined,
 Tan(0)=0,
 Tan(1/12*Pi)=2-Sqrt(3),
 Tan(1/10*Pi)=Sqrt(1-2/Sqrt(5)),

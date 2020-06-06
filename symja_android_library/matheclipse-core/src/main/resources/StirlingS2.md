@@ -8,6 +8,7 @@ StirlingS2(n, k)
  
 See 
 * [Wikipedia - Stirling numbers of the second kind](http://en.wikipedia.org/wiki/Stirling_numbers_of_the_second_kind)
+* [Fungrim - Stirling numbers](http://fungrim.org/topic/Stirling_numbers/)
 
 ### Examples
 

@@ -128,9 +128,9 @@ public interface SeriesCoefficientRules {
     // SeriesCoefficient(ArcSec(x_),{x_Symbol,a_,1}):=1/(Sqrt(1-1/a^2)*a^2)/;FreeQ(a,x)
     ISetDelayed(SeriesCoefficient(ArcSec(x_),List(x_Symbol,a_,C1)),
       Condition(Power(Times(Sqrt(Subtract(C1,Power(a,CN2))),Sqr(a)),CN1),FreeQ(a,x))),
-    // SeriesCoefficient(Log(x_),{x_Symbol,a_,n_?NotListQ}):=Piecewise({{(-1)^(1+n)/(a^n*n),n>=1},{Log(a),n==0}},0)/;FreeQ(a,x)&&a=!=0&&FreeQ(n,x)
-    ISetDelayed(SeriesCoefficient(Log(x_),List(x_Symbol,a_,PatternTest(n_,NotListQ))),
-      Condition(Piecewise(List(List(Times(Power(CN1,Plus(C1,n)),Power(Times(Power(a,n),n),CN1)),GreaterEqual(n,C1)),List(Log(a),Equal(n,C0))),C0),And(FreeQ(a,x),UnsameQ(a,C0),FreeQ(n,x)))),
+    // SeriesCoefficient(Log(b_.+c_.*x_),{x_Symbol,a_,n_?NotListQ}):=If(c===1,Piecewise({{(-1)^(1+n)/((a+b)^n*n),n>=1},{Log(a+b),n==0}},0),Piecewise({{-(-c/(b+a*c))^n/n,n>0},{Log(b+a*c),n==0}},0))/;FreeQ({a,b,c,n},x)
+    ISetDelayed(SeriesCoefficient(Log(Plus(b_DEFAULT,Times(c_DEFAULT,x_))),List(x_Symbol,a_,PatternTest(n_,NotListQ))),
+      Condition(If(SameQ(c,C1),Piecewise(List(List(Times(Power(CN1,Plus(C1,n)),Power(Times(Power(Plus(a,b),n),n),CN1)),GreaterEqual(n,C1)),List(Log(Plus(a,b)),Equal(n,C0))),C0),Piecewise(List(List(Times(CN1,Power(Times(CN1,c,Power(Plus(b,Times(a,c)),CN1)),n),Power(n,CN1)),Greater(n,C0)),List(Log(Plus(b,Times(a,c))),Equal(n,C0))),C0)),FreeQ(List(a,b,c,n),x))),
     // SeriesCoefficient(ProductLog(x_),{x_Symbol,0,n_?NotListQ}):=Piecewise({{1/((-n)^(1-n)*n!),n>=1}},0)/;FreeQ(n,x)
     ISetDelayed(SeriesCoefficient(ProductLog(x_),List(x_Symbol,C0,PatternTest(n_,NotListQ))),
       Condition(Piecewise(List(List(Times(Power(Negate(n),Plus(CN1,n)),Power(Factorial(n),CN1)),GreaterEqual(n,C1))),C0),FreeQ(n,x))),

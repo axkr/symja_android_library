@@ -1,7 +1,5 @@
 package org.matheclipse.core.eval.util;
 
-import javax.annotation.Nonnull;
-
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IASTAppendable;
@@ -38,7 +36,6 @@ public class IndexTableGenerator {
 		fCurrentIndex = new int[indexArray.length];
 	}
 
-	@Nonnull
 	public IExpr table() {
 		if (fIndex < fIndexArray.length) {
 			final int iter = fIndexArray[fIndex];

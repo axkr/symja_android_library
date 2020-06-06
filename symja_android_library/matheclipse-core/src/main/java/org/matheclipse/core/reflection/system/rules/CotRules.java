@@ -13,10 +13,13 @@ public interface CotRules {
    * <li>index 0 - number of equal rules in <code>RULES</code></li>
 	 * </ul>
 	 */
-  final public static int[] SIZES = { 28, 8 };
+  final public static int[] SIZES = { 29, 8 };
 
   final public static IAST RULES = List(
     IInit(Cot, SIZES),
+    // Cot(Undefined)=Undefined
+    ISet(Cot(Undefined),
+      Undefined),
     // Cot(0)=ComplexInfinity
     ISet(Cot(C0),
       CComplexInfinity),

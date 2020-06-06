@@ -8,6 +8,7 @@ GCD(n1, n2, ...)
 
 See
 * [Wikipedia - Greatest common divisor](https://en.wikipedia.org/wiki/Greatest_common_divisor) 
+* [Fungrim - Greatest common divisor](http://fungrim.org/topic/Greatest_common_divisor/)
 
 ### Examples
 

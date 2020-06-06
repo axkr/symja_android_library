@@ -13,10 +13,13 @@ public interface ConjugateRules {
    * <li>index 0 - number of equal rules in <code>RULES</code></li>
 	 * </ul>
 	 */
-  final public static int[] SIZES = { 0, 2 };
+  final public static int[] SIZES = { 1, 2 };
 
   final public static IAST RULES = List(
     IInit(Conjugate, SIZES),
+    // Conjugate(Undefined)=Undefined
+    ISet(Conjugate(Undefined),
+      Undefined),
     // Conjugate(Erf(x_)):=Erf(Conjugate(x))
     ISetDelayed(Conjugate(Erf(x_)),
       Erf(Conjugate(x))),

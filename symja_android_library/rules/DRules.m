@@ -1,5 +1,9 @@
 {
   D(Abs(f_),x_?NotListQ):=D(f,x)*x/Abs(x) /; Element(x, Reals),
+  D(AiryAi(f_),x_?NotListQ):=D(f,x)*AiryAiPrime(f),
+  D(AiryAiPrime(f_),x_?NotListQ):=D(f,x)*AiryAi(f)*f,
+  D(AiryBi(f_),x_?NotListQ):=D(f,x)*AiryBiPrime(f),
+  D(AiryBiPrime(f_),x_?NotListQ):=D(f,x)*AiryBi(f)*f,
   D(ArcCos(f_),x_?NotListQ):=D(f,x)*(-1)*(1-f^2)^(-1/2),
   D(ArcCosh(f_),x_?NotListQ):=D(f,x)*(f^2-1)^(-1/2),
   D(ArcCot(f_),x_?NotListQ):=D(f,x)*(-1)*(1+f^2)^(-1),
@@ -13,6 +17,8 @@
   D(ArcSec(f_),x_?NotListQ):=D(f,x)*x^(-2)*(1-f^(-2))^(-1/2),
   D(ArcSech(f_),x_?NotListQ):=D(f,x)*(-1)*f^(-1)*(1-f^2)^(-1/2),
   D(Ceiling(f_),x_?NotListQ):=D(f,x)*Piecewise({{0, f<Ceiling(f)}}, Indeterminate),
+  D(EllipticE(f_),x_?NotListQ):=((EllipticE(f) - EllipticK(f))*D(f,x))/(2*f),
+  D(EllipticK(f_),x_?NotListQ):=((EllipticE(f) - EllipticK(f)*(1 - f))*D(f,x))/(2*(1 - f)*f),
   D(Erf(f_),x_?NotListQ):=D(f,x)*(2*E^(-f^(2))/Sqrt(Pi)),
   D(Erfc(f_),x_?NotListQ):=D(f,x)*(-2*E^(-f^(2))/Sqrt(Pi)),
   D(Erfi(f_),x_?NotListQ):=D(f,x)*(2*E^(f^(2))/Sqrt(Pi)),
@@ -24,10 +30,12 @@
   D(FresnelS(f_),x_?NotListQ):=D(f,x)*Sin((Pi*f^2)/2),
   D(Gamma(f_),x_?NotListQ):=D(f,x)*Gamma(f)*PolyGamma(f),
   D(HarmonicNumber(f_),x_?NotListQ):=D(f,x)*((Pi^2)/6 - HarmonicNumber(f, 2)),
+  D(Haversine(f_),x_?NotListQ):=(1/2)*Sin(f)*D(f,x),
   D(HeavisideTheta(f_),x_?NotListQ):=D(f,x)*DiracDelta(f),
   D(IntegerPart(f_),x_?NotListQ):=0,
   D(InverseErf(f_),x_?NotListQ):=D(f,x)*(1/2*Sqrt(Pi)*E^(InverseErf(f)^2)),
   D(InverseErfc(f_),x_?NotListQ):=D(f,x)*(-(1/2))*E^InverseErfc(f)^2*Sqrt(Pi),
+  D(InverseHaversine(f_),x_?NotListQ):=D(f,x)/Sqrt((1 - f)*f),
   D(Log(f_),x_?NotListQ):=D(f,x)*f^(-1),
   D(LogGamma(f_),x_?NotListQ):=D(f,x)*PolyGamma(0,f),
   D(LogisticSigmoid(f_),x_?NotListQ):=D(f,x)*LogisticSigmoid(f)*(1-LogisticSigmoid(f)),
@@ -51,10 +59,22 @@
   D(SinIntegral(f_),x_?NotListQ):=D(f,x)*Sinc(f),
   D(SinhIntegral(f_),x_?NotListQ):=D(f,x)*Sinh(f)/f,
   
+  D(HurwitzZeta(f_,g_),x_?NotListQ):=(-f)*HurwitzZeta(1 + f, g)*D(g,x)
+    /; FreeQ({f},x),
+  D(Zeta(f_,g_),x_?NotListQ):=(-f)*Zeta(1+f, g)*D(g,x)
+    /; FreeQ({f},x),
+
   D(Hypergeometric2F1(a_, b_, c_, f_), x_?NotListQ) := (a*b*Hypergeometric2F1(1 + a, 1 + b, 1 + c, f)*D(f,x))/c
     /; FreeQ({a,b,c},x),
   D(Hypergeometric2F1(a_, b_, c_, f_), {x_,n_}) := (Hypergeometric2F1(a + n, b + n, c + n, x)*Pochhammer(a, n)*Pochhammer(b, n))/Pochhammer(c, n)
     /; FreeQ({a,b,c,n},x) && Negative(n)=!=True,
+  
+  D(HypergeometricU(f_, g_, h_),x_?NotListQ) :=-f*HypergeometricU(1+f,1+g,h)*D(h,x)
+    /; FreeQ({f,g},x),
+  D(WhittakerM(f_, g_, h_),x_?NotListQ) :=((1/2 - f/h)*WhittakerM(f, g, h) + ((1/2 + f + g)*WhittakerM(1 + f, g, h))/h)*D(h,x)
+    /; FreeQ({f,g},x),
+  D(WhittakerW(f_, g_, h_),x_?NotListQ) :=((1/2 - f/h)*WhittakerW(f, g, h) - WhittakerW(1 + f, g, h)/h)*D(h,x) 
+    /; FreeQ({f,g},x),   
     
   D(InverseFunction(f_)[x_],x_) := 1/Derivative(1)[f][InverseFunction(f)[x]] 
     /; FreeQ(f,x),

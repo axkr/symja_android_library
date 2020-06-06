@@ -19,10 +19,19 @@ public interface IUnit extends Serializable {
 	/**
 	 * @param string
 	 *            for instance "m*s^-2"
-	 * @return
+	 * @return <code>null</code> if unit couldn't be found
 	 */
 	static IUnit of(String string) {
 		return UnitHelper.MEMO.lookup(string);
+	}
+	
+	/**
+	 * @param string
+	 *            for instance "m*s^-2"
+	 * @return if unit couldn't be found, add string as new unit
+	 */
+	static IUnit ofPutIfAbsent(String string) {
+		return UnitHelper.MEMO.lookupAndPutIfAbsent(string);
 	}
 
 	/**

@@ -361,7 +361,7 @@ public class VariablesSet {
 	 * @return
 	 * @see java.util.Set#contains(java.lang.Object)
 	 */
-	public boolean contains(ISymbol o) {
+	public boolean contains(IExpr o) {
 		return fVariablesSet.contains(o);
 	}
 

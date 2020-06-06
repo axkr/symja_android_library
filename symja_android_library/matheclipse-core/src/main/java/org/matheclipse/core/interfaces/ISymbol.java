@@ -5,8 +5,6 @@ import java.io.IOException;
 import java.util.function.DoubleFunction;
 import java.util.function.Function;
 
-import javax.annotation.Nonnull;
-
 import org.matheclipse.core.convert.Object2Expr;
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.expression.Context;
@@ -208,7 +206,7 @@ public interface ISymbol extends IExpr {
 	 * 
 	 * @param sizes
 	 */
-	public RulesData createRulesData(@Nonnull int[] sizes);
+	public RulesData createRulesData(int[] sizes);
 
 	/**
 	 * Return a list of the rules associated to this symbol

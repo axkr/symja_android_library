@@ -13,10 +13,13 @@ public interface ArcSecRules {
    * <li>index 0 - number of equal rules in <code>RULES</code></li>
 	 * </ul>
 	 */
-  final public static int[] SIZES = { 30, 0 };
+  final public static int[] SIZES = { 31, 0 };
 
   final public static IAST RULES = List(
     IInit(ArcSec, SIZES),
+    // ArcSec(Undefined)=Undefined
+    ISet(ArcSec(Undefined),
+      Undefined),
     // ArcSec(0)=ComplexInfinity
     ISet(ArcSec(C0),
       CComplexInfinity),

@@ -19,6 +19,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
+import org.matheclipse.core.basic.Config;
 import org.matheclipse.core.convert.AST2Expr;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.interfaces.IAST;
@@ -211,6 +212,18 @@ public class ExprParserFactory implements IParserFactory {
 	public final static ApplyOperator APPLY_LEVEL_OPERATOR = //
 			new ApplyOperator("@@@", "Apply", 620, InfixExprOperator.RIGHT_ASSOCIATIVE);
 
+	public final static InfixExprOperator EQUAL_OPERATOR = //
+			new InfixExprOperator("==", "Equal", EQUAL_PRECEDENCE, InfixExprOperator.NONE);
+
+	public final static InfixExprOperator NON_COMMUTATIVE_MULTIPLY_OPERATOR = //
+			new InfixExprOperator("**", "NonCommutativeMultiply", 510, InfixExprOperator.NONE);
+
+	public final static InfixExprOperator POWER_OPERATOR = //
+			new InfixExprOperator("^", "Power", POWER_PRECEDENCE, InfixExprOperator.RIGHT_ASSOCIATIVE);
+
+	public final static InfixExprOperator SET_OPERATOR = //
+			new InfixExprOperator("=", "Set", 40, InfixExprOperator.RIGHT_ASSOCIATIVE);
+
 	public final static TagSetOperator TAG_SET_OPERATOR = //
 			new TagSetOperator("/:", "TagSet", 40, InfixExprOperator.NONE);
 
@@ -317,7 +330,8 @@ public class ExprParserFactory implements IParserFactory {
 	 */
 	private static class Initializer {
 
-		private static void init() {
+		private static void init(boolean fuzzyParser) {
+
 			OPERATORS = new Operator[] { new InfixExprOperator("::", "MessageName", 750, InfixExprOperator.NONE),
 					new PrefixExprOperator("<<", "Get", 720), //
 					INFORMATION_SHORT, //
@@ -338,14 +352,14 @@ public class ExprParserFactory implements IParserFactory {
 					new InfixExprOperator("<", "Less", 290, InfixExprOperator.NONE), //
 					new InfixExprOperator("&&", "And", 215, InfixExprOperator.NONE), //
 					new DivideExprOperator("/", "Divide", DIVIDE_PRECEDENCE, InfixExprOperator.LEFT_ASSOCIATIVE), //
-					new InfixExprOperator("=", "Set", 40, InfixExprOperator.RIGHT_ASSOCIATIVE), //
+					Config.FUZZY_PARSER ? EQUAL_OPERATOR : SET_OPERATOR, //
 					new PostfixExprOperator("++", "Increment", 660), //
 					new PostfixExprOperator("!!", "Factorial2", 610), //
 					new InfixExprOperator("<=", "LessEqual", 290, InfixExprOperator.NONE), //
-					new InfixExprOperator("**", "NonCommutativeMultiply", 510, InfixExprOperator.NONE), //
+					Config.FUZZY_PARSER ? POWER_OPERATOR : NON_COMMUTATIVE_MULTIPLY_OPERATOR, //
 					new PostfixExprOperator("!", "Factorial", FACTORIAL_PRECEDENCE), //
 					new InfixExprOperator("*", "Times", TIMES_PRECEDENCE, InfixExprOperator.NONE), //
-					new InfixExprOperator("^", "Power", POWER_PRECEDENCE, InfixExprOperator.RIGHT_ASSOCIATIVE), //
+					POWER_OPERATOR, //
 					new InfixExprOperator(".", "Dot", 490, InfixExprOperator.NONE), //
 					new PrefixExprOperator("!", "Not", 230), //
 					new PreMinusExprOperator("-", "PreMinus", 485), //
@@ -358,7 +372,7 @@ public class ExprParserFactory implements IParserFactory {
 					new InfixExprOperator("/=", "DivideBy", 100, InfixExprOperator.RIGHT_ASSOCIATIVE), //
 					new InfixExprOperator("||", "Or", 213, InfixExprOperator.NONE), //
 					new InfixExprOperator(";;", "Span", 305, InfixExprOperator.NONE), //
-					new InfixExprOperator("==", "Equal", EQUAL_PRECEDENCE, InfixExprOperator.NONE), //
+					EQUAL_OPERATOR, //
 					new InfixExprOperator("<>", "StringJoin", 600, InfixExprOperator.NONE), //
 					new InfixExprOperator("!=", "Unequal", 290, InfixExprOperator.NONE), //
 					new PostfixExprOperator("--", "Decrement", 660), //
@@ -391,6 +405,22 @@ public class ExprParserFactory implements IParserFactory {
 			StringBuilder buf = new StringBuilder(BASIC_OPERATOR_CHARACTERS);
 			fOperatorMap = Tries.forStrings();
 			fOperatorTokenStartSet = Tries.forStrings();
+			// if (fuzzyParser) {
+			// for (int i = 0; i < HEADER_STRINGS.length; i++) {
+			// if (OPERATOR_STRINGS[i] == "=") {
+			// addOperator(fOperatorMap, fOperatorTokenStartSet, OPERATOR_STRINGS[i], "Equal", EQUAL_OPERATOR);
+			// } else {
+			// addOperator(fOperatorMap, fOperatorTokenStartSet, OPERATOR_STRINGS[i], HEADER_STRINGS[i],
+			// OPERATORS[i]);
+			// }
+			// String unicodeChar = org.matheclipse.parser.client.Characters.NamedCharactersMap
+			// .get(HEADER_STRINGS[i]);
+			// if (unicodeChar != null) {
+			// addOperator(fOperatorMap, fOperatorTokenStartSet, unicodeChar, HEADER_STRINGS[i], OPERATORS[i]);
+			// buf.append(unicodeChar);
+			// }
+			// }
+			// } else {
 			for (int i = 0; i < HEADER_STRINGS.length; i++) {
 				addOperator(fOperatorMap, fOperatorTokenStartSet, OPERATOR_STRINGS[i], HEADER_STRINGS[i], OPERATORS[i]);
 				String unicodeChar = org.matheclipse.parser.client.Characters.NamedCharactersMap.get(HEADER_STRINGS[i]);
@@ -399,12 +429,14 @@ public class ExprParserFactory implements IParserFactory {
 					buf.append(unicodeChar);
 				}
 			}
+			// }
 			OPERATOR_MATCHER = CharMatcher.anyOf(buf.toString());
+
 		}
 	}
 
-	public static void initialize() {
-		Initializer.init();
+	public static void initialize(boolean fuzzyParser) {
+		Initializer.init(fuzzyParser);
 	}
 
 	static public void addOperator(final Map<String, Operator> operatorMap,
@@ -464,39 +496,39 @@ public class ExprParserFactory implements IParserFactory {
 		return true;
 	}
 
-//	private String toRubiString(final String nodeStr) {
-//		if (!FEConfig.PARSER_USE_LOWERCASE_SYMBOLS) {
-//			if (nodeStr.length() == 1) {
-//				return nodeStr;
-//			}
-//			String lowercaseName = nodeStr.toLowerCase();
-//			String temp = AST2Expr.PREDEFINED_SYMBOLS_MAP.get(lowercaseName);
-//			if (temp != null) {
-//				if (!temp.equals(nodeStr)) {
-//					temp = F.PREDEFINED_INTERNAL_FORM_STRINGS.get(nodeStr);
-//					if (temp == null) {
-//						if (lowercaseName.length() > 1) {
-//							if (!lowercaseName.equals("sin") && !lowercaseName.equals("cos")
-//									&& !lowercaseName.equals("tan") && !lowercaseName.equals("cot")
-//									&& !lowercaseName.equals("csc") && !lowercaseName.equals("sec")) {
-//								System.out.println(nodeStr + " => §" + lowercaseName);
-//							}
-//						}
-//						return "§" + lowercaseName;
-//					}
-//				}
-//			} else {
-//				if (!nodeStr.equals(nodeStr.toLowerCase())) {
-//					temp = F.PREDEFINED_INTERNAL_FORM_STRINGS.get(nodeStr);
-//					if (temp == null) {
-//						if (lowercaseName.length() > 1) {
-//							System.out.println(nodeStr + " => §" + lowercaseName);
-//						}
-//						return "§" + lowercaseName;
-//					}
-//				}
-//			}
-//		}
-//		return nodeStr;
-//	}
+	// private String toRubiString(final String nodeStr) {
+	// if (!FEConfig.PARSER_USE_LOWERCASE_SYMBOLS) {
+	// if (nodeStr.length() == 1) {
+	// return nodeStr;
+	// }
+	// String lowercaseName = nodeStr.toLowerCase();
+	// String temp = AST2Expr.PREDEFINED_SYMBOLS_MAP.get(lowercaseName);
+	// if (temp != null) {
+	// if (!temp.equals(nodeStr)) {
+	// temp = F.PREDEFINED_INTERNAL_FORM_STRINGS.get(nodeStr);
+	// if (temp == null) {
+	// if (lowercaseName.length() > 1) {
+	// if (!lowercaseName.equals("sin") && !lowercaseName.equals("cos")
+	// && !lowercaseName.equals("tan") && !lowercaseName.equals("cot")
+	// && !lowercaseName.equals("csc") && !lowercaseName.equals("sec")) {
+	// System.out.println(nodeStr + " => §" + lowercaseName);
+	// }
+	// }
+	// return "§" + lowercaseName;
+	// }
+	// }
+	// } else {
+	// if (!nodeStr.equals(nodeStr.toLowerCase())) {
+	// temp = F.PREDEFINED_INTERNAL_FORM_STRINGS.get(nodeStr);
+	// if (temp == null) {
+	// if (lowercaseName.length() > 1) {
+	// System.out.println(nodeStr + " => §" + lowercaseName);
+	// }
+	// return "§" + lowercaseName;
+	// }
+	// }
+	// }
+	// }
+	// return nodeStr;
+	// }
 }

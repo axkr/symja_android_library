@@ -542,7 +542,7 @@ public class Symbol implements ISymbol, Serializable {
 			if ('a' <= ch && ch <= 'z') {
 				return fSymbolName;
 			}
-			if (Config.RUBI_CONVERT_SYMBOLS && 'A' <= ch && ch <= 'G'&& ch != 'D' && ch != 'E') {
+			if (Config.RUBI_CONVERT_SYMBOLS && 'A' <= ch && ch <= 'G' && ch != 'D' && ch != 'E') {
 				return fSymbolName + "Symbol";
 			}
 			if ('A' <= ch && ch <= 'G' && ch != 'D' && ch != 'E') {
@@ -644,7 +644,8 @@ public class Symbol implements ISymbol, Serializable {
 	/** {@inheritDoc} */
 	@Override
 	public boolean isPolynomialStruct() {
-		return isVariable();
+		return ((fAttributes & CONSTANT) == CONSTANT) || //
+				isVariable();
 	}
 
 	/** {@inheritDoc} */
@@ -724,7 +725,7 @@ public class Symbol implements ISymbol, Serializable {
 	@Override
 	public final IExpr ofNIL(EvalEngine engine, IExpr... args) {
 		IAST ast = F.function(this, args);
-		IExpr temp = engine.evalLoop(ast);
+		IExpr temp = engine.evaluateNull(ast);
 		if (temp.isPresent() && temp.head() == this) {
 			return F.NIL;
 		}

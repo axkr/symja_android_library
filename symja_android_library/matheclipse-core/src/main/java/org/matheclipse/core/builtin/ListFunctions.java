@@ -17,8 +17,6 @@ import java.util.function.BiPredicate;
 import java.util.function.Function;
 import java.util.function.Predicate;
 
-import javax.annotation.Nonnull;
-
 import org.matheclipse.core.basic.Config;
 import org.matheclipse.core.basic.ToggleFeature;
 import org.matheclipse.core.convert.Convert;
@@ -1170,7 +1168,7 @@ public final class ListFunctions {
 			return IOFunctions.ARGS_1_4;
 		}
 
-		public static IAST cases(final IAST ast, final IExpr pattern, @Nonnull EvalEngine engine) {
+		public static IAST cases(final IAST ast, final IExpr pattern, EvalEngine engine) {
 			if (pattern.isRuleAST()) {
 				Function<IExpr, IExpr> function = Functors.rules((IAST) pattern, engine);
 				IAST[] results = ast.filterNIL(function);

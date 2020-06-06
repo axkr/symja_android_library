@@ -13,10 +13,13 @@ public interface CschRules {
    * <li>index 0 - number of equal rules in <code>RULES</code></li>
 	 * </ul>
 	 */
-  final public static int[] SIZES = { 15, 7 };
+  final public static int[] SIZES = { 16, 7 };
 
   final public static IAST RULES = List(
     IInit(Csch, SIZES),
+    // Csch(Undefined)=Undefined
+    ISet(Csch(Undefined),
+      Undefined),
     // Csch(0)=ComplexInfinity
     ISet(Csch(C0),
       CComplexInfinity),

@@ -81,15 +81,16 @@
     /; FreeQ(a,x),
   SeriesCoefficient(ArcSin(x_),{x_Symbol, a_, 1}):= 1/Sqrt(1 - a^2)
     /; FreeQ(a,x),
-  SeriesCoefficient(ArcTan(x_),{x_Symbol, a_, 1}):=1/(1 + a^2)
+  SeriesCoefficient(ArcTan(x_),{x_Symbol, a_, 1}):= 1/(1 + a^2)
     /; FreeQ(a,x),
   SeriesCoefficient(ArcCsc(x_),{x_Symbol, a_, 1}):= -(1/(Sqrt(1 - 1/a^2)*a^2))
     /; FreeQ(a,x),
   SeriesCoefficient(ArcSec(x_),{x_Symbol, a_, 1}):= 1/(Sqrt(1-1/a^2)*a^2)
     /; FreeQ(a,x),
           
-  SeriesCoefficient(Log(x_),{x_Symbol, a_, n_?NotListQ}):=Piecewise({{(-1)^(1 + n)/(a^n*n), n >= 1}, {Log(a), n == 0}}, 0)
-    /; FreeQ(a,x) && a=!=0 && FreeQ(n,x), 
+  SeriesCoefficient(Log(b_.+c_.*x_),{x_Symbol, a_, n_?NotListQ}):=
+    If(c===1,Piecewise({{(-1)^(1 + n)/((a + b)^n*n), n >= 1}, {Log(a + b), n == 0}}, 0),Piecewise({{-((-(c/(b + a*c)))^n/n), n > 0}, {Log(b + a*c), n == 0}}, 0))
+      /; FreeQ({a,b,c,n},x),
     
   SeriesCoefficient(ProductLog(x_),{x_Symbol, 0, n_?NotListQ}) := Piecewise({{(-n)^(-1 + n)/n!, n >= 1}}, 0)
     /; FreeQ(n,x),

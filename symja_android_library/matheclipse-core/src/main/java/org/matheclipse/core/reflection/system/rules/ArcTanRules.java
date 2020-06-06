@@ -13,10 +13,13 @@ public interface ArcTanRules {
    * <li>index 0 - number of equal rules in <code>RULES</code></li>
 	 * </ul>
 	 */
-  final public static int[] SIZES = { 22, 0 };
+  final public static int[] SIZES = { 23, 1 };
 
   final public static IAST RULES = List(
     IInit(ArcTan, SIZES),
+    // ArcTan(Undefined)=Undefined
+    ISet(ArcTan(Undefined),
+      Undefined),
     // ArcTan(0)=0
     ISet(ArcTan(C0),
       C0),
@@ -68,6 +71,12 @@ public interface ArcTanRules {
     // ArcTan(I)=I*Infinity
     ISet(ArcTan(CI),
       DirectedInfinity(CI)),
+    // ArcTan(Undefined,y_):=Undefined
+    ISetDelayed(ArcTan(Undefined,y_),
+      Undefined),
+    // ArcTan(x_,Undefined):=Undefined
+    ISetDelayed(ArcTan(x_,Undefined),
+      Undefined),
     // ArcTan(Infinity,y_)=0
     ISet(ArcTan(oo,y_),
       C0),

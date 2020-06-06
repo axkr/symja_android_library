@@ -13,10 +13,13 @@ public interface ArcCscRules {
    * <li>index 0 - number of equal rules in <code>RULES</code></li>
 	 * </ul>
 	 */
-  final public static int[] SIZES = { 26, 0 };
+  final public static int[] SIZES = { 27, 0 };
 
   final public static IAST RULES = List(
     IInit(ArcCsc, SIZES),
+    // ArcCsc(Undefined)=Undefined
+    ISet(ArcCsc(Undefined),
+      Undefined),
     // ArcCsc(0)=ComplexInfinity
     ISet(ArcCsc(C0),
       CComplexInfinity),

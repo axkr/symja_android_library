@@ -8,6 +8,7 @@ ChebyshevU(n, x)
 
 See:  
 * [Wikipedia - Chebyshev polynomials](https://en.wikipedia.org/wiki/Chebyshev_polynomials)
+* [Fungrim - Chebyshev polynomials](http://fungrim.org/topic/Chebyshev_polynomials/)
 
 ### Examples
 

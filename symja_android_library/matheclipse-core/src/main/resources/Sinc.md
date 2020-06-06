@@ -8,6 +8,7 @@ Sinc(expr)
  
 See
 * [Wikipedia - Sinc function](https://en.wikipedia.org/wiki/Sinc_function)
+* [Fungrim - Sinc function](http://fungrim.org/topic/Sinc_function/)
 
 ### Examples
 

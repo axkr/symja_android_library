@@ -8,6 +8,7 @@ LegendreP(n, x)
 
 See  
 * [Wikipedia - Legendre polynomials](https://en.wikipedia.org/wiki/Legendre_polynomials)
+* [Fungrim - Legendre polynomials](http://fungrim.org/topic/Legendre_polynomials/)
  
 ### Examples
 

@@ -10,6 +10,7 @@ n!
 
 See 
 * [Wikipedia - Factorial](https://en.wikipedia.org/wiki/Factorial)
+* [Fungrim - Factorials and binomial coefficients](http://fungrim.org/topic/Factorials_and_binomial_coefficients/)
 
 ### Examples
 

@@ -674,6 +674,7 @@ public class IOFunctions {
 			"intnm", "Non-negative machine-sized integer expected at position `2` in `1`.", //
 			"intm", "Machine-sized integer expected at position `2` in `1`.", //
 			"intpm", "Positive machine-sized integer expected at position `2` in `1`.", //
+			"intrange", "Integer expected in range `1` to `2`.", //
 			"iterb", "Iterator does not have appropriate bounds.", //
 			"itform", "Argument `1` at position `2` does not have the correct form for an iterator.", //
 			"itendless", "Endless iteration detected in `1` in evaluation loop.", //

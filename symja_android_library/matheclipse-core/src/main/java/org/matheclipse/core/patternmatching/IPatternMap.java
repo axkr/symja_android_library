@@ -5,8 +5,6 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
-import javax.annotation.Nonnull;
-
 import org.matheclipse.core.eval.EvalAttributes;
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.expression.F;
@@ -70,7 +68,7 @@ public interface IPatternMap extends Cloneable {
 		}
 
 		@Override
-		public IExpr getValue(@Nonnull IPatternObject pattern) {
+		public IExpr getValue(IPatternObject pattern) {
 			return null;
 		}
 
@@ -207,7 +205,7 @@ public interface IPatternMap extends Cloneable {
 		}
 
 		@Override
-		public IExpr getValue(@Nonnull IPatternObject pattern) {
+		public IExpr getValue(IPatternObject pattern) {
 			IExpr sym = pattern.getSymbol();
 			if (sym == null) {
 				sym = pattern;
@@ -417,7 +415,7 @@ public interface IPatternMap extends Cloneable {
 		}
 
 		@Override
-		public IExpr getValue(@Nonnull IPatternObject pattern) {
+		public IExpr getValue(IPatternObject pattern) {
 			IExpr sym = pattern.getSymbol();
 			if (sym == null) {
 				sym = pattern;
@@ -682,7 +680,7 @@ public interface IPatternMap extends Cloneable {
 		}
 
 		@Override
-		public IExpr getValue(@Nonnull IPatternObject pattern) {
+		public IExpr getValue(IPatternObject pattern) {
 			IExpr sym = pattern.getSymbol();
 			if (sym == null) {
 				sym = pattern;
@@ -1029,7 +1027,7 @@ public interface IPatternMap extends Cloneable {
 		 *            the pattern object
 		 * @return <code>null</code> if no matched expression exists
 		 */
-		public IExpr getValue(@Nonnull IPatternObject pattern) {
+		public IExpr getValue(IPatternObject pattern) {
 			ISymbol sym = pattern.getSymbol();
 			if (sym != null) {
 				return val(sym);
@@ -1047,7 +1045,7 @@ public interface IPatternMap extends Cloneable {
 		 *            the symbol
 		 * @return <code>null</code> if no matched expression exists
 		 */
-		public final IExpr val(@Nonnull ISymbol symbol) {
+		public final IExpr val(ISymbol symbol) {
 			int indx = get(symbol);
 			return indx >= 0 ? fSymbolsOrPatternValues[indx] : null;
 		}
@@ -1452,7 +1450,7 @@ public interface IPatternMap extends Cloneable {
 	 *            the pattern object
 	 * @return <code>null</code> if no matched expression exists
 	 */
-	public IExpr getValue(@Nonnull IPatternObject pattern);
+	public IExpr getValue(IPatternObject pattern);
 
 	public List<IExpr> getValuesAsList();
 
@@ -1584,17 +1582,6 @@ public interface IPatternMap extends Cloneable {
 	}
 
 	default IExpr substituteASTPatternOrSymbols(final IAST lhsPatternExpr, boolean onlyNamedPatterns) {
-		IExpr temp = substituteASTPatternOrSymbols2(lhsPatternExpr, onlyNamedPatterns);
-//		if (temp.isPresent()) {
-//			IExpr temp1 = EvalEngine.get().evaluate(temp);
-//			if (!temp.equals(temp1)) {
-//				System.out.println(temp + " != " + temp1);
-//			}
-//		}
-		return temp;
-	}
-
-	default IExpr substituteASTPatternOrSymbols2(final IAST lhsPatternExpr, boolean onlyNamedPatterns) {
 		VisitorReplaceAllWithPatternFlags visitor = new VisitorReplaceAllWithPatternFlags(input -> {
 			if (input instanceof IPatternObject) {
 				if (onlyNamedPatterns && !(input instanceof Pattern)) {
@@ -1618,7 +1605,7 @@ public interface IPatternMap extends Cloneable {
 			if (temp.isPresent()) {
 				if (!result.isPresent()) {
 					result = lhsPatternExpr.setAtCopy(i, temp);
-//					result.setEvalFlags(lhsPatternExpr.getEvalFlags());
+					// result.setEvalFlags(lhsPatternExpr.getEvalFlags());
 				} else {
 					result.set(i, temp);
 				}
@@ -1645,7 +1632,6 @@ public interface IPatternMap extends Cloneable {
 		}
 		return F.NIL;
 	}
-
 
 	/**
 	 * Substitute all symbols in the given expression with the current value of the corresponding internal pattern

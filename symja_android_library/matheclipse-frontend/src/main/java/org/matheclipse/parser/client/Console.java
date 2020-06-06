@@ -20,10 +20,6 @@ public class Console {
 
 	private File fFile;
 
-	private boolean fComplexEvaluatorMode = false;
- 
-	// private Parser fParser;
-
 	public static void main(final String args[]) {
 		Console console = new Console();
 
@@ -37,45 +33,21 @@ public class Console {
 						break;
 					}
 					if ((expr.length() >= 6) && expr.toLowerCase().substring(0, 6).equals("double")) {
-						console.fComplexEvaluatorMode = false;
+						// console.fComplexEvaluatorMode = false;
 						System.out.println("Double evaluation mode (switch to other mode with keyword 'complex')");
 						continue;
 					}
-					if ((expr.length() >= 7) && expr.toLowerCase().substring(0, 7).equals("complex")) {
-						console.fComplexEvaluatorMode = true;
-						System.out.println("Complex evaluation mode (switch to other mode with keyword 'double')");
-						continue;
-					}
+					// if ((expr.length() >= 7) && expr.toLowerCase().substring(0, 7).equals("complex")) {
+					// console.fComplexEvaluatorMode = true;
+					// System.out.println("Complex evaluation mode (switch to other mode with keyword 'double')");
+					// continue;
+					// }
 					System.out.println(console.interpreter(expr));
 				}
 			} catch (final Exception e) {
 				System.out.println(e.getMessage());
 			}
 		}
-	}
-
-	/**
-	 * Prints the usage of how to use this class to System.out
-	 */
-	private static void printUsage() {
-		final String lineSeparator = System.getProperty("line.separator");
-		final StringBuffer msg = new StringBuffer();
-		msg.append(Console.class.getCanonicalName() + " [options]" + lineSeparator);
-		msg.append(lineSeparator);
-		msg.append("Options: " + lineSeparator);
-		msg.append("  -d or -double                use Double evaluation mode" + lineSeparator);
-		msg.append("  -c or -complex               use Complex evaluation mode" + lineSeparator);
-		msg.append("  -h or -help                  print this message" + lineSeparator);
-		msg.append("  -f or -file <filename>       use given file as input" + lineSeparator);
-		msg.append("To stop the program type: " + lineSeparator);
-		msg.append("exit<RETURN-KEY>" + lineSeparator);
-		msg.append("To switch between the evaluation modes type: " + lineSeparator);
-		msg.append("complex<RETURN-KEY> or" + lineSeparator);
-		msg.append("double<RETURN-KEY>" + lineSeparator);
-		msg.append("To continue an input line type '\\' at the end of the line." + lineSeparator);
-		msg.append("****+****+****+****+****+****+****+****+****+****+****+****+");
-
-		System.out.println(msg.toString());
 	}
 
 	public Console() {
@@ -88,39 +60,6 @@ public class Console {
 	 * @param args
 	 *            the aruments of the program
 	 */
-	private void setArgs(final String args[]) {
-		for (int i = 0; i < args.length; i++) {
-			final String arg = args[i];
-			if (arg.equals("-double") || arg.equals("-d")) {
-				fComplexEvaluatorMode = false;
-				return;
-			} else if (arg.equals("-complex") || arg.equals("-c")) {
-				fComplexEvaluatorMode = true;
-				return;
-			} else if (arg.equals("-help") || arg.equals("-h")) {
-				printUsage();
-				return;
-			} else if (arg.equals("-file") || arg.equals("-f")) {
-				try {
-					fFile = new File(args[i + 1]);
-					i++;
-				} catch (final ArrayIndexOutOfBoundsException aioobe) {
-					final String msg = "You must specify a file when " + "using the -file argument";
-					System.out.println(msg);
-					return;
-				}
-			} else if (arg.charAt(0) == '-') {
-				// we don't have any more args to recognize!
-				final String msg = "Unknown arg: " + arg;
-				System.out.println(msg);
-				printUsage();
-				return;
-			}
-
-		}
-
-	}
-
 	/**
 	 * Evaluates the given string-expression and returns the result in string form.
 	 * 

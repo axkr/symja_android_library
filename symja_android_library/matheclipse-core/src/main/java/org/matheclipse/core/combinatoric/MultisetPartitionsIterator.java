@@ -1,5 +1,7 @@
 package org.matheclipse.core.combinatoric;
 
+import org.matheclipse.core.patternmatching.FlatOrderlessStepVisitor;
+
 /**
  * Partition an ordered multi-set and visit all steps of the algorithm with a <code>IStepVisitor</code>
  * 
@@ -11,7 +13,8 @@ public class MultisetPartitionsIterator {
 	private final int[] multiset;
 	private final int[][] result;
 	private RosenNumberPartitionIterator rosen;
-	private final IStepVisitor handler;
+	private int[] currentRosen;
+	private final FlatOrderlessStepVisitor handler;
 
 	/**
 	 * Partition an ordered multi-set and visit all steps of the algorithm with an <code>IStepVisitor</code>.
@@ -21,7 +24,7 @@ public class MultisetPartitionsIterator {
 	 * @param k
 	 *            the number of partitioning the n elements into k parts
 	 */
-	public MultisetPartitionsIterator(IStepVisitor visitor, final int k) {
+	public MultisetPartitionsIterator(FlatOrderlessStepVisitor visitor, final int k) {
 		int[] mset = visitor.getMultisetArray();
 		this.n = mset.length;
 		if (k > n || k < 1) {
@@ -38,30 +41,58 @@ public class MultisetPartitionsIterator {
 		for (int i = 0; i < result.length; i++) {
 			result[i] = null;
 		}
+		initPatternMap();
+	}
+
+	public void initPatternMap() {
+		handler.initPatternMap();
 	}
 
 	public boolean execute() {
 		while (rosen.hasNext()) {
-			if (recursiveMultisetCombination(multiset, rosen.next(), 0)) {
+			currentRosen = rosen.next();
+			if (recursiveMultisetCombination(multiset,  0)) {
 				return false;
 			}
 		}
 		return true;
 	}
 
-	private boolean recursiveMultisetCombination(int[] multiset, final int[] currentRosen, int i) {
+	private boolean recursiveMultisetCombination(int[] multiset, int i) {
 		if (i < currentRosen.length) {
 			final MultisetCombinationIterator iter = new MultisetCombinationIterator(multiset, currentRosen[i]);
 			while (iter.hasNext()) {
 				final int[] currentSubset = iter.next();
 				result[i] = currentSubset;
 				int[] wc = ArrayUtils.deleteSubset(multiset, currentSubset);
-				if (recursiveMultisetCombination(wc, currentRosen, i + 1)) {
+				if (recursiveMultisetCombination(wc, i + 1)) {
 					return true;
 				}
 			}
 			return false;
 		}
 		return !handler.visit(result);
+	}
+
+	@Override
+	public String toString() {
+		return handler.toString(result);
+		// StringBuilder buf = new StringBuilder();
+		// for (int i = 0; i < result.length; i++) {
+		// if (result[i] == null) {
+		// buf.append("[null]");
+		// } else {
+		// buf.append("[");
+		// for (int j = 0; j < result[i].length; j++) {
+		// buf.append(result[i][j]);
+		// if (j < result[i].length-1) {
+		// buf.append(",");
+		// }
+		// }
+		// buf.append("]");
+		// }
+		// }
+		// buf.append('\n');
+		// return buf.toString();
 	}
 }

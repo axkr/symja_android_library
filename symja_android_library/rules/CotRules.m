@@ -1,4 +1,5 @@
 {
+Cot(Undefined)=Undefined,
 Cot(0)=ComplexInfinity,
 Cot(Pi/12)=2+Sqrt(3),
 Cot(Pi/10)=Sqrt(5+2*Sqrt(5)),

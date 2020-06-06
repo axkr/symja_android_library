@@ -1,5 +1,9 @@
 {
-{
+{ 
+  AiryAi->AiryAiPrime(#),
+  AiryAiPrime->AiryAi(#)*#,
+  AiryBi->AiryBiPrime(#),
+  AiryBiPrime->AiryBi(#)*#,
   ArcCos->(-1)*(1-#^2)^(-1/2),
   ArcCosh->(#^2-1)^(-1/2),
   ArcCot->(-1)*(1+#^2)^(-1),
@@ -26,10 +30,12 @@
   FresnelS->Sin((Pi*#^2)/2),
   Gamma->Gamma(#)*PolyGamma(#),
   HarmonicNumber->(Pi^2)/6 - HarmonicNumber(#, 2),
+  Haversine->(1/2)*Sin(#),
   HeavisideTheta->DiracDelta(#),
   IntegerPart->0,
   InverseErf->(1/2*Sqrt(Pi)*E^(InverseErf(x)^2)),
   InverseErfc->(-(1/2))*E^InverseErfc(#)^2*Sqrt(Pi),
+  InverseHaversine->1/Sqrt((1 - #)*#),
   Log->#^(-1),
   LogGamma->PolyGamma(0,#),
   LogisticSigmoid->LogisticSigmoid(#)*(1-LogisticSigmoid(#)),

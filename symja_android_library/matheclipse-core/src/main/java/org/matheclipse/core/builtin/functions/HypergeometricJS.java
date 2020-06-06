@@ -207,7 +207,7 @@ public class HypergeometricJS {
 		if (x.abs() > useAsymptotic) {
 			Complex t1 = Arithmetic.lanczosApproxGamma(b).multiply(x.negate().pow(a.negate()))
 					.multiply(Arithmetic.lanczosApproxGamma(b.subtract(a)).reciprocal());
-			t1 = t1.multiply(hypergeometric2F0(a, a.add(b.negate()).add(1), new Complex(-1.0).divide(x)));
+			t1 = t1.multiply(hypergeometric2F0(a, a.add(b.negate()).add(1.0), new Complex(-1.0).divide(x)));
 
 			Complex t2 = Arithmetic.lanczosApproxGamma(b).multiply(x.pow(a.subtract(b))).multiply(x.exp())
 					.multiply(Arithmetic.lanczosApproxGamma(a).reciprocal());
@@ -486,11 +486,12 @@ public class HypergeometricJS {
 
 		}
 
-		if (x == -1) {
-			throw new ArgumentTypeException("unsupported real hypergeometric argument");
+		if (F.isNumIntValue(x, -1)) {
+			return hypergeometric2F1(new Complex(a), new Complex(b), new Complex(c), new Complex(x)).getReal();
+			// throw new ArgumentTypeException("unsupported real hypergeometric argument");
 		}
 
-		if (x == 1) {
+		if (F.isNumIntValue(x, 1)) {
 			if (c - a - b > 0) {
 				return Gamma.gamma(c) * Gamma.gamma(c - a - b) / Gamma.gamma(c - a) / Gamma.gamma(c - b);
 			} else {
@@ -500,7 +501,6 @@ public class HypergeometricJS {
 		}
 
 		if (x > 1) {
-
 			throw new ArgumentTypeException("unsupported real hypergeometric argument");
 			// return hypergeometric2F1( new Complex(a), new Complex(b), new Complex(c), new Complex(x) );
 		}
@@ -633,4 +633,38 @@ public class HypergeometricJS {
 		return hypergeometricSeries(A, B, x);
 	}
 
+	public static Complex hypergeometricU(Complex a, Complex b, Complex x) {
+
+		double useAsymptotic = 15;
+
+		// asymptotic form as per Johansson arxiv.org/abs/1606.06977
+		if (x.abs() > useAsymptotic) {
+
+			return x.pow(a.negate())
+					.multiply(hypergeometric2F0(a, a.add(b.negate()).add(1.0), x.reciprocal().negate()));
+
+		}
+
+		Complex t1 = Arithmetic.lanczosApproxGamma(b.subtract(1))
+				.multiply(Arithmetic.lanczosApproxGamma(a).reciprocal()).multiply(x.pow(Complex.ONE.subtract(b))
+						.multiply(hypergeometric1F1(a.add(b.negate()).add(1.0), b.negate().add(2.0), x)));
+
+		Complex t2 = Arithmetic.lanczosApproxGamma(Complex.ONE.subtract(b))
+				.multiply(Arithmetic.lanczosApproxGamma(a.add(b.negate()).add(1.0)).reciprocal())
+				.multiply(hypergeometric1F1(a, b, x));
+
+		return t1.add(t2);
+
+	}
+
+	public static Complex whittakerM(Complex k, Complex m, Complex x) {
+		return x.multiply(-0.5).exp().multiply(x.pow(m.add(0.5)))
+				.multiply(hypergeometric1F1(m.add(k.negate()).add(0.5), m.multiply(2.0).add(1.0), x));
+
+	}
+
+	public static Complex whittakerW(Complex k, Complex m, Complex x) {
+		return x.multiply(-0.5).exp().multiply(x.pow(m.add(0.5)))
+				.multiply(hypergeometricU(m.add(k.negate()).add(0.5), m.multiply(2.0).add(1.0), x));
+	}
 }

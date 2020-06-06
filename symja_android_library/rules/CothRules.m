@@ -1,4 +1,5 @@
  {
+ Coth(Undefined)=Undefined,
  Coth(0)=ComplexInfinity,
  Coth(0.0)=ComplexInfinity,
  Coth(1/4*Pi*I)=-I,

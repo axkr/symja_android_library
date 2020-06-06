@@ -13,10 +13,16 @@ public interface BesselYRules {
    * <li>index 0 - number of equal rules in <code>RULES</code></li>
 	 * </ul>
 	 */
-  final public static int[] SIZES = { 0, 6 };
+  final public static int[] SIZES = { 0, 7 };
 
   final public static IAST RULES = List(
     IInit(BesselY, SIZES),
+    // BesselY(Undefined,y_):=Undefined
+    ISetDelayed(BesselY(Undefined,y_),
+      Undefined),
+    // BesselY(x_,Undefined):=Undefined
+    ISetDelayed(BesselY(x_,Undefined),
+      Undefined),
     // BesselY(-1/2,z_):=(Sqrt(2/Pi)*Sin(z))/Sqrt(z)
     ISetDelayed(BesselY(CN1D2,z_),
       Times(Sqrt(Times(C2,Power(Pi,CN1))),Power(z,CN1D2),Sin(z))),

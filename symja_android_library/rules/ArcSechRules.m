@@ -1,4 +1,5 @@
-{ 
+{
+ ArcSech(Undefined)=Undefined, 
  ArcSech(0)=Infinity,
  ArcSech(1)=0,
  ArcSech(-1)=I*Pi,

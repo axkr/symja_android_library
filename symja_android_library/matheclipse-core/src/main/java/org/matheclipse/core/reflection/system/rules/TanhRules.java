@@ -13,10 +13,13 @@ public interface TanhRules {
    * <li>index 0 - number of equal rules in <code>RULES</code></li>
 	 * </ul>
 	 */
-  final public static int[] SIZES = { 10, 7 };
+  final public static int[] SIZES = { 11, 7 };
 
   final public static IAST RULES = List(
     IInit(Tanh, SIZES),
+    // Tanh(Undefined)=Undefined
+    ISet(Tanh(Undefined),
+      Undefined),
     // Tanh(0)=0
     ISet(Tanh(C0),
       C0),

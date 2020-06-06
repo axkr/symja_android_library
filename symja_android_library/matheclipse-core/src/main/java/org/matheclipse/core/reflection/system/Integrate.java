@@ -598,7 +598,10 @@ public class Integrate extends AbstractFunctionEvaluator {
 			final IASTAppendable ast = holdallAST.setAtClone(1, arg1);
 			ast.set(2, arg2);
 			final IExpr x = ast.arg2();
-
+			if (!x.isVariable()) {
+				// `1` is not a valid variable.
+				return IOFunctions.printMessage(ast.topHead(), "ivar", F.List(x), engine);
+			}
 			if (arg1.isNumber()) {
 				// Integrate[x_?NumberQ,y_Symbol] -> x*y
 				return Times(arg1, x);

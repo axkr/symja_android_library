@@ -36,6 +36,7 @@ import org.hipparchus.exception.MathIllegalStateException;
 import org.matheclipse.core.basic.Config;
 import org.matheclipse.core.builtin.functions.BesselJS;
 import org.matheclipse.core.builtin.functions.GammaJS;
+import org.matheclipse.core.builtin.functions.ZetaJS;
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.exception.ThrowException;
 import org.matheclipse.core.eval.exception.ValidateException;
@@ -67,10 +68,8 @@ import org.matheclipse.core.reflection.system.rules.StruveHRules;
 import org.matheclipse.core.reflection.system.rules.StruveLRules;
 import org.matheclipse.parser.client.FEConfig;
 
-import de.lab4inf.math.functions.Zeta;
-
 public class SpecialFunctions {
-	
+
 	/**
 	 * 
 	 * See <a href="https://pangin.pro/posts/computation-in-static-initializer">Beware of computation in static
@@ -712,38 +711,41 @@ public class SpecialFunctions {
 				}
 			}
 
-			// if (engine.isDoubleMode()) {
-			// try {
-			// double sDouble = Double.NaN;
-			// double aDouble = Double.NaN;
-			// try {
-			// sDouble = s.evalDouble();
-			// aDouble = a.evalDouble();
-			// } catch (ValidateException ve) {
-			// }
-			// if (Double.isNaN(sDouble) || Double.isNaN(aDouble)) {
-			// Complex sc = s.evalComplex();
-			// Complex ac = a.evalComplex();
-			//
-			// return F.complexNum(ZetaJS.hurwitzZeta(sc, ac));
-			//
-			// } else {
-			// return ZetaJS.hurwitzZeta(sDouble, aDouble);
-			// }
-			// } catch (ThrowException te) {
-			// if (Config.SHOW_STACKTRACE) {
-			// te.printStackTrace();
-			// }
-			// return te.getValue();
-			// } catch (ValidateException ve) {
-			// if (Config.SHOW_STACKTRACE) {
-			// ve.printStackTrace();
-			// }
-			// } catch (RuntimeException rex) {
-			// // rex.printStackTrace();
-			// return engine.printMessage(ast.topHead() + ": " + rex.getMessage());
-			// }
-			// }
+			if (engine.isDoubleMode()) {
+				try {
+					double sDouble = Double.NaN;
+					double aDouble = Double.NaN;
+					try {
+						sDouble = s.evalDouble();
+						aDouble = a.evalDouble();
+					} catch (ValidateException ve) {
+					}
+					if (aDouble < 0.0 || //
+							Double.isNaN(sDouble) || //
+							Double.isNaN(aDouble)) {
+						// TODO
+						// Complex sc = s.evalComplex();
+						// Complex ac = a.evalComplex();
+						// return F.complexNum(ZetaJS.hurwitzZeta(sc, ac));
+					} else {
+						if (aDouble >= 0 && sDouble != 1.0) {
+							return F.num(ZetaJS.hurwitzZeta(sDouble, aDouble));
+						}
+					}
+				} catch (ThrowException te) {
+					if (FEConfig.SHOW_STACKTRACE) {
+						te.printStackTrace();
+					}
+					return te.getValue();
+				} catch (ValidateException ve) {
+					if (FEConfig.SHOW_STACKTRACE) {
+						ve.printStackTrace();
+					}
+				} catch (RuntimeException rex) {
+					// rex.printStackTrace();
+					return engine.printMessage(ast.topHead() + ": " + rex.getMessage());
+				}
+			}
 
 			return NIL;
 		}
@@ -989,7 +991,7 @@ public class SpecialFunctions {
 					return F.CInfinity;
 				}
 				if (arg1 > 0.0) {
-					return Num.valueOf(GammaJS.logGamma(arg1)); 
+					return Num.valueOf(GammaJS.logGamma(arg1));
 				}
 			} catch (final MathIllegalStateException e) {
 			}
@@ -1005,7 +1007,7 @@ public class SpecialFunctions {
 				if (F.isZero(stack[top])) {
 					return Double.POSITIVE_INFINITY;
 				}
-				return GammaJS.logGamma(stack[top]); 
+				return GammaJS.logGamma(stack[top]);
 			} catch (final MathIllegalStateException e) {
 			}
 			throw new UnsupportedOperationException();
@@ -1381,9 +1383,9 @@ public class SpecialFunctions {
 			}
 			Apcomplex c = new Apcomplex(new Apfloat(new BigDecimal(arg1.getRealPart()), Config.MACHINE_PRECISION),
 					new Apfloat(new BigDecimal(arg1.getImaginaryPart()), Config.MACHINE_PRECISION));
-//			if (Config.FUZZ_TESTING) {
-//				System.err.println(c.toString());
-//			}
+			// if (Config.FUZZ_TESTING) {
+			// System.err.println(c.toString());
+			// }
 			return F.complexNum(ApcomplexMath.w(c));
 		}
 

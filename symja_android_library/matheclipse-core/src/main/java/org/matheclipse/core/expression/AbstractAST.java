@@ -33,6 +33,7 @@ import org.matheclipse.core.builtin.BooleanFunctions;
 import org.matheclipse.core.builtin.IOFunctions;
 import org.matheclipse.core.builtin.StructureFunctions.LeafCount;
 import org.matheclipse.core.convert.AST2Expr;
+import org.matheclipse.core.convert.VariablesSet;
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.exception.ArgumentTypeException;
 import org.matheclipse.core.eval.exception.Validate;
@@ -601,6 +602,12 @@ public abstract class AbstractAST implements IASTMutable {
 		/** {@inheritDoc} */
 		@Override
 		public final boolean isNumericFunction() {
+			return false;
+		}
+
+		/** {@inheritDoc} */
+		@Override
+		public final boolean isNumericFunction(VariablesSet varSet) {
 			return false;
 		}
 
@@ -1290,9 +1297,7 @@ public abstract class AbstractAST implements IASTMutable {
 		if (isAST(F.N, 3)) {
 			long determinedPrecision = arg1().determinePrecision();
 			if (determinedPrecision > 0) {
-				if (determinedPrecision >= precision) {
-					return determinedPrecision;
-				}
+				return determinedPrecision;
 			}
 			int p = arg2().toIntDefault();
 			if (p >= Config.MACHINE_PRECISION) {
@@ -2667,11 +2672,15 @@ public abstract class AbstractAST implements IASTMutable {
 	/** {@inheritDoc} */
 	@Override
 	public final boolean isFreeAST(Predicate<IExpr> predicate) {
+		if (predicate.test(this)) {
+			return false;
+		}
 		if (predicate.test(head())) {
 			return false;
 		}
 		for (int i = 1; i < size(); i++) {
-			if (get(i).isAST() && !get(i).isFreeAST(predicate)) {
+			IExpr arg = get(i);
+			if (arg.isAST() && !arg.isFreeAST(predicate)) {
 				return false;
 			}
 		}
@@ -3062,6 +3071,16 @@ public abstract class AbstractAST implements IASTMutable {
 		if (head().isSymbol() && ((ISymbol) head()).isNumericFunctionAttribute() || isList()) {
 			// check if all arguments are &quot;numeric&quot;
 			return forAll(x -> x.isNumericFunction());
+		}
+		return false;
+	}
+
+	/** {@inheritDoc} */
+	@Override
+	public boolean isNumericFunction(VariablesSet varSet) {
+		if (head().isSymbol() && ((ISymbol) head()).isNumericFunctionAttribute() || isList()) {
+			// check if all arguments are &quot;numeric&quot;
+			return forAll(x -> x.isNumericFunction(varSet));
 		}
 		return false;
 	}
@@ -3625,6 +3644,21 @@ public abstract class AbstractAST implements IASTMutable {
 			return false;
 		}
 		return engine.evalRules(symbol, this).isPresent();
+	}
+
+	/** {@inheritDoc} */
+	@Override
+	public final boolean isVariable() {
+		if (!head().isSymbol() || headID() >= 0) {
+			return false;
+		}
+		for (int i = 1; i < size(); i++) {
+			IExpr arg = get(i);
+			if (!arg.isVariable()) {
+				return false;
+			}
+		}
+		return true;
 	}
 
 	/** {@inheritDoc} */

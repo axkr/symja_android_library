@@ -13,13 +13,25 @@ public interface DRules {
    * <li>index 0 - number of equal rules in <code>RULES</code></li>
 	 * </ul>
 	 */
-  final public static int[] SIZES = { 0, 89 };
+  final public static int[] SIZES = { 0, 102 };
 
   final public static IAST RULES = List(
     IInit(D, SIZES),
     // D(Abs(f_),x_?NotListQ):=D(f,x)*x/Abs(x)/;Element(x,Reals)
     ISetDelayed(D(Abs(f_),PatternTest(x_,NotListQ)),
       Condition(Times(D(f,x),x,Power(Abs(x),CN1)),Element(x,Reals))),
+    // D(AiryAi(f_),x_?NotListQ):=D(f,x)*AiryAiPrime(f)
+    ISetDelayed(D(AiryAi(f_),PatternTest(x_,NotListQ)),
+      Times(D(f,x),AiryAiPrime(f))),
+    // D(AiryAiPrime(f_),x_?NotListQ):=D(f,x)*AiryAi(f)*f
+    ISetDelayed(D(AiryAiPrime(f_),PatternTest(x_,NotListQ)),
+      Times(D(f,x),AiryAi(f),f)),
+    // D(AiryBi(f_),x_?NotListQ):=D(f,x)*AiryBiPrime(f)
+    ISetDelayed(D(AiryBi(f_),PatternTest(x_,NotListQ)),
+      Times(D(f,x),AiryBiPrime(f))),
+    // D(AiryBiPrime(f_),x_?NotListQ):=D(f,x)*AiryBi(f)*f
+    ISetDelayed(D(AiryBiPrime(f_),PatternTest(x_,NotListQ)),
+      Times(D(f,x),AiryBi(f),f)),
     // D(ArcCos(f_),x_?NotListQ):=(D(f,x)*(-1))/Sqrt(1-f^2)
     ISetDelayed(D(ArcCos(f_),PatternTest(x_,NotListQ)),
       Times(D(f,x),CN1,Power(Subtract(C1,Sqr(f)),CN1D2))),
@@ -59,6 +71,12 @@ public interface DRules {
     // D(Ceiling(f_),x_?NotListQ):=D(f,x)*Piecewise({{0,f<Ceiling(f)}},Indeterminate)
     ISetDelayed(D(Ceiling(f_),PatternTest(x_,NotListQ)),
       Times(D(f,x),Piecewise(List(List(C0,Less(f,Ceiling(f)))),Indeterminate))),
+    // D(EllipticE(f_),x_?NotListQ):=(D(f,x)*(EllipticE(f)-EllipticK(f)))/(2*f)
+    ISetDelayed(D(EllipticE(f_),PatternTest(x_,NotListQ)),
+      Times(Power(Times(C2,f),CN1),D(f,x),Subtract(EllipticE(f),EllipticK(f)))),
+    // D(EllipticK(f_),x_?NotListQ):=(D(f,x)*(EllipticE(f)-(1-f)*EllipticK(f)))/(2*(1-f)*f)
+    ISetDelayed(D(EllipticK(f_),PatternTest(x_,NotListQ)),
+      Times(Power(Times(C2,Subtract(C1,f),f),CN1),D(f,x),Plus(EllipticE(f),Times(CN1,Subtract(C1,f),EllipticK(f))))),
     // D(Erf(f_),x_?NotListQ):=D(f,x)*2*1/(E^f^2*Sqrt(Pi))
     ISetDelayed(D(Erf(f_),PatternTest(x_,NotListQ)),
       Times(D(f,x),C2,Exp(Negate(Sqr(f))),Power(Pi,CN1D2))),
@@ -92,6 +110,9 @@ public interface DRules {
     // D(HarmonicNumber(f_),x_?NotListQ):=D(f,x)*(Pi^2/6-HarmonicNumber(f,2))
     ISetDelayed(D(HarmonicNumber(f_),PatternTest(x_,NotListQ)),
       Times(D(f,x),Subtract(Times(QQ(1L,6L),Sqr(Pi)),HarmonicNumber(f,C2)))),
+    // D(Haversine(f_),x_?NotListQ):=1/2*Sin(f)*D(f,x)
+    ISetDelayed(D(Haversine(f_),PatternTest(x_,NotListQ)),
+      Times(C1D2,Sin(f),D(f,x))),
     // D(HeavisideTheta(f_),x_?NotListQ):=D(f,x)*DiracDelta(f)
     ISetDelayed(D(HeavisideTheta(f_),PatternTest(x_,NotListQ)),
       Times(D(f,x),DiracDelta(f))),
@@ -104,6 +125,9 @@ public interface DRules {
     // D(InverseErfc(f_),x_?NotListQ):=D(f,x)*(-1/2)*E^InverseErfc(f)^2*Sqrt(Pi)
     ISetDelayed(D(InverseErfc(f_),PatternTest(x_,NotListQ)),
       Times(D(f,x),CN1D2,Exp(Sqr(InverseErfc(f))),Sqrt(Pi))),
+    // D(InverseHaversine(f_),x_?NotListQ):=D(f,x)/Sqrt((1-f)*f)
+    ISetDelayed(D(InverseHaversine(f_),PatternTest(x_,NotListQ)),
+      Times(Power(Times(Subtract(C1,f),f),CN1D2),D(f,x))),
     // D(Log(f_),x_?NotListQ):=D(f,x)/f
     ISetDelayed(D(Log(f_),PatternTest(x_,NotListQ)),
       Times(D(f,x),Power(f,CN1))),
@@ -170,12 +194,27 @@ public interface DRules {
     // D(SinhIntegral(f_),x_?NotListQ):=D(f,x)*Sinh(f)/f
     ISetDelayed(D(SinhIntegral(f_),PatternTest(x_,NotListQ)),
       Times(D(f,x),Power(f,CN1),Sinh(f))),
+    // D(HurwitzZeta(f_,g_),x_?NotListQ):=-f*HurwitzZeta(1+f,g)*D(g,x)/;FreeQ({f},x)
+    ISetDelayed(D(HurwitzZeta(f_,g_),PatternTest(x_,NotListQ)),
+      Condition(Times(CN1,f,HurwitzZeta(Plus(C1,f),g),D(g,x)),FreeQ(List(f),x))),
+    // D(Zeta(f_,g_),x_?NotListQ):=-f*Zeta(1+f,g)*D(g,x)/;FreeQ({f},x)
+    ISetDelayed(D(Zeta(f_,g_),PatternTest(x_,NotListQ)),
+      Condition(Times(CN1,f,Zeta(Plus(C1,f),g),D(g,x)),FreeQ(List(f),x))),
     // D(Hypergeometric2F1(a_,b_,c_,f_),x_?NotListQ):=(a*b*D(f,x)*Hypergeometric2F1(1+a,1+b,1+c,f))/c/;FreeQ({a,b,c},x)
     ISetDelayed(D(Hypergeometric2F1(a_,b_,c_,f_),PatternTest(x_,NotListQ)),
       Condition(Times(a,b,Power(c,CN1),D(f,x),Hypergeometric2F1(Plus(C1,a),Plus(C1,b),Plus(C1,c),f)),FreeQ(List(a,b,c),x))),
     // D(Hypergeometric2F1(a_,b_,c_,f_),{x_,n_}):=(Hypergeometric2F1(a+n,b+n,c+n,x)*Pochhammer(a,n)*Pochhammer(b,n))/Pochhammer(c,n)/;FreeQ({a,b,c,n},x)&&Negative(n)=!=True
     ISetDelayed(D(Hypergeometric2F1(a_,b_,c_,f_),List(x_,n_)),
       Condition(Times(Hypergeometric2F1(Plus(a,n),Plus(b,n),Plus(c,n),x),Pochhammer(a,n),Pochhammer(b,n),Power(Pochhammer(c,n),CN1)),And(FreeQ(List(a,b,c,n),x),UnsameQ(Negative(n),True)))),
+    // D(HypergeometricU(f_,g_,h_),x_?NotListQ):=-f*HypergeometricU(1+f,1+g,h)*D(h,x)/;FreeQ({f,g},x)
+    ISetDelayed(D(HypergeometricU(f_,g_,h_),PatternTest(x_,NotListQ)),
+      Condition(Times(CN1,f,HypergeometricU(Plus(C1,f),Plus(C1,g),h),D(h,x)),FreeQ(List(f,g),x))),
+    // D(WhittakerM(f_,g_,h_),x_?NotListQ):=((1/2-f/h)*WhittakerM(f,g,h)+((1/2+f+g)*WhittakerM(1+f,g,h))/h)*D(h,x)/;FreeQ({f,g},x)
+    ISetDelayed(D(WhittakerM(f_,g_,h_),PatternTest(x_,NotListQ)),
+      Condition(Times(Plus(Times(Plus(C1D2,Times(CN1,f,Power(h,CN1))),WhittakerM(f,g,h)),Times(Plus(C1D2,f,g),Power(h,CN1),WhittakerM(Plus(C1,f),g,h))),D(h,x)),FreeQ(List(f,g),x))),
+    // D(WhittakerW(f_,g_,h_),x_?NotListQ):=((1/2-f/h)*WhittakerW(f,g,h)-WhittakerW(1+f,g,h)/h)*D(h,x)/;FreeQ({f,g},x)
+    ISetDelayed(D(WhittakerW(f_,g_,h_),PatternTest(x_,NotListQ)),
+      Condition(Times(Plus(Times(Plus(C1D2,Times(CN1,f,Power(h,CN1))),WhittakerW(f,g,h)),Times(CN1,Power(h,CN1),WhittakerW(Plus(C1,f),g,h))),D(h,x)),FreeQ(List(f,g),x))),
     // D(InverseFunction(f_)[x_],x_):=1/f'(InverseFunction(f)[x])/;FreeQ(f,x)
     ISetDelayed(D($(InverseFunction(f_),x_),x_),
       Condition(Power($($(Derivative(C1),f),$(InverseFunction(f),x)),CN1),FreeQ(f,x))),

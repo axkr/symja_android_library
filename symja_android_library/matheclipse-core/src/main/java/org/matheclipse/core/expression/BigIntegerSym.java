@@ -30,7 +30,6 @@ import org.matheclipse.core.interfaces.ISignedNumber;
 import org.matheclipse.core.numbertheory.Primality;
 
 import com.google.common.math.BigIntegerMath;
-import com.google.common.math.DoubleMath;
 
 /**
  * IInteger implementation which delegates most of the methods to the BigInteger methods.

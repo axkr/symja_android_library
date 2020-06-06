@@ -30,6 +30,25 @@ import org.matheclipse.core.interfaces.ISymbol;
 import org.matheclipse.core.polynomials.HornerScheme;
 import org.matheclipse.parser.client.FEConfig;
 
+import net.numericalchameleon.util.spokennumbers.DutchNumber;
+import net.numericalchameleon.util.spokennumbers.EsperantoNumber;
+import net.numericalchameleon.util.spokennumbers.FinnishNumber;
+import net.numericalchameleon.util.spokennumbers.FrenchNumber;
+import net.numericalchameleon.util.spokennumbers.GermanNumber;
+import net.numericalchameleon.util.spokennumbers.HungarianNumber;
+import net.numericalchameleon.util.spokennumbers.ItalianNumber;
+import net.numericalchameleon.util.spokennumbers.LatinNumber;
+import net.numericalchameleon.util.spokennumbers.PolishNumber;
+import net.numericalchameleon.util.spokennumbers.PortugueseNumber;
+import net.numericalchameleon.util.spokennumbers.RomanianNumber;
+import net.numericalchameleon.util.spokennumbers.RussianNumber;
+import net.numericalchameleon.util.spokennumbers.SpanishNumber;
+import net.numericalchameleon.util.spokennumbers.SpokenNumber;
+import net.numericalchameleon.util.spokennumbers.SwedishNumber;
+import net.numericalchameleon.util.spokennumbers.TonganNumber;
+import net.numericalchameleon.util.spokennumbers.TurkishNumber;
+import net.numericalchameleon.util.spokennumbers.USEnglishNumber;
+
 public final class OutputFunctions {
 
 	/**
@@ -46,9 +65,11 @@ public final class OutputFunctions {
 			F.HoldForm.setEvaluator(new HoldForm());
 			F.HornerForm.setEvaluator(new HornerForm());
 			F.InputForm.setEvaluator(new InputForm());
+			F.IntegerName.setEvaluator(new IntegerName());
 			F.JavaForm.setEvaluator(new JavaForm());
 			F.JSForm.setEvaluator(new JSForm());
 			F.MathMLForm.setEvaluator(new MathMLForm());
+			F.RomanNumeral.setEvaluator(new RomanNumeral());
 			F.TableForm.setEvaluator(new TableForm());
 			F.TeXForm.setEvaluator(new TeXForm());
 			F.TreeForm.setEvaluator(new TreeForm());
@@ -145,49 +166,58 @@ public final class OutputFunctions {
 		}
 	}
 
+	private static class RomanNumeral extends AbstractFunctionEvaluator {
+
+		@Override
+		public IExpr evaluate(final IAST ast, EvalEngine engine) {
+			IExpr arg1 = ast.arg1();
+			if (arg1.isInteger()) {
+				try {
+					long value = ((IInteger) arg1).toLong();
+					if (value == 0) {
+						return F.stringx("N");
+					}
+					net.numericalchameleon.util.romannumerals.RomanNumeral romanNumeral = //
+							new net.numericalchameleon.util.romannumerals.RomanNumeral(value);
+					return F.stringx(romanNumeral.toRoman());
+				} catch (net.numericalchameleon.util.romannumerals.RomanNumeralException rne) {
+					// Integer expected in range `1` to `2`.
+					return IOFunctions.printMessage(//
+							ast.topHead(), //
+							"intrange", //
+							F.List(F.ZZ(net.numericalchameleon.util.romannumerals.RomanNumeral.MIN_VALUE), //
+									F.ZZ(net.numericalchameleon.util.romannumerals.RomanNumeral.MAX_VALUE)), //
+							engine);
+				} catch (RuntimeException rex) {
+					if (FEConfig.SHOW_STACKTRACE) {
+						rex.printStackTrace();
+					}
+				}
+			}
+			return F.NIL;
+		}
+
+		@Override
+		public int[] expectedArgSize() {
+			return IOFunctions.ARGS_1_1;
+		}
+
+		@Override
+		public void setUp(final ISymbol newSymbol) {
+			newSymbol.setAttributes(ISymbol.LISTABLE);
+		}
+
+	}
+
 	private static class TableForm extends AbstractCoreFunctionEvaluator {
 
 		@Override
 		public IExpr evaluate(final IAST ast, EvalEngine engine) {
 			if (ast.isAST1()) {
 				IExpr arg1 = engine.evaluate(ast.arg1());
-				int[] dim = arg1.isMatrix();
-				if (dim != null) {
-					IAST matrix = (IAST) arg1;
-					StringBuilder[] sb = new StringBuilder[dim[0]];
-					for (int j = 0; j < dim[0]; j++) {
-						sb[j] = new StringBuilder();
-					}
-					int rowLength = 0;
-					for (int i = 0; i < dim[1]; i++) {
-						int columnLength = 0;
-						for (int j = 0; j < dim[0]; j++) {
-							String str = matrix.getPart(j + 1, i + 1).toString();
-							if (str.length() > columnLength) {
-								columnLength = str.length();
-							}
-							sb[j].append(str);
-						}
-						if (i < dim[1] - 1) {
-							rowLength += columnLength + 1;
-						} else {
-							rowLength += columnLength;
-						}
-						for (int j = 0; j < dim[0]; j++) {
-							int rest = rowLength - sb[j].length();
-							for (int k = 0; k < rest; k++) {
-								sb[j].append(' ');
-							}
-						}
-					}
-					StringBuilder result = new StringBuilder();
-					for (int i = 0; i < dim[0]; i++) {
-						result.append(sb[i]);
-						if (i < dim[0] - 1) {
-							result.append("\n");
-						}
-					}
-					return F.stringx(result.toString(), IStringX.TEXT_PLAIN);
+				StringBuilder tableForm = new StringBuilder();
+				if (plaintextTable(tableForm, arg1, " ", x -> x.toString(), true)) {
+					return F.stringx(tableForm.toString(), IStringX.TEXT_PLAIN);
 				}
 				if (arg1.isList()) {
 					IAST list = (IAST) arg1;
@@ -325,10 +355,10 @@ public final class OutputFunctions {
 		public IExpr evaluate(final IAST ast, EvalEngine engine) {
 			if (ast.isAST1()) {
 				IExpr arg1 = engine.evaluate(ast.arg1());
-				if (FEConfig.PARSER_USE_LOWERCASE_SYMBOLS) {
-					return F.stringx(StringFunctions.inputForm(arg1, true), IStringX.APPLICATION_SYMJA);
-				}
-				return F.stringx(StringFunctions.inputForm(arg1, false), IStringX.APPLICATION_SYMJA);
+				// if (FEConfig.PARSER_USE_LOWERCASE_SYMBOLS) {
+				// return F.stringx(StringFunctions.inputForm(arg1, true), IStringX.APPLICATION_SYMJA);
+				// }
+				return F.stringx(StringFunctions.inputForm(arg1), IStringX.APPLICATION_SYMJA);
 			}
 			return F.NIL;
 		}
@@ -336,6 +366,105 @@ public final class OutputFunctions {
 		@Override
 		public void setUp(ISymbol newSymbol) {
 		}
+	}
+
+	private static class IntegerName extends AbstractFunctionEvaluator {
+
+		@Override
+		public IExpr evaluate(final IAST ast, EvalEngine engine) {
+			IExpr arg1 = ast.arg1();
+			if (arg1.isInteger()) {
+				IStringX language = F.stringx("English");
+				IStringX qual = F.stringx("Words");
+				if (ast.isAST2()) {
+					if (!ast.arg2().isString()) {
+						return F.NIL;
+					}
+					IStringX arg2 = (IStringX) ast.arg2();
+					if (arg2.isString("Dutch") || //
+							arg2.isString("Finnish") || //
+							arg2.isString("English") || //
+							arg2.isString("Esperanto") || //
+							arg2.isString("French") || //
+							arg2.isString("German") || //
+							arg2.isString("Hungarian") || //
+							arg2.isString("Italian") || //
+							arg2.isString("Latin") || //
+							arg2.isString("Polish") || //
+							arg2.isString("Portuguese") || //
+							arg2.isString("Romanian") || //
+							arg2.isString("Russian") || //
+							arg2.isString("Spanish") || //
+							arg2.isString("Swedish") || //
+							arg2.isString("Tongan") || //
+							arg2.isString("Turkish")) {
+						language = (IStringX) arg2;
+					} else {
+						qual = (IStringX) arg2;
+					}
+				}
+				try {
+					long value = ((IInteger) arg1).toLong();
+					if (qual.isString("Words")) {
+						SpokenNumber spokenNumber = null;
+						if (language.isString("Dutch")) {
+							spokenNumber = new DutchNumber(value);
+						} else if (language.isString("English")) {
+							spokenNumber = new USEnglishNumber(value);
+						} else if (language.isString("Esperanto")) {
+							spokenNumber = new EsperantoNumber(value);
+						} else if (language.isString("Finnish")) {
+							spokenNumber = new FinnishNumber(value);
+						} else if (language.isString("French")) {
+							spokenNumber = new FrenchNumber(value);
+						} else if (language.isString("German")) {
+							spokenNumber = new GermanNumber(value);
+						} else if (language.isString("Hungarian")) {
+							spokenNumber = new HungarianNumber(value);
+						} else if (language.isString("Italian")) {
+							spokenNumber = new ItalianNumber(value);
+						} else if (language.isString("Latin")) {
+							spokenNumber = new LatinNumber(value);
+						} else if (language.isString("Polish")) {
+							spokenNumber = new PolishNumber(value);
+						} else if (language.isString("Portuguese")) {
+							spokenNumber = new PortugueseNumber(value);
+						} else if (language.isString("Romanian")) {
+							spokenNumber = new RomanianNumber(value);
+						} else if (language.isString("Russian")) {
+							spokenNumber = new RussianNumber(value);
+						} else if (language.isString("Spanish")) {
+							spokenNumber = new SpanishNumber(value);
+						} else if (language.isString("Swedish")) {
+							spokenNumber = new SwedishNumber(value);
+						} else if (language.isString("Tongan")) {
+							spokenNumber = new TonganNumber(value);
+						} else if (language.isString("Turkish")) {
+							spokenNumber = new TurkishNumber(value);
+						}
+						if (spokenNumber != null) {
+							return F.stringx(spokenNumber.toString());
+						}
+					}
+				} catch (Exception ex) {
+//					if (FEConfig.SHOW_STACKTRACE) {
+						ex.printStackTrace();
+//					}
+				}
+			}
+			return F.NIL;
+		}
+
+		@Override
+		public int[] expectedArgSize() {
+			return IOFunctions.ARGS_1_2;
+		}
+
+		@Override
+		public void setUp(final ISymbol newSymbol) {
+			newSymbol.setAttributes(ISymbol.LISTABLE);
+		}
+
 	}
 
 	/**
@@ -650,6 +779,57 @@ public final class OutputFunctions {
 		StringBuilder buf = new StringBuilder();
 		factory.convert(buf, arg1);
 		return buf.toString();
+	}
+
+	public static boolean plaintextTable(StringBuilder result, IExpr expr, String delimiter,
+			java.util.function.Function<IExpr, String> function, boolean fillUpWithSPACE) {
+		int[] dim = expr.isMatrix();
+		if (dim != null) {
+			IAST matrix = (IAST) expr;
+			int rowDimension = dim[0];
+			int columnDimension = dim[1];
+			StringBuilder[] sb = new StringBuilder[rowDimension];
+			for (int j = 0; j < rowDimension; j++) {
+				sb[j] = new StringBuilder();
+			}
+			int rowLength = 0;
+
+			for (int i = 0; i < columnDimension; i++) {
+				int columnLength = 0;
+				for (int j = 0; j < rowDimension; j++) {
+					String str = function.apply(matrix.getPart(j + 1, i + 1));
+					if (str.length() > columnLength) {
+						columnLength = str.length();
+					}
+					sb[j].append(str);
+					if (i < columnDimension - 1) {
+						sb[j].append(delimiter);
+					}
+				}
+				if (i < columnDimension - 1) {
+					rowLength += columnLength + 1;
+				} else {
+					rowLength += columnLength;
+				}
+				if (fillUpWithSPACE) {
+					for (int j = 0; j < rowDimension; j++) {
+						int rest = rowLength - sb[j].length();
+						for (int k = 0; k < rest; k++) {
+							sb[j].append(' ');
+						}
+					}
+				}
+			}
+
+			for (int i = 0; i < rowDimension; i++) {
+				result.append(sb[i]);
+				if (i < rowDimension - 1) {
+					result.append("\n");
+				}
+			}
+			return true;
+		}
+		return false;
 	}
 
 	public static String toJavaScript(final IExpr arg1, int javascriptFlavor) {

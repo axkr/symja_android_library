@@ -20,12 +20,12 @@
 		<dependency>
 			<groupId>com.atlassian.commonmark</groupId>
 			<artifactId>commonmark</artifactId>
-			<version>0.14.0</version>
+			<version>0.15.0</version>
 		</dependency>
 		<dependency>
 			<groupId>com.atlassian.commonmark</groupId>
 			<artifactId>commonmark-ext-gfm-tables</artifactId>
-			<version>0.14.0</version>
+			<version>0.15.0</version>
 		</dependency>
 		<dependency>
 			<groupId>de.uni-mannheim.rz.krum</groupId>
@@ -105,6 +105,11 @@
 			<groupId>org.hipparchus</groupId>
 			<artifactId>hipparchus-stat</artifactId>
 			<version>${hipparchus.version}</version>
+		</dependency>
+		<dependency>
+			<groupId>commons-codec</groupId>
+			<artifactId>commons-codec</artifactId>
+			<version>1.14</version>
 		</dependency>
 		<dependency>
 			<groupId>org.apache.commons</groupId>

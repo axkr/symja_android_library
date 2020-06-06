@@ -11,8 +11,6 @@ import java.util.Map.Entry;
 import java.util.Set;
 import java.util.TreeSet;
 
-import javax.annotation.Nonnull;
-
 import org.hipparchus.analysis.solvers.LaguerreSolver;
 import org.hipparchus.linear.Array2DRowRealMatrix;
 import org.hipparchus.linear.EigenDecomposition;
@@ -1855,14 +1853,18 @@ public class PolynomialFunctions {
 					}
 					if (n.isOne()) {
 						// -z + l + 1
-						return F.Plus(F.C1, F.l, F.Negate(F.z));
+						return F.Plus(F.C1, l, F.Negate(z));
+					}
+					if (degree < 0) {
+						return F.NIL;
 					}
 
 					// Recurrence relation for LaguerreL polynomials
-					return F.Times(F.Power(n, -1),
-							F.Plus(F.Times(F.CN1, F.Plus(F.CN1, l, n), F.LaguerreL(F.ZZ(degree - 2), l, z)),
-									F.Times(F.Plus(F.C1, l, F.Times(F.C2, F.ZZ(degree - 1)), F.Negate(z)),
-											F.LaguerreL(F.ZZ(degree - 1), l, z))));
+					// (1/n) * (((2*n + l - z - 1) )*LaguerreL(n - 1, l, z) - ((n + l - 1) )*LaguerreL(n - 2, l, z))
+					return F.Times(F.Power(n, F.CN1),
+							F.Plus(F.Times(F.CN1, F.Plus(F.CN1, l, n), F.LaguerreL(F.Plus(F.CN2, n), l, z)),
+									F.Times(F.Plus(F.CN1, l, F.Times(F.C2, n), F.Negate(z)),
+											F.LaguerreL(F.Plus(F.CN1, n), l, z))));
 				}
 				if (degree == 0) {
 					return F.C1;
@@ -2057,34 +2059,6 @@ public class PolynomialFunctions {
 		}
 
 		/**
-		 * Get the monomial list of a univariate polynomial.
-		 * 
-		 * @param polynomial
-		 * @param variable
-		 * @param termOrder
-		 *            the JAS term ordering
-		 * @return the list of monomials of the univariate polynomial.
-		 */
-		// private static IAST monomialList(IExpr polynomial, final List<IExpr> variablesList, final TermOrder
-		// termOrder)
-		// throws JASConversionException {
-		// JASIExpr jas = new JASIExpr(variablesList, ExprRingFactory.CONST, termOrder, false);
-		// GenPolynomial<IExpr> polyExpr = jas.expr2IExprJAS(polynomial);
-		//
-		// Set<Entry<ExpVector, IExpr>> set = polyExpr.getMap().entrySet();
-		// IASTAppendable list = F.ListAlloc(set.size());
-		// for (Map.Entry<ExpVector, IExpr> monomial : set) {
-		// IExpr coeff = monomial.getValue();
-		// ExpVector exp = monomial.getKey();
-		// IASTAppendable monomTimes = F.TimesAlloc(exp.length() + 1);
-		// jas.monomialToExpr(coeff, exp, monomTimes);
-		// list.append(monomTimes);
-		// }
-		//
-		// return list;
-		// }
-
-		/**
 		 * Get the monomial list of a univariate polynomial with coefficients reduced by a modulo value.
 		 * 
 		 * @param polynomial
@@ -2215,7 +2189,6 @@ public class PolynomialFunctions {
 
 		IExpr variable = variables.arg1();
 		double[] coefficients = Expr2Object.toPolynomial(expr, variable);
-
 		if (coefficients != null) {
 			LaguerreSolver solver = new LaguerreSolver(Config.DEFAULT_ROOTS_CHOP_DELTA);
 			org.hipparchus.complex.Complex[] roots = solver.solveAllComplex(coefficients, 0);
@@ -2278,7 +2251,6 @@ public class PolynomialFunctions {
 	 *            coefficients of the polynomial.
 	 * @return the roots of the polynomial
 	 */
-	@Nonnull
 	public static IAST findRoots(double... coefficients) {
 		int N = coefficients.length - 1;
 

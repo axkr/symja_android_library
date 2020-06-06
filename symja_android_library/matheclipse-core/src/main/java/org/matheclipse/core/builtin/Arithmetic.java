@@ -76,7 +76,6 @@ import org.matheclipse.core.expression.ASTSeriesData;
 import org.matheclipse.core.expression.ApcomplexNum;
 import org.matheclipse.core.expression.ApfloatNum;
 import org.matheclipse.core.expression.ComplexNum;
-import org.matheclipse.core.expression.ComplexSym;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.expression.ID;
 import org.matheclipse.core.expression.IntervalSym;
@@ -97,6 +96,7 @@ import org.matheclipse.core.interfaces.INumber;
 import org.matheclipse.core.interfaces.IRational;
 import org.matheclipse.core.interfaces.ISignedNumber;
 import org.matheclipse.core.interfaces.ISymbol;
+import org.matheclipse.core.numbertheory.GaussianInteger;
 import org.matheclipse.core.numbertheory.Primality;
 import org.matheclipse.core.patternmatching.hash.HashedOrderlessMatcher;
 import org.matheclipse.core.patternmatching.hash.HashedOrderlessMatcherPlus;
@@ -428,7 +428,7 @@ public final class Arithmetic {
 				if (head.isBuiltInSymbol() && leftHandSide.isAST()) {
 					IEvaluator eval = ((IBuiltInSymbol) head).getEvaluator();
 					if (eval instanceof ISetEvaluator) {
-						IExpr temp = engine.evalLoop(leftHandSide);
+						IExpr temp = engine.evaluateNull(leftHandSide);
 						if (!temp.isPresent()) {
 							return F.NIL;
 						}
@@ -1764,17 +1764,12 @@ public final class Arithmetic {
 			// TODO implement GCD for gaussian integers
 			IInteger[] gi0 = c0.gaussianIntegers();
 			IInteger[] gi1 = c1.gaussianIntegers();
-			
-			ComplexSym devidend = ComplexSym.valueOf(c0.getRealPart(), c0.getImaginaryPart());
-			
-			devidend.gcd(gi1);
-			
+
 			if (gi0 != null && gi1 != null) {
-				if (gi0[0].isOne() && gi0[1].isZero()) {
-					return F.C1;
-				}
-				if (gi1[0].isOne() && gi1[1].isZero()) {
-					return F.C1;
+//				ComplexSym devidend = ComplexSym.valueOf(c0.getRealPart(), c0.getImaginaryPart());
+				IInteger[] result = GaussianInteger.gcd(gi0, gi1);
+				if (result != null) {
+					return F.complex(result[0], result[1]);
 				}
 			}
 			return F.NIL;
@@ -4826,7 +4821,7 @@ public final class Arithmetic {
 				}
 			}
 
-			return binaryOperator(ast, ast.arg1(), ast.arg2(),engine);
+			return binaryOperator(ast, ast.arg1(), ast.arg2(), engine);
 		}
 
 		public int[] expectedArgSize() {
@@ -5517,7 +5512,7 @@ public final class Arithmetic {
 					final IAST arg2 = (IAST) ast1.arg2();
 					return arg2.mapThread(F.Times(ast1.arg1(), null), 2);
 				}
-				IExpr temp = distributeLeadingFactor(binaryOperator(ast1, ast1.arg1(), ast1.arg2(),engine), ast1);
+				IExpr temp = distributeLeadingFactor(binaryOperator(ast1, ast1.arg1(), ast1.arg2(), engine), ast1);
 				if (!temp.isPresent()) {
 					ast1.addEvalFlags(IAST.BUILT_IN_EVALED);
 				}
@@ -5534,12 +5529,12 @@ public final class Arithmetic {
 				IAST astTimes = ast1;
 				while (i < astTimes.size()) {
 
-					IExpr binaryResult = binaryOperator(astTimes, tempArg1, astTimes.get(i),engine);
+					IExpr binaryResult = binaryOperator(astTimes, tempArg1, astTimes.get(i), engine);
 
 					if (!binaryResult.isPresent()) {
 
 						for (int j = i + 1; j < astTimes.size(); j++) {
-							binaryResult = binaryOperator(astTimes, tempArg1, astTimes.get(j),engine);
+							binaryResult = binaryOperator(astTimes, tempArg1, astTimes.get(j), engine);
 
 							if (binaryResult.isPresent()) {
 								evaled = true;

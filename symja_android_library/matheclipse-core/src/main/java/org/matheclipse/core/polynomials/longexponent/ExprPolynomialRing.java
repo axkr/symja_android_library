@@ -1377,51 +1377,7 @@ public class ExprPolynomialRing implements RingFactory<ExprPolynomial> {
 		// return pfac;
 	}
 
-	/**
-	 * Reverse variables. Used e.g. in opposite rings.
-	 * 
-	 * @return polynomial ring factory with reversed variables.
-	 */
-	// public GenPolynomialRing reverse() {
-	// return reverse(false);
-	// }
-
-	/**
-	 * Reverse variables. Used e.g. in opposite rings.
-	 * 
-	 * @param partial
-	 *            true for partialy reversed term orders.
-	 * @return polynomial ring factory with reversed variables.
-	 */
-	// public GenPolynomialRing reverse(boolean partial) {
-	// String[] v = null;
-	// if (vars != null) { // vars are not inversed
-	// v = new String[vars.length];
-	// int k = tord.getSplit();
-	// if (partial && k < vars.length) {
-	// // copy upper
-	// for (int j = 0; j < k; j++) {
-	// // v[vars.length - k + j] = vars[vars.length - 1 - j]; // reverse upper
-	// v[vars.length - k + j] = vars[vars.length - k + j];
-	// }
-	// // reverse lower
-	// for (int j = 0; j < vars.length - k; j++) {
-	// // v[j] = vars[j]; // copy upper
-	// v[j] = vars[vars.length - k - j - 1];
-	// }
-	// } else {
-	// for (int j = 0; j < vars.length; j++) {
-	// v[j] = vars[vars.length - 1 - j];
-	// }
-	// }
-	// // System.out.println("vars = " + Arrays.toString(vars));
-	// // System.out.println("v = " + Arrays.toString(v));
-	// }
-	// TermOrder to = tord.reverse(partial);
-	// GenPolynomialRing pfac = new GenPolynomialRing(coFac, nvar, to, v);
-	// pfac.partial = partial;
-	// return pfac;
-	// }
+	 
 
 	/**
 	 * Get PolynomialComparator.

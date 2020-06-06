@@ -8,6 +8,8 @@ BellB(n)
  
 See:  
 * [Wikipedia - Bell number](https://en.wikipedia.org/wiki/Bell_number)
+* [Fungrim - Bell numbers](http://fungrim.org/topic/Bell_numbers/)
+
 
 ## Examples
 

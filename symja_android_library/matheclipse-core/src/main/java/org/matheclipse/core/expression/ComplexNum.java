@@ -741,4 +741,73 @@ public class ComplexNum implements IComplexNum {
 		// }
 	}
 
+
+	/**
+	 * <p>
+	 * Return the quotient and remainder as an array <code>[quotient, remainder]</code> of the division of
+	 * <code>Complex</code> numbers <code>c1, c2</code>.
+	 * </p>
+	 * <p>
+	 * See
+	 * </p>
+	 * <ul>
+	 * <li><a href="https://en.wikipedia.org/wiki/Gaussian_integer">Wikipedia - Gaussian integer</a></li>
+	 * <li><a href="http://fermatslasttheorem.blogspot.com/2005/06/division-algorithm-for-gaussian.html">Division
+	 * Algorithm for Gaussian Integers </a></li>
+	 * </ul>
+	 * 
+	 * @param c1
+	 * @param c2
+	 * @return the quotient and remainder as an array <code>[quotient, remainder]</code>
+	 */
+	public static ComplexNum[] quotientRemainder(ComplexNum cn1, ComplexNum cn2) {
+		Complex c1=cn1.fComplex;
+		Complex c2=cn2.fComplex;
+		Complex [] arr= quotientRemainder(c1, c2);
+		return new ComplexNum[] { valueOf(arr[0]),
+				valueOf(arr[1]) };
+	}
+	
+	/**
+	 * <p>
+	 * Return the quotient and remainder as an array <code>[quotient, remainder]</code> of the division of
+	 * <code>Complex</code> numbers <code>c1, c2</code>.
+	 * </p>
+	 * <p>
+	 * See
+	 * </p>
+	 * <ul>
+	 * <li><a href="https://en.wikipedia.org/wiki/Gaussian_integer">Wikipedia - Gaussian integer</a></li>
+	 * <li><a href="http://fermatslasttheorem.blogspot.com/2005/06/division-algorithm-for-gaussian.html">Division
+	 * Algorithm for Gaussian Integers </a></li>
+	 * </ul>
+	 * 
+	 * @param c1
+	 * @param c2
+	 * @return the quotient and remainder as an array <code>[quotient, remainder]</code>
+	 */
+	public static Complex [] quotientRemainder(Complex c1, Complex c2) {
+		// TODO use Complex implementation - see: https://github.com/Hipparchus-Math/hipparchus/issues/67
+		double numeratorReal = c1.getReal() * c2.getReal() + //
+				c1.getImaginary() * c2.getImaginary();
+		double numeratorImaginary = c1.getReal() * (-c2.getImaginary()) + //
+				c2.getReal() * c1.getImaginary();
+		double denominator = c2.getReal() * c2.getReal() + //
+				c2.getImaginary() * c2.getImaginary();
+		if (denominator == 0.0) {
+			throw new IllegalArgumentException("Denominator cannot be zero.");
+		}
+
+		double divisionReal = Math.round(numeratorReal / denominator);
+		double divisionImaginary = Math.round(numeratorImaginary / denominator);
+
+		double remainderReal = c1.getReal() - //
+				(c2.getReal() * divisionReal) + //
+				(c2.getImaginary() * divisionImaginary);
+		double remainderImaginary = c1.getImaginary() - //
+				(c2.getReal() * divisionImaginary) - //
+				(c2.getImaginary() * divisionReal);
+		return new Complex[] { new Complex(divisionReal, divisionImaginary),
+				new Complex(remainderReal, remainderImaginary) };
+	}
 }

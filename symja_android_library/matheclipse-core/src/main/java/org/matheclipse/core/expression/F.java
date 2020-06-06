@@ -16,8 +16,6 @@ import java.util.function.Function;
 import java.util.function.IntFunction;
 import java.util.function.Predicate;
 
-import javax.annotation.Nonnull;
-
 import org.apache.commons.lang3.StringUtils;
 import org.apfloat.Apcomplex;
 import org.apfloat.Apfloat;
@@ -78,6 +76,7 @@ import org.matheclipse.core.eval.interfaces.AbstractCoreFunctionEvaluator;
 import org.matheclipse.core.eval.interfaces.ICoreFunctionEvaluator;
 import org.matheclipse.core.eval.util.IAssumptions;
 import org.matheclipse.core.eval.util.Lambda;
+import org.matheclipse.core.expression.data.GraphExpr;
 import org.matheclipse.core.form.Documentation;
 import org.matheclipse.core.generic.Functors;
 import org.matheclipse.core.graphics.Show2SVG;
@@ -88,7 +87,6 @@ import org.matheclipse.core.interfaces.IAssociation;
 import org.matheclipse.core.interfaces.IBuiltInSymbol;
 import org.matheclipse.core.interfaces.IComplex;
 import org.matheclipse.core.interfaces.IComplexNum;
-import org.matheclipse.core.interfaces.IDataExpr;
 import org.matheclipse.core.interfaces.IEvaluator;
 import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.interfaces.IFraction;
@@ -899,6 +897,8 @@ public class F {
 	/** ContinuedFraction(number) - get the continued fraction representation of `number`. */
 	public final static IBuiltInSymbol ContinuedFraction = F.initFinalSymbol("ContinuedFraction", ID.ContinuedFraction);
 
+	/***/
+	public final static IBuiltInSymbol ContourPlot = F.initFinalSymbol("ContourPlot", ID.ContourPlot);
 	/**
 	 * Convergents({n1, n2, ...}) - return the list of convergents which represents the continued fraction list `{n1,
 	 * n2, ...}`.
@@ -1228,6 +1228,9 @@ public class F {
 	/** EndPackage( ) - end a package definition */
 	public final static IBuiltInSymbol EndPackage = F.initFinalSymbol("EndPackage", ID.EndPackage);
 
+	/***/
+	public final static IBuiltInSymbol Entity = F.initFinalSymbol("Entity", ID.Entity);
+
 	/**
 	 * Equal(x, y) - yields `True` if `x` and `y` are known to be equal, or `False` if `x` and `y` are known to be
 	 * unequal.
@@ -1360,6 +1363,9 @@ public class F {
 
 	/** Factorial(n) - returns the factorial number of the integer `n` */
 	public final static IBuiltInSymbol Factorial = F.initFinalSymbol("Factorial", ID.Factorial);
+
+	/***/
+	public final static IBuiltInSymbol FactorialPower = F.initFinalSymbol("FactorialPower", ID.FactorialPower);
 
 	/** Factorial2(n) - returns the double factorial number of the integer `n`. */
 	public final static IBuiltInSymbol Factorial2 = F.initFinalSymbol("Factorial2", ID.Factorial2);
@@ -1882,6 +1888,9 @@ public class F {
 	/** IntegerLength(x) - gives the number of digits in the base-10 representation of `x`. */
 	public final static IBuiltInSymbol IntegerLength = F.initFinalSymbol("IntegerLength", ID.IntegerLength);
 
+	/***/
+	public final static IBuiltInSymbol IntegerName = F.initFinalSymbol("IntegerName", ID.IntegerName);
+
 	/** IntegerPart(expr) - for real `expr` return the integer part of `expr`. */
 	public final static IBuiltInSymbol IntegerPart = F.initFinalSymbol("IntegerPart", ID.IntegerPart);
 
@@ -2149,6 +2158,9 @@ public class F {
 
 	/** ListConvolve(kernel-list, tensor-list) - create the convolution of the `kernel-list` with `tensor-list`. */
 	public final static IBuiltInSymbol ListConvolve = F.initFinalSymbol("ListConvolve", ID.ListConvolve);
+
+	/***/
+	public final static IBuiltInSymbol ListContourPlot = F.initFinalSymbol("ListContourPlot", ID.ListContourPlot);
 
 	/** ListCorrelate(kernel-list, tensor-list) - create the correlation of the `kernel-list` with `tensor-list`. */
 	public final static IBuiltInSymbol ListCorrelate = F.initFinalSymbol("ListCorrelate", ID.ListCorrelate);
@@ -3139,6 +3151,9 @@ public class F {
 			ID.RogersTanimotoDissimilarity);
 
 	/***/
+	public final static IBuiltInSymbol RomanNumeral = F.initFinalSymbol("RomanNumeral", ID.RomanNumeral);
+
+	/***/
 	public final static IBuiltInSymbol Root = F.initFinalSymbol("Root", ID.Root);
 
 	/***/
@@ -3870,6 +3885,12 @@ public class F {
 	public final static IBuiltInSymbol White = F.initFinalSymbol("White", ID.White);
 
 	/***/
+	public final static IBuiltInSymbol WhittakerM = F.initFinalSymbol("WhittakerM", ID.WhittakerM);
+
+	/***/
+	public final static IBuiltInSymbol WhittakerW = F.initFinalSymbol("WhittakerW", ID.WhittakerW);
+
+	/***/
 	public final static IBuiltInSymbol Whitespace = F.initFinalSymbol("Whitespace", ID.Whitespace);
 
 	/**
@@ -4484,7 +4505,7 @@ public class F {
 			// long start = System.currentTimeMillis();
 			// System.out.println("Start");
 			AST2Expr.initialize();
-			ExprParserFactory.initialize();
+			ExprParserFactory.initialize(Config.FUZZY_PARSER);
 
 			PreemptStatus.setNotAllow();
 			ComputerThreads.NO_THREADS = Config.JAS_NO_THREADS;
@@ -4884,7 +4905,7 @@ public class F {
 	 * @param symbol
 	 * @return IPattern
 	 */
-	public static IPattern $p(@Nonnull final ISymbol symbol) {
+	public static IPattern $p(final ISymbol symbol) {
 		return org.matheclipse.core.expression.Pattern.valueOf(symbol);
 	}
 
@@ -4933,7 +4954,7 @@ public class F {
 	 * @param symbolName
 	 * @return IPattern
 	 */
-	public static IPattern $p(@Nonnull final String symbolName) {
+	public static IPattern $p(final String symbolName) {
 		// if (symbolName == null) {
 		// return org.matheclipse.core.expression.Pattern.valueOf(null);
 		// }
@@ -4960,7 +4981,7 @@ public class F {
 	 *            additional condition which should be checked in pattern-matching
 	 * @return IPattern
 	 */
-	public static IPattern $p(@Nonnull final String symbolName, final IExpr check) {
+	public static IPattern $p(final String symbolName, final IExpr check) {
 		// if (symbolName == null) {
 		// return org.matheclipse.core.expression.Pattern.valueOf(null, check);
 		// }
@@ -4977,7 +4998,7 @@ public class F {
 	 *            use a default value for this pattern if necessary
 	 * @return IPattern
 	 */
-	public static IPattern $p(@Nonnull final String symbolName, final IExpr check, boolean def) {
+	public static IPattern $p(final String symbolName, final IExpr check, boolean def) {
 		return org.matheclipse.core.expression.Pattern.valueOf($s(symbolName), check, def);
 	}
 
@@ -5404,6 +5425,22 @@ public class F {
 		return new AST3(Apply, a0, a1, CListC1);
 	}
 
+	public static IAST AiryAi(final IExpr a0) {
+		return new AST1(AiryAi, a0);
+	}
+
+	public static IAST AiryAiPrime(final IExpr a0) {
+		return new AST1(AiryAiPrime, a0);
+	}
+
+	public static IAST AiryBi(final IExpr a0) {
+		return new AST1(AiryBi, a0);
+	}
+
+	public static IAST AiryBiPrime(final IExpr a0) {
+		return new AST1(AiryBiPrime, a0);
+	}
+
 	public static IAST Array(final IExpr a0, final IExpr a1) {
 		return new AST2(Array, a0, a1);
 	}
@@ -5708,6 +5745,10 @@ public class F {
 		return new AST1(Attributes, a);
 	}
 
+	public static IAST BaseForm(final IExpr a0, final IExpr a1) {
+		return new AST2(F.BaseForm, a0, a1);
+	}
+
 	/**
 	 * Bell number.
 	 * 
@@ -5773,6 +5814,10 @@ public class F {
 		return new AST2(F.Binomial, a0, a1);
 	}
 
+	public static IAST Binomial(final int a0, final int a1) {
+		return new AST2(F.Binomial, F.ZZ(a0), F.ZZ(a1));
+	}
+
 	public static IAST BlankSequence() {
 		return new AST0(BlankSequence);
 	}
@@ -5828,6 +5873,10 @@ public class F {
 	 */
 	public static IAST BooleanQ(final IExpr a) {
 		return new AST1(BooleanQ, a);
+	}
+
+	public static IAST BooleanTable(final IExpr a0, final IExpr a1) {
+		return new AST2(BooleanTable, a0, a1);
 	}
 
 	public static IAST BesselI(final IExpr a0, final IExpr a1) {
@@ -5935,7 +5984,7 @@ public class F {
 	 * @param im
 	 * @return
 	 */
-	public static IComplex CC(final IFraction re, final IFraction im) {
+	public static IComplex CC(final IRational re, final IRational im) {
 		return ComplexSym.valueOf(re, im);
 	}
 
@@ -6345,6 +6394,10 @@ public class F {
 		return new AST0(Continue);
 	}
 
+	public static IAST ContinuedFraction(final IExpr a0) {
+		return new AST1(ContinuedFraction, a0);
+	}
+
 	public static IAST CoprimeQ(final IExpr a0, final IExpr a1) {
 		return new AST2(CoprimeQ, a0, a1);
 	}
@@ -6626,6 +6679,14 @@ public class F {
 
 	public static IAST Element(final IExpr a0, final IExpr a1) {
 		return new AST2(Element, a0, a1);
+	}
+
+	public static IAST ElementData(final IExpr a0) {
+		return new AST1(ElementData, a0);
+	}
+
+	public static IAST ElementData(final IExpr a0, final IExpr a1) {
+		return new AST2(ElementData, a0, a1);
 	}
 
 	public static IAST EllipticE(final IExpr a0) {
@@ -7033,6 +7094,10 @@ public class F {
 		return new AST1(Factorial, a0);
 	}
 
+	public static IAST Factorial(final int a0) {
+		return new AST1(Factorial, F.ZZ(a0));
+	}
+
 	public static IAST Factorial2(final IExpr a0) {
 		return new AST1(Factorial2, a0);
 	}
@@ -7366,6 +7431,10 @@ public class F {
 		return new AST2(Hypergeometric0F1, a0, a1);
 	}
 
+	public static IAST Hypergeometric1F1(final IExpr a0, final IExpr a1, final IExpr a2) {
+		return new AST3(Hypergeometric1F1, a0, a1, a2);
+	}
+
 	public static IAST Hypergeometric1F1Regularized(final IExpr a0, final IExpr a1, final IExpr a2) {
 		return new AST3(Hypergeometric1F1Regularized, a0, a1, a2);
 	}
@@ -7380,6 +7449,10 @@ public class F {
 
 	public static IAST HypergeometricPFQRegularized(final IExpr a0, final IExpr a1, final IExpr a2) {
 		return new AST3(HypergeometricPFQRegularized, a0, a1, a2);
+	}
+
+	public static IAST HypergeometricU(final IExpr a0, final IExpr a1, final IExpr a2) {
+		return new AST3(HypergeometricU, a0, a1, a2);
 	}
 
 	public static IAST Identity(final IExpr a0) {
@@ -7509,13 +7582,13 @@ public class F {
 		return temp;
 	}
 
-	public static IPattern initPredefinedPattern(@Nonnull final ISymbol symbol) {
+	public static IPattern initPredefinedPattern(final ISymbol symbol) {
 		IPattern temp = new Pattern(symbol);
 		PREDEFINED_PATTERN_MAP.put(symbol.toString(), temp);
 		return temp;
 	}
 
-	public static IPatternSequence initPredefinedPatternSequence(@Nonnull final ISymbol symbol) {
+	public static IPatternSequence initPredefinedPatternSequence(final ISymbol symbol) {
 		PatternSequence temp = PatternSequence.valueOf(symbol, false);
 		PREDEFINED_PATTERNSEQUENCE_MAP.put(symbol.toString(), temp);
 		return temp;
@@ -7626,6 +7699,14 @@ public class F {
 		return new AST1(IntegerPart, a0);
 	}
 
+	public static IAST IntegerName(final IExpr a0) {
+		return new AST1(IntegerName, a0);
+	}
+
+	public static IAST IntegerName(final IExpr a0, final IExpr a1) {
+		return new AST2(IntegerName, a0, a1);
+	}
+
 	/**
 	 * <pre>
 	 * IntegerQ(expr)
@@ -7717,6 +7798,27 @@ public class F {
 		IASTAppendable result = F.ast(head, to - from + 1, false);
 		for (int i = from; i <= to; i += step) {
 			result.append(function.apply(F.ZZ(i)));
+		}
+		return result;
+	}
+
+	/**
+	 * Iterate over an integer range <code>from <= i <= to</code> with the step <code>step/code>.
+	 * 
+	 * @param head
+	 *            the header symbol of the result
+	 * @param function
+	 *            the integer function which should be applied on each iterator value
+	 * @param from
+	 * @param to
+	 * @param step
+	 * @return
+	 */
+	public static IAST intIterator(ISymbol head, final IntFunction<IExpr> function, final int from, final int to,
+			final int step) {
+		IASTAppendable result = F.ast(head, to - from + 1, false);
+		for (int i = from; i <= to; i += step) {
+			result.append(function.apply(i));
 		}
 		return result;
 	}
@@ -7827,14 +7929,37 @@ public class F {
 		return isZero(value - ii.doubleValue(), Config.DOUBLE_TOLERANCE);
 	}
 
+	/**
+	 * Test if <code>rational.doubleValue()</code> equals <code>value</code> within the tolerance
+	 * <code>Config.DOUBLE_TOLERANCE</code>.
+	 * 
+	 * @param value
+	 * @param rational
+	 * @return
+	 * @throws ArithmeticException
+	 */
 	public static boolean isNumEqualRational(double value, IRational rational) throws ArithmeticException {
 		return isZero(value - rational.doubleValue(), Config.DOUBLE_TOLERANCE);
 	}
 
+	/**
+	 * Test if the value is a Java <code>int</code> value within the tolerance <code>Config.DOUBLE_TOLERANCE</code>.
+	 * 
+	 * @param value
+	 * @return
+	 */
 	public static boolean isNumIntValue(double value) {
 		return isZero(value - Math.rint(value), Config.DOUBLE_TOLERANCE);
 	}
 
+	/**
+	 * Test if the value is a Java <code>int</code> value within the given tolerance <code>epsilon</code>.
+	 * 
+	 * @param value
+	 * @param epsilon
+	 *            the tolerance
+	 * @return
+	 */
 	public static boolean isNumIntValue(double value, double epsilon) {
 		return isZero(value - Math.rint(value), epsilon);
 	}
@@ -7914,8 +8039,10 @@ public class F {
 	 * @return
 	 */
 	public static boolean isZero(org.hipparchus.complex.Complex value) {
-		return org.hipparchus.complex.Complex.equals(value, org.hipparchus.complex.Complex.ZERO, Config.MACHINE_EPSILON);
-//		return isZero(value.getReal(), Config.MACHINE_EPSILON) && isZero(value.getImaginary(), Config.MACHINE_EPSILON);
+		return org.hipparchus.complex.Complex.equals(value, org.hipparchus.complex.Complex.ZERO,
+				Config.MACHINE_EPSILON);
+		// return isZero(value.getReal(), Config.MACHINE_EPSILON) && isZero(value.getImaginary(),
+		// Config.MACHINE_EPSILON);
 	}
 
 	/**
@@ -7929,7 +8056,7 @@ public class F {
 		return isFuzzyEquals(x, 0.0, epsilon);
 		// return -epsilon < x && x < epsilon;
 	}
-	
+
 	/**
 	 * Test if the absolute value is less <code>Config.MACHINE_EPSILON</code>.
 	 * 
@@ -8133,7 +8260,7 @@ public class F {
 	 * @param numbers
 	 * @return
 	 */
-	public static IAST List(final int n, final Integer... numbers) {
+	public static IAST tensorList(final int n, final Integer... numbers) {
 		int nPositive = n;
 		if (n < 0) {
 			nPositive = -n;
@@ -8249,6 +8376,10 @@ public class F {
 
 	public static IAST ListConvolve(final IExpr a0, final IExpr a1) {
 		return new AST2(ListConvolve, a0, a1);
+	}
+
+	public static IAST ListPlot(final IExpr a) {
+		return new AST1(ListPlot, a);
 	}
 
 	/**
@@ -8401,6 +8532,10 @@ public class F {
 
 	public static IAST MathMLForm(final IExpr a0) {
 		return new AST1(MathMLForm, a0);
+	}
+
+	public static IAST MatrixForm(final IExpr a0) {
+		return new AST1(MatrixForm, a0);
 	}
 
 	public static IAST MatrixPower(final IExpr a0, final IExpr a1) {
@@ -8572,11 +8707,11 @@ public class F {
 	public static IAST Multinomial(final IExpr... a) {
 		return function(Multinomial, a);
 	}
-	
+
 	public static IAST MultiplicativeOrder(final IExpr a0, final IExpr a1) {
 		return new AST2(MultiplicativeOrder, a0, a1);
 	}
-	
+
 	/**
 	 * Evaluate the given expression in numeric mode
 	 * 
@@ -8914,8 +9049,12 @@ public class F {
 		return new AST2(Plot, a0, a1);
 	}
 
-	public static IAST Plot3D(final IExpr a0, final IExpr a1) {
-		return new AST2(Plot3D, a0, a1);
+	public static IAST Plot(final IExpr a0, final IExpr a1, final IExpr a2) {
+		return new AST3(Plot, a0, a1, a2);
+	}
+
+	public static IAST Plot3D(final IExpr a0, final IExpr a1, final IExpr a2) {
+		return new AST3(Plot3D, a0, a1, a2);
 	}
 
 	public static IExpr plus(IExpr a, Integer i) {
@@ -9065,7 +9204,7 @@ public class F {
 
 		return new AST1(PowerExpand, a0);
 	}
-	
+
 	public static IAST PowerMod(final IExpr a0, final IExpr a1, final IExpr a2) {
 		return new AST3(PowerMod, a0, a1, a2);
 	}
@@ -9458,8 +9597,8 @@ public class F {
 	/**
 	 * Create a unique dummy symbol with prefix "$", which is retrieved from the evaluation engines DUMMY context.
 	 * 
-	 * @param symbolName
-	 *            the name of the symbol
+	 * @param engine
+	 *            the evaluation engine
 	 * @return the symbol object from the context path
 	 */
 	public static ISymbol Dummy(EvalEngine engine) {
@@ -9537,6 +9676,10 @@ public class F {
 		return new AST1(Reverse, a);
 	}
 
+	public static IAST RomanNumeral(final IExpr a) {
+		return new AST1(RomanNumeral, a);
+	}
+
 	public static IAST Root(final IExpr a0, final IExpr a1) {
 		return new AST2(Root, a0, a1);
 	}
@@ -9587,6 +9730,10 @@ public class F {
 
 	public static IAST Select(final IExpr a0, final IExpr a1, final IExpr a2) {
 		return new AST3(Select, a0, a1, a2);
+	}
+
+	public static IAST Select(final IExpr a0, final IExpr a1) {
+		return new AST2(Select, a0, a1);
 	}
 
 	public final static IAST senary(final IExpr head, final IExpr a0, final IExpr a1, final IExpr a2, final IExpr a3,
@@ -9940,6 +10087,10 @@ public class F {
 		return new AST3(Sum, a0, a1, a2);
 	}
 
+	public static IAST Sum(final IExpr a0, final IExpr a1, final IExpr a2, final IExpr a3) {
+		return quaternary(F.Sum, a0, a1, a2, a3);
+	}
+
 	/**
 	 * Evaluate the sum from <code>iMin</code> to <code>iMax</code> and step <code>1</code>.
 	 * 
@@ -9949,6 +10100,10 @@ public class F {
 	 * @return
 	 */
 	public static IAST sum(final Function<IExpr, IExpr> function, final int iMin, final int iMax) {
+		return intIterator(F.Plus, function, iMin, iMax, 1);
+	}
+
+	public static IAST intSum(final IntFunction<IExpr> function, final int iMin, final int iMax) {
 		return intIterator(F.Plus, function, iMin, iMax, 1);
 	}
 
@@ -10203,6 +10358,14 @@ public class F {
 		return new AST1(Unevaluated, a0);
 	}
 
+	public static IAST Union(final IExpr a0) {
+		return new AST1(Union, a0);
+	}
+
+	public static IAST Union(final IExpr a0, final IExpr a1) {
+		return new AST2(Union, a0, a1);
+	}
+
 	public static IAST Unique(final IExpr a0) {
 		return new AST1(Unique, a0);
 	}
@@ -10249,6 +10412,14 @@ public class F {
 
 	public static IAST While(final IExpr a0, final IExpr a1) {
 		return new AST2(While, a0, a1);
+	}
+
+	public static IAST WhittakerM(final IExpr a0, final IExpr a1, final IExpr a2) {
+		return new AST3(WhittakerM, a0, a1, a2);
+	}
+
+	public static IAST WhittakerW(final IExpr a0, final IExpr a1, final IExpr a2) {
+		return new AST3(WhittakerW, a0, a1, a2);
 	}
 
 	public static IAST With(final IExpr a0, final IExpr a1) {
@@ -10444,8 +10615,8 @@ public class F {
 				if (show.size() > 1 && show.arg1().isSameHeadSizeGE(Graphics, 2)) {
 					return openSVGOnDesktop(show);
 				}
-			} else if (expr.head().equals(Graph) && expr instanceof IDataExpr) {
-				String javaScriptStr = GraphFunctions.graphToJSForm((IDataExpr) expr);
+			} else if (expr instanceof GraphExpr) {
+				String javaScriptStr = GraphFunctions.graphToJSForm((GraphExpr) expr);
 				if (javaScriptStr != null) {
 					String html = Config.VISJS_PAGE;
 					html = StringUtils.replace(html, "`1`", javaScriptStr);

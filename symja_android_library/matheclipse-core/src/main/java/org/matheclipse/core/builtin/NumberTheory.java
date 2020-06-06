@@ -1949,6 +1949,39 @@ public final class NumberTheory {
 		}
 	}
 
+	private static class FactorialPower extends AbstractEvaluator {
+
+		@Override
+		public IExpr evaluate(final IAST ast, EvalEngine engine) {
+			if (ast.isAST2()) {
+				IExpr x = ast.arg1();
+				IExpr n = ast.arg2();
+				// x*(x-1)* (x-(n-1))
+				
+				return F.NIL;
+			}
+			if (ast.isAST2()) {
+				IExpr x = ast.arg1();
+				IExpr n = ast.arg2();
+				IExpr h = ast.arg3();
+				// x*(x-h)* (x-(n-1)*h)
+				
+				return F.NIL;
+			}
+			return F.NIL;
+		}
+
+		@Override
+		public int[] expectedArgSize() {
+			return IOFunctions.ARGS_2_3;
+		}
+
+		@Override
+		public void setUp(ISymbol newSymbol) {
+			newSymbol.setAttributes(ISymbol.LISTABLE | ISymbol.NUMERICFUNCTION);
+		}
+	}
+
 	/**
 	 * <pre>
 	 * Factorial2(n)
@@ -4488,6 +4521,7 @@ public final class NumberTheory {
 			F.EulerPhi.setEvaluator(new EulerPhi());
 			F.ExtendedGCD.setEvaluator(new ExtendedGCD());
 			F.Factorial.setEvaluator(new Factorial());
+			F.FactorialPower.setEvaluator(new FactorialPower());
 			F.Factorial2.setEvaluator(new Factorial2());
 			F.FactorInteger.setEvaluator(new FactorInteger());
 			F.Fibonacci.setEvaluator(new Fibonacci());
@@ -4705,6 +4739,10 @@ public final class NumberTheory {
 			bernoulli[k] = bernoulli[k].div(AbstractFractionSym.valueOf(k + 1));
 		}
 		return bernoulli[n].normalize();
+	}
+	
+	public static double bernoulliDouble(int n) {
+		return bernoulliNumber(n).doubleValue();
 	}
 
 	/**

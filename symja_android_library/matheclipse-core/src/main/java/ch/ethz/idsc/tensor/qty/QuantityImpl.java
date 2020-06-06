@@ -8,7 +8,11 @@ import java.io.ObjectStreamException;
 import java.util.Objects;
 import java.util.Set;
 
+import org.hipparchus.complex.Complex;
+import org.matheclipse.core.builtin.functions.GammaJS;
 import org.matheclipse.core.eval.EvalEngine;
+import org.matheclipse.core.eval.exception.ThrowException;
+import org.matheclipse.core.eval.exception.ValidateException;
 import org.matheclipse.core.expression.AST;
 import org.matheclipse.core.expression.AbstractAST;
 import org.matheclipse.core.expression.ExprID;
@@ -18,6 +22,7 @@ import org.matheclipse.core.interfaces.IASTAppendable;
 import org.matheclipse.core.interfaces.IASTMutable;
 import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.interfaces.INumber;
+import org.matheclipse.parser.client.FEConfig;
 import org.matheclipse.parser.client.math.MathException;
 
 public class QuantityImpl extends AbstractAST implements IQuantity, Externalizable {
@@ -137,7 +142,7 @@ public class QuantityImpl extends AbstractAST implements IQuantity, Externalizab
 	public IASTAppendable copyAppendable() {
 		return F.NIL;
 	}
-	
+
 	@Override
 	public IASTAppendable copyAppendable(int additionalCapacity) {
 		return F.NIL;
@@ -172,6 +177,15 @@ public class QuantityImpl extends AbstractAST implements IQuantity, Externalizab
 	/** {@inheritDoc} */
 	@Override
 	public IExpr evaluate(EvalEngine engine) {
+		if (engine.isDoubleMode() && //
+				!arg1.isInexactNumber()) {
+			try {
+				double qDouble = arg1.evalDouble();
+				return setAtCopy(1, F.num(qDouble));
+			} catch (RuntimeException rex) {
+			}
+		}
+
 		return F.NIL;
 	}
 
@@ -277,7 +291,19 @@ public class QuantityImpl extends AbstractAST implements IQuantity, Externalizab
 	public boolean isNonNegativeResult() {
 		return arg1.isNonNegativeResult();
 	}
+	
+	/** {@inheritDoc} */
+	@Override
+	public boolean isNumericFunction() {
+		return arg1.isNumericFunction();
+	}
 
+	/** {@inheritDoc} */
+	@Override
+	public boolean isInexactNumber()  {
+		return arg1.isInexactNumber();
+	}
+	
 	/** {@inheritDoc} */
 	@Override
 	public boolean isOne() {
@@ -418,6 +444,11 @@ public class QuantityImpl extends AbstractAST implements IQuantity, Externalizab
 
 	@Override
 	public IExpr set(int i, IExpr object) {
+		if (i == 1) {
+			IExpr oldArg1 = arg1;
+			arg1 = object;
+			return oldArg1;
+		}
 		throw new UnsupportedOperationException();
 	}
 
@@ -473,7 +504,7 @@ public class QuantityImpl extends AbstractAST implements IQuantity, Externalizab
 	}
 
 	private Object writeReplace() throws ObjectStreamException {
-		return optional( );
+		return optional();
 	}
 
 }

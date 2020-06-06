@@ -74,6 +74,16 @@ public interface IAssumptions {
 	public boolean isInteger(IExpr expr);
 
 	/**
+	 * Gives <code>true</code>, if the expression is assumed to be less equal number, <code>false</code> in all other
+	 * cases.
+	 * 
+	 * @param expr
+	 * @param number
+	 * @return
+	 */
+	public boolean isLessEqual(IExpr expr, ISignedNumber number);
+
+	/**
 	 * Gives <code>true</code>, if the expression is assumed to be less than number, <code>false</code> in all other
 	 * cases.
 	 * 

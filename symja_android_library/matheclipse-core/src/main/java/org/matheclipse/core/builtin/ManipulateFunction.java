@@ -68,6 +68,8 @@ public class ManipulateFunction {
 				F.BarChart.setEvaluator(new BarChart());
 				F.BoxWhiskerChart.setEvaluator(new BoxWhiskerChart());
 				F.ComplexPlot3D.setEvaluator(new ComplexPlot3D());
+				F.ContourPlot.setEvaluator(new ContourPlot());
+				F.DensityPlot.setEvaluator(new DensityPlot());
 				F.DensityHistogram.setEvaluator(new DensityHistogram());
 				F.Histogram.setEvaluator(new Histogram());
 				F.PieChart.setEvaluator(new PieChart());
@@ -97,6 +99,24 @@ public class ManipulateFunction {
 		public IExpr evaluate(final IAST ast, EvalEngine engine) {
 			return redirectToManipulate(ast, engine);
 		}
+	}
+
+	private final static class ContourPlot extends AbstractEvaluator {
+
+		@Override
+		public IExpr evaluate(final IAST ast, EvalEngine engine) {
+			return redirectToManipulate(ast, engine);
+		}
+
+	}
+
+	private final static class DensityPlot extends AbstractEvaluator {
+
+		@Override
+		public IExpr evaluate(final IAST ast, EvalEngine engine) {
+			return redirectToManipulate(ast, engine);
+		}
+
 	}
 
 	private final static class DensityHistogram extends AbstractEvaluator {
@@ -194,7 +214,10 @@ public class ManipulateFunction {
 						}
 
 					}
-				} else if (arg1.isAST(F.Plot3D) || arg1.isAST(F.ComplexPlot3D)) {
+				} else if (arg1.isAST(F.Plot3D) || //
+						arg1.isAST(F.ComplexPlot3D) || //
+						arg1.isAST(F.ContourPlot) || //
+						arg1.isAST(F.DensityPlot)) {
 					IAST plot = (IAST) arg1;
 					if (plot.size() >= 3 && plot.arg2().isList()) {
 						IAST plotRangeX = (IAST) plot.arg2();
@@ -260,7 +283,10 @@ public class ManipulateFunction {
 		int plotID = plot.headID();
 		final OptionArgs options;
 		String colorMap = "hot";
-		if (plotID == ID.Plot3D || plotID == ID.ComplexPlot3D) {
+		if (plotID == ID.Plot3D || //
+				plotID == ID.ComplexPlot3D || //
+				plotID == ID.ContourPlot || //
+				plotID == ID.DensityPlot) {
 			if (plotID == ID.Plot3D) {
 				options = new OptionArgs(plot.topHead(), plot, 4, engine);
 			} else {// if (plotID == ID.ComplexPlot3D) {
@@ -332,7 +358,9 @@ public class ManipulateFunction {
 		} else {
 			listOfFunctions = F.unaryAST1(F.List, plotFunction);
 		}
-		if (plotID == ID.Plot3D) {
+		if (plotID == ID.Plot3D || //
+				plotID == ID.ContourPlot || //
+				plotID == ID.DensityPlot) {
 			if (!plotRangeY.isPresent()) {
 				return F.NIL;
 			}
@@ -381,7 +409,37 @@ public class ManipulateFunction {
 		// plot( x => (Math.sin(x*(1+a*x))), [0, 2*Math.PI], { } )
 		StringBuilder graphicControl = new StringBuilder();
 
-		if (plotID == ID.Plot3D) {
+		if (plotID == ID.ContourPlot || //
+				plotID == ID.DensityPlot) {
+			if (!plotRangeY.isPresent()) {
+				return F.NIL;
+			}
+			for (int i = 1; i < listOfFunctions.size(); i++) {
+				graphicControl.append("var p" + i + " = ");
+				if (plotID == ID.DensityPlot) {
+					graphicControl.append("isoline( z" + i + ", ");
+				} else {
+					graphicControl.append("isoband( z" + i + ", ");
+				}
+				realRange(graphicControl, plotRangeX, -1, toJS);
+				graphicControl.append(", ");
+				realRange(graphicControl, plotRangeY, -1, toJS);
+				graphicControl.append(" );\n");
+				// graphicControl.append(", { colormap: '");
+				// graphicControl.append(colorMap);
+				// graphicControl.append("' } );\n");
+			}
+			graphicControl.append("\n  var config = { type: 'threejs' };\n");
+			graphicControl.append("  var data = [");
+			for (int i = 1; i < listOfFunctions.size(); i++) {
+				graphicControl.append("p" + i);
+				if (i < listOfFunctions.size() - 1) {
+					graphicControl.append(",");
+				}
+				;
+			}
+			graphicControl.append("];\n");
+		} else if (plotID == ID.Plot3D) {
 			if (!plotRangeY.isPresent()) {
 				return F.NIL;
 			}
@@ -1041,7 +1099,8 @@ public class ManipulateFunction {
 	 * @param ast
 	 * @param plot
 	 * @param plotRangeX
-	 * @param plotRangeY
+	 * @param engine
+	 *            the evaluation engine
 	 * @return
 	 * @throws IOException
 	 */
@@ -1049,7 +1108,10 @@ public class ManipulateFunction {
 		int plotID = plot.headID();
 
 		final OptionArgs options;
-		if (plotID == ID.Plot3D || ast.arg1().isAST(F.ComplexPlot3D)) {
+		if (plotID == ID.Plot3D || //
+				plotID == ID.ComplexPlot3D || // 
+				plotID == ID.ContourPlot || //
+				plotID == ID.DensityPlot) {
 			options = new OptionArgs(plot.topHead(), plot, 4, engine);
 			// } else if (plotID == ID.Plot) {
 			// options = new OptionArgs(plot.topHead(), plot, 3, engine);

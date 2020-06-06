@@ -13,10 +13,13 @@ public interface SechRules {
    * <li>index 0 - number of equal rules in <code>RULES</code></li>
 	 * </ul>
 	 */
-  final public static int[] SIZES = { 26, 7 };
+  final public static int[] SIZES = { 27, 7 };
 
   final public static IAST RULES = List(
     IInit(Sech, SIZES),
+    // Sech(Undefined)=Undefined
+    ISet(Sech(Undefined),
+      Undefined),
     // Sech(0)=1
     ISet(Sech(C0),
       C1),

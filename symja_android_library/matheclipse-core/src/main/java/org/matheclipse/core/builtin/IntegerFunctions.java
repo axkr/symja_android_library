@@ -10,15 +10,15 @@ import static org.matheclipse.core.expression.F.Round;
 import java.math.BigInteger;
 import java.util.function.Function;
 
-import javax.annotation.Nonnull;
-
 import org.hipparchus.complex.Complex;
 import org.matheclipse.core.eval.EvalEngine;
-import org.matheclipse.core.eval.interfaces.AbstractArg2;
+import org.matheclipse.core.eval.exception.ValidateException;
 import org.matheclipse.core.eval.interfaces.AbstractCoreFunctionEvaluator;
 import org.matheclipse.core.eval.interfaces.AbstractEvaluator;
 import org.matheclipse.core.eval.interfaces.AbstractFunctionEvaluator;
 import org.matheclipse.core.eval.interfaces.INumeric;
+import org.matheclipse.core.expression.ComplexNum;
+import org.matheclipse.core.expression.ComplexSym;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.expression.IntervalSym;
 import org.matheclipse.core.expression.StringX;
@@ -30,6 +30,7 @@ import org.matheclipse.core.interfaces.IComplexNum;
 import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.interfaces.IInteger;
 import org.matheclipse.core.interfaces.INumber;
+import org.matheclipse.core.interfaces.IRational;
 import org.matheclipse.core.interfaces.ISignedNumber;
 import org.matheclipse.core.interfaces.ISymbol;
 import org.matheclipse.parser.client.FEConfig;
@@ -998,7 +999,7 @@ public class IntegerFunctions {
 		 * 
 		 * See: <a href="http://en.wikipedia.org/wiki/Modular_arithmetic">Wikipedia - Modular arithmetic</a>
 		 */
-		public IExpr evaluate(final IAST ast, @Nonnull EvalEngine engine) {
+		public IExpr evaluate(final IAST ast, EvalEngine engine) {
 			IExpr m = ast.arg1();
 			IExpr n = ast.arg2();
 			if (n.isZero()) {
@@ -1163,11 +1164,11 @@ public class IntegerFunctions {
 	 * -5
 	 * </pre>
 	 */
-	private static class Quotient extends AbstractFunctionEvaluator {
+	private static class Quotient extends AbstractCoreFunctionEvaluator {
 
-		public IExpr evaluate(final IAST ast, @Nonnull EvalEngine engine) {
-			IExpr z = ast.arg1();
-			IExpr n = ast.arg2();
+		public IExpr evaluate(final IAST ast, EvalEngine engine) {
+			IExpr z = engine.evaluate(ast.arg1());
+			IExpr n = engine.evaluate(ast.arg2());
 			if (n.isZero()) {
 				EvalEngine.get().printMessage("Quotient: division by zero");
 				return F.CComplexInfinity;
@@ -1177,18 +1178,64 @@ public class IntegerFunctions {
 					return ((IInteger) z).quotient((IInteger) n);
 				}
 				if (z.isReal() && n.isReal()) {
-					return F.Floor(((ISignedNumber) z).divideBy((ISignedNumber) n));
+					return ((ISignedNumber) z).divideBy((ISignedNumber) n).floorFraction();
 				}
-				if (z.isRealResult() && n.isRealResult()) {
-					return F.Floor(F.num(z.evalDouble() / n.evalDouble()));
+				if (z.isComplex() || n.isComplex()) {
+					IComplex c1 = null;
+					if (z.isComplex()) {
+						c1 = (IComplex) z;
+					} else if (z.isRational()) {
+						c1 = F.complex((IRational) z);
+					}
+					if (c1 != null) {
+						IComplex c2 = null;
+						if (n.isComplex()) {
+							c2 = (ComplexSym) n;
+						} else if (n.isRational()) {
+							c2 = F.complex((IRational) n);
+						}
+						if (c2 != null) {
+							IComplex[] result = c1.quotientRemainder(c2);
+							if (result != null) {
+								return result[0];
+							}
+						}
+					}
 				}
+
 				if (z.isNumericFunction() && n.isNumericFunction()) {
-					return F.Floor(F.complexNum(z.evalComplex().divide(n.evalComplex())));
+					try {
+						double zDouble = Double.NaN;
+						double nDouble = Double.NaN;
+						try {
+							zDouble = z.evalDouble();
+							nDouble = n.evalDouble();
+						} catch (RuntimeException ve) {
+						}
+						if (Double.isNaN(zDouble) || //
+								Double.isNaN(nDouble)) {
+							Complex zComplex = z.evalComplex();
+							Complex nComplex = n.evalComplex();
+							Complex[] qr = ComplexNum.quotientRemainder(zComplex, nComplex);
+							return F.complexNum(qr[0]).floorFraction();
+						} else {
+							return F.num(zDouble / nDouble).floorFraction();
+						}
+					} catch (ValidateException ve) {
+						if (FEConfig.SHOW_STACKTRACE) {
+							ve.printStackTrace();
+						}
+					} catch (RuntimeException rex) {
+						if (FEConfig.SHOW_STACKTRACE) {
+							rex.printStackTrace();
+						}
+						return engine.printMessage(ast.topHead(), rex);
+					}
 				}
 				return F.NIL;
 			}
 			if (ast.isAST3()) {
-				IExpr d = ast.arg3();
+				IExpr d = engine.evaluate(ast.arg3());
 				if (z.isInteger() && n.isInteger() && d.isInteger()) {
 					// TODO implement for 3 args
 				}
@@ -1241,26 +1288,94 @@ public class IntegerFunctions {
 	 * {-5,-1}
 	 * </pre>
 	 */
-	private static class QuotientRemainder extends AbstractArg2 {
+	private static class QuotientRemainder extends AbstractCoreFunctionEvaluator {
 
 		@Override
-		public IExpr e2IntArg(final IInteger i0, final IInteger i1) {
-			try {
-				if (i1.isZero()) {
-					return EvalEngine.get().printMessage("QuotientRemainder: division by zero");
-				}
-				IASTMutable list = F.ListAlloc(F.Null, F.Null);
-				list.set(1, i0.quotient(i1));
-				if (i1.isNegative()) {
-					list.set(2, i0.negate().mod(i1.negate()).negate());
-					return list;
-				}
-				list.set(2, i0.mod(i1));
-				return list;
-			} catch (ArithmeticException ae) {
-				return EvalEngine.get().printMessage("QuotientRemainder: " + ae.getMessage());
-			}
+		public IExpr evaluate(IAST ast, EvalEngine engine) {
 
+			try {
+				IExpr arg1 = engine.evaluate(ast.arg1());
+				IExpr arg2 = engine.evaluate(ast.arg2());
+				if (arg1.isInteger() && arg2.isInteger()) {
+					final IInteger i0 = (IInteger) arg1;
+					final IInteger i1 = (IInteger) arg2;
+					if (i1.isZero()) {
+						return EvalEngine.get().printMessage("QuotientRemainder: division by zero");
+					}
+					IASTMutable list = F.ListAlloc(F.Null, F.Null);
+
+					list.set(1, i0.quotient(i1));
+					if (i1.isNegative()) {
+						list.set(2, i0.negate().mod(i1.negate()).negate());
+						return list;
+					}
+					list.set(2, i0.mod(i1));
+					return list;
+				} else if (arg1.isComplex() || arg2.isComplex()) {
+					if (arg1.isComplex() || arg2.isComplex()) {
+						IComplex c1 = null;
+						if (arg1.isComplex()) {
+							c1 = (IComplex) arg1;
+						} else if (arg1.isRational()) {
+							c1 = F.complex((IRational) arg1);
+						}
+						if (c1 != null) {
+							IComplex c2 = null;
+							if (arg2.isComplex()) {
+								c2 = (ComplexSym) arg2;
+							} else if (arg2.isRational()) {
+								c2 = F.complex((IRational) arg2);
+							}
+							if (c2 != null) {
+								IComplex[] result = c1.quotientRemainder(c2);
+								if (result != null) {
+									return F.List(result[0], result[1]);
+								}
+							}
+						}
+					}
+				}
+
+				if (arg1.isNumericFunction() && arg2.isNumericFunction()) {
+					try {
+						double zDouble = Double.NaN;
+						double nDouble = Double.NaN;
+						try {
+							zDouble = arg1.evalDouble();
+							nDouble = arg2.evalDouble();
+						} catch (RuntimeException ve) {
+						}
+						if (Double.isNaN(zDouble) || //
+								Double.isNaN(nDouble)) {
+							Complex zComplex = arg1.evalComplex();
+							Complex nComplex = arg2.evalComplex();
+							Complex[] qr = ComplexNum.quotientRemainder(zComplex, nComplex);
+							return F.List(F.complexNum(qr[0]).floorFraction(), F.complexNum(qr[1]));
+						} else {
+							IInteger quotient = F.num(zDouble / nDouble).floorFraction();
+							IExpr remainder = F.Plus.of(engine, arg1, F.Negate(F.Times(quotient, arg2)));
+							return F.List(quotient, remainder);
+						}
+					} catch (ValidateException ve) {
+						if (FEConfig.SHOW_STACKTRACE) {
+							ve.printStackTrace();
+						}
+					} catch (RuntimeException rex) {
+						if (FEConfig.SHOW_STACKTRACE) {
+							rex.printStackTrace();
+						}
+						return engine.printMessage(ast.topHead(), rex);
+					}
+				}
+			} catch (RuntimeException rex) {
+				return EvalEngine.get().printMessage("QuotientRemainder: " + rex.getMessage());
+			}
+			return F.NIL;
+		}
+
+		@Override
+		public int[] expectedArgSize() {
+			return IOFunctions.ARGS_1_2;
 		}
 
 		@Override

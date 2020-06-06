@@ -13,7 +13,7 @@ public interface StruveHRules {
    * <li>index 0 - number of equal rules in <code>RULES</code></li>
 	 * </ul>
 	 */
-  final public static int[] SIZES = { 0, 2 };
+  final public static int[] SIZES = { 0, 3 };
 
   final public static IAST RULES = List(
     IInit(StruveH, SIZES),
@@ -22,6 +22,12 @@ public interface StruveHRules {
       Times(Sqrt(Times(C2,Power(Times(Pi,z),CN1))),Sin(z))),
     // StruveH(1/2,z_):=Sqrt(2/(Pi*z))*(1-Cos(z))
     ISetDelayed(StruveH(C1D2,z_),
-      Times(Sqrt(Times(C2,Power(Times(Pi,z),CN1))),Subtract(C1,Cos(z))))
+      Times(Sqrt(Times(C2,Power(Times(Pi,z),CN1))),Subtract(C1,Cos(z)))),
+    // StruveH(Undefined,y_):=Undefined
+    ISetDelayed(StruveH(Undefined,y_),
+      Undefined),
+    // StruveH(x_,Undefined):=Undefined
+    ISetDelayed(StruveH(x_,Undefined),
+      Undefined)
   );
 }

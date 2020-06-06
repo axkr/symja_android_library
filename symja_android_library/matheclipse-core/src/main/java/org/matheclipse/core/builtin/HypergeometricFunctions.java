@@ -10,6 +10,7 @@ import static org.matheclipse.core.expression.F.Power;
 import static org.matheclipse.core.expression.F.Times;
 
 import java.util.function.DoubleUnaryOperator;
+import java.util.function.IntFunction;
 
 import org.hipparchus.complex.Complex;
 import org.matheclipse.core.basic.Config;
@@ -30,6 +31,9 @@ import org.matheclipse.core.interfaces.INum;
 import org.matheclipse.core.interfaces.ISymbol;
 import org.matheclipse.core.reflection.system.rules.Hypergeometric0F1Rules;
 import org.matheclipse.core.reflection.system.rules.Hypergeometric2F1Rules;
+import org.matheclipse.core.reflection.system.rules.HypergeometricURules;
+import org.matheclipse.core.reflection.system.rules.WhittakerMRules;
+import org.matheclipse.core.reflection.system.rules.WhittakerWRules;
 import org.matheclipse.parser.client.FEConfig;
 
 public class HypergeometricFunctions {
@@ -52,10 +56,12 @@ public class HypergeometricFunctions {
 			F.Hypergeometric1F1.setEvaluator(new Hypergeometric1F1());
 			F.Hypergeometric2F1.setEvaluator(new Hypergeometric2F1());
 			F.HypergeometricPFQ.setEvaluator(new HypergeometricPFQ());
-			// F.HypergeometricU.setEvaluator(new HypergeometricU());
+			F.HypergeometricU.setEvaluator(new HypergeometricU());
 			F.LogIntegral.setEvaluator(new LogIntegral());
 			F.SinIntegral.setEvaluator(new SinIntegral());
 			F.SinhIntegral.setEvaluator(new SinhIntegral());
+			F.WhittakerM.setEvaluator(new WhittakerM());
+			F.WhittakerW.setEvaluator(new WhittakerW());
 		}
 	}
 
@@ -148,7 +154,7 @@ public class HypergeometricFunctions {
 		public int[] expectedArgSize() {
 			return IOFunctions.ARGS_1_1;
 		}
-		
+
 		@Override
 		public void setUp(final ISymbol newSymbol) {
 			newSymbol.setAttributes(ISymbol.LISTABLE | ISymbol.NUMERICFUNCTION);
@@ -262,11 +268,12 @@ public class HypergeometricFunctions {
 				return F.Power(F.Times(z, F.Power(F.E, z)), -1);
 			}
 			if (z.isZero()) {
-				if (n.re().greaterThan(F.C1).isTrue()) {
+				IExpr nRe = n.re();
+				if (nRe.greaterThan(F.C1).isTrue()) {
 					// 1/(n-1)
 					return F.Power(F.Plus(n, F.CN1), -1);
 				}
-				if (n.re().lessThan(F.C1).isTrue()) {
+				if (nRe.lessThan(F.C1).isTrue()) {
 					return F.CComplexInfinity;
 				}
 			}
@@ -281,7 +288,7 @@ public class HypergeometricFunctions {
 					} catch (ValidateException ve) {
 					}
 					if (Double.isNaN(nDouble) || Double.isNaN(zDouble)) {
-						Complex nc = z.evalComplex();
+						Complex nc = n.evalComplex();
 						Complex zc = z.evalComplex();
 						return F.complexNum(GammaJS.expIntegralE(nc, zc));
 					}
@@ -405,7 +412,7 @@ public class HypergeometricFunctions {
 			}
 			return F.NIL;
 		}
-		
+
 		public int[] expectedArgSize() {
 			return IOFunctions.ARGS_1_1;
 		}
@@ -479,7 +486,7 @@ public class HypergeometricFunctions {
 		public int[] expectedArgSize() {
 			return IOFunctions.ARGS_1_1;
 		}
-		
+
 		@Override
 		public void setUp(final ISymbol newSymbol) {
 			newSymbol.setAttributes(ISymbol.LISTABLE | ISymbol.NUMERICFUNCTION);
@@ -549,7 +556,7 @@ public class HypergeometricFunctions {
 		public int[] expectedArgSize() {
 			return IOFunctions.ARGS_1_1;
 		}
-		
+
 		@Override
 		public void setUp(final ISymbol newSymbol) {
 			newSymbol.setAttributes(ISymbol.LISTABLE | ISymbol.NUMERICFUNCTION);
@@ -1026,6 +1033,101 @@ public class HypergeometricFunctions {
 		}
 	}
 
+	private static class HypergeometricU extends AbstractFunctionEvaluator implements HypergeometricURules {
+
+		@Override
+		public IAST getRuleAST() {
+			return RULES;
+		}
+
+		@Override
+		public IExpr evaluate(IAST ast, EvalEngine engine) {
+			IExpr a = ast.arg1();
+			IExpr b = ast.arg2();
+			IExpr z = ast.arg3();
+			if (a.isZero()) {
+				return F.C0;
+			}
+			if (z.isZero()) {
+				IExpr bRe = b.re();
+				if (bRe.greaterThan(F.C1).isTrue()) {
+					return F.CComplexInfinity;
+				}
+				if (bRe.lessThan(F.C1).isTrue()) {
+					// Gamma(1-b) / Gamma(a-b+1)
+					return F.Divide(F.Gamma(F.Subtract(F.C1, b)), F.Gamma(F.Plus(a, F.Negate(b), F.C1)));
+				}
+			}
+			if (a.equals(b)) {
+				// b==a ==> E^z*Gamma(1-a,z)
+				return F.Times(F.Exp(z), F.Gamma(F.Subtract(F.C1, a), z));
+			}
+			IExpr n = engine.evaluate(F.Subtract(b, a));
+			if (n.isInteger()) {
+				if (n.isOne()) {
+					// b==a+1 ==> z^(-a)
+					return F.Power(z, a.negate());
+				}
+				int nInt = n.toIntDefault();
+				if (nInt > 0) {
+					int nMinus1 = nInt - 1;
+					// Sum((Binomial(-1+n, -1-k+n)*Pochhammer(a, k))/z^k, {k, 0, n-1}) / z^a
+					return F.Times(F.Power(z, a.negate()), //
+							F.intSum( //
+									k -> F.Times(F.Binomial(nMinus1, nMinus1 - k), F.Pochhammer(a, F.ZZ(k)),
+											F.Power(z, -k)), //
+									0, nMinus1));
+				}
+			}
+			if (engine.isDoubleMode()) {
+				try {
+					double aDouble = Double.NaN;
+					double bDouble = Double.NaN;
+					double zDouble = Double.NaN;
+					try {
+						aDouble = a.evalDouble();
+						bDouble = b.evalDouble();
+						zDouble = z.evalDouble();
+						return F.complexNum(HypergeometricJS.hypergeometricU(new Complex(aDouble), new Complex(bDouble),
+								new Complex(zDouble)));
+					} catch (ValidateException ve) {
+						if (FEConfig.SHOW_STACKTRACE) {
+							ve.printStackTrace();
+						}
+					}
+					Complex ac = a.evalComplex();
+					Complex bc = b.evalComplex();
+					Complex zc = z.evalComplex();
+					return F.complexNum(HypergeometricJS.hypergeometricU(ac, bc, zc));
+
+				} catch (ThrowException te) {
+					if (FEConfig.SHOW_STACKTRACE) {
+						te.printStackTrace();
+					}
+					return te.getValue();
+				} catch (ValidateException ve) {
+					if (FEConfig.SHOW_STACKTRACE) {
+						ve.printStackTrace();
+					}
+				} catch (RuntimeException rex) {
+					// rex.printStackTrace();
+					return engine.printMessage(ast.topHead(), rex);
+				}
+			}
+			return F.NIL;
+		}
+
+		public int[] expectedArgSize() {
+			return IOFunctions.ARGS_3_3;
+		}
+
+		@Override
+		public void setUp(final ISymbol newSymbol) {
+			newSymbol.setAttributes(ISymbol.LISTABLE | ISymbol.NUMERICFUNCTION);
+			super.setUp(newSymbol);
+		}
+	}
+
 	private static class LogIntegral extends AbstractFunctionEvaluator {// implements INumeric, DoubleUnaryOperator {
 
 		// @Override
@@ -1126,7 +1228,7 @@ public class HypergeometricFunctions {
 		public int[] expectedArgSize() {
 			return IOFunctions.ARGS_1_1;
 		}
-		
+
 		@Override
 		public void setUp(final ISymbol newSymbol) {
 			newSymbol.setAttributes(ISymbol.LISTABLE | ISymbol.NUMERICFUNCTION);
@@ -1236,7 +1338,7 @@ public class HypergeometricFunctions {
 		public int[] expectedArgSize() {
 			return IOFunctions.ARGS_1_1;
 		}
-		
+
 		@Override
 		public void setUp(final ISymbol newSymbol) {
 			newSymbol.setAttributes(ISymbol.LISTABLE | ISymbol.NUMERICFUNCTION);
@@ -1310,11 +1412,11 @@ public class HypergeometricFunctions {
 			}
 			return F.NIL;
 		}
-		
+
 		public int[] expectedArgSize() {
 			return IOFunctions.ARGS_1_1;
 		}
-		
+
 		@Override
 		public void setUp(final ISymbol newSymbol) {
 			newSymbol.setAttributes(ISymbol.LISTABLE | ISymbol.NUMERICFUNCTION);
@@ -1322,7 +1424,130 @@ public class HypergeometricFunctions {
 		}
 	}
 
-	
+	private static class WhittakerM extends AbstractFunctionEvaluator implements WhittakerMRules {
+
+		@Override
+		public IAST getRuleAST() {
+			return RULES;
+		}
+
+		@Override
+		public IExpr evaluate(IAST ast, EvalEngine engine) {
+			IExpr k = ast.arg1();
+			IExpr m = ast.arg2();
+			IExpr z = ast.arg3();
+
+			if (engine.isDoubleMode()) {
+				try {
+					double kDouble = Double.NaN;
+					double mDouble = Double.NaN;
+					double zDouble = Double.NaN;
+					try {
+						kDouble = k.evalDouble();
+						mDouble = m.evalDouble();
+						zDouble = z.evalDouble();
+						return F.complexNum(HypergeometricJS.whittakerM(new Complex(kDouble), new Complex(mDouble),
+								new Complex(zDouble)));
+					} catch (ValidateException ve) {
+						if (FEConfig.SHOW_STACKTRACE) {
+							ve.printStackTrace();
+						}
+					}
+					Complex kc = k.evalComplex();
+					Complex mc = m.evalComplex();
+					Complex zc = z.evalComplex();
+					return F.complexNum(HypergeometricJS.whittakerM(kc, mc, zc));
+
+				} catch (ThrowException te) {
+					if (FEConfig.SHOW_STACKTRACE) {
+						te.printStackTrace();
+					}
+					return te.getValue();
+				} catch (ValidateException ve) {
+					if (FEConfig.SHOW_STACKTRACE) {
+						ve.printStackTrace();
+					}
+				} catch (RuntimeException rex) {
+					// rex.printStackTrace();
+					return engine.printMessage(ast.topHead(), rex);
+				}
+			}
+			return F.NIL;
+		}
+
+		public int[] expectedArgSize() {
+			return IOFunctions.ARGS_3_3;
+		}
+
+		@Override
+		public void setUp(final ISymbol newSymbol) {
+			newSymbol.setAttributes(ISymbol.LISTABLE | ISymbol.NUMERICFUNCTION);
+			super.setUp(newSymbol);
+		}
+	}
+
+	private static class WhittakerW extends AbstractFunctionEvaluator implements WhittakerWRules {
+
+		@Override
+		public IAST getRuleAST() {
+			return RULES;
+		}
+
+		@Override
+		public IExpr evaluate(IAST ast, EvalEngine engine) {
+			IExpr k = ast.arg1();
+			IExpr m = ast.arg2();
+			IExpr z = ast.arg3();
+// TODO
+//			if (engine.isDoubleMode()) {
+//				try {
+//					double kDouble = Double.NaN;
+//					double mDouble = Double.NaN;
+//					double zDouble = Double.NaN;
+//					try {
+//						kDouble = k.evalDouble();
+//						mDouble = m.evalDouble();
+//						zDouble = z.evalDouble();
+//						return F.complexNum(HypergeometricJS.whittakerW(new Complex(kDouble), new Complex(mDouble),
+//								new Complex(zDouble)));
+//					} catch (ValidateException ve) {
+//						if (FEConfig.SHOW_STACKTRACE) {
+//							ve.printStackTrace();
+//						}
+//					}
+//					Complex kc = k.evalComplex();
+//					Complex mc = m.evalComplex();
+//					Complex zc = z.evalComplex();
+//					return F.complexNum(HypergeometricJS.whittakerW(kc, mc, zc));
+//
+//				} catch (ThrowException te) {
+//					if (FEConfig.SHOW_STACKTRACE) {
+//						te.printStackTrace();
+//					}
+//					return te.getValue();
+//				} catch (ValidateException ve) {
+//					if (FEConfig.SHOW_STACKTRACE) {
+//						ve.printStackTrace();
+//					}
+//				} catch (RuntimeException rex) {
+//					// rex.printStackTrace();
+//					return engine.printMessage(ast.topHead(), rex);
+//				}
+//			}
+			return F.NIL;
+		}
+
+		public int[] expectedArgSize() {
+			return IOFunctions.ARGS_3_3;
+		}
+
+		@Override
+		public void setUp(final ISymbol newSymbol) {
+			newSymbol.setAttributes(ISymbol.LISTABLE | ISymbol.NUMERICFUNCTION);
+			super.setUp(newSymbol);
+		}
+	}
+
 	public static void initialize() {
 		Initializer.init();
 	}

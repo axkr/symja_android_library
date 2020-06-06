@@ -17,6 +17,7 @@ To get a logarithm of a different base `b`, use `Log(b, x)`, which is essentiall
 
 See
 * [Wikipedia - Logarithm](https://en.wikipedia.org/wiki/Logarithm)
+* [Fungrim - Natural logarithm](http://fungrim.org/topic/Natural_logarithm/)
 
 ### Examples
 

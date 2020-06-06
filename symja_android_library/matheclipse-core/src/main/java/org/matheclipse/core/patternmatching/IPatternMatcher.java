@@ -5,8 +5,6 @@ import java.util.Comparator;
 import java.util.List;
 import java.util.function.Predicate;
 
-import javax.annotation.Nonnull;
-
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.interfaces.IAST;
@@ -18,52 +16,52 @@ import org.matheclipse.core.interfaces.IExpr;
 public abstract class IPatternMatcher implements Predicate<IExpr>, Cloneable, Serializable {// Comparable<IPatternMatcher>,
 
 	public final static int NOFLAG = 0x0000;
-	
+
 	/**
-	 * This rule is defined with the <code>Set[]</code>  function
+	 * This rule is defined with the <code>Set[]</code> function
 	 */
 	public final static int SET = 0x0001;
-	
+
 	/**
-	 * This rule is defined with the <code>SetDelayed[]</code>  function
+	 * This rule is defined with the <code>SetDelayed[]</code> function
 	 */
 	public final static int SET_DELAYED = 0x0002;
-	
+
 	/**
-	 * This rule is defined with the <code>Set[]</code>  function
+	 * This rule is defined with the <code>Set[]</code> function
 	 */
 	public final static int TAGSET = 0x0004;
-	
+
 	/**
-	 * This rule is defined with the <code>Set[]</code>  function
+	 * This rule is defined with the <code>Set[]</code> function
 	 */
 	public final static int TAGSET_DELAYED = 0x0008;
-	
+
 	/**
-	 * This rule is defined with the <code>Set[]</code>  function
+	 * This rule is defined with the <code>Set[]</code> function
 	 */
 	public final static int UPSET = 0x0010;
-	
+
 	/**
-	 * This rule is defined with the <code>Set[]</code>  function
+	 * This rule is defined with the <code>Set[]</code> function
 	 */
 	public final static int UPSET_DELAYED = 0x0020;
-	
+
 	/**
-	 * This rules left-hand-side is wrapped with a <code>Literal[]</code>  function
+	 * This rules left-hand-side is wrapped with a <code>Literal[]</code> function
 	 */
 	public final static int LITERAL = 0x1000;
-	
+
 	/**
-	 * This rules left-hand-side is wrapped with a <code>HoldPattern[]</code>  function
+	 * This rules left-hand-side is wrapped with a <code>HoldPattern[]</code> function
 	 */
 	public final static int HOLDPATTERN = 0x2000;
-	
+
 	/**
 	 * Serialization mask
 	 */
 	public final static int SERIALIZATION_MASK = 0x8000;
-	
+
 	public static class EquivalenceComparator implements Comparator<IPatternMatcher>, Serializable {
 
 		private static final long serialVersionUID = 8357661139299702326L;
@@ -88,7 +86,7 @@ public abstract class IPatternMatcher implements Predicate<IExpr>, Cloneable, Se
 	public final static EquivalenceComparator EQUIVALENCE_COMPARATOR = new EquivalenceComparator();
 
 	public final static PriorityComparator PRIORITY_COMPARATOR = new PriorityComparator();
-	
+
 	/**
 	 * 
 	 */
@@ -115,9 +113,9 @@ public abstract class IPatternMatcher implements Predicate<IExpr>, Cloneable, Se
 		return v;
 	}
 
-//	public int determinePatterns() {
-//		return PatternMap.DEFAULT_RULE_PRIORITY;
-//	}
+	// public int determinePatterns() {
+	// return PatternMap.DEFAULT_RULE_PRIORITY;
+	// }
 
 	@Override
 	public boolean equals(Object obj) {
@@ -154,7 +152,7 @@ public abstract class IPatternMatcher implements Predicate<IExpr>, Cloneable, Se
 	 * @param engine
 	 * @return <code>F.NIL</code> if the match wasn't successful, the evaluated expression otherwise.
 	 */
-	public abstract IExpr eval(final IExpr leftHandSide, @Nonnull EvalEngine engine);
+	public abstract IExpr eval(final IExpr leftHandSide, EvalEngine engine);
 
 	/**
 	 * Get the "left-hand-side" of a pattern-matching rule.

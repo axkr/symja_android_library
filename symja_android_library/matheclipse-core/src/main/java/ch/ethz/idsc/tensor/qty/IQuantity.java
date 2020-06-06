@@ -70,7 +70,7 @@ public interface IQuantity extends IExpr, Comparable<IExpr> {
 	static IExpr of(IExpr value, String string) {
 		if (value instanceof IQuantity)
 			throw MathException.of(value);
-		return QuantityImpl.of(value, IUnit.of(string));
+		return QuantityImpl.of(value, IUnit.ofPutIfAbsent(string));
 	}
 
 	/**
@@ -101,7 +101,7 @@ public interface IQuantity extends IExpr, Comparable<IExpr> {
 	 *             if either parameter equals null
 	 */
 	static IExpr of(Number number, String string) {
-		return QuantityImpl.of(F.expr(number), IUnit.of(string));
+		return QuantityImpl.of(F.expr(number), IUnit.ofPutIfAbsent(string));
 	}
 
 	public IQuantity ofUnit(IExpr scalar);

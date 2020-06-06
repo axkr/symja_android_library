@@ -1,4 +1,5 @@
 {
+ ArcCosh(Undefined)=Undefined,
  ArcCosh(0)=I*Pi/2,
  ArcCosh(1/2)=I*Pi/3, 
  ArcCosh(-1/2)=2/3*I*Pi,

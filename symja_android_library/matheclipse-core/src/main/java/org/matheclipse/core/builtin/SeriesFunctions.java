@@ -1141,11 +1141,7 @@ public class SeriesFunctions {
 					return temp;
 				}
 			} else if (function.isLog() && function.first().equals(x) && x0.isZero() && n >= 0) {
-				ASTSeriesData temp = new ASTSeriesData(x, x0, F.List(function), 0, n + 1, 1);
-
-				if (temp != null) {
-					return temp;
-				}
+				return new ASTSeriesData(x, x0, F.List(function), 0, n + 1, 1);
 			}
 
 			ISymbol power = F.Dummy("$$$n");

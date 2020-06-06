@@ -292,7 +292,11 @@ public class RulePreprocessor {
 					if (files[i].endsWith(".m")) {
 						IExpr expr = parseFileToList(sourceFile, engine);
 
-						if (expr != null) {
+						if (expr == null) {
+							System.err.println();
+							System.err.println("Abort after not parsed expression.");
+							return;
+						} else {
 							buffer = new StringBuilder(100000);
 							PrintWriter out;
 							try {
@@ -307,7 +311,7 @@ public class RulePreprocessor {
 									}
 								}
 								System.out.println(className);
-								if (className.equals("FunctionExpandRules")) {
+								if (className.equals("FunctionExpandRules")||className.equals("PodDefaultsRules")) {
 									out = new PrintWriter(targetFile.getCanonicalPath());
 									out.print(HEADER);
 									out.print(className);

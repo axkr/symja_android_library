@@ -13,10 +13,13 @@ public interface SinRules {
    * <li>index 0 - number of equal rules in <code>RULES</code></li>
 	 * </ul>
 	 */
-  final public static int[] SIZES = { 55, 11 };
+  final public static int[] SIZES = { 56, 11 };
 
   final public static IAST RULES = List(
     IInit(Sin, SIZES),
+    // Sin(Undefined)=Undefined
+    ISet(Sin(Undefined),
+      Undefined),
     // Sin(0)=0
     ISet(Sin(C0),
       C0),
