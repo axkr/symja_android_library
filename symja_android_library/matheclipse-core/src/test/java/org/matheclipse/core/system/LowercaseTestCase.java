@@ -2138,7 +2138,17 @@ public class LowercaseTestCase extends AbstractTestCase {
 				"{1,2,3,4,5,6,7,8}");
 	}
 
-	public void testCancel() {
+	public void testCancel() { 
+		// github #188
+		check("Cancel(4/n^4)", //
+				"4/n^4");
+		check("Cancel(n^4/4)", //
+				"n^4/4");
+		check("Cancel(n^4/4+n^3/2+n^2/4)", //
+				"n^2/4+n^3/2+n^4/4");
+		check("n^4/4+n^3/2+n^2/4", //
+				"n^2/4+n^3/2+n^4/4");
+
 		// check("Cancel(((1+x)*f(x))/x^2)", //
 		// "x/(-1+x)");
 		// check("Cancel((x*(1+x))/(-1+x^2))", //
@@ -2150,7 +2160,7 @@ public class LowercaseTestCase extends AbstractTestCase {
 				"c+d*x");
 		check("Cancel((c*d+d^2*x)^(-1)/(d^2)^(-1)  )", //
 				"d/(c+d*x)");
-		check("Cancel((c*d+d^2*x) /(d^2)   )", //
+		check("Cancel((c*d+d^2*x) /(d^2))", //
 				"(c+d*x)/d");
 		check("Cancel((c*d+d^2*x)^(-2)/(d^2)^(-1)  )", //
 				"1/(c+d*x)^2");
@@ -2185,7 +2195,7 @@ public class LowercaseTestCase extends AbstractTestCase {
 		check("cancel((x - 1)/(x^2 - 1) + (x - 2)/(x^2 - 4))", //
 				"1/(1+x)+1/(2+x)");
 		check("together((x - 1)/(x^2 - 1) + (x - 2)/(x^2 - 4))", //
-				"(3+2*x)/(2+3*x+x^2)");
+				"(3+2*x)/((1+x)*(2+x))");
 
 		check("Cancel(x/(1+x^3))", //
 				"x/(1+x^3)");
@@ -23672,7 +23682,7 @@ public class LowercaseTestCase extends AbstractTestCase {
 		check("Together((a+b*x+c*x^2)^13/13)", //
 				"(a+b*x+c*x^2)^13/13");
 		check("Together(1/(a + b) + 1/(c + d) - a)", //
-				"(a+b+c-a^2*c-a*b*c+d-a^2*d-a*b*d)/(a*c+b*c+a*d+b*d)");
+				"(a+b+c-a^2*c-a*b*c+d-a^2*d-a*b*d)/((a+b)*(c+d))");
 		check("Together(1/a+1/b)", //
 				"(a+b)/(a*b)");
 		check("Together(1/a+1/b+c)", //
@@ -23721,7 +23731,7 @@ public class LowercaseTestCase extends AbstractTestCase {
 				"(f(x)+x*f(x))/x^2");
 
 		check("Together(1 < 1/x + 1/(1 + x) < 2)", //
-				"1<(1+2*x)/(x+x^2)<2");
+				"1<(1+2*x)/(x*(1+x))<2");
 		check("Together(1/(1+1/(1+1/a)))", //
 				"(1+a)/(1+2*a)");
 		check("Together(1/(1+1/(1+1/(1+a))))", //
@@ -23745,13 +23755,13 @@ public class LowercaseTestCase extends AbstractTestCase {
 
 		check("Together((2*(2*x^3-4*x+5)*x^3*(3*x^2+2)^(-1)-4*x*(2*x^3-4*x+5)*(3*x^2+2)^(-1)+5*(2*x^3-4*x+\n"
 				+ "5)*(3*x^2+2)^(-1)-4*x^4+8*x^2-10*x)*(3*x^2+2)^(-1)+x^2-2)", //
-				"(17-60*x+12*x^2-10*x^3-6*x^4+x^6)/(4+12*x^2+9*x^4)");
+				"(17-60*x+12*x^2-10*x^3-6*x^4+x^6)/(2+3*x^2)^2");
 		check("Together((4*x^6-8*x^4+10*x^3)*(3*x^2+2)^(-1)+(-8*x^4+16*x^2-20*x)*(3*x^2+2)^(-1)+(10*x^3\n"
 				+ "-20*x+25)*(3*x^2+2)^(-1)-4*x^4+8*x^2-10*x)", //
 				"(25-60*x+32*x^2-10*x^3-8*x^6)/(2+3*x^2)");
 		check("Together((2*(2*x^3-4*x+5)*x^3*(3*x^2+2)^(-1)-4*x*(2*x^3-4*x+5)*(3*x^2+2)^(-1)+5*(2*x^3-4*x+\n"
 				+ "5)*(3*x^2+2)^(-1)-4*x^4+8*x^2-10*x)*(x)^(-1)-2)", //
-				"(25-64*x+32*x^2-16*x^3-8*x^6)/(2*x+3*x^3)");
+				"(25-64*x+32*x^2-16*x^3-8*x^6)/(x*(2+3*x^2))");
 		check("Together(a + c/g)", //
 				"(c+a*g)/g");
 		check("Together(((7*b*a^(-1)-1)*(-b*a^(-1)-1)^(-1)+7)*a^(-1))", //
@@ -23775,7 +23785,7 @@ public class LowercaseTestCase extends AbstractTestCase {
 		check("((-b-a)*a^(-1))^(-1)", //
 				"a/(-a-b)");
 		check("Together(1/x + 1/(x + 1) + 1/(x + 2) + 1/(x + 3))", //
-				"(6+22*x+18*x^2+4*x^3)/(6*x+11*x^2+6*x^3+x^4)");
+				"(6+22*x+18*x^2+4*x^3)/(x*(1+x)*(2+x)*(3+x))");
 
 	}
 

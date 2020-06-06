@@ -654,7 +654,7 @@ public class Algebra {
 			return F.NIL;
 		}
 
-		public static IExpr cancelPowerTimes(IExpr powerTimesAST) throws JASConversionException {
+		private static IExpr cancelPowerTimes(IExpr powerTimesAST, EvalEngine engine) throws JASConversionException {
 			IExpr[] parts = fractionalParts(powerTimesAST, false);
 			if (parts != null) {
 				IExpr p00 = parts[0];
@@ -679,7 +679,8 @@ public class Algebra {
 				if (!p10.isOne()) {
 					IExpr[] result = cancelGCD(p00, p10);
 					if (result != null) {
-						return F.Times(result[0], result[1], p01, F.Power(F.Times(result[2], p11), F.CN1));
+						return engine
+								.evaluate(F.Times(result[0], result[1], p01, F.Power(F.Times(result[2], p11), F.CN1)));
 					}
 				}
 
@@ -788,11 +789,11 @@ public class Algebra {
 					temp = cancelNIL(F.Times(numer, F.Power(denom, -1)), engine);
 					if (temp.isPresent()) {
 						if (numerExponent > denomExponent) {
-							return F.Times(F.Power(temp, numerExponent - denomExponent),
-									F.Power(numer, numerExponent - denomExponent));
+							long exp = numerExponent - denomExponent;
+							return F.Times(F.Power(temp, exp), F.Power(numer, exp));
 						} else if (numerExponent < denomExponent) {
-							return F.Times(F.Power(temp, denomExponent - numerExponent),
-									F.Power(denom, -1 * (denomExponent - numerExponent)));
+							long exp = denomExponent - numerExponent;
+							return F.Times(F.Power(temp, exp), F.Power(denom, -1 * exp));
 						}
 						return F.Power(temp, numerExponent);
 					}
@@ -814,7 +815,7 @@ public class Algebra {
 				if (expandedArg1.isPlus()) {
 					return ((IAST) expandedArg1).mapThread(F.Cancel(null), 1);
 				} else if (expandedArg1.isTimes() || expandedArg1.isPower()) {
-					IExpr result = cancelPowerTimes(expandedArg1);
+					IExpr result = cancelPowerTimes(expandedArg1, engine);
 					if (result.isPresent()) {
 						return result;
 					}
@@ -4383,9 +4384,10 @@ public class Algebra {
 				GenPolynomial<IExpr> gcd = engine.gcd(p1, p2);
 				IExpr[] result = new IExpr[3];
 				if (gcd.isONE()) {
-					result[0] = jas.exprPoly2Expr(gcd);
-					result[1] = jas.exprPoly2Expr(p1);
-					result[2] = jas.exprPoly2Expr(p2);
+					return null;
+					// result[0] = jas.exprPoly2Expr(gcd);
+					// result[1] = jas.exprPoly2Expr(p1);
+					// result[2] = jas.exprPoly2Expr(p2);
 				} else {
 					result[0] = F.C1;
 					result[1] = F.eval(jas.exprPoly2Expr(p1.divide(gcd)));
@@ -4413,9 +4415,10 @@ public class Algebra {
 			// }
 			IExpr[] result = new IExpr[3];
 			if (gcd.isONE()) {
-				result[0] = jas.complexPoly2Expr(gcd);
-				result[1] = jas.complexPoly2Expr(p1);
-				result[2] = jas.complexPoly2Expr(p2);
+				return null;
+				// result[0] = jas.complexPoly2Expr(gcd);
+				// result[1] = jas.complexPoly2Expr(p1);
+				// result[2] = jas.complexPoly2Expr(p2);
 			} else {
 				result[0] = F.C1;
 				result[1] = F.eval(jas.complexPoly2Expr(p1.divide(gcd)));
