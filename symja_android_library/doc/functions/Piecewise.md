@@ -15,6 +15,9 @@ Piecewise({{expr1, cond1}, ...}, expr)
 See:
 
 * [Wikipedia - Piecewise](http://en.wikipedia.org/wiki/Piecewise)
+* [Wikipedia - Step function](https://en.wikipedia.org/wiki/Step_function)
+* [Wikipedia - Heaviside step function](https://en.wikipedia.org/wiki/Heaviside_step_function)  
+
 
 ### Examples
 
@@ -39,3 +42,6 @@ Piecewise defaults to `0`, if no other case is matching.
 >> Piecewise({{0 ^ 0, False}}, -1)    
 -1    
 ```
+
+### Related terms 
+[UnitStep](UnitStep.md)

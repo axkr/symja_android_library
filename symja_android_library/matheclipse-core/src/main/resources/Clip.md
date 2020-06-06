@@ -18,6 +18,9 @@ Clip(expr, {min, max}, {vMin, vMax})
 
 > returns `expr` in the range `min` to `max`. Returns `vMin` if `expr` is less than `min`. Returns `vMax` if `expr` is greater than `max`.
 
+See
+* [Wikipedia - Clipping (signal processing)](https://en.wikipedia.org/wiki/Clipping_(signal_processing))
+
 ### Examples
 
 ```
@@ -50,4 +53,10 @@ a
 
 >> Clip(Tan(-2*E), {-1/2,1/2}, {a,b})
 b
+
+>> PiecewiseExpand(Clip(x)) 
+Piecewise({{-1,x<-1},{1,x>1}},x)
 ```
+
+### Related terms 
+[Piecewise](Piecewise.md), [PiecewiseExpand](PiecewiseExpand.md) 
