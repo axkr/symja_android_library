@@ -19,6 +19,8 @@ import org.matheclipse.core.interfaces.INum;
 import org.matheclipse.core.interfaces.ISignedNumber;
 import org.matheclipse.core.interfaces.ISymbol;
 
+import org.matheclipse.core.interfaces.IExprProcessor;
+
 public class IntervalSym {
 	private final static Comparator<IExpr> INTERVAL_COMPARATOR = new Comparator<IExpr>() {
 		@Override
@@ -326,7 +328,57 @@ public class IntervalSym {
 		}
 		return F.NIL;
 	}
+	
+	public static IExpr mutableResultConditions2(final IAST ast, IExprProcessor... processors) {
+		return mutableResultConditions2(ast, true, processors);
+	}
 
+	public static IExpr mutableResultConditions2(final IAST ast, boolean exclusive, IExprProcessor... processors) {
+		if (processors != null && processors.length() > 0) {
+			IAST interval = normalize(ast);
+			if (interval.isPresent()) {
+				try {
+					IASTMutable result = interval.copy();
+					for (int i = 1; i < interval.size(); i++) {
+						IAST list = (IAST) interval.get(i);
+						IExpr min = list.arg1();
+						IExpr max = list.arg2();
+
+						boolean processed = false;
+						for (IExprProcessor processor : processors) {
+							processed = processor.process(min, max, result, i);
+							if (processed && exclusive) {
+								break;
+							}
+						}
+
+						if (!processed) {
+							return F.NIL;
+						}
+					}
+					return result;
+				} catch (RuntimeException rex) {
+					//
+				}
+			}
+		}
+		
+		return F.NIL;
+	}
+	
+	
+	public static IExpr arccosh(final IAST ast) {
+		EvalEngine engine = EvalEngine.get();
+		return mutableResultConditions2(ast,
+				(min, max, result, index) -> {
+					if (engine.evalTrue(F.GreaterEqual(min, F.CN1)) && engine.evalTrue(F.LessEqual(max, F.C1))) {
+						result.set(i, F.List(F.ArcSin(min), F.ArcSin(max)));
+						return true;
+					}
+					return false;
+				});
+	}
+	/*
 	public static IExpr arccosh(final IAST ast) {
 		IAST interval = normalize(ast);
 		if (interval.isPresent()) {
@@ -351,7 +403,7 @@ public class IntervalSym {
 		}
 		return F.NIL;
 	}
-
+	*/
 	public static IExpr arcsinh(final IAST ast) {
 		return mutableResult(ast, //
 				(min, max) -> min.isRealResult() && max.isRealResult(), //
@@ -430,6 +482,33 @@ public class IntervalSym {
 	}
 
 	public static IExpr arccot(final IAST ast) {
+		EvalEngine engine = EvalEngine.get();
+		return mutableResultConditions2(ast,
+				(min, max, result, index) -> {
+					if (engine.evalTrue(F.GreaterEqual(min, F.C0)) && engine.evalTrue(F.GreaterEqual(max, F.C0))) {
+						result.append(F.List(F.ArcCot(min), F.ArcCot(max)));
+						return true;
+					}
+					return false;
+				},
+				(min, max, result, index) -> {
+					if (engine.evalTrue(F.Less(min, F.C0)) && engine.evalTrue(F.GreaterEqual(max, F.C0))) {
+						result.append(F.List(F.CNPiHalf, F.ArcCot(min)));
+						result.append(F.List(F.ArcCot(max), F.CPiHalf));
+						return true;
+					}
+					return false;
+				},
+				(min, max, result, index) -> {
+					if (engine.evalTrue(F.Less(min, F.C0)) && engine.evalTrue(F.Less(max, F.C0))) {
+						result.append(F.List(F.ArcCot(min), F.ArcCot(max)));
+						return true;
+					}
+					return false;
+				});
+	}
+	/*
+	public static IExpr arccot(final IAST ast) {
 		IAST interval = normalize(ast);
 		if (interval.isPresent()) {
 			IASTAppendable result = F.IntervalAlloc(interval.size());
@@ -457,7 +536,7 @@ public class IntervalSym {
 		}
 		return F.NIL;
 	}
-
+	*/
 	public static IExpr arcsin(final IAST ast) {
 		EvalEngine engine = EvalEngine.get();
 		return mutableResult(ast, //
