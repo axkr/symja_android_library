@@ -774,26 +774,28 @@ public class Algebra {
 							|| (parts[1].isPower() && parts[1].exponent().isInteger()))) {
 				IExpr numer = parts[0];
 				// use long values see: https://lgtm.com/rules/7900075/
-				long numerExponent = 1;
-				long denomExponent = 1;
+				long numerExponent = 1L;
+				long denominatorExponent = 1L;
 				IExpr denom = parts[1];
 				if (numer.isPower()) {
 					numerExponent = numer.exponent().toIntDefault(Integer.MIN_VALUE);
 					numer = numer.base();
 				}
 				if (denom.isPower()) {
-					denomExponent = denom.exponent().toIntDefault(Integer.MIN_VALUE);
+					denominatorExponent = denom.exponent().toIntDefault(Integer.MIN_VALUE);
 					denom = denom.base();
 				}
-				if (numerExponent > 0 && denomExponent > 0) {
+				if (numerExponent > 0 && denominatorExponent > 0) {
 					temp = cancelNIL(F.Times(numer, F.Power(denom, -1)), engine);
 					if (temp.isPresent()) {
-						if (numerExponent > denomExponent) {
-							long exp = numerExponent - denomExponent;
-							return F.Times(F.Power(temp, exp), F.Power(numer, exp));
-						} else if (numerExponent < denomExponent) {
-							long exp = denomExponent - numerExponent;
-							return F.Times(F.Power(temp, exp), F.Power(denom, -1 * exp));
+						if (numerExponent > denominatorExponent) {
+							long exp = numerExponent - denominatorExponent;
+							// result^denomExponent * numer^exp
+							return F.Times(F.Power(temp, denominatorExponent), F.Power(numer, exp));
+						} else if (numerExponent < denominatorExponent) {
+							long exp = denominatorExponent - numerExponent;
+							// result^numerExponent / denom^exp
+							return F.Times(F.Power(temp, numerExponent), F.Power(denom, -1 * exp));
 						}
 						return F.Power(temp, numerExponent);
 					}
@@ -802,6 +804,12 @@ public class Algebra {
 			return F.NIL;
 		}
 
+		/**
+		 * 
+		 * @param arg1
+		 * @param engine
+		 * @return <code>F.NIL</code> if no evaluations was possible
+		 */
 		private IExpr cancelNIL(IExpr arg1, EvalEngine engine) {
 			try {
 				if (arg1.isTimes() || arg1.isPower()) {
