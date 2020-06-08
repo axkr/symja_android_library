@@ -1,20 +1,22 @@
 package org.matheclipse.api;
 
+import static io.undertow.Handlers.resource;
+
 import java.util.Deque;
 import java.util.Map;
 
+import org.matheclipse.api.parser.FuzzyParserFactory;
 import org.matheclipse.core.basic.Config;
 import org.matheclipse.core.basic.ToggleFeature;
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.expression.F;
 
-import com.fasterxml.jackson.core.filter.TokenFilter;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 
 import io.undertow.Undertow;
 import io.undertow.server.HttpHandler;
 import io.undertow.server.HttpServerExchange;
-import io.undertow.server.ListenerRegistry.Listener;
+import io.undertow.server.handlers.PathHandler;
 import io.undertow.server.handlers.resource.ClassPathResourceManager;
 import io.undertow.util.HeaderMap;
 import io.undertow.util.Headers;
@@ -52,17 +54,25 @@ public class SymjaServer {
 		Config.MAX_AST_SIZE = ((int) Short.MAX_VALUE) * 8;
 		Config.MAX_OUTPUT_SIZE = Short.MAX_VALUE;
 		Config.MAX_BIT_LENGTH = ((int) Short.MAX_VALUE) * 8;
+		Config.MAX_INPUT_LEAVES = 100L;
 		EvalEngine.get().setPackageMode(true);
 		F.initSymbols(null, null, false);// new SymbolObserver(), false);
-
+		FuzzyParserFactory.initialize();
+ 
 		final APIHandler apiHandler = new APIHandler();
+		
+		PathHandler path = new PathHandler()
+                .addPrefixPath("/", resource(new ClassPathResourceManager(SymjaServer.class.getClassLoader(),
+                		SymjaServer.class.getPackage())).addWelcomeFiles("index.html"))
+                .addExactPath("/api",apiHandler);
+		
 		Undertow server = Undertow.builder().//
 				addHttpListener(8080, "localhost").//
-				setHandler(apiHandler).//
+				setHandler(path).//
 				build();
 		server.start();
 		System.out.println("started");
-	}
+	} 
 
 	static String getParam(Map<String, Deque<String>> queryParameters, String longParameter, String shortParameter,
 			String defaultStr) {
