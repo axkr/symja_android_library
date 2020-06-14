@@ -570,6 +570,8 @@ public class MathMLFormFactory extends AbstractMathMLFormFactory {
 
 	private final static class Not extends AbstractConverter {
 
+		static int fPrecedence=ASTNodeFactory.MMA_STYLE_FACTORY.get("Not").getPrecedence();
+
 		/**
 		 * Converts a given function into the corresponding MathML output
 		 *
@@ -587,7 +589,7 @@ public class MathMLFormFactory extends AbstractMathMLFormFactory {
 			fFactory.tagStart(buf, "mrow");
 			// &not; &#x00AC;
 			fFactory.tag(buf, "mo", "&#x00AC;");
-			fFactory.convertInternal(buf, f.arg1(), Integer.MIN_VALUE, false);
+			fFactory.convertInternal(buf, f.arg1(), fPrecedence, false);
 			fFactory.tagEnd(buf, "mrow");
 			return true;
 		}

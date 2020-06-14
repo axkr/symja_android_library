@@ -283,10 +283,16 @@ public class MathMLPresentationTestCase extends TestCase {
 				"<mrow><mrow><mo>(</mo><mrow><mi>a</mi><mo>&#x2227;</mo><mi>c</mi></mrow><mo>)</mo></mrow><mo>&#x2228;</mo><mrow><mo>(</mo><mrow><mi>a</mi><mo>&#x2227;</mo><mi>d</mi></mrow><mo>)</mo></mrow><mo>&#x2228;</mo><mrow><mo>(</mo><mrow><mi>b</mi><mo>&#x2227;</mo><mi>c</mi></mrow><mo>)</mo></mrow><mo>&#x2228;</mo><mrow><mo>(</mo><mrow><mi>b</mi><mo>&#x2227;</mo><mi>d</mi></mrow><mo>)</mo></mrow></mrow>");
 	}
 	
-	public void testNot() {
+	public void testNot001() {
 		IExpr expr = EvalEngine.get().evaluate("!f(x)");
 		check(expr, //
 				"<mrow><mo>&#x00AC;</mo><mrow><mi>f</mi><mo>&#x2061;</mo><mrow><mo>(</mo><mrow><mi>x</mi></mrow><mo>)</mo></mrow></mrow></mrow>");
+	}
+	
+	public void testNot002() {
+		IExpr expr = EvalEngine.get().evaluate("!(x&&x)");
+		check(expr, //
+				"<mrow><mo>&#x00AC;</mo><mrow><mrow><mo>(</mo><mi>x</mi><mo>&#x2227;</mo><mi>x</mi><mo>)</mo></mrow></mrow></mrow>");
 	}
 	
 	public void testRational() {
