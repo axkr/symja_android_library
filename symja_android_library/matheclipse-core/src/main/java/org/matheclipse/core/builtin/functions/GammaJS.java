@@ -27,8 +27,8 @@ import de.lab4inf.math.util.ContinuedFraction;
  * <a href="https://github.com/paulmasson/math/blob/master/src/functions/gamma.js">gamma.js</a>
  */
 public class GammaJS {
-	private GammaJS() {
 
+	private GammaJS() {
 	}
 
 	private static final double DEFAULT_EPSILON = 1.E-14;
@@ -102,7 +102,7 @@ public class GammaJS {
 	private static double regGammaP(final double a, final double x, final double eps, final int max) {
 		double ret = 0;
 		if ((a <= 0.0) || (x < 0.0)) {
-			throw new IllegalArgumentException(String.format("P(%f,%f)", a, x));
+			throw new ArgumentTypeException(String.format("P(%f,%f)", a, x));
 		}
 		if (a >= 1 && x > a) {
 			ret = 1.0 - regGammaQ(a, x, eps, max);
@@ -141,7 +141,7 @@ public class GammaJS {
 		double ret = 0;
 
 		if ((a <= 0.0) || (x < 0.0)) {
-			throw new IllegalArgumentException(String.format("Q(%f,%f)", a, x));
+			throw new ArgumentTypeException(String.format("Q(%f,%f)", a, x));
 		}
 		if (x < a || a < 1.0) {
 			ret = 1.0 - regGammaP(a, x, epsilon, maxIterations);
@@ -160,8 +160,8 @@ public class GammaJS {
 
 	public static double factorialInt(double n) {
 		if (n < 0.0) {
-            throw new MathIllegalArgumentException(LocalizedCoreFormats.FACTORIAL_NEGATIVE_PARAMETER, n);
-        } 
+			throw new ArgumentTypeException("Factorial: n<0.0");
+		}
 		double result = 1.0;
 		for (int i = 2; i <= n; i++) {
 			result *= i;
@@ -249,7 +249,7 @@ public class GammaJS {
 		// patch lower end or evaluate exponential integral independently
 		if (F.isZero(x)) {
 			if (F.isZero(y)) {
-				throw new IllegalArgumentException("Gamma function pole");
+				throw new ArgumentTypeException("Gamma function pole");
 			}
 			// if (Complex.equals(x, Complex.ZERO, Config.SPECIAL_FUNCTIONS_TOLERANCE)) {
 			// // taylorSeries => (-EulerGamma - Log(y)) + x - 1/4 * x^2 + 1/18 * x^3 - 1/96 * x^4 + 1/600 * x^5
@@ -279,11 +279,10 @@ public class GammaJS {
 			// return taylorSeries( t => gamma(t,y), mul( x, delta/x.abs( ) ), 2.0)(x);
 		}
 
-		
 		double xRe = x.getReal();
 		if (xRe < 0.0 && F.isNumIntValue(xRe) && F.isZero(x.getImaginary())) {
 			// x is a negative integer
-			final double n = -xRe; 
+			final double n = -xRe;
 			final Complex t = y.negate().exp().multiply(//
 					ZetaJS.complexSummation(k -> new Complex(Math.pow(-1.0, k) * factorialInt(k)).divide(y.pow(k + 1)), //
 							0.0, n - 1.0));
@@ -384,7 +383,7 @@ public class GammaJS {
 
 	public static double logIntegral(double x) {
 		if (x <= 0) {
-			throw new IllegalArgumentException("logIntegral: x<=0");
+			throw new ArgumentTypeException("logIntegral: x<=0");
 		}
 		return expIntegralEi(Math.log(x));
 	}

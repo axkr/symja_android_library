@@ -19,13 +19,9 @@ import org.matheclipse.core.expression.F;
  * <a href="https://github.com/paulmasson/math/blob/master/src/functions/hypergeometric.js">hypergeometric.js</a>
  */
 public class HypergeometricJS {
-	private HypergeometricJS() {
-
+	
+	private HypergeometricJS() { 
 	}
-
-	// public static Complex hypergeometricSeries(Complex[] A, Complex[] B, Complex x) {
-	// return hypergeometricSeries(A, B, x, Config.SPECIAL_FUNCTIONS_TOLERANCE);
-	// }
 
 	public static Complex hypergeometricSeries(Complex[] A, Complex[] B, Complex x) { // , double tolerance
 		// see https://github.com/paulmasson/math/issues/12
@@ -148,7 +144,7 @@ public class HypergeometricJS {
 	public static Complex hypergeometric0F1(Complex a, Complex x) {
 
 		final double useAsymptotic = 100;
-		if (F.isNumIntValue(a.getReal()) && a.getReal() <= 0 && a.getImaginary() == 0) {
+		if (a.isMathematicalInteger() && a.getReal() <= 0) {
 			throw new ArgumentTypeException("hypergeometric function pole");
 		}
 
@@ -195,7 +191,7 @@ public class HypergeometricJS {
 	public static Complex hypergeometric1F1(Complex a, Complex b, Complex x) {
 
 		final double useAsymptotic = 30;
-		if (F.isNumIntValue(b.getReal()) && b.getReal() <= 0 && F.isZero(b.getImaginary())) {
+		if (b.isMathematicalInteger() && b.getReal() <= 0) {
 			throw new ArgumentTypeException("hypergeometric function pole");
 		}
 		// Kummer transformation
@@ -445,8 +441,9 @@ public class HypergeometricJS {
 		}
 		}
 
-		if (F.isNumIntValue(c.getReal()) && c.getReal() <= 0 && F.isZero(c.getImaginary())) {
-			throw new ArgumentTypeException("hypergeometric function pole");
+		if (c.isMathematicalInteger() && c.getReal() <= 0) {
+			throw new ThrowException(F.CComplexInfinity);
+			// throw new ArgumentTypeException("hypergeometric function pole");
 		}
 		Complex s = Complex.ONE;
 		Complex p = Complex.ONE;
@@ -473,7 +470,8 @@ public class HypergeometricJS {
 	public static double hypergeometric2F1(double a, double b, double c, double x, double tolerance) {
 
 		if (F.isNumIntValue(c) && c <= 0) {
-			throw new ArgumentTypeException("hypergeometric function pole");
+			throw new ThrowException(F.CComplexInfinity);
+			// throw new ArgumentTypeException("hypergeometric function pole");
 		}
 
 		// transformation from Abramowitz & Stegun p.559

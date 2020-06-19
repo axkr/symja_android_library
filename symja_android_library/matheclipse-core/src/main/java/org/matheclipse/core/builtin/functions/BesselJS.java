@@ -8,6 +8,7 @@ import org.hipparchus.complex.Complex;
 import org.matheclipse.core.builtin.Arithmetic;
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.exception.ArgumentTypeException;
+import org.matheclipse.core.eval.exception.RecursionLimitExceeded;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.generic.UnaryNumerical;
 import org.matheclipse.core.interfaces.ISymbol;
@@ -18,9 +19,10 @@ import org.matheclipse.core.interfaces.ISymbol;
  * <a href="https://github.com/paulmasson/math/blob/master/src/functions/bessel.js">bessel.js</a>
  */
 public class BesselJS {
-	private BesselJS() {
 
+	private BesselJS() {
 	}
+
 	public static Complex besselJ(double n, double x) {
 		// if (F.isNumIntValue(n) && n < 0.0) {
 		// return besselJ(-n, x).multiply(new Complex(-1.0).pow(n));
@@ -42,6 +44,10 @@ public class BesselJS {
 		}
 
 		return Math.pow(x / 2.0, n) * HypergeometricJS.hypergeometric0F1(n + 1, -0.25 * x * x) / GammaJS.gamma(n + 1);
+	}
+
+	public static Complex besselJ(double n, Complex x) {
+		return besselJ(new Complex(n), x);
 	}
 
 	public static Complex besselJ(Complex n, Complex x) {
@@ -121,8 +127,17 @@ public class BesselJS {
 
 	public static Complex besselY(Complex n, Complex x) {
 		// for averaging over integer orders until write code for limit
-		double delta = 1e-5;
-		if (F.isNumIntValue(n.getReal()) && F.isZero(n.getImaginary())) {
+		if (n.isMathematicalInteger()) {
+			EvalEngine engine = EvalEngine.get();
+			final int recursionLimit = engine.getRecursionLimit();
+			if (recursionLimit > 0) {
+				int counter = engine.incRecursionCounter();
+				if (counter > recursionLimit) {
+					RecursionLimitExceeded.throwIt(counter, F.BesselY(F.complexNum(n), F.complexNum(x)));
+				}
+			}
+
+			double delta = 1e-5;
 			// TODO use differentiator here
 			return besselY(new Complex(n.getReal() + delta), x)
 					.add(besselY(new Complex(n.getReal() - delta), x).divide(2.0));
@@ -191,6 +206,10 @@ public class BesselJS {
 				/ GammaJS.gamma(n + 1.0);
 	}
 
+	public static Complex besselI(double n, Complex x) {
+		return besselI(new Complex(n), x);
+	}
+
 	public static Complex besselI(Complex n, Complex x) {
 		if (F.isNumIntValue(n.getReal()) && n.getReal() < 0 && n.getImaginary() == 0.0) {
 			return besselI(n.negate(), x);
@@ -253,6 +272,10 @@ public class BesselJS {
 
 	}
 
+	public static Complex besselK(double n, Complex x) {
+		return besselK(new Complex(n), x);
+	}
+
 	public static Complex besselK(Complex n, Complex x) {
 		int useAsymptotic = 5;
 
@@ -269,8 +292,8 @@ public class BesselJS {
 			return t1.multiply(t2);
 		}
 
-		double nRe = n.getReal();
-		if (F.isNumIntValue(nRe) && F.isZero(n.getImaginary())) {
+		if (n.isMathematicalInteger()) {
+			double nRe = n.getReal();
 			// TODO use differentiator here
 			return besselK(new Complex(nRe + delta), x).add(besselK(new Complex(nRe - delta), x)).divide(2.0);
 		}
@@ -301,27 +324,55 @@ public class BesselJS {
 		}
 
 		if (x < 0) {
-			return besselJ(1.0 / 3.0, 2.0 / 3.0 * Math.pow(-x, 1.5))
-					.subtract(besselY(1.0 / 3.0, 2.0 / 3.0 * Math.pow(-x, 1.5)).divide(Math.sqrt(3.0)))
-					.multiply(Math.sqrt(-x) / 2.0);
+			Complex xMinus = new Complex(-x);
+			Complex z = xMinus.pow(1.5).multiply(2.0 / 3.0);
+			return xMinus.sqrt().divide(3.0).multiply(besselJ(1.0 / 3.0, z).add(besselJ(-1.0 / 3.0, z)));
 		}
 
-		return besselK(1.0 / 3.0, 2.0 / 3.0 * Math.pow(x, 1.5)).multiply(1 / Math.PI * Math.sqrt(x / 3.0));
+		Complex xc = new Complex(x);
+		Complex z = xc.pow(1.5).multiply(2.0 / 3.0);
+		return besselK(1.0 / 3.0, z).multiply(1 / Math.PI).multiply(xc.divide(3.0).sqrt());
 
 	}
 
+	/**
+	 * See: <a href="http://dlmf.nist.gov/9.2.ii"></a> <a href="http://dlmf.nist.gov/9.6.i"></a>
+	 * 
+	 * @param x
+	 * @return
+	 */
 	public static Complex airyAi(Complex x) {
-		return besselK(new Complex(1.0 / 3.0), x.pow(1.5).multiply(2.0 / 3.0)).multiply(x.divide(3.0).sqrt())
-				.multiply(1 / Math.PI);
+		if (F.isZero(x)) {
+			return new Complex(1.0 / Math.pow(3.0, 2.0 / 3.0) / GammaJS.gamma(2.0 / 3.0));
+		}
+
+		if (x.getReal() < 0) {
+			Complex xMinus = x.negate();
+			Complex z = xMinus.pow(1.5).multiply(2.0 / 3.0);
+			return xMinus.sqrt().divide(3.0).multiply(besselJ(1.0 / 3.0, z).add(besselJ(-1.0 / 3.0, z)));
+		}
+
+		Complex z = x.pow(1.5).multiply(2.0 / 3.0);
+		return besselK(1.0 / 3.0, z).multiply(x.divide(3.0).sqrt()).multiply(1 / Math.PI);
 	}
 
 	public static Complex airyAiPrime(double x) {
-		return besselK(2.0 / 3.0, 2.0 / 3.0 * Math.pow(x, 1.5)).multiply(x).multiply(-1 / Math.PI / Math.sqrt(3));
+		return airyAiPrime(new Complex(x));
 	}
 
 	public static Complex airyAiPrime(Complex x) {
-		return besselK(new Complex(2.0 / 3.0), x.pow(1.5).multiply(2.0 / 3.0)).multiply(x)
-				.multiply(-1 / Math.PI / Math.sqrt(3));
+		if (F.isZero(x)) {
+			return new Complex(-1.0 / Math.pow(3.0, 1.0 / 3.0) / GammaJS.gamma(1.0 / 3.0));
+		}
+
+		if (x.getReal() < 0) {
+			Complex xMinus = x.negate();
+			Complex z = xMinus.pow(1.5).multiply(2.0 / 3.0);
+			return x.divide(3.0).multiply(besselJ(-2.0 / 3.0, z).subtract(besselJ(2.0 / 3.0, z)));
+		}
+
+		Complex z = x.pow(1.5).multiply(2.0 / 3.0);
+		return besselK(2.0 / 3.0, z).multiply(x).multiply(-1.0 / Math.PI / Math.sqrt(3.0));
 	}
 
 	public static Complex airyBi(double x) {
@@ -330,30 +381,47 @@ public class BesselJS {
 		}
 
 		if (x < 0) {
-			return besselJ(new Complex(1.0 / 3.0), new Complex(2.0 / 3.0 * Math.pow(-x, 1.5) / Math.sqrt(3.0))
-					.add(besselY(1.0 / 3.0, 2.0 / 3.0 * Math.pow(-x, 3 / 2)))).multiply(-Math.sqrt(-x) / 2.0);
+			Complex xMinus = new Complex(-x);
+			Complex z = xMinus.pow(1.5).multiply(2.0 / 3.0);
+			return xMinus.divide(3.0).sqrt().multiply(besselJ(-1.0 / 3.0, z).subtract(besselJ(1.0 / 3.0, z)));
 		}
-		return (besselI(1.0 / 3.0, 2.0 / 3.0 * Math.pow(x, 1.5)).add(besselI(-1.0 / 3.0, 2.0 / 3.0 * Math.pow(x, 1.5))))
-				.multiply(Math.sqrt(x / 3.0));
-
+		Complex xc = new Complex(x);
+		Complex z = xc.pow(1.5).multiply(2.0 / 3.0);
+		return xc.divide(3.0).sqrt().multiply(besselI(1.0 / 3.0, z).add(besselI(-1.0 / 3.0, z)));
 	}
 
 	public static Complex airyBi(Complex x) {
+		if (F.isZero(x)) {
+			return new Complex(1.0 / Math.pow(3.0, 1.0 / 6.0) / GammaJS.gamma(2.0 / 3.0));
+		}
 
-		Complex xPower3D2 = x.pow(1.5).multiply(2.0 / 3.0);
-		return x.divide(3.0).sqrt()
-				.multiply(besselI(new Complex(1.0 / 3.0), xPower3D2).add(besselI(new Complex(-1.0 / 3.0), xPower3D2)));
+		if (x.getReal() < 0) {
+			Complex xMinus = x.negate();
+			Complex z = xMinus.pow(1.5).multiply(2.0 / 3.0);
+			return xMinus.divide(3.0).sqrt().multiply(besselJ(-1.0 / 3.0, z).subtract(besselJ(1.0 / 3.0, z)));
+		}
+
+		Complex z = x.pow(1.5).multiply(2.0 / 3.0);
+		return x.divide(3.0).sqrt().multiply(besselI(1.0 / 3.0, z).add(besselI(-1.0 / 3.0, z)));
 	}
 
 	public static Complex airyBiPrime(double x) {
-		return (besselI(2.0 / 3.0, 2.0 / 3.0 * Math.pow(x, 1.5)).add(besselI(-2.0 / 3.0, 2.0 / 3.0 * Math.pow(x, 1.5))))
-				.multiply((1 / Math.sqrt(3.0)) * x);
+		return airyBiPrime(new Complex(x));
 	}
 
 	public static Complex airyBiPrime(Complex x) {
-		return (besselI(new Complex(2.0 / 3.0), x.pow(1.5).multiply(2.0 / 3.0))
-				.add(besselI(new Complex(-2.0 / 3.0), x.pow(1.5).multiply(2.0 / 3.0))))
-						.multiply(x.multiply((1 / Math.sqrt(3.0))));
+		if (F.isZero(x)) {
+			return new Complex(Math.pow(3.0, 1.6) / GammaJS.gamma(1.0 / 3.0));
+		}
+
+		if (x.getReal() < 0) {
+			Complex xMinus = x.negate();
+			Complex z = xMinus.pow(1.5).multiply(2.0 / 3.0);
+			return xMinus.multiply(1.0 / Math.sqrt(3.0)).multiply(besselJ(2.0 / 3.0, z).add(besselJ(-2.0 / 3.0, z)));
+		}
+
+		Complex z = x.pow(1.5).multiply(2.0 / 3.0);
+		return x.multiply(1.0 / Math.sqrt(3.0)).multiply(besselI(2.0 / 3.0, z).add(besselI(-2.0 / 3.0, z)));
 	}
 
 	public static Complex sphericalBesselJ(double n, double x) {
