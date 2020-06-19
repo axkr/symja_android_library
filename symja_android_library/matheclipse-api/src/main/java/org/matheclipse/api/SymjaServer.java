@@ -27,18 +27,26 @@ public class SymjaServer {
 	private static final class APIHandler implements HttpHandler {
 		@Override
 		public void handleRequest(final HttpServerExchange exchange) throws Exception {
+			String jsonStr;
 			HeaderMap responseHeaders = exchange.getResponseHeaders();
 			responseHeaders.put(new HttpString("Access-Control-Allow-Origin"), "*");
 			responseHeaders.put(Headers.CONTENT_TYPE, "application/json");
 
 			Map<String, Deque<String>> queryParameters = exchange.getQueryParameters();
-			String inputStr = SymjaServer.getParam(queryParameters, "input", "i", "");
-			String[] formformatStrs = SymjaServer.getParams(queryParameters, "format", "f", Pods.PLAIN_STR);
-			int formats = Pods.internFormat(formformatStrs);
-			// exchange.getResponseSender().send(createJSONJavaScript(inExpr.toString()));
-			ObjectNode messageJSON = Pods.createResult(inputStr, formats);
-			final String jsonStr = messageJSON.toString();
-			// System.out.println(jsonStr);
+			String appid = getAppID(queryParameters, "appid");
+			if (appid != null) {
+				if (appid.equals("DEMO")) {
+					String inputStr = SymjaServer.getParam(queryParameters, "input", "i", "");
+					String[] formformatStrs = SymjaServer.getParams(queryParameters, "format", "f", Pods.PLAIN_STR);
+					int formats = Pods.internFormat(formformatStrs);
+					ObjectNode messageJSON = Pods.createResult(inputStr, formats);
+					jsonStr = messageJSON.toString();
+				} else {
+					jsonStr = Pods.errorJSON("1", "Invalid appid");
+				}
+			} else {
+				jsonStr = Pods.errorJSON("2", "Appid missing");
+			}
 			exchange.getResponseSender().send(jsonStr);
 		}
 	}
@@ -55,24 +63,34 @@ public class SymjaServer {
 		Config.MAX_OUTPUT_SIZE = Short.MAX_VALUE;
 		Config.MAX_BIT_LENGTH = ((int) Short.MAX_VALUE) * 8;
 		Config.MAX_INPUT_LEAVES = 100L;
+		Config.MAX_MATRIX_DIMENSION_SIZE = 100;
 		EvalEngine.get().setPackageMode(true);
 		F.initSymbols(null, null, false);// new SymbolObserver(), false);
 		FuzzyParserFactory.initialize();
- 
+
 		final APIHandler apiHandler = new APIHandler();
-		
+
 		PathHandler path = new PathHandler()
-                .addPrefixPath("/", resource(new ClassPathResourceManager(SymjaServer.class.getClassLoader(),
-                		SymjaServer.class.getPackage())).addWelcomeFiles("index.html"))
-                .addExactPath("/api",apiHandler);
-		
+				.addPrefixPath("/",
+						resource(new ClassPathResourceManager(SymjaServer.class.getClassLoader(),
+								SymjaServer.class.getPackage())).addWelcomeFiles("index.html"))
+				.addExactPath("/api", apiHandler);
+
 		Undertow server = Undertow.builder().//
 				addHttpListener(8080, "localhost").//
 				setHandler(path).//
 				build();
 		server.start();
 		System.out.println("started");
-	} 
+	}
+
+	static String getAppID(Map<String, Deque<String>> queryParameters, String shortParameter) {
+		Deque<String> d = queryParameters.get(shortParameter);
+		if (d != null && !d.isEmpty()) {
+			return d.getFirst();
+		}
+		return null;
+	}
 
 	static String getParam(Map<String, Deque<String>> queryParameters, String longParameter, String shortParameter,
 			String defaultStr) {

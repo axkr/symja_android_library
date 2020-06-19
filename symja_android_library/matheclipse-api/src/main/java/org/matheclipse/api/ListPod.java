@@ -1,5 +1,7 @@
 package org.matheclipse.api;
 
+import org.matheclipse.core.basic.Config;
+import org.matheclipse.core.builtin.StringFunctions;
 import org.matheclipse.core.convert.VariablesSet;
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.expression.ASTRealMatrix;
@@ -78,20 +80,63 @@ public class ListPod implements IPod {
 			numpods += integerListPods(podsArray, inExpr, list, formats, mapper, engine);
 		}
 
-		int[] dimension = list.isMatrix();
-		if (dimension != null) {
-			if (dimension[0] >= 2 && dimension[1] >= 2) {
-				double[][] matrix = list.toDoubleMatrix();
-				if (matrix != null) {
-					if (dimension[1] == 2) {
-						ASTRealMatrix m = new ASTRealMatrix(matrix, false);
-						IExpr plot2D = F.ListPlot(m);
-						IExpr podOut = engine.evaluate(plot2D);
-						if (podOut.isAST(F.JSFormData, 3)) {
-							int form = Pods.internFormat(0, podOut.second().toString());
-							Pods.addPod(podsArray, inExpr, podOut, podOut.first().toString(), "Plot points", "Plotter",
-									form, mapper, engine);
-							numpods++;
+		int[] matrixDimension = list.isMatrix();
+		if (matrixDimension != null) {
+			if (matrixDimension[0] >= 2 && //
+					matrixDimension[1] >= 2) {
+				if (matrixDimension[0] <= Config.MAX_MATRIX_DIMENSION_SIZE && //
+						matrixDimension[1] <= Config.MAX_MATRIX_DIMENSION_SIZE) {
+					double[][] matrix = list.toDoubleMatrix();
+					if (matrix == null) {
+						if (matrixDimension[0] == matrixDimension[1]) {
+							IExpr hermitianMatrixQ = F.HermitianMatrixQ(list);
+							boolean isHermitian = engine.evalTrue(hermitianMatrixQ);
+							if (isHermitian) {
+								Pods.addSymjaPod(podsArray, hermitianMatrixQ, F.NIL,
+										"The matrix is hermitian (self-adjoint).", "Properties", "Matrix", formats,
+										mapper, engine);
+								numpods++;
+							}
+						}
+					} else {
+						if (matrixDimension[0] == matrixDimension[1]) {
+							IExpr symmetricMatrixQ = F.SymmetricMatrixQ(list);
+							boolean isSymmetric = engine.evalTrue(symmetricMatrixQ);
+							if (isSymmetric) {
+								Pods.addSymjaPod(podsArray, symmetricMatrixQ, F.NIL, "The matrix is symmetric.",
+										"Properties", "Matrix", formats, mapper, engine);
+								numpods++;
+							}
+							IExpr detMatrix = F.Det(list);// new ASTRealMatrix(matrix, false));
+							IExpr podOut = engine.evaluate(detMatrix);
+							if (detMatrix.isZero()) {
+								Pods.addSymjaPod(podsArray, symmetricMatrixQ, F.NIL, "The matrix is singular",
+										"Properties", "Matrix", formats, mapper, engine);
+								numpods++;
+							} else {
+								Pods.addSymjaPod(podsArray, detMatrix, F.NIL,
+										"The determinant of the matrix is " + podOut.toString(), "Properties",
+										"Matrix", formats, mapper, engine);
+								numpods++;
+								
+								inExpr = F.Inverse(list);
+								podOut = engine.evaluate(inExpr);
+								Pods.addSymjaPod(podsArray, inExpr, podOut, "Inverse of matrix", "Matrix", formats,
+										mapper, engine);
+								numpods++;
+							}
+						}
+						if (matrixDimension[1] == 2) {
+							ASTRealMatrix m = new ASTRealMatrix(matrix, false);
+							IExpr plot2D = F.ListPlot(m);
+							IExpr podOut = engine.evaluate(plot2D);
+							if (podOut.isAST(F.JSFormData, 3)) {
+								int form = Pods.internFormat(Pods.SYMJA, podOut.second().toString());
+								Pods.addPod(podsArray, inExpr, podOut, podOut.first().toString(),
+										StringFunctions.inputForm(plot2D), "Plot points", "Plotter", form, mapper,
+										engine);
+								numpods++;
+							}
 						}
 					}
 				}
@@ -118,19 +163,28 @@ public class ListPod implements IPod {
 				}
 
 				if (vector.length > 2) {
-
 					IExpr plot2D = F.ListPlot(v);
 					IExpr podOut = engine.evaluate(plot2D);
 					if (podOut.isAST(F.JSFormData, 3)) {
-						int form = Pods.internFormat(0, podOut.second().toString());
-						Pods.addPod(podsArray, inExpr, podOut, podOut.first().toString(), "Plot points", "Plotter",
-								form, mapper, engine);
+						int form = Pods.internFormat(Pods.SYMJA, podOut.second().toString());
+						Pods.addPod(podsArray, inExpr, podOut, podOut.first().toString(),
+								StringFunctions.inputForm(plot2D), "Plot points", "Plotter", form, mapper, engine);
 						numpods++;
 					}
 				}
 			}
-		}
 
+			if (list.argSize() > 5) {
+				IExpr histogram = F.Histogram(list);
+				IExpr podOut = engine.evaluate(histogram);
+				if (podOut.isAST(F.JSFormData, 3)) {
+					int form = Pods.internFormat(Pods.SYMJA, podOut.second().toString());
+					Pods.addPod(podsArray, inExpr, podOut, podOut.first().toString(),
+							StringFunctions.inputForm(histogram), "Histogram", "Plotter", form, mapper, engine);
+					numpods++;
+				}
+			}
+		}
 		return numpods;
 	}
 }

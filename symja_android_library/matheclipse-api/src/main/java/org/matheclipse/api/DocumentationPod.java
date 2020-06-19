@@ -11,6 +11,7 @@ import org.commonmark.ext.gfm.tables.TablesExtension;
 import org.commonmark.node.Node;
 import org.commonmark.parser.Parser;
 import org.commonmark.renderer.html.HtmlRenderer;
+import org.matheclipse.core.builtin.StringFunctions;
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.form.Documentation;
@@ -87,16 +88,16 @@ public class DocumentationPod implements IPod, PodDefaultsRules {
 			EvalEngine engine = EvalEngine.get();
 			IExpr podOut = engine.evaluate(plot2D);
 			if (podOut.isAST(F.JSFormData, 3)) {
-				int form = Pods.internFormat(Pods.SYMJA,  podOut.second().toString() );
-				Pods.addPod(podsArray, plot2D, podOut, podOut.first().toString(),plot2D.toString(), "Plot", "Plotter", form, mapper,
-						engine);
+				int form = Pods.internFormat(Pods.SYMJA, podOut.second().toString());
+				Pods.addPod(podsArray, plot2D, podOut, podOut.first().toString(), StringFunctions.inputForm(plot2D),
+						"Plot", "Plotter", form, mapper, engine);
 				numpods++;
 			}
 		}
 
 		ArrayNode temp = mapper.createArrayNode();
 		ObjectNode subpodsResult = mapper.createObjectNode();
-		subpodsResult.put("title", "documentation");
+		subpodsResult.put("title", "Documentation");
 		subpodsResult.put("scanner", "help");
 		subpodsResult.put("error", "false");
 		subpodsResult.put("numsubpods", 1);
