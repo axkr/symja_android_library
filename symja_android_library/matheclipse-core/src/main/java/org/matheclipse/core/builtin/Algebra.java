@@ -27,6 +27,7 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.SortedMap;
 import java.util.function.BiPredicate;
+import java.util.function.Function;
 import java.util.function.Predicate;
 
 import org.matheclipse.core.basic.Config;
@@ -1460,7 +1461,7 @@ public class Algebra {
 					}
 					IExpr powerAST = F.Power(temp[1], F.CN1);
 					if (distributePlus && temp[0].isPlus()) {
-						IAST mappedAST = ((IAST) temp[0]).mapThread(F.Times(null, powerAST), 1);
+						IAST mappedAST = ((IAST) temp[0]).mapThreadEvaled(EvalEngine.get(), F.Times(null, powerAST), 1);
 						IExpr flattened = flattenOneIdentity(mappedAST, F.C0);// EvalAttributes.flatten(mappedAST).orElse(mappedAST);
 						return addExpanded(flattened);
 					}
@@ -1670,8 +1671,8 @@ public class Algebra {
 			 */
 			private IExpr expandPlusTimesPlus(final IAST plusAST0, final IAST plusAST1) {
 				long numberOfTerms = (long) (plusAST0.argSize()) * (long) (plusAST1.argSize());
-				if (numberOfTerms > Integer.MAX_VALUE) {
-					throw new ArithmeticException("");
+				if (numberOfTerms > Config.MAX_AST_SIZE) {
+					throw new ASTElementLimitExceeded(numberOfTerms);
 				}
 				final IASTAppendable result = F.ast(F.Plus, (int) numberOfTerms, false);
 				plusAST0.forEach(x -> {
@@ -1812,7 +1813,7 @@ public class Algebra {
 			if (ast.arg1().isAST()) {
 				IAST arg1 = (IAST) ast.arg1();
 				if (arg1.isList()) {
-					return arg1.mapThread(F.ListAlloc(arg1.size()), ast, 1);
+					return arg1.mapThreadEvaled(engine, F.ListAlloc(arg1.size()), ast, 1);
 				}
 				IExpr patt = null;
 				if (ast.size() > 2) {
@@ -1935,7 +1936,7 @@ public class Algebra {
 		public IExpr evaluate(final IAST ast, EvalEngine engine) {
 			if (ast.arg1().isList()) {
 				IAST list = (IAST) ast.arg1();
-				return list.mapThread(F.ListAlloc(list.size()), ast, 1);
+				return list.mapThreadEvaled(engine, F.ListAlloc(list.size()), ast, 1);
 			}
 
 			IExpr result = F.REMEMBER_AST_CACHE.getIfPresent(ast);

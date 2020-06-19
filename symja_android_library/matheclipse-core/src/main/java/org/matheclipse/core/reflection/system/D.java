@@ -278,7 +278,7 @@ public class D extends AbstractFunctionEvaluator implements DRules {
 			if (fx.isList()) {
 				IAST list = (IAST) fx;
 				// thread over first list
-				return list.mapThread(F.ListAlloc(list.size()), ast, 1);
+				return list.mapThreadEvaled(engine, F.ListAlloc(list.size()), ast, 1);
 			}
 
 			IExpr x = ast.arg2();

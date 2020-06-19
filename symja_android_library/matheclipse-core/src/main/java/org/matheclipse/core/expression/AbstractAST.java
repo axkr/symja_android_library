@@ -4,6 +4,7 @@ import java.io.ObjectStreamException;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.EnumMap;
+import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.ListIterator;
@@ -589,6 +590,12 @@ public abstract class AbstractAST implements IASTMutable {
 
 		/** {@inheritDoc} */
 		@Override
+		public int[] isMatrixIgnore() {
+			return null;
+		}
+
+		/** {@inheritDoc} */
+		@Override
 		public boolean isNegativeResult() {
 			return false;
 		}
@@ -810,6 +817,30 @@ public abstract class AbstractAST implements IASTMutable {
 		@Override
 		public int size() {
 			return 0;
+		}
+
+		/** {@inheritDoc} */
+		@Override
+		public double[][] toDoubleMatrix() {
+			return null;
+		}
+
+		/** {@inheritDoc} */
+		@Override
+		public double[][] toDoubleMatrixIgnore() {
+			return null;
+		}
+
+		/** {@inheritDoc} */
+		@Override
+		public double[] toDoubleVector() {
+			return null;
+		}
+
+		/** {@inheritDoc} */
+		@Override
+		public double[] toDoubleVectorIgnore() {
+			return null;
 		}
 
 		/**
@@ -1053,6 +1084,11 @@ public abstract class AbstractAST implements IASTMutable {
 		// ast.append(get(i));
 		// }
 		return ast;
+	}
+
+	@Override
+	public Set<IExpr> asSet() {
+		return null;
 	}
 
 	@Override
@@ -1428,7 +1464,7 @@ public abstract class AbstractAST implements IASTMutable {
 					return temp;
 				}
 			}
-			if (isBooleanFormula()) {
+			if (isBooleanFunction()) {
 				IExpr temp = extractConditionalExpression(false);
 				if (temp.isPresent()) {
 					return temp;
@@ -2773,7 +2809,7 @@ public abstract class AbstractAST implements IASTMutable {
 	/** {@inheritDoc} */
 	@Override
 	public boolean isBooleanFormula() {
-		return head().isBooleanFormulaSymbol() && exists(x -> !x.isBooleanFormula());
+		return head().isBooleanFormulaSymbol() && forAll(x -> x.isBooleanFormula());
 	}
 
 	/** {@inheritDoc} */
@@ -2781,7 +2817,13 @@ public abstract class AbstractAST implements IASTMutable {
 	public boolean isBooleanResult() {
 		return head().isPredicateFunctionSymbol() //
 				|| ((head().isBooleanFormulaSymbol() || head().isComparatorFunctionSymbol()) //
-						&& exists(x -> !x.isBooleanResult()));
+						&& forAll(x -> x.isBooleanResult()));
+	}
+
+	/** {@inheritDoc} */
+	@Override
+	public boolean isBooleanFunction() {
+		return head().isBooleanFormulaSymbol() && size() >= 2;
 	}
 
 	/** {@inheritDoc} */
@@ -2973,6 +3015,45 @@ public abstract class AbstractAST implements IASTMutable {
 					}
 					return dim;
 				}
+			}
+
+		}
+		return null;
+	}
+
+	/** {@inheritDoc} */
+	@Override
+	public int[] isMatrixIgnore() {
+		if (isEvalFlagOn(IAST.IS_MATRIX)) {
+			final int[] dim = new int[2];
+			dim[0] = argSize();
+			if (dim[0] > 0) {
+				dim[1] = ((IAST) first()).argSize();
+				return dim;
+			}
+		}
+		if (isList()) {
+			final int[] dim = new int[2];
+			dim[0] = argSize();
+			if (dim[0] > 0) {
+				dim[1] = -1;
+				for (int i = 1; i < size(); i++) {
+					IExpr arg = get(i);
+					if (arg.isList()) {
+						if (dim[1] < 0) {
+							dim[1] = ((IAST) arg).argSize();
+						} else if (dim[1] != ((IAST) arg).argSize()) {
+							// this row has another dimension
+							return null;
+						}
+					} else {
+						dim[0]--;
+					}
+				}
+				if (dim[0] == 0) {
+					return null;
+				}
+				return dim;
 			}
 
 		}
@@ -4020,7 +4101,13 @@ public abstract class AbstractAST implements IASTMutable {
 	/** {@inheritDoc} */
 	@Override
 	public final IASTMutable mapThread(final IAST replacement, int position) {
-		EvalEngine engine = EvalEngine.get();
+		final Function<IExpr, IExpr> function = x -> replacement.setAtCopy(position, x);
+		return (IASTMutable) map(function, 1);
+	}
+
+	/** {@inheritDoc} */
+	@Override
+	public final IASTMutable mapThreadEvaled(EvalEngine engine, final IAST replacement, int position) {
 		final Function<IExpr, IExpr> function = x -> engine.evaluate(replacement.setAtCopy(position, x));
 		return (IASTMutable) map(function, 1);
 	}
@@ -4034,8 +4121,8 @@ public abstract class AbstractAST implements IASTMutable {
 
 	/** {@inheritDoc} */
 	@Override
-	public IASTAppendable mapThread(IASTAppendable appendAST, final IAST replacement, int position) {
-		EvalEngine engine = EvalEngine.get();
+	public IASTAppendable mapThreadEvaled(EvalEngine engine, IASTAppendable appendAST, final IAST replacement,
+			int position) {
 		final Function<IExpr, IExpr> function = x -> engine.evaluate(replacement.setAtCopy(position, x));
 
 		IExpr temp;
@@ -4468,6 +4555,34 @@ public abstract class AbstractAST implements IASTMutable {
 
 	/** {@inheritDoc} */
 	@Override
+	public double[][] toDoubleMatrixIgnore() {
+		int[] dim = isMatrixIgnore();
+		if (dim == null) {
+			return null;
+		}
+		double[][] result = new double[dim[0]][dim[1]];
+		int rowIndex = 0;
+		ISignedNumber signedNumber;
+		for (int i = 1; i < size(); i++) {
+			IExpr row = get(i);
+			if (row.isList()) {
+				IAST list = (IAST) row;
+				for (int j = 1; j <= dim[1]; j++) {
+					signedNumber = list.get(j).evalReal();
+					if (signedNumber != null) {
+						result[rowIndex][j - 1] = signedNumber.doubleValue();
+					} else {
+						return null;
+					}
+				}
+				rowIndex++;
+			}
+		}
+		return result;
+	}
+
+	/** {@inheritDoc} */
+	@Override
 	public double[] toDoubleVector() {
 		try {
 			double[] result = new double[argSize()];
@@ -4479,6 +4594,32 @@ public abstract class AbstractAST implements IASTMutable {
 
 		}
 		return null;
+	}
+
+	/** {@inheritDoc} */
+	@Override
+	public double[] toDoubleVectorIgnore() {
+		int i = 0;
+		int j = 1;
+		double[] temp = new double[argSize()];
+		while (j < size()) {
+			try {
+				temp[i] = get(j).evalDouble();
+				i++;
+			} catch (RuntimeException rex) {
+
+			}
+			j++;
+		}
+		if (i == 0) {
+			return null;
+		}
+		if (i == j - 1) {
+			return temp;
+		}
+		double[] result = new double[i];
+		System.arraycopy(temp, 0, result, 0, i);
+		return result;
 	}
 
 	/** {@inheritDoc} */
@@ -4555,6 +4696,16 @@ public abstract class AbstractAST implements IASTMutable {
 	@Override
 	public RealMatrix toRealMatrix() {
 		final double[][] elements = toDoubleMatrix();
+		if (elements != null) {
+			return new Array2DRowRealMatrix(elements, false);
+		}
+		return null;
+	}
+
+	/** {@inheritDoc} */
+	@Override
+	public RealMatrix toRealMatrixIgnore() {
+		final double[][] elements = toDoubleMatrixIgnore();
 		if (elements != null) {
 			return new Array2DRowRealMatrix(elements, false);
 		}

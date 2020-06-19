@@ -776,9 +776,9 @@ public abstract class HMArrayList extends AbstractAST implements IASTAppendable,
 			firstIndex = 0;
 			lastIndex = newLast;
 		} else {
-//			if (Config.FUZZ_TESTING) {
-//				throw new NullPointerException();
-//			}
+			// if (Config.FUZZ_TESTING) {
+			// throw new NullPointerException();
+			// }
 			int increment = size / 2;
 			if (required > increment) {
 				increment = required;
@@ -922,10 +922,10 @@ public abstract class HMArrayList extends AbstractAST implements IASTAppendable,
 
 	/** {@inheritDoc} */
 	@Override
-	public final IASTAppendable mapThread(IASTAppendable appendAST, final IAST replacement, int position) {
+	public final IASTAppendable mapThreadEvaled(EvalEngine engine, IASTAppendable appendAST, final IAST replacement,
+			int position) {
 		// final Function<IExpr, IExpr> function = Functors.replaceArg(replacement,
 		// position);
-		EvalEngine engine = EvalEngine.get();
 		final Function<IExpr, IExpr> function = x -> {
 			IAST a = replacement.setAtCopy(position, x);
 			return engine.evaluate(a);

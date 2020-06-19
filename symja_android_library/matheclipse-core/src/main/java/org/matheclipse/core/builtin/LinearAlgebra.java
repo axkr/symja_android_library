@@ -26,7 +26,7 @@ import static org.matheclipse.core.expression.F.Slot1;
 import static org.matheclipse.core.expression.F.Sqr;
 import static org.matheclipse.core.expression.F.Sqrt;
 import static org.matheclipse.core.expression.F.Subtract;
-import static org.matheclipse.core.expression.F.Times;  
+import static org.matheclipse.core.expression.F.Times;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -40,11 +40,14 @@ import org.hipparchus.linear.FieldDecompositionSolver;
 import org.hipparchus.linear.FieldLUDecomposition;
 import org.hipparchus.linear.FieldMatrix;
 import org.hipparchus.linear.FieldVector;
+import org.hipparchus.linear.MatrixUtils;
 import org.hipparchus.linear.RealMatrix;
 import org.hipparchus.linear.RealVector;
+import org.matheclipse.core.basic.Config;
 import org.matheclipse.core.convert.Convert;
 import org.matheclipse.core.eval.EvalAttributes;
 import org.matheclipse.core.eval.EvalEngine;
+import org.matheclipse.core.eval.exception.IterationLimitExceeded;
 import org.matheclipse.core.eval.exception.LimitException;
 import org.matheclipse.core.eval.exception.Validate;
 import org.matheclipse.core.eval.exception.ValidateException;
@@ -613,9 +616,6 @@ public final class LinearAlgebra {
 
 		@Override
 		public IExpr evaluate(final IAST ast, EvalEngine engine) {
-			// if (ast.size() != 3) {
-			// throw new WrongNumberOfArguments(ast, 2, ast.argSize());
-			// }
 			IExpr u = ast.arg1();
 			IExpr v = ast.arg2();
 
@@ -662,9 +662,6 @@ public final class LinearAlgebra {
 
 		@Override
 		public IExpr evaluate(final IAST functionList, EvalEngine engine) {
-			// if (functionList.size() != 3) {
-			// throw new WrongNumberOfArguments(functionList, 2, functionList.argSize());
-			// }
 			IExpr arg1 = functionList.arg1();
 			IExpr arg2 = functionList.arg2();
 
@@ -739,7 +736,7 @@ public final class LinearAlgebra {
 				// a matrix with square dimensions
 				IAST matrix = (IAST) ast.arg1();
 				IExpr variable = ast.arg2();
-				if (!variable.isVariable() ) {
+				if (!variable.isVariable()) {
 					// `1` is not a valid variable.
 					return IOFunctions.printMessage(ast.topHead(), "ivar", F.List(variable), engine);
 				}
@@ -778,9 +775,6 @@ public final class LinearAlgebra {
 
 		@Override
 		public IExpr evaluate(final IAST functionList, EvalEngine engine) {
-			// if (functionList.size() != 3) {
-			// throw new WrongNumberOfArguments(functionList, 2, functionList.argSize());
-			// }
 			IExpr arg1 = functionList.arg1();
 			IExpr arg2 = functionList.arg2();
 
@@ -906,9 +900,6 @@ public final class LinearAlgebra {
 
 		@Override
 		public IExpr evaluate(final IAST functionList, EvalEngine engine) {
-			// if (functionList.size() != 3) {
-			// throw new WrongNumberOfArguments(functionList, 2, functionList.argSize());
-			// }
 			IExpr arg1 = functionList.arg1();
 			IExpr arg2 = functionList.arg2();
 
@@ -1901,7 +1892,7 @@ public final class LinearAlgebra {
 							F.Times(r, F.Sin(theta), F.Sin(phi)));
 				}
 			} else if (ast.arg1().isList()) {
-				return ((IAST) ast.arg1()).mapThread(F.ListAlloc(ast.size()), ast, 1);
+				return ((IAST) ast.arg1()).mapThreadEvaled(engine, F.ListAlloc(ast.size()), ast, 1);
 			}
 			return F.NIL;
 		}
@@ -2781,9 +2772,6 @@ public final class LinearAlgebra {
 
 		@Override
 		public IExpr evaluate(final IAST ast, EvalEngine engine) {
-			// if (ast.size() != 3) {
-			// throw new WrongNumberOfArguments(ast, 2, ast.argSize());
-			// }
 			IExpr arg1 = ast.arg1();
 			IExpr arg2 = ast.arg2();
 
@@ -2825,9 +2813,12 @@ public final class LinearAlgebra {
 		public IExpr evaluate(final IAST ast, EvalEngine engine) {
 			if (ast.size() == 2) {
 				int[] dim = ast.arg1().isMatrix();
-				if (dim != null && dim[0] == dim[1]) {
-					IAST matrix = (IAST) ast.arg1();
-					final int n = dim[0];
+				if (dim != null && dim[0] == dim[1] && dim[0] > 0) {
+					RealMatrix matrix = ast.arg1().toRealMatrix();
+					if (matrix != null) {
+						RealMatrix result = MatrixUtils.matrixExponential(matrix);
+						return new ASTRealMatrix(result, false);
+					}
 				}
 			}
 			return F.NIL;
@@ -2867,11 +2858,11 @@ public final class LinearAlgebra {
 				// a matrix with square dimensions
 				IAST matrix = (IAST) ast.arg1();
 				IExpr variable = ast.arg2();
-				if (!variable.isVariable() ) {
+				if (!variable.isVariable()) {
 					// `1` is not a valid variable.
 					return IOFunctions.printMessage(ast.topHead(), "ivar", F.List(variable), engine);
 				}
-				ISymbol i = F.Dummy("i"); //new Symbol("§i", Context.SYSTEM);
+				ISymbol i = F.Dummy("i"); // new Symbol("§i", Context.SYSTEM);
 				int n = 1;
 				IAST qu = F.List();
 				IAST mnm = (IAST) engine
@@ -2963,6 +2954,11 @@ public final class LinearAlgebra {
 
 						return Convert.matrix2List(resultMatrix);
 					}
+					int iterationLimit = engine.getIterationLimit();
+					if (iterationLimit >= 0 && iterationLimit <= p) {
+						IterationLimitExceeded.throwIt(p, ast);
+					}
+
 					if (p < 0) {
 						resultMatrix = Inverse.inverseMatrix(matrix);
 						matrix = resultMatrix;
@@ -2974,27 +2970,13 @@ public final class LinearAlgebra {
 						resultMatrix = resultMatrix.multiply(matrix);
 					}
 					return Convert.matrix2List(resultMatrix);
-
-					// } catch (final ClassCastException e) {
-					// if (Config.SHOW_STACKTRACE) {
-					// e.printStackTrace();
-					// }
-					// } catch (final ArithmeticException e) {
-					// if (Config.SHOW_STACKTRACE) {
-					// e.printStackTrace();
-					// }
-					// throw new NonNegativeIntegerExpected(ast, 2);
-					// } catch (final IndexOutOfBoundsException e) {
-					// if (Config.SHOW_STACKTRACE) {
-					// e.printStackTrace();
-					// }
 				}
 				return F.NIL;
 			} catch (final RuntimeException e) {
 				if (FEConfig.SHOW_STACKTRACE) {
 					e.printStackTrace();
 				}
-				return engine.printMessage(ast.topHead() + ": " + e.getMessage());
+				return engine.printMessage(ast.topHead(), e);
 			} finally {
 				engine.setTogetherMode(togetherMode);
 			}
@@ -3845,9 +3827,6 @@ public final class LinearAlgebra {
 
 		@Override
 		public IExpr evaluate(final IAST functionList, EvalEngine engine) {
-			// if (functionList.size() != 3) {
-			// throw new WrongNumberOfArguments(functionList, 2, functionList.argSize());
-			// }
 			IExpr arg1 = functionList.arg1();
 			IExpr arg2 = functionList.arg2();
 
@@ -3972,7 +3951,7 @@ public final class LinearAlgebra {
 				}
 			} else if (ast.arg1().isList()) {
 				IAST list = (IAST) ast.arg1();
-				return list.mapThread(F.ListAlloc(list.size()), ast, 1);
+				return list.mapThreadEvaled(engine, F.ListAlloc(list.size()), ast, 1);
 			}
 			return F.NIL;
 		}
@@ -4195,7 +4174,7 @@ public final class LinearAlgebra {
 		 *            number of columns of the matrix
 		 * @return
 		 */
-		public IAST transpose(final IAST matrix, int rows, int cols) {
+		private IAST transpose(final IAST matrix, int rows, int cols) {
 			final IASTAppendable transposedMatrix = F.ast(F.List, cols, true);
 			transposedMatrix.setArgs(cols + 1, i -> F.ast(F.List, rows, true));
 			// for (int i = 1; i <= cols; i++) {
@@ -4211,7 +4190,9 @@ public final class LinearAlgebra {
 					transposedResultRow.set(i, transform(originalRow.get(j)));
 				}
 			}
-			transposedMatrix.addEvalFlags(IAST.IS_MATRIX);
+			// because the rows can contain sub lists the IAST.IS_MATRIX flag cannot be set directly. isMatrix() must be
+			// used!
+			transposedMatrix.isMatrix(true);
 			return transposedMatrix;
 		}
 
@@ -4380,7 +4361,9 @@ public final class LinearAlgebra {
 				final IndexTableGenerator generator = new IndexTableGenerator(indexArray, F.List, //
 						indx -> Power(lst.get(indx[0] + 1), F.ZZ(indx[1])));
 				final IAST matrix = (IAST) generator.table();
-				matrix.addEvalFlags(IAST.IS_MATRIX);
+				// because the rows can contain sub lists the IAST.IS_MATRIX flag cannot be set directly. isMatrix()
+				// must be used!
+				matrix.isMatrix(true);
 				return matrix;
 			}
 
@@ -4579,7 +4562,9 @@ public final class LinearAlgebra {
 		final IndexTableGenerator generator = new IndexTableGenerator(indexArray, F.List,
 				new IndexFunctionDiagonal(valueArray));
 		final IAST matrix = (IAST) generator.table();
-		matrix.addEvalFlags(IAST.IS_MATRIX);
+		// because the rows can contain sub lists the IAST.IS_MATRIX flag cannot be set directly. isMatrix() must be
+		// used!
+		matrix.isMatrix(true);
 		return matrix;
 	}
 

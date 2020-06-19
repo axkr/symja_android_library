@@ -14,6 +14,7 @@ import java.util.function.Predicate;
 //import java.util.stream.Stream;
 import java.util.stream.Stream;
 
+import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.exception.MemoryLimitExceeded;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.generic.ObjIntPredicate;
@@ -305,7 +306,7 @@ public interface IAST extends IExpr, Cloneable, Iterable<IExpr> {
 	/**
 	 * Collect all arguments of this AST in a new set.
 	 * 
-	 * @return
+	 * @return <code>null</code> if a set couldn't be created
 	 */
 	public Set<IExpr> asSet();
 
@@ -731,7 +732,7 @@ public interface IAST extends IExpr, Cloneable, Iterable<IExpr> {
 	 * 
 	 * @param predicate
 	 *            the predicate which filters each argument in this <code>AST</code>
-	 * @return the <code>true</code> if the predicate is true for all elements or <code>false</code> otherwise
+	 * @return <code>true</code> if the predicate is true for all elements or <code>false</code> otherwise
 	 */
 	default boolean forAll(ObjIntPredicate<? super IExpr> predicate) {
 		return forAll(predicate, 1);
@@ -745,7 +746,7 @@ public interface IAST extends IExpr, Cloneable, Iterable<IExpr> {
 	 *            the predicate which filters each argument in this <code>AST</code>
 	 * @param startOffset
 	 *            start offset from which the element have to be tested
-	 * @return the <code>true</code> if the predicate is true for all elements or <code>false</code> otherwise
+	 * @return <code>true</code> if the predicate is true for all elements or <code>false</code> otherwise
 	 */
 	public boolean forAll(ObjIntPredicate<? super IExpr> predicate, int startOffset);
 
@@ -755,7 +756,7 @@ public interface IAST extends IExpr, Cloneable, Iterable<IExpr> {
 	 * 
 	 * @param predicate
 	 *            the predicate which filters each argument in this <code>AST</code>
-	 * @return the <code>true</code> if the predicate is true for all elements or <code>false</code> otherwise
+	 * @return <code>true</code> if the predicate is true for all elements or <code>false</code> otherwise
 	 */
 	default boolean forAll(Predicate<? super IExpr> predicate) {
 		return forAll(predicate, 1);
@@ -769,7 +770,7 @@ public interface IAST extends IExpr, Cloneable, Iterable<IExpr> {
 	 *            the predicate which filters each argument in this <code>AST</code>
 	 * @param startOffset
 	 *            start offset from which the element have to be tested
-	 * @return the <code>true</code> if the predicate is true for all elements or <code>false</code> otherwise
+	 * @return <code>true</code> if the predicate is true for all elements or <code>false</code> otherwise
 	 */
 	public boolean forAll(Predicate<? super IExpr> predicate, int startOffset);
 
@@ -1162,25 +1163,6 @@ public interface IAST extends IExpr, Cloneable, Iterable<IExpr> {
 	 */
 	public IAST map(final IExpr head, final Function<IExpr, IExpr> functor);
 
-	/**
-	 * Maps the elements of this IAST with the unary functor <code>Functors.replaceArg(replacement, position)</code>,
-	 * there <code>replacement</code> is an IAST at which the argument at the given position will be replaced by the
-	 * currently mapped element and appends the element to <code>appendAST</code>.
-	 * 
-	 * @deprecated use IAST#mapThread() instead
-	 * 
-	 * @param appendAST
-	 * @param replacement
-	 *            an IAST there the argument at the given position is replaced by the currently mapped argument of this
-	 *            IAST.
-	 * @param position
-	 * @return <code>appendAST</code>
-	 */
-	@Deprecated
-	default IAST mapAt(IASTAppendable appendAST, final IAST replacement, int position) {
-		return mapThread(appendAST, replacement, position);
-	}
-
 	default IAST mapAt(final IASTAppendable replacement, int position) {
 		return mapThread(replacement, position);
 	}
@@ -1249,6 +1231,8 @@ public interface IAST extends IExpr, Cloneable, Iterable<IExpr> {
 	 */
 	public IASTMutable mapThread(final IAST replacement, int position);
 
+	public IASTMutable mapThreadEvaled(EvalEngine engine, final IAST replacement, int position);
+
 	/**
 	 * Maps the elements of this IAST with the unary <code>function)</code>.
 	 * 
@@ -1266,15 +1250,19 @@ public interface IAST extends IExpr, Cloneable, Iterable<IExpr> {
 	 * there <code>replacement</code> is an IAST at which the argument at the given position will be replaced by the
 	 * currently mapped element and appends the element to <code>appendAST</code>.
 	 * 
+	 * @param engine
+	 *            TODO
 	 * @param appendAST
 	 * @param replacement
 	 *            an IAST there the argument at the given position is replaced by the currently mapped argument of this
 	 *            IAST.
 	 * @param position
+	 * 
 	 * @return <code>appendAST</code>
 	 * @see IAST#map(Function, int)
 	 */
-	public IASTAppendable mapThread(IASTAppendable appendAST, final IAST replacement, int position);
+	public IASTAppendable mapThreadEvaled(EvalEngine engine, IASTAppendable appendAST, final IAST replacement,
+			int position);
 
 	/**
 	 * Get the argument at index 1, if the <code>size() == 2</code> or the complete ast if the <code>size() > 2</code>
