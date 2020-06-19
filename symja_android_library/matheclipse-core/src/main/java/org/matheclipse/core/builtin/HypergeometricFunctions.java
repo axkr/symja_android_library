@@ -764,13 +764,14 @@ public class HypergeometricFunctions {
 					&& ((IInteger) b).isGT((IInteger) a)) {
 				return F.CComplexInfinity;
 			}
-			IExpr bPlus1 = engine.evaluate(b.plus(F.C1));
-			if (a.equals(bPlus1)) {
-				// (E^z * (-1 + a + z)) / (-1 + a)
-				return F.Times(F.Power(F.E, z), F.Divide(F.Plus(F.CN1, a, z), F.Plus(a, F.CN1)));
-			}
-			if (engine.isDoubleMode()) {
-				try {
+			try {
+				IExpr bPlus1 = engine.evaluate(b.plus(F.C1));
+				if (a.equals(bPlus1)) {
+					// (E^z * (-1 + a + z)) / (-1 + a)
+					return F.Times(F.Power(F.E, z), F.Divide(F.Plus(F.CN1, a, z), F.Plus(a, F.CN1)));
+				}
+				if (engine.isDoubleMode()) {
+
 					double aDouble = Double.NaN;
 					double bDouble = Double.NaN;
 					double zDouble = Double.NaN;
@@ -791,41 +792,42 @@ public class HypergeometricFunctions {
 						return F.num(HypergeometricJS.hypergeometric1F1(aDouble, bDouble, zDouble));
 					}
 
-				} catch (ValidateException ve) {
-					if (FEConfig.SHOW_STACKTRACE) {
-						ve.printStackTrace();
-					}
-				} catch (RuntimeException rex) {
-					// rex.printStackTrace();
-					return engine.printMessage(ast.topHead(), rex);
 				}
-			}
-			if (a.equals(b)) {
-				// E^z
-				return F.Power(F.E, z);
-			}
-			if (a.isOne()) {
-				// (-1 + b)*E^z*z^(1 - b)*(Gamma(-1 + b) - Gamma(-1 + b, z))
-				return F.Times(F.Plus(F.CN1, b), F.Power(F.E, z), F.Power(z, F.Plus(F.C1, F.Negate(b))),
-						F.Plus(F.Gamma(F.Plus(F.CN1, b)), F.Negate(F.Gamma(F.Plus(F.CN1, b), z))));
-			}
-			if (a.isMinusOne()) {
-				// 1 - z/b
-				return F.Subtract(F.C1, F.Divide(z, b));
-			}
-			if (a.isNumEqualInteger(F.C2)) {
-				// (-1 + b)*(1 + (2 - b)*E^z*z^(1 - b)* (Gamma(-1 + b) - Gamma(-1 + b, z)) + E^z*z^(2 - b)*(Gamma(-1 +
-				// b] - Gamma(-1 + b, z)))
-				return F.Times(F.Plus(F.CN1, b), F.Plus(F.C1,
-						F.Times(F.Plus(F.C2, F.Negate(b)), F.Power(F.E, z), F.Power(z, F.Plus(F.C1, F.Negate(b))),
-								F.Plus(F.Gamma(F.Plus(F.CN1, b)), F.Negate(F.Gamma(F.Plus(F.CN1, b), z)))),
-						F.Times(F.Power(F.E, z), F.Power(z, F.Plus(F.C2, F.Negate(b))),
-								F.Plus(F.Gamma(F.Plus(F.CN1, b)), F.Negate(F.Gamma(F.Plus(F.CN1, b), z))))));
-			}
-			if (a.isNumEqualInteger(F.CN2)) {
-				// 1 - (2*z)/b + z^2/(b*(1 + b))
-				return F.Plus(F.C1, F.Times(F.CN2, F.Power(b, -1), z),
-						F.Times(F.Power(b, -1), F.Power(F.Plus(F.C1, b), -1), F.Sqr(z)));
+				if (a.equals(b)) {
+					// E^z
+					return F.Power(F.E, z);
+				}
+				if (a.isOne()) {
+					// (-1 + b)*E^z*z^(1 - b)*(Gamma(-1 + b) - Gamma(-1 + b, z))
+					return F.Times(F.Plus(F.CN1, b), F.Power(F.E, z), F.Power(z, F.Plus(F.C1, F.Negate(b))),
+							F.Plus(F.Gamma(F.Plus(F.CN1, b)), F.Negate(F.Gamma(F.Plus(F.CN1, b), z))));
+				}
+				if (a.isMinusOne()) {
+					// 1 - z/b
+					return F.Subtract(F.C1, F.Divide(z, b));
+				}
+				if (a.isNumEqualInteger(F.C2)) {
+					// (-1 + b)*(1 + (2 - b)*E^z*z^(1 - b)* (Gamma(-1 + b) - Gamma(-1 + b, z)) + E^z*z^(2 - b)*(Gamma(-1
+					// +
+					// b] - Gamma(-1 + b, z)))
+					return F.Times(F.Plus(F.CN1, b), F.Plus(F.C1,
+							F.Times(F.Plus(F.C2, F.Negate(b)), F.Power(F.E, z), F.Power(z, F.Plus(F.C1, F.Negate(b))),
+									F.Plus(F.Gamma(F.Plus(F.CN1, b)), F.Negate(F.Gamma(F.Plus(F.CN1, b), z)))),
+							F.Times(F.Power(F.E, z), F.Power(z, F.Plus(F.C2, F.Negate(b))),
+									F.Plus(F.Gamma(F.Plus(F.CN1, b)), F.Negate(F.Gamma(F.Plus(F.CN1, b), z))))));
+				}
+				if (a.isNumEqualInteger(F.CN2)) {
+					// 1 - (2*z)/b + z^2/(b*(1 + b))
+					return F.Plus(F.C1, F.Times(F.CN2, F.Power(b, -1), z),
+							F.Times(F.Power(b, -1), F.Power(F.Plus(F.C1, b), -1), F.Sqr(z)));
+				}
+			} catch (ValidateException ve) {
+				if (FEConfig.SHOW_STACKTRACE) {
+					ve.printStackTrace();
+				}
+			} catch (RuntimeException rex) {
+				// rex.printStackTrace();
+				return engine.printMessage(ast.topHead(), rex);
 			}
 			return F.NIL;
 		}
@@ -852,7 +854,7 @@ public class HypergeometricFunctions {
 			IExpr b = ast.arg2();
 			IExpr c = ast.arg3();
 			IExpr z = ast.arg4();
-			if (z.isZero()) {
+			if (a.isZero() || b.isZero() || z.isZero()) {
 				return F.C1;
 			}
 			if (a.compareTo(b) > 0) {
@@ -861,18 +863,23 @@ public class HypergeometricFunctions {
 				newAST.set(2, a);
 				return newAST;
 			}
+			if (c.isInteger() && c.isNegative()) {
+				if (a.isNumber() && b.isNumber()) {
+					return F.CComplexInfinity;
+				}
+			}
 			if (a.isInteger()) {
 				if (a.isNegative() && z.isOne()) {
 					IInteger n = (IInteger) a.negate();
 					// Pochhammer(c-b, n) / Pochhammer(c, n)
 					return F.Divide(F.Expand(F.Pochhammer(F.Subtract(c, b), n)), F.Pochhammer(c, n));
 				}
-				if (a.isOne() && c.isNumEqualInteger(F.C2)) {
-					return
-					// [$ ((1-z)^(1-b)-1)/((-1 + b)*z) $]
-					F.Times(F.Plus(F.CN1, F.Power(F.Subtract(F.C1, z), F.Subtract(F.C1, b))),
-							F.Power(F.Times(F.Plus(F.CN1, b), z), F.CN1)); // $$;
-				}
+				// if (a.isOne() && c.isNumEqualInteger(F.C2)) {
+				// return
+				// // [$ ((1-z)^(1-b)-1)/((-1 + b)*z) $]
+				// F.Times(F.Plus(F.CN1, F.Power(F.Subtract(F.C1, z), F.Subtract(F.C1, b))),
+				// F.Power(F.Times(F.Plus(F.CN1, b), z), F.CN1)); // $$;
+				// }
 			}
 
 			if (a.equals(c)) {
@@ -880,37 +887,38 @@ public class HypergeometricFunctions {
 				// [$ (1 - z)^(-b) $]
 				F.Power(F.Subtract(F.C1, z), F.Negate(b)); // $$;
 			}
-			if (a.equals(b)) {
+			if (b.equals(c)) {
 				return
 				// [$ (1 - z)^(-a) $]
 				F.Power(F.Subtract(F.C1, z), F.Negate(a)); // $$;
 			}
 
-			IExpr temp = engine.evaluate(F.ExpandAll(F.Subtract(c, b)));
-			int diff = temp.toIntDefault();
-			if (diff != Integer.MIN_VALUE) {
-				if (diff == 0) {
-					return
-					// [$ (1 - z)^(-a) $]
-					F.Power(F.Subtract(F.C1, z), F.Negate(a)); // $$;
-				}
-				// if (diff == 1 && !a.isOne()) {
+			try {
+				// IExpr temp = engine.evaluate(F.ExpandAll(F.Subtract(c, b)));
+				// int diff = temp.toIntDefault();
+				// if (diff != Integer.MIN_VALUE) {
+				// if (diff == 0) {
 				// return
-				// // [$ (b*Beta(z, b, 1 - a))/z^b $]
-				// F.Times(b, F.Power(F.Power(z, b), F.CN1), F.Beta(z, b, F.Subtract(F.C1, a))); // $$;
+				// // [$ (1 - z)^(-a) $]
+				// F.Power(F.Subtract(F.C1, z), F.Negate(a)); // $$;
 				// }
-				if (diff == -1) {
-					return
-					// [$ ((1-z)^(-1-a)*(z*(a-b+1)+b-1))/(b-1) $]
-					F.Times(F.Power(F.Plus(F.CN1, b), F.CN1),
-							F.Plus(F.CN1, F.Times(z, F.Plus(a, F.Negate(b), F.C1)), b),
-							F.Power(F.Subtract(F.C1, z), F.Subtract(F.CN1, a))); // $$;
-				}
+				// // if (diff == 1 && !a.isOne()) {
+				// // return
+				// // // [$ (b*Beta(z, b, 1 - a))/z^b $]
+				// // F.Times(b, F.Power(F.Power(z, b), F.CN1), F.Beta(z, b, F.Subtract(F.C1, a))); // $$;
+				// // }
+				// if (diff == -1) {
+				// return
+				// // [$ ((1-z)^(-1-a)*(z*(a-b+1)+b-1))/(b-1) $]
+				// F.Times(F.Power(F.Plus(F.CN1, b), F.CN1),
+				// F.Plus(F.CN1, F.Times(z, F.Plus(a, F.Negate(b), F.C1)), b),
+				// F.Power(F.Subtract(F.C1, z), F.Subtract(F.CN1, a))); // $$;
+				// }
+				//
+				// }
 
-			}
+				if (engine.isDoubleMode()) {
 
-			if (engine.isDoubleMode()) {
-				try {
 					double aDouble = Double.NaN;
 					double bDouble = Double.NaN;
 					double cDouble = Double.NaN;
@@ -922,8 +930,8 @@ public class HypergeometricFunctions {
 						zDouble = z.evalDouble();
 					} catch (ValidateException ve) {
 					}
-					if (Double.isNaN(aDouble) || Double.isNaN(bDouble) || Double.isNaN(zDouble) || (zDouble > 1.0)
-							|| (zDouble == -1.0)) {
+					if (Double.isNaN(aDouble) || Double.isNaN(bDouble) || Double.isNaN(cDouble) || Double.isNaN(zDouble)
+							|| (zDouble > 1.0) || (zDouble == -1.0)) {
 						Complex ac = a.evalComplex();
 						Complex bc = b.evalComplex();
 						Complex cc = c.evalComplex();
@@ -935,33 +943,33 @@ public class HypergeometricFunctions {
 						return F.num(HypergeometricJS.hypergeometric2F1(aDouble, bDouble, cDouble, zDouble));
 					}
 
-				} catch (ThrowException te) {
-					if (FEConfig.SHOW_STACKTRACE) {
-						te.printStackTrace();
-					}
-					return te.getValue();
-				} catch (ValidateException ve) {
-					if (FEConfig.SHOW_STACKTRACE) {
-						ve.printStackTrace();
-					}
-				} catch (RuntimeException rex) {
-					// rex.printStackTrace();
-					return engine.printMessage(ast.topHead(), rex);
 				}
+				//
+				// if (a.isReal() && b.isReal() && c.isReal() && z.isReal()) {
+				// double aDouble = ((ISignedNumber) a).doubleValue();
+				// double bDouble = ((ISignedNumber) b).doubleValue();
+				// double cDouble = ((ISignedNumber) c).doubleValue();
+				// double zDouble = ((ISignedNumber) z).doubleValue();
+				// try {
+				// return F.num(de.lab4inf.math.functions.HypergeometricGaussSeries.gaussSeries(aDouble, bDouble,
+				// cDouble, zDouble));
+				// } catch (RuntimeException rex) {
+				// return engine.printMessage(ast.topHead() + ": " + rex.getMessage());
+				// }
+				// }
+			} catch (ThrowException te) {
+				if (FEConfig.SHOW_STACKTRACE) {
+					te.printStackTrace();
+				}
+				return te.getValue();
+			} catch (ValidateException ve) {
+				if (FEConfig.SHOW_STACKTRACE) {
+					ve.printStackTrace();
+				}
+			} catch (RuntimeException rex) {
+				// rex.printStackTrace();
+				return engine.printMessage(ast.topHead(), rex);
 			}
-			//
-			// if (a.isReal() && b.isReal() && c.isReal() && z.isReal()) {
-			// double aDouble = ((ISignedNumber) a).doubleValue();
-			// double bDouble = ((ISignedNumber) b).doubleValue();
-			// double cDouble = ((ISignedNumber) c).doubleValue();
-			// double zDouble = ((ISignedNumber) z).doubleValue();
-			// try {
-			// return F.num(de.lab4inf.math.functions.HypergeometricGaussSeries.gaussSeries(aDouble, bDouble,
-			// cDouble, zDouble));
-			// } catch (RuntimeException rex) {
-			// return engine.printMessage(ast.topHead() + ": " + rex.getMessage());
-			// }
-			// }
 			return F.NIL;
 		}
 
@@ -1062,25 +1070,25 @@ public class HypergeometricFunctions {
 				// b==a ==> E^z*Gamma(1-a,z)
 				return F.Times(F.Exp(z), F.Gamma(F.Subtract(F.C1, a), z));
 			}
-			IExpr n = engine.evaluate(F.Subtract(b, a));
-			if (n.isInteger()) {
-				if (n.isOne()) {
-					// b==a+1 ==> z^(-a)
-					return F.Power(z, a.negate());
+			try {
+				IExpr n = engine.evaluate(F.Subtract(b, a));
+				if (n.isInteger()) {
+					if (n.isOne()) {
+						// b==a+1 ==> z^(-a)
+						return F.Power(z, a.negate());
+					}
+					int nInt = n.toIntDefault();
+					if (nInt > 0) {
+						int nMinus1 = nInt - 1;
+						// Sum((Binomial(-1+n, -1-k+n)*Pochhammer(a, k))/z^k, {k, 0, n-1}) / z^a
+						return F.Times(F.Power(z, a.negate()), //
+								F.intSum( //
+										k -> F.Times(F.Binomial(nMinus1, nMinus1 - k), F.Pochhammer(a, F.ZZ(k)),
+												F.Power(z, -k)), //
+										0, nMinus1));
+					}
 				}
-				int nInt = n.toIntDefault();
-				if (nInt > 0) {
-					int nMinus1 = nInt - 1;
-					// Sum((Binomial(-1+n, -1-k+n)*Pochhammer(a, k))/z^k, {k, 0, n-1}) / z^a
-					return F.Times(F.Power(z, a.negate()), //
-							F.intSum( //
-									k -> F.Times(F.Binomial(nMinus1, nMinus1 - k), F.Pochhammer(a, F.ZZ(k)),
-											F.Power(z, -k)), //
-									0, nMinus1));
-				}
-			}
-			if (engine.isDoubleMode()) {
-				try {
+				if (engine.isDoubleMode()) {
 					double aDouble = Double.NaN;
 					double bDouble = Double.NaN;
 					double zDouble = Double.NaN;
@@ -1099,20 +1107,19 @@ public class HypergeometricFunctions {
 					Complex bc = b.evalComplex();
 					Complex zc = z.evalComplex();
 					return F.complexNum(HypergeometricJS.hypergeometricU(ac, bc, zc));
-
-				} catch (ThrowException te) {
-					if (FEConfig.SHOW_STACKTRACE) {
-						te.printStackTrace();
-					}
-					return te.getValue();
-				} catch (ValidateException ve) {
-					if (FEConfig.SHOW_STACKTRACE) {
-						ve.printStackTrace();
-					}
-				} catch (RuntimeException rex) {
-					// rex.printStackTrace();
-					return engine.printMessage(ast.topHead(), rex);
 				}
+			} catch (ThrowException te) {
+				if (FEConfig.SHOW_STACKTRACE) {
+					te.printStackTrace();
+				}
+				return te.getValue();
+			} catch (ValidateException ve) {
+				if (FEConfig.SHOW_STACKTRACE) {
+					ve.printStackTrace();
+				}
+			} catch (RuntimeException rex) {
+				// rex.printStackTrace();
+				return engine.printMessage(ast.topHead(), rex);
 			}
 			return F.NIL;
 		}
@@ -1498,42 +1505,42 @@ public class HypergeometricFunctions {
 			IExpr k = ast.arg1();
 			IExpr m = ast.arg2();
 			IExpr z = ast.arg3();
-// TODO
-//			if (engine.isDoubleMode()) {
-//				try {
-//					double kDouble = Double.NaN;
-//					double mDouble = Double.NaN;
-//					double zDouble = Double.NaN;
-//					try {
-//						kDouble = k.evalDouble();
-//						mDouble = m.evalDouble();
-//						zDouble = z.evalDouble();
-//						return F.complexNum(HypergeometricJS.whittakerW(new Complex(kDouble), new Complex(mDouble),
-//								new Complex(zDouble)));
-//					} catch (ValidateException ve) {
-//						if (FEConfig.SHOW_STACKTRACE) {
-//							ve.printStackTrace();
-//						}
-//					}
-//					Complex kc = k.evalComplex();
-//					Complex mc = m.evalComplex();
-//					Complex zc = z.evalComplex();
-//					return F.complexNum(HypergeometricJS.whittakerW(kc, mc, zc));
-//
-//				} catch (ThrowException te) {
-//					if (FEConfig.SHOW_STACKTRACE) {
-//						te.printStackTrace();
-//					}
-//					return te.getValue();
-//				} catch (ValidateException ve) {
-//					if (FEConfig.SHOW_STACKTRACE) {
-//						ve.printStackTrace();
-//					}
-//				} catch (RuntimeException rex) {
-//					// rex.printStackTrace();
-//					return engine.printMessage(ast.topHead(), rex);
-//				}
-//			}
+			// TODO
+			// if (engine.isDoubleMode()) {
+			// try {
+			// double kDouble = Double.NaN;
+			// double mDouble = Double.NaN;
+			// double zDouble = Double.NaN;
+			// try {
+			// kDouble = k.evalDouble();
+			// mDouble = m.evalDouble();
+			// zDouble = z.evalDouble();
+			// return F.complexNum(HypergeometricJS.whittakerW(new Complex(kDouble), new Complex(mDouble),
+			// new Complex(zDouble)));
+			// } catch (ValidateException ve) {
+			// if (FEConfig.SHOW_STACKTRACE) {
+			// ve.printStackTrace();
+			// }
+			// }
+			// Complex kc = k.evalComplex();
+			// Complex mc = m.evalComplex();
+			// Complex zc = z.evalComplex();
+			// return F.complexNum(HypergeometricJS.whittakerW(kc, mc, zc));
+			//
+			// } catch (ThrowException te) {
+			// if (FEConfig.SHOW_STACKTRACE) {
+			// te.printStackTrace();
+			// }
+			// return te.getValue();
+			// } catch (ValidateException ve) {
+			// if (FEConfig.SHOW_STACKTRACE) {
+			// ve.printStackTrace();
+			// }
+			// } catch (RuntimeException rex) {
+			// // rex.printStackTrace();
+			// return engine.printMessage(ast.topHead(), rex);
+			// }
+			// }
 			return F.NIL;
 		}
 
