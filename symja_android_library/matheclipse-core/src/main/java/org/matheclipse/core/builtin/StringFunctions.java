@@ -6,6 +6,7 @@ import java.io.UnsupportedEncodingException;
 import java.util.function.Predicate;
 import java.util.regex.Pattern;
 
+import org.matheclipse.core.basic.Config;
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.exception.Validate;
 import org.matheclipse.core.eval.exception.ValidateException;
@@ -52,10 +53,14 @@ public final class StringFunctions {
 			F.SyntaxLength.setEvaluator(new SyntaxLength());
 			F.TextString.setEvaluator(new TextString());
 			F.ToCharacterCode.setEvaluator(new ToCharacterCode());
-			F.ToExpression.setEvaluator(new ToExpression());
 			F.ToString.setEvaluator(new ToString());
 			F.ToUnicode.setEvaluator(new ToUnicode());
 			F.UpperCaseQ.setEvaluator(new UpperCaseQ());
+
+			TeXParser.initialize();
+			if (!Config.FUZZY_PARSER) {
+				F.ToExpression.setEvaluator(new ToExpression());
+			}
 		}
 	}
 
@@ -900,7 +905,7 @@ public final class StringFunctions {
 
 		@Override
 		public void setUp(final ISymbol newSymbol) {
-			TeXParser.initialize();
+
 		}
 	}
 
