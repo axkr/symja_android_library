@@ -13,7 +13,7 @@ public interface ArcSinRules {
    * <li>index 0 - number of equal rules in <code>RULES</code></li>
 	 * </ul>
 	 */
-  final public static int[] SIZES = { 17, 0 };
+  final public static int[] SIZES = { 18, 0 };
 
   final public static IAST RULES = List(
     IInit(ArcSin, SIZES),
@@ -23,6 +23,9 @@ public interface ArcSinRules {
     // ArcSin(0)=0
     ISet(ArcSin(C0),
       C0),
+    // ArcSin(Sqrt(2-Sqrt(3))/2)=Pi/12
+    ISet(ArcSin(Times(C1D2,Sqrt(Subtract(C2,CSqrt3)))),
+      Times(QQ(1L,12L),Pi)),
     // ArcSin((-1+Sqrt(3))/(2*Sqrt(2)))=Pi/12
     ISet(ArcSin(Times(C1D2,C1DSqrt2,Plus(CN1,CSqrt3))),
       Times(QQ(1L,12L),Pi)),

@@ -13,7 +13,7 @@ public interface LimitRules {
    * <li>index 0 - number of equal rules in <code>RULES</code></li>
 	 * </ul>
 	 */
-  final public static int[] SIZES = { 44, 21 };
+  final public static int[] SIZES = { 47, 21 };
 
   final public static IAST RULES = List(
     IInit(Limit, SIZES),
@@ -65,6 +65,15 @@ public interface LimitRules {
     // Limit((1+a_/x_)^x_,x_Symbol->Infinity)=E^a/;FreeQ(a,x)
     ISet(Limit(Power(Plus(C1,Times(a_,Power(x_,CN1))),x_),Rule(x_Symbol,oo)),
       Condition(Exp(a),FreeQ(a,x))),
+    // Limit((1+x_)^(1/x_),x_Symbol->0)=E
+    ISet(Limit(Power(Plus(C1,x_),Power(x_,CN1)),Rule(x_Symbol,C0)),
+      E),
+    // Limit(((a_.+x_)/(b_.+x_))^(c_.+x_),x_Symbol->-Infinity)=E^(a-b)/;FreeQ({a,b,c},x)
+    ISet(Limit(Power(Times(Plus(a_DEFAULT,x_),Power(Plus(b_DEFAULT,x_),CN1)),Plus(c_DEFAULT,x_)),Rule(x_Symbol,Noo)),
+      Condition(Exp(Subtract(a,b)),FreeQ(List(a,b,c),x))),
+    // Limit(((a_.+x_)/(b_.+x_))^(c_.+x_),x_Symbol->Infinity)=E^(a-b)/;FreeQ({a,b,c},x)
+    ISet(Limit(Power(Times(Plus(a_DEFAULT,x_),Power(Plus(b_DEFAULT,x_),CN1)),Plus(c_DEFAULT,x_)),Rule(x_Symbol,oo)),
+      Condition(Exp(Subtract(a,b)),FreeQ(List(a,b,c),x))),
     // Limit(HarmonicNumber(y_Symbol,s_Integer),x_Symbol->Infinity):=With({v=s/2},((-1)^(v+1)*(2*Pi)^(2*v)*BernoulliB(2*v))/(2*(2*v)!))/;EvenQ(s)&&Positive(s)
     ISetDelayed(Limit(HarmonicNumber(y_Symbol,$p(s, Integer)),Rule(x_Symbol,oo)),
       Condition(With(List(Set(v,Times(C1D2,s))),Times(Power(CN1,Plus(v,C1)),Power(C2Pi,Times(C2,v)),BernoulliB(Times(C2,v)),Power(Times(C2,Factorial(Times(C2,v))),CN1))),And(EvenQ(s),Positive(s)))),
