@@ -189,6 +189,11 @@
 			<artifactId>tablesaw-excel</artifactId>
 			<version>0.38.1</version>
 		</dependency>
+		<dependency>
+			<groupId>org.owasp.encoder</groupId>
+			<artifactId>encoder</artifactId>
+			<version>1.2.2</version>
+		</dependency>
 	</dependencies>
 
 	<build>
