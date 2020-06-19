@@ -25,7 +25,7 @@ import org.matheclipse.parser.client.FEConfig;
 public class BigFractionSym extends AbstractFractionSym {
 
 	/**
-	 * 
+	 *  
 	 */
 	private static final long serialVersionUID = -553051997353641162L;
 
@@ -537,7 +537,7 @@ public class BigFractionSym extends AbstractFractionSym {
 	@Override
 	public IRational normalize() {
 		if (toBigDenominator().equals(BigInteger.ONE)) {
-			return F.integer(toBigNumerator());
+			return F.ZZ(toBigNumerator());
 		}
 		if (toBigNumerator().equals(BigInteger.ZERO)) {
 			return F.C0;
@@ -572,13 +572,12 @@ public class BigFractionSym extends AbstractFractionSym {
 	/** {@inheritDoc} */
 	@Override
 	public int toIntDefault(int defaultValue) {
-		if (toBigDenominator().equals(BigInteger.ONE)) {
-			return NumberUtil.toInt(toBigNumerator());
+		BigInteger bigDenominator = toBigDenominator();
+		if (bigDenominator.equals(BigInteger.ONE)) {
+			int val = bigDenominator.intValue();
+			return bigDenominator.equals(BigInteger.valueOf(val)) ? val : defaultValue;
 		}
-		if (toBigNumerator().equals(BigInteger.ZERO)) {
-			return 0;
-		}
-		return defaultValue;
+		return fFraction.equals(BigFraction.ZERO) ? 0 : defaultValue;
 	}
 
 	/** {@inheritDoc} */
