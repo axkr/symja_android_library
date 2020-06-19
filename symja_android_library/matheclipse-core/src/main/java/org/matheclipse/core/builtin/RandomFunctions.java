@@ -55,7 +55,7 @@ public final class RandomFunctions {
 
 		@Override
 		public IExpr evaluate(final IAST ast, EvalEngine engine) {
-			if (ast.size() > 1 && ast.arg1().isAST()) {
+			if (ast.size() > 1 && ast.arg1().isList()) {
 				IAST list = (IAST) ast.arg1();
 				ThreadLocalRandom random = ThreadLocalRandom.current();
 				int listSize = list.argSize();
@@ -122,7 +122,7 @@ public final class RandomFunctions {
 						ThreadLocalRandom tlr = ThreadLocalRandom.current();
 						return F.complexNum(tlr.nextDouble(minRe, maxRe), tlr.nextDouble(minIm, maxIm));
 					} else {
-						Complex max = engine.evalComplex(ast.arg1() ); 
+						Complex max = engine.evalComplex(ast.arg1());
 						ThreadLocalRandom tlr = ThreadLocalRandom.current();
 						return F.complexNum(tlr.nextDouble(max.getReal()), tlr.nextDouble(max.getImaginary()));
 					}
@@ -373,7 +373,7 @@ public final class RandomFunctions {
 
 		@Override
 		public IExpr evaluate(final IAST ast, EvalEngine engine) {
-			if (ast.arg1().isAST()) {
+			if (ast.arg1().isList()) {
 				int n = ast.isAST2() ? ast.arg2().toIntDefault(Integer.MIN_VALUE) : Integer.MAX_VALUE;
 				if (n >= 0) {
 					return shuffle((IAST) ast.arg1(), n);
