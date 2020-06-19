@@ -29,7 +29,9 @@ import org.matheclipse.core.basic.Config;
 import org.matheclipse.core.convert.JASConvert;
 import org.matheclipse.core.convert.VariablesSet;
 import org.matheclipse.core.eval.EvalEngine;
+import org.matheclipse.core.eval.exception.ASTElementLimitExceeded;
 import org.matheclipse.core.eval.exception.ArgumentTypeException;
+import org.matheclipse.core.eval.exception.IterationLimitExceeded;
 import org.matheclipse.core.eval.exception.JASConversionException;
 import org.matheclipse.core.eval.exception.LimitException;
 import org.matheclipse.core.eval.exception.Validate;
@@ -64,6 +66,7 @@ import org.matheclipse.parser.client.FEConfig;
 
 import com.google.common.math.BigIntegerMath;
 import com.google.common.math.LongMath;
+import com.google.common.util.concurrent.UncheckedExecutionException;
 
 import edu.jas.arith.BigRational;
 import edu.jas.arith.ModInteger;
@@ -1264,7 +1267,7 @@ public final class NumberTheory {
 			if (ast.arg1().isList()) {
 				// thread over first list
 				IAST list = (IAST) ast.arg1();
-				return list.mapThread(F.ListAlloc(list.size()), ast, 1);
+				return list.mapThreadEvaled(engine, F.ListAlloc(list.size()), ast, 1);
 			}
 
 			IExpr result = engine.evaluate(F.Divide(ast.arg1(), ast.arg2()));
@@ -1347,7 +1350,7 @@ public final class NumberTheory {
 
 		@Override
 		public IExpr evaluateArg1(final IExpr arg1, EvalEngine engine) {
-			if (arg1.isInteger()) {
+			if (arg1.isInteger() && !arg1.isZero()) {
 				IInteger i = (IInteger) arg1;
 				if (i.isNegative()) {
 					i = i.negate();
@@ -1957,7 +1960,7 @@ public final class NumberTheory {
 				IExpr x = ast.arg1();
 				IExpr n = ast.arg2();
 				// x*(x-1)* (x-(n-1))
-				
+
 				return F.NIL;
 			}
 			if (ast.isAST2()) {
@@ -1965,7 +1968,7 @@ public final class NumberTheory {
 				IExpr n = ast.arg2();
 				IExpr h = ast.arg3();
 				// x*(x-h)* (x-(n-1)*h)
-				
+
 				return F.NIL;
 			}
 			return F.NIL;
@@ -2209,7 +2212,10 @@ public final class NumberTheory {
 				int n = ((IInteger) arg1).toIntDefault(Integer.MIN_VALUE);
 				if (n > Integer.MIN_VALUE) {
 					if (ast.isAST2()) {
-						return fibonacciPolynomialIterative(n, ast.arg2(), engine);
+						if (ast.arg2().isQuantity()) {
+							return F.NIL;
+						}
+						return fibonacciPolynomialIterative(n, ast.arg2(), ast, engine);
 					}
 					return fibonacci(n);
 				}
@@ -2243,7 +2249,7 @@ public final class NumberTheory {
 		 *            the variable expression of the polynomial
 		 * @return
 		 */
-		public IExpr fibonacciPolynomialIterative(int n, IExpr x, final EvalEngine engine) {
+		public IExpr fibonacciPolynomialIterative(int n, IExpr x, IAST ast, final EvalEngine engine) {
 			int iArg = n;
 			if (n < 0) {
 				n *= (-1);
@@ -2258,6 +2264,10 @@ public final class NumberTheory {
 				return fibonacci;
 			}
 
+			int iterationLimit = engine.getIterationLimit();
+			if (iterationLimit >= 0 && iterationLimit <= n) {
+				IterationLimitExceeded.throwIt(n, ast);
+			}
 			for (int i = 1; i < n; i++) {
 				IExpr temp = fibonacci;
 				if (fibonacci.isPlus()) {
@@ -2530,11 +2540,11 @@ public final class NumberTheory {
 				IAST list2 = (IAST) arg2;
 				if (arg3.isReal() && arg3.isPositive()) {
 					int n = arg3.toIntDefault(-1);
-					return linearRecurrence(list1, list2, n, engine);
+					return linearRecurrence(list1, list2, n, ast, engine);
 				}
 				if (arg3.isList() && arg3.size() == 2 && arg3.first().isReal()) {
 					int n = arg3.first().toIntDefault(-1);
-					IAST result = linearRecurrence(list1, list2, n, engine);
+					IAST result = linearRecurrence(list1, list2, n, ast, engine);
 					if (result.isPresent()) {
 						return result.get(n);
 					}
@@ -2548,7 +2558,7 @@ public final class NumberTheory {
 			return IOFunctions.ARGS_3_3;
 		}
 
-		private IAST linearRecurrence(IAST list1, IAST list2, int n, EvalEngine engine) {
+		private IAST linearRecurrence(IAST list1, IAST list2, int n, IAST ast, EvalEngine engine) {
 			if (n < 0) {
 				return F.NIL;
 			}
@@ -2556,6 +2566,18 @@ public final class NumberTheory {
 			int size2 = list2.size();
 			if (size2 >= size1) {
 				int counter = 0;
+				if (Config.MAX_AST_SIZE < n) {
+					ASTElementLimitExceeded.throwIt(n);
+				}
+				int loopCounter = n;
+				if (size1 > 0) {
+					loopCounter = n * size1;
+				}
+
+				int iterationLimit = engine.getIterationLimit();
+				if (iterationLimit >= 0 && iterationLimit <= loopCounter) {
+					IterationLimitExceeded.throwIt(loopCounter, ast);
+				}
 				IASTAppendable result = F.ListAlloc(n);
 				int start = size2 - size1 + 1;
 				boolean isNumber = true;
@@ -2576,6 +2598,7 @@ public final class NumberTheory {
 						}
 					}
 				}
+
 				if (isNumber) {
 					while (counter < n) {
 						int size = result.size();
@@ -2668,7 +2691,7 @@ public final class NumberTheory {
 				int n = ((IInteger) arg1).toIntDefault(Integer.MIN_VALUE);
 				if (n > Integer.MIN_VALUE) {
 					if (ast.isAST2()) {
-						return lucasLPolynomialIterative(n, ast.arg2(), engine);
+						return lucasLPolynomialIterative(n, ast.arg2(), ast, engine);
 					}
 					int iArg = n;
 					if (n < 0) {
@@ -2712,7 +2735,7 @@ public final class NumberTheory {
 		 *            the variable expression of the polynomial
 		 * @return
 		 */
-		private static IExpr lucasLPolynomialIterative(int n, IExpr x, final EvalEngine engine) {
+		private static IExpr lucasLPolynomialIterative(int n, IExpr x, final IAST ast, final EvalEngine engine) {
 			int iArg = n;
 			if (n < 0) {
 				n *= (-1);
@@ -2729,6 +2752,10 @@ public final class NumberTheory {
 				return lucalsL;
 			}
 
+			int iterationLimit = engine.getIterationLimit();
+			if (iterationLimit >= 0 && iterationLimit <= n) {
+				IterationLimitExceeded.throwIt(n, ast);
+			}
 			for (int i = 1; i < n; i++) {
 				IExpr temp = lucalsL;
 				if (lucalsL.isPlus()) {
@@ -3187,6 +3214,11 @@ public final class NumberTheory {
 					return IOFunctions.printMessage(F.NextPrime, "intpm", F.List(ast, F.C2), engine);
 				}
 
+				int iterationLimit = EvalEngine.get().getIterationLimit();
+				if (iterationLimit >= 0 && iterationLimit <= n) {
+					IterationLimitExceeded.throwIt(n, ast);
+				}
+
 				BigInteger temp = primeBase;
 				for (int i = 0; i < n; i++) {
 					temp = temp.nextProbablePrime();
@@ -3256,6 +3288,12 @@ public final class NumberTheory {
 			 * @return the ith partition number. This is 1 if i=0 or 1, 2 if i=2 and so forth.
 			 */
 			private BigInteger sumPartitionsP(int n, int capacity) {
+				int iterationLimit = EvalEngine.get().getIterationLimit();
+				long maxIterations = (long) capacity;
+				if (iterationLimit >= 0 && iterationLimit <= maxIterations) {
+					IterationLimitExceeded.throwIt(capacity, F.PartitionsP(F.ZZ(n)));
+				}
+
 				fList.ensureCapacity(capacity);
 				while (fList.size() <= capacity) {
 					BigInteger per = BigInteger.ZERO;
@@ -3299,8 +3337,14 @@ public final class NumberTheory {
 						if (result != null) {
 							return result;
 						}
-					} catch (RuntimeException rex) {
+					} catch (ValidateException ve) {
 						// e.printStackTrace();
+						return engine.printMessage(ast.topHead(), ve);
+					} catch (UncheckedExecutionException e) {
+						Throwable th = e.getCause();
+						if (th instanceof LimitException) {
+							throw (LimitException) th;
+						}
 					} catch (ExecutionException e) {
 						// e.printStackTrace();
 					}
@@ -3398,10 +3442,14 @@ public final class NumberTheory {
 								return result;
 							}
 						}
-					} catch (ArithmeticException e) {
+					} catch (ValidateException ve) {
 						// e.printStackTrace();
-					} catch (RuntimeException rex) {
-						// e.printStackTrace();
+						return engine.printMessage(ast.topHead(), ve);
+					} catch (UncheckedExecutionException e) {
+						Throwable th = e.getCause();
+						if (th instanceof LimitException) {
+							throw (LimitException) th;
+						}
 					} catch (ExecutionException e) {
 						// e.printStackTrace();
 					}
@@ -3444,9 +3492,14 @@ public final class NumberTheory {
 		}
 
 		private static IExpr sumPartitionsQ1(EvalEngine engine, IInteger n) {
-			IInteger sum = F.C0;
+
 			int nInt = n.toIntDefault(Integer.MIN_VALUE);
 			if (nInt >= 0) {
+				int iterationLimit = EvalEngine.get().getIterationLimit();
+				if (iterationLimit >= 0 && iterationLimit <= nInt) {
+					IterationLimitExceeded.throwIt(nInt, F.PartitionsQ(F.ZZ(nInt)));
+				}
+				IInteger sum = F.C0;
 				for (int k = 1; k <= nInt; k++) {
 					IExpr temp = termPartitionsQ1(engine, n, k);
 					if (!temp.isInteger()) {
@@ -3454,8 +3507,10 @@ public final class NumberTheory {
 					}
 					sum = sum.add((IInteger) temp);
 				}
+				return sum;
 			}
-			return sum;
+			return F.NIL;
+
 		}
 
 		private static IExpr termPartitionsQ1(EvalEngine engine, IInteger n, int k) {
@@ -3465,16 +3520,23 @@ public final class NumberTheory {
 		}
 
 		private static IExpr sumPartitionsQ2(EvalEngine engine, IInteger n) {
-			int floorND2 = n.div(F.C2).toInt();
-			IInteger sum = F.C0;
-			for (int k = 1; k <= floorND2; k++) {
-				IExpr temp = termPartitionsQ2(engine, n, k);
-				if (!temp.isInteger()) {
-					return F.NIL;
+			int floorND2 = n.div(F.C2).toIntDefault();
+			if (floorND2 >= 0) {
+				int iterationLimit = EvalEngine.get().getIterationLimit();
+				if (iterationLimit >= 0 && iterationLimit <= floorND2) {
+					IterationLimitExceeded.throwIt(floorND2, F.PartitionsQ(n));
 				}
-				sum = sum.add((IInteger) temp);
+				IInteger sum = F.C0;
+				for (int k = 1; k <= floorND2; k++) {
+					IExpr temp = termPartitionsQ2(engine, n, k);
+					if (!temp.isInteger()) {
+						return F.NIL;
+					}
+					sum = sum.add((IInteger) temp);
+				}
+				return sum;
 			}
-			return sum;
+			return F.NIL;
 		}
 
 		private static IExpr termPartitionsQ2(EvalEngine engine, IInteger n, int k) {
@@ -3647,10 +3709,15 @@ public final class NumberTheory {
 				int maxK = ((IInteger) x).toIntDefault(Integer.MIN_VALUE);
 				if (maxK >= 0) {
 					int result = 0;
+					BigInteger max = BigInteger.valueOf(maxK);
 					BigInteger temp = BigInteger.ONE;
+					int iterationLimit = engine.getIterationLimit();
+					if (iterationLimit >= 0 && iterationLimit < (maxK / 100)) {
+						IterationLimitExceeded.throwIt(maxK, ast);
+					}
 					for (int i = 2; i <= maxK; i++) {
 						temp = temp.nextProbablePrime();
-						if (temp.intValue() > maxK) {
+						if (temp.compareTo(max) > 0) {
 							break;
 						}
 						result++;
@@ -4565,12 +4632,22 @@ public final class NumberTheory {
 	public static IInteger factorial(int ni) {
 		BigInteger result;
 		if (ni < 0) {
-			result = BigIntegerMath.factorial(-1 * ni);
+			int positiveN = -1 * ni;
+			int iterationLimit = EvalEngine.get().getIterationLimit();
+			if (iterationLimit >= 0 && iterationLimit < positiveN) {
+				IterationLimitExceeded.throwIt(positiveN, F.Factorial(F.ZZ(ni)));
+			}
+			result = BigIntegerMath.factorial(positiveN);
 			if ((ni & 0x0001) == 0x0001) {
 				// odd integer number
 				result = result.multiply(BigInteger.valueOf(-1L));
 			}
 		} else {
+			int iterationLimit = EvalEngine.get().getIterationLimit();
+			if (iterationLimit >= 0 && iterationLimit < ni) {
+				IterationLimitExceeded.throwIt(ni, F.Factorial(F.ZZ(ni)));
+			}
+
 			if (ni <= 20) {
 				return AbstractIntegerSym.valueOf(LongMath.factorial(ni));
 			}
@@ -4629,6 +4706,9 @@ public final class NumberTheory {
 			if ((temp & 0x00000001) == 0x00000001) { // odd?
 				d = result.multiply(c);
 				result = a.multiply(c).add(result.multiply(b).add(d));
+				if (result.bitLength() > Config.MAX_AST_SIZE * 8) {
+					IterationLimitExceeded.throwIt(result.bitLength(), F.Fibonacci(F.ZZ(iArg)));
+				}
 				a = a.multiply(b).add(d);
 			}
 
@@ -4740,7 +4820,7 @@ public final class NumberTheory {
 		}
 		return bernoulli[n].normalize();
 	}
-	
+
 	public static double bernoulliDouble(int n) {
 		return bernoulliNumber(n).doubleValue();
 	}
