@@ -209,7 +209,7 @@ public class ManipulateFunction {
 						}
 
 						if (plotRangeX.isAST3() && plotRangeX.arg1().isSymbol()) {
-							// return mathcellSliderWithPlot(ast, plot, plotRangeX, plotRangeY, engine);
+							//return mathcellSliderWithPlot(ast, plot, plotRangeX, plotRangeY, engine);
 							return jsxgraphSliderWithPlot(ast, plot, plotRangeX, engine);
 						}
 
@@ -524,6 +524,12 @@ public class ManipulateFunction {
 				for (int i = 1; i < listOfFunctions.size(); i++) {
 					graphicControl.append("var p" + i + " = plot( z" + i + ", ");
 					realRange(graphicControl, plotRangeX, -1, toJS);
+
+					// each function gets it's own color (hue, saturation, lightness)
+					graphicControl.append(", { color: 'hsl(");
+					graphicControl.append(72 * (i - 1));
+					graphicControl.append(",100%,50%)' }");
+
 					graphicControl.append(" );\n");
 				}
 
@@ -1109,7 +1115,7 @@ public class ManipulateFunction {
 
 		final OptionArgs options;
 		if (plotID == ID.Plot3D || //
-				plotID == ID.ComplexPlot3D || // 
+				plotID == ID.ComplexPlot3D || //
 				plotID == ID.ContourPlot || //
 				plotID == ID.DensityPlot) {
 			options = new OptionArgs(plot.topHead(), plot, 4, engine);
@@ -1670,10 +1676,10 @@ public class ManipulateFunction {
 		}
 
 		if (ast.arg1().isAST(F.DensityHistogram)) {
-			int[] dims = arg1.isMatrix();
+			int[] dims = arg1.isMatrixIgnore();
 			if (dims != null) {
 				if (dims[1] == 2) {
-					RealMatrix m = arg1.toRealMatrix();
+					RealMatrix m = arg1.toRealMatrixIgnore();
 					if (m != null) {
 						// double opacity = 1.0;
 						// if (plot.size() >= 2 && plot.arg2().isAST(F.List, 2)) {
@@ -1694,7 +1700,7 @@ public class ManipulateFunction {
 				}
 			}
 		} else if (ast.arg1().isAST(F.Histogram)) {
-			double[] vector = arg1.toDoubleVector();
+			double[] vector = arg1.toDoubleVectorIgnore();
 			if (vector != null && vector.length > 0) {
 				Layout layout = Layout.builder().autosize(true).build();// .title("Histogram").build();
 
