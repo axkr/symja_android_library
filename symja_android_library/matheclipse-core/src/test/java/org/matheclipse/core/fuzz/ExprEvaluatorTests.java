@@ -5,6 +5,7 @@ import java.io.File;
 import java.io.FileReader;
 import java.util.List;
 import java.util.concurrent.ThreadLocalRandom;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 import org.matheclipse.core.basic.Config;
 import org.matheclipse.core.convert.AST2Expr;
@@ -30,6 +31,7 @@ import org.matheclipse.parser.client.ast.ASTNode;
 import org.matheclipse.parser.client.math.MathException;
 import org.matheclipse.parser.client.operator.ASTNodeFactory;
 
+import ch.ethz.idsc.tensor.qty.IQuantity;
 import junit.framework.TestCase;
 
 public class ExprEvaluatorTests extends TestCase {
@@ -249,6 +251,8 @@ public class ExprEvaluatorTests extends TestCase {
 		Config.MAX_AST_SIZE = 10000;
 		Config.MAX_BIT_LENGTH = 1000;
 		Config.MAX_OUTPUT_SIZE = 10000;
+		Config.MAX_INPUT_LEAVES = 100L;
+		Config.MAX_MATRIX_DIMENSION_SIZE = 100;
 
 		EvalEngine engine = new EvalEngine(true);
 		engine.setRecursionLimit(256);
@@ -286,7 +290,8 @@ public class ExprEvaluatorTests extends TestCase {
 				F.CI, //
 				// some primes
 				F.C2, F.C3, F.C5, F.C7, F.ZZ(11), F.ZZ(13), F.ZZ(17), F.ZZ(19), F.ZZ(101), F.ZZ(1009), F.ZZ(10007), //
-				// F.ZZ(Integer.MIN_VALUE), //
+				F.ZZ(Integer.MIN_VALUE), //
+				F.ZZ(Integer.MAX_VALUE), //
 				F.CInfinity, //
 				F.CNInfinity, //
 				F.Null, //
@@ -311,22 +316,24 @@ public class ExprEvaluatorTests extends TestCase {
 				F.List(F.x, F.C5, F.CN3), //
 				F.List(F.x, F.CN3, F.CN1D2), //
 				F.C1DSqrt5, //
-				F.Divide(F.Plus(F.C1,F.Sqrt(5)), F.C2), // GoldenRatio
-				F.Divide(F.C2, F.Plus(F.C1,F.Sqrt(5))), // 1/GoldenRatio
+				F.Divide(F.Plus(F.C1, F.Sqrt(5)), F.C2), // GoldenRatio
+				F.Divide(F.C2, F.Plus(F.C1, F.Sqrt(5))), // 1/GoldenRatio
 				F.Negate(F.Sqrt(2)), //
-				F.Divide(F.Sqrt(2),F.C2), //
-				F.Negate(F.Divide(F.Sqrt(2),F.C2)), //
-				F.Plus(F.Sqrt(2),F.C1), //
-				F.Plus(F.Sqrt(2),F.CN1), //
-				F.Exp(F.Times(F.Pi,F.CI,F.C1D3)), //
-				F.Plus(F.C1,F.CI), //
-				F.Plus(F.CN1,F.CI), //
+				F.Divide(F.Sqrt(2), F.C2), //
+				F.Negate(F.Divide(F.Sqrt(2), F.C2)), //
+				F.Plus(F.Sqrt(2), F.C1), //
+				F.Plus(F.Sqrt(2), F.CN1), //
+				F.Exp(F.Times(F.Pi, F.CI, F.C1D3)), //
+				F.Plus(F.C1, F.CI), //
+				F.Plus(F.CN1, F.CI), //
 				F.CSqrt2, //
 				F.C2Pi, //
 				F.CN3D2, //
 				F.C3D2, //
 				F.C3D4, //
-				F.Slot2, //
+				F.QQ(Long.MAX_VALUE, 7L), F.QQ(Long.MIN_VALUE, 11L), F.QQ(7, Long.MAX_VALUE), F.QQ(11, Long.MAX_VALUE),
+				F.QQ(Long.MAX_VALUE, Long.MAX_VALUE), F.QQ(Long.MIN_VALUE, Long.MAX_VALUE), F.Slot2, //
+				IQuantity.of(1.2, "m"), //
 				F.stringx(""), //
 				F.stringx("\\"), //
 				F.stringx("\r"), //
@@ -343,7 +350,8 @@ public class ExprEvaluatorTests extends TestCase {
 			for (int i = 0; i < functionStrs.length; i++) {
 				IBuiltInSymbol sym = (IBuiltInSymbol) F.symbol(functionStrs[i]);
 				if (sym == F.PolynomialGCD || sym == F.On || sym == F.Off || sym == F.Compile
-						|| sym == F.CompiledFunction || sym == F.Set || sym == F.SetDelayed) {
+						|| sym == F.CompiledFunction || sym == F.Set || sym == F.SetDelayed || sym == F.UpSet
+						|| sym == F.UpSetDelayed) {
 					continue;
 				}
 				IEvaluator evaluator = sym.getEvaluator();
@@ -353,6 +361,9 @@ public class ExprEvaluatorTests extends TestCase {
 						int end = argSize[1];
 						if (end <= 10) {
 							int start = argSize[0];
+							if (start == 0) {
+								start = 1;
+							}
 							generateASTs(sym, start, end, seedList, random, counter, (IFunctionEvaluator) evaluator,
 									engine);
 							continue;
@@ -369,6 +380,8 @@ public class ExprEvaluatorTests extends TestCase {
 		Config.MAX_AST_SIZE = 10000;
 		Config.MAX_BIT_LENGTH = 1000;
 		Config.MAX_OUTPUT_SIZE = 10000;
+		Config.MAX_INPUT_LEAVES = 100L;
+		Config.MAX_MATRIX_DIMENSION_SIZE = 100;
 
 		EvalEngine engine = new EvalEngine(true);
 		engine.setRecursionLimit(256);
@@ -455,6 +468,40 @@ public class ExprEvaluatorTests extends TestCase {
 		}
 	}
 
+	private static class SlowComputationThread extends Thread {
+		private String str;
+		private AtomicBoolean running;
+
+		SlowComputationThread(String str) {
+			this.str = str;
+			this.running = new AtomicBoolean(true);
+		}
+
+		@Override
+		public void run() {
+			if (running.get()) {
+				try {
+					for (int i = 0; i < 300; i++) {
+						join(100);
+						if (!running.get()) {
+							break;
+						}
+					}
+				} catch (InterruptedException e) {
+					//
+					running.set(false);
+				}
+				if (running.get()) {
+					System.err.println("SLOW: " + str);
+				}
+			}
+		}
+
+		public void terminate() {
+			running.set(false);
+		}
+	}
+
 	private void generateASTs(IBuiltInSymbol sym, int start, int end, IAST seedList, ThreadLocalRandom random,
 			int[] counter, IFunctionEvaluator evaluator, EvalEngine engine) {
 		boolean quietMode = true;
@@ -467,7 +514,7 @@ public class ExprEvaluatorTests extends TestCase {
 			engine.init();
 			engine.setQuietMode(quietMode);
 			IASTAppendable ast = F.ast(sym);
-
+			SlowComputationThread thread = null;
 			try {
 				for (int k = 0; k < j; k++) {
 					int seedIndex = random.nextInt(1, seedList.size());
@@ -481,13 +528,16 @@ public class ExprEvaluatorTests extends TestCase {
 					System.out.flush();
 					System.err.flush();
 				}
-				 System.out.println(">> " + ast.toString());
+				// System.out.println(">> " + ast.toString());
 				// System.out.print(".");
+				thread = new SlowComputationThread(">> " + ast.toString());
+				thread.start();
 				if (evaluator != null) {
 					evaluator.evaluate(ast, engine);
 				} else {
 					eval.eval(ast);
 				}
+
 			} catch (FlowControlException mex) {
 				if (!quietMode) {
 					System.err.println(ast.toString());
@@ -532,6 +582,9 @@ public class ExprEvaluatorTests extends TestCase {
 					rex.printStackTrace();
 					fail();
 				}
+			} finally {
+				thread.terminate();
+				thread.interrupt();
 			}
 		}
 	}
