@@ -85,7 +85,9 @@ public abstract class AbstractFractionSym implements IFraction {
 	 */
 	public static IFraction valueOf(BigInteger num, BigInteger den) {
 		if (BigInteger.ZERO.equals(den)) {
-			throw new MathIllegalArgumentException(LocalizedCoreFormats.ZERO_DENOMINATOR);
+			// Infinite expression `1` encountered.
+			String str = IOFunctions.getMessage("infy", F.List(F.Rational(F.ZZ(num), F.C0)), EvalEngine.get());
+			throw new ArgumentTypeException(str);
 		}
 		int cp = den.signum();
 		if (cp < 0) {
@@ -158,35 +160,37 @@ public abstract class AbstractFractionSym implements IFraction {
 	 * @return
 	 */
 	public static IFraction valueOf(long newnum, long newdenom) {
-		if (newdenom != 1) {
-			if (newdenom == 0) {
-				// Infinite expression `1` encountered.
-				String str = IOFunctions.getMessage("infy", F.List(F.Rational(F.ZZ(newnum), F.ZZ(newdenom))),
-						EvalEngine.get());
-				throw new ArgumentTypeException(str);
-			}
-			long gcd2 = Math.abs(ArithmeticUtils.gcd(newnum, newdenom));
-			if (newdenom < 0) {
-				gcd2 = -gcd2;
-			}
-			newnum /= gcd2;
-			newdenom /= gcd2;
+		if (newdenom == 0) {
+			// Infinite expression `1` encountered.
+			String str = IOFunctions.getMessage("infy", F.List(F.Rational(F.ZZ(newnum), F.ZZ(newdenom))),
+					EvalEngine.get());
+			throw new ArgumentTypeException(str);
 		}
+		if (newnum > Long.MIN_VALUE && newdenom > Long.MIN_VALUE) {
+			if (newdenom != 1) {
+				long gcd2 = Math.abs(ArithmeticUtils.gcd(newnum, newdenom));
+				if (newdenom < 0) {
+					gcd2 = -gcd2;
+				}
+				newnum /= gcd2;
+				newdenom /= gcd2;
+			}
 
-		if (newdenom == 1) {
-			if (newnum == 0) {
-				return ZERO;
+			if (newdenom == 1) {
+				if (newnum == 0) {
+					return ZERO;
+				}
+				if (newnum == 1) {
+					return ONE;
+				}
+				if (newnum == -1) {
+					return MONE;
+				}
 			}
-			if (newnum == 1) {
-				return ONE;
-			}
-			if (newnum == -1) {
-				return MONE;
-			}
-		}
 
-		if (Integer.MIN_VALUE < newnum && newnum <= Integer.MAX_VALUE && newdenom <= Integer.MAX_VALUE) {
-			return new FractionSym((int) newnum, (int) newdenom);
+			if (Integer.MIN_VALUE < newnum && newnum <= Integer.MAX_VALUE && newdenom <= Integer.MAX_VALUE) {
+				return new FractionSym((int) newnum, (int) newdenom);
+			}
 		}
 		return new BigFractionSym(BigInteger.valueOf(newnum), BigInteger.valueOf(newdenom));
 	}
@@ -294,16 +298,16 @@ public abstract class AbstractFractionSym implements IFraction {
 	@Override
 	public abstract IInteger ceilFraction();
 
-	public int compareTo(final IExpr expr) { 
+	public int compareTo(final IExpr expr) {
 		if (expr.isNumber()) {
 			int c = this.compareTo(((INumber) expr).re());
 			if (c != 0) {
 				return c;
-			} 
+			}
 		}
 		return -1;
 	}
-	
+
 	/** {@inheritDoc} */
 	@Override
 	public int complexSign() {
@@ -406,7 +410,7 @@ public abstract class AbstractFractionSym implements IFraction {
 		}
 		return F.NIL;
 	}
-	
+
 	/** {@inheritDoc} */
 	public IInteger integerPart() {
 		return isNegative() ? ceilFraction() : floorFraction();
