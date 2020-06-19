@@ -2,9 +2,14 @@ package org.matheclipse.core.expression;
 
 import java.io.Externalizable;
 import java.math.BigInteger;
+import java.util.ArrayList;
 import java.util.Map;
+import java.util.Set;
 import java.util.SortedMap;
+import java.util.SortedSet;
+import java.util.Stack;
 import java.util.TreeMap;
+import java.util.TreeSet;
 
 import org.apfloat.Apcomplex;
 import org.apfloat.Apfloat;
@@ -13,6 +18,7 @@ import org.matheclipse.core.basic.Config;
 import org.matheclipse.core.builtin.NumberTheory;
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.exception.ASTElementLimitExceeded;
+import org.matheclipse.core.eval.exception.IterationLimitExceeded;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IASTAppendable;
 import org.matheclipse.core.interfaces.IExpr;
@@ -61,6 +67,80 @@ public abstract class AbstractIntegerSym implements IInteger, Externalizable {
 	public static final BigInteger BI_FOUR = BigInteger.valueOf(4L);
 	public static final BigInteger BI_SEVEN = BigInteger.valueOf(7L);
 	public static final BigInteger BI_EIGHT = BigInteger.valueOf(8L);
+
+	@Override
+	public IAST divisors() {
+		if (isOne() || isMinusOne()) {
+			return F.List(F.C1);
+		}
+		Set<IInteger> set = divisorsSet();
+		final IASTAppendable resultList = F.ListAlloc(set.size() + 1);
+		for (IInteger divisor : set) {
+			resultList.append(divisor);
+		}
+		return resultList;
+	}
+
+	/**
+	 * Bottom-up divisors construction algorithm. Slightly faster than top-down.
+	 * 
+	 * @param factors
+	 * @return the set of divisors of the number thats prime factorization is given
+	 */
+	private SortedSet<IInteger> divisorsSet() {
+		IAST factors = factorInteger();
+		if (factors.size() == 1) {
+			TreeSet<IInteger> treeSet = new TreeSet<IInteger>();
+			treeSet.add(F.C1);
+			return treeSet;
+		}
+
+		ArrayList<IInteger> primes = new ArrayList<>();
+		ArrayList<Integer> maxPowers = new ArrayList<>();
+		for (int i = 1; i < factors.size(); i++) {
+			IExpr arg = factors.get(i);
+			primes.add((IInteger) arg.first());
+			maxPowers.add(arg.second().toIntDefault());
+		}
+
+		TreeSet<IInteger> divisors = new TreeSet<IInteger>();
+		if (primes.size() == 0 || (primes.size() == 1 && primes.get(0).equals(F.C0))) {
+			return divisors;
+		}
+
+		Stack<ArrayList<Integer>> stack = new Stack<ArrayList<Integer>>();
+		ArrayList<Integer> emptyPowers = new ArrayList<Integer>();
+		for (int i = 0; i < maxPowers.size(); i++) {
+			emptyPowers.add(0);
+		}
+		stack.push(emptyPowers);
+
+		while (!stack.isEmpty()) {
+			ArrayList<Integer> powers = stack.pop();
+			// compute divisor from stack element
+			IInteger divisor = F.C1;
+			for (int i = 0; i < powers.size(); i++) {
+				int power = powers.get(i);
+				if (power > 0) {
+					// multiply entry to divisor
+					divisor = divisor.multiply(primes.get(i).pow(power));
+				}
+			}
+			if (divisors.add(divisor)) {
+				for (int i = 0; i < maxPowers.size(); i++) {
+					int maxPower = maxPowers.get(i);
+					int power = powers.get(i);
+					if (power < maxPower) {
+						// create new entry
+						ArrayList<Integer> enhancedPowers = new ArrayList<Integer>(powers); // copy
+						enhancedPowers.set(i, power + 1);
+						stack.push(enhancedPowers);
+					}
+				}
+			}
+		}
+		return divisors;
+	}
 
 	public static BigInteger jacobiSymbol(BigInteger a, BigInteger b) {
 		if (a.equals(BigInteger.ONE)) {
@@ -297,13 +377,13 @@ public abstract class AbstractIntegerSym implements IInteger, Externalizable {
 	public IInteger charmichaelLambda() {
 		return AbstractIntegerSym.valueOf(Primality.charmichaelLambda(toBigNumerator()));
 	}
-	
-	public int compareTo(final IExpr expr) { 
+
+	public int compareTo(final IExpr expr) {
 		if (expr.isNumber()) {
 			int c = this.compareTo(((INumber) expr).re());
 			if (c != 0) {
 				return c;
-			} 
+			}
 		}
 		return -1;
 	}
@@ -617,7 +697,7 @@ public abstract class AbstractIntegerSym implements IInteger, Externalizable {
 	public IRational fractionalPart() {
 		return F.C0;
 	}
-	
+
 	/** {@inheritDoc} */
 	public IInteger integerPart() {
 		return this;
@@ -640,6 +720,10 @@ public abstract class AbstractIntegerSym implements IInteger, Externalizable {
 			return NumberTheory.factorial(ni);
 		}
 
+		int iterationLimit = EvalEngine.get().getIterationLimit();
+		if (iterationLimit >= 0) {
+			IterationLimitExceeded.throwIt(iterationLimit, F.Factorial(this));
+		}
 		IInteger result = F.C1;
 		if (compareTo(F.C0) == -1) {
 			result = F.CN1;
