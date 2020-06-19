@@ -47,16 +47,19 @@ public class BesselFunctions {
 		@Override
 		public IExpr evaluate(final IAST ast, EvalEngine engine) {
 			IExpr z = ast.arg1();
-			try {
-				if (z.isReal()) {
-					try {
-						return F.complexNum(BesselJS.airyAi(z.evalDouble()));
-					} catch (NegativeArraySizeException nae) {
-						return engine.printMessage("AiryAi: " + ast.toString() + " caused NegativeArraySizeException");
-					} catch (RuntimeException rex) {
-						return engine.printMessage(ast.topHead(), rex);
+			if (engine.isDoubleMode()) {
+				try {
+					if (!z.isComplexNumeric()) {
+						try {
+							return F.complexNum(BesselJS.airyAi(z.evalDouble()));
+						} catch (NegativeArraySizeException nae) {
+							return engine
+									.printMessage("AiryAi: " + ast.toString() + " caused NegativeArraySizeException");
+						} catch (RuntimeException rex) {
+							//
+						}
 					}
-				} else if (z.isInexactNumber()) {
+
 					try {
 						return F.complexNum(BesselJS.airyAi(z.evalComplex()));
 					} catch (NegativeArraySizeException nae) {
@@ -64,10 +67,11 @@ public class BesselFunctions {
 					} catch (RuntimeException rex) {
 						return engine.printMessage(ast.topHead(), rex);
 					}
-				}
-			} catch (ValidateException ve) {
-				if (FEConfig.SHOW_STACKTRACE) {
-					ve.printStackTrace();
+
+				} catch (ValidateException ve) {
+					if (FEConfig.SHOW_STACKTRACE) {
+						ve.printStackTrace();
+					}
 				}
 			}
 			return F.NIL;
@@ -88,17 +92,18 @@ public class BesselFunctions {
 		@Override
 		public IExpr evaluate(final IAST ast, EvalEngine engine) {
 			IExpr z = ast.arg1();
-			try {
-				if (z.isReal()) {
-					try {
-						return F.complexNum(BesselJS.airyAiPrime(z.evalDouble()));
-					} catch (NegativeArraySizeException nae) {
-						return engine
-								.printMessage("AiryAiPrime: " + ast.toString() + " caused NegativeArraySizeException");
-					} catch (RuntimeException rex) {
-						return engine.printMessage(ast.topHead(), rex);
+			if (engine.isDoubleMode()) {
+				try {
+					if (!z.isComplexNumeric()) {
+						try {
+							return F.complexNum(BesselJS.airyAiPrime(z.evalDouble()));
+						} catch (NegativeArraySizeException nae) {
+							return engine.printMessage(
+									"AiryAiPrime: " + ast.toString() + " caused NegativeArraySizeException");
+						} catch (RuntimeException rex) {
+						}
 					}
-				} else if (z.isInexactNumber()) {
+
 					try {
 						return F.complexNum(BesselJS.airyAiPrime(z.evalComplex()));
 					} catch (NegativeArraySizeException nae) {
@@ -107,10 +112,11 @@ public class BesselFunctions {
 					} catch (RuntimeException rex) {
 						return engine.printMessage(ast.topHead(), rex);
 					}
-				}
-			} catch (ValidateException ve) {
-				if (FEConfig.SHOW_STACKTRACE) {
-					ve.printStackTrace();
+
+				} catch (ValidateException ve) {
+					if (FEConfig.SHOW_STACKTRACE) {
+						ve.printStackTrace();
+					}
 				}
 			}
 			return F.NIL;
@@ -131,16 +137,18 @@ public class BesselFunctions {
 		@Override
 		public IExpr evaluate(final IAST ast, EvalEngine engine) {
 			IExpr z = ast.arg1();
-			try {
-				if (z.isReal()) {
-					try {
-						return F.complexNum(BesselJS.airyBi(z.evalDouble()));
-					} catch (NegativeArraySizeException nae) {
-						return engine.printMessage("AiryBi: " + ast.toString() + " caused NegativeArraySizeException");
-					} catch (RuntimeException rex) {
-						return engine.printMessage(ast.topHead(), rex);
+			if (engine.isDoubleMode()) {
+				try {
+					if (!z.isComplexNumeric()) {
+						try {
+							return F.complexNum(BesselJS.airyBi(z.evalDouble()));
+						} catch (NegativeArraySizeException nae) {
+							return engine
+									.printMessage("AiryBi: " + ast.toString() + " caused NegativeArraySizeException");
+						} catch (RuntimeException rex) {
+						}
 					}
-				} else if (z.isInexactNumber()) {
+
 					try {
 						return F.complexNum(BesselJS.airyBi(z.evalComplex()));
 					} catch (NegativeArraySizeException nae) {
@@ -148,10 +156,11 @@ public class BesselFunctions {
 					} catch (RuntimeException rex) {
 						return engine.printMessage(ast.topHead(), rex);
 					}
-				}
-			} catch (ValidateException ve) {
-				if (FEConfig.SHOW_STACKTRACE) {
-					ve.printStackTrace();
+
+				} catch (ValidateException ve) {
+					if (FEConfig.SHOW_STACKTRACE) {
+						ve.printStackTrace();
+					}
 				}
 			}
 			return F.NIL;
@@ -172,17 +181,18 @@ public class BesselFunctions {
 		@Override
 		public IExpr evaluate(final IAST ast, EvalEngine engine) {
 			IExpr z = ast.arg1();
-			try {
-				if (z.isReal()) {
-					try {
-						return F.complexNum(BesselJS.airyBiPrime(z.evalDouble()));
-					} catch (NegativeArraySizeException nae) {
-						return engine
-								.printMessage("AiryBiPrime: " + ast.toString() + " caused NegativeArraySizeException");
-					} catch (RuntimeException rex) {
-						return engine.printMessage(ast.topHead(), rex);
+			if (engine.isDoubleMode()) {
+				try {
+					if (!z.isComplexNumeric()) {
+						try {
+							return F.complexNum(BesselJS.airyBiPrime(z.evalDouble()));
+						} catch (NegativeArraySizeException nae) {
+							return engine.printMessage(
+									"AiryBiPrime: " + ast.toString() + " caused NegativeArraySizeException");
+						} catch (RuntimeException rex) {
+						}
 					}
-				} else if (z.isInexactNumber()) {
+
 					try {
 						return F.complexNum(BesselJS.airyBiPrime(z.evalComplex()));
 					} catch (NegativeArraySizeException nae) {
@@ -191,10 +201,11 @@ public class BesselFunctions {
 					} catch (RuntimeException rex) {
 						return engine.printMessage(ast.topHead(), rex);
 					}
-				}
-			} catch (ValidateException ve) {
-				if (FEConfig.SHOW_STACKTRACE) {
-					ve.printStackTrace();
+
+				} catch (ValidateException ve) {
+					if (FEConfig.SHOW_STACKTRACE) {
+						ve.printStackTrace();
+					}
 				}
 			}
 			return F.NIL;
@@ -766,31 +777,32 @@ public class BesselFunctions {
 			IExpr n = ast.arg1();
 			IExpr z = ast.arg2();
 
-			try {
-				double nDouble = Double.NaN;
-				double zDouble = Double.NaN;
+			if (engine.isDoubleMode()) {
 				try {
-					nDouble = n.evalDouble();
-					zDouble = z.evalDouble();
+					double nDouble = Double.NaN;
+					double zDouble = Double.NaN;
+					try {
+						nDouble = n.evalDouble();
+						zDouble = z.evalDouble();
+					} catch (ValidateException ve) {
+					}
+					if (Double.isNaN(nDouble) || Double.isNaN(zDouble)) {
+						Complex nc = n.evalComplex();
+						Complex zc = z.evalComplex();
+						return F.complexNum(BesselJS.hankelH1(nc, zc));
+					} else {
+						return F.complexNum(BesselJS.hankelH1(nDouble, zDouble));
+					}
+
 				} catch (ValidateException ve) {
+					if (FEConfig.SHOW_STACKTRACE) {
+						ve.printStackTrace();
+					}
+				} catch (RuntimeException rex) {
+					// rex.printStackTrace();
+					return engine.printMessage(ast.topHead(), rex);
 				}
-				if (Double.isNaN(nDouble) || Double.isNaN(zDouble)) {
-					Complex nc = n.evalComplex();
-					Complex zc = z.evalComplex();
-					return F.complexNum(BesselJS.hankelH1(nc, zc));
-				} else {
-					return F.complexNum(BesselJS.hankelH1(nDouble, zDouble));
-				}
-
-			} catch (ValidateException ve) {
-				if (FEConfig.SHOW_STACKTRACE) {
-					ve.printStackTrace();
-				}
-			} catch (RuntimeException rex) {
-				// rex.printStackTrace();
-				return engine.printMessage(ast.topHead(), rex);
 			}
-
 			return F.NIL;
 		}
 
@@ -810,32 +822,32 @@ public class BesselFunctions {
 		public IExpr evaluate(final IAST ast, EvalEngine engine) {
 			IExpr n = ast.arg1();
 			IExpr z = ast.arg2();
-
-			try {
-				double nDouble = Double.NaN;
-				double zDouble = Double.NaN;
+			if (engine.isDoubleMode()) {
 				try {
-					nDouble = n.evalDouble();
-					zDouble = z.evalDouble();
+					double nDouble = Double.NaN;
+					double zDouble = Double.NaN;
+					try {
+						nDouble = n.evalDouble();
+						zDouble = z.evalDouble();
+					} catch (ValidateException ve) {
+					}
+					if (Double.isNaN(nDouble) || Double.isNaN(zDouble)) {
+						Complex nc = n.evalComplex();
+						Complex zc = z.evalComplex();
+						return F.complexNum(BesselJS.hankelH2(nc, zc));
+					} else {
+						return F.complexNum(BesselJS.hankelH2(nDouble, zDouble));
+					}
+
 				} catch (ValidateException ve) {
+					if (FEConfig.SHOW_STACKTRACE) {
+						ve.printStackTrace();
+					}
+				} catch (RuntimeException rex) {
+					// rex.printStackTrace();
+					return engine.printMessage(ast.topHead(), rex);
 				}
-				if (Double.isNaN(nDouble) || Double.isNaN(zDouble)) {
-					Complex nc = n.evalComplex();
-					Complex zc = z.evalComplex();
-					return F.complexNum(BesselJS.hankelH2(nc, zc));
-				} else {
-					return F.complexNum(BesselJS.hankelH2(nDouble, zDouble));
-				}
-
-			} catch (ValidateException ve) {
-				if (FEConfig.SHOW_STACKTRACE) {
-					ve.printStackTrace();
-				}
-			} catch (RuntimeException rex) {
-				// rex.printStackTrace();
-				return engine.printMessage(ast.topHead(), rex);
 			}
-
 			return F.NIL;
 		}
 
@@ -890,6 +902,7 @@ public class BesselFunctions {
 						zDouble = z.evalDouble();
 					} catch (ValidateException ve) {
 					}
+					
 					if (Double.isNaN(nDouble) || Double.isNaN(zDouble)) {
 						Complex nc = n.evalComplex();
 						Complex zc = z.evalComplex();
@@ -976,6 +989,7 @@ public class BesselFunctions {
 						zDouble = z.evalDouble();
 					} catch (ValidateException ve) {
 					}
+					
 					if (Double.isNaN(nDouble) || Double.isNaN(zDouble) || zDouble < 0.0) {
 						Complex nc = n.evalComplex();
 						Complex zc = z.evalComplex();
@@ -1005,6 +1019,7 @@ public class BesselFunctions {
 		public void setUp(final ISymbol newSymbol) {
 			newSymbol.setAttributes(ISymbol.LISTABLE | ISymbol.NUMERICFUNCTION);
 		}
+
 	}
 
 	public static void initialize() {

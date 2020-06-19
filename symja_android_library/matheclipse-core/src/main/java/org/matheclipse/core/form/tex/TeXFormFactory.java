@@ -39,6 +39,7 @@ import org.matheclipse.core.interfaces.ISymbol;
 import org.matheclipse.parser.client.Characters;
 import org.matheclipse.parser.client.FEConfig;
 import org.matheclipse.parser.client.operator.ASTNodeFactory;
+import org.matheclipse.parser.client.operator.Precedence;
 import org.matheclipse.parser.trie.Tries;
 
 /**
@@ -190,11 +191,26 @@ public class TeXFormFactory {
 		@Override
 		public boolean convert(final StringBuilder buf, final IAST f, final int precedence) {
 			if (f.isAST2()) {
-
-				buf.append("\\frac{d}{{d");
-				fFactory.convertInternal(buf, f.arg2(), 0);
-				buf.append("}}");
+				IExpr arg2 = f.arg2();
+				int n = 1;
+				if (arg2.isAST(F.List, 3) && arg2.second().isInteger()) {
+					n = arg2.second().toIntDefault();
+					if (n <= 0) {
+						return false;
+					}
+					arg2 = arg2.first();
+				}
+				buf.append("\\frac{\\partial ");
+				if (n > 1) {
+					buf.append("^" + n + " ");
+				}
 				fFactory.convertInternal(buf, f.arg1(), 0);
+				buf.append("}{\\partial ");
+				fFactory.convertInternal(buf, arg2, 0);
+				if (n > 1) {
+					buf.append("^" + n);
+				}
+				buf.append("}");
 
 				return true;
 			}
@@ -345,7 +361,7 @@ public class TeXFormFactory {
 				}
 			}
 			if ((ast instanceof ASTRealMatrix) || //
-					(ast.getEvalFlags() & IAST.IS_MATRIX) == IAST.IS_MATRIX) {
+					ast.isEvalFlagOn(IAST.IS_MATRIX)) {
 				int[] dims = ast.isMatrix();
 				if (dims != null) {
 					// create a LaTeX matrix
@@ -622,7 +638,7 @@ public class TeXFormFactory {
 	private final static class Plus extends AbstractOperator {
 
 		public Plus() {
-			super(ASTNodeFactory.MMA_STYLE_FACTORY.get("Plus").getPrecedence(), "+");
+			super(Precedence.PLUS, "+");
 		}
 
 		/** {@inheritDoc} */
@@ -701,7 +717,7 @@ public class TeXFormFactory {
 	private final static class Power extends AbstractOperator {
 
 		public Power() {
-			super(ASTNodeFactory.MMA_STYLE_FACTORY.get("Power").getPrecedence(), "^");
+			super(Precedence.POWER, "^");
 		}
 
 		@Override
@@ -1065,6 +1081,7 @@ public class TeXFormFactory {
 				final int caller) {
 			int size = timesAST.size();
 			IExpr arg1 = F.NIL;
+			String timesOperator = "\\,";
 			if (size > 1) {
 				arg1 = timesAST.arg1();
 				if (arg1.isMinusOne()) {
@@ -1112,15 +1129,25 @@ public class TeXFormFactory {
 					fFactory.convertInternal(buf, arg1, fPrecedence);
 					if (fOperator.compareTo("") != 0) {
 						if (size > 2) {
-							if (timesAST.arg1().isNumber() && isTeXNumberDigit(timesAST.arg2())) {
+							if (isTeXNumberDigit(timesAST.arg1()) || isTeXNumberDigit(timesAST.arg2())) {
 								// Issue #67, #117: if we have 2 TeX number
 								// expressions we use
 								// the \cdot operator see
 								// http://tex.stackexchange.com/questions/40794/when-should-cdot-be-used-to-indicate-multiplication
-								buf.append("\\cdot ");
+								timesOperator = "\\cdot ";
 							} else {
-								buf.append("\\,");
+								for (int i = 2; i < size; i++) {
+									if ((i < timesAST.argSize())) {
+										if (isTeXNumberDigit(timesAST.get(i))
+												&& isTeXNumberDigit(timesAST.get(i + 1))) {
+											timesOperator = "\\cdot ";
+											break;
+										}
+									}
+								}
+
 							}
+							buf.append(timesOperator);
 						}
 					}
 				}
@@ -1132,17 +1159,20 @@ public class TeXFormFactory {
 				} else {
 					fFactory.convertInternal(buf, timesAST.get(i), fPrecedence);
 				}
-				if ((i < timesAST.argSize()) && (fOperator.compareTo("") != 0)) {
-					if (timesAST.arg1().isNumber() && isTeXNumberDigit(timesAST.get(i + 1))) {
-						// Issue #67, #117: if we have 2 TeX number expressions we
-						// use
-						// the \cdot operator see
-						// http://tex.stackexchange.com/questions/40794/when-should-cdot-be-used-to-indicate-multiplication
-						buf.append("\\cdot ");
-					} else {
-						buf.append("\\,");
-					}
+				if (i < timesAST.argSize()){
+				buf.append(timesOperator);
 				}
+//				if ((i < timesAST.argSize()) && (fOperator.compareTo("") != 0)) {
+//					if (isTeXNumberDigit(timesAST.get(i)) && isTeXNumberDigit(timesAST.get(i + 1))) {
+//						// Issue #67, #117: if we have 2 TeX number expressions we
+//						// use
+//						// the \cdot operator see
+//						// http://tex.stackexchange.com/questions/40794/when-should-cdot-be-used-to-indicate-multiplication
+//						buf.append("\\cdot ");
+//					} else {
+//						buf.append("\\,");
+//					}
+//				}
 			}
 			precedenceClose(buf, precedence);
 			return true;
@@ -1239,7 +1269,7 @@ public class TeXFormFactory {
 	}
 
 	public void convertApcomplex(final StringBuilder buf, final Apcomplex dc, final int precedence, boolean caller) {
-		if (ASTNodeFactory.PLUS_PRECEDENCE < precedence) {
+		if (Precedence.PLUS < precedence) {
 			if (caller == PLUS_CALL) {
 				buf.append(" + ");
 				caller = false;
@@ -1251,15 +1281,15 @@ public class TeXFormFactory {
 		boolean realZero = realPart.equals(Apcomplex.ZERO);
 		boolean imaginaryZero = imaginaryPart.equals(Apcomplex.ZERO);
 		if (realZero && imaginaryZero) {
-			convertDoubleString(buf, "0.0", ASTNodeFactory.PLUS_PRECEDENCE, false);
+			convertDoubleString(buf, "0.0", Precedence.PLUS, false);
 		} else {
 			if (!realZero) {
 				buf.append(convertApfloatToFormattedString(realPart));
 				if (!imaginaryZero) {
 					buf.append(" + ");
 					final boolean isNegative = imaginaryPart.compareTo(Apcomplex.ZERO) < 0;
-					convertDoubleString(buf, convertApfloatToFormattedString(imaginaryPart),
-							ASTNodeFactory.TIMES_PRECEDENCE, isNegative);
+					convertDoubleString(buf, convertApfloatToFormattedString(imaginaryPart), Precedence.TIMES,
+							isNegative);
 					buf.append("\\,"); // InvisibleTimes
 					buf.append("i ");
 				}
@@ -1270,13 +1300,12 @@ public class TeXFormFactory {
 				}
 
 				final boolean isNegative = imaginaryPart.compareTo(Apcomplex.ZERO) < 0;
-				convertDoubleString(buf, convertApfloatToFormattedString(imaginaryPart),
-						ASTNodeFactory.TIMES_PRECEDENCE, isNegative);
+				convertDoubleString(buf, convertApfloatToFormattedString(imaginaryPart), Precedence.TIMES, isNegative);
 				buf.append("\\,"); // InvisibleTimes
 				buf.append("i ");
 			}
 		}
-		if (ASTNodeFactory.PLUS_PRECEDENCE < precedence) {
+		if (Precedence.PLUS < precedence) {
 			buf.append("\\right) ");
 		}
 	}
@@ -1541,10 +1570,9 @@ public class TeXFormFactory {
 	}
 
 	private boolean convertInequality(final StringBuilder buf, final IAST inequality, final int precedence) {
-		int operPrecedence = ASTNodeFactory.EQUAL_PRECEDENCE;
 		StringBuilder tempBuffer = new StringBuilder();
 
-		if (operPrecedence < precedence) {
+		if (Precedence.EQUAL < precedence) {
 			tempBuffer.append("(");
 		}
 
@@ -1553,7 +1581,7 @@ public class TeXFormFactory {
 		while (i < listSize) {
 			convertInternal(tempBuffer, inequality.get(i++), 0);
 			if (i == listSize) {
-				if (operPrecedence < precedence) {
+				if (Precedence.EQUAL < precedence) {
 					tempBuffer.append(")");
 				}
 				buf.append(tempBuffer);
@@ -1588,7 +1616,7 @@ public class TeXFormFactory {
 				return false;
 			}
 		}
-		if (operPrecedence < precedence) {
+		if (Precedence.EQUAL < precedence) {
 			tempBuffer.append(")");
 		}
 		buf.append(tempBuffer);
@@ -1704,11 +1732,11 @@ public class TeXFormFactory {
 
 	private void convertDoubleString(final StringBuilder buf, final String d, final int precedence,
 			final boolean isNegative) {
-		if (isNegative && (ASTNodeFactory.PLUS_PRECEDENCE < precedence)) {
+		if (isNegative && (Precedence.PLUS < precedence)) {
 			buf.append("\\left( ");
 		}
 		buf.append(d);
-		if (isNegative && (ASTNodeFactory.PLUS_PRECEDENCE < precedence)) {
+		if (isNegative && (Precedence.PLUS < precedence)) {
 			buf.append("\\right) ");
 		}
 	}
@@ -1911,107 +1939,60 @@ public class TeXFormFactory {
 		operTab.put(F.Times, new Times());
 		operTab.put(F.Zeta, new Zeta());
 
-		operTab.put(F.Condition, new AbstractOperator(this,
-				ASTNodeFactory.MMA_STYLE_FACTORY.get("Condition").getPrecedence(), "\\text{/;}"));
-		operTab.put(F.Unset,
-				new PostOperator(this, ASTNodeFactory.MMA_STYLE_FACTORY.get("Unset").getPrecedence(), "\\text{=.}"));
-		operTab.put(F.UpSetDelayed, new AbstractOperator(this,
-				ASTNodeFactory.MMA_STYLE_FACTORY.get("UpSetDelayed").getPrecedence(), "\\text{^:=}"));
-		operTab.put(F.UpSet, new AbstractOperator(this, ASTNodeFactory.MMA_STYLE_FACTORY.get("UpSet").getPrecedence(),
-				"\\text{^=}"));
-		operTab.put(F.NonCommutativeMultiply, new AbstractOperator(this,
-				ASTNodeFactory.MMA_STYLE_FACTORY.get("NonCommutativeMultiply").getPrecedence(), "\\text{**}"));
-		operTab.put(F.PreDecrement, new PreOperator(this,
-				ASTNodeFactory.MMA_STYLE_FACTORY.get("PreDecrement").getPrecedence(), "\\text{--}"));
-		operTab.put(F.ReplaceRepeated, new AbstractOperator(this,
-				ASTNodeFactory.MMA_STYLE_FACTORY.get("ReplaceRepeated").getPrecedence(), "\\text{//.}"));
-		operTab.put(F.MapAll, new AbstractOperator(this, ASTNodeFactory.MMA_STYLE_FACTORY.get("MapAll").getPrecedence(),
-				"\\text{//@}"));
-		operTab.put(F.AddTo, new AbstractOperator(this, ASTNodeFactory.MMA_STYLE_FACTORY.get("AddTo").getPrecedence(),
-				"\\text{+=}"));
-		operTab.put(F.Greater,
-				new AbstractOperator(this, ASTNodeFactory.MMA_STYLE_FACTORY.get("Greater").getPrecedence(), " > "));
-		operTab.put(F.GreaterEqual, new AbstractOperator(this,
-				ASTNodeFactory.MMA_STYLE_FACTORY.get("GreaterEqual").getPrecedence(), "\\geq "));
-		operTab.put(F.SubtractFrom, new AbstractOperator(this,
-				ASTNodeFactory.MMA_STYLE_FACTORY.get("SubtractFrom").getPrecedence(), "\\text{-=}"));
-		operTab.put(F.Subtract,
-				new AbstractOperator(this, ASTNodeFactory.MMA_STYLE_FACTORY.get("Subtract").getPrecedence(), " - "));
-		operTab.put(F.CompoundExpression, new AbstractOperator(this,
-				ASTNodeFactory.MMA_STYLE_FACTORY.get("CompoundExpression").getPrecedence(), ";"));
-		operTab.put(F.DivideBy, new AbstractOperator(this,
-				ASTNodeFactory.MMA_STYLE_FACTORY.get("DivideBy").getPrecedence(), "\\text{/=}"));
-		operTab.put(F.StringJoin, new AbstractOperator(this,
-				ASTNodeFactory.MMA_STYLE_FACTORY.get("StringJoin").getPrecedence(), "\\text{<>}"));
-		operTab.put(F.UnsameQ, new AbstractOperator(this,
-				ASTNodeFactory.MMA_STYLE_FACTORY.get("UnsameQ").getPrecedence(), "\\text{=!=}"));
-		operTab.put(F.Decrement, new PostOperator(this,
-				ASTNodeFactory.MMA_STYLE_FACTORY.get("Decrement").getPrecedence(), "\\text{--}"));
-		operTab.put(F.LessEqual, new AbstractOperator(this,
-				ASTNodeFactory.MMA_STYLE_FACTORY.get("LessEqual").getPrecedence(), "\\leq "));
-		operTab.put(F.Colon,
-				new AbstractOperator(this, ASTNodeFactory.MMA_STYLE_FACTORY.get("Colon").getPrecedence(), "\\text{:}"));
-		operTab.put(F.Increment, new PostOperator(this,
-				ASTNodeFactory.MMA_STYLE_FACTORY.get("Increment").getPrecedence(), "\\text{++}"));
-		operTab.put(F.Alternatives, new AbstractOperator(this,
-				ASTNodeFactory.MMA_STYLE_FACTORY.get("Alternatives").getPrecedence(), "\\text{|}"));
-		operTab.put(F.Equal,
-				new AbstractOperator(this, ASTNodeFactory.MMA_STYLE_FACTORY.get("Equal").getPrecedence(), " == "));
-		operTab.put(F.DirectedEdge, new AbstractOperator(this,
-				ASTNodeFactory.MMA_STYLE_FACTORY.get("DirectedEdge").getPrecedence(), "\\to "));
-		operTab.put(F.Divide, new AbstractOperator(this, ASTNodeFactory.MMA_STYLE_FACTORY.get("Divide").getPrecedence(),
-				"\\text{/}"));
-		operTab.put(F.Apply, new AbstractOperator(this, ASTNodeFactory.MMA_STYLE_FACTORY.get("Apply").getPrecedence(),
-				"\\text{@@}"));
-		operTab.put(F.Set,
-				new AbstractOperator(this, ASTNodeFactory.MMA_STYLE_FACTORY.get("Set").getPrecedence(), " = "));
+		operTab.put(F.Condition, new AbstractOperator(this, Precedence.CONDITION, "\\text{/;}"));
+		operTab.put(F.Unset, new PostOperator(this, Precedence.UNSET, "\\text{=.}"));
+		operTab.put(F.UpSetDelayed, new AbstractOperator(this, Precedence.UPSETDELAYED, "\\text{^:=}"));
+		operTab.put(F.UpSet, new AbstractOperator(this, Precedence.UPSET, "\\text{^=}"));
+		operTab.put(F.NonCommutativeMultiply,
+				new AbstractOperator(this, Precedence.NONCOMMUTATIVEMULTIPLY, "\\text{**}"));
+		operTab.put(F.PreDecrement, new PreOperator(this, Precedence.PREDECREMENT, "\\text{--}"));
+		operTab.put(F.ReplaceRepeated, new AbstractOperator(this, Precedence.REPLACEREPEATED, "\\text{//.}"));
+		operTab.put(F.MapAll, new AbstractOperator(this, Precedence.MAPALL, "\\text{//@}"));
+		operTab.put(F.AddTo, new AbstractOperator(this, Precedence.ADDTO, "\\text{+=}"));
+		operTab.put(F.Greater, new AbstractOperator(this, Precedence.GREATER, " > "));
+		operTab.put(F.GreaterEqual, new AbstractOperator(this, Precedence.GREATEREQUAL, "\\geq "));
+		operTab.put(F.SubtractFrom, new AbstractOperator(this, Precedence.SUBTRACTFROM, "\\text{-=}"));
+		operTab.put(F.Subtract, new AbstractOperator(this, Precedence.SUBTRACT, " - "));
+		operTab.put(F.CompoundExpression, new AbstractOperator(this, Precedence.COMPOUNDEXPRESSION, ";"));
+		operTab.put(F.DivideBy, new AbstractOperator(this, Precedence.DIVIDEBY, "\\text{/=}"));
+		operTab.put(F.StringJoin, new AbstractOperator(this, Precedence.STRINGJOIN, "\\text{<>}"));
+		operTab.put(F.UnsameQ, new AbstractOperator(this, Precedence.UNSAMEQ, "\\text{=!=}"));
+		operTab.put(F.Decrement, new PostOperator(this, Precedence.DECREMENT, "\\text{--}"));
+		operTab.put(F.LessEqual, new AbstractOperator(this, Precedence.LESSEQUAL, "\\leq "));
+		operTab.put(F.Colon, new AbstractOperator(this, Precedence.COLON, "\\text{:}"));
+		operTab.put(F.Increment, new PostOperator(this, Precedence.INCREMENT, "\\text{++}"));
+		operTab.put(F.Alternatives, new AbstractOperator(this, Precedence.ALTERNATIVES, "\\text{|}"));
+		operTab.put(F.Equal, new AbstractOperator(this, Precedence.EQUAL, " == "));
+		operTab.put(F.DirectedEdge, new AbstractOperator(this, Precedence.DIRECTEDEDGE, "\\to "));
+		operTab.put(F.Divide, new AbstractOperator(this, Precedence.DIVIDE, "\\text{/}"));
+		operTab.put(F.Apply, new AbstractOperator(this, Precedence.APPLY, "\\text{@@}"));
+		operTab.put(F.Set, new AbstractOperator(this, Precedence.SET, " = "));
 		// operTab.put(F.Minus,
 		// new PreOperator(this, ASTNodeFactory.MMA_STYLE_FACTORY.get("Minus").getPrecedence(), "\\text{-}"));
-		operTab.put(F.Map,
-				new AbstractOperator(this, ASTNodeFactory.MMA_STYLE_FACTORY.get("Map").getPrecedence(), "\\text{/@}"));
-		operTab.put(F.SameQ, new AbstractOperator(this, ASTNodeFactory.MMA_STYLE_FACTORY.get("SameQ").getPrecedence(),
-				"\\text{===}"));
-		operTab.put(F.Less,
-				new AbstractOperator(this, ASTNodeFactory.MMA_STYLE_FACTORY.get("Less").getPrecedence(), " < "));
-		operTab.put(F.PreIncrement, new PreOperator(this,
-				ASTNodeFactory.MMA_STYLE_FACTORY.get("PreIncrement").getPrecedence(), "\\text{++}"));
-		operTab.put(F.Unequal,
-				new AbstractOperator(this, ASTNodeFactory.MMA_STYLE_FACTORY.get("Unequal").getPrecedence(), "\\neq "));
-		operTab.put(F.Or,
-				new AbstractOperator(this, ASTNodeFactory.MMA_STYLE_FACTORY.get("Or").getPrecedence(), " \\lor "));
+		operTab.put(F.Map, new AbstractOperator(this, Precedence.MAP, "\\text{/@}"));
+		operTab.put(F.SameQ, new AbstractOperator(this, Precedence.SAMEQ, "\\text{===}"));
+		operTab.put(F.Less, new AbstractOperator(this, Precedence.LESS, " < "));
+		operTab.put(F.PreIncrement, new PreOperator(this, Precedence.PREINCREMENT, "\\text{++}"));
+		operTab.put(F.Unequal, new AbstractOperator(this, Precedence.UNEQUAL, "\\neq "));
+		operTab.put(F.Or, new AbstractOperator(this, Precedence.OR, " \\lor "));
 		// operTab.put(F.PrePlus,
 		// new PreOperator(this, ASTNodeFactory.MMA_STYLE_FACTORY.get("PrePlus").getPrecedence(), "\\text{+}"));
-		operTab.put(F.TimesBy, new AbstractOperator(this,
-				ASTNodeFactory.MMA_STYLE_FACTORY.get("TimesBy").getPrecedence(), "\\text{*=}"));
-		operTab.put(F.And,
-				new AbstractOperator(this, ASTNodeFactory.MMA_STYLE_FACTORY.get("And").getPrecedence(), " \\land "));
-		operTab.put(F.Not,
-				new PreOperator(this, ASTNodeFactory.MMA_STYLE_FACTORY.get("Not").getPrecedence(), "\\neg "));
-		operTab.put(F.Factorial,
-				new PostOperator(this, ASTNodeFactory.MMA_STYLE_FACTORY.get("Factorial").getPrecedence(), " ! "));
-		operTab.put(F.Factorial2,
-				new PostOperator(this, ASTNodeFactory.MMA_STYLE_FACTORY.get("Factorial2").getPrecedence(), " !! "));
+		operTab.put(F.TimesBy, new AbstractOperator(this, Precedence.TIMESBY, "\\text{*=}"));
+		operTab.put(F.And, new AbstractOperator(this, Precedence.AND, " \\land "));
+		operTab.put(F.Not, new PreOperator(this, Precedence.NOT, "\\neg "));
+		operTab.put(F.Factorial, new PostOperator(this, Precedence.FACTORIAL, " ! "));
+		operTab.put(F.Factorial2, new PostOperator(this, Precedence.FACTORIAL2, " !! "));
 
-		operTab.put(F.ReplaceAll, new AbstractOperator(this,
-				ASTNodeFactory.MMA_STYLE_FACTORY.get("ReplaceAll").getPrecedence(), "\\text{/.}\\,"));
-		operTab.put(F.ReplaceRepeated, new AbstractOperator(this,
-				ASTNodeFactory.MMA_STYLE_FACTORY.get("ReplaceRepeated").getPrecedence(), "\\text{//.}\\,"));
-		operTab.put(F.Rule,
-				new AbstractOperator(this, ASTNodeFactory.MMA_STYLE_FACTORY.get("Rule").getPrecedence(), "\\to "));
-		operTab.put(F.RuleDelayed, new AbstractOperator(this,
-				ASTNodeFactory.MMA_STYLE_FACTORY.get("RuleDelayed").getPrecedence(), ":\\to "));
-		operTab.put(F.Set,
-				new AbstractOperator(this, ASTNodeFactory.MMA_STYLE_FACTORY.get("Set").getPrecedence(), " = "));
-		operTab.put(F.SetDelayed, new AbstractOperator(this,
-				ASTNodeFactory.MMA_STYLE_FACTORY.get("SetDelayed").getPrecedence(), "\\text{:=}\\,"));
-		operTab.put(F.UndirectedEdge, new AbstractOperator(this,
-				ASTNodeFactory.MMA_STYLE_FACTORY.get("UndirectedEdge").getPrecedence(), "\\leftrightarrow "));
-		operTab.put(F.TwoWayRule, new AbstractOperator(this,
-				ASTNodeFactory.MMA_STYLE_FACTORY.get("TwoWayRule").getPrecedence(), "\\leftrightarrow "));
-		operTab.put(F.CenterDot, new AbstractOperator(this,
-				ASTNodeFactory.MMA_STYLE_FACTORY.get("CenterDot").getPrecedence(), "\\cdot "));
-		operTab.put(F.CircleDot, new AbstractOperator(this,
-				ASTNodeFactory.MMA_STYLE_FACTORY.get("CircleDot").getPrecedence(), "\\odot "));
+		operTab.put(F.ReplaceAll, new AbstractOperator(this, Precedence.REPLACEALL, "\\text{/.}\\,"));
+		operTab.put(F.ReplaceRepeated, new AbstractOperator(this, Precedence.REPLACEREPEATED, "\\text{//.}\\,"));
+		operTab.put(F.Rule, new AbstractOperator(this, Precedence.RULE, "\\to "));
+		operTab.put(F.RuleDelayed, new AbstractOperator(this, Precedence.RULEDELAYED, ":\\to "));
+		operTab.put(F.Set, new AbstractOperator(this, Precedence.SET, " = "));
+		operTab.put(F.SetDelayed, new AbstractOperator(this, Precedence.SETDELAYED, "\\text{:=}\\,"));
+		operTab.put(F.UndirectedEdge, new AbstractOperator(this, Precedence.UNDIRECTEDEDGE, "\\leftrightarrow "));
+		operTab.put(F.TwoWayRule, new AbstractOperator(this, Precedence.TWOWAYRULE, "\\leftrightarrow "));
+		operTab.put(F.CenterDot, new AbstractOperator(this, Precedence.CENTERDOT, "\\cdot "));
+		operTab.put(F.CircleDot, new AbstractOperator(this, Precedence.CIRCLEDOT, "\\odot "));
 
 		operTab.put(F.Sin, new TeXFunction(this, "sin "));
 		operTab.put(F.Cos, new TeXFunction(this, "cos "));

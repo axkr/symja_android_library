@@ -24127,12 +24127,7 @@ Unique(x)
 
 Unique("x")
 
-
-$f($h(0)) ^= h0;$f($h(x_)) ^:= 2*$f($h(x - 1));$f($h(10))
-
-
 ValueQ(x)
-
 
 x=1; ValueQ(x)
 

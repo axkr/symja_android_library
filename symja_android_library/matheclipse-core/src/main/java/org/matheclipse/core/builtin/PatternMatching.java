@@ -60,20 +60,6 @@ public final class PatternMatching {
 	private static class Initializer {
 
 		private static void init() {
-			F.BeginPackage.setEvaluator(new BeginPackage());
-			F.EndPackage.setEvaluator(new EndPackage());
-			F.Begin.setEvaluator(new Begin());
-			F.End.setEvaluator(new End());
-			F.Blank.setEvaluator(Blank.CONST);
-			F.BlankSequence.setEvaluator(BlankSequence.CONST);
-			F.BlankNullSequence.setEvaluator(BlankNullSequence.CONST);
-			F.Clear.setEvaluator(new Clear());
-			F.ClearAll.setEvaluator(new ClearAll());
-			F.Context.setEvaluator(new ContextFunction());
-			F.Default.setEvaluator(new Default());
-			F.Definition.setEvaluator(new Definition());
-			F.Evaluate.setEvaluator(new Evaluate());
-			F.Get.setEvaluator(new Get());
 			F.Hold.setEvaluator(new Hold());
 			F.HoldPattern.setEvaluator(new HoldPattern());
 			F.Identity.setEvaluator(new Identity());
@@ -82,18 +68,36 @@ public final class PatternMatching {
 			F.MessageName.setEvaluator(new MessageName());
 			F.Optional.setEvaluator(Optional.CONST);
 			F.Options.setEvaluator(new Options());
-			F.Pattern.setEvaluator(Pattern.CONST);
-			F.Put.setEvaluator(new Put());
 			F.Rule.setEvaluator(new Rule());
 			F.RuleDelayed.setEvaluator(new RuleDelayed());
+			// if (!Config.FUZZY_PARSER) {
 			F.Set.setEvaluator(new Set());
 			F.SetDelayed.setEvaluator(new SetDelayed());
-			F.TagSet.setEvaluator(new TagSet());
-			F.TagSetDelayed.setEvaluator(new TagSetDelayed());
+			// }
 			F.Unique.setEvaluator(new Unique());
-			F.Unset.setEvaluator(new Unset());
-			F.UpSet.setEvaluator(new UpSet());
-			F.UpSetDelayed.setEvaluator(new UpSetDelayed());
+			if (!Config.FUZZY_PARSER) {
+				F.BeginPackage.setEvaluator(new BeginPackage());
+				F.EndPackage.setEvaluator(new EndPackage());
+				F.Begin.setEvaluator(new Begin());
+				F.End.setEvaluator(new End());
+				F.Blank.setEvaluator(Blank.CONST);
+				F.BlankSequence.setEvaluator(BlankSequence.CONST);
+				F.BlankNullSequence.setEvaluator(BlankNullSequence.CONST);
+				F.Pattern.setEvaluator(Pattern.CONST);
+				F.Clear.setEvaluator(new Clear());
+				F.ClearAll.setEvaluator(new ClearAll());
+				F.Context.setEvaluator(new ContextFunction());
+				F.Default.setEvaluator(new Default());
+				F.Definition.setEvaluator(new Definition());
+				F.Evaluate.setEvaluator(new Evaluate());
+				F.Get.setEvaluator(new Get());
+				F.Put.setEvaluator(new Put());
+				F.TagSet.setEvaluator(new TagSet());
+				F.TagSetDelayed.setEvaluator(new TagSetDelayed());
+				F.Unset.setEvaluator(new Unset());
+				F.UpSet.setEvaluator(new UpSet());
+				F.UpSetDelayed.setEvaluator(new UpSetDelayed());
+			}
 		}
 	}
 
@@ -1219,7 +1223,7 @@ public final class PatternMatching {
 
 		@Override
 		public void setUp(final ISymbol newSymbol) {
-			newSymbol.setAttributes( ISymbol.SEQUENCEHOLD);
+			newSymbol.setAttributes(ISymbol.SEQUENCEHOLD);
 		}
 	}
 

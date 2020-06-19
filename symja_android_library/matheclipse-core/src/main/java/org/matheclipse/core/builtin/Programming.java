@@ -19,16 +19,18 @@ import org.matheclipse.core.convert.VariablesSet;
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.exception.ASTElementLimitExceeded;
 import org.matheclipse.core.eval.exception.AbortException;
+import org.matheclipse.core.eval.exception.ArgumentTypeException;
 import org.matheclipse.core.eval.exception.BreakException;
 import org.matheclipse.core.eval.exception.ConditionException;
 import org.matheclipse.core.eval.exception.ContinueException;
+import org.matheclipse.core.eval.exception.IterationLimitExceeded;
 import org.matheclipse.core.eval.exception.NoEvalException;
 import org.matheclipse.core.eval.exception.RecursionLimitExceeded;
 import org.matheclipse.core.eval.exception.ReturnException;
+import org.matheclipse.core.eval.exception.SymjaMathException;
 import org.matheclipse.core.eval.exception.ThrowException;
 import org.matheclipse.core.eval.exception.Validate;
 import org.matheclipse.core.eval.exception.ValidateException;
-import org.matheclipse.core.eval.exception.WrappedException;
 import org.matheclipse.core.eval.interfaces.AbstractCoreFunctionEvaluator;
 import org.matheclipse.core.eval.interfaces.AbstractFunctionEvaluator;
 import org.matheclipse.core.eval.interfaces.ISetEvaluator;
@@ -70,7 +72,6 @@ public final class Programming {
 			F.Block.setEvaluator(new Block());
 			F.Catch.setEvaluator(new Catch());
 			F.Check.setEvaluator(new Check());
-			F.CompiledFunction.setEvaluator(new CompiledFunction());
 			F.CompoundExpression.setEvaluator(new CompoundExpression());
 			F.Condition.setEvaluator(new Condition());
 			F.Continue.setEvaluator(new Continue());
@@ -87,8 +88,6 @@ public final class Programming {
 			F.NestList.setEvaluator(new NestList());
 			F.NestWhile.setEvaluator(new NestWhile());
 			F.NestWhileList.setEvaluator(new NestWhileList());
-			F.On.setEvaluator(new On());
-			F.Off.setEvaluator(new Off());
 			F.Part.setEvaluator(new Part());
 			F.Print.setEvaluator(new Print());
 			F.Quiet.setEvaluator(new Quiet());
@@ -99,12 +98,18 @@ public final class Programming {
 			F.TimeConstrained.setEvaluator(new TimeConstrained());
 			F.Timing.setEvaluator(new Timing());
 			F.Throw.setEvaluator(new Throw());
-			F.Trace.setEvaluator(new Trace());
-			F.TraceForm.setEvaluator(new TraceForm());
 			F.Unevaluated.setEvaluator(new Unevaluated());
 			F.Which.setEvaluator(new Which());
 			F.While.setEvaluator(new While());
 			F.With.setEvaluator(new With());
+
+			if (!Config.FUZZY_PARSER) {
+				F.CompiledFunction.setEvaluator(new CompiledFunction());
+				F.On.setEvaluator(new On());
+				F.Off.setEvaluator(new Off());
+				F.Trace.setEvaluator(new Trace());
+				F.TraceForm.setEvaluator(new TraceForm());
+			}
 		}
 	}
 
@@ -1226,14 +1231,6 @@ public final class Programming {
 
 		@Override
 		public IExpr evaluate(final IAST ast, EvalEngine engine) {
-			return evaluateNest(ast, engine);
-		}
-
-		public int[] expectedArgSize() {
-			return IOFunctions.ARGS_3_3;
-		}
-
-		public static IExpr evaluateNest(final IAST ast, EvalEngine engine) {
 			IExpr arg3 = engine.evaluate(ast.arg3());
 			if (arg3.isInteger()) {
 				int n = arg3.toIntDefault(Integer.MIN_VALUE);
@@ -1241,9 +1238,17 @@ public final class Programming {
 					// Positive integer (less equal 2147483647) expected at position `2` in `1`.
 					return IOFunctions.printMessage(F.Nest, "intpm", F.List(ast, F.C3), engine);
 				}
+				int iterationLimit = engine.getIterationLimit();
+				if (iterationLimit >= 0 && iterationLimit <= n) {
+					IterationLimitExceeded.throwIt(n, ast);
+				}
 				return nest(ast.arg2(), n, x -> F.unaryAST1(ast.arg1(), x), engine);
 			}
 			return F.NIL;
+		}
+
+		public int[] expectedArgSize() {
+			return IOFunctions.ARGS_3_3;
 		}
 
 		public static IExpr nest(final IExpr expr, final int n, final Function<IExpr, IExpr> fn, EvalEngine engine) {
@@ -1291,6 +1296,10 @@ public final class Programming {
 				if (n < 0) {
 					// Positive integer (less equal 2147483647) expected at position `2` in `1`.
 					return IOFunctions.printMessage(F.Nest, "intpm", F.List(ast, F.C3), engine);
+				}
+				int iterationLimit = engine.getIterationLimit();
+				if (iterationLimit >= 0 && iterationLimit <= n) {
+					IterationLimitExceeded.throwIt(n, ast);
 				}
 				IExpr arg1 = engine.evaluate(ast.arg1());
 				IExpr arg2 = engine.evaluate(ast.arg2());
@@ -1953,9 +1962,9 @@ public final class Programming {
 								}
 								return rightHandSide;
 							}
-						} catch (RuntimeException npe) {
-							engine.printMessage("Set: " + npe.getMessage());
-							return F.NIL;
+						} catch (SymjaMathException sme) {
+//							engine.printMessage("Set: " + npe.getMessage());
+							return engine.printMessage(F.Set, sme);
 							// return rightHandSide;
 						}
 					}
@@ -2913,7 +2922,7 @@ public final class Programming {
 	 * @return
 	 */
 	private static boolean rememberWithVariables(IAST variablesList, final java.util.Map<ISymbol, IExpr> variablesMap,
-			  EvalEngine engine) {
+			EvalEngine engine) {
 		ISymbol oldSymbol;
 		for (int i = 1; i < variablesList.size(); i++) {
 			if (variablesList.get(i).isAST(F.Set, 3)) {
@@ -3067,7 +3076,7 @@ public final class Programming {
 		final String varAppend = engine.uniqueName("$");
 		final java.util.IdentityHashMap<ISymbol, IExpr> moduleVariables = new IdentityHashMap<ISymbol, IExpr>();
 		if (rememberModuleVariables(intializerList, varAppend, moduleVariables, engine)) {
-			IExpr result = moduleBlock.accept(new ModuleReplaceAll(moduleVariables,  engine, varAppend));
+			IExpr result = moduleBlock.accept(new ModuleReplaceAll(moduleVariables, engine, varAppend));
 			return result.orElse(moduleBlock);
 		}
 		return F.NIL;
@@ -3088,9 +3097,8 @@ public final class Programming {
 		// final long moduleCounter = engine.incModuleCounter();
 		// final String varAppend = "$" + moduleCounter;
 		final java.util.IdentityHashMap<ISymbol, IExpr> moduleVariables = new IdentityHashMap<ISymbol, IExpr>();
-		if (rememberWithVariables(intializerList, moduleVariables,   engine)) {
-			IExpr result = withBlock
-					.accept(new ModuleReplaceAll(moduleVariables,   engine, engine.uniqueName("$")));
+		if (rememberWithVariables(intializerList, moduleVariables, engine)) {
+			IExpr result = withBlock.accept(new ModuleReplaceAll(moduleVariables, engine, engine.uniqueName("$")));
 			return result.orElse(withBlock);
 		}
 		return F.NIL;
@@ -3326,8 +3334,6 @@ public final class Programming {
 			if ((indx < 0) || (indx >= part.size())) {
 				// Part `1` of `2` does not exist.
 				return IOFunctions.printMessage(F.Part, "partw", F.List(F.ZZ(indx), part), engine);
-				// throw new WrappedException(new IndexOutOfBoundsException(
-				// "Part[] index " + indx + " of " + part.toString() + " is out of bounds."));
 			}
 			IASTAppendable result = F.NIL;
 			IExpr temp = assignPart(assignedAST.get(indx), part, partPositionPlus1, value, engine);
@@ -3489,8 +3495,8 @@ public final class Programming {
 			partPosition = lhs.size() + partPosition;
 		}
 		if ((partPosition < 0) || (partPosition >= lhs.size())) {
-			throw new WrappedException(new IndexOutOfBoundsException(
-					"Part[] index " + partPosition + " of " + lhs.toString() + " is out of bounds."));
+			throw new ArgumentTypeException(
+					"Part: index " + partPosition + " of " + lhs.toString() + " is out of bounds.");
 		}
 		return lhs.setAtCopy(partPosition, value);
 	}

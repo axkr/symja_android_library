@@ -5,7 +5,6 @@ import static org.matheclipse.core.expression.F.Power;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.hipparchus.exception.MathIllegalStateException;
 import org.hipparchus.optim.OptimizationData;
 import org.hipparchus.optim.PointValuePair;
 import org.hipparchus.optim.linear.LinearConstraint;
@@ -19,7 +18,6 @@ import org.matheclipse.core.convert.Expr2LP;
 import org.matheclipse.core.convert.VariablesSet;
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.exception.ValidateException;
-import org.matheclipse.core.eval.exception.WrappedException;
 import org.matheclipse.core.eval.interfaces.AbstractCoreFunctionEvaluator;
 import org.matheclipse.core.eval.interfaces.AbstractEvaluator;
 import org.matheclipse.core.eval.interfaces.AbstractFunctionEvaluator;
@@ -465,6 +463,11 @@ public class MinMaxFunctions {
 						}
 					}
 				}
+			} catch(org.hipparchus.exception.MathRuntimeException mrex) {
+				if (FEConfig.SHOW_STACKTRACE) {
+					mrex.printStackTrace();
+				}
+				return engine.printMessage(ast.topHead(), mrex);
 			} catch (ValidateException ve) {
 				if (FEConfig.SHOW_STACKTRACE) {
 					ve.printStackTrace();
@@ -554,6 +557,11 @@ public class MinMaxFunctions {
 						}
 					}
 				}
+			} catch(org.hipparchus.exception.MathRuntimeException mrex) {
+				if (FEConfig.SHOW_STACKTRACE) {
+					mrex.printStackTrace();
+				}
+				return engine.printMessage(ast.topHead(), mrex);
 			} catch (ValidateException ve) {
 				if (FEConfig.SHOW_STACKTRACE) {
 					ve.printStackTrace();
@@ -582,25 +590,19 @@ public class MinMaxFunctions {
 			return constraints;
 		}
 
-		protected static IExpr simplexSolver(VariablesSet vars, LinearObjectiveFunction f,
-				OptimizationData... optData) {
-			try {
-				SimplexSolver solver = new SimplexSolver();
-				PointValuePair solution = solver.optimize(optData);
-				double[] values = solution.getPointRef();
-				IASTAppendable list = F.ListAlloc(values.length);
-				List<IExpr> varList = vars.getArrayList();
-				for (int i = 0; i < values.length; i++) {
-					list.append(F.Rule(varList.get(i), F.num(values[i])));
-				}
-				IAST result = F.List(F.num(f.value(values)), list);
-				return result;
-			} catch (MathIllegalStateException oe) {
-				throw new WrappedException(oe);
-				// if (Config.SHOW_STACKTRACE) {
-				// oe.printStackTrace();
-				// }
+		protected static IExpr simplexSolver(VariablesSet vars, LinearObjectiveFunction f, OptimizationData... optData)
+				throws org.hipparchus.exception.MathRuntimeException {
+
+			SimplexSolver solver = new SimplexSolver();
+			PointValuePair solution = solver.optimize(optData);
+			double[] values = solution.getPointRef();
+			IASTAppendable list = F.ListAlloc(values.length);
+			List<IExpr> varList = vars.getArrayList();
+			for (int i = 0; i < values.length; i++) {
+				list.append(F.Rule(varList.get(i), F.num(values[i])));
 			}
+			IAST result = F.List(F.num(f.value(values)), list);
+			return result;
 		}
 	}
 

@@ -193,6 +193,11 @@ public interface IRational extends ISignedNumber, IBigNumber {
 	 */
 	public BigInteger toBigNumerator();
 
+	/**
+	 * Truncates the integer part in the "direction to 0" as <code>isNegative() ? ceil() : floor()</code>..
+	 * 
+	 * @return
+	 */
 	default IInteger trunc() {
 		return isNegative() ? ceil() : floor();
 	}

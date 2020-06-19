@@ -11,7 +11,9 @@ import java.math.BigInteger;
 import java.util.function.Function;
 
 import org.hipparchus.complex.Complex;
+import org.matheclipse.core.basic.Config;
 import org.matheclipse.core.eval.EvalEngine;
+import org.matheclipse.core.eval.exception.ASTElementLimitExceeded;
 import org.matheclipse.core.eval.exception.ValidateException;
 import org.matheclipse.core.eval.interfaces.AbstractCoreFunctionEvaluator;
 import org.matheclipse.core.eval.interfaces.AbstractEvaluator;
@@ -288,6 +290,10 @@ public class IntegerFunctions {
 						return F.ZZ(count);
 					}
 					return F.NIL;
+				}
+				
+				if (Config.MAX_AST_SIZE < radix  ) {
+					ASTElementLimitExceeded.throwIt(radix);
 				}
 				IExpr[] arr = new IExpr[radix];
 				for (int i = 0; i < arr.length; i++) {

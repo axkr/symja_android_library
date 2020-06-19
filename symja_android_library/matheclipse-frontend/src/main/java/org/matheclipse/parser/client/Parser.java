@@ -286,7 +286,7 @@ public class Parser extends Scanner {
 			if (fToken == TT_DIGIT) {
 				slot.add(fFactory.createInteger(getJavaInt()));
 			} else if (fToken == TT_IDENTIFIER) {
-				slot.add(getSymbol()); 
+				slot.add(getSymbol());
 			} else if (fToken == TT_STRING) {
 				slot.add(getString());
 			} else {
@@ -706,10 +706,11 @@ public class Parser extends Scanner {
 	 */
 	private ASTNode getNumber(final boolean negative) throws SyntaxError {
 		ASTNode temp = null;
-		final Object[] result = getNumberString();
-		String number = (String) result[0];
-		final int numFormat = ((Integer) result[1]).intValue();
+		String number = "";
 		try {
+			final Object[] result = getNumberString();
+			number = (String) result[0];
+			final int numFormat = ((Integer) result[1]).intValue();
 			if (negative) {
 				number = '-' + number;
 			}
@@ -718,7 +719,7 @@ public class Parser extends Scanner {
 			} else {
 				temp = fFactory.createInteger(number, numFormat);
 			}
-		} catch (final RuntimeException e) {
+		} catch (final SyntaxError e) {
 			throwSyntaxError("Number format error: " + number, number.length());
 		}
 		getNextToken();

@@ -18,6 +18,7 @@ import org.matheclipse.core.interfaces.ISymbol;
 import org.matheclipse.core.parser.ExprParserFactory;
 import org.matheclipse.parser.client.FEConfig;
 import org.matheclipse.parser.client.operator.Operator;
+import org.matheclipse.parser.client.operator.Precedence;
 import org.matheclipse.parser.trie.Tries;
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
@@ -81,17 +82,15 @@ public class TeXParser {
 	};
 
 	static final PostfixOperator[] POSTFIX_OPERATORS = { //
-			new PostfixOperator("!", "Factorial", ExprParserFactory.FACTORIAL_PRECEDENCE, (x) -> F.Factorial(x)), //
+			new PostfixOperator("!", "Factorial", Precedence.FACTORIAL, (x) -> F.Factorial(x)), //
 	};
 
 	static final BinaryOperator[] BINARY_OPERATORS = { //
-			new BinaryOperator("=", "Equal", ExprParserFactory.EQUAL_PRECEDENCE, (lhs, rhs) -> F.Equal(lhs, rhs)), //
-			new BinaryOperator("\u2264", "LessEqual", ExprParserFactory.EQUAL_PRECEDENCE,
-					(lhs, rhs) -> F.LessEqual(lhs, rhs)), //
-			new BinaryOperator("\u2265", "GreaterEqual", ExprParserFactory.EQUAL_PRECEDENCE,
-					(lhs, rhs) -> F.GreaterEqual(lhs, rhs)), //
-			new BinaryOperator("<", "Less", ExprParserFactory.EQUAL_PRECEDENCE, (lhs, rhs) -> F.Less(lhs, rhs)), //
-			new BinaryOperator(">", "Greater", ExprParserFactory.EQUAL_PRECEDENCE, (lhs, rhs) -> F.Greater(lhs, rhs)), //
+			new BinaryOperator("=", "Equal", Precedence.EQUAL, (lhs, rhs) -> F.Equal(lhs, rhs)), //
+			new BinaryOperator("\u2264", "LessEqual", Precedence.EQUAL, (lhs, rhs) -> F.LessEqual(lhs, rhs)), //
+			new BinaryOperator("\u2265", "GreaterEqual", Precedence.EQUAL, (lhs, rhs) -> F.GreaterEqual(lhs, rhs)), //
+			new BinaryOperator("<", "Less", Precedence.EQUAL, (lhs, rhs) -> F.Less(lhs, rhs)), //
+			new BinaryOperator(">", "Greater", Precedence.EQUAL, (lhs, rhs) -> F.Greater(lhs, rhs)), //
 
 			new BinaryOperator("\u2227", "And", 215, (lhs, rhs) -> F.And(lhs, rhs)), //
 			new BinaryOperator("\u2228", "Or", 213, (lhs, rhs) -> F.Or(lhs, rhs)), //
@@ -101,19 +100,18 @@ public class TeXParser {
 			new BinaryOperator("\u21d4", "Equivalent", 120, (lhs, rhs) -> F.Equivalent(lhs, rhs)), // Leftrightarrow
 			new BinaryOperator("\u2261", "Equivalent", 120, (lhs, rhs) -> F.Equivalent(lhs, rhs)), // equiv
 
-			new BinaryOperator("+", "Plus", ExprParserFactory.PLUS_PRECEDENCE, (lhs, rhs) -> F.Plus(lhs, rhs)), //
-			new BinaryOperator("-", "Subtract", ExprParserFactory.PLUS_PRECEDENCE, (lhs, rhs) -> F.Subtract(lhs, rhs)), //
+			new BinaryOperator("+", "Plus", Precedence.PLUS, (lhs, rhs) -> F.Plus(lhs, rhs)), //
+			new BinaryOperator("-", "Subtract", Precedence.PLUS, (lhs, rhs) -> F.Subtract(lhs, rhs)), //
 
-			new BinaryOperator("*", "Times", ExprParserFactory.TIMES_PRECEDENCE, (lhs, rhs) -> F.Times(lhs, rhs)), //
+			new BinaryOperator("*", "Times", Precedence.TIMES, (lhs, rhs) -> F.Times(lhs, rhs)), //
 			// x multiplication sign
-			new BinaryOperator("\u00d7", "Times", ExprParserFactory.TIMES_PRECEDENCE, (lhs, rhs) -> F.Times(lhs, rhs)), //
+			new BinaryOperator("\u00d7", "Times", Precedence.TIMES, (lhs, rhs) -> F.Times(lhs, rhs)), //
 			// InvisibleTimes
-			new BinaryOperator("\u2062", "Times", ExprParserFactory.TIMES_PRECEDENCE, (lhs, rhs) -> F.Times(lhs, rhs)), //
+			new BinaryOperator("\u2062", "Times", Precedence.TIMES, (lhs, rhs) -> F.Times(lhs, rhs)), //
 
-			new BinaryOperator("/", "Divide", ExprParserFactory.DIVIDE_PRECEDENCE, (lhs, rhs) -> F.Divide(lhs, rhs)), //
+			new BinaryOperator("/", "Divide", Precedence.DIVIDE, (lhs, rhs) -> F.Divide(lhs, rhs)), //
 			// &#xf7; Division sign
-			new BinaryOperator("\u00f7", "Divide", ExprParserFactory.DIVIDE_PRECEDENCE,
-					(lhs, rhs) -> F.Divide(lhs, rhs)), //
+			new BinaryOperator("\u00f7", "Divide", Precedence.DIVIDE, (lhs, rhs) -> F.Divide(lhs, rhs)), //
 
 			new BinaryOperator("\u2208", "Element", 250, (lhs, rhs) -> F.Element(lhs, rhs)), //
 
@@ -322,7 +320,7 @@ public class TeXParser {
 				}
 
 				// try to build a Times(...) expression
-				currPrec = ExprParserFactory.TIMES_PRECEDENCE;
+				currPrec = Precedence.TIMES;
 				IExpr rhs = convert(list, position, end, null, currPrec);
 				// invisible times?
 				result = F.Times(lhs, rhs);

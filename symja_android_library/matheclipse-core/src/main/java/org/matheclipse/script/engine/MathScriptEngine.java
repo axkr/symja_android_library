@@ -20,7 +20,6 @@ import org.matheclipse.core.eval.exception.FailedException;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.form.output.OutputFormFactory;
 import org.matheclipse.core.interfaces.IExpr;
-import org.matheclipse.parser.client.FEConfig;
 import org.matheclipse.parser.client.SyntaxError;
 import org.matheclipse.parser.client.math.MathException;
 
@@ -74,6 +73,12 @@ public class MathScriptEngine extends AbstractScriptEngine {
 	public Object eval(final String script, final ScriptContext context) throws ScriptException {
 		// final ArrayList<ISymbol> list = new ArrayList<ISymbol>();
 		boolean relaxedSyntax = false;
+		boolean showStackTrace = false;
+		final Object enableStackTraceBoolean = get("PRINT_STACKTRACE");
+		if (Boolean.TRUE.equals(enableStackTraceBoolean)) {
+			showStackTrace = true;
+		}
+		
 		try {
 			// first assign the EvalEngine to the current thread:
 			fUtility.startRequest();
@@ -125,19 +130,19 @@ public class MathScriptEngine extends AbstractScriptEngine {
 			}
 
 		} catch (final AbortException e) {
-			if (FEConfig.SHOW_STACKTRACE) {
+			if (showStackTrace) {
 				e.printStackTrace();
 			}
 			try {
 				return printResult(F.$Aborted, relaxedSyntax);
 			} catch (IOException e1) {
-				if (Config.DEBUG) {
+				if (showStackTrace) {
 					e.printStackTrace();
 				}
 				return e1.getMessage();
 			}
 		} catch (final FailedException e) {
-			if (FEConfig.SHOW_STACKTRACE) {
+			if (showStackTrace) {
 				e.printStackTrace();
 			}
 			try {
@@ -149,18 +154,18 @@ public class MathScriptEngine extends AbstractScriptEngine {
 				return e1.getMessage();
 			}
 		} catch (final SyntaxError e) {
-			if (Config.DEBUG) {
+			if (showStackTrace) {
 				e.printStackTrace();
 			}
 			// catch parser errors here
 			return e.getMessage();
 		} catch (final MathException e) {
-			if (FEConfig.SHOW_STACKTRACE) {
+			if (showStackTrace) {
 				e.printStackTrace();
 			}
 			return e.getMessage();
 		} catch (final ApfloatRuntimeException e) {
-			if (FEConfig.SHOW_STACKTRACE) {
+			if (showStackTrace) {
 				e.printStackTrace();
 			}
 			// catch parser errors here
@@ -172,17 +177,17 @@ public class MathScriptEngine extends AbstractScriptEngine {
 			// }
 			// return e.getMessage();
 			// }
-			if (FEConfig.SHOW_STACKTRACE) {
+			if (showStackTrace) {
 				e.printStackTrace();
 			}
 			return "Exception: " + e.getMessage();
 		} catch (final OutOfMemoryError e) {
-			if (Config.DEBUG) {
+			if (showStackTrace) {
 				e.printStackTrace();
 			}
 			return "OutOfMemoryError";
 		} catch (final StackOverflowError e) {
-			if (FEConfig.SHOW_STACKTRACE) {
+			if (showStackTrace) {
 				e.printStackTrace();
 			}
 			return "StackOverflowError";

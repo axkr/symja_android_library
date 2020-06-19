@@ -53,6 +53,7 @@ import org.matheclipse.core.basic.Config;
 import org.matheclipse.core.builtin.functions.GammaJS;
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.PlusOp;
+import org.matheclipse.core.eval.exception.IterationLimitExceeded;
 import org.matheclipse.core.eval.exception.Validate;
 import org.matheclipse.core.eval.exception.ValidateException;
 import org.matheclipse.core.eval.interfaces.AbstractArg1;
@@ -1766,7 +1767,7 @@ public final class Arithmetic {
 			IInteger[] gi1 = c1.gaussianIntegers();
 
 			if (gi0 != null && gi1 != null) {
-//				ComplexSym devidend = ComplexSym.valueOf(c0.getRealPart(), c0.getImaginaryPart());
+				// ComplexSym devidend = ComplexSym.valueOf(c0.getRealPart(), c0.getImaginaryPart());
 				IInteger[] result = GaussianInteger.gcd(gi0, gi1);
 				if (result != null) {
 					return F.complex(result[0], result[1]);
@@ -1897,6 +1898,10 @@ public final class Arithmetic {
 			if (n < 1)
 				return BigFraction.ZERO;
 			else {
+				int iterationLimit = EvalEngine.get().getIterationLimit();
+				if (iterationLimit >= 0 && iterationLimit <= n) {
+					IterationLimitExceeded.throwIt(n, F.HarmonicNumber(F.ZZ(n)));
+				}
 				/*
 				 * start with 1 as the result
 				 */
@@ -2910,7 +2915,7 @@ public final class Arithmetic {
 			int ni = n.toIntDefault(Integer.MIN_VALUE);
 			if (a.isRational() && ni > Integer.MIN_VALUE) {
 				BigFraction bf = ((IRational) a).toBigFraction();
-				return pochhammer(bf, ni);
+				return pochhammer(bf, ni, ast);
 			}
 			if (a.isInteger() && a.isPositive()) {
 				IExpr temp = EvalEngine.get().evaluate(F.Plus(((IInteger) a).subtract(F.C1), n));
@@ -2946,8 +2951,13 @@ public final class Arithmetic {
 		 *            The number of product terms in the evaluation.
 		 * @return Gamma(that+n)/Gamma(that) = that*(that+1)*...*(that+n-1).
 		 */
-		public static IExpr pochhammer(BigFraction that, final int n) {
+		private static IExpr pochhammer(BigFraction that, final int n, IAST ast) {
 			if (n < 0) {
+				int positiveN = -n;
+				int iterationLimit = EvalEngine.get().getIterationLimit();
+				if (iterationLimit >= 0 && iterationLimit <= positiveN) {
+					IterationLimitExceeded.throwIt(positiveN, ast);
+				}
 				BigFraction res = BigFraction.ONE;
 				for (int i = (-1); i >= n; i--) {
 					res = res.multiply(that.add(i));
@@ -2961,6 +2971,11 @@ public final class Arithmetic {
 			} else {
 				if (that.equals(BigFraction.ZERO)) {
 					return F.C0;
+				}
+
+				int iterationLimit = EvalEngine.get().getIterationLimit();
+				if (iterationLimit >= 0 && iterationLimit <= n) {
+					IterationLimitExceeded.throwIt(n, ast);
 				}
 				BigFraction res = that;
 				for (int i = 1; i < n; i++) {
@@ -3119,20 +3134,27 @@ public final class Arithmetic {
 				}
 				return powerZeroArg1(exponent);
 			}
-			if (base.isAST()) {
+			if (base.isQuantity()) {
+				try {
+					IQuantity q = (IQuantity) base;
+					return q.power(exponent);
+				} catch (MathException mex) {
+					return F.NIL;
+				}
+			} else if (base.isAST()) {
 				if (base.isInterval()) {
 					if (exponent.isInteger()) {
 						IInteger ii = (IInteger) exponent;
 						return org.matheclipse.core.expression.IntervalSym.power((IAST) base, ii);
 						// return powerInterval(base, ii);
 					}
-				} else if (base.isQuantity()) {
-					try {
-						IQuantity q = (IQuantity) base;
-						return q.power(exponent);
-					} catch (MathException mex) {
-						return F.NIL;
-					}
+					// } else if (base.isQuantity()) {
+					// try {
+					// IQuantity q = (IQuantity) base;
+					// return q.power(exponent);
+					// } catch (MathException mex) {
+					// return F.NIL;
+					// }
 				} else if (base instanceof ASTSeriesData) {
 					int exp = exponent.toIntDefault(Integer.MIN_VALUE);
 					if (exp != Integer.MIN_VALUE) {
@@ -5305,7 +5327,14 @@ public final class Arithmetic {
 				}
 			}
 
-			if (arg1.isAST() || arg2.isAST()) {
+			if (arg1.isQuantity()) {
+				IQuantity q = (IQuantity) arg1;
+				return q.times(arg2);
+
+			} else if (arg2.isQuantity()) {
+				IQuantity q = (IQuantity) arg2;
+				return q.times(arg1);
+			} else if (arg1.isAST() || arg2.isAST()) {
 				final int arg1Ordinal = arg1.headID();
 				final int arg2Ordinal = arg2.headID();
 				if (arg1Ordinal < 0 && arg2Ordinal < 0) {
@@ -5347,12 +5376,12 @@ public final class Arithmetic {
 						}
 					}
 					break;
-				case ID.Quantity:
-					if (arg1.isQuantity()) {
-						IQuantity q = (IQuantity) arg1;
-						return q.times(arg2);
-					}
-					break;
+				// case ID.Quantity:
+				// if (arg1.isQuantity()) {
+				// IQuantity q = (IQuantity) arg1;
+				// return q.times(arg2);
+				// }
+				// break;
 				default:
 				}
 
@@ -5391,12 +5420,12 @@ public final class Arithmetic {
 						return IntervalSym.times(arg1, (IAST) arg2);
 					}
 					break;
-				case ID.Quantity:
-					if (arg2.isQuantity()) {
-						IQuantity q = (IQuantity) arg2;
-						return q.times(arg1);
-					}
-					break;
+				// case ID.Quantity:
+				// if (arg2.isQuantity()) {
+				// IQuantity q = (IQuantity) arg2;
+				// return q.times(arg1);
+				// }
+				// break;
 				case ID.SeriesData:
 					if (arg2 instanceof ASTSeriesData) {
 						return ((ASTSeriesData) arg2).times(arg1);

@@ -3,7 +3,6 @@ package org.matheclipse.core.eval.exception;
 import org.matheclipse.core.expression.Context;
 import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.interfaces.ISymbol;
-import org.matheclipse.parser.client.math.MathException;
 
 public class RuleCreationError extends ValidateException {
 	/**

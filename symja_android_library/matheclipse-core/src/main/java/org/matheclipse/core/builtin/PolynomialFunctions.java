@@ -23,10 +23,12 @@ import org.matheclipse.core.convert.JASModInteger;
 import org.matheclipse.core.convert.Object2Expr;
 import org.matheclipse.core.convert.VariablesSet;
 import org.matheclipse.core.eval.EvalEngine;
+import org.matheclipse.core.eval.exception.ASTElementLimitExceeded;
+import org.matheclipse.core.eval.exception.IterationLimitExceeded;
 import org.matheclipse.core.eval.exception.JASConversionException;
 import org.matheclipse.core.eval.exception.LimitException;
+import org.matheclipse.core.eval.exception.RecursionLimitExceeded;
 import org.matheclipse.core.eval.exception.Validate;
-import org.matheclipse.core.eval.exception.WrappedException;
 import org.matheclipse.core.eval.interfaces.AbstractCoreFunctionEvaluator;
 import org.matheclipse.core.eval.interfaces.AbstractFunctionEvaluator;
 import org.matheclipse.core.eval.util.OptionArgs;
@@ -1103,6 +1105,20 @@ public class PolynomialFunctions {
 		 */
 		@Override
 		public IExpr evaluate(final IAST ast, EvalEngine engine) {
+			IExpr arg1 = ast.arg1();
+			if (arg1.isEqual()) {
+				IAST equalAST = (IAST) arg1;
+				if (equalAST.arg2().isZero()) {
+					arg1 = equalAST.arg1();
+				} else {
+					arg1 = engine.evaluate(F.Subtract(equalAST.arg1(), equalAST.arg2()));
+				}
+			} else {
+				if (!arg1.isPolynomialStruct()) {
+					return engine.printMessage(ast.topHead() + ": Equal() expression expected at position 1 instead of "
+							+ ast.arg1().toString());
+				}
+			}
 			IAST variables;
 			if (ast.size() == 2) {
 				VariablesSet eVar = new VariablesSet(ast.arg1());
@@ -1120,7 +1136,7 @@ public class PolynomialFunctions {
 			if (variables.size() <= 1) {
 				return F.NIL;
 			}
-			IExpr temp = roots(ast.arg1(), variables, engine);
+			IExpr temp = roots(arg1, variables, engine);
 			if (!temp.isList()) {
 				return F.NIL;
 			}
@@ -1128,10 +1144,6 @@ public class PolynomialFunctions {
 			int size = list.size();
 			IASTAppendable result = F.ListAlloc(size);
 			return result.appendArgs(size, i -> engine.evalN(list.get(i)));
-			// for (int i = 1; i < size; i++) {
-			// result.append(engine.evalN(list.get(i)));
-			// }
-			// return result;
 		}
 
 		@Override
@@ -1637,7 +1649,7 @@ public class PolynomialFunctions {
 				}
 				int max = n - k + 2;
 				if (max >= 0) {
-					return bellY(n, k, (IAST) ast.arg3());
+					return bellY(n, k, (IAST) ast.arg3(), ast, engine);
 				}
 			}
 
@@ -2098,7 +2110,14 @@ public class PolynomialFunctions {
 
 	}
 
-	public static IExpr bellY(int n, int k, IAST symbols) {
+	public static IExpr bellY(int n, int k, IAST symbols, IAST ast, EvalEngine engine) {
+		final int recursionLimit = engine.getRecursionLimit();
+		if (recursionLimit > 0) {
+			int counter = engine.incRecursionCounter();
+			if (counter > recursionLimit) {
+				RecursionLimitExceeded.throwIt(counter, ast);
+			}
+		}
 		if (n == 0 && k == 0) {
 			return F.C1;
 		}
@@ -2108,9 +2127,14 @@ public class PolynomialFunctions {
 		IExpr s = F.C0;
 		int a = 1;
 		int max = n - k + 2;
+
+		int iterationLimit = engine.getIterationLimit();
+		if (iterationLimit >= 0 && iterationLimit <= max) {
+			IterationLimitExceeded.throwIt(max, ast);
+		}
 		for (int m = 1; m < max; m++) {
 			if ((m < symbols.size()) && !symbols.get(m).isZero()) {
-				IExpr bellY = bellY(n - m, k - 1, symbols);
+				IExpr bellY = bellY(n - m, k - 1, symbols, ast, engine);
 				if (bellY.isPlus()) {
 					bellY = ((IAST) bellY).mapThread(F.Times(a, null, symbols.get(m)), 2);
 				} else {
@@ -2190,9 +2214,16 @@ public class PolynomialFunctions {
 		IExpr variable = variables.arg1();
 		double[] coefficients = Expr2Object.toPolynomial(expr, variable);
 		if (coefficients != null) {
-			LaguerreSolver solver = new LaguerreSolver(Config.DEFAULT_ROOTS_CHOP_DELTA);
-			org.hipparchus.complex.Complex[] roots = solver.solveAllComplex(coefficients, 0);
-			return Object2Expr.convertComplex(true, roots);
+			try {
+				LaguerreSolver solver = new LaguerreSolver(Config.DEFAULT_ROOTS_CHOP_DELTA);
+				org.hipparchus.complex.Complex[] roots = solver.solveAllComplex(coefficients, 0);
+				return Object2Expr.convertComplex(true, roots);
+			} catch (org.hipparchus.exception.MathRuntimeException mrex) {
+				if (FEConfig.SHOW_STACKTRACE) {
+					mrex.printStackTrace();
+				}
+				return F.NIL;
+			}
 		}
 		IExpr denom = F.C1;
 		if (expr.isAST()) {
@@ -2250,8 +2281,9 @@ public class PolynomialFunctions {
 	 * @param coefficients
 	 *            coefficients of the polynomial.
 	 * @return the roots of the polynomial
+	 * @throws RuntimeException
 	 */
-	public static IAST findRoots(double... coefficients) {
+	private static IAST findRoots(double... coefficients) {
 		int N = coefficients.length - 1;
 
 		// Construct the companion matrix
@@ -2265,24 +2297,19 @@ public class PolynomialFunctions {
 			c.setEntry(i, i - 1, 1);
 		}
 
-		try {
+		EigenDecomposition ed = new EigenDecomposition(c);
 
-			EigenDecomposition ed = new EigenDecomposition(c);
+		double[] realValues = ed.getRealEigenvalues();
+		double[] imagValues = ed.getImagEigenvalues();
 
-			double[] realValues = ed.getRealEigenvalues();
-			double[] imagValues = ed.getImagEigenvalues();
-
-			IASTAppendable roots = F.ListAlloc(N);
-			return roots.appendArgs(0, N,
-					i -> F.chopExpr(F.complexNum(realValues[i], imagValues[i]), Config.DEFAULT_ROOTS_CHOP_DELTA));
-			// for (int i = 0; i < N; i++) {
-			// roots.append(F.chopExpr(F.complexNum(realValues[i], imagValues[i]),
-			// Config.DEFAULT_ROOTS_CHOP_DELTA));
-			// }
-			// return roots;
-		} catch (Exception ime) {
-			throw new WrappedException(ime);
-		}
+		IASTAppendable roots = F.ListAlloc(N);
+		return roots.appendArgs(0, N,
+				i -> F.chopExpr(F.complexNum(realValues[i], imagValues[i]), Config.DEFAULT_ROOTS_CHOP_DELTA));
+		// for (int i = 0; i < N; i++) {
+		// roots.append(F.chopExpr(F.complexNum(realValues[i], imagValues[i]),
+		// Config.DEFAULT_ROOTS_CHOP_DELTA));
+		// }
+		// return roots;
 
 	}
 
@@ -2595,7 +2622,7 @@ public class PolynomialFunctions {
 			newResult = QuarticSolver.createSet(newResult);
 			return newResult;
 		} catch (RuntimeException rex) {
-			// JAS may throw RuntimeExceptions
+			// JAS or "findRoots" may throw RuntimeExceptions
 			result = rootsOfExprPolynomial(expr, variables, true);
 		}
 		if (result.isPresent()) {

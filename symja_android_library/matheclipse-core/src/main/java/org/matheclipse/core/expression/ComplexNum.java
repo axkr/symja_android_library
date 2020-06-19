@@ -787,27 +787,31 @@ public class ComplexNum implements IComplexNum {
 	 * @return the quotient and remainder as an array <code>[quotient, remainder]</code>
 	 */
 	public static Complex [] quotientRemainder(Complex c1, Complex c2) {
-		// TODO use Complex implementation - see: https://github.com/Hipparchus-Math/hipparchus/issues/67
-		double numeratorReal = c1.getReal() * c2.getReal() + //
-				c1.getImaginary() * c2.getImaginary();
-		double numeratorImaginary = c1.getReal() * (-c2.getImaginary()) + //
-				c2.getReal() * c1.getImaginary();
-		double denominator = c2.getReal() * c2.getReal() + //
-				c2.getImaginary() * c2.getImaginary();
-		if (denominator == 0.0) {
-			throw new IllegalArgumentException("Denominator cannot be zero.");
-		}
-
-		double divisionReal = Math.round(numeratorReal / denominator);
-		double divisionImaginary = Math.round(numeratorImaginary / denominator);
-
-		double remainderReal = c1.getReal() - //
-				(c2.getReal() * divisionReal) + //
-				(c2.getImaginary() * divisionImaginary);
-		double remainderImaginary = c1.getImaginary() - //
-				(c2.getReal() * divisionImaginary) - //
-				(c2.getImaginary() * divisionReal);
-		return new Complex[] { new Complex(divisionReal, divisionImaginary),
-				new Complex(remainderReal, remainderImaginary) };
+		// use hipparchus Complex implementation - see: https://github.com/Hipparchus-Math/hipparchus/issues/67
+		Complex remainder = c1.remainder(c2);
+		Complex quotient = c1.subtract(remainder).divide(c2).rint();
+		return new Complex[] {quotient, remainder};
+ 	
+//		double numeratorReal = c1.getReal() * c2.getReal() + //
+//				c1.getImaginary() * c2.getImaginary();
+//		double numeratorImaginary = c1.getReal() * (-c2.getImaginary()) + //
+//				c2.getReal() * c1.getImaginary();
+//		double denominator = c2.getReal() * c2.getReal() + //
+//				c2.getImaginary() * c2.getImaginary();
+//		if (denominator == 0.0) {
+//			throw new IllegalArgumentException("Denominator cannot be zero.");
+//		}
+//
+//		double divisionReal = Math.rint(numeratorReal / denominator);
+//		double divisionImaginary = Math.rint(numeratorImaginary / denominator);
+//
+//		double remainderReal = c1.getReal() - //
+//				(c2.getReal() * divisionReal) + //
+//				(c2.getImaginary() * divisionImaginary);
+//		double remainderImaginary = c1.getImaginary() - //
+//				(c2.getReal() * divisionImaginary) - //
+//				(c2.getImaginary() * divisionReal);
+//		return new Complex[] { new Complex(divisionReal, divisionImaginary),
+//				new Complex(remainderReal, remainderImaginary) };
 	}
 }

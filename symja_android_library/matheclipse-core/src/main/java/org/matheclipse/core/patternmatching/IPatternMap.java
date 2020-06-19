@@ -1476,18 +1476,14 @@ public interface IPatternMap extends Cloneable {
 
 	default boolean isPatternTest(IExpr expr, IExpr patternTest, EvalEngine engine) {
 		final IExpr temp = substitutePatternOrSymbols(expr, false).orElse(expr);
-		final IASTMutable test = (IASTMutable) F.unaryAST1(patternTest, null);
 		if (temp.isSequence()) {
-			return ((IAST) temp).forAll((x, i) -> {
+			final IASTMutable test = F.unaryAST1(patternTest, null);
+			return ((IAST) temp).forAll(x -> {
 				test.set(1, x);
 				return engine.evalTrue(test);
-			}, 1);
+			});
 		}
-		test.set(1, temp);
-		if (!engine.evalTrue(test)) {
-			return false;
-		}
-		return true;
+		return engine.evalTrue(F.unaryAST1(patternTest, temp));
 	}
 
 	/**

@@ -55,6 +55,8 @@ public class BinaryNumerical implements BiFunction<IExpr, IExpr, IExpr> {
 			variable2.assign(Num.valueOf(y));
 			final double[] stack = new double[10];
 			result = DoubleStackEvaluator.eval(stack, 0, fun);
+		} catch (RuntimeException rex) {
+			return Double.NaN;
 		} finally {
 			variable1.assign(value1);
 			variable2.assign(value2);

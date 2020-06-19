@@ -23,9 +23,9 @@ import org.matheclipse.core.convert.Convert;
 import org.matheclipse.core.convert.VariablesSet;
 import org.matheclipse.core.eval.EvalAttributes;
 import org.matheclipse.core.eval.EvalEngine;
+import org.matheclipse.core.eval.exception.ASTElementLimitExceeded;
 import org.matheclipse.core.eval.exception.ArgumentTypeException;
 import org.matheclipse.core.eval.exception.FlowControlException;
-import org.matheclipse.core.eval.exception.IllegalArgument;
 import org.matheclipse.core.eval.exception.NoEvalException;
 import org.matheclipse.core.eval.exception.Validate;
 import org.matheclipse.core.eval.exception.ValidateException;
@@ -940,20 +940,32 @@ public final class ListFunctions {
 		}
 
 		private static IExpr arrayPadMatrixAtom(IAST matrix, int[] dim, int m, int n, IExpr atom) {
-			int columnDim = dim[1] + m + n;
-			IASTAppendable result = matrix.copyHead(dim[0] + m + n);
+			long columnDim = (long)dim[1] +(long) m + (long)n;
+			if (Config.MAX_AST_SIZE < columnDim ) {
+				ASTElementLimitExceeded.throwIt(columnDim);
+			}
+			long rowDim = dim[0] + m + n;
+			if (Config.MAX_AST_SIZE < rowDim ) {
+				ASTElementLimitExceeded.throwIt(rowDim);
+			}
+			
+			IASTAppendable result = matrix.copyHead((int)rowDim);
 			// prepend m rows
-			result.appendArgs(0, m, i -> atom.constantArray(F.List, 0, columnDim));
+			result.appendArgs(0, m, i -> atom.constantArray(F.List, 0, (int)columnDim));
 
 			result.appendArgs(1, dim[0] + 1, i -> arrayPadAtom(matrix.getAST(i), m, n, atom));
 
 			// append n rows
-			result.appendArgs(0, n, i -> atom.constantArray(F.List, 0, columnDim));
+			result.appendArgs(0, n, i -> atom.constantArray(F.List, 0,(int) columnDim));
 			return result;
 		}
 
 		private static IExpr arrayPadAtom(IAST ast, int m, int n, IExpr atom) {
-			IASTAppendable result = ast.copyHead(m + n + ast.argSize());
+			long intialCapacity = (long) m + (long) n + (long) ast.argSize();
+			if (Config.MAX_AST_SIZE < intialCapacity) {
+				ASTElementLimitExceeded.throwIt(intialCapacity);
+			}
+			IASTAppendable result = ast.copyHead((int) intialCapacity);
 			result.appendArgs(0, m, i -> atom);
 			result.appendArgs(ast);
 			result.appendArgs(0, n, i -> atom);
@@ -1335,14 +1347,16 @@ public final class ListFunctions {
 				final IAST arg1 = (IAST) ast.arg1();
 				final IAST arg2 = (IAST) ast.arg2();
 				IAST result = complement(arg1, arg2);
-				for (int i = 3; i < ast.size(); i++) {
-					if (ast.get(i).isAST()) {
-						result = complement(result, (IAST) ast.get(i));
-					} else {
-						return F.NIL;
+				if (result.isPresent()) {
+					for (int i = 3; i < ast.size(); i++) {
+						if (ast.get(i).isAST()) {
+							result = complement(result, (IAST) ast.get(i));
+						} else {
+							return F.NIL;
+						}
 					}
+					return result;
 				}
-				return result;
 			}
 			return F.NIL;
 		}
@@ -1355,18 +1369,21 @@ public final class ListFunctions {
 		public static IAST complement(final IAST arg1, final IAST arg2) {
 
 			Set<IExpr> set2 = arg2.asSet();
-			Set<IExpr> set3 = new HashSet<IExpr>();
-			arg1.forEach(x -> {
-				if (!set2.contains(x)) {
-					set3.add(x);
+			if (set2 != null) {
+				Set<IExpr> set3 = new HashSet<IExpr>();
+				arg1.forEach(x -> {
+					if (!set2.contains(x)) {
+						set3.add(x);
+					}
+				});
+				IASTAppendable result = F.ListAlloc(set3.size());
+				for (IExpr expr : set3) {
+					result.append(expr);
 				}
-			});
-			IASTAppendable result = F.ListAlloc(set3.size());
-			for (IExpr expr : set3) {
-				result.append(expr);
+				EvalAttributes.sort(result);
+				return result;
 			}
-			EvalAttributes.sort(result);
-			return result;
+			return F.NIL;
 		}
 	}
 
@@ -2656,10 +2673,12 @@ public final class ListFunctions {
 					if (ast.arg1().isAST()) {
 						IAST arg1 = (IAST) ast.arg1();
 						Set<IExpr> set = arg1.asSet();
-						final IASTAppendable result = F.ListAlloc(set.size());
-						result.appendAll(set);
-						EvalAttributes.sort(result, Comparators.ExprComparator.CONS);
-						return result;
+						if (set != null) {
+							final IASTAppendable result = F.ListAlloc(set.size());
+							result.appendAll(set);
+							EvalAttributes.sort(result, Comparators.ExprComparator.CONS);
+							return result;
+						}
 					}
 					return F.NIL;
 				}
@@ -3425,7 +3444,11 @@ public final class ListFunctions {
 		public static IExpr padLeftAtom(IAST ast, int n, IExpr atom) {
 			int length = n - ast.size() + 1;
 			if (length > 0) {
-				IASTAppendable result = ast.copyHead(length + ast.argSize());
+				long intialCapacity = (long) length + (long) ast.argSize();
+				if (Config.MAX_AST_SIZE < intialCapacity) {
+					ASTElementLimitExceeded.throwIt(intialCapacity);
+				}
+				IASTAppendable result = ast.copyHead((int) intialCapacity);
 				result.appendArgs(0, length, i -> atom);
 				// for (int i = 0; i < length; i++) {
 				// result.append(atom);
@@ -3442,7 +3465,11 @@ public final class ListFunctions {
 		public static IAST padLeftAST(IAST ast, int n, IAST arg2) {
 			int length = n - ast.size() + 1;
 			if (length > 0) {
-				IASTAppendable result = ast.copyHead(length + ast.argSize());
+				long intialCapacity = (long) length + (long) ast.argSize();
+				if (Config.MAX_AST_SIZE < intialCapacity) {
+					ASTElementLimitExceeded.throwIt(intialCapacity);
+				}
+				IASTAppendable result = ast.copyHead((int) intialCapacity);
 				if (arg2.size() < 2) {
 					return ast;
 				}
@@ -3641,7 +3668,11 @@ public final class ListFunctions {
 		public static IExpr padRightAtom(IAST ast, int n, IExpr atom) {
 			int length = n - ast.size() + 1;
 			if (length > 0) {
-				IASTAppendable result = ast.copyHead(length + ast.argSize());
+				long intialCapacity = (long) length + (long) ast.argSize();
+				if (Config.MAX_AST_SIZE < intialCapacity) {
+					ASTElementLimitExceeded.throwIt(intialCapacity);
+				}
+				IASTAppendable result = ast.copyHead((int) intialCapacity);
 				result.appendArgs(ast);
 				return result.appendArgs(0, length, i -> atom);
 			}
@@ -3654,7 +3685,11 @@ public final class ListFunctions {
 		public static IAST padRightAST(IAST ast, int n, IAST arg2) {
 			int length = n - ast.size() + 1;
 			if (length > 0) {
-				IASTAppendable result = ast.copyHead(length + ast.argSize());
+				long intialCapacity = (long) length + (long) ast.argSize();
+				if (Config.MAX_AST_SIZE < intialCapacity) {
+					ASTElementLimitExceeded.throwIt(intialCapacity);
+				}
+				IASTAppendable result = ast.copyHead((int) intialCapacity);
 				result.appendArgs(ast);
 				if (arg2.size() < 2) {
 					return ast;
@@ -6373,12 +6408,14 @@ public final class ListFunctions {
 					if (ast.arg1().isAST()) {
 						IAST arg1 = (IAST) ast.arg1();
 						Set<IExpr> set = arg1.asSet();
-						final IASTAppendable result = F.ListAlloc(set.size());
-						for (IExpr IExpr : set) {
-							result.append(IExpr);
+						if (set != null) {
+							final IASTAppendable result = F.ListAlloc(set.size());
+							for (IExpr IExpr : set) {
+								result.append(IExpr);
+							}
+							EvalAttributes.sort(result, Comparators.ExprComparator.CONS);
+							return result;
 						}
-						EvalAttributes.sort(result, Comparators.ExprComparator.CONS);
-						return result;
 					}
 					return F.NIL;
 				}

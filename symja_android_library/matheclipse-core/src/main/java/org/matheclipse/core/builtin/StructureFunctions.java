@@ -204,6 +204,9 @@ public class StructureFunctions {
 			}
 			IExpr arg1 = evaledAST.arg1();
 			IExpr arg2 = evaledAST.arg2();
+			if (arg1.isQuantity()||arg2.isQuantity()) {
+				return F.NIL;
+			}
 			return evalApply(arg1, arg2, evaledAST, lastIndex, heads, engine);
 		}
 

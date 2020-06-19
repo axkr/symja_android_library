@@ -2,6 +2,7 @@ package org.matheclipse.core.eval;
 
 import java.io.ByteArrayOutputStream;
 
+import org.matheclipse.core.eval.exception.SymjaMathException;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IExpr;
@@ -390,7 +391,7 @@ public class MathUtils {
 			// ParserContext(resp, 0, null));
 			throw e;
 		}
-		throw new MathException("MathUtils:getFunctionVal - cannot compute function values");
+		throw new SymjaMathException("MathUtils:getFunctionVal - cannot compute function values");
 	}
 
 	public static boolean isValid(String fun, String[] var) {

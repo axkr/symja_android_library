@@ -168,7 +168,7 @@ public class MainTestCase extends AbstractTestCase {
 		check("1+1", "2");
 		check("Out()", "2");
 	}
-	
+
 	public void testQuit() {
 		check("1^(-1)", //
 				"1");
@@ -176,25 +176,26 @@ public class MainTestCase extends AbstractTestCase {
 				"test");
 		check("Times(3, Power(1, -1))", //
 				"3");
-		check("%",//
+		check("%", //
 				"3");
 		check("%%%*%2", //
 				"test^2");
-		
+
 		check("Quit()", //
 				"");
-		 
+
 		check("2+3", //
 				"5");
 		check("test+2", //
 				"2+test");
 		check("Times(3, 4)", //
 				"12");
-		check("%",//
+		check("%", //
 				"12");
 		check("%%%*%1", //
 				"5*(2+test)");
 	}
+
 	public void testPower() {
 		check("(2/3)^(-2)", //
 				"9/4");
@@ -598,10 +599,10 @@ public class MainTestCase extends AbstractTestCase {
 
 	public void testSystem007() {
 		check("-12528^(1/2)", //
-				 "-12*Sqrt(87)");
-		check("32^(1/4)",//
+				"-12*Sqrt(87)");
+		check("32^(1/4)", //
 				"2*2^(1/4)");
-		check("(-1)^(1/3)",//
+		check("(-1)^(1/3)", //
 				"(-1)^(1/3)");
 		check("(-27)^(1/3)", //
 				"3*(-1)^(1/3)");
@@ -609,15 +610,15 @@ public class MainTestCase extends AbstractTestCase {
 				"9*(-1)^(2/3)");
 		check("8^(1/3)", //
 				"2");
-		check("81^(3/4)",//
+		check("81^(3/4)", //
 				"27");
 		check("82^(3/4)", //
 				"82^(3/4)");
-		check("(20/7)^(-1)",//
+		check("(20/7)^(-1)", //
 				"7/20");
-		check("(-27/64)^(1/3)",//
+		check("(-27/64)^(1/3)", //
 				"3/4*(-1)^(1/3)");
-		check("(27/64)^(-2/3)",//
+		check("(27/64)^(-2/3)", //
 				"16/9");
 		// check("16/9","");
 		check("10^4", //
@@ -637,7 +638,7 @@ public class MainTestCase extends AbstractTestCase {
 	}
 
 	public void testSystem010() {
-		check("1/2+I*(-1/3)",//
+		check("1/2+I*(-1/3)", //
 				"1/2-I*1/3");
 	}
 
@@ -652,7 +653,7 @@ public class MainTestCase extends AbstractTestCase {
 	}
 
 	public void testSystem013() {
-		check("$a=2;$a-=b",//
+		check("$a=2;$a-=b", //
 				"2-b");
 	}
 
@@ -3789,34 +3790,30 @@ public class MainTestCase extends AbstractTestCase {
 	}
 
 	public void testSystem1000() {
-		check("NRoots(4*x^(-2)-1)", "{-2.0,2.0}");
-		check("N(Sin(13*Degree))", "0.224951");
-		check("NRoots(0.224951054343865*x^2 + 5*x + 10)", "{-2.22216,-20.0049}");
-		check("NRoots(Sin(13*Degree)*x^2 + 5*x + 10)", "{-2.22216,-20.0049}");
-		check("NRoots(x^2-4)", "{2.0,-2.0}");
-		check("NRoots(2.5*x^2+1650)", "{I*(-25.69047),I*25.69047}");
-		check("NRoots(2*x^3 - 4*x^2 -22*x + 24)", "{1.0,-3.0,4.0}");
+		check("NRoots({x,-3,-1/2}==0)", //
+				"NRoots({x,-3,-1/2}==0)");
+		check("NRoots(4*x^(-2)-1==0)", //
+				"{-2.0,2.0}");
+		check("N(Sin(13*Degree))", //
+				"0.224951");
+		check("NRoots(0.224951054343865*x^2 + 5*x + 10==0)", //
+				"{-2.22216,-20.0049}");
+		check("NRoots(Sin(13*Degree)*x^2 + 5*x + 10==0)", //
+				"{-2.22216,-20.0049}");
+		check("NRoots(x^2-4==0)", //
+				"{2.0,-2.0}");
+		check("NRoots(2.5*x^2+1650==0)", //
+				"{I*(-25.69047),I*25.69047}");
+		check("NRoots(2*x^3 - 4*x^2 -22*x + 24==0)", //
+				"{1.0,-3.0,4.0}");
 
-		check("NRoots(x^2 + 5*x + 10)", "{-2.5+I*(-1.93649),-2.5+I*1.93649}");
-		check("NRoots(x^3+2*x^2+2*x+2)", //
+		check("NRoots(x^2 + 5*x + 10==0)", //
+				"{-2.5+I*(-1.93649),-2.5+I*1.93649}");
+		check("NRoots(x^3+2*x^2+2*x+2==0)", //
 				"{-0.228155+I*(-1.11514),-0.228155+I*1.11514,-1.54369}");
-		check("NRoots(x^3+4*x^2+x+2)", //
+		check("NRoots(x^3+4*x^2+x+2==0)", //
 				"{-0.0624351+I*(-0.715691),-0.0624351+I*0.715691,-3.87513}");
 	}
-
-	// public void testSystem999() {
-	// check("FactorI(4+x^2+2*x+3*x^3, x)", "(1+x)*(4-2*x+3*x^2)");
-	// check("FactorI(4+8*x+19*x^2+20*x^3+20*x^4+8*x^5+x^6, x)",
-	// "(2+x+4*x^2+x^3)*(2+3*x+4*x^2+x^3)");
-	// check("FactorI(Expand((x-1)^3), x)", "(-1+x)^3");
-	// check("FactorI(x^6-1, x)", "(-1+x)*(1+x)*(1+x+x^2)*(1-x+x^2)");
-	// check("FactorI(x^5+x^4+x+1, x)", "(1+x)*(1+x^4)");
-	// check("FactorI(-1+x^16, x)", "(-1+x)*(1+x)*(1+x^2)*(1+x^4)*(1+x^8)");
-	// check("FactorI(243-405*x+270*x^2-90*x^3+15*x^4-x^5,x)", "(-1)*(-3+x)^5");
-	// }
-
-	// public void testSystemTest() { check("TestIt(x^2+Sin(x)*Cos(y))",
-	// "Cos(#2)*Sin(#1)+#1^2")};
 
 	public void testSystem1100() {
 		check("Coefficient(10*(x^2)+2*(y^2)+2*x,x,2)", "10");

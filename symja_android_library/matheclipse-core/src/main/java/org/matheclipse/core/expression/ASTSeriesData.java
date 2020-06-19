@@ -134,12 +134,7 @@ public class ASTSeriesData extends AbstractAST implements Cloneable, Externaliza
 	@Override
 	public int argSize() {
 		return 6;
-	}
-
-	@Override
-	public Set<IExpr> asSet() {
-		throw new UnsupportedOperationException();
-	}
+	} 
 
 	/**
 	 * Returns a new {@code HMArrayList} with the same elements, the same size and the same capacity as this

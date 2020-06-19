@@ -312,9 +312,8 @@ public class Primality {
 	private static final BigInteger BIprimes[] = new BigInteger[primes.length];
 
 	/**
-	 * It encodes how many iterations of Miller-Rabin test are need to get an error bound not greater than
-	 * {@code 2<sup>(-100)</sup>}. For example: for a {@code 1000}-bit number we need {@code 4} iterations, since
-	 * {@code BITS[3]
+	 * It encodes how many iterations of Miller-Rabin test are need to get an error bound not greater than {@code 2<sup>(-100)</sup>}.
+	 * For example: for a {@code 1000}-bit number we need {@code 4} iterations, since {@code BITS[3]
 	 * < 1000 <= BITS[4]}.
 	 */
 	private static final int[] BITS = { 0, 0, 1854, 1233, 927, 747, 627, 543, 480, 431, 393, 361, 335, 314, 295, 279,
@@ -322,9 +321,8 @@ public class Primality {
 			92, 87, 83, 78, 73, 69, 64, 59, 54, 49, 44, 38, 32, 26, 1 };
 
 	/**
-	 * It encodes how many i-bit primes there are in the table for {@code i=2,...,10}. For example
-	 * {@code offsetPrimes[6]} says that from index {@code 11} exists {@code 7} consecutive {@code 6}-bit prime numbers
-	 * in the array.
+	 * It encodes how many i-bit primes there are in the table for {@code i=2,...,10}. For example {@code offsetPrimes[6]} says that
+	 * from index {@code 11} exists {@code 7} consecutive {@code 6}-bit prime numbers in the array.
 	 */
 	private static final int[][] offsetPrimes = { null, null, { 0, 2 }, { 2, 2 }, { 4, 2 }, { 6, 5 }, { 11, 7 },
 			{ 18, 13 }, { 31, 23 }, { 54, 43 }, { 97, 75 } };
@@ -338,10 +336,8 @@ public class Primality {
 	/**
 	 * Factor the given value into primes less equal than 1021.
 	 * 
-	 * @param val
-	 *            a BigInteger value which should be factored by all primes less equal than 1021
-	 * @param map
-	 *            a map which counts the prime integer factors less equal than 1021
+	 * @param val a BigInteger value which should be factored by all primes less equal than 1021
+	 * @param map a map which counts the prime integer factors less equal than 1021
 	 * @return the rest factor or zero, if the number could be factored completely into primes less equal then 1021
 	 */
 	public static BigInteger countPrimes1021(final BigInteger val, Map<Integer, Integer> map) {
@@ -376,15 +372,11 @@ public class Primality {
 	/**
 	 * Factor the given base into primes less equal than 1021.
 	 * 
-	 * @param base
-	 *            a BigInteger value which should be factored by all primes less equal than 1021
-	 * @param exponent
-	 *            the exponent which should be used for the collected primes
-	 * @param map
-	 *            a map which collects the prime integer factors less equal than 1021 in the form
-	 *            <code>prime-factor -> prime-count * exponent</code>
-	 * @param evaled
-	 *            if <code>evaled[0]</code> is <code>true</code> a transformations was done
+	 * @param base     a BigInteger value which should be factored by all primes less equal than 1021
+	 * @param exponent the exponent which should be used for the collected primes
+	 * @param map      a map which collects the prime integer factors less equal than 1021 in the form
+	 *                 <code>prime-factor -> prime-count * exponent</code>
+	 * @param evaled   if <code>evaled[0]</code> is <code>true</code> a transformations was done
 	 * @return the rest factor or one, if the number could be factored completely into primes less equal then 1021
 	 */
 	public static IInteger countPrimes1021(IInteger base, IExpr exponent, OpenIntToIExprHashMap<IExpr> map,
@@ -401,15 +393,11 @@ public class Primality {
 	/**
 	 * Factor the given base into primes less equal than 1021.
 	 * 
-	 * @param base
-	 *            a BigInteger value which should be factored by all primes less equal than 1021
-	 * @param exponent
-	 *            the exponent which should be used for the collected primes
-	 * @param map
-	 *            a map which collects the prime integer factors less equal than 1021 in the form
-	 *            <code>prime-factor -> prime-count * exponent</code>
-	 * @param evaled
-	 *            if <code>evaled[0]</code> is <code>true</code> a transformations was done
+	 * @param base     a BigInteger value which should be factored by all primes less equal than 1021
+	 * @param exponent the exponent which should be used for the collected primes
+	 * @param map      a map which collects the prime integer factors less equal than 1021 in the form
+	 *                 <code>prime-factor -> prime-count * exponent</code>
+	 * @param evaled   if <code>evaled[0]</code> is <code>true</code> a transformations was done
 	 * @return the rest factor or one, if the number could be factored completely into primes less equal then 1021
 	 */
 	private static IInteger countPrimes1021(final BigInteger base, IExpr exponent, OpenIntToIExprHashMap<IExpr> map,
@@ -459,15 +447,11 @@ public class Primality {
 	/**
 	 * Factor the given base into primes less equal than 1021.
 	 * 
-	 * @param base
-	 *            an int value <code>!= 0</code> which should be factored by all primes less equal than 1021
-	 * @param exponent
-	 *            the exponent which should be used for the collected primes
-	 * @param map
-	 *            a map which collects the prime integer factors less equal than 1021 in the form
-	 *            <code>prime-factor -> prime-count * exponent</code>
-	 * @param evaled
-	 *            if <code>evaled[0]</code> is <code>true</code> a transformations was done
+	 * @param base     an int value <code>!= 0</code> which should be factored by all primes less equal than 1021
+	 * @param exponent the exponent which should be used for the collected primes
+	 * @param map      a map which collects the prime integer factors less equal than 1021 in the form
+	 *                 <code>prime-factor -> prime-count * exponent</code>
+	 * @param evaled   if <code>evaled[0]</code> is <code>true</code> a transformations was done
 	 * @return the rest factor or one, if the number could be factored completely into primes less equal then 1021
 	 */
 	private static IInteger countPrimes1021(final int base, IExpr exponent, OpenIntToIExprHashMap<IExpr> map,
@@ -539,10 +523,8 @@ public class Primality {
 	/**
 	 * Factor the given value into primes less than <code>Short.MAX_VALUE</code> .
 	 * 
-	 * @param val
-	 *            a BigInteger value which should be factored by all primes less equal than 1021
-	 * @param map
-	 *            a map which counts the prime integer factors less equal than 32749
+	 * @param val a BigInteger value which should be factored by all primes less equal than 1021
+	 * @param map a map which counts the prime integer factors less equal than 32749
 	 * @return the rest factor or zero, if the number could be factored completely into primes less equal then 1021
 	 */
 	public static BigInteger countPrimes32749(final BigInteger val, Int2IntMap map) {
@@ -599,10 +581,8 @@ public class Primality {
 	/**
 	 * Get the highest exponent of base (greater than 1) that divides val.
 	 * 
-	 * @param val
-	 *            a BigInteger value
-	 * @param base
-	 *            a base greater than 1
+	 * @param val  a BigInteger value
+	 * @param base a base greater than 1
 	 * @return the exponent, which is the highest exponent of base that divides val.
 	 */
 	public static BigInteger countExponent(final BigInteger val, final BigInteger base) {
@@ -680,8 +660,7 @@ public class Primality {
 	 * Call elliptic curve method anf if necessary the parallel SIQS factoring algorithm.
 	 * 
 	 * @param val
-	 * @param map
-	 *            of all BigInteger primes and their associated exponents
+	 * @param map of all BigInteger primes and their associated exponents
 	 */
 	public static void factorInteger(final BigInteger val, SortedMap<BigInteger, Integer> map) {
 		EllipticCurveMethod ecm = new EllipticCurveMethod();
@@ -726,10 +705,8 @@ public class Primality {
 	/**
 	 * Determine the n-th root from the prime decomposition of the primes[] array.
 	 * 
-	 * @param val
-	 *            a BigInteger value which should be factored by all primes less equal than 1021
-	 * @param root
-	 *            th n-th root which should be determined
+	 * @param val  a BigInteger value which should be factored by all primes less equal than 1021
+	 * @param root th n-th root which should be determined
 	 * @return <code>(result[0] ^ root ) * result[1]</code>
 	 */
 	public static BigInteger[] countRoot1021(final BigInteger val, int root) {
@@ -777,10 +754,8 @@ public class Primality {
 	/**
 	 * Determine the n-th root from the prime decomposition of the primes[] array.
 	 * 
-	 * @param val
-	 *            a BigInteger value which should be factored by all primes less equal than 1021
-	 * @param root
-	 *            the n-th root which should be determined
+	 * @param val  a BigInteger value which should be factored by all primes less equal than 1021
+	 * @param root the n-th root which should be determined
 	 * @return <code>(result[0] ^ root ) * result[1]</code>
 	 */
 	public static long[] countRoot1021(final long val, int root) {
@@ -1040,12 +1015,11 @@ public class Primality {
 	}
 
 	/**
-	 * A prime power is a positive integer power of a single prime number. For example:
-	 * <code>7 = 7^1, 9= 3^2 and 32 = 2^5</code> are prime powers, while
-	 * <code>6 = 2 × 3, 12 = 22 × 3 and 36 = 62 = 22 × 32</code> are not. The number 1 is not counted as a prime power.
+	 * A prime power is a positive integer power of a single prime number. For example: <code>7 = 7^1, 9= 3^2 and 32 = 2^5</code> are
+	 * prime powers, while <code>6 = 2 × 3, 12 = 22 × 3 and 36 = 62 = 22 × 32</code> are not. The number 1 is not counted as a prime
+	 * power.
 	 * 
-	 * @param value
-	 *            check if value is prime power
+	 * @param value check if value is prime power
 	 * @return code>true</code> if <code>val</code> is a power of a prime number
 	 */
 	public static boolean isPrimePower(BigInteger value) {
@@ -1071,14 +1045,12 @@ public class Primality {
 	}
 
 	/**
-	 * A prime power is a positive integer power of a single prime number. For example:
-	 * <code>7 = 7^1, 9= 3^2 and 32 = 2^5</code> are prime powers, while
-	 * <code>6 = 2 × 3, 12 = 22 × 3 and 36 = 62 = 22 × 32</code> are not. The number 1 is not counted as a prime power.
+	 * A prime power is a positive integer power of a single prime number. For example: <code>7 = 7^1, 9= 3^2 and 32 = 2^5</code> are
+	 * prime powers, while <code>6 = 2 × 3, 12 = 22 × 3 and 36 = 62 = 22 × 32</code> are not. The number 1 is not counted as a prime
+	 * power.
 	 * 
-	 * @param value
-	 *            check if value is prime power
-	 * @return <code>null</code> if value is not a prime power or
-	 *         <code>Object[BigInteger, Integer] = { prime power, base }</code>
+	 * @param value check if value is prime power
+	 * @return <code>null</code> if value is not a prime power or <code>Object[BigInteger, Integer] = { prime power, base }</code>
 	 */
 	public static Object[] primePower(BigInteger value) {
 		if (value.compareTo(BigInteger.ZERO) < 0) {
@@ -1122,8 +1094,7 @@ public class Primality {
 	 * <code>Prime(i)</code> gives the i-th prime number for <code>i</code> less equal 103000000.
 	 * 
 	 * See: <a href="https://bitbucket.org/dafis/javaprimes">https://bitbucket.org/dafis/javaprimes</a><br />
-	 * <a href=
-	 * "http://stackoverflow.com/questions/9625663/calculating-and-printing-the-nth-prime-number/9704912#9704912">
+	 * <a href= "http://stackoverflow.com/questions/9625663/calculating-and-printing-the-nth-prime-number/9704912#9704912">
 	 * stackoverflow. com - Calculating and printing the nth prime number</a>
 	 */
 	public static long prime(long n) {

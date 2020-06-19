@@ -90,7 +90,7 @@ public class BasicTeXTestCase extends TestCase {
 
 	public void testTeX011() {
 		check("x^(3/4*y)", //
-				"{x}^{\\frac{3\\,y}{4}}");
+				"{x}^{\\frac{3\\cdot y}{4}}");
 	}
 
 	public void testTeX012a() {
@@ -132,7 +132,7 @@ public class BasicTeXTestCase extends TestCase {
 		check("Sin(x)^2", //
 				"{\\sin (x)}^{2}");
 		check("Sin(2*x)^2", //
-				"{\\sin (2\\,x)}^{2}");
+				"{\\sin (2\\cdot x)}^{2}");
 	}
 
 	public void testTeX015() {
@@ -206,12 +206,12 @@ public class BasicTeXTestCase extends TestCase {
 
 	public void testTeX017() {
 		check("1/4*d^(-1)*f^(-1)", //
-				"\\frac{1}{4\\,d\\,f}");
+				"\\frac{1}{4\\cdot d\\cdot f}");
 	}
 
 	public void testTeX018() {
 		check("1/4*a^2*b^(-1)*f^(-1)", //
-				"\\frac{{a}^{2}}{4\\,b\\,f}");
+				"\\frac{{a}^{2}}{4\\cdot b\\cdot f}");
 	}
 
 	public void testTeX019() {
@@ -231,11 +231,11 @@ public class BasicTeXTestCase extends TestCase {
 		check("Hold(1 * 5 * x + 1 * 63)", //
 				"\\text{Hold}(5\\,x + 63)");
 		check("10*f(x)", //
-				"10\\,f(x)");
+				"10\\cdot f(x)");
 		check("Hold((5*3)/2)", //
 				"\\text{Hold}(\\frac{3\\cdot 5}{2})");
 		check("Integrate(8+5*x, {x, 5, 10})", //
-				"\\int_{5}^{10} 8 + 5\\,x\\,\\mathrm{d}x");
+				"\\int_{5}^{10} 8 + 5\\cdot x\\,\\mathrm{d}x");
 	}
 
 	public void testTeX021() {
@@ -275,7 +275,7 @@ public class BasicTeXTestCase extends TestCase {
 	public void testTeX023() {
 		// issue #117
 		check("5*3^(5*x)*Log(3)", //
-				"5\\cdot {3}^{5\\,x}\\,\\log (3)");
+				"5\\cdot {3}^{5\\cdot x}\\cdot \\log (3)");
 	}
 
 	public void testTeX024() {

@@ -1,16 +1,13 @@
 package org.matheclipse.core.form.output;
 
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import org.matheclipse.core.basic.Config;
 import org.matheclipse.core.builtin.Arithmetic;
-import org.matheclipse.core.builtin.IOFunctions;
-import org.matheclipse.core.convert.AST2Expr;
 import org.matheclipse.core.eval.EvalEngine;
+import org.matheclipse.core.eval.exception.ArgumentTypeException;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.expression.ID;
 import org.matheclipse.core.interfaces.IAST;
@@ -18,8 +15,6 @@ import org.matheclipse.core.interfaces.IComplex;
 import org.matheclipse.core.interfaces.IComplexNum;
 import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.interfaces.ISymbol;
-import org.matheclipse.parser.client.math.MathException;
-import org.matheclipse.parser.client.operator.ASTNodeFactory;
 import org.matheclipse.parser.client.operator.Operator;
 
 /**
@@ -354,7 +349,7 @@ public class JavaScriptFormFactory extends DoubleFormFactory {
 			String str = functionHead((ISymbol) head);
 			if (str != null) {
 				if (function.isASTSizeGE(F.Round, 3)) {
-					throw new MathException("Cannot convert to JavaScript: " + function.toString());
+					throw new ArgumentTypeException("Cannot convert to JavaScript: " + function.toString());
 				}
 				if (function.isAST(F.ArcTan, 3)) {
 					buf.append("Math.atan2");
@@ -518,7 +513,7 @@ public class JavaScriptFormFactory extends DoubleFormFactory {
 			return;
 		}
 		if (function.headID() > 0) {
-			throw new MathException("Cannot convert to JavaScript. Function head: " + function.head());
+			throw new ArgumentTypeException("Cannot convert to JavaScript. Function head: " + function.head());
 		}
 
 		convertInternal(buf, head);

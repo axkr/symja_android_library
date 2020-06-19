@@ -46,6 +46,7 @@ import org.matheclipse.parser.client.FEConfig;
 import org.matheclipse.parser.client.Scanner;
 import org.matheclipse.parser.client.SyntaxError;
 import org.matheclipse.parser.client.ast.IParserFactory;
+import org.matheclipse.parser.client.math.MathException;
 import org.matheclipse.parser.client.operator.InfixOperator;
 import org.matheclipse.parser.client.operator.Operator;
 
@@ -509,8 +510,8 @@ public class ExprParser extends Scanner {
 					throwSyntaxError("\'|>\' expected.");
 				}
 				try {
-					temp = F.assoc(function);// F.unaryAST1(F.Association, function);
-				} catch (RuntimeException rex) {
+					temp = F.assoc(function); 
+				} catch (MathException mex) {
 					// fallback if no rules were parsed
 					function.set(0, F.Association);
 					temp = function;
@@ -1295,11 +1296,7 @@ public class ExprParser extends Scanner {
 					// lazy evaluation of multiplication
 					oper = fFactory.get("Times");
 					if (FEConfig.DOMINANT_IMPLICIT_TIMES || oper.getPrecedence() >= min_precedence) {
-						if (Config.FUZZY_PARSER && fToken == TT_IDENTIFIER) {
-							rhs = parseExpression();
-						} else {
-							rhs = parseLookaheadOperator(oper.getPrecedence());
-						}
+						rhs = parseLookaheadOperator(oper.getPrecedence());
 						lhs = F.$(F.Times, lhs, rhs);
 						((IAST) lhs).addEvalFlags(IAST.TIMES_PARSED_IMPLICIT);
 						continue;

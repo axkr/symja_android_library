@@ -4,10 +4,13 @@ import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 
+import org.matheclipse.core.basic.Config;
 import org.matheclipse.core.combinatoric.KSubsets;
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.exception.ASTElementLimitExceeded;
+import org.matheclipse.core.eval.exception.IterationLimitExceeded;
 import org.matheclipse.core.eval.exception.LimitException;
+import org.matheclipse.core.eval.exception.RecursionLimitExceeded;
 import org.matheclipse.core.eval.exception.Validate;
 import org.matheclipse.core.eval.exception.ValidateException;
 import org.matheclipse.core.eval.interfaces.AbstractEvaluator;
@@ -333,11 +336,11 @@ public final class Combinatoric {
 				if (len > n) {
 					size = len;
 				}
+				if (Config.MAX_AST_SIZE < size) {
+					ASTElementLimitExceeded.throwIt(size);
+				}
 				fPartititionsIndex = new int[size];
 				fCopiedResultIndex = new int[size];
-				for (int i = 0; i < size; i++) {
-					fPartititionsIndex[i] = 0;
-				}
 				fResultIndex = nextBeforehand();
 			}
 
@@ -426,6 +429,11 @@ public final class Combinatoric {
 				if (arg1.isInteger()) {
 					final int n = arg1.toIntDefault(-1);
 					if (n >= 0) {
+						int max = range.maximum();
+						if (max > n) {
+							range = new IntRangeSpec(1, n);
+							max = range.maximum();
+						}
 						if (ast.isAST3()) {
 							return frobeniusPartition(ast, engine);
 						}
@@ -436,11 +444,33 @@ public final class Combinatoric {
 						if (n == 1) {
 							return F.List(F.List(F.C1));
 						}
+						if (range.isIncluded(0) && !range.isIncluded(1)) {
+							return F.CEmptyList;
+						}
 						// try {
 						IASTAppendable temp;
-						final NumberPartitionsIterable comb = new NumberPartitionsIterable(n);
+						final NumberPartitionsIterable comb = new NumberPartitionsIterable(n, max);
 						IASTAppendable result = F.ListAlloc(50);
+						int iterationLimit = engine.getIterationLimit();
+						int iterationCounter = 0;
 						for (int j[] : comb) {
+							if (iterationLimit >= 0 && iterationLimit <= ++iterationCounter) {
+								IterationLimitExceeded.throwIt(iterationCounter, ast);
+							}
+							if (j.length > max) {
+								if (j[max] != 0) {
+									continue;
+								}
+							}
+							int count = 0;
+							for (int i = 0; i < j.length; i++) {
+								if (j[i] != 0) {
+									count++;
+								}
+							}
+							if (!range.isIncluded(count)) {
+								continue;
+							}
 							temp = F.ListAlloc(j.length);
 							for (int i = 0; i < j.length; i++) {
 								if (j[i] != 0) {
@@ -449,8 +479,9 @@ public final class Combinatoric {
 									break;
 								}
 							}
-							if (range.isIncluded(temp.size() - 1)) {
-								result.append(temp);
+							result.append(temp);
+							if (max == 1) {
+								break;
 							}
 						}
 						return result;
@@ -493,12 +524,20 @@ public final class Combinatoric {
 						}
 
 						IASTAppendable result = F.ListAlloc(8);
+						int iterations = 0;
+						int iterationLimit = engine.getIterationLimit();
 						while ((solution = solver.take()) != null) {
+							if (iterationLimit > 0 && iterations > iterationLimit) {
+								IOFunctions.printMessage(ast.topHead(), "itlimpartial", F.List(F.ZZ(iterationLimit)),
+										engine);
+								return result;
+							}
 							if (numberOfSolutions >= 0) {
 								if (--numberOfSolutions < 0) {
 									break;
 								}
 							}
+							iterations++;
 							if (createFrobeniusSolution(solution, listInt, lowerLimitOfCoins, upperLimitOfCoins,
 									result)) {
 								continue;
@@ -1004,13 +1043,18 @@ public final class Combinatoric {
 					}
 					if (v > 0) {
 						while (i <= f.argSize()) {
+							if (i < 1 ) {
+								break;
+							}
 							temp = F.ast(f.head());
 							for (int j = i - n; j < i; j++) {
+								if (j + 1 < 1 || j + 1 >= f.size()) {
+									return result;
+								}
 								temp.append(f.get(j + 1));
 							}
-							i += v;
 							result.append(temp);
-
+							i += v;
 						}
 						return result;
 					}
@@ -1707,7 +1751,7 @@ public final class Combinatoric {
 				}
 				IASTAppendable result = F.ListAlloc(16);
 				IAST temp = F.List();
-				tuplesOfLists(list, 1, result, temp);
+				tuplesOfLists(list, 1, result, temp, ast, engine);
 				return result;
 			} else if (ast.isAST2() && arg1.isAST() && ast.arg2().isInteger()) {
 				IExpr arg2 = ast.arg2();
@@ -1715,7 +1759,7 @@ public final class Combinatoric {
 				if (k >= 0) {
 					IASTAppendable result = F.ListAlloc(16);
 					IAST temp = F.ast(arg1.head());
-					tuples((IAST) arg1, k, result, temp);
+					tuples((IAST) arg1, k, result, temp, ast, engine);
 					return result;
 				}
 			}
@@ -1734,17 +1778,27 @@ public final class Combinatoric {
 		 * @param n
 		 * @param result
 		 * @param subResult
+		 * @param ast
+		 * @param engine
 		 */
-		private void tuples(final IAST originalList, final int n, IASTAppendable result, IAST subResult) {
+		private static void tuples(final IAST originalList, final int n, IASTAppendable result, IAST subResult,
+				IAST ast, EvalEngine engine) {
 			if (n == 0) {
 				result.append(subResult);
 				return;
+			}
+			final int recursionLimit = engine.getRecursionLimit();
+			if (recursionLimit > 0) {
+				int counter = engine.incRecursionCounter();
+				if (counter > recursionLimit) {
+					RecursionLimitExceeded.throwIt(counter, ast);
+				}
 			}
 			IASTAppendable temp;
 			for (int j = 1; j < originalList.size(); j++) {
 				temp = subResult.copyAppendable();
 				temp.append(originalList.get(j));
-				tuples(originalList, n - 1, result, temp);
+				tuples(originalList, n - 1, result, temp, ast, engine);
 			}
 
 		}
@@ -1759,18 +1813,28 @@ public final class Combinatoric {
 		 *            the result list
 		 * @param subResult
 		 *            the current subList which should be inserted in the result list
+		 * @param ast
+		 * @param engine
 		 */
-		private void tuplesOfLists(final IAST originalList, final int k, IASTAppendable result, IAST subResult) {
+		private void tuplesOfLists(final IAST originalList, final int k, IASTAppendable result, IAST subResult,
+				IAST ast, EvalEngine engine) {
 			if (k == originalList.size()) {
 				result.append(subResult);
 				return;
+			}
+			final int recursionLimit = engine.getRecursionLimit();
+			if (recursionLimit > 0) {
+				int counter = engine.incRecursionCounter();
+				if (counter > recursionLimit) {
+					RecursionLimitExceeded.throwIt(counter, ast);
+				}
 			}
 			IASTAppendable temp;
 			IAST subAST = (IAST) originalList.get(k);
 			for (int j = 1; j < subAST.size(); j++) {
 				temp = subResult.copyAppendable();
 				temp.append(subAST.get(j));
-				tuplesOfLists(originalList, k + 1, result, temp);
+				tuplesOfLists(originalList, k + 1, result, temp, ast, engine);
 			}
 
 		}

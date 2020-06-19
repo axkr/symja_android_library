@@ -1,14 +1,12 @@
 package org.matheclipse.core.eval.exception;
 
-import org.matheclipse.parser.client.math.MathException;
-
 /**
  * Base exception for exceptions, which are used to implement &quot;limit control&quot; functions like for example
  * <code>ASTElementLimitExceeded</code> and <code>RecursionLimitExceeded</code> .
  * 
  * 
  */
-public abstract class LimitException extends MathException {
+public abstract class LimitException extends SymjaMathException {
 
 	/**
 	 * 

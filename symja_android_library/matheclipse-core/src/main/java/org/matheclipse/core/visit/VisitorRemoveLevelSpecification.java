@@ -3,6 +3,7 @@ package org.matheclipse.core.visit;
 import java.util.function.Function;
 
 import org.matheclipse.core.eval.EvalEngine;
+import org.matheclipse.core.eval.exception.SymjaMathException;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IASTAppendable;
@@ -17,7 +18,6 @@ import org.matheclipse.core.interfaces.IPattern;
 import org.matheclipse.core.interfaces.IPatternSequence;
 import org.matheclipse.core.interfaces.IStringX;
 import org.matheclipse.core.interfaces.ISymbol;
-import org.matheclipse.parser.client.math.MathException;
 
 /**
  * A level specification visitor for levels in abstract syntax trees (AST), which removes elements from a (cloned) AST
@@ -32,7 +32,7 @@ public class VisitorRemoveLevelSpecification extends VisitorLevelSpecification {
 	 *
 	 */
 	@SuppressWarnings("serial")
-	public static class StopException extends MathException {
+	public static class StopException extends SymjaMathException {
 		public StopException() {
 			super("Stop VisitorDeleteLevelSpecification evaluation");
 		}
@@ -58,7 +58,7 @@ public class VisitorRemoveLevelSpecification extends VisitorLevelSpecification {
 	 *            maximum number of elements, which are allowed to remove
 	 * @param includeHeads
 	 *            set to <code>true</code>, if the header of an AST expression should be included
-	 * @throws MathException
+	 * @throws SymjaMathException
 	 *             if the <code>expr</code> is not a <i>level specification</i>
 	 * @see
 	 */

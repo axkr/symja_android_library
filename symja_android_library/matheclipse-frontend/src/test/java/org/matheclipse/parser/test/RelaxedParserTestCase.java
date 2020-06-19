@@ -104,4 +104,15 @@ public class RelaxedParserTestCase extends TestCase {
 			assertEquals("", e.getMessage());
 		}
 	}
+	
+	public void testParser8() {
+		try {
+			Parser p = new Parser(true);
+			ASTNode obj = p.parse("Fibonacci(1007,Null)");
+			assertEquals(obj.toString(), "Fibonacci(1007, Null)");
+		} catch (Exception e) {
+			e.printStackTrace();
+			assertEquals("", e.getMessage());
+		}
+	}
 }

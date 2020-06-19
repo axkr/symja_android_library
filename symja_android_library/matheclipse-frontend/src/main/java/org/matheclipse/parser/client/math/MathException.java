@@ -32,7 +32,11 @@ public class MathException extends RuntimeException {
 	 * 
 	 */
 	public MathException() {
-		super(null, null, false, false);
+		super();
+	}
+
+	public MathException(String message, Throwable cause, boolean enableSuppression, boolean writableStackTrace) {
+		super(message, cause, enableSuppression, writableStackTrace);
 	}
 
 	public MathException(String message) {
@@ -47,13 +51,4 @@ public class MathException extends RuntimeException {
 		super(cause);
 	}
 
-	@Override
-	public synchronized Throwable fillInStackTrace() {
-		if (FEConfig.SHOW_STACKTRACE) {
-			// doesn't fill the stack for FlowControlExceptions
-			return super.fillInStackTrace();
-		} else {
-			return this;
-		}
-	}
 }

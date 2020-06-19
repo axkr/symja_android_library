@@ -677,6 +677,8 @@ public class IOFunctions {
 			"intrange", "Integer expected in range `1` to `2`.", //
 			"iterb", "Iterator does not have appropriate bounds.", //
 			"itform", "Argument `1` at position `2` does not have the correct form for an iterator.", //
+			"itlim", "Iteration limit of `1` exceeded for `2`.", //
+			"itlimpartial", "Iteration limit of `1` exceeded. Returning partial results.", //
 			"itendless", "Endless iteration detected in `1` in evaluation loop.", //
 			"ivar", "`1` is not a valid variable.", //
 			"level", "Level specification `1` is not of the form n, {n}, or {m, n}.", //
@@ -720,6 +722,7 @@ public class IOFunctions {
 			"pkspec1", "The expression `1` cannot be used as a part specification.", //
 			"precsm", "Requested precision `1` is smaller than `2`.", //
 			"range", "Range specification in `1` does not have appropriate bounds.", //
+			"reclim2", "Recursion depth of `1` exceeded during evaluation of `2`.", //
 			"rectt", "Rectangular array expected at position `1` in `2`.", //
 			"rvalue", "`1` is not a variable with a value, so its value cannot be changed.", //
 			"rubiendless", "Endless iteration detected in `1` for Rubi pattern-matching rules.", //

@@ -1,7 +1,6 @@
 package org.matheclipse.core.eval.exception;
 
 import org.matheclipse.core.basic.Config;
-import org.matheclipse.parser.client.math.MathException;
 
 /**
  * Base exception for exceptions, which are used to implement &quot;control flow&quot; functions like for example
@@ -9,7 +8,7 @@ import org.matheclipse.parser.client.math.MathException;
  * 
  * 
  */
-public abstract class FlowControlException extends MathException {
+public abstract class FlowControlException extends SymjaMathException {
 	/**
 	 * 
 	 */

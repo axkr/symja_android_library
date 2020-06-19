@@ -8,9 +8,6 @@ import static org.matheclipse.core.expression.F.x;
 
 import java.io.StringWriter;
 import java.math.BigInteger;
-import java.text.DecimalFormat;
-import java.text.DecimalFormatSymbols;
-import java.util.Locale;
 
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.ExprEvaluator;

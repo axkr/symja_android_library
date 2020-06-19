@@ -41,7 +41,6 @@ import org.apfloat.ApfloatMath;
 import org.hipparchus.complex.Complex;
 import org.hipparchus.util.FastMath;
 import org.matheclipse.core.eval.EvalEngine;
-import org.matheclipse.core.eval.exception.ComplexResultException;
 import org.matheclipse.core.eval.interfaces.AbstractArg1;
 import org.matheclipse.core.eval.interfaces.AbstractArg12;
 import org.matheclipse.core.eval.interfaces.AbstractEvaluator;
@@ -202,11 +201,7 @@ public class ExpTrigsFunctions {
 
 		@Override
 		public double applyAsDouble(double operand) {
-			double val = Math.acos(operand);
-			if (Double.isNaN(val)) {
-				throw new ComplexResultException("ArcCos(NaN)");
-			}
-			return val;
+			return Math.acos(operand);
 		}
 
 		@Override
@@ -460,7 +455,7 @@ public class ExpTrigsFunctions {
 		@Override
 		public double applyAsDouble(double operand) {
 			if (F.isZero(operand)) {
-				throw new ComplexResultException("ArcCoth(0)");
+				return Double.NaN;
 			}
 			double c = 1.0 / operand;
 			return (Math.log(1.0 + c) - Math.log(1.0 - c)) / 2.0;
@@ -746,11 +741,7 @@ public class ExpTrigsFunctions {
 
 		@Override
 		public double applyAsDouble(double operand) {
-			double val = Math.asin(operand);
-			if (Double.isNaN(val)) {
-				throw new ComplexResultException("");
-			}
-			return val;
+			return Math.asin(operand);
 		}
 
 		@Override

@@ -571,8 +571,8 @@ public class ComplexSym implements IComplex {
 			throw new IllegalArgumentException("Denominator can not be zero.");
 		}
 
-		IRational divisionReal = numeratorReal.divideBy(denominator).round();
-		IRational divisionImaginary = numeratorImaginary.divideBy(denominator).round();
+		IInteger divisionReal = numeratorReal.divideBy(denominator).round();
+		IInteger divisionImaginary = numeratorImaginary.divideBy(denominator).round();
 
 		IRational remainderReal = fReal.subtract(re.multiply(divisionReal))
 				.subtract(im.multiply(divisionImaginary).negate());

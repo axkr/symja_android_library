@@ -1,6 +1,34 @@
 package org.matheclipse.core.examples;
 
-import static org.matheclipse.core.expression.F.*;
+import static org.matheclipse.core.expression.F.ArcCos;
+import static org.matheclipse.core.expression.F.ArcSin;
+import static org.matheclipse.core.expression.F.ArcTan;
+import static org.matheclipse.core.expression.F.C1;
+import static org.matheclipse.core.expression.F.C1D2;
+import static org.matheclipse.core.expression.F.C2;
+import static org.matheclipse.core.expression.F.CI;
+import static org.matheclipse.core.expression.F.CN1;
+import static org.matheclipse.core.expression.F.CNI;
+import static org.matheclipse.core.expression.F.Cos;
+import static org.matheclipse.core.expression.F.Cosh;
+import static org.matheclipse.core.expression.F.Coth;
+import static org.matheclipse.core.expression.F.Csch;
+import static org.matheclipse.core.expression.F.E;
+import static org.matheclipse.core.expression.F.Log;
+import static org.matheclipse.core.expression.F.Pi;
+import static org.matheclipse.core.expression.F.Plus;
+import static org.matheclipse.core.expression.F.Power;
+import static org.matheclipse.core.expression.F.Sech;
+import static org.matheclipse.core.expression.F.Sin;
+import static org.matheclipse.core.expression.F.Sinh;
+import static org.matheclipse.core.expression.F.Sqr;
+import static org.matheclipse.core.expression.F.Sqrt;
+import static org.matheclipse.core.expression.F.Subtract;
+import static org.matheclipse.core.expression.F.Tan;
+import static org.matheclipse.core.expression.F.Tanh;
+import static org.matheclipse.core.expression.F.Times;
+import static org.matheclipse.core.expression.F.x_;
+
 import org.matheclipse.core.eval.ExprEvaluator;
 import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.patternmatching.Matcher;

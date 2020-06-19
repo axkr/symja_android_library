@@ -29,6 +29,8 @@ import org.matheclipse.core.interfaces.IStringX;
 import org.matheclipse.core.interfaces.ISymbol;
 import org.matheclipse.parser.client.FEConfig;
 
+import ch.ethz.idsc.tensor.qty.IQuantity;
+
 /**
  * Methods for handling the WXF serialization format.
  *
@@ -432,12 +434,13 @@ public class WL {
 		}
 
 		private void writeQuantity(IExpr arg1) throws IOException {
-			IAST ast = (IAST) arg1;
+			IQuantity quantity = (IQuantity) arg1;
+			// simulate AST Quantity(..., ...)
 			stream.write(WL.WXF_CONSTANTS.Function);
-			stream.write(varintBytes(ast.argSize()));
-			for (int i = 0; i < ast.size(); i++) {
-				write(ast.get(i));
-			}
+			stream.write(varintBytes(2));
+			write(quantity.head());
+			write(quantity.value());
+			write(F.stringx(quantity.unitString())); 
 		}
 
 		private void writeSeriesData(IExpr arg1) throws IOException {

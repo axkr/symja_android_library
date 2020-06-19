@@ -10,8 +10,9 @@ public class ToggleFeature {
 
 	/**
 	 * If <code>true</code>, enable <code>org.matheclipse.core.builtin.function.Compile</code> function.
+	 * A JDK must be installed to let this feature work.
 	 */
-	public static boolean COMPILE = true;
+	public static boolean COMPILE = false;
 
 	/**
 	 * If <code>true</code>, enable <code>org.matheclipse.core.builtin.function.Defer</code> function.

@@ -2,7 +2,6 @@ package org.matheclipse.core.eval.exception;
 
 import org.matheclipse.core.builtin.StringFunctions;
 import org.matheclipse.core.interfaces.IExpr;
-import org.matheclipse.parser.client.math.MathException;
 
 /**
  * Exception which will be thrown, if the Config.MAX_AST_SIZE limit was exceeded.
@@ -29,10 +28,10 @@ public class ASTElementLimitExceeded extends LimitException {
 
 	@Override
 	public String getMessage() {
-		return "Maximum AST size " + fLimit + " exceeded";
+		return "Maximum AST dimension " + fLimit + " exceeded";
 	}
 
-	public static void throwIt(final int limit) {
+	public static void throwIt(final long limit) {
 		// HeapContext.enter();
 		// try {
 		throw new ASTElementLimitExceeded(limit);// .copy());

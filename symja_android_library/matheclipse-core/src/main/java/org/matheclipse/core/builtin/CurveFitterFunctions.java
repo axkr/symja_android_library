@@ -6,8 +6,10 @@ import org.hipparchus.fitting.AbstractCurveFitter;
 import org.hipparchus.fitting.PolynomialCurveFitter;
 import org.hipparchus.fitting.SimpleCurveFitter;
 import org.hipparchus.fitting.WeightedObservedPoints;
+import org.matheclipse.core.basic.Config;
 import org.matheclipse.core.convert.Convert;
 import org.matheclipse.core.eval.EvalEngine;
+import org.matheclipse.core.eval.exception.ASTElementLimitExceeded;
 import org.matheclipse.core.eval.interfaces.AbstractFunctionEvaluator;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.interfaces.IAST;
@@ -154,7 +156,7 @@ public class CurveFitterFunctions {
 					return false;
 				}
 				final double[] elements = data.toDoubleVector();
-				if (elements==null) {
+				if (elements == null) {
 					return false;
 				}
 				for (int i = 0; i < elements.length; i++) {
@@ -297,6 +299,9 @@ public class CurveFitterFunctions {
 			if (ast.arg1().isList() && ast.arg2().isReal() && ast.arg3().isSymbol()) {
 				int polynomialDegree = ast.arg2().toIntDefault(Integer.MIN_VALUE);
 				if (polynomialDegree > 0) {
+					if (Config.MAX_AST_SIZE < polynomialDegree) {
+						ASTElementLimitExceeded.throwIt(polynomialDegree);
+					}
 					AbstractCurveFitter fitter = PolynomialCurveFitter.create(polynomialDegree);
 					IAST data = (IAST) ast.arg1();
 					WeightedObservedPoints obs = new WeightedObservedPoints();

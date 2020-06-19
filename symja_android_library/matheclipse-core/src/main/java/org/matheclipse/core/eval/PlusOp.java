@@ -225,6 +225,19 @@ public final class PlusOp {
 					return F.NIL;
 				}
 				return F.NIL;
+			} else if (arg.isQuantity()) {
+//				if (arg.isQuantity()) {
+					if (!numberValue.isPresent()) {
+						numberValue = arg;
+						return F.NIL;
+					}
+					IQuantity q = (IQuantity) arg;
+					numberValue = q.plus(numberValue);
+					if (numberValue.isPresent()) {
+						evaled = true;
+					}
+					return F.NIL;
+//				}
 			} else if (arg.isAST()) {
 				final IAST ast = (IAST) arg;
 				final int headID = ((IAST) arg).headID();
@@ -303,20 +316,20 @@ public final class PlusOp {
 							return F.NIL;
 						}
 						break;
-					case ID.Quantity:
-						if (arg.isQuantity()) {
-							if (!numberValue.isPresent()) {
-								numberValue = arg;
-								return F.NIL;
-							}
-							IQuantity q = (IQuantity) arg;
-							numberValue = q.plus(numberValue);
-							if (numberValue.isPresent()) {
-								evaled = true;
-							}
-							return F.NIL;
-						}
-						break;
+//					case ID.Quantity:
+//						if (arg.isQuantity()) {
+//							if (!numberValue.isPresent()) {
+//								numberValue = arg;
+//								return F.NIL;
+//							}
+//							IQuantity q = (IQuantity) arg;
+//							numberValue = q.plus(numberValue);
+//							if (numberValue.isPresent()) {
+//								evaled = true;
+//							}
+//							return F.NIL;
+//						}
+//						break;
 					case ID.SeriesData:
 						if (arg instanceof ASTSeriesData) {
 							if (!numberValue.isPresent()) {

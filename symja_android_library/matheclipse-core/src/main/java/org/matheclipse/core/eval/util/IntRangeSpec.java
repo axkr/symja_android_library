@@ -8,6 +8,14 @@ public class IntRangeSpec {
 	final int min;
 	final int max;
 
+	public int minimum() {
+		return min;
+	}
+	
+	public int maximum() {
+		return max;
+	}
+	
 	/**
 	 * Create the range <code>[min, max]</code>
 	 * 
@@ -45,9 +53,9 @@ public class IntRangeSpec {
 	public static IntRangeSpec createNonNegative(IAST ast, int position) {
 		IntRangeSpec range = null;
 		if (ast.size() <= position) {
-			range = IntRangeSpec.createNonNegative();
+			range =  createNonNegative();
 		} else if (ast.size() > position) {
-			range = IntRangeSpec.createNonNegative(ast.get(position));
+			range =  createNonNegative(ast.get(position));
 		}
 		return range;
 	}

@@ -9,6 +9,7 @@ import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.interfaces.AbstractFunctionEvaluator;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.expression.ID;
+import org.matheclipse.core.expression.S;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IASTAppendable;
 import org.matheclipse.core.interfaces.IBuiltInSymbol;
@@ -21,7 +22,7 @@ public class HomogenizationTest extends AbstractTestCase {
 		super("HomogenizationTest");
 	}
 
-	public final static IBuiltInSymbol Homogenization = F.initFinalSymbol("Homogenization", ID.Zeta + 9);
+	public final static IBuiltInSymbol Homogenization = S.initFinalSymbol("Homogenization", ID.Zeta + 9);
 
 	static {
 		Homogenization.setEvaluator(new Homogenization());

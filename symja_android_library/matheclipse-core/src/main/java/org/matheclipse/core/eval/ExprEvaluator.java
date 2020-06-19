@@ -8,6 +8,7 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
 
+import org.matheclipse.core.eval.exception.SymjaMathException;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IExpr;
@@ -16,7 +17,6 @@ import org.matheclipse.core.interfaces.ISymbol;
 import org.matheclipse.core.parser.ExprParser;
 import org.matheclipse.parser.client.FEConfig;
 import org.matheclipse.parser.client.SyntaxError;
-import org.matheclipse.parser.client.math.MathException;
 
 import com.google.common.util.concurrent.SimpleTimeLimiter;
 import com.google.common.util.concurrent.TimeLimiter;
@@ -608,7 +608,7 @@ public class ExprEvaluator {
 	 * @param inputExpression
 	 *            an input expression
 	 */
-	public String toJavaForm(final String inputExpression) throws MathException {
+	public String toJavaForm(final String inputExpression) throws SymjaMathException {
 		IExpr parsedExpression;
 		if (inputExpression != null) {
 			ExprParser parser = new ExprParser(engine);
@@ -625,7 +625,7 @@ public class ExprEvaluator {
 	 * @param inputExpression
 	 *            an input expression
 	 */
-	public String toScalaForm(final String inputExpression) throws MathException {
+	public String toScalaForm(final String inputExpression) throws SymjaMathException {
 		IExpr parsedExpression;
 		if (inputExpression != null) {
 			ExprParser parser = new ExprParser(engine);

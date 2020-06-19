@@ -36,7 +36,7 @@ public interface ISignedNumber extends INumber {
 
 	/** {@inheritDoc} */
 	@Override
-	default INumber conjugate() {
+	default ISignedNumber conjugate() {
 		return this;
 	}
 

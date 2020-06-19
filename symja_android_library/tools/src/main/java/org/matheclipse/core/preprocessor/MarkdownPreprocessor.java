@@ -24,7 +24,7 @@ public class MarkdownPreprocessor {
 			final String[] files = sourceLocation.list();
 			if (files != null) {
 				for (int i = 0; i < files.length; i++) {
-					// we are only interested in .m files
+					// we are only interested in .md files
 					if (files[i].endsWith(".md")) {
 						String className = files[i].substring(0, files[i].length() - 3);
 						// [Integrate](functions/Integrate.md)

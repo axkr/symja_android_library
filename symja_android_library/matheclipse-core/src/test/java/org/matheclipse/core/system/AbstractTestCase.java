@@ -181,9 +181,12 @@ public abstract class AbstractTestCase extends TestCase {
 	protected void setUp() {
 		try {
 			synchronized (fScriptManager) {
+				Config.MAX_AST_SIZE = 20000;
+				Config.MAX_MATRIX_DIMENSION_SIZE = 100;
 				Config.FILESYSTEM_ENABLED = false;
 				EvalEngine engine = new EvalEngine();
 				fScriptEngine = new MathScriptEngine(engine);// fScriptManager.getEngineByExtension("m");
+				fScriptEngine.put("PRINT_STACKTRACE", Boolean.TRUE);
 				fScriptEngine.put("RELAXED_SYNTAX", Boolean.TRUE);
  				fScriptEngine.put("DECIMAL_FORMAT", "0.0####");
 

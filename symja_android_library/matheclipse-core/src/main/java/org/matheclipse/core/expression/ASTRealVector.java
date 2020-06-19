@@ -4,6 +4,7 @@ import java.io.Externalizable;
 import java.io.IOException;
 import java.io.ObjectInput;
 import java.io.ObjectOutput;
+import java.util.HashSet;
 import java.util.RandomAccess;
 import java.util.Set;
 import java.util.function.DoubleUnaryOperator;
@@ -186,9 +187,12 @@ public class ASTRealVector extends AbstractAST implements Cloneable, Externaliza
 
 	@Override
 	public Set<IExpr> asSet() {
-		throw new UnsupportedOperationException();
-		// empty set:
-		// return new HashSet<IExpr>();
+		int size = size();
+		Set<IExpr> set = new HashSet<IExpr>(size > 16 ? size : 16);
+		for (int i = 1; i < size; i++) {
+			set.add(get(i));
+		}
+		return set;
 	}
 
 	/**

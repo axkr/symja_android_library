@@ -4,6 +4,7 @@ import java.util.function.BiFunction;
 import java.util.function.Function;
 
 import org.matheclipse.core.eval.EvalEngine;
+import org.matheclipse.core.eval.exception.SymjaMathException;
 import org.matheclipse.core.eval.exception.Validate;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.interfaces.IAST;
@@ -20,7 +21,6 @@ import org.matheclipse.core.interfaces.IPattern;
 import org.matheclipse.core.interfaces.IPatternSequence;
 import org.matheclipse.core.interfaces.IStringX;
 import org.matheclipse.core.interfaces.ISymbol;
-import org.matheclipse.parser.client.math.MathException;
 
 /**
  * A level specification for levels used in the function <code>MapIndexed</code>
@@ -60,7 +60,7 @@ public class IndexedLevel {
 	 *            the given <i>level specification</i>
 	 * @param includeHeads
 	 *            set to <code>true</code>, if the header of an AST expression should be included
-	 * @throws MathException
+	 * @throws SymjaMathException
 	 *             if the <code>expr</code> is not a <i>level specification</i>
 	 */
 	public IndexedLevel(final BiFunction<IExpr, IExpr, IExpr> function, final IExpr unevaledLevelExpr,
@@ -139,7 +139,7 @@ public class IndexedLevel {
 					} else if ((lst.arg1() instanceof IInteger) && (lst.arg2().isInfinity())) {
 						final IInteger i0 = (IInteger) lst.arg1();
 						if (i0.isNegative()) {
-							throw new MathException("Invalid Level specification: " + levelExpr.toString());
+							throw new SymjaMathException("Invalid Level specification: " + levelExpr.toString());
 						} else {
 							fFromDepth = Integer.MIN_VALUE;
 							fToDepth = -1;
@@ -166,7 +166,7 @@ public class IndexedLevel {
 			fToDepth = -1;
 			return;
 		}
-		throw new MathException("Invalid Level specification: " + levelExpr.toString());
+		throw new SymjaMathException("Invalid Level specification: " + levelExpr.toString());
 	}
 
 	public IndexedLevel(final BiFunction<IExpr, IExpr, IExpr> function, final int level, final boolean includeHeads) {

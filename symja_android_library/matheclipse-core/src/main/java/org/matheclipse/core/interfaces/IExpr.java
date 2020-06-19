@@ -24,6 +24,8 @@ import org.matheclipse.core.builtin.BooleanFunctions;
 import org.matheclipse.core.builtin.PredicateQ;
 import org.matheclipse.core.convert.VariablesSet;
 import org.matheclipse.core.eval.EvalEngine;
+import org.matheclipse.core.eval.exception.ASTElementLimitExceeded;
+import org.matheclipse.core.eval.exception.ArgumentTypeException;
 import org.matheclipse.core.eval.exception.IterationLimitExceeded;
 import org.matheclipse.core.eval.util.AbstractAssumptions;
 import org.matheclipse.core.expression.ASTDataset;
@@ -389,15 +391,19 @@ public interface IExpr extends Comparable<IExpr>, GcdRingElem<IExpr>, Serializab
 	 * @return <code>F.NIL</code> if <code>arr</code> has length 0.
 	 */
 	default IASTAppendable constantArray(IExpr head, final int startPosition, int... arr) {
+		final int size = arr[startPosition];
+		if (Config.MAX_AST_SIZE < size ) {
+			ASTElementLimitExceeded.throwIt(size);
+		}
 		if (arr.length - 1 == startPosition) {
-			IExpr[] exprArr = new IExpr[arr[startPosition]];
-			for (int i = 0; i < arr[startPosition]; i++) {
+			IExpr[] exprArr = new IExpr[size];
+			for (int i = 0; i < size; i++) {
 				exprArr[i] = this;
 			}
 			return F.ast(exprArr, head);
 		}
-		IExpr[] exprArr = new IExpr[arr[startPosition]];
-		for (int i = 0; i < arr[startPosition]; i++) {
+		IExpr[] exprArr = new IExpr[size];
+		for (int i = 0; i < size; i++) {
 			exprArr[i] = constantArray(head, startPosition + 1, arr);
 		}
 		return F.ast(exprArr, head);
@@ -1248,6 +1254,15 @@ public interface IExpr extends Comparable<IExpr>, GcdRingElem<IExpr>, Serializab
 	}
 
 	/**
+	 * Test if this expression is a boolean function with head <code>And, Equivalent, Nand, Nor, Not, Or, Xor</code>.
+	 * 
+	 * @return
+	 */
+	default boolean isBooleanFunction() {
+		return false;
+	}
+
+	/**
 	 * Test if this expression is a boolean function (i.e. a symbol or a boolean function like for example
 	 * <code>And, Equivalent, Equal, Greater, GreaterEqual, Less, LessEqual, Nand, Nor, Not, Or, Xor,...</code> where
 	 * all arguments are also &quot;boolean functions&quot;) or a symbol or some builtin predicates like for example
@@ -1977,6 +1992,18 @@ public interface IExpr extends Comparable<IExpr>, GcdRingElem<IExpr>, Serializab
 	}
 
 	/**
+	 * Test if this expression is a matrix and return the dimensions as array [row-dimension, column-dimension]. This
+	 * expression is a matrix, if it is a <code>ASTRealMatrix</code> or a <code>List(...)</code> where elements which
+	 * could not be converted to a row vector are ignored.
+	 * 
+	 * @return <code>null</code> if the expression is not a matrix
+	 */
+	default int[] isMatrixIgnore() {
+		// default: no matrix
+		return isMatrix(true);
+	}
+
+	/**
 	 * Returns <code>true</code>, if <b>at least one of the elements</b> in the subexpressions, match the given pattern.
 	 * By default <code>isMember()</code> only operates at level 1.
 	 * 
@@ -2252,8 +2279,8 @@ public interface IExpr extends Comparable<IExpr>, GcdRingElem<IExpr>, Serializab
 	 * NumericFunction) where all arguments are also &quot;numeric functions&quot;) under the assumption, that all
 	 * variables contained in <code>varSet</code> are also numeric.
 	 * 
-	 * @return <code>true</code>, if the given expression is a numeric function or value, assuming all variables contained
-	 *         in <code>varSet</code> are also numeric.
+	 * @return <code>true</code>, if the given expression is a numeric function or value, assuming all variables
+	 *         contained in <code>varSet</code> are also numeric.
 	 */
 	default boolean isNumericFunction(VariablesSet varSet) {
 		return isNumericFunction() || varSet.contains(this);
@@ -2408,8 +2435,8 @@ public interface IExpr extends Comparable<IExpr>, GcdRingElem<IExpr>, Serializab
 	}
 
 	/**
-	 * Test if this expression is the <code>Except</code> function <code>Except[&lt;pattern1&gt;]</code> or
-	 * <code>Except[&lt;pattern1&gt;, &lt;pattern2&gt;]</code>
+	 * Test if this expression is the <code>PatternTest</code> function
+	 * <code>PatternTest[&lt;pattern&gt;, &lt;test&gt;]</code>
 	 * 
 	 * @return
 	 */
@@ -3041,7 +3068,7 @@ public interface IExpr extends Comparable<IExpr>, GcdRingElem<IExpr>, Serializab
 	}
 
 	/**
-	 * Count the number of leaves of this expression.
+	 * Count the number of indivisible subexpressions (atoms/leaves) of this expression.
 	 * 
 	 * @return
 	 */
@@ -3884,12 +3911,32 @@ public interface IExpr extends Comparable<IExpr>, GcdRingElem<IExpr>, Serializab
 	}
 
 	/**
+	 * Convert this object into a <code>double[]</code> matrix, if a row is not convertible to double vector ignore the
+	 * row.
+	 * 
+	 * @return <code>null</code> if this object can not be converted into a <code>double[]</code> matrix
+	 */
+	default double[][] toDoubleMatrixIgnore() {
+		return toDoubleMatrix();
+	}
+
+	/**
 	 * Convert this object into a <code>double[]</code> vector.
 	 * 
 	 * @return <code>null</code> if this object can not be converted into a <code>double[]</code> vector
 	 */
 	default double[] toDoubleVector() {
 		return null;
+	}
+
+	/**
+	 * Convert this object into a <code>double[]</code> vector, if an argument is not convertible to double ignore the
+	 * value.
+	 * 
+	 * @return <code>null</code> if this object can not be converted into a <code>double[]</code> vector
+	 */
+	default double[] toDoubleVectorIgnore() {
+		return toDoubleVector();
 	}
 
 	/**
@@ -3941,6 +3988,15 @@ public interface IExpr extends Comparable<IExpr>, GcdRingElem<IExpr>, Serializab
 	 * @return <code>null</code> if this object can not be converted into a RealMatrix
 	 */
 	default RealMatrix toRealMatrix() {
+		return null;
+	}
+
+	/**
+	 * Convert this object into a RealMatrix.
+	 * 
+	 * @return <code>null</code> if this object can not be converted into a RealMatrix
+	 */
+	default RealMatrix toRealMatrixIgnore() {
 		return null;
 	}
 

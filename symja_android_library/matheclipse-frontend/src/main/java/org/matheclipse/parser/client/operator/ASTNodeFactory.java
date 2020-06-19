@@ -149,21 +149,6 @@ public class ASTNodeFactory implements INodeParserFactory {
 		}
 	}
 
-	public final static int TAG_SET_PRECEDENCE = 40;
-
-	public final static int EQUAL_PRECEDENCE = 290;
-
-	public final static int PLUS_PRECEDENCE = 310;
-
-	public final static int TIMES_PRECEDENCE = 400;
-
-	public final static int DIVIDE_PRECEDENCE = 470;
-
-	public final static int POWER_PRECEDENCE = 590;
-
-	public final static int APPLY_HEAD_PRECEDENCE = 660;
-
-	public final static int APPLY_PRECEDENCE = 620;
 
 	static final String[] HEADER_STRINGS = { "MessageName", "Get", "PatternTest", "MapAll", "TimesBy", "Plus", "UpSet",
 			"CompoundExpression", "Apply", "Map", "Unset", "Apply", "Apply", "ReplaceRepeated", "Less", "And", "Divide",
@@ -187,67 +172,17 @@ public class ASTNodeFactory implements INodeParserFactory {
 			"\u2299" // CircleDot
 	};
 
-	public static final ApplyOperator APPLY_HEAD_OPERATOR = new ApplyOperator("@", "Apply", APPLY_HEAD_PRECEDENCE,
+	public static final ApplyOperator APPLY_HEAD_OPERATOR = new ApplyOperator("@", "Apply", Precedence.APPLY_HEAD,
 			InfixOperator.RIGHT_ASSOCIATIVE);
-	public static final ApplyOperator APPLY_OPERATOR = new ApplyOperator("@@", "Apply", APPLY_PRECEDENCE,
+	public static final ApplyOperator APPLY_OPERATOR = new ApplyOperator("@@", "Apply", Precedence.APPLY,
 			InfixOperator.RIGHT_ASSOCIATIVE);
-	public static final ApplyOperator APPLY_LEVEL_OPERATOR = new ApplyOperator("@@@", "Apply", APPLY_PRECEDENCE,
+	public static final ApplyOperator APPLY_LEVEL_OPERATOR = new ApplyOperator("@@@", "Apply", Precedence.APPLY,
 			InfixOperator.RIGHT_ASSOCIATIVE);
 
-	public static final TagSetOperator TAG_SET_OPERATOR = new TagSetOperator("/:", "TagSet", TAG_SET_PRECEDENCE,
+	public static final TagSetOperator TAG_SET_OPERATOR = new TagSetOperator("/:", "TagSet", Precedence.TAGSET,
 			InfixOperator.NONE);
 
 	private static Operator[] OPERATORS;
-	// = { new InfixOperator("::", "MessageName", 750, InfixOperator.NONE),
-	// new PrefixOperator("<<", "Get", 720), new InfixOperator("?", "PatternTest", 680, InfixOperator.NONE),
-	// new InfixOperator("//@", "MapAll", 620, InfixOperator.RIGHT_ASSOCIATIVE),
-	// new InfixOperator("*=", "TimesBy", 100, InfixOperator.RIGHT_ASSOCIATIVE),
-	// new InfixOperator("+", "Plus", PLUS_PRECEDENCE, InfixOperator.NONE),
-	// new InfixOperator("^=", "UpSet", 40, InfixOperator.RIGHT_ASSOCIATIVE),
-	// new InfixOperator(";", "CompoundExpression", 10, InfixOperator.NONE), APPLY_HEAD_OPERATOR,
-	// new InfixOperator("/@", "Map", 620, InfixOperator.RIGHT_ASSOCIATIVE),
-	// new PostfixOperator("=.", "Unset", 670), APPLY_OPERATOR, APPLY_LEVEL_OPERATOR,
-	// // new ApplyOperator("@@", "Apply", APPLY_PRECEDENCE,
-	// // InfixOperator.RIGHT_ASSOCIATIVE),
-	// // new ApplyOperator("@@@", "Apply", APPLY_PRECEDENCE,
-	// // InfixOperator.RIGHT_ASSOCIATIVE),
-	// new InfixOperator("//.", "ReplaceRepeated", 110, InfixOperator.LEFT_ASSOCIATIVE),
-	// new InfixOperator("<", "Less", 290, InfixOperator.NONE),
-	// new InfixOperator("&&", "And", 215, InfixOperator.NONE),
-	// new DivideOperator("/", "Divide", DIVIDE_PRECEDENCE, InfixOperator.LEFT_ASSOCIATIVE),
-	// new InfixOperator("=", "Set", 40, InfixOperator.RIGHT_ASSOCIATIVE),
-	// new PostfixOperator("++", "Increment", 660), new PostfixOperator("!!", "Factorial2", 610),
-	// new InfixOperator("<=", "LessEqual", 290, InfixOperator.NONE),
-	// new InfixOperator("**", "NonCommutativeMultiply", 510, InfixOperator.NONE),
-	// new PostfixOperator("!", "Factorial", 610),
-	// new InfixOperator("*", "Times", TIMES_PRECEDENCE, InfixOperator.NONE),
-	// new InfixOperator("^", "Power", POWER_PRECEDENCE, InfixOperator.RIGHT_ASSOCIATIVE),
-	// new InfixOperator(".", "Dot", 490, InfixOperator.NONE), new PrefixOperator("!", "Not", 230),
-	// new PreMinusOperator("-", "PreMinus", 485), new InfixOperator("===", "SameQ", 290, InfixOperator.NONE),
-	// new InfixOperator(":>", "RuleDelayed", 120, InfixOperator.RIGHT_ASSOCIATIVE),
-	// new InfixOperator(">=", "GreaterEqual", 290, InfixOperator.NONE),
-	// new InfixOperator("/;", "Condition", 130, InfixOperator.LEFT_ASSOCIATIVE),
-	// new InfixOperator(":", "Colon", 80, InfixOperator.NONE),
-	// new InfixOperator("//", "//", 70, InfixOperator.LEFT_ASSOCIATIVE),
-	// new InfixOperator("/=", "DivideBy", 100, InfixOperator.RIGHT_ASSOCIATIVE),
-	// new InfixOperator("||", "Or", 213, InfixOperator.NONE),
-	// new InfixOperator(";;", "Span", 305, InfixOperator.NONE),
-	// new InfixOperator("==", "Equal", 290, InfixOperator.NONE),
-	// new InfixOperator("<>", "StringJoin", 600, InfixOperator.NONE),
-	// new InfixOperator("!=", "Unequal", 290, InfixOperator.NONE), new PostfixOperator("--", "Decrement", 660),
-	// new InfixOperator("-=", "SubtractFrom", 100, InfixOperator.RIGHT_ASSOCIATIVE),
-	// new PrePlusOperator("+", "PrePlus", 670), new PostfixOperator("...", "RepeatedNull", 170),
-	// new InfixOperator("=!=", "UnsameQ", 290, InfixOperator.NONE),
-	// new InfixOperator("->", "Rule", 120, InfixOperator.RIGHT_ASSOCIATIVE),
-	// new InfixOperator("^:=", "UpSetDelayed", 40, InfixOperator.RIGHT_ASSOCIATIVE),
-	// new PrefixOperator("++", "PreIncrement", 660), new PostfixOperator("&", "Function", 90),
-	// new InfixOperator(">", "Greater", 290, InfixOperator.NONE), new PrefixOperator("--", "PreDecrement", 660),
-	// new SubtractOperator("-", "Subtract", 310, InfixOperator.LEFT_ASSOCIATIVE),
-	// new InfixOperator(":=", "SetDelayed", 40, InfixOperator.RIGHT_ASSOCIATIVE),
-	// new InfixOperator("|", "Alternatives", 160, InfixOperator.NONE),
-	// new InfixOperator("+=", "AddTo", 100, InfixOperator.RIGHT_ASSOCIATIVE),
-	// new PostfixOperator("..", "Repeated", 170),
-	// new InfixOperator("/.", "ReplaceAll", 110, InfixOperator.LEFT_ASSOCIATIVE), TAG_SET_OPERATOR };
 
 	public final static ASTNodeFactory MMA_STYLE_FACTORY = new ASTNodeFactory(false);
 
@@ -269,69 +204,73 @@ public class ASTNodeFactory implements INodeParserFactory {
 	private static class Initializer {
 
 		private static void init() {
-			OPERATORS = new Operator[] { new InfixOperator("::", "MessageName", 750, InfixOperator.NONE),
-					new PrefixOperator("<<", "Get", 720),
-					new InfixOperator("?", "PatternTest", 680, InfixOperator.NONE),
-					new InfixOperator("//@", "MapAll", 620, InfixOperator.RIGHT_ASSOCIATIVE),
-					new InfixOperator("*=", "TimesBy", 100, InfixOperator.RIGHT_ASSOCIATIVE),
-					new InfixOperator("+", "Plus", PLUS_PRECEDENCE, InfixOperator.NONE),
-					new InfixOperator("^=", "UpSet", 40, InfixOperator.RIGHT_ASSOCIATIVE),
-					new InfixOperator(";", "CompoundExpression", 10, InfixOperator.NONE), APPLY_HEAD_OPERATOR,
-					new InfixOperator("/@", "Map", 620, InfixOperator.RIGHT_ASSOCIATIVE),
-					new PostfixOperator("=.", "Unset", 670), APPLY_OPERATOR, APPLY_LEVEL_OPERATOR,
+			OPERATORS = new Operator[] { new InfixOperator("::", "MessageName", Precedence.MESSAGENAME, InfixOperator.NONE),
+					new PrefixOperator("<<", "Get", Precedence.GET),
+					new InfixOperator("?", "PatternTest", Precedence.PATTERNTEST, InfixOperator.NONE),
+					new InfixOperator("//@", "MapAll", Precedence.MAPALL, InfixOperator.RIGHT_ASSOCIATIVE),
+					new InfixOperator("*=", "TimesBy", Precedence.TIMESBY, InfixOperator.RIGHT_ASSOCIATIVE),
+					new InfixOperator("+", "Plus", Precedence.PLUS, InfixOperator.NONE),
+					new InfixOperator("^=", "UpSet", Precedence.UPSET, InfixOperator.RIGHT_ASSOCIATIVE),
+					new InfixOperator(";", "CompoundExpression", Precedence.COMPOUNDEXPRESSION, InfixOperator.NONE), APPLY_HEAD_OPERATOR,
+					new InfixOperator("/@", "Map", Precedence.MAP, InfixOperator.RIGHT_ASSOCIATIVE),
+					new PostfixOperator("=.", "Unset", Precedence.UNSET), APPLY_OPERATOR, APPLY_LEVEL_OPERATOR,
 					// new ApplyOperator("@@", "Apply", APPLY_PRECEDENCE,
 					// InfixOperator.RIGHT_ASSOCIATIVE),
 					// new ApplyOperator("@@@", "Apply", APPLY_PRECEDENCE,
 					// InfixOperator.RIGHT_ASSOCIATIVE),
-					new InfixOperator("//.", "ReplaceRepeated", 110, InfixOperator.LEFT_ASSOCIATIVE),
-					new InfixOperator("<", "Less", 290, InfixOperator.NONE),
-					new InfixOperator("&&", "And", 215, InfixOperator.NONE),
-					new DivideOperator("/", "Divide", DIVIDE_PRECEDENCE, InfixOperator.LEFT_ASSOCIATIVE),
-					new InfixOperator("=", "Set", 40, InfixOperator.RIGHT_ASSOCIATIVE),
-					new PostfixOperator("++", "Increment", 660), new PostfixOperator("!!", "Factorial2", 610),
-					new InfixOperator("<=", "LessEqual", 290, InfixOperator.NONE),
+					new InfixOperator("//.", "ReplaceRepeated", Precedence.REPLACEREPEATED, InfixOperator.LEFT_ASSOCIATIVE),
+					new InfixOperator("<", "Less", Precedence.LESS, InfixOperator.NONE),
+					new InfixOperator("&&", "And", Precedence.AND, InfixOperator.NONE),
+					new DivideOperator("/", "Divide", Precedence.DIVIDE, InfixOperator.LEFT_ASSOCIATIVE),
+					new InfixOperator("=", "Set", Precedence.SET, InfixOperator.RIGHT_ASSOCIATIVE),
+					new PostfixOperator("++", "Increment", Precedence.INCREMENT), //
+					new PostfixOperator("!!", "Factorial2", Precedence.FACTORIAL2),
+					new InfixOperator("<=", "LessEqual", Precedence.LESSEQUAL, InfixOperator.NONE),
 					new InfixOperator("**", "NonCommutativeMultiply", 510, InfixOperator.NONE),
-					new PostfixOperator("!", "Factorial", 610),
-					new InfixOperator("*", "Times", TIMES_PRECEDENCE, InfixOperator.NONE),
-					new InfixOperator("^", "Power", POWER_PRECEDENCE, InfixOperator.RIGHT_ASSOCIATIVE),
-					new InfixOperator(".", "Dot", 490, InfixOperator.NONE), new PrefixOperator("!", "Not", 230),
-					new PreMinusOperator("-", "PreMinus", 485),
-					new InfixOperator("===", "SameQ", 290, InfixOperator.NONE),
-					new InfixOperator(":>", "RuleDelayed", 120, InfixOperator.RIGHT_ASSOCIATIVE),
-					new InfixOperator(">=", "GreaterEqual", 290, InfixOperator.NONE),
-					new InfixOperator("/;", "Condition", 130, InfixOperator.LEFT_ASSOCIATIVE),
-					new InfixOperator(":", "Colon", 80, InfixOperator.NONE),
+					new PostfixOperator("!", "Factorial", Precedence.FACTORIAL),
+					new InfixOperator("*", "Times", Precedence.TIMES, InfixOperator.NONE),
+					new InfixOperator("^", "Power", Precedence.POWER, InfixOperator.RIGHT_ASSOCIATIVE),
+					new InfixOperator(".", "Dot", Precedence.DOT, InfixOperator.NONE), //
+					new PrefixOperator("!", "Not", Precedence.NOT),
+					new PreMinusOperator("-", "PreMinus", Precedence.PREMINUS),
+					new InfixOperator("===", "SameQ", Precedence.SAMEQ, InfixOperator.NONE),
+					new InfixOperator(":>", "RuleDelayed", Precedence.RULEDELAYED, InfixOperator.RIGHT_ASSOCIATIVE),
+					new InfixOperator(">=", "GreaterEqual", Precedence.GREATEREQUAL, InfixOperator.NONE),
+					new InfixOperator("/;", "Condition", Precedence.CONDITION, InfixOperator.LEFT_ASSOCIATIVE),
+					new InfixOperator(":", "Colon", Precedence.COLON, InfixOperator.NONE),
 					new InfixOperator("//", "//", 70, InfixOperator.LEFT_ASSOCIATIVE),
-					new InfixOperator("/=", "DivideBy", 100, InfixOperator.RIGHT_ASSOCIATIVE),
-					new InfixOperator("||", "Or", 213, InfixOperator.NONE),
-					new InfixOperator(";;", "Span", 305, InfixOperator.NONE),
-					new InfixOperator("==", "Equal", EQUAL_PRECEDENCE, InfixOperator.NONE),
-					new InfixOperator("<>", "StringJoin", 600, InfixOperator.NONE),
-					new InfixOperator("!=", "Unequal", 290, InfixOperator.NONE),
-					new PostfixOperator("--", "Decrement", 660),
-					new InfixOperator("-=", "SubtractFrom", 100, InfixOperator.RIGHT_ASSOCIATIVE),
-					new PrePlusOperator("+", "PrePlus", 670), new PostfixOperator("...", "RepeatedNull", 170),
-					new InfixOperator("=!=", "UnsameQ", 290, InfixOperator.NONE),
-					new InfixOperator("->", "Rule", 120, InfixOperator.RIGHT_ASSOCIATIVE),
-					new InfixOperator("^:=", "UpSetDelayed", 40, InfixOperator.RIGHT_ASSOCIATIVE),
-					new PrefixOperator("++", "PreIncrement", 660), new PostfixOperator("&", "Function", 90),
+					new InfixOperator("/=", "DivideBy", Precedence.DIVIDEBY, InfixOperator.RIGHT_ASSOCIATIVE),
+					new InfixOperator("||", "Or", Precedence.OR, InfixOperator.NONE),
+					new InfixOperator(";;", "Span", Precedence.SPAN, InfixOperator.NONE),
+					new InfixOperator("==", "Equal", Precedence.EQUAL, InfixOperator.NONE),
+					new InfixOperator("<>", "StringJoin", Precedence.STRINGJOIN, InfixOperator.NONE),
+					new InfixOperator("!=", "Unequal", Precedence.UNEQUAL, InfixOperator.NONE),
+					new PostfixOperator("--", "Decrement", Precedence.DECREMENT),
+					new InfixOperator("-=", "SubtractFrom", Precedence.SUBTRACTFROM, InfixOperator.RIGHT_ASSOCIATIVE),
+					new PrePlusOperator("+", "PrePlus", Precedence.PREPLUS), //
+					new PostfixOperator("...", "RepeatedNull", Precedence.REPEATEDNULL),
+					new InfixOperator("=!=", "UnsameQ", Precedence.UNSAMEQ, InfixOperator.NONE),
+					new InfixOperator("->", "Rule", Precedence.RULE, InfixOperator.RIGHT_ASSOCIATIVE),
+					new InfixOperator("^:=", "UpSetDelayed", Precedence.UPSETDELAYED, InfixOperator.RIGHT_ASSOCIATIVE),
+					new PrefixOperator("++", "PreIncrement", Precedence.PREINCREMENT), //
+					new PostfixOperator("&", "Function", Precedence.FUNCTION),
 					new InfixOperator(">", "Greater", 290, InfixOperator.NONE),
-					new PrefixOperator("--", "PreDecrement", 660),
-					new SubtractOperator("-", "Subtract", 310, InfixOperator.LEFT_ASSOCIATIVE),
-					new InfixOperator(":=", "SetDelayed", 40, InfixOperator.RIGHT_ASSOCIATIVE),
-					new InfixOperator("|", "Alternatives", 160, InfixOperator.NONE),
-					new InfixOperator("+=", "AddTo", 100, InfixOperator.RIGHT_ASSOCIATIVE),
-					new PostfixOperator("..", "Repeated", 170),
-					new InfixOperator("/.", "ReplaceAll", 110, InfixOperator.LEFT_ASSOCIATIVE), //
+					new PrefixOperator("--", "PreDecrement", Precedence.PREDECREMENT),
+					new SubtractOperator("-", "Subtract", Precedence.SUBTRACT, InfixOperator.LEFT_ASSOCIATIVE),
+					new InfixOperator(":=", "SetDelayed", Precedence.SETDELAYED, InfixOperator.RIGHT_ASSOCIATIVE),
+					new InfixOperator("|", "Alternatives", Precedence.ALTERNATIVES, InfixOperator.NONE),
+					new InfixOperator("+=", "AddTo", Precedence.ADDTO, InfixOperator.RIGHT_ASSOCIATIVE),
+					new PostfixOperator("..", "Repeated", Precedence.REPEATED),
+					new InfixOperator("/.", "ReplaceAll", Precedence.REPLACEALL, InfixOperator.LEFT_ASSOCIATIVE), //
 					TAG_SET_OPERATOR, //
-					new InfixOperator("@*", "Composition", 625, InfixOperator.NONE),
-					new InfixOperator("~~", "StringExpression", 135, InfixOperator.NONE),
-					new InfixOperator("<->", "TwoWayRule", 125, InfixOperator.RIGHT_ASSOCIATIVE),
-					new InfixOperator("\uF120", "TwoWayRule", 125, InfixOperator.RIGHT_ASSOCIATIVE),
-					new InfixOperator("\uF3D5", "DirectedEdge", 120, InfixOperator.RIGHT_ASSOCIATIVE),
-					new InfixOperator("\uF3D4", "UndirectedEdge", 120, InfixOperator.RIGHT_ASSOCIATIVE),
-					new InfixOperator("\u00B7", "CenterDot", 410, InfixOperator.NONE), //
-					new InfixOperator("\u2299", "CircleDot", 520, InfixOperator.NONE) //
+					new InfixOperator("@*", "Composition", Precedence.COMPOSITION, InfixOperator.NONE),
+					new InfixOperator("~~", "StringExpression", Precedence.STRINGEXPRESSION, InfixOperator.NONE),
+					new InfixOperator("<->", "TwoWayRule", Precedence.TWOWAYRULE, InfixOperator.RIGHT_ASSOCIATIVE),
+					new InfixOperator("\uF120", "TwoWayRule", Precedence.TWOWAYRULE, InfixOperator.RIGHT_ASSOCIATIVE),
+					new InfixOperator("\uF3D5", "DirectedEdge", Precedence.DIRECTEDEDGE, InfixOperator.RIGHT_ASSOCIATIVE),
+					new InfixOperator("\uF3D4", "UndirectedEdge", Precedence.UNDIRECTEDEDGE, InfixOperator.RIGHT_ASSOCIATIVE),
+					new InfixOperator("\u00B7", "CenterDot", Precedence.CENTERDOT, InfixOperator.NONE), //
+					new InfixOperator("\u2299", "CircleDot", Precedence.CIRCLEDOT, InfixOperator.NONE) //
 
 			};
 			StringBuilder buf = new StringBuilder(BASIC_OPERATOR_CHARACTERS);

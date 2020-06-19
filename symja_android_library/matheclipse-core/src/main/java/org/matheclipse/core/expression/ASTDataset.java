@@ -539,11 +539,6 @@ public class ASTDataset extends AbstractAST implements IDataExpr<Table>, Externa
 	}
 
 	@Override
-	public Set<IExpr> asSet() {
-		throw new UnsupportedOperationException();
-	}
-
-	@Override
 	public IASTAppendable copyAppendable() {
 		return normal(false);
 	}

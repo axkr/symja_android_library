@@ -51,7 +51,9 @@ public class WXFTestCase extends AbstractTestCase {
 	}
 
 	public void testBinarySerialize() {
-
+		check("BinarySerialize(Quantity(12, \"Hours\")) // Normal", //
+				"{56,58,102,2,115,8,81,117,97,110,116,105,116,121,67,12,83,5,72,111,117,114,115}");
+		
 		// check("BinarySerialize(N(Pi,30))", //
 		// "");
 

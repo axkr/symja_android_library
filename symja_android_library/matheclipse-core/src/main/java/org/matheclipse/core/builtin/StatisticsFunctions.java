@@ -53,7 +53,7 @@ import org.matheclipse.core.interfaces.IStringX;
 import org.matheclipse.core.interfaces.ISymbol;
 import org.matheclipse.core.reflection.system.rules.QuantileRules;
 import org.matheclipse.core.reflection.system.rules.StandardDeviationRules;
-import org.matheclipse.parser.client.FEConfig; 
+import org.matheclipse.parser.client.FEConfig;
 
 public class StatisticsFunctions {
 	// avoid result -Infinity when reference is close to 1.0
@@ -660,10 +660,10 @@ public class StatisticsFunctions {
 				// see exception handling in RandonmVariate() function
 				double p = dist.arg1().evalDouble();
 				if (0 <= p && p <= 1) {
-//					return F.ZZ(new BinomialGenerator(1, p, random).nextValue());
+					// return F.ZZ(new BinomialGenerator(1, p, random).nextValue());
 					RandomDataGenerator rdg = new RandomDataGenerator();
-					int[] vector = rdg.nextDeviates(
-							new org.hipparchus.distribution.discrete.BinomialDistribution(1, p), size);
+					int[] vector = rdg.nextDeviates(new org.hipparchus.distribution.discrete.BinomialDistribution(1, p),
+							size);
 					return F.List(vector);
 				}
 			}
@@ -775,7 +775,7 @@ public class StatisticsFunctions {
 					RandomDataGenerator rdg = new RandomDataGenerator();
 					double[] vector = rdg.nextDeviates(new org.hipparchus.distribution.continuous.BetaDistribution(
 							a.doubleValue(), b.doubleValue()), size);
-					return new ASTRealVector(vector, false); 
+					return new ASTRealVector(vector, false);
 				}
 			}
 			return F.NIL;
@@ -2537,7 +2537,7 @@ public class StatisticsFunctions {
 	 * </p>
 	 */
 	private final static class HypergeometricDistribution extends AbstractEvaluator
-			implements ICDF, IDiscreteDistribution, IPDF, IStatistics {
+			implements ICDF, IDiscreteDistribution, IPDF, IStatistics, IRandomVariate {
 
 		@Override
 		public IExpr evaluate(final IAST ast, EvalEngine engine) {
@@ -2684,6 +2684,21 @@ public class StatisticsFunctions {
 				int param[] = parameters(dist);
 				if (param != null) {
 					return F.NIL;
+				}
+			}
+			return F.NIL;
+		}
+
+		@Override
+		public IExpr randomVariate(Random random, IAST dist, int size) {
+			if (dist.isAST3()) {
+				int param[] = parameters(dist);
+				if (param != null) {
+					RandomDataGenerator rdg = new RandomDataGenerator();
+					int[] vector = rdg.nextDeviates(new org.hipparchus.distribution.discrete.HypergeometricDistribution(
+							param[2], param[1], param[0]), size);
+					return F.List(vector);
+
 				}
 			}
 			return F.NIL;
@@ -4950,20 +4965,20 @@ public class StatisticsFunctions {
 			return IOFunctions.ARGS_1_3;
 		}
 
-		private IExpr of(IAST sorted, IInteger length, ISignedNumber scalar) {
-			if (scalar.isReal()) {
-				int index = 0;
-				if (scalar instanceof INum) {
-					index = ((INum) scalar).multiply(length).ceilFraction().subtract(F.C1).toIntDefault(-1);
-				} else {
-					index = ((IRational) scalar).multiply(length).ceil().subtract(F.C1).toIntDefault(-1);
-				}
-				if (index >= 0) {
-					return sorted.get(index + 1);
-				}
-			}
-			throw new ArithmeticException();
-		}
+		// private IExpr of(IAST sorted, IInteger length, ISignedNumber scalar) {
+		// if (scalar.isReal()) {
+		// int index = 0;
+		// if (scalar instanceof INum) {
+		// index = ((INum) scalar).multiply(length).ceilFraction().subtract(F.C1).toIntDefault(-1);
+		// } else {
+		// index = ((IRational) scalar).multiply(length).ceil().subtract(F.C1).toIntDefault(-1);
+		// }
+		// if (index >= 0) {
+		// return sorted.get(index + 1);
+		// }
+		// }
+		// throw new ArithmeticException();
+		// }
 
 		@Override
 		public void setUp(final ISymbol newSymbol) {

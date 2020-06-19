@@ -4,6 +4,7 @@ import java.io.Externalizable;
 import java.io.IOException;
 import java.io.ObjectInput;
 import java.io.ObjectOutput;
+import java.util.HashSet;
 import java.util.RandomAccess;
 import java.util.Set;
 import java.util.function.DoubleUnaryOperator;
@@ -95,8 +96,8 @@ public class ASTRealMatrix extends AbstractAST implements Cloneable, Externaliza
 	 *            if <code>true</code> allocate new memory and copy all elements from the matrix
 	 */
 	public ASTRealMatrix(double[][] matrix, boolean deepCopy) {
-		if (Config.MAX_AST_SIZE < matrix.length || //
-				Config.MAX_AST_SIZE < matrix[0].length) {
+		if (Config.MAX_MATRIX_DIMENSION_SIZE < matrix.length || //
+				Config.MAX_MATRIX_DIMENSION_SIZE < matrix[0].length) {
 			throw new ASTElementLimitExceeded(matrix.length, matrix[0].length);
 		}
 		this.matrix = new Array2DRowRealMatrix(matrix, deepCopy);
@@ -111,8 +112,8 @@ public class ASTRealMatrix extends AbstractAST implements Cloneable, Externaliza
 	 *            if <code>true</code> allocate new memory and copy all elements from the matrix
 	 */
 	public ASTRealMatrix(RealMatrix matrix, boolean deepCopy) {
-		if (Config.MAX_AST_SIZE < matrix.getRowDimension() || //
-				Config.MAX_AST_SIZE < matrix.getColumnDimension()) {
+		if (Config.MAX_MATRIX_DIMENSION_SIZE < matrix.getRowDimension() || //
+				Config.MAX_MATRIX_DIMENSION_SIZE < matrix.getColumnDimension()) {
 			throw new ASTElementLimitExceeded(matrix.getRowDimension(), matrix.getColumnDimension());
 		}
 		if (deepCopy) {
@@ -199,11 +200,13 @@ public class ASTRealMatrix extends AbstractAST implements Cloneable, Externaliza
 
 	@Override
 	public Set<IExpr> asSet() {
-		throw new UnsupportedOperationException();
-		// empty set:
-		// return new HashSet<IExpr>();
+		int size = size();
+		Set<IExpr> set = new HashSet<IExpr>(size > 16 ? size : 16);
+		for (int i = 1; i < size; i++) {
+			set.add(get(i));
+		}
+		return set;
 	}
-
 	/**
 	 * Removes all elements from this {@code ArrayList}, leaving it empty.
 	 * 

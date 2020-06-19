@@ -213,7 +213,7 @@ final public class FunctionNode extends ASTNode implements java.util.List<ASTNod
 	 */
 	@Override
 	public List<ASTNode> subList(final int fromIndex, final int toIndex) throws UnsupportedOperationException {
-		throw new UnsupportedOperationException("Arraylist#subList() not supported");
+		throw new UnsupportedOperationException("FunctionNode#subList() not supported");
 	}
 
 	@Override

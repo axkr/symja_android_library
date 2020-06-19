@@ -55,9 +55,11 @@ public class SyntaxError extends MathException {
 	/**
 	 * SyntaxError exception
 	 *
-	 * @param startOffset the start offset inside the row
-	 * @param rowIndx the row index
-	 * @param columnIndx 
+	 * @param startOffset
+	 *            the start offset inside the row
+	 * @param rowIndx
+	 *            the row index
+	 * @param columnIndx
 	 * @param currentLine
 	 * @param error
 	 * @param length
@@ -65,6 +67,7 @@ public class SyntaxError extends MathException {
 	 */
 	public SyntaxError(final int startOffset, final int rowIndx, final int columnIndx, final String currentLine,
 			final String error, final int length) {
+		super(null, null, false, false);
 		fStartOffset = startOffset;
 		fRowIndex = rowIndx;
 		fColumnIndex = columnIndx;
@@ -131,5 +134,15 @@ public class SyntaxError extends MathException {
 	 */
 	public int getStartOffset() {
 		return fStartOffset;
+	}
+
+	@Override
+	public synchronized Throwable fillInStackTrace() {
+		if (FEConfig.SHOW_STACKTRACE) {
+			// doesn't fill the stack for FlowControlExceptions
+			return super.fillInStackTrace();
+		} else {
+			return this;
+		}
 	}
 }

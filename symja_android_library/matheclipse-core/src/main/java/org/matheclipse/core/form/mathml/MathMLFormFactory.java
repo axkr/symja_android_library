@@ -46,6 +46,7 @@ import org.matheclipse.parser.client.FEConfig;
 import org.matheclipse.parser.client.operator.ASTNodeFactory;
 import org.matheclipse.parser.client.operator.InfixOperator;
 import org.matheclipse.parser.client.operator.PostfixOperator;
+import org.matheclipse.parser.client.operator.Precedence;
 import org.matheclipse.parser.client.operator.PrefixOperator;
 import org.matheclipse.parser.trie.Tries;
 
@@ -570,8 +571,6 @@ public class MathMLFormFactory extends AbstractMathMLFormFactory {
 
 	private final static class Not extends AbstractConverter {
 
-		static int fPrecedence=ASTNodeFactory.MMA_STYLE_FACTORY.get("Not").getPrecedence();
-
 		/**
 		 * Converts a given function into the corresponding MathML output
 		 *
@@ -589,7 +588,7 @@ public class MathMLFormFactory extends AbstractMathMLFormFactory {
 			fFactory.tagStart(buf, "mrow");
 			// &not; &#x00AC;
 			fFactory.tag(buf, "mo", "&#x00AC;");
-			fFactory.convertInternal(buf, f.arg1(), fPrecedence, false);
+			fFactory.convertInternal(buf, f.arg1(), Precedence.NOT, false);
 			fFactory.tagEnd(buf, "mrow");
 			return true;
 		}
@@ -618,7 +617,7 @@ public class MathMLFormFactory extends AbstractMathMLFormFactory {
 	private final static class Plus extends MMLOperator {
 
 		public Plus() {
-			super(ASTNodeFactory.MMA_STYLE_FACTORY.get("Plus").getPrecedence(), "mrow", "+");
+			super(Precedence.PLUS, "mrow", "+");
 		}
 
 		@Override
@@ -655,7 +654,7 @@ public class MathMLFormFactory extends AbstractMathMLFormFactory {
 	private final static class Power extends MMLOperator {
 
 		public Power() {
-			super(ASTNodeFactory.MMA_STYLE_FACTORY.get("Power").getPrecedence(), "msup", "");
+			super(Precedence.POWER, "msup", "");
 		}
 
 		/**
@@ -951,10 +950,10 @@ public class MathMLFormFactory extends AbstractMathMLFormFactory {
 	private final static class Times extends MMLOperator {
 
 		public Times() {
-			super(ASTNodeFactory.MMA_STYLE_FACTORY.get("Times").getPrecedence(), "mrow", "&#0183;");// centerdot instead
-																									// of
-																									// invisibletimes:
-																									// "&#8290;");
+			super(Precedence.TIMES, "mrow", "&#0183;");// centerdot instead
+														// of
+														// invisibletimes:
+														// "&#8290;");
 		}
 
 		/**
@@ -1138,8 +1137,6 @@ public class MathMLFormFactory extends AbstractMathMLFormFactory {
 	 */
 	public final static Map<String, AbstractConverter> OPERATORS = Tries.forStrings();
 
-	private int plusPrec;
-
 	private boolean fRelaxedSyntax;
 
 	private int fExponentFigures;
@@ -1230,7 +1227,7 @@ public class MathMLFormFactory extends AbstractMathMLFormFactory {
 		final boolean isImNegative = imaginaryPart.compareTo(Apcomplex.ZERO) < 0;
 
 		tagStart(buf, "mrow");
-		if (ASTNodeFactory.PLUS_PRECEDENCE < precedence) {
+		if (Precedence.PLUS < precedence) {
 			tag(buf, "mo", "(");
 		}
 		// convertApfloat(buf, realPart);
@@ -1250,7 +1247,7 @@ public class MathMLFormFactory extends AbstractMathMLFormFactory {
 		tag(buf, "mo", "&#0183;");
 		// <!ENTITY ImaginaryI "&#x2148;" >
 		tag(buf, "mi", "&#x2148;");// "&#x2148;");
-		if (ASTNodeFactory.PLUS_PRECEDENCE < precedence) {
+		if (Precedence.PLUS < precedence) {
 			tag(buf, "mo", ")");
 		}
 		tagEnd(buf, "mrow");
@@ -1514,11 +1511,10 @@ public class MathMLFormFactory extends AbstractMathMLFormFactory {
 	}
 
 	private boolean convertInequality(final StringBuilder buf, final IAST inequality, final int precedence) {
-		int operPrecedence = ASTNodeFactory.EQUAL_PRECEDENCE;
 		StringBuilder tempBuffer = new StringBuilder();
 
 		tagStart(tempBuffer, "mrow");
-		if (operPrecedence < precedence) {
+		if (Precedence.EQUAL < precedence) {
 			// append(buf, "(");
 			tag(tempBuffer, "mo", "(");
 		}
@@ -1526,9 +1522,9 @@ public class MathMLFormFactory extends AbstractMathMLFormFactory {
 		final int listSize = inequality.size();
 		int i = 1;
 		while (i < listSize) {
-			convertInternal(tempBuffer, inequality.get(i++), operPrecedence, false);
+			convertInternal(tempBuffer, inequality.get(i++), Precedence.EQUAL, false);
 			if (i == listSize) {
-				if (operPrecedence < precedence) {
+				if (Precedence.EQUAL < precedence) {
 					// append(buf, ")");
 					tag(tempBuffer, "mo", ")");
 				}
@@ -1565,7 +1561,7 @@ public class MathMLFormFactory extends AbstractMathMLFormFactory {
 				return false;
 			}
 		}
-		if (operPrecedence < precedence) {
+		if (Precedence.EQUAL < precedence) {
 			// append(buf, ")");
 			tag(tempBuffer, "mo", ")");
 		}
@@ -1590,11 +1586,11 @@ public class MathMLFormFactory extends AbstractMathMLFormFactory {
 			return;
 		}
 		tagStart(buf, "mrow");
-		if (!isReZero && (ASTNodeFactory.PLUS_PRECEDENCE < precedence)) {
+		if (!isReZero && (Precedence.PLUS < precedence)) {
 			tag(buf, "mo", "(");
 		}
 		if (!isReZero) {
-			convertFraction(buf, c.getRealPart(), plusPrec, caller);
+			convertFraction(buf, c.getRealPart(), Precedence.PLUS, caller);
 		}
 
 		if (isImOne) {
@@ -1636,7 +1632,7 @@ public class MathMLFormFactory extends AbstractMathMLFormFactory {
 					tag(buf, "mo", "-");
 				}
 			}
-			convertFraction(buf, imaginaryPart, ASTNodeFactory.TIMES_PRECEDENCE, caller);
+			convertFraction(buf, imaginaryPart, Precedence.TIMES, caller);
 			// <!ENTITY InvisibleTimes "&#x2062;" >
 			// <!ENTITY CenterDot "&#0183;" >
 			tag(buf, "mo", "&#0183;");
@@ -1646,7 +1642,7 @@ public class MathMLFormFactory extends AbstractMathMLFormFactory {
 			// } else {
 			// tag(buf, "mi", "&#x2148;");
 		}
-		if (!isReZero && (ASTNodeFactory.PLUS_PRECEDENCE < precedence)) {
+		if (!isReZero && (Precedence.PLUS < precedence)) {
 			tag(buf, "mo", ")");
 		}
 		tagEnd(buf, "mrow");
@@ -1661,7 +1657,7 @@ public class MathMLFormFactory extends AbstractMathMLFormFactory {
 			return;
 		}
 		final boolean isNegative = d.isNegative();
-		if (isNegative && (precedence > plusPrec)) {
+		if (isNegative && (precedence > Precedence.PLUS)) {
 			tagStart(buf, "mrow");
 			tag(buf, "mo", "(");
 		}
@@ -1674,7 +1670,7 @@ public class MathMLFormFactory extends AbstractMathMLFormFactory {
 			tagEnd(buf, "mn");
 		}
 
-		if (isNegative && (precedence > plusPrec)) {
+		if (isNegative && (precedence > Precedence.PLUS)) {
 			tag(buf, "mo", ")");
 			tagEnd(buf, "mrow");
 		}
@@ -1692,7 +1688,7 @@ public class MathMLFormFactory extends AbstractMathMLFormFactory {
 		final boolean isImNegative = imaginaryPart < 0;
 
 		tagStart(buf, "mrow");
-		if (ASTNodeFactory.PLUS_PRECEDENCE < precedence) {
+		if (Precedence.PLUS < precedence) {
 			tag(buf, "mo", "(");
 		}
 		tagStart(buf, "mn");
@@ -1713,7 +1709,7 @@ public class MathMLFormFactory extends AbstractMathMLFormFactory {
 		tag(buf, "mo", "&#0183;");
 		// <!ENTITY ImaginaryI "&#x2148;" >
 		tag(buf, "mi", "&#x2148;");// "&#x2148;");
-		if (ASTNodeFactory.PLUS_PRECEDENCE < precedence) {
+		if (Precedence.PLUS < precedence) {
 			tag(buf, "mo", ")");
 		}
 		tagEnd(buf, "mrow");
@@ -1740,7 +1736,7 @@ public class MathMLFormFactory extends AbstractMathMLFormFactory {
 		if (isNegative) {
 			numerator = numerator.negate();
 		}
-		final int prec = isNegative ? ASTNodeFactory.PLUS_PRECEDENCE : ASTNodeFactory.TIMES_PRECEDENCE;
+		final int prec = isNegative ? Precedence.PLUS : Precedence.TIMES;
 		tagStart(buf, "mrow");
 		if (!isNegative) {
 			if (caller == PLUS_CALL) {
@@ -1777,7 +1773,7 @@ public class MathMLFormFactory extends AbstractMathMLFormFactory {
 
 	public void convertFraction(final StringBuilder buf, final IFraction f, final int precedence) {
 		boolean isInteger = f.denominator().isOne();
-		if (f.isNegative() && (precedence > plusPrec)) {
+		if (f.isNegative() && (precedence > Precedence.PLUS)) {
 			tagStart(buf, "mrow");
 			tag(buf, "mo", "(");
 		}
@@ -1795,7 +1791,7 @@ public class MathMLFormFactory extends AbstractMathMLFormFactory {
 			tagEnd(buf, "mn");
 			tagEnd(buf, "mfrac");
 		}
-		if (f.isNegative() && (precedence > plusPrec)) {
+		if (f.isNegative() && (precedence > Precedence.PLUS)) {
 			tag(buf, "mo", ")");
 			tagEnd(buf, "mrow");
 		}
@@ -1947,14 +1943,14 @@ public class MathMLFormFactory extends AbstractMathMLFormFactory {
 
 	@Override
 	public void convertInteger(final StringBuilder buf, final IInteger i, final int precedence, boolean caller) {
-		if (i.isNegative() && (precedence > plusPrec)) {
+		if (i.isNegative() && (precedence > Precedence.PLUS)) {
 			tagStart(buf, "mrow");
 			tag(buf, "mo", "(");
 		}
 		tagStart(buf, "mn");
 		buf.append(i.toBigNumerator().toString());
 		tagEnd(buf, "mn");
-		if (i.isNegative() && (precedence > plusPrec)) {
+		if (i.isNegative() && (precedence > Precedence.PLUS)) {
 			tag(buf, "mo", ")");
 			tagEnd(buf, "mrow");
 		}
@@ -2200,10 +2196,9 @@ public class MathMLFormFactory extends AbstractMathMLFormFactory {
 	 * @throws IOException
 	 */
 	public boolean convertSeriesData(final StringBuilder buf, final ASTSeriesData seriesData, final int precedence) {
-		int operPrecedence = ASTNodeFactory.PLUS_PRECEDENCE;
 		StringBuilder tempBuffer = new StringBuilder();
 		tagStart(tempBuffer, "mrow");
-		if (operPrecedence < precedence) {
+		if (Precedence.PLUS < precedence) {
 			tag(tempBuffer, "mo", "(");
 		}
 		try {
@@ -2247,7 +2242,7 @@ public class MathMLFormFactory extends AbstractMathMLFormFactory {
 			}
 			return false;
 		}
-		if (operPrecedence < precedence) {
+		if (Precedence.PLUS < precedence) {
 			tag(tempBuffer, "mo", ")");
 		}
 		tagEnd(tempBuffer, "mrow");
@@ -2373,8 +2368,6 @@ public class MathMLFormFactory extends AbstractMathMLFormFactory {
 	}
 
 	public void init() {
-		plusPrec = ASTNodeFactory.PLUS_PRECEDENCE;// ASTNodeFactory.MMA_STYLE_FACTORY.get("Plus").getPrecedence();
-
 		if (Config.MATHML_TRIG_LOWERCASE) {
 			CONVERTERS.put(F.Sin, new MMLFunction(this, "sin"));
 			CONVERTERS.put(F.Cos, new MMLFunction(this, "cos"));
@@ -2487,46 +2480,46 @@ public class MathMLFormFactory extends AbstractMathMLFormFactory {
 		CONSTANT_EXPRS.put(F.Reals, "<mi>&#8477;</mi>");
 
 		CONVERTERS.put(F.Abs, new Abs());
-		CONVERTERS.put(F.And, new MMLOperator(ASTNodeFactory.MMA_STYLE_FACTORY.get("And").getPrecedence(), "&#x2227;"));
+		CONVERTERS.put(F.And, new MMLOperator(Precedence.AND, "&#x2227;"));
 		CONVERTERS.put(F.Binomial, new Binomial());
 		CONVERTERS.put(F.C, new C());
 		CONVERTERS.put(F.Ceiling, new Ceiling());
 		CONVERTERS.put(F.CompoundExpression,
-				new MMLOperator(ASTNodeFactory.MMA_STYLE_FACTORY.get("CompoundExpression").getPrecedence(), ";"));
+				new MMLOperator(Precedence.COMPOUNDEXPRESSION, ";"));
 		CONVERTERS.put(F.D, new D());
 		CONVERTERS.put(F.DirectedEdge,
-				new MMLOperator(ASTNodeFactory.MMA_STYLE_FACTORY.get("DirectedEdge").getPrecedence(), "-&gt;"));
-		CONVERTERS.put(F.Dot, new MMLOperator(ASTNodeFactory.MMA_STYLE_FACTORY.get("Dot").getPrecedence(), "."));
+				new MMLOperator(Precedence.DIRECTEDEDGE, "-&gt;"));
+		CONVERTERS.put(F.Dot, new MMLOperator(Precedence.DOT, "."));
 		CONVERTERS.put(F.Element, new Element());
-		CONVERTERS.put(F.Equal, new MMLOperator(ASTNodeFactory.MMA_STYLE_FACTORY.get("Equal").getPrecedence(), "=="));
+		CONVERTERS.put(F.Equal, new MMLOperator(Precedence.EQUAL, "=="));
 		CONVERTERS.put(F.Factorial,
-				new MMLPostfix("!", ASTNodeFactory.MMA_STYLE_FACTORY.get("Factorial").getPrecedence()));
+				new MMLPostfix("!", Precedence.FACTORIAL));
 		CONVERTERS.put(F.Factorial2,
-				new MMLPostfix("!!", ASTNodeFactory.MMA_STYLE_FACTORY.get("Factorial2").getPrecedence()));
+				new MMLPostfix("!!", Precedence.FACTORIAL2));
 		CONVERTERS.put(F.Floor, new Floor());
 		CONVERTERS.put(F.Function, new Function());
 		CONVERTERS.put(F.Greater,
-				new MMLOperator(ASTNodeFactory.MMA_STYLE_FACTORY.get("Greater").getPrecedence(), "&gt;"));
+				new MMLOperator(Precedence.GREATER, "&gt;"));
 		CONVERTERS.put(F.GreaterEqual,
-				new MMLOperator(ASTNodeFactory.MMA_STYLE_FACTORY.get("GreaterEqual").getPrecedence(), "&#x2265;"));
+				new MMLOperator(Precedence.GREATEREQUAL, "&#x2265;"));
 		CONVERTERS.put(F.Integrate, new Integrate());
-		CONVERTERS.put(F.Less, new MMLOperator(ASTNodeFactory.MMA_STYLE_FACTORY.get("Less").getPrecedence(), "&lt;"));
+		CONVERTERS.put(F.Less, new MMLOperator(Precedence.LESS, "&lt;"));
 		CONVERTERS.put(F.LessEqual,
-				new MMLOperator(ASTNodeFactory.MMA_STYLE_FACTORY.get("LessEqual").getPrecedence(), "&#x2264;"));
+				new MMLOperator(Precedence.LESSEQUAL, "&#x2264;"));
 		CONVERTERS.put(F.MatrixForm, new MatrixForm(false));
 		CONVERTERS.put(F.TableForm, new MatrixForm(true));
 		CONVERTERS.put(F.Not, new Not());
-		CONVERTERS.put(F.Or, new MMLOperator(ASTNodeFactory.MMA_STYLE_FACTORY.get("Or").getPrecedence(), "&#x2228;"));
+		CONVERTERS.put(F.Or, new MMLOperator(Precedence.OR, "&#x2228;"));
 		CONVERTERS.put(F.Plus, new Plus());
 		CONVERTERS.put(F.Power, new Power());
 		CONVERTERS.put(F.Product, new Product());
 		CONVERTERS.put(F.Rational, new Rational());
-		CONVERTERS.put(F.Rule, new MMLOperator(ASTNodeFactory.MMA_STYLE_FACTORY.get("Rule").getPrecedence(), "-&gt;"));
+		CONVERTERS.put(F.Rule, new MMLOperator(Precedence.RULE, "-&gt;"));
 		CONVERTERS.put(F.RuleDelayed,
-				new MMLOperator(ASTNodeFactory.MMA_STYLE_FACTORY.get("RuleDelayed").getPrecedence(), "&#x29F4;"));
-		CONVERTERS.put(F.Set, new MMLOperator(ASTNodeFactory.MMA_STYLE_FACTORY.get("Set").getPrecedence(), "="));
+				new MMLOperator(Precedence.RULEDELAYED, "&#x29F4;"));
+		CONVERTERS.put(F.Set, new MMLOperator(Precedence.SET, "="));
 		CONVERTERS.put(F.SetDelayed,
-				new MMLOperator(ASTNodeFactory.MMA_STYLE_FACTORY.get("SetDelayed").getPrecedence(), ":="));
+				new MMLOperator(Precedence.SETDELAYED, ":="));
 		CONVERTERS.put(F.Sqrt, new Sqrt());
 		CONVERTERS.put(F.Subscript, new Subscript());
 		CONVERTERS.put(F.Superscript, new Superscript());
@@ -2534,14 +2527,14 @@ public class MathMLFormFactory extends AbstractMathMLFormFactory {
 		CONVERTERS.put(F.Surd, new Surd());
 		CONVERTERS.put(F.Times, new Times());
 		CONVERTERS.put(F.TwoWayRule,
-				new MMLOperator(ASTNodeFactory.MMA_STYLE_FACTORY.get("TwoWayRule").getPrecedence(), "&lt;-&gt;"));
+				new MMLOperator(Precedence.TWOWAYRULE, "&lt;-&gt;"));
 		CONVERTERS.put(F.UndirectedEdge,
-				new MMLOperator(ASTNodeFactory.MMA_STYLE_FACTORY.get("UndirectedEdge").getPrecedence(), "&lt;-&gt;"));
+				new MMLOperator(Precedence.UNDIRECTEDEDGE, "&lt;-&gt;"));
 		CONVERTERS.put(F.Unequal,
-				new MMLOperator(ASTNodeFactory.MMA_STYLE_FACTORY.get("Unequal").getPrecedence(), "!="));
+				new MMLOperator(Precedence.UNEQUAL, "!="));
 		CONVERTERS.put(F.CenterDot,
-				new MMLOperator(ASTNodeFactory.MMA_STYLE_FACTORY.get("CenterDot").getPrecedence(), "&#183;"));
+				new MMLOperator(Precedence.CENTERDOT, "&#183;"));
 		CONVERTERS.put(F.CircleDot,
-				new MMLOperator(ASTNodeFactory.MMA_STYLE_FACTORY.get("CircleDot").getPrecedence(), "&#8857;"));
+				new MMLOperator(Precedence.CIRCLEDOT, "&#8857;"));
 	}
 }

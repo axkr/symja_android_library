@@ -1,51 +1,58 @@
 package org.matheclipse.core.reflection.system;
 
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.HashSet;
-
 import org.hipparchus.analysis.differentiation.DSFactory;
 import org.hipparchus.analysis.differentiation.FiniteDifferencesDifferentiator;
 import org.hipparchus.analysis.differentiation.UnivariateDifferentiableFunction;
-import org.hipparchus.complex.Complex;
-import org.matheclipse.core.builtin.Algebra;
+import org.hipparchus.exception.MathRuntimeException;
 import org.matheclipse.core.builtin.IOFunctions;
-import org.matheclipse.core.builtin.PolynomialFunctions;
-import org.matheclipse.core.builtin.functions.BesselJS;
 import org.matheclipse.core.eval.EvalEngine;
-import org.matheclipse.core.eval.exception.Validate;
 import org.matheclipse.core.eval.exception.ValidateException;
 import org.matheclipse.core.eval.interfaces.AbstractFunctionEvaluator;
 import org.matheclipse.core.expression.F;
-import org.matheclipse.core.generic.Predicates;
 import org.matheclipse.core.generic.UnaryNumerical;
 import org.matheclipse.core.interfaces.IAST;
-import org.matheclipse.core.interfaces.IASTAppendable;
 import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.interfaces.ISymbol;
-import org.matheclipse.core.polynomials.QuarticSolver;
 import org.matheclipse.parser.client.FEConfig;
 
 /**
- * <pre><code>ND(function, x, value)
- * </code></pre>
+ * <pre>
+ * <code>ND(function, x, value)
+ * </code>
+ * </pre>
+ * 
  * <blockquote>
- * <p>returns a numerical approximation of the partial derivative of the <code>function</code> for the variable <code>x</code> and the given <code>value</code>.</p>
+ * <p>
+ * returns a numerical approximation of the partial derivative of the <code>function</code> for the variable
+ * <code>x</code> and the given <code>value</code>.
+ * </p>
  * </blockquote>
- * <pre><code>ND(function, {x, n} , value)
- * </code></pre>
+ * 
+ * <pre>
+ * <code>ND(function, {x, n} , value)
+ * </code>
+ * </pre>
+ * 
  * <blockquote>
- * <p>returns a numerical approximation of the partial derivative of order <code>n</code>.</p>
+ * <p>
+ * returns a numerical approximation of the partial derivative of order <code>n</code>.
+ * </p>
  * </blockquote>
  * <h3>Examples</h3>
- * <pre><code>&gt;&gt; ND(BesselY(10.0,x), x, 1) 
+ * 
+ * <pre>
+ * <code>&gt;&gt; ND(BesselY(10.0,x), x, 1) 
  * 1.20940*10^9
  * 
  * &gt;&gt; ND(Cos(x)^3, {x,2}, 1) 
  * 1.82226
- * </code></pre>
+ * </code>
+ * </pre>
+ * 
  * <h3>Related terms</h3>
- * <p><a href="D.md">D</a>, <a href="Integrate.md">Integrate</a>, <a href="NIntegrate.md">NIntegrate</a></p>
+ * <p>
+ * <a href="D.md">D</a>, <a href="Integrate.md">Integrate</a>, <a href="NIntegrate.md">NIntegrate</a>
+ * </p>
  */
 public class ND extends AbstractFunctionEvaluator {
 
@@ -67,13 +74,16 @@ public class ND extends AbstractFunctionEvaluator {
 			} else if (arg2.isSymbol()) {
 				return partialDerivative(arg1, (ISymbol) arg2, 1, arg3, engine);
 			}
+		} catch (MathRuntimeException mrex) {
+			if (FEConfig.SHOW_STACKTRACE) {
+				mrex.printStackTrace();
+			}
+			return engine.printMessage(ast.topHead(), mrex);
 		} catch (ValidateException ve) {
 			if (FEConfig.SHOW_STACKTRACE) {
 				ve.printStackTrace();
 			}
-		} catch (RuntimeException rex) {
-			// rex.printStackTrace();
-			return engine.printMessage(ast.topHead() + ": " + rex.getMessage());
+			return engine.printMessage(ast.topHead(), ve);
 		}
 		return F.NIL;
 	}
@@ -94,14 +104,6 @@ public class ND extends AbstractFunctionEvaluator {
 			DSFactory factory = new DSFactory(1, order);
 			return F.num(f.value(factory.variable(0, a3Double)).getPartialDerivative(order));
 		}
-		// } catch (ValidateException ve) {
-		// if (Config.SHOW_STACKTRACE) {
-		// ve.printStackTrace();
-		// }
-		// } catch (RuntimeException rex) {
-		// // rex.printStackTrace();
-		// return engine.printMessage(ast.topHead() + ": " + rex.getMessage());
-		// }
 		return F.NIL;
 	}
 

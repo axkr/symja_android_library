@@ -7,8 +7,6 @@ import java.util.IdentityHashMap;
 import java.util.Map;
 import java.util.Set;
 import java.util.Stack;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
 import java.util.concurrent.atomic.AtomicLong;
 import java.util.function.DoubleUnaryOperator;
 import java.util.function.Predicate;
@@ -20,7 +18,6 @@ import org.matheclipse.core.builtin.IOFunctions;
 import org.matheclipse.core.builtin.Programming;
 import org.matheclipse.core.eval.exception.AbortException;
 import org.matheclipse.core.eval.exception.ArgumentTypeException;
-import org.matheclipse.core.eval.exception.IllegalArgument;
 import org.matheclipse.core.eval.exception.IterationLimitExceeded;
 import org.matheclipse.core.eval.exception.RecursionLimitExceeded;
 import org.matheclipse.core.eval.exception.TimeoutException;
@@ -29,7 +26,6 @@ import org.matheclipse.core.eval.interfaces.IFunctionEvaluator;
 import org.matheclipse.core.eval.util.IAssumptions;
 import org.matheclipse.core.expression.ASTRealMatrix;
 import org.matheclipse.core.expression.ASTRealVector;
-import org.matheclipse.core.expression.AbstractAST;
 import org.matheclipse.core.expression.ApcomplexNum;
 import org.matheclipse.core.expression.ApfloatNum;
 import org.matheclipse.core.expression.Context;
@@ -701,8 +697,6 @@ public class EvalEngine implements Serializable {
 
 					}
 				} catch (RuntimeException rex) {
-					// org.matheclipse.core.eval.exception.ComplexResultException
-					// may be thrown in applAsDouble()
 				}
 
 				if (arg1.isList()) {
@@ -889,7 +883,7 @@ public class EvalEngine implements Serializable {
 						return temp;
 					}
 				}
-			} else if (tempAST.isBooleanFormula() || tempAST.isComparatorFunction()) {
+			} else if (tempAST.isBooleanFunction() || tempAST.isComparatorFunction()) {
 				IExpr temp = tempAST.extractConditionalExpression(false);
 				if (temp.isPresent()) {
 					return temp;
@@ -2236,7 +2230,7 @@ public class EvalEngine implements Serializable {
 			stream.println(str);
 		}
 		if (fThrowError) {
-			throw new IllegalArgument(str);
+			throw new ArgumentTypeException(str);
 		}
 		return F.NIL;
 	}
@@ -2261,7 +2255,7 @@ public class EvalEngine implements Serializable {
 			}
 		}
 		if (fThrowError) {
-			throw new IllegalArgument(message);
+			throw new ArgumentTypeException(message);
 		}
 		return F.NIL;
 	}

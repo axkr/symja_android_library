@@ -84,14 +84,15 @@ public abstract class AbstractMatrix1Matrix extends AbstractFunctionEvaluator {
 
 			}
 			return F.NIL;
-		} catch (final IndexOutOfBoundsException e) {
+		} catch (final RuntimeException rex) {
 			if (FEConfig.SHOW_STACKTRACE) {
-				e.printStackTrace();
+				rex.printStackTrace();
 			}
+			return engine.printMessage(ast.topHead(), rex);
 		} finally {
 			engine.setTogetherMode(togetherMode);
 		}
-		return evaluate(ast, engine);
+//		return evaluate(ast, engine);
 	}
 
 	/**

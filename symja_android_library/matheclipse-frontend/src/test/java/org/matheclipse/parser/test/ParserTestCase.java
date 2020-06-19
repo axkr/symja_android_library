@@ -632,13 +632,25 @@ public class ParserTestCase extends TestCase {
 			assertEquals("", e.getMessage());
 		}
 	}
-	
+
 	public void testParser46() {
 		try {
 			Parser p = new Parser();
 			ASTNode obj = p.parse("{a,b,c}[x] ");
 			assertEquals(obj.toString(), //
 					"List(a, b, c)[x]");
+		} catch (Exception e) {
+			e.printStackTrace();
+			assertEquals("", e.getMessage());
+		}
+	}
+	
+	public void testParser47() {
+		try {
+			Parser p = new Parser();
+			ASTNode obj = p.parse("123456789012345678901234567890");
+			assertEquals(obj.toString(), //
+					"123456789012345678901234567890");
 		} catch (Exception e) {
 			e.printStackTrace();
 			assertEquals("", e.getMessage());

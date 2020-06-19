@@ -62,11 +62,6 @@ public class SimpleUnitSystem implements UnitSystem {
 			for (Entry<String, IExpr> entry : quantity.unit().map().entrySet()) {
 				IExpr lookup = map.get(entry.getKey());
 				IExpr entryValue = entry.getValue();
-				// if (entryValue.isOne()) {
-				// value = Objects.isNull(lookup) //
-				// ? IQuantity.of(F.C1, format(entry)) //
-				// :lookup;
-				// } else {
 				IExpr temp = Objects.isNull(lookup) //
 						? IQuantity.of(F.C1, format(entry)) //
 						: lookup.isQuantity()//
@@ -77,7 +72,6 @@ public class SimpleUnitSystem implements UnitSystem {
 				} else {
 					value = value.times(temp);
 				}
-				// }
 			}
 			return value;
 		}
@@ -91,12 +85,14 @@ public class SimpleUnitSystem implements UnitSystem {
 
 	// helper function
 	private static IExpr requireNumeric(IExpr scalar) {
-		if (scalar instanceof IStringX)
+		if (scalar instanceof IStringX) {
 			throw MathException.of(scalar);
+		}
 		if (scalar instanceof IQuantity) {
 			IQuantity quantity = (IQuantity) scalar;
-			if (quantity.value() instanceof IStringX)
+			if (quantity.value() instanceof IStringX) {
 				throw MathException.of(scalar);
+			}
 		}
 		return scalar;
 	}

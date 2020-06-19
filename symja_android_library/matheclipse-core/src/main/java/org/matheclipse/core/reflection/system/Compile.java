@@ -75,9 +75,7 @@ public class Compile extends AbstractCoreFunctionEvaluator {
 			// org.matheclipse.core.eval.exception.Validate.checkIsVariableOrVariableList( )
 			return engine.printMessage(ast.topHead(), ve);
 		} catch (Exception rex) {
-			if (FEConfig.SHOW_STACKTRACE) {
-				rex.printStackTrace();
-			}
+			rex.printStackTrace();
 			return engine.printMessage("Compile: " + rex.getMessage());
 		}
 	}

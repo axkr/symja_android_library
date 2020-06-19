@@ -197,7 +197,7 @@ public class PatternMatcherAndEvaluator extends PatternMatcher implements Extern
 	 * Check if the condition for the right-hand-sides <code>Module[], With[] or Condition[]</code> expressions
 	 * evaluates to <code>true</code>.
 	 * 
-	 * @return <code>true</code> if the right-hand-sides condition is fulfilled.
+	 * @return <code>true</code> if the right-hand-sides condition is fulfilled or not all patterns are assigned.
 	 */
 	@Override
 	public boolean checkRHSCondition(EvalEngine engine) {
@@ -206,7 +206,7 @@ public class PatternMatcherAndEvaluator extends PatternMatcher implements Extern
 			return true;
 		}
 
-		if (!(fRightHandSide.isModule() || fRightHandSide.isWith() || fRightHandSide.isCondition())) {
+		if (!(fRightHandSide.isCondition() || fRightHandSide.isModule() || fRightHandSide.isWith())) {
 			return true;
 		} else {
 			if (!patternMap.isAllPatternsAssigned()) {

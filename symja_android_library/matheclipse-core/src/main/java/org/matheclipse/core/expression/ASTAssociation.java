@@ -7,6 +7,8 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
+import java.util.Map;
+import java.util.function.Function;
 import java.util.function.Predicate;
 import java.util.function.Supplier;
 
@@ -182,6 +184,26 @@ public class ASTAssociation extends AST implements IAssociation {
 	/** {@inheritDoc} */
 	@Override
 	public IExpr evaluate(EvalEngine engine) {
+		if (isEvalFlagOff(IAST.BUILT_IN_EVALED)) {
+			addEvalFlags(IAST.BUILT_IN_EVALED);
+			ASTAssociation result = null;
+			for (Object2IntMap.Entry<IExpr> element : map.object2IntEntrySet()) {
+				int value = element.getIntValue();
+				if (value > 0) {
+					// for Rules eval rhs / for RuleDelayed don't
+					IExpr temp = engine.evaluateNull(get(value));
+					if (temp.isPresent()) {
+						if (result == null) {
+							result = copy();
+						}
+						result.set(value, temp);
+					}
+				}
+			}
+			if (result != null) {
+				return result;
+			}
+		}
 		return F.NIL;
 	}
 
@@ -458,7 +480,7 @@ public class ASTAssociation extends AST implements IAssociation {
 	public IAssociation sort() {
 		return sort(null);
 	}
-	
+
 	@Override
 	public IAssociation sort(Comparator<IExpr> comp) {
 		List<Integer> indices = new ArrayList<Integer>(argSize());

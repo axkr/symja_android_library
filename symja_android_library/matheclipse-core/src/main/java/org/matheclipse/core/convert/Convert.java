@@ -325,7 +325,8 @@ public class Convert {
 			}
 		}
 		if (matrixFormat) {
-			out.addEvalFlags(IAST.IS_MATRIX);
+			// because the rows can contain sub lists the IAST.IS_MATRIX flag cannot be set directly. isMatrix() must be used!
+			out.isMatrix(true);
 		}
 		return out;
 	}
@@ -375,7 +376,8 @@ public class Convert {
 			}
 		}
 		if (matrixFormat) {
-			out.addEvalFlags(IAST.IS_MATRIX);
+			// because the rows can contain sub lists the IAST.IS_MATRIX flag cannot be set directly. isMatrix() must be used!
+			out.isMatrix(true);
 		}
 		return out;
 	}
@@ -516,7 +518,8 @@ public class Convert {
 				}
 				list.append(row);
 			}
-			list.addEvalFlags(IAST.IS_MATRIX);
+			// because the rows can contain sub lists the IAST.IS_MATRIX flag cannot be set directly. isMatrix() must be used!
+			list.isMatrix(true);
 			return list;
 		} catch (final Exception ex) {
 		}

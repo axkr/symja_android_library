@@ -59,7 +59,7 @@ public class VisitorBooleanLevelSpecification extends AbstractVisitorBoolean {
 	 *            the given <i>level specification</i>
 	 * @param includeHeads
 	 *            set to <code>true</code>, if the header of an AST expression should be included
-	 * @throws MathException
+	 * @throws SymjaMathException
 	 *             if the <code>expr</code> is not a <i>level specification</i>
 	 */
 	public VisitorBooleanLevelSpecification(final Predicate<IExpr> function, final IExpr unevaledLevelExpr,

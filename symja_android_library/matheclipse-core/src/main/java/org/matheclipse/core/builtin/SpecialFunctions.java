@@ -111,8 +111,8 @@ public class SpecialFunctions {
 				IExpr z = ast.arg1();
 				IExpr a = ast.arg2();
 				IExpr b = ast.arg3();
-				if (engine.isDoubleMode()) {
-					try {
+				try {
+					if (engine.isDoubleMode()) {
 						double aDouble = Double.NaN;
 						double bDouble = Double.NaN;
 						double zDouble = Double.NaN;
@@ -132,37 +132,37 @@ public class SpecialFunctions {
 						} else {
 							return GammaJS.incompleteBeta(zDouble, aDouble, bDouble);
 						}
-					} catch (ThrowException te) {
-						if (FEConfig.SHOW_STACKTRACE) {
-							te.printStackTrace();
-						}
-						return te.getValue();
-					} catch (ValidateException ve) {
-						if (FEConfig.SHOW_STACKTRACE) {
-							ve.printStackTrace();
-						}
-					} catch (RuntimeException rex) {
-						// rex.printStackTrace();
-						return engine.printMessage(ast.topHead() + ": " + rex.getMessage());
 					}
-				}
 
-				int bInt = b.toIntDefault();
-				if (bInt > 0) {
-					IInteger n = F.ZZ(bInt);
-					if (a.isOne()) {
-						return
-						// [$ ( (1/n)*(1 - (1 - z)^n) ) $]
-						F.Times(F.Power(n, F.CN1), F.Subtract(F.C1, F.Power(F.Subtract(F.C1, z), n))); // $$;
+					int bInt = b.toIntDefault();
+					if (bInt > 0) {
+						IInteger n = F.ZZ(bInt);
+						if (a.isOne()) {
+							return
+							// [$ ( (1/n)*(1 - (1 - z)^n) ) $]
+							F.Times(F.Power(n, F.CN1), F.Subtract(F.C1, F.Power(F.Subtract(F.C1, z), n))); // $$;
+						}
+						// if (bInt <= 1) {
+						// ISymbol k = F.Dummy("k");
+						// return
+						// // [$ (Beta(a,n)*z^a*Sum((Pochhammer(a, k)*(1-z)^k)/k!, {k, 0, n - 1})) $]
+						// F.Times(F.Beta(a, n), F.Power(z, a),
+						// F.Sum(F.Times(F.Power(F.Subtract(F.C1, z), k), F.Power(F.Factorial(k), F.CN1),
+						// F.Pochhammer(a, k)), F.List(k, F.C0, F.Plus(F.CN1, n)))); // $$;
+						// }
 					}
-					// if (bInt <= 1) {
-					// ISymbol k = F.Dummy("k");
-					// return
-					// // [$ (Beta(a,n)*z^a*Sum((Pochhammer(a, k)*(1-z)^k)/k!, {k, 0, n - 1})) $]
-					// F.Times(F.Beta(a, n), F.Power(z, a),
-					// F.Sum(F.Times(F.Power(F.Subtract(F.C1, z), k), F.Power(F.Factorial(k), F.CN1),
-					// F.Pochhammer(a, k)), F.List(k, F.C0, F.Plus(F.CN1, n)))); // $$;
-					// }
+				} catch (ThrowException te) {
+					if (FEConfig.SHOW_STACKTRACE) {
+						te.printStackTrace();
+					}
+					return te.getValue();
+				} catch (ValidateException ve) {
+					if (FEConfig.SHOW_STACKTRACE) {
+						ve.printStackTrace();
+					}
+				} catch (RuntimeException rex) {
+					// rex.printStackTrace();
+					return engine.printMessage(ast.topHead() + ": " + rex.getMessage());
 				}
 				return F.NIL;
 			}
@@ -171,8 +171,9 @@ public class SpecialFunctions {
 			if (a.isZero() || b.isZero()) {
 				return F.CComplexInfinity;
 			}
-			if (engine.isDoubleMode()) {
-				try {
+			try {
+				if (engine.isDoubleMode()) {
+
 					double aDouble = Double.NaN;
 					double bDouble = Double.NaN;
 					try {
@@ -189,36 +190,37 @@ public class SpecialFunctions {
 					} else {
 						return F.num(GammaJS.beta(aDouble, bDouble));
 					}
-				} catch (ThrowException te) {
-					if (FEConfig.SHOW_STACKTRACE) {
-						te.printStackTrace();
-					}
-					return te.getValue();
-				} catch (ValidateException ve) {
-					if (FEConfig.SHOW_STACKTRACE) {
-						ve.printStackTrace();
-					}
-				} catch (RuntimeException rex) {
-					// rex.printStackTrace();
-					return engine.printMessage(ast.topHead() + ": " + rex.getMessage());
+
 				}
-			}
-			if (a.isNumber() && b.isNumber()) {
-				if (a.isInteger() && a.isPositive() && b.isInteger() && b.isPositive()) {
-					// http://fungrim.org/entry/082a69/
-					return Times(Factorial(Plus(CN1, a)), Factorial(Plus(CN1, b)),
-							Power(Factorial(Plus(CN1, a, b)), -1));
+				if (a.isNumber() && b.isNumber()) {
+					if (a.isInteger() && a.isPositive() && b.isInteger() && b.isPositive()) {
+						// http://fungrim.org/entry/082a69/
+						return Times(Factorial(Plus(CN1, a)), Factorial(Plus(CN1, b)),
+								Power(Factorial(Plus(CN1, a, b)), -1));
+					}
+					// http://fungrim.org/entry/888581/
+					return F.Times(F.Gamma(a), F.Gamma(b), F.Power(F.Gamma(F.Plus(a, b)), -1));
 				}
-				// http://fungrim.org/entry/888581/
-				return F.Times(F.Gamma(a), F.Gamma(b), F.Power(F.Gamma(F.Plus(a, b)), -1));
-			}
-			IExpr s = a.inc().subtract(b);
-			if (s.isZero()) {
-				return F.Power(F.Times(a, b, F.CatalanNumber(a)), -1);
-			}
-			IExpr sum = a.plus(b);
-			if (sum.isInteger() && sum.isNegative()) {
-				return F.C0;
+				IExpr s = a.inc().subtract(b);
+				if (s.isZero()) {
+					return F.Power(F.Times(a, b, F.CatalanNumber(a)), -1);
+				}
+				IExpr sum = a.plus(b);
+				if (sum.isInteger() && sum.isNegative()) {
+					return F.C0;
+				}
+			} catch (ThrowException te) {
+				if (FEConfig.SHOW_STACKTRACE) {
+					te.printStackTrace();
+				}
+				return te.getValue();
+			} catch (ValidateException ve) {
+				if (FEConfig.SHOW_STACKTRACE) {
+					ve.printStackTrace();
+				}
+			} catch (RuntimeException rex) {
+				// rex.printStackTrace();
+				return engine.printMessage(ast.topHead() + ": " + rex.getMessage());
 			}
 			return F.NIL;
 		}

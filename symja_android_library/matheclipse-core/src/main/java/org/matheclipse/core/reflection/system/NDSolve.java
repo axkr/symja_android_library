@@ -138,7 +138,6 @@ public class NDSolve extends AbstractFunctionEvaluator {
 							}
 							resultList.append(list);
 						}
-						resultList.setEvalFlags(IAST.IS_MATRIX);
 						return result;
 
 					}

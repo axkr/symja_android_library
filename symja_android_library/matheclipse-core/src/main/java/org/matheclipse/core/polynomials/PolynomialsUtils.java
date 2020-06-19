@@ -21,6 +21,8 @@ import org.hipparchus.util.FastMath;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.matheclipse.core.basic.Config;
+import org.matheclipse.core.eval.exception.ASTElementLimitExceeded;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IASTAppendable;
@@ -216,7 +218,7 @@ public class PolynomialsUtils {
 			final RecurrenceCoefficientsGenerator generator) {
 		// do allocation at start to test limits
 		IASTAppendable result = F.PlusAlloc(degree + 1);
-		
+
 		final int maxDegree = (int) FastMath.floor(FastMath.sqrt(2.0 * coefficients.size())) - 1;
 		synchronized (PolynomialsUtils.class) {
 			if (degree > maxDegree) {
@@ -234,7 +236,7 @@ public class PolynomialsUtils {
 		// ...
 		final int start = degree * (degree + 1) / 2;
 		return result.appendArgs(0, degree + 1,
-				i -> F.Times(F.fraction(coefficients.get(start + i)), F.Power(x, F.ZZ(i)))); 
+				i -> F.Times(F.fraction(coefficients.get(start + i)), F.Power(x, F.ZZ(i))));
 
 	}
 
@@ -275,6 +277,9 @@ public class PolynomialsUtils {
 				ck = coefficients.get(startK + i);
 				ckm1 = coefficients.get(startKm1 + i);
 				coefficients.add(ck.multiply(ai[0]).add(ckPrev.multiply(ai[1])).subtract(ckm1.multiply(ai[2])));
+				if (coefficients.size() > Config.MAX_AST_SIZE) {
+					ASTElementLimitExceeded.throwIt(coefficients.size());
+				}
 			}
 
 			// degree k coefficient
@@ -284,7 +289,9 @@ public class PolynomialsUtils {
 
 			// degree k+1 coefficient
 			coefficients.add(ck.multiply(ai[1]));
-
+			if (coefficients.size() > Config.MAX_AST_SIZE) {
+				ASTElementLimitExceeded.throwIt(coefficients.size());
+			}
 		}
 
 	}

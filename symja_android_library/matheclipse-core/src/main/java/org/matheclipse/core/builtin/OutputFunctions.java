@@ -447,9 +447,9 @@ public final class OutputFunctions {
 						}
 					}
 				} catch (Exception ex) {
-//					if (FEConfig.SHOW_STACKTRACE) {
+					if (FEConfig.SHOW_STACKTRACE) {
 						ex.printStackTrace();
-//					}
+					}
 				}
 			}
 			return F.NIL;
@@ -781,10 +781,72 @@ public final class OutputFunctions {
 		return buf.toString();
 	}
 
+	public static boolean markdownTable(StringBuilder result, IExpr expr,
+			java.util.function.Function<IExpr, String> function, boolean fillUpWithSPACE) {
+		int[] dim = expr.isMatrix();
+		if (dim != null && dim[0] > 0 && dim[1] > 0) {
+			IAST matrix = (IAST) expr;
+			int rowDimension = dim[0];
+			int columnDimension = dim[1];
+			// int[] columnSizes = new int[columnDimension];
+			String[][] texts = new String[rowDimension][columnDimension];
+			for (int i = 0; i < rowDimension; i++) {
+				for (int j = 0; j < columnDimension; j++) {
+					final String str = function.apply(matrix.getPart(i + 1, j + 1));
+					texts[i][j] = str;
+					// if (str.length() > columnSizes[j]) {
+					// columnSizes[j] = str.length();
+					// }
+				}
+			}
+
+			StringBuilder[] sb = new StringBuilder[rowDimension];
+			for (int j = 0; j < rowDimension; j++) {
+				sb[j] = new StringBuilder();
+			}
+			int rowLength = 0;
+
+			for (int i = 0; i < columnDimension; i++) {
+				int columnLength = 0;
+				for (int j = 0; j < rowDimension; j++) {
+					String str = texts[j][i];
+					if (str.length() > columnLength) {
+						columnLength = str.length();
+					}
+					sb[j].append('|');
+					sb[j].append(str);
+				}
+				if (i < columnDimension - 1) {
+					rowLength += columnLength + 1;
+				} else {
+					rowLength += columnLength;
+				}
+				if (fillUpWithSPACE) {
+					for (int j = 0; j < rowDimension; j++) {
+						int rest = rowLength - sb[j].length();
+						for (int k = 0; k < rest; k++) {
+							sb[j].append(' ');
+						}
+					}
+				}
+			}
+
+			for (int i = 0; i < rowDimension; i++) {
+				result.append(sb[i]);
+				result.append("|");
+				if (i < rowDimension - 1) {
+					result.append("\n");
+				}
+			}
+			return true;
+		}
+		return false;
+	}
+
 	public static boolean plaintextTable(StringBuilder result, IExpr expr, String delimiter,
 			java.util.function.Function<IExpr, String> function, boolean fillUpWithSPACE) {
 		int[] dim = expr.isMatrix();
-		if (dim != null) {
+		if (dim != null && dim[0] > 0 && dim[1] > 0) {
 			IAST matrix = (IAST) expr;
 			int rowDimension = dim[0];
 			int columnDimension = dim[1];

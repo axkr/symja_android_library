@@ -10,6 +10,7 @@ import org.matheclipse.core.interfaces.IFraction;
 import org.matheclipse.core.interfaces.ISignedNumber;
 import org.matheclipse.core.interfaces.ISymbol;
 import org.matheclipse.parser.client.operator.ASTNodeFactory;
+import org.matheclipse.parser.client.operator.Precedence;
 
 /**
  * ASCII pretty printer which tries to create a pretty printer ASCII form on 3 lines.
@@ -117,14 +118,14 @@ public class ASCIIPrettyPrinter3 {
 
 	private void convert(final IExpr expr, final int precedence, boolean caller) {
 		if (expr.isPlus()) {
-			if (ASTNodeFactory.PLUS_PRECEDENCE < precedence) {
+			if (Precedence.PLUS < precedence) {
 				print(" ( ");
 			}
 			IAST plus = (IAST) expr;
 			for (int i = 1; i < plus.size(); i++) {
-				convert(plus.get(i), ASTNodeFactory.PLUS_PRECEDENCE, (i == 1) ? NO_PLUS_CALL : PLUS_CALL);
+				convert(plus.get(i), Precedence.PLUS, (i == 1) ? NO_PLUS_CALL : PLUS_CALL);
 			}
-			if (ASTNodeFactory.PLUS_PRECEDENCE < precedence) {
+			if (Precedence.PLUS < precedence) {
 				print(" ) ");
 			}
 		} else if (expr.isTimes()) {
@@ -174,7 +175,7 @@ public class ASCIIPrettyPrinter3 {
 		IExpr arg1 = times.arg1();
 
 		if (arg1.isReal()) {
-			if (ASTNodeFactory.TIMES_PRECEDENCE < precedence) {
+			if (Precedence.TIMES  < precedence) {
 				print(" ( ");
 			}
 			if (arg1.isMinusOne()) {
@@ -189,19 +190,19 @@ public class ASCIIPrettyPrinter3 {
 			if (timesExpr.isTimes()) {
 				times = (IAST) timesExpr;
 			} else {
-				convert(timesExpr, ASTNodeFactory.TIMES_PRECEDENCE, NO_PLUS_CALL);
+				convert(timesExpr, Precedence.TIMES , NO_PLUS_CALL);
 				return;
 			}
 		} else {
 			if (caller == PLUS_CALL) {
 				print(" + ");
 			}
-			if (ASTNodeFactory.TIMES_PRECEDENCE < precedence) {
+			if (Precedence.TIMES  < precedence) {
 				print(" ( ");
 			}
 		}
-		convertTimesPowerFraction(times, ASTNodeFactory.TIMES_PRECEDENCE);
-		if (ASTNodeFactory.TIMES_PRECEDENCE < precedence) {
+		convertTimesPowerFraction(times, Precedence.TIMES );
+		if (Precedence.TIMES < precedence) {
 			print(" ) ");
 		}
 	}
