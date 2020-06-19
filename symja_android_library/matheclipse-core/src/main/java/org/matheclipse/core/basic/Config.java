@@ -66,6 +66,11 @@ public class Config {
 	public static final int MAX_SIMPLIFY_TOGETHER_LEAFCOUNT = 65;
 
 	/**
+	 * Maximum number of parsed input leaves of an expression
+	 */
+	public static long MAX_INPUT_LEAVES = Long.MAX_VALUE;
+	
+	/**
 	 * Maximum output size in characters for an output form (i.e. TeXForm, MathMLForm,...I)
 	 */
 	public static int MAX_OUTPUT_SIZE = Integer.MAX_VALUE;
@@ -75,6 +80,11 @@ public class Config {
 	 */
 	public static int MAX_AST_SIZE = Integer.MAX_VALUE;
 
+	/**
+	 * Maximum number of row or column dimension allowed if creating a new matrix or vector
+	 */
+	public static int MAX_MATRIX_DIMENSION_SIZE = Integer.MAX_VALUE;
+	
 	/**
 	 * Maximum number of elements which could be allocated for a BigInteger number
 	 */
@@ -125,7 +135,7 @@ public class Config {
 	public final static boolean FUZZ_TESTING = false;
 
 	/**
-	 * Set to true ifthe fuzzy parser should be used in the fre form API
+	 * Set to true if the fuzzy parser should be used in the free form Symja API
 	 * 
 	 */
 	public static boolean FUZZY_PARSER = false;
@@ -494,7 +504,7 @@ public class Config {
 					"</head>\n" + //
 					"\n" + //
 					"<body>\n" + //
-					"<script src=\"https://cdn.jsdelivr.net/gh/paulmasson/math@1.2.8/build/math.js\"></script>" + //
+					"<script src=\"https://cdn.jsdelivr.net/gh/paulmasson/math@1.2.9/build/math.js\"></script>" + //
 					"\n" + //
 					"\n" + //
 					"<script src=\"https://cdn.jsdelivr.net/gh/paulmasson/mathcell@1.8.8/build/mathcell.js\"></script>\n"
@@ -534,7 +544,7 @@ public class Config {
 					"\n" + //
 					"<link rel=\"stylesheet\" type=\"text/css\" href=\"https://cdnjs.cloudflare.com/ajax/libs/jsxgraph/0.99.7/jsxgraph.css\" />\n"
 					+ //
-					"<script src=\"https://cdn.jsdelivr.net/gh/paulmasson/math@1.2.8/build/math.js\"></script>\n"
+					"<script src=\"https://cdn.jsdelivr.net/gh/paulmasson/math@1.2.9/build/math.js\"></script>\n"
 					+ "<script src=\"https://cdnjs.cloudflare.com/ajax/libs/jsxgraph/0.99.7/jsxgraphcore.js\"\n" + //
 					"        type='text/javascript'></script>\n" + //
 					"<script src=\"https://cdnjs.cloudflare.com/ajax/libs/jsxgraph/0.99.7/geonext.min.js\"\n" + //
