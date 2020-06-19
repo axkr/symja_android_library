@@ -1,15 +1,15 @@
 ## NRoots
 
 ```
-NRoots(poly)
+NRoots(polynomial==0)
 ```
 
-> gives the numerical roots of polynomial `poly`.
+> gives the numerical roots of a univariate polynomial `polynomial`.
 
 ### Examples
 
 ```
->> NRoots(x^3-4*x^2+x+6)
+>> NRoots(x^3-4*x^2+x+6==0)
 {2.9999999999999996,-1.0000000000000002,1.9999999999999998}
 ```
 
