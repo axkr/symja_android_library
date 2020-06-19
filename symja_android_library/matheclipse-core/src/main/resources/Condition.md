@@ -1,4 +1,4 @@
-## ConditionalExpression
+## Condition
 
 ```
 Condition(pattern, expr)
