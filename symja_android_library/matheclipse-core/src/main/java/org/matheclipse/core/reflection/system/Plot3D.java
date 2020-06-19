@@ -142,17 +142,11 @@ public class Plot3D extends AbstractEvaluator {
 		for (int i = 0; i < NUMBER_OF_DIVISIONS; i++) {
 			y = yMin;
 			for (int j = 0; j < NUMBER_OF_DIVISIONS; j++) {
-				try {
-					z = hbn.value(x, y);
-					// if (Double.isNaN(z)) {
-					// TODO
-					// }
-				} catch (final Throwable se) {
-					z = Double.NaN;
-				}
-
+				z = hbn.value(x, y);
+				// if (Double.isNaN(z)) {
+				// TODO
+				// }
 				data[i][j] = z;
-
 				y += yStep;
 
 			}
