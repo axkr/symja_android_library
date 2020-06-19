@@ -6,26 +6,15 @@ import java.io.ObjectInput;
 import java.io.ObjectOutput;
 import java.io.ObjectStreamException;
 import java.util.Objects;
-import java.util.Set;
 
-import org.hipparchus.complex.Complex;
-import org.matheclipse.core.builtin.functions.GammaJS;
 import org.matheclipse.core.eval.EvalEngine;
-import org.matheclipse.core.eval.exception.ThrowException;
-import org.matheclipse.core.eval.exception.ValidateException;
-import org.matheclipse.core.expression.AST;
-import org.matheclipse.core.expression.AbstractAST;
-import org.matheclipse.core.expression.ExprID;
+import org.matheclipse.core.expression.DataExpr;
 import org.matheclipse.core.expression.F;
-import org.matheclipse.core.interfaces.IAST;
-import org.matheclipse.core.interfaces.IASTAppendable;
-import org.matheclipse.core.interfaces.IASTMutable;
 import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.interfaces.INumber;
-import org.matheclipse.parser.client.FEConfig;
 import org.matheclipse.parser.client.math.MathException;
 
-public class QuantityImpl extends AbstractAST implements IQuantity, Externalizable {
+public class QuantityImpl extends DataExpr<IUnit> implements IQuantity, Externalizable {
 	/**
 	 * @param value
 	 *            is assumed to be not instance of {@link IQuantity}
@@ -33,22 +22,19 @@ public class QuantityImpl extends AbstractAST implements IQuantity, Externalizab
 	 * @return
 	 */
 	/* package */ static IExpr of(IExpr value, IUnit unit) {
-		return IUnit.ONE.equals(unit) ? value : new QuantityImpl(value, null, unit);
+		return IUnit.ONE.equals(unit) ? value : new QuantityImpl(value, unit);
 	}
 
 	private IExpr arg1;
 
-	private String unitString;
-	private IUnit unit; // not Unit.ONE
-
 	public QuantityImpl() {
-
+		super(F.Quantity, null);
 	}
 
-	/* package */ QuantityImpl(IExpr value, String unitString, IUnit unit) {
+	/* package */ QuantityImpl(IExpr value, IUnit unit) {
+		super(F.Quantity, unit);
 		this.arg1 = value;
-		this.unitString = unitString;
-		this.unit = unit;
+		this.fData = unit;
 	}
 
 	@Override
@@ -59,7 +45,7 @@ public class QuantityImpl extends AbstractAST implements IQuantity, Externalizab
 	public IExpr arcTan(IExpr x) {
 		if (x instanceof IQuantity) {
 			IQuantity quantity = (IQuantity) x;
-			if (unit.equals(quantity.unit()))
+			if (fData.equals(quantity.unit()))
 				return F.ArcTan.of(quantity.value(), arg1);
 		}
 		throw MathException.of(x, this);
@@ -69,42 +55,9 @@ public class QuantityImpl extends AbstractAST implements IQuantity, Externalizab
 		return F.Arg.of(arg1);
 	}
 
-	@Override
-	public IExpr arg1() {
-		return arg1;
-	}
-
-	@Override
-	public IExpr arg2() {
-		return F.stringx(unit.toString());
-	}
-
-	@Override
-	public IExpr arg3() {
-		throw new UnsupportedOperationException();
-	}
-
-	@Override
-	public IExpr arg4() {
-		throw new UnsupportedOperationException();
-	}
-
-	@Override
-	public IExpr arg5() {
-		throw new UnsupportedOperationException();
-	}
-
-	// public Number number() {
-	// return value.number();
-	// }
-
-	// public IExpr zero() {
-	// return ofUnit(value.zero());
-	// }
-
-	@Override
-	public Set<IExpr> asSet() {
-		throw new UnsupportedOperationException();
+	// @Override
+	public String unitString() {
+		return fData.toString();
 	}
 
 	public IExpr ceiling() {
@@ -112,15 +65,10 @@ public class QuantityImpl extends AbstractAST implements IQuantity, Externalizab
 	}
 
 	@Override
-	public IAST clone() throws CloneNotSupportedException {
-		return new QuantityImpl(arg1, unitString, unit);
-	}
-
-	@Override
 	public int compareTo(IExpr scalar) {
 		if (scalar instanceof IQuantity) {
 			IQuantity quantity = (IQuantity) scalar;
-			if (unit.equals(quantity.unit())) {
+			if (fData.equals(quantity.unit())) {
 				return arg1.compareTo(quantity.value());
 			}
 		}
@@ -134,42 +82,24 @@ public class QuantityImpl extends AbstractAST implements IQuantity, Externalizab
 
 	/** {@inheritDoc} */
 	@Override
-	public IASTMutable copy() {
-		return new QuantityImpl(arg1, unitString, unit);
-	}
-
-	@Override
-	public IASTAppendable copyAppendable() {
-		return F.NIL;
-	}
-
-	@Override
-	public IASTAppendable copyAppendable(int additionalCapacity) {
-		return F.NIL;
+	public IExpr copy() {
+		return new QuantityImpl(arg1, fData);
 	}
 
 	@Override
 	public IExpr divide(IExpr scalar) {
 		if (scalar instanceof IQuantity) {
 			IQuantity quantity = (IQuantity) scalar;
-			return of(arg1.divide(quantity.value()), unit.add(quantity.unit().negate()));
+			return of(arg1.divide(quantity.value()), fData.add(quantity.unit().negate()));
 		}
 		return ofUnit(arg1.divide(scalar));
 	}
-
-	// public IExpr under(IExpr scalar) {
-	// if (scalar instanceof IQuantity) {
-	// IQuantity quantity = (IQuantity) scalar;
-	// return of(arg1.under(quantity.value()), unit.negate().add(quantity.unit()));
-	// }
-	// return new QuantityImpl(arg1.under(scalar), unit.negate());
-	// }
 
 	@Override
 	public boolean equals(Object object) {
 		if (object instanceof IQuantity) {
 			IQuantity quantity = (IQuantity) object;
-			return arg1.equals(quantity.value()) && unit.equals(quantity.unit()); // 2[kg] == 2[kg]
+			return arg1.equals(quantity.value()) && fData.equals(quantity.unit()); // 2[kg] == 2[kg]
 		}
 		return false;
 	}
@@ -181,7 +111,7 @@ public class QuantityImpl extends AbstractAST implements IQuantity, Externalizab
 				!arg1.isInexactNumber()) {
 			try {
 				double qDouble = arg1.evalDouble();
-				return setAtCopy(1, F.num(qDouble));
+				return new QuantityImpl(F.num(qDouble), fData);// setAtCopy(1, F.num(qDouble));
 			} catch (RuntimeException rex) {
 			}
 		}
@@ -194,38 +124,8 @@ public class QuantityImpl extends AbstractAST implements IQuantity, Externalizab
 	}
 
 	@Override
-	public IExpr get(int location) {
-		if (location >= 0 && location <= 2) {
-			switch (location) {
-			case 0:
-				return head();
-			case 1:
-				// x
-				return arg1();
-			case 2:
-				// x0
-				return arg2();
-			}
-		}
-		throw new IndexOutOfBoundsException("Index: " + Integer.valueOf(location) + ", Size: 1");
-	}
-
-	@Override
-	public IAST getItems(int[] items, int length) {
-		if (length == 0) {
-			return this;
-		}
-		throw new IndexOutOfBoundsException("Index: " + items[0]);
-	}
-
-	@Override
 	public int hashCode() {
-		return Objects.hash(arg1, unit);
-	}
-
-	@Override
-	public IExpr head() {
-		return F.Quantity;
+		return Objects.hash(arg1, fData);
 	}
 
 	/** {@inheritDoc} */
@@ -291,7 +191,7 @@ public class QuantityImpl extends AbstractAST implements IQuantity, Externalizab
 	public boolean isNonNegativeResult() {
 		return arg1.isNonNegativeResult();
 	}
-	
+
 	/** {@inheritDoc} */
 	@Override
 	public boolean isNumericFunction() {
@@ -300,27 +200,15 @@ public class QuantityImpl extends AbstractAST implements IQuantity, Externalizab
 
 	/** {@inheritDoc} */
 	@Override
-	public boolean isInexactNumber()  {
-		return arg1.isInexactNumber();
+	public boolean isInexactNumber() {
+		return false;
 	}
-	
+
 	/** {@inheritDoc} */
 	@Override
 	public boolean isOne() {
 		return false;// arg1.isOne();
 	}
-
-	// @Override
-	// public IExpr n(MathContext mathContext) {
-	// N n = N.in(mathContext.getPrecision());
-	// return ofUnit(n.apply(value));
-	// }
-
-	// @Override
-	// public int signInt() {
-	// SignInterface signInterface = (SignInterface) value;
-	// return signInterface.signInt();
-	// }
 
 	/** {@inheritDoc} */
 	@Override
@@ -333,16 +221,6 @@ public class QuantityImpl extends AbstractAST implements IQuantity, Externalizab
 	public boolean isPositiveResult() {
 		return arg1.isPositiveResult();
 	}
-
-	// @Override
-	// public int compareTo(IExpr scalar) {
-	// if (scalar instanceof IQuantity) {
-	// IQuantity quantity = (IQuantity) scalar;
-	// if (unit.equals(quantity.unit()))
-	// return Scalars.compare(value, quantity.value());
-	// }
-	// throw MathException.of(this, scalar);
-	// }
 
 	@Override
 	public boolean isQuantity() {
@@ -359,7 +237,7 @@ public class QuantityImpl extends AbstractAST implements IQuantity, Externalizab
 	public IExpr times(IExpr scalar) {
 		if (scalar instanceof IQuantity) {
 			IQuantity quantity = (IQuantity) scalar;
-			return of(arg1.times(quantity.value()), unit.add(quantity.unit()));
+			return of(arg1.times(quantity.value()), fData.add(quantity.unit()));
 		}
 		return ofUnit(arg1.times(scalar));
 	}
@@ -375,38 +253,45 @@ public class QuantityImpl extends AbstractAST implements IQuantity, Externalizab
 
 	@Override
 	public IQuantity ofUnit(IExpr scalar) {
-		return new QuantityImpl(scalar, unitString, unit);
+		return new QuantityImpl(scalar, fData);
 	}
 
 	@Override
 	public IExpr plus(final IExpr scalar) {
 		boolean azero = arg1.isZero();
 		boolean bzero = scalar.isZero();
-		if (azero && !bzero)
+		if (azero && !bzero) {
 			return scalar; // 0[m] + X(X!=0) gives X(X!=0)
-		if (!azero && bzero)
+		}
+		if (!azero && bzero) {
 			return this; // X(X!=0) + 0[m] gives X(X!=0)
+		}
 		/** at this point the implication holds: azero == bzero */
 		if (scalar instanceof IQuantity) {
 			IQuantity quantity = (IQuantity) scalar;
-			if (!unit.equals(quantity.unit())) {
-				return UnitSystem.SI().apply(this).add(UnitSystem.SI().apply(quantity));
+			if (!fData.equals(quantity.unit())) {
+				IExpr lhs = UnitSystem.SI().apply(this);
+				IExpr rhs = UnitSystem.SI().apply(quantity);
+				if (!this.equals(lhs) || !quantity.equals(rhs)) {
+					return lhs.plus(rhs);
+				}
+				return F.NIL;
 				// quantity = (IQuantity) UnitConvert.SI().to(unit).apply(quantity);
 			}
-			if (unit.equals(quantity.unit())) {
-				return ofUnit(arg1.add(quantity.value())); // 0[m] + 0[m] gives 0[m]
+			if (fData.equals(quantity.unit())) {
+				return ofUnit(arg1.plus(quantity.value())); // 0[m] + 0[m] gives 0[m]
 			} else if (azero) {
 				// explicit addition of zeros to ensure symmetry
 				// for instance when numeric precision is different
-				return arg1.add(quantity.value()); // 0[m] + 0[s] gives 0
+				return arg1.plus(quantity.value()); // 0[m] + 0[s] gives 0
 			}
 		} else // <- scalar is not an instance of Quantity
-		if (azero)
+		if (azero) {
 			// return of value.add(scalar) is not required for symmetry
 			// precision of this.value prevails over given scalar
 			return this; // 0[kg] + 0 gives 0[kg]
-
-		throw MathException.of(this, scalar);
+		}
+		return F.NIL;
 	}
 
 	@Override
@@ -414,7 +299,7 @@ public class QuantityImpl extends AbstractAST implements IQuantity, Externalizab
 		if (exponent instanceof IQuantity) {
 			throw MathException.of(this, exponent);
 		}
-		return of(F.Power.of(arg1, exponent), unit.multiply(exponent));
+		return of(F.Power.of(arg1, exponent), fData.multiply(exponent));
 	}
 
 	@Override
@@ -424,18 +309,14 @@ public class QuantityImpl extends AbstractAST implements IQuantity, Externalizab
 
 	@Override
 	public void readExternal(ObjectInput objectInput) throws IOException, ClassNotFoundException {
-		this.fEvalFlags = objectInput.readShort();
+		// this.fEvalFlags = objectInput.readShort();
 		this.arg1 = (IExpr) objectInput.readObject();
-		this.unitString = (String) objectInput.readObject();
-		if (unitString.length() == 0) {
-			this.unitString = null;
-		}
-		this.unit = (IUnit) objectInput.readObject();
+		this.fData = (IUnit) objectInput.readObject();
 	}
 
 	@Override
 	public IExpr reciprocal() {
-		return new QuantityImpl(arg1.reciprocal(), null, unit.negate());
+		return new QuantityImpl(arg1.reciprocal(), fData.negate());
 	}
 
 	public IExpr round() {
@@ -443,32 +324,8 @@ public class QuantityImpl extends AbstractAST implements IQuantity, Externalizab
 	}
 
 	@Override
-	public IExpr set(int i, IExpr object) {
-		if (i == 1) {
-			IExpr oldArg1 = arg1;
-			arg1 = object;
-			return oldArg1;
-		}
-		throw new UnsupportedOperationException();
-	}
-
-	@Override
-	public int size() {
-		return 3;
-	}
-
-	@Override
 	public IExpr sqrt() {
-		return of(F.Sqrt.of(arg1), unit.multiply(F.C1D2));
-	}
-
-	@Override
-	public IExpr[] toArray() {
-		IExpr[] result = new IExpr[3];
-		result[0] = head();
-		result[1] = arg1();
-		result[2] = arg2();
-		return result;
+		return of(F.Sqrt.of(arg1), fData.multiply(F.C1D2));
 	}
 
 	@Override
@@ -476,14 +333,14 @@ public class QuantityImpl extends AbstractAST implements IQuantity, Externalizab
 		StringBuilder stringBuilder = new StringBuilder(32); // initial buffer size
 		stringBuilder.append(arg1);
 		stringBuilder.append(UNIT_OPENING_BRACKET);
-		stringBuilder.append(unit);
+		stringBuilder.append(fData);
 		stringBuilder.append(UNIT_CLOSING_BRACKET);
 		return stringBuilder.toString();
 	}
 
 	@Override
 	public IUnit unit() {
-		return unit;
+		return fData;
 	}
 
 	@Override
@@ -493,14 +350,8 @@ public class QuantityImpl extends AbstractAST implements IQuantity, Externalizab
 
 	@Override
 	public void writeExternal(ObjectOutput objectOutput) throws IOException {
-		objectOutput.writeShort(fEvalFlags);
 		objectOutput.writeObject(arg1);
-		if (unitString == null) {
-			objectOutput.writeObject("");
-		} else {
-			objectOutput.writeObject(unitString);
-		}
-		objectOutput.writeObject(unit);
+		objectOutput.writeObject(fData);
 	}
 
 	private Object writeReplace() throws ObjectStreamException {

@@ -305,7 +305,7 @@ public class QuantityFunctions {
 				if (ast.size() == 2) {
 					IExpr arg1 = engine.evaluate(ast.arg1());
 					if (arg1.isQuantity()) {
-						return ((IAST) arg1).arg1();
+						return ((IQuantity) arg1).value();
 					}
 				} else if (ast.size() == 3) {
 					IExpr arg1 = engine.evaluate(ast.arg1());

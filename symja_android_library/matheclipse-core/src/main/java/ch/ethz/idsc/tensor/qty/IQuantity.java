@@ -5,6 +5,8 @@ import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.interfaces.ISignedNumber;
 import org.matheclipse.parser.client.math.MathException;
 
+import com.univocity.parsers.csv.CsvFormat;
+
 /**
  * {@link IQuantity} represents a magnitude and unit.
  * 
@@ -51,9 +53,9 @@ public interface IQuantity extends IExpr, Comparable<IExpr> {
 		}
 		return QuantityImpl.of(value, unit);
 	}
-	
+
 	static IQuantity of(ISignedNumber value, IUnit unit) {
-		return new QuantityImpl(value, null, unit);
+		return new QuantityImpl(value, unit);
 	}
 
 	/**
@@ -108,6 +110,8 @@ public interface IQuantity extends IExpr, Comparable<IExpr> {
 
 	/** @return unit of quantity without value */
 	IUnit unit();
+
+	String unitString();
 
 	/**
 	 * 
