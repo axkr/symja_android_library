@@ -2,6 +2,7 @@ package org.matheclipse.core.system;
 
 import java.util.SortedMap;
 
+import org.matheclipse.core.convert.JASConvert;
 import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.polynomials.longexponent.ExprRingFactory;
 
@@ -10,6 +11,7 @@ import edu.jas.poly.Complex;
 import edu.jas.poly.ComplexRing;
 import edu.jas.poly.GenPolynomial;
 import edu.jas.poly.GenPolynomialRing;
+import edu.jas.poly.PolyUtil;
 import edu.jas.poly.TermOrderByName;
 import edu.jas.ufd.FactorComplex;
 import edu.jas.ufd.GCDFactory;
@@ -22,11 +24,31 @@ public class JAS extends TestCase {
 		super(name);
 	}
 
-	public void testComplexFactor() {
-		final int variableSize = 2;
+	public void testSimplexFactor001() {
+		final int variableSize = 1;
+		String[] vars = new String[] { "x" };
 		ComplexRing<BigRational> cfac = new ComplexRing<BigRational>(BigRational.ZERO);
 		GenPolynomialRing<Complex<BigRational>> cpfac = new GenPolynomialRing<Complex<BigRational>>(cfac, variableSize,
-				TermOrderByName.INVLEX);
+				TermOrderByName.INVLEX,vars);
+		GenPolynomial<Complex<BigRational>> a = cpfac.parse("x^2 + 4*x + 4"); 
+		FactorComplex<BigRational> factorAbstract = new FactorComplex<BigRational>(cfac);
+		SortedMap<GenPolynomial<Complex<BigRational>>, Long> map = factorAbstract.factors(a);
+
+		for (SortedMap.Entry<GenPolynomial<Complex<BigRational>>, Long> entry : map.entrySet()) {
+			if (entry.getKey().isONE() && entry.getValue().equals(1L)) {
+				continue;
+			}
+			System.out.println(" ( " + entry.getKey() + " ) ^ " + entry.getValue());
+		}
+	}
+	
+	public void testComplexFactor() {
+		final int variableSize = 2;
+
+		String[] vars = new String[] { "x0", "x1" };
+		ComplexRing<BigRational> cfac = new ComplexRing<BigRational>(BigRational.ZERO);
+		GenPolynomialRing<Complex<BigRational>> cpfac = new GenPolynomialRing<Complex<BigRational>>(cfac, variableSize,
+				TermOrderByName.INVLEX,vars);
 		GenPolynomial<Complex<BigRational>> a = cpfac.parse("x1^4 + x0^4");
 		// GenPolynomial<Complex<BigRational>> a = cpfac.parse("x1^8 + x0^8") ;
 		// GenPolynomial<Complex<BigRational>> a = cpfac.parse("x1^12 - x0^12") ;
