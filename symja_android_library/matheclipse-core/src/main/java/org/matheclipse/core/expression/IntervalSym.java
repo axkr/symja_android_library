@@ -437,7 +437,7 @@ public class IntervalSym {
 	public static IExpr arcsin(final IAST ast) {
 		EvalEngine engine = EvalEngine.get();
 		return mutableResultConditions2(ast, (min, max, result, index) -> {
-			if(engine.evalTrue(F.GreaterEqual(min, F.CN1)) && engine.evalTrue(F.LessEqual(max, F.C1))) {
+			if (engine.evalTrue(F.GreaterEqual(min, F.CN1)) && engine.evalTrue(F.LessEqual(max, F.C1))) {
 				result.append(index, F.List(F.ArcSin(min), F.ArcSin(max)));
 				return true;
 			}
@@ -459,14 +459,14 @@ public class IntervalSym {
 		EvalEngine engine = EvalEngine.get();
 		return mutableResultConditions2(ast, 
 			(min, max, result, index) -> {
-				if(engine.evalTrue(F.GreaterEqual(min, F.C0)) && engine.evalTrue(F.GreaterEqual(max, F.C0))) {
+				if (engine.evalTrue(F.GreaterEqual(min, F.C0)) && engine.evalTrue(F.GreaterEqual(max, F.C0))) {
 					result.append(F.List(F.Coth(max), F.Coth(min)));
 					return true;
 				}
 				return false;
 			},
 			(min, max, result, index) -> {
-				if(engine.evalTrue(F.Less(min, F.C0)) && engine.evalTrue(F.GreaterEqual(max, F.C0))) {
+				if (engine.evalTrue(F.Less(min, F.C0)) && engine.evalTrue(F.GreaterEqual(max, F.C0))) {
 					result.append(F.List(F.CNInfinity, F.Coth(min)));
 					result.append(F.List(F.Coth(max), F.CInfinity));
 					return true;
@@ -474,7 +474,7 @@ public class IntervalSym {
 				return false;
 			},
 			(min, max, result, index) -> {
-				if(engine.evalTrue(F.Less(min, F.C0)) && engine.evalTrue(F.Less(max, F.C0))) {
+				if (engine.evalTrue(F.Less(min, F.C0)) && engine.evalTrue(F.Less(max, F.C0))) {
 					result.append(F.List(F.Coth(min), F.Coth(max)));
 					return true;
 				}
@@ -816,7 +816,7 @@ public class IntervalSym {
 				result.append(F.List(F.CNInfinity, F.CInfinity));
 			} else {
 				double dMin = engine.evalDouble(F.Tan(min));
-				double dMax = engine.evalDouble(F.Tan(max));;
+				double dMax = engine.evalDouble(F.Tan(max));
 				if (engine.evalTrue(F.LessEqual(difference, F.CPiHalf))) {
 					// difference <= 1/2*Pi
 					if (dMin >= 0) {
