@@ -37,6 +37,18 @@ public class FractionTestCase extends AbstractTestCase {
 
 		a = AbstractFractionSym.valueOf(Long.MIN_VALUE, Long.MAX_VALUE);
 		assertEquals("-9223372036854775808/9223372036854775807", a.toString());
+
+		a = AbstractFractionSym.valueOf((long) Integer.MIN_VALUE - 1L, Integer.MIN_VALUE - 1L);
+		assertEquals("1", a.toString());
+
+		a = AbstractFractionSym.valueOf((long) Integer.MAX_VALUE + 1L, Integer.MAX_VALUE + 1L);
+		assertEquals("1", a.toString());
+
+		a = AbstractFractionSym.valueOf((long) Integer.MAX_VALUE + 1L, (long) Integer.MIN_VALUE - 1L);
+		assertEquals("-2147483648/2147483649", a.toString());
+
+		a = AbstractFractionSym.valueOf(Integer.MIN_VALUE - 1L, Integer.MAX_VALUE + 1L);
+		assertEquals("-2147483649/2147483648", a.toString());
 	}
 
 	public void testCTor0() {

@@ -2621,7 +2621,7 @@ public interface IExpr extends Comparable<IExpr>, GcdRingElem<IExpr>, Serializab
 	}
 
 	/**
-	 * Test if this expression is a rational number, i.e. integer or fraction number.
+	 * Test if this expression is a symbolic rational number, i.e. integer or fraction number.
 	 * 
 	 * @return
 	 * @see #isNumEqualRational(IRational)
@@ -2631,7 +2631,7 @@ public interface IExpr extends Comparable<IExpr>, GcdRingElem<IExpr>, Serializab
 	}
 
 	/**
-	 * Test if this expression is a rational function (i.e. a number, a symbolic constant or an rational function where
+	 * Test if this expression is a symbolic rational function (i.e. a number, a symbolic constant or an rational function where
 	 * all arguments are also &quot;rational functions&quot;)
 	 * 
 	 * @return <code>true</code>, if the given expression is a rational function or value.

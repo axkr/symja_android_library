@@ -346,12 +346,18 @@ public class ExprEvaluatorTests extends TestCase {
 		ThreadLocalRandom random = ThreadLocalRandom.current();
 		String[] functionStrs = AST2Expr.FUNCTION_STRINGS;
 		int[] counter = new int[] { 0 };
-		for (int loop = 0; loop < 10000; loop++) {
+		for (int loop = 0; loop < 20000; loop++) {
 			for (int i = 0; i < functionStrs.length; i++) {
 				IBuiltInSymbol sym = (IBuiltInSymbol) F.symbol(functionStrs[i]);
-				if (sym == F.PolynomialGCD || sym == F.On || sym == F.Off || sym == F.Compile
-						|| sym == F.CompiledFunction || sym == F.Set || sym == F.SetDelayed || sym == F.UpSet
-						|| sym == F.UpSetDelayed) {
+				if (sym == F.PolynomialGCD || //
+						sym == F.On || //
+						sym == F.Off || //
+						sym == F.Compile || //
+						sym == F.CompiledFunction || //
+						sym == F.Set || //
+						sym == F.SetDelayed || //
+						sym == F.UpSet || //
+						sym == F.UpSetDelayed) {
 					continue;
 				}
 				IEvaluator evaluator = sym.getEvaluator();
