@@ -331,6 +331,9 @@ public class MinMaxFunctions {
 			if (ast.size() == 3) {
 				IExpr function = ast.arg1();
 				IExpr x = ast.arg2();
+				if (x.isAST(F.List, 2)) {
+					x = ast.arg2().first();
+				}
 				ISymbol head = ast.topHead();
 				if (x.isSymbol() || (x.isAST() && !x.isList())) {
 					return maximize(head, function, x, engine);
@@ -382,6 +385,9 @@ public class MinMaxFunctions {
 			if (ast.size() == 3) {
 				IExpr function = ast.arg1();
 				IExpr x = ast.arg2();
+				if (x.isAST(F.List, 2)) {
+					x = ast.arg2().first();
+				}
 				ISymbol head = ast.topHead();
 				if (x.isSymbol() || (x.isAST() && !x.isList())) {
 					return minimize(head, function, x, engine);
@@ -463,7 +469,7 @@ public class MinMaxFunctions {
 						}
 					}
 				}
-			} catch(org.hipparchus.exception.MathRuntimeException mrex) {
+			} catch (org.hipparchus.exception.MathRuntimeException mrex) {
 				if (FEConfig.SHOW_STACKTRACE) {
 					mrex.printStackTrace();
 				}
@@ -557,7 +563,7 @@ public class MinMaxFunctions {
 						}
 					}
 				}
-			} catch(org.hipparchus.exception.MathRuntimeException mrex) {
+			} catch (org.hipparchus.exception.MathRuntimeException mrex) {
 				if (FEConfig.SHOW_STACKTRACE) {
 					mrex.printStackTrace();
 				}

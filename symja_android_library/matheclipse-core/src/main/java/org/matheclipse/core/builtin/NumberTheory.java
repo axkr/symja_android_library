@@ -4805,9 +4805,7 @@ public final class NumberTheory {
 		}
 		IFraction[] bernoulli = new IFraction[n + 1];
 		bernoulli[0] = AbstractFractionSym.ONE;
-		bernoulli[1] = AbstractFractionSym.valueOf(-1, 2);// new
-															// BigFraction(-1,
-															// 2);
+		bernoulli[1] = AbstractFractionSym.valueOf(-1L, 2L);
 		for (int k = 2; k <= n; k++) {
 			bernoulli[k] = AbstractFractionSym.ZERO;
 			for (int i = 0; i < k; i++) {

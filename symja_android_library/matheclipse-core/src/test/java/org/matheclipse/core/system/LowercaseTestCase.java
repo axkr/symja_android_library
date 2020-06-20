@@ -6743,7 +6743,7 @@ public class LowercaseTestCase extends AbstractTestCase {
 
 	public void testFactor() {
 		System.out.println();
-
+		
 		check("Factor(I,GaussianIntegers->True)", //
 				"I");
 		// https://github.com/kredel/java-algebra-system/issues/12
@@ -13803,7 +13803,11 @@ public class LowercaseTestCase extends AbstractTestCase {
 
 	public void testMinimize() {
 		// check("Minimize(Sin(x),x)", //
-		// "");
+		// ""); 
+		
+		check("Minimize(x^2+4*x+4, {x})", //
+				"{0,{x->-2}}");
+	
 		check("Minimize(x^4+7*x^3-2*x^2 + 42, x)", //
 				"{42+7*(-21/8-Sqrt(505)/8)^3-2*(21/8+Sqrt(505)/8)^2+(21/8+Sqrt(505)/8)^4,{x->-21/\n"
 						+ "8-Sqrt(505)/8}}");
