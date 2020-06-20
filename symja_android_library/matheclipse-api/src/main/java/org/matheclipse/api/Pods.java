@@ -55,6 +55,15 @@ import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.google.common.base.Suppliers;
 
 public class Pods {
+	
+	public static final String JSON = "JSON";
+
+	/**
+	 * From the docs: "Mapper instances are fully thread-safe provided that ALL configuration of the instance occurs
+	 * before ANY read or write calls."
+	 */
+	public static final ObjectMapper JSON_OBJECT_MAPPER = new ObjectMapper();
+
 	private static class LevenshteinDistanceComparator implements Comparator<IPod> {
 		static final LevenshteinDistance ld = new LevenshteinDistance(128);
 
@@ -812,8 +821,6 @@ public class Pods {
 	public static final int PLOTLY = 0x0100;
 	public static final int VISJS = 0x0200;
 
-	// output
-	public static final String JSON = "JSON";
 	public static final Soundex SOUNDEX = new Soundex();
 
 	public static final Trie<String, ArrayList<IPod>> SOUNDEX_MAP = Tries.forStrings();
@@ -972,9 +979,9 @@ public class Pods {
 
 	/** package private */
 	static void addPod(ArrayNode podsArray, IExpr inExpr, IExpr outExpr, String title, String scanner, int formats,
-			ObjectMapper mapper, EvalEngine engine) {
-		ArrayNode temp = mapper.createArrayNode();
-		ObjectNode subpodsResult = mapper.createObjectNode();
+			EvalEngine engine) {
+		ArrayNode temp = JSON_OBJECT_MAPPER.createArrayNode();
+		ObjectNode subpodsResult = JSON_OBJECT_MAPPER.createObjectNode();
 		subpodsResult.put("title", title);
 		subpodsResult.put("scanner", scanner);
 		subpodsResult.put("error", "false");
@@ -982,16 +989,16 @@ public class Pods {
 		subpodsResult.putPOJO("subpods", temp);
 		podsArray.add(subpodsResult);
 
-		ObjectNode node = mapper.createObjectNode();
+		ObjectNode node = JSON_OBJECT_MAPPER.createObjectNode();
 		temp.add(node);
 		createJSONFormat(node, engine, outExpr, formats);
 	}
 
 	/** package private */
 	static void addPod(ArrayNode podsArray, IExpr inExpr, IExpr outExpr, String plaintext, String title, String scanner,
-			int formats, ObjectMapper mapper, EvalEngine engine) {
-		ArrayNode temp = mapper.createArrayNode();
-		ObjectNode subpodsResult = mapper.createObjectNode();
+			int formats, EvalEngine engine) {
+		ArrayNode temp = JSON_OBJECT_MAPPER.createArrayNode();
+		ObjectNode subpodsResult = JSON_OBJECT_MAPPER.createObjectNode();
 		subpodsResult.put("title", title);
 		subpodsResult.put("scanner", scanner);
 		subpodsResult.put("error", "false");
@@ -999,16 +1006,16 @@ public class Pods {
 		subpodsResult.putPOJO("subpods", temp);
 		podsArray.add(subpodsResult);
 
-		ObjectNode node = mapper.createObjectNode();
+		ObjectNode node = JSON_OBJECT_MAPPER.createObjectNode();
 		temp.add(node);
 		createJSONFormat(node, engine, outExpr, plaintext, "", formats);
 	}
 
 	/** package private */
 	static void addPod(ArrayNode podsArray, IExpr inExpr, IExpr outExpr, String plaintext, String sinput, String title,
-			String scanner, int formats, ObjectMapper mapper, EvalEngine engine) {
-		ArrayNode temp = mapper.createArrayNode();
-		ObjectNode subpodsResult = mapper.createObjectNode();
+			String scanner, int formats, EvalEngine engine) {
+		ArrayNode temp = JSON_OBJECT_MAPPER.createArrayNode();
+		ObjectNode subpodsResult = JSON_OBJECT_MAPPER.createObjectNode();
 		subpodsResult.put("title", title);
 		subpodsResult.put("scanner", scanner);
 		subpodsResult.put("error", "false");
@@ -1016,16 +1023,16 @@ public class Pods {
 		subpodsResult.putPOJO("subpods", temp);
 		podsArray.add(subpodsResult);
 
-		ObjectNode node = mapper.createObjectNode();
+		ObjectNode node = JSON_OBJECT_MAPPER.createObjectNode();
 		temp.add(node);
 		createJSONFormat(node, engine, outExpr, plaintext, sinput, formats);
 	}
 
 	/** package private */
 	static void addSymjaPod(ArrayNode podsArray, IExpr inExpr, IExpr outExpr, String title, String scanner, int formats,
-			ObjectMapper mapper, EvalEngine engine) {
-		ArrayNode temp = mapper.createArrayNode();
-		ObjectNode subpodsResult = mapper.createObjectNode();
+			EvalEngine engine) {
+		ArrayNode temp = JSON_OBJECT_MAPPER.createArrayNode();
+		ObjectNode subpodsResult = JSON_OBJECT_MAPPER.createObjectNode();
 		subpodsResult.put("title", title);
 		subpodsResult.put("scanner", scanner);
 		subpodsResult.put("error", "false");
@@ -1033,16 +1040,16 @@ public class Pods {
 		subpodsResult.putPOJO("subpods", temp);
 		podsArray.add(subpodsResult);
 
-		ObjectNode node = mapper.createObjectNode();
+		ObjectNode node = JSON_OBJECT_MAPPER.createObjectNode();
 		temp.add(node);
 		createJSONFormat(node, engine, StringFunctions.inputForm(inExpr), outExpr, formats);
 	}
 
 	/** package private */
 	static void addSymjaPod(ArrayNode podsArray, IExpr inExpr, IExpr outExpr, String plaintext, String title,
-			String scanner, int formats, ObjectMapper mapper, EvalEngine engine) {
-		ArrayNode temp = mapper.createArrayNode();
-		ObjectNode subpodsResult = mapper.createObjectNode();
+			String scanner, int formats, EvalEngine engine) {
+		ArrayNode temp = JSON_OBJECT_MAPPER.createArrayNode();
+		ObjectNode subpodsResult = JSON_OBJECT_MAPPER.createObjectNode();
 		subpodsResult.put("title", title);
 		subpodsResult.put("scanner", scanner);
 		subpodsResult.put("error", "false");
@@ -1050,7 +1057,7 @@ public class Pods {
 		subpodsResult.putPOJO("subpods", temp);
 		podsArray.add(subpodsResult);
 
-		ObjectNode node = mapper.createObjectNode();
+		ObjectNode node = JSON_OBJECT_MAPPER.createObjectNode();
 		temp.add(node);
 		createJSONFormat(node, engine, plaintext, StringFunctions.inputForm(inExpr), outExpr, formats);
 	}
@@ -1067,7 +1074,7 @@ public class Pods {
 	 * @return
 	 */
 	private static int booleanPods(ArrayNode podsArray, IExpr booleanFormula, IAST variables, int formats,
-			ObjectMapper mapper, EvalEngine engine) {
+			EvalEngine engine) {
 		int htmlFormats = formats | HTML;
 		if ((htmlFormats & PLAIN) == PLAIN) {
 			htmlFormats ^= PLAIN;
@@ -1109,7 +1116,7 @@ public class Pods {
 				tableForm.append("</tr></tbody>");
 				tableForm.append("</table>");
 				addSymjaPod(podsArray, outExpr, podOut, tableForm.toString(), "Truth table", "Boolean", htmlFormats,
-						mapper, engine);
+						engine);
 				numpods++;
 			}
 		}
@@ -1147,7 +1154,7 @@ public class Pods {
 			tableForm.append("</table>");
 
 			addSymjaPod(podsArray, outExpr, podOut, tableForm.toString(), "Satisfiability instance", "Boolean",
-					htmlFormats, mapper, engine);
+					htmlFormats, engine);
 			numpods++;
 		}
 
@@ -1155,26 +1162,24 @@ public class Pods {
 	}
 
 	static ObjectNode createJSONErrorString(String str) {
-		ObjectMapper mapper = new ObjectMapper();
-
-		ObjectNode outJSON = mapper.createObjectNode();
+		ObjectNode outJSON = JSON_OBJECT_MAPPER.createObjectNode();
 		outJSON.put("prefix", "Error");
 		outJSON.put("message", Boolean.TRUE);
 		outJSON.put("tag", "syntax");
 		outJSON.put("symbol", "General");
 		outJSON.put("text", "<math><mrow><mtext>" + str + "</mtext></mrow></math>");
 
-		ObjectNode resultsJSON = mapper.createObjectNode();
+		ObjectNode resultsJSON = JSON_OBJECT_MAPPER.createObjectNode();
 		resultsJSON.putNull("line");
 		resultsJSON.putNull("result");
 
-		ArrayNode temp = mapper.createArrayNode();
+		ArrayNode temp = JSON_OBJECT_MAPPER.createArrayNode();
 		temp.add(outJSON);
 		resultsJSON.putPOJO("out", temp);
 
-		temp = mapper.createArrayNode();
+		temp = JSON_OBJECT_MAPPER.createArrayNode();
 		temp.add(resultsJSON);
-		ObjectNode json = mapper.createObjectNode();
+		ObjectNode json = JSON_OBJECT_MAPPER.createObjectNode();
 		json.putPOJO("results", temp);
 		return json;
 	}
@@ -1341,10 +1346,9 @@ public class Pods {
 	}
 
 	public static ObjectNode createResult(String inputStr, int formats) {
-		ObjectMapper mapper = new ObjectMapper();
-		ObjectNode messageJSON = mapper.createObjectNode();
+		ObjectNode messageJSON = JSON_OBJECT_MAPPER.createObjectNode();
 
-		ObjectNode queryresult = mapper.createObjectNode();
+		ObjectNode queryresult = JSON_OBJECT_MAPPER.createObjectNode();
 		messageJSON.putPOJO("queryresult", queryresult);
 		queryresult.put("success", "false");
 		queryresult.put("error", "false");
@@ -1357,7 +1361,7 @@ public class Pods {
 		IExpr outExpr = F.Null;
 		EvalEngine engine = EvalEngine.get();
 		try {
-			ArrayNode podsArray = mapper.createArrayNode();
+			ArrayNode podsArray = JSON_OBJECT_MAPPER.createArrayNode();
 			inExpr = parseInput(inputStr, engine);
 			if (inExpr.isPresent()) {
 				long numberOfLeaves = inExpr.leafCount();
@@ -1369,7 +1373,7 @@ public class Pods {
 
 					IExpr podOut = outExpr;
 					// if (podOut.isAST(F.JSFormData)) {
-					addSymjaPod(podsArray, inExpr, inExpr, "Input", "Identity", formats, mapper, engine);
+					addSymjaPod(podsArray, inExpr, inExpr, "Input", "Identity", formats, engine);
 					// } else {
 					// addSymjaPod(podsArray, inExpr, podOut, "Input", "Identity", formats, mapper,
 					// engine);
@@ -1385,21 +1389,20 @@ public class Pods {
 					if (outExpr.isNumber() || //
 							outExpr.isQuantity()) {
 						if (outExpr.isInteger()) {
-							numpods += integerPods(podsArray, inExpr, (IInteger) outExpr, formats, mapper, engine);
+							numpods += integerPods(podsArray, inExpr, (IInteger) outExpr, formats, engine);
 							resultStatistics(queryresult, error, numpods, podsArray);
 							return messageJSON;
 						} else {
 							podOut = outExpr;
 							if (outExpr.isRational()) {
-								addSymjaPod(podsArray, inExpr, podOut, "Exact result", "Rational", formats, mapper,
-										engine);
+								addSymjaPod(podsArray, inExpr, podOut, "Exact result", "Rational", formats, engine);
 								numpods++;
 							}
 
 							if (evaledNumExpr.isInexactNumber() || //
 									evaledNumExpr.isQuantity()) {
 								addSymjaPod(podsArray, numExpr, evaledNumExpr, "Decimal form", "Numeric", formats,
-										mapper, engine);
+										engine);
 								numpods++;
 							}
 
@@ -1410,7 +1413,7 @@ public class Pods {
 									podOut = engine.evaluate(inExpr);
 									String plaintext = podOut.first().toString() + " " + podOut.second().toString();
 									addSymjaPod(podsArray, inExpr, podOut, plaintext, "Mixed fraction", "Rational",
-											formats, mapper, engine);
+											formats, engine);
 									numpods++;
 
 									inExpr = F.ContinuedFraction(outExpr);
@@ -1431,7 +1434,7 @@ public class Pods {
 										plainBuf.append(']');
 									}
 									addSymjaPod(podsArray, inExpr, podOut, plainBuf.toString(), "Continued fraction",
-											"ContinuedFraction", formats, mapper, engine);
+											"ContinuedFraction", formats, engine);
 									numpods++;
 								}
 							}
@@ -1446,13 +1449,12 @@ public class Pods {
 						if (outExpr.isList()) {
 							IAST list = (IAST) outExpr;
 							ListPod listPod = new ListPod(list);
-							numpods += listPod.addJSON(mapper, podsArray, formats, engine);
+							numpods += listPod.addJSON(podsArray, formats, engine);
 						}
 
 						if (evaledNumExpr.isInexactNumber() || //
 								evaledNumExpr.isQuantity()) {
-							addSymjaPod(podsArray, numExpr, evaledNumExpr, "Decimal form", "Numeric", formats, mapper,
-									engine);
+							addSymjaPod(podsArray, numExpr, evaledNumExpr, "Decimal form", "Numeric", formats, engine);
 							numpods++;
 						}
 
@@ -1460,8 +1462,8 @@ public class Pods {
 							String inputWord = outExpr.toString();
 							StringBuilder buf = new StringBuilder();
 							if (Documentation.getMarkdown(buf, inputWord)) {
-								DocumentationPod.addDocumentationPod(new DocumentationPod((ISymbol) outExpr), mapper,
-										podsArray, buf, formats);
+								DocumentationPod.addDocumentationPod(new DocumentationPod((ISymbol) outExpr), podsArray,
+										buf, formats);
 								numpods++;
 								resultStatistics(queryresult, error, numpods, podsArray);
 								return messageJSON;
@@ -1472,7 +1474,7 @@ public class Pods {
 									for (int i = 0; i < soundsLike.size(); i++) {
 										IPod pod = soundsLike.get(i);
 										if (pod.keyWord().equalsIgnoreCase(inputWord)) {
-											int numberOfEntries = pod.addJSON(mapper, podsArray, formats, engine);
+											int numberOfEntries = pod.addJSON(podsArray, formats, engine);
 											if (numberOfEntries > 0) {
 												numpods += numberOfEntries;
 												evaled = true;
@@ -1483,7 +1485,7 @@ public class Pods {
 									if (!evaled) {
 										for (int i = 0; i < soundsLike.size(); i++) {
 											IPod pod = soundsLike.get(i);
-											int numberOfEntries = pod.addJSON(mapper, podsArray, formats, engine);
+											int numberOfEntries = pod.addJSON(podsArray, formats, engine);
 											if (numberOfEntries > 0) {
 												numpods += numberOfEntries;
 											}
@@ -1504,8 +1506,7 @@ public class Pods {
 								}
 								outExpr = engine.evaluate(inExpr);
 								podOut = outExpr;
-								addSymjaPod(podsArray, inExpr, podOut, "Derivative", "Derivative", formats, mapper,
-										engine);
+								addSymjaPod(podsArray, inExpr, podOut, "Derivative", "Derivative", formats, engine);
 								numpods++;
 
 								if (!outExpr.isFreeAST(x -> x.isTrigFunction())) {
@@ -1513,7 +1514,7 @@ public class Pods {
 									podOut = engine.evaluate(inExpr);
 									if (!F.PossibleZeroQ.ofQ(engine, F.Subtract(podOut, outExpr))) {
 										addSymjaPod(podsArray, inExpr, podOut, "Alternate form", "Simplification",
-												formats, mapper, engine);
+												formats, engine);
 										numpods++;
 									}
 								}
@@ -1529,8 +1530,7 @@ public class Pods {
 								}
 								outExpr = engine.evaluate(inExpr);
 								podOut = outExpr;
-								addSymjaPod(podsArray, inExpr, podOut, "Integration", "Integral", formats, mapper,
-										engine);
+								addSymjaPod(podsArray, inExpr, podOut, "Integration", "Integral", formats, engine);
 								numpods++;
 
 								if (!outExpr.isFreeAST(x -> x.isTrigFunction())) {
@@ -1538,7 +1538,7 @@ public class Pods {
 									podOut = engine.evaluate(inExpr);
 									if (!F.PossibleZeroQ.ofQ(engine, F.Subtract(podOut, outExpr))) {
 										addSymjaPod(podsArray, inExpr, podOut, "Alternate form", "Simplification",
-												formats, mapper, engine);
+												formats, engine);
 										numpods++;
 									}
 								}
@@ -1554,8 +1554,7 @@ public class Pods {
 								}
 								outExpr = engine.evaluate(inExpr);
 								podOut = outExpr;
-								addSymjaPod(podsArray, inExpr, podOut, "Solve equation", "Solver", formats, mapper,
-										engine);
+								addSymjaPod(podsArray, inExpr, podOut, "Solve equation", "Solver", formats, engine);
 								numpods++;
 
 								if (!outExpr.isFreeAST(x -> x.isTrigFunction())) {
@@ -1563,7 +1562,7 @@ public class Pods {
 									podOut = engine.evaluate(inExpr);
 									if (!F.PossibleZeroQ.ofQ(engine, F.Subtract(podOut, outExpr))) {
 										addSymjaPod(podsArray, inExpr, podOut, "Alternate form", "Simplification",
-												formats, mapper, engine);
+												formats, engine);
 										numpods++;
 									}
 								}
@@ -1577,8 +1576,7 @@ public class Pods {
 									podOut = outExpr;
 									int form = internFormat(SYMJA, podOut.second().toString());
 									addPod(podsArray, inExpr, podOut, podOut.first().toString(),
-											StringFunctions.inputForm(inExpr), "Function", "Plotter", form, mapper,
-											engine);
+											StringFunctions.inputForm(inExpr), "Function", "Plotter", form, engine);
 									numpods++;
 								} else if (outExpr instanceof GraphExpr) {
 									String javaScriptStr = GraphFunctions.graphToJSForm((GraphExpr) outExpr);
@@ -1590,8 +1588,7 @@ public class Pods {
 										);
 										// html = StringEscapeUtils.escapeHtml4(html);
 										int form = internFormat(SYMJA, "visjs");
-										addPod(podsArray, inExpr, podOut, html, "Graph data", "Graph", form, mapper,
-												engine);
+										addPod(podsArray, inExpr, podOut, html, "Graph data", "Graph", form, engine);
 										numpods++;
 									}
 								} else {
@@ -1601,7 +1598,7 @@ public class Pods {
 										if (evaluator instanceof IDistribution) {
 											// if (evaluator instanceof IDiscreteDistribution) {
 											int snumpods = statisticsPods(podsArray, (IAST) outExpr, podOut, formats,
-													mapper, engine);
+													engine);
 											numpods += snumpods;
 										}
 									}
@@ -1609,7 +1606,7 @@ public class Pods {
 									VariablesSet varSet = new VariablesSet(outExpr);
 									IAST variables = varSet.getVarList();
 									if (outExpr.isBooleanFormula()) {
-										numpods += booleanPods(podsArray, outExpr, variables, formats, mapper, engine);
+										numpods += booleanPods(podsArray, outExpr, variables, formats, engine);
 									}
 									if (outExpr.isAST(F.Equal, 3)) {
 										IExpr arg1 = outExpr.first();
@@ -1624,7 +1621,7 @@ public class Pods {
 													int form = internFormat(SYMJA, podOut.second().toString());
 													addPod(podsArray, inExpr, podOut, podOut.first().toString(),
 															StringFunctions.inputForm(plot2D), "Function", "Plotter",
-															form, mapper, engine);
+															form, engine);
 													numpods++;
 												}
 											}
@@ -1633,13 +1630,13 @@ public class Pods {
 												inExpr = F.Equal(engine.evaluate(F.Subtract(arg1, arg2)), F.C0);
 												podOut = inExpr;
 												addSymjaPod(podsArray, inExpr, podOut, "Alternate form",
-														"Simplification", formats, mapper, engine);
+														"Simplification", formats, engine);
 												numpods++;
 											}
 											inExpr = F.Solve(F.binaryAST2(F.Equal, arg1, arg2), variables);
 											podOut = engine.evaluate(inExpr);
 											addSymjaPod(podsArray, inExpr, podOut, "Solution", "Reduce", formats,
-													mapper, engine);
+													engine);
 											numpods++;
 										}
 
@@ -1648,7 +1645,7 @@ public class Pods {
 									} else {
 										if (!inExpr.equals(outExpr)) {
 											addSymjaPod(podsArray, inExpr, outExpr, "Result", "Identity", formats,
-													mapper, engine);
+													engine);
 											numpods++;
 										}
 									}
@@ -1663,7 +1660,7 @@ public class Pods {
 												int form = internFormat(SYMJA, podOut.second().toString());
 												addPod(podsArray, inExpr, podOut, podOut.first().toString(),
 														StringFunctions.inputForm(plot2D), "Function", "Plotter", form,
-														mapper, engine);
+														engine);
 												numpods++;
 											}
 										} else if (variables.argSize() == 2) {
@@ -1675,7 +1672,7 @@ public class Pods {
 												int form = internFormat(SYMJA, podOut.second().toString());
 												addPod(podsArray, inExpr, podOut, podOut.first().toString(),
 														StringFunctions.inputForm(plot3D), "3D plot", "Plot", form,
-														mapper, engine);
+														engine);
 												numpods++;
 											}
 										}
@@ -1685,7 +1682,7 @@ public class Pods {
 										podOut = engine.evaluate(inExpr);
 										if (!F.PossibleZeroQ.ofQ(engine, F.Subtract(podOut, outExpr))) {
 											addSymjaPod(podsArray, inExpr, podOut, "Alternate form", "Simplification",
-													formats, mapper, engine);
+													formats, engine);
 											numpods++;
 										}
 									}
@@ -1695,26 +1692,26 @@ public class Pods {
 											inExpr = F.Factor(outExpr);
 											podOut = engine.evaluate(inExpr);
 											addSymjaPod(podsArray, inExpr, podOut, "Factor", "Polynomial", formats,
-													mapper, engine);
+													engine);
 											numpods++;
 										}
 										inExpr = F.D(outExpr, variables.arg1());
 										podOut = engine.evaluate(inExpr);
 										addSymjaPod(podsArray, inExpr, podOut, "Derivative", "Derivative", formats,
-												mapper, engine);
+												engine);
 										numpods++;
 
 										inExpr = F.Integrate(outExpr, variables.arg1());
 										podOut = engine.evaluate(inExpr);
 										addSymjaPod(podsArray, inExpr, podOut, "Indefinite integral", "Integral",
-												formats, mapper, engine);
+												formats, engine);
 										numpods++;
 									}
 								}
 								if (numpods == 1) {
 									// only Identity pod was appended
 									addSymjaPod(podsArray, expr, outExpr, "Evaluated result", "Expression", formats,
-											mapper, engine);
+											engine);
 									numpods++;
 								}
 
@@ -1864,7 +1861,7 @@ public class Pods {
 	}
 
 	private static int integerPods(ArrayNode podsArray, IExpr inExpr, final IInteger outExpr, int formats,
-			ObjectMapper mapper, EvalEngine engine) {
+			EvalEngine engine) {
 		int htmlFormats = formats | HTML;
 		if ((htmlFormats & PLAIN) == PLAIN) {
 			htmlFormats ^= PLAIN;
@@ -1874,7 +1871,7 @@ public class Pods {
 		IInteger n = outExpr;
 
 		if (!inExpr.equals(outExpr)) {
-			addSymjaPod(podsArray, inExpr, outExpr, "Result", "Simplification", formats, mapper, engine);
+			addSymjaPod(podsArray, inExpr, outExpr, "Result", "Simplification", formats, engine);
 			numpods++;
 		}
 		inExpr = outExpr;
@@ -1882,7 +1879,7 @@ public class Pods {
 		inExpr = F.IntegerName(n, F.stringx("Words"));
 		IExpr podOut = engine.evaluateNull(inExpr);
 		if (podOut.isPresent()) {
-			addSymjaPod(podsArray, inExpr, podOut, "Number name", "Integer", formats, mapper, engine);
+			addSymjaPod(podsArray, inExpr, podOut, "Number name", "Integer", formats, engine);
 			numpods++;
 		}
 
@@ -1890,7 +1887,7 @@ public class Pods {
 				intValue <= net.numericalchameleon.util.romannumerals.RomanNumeral.MAX_VALUE) {
 			inExpr = F.RomanNumeral(n);
 			podOut = engine.evaluate(inExpr);
-			addSymjaPod(podsArray, inExpr, podOut, "Roman numerals", "Integer", formats, mapper, engine);
+			addSymjaPod(podsArray, inExpr, podOut, "Roman numerals", "Integer", formats, engine);
 			numpods++;
 		}
 
@@ -1902,7 +1899,7 @@ public class Pods {
 			plainText.append("_");
 			plainText.append(podOut.second().toString());
 		}
-		addSymjaPod(podsArray, inExpr, podOut, plainText.toString(), "Binary form", "Integer", formats, mapper, engine);
+		addSymjaPod(podsArray, inExpr, podOut, plainText.toString(), "Binary form", "Integer", formats, engine);
 		numpods++;
 
 		if (n.bitLength() < 200) {
@@ -1914,7 +1911,7 @@ public class Pods {
 				plainText.append(n.toString());
 				plainText.append(" is a prime number.");
 				addSymjaPod(podsArray, inExpr, podOut, plainText.toString(), "Prime factorization", "Integer", formats,
-						mapper, engine);
+						engine);
 				numpods++;
 			} else {
 				if (matrixDimension[1] == 2) {
@@ -1936,7 +1933,7 @@ public class Pods {
 						}
 					}
 					addSymjaPod(podsArray, inExpr, times.oneIdentity0(), plainText.toString(), "Prime factorization",
-							"Integer", formats, mapper, engine);
+							"Integer", formats, engine);
 					numpods++;
 				}
 			}
@@ -1994,18 +1991,18 @@ public class Pods {
 			tableForm.append("</table>");
 
 			addSymjaPod(podsArray, inExpr, podOut, tableForm.toString(), "Residues modulo small integers", "Integer",
-					htmlFormats, mapper, engine);
+					htmlFormats, engine);
 			numpods++;
 		}
 
-		integerPropertiesPod(podsArray, outExpr, podOut, "Properties", "Integer", formats, mapper, engine);
+		integerPropertiesPod(podsArray, outExpr, podOut, "Properties", "Integer", formats, engine);
 		numpods++;
 
 		if (n.isPositive() && n.isLT(F.ZZ(100))) {
 			inExpr = F.Union(F.PowerMod(F.Range(F.C0, F.QQ(n, F.C2)), F.C2, n));
 			podOut = engine.evaluate(inExpr);
 			addSymjaPod(podsArray, inExpr, podOut, "Quadratic residues modulo " + n.toString(), "Integer", formats,
-					mapper, engine);
+					engine);
 			numpods++;
 
 			if (n.isProbablePrime()) {
@@ -2013,7 +2010,7 @@ public class Pods {
 						F.Function(F.Equal(F.MultiplicativeOrder(F.Slot1, n), F.EulerPhi(n))));
 				podOut = engine.evaluate(inExpr);
 				addSymjaPod(podsArray, inExpr, podOut, "Primitive roots modulo " + n.toString(), "Integer", formats,
-						mapper, engine);
+						engine);
 				numpods++;
 			}
 		}
@@ -2021,10 +2018,10 @@ public class Pods {
 	}
 
 	static void integerPropertiesPod(ArrayNode podsArray, IInteger inExpr, IExpr outExpr, String title, String scanner,
-			int formats, ObjectMapper mapper, EvalEngine engine) {
-		ArrayNode temp = mapper.createArrayNode();
+			int formats, EvalEngine engine) {
+		ArrayNode temp = JSON_OBJECT_MAPPER.createArrayNode();
 		int numsubpods = 0;
-		ObjectNode subpodsResult = mapper.createObjectNode();
+		ObjectNode subpodsResult = JSON_OBJECT_MAPPER.createObjectNode();
 		subpodsResult.put("title", title);
 		subpodsResult.put("scanner", scanner);
 		subpodsResult.put("error", "false");
@@ -2034,14 +2031,14 @@ public class Pods {
 
 		try {
 			if (inExpr.isEven()) {
-				ObjectNode node = mapper.createObjectNode();
+				ObjectNode node = JSON_OBJECT_MAPPER.createObjectNode();
 				temp.add(node);
 				createJSONFormat(node, engine, F.NIL, inExpr.toString() + " is an even number.",
 						StringFunctions.inputForm(F.EvenQ(inExpr)), formats);
 
 				numsubpods++;
 			} else {
-				ObjectNode node = mapper.createObjectNode();
+				ObjectNode node = JSON_OBJECT_MAPPER.createObjectNode();
 				temp.add(node);
 				createJSONFormat(node, engine, F.NIL, inExpr.toString() + " is an odd number.",
 						StringFunctions.inputForm(F.OddQ(inExpr)), formats);
@@ -2052,14 +2049,14 @@ public class Pods {
 				IExpr primePiExpr = F.PrimePi(inExpr);
 				IExpr primePi = engine.evaluate(inExpr);
 				if (primePi.isInteger()) {
-					ObjectNode node = mapper.createObjectNode();
+					ObjectNode node = JSON_OBJECT_MAPPER.createObjectNode();
 					temp.add(node);
 					createJSONFormat(node, engine, F.NIL,
 							inExpr.toString() + " is the " + primePi.toString() + "th prime number.",
 							StringFunctions.inputForm(primePiExpr), formats);
 					numsubpods++;
 				} else {
-					ObjectNode node = mapper.createObjectNode();
+					ObjectNode node = JSON_OBJECT_MAPPER.createObjectNode();
 					temp.add(node);
 					createJSONFormat(node, engine, F.NIL, inExpr.toString() + " is a prime number.",
 							StringFunctions.inputForm(F.PrimeQ(inExpr)), formats);
@@ -2232,8 +2229,7 @@ public class Pods {
 		}
 	}
 
-	private static int statisticsPods(ArrayNode podsArray, IAST inExpr, IExpr outExpr, int formats, ObjectMapper mapper,
-			EvalEngine engine) {
+	private static int statisticsPods(ArrayNode podsArray, IAST inExpr, IExpr outExpr, int formats, EvalEngine engine) {
 		int numpods = 0;
 		int htmlFormats = formats | HTML;
 		if ((htmlFormats & PLAIN) == PLAIN) {
@@ -2287,19 +2283,18 @@ public class Pods {
 			tableForm.append("</table>");
 
 			addSymjaPod(podsArray, F.List(), podOut, tableForm.toString(), "Statistical properties", "Statistics",
-					htmlFormats, mapper, engine);
+					htmlFormats, engine);
 			numpods++;
 
 			inExpr = F.PDF(outExpr, F.x);
 			podOut = engine.evaluate(inExpr);
-			addSymjaPod(podsArray, inExpr, podOut, "Probability density function (PDF)", "Statistics", formats, mapper,
-					engine);
+			addSymjaPod(podsArray, inExpr, podOut, "Probability density function (PDF)", "Statistics", formats, engine);
 			numpods++;
 
 			inExpr = F.CDF(outExpr, F.x);
 			podOut = engine.evaluate(inExpr);
 			addSymjaPod(podsArray, inExpr, podOut, "Cumulative distribution function (CDF)", "Statistics", formats,
-					mapper, engine);
+					engine);
 		}
 		numpods++;
 		return numpods;

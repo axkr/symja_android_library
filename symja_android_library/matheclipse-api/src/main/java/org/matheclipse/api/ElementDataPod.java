@@ -7,7 +7,6 @@ import org.matheclipse.core.expression.F;
 import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.interfaces.IStringX;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ArrayNode;
 
 public class ElementDataPod implements IPod {
@@ -25,7 +24,7 @@ public class ElementDataPod implements IPod {
 		return word;
 	}
 
-	public int addJSON(ObjectMapper mapper, ArrayNode podsArray, int formats, EvalEngine engine) {
+	public int addJSON(ArrayNode podsArray, int formats, EvalEngine engine) {
 		String[] properties = ElementData.PROPERTIES_DATA;
 		final IStringX wordStrX = F.stringx(word);
 		int numpods = 0;
@@ -34,7 +33,7 @@ public class ElementDataPod implements IPod {
 			IExpr podOut = EvalEngine.get().evaluate(inExpr);
 			if (!podOut.isAST(F.Missing)) {
 				String title = StringUtils.join(StringUtils.splitByCharacterTypeCamelCase(properties[i]), ' ');
-				Pods.addSymjaPod(podsArray, inExpr, podOut, title, "Data", formats, mapper, engine);
+				Pods.addSymjaPod(podsArray, inExpr, podOut, title, "Data", formats, engine);
 				numpods++;
 			}
 		}

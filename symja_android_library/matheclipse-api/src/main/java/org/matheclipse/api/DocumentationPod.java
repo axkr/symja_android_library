@@ -21,7 +21,6 @@ import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.interfaces.ISymbol;
 import org.matheclipse.core.reflection.system.rules.PodDefaultsRules;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.google.common.base.Suppliers;
@@ -63,16 +62,16 @@ public class DocumentationPod implements IPod, PodDefaultsRules {
 		return symbol.toString();
 	}
 
-	public int addJSON(ObjectMapper mapper, ArrayNode podsArray, int formats, EvalEngine engine) {
+	public int addJSON(ArrayNode podsArray, int formats, EvalEngine engine) {
 		StringBuilder buf = new StringBuilder();
 		if (Documentation.getMarkdown(buf, keyWord())) {
-			return addDocumentationPod(this, mapper, podsArray, buf, formats);
+			return addDocumentationPod(this, podsArray, buf, formats);
 		}
 		return 0;
 	}
 
-	protected static int addDocumentationPod(DocumentationPod pod, ObjectMapper mapper, ArrayNode podsArray,
-			StringBuilder buf, int formats) {
+	protected static int addDocumentationPod(DocumentationPod pod, ArrayNode podsArray, StringBuilder buf,
+			int formats) {
 		int numpods = 0;
 		if (pod.parameters != null) {
 			IAST plotFunction = F.unaryAST1(pod.symbol, F.Times(F.a, F.x));
@@ -90,20 +89,20 @@ public class DocumentationPod implements IPod, PodDefaultsRules {
 			if (podOut.isAST(F.JSFormData, 3)) {
 				int form = Pods.internFormat(Pods.SYMJA, podOut.second().toString());
 				Pods.addPod(podsArray, plot2D, podOut, podOut.first().toString(), StringFunctions.inputForm(plot2D),
-						"Plot", "Plotter", form, mapper, engine);
+						"Plot", "Plotter", form, engine);
 				numpods++;
 			}
 		}
 
-		ArrayNode temp = mapper.createArrayNode();
-		ObjectNode subpodsResult = mapper.createObjectNode();
+		ArrayNode temp = Pods.JSON_OBJECT_MAPPER.createArrayNode();
+		ObjectNode subpodsResult = Pods.JSON_OBJECT_MAPPER.createObjectNode();
 		subpodsResult.put("title", "Documentation");
 		subpodsResult.put("scanner", "help");
 		subpodsResult.put("error", "false");
 		subpodsResult.put("numsubpods", 1);
 		subpodsResult.putPOJO("subpods", temp);
 		podsArray.add(subpodsResult);
-		ObjectNode node = mapper.createObjectNode();
+		ObjectNode node = Pods.JSON_OBJECT_MAPPER.createObjectNode();
 		// if ((formats & HTML) != 0x00) {
 		temp.add(node);
 		// node.put("html", generateHTMLString(buf.toString()));
