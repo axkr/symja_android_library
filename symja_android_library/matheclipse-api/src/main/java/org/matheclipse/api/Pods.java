@@ -2047,7 +2047,7 @@ public class Pods {
 			}
 			if (inExpr.isProbablePrime()) {
 				IExpr primePiExpr = F.PrimePi(inExpr);
-				IExpr primePi = engine.evaluate(inExpr);
+				IExpr primePi = engine.evaluate(primePiExpr);
 				if (primePi.isInteger()) {
 					ObjectNode node = JSON_OBJECT_MAPPER.createObjectNode();
 					temp.add(node);
@@ -2059,7 +2059,7 @@ public class Pods {
 					ObjectNode node = JSON_OBJECT_MAPPER.createObjectNode();
 					temp.add(node);
 					createJSONFormat(node, engine, F.NIL, inExpr.toString() + " is a prime number.",
-							StringFunctions.inputForm(F.PrimeQ(inExpr)), formats);
+							StringFunctions.inputForm(primePiExpr), formats);
 					numsubpods++;
 				}
 			}

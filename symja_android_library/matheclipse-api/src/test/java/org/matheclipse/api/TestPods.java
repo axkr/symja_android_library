@@ -598,7 +598,7 @@ public class TestPods {
 					"        \"plaintext\" : \"17 is an odd number.\",\r\n" + 
 					"        \"sinput\" : \"OddQ(17)\"\r\n" + 
 					"      }, {\r\n" + 
-					"        \"plaintext\" : \"17 is the 17th prime number.\",\r\n" + 
+					"        \"plaintext\" : \"17 is the 7th prime number.\",\r\n" + 
 					"        \"sinput\" : \"PrimePi(17)\"\r\n" + 
 					"      } ]\r\n" + 
 					"    }, {\r\n" + 
