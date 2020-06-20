@@ -2250,7 +2250,7 @@ public class TestPods {
 					"  \"queryresult\" : {\r\n" + 
 					"    \"success\" : \"true\",\r\n" + 
 					"    \"error\" : \"false\",\r\n" + 
-					"    \"numpods\" : 6,\r\n" + 
+					"    \"numpods\" : 7,\r\n" + 
 					"    \"version\" : \"0.1\",\r\n" + 
 					"    \"pods\" : [ {\r\n" + 
 					"      \"title\" : \"Input\",\r\n" + 
@@ -2290,6 +2290,16 @@ public class TestPods {
 					"        \"plaintext\" : \"x^2*(1+x+2*x^12)\",\r\n" + 
 					"        \"sinput\" : \"Factor(x^2*(1+x*(1+2*x^11)))\",\r\n" + 
 					"        \"latex\" : \"{x}^{2}\\\\,\\\\left( 1+x + 2\\\\cdot {x}^{12}\\\\right) \"\r\n" + 
+					"      } ]\r\n" + 
+					"    }, {\r\n" + 
+					"      \"title\" : \"GlobalExtrema\",\r\n" + 
+					"      \"scanner\" : \"GlobalMinimum\",\r\n" + 
+					"      \"error\" : \"false\",\r\n" + 
+					"      \"numsubpods\" : 1,\r\n" + 
+					"      \"subpods\" : [ {\r\n" + 
+					"        \"plaintext\" : \"min{x^2*(1+x*(1+2*x^11))} = 0 at x = 0\",\r\n" + 
+					"        \"sinput\" : \"Minimize(x^2*(1+x*(1+2*x^11)),x)\",\r\n" + 
+					"        \"latex\" : \"\\\\{0,\\\\{x\\\\to 0\\\\}\\\\}\"\r\n" + 
 					"      } ]\r\n" + 
 					"    }, {\r\n" + 
 					"      \"title\" : \"Derivative\",\r\n" + 
@@ -2403,6 +2413,85 @@ public class TestPods {
 					"      \"numsubpods\" : 1,\r\n" + 
 					"      \"subpods\" : [ {\r\n" + 
 					"        \"markdown\" : \"## CoshIntegral\\n\\n```\\nCoshIntegral(expr)\\n```\\n\\n> returns the hyperbolic cosine integral of `expr`.\\n  \\nSee\\n* [Wikipedia - Trigonometric integral](https://en.wikipedia.org/wiki/Trigonometric_integral)\\n\\n### Examples\\n\\n```\\n>> CoshIntegral(0)\\n-Infinity\\n```\\n \\n\"\r\n" + 
+					"      } ]\r\n" + 
+					"    } ]\r\n" + 
+					"  }\r\n" + 
+					"}");//
+		}
+	}
+	
+	@Test
+	public void testPolynomial001() {
+		String s = System.getProperty("os.name");
+		ObjectNode messageJSON = Pods.createResult("-x^2 + 4*x + 4", formatsTEX);
+		final String jsonStr = messageJSON.toPrettyString();
+		System.out.println(jsonStr);
+		if (s.contains("Windows")) {
+			assertEquals(jsonStr, //
+					"{\r\n" + 
+					"  \"queryresult\" : {\r\n" + 
+					"    \"success\" : \"true\",\r\n" + 
+					"    \"error\" : \"false\",\r\n" + 
+					"    \"numpods\" : 6,\r\n" + 
+					"    \"version\" : \"0.1\",\r\n" + 
+					"    \"pods\" : [ {\r\n" + 
+					"      \"title\" : \"Input\",\r\n" + 
+					"      \"scanner\" : \"Identity\",\r\n" + 
+					"      \"error\" : \"false\",\r\n" + 
+					"      \"numsubpods\" : 1,\r\n" + 
+					"      \"subpods\" : [ {\r\n" + 
+					"        \"plaintext\" : \"4+4*x-x^2\",\r\n" + 
+					"        \"sinput\" : \"4+4*x-x^2\",\r\n" + 
+					"        \"latex\" : \"4 + 4\\\\cdot x - {x}^{2}\"\r\n" + 
+					"      } ]\r\n" + 
+					"    }, {\r\n" + 
+					"      \"title\" : \"Function\",\r\n" + 
+					"      \"scanner\" : \"Plotter\",\r\n" + 
+					"      \"error\" : \"false\",\r\n" + 
+					"      \"numsubpods\" : 1,\r\n" + 
+					"      \"subpods\" : [ {\r\n" + 
+					"        \"sinput\" : \"Plot(4+4*x-x^2,{x,-7.0,7.0})\",\r\n" + 
+					"        \"jsxgraph\" : \"<iframe srcdoc=\\\"&lt;?xml version=&quot;1.0&quot; encoding=&quot;UTF-8&quot;?&gt;\\n\\n&lt;!DOCTYPE html PUBLIC\\n  &quot;-//W3C//DTD XHTML 1.1 plus MathML 2.0 plus SVG 1.1//EN&quot;\\n  &quot;http://www.w3.org/2002/04/xhtml-math-svg/xhtml-math-svg.dtd&quot;&gt;\\n\\n&lt;html xmlns=&quot;http://www.w3.org/1999/xhtml&quot; style=&quot;width: 100%; height: 100%; margin: 0; padding: 0&quot;&gt;\\n&lt;head&gt;\\n&lt;meta charset=&quot;utf-8&quot;&gt;\\n&lt;title&gt;JSXGraph&lt;/title&gt;\\n\\n&lt;body style=&quot;width: 100%; height: 100%; margin: 0; padding: 0&quot;&gt;\\n\\n&lt;link rel=&quot;stylesheet&quot; type=&quot;text/css&quot; href=&quot;https://cdnjs.cloudflare.com/ajax/libs/jsxgraph/0.99.7/jsxgraphcore.css&quot; /&gt;\\n&lt;script src=&quot;https://cdn.jsdelivr.net/gh/paulmasson/math@1.2.9/build/math.js&quot;&gt;&lt;/script&gt;\\n&lt;script src=&quot;https://cdnjs.cloudflare.com/ajax/libs/jsxgraph/0.99.7/jsxgraphcore.js&quot;\\n        type=&quot;text/javascript&quot;&gt;&lt;/script&gt;\\n&lt;script src=&quot;https://cdnjs.cloudflare.com/ajax/libs/jsxgraph/0.99.7/geonext.min.js&quot;\\n        type=&quot;text/javascript&quot;&gt;&lt;/script&gt;\\n\\n&lt;div id=&quot;jxgbox&quot; class=&quot;jxgbox&quot; style=&quot;display: flex; width:99%; height:99%; margin: 0; flex-direction: column; overflow: hidden&quot;&gt;\\n&lt;script&gt;\\nvar board = JXG.JSXGraph.initBoard('jxgbox', {axis:true,boundingbox:[-7.7,8.65,7.7,-5.65]});\\nboard.suspendUpdate();\\n\\nfunction z1(x) { return add(add(4,mul(4,x)),mul(-1,pow(x,2))); }\\nvar p1 = board.create('functiongraph',[z1, -7.0, 7.0]);\\nvar data = [ p1 ];\\n\\n\\nboard.unsuspendUpdate();\\n\\n&lt;/script&gt;\\n&lt;/div&gt;\\n\\n&lt;/body&gt;\\n&lt;/html&gt;\\\" style=\\\"display: block; width: 100%; height: 100%; border: none;\\\" ></iframe>\"\r\n" + 
+					"      } ]\r\n" + 
+					"    }, {\r\n" + 
+					"      \"title\" : \"Factor\",\r\n" + 
+					"      \"scanner\" : \"Polynomial\",\r\n" + 
+					"      \"error\" : \"false\",\r\n" + 
+					"      \"numsubpods\" : 1,\r\n" + 
+					"      \"subpods\" : [ {\r\n" + 
+					"        \"plaintext\" : \"4+4*x-x^2\",\r\n" + 
+					"        \"sinput\" : \"Factor(4+4*x-x^2)\",\r\n" + 
+					"        \"latex\" : \"4 + 4\\\\cdot x - {x}^{2}\"\r\n" + 
+					"      } ]\r\n" + 
+					"    }, {\r\n" + 
+					"      \"title\" : \"GlobalExtrema\",\r\n" + 
+					"      \"scanner\" : \"GlobalMaximum\",\r\n" + 
+					"      \"error\" : \"false\",\r\n" + 
+					"      \"numsubpods\" : 1,\r\n" + 
+					"      \"subpods\" : [ {\r\n" + 
+					"        \"plaintext\" : \"max{4+4*x-x^2} = 8 at x = 2\",\r\n" + 
+					"        \"sinput\" : \"Maximize(4+4*x-x^2,x)\",\r\n" + 
+					"        \"latex\" : \"\\\\{8,\\\\{x\\\\to 2\\\\}\\\\}\"\r\n" + 
+					"      } ]\r\n" + 
+					"    }, {\r\n" + 
+					"      \"title\" : \"Derivative\",\r\n" + 
+					"      \"scanner\" : \"Derivative\",\r\n" + 
+					"      \"error\" : \"false\",\r\n" + 
+					"      \"numsubpods\" : 1,\r\n" + 
+					"      \"subpods\" : [ {\r\n" + 
+					"        \"plaintext\" : \"4-2*x\",\r\n" + 
+					"        \"sinput\" : \"D(4+4*x-x^2,x)\",\r\n" + 
+					"        \"latex\" : \"4 - 2\\\\cdot x\"\r\n" + 
+					"      } ]\r\n" + 
+					"    }, {\r\n" + 
+					"      \"title\" : \"Indefinite integral\",\r\n" + 
+					"      \"scanner\" : \"Integral\",\r\n" + 
+					"      \"error\" : \"false\",\r\n" + 
+					"      \"numsubpods\" : 1,\r\n" + 
+					"      \"subpods\" : [ {\r\n" + 
+					"        \"plaintext\" : \"4*x+2*x^2-x^3/3\",\r\n" + 
+					"        \"sinput\" : \"Integrate(4+4*x-x^2,x)\",\r\n" + 
+					"        \"latex\" : \"4\\\\cdot x + 2\\\\cdot {x}^{2}+\\\\frac{ - {x}^{3}}{3}\"\r\n" + 
 					"      } ]\r\n" + 
 					"    } ]\r\n" + 
 					"  }\r\n" + 

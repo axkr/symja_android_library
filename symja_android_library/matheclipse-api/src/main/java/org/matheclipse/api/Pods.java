@@ -55,7 +55,7 @@ import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.google.common.base.Suppliers;
 
 public class Pods {
-	
+
 	public static final String JSON = "JSON";
 
 	/**
@@ -1399,11 +1399,21 @@ public class Pods {
 								numpods++;
 							}
 
-							if (evaledNumExpr.isInexactNumber() || //
-									evaledNumExpr.isQuantity()) {
+							if (numExpr.isPresent() && //
+									(evaledNumExpr.isInexactNumber() || //
+											evaledNumExpr.isQuantity())) {
 								addSymjaPod(podsArray, numExpr, evaledNumExpr, "Decimal form", "Numeric", formats,
 										engine);
 								numpods++;
+								if (!outExpr.isRational()) {
+									if (evaledNumExpr.isInexactNumber()) {
+										inExpr = F.Rationalize(evaledNumExpr);
+										podOut = engine.evaluate(inExpr);
+										addSymjaPod(podsArray, inExpr, podOut, "Rational form", "Numeric", formats,
+												engine);
+										numpods++;
+									}
+								}
 							}
 
 							if (outExpr.isFraction()) {
@@ -1452,8 +1462,9 @@ public class Pods {
 							numpods += listPod.addJSON(podsArray, formats, engine);
 						}
 
-						if (evaledNumExpr.isInexactNumber() || //
-								evaledNumExpr.isQuantity()) {
+						if (numExpr.isPresent() && //
+								(evaledNumExpr.isInexactNumber() || //
+										evaledNumExpr.isQuantity())) {
 							addSymjaPod(podsArray, numExpr, evaledNumExpr, "Decimal form", "Numeric", formats, engine);
 							numpods++;
 						}
@@ -1688,12 +1699,57 @@ public class Pods {
 									}
 
 									if (isNumericFunction && variables.argSize() == 1) {
-										if (outExpr.isPolynomial(variables)) {
+										if (outExpr.isPolynomial(variables) && !outExpr.isAtom()) {
 											inExpr = F.Factor(outExpr);
 											podOut = engine.evaluate(inExpr);
 											addSymjaPod(podsArray, inExpr, podOut, "Factor", "Polynomial", formats,
 													engine);
 											numpods++;
+
+											IExpr x = variables.first();
+											inExpr = F.Minimize(outExpr, x);
+											podOut = engine.evaluate(inExpr);
+											if (podOut.isAST(F.List, 3) && //
+													podOut.first().isNumber() && //
+													podOut.second().isAST(F.List, 2)) {
+												IExpr rule = podOut.second().first();
+												if (rule.isRule()) {
+													StringBuilder buf = new StringBuilder();
+													buf.append("min{");
+													buf.append(outExpr.toString());
+													buf.append("} = ");
+													buf.append(podOut.first());
+													buf.append(" at ");
+													buf.append(rule.first().toString());
+													buf.append(" = ");
+													buf.append(rule.second().toString());
+													addSymjaPod(podsArray, inExpr, podOut, buf.toString(),
+															"GlobalExtrema", "GlobalMinimum", formats, engine);
+													numpods++;
+												}
+											}
+
+											inExpr = F.Maximize(outExpr, x);
+											podOut = engine.evaluate(inExpr);
+											if (podOut.isAST(F.List, 3) && //
+													podOut.first().isNumber() && //
+													podOut.second().isAST(F.List, 2)) {
+												IExpr rule = podOut.second().first();
+												if (rule.isRule()) {
+													StringBuilder buf = new StringBuilder();
+													buf.append("max{");
+													buf.append(outExpr.toString());
+													buf.append("} = ");
+													buf.append(podOut.first());
+													buf.append(" at ");
+													buf.append(rule.first().toString());
+													buf.append(" = ");
+													buf.append(rule.second().toString());
+													addSymjaPod(podsArray, inExpr, podOut, buf.toString(),
+															"GlobalExtrema", "GlobalMaximum", formats, engine);
+													numpods++;
+												}
+											}
 										}
 										inExpr = F.D(outExpr, variables.arg1());
 										podOut = engine.evaluate(inExpr);
@@ -1728,15 +1784,19 @@ public class Pods {
 			}
 		} catch (RuntimeException rex) {
 			rex.printStackTrace();
-			error = true;
-			outExpr = F.$Aborted;
+			return errorJSON("0", "JSON Export Failed");
 		}
 
 		queryresult.put("error", error ? "true" : "false");
 		return messageJSON;
 	}
 
-	public static String errorJSON(String code, String msg) {
+	public static String errorJSONString(String code, String msg) {
+		ObjectNode messageJSON = errorJSON(code, msg);
+		return messageJSON.toString();
+	}
+
+	private static ObjectNode errorJSON(String code, String msg) {
 		ObjectMapper mapper = new ObjectMapper();
 		ObjectNode messageJSON = mapper.createObjectNode();
 		ObjectNode queryresult = mapper.createObjectNode();
@@ -1748,7 +1808,7 @@ public class Pods {
 		error.put("msg", msg);
 		queryresult.put("numpods", 0);
 		queryresult.put("version", "0.1");
-		return messageJSON.toString();
+		return messageJSON;
 	}
 
 	private static IASTAppendable flattenTimes(final IAST ast) {

@@ -42,10 +42,10 @@ public class SymjaServer {
 					ObjectNode messageJSON = Pods.createResult(inputStr, formats);
 					jsonStr = messageJSON.toString();
 				} else {
-					jsonStr = Pods.errorJSON("1", "Invalid appid");
+					jsonStr = Pods.errorJSONString("1", "Invalid appid");
 				}
 			} else {
-				jsonStr = Pods.errorJSON("2", "Appid missing");
+				jsonStr = Pods.errorJSONString("2", "Appid missing");
 			}
 			exchange.getResponseSender().send(jsonStr);
 		}
