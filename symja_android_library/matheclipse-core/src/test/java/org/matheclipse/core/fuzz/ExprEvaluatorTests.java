@@ -288,6 +288,9 @@ public class ExprEvaluatorTests extends TestCase {
 				F.C1D2, //
 				F.CNI, //
 				F.CI, //
+				F.CC(Long.MAX_VALUE,  Long.MIN_VALUE , Long.MIN_VALUE, Long.MAX_VALUE), //
+				F.QQ(Long.MAX_VALUE, Long.MIN_VALUE), F.QQ(Long.MIN_VALUE, Long.MAX_VALUE), //
+				F.Slot2, //
 				// some primes
 				F.C2, F.C3, F.C5, F.C7, F.ZZ(11), F.ZZ(13), F.ZZ(17), F.ZZ(19), F.ZZ(101), F.ZZ(1009), F.ZZ(10007), //
 				F.ZZ(Integer.MIN_VALUE), //
