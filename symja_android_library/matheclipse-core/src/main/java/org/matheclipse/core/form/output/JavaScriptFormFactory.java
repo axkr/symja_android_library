@@ -64,6 +64,7 @@ public class JavaScriptFormFactory extends DoubleFormFactory {
 		FUNCTIONS_STR_MATHCELL.put(F.HankelH1, "hankel1");
 		FUNCTIONS_STR_MATHCELL.put(F.HankelH2, "hankel2");
 		FUNCTIONS_STR_MATHCELL.put(F.InverseWeierstrassP, "inverseWeierstrassP");
+		FUNCTIONS_STR_MATHCELL.put(F.PolyGamma, "digamma");
 		FUNCTIONS_STR_MATHCELL.put(F.SphericalBesselJ, "sphericalBesselJ");
 		FUNCTIONS_STR_MATHCELL.put(F.SphericalBesselY, "sphericalBesselY");
 		FUNCTIONS_STR_MATHCELL.put(F.SphericalHankelH1, "sphericalHankel1");
@@ -73,7 +74,9 @@ public class JavaScriptFormFactory extends DoubleFormFactory {
 		FUNCTIONS_STR_MATHCELL.put(F.WeierstrassInvariants, "weierstrassInvariants");
 		FUNCTIONS_STR_MATHCELL.put(F.WeierstrassP, "weierstrassP");
 		FUNCTIONS_STR_MATHCELL.put(F.WeierstrassPPrime, "weierstrassPPrime");
-
+		FUNCTIONS_STR_MATHCELL.put(F.WhittakerM, "whittakerM");
+		FUNCTIONS_STR_MATHCELL.put(F.WhittakerW, "whittakerW");
+		
 		FUNCTIONS_STR_MATHCELL.put(F.Abs, "abs");
 		FUNCTIONS_STR_MATHCELL.put(F.Arg, "arg");
 		FUNCTIONS_STR_MATHCELL.put(F.Chop, "chop");

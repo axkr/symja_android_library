@@ -59,11 +59,50 @@
   D(SinIntegral(f_),x_?NotListQ):=D(f,x)*Sinc(f),
   D(SinhIntegral(f_),x_?NotListQ):=D(f,x)*Sinh(f)/f,
   
+  D(ExpIntegralE(g_, f_),x_?NotListQ):= -1*ExpIntegralE(-1+g,f)*D(f,x)
+    /; FreeQ({g},x),
+
+  D(JacobiAmplitude(g_, f_),x_?NotListQ):= (((EllipticE(JacobiAmplitude(g,f),f)+(-1+f)*g)*JacobiDN(g,f)-f*JacobiCN(g,f)*JacobiSN(g,f))*D(f,x))/(2*(-1+f)*f)
+    /; FreeQ({g},x),
+  D(JacobiCD(g_, f_),x_?NotListQ):= ((EllipticE(JacobiAmplitude(g,f),f)+(-1+f)*g)*JacobiND(g,f)*JacobiSD(g,f)*D(f,x))/(2*f)
+    /; FreeQ({g},x), 
+  D(JacobiCN(g_, f_),x_?NotListQ):= (JacobiDN(g,f)*JacobiSN(g,f)*(EllipticE(JacobiAmplitude(g,f),f)+(-1+f)*g-f*JacobiCD(g,f)*JacobiSN(g, f))*D(f,x))/(2*(1-f)*f)
+    /; FreeQ({g},x),
+  D(JacobiDC(g_, f_),x_?NotListQ):= ((-EllipticE(JacobiAmplitude(g,f),f)+(1-f)*g)*JacobiNC(g,f)*JacobiSC(g, f)*D(f,x))/(2*f)
+    /; FreeQ({g},x), 
+  D(JacobiDN(g_, f_),x_?NotListQ):= (JacobiCN(g,f)*(EllipticE(JacobiAmplitude(g,f),f)+(-1+f)*g-JacobiDN(g,f)*JacobiSC(g,f))*JacobiSN(g,f)*D(f,x))/(2*(1-f))
+    /; FreeQ({g},x), 
+  D(JacobiNC(g_, f_),x_?NotListQ):= (JacobiDC(g,f)*JacobiSC(g,f)*(-EllipticE(JacobiAmplitude(g,f),f)+(1-f)*g+f*JacobiCD(g,f)*JacobiSN(g,f))*D(f,x))/(2*(1-f)*f)
+    /; FreeQ({g},x),    
+  D(JacobiND(g_, f_),x_?NotListQ):= (JacobiCD(g,f)*(-EllipticE(JacobiAmplitude(g,f),f)+(1-f)*g+JacobiDN(g,f)*JacobiSC(g,f))*JacobiSD(g,f)*D(f,x))/(2*(1-f))
+    /; FreeQ({g},x), 
+  D(JacobiSC(g_, f_),x_?NotListQ):= (JacobiDC(g,f)*JacobiNC(g,f)*(-EllipticE(JacobiAmplitude(g,f),f)+(1-f)*g+f*JacobiCD[g,f]*JacobiSN[g,f])*D(f,x))/(2*(1-f)*f)
+    /; FreeQ({g},x), 
+  D(JacobiSD(g_, f_),x_?NotListQ):= (JacobiCD(g,f)*JacobiND(g,f)*(-EllipticE(JacobiAmplitude(g,f),f)+(1-f)*g+f*JacobiDN(g,f)*JacobiSC(g,f))*D(f,x))/(2*(1-f)*f)
+    /; FreeQ({g},x), 
+  D(JacobiSN(g_, f_),x_?NotListQ):= (JacobiCN(g,f)*JacobiDN(g,f)*(-EllipticE(JacobiAmplitude(g,f),f)+(1-f)*g+f*JacobiCD(g,f)*JacobiSN(g,f))*D(f,x))/(2*(1-f)*f)
+    /; FreeQ({g},x),
+    
+  D(LaguerreL(g_, f_),x_?NotListQ):= -1*LaguerreL(-1+g,1,f)*D(f,x)
+    /; FreeQ({g},x),
+  D(LaguerreL(g_, h_, f_),x_?NotListQ):= -1*LaguerreL(-1+g,1+h,f)*c
+    /; FreeQ({g,h},x), 
+  D(LegendreP(g_, f_),x_?NotListQ):= ((f*(-1-g)*LegendreP(g,f)+(1+g)*LegendreP(1+g,f))*D(f,x))/(-1 + f^2)
+    /; FreeQ({g},x),
+  D(LegendreP(g_, h_, f_),x_?NotListQ):= ((f*(-1-g)*LegendreP(g, h, f)+(1+g-h)*LegendreP(1+g,h,f))*D(f,x))/(-1+f^2)
+    /; FreeQ({g,h},x),   
+  D(LegendreQ(g_, f_),x_?NotListQ):= ((f*(-1-g)*LegendreQ(g,f)+(1+g)*LegendreQ(1+g,f))*D(f,x))/(-1+f^2)
+    /; FreeQ({g},x),
+  D(LegendreQ(g_, h_, f_),x_?NotListQ):= ((f*(-1-g)*LegendreQ(g,h,f)+(1+g-h)*LegendreQ(1+g,h,f))*D(f,x))/(-1+f^2)
+    /; FreeQ({g,h},x),
+    
+  D(PolyGamma(g_, f_),x_?NotListQ):=  PolyGamma(1+g, f)*D(f,x)
+    /; FreeQ({g},x),
   D(HurwitzZeta(f_,g_),x_?NotListQ):=(-f)*HurwitzZeta(1 + f, g)*D(g,x)
     /; FreeQ({f},x),
   D(Zeta(f_,g_),x_?NotListQ):=(-f)*Zeta(1+f, g)*D(g,x)
     /; FreeQ({f},x),
-
+    
   D(Hypergeometric2F1(a_, b_, c_, f_), x_?NotListQ) := (a*b*Hypergeometric2F1(1 + a, 1 + b, 1 + c, f)*D(f,x))/c
     /; FreeQ({a,b,c},x),
   D(Hypergeometric2F1(a_, b_, c_, f_), {x_,n_}) := (Hypergeometric2F1(a + n, b + n, c + n, x)*Pochhammer(a, n)*Pochhammer(b, n))/Pochhammer(c, n)
@@ -71,9 +110,9 @@
   
   D(HypergeometricU(f_, g_, h_),x_?NotListQ) :=-f*HypergeometricU(1+f,1+g,h)*D(h,x)
     /; FreeQ({f,g},x),
-  D(WhittakerM(f_, g_, h_),x_?NotListQ) :=((1/2 - f/h)*WhittakerM(f, g, h) + ((1/2 + f + g)*WhittakerM(1 + f, g, h))/h)*D(h,x)
+  D(WhittakerM(f_, g_, h_),x_?NotListQ) :=((1/2-f/h)*WhittakerM(f, g, h) + ((1/2+f+g)*WhittakerM(1 + f, g, h))/h)*D(h,x)
     /; FreeQ({f,g},x),
-  D(WhittakerW(f_, g_, h_),x_?NotListQ) :=((1/2 - f/h)*WhittakerW(f, g, h) - WhittakerW(1 + f, g, h)/h)*D(h,x) 
+  D(WhittakerW(f_, g_, h_),x_?NotListQ) :=((1/2-f/h)*WhittakerW(f, g, h) - WhittakerW(1+f,g,h)/h)*D(h,x) 
     /; FreeQ({f,g},x),   
     
   D(InverseFunction(f_)[x_],x_) := 1/Derivative(1)[f][InverseFunction(f)[x]] 

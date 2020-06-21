@@ -4257,14 +4257,38 @@ public class F extends S {
 		return new AST2(JacobiAmplitude, a0, a1);
 	}
 
+	public static IAST JacobiCD(final IExpr a0, final IExpr a1) {
+		return new AST2(JacobiCD, a0, a1);
+	}
+	
 	public static IAST JacobiCN(final IExpr a0, final IExpr a1) {
 		return new AST2(JacobiCN, a0, a1);
 	}
 
+	public static IAST JacobiDC(final IExpr a0, final IExpr a1) {
+		return new AST2(JacobiDC, a0, a1);
+	}
+	
+	public static IAST JacobiNC(final IExpr a0, final IExpr a1) {
+		return new AST2(JacobiNC, a0, a1);
+	}
+	
+	public static IAST JacobiND(final IExpr a0, final IExpr a1) {
+		return new AST2(JacobiND, a0, a1);
+	}
+	
 	public static IAST JacobiDN(final IExpr a0, final IExpr a1) {
 		return new AST2(JacobiDN, a0, a1);
 	}
 
+	public static IAST JacobiSC(final IExpr a0, final IExpr a1) {
+		return new AST2(JacobiSC, a0, a1);
+	}
+	
+	public static IAST JacobiSD(final IExpr a0, final IExpr a1) {
+		return new AST2(JacobiSD, a0, a1);
+	}
+	
 	public static IAST JacobiSN(final IExpr a0, final IExpr a1) {
 		return new AST2(JacobiSN, a0, a1);
 	}
