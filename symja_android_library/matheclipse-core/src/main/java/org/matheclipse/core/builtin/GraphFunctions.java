@@ -1652,43 +1652,76 @@ public class GraphFunctions {
 	}
 
 	private static void edgesToVisjs(Map<IExpr, Integer> map, StringBuilder buf, Graph<IExpr, ExprEdge> g) {
-		Set<ExprEdge> edgeSet = g.edgeSet();
-		IASTAppendable edges = F.ListAlloc(edgeSet.size());
+		Set<ExprEdge> edgeSet = g.edgeSet(); 
 		GraphType type = g.getType();
 		boolean first = true;
 		if (type.isDirected()) {
 			buf.append("var edges = new vis.DataSet([\n");
-			for (ExprEdge edge : edgeSet) {
-				// {from: 1, to: 3},
-				if (first) {
-					buf.append("  {from: ");
-				} else {
-					buf.append(", {from: ");
+			for (Object object : edgeSet) {
+				if (object instanceof ExprEdge) {
+					ExprEdge edge = (ExprEdge) object;
+					// {from: 1, to: 3},
+					if (first) {
+						buf.append("  {from: ");
+					} else {
+						buf.append(", {from: ");
+					}
+					buf.append(map.get(edge.lhs()));
+					buf.append(", to: ");
+					buf.append(map.get(edge.rhs()));
+					// , arrows: { to: { enabled: true, type: 'arrow'}}
+					buf.append(" , arrows: { to: { enabled: true, type: 'arrow'}}");
+					buf.append("}\n");
+					first = false;
+				} else if (object instanceof ExprWeightedEdge) {
+					ExprWeightedEdge weightedEdge = (ExprWeightedEdge) object;
+					// {from: 1, to: 3},
+					if (first) {
+						buf.append("  {from: ");
+					} else {
+						buf.append(", {from: ");
+					}
+					buf.append(map.get(weightedEdge.lhs()));
+					buf.append(", to: ");
+					buf.append(map.get(weightedEdge.rhs()));
+					// , arrows: { to: { enabled: true, type: 'arrow'}}
+					buf.append(" , arrows: { to: { enabled: true, type: 'arrow'}}");
+					buf.append("}\n");
+					first = false;
 				}
-				buf.append(map.get(edge.lhs()));
-				buf.append(", to: ");
-				buf.append(map.get(edge.rhs()));
-				// , arrows: { to: { enabled: true, type: 'arrow'}}
-				buf.append(" , arrows: { to: { enabled: true, type: 'arrow'}}");
-				buf.append("}\n");
-				first = false;
 			}
 			buf.append("]);\n");
 		} else {
 			//
 			buf.append("var edges = new vis.DataSet([\n");
-			for (ExprEdge edge : edgeSet) {
-				// {from: 1, to: 3},
-				if (first) {
-					buf.append("  {from: ");
-				} else {
-					buf.append(", {from: ");
+			for (Object object : edgeSet) {
+				if (object instanceof ExprEdge) {
+					ExprEdge edge = (ExprEdge) object;
+					// {from: 1, to: 3},
+					if (first) {
+						buf.append("  {from: ");
+					} else {
+						buf.append(", {from: ");
+					}
+					buf.append(map.get(edge.lhs()));
+					buf.append(", to: ");
+					buf.append(map.get(edge.rhs()));
+					buf.append("}\n");
+					first = false;
+				} else if (object instanceof ExprWeightedEdge) {
+					ExprWeightedEdge weightedEdge = (ExprWeightedEdge) object;
+					// {from: 1, to: 3},
+					if (first) {
+						buf.append("  {from: ");
+					} else {
+						buf.append(", {from: ");
+					}
+					buf.append(map.get(weightedEdge.lhs()));
+					buf.append(", to: ");
+					buf.append(map.get(weightedEdge.rhs()));
+					buf.append("}\n");
+					first = false;
 				}
-				buf.append(map.get(edge.lhs()));
-				buf.append(", to: ");
-				buf.append(map.get(edge.rhs()));
-				buf.append("}\n");
-				first = false;
 			}
 			buf.append("]);\n");
 		}
@@ -1697,52 +1730,56 @@ public class GraphFunctions {
 	private static void weightedEdgesToVisjs(Map<IExpr, Integer> map, StringBuilder buf,
 			Graph<IExpr, ExprWeightedEdge> graph) {
 
-		Set<ExprWeightedEdge> edgeSet = graph.edgeSet();
-		IASTAppendable edges = F.ListAlloc(edgeSet.size());
-		IASTAppendable weights = F.ListAlloc(edgeSet.size());
+		Set<ExprWeightedEdge> edgeSet = graph.edgeSet(); 
 		GraphType type = graph.getType();
 		boolean first = true;
 		if (type.isDirected()) {
 			buf.append("var edges = new vis.DataSet([\n");
-			for (ExprWeightedEdge edge : edgeSet) {
-				// {from: 1, to: 3},
-				if (first) {
-					buf.append("  {from: ");
-				} else {
-					buf.append(", {from: ");
+			for (Object object : edgeSet) {
+				if (object instanceof ExprWeightedEdge) {
+					ExprWeightedEdge edge = (ExprWeightedEdge) object;
+					// {from: 1, to: 3},
+					if (first) {
+						buf.append("  {from: ");
+					} else {
+						buf.append(", {from: ");
+					}
+
+					buf.append(map.get(edge.lhs()));
+					buf.append(", to: ");
+					buf.append(map.get(edge.rhs()));
+
+					buf.append(", label: '");
+					buf.append(edge.weight());
+					buf.append("'");
+					// , arrows: { to: { enabled: true, type: 'arrow'}}
+					buf.append(" , arrows: { to: { enabled: true, type: 'arrow'}}");
+					buf.append("}\n");
+					first = false;
 				}
-
-				buf.append(map.get(edge.lhs()));
-				buf.append(", to: ");
-				buf.append(map.get(edge.rhs()));
-
-				buf.append(", label: '");
-				buf.append(edge.weight());
-				buf.append("'");
-				// , arrows: { to: { enabled: true, type: 'arrow'}}
-				buf.append(" , arrows: { to: { enabled: true, type: 'arrow'}}");
-				buf.append("}\n");
-				first = false;
 			}
 			buf.append("]);\n");
 		} else {
 			buf.append("var edges = new vis.DataSet([\n");
-			for (ExprWeightedEdge edge : edgeSet) {
-				// {from: 1, to: 3},
-				if (first) {
-					buf.append("  {from: ");
-				} else {
-					buf.append(", {from: ");
-				}
+			for (Object object : edgeSet) {
+				if (object instanceof ExprWeightedEdge) {
+					ExprWeightedEdge edge = (ExprWeightedEdge) object;
+					// {from: 1, to: 3},
+					if (first) {
+						buf.append("  {from: ");
+					} else {
+						buf.append(", {from: ");
+					}
 
-				buf.append(map.get(edge.lhs()));
-				buf.append(", to: ");
-				buf.append(map.get(edge.rhs()));
-				buf.append(", label: '");
-				buf.append(edge.weight());
-				buf.append("'");
-				buf.append("}\n");
-				first = false;
+					buf.append(map.get(edge.lhs()));
+					buf.append(", to: ");
+					buf.append(map.get(edge.rhs()));
+					buf.append(", label: '");
+					buf.append(edge.weight());
+					buf.append("'");
+					buf.append("}\n");
+					first = false;
+				}
 			}
 			buf.append("]);\n");
 		}

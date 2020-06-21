@@ -209,7 +209,7 @@ public class ManipulateFunction {
 						}
 
 						if (plotRangeX.isAST3() && plotRangeX.arg1().isSymbol()) {
-							//return mathcellSliderWithPlot(ast, plot, plotRangeX, plotRangeY, engine);
+							// return mathcellSliderWithPlot(ast, plot, plotRangeX, plotRangeY, engine);
 							return jsxgraphSliderWithPlot(ast, plot, plotRangeX, engine);
 						}
 
@@ -1883,15 +1883,23 @@ public class ManipulateFunction {
 		if (!fixedBounds) {
 			if (F.isFuzzyEquals(Double.MAX_VALUE, boundingbox[0], Config.SPECIAL_FUNCTIONS_TOLERANCE)) {
 				boundingbox[0] = -5.0;
+			} else {
+				boundingbox[0] = boundingbox[0] - 0.5;
 			}
 			if (F.isFuzzyEquals(Double.MIN_VALUE, boundingbox[1], Config.SPECIAL_FUNCTIONS_TOLERANCE)) {
 				boundingbox[1] = 5.0;
+			} else {
+				boundingbox[1] = boundingbox[1] + 0.5;
 			}
 			if (F.isFuzzyEquals(Double.MIN_VALUE, boundingbox[2], Config.SPECIAL_FUNCTIONS_TOLERANCE)) {
 				boundingbox[2] = 5.0;
+			} else {
+				boundingbox[2] = boundingbox[2] + 0.5;
 			}
 			if (F.isFuzzyEquals(Double.MAX_VALUE, boundingbox[3], Config.SPECIAL_FUNCTIONS_TOLERANCE)) {
 				boundingbox[3] = -5.0;
+			} else {
+				boundingbox[3] = boundingbox[3] - 0.5;
 			}
 		}
 

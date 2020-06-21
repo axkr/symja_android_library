@@ -7786,6 +7786,7 @@ public class LowercaseTestCase extends AbstractTestCase {
 
 	public void testFindSpanningTree() {
 		// example from Wikipedia https://en.wikipedia.org/wiki/Minimum_spanning_tree
+		
 		check("FindSpanningTree(Graph({a,b,c,d,e,f},{a<->b,a<->d,b<->c,b<->d,b<->e,c<->e,c<->f,d<->e,e<->f}," //
 				+ "{EdgeWeight->{1.0,3.0,6.0,5.0,1.0,5.0,2.0,1.0,4.0}}))", //
 				"Graph({a,b,d,e,c,f},{a->b,d->e,c->f,b->e,e->f},{EdgeWeight->{1.0,1.0,2.0,1.0,4.0}})");
@@ -11366,12 +11367,17 @@ public class LowercaseTestCase extends AbstractTestCase {
 				"(20.085536923187664)-Math.cos((9.869604401089358)/x)");
 		// JSXGraph.org syntax
 		check("JSForm(Manipulate(Plot(Sin(x)*Cos(1 + a*x), {x, 0, 2*Pi}, PlotRange->{-1,2}), {a,0,10}))", //
-				"var board = JXG.JSXGraph.initBoard('jxgbox', {axis:true,boundingbox:[-0.3141592653589793,2.15,6.5973445725385655,-1.15]});\n"
-						+ "board.suspendUpdate();\n"
-						+ "var a = board.create('slider',[[0.37699111843077515,1.8199999999999998],[5.906194188748811,1.8199999999999998],[0,0,10]],{name:'a'});\n"
-						+ "\n" + "function z1(x) { return mul(cos(add(1,mul(a.Value(),x))),sin(x)); }\n"
-						+ "var p1 = board.create('functiongraph',[z1, 0, (6.283185307179586)]);\n"
-						+ "var data = [ p1 ];\n" + "\n" + "\n" + "board.unsuspendUpdate();\n" + "");
+				"var board = JXG.JSXGraph.initBoard('jxgbox', {axis:true,boundingbox:[-0.8641592653589794,2.7,7.147344572538565,-1.7]});\n" + 
+				"board.suspendUpdate();\n" + 
+				"var a = board.create('slider',[[-0.0630088815692249,2.2600000000000002],[6.346194188748811,2.2600000000000002],[0,0,10]],{name:'a'});\n" + 
+				"\n" + 
+				"function z1(x) { return mul(cos(add(1,mul(a.Value(),x))),sin(x)); }\n" + 
+				"var p1 = board.create('functiongraph',[z1, 0, (6.283185307179586)]);\n" + 
+				"var data = [ p1 ];\n" + 
+				"\n" + 
+				"\n" + 
+				"board.unsuspendUpdate();\n" + 
+				"");
 		// Mathcell syntax / generate TeX for MathJAX
 		check("JSForm(Manipulate(Factor(x^n + 1), {n, 1, 5, 1}))", //
 				"MathCell( id, [ { type: 'slider', min: 1, max: 5, step: 1, name: 'n', label: 'n' }\n" + //
@@ -11402,7 +11408,7 @@ public class LowercaseTestCase extends AbstractTestCase {
 						"}");
 		// JSXGraph.org syntax
 		check("JSForm(ListPlot(Prime(Range(25))))", //
-				"var board = JXG.JSXGraph.initBoard('jxgbox', {axis:true,boundingbox:[-1.3,101.75,27.3,-2.75]});\n" + //
+				"var board = JXG.JSXGraph.initBoard('jxgbox', {axis:true,boundingbox:[-1.85,102.3,27.85,-3.3]});\n" + //
 						"board.suspendUpdate();\n" + //
 						"\n" + //
 						"board.create('point', [function() {return 1;},function() {return 2;}],  {name:'', face:'o', size: 2 } );\n"

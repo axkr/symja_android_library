@@ -1319,6 +1319,26 @@ public class Pods {
 				try {
 					String html = VISJS_IFRAME;
 					html = StringUtils.replace(html, "`1`", plainText);
+					html = StringUtils.replace(html, "`2`", //
+							"  var options = {\n" + //
+									"		  edges: {\n" + //
+									"              smooth: {\n" + //
+									"                  type: 'cubicBezier',\n" + //
+									"                  forceDirection:  'vertical',\n" + //
+									"                  roundness: 0.4\n" + //
+									"              }\n" + //
+									"          },\n" + //
+									"          layout: {\n" + //
+									"              hierarchical: {\n" + //
+									"                  direction: \"UD\"\n" + //
+									"              }\n" + //
+									"          },\n" + //
+									"          nodes: {\n" + //
+									"            shape: 'box'\n" + //
+									"          },\n" + //
+									"          physics:false\n" + //
+									"      }; "//
+					);
 					html = StringEscapeUtils.escapeHtml4(html);
 					html = "<iframe srcdoc=\"" + html
 							+ "\" style=\"display: block; width: 100%; height: 100%; border: none;\" ></iframe>";
@@ -2108,7 +2128,7 @@ public class Pods {
 			if (inExpr.isProbablePrime()) {
 				IExpr primePiExpr = F.PrimePi(inExpr);
 				IExpr primePi = engine.evaluate(primePiExpr);
-				if (primePi.isInteger()) {
+				if (primePi.isInteger() && inExpr.isPositive()) {
 					ObjectNode node = JSON_OBJECT_MAPPER.createObjectNode();
 					temp.add(node);
 					createJSONFormat(node, engine, F.NIL,
