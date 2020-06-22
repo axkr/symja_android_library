@@ -1,6 +1,6 @@
 @import url(https://fonts.googleapis.com/css?family=Open+Sans:400,600);
 @import url(https://fonts.googleapis.com/css?family=Droid+Sans+Mono);
-@import url(https://fonts.googleapis.com/css?family=Gentium+Basic&text=SymPy%20Gamma);
+@import url(https://fonts.googleapis.com/css?family=Gentium+Basic&text=Symja%20Talk);
 
 body {
   font-family: 'Open Sans', sans-serif;
@@ -588,7 +588,7 @@ button {
   border-right: none;
 }
 
-.sympy-live-eval-button {
+.symja-live-eval-button {
   margin-top: 0.25em;
   color: #FFF;
   border: 0;
@@ -605,7 +605,7 @@ button {
   margin-bottom: -1px;
 }
 
-.sympy-live-eval-button:hover {
+.symja-live-eval-button:hover {
   color: #81B953;
   text-decoration: underline;
 }
@@ -940,4 +940,26 @@ td .false {
     margin: 2em auto;
     width: 700px;
   }
+}
+
+.modal {
+    display:    none;
+    position:   fixed;
+    z-index:    1000;
+    top:        0;
+    left:       0;
+    height:     100%;
+    width:      100%;
+    background: rgba( 255, 255, 255, .8 ) 
+                url('/static/images/loader.gif') 
+                50% 50% 
+                no-repeat;
+}
+
+body.loading .modal {
+    overflow: hidden;   
+}
+
+body.loading .modal {
+    display: block;
 }

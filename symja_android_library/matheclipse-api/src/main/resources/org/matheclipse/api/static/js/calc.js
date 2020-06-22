@@ -1,10 +1,44 @@
+function setupExamples() {
+    var delay = 0;
+    $('.example-group div.contents').each(function() {
+        var contents = $(this);
+        var header = $(this).siblings('h3');    
+        contents.hide();  
+    });
+
+    $('.example-group').click(function(e) {
+        var header = $(e.target);
+        var contents = header.siblings('div.contents');
+
+        contents.stop(false, true).slideToggle(500, function() {
+            createCookie(header.html(), contents.is(':visible'), 365);
+        });
+        header.toggleClass('shown');
+        header.siblings('i').toggleClass('shown');
+	header.siblings('h3').toggleClass('shown');
+    });
+}
+
+$(function () {
+    $("#id_i").keypress(function (e) {
+        var code = (e.keyCode ? e.keyCode : e.which);
+        //alert(code);
+        if (code == 13&& e.shiftKey) {
+            $("#submit").trigger('click');
+            return true;
+        }
+    });
+});
 $("#calc").submit(
   function(event) {
 	  event.preventDefault();
 	  var post_url = $(this).attr("action");
 	  var form_data = $(this).serialize();
+	  $("#main").hide(); 
+	  $("body").addClass("loading"); 
 	  $.getJSON(post_url, form_data, 
         function(data) {
+		  $("body").removeClass("loading"); 
 		  var queryresult = data.queryresult;
 		  var output = ' <div class="result_card">';
 		  for ( var i in queryresult.pods) {
@@ -19,9 +53,11 @@ $("#calc").submit(
 				if (k == 'plaintext') {
 				  output += `<div class="cell_output"><pre>${v}</pre></div>\n`;
 			    } else if (k == 'markdown') {
-				  output += `<div class="cell_output_plain" data-card-name="function_docs" data-variable="None"><pre>${v}</pre></div>`;
+                  v=md.makeHtml(v);			
+				  output += `<div class="cell_output" data-card-name="function_docs" data-variable="None">${v}</div>`;
 				} else if (k == 'html') {
-				  output += `<div class="cell_output_plain" data-card-name="function_docs" data-variable="None">${v}</div>`;
+			      v=$("<div>").html(v).text();			
+				  output += `<div class="cell_output" data-card-name="function_docs" data-variable="None">${v}</div>`;
 				} else if (k == 'latex') {
 			      output += `<div class="cell_output"><div>${v}</div></div>`;
 			    } else if (k == 'jsxgraph') {
@@ -44,4 +80,3 @@ $("#calc").submit(
 	  );
   }
 );
- 
