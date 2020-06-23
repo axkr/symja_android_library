@@ -42,7 +42,7 @@
 		<endorsed.dir>${project.build.directory}/endorsed</endorsed.dir>
 		<maven.compiler.source>1.8</maven.compiler.source>
 		<maven.compiler.target>1.8</maven.compiler.target>
-		<hipparchus.version>1.6</hipparchus.version>
+		<hipparchus.version>1.7</hipparchus.version>
 		<version.antlr>4.7</version.antlr>
 		<timestamp>${maven.build.timestamp}</timestamp>
 		<maven.build.timestamp.format>yyyyMMddHHmmss</maven.build.timestamp.format>
