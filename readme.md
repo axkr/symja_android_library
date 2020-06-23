@@ -40,6 +40,8 @@ Features of the Symja language:
 
 ### Applications
 
+* [Symja.org](https://symja.org/) - test the [Symja API](https://github.com/axkr/symja_android_library/wiki/API)
+
 * [Appengine web interface symjaweb.appspot.com](http://symjaweb.appspot.com/) - available as open source in this [Github repository](https://github.com/axkr/symja_web) 
 
 * [Android App Calculator N+ on Google play store](https://play.google.com/store/apps/details?id=com.duy.calculator.free) - available as open source in this [Github repository](https://github.com/tranleduy2000/ncalc) provides an **IDE mode** to calculate arbitrary Symja expressions.
