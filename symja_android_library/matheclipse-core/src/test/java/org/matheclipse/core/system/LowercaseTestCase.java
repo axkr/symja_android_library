@@ -1063,7 +1063,7 @@ public class LowercaseTestCase extends AbstractTestCase {
 	public void testArrayPad() {
 		check("ArrayPad({{1,0},{0,1}}, 2147483647)", //
 				"Maximum AST dimension 4294967296 exceeded");
-		check("ArrayPad(E^(I*1/3*Pi),2147483647,2*Pi)",//
+		check("ArrayPad(E^(I*1/3*Pi),2147483647,2*Pi)", //
 				"Maximum AST dimension 4294967296 exceeded");
 		check("ArrayPad({a, b, c}, 1, x)", //
 				"{x,a,b,c,x}");
@@ -4216,7 +4216,7 @@ public class LowercaseTestCase extends AbstractTestCase {
 	public void testCyclotomic() {
 		check("Cyclotomic(2147483647,3/4)", //
 				"Maximum AST dimension 2147483647 exceeded");
-		
+
 		// https://en.wikipedia.org/wiki/Cyclotomic_polynomial
 		check("Cyclotomic(0,x)", //
 				"1");
@@ -4968,7 +4968,7 @@ public class LowercaseTestCase extends AbstractTestCase {
 	}
 
 	public void testDigitCount() {
-		
+
 		check("DigitCount({2,5,3},2147483647)", //
 				"Maximum AST dimension 2147483647 exceeded");
 		check("DigitCount(1, 17)", //
@@ -5350,9 +5350,9 @@ public class LowercaseTestCase extends AbstractTestCase {
 		check("Divisors(101)", //
 				"{1,101}");
 		check("Divisors(-2147483648)", //
-				"{1,2,4,8,16,32,64,128,256,512,1024,2048,4096,8192,16384,32768,65536,131072,\n" + 
-				"262144,524288,1048576,2097152,4194304,8388608,16777216,33554432,67108864,\n" + 
-				"134217728,268435456,536870912,1073741824,2147483648}");
+				"{1,2,4,8,16,32,64,128,256,512,1024,2048,4096,8192,16384,32768,65536,131072,\n"
+						+ "262144,524288,1048576,2097152,4194304,8388608,16777216,33554432,67108864,\n"
+						+ "134217728,268435456,536870912,1073741824,2147483648}");
 		check("a178752(n_):=Sum((1/GCD(n, k))*2^s *EulerPhi(GCD(n, k)/s), {k, 0, n-1}, {s, Divisors(GCD(n, k))})", //
 				"");
 		check("Table(a178752(n),{n,30})", //
@@ -6743,7 +6743,7 @@ public class LowercaseTestCase extends AbstractTestCase {
 
 	public void testFactor() {
 		System.out.println();
-		
+
 		check("Factor(I,GaussianIntegers->True)", //
 				"I");
 		// https://github.com/kredel/java-algebra-system/issues/12
@@ -7488,7 +7488,7 @@ public class LowercaseTestCase extends AbstractTestCase {
 	public void testFibonacci() {
 		// check("Fibonacci(10007,Quantity(1.2,\"m\"))", //
 		// "Fibonacci(10007,1.2[m])");
-		
+
 		check("Fibonacci(2147483647)", //
 				"Iteration limit of 181990 exceeded for Fibonacci(2147483647).");
 		check("Fibonacci(0.2114411444411100011, 5)", //
@@ -7786,7 +7786,7 @@ public class LowercaseTestCase extends AbstractTestCase {
 
 	public void testFindSpanningTree() {
 		// example from Wikipedia https://en.wikipedia.org/wiki/Minimum_spanning_tree
-		
+
 		check("FindSpanningTree(Graph({a,b,c,d,e,f},{a<->b,a<->d,b<->c,b<->d,b<->e,c<->e,c<->f,d<->e,e<->f}," //
 				+ "{EdgeWeight->{1.0,3.0,6.0,5.0,1.0,5.0,2.0,1.0,4.0}}))", //
 				"Graph({a,b,d,e,c,f},{a->b,d->e,c->f,b->e,e->f},{EdgeWeight->{1.0,1.0,2.0,1.0,4.0}})");
@@ -8925,7 +8925,7 @@ public class LowercaseTestCase extends AbstractTestCase {
 	}
 
 	public void testGamma() {
-		check("Gamma(2147483647)",//
+		check("Gamma(2147483647)", //
 				"Iteration limit of 2147483646 exceeded for 2147483646!.");
 		check("Gamma(a,b,Infinity)", //
 				"Gamma(a,b)");
@@ -10246,7 +10246,7 @@ public class LowercaseTestCase extends AbstractTestCase {
 	public void testIntegerPartitions() {
 		check("IntegerPartitions(2147483647)", //
 				"Maximum AST dimension 2147483647 exceeded");
-		
+
 		// TODO improve performance
 		// check("IntegerPartitions(1009,2)", //
 		// "{{1009}}");
@@ -11367,17 +11367,12 @@ public class LowercaseTestCase extends AbstractTestCase {
 				"(20.085536923187664)-Math.cos((9.869604401089358)/x)");
 		// JSXGraph.org syntax
 		check("JSForm(Manipulate(Plot(Sin(x)*Cos(1 + a*x), {x, 0, 2*Pi}, PlotRange->{-1,2}), {a,0,10}))", //
-				"var board = JXG.JSXGraph.initBoard('jxgbox', {axis:true,boundingbox:[-0.8641592653589794,2.7,7.147344572538565,-1.7]});\n" + 
-				"board.suspendUpdate();\n" + 
-				"var a = board.create('slider',[[-0.0630088815692249,2.2600000000000002],[6.346194188748811,2.2600000000000002],[0,0,10]],{name:'a'});\n" + 
-				"\n" + 
-				"function z1(x) { return mul(cos(add(1,mul(a.Value(),x))),sin(x)); }\n" + 
-				"var p1 = board.create('functiongraph',[z1, 0, (6.283185307179586)]);\n" + 
-				"var data = [ p1 ];\n" + 
-				"\n" + 
-				"\n" + 
-				"board.unsuspendUpdate();\n" + 
-				"");
+				"var board = JXG.JSXGraph.initBoard('jxgbox', {axis:true,boundingbox:[-0.8641592653589794,2.7,7.147344572538565,-1.7]});\n"
+						+ "board.suspendUpdate();\n"
+						+ "var a = board.create('slider',[[-0.0630088815692249,2.2600000000000002],[6.346194188748811,2.2600000000000002],[0,0,10]],{name:'a'});\n"
+						+ "\n" + "function z1(x) { return mul(cos(add(1,mul(a.Value(),x))),sin(x)); }\n"
+						+ "var p1 = board.create('functiongraph',[z1, 0, (6.283185307179586)]);\n"
+						+ "var data = [ p1 ];\n" + "\n" + "\n" + "board.unsuspendUpdate();\n" + "");
 		// Mathcell syntax / generate TeX for MathJAX
 		check("JSForm(Manipulate(Factor(x^n + 1), {n, 1, 5, 1}))", //
 				"MathCell( id, [ { type: 'slider', min: 1, max: 5, step: 1, name: 'n', label: 'n' }\n" + //
@@ -12416,10 +12411,12 @@ public class LowercaseTestCase extends AbstractTestCase {
 	}
 
 	public void testLinearRecurrence() {
+		check("LinearRecurrence({x,-3,-1/2},{{1,0},{0,1},0},101)", //
+				"Maximum AST dimension 20511 exceeded");
 		check("LinearRecurrence({-1,-2,3},{x,-3,-1/2},1009)", //
 				"Iteration limit of 4036 exceeded for LinearRecurrence({-1,-2,3},{x,-3,-1/2},1009).");
 		check("LinearRecurrence({a, b}, {1, 1}, 5)", //
-				"{1,1,a+b,b+a*(a+b),b*(a+b)+a*(b+a*(a+b))}");
+				"{1,1,a+b,a^2+b+a*b,a^3+2*a*b+a^2*b+b^2}");
 		check("LinearRecurrence({-3, 1}, {7, 2}, 10)", //
 				"{7,2,1,-1,4,-13,43,-142,469,-1549}");
 		// Fibonacci sequence
@@ -12429,7 +12426,7 @@ public class LowercaseTestCase extends AbstractTestCase {
 				"21");
 
 		check("LinearRecurrence({a,b}, {c,d}, 5)", //
-				"{c,d,b*c+a*d,b*d+a*(b*c+a*d),b*(b*c+a*d)+a*(b*d+a*(b*c+a*d))}");
+				"{c,d,b*c+a*d,a*b*c+a^2*d+b*d,a^2*b*c+b^2*c+a^3*d+2*a*b*d}");
 		check("LinearRecurrence({1, 1}, {{1, 2}, {2, 1}}, 10)", //
 				"{{1,2},{2,1},{3,3},{5,4},{8,7},{13,11},{21,18},{34,29},{55,47},{89,76}}");
 
@@ -13278,9 +13275,9 @@ public class LowercaseTestCase extends AbstractTestCase {
 
 	public void testMatrixPower() {
 		check("MatrixPower({{1,0}, {0,1}},2147483647)", //
-				"MatrixPower(\n" +  //
-				"{{1,0},\n" +  //
-				" {0,1}},2147483647)");
+				"MatrixPower(\n" + //
+						"{{1,0},\n" + //
+						" {0,1}},2147483647)");
 		// github #121 - print error
 		check("MatrixPower({{2},{1}},2)", //
 				"MatrixPower(\n" + //
@@ -13809,11 +13806,11 @@ public class LowercaseTestCase extends AbstractTestCase {
 
 	public void testMinimize() {
 		// check("Minimize(Sin(x),x)", //
-		// ""); 
-		
+		// "");
+
 		check("Minimize(x^2+4*x+4, {x})", //
 				"{0,{x->-2}}");
-	
+
 		check("Minimize(x^4+7*x^3-2*x^2 + 42, x)", //
 				"{42+7*(-21/8-Sqrt(505)/8)^3-2*(21/8+Sqrt(505)/8)^2+(21/8+Sqrt(505)/8)^4,{x->-21/\n"
 						+ "8-Sqrt(505)/8}}");
@@ -14655,7 +14652,7 @@ public class LowercaseTestCase extends AbstractTestCase {
 	public void testNextPrime() {
 		check("NextPrime(13,2147483647)", //
 				"Iteration limit of 2147483647 exceeded for NextPrime(13,2147483647).");
-		
+
 		// print NextPrime: Non-negative integer expected.
 		check("NextPrime(-10000)", //
 				"NextPrime(-10000)");
@@ -15986,7 +15983,7 @@ public class LowercaseTestCase extends AbstractTestCase {
 	}
 
 	public void testPartition() {
-		check("Partition({-1/2,-2,3},3,2147483647)",//
+		check("Partition({-1/2,-2,3},3,2147483647)", //
 				"{{-1/2,-2,3}}");
 		check("Partition(f(),1)", //
 				"f()");

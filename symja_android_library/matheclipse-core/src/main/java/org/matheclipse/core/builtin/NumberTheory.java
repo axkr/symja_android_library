@@ -2611,14 +2611,20 @@ public final class NumberTheory {
 						counter++;
 					}
 				} else {
+					long numberOfLeaves = n;
 					while (counter < n) {
 						int size = result.size();
-						IASTAppendable plusAST = F.PlusAlloc(size);
+						IASTAppendable plusAST = F.PlusAlloc(size1);
 						int k = size - 1;
 						for (int i = 1; i < size1; i++) {
 							plusAST.append(F.Times(list1.get(i), result.get(k--)));
 						}
-						result.append(engine.evaluate(plusAST));
+						IExpr temp = engine.evaluate(F.Expand(plusAST));
+						numberOfLeaves += temp.leafCount();
+						if (numberOfLeaves >= Config.MAX_AST_SIZE) {
+							ASTElementLimitExceeded.throwIt(numberOfLeaves);
+						}
+						result.append(temp);
 						counter++;
 					}
 				}
