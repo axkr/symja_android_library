@@ -1,6 +1,7 @@
 package org.matheclipse.api;
 
 import java.io.IOException;
+import java.io.PrintStream;
 import java.io.StringReader;
 import java.io.StringWriter;
 import java.util.ArrayList;
@@ -29,6 +30,7 @@ import org.matheclipse.core.data.ElementData1;
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.MathMLUtilities;
 import org.matheclipse.core.eval.TeXUtilities;
+import org.matheclipse.core.eval.util.WriterOutputStream;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.expression.ID;
 import org.matheclipse.core.expression.data.GraphExpr;
@@ -324,11 +326,17 @@ public class Pods {
 	/** package private */
 	static void addSymjaPod(ArrayNode podsArray, IExpr inExpr, IExpr outExpr, String plaintext, String title,
 			String scanner, int formats, EvalEngine engine) {
+		addSymjaPod(podsArray, inExpr, outExpr, plaintext, title, scanner, formats, engine, false);
+	}
+
+	/** package private */
+	static void addSymjaPod(ArrayNode podsArray, IExpr inExpr, IExpr outExpr, String plaintext, String title,
+			String scanner, int formats, EvalEngine engine, boolean error) {
 		ArrayNode temp = JSON_OBJECT_MAPPER.createArrayNode();
 		ObjectNode subpodsResult = JSON_OBJECT_MAPPER.createObjectNode();
 		subpodsResult.put("title", title);
 		subpodsResult.put("scanner", scanner);
-		subpodsResult.put("error", "false");
+		subpodsResult.put("error", error ? "true" : "false");
 		subpodsResult.put("numsubpods", 1);
 		subpodsResult.putPOJO("subpods", temp);
 		podsArray.add(subpodsResult);
@@ -662,19 +670,27 @@ public class Pods {
 			if (inExpr.isPresent()) {
 				long numberOfLeaves = inExpr.leafCount();
 				if (numberOfLeaves < Config.MAX_INPUT_LEAVES) {
-					outExpr = engine.evaluate(inExpr);
-					// if (inExpr.isNumericFunction()) {
-					// outExpr = engine.evaluate(inExpr);
-					// }
-
-					IExpr podOut = outExpr;
-					// if (podOut.isAST(F.JSFormData)) {
+					outExpr = inExpr;
+					// inExpr may be sorted and by evaluation
+					final StringWriter errorWriter = new StringWriter();
+					WriterOutputStream werrors = new WriterOutputStream(errorWriter);
+					PrintStream errors = new PrintStream(werrors);
+					IExpr firstEval = F.NIL;
+					try {
+						engine.setErrorPrintStream(errors);
+						firstEval = engine.evaluateNull(inExpr);
+					} finally {
+						engine.setErrorPrintStream(null);
+					}
 					addSymjaPod(podsArray, inExpr, inExpr, "Input", "Identity", formats, engine);
-					// } else {
-					// addSymjaPod(podsArray, inExpr, podOut, "Input", "Identity", formats, mapper,
-					// engine);
-					// }
 					numpods++;
+					String errorString = "";
+					if (firstEval.isPresent()) {
+						outExpr = firstEval;
+					} else {
+						errorString = errorWriter.toString().trim();
+					}
+					IExpr podOut = outExpr;
 
 					IExpr numExpr = F.NIL;
 					IExpr evaledNumExpr = F.NIL;
@@ -1062,9 +1078,16 @@ public class Pods {
 								}
 								if (numpods == 1) {
 									// only Identity pod was appended
-									addSymjaPod(podsArray, expr, outExpr, "Evaluated result", "Expression", formats,
-											engine);
-									numpods++;
+									if (errorString.length() == 0 && //
+											!firstEval.isPresent()) {
+										addSymjaPod(podsArray, expr, outExpr, "Evaluated result", "Expression", formats,
+												engine);
+										numpods++;
+									} else {
+										addSymjaPod(podsArray, expr, outExpr, errorString, "Evaluated result",
+												"Expression", formats, engine, true);
+										numpods++;
+									}
 								}
 
 								resultStatistics(queryresult, error, numpods, podsArray);
@@ -1076,6 +1099,7 @@ public class Pods {
 						resultStatistics(queryresult, error, numpods, podsArray);
 						return messageJSON;
 					}
+
 				}
 			}
 		} catch (RuntimeException rex) {

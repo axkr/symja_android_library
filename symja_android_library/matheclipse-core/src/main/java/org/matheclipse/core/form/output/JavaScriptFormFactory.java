@@ -5,6 +5,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import org.matheclipse.core.basic.Config;
 import org.matheclipse.core.builtin.Arithmetic;
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.exception.ArgumentTypeException;
@@ -16,9 +17,10 @@ import org.matheclipse.core.interfaces.IComplexNum;
 import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.interfaces.ISymbol;
 import org.matheclipse.parser.client.operator.Operator;
-
+ 
 /**
- * <p>Transpile an internal <code>IExpr</code> into a JavaScript string. It can especially generate JavaScript output for
+ * <p>
+ * Transpile an internal <code>IExpr</code> into a JavaScript string. It can especially generate JavaScript output for
  * usage with the JavaScript libraries:
  * </p>
  * <ul>
@@ -76,7 +78,7 @@ public class JavaScriptFormFactory extends DoubleFormFactory {
 		FUNCTIONS_STR_MATHCELL.put(F.WeierstrassPPrime, "weierstrassPPrime");
 		FUNCTIONS_STR_MATHCELL.put(F.WhittakerM, "whittakerM");
 		FUNCTIONS_STR_MATHCELL.put(F.WhittakerW, "whittakerW");
-		
+
 		FUNCTIONS_STR_MATHCELL.put(F.Abs, "abs");
 		FUNCTIONS_STR_MATHCELL.put(F.Arg, "arg");
 		FUNCTIONS_STR_MATHCELL.put(F.Chop, "chop");
@@ -363,6 +365,9 @@ public class JavaScriptFormFactory extends DoubleFormFactory {
 				return;
 			}
 			if (javascriptFlavor == USE_MATHCELL && function.headID() < 0) {
+				if (Config.FUZZY_PARSER) {
+					throw new ArgumentTypeException("Cannot convert to JavaScript. Function head: " + function.head());
+				}
 				// avoid generating JavaScript eval(head) here
 				buf.append("(window[");
 				convertInternal(buf, head);
@@ -446,6 +451,9 @@ public class JavaScriptFormFactory extends DoubleFormFactory {
 				// if (convertClip(function, buf)) {
 				// return;
 				// }
+			} else if (function.head() == F.HeavisideTheta && function.size() >= 2) {
+				convertHeavisideTheta(function, buf);
+				return;
 			}
 			IAST piecewiseExpand = Arithmetic.piecewiseExpand(function, F.Reals);
 			int[] dim = piecewiseExpand.isPiecewise();
@@ -612,6 +620,20 @@ public class JavaScriptFormFactory extends DoubleFormFactory {
 		buf.append(") ? (");
 		convertInternal(buf, arg1);
 		buf.append(") : ( Number.NaN ))");
+	}
+
+	private void convertHeavisideTheta(final IAST function, final StringBuilder buf) {
+		IExpr arg1 = function.arg1();
+		// use the ternary operator
+		buf.append("((");
+		convertInternal(buf, arg1);
+		buf.append(" > 0 ) ");
+		for (int i = 2; i < function.size(); i++) {
+			buf.append("&& (");
+			convertInternal(buf, function.get(i));
+			buf.append(" > 0 ) ");
+		}
+		buf.append("? 1:0)");
 	}
 
 	private boolean convertPiecewise(int dim[], final IAST function, final StringBuilder buffer) {

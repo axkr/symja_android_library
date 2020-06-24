@@ -785,6 +785,46 @@ public class TestPods {
 					"}");//
 		}
 	}
+	
+	@Test
+	public void testPlotF() {
+		String s = System.getProperty("os.name");
+		ObjectNode messageJSON = Pods.createResult("Plot(f(x), {x, 0, 6*Pi} )", formatsTEX);
+		final String jsonStr = messageJSON.toPrettyString();
+		System.out.println(jsonStr);
+		if (s.contains("Windows")) {
+			assertEquals(jsonStr, //
+					"{\r\n" + 
+					"  \"queryresult\" : {\r\n" + 
+					"    \"success\" : \"true\",\r\n" + 
+					"    \"error\" : \"false\",\r\n" + 
+					"    \"numpods\" : 2,\r\n" + 
+					"    \"version\" : \"0.1\",\r\n" + 
+					"    \"pods\" : [ {\r\n" + 
+					"      \"title\" : \"Input\",\r\n" + 
+					"      \"scanner\" : \"Identity\",\r\n" + 
+					"      \"error\" : \"false\",\r\n" + 
+					"      \"numsubpods\" : 1,\r\n" + 
+					"      \"subpods\" : [ {\r\n" + 
+					"        \"plaintext\" : \"Plot(f(x),{x,0,6*Pi})\",\r\n" + 
+					"        \"sinput\" : \"Plot(f(x),{x,0,6*Pi})\",\r\n" + 
+					"        \"latex\" : \"\\\\text{Plot}(f(x),\\\\{x,0,6\\\\cdot \\\\pi\\\\})\"\r\n" + 
+					"      } ]\r\n" + 
+					"    }, {\r\n" + 
+					"      \"title\" : \"Evaluated result\",\r\n" + 
+					"      \"scanner\" : \"Expression\",\r\n" + 
+					"      \"error\" : \"true\",\r\n" + 
+					"      \"numsubpods\" : 1,\r\n" + 
+					"      \"subpods\" : [ {\r\n" + 
+					"        \"plaintext\" : \"Manipulate: Cannot convert to JavaScript. Function head: f\",\r\n" + 
+					"        \"sinput\" : \"Plot(f(x),{x,0,6*Pi})\",\r\n" + 
+					"        \"latex\" : \"\\\\text{Plot}(f(x),\\\\{x,0,6\\\\cdot \\\\pi\\\\})\"\r\n" + 
+					"      } ]\r\n" + 
+					"    } ]\r\n" + 
+					"  }\r\n" + 
+					"}");//
+		}
+	}
 
 	@Test
 	public void testSin() {
