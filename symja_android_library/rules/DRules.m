@@ -58,6 +58,7 @@
   D(CoshIntegral(f_),x_?NotListQ):=D(f,x)*Cosh(f)/f,
   D(SinIntegral(f_),x_?NotListQ):=D(f,x)*Sinc(f),
   D(SinhIntegral(f_),x_?NotListQ):=D(f,x)*Sinh(f)/f,
+  D(UnitStep(f_),x_?NotListQ):=D(f,x)*Piecewise({{Indeterminate,f==0}}, 0),
   
   D(ExpIntegralE(g_, f_),x_?NotListQ):= -1*ExpIntegralE(-1+g,f)*D(f,x)
     /; FreeQ({g},x),

@@ -221,31 +221,14 @@ public class BesselJS {
 	}
 
 	public static Complex besselK(double n, double x) {
-		final int useAsymptotic = 5;
-
-		// for averaging over integer orders until write code for limit
-		// double delta = 1e-5;
-
-		if (x > useAsymptotic) {
-			return new Complex(Math.sqrt(0.5 * Math.PI / x) * Math.exp(-x)
-					* HypergeometricJS.hypergeometric2F0(n + 0.5, 0.5 - n, -0.5 / x));
-		}
 		if (x < 0) {
 			return besselK(new Complex(n), new Complex(x));
 		}
 		return new Complex(besselKDouble(n, x));
-		// if (F.isNumIntValue(n)) {
-		// return besselK(n + delta, x).add(besselK(n - delta, x)).divide(2.0);
-		// }
-		// return (besselI(-n, x).subtract(besselI(n, x))).multiply(Math.PI / 2.0).divide(Math.sin(n * Math.PI));
-
 	}
 
 	public static double besselKDouble(double n, double x) {
-		final int useAsymptotic = 5;
-
-		// for averaging over integer orders until write code for limit
-		// double delta = 1e-5;
+		final int useAsymptotic = 10;
 
 		if (x > useAsymptotic) {
 			return Math.sqrt(0.5 * Math.PI / x) * Math.exp(-x)
@@ -255,6 +238,7 @@ public class BesselJS {
 		if (x < 0) {
 			throw new ArgumentTypeException(x + " < 0.0");
 		}
+		// based on dlmf.nist.gov/10.2.3
 		if (F.isNumIntValue(n)) {
 			FiniteDifferencesDifferentiator differentiator = new FiniteDifferencesDifferentiator(15, 0.01);
 			ISymbol nSymbol = F.Dummy("n");
@@ -265,8 +249,6 @@ public class BesselJS {
 			double d2 = f.value(factory.variable(0, -n)).getPartialDerivative(1);
 
 			return ((d1 + d2) / 2.0) * Math.pow(-1.0, Math.rint(n + 1));
-			// return (-1)**(n+1)/2 * ( diff( n => besselI(n,x), n ) + diff( n => besselI(n,x), -n ) );
-			// return (besselKDouble(n + delta, x) + besselKDouble(n - delta, x)) / 2.0;
 		}
 		return (besselIDouble(-n, x) - besselIDouble(n, x)) * Math.PI / (2.0 * Math.sin(n * Math.PI));
 
@@ -277,7 +259,7 @@ public class BesselJS {
 	}
 
 	public static Complex besselK(Complex n, Complex x) {
-		int useAsymptotic = 5;
+		final int useAsymptotic = 10;
 
 		// for averaging over integer orders until write code for limit
 		double delta = 1e-5;
@@ -294,7 +276,8 @@ public class BesselJS {
 
 		if (n.isMathematicalInteger()) {
 			double nRe = n.getReal();
-			// TODO use differentiator here
+			// TODO use complex differentiator here
+			// see https://github.com/Hipparchus-Math/hipparchus/issues/67
 			return besselK(new Complex(nRe + delta), x).add(besselK(new Complex(nRe - delta), x)).divide(2.0);
 		}
 		Complex product = new Complex(Math.PI / 2.0).divide(n.multiply(Math.PI).sin());
