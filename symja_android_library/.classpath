@@ -47,8 +47,6 @@
 	<classpathentry kind="lib" path="lib/poi-ooxml-4.1.1.jar"/>
 	<classpathentry kind="lib" path="lib/poi-ooxml-schemas-4.1.1.jar"/>
 	<classpathentry kind="lib" path="lib/jheaps-0.11.jar"/>
-	<classpathentry kind="lib" path="lib/log4j-api-2.13.1.jar"/>
-	<classpathentry kind="lib" path="lib/log4j-core-2.13.1.jar"/>
 	<classpathentry kind="lib" path="lib/commons-csv-1.4.jar"/>
 	<classpathentry kind="lib" path="lib/undertow-core-2.1.0.Final.jar"/>
 	<classpathentry kind="lib" path="lib/xnio-api-3.8.0.Final.jar"/>
@@ -77,11 +75,14 @@
 	<classpathentry kind="lib" path="lib/encoder-1.2.2.jar"/>
 	<classpathentry kind="lib" path="lib/hipparchus-core-1.7.jar"/>
 	<classpathentry kind="lib" path="lib/hipparchus-fft-1.7.jar"/>
-	<classpathentry kind="lib" path="lib/hipparchus-fitting-1.7.jar"/>  
+	<classpathentry kind="lib" path="lib/hipparchus-fitting-1.7.jar"/>
 	<classpathentry kind="lib" path="lib/hipparchus-ode-1.7.jar"/>
 	<classpathentry kind="lib" path="lib/hipparchus-optim-1.7.jar"/>
 	<classpathentry kind="lib" path="lib/hipparchus-stat-1.7.jar"/>
 	<classpathentry kind="lib" path="lib/jgrapht-core-1.4.0.jar"/>
 	<classpathentry kind="lib" path="lib/jgrapht-io-1.4.0.jar"/>
+	<classpathentry kind="lib" path="lib/tablesaw-json-0.38.1.jar"/>
+	<classpathentry kind="lib" path="lib/log4j-api-2.13.2.jar"/>
+	<classpathentry kind="lib" path="lib/log4j-core-2.13.2.jar"/>
 	<classpathentry kind="output" path="bin/classes"/>
 </classpath>
