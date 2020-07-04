@@ -48,7 +48,6 @@ public class TestPods {
 		String s = System.getProperty("os.name");
 		ObjectNode messageJSON = Pods.createResult("?#?", formatsTEX);
 		final String jsonStr = messageJSON.toPrettyString();
-		System.out.println(jsonStr);
 		if (s.contains("Windows")) {
 			assertEquals(jsonStr, //
 					"{\r\n" + //
@@ -67,7 +66,6 @@ public class TestPods {
 		String s = System.getProperty("os.name");
 		ObjectNode messageJSON = Pods.createResult("Sin", formatsHTML);
 		final String jsonStr = messageJSON.toPrettyString();
-		System.out.println(jsonStr);
 		if (s.contains("Windows")) {
 			assertEquals(jsonStr, //
 					"{\r\n" + 
@@ -114,7 +112,6 @@ public class TestPods {
 		String s = System.getProperty("os.name");
 		ObjectNode messageJSON = Pods.createResult("\\sin 30 ^ { \\circ }", formatsHTML);
 		final String jsonStr = messageJSON.toPrettyString();
-		System.out.println(jsonStr);
 		if (s.contains("Windows")) {
 			assertEquals(jsonStr, //
 					"{\r\n" + "  \"queryresult\" : {\r\n" + "    \"success\" : \"true\",\r\n"
@@ -141,7 +138,6 @@ public class TestPods {
 		String s = System.getProperty("os.name");
 		ObjectNode messageJSON = Pods.createResult("Cs", formatsTEX);
 		final String jsonStr = messageJSON.toPrettyString();
-		System.out.println(jsonStr);
 		if (s.contains("Windows")) {
 			assertEquals(jsonStr, //
 					"{\r\n" + "  \"queryresult\" : {\r\n" + "    \"success\" : \"true\",\r\n"
@@ -329,7 +325,6 @@ public class TestPods {
 		String s = System.getProperty("os.name");
 		ObjectNode messageJSON = Pods.createResult("17", formatsTEX);
 		final String jsonStr = messageJSON.toPrettyString();
-		System.out.println(jsonStr);
 		if (s.contains("Windows")) {
 			assertEquals(jsonStr, //
 					"{\r\n" + "  \"queryresult\" : {\r\n" + "    \"success\" : \"true\",\r\n"
@@ -395,7 +390,6 @@ public class TestPods {
 		String s = System.getProperty("os.name");
 		ObjectNode messageJSON = Pods.createResult("1/2", formatsTEX);
 		final String jsonStr = messageJSON.toPrettyString();
-		System.out.println(jsonStr);
 		if (s.contains("Windows")) {
 			assertEquals(jsonStr, //
 					"{\r\n" + //
@@ -445,7 +439,6 @@ public class TestPods {
 		String s = System.getProperty("os.name");
 		ObjectNode messageJSON = Pods.createResult("1/2+3/4", formatsTEX);
 		final String jsonStr = messageJSON.toPrettyString();
-		System.out.println(jsonStr);
 		if (s.contains("Windows")) {
 			assertEquals(jsonStr, //
 					"{\r\n" + "  \"queryresult\" : {\r\n" + "    \"success\" : \"true\",\r\n"
@@ -486,7 +479,6 @@ public class TestPods {
 		String s = System.getProperty("os.name");
 		ObjectNode messageJSON = Pods.createResult("Plot(Sin(x), {x, 0, 6*Pi} )", formatsTEX);
 		final String jsonStr = messageJSON.toPrettyString();
-		System.out.println(jsonStr);
 		if (s.contains("Windows")) {
 			assertEquals(jsonStr, //
 					"{\r\n" + 
@@ -525,7 +517,6 @@ public class TestPods {
 		String s = System.getProperty("os.name");
 		ObjectNode messageJSON = Pods.createResult("Plot(f(x), {x, 0, 6*Pi} )", formatsTEX);
 		final String jsonStr = messageJSON.toPrettyString();
-		System.out.println(jsonStr);
 		if (s.contains("Windows")) {
 			assertEquals(jsonStr, //
 					"{\r\n" + "  \"queryresult\" : {\r\n" + "    \"success\" : \"true\",\r\n"
@@ -551,7 +542,6 @@ public class TestPods {
 		String s = System.getProperty("os.name");
 		ObjectNode messageJSON = Pods.createResult("Sin(x)", formatsTEX);
 		final String jsonStr = messageJSON.toPrettyString();
-		System.out.println(jsonStr);
 		if (s.contains("Windows")) {
 			assertEquals(jsonStr, //
 					"{\r\n" + 
@@ -620,7 +610,6 @@ public class TestPods {
 		String s = System.getProperty("os.name");
 		ObjectNode messageJSON = Pods.createResult(" x**2-4,x-2", formatsTEX);
 		final String jsonStr = messageJSON.toPrettyString();
-		System.out.println(jsonStr);
 		if (s.contains("Windows")) {
 			assertEquals(jsonStr, //
 					"{\r\n" + 
@@ -689,7 +678,6 @@ public class TestPods {
 		String s = System.getProperty("os.name");
 		ObjectNode messageJSON = Pods.createResult("Sin(x*y)", formatsTEX);
 		final String jsonStr = messageJSON.toPrettyString();
-		System.out.println(jsonStr);
 		if (s.contains("Windows")) {
 			assertEquals(jsonStr, //
 					"{\r\n" + "  \"queryresult\" : {\r\n" + "    \"success\" : \"true\",\r\n"
@@ -720,7 +708,6 @@ public class TestPods {
 		ObjectNode messageJSON = Pods.createResult(
 				"ComplexPlot3D((z^2 + 1)/(z^2 - 1),  {z, -2 - 2*I, 2 + 2*I}, PlotRange->{0,3})", formatsMATHML);
 		final String jsonStr = messageJSON.toPrettyString();
-		System.out.println(jsonStr);
 		if (s.contains("Windows")) {
 			assertEquals(jsonStr, //
 					"{\r\n" + "  \"queryresult\" : {\r\n" + "    \"success\" : \"true\",\r\n"
@@ -746,7 +733,6 @@ public class TestPods {
 		ObjectNode messageJSON = Pods.createResult("Histogram(RandomVariate(NormalDistribution(0, 1), 200))",
 				formatsMATHML);
 		final String jsonStr = messageJSON.toPrettyString();
-		System.out.println(jsonStr);
 		if (s.contains("Windows")) {
 			// RandomVariate gives random results
 
@@ -758,7 +744,6 @@ public class TestPods {
 		String s = System.getProperty("os.name");
 		ObjectNode messageJSON = Pods.createResult("1,2,3", formatsMATHML);
 		final String jsonStr = messageJSON.toPrettyString();
-		System.out.println(jsonStr);
 		if (s.contains("Windows")) {
 			assertEquals(jsonStr, //
 					"{\r\n" + 
@@ -823,7 +808,6 @@ public class TestPods {
 		String s = System.getProperty("os.name");
 		ObjectNode messageJSON = Pods.createResult("1, 17 + 4*I\n17 - 4*I, 10", formatsTEX);
 		final String jsonStr = messageJSON.toPrettyString();
-		System.out.println(jsonStr);
 		if (s.contains("Windows")) {
 			assertEquals(jsonStr, //
 					"{\r\n" + "  \"queryresult\" : {\r\n" + "    \"success\" : \"true\",\r\n"
@@ -855,7 +839,6 @@ public class TestPods {
 		String s = System.getProperty("os.name");
 		ObjectNode messageJSON = Pods.createResult("1,3\n3,4", formatsTEX);
 		final String jsonStr = messageJSON.toPrettyString();
-		System.out.println(jsonStr);
 		if (s.contains("Windows")) {
 			assertEquals(jsonStr, //
 					"{\r\n" + 
@@ -922,7 +905,6 @@ public class TestPods {
 		String s = System.getProperty("os.name");
 		ObjectNode messageJSON = Pods.createResult("3+x=10", formatsTEX);
 		final String jsonStr = messageJSON.toPrettyString();
-		System.out.println(jsonStr);
 		if (s.contains("Windows")) {
 			assertEquals(jsonStr, //
 					"{\r\n" + 
@@ -981,7 +963,6 @@ public class TestPods {
 		String s = System.getProperty("os.name");
 		ObjectNode messageJSON = Pods.createResult("x^2+1=0", formatsTEX);
 		final String jsonStr = messageJSON.toPrettyString();
-		System.out.println(jsonStr);
 		if (s.contains("Windows")) {//
 			assertEquals(jsonStr, //
 					"{\r\n" + 
@@ -1040,7 +1021,6 @@ public class TestPods {
 		String s = System.getProperty("os.name");
 		ObjectNode messageJSON = Pods.createResult("Solver x+3=10", formatsTEX);
 		final String jsonStr = messageJSON.toPrettyString();
-		System.out.println(jsonStr);
 		if (s.contains("Windows")) {
 			assertEquals(jsonStr, //
 					"{\r\n" + 
@@ -1080,7 +1060,6 @@ public class TestPods {
 		String s = System.getProperty("os.name");
 		ObjectNode messageJSON = Pods.createResult("2**32-1", formatsTEX);
 		final String jsonStr = messageJSON.toPrettyString();
-		System.out.println(jsonStr);
 		if (s.contains("Windows")) {
 			assertEquals(jsonStr, //
 					"{\r\n" + "  \"queryresult\" : {\r\n" + "    \"success\" : \"true\",\r\n"
@@ -1134,7 +1113,6 @@ public class TestPods {
 		String s = System.getProperty("os.name");
 		ObjectNode messageJSON = Pods.createResult("NormalDistribution(a,b)", formatsTEX);
 		final String jsonStr = messageJSON.toPrettyString();
-		System.out.println(jsonStr);
 		if (s.contains("Windows")) {
 			assertEquals(jsonStr, //
 					"{\r\n" + "  \"queryresult\" : {\r\n" + "    \"success\" : \"true\",\r\n"
@@ -1174,7 +1152,6 @@ public class TestPods {
 		String s = System.getProperty("os.name");
 		ObjectNode messageJSON = Pods.createResult("a&&b||c", formatsTEX);
 		final String jsonStr = messageJSON.toPrettyString();
-		System.out.println(jsonStr);
 		if (s.contains("Windows")) {
 			assertEquals(jsonStr, //
 					"{\r\n" + "  \"queryresult\" : {\r\n" + "    \"success\" : \"true\",\r\n"
@@ -1206,7 +1183,6 @@ public class TestPods {
 		String s = System.getProperty("os.name");
 		ObjectNode messageJSON = Pods.createResult("a&b|c", formatsTEX);
 		final String jsonStr = messageJSON.toPrettyString();
-		System.out.println(jsonStr);
 		if (s.contains("Windows")) {
 			assertEquals(jsonStr, //
 					"{\r\n" + "  \"queryresult\" : {\r\n" + "    \"success\" : \"true\",\r\n"
@@ -1238,7 +1214,6 @@ public class TestPods {
 		String s = System.getProperty("os.name");
 		ObjectNode messageJSON = Pods.createResult("convert 111 cm in m", formatsHTML);
 		final String jsonStr = messageJSON.toPrettyString();
-		System.out.println(jsonStr);
 		if (s.contains("Windows")) {
 			assertEquals(jsonStr, //
 					"{\r\n" + "  \"queryresult\" : {\r\n" + "    \"success\" : \"true\",\r\n"
@@ -1263,7 +1238,6 @@ public class TestPods {
 		String s = System.getProperty("os.name");
 		ObjectNode messageJSON = Pods.createResult("10*11*12", formatsTEX);
 		final String jsonStr = messageJSON.toPrettyString();
-		System.out.println(jsonStr);
 		if (s.contains("Windows")) {
 			assertEquals(jsonStr, //
 					"{\r\n" + "  \"queryresult\" : {\r\n" + "    \"success\" : \"true\",\r\n"
@@ -1320,7 +1294,6 @@ public class TestPods {
 		String s = System.getProperty("os.name");
 		ObjectNode messageJSON = Pods.createResult("simplificate Sqrt(9-4*Sqrt(5))", formatsTEX);
 		final String jsonStr = messageJSON.toPrettyString();
-		System.out.println(jsonStr);
 		if (s.contains("Windows")) {
 			assertEquals(jsonStr, //
 					"{\r\n" + "  \"queryresult\" : {\r\n" + "    \"success\" : \"true\",\r\n"
@@ -1352,7 +1325,6 @@ public class TestPods {
 		String s = System.getProperty("os.name");
 		ObjectNode messageJSON = Pods.createResult("Integral Sin(x)", formatsTEX);
 		final String jsonStr = messageJSON.toPrettyString();
-		System.out.println(jsonStr);
 		if (s.contains("Windows")) {
 			assertEquals(jsonStr, //
 					"{\r\n" + "  \"queryresult\" : {\r\n" + "    \"success\" : \"true\",\r\n"
@@ -1384,7 +1356,6 @@ public class TestPods {
 		String s = System.getProperty("os.name");
 		ObjectNode messageJSON = Pods.createResult("integrate Tan(x)*Cos(x)*Pi x", formatsTEX);
 		final String jsonStr = messageJSON.toPrettyString();
-		System.out.println(jsonStr);
 		if (s.contains("Windows")) {
 			assertEquals(jsonStr, //
 					"{\r\n" + "  \"queryresult\" : {\r\n" + "    \"success\" : \"true\",\r\n"
@@ -1417,7 +1388,6 @@ public class TestPods {
 		String s = System.getProperty("os.name");
 		ObjectNode messageJSON = Pods.createResult("derive tan(x^3)", formatsTEX);
 		final String jsonStr = messageJSON.toPrettyString();
-		System.out.println(jsonStr);
 		if (s.contains("Windows")) {
 			assertEquals(jsonStr, //
 					"{\r\n" + "  \"queryresult\" : {\r\n" + "    \"success\" : \"true\",\r\n"
@@ -1448,7 +1418,6 @@ public class TestPods {
 		String s = System.getProperty("os.name");
 		ObjectNode messageJSON = Pods.createResult("3,Sin(1),Pi,3/4,42,1.2", formatsTEX);
 		final String jsonStr = messageJSON.toPrettyString();
-		System.out.println(jsonStr);
 		if (s.contains("Windows")) {
 			assertEquals(jsonStr, //
 					"{\r\n" + 
@@ -1546,7 +1515,6 @@ public class TestPods {
 		String s = System.getProperty("os.name");
 		ObjectNode messageJSON = Pods.createResult("Table({Sin(t*0.33), Cos(t*1.1)}, {t, 100})", formatsTEX);
 		final String jsonStr = messageJSON.toPrettyString();
-		System.out.println(jsonStr);
 		if (s.contains("Windows")) {
 			assertEquals(jsonStr, //
 					"{\r\n" + 
@@ -1595,7 +1563,6 @@ public class TestPods {
 		String s = System.getProperty("os.name");
 		ObjectNode messageJSON = Pods.createResult("1, 2, 3, None, 3, 5, f(), 2, 1, foo, 2, 3", formatsTEX);
 		final String jsonStr = messageJSON.toPrettyString();
-		System.out.println(jsonStr);
 		if (s.contains("Windows")) {
 			assertEquals(jsonStr, //
 					"{\r\n" + 
@@ -1644,7 +1611,6 @@ public class TestPods {
 		String s = System.getProperty("os.name");
 		ObjectNode messageJSON = Pods.createResult("plot ([x,x**2,x**3,x**4])", formatsTEX);
 		final String jsonStr = messageJSON.toPrettyString();
-		System.out.println(jsonStr);
 		if (s.contains("Windows")) {
 			assertEquals(jsonStr, //
 					"{\r\n" + 
@@ -1717,7 +1683,6 @@ public class TestPods {
 				formatsTEX);
 
 		final String jsonStr = messageJSON.toPrettyString();
-		System.out.println(jsonStr);
 		if (s.contains("Windows")) {
 			assertEquals(jsonStr, //
 					"{\r\n" + "  \"queryresult\" : {\r\n" + "    \"success\" : \"true\",\r\n"
@@ -1743,7 +1708,6 @@ public class TestPods {
 		String s = System.getProperty("os.name");
 		ObjectNode messageJSON = Pods.createResult("HornerForm(x^2+x^3+2*x^14)", formatsTEX);
 		final String jsonStr = messageJSON.toPrettyString();
-		System.out.println(jsonStr);
 		if (s.contains("Windows")) {
 			assertEquals(jsonStr, //
 					"{\r\n" + 
@@ -1835,7 +1799,6 @@ public class TestPods {
 				formatsTEX);
 
 		final String jsonStr = messageJSON.toPrettyString();
-		System.out.println(jsonStr);
 		if (s.contains("Windows")) {
 			assertEquals(jsonStr, //
 					"{\r\n" + "  \"queryresult\" : {\r\n" + "    \"success\" : \"true\",\r\n"
@@ -1862,7 +1825,6 @@ public class TestPods {
 				formatsTEX);
 
 		final String jsonStr = messageJSON.toPrettyString();
-		System.out.println(jsonStr);
 		if (s.contains("Windows")) {
 			assertEquals(jsonStr, //
 					"{\r\n" + 
@@ -1909,7 +1871,6 @@ public class TestPods {
 		String s = System.getProperty("os.name");
 		ObjectNode messageJSON = Pods.createResult("-x^2 + 4*x + 4", formatsTEX);
 		final String jsonStr = messageJSON.toPrettyString();
-		System.out.println(jsonStr);
 		if (s.contains("Windows")) {
 			assertEquals(jsonStr, //
 					"{\r\n" + 
