@@ -115,8 +115,6 @@ import org.matheclipse.core.visit.VisitorExpr;
 import org.matheclipse.parser.client.FEConfig;
 import org.matheclipse.parser.client.math.MathException;
 
-import com.sun.javafx.geom.transform.BaseTransform.Degree;
-
 import ch.ethz.idsc.tensor.qty.IQuantity;
 
 public final class Arithmetic {
