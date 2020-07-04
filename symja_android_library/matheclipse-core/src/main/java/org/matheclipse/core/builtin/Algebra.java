@@ -485,7 +485,7 @@ public class Algebra {
 			return F.evalExpandAll(arg1, engine);
 		}
 
-		public int[] expectedArgSize() {
+		public int[] expectedArgSize(IAST ast) {
 			return IOFunctions.ARGS_1_2;
 		}
 
@@ -763,7 +763,7 @@ public class Algebra {
 			return arg1;
 		}
 
-		public int[] expectedArgSize() {
+		public int[] expectedArgSize(IAST ast) {
 			return IOFunctions.ARGS_1_1;
 		}
 
@@ -1160,7 +1160,7 @@ public class Algebra {
 			}
 		}
 
-		public int[] expectedArgSize() {
+		public int[] expectedArgSize(IAST ast) {
 			return IOFunctions.ARGS_1_2;
 		}
 
@@ -1264,7 +1264,7 @@ public class Algebra {
 			return arg1;
 		}
 
-		public int[] expectedArgSize() {
+		public int[] expectedArgSize(IAST ast) {
 			return IOFunctions.ARGS_1_5;
 		}
 
@@ -1825,7 +1825,7 @@ public class Algebra {
 			return ast.arg1();
 		}
 
-		public int[] expectedArgSize() {
+		public int[] expectedArgSize(IAST ast) {
 			return IOFunctions.ARGS_1_2;
 		}
 	}
@@ -1884,7 +1884,7 @@ public class Algebra {
 			return arg1;
 		}
 
-		public int[] expectedArgSize() {
+		public int[] expectedArgSize(IAST ast) {
 			return IOFunctions.ARGS_1_2;
 		}
 
@@ -1986,7 +1986,7 @@ public class Algebra {
 			return expr;
 		}
 
-		public int[] expectedArgSize() {
+		public int[] expectedArgSize(IAST ast) {
 			return IOFunctions.ARGS_1_2;
 		}
 
@@ -2206,7 +2206,7 @@ public class Algebra {
 			return F.NIL;
 		}
 
-		public int[] expectedArgSize() {
+		public int[] expectedArgSize(IAST ast) {
 			return IOFunctions.ARGS_1_2;
 		}
 	}
@@ -2251,7 +2251,7 @@ public class Algebra {
 			return F.NIL;
 		}
 
-		public int[] expectedArgSize() {
+		public int[] expectedArgSize(IAST ast) {
 			return IOFunctions.ARGS_1_1;
 		}
 
@@ -2406,7 +2406,7 @@ public class Algebra {
 			return ast.arg1();
 		}
 
-		public int[] expectedArgSize() {
+		public int[] expectedArgSize(IAST ast) {
 			return IOFunctions.ARGS_1_2;
 		}
 
@@ -2515,7 +2515,7 @@ public class Algebra {
 			}
 		}
 
-		public int[] expectedArgSize() {
+		public int[] expectedArgSize(IAST ast) {
 			return IOFunctions.ARGS_1_2;
 		}
 
@@ -2707,7 +2707,7 @@ public class Algebra {
 			return F.NIL;
 		}
 
-		public int[] expectedArgSize() {
+		public int[] expectedArgSize(IAST ast) {
 			return IOFunctions.ARGS_3_4;
 		}
 
@@ -3112,7 +3112,7 @@ public class Algebra {
 		}
 
 		@Override
-		public int[] expectedArgSize() {
+		public int[] expectedArgSize(IAST ast) {
 			return IOFunctions.ARGS_1_2;
 		}
 
@@ -3332,7 +3332,7 @@ public class Algebra {
 			}
 		}
 
-		public int[] expectedArgSize() {
+		public int[] expectedArgSize(IAST ast) {
 			return IOFunctions.ARGS_3_4;
 		}
 
@@ -3441,7 +3441,7 @@ public class Algebra {
 			}
 		}
 
-		public int[] expectedArgSize() {
+		public int[] expectedArgSize(IAST ast) {
 			return IOFunctions.ARGS_3_4;
 		}
 
@@ -3609,7 +3609,7 @@ public class Algebra {
 			return ast.arg1();
 		}
 
-		public int[] expectedArgSize() {
+		public int[] expectedArgSize(IAST ast) {
 			return IOFunctions.ARGS_1_2;
 		}
 
@@ -4212,7 +4212,7 @@ public class Algebra {
 			return arg1;
 		}
 
-		public int[] expectedArgSize() {
+		public int[] expectedArgSize(IAST ast) {
 			return IOFunctions.ARGS_1_1;
 		}
 
@@ -4299,7 +4299,7 @@ public class Algebra {
 			return VariablesSet.getAlgebraicVariables(ast.arg1());
 		}
 
-		public int[] expectedArgSize() {
+		public int[] expectedArgSize(IAST ast) {
 			return IOFunctions.ARGS_1_1;
 		}
 

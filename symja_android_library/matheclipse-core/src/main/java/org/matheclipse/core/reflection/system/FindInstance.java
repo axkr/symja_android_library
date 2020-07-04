@@ -95,7 +95,7 @@ public class FindInstance extends Solve {
 		return F.NIL;
 	}
 
-	public int[] expectedArgSize() {
+	public int[] expectedArgSize(IAST ast) {
 		return IOFunctions.ARGS_2_3;
 	}
 }

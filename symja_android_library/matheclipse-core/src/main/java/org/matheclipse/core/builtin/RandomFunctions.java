@@ -233,7 +233,7 @@ public final class RandomFunctions {
 			return F.ZZ(negative ? r.negate() : r);
 		}
 
-		public int[] expectedArgSize() {
+		public int[] expectedArgSize(IAST ast) {
 			return IOFunctions.ARGS_0_2;
 		}
 	}
@@ -267,7 +267,7 @@ public final class RandomFunctions {
 			return F.NIL;
 		}
 
-		public int[] expectedArgSize() {
+		public int[] expectedArgSize(IAST ast) {
 			return IOFunctions.ARGS_1_1;
 		}
 	}
@@ -383,7 +383,7 @@ public final class RandomFunctions {
 		}
 
 		@Override
-		public int[] expectedArgSize() {
+		public int[] expectedArgSize(IAST ast) {
 			return IOFunctions.ARGS_1_2;
 		}
 

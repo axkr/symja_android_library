@@ -215,7 +215,7 @@ public class FindRoot extends AbstractFunctionEvaluator {
 		return F.NIL;
 	}
 
-	public int[] expectedArgSize() {
+	public int[] expectedArgSize(IAST ast) {
 		return IOFunctions.ARGS_2_INFINITY;
 	}
 

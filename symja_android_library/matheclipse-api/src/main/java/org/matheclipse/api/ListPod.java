@@ -115,10 +115,10 @@ public class ListPod implements IPod {
 								numpods++;
 							} else {
 								Pods.addSymjaPod(podsArray, detMatrix, F.NIL,
-										"The determinant of the matrix is " + podOut.toString(), "Properties",
-										"Matrix", formats, engine);
+										"The determinant of the matrix is " + podOut.toString(), "Properties", "Matrix",
+										formats, engine);
 								numpods++;
-								
+
 								inExpr = F.Inverse(list);
 								podOut = engine.evaluate(inExpr);
 								Pods.addSymjaPod(podsArray, inExpr, podOut, "Inverse of matrix", "Matrix", formats,
@@ -174,14 +174,20 @@ public class ListPod implements IPod {
 			}
 
 			if (list.argSize() > 5) {
+				IExpr fivenum = F.FiveNum(list);
+				IExpr podOut = engine.evaluate(fivenum);
+				Pods.addSymjaPod(podsArray, fivenum, podOut, "Five-number summary", "Statistics", formats, engine);
+				numpods++;
+
 				IExpr histogram = F.Histogram(list);
-				IExpr podOut = engine.evaluate(histogram);
+				podOut = engine.evaluate(histogram);
 				if (podOut.isAST(F.JSFormData, 3)) {
 					int form = Pods.internFormat(Pods.SYMJA, podOut.second().toString());
 					Pods.addPod(podsArray, inExpr, podOut, podOut.first().toString(),
 							StringFunctions.inputForm(histogram), "Histogram", "Plotter", form, engine);
 					numpods++;
 				}
+
 			}
 		}
 		return numpods;

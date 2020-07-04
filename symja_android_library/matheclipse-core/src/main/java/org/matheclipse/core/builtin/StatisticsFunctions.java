@@ -214,7 +214,7 @@ public class StatisticsFunctions {
 		}
 
 		@Override
-		public int[] expectedArgSize() {
+		public int[] expectedArgSize(IAST ast) {
 			return IOFunctions.ARGS_2_2;
 		}
 	}
@@ -569,7 +569,7 @@ public class StatisticsFunctions {
 		}
 
 		@Override
-		public int[] expectedArgSize() {
+		public int[] expectedArgSize(IAST ast) {
 			return IOFunctions.ARGS_1_1;
 		}
 
@@ -893,7 +893,7 @@ public class StatisticsFunctions {
 		}
 
 		@Override
-		public int[] expectedArgSize() {
+		public int[] expectedArgSize(IAST ast) {
 			return IOFunctions.ARGS_1_2;
 		}
 
@@ -1195,7 +1195,7 @@ public class StatisticsFunctions {
 		}
 
 		@Override
-		public int[] expectedArgSize() {
+		public int[] expectedArgSize(IAST ast) {
 			return IOFunctions.ARGS_2_2;
 		}
 
@@ -1381,7 +1381,7 @@ public class StatisticsFunctions {
 		}
 
 		@Override
-		public int[] expectedArgSize() {
+		public int[] expectedArgSize(IAST ast) {
 			return IOFunctions.ARGS_2_2;
 		}
 	}
@@ -1441,7 +1441,7 @@ public class StatisticsFunctions {
 		}
 
 		@Override
-		public int[] expectedArgSize() {
+		public int[] expectedArgSize(IAST ast) {
 			return IOFunctions.ARGS_1_1;
 		}
 
@@ -1635,7 +1635,7 @@ public class StatisticsFunctions {
 		}
 
 		@Override
-		public int[] expectedArgSize() {
+		public int[] expectedArgSize(IAST ast) {
 			return IOFunctions.ARGS_2_2;
 		}
 
@@ -2024,7 +2024,7 @@ public class StatisticsFunctions {
 		@Override
 		public IExpr evaluate(final IAST ast, EvalEngine engine) {
 			IExpr arg1 = ast.arg1();
-			if (arg1.isList() && arg1.size() > 1) {
+			if (arg1.isNonEmptyList()) {
 				IAST list = (IAST) arg1;
 
 				int[] dim = list.isMatrix();
@@ -2048,7 +2048,7 @@ public class StatisticsFunctions {
 		}
 
 		@Override
-		public int[] expectedArgSize() {
+		public int[] expectedArgSize(IAST ast) {
 			return IOFunctions.ARGS_1_1;
 		}
 
@@ -2071,7 +2071,7 @@ public class StatisticsFunctions {
 		}
 
 		@Override
-		public int[] expectedArgSize() {
+		public int[] expectedArgSize(IAST ast) {
 			return IOFunctions.ARGS_1_1;
 		}
 
@@ -2280,7 +2280,7 @@ public class StatisticsFunctions {
 		}
 
 		@Override
-		public int[] expectedArgSize() {
+		public int[] expectedArgSize(IAST ast) {
 			return IOFunctions.ARGS_2_2;
 		}
 
@@ -2485,7 +2485,7 @@ public class StatisticsFunctions {
 		@Override
 		public IExpr evaluate(final IAST ast, EvalEngine engine) {
 			IExpr arg1 = ast.arg1();
-			if (arg1.isList() && arg1.size() > 1) {
+			if (arg1.isNonEmptyList()) {
 				IAST list = (IAST) arg1;
 
 				int[] dim = list.isMatrix();
@@ -2505,7 +2505,7 @@ public class StatisticsFunctions {
 		}
 
 		@Override
-		public int[] expectedArgSize() {
+		public int[] expectedArgSize(IAST ast) {
 			return IOFunctions.ARGS_1_1;
 		}
 
@@ -2545,7 +2545,7 @@ public class StatisticsFunctions {
 		}
 
 		@Override
-		public int[] expectedArgSize() {
+		public int[] expectedArgSize(IAST ast) {
 			return IOFunctions.ARGS_3_3;
 		}
 
@@ -2765,7 +2765,7 @@ public class StatisticsFunctions {
 		}
 
 		@Override
-		public int[] expectedArgSize() {
+		public int[] expectedArgSize(IAST ast) {
 			return IOFunctions.ARGS_1_2;
 		}
 
@@ -2859,7 +2859,7 @@ public class StatisticsFunctions {
 		}
 
 		@Override
-		public int[] expectedArgSize() {
+		public int[] expectedArgSize(IAST ast) {
 			return IOFunctions.ARGS_1_1;
 		}
 
@@ -3027,7 +3027,7 @@ public class StatisticsFunctions {
 		}
 
 		@Override
-		public int[] expectedArgSize() {
+		public int[] expectedArgSize(IAST ast) {
 			return IOFunctions.ARGS_2_2;
 		}
 
@@ -3247,7 +3247,7 @@ public class StatisticsFunctions {
 		}
 
 		@Override
-		public int[] expectedArgSize() {
+		public int[] expectedArgSize(IAST ast) {
 			return IOFunctions.ARGS_1_1;
 		}
 
@@ -3555,7 +3555,7 @@ public class StatisticsFunctions {
 		}
 
 		@Override
-		public int[] expectedArgSize() {
+		public int[] expectedArgSize(IAST ast) {
 			return IOFunctions.ARGS_1_1;
 		}
 
@@ -3876,7 +3876,7 @@ public class StatisticsFunctions {
 		}
 
 		@Override
-		public int[] expectedArgSize() {
+		public int[] expectedArgSize(IAST ast) {
 			return IOFunctions.ARGS_1_1;
 		}
 
@@ -4723,7 +4723,7 @@ public class StatisticsFunctions {
 		}
 
 		@Override
-		public int[] expectedArgSize() {
+		public int[] expectedArgSize(IAST ast) {
 			return IOFunctions.ARGS_1_1;
 		}
 
@@ -4961,7 +4961,7 @@ public class StatisticsFunctions {
 		}
 
 		@Override
-		public int[] expectedArgSize() {
+		public int[] expectedArgSize(IAST ast) {
 			return IOFunctions.ARGS_1_3;
 		}
 
@@ -4995,7 +4995,7 @@ public class StatisticsFunctions {
 		@Override
 		public IExpr evaluate(final IAST ast, EvalEngine engine) {
 			IExpr arg1 = ast.arg1();
-			if ((arg1.isList() && arg1.size() > 1) || arg1.isDistribution()) {
+			if ((arg1.isNonEmptyList()) || arg1.isDistribution()) {
 				IAST list = (IAST) arg1;
 				if (ast.size() == 3) {
 					IExpr arg2 = ast.arg2();
@@ -5011,7 +5011,7 @@ public class StatisticsFunctions {
 		}
 
 		@Override
-		public int[] expectedArgSize() {
+		public int[] expectedArgSize(IAST ast) {
 			return IOFunctions.ARGS_1_2;
 		}
 
@@ -5074,7 +5074,7 @@ public class StatisticsFunctions {
 		}
 
 		@Override
-		public int[] expectedArgSize() {
+		public int[] expectedArgSize(IAST ast) {
 			return IOFunctions.ARGS_1_2;
 		}
 
@@ -5172,7 +5172,7 @@ public class StatisticsFunctions {
 		}
 
 		@Override
-		public int[] expectedArgSize() {
+		public int[] expectedArgSize(IAST ast) {
 			return IOFunctions.ARGS_1_3;
 		}
 
@@ -5231,7 +5231,7 @@ public class StatisticsFunctions {
 		}
 
 		@Override
-		public int[] expectedArgSize() {
+		public int[] expectedArgSize(IAST ast) {
 			return IOFunctions.ARGS_1_1;
 		}
 
@@ -5320,7 +5320,7 @@ public class StatisticsFunctions {
 		}
 
 		@Override
-		public int[] expectedArgSize() {
+		public int[] expectedArgSize(IAST ast) {
 			return IOFunctions.ARGS_1_1;
 		}
 
@@ -5353,7 +5353,7 @@ public class StatisticsFunctions {
 		}
 
 		@Override
-		public int[] expectedArgSize() {
+		public int[] expectedArgSize(IAST ast) {
 			return IOFunctions.ARGS_1_1;
 		}
 
@@ -5611,7 +5611,7 @@ public class StatisticsFunctions {
 		}
 
 		@Override
-		public int[] expectedArgSize() {
+		public int[] expectedArgSize(IAST ast) {
 			return IOFunctions.ARGS_1_1;
 		}
 
@@ -5890,7 +5890,7 @@ public class StatisticsFunctions {
 		}
 
 		@Override
-		public int[] expectedArgSize() {
+		public int[] expectedArgSize(IAST ast) {
 			return IOFunctions.ARGS_1_1;
 		}
 	}
@@ -5928,7 +5928,7 @@ public class StatisticsFunctions {
 		}
 
 		@Override
-		public int[] expectedArgSize() {
+		public int[] expectedArgSize(IAST ast) {
 			return IOFunctions.ARGS_2_3;
 		}
 

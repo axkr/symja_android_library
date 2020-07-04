@@ -38,6 +38,7 @@ import org.matheclipse.core.builtin.functions.BesselJS;
 import org.matheclipse.core.builtin.functions.GammaJS;
 import org.matheclipse.core.builtin.functions.ZetaJS;
 import org.matheclipse.core.eval.EvalEngine;
+import org.matheclipse.core.eval.exception.PolynomialDegreeLimitExceeded;
 import org.matheclipse.core.eval.exception.ThrowException;
 import org.matheclipse.core.eval.exception.ValidateException;
 import org.matheclipse.core.eval.interfaces.AbstractArg1;
@@ -226,7 +227,7 @@ public class SpecialFunctions {
 		}
 
 		@Override
-		public int[] expectedArgSize() {
+		public int[] expectedArgSize(IAST ast) {
 			return IOFunctions.ARGS_2_3;
 		}
 
@@ -287,6 +288,9 @@ public class SpecialFunctions {
 						if (ni < 0) {
 							// for n>=0; BetaRegularized(z, a, -n)=0
 							return F.C0;
+						}
+						if (ni > Config.MAX_POLYNOMIAL_DEGREE) {
+							PolynomialDegreeLimitExceeded.throwIt(ni);
 						}
 						IASTAppendable sum = F.PlusAlloc(ni);
 						// {k, 0, n - 1}
@@ -437,7 +441,7 @@ public class SpecialFunctions {
 			super.setUp(newSymbol);
 		}
 
-		public int[] expectedArgSize() {
+		public int[] expectedArgSize(IAST ast) {
 			return IOFunctions.ARGS_1_2;
 		}
 	}
@@ -552,7 +556,7 @@ public class SpecialFunctions {
 		}
 
 		@Override
-		public int[] expectedArgSize() {
+		public int[] expectedArgSize(IAST ast) {
 			return IOFunctions.ARGS_1_1;
 		}
 
@@ -628,7 +632,7 @@ public class SpecialFunctions {
 		}
 
 		@Override
-		public int[] expectedArgSize() {
+		public int[] expectedArgSize(IAST ast) {
 			return IOFunctions.ARGS_2_3;
 		}
 
@@ -648,7 +652,7 @@ public class SpecialFunctions {
 		}
 
 		@Override
-		public int[] expectedArgSize() {
+		public int[] expectedArgSize(IAST ast) {
 			return IOFunctions.ARGS_3_3;
 		}
 
@@ -743,6 +747,7 @@ public class SpecialFunctions {
 					if (FEConfig.SHOW_STACKTRACE) {
 						ve.printStackTrace();
 					}
+					return engine.printMessage(ast.topHead() + ": " + ve.getMessage());
 				} catch (RuntimeException rex) {
 					// rex.printStackTrace();
 					return engine.printMessage(ast.topHead() + ": " + rex.getMessage());
@@ -753,7 +758,7 @@ public class SpecialFunctions {
 		}
 
 		@Override
-		public int[] expectedArgSize() {
+		public int[] expectedArgSize(IAST ast) {
 			return IOFunctions.ARGS_2_2;
 		}
 
@@ -928,7 +933,7 @@ public class SpecialFunctions {
 		}
 
 		@Override
-		public int[] expectedArgSize() {
+		public int[] expectedArgSize(IAST ast) {
 			return IOFunctions.ARGS_3_4;
 		}
 
@@ -967,7 +972,7 @@ public class SpecialFunctions {
 		}
 
 		@Override
-		public int[] expectedArgSize() {
+		public int[] expectedArgSize(IAST ast) {
 			return IOFunctions.ARGS_2_3;
 		}
 
@@ -1264,7 +1269,7 @@ public class SpecialFunctions {
 		}
 
 		@Override
-		public int[] expectedArgSize() {
+		public int[] expectedArgSize(IAST ast) {
 			return IOFunctions.ARGS_1_2;
 		}
 
@@ -1334,7 +1339,7 @@ public class SpecialFunctions {
 		}
 
 		@Override
-		public int[] expectedArgSize() {
+		public int[] expectedArgSize(IAST ast) {
 			return IOFunctions.ARGS_2_2;
 		}
 
@@ -1503,7 +1508,7 @@ public class SpecialFunctions {
 		}
 
 		@Override
-		public int[] expectedArgSize() {
+		public int[] expectedArgSize(IAST ast) {
 			return IOFunctions.ARGS_1_2;
 		}
 
@@ -1583,7 +1588,7 @@ public class SpecialFunctions {
 		}
 
 		@Override
-		public int[] expectedArgSize() {
+		public int[] expectedArgSize(IAST ast) {
 			return IOFunctions.ARGS_2_2;
 		}
 
@@ -1663,7 +1668,7 @@ public class SpecialFunctions {
 		}
 
 		@Override
-		public int[] expectedArgSize() {
+		public int[] expectedArgSize(IAST ast) {
 			return IOFunctions.ARGS_2_2;
 		}
 

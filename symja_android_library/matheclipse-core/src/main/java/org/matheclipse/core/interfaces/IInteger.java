@@ -10,6 +10,9 @@ import org.matheclipse.core.expression.F;
  * 
  */
 public interface IInteger extends IRational {
+
+	public void checkBitLength();
+
 	/**
 	 * Certainty for the isProbablePrime() method
 	 */
@@ -45,9 +48,9 @@ public interface IInteger extends IRational {
 	public IInteger charmichaelLambda();
 
 	public IInteger dec();
- 
+
 	public IInteger inc();
-		 
+
 	/**
 	 * Returns an IInteger whose value is <code>(this / that)</code>.
 	 *
@@ -75,7 +78,7 @@ public interface IInteger extends IRational {
 	public IInteger[] divideAndRemainder(final IInteger that);
 
 	public IInteger iquo(final IInteger that);
-	
+
 	public IInteger irem(final IInteger that);
 
 	/**

@@ -13,6 +13,7 @@ import org.hipparchus.util.CombinatoricsUtils;
 import org.matheclipse.core.basic.Config;
 import org.matheclipse.core.builtin.Arithmetic;
 import org.matheclipse.core.builtin.ConstantDefinitions;
+import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.exception.ArgumentTypeException;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.interfaces.INumber;
@@ -283,9 +284,10 @@ public class GammaJS {
 		if (xRe < 0.0 && F.isNumIntValue(xRe) && F.isZero(x.getImaginary())) {
 			// x is a negative integer
 			final double n = -xRe;
+			int iterationLimit = EvalEngine.get().getIterationLimit();
 			final Complex t = y.negate().exp().multiply(//
 					ZetaJS.complexSummation(k -> new Complex(Math.pow(-1.0, k) * factorialInt(k)).divide(y.pow(k + 1)), //
-							0.0, n - 1.0));
+							0.0, n - 1.0, iterationLimit));
 
 			final double plusMinusOne = Math.pow(-1.0, n);
 			return expIntegralE(Complex.ONE, y).subtract(t).multiply(plusMinusOne / factorialInt(n));

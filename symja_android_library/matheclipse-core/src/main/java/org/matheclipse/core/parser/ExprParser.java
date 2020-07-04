@@ -804,7 +804,7 @@ public class ExprParser extends Scanner {
 		if (head.isBuiltInSymbol()) {
 			IEvaluator eval = ((IBuiltInSymbol) head).getEvaluator();
 			if (eval instanceof IFunctionEvaluator) {
-				int[] args = ((IFunctionEvaluator) eval).expectedArgSize();
+				int[] args = ((IFunctionEvaluator) eval).expectedArgSize(F.NIL);
 				if (args != null && args[1] < 10) {
 					defaultSize = args[1] + 1;
 				}

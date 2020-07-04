@@ -7,7 +7,10 @@ import java.io.ObjectOutput;
 import java.io.ObjectStreamException;
 import java.util.Objects;
 
+import org.matheclipse.core.builtin.IOFunctions;
 import org.matheclipse.core.eval.EvalEngine;
+import org.matheclipse.core.eval.exception.ArgumentTypeException;
+import org.matheclipse.core.eval.exception.Validate;
 import org.matheclipse.core.expression.DataExpr;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.interfaces.IExpr;
@@ -68,9 +71,11 @@ public class QuantityImpl extends DataExpr<IUnit> implements IQuantity, External
 	public int compareTo(IExpr scalar) {
 		if (scalar instanceof IQuantity) {
 			IQuantity quantity = (IQuantity) scalar;
-			if (fData.equals(quantity.unit())) {
+			IUnit unit = quantity.unit();
+			if (fData.equals(unit)) {
 				return arg1.compareTo(quantity.value());
 			}
+			return fData.compareTo(unit);
 		}
 		return super.compareTo(scalar);
 	}
@@ -258,7 +263,7 @@ public class QuantityImpl extends DataExpr<IUnit> implements IQuantity, External
 
 	@Override
 	public IExpr plus(final IExpr scalar) {
-		boolean azero = arg1.isZero();
+		boolean azero =  isZero();
 		boolean bzero = scalar.isZero();
 		if (azero && !bzero) {
 			return scalar; // 0[m] + X(X!=0) gives X(X!=0)
@@ -269,16 +274,19 @@ public class QuantityImpl extends DataExpr<IUnit> implements IQuantity, External
 		/** at this point the implication holds: azero == bzero */
 		if (scalar instanceof IQuantity) {
 			IQuantity quantity = (IQuantity) scalar;
-			if (!fData.equals(quantity.unit())) {
+			IUnit unit = quantity.unit();
+			if (!fData.equals(unit)) {
 				IExpr lhs = UnitSystem.SI().apply(this);
 				IExpr rhs = UnitSystem.SI().apply(quantity);
 				if (!this.equals(lhs) || !quantity.equals(rhs)) {
 					return lhs.plus(rhs);
 				}
-				return F.NIL;
+				String str = IOFunctions.getMessage("compat",
+						F.List(F.stringx(fData.toString()), F.stringx(unit.toString())));
+				throw new ArgumentTypeException(str); 
 				// quantity = (IQuantity) UnitConvert.SI().to(unit).apply(quantity);
 			}
-			if (fData.equals(quantity.unit())) {
+			if (fData.equals(unit)) {
 				return ofUnit(arg1.plus(quantity.value())); // 0[m] + 0[m] gives 0[m]
 			} else if (azero) {
 				// explicit addition of zeros to ensure symmetry

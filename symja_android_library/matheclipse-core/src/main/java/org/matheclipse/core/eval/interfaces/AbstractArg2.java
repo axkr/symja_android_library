@@ -2,7 +2,7 @@ package org.matheclipse.core.eval.interfaces;
 
 import org.matheclipse.core.builtin.IOFunctions;
 import org.matheclipse.core.eval.EvalEngine;
-import org.matheclipse.core.eval.exception.Validate;
+import org.matheclipse.core.eval.exception.LimitException;
 import org.matheclipse.core.eval.exception.ValidateException;
 import org.matheclipse.core.expression.ApcomplexNum;
 import org.matheclipse.core.expression.ApfloatNum;
@@ -95,6 +95,8 @@ public abstract class AbstractArg2 extends AbstractFunctionEvaluator {
 					return e2FunArg((IAST) o0, (IAST) o1);
 				}
 			}
+		} catch (LimitException le) {
+			throw le;
 		} catch (ValidateException ve) {
 			if (FEConfig.SHOW_STACKTRACE) {
 				ve.printStackTrace();
@@ -155,6 +157,8 @@ public abstract class AbstractArg2 extends AbstractFunctionEvaluator {
 				return result;
 			}
 			return e2ObjArg(ast, o0, o1);
+		} catch (LimitException le) {
+			throw le;
 		} catch (RuntimeException rex) {
 			// EvalEngine.get().printMessage(ast.topHead().toString() + ": " + rex.getMessage());
 		}
@@ -226,10 +230,10 @@ public abstract class AbstractArg2 extends AbstractFunctionEvaluator {
 
 	@Override
 	public IExpr evaluate(final IAST ast, final EvalEngine engine) {
-		return binaryOperator(ast, ast.arg1(), ast.arg2(),engine);
+		return binaryOperator(ast, ast.arg1(), ast.arg2(), engine);
 	}
 
-	public int[] expectedArgSize() {
+	public int[] expectedArgSize(IAST ast) {
 		return IOFunctions.ARGS_2_2;
 	}
 }

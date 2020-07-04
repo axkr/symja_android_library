@@ -130,17 +130,23 @@ public class BesselJS {
 		if (n.isMathematicalInteger()) {
 			EvalEngine engine = EvalEngine.get();
 			final int recursionLimit = engine.getRecursionLimit();
-			if (recursionLimit > 0) {
-				int counter = engine.incRecursionCounter();
-				if (counter > recursionLimit) {
-					RecursionLimitExceeded.throwIt(counter, F.BesselY(F.complexNum(n), F.complexNum(x)));
+			try {
+				if (recursionLimit > 0) {
+					int counter = engine.incRecursionCounter();
+					if (counter > recursionLimit) {
+						RecursionLimitExceeded.throwIt(counter, F.BesselY(F.complexNum(n), F.complexNum(x)));
+					}
+				}
+
+				double delta = 1e-5;
+				// TODO use differentiator here
+				return besselY(new Complex(n.getReal() + delta), x)
+						.add(besselY(new Complex(n.getReal() - delta), x).divide(2.0));
+			} finally {
+				if (recursionLimit > 0) {
+					engine.decRecursionCounter();
 				}
 			}
-
-			double delta = 1e-5;
-			// TODO use differentiator here
-			return besselY(new Complex(n.getReal() + delta), x)
-					.add(besselY(new Complex(n.getReal() - delta), x).divide(2.0));
 		}
 
 		Complex sum = n.multiply(Math.PI).cos().multiply(besselJ(n, x)).subtract(besselJ(n.negate(), x));
@@ -274,14 +280,28 @@ public class BesselJS {
 			return t1.multiply(t2);
 		}
 
-		if (n.isMathematicalInteger()) {
-			double nRe = n.getReal();
-			// TODO use complex differentiator here
-			// see https://github.com/Hipparchus-Math/hipparchus/issues/67
-			return besselK(new Complex(nRe + delta), x).add(besselK(new Complex(nRe - delta), x)).divide(2.0);
+		EvalEngine engine = EvalEngine.get();
+		int recursionLimit = engine.getRecursionLimit();
+		try {
+			if (recursionLimit > 0) {
+				int counter = engine.incRecursionCounter();
+				if (counter > recursionLimit) {
+					RecursionLimitExceeded.throwIt(counter, F.BesselK);
+				}
+			}
+			if (n.isMathematicalInteger()) {
+				double nRe = n.getReal();
+				// TODO use complex differentiator here
+				// see https://github.com/Hipparchus-Math/hipparchus/issues/67
+				return besselK(new Complex(nRe + delta), x).add(besselK(new Complex(nRe - delta), x)).divide(2.0);
+			}
+			Complex product = new Complex(Math.PI / 2.0).divide(n.multiply(Math.PI).sin());
+			return product.multiply(besselI(n.negate(), x).subtract(besselI(n, x)));
+		} finally {
+			if (recursionLimit > 0) {
+				engine.decRecursionCounter();
+			}
 		}
-		Complex product = new Complex(Math.PI / 2.0).divide(n.multiply(Math.PI).sin());
-		return product.multiply(besselI(n.negate(), x).subtract(besselI(n, x)));
 	}
 
 	public static Complex hankelH1(double n, double x) {

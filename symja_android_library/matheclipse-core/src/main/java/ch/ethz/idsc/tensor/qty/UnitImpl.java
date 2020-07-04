@@ -2,6 +2,7 @@ package ch.ethz.idsc.tensor.qty;
 
 import java.io.Serializable;
 import java.util.Collections;
+import java.util.Map;
 import java.util.Map.Entry;
 import java.util.NavigableMap;
 import java.util.TreeMap;
@@ -86,4 +87,14 @@ import org.matheclipse.parser.client.math.MathException;
 				.map(entry -> entry.getKey() + exponentString(entry.getValue())) //
 				.collect(Collectors.joining(IUnit.JOIN_DELIMITER));
 	}
+
+	@Override
+	public int compareTo(IUnit o) {
+		Map<String, IExpr> map = o.map();
+		if (navigableMap.size() == map.size()) {
+			return toString().compareTo(o.toString());
+		}
+		return navigableMap.size() > map.size() ? 1 : -1;
+	}
+
 }

@@ -273,7 +273,7 @@ public class PredicateQ {
 
 		}
 
-		public int[] expectedArgSize() {
+		public int[] expectedArgSize(IAST ast) {
 			return IOFunctions.ARGS_1_3;
 		}
 	}
@@ -477,7 +477,7 @@ public class PredicateQ {
 			return F.NIL;
 		}
 
-		public int[] expectedArgSize() {
+		public int[] expectedArgSize(IAST ast) {
 			return IOFunctions.ARGS_1_2;
 		}
 	}
@@ -575,7 +575,7 @@ public class PredicateQ {
 			return F.False;
 		}
 
-		public int[] expectedArgSize() {
+		public int[] expectedArgSize(IAST ast) {
 			return IOFunctions.ARGS_1_2;
 		}
 	}
@@ -635,7 +635,7 @@ public class PredicateQ {
 			return F.True;
 		}
 
-		public int[] expectedArgSize() {
+		public int[] expectedArgSize(IAST ast) {
 			return IOFunctions.ARGS_1_2;
 		}
 
@@ -852,7 +852,7 @@ public class PredicateQ {
 			return F.True;
 		}
 
-		public int[] expectedArgSize() {
+		public int[] expectedArgSize(IAST ast) {
 			return IOFunctions.ARGS_1_1;
 		}
 	}
@@ -1111,7 +1111,7 @@ public class PredicateQ {
 
 		}
 
-		public int[] expectedArgSize() {
+		public int[] expectedArgSize(IAST ast) {
 			return IOFunctions.ARGS_1_1;
 		}
 	}
@@ -1151,7 +1151,7 @@ public class PredicateQ {
 			return F.True;
 		}
 
-		public int[] expectedArgSize() {
+		public int[] expectedArgSize(IAST ast) {
 			return IOFunctions.ARGS_1_1;
 		}
 	}
@@ -1208,7 +1208,7 @@ public class PredicateQ {
 			return F.True;
 		}
 
-		public int[] expectedArgSize() {
+		public int[] expectedArgSize(IAST ast) {
 			return IOFunctions.ARGS_1_2;
 		}
 
@@ -1275,7 +1275,7 @@ public class PredicateQ {
 			return F.bool(ast.arg1().isValue());
 		}
 
-		public int[] expectedArgSize() {
+		public int[] expectedArgSize(IAST ast) {
 			return IOFunctions.ARGS_1_1;
 		}
 
@@ -1341,7 +1341,7 @@ public class PredicateQ {
 			return F.True;
 		}
 
-		public int[] expectedArgSize() {
+		public int[] expectedArgSize(IAST ast) {
 			return IOFunctions.ARGS_1_2;
 		}
 	}

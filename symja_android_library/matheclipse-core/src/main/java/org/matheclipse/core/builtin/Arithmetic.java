@@ -53,7 +53,9 @@ import org.matheclipse.core.basic.Config;
 import org.matheclipse.core.builtin.functions.GammaJS;
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.PlusOp;
+import org.matheclipse.core.eval.exception.ASTElementLimitExceeded;
 import org.matheclipse.core.eval.exception.IterationLimitExceeded;
+import org.matheclipse.core.eval.exception.PolynomialDegreeLimitExceeded;
 import org.matheclipse.core.eval.exception.Validate;
 import org.matheclipse.core.eval.exception.ValidateException;
 import org.matheclipse.core.eval.interfaces.AbstractArg1;
@@ -112,6 +114,8 @@ import org.matheclipse.core.reflection.system.rules.PowerRules;
 import org.matheclipse.core.visit.VisitorExpr;
 import org.matheclipse.parser.client.FEConfig;
 import org.matheclipse.parser.client.math.MathException;
+
+import com.sun.javafx.geom.transform.BaseTransform.Degree;
 
 import ch.ethz.idsc.tensor.qty.IQuantity;
 
@@ -460,7 +464,7 @@ public final class Arithmetic {
 			return IOFunctions.printMessage(getFunctionSymbol(), "rvalue", F.List(leftHandSide), engine);
 		}
 
-		public int[] expectedArgSize() {
+		public int[] expectedArgSize(IAST ast) {
 			return IOFunctions.ARGS_2_2;
 		}
 
@@ -608,7 +612,7 @@ public final class Arithmetic {
 			return result;
 		}
 
-		public int[] expectedArgSize() {
+		public int[] expectedArgSize(IAST ast) {
 			return IOFunctions.ARGS_1_1;
 		}
 
@@ -665,7 +669,7 @@ public final class Arithmetic {
 		}
 
 		@Override
-		public int[] expectedArgSize() {
+		public int[] expectedArgSize(IAST ast) {
 			return IOFunctions.ARGS_1_2;
 		}
 
@@ -792,7 +796,7 @@ public final class Arithmetic {
 		}
 
 		@Override
-		public int[] expectedArgSize() {
+		public int[] expectedArgSize(IAST ast) {
 			return IOFunctions.ARGS_1_3;
 		}
 
@@ -1001,7 +1005,7 @@ public final class Arithmetic {
 			return F.NIL;
 		}
 
-		public int[] expectedArgSize() {
+		public int[] expectedArgSize(IAST ast) {
 			return IOFunctions.ARGS_2_2;
 		}
 
@@ -1025,7 +1029,7 @@ public final class Arithmetic {
 			return F.NIL;
 		}
 
-		public int[] expectedArgSize() {
+		public int[] expectedArgSize(IAST ast) {
 			return IOFunctions.ARGS_2_2;
 		}
 
@@ -1240,7 +1244,7 @@ public final class Arithmetic {
 			return F.NIL;
 		}
 
-		public int[] expectedArgSize() {
+		public int[] expectedArgSize(IAST ast) {
 			return IOFunctions.ARGS_1_1;
 		}
 
@@ -1273,7 +1277,7 @@ public final class Arithmetic {
 		}
 
 		@Override
-		public int[] expectedArgSize() {
+		public int[] expectedArgSize(IAST ast) {
 			return IOFunctions.ARGS_1_3;
 		}
 
@@ -1353,7 +1357,7 @@ public final class Arithmetic {
 			return F.Divide(ast.arg1(), ast.arg2());
 		}
 
-		public int[] expectedArgSize() {
+		public int[] expectedArgSize(IAST ast) {
 			return IOFunctions.ARGS_2_2;
 		}
 
@@ -1469,7 +1473,7 @@ public final class Arithmetic {
 		}
 
 		@Override
-		public int[] expectedArgSize() {
+		public int[] expectedArgSize(IAST ast) {
 			return IOFunctions.ARGS_0_1;
 		}
 
@@ -1627,6 +1631,10 @@ public final class Arithmetic {
 				//
 				// Gamma(n,z) = ((n - 1)! * Sum(z^k/k!, {k, 0, n - 1}))/E^z
 				//
+				int iterationLimit = EvalEngine.get().getIterationLimit();
+				if (iterationLimit >= 0 && iterationLimit <= n + 1) {
+					IterationLimitExceeded.throwIt(n, F.Gamma(o0, z));
+				}
 				IASTAppendable sum = F.PlusAlloc(n);
 				for (int k = 0; k < n; k++) {
 					sum.append(F.Divide(F.Power(z, k), F.Factorial(F.ZZ(k))));
@@ -1657,7 +1665,7 @@ public final class Arithmetic {
 		}
 
 		@Override
-		public int[] expectedArgSize() {
+		public int[] expectedArgSize(IAST ast) {
 			return IOFunctions.ARGS_1_3;
 		}
 
@@ -1846,8 +1854,13 @@ public final class Arithmetic {
 							if (n == 0) {
 								return C0;
 							}
+							int iterationLimit = EvalEngine.get().getIterationLimit();
+							if (iterationLimit >= 0 && iterationLimit <= n + 1) {
+								IterationLimitExceeded.throwIt(n, ast);
+							}
 							IASTAppendable result = F.PlusAlloc(n);
-							return result.appendArgs(n + 1, i -> Power(F.ZZ(i), Negate(arg2)));
+							final IExpr arg2Negate = arg2.negate();
+							return result.appendArgs(n + 1, i -> Power(F.ZZ(i), arg2Negate));
 						}
 						return F.NIL;
 					}
@@ -1883,7 +1896,7 @@ public final class Arithmetic {
 		}
 
 		@Override
-		public int[] expectedArgSize() {
+		public int[] expectedArgSize(IAST ast) {
 			return IOFunctions.ARGS_1_2;
 		}
 
@@ -2036,7 +2049,7 @@ public final class Arithmetic {
 			return F.NIL;
 		}
 
-		public int[] expectedArgSize() {
+		public int[] expectedArgSize(IAST ast) {
 			return IOFunctions.ARGS_1_1;
 		}
 
@@ -2142,7 +2155,7 @@ public final class Arithmetic {
 		}
 
 		@Override
-		public int[] expectedArgSize() {
+		public int[] expectedArgSize(IAST ast) {
 			return IOFunctions.ARGS_1_INFINITY;
 		}
 
@@ -2192,7 +2205,7 @@ public final class Arithmetic {
 		}
 
 		@Override
-		public int[] expectedArgSize() {
+		public int[] expectedArgSize(IAST ast) {
 			return IOFunctions.ARGS_1_2;
 		}
 	}
@@ -2245,7 +2258,7 @@ public final class Arithmetic {
 		}
 
 		@Override
-		public int[] expectedArgSize() {
+		public int[] expectedArgSize(IAST ast) {
 			return IOFunctions.ARGS_1_1;
 		}
 	}
@@ -2316,6 +2329,11 @@ public final class Arithmetic {
 						// Requested precision `1` is smaller than `2`.
 						return IOFunctions.printMessage(ast.topHead(), "precsm", F.List(arg2, F.C1), engine);
 					}
+					if (numericPrecision > Config.MAX_PRECISION_APFLOAT) {
+						// Requested precision `1` is greater than `2`.
+						return IOFunctions.printMessage(ast.topHead(), "precgt",
+								F.List(arg2, F.ZZ(Config.MAX_PRECISION_APFLOAT)), engine);
+					}
 					final int maxSize = (Config.MAX_OUTPUT_SIZE > Short.MAX_VALUE) ? Short.MAX_VALUE
 							: Config.MAX_OUTPUT_SIZE;
 					significantFigures = (numericPrecision > maxSize) ? maxSize : (int) numericPrecision;
@@ -2341,7 +2359,7 @@ public final class Arithmetic {
 		}
 
 		@Override
-		public int[] expectedArgSize() {
+		public int[] expectedArgSize(IAST ast) {
 			return IOFunctions.ARGS_1_2;
 		}
 
@@ -2410,7 +2428,7 @@ public final class Arithmetic {
 			IExpr arg1 = ast.arg1();
 			int[] dim = arg1.isMatrix(false);
 			if (dim == null || dim[0] <= 0 || dim[1] != 2) {
-				if (arg1.isAST(F.List, 1)) {
+				if (arg1.isEmptyList()) {
 					if (ast.isAST2()) {
 						return ast.arg2();
 					}
@@ -2493,7 +2511,7 @@ public final class Arithmetic {
 		}
 
 		@Override
-		public int[] expectedArgSize() {
+		public int[] expectedArgSize(IAST ast) {
 			return IOFunctions.ARGS_1_2;
 		}
 
@@ -2581,7 +2599,7 @@ public final class Arithmetic {
 		}
 
 		@Override
-		public int[] expectedArgSize() {
+		public int[] expectedArgSize(IAST ast) {
 			return IOFunctions.ARGS_1_3;
 		}
 	}
@@ -2927,13 +2945,20 @@ public final class Arithmetic {
 			if (n.isInteger()) {
 
 				if (ni > Integer.MIN_VALUE) {
+					if (ni > Config.MAX_POLYNOMIAL_DEGREE) {
+						PolynomialDegreeLimitExceeded.throwIt(ni);
+					}
+					EvalEngine engine = EvalEngine.get();
 					if (ni > 0) {
 						// Product(a + k, {k, 0, n - 1})
-						return F.product(k -> F.Plus(a, k), 0, ni - 1);
+						IAST product = F.product(k -> F.Plus(a, k), 0, ni - 1);
+						return engine.evaluate(product);
 					}
 					if (ni < 0) {
 						// Product(1/(a - k), {k, 1, -n})
-						return Power(F.product(k -> F.Plus(a, k.negate()), 1, -ni), -1);
+						IExpr temp = Power(F.product(k -> F.Plus(a, k.negate()), 1, -ni), -1);
+						IExpr result = engine.evaluate(temp);
+						return result;
 					}
 				}
 			}
@@ -3258,56 +3283,56 @@ public final class Arithmetic {
 		}
 
 		private static IExpr e2NumericArg(IAST ast, final IExpr o0, final IExpr o1) {
-			try {
-				IExpr result = F.NIL;
-				if (o0 instanceof ApcomplexNum) {
-					if (o1.isNumber()) {
-						result = e2ApcomplexArg((ApcomplexNum) o0,
-								((INumber) o1).apcomplexNumValue(((ApcomplexNum) o0).precision()));
-					}
-				} else if (o1 instanceof ApcomplexNum) {
-					if (o0.isNumber()) {
-						result = e2ApcomplexArg(((INumber) o0).apcomplexNumValue(((ApcomplexNum) o1).precision()),
-								(ApcomplexNum) o1);
-					}
-				} else if (o0 instanceof ComplexNum) {
-					if (o1.isNumber()) {
-						result = e2DblComArg((ComplexNum) o0, ((INumber) o1).complexNumValue());
-					}
-				} else if (o1 instanceof ComplexNum) {
-					if (o0.isNumber()) {
-						result = e2DblComArg(((INumber) o0).complexNumValue(), (ComplexNum) o1);
-					}
+			// try {
+			IExpr result = F.NIL;
+			if (o0 instanceof ApcomplexNum) {
+				if (o1.isNumber()) {
+					result = e2ApcomplexArg((ApcomplexNum) o0,
+							((INumber) o1).apcomplexNumValue(((ApcomplexNum) o0).precision()));
 				}
-
-				if (o0 instanceof ApfloatNum) {
-					if (o1.isReal()) {
-						result = e2ApfloatArg((ApfloatNum) o0,
-								((ISignedNumber) o1).apfloatNumValue(((ApfloatNum) o0).precision()));
-					}
-				} else if (o1 instanceof ApfloatNum) {
-					if (o0.isReal()) {
-						result = e2ApfloatArg(((ISignedNumber) o0).apfloatNumValue(((ApfloatNum) o1).precision()),
-								(ApfloatNum) o1);
-					}
-				} else if (o0 instanceof Num) {
-					if (o1.isReal()) {
-						result = e2DblArg((Num) o0, ((ISignedNumber) o1).numValue());
-					}
-				} else if (o1 instanceof Num) {
-					if (o0.isReal()) {
-						result = e2DblArg(((ISignedNumber) o0).numValue(), (Num) o1);
-					}
+			} else if (o1 instanceof ApcomplexNum) {
+				if (o0.isNumber()) {
+					result = e2ApcomplexArg(((INumber) o0).apcomplexNumValue(((ApcomplexNum) o1).precision()),
+							(ApcomplexNum) o1);
 				}
-				if (result.isPresent()) {
-					return result;
+			} else if (o0 instanceof ComplexNum) {
+				if (o1.isNumber()) {
+					result = e2DblComArg((ComplexNum) o0, ((INumber) o1).complexNumValue());
 				}
-				return e2ObjArg(ast, o0, o1);
-			} catch (RuntimeException rex) {
-				// EvalEngine.get().printMessage(ast.topHead().toString() + ": " + rex.getMessage());
+			} else if (o1 instanceof ComplexNum) {
+				if (o0.isNumber()) {
+					result = e2DblComArg(((INumber) o0).complexNumValue(), (ComplexNum) o1);
+				}
 			}
 
-			return F.NIL;
+			if (o0 instanceof ApfloatNum) {
+				if (o1.isReal()) {
+					result = e2ApfloatArg((ApfloatNum) o0,
+							((ISignedNumber) o1).apfloatNumValue(((ApfloatNum) o0).precision()));
+				}
+			} else if (o1 instanceof ApfloatNum) {
+				if (o0.isReal()) {
+					result = e2ApfloatArg(((ISignedNumber) o0).apfloatNumValue(((ApfloatNum) o1).precision()),
+							(ApfloatNum) o1);
+				}
+			} else if (o0 instanceof Num) {
+				if (o1.isReal()) {
+					result = e2DblArg((Num) o0, ((ISignedNumber) o1).numValue());
+				}
+			} else if (o1 instanceof Num) {
+				if (o0.isReal()) {
+					result = e2DblArg(((ISignedNumber) o0).numValue(), (Num) o1);
+				}
+			}
+			if (result.isPresent()) {
+				return result;
+			}
+			return e2ObjArg(ast, o0, o1);
+			// } catch (RuntimeException rex) {
+			// // EvalEngine.get().printMessage(ast.topHead().toString() + ": " + rex.getMessage());
+			// }
+			//
+			// return F.NIL;
 		}
 
 		/**
@@ -3393,7 +3418,7 @@ public final class Arithmetic {
 			}
 			// exponent is integer
 			IInteger exp = exponent.numerator();
-			int expInt = exp.toIntDefault();
+			final int expInt = exp.toIntDefault();
 			if (expInt != Integer.MIN_VALUE) {
 				return base.pow(expInt);
 			}
@@ -4120,7 +4145,7 @@ public final class Arithmetic {
 			return F.NIL;
 		}
 
-		public int[] expectedArgSize() {
+		public int[] expectedArgSize(IAST ast) {
 			return null;
 		}
 
@@ -4146,7 +4171,7 @@ public final class Arithmetic {
 			return engine.printMessage("Precision: Numeric expression expected");
 		}
 
-		public int[] expectedArgSize() {
+		public int[] expectedArgSize(IAST ast) {
 			return IOFunctions.ARGS_1_1;
 		}
 	}
@@ -4330,7 +4355,7 @@ public final class Arithmetic {
 			return F.NIL;
 		}
 
-		public int[] expectedArgSize() {
+		public int[] expectedArgSize(IAST ast) {
 			return IOFunctions.ARGS_2_2;
 		}
 	}
@@ -4431,7 +4456,7 @@ public final class Arithmetic {
 			return evalRe(arg1, engine);
 		}
 
-		public int[] expectedArgSize() {
+		public int[] expectedArgSize(IAST ast) {
 			return IOFunctions.ARGS_1_1;
 		}
 
@@ -4446,12 +4471,16 @@ public final class Arithmetic {
 		 * @return
 		 */
 		private static IExpr rePowerComplex(IExpr x, IExpr a, IExpr b) {
-			if (x.isE()) {
-				// Re(E^(a+I*b)) -> E^a*Cos[b]
-				return Times(Power(F.E, a), Cos(b));
+			if ((a.isNumber() || a.isRealResult()) && //
+					(b.isNumber() || b.isRealResult())) {
+				if (x.isE()) {
+					// Re(E^(a+I*b)) -> E^a*Cos[b]
+					return Times(Power(F.E, a), Cos(b));
+				}
+				return Times(Times(Power(Power(x, C2), Times(C1D2, a)), Power(E, Times(Negate(b), Arg(x)))),
+						Cos(Plus(Times(a, Arg(x)), Times(Times(C1D2, b), Log(Power(x, C2))))));
 			}
-			return Times(Times(Power(Power(x, C2), Times(C1D2, a)), Power(E, Times(Negate(b), Arg(x)))),
-					Cos(Plus(Times(a, Arg(x)), Times(Times(C1D2, b), Log(Power(x, C2))))));
+			return F.NIL;
 		}
 
 		@Override
@@ -4596,7 +4625,7 @@ public final class Arithmetic {
 		}
 
 		@Override
-		public int[] expectedArgSize() {
+		public int[] expectedArgSize(IAST ast) {
 			return IOFunctions.ARGS_1_1;
 		}
 
@@ -4639,7 +4668,7 @@ public final class Arithmetic {
 		}
 
 		@Override
-		public int[] expectedArgSize() {
+		public int[] expectedArgSize(IAST ast) {
 			return IOFunctions.ARGS_1_1;
 		}
 
@@ -4846,7 +4875,7 @@ public final class Arithmetic {
 			return binaryOperator(ast, ast.arg1(), ast.arg2(), engine);
 		}
 
-		public int[] expectedArgSize() {
+		public int[] expectedArgSize(IAST ast) {
 			return IOFunctions.ARGS_2_2;
 		}
 	}
@@ -4927,7 +4956,7 @@ public final class Arithmetic {
 			return F.Subtract(ast.arg1(), ast.arg2());
 		}
 
-		public int[] expectedArgSize() {
+		public int[] expectedArgSize(IAST ast) {
 			return IOFunctions.ARGS_2_2;
 		}
 
@@ -5087,11 +5116,10 @@ public final class Arithmetic {
 				}
 			}
 			if (inf.isAST1()) {
-				if (o1.isNumber() || o1.isSymbol()) {
+				if (o1.isNumber()) {
 					if (inf.isAST1()) {
 						return DirectedInfinity.timesInf(inf, o1);
 					}
-
 				}
 				if (o1.isDirectedInfinity() && o1.isAST1()) {
 					return F.eval(F.DirectedInfinity(F.Times(inf.first(), o1.first())));

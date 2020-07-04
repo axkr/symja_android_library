@@ -5,7 +5,8 @@ package org.matheclipse.core.interfaces;
  * 
  */
 public interface IComplex extends IBigNumber {
-
+	void checkBitLength();
+	
 	public IComplex add(IComplex val);
 
 	/**

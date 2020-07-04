@@ -74,7 +74,7 @@ public class ASTAssociation extends AST implements IAssociation {
 					set(value, rule.second());
 					map.put(rule.first(), -value);
 				}
-			} else if (rule.isAST(F.List, 1)) {
+			} else if (rule.isEmptyList()) {
 				// ignore empty list entries
 			} else {
 				throw new ArgumentTypeException("rule expression expected instead of " + rule.toString());
@@ -113,7 +113,7 @@ public class ASTAssociation extends AST implements IAssociation {
 				map.put(rule.first(), -value);
 			}
 			normalCache = null;
-		} else if (rule.isAST(F.List, 1)) {
+		} else if (rule.isEmptyList()) {
 			// ignore empty list entries
 		} else {
 			throw new ArgumentTypeException("rule expression expected instead of " + rule.toString());

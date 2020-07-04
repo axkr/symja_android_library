@@ -253,7 +253,7 @@ public class ManipulateFunction {
 		}
 
 		@Override
-		public int[] expectedArgSize() {
+		public int[] expectedArgSize(IAST ast) {
 			return IOFunctions.ARGS_1_INFINITY;
 		}
 
@@ -900,7 +900,7 @@ public class ManipulateFunction {
 			EvalEngine engine) {
 		JavaScriptFormFactory toJS = new JavaScriptFormFactory(true, false, -1, -1, JavaScriptFormFactory.USE_MATHCELL);
 		IExpr list = engine.evaluate(F.Table(formula, sliderRange));
-		if (list.isList() && list.size() > 1) {
+		if (list.isNonEmptyList()) {
 			IAST listOfFormulas = (IAST) list;
 			String sliderSymbol = toJS.toString(sliderRange.arg1());
 			String min = toJS.toString(sliderRange.arg2());
@@ -1438,7 +1438,7 @@ public class ManipulateFunction {
 			IAssociation assoc = ((IAssociation) arg1);
 			arg1 = assoc.matrixOrList();
 		}
-		if (arg1.isList() && arg1.size() > 1) {
+		if (arg1.isNonEmptyList()) {
 			IAST pointList = (IAST) arg1;
 			int[] dimension = pointList.isMatrix();
 			if (dimension != null) {

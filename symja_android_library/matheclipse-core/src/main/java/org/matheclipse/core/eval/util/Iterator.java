@@ -8,6 +8,8 @@ import org.matheclipse.core.builtin.IOFunctions;
 import org.matheclipse.core.builtin.QuantityFunctions;
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.exception.ArgumentTypeException;
+import org.matheclipse.core.eval.exception.IterationLimitExceeded;
+import org.matheclipse.core.eval.exception.LimitException;
 import org.matheclipse.core.eval.exception.NoEvalException;
 import org.matheclipse.core.eval.exception.ValidateException;
 import org.matheclipse.core.expression.F;
@@ -1051,6 +1053,7 @@ public class Iterator {
 				evalEngine.setNumericMode(true);
 			}
 			fNumericMode = evalEngine.isNumericMode();
+			int iterationLimit = evalEngine.getIterationLimit();
 			switch (list.size()) {
 
 			case 2:
@@ -1064,12 +1067,19 @@ public class Iterator {
 				if (upperLimit.isInteger()) {
 					try {
 						int iUpperLimit = ((IInteger) upperLimit).toInt();
+						if (iUpperLimit > iterationLimit && iterationLimit > 0) {
+							IterationLimitExceeded.throwIt(iUpperLimit, upperLimit);
+						}
 						return new IntIterator(variable, 1, iUpperLimit, 1);
 					} catch (ArithmeticException ae) {
 						//
 					}
 				} else if (upperLimit.isRational()) {
 					try {
+						int iUpperLimit = ((IRational) upperLimit).floor().toInt();
+						if (iUpperLimit > iterationLimit && iterationLimit > 0) {
+							IterationLimitExceeded.throwIt(iUpperLimit, upperLimit);
+						}
 						return new RationalIterator(variable, F.C1, (IRational) upperLimit, F.C1);
 					} catch (ArithmeticException ae) {
 						//
@@ -1083,7 +1093,7 @@ public class Iterator {
 					throw new ArgumentTypeException(
 							IOFunctions.getMessage("vloc", F.List(list.arg1()), EvalEngine.get()));
 				}
-
+				break;
 			case 3:
 				lowerLimit = F.C1;
 				upperLimit = evalEngine.evalWithoutNumericReset(list.arg2());
@@ -1222,6 +1232,8 @@ public class Iterator {
 			}
 
 			return new ExprIterator(variable, evalEngine, lowerLimit, upperLimit, step, fNumericMode);
+		} catch (LimitException le) {
+			throw  le;
 		} catch (RuntimeException rex) {
 			// Argument `1` at position `2` does not have the correct form for an iterator.
 			String str = IOFunctions.getMessage("itform", F.List(list, F.ZZ(position)), EvalEngine.get());
@@ -1360,6 +1372,8 @@ public class Iterator {
 				variable = null;
 			}
 			return new ExprIterator(variable, evalEngine, lowerLimit, upperLimit, step, fNumericMode);
+		} catch (LimitException le) {
+			throw le;
 		} catch (RuntimeException rex) {
 			throw new ClassCastException();
 		} finally {

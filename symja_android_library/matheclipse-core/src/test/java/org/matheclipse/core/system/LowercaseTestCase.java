@@ -939,6 +939,9 @@ public class LowercaseTestCase extends AbstractTestCase {
 	}
 
 	public void testArg() {
+		check("Arg(I-Sqrt(3))", //
+				"5/6*Pi");
+
 		check("Arg(E^(-42-5*I))", //
 				"-5+2*Pi");
 		check("Arg(E^(7+I*3))", //
@@ -1061,10 +1064,12 @@ public class LowercaseTestCase extends AbstractTestCase {
 	}
 
 	public void testArrayPad() {
+		// display error messages:
 		check("ArrayPad({{1,0},{0,1}}, 2147483647)", //
 				"Maximum AST dimension 4294967296 exceeded");
 		check("ArrayPad(E^(I*1/3*Pi),2147483647,2*Pi)", //
 				"Maximum AST dimension 4294967296 exceeded");
+
 		check("ArrayPad({a, b, c}, 1, x)", //
 				"{x,a,b,c,x}");
 		check("ArrayPad({{1, 2}, {3, 4}}, {1,2})", //
@@ -1416,6 +1421,10 @@ public class LowercaseTestCase extends AbstractTestCase {
 	}
 
 	public void testBellB() {
+		check("BellB(1009,-9223372036854775807/9223372036854775808)", //
+				"BellB(1009,-9223372036854775807/9223372036854775808)");
+		check("BellB(10007)", //
+				"BellB(10007)");
 		check("BellB(1/2,z)", //
 				"BellB(1/2,z)");
 
@@ -1451,10 +1460,13 @@ public class LowercaseTestCase extends AbstractTestCase {
 		// check("x + Sum(x^m/(m!*(m - 1)!) * BellY(Table({(m + k - 2)!, -(k - 1)! * c(k)}, {k, 2, m})), {m, 2, 4}) ",
 		// //
 		// "");
+
+		// display error messages:
 		check("BellY(2147483647,3,{x,-3,-1/2})", //
-				"Iteration limit of 2147483646 exceeded for BellY(2147483647,3,{x,-3,-1/2}).");
+				"Polynomial degree 2147483647 exceeded");
 		check("BellY(1009,19,{-1/2,-2,3})", //
-				"Iteration limit of 992 exceeded for BellY(1009,19,{-1/2,-2,3}).");
+				"Polynomial degree 1009 exceeded");
+
 		check("BellY(2,1,{1/2,0})", //
 				"0");
 		check("BellY(5, 2, {1})", //
@@ -1480,6 +1492,9 @@ public class LowercaseTestCase extends AbstractTestCase {
 	}
 
 	public void testBernoulliB() {
+		// slow
+		check("BernoulliB(1009,-1+Sqrt(2))", //
+				"BernoulliB(1009,-1+Sqrt(2))");
 		check("BernoulliB(-2147483648,1/2)", //
 				"BernoulliB(-2147483648,1/2)");
 		check("BernoulliB(18, 1/2)", //
@@ -1620,6 +1635,8 @@ public class LowercaseTestCase extends AbstractTestCase {
 	}
 
 	public void testBesselK() {
+		check("BesselK(1317624576693539401,3.0-2*I)", //
+				"BesselK(1.31762*10^18,3.0+I*(-2.0))");
 		check("BesselK(-1/2, z)", //
 				"Sqrt(2/Pi)/(E^z*Sqrt(z))");
 		check("BesselK(1/2, z)", //
@@ -1745,6 +1762,16 @@ public class LowercaseTestCase extends AbstractTestCase {
 	}
 
 	public void testBetaRegularized() {
+
+		check("BetaRegularized(2,Quantity(1.2,\"m\"),1009)", //
+				"BetaRegularized(2,1.2[m],1009)");
+
+		check("BetaRegularized(0.99,ByteArray(1),1009)", //
+				"The argument at position 1 in ByteArray(1) should be a vector of unsigned byte values or a Base64 encoded string.");
+		// slow
+		check("BetaRegularized({0.25,0.5,0.75},0.5,2147483647)", //
+				"{BetaRegularized(0.25,0.5,2.14748*10^9),BetaRegularized(0.5,0.5,2.14748*10^9),BetaRegularized(0.75,0.5,2.14748*10^9)}");
+
 		check("BetaRegularized(-1.5707963267948966,-I,-I)", //
 				"BetaRegularized(-1.5708,I*(-1.0),I*(-1.0))");
 		check("BetaRegularized(2,-2147483648,17)", //
@@ -4098,6 +4125,9 @@ public class LowercaseTestCase extends AbstractTestCase {
 	}
 
 	public void testCsc() {
+		check("Csc(z+Pi)", //
+				"-Csc(z)");
+
 		check("Csc(-3/4*Pi+x)", //
 				"-Csc(Pi/4+x)");
 
@@ -4214,8 +4244,10 @@ public class LowercaseTestCase extends AbstractTestCase {
 	}
 
 	public void testCyclotomic() {
+		check("Cyclotomic(101,-Infinity)", //
+				"Indeterminate");
 		check("Cyclotomic(2147483647,3/4)", //
-				"Maximum AST dimension 2147483647 exceeded");
+				"Polynomial degree 2147483647 exceeded");
 
 		// https://en.wikipedia.org/wiki/Cyclotomic_polynomial
 		check("Cyclotomic(0,x)", //
@@ -5386,6 +5418,8 @@ public class LowercaseTestCase extends AbstractTestCase {
 	}
 
 	public void testDivisorSigma() {
+		check("DivisorSigma(17,20)", //
+				"13107300000780119453382");
 		check("DivisorSigma(0,12)", //
 				"6");
 		check("DivisorSigma(1,12)", //
@@ -5508,6 +5542,9 @@ public class LowercaseTestCase extends AbstractTestCase {
 	}
 
 	public void testDrop() {
+
+		check("Drop({a,b,c,d},1317624576693539401)", //
+				"Drop({a,b,c,d},1317624576693539401)");
 		check("Drop(<|1 -> a, 2 -> b, 3 -> c, 4 -> d|>, {2, -1})", //
 				"<|1->a|>");
 		check("Drop(<|1 -> a, 2 -> b, 3 -> c|>, {2})", //
@@ -5946,6 +5983,8 @@ public class LowercaseTestCase extends AbstractTestCase {
 	}
 
 	public void testEllipticTheta() {
+		check("EllipticTheta(3,0.4,E^(Pi*I*1/3))", //
+				"EllipticTheta(3,0.4,0.5+I*0.866025)");
 		check("EllipticTheta(1,0,x)", //
 				"0");
 		check("EllipticTheta(1,x,0)", //
@@ -7489,6 +7528,9 @@ public class LowercaseTestCase extends AbstractTestCase {
 		// check("Fibonacci(10007,Quantity(1.2,\"m\"))", //
 		// "Fibonacci(10007,1.2[m])");
 
+		check("Fibonacci(101,11/9223372036854775807)", //
+				"Polynomial degree 101 exceeded");
+
 		check("Fibonacci(2147483647)", //
 				"Iteration limit of 181990 exceeded for Fibonacci(2147483647).");
 		check("Fibonacci(0.2114411444411100011, 5)", //
@@ -8008,9 +8050,9 @@ public class LowercaseTestCase extends AbstractTestCase {
 
 	public void testFixedPointList() {
 		check("FixedPointList(x^2,1.5707963267948966)", //
-				"Recursion depth of 256 exceeded during evaluation of x.");
+				"Recursion depth of 256 exceeded during evaluation of Null.");
 		check("FixedPointList(x_,Null)", //
-				"StackOverflowError in visitor");
+				"Recursion depth of 2147483647 exceeded during evaluation of Null.");
 		check("FixedPointList(-1/2,14)", //
 				"FixedPointList(-1/2,14)");
 		check("FixedPointList(Cos, 1.0, 4)", //
@@ -8503,8 +8545,11 @@ public class LowercaseTestCase extends AbstractTestCase {
 	}
 
 	public void testFrobeniusSolve() {
+		check("FrobeniusSolve({1,5,10,25},1317624576693539401)", //
+				"Iteration limit of 50002 exceeded for FrobeniusSolve.");
 		check("FrobeniusSolve({-1/2,-2,3},89)", //
 				"FrobeniusSolve({-1/2,-2,3},89)");
+
 		check("FrobeniusSolve({-1,-2,3}, 47349, 3)", //
 				"FrobeniusSolve({-1,-2,3},47349,3)");
 		check("FrobeniusSolve(Null, Null)", //
@@ -8925,6 +8970,10 @@ public class LowercaseTestCase extends AbstractTestCase {
 	}
 
 	public void testGamma() {
+		check("Gamma(1009,-9223372036854775807/9223372036854775808)",
+				"Iteration limit of 1009 exceeded for Gamma(1009,-9223372036854775807/9223372036854775808).");
+		check("Gamma(-9223372036854775808/11,0.5)", //
+				"Iteration limit of 502 exceeded for Sum.");
 		check("Gamma(2147483647)", //
 				"Iteration limit of 2147483646 exceeded for 2147483646!.");
 		check("Gamma(a,b,Infinity)", //
@@ -9070,6 +9119,10 @@ public class LowercaseTestCase extends AbstractTestCase {
 	}
 
 	public void testGegenbauerC() {
+
+		check("GegenbauerC(101,-9223372036854775807/9223372036854775808-I*9223372036854775808/9223372036854775807,z)", //
+				"Polynomial degree 101 exceeded");
+
 		check("GegenbauerC(3, l, z)", //
 				"-2*l*(1+l)*z+4/3*l*(1+l)*(2+l)*z^3");
 		check("GegenbauerC(4, l, z)", //
@@ -9355,6 +9408,8 @@ public class LowercaseTestCase extends AbstractTestCase {
 	}
 
 	public void testHarmonicNumber() {
+		check("HarmonicNumber(1009,101)", //
+				"Iteration limit of 1009 exceeded for HarmonicNumber(1009,101).");
 		check("HarmonicNumber(10007)", //
 				"Iteration limit of 10007 exceeded for HarmonicNumber(10007).");
 		check("HarmonicNumber(-Infinity)", //
@@ -9576,6 +9631,10 @@ public class LowercaseTestCase extends AbstractTestCase {
 		// TODO
 		// check("HurwitzZeta(7,5.0)", //
 		// " ");
+		check("HurwitzZeta(2147483647,3.141592653589793)", //
+				"HurwitzZeta(2.14748*10^9,3.14159)");
+		check("HurwitzZeta(1.5708,1317624576693539401)", //
+				"HurwitzZeta(1.5708,1.31762*10^18)");
 		check("HurwitzZeta(3,0.2)", //
 				"125.739");
 		check("HurwitzZeta(.51, .87)", //
@@ -9652,6 +9711,9 @@ public class LowercaseTestCase extends AbstractTestCase {
 	}
 
 	public void testHypergeometric1F1() {
+		// slow
+		check("Hypergeometric1F1(-9223372036854775808/11,{2,3,4},0.5)", //
+				"{Hypergeometric1F1(-8.38488*10^17,2.0,0.5),Hypergeometric1F1(-8.38488*10^17,3.0,0.5),Hypergeometric1F1(-8.38488*10^17,4.0,0.5)}");
 		// TODO check wrong
 		check("Hypergeometric1F1(3,Quantity(1.2,\"m\"),-1+I)", //
 				"Hypergeometric1F1(3,1.2[m],-1+I)");
@@ -9692,6 +9754,15 @@ public class LowercaseTestCase extends AbstractTestCase {
 	}
 
 	public void testHypergeometric2F1() {
+		// TODO check Quantity compatibility
+		check("Hypergeometric2F1(-5,Quantity(1.2,\"m\"),c,1)", //
+				"(-28.799999999999997[m]+-14.399999999999999*c^2[m]+-14.399999999999999*c^2[m]+-14.399999999999999*c^2[m]+-9.6*c^2[m]+-9.6*c^2[m]+-9.6*c^2[m]+-7.199999999999999*c^2[m]+-7.199999999999999*c^2[m]+-7.199999999999999*c^2[m]+-4.8*c^2[m]+-4.8*c^2[m]+-4.8*c^2[m]+-3.5999999999999996*c^2[m]+-3.5999999999999996*c^2[m]+-3.5999999999999996*c^2[m]+-2.4*c^2[m]+-2.4*c^2[m]+-2.4*c^2[m]+-4.8*c^3[m]+-3.5999999999999996*c^3[m]+-2.4*c^3[m]+-1.2*c^3[m]+-1.2*c^4[m]+-1.2*c^4[m]+-1.2*c^4[m]+-1.2*c^4[m]+8.639999999999999[m^2]+11.52[m^2]+17.28[m^2]+34.56[m^2]+1.44*c^2[m^2]+1.44*c^2[m^2]+1.44*c^2[m^2]+1.44*c^2[m^2]+1.44*c^2[m^2]+1.44*c^2[m^2]+2.88*c^2[m^2]+2.88*c^2[m^2]+2.88*c^2[m^2]+2.88*c^2[m^2]+2.88*c^2[m^2]+2.88*c^2[m^2]+4.319999999999999*c^2[m^2]+4.319999999999999*c^2[m^2]+4.319999999999999*c^2[m^2]+4.32*c^2[m^2]+4.32*c^2[m^2]+4.32*c^2[m^2]+5.76*c^2[m^2]+5.76*c^2[m^2]+5.76*c^2[m^2]+5.76*c^2[m^2]+5.76*c^2[m^2]+5.76*c^2[m^2]+1.44*c^3[m^2]+-20.736[m^3]+-13.824[m^3]+-10.368[m^3]+-6.912[m^3]+-5.184[m^3]+-3.456[m^3]+-1.728*c^2[m^3]+-1.728*c^2[m^3]+-1.728*c^2[m^3]+-1.728*c^2[m^3]+-1.728*c^2[m^3]+-1.728*c^2[m^3]+-1.728*c^2[m^3]+-1.728*c^2[m^3]+-1.728*c^2[m^3]+-1.728*c^2[m^3]+2.0736[m^4]+4.1472[m^4]+6.2208[m^4]+8.2944[m^4]+-2.48832[m^5]+\n"
+						+ "24*c+-28.799999999999997[m]*c+-28.799999999999997[m]*c+-14.399999999999999[m]*c+-14.399999999999999[m]*c+-9.6[m]*c+-9.6[m]*c+-7.199999999999999[m]*c+-7.199999999999999[m]*c+-4.8*c^2[m]*c+-4.8*c^2[m]*c+-4.8*c^2[m]*c+-3.5999999999999996*c^2[m]*c+-3.5999999999999996*c^2[m]*c+-3.5999999999999996*c^2[m]*c+-2.4*c^2[m]*c+-2.4*c^2[m]*c+-2.4*c^2[m]*c+-1.2*c^2[m]*c+-1.2*c^2[m]*c+-1.2*c^2[m]*c+-1.2*c^3[m]*c+2.88[m^2]*c+2.88[m^2]*c+2.88[m^2]*c+4.319999999999999[m^2]*c+4.319999999999999[m^2]*c+4.32[m^2]*c+5.76[m^2]*c+5.76[m^2]*c+5.76[m^2]*c+8.639999999999999[m^2]*c+8.639999999999999[m^2]*c+8.64[m^2]*c+11.52[m^2]*c+11.52[m^2]*c+11.52[m^2]*c+17.28[m^2]*c+17.28[m^2]*c+17.28[m^2]*c+1.44*c^2[m^2]*c+1.44*c^2[m^2]*c+1.44*c^2[m^2]*c+1.44*c^2[m^2]*c+1.44*c^2[m^2]*c+1.44*c^2[m^2]*c+1.44*c^2[m^2]*c+1.44*c^2[m^2]*c+1.44*c^2[m^2]*c+-6.912[m^3]*c+-6.912[m^3]*c+-6.912[m^3]*c+-6.912[m^3]*c+-5.184[m^3]*c+-5.184[m^3]*c+-5.184[m^3]*c+-5.184[m^3]*c+-3.456[m^3]*c+-3.456[m^3]*c+-3.456[m^3]*c+-3.456[m^3]*c+-1.728[m^3]*c+-1.728[m^3]*c+-1.728[m^3]*c+-1.728[m^3]*c+2.0736[m^4]*c+2.0736[m^4]*c+2.0736[m^4]*c+2.0736[m^4]*c+2.0736[m^4]*c+\n"
+						+ "6*c^2+8*c^2+12*c^2+24*c^2+2*c^3+3*c^3+4*c^3+6*c^3+8*c^3+12*c^3+c^4+2*c^4+3*c^4+4*c^\n"
+						+ "4+c^5)/(c*(1+c)*(2+c)*(3+c)*(4+c))");
+
+		check("Hypergeometric2F1(1317624576693539401,0.333,-3/2,-0.5)", //
+				"Hypergeometric2F1(0.333,1.31762*10^18,-1.5,-0.5)");
 		check("Hypergeometric2F1(-1,b,c,1)", //
 				"(-b+c)/c");
 		check("Hypergeometric2F1(-2,b,c,1)", //
@@ -10004,6 +10075,14 @@ public class LowercaseTestCase extends AbstractTestCase {
 	}
 
 	public void testInfinity() {
+		// 1/2*(2+3*l+l^2-4*(-Infinity)-2*l*(-Infinity)+(-Infinity)^2)
+		check("-2*l*(-Infinity)", //
+				"l*Infinity");
+		check("(-Infinity)^2", //
+				"Infinity");
+		check("1/2*(2+3*l+l^2-4*(-Infinity)-2*l*(-Infinity)+(-Infinity)^2)", //
+				"1/2*(Infinity+3*l+l*Infinity+l^2)");
+
 		check("1 / Infinity", //
 				"0");
 		check("Infinity + 100", //
@@ -11630,8 +11709,18 @@ public class LowercaseTestCase extends AbstractTestCase {
 	}
 
 	public void testLaguerreL() {
+		// TODO improve error messages
+		check("LaguerreL(10,l,Infinity)", //
+				"Indeterminate");
+		check("LaguerreL(3,l,-Infinity)", //
+				"1/3*(-(2+l)*(l+Infinity)+1/2*(l+Infinity)*(Infinity+3*l+l*Infinity+l^2))");
+		check("LaguerreL(101,l,-Infinity)", //
+				"Polynomial degree 101 exceeded");
+		check("LaguerreL(101,l,-I)", //
+				"Polynomial degree 101 exceeded");
 		check("LaguerreL(1009, 7)", //
-				"Maximum AST dimension 20001 exceeded");
+				"Polynomial degree 1009 exceeded");
+
 		check("LaguerreL(1, 1 - b, -z)", //
 				"2-b+z");
 		check("LaguerreL(1, a, z)", //
@@ -11639,12 +11728,12 @@ public class LowercaseTestCase extends AbstractTestCase {
 		check("LaguerreL(0, l, z)", //
 				"1");
 		check("LaguerreL(2, l, z)", // 1/2*(-1-l)+1/2*(1+l-z)*(3+l-z)
-				"1/2*(-1-l+(1+l-z)*(3+l-z))");
+				"1/2*(2+3*l+l^2-4*z-2*l*z+z^2)");
 		check("LaguerreL(3, l, z)", //
-				"1/3*(-(2+l)*(1+l-z)+1/2*(-1-l+(1+l-z)*(3+l-z))*(5+l-z))");
+				"1/3*(-(2+l)*(1+l-z)+1/2*(5+l-z)*(2+3*l+l^2-4*z-2*l*z+z^2))");
 		check("LaguerreL(4, l, z)", //
-				"1/4*(1/2*(-3-l)*(-1-l+(1+l-z)*(3+l-z))+1/3*(-(2+l)*(1+l-z)+1/2*(-1-l+(1+l-z)*(3+l-z))*(\n" + //
-						"5+l-z))*(7+l-z))");
+				"1/4*(1/2*(-3-l)*(2+3*l+l^2-4*z-2*l*z+z^2)+1/3*(7+l-z)*(-(2+l)*(1+l-z)+1/2*(5+l-z)*(\n"
+						+ "2+3*l+l^2-4*z-2*l*z+z^2)))");
 		check("LaguerreL(n, 0)", //
 				"LaguerreL(n,0)");
 		check("LaguerreL(8, x)", //
@@ -11887,6 +11976,14 @@ public class LowercaseTestCase extends AbstractTestCase {
 	}
 
 	public void testLegendreQ() {
+		// TODO control number of error message output
+		// check("LegendreQ(1009,z)", //
+		// "");
+
+		// SLOW
+		check("LegendreQ(10007,z)", //
+				"Polynomial degree 10007 exceeded");
+
 		check("LegendreQ(-(1/2), 2*z - 1)", //
 				"EllipticK(z)");
 		check("LegendreQ(-3,z)", //
@@ -12313,7 +12410,7 @@ public class LowercaseTestCase extends AbstractTestCase {
 				"Infinity");
 
 		check("Limit(Log(x^y), x->0)", //
-				"DirectedInfinity(-y)");
+				"y*(-Infinity)");
 		check("Limit(Log(y*x, b), x->1)", //
 				"Log(b)/Log(y)");
 		check("Limit(Log(y*x), x->0)", //
@@ -12871,8 +12968,13 @@ public class LowercaseTestCase extends AbstractTestCase {
 	public void testLucasL() {
 		// check("LucasL(19,<|s1->0,s2:>1|>)", //
 		// "<|s1->0,s2:>LucasL(19,1)|>");
+
+		// slow
+		check("LucasL(101,1/1317624576693539401)", //
+				"Polynomial degree 101 exceeded");
 		check("LucasL(Quantity(1.2,\"m\"),2.718281828459045)", //
 				"LucasL(1.2[m],2.71828)");
+
 		check("LucasL(1+I/2)//N", //
 				"0.0653384+I*0.755095");
 		check("LucasL(1,0)", //
@@ -13359,7 +13461,7 @@ public class LowercaseTestCase extends AbstractTestCase {
 		check("Refine(Max(Infinity,x,y), x>0&&y>0)", //
 				"Infinity");
 		check("Refine(Max(Infinity,x,y), x>0)", //
-				"Max(Infinity,y)");
+				"Max(y,Infinity)");
 		check("Refine(Max(x,Infinity), x>0)", //
 				"Infinity");
 		check("Refine(Max(x,y,Infinity), x>0&&y>0)", //
@@ -14134,7 +14236,8 @@ public class LowercaseTestCase extends AbstractTestCase {
 	}
 
 	public void testN() {
-
+		check("N(Sqrt(2)/2,2147483647)", //
+				"N(Sqrt(2)/2,2147483647)");
 		check("N(Null)", //
 				"");
 		// test precision 30
@@ -14819,6 +14922,10 @@ public class LowercaseTestCase extends AbstractTestCase {
 	}
 
 	public void testNorm() {
+		// message Power: BigInteger bit length XXX exceeded
+		check("Norm({10,100,200},10007)", //
+				"BigInteger bit length 76493 exceeded", //
+				60);
 		check("Norm(0)", //
 				"0");
 		check("Norm({x, y}, 0)", //
@@ -15557,6 +15664,10 @@ public class LowercaseTestCase extends AbstractTestCase {
 	}
 
 	public void testOrthogonalize() {
+		// TODO
+		// check("Orthogonalize({{1, 2}, {3, 1}, {6, 9}, {7, 8}})", //
+		// "{{1/Sqrt(5),2/Sqrt(5)},{2/Sqrt(5),-1/Sqrt(5)},{0,0},{0,0}}");
+
 		check("2/Sqrt(14)", //
 				"Sqrt(2/7)");
 		check("(1/4)*Sqrt(1/2)", //
@@ -15580,8 +15691,6 @@ public class LowercaseTestCase extends AbstractTestCase {
 				"{{3/Sqrt(10),1/Sqrt(10)},{-1/Sqrt(10),3/Sqrt(10)}}");
 		check("Orthogonalize({{1,0,1},{1,1,1}})", //
 				"{{1/Sqrt(2),0,1/Sqrt(2)},{0,1,0}}");
-		check("Orthogonalize({{1, 2}, {3, 1}, {6, 9}, {7, 8}})", //
-				"{{1/Sqrt(5),2/Sqrt(5)},{2/Sqrt(5),-1/Sqrt(5)},{0,0},{0,0}}");
 		check("Orthogonalize({{2,3}, {2,7}, {4,5}})", //
 				"{{2/Sqrt(13),3/Sqrt(13)},{-3/Sqrt(13),2/Sqrt(13)},{0,0}}");
 		check("Orthogonalize({{1,2,3},{5,2,7},{3,5,1}})", //
@@ -15650,7 +15759,10 @@ public class LowercaseTestCase extends AbstractTestCase {
 		// TODO
 		// check("PadLeft({1, 2, 3}, 10, {a, b, c}, 2)", //
 		// "{b, c, a, b, c, 1, 2, 3, a, b}");
-
+		if (Config.EXPENSIVE_JUNIT_TESTS) {
+			check("PadLeft(x^2,1009)", //
+					"Recursion depth of 256 exceeded during evaluation of Null.");
+		}
 		// https://oeis.org/A196023
 		check("Select(Table(FromDigits@Join(Flatten@IntegerDigits@PadLeft({666}, 2, n), Reverse@IntegerDigits(n)), {n, 397}), PrimeQ)", //
 				"{16661,76667,3166613,3466643,7466647,7666667,145666541,148666841,152666251,\n" + //
@@ -16436,6 +16548,11 @@ public class LowercaseTestCase extends AbstractTestCase {
 	}
 
 	public void testPlus() {
+		check("x+1/(3!*E)-Infinity+1/(5!*E)+1/(6!*E)", //
+				"x-Infinity");
+		check("Refine(Infinity+x, x>0)", //
+				"Infinity");
+
 		check("1+I", //
 				"1+I");
 		check("Infinity - Infinity", //
@@ -16520,7 +16637,7 @@ public class LowercaseTestCase extends AbstractTestCase {
 	public void testPochhammer() {
 		// iteration limit exceeded
 		check("Pochhammer(3/4,10007)", //
-				"Pochhammer(3/4,10007)");
+				"Iteration limit of 10007 exceeded for Pochhammer(3/4,10007).");
 
 		check("Pochhammer(2-b,1)", //
 				"2-b");
@@ -17076,6 +17193,18 @@ public class LowercaseTestCase extends AbstractTestCase {
 	}
 
 	public void testPower() {
+		if (Config.EXPENSIVE_JUNIT_TESTS) {
+			check("(-9223372036854775807/9223372036854775808-I*9223372036854775808/9223372036854775807)^10007", //
+					"BigInteger bit length 229469 exceeded");
+		}
+		check("(-8/27*(-2/3)^(2/5))^2147483647", //
+				"BigInteger bit length 254105 exceeded");
+		// SLOW in factorSmallPrimes()
+		check("(85070591730234615764386559452539518976/121)^(13479/14641)", //
+				"BigInteger bit length 258048 exceeded");
+
+		check("(I*1/2)^x^2", //
+				"(I*1/2)^x^2");
 		check("Sqrt(Sqrt(3/5)/2) // FullForm", //
 				"Times(Power(Rational(3,5), Rational(1,4)), Power(2, Rational(-1,2)))");
 		check("Sqrt(Sqrt(3/5)) // FullForm", //
@@ -18222,6 +18351,10 @@ public class LowercaseTestCase extends AbstractTestCase {
 
 	public void testQuantity() {
 		if (ToggleFeature.QUANTITY) {
+			// TODO return unevaluated and print "compat" message that types are incompatible
+			check("Quantity(0, \"kg\") + Quantity(0, \"A\") + Quantity(0, \"m\")", //
+					"0[A]+0[kg]+0[m]");
+
 			check("N(Quantity(2/3,\"m\"))", //
 					"0.6666666666666666[m]");
 
@@ -18231,9 +18364,6 @@ public class LowercaseTestCase extends AbstractTestCase {
 					"110[s]");
 			check("Quantity(1, \"min\") + Quantity(50, \"s\")", //
 					"110[s]");
-			// TODO return unevaluated and print "compat" message that types are incompatible
-			check("Quantity(0, \"kg\") + Quantity(0, \"A\") + Quantity(0, \"m\")", //
-					"0[kg]");
 			check("Quantity(1, \"min\") + Quantity(120, \"min\")", //
 					"121[min]");
 			check("Quantity(1, \"min\") + Quantity(50, \"s\")", //
@@ -22279,6 +22409,8 @@ public class LowercaseTestCase extends AbstractTestCase {
 	}
 
 	public void testStirlingS1() {
+		check("StirlingS1(10007,11)", //
+				"Maximum AST dimension 20834 exceeded");
 		check("StirlingS1(9,6)", //
 				"-4536");
 		check("StirlingS1(0,0)", //
@@ -22300,6 +22432,8 @@ public class LowercaseTestCase extends AbstractTestCase {
 	}
 
 	public void testStirlingS2() {
+		check("StirlingS2(1317624576693539401,4)", //
+				"StirlingS2(1317624576693539401,4)");
 		check("StirlingS2(-1,-3)", //
 				"StirlingS2(-1,-3)");
 
@@ -22492,6 +22626,8 @@ public class LowercaseTestCase extends AbstractTestCase {
 	public void testStruveH() {
 		System.out.println("testStruveH: ");
 
+		check("StruveH(1009,-9223372036854775807/9223372036854775808-I*9223372036854775808/9223372036854775807)", //
+				"BigInteger bit length 60600 exceeded");
 		// https://github.com/paulmasson/math/issues/9
 		check("StruveH(0, 50.0)", //
 				"-0.0853402");
@@ -22573,6 +22709,12 @@ public class LowercaseTestCase extends AbstractTestCase {
 	}
 
 	public void testSubdivide() {
+		check("Subdivide(N(E,21),E^(Pi*I*1/3),4)", //
+				"{2.71828182845904523536," //
+						+ "2.16371137134428392652+I*0.21650635094610966169," //
+						+ "1.60914091422952261768+I*0.433012701892219323381," //
+						+ "1.05457045711476130884+I*0.649519052838328985072," //
+						+ "0.5+I*0.866025403784438646763}");
 		check("Subdivide(3/4,Quantity(1.2,\"m\"),11)", //
 				"Subdivide(3/4,1.2[m],11)");
 		check("Subdivide(10,  4)", //
@@ -22721,6 +22863,8 @@ public class LowercaseTestCase extends AbstractTestCase {
 	}
 
 	public void testSum() {
+		check("Sum(10007,2147483647)", //
+				"Iteration limit of 2147483647 exceeded for 2147483647.");
 		check("Sum(1.5708,{i,1,10},{1->0})", //
 				"Sum(1.5708,{i,1,10},{1->0})");
 		check("Sum(i^2,x)", //

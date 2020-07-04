@@ -178,6 +178,9 @@ public class Symbol implements ISymbol, Serializable {
 		}
 		if (expr.isAST()) {
 			final int id = expr.headID();
+			if (id == ID.DirectedInfinity && expr.isDirectedInfinity()) {
+				return -1;
+			}
 			if (id >= ID.Not && id <= ID.Power) {
 				if (expr.isNot() && expr.first().isSymbol()) {
 					final int cp = compareTo(expr.first());
@@ -191,10 +194,10 @@ public class Symbol implements ISymbol, Serializable {
 					return baseCompare;
 				}
 			}
-			if (!expr.isDirectedInfinity()) {
-				return -1 * expr.compareTo(this);
-			}
-			return -1;
+			// if (!expr.isDirectedInfinity()) {
+			return -1 * expr.compareTo(this);
+			// }
+			// return -1;
 		}
 
 		int x = hierarchy();

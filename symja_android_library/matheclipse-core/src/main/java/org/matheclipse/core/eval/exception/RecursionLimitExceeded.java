@@ -36,7 +36,7 @@ public class RecursionLimitExceeded extends LimitException {
 	public static void throwIt(final int limit, final IExpr expr) {
 		// HeapContext.enter();
 		// try {
-		throw new RecursionLimitExceeded(limit, expr);// .copy());
+		throw new RecursionLimitExceeded(limit, null);// .copy());
 		// } finally {
 		// HeapContext.exit();
 		// }

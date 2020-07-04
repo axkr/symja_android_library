@@ -8107,6 +8107,7 @@ public class AlgebraicFunctions extends AbstractRubiTestCase {
 
 	// {750}
 	public void test1056() {
+		fSeconds = 60;
 		check(//
 				"Integrate[1/((d + e*x)*(c^2*d^2 - b*c*d*e + b^2*e^2 + 3*b*c*e^2*x + 3*c^2*e^2*x^2)^(1/3)), x]", //
 				"-(ArcTan[1/Sqrt[3] + (2*(c*d - b*e - c*e*x))/(Sqrt[3]*(2*c*d - b*e)^(1/3)*(c^2*d^2 - b*c*d*e + b^2*e^2 + 3*b*c*e^2*x + 3*c^2*e^2*x^2)^(1/3))]/(Sqrt[3]*e*(2*c*d - b*e)^(2/3))) - Log[d + e*x]/(2*e*(2*c*d - b*e)^(2/3)) + Log[3*c*e^2*(c*d - b*e) - 3*c^2*e^3*x - 3*c*e^2*(2*c*d - b*e)^(1/3)*(c^2*d^2 - b*c*d*e + b^2*e^2 + 3*b*c*e^2*x + 3*c^2*e^2*x^2)^(1/3)]/(2*e*(2*c*d - b*e)^(2/3))", //

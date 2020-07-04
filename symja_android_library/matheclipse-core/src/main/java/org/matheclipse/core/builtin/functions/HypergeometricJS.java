@@ -9,7 +9,9 @@ import org.hipparchus.complex.Complex;
 import org.hipparchus.special.Gamma;
 import org.matheclipse.core.basic.Config;
 import org.matheclipse.core.builtin.Arithmetic;
+import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.exception.ArgumentTypeException;
+import org.matheclipse.core.eval.exception.IterationLimitExceeded;
 import org.matheclipse.core.eval.exception.ThrowException;
 import org.matheclipse.core.expression.F;
 
@@ -19,8 +21,8 @@ import org.matheclipse.core.expression.F;
  * <a href="https://github.com/paulmasson/math/blob/master/src/functions/hypergeometric.js">hypergeometric.js</a>
  */
 public class HypergeometricJS {
-	
-	private HypergeometricJS() { 
+
+	private HypergeometricJS() {
 	}
 
 	public static Complex hypergeometricSeries(Complex[] A, Complex[] B, Complex x) { // , double tolerance
@@ -125,13 +127,15 @@ public class HypergeometricJS {
 
 		double s = 1.0;
 		double p = 1.0;
-		int i = 1;
-
+		long i = 1;
+		long iterationLimit = EvalEngine.get().getIterationLimit();
 		while (Math.abs(p) > Config.SPECIAL_FUNCTIONS_TOLERANCE) {
 			p *= x / a / i;
 			s += p;
 			a++;
-			i++;
+			if (i++ > iterationLimit && iterationLimit > 0) {
+				IterationLimitExceeded.throwIt(i, F.Hypergeometric0F1);
+			}
 		}
 
 		return s;
@@ -170,14 +174,16 @@ public class HypergeometricJS {
 
 		Complex s = Complex.ONE;
 		Complex p = Complex.ONE;
-		int i = 1;
-
+		long i = 1;
+		long iterationLimit = EvalEngine.get().getIterationLimit();
 		while (Math.abs(p.getReal()) > Config.SPECIAL_FUNCTIONS_TOLERANCE || //
 				Math.abs(p.getImaginary()) > Config.SPECIAL_FUNCTIONS_TOLERANCE) {
 			p = p.multiply(x).multiply(a.reciprocal()).divide(i);
 			s = s.add(p);
 			a = a.add(1);
-			i++;
+			if (i++ > iterationLimit && iterationLimit > 0) {
+				IterationLimitExceeded.throwIt(i, F.Hypergeometric0F1);
+			}
 		}
 
 		return s;
@@ -214,15 +220,18 @@ public class HypergeometricJS {
 
 		Complex s = Complex.ONE;
 		Complex p = Complex.ONE;
-		int i = 1;
+		long i = 1;
 
+		long iterationLimit = EvalEngine.get().getIterationLimit();
 		while (Math.abs(p.getReal()) > Config.SPECIAL_FUNCTIONS_TOLERANCE || //
 				Math.abs(p.getImaginary()) > Config.SPECIAL_FUNCTIONS_TOLERANCE) {
 			p = p.multiply(x).multiply(a).multiply(b.reciprocal()).divide(i);
 			s = s.add(p);
 			a = a.add(1.0);
 			b = b.add(1.0);
-			i++;
+			if (i++ > iterationLimit && iterationLimit > 0) {
+				IterationLimitExceeded.throwIt(i, F.Hypergeometric1F1);
+			}
 		}
 
 		return s;
@@ -251,14 +260,17 @@ public class HypergeometricJS {
 
 		double s = 1;
 		double p = 1;
-		double i = 1;
+		long i = 1;
 
+		long iterationLimit = EvalEngine.get().getIterationLimit();
 		while (Math.abs(p) > Config.SPECIAL_FUNCTIONS_TOLERANCE) {
 			p *= x * a / b / i;
 			s += p;
 			a++;
 			b++;
-			i++;
+			if (i++ > iterationLimit && iterationLimit > 0) {
+				IterationLimitExceeded.throwIt(i, F.Hypergeometric1F1);
+			}
 		}
 
 		return s;
@@ -447,15 +459,18 @@ public class HypergeometricJS {
 		}
 		Complex s = Complex.ONE;
 		Complex p = Complex.ONE;
-		double i = 1;
+		int i = 1;
 
+		long iterationLimit = EvalEngine.get().getIterationLimit();
 		while (Math.abs(p.getReal()) > tolerance || Math.abs(p.getImaginary()) > tolerance) {
 			p = p.multiply(x).multiply(a).multiply(b).multiply(c.reciprocal()).divide(i);
 			s = s.add(p);
 			a = a.add(1);
 			b = b.add(1);
 			c = c.add(1);
-			i++;
+			if (i++ > iterationLimit && iterationLimit > 0) {
+				IterationLimitExceeded.throwIt(i, F.Hypergeometric2F1);
+			}
 		}
 
 		return s;
@@ -505,15 +520,17 @@ public class HypergeometricJS {
 
 		double s = 1;
 		double p = 1;
-		double i = 1;
-
+		int i = 1;
+		long iterationLimit = EvalEngine.get().getIterationLimit();
 		while (Math.abs(p) > tolerance) {
 			p *= x * a * b / c / i;
 			s += p;
 			a++;
 			b++;
 			c++;
-			i++;
+			if (i++ > iterationLimit && iterationLimit > 0) {
+				IterationLimitExceeded.throwIt(i, F.Hypergeometric2F1);
+			}
 		}
 
 		return s;

@@ -3351,6 +3351,10 @@ public class F extends S {
 	public static IAST Fit(final IExpr a0, final IExpr a1, final IExpr a2) {
 		return new AST3(Fit, a0, a1, a2);
 	}
+	
+	public static IAST FiveNum(final IExpr a) {
+		return new AST1(FiveNum, a);
+	}
 
 	public static IAST First(final IExpr a0) {
 		return new AST1(First, a0);
@@ -3970,8 +3974,14 @@ public class F extends S {
 	public static IAST intIterator(ISymbol head, final Function<IExpr, IExpr> function, final int from, final int to,
 			final int step) {
 		IASTAppendable result = F.ast(head, to - from + 1, false);
+		int numberOfLeaves = 0;
 		for (int i = from; i <= to; i += step) {
-			result.append(function.apply(F.ZZ(i)));
+			IExpr temp = function.apply(F.ZZ(i));
+			numberOfLeaves += temp.leafCount() + 1;
+			if (numberOfLeaves >= Config.MAX_AST_SIZE) {
+				ASTElementLimitExceeded.throwIt(numberOfLeaves);
+			}
+			result.append(temp);
 		}
 		return result;
 	}
@@ -4260,7 +4270,7 @@ public class F extends S {
 	public static IAST JacobiCD(final IExpr a0, final IExpr a1) {
 		return new AST2(JacobiCD, a0, a1);
 	}
-	
+
 	public static IAST JacobiCN(final IExpr a0, final IExpr a1) {
 		return new AST2(JacobiCN, a0, a1);
 	}
@@ -4268,15 +4278,15 @@ public class F extends S {
 	public static IAST JacobiDC(final IExpr a0, final IExpr a1) {
 		return new AST2(JacobiDC, a0, a1);
 	}
-	
+
 	public static IAST JacobiNC(final IExpr a0, final IExpr a1) {
 		return new AST2(JacobiNC, a0, a1);
 	}
-	
+
 	public static IAST JacobiND(final IExpr a0, final IExpr a1) {
 		return new AST2(JacobiND, a0, a1);
 	}
-	
+
 	public static IAST JacobiDN(final IExpr a0, final IExpr a1) {
 		return new AST2(JacobiDN, a0, a1);
 	}
@@ -4284,11 +4294,11 @@ public class F extends S {
 	public static IAST JacobiSC(final IExpr a0, final IExpr a1) {
 		return new AST2(JacobiSC, a0, a1);
 	}
-	
+
 	public static IAST JacobiSD(final IExpr a0, final IExpr a1) {
 		return new AST2(JacobiSD, a0, a1);
 	}
-	
+
 	public static IAST JacobiSN(final IExpr a0, final IExpr a1) {
 		return new AST2(JacobiSN, a0, a1);
 	}

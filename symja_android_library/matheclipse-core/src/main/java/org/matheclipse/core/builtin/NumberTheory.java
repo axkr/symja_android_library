@@ -31,9 +31,11 @@ import org.matheclipse.core.convert.VariablesSet;
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.exception.ASTElementLimitExceeded;
 import org.matheclipse.core.eval.exception.ArgumentTypeException;
+import org.matheclipse.core.eval.exception.BigIntegerLimitExceeded;
 import org.matheclipse.core.eval.exception.IterationLimitExceeded;
 import org.matheclipse.core.eval.exception.JASConversionException;
 import org.matheclipse.core.eval.exception.LimitException;
+import org.matheclipse.core.eval.exception.PolynomialDegreeLimitExceeded;
 import org.matheclipse.core.eval.exception.Validate;
 import org.matheclipse.core.eval.exception.ValidateException;
 import org.matheclipse.core.eval.interfaces.AbstractArg2;
@@ -127,7 +129,10 @@ public final class NumberTheory {
 			// Sum[StirlingS2[n, k], {k, 0, n}]
 			IInteger sum = F.C1;
 			for (int ki = 0; ki < index; ki++) {
-				sum = sum.add(stirlingS2(F.ZZ(index), F.ZZ(ki), ki));
+				sum = sum.add(stirlingS2(index, F.ZZ(ki), ki));
+				if (sum.bitLength() > Config.MAX_BIT_LENGTH / 100) {
+					BigIntegerLimitExceeded.throwIt(Config.MAX_BIT_LENGTH / 100);
+				}
 			}
 			return sum;
 		}
@@ -183,6 +188,9 @@ public final class NumberTheory {
 						if (z.isZero()) {
 							return F.C0;
 						}
+						if (n > Config.MAX_POLYNOMIAL_DEGREE) {
+							PolynomialDegreeLimitExceeded.throwIt(n);
+						}
 						if (!z.isOne()) {
 							// bell polynomials: Sum(StirlingS2(n, k)* z^k, {k, 0, n})
 							return bellBPolynomial(n, z);
@@ -210,7 +218,7 @@ public final class NumberTheory {
 		}
 
 		@Override
-		public int[] expectedArgSize() {
+		public int[] expectedArgSize(IAST ast) {
 			return IOFunctions.ARGS_1_2;
 		}
 
@@ -299,7 +307,7 @@ public final class NumberTheory {
 		}
 
 		@Override
-		public int[] expectedArgSize() {
+		public int[] expectedArgSize(IAST ast) {
 			return IOFunctions.ARGS_1_2;
 		}
 
@@ -752,7 +760,7 @@ public final class NumberTheory {
 		}
 
 		@Override
-		public int[] expectedArgSize() {
+		public int[] expectedArgSize(IAST ast) {
 			return IOFunctions.ARGS_2_2;
 		}
 	}
@@ -814,7 +822,7 @@ public final class NumberTheory {
 		}
 
 		@Override
-		public int[] expectedArgSize() {
+		public int[] expectedArgSize(IAST ast) {
 			return IOFunctions.ARGS_1_1;
 		}
 
@@ -1075,7 +1083,7 @@ public final class NumberTheory {
 		}
 
 		@Override
-		public int[] expectedArgSize() {
+		public int[] expectedArgSize(IAST ast) {
 			return IOFunctions.ARGS_1_1;
 		}
 
@@ -1288,7 +1296,7 @@ public final class NumberTheory {
 		}
 
 		@Override
-		public int[] expectedArgSize() {
+		public int[] expectedArgSize(IAST ast) {
 			return IOFunctions.ARGS_2_2;
 		}
 
@@ -1401,7 +1409,7 @@ public final class NumberTheory {
 		}
 
 		@Override
-		public int[] expectedArgSize() {
+		public int[] expectedArgSize(IAST ast) {
 			return IOFunctions.ARGS_2_3;
 		}
 
@@ -1453,7 +1461,7 @@ public final class NumberTheory {
 		}
 
 		@Override
-		public int[] expectedArgSize() {
+		public int[] expectedArgSize(IAST ast) {
 			return IOFunctions.ARGS_2_2;
 		}
 
@@ -1733,6 +1741,9 @@ public final class NumberTheory {
 		 */
 		@Override
 		public IExpr evaluate(final IAST ast, EvalEngine engine) {
+			if (ast.isAST1()) {
+				return F.NIL;
+			}
 			IExpr arg;
 			BigInteger[] gcdArgs = new BigInteger[ast.argSize()];
 			for (int i = 1; i < ast.size(); i++) {
@@ -1767,8 +1778,8 @@ public final class NumberTheory {
 		}
 
 		@Override
-		public int[] expectedArgSize() {
-			return IOFunctions.ARGS_2_INFINITY;
+		public int[] expectedArgSize(IAST ast) {
+			return IOFunctions.ARGS_1_INFINITY;
 		}
 
 		/**
@@ -1975,7 +1986,7 @@ public final class NumberTheory {
 		}
 
 		@Override
-		public int[] expectedArgSize() {
+		public int[] expectedArgSize(IAST ast) {
 			return IOFunctions.ARGS_2_3;
 		}
 
@@ -2254,7 +2265,9 @@ public final class NumberTheory {
 			if (n < 0) {
 				n *= (-1);
 			}
-
+			if (n > Config.MAX_POLYNOMIAL_DEGREE) {
+				PolynomialDegreeLimitExceeded.throwIt(n);
+			}
 			IExpr previousFibonacci = F.C0;
 			IExpr fibonacci = F.C1;
 			if (n == 0) {
@@ -2286,7 +2299,7 @@ public final class NumberTheory {
 		}
 
 		@Override
-		public int[] expectedArgSize() {
+		public int[] expectedArgSize(IAST ast) {
 			return IOFunctions.ARGS_1_2;
 		}
 
@@ -2339,7 +2352,7 @@ public final class NumberTheory {
 		}
 
 		@Override
-		public int[] expectedArgSize() {
+		public int[] expectedArgSize(IAST ast) {
 			return IOFunctions.ARGS_1_1;
 		}
 
@@ -2401,7 +2414,7 @@ public final class NumberTheory {
 		}
 
 		@Override
-		public int[] expectedArgSize() {
+		public int[] expectedArgSize(IAST ast) {
 			return IOFunctions.ARGS_1_1;
 		}
 
@@ -2554,7 +2567,7 @@ public final class NumberTheory {
 		}
 
 		@Override
-		public int[] expectedArgSize() {
+		public int[] expectedArgSize(IAST ast) {
 			return IOFunctions.ARGS_3_3;
 		}
 
@@ -2672,7 +2685,7 @@ public final class NumberTheory {
 		}
 
 		@Override
-		public int[] expectedArgSize() {
+		public int[] expectedArgSize(IAST ast) {
 			return IOFunctions.ARGS_1_1;
 		}
 
@@ -2746,6 +2759,9 @@ public final class NumberTheory {
 			if (n < 0) {
 				n *= (-1);
 			}
+			if (n > Config.MAX_POLYNOMIAL_DEGREE) {
+				PolynomialDegreeLimitExceeded.throwIt(n);
+			}
 			IExpr previousLucasL = F.C2;
 			IExpr lucalsL = x;
 			if (n == 0) {
@@ -2779,7 +2795,7 @@ public final class NumberTheory {
 		}
 
 		@Override
-		public int[] expectedArgSize() {
+		public int[] expectedArgSize(IAST ast) {
 			return IOFunctions.ARGS_1_2;
 		}
 
@@ -2834,7 +2850,7 @@ public final class NumberTheory {
 		}
 
 		@Override
-		public int[] expectedArgSize() {
+		public int[] expectedArgSize(IAST ast) {
 			return IOFunctions.ARGS_1_1;
 		}
 
@@ -2947,7 +2963,7 @@ public final class NumberTheory {
 		}
 
 		@Override
-		public int[] expectedArgSize() {
+		public int[] expectedArgSize(IAST ast) {
 			return IOFunctions.ARGS_1_1;
 		}
 
@@ -3092,7 +3108,7 @@ public final class NumberTheory {
 		}
 
 		@Override
-		public int[] expectedArgSize() {
+		public int[] expectedArgSize(IAST ast) {
 			return null;
 		}
 
@@ -3154,7 +3170,7 @@ public final class NumberTheory {
 		}
 
 		@Override
-		public int[] expectedArgSize() {
+		public int[] expectedArgSize(IAST ast) {
 			return IOFunctions.ARGS_2_2;
 		}
 
@@ -3236,7 +3252,7 @@ public final class NumberTheory {
 		}
 
 		@Override
-		public int[] expectedArgSize() {
+		public int[] expectedArgSize(IAST ast) {
 			return IOFunctions.ARGS_1_2;
 		}
 	}
@@ -3366,7 +3382,7 @@ public final class NumberTheory {
 		}
 
 		@Override
-		public int[] expectedArgSize() {
+		public int[] expectedArgSize(IAST ast) {
 			return IOFunctions.ARGS_1_1;
 		}
 
@@ -3470,7 +3486,7 @@ public final class NumberTheory {
 		}
 
 		@Override
-		public int[] expectedArgSize() {
+		public int[] expectedArgSize(IAST ast) {
 			return IOFunctions.ARGS_1_1;
 		}
 
@@ -3625,7 +3641,7 @@ public final class NumberTheory {
 		}
 
 		@Override
-		public int[] expectedArgSize() {
+		public int[] expectedArgSize(IAST ast) {
 			return IOFunctions.ARGS_1_1;
 		}
 
@@ -3677,7 +3693,7 @@ public final class NumberTheory {
 		}
 
 		@Override
-		public int[] expectedArgSize() {
+		public int[] expectedArgSize(IAST ast) {
 			return IOFunctions.ARGS_1_1;
 		}
 
@@ -3736,7 +3752,7 @@ public final class NumberTheory {
 		}
 
 		@Override
-		public int[] expectedArgSize() {
+		public int[] expectedArgSize(IAST ast) {
 			return IOFunctions.ARGS_1_1;
 		}
 
@@ -3807,7 +3823,7 @@ public final class NumberTheory {
 		}
 
 		@Override
-		public int[] expectedArgSize() {
+		public int[] expectedArgSize(IAST ast) {
 			return IOFunctions.ARGS_1_1;
 		}
 
@@ -3858,7 +3874,7 @@ public final class NumberTheory {
 		}
 
 		@Override
-		public int[] expectedArgSize() {
+		public int[] expectedArgSize(IAST ast) {
 			return IOFunctions.ARGS_1_1;
 		}
 
@@ -3894,7 +3910,7 @@ public final class NumberTheory {
 		}
 
 		@Override
-		public int[] expectedArgSize() {
+		public int[] expectedArgSize(IAST ast) {
 			return IOFunctions.ARGS_1_2;
 		}
 
@@ -4099,7 +4115,7 @@ public final class NumberTheory {
 			return F.NIL;
 		}
 
-		public int[] expectedArgSize() {
+		public int[] expectedArgSize(IAST ast) {
 			return IOFunctions.ARGS_1_2;
 		}
 
@@ -4172,7 +4188,7 @@ public final class NumberTheory {
 		}
 
 		@Override
-		public int[] expectedArgSize() {
+		public int[] expectedArgSize(IAST ast) {
 			return IOFunctions.ARGS_1_2;
 		}
 
@@ -4298,6 +4314,7 @@ public final class NumberTheory {
 				counter++;
 				IInteger k;
 				IASTAppendable temp = F.PlusAlloc(counter >= 0 ? counter : 0);
+				long leafCount = 0;
 				for (int i = 0; i < counter; i++) {
 					k = F.ZZ(i);
 					if ((i & 1) == 1) { // isOdd(i) ?
@@ -4308,11 +4325,17 @@ public final class NumberTheory {
 					temp.append(Times(factorPlusMinus1, F.Binomial(Plus(k, nSubtract1), Plus(k, nSubtractm)),
 							F.Binomial(nTimes2Subtractm, F.Subtract(nSubtractm, k)),
 							F.StirlingS2(Plus(k, nSubtractm), k)));
+					leafCount += temp.leafCount();
+					if (leafCount > Config.MAX_AST_SIZE) {
+						ASTElementLimitExceeded.throwIt(leafCount);
+					}
 
 				}
 				return temp;
 			}
-			throw new ArithmeticException("StirlingS1(n, m): arguments out of range.");
+			// Machine-sized integer expected at position `2` in `1`.
+			String str = IOFunctions.getMessage("intm", F.List(F.ZZ(1), F.StirlingS1(n, m)));
+			throw new ArgumentTypeException(str);
 		}
 
 		/** {@inheritDoc} */
@@ -4324,20 +4347,14 @@ public final class NumberTheory {
 				return F.NIL;
 			}
 			if (nArg1.isInteger() && mArg2.isInteger()) {
-				try {
-					return stirlingS1((IInteger) nArg1, (IInteger) mArg2);
-				} catch (RuntimeException rex) {
-					if (FEConfig.SHOW_STACKTRACE) {
-						rex.printStackTrace();
-					}
-				}
+				return stirlingS1((IInteger) nArg1, (IInteger) mArg2);
 			}
 
 			return F.NIL;
 		}
 
 		@Override
-		public int[] expectedArgSize() {
+		public int[] expectedArgSize(IAST ast) {
 			return IOFunctions.ARGS_2_2;
 		}
 
@@ -4386,6 +4403,7 @@ public final class NumberTheory {
 					return F.C1;
 				}
 				if (nArg1.isInteger() && kArg2.isInteger()) {
+					int n = Validate.checkNonNegativeIntType(ast, 1);
 					IInteger ki = (IInteger) kArg2;
 					if (ki.greaterThan(nArg1).isTrue()) {
 						return C0;
@@ -4407,22 +4425,17 @@ public final class NumberTheory {
 
 					int k = ki.toIntDefault(0);
 					if (k != 0) {
-						return stirlingS2((IInteger) nArg1, ki, k);
+						return stirlingS2(n, ki, k);
 					}
 				}
 			} catch (MathRuntimeException mre) {
 				return engine.printMessage(ast.topHead(), mre);
-			} catch (RuntimeException rex) {
-				if (FEConfig.SHOW_STACKTRACE) {
-					rex.printStackTrace();
-				}
-				return engine.printMessage(ast.topHead(), rex);
 			}
 			return F.NIL;
 		}
 
 		@Override
-		public int[] expectedArgSize() {
+		public int[] expectedArgSize(IAST ast) {
 			return IOFunctions.ARGS_2_2;
 		}
 
@@ -4947,7 +4960,7 @@ public final class NumberTheory {
 	 * {@code n}-element set into {@code k} non-empty subsets.
 	 * 
 	 * @param n
-	 *            the size of the set
+	 *            the size of the set. Must be a value > 0
 	 * @param k
 	 *            the number of non-empty subsets
 	 * @param ki
@@ -4955,25 +4968,14 @@ public final class NumberTheory {
 	 * @return {@code S2(nArg1,kArg2)} or throw <code>ArithmeticException</code> if <code>n</code> cannot be converted
 	 *         into a positive int number
 	 */
-	public static IInteger stirlingS2(IInteger n, IInteger k, int ki) throws MathRuntimeException {
-		// try {
-		int ni = n.toIntDefault(0);
-		if (ni != 0 && ni <= 25) {// S(26,9) = 11201516780955125625 is larger than Long.MAX_VALUE
-			return F.ZZ(CombinatoricsUtils.stirlingS2(ni, ki));
+	public static IInteger stirlingS2(int n, IInteger k, int ki) throws MathRuntimeException {
+		if (n != 0 && n <= 25) {// S(26,9) = 11201516780955125625 is larger than Long.MAX_VALUE
+			return F.ZZ(CombinatoricsUtils.stirlingS2(n, ki));
 		}
-		// } catch (MathRuntimeException mre) {
-		// if (Config.DEBUG) {
-		// mre.printStackTrace();
-		// }
-		// }
 		IInteger sum = F.C0;
-		int nInt = n.toIntDefault(-1);
-		if (nInt < 0) {
-			throw new ArithmeticException("StirlingS2(n,k) n is not a positive int number");
-		}
 		for (int i = 0; i < ki; i++) {
 			IInteger bin = binomial(k, F.ZZ(i));
-			IInteger pow = k.add(F.ZZ(-i)).pow(nInt);
+			IInteger pow = k.add(F.ZZ(-i)).pow(n);
 			if ((i & 1) == 1) { // isOdd(i) ?
 				sum = sum.add(bin.negate().multiply(pow));
 			} else {

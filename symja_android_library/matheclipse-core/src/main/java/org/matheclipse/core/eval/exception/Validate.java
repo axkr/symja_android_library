@@ -79,7 +79,7 @@ public final class Validate {
 	}
 
 	public static BigInteger[] checkListOfBigIntegers(IAST ast, IExpr arg, boolean nonNegative, EvalEngine engine) {
-		if (arg.isList() && arg.size() > 1) {
+		if (arg.isNonEmptyList()) {
 			IAST list = (IAST) arg;
 			BigInteger[] result = new BigInteger[list.argSize()];
 
@@ -118,7 +118,7 @@ public final class Validate {
 	}
 
 	public static int[] checkListOfInts(IAST ast, IExpr arg, boolean nonNegative, EvalEngine engine) {
-		if (arg.isList() && arg.size() > 1) {
+		if (arg.isNonEmptyList()) {
 			IAST list = (IAST) arg;
 			int[] result = new int[list.argSize()];
 

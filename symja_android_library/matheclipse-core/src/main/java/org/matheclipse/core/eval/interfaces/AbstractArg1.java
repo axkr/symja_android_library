@@ -1,11 +1,11 @@
 package org.matheclipse.core.eval.interfaces;
 
-import org.hipparchus.complex.Complex;
 import org.apfloat.Apcomplex;
 import org.apfloat.Apfloat;
+import org.hipparchus.complex.Complex;
 import org.matheclipse.core.builtin.IOFunctions;
 import org.matheclipse.core.eval.EvalEngine;
-import org.matheclipse.core.eval.exception.Validate;
+import org.matheclipse.core.eval.exception.LimitException;
 import org.matheclipse.core.expression.ApcomplexNum;
 import org.matheclipse.core.expression.ApfloatNum;
 import org.matheclipse.core.expression.ComplexNum;
@@ -49,6 +49,8 @@ public abstract class AbstractArg1 extends AbstractFunctionEvaluator {
 						return e1ApcomplexArg(((ApcomplexNum) arg1).apcomplexValue());
 					}
 					return e1ComplexArg(((ComplexNum) arg1).complexValue());
+				} catch (LimitException le) {
+					throw le;
 				} catch (RuntimeException rex) {
 //					EvalEngine.get().printMessage(ast.topHead().toString() + ": " + rex.getMessage());
 					return F.NIL;
@@ -73,7 +75,7 @@ public abstract class AbstractArg1 extends AbstractFunctionEvaluator {
 	}
 
 	@Override
-	public int[] expectedArgSize() {
+	public int[] expectedArgSize(IAST ast) {
 		return IOFunctions.ARGS_1_1;
 	}
 

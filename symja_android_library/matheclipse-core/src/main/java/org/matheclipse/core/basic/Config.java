@@ -69,7 +69,7 @@ public class Config {
 	 * Maximum number of parsed input leaves of an expression
 	 */
 	public static long MAX_INPUT_LEAVES = Long.MAX_VALUE;
-	
+
 	/**
 	 * Maximum output size in characters for an output form (i.e. TeXForm, MathMLForm,...I)
 	 */
@@ -84,11 +84,16 @@ public class Config {
 	 * Maximum number of row or column dimension allowed if creating a new matrix or vector
 	 */
 	public static int MAX_MATRIX_DIMENSION_SIZE = Integer.MAX_VALUE;
-	
+
 	/**
 	 * Maximum number of elements which could be allocated for a BigInteger number
 	 */
 	public static int MAX_BIT_LENGTH = Integer.MAX_VALUE;
+	
+	/**
+	 * Maximum degree of a polynomial generating function
+	 */
+	public static int MAX_POLYNOMIAL_DEGREE = Integer.MAX_VALUE;
 
 	static {
 		EXPR_CACHE = CacheBuilder.newBuilder().maximumSize(MAX_EXPR_CACHE_SIZE).weakKeys().weakValues().build();
@@ -132,7 +137,7 @@ public class Config {
 	 * Set to true if in fuzz testing mode
 	 * 
 	 */
-	public final static boolean FUZZ_TESTING = false;
+	public final static boolean FUZZ_TESTING = true;
 
 	/**
 	 * Set to true if the fuzzy parser should be used in the free form Symja API
@@ -270,6 +275,11 @@ public class Config {
 	 * Use <code>Num</code> objects for numeric calculations up to 16 digits precision.
 	 */
 	public static final long MACHINE_PRECISION = 16L;
+
+	/**
+	 * The maximum precision which could be requested from a user for numerical calculations.
+	 */
+	public static long MAX_PRECISION_APFLOAT = Short.MAX_VALUE;
 
 	/**
 	 * Print trigonometric functions in lower case characters.
@@ -542,12 +552,12 @@ public class Config {
 					"\n" + //
 					"<body>\n" + //
 					"\n" + //
-					"<link rel=\"stylesheet\" type=\"text/css\" href=\"https://cdnjs.cloudflare.com/ajax/libs/jsxgraph/0.99.7/jsxgraph.css\" />\n"
+					"<link rel=\"stylesheet\" type=\"text/css\" href=\"https://cdnjs.cloudflare.com/ajax/libs/jsxgraph/1.1.0/jsxgraph.min.css\" />\n"
 					+ //
 					"<script src=\"https://cdn.jsdelivr.net/gh/paulmasson/math@1.2.9/build/math.js\"></script>\n"
-					+ "<script src=\"https://cdnjs.cloudflare.com/ajax/libs/jsxgraph/0.99.7/jsxgraphcore.js\"\n" + //
+					+ "<script src=\"https://cdnjs.cloudflare.com/ajax/libs/jsxgraph/1.1.0/jsxgraphcore.min.js\"\n" + //
 					"        type='text/javascript'></script>\n" + //
-					"<script src=\"https://cdnjs.cloudflare.com/ajax/libs/jsxgraph/0.99.7/geonext.min.js\"\n" + //
+					"<script src=\"https://cdnjs.cloudflare.com/ajax/libs/jsxgraph/1.1.0/geonext.min.js\"\n" + //
 					"        type='text/javascript'></script>\n" + //
 					"\n" + //
 					"<div id=\"jxgbox\" class=\"jxgbox\" style=\"display: flex; width:99%; height:99%; margin: 0; flex-direction: column; overflow: hidden\">\n"

@@ -8,6 +8,7 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
 
+import org.matheclipse.core.eval.exception.LimitException;
 import org.matheclipse.core.eval.exception.SymjaMathException;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.interfaces.IAST;
@@ -344,6 +345,8 @@ public class ExprEvaluator {
 				engine.addOut(temp);
 			}
 			return temp;
+		} catch (SymjaMathException sma) {
+			return expr;
 		} finally {
 			// Quit may set a new engine
 			engine = EvalEngine.get();
@@ -445,7 +448,7 @@ public class ExprEvaluator {
 					work.setExpr(fExpr);
 					try {
 						F.await();
-						TimeLimiter timeLimiter = SimpleTimeLimiter.create(executor); 
+						TimeLimiter timeLimiter = SimpleTimeLimiter.create(executor);
 						return timeLimiter.callWithTimeout(work, timeoutDuration, timeUnit);
 					} catch (org.matheclipse.core.eval.exception.TimeoutException e) {
 						return F.$Aborted;

@@ -87,9 +87,12 @@ public interface IFunctionEvaluator extends IEvaluator {
 	 * At index 0 return the &quot;from&quot;, at index 1 return the &quot;to&quot; number of arguments, which are
 	 * expected by this function.
 	 * 
+	 * @param ast
+	 *            the abstract syntax tree (AST) those arguments should be checked
+	 * 
 	 * @return <code>null</code> is no range for the number of arguments is specified.
 	 */
-	default int[] expectedArgSize() {
+	default int[] expectedArgSize(IAST ast) {
 		return null;
 	}
 }

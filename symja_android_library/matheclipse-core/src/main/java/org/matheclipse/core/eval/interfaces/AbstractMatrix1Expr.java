@@ -6,6 +6,7 @@ import org.hipparchus.linear.RealMatrix;
 import org.matheclipse.core.builtin.IOFunctions;
 import org.matheclipse.core.convert.Convert;
 import org.matheclipse.core.eval.EvalEngine;
+import org.matheclipse.core.eval.exception.LimitException;
 import org.matheclipse.core.eval.exception.Validate;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.interfaces.IAST;
@@ -49,6 +50,8 @@ public abstract class AbstractMatrix1Expr extends AbstractFunctionEvaluator {
 			// if (Config.SHOW_STACKTRACE) {
 			// e.printStackTrace();
 			// }
+		} catch (LimitException le) {
+			throw le;
 		} catch (final MathRuntimeException mre) {
 			// org.hipparchus.exception.MathIllegalArgumentException: inconsistent dimensions: 0 != 3
 			return engine.printMessage(ast.topHead(), mre);
@@ -63,7 +66,7 @@ public abstract class AbstractMatrix1Expr extends AbstractFunctionEvaluator {
 	}
 
 	@Override
-	public int[] expectedArgSize() {
+	public int[] expectedArgSize(IAST ast) {
 		return IOFunctions.ARGS_1_1;
 	}
 
@@ -100,6 +103,8 @@ public abstract class AbstractMatrix1Expr extends AbstractFunctionEvaluator {
 						return matrixEval(fieldMatrix);
 					}
 				}
+			} catch (LimitException le) {
+				throw le;
 			} catch (final MathRuntimeException mre) {
 				// org.hipparchus.exception.MathIllegalArgumentException: inconsistent dimensions: 0 != 3
 				return engine.printMessage(ast.topHead(), mre);

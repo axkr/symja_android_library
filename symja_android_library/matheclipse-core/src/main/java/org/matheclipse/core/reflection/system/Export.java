@@ -153,7 +153,7 @@ public class Export extends AbstractEvaluator {
 		exporter.exportGraph(g, writer);
 	}
 
-	public int[] expectedArgSize() {
+	public int[] expectedArgSize(IAST ast) {
 		return IOFunctions.ARGS_2_3;
 	}
 

@@ -74,7 +74,7 @@ public class LaplaceTransform extends AbstractFunctionEvaluator implements Lapla
 	}
 
 	@Override
-	public int[] expectedArgSize() {
+	public int[] expectedArgSize(IAST ast) {
 		return IOFunctions.ARGS_3_3;
 	}
 	

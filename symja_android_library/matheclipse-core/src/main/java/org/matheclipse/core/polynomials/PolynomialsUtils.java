@@ -235,6 +235,9 @@ public class PolynomialsUtils {
 		// coefficients for polynomial 6 are l[21] ... l[27] (degrees 0 ... 6)
 		// ...
 		final int start = degree * (degree + 1) / 2;
+		if (start+degree + 1 >= Config.MAX_AST_SIZE) {
+			ASTElementLimitExceeded.throwIt(start+degree + 1); 
+		}
 		return result.appendArgs(0, degree + 1,
 				i -> F.Times(F.fraction(coefficients.get(start + i)), F.Power(x, F.ZZ(i))));
 

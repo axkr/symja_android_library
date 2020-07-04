@@ -178,7 +178,7 @@ public class IOFunctions {
 			return inputString(ast, engine);
 		}
 
-		public int[] expectedArgSize() {
+		public int[] expectedArgSize(IAST ast) {
 			return IOFunctions.ARGS_0_1;
 		}
 	}
@@ -223,7 +223,7 @@ public class IOFunctions {
 			return F.NIL;
 		}
 
-		public int[] expectedArgSize() {
+		public int[] expectedArgSize(IAST ast) {
 			return IOFunctions.ARGS_1_2;
 		}
 	}
@@ -242,7 +242,7 @@ public class IOFunctions {
 			return F.NIL;
 		}
 
-		public int[] expectedArgSize() {
+		public int[] expectedArgSize(IAST ast) {
 			return IOFunctions.ARGS_0_1;
 		}
 	}
@@ -543,7 +543,7 @@ public class IOFunctions {
 			// });
 		}
 
-		public int[] expectedArgSize() {
+		public int[] expectedArgSize(IAST ast) {
 			return IOFunctions.ARGS_1_2;
 		}
 	}
@@ -572,7 +572,7 @@ public class IOFunctions {
 			throw new DialogReturnException();
 		}
 
-		public int[] expectedArgSize() {
+		public int[] expectedArgSize(IAST ast) {
 			return IOFunctions.ARGS_0_1;
 		}
 
@@ -595,7 +595,7 @@ public class IOFunctions {
 			return F.NIL;
 		}
 
-		public int[] expectedArgSize() {
+		public int[] expectedArgSize(IAST ast) {
 			return IOFunctions.ARGS_0_1;
 		}
 
@@ -681,6 +681,7 @@ public class IOFunctions {
 			"itlimpartial", "Iteration limit of `1` exceeded. Returning partial results.", //
 			"itendless", "Endless iteration detected in `1` in evaluation loop.", //
 			"ivar", "`1` is not a valid variable.", //
+			"lend", "The argument at position `1` in `2` should be a vector of unsigned byte values or a Base64 encoded string.", //
 			"level", "Level specification `1` is not of the form n, {n}, or {m, n}.", //
 			"list", "List expected at position `1` in `2`.", //
 			"listofbigints", "List of Java BigInteger numbers expected in `1`.", //
@@ -689,7 +690,8 @@ public class IOFunctions {
 			"locked", "Symbol `1` is locked.", //
 			"lvlist", "Local variable specification `1` is not a List.", //
 			"lvws", "Variable `1` in local variable specification `2` requires assigning a value", //
-			"lvset", "Local variable specification `1` contains `2`, which is an assignment to `3`; only assignments to symbols are allowed.", //
+			"lvset",
+			"Local variable specification `1` contains `2`, which is an assignment to `3`; only assignments to symbols are allowed.", //
 			"matrix", "Argument `1` at position `2` is not a non-empty rectangular matrix.", //
 			"matsq", "Argument `1` at position `2` is not a non-empty square matrix.", //
 			"nil", "unexpected NIL expression encountered.", //
@@ -721,6 +723,7 @@ public class IOFunctions {
 			"polynomial", "Polynomial expected at position `1` in `2`.", //
 			"pkspec1", "The expression `1` cannot be used as a part specification.", //
 			"precsm", "Requested precision `1` is smaller than `2`.", //
+			"precgt", "Requested precision `1` is greater than `2`.", //
 			"range", "Range specification in `1` does not have appropriate bounds.", //
 			"reclim2", "Recursion depth of `1` exceeded during evaluation of `2`.", //
 			"rectt", "Rectangular array expected at position `1` in `2`.", //
@@ -753,7 +756,7 @@ public class IOFunctions {
 		Initializer.init();
 	}
 
-	public static IExpr message(ISymbol symbol, String messageShortcut, final IAST ast) {
+	public static IExpr message(ISymbol symbol, String messageShortcut, final IAST list) {
 		IExpr temp = symbol.evalMessage(messageShortcut);
 		String message = null;
 		if (temp.isPresent()) {
@@ -765,7 +768,7 @@ public class IOFunctions {
 			}
 		}
 		if (message != null) {
-			message = rawMessage(ast, message);
+			message = rawMessage(list, message);
 			return F.stringx(symbol.toString() + ": " + message);
 		}
 		return F.NIL;
@@ -822,6 +825,10 @@ public class IOFunctions {
 		return F.NIL;
 	}
 
+	public static String getMessage(String messageShortcut, final IAST listOfArgs) {
+		return getMessage(messageShortcut, listOfArgs, EvalEngine.get());
+	}
+
 	public static String getMessage(String messageShortcut, final IAST listOfArgs, EvalEngine engine) {
 		IExpr temp = F.General.evalMessage(messageShortcut);
 		String message = null;
@@ -851,9 +858,9 @@ public class IOFunctions {
 		return F.NIL;
 	}
 
-	private static String rawMessage(final IAST ast, String message) {
-		for (int i = 2; i < ast.size(); i++) {
-			message = StringUtils.replace(message, "`" + (i - 1) + "`", ast.get(i).toString());
+	private static String rawMessage(final IAST list, String message) {
+		for (int i = 2; i < list.size(); i++) {
+			message = StringUtils.replace(message, "`" + (i - 1) + "`", list.get(i).toString());
 		}
 		return message;
 	}

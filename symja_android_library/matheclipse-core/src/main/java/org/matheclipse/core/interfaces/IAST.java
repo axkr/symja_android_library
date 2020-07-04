@@ -16,6 +16,7 @@ import java.util.stream.Stream;
 
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.exception.MemoryLimitExceeded;
+import org.matheclipse.core.eval.exception.RecursionLimitExceeded;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.generic.ObjIntPredicate;
 import org.matheclipse.core.visit.IVisitor;
@@ -180,8 +181,9 @@ public interface IAST extends IExpr, Cloneable, Iterable<IExpr> {
 		try {
 			return accept(visitor);
 		} catch (StackOverflowError soe) {
-			throw new MemoryLimitExceeded("StackOverflowError in visitor");
+			RecursionLimitExceeded.throwIt(Integer.MAX_VALUE, this);
 		}
+		return F.NIL;
 	}
 
 	/**

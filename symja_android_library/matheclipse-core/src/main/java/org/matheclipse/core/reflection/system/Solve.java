@@ -938,7 +938,7 @@ public class Solve extends AbstractFunctionEvaluator {
 		return of(ast, false, engine);
 	}
 
-	public int[] expectedArgSize() {
+	public int[] expectedArgSize(IAST ast) {
 		return IOFunctions.ARGS_2_3;
 	}
 
@@ -954,7 +954,7 @@ public class Solve extends AbstractFunctionEvaluator {
 	public static IExpr of(final IAST ast, boolean numeric, EvalEngine engine) {
 		boolean[] isNumeric = new boolean[] { false };
 		try {
-			if (ast.arg1().isAST(F.List, 1)) {
+			if (ast.arg1().isEmptyList()) {
 				return F.List(F.CEmptyList);
 			}
 			IAST userDefinedVariables = Validate.checkIsVariableOrVariableList(ast, 2, engine);

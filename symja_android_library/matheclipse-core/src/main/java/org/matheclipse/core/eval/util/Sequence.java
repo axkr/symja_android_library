@@ -1,10 +1,11 @@
 package org.matheclipse.core.eval.util;
 
+import org.matheclipse.core.builtin.IOFunctions;
+import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.exception.ArgumentTypeException;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IInteger;
-import org.matheclipse.core.interfaces.ISignedNumber;
 
 /**
  * Represent Sequences in Take[] or Drop[] functions.
@@ -28,9 +29,10 @@ public class Sequence extends ListSizeSequence {
 	 * @param ast
 	 * @param offset
 	 *            the position in <code>ast</code>, where the first ISequence specification starts.
-	 * @return
+	 * @return <code>null</code> if no <code>Sequence[]</code> can be created
 	 */
-	public static Sequence[] createSequences(final IAST ast, final int offset) {
+	public static Sequence[] createSequences(final IAST ast, final int offset, String messageShortcut,
+			EvalEngine engine) {
 		final Sequence[] sequArray = new Sequence[ast.size() - offset];
 		Sequence sequ = null;
 		int j = 0;
@@ -38,8 +40,15 @@ public class Sequence extends ListSizeSequence {
 			if (ast.get(i).isList()) {
 				sequ = new Sequence((IAST) ast.get(i));
 			} else if (ast.get(i) instanceof IInteger) {
-				int num = ((IInteger) ast.get(i)).toInt();
+				IInteger integerValue = (IInteger) ast.get(i);
+				int num = integerValue.toIntDefault();
 				if (num < 0) {
+					if (num == Integer.MIN_VALUE) {
+						// default value for overflow from toIntDefault()
+						// Cannot <messageShortcut> positions `1` through `2` in `3`.
+						IOFunctions.printMessage(ast.topHead(), messageShortcut, F.List(F.C1, ast.arg2(), ast), engine);
+						return null;
+					}
 					sequ = new Sequence(num, Integer.MAX_VALUE);
 				} else {
 					sequ = new Sequence(1, num);
@@ -83,7 +92,7 @@ public class Sequence extends ListSizeSequence {
 			throw new ArgumentTypeException("real number expected at position 1 instead of " + lst.arg1().toString());
 		}
 		if (lst.size() > 3) {
-			return lst.arg3().toIntDefault(); 
+			return lst.arg3().toIntDefault();
 		}
 		return 1;
 	}

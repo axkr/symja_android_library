@@ -2,6 +2,7 @@ package org.matheclipse.core.eval.interfaces;
 
 import org.matheclipse.core.builtin.IOFunctions;
 import org.matheclipse.core.eval.EvalEngine;
+import org.matheclipse.core.eval.exception.LimitException;
 import org.matheclipse.core.eval.exception.ValidateException;
 import org.matheclipse.core.expression.ApfloatNum;
 import org.matheclipse.core.expression.F;
@@ -100,7 +101,7 @@ public abstract class AbstractArgMultiple extends AbstractArg2 {
 		return F.NIL;
 	}
 
-	public int[] expectedArgSize() {
+	public int[] expectedArgSize(IAST ast) {
 		return null;
 	}
 
@@ -274,6 +275,8 @@ public abstract class AbstractArgMultiple extends AbstractArg2 {
 					return e2FunArg(a0, (IAST) o1);
 				}
 			}
+		} catch (LimitException le) {
+			throw le;
 		} catch (ValidateException ve) {
 			if (FEConfig.SHOW_STACKTRACE) {
 				ve.printStackTrace();

@@ -14,6 +14,7 @@ import org.matheclipse.core.builtin.IOFunctions;
 import org.matheclipse.core.eval.EvalAttributes;
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.exception.ArgumentTypeException;
+import org.matheclipse.core.eval.exception.BigIntegerLimitExceeded;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IASTAppendable;
 import org.matheclipse.core.interfaces.IASTMutable;
@@ -381,7 +382,7 @@ public abstract class AbstractFractionSym implements IFraction {
 
 	@Override
 	public IAST factorSmallPrimes(int numerator, int root) {
-		BigInteger b = toBigNumerator();
+		IInteger b = numerator();
 		boolean isNegative = false;
 		if (sign() < 0) {
 			b = b.negate();
@@ -390,16 +391,18 @@ public abstract class AbstractFractionSym implements IFraction {
 		if (numerator != 1) {
 			b = b.pow(numerator);
 		}
-		BigInteger d = toBigDenominator();
+		IInteger d = denominator();
 		if (numerator != 1) {
 			d = d.pow(numerator);
 		}
 		// SortedMap<Integer, Integer> bMap = new TreeMap<Integer, Integer>();
 		Int2IntMap bMap = new Int2IntRBTreeMap();
-		IAST bAST = AbstractIntegerSym.factorBigInteger(b, isNegative, numerator, root, bMap);
+		BigInteger number = b.toBigNumerator();
+		IAST bAST = AbstractIntegerSym.factorBigInteger(number, isNegative, numerator, root, bMap);
 		// SortedMap<Integer, Integer> dMap = new TreeMap<Integer, Integer>();
 		Int2IntMap dMap = new Int2IntRBTreeMap();
-		IAST dAST = AbstractIntegerSym.factorBigInteger(d, false, numerator, root, dMap);
+		number = d.toBigNumerator();
+		IAST dAST = AbstractIntegerSym.factorBigInteger(number, false, numerator, root, dMap);
 		if (bAST.isPresent()) {
 			if (dAST.isPresent()) {
 				return F.Times(bAST, F.Power(dAST, F.CN1));
@@ -625,17 +628,28 @@ public abstract class AbstractFractionSym implements IFraction {
 		while ((exp >>= 1) > 0) {
 			x = x.mul(x);
 			if ((exp & 1) != 0) {
+				r.checkBitLength( );
 				r = r.mul(x);
 			}
 		}
 
 		while (b2pow-- > 0) {
+			r.checkBitLength( );
 			r = r.mul(r);
 		}
 		if (n < 0) {
 			return r.inverse();
 		}
 		return r;
+	}
+
+	public void checkBitLength( ) {
+		if (Integer.MAX_VALUE > Config.MAX_BIT_LENGTH) {
+			final long bitLength = toBigNumerator().bitLength() + toBigDenominator().bitLength();
+			if (bitLength > Config.MAX_BIT_LENGTH) {
+				BigIntegerLimitExceeded.throwIt(bitLength);
+			}
+		}
 	}
 
 	/** {@inheritDoc} */

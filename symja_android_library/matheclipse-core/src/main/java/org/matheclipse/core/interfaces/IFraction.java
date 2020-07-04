@@ -8,6 +8,9 @@ import java.math.BigInteger;
  * 
  */
 public interface IFraction extends IRational {
+	
+	
+	public void checkBitLength();
 
 	/** {@inheritDoc} */
 	@Override

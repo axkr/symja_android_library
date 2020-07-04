@@ -66,12 +66,20 @@ public class ExprEvaluatorTests extends TestCase {
 
 	public void testSmartFuzz() {
 		Config.MAX_AST_SIZE = 10000;
-		Config.MAX_BIT_LENGTH = 1000;
 		Config.MAX_OUTPUT_SIZE = 10000;
+		Config.MAX_INPUT_LEAVES = 100L;
+		Config.MAX_MATRIX_DIMENSION_SIZE = 100;
+		Config.MAX_PRECISION_APFLOAT = 100;
+		Config.MAX_BIT_LENGTH = 200000;
+		Config.MAX_POLYNOMIAL_DEGREE = 100;
+		Config.FILESYSTEM_ENABLED = false;
 		boolean quietMode = true;
-		EvalEngine engine = EvalEngine.get();
+
+		EvalEngine engine = new EvalEngine(true);
 		engine.setRecursionLimit(256);
 		engine.setIterationLimit(1000);
+		ExprEvaluator eval = new ExprEvaluator(engine, true, 20);
+
 		List<ASTNode> node = parseFileToList();
 		IExpr temp;
 
@@ -90,57 +98,70 @@ public class ExprEvaluatorTests extends TestCase {
 				F.complex(0.0, 0.5), //
 				F.complex(0.0, -1.0), //
 				F.complex(0.0, 1.0), //
-				F.num(-0.5), //
 				F.num(0.5), //
+				F.num(-0.5), //
 				F.num(Math.PI * (-0.5)), //
 				F.num(Math.PI * 0.5), //
 				F.num(-Math.PI), //
 				F.num(Math.PI), //
 				F.num(-Math.E), //
 				F.num(Math.E), //
-				F.True, //
-				F.False, //
-				F.assoc(F.CEmptyList), //
-				F.assoc(F.List(F.Rule(F.x, F.y))), //
-				F.CEmptyList, //
-				F.List(F.Rule(F.C1, F.C0)), //
-				F.List(F.Rule(F.x, F.CN1)), //
 				F.C0, //
 				F.C1, //
 				F.CN1, //
-				F.C2, //
-				F.CN2, //
-				F.CN10, //
 				F.CN1D2, //
 				F.C1D2, //
 				F.CNI, //
 				F.CI, //
-				// F.ZZ(Integer.MIN_VALUE), //
+				F.CC(Long.MAX_VALUE, Long.MIN_VALUE, Long.MIN_VALUE, Long.MAX_VALUE), //
+				F.QQ(Long.MAX_VALUE, Long.MIN_VALUE), F.QQ(Long.MIN_VALUE, Long.MAX_VALUE), //
+				F.Slot2, //
+				// some primes
+				F.C2, F.C3, F.C5, F.C7, F.ZZ(11), F.ZZ(13), F.ZZ(17), F.ZZ(19), F.ZZ(101), F.ZZ(1009), F.ZZ(10007), //
+				F.ZZ(Integer.MIN_VALUE), //
+				F.ZZ(Integer.MAX_VALUE), //
 				F.CInfinity, //
 				F.CNInfinity, //
 				F.Null, //
 				F.Power(F.x, F.C2), //
-				// F.Indeterminate, //
-				F.C1DSqrt5, // F.List(F.List(F.C0)), //
+				F.Indeterminate, //
 				F.ComplexInfinity, //
 				F.x_, //
 				F.y_, //
 				F.CEmptyList, //
+				F.assoc(F.List(F.Rule(F.a, F.C0), F.RuleDelayed(F.b, F.C1))), F.assoc(F.List()),
+				F.assoc(F.List(F.Rule(F.stringx("s1"), F.C0), F.RuleDelayed(F.stringx("s2"), F.C1))),
+				F.List(F.List(F.C0)), //
 				F.List(F.List(F.C1)), //
 				F.List(F.List(F.CN1)), //
 				F.List(F.List(F.C1, F.C0), F.List(F.C0, F.C1)), //
 				F.List(F.List(F.C0, F.C0), F.List(F.C0, F.C0)), //
+				F.List(F.List(F.C1, F.C0), F.List(F.C0, F.C1), F.C0), //
+				F.List(F.List(F.C0, F.C0), F.List(F.C0, F.C0), F.C0), //
 				F.List(F.CN1, F.CN2, F.C3), //
 				F.List(F.CN1D2, F.CN2, F.C3), //
 				F.List(F.x, F.CN2, F.C3), //
 				F.List(F.x, F.C5, F.CN3), //
 				F.List(F.x, F.CN3, F.CN1D2), //
-				F.Slot1, //
+				F.C1DSqrt5, //
+				F.Divide(F.Plus(F.C1, F.Sqrt(5)), F.C2), // GoldenRatio
+				F.Divide(F.C2, F.Plus(F.C1, F.Sqrt(5))), // 1/GoldenRatio
+				F.Negate(F.Sqrt(2)), //
+				F.Divide(F.Sqrt(2), F.C2), //
+				F.Negate(F.Divide(F.Sqrt(2), F.C2)), //
+				F.Plus(F.Sqrt(2), F.C1), //
+				F.Plus(F.Sqrt(2), F.CN1), //
+				F.Exp(F.Times(F.Pi, F.CI, F.C1D3)), //
+				F.Plus(F.C1, F.CI), //
+				F.Plus(F.CN1, F.CI), //
+				F.CSqrt2, //
 				F.C2Pi, //
 				F.CN3D2, //
 				F.C3D2, //
 				F.C3D4, //
-				F.Slot2, //
+				F.QQ(Long.MAX_VALUE, 7L), F.QQ(Long.MIN_VALUE, 11L), F.QQ(7, Long.MAX_VALUE), F.QQ(11, Long.MAX_VALUE),
+				F.QQ(Long.MAX_VALUE, Long.MAX_VALUE), F.QQ(Long.MIN_VALUE, Long.MAX_VALUE), F.Slot2, //
+				IQuantity.of(1.2, "m"), //
 				F.stringx(""), //
 				F.stringx("\\"), //
 				F.stringx("\r"), //
@@ -150,8 +171,8 @@ public class ExprEvaluatorTests extends TestCase {
 				F.stringx("\n   "), //
 				F.stringx("\uffff"), //
 				F.Subtract(F.C1, F.C1));
-		int counter = 0;
 		ThreadLocalRandom random = ThreadLocalRandom.current();
+		SlowComputationThread thread = null;
 		for (int j = 1; j < 10000; j++) {
 			int i = 0;
 			while (i < node.size()) {
@@ -160,8 +181,20 @@ public class ExprEvaluatorTests extends TestCase {
 					int seedIndex = random.nextInt(1, seedList.size());
 					IExpr seed = seedList.get(seedIndex);
 					String mutantStr = "initial";
+					IASTMutable mutant = ((IAST) temp).copy();
 					try {
-						IASTMutable mutant = ((IAST) temp).copy();
+						ISymbol sym = mutant.topHead();
+						if (sym == F.PolynomialGCD || //
+								sym == F.On || //
+								sym == F.Off || //
+								sym == F.Compile || //
+								sym == F.CompiledFunction || //
+								sym == F.Set || //
+								sym == F.SetDelayed || //
+								sym == F.UpSet || //
+								sym == F.UpSetDelayed) {
+							continue;
+						}
 						int randomIndex = random.nextInt(1, mutant.size());
 						mutant.set(randomIndex, seed);
 
@@ -176,61 +209,67 @@ public class ExprEvaluatorTests extends TestCase {
 						engine.setQuietMode(quietMode);
 						engine.setRecursionLimit(256);
 						engine.setIterationLimit(1000);
-						ExprEvaluator eval = new ExprEvaluator(engine, true, 20);
-						mutantStr = fInputFactory.toString(mutant);
+						// mutantStr = fInputFactory.toString(mutant);
 
 						// System.out.println(">> " + mutantStr);
-						System.out.print(".");
-						if (counter++ > 80) {
-							System.out.println("");
-							counter = 0;
-							System.out.flush();
-							System.err.flush();
-						}
-						eval.eval(mutantStr);
+						// if (counter++ > 80) {
+						// System.out.println("");
+						// counter = 0;
+						// System.out.flush();
+						// System.err.flush();
+						// }
+
+						thread = new SlowComputationThread(">> " + mutant.toString());
+						thread.start();
+						engine.evaluate(mutant);
+
 					} catch (FlowControlException mex) {
 						if (!quietMode) {
-							System.err.println(mutantStr);
+							System.err.println(mutant.toString());
 							mex.printStackTrace();
 							System.err.println();
 						}
 					} catch (LimitException ile) {
 						if (!quietMode) {
-							System.err.println(mutantStr);
+							System.err.println(mutant.toString());
 							ile.printStackTrace();
 							System.err.println();
 						}
-					} catch (ValidateException ve) {
-						if (!quietMode) {
-							System.err.println(mutantStr);
-							ve.printStackTrace();
-							System.err.println();
-						}
 					} catch (SyntaxError se) {
-						if (!quietMode) {
-							System.err.println(mutantStr);
-							se.printStackTrace();
-							System.err.println();
-						}
+
+						System.err.println(mutant.toString());
+						se.printStackTrace();
+						System.err.println();
+
+						// fail();
+					} catch (ValidateException ve) {
+						System.err.println(mutant.toString());
+						ve.printStackTrace();
+						System.err.println();
 						// fail();
 					} catch (MathException mex) {
-						System.err.println(mutantStr);
+						System.err.println(mutant.toString());
 						mex.printStackTrace();
 						System.err.println();
 						fail();
 					} catch (RuntimeException rex) {
-						System.err.println(mutantStr);
+						System.err.println(mutant.toString());
 						rex.printStackTrace();
 						fail();
 					} catch (Error rex) {
-						System.err.println(mutantStr);
+						System.err.println(mutant.toString());
 						if (rex instanceof StackOverflowError) {
 							System.err.println("java.lang.StackOverflowError");
 							rex.printStackTrace();
+							fail();
 						} else {
+							System.err.println(mutantStr);
 							rex.printStackTrace();
 							fail();
 						}
+					} finally {
+						thread.terminate();
+						thread.interrupt();
 					}
 				}
 			}
@@ -249,11 +288,14 @@ public class ExprEvaluatorTests extends TestCase {
 
 	public void testBuiltinFunctionFuzz() {
 		Config.MAX_AST_SIZE = 10000;
-		Config.MAX_BIT_LENGTH = 1000;
 		Config.MAX_OUTPUT_SIZE = 10000;
 		Config.MAX_INPUT_LEAVES = 100L;
 		Config.MAX_MATRIX_DIMENSION_SIZE = 100;
-
+		Config.MAX_PRECISION_APFLOAT = 100;  
+		Config.MAX_BIT_LENGTH = 200000;
+		Config.MAX_POLYNOMIAL_DEGREE = 100;
+		Config.FILESYSTEM_ENABLED = false;
+		
 		EvalEngine engine = new EvalEngine(true);
 		engine.setRecursionLimit(256);
 		engine.setIterationLimit(1000);
@@ -288,7 +330,7 @@ public class ExprEvaluatorTests extends TestCase {
 				F.C1D2, //
 				F.CNI, //
 				F.CI, //
-				F.CC(Long.MAX_VALUE,  Long.MIN_VALUE , Long.MIN_VALUE, Long.MAX_VALUE), //
+				F.CC(Long.MAX_VALUE, Long.MIN_VALUE, Long.MIN_VALUE, Long.MAX_VALUE), //
 				F.QQ(Long.MAX_VALUE, Long.MIN_VALUE), F.QQ(Long.MIN_VALUE, Long.MAX_VALUE), //
 				F.Slot2, //
 				// some primes
@@ -365,7 +407,7 @@ public class ExprEvaluatorTests extends TestCase {
 				}
 				IEvaluator evaluator = sym.getEvaluator();
 				if (evaluator instanceof IFunctionEvaluator) {
-					int[] argSize = ((IFunctionEvaluator) evaluator).expectedArgSize();
+					int[] argSize = ((IFunctionEvaluator) evaluator).expectedArgSize(null);
 					if (argSize != null) {
 						int end = argSize[1];
 						if (end <= 10) {
@@ -391,6 +433,10 @@ public class ExprEvaluatorTests extends TestCase {
 		Config.MAX_OUTPUT_SIZE = 10000;
 		Config.MAX_INPUT_LEAVES = 100L;
 		Config.MAX_MATRIX_DIMENSION_SIZE = 100;
+		Config.MAX_PRECISION_APFLOAT = 100;  
+		Config.MAX_BIT_LENGTH = 200000;
+		Config.MAX_POLYNOMIAL_DEGREE = 100;
+		Config.FILESYSTEM_ENABLED = false;
 
 		EvalEngine engine = new EvalEngine(true);
 		engine.setRecursionLimit(256);

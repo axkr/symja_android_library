@@ -177,7 +177,7 @@ public class Sum extends ListFunctions.Table implements SumRules {
 			IAST varList = variablesSet.getVarList();
 			IIterator<IExpr> iterator = null;
 			IExpr argN = ast.last();
-			try {
+//			try {
 				IExpr temp = evaluateTableThrow(ast, Plus(), Plus(), engine);
 				if (temp.isPresent()) {
 					return temp;
@@ -208,18 +208,18 @@ public class Sum extends ListFunctions.Table implements SumRules {
 					// }
 
 				}
-			} catch (final ValidateException ve) {
-				if (FEConfig.SHOW_STACKTRACE) {
-					ve.printStackTrace();
-				}
-				// see level specification
-				return engine.printMessage(ve.getMessage(ast.topHead()));
-			}
+//			} catch (final ValidateException ve) {
+//				if (FEConfig.SHOW_STACKTRACE) {
+//					ve.printStackTrace();
+//				}
+//				// see level specification
+//				return engine.printMessage(ve.getMessage(ast.topHead()));
+//			}
 
 			// arg1 = evalBlockExpandWithoutReap(ast.arg1(), varList);
 			if (arg1.isTimes()) {
 				if (variablesSet.size() > 0) {
-					IExpr temp = collectConstantFactors(ast, (IAST) arg1, variablesSet);
+					  temp = collectConstantFactors(ast, (IAST) arg1, variablesSet);
 					if (temp.isPresent()) {
 						return temp;
 					}
@@ -244,7 +244,7 @@ public class Sum extends ListFunctions.Table implements SumRules {
 
 				if (iterator.isValidVariable() && iterator.isNumericFunction()) {
 					IAST resultList = Plus();
-					IExpr temp = evaluateLast(ast.arg1(), iterator, resultList, F.C0);
+					  temp = evaluateLast(ast.arg1(), iterator, resultList, F.C0);
 					if (!temp.isPresent() || temp.equals(resultList)) {
 						return F.NIL;
 					}
@@ -259,7 +259,6 @@ public class Sum extends ListFunctions.Table implements SumRules {
 
 				if (iterator.isValidVariable() && !iterator.isNumericFunction()) {
 					if (iterator.getStep().isOne()) {
-						IExpr temp;
 						if (iterator.getUpperLimit().isDirectedInfinity()) {
 							temp = definiteSumInfinity(arg1, iterator, (IAST) argN, engine);
 						} else {
@@ -278,7 +277,7 @@ public class Sum extends ListFunctions.Table implements SumRules {
 				}
 
 			} else if (argN.isSymbol()) {
-				IExpr temp = indefiniteSum(arg1, (ISymbol) argN);
+				  temp = indefiniteSum(arg1, (ISymbol) argN);
 				if (temp.isPresent()) {
 					if (ast.isAST2()) {
 						return temp;
@@ -312,7 +311,7 @@ public class Sum extends ListFunctions.Table implements SumRules {
 		return newSum;
 	}
 
-	public int[] expectedArgSize() {
+	public int[] expectedArgSize(IAST ast) {
 		return IOFunctions.ARGS_2_INFINITY;
 	}
 

@@ -4,7 +4,9 @@ import java.util.Arrays;
 
 import org.hipparchus.complex.Complex;
 import org.matheclipse.core.basic.Config;
+import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.exception.ArgumentTypeException;
+import org.matheclipse.core.eval.exception.IterationLimitExceeded;
 import org.matheclipse.core.expression.F;
 import static org.matheclipse.core.builtin.functions.EllipticIntegralsJS.*;
 
@@ -17,7 +19,7 @@ public class EllipticFunctionsJS {
 	private EllipticFunctionsJS() {
 
 	}
-	
+
 	public static double trunc(double value) {
 		return value < 0 ? Math.ceil(value) : Math.floor(value);
 	}
@@ -67,6 +69,7 @@ public class EllipticFunctionsJS {
 
 		}
 
+		long iterationLimit = EvalEngine.get().getIterationLimit();
 		switch (n) {
 
 		case 1:
@@ -81,7 +84,9 @@ public class EllipticFunctionsJS {
 			while (Math.abs(p) > tolerance) {
 				p = Math.pow(-1, i) * Math.pow(q, (i * i + i)) * Math.sin((2 * i + 1) * x);
 				s += p;
-				i++;
+				if (i++ > iterationLimit && iterationLimit > 0) {
+					IterationLimitExceeded.throwIt(i, F.EllipticTheta);
+				}
 			}
 			return new Complex(2 * Math.pow(q, 0.25) * s);
 		case 2:
@@ -96,7 +101,9 @@ public class EllipticFunctionsJS {
 			while (Math.abs(p) > tolerance) {
 				p = Math.pow(q, (i * i + i)) * Math.cos((2 * i + 1) * x);
 				s += p;
-				i++;
+				if (i++ > iterationLimit && iterationLimit > 0) {
+					IterationLimitExceeded.throwIt(i, F.EllipticTheta);
+				}
 			}
 			return new Complex(2 * Math.pow(q, 0.25) * s);
 		case 3:
@@ -106,7 +113,9 @@ public class EllipticFunctionsJS {
 			while (Math.abs(p) > tolerance) {
 				p = Math.pow(q, (i * i)) * Math.cos(2 * i * x);
 				s += p;
-				i++;
+				if (i++ > iterationLimit && iterationLimit > 0) {
+					IterationLimitExceeded.throwIt(i, F.EllipticTheta);
+				}
 			}
 			return new Complex(1 + 2 * s);
 		case 4:
@@ -118,7 +127,9 @@ public class EllipticFunctionsJS {
 			while (Math.abs(p) > tolerance) {
 				p = Math.pow(-q, (i * i)) * Math.cos(2 * i * x);
 				s += p;
-				i++;
+				if (i++ > iterationLimit && iterationLimit > 0) {
+					IterationLimitExceeded.throwIt(i, F.EllipticTheta);
+				}
 			}
 
 			return new Complex(1 + 2 * s);
@@ -186,6 +197,7 @@ public class EllipticFunctionsJS {
 		}
 		Complex s = Complex.ZERO;
 		Complex p = Complex.ONE;
+		long iterationLimit = EvalEngine.get().getIterationLimit();
 		int i = 0;
 		switch (n) {
 
@@ -193,7 +205,9 @@ public class EllipticFunctionsJS {
 			while (Math.abs(p.getReal()) > tolerance || Math.abs(p.getImaginary()) > tolerance) {
 				p = q.pow(i * i + i).multiply(x.multiply(2 * i + 1).sin()).multiply(Math.pow(-1, i));
 				s = s.add(p);
-				i++;
+				if (i++ > iterationLimit && iterationLimit > 0) {
+					IterationLimitExceeded.throwIt(i, F.EllipticTheta);
+				}
 			}
 
 			return q.pow(0.25).multiply(s).multiply(2);
@@ -201,7 +215,9 @@ public class EllipticFunctionsJS {
 			while (Math.abs(p.getReal()) > tolerance || Math.abs(p.getImaginary()) > tolerance) {
 				p = q.pow(i * i + i).multiply(x.multiply(2 * i + 1).cos());
 				s = s.add(p);
-				i++;
+				if (i++ > iterationLimit && iterationLimit > 0) {
+					IterationLimitExceeded.throwIt(i, F.EllipticTheta);
+				}
 			}
 			return q.pow(0.25).multiply(s).multiply(2);
 		case 3:
@@ -209,7 +225,9 @@ public class EllipticFunctionsJS {
 			while (Math.abs(p.getReal()) > tolerance || Math.abs(p.getImaginary()) > tolerance) {
 				p = q.pow(i * i).multiply(x.multiply(2 * i).cos());
 				s = s.add(p);
-				i++;
+				if (i++ > iterationLimit && iterationLimit > 0) {
+					IterationLimitExceeded.throwIt(i, F.EllipticTheta);
+				}
 			}
 			return s.multiply(2.0).add(1.0);
 		case 4:
@@ -217,7 +235,9 @@ public class EllipticFunctionsJS {
 			while (Math.abs(p.getReal()) > tolerance || Math.abs(p.getImaginary()) > tolerance) {
 				p = q.negate().pow(i * i).multiply(x.multiply(2 * i).cos());
 				s = s.add(p);
-				i++;
+				if (i++ > iterationLimit && iterationLimit > 0) {
+					IterationLimitExceeded.throwIt(i, F.EllipticTheta);
+				}
 			}
 			return s.multiply(2.0).add(1.0);
 		}

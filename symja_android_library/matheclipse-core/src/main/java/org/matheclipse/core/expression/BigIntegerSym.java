@@ -6,19 +6,13 @@ import java.io.ObjectOutput;
 import java.io.ObjectStreamException;
 import java.math.BigInteger;
 import java.math.RoundingMode;
-import java.util.Set;
-import java.util.TreeSet;
 
 import org.hipparchus.fraction.BigFraction;
 import org.matheclipse.core.basic.Config;
-import org.matheclipse.core.builtin.Combinatoric.Subsets;
-import org.matheclipse.core.builtin.Combinatoric.Subsets.KSubsetsList;
-import org.matheclipse.core.eval.EvalEngine;
-import org.matheclipse.core.eval.exception.ASTElementLimitExceeded;
-import org.matheclipse.core.eval.exception.IterationLimitExceeded;
+import org.matheclipse.core.eval.exception.BigIntegerLimitExceeded;
+import org.matheclipse.core.eval.exception.LimitException;
 import org.matheclipse.core.form.output.OutputFormFactory;
 import org.matheclipse.core.interfaces.IAST;
-import org.matheclipse.core.interfaces.IASTAppendable;
 import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.interfaces.IFraction;
 import org.matheclipse.core.interfaces.IInteger;
@@ -105,14 +99,14 @@ public class BigIntegerSym extends AbstractIntegerSym {
 
 	public BigIntegerSym(BigInteger value) {
 		if (Config.MAX_BIT_LENGTH < value.bitLength()) {
-			throw new ASTElementLimitExceeded(value.bitLength());
+			BigIntegerLimitExceeded.throwIt(value.bitLength());
 		}
 		fBigIntValue = value;
 	}
 
 	public BigIntegerSym(byte[] bytes) {
 		if (Config.MAX_BIT_LENGTH < bytes.length * 8) {
-			throw new ASTElementLimitExceeded(((long) bytes.length) * 8L);
+			BigIntegerLimitExceeded.throwIt(((long) bytes.length) * 8L);
 		}
 		fBigIntValue = new BigInteger(bytes);
 
@@ -596,7 +590,7 @@ public class BigIntegerSym extends AbstractIntegerSym {
 		}
 		BigInteger thatBigIntValue = that.toBigNumerator();
 		if (Config.MAX_BIT_LENGTH < (fBigIntValue.bitLength() + thatBigIntValue.bitLength())) {
-			throw new ASTElementLimitExceeded(fBigIntValue.bitLength() + thatBigIntValue.bitLength());
+			BigIntegerLimitExceeded.throwIt(fBigIntValue.bitLength() + thatBigIntValue.bitLength());
 		}
 
 		return valueOf(fBigIntValue.multiply(thatBigIntValue));
@@ -779,7 +773,9 @@ public class BigIntegerSym extends AbstractIntegerSym {
 	public IExpr sqrt() {
 		try {
 			return valueOf(BigIntegerMath.sqrt(fBigIntValue, RoundingMode.UNNECESSARY));
-		} catch (RuntimeException ex) {
+		} catch (LimitException lime) {
+			throw lime;
+		} catch (RuntimeException rex) {
 			return F.Sqrt(this);
 		}
 	}
@@ -804,7 +800,11 @@ public class BigIntegerSym extends AbstractIntegerSym {
 	/** {@inheritDoc} */
 	@Override
 	public int toInt() throws ArithmeticException {
-		return NumberUtil.toInt(fBigIntValue);
+		int val = NumberUtil.toIntDefault(fBigIntValue);
+		if (val != Integer.MIN_VALUE) {
+			return val;
+		}
+		throw new ArithmeticException("toInt: numerator is a big integer");
 	}
 
 	/** {@inheritDoc} */

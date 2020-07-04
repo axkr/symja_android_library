@@ -440,7 +440,7 @@ public class WL {
 			stream.write(varintBytes(2));
 			write(quantity.head());
 			write(quantity.value());
-			write(F.stringx(quantity.unitString())); 
+			write(F.stringx(quantity.unitString()));
 		}
 
 		private void writeSeriesData(IExpr arg1) throws IOException {
@@ -646,12 +646,19 @@ public class WL {
 	 * Convert <code>List(<byte values>)</code> to Java byte array.
 	 * 
 	 * @param list
-	 * @return
+	 * @return <code>null</code> if the list is nota a list of bytes
 	 */
 	public static byte[] toByteArray(IAST list) {
 		byte[] result = new byte[list.size() - 1];
 		for (int i = 1; i < list.size(); i++) {
-			result[i - 1] = ((IInteger) list.get(i)).byteValue();
+			if (list.get(i).isInteger()) {
+				final int val = ((IInteger) list.get(i)).toIntDefault();
+				if (val >= 0 && val < 256) {
+					result[i - 1] = (byte) val;
+					continue;
+				}
+			}
+			return null;
 		}
 		return result;
 	}

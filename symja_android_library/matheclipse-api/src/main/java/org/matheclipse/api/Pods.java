@@ -128,12 +128,12 @@ public class Pods {
 					"\n" + //
 					"<body style=\"width: 100%; height: 100%; margin: 0; padding: 0\">\n" + //
 					"\n" + //
-					"<link rel=\"stylesheet\" type=\"text/css\" href=\"https://cdnjs.cloudflare.com/ajax/libs/jsxgraph/0.99.7/jsxgraphcore.css\" />\n"
+					"<link rel=\"stylesheet\" type=\"text/css\" href=\"https://cdnjs.cloudflare.com/ajax/libs/jsxgraph/1.1.0/jsxgraph.min.css\" />\n"
 					+ //
 					"<script src=\"https://cdn.jsdelivr.net/gh/paulmasson/math@1.2.9/build/math.js\"></script>\n"
-					+ "<script src=\"https://cdnjs.cloudflare.com/ajax/libs/jsxgraph/0.99.7/jsxgraphcore.js\"\n" + //
+					+ "<script src=\"https://cdnjs.cloudflare.com/ajax/libs/jsxgraph/1.1.0/jsxgraphcore.min.js\"\n" + //
 					"        type=\"text/javascript\"></script>\n" + //
-					"<script src=\"https://cdnjs.cloudflare.com/ajax/libs/jsxgraph/0.99.7/geonext.min.js\"\n" + //
+					"<script src=\"https://cdnjs.cloudflare.com/ajax/libs/jsxgraph/1.1.0/geonext.min.js\"\n" + //
 					"        type=\"text/javascript\"></script>\n" + //
 
 					"\n" + //
@@ -695,7 +695,7 @@ public class Pods {
 					IExpr numExpr = F.NIL;
 					IExpr evaledNumExpr = F.NIL;
 					if (outExpr.isNumericFunction()) {
-						numExpr = F.N(inExpr);
+						numExpr = inExpr.isAST(F.N) ? inExpr : F.N(inExpr);
 						evaledNumExpr = engine.evaluate(F.N(outExpr));
 					}
 					if (outExpr.isNumber() || //
@@ -741,7 +741,7 @@ public class Pods {
 									inExpr = F.ContinuedFraction(outExpr);
 									podOut = engine.evaluate(inExpr);
 									StringBuilder plainBuf = new StringBuilder();
-									if (podOut.isList() && podOut.size() > 1) {
+									if (podOut.isNonEmptyList()) {
 										IAST list = (IAST) podOut;
 										plainBuf.append('[');
 										plainBuf.append(list.arg1().toString());
@@ -1282,7 +1282,7 @@ public class Pods {
 		addSymjaPod(podsArray, inExpr, podOut, plainText.toString(), "Binary form", "Integer", formats, engine);
 		numpods++;
 
-		if (n.bitLength() < 200) {
+		if (n.bitLength() < Config.MAX_BIT_LENGTH / 1000) {
 			inExpr = F.FactorInteger(n);
 			podOut = engine.evaluate(inExpr);
 			int[] matrixDimension = podOut.isMatrix();

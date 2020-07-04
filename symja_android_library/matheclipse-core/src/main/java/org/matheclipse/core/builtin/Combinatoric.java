@@ -231,7 +231,7 @@ public final class Combinatoric {
 		}
 
 		@Override
-		public int[] expectedArgSize() {
+		public int[] expectedArgSize(IAST ast) {
 			return IOFunctions.ARGS_2_INFINITY;
 		}
 	}
@@ -277,7 +277,7 @@ public final class Combinatoric {
 			return F.NIL;
 		}
 
-		public int[] expectedArgSize() {
+		public int[] expectedArgSize(IAST ast) {
 			return IOFunctions.ARGS_2_2;
 		}
 
@@ -499,7 +499,7 @@ public final class Combinatoric {
 		}
 
 		private static IExpr frobeniusPartition(final IAST ast, EvalEngine engine) {
-			if (ast.arg3().isList() && ast.arg3().size() > 1 && ast.arg1().isInteger()) {
+			if (ast.arg3().isNonEmptyList() && ast.arg1().isInteger()) {
 				try {
 					int[] listInt = Validate.checkListOfInts(ast, ast.arg3(), Integer.MIN_VALUE, Integer.MAX_VALUE,
 							engine);
@@ -597,7 +597,7 @@ public final class Combinatoric {
 		}
 
 		@Override
-		public int[] expectedArgSize() {
+		public int[] expectedArgSize(IAST ast) {
 			return IOFunctions.ARGS_1_3;
 		}
 	}
@@ -643,7 +643,7 @@ public final class Combinatoric {
 			return F.NIL;
 		}
 
-		public int[] expectedArgSize() {
+		public int[] expectedArgSize(IAST ast) {
 			return IOFunctions.ARGS_2_2;
 		}
 
@@ -691,7 +691,7 @@ public final class Combinatoric {
 			return F.NIL;
 		}
 
-		public int[] expectedArgSize() {
+		public int[] expectedArgSize(IAST ast) {
 			return IOFunctions.ARGS_2_2;
 		}
 
@@ -967,7 +967,7 @@ public final class Combinatoric {
 			return F.NIL;
 		}
 
-		public int[] expectedArgSize() {
+		public int[] expectedArgSize(IAST ast) {
 			return IOFunctions.ARGS_2_2;
 		}
 	}
@@ -1008,7 +1008,7 @@ public final class Combinatoric {
 			return F.NIL;
 		}
 
-		public int[] expectedArgSize() {
+		public int[] expectedArgSize(IAST ast) {
 			return IOFunctions.ARGS_2_2;
 		}
 
@@ -1043,7 +1043,7 @@ public final class Combinatoric {
 					}
 					if (v > 0) {
 						while (i <= f.argSize()) {
-							if (i < 1 ) {
+							if (i < 1) {
 								break;
 							}
 							temp = F.ast(f.head());
@@ -1064,7 +1064,7 @@ public final class Combinatoric {
 		}
 
 		@Override
-		public int[] expectedArgSize() {
+		public int[] expectedArgSize(IAST ast) {
 			return IOFunctions.ARGS_2_3;
 		}
 	}
@@ -1350,7 +1350,7 @@ public final class Combinatoric {
 		}
 
 		@Override
-		public int[] expectedArgSize() {
+		public int[] expectedArgSize(IAST ast) {
 			return IOFunctions.ARGS_1_2;
 		}
 
@@ -1433,7 +1433,7 @@ public final class Combinatoric {
 			return F.NIL;
 		}
 
-		public int[] expectedArgSize() {
+		public int[] expectedArgSize(IAST ast) {
 			return IOFunctions.ARGS_2_2;
 		}
 
@@ -1488,7 +1488,7 @@ public final class Combinatoric {
 			return F.NIL;
 		}
 
-		public int[] expectedArgSize() {
+		public int[] expectedArgSize(IAST ast) {
 			return IOFunctions.ARGS_2_2;
 		}
 
@@ -1546,7 +1546,7 @@ public final class Combinatoric {
 			return F.NIL;
 		}
 
-		public int[] expectedArgSize() {
+		public int[] expectedArgSize(IAST ast) {
 			return IOFunctions.ARGS_2_2;
 		}
 
@@ -1689,7 +1689,7 @@ public final class Combinatoric {
 		}
 
 		@Override
-		public int[] expectedArgSize() {
+		public int[] expectedArgSize(IAST ast) {
 			return IOFunctions.ARGS_0_2;
 		}
 
@@ -1767,7 +1767,7 @@ public final class Combinatoric {
 		}
 
 		@Override
-		public int[] expectedArgSize() {
+		public int[] expectedArgSize(IAST ast) {
 			return IOFunctions.ARGS_1_2;
 		}
 
@@ -1788,19 +1788,27 @@ public final class Combinatoric {
 				return;
 			}
 			final int recursionLimit = engine.getRecursionLimit();
-			if (recursionLimit > 0) {
-				int counter = engine.incRecursionCounter();
-				if (counter > recursionLimit) {
-					RecursionLimitExceeded.throwIt(counter, ast);
-				}
-			}
-			IASTAppendable temp;
-			for (int j = 1; j < originalList.size(); j++) {
-				temp = subResult.copyAppendable();
-				temp.append(originalList.get(j));
-				tuples(originalList, n - 1, result, temp, ast, engine);
-			}
 
+			try {
+
+				if (recursionLimit > 0) {
+					int counter = engine.incRecursionCounter();
+					if (counter > recursionLimit) {
+						RecursionLimitExceeded.throwIt(counter, ast);
+					}
+				}
+				IASTAppendable temp;
+				for (int j = 1; j < originalList.size(); j++) {
+					temp = subResult.copyAppendable();
+					temp.append(originalList.get(j));
+					tuples(originalList, n - 1, result, temp, ast, engine);
+				}
+			} finally {
+				if (recursionLimit > 0) {
+					 engine.decRecursionCounter();
+				}
+
+			}
 		}
 
 		/**
@@ -1891,7 +1899,7 @@ public final class Combinatoric {
 			return F.NIL;
 		}
 
-		public int[] expectedArgSize() {
+		public int[] expectedArgSize(IAST ast) {
 			return IOFunctions.ARGS_2_2;
 		}
 

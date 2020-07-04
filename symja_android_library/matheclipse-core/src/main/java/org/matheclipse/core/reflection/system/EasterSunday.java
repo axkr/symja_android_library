@@ -48,7 +48,7 @@ public class EasterSunday extends AbstractFunctionEvaluator {
 	}
 
 	@Override
-	public int[] expectedArgSize() {
+	public int[] expectedArgSize(IAST ast) {
 		return IOFunctions.ARGS_1_1;
 	}
 	

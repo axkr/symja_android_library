@@ -4,7 +4,6 @@ import java.io.ObjectStreamException;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.EnumMap;
-import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.ListIterator;
@@ -37,8 +36,12 @@ import org.matheclipse.core.convert.AST2Expr;
 import org.matheclipse.core.convert.VariablesSet;
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.exception.ArgumentTypeException;
+import org.matheclipse.core.eval.exception.FlowControlException;
+import org.matheclipse.core.eval.exception.LimitException;
+import org.matheclipse.core.eval.exception.SymjaMathException;
 import org.matheclipse.core.eval.exception.Validate;
 import org.matheclipse.core.eval.interfaces.ICoreFunctionEvaluator;
+import org.matheclipse.core.eval.interfaces.IFunctionEvaluator;
 import org.matheclipse.core.eval.interfaces.IRewrite;
 import org.matheclipse.core.eval.util.AbstractAssumptions;
 import org.matheclipse.core.form.output.OutputFormFactory;
@@ -549,6 +552,18 @@ public abstract class AbstractAST implements IASTMutable {
 		}
 
 		public final boolean isInterval1() {
+			return false;
+		}
+
+		/** {@inheritDoc} */
+		@Override
+		public boolean isEmptyList() {
+			return false;
+		}
+
+		/** {@inheritDoc} */
+		@Override
+		public boolean isNonEmptyList() {
 			return false;
 		}
 
@@ -1185,6 +1200,10 @@ public abstract class AbstractAST implements IASTMutable {
 			}
 		} else {
 			if (lhsOrdinal == ID.DirectedInfinity && isDirectedInfinity()) {
+				if (rhsExpr.isNumber() || rhsExpr.isSymbol()) {
+					// O-7
+					return 1;
+				}
 				if (!rhsExpr.isDirectedInfinity()) {
 					return -1;
 				}
@@ -1198,7 +1217,10 @@ public abstract class AbstractAST implements IASTMutable {
 		}
 		if (rhsExpr.isAST()) {
 			if (rhsOrdinal == ID.DirectedInfinity && rhsExpr.isDirectedInfinity()) {
-				return 1;
+				if (!isDirectedInfinity()) {
+					return 1;
+				}
+				return compareToASTIncreasing(this, (IAST) rhsExpr);
 			}
 			if (lhsOrdinal >= ID.Plus && lhsOrdinal <= ID.Times && size() > 1) {
 				IAST rhs = (IAST) rhsExpr;
@@ -1456,34 +1478,59 @@ public abstract class AbstractAST implements IASTMutable {
 		}
 		final IExpr head = head();
 		final int argSize = argSize();
-		if (head.isCoreFunctionSymbol()) {
-			IBuiltInSymbol header = ((IBuiltInSymbol) head);
-			if ((header.getAttributes() & ISymbol.SEQUENCEHOLD) != ISymbol.SEQUENCEHOLD) {
-				IExpr temp;
-				if ((temp = engine.flattenSequences(this)).isPresent()) {
-					return temp;
-				}
-			}
-			if (isBooleanFunction()) {
-				IExpr temp = extractConditionalExpression(false);
-				if (temp.isPresent()) {
-					return temp;
-				}
-			}
-			ICoreFunctionEvaluator functionEvaluator = (ICoreFunctionEvaluator) ((IBuiltInSymbol) head).getEvaluator();
-			int[] expected;
-			if ((expected = functionEvaluator.expectedArgSize()) != null) {
-				if (argSize < expected[0] || argSize > expected[1]) {
-					return IOFunctions.printArgMessage(this, expected, engine);
-				}
-			}
+		if (head instanceof IBuiltInSymbol) {
+			final IEvaluator evaluator = ((IBuiltInSymbol) head).getEvaluator();
+			if (evaluator instanceof IFunctionEvaluator) {
+				try {
+					int[] expected;
+					if ((expected = ((IFunctionEvaluator) evaluator).expectedArgSize(this)) != null) {
+						if (argSize < expected[0] || argSize > expected[1]) {
+							return IOFunctions.printArgMessage(this, expected, engine);
+						}
+					}
+					if (evaluator instanceof ICoreFunctionEvaluator) {
+						IBuiltInSymbol header = ((IBuiltInSymbol) head);
+						if ((header.getAttributes() & ISymbol.SEQUENCEHOLD) != ISymbol.SEQUENCEHOLD) {
+							IExpr temp;
+							if ((temp = engine.flattenSequences(this)).isPresent()) {
+								return temp;
+							}
+						}
+						if (isBooleanFunction()) {
+							IExpr temp = extractConditionalExpression(false);
+							if (temp.isPresent()) {
+								return temp;
+							}
+						}
 
-			IExpr evaluateTemp = engine.evalEvaluate(this);
-			if (evaluateTemp.isPresent()) {
-				return evaluateTemp;
-			}
+						ICoreFunctionEvaluator functionEvaluator = (ICoreFunctionEvaluator) evaluator;
+						// int[] expected;
+						// if ((expected = functionEvaluator.expectedArgSize()) != null) {
+						// if (argSize < expected[0] || argSize > expected[1]) {
+						// return IOFunctions.printArgMessage(this, expected, engine);
+						// }
+						// }
 
-			return functionEvaluator.evaluate(this, engine);
+						IExpr evaluateTemp = engine.evalEvaluate(this);
+						if (evaluateTemp.isPresent()) {
+							return evaluateTemp;
+						}
+
+						return functionEvaluator.evaluate(this, engine);
+					}
+
+				} catch (FlowControlException fce) {
+					throw fce;
+				} catch (SymjaMathException ve) {
+					if (ve instanceof LimitException) {
+						throw ve;
+					}
+					if (FEConfig.SHOW_STACKTRACE) {
+						ve.printStackTrace();
+					}
+					return engine.printMessage(topHead(), ve);
+				}
+			}
 		}
 
 		if (head.isAssociation() && argSize == 1) {
@@ -1491,7 +1538,11 @@ public abstract class AbstractAST implements IASTMutable {
 		}
 
 		final ISymbol symbol = topHead();
-		return engine.evalAttributes(symbol, this).orElseGet(() -> engine.evalRules(symbol, this));
+		IExpr temp = engine.evalAttributes(symbol, this);
+		if (temp.isPresent()) {
+			return temp;
+		}
+		return engine.evalRules(symbol, this);
 
 		// if (Config.SHOW_CONSOLE) {
 		// if (temp.isPresent() && (topHead().getAttributes() & ISymbol.CONSOLE_OUTPUT) == ISymbol.CONSOLE_OUTPUT) {
@@ -2881,6 +2932,18 @@ public abstract class AbstractAST implements IASTMutable {
 
 	/** {@inheritDoc} */
 	@Override
+	public boolean isEmptyList() {
+		return equals(F.CEmptyList);
+	}
+
+	/** {@inheritDoc} */
+	@Override
+	public boolean isNonEmptyList() {
+		return isList() && size() > 1;
+	}
+
+	/** {@inheritDoc} */
+	@Override
 	public boolean isList() {
 		return isSameHeadSizeGE(F.List, 1);
 	}
@@ -2963,8 +3026,7 @@ public abstract class AbstractAST implements IASTMutable {
 		if (head().equals(F.List)) {
 			for (int i = 1; i < size(); i++) {
 				if (!get(i).isRuleAST()) {
-					if (ignoreEmptyList && get(i).isAST(F.List, 1)) {
-						// ignore empty list entries
+					if (ignoreEmptyList && get(i).isEmptyList()) {
 						continue;
 					}
 					// the row is no list
@@ -3294,7 +3356,7 @@ public abstract class AbstractAST implements IASTMutable {
 				ExprPolynomial poly = ring.create(expr);
 				return poly.degree() <= maxDegree;
 			}
-		} catch (RuntimeException ex) {
+		} catch (ArithmeticException | ClassCastException ex) {
 			//
 		}
 		return false;
@@ -4590,7 +4652,7 @@ public abstract class AbstractAST implements IASTMutable {
 				result[i - 1] = get(i).evalDouble();
 			}
 			return result;
-		} catch (RuntimeException rex) {
+		} catch (ArgumentTypeException rex) {
 
 		}
 		return null;
@@ -4606,7 +4668,7 @@ public abstract class AbstractAST implements IASTMutable {
 			try {
 				temp[i] = get(j).evalDouble();
 				i++;
-			} catch (RuntimeException rex) {
+			} catch (ArgumentTypeException rex) {
 
 			}
 			j++;
@@ -4631,7 +4693,7 @@ public abstract class AbstractAST implements IASTMutable {
 				result[i - 1] = get(i).evalComplex();
 			}
 			return result;
-		} catch (RuntimeException rex) {
+		} catch (ArgumentTypeException ex) {
 
 		}
 		return null;
@@ -4744,19 +4806,17 @@ public abstract class AbstractAST implements IASTMutable {
 				return buf.toString();
 
 			} else if (isAST(F.Slot, 2) && (arg1().isReal())) {
-				try {
-					final int slot = ((ISignedNumber) arg1()).toInt();
-					if (slot <= 0) {
-						return toFullFormString();
-					}
-					if (slot == 1) {
-						return "#";
-					}
-					return "#" + slot;
-				} catch (final ArithmeticException e) {
-					// fall through
+
+				final int slot = ((ISignedNumber) arg1()).toIntDefault();
+				if (slot <= 0) {
+					return toFullFormString();
 				}
-				return toFullFormString();
+				if (slot == 1) {
+					return "#";
+				}
+				return "#" + slot;
+
+				// return toFullFormString();
 
 			} else {
 				return toFullFormString();

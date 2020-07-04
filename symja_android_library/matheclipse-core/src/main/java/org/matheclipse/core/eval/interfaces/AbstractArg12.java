@@ -4,6 +4,7 @@ import org.apfloat.Apcomplex;
 import org.apfloat.Apfloat;
 import org.matheclipse.core.builtin.IOFunctions;
 import org.matheclipse.core.eval.EvalEngine;
+import org.matheclipse.core.eval.exception.LimitException;
 import org.matheclipse.core.eval.exception.Validate;
 import org.matheclipse.core.eval.exception.ValidateException;
 import org.matheclipse.core.expression.ApcomplexNum;
@@ -168,6 +169,8 @@ public abstract class AbstractArg12 extends AbstractFunctionEvaluator {
 				if (result.isPresent()) {
 					return result;
 				}
+			} catch (LimitException le) {
+				throw le;
 			} catch (RuntimeException rex) {
 				// EvalEngine.get().printMessage(ast.topHead().toString() + ": " + rex.getMessage());
 				if (FEConfig.SHOW_STACKTRACE) {
@@ -298,6 +301,8 @@ public abstract class AbstractArg12 extends AbstractFunctionEvaluator {
 				}
 				return binaryOperator(ast, ast.arg1(), ast.arg2());
 			}
+		} catch (LimitException le) {
+			throw le;
 		} catch (ValidateException ve) {
 			if (FEConfig.SHOW_STACKTRACE) {
 				ve.printStackTrace();
@@ -315,7 +320,7 @@ public abstract class AbstractArg12 extends AbstractFunctionEvaluator {
 	}
 
 	@Override
-	public int[] expectedArgSize() {
+	public int[] expectedArgSize(IAST ast) {
 		return IOFunctions.ARGS_1_2;
 	}
 }

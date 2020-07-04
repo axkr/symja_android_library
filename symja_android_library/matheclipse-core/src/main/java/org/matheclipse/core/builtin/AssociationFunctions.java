@@ -89,7 +89,7 @@ public class AssociationFunctions {
 		}
 
 		@Override
-		public int[] expectedArgSize() {
+		public int[] expectedArgSize(IAST ast) {
 			return IOFunctions.ARGS_1_INFINITY;
 		}
 
@@ -122,11 +122,11 @@ public class AssociationFunctions {
 						}
 					} catch (ValidateException ve) {
 						return engine.printMessage(F.Set, ve);
-					} catch (RuntimeException rex) {
-						if (FEConfig.SHOW_STACKTRACE) {
-							rex.printStackTrace();
-						}
-						return engine.printMessage(F.Set, rex);  
+//					} catch (RuntimeException rex) {
+//						if (FEConfig.SHOW_STACKTRACE) {
+//							rex.printStackTrace();
+//						}
+//						return engine.printMessage(F.Set, rex);  
 					}
 				}
 			}
@@ -160,7 +160,7 @@ public class AssociationFunctions {
 		}
 
 		@Override
-		public int[] expectedArgSize() {
+		public int[] expectedArgSize(IAST ast) {
 			return IOFunctions.ARGS_1_1;
 		}
 	}
@@ -198,7 +198,7 @@ public class AssociationFunctions {
 		}
 
 		@Override
-		public int[] expectedArgSize() {
+		public int[] expectedArgSize(IAST ast) {
 			return IOFunctions.ARGS_1_2;
 		}
 	}
@@ -225,7 +225,7 @@ public class AssociationFunctions {
 						IExpr rule = listOfRules.get(i);
 						if (rule.isRule() || rule.isRuleDelayed()) {
 							list.append(rule.first());
-						} else if (rule.isAST(F.List, 1)) {
+						} else if (rule.isEmptyList()) {
 							list.append(rule);
 						}
 					}
@@ -239,7 +239,7 @@ public class AssociationFunctions {
 		}
 
 		@Override
-		public int[] expectedArgSize() {
+		public int[] expectedArgSize(IAST ast) {
 			return IOFunctions.ARGS_1_2;
 		}
 	}
@@ -262,7 +262,7 @@ public class AssociationFunctions {
 		}
 
 		@Override
-		public int[] expectedArgSize() {
+		public int[] expectedArgSize(IAST ast) {
 			return IOFunctions.ARGS_1_2;
 		}
 	}
@@ -319,7 +319,7 @@ public class AssociationFunctions {
 		}
 
 		@Override
-		public int[] expectedArgSize() {
+		public int[] expectedArgSize(IAST ast) {
 			return IOFunctions.ARGS_1_3;
 		}
 
@@ -342,7 +342,7 @@ public class AssociationFunctions {
 		}
 
 		@Override
-		public int[] expectedArgSize() {
+		public int[] expectedArgSize(IAST ast) {
 			return IOFunctions.ARGS_1_1;
 		}
 	}
@@ -360,7 +360,7 @@ public class AssociationFunctions {
 		}
 
 		@Override
-		public int[] expectedArgSize() {
+		public int[] expectedArgSize(IAST ast) {
 			return IOFunctions.ARGS_1_1;
 		}
 	}
@@ -383,7 +383,7 @@ public class AssociationFunctions {
 						IExpr rule = listOfRules.get(i);
 						if (rule.isRule() || rule.isRuleDelayed()) {
 							list.append(rule.second());
-						} else if (rule.isAST(F.List, 1)) {
+						} else if (rule.isEmptyList()) {
 							list.append(rule);
 						}
 					}
@@ -397,7 +397,7 @@ public class AssociationFunctions {
 		}
 
 		@Override
-		public int[] expectedArgSize() {
+		public int[] expectedArgSize(IAST ast) {
 			return IOFunctions.ARGS_1_2;
 		}
 	}

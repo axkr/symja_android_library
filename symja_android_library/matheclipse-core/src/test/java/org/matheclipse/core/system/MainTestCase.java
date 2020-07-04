@@ -83,7 +83,8 @@ public class MainTestCase extends AbstractTestCase {
 	/**
 	 * Test system functions
 	 */
-	public void testSystem000() {
+	public void testSystem000() { 
+		
 		// assertEquals(PrimeList.getMersennePrime(4).toString(), "15");
 		// assertEquals(PrimeList.getMersennePrime(128).toString(), "15");
 		check("1^(-1)", "1");

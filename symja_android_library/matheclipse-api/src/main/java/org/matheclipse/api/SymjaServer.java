@@ -59,9 +59,11 @@ public class SymjaServer {
 		Config.JAS_NO_THREADS = false;
 		// Config.THREAD_FACTORY = com.google.appengine.api.ThreadManager.currentRequestThreadFactory();
 		Config.MATHML_TRIG_LOWERCASE = false;
-		Config.MAX_AST_SIZE = ((int) Short.MAX_VALUE) * 8;
-		Config.MAX_OUTPUT_SIZE = Short.MAX_VALUE;
-		Config.MAX_BIT_LENGTH = ((int) Short.MAX_VALUE) * 8;
+		Config.MAX_AST_SIZE = 10000;
+		Config.MAX_OUTPUT_SIZE = 10000;
+		Config.MAX_BIT_LENGTH = 200000;
+		Config.MAX_POLYNOMIAL_DEGREE=100;
+		Config.FILESYSTEM_ENABLED = false;
 		Config.MAX_INPUT_LEAVES = 100L;
 		Config.MAX_MATRIX_DIMENSION_SIZE = 100;
 		EvalEngine.get().setPackageMode(true);

@@ -52,7 +52,7 @@ public abstract class AbstractCorePredicateEvaluator extends AbstractCoreFunctio
 		// return F.NIL;
 	}
 
-	public int[] expectedArgSize() {
+	public int[] expectedArgSize(IAST ast) {
 		return IOFunctions.ARGS_1_2;
 	}
 }

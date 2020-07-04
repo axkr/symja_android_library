@@ -6,6 +6,7 @@ import org.hipparchus.linear.RealMatrix;
 import org.matheclipse.core.builtin.IOFunctions;
 import org.matheclipse.core.convert.Convert;
 import org.matheclipse.core.eval.EvalEngine;
+import org.matheclipse.core.eval.exception.LimitException;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IExpr;
@@ -31,6 +32,8 @@ public abstract class AbstractMatrix1Matrix extends AbstractFunctionEvaluator {
 					return Convert.matrix2List(matrix);
 				}
 			}
+		} catch (LimitException le) {
+			throw le;
 		} catch (MathRuntimeException mre) {
 			return engine.printMessage(ast.topHead(), mre);
 		} catch (final ClassCastException e) {
@@ -49,7 +52,7 @@ public abstract class AbstractMatrix1Matrix extends AbstractFunctionEvaluator {
 	}
 
 	@Override
-	public int[] expectedArgSize() {
+	public int[] expectedArgSize(IAST ast) {
 		return IOFunctions.ARGS_1_1;
 	}
 
@@ -84,6 +87,8 @@ public abstract class AbstractMatrix1Matrix extends AbstractFunctionEvaluator {
 
 			}
 			return F.NIL;
+		} catch (LimitException le) {
+			throw le;
 		} catch (final RuntimeException rex) {
 			if (FEConfig.SHOW_STACKTRACE) {
 				rex.printStackTrace();

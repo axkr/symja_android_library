@@ -42,7 +42,7 @@ public class InverseFourier extends AbstractFunctionEvaluator {
 		return IOFunctions.printMessage(F.InverseFourier, "fftl", F.List(expr), engine);
 	}
 
-	public int[] expectedArgSize() {
+	public int[] expectedArgSize(IAST ast) {
 		return IOFunctions.ARGS_1_1;
 	}
 

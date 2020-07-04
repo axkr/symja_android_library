@@ -28,6 +28,9 @@
  */
 package org.matheclipse.core.frobenius;
 
+import org.matheclipse.core.eval.EvalEngine;
+import org.matheclipse.core.eval.exception.IterationLimitExceeded;
+import org.matheclipse.core.expression.F;
 import org.matheclipse.core.interfaces.IInteger;
 
 /**
@@ -51,6 +54,8 @@ final class TotalSolutionProvider implements OutputPortUnsafe<IInteger[]> {
 			}
 			inited = true;
 		}
+		int iterationLimit = EvalEngine.get().getIterationLimit() * 100;
+		int counter = 0;
 		int i = providers.length - 1;
 		IInteger[] solution = providers[i].take();
 		if (solution != null) {
@@ -58,6 +63,9 @@ final class TotalSolutionProvider implements OutputPortUnsafe<IInteger[]> {
 		}
 		OUTER: while (true) {
 			boolean r;
+			if (counter++ > iterationLimit && iterationLimit > 0) {
+				IterationLimitExceeded.throwIt(counter, F.FrobeniusSolve);
+			}
 			while ((r = !(providers[i--].tick())) && i >= 0) {
 				//
 			}

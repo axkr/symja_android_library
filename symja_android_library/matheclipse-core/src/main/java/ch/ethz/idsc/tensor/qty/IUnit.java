@@ -7,7 +7,7 @@ import java.util.TreeMap;
 import org.matheclipse.core.interfaces.IExpr;
 
 /** implementations are immutable */
-public interface IUnit extends Serializable {
+public interface IUnit extends Comparable<IUnit>, Serializable {
 	/** Example: cd*m*s */
 	static final String JOIN_DELIMITER = "*";
 	/** Example: A*kg^-2 */

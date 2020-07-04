@@ -333,7 +333,7 @@ public interface IExpr extends Comparable<IExpr>, GcdRingElem<IExpr>, Serializab
 	 */
 	default IExpr base() {
 		if (Config.FUZZ_TESTING) {
-			if (!isPower()) {
+			if (!isPower() && !isAST(F.Surd)) {
 				throw new NullPointerException();
 			}
 		}
@@ -347,9 +347,9 @@ public interface IExpr extends Comparable<IExpr>, GcdRingElem<IExpr>, Serializab
 	@Override
 	default int compareTo(IExpr expr) {
 		if (expr.isAST()) {
-			if (!expr.isDirectedInfinity()) {
-				return -1 * expr.compareTo(this);
-			}
+			// if (!expr.isDirectedInfinity()) {
+			return -1 * expr.compareTo(this);
+			// }
 		}
 		final int x = hierarchy();
 		final int y = expr.hierarchy();
@@ -392,7 +392,7 @@ public interface IExpr extends Comparable<IExpr>, GcdRingElem<IExpr>, Serializab
 	 */
 	default IASTAppendable constantArray(IExpr head, final int startPosition, int... arr) {
 		final int size = arr[startPosition];
-		if (Config.MAX_AST_SIZE < size ) {
+		if (Config.MAX_AST_SIZE < size) {
 			ASTElementLimitExceeded.throwIt(size);
 		}
 		if (arr.length - 1 == startPosition) {
@@ -503,7 +503,7 @@ public interface IExpr extends Comparable<IExpr>, GcdRingElem<IExpr>, Serializab
 	 * @return
 	 * @throws ArgumentTypeException
 	 */
-	default Complex evalComplex() {
+	default Complex evalComplex() throws ArgumentTypeException {
 		return EvalEngine.get().evalComplex(this);
 	}
 
@@ -513,7 +513,7 @@ public interface IExpr extends Comparable<IExpr>, GcdRingElem<IExpr>, Serializab
 	 * 
 	 * @return this expression converted to a Java <code>double</code> value.
 	 */
-	default double evalDouble() {
+	default double evalDouble() throws ArgumentTypeException {
 		return EvalEngine.get().evalDouble(this);
 	}
 
@@ -583,7 +583,7 @@ public interface IExpr extends Comparable<IExpr>, GcdRingElem<IExpr>, Serializab
 	 */
 	default IExpr exponent() {
 		if (Config.FUZZ_TESTING) {
-			if (!isPower()) {
+			if (!isPower() && !isAST(F.Surd)) {
 				throw new NullPointerException();
 			}
 		}
@@ -1876,6 +1876,15 @@ public interface IExpr extends Comparable<IExpr>, GcdRingElem<IExpr>, Serializab
 	}
 
 	/**
+	 * Test if this expression is an empty list (i.e. a list <code>{}</code>)
+	 * 
+	 * @return
+	 */
+	default boolean isEmptyList() {
+		return false;
+	}
+
+	/**
 	 * Test if this expression is a list (i.e. an AST with head List)
 	 * 
 	 * @return
@@ -1932,6 +1941,15 @@ public interface IExpr extends Comparable<IExpr>, GcdRingElem<IExpr>, Serializab
 	 * @see #isVector()
 	 */
 	default boolean isListOfRules(boolean ignoreEmptyList) {
+		return false;
+	}
+
+	/**
+	 * Test if this expression is a list with at least one element (i.e. a list <code>{element, ...}</code>)
+	 * 
+	 * @return
+	 */
+	default boolean isNonEmptyList() {
 		return false;
 	}
 
@@ -2631,8 +2649,8 @@ public interface IExpr extends Comparable<IExpr>, GcdRingElem<IExpr>, Serializab
 	}
 
 	/**
-	 * Test if this expression is a symbolic rational function (i.e. a number, a symbolic constant or an rational function where
-	 * all arguments are also &quot;rational functions&quot;)
+	 * Test if this expression is a symbolic rational function (i.e. a number, a symbolic constant or an rational
+	 * function where all arguments are also &quot;rational functions&quot;)
 	 * 
 	 * @return <code>true</code>, if the given expression is a rational function or value.
 	 * @see #isRealResult()
@@ -3966,7 +3984,7 @@ public interface IExpr extends Comparable<IExpr>, GcdRingElem<IExpr>, Serializab
 	/**
 	 * Convert this object into a <code>int[]</code> vector.
 	 * 
-	 * @return
+	 * @return <code>null</code> if the conversion is not possible
 	 */
 	default int[] toIntVector() {
 		return null;

@@ -155,17 +155,28 @@ public class NumberUtil {
 	}
 
 	/**
-	 * Converts this number to <code>int</code>; unlike {@link #intValue} this method raises {@link ArithmeticException}
-	 * if this integer cannot be represented by an <code>int</code> type.
+	 * Converts this number to <code>int</code>. If this integer cannot be represented by an <code>int</code> type,
+	 * return the <code>Integer.MIN_VALUE</code> .
 	 * 
-	 * @return the numeric value represented by this integer after conversion to type <code>int</code>.
-	 * @throws ArithmeticException
-	 *             if conversion to <code>int</code> is not possible.
+	 * @return the numeric value represented by this integer after conversion to type <code>int</code> or the
+	 *         <code>Integer.MIN_VALUE</code> if the cast is not possible
 	 */
-	public static int toInt(BigInteger a) throws ArithmeticException {
+	public static int toIntDefault(BigInteger a) {
+		return toIntDefault(a, Integer.MIN_VALUE);
+	}
+
+	/**
+	 * Converts this number to <code>int</code>. If this integer cannot be represented by an <code>int</code> type,
+	 * return the <code>defaultValue</code> .
+	 * 
+	 * @return the numeric value represented by this integer after conversion to type <code>int</code> or the
+	 *         <code>defaultValue</code> if the cast is not possible
+	 */
+	public static int toIntDefault(BigInteger a, final int defaultValue) {
 		int val = a.intValue();
 		if (!a.equals(BigInteger.valueOf(val))) {
-			throw new ArithmeticException("BigInteger:toInt: number out of range");
+			return defaultValue;
+			// throw new ArithmeticException("BigInteger:toInt: number out of range");
 		}
 		return val;
 	}

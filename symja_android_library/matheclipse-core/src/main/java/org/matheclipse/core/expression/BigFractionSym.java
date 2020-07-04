@@ -6,6 +6,7 @@ import java.math.BigInteger;
 import org.hipparchus.fraction.BigFraction;
 import org.matheclipse.core.basic.Config;
 import org.matheclipse.core.eval.exception.ASTElementLimitExceeded;
+import org.matheclipse.core.eval.exception.BigIntegerLimitExceeded;
 import org.matheclipse.core.form.output.OutputFormFactory;
 import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.interfaces.IFraction;
@@ -36,11 +37,11 @@ public class BigFractionSym extends AbstractFractionSym {
 	BigFractionSym(BigFraction fraction) {
 		BigInteger temp = fraction.getNumerator();
 		if (Config.MAX_BIT_LENGTH < temp.bitLength()) {
-			throw new ASTElementLimitExceeded(temp.bitLength());
+			BigIntegerLimitExceeded.throwIt(temp.bitLength());
 		}
 		temp = fraction.getDenominator();
 		if (Config.MAX_BIT_LENGTH < temp.bitLength()) {
-			throw new ASTElementLimitExceeded(temp.bitLength());
+			BigIntegerLimitExceeded.throwIt(temp.bitLength());
 		}
 		fFraction = fraction;
 	}
@@ -60,11 +61,11 @@ public class BigFractionSym extends AbstractFractionSym {
 	BigFractionSym(BigInteger nom, BigInteger denom) {
 		BigInteger temp = nom;
 		if (Config.MAX_BIT_LENGTH < temp.bitLength()) {
-			throw new ASTElementLimitExceeded(temp.bitLength());
+			BigIntegerLimitExceeded.throwIt(temp.bitLength());
 		}
 		temp = denom;
 		if (Config.MAX_BIT_LENGTH < temp.bitLength()) {
-			throw new ASTElementLimitExceeded(temp.bitLength());
+			BigIntegerLimitExceeded.throwIt(temp.bitLength());
 		}
 		fFraction = new BigFraction(nom, denom);
 	}
@@ -401,10 +402,9 @@ public class BigFractionSym extends AbstractFractionSym {
 	public String internalJavaString(boolean symbolsAsFactoryMethod, int depth, boolean useOperators, boolean usePrefix,
 			boolean noSymbolPrefix) {
 		String prefix = usePrefix ? "F." : "";
-		try {
-			// toInt throws ArithmeticException if conversion is not possible
-			int numerator = NumberUtil.toInt(fFraction.getNumerator());
-			int denominator = NumberUtil.toInt(fFraction.getDenominator());
+		int numerator = NumberUtil.toIntDefault(fFraction.getNumerator());
+		if (numerator == 1 || numerator == -1) {
+			int denominator = NumberUtil.toIntDefault(fFraction.getDenominator());
 			if (numerator == 1) {
 				switch (denominator) {
 				case 2:
@@ -415,8 +415,7 @@ public class BigFractionSym extends AbstractFractionSym {
 					return prefix + "C1D4";
 				default:
 				}
-			}
-			if (numerator == -1) {
+			} else if (numerator == -1) {
 				switch (denominator) {
 				case 2:
 					return prefix + "CN1D2";
@@ -427,9 +426,6 @@ public class BigFractionSym extends AbstractFractionSym {
 				default:
 				}
 			}
-		} catch (RuntimeException e) {
-			return prefix + "QQ(" + fFraction.getNumerator().toString() + "L," + fFraction.getDenominator().toString()
-					+ "L)";
 		}
 		return prefix + "QQ(" + fFraction.getNumerator().toString() + "L," + fFraction.getDenominator().toString()
 				+ "L)";
@@ -561,9 +557,11 @@ public class BigFractionSym extends AbstractFractionSym {
 	@Override
 	public int toInt() throws ArithmeticException {
 		if (toBigDenominator().equals(BigInteger.ONE)) {
-			return NumberUtil.toInt(toBigNumerator());
-		}
-		if (toBigNumerator().equals(BigInteger.ZERO)) {
+			int val = NumberUtil.toIntDefault(toBigNumerator());
+			if (val != Integer.MIN_VALUE) {
+				return val;
+			}
+		} else if (toBigNumerator().equals(BigInteger.ZERO)) {
 			return 0;
 		}
 		throw new ArithmeticException("toInt: denominator != 1");

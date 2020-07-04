@@ -518,7 +518,7 @@ public final class ListFunctions {
 		}
 
 		@Override
-		public int[] expectedArgSize() {
+		public int[] expectedArgSize(IAST ast) {
 			return IOFunctions.ARGS_1_1;
 		}
 	}
@@ -585,7 +585,7 @@ public final class ListFunctions {
 		}
 
 		@Override
-		public int[] expectedArgSize() {
+		public int[] expectedArgSize(IAST ast) {
 			return IOFunctions.ARGS_1_2;
 		}
 	}
@@ -673,7 +673,7 @@ public final class ListFunctions {
 		}
 
 		@Override
-		public int[] expectedArgSize() {
+		public int[] expectedArgSize(IAST ast) {
 			return IOFunctions.ARGS_2_2;
 		}
 
@@ -935,28 +935,28 @@ public final class ListFunctions {
 		}
 
 		@Override
-		public int[] expectedArgSize() {
+		public int[] expectedArgSize(IAST ast) {
 			return IOFunctions.ARGS_2_3;
 		}
 
 		private static IExpr arrayPadMatrixAtom(IAST matrix, int[] dim, int m, int n, IExpr atom) {
-			long columnDim = (long)dim[1] +(long) m + (long)n;
-			if (Config.MAX_AST_SIZE < columnDim ) {
+			long columnDim = (long) dim[1] + (long) m + (long) n;
+			if (Config.MAX_AST_SIZE < columnDim) {
 				ASTElementLimitExceeded.throwIt(columnDim);
 			}
 			long rowDim = dim[0] + m + n;
-			if (Config.MAX_AST_SIZE < rowDim ) {
+			if (Config.MAX_AST_SIZE < rowDim) {
 				ASTElementLimitExceeded.throwIt(rowDim);
 			}
-			
-			IASTAppendable result = matrix.copyHead((int)rowDim);
+
+			IASTAppendable result = matrix.copyHead((int) rowDim);
 			// prepend m rows
-			result.appendArgs(0, m, i -> atom.constantArray(F.List, 0, (int)columnDim));
+			result.appendArgs(0, m, i -> atom.constantArray(F.List, 0, (int) columnDim));
 
 			result.appendArgs(1, dim[0] + 1, i -> arrayPadAtom(matrix.getAST(i), m, n, atom));
 
 			// append n rows
-			result.appendArgs(0, n, i -> atom.constantArray(F.List, 0,(int) columnDim));
+			result.appendArgs(0, n, i -> atom.constantArray(F.List, 0, (int) columnDim));
 			return result;
 		}
 
@@ -1176,7 +1176,7 @@ public final class ListFunctions {
 		}
 
 		@Override
-		public int[] expectedArgSize() {
+		public int[] expectedArgSize(IAST ast) {
 			return IOFunctions.ARGS_1_4;
 		}
 
@@ -1238,7 +1238,7 @@ public final class ListFunctions {
 		}
 
 		@Override
-		public int[] expectedArgSize() {
+		public int[] expectedArgSize(IAST ast) {
 			return IOFunctions.ARGS_1_1;
 		}
 	}
@@ -1299,7 +1299,7 @@ public final class ListFunctions {
 		}
 
 		@Override
-		public int[] expectedArgSize() {
+		public int[] expectedArgSize(IAST ast) {
 			return IOFunctions.ARGS_1_2;
 		}
 
@@ -1362,7 +1362,7 @@ public final class ListFunctions {
 		}
 
 		@Override
-		public int[] expectedArgSize() {
+		public int[] expectedArgSize(IAST ast) {
 			return IOFunctions.ARGS_2_INFINITY;
 		}
 
@@ -1567,7 +1567,7 @@ public final class ListFunctions {
 		}
 
 		@Override
-		public int[] expectedArgSize() {
+		public int[] expectedArgSize(IAST ast) {
 			return IOFunctions.ARGS_2_2;
 		}
 
@@ -1655,7 +1655,7 @@ public final class ListFunctions {
 		}
 
 		@Override
-		public int[] expectedArgSize() {
+		public int[] expectedArgSize(IAST ast) {
 			return IOFunctions.ARGS_2_3;
 		}
 	}
@@ -1674,7 +1674,7 @@ public final class ListFunctions {
 		}
 
 		@Override
-		public int[] expectedArgSize() {
+		public int[] expectedArgSize(IAST ast) {
 			return IOFunctions.ARGS_1_1;
 		}
 	}
@@ -1803,7 +1803,7 @@ public final class ListFunctions {
 		}
 
 		@Override
-		public int[] expectedArgSize() {
+		public int[] expectedArgSize(IAST ast) {
 			return IOFunctions.ARGS_1_2;
 		}
 	}
@@ -1894,7 +1894,7 @@ public final class ListFunctions {
 		}
 
 		@Override
-		public int[] expectedArgSize() {
+		public int[] expectedArgSize(IAST ast) {
 			return IOFunctions.ARGS_2_4;
 		}
 
@@ -1971,7 +1971,7 @@ public final class ListFunctions {
 		}
 
 		@Override
-		public int[] expectedArgSize() {
+		public int[] expectedArgSize(IAST ast) {
 			return IOFunctions.ARGS_1_2;
 		}
 	}
@@ -2035,12 +2035,16 @@ public final class ListFunctions {
 			final IExpr arg1 = evaledAST.arg1();
 			try {
 				if (arg1.isAST()) {
-					final ISequence[] sequ = Sequence.createSequences(evaledAST, 2);
-					final IAST list = (IAST) arg1;
-					if (sequ != null) {
-						final IASTAppendable resultList = list.copyAppendable();
-						drop(resultList, 0, sequ);
-						return resultList;
+					final ISequence[] sequ = Sequence.createSequences(evaledAST, 2, "drop", engine);
+					if (sequ == null) {
+						return F.NIL;
+					} else {
+						final IAST list = (IAST) arg1;
+						if (sequ != null) {
+							final IASTAppendable resultList = list.copyAppendable();
+							drop(resultList, 0, sequ);
+							return resultList;
+						}
 					}
 				}
 			} catch (ValidateException ve) {
@@ -2060,7 +2064,7 @@ public final class ListFunctions {
 		}
 
 		@Override
-		public int[] expectedArgSize() {
+		public int[] expectedArgSize(IAST ast) {
 			return IOFunctions.ARGS_2_INFINITY;
 		}
 
@@ -2202,7 +2206,7 @@ public final class ListFunctions {
 		}
 
 		@Override
-		public int[] expectedArgSize() {
+		public int[] expectedArgSize(IAST ast) {
 			return IOFunctions.ARGS_1_3;
 		}
 
@@ -2313,7 +2317,7 @@ public final class ListFunctions {
 		}
 
 		@Override
-		public int[] expectedArgSize() {
+		public int[] expectedArgSize(IAST ast) {
 			return IOFunctions.ARGS_1_2;
 		}
 	}
@@ -2335,16 +2339,6 @@ public final class ListFunctions {
 
 		@Override
 		public IExpr evaluate(final IAST ast, EvalEngine engine) {
-			return evaluateNestList(ast, engine);
-		}
-
-		@Override
-		public int[] expectedArgSize() {
-			return IOFunctions.ARGS_3_3;
-		}
-
-		private static IExpr evaluateNestList(final IAST ast, EvalEngine engine) {
-
 			try {
 				IExpr temp = engine.evaluate(ast.arg3());
 				if (temp.isAST()) {
@@ -2357,6 +2351,11 @@ public final class ListFunctions {
 
 			}
 			return F.NIL;
+		}
+
+		@Override
+		public int[] expectedArgSize(IAST ast) {
+			return IOFunctions.ARGS_3_3;
 		}
 
 		@Override
@@ -2504,7 +2503,7 @@ public final class ListFunctions {
 		}
 
 		@Override
-		public int[] expectedArgSize() {
+		public int[] expectedArgSize(IAST ast) {
 			return IOFunctions.ARGS_1_2;
 		}
 
@@ -2599,7 +2598,7 @@ public final class ListFunctions {
 		}
 
 		@Override
-		public int[] expectedArgSize() {
+		public int[] expectedArgSize(IAST ast) {
 			return IOFunctions.ARGS_1_2;
 		}
 
@@ -2636,7 +2635,7 @@ public final class ListFunctions {
 		}
 
 		@Override
-		public int[] expectedArgSize() {
+		public int[] expectedArgSize(IAST ast) {
 			return IOFunctions.ARGS_1_2;
 		}
 
@@ -2785,7 +2784,7 @@ public final class ListFunctions {
 		}
 
 		@Override
-		public int[] expectedArgSize() {
+		public int[] expectedArgSize(IAST ast) {
 			return IOFunctions.ARGS_1_3;
 		}
 	}
@@ -2875,7 +2874,7 @@ public final class ListFunctions {
 		}
 
 		@Override
-		public int[] expectedArgSize() {
+		public int[] expectedArgSize(IAST ast) {
 			return IOFunctions.ARGS_1_INFINITY;
 		}
 
@@ -2933,7 +2932,7 @@ public final class ListFunctions {
 		}
 
 		@Override
-		public int[] expectedArgSize() {
+		public int[] expectedArgSize(IAST ast) {
 			return IOFunctions.ARGS_1_2;
 		}
 	}
@@ -3000,7 +2999,7 @@ public final class ListFunctions {
 		}
 
 		@Override
-		public int[] expectedArgSize() {
+		public int[] expectedArgSize(IAST ast) {
 			return IOFunctions.ARGS_1_1;
 		}
 	}
@@ -3150,7 +3149,7 @@ public final class ListFunctions {
 		}
 
 		@Override
-		public int[] expectedArgSize() {
+		public int[] expectedArgSize(IAST ast) {
 			return IOFunctions.ARGS_2_4;
 		}
 
@@ -3199,7 +3198,7 @@ public final class ListFunctions {
 		}
 
 		@Override
-		public int[] expectedArgSize() {
+		public int[] expectedArgSize(IAST ast) {
 			return IOFunctions.ARGS_1_1;
 		}
 	}
@@ -3248,7 +3247,7 @@ public final class ListFunctions {
 		}
 
 		@Override
-		public int[] expectedArgSize() {
+		public int[] expectedArgSize(IAST ast) {
 			return IOFunctions.ARGS_1_1;
 		}
 	}
@@ -3274,7 +3273,7 @@ public final class ListFunctions {
 		}
 
 		@Override
-		public int[] expectedArgSize() {
+		public int[] expectedArgSize(IAST ast) {
 			return IOFunctions.ARGS_1_3;
 		}
 
@@ -3437,7 +3436,7 @@ public final class ListFunctions {
 		}
 
 		@Override
-		public int[] expectedArgSize() {
+		public int[] expectedArgSize(IAST ast) {
 			return IOFunctions.ARGS_1_3;
 		}
 
@@ -3661,7 +3660,7 @@ public final class ListFunctions {
 		}
 
 		@Override
-		public int[] expectedArgSize() {
+		public int[] expectedArgSize(IAST ast) {
 			return IOFunctions.ARGS_1_3;
 		}
 
@@ -4016,7 +4015,7 @@ public final class ListFunctions {
 		}
 
 		@Override
-		public int[] expectedArgSize() {
+		public int[] expectedArgSize(IAST ast) {
 			return IOFunctions.ARGS_1_2;
 		}
 	}
@@ -4132,7 +4131,7 @@ public final class ListFunctions {
 		}
 
 		@Override
-		public int[] expectedArgSize() {
+		public int[] expectedArgSize(IAST ast) {
 			return IOFunctions.ARGS_2_2;
 		}
 
@@ -4189,7 +4188,7 @@ public final class ListFunctions {
 
 		@Override
 		public IExpr evaluate(final IAST ast, EvalEngine engine) {
-			if (ast.arg1().isAST(F.List, 1)) {
+			if (ast.arg1().isEmptyList()) {
 				return ast.arg1();
 			}
 
@@ -4266,7 +4265,7 @@ public final class ListFunctions {
 		}
 
 		@Override
-		public int[] expectedArgSize() {
+		public int[] expectedArgSize(IAST ast) {
 			return IOFunctions.ARGS_1_3;
 		}
 
@@ -4469,7 +4468,7 @@ public final class ListFunctions {
 
 		}
 
-		public int[] expectedArgSize() {
+		public int[] expectedArgSize(IAST ast) {
 			return IOFunctions.ARGS_1_3;
 		}
 
@@ -4559,7 +4558,7 @@ public final class ListFunctions {
 		}
 
 		@Override
-		public int[] expectedArgSize() {
+		public int[] expectedArgSize(IAST ast) {
 			return IOFunctions.ARGS_1_2;
 		}
 
@@ -4785,7 +4784,7 @@ public final class ListFunctions {
 		}
 
 		@Override
-		public int[] expectedArgSize() {
+		public int[] expectedArgSize(IAST ast) {
 			return IOFunctions.ARGS_1_3;
 		}
 
@@ -4877,7 +4876,7 @@ public final class ListFunctions {
 		}
 
 		@Override
-		public int[] expectedArgSize() {
+		public int[] expectedArgSize(IAST ast) {
 			return IOFunctions.ARGS_1_2;
 		}
 
@@ -4931,7 +4930,7 @@ public final class ListFunctions {
 		}
 
 		@Override
-		public int[] expectedArgSize() {
+		public int[] expectedArgSize(IAST ast) {
 			return IOFunctions.ARGS_1_1;
 		}
 
@@ -5011,7 +5010,7 @@ public final class ListFunctions {
 		}
 
 		@Override
-		public int[] expectedArgSize() {
+		public int[] expectedArgSize(IAST ast) {
 			return IOFunctions.ARGS_2_2;
 		}
 
@@ -5122,7 +5121,7 @@ public final class ListFunctions {
 		}
 
 		@Override
-		public int[] expectedArgSize() {
+		public int[] expectedArgSize(IAST ast) {
 			return IOFunctions.ARGS_1_2;
 		}
 	}
@@ -5195,7 +5194,7 @@ public final class ListFunctions {
 		}
 
 		@Override
-		public int[] expectedArgSize() {
+		public int[] expectedArgSize(IAST ast) {
 			return IOFunctions.ARGS_1_2;
 		}
 	}
@@ -5269,7 +5268,7 @@ public final class ListFunctions {
 		}
 
 		@Override
-		public int[] expectedArgSize() {
+		public int[] expectedArgSize(IAST ast) {
 			return IOFunctions.ARGS_1_3;
 		}
 
@@ -5316,7 +5315,7 @@ public final class ListFunctions {
 		}
 
 		@Override
-		public int[] expectedArgSize() {
+		public int[] expectedArgSize(IAST ast) {
 			return IOFunctions.ARGS_1_3;
 		}
 
@@ -5412,7 +5411,7 @@ public final class ListFunctions {
 		}
 
 		@Override
-		public int[] expectedArgSize() {
+		public int[] expectedArgSize(IAST ast) {
 			return IOFunctions.ARGS_1_2;
 		}
 
@@ -5458,7 +5457,7 @@ public final class ListFunctions {
 		}
 
 		@Override
-		public int[] expectedArgSize() {
+		public int[] expectedArgSize(IAST ast) {
 			return IOFunctions.ARGS_2_2;
 		}
 
@@ -5634,7 +5633,7 @@ public final class ListFunctions {
 		}
 
 		@Override
-		public int[] expectedArgSize() {
+		public int[] expectedArgSize(IAST ast) {
 			return IOFunctions.ARGS_2_INFINITY;
 		}
 
@@ -5853,7 +5852,7 @@ public final class ListFunctions {
 		}
 
 		@Override
-		public int[] expectedArgSize() {
+		public int[] expectedArgSize(IAST ast) {
 			return IOFunctions.ARGS_1_2;
 		}
 
@@ -5995,13 +5994,17 @@ public final class ListFunctions {
 			}
 			try {
 				if (evaledAST.arg1().isAST()) {
-					final ISequence[] sequ = Sequence.createSequences(evaledAST, 2);
-					final IAST arg1 = (IAST) evaledAST.arg1();
-					if (sequ != null) {
-						if (arg1.isAssociation()) {
-							return take((IAssociation) arg1, 0, sequ);
+					final ISequence[] sequ = Sequence.createSequences(evaledAST, 2, "take", engine);
+					if (sequ == null) {
+						return F.NIL;
+					} else {
+						final IAST arg1 = (IAST) evaledAST.arg1();
+						if (sequ != null) {
+							if (arg1.isAssociation()) {
+								return take((IAssociation) arg1, 0, sequ);
+							}
+							return take(arg1, 0, sequ);
 						}
-						return take(arg1, 0, sequ);
 					}
 				} else {
 					return engine.printMessage("Take: Nonatomic expression expected at position 1");
@@ -6018,7 +6021,7 @@ public final class ListFunctions {
 		}
 
 		@Override
-		public int[] expectedArgSize() {
+		public int[] expectedArgSize(IAST ast) {
 			return IOFunctions.ARGS_2_INFINITY;
 		}
 
@@ -6204,7 +6207,7 @@ public final class ListFunctions {
 		}
 
 		@Override
-		public int[] expectedArgSize() {
+		public int[] expectedArgSize(IAST ast) {
 			return IOFunctions.ARGS_1_2;
 		}
 
@@ -6250,7 +6253,7 @@ public final class ListFunctions {
 		}
 
 		@Override
-		public int[] expectedArgSize() {
+		public int[] expectedArgSize(IAST ast) {
 			return IOFunctions.ARGS_2_3;
 		}
 
@@ -6370,7 +6373,7 @@ public final class ListFunctions {
 		}
 
 		@Override
-		public int[] expectedArgSize() {
+		public int[] expectedArgSize(IAST ast) {
 			return IOFunctions.ARGS_1_2;
 		}
 	}

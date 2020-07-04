@@ -6,16 +6,11 @@ import java.io.ObjectOutput;
 import java.io.ObjectStreamException;
 import java.math.BigInteger;
 import java.math.RoundingMode;
-import java.util.Set;
-import java.util.TreeSet;
 
+import org.hipparchus.exception.MathRuntimeException;
 import org.hipparchus.fraction.BigFraction;
 import org.hipparchus.util.ArithmeticUtils;
-import org.matheclipse.core.builtin.Combinatoric.Subsets;
-import org.matheclipse.core.builtin.Combinatoric.Subsets.KSubsetsList;
 import org.matheclipse.core.form.output.OutputFormFactory;
-import org.matheclipse.core.interfaces.IAST;
-import org.matheclipse.core.interfaces.IASTAppendable;
 import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.interfaces.IInteger;
 import org.matheclipse.core.interfaces.INumber;
@@ -284,7 +279,7 @@ public class IntegerSym extends AbstractIntegerSym {
 		if (that instanceof IntegerSym) {
 			try {
 				return valueOf(ArithmeticUtils.gcd(fIntValue, ((IntegerSym) that).fIntValue));
-			} catch (RuntimeException ex) {
+			} catch (MathRuntimeException ex) {
 				//
 			}
 		}
@@ -514,7 +509,7 @@ public class IntegerSym extends AbstractIntegerSym {
 		if (that instanceof IntegerSym) {
 			try {
 				return valueOf(ArithmeticUtils.lcm(fIntValue, ((IntegerSym) that).fIntValue));
-			} catch (RuntimeException ex) {
+			} catch (MathRuntimeException ex) {
 				//
 			}
 		}
@@ -843,7 +838,7 @@ public class IntegerSym extends AbstractIntegerSym {
 	public IExpr sqrt() {
 		try {
 			return valueOf(IntMath.sqrt(fIntValue, RoundingMode.UNNECESSARY));
-		} catch (RuntimeException ex) {
+		} catch (ArithmeticException | IllegalArgumentException ex) {
 			return F.Sqrt(this);
 		}
 	}

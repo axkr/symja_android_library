@@ -18,10 +18,12 @@ import org.matheclipse.core.builtin.IOFunctions;
 import org.matheclipse.core.builtin.Programming;
 import org.matheclipse.core.eval.exception.AbortException;
 import org.matheclipse.core.eval.exception.ArgumentTypeException;
+import org.matheclipse.core.eval.exception.FlowControlException;
 import org.matheclipse.core.eval.exception.IterationLimitExceeded;
+import org.matheclipse.core.eval.exception.LimitException;
 import org.matheclipse.core.eval.exception.RecursionLimitExceeded;
+import org.matheclipse.core.eval.exception.SymjaMathException;
 import org.matheclipse.core.eval.exception.TimeoutException;
-import org.matheclipse.core.eval.exception.ValidateException;
 import org.matheclipse.core.eval.interfaces.IFunctionEvaluator;
 import org.matheclipse.core.eval.util.IAssumptions;
 import org.matheclipse.core.expression.ASTRealMatrix;
@@ -37,6 +39,7 @@ import org.matheclipse.core.interfaces.IASTAppendable;
 import org.matheclipse.core.interfaces.IASTMutable;
 import org.matheclipse.core.interfaces.IAssociation;
 import org.matheclipse.core.interfaces.IBuiltInSymbol;
+import org.matheclipse.core.interfaces.IDataExpr;
 import org.matheclipse.core.interfaces.IEvalStepListener;
 import org.matheclipse.core.interfaces.IEvaluator;
 import org.matheclipse.core.interfaces.IExpr;
@@ -681,22 +684,18 @@ public class EvalEngine implements Serializable {
 
 		if ((ISymbol.LISTABLE & attr) == ISymbol.LISTABLE) {
 			if (symbol.isBuiltInSymbol()) {
-				try {
-					if (arg1.isRealVector() && ((IAST) arg1).size() > 1) {
-						final IEvaluator module = ((IBuiltInSymbol) symbol).getEvaluator();
-						if (module instanceof DoubleUnaryOperator) {
-							DoubleUnaryOperator oper = (DoubleUnaryOperator) module;
-							return ASTRealVector.map((IAST) arg1, oper);
-						}
-					} else if (arg1.isRealMatrix()) {
-						final IEvaluator module = ((IBuiltInSymbol) symbol).getEvaluator();
-						if (module instanceof DoubleUnaryOperator) {
-							DoubleUnaryOperator oper = (DoubleUnaryOperator) module;
-							return ASTRealMatrix.map((IAST) arg1, oper);
-						}
-
+				if (arg1.isRealVector() && ((IAST) arg1).size() > 1) {
+					final IEvaluator module = ((IBuiltInSymbol) symbol).getEvaluator();
+					if (module instanceof DoubleUnaryOperator) {
+						DoubleUnaryOperator oper = (DoubleUnaryOperator) module;
+						return ASTRealVector.map((IAST) arg1, oper);
 					}
-				} catch (RuntimeException rex) {
+				} else if (arg1.isRealMatrix()) {
+					final IEvaluator module = ((IBuiltInSymbol) symbol).getEvaluator();
+					if (module instanceof DoubleUnaryOperator) {
+						DoubleUnaryOperator oper = (DoubleUnaryOperator) module;
+						return ASTRealMatrix.map((IAST) arg1, oper);
+					}
 				}
 
 				if (arg1.isList()) {
@@ -765,7 +764,7 @@ public class EvalEngine implements Serializable {
 					// evaluate a built-in function.
 					final IFunctionEvaluator functionEvaluator = (IFunctionEvaluator) module;
 					int[] expected;
-					if ((expected = functionEvaluator.expectedArgSize()) != null) {
+					if ((expected = functionEvaluator.expectedArgSize(ast)) != null) {
 						if (ast.argSize() < expected[0] || ast.argSize() > expected[1]) {
 							return IOFunctions.printArgMessage(ast, expected, this);
 						}
@@ -780,9 +779,13 @@ public class EvalEngine implements Serializable {
 							functionEvaluator.evaluate(ast, this);
 					if (result.isPresent()) {
 						return result;
-
 					}
-				} catch (ValidateException ve) {
+				} catch (FlowControlException fce) {
+					throw fce;
+				} catch (SymjaMathException ve) {
+					if (ve instanceof LimitException) {
+						throw ve;
+					}
 					if (FEConfig.SHOW_STACKTRACE) {
 						ve.printStackTrace();
 					}
@@ -877,7 +880,6 @@ public class EvalEngine implements Serializable {
 					if (tempAST.exists(x -> x.isIndeterminate())) {
 						return F.Indeterminate;
 					}
-
 					IExpr temp = tempAST.extractConditionalExpression(false);
 					if (temp.isPresent()) {
 						return temp;
@@ -979,7 +981,7 @@ public class EvalEngine implements Serializable {
 	 * @return
 	 * @see #evaluate(IExpr)
 	 */
-	final public double evalDouble(final IExpr expr) {
+	final public double evalDouble(final IExpr expr) throws ArgumentTypeException {
 		if (expr.isReal()) {
 			return ((ISignedNumber) expr).doubleValue();
 		}
@@ -1000,7 +1002,7 @@ public class EvalEngine implements Serializable {
 	 * @return
 	 * @throws ArgumentTypeException
 	 */
-	final public Complex evalComplex(final IExpr expr) {
+	final public Complex evalComplex(final IExpr expr) throws ArgumentTypeException {
 		if (expr.isReal()) {
 			return new Complex(((ISignedNumber) expr).doubleValue());
 		}

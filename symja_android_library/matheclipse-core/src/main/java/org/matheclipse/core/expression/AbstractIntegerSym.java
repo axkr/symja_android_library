@@ -13,11 +13,13 @@ import java.util.TreeSet;
 
 import org.apfloat.Apcomplex;
 import org.apfloat.Apfloat;
+import org.hipparchus.exception.MathRuntimeException;
 import org.hipparchus.util.ArithmeticUtils;
 import org.matheclipse.core.basic.Config;
 import org.matheclipse.core.builtin.NumberTheory;
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.exception.ASTElementLimitExceeded;
+import org.matheclipse.core.eval.exception.BigIntegerLimitExceeded;
 import org.matheclipse.core.eval.exception.IterationLimitExceeded;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IASTAppendable;
@@ -609,6 +611,9 @@ public abstract class AbstractIntegerSym implements IInteger, Externalizable {
 		if (number.compareTo(BigInteger.valueOf(7)) <= 0) {
 			return F.NIL;
 		}
+		if (number.bitLength() > Config.MAX_BIT_LENGTH / 100) {
+			BigIntegerLimitExceeded.throwIt(number.bitLength());
+		}
 		BigInteger rest = Primality.countPrimes32749(number, map);
 		if (map.size() == 0) {
 			return F.NIL;
@@ -996,8 +1001,8 @@ public abstract class AbstractIntegerSym implements IInteger, Externalizable {
 		if (this instanceof IntegerSym && exponent < 63) {
 			try {
 				return valueOf(ArithmeticUtils.pow((long) ((IntegerSym) this).fIntValue, (int) exponent));
-			} catch (RuntimeException ex) {
-				//
+			} catch (MathRuntimeException mrex) {
+				// result doesn't fit into a Java long
 			}
 		}
 
@@ -1015,14 +1020,23 @@ public abstract class AbstractIntegerSym implements IInteger, Externalizable {
 		while ((exp >>= 1) > 0L) {
 			x = x.multiply(x);
 			if ((exp & 1) != 0) {
+				r.checkBitLength();
 				r = r.multiply(x);
 			}
 		}
 
 		while (b2pow-- > 0L) {
+			r.checkBitLength();
 			r = r.multiply(r);
 		}
 		return r;
+	}
+
+	public void checkBitLength() {
+		final long bitLength = bitLength();
+		if (bitLength > Config.MAX_BIT_LENGTH) {
+			BigIntegerLimitExceeded.throwIt(bitLength);
+		}
 	}
 
 	/**
