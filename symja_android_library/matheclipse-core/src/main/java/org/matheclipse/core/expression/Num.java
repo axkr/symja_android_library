@@ -6,7 +6,7 @@ import java.math.RoundingMode;
 import org.apfloat.Apcomplex;
 import org.apfloat.Apfloat;
 import org.apfloat.ApfloatRuntimeException;
-import org.hipparchus.complex.Complex;
+import org.hipparchus.util.MathUtils;
 import org.matheclipse.core.basic.Config;
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.interfaces.IExpr;
@@ -250,13 +250,21 @@ public class Num implements INum {
 	}
 
 	@Override
-	public boolean equals(final Object arg0) {
-		if (this == arg0) {
+	public boolean equals(final Object other) {
+		if (this == other) {
 			return true;
 		}
-		if (arg0 instanceof Num) {
-			return fDouble == ((Num) arg0).fDouble;
+		if (other instanceof Num) {
+			final Num c = (Num) other;
+			if (Double.isNaN(c.fDouble)) {
+				return Double.isNaN(fDouble);
+			} else {
+				return MathUtils.equals(fDouble, c.fDouble);
+			}
 		}
+		// if (other instanceof Num) {
+		// return fDouble == ((Num) other).fDouble;
+		// }
 		return false;
 	}
 
@@ -356,7 +364,11 @@ public class Num implements INum {
 
 	@Override
 	public final int hashCode() {
-		return Double.hashCode(fDouble);
+		if (Double.isNaN(fDouble)) {
+			return 11;
+		}
+		return 37 * 17 * MathUtils.hash(fDouble); 
+		// return Double.hashCode(fDouble);
 	}
 
 	@Override

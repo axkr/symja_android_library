@@ -399,7 +399,7 @@ public class IntegerSym extends AbstractIntegerSym {
 	 * @return
 	 */
 	@Override
-	public ISignedNumber inverse() {
+	public IRational inverse() {
 		if (isOne()) {
 			return this;
 		}

@@ -35,16 +35,20 @@ public class BigFractionSym extends AbstractFractionSym {
 	BigFraction fFraction;
 
 	BigFractionSym(BigFraction fraction) {
-		BigInteger temp = fraction.getNumerator();
-		if (Config.MAX_BIT_LENGTH < temp.bitLength()) {
-			BigIntegerLimitExceeded.throwIt(temp.bitLength());
-		}
-		temp = fraction.getDenominator();
-		if (Config.MAX_BIT_LENGTH < temp.bitLength()) {
-			BigIntegerLimitExceeded.throwIt(temp.bitLength());
-		}
 		fFraction = fraction;
+		checkBitLength( );
 	}
+
+//	public void checkBitLength( ) {
+//		BigInteger temp = fFraction.getNumerator();
+//		if (Config.MAX_BIT_LENGTH < temp.bitLength()) {
+//			BigIntegerLimitExceeded.throwIt(temp.bitLength());
+//		}
+//		temp = fFraction.getDenominator();
+//		if (Config.MAX_BIT_LENGTH < temp.bitLength()) {
+//			BigIntegerLimitExceeded.throwIt(temp.bitLength());
+//		}
+//	}
 
 	/**
 	 * <p>

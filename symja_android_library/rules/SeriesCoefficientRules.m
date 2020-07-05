@@ -1,4 +1,13 @@
 {
+  SeriesCoefficient(HarmonicNumber(x_),{x_Symbol, a_, n_?NotListQ}) := Piecewise({{HarmonicNumber(a), n == 0}, {(-1)^(1 + n)*Zeta(1 + n, 1 + a), n >= 1}}, 0)
+    /; FreeQ(a,x)&&FreeQ(n,x), 
+    
+  SeriesCoefficient(BernoulliB(m_, x_),{x_Symbol, a_, n_?NotListQ}) :=  Piecewise({{(BernoulliB(m - n, a)*Pochhammer(1 + m - n, n))/n!, n >= 0 && m >= n}}, 0)
+    /; FreeQ({a,m,n},x), 
+    
+  SeriesCoefficient(x_/(a_^x_ - 1), {x_Symbol, 0, n_?NotListQ})  := Piecewise({{(BernoulliB(n)*Log(a)^(-1+n))/n!, n >= 0}}, 0)
+    /; FreeQ(a,x)&&FreeQ(n,x), 
+    
   SeriesCoefficient(Cos(x_),{x_Symbol, 0, n_?NotListQ}):=Piecewise({{(I^n*(1 + (-1)^n))/(2*n!), n >= 0}}, 0)
     /; FreeQ(n,x),
   SeriesCoefficient(Cos(x_),{x_Symbol, Pi/2, n_?NotListQ}):=Piecewise({{-((I*I^n*(-1 + (-1)^n))/(2*n!)), n >= 0}}, 0) 

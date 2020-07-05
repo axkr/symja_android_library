@@ -796,7 +796,7 @@ public abstract class AbstractIntegerSym implements IInteger, Externalizable {
 	}
 
 	@Override
-	public abstract ISignedNumber inverse();
+	public abstract IRational inverse();
 
 	// public static BigInteger jacobiSymbol(long a, long b) {
 	// return jacobiSymbol(BigInteger.valueOf(a), BigInteger.valueOf(b));

@@ -13,10 +13,19 @@ public interface SeriesCoefficientRules {
    * <li>index 0 - number of equal rules in <code>RULES</code></li>
 	 * </ul>
 	 */
-  final public static int[] SIZES = { 0, 42 };
+  final public static int[] SIZES = { 0, 45 };
 
   final public static IAST RULES = List(
     IInit(SeriesCoefficient, SIZES),
+    // SeriesCoefficient(HarmonicNumber(x_),{x_Symbol,a_,n_?NotListQ}):=Piecewise({{HarmonicNumber(a),n==0},{(-1)^(1+n)*Zeta(1+n,1+a),n>=1}},0)/;FreeQ(a,x)&&FreeQ(n,x)
+    ISetDelayed(SeriesCoefficient(HarmonicNumber(x_),List(x_Symbol,a_,PatternTest(n_,NotListQ))),
+      Condition(Piecewise(List(List(HarmonicNumber(a),Equal(n,C0)),List(Times(Power(CN1,Plus(C1,n)),Zeta(Plus(C1,n),Plus(C1,a))),GreaterEqual(n,C1))),C0),And(FreeQ(a,x),FreeQ(n,x)))),
+    // SeriesCoefficient(BernoulliB(m_,x_),{x_Symbol,a_,n_?NotListQ}):=Piecewise({{(BernoulliB(m-n,a)*Pochhammer(1+m-n,n))/n!,n>=0&&m>=n}},0)/;FreeQ({a,m,n},x)
+    ISetDelayed(SeriesCoefficient(BernoulliB(m_,x_),List(x_Symbol,a_,PatternTest(n_,NotListQ))),
+      Condition(Piecewise(List(List(Times(BernoulliB(Subtract(m,n),a),Power(Factorial(n),CN1),Pochhammer(Plus(C1,m,Negate(n)),n)),And(GreaterEqual(n,C0),GreaterEqual(m,n)))),C0),FreeQ(List(a,m,n),x))),
+    // SeriesCoefficient(x_/(-1+a_^x_),{x_Symbol,0,n_?NotListQ}):=Piecewise({{BernoulliB(n)/(n!*Log(a)^(1-n)),n>=0}},0)/;FreeQ(a,x)&&FreeQ(n,x)
+    ISetDelayed(SeriesCoefficient(Times(Power(Plus(CN1,Power(a_,x_)),CN1),x_),List(x_Symbol,C0,PatternTest(n_,NotListQ))),
+      Condition(Piecewise(List(List(Times(BernoulliB(n),Power(Factorial(n),CN1),Power(Log(a),Plus(CN1,n))),GreaterEqual(n,C0))),C0),And(FreeQ(a,x),FreeQ(n,x)))),
     // SeriesCoefficient(Cos(x_),{x_Symbol,0,n_?NotListQ}):=Piecewise({{((1+(-1)^n)*I^n)/(2*n!),n>=0}},0)/;FreeQ(n,x)
     ISetDelayed(SeriesCoefficient(Cos(x_),List(x_Symbol,C0,PatternTest(n_,NotListQ))),
       Condition(Piecewise(List(List(Times(Plus(C1,Power(CN1,n)),Power(CI,n),Power(Times(C2,Factorial(n)),CN1)),GreaterEqual(n,C0))),C0),FreeQ(n,x))),

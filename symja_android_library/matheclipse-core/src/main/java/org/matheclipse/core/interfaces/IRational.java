@@ -17,6 +17,8 @@ public interface IRational extends ISignedNumber, IBigNumber {
 
 	public IRational add(IRational parm1);
 
+	public void checkBitLength( );
+
 	public IInteger ceil();
 
 	public int compareInt(final int value);
@@ -102,6 +104,10 @@ public interface IRational extends ISignedNumber, IBigNumber {
 	default IInteger getNumerator() {
 		return numerator();
 	}
+
+	/** {@inheritDoc} */
+	@Override
+	public IRational inverse();
 
 	default IRational imRational() {
 		return F.C0;

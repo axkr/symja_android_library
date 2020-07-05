@@ -1844,7 +1844,22 @@ public final class Arithmetic {
 								return F.NIL;
 							}
 						}
+						if (arg2.isInteger() && !arg2.isPositive()) {
+							IExpr z = arg1;
+							IExpr n = arg2.negate();
+							return
+							// [$ (1/(n + 1))*BernoulliB(n + 1, z + 1) + ((-1)^n/(n + 1))* BernoulliB(n + 1) $]
+							F.Plus(F.Times(F.Power(F.Plus(n, F.C1), F.CN1),
+									F.BernoulliB(F.Plus(n, F.C1), F.Plus(z, F.C1))),
+									F.Times(F.Power(F.CN1, n), F.Power(F.Plus(n, F.C1), F.CN1),
+											F.BernoulliB(F.Plus(n, F.C1)))); // $$;
+						}
+
 						if (arg1.isInteger()) {
+							if (arg1.isNegative() && arg2.isNumber() && arg2.isPositive()) {
+								return F.CComplexInfinity;
+							}
+
 							int n = Validate.checkIntType(ast, 1, Integer.MIN_VALUE);
 							if (n < 0) {
 								return F.NIL;
@@ -1852,13 +1867,33 @@ public final class Arithmetic {
 							if (n == 0) {
 								return C0;
 							}
+
+							int intArg2 = arg2.toIntDefault();
+							if (intArg2 != Integer.MIN_VALUE) {
+								int exponent = intArg2;
+								if (intArg2 < 0) {
+									exponent *= -1;
+								}
+								IRational result = F.C0;
+								for (int i = 1; i <= n; i++) {
+									IInteger pow = F.ZZ(i).pow(exponent);
+									if (intArg2 < 0) {
+										result = result.add(pow);
+									} else {
+										result = result.add(pow.inverse());
+									}
+									result.checkBitLength();
+								}
+								return result;
+							}
 							int iterationLimit = EvalEngine.get().getIterationLimit();
 							if (iterationLimit >= 0 && iterationLimit <= n + 1) {
 								IterationLimitExceeded.throwIt(n, ast);
 							}
-							IASTAppendable result = F.PlusAlloc(n);
 							final IExpr arg2Negate = arg2.negate();
-							return result.appendArgs(n + 1, i -> Power(F.ZZ(i), arg2Negate));
+							return F.sum(i -> Power(i, arg2Negate), 1, n);
+							// IASTAppendable result = F.PlusAlloc(n);
+							// return result.appendArgs(n + 1, i -> Power(F.ZZ(i), arg2Negate));
 						}
 						return F.NIL;
 					}

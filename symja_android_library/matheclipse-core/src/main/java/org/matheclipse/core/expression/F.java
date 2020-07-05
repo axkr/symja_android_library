@@ -3351,7 +3351,7 @@ public class F extends S {
 	public static IAST Fit(final IExpr a0, final IExpr a1, final IExpr a2) {
 		return new AST3(Fit, a0, a1, a2);
 	}
-	
+
 	public static IAST FiveNum(final IExpr a) {
 		return new AST1(FiveNum, a);
 	}
@@ -4200,10 +4200,10 @@ public class F extends S {
 	 *             if {@code tolerance} is {@code < 0} or NaN
 	 */
 	public static boolean isFuzzyEquals(double a, double b, double tolerance) {
-		return Math.copySign(a - b, 1.0) < tolerance
-				// copySign(x, 1.0) is a branch-free version of abs(x), but with different NaN semantics
-				|| (a == b) // needed to ensure that infinities equal themselves
-				|| (Double.isNaN(a) && Double.isNaN(b));
+		 return Math.copySign(a - b, 1.0) < tolerance
+		 // copySign(x, 1.0) is a branch-free version of abs(x), but with different NaN semantics
+		 || (a == b) // needed to ensure that infinities equal themselves
+		 || (Double.isNaN(a) && Double.isNaN(b));
 	}
 
 	/**

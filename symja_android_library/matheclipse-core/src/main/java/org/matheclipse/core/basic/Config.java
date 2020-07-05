@@ -137,7 +137,7 @@ public class Config {
 	 * Set to true if in fuzz testing mode
 	 * 
 	 */
-	public final static boolean FUZZ_TESTING = false;
+	public final static boolean FUZZ_TESTING = true;
 
 	/**
 	 * Set to true if the fuzzy parser should be used in the free form Symja API

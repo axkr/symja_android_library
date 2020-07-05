@@ -282,8 +282,6 @@ public final class NumberTheory {
 							// http://fungrim.org/entry/829185/
 							return F.Times(F.Power(F.CN1, n), F.BernoulliB(n));
 						}
-
-						return F.NIL;
 					}
 					if (n.isInteger() && n.isNonNegativeResult()) {
 						if (x.isNumEqualRational(F.C1D2)) {

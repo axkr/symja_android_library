@@ -1492,6 +1492,11 @@ public class LowercaseTestCase extends AbstractTestCase {
 	}
 
 	public void testBernoulliB() {
+		check("BernoulliB(4, 9)", //
+				"155519/30");
+		check("BernoulliB(4, -9)", //
+				"242999/30");
+		
 		// slow
 		check("BernoulliB(1009,-1+Sqrt(2))", //
 				"BernoulliB(1009,-1+Sqrt(2))");
@@ -9408,8 +9413,21 @@ public class LowercaseTestCase extends AbstractTestCase {
 	}
 
 	public void testHarmonicNumber() {
-		check("HarmonicNumber(1009,101)", //
-				"Iteration limit of 1009 exceeded for HarmonicNumber(1009,101).");
+		check("HarmonicNumber(-10, -3)", //
+				"2025");
+		check("HarmonicNumber(10, 3)", //
+				"19164113947/16003008000");
+		check("HarmonicNumber(10, -3)", //
+				"3025");
+		check("HarmonicNumber(-10, 3)", //
+				"ComplexInfinity");
+		
+ 		if (Config.EXPENSIVE_JUNIT_TESTS) {
+			check("HarmonicNumber(101,1009)", //
+					"BigInteger bit length 206136 exceeded");
+			check("HarmonicNumber(1009,101)", //
+					"BigInteger bit length 201800 exceeded");
+ 		}
 		check("HarmonicNumber(10007)", //
 				"Iteration limit of 10007 exceeded for HarmonicNumber(10007).");
 		check("HarmonicNumber(-Infinity)", //
