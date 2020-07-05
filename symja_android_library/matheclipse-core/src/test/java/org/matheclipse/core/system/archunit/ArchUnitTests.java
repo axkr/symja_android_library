@@ -98,7 +98,7 @@ public class ArchUnitTests extends TestCase {
 
 		ArchRule rule = classes().that().haveSimpleName("IExpr").or().haveSimpleName("IAST").//
 				should().onlyBeAccessed().byAnyPackage(//
-						"org.matheclipse.core..");
+						"org.matheclipse..");
 		rule.check(importedClasses);
 	}
 
