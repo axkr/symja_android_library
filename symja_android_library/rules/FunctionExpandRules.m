@@ -3,6 +3,9 @@
  ArcSin(Sqrt(x_^2)) := (Sqrt(x^2)*ArcSin(x))/x,
  ArcTan(Sqrt(x_^2)) := (Sqrt(x^2)*ArcTan(x))/x,
  
+ ChebyshevT(n_,x_) :=  Cos(n*ArcCos(x)),
+ ChebyshevU(n_,x_) :=  Sin((1 + n)*ArcCos(x))/(Sqrt(1 - x)*Sqrt(1 + x)),
+ 
  Cos(n_Integer*ArcSin(z_)) := ChebyshevT(n, Sqrt(1 - z^2))
   /; n>0,
  
@@ -14,6 +17,10 @@
  Gamma(0, z_) := -ExpIntegralEi(-z) + (1/2)*(-Log(-(1/z)) + Log(-z)) - Log(z),
  Gamma(1/2, z_) := Sqrt(Pi)*(1 - Erf(Sqrt(z))),
 
+ GegenbauerC(n_, x_) := (2*Cos(n*ArcCos(x)))/n,
+ 
+ HarmonicNumber(n_) := EulerGamma + PolyGamma(0, 1 + n),
+ HarmonicNumber(z_, n_) := -HurwitzZeta(n, 1 + z) + Zeta(n),
  HurwitzZeta(n_Integer, a_) := ((-1)^n/(n - 1)!)*PolyGamma(n - 1, a)
   /; n>1,
   

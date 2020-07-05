@@ -30,6 +30,8 @@
   D(FresnelS(f_),x_?NotListQ):=D(f,x)*Sin((Pi*f^2)/2),
   D(Gamma(f_),x_?NotListQ):=D(f,x)*Gamma(f)*PolyGamma(f),
   D(HarmonicNumber(f_),x_?NotListQ):=D(f,x)*((Pi^2)/6 - HarmonicNumber(f, 2)),
+  D(HarmonicNumber(f_,g_),x_?NotListQ):=D(f,x)*g*(-HarmonicNumber(f, 1 + g) + Zeta(1 + g))
+    /; FreeQ({g},x),
   D(Haversine(f_),x_?NotListQ):=(1/2)*Sin(f)*D(f,x),
   D(HeavisideTheta(f_),x_?NotListQ):=D(f,x)*DiracDelta(f),
   D(IntegerPart(f_),x_?NotListQ):=0,
@@ -83,6 +85,17 @@
     /; FreeQ({g},x), 
   D(JacobiSN(g_, f_),x_?NotListQ):= (JacobiCN(g,f)*JacobiDN(g,f)*(-EllipticE(JacobiAmplitude(g,f),f)+(1-f)*g+f*JacobiCD(g,f)*JacobiSN(g,f))*D(f,x))/(2*(1-f)*f)
     /; FreeQ({g},x),
+    
+  D(BernoulliB(g_, f_),x_?NotListQ):= BernoulliB(-1+g, f)*g*D(f,x)
+    /; FreeQ({g},x), 
+  D(ChebyshevT(g_, f_),x_?NotListQ):= ChebyshevU(-1+g, f)*g*D(f,x)
+    /; FreeQ({g},x),
+  D(ChebyshevU(g_, f_),x_?NotListQ):= ((ChebyshevU(-1+g, f)*(-1-g) + ChebyshevU(g, f)*f*g)*D(f,x))/(-1+f^2)
+    /; FreeQ({g},x), 
+  D(GegenbauerC(g_, f_),x_?NotListQ):= 2*ChebyshevU(-1+g, f)*D(f,x)
+    /; FreeQ({g},x),
+  D(GegenbauerC(g_,h_,f_),x_?NotListQ):= 2*GegenbauerC(-1+g,1+h,f)*h*D(f,x)
+    /; FreeQ({g,h},x),
     
   D(LaguerreL(g_, f_),x_?NotListQ):= -1*LaguerreL(-1+g,1,f)*D(f,x)
     /; FreeQ({g},x),

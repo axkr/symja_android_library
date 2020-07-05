@@ -18,6 +18,12 @@ public interface FunctionExpandRules {
     // ArcTan(Sqrt(x_^2)):=(Sqrt(x^2)*ArcTan(x))/x
     SetDelayed(ArcTan(Sqrt(Sqr(x_))),
       Times(Power(x,CN1),Sqrt(Sqr(x)),ArcTan(x))),
+    // ChebyshevT(n_,x_):=Cos(n*ArcCos(x))
+    SetDelayed(ChebyshevT(n_,x_),
+      Cos(Times(n,ArcCos(x)))),
+    // ChebyshevU(n_,x_):=Sin((1+n)*ArcCos(x))/(Sqrt(1-x)*Sqrt(1+x))
+    SetDelayed(ChebyshevU(n_,x_),
+      Times(Power(Times(Sqrt(Subtract(C1,x)),Sqrt(Plus(C1,x))),CN1),Sin(Times(Plus(C1,n),ArcCos(x))))),
     // Cos(n_Integer*ArcSin(z_)):=ChebyshevT(n,Sqrt(1-z^2))/;n>0
     SetDelayed(Cos(Times(ArcSin(z_),$p(n, Integer))),
       Condition(ChebyshevT(n,Sqrt(Subtract(C1,Sqr(z)))),Greater(n,C0))),
@@ -36,6 +42,15 @@ public interface FunctionExpandRules {
     // Gamma(1/2,z_):=Sqrt(Pi)*(1-Erf(Sqrt(z)))
     SetDelayed(Gamma(C1D2,z_),
       Times(Sqrt(Pi),Subtract(C1,Erf(Sqrt(z))))),
+    // GegenbauerC(n_,x_):=(2*Cos(n*ArcCos(x)))/n
+    SetDelayed(GegenbauerC(n_,x_),
+      Times(C2,Power(n,CN1),Cos(Times(n,ArcCos(x))))),
+    // HarmonicNumber(n_):=EulerGamma+PolyGamma(0,1+n)
+    SetDelayed(HarmonicNumber(n_),
+      Plus(EulerGamma,PolyGamma(C0,Plus(C1,n)))),
+    // HarmonicNumber(z_,n_):=-HurwitzZeta(n,1+z)+Zeta(n)
+    SetDelayed(HarmonicNumber(z_,n_),
+      Plus(Negate(HurwitzZeta(n,Plus(C1,z))),Zeta(n))),
     // HurwitzZeta(n_Integer,a_):=(-1)^n/(-1+n)!*PolyGamma(-1+n,a)/;n>1
     SetDelayed(HurwitzZeta($p(n, Integer),a_),
       Condition(Times(Power(CN1,n),Power(Factorial(Plus(CN1,n)),CN1),PolyGamma(Plus(CN1,n),a)),Greater(n,C1))),

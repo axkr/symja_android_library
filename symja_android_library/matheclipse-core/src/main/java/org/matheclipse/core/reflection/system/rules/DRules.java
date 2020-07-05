@@ -13,7 +13,7 @@ public interface DRules {
    * <li>index 0 - number of equal rules in <code>RULES</code></li>
 	 * </ul>
 	 */
-  final public static int[] SIZES = { 0, 121 };
+  final public static int[] SIZES = { 0, 127 };
 
   final public static IAST RULES = List(
     IInit(D, SIZES),
@@ -110,6 +110,9 @@ public interface DRules {
     // D(HarmonicNumber(f_),x_?NotListQ):=D(f,x)*(Pi^2/6-HarmonicNumber(f,2))
     ISetDelayed(D(HarmonicNumber(f_),PatternTest(x_,NotListQ)),
       Times(D(f,x),Subtract(Times(QQ(1L,6L),Sqr(Pi)),HarmonicNumber(f,C2)))),
+    // D(HarmonicNumber(f_,g_),x_?NotListQ):=D(f,x)*g*(-HarmonicNumber(f,1+g)+Zeta(1+g))/;FreeQ({g},x)
+    ISetDelayed(D(HarmonicNumber(f_,g_),PatternTest(x_,NotListQ)),
+      Condition(Times(D(f,x),g,Plus(Negate(HarmonicNumber(f,Plus(C1,g))),Zeta(Plus(C1,g)))),FreeQ(List(g),x))),
     // D(Haversine(f_),x_?NotListQ):=1/2*Sin(f)*D(f,x)
     ISetDelayed(D(Haversine(f_),PatternTest(x_,NotListQ)),
       Times(C1D2,Sin(f),D(f,x))),
@@ -230,6 +233,21 @@ public interface DRules {
     // D(JacobiSN(g_,f_),x_?NotListQ):=(D(f,x)*JacobiCN(g,f)*JacobiDN(g,f)*(-EllipticE(JacobiAmplitude(g,f),f)+(1-f)*g+f*JacobiCD(g,f)*JacobiSN(g,f)))/(2*(1-f)*f)/;FreeQ({g},x)
     ISetDelayed(D(JacobiSN(g_,f_),PatternTest(x_,NotListQ)),
       Condition(Times(Power(Times(C2,Subtract(C1,f),f),CN1),D(f,x),JacobiCN(g,f),JacobiDN(g,f),Plus(Negate(EllipticE(JacobiAmplitude(g,f),f)),Times(Subtract(C1,f),g),Times(f,JacobiCD(g,f),JacobiSN(g,f)))),FreeQ(List(g),x))),
+    // D(BernoulliB(g_,f_),x_?NotListQ):=BernoulliB(-1+g,f)*g*D(f,x)/;FreeQ({g},x)
+    ISetDelayed(D(BernoulliB(g_,f_),PatternTest(x_,NotListQ)),
+      Condition(Times(BernoulliB(Plus(CN1,g),f),g,D(f,x)),FreeQ(List(g),x))),
+    // D(ChebyshevT(g_,f_),x_?NotListQ):=ChebyshevU(-1+g,f)*g*D(f,x)/;FreeQ({g},x)
+    ISetDelayed(D(ChebyshevT(g_,f_),PatternTest(x_,NotListQ)),
+      Condition(Times(ChebyshevU(Plus(CN1,g),f),g,D(f,x)),FreeQ(List(g),x))),
+    // D(ChebyshevU(g_,f_),x_?NotListQ):=((ChebyshevU(-1+g,f)*(-1-g)+ChebyshevU(g,f)*f*g)*D(f,x))/(-1+f^2)/;FreeQ({g},x)
+    ISetDelayed(D(ChebyshevU(g_,f_),PatternTest(x_,NotListQ)),
+      Condition(Times(Power(Plus(CN1,Sqr(f)),CN1),Plus(Times(ChebyshevU(Plus(CN1,g),f),Subtract(CN1,g)),Times(ChebyshevU(g,f),f,g)),D(f,x)),FreeQ(List(g),x))),
+    // D(GegenbauerC(g_,f_),x_?NotListQ):=2*ChebyshevU(-1+g,f)*D(f,x)/;FreeQ({g},x)
+    ISetDelayed(D(GegenbauerC(g_,f_),PatternTest(x_,NotListQ)),
+      Condition(Times(C2,ChebyshevU(Plus(CN1,g),f),D(f,x)),FreeQ(List(g),x))),
+    // D(GegenbauerC(g_,h_,f_),x_?NotListQ):=2*GegenbauerC(-1+g,1+h,f)*h*D(f,x)/;FreeQ({g,h},x)
+    ISetDelayed(D(GegenbauerC(g_,h_,f_),PatternTest(x_,NotListQ)),
+      Condition(Times(C2,GegenbauerC(Plus(CN1,g),Plus(C1,h),f),h,D(f,x)),FreeQ(List(g,h),x))),
     // D(LaguerreL(g_,f_),x_?NotListQ):=-LaguerreL(-1+g,1,f)*D(f,x)/;FreeQ({g},x)
     ISetDelayed(D(LaguerreL(g_,f_),PatternTest(x_,NotListQ)),
       Condition(Times(CN1,LaguerreL(Plus(CN1,g),C1,f),D(f,x)),FreeQ(List(g),x))),

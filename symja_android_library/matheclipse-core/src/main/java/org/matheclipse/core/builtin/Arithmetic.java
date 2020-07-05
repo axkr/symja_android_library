@@ -1868,6 +1868,10 @@ public final class Arithmetic {
 								return C0;
 							}
 
+							int iterationLimit = EvalEngine.get().getIterationLimit();
+							if (iterationLimit >= 0 && iterationLimit <= n + 1) {
+								IterationLimitExceeded.throwIt(n, ast);
+							}
 							int intArg2 = arg2.toIntDefault();
 							if (intArg2 != Integer.MIN_VALUE) {
 								int exponent = intArg2;
@@ -1886,10 +1890,7 @@ public final class Arithmetic {
 								}
 								return result;
 							}
-							int iterationLimit = EvalEngine.get().getIterationLimit();
-							if (iterationLimit >= 0 && iterationLimit <= n + 1) {
-								IterationLimitExceeded.throwIt(n, ast);
-							}
+							
 							final IExpr arg2Negate = arg2.negate();
 							return F.sum(i -> Power(i, arg2Negate), 1, n);
 							// IASTAppendable result = F.PlusAlloc(n);

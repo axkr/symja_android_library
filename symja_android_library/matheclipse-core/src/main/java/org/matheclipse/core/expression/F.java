@@ -3548,6 +3548,10 @@ public class F extends S {
 	public static IAST GegenbauerC(final IExpr a0, final IExpr a1) {
 		return new AST2(GegenbauerC, a0, a1);
 	}
+	
+	public static IAST GegenbauerC(final IExpr a0, final IExpr a1, final IExpr a2) {
+		return new AST3(GegenbauerC, a0, a1, a2);
+	}
 
 	public static IAST GeoDistance(final IExpr a0, final IExpr a1) {
 		return new AST2(GeoDistance, a0, a1);
