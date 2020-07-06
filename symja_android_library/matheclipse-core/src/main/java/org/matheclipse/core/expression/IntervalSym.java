@@ -12,7 +12,6 @@ import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IASTAppendable;
 import org.matheclipse.core.interfaces.IASTMutable;
 import org.matheclipse.core.interfaces.IExpr;
-import org.matheclipse.core.interfaces.IExprProcessor;
 import org.matheclipse.core.interfaces.IInteger;
 import org.matheclipse.core.interfaces.INum;
 import org.matheclipse.core.interfaces.ISignedNumber;
@@ -39,6 +38,15 @@ public class IntervalSym {
 	 * @param interval
 	 * @return
 	 */
+	/**
+	 * IExprProcessor interface 
+	 * method boolean process (IExpr min, IExpr max, IASTAppendable result, int index), return true or false;
+	 */
+	@FunctionalInterface
+	public interface IExprProcessor {
+		boolean process(IExpr min, IExpr max, IASTAppendable result, int index);
+	}
+	
 	private static boolean isNormalized(final IAST interval) {
 		return interval.isEvalFlagOn(IAST.BUILT_IN_EVALED);
 	}
@@ -326,11 +334,24 @@ public class IntervalSym {
 		return F.NIL;
 	}
 
-	public static IAST mutableResultConditions2(final IAST ast, IExprProcessor... processors) {
-		return mutableResultConditions2(ast, true, processors);
+	/**
+	 * Special case of mutableProcessorConditions when exlusive = true;
+	 * @param IAST ast
+	 * @param IExprProcessor... processors
+	 * @return IAST result
+	 */
+	private static IAST mutableProcessorConditions(final IAST ast, IExprProcessor... processors) {
+		return mutableProcessorConditions(ast, true, processors);
 	}
 
-	public static IAST mutableResultConditions2(final IAST ast, boolean exclusive, IExprProcessor... processors) {
+	/**
+	 * Replaces the most common code. Determines the result depending on the fulfillment of conditions
+	 * @param IAST ast
+	 * @param boolean exclusive, true or false
+	 * @param IExprProcessor... processors, conditions to be met 
+	 * @return IAST result, append value or F.NIL;
+	 */
+	private static IAST mutableProcessorConditions(final IAST ast, boolean exclusive, IExprProcessor... processors) {
 		if (processors != null && processors.length > 0) {
 			IAST interval = normalize(ast);
 			if (interval.isPresent()) {
@@ -365,7 +386,7 @@ public class IntervalSym {
 
 	public static IExpr arccosh(final IAST ast) {
 		EvalEngine engine = EvalEngine.get();
-		return mutableResultConditions2(ast,
+		return mutableProcessorConditions(ast,
 				(min, max, result, index) -> {
 					if (engine.evalTrue(F.GreaterEqual(min, F.C1)) && engine.evalTrue(F.LessEqual(max, F.CInfinity))) {
 						result.append(index, F.List(F.ArcCosh(min), F.ArcCosh(max)));
@@ -376,7 +397,7 @@ public class IntervalSym {
 	}
 
 	public static IExpr arcsinh(final IAST ast) {
-		return mutableResultConditions2(ast, (min, max, result, index) -> {
+		return mutableProcessorConditions(ast, (min, max, result, index) -> {
 			if (min.isRealResult() && max.isRealResult()) {
 				result.append(index, F.List(F.ArcSinh(min), F.ArcSinh(max)));
 				return true;
@@ -387,7 +408,7 @@ public class IntervalSym {
 
 	public static IExpr arctanh(final IAST ast) {
 		EvalEngine engine = EvalEngine.get();
-		return mutableResultConditions2(ast, (min, max, result, index) ->  {
+		return mutableProcessorConditions(ast, (min, max, result, index) ->  {
 			if (engine.evalTrue(F.GreaterEqual(min, F.CN1)) && engine.evalTrue(F.LessEqual(max, F.C1))) {
 				result.append(index, F.List(F.ArcTanh(min), F.ArcTanh(max)));
 				return true;
@@ -398,7 +419,7 @@ public class IntervalSym {
 
 	public static IExpr arccos(final IAST ast) {
 		EvalEngine engine = EvalEngine.get();
-		return mutableResultConditions2(ast, (min, max, result, index) -> {
+		return mutableProcessorConditions(ast, (min, max, result, index) -> {
 			if (engine.evalTrue(F.GreaterEqual(min, F.CN1)) && engine.evalTrue(F.LessEqual(max, F.C1))) {
 				result.append(index, F.List(F.ArcCos(min), F.ArcCos(max)));
 				return true;
@@ -409,7 +430,7 @@ public class IntervalSym {
 
 	public static IExpr arccot(final IAST ast) {
 		EvalEngine engine = EvalEngine.get();
-		return mutableResultConditions2(ast,
+		return mutableProcessorConditions(ast,
 				(min, max, result, index) -> {
 					if (engine.evalTrue(F.GreaterEqual(min, F.C0)) && engine.evalTrue(F.GreaterEqual(max, F.C0))) {
 						result.append(F.List(F.ArcCot(min), F.ArcCot(max)));
@@ -436,7 +457,7 @@ public class IntervalSym {
 
 	public static IExpr arcsin(final IAST ast) {
 		EvalEngine engine = EvalEngine.get();
-		return mutableResultConditions2(ast, (min, max, result, index) -> {
+		return mutableProcessorConditions(ast, (min, max, result, index) -> {
 			if (engine.evalTrue(F.GreaterEqual(min, F.CN1)) && engine.evalTrue(F.LessEqual(max, F.C1))) {
 				result.append(index, F.List(F.ArcSin(min), F.ArcSin(max)));
 				return true;
@@ -446,7 +467,7 @@ public class IntervalSym {
 	}
 
 	public static IExpr arctan(final IAST ast) {
-		return mutableResultConditions2(ast, (min, max, result, index) -> {
+		return mutableProcessorConditions(ast, (min, max, result, index) -> {
 			if (min.isRealResult() && max.isRealResult()) {
 				result.append(index, F.List(F.ArcTan(min), F.ArcTan(max)));
 				return true;
@@ -457,7 +478,7 @@ public class IntervalSym {
 
 	public static IAST coth(final IAST ast) {
 		EvalEngine engine = EvalEngine.get();
-		return mutableResultConditions2(ast, 
+		return mutableProcessorConditions(ast, 
 			(min, max, result, index) -> {
 				if (engine.evalTrue(F.GreaterEqual(min, F.C0)) && engine.evalTrue(F.GreaterEqual(max, F.C0))) {
 					result.append(F.List(F.Coth(max), F.Coth(min)));
@@ -485,7 +506,7 @@ public class IntervalSym {
 
 	public  static IAST cosh(final IAST ast) {
 		EvalEngine engine = EvalEngine.get();
-		return mutableResultConditions2(ast, (min, max, result, index) -> {
+		return mutableProcessorConditions(ast, (min, max, result, index) -> {
 			if (min.isRealResult() && max.isRealResult()) {
 				if (engine.evalTrue(F.GreaterEqual(min, F.C0)) && //
 						engine.evalTrue(F.GreaterEqual(max, F.C0))) {
@@ -505,7 +526,7 @@ public class IntervalSym {
 
 	public static IAST csch(final IAST ast) {
 		EvalEngine engine = EvalEngine.get();
-		return mutableResultConditions2(ast, 
+		return mutableProcessorConditions(ast, 
 			(min, max, result, index) -> {
 				if (engine.evalTrue(F.GreaterEqual(min, F.C0)) && engine.evalTrue(F.GreaterEqual(max, F.C0))) {
 					result.append(F.List(F.Csch(max), F.Csch(min)));
@@ -533,7 +554,7 @@ public class IntervalSym {
 
 	public static IAST sech(final IAST ast) {
 		EvalEngine engine = EvalEngine.get();
-		return mutableResultConditions2(ast, (min, max, result, index) -> {
+		return mutableProcessorConditions(ast, (min, max, result, index) -> {
 			if (min.isRealResult() && max.isRealResult()) {
 				if (engine.evalTrue(F.GreaterEqual(min, F.C0)) && //
 						engine.evalTrue(F.GreaterEqual(max, F.C0))) {
@@ -552,7 +573,7 @@ public class IntervalSym {
 	}
 
 	public static IAST sinh(final IAST ast) {
-		return mutableResultConditions2(ast, (min, max, result, index) -> {
+		return mutableProcessorConditions(ast, (min, max, result, index) -> {
 			if (min.isRealResult() && max.isRealResult()) {
 				result.append(index, F.List(F.Sinh(min), F.Sinh(max)));
 				return true;
@@ -562,7 +583,7 @@ public class IntervalSym {
 	}
 
 	public static IAST tanh(final IAST ast) {
-		return mutableResultConditions2(ast, (min, max, result, index) -> {
+		return mutableProcessorConditions(ast, (min, max, result, index) -> {
 			if (min.isRealResult() && max.isRealResult()) {
 				result.append(index, F.List(F.Tanh(min), F.Tanh(max)));
 				return true;
@@ -622,7 +643,7 @@ public class IntervalSym {
 
 	public static IAST cos(final IAST ast) {
 		EvalEngine engine = EvalEngine.get();
-		return mutableResultConditions2(ast, (min, max, result, index) -> {
+		return mutableProcessorConditions(ast, (min, max, result, index) -> {
 			IAST difference = F.Subtract(max, min);
 			if (engine.evalTrue(F.GreaterEqual(difference, F.C2Pi))) {
 				// difference >= 2 * Pi
@@ -667,7 +688,7 @@ public class IntervalSym {
 
 	public static IAST cot(final IAST ast) {
 		EvalEngine engine = EvalEngine.get();
-		return mutableResultConditions2(ast, (min, max, result, index) -> {
+		return mutableProcessorConditions(ast, (min, max, result, index) -> {
 			IAST difference = F.Subtract(max, min);
 			if (engine.evalTrue(F.GreaterEqual(difference, F.Pi))) {
 				result.append(F.List(F.CNInfinity, F.CInfinity));
@@ -744,7 +765,7 @@ public class IntervalSym {
 
 	public static IAST log(final IAST ast) {
 		EvalEngine engine = EvalEngine.get();
-		return mutableResultConditions2(ast, (min, max, result, index) -> {
+		return mutableProcessorConditions(ast, (min, max, result, index) -> {
 			if (min.isNonNegativeResult() && max.isNonNegativeResult()) {
 				min = F.Log.of(engine, min);
 				max = F.Log.of(engine, max);
@@ -765,7 +786,7 @@ public class IntervalSym {
 
 	public static IAST sin(final IAST ast) {
 		EvalEngine engine = EvalEngine.get();
-		return mutableResultConditions2(ast, (min, max, result, index) -> {
+		return mutableProcessorConditions(ast, (min, max, result, index) -> {
 			IAST difference = F.Subtract(max, min);
 			if (engine.evalTrue(F.GreaterEqual(difference, F.C2Pi))) {
 				// difference >= 2 * Pi
@@ -810,7 +831,7 @@ public class IntervalSym {
 
 	public static IAST tan(final IAST ast) {
 		EvalEngine engine = EvalEngine.get();
-		return mutableResultConditions2(ast, (min, max, result, index) -> {
+		return mutableProcessorConditions(ast, (min, max, result, index) -> {
 			IAST difference = F.Subtract(max, min);
 			if (engine.evalTrue(F.GreaterEqual(difference, F.Pi))) {
 				result.append(F.List(F.CNInfinity, F.CInfinity));
