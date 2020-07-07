@@ -1869,7 +1869,7 @@ public final class Arithmetic {
 							}
 
 							int iterationLimit = EvalEngine.get().getIterationLimit();
-							if (iterationLimit >= 0 && iterationLimit <= n + 1) {
+							if (iterationLimit >= 0 && iterationLimit <= n) {
 								IterationLimitExceeded.throwIt(n, ast);
 							}
 							int intArg2 = arg2.toIntDefault();
@@ -1890,7 +1890,7 @@ public final class Arithmetic {
 								}
 								return result;
 							}
-							
+
 							final IExpr arg2Negate = arg2.negate();
 							return F.sum(i -> Power(i, arg2Negate), 1, n);
 							// IASTAppendable result = F.PlusAlloc(n);

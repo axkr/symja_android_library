@@ -7,6 +7,7 @@ import java.math.BigInteger;
 import java.util.AbstractMap.SimpleImmutableEntry;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Locale;
 
 import org.matheclipse.core.convert.VariablesSet;
 import org.matheclipse.core.eval.EvalEngine;
@@ -30,24 +31,12 @@ import org.matheclipse.core.interfaces.ISymbol;
 import org.matheclipse.core.polynomials.HornerScheme;
 import org.matheclipse.parser.client.FEConfig;
 
-import net.numericalchameleon.util.spokennumbers.DutchNumber;
-import net.numericalchameleon.util.spokennumbers.EsperantoNumber;
-import net.numericalchameleon.util.spokennumbers.FinnishNumber;
-import net.numericalchameleon.util.spokennumbers.FrenchNumber;
-import net.numericalchameleon.util.spokennumbers.GermanNumber;
-import net.numericalchameleon.util.spokennumbers.HungarianNumber;
-import net.numericalchameleon.util.spokennumbers.ItalianNumber;
+import com.ibm.icu.text.NumberFormat;
+import com.ibm.icu.text.RuleBasedNumberFormat;
+
 import net.numericalchameleon.util.spokennumbers.LatinNumber;
-import net.numericalchameleon.util.spokennumbers.PolishNumber;
-import net.numericalchameleon.util.spokennumbers.PortugueseNumber;
-import net.numericalchameleon.util.spokennumbers.RomanianNumber;
-import net.numericalchameleon.util.spokennumbers.RussianNumber;
-import net.numericalchameleon.util.spokennumbers.SpanishNumber;
 import net.numericalchameleon.util.spokennumbers.SpokenNumber;
-import net.numericalchameleon.util.spokennumbers.SwedishNumber;
 import net.numericalchameleon.util.spokennumbers.TonganNumber;
-import net.numericalchameleon.util.spokennumbers.TurkishNumber;
-import net.numericalchameleon.util.spokennumbers.USEnglishNumber;
 
 public final class OutputFunctions {
 
@@ -374,73 +363,88 @@ public final class OutputFunctions {
 		public IExpr evaluate(final IAST ast, EvalEngine engine) {
 			IExpr arg1 = ast.arg1();
 			if (arg1.isInteger()) {
-				IStringX language = F.stringx("English");
-				IStringX qual = F.stringx("Words");
-				if (ast.isAST2()) {
-					if (!ast.arg2().isString()) {
-						return F.NIL;
-					}
-					IStringX arg2 = (IStringX) ast.arg2();
-					if (arg2.isString("Dutch") || //
-							arg2.isString("Finnish") || //
-							arg2.isString("English") || //
-							arg2.isString("Esperanto") || //
-							arg2.isString("French") || //
-							arg2.isString("German") || //
-							arg2.isString("Hungarian") || //
-							arg2.isString("Italian") || //
-							arg2.isString("Latin") || //
-							arg2.isString("Polish") || //
-							arg2.isString("Portuguese") || //
-							arg2.isString("Romanian") || //
-							arg2.isString("Russian") || //
-							arg2.isString("Spanish") || //
-							arg2.isString("Swedish") || //
-							arg2.isString("Tongan") || //
-							arg2.isString("Turkish")) {
-						language = (IStringX) arg2;
-					} else {
-						qual = (IStringX) arg2;
-					}
-				}
+				NumberFormat formatter = null;
 				try {
 					long value = ((IInteger) arg1).toLong();
+					if (value != Integer.MIN_VALUE && ast.isAST1()) {
+						formatter = new RuleBasedNumberFormat(RuleBasedNumberFormat.SPELLOUT);
+						String textNumber = formatter.format(value);
+						if (textNumber != null) {
+							return F.stringx(textNumber);
+						}
+					}
+					IStringX language = F.stringx("English");
+					IStringX qual = F.stringx("Words");
+					if (ast.isAST2()) {
+						if (!ast.arg2().isString()) {
+							return F.NIL;
+						}
+						IStringX arg2 = (IStringX) ast.arg2();
+						if (arg2.isString("Dutch") || //
+								arg2.isString("Finnish") || //
+								arg2.isString("English") || //
+								arg2.isString("Esperanto") || //
+								arg2.isString("French") || //
+								arg2.isString("German") || //
+								arg2.isString("Hungarian") || //
+								arg2.isString("Italian") || //
+								arg2.isString("Latin") || //
+								arg2.isString("Polish") || //
+								arg2.isString("Portuguese") || //
+								arg2.isString("Romanian") || //
+								arg2.isString("Russian") || //
+								arg2.isString("Spanish") || //
+								arg2.isString("Swedish") || //
+								arg2.isString("Tongan") || //
+								arg2.isString("Turkish")) {
+							language = (IStringX) arg2;
+						} else {
+							qual = (IStringX) arg2;
+						}
+					}
+
 					if (qual.isString("Words")) {
 						SpokenNumber spokenNumber = null;
 						if (language.isString("Dutch")) {
-							spokenNumber = new DutchNumber(value);
+							formatter = new RuleBasedNumberFormat(new Locale("nl"), RuleBasedNumberFormat.SPELLOUT);
 						} else if (language.isString("English")) {
-							spokenNumber = new USEnglishNumber(value);
+							formatter = new RuleBasedNumberFormat(Locale.ENGLISH, RuleBasedNumberFormat.SPELLOUT);
 						} else if (language.isString("Esperanto")) {
-							spokenNumber = new EsperantoNumber(value);
+							formatter = new RuleBasedNumberFormat(new Locale("eo"), RuleBasedNumberFormat.SPELLOUT);
 						} else if (language.isString("Finnish")) {
-							spokenNumber = new FinnishNumber(value);
+							formatter = new RuleBasedNumberFormat(new Locale("fi"), RuleBasedNumberFormat.SPELLOUT);
 						} else if (language.isString("French")) {
-							spokenNumber = new FrenchNumber(value);
+							formatter = new RuleBasedNumberFormat(Locale.FRENCH, RuleBasedNumberFormat.SPELLOUT);
 						} else if (language.isString("German")) {
-							spokenNumber = new GermanNumber(value);
+							formatter = new RuleBasedNumberFormat(Locale.GERMAN, RuleBasedNumberFormat.SPELLOUT);
 						} else if (language.isString("Hungarian")) {
-							spokenNumber = new HungarianNumber(value);
+							formatter = new RuleBasedNumberFormat(new Locale("hu"), RuleBasedNumberFormat.SPELLOUT);
 						} else if (language.isString("Italian")) {
-							spokenNumber = new ItalianNumber(value);
+							formatter = new RuleBasedNumberFormat(Locale.ITALIAN, RuleBasedNumberFormat.SPELLOUT);
 						} else if (language.isString("Latin")) {
 							spokenNumber = new LatinNumber(value);
 						} else if (language.isString("Polish")) {
-							spokenNumber = new PolishNumber(value);
+							formatter = new RuleBasedNumberFormat(new Locale("pl"), RuleBasedNumberFormat.SPELLOUT);
 						} else if (language.isString("Portuguese")) {
-							spokenNumber = new PortugueseNumber(value);
+							formatter = new RuleBasedNumberFormat(new Locale("pt"), RuleBasedNumberFormat.SPELLOUT);
 						} else if (language.isString("Romanian")) {
-							spokenNumber = new RomanianNumber(value);
+							formatter = new RuleBasedNumberFormat(new Locale("ro"), RuleBasedNumberFormat.SPELLOUT);
 						} else if (language.isString("Russian")) {
-							spokenNumber = new RussianNumber(value);
+							formatter = new RuleBasedNumberFormat(new Locale("ru"), RuleBasedNumberFormat.SPELLOUT);
 						} else if (language.isString("Spanish")) {
-							spokenNumber = new SpanishNumber(value);
+							formatter = new RuleBasedNumberFormat(new Locale("es"), RuleBasedNumberFormat.SPELLOUT);
 						} else if (language.isString("Swedish")) {
-							spokenNumber = new SwedishNumber(value);
+							formatter = new RuleBasedNumberFormat(new Locale("sv"), RuleBasedNumberFormat.SPELLOUT);
 						} else if (language.isString("Tongan")) {
 							spokenNumber = new TonganNumber(value);
 						} else if (language.isString("Turkish")) {
-							spokenNumber = new TurkishNumber(value);
+							formatter = new RuleBasedNumberFormat(new Locale("tr"), RuleBasedNumberFormat.SPELLOUT);
+						}
+						if (formatter != null) {
+							String textNumber = formatter.format(value);
+							if (textNumber != null) {
+								return F.stringx(textNumber);
+							}
 						}
 						if (spokenNumber != null) {
 							return F.stringx(spokenNumber.toString());
