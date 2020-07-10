@@ -286,6 +286,7 @@ public class STEM {
 			"harmonicnumb", F.HarmonicNumber, //
 			"haversin", F.Haversine, //
 			"head", F.Head, //
+			"heavisidetheta", F.HeavisideTheta, //
 			"hermiteh", F.HermiteH, //
 			"hermitianmatrixq", F.HermitianMatrixQ, //
 			"hilbertmatrix", F.HilbertMatrix, //
