@@ -1,5 +1,6 @@
 package org.matheclipse.core.graphics;
 
+import java.awt.Color;
 import java.text.DecimalFormat;
 import java.text.DecimalFormatSymbols;
 import java.util.Locale;
@@ -33,8 +34,8 @@ public class Show2SVG {
 
 	private static void elementToSVG(IAST ast, StringBuilder buf, Dimensions2D dim) {
 		for (int i = 1; i < ast.size(); i++) {
-			if (ast.get(i).isSymbol()) {
-				dim.setColorRGB(ast.get(i).toString());
+			if (ast.get(i).isAST(F.RGBColor, 4)) {
+				dim.setColorRGB((IAST) ast.get(i));
 			} else if (ast.get(i).isSameHeadSizeGE(F.Line, 2)) {
 				lineToSVG(ast.getAST(i), buf, dim);
 			} else if (ast.get(i).isSameHeadSizeGE(F.Point, 2)) {
@@ -49,8 +50,8 @@ public class Show2SVG {
 		EvalEngine engine = EvalEngine.get();
 		IAST numericAST = (IAST) engine.evalN(ast);
 		Dimensions2D dim = new Dimensions2D(350, 350);
-		// TODO change to these rgb(24.720000%, 24.000000%, 60.000000%);
-		dim.setColorRGB("blue");
+		// set a default value
+		dim.color = Color.BLUE;
 		if (numericAST.size() > 2) {
 			final OptionArgs options = new OptionArgs(numericAST.topHead(), numericAST, 2, engine);
 			IExpr option = options.getOption(F.PlotRange);
@@ -264,7 +265,7 @@ public class Show2SVG {
 			double r = 2.166667;
 			// x="0.000000" y="0.000000" width="350.000000" height="350.000000"
 			double cx = (x1 - xMin) * xAxisScalingFactor;
-			double cy = (yMax - y1) * yAxisScalingFactor; 
+			double cy = (yMax - y1) * yAxisScalingFactor;
 			buf.append("cx=\"");
 			buf.append(FORMATTER.format(cx));
 			buf.append("\" cy=\"");

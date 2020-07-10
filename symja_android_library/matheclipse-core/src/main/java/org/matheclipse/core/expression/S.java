@@ -367,6 +367,9 @@ public class S {
     public final static IBuiltInSymbol BitLength = F.initFinalSymbol("BitLength", ID.BitLength);
 
     /***/
+    public final static IBuiltInSymbol Black = F.initFinalSymbol("Black", ID.Black);
+
+    /***/
     public final static IBuiltInSymbol BlackmanHarrisWindow = F.initFinalSymbol("BlackmanHarrisWindow", ID.BlackmanHarrisWindow);
 
     /***/
@@ -386,6 +389,9 @@ public class S {
 
     /** Block({list_of_local_variables}, expr ) - evaluates `expr` for the `list_of_local_variables`*/
     public final static IBuiltInSymbol Block = F.initFinalSymbol("Block", ID.Block);
+
+    /***/
+    public final static IBuiltInSymbol Blue = F.initFinalSymbol("Blue", ID.Blue);
 
     /** Boole(expr) - returns `1` if `expr` evaluates to `True`; returns `0` if `expr` evaluates to `False`; and gives no result otherwise.*/
     public final static IBuiltInSymbol Boole = F.initFinalSymbol("Boole", ID.Boole);
@@ -421,6 +427,9 @@ public class S {
     public final static IBuiltInSymbol Break = F.initFinalSymbol("Break", ID.Break);
 
     /***/
+    public final static IBuiltInSymbol Brown = F.initFinalSymbol("Brown", ID.Brown);
+
+    /***/
     public final static IBuiltInSymbol Button = F.initFinalSymbol("Button", ID.Button);
 
     /** ByteArray({list-of-byte-values}) - converts the `list-of-byte-values` into a byte array.*/
@@ -440,6 +449,9 @@ public class S {
 
     /***/
     public final static IBuiltInSymbol CForm = F.initFinalSymbol("CForm", ID.CForm);
+
+    /***/
+    public final static IBuiltInSymbol CMYColor = F.initFinalSymbol("CMYColor", ID.CMYColor);
 
     /** CanberraDistance(u, v) - returns the canberra distance between `u` and `v`, which is a weighted version of the Manhattan distance.*/
     public final static IBuiltInSymbol CanberraDistance = F.initFinalSymbol("CanberraDistance", ID.CanberraDistance);
@@ -707,6 +719,9 @@ public class S {
 
     /** Curl({f1, f2}, {x1, x2}) - gives the curl.*/
     public final static IBuiltInSymbol Curl = F.initFinalSymbol("Curl", ID.Curl);
+
+    /***/
+    public final static IBuiltInSymbol Cyan = F.initFinalSymbol("Cyan", ID.Cyan);
 
     /** Cyclotomic(n, x) - returns the Cyclotomic polynomial `C_n(x)`.*/
     public final static IBuiltInSymbol Cyclotomic = F.initFinalSymbol("Cyclotomic", ID.Cyclotomic);
@@ -1305,11 +1320,20 @@ public class S {
     /***/
     public final static IBuiltInSymbol Graphics3D = F.initFinalSymbol("Graphics3D", ID.Graphics3D);
 
+    /***/
+    public final static IBuiltInSymbol Gray = F.initFinalSymbol("Gray", ID.Gray);
+
+    /***/
+    public final static IBuiltInSymbol GrayLevel = F.initFinalSymbol("GrayLevel", ID.GrayLevel);
+
     /** Greater(x, y) - yields `True` if `x` is known to be greater than `y`.*/
     public final static IBuiltInSymbol Greater = F.initFinalSymbol("Greater", ID.Greater);
 
     /** GreaterEqual(x, y) - yields `True` if `x` is known to be greater than or equal to `y`.*/
     public final static IBuiltInSymbol GreaterEqual = F.initFinalSymbol("GreaterEqual", ID.GreaterEqual);
+
+    /***/
+    public final static IBuiltInSymbol Green = F.initFinalSymbol("Green", ID.Green);
 
     /** GroebnerBasis({polynomial-list},{variable-list}) - returns a Gröbner basis for the `polynomial-list` and `variable-list`.*/
     public final static IBuiltInSymbol GroebnerBasis = F.initFinalSymbol("GroebnerBasis", ID.GroebnerBasis);
@@ -1350,7 +1374,7 @@ public class S {
     /***/
     public final static IBuiltInSymbol Heads = F.initFinalSymbol("Heads", ID.Heads);
 
-    /***/
+    /** HeavisideTheta(expr1, expr2, ... exprN) - returns `1` if all `expr1, expr2, ... exprN` are positive and `0` if one of the `expr1, expr2, ... exprN` is negative. `HeavisideTheta(0)` returns unevaluated as `HeavisideTheta(0)`.*/
     public final static IBuiltInSymbol HeavisideTheta = F.initFinalSymbol("HeavisideTheta", ID.HeavisideTheta);
 
     /** HermiteH(n, x) - returns the Hermite polynomial `H_n(x)`.*/
@@ -1394,6 +1418,9 @@ public class S {
 
     /** HornerForm(polynomial) - Generate the horner scheme for a univariate `polynomial`. */
     public final static IBuiltInSymbol HornerForm = F.initFinalSymbol("HornerForm", ID.HornerForm);
+
+    /***/
+    public final static IBuiltInSymbol Hue = F.initFinalSymbol("Hue", ID.Hue);
 
     /** HurwitzZeta(s, a) - returns the Hurwitz zeta function.*/
     public final static IBuiltInSymbol HurwitzZeta = F.initFinalSymbol("HurwitzZeta", ID.HurwitzZeta);
@@ -1710,6 +1737,39 @@ public class S {
     /***/
     public final static IBuiltInSymbol Lexicographic = F.initFinalSymbol("Lexicographic", ID.Lexicographic);
 
+    /***/
+    public final static IBuiltInSymbol LightBlue = F.initFinalSymbol("LightBlue", ID.LightBlue);
+
+    /***/
+    public final static IBuiltInSymbol LightBrown = F.initFinalSymbol("LightBrown", ID.LightBrown);
+
+    /***/
+    public final static IBuiltInSymbol LightCyan = F.initFinalSymbol("LightCyan", ID.LightCyan);
+
+    /***/
+    public final static IBuiltInSymbol LightGreen = F.initFinalSymbol("LightGreen", ID.LightGreen);
+
+    /***/
+    public final static IBuiltInSymbol LightGray = F.initFinalSymbol("LightGray", ID.LightGray);
+
+    /***/
+    public final static IBuiltInSymbol LightMagenta = F.initFinalSymbol("LightMagenta", ID.LightMagenta);
+
+    /***/
+    public final static IBuiltInSymbol LightOrange = F.initFinalSymbol("LightOrange", ID.LightOrange);
+
+    /***/
+    public final static IBuiltInSymbol LightPink = F.initFinalSymbol("LightPink", ID.LightPink);
+
+    /***/
+    public final static IBuiltInSymbol LightPurple = F.initFinalSymbol("LightPurple", ID.LightPurple);
+
+    /***/
+    public final static IBuiltInSymbol LightRed = F.initFinalSymbol("LightRed", ID.LightRed);
+
+    /***/
+    public final static IBuiltInSymbol LightYellow = F.initFinalSymbol("LightYellow", ID.LightYellow);
+
     /** Limit(expr, x->x0) - gives the limit of `expr` as `x` approaches `x0`*/
     public final static IBuiltInSymbol Limit = F.initFinalSymbol("Limit", ID.Limit);
 
@@ -1802,6 +1862,9 @@ public class S {
 
     /** MachineNumberQ(expr) - returns `True` if `expr` is a machine-precision real or complex number.*/
     public final static IBuiltInSymbol MachineNumberQ = F.initFinalSymbol("MachineNumberQ", ID.MachineNumberQ);
+
+    /***/
+    public final static IBuiltInSymbol Magenta = F.initFinalSymbol("Magenta", ID.Magenta);
 
     /** MangoldtLambda(n) -  the von Mangoldt function of `n`*/
     public final static IBuiltInSymbol MangoldtLambda = F.initFinalSymbol("MangoldtLambda", ID.MangoldtLambda);
@@ -2157,6 +2220,9 @@ public class S {
     /** Or(expr1, expr2, ...)' - `expr1 || expr2 || ...` evaluates each expression in turn, returning `True` as soon as an expression evaluates to `True`. If all expressions evaluate to `False`, `Or` returns `False`.*/
     public final static IBuiltInSymbol Or = F.initFinalSymbol("Or", ID.Or);
 
+    /***/
+    public final static IBuiltInSymbol Orange = F.initFinalSymbol("Orange", ID.Orange);
+
     /** Order(a, b) - is `0` if `a` equals `b`. Is `-1` or `1` according to canonical order of `a` and `b`.*/
     public final static IBuiltInSymbol Order = F.initFinalSymbol("Order", ID.Order);
 
@@ -2250,6 +2316,9 @@ public class S {
     /** PiecewiseExpand(function) - expands piecewise expressions into a `Piecewise` function. Currently only `Abs, Clip, If, Ramp, UnitStep` are converted to Piecewise expressions.*/
     public final static IBuiltInSymbol PiecewiseExpand = F.initFinalSymbol("PiecewiseExpand", ID.PiecewiseExpand);
 
+    /***/
+    public final static IBuiltInSymbol Pink = F.initFinalSymbol("Pink", ID.Pink);
+
     /** Plot(function, {x, xMin, xMax}, PlotRange->{yMin,yMax}) - generate a JavaScript control for the expression `function` in the `x` range `{x, xMin, xMax}` and `{yMin, yMax}` in the `y` range.*/
     public final static IBuiltInSymbol Plot = F.initFinalSymbol("Plot", ID.Plot);
 
@@ -2258,6 +2327,9 @@ public class S {
 
     /***/
     public final static IBuiltInSymbol PlotRange = F.initFinalSymbol("PlotRange", ID.PlotRange);
+
+    /***/
+    public final static IBuiltInSymbol PlotStyle = F.initFinalSymbol("PlotStyle", ID.PlotStyle);
 
     /** Plus(a, b, ...) - represents the sum of the terms `a, b, ...`. */
     public final static IBuiltInSymbol Plus = F.initFinalSymbol("Plus", ID.Plus);
@@ -2395,6 +2467,9 @@ public class S {
     public final static IBuiltInSymbol PseudoInverse = F.initFinalSymbol("PseudoInverse", ID.PseudoInverse);
 
     /***/
+    public final static IBuiltInSymbol Purple = F.initFinalSymbol("Purple", ID.Purple);
+
+    /***/
     public final static IBuiltInSymbol Put = F.initFinalSymbol("Put", ID.Put);
 
     /** QRDecomposition(A) - computes the QR decomposition of the matrix `A`. The QR decomposition is a decomposition of a matrix `A` into a product `A = Q.R` of an unitary matrix `Q` and an upper triangular matrix `R`. */
@@ -2429,6 +2504,9 @@ public class S {
 
     /** QuotientRemainder(m, n) - computes a list of the quotient and remainder from division of `m` and `n`.*/
     public final static IBuiltInSymbol QuotientRemainder = F.initFinalSymbol("QuotientRemainder", ID.QuotientRemainder);
+
+    /***/
+    public final static IBuiltInSymbol RGBColor = F.initFinalSymbol("RGBColor", ID.RGBColor);
 
     /** Ramp(z) - The `Ramp` function is a unary real function, whose graph is shaped like a ramp.  */
     public final static IBuiltInSymbol Ramp = F.initFinalSymbol("Ramp", ID.Ramp);
@@ -2489,6 +2567,9 @@ public class S {
 
     /***/
     public final static IBuiltInSymbol Rectangle = F.initFinalSymbol("Rectangle", ID.Rectangle);
+
+    /***/
+    public final static IBuiltInSymbol Red = F.initFinalSymbol("Red", ID.Red);
 
     /***/
     public final static IBuiltInSymbol Reduce = F.initFinalSymbol("Reduce", ID.Reduce);
@@ -2643,7 +2724,7 @@ public class S {
     /** SeriesCoefficient(expr, {x, x0, n}) - get the coefficient of `(x- x0)^n` at the point `x = x0`*/
     public final static IBuiltInSymbol SeriesCoefficient = F.initFinalSymbol("SeriesCoefficient", ID.SeriesCoefficient);
 
-    /** SeriesData(x, x0, {coeff0, coeff1, coeff2,...}, nMin, nMax, denominator}) - internal structure of a power series at the point `x = x0` the `coeff`-i are coefficients of the power series. */
+    /** SeriesData(x, x0, {coeff0, coeff1, coeff2,...}, nMin, nMax, denominator}) - internal structure of a power series at the point `x = x0` the `coeff_i` are coefficients of the power series.*/
     public final static IBuiltInSymbol SeriesData = F.initFinalSymbol("SeriesData", ID.SeriesData);
 
     /** Set(expr, value) - evaluates `value` and assigns it to `expr`.*/
@@ -2819,6 +2900,9 @@ public class S {
 
     /** StudentTDistribution(v) - returns a Student's t-distribution.*/
     public final static IBuiltInSymbol StudentTDistribution = F.initFinalSymbol("StudentTDistribution", ID.StudentTDistribution);
+
+    /***/
+    public final static IBuiltInSymbol Style = F.initFinalSymbol("Style", ID.Style);
 
     /** Subdivide(n) - returns a list with `n+1` entries obtained by subdividing the range `0` to `1`.*/
     public final static IBuiltInSymbol Subdivide = F.initFinalSymbol("Subdivide", ID.Subdivide);
@@ -3200,6 +3284,9 @@ public class S {
 
     /** Xor(arg1, arg2, ...) - Logical XOR (exclusive OR) function. Returns `True` if an odd number of the arguments are `True` and the rest are `False`. Returns `False` if an even number of the arguments are `True` and the rest are `False`.*/
     public final static IBuiltInSymbol Xor = F.initFinalSymbol("Xor", ID.Xor);
+
+    /***/
+    public final static IBuiltInSymbol Yellow = F.initFinalSymbol("Yellow", ID.Yellow);
 
     /** YuleDissimilarity(u, v) - returns the Yule dissimilarity between the two boolean 1-D lists `u` and `v`, which is defined as `R / (c_tt * c_ff + R / 2)` where `n` is `len(u)`, `c_ij` is the number of occurrences of `u(k)=i` and `v(k)=j` for `k<n`, and `R = 2 * c_tf * c_ft`.*/
     public final static IBuiltInSymbol YuleDissimilarity = F.initFinalSymbol("YuleDissimilarity", ID.YuleDissimilarity);

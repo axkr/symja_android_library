@@ -92,25 +92,13 @@ public class Dimensions2D {
 		this.axes = axes;
 	}
 
-	public void setColorRGB(String color) {
-		String c = color.toLowerCase();
-		if (c.equals("white")) {
-			this.color = Color.WHITE;
-		} else if (c.equals("black")) {
-			this.color = Color.BLACK;
-		} else if (c.equals("blue")) {
-			this.color = Color.BLUE;
-		} else if (c.equals("green")) {
-			this.color = Color.GREEN;
-		} else if (c.equals("magenta")) {
-			this.color = Color.MAGENTA;
-		} else if (c.equals("orange")) {
-			this.color = Color.ORANGE;
-		} else if (c.equals("red")) {
-			this.color = Color.RED;
-		} else if (c.equals("yellow")) {
-			this.color = Color.YELLOW;
-		}
+	public void setColorRGB(IAST rgbColor) {
+		if (rgbColor.size()==4||rgbColor.size()==5) {
+			float r=(float) rgbColor.arg1().evalDouble();
+			float g=(float) rgbColor.arg2().evalDouble();
+			float b=(float) rgbColor.arg3().evalDouble();
+			color=new Color(r, g, b);
+		} 
 	}
 
 	public void setPlotRange(IAST p1, IAST p2) {

@@ -703,6 +703,48 @@ public class TestPods {
 	}
 
 	@Test
+	public void testColor001() {
+		String s = System.getProperty("os.name");
+		// ObjectNode messageJSON = Pods.createResult("TreeForm(a+(b*q*s)^(2*y)+Sin(c)^(3-z))", formatsTEX);
+		ObjectNode messageJSON = Pods.createResult(//
+				"Yellow", //
+				formatsTEX); 
+		final String jsonStr = messageJSON.toPrettyString();
+		if (s.contains("Windows")) {
+			assertEquals(jsonStr, //
+					"{\r\n" + 
+					"  \"queryresult\" : {\r\n" + 
+					"    \"success\" : \"true\",\r\n" + 
+					"    \"error\" : \"false\",\r\n" + 
+					"    \"numpods\" : 2,\r\n" + 
+					"    \"version\" : \"0.1\",\r\n" + 
+					"    \"pods\" : [ {\r\n" + 
+					"      \"title\" : \"Input\",\r\n" + 
+					"      \"scanner\" : \"Identity\",\r\n" + 
+					"      \"error\" : \"false\",\r\n" + 
+					"      \"numsubpods\" : 1,\r\n" + 
+					"      \"subpods\" : [ {\r\n" + 
+					"        \"plaintext\" : \"Yellow\",\r\n" + 
+					"        \"sinput\" : \"Yellow\",\r\n" + 
+					"        \"latex\" : \"Yellow\"\r\n" + 
+					"      } ]\r\n" + 
+					"    }, {\r\n" + 
+					"      \"title\" : \"Result\",\r\n" + 
+					"      \"scanner\" : \"Identity\",\r\n" + 
+					"      \"error\" : \"false\",\r\n" + 
+					"      \"numsubpods\" : 1,\r\n" + 
+					"      \"subpods\" : [ {\r\n" + 
+					"        \"plaintext\" : \"RGBColor(1.0,1.0,0.0)\",\r\n" + 
+					"        \"sinput\" : \"Yellow\",\r\n" + 
+					"        \"latex\" : \"\\\\text{RGBColor}(1.0,1.0,0.0)\"\r\n" + 
+					"      } ]\r\n" + 
+					"    } ]\r\n" + 
+					"  }\r\n" + 
+					"}");//
+		}
+	}
+	
+	@Test
 	public void testComplexPlot3D() {
 		String s = System.getProperty("os.name");
 		ObjectNode messageJSON = Pods.createResult(

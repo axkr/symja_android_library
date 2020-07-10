@@ -36,6 +36,7 @@ import org.matheclipse.core.builtin.ConstantDefinitions;
 import org.matheclipse.core.builtin.ContainsFunctions;
 import org.matheclipse.core.builtin.CurveFitterFunctions;
 import org.matheclipse.core.builtin.EllipticIntegrals;
+import org.matheclipse.core.builtin.EntityFunctions;
 import org.matheclipse.core.builtin.ExpTrigsFunctions;
 import org.matheclipse.core.builtin.FinancialFunctions;
 import org.matheclipse.core.builtin.FunctionDefinitions;
@@ -949,6 +950,7 @@ public class F extends S {
 			GeodesyFunctions.initialize();
 			ManipulateFunction.initialize();
 			ImageFunctions.initialize();
+			EntityFunctions.initialize();
 			ComputationalGeometryFunctions.initialize();
 
 			F.Integrate.setEvaluator(org.matheclipse.core.reflection.system.Integrate.CONST);
@@ -5685,6 +5687,10 @@ public class F extends S {
 		return new AST3(Resultant, a0, a1, a2);
 	}
 
+	public static IAST RGBColor(final IExpr a0, final IExpr a1, final IExpr a2) {
+		return new AST3(RGBColor, a0, a1, a2);
+	}
+	
 	/**
 	 * Get or create a user defined symbol which is retrieved from the evaluation engines context path.
 	 * 

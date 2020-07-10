@@ -118,24 +118,26 @@ public class SVGGraphicsTestCase extends AbstractTestCase {
 	public void testRectangle002() {
 
 		checkSVGGraphics("Show(Graphics({Red, Rectangle({0, 0}), Blue, Rectangle({0.5, 0.5})}))",
-				"<svg xmlns=\"http://www.w3.org/2000/svg\" version=\"1.1\" viewBox=\"-1.666667 -1.666667 353.333333 353.333333\" width=\"350px\" height=\"350px\">\n"
-						+ "<rect x=\"0.0\" y=\"116.66667\" width=\"233.33333\" height=\"233.33333\" \n"
-						+ "      style=\"stroke: none; stroke-width: 0.000000px; fill: rgb(100.0%, 0.0%, 0.0%); stroke-opacity: 1; stroke-width: 0.666667px; fill-opacity: 1\" />\n"
-						+ "<rect x=\"116.66667\" y=\"0.0\" width=\"233.33333\" height=\"233.33333\" \n"
-						+ "      style=\"stroke: none; stroke-width: 0.000000px; fill: rgb(0.0%, 0.0%, 100.0%); stroke-opacity: 1; stroke-width: 0.666667px; fill-opacity: 1\" />\n"
-						+ "\n" + "</svg>");
+				"<svg xmlns=\"http://www.w3.org/2000/svg\" version=\"1.1\" viewBox=\"-1.666667 -1.666667 353.333333 353.333333\" width=\"350px\" height=\"350px\">\n" + // 
+				"<rect x=\"0.0\" y=\"116.66667\" width=\"233.33333\" height=\"233.33333\" \n" + // 
+				"      style=\"stroke: none; stroke-width: 0.000000px; fill: rgb(100.0%, 0.0%, 0.0%); stroke-opacity: 1; stroke-width: 0.666667px; fill-opacity: 1\" />\n" + // 
+				"<rect x=\"116.66667\" y=\"0.0\" width=\"233.33333\" height=\"233.33333\" \n" + // 
+				"      style=\"stroke: none; stroke-width: 0.000000px; fill: rgb(0.0%, 0.0%, 100.0%); stroke-opacity: 1; stroke-width: 0.666667px; fill-opacity: 1\" />\n" + // 
+				"\n" + // 
+				"</svg>");
 
 	}
 
 	public void testRectangle003() {
 
 		checkSVGGraphics("Show(Graphics({Red, Rectangle({0, 0},{1, 3}), Blue, Rectangle({2, 1},{4, 2})}))",
-				"<svg xmlns=\"http://www.w3.org/2000/svg\" version=\"1.1\" viewBox=\"-1.666667 -1.666667 353.333333 353.333333\" width=\"350px\" height=\"350px\">\n"
-						+ "<rect x=\"0.0\" y=\"0.0\" width=\"87.5\" height=\"350.0\" \n"
-						+ "      style=\"stroke: none; stroke-width: 0.000000px; fill: rgb(100.0%, 0.0%, 0.0%); stroke-opacity: 1; stroke-width: 0.666667px; fill-opacity: 1\" />\n"
-						+ "<rect x=\"175.0\" y=\"116.66667\" width=\"175.0\" height=\"116.66667\" \n"
-						+ "      style=\"stroke: none; stroke-width: 0.000000px; fill: rgb(0.0%, 0.0%, 100.0%); stroke-opacity: 1; stroke-width: 0.666667px; fill-opacity: 1\" />\n"
-						+ "\n" + "</svg>");
+				"<svg xmlns=\"http://www.w3.org/2000/svg\" version=\"1.1\" viewBox=\"-1.666667 -1.666667 353.333333 353.333333\" width=\"350px\" height=\"350px\">\n" + // 
+				"<rect x=\"0.0\" y=\"0.0\" width=\"87.5\" height=\"350.0\" \n" + // 
+				"      style=\"stroke: none; stroke-width: 0.000000px; fill: rgb(100.0%, 0.0%, 0.0%); stroke-opacity: 1; stroke-width: 0.666667px; fill-opacity: 1\" />\n" + // 
+				"<rect x=\"175.0\" y=\"116.66667\" width=\"175.0\" height=\"116.66667\" \n" + // 
+				"      style=\"stroke: none; stroke-width: 0.000000px; fill: rgb(0.0%, 0.0%, 100.0%); stroke-opacity: 1; stroke-width: 0.666667px; fill-opacity: 1\" />\n" + // 
+				"\n" + // 
+				"</svg>");
 
 	}
 
