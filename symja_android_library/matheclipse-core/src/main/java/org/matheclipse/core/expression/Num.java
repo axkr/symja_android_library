@@ -367,7 +367,7 @@ public class Num implements INum {
 		if (Double.isNaN(fDouble)) {
 			return 11;
 		}
-		return 37 * 17 * MathUtils.hash(fDouble); 
+		return 37 * 17 * MathUtils.hash(fDouble);
 		// return Double.hashCode(fDouble);
 	}
 
@@ -390,6 +390,13 @@ public class Num implements INum {
 	public String internalJavaString(boolean symbolsAsFactoryMethod, int depth, boolean useOperators, boolean usePrefix,
 			boolean noSymbolPrefix) {
 		String prefix = usePrefix ? "F." : "";
+		if (isZero()) {
+			return prefix + "CD0";
+		} else if (isOne()) {
+			return prefix + "CD1";
+		} else if (isMinusOne()) {
+			return prefix + "CND1";
+		}
 		return prefix + "num(" + fDouble + ")";
 	}
 

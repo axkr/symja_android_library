@@ -39,7 +39,7 @@ public interface LogRules {
     ISet(Log(Exp(CNI)),
       CNI),
     // Log(0.0)=Indeterminate
-    ISet(Log(num(0.0)),
+    ISet(Log(CD0),
       Indeterminate),
     // Log(0)=-Infinity
     ISet(Log(C0),

@@ -24,7 +24,7 @@ public interface CothRules {
     ISet(Coth(C0),
       CComplexInfinity),
     // Coth(0.0)=ComplexInfinity
-    ISet(Coth(num(0.0)),
+    ISet(Coth(CD0),
       CComplexInfinity),
     // Coth(1/4*Pi*I)=-I
     ISet(Coth(Times(CC(0L,1L,1L,4L),Pi)),

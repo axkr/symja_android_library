@@ -19,75 +19,75 @@ public interface RGBColorRules {
     IInit(RGBColor, SIZES),
     // Black=RGBColor(0.0,0.0,0.0)
     ISet(Black,
-      RGBColor(num(0.0),num(0.0),num(0.0))),
+      RGBColor(CD0,CD0,CD0)),
     // Brown=RGBColor(0.6,0.4,0.2)
     ISet(Brown,
       RGBColor(num(0.6),num(0.4),num(0.2))),
     // Blue=RGBColor(0.0,0.0,1.0)
     ISet(Blue,
-      RGBColor(num(0.0),num(0.0),num(1.0))),
+      RGBColor(CD0,CD0,CD1)),
     // Cyan=RGBColor(0.0,1.0,1.0)
     ISet(Cyan,
-      RGBColor(num(0.0),num(1.0),num(1.0))),
+      RGBColor(CD0,CD1,CD1)),
     // Gray=RGBColor(0.5,0.5,0.5)
     ISet(Gray,
       RGBColor(num(0.5),num(0.5),num(0.5))),
     // Green=RGBColor(0.0,1.0,0.0)
     ISet(Green,
-      RGBColor(num(0.0),num(1.0),num(0.0))),
+      RGBColor(CD0,CD1,CD0)),
     // Magenta=RGBColor(1.0,0.0,1.0)
     ISet(Magenta,
-      RGBColor(num(1.0),num(0.0),num(1.0))),
+      RGBColor(CD1,CD0,CD1)),
     // Orange=RGBColor(1.0,0.5,0.0)
     ISet(Orange,
-      RGBColor(num(1.0),num(0.5),num(0.0))),
+      RGBColor(CD1,num(0.5),CD0)),
     // Pink=RGBColor(1.0,0.5,0.5)
     ISet(Pink,
-      RGBColor(num(1.0),num(0.5),num(0.5))),
+      RGBColor(CD1,num(0.5),num(0.5))),
     // Purple=RGBColor(0.5,0.0,0.5)
     ISet(Purple,
-      RGBColor(num(0.5),num(0.0),num(0.5))),
+      RGBColor(num(0.5),CD0,num(0.5))),
     // Red=RGBColor(1.0,0.0,0.0)
     ISet(Red,
-      RGBColor(num(1.0),num(0.0),num(0.0))),
+      RGBColor(CD1,CD0,CD0)),
     // White=RGBColor(1.0,1.0,1.0)
     ISet(White,
-      RGBColor(num(1.0),num(1.0),num(1.0))),
+      RGBColor(CD1,CD1,CD1)),
     // Yellow=RGBColor(1.0,1.0,0.0)
     ISet(Yellow,
-      RGBColor(num(1.0),num(1.0),num(0.0))),
+      RGBColor(CD1,CD1,CD0)),
     // LightBrown=RGBColor(0.94,0.91,0.88)
     ISet(LightBrown,
       RGBColor(num(0.94),num(0.91),num(0.88))),
     // LightBlue=RGBColor(0.87,0.94,1.0)
     ISet(LightBlue,
-      RGBColor(num(0.87),num(0.94),num(1.0))),
+      RGBColor(num(0.87),num(0.94),CD1)),
     // LightCyan=RGBColor(0.9,1.0,1.0)
     ISet(LightCyan,
-      RGBColor(num(0.9),num(1.0),num(1.0))),
+      RGBColor(num(0.9),CD1,CD1)),
     // LightGray=RGBColor(0.85,0.85,0.85)
     ISet(LightGray,
       RGBColor(num(0.85),num(0.85),num(0.85))),
     // LightGreen=RGBColor(0.0,1.0,0.0)
     ISet(LightGreen,
-      RGBColor(num(0.0),num(1.0),num(0.0))),
+      RGBColor(CD0,CD1,CD0)),
     // LightMagenta=RGBColor(1.0,0.9,1.0)
     ISet(LightMagenta,
-      RGBColor(num(1.0),num(0.9),num(1.0))),
+      RGBColor(CD1,num(0.9),CD1)),
     // LightOrange=RGBColor(1.0,0.9,0.8)
     ISet(LightOrange,
-      RGBColor(num(1.0),num(0.9),num(0.8))),
+      RGBColor(CD1,num(0.9),num(0.8))),
     // LightPink=RGBColor(1.0,0.925,0.925)
     ISet(LightPink,
-      RGBColor(num(1.0),num(0.925),num(0.925))),
+      RGBColor(CD1,num(0.925),num(0.925))),
     // LightPurple=RGBColor(0.94,0.88,0.94)
     ISet(LightPurple,
       RGBColor(num(0.94),num(0.88),num(0.94))),
     // LightRed=RGBColor(1.0,0.85,0.85)
     ISet(LightRed,
-      RGBColor(num(1.0),num(0.85),num(0.85))),
+      RGBColor(CD1,num(0.85),num(0.85))),
     // LightYellow=RGBColor(1.0,1.0,0.85)
     ISet(LightYellow,
-      RGBColor(num(1.0),num(1.0),num(0.85)))
+      RGBColor(CD1,CD1,num(0.85)))
   );
 }

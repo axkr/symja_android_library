@@ -20,7 +20,7 @@ public interface PodDefaultsRules {
       List(num(-10.0),num(10.0),num(-10.0),num(10.0),Reals)),
     // EllipticK={-10.0,10.0,-1.0,5.0,Reals}
     Set(EllipticK,
-      List(num(-10.0),num(10.0),num(-1.0),num(5.0),Reals)),
+      List(num(-10.0),num(10.0),CND1,num(5.0),Reals)),
     // Exp={-10.0,10.0,-0.1,125000.0,Reals}
     Set(Exp,
       List(num(-10.0),num(10.0),num(-0.1),num(125000.0),Reals)),
@@ -32,22 +32,22 @@ public interface PodDefaultsRules {
       List(num(-5.0),num(7.0),num(-30.0),num(30.0),Reals)),
     // Haversine={-10.0,10.0,-1.0,2.0,Reals}
     Set(Haversine,
-      List(num(-10.0),num(10.0),num(-1.0),num(2.0),Reals)),
+      List(num(-10.0),num(10.0),CND1,num(2.0),Reals)),
     // InverseHaversine={-3.0,4.0,-1.0,5.0,Reals}
     Set(InverseHaversine,
-      List(num(-3.0),num(4.0),num(-1.0),num(5.0),Reals)),
+      List(num(-3.0),num(4.0),CND1,num(5.0),Reals)),
     // Log={-10.0,10.0,-3.0,3.0,Reals}
     Set(Log,
       List(num(-10.0),num(10.0),num(-3.0),num(3.0),Reals)),
     // LogisticSigmoid={-3.0,3.0,0.0,2.0,Reals}
     Set(LogisticSigmoid,
-      List(num(-3.0),num(3.0),num(0.0),num(2.0),Reals)),
+      List(num(-3.0),num(3.0),CD0,num(2.0),Reals)),
     // Sign={-5.0,5.0,-2.0,2.0,Reals}
     Set(Sign,
       List(num(-5.0),num(5.0),num(-2.0),num(2.0),Reals)),
     // Sqrt={-20.0,20.0,-1.0,5.0,Reals}
     Set(Sqrt,
-      List(num(-20.0),num(20.0),num(-1.0),num(5.0),Reals)),
+      List(num(-20.0),num(20.0),CND1,num(5.0),Reals)),
     // Surd={-10.0,10.0,-10.0,10.0,Reals}
     Set(Surd,
       List(num(-10.0),num(10.0),num(-10.0),num(10.0),Reals)),
@@ -71,7 +71,7 @@ public interface PodDefaultsRules {
       List(num(-10.0),num(10.0),num(-6000.0),num(6000.0),Reals)),
     // Cosh={-10.0,10.0,-1.0,30000.0,Reals}
     Set(Cosh,
-      List(num(-10.0),num(10.0),num(-1.0),num(30000.0),Reals)),
+      List(num(-10.0),num(10.0),CND1,num(30000.0),Reals)),
     // Coth={-10.0,10.0,-5.0,5.0,Reals}
     Set(Coth,
       List(num(-10.0),num(10.0),num(-5.0),num(5.0),Reals)),
@@ -95,7 +95,7 @@ public interface PodDefaultsRules {
       List(num(-10.0),num(10.0),num(-10.0),num(10.0),Reals)),
     // ArcCosh={-20.0,20.0,-1.0,10.0,Reals}
     Set(ArcCosh,
-      List(num(-20.0),num(20.0),num(-1.0),num(10.0),Reals)),
+      List(num(-20.0),num(20.0),CND1,num(10.0),Reals)),
     // ArcCoth={-12.0,12.0,-10.0,10.0,Reals}
     Set(ArcCoth,
       List(num(-12.0),num(12.0),num(-10.0),num(10.0),Reals)),
@@ -119,10 +119,10 @@ public interface PodDefaultsRules {
       List(num(-10.0),num(10.0),num(-10.0),num(10.0),Reals)),
     // Sech={-10.0,10.0,-1.0,1.0,Reals}
     Set(Sech,
-      List(num(-10.0),num(10.0),num(-1.0),num(1.0),Reals)),
+      List(num(-10.0),num(10.0),CND1,CD1,Reals)),
     // ArcSec={-10.0,10.0,-1.0,5.0,Reals}
     Set(ArcSec,
-      List(num(-10.0),num(10.0),num(-1.0),num(5.0),Reals)),
+      List(num(-10.0),num(10.0),CND1,num(5.0),Reals)),
     // ArcSech={-1.5,1.5,-5.0,5.0,Reals}
     Set(ArcSech,
       List(num(-1.5),num(1.5),num(-5.0),num(5.0),Reals)),
