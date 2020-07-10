@@ -30,6 +30,9 @@ public interface FunctionExpandRules {
     // Fibonacci(m_Integer+n_):=1/2*Fibonacci(m)*LucasL(n)+1/2*Fibonacci(n)*LucasL(m)/;Element(n,Integers)
     SetDelayed(Fibonacci(Plus($p(m, Integer),n_)),
       Condition(Plus(Times(C1D2,Fibonacci(m),LucasL(n)),Times(C1D2,Fibonacci(n),LucasL(m))),Element(n,Integers))),
+    // Fibonacci(n_+a_):=((2/(1+Sqrt(5)))^(-a-n)-Cos((a+n)*Pi)/(1/2*(1+Sqrt(5)))^(a+n))/Sqrt(5)/;Element(n,Integers)
+    SetDelayed(Fibonacci(Plus(a_,n_)),
+      Condition(Times(C1DSqrt5,Plus(Power(Times(C2,Power(Plus(C1,CSqrt5),CN1)),Subtract(Negate(a),n)),Times(CN1,Power(Times(C1D2,Plus(C1,CSqrt5)),Subtract(Negate(a),n)),Cos(Times(Plus(a,n),Pi))))),Element(n,Integers))),
     // Gamma(-1,z_):=1/(E^z*z)+ExpIntegralEi(-z)+1/2*(Log(-1/z)-Log(-z))+Log(z)
     SetDelayed(Gamma(CN1,z_),
       Plus(Power(Times(Exp(z),z),CN1),ExpIntegralEi(Negate(z)),Times(C1D2,Subtract(Log(Negate(Power(z,CN1))),Log(Negate(z)))),Log(z))),

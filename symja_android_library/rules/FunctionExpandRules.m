@@ -11,7 +11,8 @@
  
  Fibonacci(m_Integer+n_) := ((1/2)*Fibonacci(m)*LucasL(n) + (1/2)*Fibonacci(n)*LucasL(m)) 
   /; Element(n, Integers),
-					
+ Fibonacci(n_+a_) := ((2/(1 + Sqrt(5)))^(-a-n)-((1/2)*(1+Sqrt(5)))^(-a-n)*Cos((a+n)*Pi))/Sqrt(5)
+  /; Element(n, Integers),				
  Gamma(-1, z_) := 1/(E^z*z) + ExpIntegralEi(-z) + (1/2)*(Log(-(1/z)) - Log(-z)) + Log(z),
  Gamma(-1/2, z_) := 2/(E^z*Sqrt(z)) - 2*Sqrt(Pi)*(1 - Erf(Sqrt(z))),
  Gamma(0, z_) := -ExpIntegralEi(-z) + (1/2)*(-Log(-(1/z)) + Log(-z)) - Log(z),
