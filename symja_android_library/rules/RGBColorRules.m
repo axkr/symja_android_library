@@ -1,0 +1,27 @@
+{ 
+Black=RGBColor(0.0,0.0,0.0),
+Brown=RGBColor(0.6,0.4,0.2),
+Blue=RGBColor(0.0,0.0,1.0),
+Cyan=RGBColor(0.0,1.0,1.0),
+Gray=RGBColor(0.5,0.5,0.5),
+Green=RGBColor(0.0,1.0,0.0),
+Magenta=RGBColor(1.0,0.0,1.0),
+Orange=RGBColor(1.0,0.5,0.0),
+Pink=RGBColor(1.0,0.5,0.5),
+Purple=RGBColor(0.5,0.0,0.5),
+Red=RGBColor(1.0,0.0,0.0),
+White=RGBColor(1.0,1.0,1.0),
+Yellow=RGBColor(1.0,1.0,0.0),
+
+LightBrown=RGBColor(0.94,0.91,0.88),
+LightBlue=RGBColor(0.87,0.94,1.0),
+LightCyan=RGBColor(0.9,1.0,1.0),
+LightGray=RGBColor(0.85,0.85,0.85),
+LightGreen=RGBColor(0.0,1.0,0.0),
+LightMagenta=RGBColor(1.0,0.9,1.0),
+LightOrange=RGBColor(1.0,0.9,0.8),
+LightPink=RGBColor(1.0,0.925,0.925),
+LightPurple=RGBColor(0.94, 0.88, 0.94),
+LightRed=RGBColor(1.0,0.85,0.85), 
+LightYellow=RGBColor(1.0,1.0,0.85)
+}
