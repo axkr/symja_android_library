@@ -25,7 +25,7 @@ public class Fourier extends AbstractFunctionEvaluator {
 				if (n == 0 || 0 != (n & (n - 1))) {
 					return IOFunctions.printMessage(F.Fourier, "vpow2", F.List(expr), engine);
 				}
-				IAST result= fourier((IAST) expr, 1);
+				IAST result = fourier((IAST) expr, 1);
 				if (result.isPresent()) {
 					return result;
 				}
@@ -49,6 +49,22 @@ public class Fourier extends AbstractFunctionEvaluator {
 	protected static IAST fourier(IAST vector, int b) {
 		final int n = vector.argSize();
 		Complex[] array = Convert.list2Complex(vector);
+		// TODO use org.hipparchus.transform.FastFourierTransformer
+		// if (array == null) {
+		// return F.NIL;
+		// } else {
+		// if (b == -1) {
+		// FastFourierTransformer fft = new org.hipparchus.transform.FastFourierTransformer(
+		// DftNormalization.UNITARY);
+		// Complex[] cmpResult = fft.transform(array, TransformType.INVERSE);
+		// return Convert.toVector(cmpResult);
+		// } else {
+		// FastFourierTransformer fft = new org.hipparchus.transform.FastFourierTransformer(
+		// DftNormalization.UNITARY);
+		// Complex[] cmpResult = fft.transform(array, TransformType.FORWARD);
+		// return Convert.toVector(cmpResult);
+		// }
+		// }
 		if (array == null) {
 			return F.NIL;
 		} else {
@@ -70,8 +86,8 @@ public class Fourier extends AbstractFunctionEvaluator {
 		int mmax = 1;
 		while (n > mmax) {
 			int istep = mmax << 1;
-			double thalf = b * Math.PI / istep;
-			double wtemp = Math.sin(thalf);
+			final double thalf = b * Math.PI / istep;
+			final double wtemp = Math.sin(thalf);
 			Complex wp = new Complex(-2 * wtemp * wtemp, Math.sin(thalf + thalf));
 			Complex w = Complex.ONE;
 			for (int m = 0; m < mmax; ++m) {
