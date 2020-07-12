@@ -1,5 +1,6 @@
 package org.matheclipse.core.convert;
 
+import java.awt.Color;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -325,7 +326,8 @@ public class Convert {
 			}
 		}
 		if (matrixFormat) {
-			// because the rows can contain sub lists the IAST.IS_MATRIX flag cannot be set directly. isMatrix() must be used!
+			// because the rows can contain sub lists the IAST.IS_MATRIX flag cannot be set directly. isMatrix() must be
+			// used!
 			out.isMatrix(true);
 		}
 		return out;
@@ -376,7 +378,8 @@ public class Convert {
 			}
 		}
 		if (matrixFormat) {
-			// because the rows can contain sub lists the IAST.IS_MATRIX flag cannot be set directly. isMatrix() must be used!
+			// because the rows can contain sub lists the IAST.IS_MATRIX flag cannot be set directly. isMatrix() must be
+			// used!
 			out.isMatrix(true);
 		}
 		return out;
@@ -518,7 +521,8 @@ public class Convert {
 				}
 				list.append(row);
 			}
-			// because the rows can contain sub lists the IAST.IS_MATRIX flag cannot be set directly. isMatrix() must be used!
+			// because the rows can contain sub lists the IAST.IS_MATRIX flag cannot be set directly. isMatrix() must be
+			// used!
 			list.isMatrix(true);
 			return list;
 		} catch (final Exception ex) {
@@ -607,5 +611,34 @@ public class Convert {
 			return null;
 		}
 		return dim;
+	}
+
+	/**
+	 * Convert the <code>RGBColor(r,g,b)</code> to a <code>java.awt.Color</code>
+	 * 
+	 * @param rgbAST
+	 * @return <code>null</code> if the conversion is not possible
+	 */
+	public static java.awt.Color toAWTColor(IExpr rgbAST) { 
+		return  toAWTColorDefault(rgbAST, null);
+	}
+
+	public static java.awt.Color toAWTColorDefault(IExpr rgbAST, Color defaultColor) {
+		if (rgbAST.isAST(F.RGBColor, 4, 5)) {
+			IAST rgbColor = (IAST) rgbAST;
+			float r = (float) rgbColor.arg1().evalDouble();
+			float g = (float) rgbColor.arg2().evalDouble();
+			float b = (float) rgbColor.arg3().evalDouble();
+			return new Color(r, g, b);
+		}
+		return defaultColor;
+	}
+
+	public static java.awt.Color toAWTColorDefault(IAST rgbColor) {
+		return toAWTColorDefault(rgbColor, Color.BLACK);
+	}
+	
+	public static String toHex(java.awt.Color c) {
+		return "#"+Integer.toHexString(c.getRGB()).substring(2);
 	}
 }

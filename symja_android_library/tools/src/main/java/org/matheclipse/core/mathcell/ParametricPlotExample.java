@@ -12,7 +12,8 @@ public class ParametricPlotExample extends BasePlotExample {
 
 	@Override
 	public String exampleFunction() {
-		return "ParametricPlot({Sin(t), Cos(t^2)}, {t, 0, 2*Pi})";
+		return "ParametricPlot({{2*Cos(t), 2*Sin(t)}, {2*Cos(t), Sin(t)}, {Cos(t), 2*Sin(t)}, {Cos(t), Sin(t)}}, {t, 0, 2 Pi}, PlotLegends -> \"Expressions\")";
+		// return "ParametricPlot({Sin(t), Cos(t^2)}, {t, 0, 2*Pi})";
 	}
 
 	public static void main(String[] args) {

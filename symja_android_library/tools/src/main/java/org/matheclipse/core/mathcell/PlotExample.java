@@ -4,7 +4,8 @@ public class PlotExample extends BasePlotExample {
 
 	@Override
 	public String exampleFunction() {
- 		return "Plot(Tan(x), {x, -10, 10},PlotRange->{-20,20})";
+		return "Plot({x, Surd(x, 3), Surd(x, 5), Surd(x, 7)}, {x, -1, 1})";//,PlotStyle->{Red,Directive(Dashed,Cyan),Purple,Brown})";
+// 		return "Plot(Tan(x), {x, -10, 10},PlotRange->{-20,20},PlotStyle->{Purple})";
 //		return "Plot(SinIntegral(x), {x, -20, 20})";
 		// return "Plot({x, Surd(x, 3), Surd(x, 5), Surd(x, 7)}, {x, -1, 1}, PlotLegends -> \"Expressions\")";
 		// return "Plot(Clip(x, {-3, 2}), {x, -10, 10})";

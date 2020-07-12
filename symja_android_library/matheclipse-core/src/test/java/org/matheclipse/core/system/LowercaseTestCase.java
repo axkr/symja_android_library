@@ -11562,12 +11562,17 @@ public class LowercaseTestCase extends AbstractTestCase {
 				"(20.085536923187664)-Math.cos((9.869604401089358)/x)");
 		// JSXGraph.org syntax
 		check("JSForm(Manipulate(Plot(Sin(x)*Cos(1 + a*x), {x, 0, 2*Pi}, PlotRange->{-1,2}), {a,0,10}))", //
-				"var board = JXG.JSXGraph.initBoard('jxgbox', {axis:true,boundingbox:[-0.8641592653589794,2.7,7.147344572538565,-1.7]});\n"
-						+ "board.suspendUpdate();\n"
-						+ "var a = board.create('slider',[[-0.0630088815692249,2.2600000000000002],[6.346194188748811,2.2600000000000002],[0,0,10]],{name:'a'});\n"
-						+ "\n" + "function z1(x) { return mul(cos(add(1,mul(a.Value(),x))),sin(x)); }\n"
-						+ "var p1 = board.create('functiongraph',[z1, 0, (6.283185307179586)]);\n"
-						+ "var data = [ p1 ];\n" + "\n" + "\n" + "board.unsuspendUpdate();\n" + "");
+				"var board = JXG.JSXGraph.initBoard('jxgbox', {axis:true,boundingbox:[-0.8641592653589794,2.7,7.147344572538565,-1.7]});\n" + 
+				"board.suspendUpdate();\n" + 
+				"var a = board.create('slider',[[-0.0630088815692249,2.2600000000000002],[6.346194188748811,2.2600000000000002],[0,0,10]],{name:'a'});\n" + 
+				"\n" + 
+				"function z1(x) { try { return mul(cos(add(1,mul(a.Value(),x))),sin(x));} catch(e) { return Number.NaN;} }\n" + 
+				"var p1 = board.create('functiongraph',[z1, 0, (6.283185307179586)],{strokecolor:'#5e81b5'});\n" + 
+				"var data = [ p1 ];\n" + 
+				"\n" + 
+				"\n" + 
+				"board.unsuspendUpdate();\n" + 
+				"");
 		// Mathcell syntax / generate TeX for MathJAX
 		check("JSForm(Manipulate(Factor(x^n + 1), {n, 1, 5, 1}))", //
 				"MathCell( id, [ { type: 'slider', min: 1, max: 5, step: 1, name: 'n', label: 'n' }\n" + //
