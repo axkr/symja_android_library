@@ -89,7 +89,7 @@ public class Config {
 	 * Maximum number of elements which could be allocated for a BigInteger number
 	 */
 	public static int MAX_BIT_LENGTH = Integer.MAX_VALUE;
-	
+
 	/**
 	 * Maximum degree of a polynomial generating function
 	 */
@@ -137,7 +137,7 @@ public class Config {
 	 * Set to true if in fuzz testing mode
 	 * 
 	 */
-	public final static boolean FUZZ_TESTING = false;
+	public static boolean FUZZ_TESTING = false;
 
 	/**
 	 * Set to true if the fuzzy parser should be used in the free form Symja API

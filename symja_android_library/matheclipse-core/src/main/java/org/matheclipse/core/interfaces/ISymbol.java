@@ -468,10 +468,10 @@ public interface ISymbol extends IExpr {
 	 */
 	public IExpr of(IExpr... args);
 
-	default IExpr of(Number... args) {
+	default IExpr of(int... args) {
 		IExpr[] array = new IExpr[args.length];
 		for (int i = 0; i < array.length; i++) {
-			array[i] = Object2Expr.convert(args[i]);
+			array[i] = F.ZZ(args[i]);
 		}
 		return of(array);
 	}
@@ -484,10 +484,10 @@ public interface ISymbol extends IExpr {
 		return of(array).evalDouble();
 	}
 
-	default IExpr of(Boolean... args) {
+	default IExpr of(boolean... args) {
 		IExpr[] array = new IExpr[args.length];
 		for (int i = 0; i < array.length; i++) {
-			array[i] = args[i].booleanValue() ? F.True : F.False;
+			array[i] = args[i] ? F.True : F.False;
 		}
 		return of(array);
 	}

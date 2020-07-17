@@ -44,6 +44,7 @@ import org.matheclipse.core.interfaces.IEvaluator;
 import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.interfaces.IFraction;
 import org.matheclipse.core.interfaces.IInteger;
+import org.matheclipse.core.interfaces.IStringX;
 import org.matheclipse.core.interfaces.ISymbol;
 import org.matheclipse.parser.client.FEConfig;
 import org.matheclipse.parser.client.SyntaxError;
@@ -61,8 +62,8 @@ public class Pods {
 	public static final String JSON = "JSON";
 
 	/**
-	 * From the docs: "Mapper instances are fully thread-safe provided that ALL configuration of the instance occurs
-	 * before ANY read or write calls."
+	 * From the docs: "Mapper instances are fully thread-safe provided that ALL
+	 * configuration of the instance occurs before ANY read or write calls."
 	 */
 	public static final ObjectMapper JSON_OBJECT_MAPPER = new ObjectMapper();
 
@@ -111,7 +112,36 @@ public class Pods {
 
 	public static final Trie<String, ArrayList<IPod>> SOUNDEX_MAP = Tries.forStrings();
 
-	private static Supplier<Trie<String, ArrayList<IPod>>> LAZY_SOUNDEX = Suppliers.memoize(Pods::initSoundex);
+	static com.google.common.base.Supplier<Trie<String, ArrayList<IPod>>> SOUNDEX_SUPPLIER = new com.google.common.base.Supplier<Trie<String, ArrayList<IPod>>>() {
+
+		@Override
+		public Trie<String, ArrayList<IPod>> get() {
+//			Map<String, String> map = AST2Expr.PREDEFINED_SYMBOLS_MAP;
+
+			IAST[] list = ElementData1.ELEMENTS;
+			for (int i = 0; i < list.length; i++) {
+				String keyWord = list[i].arg3().toString();
+				addElementData(list[i].arg2().toString().toLowerCase(), keyWord);
+				soundexElementData(list[i].arg3().toString(), keyWord);
+			}
+			for (int i = 0; i < ID.Zeta; i++) {
+				ISymbol sym = F.symbol(i);
+				soundexHelp(sym.toString().toLowerCase(), sym);
+			}
+			// for (Map.Entry<String, String> entry : map.entrySet()) {
+			// soundexHelp(entry.getKey(), entry.getKey());
+			// }
+			// appendSoundex();
+			soundexHelp("cosine", F.Cos);
+			soundexHelp("sine", F.Sin);
+			soundexHelp("integral", F.Integrate);
+
+			return SOUNDEX_MAP;
+		}
+
+	};
+	private static com.google.common.base.Supplier<Trie<String, ArrayList<IPod>>> LAZY_SOUNDEX = Suppliers
+			.memoize(SOUNDEX_SUPPLIER);
 
 	final static String JSXGRAPH_IFRAME = //
 			"<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n" + //
@@ -243,6 +273,39 @@ public class Pods {
 					"</div>\n" + //
 					"</body>\n" + //
 					"</html>";//
+
+	protected final static String HIGHLIGHT_IFRAME = //
+			"<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n" + //
+					"\n" + //
+					"<!DOCTYPE html PUBLIC\n" + //
+					"  \"-//W3C//DTD XHTML 1.1 plus MathML 2.0 plus SVG 1.1//EN\"\n" + //
+					"  \"http://www.w3.org/2002/04/xhtml-math-svg/xhtml-math-svg.dtd\">\n" + //
+					"\n" + //
+					"<html xmlns=\"http://www.w3.org/1999/xhtml\" style=\"width: 100%; height: 100%; margin: 0; padding: 0\">\n"
+					+ //
+					"<head>\n" + //
+					"<meta charset=\"utf-8\">\n" + //
+					"<title>Highlight</title>\n" + //
+					"\n" + //
+					"<link rel=\"stylesheet\" type=\"text/css\" href=\"https://cdnjs.cloudflare.com/ajax/libs/highlight.js/10.1.1/styles/default.min.css\" />\n"
+					+ //
+					"  <script type=\"text/javascript\" src=\"https://cdnjs.cloudflare.com/ajax/libs/highlight.js/10.1.1/highlight.min.js\"></script>\n"
+					+ //
+					"<script>hljs.initHighlightingOnLoad();</script></head>\n" + //
+					"<body style=\"width: 100%; height: 100%; margin: 0; padding: 0\">\n" + //
+					"\n" + //
+					"<div id=\"highlight\" style=\"width: 600px; height: 800px; margin: 0;  padding: .25in .5in .5in .5in; flex-direction: column; overflow: hidden\">\n"
+					+ //
+					"<pre><code class=\"javascript\">\n" + //
+					"`1`\n" + //
+					"</code></pre>\n" + //
+					"</div>\n" + //
+					"</body>\n" + //
+					"</html>";//
+
+//	public static void main(String[] args) {
+//		System.out.println(HIGHLIGHT_IFRAME);
+//	}
 
 	private static void addElementData(String soundex, String value) {
 		ArrayList<IPod> list = SOUNDEX_MAP.get(soundex);
@@ -477,10 +540,8 @@ public class Pods {
 	 * @param json
 	 * @param engine
 	 * @param outExpr
-	 * @param plainText
-	 *            text which should obligatory be used for plaintext format
-	 * @param sinput
-	 *            Symja input string
+	 * @param plainText text which should obligatory be used for plaintext format
+	 * @param sinput    Symja input string
 	 * @param formats
 	 */
 	private static void createJSONFormat(ObjectNode json, EvalEngine engine, IExpr outExpr, String plainText,
@@ -784,7 +845,7 @@ public class Pods {
 						if (outExpr.isSymbol() || outExpr.isString()) {
 							String inputWord = outExpr.toString();
 							StringBuilder buf = new StringBuilder();
-							if (Documentation.getMarkdown(buf, inputWord)) {
+							if (outExpr.isSymbol() && Documentation.getMarkdown(buf, inputWord)) {
 								DocumentationPod.addDocumentationPod(new DocumentationPod((ISymbol) outExpr), podsArray,
 										buf, formats);
 								numpods++;
@@ -816,6 +877,19 @@ public class Pods {
 									}
 									resultStatistics(queryresult, error, numpods, podsArray);
 									return messageJSON;
+								}
+								if (outExpr.isString()) {
+									int mimeTyp = ((IStringX) outExpr).getMimeType();
+									if (mimeTyp == IStringX.APPLICATION_SYMJA || //
+											mimeTyp == IStringX.APPLICATION_JAVA || //
+											mimeTyp == IStringX.APPLICATION_JAVASCRIPT) {
+										String html = toHighligthedCode(outExpr.toString());
+										addSymjaPod(podsArray, inExpr, F.NIL, html, "Result", "String form", HTML,
+												engine);
+										numpods++;
+										resultStatistics(queryresult, error, numpods, podsArray);
+										return messageJSON;
+									}
 								}
 							}
 						} else {
@@ -1216,29 +1290,29 @@ public class Pods {
 		return null;
 	}
 
-	private static Trie<String, ArrayList<IPod>> initSoundex() {
-		Map<String, String> map = AST2Expr.PREDEFINED_SYMBOLS_MAP;
-
-		IAST[] list = ElementData1.ELEMENTS;
-		for (int i = 0; i < list.length; i++) {
-			String keyWord = list[i].arg3().toString();
-			addElementData(list[i].arg2().toString().toLowerCase(), keyWord);
-			soundexElementData(list[i].arg3().toString(), keyWord);
-		}
-		for (int i = 0; i < ID.Zeta; i++) {
-			ISymbol sym = F.symbol(i);
-			soundexHelp(sym.toString().toLowerCase(), sym);
-		}
-		// for (Map.Entry<String, String> entry : map.entrySet()) {
-		// soundexHelp(entry.getKey(), entry.getKey());
-		// }
-		// appendSoundex();
-		soundexHelp("cosine", F.Cos);
-		soundexHelp("sine", F.Sin);
-		soundexHelp("integral", F.Integrate);
-
-		return SOUNDEX_MAP;
-	}
+//	private static Trie<String, ArrayList<IPod>> initSoundex() {
+//		Map<String, String> map = AST2Expr.PREDEFINED_SYMBOLS_MAP;
+//
+//		IAST[] list = ElementData1.ELEMENTS;
+//		for (int i = 0; i < list.length; i++) {
+//			String keyWord = list[i].arg3().toString();
+//			addElementData(list[i].arg2().toString().toLowerCase(), keyWord);
+//			soundexElementData(list[i].arg3().toString(), keyWord);
+//		}
+//		for (int i = 0; i < ID.Zeta; i++) {
+//			ISymbol sym = F.symbol(i);
+//			soundexHelp(sym.toString().toLowerCase(), sym);
+//		}
+//		// for (Map.Entry<String, String> entry : map.entrySet()) {
+//		// soundexHelp(entry.getKey(), entry.getKey());
+//		// }
+//		// appendSoundex();
+//		soundexHelp("cosine", F.Cos);
+//		soundexHelp("sine", F.Sin);
+//		soundexHelp("integral", F.Integrate);
+//
+//		return SOUNDEX_MAP;
+//	}
 
 	private static int integerPods(ArrayNode podsArray, IExpr inExpr, final IInteger outExpr, int formats,
 			EvalEngine engine) {
@@ -1681,11 +1755,35 @@ public class Pods {
 	}
 
 	/**
-	 * Test if this is a unit conversion question? If YES return <code>F.UnitConvert(...)</code> expression
+	 * Present the source code in an HTML iframe-srcdoc with highligthed key words
+	 * 
+	 * @param sourceCode
+	 * @return
+	 */
+	private static String toHighligthedCode(String sourceCode) {
+		try {
+			String html = HIGHLIGHT_IFRAME;
+			html = StringUtils.replace(html, "`1`", sourceCode);
+			html = StringEscapeUtils.escapeHtml4(html);
+			html = "<iframe srcdoc=\"" + html
+					+ "\" style=\"display: block; width: 100%; height: 100%; border: none;\" ></iframe>";
+			return html;
+		} catch (Exception ex) {
+			if (FEConfig.SHOW_STACKTRACE) {
+				ex.printStackTrace();
+			}
+		}
+		return sourceCode;
+	}
+
+	/**
+	 * Test if this is a unit conversion question? If YES return
+	 * <code>F.UnitConvert(...)</code> expression
 	 * 
 	 * @param engine
 	 * @param rest
-	 * @return <code>F.NIL</code> if it's not a <code>F.UnitConvert(...)</code> expression
+	 * @return <code>F.NIL</code> if it's not a <code>F.UnitConvert(...)</code>
+	 *         expression
 	 */
 	private static IExpr unitConvert(EvalEngine engine, IAST rest) {
 		if (rest.argSize() == 3) {

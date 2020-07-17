@@ -68,7 +68,7 @@ public class CombinatoricTestCase extends AbstractTestCase {
 		IAST lhsEvalAST = F.Plus(F.a, F.b, F.c, F.d);
 
 		PatternMatcher patternMatcher = new PatternMatcher(lhsPatternAST);
-		IPatternMap patternMap = patternMatcher.getPatternMap();
+		IPatternMap patternMap = patternMatcher.createPatternMap();
 		// StackMatcher stackMatcher = patternMatcher.new StackMatcher(EvalEngine.get());
 		FlatOrderlessStepVisitor visitor = new FlatOrderlessStepVisitor(F.Plus, lhsPatternAST, lhsEvalAST,
 				patternMatcher, patternMap);

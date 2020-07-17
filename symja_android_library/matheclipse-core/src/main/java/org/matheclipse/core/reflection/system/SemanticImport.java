@@ -1,5 +1,6 @@
 package org.matheclipse.core.reflection.system;
 
+import java.io.File;
 import java.io.IOException;
 
 import org.matheclipse.core.basic.Config;
@@ -37,12 +38,14 @@ public class SemanticImport extends AbstractEvaluator {
 			String fileName = arg1.toString();
 			if (format.equals(Extension.CSV)) {
 				try {
-					Table table = Table.read().csv(arg1.toString());
-
-					// System.out.println(table.printAll());
-					// System.out.println(table.structure().printAll());
-					return ASTDataset.newInstance(table);
-
+					File file = new File(arg1.toString());
+					if (file.exists()) {
+						Table table = Table.read().csv(file);
+						// System.out.println(table.printAll());
+						// System.out.println(table.structure().printAll());
+						return ASTDataset.newInstance(table);
+					}
+					return engine.printMessage("SemanticImport: file " + fileName + " does not exist!");
 				} catch (IOException ioe) {
 					return engine.printMessage("SemanticImport: file " + fileName + " not found!");
 				} catch (RuntimeException rex) {

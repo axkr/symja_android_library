@@ -1,5 +1,6 @@
 package org.matheclipse.api;
 
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
@@ -20,6 +21,7 @@ import org.matheclipse.core.interfaces.IASTMutable;
 import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.interfaces.ISymbol;
 import org.matheclipse.core.reflection.system.rules.PodDefaultsRules;
+import org.matheclipse.parser.trie.Trie;
 
 import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
@@ -27,20 +29,25 @@ import com.google.common.base.Suppliers;
 
 public class DocumentationPod implements IPod, PodDefaultsRules {
 
-	private static Supplier<Map<IExpr, IAST>> LAZY_DEFAULTS = Suppliers.memoize(DocumentationPod::init);
+	static com.google.common.base.Supplier<Map<IExpr, IAST>> LAZY_DEFAULTS_SUPPLIER = new com.google.common.base.Supplier<Map<IExpr, IAST>>() {
 
-	private static Map<IExpr, IAST> init() {
-		HashMap<IExpr, IAST> defaultParameters = new HashMap<IExpr, IAST>();
-		for (int i = 1; i < RULES.size(); i++) {
-			IExpr arg = RULES.get(i);
-			if (arg.isAST(F.SetDelayed, 3)) {
-				defaultParameters.put(arg.first(), (IAST) arg.second());
-			} else if (arg.isAST(F.Set, 3)) {
-				defaultParameters.put(arg.first(), (IAST) arg.second());
+		@Override
+		public Map<IExpr, IAST> get() {
+			HashMap<IExpr, IAST> defaultParameters = new HashMap<IExpr, IAST>();
+			for (int i = 1; i < RULES.size(); i++) {
+				IExpr arg = RULES.get(i);
+				if (arg.isAST(F.SetDelayed, 3)) {
+					defaultParameters.put(arg.first(), (IAST) arg.second());
+				} else if (arg.isAST(F.Set, 3)) {
+					defaultParameters.put(arg.first(), (IAST) arg.second());
+				}
 			}
+			return defaultParameters;
 		}
-		return defaultParameters;
-	}
+	};
+
+	private static com.google.common.base.Supplier<Map<IExpr, IAST>> LAZY_DEFAULTS = Suppliers
+			.memoize(LAZY_DEFAULTS_SUPPLIER);
 
 	private static Map<IExpr, IAST> getMap() {
 		return LAZY_DEFAULTS.get();

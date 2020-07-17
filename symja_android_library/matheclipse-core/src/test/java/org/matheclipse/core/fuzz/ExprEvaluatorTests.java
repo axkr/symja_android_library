@@ -284,6 +284,8 @@ public class ExprEvaluatorTests extends TestCase {
 		super.setUp();
 		// wait for initializing of Integrate() rules:
 		F.await();
+		// define after initialization
+		Config.FUZZ_TESTING = true;
 	}
 
 	public void testBuiltinFunctionFuzz() {

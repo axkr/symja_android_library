@@ -511,7 +511,42 @@ public class TestPods {
 					"}");//
 		}
 	}
-
+	@Test
+	public void testPlot002() {
+		String s = System.getProperty("os.name");
+		ObjectNode messageJSON = Pods.createResult("Plot({Sin(x),Cos(x),Tan(x)},{x,-2*Pi,2*Pi}) // JSForm", formatsTEX);
+		final String jsonStr = messageJSON.toPrettyString();
+		if (s.contains("Windows")) {
+			assertEquals(jsonStr, //
+					"{\r\n" + 
+					"  \"queryresult\" : {\r\n" + 
+					"    \"success\" : \"true\",\r\n" + 
+					"    \"error\" : \"false\",\r\n" + 
+					"    \"numpods\" : 2,\r\n" + 
+					"    \"version\" : \"0.1\",\r\n" + 
+					"    \"pods\" : [ {\r\n" + 
+					"      \"title\" : \"Input\",\r\n" + 
+					"      \"scanner\" : \"Identity\",\r\n" + 
+					"      \"error\" : \"false\",\r\n" + 
+					"      \"numsubpods\" : 1,\r\n" + 
+					"      \"subpods\" : [ {\r\n" + 
+					"        \"plaintext\" : \"JSForm(Plot({Sin(x),Cos(x),Tan(x)},{x,-2*Pi,2*Pi}))\",\r\n" + 
+					"        \"sinput\" : \"JSForm(Plot({Sin(x),Cos(x),Tan(x)},{x,-2*Pi,2*Pi}))\",\r\n" + 
+					"        \"latex\" : \"\\\\text{JSForm}(\\\\text{Plot}(\\\\{\\\\sin (x),\\\\cos (x),\\\\tan (x)\\\\},\\\\{x,\\\\left( -2\\\\right) \\\\cdot \\\\pi,2\\\\cdot \\\\pi\\\\}))\"\r\n" + 
+					"      } ]\r\n" + 
+					"    }, {\r\n" + 
+					"      \"title\" : \"Result\",\r\n" + 
+					"      \"scanner\" : \"String form\",\r\n" + 
+					"      \"error\" : \"false\",\r\n" + 
+					"      \"numsubpods\" : 1,\r\n" + 
+					"      \"subpods\" : [ {\r\n" + 
+					"        \"html\" : \"&lt;iframe srcdoc=\\\"&amp;lt;?xml version=&amp;quot;1.0&amp;quot; encoding=&amp;quot;UTF-8&amp;quot;?&amp;gt;\\n\\n&amp;lt;!DOCTYPE html PUBLIC\\n  &amp;quot;-//W3C//DTD XHTML 1.1 plus MathML 2.0 plus SVG 1.1//EN&amp;quot;\\n  &amp;quot;http://www.w3.org/2002/04/xhtml-math-svg/xhtml-math-svg.dtd&amp;quot;&amp;gt;\\n\\n&amp;lt;html xmlns=&amp;quot;http://www.w3.org/1999/xhtml&amp;quot; style=&amp;quot;width: 100%; height: 100%; margin: 0; padding: 0&amp;quot;&amp;gt;\\n&amp;lt;head&amp;gt;\\n&amp;lt;meta charset=&amp;quot;utf-8&amp;quot;&amp;gt;\\n&amp;lt;title&amp;gt;Highlight&amp;lt;/title&amp;gt;\\n\\n&amp;lt;link rel=&amp;quot;stylesheet&amp;quot; type=&amp;quot;text/css&amp;quot; href=&amp;quot;https://cdnjs.cloudflare.com/ajax/libs/highlight.js/10.1.1/styles/default.min.css&amp;quot; /&amp;gt;\\n  &amp;lt;script type=&amp;quot;text/javascript&amp;quot; src=&amp;quot;https://cdnjs.cloudflare.com/ajax/libs/highlight.js/10.1.1/highlight.min.js&amp;quot;&amp;gt;&amp;lt;/script&amp;gt;\\n&amp;lt;script&amp;gt;hljs.initHighlightingOnLoad();&amp;lt;/script&amp;gt;&amp;lt;/head&amp;gt;\\n&amp;lt;body style=&amp;quot;width: 100%; height: 100%; margin: 0; padding: 0&amp;quot;&amp;gt;\\n\\n&amp;lt;div id=&amp;quot;highlight&amp;quot; style=&amp;quot;width: 600px; height: 800px; margin: 0;  padding: .25in .5in .5in .5in; flex-direction: column; overflow: hidden&amp;quot;&amp;gt;\\n&amp;lt;pre&amp;gt;&amp;lt;code class=&amp;quot;javascript&amp;quot;&amp;gt;\\nvar board = JXG.JSXGraph.initBoard('jxgbox', {axis:true,boundingbox:[-7.461503837897545,1.65,7.461503837897545,-1.65]});\\nboard.suspendUpdate();\\n\\nfunction z1(x) { try { return sin(x);} catch(e) { return Number.NaN;} }\\nfunction z2(x) { try { return cos(x);} catch(e) { return Number.NaN;} }\\nfunction z3(x) { try { return tan(x);} catch(e) { return Number.NaN;} }\\nvar p1 = board.create('functiongraph',[z1, (-6.283185307179586), (6.283185307179586)],{strokecolor:'#5e81b5'});\\nvar p2 = board.create('functiongraph',[z2, (-6.283185307179586), (6.283185307179586)],{strokecolor:'#e19c24'});\\nvar p3 = board.create('functiongraph',[z3, (-6.283185307179586), (6.283185307179586)],{strokecolor:'#8fb032'});\\nvar data = [ p1, p2, p3 ];\\n\\n\\nboard.unsuspendUpdate();\\n\\n&amp;lt;/code&amp;gt;&amp;lt;/pre&amp;gt;\\n&amp;lt;/div&amp;gt;\\n&amp;lt;/body&amp;gt;\\n&amp;lt;/html&amp;gt;\\\" style=\\\"display: block; width: 100%; height: 100%; border: none;\\\" &gt;&lt;/iframe&gt;\"\r\n" + 
+					"      } ]\r\n" + 
+					"    } ]\r\n" + 
+					"  }\r\n" + 
+					"}");//
+		}
+	}
 	@Test
 	public void testPlotF() {
 		String s = System.getProperty("os.name");
@@ -1600,7 +1635,7 @@ public class TestPods {
 		}
 	}
 
-	@Test
+	@Test 
 	public void testListPlot004() {
 		String s = System.getProperty("os.name");
 		ObjectNode messageJSON = Pods.createResult("1, 2, 3, None, 3, 5, f(), 2, 1, foo, 2, 3", formatsTEX);

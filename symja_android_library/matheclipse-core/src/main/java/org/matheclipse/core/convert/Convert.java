@@ -28,7 +28,6 @@ import org.matheclipse.core.expression.F;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IASTAppendable;
 import org.matheclipse.core.interfaces.IASTMutable;
-import org.matheclipse.core.interfaces.IComplexNum;
 import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.interfaces.IStringX;
 import org.matheclipse.core.interfaces.ISymbol;
@@ -452,6 +451,37 @@ public class Convert {
 		return new ASTRealVector(vector, false);
 	}
 
+	/**
+	 * Convert a RealVector to a IAST list.
+	 * 
+	 * @param vector
+	 * @return <code>F.NIL</code> if no conversion was possible
+	 */
+	public static IASTAppendable complexVector2List(final FieldVector<Complex> vector) {
+		return complexVector2List(vector, true);
+	}
+	/**
+	 * Convert a RealVector to a IAST list.
+	 * 
+	 * @param vector
+	 * @param vectorFormat
+	 *            set flag for isVector() method
+	 * @return <code>F.NIL</code> if no conversion was possible
+	 */
+	public static IASTAppendable complexVector2List(final FieldVector<Complex> vector, boolean vectorFormat) {
+		if (vector == null) {
+			return F.NIL;
+		}
+		final int rowSize = vector.getDimension();
+
+		final IASTAppendable out = F.ListAlloc(rowSize);
+		for (int i = 0; i < rowSize; i++) {
+			out.append(F.complexNum(vector.getEntry(i)));
+		}
+		out.addEvalFlags(IAST.IS_VECTOR);
+		return out;
+	}
+	
 	/**
 	 * Convert a RealVector to a IAST list.
 	 * 

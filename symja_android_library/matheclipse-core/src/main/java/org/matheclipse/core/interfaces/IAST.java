@@ -374,7 +374,7 @@ public interface IAST extends IExpr, Cloneable, Iterable<IExpr> {
 
 	/**
 	 * Returns a shallow copy of this <code>IAST</code> instance (the elements themselves are not copied). In contrast
-	 * to the <code>copyAppendable()</code> method, this method returns exactly the same type for
+	 * to the {@link #copyAppendable()} method, this method returns exactly the same type for
 	 * <code>AST0, AST1, AST2, AST3</code> and tries to transform <code>AST</code> objects to
 	 * <code>AST0, AST1, AST2, AST3</code> if possible.
 	 * 
@@ -385,8 +385,8 @@ public interface IAST extends IExpr, Cloneable, Iterable<IExpr> {
 
 	/**
 	 * Return a copy of the pure <code>IAST</code> instance (the elements themselves are not copied). Additionally to
-	 * the <code>copy()</code> method, this method tries to transform <code>AssociationAST</code> objects to
-	 * <code>AST</code> if possible.
+	 * the <code>copy()</code> method, this method tries to avaoid <code>AssociationAST</code> objects by transforming
+	 * them to <code>AST</code> objects if possible.
 	 * 
 	 * @return a copy of this <code>IAST</code> instance.
 	 */
@@ -395,14 +395,20 @@ public interface IAST extends IExpr, Cloneable, Iterable<IExpr> {
 	}
 
 	/**
-	 * Returns a shallow copy of this <code>IAST</code> instance (the elements themselves are not copied).
+	 * Returns a shallow copy of this <code>IAST</code> instance (the elements themselves are not copied). In contrast
+	 * to the {@link #copy()} method, this method doesn't return exactly the same type for a given
+	 * <code>AST0, AST1, AST2, AST3...</code> object but transforms it into a new <code>AST</code> object, so that
+	 * additional arguments could be appended or at the end.
 	 * 
 	 * @return a copy of this <code>IAST</code> instance.
 	 */
 	public IASTAppendable copyAppendable();
 
 	/**
-	 * Returns a shallow copy of this <code>IAST</code> instance (the elements themselves are not copied).
+	 * Returns a shallow copy of this <code>IAST</code> instance (the elements themselves are not copied). In contrast
+	 * to the {@link #copy()} method, this method doesn't return exactly the same type for a given
+	 * <code>AST0, AST1, AST2, AST3...</code> object but transforms it into a new <code>AST</code> object, so that
+	 * additional arguments could be appended at the end.
 	 * 
 	 * @return a copy of this <code>IAST</code> instance.
 	 */

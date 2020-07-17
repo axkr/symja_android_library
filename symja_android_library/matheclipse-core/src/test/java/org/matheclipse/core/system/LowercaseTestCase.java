@@ -5719,6 +5719,8 @@ public class LowercaseTestCase extends AbstractTestCase {
 				"{1/2*(a+d-Sqrt(a^2+4*b*c-2*a*d+d^2)),1/2*(a+d+Sqrt(a^2+4*b*c-2*a*d+d^2))}");
 		check("Eigenvalues({{1, 0, 0}, {0, 1, 0}, {0, 0, 1}})", //
 				"{1.0,1.0,1.0}");
+		check("Eigenvalues({{1, 2, 3}, {4, 5, 6}, {7, 8, 9}})", //
+				"{16.11684,-1.11684,-9.29650*10^-16}");
 	}
 
 	public void testEigenvectors() {
@@ -11562,17 +11564,13 @@ public class LowercaseTestCase extends AbstractTestCase {
 				"(20.085536923187664)-Math.cos((9.869604401089358)/x)");
 		// JSXGraph.org syntax
 		check("JSForm(Manipulate(Plot(Sin(x)*Cos(1 + a*x), {x, 0, 2*Pi}, PlotRange->{-1,2}), {a,0,10}))", //
-				"var board = JXG.JSXGraph.initBoard('jxgbox', {axis:true,boundingbox:[-0.8641592653589794,2.7,7.147344572538565,-1.7]});\n" + 
-				"board.suspendUpdate();\n" + 
-				"var a = board.create('slider',[[-0.0630088815692249,2.2600000000000002],[6.346194188748811,2.2600000000000002],[0,0,10]],{name:'a'});\n" + 
-				"\n" + 
-				"function z1(x) { try { return mul(cos(add(1,mul(a.Value(),x))),sin(x));} catch(e) { return Number.NaN;} }\n" + 
-				"var p1 = board.create('functiongraph',[z1, 0, (6.283185307179586)],{strokecolor:'#5e81b5'});\n" + 
-				"var data = [ p1 ];\n" + 
-				"\n" + 
-				"\n" + 
-				"board.unsuspendUpdate();\n" + 
-				"");
+				"var board = JXG.JSXGraph.initBoard('jxgbox', {axis:true,boundingbox:[-0.8641592653589794,2.7,7.147344572538565,-1.7]});\n"
+						+ "board.suspendUpdate();\n"
+						+ "var a = board.create('slider',[[-0.0630088815692249,2.2600000000000002],[6.346194188748811,2.2600000000000002],[0,0,10]],{name:'a'});\n"
+						+ "\n"
+						+ "function z1(x) { try { return mul(cos(add(1,mul(a.Value(),x))),sin(x));} catch(e) { return Number.NaN;} }\n"
+						+ "var p1 = board.create('functiongraph',[z1, 0, (6.283185307179586)],{strokecolor:'#5e81b5'});\n"
+						+ "var data = [ p1 ];\n" + "\n" + "\n" + "board.unsuspendUpdate();\n" + "");
 		// Mathcell syntax / generate TeX for MathJAX
 		check("JSForm(Manipulate(Factor(x^n + 1), {n, 1, 5, 1}))", //
 				"MathCell( id, [ { type: 'slider', min: 1, max: 5, step: 1, name: 'n', label: 'n' }\n" + //
@@ -12358,6 +12356,27 @@ public class LowercaseTestCase extends AbstractTestCase {
 	// }
 
 	public void testLimit() {
+		check("Limit((-x^2+1)/(x+2),x->Infinity)", //
+				"-Infinity");
+		check("Limit(Exp(2*x),x->-Infinity)", //
+				"0");
+		check("Limit((1+1/x)^x,x->Infinity)", //
+				"E");
+		check("Limit((1+2/x)^x,x->Infinity)", //
+				"E^2");
+		check("Limit((1+1/x)^(2*x),x->Infinity)", //
+				"E^2");
+		check("Limit((1+a*(1/x))^(b*x),x->(-Infinity))", //
+				"E^(a*b)");
+		check("Limit(-2*x,x->Infinity)", //
+				"-Infinity");
+		check("Limit((x^2+1)/(-x^3+1),x->Infinity)", //
+				"0");
+		check("Limit(1/x,x->0)", //
+				"Indeterminate");
+		check("Limit((Sin(x)-Tan(x))/(x^3),x->0)", //
+				"-1/2");
+
 		check("Limit((1+x)^(1/x),x->0)", //
 				"E");
 		check("Limit((x/(k+x))^x,x->Infinity)", //
@@ -19913,6 +19932,29 @@ public class LowercaseTestCase extends AbstractTestCase {
 				"RGBColor(0.5,0.0,0.5)");
 	}
 
+	public void testRiccatiSolve() {
+		check("RiccatiSolve({ {{-3, 2}, {1, 1}}, " //
+				+ "{{0}, {1}} }, " //
+				+ "{ {{1.0,0.0},{0.0,1.0}}, " //
+				+ "{{1.0}} })", //
+				"{{0.322124,0.74066},\n" + //
+						" {0.74066,3.2277}}");
+
+		check("RiccatiSolve({ {{3, -2}, {4, -1}}, " //
+				+ "{{0}, {1}} }, " //
+				+ "{ {{1.0,0.0},{0.0,1.0}}, " //
+				+ "{{1.0}} })", //
+				"{{19.75982,-7.64298},\n" + //
+						" {-7.64298,4.70718}}");
+
+		check("RiccatiSolve({ {{-3, 2}, {1, 1}}, " //
+				+ "{{0}, {1}} }, " //
+				+ "{ {{1., -1.}, {-1., 1.}}, " //
+				+ "{{3}}})", //
+				"{{0.589517,1.82157},\n" + //
+						" {1.82157,8.81884}}");
+	}
+
 	public void testRiffle() {
 		check("Riffle({1, 2, 3, 4, 5, 6, 7, 8, 9}, x)", //
 				"{1,x,2,x,3,x,4,x,5,x,6,x,7,x,8,x,9}");
@@ -20778,9 +20820,11 @@ public class LowercaseTestCase extends AbstractTestCase {
 	public void testSemanticImport() {
 		String s = System.getProperty("os.name");
 
+		// Config.FILESYSTEM_ENABLED = true;
 		// check("ds=SemanticImport(\"./data/color_data.csv\");ds(All, {\"r\",\"g\",\"b\"})//Normal //Values //
 		// InputForm", //
 		// "");
+
 		//
 		// if (s.contains("Windows")) {
 		// check("dset = Dataset({\n" + //
@@ -22996,6 +23040,9 @@ public class LowercaseTestCase extends AbstractTestCase {
 	}
 
 	public void testSum() {
+		check("Sum(i^a, {i,0,n})", //
+				"0^a+HarmonicNumber(n,-a)");
+
 		check("Sum(10007,2147483647)", //
 				"Iteration limit of 2147483647 exceeded for 2147483647.");
 		check("Sum(1.5708,{i,1,10},{1->0})", //
@@ -23009,6 +23056,8 @@ public class LowercaseTestCase extends AbstractTestCase {
 		check("Sum(f(x), {k,3, 1/2})", //
 				"0");
 
+		check("Sum(a^i,{i,0,n})", //
+				"(-1+a^(1+n))/(-1+a)");
 		check("Sum((b+i*d)*a^i, {i,0,n})", //
 				"((-1+a^(1+n))*b)/(-1+a)+(d*(a+a^(1+n)*(-1-n+a*n)))/(1-a)^2");
 
