@@ -13,7 +13,7 @@ public interface LimitRules {
    * <li>index 0 - number of equal rules in <code>RULES</code></li>
 	 * </ul>
 	 */
-  final public static int[] SIZES = { 47, 21 };
+  final public static int[] SIZES = { 48, 21 };
 
   final public static IAST RULES = List(
     IInit(Limit, SIZES),
@@ -62,9 +62,12 @@ public interface LimitRules {
     // Limit((1+1/x_)^x_,x_Symbol->Infinity)=E
     ISet(Limit(Power(Plus(C1,Power(x_,CN1)),x_),Rule(x_Symbol,oo)),
       E),
-    // Limit((1+a_/x_)^x_,x_Symbol->Infinity)=E^a/;FreeQ(a,x)
-    ISet(Limit(Power(Plus(C1,Times(a_,Power(x_,CN1))),x_),Rule(x_Symbol,oo)),
-      Condition(Exp(a),FreeQ(a,x))),
+    // Limit((1+a_./x_)^(b_.*x_),x_Symbol->-Infinity)=E^(a*b)/;FreeQ({a,b},x)
+    ISet(Limit(Power(Plus(C1,Times(a_DEFAULT,Power(x_,CN1))),Times(b_DEFAULT,x_)),Rule(x_Symbol,Noo)),
+      Condition(Exp(Times(a,b)),FreeQ(List(a,b),x))),
+    // Limit((1+a_./x_)^(b_.*x_),x_Symbol->Infinity)=E^(a*b)/;FreeQ({a,b},x)
+    ISet(Limit(Power(Plus(C1,Times(a_DEFAULT,Power(x_,CN1))),Times(b_DEFAULT,x_)),Rule(x_Symbol,oo)),
+      Condition(Exp(Times(a,b)),FreeQ(List(a,b),x))),
     // Limit((1+x_)^(1/x_),x_Symbol->0)=E
     ISet(Limit(Power(Plus(C1,x_),Power(x_,CN1)),Rule(x_Symbol,C0)),
       E),
