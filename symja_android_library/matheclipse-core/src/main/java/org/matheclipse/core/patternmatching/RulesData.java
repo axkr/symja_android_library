@@ -15,15 +15,15 @@ import org.matheclipse.core.eval.util.OpenIntToIExprHashMap;
 import org.matheclipse.core.eval.util.OpenIntToSet;
 import org.matheclipse.core.expression.Context;
 import org.matheclipse.core.expression.F;
-import org.matheclipse.core.expression.ID;
 import org.matheclipse.core.interfaces.IAST;
-import org.matheclipse.core.interfaces.IASTAppendable;
 import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.interfaces.IStringX;
 import org.matheclipse.core.interfaces.ISymbol;
 import org.matheclipse.core.patternmatching.IPatternMap.PatternMap;
 import org.matheclipse.core.visit.AbstractVisitor;
 import org.matheclipse.parser.client.FEConfig;
+
+import it.unimi.dsi.fastutil.ints.IntArrayList;
 
 /**
  * The pattern matching rules associated with a symbol.
@@ -87,18 +87,6 @@ public final class RulesData implements Serializable {
 				// the head contains a pattern F_(a1, a2,...) or complicated expression
 				return true;
 			}
-			// if (orderlessSymbols != null && arg1.isOrderlessAST()) {
-			// boolean lambda = !lhsAST.exists(x -> x.isPatternDefault() || x.isOrderlessAST());
-			// boolean[] isComplicated = { false };
-			// arg1.forEach(t -> {
-			// if (t.isPatternDefault()) {
-			// isComplicated[0] = true;
-			// } else if (lambda && t.isAST() && t.head().isSymbol()) {
-			// orderlessSymbols.add((ISymbol) t.head());
-			// }
-			// });
-			// return isComplicated[0];
-			// }
 			// the left hand side is associated with the first argument
 			// see if one of the arguments contain a pattern with default
 			// value
@@ -113,12 +101,20 @@ public final class RulesData implements Serializable {
 
 	private Map<IExpr, PatternMatcherEquals> fEqualDownRules;
 
+	/**
+	 * List of pattern matchers. The corresponding priority is stored in <code>fPriorityDownRules</code>.
+	 */
 	private List<IPatternMatcher> fPatternDownRules;
+
+	/**
+	 * Sorted int array of the priorities of the correponding <code>fPatternDownRules</code> matcher.
+	 */
+	private transient IntArrayList fPriorityDownRules;
+
 	private Map<IExpr, PatternMatcherEquals> fEqualUpRules;
 	private OpenIntToSet<IPatternMatcher> fSimplePatternUpRules;
 
 	public RulesData() {
-		// this.context = context;
 		clear();
 	}
 
@@ -134,13 +130,6 @@ public final class RulesData implements Serializable {
 				}
 				fEqualDownRules = new HashMap<IExpr, PatternMatcherEquals>(capacity);
 			}
-			// if (sizes.length > 1) {
-			// if (sizes[1] >= 16) {
-			// capacity = sizes[1];
-			// fSimplePatternDownRules = new OpenIntToSet<IPatternMatcher>(IPatternMatcher.EQUIVALENCE_COMPARATOR,
-			// capacity);
-			// }
-			// }
 		}
 	}
 
@@ -255,6 +244,7 @@ public final class RulesData implements Serializable {
 	public void clear() {
 		fEqualDownRules = null;
 		fPatternDownRules = null;
+		fPriorityDownRules = null;
 		fEqualUpRules = null;
 		fSimplePatternUpRules = null;
 	}
@@ -555,12 +545,6 @@ public final class RulesData implements Serializable {
 		return fEqualUpRules;
 	}
 
-	final private List<IPatternMatcher> getPatternDownRules() {
-		return (fPatternDownRules != null) ? //
-				fPatternDownRules : //
-				new ArrayList<IPatternMatcher>();// IPatternMatcher.EQUIVALENCE_COMPARATOR);
-	}
-
 	private OpenIntToSet<IPatternMatcher> getSimplePatternUpRules() {
 		if (fSimplePatternUpRules == null) {
 			fSimplePatternUpRules = new OpenIntToSet<IPatternMatcher>(IPatternMatcher.EQUIVALENCE_COMPARATOR);
@@ -611,8 +595,10 @@ public final class RulesData implements Serializable {
 			pmEvaluator.setLHSPriority(priority);
 			if (fPatternDownRules == null) {
 				fPatternDownRules = new ArrayList<IPatternMatcher>(7000);
+				fPriorityDownRules = new IntArrayList(7000);
 			}
 			fPatternDownRules.add(pmEvaluator);
+			fPriorityDownRules.add(priority);
 			return pmEvaluator;
 		} else {
 			pmEvaluator = new PatternMatcherAndEvaluator(setSymbol, leftHandSide, rightHandSide, true, patternHash);
@@ -629,50 +615,100 @@ public final class RulesData implements Serializable {
 		}
 
 		return insertMatcher(pmEvaluator);
-		// fPatternDownRules = getPatternDownRules();
-		// if (F.isSystemInitialized) {
-		// insertMatcher(pmEvaluator);
-		// } else {
-		// fPatternDownRules.add(pmEvaluator);
-		// }
-		// return pmEvaluator;
 	}
 
-	public final IPatternMatcher insertMatcher(final IPatternMatcher pmEvaluator) {
-		final int patternHash = pmEvaluator.getPatternHash();
+	/**
+	 * Insert a new (or replace an old equivalent) pattern matching rule in the rules data structure.
+	 * 
+	 * @param newPatternMatcher
+	 *            the new pattern matching rule
+	 * @return
+	 */
+	public final PatternMatcher insertMatcher(final PatternMatcher newPatternMatcher) {
 		if (fPatternDownRules == null) {
 			fPatternDownRules = new ArrayList<IPatternMatcher>();
-			fPatternDownRules.add(pmEvaluator);
-			return pmEvaluator;
+			fPriorityDownRules = new IntArrayList();
+			fPatternDownRules.add(newPatternMatcher);
+			fPriorityDownRules.add(newPatternMatcher.getLHSPriority());
+			return newPatternMatcher;
 		}
-		final int lhsPriority = pmEvaluator.getLHSPriority();
-		// TODO use a binary search to find the first equal getLHSPriority()
 		final int size = fPatternDownRules.size();
+		final int patternHash = newPatternMatcher.getPatternHash();
+		final int lhsPriority = newPatternMatcher.getLHSPriority();
+		IPatternMap pmSlotValuesMap = null;
+		IExpr pmRHS = null;
+		IExpr pmSlotValuesLHS = null;
+		// TODO use a binary search in fPriorityDownRules to find the first equal getLHSPriority()
 		for (int i = 0; i < size; i++) {
-			IPatternMatcher matcher = fPatternDownRules.get(i);
-			if (matcher.getLHSPriority() > lhsPriority) {
-				fPatternDownRules.add(i, pmEvaluator);
-				return pmEvaluator;
+			final int priority = fPriorityDownRules.getInt(i);
+			if (priority > lhsPriority) {
+				fPatternDownRules.add(i, newPatternMatcher);
+				fPriorityDownRules.add(i, lhsPriority);
+				return newPatternMatcher;
 			} else {
-				if (matcher.getLHSPriority() == lhsPriority) {
+				if (priority == lhsPriority) {
+					// There can be "multiple rules" with the same priority
+					// Append the new rule matcher behind the last one or replace an existing equivalent rule matcher
+					final IPatternMatcher matcher = fPatternDownRules.get(i);
 					if (matcher.isPatternHashAllowed(patternHash)) {
-						if (IPatternMatcher.EQUIVALENCE_COMPARATOR.compare(pmEvaluator, matcher) == 0) {
-							fPatternDownRules.set(i, pmEvaluator);
-							return pmEvaluator;
+						if (IPatternMatcher.EQUIVALENCE_COMPARATOR.compare(newPatternMatcher, matcher) == 0) {
+							if (pmSlotValuesMap == null) {
+								pmSlotValuesMap = newPatternMatcher.getPatternMap().clone();
+								pmSlotValuesMap.initSlotValues();
+								pmRHS = pmSlotValuesMap.substituteSymbols(newPatternMatcher.getRHS());
+								pmSlotValuesLHS = pmSlotValuesMap.substitutePatternOrSymbols(newPatternMatcher.getLHS(),
+										true);
+							}
+							if (equivalentSlots(matcher, pmSlotValuesMap.size(), pmSlotValuesLHS, pmRHS)) {
+								fPatternDownRules.set(i, newPatternMatcher);
+								fPriorityDownRules.set(i, lhsPriority);
+								return newPatternMatcher;
+							}
 						}
 					}
 				}
 			}
 		}
-		fPatternDownRules.add(pmEvaluator);
-		return pmEvaluator;
+
+		fPatternDownRules.add(newPatternMatcher);
+		fPriorityDownRules.add(lhsPriority);
+		return newPatternMatcher;
 	}
 
-	// public PatternMatcher putDownRule(final PatternMatcherAndInvoker pmEvaluator) {
-	// fPatternDownRules = getPatternDownRules();
-	// insertMatcher(pmEvaluator);
-	// return pmEvaluator;
-	// }
+	/**
+	 * Test if the matchers are equivalent, comparing the LHS (and possibly RHS-condition), with named patterns replaced
+	 * by slot values <code>#1, #2, #3,...</code>.
+	 * 
+	 * @param matcher
+	 *            the existing pattern matcher in the RulesData structure
+	 * @param newNumberOfPatterns
+	 *            the number of patterns which the new rule contains
+	 * @param newSlotValuesLHS
+	 *            the left-hand-side of the new rule with patterns replaced by slot values
+	 * @param newSlotValuesRHS
+	 *            the right-hand-side of the new rule with pattern symbols replaced by slot values
+	 * @return <code>true</code> if the <code>matcher</code>'s LHS and RHS-condition are equivalent to the new matcher
+	 *         parameters
+	 */
+	private static boolean equivalentSlots(IPatternMatcher matcher, int newNumberOfPatterns, IExpr newSlotValuesLHS,
+			IExpr newSlotValuesRHS) {
+		IPatternMap oldMap = matcher.getPatternMap();
+		if (oldMap.size() != newNumberOfPatterns) {
+			return false;
+		}
+		oldMap = oldMap.clone();
+		oldMap.initSlotValues();
+		IExpr oldSlotValuesLHS = oldMap.substitutePatternOrSymbols(matcher.getLHS(), true);
+		if (oldSlotValuesLHS.equals(newSlotValuesLHS)) {
+			IExpr rhs = matcher.getRHS();
+			if (newSlotValuesRHS.isCondition() && rhs.isCondition()) {
+				IExpr oldSlotValuesRHS = oldMap.substituteSymbols(rhs.second());
+				return newSlotValuesRHS.second().equals(oldSlotValuesRHS);
+			}
+			return !(rhs.isCondition() || newSlotValuesRHS.isCondition());
+		}
+		return false;
+	}
 
 	public void putfDefaultValues(IExpr expr) {
 		putfDefaultValues(DEFAULT_VALUE_INDEX, expr);
@@ -724,7 +760,19 @@ public final class RulesData implements Serializable {
 		}
 
 		if (fPatternDownRules != null) {
-			return fPatternDownRules.removeIf(x -> x.equivalentLHS(pmEvaluator) == 0);
+			int i = 0;
+			boolean evaled = false;
+			while (i < fPatternDownRules.size()) {
+				IPatternMatcher pm = fPatternDownRules.get(i);
+				if (pm.equivalentLHS(pmEvaluator) == 0) {
+					fPatternDownRules.remove(i);
+					fPriorityDownRules.removeInt(i);
+					evaled = true;
+					continue;
+				}
+				i++;
+			}
+			return evaled;
 		}
 		return false;
 	}

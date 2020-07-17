@@ -82,6 +82,10 @@ public interface IPatternMap extends Cloneable {
 		}
 
 		@Override
+		public final void initSlotValues() {
+		}
+
+		@Override
 		public boolean isAllPatternsAssigned() {
 			return true;
 		}
@@ -227,6 +231,11 @@ public interface IPatternMap extends Cloneable {
 		public void initPattern() {
 			evaluatedRHS = false;
 			fValue1 = null;
+		}
+
+		@Override
+		public final void initSlotValues() {
+			fValue1 = F.Slot1;
 		}
 
 		@Override
@@ -445,6 +454,12 @@ public interface IPatternMap extends Cloneable {
 			evaluatedRHS = false;
 			fValue1 = null;
 			fValue2 = null;
+		}
+
+		@Override
+		public final void initSlotValues() {
+			fValue1 = F.Slot1;
+			fValue2 = F.Slot2;
 		}
 
 		@Override
@@ -716,6 +731,13 @@ public interface IPatternMap extends Cloneable {
 			fValue1 = null;
 			fValue2 = null;
 			fValue3 = null;
+		}
+
+		@Override
+		public final void initSlotValues() {
+			fValue1 = F.Slot1;
+			fValue2 = F.Slot2;
+			fValue3 = F.Slot3;
 		}
 
 		@Override
@@ -1069,6 +1091,12 @@ public interface IPatternMap extends Cloneable {
 		public final void initPattern() {
 			evaluatedRHS = false;
 			Arrays.fill(fSymbolsOrPatternValues, null);
+		}
+
+		public final void initSlotValues() {
+			for (int i = 0; i < fSymbolsOrPatternValues.length; i++) {
+				fSymbolsOrPatternValues[i] = F.Slot(i + 1);
+			}
 		}
 
 		/**
@@ -1458,6 +1486,8 @@ public interface IPatternMap extends Cloneable {
 	 * Set all pattern values to <code>null</code>;
 	 */
 	public void initPattern();
+
+	public void initSlotValues();
 
 	/**
 	 * Check if all symbols in the symbols array have corresponding values assigned.

@@ -169,7 +169,17 @@ public abstract class IPatternMatcher implements Predicate<IExpr>, Cloneable, Se
 	 * @return the priority
 	 */
 	public abstract int getLHSPriority();
+	
 
+	/**
+	 * Get the current pattern map of this matcher. If not initialized return <code>null</code>.
+	 * 
+	 * @return <code>null</code> if not initialized; the pattern map otherwise
+	 */
+	public IPatternMap getPatternMap() {
+		return null;
+	}
+	
 	public abstract int getPatternHash();
 
 	/**
