@@ -23,11 +23,15 @@ Sum(Ceiling(Log(a_,i_)), {i_Symbol,1,n_Symbol}):=
   
 },{   
 
-Sum(c_^i_, {i_Symbol,0,n_Symbol}) := (-1 + c^(1 + n))/(-1 + c)  
-  /; FreeQ(c,i)&&FreeQ(n,i),
+Sum(i_^c_, {i_Symbol,0,n_Symbol}) := 0^c + HarmonicNumber(n, -c)
+  /;  FreeQ({c,n},i),
   
+Sum(c_^i_, {i_Symbol,0,n_Symbol}) := (-1 + c^(1 + n))/(-1 + c)  
+  /; FreeQ({c,n},i),
+
+    
 Sum(i_*c_^i_, {i_Symbol,0,n_Symbol}) := (c + c^(1 + n)*(-1 - n + c*n))/(1 - c)^2
-  /; FreeQ(c,i)&&FreeQ(n,i),
+  /;  FreeQ({c,n},i),
   
 Sum(Binomial(n_, i_), {i_Symbol,0,n_Symbol}) := 2^n
   /; FreeQ(n,i),

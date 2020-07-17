@@ -29,12 +29,15 @@ public interface SumRules {
       Condition(Plus(Times(Plus(Times(Floor(Log(a,n)),Power(a,Plus(Floor(Log(a,n)),C1))),Times(CN1,Plus(Floor(Log(a,n)),C1),Power(a,Floor(Log(a,n)))),C1),Power(Plus(CN1,a),CN1)),Times(Plus(Negate(Power(a,Floor(Log(a,n)))),n),Ceiling(Log(a,n)))),And(FreeQ(a,i),FreeQ(n,i))))
   );
   final public static IAST RULES2 = List(
-    // Sum(c_^i_,{i_Symbol,0,n_Symbol}):=(-1+c^(1+n))/(-1+c)/;FreeQ(c,i)&&FreeQ(n,i)
+    // Sum(i_^c_,{i_Symbol,0,n_Symbol}):=0^c+HarmonicNumber(n,-c)/;FreeQ({c,n},i)
+    ISetDelayed(Sum(Power(i_,c_),List(i_Symbol,C0,n_Symbol)),
+      Condition(Plus(Power(C0,c),HarmonicNumber(n,Negate(c))),FreeQ(List(c,n),i))),
+    // Sum(c_^i_,{i_Symbol,0,n_Symbol}):=(-1+c^(1+n))/(-1+c)/;FreeQ({c,n},i)
     ISetDelayed(Sum(Power(c_,i_),List(i_Symbol,C0,n_Symbol)),
-      Condition(Times(Power(Plus(CN1,c),CN1),Plus(CN1,Power(c,Plus(C1,n)))),And(FreeQ(c,i),FreeQ(n,i)))),
-    // Sum(i_*c_^i_,{i_Symbol,0,n_Symbol}):=(c+c^(1+n)*(-1-n+c*n))/(1-c)^2/;FreeQ(c,i)&&FreeQ(n,i)
+      Condition(Times(Power(Plus(CN1,c),CN1),Plus(CN1,Power(c,Plus(C1,n)))),FreeQ(List(c,n),i))),
+    // Sum(i_*c_^i_,{i_Symbol,0,n_Symbol}):=(c+c^(1+n)*(-1-n+c*n))/(1-c)^2/;FreeQ({c,n},i)
     ISetDelayed(Sum(Times(i_,Power(c_,i_)),List(i_Symbol,C0,n_Symbol)),
-      Condition(Times(Power(Subtract(C1,c),CN2),Plus(c,Times(Power(c,Plus(C1,n)),Plus(CN1,Negate(n),Times(c,n))))),And(FreeQ(c,i),FreeQ(n,i)))),
+      Condition(Times(Power(Subtract(C1,c),CN2),Plus(c,Times(Power(c,Plus(C1,n)),Plus(CN1,Negate(n),Times(c,n))))),FreeQ(List(c,n),i))),
     // Sum(Binomial(n_,i_),{i_Symbol,0,n_Symbol}):=2^n/;FreeQ(n,i)
     ISetDelayed(Sum(Binomial(n_,i_),List(i_Symbol,C0,n_Symbol)),
       Condition(Power(C2,n),FreeQ(n,i))),
