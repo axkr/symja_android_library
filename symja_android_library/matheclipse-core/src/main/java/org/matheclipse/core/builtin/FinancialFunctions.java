@@ -2,9 +2,9 @@ package org.matheclipse.core.builtin;
 
 import org.matheclipse.core.basic.ToggleFeature;
 import org.matheclipse.core.eval.EvalEngine;
-import org.matheclipse.core.eval.exception.Validate;
 import org.matheclipse.core.eval.interfaces.AbstractEvaluator;
 import org.matheclipse.core.expression.F;
+import org.matheclipse.core.expression.S;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.parser.client.FEConfig;
@@ -20,10 +20,10 @@ public class FinancialFunctions {
 
 		private static void init() {
 			if (ToggleFeature.FINANCE) {
-				F.EffectiveInterest.setEvaluator(new EffectiveInterest());
-				F.TimeValue.setEvaluator(new TimeValue());
-				F.Annuity.setEvaluator(new Annuity());
-				F.AnnuityDue.setEvaluator(new AnnuityDue());
+				S.EffectiveInterest.setEvaluator(new EffectiveInterest());
+				S.TimeValue.setEvaluator(new TimeValue());
+				S.Annuity.setEvaluator(new Annuity());
+				S.AnnuityDue.setEvaluator(new AnnuityDue());
 			}
 		}
 	}

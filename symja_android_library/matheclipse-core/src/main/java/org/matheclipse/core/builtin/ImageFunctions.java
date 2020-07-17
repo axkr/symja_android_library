@@ -3,10 +3,10 @@ package org.matheclipse.core.builtin;
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.interfaces.AbstractEvaluator;
 import org.matheclipse.core.expression.F;
+import org.matheclipse.core.expression.S;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IASTMutable;
 import org.matheclipse.core.interfaces.IExpr;
-import org.matheclipse.core.interfaces.ISymbol;
 import org.matheclipse.parser.client.FEConfig;
 
 public class ImageFunctions {
@@ -18,17 +18,17 @@ public class ImageFunctions {
 	private static class Initializer {
 
 		private static void init() {
-			F.MaxFilter.setEvaluator(new MaxFilter());
-			F.MeanFilter.setEvaluator(new MeanFilter());
-			F.MedianFilter.setEvaluator(new MedianFilter());
-			F.MinFilter.setEvaluator(new MinFilter());
+			S.MaxFilter.setEvaluator(new MaxFilter());
+			S.MeanFilter.setEvaluator(new MeanFilter());
+			S.MedianFilter.setEvaluator(new MedianFilter());
+			S.MinFilter.setEvaluator(new MinFilter());
 		}
 	}
 
 	private static class MinFilter extends AbstractEvaluator {
 
 		protected IExpr filterHead() {
-			return F.Min;
+			return S.Min;
 		}
 
 		@Override
@@ -68,19 +68,19 @@ public class ImageFunctions {
 
 	private static class MaxFilter extends MinFilter {
 		protected IExpr filterHead() {
-			return F.Max;
+			return S.Max;
 		}
 	}
 
 	private static class MeanFilter extends MinFilter {
 		protected IExpr filterHead() {
-			return F.Mean;
+			return S.Mean;
 		}
 	}
 
 	private static class MedianFilter extends MinFilter {
 		protected IExpr filterHead() {
-			return F.Median;
+			return S.Median;
 		}
 	}
 

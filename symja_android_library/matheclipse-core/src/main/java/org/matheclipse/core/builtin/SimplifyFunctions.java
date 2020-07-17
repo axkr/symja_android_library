@@ -1,8 +1,9 @@
 package org.matheclipse.core.builtin;
 
 import static org.matheclipse.core.expression.F.Log;
-import static org.matheclipse.core.expression.F.x;
 import static org.matheclipse.core.expression.F.x_;
+import static org.matheclipse.core.expression.S.Log;
+import static org.matheclipse.core.expression.S.x;
 
 import java.util.List;
 import java.util.function.Function;
@@ -16,6 +17,7 @@ import org.matheclipse.core.eval.util.IAssumptions;
 import org.matheclipse.core.eval.util.OptionArgs;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.expression.ID;
+import org.matheclipse.core.expression.S;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IASTAppendable;
 import org.matheclipse.core.interfaces.IASTMutable;
@@ -43,9 +45,8 @@ public class SimplifyFunctions {
 	private static class Initializer {
 
 		private static void init() {
-			// F.ConvexHullMesh.setEvaluator(new ConvexHullMesh());
-			F.FullSimplify.setEvaluator(new FullSimplify());
-			F.Simplify.setEvaluator(new Simplify());
+			S.FullSimplify.setEvaluator(new FullSimplify());
+			S.Simplify.setEvaluator(new Simplify());
 		}
 	}
 

@@ -5,12 +5,12 @@ import java.util.function.Predicate;
 import org.matheclipse.core.basic.Config;
 import org.matheclipse.core.builtin.Algebra.InternalFindCommonFactorPlus;
 import org.matheclipse.core.eval.EvalEngine;
-import org.matheclipse.core.eval.exception.ArgumentTypeException;
 import org.matheclipse.core.eval.exception.ValidateException;
 import org.matheclipse.core.eval.interfaces.AbstractCoreFunctionEvaluator;
 import org.matheclipse.core.eval.interfaces.AbstractCorePredicateEvaluator;
 import org.matheclipse.core.eval.util.OptionArgs;
 import org.matheclipse.core.expression.F;
+import org.matheclipse.core.expression.S;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IASTAppendable;
 import org.matheclipse.core.interfaces.IExpr;
@@ -39,42 +39,42 @@ public class PredicateQ {
 	private static class Initializer {
 
 		private static void init() {
-			F.AntisymmetricMatrixQ.setEvaluator(new AntisymmetricMatrixQ());
-			F.AntihermitianMatrixQ.setEvaluator(new AntihermitianMatrixQ());
-			F.ArrayQ.setEvaluator(new ArrayQ());
-			F.AssociationQ.setPredicateQ(x -> x.isAssociation());
-			F.AtomQ.setPredicateQ(x -> x.isAtom());
-			F.BooleanQ.setPredicateQ(x -> x.isTrue() || x.isFalse());
-			F.ByteArrayQ.setPredicateQ(WXFFunctions::isByteArray);
-			F.DigitQ.setEvaluator(new DigitQ());
-			F.EvenQ.setEvaluator(new EvenQ());
-			F.ExactNumberQ.setPredicateQ(x -> x.isExactNumber());
-			F.FreeQ.setEvaluator(new FreeQ());
-			F.HermitianMatrixQ.setEvaluator(new HermitianMatrixQ());
-			F.InexactNumberQ.setPredicateQ(x -> x.isInexactNumber());
-			F.IntegerQ.setPredicateQ(x -> x.isInteger());
-			F.ListQ.setPredicateQ(x -> x.isList());
-			F.MachineNumberQ.setPredicateQ(x -> x.isMachineNumber());
-			F.MatchQ.setEvaluator(new MatchQ());
-			F.MatrixQ.setEvaluator(new MatrixQ());
-			F.MemberQ.setEvaluator(new MemberQ());
-			F.MissingQ.setPredicateQ(x -> x.isAST(F.Missing, 2));
-			F.NotListQ.setPredicateQ(x -> !x.isList());
-			F.NumberQ.setPredicateQ(x -> x.isNumber());
-			F.NumericQ.setPredicateQ(x -> x.isNumericFunction());
-			F.OddQ.setEvaluator(new OddQ());
-			F.OrthogonalMatrixQ.setEvaluator(new OrthogonalMatrixQ());
-			F.PossibleZeroQ.setEvaluator(new PossibleZeroQ());
-			F.PrimeQ.setEvaluator(new PrimeQ());
-			F.QuantityQ.setEvaluator(new QuantityQ());
-			F.RealNumberQ.setEvaluator(new RealNumberQ());
-			F.SquareMatrixQ.setEvaluator(new SquareMatrixQ());
-			F.StringQ.setPredicateQ(x -> x.isString());
-			F.SymbolQ.setPredicateQ(x -> x.isSymbol());
-			F.SymmetricMatrixQ.setEvaluator(new SymmetricMatrixQ());
-			F.SyntaxQ.setEvaluator(new SyntaxQ());
-			F.ValueQ.setEvaluator(new ValueQ());
-			F.VectorQ.setEvaluator(new VectorQ());
+			S.AntisymmetricMatrixQ.setEvaluator(new AntisymmetricMatrixQ());
+			S.AntihermitianMatrixQ.setEvaluator(new AntihermitianMatrixQ());
+			S.ArrayQ.setEvaluator(new ArrayQ());
+			S.AssociationQ.setPredicateQ(x -> x.isAssociation());
+			S.AtomQ.setPredicateQ(x -> x.isAtom());
+			S.BooleanQ.setPredicateQ(x -> x.isTrue() || x.isFalse());
+			S.ByteArrayQ.setPredicateQ(WXFFunctions::isByteArray);
+			S.DigitQ.setEvaluator(new DigitQ());
+			S.EvenQ.setEvaluator(new EvenQ());
+			S.ExactNumberQ.setPredicateQ(x -> x.isExactNumber());
+			S.FreeQ.setEvaluator(new FreeQ());
+			S.HermitianMatrixQ.setEvaluator(new HermitianMatrixQ());
+			S.InexactNumberQ.setPredicateQ(x -> x.isInexactNumber());
+			S.IntegerQ.setPredicateQ(x -> x.isInteger());
+			S.ListQ.setPredicateQ(x -> x.isList());
+			S.MachineNumberQ.setPredicateQ(x -> x.isMachineNumber());
+			S.MatchQ.setEvaluator(new MatchQ());
+			S.MatrixQ.setEvaluator(new MatrixQ());
+			S.MemberQ.setEvaluator(new MemberQ());
+			S.MissingQ.setPredicateQ(x -> x.isAST(S.Missing, 2));
+			S.NotListQ.setPredicateQ(x -> !x.isList());
+			S.NumberQ.setPredicateQ(x -> x.isNumber());
+			S.NumericQ.setPredicateQ(x -> x.isNumericFunction());
+			S.OddQ.setEvaluator(new OddQ());
+			S.OrthogonalMatrixQ.setEvaluator(new OrthogonalMatrixQ());
+			S.PossibleZeroQ.setEvaluator(new PossibleZeroQ());
+			S.PrimeQ.setEvaluator(new PrimeQ());
+			S.QuantityQ.setEvaluator(new QuantityQ());
+			S.RealNumberQ.setEvaluator(new RealNumberQ());
+			S.SquareMatrixQ.setEvaluator(new SquareMatrixQ());
+			S.StringQ.setPredicateQ(x -> x.isString());
+			S.SymbolQ.setPredicateQ(x -> x.isSymbol());
+			S.SymmetricMatrixQ.setEvaluator(new SymmetricMatrixQ());
+			S.SyntaxQ.setEvaluator(new SyntaxQ());
+			S.ValueQ.setEvaluator(new ValueQ());
+			S.VectorQ.setEvaluator(new VectorQ());
 		}
 	}
 
@@ -105,7 +105,7 @@ public class PredicateQ {
 				}
 				return false;
 			}
-			return F.Equal.ofQ(engine, F.Times(F.CN1, F.Conjugate(expr1)), expr2);
+			return S.Equal.ofQ(engine, F.Times(F.CN1, F.Conjugate(expr1)), expr2);
 		}
 
 	}
@@ -137,7 +137,7 @@ public class PredicateQ {
 				}
 				return false;
 			}
-			return F.Equal.ofQ(engine, F.Times(F.CN1, expr1), expr2);
+			return S.Equal.ofQ(engine, F.Times(F.CN1, expr1), expr2);
 		}
 
 	}
@@ -264,12 +264,12 @@ public class PredicateQ {
 					// Match the depth with the second argument
 					final IPatternMatcher matcher = engine.evalPatternMatcher(ast.arg2());
 					if (!matcher.test(F.ZZ(depth), engine)) {
-						return F.False;
+						return S.False;
 					}
 				}
-				return F.True;
+				return S.True;
 			}
-			return F.False;
+			return S.False;
 
 		}
 
@@ -352,7 +352,7 @@ public class PredicateQ {
 
 		@Override
 		public boolean evalArg1Boole(final IExpr arg1, EvalEngine engine, OptionArgs options) {
-			IExpr option = options.getOption(F.GaussianIntegers);
+			IExpr option = options.getOption(S.GaussianIntegers);
 			if (!option.isTrue()) {
 				return evalArg1Boole(arg1, engine);
 			}
@@ -468,7 +468,7 @@ public class PredicateQ {
 					// special for FreeQ(), don't implemented in MemberQ()!
 					if (arg1.isOrderlessAST() && arg2.isOrderlessAST() && arg1.head().equals(arg2.head())) {
 						if (!isFreeOrderless((IAST) arg1, (IAST) arg1)) {
-							return F.False;
+							return S.False;
 						}
 					}
 				}
@@ -514,7 +514,7 @@ public class PredicateQ {
 				}
 				return false;
 			}
-			return F.Equal.ofQ(engine, F.Conjugate(expr1), expr2);
+			return S.Equal.ofQ(engine, F.Conjugate(expr1), expr2);
 		}
 
 	}
@@ -557,7 +557,7 @@ public class PredicateQ {
 				IPatternMatcher matcher = engine.evalPatternMatcher(ast.arg2());
 				IExpr arg1Evaled = engine.evaluate(arg1);
 				if (matcher.test(arg1Evaled, engine)) {
-					return F.True;
+					return S.True;
 				}
 				if (arg1Evaled.isAST()) {
 					return F.bool(matcher.test(arg1, engine));
@@ -572,7 +572,7 @@ public class PredicateQ {
 				// return F.bool(engine.evalPatternMatcher(arg2).test(arg1, engine));
 
 			}
-			return F.False;
+			return S.False;
 		}
 
 		public int[] expectedArgSize(IAST ast) {
@@ -615,7 +615,7 @@ public class PredicateQ {
 			final IExpr arg1 = engine.evaluate(ast.arg1());
 			int[] dims = arg1.isMatrix();
 			if (dims == null) {
-				return F.False;
+				return S.False;
 			}
 
 			if (ast.isAST2()) {
@@ -628,11 +628,11 @@ public class PredicateQ {
 						temp.set(1, x);
 						return engine.evalTrue(temp);
 					})) {
-						return F.False;
+						return S.False;
 					}
 				}
 			}
-			return F.True;
+			return S.True;
 		}
 
 		public int[] expectedArgSize(IAST ast) {
@@ -683,7 +683,7 @@ public class PredicateQ {
 				int size = ast.size();
 				if (ast.size() > 3) {
 					final OptionArgs options = new OptionArgs(ast.topHead(), ast, 3, size, engine);
-					if (options.isTrue(F.Heads)) {
+					if (options.isTrue(S.Heads)) {
 						heads = true;
 					}
 					int pos = options.getLastPosition();
@@ -707,7 +707,7 @@ public class PredicateQ {
 						return F.bool(arg1.accept(level));
 					}
 
-					return F.False;
+					return S.False;
 				}
 			} catch (final ValidateException ve) {
 				// see level specification
@@ -753,7 +753,7 @@ public class PredicateQ {
 
 		@Override
 		public boolean evalArg1Boole(final IExpr arg1, EvalEngine engine, OptionArgs options) {
-			IExpr option = options.getOption(F.GaussianIntegers);
+			IExpr option = options.getOption(S.GaussianIntegers);
 			if (!option.isTrue()) {
 				return evalArg1Boole(arg1, engine);
 			}
@@ -813,25 +813,25 @@ public class PredicateQ {
 			int[] dims = arg1.isMatrix();
 			if (dims == null) {
 				// no square matrix
-				return F.False;
+				return S.False;
 			}
 			IExpr identityMatrix = F.NIL;
 			int[] identityMatrixDims = null;
 			if (dims[0] >= dims[1]) {
-				identityMatrix = F.Dot.of(engine, F.Transpose(arg1), arg1);
+				identityMatrix = S.Dot.of(engine, F.Transpose(arg1), arg1);
 				identityMatrixDims = identityMatrix.isMatrix();
 				if (identityMatrixDims == null || //
 						identityMatrixDims[0] != dims[1] || //
 						identityMatrixDims[1] != dims[1]) {
-					return F.False;
+					return S.False;
 				}
 			} else {
-				identityMatrix = F.Dot.of(engine, arg1, F.Transpose(arg1));
+				identityMatrix = S.Dot.of(engine, arg1, F.Transpose(arg1));
 				identityMatrixDims = identityMatrix.isMatrix();
 				if (identityMatrixDims == null || //
 						identityMatrixDims[0] != dims[0] || //
 						identityMatrixDims[1] != dims[0]) {
-					return F.False;
+					return S.False;
 				}
 			}
 			IAST matrix = (IAST) identityMatrix;
@@ -839,17 +839,17 @@ public class PredicateQ {
 				IAST row = (IAST) matrix.get(i);
 				for (int j = 1; j <= identityMatrixDims[1]; j++) {
 					if (i == j) {
-						if (!F.PossibleZeroQ.ofQ(engine, F.Plus(F.CN1, row.get(j)))) {
-							return F.False;
+						if (!S.PossibleZeroQ.ofQ(engine, F.Plus(F.CN1, row.get(j)))) {
+							return S.False;
 						}
 					} else {
-						if (!F.PossibleZeroQ.ofQ(engine, row.get(j))) {
-							return F.False;
+						if (!S.PossibleZeroQ.ofQ(engine, row.get(j))) {
+							return S.False;
 						}
 					}
 				}
 			}
-			return F.True;
+			return S.True;
 		}
 
 		public int[] expectedArgSize(IAST ast) {
@@ -899,7 +899,7 @@ public class PredicateQ {
 				if (expr.isPlus()) {
 					IExpr[] commonFactors = InternalFindCommonFactorPlus.findCommonFactors((IAST) expr, true);
 					if (commonFactors != null) {
-						temp = engine.evaluate(F.Simplify(F.Times(commonFactors[0], commonFactors[1])));
+						temp = F.Simplify.of(engine, F.Times(commonFactors[0], commonFactors[1]));
 						if (temp.isNumber()) {
 							return temp.isZero();
 						}

@@ -7,6 +7,7 @@ import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.exception.ValidateException;
 import org.matheclipse.core.eval.interfaces.AbstractFunctionEvaluator;
 import org.matheclipse.core.expression.F;
+import org.matheclipse.core.expression.S;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.interfaces.ISignedNumber;
@@ -26,20 +27,20 @@ public class BesselFunctions {
 	private static class Initializer {
 
 		private static void init() {
-			F.AiryAi.setEvaluator(new AiryAi());
-			F.AiryAiPrime.setEvaluator(new AiryAiPrime());
-			F.AiryBi.setEvaluator(new AiryBi());
-			F.AiryBiPrime.setEvaluator(new AiryBiPrime());
-			F.BesselI.setEvaluator(new BesselI());
-			F.BesselJ.setEvaluator(new BesselJ());
-			F.BesselJZero.setEvaluator(new BesselJZero());
-			F.BesselK.setEvaluator(new BesselK());
-			F.BesselY.setEvaluator(new BesselY());
-			F.BesselYZero.setEvaluator(new BesselYZero());
-			F.HankelH1.setEvaluator(new HankelH1());
-			F.HankelH2.setEvaluator(new HankelH2());
-			F.SphericalBesselJ.setEvaluator(new SphericalBesselJ());
-			F.SphericalBesselY.setEvaluator(new SphericalBesselY());
+			S.AiryAi.setEvaluator(new AiryAi());
+			S.AiryAiPrime.setEvaluator(new AiryAiPrime());
+			S.AiryBi.setEvaluator(new AiryBi());
+			S.AiryBiPrime.setEvaluator(new AiryBiPrime());
+			S.BesselI.setEvaluator(new BesselI());
+			S.BesselJ.setEvaluator(new BesselJ());
+			S.BesselJZero.setEvaluator(new BesselJZero());
+			S.BesselK.setEvaluator(new BesselK());
+			S.BesselY.setEvaluator(new BesselY());
+			S.BesselYZero.setEvaluator(new BesselYZero());
+			S.HankelH1.setEvaluator(new HankelH1());
+			S.HankelH2.setEvaluator(new HankelH2());
+			S.SphericalBesselJ.setEvaluator(new SphericalBesselJ());
+			S.SphericalBesselY.setEvaluator(new SphericalBesselY());
 		}
 	}
 
@@ -902,7 +903,7 @@ public class BesselFunctions {
 						zDouble = z.evalDouble();
 					} catch (ValidateException ve) {
 					}
-					
+
 					if (Double.isNaN(nDouble) || Double.isNaN(zDouble)) {
 						Complex nc = n.evalComplex();
 						Complex zc = z.evalComplex();
@@ -989,7 +990,7 @@ public class BesselFunctions {
 						zDouble = z.evalDouble();
 					} catch (ValidateException ve) {
 					}
-					
+
 					if (Double.isNaN(nDouble) || Double.isNaN(zDouble) || zDouble < 0.0) {
 						Complex nc = n.evalComplex();
 						Complex zc = z.evalComplex();

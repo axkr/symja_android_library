@@ -19,6 +19,7 @@ import org.matheclipse.core.eval.interfaces.AbstractFunctionEvaluator;
 import org.matheclipse.core.eval.util.OptionArgs;
 import org.matheclipse.core.expression.ASTDataset;
 import org.matheclipse.core.expression.F;
+import org.matheclipse.core.expression.S;
 import org.matheclipse.core.expression.data.GraphExpr;
 import org.matheclipse.core.form.output.DoubleFormFactory;
 import org.matheclipse.core.form.output.JavaDoubleFormFactory;
@@ -48,20 +49,20 @@ public final class OutputFunctions {
 	private static class Initializer {
 
 		private static void init() {
-			F.BaseForm.setEvaluator(new BaseForm());
-			F.CForm.setEvaluator(new CForm());
-			F.FullForm.setEvaluator(new FullForm());
-			F.HoldForm.setEvaluator(new HoldForm());
-			F.HornerForm.setEvaluator(new HornerForm());
-			F.InputForm.setEvaluator(new InputForm());
-			F.IntegerName.setEvaluator(new IntegerName());
-			F.JavaForm.setEvaluator(new JavaForm());
-			F.JSForm.setEvaluator(new JSForm());
-			F.MathMLForm.setEvaluator(new MathMLForm());
-			F.RomanNumeral.setEvaluator(new RomanNumeral());
-			F.TableForm.setEvaluator(new TableForm());
-			F.TeXForm.setEvaluator(new TeXForm());
-			F.TreeForm.setEvaluator(new TreeForm());
+			S.BaseForm.setEvaluator(new BaseForm());
+			S.CForm.setEvaluator(new CForm());
+			S.FullForm.setEvaluator(new FullForm());
+			S.HoldForm.setEvaluator(new HoldForm());
+			S.HornerForm.setEvaluator(new HornerForm());
+			S.InputForm.setEvaluator(new InputForm());
+			S.IntegerName.setEvaluator(new IntegerName());
+			S.JavaForm.setEvaluator(new JavaForm());
+			S.JSForm.setEvaluator(new JSForm());
+			S.MathMLForm.setEvaluator(new MathMLForm());
+			S.RomanNumeral.setEvaluator(new RomanNumeral());
+			S.TableForm.setEvaluator(new TableForm());
+			S.TeXForm.setEvaluator(new TeXForm());
+			S.TreeForm.setEvaluator(new TreeForm());
 		}
 	}
 

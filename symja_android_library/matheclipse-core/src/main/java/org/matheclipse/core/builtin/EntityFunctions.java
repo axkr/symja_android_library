@@ -1,12 +1,11 @@
 package org.matheclipse.core.builtin;
 
 import org.matheclipse.core.eval.EvalEngine;
-import org.matheclipse.core.eval.interfaces.AbstractEvaluator;
 import org.matheclipse.core.eval.interfaces.AbstractFunctionEvaluator;
 import org.matheclipse.core.expression.F;
+import org.matheclipse.core.expression.S;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IExpr;
-import org.matheclipse.core.interfaces.ISymbol;
 import org.matheclipse.core.reflection.system.rules.RGBColorRules;
 
 public class EntityFunctions {
@@ -14,7 +13,7 @@ public class EntityFunctions {
 	private static class Initializer {
 
 		private static void init() {
-			F.RGBColor.setEvaluator(new RGBColor());
+			S.RGBColor.setEvaluator(new RGBColor());
 		}
 	}
 

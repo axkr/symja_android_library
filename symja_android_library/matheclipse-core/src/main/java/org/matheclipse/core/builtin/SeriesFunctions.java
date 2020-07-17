@@ -12,12 +12,10 @@ import org.matheclipse.core.eval.interfaces.AbstractFunctionEvaluator;
 import org.matheclipse.core.eval.util.OptionArgs;
 import org.matheclipse.core.expression.ASTSeriesData;
 import org.matheclipse.core.expression.F;
-import org.matheclipse.core.expression.data.ByteArrayExpr;
+import org.matheclipse.core.expression.S;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IASTAppendable;
 import org.matheclipse.core.interfaces.IASTMutable;
-import org.matheclipse.core.interfaces.IAssociation;
-import org.matheclipse.core.interfaces.IDataExpr;
 import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.interfaces.IFraction;
 import org.matheclipse.core.interfaces.IInteger;
@@ -41,14 +39,14 @@ public class SeriesFunctions {
 
 		private static void init() {
 
-			F.Limit.setEvaluator(new Limit());
+			S.Limit.setEvaluator(new Limit());
 			if (ToggleFeature.SERIES) {
-				F.ComposeSeries.setEvaluator(new ComposeSeries());
-				F.InverseSeries.setEvaluator(new InverseSeries());
-				F.Normal.setEvaluator(new Normal());
-				F.Series.setEvaluator(new Series());
-				F.SeriesCoefficient.setEvaluator(new SeriesCoefficient());
-				F.SeriesData.setEvaluator(new SeriesData());
+				S.ComposeSeries.setEvaluator(new ComposeSeries());
+				S.InverseSeries.setEvaluator(new InverseSeries());
+				S.Normal.setEvaluator(new Normal());
+				S.Series.setEvaluator(new Series());
+				S.SeriesCoefficient.setEvaluator(new SeriesCoefficient());
+				S.SeriesData.setEvaluator(new SeriesData());
 			}
 		}
 	}
@@ -186,7 +184,7 @@ public class SeriesFunctions {
 				boolean isLimit = false;
 				for (int i = 1; i < ast.size(); i++) {
 					IExpr temp = evalLimitQuiet(ast.get(i), this);
-					if (!temp.isFree(F.Limit)) {
+					if (!temp.isFree(S.Limit)) {
 						isLimit = true;
 					} else if (temp.isIndeterminate()) {
 						isIndeterminate = true;
@@ -206,8 +204,8 @@ public class SeriesFunctions {
 			try {
 				// engine.setQuietMode(true);
 				// return evalLimit(expr, data, true);
-				IExpr direction = data.direction() == Direction.TWO_SIDED ? F.Reals : F.ZZ(data.direction().toInt());
-				return engine.evaluate(F.Limit(expr, data.rule(), F.Rule(F.Direction, direction)));
+				IExpr direction = data.direction() == Direction.TWO_SIDED ? S.Reals : F.ZZ(data.direction().toInt());
+				return engine.evaluate(F.Limit(expr, data.rule(), F.Rule(S.Direction, direction)));
 			} finally {
 				engine.setQuietMode(quiet);
 			}
@@ -230,7 +228,7 @@ public class SeriesFunctions {
 			if (result.isNumericFunction()) {
 				return result;
 			}
-			if (!result.equals(F.Indeterminate)) {
+			if (!result.equals(S.Indeterminate)) {
 				expression = result;
 			}
 			if (result.isFree(data.variable(), true)) {
@@ -265,7 +263,7 @@ public class SeriesFunctions {
 			}
 
 			if (expression.isAST()) {
-				if (!limitValue.isNumericFunction() && limitValue.isFree(F.DirectedInfinity)
+				if (!limitValue.isNumericFunction() && limitValue.isFree(S.DirectedInfinity)
 						&& limitValue.isFree(data.variable())) {
 					// example Limit(E^(3*x), x->a) ==> E^(3*a)
 					return expr.replaceAll(data.rule()).orElse(expr);

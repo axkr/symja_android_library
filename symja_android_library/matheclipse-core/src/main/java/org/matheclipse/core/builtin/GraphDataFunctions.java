@@ -11,6 +11,7 @@ import org.jgrapht.graph.builder.GraphTypeBuilder;
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.interfaces.AbstractEvaluator;
 import org.matheclipse.core.expression.F;
+import org.matheclipse.core.expression.S;
 import org.matheclipse.core.expression.data.ExprEdge;
 import org.matheclipse.core.expression.data.GraphExpr;
 import org.matheclipse.core.interfaces.IAST;
@@ -38,7 +39,7 @@ public class GraphDataFunctions {
 		private static void init() {
 			GRAPH_MAP.put("PetersenGraph", () -> petersenGraph());
 			GRAPH_MAP.put("PappusGraph", () -> pappusGraph());
-			F.GraphData.setEvaluator(new GraphData());
+			S.GraphData.setEvaluator(new GraphData());
 		}
 	}
 

@@ -4,7 +4,6 @@ import static org.matheclipse.core.expression.F.Power;
 import static org.matheclipse.core.expression.F.Times;
 
 import java.time.LocalDateTime;
-import java.time.LocalTime;
 import java.util.Calendar;
 import java.util.Properties;
 
@@ -17,8 +16,8 @@ import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.interfaces.AbstractSymbolEvaluator;
 import org.matheclipse.core.eval.interfaces.ISignedNumberConstant;
 import org.matheclipse.core.expression.F;
+import org.matheclipse.core.expression.S;
 import org.matheclipse.core.expression.data.DateObjectExpr;
-import org.matheclipse.core.expression.data.TimeObjectExpr;
 import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.interfaces.ISymbol;
 
@@ -69,35 +68,35 @@ public class ConstantDefinitions {
 			// System.out.println(VERSION);
 			// System.out.println(TIMESTAMP);
 
-			F.$Context.setEvaluator(new $Context());
-			F.$ContextPath.setEvaluator(new $ContextPath());
-			F.$CreationDate.setEvaluator(new $CreationDate());
-			F.$HomeDirectory.setEvaluator(new $HomeDirectory());
-			F.$MachineEpsilon.setEvaluator(new $MachineEpsilon());
-			F.$MachinePrecision.setEvaluator(new $MachinePrecision());
-			F.$UserName.setEvaluator(new $UserName());
-			F.$Version.setEvaluator(new $Version());
+			S.$Context.setEvaluator(new $Context());
+			S.$ContextPath.setEvaluator(new $ContextPath());
+			S.$CreationDate.setEvaluator(new $CreationDate());
+			S.$HomeDirectory.setEvaluator(new $HomeDirectory());
+			S.$MachineEpsilon.setEvaluator(new $MachineEpsilon());
+			S.$MachinePrecision.setEvaluator(new $MachinePrecision());
+			S.$UserName.setEvaluator(new $UserName());
+			S.$Version.setEvaluator(new $Version());
 
-			// System.out.println(F.$CreationDate.of().toString());
-			F.Catalan.setEvaluator(new Catalan());
-			F.ComplexInfinity.setEvaluator(new ComplexInfinity());
-			F.Degree.setEvaluator(new Degree());
-			F.E.setEvaluator(new E());
-			F.EulerGamma.setEvaluator(new EulerGamma());
-			F.Glaisher.setEvaluator(new Glaisher());
-			F.GoldenAngle.setEvaluator(new GoldenAngle());
-			F.GoldenRatio.setEvaluator(new GoldenRatio());
-			F.I.setEvaluator(new I());
-			F.Infinity.setEvaluator(new Infinity());
-			F.Khinchin.setEvaluator(new Khinchin());
-			F.Pi.setEvaluator(new Pi());
+			// System.out.println(S.$CreationDate.of().toString());
+			S.Catalan.setEvaluator(new Catalan());
+			S.ComplexInfinity.setEvaluator(new ComplexInfinity());
+			S.Degree.setEvaluator(new Degree());
+			S.E.setEvaluator(new E());
+			S.EulerGamma.setEvaluator(new EulerGamma());
+			S.Glaisher.setEvaluator(new Glaisher());
+			S.GoldenAngle.setEvaluator(new GoldenAngle());
+			S.GoldenRatio.setEvaluator(new GoldenRatio());
+			S.I.setEvaluator(new I());
+			S.Infinity.setEvaluator(new Infinity());
+			S.Khinchin.setEvaluator(new Khinchin());
+			S.Pi.setEvaluator(new Pi());
 			
-			F.Now.setEvaluator(new Now());
-			F.Today.setEvaluator(new Today());
+			S.Now.setEvaluator(new Now());
+			S.Today.setEvaluator(new Today());
 
-			F.False.setEvaluator(NILEvaluator.CONST);
-			F.True.setEvaluator(NILEvaluator.CONST);
-			F.Null.setEvaluator(NILEvaluator.CONST);
+			S.False.setEvaluator(NILEvaluator.CONST);
+			S.True.setEvaluator(NILEvaluator.CONST);
+			S.Null.setEvaluator(NILEvaluator.CONST);
 		}
 	}
 

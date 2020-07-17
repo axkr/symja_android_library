@@ -6,6 +6,7 @@ import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.exception.ArgumentTypeStopException;
 import org.matheclipse.core.eval.interfaces.AbstractCoreFunctionEvaluator;
 import org.matheclipse.core.expression.F;
+import org.matheclipse.core.expression.S;
 import org.matheclipse.core.expression.WL;
 import org.matheclipse.core.expression.data.ByteArrayExpr;
 import org.matheclipse.core.interfaces.IAST;
@@ -22,9 +23,9 @@ public class WXFFunctions {
 	private static class Initializer {
 
 		private static void init() {
-			F.BinarySerialize.setEvaluator(new BinarySerialize());
-			F.BinaryDeserialize.setEvaluator(new BinaryDeserialize());
-			F.ByteArray.setEvaluator(new ByteArray());
+			S.BinarySerialize.setEvaluator(new BinarySerialize());
+			S.BinaryDeserialize.setEvaluator(new BinaryDeserialize());
+			S.ByteArray.setEvaluator(new ByteArray());
 		}
 	}
 

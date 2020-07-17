@@ -1,7 +1,6 @@
 
 package org.matheclipse.core.builtin;
 
-import java.io.IOException;
 import java.io.UnsupportedEncodingException;
 import java.util.function.Predicate;
 import java.util.regex.Pattern;
@@ -13,6 +12,7 @@ import org.matheclipse.core.eval.exception.ValidateException;
 import org.matheclipse.core.eval.interfaces.AbstractCoreFunctionEvaluator;
 import org.matheclipse.core.eval.interfaces.AbstractFunctionEvaluator;
 import org.matheclipse.core.expression.F;
+import org.matheclipse.core.expression.S;
 import org.matheclipse.core.expression.StringX;
 import org.matheclipse.core.form.output.OutputFormFactory;
 import org.matheclipse.core.form.tex.TeXParser;
@@ -35,31 +35,31 @@ public final class StringFunctions {
 	private static class Initializer {
 
 		private static void init() {
-			F.FromCharacterCode.setEvaluator(new FromCharacterCode());
-			F.LetterQ.setEvaluator(new LetterQ());
-			F.LowerCaseQ.setEvaluator(new LowerCaseQ());
-			F.StringCases.setEvaluator(new StringCases());
-			F.StringContainsQ.setEvaluator(new StringContainsQ());
-			F.StringDrop.setEvaluator(new StringDrop());
-			F.StringExpression.setEvaluator(new StringExpression());
-			F.StringJoin.setEvaluator(new StringJoin());
-			F.StringLength.setEvaluator(new StringLength());
-			F.StringMatchQ.setEvaluator(new StringMatchQ());
-			F.StringPart.setEvaluator(new StringPart());
-			F.StringReplace.setEvaluator(new StringReplace());
-			F.StringRiffle.setEvaluator(new StringRiffle());
-			F.StringSplit.setEvaluator(new StringSplit());
-			F.StringTake.setEvaluator(new StringTake());
-			F.SyntaxLength.setEvaluator(new SyntaxLength());
-			F.TextString.setEvaluator(new TextString());
-			F.ToCharacterCode.setEvaluator(new ToCharacterCode());
-			F.ToString.setEvaluator(new ToString());
-			F.ToUnicode.setEvaluator(new ToUnicode());
-			F.UpperCaseQ.setEvaluator(new UpperCaseQ());
+			S.FromCharacterCode.setEvaluator(new FromCharacterCode());
+			S.LetterQ.setEvaluator(new LetterQ());
+			S.LowerCaseQ.setEvaluator(new LowerCaseQ());
+			S.StringCases.setEvaluator(new StringCases());
+			S.StringContainsQ.setEvaluator(new StringContainsQ());
+			S.StringDrop.setEvaluator(new StringDrop());
+			S.StringExpression.setEvaluator(new StringExpression());
+			S.StringJoin.setEvaluator(new StringJoin());
+			S.StringLength.setEvaluator(new StringLength());
+			S.StringMatchQ.setEvaluator(new StringMatchQ());
+			S.StringPart.setEvaluator(new StringPart());
+			S.StringReplace.setEvaluator(new StringReplace());
+			S.StringRiffle.setEvaluator(new StringRiffle());
+			S.StringSplit.setEvaluator(new StringSplit());
+			S.StringTake.setEvaluator(new StringTake());
+			S.SyntaxLength.setEvaluator(new SyntaxLength());
+			S.TextString.setEvaluator(new TextString());
+			S.ToCharacterCode.setEvaluator(new ToCharacterCode());
+			S.ToString.setEvaluator(new ToString());
+			S.ToUnicode.setEvaluator(new ToUnicode());
+			S.UpperCaseQ.setEvaluator(new UpperCaseQ());
 
 			TeXParser.initialize();
 			if (!Config.FUZZY_PARSER) {
-				F.ToExpression.setEvaluator(new ToExpression());
+				S.ToExpression.setEvaluator(new ToExpression());
 			}
 		}
 	}
@@ -93,7 +93,7 @@ public final class StringFunctions {
 					if (unicode < 0 || unicode >= 1114112) {
 						// A character unicode, which should be a non-negative integer less than 1114112, is expected at
 						// position `2` in `1`.
-						return IOFunctions.printMessage(F.FromCharacterCode, "notunicode", F.List(charList, F.ZZ(i)),
+						return IOFunctions.printMessage(S.FromCharacterCode, "notunicode", F.List(charList, F.ZZ(i)),
 								engine);
 					}
 					ch = (char) unicode;

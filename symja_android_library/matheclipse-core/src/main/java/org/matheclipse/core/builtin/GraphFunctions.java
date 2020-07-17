@@ -15,10 +15,8 @@ import org.jgrapht.GraphPath;
 import org.jgrapht.GraphType;
 import org.jgrapht.Graphs;
 import org.jgrapht.alg.cycle.HierholzerEulerianCycle;
-import org.jgrapht.alg.independentset.ChordalGraphIndependentSetFinder;
 import org.jgrapht.alg.interfaces.EulerianCycleAlgorithm;
 import org.jgrapht.alg.interfaces.HamiltonianCycleAlgorithm;
-import org.jgrapht.alg.interfaces.IndependentSetAlgorithm.IndependentSet;
 import org.jgrapht.alg.interfaces.ShortestPathAlgorithm.SingleSourcePaths;
 import org.jgrapht.alg.interfaces.SpanningTreeAlgorithm;
 import org.jgrapht.alg.interfaces.VertexCoverAlgorithm;
@@ -37,13 +35,13 @@ import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.interfaces.AbstractEvaluator;
 import org.matheclipse.core.eval.util.OptionArgs;
 import org.matheclipse.core.expression.F;
+import org.matheclipse.core.expression.S;
 import org.matheclipse.core.expression.data.ExprEdge;
 import org.matheclipse.core.expression.data.ExprWeightedEdge;
 import org.matheclipse.core.expression.data.GeoPositionExpr;
 import org.matheclipse.core.expression.data.GraphExpr;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IASTAppendable;
-import org.matheclipse.core.interfaces.IDataExpr;
 import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.interfaces.IInteger;
 import org.matheclipse.core.interfaces.INum;
@@ -62,26 +60,26 @@ public class GraphFunctions {
 	private static class Initializer {
 
 		private static void init() {
-			F.Graph.setEvaluator(new GraphCTor());
-			F.GraphCenter.setEvaluator(new GraphCenter());
-			F.GraphDiameter.setEvaluator(new GraphDiameter());
-			F.GraphPeriphery.setEvaluator(new GraphPeriphery());
-			F.GraphRadius.setEvaluator(new GraphRadius());
-			F.AdjacencyMatrix.setEvaluator(new AdjacencyMatrix());
-			F.EdgeList.setEvaluator(new EdgeList());
-			F.EdgeQ.setEvaluator(new EdgeQ());
-			F.EulerianGraphQ.setEvaluator(new EulerianGraphQ());
-			F.FindEulerianCycle.setEvaluator(new FindEulerianCycle());
-			F.FindHamiltonianCycle.setEvaluator(new FindHamiltonianCycle());
-			F.FindVertexCover.setEvaluator(new FindVertexCover());
-			F.FindShortestPath.setEvaluator(new FindShortestPath());
-			F.FindShortestTour.setEvaluator(new FindShortestTour());
-			F.FindSpanningTree.setEvaluator(new FindSpanningTree());
-			F.GraphQ.setEvaluator(new GraphQ());
-			F.HamiltonianGraphQ.setEvaluator(new HamiltonianGraphQ());
-			F.VertexEccentricity.setEvaluator(new VertexEccentricity());
-			F.VertexList.setEvaluator(new VertexList());
-			F.VertexQ.setEvaluator(new VertexQ());
+			S.Graph.setEvaluator(new GraphCTor());
+			S.GraphCenter.setEvaluator(new GraphCenter());
+			S.GraphDiameter.setEvaluator(new GraphDiameter());
+			S.GraphPeriphery.setEvaluator(new GraphPeriphery());
+			S.GraphRadius.setEvaluator(new GraphRadius());
+			S.AdjacencyMatrix.setEvaluator(new AdjacencyMatrix());
+			S.EdgeList.setEvaluator(new EdgeList());
+			S.EdgeQ.setEvaluator(new EdgeQ());
+			S.EulerianGraphQ.setEvaluator(new EulerianGraphQ());
+			S.FindEulerianCycle.setEvaluator(new FindEulerianCycle());
+			S.FindHamiltonianCycle.setEvaluator(new FindHamiltonianCycle());
+			S.FindVertexCover.setEvaluator(new FindVertexCover());
+			S.FindShortestPath.setEvaluator(new FindShortestPath());
+			S.FindShortestTour.setEvaluator(new FindShortestTour());
+			S.FindSpanningTree.setEvaluator(new FindSpanningTree());
+			S.GraphQ.setEvaluator(new GraphQ());
+			S.HamiltonianGraphQ.setEvaluator(new HamiltonianGraphQ());
+			S.VertexEccentricity.setEvaluator(new VertexEccentricity());
+			S.VertexList.setEvaluator(new VertexList());
+			S.VertexQ.setEvaluator(new VertexQ());
 		}
 	}
 
@@ -141,9 +139,9 @@ public class GraphFunctions {
 					}
 				} else if (ast.size() >= 3 && ast.arg1().isList()) {
 					IExpr edgeWeight = F.NIL;
-					final OptionArgs options = new OptionArgs(F.Graph, ast, 2, engine);
-					IExpr option = options.getOption(F.EdgeWeight);
-					if (option.isPresent() && !option.equals(F.Automatic)) {
+					final OptionArgs options = new OptionArgs(S.Graph, ast, 2, engine);
+					IExpr option = options.getOption(S.EdgeWeight);
+					if (option.isPresent() && !option.equals(S.Automatic)) {
 						edgeWeight = option;
 					}
 					GraphType t = ast.arg1().isListOfEdges();
@@ -187,7 +185,7 @@ public class GraphFunctions {
 
 		@Override
 		public IAST options() {
-			return F.List(F.Rule(F.EdgeWeight, F.Automatic));
+			return F.List(F.Rule(S.EdgeWeight, S.Automatic));
 		}
 
 		@Override

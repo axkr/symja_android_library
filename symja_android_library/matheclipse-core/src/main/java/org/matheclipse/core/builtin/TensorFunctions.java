@@ -11,6 +11,7 @@ import org.matheclipse.core.eval.exception.Validate;
 import org.matheclipse.core.eval.interfaces.AbstractEvaluator;
 import org.matheclipse.core.eval.interfaces.AbstractNonOrderlessArgMultiple;
 import org.matheclipse.core.expression.F;
+import org.matheclipse.core.expression.S;
 import org.matheclipse.core.generic.Predicates;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IASTAppendable;
@@ -27,14 +28,14 @@ public class TensorFunctions {
 	private static class Initializer {
 
 		private static void init() {
-			F.ArrayReshape.setEvaluator(new ArrayReshape());
-			F.Ordering.setEvaluator(new Ordering());
-			F.ListConvolve.setEvaluator(new ListConvolve());
-			F.ListCorrelate.setEvaluator(new ListCorrelate());
-			F.TensorDimensions.setEvaluator(new TensorDimensions());
-			F.TensorProduct.setEvaluator(new TensorProduct());
-			F.TensorRank.setEvaluator(new TensorRank());
-			F.TensorSymmetry.setEvaluator(new TensorSymmetry());
+			S.ArrayReshape.setEvaluator(new ArrayReshape());
+			S.Ordering.setEvaluator(new Ordering());
+			S.ListConvolve.setEvaluator(new ListConvolve());
+			S.ListCorrelate.setEvaluator(new ListCorrelate());
+			S.TensorDimensions.setEvaluator(new TensorDimensions());
+			S.TensorProduct.setEvaluator(new TensorProduct());
+			S.TensorRank.setEvaluator(new TensorRank());
+			S.TensorSymmetry.setEvaluator(new TensorSymmetry());
 		}
 	}
 

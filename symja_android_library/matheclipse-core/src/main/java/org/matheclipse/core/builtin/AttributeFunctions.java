@@ -4,11 +4,11 @@ import org.matheclipse.core.basic.Config;
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.exception.FailedException;
 import org.matheclipse.core.eval.exception.RuleCreationError;
-import org.matheclipse.core.eval.exception.Validate;
 import org.matheclipse.core.eval.interfaces.AbstractCoreFunctionEvaluator;
 import org.matheclipse.core.eval.interfaces.ISetEvaluator;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.expression.ID;
+import org.matheclipse.core.expression.S;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IASTAppendable;
 import org.matheclipse.core.interfaces.IExpr;
@@ -23,11 +23,11 @@ public class AttributeFunctions {
 	private static class Initializer {
 
 		private static void init() {
-			F.Attributes.setEvaluator(new Attributes());
-			F.ClearAttributes.setEvaluator(new ClearAttributes());
-			F.SetAttributes.setEvaluator(new SetAttributes());
-			F.Protect.setEvaluator(new Protect());
-			F.Unprotect.setEvaluator(new Unprotect());
+			S.Attributes.setEvaluator(new Attributes());
+			S.ClearAttributes.setEvaluator(new ClearAttributes());
+			S.SetAttributes.setEvaluator(new SetAttributes());
+			S.Protect.setEvaluator(new Protect());
+			S.Unprotect.setEvaluator(new Unprotect());
 		}
 	}
 

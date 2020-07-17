@@ -17,7 +17,6 @@ import java.util.List;
 import org.matheclipse.core.basic.Config;
 import org.matheclipse.core.convert.AST2Expr;
 import org.matheclipse.core.eval.EvalEngine;
-import org.matheclipse.core.eval.exception.ArgumentTypeException;
 import org.matheclipse.core.eval.exception.ConditionException;
 import org.matheclipse.core.eval.exception.FailedException;
 import org.matheclipse.core.eval.exception.ReturnException;
@@ -29,9 +28,9 @@ import org.matheclipse.core.eval.interfaces.AbstractFunctionEvaluator;
 import org.matheclipse.core.eval.interfaces.ISetEvaluator;
 import org.matheclipse.core.eval.util.Lambda;
 import org.matheclipse.core.eval.util.OptionArgs;
-import org.matheclipse.core.expression.ASTAssociation;
 import org.matheclipse.core.expression.Context;
 import org.matheclipse.core.expression.F;
+import org.matheclipse.core.expression.S;
 import org.matheclipse.core.form.Documentation;
 import org.matheclipse.core.form.output.OutputFormFactory;
 import org.matheclipse.core.interfaces.IAST;
@@ -60,43 +59,43 @@ public final class PatternMatching {
 	private static class Initializer {
 
 		private static void init() {
-			F.Hold.setEvaluator(new Hold());
-			F.HoldPattern.setEvaluator(new HoldPattern());
-			F.Identity.setEvaluator(new Identity());
-			F.Information.setEvaluator(new Information());
-			F.Literal.setEvaluator(new Literal());
-			F.MessageName.setEvaluator(new MessageName());
-			F.Optional.setEvaluator(Optional.CONST);
-			F.Options.setEvaluator(new Options());
-			F.Rule.setEvaluator(new Rule());
-			F.RuleDelayed.setEvaluator(new RuleDelayed());
+			S.Hold.setEvaluator(new Hold());
+			S.HoldPattern.setEvaluator(new HoldPattern());
+			S.Identity.setEvaluator(new Identity());
+			S.Information.setEvaluator(new Information());
+			S.Literal.setEvaluator(new Literal());
+			S.MessageName.setEvaluator(new MessageName());
+			S.Optional.setEvaluator(Optional.CONST);
+			S.Options.setEvaluator(new Options());
+			S.Rule.setEvaluator(new Rule());
+			S.RuleDelayed.setEvaluator(new RuleDelayed());
 			// if (!Config.FUZZY_PARSER) {
-			F.Set.setEvaluator(new Set());
-			F.SetDelayed.setEvaluator(new SetDelayed());
+			S.Set.setEvaluator(new Set());
+			S.SetDelayed.setEvaluator(new SetDelayed());
 			// }
-			F.Unique.setEvaluator(new Unique());
+			S.Unique.setEvaluator(new Unique());
 			if (!Config.FUZZY_PARSER) {
-				F.BeginPackage.setEvaluator(new BeginPackage());
-				F.EndPackage.setEvaluator(new EndPackage());
-				F.Begin.setEvaluator(new Begin());
-				F.End.setEvaluator(new End());
-				F.Blank.setEvaluator(Blank.CONST);
-				F.BlankSequence.setEvaluator(BlankSequence.CONST);
-				F.BlankNullSequence.setEvaluator(BlankNullSequence.CONST);
-				F.Pattern.setEvaluator(Pattern.CONST);
-				F.Clear.setEvaluator(new Clear());
-				F.ClearAll.setEvaluator(new ClearAll());
-				F.Context.setEvaluator(new ContextFunction());
-				F.Default.setEvaluator(new Default());
-				F.Definition.setEvaluator(new Definition());
-				F.Evaluate.setEvaluator(new Evaluate());
-				F.Get.setEvaluator(new Get());
-				F.Put.setEvaluator(new Put());
-				F.TagSet.setEvaluator(new TagSet());
-				F.TagSetDelayed.setEvaluator(new TagSetDelayed());
-				F.Unset.setEvaluator(new Unset());
-				F.UpSet.setEvaluator(new UpSet());
-				F.UpSetDelayed.setEvaluator(new UpSetDelayed());
+				S.BeginPackage.setEvaluator(new BeginPackage());
+				S.EndPackage.setEvaluator(new EndPackage());
+				S.Begin.setEvaluator(new Begin());
+				S.End.setEvaluator(new End());
+				S.Blank.setEvaluator(Blank.CONST);
+				S.BlankSequence.setEvaluator(BlankSequence.CONST);
+				S.BlankNullSequence.setEvaluator(BlankNullSequence.CONST);
+				S.Pattern.setEvaluator(Pattern.CONST);
+				S.Clear.setEvaluator(new Clear());
+				S.ClearAll.setEvaluator(new ClearAll());
+				S.Context.setEvaluator(new ContextFunction());
+				S.Default.setEvaluator(new Default());
+				S.Definition.setEvaluator(new Definition());
+				S.Evaluate.setEvaluator(new Evaluate());
+				S.Get.setEvaluator(new Get());
+				S.Put.setEvaluator(new Put());
+				S.TagSet.setEvaluator(new TagSet());
+				S.TagSetDelayed.setEvaluator(new TagSetDelayed());
+				S.Unset.setEvaluator(new Unset());
+				S.UpSet.setEvaluator(new UpSet());
+				S.UpSetDelayed.setEvaluator(new UpSetDelayed());
 			}
 		}
 	}

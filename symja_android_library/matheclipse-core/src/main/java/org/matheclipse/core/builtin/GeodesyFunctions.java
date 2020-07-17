@@ -7,6 +7,7 @@ import org.gavaghan.geodesy.GlobalPosition;
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.interfaces.AbstractEvaluator;
 import org.matheclipse.core.expression.F;
+import org.matheclipse.core.expression.S;
 import org.matheclipse.core.expression.data.GeoPositionExpr;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IExpr;
@@ -20,8 +21,8 @@ public class GeodesyFunctions {
 	private static class Initializer {
 
 		private static void init() {
-			F.GeoDistance.setEvaluator(new GeoDistance());
-			F.GeoPosition.setEvaluator(new GeoPosition());
+			S.GeoDistance.setEvaluator(new GeoDistance());
+			S.GeoPosition.setEvaluator(new GeoPosition());
 		}
 	}
 

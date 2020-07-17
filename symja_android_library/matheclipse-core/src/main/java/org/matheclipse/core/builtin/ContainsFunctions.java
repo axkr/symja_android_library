@@ -1,40 +1,29 @@
 package org.matheclipse.core.builtin;
 
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Comparator;
-import java.util.List;
-
-import org.hipparchus.exception.MathIllegalArgumentException;
 import org.matheclipse.core.eval.EvalEngine;
-import org.matheclipse.core.eval.exception.Validate;
 import org.matheclipse.core.eval.interfaces.AbstractEvaluator;
-import org.matheclipse.core.eval.interfaces.AbstractNonOrderlessArgMultiple;
 import org.matheclipse.core.eval.util.OptionArgs;
 import org.matheclipse.core.expression.F;
-import org.matheclipse.core.generic.Predicates;
+import org.matheclipse.core.expression.S;
 import org.matheclipse.core.interfaces.IAST;
-import org.matheclipse.core.interfaces.IASTAppendable;
 import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.interfaces.IPredicate;
-import org.matheclipse.core.interfaces.ISignedNumber;
-import org.matheclipse.core.interfaces.ISymbol;
 
 public class ContainsFunctions {
 
 	private static class Initializer {
 
 		private static void init() {
-			F.ContainsAny.setEvaluator(ContainsAny.CONST);
-			F.ContainsAll.setEvaluator(ContainsAll.CONST);
-			F.ContainsExactly.setEvaluator(ContainsExactly.CONST);
-			F.ContainsNone.setEvaluator(ContainsNone.CONST);
-			F.ContainsOnly.setEvaluator(ContainsOnly.CONST);
+			S.ContainsAny.setEvaluator(ContainsAny.CONST);
+			S.ContainsAll.setEvaluator(ContainsAll.CONST);
+			S.ContainsExactly.setEvaluator(ContainsExactly.CONST);
+			S.ContainsNone.setEvaluator(ContainsNone.CONST);
+			S.ContainsOnly.setEvaluator(ContainsOnly.CONST);
 
 			// seemed to be the same behavior as ContainsXXX functions, if the headers of the lists are identical
-			F.DisjointQ.setEvaluator(new DisjointQ());
-			F.IntersectingQ.setEvaluator(new IntersectingQ());
-			F.SubsetQ.setEvaluator(new SubsetQ());
+			S.DisjointQ.setEvaluator(new DisjointQ());
+			S.IntersectingQ.setEvaluator(new IntersectingQ());
+			S.SubsetQ.setEvaluator(new SubsetQ());
 		}
 
 	}

@@ -10,7 +10,6 @@ import static org.matheclipse.core.expression.F.Power;
 import static org.matheclipse.core.expression.F.Times;
 
 import java.util.function.DoubleUnaryOperator;
-import java.util.function.IntFunction;
 
 import org.hipparchus.complex.Complex;
 import org.matheclipse.core.basic.Config;
@@ -23,6 +22,7 @@ import org.matheclipse.core.eval.interfaces.AbstractFunctionEvaluator;
 import org.matheclipse.core.eval.interfaces.AbstractTrigArg1;
 import org.matheclipse.core.eval.interfaces.INumeric;
 import org.matheclipse.core.expression.F;
+import org.matheclipse.core.expression.S;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IASTMutable;
 import org.matheclipse.core.interfaces.IExpr;
@@ -45,23 +45,23 @@ public class HypergeometricFunctions {
 	private static class Initializer {
 
 		private static void init() {
-			F.CosIntegral.setEvaluator(new CosIntegral());
-			F.CoshIntegral.setEvaluator(new CoshIntegral());
-			F.ExpIntegralE.setEvaluator(new ExpIntegralE());
-			F.ExpIntegralEi.setEvaluator(new ExpIntegralEi());
-			F.FresnelC.setEvaluator(new FresnelC());
-			F.FresnelS.setEvaluator(new FresnelS());
-			F.GegenbauerC.setEvaluator(new GegenbauerC());
-			F.Hypergeometric0F1.setEvaluator(new Hypergeometric0F1());
-			F.Hypergeometric1F1.setEvaluator(new Hypergeometric1F1());
-			F.Hypergeometric2F1.setEvaluator(new Hypergeometric2F1());
-			F.HypergeometricPFQ.setEvaluator(new HypergeometricPFQ());
-			F.HypergeometricU.setEvaluator(new HypergeometricU());
-			F.LogIntegral.setEvaluator(new LogIntegral());
-			F.SinIntegral.setEvaluator(new SinIntegral());
-			F.SinhIntegral.setEvaluator(new SinhIntegral());
-			F.WhittakerM.setEvaluator(new WhittakerM());
-			F.WhittakerW.setEvaluator(new WhittakerW());
+			S.CosIntegral.setEvaluator(new CosIntegral());
+			S.CoshIntegral.setEvaluator(new CoshIntegral());
+			S.ExpIntegralE.setEvaluator(new ExpIntegralE());
+			S.ExpIntegralEi.setEvaluator(new ExpIntegralEi());
+			S.FresnelC.setEvaluator(new FresnelC());
+			S.FresnelS.setEvaluator(new FresnelS());
+			S.GegenbauerC.setEvaluator(new GegenbauerC());
+			S.Hypergeometric0F1.setEvaluator(new Hypergeometric0F1());
+			S.Hypergeometric1F1.setEvaluator(new Hypergeometric1F1());
+			S.Hypergeometric2F1.setEvaluator(new Hypergeometric2F1());
+			S.HypergeometricPFQ.setEvaluator(new HypergeometricPFQ());
+			S.HypergeometricU.setEvaluator(new HypergeometricU());
+			S.LogIntegral.setEvaluator(new LogIntegral());
+			S.SinIntegral.setEvaluator(new SinIntegral());
+			S.SinhIntegral.setEvaluator(new SinhIntegral());
+			S.WhittakerM.setEvaluator(new WhittakerM());
+			S.WhittakerW.setEvaluator(new WhittakerW());
 		}
 	}
 

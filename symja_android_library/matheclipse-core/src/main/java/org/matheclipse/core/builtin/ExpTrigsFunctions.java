@@ -18,7 +18,6 @@ import static org.matheclipse.core.expression.F.Coth;
 import static org.matheclipse.core.expression.F.Csc;
 import static org.matheclipse.core.expression.F.Csch;
 import static org.matheclipse.core.expression.F.Negate;
-import static org.matheclipse.core.expression.F.Pi;
 import static org.matheclipse.core.expression.F.Plus;
 import static org.matheclipse.core.expression.F.Power;
 import static org.matheclipse.core.expression.F.Sec;
@@ -30,6 +29,7 @@ import static org.matheclipse.core.expression.F.Tan;
 import static org.matheclipse.core.expression.F.Tanh;
 import static org.matheclipse.core.expression.F.Times;
 import static org.matheclipse.core.expression.F.num;
+import static org.matheclipse.core.expression.S.Pi;
 
 import java.math.RoundingMode;
 import java.util.function.DoubleUnaryOperator;
@@ -55,6 +55,7 @@ import org.matheclipse.core.expression.ComplexNum;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.expression.IntervalSym;
 import org.matheclipse.core.expression.Num;
+import org.matheclipse.core.expression.S;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IASTAppendable;
 import org.matheclipse.core.interfaces.IComplexNum;
@@ -103,40 +104,40 @@ public class ExpTrigsFunctions {
 	private static class Initializer {
 
 		private static void init() {
-			F.AngleVector.setEvaluator(new AngleVector());
-			F.ArcCos.setEvaluator(new ArcCos());
-			F.ArcCosh.setEvaluator(new ArcCosh());
-			F.ArcCot.setEvaluator(new ArcCot());
-			F.ArcCoth.setEvaluator(new ArcCoth());
-			F.ArcCsc.setEvaluator(new ArcCsc());
-			F.ArcCsch.setEvaluator(new ArcCsch());
-			F.ArcSec.setEvaluator(new ArcSec());
-			F.ArcSech.setEvaluator(new ArcSech());
-			F.ArcSin.setEvaluator(new ArcSin());
-			F.ArcSinh.setEvaluator(new ArcSinh());
-			F.ArcTan.setEvaluator(new ArcTan());
-			F.ArcTanh.setEvaluator(new ArcTanh());
-			F.CirclePoints.setEvaluator(new CirclePoints());
-			F.Cos.setEvaluator(new Cos());
-			F.Cosh.setEvaluator(new Cosh());
-			F.Cot.setEvaluator(new Cot());
-			F.Coth.setEvaluator(new Coth());
-			F.Csc.setEvaluator(new Csc());
-			F.Csch.setEvaluator(new Csch());
-			F.Exp.setEvaluator(new Exp());
-			F.Haversine.setEvaluator(new Haversine());
-			F.InverseHaversine.setEvaluator(new InverseHaversine());
-			F.Log.setEvaluator(new Log());
-			F.LogisticSigmoid.setEvaluator(new LogisticSigmoid());
-			F.Log10.setEvaluator(new Log10());
-			F.Log2.setEvaluator(new Log2());
-			F.Sec.setEvaluator(new Sec());
-			F.Sech.setEvaluator(new Sech());
-			F.Sin.setEvaluator(new Sin());
-			F.Sinc.setEvaluator(new Sinc());
-			F.Sinh.setEvaluator(new Sinh());
-			F.Tan.setEvaluator(new Tan());
-			F.Tanh.setEvaluator(new Tanh());
+			S.AngleVector.setEvaluator(new AngleVector());
+			S.ArcCos.setEvaluator(new ArcCos());
+			S.ArcCosh.setEvaluator(new ArcCosh());
+			S.ArcCot.setEvaluator(new ArcCot());
+			S.ArcCoth.setEvaluator(new ArcCoth());
+			S.ArcCsc.setEvaluator(new ArcCsc());
+			S.ArcCsch.setEvaluator(new ArcCsch());
+			S.ArcSec.setEvaluator(new ArcSec());
+			S.ArcSech.setEvaluator(new ArcSech());
+			S.ArcSin.setEvaluator(new ArcSin());
+			S.ArcSinh.setEvaluator(new ArcSinh());
+			S.ArcTan.setEvaluator(new ArcTan());
+			S.ArcTanh.setEvaluator(new ArcTanh());
+			S.CirclePoints.setEvaluator(new CirclePoints());
+			S.Cos.setEvaluator(new Cos());
+			S.Cosh.setEvaluator(new Cosh());
+			S.Cot.setEvaluator(new Cot());
+			S.Coth.setEvaluator(new Coth());
+			S.Csc.setEvaluator(new Csc());
+			S.Csch.setEvaluator(new Csch());
+			S.Exp.setEvaluator(new Exp());
+			S.Haversine.setEvaluator(new Haversine());
+			S.InverseHaversine.setEvaluator(new InverseHaversine());
+			S.Log.setEvaluator(new Log());
+			S.LogisticSigmoid.setEvaluator(new LogisticSigmoid());
+			S.Log10.setEvaluator(new Log10());
+			S.Log2.setEvaluator(new Log2());
+			S.Sec.setEvaluator(new Sec());
+			S.Sech.setEvaluator(new Sech());
+			S.Sin.setEvaluator(new Sin());
+			S.Sinc.setEvaluator(new Sinc());
+			S.Sinh.setEvaluator(new Sinh());
+			S.Tan.setEvaluator(new Tan());
+			S.Tanh.setEvaluator(new Tanh());
 
 		}
 	}
@@ -150,10 +151,10 @@ public class ExpTrigsFunctions {
 			if (ast.isAST2()) {
 				IExpr arg2 = ast.second();
 
-				if (arg1.isAST(F.List, 3)) {
+				if (arg1.isAST(S.List, 3)) {
 					IExpr x = arg1.first();
 					IExpr y = arg1.second();
-					if (arg2.isAST(F.List, 3)) {
+					if (arg2.isAST(S.List, 3)) {
 						// AngleVector({x_, y_}, {r_, phi_}) := {x + r * Cos(phi), y + r * Sin(phi)}
 						IExpr r = arg2.first();
 						phi = arg2.second();

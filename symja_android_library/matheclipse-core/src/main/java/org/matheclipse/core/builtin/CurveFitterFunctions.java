@@ -12,6 +12,7 @@ import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.exception.ASTElementLimitExceeded;
 import org.matheclipse.core.eval.interfaces.AbstractFunctionEvaluator;
 import org.matheclipse.core.expression.F;
+import org.matheclipse.core.expression.S;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IASTAppendable;
 import org.matheclipse.core.interfaces.IASTMutable;
@@ -28,8 +29,8 @@ public class CurveFitterFunctions {
 	private static class Initializer {
 
 		private static void init() {
-			F.FindFit.setEvaluator(new FindFit());
-			F.Fit.setEvaluator(new Fit());
+			S.FindFit.setEvaluator(new FindFit());
+			S.Fit.setEvaluator(new Fit());
 		}
 	}
 

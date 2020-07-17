@@ -4,13 +4,13 @@ import java.util.HashMap;
 import java.util.Map;
 
 import org.matheclipse.core.eval.EvalEngine;
-import org.matheclipse.core.eval.exception.ArgumentTypeException;
 import org.matheclipse.core.eval.exception.ValidateException;
 import org.matheclipse.core.eval.interfaces.AbstractEvaluator;
 import org.matheclipse.core.eval.interfaces.ISetEvaluator;
 import org.matheclipse.core.expression.ASTAssociation;
 import org.matheclipse.core.expression.ASTDataset;
 import org.matheclipse.core.expression.F;
+import org.matheclipse.core.expression.S;
 import org.matheclipse.core.generic.Predicates;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IASTAppendable;
@@ -46,15 +46,15 @@ public class AssociationFunctions {
 	private static class Initializer {
 
 		private static void init() {
-			F.Association.setEvaluator(new Association());
-			F.Counts.setEvaluator(new Counts());
-			F.KeyExistsQ.setEvaluator(new KeyExistsQ());
-			F.Keys.setEvaluator(new Keys());
-			F.KeySort.setEvaluator(new KeySort());
-			F.Lookup.setEvaluator(new Lookup());
-			F.Structure.setEvaluator(new Structure());
-			F.Summary.setEvaluator(new Summary());
-			F.Values.setEvaluator(new Values());
+			S.Association.setEvaluator(new Association());
+			S.Counts.setEvaluator(new Counts());
+			S.KeyExistsQ.setEvaluator(new KeyExistsQ());
+			S.Keys.setEvaluator(new Keys());
+			S.KeySort.setEvaluator(new KeySort());
+			S.Lookup.setEvaluator(new Lookup());
+			S.Structure.setEvaluator(new Structure());
+			S.Summary.setEvaluator(new Summary());
+			S.Values.setEvaluator(new Values());
 		}
 	}
 
@@ -122,11 +122,11 @@ public class AssociationFunctions {
 						}
 					} catch (ValidateException ve) {
 						return engine.printMessage(F.Set, ve);
-//					} catch (RuntimeException rex) {
-//						if (FEConfig.SHOW_STACKTRACE) {
-//							rex.printStackTrace();
-//						}
-//						return engine.printMessage(F.Set, rex);  
+						// } catch (RuntimeException rex) {
+						// if (FEConfig.SHOW_STACKTRACE) {
+						// rex.printStackTrace();
+						// }
+						// return engine.printMessage(F.Set, rex);
 					}
 				}
 			}

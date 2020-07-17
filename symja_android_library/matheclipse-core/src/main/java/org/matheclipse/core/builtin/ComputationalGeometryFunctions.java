@@ -1,9 +1,9 @@
 package org.matheclipse.core.builtin;
 
 import org.matheclipse.core.eval.EvalEngine;
-import org.matheclipse.core.eval.exception.Validate;
 import org.matheclipse.core.eval.interfaces.AbstractEvaluator;
 import org.matheclipse.core.expression.F;
+import org.matheclipse.core.expression.S;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IExpr;
 
@@ -16,7 +16,7 @@ public class ComputationalGeometryFunctions {
 	private static class Initializer {
 
 		private static void init() {
-			F.ConvexHullMesh.setEvaluator(new ConvexHullMesh());
+			S.ConvexHullMesh.setEvaluator(new ConvexHullMesh());
 		}
 	}
 

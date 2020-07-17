@@ -5,6 +5,7 @@ import java.util.function.Function;
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.interfaces.AbstractTrigArg1;
 import org.matheclipse.core.expression.F;
+import org.matheclipse.core.expression.S;
 import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.interfaces.ISymbol;
 
@@ -18,18 +19,18 @@ public class WindowFunctions {
 	private static class Initializer {
 
 		private static void init() {
-			F.BartlettWindow.setEvaluator(new WindowFunction(WindowFunctions::bartlettWindow));
-			F.BlackmanHarrisWindow.setEvaluator(new WindowFunction(WindowFunctions::blackmanHarrisWindow));
-			F.BlackmanNuttallWindow.setEvaluator(new WindowFunction(WindowFunctions::blackmanNuttallWindow));
-			F.BlackmanWindow.setEvaluator(new WindowFunction(WindowFunctions::blackmanWindow));
-			F.DirichletWindow.setEvaluator(new WindowFunction(WindowFunctions::dirichletWindow));
-			F.FlatTopWindow.setEvaluator(new WindowFunction(WindowFunctions::flatTopWindow));
-			F.GaussianWindow.setEvaluator(new WindowFunction(WindowFunctions::gaussianWindow));
-			F.HammingWindow.setEvaluator(new WindowFunction(WindowFunctions::hammingWindow));
-			F.HannWindow.setEvaluator(new WindowFunction(WindowFunctions::hannWindow));
-			F.NuttallWindow.setEvaluator(new WindowFunction(WindowFunctions::nuttallWindow));
-			F.ParzenWindow.setEvaluator(new WindowFunction(WindowFunctions::parzenWindow));
-			F.TukeyWindow.setEvaluator(new WindowFunction(WindowFunctions::tukeyWindow));
+			S.BartlettWindow.setEvaluator(new WindowFunction(WindowFunctions::bartlettWindow));
+			S.BlackmanHarrisWindow.setEvaluator(new WindowFunction(WindowFunctions::blackmanHarrisWindow));
+			S.BlackmanNuttallWindow.setEvaluator(new WindowFunction(WindowFunctions::blackmanNuttallWindow));
+			S.BlackmanWindow.setEvaluator(new WindowFunction(WindowFunctions::blackmanWindow));
+			S.DirichletWindow.setEvaluator(new WindowFunction(WindowFunctions::dirichletWindow));
+			S.FlatTopWindow.setEvaluator(new WindowFunction(WindowFunctions::flatTopWindow));
+			S.GaussianWindow.setEvaluator(new WindowFunction(WindowFunctions::gaussianWindow));
+			S.HammingWindow.setEvaluator(new WindowFunction(WindowFunctions::hammingWindow));
+			S.HannWindow.setEvaluator(new WindowFunction(WindowFunctions::hannWindow));
+			S.NuttallWindow.setEvaluator(new WindowFunction(WindowFunctions::nuttallWindow));
+			S.ParzenWindow.setEvaluator(new WindowFunction(WindowFunctions::parzenWindow));
+			S.TukeyWindow.setEvaluator(new WindowFunction(WindowFunctions::tukeyWindow));
 		}
 	}
 

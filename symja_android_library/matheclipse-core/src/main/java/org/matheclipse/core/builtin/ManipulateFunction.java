@@ -1635,9 +1635,9 @@ public class ManipulateFunction {
 		private static IExpr boxWhiskerChart(IExpr arg) {
 			double[] vector = arg.toDoubleVector();
 			if (vector != null && vector.length > 0) {
-				String[] strs = new String[vector.length];
+				double[] strs = new double[vector.length];
 				for (int i = 0; i < vector.length; i++) {
-					strs[i] = Integer.toString(i + 1);
+					strs[i] = i + 1;
 				}
 				Layout layout = Layout.builder().autosize(true).build();
 				BoxTrace trace = BoxTrace.builder(strs, vector).build();

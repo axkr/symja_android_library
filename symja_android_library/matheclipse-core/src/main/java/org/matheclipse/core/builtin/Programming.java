@@ -36,6 +36,7 @@ import org.matheclipse.core.eval.interfaces.AbstractFunctionEvaluator;
 import org.matheclipse.core.eval.interfaces.ISetEvaluator;
 import org.matheclipse.core.eval.util.Iterator;
 import org.matheclipse.core.expression.F;
+import org.matheclipse.core.expression.S;
 import org.matheclipse.core.expression.data.CompiledFunctionExpr;
 import org.matheclipse.core.form.output.OutputFormFactory;
 import org.matheclipse.core.interfaces.IAST;
@@ -67,48 +68,48 @@ public final class Programming {
 	private static class Initializer {
 
 		private static void init() {
-			F.Abort.setEvaluator(new Abort());
-			F.Break.setEvaluator(new Break());
-			F.Block.setEvaluator(new Block());
-			F.Catch.setEvaluator(new Catch());
-			F.Check.setEvaluator(new Check());
-			F.CompoundExpression.setEvaluator(new CompoundExpression());
-			F.Condition.setEvaluator(new Condition());
-			F.Continue.setEvaluator(new Continue());
-			F.Defer.setEvaluator(new Defer());
-			F.Do.setEvaluator(new Do());
-			F.FixedPoint.setEvaluator(new FixedPoint());
-			F.FixedPointList.setEvaluator(new FixedPointList());
-			F.For.setEvaluator(new For());
-			F.If.setEvaluator(new If());
-			F.Interrupt.setEvaluator(new Interrupt());
-			F.List.setEvaluator(new ListFunction());
-			F.Module.setEvaluator(new Module());
-			F.Nest.setEvaluator(new Nest());
-			F.NestList.setEvaluator(new NestList());
-			F.NestWhile.setEvaluator(new NestWhile());
-			F.NestWhileList.setEvaluator(new NestWhileList());
-			F.Part.setEvaluator(new Part());
-			F.Print.setEvaluator(new Print());
-			F.Quiet.setEvaluator(new Quiet());
-			F.Reap.setEvaluator(new Reap());
-			F.Return.setEvaluator(new Return());
-			F.Sow.setEvaluator(new Sow());
-			F.Switch.setEvaluator(new Switch());
-			F.TimeConstrained.setEvaluator(new TimeConstrained());
-			F.Timing.setEvaluator(new Timing());
-			F.Throw.setEvaluator(new Throw());
-			F.Unevaluated.setEvaluator(new Unevaluated());
-			F.Which.setEvaluator(new Which());
-			F.While.setEvaluator(new While());
-			F.With.setEvaluator(new With());
+			S.Abort.setEvaluator(new Abort());
+			S.Break.setEvaluator(new Break());
+			S.Block.setEvaluator(new Block());
+			S.Catch.setEvaluator(new Catch());
+			S.Check.setEvaluator(new Check());
+			S.CompoundExpression.setEvaluator(new CompoundExpression());
+			S.Condition.setEvaluator(new Condition());
+			S.Continue.setEvaluator(new Continue());
+			S.Defer.setEvaluator(new Defer());
+			S.Do.setEvaluator(new Do());
+			S.FixedPoint.setEvaluator(new FixedPoint());
+			S.FixedPointList.setEvaluator(new FixedPointList());
+			S.For.setEvaluator(new For());
+			S.If.setEvaluator(new If());
+			S.Interrupt.setEvaluator(new Interrupt());
+			S.List.setEvaluator(new ListFunction());
+			S.Module.setEvaluator(new Module());
+			S.Nest.setEvaluator(new Nest());
+			S.NestList.setEvaluator(new NestList());
+			S.NestWhile.setEvaluator(new NestWhile());
+			S.NestWhileList.setEvaluator(new NestWhileList());
+			S.Part.setEvaluator(new Part());
+			S.Print.setEvaluator(new Print());
+			S.Quiet.setEvaluator(new Quiet());
+			S.Reap.setEvaluator(new Reap());
+			S.Return.setEvaluator(new Return());
+			S.Sow.setEvaluator(new Sow());
+			S.Switch.setEvaluator(new Switch());
+			S.TimeConstrained.setEvaluator(new TimeConstrained());
+			S.Timing.setEvaluator(new Timing());
+			S.Throw.setEvaluator(new Throw());
+			S.Unevaluated.setEvaluator(new Unevaluated());
+			S.Which.setEvaluator(new Which());
+			S.While.setEvaluator(new While());
+			S.With.setEvaluator(new With());
 
 			if (!Config.FUZZY_PARSER) {
-				F.CompiledFunction.setEvaluator(new CompiledFunction());
-				F.On.setEvaluator(new On());
-				F.Off.setEvaluator(new Off());
-				F.Trace.setEvaluator(new Trace());
-				F.TraceForm.setEvaluator(new TraceForm());
+				S.CompiledFunction.setEvaluator(new CompiledFunction());
+				S.On.setEvaluator(new On());
+				S.Off.setEvaluator(new Off());
+				S.Trace.setEvaluator(new Trace());
+				S.TraceForm.setEvaluator(new TraceForm());
 			}
 		}
 	}
@@ -232,9 +233,9 @@ public final class Programming {
 			} catch (final ThrowException e) {
 				if (ast.size() == 2) {
 					if (ThrowException.THROW_FALSE == e) {
-						return F.False;
+						return S.False;
 					} else if (ThrowException.THROW_TRUE == e) {
-						return F.True;
+						return S.True;
 					}
 					return e.getValue();
 				} else if (ast.size() == 3) {
@@ -320,11 +321,11 @@ public final class Programming {
 		@Override
 		public IExpr evaluate(final IAST ast, EvalEngine engine) {
 			if (ast.size() > 1) {
-				IExpr[] result = { F.Null };
+				IExpr[] result = { S.Null };
 				ast.forEach(x -> result[0] = engine.evaluate(x));
 				return result[0];
 			}
-			return F.Null;
+			return S.Null;
 		}
 
 		@Override
@@ -628,7 +629,7 @@ public final class Programming {
 								} catch (final ReturnException e) {
 									return e.getValue();
 								} catch (final BreakException e) {
-									return F.Null;
+									return S.Null;
 								} catch (final ContinueException e) {
 									continue;
 								}
@@ -639,7 +640,7 @@ public final class Programming {
 							iter.tearDown();
 						}
 					}
-					return F.Null;
+					return S.Null;
 				}
 				fEngine.evaluate(input);
 

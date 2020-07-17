@@ -40,6 +40,7 @@ import org.matheclipse.core.eval.interfaces.AbstractEvaluator;
 import org.matheclipse.core.eval.interfaces.AbstractFunctionEvaluator;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.expression.ID;
+import org.matheclipse.core.expression.S;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IASTAppendable;
 import org.matheclipse.core.interfaces.IBuiltInSymbol;
@@ -62,22 +63,22 @@ public class IOFunctions {
 
 		private static void init() {
 			if (Config.FILESYSTEM_ENABLED) {
-				F.Button.setEvaluator(new Button());
-				F.DefaultButton.setEvaluator(new DefaultButton());
-				F.Dynamic.setEvaluator(new Dynamic());
-				F.CancelButton.setEvaluator(new CancelButton());
-				F.DialogInput.setEvaluator(new DialogInput());
-				F.DialogReturn.setEvaluator(new DialogReturn());
-				F.Input.setEvaluator(new Input());
-				F.InputString.setEvaluator(new InputString());
-				F.SystemDialogInput.setEvaluator(new SystemDialogInput());
+				S.Button.setEvaluator(new Button());
+				S.DefaultButton.setEvaluator(new DefaultButton());
+				S.Dynamic.setEvaluator(new Dynamic());
+				S.CancelButton.setEvaluator(new CancelButton());
+				S.DialogInput.setEvaluator(new DialogInput());
+				S.DialogReturn.setEvaluator(new DialogReturn());
+				S.Input.setEvaluator(new Input());
+				S.InputString.setEvaluator(new InputString());
+				S.SystemDialogInput.setEvaluator(new SystemDialogInput());
 			}
 
-			// F.General.setEvaluator(new General());
-			F.Message.setEvaluator(new Message());
-			F.Names.setEvaluator(new Names());
+			// S.General.setEvaluator(new General());
+			S.Message.setEvaluator(new Message());
+			S.Names.setEvaluator(new Names());
 			for (int i = 0; i < MESSAGES.length; i += 2) {
-				F.General.putMessage(IPatternMatcher.SET, MESSAGES[i], F.stringx(MESSAGES[i + 1]));
+				S.General.putMessage(IPatternMatcher.SET, MESSAGES[i], F.stringx(MESSAGES[i + 1]));
 			}
 		}
 	}
@@ -150,7 +151,7 @@ public class IOFunctions {
 					}
 					return F.stringx(": " + message);
 				}
-				if (ast.arg1().isAST(F.MessageName, 3)) {
+				if (ast.arg1().isAST(S.MessageName, 3)) {
 					IAST messageName = (IAST) ast.arg1();
 					String messageShortcut = messageName.arg2().toString();
 					if (messageName.arg1().isSymbol()) {
@@ -159,7 +160,7 @@ public class IOFunctions {
 							return temp;
 						}
 					}
-					return message(F.General, messageShortcut, ast);
+					return message(S.General, messageShortcut, ast);
 				}
 			}
 			return F.NIL;
@@ -268,9 +269,9 @@ public class IOFunctions {
 		public IExpr evaluate(final IAST ast, EvalEngine engine) {
 			if (Desktop.isDesktopSupported()) {
 				IAST dialogNoteBook = null;
-				if (ast.isAST2() && ast.arg2().isAST(F.DialogNotebook, 2)) {
+				if (ast.isAST2() && ast.arg2().isAST(S.DialogNotebook, 2)) {
 					dialogNoteBook = (IAST) ast.arg2();
-				} else if (ast.isAST1() && ast.arg1().isAST(F.DialogNotebook, 2)) {
+				} else if (ast.isAST1() && ast.arg1().isAST(S.DialogNotebook, 2)) {
 					dialogNoteBook = (IAST) ast.arg1();
 				}
 
@@ -339,7 +340,7 @@ public class IOFunctions {
 						String cancelLabel = "Cancel";
 						final IExpr cancelAction;
 						if (arg.size() == 1) {
-							cancelAction = F.DialogReturn(F.$Cancel);
+							cancelAction = F.DialogReturn(S.$Cancel);
 						} else if (arg.size() == 2) {
 							cancelAction = F.DialogReturn(arg.first());
 						} else if (arg.size() == 3) {
@@ -393,7 +394,7 @@ public class IOFunctions {
 						}
 						continue;
 					case ID.InputField:
-						IExpr input = F.Null;
+						IExpr input = S.Null;
 						int inputType = ID.String;
 						if (arg.size() == 1) {
 						} else if (arg.size() == 2) {
@@ -517,9 +518,9 @@ public class IOFunctions {
 			String defaultInput = action.toString();
 			ISymbol dynamic = null;
 
-			if (action == F.Null) {
+			if (action == S.Null) {
 				defaultInput = "";
-			} else if (action.isAST(F.Dynamic, 2) && action.first().isSymbol() && !action.first().isBuiltInSymbol()) {
+			} else if (action.isAST(S.Dynamic, 2) && action.first().isSymbol() && !action.first().isBuiltInSymbol()) {
 				dynamic = (ISymbol) action.first();
 				defaultInput = dynamic.toString();
 			}

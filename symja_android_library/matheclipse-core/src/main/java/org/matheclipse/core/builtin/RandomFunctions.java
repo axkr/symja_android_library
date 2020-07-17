@@ -9,6 +9,7 @@ import org.hipparchus.util.MathArrays;
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.interfaces.AbstractFunctionEvaluator;
 import org.matheclipse.core.expression.F;
+import org.matheclipse.core.expression.S;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IASTAppendable;
 import org.matheclipse.core.interfaces.IExpr;
@@ -25,12 +26,12 @@ public final class RandomFunctions {
 	private static class Initializer {
 
 		private static void init() {
-			F.RandomInteger.setEvaluator(new RandomInteger());
-			F.RandomPrime.setEvaluator(new RandomPrime());
-			F.RandomChoice.setEvaluator(new RandomChoice());
-			F.RandomComplex.setEvaluator(new RandomComplex());
-			F.RandomReal.setEvaluator(new RandomReal());
-			F.RandomSample.setEvaluator(new RandomSample());
+			S.RandomInteger.setEvaluator(new RandomInteger());
+			S.RandomPrime.setEvaluator(new RandomPrime());
+			S.RandomChoice.setEvaluator(new RandomChoice());
+			S.RandomComplex.setEvaluator(new RandomComplex());
+			S.RandomReal.setEvaluator(new RandomReal());
+			S.RandomSample.setEvaluator(new RandomSample());
 		}
 	}
 
@@ -96,7 +97,7 @@ public final class RandomFunctions {
 					double im = tlr.nextDouble();
 					return F.complexNum(re, im);
 				} else if (ast.isAST1()) {
-					if (ast.arg1().isAST(F.List, 3)) {
+					if (ast.arg1().isAST(S.List, 3)) {
 						Complex min = engine.evalComplex(ast.arg1().first());
 						Complex max = engine.evalComplex(ast.arg1().second());
 						double minRe = min.getReal();
@@ -108,7 +109,7 @@ public final class RandomFunctions {
 							minRe = maxRe;
 							maxRe = temp;
 							if (minRe == maxRe) {
-								// return F.num(min);
+								// return S.num(min);
 							}
 						}
 						if (minIm >= maxIm) {

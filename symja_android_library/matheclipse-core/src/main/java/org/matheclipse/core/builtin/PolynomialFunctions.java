@@ -33,6 +33,7 @@ import org.matheclipse.core.eval.interfaces.AbstractCoreFunctionEvaluator;
 import org.matheclipse.core.eval.interfaces.AbstractFunctionEvaluator;
 import org.matheclipse.core.eval.util.OptionArgs;
 import org.matheclipse.core.expression.F;
+import org.matheclipse.core.expression.S;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IASTAppendable;
 import org.matheclipse.core.interfaces.IASTMutable;
@@ -95,25 +96,25 @@ public class PolynomialFunctions {
 	private static class Initializer {
 
 		private static void init() {
-			F.BellY.setEvaluator(new BellY());
-			F.ChebyshevT.setEvaluator(new ChebyshevT());
-			F.ChebyshevU.setEvaluator(new ChebyshevU());
-			F.Coefficient.setEvaluator(new Coefficient());
-			F.CoefficientList.setEvaluator(new CoefficientList());
-			F.CoefficientRules.setEvaluator(new CoefficientRules());
-			F.Cyclotomic.setEvaluator(new Cyclotomic());
-			F.Discriminant.setEvaluator(new Discriminant());
-			F.Exponent.setEvaluator(new Exponent());
-			F.GroebnerBasis.setEvaluator(new GroebnerBasis());
-			F.HermiteH.setEvaluator(new HermiteH());
-			F.LaguerreL.setEvaluator(new LaguerreL());
-			F.LegendreP.setEvaluator(new LegendreP());
-			F.LegendreQ.setEvaluator(new LegendreQ());
-			F.MonomialList.setEvaluator(new MonomialList());
-			F.NRoots.setEvaluator(new NRoots());
-			F.Resultant.setEvaluator(new Resultant());
-			F.RootIntervals.setEvaluator(new RootIntervals());
-			F.Roots.setEvaluator(new Roots());
+			S.BellY.setEvaluator(new BellY());
+			S.ChebyshevT.setEvaluator(new ChebyshevT());
+			S.ChebyshevU.setEvaluator(new ChebyshevU());
+			S.Coefficient.setEvaluator(new Coefficient());
+			S.CoefficientList.setEvaluator(new CoefficientList());
+			S.CoefficientRules.setEvaluator(new CoefficientRules());
+			S.Cyclotomic.setEvaluator(new Cyclotomic());
+			S.Discriminant.setEvaluator(new Discriminant());
+			S.Exponent.setEvaluator(new Exponent());
+			S.GroebnerBasis.setEvaluator(new GroebnerBasis());
+			S.HermiteH.setEvaluator(new HermiteH());
+			S.LaguerreL.setEvaluator(new LaguerreL());
+			S.LegendreP.setEvaluator(new LegendreP());
+			S.LegendreQ.setEvaluator(new LegendreQ());
+			S.MonomialList.setEvaluator(new MonomialList());
+			S.NRoots.setEvaluator(new NRoots());
+			S.Resultant.setEvaluator(new Resultant());
+			S.RootIntervals.setEvaluator(new RootIntervals());
+			S.Roots.setEvaluator(new Roots());
 		}
 	}
 
@@ -292,7 +293,7 @@ public class PolynomialFunctions {
 					termOrder = JASIExpr.monomialOrder((ISymbol) ast.arg3(), termOrder);
 				} else {
 					final OptionArgs options = new OptionArgs(ast.topHead(), ast, 2, engine);
-					IExpr option = options.getOption(F.Modulus);
+					IExpr option = options.getOption(S.Modulus);
 					if (option.isPresent()) {
 						try {
 							if (option.isInteger()) {
@@ -493,7 +494,7 @@ public class PolynomialFunctions {
 			IInteger ni = F.ZZ(n);
 			IAST divisorList = ni.divisors();
 			// Product((1 - x^d)^MoebiusMu(n/d), {d, divisorList) // Together
-			return F.Together(F.intIterator(F.Times,
+			return F.Together(F.intIterator(S.Times,
 					d -> F.Power(F.Plus(F.C1, F.Negate(F.Power(x, d))), F.MoebiusMu(F.Times(F.Power(d, -1), ni))),
 					divisorList));
 		}

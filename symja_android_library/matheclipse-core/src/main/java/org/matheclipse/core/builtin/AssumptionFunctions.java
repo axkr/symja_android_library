@@ -1,7 +1,6 @@
 package org.matheclipse.core.builtin;
 
 import org.matheclipse.core.eval.EvalEngine;
-import org.matheclipse.core.eval.exception.Validate;
 import org.matheclipse.core.eval.interfaces.AbstractCoreFunctionEvaluator;
 import org.matheclipse.core.eval.interfaces.AbstractEvaluator;
 import org.matheclipse.core.eval.util.AbstractAssumptions;
@@ -10,6 +9,7 @@ import org.matheclipse.core.eval.util.IAssumptions;
 import org.matheclipse.core.eval.util.OptionArgs;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.expression.ID;
+import org.matheclipse.core.expression.S;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IASTAppendable;
 import org.matheclipse.core.interfaces.IBuiltInSymbol;
@@ -25,10 +25,10 @@ public class AssumptionFunctions {
 	private static class Initializer {
 
 		private static void init() {
-			F.Arrays.setEvaluator(new Arrays());
-			F.Element.setEvaluator(new Element());
-			F.NotElement.setEvaluator(new NotElement());
-			F.Refine.setEvaluator(new Refine());
+			S.Arrays.setEvaluator(new Arrays());
+			S.Element.setEvaluator(new Element());
+			S.NotElement.setEvaluator(new NotElement());
+			S.Refine.setEvaluator(new Refine());
 		}
 	}
 

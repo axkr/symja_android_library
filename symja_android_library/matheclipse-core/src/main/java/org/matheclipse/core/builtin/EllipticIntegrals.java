@@ -8,6 +8,7 @@ import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.exception.ValidateException;
 import org.matheclipse.core.eval.interfaces.AbstractFunctionEvaluator;
 import org.matheclipse.core.expression.F;
+import org.matheclipse.core.expression.S;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.interfaces.IRational;
@@ -24,25 +25,25 @@ public class EllipticIntegrals {
 	private static class Initializer {
 
 		private static void init() {
-			F.EllipticE.setEvaluator(new EllipticE());
-			F.EllipticF.setEvaluator(new EllipticF());
-			F.EllipticK.setEvaluator(new EllipticK());
-			F.EllipticPi.setEvaluator(new EllipticPi());
-			F.EllipticTheta.setEvaluator(new EllipticTheta());
+			S.EllipticE.setEvaluator(new EllipticE());
+			S.EllipticF.setEvaluator(new EllipticF());
+			S.EllipticK.setEvaluator(new EllipticK());
+			S.EllipticPi.setEvaluator(new EllipticPi());
+			S.EllipticTheta.setEvaluator(new EllipticTheta());
 
-			// F.InverseWeierstrassP.setEvaluator(new InverseWeierstrassP());
-			F.JacobiAmplitude.setEvaluator(new JacobiAmplitude());
-			F.JacobiCN.setEvaluator(new JacobiCN());
-			F.JacobiDN.setEvaluator(new JacobiDN());
-			F.JacobiSN.setEvaluator(new JacobiSN());
-			F.JacobiZeta.setEvaluator(new JacobiZeta());
+			// S.InverseWeierstrassP.setEvaluator(new InverseWeierstrassP());
+			S.JacobiAmplitude.setEvaluator(new JacobiAmplitude());
+			S.JacobiCN.setEvaluator(new JacobiCN());
+			S.JacobiDN.setEvaluator(new JacobiDN());
+			S.JacobiSN.setEvaluator(new JacobiSN());
+			S.JacobiZeta.setEvaluator(new JacobiZeta());
 
-			F.KleinInvariantJ.setEvaluator(new KleinInvariantJ());
+			S.KleinInvariantJ.setEvaluator(new KleinInvariantJ());
 
-			F.WeierstrassHalfPeriods.setEvaluator(new WeierstrassHalfPeriods());
-			F.WeierstrassInvariants.setEvaluator(new WeierstrassInvariants());
-			F.WeierstrassP.setEvaluator(new WeierstrassP());
-			F.WeierstrassPPrime.setEvaluator(new WeierstrassPPrime());
+			S.WeierstrassHalfPeriods.setEvaluator(new WeierstrassHalfPeriods());
+			S.WeierstrassInvariants.setEvaluator(new WeierstrassInvariants());
+			S.WeierstrassP.setEvaluator(new WeierstrassP());
+			S.WeierstrassPPrime.setEvaluator(new WeierstrassPPrime());
 		}
 	}
 

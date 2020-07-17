@@ -7,7 +7,6 @@ import java.time.format.TextStyle;
 import java.util.HashMap;
 import java.util.Locale;
 import java.util.function.Function;
-import java.util.function.Supplier;
 import java.util.function.UnaryOperator;
 
 import org.matheclipse.core.basic.ToggleFeature;
@@ -15,6 +14,7 @@ import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.interfaces.AbstractCoreFunctionEvaluator;
 import org.matheclipse.core.eval.interfaces.AbstractFunctionEvaluator;
 import org.matheclipse.core.expression.F;
+import org.matheclipse.core.expression.S;
 import org.matheclipse.core.expression.data.DateObjectExpr;
 import org.matheclipse.core.expression.data.TimeObjectExpr;
 import org.matheclipse.core.interfaces.IAST;
@@ -38,14 +38,14 @@ public class QuantityFunctions {
 	private static class Initializer {
 
 		private static void init() {
-			F.DateObject.setEvaluator(new DateObject());
-			F.DateValue.setEvaluator(new DateValue());
+			S.DateObject.setEvaluator(new DateObject());
+			S.DateValue.setEvaluator(new DateValue());
 
-			F.TimeObject.setEvaluator(new TimeObject());
+			S.TimeObject.setEvaluator(new TimeObject());
 			if (ToggleFeature.QUANTITY) {
-				F.Quantity.setEvaluator(new Quantity());
-				F.QuantityMagnitude.setEvaluator(new QuantityMagnitude());
-				F.UnitConvert.setEvaluator(new UnitConvert());
+				S.Quantity.setEvaluator(new Quantity());
+				S.QuantityMagnitude.setEvaluator(new QuantityMagnitude());
+				S.UnitConvert.setEvaluator(new UnitConvert());
 			}
 
 			// integers
