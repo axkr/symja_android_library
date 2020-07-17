@@ -31,9 +31,11 @@ import static org.matheclipse.core.expression.F.Times;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.hipparchus.complex.Complex;
 import org.hipparchus.exception.MathIllegalArgumentException;
 import org.hipparchus.exception.MathRuntimeException;
 import org.hipparchus.linear.BlockFieldMatrix;
+import org.hipparchus.linear.ComplexEigenDecomposition;
 import org.hipparchus.linear.DecompositionSolver;
 import org.hipparchus.linear.EigenDecomposition;
 import org.hipparchus.linear.FieldDecompositionSolver;
@@ -43,7 +45,8 @@ import org.hipparchus.linear.FieldVector;
 import org.hipparchus.linear.MatrixUtils;
 import org.hipparchus.linear.RealMatrix;
 import org.hipparchus.linear.RealVector;
-import org.matheclipse.core.basic.Config;
+import org.hipparchus.linear.RiccatiEquationSolver;
+import org.hipparchus.linear.RiccatiEquationSolverImpl;
 import org.matheclipse.core.convert.Convert;
 import org.matheclipse.core.eval.EvalAttributes;
 import org.matheclipse.core.eval.EvalEngine;
@@ -60,10 +63,9 @@ import org.matheclipse.core.eval.util.IndexFunctionDiagonal;
 import org.matheclipse.core.eval.util.IndexTableGenerator;
 import org.matheclipse.core.expression.ASTRealMatrix;
 import org.matheclipse.core.expression.ASTRealVector;
-import org.matheclipse.core.expression.Context;
 import org.matheclipse.core.expression.ExprField;
 import org.matheclipse.core.expression.F;
-import org.matheclipse.core.expression.Symbol;
+import org.matheclipse.core.expression.S;
 import org.matheclipse.core.generic.Comparators.ExprReverseComparator;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IASTAppendable;
@@ -85,58 +87,59 @@ public final class LinearAlgebra {
 	private static class Initializer {
 
 		private static void init() {
-			F.ArrayDepth.setEvaluator(new ArrayDepth());
-			F.BrayCurtisDistance.setEvaluator(new BrayCurtisDistance());
-			F.CanberraDistance.setEvaluator(new CanberraDistance());
-			F.CharacteristicPolynomial.setEvaluator(new CharacteristicPolynomial());
-			F.ChessboardDistance.setEvaluator(new ChessboardDistance());
-			F.CholeskyDecomposition.setEvaluator(new CholeskyDecomposition());
-			F.ConjugateTranspose.setEvaluator(new ConjugateTranspose());
-			F.CosineDistance.setEvaluator(new CosineDistance());
-			F.Cross.setEvaluator(new Cross());
-			F.DesignMatrix.setEvaluator(new DesignMatrix());
-			F.Det.setEvaluator(new Det());
-			F.Diagonal.setEvaluator(new Diagonal());
-			F.DiagonalMatrix.setEvaluator(new DiagonalMatrix());
-			F.Dimensions.setEvaluator(new Dimensions());
-			F.Dot.setEvaluator(new Dot());
-			F.Eigenvalues.setEvaluator(new Eigenvalues());
-			F.Eigenvectors.setEvaluator(new Eigenvectors());
-			F.EuclideanDistance.setEvaluator(new EuclideanDistance());
-			F.FourierMatrix.setEvaluator(new FourierMatrix());
-			F.FromPolarCoordinates.setEvaluator(new FromPolarCoordinates());
-			F.HilbertMatrix.setEvaluator(new HilbertMatrix());
-			F.IdentityMatrix.setEvaluator(new IdentityMatrix());
-			F.Inner.setEvaluator(new Inner());
-			F.Inverse.setEvaluator(new Inverse());
-			F.JacobiMatrix.setEvaluator(new JacobiMatrix());
-			F.LeastSquares.setEvaluator(new LeastSquares());
-			F.LinearSolve.setEvaluator(new LinearSolve());
-			F.LowerTriangularize.setEvaluator(new LowerTriangularize());
-			F.LUDecomposition.setEvaluator(new LUDecomposition());
-			F.ManhattanDistance.setEvaluator(new ManhattanDistance());
-			F.MatrixMinimalPolynomial.setEvaluator(new MatrixMinimalPolynomial());
-			F.MatrixExp.setEvaluator(new MatrixExp());
-			F.MatrixPower.setEvaluator(new MatrixPower());
-			F.MatrixRank.setEvaluator(new MatrixRank());
-			F.Norm.setEvaluator(new Norm());
-			F.Normalize.setEvaluator(new Normalize());
-			F.NullSpace.setEvaluator(new NullSpace());
-			F.Orthogonalize.setEvaluator(new Orthogonalize());
-			F.PseudoInverse.setEvaluator(PseudoInverse.CONST);
-			F.Projection.setEvaluator(new Projection());
-			F.QRDecomposition.setEvaluator(new QRDecomposition());
-			F.RowReduce.setEvaluator(new RowReduce());
-			F.SingularValueDecomposition.setEvaluator(new SingularValueDecomposition());
-			F.SquaredEuclideanDistance.setEvaluator(new SquaredEuclideanDistance());
-			F.ToeplitzMatrix.setEvaluator(new ToeplitzMatrix());
-			F.ToPolarCoordinates.setEvaluator(new ToPolarCoordinates());
-			F.Tr.setEvaluator(new Tr());
-			F.Transpose.setEvaluator(new Transpose());
-			F.UpperTriangularize.setEvaluator(new UpperTriangularize());
-			F.UnitVector.setEvaluator(new UnitVector());
-			F.VandermondeMatrix.setEvaluator(new VandermondeMatrix());
-			F.VectorAngle.setEvaluator(new VectorAngle());
+			S.ArrayDepth.setEvaluator(new ArrayDepth());
+			S.BrayCurtisDistance.setEvaluator(new BrayCurtisDistance());
+			S.CanberraDistance.setEvaluator(new CanberraDistance());
+			S.CharacteristicPolynomial.setEvaluator(new CharacteristicPolynomial());
+			S.ChessboardDistance.setEvaluator(new ChessboardDistance());
+			S.CholeskyDecomposition.setEvaluator(new CholeskyDecomposition());
+			S.ConjugateTranspose.setEvaluator(new ConjugateTranspose());
+			S.CosineDistance.setEvaluator(new CosineDistance());
+			S.Cross.setEvaluator(new Cross());
+			S.DesignMatrix.setEvaluator(new DesignMatrix());
+			S.Det.setEvaluator(new Det());
+			S.Diagonal.setEvaluator(new Diagonal());
+			S.DiagonalMatrix.setEvaluator(new DiagonalMatrix());
+			S.Dimensions.setEvaluator(new Dimensions());
+			S.Dot.setEvaluator(new Dot());
+			S.Eigenvalues.setEvaluator(new Eigenvalues());
+			S.Eigenvectors.setEvaluator(new Eigenvectors());
+			S.EuclideanDistance.setEvaluator(new EuclideanDistance());
+			S.FourierMatrix.setEvaluator(new FourierMatrix());
+			S.FromPolarCoordinates.setEvaluator(new FromPolarCoordinates());
+			S.HilbertMatrix.setEvaluator(new HilbertMatrix());
+			S.IdentityMatrix.setEvaluator(new IdentityMatrix());
+			S.Inner.setEvaluator(new Inner());
+			S.Inverse.setEvaluator(new Inverse());
+			S.JacobiMatrix.setEvaluator(new JacobiMatrix());
+			S.LeastSquares.setEvaluator(new LeastSquares());
+			S.LinearSolve.setEvaluator(new LinearSolve());
+			S.LowerTriangularize.setEvaluator(new LowerTriangularize());
+			S.LUDecomposition.setEvaluator(new LUDecomposition());
+			S.ManhattanDistance.setEvaluator(new ManhattanDistance());
+			S.MatrixMinimalPolynomial.setEvaluator(new MatrixMinimalPolynomial());
+			S.MatrixExp.setEvaluator(new MatrixExp());
+			S.MatrixPower.setEvaluator(new MatrixPower());
+			S.MatrixRank.setEvaluator(new MatrixRank());
+			S.Norm.setEvaluator(new Norm());
+			S.Normalize.setEvaluator(new Normalize());
+			S.NullSpace.setEvaluator(new NullSpace());
+			S.Orthogonalize.setEvaluator(new Orthogonalize());
+			S.PseudoInverse.setEvaluator(PseudoInverse.CONST);
+			S.Projection.setEvaluator(new Projection());
+			S.QRDecomposition.setEvaluator(new QRDecomposition());
+			S.RiccatiSolve.setEvaluator(new RiccatiSolve());
+			S.RowReduce.setEvaluator(new RowReduce());
+			S.SingularValueDecomposition.setEvaluator(new SingularValueDecomposition());
+			S.SquaredEuclideanDistance.setEvaluator(new SquaredEuclideanDistance());
+			S.ToeplitzMatrix.setEvaluator(new ToeplitzMatrix());
+			S.ToPolarCoordinates.setEvaluator(new ToPolarCoordinates());
+			S.Tr.setEvaluator(new Tr());
+			S.Transpose.setEvaluator(new Transpose());
+			S.UpperTriangularize.setEvaluator(new UpperTriangularize());
+			S.UnitVector.setEvaluator(new UnitVector());
+			S.VandermondeMatrix.setEvaluator(new VandermondeMatrix());
+			S.VectorAngle.setEvaluator(new VectorAngle());
 		}
 	}
 
@@ -1743,6 +1746,13 @@ public final class LinearAlgebra {
 
 		@Override
 		public IAST realMatrixEval(RealMatrix matrix) {
+			// ComplexEigenDecomposition ced = new ComplexEigenDecomposition(matrix);
+			// int size = matrix.getColumnDimension();
+			// IASTAppendable list = F.ListAlloc(size);
+			// return list.appendArgs(0, size, i -> {
+			// FieldVector<Complex> rv = ced.getEigenvector(i);
+			// return Convert.complexVector2List(rv);
+			// });
 			EigenDecomposition ed = new EigenDecomposition(matrix);
 			int size = matrix.getColumnDimension();
 			IASTAppendable list = F.ListAlloc(size);
@@ -3632,6 +3642,44 @@ public final class LinearAlgebra {
 			}
 			return F.NIL;
 		}
+	}
+
+	private static class RiccatiSolve extends AbstractEvaluator {
+
+		@Override
+		public IExpr evaluate(final IAST ast, EvalEngine engine) {
+			if (ast.arg1().argSize() == 2 && ast.arg1().isListOfMatrices() && //
+					ast.arg2().argSize() == 2 && ast.arg2().isListOfMatrices()) {
+				try {
+					IAST list1 = (IAST) ast.arg1();
+					IAST list2 = (IAST) ast.arg2();
+					RealMatrix A = list1.arg1().toRealMatrix();
+					if (A != null) {
+						RealMatrix B = list1.arg2().toRealMatrix();
+						if (B != null) {
+							RealMatrix Q = list2.arg1().toRealMatrix();
+							if (Q != null) {
+								RealMatrix R = list2.arg2().toRealMatrix();
+								if (R != null) {
+									RiccatiEquationSolver solver = new RiccatiEquationSolverImpl(A, B, Q, R);
+									RealMatrix result = solver.getP();
+									return new ASTRealMatrix(result, false);
+								}
+							}
+						}
+					}
+				} catch (MathRuntimeException mrex) {
+					IOFunctions.printMessage(ast.topHead(), mrex, engine);
+				}
+			}
+			return F.NIL;
+		}
+
+		@Override
+		public int[] expectedArgSize(IAST ast) {
+			return IOFunctions.ARGS_2_2;
+		}
+
 	}
 
 	/**

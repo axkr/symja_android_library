@@ -37,6 +37,7 @@ import org.matheclipse.core.expression.ExprID;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.expression.ID;
 import org.matheclipse.core.expression.Num;
+import org.matheclipse.core.expression.S;
 import org.matheclipse.core.patternmatching.IPatternMatcher;
 import org.matheclipse.core.patternmatching.PatternMatcher;
 import org.matheclipse.core.polynomials.longexponent.ExprRingFactory;
@@ -107,8 +108,8 @@ import edu.jas.structure.GcdRingElem;
 public interface IExpr extends Comparable<IExpr>, GcdRingElem<IExpr>, Serializable, FieldElement<IExpr> {
 
 	/**
-	 * A three-state &quot;boolean&quot; value. If a comparison can not be evaluated to <code>F.True</code>
-	 * (&quot;state&quot; <code>TRUE</code>) or <code>F.False</code> (&quot;state&quot; <code>FALSE</code>) it can get
+	 * A three-state &quot;boolean&quot; value. If a comparison can not be evaluated to <code>S.True</code>
+	 * (&quot;state&quot; <code>TRUE</code>) or <code>S.False</code> (&quot;state&quot; <code>FALSE</code>) it can get
 	 * the &quot;state&quot; <code>UNDECIDABLE</code>.
 	 *
 	 */
@@ -333,7 +334,7 @@ public interface IExpr extends Comparable<IExpr>, GcdRingElem<IExpr>, Serializab
 	 */
 	default IExpr base() {
 		if (Config.FUZZ_TESTING) {
-			if (!isPower() && !isAST(F.Surd)) {
+			if (!isPower() && !isAST(S.Surd)) {
 				throw new NullPointerException();
 			}
 		}
@@ -484,13 +485,13 @@ public interface IExpr extends Comparable<IExpr>, GcdRingElem<IExpr>, Serializab
 	/**
 	 * Compare if <code>this == that</code:
 	 * <ul>
-	 * <li>return F.True if the comparison is <code>true</code></li>
-	 * <li>return F.False if the comparison is <code>false</code></li>
+	 * <li>return S.True if the comparison is <code>true</code></li>
+	 * <li>return S.False if the comparison is <code>false</code></li>
 	 * <li>return F.NIL if the comparison is undetermined (i.e. could not be evaluated)</li>
 	 * </ul>
 	 * 
 	 * @param that
-	 * @return <code>F.True, F.False or F.NIL</code
+	 * @return <code>S.True, S.False or F.NIL</code
 	 */
 	default public IExpr equalTo(IExpr that) {
 		COMPARE_TERNARY temp = BooleanFunctions.CONST_EQUAL.compareTernary(this, that);
@@ -583,7 +584,7 @@ public interface IExpr extends Comparable<IExpr>, GcdRingElem<IExpr>, Serializab
 	 */
 	default IExpr exponent() {
 		if (Config.FUZZ_TESTING) {
-			if (!isPower() && !isAST(F.Surd)) {
+			if (!isPower() && !isAST(S.Surd)) {
 				throw new NullPointerException();
 			}
 		}
@@ -626,7 +627,7 @@ public interface IExpr extends Comparable<IExpr>, GcdRingElem<IExpr>, Serializab
 
 	@Override
 	default IExpr gcd(IExpr that) {
-		return F.GCD.of(this, that);
+		return S.GCD.of(this, that);
 	}
 
 	/**
@@ -637,7 +638,7 @@ public interface IExpr extends Comparable<IExpr>, GcdRingElem<IExpr>, Serializab
 	 * @return
 	 */
 	default IExpr getAt(final int index) {
-		return F.Part.of(this, F.ZZ(index));
+		return S.Part.of(this, F.ZZ(index));
 	}
 
 	@Override
@@ -657,7 +658,7 @@ public interface IExpr extends Comparable<IExpr>, GcdRingElem<IExpr>, Serializab
 	 */
 	default IExpr greater(final IExpr a1) {
 		if (isReal() && a1.isReal()) {
-			return ((ISignedNumber) this).isGT(((ISignedNumber) a1)) ? F.True : F.False;
+			return ((ISignedNumber) this).isGT(((ISignedNumber) a1)) ? S.True : S.False;
 		}
 		EvalEngine engine = EvalEngine.get();
 		return engine.evaluate(F.Greater(this, a1));
@@ -671,7 +672,7 @@ public interface IExpr extends Comparable<IExpr>, GcdRingElem<IExpr>, Serializab
 	 */
 	default IExpr greaterEqual(final IExpr a1) {
 		if (isReal() && a1.isReal()) {
-			return ((ISignedNumber) this).isLT(((ISignedNumber) a1)) ? F.False : F.True;
+			return ((ISignedNumber) this).isLT(((ISignedNumber) a1)) ? S.False : S.True;
 		}
 		EvalEngine engine = EvalEngine.get();
 		return engine.evaluate(F.GreaterEqual(this, a1));
@@ -680,13 +681,13 @@ public interface IExpr extends Comparable<IExpr>, GcdRingElem<IExpr>, Serializab
 	/**
 	 * Compare if <code>this >= that</code:
 	 * <ul>
-	 * <li>return F.True if the comparison is <code>true</code></li>
-	 * <li>return F.False if the comparison is <code>false</code></li>
+	 * <li>return S.True if the comparison is <code>true</code></li>
+	 * <li>return S.False if the comparison is <code>false</code></li>
 	 * <li>return F.NIL if the comparison is undetermined (i.e. could not be evaluated)</li>
 	 * </ul>
 	 * 
 	 * @param that
-	 * @return <code>F.True, F.False or F.NIL</code
+	 * @return <code>S.True, S.False or F.NIL</code
 	 */
 	default public IExpr greaterEqualThan(IExpr that) {
 		COMPARE_TERNARY temp = BooleanFunctions.CONST_GREATER_EQUAL.prepareCompare(this, that);
@@ -696,13 +697,13 @@ public interface IExpr extends Comparable<IExpr>, GcdRingElem<IExpr>, Serializab
 	/**
 	 * Compare if <code>this > that</code:
 	 * <ul>
-	 * <li>return F.True if the comparison is <code>true</code></li>
-	 * <li>return F.False if the comparison is <code>false</code></li>
+	 * <li>return S.True if the comparison is <code>true</code></li>
+	 * <li>return S.False if the comparison is <code>false</code></li>
 	 * <li>return F.NIL if the comparison is undetermined (i.e. could not be evaluated)</li>
 	 * </ul>
 	 * 
 	 * @param that
-	 * @return <code>F.True, F.False or F.NIL</code
+	 * @return <code>S.True, S.False or F.NIL</code
 	 */
 	default public IExpr greaterThan(IExpr that) {
 		COMPARE_TERNARY temp = BooleanFunctions.CONST_GREATER.prepareCompare(this, that);
@@ -759,7 +760,7 @@ public interface IExpr extends Comparable<IExpr>, GcdRingElem<IExpr>, Serializab
 	/**
 	 * If this object is an instance of <code>IAST</code> get the first element (offset 0) of the <code>IAST</code> list
 	 * (i.e. <code>#get(0)</code> ). Otherwise return the specific header, i.e. for
-	 * <code>integer number type => F.Integer, fraction number type => F.Rational, complex number type => F.Complex, ...  </code>
+	 * <code>integer number type => S.Integer, fraction number type => S.Rational, complex number type => S.Complex, ...  </code>
 	 * 
 	 * @return the head of the expression, which must not be null.
 	 */
@@ -806,7 +807,7 @@ public interface IExpr extends Comparable<IExpr>, GcdRingElem<IExpr>, Serializab
 	 * @return real part
 	 */
 	default public IExpr im() {
-		return F.Im.of(this);
+		return S.Im.of(this);
 	}
 
 	/**
@@ -1272,7 +1273,7 @@ public interface IExpr extends Comparable<IExpr>, GcdRingElem<IExpr>, Serializab
 	 * @see #isRealResult()
 	 */
 	default boolean isBooleanResult() {
-		if (F.True.equals(AbstractAssumptions.assumeBoolean(this))) {
+		if (S.True.equals(AbstractAssumptions.assumeBoolean(this))) {
 			return true;
 		}
 		return isBooleanFormula();
@@ -1837,7 +1838,7 @@ public interface IExpr extends Comparable<IExpr>, GcdRingElem<IExpr>, Serializab
 	 * @see #isRealResult()
 	 */
 	default boolean isIntegerResult() {
-		if (F.True.equals(AbstractAssumptions.assumeInteger(this))) {
+		if (S.True.equals(AbstractAssumptions.assumeInteger(this))) {
 			return true;
 		}
 		return this instanceof IInteger;
@@ -1893,6 +1894,33 @@ public interface IExpr extends Comparable<IExpr>, GcdRingElem<IExpr>, Serializab
 		return false;
 	}
 
+	/**
+	 * Test if this expression is a list (i.e. an AST with head List) with exactly 2 arguments
+	 * 
+	 * @return
+	 */
+	default boolean isList1() {
+		return isAST(S.List, 2);
+	}
+
+	/**
+	 * Test if this expression is a list (i.e. an AST with head List) with exactly 2 arguments
+	 * 
+	 * @return
+	 */
+	default boolean isList2() {
+		return isAST(S.List, 3);
+	}
+
+	/**
+	 * Test if this expression is a list (i.e. an AST with head List) with exactly 2 arguments
+	 * 
+	 * @return
+	 */
+	default boolean isList3() {
+		return isAST(S.List, 4);
+	}
+
 	default boolean isList(Predicate<IExpr> pred) {
 		return false;
 	}
@@ -1918,6 +1946,16 @@ public interface IExpr extends Comparable<IExpr>, GcdRingElem<IExpr>, Serializab
 		return false;
 	}
 
+	/**
+	 * Test if this expression is a list of matrices
+	 * 
+	 * @return 
+	 */
+	default boolean isListOfMatrices() {
+		return false;
+	}
+
+	
 	/**
 	 * Test if this expression is a list of rules (head Rule or RuleDelayed)
 	 * 
@@ -2656,7 +2694,7 @@ public interface IExpr extends Comparable<IExpr>, GcdRingElem<IExpr>, Serializab
 	 * @see #isRealResult()
 	 */
 	default boolean isRationalResult() {
-		if (F.True.equals(AbstractAssumptions.assumeRational(this))) {
+		if (S.True.equals(AbstractAssumptions.assumeRational(this))) {
 			return true;
 		}
 		return this instanceof IRational;
@@ -2723,7 +2761,7 @@ public interface IExpr extends Comparable<IExpr>, GcdRingElem<IExpr>, Serializab
 	 * @see #isIntegerResult
 	 */
 	default boolean isRealResult() {
-		if (F.True.equals(AbstractAssumptions.assumeReal(this))) {
+		if (S.True.equals(AbstractAssumptions.assumeReal(this))) {
 			return true;
 		}
 		return this instanceof ISignedNumber;
@@ -3113,7 +3151,7 @@ public interface IExpr extends Comparable<IExpr>, GcdRingElem<IExpr>, Serializab
 	 */
 	default IExpr less(final IExpr a1) {
 		if (isReal() && a1.isReal()) {
-			return ((ISignedNumber) this).isLT(((ISignedNumber) a1)) ? F.True : F.False;
+			return ((ISignedNumber) this).isLT(((ISignedNumber) a1)) ? S.True : S.False;
 		}
 		EvalEngine engine = EvalEngine.get();
 		return engine.evaluate(F.Less(this, a1));
@@ -3127,7 +3165,7 @@ public interface IExpr extends Comparable<IExpr>, GcdRingElem<IExpr>, Serializab
 	 */
 	default IExpr lessEqual(final IExpr a1) {
 		if (isReal() && a1.isReal()) {
-			return ((ISignedNumber) this).isGT(((ISignedNumber) a1)) ? F.False : F.True;
+			return ((ISignedNumber) this).isGT(((ISignedNumber) a1)) ? S.False : S.True;
 		}
 		EvalEngine engine = EvalEngine.get();
 		return engine.evaluate(F.LessEqual(this, a1));
@@ -3136,13 +3174,13 @@ public interface IExpr extends Comparable<IExpr>, GcdRingElem<IExpr>, Serializab
 	/**
 	 * Compare if <code>this <= that</code:
 	 * <ul>
-	 * <li>return F.True if the comparison is <code>true</code></li>
-	 * <li>return F.False if the comparison is <code>false</code></li>
+	 * <li>return S.True if the comparison is <code>true</code></li>
+	 * <li>return S.False if the comparison is <code>false</code></li>
 	 * <li>return F.NIL if the comparison is undetermined (i.e. could not be evaluated)</li>
 	 * </ul>
 	 * 
 	 * @param that
-	 * @return <code>F.True, F.False or F.NIL</code
+	 * @return <code>S.True, S.False or F.NIL</code
 	 */
 	default public IExpr lessEqualThan(IExpr that) {
 		COMPARE_TERNARY temp = BooleanFunctions.CONST_LESS_EQUAL.prepareCompare(this, that);
@@ -3152,13 +3190,13 @@ public interface IExpr extends Comparable<IExpr>, GcdRingElem<IExpr>, Serializab
 	/**
 	 * Compare if <code>this < that</code:
 	 * <ul>
-	 * <li>return F.True if the comparison is <code>true</code></li>
-	 * <li>return F.False if the comparison is <code>false</code></li>
+	 * <li>return S.True if the comparison is <code>true</code></li>
+	 * <li>return S.False if the comparison is <code>false</code></li>
 	 * <li>return F.NIL if the comparison is undetermined (i.e. could not be evaluated)</li>
 	 * </ul>
 	 * 
 	 * @param that
-	 * @return <code>F.True, F.False or F.NIL</code
+	 * @return <code>S.True, S.False or F.NIL</code
 	 */
 	default public IExpr lessThan(IExpr that) {
 		COMPARE_TERNARY temp = BooleanFunctions.CONST_LESS.prepareCompare(this, that);
@@ -3228,7 +3266,7 @@ public interface IExpr extends Comparable<IExpr>, GcdRingElem<IExpr>, Serializab
 	}
 
 	default IExpr mod(final IExpr that) {
-		return F.Mod.of(this, that);
+		return S.Mod.of(this, that);
 	}
 
 	/**
@@ -3299,10 +3337,10 @@ public interface IExpr extends Comparable<IExpr>, GcdRingElem<IExpr>, Serializab
 				IExpr temp = ((IAST) this).map(x -> x.multiplyDistributed(that), 1);
 				return EvalEngine.get().evaluate(temp);
 			}
-			IExpr temp = ((IAST) this).mapThread(F.binaryAST2(F.Times, null, that), 1);
+			IExpr temp = ((IAST) this).mapThread(F.binaryAST2(S.Times, null, that), 1);
 			return EvalEngine.get().evaluate(temp);
 		} else if (that.isPlus()) {
-			IExpr temp = ((IAST) that).mapThread(F.binaryAST2(F.Times, this, null), 2);
+			IExpr temp = ((IAST) that).mapThread(F.binaryAST2(S.Times, this, null), 2);
 			return EvalEngine.get().evaluate(temp);
 		}
 		return times(that);

@@ -584,7 +584,13 @@ public abstract class AbstractAST implements IASTMutable {
 		public final boolean isListOfLists() {
 			return false;
 		}
-
+		
+		/** {@inheritDoc} */
+		@Override
+		public final boolean isListOfMatrices() {
+			return false;
+		}
+		
 		/** {@inheritDoc} */
 		@Override
 		public final GraphType isListOfEdges() {
@@ -2970,6 +2976,21 @@ public abstract class AbstractAST implements IASTMutable {
 			for (int i = 1; i < size(); i++) {
 				if (!get(i).isList()) {
 					// the row is no list
+					return false;
+				}
+			}
+			return true;
+		}
+		return false;
+	}
+	
+	/** {@inheritDoc} */
+	@Override
+	public boolean isListOfMatrices() {
+		if (head().equals(F.List)) {
+			for (int i = 1; i < size(); i++) {
+				if (get(i).isMatrix(false)==null) {
+					// the row is no matrix
 					return false;
 				}
 			}
