@@ -64,7 +64,7 @@ public abstract class AbstractPatternMatcherMethod extends PatternMatcher {
 			}
 		}
 
-		IPatternMap patternMap=getPatternMap();
+		IPatternMap patternMap=createPatternMap();
 		patternMap.initPattern();
 		if (matchExpr(fLhsPatternExpr, leftHandSide, engine)) {
 			try {

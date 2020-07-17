@@ -28,7 +28,7 @@ public class PatternMatcherList extends PatternMatcherAndEvaluator {
 	
 	@Override
 	public boolean checkRHSCondition(EvalEngine engine) {
-		IPatternMap patternMap = getPatternMap();
+		IPatternMap patternMap = createPatternMap();
 
 		if (patternMap.isAllPatternsAssigned()) {
 			IExpr result = patternMap.substituteSymbols(fRightHandSide);

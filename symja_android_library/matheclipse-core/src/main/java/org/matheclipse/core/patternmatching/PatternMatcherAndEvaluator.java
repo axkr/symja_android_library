@@ -201,7 +201,7 @@ public class PatternMatcherAndEvaluator extends PatternMatcher implements Extern
 	 */
 	@Override
 	public boolean checkRHSCondition(EvalEngine engine) {
-		IPatternMap patternMap = getPatternMap();
+		IPatternMap patternMap = createPatternMap();
 		if (patternMap.getRHSEvaluated()) {
 			return true;
 		}
@@ -270,7 +270,7 @@ public class PatternMatcherAndEvaluator extends PatternMatcher implements Extern
 				return F.NIL;
 			}
 		} else {
-			patternMap = getPatternMap();
+			patternMap = createPatternMap();
 			patternMap.initPattern();
 			if (matchExpr(fLhsPatternExpr, leftHandSide, engine, new StackMatcher(engine))) {
 
@@ -400,8 +400,8 @@ public class PatternMatcherAndEvaluator extends PatternMatcher implements Extern
 							if (getRHSleafCountSimplify() > pm.getRHSleafCountSimplify()) {
 								return 1;
 							}
-							return equivalentRHS(fRightHandSide, pm.fRightHandSide, getPatternMap(),
-									pm.getPatternMap());
+							return equivalentRHS(fRightHandSide, pm.fRightHandSide, createPatternMap(),
+									pm.createPatternMap());
 						}
 						return 1;
 					} else if (pm.fRightHandSide.isModuleOrWithCondition() || pm.fRightHandSide.isCondition()) {

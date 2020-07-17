@@ -277,6 +277,10 @@ public class PatternMatcher extends IPatternMatcher implements Externalizable {
 	protected transient IPatternMap fPatternMap;
 
 	public IPatternMap getPatternMap() {
+		return fPatternMap;
+	}
+	
+	public IPatternMap createPatternMap() {
 		if (fPatternMap == null) {
 			int[] priority = new int[] { IPatternMap.DEFAULT_RULE_PRIORITY };
 			fPatternMap = IPatternMap.determinePatterns(fLhsPatternExpr, priority);
@@ -358,7 +362,7 @@ public class PatternMatcher extends IPatternMatcher implements Externalizable {
 	public Object clone() throws CloneNotSupportedException {
 		PatternMatcher v = (PatternMatcher) super.clone();
 		v.fPatternCondition = fPatternCondition;
-		IPatternMap patternMap = getPatternMap();
+		IPatternMap patternMap = createPatternMap();
 		v.fPatternMap = patternMap.clone();
 		v.fLHSPriority = fLHSPriority;
 		return v;
@@ -591,7 +595,7 @@ public class PatternMatcher extends IPatternMatcher implements Externalizable {
 	 */
 	@Override
 	final public boolean isRuleWithoutPatterns() {
-		return getPatternMap().isRuleWithoutPatterns();
+		return createPatternMap().isRuleWithoutPatterns();
 	}
 
 	protected void logConditionFalse(final IExpr lhsEvalAST, final IExpr lhsPatternAST, IExpr rhsAST) {

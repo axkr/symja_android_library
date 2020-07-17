@@ -120,7 +120,7 @@ public class PatternMatcherAndInvoker extends PatternMatcher {
 			}
 			return result != null ? result : F.NIL;
 		}
-		IPatternMap patternMap = getPatternMap();
+		IPatternMap patternMap = createPatternMap();
 		if (fTypes.length != patternMap.size()) {
 			return F.NIL;
 		}
