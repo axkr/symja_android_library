@@ -3081,6 +3081,9 @@ public class S {
 	/** Reverse(list) - reverse the elements of the `list`. */
 	public final static IBuiltInSymbol Reverse = F.initFinalSymbol("Reverse", ID.Reverse);
 
+	/***/
+	public final static IBuiltInSymbol RiccatiSolve = F.initFinalSymbol("RiccatiSolve", ID.RiccatiSolve);
+
 	/** Riffle(list1, list2) - insert elements of `list2` between the elements of `list1`. */
 	public final static IBuiltInSymbol Riffle = F.initFinalSymbol("Riffle", ID.Riffle);
 
@@ -3957,7 +3960,7 @@ public class S {
 		} else {
 			str = symbolName;
 		}
-		IBuiltInSymbol temp = new BuiltInSymbol(str, ordinal);
+		final IBuiltInSymbol temp = new BuiltInSymbol(str, ordinal);
 		BUILT_IN_SYMBOLS[ordinal] = temp;
 		org.matheclipse.core.expression.Context.SYSTEM.put(str, temp);
 		GLOBAL_IDS_MAP.put(temp, (short) ordinal);
@@ -3974,7 +3977,7 @@ public class S {
 	 * @return
 	 */
 	public static ISymbol initFinalHiddenSymbol(final String symbolName) {
-		ISymbol temp = new Symbol(symbolName, org.matheclipse.core.expression.Context.DUMMY);
+		final ISymbol temp = new Symbol(symbolName, org.matheclipse.core.expression.Context.DUMMY);
 		HIDDEN_SYMBOLS_MAP.put(symbolName, temp);
 		return temp;
 	}
