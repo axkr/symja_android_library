@@ -9,6 +9,11 @@
 
 These are some functions integrated in Symja, which allow the output of a graphical "JavaScript control".  
 
+* [BarChart](functions/BarChart.md)			
+* [BoxWhiskerChart](functions/BoxWhiskerChart.md)	
+* [DensityHistogram](functions/DensityHistogram.md)	
+* [Histogram](functions/Histogram.md)	
+* [PieChart](functions/PieChart.md)	
 * [ListLinePlot](functions/ListLinePlot.md)
 * [ListPlot](functions/ListPlot.md)
 * [ListPlot3D](functions/ListPlot3D.md)
