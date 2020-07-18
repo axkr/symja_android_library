@@ -16,9 +16,8 @@ import org.matheclipse.core.expression.IntervalSym;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IASTAppendable;
 import org.matheclipse.core.interfaces.IExpr;
+import org.matheclipse.core.tensor.qty.IQuantity;
 import org.matheclipse.parser.client.FEConfig;
-
-import ch.ethz.idsc.tensor.qty.IQuantity;
 
 /**
  * <p>

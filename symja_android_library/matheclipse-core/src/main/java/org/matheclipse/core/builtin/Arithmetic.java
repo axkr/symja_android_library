@@ -113,11 +113,10 @@ import org.matheclipse.core.reflection.system.rules.AbsRules;
 import org.matheclipse.core.reflection.system.rules.ConjugateRules;
 import org.matheclipse.core.reflection.system.rules.GammaRules;
 import org.matheclipse.core.reflection.system.rules.PowerRules;
+import org.matheclipse.core.tensor.qty.IQuantity;
 import org.matheclipse.core.visit.VisitorExpr;
 import org.matheclipse.parser.client.FEConfig;
 import org.matheclipse.parser.client.math.MathException;
-
-import ch.ethz.idsc.tensor.qty.IQuantity;
 
 public final class Arithmetic {
 

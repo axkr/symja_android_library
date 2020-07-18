@@ -10309,12 +10309,13 @@ public class LowercaseTestCase extends AbstractTestCase {
 	}
 
 	public void testIntegerName() {
-		check("IntegerName(0,\"Latin\")", //
-				"nihil");
-		check("IntegerName(99,\"Latin\")", //
-				"nonaginta novem");
-		check("IntegerName(-99,\"Latin\")", //
-				"- nonaginta novem");
+		check("IntegerName(0,\"Tongan\")", //
+				"noll");
+		check("IntegerName(123007,\"Tongan\")", //
+				"ett­hundra­tjugo­tre­tusen sju");
+		check("IntegerName(-123007,\"Tongan\")", //
+				"minus ett­hundra­tjugo­tre­tusen sju");
+		
 		// check("IntegerName(123007,\"Latin\")", //
 		// "ciento veintitrés mil siete");
 		// check("IntegerName(-123007,\"Latin\")", //

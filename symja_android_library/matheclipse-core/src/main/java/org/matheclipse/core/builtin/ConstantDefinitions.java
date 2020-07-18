@@ -20,8 +20,7 @@ import org.matheclipse.core.expression.S;
 import org.matheclipse.core.expression.data.DateObjectExpr;
 import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.interfaces.ISymbol;
-
-import ch.ethz.idsc.tensor.io.ResourceData;
+import org.matheclipse.core.tensor.io.ResourceData;
 
 public class ConstantDefinitions {
 

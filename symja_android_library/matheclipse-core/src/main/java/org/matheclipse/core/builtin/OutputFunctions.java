@@ -35,10 +35,6 @@ import org.matheclipse.parser.client.FEConfig;
 import com.ibm.icu.text.NumberFormat;
 import com.ibm.icu.text.RuleBasedNumberFormat;
 
-import net.numericalchameleon.util.spokennumbers.LatinNumber;
-import net.numericalchameleon.util.spokennumbers.SpokenNumber;
-import net.numericalchameleon.util.spokennumbers.TonganNumber;
-
 public final class OutputFunctions {
 
 	/**
@@ -405,7 +401,6 @@ public final class OutputFunctions {
 					}
 
 					if (qual.isString("Words")) {
-						SpokenNumber spokenNumber = null;
 						if (language.isString("Dutch")) {
 							formatter = new RuleBasedNumberFormat(new Locale("nl"), RuleBasedNumberFormat.SPELLOUT);
 						} else if (language.isString("English")) {
@@ -423,7 +418,7 @@ public final class OutputFunctions {
 						} else if (language.isString("Italian")) {
 							formatter = new RuleBasedNumberFormat(Locale.ITALIAN, RuleBasedNumberFormat.SPELLOUT);
 						} else if (language.isString("Latin")) {
-							spokenNumber = new LatinNumber(value);
+							formatter = new RuleBasedNumberFormat(new Locale("vai"), RuleBasedNumberFormat.SPELLOUT);
 						} else if (language.isString("Polish")) {
 							formatter = new RuleBasedNumberFormat(new Locale("pl"), RuleBasedNumberFormat.SPELLOUT);
 						} else if (language.isString("Portuguese")) {
@@ -437,7 +432,7 @@ public final class OutputFunctions {
 						} else if (language.isString("Swedish")) {
 							formatter = new RuleBasedNumberFormat(new Locale("sv"), RuleBasedNumberFormat.SPELLOUT);
 						} else if (language.isString("Tongan")) {
-							spokenNumber = new TonganNumber(value);
+							formatter = new RuleBasedNumberFormat(new Locale("sv"), RuleBasedNumberFormat.SPELLOUT);
 						} else if (language.isString("Turkish")) {
 							formatter = new RuleBasedNumberFormat(new Locale("tr"), RuleBasedNumberFormat.SPELLOUT);
 						}
@@ -446,9 +441,6 @@ public final class OutputFunctions {
 							if (textNumber != null) {
 								return F.stringx(textNumber);
 							}
-						}
-						if (spokenNumber != null) {
-							return F.stringx(spokenNumber.toString());
 						}
 					}
 				} catch (Exception ex) {

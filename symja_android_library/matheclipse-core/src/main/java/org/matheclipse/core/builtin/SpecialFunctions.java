@@ -38,6 +38,7 @@ import org.matheclipse.core.builtin.functions.BesselJS;
 import org.matheclipse.core.builtin.functions.GammaJS;
 import org.matheclipse.core.builtin.functions.ZetaJS;
 import org.matheclipse.core.eval.EvalEngine;
+import org.matheclipse.core.eval.exception.IterationLimitExceeded;
 import org.matheclipse.core.eval.exception.PolynomialDegreeLimitExceeded;
 import org.matheclipse.core.eval.exception.ThrowException;
 import org.matheclipse.core.eval.exception.ValidateException;
@@ -275,6 +276,15 @@ public class SpecialFunctions {
 							double zn = engine.evalDouble(z);
 							double an = engine.evalDouble(a);
 							double nn = engine.evalDouble(n);
+							int iterationLimit = EvalEngine.get().getIterationLimit();
+							int aInt = (int) an;
+							if (aInt > iterationLimit && iterationLimit > 0) {
+								IterationLimitExceeded.throwIt(aInt, ast.topHead());
+							}
+							int nInt = (int) nn;
+							if (nInt > iterationLimit && iterationLimit > 0) {
+								IterationLimitExceeded.throwIt(nInt, ast.topHead());
+							}
 							// TODO improve with regularizedIncompleteBetaFunction() -
 							// https://github.com/haifengl/smile/blob/master/math/src/main/java/smile/math/special/Beta.java
 							return F.num(de.lab4inf.math.functions.IncompleteBeta.incBeta(zn, an, nn));

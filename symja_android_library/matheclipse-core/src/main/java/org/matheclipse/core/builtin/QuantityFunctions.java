@@ -21,11 +21,10 @@ import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.interfaces.IStringX;
 import org.matheclipse.core.interfaces.ISymbol;
+import org.matheclipse.core.tensor.qty.IQuantity;
+import org.matheclipse.core.tensor.qty.IUnit;
+import org.matheclipse.core.tensor.qty.UnitSystem;
 import org.matheclipse.parser.client.FEConfig;
-
-import ch.ethz.idsc.tensor.qty.IQuantity;
-import ch.ethz.idsc.tensor.qty.IUnit;
-import ch.ethz.idsc.tensor.qty.UnitSystem;
 
 public class QuantityFunctions {
 	final static HashMap<String, Function<LocalDateTime, IExpr>> DATEVALUE_MAP = new HashMap<String, Function<LocalDateTime, IExpr>>();
@@ -311,7 +310,7 @@ public class QuantityFunctions {
 					IExpr arg1 = engine.evaluate(ast.arg1());
 					IExpr arg2 = engine.evaluate(ast.arg2());
 					if (arg1.isQuantity()) {
-						ch.ethz.idsc.tensor.qty.QuantityMagnitude quantityMagnitude = ch.ethz.idsc.tensor.qty.QuantityMagnitude
+						org.matheclipse.core.tensor.qty.QuantityMagnitude quantityMagnitude = org.matheclipse.core.tensor.qty.QuantityMagnitude
 								.SI();
 						IUnit unit = IUnit.of(arg2.toString());
 						if (unit==null) {
@@ -404,7 +403,7 @@ public class QuantityFunctions {
 	}
 
 	public static IExpr unitConvert(IQuantity arg1, IUnit unit) {
-		ch.ethz.idsc.tensor.qty.UnitConvert unitConvert = ch.ethz.idsc.tensor.qty.UnitConvert.SI();
+		org.matheclipse.core.tensor.qty.UnitConvert unitConvert = org.matheclipse.core.tensor.qty.UnitConvert.SI();
 		return unitConvert.to(unit).apply(arg1);
 	}
 }

@@ -57,8 +57,7 @@ import org.matheclipse.core.interfaces.ISignedNumber;
 import org.matheclipse.core.interfaces.IStringX;
 import org.matheclipse.core.interfaces.ISymbol;
 import org.matheclipse.core.interfaces.ITernaryComparator;
-
-import ch.ethz.idsc.tensor.qty.IQuantity;
+import org.matheclipse.core.tensor.qty.IQuantity;
 
 public final class BooleanFunctions {
 	public final static Equal CONST_EQUAL = new Equal();
@@ -4270,7 +4269,7 @@ public final class BooleanFunctions {
 	private static IExpr quantityEquals(IQuantity q1, IQuantity q2) {
 		try {
 			if (!q1.unit().equals(q2.unit())) {
-				ch.ethz.idsc.tensor.qty.UnitConvert unitConvert = ch.ethz.idsc.tensor.qty.UnitConvert.SI();
+				org.matheclipse.core.tensor.qty.UnitConvert unitConvert = org.matheclipse.core.tensor.qty.UnitConvert.SI();
 				q2 = (IQuantity) unitConvert.to(q1.unit()).apply(q2);
 			}
 			if (q1.unit().equals(q2.unit())) {
@@ -4293,7 +4292,7 @@ public final class BooleanFunctions {
 	private static IExpr quantityUnequals(IQuantity q1, IQuantity q2) {
 		try {
 			if (!q1.unit().equals(q2.unit())) {
-				ch.ethz.idsc.tensor.qty.UnitConvert unitConvert = ch.ethz.idsc.tensor.qty.UnitConvert.SI();
+				org.matheclipse.core.tensor.qty.UnitConvert unitConvert = org.matheclipse.core.tensor.qty.UnitConvert.SI();
 				q2 = (IQuantity) unitConvert.to(q1.unit()).apply(q2);
 			}
 			if (q1.unit().equals(q2.unit())) {
@@ -4317,7 +4316,7 @@ public final class BooleanFunctions {
 	private static int quantityCompareTo(IQuantity q1, IQuantity q2) {
 		try {
 			if (!q1.unit().equals(q2.unit())) {
-				ch.ethz.idsc.tensor.qty.UnitConvert unitConvert = ch.ethz.idsc.tensor.qty.UnitConvert.SI();
+				org.matheclipse.core.tensor.qty.UnitConvert unitConvert = org.matheclipse.core.tensor.qty.UnitConvert.SI();
 				q2 = (IQuantity) unitConvert.to(q1.unit()).apply(q2);
 			}
 			if (q1.unit().equals(q2.unit())) {

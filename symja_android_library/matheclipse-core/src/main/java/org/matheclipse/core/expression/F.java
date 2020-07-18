@@ -104,6 +104,7 @@ import org.matheclipse.core.interfaces.ISymbol;
 import org.matheclipse.core.parser.ExprParser;
 import org.matheclipse.core.parser.ExprParserFactory;
 import org.matheclipse.core.patternmatching.IPatternMap.PatternMap;
+import org.matheclipse.core.tensor.QuantityParser;
 import org.matheclipse.core.patternmatching.IPatternMatcher;
 import org.matheclipse.parser.client.FEConfig;
 import org.matheclipse.parser.client.SyntaxError;
@@ -112,7 +113,6 @@ import org.matheclipse.parser.trie.Tries;
 import com.google.common.cache.Cache;
 import com.google.common.cache.CacheBuilder;
 
-import ch.ethz.idsc.tensor.QuantityParser;
 import edu.jas.kern.ComputerThreads;
 import edu.jas.kern.PreemptStatus;
 

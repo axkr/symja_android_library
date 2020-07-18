@@ -27,9 +27,8 @@ import org.matheclipse.core.interfaces.IPatternSequence;
 import org.matheclipse.core.interfaces.IRational;
 import org.matheclipse.core.interfaces.IStringX;
 import org.matheclipse.core.interfaces.ISymbol;
+import org.matheclipse.core.tensor.qty.IQuantity;
 import org.matheclipse.parser.client.FEConfig;
-
-import ch.ethz.idsc.tensor.qty.IQuantity;
 
 /**
  * Methods for handling the WXF serialization format.

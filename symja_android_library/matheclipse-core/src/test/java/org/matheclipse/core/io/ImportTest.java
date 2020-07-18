@@ -10,8 +10,8 @@ import org.matheclipse.core.builtin.LinearAlgebra;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IExpr;
+import org.matheclipse.core.tensor.io.ImageFormat;
 
-import ch.ethz.idsc.tensor.io.ImageFormat;
 import junit.framework.TestCase;
 
 public class ImportTest extends TestCase {

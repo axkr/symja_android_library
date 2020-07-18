@@ -22,9 +22,8 @@ import org.matheclipse.core.interfaces.INum;
 import org.matheclipse.core.interfaces.IRational;
 import org.matheclipse.core.interfaces.ISignedNumber;
 import org.matheclipse.core.interfaces.ISymbol;
-
-import ch.ethz.idsc.tensor.qty.IQuantity;
-import ch.ethz.idsc.tensor.qty.IUnit;
+import org.matheclipse.core.tensor.qty.IQuantity;
+import org.matheclipse.core.tensor.qty.IUnit;
 
 /**
  * Create iterators for functions like <code>Table()</code>, <code>Sum()</code> or <code>Product()</code>

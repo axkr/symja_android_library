@@ -2,6 +2,7 @@
 <classpath>
 	<classpathentry kind="lib" path="lib/fastutil-8.3.0.jar"/>
 	<classpathentry kind="src" path="matheclipse-core/src/test/resources"/>
+	<classpathentry kind="src" path="matheclipse-external/src/main/java"/>
 	<classpathentry kind="src" path="matheclipse-frontend/src/main/java"/>
 	<classpathentry kind="src" path="matheclipse-frontend/src/test/java"/>
 	<classpathentry kind="src" path="matheclipse-api/src/main/java"/>

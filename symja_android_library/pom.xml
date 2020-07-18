@@ -49,6 +49,7 @@
 	</properties>
 
 	<modules>
+	    <module>matheclipse-external</module>
 	    <module>matheclipse-frontend</module>
 		<module>matheclipse-core</module>
 		<module>matheclipse-api</module>

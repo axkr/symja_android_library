@@ -14,7 +14,12 @@
 	<dependencies>
 		<dependency>
 			<groupId>org.matheclipse</groupId>
-			<artifactId>matheclipse-frontend</artifactId> 
+			<artifactId>matheclipse-external</artifactId>
+			<version>1.0.0-SNAPSHOT</version>
+		</dependency>
+		<dependency>
+			<groupId>org.matheclipse</groupId>
+			<artifactId>matheclipse-frontend</artifactId>
 			<version>1.0.0-SNAPSHOT</version>
 		</dependency>
 		<dependency>

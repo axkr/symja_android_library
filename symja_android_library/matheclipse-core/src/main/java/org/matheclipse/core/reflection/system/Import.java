@@ -35,11 +35,10 @@ import org.matheclipse.core.interfaces.IASTAppendable;
 import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.interfaces.IStringX;
 import org.matheclipse.core.io.Extension;
+import org.matheclipse.core.tensor.io.ImageFormat;
 import org.matheclipse.parser.client.Parser;
 import org.matheclipse.parser.client.SyntaxError;
 import org.matheclipse.parser.client.ast.ASTNode;
-
-import ch.ethz.idsc.tensor.io.ImageFormat;
 
 /**
  * Import some data from file system.
