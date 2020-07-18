@@ -10315,7 +10315,7 @@ public class LowercaseTestCase extends AbstractTestCase {
 				"ett­hundra­tjugo­tre­tusen sju");
 		check("IntegerName(-123007,\"Tongan\")", //
 				"minus ett­hundra­tjugo­tre­tusen sju");
-		
+
 		// check("IntegerName(123007,\"Latin\")", //
 		// "ciento veintitrés mil siete");
 		// check("IntegerName(-123007,\"Latin\")", //
@@ -16351,6 +16351,9 @@ public class LowercaseTestCase extends AbstractTestCase {
 	}
 
 	public void testPatternAndRules() {
+
+		check("f((-1)^i_*x_^(2*i_+1)/(2*i_+1)!, {i_Symbol,0,Infinity}) := Sin(x) /;  FreeQ(x,i); f((-1)^i*x^(2*i+1)/(2*i+1)!, {i,0,Infinity})", //
+				"Sin(x)");
 		check("f(a_.*x_^j_.,x_):={a,x,j}; f(a*x*z,x)", //
 				"{a*z,x,1}");
 		check("f(a_.*x_^j_.,x_):={a,x,j}; f(a*b*x^3,x)", //
@@ -23040,7 +23043,33 @@ public class LowercaseTestCase extends AbstractTestCase {
 				"8");
 	}
 
-	public void testSum() {
+	public void testSum() { 
+		check("Sum((-1)^i*x^(2*i+1)/(2*i+1)!, {i,0,Infinity})", //
+				"Sin(x)");
+		check("Sum((-1)^i*x^(2*i)/(2*i)!, {i,0,Infinity})", //
+				"Cos(x)");
+		check("Sum(1/(i^d),{i,1,Infinity})", //
+				"Zeta(d)");
+		check("Sum(1/(i^(-d)),{i,1,Infinity})", //
+				"Zeta(-d)");
+		check("Sum(x^(2*i+1)/(2*i+1)!,{i,0,Infinity})", //
+				"Sinh(x)");
+		check("Sum(x^(2*i)/(2*i)!,{i,0,Infinity})", //
+				"Cosh(x)");
+		check("Sum(1/(i!),{i,0,Infinity})", //
+				"E");
+		check("Sum(x^i/(i!),{i,0,Infinity})", //
+				"E^x");
+
+		check("Sum(1/Binomial(2*i,i), {i,1,Infinity})", //
+				"1/27*(9+2*Sqrt(3)*Pi)");
+		check("Sum(1/(i*Binomial(2*i,i)), {i,1,Infinity})", //
+				"Pi/(3*Sqrt(3))"); 
+		check("Sum(1/(i^2*Binomial(2*i,i)), {i,1,Infinity})", //
+				"Pi^2/18");
+		check("Sum((-1)^(i-1)/i, {i,1,Infinity})", //
+				"Log(2)");
+
 		check("Sum(i^a, {i,0,n})", //
 				"0^a+HarmonicNumber(n,-a)");
 
@@ -23161,8 +23190,8 @@ public class LowercaseTestCase extends AbstractTestCase {
 		check("Sum(Cos(Pi*i), {i, 1, Infinity})", //
 				"Sum(Cos(i*Pi),{i,1,Infinity})");
 		check("Sum(x^k*Sum(y^l,{l,0,4}),{k,0,4})", //
-				"1+y+y^2+y^3+y^4+x*(1+y+y^2+y^3+y^4)+x^2*(1+y+y^2+y^3+y^4)+x^3*(1+y+y^2+y^3+y^4)+x^\n"
-						+ "4*(1+y+y^2+y^3+y^4)");
+				"1+y+y^2+y^3+y^4+x*(1+y+y^2+y^3+y^4)+x^2*(1+y+y^2+y^3+y^4)+x^3*(1+y+y^2+y^3+y^4)+x^\n" + //
+				"4*(1+y+y^2+y^3+y^4)");
 		check("Sum(2^(-i), {i, 1, Infinity})", //
 				"1");
 		check("Sum((-3)^(-i), {i, 1, Infinity})", //

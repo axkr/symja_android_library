@@ -177,49 +177,49 @@ public class Sum extends ListFunctions.Table implements SumRules {
 			IAST varList = variablesSet.getVarList();
 			IIterator<IExpr> iterator = null;
 			IExpr argN = ast.last();
-//			try {
-				IExpr temp = evaluateTableThrow(ast, Plus(), Plus(), engine);
-				if (temp.isPresent()) {
-					return temp;
-				}
+			// try {
+			IExpr temp = evaluateTableThrow(ast, Plus(), Plus(), engine);
+			if (temp.isPresent()) {
+				return temp;
+			}
 
+			if (argN.isList()) {
+
+				argN = evalBlockWithoutReap(argN, varList);
 				if (argN.isList()) {
-
-					argN = evalBlockWithoutReap(argN, varList);
-					if (argN.isList()) {
-						iterator = Iterator.create((IAST) argN, ast.argSize(), engine);
-					} else {
-						iterator = Iterator.create(F.List(argN), ast.argSize(), engine);
-					}
-
-					// if (iterator.isSetIterator() || iterator.isNumericFunction()) {
-					// IAST resultList = Plus();
-					// temp = evaluateLast(ast.arg1(), iterator, resultList, C0);
-					// if (temp.isPresent() && !temp.equals(resultList)) {
-					// if (ast.isAST2()) {
-					// return temp;
-					// } else {
-					// IAST result = ast.clone();
-					// result.remove(ast.argSize());
-					// result.set(1, temp);
-					// return result;
-					// }
-					// }
-					// }
-
+					iterator = Iterator.create((IAST) argN, ast.argSize(), engine);
+				} else {
+					iterator = Iterator.create(F.List(argN), ast.argSize(), engine);
 				}
-//			} catch (final ValidateException ve) {
-//				if (FEConfig.SHOW_STACKTRACE) {
-//					ve.printStackTrace();
-//				}
-//				// see level specification
-//				return engine.printMessage(ve.getMessage(ast.topHead()));
-//			}
+
+				// if (iterator.isSetIterator() || iterator.isNumericFunction()) {
+				// IAST resultList = Plus();
+				// temp = evaluateLast(ast.arg1(), iterator, resultList, C0);
+				// if (temp.isPresent() && !temp.equals(resultList)) {
+				// if (ast.isAST2()) {
+				// return temp;
+				// } else {
+				// IAST result = ast.clone();
+				// result.remove(ast.argSize());
+				// result.set(1, temp);
+				// return result;
+				// }
+				// }
+				// }
+
+			}
+			// } catch (final ValidateException ve) {
+			// if (FEConfig.SHOW_STACKTRACE) {
+			// ve.printStackTrace();
+			// }
+			// // see level specification
+			// return engine.printMessage(ve.getMessage(ast.topHead()));
+			// }
 
 			// arg1 = evalBlockExpandWithoutReap(ast.arg1(), varList);
 			if (arg1.isTimes()) {
 				if (variablesSet.size() > 0) {
-					  temp = collectConstantFactors(ast, (IAST) arg1, variablesSet);
+					temp = collectConstantFactors(ast, (IAST) arg1, variablesSet);
 					if (temp.isPresent()) {
 						return temp;
 					}
@@ -244,7 +244,7 @@ public class Sum extends ListFunctions.Table implements SumRules {
 
 				if (iterator.isValidVariable() && iterator.isNumericFunction()) {
 					IAST resultList = Plus();
-					  temp = evaluateLast(ast.arg1(), iterator, resultList, F.C0);
+					temp = evaluateLast(ast.arg1(), iterator, resultList, F.C0);
 					if (!temp.isPresent() || temp.equals(resultList)) {
 						return F.NIL;
 					}
@@ -277,7 +277,7 @@ public class Sum extends ListFunctions.Table implements SumRules {
 				}
 
 			} else if (argN.isSymbol()) {
-				  temp = indefiniteSum(arg1, (ISymbol) argN);
+				temp = indefiniteSum(arg1, (ISymbol) argN);
 				if (temp.isPresent()) {
 					if (ast.isAST2()) {
 						return temp;
