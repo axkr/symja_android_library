@@ -31,10 +31,10 @@ public interface SumRules {
     ISetDelayed(Sum(Ceiling(Times(Power(Log(a_),CN1),Log(i_))),List(i_Symbol,C1,n_Symbol)),
       Condition(Plus(Times(Plus(Times(Floor(Log(a,n)),Power(a,Plus(Floor(Log(a,n)),C1))),Times(CN1,Plus(Floor(Log(a,n)),C1),Power(a,Floor(Log(a,n)))),C1),Power(Plus(CN1,a),CN1)),Times(Plus(Negate(Power(a,Floor(Log(a,n)))),n),Ceiling(Log(a,n)))),And(FreeQ(a,i),FreeQ(n,i)))),
     // Sum(x_^(2*i_+1)/(2*i_+1)!,{i_Symbol,0,Infinity}):=Sinh(x)/;FreeQ(x,i)
-    ISetDelayed(Sum(Times(Power(Factorial(Plus(C1,Times(C2,i_))),CN1),Power(x_,Plus(C1,Times(C2,i_)))),List(i_Symbol,C0,oo)),
+    ISetDelayed(Sum(Times(Power(Factorial(Plus(Times(C2,i_),C1)),CN1),Power(x_,Plus(Times(C2,i_),C1))),List(i_Symbol,C0,oo)),
       Condition(Sinh(x),FreeQ(x,i))),
     // Sum((-1)^i_*x_^(2*i_+1)/(2*i_+1)!,{i_Symbol,0,Infinity}):=Sin(x)/;FreeQ(x,i)
-    ISetDelayed(Sum(Times(Power(CN1,i_),Power(Factorial(Plus(C1,Times(C2,i_))),CN1),Power(x_,Plus(C1,Times(C2,i_)))),List(i_Symbol,C0,oo)),
+    ISetDelayed(Sum(Times(Power(CN1,i_),Power(Factorial(Plus(Times(C2,i_),C1)),CN1),Power(x_,Plus(Times(C2,i_),C1))),List(i_Symbol,C0,oo)),
       Condition(Sin(x),FreeQ(x,i))),
     // Sum(x_^(2*i_)/(2*i_)!,{i_Symbol,0,Infinity}):=Cosh(x)/;FreeQ(x,i)
     ISetDelayed(Sum(Times(Power(Factorial(Times(C2,i_)),CN1),Power(x_,Times(C2,i_))),List(i_Symbol,C0,oo)),
@@ -43,7 +43,7 @@ public interface SumRules {
     ISetDelayed(Sum(Times(Power(CN1,i_),Power(Factorial(Times(C2,i_)),CN1),Power(x_,Times(C2,i_))),List(i_Symbol,C0,oo)),
       Condition(Cos(x),FreeQ(x,i))),
     // Sum((-1)^i_*x_^(2*i_+1)/(2*i_+1),{i_Symbol,0,Infinity}):=ArcTanh(x)/;FreeQ(x,i)
-    ISetDelayed(Sum(Times(Power(CN1,i_),Power(Plus(C1,Times(C2,i_)),CN1),Power(x_,Plus(C1,Times(C2,i_)))),List(i_Symbol,C0,oo)),
+    ISetDelayed(Sum(Times(Power(CN1,i_),Power(Plus(Times(C2,i_),C1),CN1),Power(x_,Plus(Times(C2,i_),C1))),List(i_Symbol,C0,oo)),
       Condition(ArcTanh(x),FreeQ(x,i))),
     // Sum(1/i_!,{i_Symbol,0,Infinity}):=E/;FreeQ(x,i)
     ISetDelayed(Sum(Power(Factorial(i_),CN1),List(i_Symbol,C0,oo)),
@@ -55,10 +55,10 @@ public interface SumRules {
     ISetDelayed(Sum(Power(Binomial(Times(C2,i_),i_),CN1),List(i_Symbol,C1,oo)),
       Times(QQ(1L,27L),Plus(Times(C2,Pi,CSqrt3),C9))),
     // Sum(1/(i_*Binomial(2*i_,i_)),{i_Symbol,1,Infinity}):=1/9*Sqrt(3)*Pi
-    ISetDelayed(Sum(Times(Power(Binomial(Times(C2,i_),i_),CN1),Power(i_,CN1)),List(i_Symbol,C1,oo)),
+    ISetDelayed(Sum(Times(Power(i_,CN1),Power(Binomial(Times(C2,i_),i_),CN1)),List(i_Symbol,C1,oo)),
       Times(QQ(1L,9L),CSqrt3,Pi)),
     // Sum(1/(i_^2*Binomial(2*i_,i_)),{i_Symbol,1,Infinity}):=Zeta(2)/3
-    ISetDelayed(Sum(Times(Power(Binomial(Times(C2,i_),i_),CN1),Power(i_,CN2)),List(i_Symbol,C1,oo)),
+    ISetDelayed(Sum(Times(Power(i_,CN2),Power(Binomial(Times(C2,i_),i_),CN1)),List(i_Symbol,C1,oo)),
       Times(C1D3,Zeta(C2))),
     // Sum(1/((-1)^(1-i_)*i_),{i_Symbol,1,Infinity}):=Log(2)
     ISetDelayed(Sum(Times(Power(CN1,Plus(CN1,i_)),Power(i_,CN1)),List(i_Symbol,C1,oo)),
@@ -72,13 +72,13 @@ public interface SumRules {
     ISetDelayed(Sum(Power(c_,i_),List(i_Symbol,C0,n_Symbol)),
       Condition(Times(Power(Plus(CN1,c),CN1),Plus(CN1,Power(c,Plus(C1,n)))),FreeQ(List(c,n),i))),
     // Sum(i_*c_^i_,{i_Symbol,0,n_Symbol}):=(c+c^(1+n)*(-1-n+c*n))/(1-c)^2/;FreeQ({c,n},i)
-    ISetDelayed(Sum(Times(Power(c_,i_),i_),List(i_Symbol,C0,n_Symbol)),
+    ISetDelayed(Sum(Times(i_,Power(c_,i_)),List(i_Symbol,C0,n_Symbol)),
       Condition(Times(Power(Subtract(C1,c),CN2),Plus(c,Times(Power(c,Plus(C1,n)),Plus(CN1,Negate(n),Times(c,n))))),FreeQ(List(c,n),i))),
     // Sum(Binomial(n_,i_),{i_Symbol,0,n_Symbol}):=2^n/;FreeQ(n,i)
     ISetDelayed(Sum(Binomial(n_,i_),List(i_Symbol,C0,n_Symbol)),
       Condition(Power(C2,n),FreeQ(n,i))),
     // Sum(i_*Binomial(n_,i_),{i_Symbol,0,n_Symbol}):=n/2^(1-n)/;FreeQ(n,i)
-    ISetDelayed(Sum(Times(Binomial(n_,i_),i_),List(i_Symbol,C0,n_Symbol)),
+    ISetDelayed(Sum(Times(i_,Binomial(n_,i_)),List(i_Symbol,C0,n_Symbol)),
       Condition(Times(n,Power(C2,Plus(CN1,n))),FreeQ(n,i))),
     // Sum(i_!,{i_Symbol,0,n_Symbol}):=-Subfactorial(-1)+Gamma(n+2)*(-1)^(n+1)*Subfactorial(-2-n)/;FreeQ(n,i)
     ISetDelayed(Sum(Factorial(i_),List(i_Symbol,C0,n_Symbol)),
