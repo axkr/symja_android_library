@@ -3247,6 +3247,9 @@ public class S {
 	public final static IBuiltInSymbol Sign = F.initFinalSymbol("Sign", ID.Sign);
 
 	/***/
+	public final static IBuiltInSymbol Signature = F.initFinalSymbol("Signature", ID.Signature);
+
+	/***/
 	public final static IBuiltInSymbol SignCmp = F.initFinalSymbol("SignCmp", ID.SignCmp);
 
 	/** Simplify(expr) - simplifies `expr` */

@@ -174,7 +174,7 @@ public class AST2Expr {
 			"RowReduce", "Rule", "RuleDelayed", "RussellRaoDissimilarity", "Surd", "SameQ", "SatisfiabilityCount",
 			"SatisfiabilityInstances", "SatisfiableQ", "Scaled", "Scan", "Sec", "Sech", "Select", "SelectFirst",
 			"SemanticImport", "SemanticImportString", "Sequence", "Series", "SeriesCoefficient", "SeriesData", "Set",
-			"SetAttributes", "SetDelayed", "Share", "Show", "Sign", "SignCmp", "Simplify", "Sin", "Sinc",
+			"SetAttributes", "SetDelayed", "Share", "Show", "Sign", "Signature", "SignCmp", "Simplify", "Sin", "Sinc",
 			"SingularValueDecomposition", "Sinh", "SinIntegral", "SinhIntegral", "Skewness", "SokalSneathDissimilarity",
 			"Solve", "Sort", "SortBy", "Sow", "Span", "SphericalBesselJ", "SphericalBesselY", "SphericalHankelH1",
 			"SphericalHankelH2", "Split", "SplitBy", "Sqrt", "SquaredEuclideanDistance", "SquareFreeQ", "SquareMatrixQ",

@@ -48,6 +48,7 @@ public final class Combinatoric {
 			S.Permutations.setEvaluator(new Permutations());
 			S.RogersTanimotoDissimilarity.setEvaluator(new RogersTanimotoDissimilarity());
 			S.RussellRaoDissimilarity.setEvaluator(new RussellRaoDissimilarity());
+			S.Signature.setEvaluator(new Signature());
 			S.SokalSneathDissimilarity.setEvaluator(new SokalSneathDissimilarity());
 			S.Subsets.setEvaluator(new Subsets());
 			S.Tuples.setEvaluator(new Tuples());
@@ -1499,6 +1500,39 @@ public final class Combinatoric {
 
 	}
 
+	public final static class Signature extends AbstractFunctionEvaluator {
+
+		@Override
+		public IExpr evaluate(final IAST ast, EvalEngine engine) {
+			if (ast.arg1().isList()) {
+				IAST list = (IAST) ast.arg1();
+				if (list.argSize() == 1) {
+					return F.C1;
+				}
+				int n = 0;
+				for (int i = 1; i < list.size(); i++) {
+					for (int j = i + 1; j < list.size(); j++) {
+						int compareTo = list.get(i).compareTo(list.get(j));
+						if (compareTo > 0) {
+							n++;
+						} else if (compareTo == 0) {
+							return F.C0;
+						}
+					}
+				}
+
+				return ((n % 2) == 0) ? F.C1 : F.CN1;
+			}
+			return F.NIL;
+		}
+
+		@Override
+		public int[] expectedArgSize(IAST ast) {
+			return IOFunctions.ARGS_1_1;
+		}
+
+	}
+
 	private final static class SokalSneathDissimilarity extends AbstractEvaluator {
 
 		@Override
@@ -1806,7 +1840,7 @@ public final class Combinatoric {
 				}
 			} finally {
 				if (recursionLimit > 0) {
-					 engine.decRecursionCounter();
+					engine.decRecursionCounter();
 				}
 
 			}

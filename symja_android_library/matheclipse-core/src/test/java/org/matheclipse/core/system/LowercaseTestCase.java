@@ -21272,6 +21272,30 @@ public class LowercaseTestCase extends AbstractTestCase {
 				"SingularValueDecomposition({1,{2}})");
 	}
 
+	public void testSignature() {
+		check("Signature({1,2,3,4})", //
+				"1");
+		check("Signature({1,4,3,2})", //
+				"-1");
+		check("Signature({1,2,3,2})", //
+				"0");
+		
+		check("Signature({a,b,c})", //
+				"1");
+		check("Signature({a,b,c,d})", //
+				"1");
+		check("Signature({a,c,b})", //
+				"-1");
+		check("Signature({a,c,b,d})", //
+				"-1");
+		check("Signature({a,b,b})", //
+				"0");
+		check("Select(Permutations({a,b,c,d}),Signature(#)==1&)", //
+				"{{a,b,c,d},{a,c,d,b},{a,d,b,c},{b,a,d,c},{b,c,a,d},{b,d,c,a},{c,a,b,d},{c,b,d,a},{c,d,a,b},{d,a,c,b},{d,b,a,c},{d,c,b,a}}");
+		check("Array(Signature({##})&,{3,3,3})", //
+				"{{{0,0,0},{0,0,1},{0,-1,0}},{{0,0,-1},{0,0,0},{1,0,0}},{{0,1,0},{-1,0,0},{0,0,0}}}");
+	}
+
 	public void testSign() {
 		check("Sign(Sign(z))", //
 				"Sign(z)");
@@ -23043,7 +23067,7 @@ public class LowercaseTestCase extends AbstractTestCase {
 				"8");
 	}
 
-	public void testSum() { 
+	public void testSum() {
 		check("Sum((-1)^i*x^(2*i+1)/(2*i+1)!, {i,0,Infinity})", //
 				"Sin(x)");
 		check("Sum((-1)^i*x^(2*i)/(2*i)!, {i,0,Infinity})", //
@@ -23064,7 +23088,7 @@ public class LowercaseTestCase extends AbstractTestCase {
 		check("Sum(1/Binomial(2*i,i), {i,1,Infinity})", //
 				"1/27*(9+2*Sqrt(3)*Pi)");
 		check("Sum(1/(i*Binomial(2*i,i)), {i,1,Infinity})", //
-				"Pi/(3*Sqrt(3))"); 
+				"Pi/(3*Sqrt(3))");
 		check("Sum(1/(i^2*Binomial(2*i,i)), {i,1,Infinity})", //
 				"Pi^2/18");
 		check("Sum((-1)^(i-1)/i, {i,1,Infinity})", //
@@ -23191,7 +23215,7 @@ public class LowercaseTestCase extends AbstractTestCase {
 				"Sum(Cos(i*Pi),{i,1,Infinity})");
 		check("Sum(x^k*Sum(y^l,{l,0,4}),{k,0,4})", //
 				"1+y+y^2+y^3+y^4+x*(1+y+y^2+y^3+y^4)+x^2*(1+y+y^2+y^3+y^4)+x^3*(1+y+y^2+y^3+y^4)+x^\n" + //
-				"4*(1+y+y^2+y^3+y^4)");
+						"4*(1+y+y^2+y^3+y^4)");
 		check("Sum(2^(-i), {i, 1, Infinity})", //
 				"1");
 		check("Sum((-3)^(-i), {i, 1, Infinity})", //
