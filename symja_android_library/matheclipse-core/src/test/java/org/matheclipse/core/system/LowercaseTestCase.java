@@ -7586,6 +7586,17 @@ public class LowercaseTestCase extends AbstractTestCase {
 
 	}
 
+	public void testFindClusters() {
+		// FindClusters[]
+		// check("FindClusters({{2.5, 3.1}, {5.9, 3.4}, {10, 15}, {2.2, 1.5}, {100, 7.5}})", //
+		// "{{{2.5,3.1},{5.9,3.4},{2.2,1.5}},{{100.0,7.5}},{{10.0,15.0}}}");
+		// check("FindClusters({1, 2, 3, 4, 5, 6, 7, 8, 9})", //
+		// "{{1.0,2.0,3.0},{6.0,7.0,8.0,9.0},{4.0,5.0}}");
+		// TODO order results?
+		// check("FindClusters({1, 2, 10, 12, 3, 1, 13, 25},4)", //
+		// "{{1.0,2.0,3.0,1.0},{12.0,13.0},{25.0},{10.0}}");
+	}
+
 	public void testFindFit() {
 		// https://stackoverflow.com/a/51696587/24819
 		check("FindFit({ {1.3,0.5}, {2.8,0.9}, {5.0,2.6}, {10.2,7.1}, {16.5,12.3}, {21.3,15.3},{ 31.8,20.4}, {52.2,24.4}}, " //
@@ -21279,7 +21290,7 @@ public class LowercaseTestCase extends AbstractTestCase {
 				"-1");
 		check("Signature({1,2,3,2})", //
 				"0");
-		
+
 		check("Signature({a,b,c})", //
 				"1");
 		check("Signature({a,b,c,d})", //

@@ -1230,6 +1230,9 @@ public class S {
 	public final static IBuiltInSymbol Fibonacci = F.initFinalSymbol("Fibonacci", ID.Fibonacci);
 
 	/***/
+	public final static IBuiltInSymbol FindClusters = F.initFinalSymbol("FindClusters", ID.FindClusters);
+
+	/***/
 	public final static IBuiltInSymbol FindEdgeCover = F.initFinalSymbol("FindEdgeCover", ID.FindEdgeCover);
 
 	/** FindEulerianCycle(graph) - find an eulerian cycle in the `graph`. */

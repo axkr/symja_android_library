@@ -107,7 +107,7 @@ public class AST2Expr {
 			"ExactNumberQ", "Except", "Exists", "Exp", "Expand", "ExpandAll", "Expectation", "ExponentialDistribution",
 			"ExpIntegralE", "ExpIntegralEi", "Exponent", "Export", "ExportString", "ExpToTrig", "ExtendedGCD",
 			"Extract", "Factor", "Factorial", "FactorialPower", "Factorial2", "FactorInteger", "FactorSquareFree",
-			"FactorSquareFreeList", "FactorTerms", "Flatten", "FlattenAt", "FlatTopWindow", "Fibonacci",
+			"FactorSquareFreeList", "FactorTerms", "Flatten", "FlattenAt", "FlatTopWindow", "Fibonacci", "FindClusters",
 			"FindEulerianCycle", "FindEdgeCover", "FindFit", "FindGraphCommunities", "FindIndependentEdgeSet",
 			"FindIndependentVertexSet", "FindHamiltonianCycle", "FindInstance", "FindRoot", "FindShortestPath",
 			"FindShortestTour", "FindSpanningTree", "FindVertexCover", "First", "Fit", "FiveNum", "FixedPoint",
