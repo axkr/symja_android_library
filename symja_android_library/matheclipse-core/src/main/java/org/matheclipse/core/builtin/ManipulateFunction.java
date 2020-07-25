@@ -1,7 +1,5 @@
 package org.matheclipse.core.builtin;
 
-import static org.junit.Assert.fail;
-
 import java.io.IOException;
 import java.io.StringWriter;
 
