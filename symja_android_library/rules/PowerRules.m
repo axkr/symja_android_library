@@ -8,7 +8,7 @@
  E^(-I*Infinity)=Indeterminate,
  E^(ComplexInfinity)=Indeterminate,
  E^Log(x_):=x,
- E^(a_*Log(x_)/; FreeQ(a,x)):=x^a,
+ E^(a_*Log(x_)):=x^a /; FreeQ(a,x),
  Tan(x_)^m_?(IntegerQ(#)&&#<0 &):=Cot(x)^(-m),
  Cot(x_)^m_?(IntegerQ(#)&&#<0 &):=Tan(x)^(-m),
  Sec(x_)^m_?(IntegerQ(#)&&#<0 &):=Cos(x)^(-m),
