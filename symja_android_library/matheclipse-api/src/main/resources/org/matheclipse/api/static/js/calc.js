@@ -1,5 +1,4 @@
-function setupExamples() {
-    var delay = 0;
+function setupExamples() { 
     $('.example-group div.contents').each(function() {
         var contents = $(this);
         var header = $(this).siblings('h3');    
@@ -7,7 +6,6 @@ function setupExamples() {
     });
 
     $('.example-group').click(function(e) {
-        var header = $(e.target);
         var contents = header.siblings('div.contents');
 
         contents.stop(false, true).slideToggle(500, function() {
