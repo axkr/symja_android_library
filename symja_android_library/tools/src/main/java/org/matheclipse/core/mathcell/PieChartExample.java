@@ -12,7 +12,7 @@ public class PieChartExample extends BasePlotExample {
 
 	@Override
 	public String exampleFunction() { 
-		return "PieChart({25, 33, 33,10})";
+		return "PieChart({25, 33, 33, 10})";
 	}
 
 	public static void main(String[] args) {

@@ -2041,11 +2041,9 @@ public final class ListFunctions {
 						return F.NIL;
 					} else {
 						final IAST list = (IAST) arg1;
-						if (sequ != null) {
-							final IASTAppendable resultList = list.copyAppendable();
-							drop(resultList, 0, sequ);
-							return resultList;
-						}
+						final IASTAppendable resultList = list.copyAppendable();
+						drop(resultList, 0, sequ);
+						return resultList;
 					}
 				}
 			} catch (ValidateException ve) {
@@ -6000,12 +5998,10 @@ public final class ListFunctions {
 						return F.NIL;
 					} else {
 						final IAST arg1 = (IAST) evaledAST.arg1();
-						if (sequ != null) {
-							if (arg1.isAssociation()) {
-								return take((IAssociation) arg1, 0, sequ);
-							}
-							return take(arg1, 0, sequ);
+						if (arg1.isAssociation()) {
+							return take((IAssociation) arg1, 0, sequ);
 						}
+						return take(arg1, 0, sequ);
 					}
 				} else {
 					return engine.printMessage("Take: Nonatomic expression expected at position 1");

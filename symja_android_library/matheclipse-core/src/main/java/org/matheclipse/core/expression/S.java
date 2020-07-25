@@ -371,6 +371,9 @@ public class S {
 	/***/
 	public final static IBuiltInSymbol BetaRegularized = F.initFinalSymbol("BetaRegularized", ID.BetaRegularized);
 
+	/***/
+	public final static IBuiltInSymbol BinaryDistance = F.initFinalSymbol("BinaryDistance", ID.BinaryDistance);
+
 	/**
 	 * BinCounts(list, width-of-bin) - count the number of elements, if `list`, is divided into successive bins with
 	 * width `width-of-bin`.
@@ -975,6 +978,9 @@ public class S {
 
 	/***/
 	public final static IBuiltInSymbol Disputed = F.initFinalSymbol("Disputed", ID.Disputed);
+
+	/***/
+	public final static IBuiltInSymbol DistanceFunction = F.initFinalSymbol("DistanceFunction", ID.DistanceFunction);
 
 	/** Distribute(f(x1, x2, x3,...)) - distributes `f` over `Plus` appearing in any of the `xi`. */
 	public final static IBuiltInSymbol Distribute = F.initFinalSymbol("Distribute", ID.Distribute);

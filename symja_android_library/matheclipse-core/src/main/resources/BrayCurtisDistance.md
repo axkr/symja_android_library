@@ -9,6 +9,6 @@ BrayCurtisDistance(u, v)
 ### Examples
 
 ``` 
->> BrayCurtisDistance[{-1, -1}, {10, 10}]
+>> BrayCurtisDistance({-1, -1}, {10, 10})
 11/9
 ```

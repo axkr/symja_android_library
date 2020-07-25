@@ -1,8 +1,10 @@
 package org.matheclipse.core.basic;
 
+import java.io.IOException;
+import java.io.InputStream;
 import java.util.HashSet;
+import java.util.Properties;
 import java.util.Set;
-import java.util.concurrent.ThreadFactory;
 
 import org.hipparchus.util.Precision;
 import org.matheclipse.core.eval.EvalEngine;
@@ -608,4 +610,20 @@ public class Config {
 	 * Used to parse Rubi files. See <a href="http://www.apmaths.uwo.ca/~arich/">Rubi - Symbolic Integration Rules</a>
 	 */
 	public static boolean RUBI_CONVERT_SYMBOLS = false;
+
+	public static String getVersion() {
+		InputStream resourceAsStream = new Config().getClass()
+				.getResourceAsStream("/META-INF/maven/org.matheclipse/matheclipse-frontend/pom.properties");
+		if (resourceAsStream != null) {
+			try {
+				Properties prop = new Properties();
+				prop.load(resourceAsStream);
+				return prop.get("version").toString();
+			} catch (IOException e) {
+				e.printStackTrace();
+			}
+		}
+		return "1.0.0-SNAPSHOT";
+	}
+
 }

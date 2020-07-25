@@ -409,7 +409,13 @@ public class ASTRealVector extends AbstractAST implements Cloneable, Externaliza
 	public final int isVector() {
 		return vector.getDimension();
 	}
-
+	
+	/** {@inheritDoc} */
+	@Override
+	public boolean isNumericAST() {
+		return true;
+	}
+	
 	@Override
 	public void readExternal(ObjectInput objectInput) throws IOException, ClassNotFoundException {
 		this.fEvalFlags = objectInput.readShort();

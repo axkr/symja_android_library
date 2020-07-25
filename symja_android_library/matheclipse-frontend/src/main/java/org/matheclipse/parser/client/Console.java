@@ -55,12 +55,6 @@ public class Console {
 	}
 
 	/**
-	 * Sets the arguments for the <code>main</code> method
-	 * 
-	 * @param args
-	 *            the aruments of the program
-	 */
-	/**
 	 * Evaluates the given string-expression and returns the result in string form.
 	 * 
 	 * @param strEval

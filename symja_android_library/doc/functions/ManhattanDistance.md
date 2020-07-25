@@ -15,3 +15,6 @@ See:
 >> ManhattanDistance({-1, -1}, {1, 1})
 4
 ```
+
+### Related terms 
+[FindClusters](FindClusters.md), [BinaryDistance](BinaryDistance.md), [BrayCurtisDistance](BrayCurtisDistance.md), [ChessboardDistance](ChessboardDistance.md), [CanberraDistance](CanberraDistance.md), [CosineDistance](CosineDistance.md), [EuclideanDistance](EuclideanDistance.md), [SquaredEuclideanDistance](SquaredEuclideanDistance.md)

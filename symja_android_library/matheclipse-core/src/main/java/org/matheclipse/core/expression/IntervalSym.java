@@ -286,11 +286,9 @@ public class IntervalSym {
 	/**
 	 * Special case of mutableProcessorConditions when exlusive = true;
 	 * 
-	 * @param IAST
-	 *            ast
-	 * @param IExprProcessor...
-	 *            processors
-	 * @return IAST result
+	 * @param ast
+	 * @param processors
+	 * @return
 	 */
 	private static IAST mutableProcessorConditions(final IAST ast, IExprProcessor... processors) {
 		return mutableProcessorConditions(ast, true, processors);
@@ -299,12 +297,9 @@ public class IntervalSym {
 	/**
 	 * Replaces the most common code. Determines the result depending on the fulfillment of conditions
 	 * 
-	 * @param IAST
-	 *            ast
-	 * @param boolean
-	 *            exclusive, true or false
-	 * @param IExprProcessor...
-	 *            processors, conditions to be met
+	 * @param ast
+	 * @param exclusive, true or false
+	 * @param processors, conditions to be met
 	 * @return IAST result, append value or F.NIL;
 	 */
 	private static IAST mutableProcessorConditions(final IAST ast, boolean exclusive, IExprProcessor... processors) {

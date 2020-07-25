@@ -30,7 +30,7 @@ import org.matheclipse.core.builtin.AssumptionFunctions;
 import org.matheclipse.core.builtin.AttributeFunctions;
 import org.matheclipse.core.builtin.BesselFunctions;
 import org.matheclipse.core.builtin.BooleanFunctions;
-import org.matheclipse.core.builtin.ClusteringFuncrtions;
+import org.matheclipse.core.builtin.ClusteringFunctions;
 import org.matheclipse.core.builtin.Combinatoric;
 import org.matheclipse.core.builtin.ComputationalGeometryFunctions;
 import org.matheclipse.core.builtin.ConstantDefinitions;
@@ -952,7 +952,7 @@ public class F extends S {
 			ManipulateFunction.initialize();
 			ImageFunctions.initialize();
 			EntityFunctions.initialize();
-			ClusteringFuncrtions.initialize();
+			ClusteringFunctions.initialize();
 			ComputationalGeometryFunctions.initialize();
 
 			F.Integrate.setEvaluator(org.matheclipse.core.reflection.system.Integrate.CONST);
@@ -3982,7 +3982,7 @@ public class F extends S {
 	public static IAST intIterator(ISymbol head, final Function<IExpr, IExpr> function, final int from, final int to,
 			final int step) {
 		IASTAppendable result = F.ast(head, to - from + 1, false);
-		int numberOfLeaves = 0;
+		long numberOfLeaves = 0;
 		for (int i = from; i <= to; i += step) {
 			IExpr temp = function.apply(F.ZZ(i));
 			numberOfLeaves += temp.leafCount() + 1;
@@ -6885,7 +6885,7 @@ public class F extends S {
 	 */
 	public static IAST matrix(BiFunction<Integer, Integer, ? extends IExpr> biFunction, int n, int m) {
 		if (n > Config.MAX_MATRIX_DIMENSION_SIZE || m > Config.MAX_MATRIX_DIMENSION_SIZE) {
-			ASTElementLimitExceeded.throwIt(n * m);
+			ASTElementLimitExceeded.throwIt(((long) n) * ((long) m));
 		}
 		IASTAppendable matrix = F.ListAlloc(n);
 		for (int i = 0; i < n; i++) {

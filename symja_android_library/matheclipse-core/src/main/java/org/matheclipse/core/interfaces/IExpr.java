@@ -1949,13 +1949,12 @@ public interface IExpr extends Comparable<IExpr>, GcdRingElem<IExpr>, Serializab
 	/**
 	 * Test if this expression is a list of matrices
 	 * 
-	 * @return 
+	 * @return
 	 */
 	default boolean isListOfMatrices() {
 		return false;
 	}
 
-	
 	/**
 	 * Test if this expression is a list of rules (head Rule or RuleDelayed)
 	 * 
@@ -3079,6 +3078,15 @@ public interface IExpr extends Comparable<IExpr>, GcdRingElem<IExpr>, Serializab
 	default int isVector() {
 		// default: no vector
 		return -1;
+	}
+
+	/**
+	 * Test if this expression is an IAST and contains at least one numeric argument.
+	 * 
+	 * @return
+	 */
+	default boolean isNumericAST() {
+		return false;
 	}
 
 	/**

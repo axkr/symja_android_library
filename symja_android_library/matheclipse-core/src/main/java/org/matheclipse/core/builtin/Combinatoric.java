@@ -1046,6 +1046,7 @@ public final class Combinatoric {
 					if (v > 0) {
 						while (i <= f.argSize()) {
 							if (i < 1) {
+								// i+=v might overflow and create a negative value
 								break;
 							}
 							temp = F.ast(f.head());

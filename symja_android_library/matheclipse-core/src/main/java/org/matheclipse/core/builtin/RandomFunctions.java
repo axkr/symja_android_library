@@ -8,6 +8,7 @@ import org.hipparchus.complex.Complex;
 import org.hipparchus.util.MathArrays;
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.interfaces.AbstractFunctionEvaluator;
+import org.matheclipse.core.expression.ASTRealVector;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.expression.S;
 import org.matheclipse.core.interfaces.IAST;
@@ -294,48 +295,83 @@ public final class RandomFunctions {
 
 		@Override
 		public IExpr evaluate(final IAST ast, EvalEngine engine) {
-			try {
-				if (ast.isAST0()) {
-					// RandomReal() gives a double value between 0.0 and 1.0
-					ThreadLocalRandom tlr = ThreadLocalRandom.current();
-					double r = tlr.nextDouble();
-					return F.num(r);
-				} else if (ast.isAST1()) {
-					if (ast.arg1().isAST(F.List, 3)) {
-						double min = engine.evalDouble(ast.arg1().first());
-						double max = engine.evalDouble(ast.arg1().second());
-						if (min >= max) {
-							double temp = min;
-							min = max;
-							max = temp;
-							if (min == max) {
-								return F.num(min);
-							}
-						}
 
-						ThreadLocalRandom tlr = ThreadLocalRandom.current();
-						return F.num(tlr.nextDouble(min, max));
-					} else {
-						double max = engine.evalDouble(ast.arg1());
-						ThreadLocalRandom tlr = ThreadLocalRandom.current();
-						return F.num(tlr.nextDouble(max));
-					}
-				} else if (ast.isAST2()) {
-					if (ast.arg2().isList()) {
-						IAST list = (IAST) ast.arg2();
-						IExpr[] arr = new IExpr[list.size()];
-						arr[0] = F.RandomReal(ast.arg1());
-						for (int i = 1; i < list.size(); i++) {
-							arr[i] = F.List(list.get(i));
+			if (ast.isAST0()) {
+				// RandomReal() gives a double value between 0.0 and 1.0
+				ThreadLocalRandom tlr = ThreadLocalRandom.current();
+				double r = tlr.nextDouble();
+				return F.num(r);
+			} else if (ast.isAST1()) {
+				if (ast.arg1().isList2()) {
+					double min = engine.evalDouble(ast.arg1().first());
+					double max = engine.evalDouble(ast.arg1().second());
+					if (min >= max) {
+						double temp = min;
+						min = max;
+						max = temp;
+						if (min == max) {
+							return F.num(min);
 						}
-						return F.ast(arr, F.Table);
-						// F.Table(F.RandomReal(ast.arg1()), ast.arg2());
 					}
+
+					ThreadLocalRandom tlr = ThreadLocalRandom.current();
+					return F.num(tlr.nextDouble(min, max));
+				} else {
+					double max = engine.evalDouble(ast.arg1());
+					ThreadLocalRandom tlr = ThreadLocalRandom.current();
+					return F.num(tlr.nextDouble(max));
 				}
-			} catch (RuntimeException rex) {
-				//
+			} else if (ast.isAST2()) {
+				if (ast.arg2().isList()) {
+					if (ast.arg2().argSize()==1) {
+						int n = ast.arg2().first().toIntDefault();
+						if (n <= 0) {
+							return F.NIL;
+						}
+						return randomASTRealVector(ast.arg1(), n, engine);
+					}
+					IAST list = (IAST) ast.arg2();
+					IExpr[] arr = new IExpr[list.size()];
+					arr[0] = F.RandomReal(ast.arg1());
+					for (int i = 1; i < list.size(); i++) {
+						arr[i] = F.List(list.get(i));
+					}
+					return F.ast(arr, F.Table);
+				}
+				int n = ast.arg2().toIntDefault();
+				if (n > 0) {
+					return randomASTRealVector(ast.arg1(), n, engine);
+				}
 			}
 			return F.NIL;
+		}
+
+		private static IExpr randomASTRealVector(final IExpr arg1 , int n, EvalEngine engine) {
+			double[] array = new double[n];
+			if (arg1.isList2()) {
+				double min = engine.evalDouble(arg1.first());
+				double max = engine.evalDouble(arg1.second());
+				if (min >= max) {
+					double temp = min;
+					min = max;
+					max = temp;
+					if (min == max) {
+						return F.num(min);
+					}
+				}
+				ThreadLocalRandom tlr = ThreadLocalRandom.current();
+				for (int i = 0; i < array.length; i++) {
+					array[i] = tlr.nextDouble(min, max);
+				}
+
+			} else {
+				double max = engine.evalDouble(arg1);
+				ThreadLocalRandom tlr = ThreadLocalRandom.current();
+				for (int i = 0; i < array.length; i++) {
+					array[i] = tlr.nextDouble(max);
+				}
+			}
+			return new ASTRealVector(array, false);
 		}
 
 	}
