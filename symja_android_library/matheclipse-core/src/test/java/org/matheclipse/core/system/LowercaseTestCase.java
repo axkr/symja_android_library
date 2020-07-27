@@ -7108,6 +7108,36 @@ public class LowercaseTestCase extends AbstractTestCase {
 				"3*a^4-3*a^2*x^2-2*a^2*x*y+2*x^3*y");
 	}
 
+	public void testFactorialPower() {
+		check("FactorialPower(3, 2)", //
+				"6");
+		check("FactorialPower(2, 2)", //
+				"2");
+		check("FactorialPower(1, 2)", //
+				"0");
+		check("FactorialPower(0, 2)", //
+				"0");
+		check("FactorialPower(9, 1)", //
+				"9");
+		check("FactorialPower(1, 1)", //
+				"1");
+		check("FactorialPower(100, 0)", //
+				"1");
+		check("FactorialPower(100, 3)", //
+				"970200");
+		
+		check("FactorialPower(-1, 2)", //
+				"2");
+		check("FactorialPower(-2, 2)", //
+				"6");
+		check("FactorialPower(-3, 2)", //
+				"12");
+		check("FactorialPower(100, 3)", //
+				"970200");
+		check("FactorialPower(-100, 3)", //
+				"-1030200");
+	}
+	
 	public void testFactorial() {
 
 		check("Factorial(Factorial(x))", //
