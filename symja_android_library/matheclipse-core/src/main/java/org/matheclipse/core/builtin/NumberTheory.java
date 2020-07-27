@@ -1963,23 +1963,54 @@ public final class NumberTheory {
 	}
 
 	private static class FactorialPower extends AbstractEvaluator {
-
 		@Override
 		public IExpr evaluate(final IAST ast, EvalEngine engine) {
 			if (ast.isAST2()) {
+				IExpr result = F.C1;
 				IExpr x = ast.arg1();
-				IExpr n = ast.arg2();
+				IExpr n = ast.arg2();  
 				// x*(x-1)* (x-(n-1))
-
-				return F.NIL;
+				if (engine.evalTrue(F.GreaterEqual(n, F.C0))) {
+					if (engine.evalTrue(F.Equal(n, F.C0))) {
+						return F.C1;
+					} else if (engine.evalTrue(F.Equal(n, F.C1))) {
+						return x;
+					} else {
+						IExpr i = x.minus(n.dec());
+						while(engine.evalTrue(F.GreaterEqual(x, i))) {
+							result = result.multiply(x);
+							x = x.dec();
+						}
+						return result;
+					}
+				}
 			}
-			if (ast.isAST2()) {
+			if (ast.isAST3()) {
+				IExpr result = F.C1;
 				IExpr x = ast.arg1();
 				IExpr n = ast.arg2();
 				IExpr h = ast.arg3();
 				// x*(x-h)* (x-(n-1)*h)
-
-				return F.NIL;
+				if (engine.evalTrue(F.GreaterEqual(n, F.C0)) && engine.evalTrue(F.GreaterEqual(h, F.C0))) {
+					if (engine.evalTrue(F.Equal(n, F.C0))) {
+						return F.C1;
+					} else if (engine.evalTrue(F.Equal(n, F.C1))) {
+						return x;
+					} else if (engine.evalTrue(F.Equal(h, F.C0))) {
+						while(engine.evalTrue(F.Greater(n, F.C0))) {
+							result = result.multiply(x);
+							n = n.dec();
+						}
+						return result;
+					} else {
+						IExpr i = x.minus(n.dec().multiply(h));
+						while(engine.evalTrue(F.GreaterEqual(x, i))) {
+							result = result.multiply(x);
+							x = x.minus(h);
+						}
+						return result;
+					}
+				}
 			}
 			return F.NIL;
 		}
