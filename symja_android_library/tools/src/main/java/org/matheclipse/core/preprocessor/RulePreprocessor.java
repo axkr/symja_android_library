@@ -7,6 +7,7 @@ import java.io.IOException;
 import java.io.PrintWriter;
 
 import org.matheclipse.core.eval.EvalEngine;
+import org.matheclipse.core.eval.exception.ArgumentTypeException;
 import org.matheclipse.core.eval.util.ArraySet;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.interfaces.IAST;
@@ -16,10 +17,18 @@ import org.matheclipse.core.parser.ExprParser;
 import org.matheclipse.core.patternmatching.RulesData;
 import org.matheclipse.parser.client.FEConfig;
 
+import com.sun.xml.internal.ws.addressing.model.InvalidAddressingHeaderException;
+
 /**
  * Generate java sources for Symja rule files.
  */
 public class RulePreprocessor {
+
+	/**
+	 * If <code>true</code> abort rule creation, if the left-hand-side contains a variable (instead of an expected
+	 * pattern)
+	 */
+	private static boolean TEST_LHS_FOR_VARIABLES = false;
 
 	final static String HEADER = "package org.matheclipse.core.reflection.system.rules;\n" + "\n"
 			+ "import static org.matheclipse.core.expression.F.*;\n" + "import org.matheclipse.core.interfaces.IAST;\n"
@@ -44,7 +53,14 @@ public class RulePreprocessor {
 	public static void appendSetDelayedToBuffer(IAST ast, StringBuilder buffer, boolean evalRHS, boolean last) {
 		IExpr leftHandSide = ast.arg1();
 		IExpr rightHandSide = ast.arg2();
-		if (ast.arg1().isAST()) {
+		if (leftHandSide.isAST()) {
+			if (TEST_LHS_FOR_VARIABLES && //
+					!leftHandSide.isFree( //
+							x -> x.isVariable() && //
+									!x.isBuiltInSymbol(),
+							true)) {
+				throw new IllegalArgumentException("Variable used in left-hand-side of rule: " + ast.toString());
+			}
 			leftHandSide = EvalEngine.get().evalHoldPattern((IAST) leftHandSide);
 		}
 		if (evalRHS) {
@@ -93,8 +109,6 @@ public class RulePreprocessor {
 		} catch (UnsupportedOperationException uoe) {
 			System.out.println(uoe.getMessage());
 			System.out.println(expr.toString());
-		} catch (Exception e) {
-			e.printStackTrace();
 		}
 	}
 
@@ -311,7 +325,7 @@ public class RulePreprocessor {
 									}
 								}
 								System.out.println(className);
-								if (className.equals("FunctionExpandRules")||className.equals("PodDefaultsRules")) {
+								if (className.equals("FunctionExpandRules") || className.equals("PodDefaultsRules")) {
 									out = new PrintWriter(targetFile.getCanonicalPath());
 									out.print(HEADER);
 									out.print(className);
@@ -328,8 +342,13 @@ public class RulePreprocessor {
 									out.println(FOOTER1);
 									out.close();
 								}
-							} catch (IOException e) {
+								// } catch (IOException e) {
+								// e.printStackTrace();
+							} catch (Exception e) {
+								System.err.println();
+								System.err.println("Abort after exception.");
 								e.printStackTrace();
+								return;
 							}
 						}
 
@@ -342,6 +361,7 @@ public class RulePreprocessor {
 
 	public static void main(final String[] args) {
 		FEConfig.EXPLICIT_TIMES_OPERATOR = true;
+		TEST_LHS_FOR_VARIABLES = true;
 		F.initSymbols();
 		// C:\\Users\\dev\\git\\symja_android_library
 		File sourceLocation = new File("..\\symja_android_library\\rules");

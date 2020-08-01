@@ -18,15 +18,51 @@ public interface SumRules {
     // Sum(i_^k_,{i_Symbol,1,Infinity}):=Zeta(-k)/;FreeQ(k,i)
     ISetDelayed(Sum(Power(i_,k_),List(i_Symbol,C1,oo)),
       Condition(Zeta(Negate(k)),FreeQ(k,i))),
+    // Sum(1/i_^k_,{i_Symbol,1,Infinity}):=Zeta(k)/;FreeQ(k,i)
+    ISetDelayed(Sum(Power(Power(i_,k_),CN1),List(i_Symbol,C1,oo)),
+      Condition(Zeta(k),FreeQ(k,i))),
     // Sum(k_^(a_.*i_),{i_Symbol,1,Infinity}):=-k^a/(-1+k^a)/;FreeQ(k,i)&&a<0&&(k>1||k<-1)
     ISetDelayed(Sum(Power(k_,Times(a_DEFAULT,i_)),List(i_Symbol,C1,oo)),
       Condition(Times(CN1,Power(k,a),Power(Plus(CN1,Power(k,a)),CN1)),And(FreeQ(k,i),Less(a,C0),Or(Greater(k,C1),Less(k,CN1))))),
     // Sum(Ceiling(Log(i_)),{i_Symbol,1,n_Symbol}):=(Floor(Log(n))*E^(Floor(Log(n))+1)-(Floor(Log(n))+1)*E^Floor(Log(n))+1)/(-1+E)+(-E^Floor(Log(n))+n)*Ceiling(Log(n))/;FreeQ(n,i)
     ISetDelayed(Sum(Ceiling(Log(i_)),List(i_Symbol,C1,n_Symbol)),
       Condition(Plus(Times(Plus(Times(Floor(Log(n)),Exp(Plus(Floor(Log(n)),C1))),Times(CN1,Plus(Floor(Log(n)),C1),Exp(Floor(Log(n)))),C1),Power(Plus(CN1,E),CN1)),Times(Plus(Negate(Exp(Floor(Log(n)))),n),Ceiling(Log(n)))),FreeQ(n,i))),
-    // Sum(Ceiling(Log(a_,i_)),{i_Symbol,1,n_Symbol}):=(Floor(Log(a,n))*a^(Floor(Log(a,n))+1)-(Floor(Log(a,n))+1)*a^Floor(Log(a,n))+1)/(-1+a)+(-a^Floor(Log(a,n))+n)*Ceiling(Log(a,n))/;FreeQ(a,i)&&FreeQ(n,i)
-    ISetDelayed(Sum(Ceiling(Log(a_,i_)),List(i_Symbol,C1,n_Symbol)),
-      Condition(Plus(Times(Plus(Times(Floor(Log(a,n)),Power(a,Plus(Floor(Log(a,n)),C1))),Times(CN1,Plus(Floor(Log(a,n)),C1),Power(a,Floor(Log(a,n)))),C1),Power(Plus(CN1,a),CN1)),Times(Plus(Negate(Power(a,Floor(Log(a,n)))),n),Ceiling(Log(a,n)))),And(FreeQ(a,i),FreeQ(n,i))))
+    // Sum(Ceiling(Log(i_)/Log(a_)),{i_Symbol,1,n_Symbol}):=(Floor(Log(a,n))*a^(Floor(Log(a,n))+1)-(Floor(Log(a,n))+1)*a^Floor(Log(a,n))+1)/(-1+a)+(-a^Floor(Log(a,n))+n)*Ceiling(Log(a,n))/;FreeQ(a,i)&&FreeQ(n,i)
+    ISetDelayed(Sum(Ceiling(Times(Power(Log(a_),CN1),Log(i_))),List(i_Symbol,C1,n_Symbol)),
+      Condition(Plus(Times(Plus(Times(Floor(Log(a,n)),Power(a,Plus(Floor(Log(a,n)),C1))),Times(CN1,Plus(Floor(Log(a,n)),C1),Power(a,Floor(Log(a,n)))),C1),Power(Plus(CN1,a),CN1)),Times(Plus(Negate(Power(a,Floor(Log(a,n)))),n),Ceiling(Log(a,n)))),And(FreeQ(a,i),FreeQ(n,i)))),
+    // Sum(x_^(2*i_+1)/(2*i_+1)!,{i_Symbol,0,Infinity}):=Sinh(x)/;FreeQ(x,i)
+    ISetDelayed(Sum(Times(Power(Factorial(Plus(Times(C2,i_),C1)),CN1),Power(x_,Plus(Times(C2,i_),C1))),List(i_Symbol,C0,oo)),
+      Condition(Sinh(x),FreeQ(x,i))),
+    // Sum((-1)^i_*x_^(2*i_+1)/(2*i_+1)!,{i_Symbol,0,Infinity}):=Sin(x)/;FreeQ(x,i)
+    ISetDelayed(Sum(Times(Power(CN1,i_),Power(Factorial(Plus(Times(C2,i_),C1)),CN1),Power(x_,Plus(Times(C2,i_),C1))),List(i_Symbol,C0,oo)),
+      Condition(Sin(x),FreeQ(x,i))),
+    // Sum(x_^(2*i_)/(2*i_)!,{i_Symbol,0,Infinity}):=Cosh(x)/;FreeQ(x,i)
+    ISetDelayed(Sum(Times(Power(Factorial(Times(C2,i_)),CN1),Power(x_,Times(C2,i_))),List(i_Symbol,C0,oo)),
+      Condition(Cosh(x),FreeQ(x,i))),
+    // Sum((-1)^i_*x_^(2*i_)/(2*i_)!,{i_Symbol,0,Infinity}):=Cos(x)/;FreeQ(x,i)
+    ISetDelayed(Sum(Times(Power(CN1,i_),Power(Factorial(Times(C2,i_)),CN1),Power(x_,Times(C2,i_))),List(i_Symbol,C0,oo)),
+      Condition(Cos(x),FreeQ(x,i))),
+    // Sum((-1)^i_*x_^(2*i_+1)/(2*i_+1),{i_Symbol,0,Infinity}):=ArcTanh(x)/;FreeQ(x,i)
+    ISetDelayed(Sum(Times(Power(CN1,i_),Power(Plus(Times(C2,i_),C1),CN1),Power(x_,Plus(Times(C2,i_),C1))),List(i_Symbol,C0,oo)),
+      Condition(ArcTanh(x),FreeQ(x,i))),
+    // Sum(1/i_!,{i_Symbol,0,Infinity}):=E/;FreeQ(x,i)
+    ISetDelayed(Sum(Power(Factorial(i_),CN1),List(i_Symbol,C0,oo)),
+      Condition(E,FreeQ(x,i))),
+    // Sum(x_^i_/i_!,{i_Symbol,0,Infinity}):=E^x/;FreeQ(x,i)
+    ISetDelayed(Sum(Times(Power(Factorial(i_),CN1),Power(x_,i_)),List(i_Symbol,C0,oo)),
+      Condition(Exp(x),FreeQ(x,i))),
+    // Sum(1/Binomial(2*i_,i_),{i_Symbol,1,Infinity}):=1/27*(2*Pi*Sqrt(3)+9)
+    ISetDelayed(Sum(Power(Binomial(Times(C2,i_),i_),CN1),List(i_Symbol,C1,oo)),
+      Times(QQ(1L,27L),Plus(Times(C2,Pi,CSqrt3),C9))),
+    // Sum(1/(i_*Binomial(2*i_,i_)),{i_Symbol,1,Infinity}):=1/9*Sqrt(3)*Pi
+    ISetDelayed(Sum(Times(Power(i_,CN1),Power(Binomial(Times(C2,i_),i_),CN1)),List(i_Symbol,C1,oo)),
+      Times(QQ(1L,9L),CSqrt3,Pi)),
+    // Sum(1/(i_^2*Binomial(2*i_,i_)),{i_Symbol,1,Infinity}):=Zeta(2)/3
+    ISetDelayed(Sum(Times(Power(i_,CN2),Power(Binomial(Times(C2,i_),i_),CN1)),List(i_Symbol,C1,oo)),
+      Times(C1D3,Zeta(C2))),
+    // Sum(1/((-1)^(1-i_)*i_),{i_Symbol,1,Infinity}):=Log(2)
+    ISetDelayed(Sum(Times(Power(CN1,Plus(CN1,i_)),Power(i_,CN1)),List(i_Symbol,C1,oo)),
+      Log(C2))
   );
   final public static IAST RULES2 = List(
     // Sum(i_^c_,{i_Symbol,0,n_Symbol}):=0^c+HarmonicNumber(n,-c)/;FreeQ({c,n},i)

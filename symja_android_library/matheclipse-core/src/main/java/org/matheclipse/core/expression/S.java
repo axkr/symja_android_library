@@ -371,6 +371,9 @@ public class S {
 	/***/
 	public final static IBuiltInSymbol BetaRegularized = F.initFinalSymbol("BetaRegularized", ID.BetaRegularized);
 
+	/***/
+	public final static IBuiltInSymbol BinaryDistance = F.initFinalSymbol("BinaryDistance", ID.BinaryDistance);
+
 	/**
 	 * BinCounts(list, width-of-bin) - count the number of elements, if `list`, is divided into successive bins with
 	 * width `width-of-bin`.
@@ -976,6 +979,9 @@ public class S {
 	/***/
 	public final static IBuiltInSymbol Disputed = F.initFinalSymbol("Disputed", ID.Disputed);
 
+	/***/
+	public final static IBuiltInSymbol DistanceFunction = F.initFinalSymbol("DistanceFunction", ID.DistanceFunction);
+
 	/** Distribute(f(x1, x2, x3,...)) - distributes `f` over `Plus` appearing in any of the `xi`. */
 	public final static IBuiltInSymbol Distribute = F.initFinalSymbol("Distribute", ID.Distribute);
 
@@ -1228,6 +1234,9 @@ public class S {
 
 	/** Fibonacci(n) - returns the Fibonacci number of the integer `n` */
 	public final static IBuiltInSymbol Fibonacci = F.initFinalSymbol("Fibonacci", ID.Fibonacci);
+
+	/***/
+	public final static IBuiltInSymbol FindClusters = F.initFinalSymbol("FindClusters", ID.FindClusters);
 
 	/***/
 	public final static IBuiltInSymbol FindEdgeCover = F.initFinalSymbol("FindEdgeCover", ID.FindEdgeCover);
@@ -3245,6 +3254,9 @@ public class S {
 
 	/** Sign(x) - gives `-1`, `0` or `1` depending on whether `x` is negative, zero or positive. */
 	public final static IBuiltInSymbol Sign = F.initFinalSymbol("Sign", ID.Sign);
+
+	/***/
+	public final static IBuiltInSymbol Signature = F.initFinalSymbol("Signature", ID.Signature);
 
 	/***/
 	public final static IBuiltInSymbol SignCmp = F.initFinalSymbol("SignCmp", ID.SignCmp);

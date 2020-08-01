@@ -1,2 +1,0 @@
-version=${pom.version}
-timestamp=${timestamp}

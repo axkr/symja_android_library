@@ -31,11 +31,9 @@ import static org.matheclipse.core.expression.F.Times;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.hipparchus.complex.Complex;
 import org.hipparchus.exception.MathIllegalArgumentException;
 import org.hipparchus.exception.MathRuntimeException;
 import org.hipparchus.linear.BlockFieldMatrix;
-import org.hipparchus.linear.ComplexEigenDecomposition;
 import org.hipparchus.linear.DecompositionSolver;
 import org.hipparchus.linear.EigenDecomposition;
 import org.hipparchus.linear.FieldDecompositionSolver;
@@ -88,13 +86,9 @@ public final class LinearAlgebra {
 
 		private static void init() {
 			S.ArrayDepth.setEvaluator(new ArrayDepth());
-			S.BrayCurtisDistance.setEvaluator(new BrayCurtisDistance());
-			S.CanberraDistance.setEvaluator(new CanberraDistance());
 			S.CharacteristicPolynomial.setEvaluator(new CharacteristicPolynomial());
-			S.ChessboardDistance.setEvaluator(new ChessboardDistance());
 			S.CholeskyDecomposition.setEvaluator(new CholeskyDecomposition());
 			S.ConjugateTranspose.setEvaluator(new ConjugateTranspose());
-			S.CosineDistance.setEvaluator(new CosineDistance());
 			S.Cross.setEvaluator(new Cross());
 			S.DesignMatrix.setEvaluator(new DesignMatrix());
 			S.Det.setEvaluator(new Det());
@@ -104,7 +98,6 @@ public final class LinearAlgebra {
 			S.Dot.setEvaluator(new Dot());
 			S.Eigenvalues.setEvaluator(new Eigenvalues());
 			S.Eigenvectors.setEvaluator(new Eigenvectors());
-			S.EuclideanDistance.setEvaluator(new EuclideanDistance());
 			S.FourierMatrix.setEvaluator(new FourierMatrix());
 			S.FromPolarCoordinates.setEvaluator(new FromPolarCoordinates());
 			S.HilbertMatrix.setEvaluator(new HilbertMatrix());
@@ -116,7 +109,6 @@ public final class LinearAlgebra {
 			S.LinearSolve.setEvaluator(new LinearSolve());
 			S.LowerTriangularize.setEvaluator(new LowerTriangularize());
 			S.LUDecomposition.setEvaluator(new LUDecomposition());
-			S.ManhattanDistance.setEvaluator(new ManhattanDistance());
 			S.MatrixMinimalPolynomial.setEvaluator(new MatrixMinimalPolynomial());
 			S.MatrixExp.setEvaluator(new MatrixExp());
 			S.MatrixPower.setEvaluator(new MatrixPower());
@@ -131,7 +123,6 @@ public final class LinearAlgebra {
 			S.RiccatiSolve.setEvaluator(new RiccatiSolve());
 			S.RowReduce.setEvaluator(new RowReduce());
 			S.SingularValueDecomposition.setEvaluator(new SingularValueDecomposition());
-			S.SquaredEuclideanDistance.setEvaluator(new SquaredEuclideanDistance());
 			S.ToeplitzMatrix.setEvaluator(new ToeplitzMatrix());
 			S.ToPolarCoordinates.setEvaluator(new ToPolarCoordinates());
 			S.Tr.setEvaluator(new Tr());
@@ -601,97 +592,6 @@ public final class LinearAlgebra {
 
 	/**
 	 * <pre>
-	 * BrayCurtisDistance(u, v)
-	 * </pre>
-	 * 
-	 * <blockquote>
-	 * <p>
-	 * returns the Bray Curtis distance between <code>u</code> and <code>v</code>.
-	 * </p>
-	 * </blockquote>
-	 * 
-	 * <pre>
-	 * &gt;&gt; BrayCurtisDistance[{-1, -1}, {10, 10}]
-	 * 11/9
-	 * </pre>
-	 */
-	private final static class BrayCurtisDistance extends AbstractEvaluator {
-
-		@Override
-		public IExpr evaluate(final IAST ast, EvalEngine engine) {
-			IExpr u = ast.arg1();
-			IExpr v = ast.arg2();
-
-			int dim1 = u.isVector();
-			if (dim1 > (-1)) {
-				int dim2 = v.isVector();
-				if (dim1 == dim2) {
-					if (dim1 == 0) {
-						return F.C0;
-					}
-
-					return F.Total(F.Divide(F.Abs(F.Subtract(u, v)), F.Total(F.Abs(F.Plus(u, v)))));
-
-				}
-			}
-			return F.NIL;
-		}
-
-		@Override
-		public int[] expectedArgSize(IAST ast) {
-			return IOFunctions.ARGS_2_2;
-		}
-	}
-
-	/**
-	 * <pre>
-	 * CanberraDistance(u, v)
-	 * </pre>
-	 * 
-	 * <blockquote>
-	 * <p>
-	 * returns the canberra distance between <code>u</code> and <code>v</code>, which is a weighted version of the
-	 * Manhattan distance.
-	 * </p>
-	 * </blockquote>
-	 * <h3>Examples</h3>
-	 * 
-	 * <pre>
-	 * &gt;&gt; CanberraDistance({-1, -1}, {1, 1})
-	 * 2
-	 * </pre>
-	 */
-	private final static class CanberraDistance extends AbstractEvaluator {
-
-		@Override
-		public IExpr evaluate(final IAST functionList, EvalEngine engine) {
-			IExpr arg1 = functionList.arg1();
-			IExpr arg2 = functionList.arg2();
-
-			int dim1 = arg1.isVector();
-			if (dim1 > (-1)) {
-				int dim2 = arg2.isVector();
-				if (dim1 == dim2) {
-					if (dim1 == 0) {
-						return F.C0;
-					}
-
-					return F.Total(F.Divide(F.Abs(F.Subtract(arg1, arg2)), F.Plus(F.Abs(arg1), F.Abs(arg2))));
-
-				}
-			}
-			return F.NIL;
-		}
-
-		@Override
-		public int[] expectedArgSize(IAST ast) {
-			return IOFunctions.ARGS_2_2;
-		}
-
-	}
-
-	/**
-	 * <pre>
 	 * CharacteristicPolynomial(matrix, var)
 	 * </pre>
 	 * 
@@ -753,59 +653,6 @@ public final class LinearAlgebra {
 		public int[] expectedArgSize(IAST ast) {
 			return IOFunctions.ARGS_2_2;
 		}
-	}
-
-	/**
-	 * <pre>
-	 * ChessboardDistance(u, v)
-	 * </pre>
-	 * 
-	 * <blockquote>
-	 * <p>
-	 * returns the chessboard distance (also known as Chebyshev distance) between <code>u</code> and <code>v</code>,
-	 * which is the number of moves a king on a chessboard needs to get from square <code>u</code> to square
-	 * <code>v</code>.
-	 * </p>
-	 * </blockquote>
-	 * <h3>Examples</h3>
-	 * 
-	 * <pre>
-	 * &gt;&gt; ChessboardDistance({-1, -1}, {1, 1})
-	 * 2
-	 * </pre>
-	 */
-	private final static class ChessboardDistance extends AbstractEvaluator {
-
-		@Override
-		public IExpr evaluate(final IAST functionList, EvalEngine engine) {
-			IExpr arg1 = functionList.arg1();
-			IExpr arg2 = functionList.arg2();
-
-			int dim1 = arg1.isVector();
-			if (dim1 > (-1)) {
-				int dim2 = arg2.isVector();
-				if (dim1 == dim2) {
-					if (dim1 == 0) {
-						return F.C0;
-					}
-					IAST a1 = ((IAST) arg1);
-					IAST a2 = ((IAST) arg2);
-					IASTAppendable maxAST = F.Max();
-					return maxAST.appendArgs(a1.size(), i -> F.Abs(F.Subtract(a1.get(i), a2.get(i))));
-					// for (int i = 1; i < a1.size(); i++) {
-					// maxAST.append(F.Abs(F.Subtract(a1.get(i), a2.get(i))));
-					// }
-					// return maxAST;
-				}
-			}
-			return F.NIL;
-		}
-
-		@Override
-		public int[] expectedArgSize(IAST ast) {
-			return IOFunctions.ARGS_2_2;
-		}
-
 	}
 
 	/**
@@ -875,55 +722,6 @@ public final class LinearAlgebra {
 		@Override
 		protected IExpr transform(final IExpr expr) {
 			return expr.conjugate();
-		}
-
-	}
-
-	/**
-	 * <pre>
-	 * CosineDistance(u, v)
-	 * </pre>
-	 * 
-	 * <blockquote>
-	 * <p>
-	 * returns the cosine distance between <code>u</code> and <code>v</code>.
-	 * </p>
-	 * </blockquote>
-	 * <h3>Examples</h3>
-	 * 
-	 * <pre>
-	 * &gt;&gt; N(CosineDistance({7, 9}, {71, 89}))
-	 * 7.596457213221441E-5
-	 * 
-	 * &gt;&gt; CosineDistance({a, b}, {c, d})
-	 * 1-(a*c+b*d)/(Sqrt(Abs(a)^2+Abs(b)^2)*Sqrt(Abs(c)^2+Abs(d)^2))
-	 * </pre>
-	 */
-	private final static class CosineDistance extends AbstractEvaluator {
-
-		@Override
-		public IExpr evaluate(final IAST functionList, EvalEngine engine) {
-			IExpr arg1 = functionList.arg1();
-			IExpr arg2 = functionList.arg2();
-
-			int dim1 = arg1.isVector();
-			if (dim1 > (-1)) {
-				int dim2 = arg2.isVector();
-				if (dim1 == dim2) {
-					if (dim1 == 0) {
-						return F.C0;
-					}
-
-					return F.Subtract(F.C1, F.Divide(F.Dot(arg1, arg2), F.Times(F.Norm(arg1), F.Norm(arg2))));
-
-				}
-			}
-			return F.NIL;
-		}
-
-		@Override
-		public int[] expectedArgSize(IAST ast) {
-			return IOFunctions.ARGS_2_2;
 		}
 
 	}
@@ -1761,63 +1559,6 @@ public final class LinearAlgebra {
 				return Convert.vector2List(rv);
 			});
 		}
-	}
-
-	/**
-	 * <pre>
-	 * EuclideanDistance(u, v)
-	 * </pre>
-	 * 
-	 * <blockquote>
-	 * <p>
-	 * returns the euclidean distance between <code>u</code> and <code>v</code>.
-	 * </p>
-	 * </blockquote>
-	 * <h3>Examples</h3>
-	 * 
-	 * <pre>
-	 * &gt;&gt; EuclideanDistance({-1, -1}, {1, 1})
-	 * 2*Sqrt(2)
-	 * 
-	 * &gt;&gt; EuclideanDistance({a, b}, {c, d})
-	 * Sqrt(Abs(a-c)^2+Abs(b-d)^2)
-	 * </pre>
-	 */
-	private final static class EuclideanDistance extends AbstractEvaluator {
-
-		@Override
-		public IExpr evaluate(final IAST ast, EvalEngine engine) {
-			IExpr arg1 = ast.arg1();
-			IExpr arg2 = ast.arg2();
-
-			int dim1 = arg1.isVector();
-			if (dim1 > (-1)) {
-				int dim2 = arg2.isVector();
-				if (dim1 == dim2) {
-					if (dim1 == 0) {
-						return F.C0;
-					}
-					IAST a1 = ((IAST) arg1);
-					IAST a2 = ((IAST) arg2);
-					int size = a1.size();
-					IASTAppendable plusAST = F.PlusAlloc(size);
-					plusAST.appendArgs(size, i -> F.Sqr(F.Abs(F.Subtract(a1.get(i), a2.get(i)))));
-					return F.Sqrt(plusAST);
-				}
-			}
-			return F.NIL;
-		}
-
-		@Override
-		public int[] expectedArgSize(IAST ast) {
-			return IOFunctions.ARGS_2_2;
-		}
-
-		@Override
-		public void setUp(ISymbol newSymbol) {
-
-		}
-
 	}
 
 	private static class FourierMatrix extends AbstractFunctionEvaluator {
@@ -2750,70 +2491,6 @@ public final class LinearAlgebra {
 		@Override
 		public int[] expectedArgSize(IAST ast) {
 			return IOFunctions.ARGS_1_1;
-		}
-
-	}
-
-	/**
-	 * <pre>
-	 * ManhattanDistance(u, v)
-	 * </pre>
-	 * 
-	 * <blockquote>
-	 * <p>
-	 * returns the Manhattan distance between <code>u</code> and <code>v</code>, which is the number of horizontal or
-	 * vertical moves in the grid like Manhattan city layout to get from <code>u</code> to <code>v</code>.
-	 * </p>
-	 * </blockquote>
-	 * <p>
-	 * See:
-	 * </p>
-	 * <ul>
-	 * <li><a href="https://en.wikipedia.org/wiki/Taxicab_geometry">Wikipedia - Taxicab geometry</a></li>
-	 * </ul>
-	 * <h3>Examples</h3>
-	 * 
-	 * <pre>
-	 * &gt;&gt; ManhattanDistance({-1, -1}, {1, 1})
-	 * 4
-	 * </pre>
-	 */
-	private final static class ManhattanDistance extends AbstractEvaluator {
-
-		@Override
-		public IExpr evaluate(final IAST ast, EvalEngine engine) {
-			IExpr arg1 = ast.arg1();
-			IExpr arg2 = ast.arg2();
-
-			int dim1 = arg1.isVector();
-			if (dim1 > (-1)) {
-				int dim2 = arg2.isVector();
-				if (dim1 == dim2) {
-					if (dim1 == 0) {
-						return F.C0;
-					}
-					IAST a1 = ((IAST) arg1);
-					IAST a2 = ((IAST) arg2);
-					int size = a1.size();
-					IASTAppendable plusAST = F.PlusAlloc(size);
-					return plusAST.appendArgs(size, i -> F.Abs(F.Subtract(a1.get(i), a2.get(i))));
-					// for (int i = 1; i < size; i++) {
-					// plusAST.append(F.Abs(F.Subtract(a1.get(i), a2.get(i))));
-					// }
-					// return plusAST;
-				}
-			}
-			return F.NIL;
-		}
-
-		@Override
-		public int[] expectedArgSize(IAST ast) {
-			return IOFunctions.ARGS_2_2;
-		}
-
-		@Override
-		public void setUp(ISymbol newSymbol) {
-
 		}
 
 	}
@@ -3852,59 +3529,6 @@ public final class LinearAlgebra {
 		public int[] expectedArgSize(IAST ast) {
 			return IOFunctions.ARGS_1_1;
 		}
-	}
-
-	/**
-	 * <pre>
-	 * SquaredEuclideanDistance(u, v)
-	 * </pre>
-	 * 
-	 * <blockquote>
-	 * <p>
-	 * returns squared the euclidean distance between <code>u$</code> and <code>v</code>.
-	 * </p>
-	 * </blockquote>
-	 * <h3>Examples</h3>
-	 * 
-	 * <pre>
-	 * &gt;&gt; SquaredEuclideanDistance({-1, -1}, {1, 1})
-	 * 8
-	 * </pre>
-	 */
-	private final static class SquaredEuclideanDistance extends AbstractEvaluator {
-
-		@Override
-		public IExpr evaluate(final IAST functionList, EvalEngine engine) {
-			IExpr arg1 = functionList.arg1();
-			IExpr arg2 = functionList.arg2();
-
-			int dim1 = arg1.isVector();
-			if (dim1 > (-1)) {
-				int dim2 = arg2.isVector();
-				if (dim1 == dim2) {
-					if (dim1 == 0) {
-						return F.C0;
-					}
-					IAST a1 = ((IAST) arg1);
-					IAST a2 = ((IAST) arg2);
-					int size = a1.size();
-					IASTAppendable plusAST = F.PlusAlloc(size);
-
-					return plusAST.appendArgs(size, i -> F.Sqr(F.Abs(F.Subtract(a1.get(i), a2.get(i)))));
-					// for (int i = 1; i < size; i++) {
-					// plusAST.append(F.Sqr(F.Abs(F.Subtract(a1.get(i), a2.get(i)))));
-					// }
-					// return plusAST;
-				}
-			}
-			return F.NIL;
-		}
-
-		@Override
-		public int[] expectedArgSize(IAST ast) {
-			return IOFunctions.ARGS_2_2;
-		}
-
 	}
 
 	private static class ToeplitzMatrix extends AbstractFunctionEvaluator {

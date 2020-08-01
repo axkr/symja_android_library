@@ -17,3 +17,6 @@ See
 >> EuclideanDistance({a, b}, {c, d})
 Sqrt(Abs(a-c)^2+Abs(b-d)^2) 
 ```
+
+### Related terms 
+[FindClusters](FindClusters.md), [BinaryDistance](BinaryDistance.md), [BrayCurtisDistance](BrayCurtisDistance.md), [ChessboardDistance](ChessboardDistance.md), [CanberraDistance](CanberraDistance.md), [CosineDistance](CosineDistance.md),  [ManhattanDistance](ManhattanDistance.md), [SquaredEuclideanDistance](SquaredEuclideanDistance.md)

@@ -792,7 +792,9 @@ public class EvalEngine implements Serializable {
 					return printMessage(ast.topHead(), ve);
 				}
 				if (((ISymbol.DELAYED_RULE_EVALUATION & attr) == ISymbol.DELAYED_RULE_EVALUATION)) {
-					return symbol.evalDownRule(this, ast);
+					// evaluate args especially for Sum() and Product(), although they have HOLDALL attribute
+					IExpr temp = evalArgs(ast, ISymbol.NOATTRIBUTE).orElse(ast);
+					return symbol.evalDownRule(this, temp);
 				} else {
 					if (!fNumericMode && fAssumptions == null
 							&& (((ISymbol.HOLDALLCOMPLETE | ISymbol.NHOLDALL) & attr) == ISymbol.NOATTRIBUTE)) {

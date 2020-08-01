@@ -756,8 +756,8 @@ public class ComplexNum implements IComplexNum {
 	 * Algorithm for Gaussian Integers </a></li>
 	 * </ul>
 	 * 
-	 * @param c1
-	 * @param c2
+	 * @param cn1
+	 * @param cn2
 	 * @return the quotient and remainder as an array <code>[quotient, remainder]</code>
 	 */
 	public static ComplexNum[] quotientRemainder(ComplexNum cn1, ComplexNum cn2) {

@@ -24,7 +24,8 @@ import org.matheclipse.core.tensor.io.ResourceData;
 
 public class ConstantDefinitions {
 
-	public static String VERSION = "1.0.0";
+	// load version string from MAVEN
+	public static String VERSION = "?";
 	public static String TIMESTAMP = "";
 	private static int YEAR = Calendar.getInstance().get(Calendar.YEAR);
 	private static int MONTH = Calendar.getInstance().get(Calendar.MONTH);
@@ -42,27 +43,26 @@ public class ConstantDefinitions {
 	private static class Initializer {
 
 		private static void init() {
-			Properties properties = ResourceData.properties("/version.txt");
 
-			String versionString = properties.getProperty("version");
-			if (versionString != null && versionString.charAt(0) != '$') {
+			String versionString = Config.getVersion();
+			if (versionString != null) {
 				VERSION = versionString;
 			}
-
-			String timestamp = properties.getProperty("timestamp");
-			if (timestamp != null && timestamp.charAt(0) != '$') {
-				TIMESTAMP = timestamp;
-				try {
-					YEAR = Integer.parseInt(TIMESTAMP.substring(0, 4));
-					MONTH = Integer.parseInt(TIMESTAMP.substring(4, 6));
-					DAY = Integer.parseInt(TIMESTAMP.substring(6, 8));
-					HOUR = Integer.parseInt(TIMESTAMP.substring(8, 10));
-					MINUTE = Integer.parseInt(TIMESTAMP.substring(10, 12));
-					SECOND = Integer.parseInt(TIMESTAMP.substring(12, 14));
-				} catch (NumberFormatException nfe) {
-					nfe.printStackTrace();
-				}
-			}
+			// Properties properties = ResourceData.properties("/version.txt");
+			// String timestamp = properties.getProperty("timestamp");
+			// if (timestamp != null && timestamp.charAt(0) != '$') {
+			// TIMESTAMP = timestamp;
+			// try {
+			// YEAR = Integer.parseInt(TIMESTAMP.substring(0, 4));
+			// MONTH = Integer.parseInt(TIMESTAMP.substring(4, 6));
+			// DAY = Integer.parseInt(TIMESTAMP.substring(6, 8));
+			// HOUR = Integer.parseInt(TIMESTAMP.substring(8, 10));
+			// MINUTE = Integer.parseInt(TIMESTAMP.substring(10, 12));
+			// SECOND = Integer.parseInt(TIMESTAMP.substring(12, 14));
+			// } catch (NumberFormatException nfe) {
+			// nfe.printStackTrace();
+			// }
+			// }
 
 			// System.out.println(VERSION);
 			// System.out.println(TIMESTAMP);
@@ -89,7 +89,7 @@ public class ConstantDefinitions {
 			S.Infinity.setEvaluator(new Infinity());
 			S.Khinchin.setEvaluator(new Khinchin());
 			S.Pi.setEvaluator(new Pi());
-			
+
 			S.Now.setEvaluator(new Now());
 			S.Today.setEvaluator(new Today());
 
@@ -663,8 +663,7 @@ public class ConstantDefinitions {
 
 		@Override
 		public IExpr evaluate(final ISymbol symbol) {
-			return DateObjectExpr
-					.newInstance(LocalDateTime.now());
+			return DateObjectExpr.newInstance(LocalDateTime.now());
 		}
 
 		@Override

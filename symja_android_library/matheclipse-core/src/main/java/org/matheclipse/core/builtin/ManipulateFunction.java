@@ -855,14 +855,42 @@ public class ManipulateFunction {
 			}
 			if (arg1.isNonEmptyList()) {
 				IAST pointList = (IAST) arg1;
-				int[] dimension = pointList.isMatrix(false);
-				if (dimension != null) {
-					if (dimension[1] == 2) {
-						return sequencePointListPlot(manipulateAST, pointList, toJS, engine);
+				if (pointList.isListOfLists()) {
+					int[] dimension = pointList.isMatrix(false);
+					if (dimension != null) {
+						if (dimension[1] == 2) {
+							double[] boundingbox = new double[] { Double.MAX_VALUE, Double.MIN_VALUE, Double.MIN_VALUE,
+									Double.MAX_VALUE };
+							StringBuilder function = new StringBuilder();
+							sequencePointListPlot(manipulateAST, 1, pointList, toJS, function, boundingbox, engine);
+							return JSXGraph.boundingBox(manipulateAST, boundingbox, function.toString(), toJS, false,
+									true);
+						}
 					}
-					return F.NIL;
+					IAST listOfLists = (IAST) pointList;
+					double[] boundingbox = new double[] { Double.MAX_VALUE, Double.MIN_VALUE, Double.MIN_VALUE,
+							Double.MAX_VALUE };
+					StringBuilder function = new StringBuilder();
+					for (int i = 1; i < listOfLists.size(); i++) {
+						pointList = (IAST) listOfLists.get(i);
+						dimension = pointList.isMatrix(false);
+						if (dimension != null) {
+							if (dimension[1] == 2) {
+								sequencePointListPlot(manipulateAST, i, pointList, toJS, function, boundingbox, engine);
+							} else {
+								return F.NIL;
+							}
+						} else {
+							sequenceYValuesListPlot(manipulateAST, i, pointList, toJS, function, boundingbox, engine);
+						}
+					}
+					return JSXGraph.boundingBox(manipulateAST, boundingbox, function.toString(), toJS, false, true);
 				} else {
-					return sequenceYValuesListPlot(manipulateAST, pointList, toJS, engine);
+					double[] boundingbox = new double[] { Double.MAX_VALUE, Double.MIN_VALUE, Double.MIN_VALUE,
+							Double.MAX_VALUE };
+					StringBuilder function = new StringBuilder();
+					sequenceYValuesListPlot(manipulateAST, 1, pointList, toJS, function, boundingbox, engine);
+					return JSXGraph.boundingBox(manipulateAST, boundingbox, function.toString(), toJS, false, true);
 				}
 			}
 			return F.NIL;
@@ -1030,7 +1058,7 @@ public class ManipulateFunction {
 				function.append(", ");
 				JSXGraph.rangeArgs(function, plotRangeX, -1, toJS);
 				function.append("]");
-				java.awt.Color color = plotStyleColor(i, plotStyle, function);
+				java.awt.Color color = plotStyleColor(i, plotStyle);
 				function.append(",{strokecolor:'");
 				function.append(Convert.toHex(color));
 				function.append("'}");
@@ -1126,7 +1154,7 @@ public class ManipulateFunction {
 				function.append(", ");
 				JSXGraph.rangeArgs(function, plotRangeX, -1, toJS);
 				function.append("]");
-				java.awt.Color color = plotStyleColor(i, plotStyle, function);
+				java.awt.Color color = plotStyleColor(i, plotStyle);
 				function.append(",{strokecolor:'");
 				function.append(Convert.toHex(color));
 				function.append("'}");
@@ -1220,7 +1248,7 @@ public class ManipulateFunction {
 				function.append("]");
 				function.append(", {curveType:'polar'");
 
-				java.awt.Color color = plotStyleColor(i, plotStyle, function);
+				java.awt.Color color = plotStyleColor(i, plotStyle);
 				function.append(",strokeWidth:2, strokecolor:'");
 				function.append(Convert.toHex(color));
 				function.append("'");
@@ -1258,36 +1286,6 @@ public class ManipulateFunction {
 			}
 
 			return JSXGraph.boundingBox(manipulateAST, boundingbox, function.toString(), toJS, false, true);
-		}
-
-		/**
-		 * 
-		 * @param functionNumber
-		 *            the number of the function which should be plotted
-		 * @param plotStyle
-		 *            if present a <code>List()</code> is expected
-		 * @param function
-		 */
-		private static java.awt.Color plotStyleColor(int functionNumber, IAST plotStyle, StringBuilder function) {
-			if (plotStyle.isList() && plotStyle.size() > functionNumber) {
-				IExpr temp = plotStyle.get(functionNumber);
-				if (temp.isASTSizeGE(F.Directive, 2)) {
-					IAST directive = (IAST) temp;
-					for (int j = 1; j < directive.size(); j++) {
-						temp = directive.get(j);
-						java.awt.Color color = Convert.toAWTColor(temp);
-						if (color != null) {
-							return color;
-						}
-					}
-				} else {
-					java.awt.Color color = Convert.toAWTColor(temp);
-					if (color != null) {
-						return color;
-					}
-				}
-			}
-			return PLOT_COLORS[(functionNumber - 1) % PLOT_COLORS.length];
 		}
 
 		/**
@@ -1978,17 +1976,17 @@ public class ManipulateFunction {
 	 * Plot a list of 2D points.
 	 * 
 	 * @param ast
+	 * @param arg
+	 *            the number of the current argument
 	 * @param pointList
 	 * @param toJS
 	 * @param engine
 	 * @return
 	 */
-	private static IExpr sequencePointListPlot(final IAST ast, IAST pointList, JavaScriptFormFactory toJS,
-			EvalEngine engine) {
-		double[] boundingbox;
+	private static void sequencePointListPlot(final IAST ast, int arg, IAST pointList, JavaScriptFormFactory toJS,
+			StringBuilder function, double[] boundingbox, EvalEngine engine) {
 		// plot a list of 2D points
-		StringBuilder function = new StringBuilder();
-		boundingbox = new double[] { Double.MAX_VALUE, Double.MIN_VALUE, Double.MIN_VALUE, Double.MAX_VALUE };
+		java.awt.Color color = plotStyleColor(arg, F.NIL);
 		if (ast.arg1().isAST(F.ListLinePlot) && pointList.size() > 2) {
 			// IAST lastPoint = (IAST) pointList.arg1();
 			IAST lastPoint = F.NIL;
@@ -2023,7 +2021,9 @@ public class ManipulateFunction {
 							toJS.convert(function, lastPoint.arg2());
 							function.append(";}");
 							function.append("], ");
-							function.append(" {name:'', face:'o', size: 2 } );\n");
+							function.append(" {color:'");
+							function.append(Convert.toHex(color));
+							function.append("' ,name:'', face:'o', size: 2 } );\n");
 						}
 						lastPoint = F.NIL;
 						isConnected = false;
@@ -2050,8 +2050,10 @@ public class ManipulateFunction {
 						function.append("function() {return ");
 						toJS.convert(function, point.arg2());
 						function.append(";}");
-						function.append("]]");
-						function.append(", {straightFirst:false, straightLast:false, strokeWidth:2});\n");
+						function.append("]],");
+						function.append(" {color:'");
+						function.append(Convert.toHex(color));
+						function.append("', straightFirst:false, straightLast:false, strokeWidth:2});\n");
 						isConnected = true;
 					}
 					lastPoint = point;
@@ -2074,10 +2076,11 @@ public class ManipulateFunction {
 				toJS.convert(function, point.arg2());
 				function.append(";}");
 				function.append("], ");
-				function.append(" {name:'', face:'o', size: 2 } );\n");
+				function.append(" {color:'");
+				function.append(Convert.toHex(color));
+				function.append("' ,name:'', face:'o', size: 2 } );\n");
 			}
 		}
-		return JSXGraph.boundingBox(ast, boundingbox, function.toString(), toJS, false, true);
 	}
 
 	/**
@@ -2089,12 +2092,13 @@ public class ManipulateFunction {
 	 * @param engine
 	 * @return
 	 */
-	private static IExpr sequenceYValuesListPlot(final IAST ast, IAST pointList, JavaScriptFormFactory toJS,
-			EvalEngine engine) {
-		double[] boundingbox;
-
-		StringBuilder function = new StringBuilder();
-		boundingbox = new double[] { 0.0, Double.MIN_VALUE, pointList.size(), Double.MAX_VALUE };
+	private static void sequenceYValuesListPlot(final IAST ast, int arg, IAST pointList, JavaScriptFormFactory toJS,
+			StringBuilder function, double[] boundingbox, EvalEngine engine) {
+		java.awt.Color color = plotStyleColor(arg, F.NIL);
+		// StringBuilder function = new StringBuilder();
+		// boundingbox = new double[] { 0.0, Double.MIN_VALUE, pointList.size(), Double.MAX_VALUE };
+		xBoundingBox(engine, boundingbox, F.C1);
+		xBoundingBox(engine, boundingbox, F.ZZ(pointList.size()));
 		if (ast.arg1().isAST(F.ListLinePlot)) {
 			IExpr lastPoint = F.NIL;
 			int lastPosition = -1;
@@ -2123,8 +2127,10 @@ public class ManipulateFunction {
 							function.append("function() {return ");
 							toJS.convert(function, lastPoint);
 							function.append(";}");
-							function.append("], ");
-							function.append(" {name:'', face:'o', size: 2 } );\n");
+							function.append("],");
+							function.append(" {color:'");
+							function.append(Convert.toHex(color));
+							function.append("' ,name:'', face:'o', size: 2 } );\n");
 						}
 						lastPoint = F.NIL;
 						lastPosition = -1;
@@ -2147,8 +2153,10 @@ public class ManipulateFunction {
 						function.append("function() {return ");
 						toJS.convert(function, currentPointY);
 						function.append(";}");
-						function.append("]]");
-						function.append(", {straightFirst:false, straightLast:false, strokeWidth:2});\n");
+						function.append("]],");
+						function.append(" {color:'");
+						function.append(Convert.toHex(color));
+						function.append("' ,straightFirst:false, straightLast:false, strokeWidth:2});\n");
 						isConnected = true;
 					}
 					lastPoint = currentPointY;
@@ -2169,11 +2177,12 @@ public class ManipulateFunction {
 				toJS.convert(function, pointList.get(i));
 				function.append(";}");
 				function.append("], ");
-				function.append(" {name:'', face:'o', size: 2 } );\n");
+				function.append(" {color:'");
+				function.append(Convert.toHex(color));
+				function.append("' ,name:'', face:'o', size: 2 } );\n");
 			}
 		}
 
-		return JSXGraph.boundingBox(ast, boundingbox, function.toString(), toJS, false, true);
 	}
 
 	private static boolean isNonReal(IExpr lastPoint) {
@@ -2185,6 +2194,35 @@ public class ManipulateFunction {
 	private static boolean isNonReal(IExpr lastPointX, IExpr lastPointY) {
 		return isNonReal(lastPointX) || //
 				isNonReal(lastPointY);
+	}
+
+	/**
+	 * 
+	 * @param functionNumber
+	 *            the number of the function which should be plotted
+	 * @param plotStyle
+	 *            if present a <code>List()</code> is expected
+	 */
+	private static java.awt.Color plotStyleColor(int functionNumber, IAST plotStyle) {
+		if (plotStyle.isList() && plotStyle.size() > functionNumber) {
+			IExpr temp = plotStyle.get(functionNumber);
+			if (temp.isASTSizeGE(F.Directive, 2)) {
+				IAST directive = (IAST) temp;
+				for (int j = 1; j < directive.size(); j++) {
+					temp = directive.get(j);
+					java.awt.Color color = Convert.toAWTColor(temp);
+					if (color != null) {
+						return color;
+					}
+				}
+			} else {
+				java.awt.Color color = Convert.toAWTColor(temp);
+				if (color != null) {
+					return color;
+				}
+			}
+		}
+		return PLOT_COLORS[(functionNumber - 1) % PLOT_COLORS.length];
 	}
 
 	private static int[] calcHistogram(double[] data, double min, double max, int numBins) {

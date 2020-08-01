@@ -4,7 +4,7 @@ public class SpecialFunctionPlots extends BasePlotExample {
 
 	@Override
 	public String exampleFunction() {
-		return "Plot(StruveH(x), {x, 0, 100})";
+		return "Plot(Gamma(x), {x, -10, 10})";
 	}
 
 	public static void main(String[] args) {

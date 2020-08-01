@@ -16,6 +16,7 @@ import org.hipparchus.linear.FieldMatrix;
 import org.hipparchus.linear.RealMatrix;
 import org.hipparchus.random.RandomDataGenerator;
 import org.hipparchus.stat.StatUtils;
+import org.hipparchus.stat.correlation.PearsonsCorrelation;
 import org.hipparchus.util.FastMath;
 import org.hipparchus.util.MathUtils;
 import org.matheclipse.core.basic.Config;
@@ -1370,19 +1371,52 @@ public class StatisticsFunctions {
 
 		@Override
 		public IExpr evaluate(final IAST ast, EvalEngine engine) {
-			IExpr a = ast.arg1();
-			IExpr b = ast.arg2();
-			int dim1 = a.isVector();
-			int dim2 = b.isVector();
-			if (dim1 >= 0 && dim1 == dim2) {
-				return F.Divide(F.Covariance(a, b), F.Times(F.StandardDeviation(a), F.StandardDeviation(b)));
+			try {
+				if (ast.isAST1()) {
+					// System.out.println(ast.arg1().toString());
+					if (ast.arg1() instanceof ASTRealMatrix) {
+						PearsonsCorrelation pc = new PearsonsCorrelation(((ASTRealMatrix) ast.arg1()).getRealMatrix());
+						return new ASTRealMatrix(pc.getCorrelationMatrix(), false);
+					}
+					int[] dim = ast.arg1().isMatrix();
+					if (dim != null && dim[0] > 1 && dim[1] > 1) {
+						RealMatrix matrix = ast.arg1().toRealMatrix();
+						if (matrix != null) {
+							PearsonsCorrelation pc = new PearsonsCorrelation(matrix);
+							return new ASTRealMatrix(pc.getCorrelationMatrix(), false);
+						}
+					}
+					return F.NIL;
+				}
+				IExpr arg1 = ast.arg1();
+				IExpr arg2 = ast.arg2();
+				int dim1 = arg1.isVector();
+				int dim2 = arg2.isVector();
+				if (dim1 >= 0 && dim1 == dim2) {
+					if (engine.isDoubleMode() || //
+							arg1.isNumericAST() || //
+							arg2.isNumericAST()) {
+						double[] a = arg1.toDoubleVector();
+						if (a != null) {
+							double[] b = arg2.toDoubleVector();
+							if (b != null) {
+								PearsonsCorrelation pc = new PearsonsCorrelation();
+								return F.num(pc.correlation(a, b));
+							}
+						}
+					}
+					return F.Divide(F.Covariance(arg1, arg2),
+							F.Times(F.StandardDeviation(arg1), F.StandardDeviation(arg2)));
+				}
+				return F.NIL;
+			} catch (MathRuntimeException mrex) {
+				return IOFunctions.printMessage(ast.topHead(), mrex, engine);
 			}
-			return F.NIL;
 		}
 
 		@Override
 		public int[] expectedArgSize(IAST ast) {
-			return IOFunctions.ARGS_2_2;
+			return IOFunctions.ARGS_1_2;
 		}
 	}
 

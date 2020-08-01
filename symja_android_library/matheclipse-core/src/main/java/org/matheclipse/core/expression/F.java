@@ -30,6 +30,7 @@ import org.matheclipse.core.builtin.AssumptionFunctions;
 import org.matheclipse.core.builtin.AttributeFunctions;
 import org.matheclipse.core.builtin.BesselFunctions;
 import org.matheclipse.core.builtin.BooleanFunctions;
+import org.matheclipse.core.builtin.ClusteringFunctions;
 import org.matheclipse.core.builtin.Combinatoric;
 import org.matheclipse.core.builtin.ComputationalGeometryFunctions;
 import org.matheclipse.core.builtin.ConstantDefinitions;
@@ -951,6 +952,7 @@ public class F extends S {
 			ManipulateFunction.initialize();
 			ImageFunctions.initialize();
 			EntityFunctions.initialize();
+			ClusteringFunctions.initialize();
 			ComputationalGeometryFunctions.initialize();
 
 			F.Integrate.setEvaluator(org.matheclipse.core.reflection.system.Integrate.CONST);
@@ -3550,7 +3552,7 @@ public class F extends S {
 	public static IAST GegenbauerC(final IExpr a0, final IExpr a1) {
 		return new AST2(GegenbauerC, a0, a1);
 	}
-	
+
 	public static IAST GegenbauerC(final IExpr a0, final IExpr a1, final IExpr a2) {
 		return new AST3(GegenbauerC, a0, a1, a2);
 	}
@@ -3980,7 +3982,7 @@ public class F extends S {
 	public static IAST intIterator(ISymbol head, final Function<IExpr, IExpr> function, final int from, final int to,
 			final int step) {
 		IASTAppendable result = F.ast(head, to - from + 1, false);
-		int numberOfLeaves = 0;
+		long numberOfLeaves = 0;
 		for (int i = from; i <= to; i += step) {
 			IExpr temp = function.apply(F.ZZ(i));
 			numberOfLeaves += temp.leafCount() + 1;
@@ -4206,10 +4208,10 @@ public class F extends S {
 	 *             if {@code tolerance} is {@code < 0} or NaN
 	 */
 	public static boolean isFuzzyEquals(double a, double b, double tolerance) {
-		 return Math.copySign(a - b, 1.0) < tolerance
-		 // copySign(x, 1.0) is a branch-free version of abs(x), but with different NaN semantics
-		 || (a == b) // needed to ensure that infinities equal themselves
-		 || (Double.isNaN(a) && Double.isNaN(b));
+		return Math.copySign(a - b, 1.0) < tolerance
+				// copySign(x, 1.0) is a branch-free version of abs(x), but with different NaN semantics
+				|| (a == b) // needed to ensure that infinities equal themselves
+				|| (Double.isNaN(a) && Double.isNaN(b));
 	}
 
 	/**
@@ -5690,7 +5692,7 @@ public class F extends S {
 	public static IAST RGBColor(final IExpr a0, final IExpr a1, final IExpr a2) {
 		return new AST3(RGBColor, a0, a1, a2);
 	}
-	
+
 	/**
 	 * Get or create a user defined symbol which is retrieved from the evaluation engines context path.
 	 * 
@@ -6883,7 +6885,7 @@ public class F extends S {
 	 */
 	public static IAST matrix(BiFunction<Integer, Integer, ? extends IExpr> biFunction, int n, int m) {
 		if (n > Config.MAX_MATRIX_DIMENSION_SIZE || m > Config.MAX_MATRIX_DIMENSION_SIZE) {
-			ASTElementLimitExceeded.throwIt(n * m);
+			ASTElementLimitExceeded.throwIt(((long) n) * ((long) m));
 		}
 		IASTAppendable matrix = F.ListAlloc(n);
 		for (int i = 0; i < n; i++) {

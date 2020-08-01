@@ -1889,6 +1889,15 @@ public class LowercaseTestCase extends AbstractTestCase {
 
 	}
 
+	public void testBinaryDistance() {
+		check("BinaryDistance({1, 2, 3, 4, 5}, {1, 2, 3, 4, 5})", //
+				"1");
+		check("BinaryDistance({1, 2, 3, 4, 5}, {1, 2, 3, 4, -5})", //
+				"0");
+		check("BinaryDistance({1, 2, 3, 4, 5}, {1, 2, 3, 4, 5.0})", //
+				"0");
+	}
+
 	public void testBinCounts() {
 		check("BinCounts({1,2,3,4,5})", //
 				"{0,1,1,1,1,1}");
@@ -2228,7 +2237,10 @@ public class LowercaseTestCase extends AbstractTestCase {
 	}
 
 	public void testBrayCurtisDistance() {
-		check("BrayCurtisDistance({x,-2,3},{x,5,-3})", "13/(3+2*Abs(x))");
+		check("BrayCurtisDistance({-1, -1}, {10.5, 10})", //
+				"1.21622");
+		check("BrayCurtisDistance({x,-2,3},{x,5,-3})", //
+				"13/(3+2*Abs(x))");
 		check("BrayCurtisDistance({-1, -1}, {10, 10})", //
 				"11/9");
 	}
@@ -2689,6 +2701,8 @@ public class LowercaseTestCase extends AbstractTestCase {
 	}
 
 	public void testChessboardDistance() {
+		check("ChessboardDistance({-1, -1.5}, {1, 1})", //
+				"2.5");
 		check("ChessboardDistance({-1, -1}, {1, 1})", //
 				"2");
 	}
@@ -3730,7 +3744,7 @@ public class LowercaseTestCase extends AbstractTestCase {
 
 	public void test$Version() {
 		check("$Version", //
-				ConstantDefinitions.VERSION);
+				"1.0.0-SNAPSHOT");
 	}
 
 	public void testContinue() {
@@ -3935,20 +3949,56 @@ public class LowercaseTestCase extends AbstractTestCase {
 	}
 
 	public void testCanberraDistance() {
+		check("CanberraDistance({-1, -1.0}, {1, 1})", //
+				"2.0");
 		check("CanberraDistance({-1, -1}, {1, 1})", //
 				"2");
 	}
 
 	public void testCorrelation() {
+		check("Correlation({1.5, 3, 5, 10}, {2, 1.25, 15, 8})", //
+				"0.475976");
+		check("N(Correlation({5.0, 3/4, 1}, {2, 1/2, 1}))", //
+				"0.960769");
 		check("Correlation({a,b},{c,d})", //
 				"((a-b)*(Conjugate(c)-Conjugate(d)))/(Sqrt((a-b)*(Conjugate(a)-Conjugate(b)))*Sqrt((c-d)*(Conjugate(c)-Conjugate(d))))");
-		check("Correlation({10, 8, 13, 9, 11, 14, 6, 4, 12, 7, 5}, {8.04, 6.95, 7.58, 8.81, 8.33, 9.96, 7.24, 4.26, 10.84, 4.82, 5.68})", //
+		check("Correlation({10, 8, 13, 9, 11, 14, 6, 4, 12, 7, 5}, {8.04, 6.95, 7.58, 8.81, 8.33, 9.96, 7.24, 4.26,10.84, 4.82, 5.68})", //
 				"0.816421");
+
 		check("Correlation({5, 3/4, 1}, {2, 1/2, 1})", //
 				"2*Sqrt(3/13)");
+
+		check("Correlation({\n" + //
+				"{60323,83.0,234289,2356,1590,107608,1947},\n" + //
+				"{61122,88.5,259426,2325,1456,108632,1948},\n" + //
+				"{60171,88.2,258054,3682,1616,109773,1949},\n" + //
+				"{61187,89.5,284599,3351,1650,110929,1950},\n" + //
+				"{63221,96.2,328975,2099,3099,112075,1951},\n" + //
+				"{63639,98.1,346999,1932,3594,113270,1952},\n" + //
+				"{64989,99.0,365385,1870,3547,115094,1953},\n" + //
+				"{63761,100.0,363112,3578,3350,116219,1954},\n" + //
+				"{66019,101.2,397469,2904,3048,117388,1955},\n" + //
+				"{67857,104.6,419180,2822,2857,118734,1956},\n" + //
+				"{68169,108.4,442769,2936,2798,120445,1957},\n" + //
+				"{66513,110.8,444546,4681,2637,121950,1958},\n" + //
+				"{68655,112.6,482704,3813,2552,123366,1959},\n" + //
+				"{69564,114.2,502601,3931,2514,125368,1960},\n" + //
+				"{69331,115.7,518173,4806,2572,127852,1961},\n" + //
+				"{70551,116.9,554894,4007,2827,130081,1962}})", //
+				"{{1.0,0.970899,0.983552,0.502498,0.457307,0.960391,0.971329},\n" + //
+						" {0.970899,1.0,0.991589,0.620633,0.464744,0.979163,0.991149},\n" + //
+						" {0.983552,0.991589,1.0,0.604261,0.446437,0.99109,0.995273},\n" + //
+						" {0.502498,0.620633,0.604261,1.0,-0.177421,0.686552,0.668257},\n" + //
+						" {0.457307,0.464744,0.446437,-0.177421,1.0,0.364416,0.417245},\n" + //
+						" {0.960391,0.979163,0.99109,0.686552,0.364416,1.0,0.993953},\n" + //
+						" {0.971329,0.991149,0.995273,0.668257,0.417245,0.993953,1.0}}");
+		// check("Correlation(RandomReal(1, 10^4), RandomReal(1, 10^4))", //
+		// "0.000430087");
 	}
 
 	public void testCosineDistance() {
+		check("CosineDistance({7.0, 9}, {71, 89})", //
+				"0.0000759646");
 		check("N(CosineDistance({7, 9}, {71, 89}))", //
 				"0.0000759646");
 		check("CosineDistance({a, b}, {c, d})", //
@@ -6323,6 +6373,8 @@ public class LowercaseTestCase extends AbstractTestCase {
 	}
 
 	public void testEuclideanDistance() {
+		check("EuclideanDistance({-1, -1}, {1.0, 1})", //
+				"2.82843");
 		check("EuclideanDistance({a, b, c}, {x, y, z})", //
 				"Sqrt(Abs(a-x)^2+Abs(b-y)^2+Abs(c-z)^2)");
 		check("EuclideanDistance({-1, -1}, {1, 1})", //
@@ -7647,6 +7699,87 @@ public class LowercaseTestCase extends AbstractTestCase {
 						+ "1890403879840079255169295922593080322634775209689623239873322471161642996440906\\\n"
 						+ "533187938298969649928516003704476137795166849228875");
 
+	}
+
+	public void testFindClusters() {
+		// Test data generator http://people.cs.nctu.edu.tw/~rsliang/dbscan/testdatagen.html
+//		check("FindClusters({{83.08303244924173,58.83387754182331},{45.05445510940626,23.469642649637535},{14.96417921432294,69.0264096390456},{73.53189604333602,34.896145021310076},{73.28498173551634,33.96860806993209},{73.45828098873608,33.92584423092194},{73.9657889183145,35.73191006924026},{74.0074097183533,36.81735596177168},{73.41247541410848,34.27314856695011},{73.9156256353017,36.83206791547127},{74.81499205809087,37.15682749846019},{74.03144880081527,37.57399178552441},{74.51870941207744,38.674258946906775},{74.50754595105536,35.58903978415765},{74.51322752749547,36.030572259100154},{59.27900996617973,46.41091720294207},{59.73744793841615,46.20015558367595},{58.81134076672606,45.71150126331486},{58.52225539437495,47.416083617601544},{58.218626647023484,47.36228902172297},{60.27139669447206,46.606106348801404},{60.894962462363765,46.976924697402865},{62.29048673878424,47.66970563563518},{61.03857608977705,46.212924720020965}}, 2.0, \r\n" + 
+//				"5, Method->\"DBSCAN\", DistanceFunction->EuclideanDistance)",//
+//				"{{{73.5319,34.89615},{73.28498,33.96861},{73.45828,33.92584},{73.96579,35.73191},{74.00741,36.81736},{73.41248,34.27315},{73.91563,36.83207},{74.50755,35.58904},{74.51323,36.03057},{74.81499,37.15683},{74.03145,37.57399},{74.51871,38.67426}},{{59.27901,46.41092},{59.73745,46.20016},{58.81134,45.7115},{58.52226,47.41608},{58.21863,47.36229},{60.2714,46.60611},{60.89496,46.97692},{61.03858,46.21292},{62.29049,47.66971}}}");
+//		check("FindClusters({{ 83.08303244924173, 58.83387754182331 },\n" + //
+//				"{ 45.05445510940626, 23.469642649637535 },\n" + //
+//				"{ 14.96417921432294, 69.0264096390456 },\n" + //
+//				"{ 73.53189604333602, 34.896145021310076 },\n" + //
+//				"{ 73.28498173551634, 33.96860806993209 },\n" + //
+//				"{ 73.45828098873608, 33.92584423092194 },\n" + //
+//				"{ 73.9657889183145, 35.73191006924026 },\n" + //
+//				"{ 74.0074097183533, 36.81735596177168 },\n" + //
+//				"{ 73.41247541410848, 34.27314856695011 },\n" + //
+//				"{ 73.9156256353017, 36.83206791547127 },\n" + //
+//				"{ 74.81499205809087, 37.15682749846019 },\n" + //
+//				"{ 74.03144880081527, 37.57399178552441 },\n" + //
+//				"{ 74.51870941207744, 38.674258946906775 },\n" + //
+//				"{ 74.50754595105536, 35.58903978415765 },\n" + //
+//				"{ 74.51322752749547, 36.030572259100154 },\n" + //
+//				"{ 59.27900996617973, 46.41091720294207 },\n" + //
+//				"{ 59.73744793841615, 46.20015558367595 },\n" + //
+//				"{ 58.81134076672606, 45.71150126331486 },\n" + //
+//				"{ 58.52225539437495, 47.416083617601544 },\n" + //
+//				"{ 58.218626647023484, 47.36228902172297 },\n" + //
+//				"{ 60.27139669447206, 46.606106348801404 },\n" + //
+//				"{ 60.894962462363765, 46.976924697402865 },\n" + //
+//				"{ 62.29048673878424, 47.66970563563518 },\n" + //
+//				"{ 61.03857608977705, 46.212924720020965 },\n" + //
+//				"{ 60.16916214139201, 45.18193661351688 },\n" + //
+//				"{ 59.90036905976012, 47.555364347063005 },\n" + //
+//				"{ 62.33003634144552, 47.83941489877179 },\n" + //
+//				"{ 57.86035536718555, 47.31117930193432 },\n" + //
+//				"{ 58.13715479685925, 48.985960494028404 },\n" + //
+//				"{ 56.131923963548616, 46.8508904252667 },\n" + //
+//				"{ 55.976329887053, 47.46384037658572 },\n" + //
+//				"{ 56.23245975235477, 47.940035191131756 },\n" + //
+//				"{ 58.51687048212625, 46.622885352699086 },\n" + //
+//				"{ 57.85411081905477, 45.95394361577928 },\n" + //
+//				"{ 56.445776311447844, 45.162093662656844 },\n" + //
+//				"{ 57.36691949656233, 47.50097194337286 },\n" + //
+//				"{ 58.243626387557015, 46.114052729681134 },\n" + //
+//				"{ 56.27224595635198, 44.799080066150054 },\n" + //
+//				"{ 57.606924816500396, 46.94291057763621 },\n" + //
+//				"{ 30.18714230041951, 13.877149710431695 },\n" + //
+//				"{ 30.449448810657486, 13.490778346545994 },\n" + //
+//				"{ 30.295018390286714, 13.264889000216499 },\n" + //
+//				"{ 30.160201832884923, 11.89278262341395 },\n" + //
+//				"{ 31.341509791789576, 15.282655921997502 },\n" + //
+//				"{ 31.68601630325429, 14.756873246748 },\n" + //
+//				"{ 29.325963742565364, 12.097849250072613 },\n" + //
+//				"{ 29.54820742388256, 13.613295356975868 },\n" + //
+//				"{ 28.79359608888626, 10.36352064087987 },\n" + //
+//				"{ 31.01284597092308, 12.788479208014905 },\n" + //
+//				"{ 27.58509216737002, 11.47570110601373 },\n" + //
+//				"{ 28.593799561727792, 10.780998203903437 },\n" + //
+//				"{ 31.356105766724795, 15.080316198524088 },\n" + //
+//				"{ 31.25948503636755, 13.674329151166603 },\n" + //
+//				"{ 32.31590076372959, 14.95261758659035 },\n" + //
+//				"{ 30.460413702763617, 15.88402809202671 },\n" + //
+//				"{ 32.56178203062154, 14.586076852632686 },\n" + //
+//				"{ 32.76138648530468, 16.239837325178087 },\n" + //
+//				"{ 30.1829453331884, 14.709592407103628 },\n" + //
+//				"{ 29.55088173528202, 15.0651247180067 },\n" + //
+//				"{ 29.004155302187428, 14.089665298582986 },\n" + //
+//				"{ 29.339624439831823, 13.29096065578051 },\n" + //
+//				"{ 30.997460327576846, 14.551914158277214 },\n" + //
+//				"{ 30.66784126125276, 16.269703107886016 }},2.0,5,Method->\"DBSCAN\", DistanceFunction->EuclideanDistance)", //
+//				"{{{73.5319,34.89615},{73.28498,33.96861},{73.45828,33.92584},{73.96579,35.73191},{74.00741,36.81736},{73.41248,34.27315},{73.91563,36.83207},{74.50755,35.58904},{74.51323,36.03057},{74.81499,37.15683},{74.03145,37.57399},{74.51871,38.67426}},"//
+//						+ "{{59.27901,46.41092},{59.73745,46.20016},{58.81134,45.7115},{58.52226,47.41608},{58.21863,47.36229},{60.2714,46.60611},{60.89496,46.97692},{61.03858,46.21292},{60.16916,45.18194},{59.90037,47.55536},{57.86036,47.31118},{58.51687,46.62289},{57.85411,45.95394},{58.24363,46.11405},{57.60692,46.94291},{58.13715,48.98596},{57.36692,47.50097},{62.29049,47.66971},{62.33004,47.83941},{56.13192,46.85089},{55.97633,47.46384},{56.23246,47.94004},{56.44578,45.16209},{56.27225,44.79908}},"
+//						+ "{{30.18714,13.87715},{30.44945,13.49078},{30.29502,13.26489},{30.1602,11.89278},{31.34151,15.28266},{31.68602,14.75687},{29.32596,12.09785},{29.54821,13.6133},{31.01285,12.78848},{31.35611,15.08032},{31.25949,13.67433},{30.18295,14.70959},{29.55088,15.06512},{29.00416,14.08967},{29.33962,13.29096},{30.99746,14.55191},{28.5938,10.781},{32.3159,14.95262},{30.46041,15.88403},{32.56178,14.58608},{32.76139,16.23984},{30.66784,16.2697},{28.7936,10.36352},{27.58509,11.4757}}}");
+//
+//		check("FindClusters({{2.5, 3.1}, {5.9, 3.4}, {10, 15}, {2.2, 1.5}, {100, 7.5}})", //
+//				"{{{2.5,3.1},{5.9,3.4},{2.2,1.5}},{{100.0,7.5}},{{10.0,15.0}}}");
+//		check("FindClusters({1, 2, 3, 4, 5, 6, 7, 8, 9})", //
+//				"{{1.0,2.0,3.0},{6.0,7.0,8.0,9.0},{4.0,5.0}}");
+//		// TODO order results?
+//		check("FindClusters({1, 2, 10, 12, 3, 1, 13, 25},4)", //
+//				"{{1.0,2.0,3.0,1.0},{12.0,13.0},{25.0},{10.0}}");
 	}
 
 	public void testFindFit() {
@@ -10378,7 +10511,7 @@ public class LowercaseTestCase extends AbstractTestCase {
 				"ett­hundra­tjugo­tre­tusen sju");
 		check("IntegerName(-123007,\"Tongan\")", //
 				"minus ett­hundra­tjugo­tre­tusen sju");
-		
+
 		// check("IntegerName(123007,\"Latin\")", //
 		// "ciento veintitrés mil siete");
 		// check("IntegerName(-123007,\"Latin\")", //
@@ -11665,63 +11798,38 @@ public class LowercaseTestCase extends AbstractTestCase {
 						"}");
 		// JSXGraph.org syntax
 		check("JSForm(ListPlot(Prime(Range(25))))", //
-				"var board = JXG.JSXGraph.initBoard('jxgbox', {axis:true,boundingbox:[-1.85,102.3,27.85,-3.3]});\n" + //
-						"board.suspendUpdate();\n" + //
-						"\n" + //
-						"board.create('point', [function() {return 1;},function() {return 2;}],  {name:'', face:'o', size: 2 } );\n"
-						+ //
-						"board.create('point', [function() {return 2;},function() {return 3;}],  {name:'', face:'o', size: 2 } );\n"
-						+ //
-						"board.create('point', [function() {return 3;},function() {return 5;}],  {name:'', face:'o', size: 2 } );\n"
-						+ //
-						"board.create('point', [function() {return 4;},function() {return 7;}],  {name:'', face:'o', size: 2 } );\n"
-						+ //
-						"board.create('point', [function() {return 5;},function() {return 11;}],  {name:'', face:'o', size: 2 } );\n"
-						+ //
-						"board.create('point', [function() {return 6;},function() {return 13;}],  {name:'', face:'o', size: 2 } );\n"
-						+ //
-						"board.create('point', [function() {return 7;},function() {return 17;}],  {name:'', face:'o', size: 2 } );\n"
-						+ //
-						"board.create('point', [function() {return 8;},function() {return 19;}],  {name:'', face:'o', size: 2 } );\n"
-						+ //
-						"board.create('point', [function() {return 9;},function() {return 23;}],  {name:'', face:'o', size: 2 } );\n"
-						+ //
-						"board.create('point', [function() {return 10;},function() {return 29;}],  {name:'', face:'o', size: 2 } );\n"
-						+ //
-						"board.create('point', [function() {return 11;},function() {return 31;}],  {name:'', face:'o', size: 2 } );\n"
-						+ //
-						"board.create('point', [function() {return 12;},function() {return 37;}],  {name:'', face:'o', size: 2 } );\n"
-						+ //
-						"board.create('point', [function() {return 13;},function() {return 41;}],  {name:'', face:'o', size: 2 } );\n"
-						+ //
-						"board.create('point', [function() {return 14;},function() {return 43;}],  {name:'', face:'o', size: 2 } );\n"
-						+ //
-						"board.create('point', [function() {return 15;},function() {return 47;}],  {name:'', face:'o', size: 2 } );\n"
-						+ //
-						"board.create('point', [function() {return 16;},function() {return 53;}],  {name:'', face:'o', size: 2 } );\n"
-						+ //
-						"board.create('point', [function() {return 17;},function() {return 59;}],  {name:'', face:'o', size: 2 } );\n"
-						+ //
-						"board.create('point', [function() {return 18;},function() {return 61;}],  {name:'', face:'o', size: 2 } );\n"
-						+ //
-						"board.create('point', [function() {return 19;},function() {return 67;}],  {name:'', face:'o', size: 2 } );\n"
-						+ //
-						"board.create('point', [function() {return 20;},function() {return 71;}],  {name:'', face:'o', size: 2 } );\n"
-						+ //
-						"board.create('point', [function() {return 21;},function() {return 73;}],  {name:'', face:'o', size: 2 } );\n"
-						+ //
-						"board.create('point', [function() {return 22;},function() {return 79;}],  {name:'', face:'o', size: 2 } );\n"
-						+ //
-						"board.create('point', [function() {return 23;},function() {return 83;}],  {name:'', face:'o', size: 2 } );\n"
-						+ //
-						"board.create('point', [function() {return 24;},function() {return 89;}],  {name:'', face:'o', size: 2 } );\n"
-						+ //
-						"board.create('point', [function() {return 25;},function() {return 97;}],  {name:'', face:'o', size: 2 } );\n"
-						+ //
-						"\n" + //
-						"\n" + //
-						"board.unsuspendUpdate();\n" + //
-						"");
+				"var board = JXG.JSXGraph.initBoard('jxgbox', {axis:true,boundingbox:[-0.8,102.3,27.8,-3.3]});\n" + 
+				"board.suspendUpdate();\n" + 
+				"\n" + 
+				"board.create('point', [function() {return 1;},function() {return 2;}],  {color:'#5e81b5' ,name:'', face:'o', size: 2 } );\n" + 
+				"board.create('point', [function() {return 2;},function() {return 3;}],  {color:'#5e81b5' ,name:'', face:'o', size: 2 } );\n" + 
+				"board.create('point', [function() {return 3;},function() {return 5;}],  {color:'#5e81b5' ,name:'', face:'o', size: 2 } );\n" + 
+				"board.create('point', [function() {return 4;},function() {return 7;}],  {color:'#5e81b5' ,name:'', face:'o', size: 2 } );\n" + 
+				"board.create('point', [function() {return 5;},function() {return 11;}],  {color:'#5e81b5' ,name:'', face:'o', size: 2 } );\n" + 
+				"board.create('point', [function() {return 6;},function() {return 13;}],  {color:'#5e81b5' ,name:'', face:'o', size: 2 } );\n" + 
+				"board.create('point', [function() {return 7;},function() {return 17;}],  {color:'#5e81b5' ,name:'', face:'o', size: 2 } );\n" + 
+				"board.create('point', [function() {return 8;},function() {return 19;}],  {color:'#5e81b5' ,name:'', face:'o', size: 2 } );\n" + 
+				"board.create('point', [function() {return 9;},function() {return 23;}],  {color:'#5e81b5' ,name:'', face:'o', size: 2 } );\n" + 
+				"board.create('point', [function() {return 10;},function() {return 29;}],  {color:'#5e81b5' ,name:'', face:'o', size: 2 } );\n" + 
+				"board.create('point', [function() {return 11;},function() {return 31;}],  {color:'#5e81b5' ,name:'', face:'o', size: 2 } );\n" + 
+				"board.create('point', [function() {return 12;},function() {return 37;}],  {color:'#5e81b5' ,name:'', face:'o', size: 2 } );\n" + 
+				"board.create('point', [function() {return 13;},function() {return 41;}],  {color:'#5e81b5' ,name:'', face:'o', size: 2 } );\n" + 
+				"board.create('point', [function() {return 14;},function() {return 43;}],  {color:'#5e81b5' ,name:'', face:'o', size: 2 } );\n" + 
+				"board.create('point', [function() {return 15;},function() {return 47;}],  {color:'#5e81b5' ,name:'', face:'o', size: 2 } );\n" + 
+				"board.create('point', [function() {return 16;},function() {return 53;}],  {color:'#5e81b5' ,name:'', face:'o', size: 2 } );\n" + 
+				"board.create('point', [function() {return 17;},function() {return 59;}],  {color:'#5e81b5' ,name:'', face:'o', size: 2 } );\n" + 
+				"board.create('point', [function() {return 18;},function() {return 61;}],  {color:'#5e81b5' ,name:'', face:'o', size: 2 } );\n" + 
+				"board.create('point', [function() {return 19;},function() {return 67;}],  {color:'#5e81b5' ,name:'', face:'o', size: 2 } );\n" + 
+				"board.create('point', [function() {return 20;},function() {return 71;}],  {color:'#5e81b5' ,name:'', face:'o', size: 2 } );\n" + 
+				"board.create('point', [function() {return 21;},function() {return 73;}],  {color:'#5e81b5' ,name:'', face:'o', size: 2 } );\n" + 
+				"board.create('point', [function() {return 22;},function() {return 79;}],  {color:'#5e81b5' ,name:'', face:'o', size: 2 } );\n" + 
+				"board.create('point', [function() {return 23;},function() {return 83;}],  {color:'#5e81b5' ,name:'', face:'o', size: 2 } );\n" + 
+				"board.create('point', [function() {return 24;},function() {return 89;}],  {color:'#5e81b5' ,name:'', face:'o', size: 2 } );\n" + 
+				"board.create('point', [function() {return 25;},function() {return 97;}],  {color:'#5e81b5' ,name:'', face:'o', size: 2 } );\n" + 
+				"\n" + 
+				"\n" + 
+				"board.unsuspendUpdate();\n" + 
+				"");
 	}
 
 	public void testJoin() {
@@ -13234,6 +13342,8 @@ public class LowercaseTestCase extends AbstractTestCase {
 	}
 
 	public void testManhattanDistance() {
+		check("ManhattanDistance({-1, -1}, {1.0, 1})", //
+				"4.0");
 		check("ManhattanDistance({-1, -1}, {1, 1})", //
 				"4");
 	}
@@ -16414,6 +16524,9 @@ public class LowercaseTestCase extends AbstractTestCase {
 	}
 
 	public void testPatternAndRules() {
+
+		check("f((-1)^i_*x_^(2*i_+1)/(2*i_+1)!, {i_Symbol,0,Infinity}) := Sin(x) /;  FreeQ(x,i); f((-1)^i*x^(2*i+1)/(2*i+1)!, {i,0,Infinity})", //
+				"Sin(x)");
 		check("f(a_.*x_^j_.,x_):={a,x,j}; f(a*x*z,x)", //
 				"{a*z,x,1}");
 		check("f(a_.*x_^j_.,x_):={a,x,j}; f(a*b*x^3,x)", //
@@ -21332,6 +21445,30 @@ public class LowercaseTestCase extends AbstractTestCase {
 				"SingularValueDecomposition({1,{2}})");
 	}
 
+	public void testSignature() {
+		check("Signature({1,2,3,4})", //
+				"1");
+		check("Signature({1,4,3,2})", //
+				"-1");
+		check("Signature({1,2,3,2})", //
+				"0");
+
+		check("Signature({a,b,c})", //
+				"1");
+		check("Signature({a,b,c,d})", //
+				"1");
+		check("Signature({a,c,b})", //
+				"-1");
+		check("Signature({a,c,b,d})", //
+				"-1");
+		check("Signature({a,b,b})", //
+				"0");
+		check("Select(Permutations({a,b,c,d}),Signature(#)==1&)", //
+				"{{a,b,c,d},{a,c,d,b},{a,d,b,c},{b,a,d,c},{b,c,a,d},{b,d,c,a},{c,a,b,d},{c,b,d,a},{c,d,a,b},{d,a,c,b},{d,b,a,c},{d,c,b,a}}");
+		check("Array(Signature({##})&,{3,3,3})", //
+				"{{{0,0,0},{0,0,1},{0,-1,0}},{{0,0,-1},{0,0,0},{1,0,0}},{{0,1,0},{-1,0,0},{0,0,0}}}");
+	}
+
 	public void testSign() {
 		check("Sign(Sign(z))", //
 				"Sign(z)");
@@ -22582,7 +22719,12 @@ public class LowercaseTestCase extends AbstractTestCase {
 	}
 
 	public void testSquaredEuclideanDistance() {
-		// check("SquaredEuclideanDistance(-7, 5)", "144");
+		check("SquaredEuclideanDistance({-7, 5.0}, {1, 1})", //
+				"80.0");
+		check("SquaredEuclideanDistance({-1, -1}, {1.5, 1})", //
+				"10.25");
+		check("SquaredEuclideanDistance({-7, 5}, {1, 1})", //
+				"80");
 		check("SquaredEuclideanDistance({-1, -1}, {1, 1})", //
 				"8");
 
@@ -23104,6 +23246,32 @@ public class LowercaseTestCase extends AbstractTestCase {
 	}
 
 	public void testSum() {
+		check("Sum((-1)^i*x^(2*i+1)/(2*i+1)!, {i,0,Infinity})", //
+				"Sin(x)");
+		check("Sum((-1)^i*x^(2*i)/(2*i)!, {i,0,Infinity})", //
+				"Cos(x)");
+		check("Sum(1/(i^d),{i,1,Infinity})", //
+				"Zeta(d)");
+		check("Sum(1/(i^(-d)),{i,1,Infinity})", //
+				"Zeta(-d)");
+		check("Sum(x^(2*i+1)/(2*i+1)!,{i,0,Infinity})", //
+				"Sinh(x)");
+		check("Sum(x^(2*i)/(2*i)!,{i,0,Infinity})", //
+				"Cosh(x)");
+		check("Sum(1/(i!),{i,0,Infinity})", //
+				"E");
+		check("Sum(x^i/(i!),{i,0,Infinity})", //
+				"E^x");
+
+		check("Sum(1/Binomial(2*i,i), {i,1,Infinity})", //
+				"1/27*(9+2*Sqrt(3)*Pi)");
+		check("Sum(1/(i*Binomial(2*i,i)), {i,1,Infinity})", //
+				"Pi/(3*Sqrt(3))");
+		check("Sum(1/(i^2*Binomial(2*i,i)), {i,1,Infinity})", //
+				"Pi^2/18");
+		check("Sum((-1)^(i-1)/i, {i,1,Infinity})", //
+				"Log(2)");
+
 		check("Sum(i^a, {i,0,n})", //
 				"0^a+HarmonicNumber(n,-a)");
 
@@ -23224,8 +23392,8 @@ public class LowercaseTestCase extends AbstractTestCase {
 		check("Sum(Cos(Pi*i), {i, 1, Infinity})", //
 				"Sum(Cos(i*Pi),{i,1,Infinity})");
 		check("Sum(x^k*Sum(y^l,{l,0,4}),{k,0,4})", //
-				"1+y+y^2+y^3+y^4+x*(1+y+y^2+y^3+y^4)+x^2*(1+y+y^2+y^3+y^4)+x^3*(1+y+y^2+y^3+y^4)+x^\n"
-						+ "4*(1+y+y^2+y^3+y^4)");
+				"1+y+y^2+y^3+y^4+x*(1+y+y^2+y^3+y^4)+x^2*(1+y+y^2+y^3+y^4)+x^3*(1+y+y^2+y^3+y^4)+x^\n" + //
+						"4*(1+y+y^2+y^3+y^4)");
 		check("Sum(2^(-i), {i, 1, Infinity})", //
 				"1");
 		check("Sum((-3)^(-i), {i, 1, Infinity})", //
