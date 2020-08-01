@@ -7073,9 +7073,10 @@ public class LowercaseTestCase extends AbstractTestCase {
 				"1");
 		check("FactorialPower(100, 3)", //
 				"970200");
-		
 		check("FactorialPower(-1, 2)", //
 				"2");
+		check("FactorialPower(-1, 3)", //
+				"-6");
 		check("FactorialPower(-2, 2)", //
 				"6");
 		check("FactorialPower(-3, 2)", //
@@ -7084,6 +7085,38 @@ public class LowercaseTestCase extends AbstractTestCase {
 				"970200");
 		check("FactorialPower(-100, 3)", //
 				"-1030200");
+		check("FactorialPower(0.5, 1)", //
+				"0.5");
+		check("FactorialPower(0.5, 2)", //
+				"-0.25");
+		check("FactorialPower(0.1, 3)", //
+				"0.171");
+		check("FactorialPower(8, 2, 2)", //
+				"48");
+		check("FactorialPower(1, 2, 2)", //
+				"-1");
+		check("FactorialPower(-0.5, 3, 2)", //
+				"-5.625");
+		check("FactorialPower(0.5, 2, 3)", //
+				"-1.25");
+		check("FactorialPower(10, 3, 5)", //
+				"0");
+		check("FactorialPower(0.5, 3, 0.5)", //
+				"0.0");
+		check("FactorialPower(0.5, 3, 0.1)", //
+				"0.06");
+		check("FactorialPower(-5, 3, 0.5)", //
+				"-165.0");
+		check("FactorialPower(2-I, 1)", //
+				"2-I");
+		check("FactorialPower(1-5I, 0)", //
+				"1");
+		check("FactorialPower(2-I, 2)", //
+			    "1-I*3");
+		check("FactorialPower(2-I, 2, 2)", //
+			    "-1-I*2");
+		check("FactorialPower(2-I, 2, 0)", //
+			    "3-I*4");
 	}
 	
 	public void testFactorial() {
