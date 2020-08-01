@@ -23,6 +23,7 @@ import java.util.TreeMap;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutionException;
 
+import org.hipparchus.complex.Complex;
 import org.hipparchus.exception.MathRuntimeException;
 import org.hipparchus.util.CombinatoricsUtils;
 import org.matheclipse.core.basic.Config;
@@ -1970,19 +1971,22 @@ public final class NumberTheory {
 				IExpr x = ast.arg1();
 				IExpr n = ast.arg2();  
 				// x*(x-1)* (x-(n-1))
-				if (engine.evalTrue(F.GreaterEqual(n, F.C0))) {
-					if (engine.evalTrue(F.Equal(n, F.C0))) {
-						return F.C1;
-					} else if (engine.evalTrue(F.Equal(n, F.C1))) {
-						return x;
-					} else {
-						IExpr i = x.minus(n.dec());
-						while(engine.evalTrue(F.GreaterEqual(x, i))) {
-							result = result.multiply(x);
-							x = x.dec();
-						}
-						return result;
+				if (engine.evalTrue(F.Less(n, F.C0))) {
+					return F.NIL;
+				} else if (n.isZero()) {
+					return F.C1;
+				} else if (n.isOne()) {
+					return x;
+				} else {
+					double real = x.evalComplex().getReal();
+					double dN = n.evalDouble();
+					double i = real - dN + 1;
+					while(real >= i) {
+						result = result.multiply(x);
+						x = x.dec();
+						real--;
 					}
+					return result;
 				}
 			}
 			if (ast.isAST3()) {
@@ -1991,22 +1995,28 @@ public final class NumberTheory {
 				IExpr n = ast.arg2();
 				IExpr h = ast.arg3();
 				// x*(x-h)* (x-(n-1)*h)
-				if (engine.evalTrue(F.GreaterEqual(n, F.C0)) && engine.evalTrue(F.GreaterEqual(h, F.C0))) {
-					if (engine.evalTrue(F.Equal(n, F.C0))) {
-						return F.C1;
-					} else if (engine.evalTrue(F.Equal(n, F.C1))) {
-						return x;
-					} else if (engine.evalTrue(F.Equal(h, F.C0))) {
+				if (engine.evalTrue(F.Less(n, F.C0)) && engine.evalTrue(F.Less(h, F.C0))) {
+					return F.NIL;
+				} else if (n.isZero()) {
+					return F.C1;
+				} else if (n.isOne()) {
+					return x;
+				} else {
+					double real = x.evalComplex().getReal();
+					double dN = n.evalDouble();
+					double doubleH = h.evalDouble();
+					if (h.isZero()) {
 						while(engine.evalTrue(F.Greater(n, F.C0))) {
 							result = result.multiply(x);
 							n = n.dec();
 						}
 						return result;
 					} else {
-						IExpr i = x.minus(n.dec().multiply(h));
-						while(engine.evalTrue(F.GreaterEqual(x, i))) {
+						double i = real - (dN - 1) * doubleH;
+						while(real >= i) {
 							result = result.multiply(x);
 							x = x.minus(h);
+							real -= doubleH;
 						}
 						return result;
 					}
