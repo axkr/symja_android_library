@@ -15,3 +15,6 @@ See:
 >> Fit({{1,1},{2,4},{3,9},{4,16}},2,x)
 x^2.0
 ```
+
+### Related terms 
+[FindFit](FindFit.md), [FittedModel](FittedModel.md), [LinearModelFit](LinearModelFit.md) 
