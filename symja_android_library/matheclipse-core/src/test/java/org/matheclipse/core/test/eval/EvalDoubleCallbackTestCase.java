@@ -215,7 +215,7 @@ public class EvalDoubleCallbackTestCase extends TestCase {
 			DoubleEvaluator engine = new DoubleEvaluator();
 			engine.setCallbackFunction(CoreCallbackFunction.CONST);
 			engine.defineVariable("x", new DoubleVariable(3.0));
-			double d = engine.evaluate("InterpolatingFunction[{{0, 0}, {1, 1}, {2, 3}, {3, 4}, {4, 3}, {5, 0}}][x]");
+			double d = engine.evaluate("Interpolation[{{0, 0}, {1, 1}, {2, 3}, {3, 4}, {4, 3}, {5, 0}}][x]");
 
 			assertEquals(Double.toString(d), "4.0");
 		} catch (MathException e) {

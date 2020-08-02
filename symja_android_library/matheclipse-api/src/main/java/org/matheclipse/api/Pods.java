@@ -62,8 +62,8 @@ public class Pods {
 	public static final String JSON = "JSON";
 
 	/**
-	 * From the docs: "Mapper instances are fully thread-safe provided that ALL
-	 * configuration of the instance occurs before ANY read or write calls."
+	 * From the docs: "Mapper instances are fully thread-safe provided that ALL configuration of the instance occurs
+	 * before ANY read or write calls."
 	 */
 	public static final ObjectMapper JSON_OBJECT_MAPPER = new ObjectMapper();
 
@@ -116,7 +116,7 @@ public class Pods {
 
 		@Override
 		public Trie<String, ArrayList<IPod>> get() {
-//			Map<String, String> map = AST2Expr.PREDEFINED_SYMBOLS_MAP;
+			// Map<String, String> map = AST2Expr.PREDEFINED_SYMBOLS_MAP;
 
 			IAST[] list = ElementData1.ELEMENTS;
 			for (int i = 0; i < list.length; i++) {
@@ -303,9 +303,9 @@ public class Pods {
 					"</body>\n" + //
 					"</html>";//
 
-//	public static void main(String[] args) {
-//		System.out.println(HIGHLIGHT_IFRAME);
-//	}
+	// public static void main(String[] args) {
+	// System.out.println(HIGHLIGHT_IFRAME);
+	// }
 
 	private static void addElementData(String soundex, String value) {
 		ArrayList<IPod> list = SOUNDEX_MAP.get(soundex);
@@ -540,8 +540,10 @@ public class Pods {
 	 * @param json
 	 * @param engine
 	 * @param outExpr
-	 * @param plainText text which should obligatory be used for plaintext format
-	 * @param sinput    Symja input string
+	 * @param plainText
+	 *            text which should obligatory be used for plaintext format
+	 * @param sinput
+	 *            Symja input string
 	 * @param formats
 	 */
 	private static void createJSONFormat(ObjectNode json, EvalEngine engine, IExpr outExpr, String plainText,
@@ -845,6 +847,28 @@ public class Pods {
 						if (outExpr.isSymbol() || outExpr.isString()) {
 							String inputWord = outExpr.toString();
 							StringBuilder buf = new StringBuilder();
+							if (outExpr.isBuiltInSymbol()) {
+								inExpr = F.FunctionURL(outExpr);
+								podOut = engine.evaluate(inExpr);
+								if (podOut.isString()) {
+									int htmlFormats = formats | HTML;
+									if ((htmlFormats & PLAIN) == PLAIN) {
+										htmlFormats ^= PLAIN;
+									}
+									if ((htmlFormats & LATEX) == LATEX) {
+										htmlFormats ^= LATEX; 
+									}
+									StringBuilder html = new StringBuilder();
+									html.append("<a href=\"");
+									html.append(podOut.toString());
+									html.append("\">");
+									html.append(outExpr.toString());
+									html.append(" - Symja Java function definition</a>");
+									addSymjaPod(podsArray, inExpr, podOut, html.toString(), "Git source code",
+											"FunctionURL", htmlFormats, engine);
+									numpods++;
+								}
+							}
 							if (outExpr.isSymbol() && Documentation.getMarkdown(buf, inputWord)) {
 								DocumentationPod.addDocumentationPod(new DocumentationPod((ISymbol) outExpr), podsArray,
 										buf, formats);
@@ -1290,29 +1314,29 @@ public class Pods {
 		return null;
 	}
 
-//	private static Trie<String, ArrayList<IPod>> initSoundex() {
-//		Map<String, String> map = AST2Expr.PREDEFINED_SYMBOLS_MAP;
-//
-//		IAST[] list = ElementData1.ELEMENTS;
-//		for (int i = 0; i < list.length; i++) {
-//			String keyWord = list[i].arg3().toString();
-//			addElementData(list[i].arg2().toString().toLowerCase(), keyWord);
-//			soundexElementData(list[i].arg3().toString(), keyWord);
-//		}
-//		for (int i = 0; i < ID.Zeta; i++) {
-//			ISymbol sym = F.symbol(i);
-//			soundexHelp(sym.toString().toLowerCase(), sym);
-//		}
-//		// for (Map.Entry<String, String> entry : map.entrySet()) {
-//		// soundexHelp(entry.getKey(), entry.getKey());
-//		// }
-//		// appendSoundex();
-//		soundexHelp("cosine", F.Cos);
-//		soundexHelp("sine", F.Sin);
-//		soundexHelp("integral", F.Integrate);
-//
-//		return SOUNDEX_MAP;
-//	}
+	// private static Trie<String, ArrayList<IPod>> initSoundex() {
+	// Map<String, String> map = AST2Expr.PREDEFINED_SYMBOLS_MAP;
+	//
+	// IAST[] list = ElementData1.ELEMENTS;
+	// for (int i = 0; i < list.length; i++) {
+	// String keyWord = list[i].arg3().toString();
+	// addElementData(list[i].arg2().toString().toLowerCase(), keyWord);
+	// soundexElementData(list[i].arg3().toString(), keyWord);
+	// }
+	// for (int i = 0; i < ID.Zeta; i++) {
+	// ISymbol sym = F.symbol(i);
+	// soundexHelp(sym.toString().toLowerCase(), sym);
+	// }
+	// // for (Map.Entry<String, String> entry : map.entrySet()) {
+	// // soundexHelp(entry.getKey(), entry.getKey());
+	// // }
+	// // appendSoundex();
+	// soundexHelp("cosine", F.Cos);
+	// soundexHelp("sine", F.Sin);
+	// soundexHelp("integral", F.Integrate);
+	//
+	// return SOUNDEX_MAP;
+	// }
 
 	private static int integerPods(ArrayNode podsArray, IExpr inExpr, final IInteger outExpr, int formats,
 			EvalEngine engine) {
@@ -1777,13 +1801,11 @@ public class Pods {
 	}
 
 	/**
-	 * Test if this is a unit conversion question? If YES return
-	 * <code>F.UnitConvert(...)</code> expression
+	 * Test if this is a unit conversion question? If YES return <code>F.UnitConvert(...)</code> expression
 	 * 
 	 * @param engine
 	 * @param rest
-	 * @return <code>F.NIL</code> if it's not a <code>F.UnitConvert(...)</code>
-	 *         expression
+	 * @return <code>F.NIL</code> if it's not a <code>F.UnitConvert(...)</code> expression
 	 */
 	private static IExpr unitConvert(EvalEngine engine, IAST rest) {
 		if (rest.argSize() == 3) {

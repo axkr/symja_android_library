@@ -2,15 +2,12 @@ package org.matheclipse.core.expression.data;
 
 import java.time.LocalDateTime;
 
-import org.gavaghan.geodesy.GlobalPosition;
-import org.jgrapht.graph.AbstractBaseGraph;
-import org.matheclipse.core.builtin.GraphFunctions;
 import org.matheclipse.core.expression.DataExpr;
-import org.matheclipse.core.expression.F;
+import org.matheclipse.core.expression.S;
 import org.matheclipse.core.interfaces.IExpr;
 
-public class DateObjectExpr extends DataExpr<LocalDateTime> { 
-	
+public class DateObjectExpr extends DataExpr<LocalDateTime> {
+
 	private static final long serialVersionUID = 33260626252103830L;
 
 	/**
@@ -23,7 +20,7 @@ public class DateObjectExpr extends DataExpr<LocalDateTime> {
 	}
 
 	protected DateObjectExpr(final LocalDateTime position) {
-		super(F.DateObject, position);
+		super(S.DateObject, position);
 	}
 
 	@Override
@@ -51,9 +48,9 @@ public class DateObjectExpr extends DataExpr<LocalDateTime> {
 	public IExpr copy() {
 		return new DateObjectExpr(fData);
 	}
-	
+
 	@Override
-	public String toString() { 
-		return  fData.toString() ;
+	public String toString() {
+		return fData.toString();
 	}
 }

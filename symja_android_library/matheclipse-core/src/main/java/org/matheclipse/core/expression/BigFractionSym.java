@@ -36,19 +36,19 @@ public class BigFractionSym extends AbstractFractionSym {
 
 	BigFractionSym(BigFraction fraction) {
 		fFraction = fraction;
-		checkBitLength( );
+		checkBitLength();
 	}
 
-//	public void checkBitLength( ) {
-//		BigInteger temp = fFraction.getNumerator();
-//		if (Config.MAX_BIT_LENGTH < temp.bitLength()) {
-//			BigIntegerLimitExceeded.throwIt(temp.bitLength());
-//		}
-//		temp = fFraction.getDenominator();
-//		if (Config.MAX_BIT_LENGTH < temp.bitLength()) {
-//			BigIntegerLimitExceeded.throwIt(temp.bitLength());
-//		}
-//	}
+	// public void checkBitLength( ) {
+	// BigInteger temp = fFraction.getNumerator();
+	// if (Config.MAX_BIT_LENGTH < temp.bitLength()) {
+	// BigIntegerLimitExceeded.throwIt(temp.bitLength());
+	// }
+	// temp = fFraction.getDenominator();
+	// if (Config.MAX_BIT_LENGTH < temp.bitLength()) {
+	// BigIntegerLimitExceeded.throwIt(temp.bitLength());
+	// }
+	// }
 
 	/**
 	 * <p>
@@ -561,10 +561,11 @@ public class BigFractionSym extends AbstractFractionSym {
 	@Override
 	public int toInt() throws ArithmeticException {
 		if (toBigDenominator().equals(BigInteger.ONE)) {
-			int val = NumberUtil.toIntDefault(toBigNumerator());
-			if (val != Integer.MIN_VALUE) {
-				return val;
-			}
+			return toBigNumerator().intValueExact();
+			// int val = NumberUtil.toIntDefault(toBigNumerator());
+			// if (val != Integer.MIN_VALUE) {
+			// return val;
+			// }
 		} else if (toBigNumerator().equals(BigInteger.ZERO)) {
 			return 0;
 		}
@@ -574,10 +575,12 @@ public class BigFractionSym extends AbstractFractionSym {
 	/** {@inheritDoc} */
 	@Override
 	public int toIntDefault(int defaultValue) {
-		BigInteger bigDenominator = toBigDenominator();
-		if (bigDenominator.equals(BigInteger.ONE)) {
-			int val = bigDenominator.intValue();
-			return bigDenominator.equals(BigInteger.valueOf(val)) ? val : defaultValue;
+		if (toBigDenominator().equals(BigInteger.ONE)) {
+			try {
+				return toBigNumerator().intValueExact();
+			} catch (java.lang.ArithmeticException aex) {
+				return defaultValue;
+			}
 		}
 		return fFraction.equals(BigFraction.ZERO) ? 0 : defaultValue;
 	}

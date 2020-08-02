@@ -378,6 +378,12 @@ public class ASTRealMatrix extends AbstractAST implements Cloneable, Externaliza
 	public boolean isList() {
 		return true;
 	}
+	
+	/** {@inheritDoc} */
+	@Override
+	public boolean isListOfLists() {
+		return true;
+	}
 
 	/** {@inheritDoc} */
 	@Override
@@ -491,9 +497,10 @@ public class ASTRealMatrix extends AbstractAST implements Cloneable, Externaliza
 	 */
 	@Override
 	public IExpr[] toArray() {
-		IExpr[] result = new IExpr[matrix.getRowDimension()];
+		IExpr[] result = new IExpr[matrix.getRowDimension()+1];
+		result[0] = S.List;
 		for (int i = 0; i < result.length; i++) {
-			result[i] = new ASTRealVector(matrix.getRowVector(i), false);
+			result[i+1] = new ASTRealVector(matrix.getRowVector(i), false);
 		}
 		return result;
 	}

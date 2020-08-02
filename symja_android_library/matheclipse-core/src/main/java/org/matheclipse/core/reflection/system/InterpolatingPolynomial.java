@@ -1,14 +1,18 @@
 package org.matheclipse.core.reflection.system;
 
+import org.hipparchus.exception.LocalizedCoreFormats;
 import org.hipparchus.exception.MathIllegalArgumentException;
+import org.hipparchus.exception.MathRuntimeException;
+import org.hipparchus.util.MathArrays;
+import org.hipparchus.util.MathArrays.OrderDirection;
 import org.matheclipse.core.builtin.IOFunctions;
 import org.matheclipse.core.eval.EvalEngine;
-import org.matheclipse.core.eval.exception.Validate;
 import org.matheclipse.core.eval.interfaces.AbstractEvaluator;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IASTAppendable;
 import org.matheclipse.core.interfaces.IExpr;
+import org.matheclipse.core.interfaces.ISignedNumber;
 import org.matheclipse.core.interfaces.ISymbol;
 
 /**
@@ -45,6 +49,117 @@ public class InterpolatingPolynomial extends AbstractEvaluator {
 	}
 
 	/**
+	 * Check that the given array is sorted for real numbers. If symbolic expressions occur we don't compare.
+	 *
+	 * @param val
+	 *            Values.
+	 * @param dir
+	 *            Ordering direction.
+	 * @param strict
+	 *            Whether the order should be strict.
+	 * @param abort
+	 *            Whether to throw an exception if the check fails.
+	 * @return {@code true} if the array is sorted.
+	 * @throws MathIllegalArgumentException
+	 *             if the array is not sorted and {@code abort} is {@code true}.
+	 */
+	public static boolean checkPartialRealOrder(IExpr[] val, OrderDirection dir, boolean strict, boolean abort)
+			throws MathIllegalArgumentException {
+		ISignedNumber previous = F.C0;
+		final int max = val.length;
+		int start = max;
+		for (int i = 0; i < val.length; i++) {
+			if (val[i] instanceof ISignedNumber) {
+				previous = (ISignedNumber) val[i];
+				start = i + 1;
+				break;
+			}
+		}
+
+		int index;
+		ITEM: for (index = start; index < max; index++) {
+			if (val[index] instanceof ISignedNumber) {
+				switch (dir) {
+				case INCREASING:
+					if (strict) {
+						if (((ISignedNumber) val[index]).isLE((ISignedNumber) previous)) {
+							break ITEM;
+						}
+					} else {
+						if (((ISignedNumber) val[index]).isLT((ISignedNumber) previous)) {
+							break ITEM;
+						}
+					}
+					break;
+				case DECREASING:
+					if (strict) {
+						if (((ISignedNumber) val[index]).isGE((ISignedNumber) previous)) {
+							break ITEM;
+						}
+					} else {
+						if (((ISignedNumber) val[index]).isGT((ISignedNumber) previous)) {
+							break ITEM;
+						}
+					}
+					break;
+				default:
+					// Should never happen.
+					throw MathRuntimeException.createInternalError();
+				}
+
+				previous = (ISignedNumber) val[index];
+			}
+		}
+
+		if (index == max) {
+			// Loop completed.
+			return true;
+		}
+
+		// Loop early exit means wrong ordering.
+		if (abort) {
+			throw new MathIllegalArgumentException(
+					dir == MathArrays.OrderDirection.INCREASING
+							? (strict ? LocalizedCoreFormats.NOT_STRICTLY_INCREASING_SEQUENCE
+									: LocalizedCoreFormats.NOT_INCREASING_SEQUENCE)
+							: (strict ? LocalizedCoreFormats.NOT_STRICTLY_DECREASING_SEQUENCE
+									: LocalizedCoreFormats.NOT_DECREASING_SEQUENCE),
+					val[index], previous, index, index - 1);
+		} else {
+			return false;
+		}
+	}
+
+	/**
+	 * Check that the interpolation arrays are valid. The arrays features checked by this method are that both arrays
+	 * have the same length and this length is at least 2.
+	 *
+	 * @param x
+	 *            Interpolating points array.
+	 * @param y
+	 *            Interpolating values array.
+	 * @param abort
+	 *            Whether to throw an exception if {@code x} is not sorted.
+	 * @throws MathIllegalArgumentException
+	 *             if the array lengths are different.
+	 * @throws MathIllegalArgumentException
+	 *             if the number of points is less than 2.
+	 * @throws org.hipparchus.exception.MathIllegalArgumentException
+	 *             if {@code x} is not sorted in strictly increasing order and {@code abort} is {@code true}.
+	 * @return {@code false} if the {@code x} is not sorted in increasing order, {@code true} otherwise.
+	 * @see #evaluate(double[], double[], double)
+	 * @see #computeCoefficients()
+	 */
+	public static boolean verifyInterpolationArray(IExpr x[], IExpr y[], boolean abort)
+			throws MathIllegalArgumentException {
+		if (x.length < 2) {
+			throw new MathIllegalArgumentException(LocalizedCoreFormats.WRONG_NUMBER_OF_POINTS, 2, x.length, true);
+		}
+
+		return checkPartialRealOrder(x, MathArrays.OrderDirection.INCREASING, true, abort);
+	}
+
+	/**
 	 * Return a copy of the divided difference array.
 	 * <p>
 	 * The divided difference array is defined recursively by
@@ -71,7 +186,9 @@ public class InterpolatingPolynomial extends AbstractEvaluator {
 	 * @throws MathIllegalArgumentException
 	 *             if {@code x} is not sorted in strictly increasing order.
 	 */
-	protected static IExpr[] computeDividedDifference(final IExpr x[], final IExpr y[]) {
+	protected static IExpr[] computeDividedDifference(final IExpr x[], final IExpr y[], EvalEngine engine) {
+		// see org.hipparchus.analysis.interpolation.DividedDifferenceInterpolator
+		verifyInterpolationArray(x, y, true);
 		final IExpr[] divdiff = y.clone(); // initialization
 
 		final int n = x.length;
@@ -79,8 +196,8 @@ public class InterpolatingPolynomial extends AbstractEvaluator {
 		a[0] = divdiff[0];
 		for (int i = 1; i < n; i++) {
 			for (int j = 0; j < n - i; j++) {
-				final IExpr denominator = F.eval(F.Subtract(x[j + i], x[j]));
-				divdiff[j] = F.eval(F.Divide(F.Subtract(divdiff[j + 1], divdiff[j]), denominator));
+				final IExpr denominator = engine.evaluate(F.Subtract(x[j + i], x[j]));
+				divdiff[j] = engine.evaluate(F.Divide(F.Subtract(divdiff[j + 1], divdiff[j]), denominator));
 			}
 			a[i] = divdiff[0];
 		}
@@ -91,14 +208,16 @@ public class InterpolatingPolynomial extends AbstractEvaluator {
 	@Override
 	public IExpr evaluate(final IAST ast, EvalEngine engine) {
 		if (ast.arg1().isList()) {
+
 			final IAST list = (IAST) ast.arg1();
-			IExpr arg2 =  ast.arg2();
+			IExpr z = ast.arg2();
 			int size = list.size();
 			if (size > 1) {
 				int n = size - 1;
 				IExpr[] xv = new IExpr[n];
 				IExpr[] yv = new IExpr[n];
 				int[] dim = list.isMatrix();
+
 				if (dim != null && dim[1] == 2) {
 					if (dim[1] != 2) {
 						return F.NIL;
@@ -114,22 +233,23 @@ public class InterpolatingPolynomial extends AbstractEvaluator {
 						yv[i] = list.get(i + 1);
 					}
 				}
-				IExpr[] c = computeDividedDifference(xv, yv);
+				try {
+					IExpr[] c = new IExpr[n - 1];
+					System.arraycopy(xv, 0, c, 0, c.length);
+					// see org.hipparchus.analysis.interpolation.DividedDifferenceInterpolator
+					IExpr[] a = computeDividedDifference(xv, yv, engine);
 
-				IASTAppendable polynomial = F.PlusAlloc(16);
-				IASTAppendable[] tempPlus = new IASTAppendable[1];
-				tempPlus[0] = polynomial;
-				polynomial.append(c[0]); 
-				list.forEach(2, size, (x, i) -> {
-					IASTAppendable times = F.TimesAlloc(2);
-					IASTAppendable plus = F.PlusAlloc(8);
-					times.append(plus);
-					times.append(F.Subtract(arg2, xv[i - 2]));
-					tempPlus[0].append(times);
-					tempPlus[0] = plus;
-					tempPlus[0].append(c[i - 1]);
-				});
-				return polynomial;
+					IASTAppendable polynomial = F.PlusAlloc(16);
+					n = c.length;
+					IExpr value = a[n];
+					for (int i = n - 1; i >= 0; i--) {
+						value = F.Plus(a[i], F.Times(F.Subtract(z, c[i]), value));
+					}
+
+					return value;
+				} catch (MathRuntimeException mrex) {
+					return engine.printMessage(ast.topHead(), mrex);
+				}
 			}
 		}
 		return F.NIL;
@@ -139,9 +259,9 @@ public class InterpolatingPolynomial extends AbstractEvaluator {
 	public int[] expectedArgSize(IAST ast) {
 		return IOFunctions.ARGS_2_2;
 	}
-	
+
 	@Override
 	public void setUp(final ISymbol newSymbol) {
-		newSymbol.setAttributes(ISymbol.HOLDALL);
+//		newSymbol.setAttributes(ISymbol.HOLDALL);
 	}
 }

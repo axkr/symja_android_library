@@ -4,7 +4,7 @@ import org.jgrapht.Graph;
 import org.jgrapht.graph.DefaultDirectedWeightedGraph;
 import org.jgrapht.graph.DefaultUndirectedWeightedGraph;
 import org.matheclipse.core.expression.DataExpr;
-import org.matheclipse.core.expression.F;
+import org.matheclipse.core.expression.S;
 import org.matheclipse.core.interfaces.IExpr;
 
 public class GraphExpr<T> extends DataExpr<Graph<IExpr, T>> {
@@ -22,7 +22,7 @@ public class GraphExpr<T> extends DataExpr<Graph<IExpr, T>> {
 	}
 
 	protected GraphExpr(final Graph<IExpr, T> graph) {
-		super(F.Graph, graph);
+		super(S.Graph, graph);
 	}
 
 	@Override

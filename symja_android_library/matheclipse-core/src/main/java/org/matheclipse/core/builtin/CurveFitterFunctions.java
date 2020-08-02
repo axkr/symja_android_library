@@ -6,10 +6,12 @@ import org.hipparchus.fitting.AbstractCurveFitter;
 import org.hipparchus.fitting.PolynomialCurveFitter;
 import org.hipparchus.fitting.SimpleCurveFitter;
 import org.hipparchus.fitting.WeightedObservedPoints;
+import org.hipparchus.stat.regression.SimpleRegression;
 import org.matheclipse.core.basic.Config;
 import org.matheclipse.core.convert.Convert;
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.exception.ASTElementLimitExceeded;
+import org.matheclipse.core.eval.interfaces.AbstractEvaluator;
 import org.matheclipse.core.eval.interfaces.AbstractFunctionEvaluator;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.expression.S;
@@ -31,6 +33,7 @@ public class CurveFitterFunctions {
 		private static void init() {
 			S.FindFit.setEvaluator(new FindFit());
 			S.Fit.setEvaluator(new Fit());
+			S.LinearModelFit.setEvaluator(new LinearModelFit());
 		}
 	}
 
@@ -319,6 +322,43 @@ public class CurveFitterFunctions {
 			return F.NIL;
 		}
 
+		public int[] expectedArgSize(IAST ast) {
+			return IOFunctions.ARGS_3_3;
+		}
+	}
+
+	private final static class LinearModelFit extends AbstractEvaluator {
+
+		@Override
+		public IExpr evaluate(final IAST ast, EvalEngine engine) {
+			if (ast.arg1().isList()) {
+				int[] dim = ast.arg1().isMatrix();
+				if (dim != null && dim[1] == 2) {
+					double[][] data = ast.arg1().toDoubleMatrix();
+					// double[][] data = { { 1, 3 }, { 2, 5 }, { 3, 7 }, { 4, 14 }, { 5, 11 } };
+					SimpleRegression model = new SimpleRegression();
+					model.addData(data);
+					double[] values = new double[] { model.getIntercept(), model.getSlope() };
+					// return FittedModelExpr.newInstance(model);
+					return F.Plus(F.num(model.getIntercept()), F.Times(F.num(model.getSlope()), ast.arg3()));
+					// return new ASTRealVector(values, false);
+
+					// OLSMultipleLinearRegression regression = new OLSMultipleLinearRegression();
+					// double[] y = new double[] { 11.0, 12.0, 13.0, 14.0, 15.0, 16.0 };
+					// double[][] x = new double[6][];
+					// x[0] = new double[] { 0, 0, 0, 0, 0 };
+					// x[1] = new double[] { 2.0, 0, 0, 0, 0 };
+					// x[2] = new double[] { 0, 3.0, 0, 0, 0 };
+					// x[3] = new double[] { 0, 0, 4.0, 0, 0 };
+					// x[4] = new double[] { 0, 0, 0, 5.0, 0 };
+					// x[5] = new double[] { 0, 0, 0, 0, 6.0 };
+					// regression.newSampleData(y, x);
+				}
+			}
+			return F.NIL;
+		}
+
+		@Override
 		public int[] expectedArgSize(IAST ast) {
 			return IOFunctions.ARGS_3_3;
 		}

@@ -75,7 +75,7 @@ public class BuiltInSymbol extends Symbol implements IBuiltInSymbol {
 	 */
 	private static final long serialVersionUID = -4991038487281911261L;
 
-	protected static final DummyEvaluator DUMMY_EVALUATOR = new DummyEvaluator();
+	public static final DummyEvaluator DUMMY_EVALUATOR = new DummyEvaluator();
 
 	/**
 	 * The evaluation class of this built-in-function. See packages: package
