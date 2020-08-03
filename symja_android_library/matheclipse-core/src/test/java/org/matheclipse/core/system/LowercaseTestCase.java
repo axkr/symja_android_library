@@ -7169,6 +7169,12 @@ public class LowercaseTestCase extends AbstractTestCase {
 				"-1-I*2");
 		check("FactorialPower(2-I, 2, 0)", //
 				"3-I*4");
+		check("FactorialPower(2-I, 2, -1)", //
+				"5-I*5");
+		check("FactorialPower(1+I, 3, -2)", //
+				"6+I*22");
+		check("FactorialPower(5+6I, 2, -1.5)", //
+				"-3.5+I*69.0");
 	}
 	
 	public void testFactorial() {

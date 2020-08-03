@@ -1995,7 +1995,7 @@ public final class NumberTheory {
 				IExpr n = ast.arg2();
 				IExpr h = ast.arg3();
 				// x*(x-h)* (x-(n-1)*h)
-				if (engine.evalTrue(F.Less(n, F.C0)) || engine.evalTrue(F.Less(h, F.C0))) {
+				if (engine.evalTrue(F.Less(n, F.C0))) {
 					return F.NIL;
 				} else if (n.isZero()) {
 					return F.C1;
@@ -2011,9 +2011,17 @@ public final class NumberTheory {
 							n = n.dec();
 						}
 						return result;
-					} else {
+					} else if (engine.evalTrue(F.Greater(h, F.C0))) {
 						double i = real - (dN - 1) * doubleH;
 						while(real >= i) {
+							result = result.multiply(x);
+							x = x.minus(h);
+							real -= doubleH;
+						}
+						return result;
+					} else {
+						double i = real - (dN - 1) * doubleH;
+						while(real <= i) {
 							result = result.multiply(x);
 							x = x.minus(h);
 							real -= doubleH;
