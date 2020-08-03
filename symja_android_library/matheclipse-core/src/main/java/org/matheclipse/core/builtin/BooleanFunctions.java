@@ -21,8 +21,10 @@ import org.logicng.formulas.Variable;
 import org.logicng.solvers.MiniSat;
 import org.logicng.solvers.SATSolver;
 import org.logicng.transformations.cnf.BDDCNFTransformation;
+import org.logicng.transformations.dnf.CanonicalDNFEnumeration;
 import org.logicng.transformations.dnf.DNFFactorization;
-import org.logicng.transformations.qmc.QuineMcCluskeyAlgorithm;
+import org.logicng.transformations.simplification.AdvancedSimplifier;
+import org.logicng.transformations.simplification.DefaultRatingFunction;
 import org.matheclipse.core.convert.VariablesSet;
 import org.matheclipse.core.eval.EvalAttributes;
 import org.matheclipse.core.eval.EvalEngine;
@@ -921,45 +923,18 @@ public final class BooleanFunctions {
 			try {
 				FormulaFactory factory = new FormulaFactory();
 				LogicFormula lf = new LogicFormula(factory);
-				Formula formula = lf.expr2BooleanFunction(ast.arg1());
-				// only DNF form can be used in QuineMcCluskeyAlgorithm at the moment
-				formula = formula.transform(new DNFFactorization());
-				IExpr ex = lf.booleanFunction2Expr(formula);
-				IASTAppendable vars = F.Or();
-				if (ex.isOr()) {
-					IAST orAST = (IAST) ex;
-					IASTAppendable rest = F.Or();
-					for (int i = 1; i < orAST.size(); i++) {
-						IExpr temp = orAST.get(i);
-						if (temp.isAnd()) {
-							rest.append(temp);
-						} else {
-							vars.append(temp);
-						}
-					}
-					if (rest.isEmpty()) {
-						vars = F.Or();
-					} else {
-						formula = lf.expr2BooleanFunction(rest);
-					}
+				Formula formula = lf.expr2BooleanFunction(ast.arg1()); 
+				final AdvancedSimplifier simplifier = new AdvancedSimplifier(new DefaultRatingFunction());
+				FormulaTransformation transformation = transformation(ast, engine);
+				if (transformation == null) {
+					return F.NIL;
 				}
 
-				formula = QuineMcCluskeyAlgorithm.compute(formula);
+				final Formula simplified = formula.transform(simplifier).transform(transformation);
+				// formula = QuineMcCluskeyAlgorithm.compute(formula);
 				// System.out.println(formula.toString());
-				IExpr result = lf.booleanFunction2Expr(formula);
-				if (result.isOr()) {
-					vars.appendArgs((IAST) result);
-					EvalAttributes.sort(vars);
-					result = vars;
-				} else {
-					vars.append(result);
-					EvalAttributes.sort(vars);
-					result = vars;
-				}
+				IExpr result = lf.booleanFunction2Expr(simplified); 
 				return result;
-				// TODO CNF form after minimizing blows up the formula.
-				// FormulaTransformation transformation = BooleanConvert.transformation(ast, engine);
-				// return lf.booleanFunction2Expr(formula.transform(transformation));
 			} catch (final ValidateException ve) {
 				// int number validation
 				engine.printMessage(ast.topHead(), ve);
@@ -970,7 +945,7 @@ public final class BooleanFunctions {
 		}
 
 		public int[] expectedArgSize(IAST ast) {
-			return IOFunctions.ARGS_1_1;
+			return IOFunctions.ARGS_1_2;
 		}
 	}
 
@@ -4269,7 +4244,8 @@ public final class BooleanFunctions {
 	private static IExpr quantityEquals(IQuantity q1, IQuantity q2) {
 		try {
 			if (!q1.unit().equals(q2.unit())) {
-				org.matheclipse.core.tensor.qty.UnitConvert unitConvert = org.matheclipse.core.tensor.qty.UnitConvert.SI();
+				org.matheclipse.core.tensor.qty.UnitConvert unitConvert = org.matheclipse.core.tensor.qty.UnitConvert
+						.SI();
 				q2 = (IQuantity) unitConvert.to(q1.unit()).apply(q2);
 			}
 			if (q1.unit().equals(q2.unit())) {
@@ -4292,7 +4268,8 @@ public final class BooleanFunctions {
 	private static IExpr quantityUnequals(IQuantity q1, IQuantity q2) {
 		try {
 			if (!q1.unit().equals(q2.unit())) {
-				org.matheclipse.core.tensor.qty.UnitConvert unitConvert = org.matheclipse.core.tensor.qty.UnitConvert.SI();
+				org.matheclipse.core.tensor.qty.UnitConvert unitConvert = org.matheclipse.core.tensor.qty.UnitConvert
+						.SI();
 				q2 = (IQuantity) unitConvert.to(q1.unit()).apply(q2);
 			}
 			if (q1.unit().equals(q2.unit())) {
@@ -4316,7 +4293,8 @@ public final class BooleanFunctions {
 	private static int quantityCompareTo(IQuantity q1, IQuantity q2) {
 		try {
 			if (!q1.unit().equals(q2.unit())) {
-				org.matheclipse.core.tensor.qty.UnitConvert unitConvert = org.matheclipse.core.tensor.qty.UnitConvert.SI();
+				org.matheclipse.core.tensor.qty.UnitConvert unitConvert = org.matheclipse.core.tensor.qty.UnitConvert
+						.SI();
 				q2 = (IQuantity) unitConvert.to(q1.unit()).apply(q2);
 			}
 			if (q1.unit().equals(q2.unit())) {
@@ -4451,15 +4429,15 @@ public final class BooleanFunctions {
 	private static FormulaTransformation transformation(final IAST ast, EvalEngine engine) {
 		int size = ast.argSize();
 		if (size > 1 && ast.get(size).isString()) {
-			IStringX arg2 = (IStringX) ast.arg2();
-			String method = arg2.toString();
+			IStringX lastArg = (IStringX) ast.get(size);
+			String method = lastArg.toString();
 			if (method.equals("DNF") || method.equals("SOP")) {
 				return new DNFFactorization();
 			} else if (method.equals("CNF") || method.equals("POS")) {
 				return new BDDCNFTransformation();// new CNFFactorization( );
 			}
 			// `1` currently not supported in `2`.
-			IOFunctions.printMessage(ast.topHead(), "unsupported", F.List(arg2, F.Method), engine);
+			IOFunctions.printMessage(ast.topHead(), "unsupported", F.List(lastArg, F.Method), engine);
 			return null;
 		}
 		return new DNFFactorization();

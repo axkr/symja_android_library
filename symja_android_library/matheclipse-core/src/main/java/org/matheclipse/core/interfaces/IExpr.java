@@ -159,6 +159,9 @@ public interface IExpr extends Comparable<IExpr>, GcdRingElem<IExpr>, Serializab
 
 	public final static int TIMEOBJECTEXPRID = DATAID + 6;
 
+	public final static int FITTEDMODELID = DATAID + 7;
+	
+	public final static int INTERPOLATEDFUNCTONID = DATAID + 8;
 	/**
 	 * Operator overloading for Scala operator <code>/</code>. Calls <code>divide(that)</code>.
 	 * 
@@ -1900,7 +1903,7 @@ public interface IExpr extends Comparable<IExpr>, GcdRingElem<IExpr>, Serializab
 	 * @return
 	 */
 	default boolean isList1() {
-		return isAST(S.List, 2);
+		return isList() && size() == 2;
 	}
 
 	/**
@@ -1909,7 +1912,7 @@ public interface IExpr extends Comparable<IExpr>, GcdRingElem<IExpr>, Serializab
 	 * @return
 	 */
 	default boolean isList2() {
-		return isAST(S.List, 3);
+		return isList() && size() == 3;
 	}
 
 	/**
@@ -1918,7 +1921,7 @@ public interface IExpr extends Comparable<IExpr>, GcdRingElem<IExpr>, Serializab
 	 * @return
 	 */
 	default boolean isList3() {
-		return isAST(S.List, 4);
+		return isList() && size() == 4;
 	}
 
 	default boolean isList(Predicate<IExpr> pred) {

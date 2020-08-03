@@ -810,11 +810,15 @@ public class BigIntegerSym extends AbstractIntegerSym {
 	/** {@inheritDoc} */
 	@Override
 	public int toIntDefault(int defaultValue) {
-		int val = fBigIntValue.intValue();
-		if (!fBigIntValue.equals(BigInteger.valueOf(val))) {
+		try {
+			return fBigIntValue.intValueExact();
+			// if (!fBigIntValue.equals(BigInteger.valueOf(val))) {
+			// return defaultValue;
+			// }
+			// return val;
+		} catch (java.lang.ArithmeticException aex) {
 			return defaultValue;
 		}
-		return val;
 	}
 
 	/**

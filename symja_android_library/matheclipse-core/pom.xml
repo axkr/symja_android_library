@@ -147,7 +147,7 @@
 		<dependency>
 			<groupId>org.logicng</groupId>
 			<artifactId>logicng</artifactId>
-			<version>1.6.2</version>
+			<version>2.0.0</version>
 		</dependency>
 		<dependency>
 			<groupId>com.itranswarp</groupId>
@@ -193,11 +193,6 @@
 			<groupId>tech.tablesaw</groupId>
 			<artifactId>tablesaw-excel</artifactId>
 			<version>0.38.1</version>
-		</dependency>
-		<dependency>
-			<groupId>org.owasp.encoder</groupId>
-			<artifactId>encoder</artifactId>
-			<version>1.2.2</version>
 		</dependency>
 	</dependencies>
 

@@ -5,8 +5,11 @@ import java.math.BigInteger;
 import java.util.concurrent.ThreadLocalRandom;
 
 import org.hipparchus.complex.Complex;
+import org.hipparchus.util.FastMath;
 import org.hipparchus.util.MathArrays;
+import org.matheclipse.core.basic.Config;
 import org.matheclipse.core.eval.EvalEngine;
+import org.matheclipse.core.eval.exception.ASTElementLimitExceeded;
 import org.matheclipse.core.eval.interfaces.AbstractFunctionEvaluator;
 import org.matheclipse.core.expression.ASTRealVector;
 import org.matheclipse.core.expression.F;
@@ -295,7 +298,6 @@ public final class RandomFunctions {
 
 		@Override
 		public IExpr evaluate(final IAST ast, EvalEngine engine) {
-
 			if (ast.isAST0()) {
 				// RandomReal() gives a double value between 0.0 and 1.0
 				ThreadLocalRandom tlr = ThreadLocalRandom.current();
@@ -317,13 +319,25 @@ public final class RandomFunctions {
 					ThreadLocalRandom tlr = ThreadLocalRandom.current();
 					return F.num(tlr.nextDouble(min, max));
 				} else {
+					boolean isNegative = false;
 					double max = engine.evalDouble(ast.arg1());
+					if (max < 0) {
+						isNegative = true;
+						max = FastMath.abs(max);
+					}
+					if (F.isZero(max)) {
+						return F.CD0;
+					}
 					ThreadLocalRandom tlr = ThreadLocalRandom.current();
-					return F.num(tlr.nextDouble(max));
+					double nextDouble = tlr.nextDouble(max);
+					if (isNegative) {
+						nextDouble *= -1;
+					}
+					return F.num(nextDouble);
 				}
 			} else if (ast.isAST2()) {
 				if (ast.arg2().isList()) {
-					if (ast.arg2().argSize()==1) {
+					if (ast.arg2().argSize() == 1) {
 						int n = ast.arg2().first().toIntDefault();
 						if (n <= 0) {
 							return F.NIL;
@@ -346,7 +360,12 @@ public final class RandomFunctions {
 			return F.NIL;
 		}
 
-		private static IExpr randomASTRealVector(final IExpr arg1 , int n, EvalEngine engine) {
+		private static IExpr randomASTRealVector(final IExpr arg1, int n, EvalEngine engine) {
+
+			if (Config.MAX_AST_SIZE < n) {
+				ASTElementLimitExceeded.throwIt(n);
+			}
+
 			double[] array = new double[n];
 			if (arg1.isList2()) {
 				double min = engine.evalDouble(arg1.first());
@@ -365,10 +384,22 @@ public final class RandomFunctions {
 				}
 
 			} else {
+				boolean isNegative = false;
 				double max = engine.evalDouble(arg1);
+				if (max < 0) {
+					isNegative = true;
+					max = FastMath.abs(max);
+				}
 				ThreadLocalRandom tlr = ThreadLocalRandom.current();
 				for (int i = 0; i < array.length; i++) {
+					if (F.isZero(max)) {
+						array[i] *= 0.0;
+						continue;
+					}
 					array[i] = tlr.nextDouble(max);
+					if (isNegative) {
+						array[i] *= -1;
+					}
 				}
 			}
 			return new ASTRealVector(array, false);

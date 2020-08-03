@@ -4,7 +4,7 @@ import java.time.LocalTime;
 import java.time.format.DateTimeFormatter;
 
 import org.matheclipse.core.expression.DataExpr;
-import org.matheclipse.core.expression.F;
+import org.matheclipse.core.expression.S;
 import org.matheclipse.core.interfaces.IExpr;
 
 public class TimeObjectExpr extends DataExpr<LocalTime> {
@@ -21,7 +21,7 @@ public class TimeObjectExpr extends DataExpr<LocalTime> {
 	}
 
 	protected TimeObjectExpr(final LocalTime value) {
-		super(F.TimeObject, value);
+		super(S.TimeObject, value);
 	}
 
 	@Override

@@ -2957,7 +2957,7 @@ public abstract class AbstractAST implements IASTMutable {
 	/** {@inheritDoc} */
 	@Override
 	public boolean isList(Predicate<IExpr> pred) {
-		if (head().equals(F.List)) {
+		if (isList()) {
 			for (int i = 1; i < size(); i++) {
 				if (!pred.test(get(i))) {
 					// the row is no list

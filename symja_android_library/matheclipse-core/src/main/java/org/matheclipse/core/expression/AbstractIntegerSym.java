@@ -720,13 +720,13 @@ public abstract class AbstractIntegerSym implements IInteger, Externalizable {
 
 	@Override
 	public IInteger factorial() {
-		int ni = toIntDefault(Integer.MIN_VALUE);
+		int ni = toIntDefault( );
 		if (ni > Integer.MIN_VALUE) {
 			return NumberTheory.factorial(ni);
 		}
 
 		int iterationLimit = EvalEngine.get().getIterationLimit();
-		if (iterationLimit >= 0) {
+		if (iterationLimit <= ni) {
 			IterationLimitExceeded.throwIt(iterationLimit, F.Factorial(this));
 		}
 		IInteger result = F.C1;

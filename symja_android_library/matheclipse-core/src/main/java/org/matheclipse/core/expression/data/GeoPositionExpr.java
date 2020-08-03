@@ -2,7 +2,7 @@ package org.matheclipse.core.expression.data;
 
 import org.gavaghan.geodesy.GlobalPosition;
 import org.matheclipse.core.expression.DataExpr;
-import org.matheclipse.core.expression.F;
+import org.matheclipse.core.expression.S;
 import org.matheclipse.core.interfaces.IExpr;
 
 public class GeoPositionExpr extends DataExpr<GlobalPosition> {
@@ -20,7 +20,7 @@ public class GeoPositionExpr extends DataExpr<GlobalPosition> {
 	}
 
 	protected GeoPositionExpr(final GlobalPosition position) {
-		super(F.GeoPosition, position);
+		super(S.GeoPosition, position);
 	}
 
 	@Override

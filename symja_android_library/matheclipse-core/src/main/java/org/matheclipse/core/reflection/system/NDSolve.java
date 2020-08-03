@@ -1,7 +1,10 @@
 package org.matheclipse.core.reflection.system;
 
 import org.hipparchus.ode.AbstractIntegrator;
+import org.hipparchus.ode.ODEState;
+import org.hipparchus.ode.ODEStateAndDerivative;
 import org.hipparchus.ode.OrdinaryDifferentialEquation;
+import org.hipparchus.ode.nonstiff.ClassicalRungeKuttaIntegrator;
 import org.hipparchus.ode.nonstiff.DormandPrince853Integrator;
 import org.matheclipse.core.basic.ToggleFeature;
 import org.matheclipse.core.builtin.IOFunctions;
@@ -74,81 +77,102 @@ public class NDSolve extends AbstractFunctionEvaluator {
 		if (!ToggleFeature.DSOLVE) {
 			return F.NIL;
 		}
-		if (ast.arg3().isAST(F.List, 4)) {
+		if (ast.arg3().isList()) {
+			final IAST tRangeList = (IAST) ast.arg3();
+			if (!(tRangeList.isAST2() || //
+					tRangeList.isAST3())) {
+				return F.NIL;
+			}
 			try {
-				IAST uFunctionSymbols = Validate.checkIsVariableOrVariableList(ast, 2, engine);
-				if (!uFunctionSymbols.isPresent()) {
+				final IAST listOfVariables = Validate.checkIsVariableOrVariableList(ast, 2, engine);
+				if (!listOfVariables.isPresent()) {
 					return F.NIL;
 				}
-				int dimension = uFunctionSymbols.argSize();
-				IAST xVarList = (IAST) ast.arg3();
-				ISymbol xVar = (ISymbol) xVarList.arg1();
-				IExpr xMinExpr = xVarList.arg2();
-				IExpr xMaxExpr = xVarList.arg3();
-				if (xMinExpr.isReal() && xMaxExpr.isReal()) {
-					double xMin = ((ISignedNumber) xMinExpr).doubleValue();
-					double xMax = ((ISignedNumber) xMaxExpr).doubleValue();
-					double xStep = 0.1;
-					IASTAppendable listOfEquations = Validate.checkEquations(ast, 1).copyAppendable();
-					IExpr[][] boundaryCondition = new IExpr[2][dimension];
-					int i = 1;
-					while (i < listOfEquations.size()) {
-						IExpr equation = listOfEquations.get(i);
-						if (equation.isFree(xVar)) {
-							if (determineSingleBoundary(equation, uFunctionSymbols, xVar, boundaryCondition, engine)) {
-								listOfEquations.remove(i);
-								continue;
-							}
-						}
-						i++;
-					}
+				final int numberOfVariables = listOfVariables.argSize();
 
-					IExpr[] dotEquations = new IExpr[dimension];
-					i = 1;
-					while (i < listOfEquations.size()) {
-						IExpr equation = listOfEquations.get(i);
-						if (!equation.isFree(xVar)) {
-							if (determineSingleDotEquation(equation, uFunctionSymbols, xVar, dotEquations, engine)) {
-								listOfEquations.remove(i);
-								continue;
-							}
-						}
-						i++;
-					}
-
-					if (uFunctionSymbols.isList()) {
-						AbstractIntegrator dp853 = new DormandPrince853Integrator(1.0e-8, 100.0, 1.0e-10, 1.0e-10);
-						double[] xyz = new double[dimension];
-						for (int j = 0; j < dimension; j++) {
-							xyz[j] = ((INum) engine.evalN(boundaryCondition[1][j])).doubleValue();
-						}
-
-						OrdinaryDifferentialEquation ode = new FirstODE(engine, dotEquations, uFunctionSymbols, xVar);
-
-						IASTAppendable resultList = F.ListAlloc(16);
-
-						IAST result = F.Interpolation(resultList);
-
-						IASTAppendable list;
-						for (double tDouble = xMin; tDouble < xMax; tDouble += xStep) {
-							list = F.ListAlloc(F.num(tDouble));
-							dp853.integrate(ode, tDouble, xyz, tDouble + xStep, xyz);
-							for (int j = 0; j < xyz.length; j++) {
-								list.append(F.num(xyz[j]));
-							}
-							resultList.append(list);
-						}
-						return result;
-
-					}
+				final ISymbol timeVar = (ISymbol) tRangeList.arg1();
+				IExpr tMinExpr = F.C0;
+				IExpr tMaxExpr = tRangeList.arg2();
+				if (tRangeList.isAST3()) {
+					tMinExpr = tRangeList.arg2();
+					tMaxExpr = tRangeList.arg3();
 				}
+				final double tMin = tMinExpr.evalDouble();
+				final double tMax = tMaxExpr.evalDouble();
+				final double tStep = 0.1;
+				IASTAppendable listOfEquations = Validate.checkEquations(ast, 1).copyAppendable();
+				IExpr[][] boundaryCondition = new IExpr[2][numberOfVariables];
+				int i = 1;
+				while (i < listOfEquations.size()) {
+					IExpr equation = listOfEquations.get(i);
+					if (equation.isFree(timeVar)) {
+						if (determineSingleBoundary(equation, listOfVariables, timeVar, boundaryCondition, engine)) {
+							listOfEquations.remove(i);
+							continue;
+						}
+					}
+					i++;
+				}
+
+				IExpr[] dotEquations = new IExpr[numberOfVariables];
+				i = 1;
+				while (i < listOfEquations.size()) {
+					IExpr equation = listOfEquations.get(i);
+					if (!equation.isFree(timeVar)) {
+						if (determineSingleDotEquation(equation, listOfVariables, timeVar, dotEquations, engine)) {
+							listOfEquations.remove(i);
+							continue;
+						}
+					}
+					i++;
+				}
+
+				if (listOfVariables.isList()) {
+					AbstractIntegrator abstractIntegrator = new DormandPrince853Integrator(1.0e-8, 100.0, 1.0e-10,
+							1.0e-10);
+					// AbstractIntegrator abstractIntegrator = new ClassicalRungeKuttaIntegrator(1.0);
+					double[] primaryState = new double[numberOfVariables];
+					for (int j = 0; j < numberOfVariables; j++) {
+						primaryState[j] = ((INum) engine.evalN(boundaryCondition[1][j])).doubleValue();
+					}
+
+					OrdinaryDifferentialEquation ode = new FirstODE(engine, dotEquations, listOfVariables, timeVar);
+
+					if (listOfVariables.size() > 1) {
+						IASTAppendable[] resultLists = new IASTAppendable[numberOfVariables];
+						for (int j = 0; j < primaryState.length; j++) {
+							resultLists[j] = F.ListAlloc();
+						}
+						IASTAppendable list;
+						for (double time = tMin; time < tMax; time += tStep) {
+							final ODEStateAndDerivative finalstate = abstractIntegrator.integrate(ode,
+									new ODEState(time, primaryState), time + tStep);
+							primaryState = finalstate.getPrimaryState();
+
+							for (int j = 0; j < primaryState.length; j++) {
+								resultLists[j].append(F.List(F.num(time), F.num(primaryState[j])));
+							}
+						}
+
+						IASTAppendable primaryList = F.ListAlloc();
+						IASTAppendable secondaryList = F.ListAlloc();
+						for (int j = 1; j < listOfVariables.size(); j++) {
+							secondaryList.append(F.Rule(listOfVariables.get(j),
+									engine.evaluate(F.Interpolation(resultLists[j - 1]))));
+						}
+						primaryList.append(secondaryList);
+						return primaryList;
+					}
+
+				}
+
 			} catch (LimitException le) {
 				throw le;
 			} catch (RuntimeException rex) {
 				if (FEConfig.SHOW_STACKTRACE) {
 					rex.printStackTrace();
 				}
-
+				return engine.printMessage(ast.topHead(), rex);
 			}
 		}
 		return F.NIL;
@@ -259,7 +283,7 @@ public class NDSolve extends AbstractFunctionEvaluator {
 	 *            the <code>Plus(...)</code> expression
 	 * @param j
 	 *            the index which should be removed in <code>plusAST</code>
-	 * @param expr 
+	 * @param expr
 	 * @param negate
 	 * @param engine
 	 * @return

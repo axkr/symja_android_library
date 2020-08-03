@@ -77,6 +77,7 @@ public class IOFunctions {
 			// S.General.setEvaluator(new General());
 			S.Message.setEvaluator(new Message());
 			S.Names.setEvaluator(new Names());
+			S.Short.setEvaluator(new Short());
 			for (int i = 0; i < MESSAGES.length; i += 2) {
 				S.General.putMessage(IPatternMatcher.SET, MESSAGES[i], F.stringx(MESSAGES[i + 1]));
 			}
@@ -182,6 +183,19 @@ public class IOFunctions {
 		public int[] expectedArgSize(IAST ast) {
 			return IOFunctions.ARGS_0_1;
 		}
+	}
+
+	private static class Short extends AbstractEvaluator {
+
+		@Override
+		public IExpr evaluate(final IAST ast, EvalEngine engine) {
+			return F.stringx(shorten(ast.arg1()));
+		}
+
+		public int[] expectedArgSize(IAST ast) {
+			return IOFunctions.ARGS_1_1;
+		}
+
 	}
 
 	private final static class SystemDialogInput extends AbstractFunctionEvaluator {
@@ -656,6 +670,8 @@ public class IOFunctions {
 			"cxt", "`1` is not a valid context name.", //
 			"divz", "The argument `1` should be nonzero.", //
 			"digit", "Digit at position `1` in `2` is too large to be used in base `3`.", //
+			"dmval",
+			"Input value `1` lies outside the range of data in the interpolating function. Extrapolation will be used.",
 			"drop", "Cannot drop positions `1` through `2` in `3`.", //
 			"eqf", "`1` is not a well-formed equation.", //
 			"exact", "Argument `1` is not an exact number.", //
@@ -682,7 +698,8 @@ public class IOFunctions {
 			"itlimpartial", "Iteration limit of `1` exceeded. Returning partial results.", //
 			"itendless", "Endless iteration detected in `1` in evaluation loop.", //
 			"ivar", "`1` is not a valid variable.", //
-			"lend", "The argument at position `1` in `2` should be a vector of unsigned byte values or a Base64 encoded string.", //
+			"lend",
+			"The argument at position `1` in `2` should be a vector of unsigned byte values or a Base64 encoded string.", //
 			"level", "Level specification `1` is not of the form n, {n}, or {m, n}.", //
 			"list", "List expected at position `1` in `2`.", //
 			"listofbigints", "List of Java BigInteger numbers expected in `1`.", //
@@ -711,6 +728,7 @@ public class IOFunctions {
 			"nsmet", "This system cannot be solved with the methods available to `1`", //
 			"openx", "`1` is not open.", //
 			"optb", "Optional object `1` in `2` is not a single blank.", //
+			"optx", "Unknown option `1` in `2`.", //
 			"ovfl", "Overflow occurred in computation.", //
 			"padlevel", "The padding specification `1` involves `2` levels; the list `3` has only `4` level.", //
 			"partd", "Part specification `1` is longer than depth of object.", //
@@ -818,7 +836,7 @@ public class IOFunctions {
 			engine.printMessage(symbol.toString() + ": " + message);
 		} else {
 			for (int i = 1; i < listOfArgs.size(); i++) {
-				message = StringUtils.replace(message, "`" + (i) + "`", listOfArgs.get(i).toString());
+				message = StringUtils.replace(message, "`" + (i) + "`", shorten(listOfArgs.get(i)));
 			}
 			engine.setMessageShortcut(messageShortcut);
 			engine.printMessage(symbol.toString() + ": " + message);
@@ -842,7 +860,7 @@ public class IOFunctions {
 			return message;
 		}
 		for (int i = 1; i < listOfArgs.size(); i++) {
-			message = StringUtils.replace(message, "`" + (i) + "`", listOfArgs.get(i).toString());
+			message = StringUtils.replace(message, "`" + (i) + "`", shorten(listOfArgs.get(i)));
 		}
 		engine.setMessageShortcut(messageShortcut);
 		return message;
@@ -861,9 +879,42 @@ public class IOFunctions {
 
 	private static String rawMessage(final IAST list, String message) {
 		for (int i = 2; i < list.size(); i++) {
-			message = StringUtils.replace(message, "`" + (i - 1) + "`", list.get(i).toString());
+			message = StringUtils.replace(message, "`" + (i - 1) + "`", shorten(list.get(i)));
 		}
 		return message;
+	}
+
+	/**
+	 * Shorten the output string generated from <code>expr</code> to a maximum length of <code>80</code> characters.
+	 * Print <<SHORT>> as substitute of the middle of the expression if necessary.
+	 * 
+	 * @param expr
+	 * @return
+	 */
+	public static String shorten(IExpr expr) {
+		return shorten(expr, 80);
+	}
+
+	/**
+	 * Shorten the output string generated from <code>expr</code> to a maximum length of <code>maximuLength</code>
+	 * characters. Print <<SHORT>> as substitute of the middle of the expression if necessary.
+	 * 
+	 * @param expr
+	 * @param maximuLength
+	 *            the maximum length of the result string.
+	 * @return
+	 */
+	public static String shorten(IExpr expr, int maximuLength) {
+		String str = expr.toString();
+		if (str.length() > maximuLength) {
+			StringBuilder buf = new StringBuilder(maximuLength);
+			int halfLength = (maximuLength / 2) - 14;
+			buf.append(str.substring(0, halfLength));
+			buf.append("<<SHORT>>");
+			buf.append(str.substring(str.length() - halfLength));
+			return buf.toString();
+		}
+		return str;
 	}
 
 	public static IAST getNamesByPrefix(String name) {
@@ -918,10 +969,6 @@ public class IOFunctions {
 		int size = AST2Expr.FUNCTION_STRINGS.length;
 		IASTAppendable list = F.ListAlloc(size);
 		return list.appendArgs(0, size, i -> F.$s(AST2Expr.FUNCTION_STRINGS[i]));
-		// for (int i = 0; i < size; i++) {
-		// list.append(F.$s(AST2Expr.FUNCTION_STRINGS[i]));
-		// }
-		// return list;
 	}
 
 	private IOFunctions() {

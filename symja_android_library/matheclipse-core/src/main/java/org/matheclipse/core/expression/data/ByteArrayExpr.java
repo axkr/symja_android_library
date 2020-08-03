@@ -2,14 +2,11 @@ package org.matheclipse.core.expression.data;
 
 import java.util.Arrays;
 
-import org.gavaghan.geodesy.GlobalPosition;
 import org.matheclipse.core.expression.DataExpr;
-import org.matheclipse.core.expression.F;
+import org.matheclipse.core.expression.S;
 import org.matheclipse.core.expression.WL;
-import org.matheclipse.core.interfaces.IASTAppendable;
 import org.matheclipse.core.interfaces.IASTMutable;
 import org.matheclipse.core.interfaces.IExpr;
-import org.matheclipse.core.interfaces.INumber;
 
 public class ByteArrayExpr extends DataExpr<byte[]> {
 
@@ -28,7 +25,7 @@ public class ByteArrayExpr extends DataExpr<byte[]> {
 	}
 
 	protected ByteArrayExpr(final byte[] array) {
-		super(F.ByteArray, array);
+		super(S.ByteArray, array);
 	}
 
 	@Override

@@ -40,3 +40,6 @@ You can omit `1.0` in the parameter list because it's the default value:
 >> FindFit(Table({t, 3*Sin(3*t + 1)}, {t, -3, 3, 0.1}), a* Sin(w*t + f), {{a, 2}, w, f}, t) 
 {a->3.0,w->3.0,f->1.0}
 ```
+
+### Related terms 
+[Fit](Fit.md), [FittedModel](FittedModel.md), [LinearModelFit](LinearModelFit.md) 

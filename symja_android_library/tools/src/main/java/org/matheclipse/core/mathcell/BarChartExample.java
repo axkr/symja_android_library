@@ -12,7 +12,7 @@ public class BarChartExample extends BasePlotExample {
 
 	@Override
 	public String exampleFunction() {  
-		return "BarChart({1, -2, 3}, BarOrigin -> Left)";
+		return "BarChart({1, -2, 3}, BarOrigin -> Right)";
 	}
 
 	public static void main(String[] args) {

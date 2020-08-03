@@ -1966,27 +1966,15 @@ public final class NumberTheory {
 	private static class FactorialPower extends AbstractEvaluator {
 		@Override
 		public IExpr evaluate(final IAST ast, EvalEngine engine) {
-			if (ast.isAST2()) {
-				IExpr result = F.C1;
-				IExpr x = ast.arg1();
-				IExpr n = ast.arg2();  
-				// x*(x-1)* (x-(n-1))
-				if (engine.evalTrue(F.Less(n, F.C0))) {
-					return F.NIL;
-				} else if (n.isZero()) {
-					return F.C1;
-				} else if (n.isOne()) {
-					return x;
-				} else {
-					double real = x.evalComplex().getReal();
-					double dN = n.evalDouble();
-					double i = real - dN + 1;
-					while(real >= i) {
-						result = result.multiply(x);
-						x = x.dec();
-						real--;
-					}
-					return result;
+			IExpr n = ast.arg2();
+			int ni = n.toIntDefault();
+			if (ni >= 0) {
+        if (Config.MAX_AST_SIZE < ni) {
+					ASTElementLimitExceeded.throwIt(ni);
+				}
+				int iterationLimit = EvalEngine.get().getIterationLimit();
+				if (iterationLimit <= ni) {
+					IterationLimitExceeded.throwIt(ni, ast);
 				}
 			}
 			if (ast.isAST3()) {
@@ -2008,7 +1996,8 @@ public final class NumberTheory {
 					if (h.isZero()) {
 						while(engine.evalTrue(F.Greater(n, F.C0))) {
 							result = result.multiply(x);
-							n = n.dec();
+							x = x.dec();
+							real--;
 						}
 						return result;
 					} else if (engine.evalTrue(F.Greater(h, F.C0))) {

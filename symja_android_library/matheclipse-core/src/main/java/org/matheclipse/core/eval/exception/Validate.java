@@ -461,7 +461,7 @@ public final class Validate {
 	 *            the position which has to be a variable or list of variables.
 	 * @param engine
 	 *            engine to print a message if the expression is no variable
-	 * @return a list of symbols defined at <code>ast.get(position)</code> or <code>F.NIL</code> if not.
+	 * @return a list of symbols defined at <code>ast.get(position)</code> or <code>F.NIL</code> otherwise.
 	 */
 	public static IAST checkIsVariableOrVariableList(IAST ast, int position, EvalEngine engine) {
 		IAST vars = null;
@@ -569,17 +569,17 @@ public final class Validate {
 	 */
 	public static IASTAppendable checkEquations(final IAST ast, int position) {
 		IExpr expr = ast.get(position);
+		int size = expr.size();
+		IASTAppendable termsEqualNumberList = F.ListAlloc(size > 0 ? size : 1);
 		if (expr.isList() || expr.isAnd()) {
 			IAST listOrAndAST = (IAST) expr;
-			int size = listOrAndAST.size();
-			IASTAppendable termsEqualZeroList = F.ListAlloc(size);
-			return termsEqualZeroList.appendArgs(size, i -> checkEquation(listOrAndAST.get(i)));
-			// for (int i = 1; i < size; i++) {
-			// termsEqualZeroList.append(checkEquation(listOrAndAST.get(i)));
-			// }
-			// return termsEqualZeroList;
+			for (int i = 1; i < size; i++) {
+				checkEquation(listOrAndAST.get(i), termsEqualNumberList);
+			}
+			return termsEqualNumberList;
 		}
-		return F.ListAlloc(checkEquation(expr));
+		checkEquation(expr, termsEqualNumberList);
+		return termsEqualNumberList;
 	}
 
 	/**
@@ -648,16 +648,22 @@ public final class Validate {
 	 * 
 	 * @param expr
 	 *            the expression which should be an equation
-	 * @return
 	 */
-	private static IExpr checkEquation(IExpr expr) {
-		if (expr.isEqual()) {
+	private static void checkEquation(IExpr expr, IASTAppendable termsEqualNumberList) {
+		if (expr.isASTSizeGE(F.Equal, 3)) {
 			IAST equal = (IAST) expr;
-			return F.evalExpandAll(F.Subtract(equal.arg1(), equal.arg2()));
+			IExpr last = equal.last();
+			for (int i = 1; i < equal.size() - 1; i++) {
+				IExpr temp = F.evalExpandAll(F.Subtract(equal.get(i), last));
+				termsEqualNumberList.append(temp);
+			}
+
 		} else if (expr.isTrue()) {
-			return F.True;
+			termsEqualNumberList.append(F.True);
+			// return F.True;
 		} else if (expr.isFalse()) {
-			return F.False;
+			termsEqualNumberList.append(F.False);
+			// return F.False;
 		} else {
 			// not an equation
 			throw new ArgumentTypeException("Equal[] expression (a==b) expected instead of " + expr.toString());

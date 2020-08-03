@@ -6,6 +6,7 @@ function setupExamples() {
     });
 
     $('.example-group').click(function(e) {
+        var header = $(e.target);
         var contents = header.siblings('div.contents');
 
         contents.stop(false, true).slideToggle(500, function() {

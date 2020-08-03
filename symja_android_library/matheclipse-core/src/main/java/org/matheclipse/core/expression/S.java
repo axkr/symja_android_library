@@ -473,6 +473,9 @@ public class S {
 
 	/***/
 	public final static IBuiltInSymbol Brown = F.initFinalSymbol("Brown", ID.Brown);
+	
+	/***/
+	public final static IBuiltInSymbol BSplineFunction = F.initFinalSymbol("BSplineFunction", ID.BSplineFunction);
 
 	/***/
 	public final static IBuiltInSymbol Button = F.initFinalSymbol("Button", ID.Button);
@@ -1308,6 +1311,9 @@ public class S {
 	 */
 	public final static IBuiltInSymbol Fit = F.initFinalSymbol("Fit", ID.Fit);
 
+	/***/
+	public final static IBuiltInSymbol FittedModel = F.initFinalSymbol("FittedModel", ID.FittedModel);
+
 	/**
 	 * FiveNum({dataset}) - the Tuckey five-number summary is a set of descriptive statistics that provide information
 	 * about a `dataset`. It consists of the five most important sample percentiles:
@@ -1435,6 +1441,9 @@ public class S {
 
 	/***/
 	public final static IBuiltInSymbol FunctionRange = F.initFinalSymbol("FunctionRange", ID.FunctionRange);
+
+	/***/
+	public final static IBuiltInSymbol FunctionURL = F.initFinalSymbol("FunctionURL", ID.FunctionURL);
 
 	/** GCD(n1, n2, ...) - computes the greatest common divisor of the given integers. */
 	public final static IBuiltInSymbol GCD = F.initFinalSymbol("GCD", ID.GCD);
@@ -3248,7 +3257,10 @@ public class S {
 
 	/***/
 	public final static IBuiltInSymbol Share = F.initFinalSymbol("Share", ID.Share);
-
+	
+	/***/
+	public final static IBuiltInSymbol Short = F.initFinalSymbol("Short", ID.Short);
+	
 	/***/
 	public final static IBuiltInSymbol Show = F.initFinalSymbol("Show", ID.Show);
 

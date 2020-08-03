@@ -62,6 +62,7 @@ import org.matheclipse.core.builtin.QuantityFunctions;
 import org.matheclipse.core.builtin.RandomFunctions;
 import org.matheclipse.core.builtin.SeriesFunctions;
 import org.matheclipse.core.builtin.SimplifyFunctions;
+import org.matheclipse.core.builtin.SourceCodeFunctions;
 import org.matheclipse.core.builtin.SpecialFunctions;
 import org.matheclipse.core.builtin.StatisticsFunctions;
 import org.matheclipse.core.builtin.StringFunctions;
@@ -105,8 +106,8 @@ import org.matheclipse.core.interfaces.ISymbol;
 import org.matheclipse.core.parser.ExprParser;
 import org.matheclipse.core.parser.ExprParserFactory;
 import org.matheclipse.core.patternmatching.IPatternMap.PatternMap;
-import org.matheclipse.core.tensor.QuantityParser;
 import org.matheclipse.core.patternmatching.IPatternMatcher;
+import org.matheclipse.core.tensor.QuantityParser;
 import org.matheclipse.parser.client.FEConfig;
 import org.matheclipse.parser.client.SyntaxError;
 import org.matheclipse.parser.trie.Tries;
@@ -952,7 +953,8 @@ public class F extends S {
 			ManipulateFunction.initialize();
 			ImageFunctions.initialize();
 			EntityFunctions.initialize();
-			ClusteringFunctions.initialize();
+			ClusteringFunctions.initialize(); 
+			SourceCodeFunctions.initialize();
 			ComputationalGeometryFunctions.initialize();
 
 			F.Integrate.setEvaluator(org.matheclipse.core.reflection.system.Integrate.CONST);
@@ -3497,6 +3499,10 @@ public class F extends S {
 		return new AST2(FunctionExpand, a0, a1);
 	}
 
+	public static IAST FunctionURL(final IExpr a0) {
+		return new AST1(FunctionURL, a0);
+	}
+	
 	public static IAST Get(final IExpr a0) {
 		return new AST1(Get, a0);
 	}
@@ -3923,12 +3929,8 @@ public class F extends S {
 
 	public static IAST Interpolation(final IExpr list) {
 		return new AST1(Interpolation, list);
-	}
-
-	public static IAST InterpolatingFunction(final IExpr list) {
-		return new AST1(InterpolatingFunction, list);
-	}
-
+	} 
+	
 	public static IAST InterpolatingPolynomial(final IExpr a0, final IExpr a1) {
 		return new AST2(InterpolatingPolynomial, a0, a1);
 	}

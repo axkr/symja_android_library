@@ -6,20 +6,15 @@ import java.io.Writer;
 
 public class WriterOutputStream extends OutputStream {
 	protected Writer fWriter;
-
-	protected String fEncoding;
-
-	private byte fBuffer[];
+	protected String fEncoding; 
 
 	public WriterOutputStream(final Writer writer, final String encoding) {
-		fBuffer = new byte[1];
 		fWriter = writer;
 		fEncoding = encoding;
 
 	}
 
 	public WriterOutputStream(final Writer writer) {
-		fBuffer = new byte[1];
 		fWriter = writer;
 	}
 
@@ -56,8 +51,7 @@ public class WriterOutputStream extends OutputStream {
 
 	@Override
 	public synchronized void write(final int b) throws IOException {
-		fBuffer[0] = (byte) b;
-		write(fBuffer);
+		write(new byte[] { (byte) b });
 	}
 
 }
