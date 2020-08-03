@@ -1964,23 +1964,49 @@ public final class NumberTheory {
 	}
 
 	private static class FactorialPower extends AbstractEvaluator {
+
 		@Override
 		public IExpr evaluate(final IAST ast, EvalEngine engine) {
 			IExpr n = ast.arg2();
 			int ni = n.toIntDefault();
 			if (ni >= 0) {
-        if (Config.MAX_AST_SIZE < ni) {
+				if (Config.MAX_AST_SIZE < ni) {
 					ASTElementLimitExceeded.throwIt(ni);
 				}
 				int iterationLimit = EvalEngine.get().getIterationLimit();
 				if (iterationLimit <= ni) {
 					IterationLimitExceeded.throwIt(ni, ast);
 				}
+			} else {
+				if (n.isInteger()) {
+					return F.NIL;
+				}
 			}
-			if (ast.isAST3()) {
+
+			if (ast.isAST2()) {
 				IExpr result = F.C1;
 				IExpr x = ast.arg1();
-				IExpr n = ast.arg2();
+				// x*(x-1)* (x-(n-1))
+				if (engine.evalTrue(F.Less(n, F.C0))) {
+					return F.NIL;
+				} else if (n.isZero()) {
+					return F.C1;
+				} else if (n.isOne()) {
+					return x;
+				} else {
+					double real = x.evalComplex().getReal();
+					double dN = n.evalDouble();
+					double i = real - dN + 1;
+					while (real >= i) {
+						result = result.multiply(x);
+						x = x.dec();
+						real--;
+					}
+					return result;
+				}
+			} else if (ast.isAST3()) {
+				IExpr result = F.C1;
+				IExpr x = ast.arg1();
 				IExpr h = ast.arg3();
 				// x*(x-h)* (x-(n-1)*h)
 				if (engine.evalTrue(F.Less(n, F.C0))) {
@@ -1994,15 +2020,14 @@ public final class NumberTheory {
 					double dN = n.evalDouble();
 					double doubleH = h.evalDouble();
 					if (h.isZero()) {
-						while(engine.evalTrue(F.Greater(n, F.C0))) {
+						while (engine.evalTrue(F.Greater(n, F.C0))) {
 							result = result.multiply(x);
-							x = x.dec();
-							real--;
+							n = n.dec();
 						}
 						return result;
 					} else if (engine.evalTrue(F.Greater(h, F.C0))) {
 						double i = real - (dN - 1) * doubleH;
-						while(real >= i) {
+						while (real >= i) {
 							result = result.multiply(x);
 							x = x.minus(h);
 							real -= doubleH;
@@ -2010,7 +2035,7 @@ public final class NumberTheory {
 						return result;
 					} else {
 						double i = real - (dN - 1) * doubleH;
-						while(real <= i) {
+						while (real <= i) {
 							result = result.multiply(x);
 							x = x.minus(h);
 							real -= doubleH;
@@ -2018,6 +2043,7 @@ public final class NumberTheory {
 						return result;
 					}
 				}
+
 			}
 			return F.NIL;
 		}
@@ -4679,6 +4705,7 @@ public final class NumberTheory {
 			S.Subfactorial.setEvaluator(new Subfactorial());
 			S.Unitize.setEvaluator(new Unitize());
 		}
+
 	}
 
 	public static IInteger factorial(final IInteger x) {
