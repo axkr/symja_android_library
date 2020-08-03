@@ -1969,76 +1969,53 @@ public final class NumberTheory {
 			IExpr n = ast.arg2();
 			int ni = n.toIntDefault();
 			if (ni >= 0) {
+        if (Config.MAX_AST_SIZE < ni) {
+					ASTElementLimitExceeded.throwIt(ni);
+				}
 				int iterationLimit = EvalEngine.get().getIterationLimit();
 				if (iterationLimit <= ni) {
 					IterationLimitExceeded.throwIt(ni, ast);
 				}
-				if (Config.MAX_AST_SIZE < ni) {
-					ASTElementLimitExceeded.throwIt(ni);
-				}
-				if (ast.isAST2()) {
-					IExpr result = F.C1;
-					IExpr x = ast.arg1();
-					// x*(x-1)* (x-(n-1))
-					if (engine.evalTrue(F.Less(n, F.C0))) {
-						return F.NIL;
-					} else if (n.isZero()) {
-						return F.C1;
-					} else if (n.isOne()) {
-						return x;
-					} else {
-						double real = x.evalComplex().getReal();
-						double dN = n.evalDouble();
-						double i = real - dN + 1;
-						int counter = 0;
-						while (real >= i) {
-							if (iterationLimit <= counter++) {
-								IterationLimitExceeded.throwIt(iterationLimit, ast);
-							}
+			}
+			if (ast.isAST3()) {
+				IExpr result = F.C1;
+				IExpr x = ast.arg1();
+				IExpr n = ast.arg2();
+				IExpr h = ast.arg3();
+				// x*(x-h)* (x-(n-1)*h)
+				if (engine.evalTrue(F.Less(n, F.C0))) {
+					return F.NIL;
+				} else if (n.isZero()) {
+					return F.C1;
+				} else if (n.isOne()) {
+					return x;
+				} else {
+					double real = x.evalComplex().getReal();
+					double dN = n.evalDouble();
+					double doubleH = h.evalDouble();
+					if (h.isZero()) {
+						while(engine.evalTrue(F.Greater(n, F.C0))) {
 							result = result.multiply(x);
 							x = x.dec();
 							real--;
 						}
 						return result;
-					}
-				}
-				if (ast.isAST3()) {
-					IExpr result = F.C1;
-					IExpr x = ast.arg1();
-					IExpr h = ast.arg3();
-					// x*(x-h)* (x-(n-1)*h)
-					if (engine.evalTrue(F.Less(n, F.C0)) && engine.evalTrue(F.Less(h, F.C0))) {
-						return F.NIL;
-					} else if (n.isZero()) {
-						return F.C1;
-					} else if (n.isOne()) {
-						return x;
-					} else {
-						double real = x.evalComplex().getReal();
-						double dN = n.evalDouble();
-						double doubleH = h.evalDouble();
-						int counter = 0;
-						if (h.isZero()) {
-							while (engine.evalTrue(F.Greater(n, F.C0))) {
-								if (iterationLimit <= counter++) {
-									IterationLimitExceeded.throwIt(iterationLimit, ast);
-								}
-								result = result.multiply(x);
-								n = n.dec();
-							}
-							return result;
-						} else {
-							double i = real - (dN - 1) * doubleH;
-							while (real >= i) {
-								if (iterationLimit <= counter++) {
-									IterationLimitExceeded.throwIt(iterationLimit, ast);
-								}
-								result = result.multiply(x);
-								x = x.minus(h);
-								real -= doubleH;
-							}
-							return result;
+					} else if (engine.evalTrue(F.Greater(h, F.C0))) {
+						double i = real - (dN - 1) * doubleH;
+						while(real >= i) {
+							result = result.multiply(x);
+							x = x.minus(h);
+							real -= doubleH;
 						}
+						return result;
+					} else {
+						double i = real - (dN - 1) * doubleH;
+						while(real <= i) {
+							result = result.multiply(x);
+							x = x.minus(h);
+							real -= doubleH;
+						}
+						return result;
 					}
 				}
 			}
