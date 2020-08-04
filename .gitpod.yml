@@ -1,0 +1,3 @@
+tasks:
+  - init: mvn clean install
+    command: 'echo "mvn exec:java -pl matheclipse-core -Dexec.mainClass="org.matheclipse.core.eval.Console"'
