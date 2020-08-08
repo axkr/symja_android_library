@@ -23,6 +23,7 @@ import org.matheclipse.core.expression.ApfloatNum;
 import org.matheclipse.core.expression.Context;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.expression.Num;
+import org.matheclipse.core.expression.S;
 import org.matheclipse.core.form.DoubleToMMA;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IASTAppendable;
@@ -144,7 +145,7 @@ public class JavaDoubleFormFactory extends DoubleFormFactory {
 		return get(false);
 	}
 
-	public void convertAST(final StringBuilder buf, final IAST function)  {
+	public void convertAST(final StringBuilder buf, final IAST function) {
 		if (function.isNumericFunction()) {
 			try {
 				double value = EvalEngine.get().evalDouble(function);
@@ -167,6 +168,10 @@ public class JavaDoubleFormFactory extends DoubleFormFactory {
 			}
 		}
 		if (function.headID() > 0) {
+			if (function.isAST(S.Evaluate, 2)) {
+				convertInternal(buf, function.first());
+				return;
+			}
 			if (function.isPower()) {
 				IExpr base = function.base();
 				IExpr exponent = function.exponent();

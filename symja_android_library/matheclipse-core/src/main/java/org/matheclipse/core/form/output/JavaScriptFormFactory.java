@@ -11,13 +11,14 @@ import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.exception.ArgumentTypeException;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.expression.ID;
+import org.matheclipse.core.expression.S;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IComplex;
 import org.matheclipse.core.interfaces.IComplexNum;
 import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.interfaces.ISymbol;
 import org.matheclipse.parser.client.operator.Operator;
- 
+
 /**
  * <p>
  * Transpile an internal <code>IExpr</code> into a JavaScript string. It can especially generate JavaScript output for
@@ -387,6 +388,10 @@ public class JavaScriptFormFactory extends DoubleFormFactory {
 				}
 			}
 			buf.append("]");
+			return;
+		}
+		if (function.isAST(S.Evaluate, 2)) {
+			convertInternal(buf, function.first());
 			return;
 		}
 		if (javascriptFlavor == USE_MATHCELL) {
