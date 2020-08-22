@@ -4,5 +4,7 @@ pipelines:
   default:
     - step:
         size: 2x # Double resources available for this step.
+        caches:
+          - maven
         script:
           - cd symja_android_library && mvn clean install
