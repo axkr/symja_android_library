@@ -34,12 +34,12 @@ public class ParallelSolver extends Solver implements SolutionHandler {
 		return solvers;
 	}
 
-	@Override
-	public void setMonitor(Monitor monitor) {
-		for (Solver solver : solvers) {
-			solver.setMonitor(monitor);
-		}
-	}
+//	@Override
+//	public void setMonitor(Monitor monitor) {
+//		for (Solver solver : solvers) {
+//			solver.setMonitor(monitor);
+//		}
+//	}
 
 	@Override
 	public synchronized void stop() {

@@ -105,7 +105,7 @@ public abstract class Solver implements Runnable {
 
 	protected long count = 0;
 	
-	private Monitor monitor = null;
+//	private Monitor monitor = null;
 
 	/**
 	 * Constructs a solver for the given network (for invocation by subclass
@@ -186,17 +186,17 @@ public abstract class Solver implements Runnable {
 	 * @param monitor
 	 *            monitor
 	 */
-	public void setMonitor(Monitor monitor) {
-		this.monitor = monitor;
-		monitor.add(this);
-	}
+//	public void setMonitor(Monitor monitor) {
+//		this.monitor = monitor;
+//		monitor.add(this);
+//	}
 
 	/**
 	 * Gets the monitor.
 	 */
-	public Monitor getMonitor() {
-		return monitor;
-	}
+//	public Monitor getMonitor() {
+//		return monitor;
+//	}
 
 	/**
 	 * Resets the ID counter to be 0.
@@ -519,18 +519,18 @@ public abstract class Solver implements Runnable {
 		Thread.yield();
 		boolean better = updateBest();
 		if (isOption(BETTER)) {
-			if (monitor != null) {
-				// monitor.addData(this, bestValue);
-				int value = solution.getObjectiveIntValue();
-				monitor.addData(this, value);
-			}
+//			if (monitor != null) {
+//				// monitor.addData(this, bestValue);
+//				int value = solution.getObjectiveIntValue();
+//				monitor.addData(this, value);
+//			}
 			if (!better)
 				return;
 		} else {
-			if (monitor != null) {
-				int value = solution.getObjectiveIntValue();
-				monitor.addData(this, value);
-			}
+//			if (monitor != null) {
+//				int value = solution.getObjectiveIntValue();
+//				monitor.addData(this, value);
+//			}
 		}
 		ready = true;
 		notifyAll();
