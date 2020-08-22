@@ -1,49 +1,21 @@
 package org.matheclipse.core.builtin;
 
-import java.awt.Color;
-import java.awt.Container;
-import java.awt.Desktop;
-import java.awt.FlowLayout;
-import java.awt.GridLayout;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
-import java.awt.event.KeyEvent;
-import java.io.BufferedReader;
-import java.io.InputStreamReader;
-import java.nio.charset.StandardCharsets;
+import java.io.PrintStream;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.function.Consumer;
-
-import javax.swing.AbstractAction;
-import javax.swing.JButton;
-import javax.swing.JColorChooser;
-import javax.swing.JComponent;
-import javax.swing.JDialog;
-import javax.swing.JFileChooser;
-import javax.swing.JLabel;
-import javax.swing.JPanel;
-import javax.swing.JTextField;
-import javax.swing.KeyStroke;
-import javax.swing.event.DocumentEvent;
-import javax.swing.event.DocumentListener;
-import javax.swing.filechooser.FileSystemView;
 
 import org.apache.commons.lang3.StringUtils;
-import org.matheclipse.core.basic.Config;
 import org.matheclipse.core.convert.AST2Expr;
 import org.matheclipse.core.eval.EvalEngine;
-import org.matheclipse.core.eval.exception.ArgumentTypeException;
-import org.matheclipse.core.eval.exception.DialogReturnException;
 import org.matheclipse.core.eval.interfaces.AbstractCoreFunctionEvaluator;
 import org.matheclipse.core.eval.interfaces.AbstractEvaluator;
 import org.matheclipse.core.eval.interfaces.AbstractFunctionEvaluator;
+import org.matheclipse.core.expression.AST2;
 import org.matheclipse.core.expression.F;
-import org.matheclipse.core.expression.ID;
 import org.matheclipse.core.expression.S;
+import org.matheclipse.core.form.output.OutputFormFactory;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IASTAppendable;
-import org.matheclipse.core.interfaces.IBuiltInSymbol;
 import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.interfaces.IStringX;
 import org.matheclipse.core.interfaces.ISymbol;
@@ -62,80 +34,96 @@ public class IOFunctions {
 	private static class Initializer {
 
 		private static void init() {
-			if (Config.FILESYSTEM_ENABLED) {
-				S.Button.setEvaluator(new Button());
-				S.DefaultButton.setEvaluator(new DefaultButton());
-				S.Dynamic.setEvaluator(new Dynamic());
-				S.CancelButton.setEvaluator(new CancelButton());
-				S.DialogInput.setEvaluator(new DialogInput());
-				S.DialogReturn.setEvaluator(new DialogReturn());
-				S.Input.setEvaluator(new Input());
-				S.InputString.setEvaluator(new InputString());
-				S.SystemDialogInput.setEvaluator(new SystemDialogInput());
-			}
-
 			// S.General.setEvaluator(new General());
+			S.Echo.setEvaluator(new Echo());
+			S.EchoFunction.setEvaluator(new EchoFunction());
 			S.Message.setEvaluator(new Message());
 			S.Names.setEvaluator(new Names());
+			S.Print.setEvaluator(new Print());
 			S.Short.setEvaluator(new Short());
+			S.StyleForm.setEvaluator(new StyleForm());
 			for (int i = 0; i < MESSAGES.length; i += 2) {
 				S.General.putMessage(IPatternMatcher.SET, MESSAGES[i], F.stringx(MESSAGES[i + 1]));
 			}
 		}
 	}
 
-	private static class Button extends AbstractCoreFunctionEvaluator {
+	private static class Echo extends Print {
 
 		@Override
 		public IExpr evaluate(final IAST ast, EvalEngine engine) {
-			return F.NIL;
+			final PrintStream s = engine.getOutPrintStream();
+			final PrintStream stream;
+			if (s == null) {
+				stream = System.out;
+			} else {
+				stream = s;
+			}
+			final StringBuilder buf = new StringBuilder();
+			OutputFormFactory out = OutputFormFactory.get(engine.isRelaxedSyntax());
+			boolean[] convert = new boolean[] { true };
+			IExpr arg1 = ast.arg1();
+			IExpr result = engine.evaluate(arg1);
+			if (ast.argSize() >= 2) {
+				IExpr arg2 = engine.evaluate(ast.arg2());
+				printExpression(arg2, out, buf, convert, engine);
+				if (ast.isAST3()) {
+					IExpr arg3 = engine.evaluate(F.unaryAST1(ast.arg3(), arg1));
+					printExpression(arg3, out, buf, convert, engine);
+				} else {
+					printExpression(result, out, buf, convert, engine);
+				}
+			} else {
+				printExpression(result, out, buf, convert, engine);
+			}
+			stream.println(buf.toString());
+			return result;
 		}
 
-		@Override
-		public void setUp(ISymbol newSymbol) {
-			newSymbol.setAttributes(ISymbol.HOLDALL);
+		public int[] expectedArgSize(IAST ast) {
+			return IOFunctions.ARGS_1_3;
 		}
-
 	}
 
-	private static class CancelButton extends AbstractCoreFunctionEvaluator {
-
+	private final static class EchoFunction extends Print {
 		@Override
-		public IExpr evaluate(final IAST ast, EvalEngine engine) {
+		public IExpr evaluate(IAST ast, EvalEngine engine) {
+
+			if (ast.isAST1() && ast.head().isAST()) {
+				final int size = ast.head().size();
+				switch (size) {
+				case 1:
+					return F.unaryAST1(S.Echo, ast.arg1());
+				case 2:
+					return echo(ast.arg1(), ast.head().first(),engine);
+				case 3:
+					return F.ternaryAST3(S.Echo, ast.arg1(), ast.head().first(), ast.head().second());
+				default:
+				}
+			}
 			return F.NIL;
 		}
 
-		@Override
-		public void setUp(ISymbol newSymbol) {
-			newSymbol.setAttributes(ISymbol.HOLDALL);
+		private static IExpr echo(final IExpr arg1, IExpr headFirst, EvalEngine engine) {
+			final PrintStream s = engine.getOutPrintStream();
+			final PrintStream stream;
+			if (s == null) {
+				stream = System.out;
+			} else {
+				stream = s;
+			}
+			final StringBuilder buf = new StringBuilder();
+			OutputFormFactory out = OutputFormFactory.get(engine.isRelaxedSyntax());
+			boolean[] convert = new boolean[] { true };
+			IExpr result = engine.evaluate(arg1);
+			IExpr arg3 = engine.evaluate(F.unaryAST1(headFirst, arg1));
+			printExpression(arg3, out, buf, convert, engine);
+			stream.println(buf.toString());
+			return result;
 		}
 
-	}
-
-	private static class DefaultButton extends AbstractCoreFunctionEvaluator {
-
-		@Override
-		public IExpr evaluate(final IAST ast, EvalEngine engine) {
-			return F.NIL;
-		}
-
-		@Override
-		public void setUp(ISymbol newSymbol) {
-			newSymbol.setAttributes(ISymbol.HOLDALL);
-		}
-
-	}
-
-	private static class Dynamic extends AbstractCoreFunctionEvaluator {
-
-		@Override
-		public IExpr evaluate(final IAST ast, EvalEngine engine) {
-			return F.NIL;
-		}
-
-		@Override
-		public void setUp(ISymbol newSymbol) {
-			newSymbol.setAttributes(ISymbol.HOLDALL);
+		public int[] expectedArgSize(IAST ast) {
+			return IOFunctions.ARGS_0_2;
 		}
 
 	}
@@ -174,17 +162,6 @@ public class IOFunctions {
 
 	}
 
-	private final static class InputString extends AbstractFunctionEvaluator {
-		@Override
-		public IExpr evaluate(final IAST ast, EvalEngine engine) {
-			return inputString(ast, engine);
-		}
-
-		public int[] expectedArgSize(IAST ast) {
-			return IOFunctions.ARGS_0_1;
-		}
-	}
-
 	private static class Short extends AbstractEvaluator {
 
 		@Override
@@ -198,401 +175,14 @@ public class IOFunctions {
 
 	}
 
-	private final static class SystemDialogInput extends AbstractFunctionEvaluator {
+	private static class StyleForm extends AbstractEvaluator {
+
 		@Override
 		public IExpr evaluate(final IAST ast, EvalEngine engine) {
-			if (Desktop.isDesktopSupported() && ast.arg1().isString()) {
-				String type = ast.arg1().toString().toLowerCase();
-				if (type.equals("fileopen")) {
-					JFileChooser j = new JFileChooser(FileSystemView.getFileSystemView().getHomeDirectory());
-					j.setApproveButtonText("Open");
-					// FileNameExtensionFilter restrict = new FileNameExtensionFilter("Only .txt files", "txt");
-					// j.addChoosableFileFilter(restrict);
-					int r = j.showSaveDialog(null);
-					if (r == JFileChooser.APPROVE_OPTION) {
-						return F.stringx(j.getSelectedFile().getAbsolutePath());
-					}
-
-				} else if (type.equals("filesave")) {
-					JFileChooser j = new JFileChooser(FileSystemView.getFileSystemView().getHomeDirectory());
-					j.setApproveButtonText("Save");
-					int r = j.showSaveDialog(null);
-					if (r == JFileChooser.APPROVE_OPTION) {
-						return F.stringx(j.getSelectedFile().getAbsolutePath());
-					}
-				} else if (type.equals("directory")) {
-					JFileChooser j = new JFileChooser(FileSystemView.getFileSystemView().getHomeDirectory());
-					j.setApproveButtonText("Select");
-					j.setFileSelectionMode(JFileChooser.DIRECTORIES_ONLY);
-					int r = j.showSaveDialog(null);
-					if (r == JFileChooser.APPROVE_OPTION) {
-						return F.stringx(j.getSelectedFile().getAbsolutePath());
-					}
-				} else if (type.equals("color")) {
-					Color color = JColorChooser.showDialog(null, "ColorChooser", null);
-					if (color != null) {
-						return F.stringx(Integer.toString(color.getRGB()));
-					}
-				}
+			if (ast.head() == S.StyleForm) {
+				return ast.apply(S.Style);
 			}
 			return F.NIL;
-		}
-
-		public int[] expectedArgSize(IAST ast) {
-			return IOFunctions.ARGS_1_2;
-		}
-	}
-
-	private final static class Input extends AbstractFunctionEvaluator {
-		@Override
-		public IExpr evaluate(final IAST ast, EvalEngine engine) {
-			try {
-				IExpr str = inputString(ast, engine);
-				if (str.isPresent()) {
-					return engine.evaluate(str.toString());
-				}
-			} catch (final RuntimeException e1) {
-				//
-			}
-			return F.NIL;
-		}
-
-		public int[] expectedArgSize(IAST ast) {
-			return IOFunctions.ARGS_0_1;
-		}
-	}
-
-	private static IExpr inputString(final IAST ast, EvalEngine engine) {
-		final BufferedReader in = new BufferedReader(new InputStreamReader(System.in, StandardCharsets.UTF_8));
-		try {
-			if (ast.isAST1()) {
-				engine.getOutPrintStream().print(ast.arg1().toString());
-			}
-			final String str = in.readLine();
-			if (str != null) {
-				return F.stringx(str);
-			}
-		} catch (final Exception e1) {
-			//
-		}
-		return F.NIL;
-	}
-
-	private final static class DialogInput extends AbstractFunctionEvaluator {
-		@Override
-		public IExpr evaluate(final IAST ast, EvalEngine engine) {
-			if (Desktop.isDesktopSupported()) {
-				IAST dialogNoteBook = null;
-				if (ast.isAST2() && ast.arg2().isAST(S.DialogNotebook, 2)) {
-					dialogNoteBook = (IAST) ast.arg2();
-				} else if (ast.isAST1() && ast.arg1().isAST(S.DialogNotebook, 2)) {
-					dialogNoteBook = (IAST) ast.arg1();
-				}
-
-				IAST list;
-				if (dialogNoteBook == null) {
-					if (ast.isAST1()) {
-						if (ast.arg1().isList()) {
-							list = (IAST) ast.arg1();
-						} else {
-							list = F.List(ast.arg1());
-						}
-					} else {
-						return F.NIL;
-					}
-				} else {
-					if (dialogNoteBook.arg1().isList()) {
-						list = (IAST) dialogNoteBook.arg1();
-					} else {
-						list = F.List(dialogNoteBook.arg1());
-					}
-				}
-
-				JDialog dialog = new JDialog();
-				dialog.setTitle("DialogInput");
-				dialog.setSize(320, 200);
-				dialog.setModal(true);
-				// dialog.setLayout(new FlowLayout(FlowLayout.LEFT));
-				// dialog.setLayout(new GridLayout(list.argSize(), 1));
-				IExpr[] result = new IExpr[] { F.NIL };
-				if (addComponents(dialog, list, dialog, engine, result)) {
-					dialog.setVisible(true);
-					if (result[0].isPresent()) {
-						return result[0];
-					}
-				}
-			}
-			return F.NIL;
-		}
-
-		private static boolean addComponents(Container container, IAST list, JDialog dialog, EvalEngine engine,
-				IExpr result[]) {
-			final Consumer<IExpr> consumer = x -> {
-				try {
-					engine.evaluate(x);
-				} catch (DialogReturnException rex) {
-					result[0] = rex.getValue();
-					dialog.dispose();
-				} catch (RuntimeException rex) {
-					//
-				}
-			};
-			for (int i = 1; i < list.size(); i++) {
-				IExpr arg = list.get(i);
-				int headID = list.get(i).headID();
-				if (headID > 0) {
-					switch (headID) {
-					case ID.Button:
-						if (arg.size() == 3) {
-							final String buttonLabel = arg.first().toString();
-							createButton(dialog, container, buttonLabel, arg.second(), consumer, result, engine);
-						} else {
-							return false;
-						}
-						continue;
-					case ID.CancelButton:
-						String cancelLabel = "Cancel";
-						final IExpr cancelAction;
-						if (arg.size() == 1) {
-							cancelAction = F.DialogReturn(S.$Cancel);
-						} else if (arg.size() == 2) {
-							cancelAction = F.DialogReturn(arg.first());
-						} else if (arg.size() == 3) {
-							cancelLabel = arg.first().toString();
-							cancelAction = F.DialogReturn(arg.second());
-						} else {
-							return false;
-						}
-						createButton(dialog, container, cancelLabel, cancelAction, consumer, result, engine);
-						dialog.getRootPane().getInputMap(JComponent.WHEN_ANCESTOR_OF_FOCUSED_COMPONENT)
-								.put(KeyStroke.getKeyStroke(KeyEvent.VK_ESCAPE, 0), "CANCEL");
-						dialog.getRootPane().getActionMap().put("CANCEL", new AbstractAction() {
-							@Override
-							public void actionPerformed(ActionEvent e) {
-								consumer.accept(cancelAction);
-							}
-						});
-						continue;
-					case ID.DefaultButton:
-						String buttonLabel = "Ok";
-						IExpr buttonAction = F.DialogReturn();
-						if (arg.size() == 1) {
-						} else if (arg.size() == 2) {
-							buttonAction = F.DialogReturn(arg.first());
-						} else if (arg.size() == 3) {
-							buttonLabel = arg.first().toString();
-							buttonAction = F.DialogReturn(arg.second());
-						} else {
-							return false;
-						}
-						JButton db = createButton(dialog, container, buttonLabel, buttonAction, consumer, result,
-								engine);
-						dialog.getRootPane().setDefaultButton(db);
-						continue;
-					case ID.Column:
-						if (arg.size() == 2) {
-							IAST column;
-							if (arg.first().isList()) {
-								column = (IAST) arg.first();
-							} else {
-								column = F.List(arg.first());
-							}
-							JPanel columnPanel = new JPanel();
-							columnPanel.setLayout(new GridLayout(column.argSize(), 1));
-							container.add(columnPanel);
-							if (!addComponents(columnPanel, column, dialog, engine, result)) {
-								return false;
-							}
-						} else {
-							return false;
-						}
-						continue;
-					case ID.InputField:
-						IExpr input = S.Null;
-						int inputType = ID.String;
-						if (arg.size() == 1) {
-						} else if (arg.size() == 2) {
-							input = arg.first();
-						} else if (arg.size() == 3) {
-							input = arg.first();
-							if (arg.second().isBuiltInSymbol()) {
-								inputType = ((IBuiltInSymbol) arg.second()).ordinal();
-							}
-						} else {
-							return false;
-						}
-						createInputField(dialog, container, input, inputType, result, engine);
-						continue;
-					case ID.Row:
-						if (arg.size() == 2) {
-							IAST row;
-							if (arg.first().isList()) {
-								row = (IAST) arg.first();
-							} else {
-								row = F.List(arg.first());
-							}
-							JPanel rowPanel = new JPanel();
-							rowPanel.setLayout(new FlowLayout(FlowLayout.LEFT));
-							container.add(rowPanel);
-							if (!addComponents(rowPanel, row, dialog, engine, result)) {
-								return false;
-							}
-						} else {
-							return false;
-						}
-						continue;
-					case ID.TextCell:
-						if (arg.size() == 2) {
-							JLabel label = new JLabel(arg.first().toString());
-							container.add(label);
-						} else {
-							return false;
-						}
-						continue;
-					default:
-
-					}
-				}
-				// fallback
-				JLabel label = new JLabel(arg.toString());
-				container.add(label);
-			}
-			return true;
-		}
-
-		private static JButton createButton(JDialog dialog, Container container, String label, IExpr action,
-				final Consumer<IExpr> consumer, IExpr[] result, EvalEngine engine) {
-			JButton button = new JButton(label);
-			container.add(button);
-			button.addActionListener(new ActionListener() {
-				@Override
-				public void actionPerformed(ActionEvent e) {
-					consumer.accept(action);
-				}
-			});
-			return button;
-		}
-
-		private static class MyDocumentListener implements DocumentListener {
-			JTextField inputField;
-			ISymbol dynamic;
-			int headID;
-
-			public MyDocumentListener(JTextField inputField, ISymbol dynamic, int headID) {
-				if (dynamic != null && //
-						(!dynamic.isVariable() || dynamic.isBuiltInSymbol())) {
-					// Cannot assign to raw object `1`.
-					throw new ArgumentTypeException(
-							IOFunctions.getMessage("setraw", F.List(dynamic), EvalEngine.get()));
-				}
-				this.inputField = inputField;
-				this.dynamic = dynamic;
-				this.headID = headID;
-			}
-
-			@Override
-			public void insertUpdate(DocumentEvent e) {
-				updateFieldState();
-			}
-
-			@Override
-			public void removeUpdate(DocumentEvent e) {
-				updateFieldState();
-			}
-
-			@Override
-			public void changedUpdate(DocumentEvent e) {
-				updateFieldState();
-			}
-
-			protected void updateFieldState() {
-				if (dynamic != null) {
-					String text = inputField.getText();
-					IExpr expr = F.NIL;
-					if (headID == ID.String) {
-						expr = F.stringx(text);
-					} else if (headID == ID.Expression) {
-						expr = F.eval(F.ToExpression(F.stringx(text)));
-					} else if (headID == ID.Number) {
-						expr = F.eval(F.ToExpression(F.stringx(text)));
-						if (!expr.isNumber()) {
-							expr = F.NIL;
-						}
-					}
-					if (expr.isPresent()) {
-						dynamic.assign(expr);
-					}
-					// System.out.println(F.eval(dynamic).toString());
-				}
-			}
-		};
-
-		private static void createInputField(JDialog dialog, Container container, final IExpr action, int headID,
-				IExpr[] result, EvalEngine engine) {
-			String defaultInput = action.toString();
-			ISymbol dynamic = null;
-
-			if (action == S.Null) {
-				defaultInput = "";
-			} else if (action.isAST(S.Dynamic, 2) && action.first().isSymbol() && !action.first().isBuiltInSymbol()) {
-				dynamic = (ISymbol) action.first();
-				defaultInput = dynamic.toString();
-			}
-			JTextField inputField = new JTextField(defaultInput, 10);
-			container.add(inputField);
-
-			MyDocumentListener dl = new MyDocumentListener(inputField, dynamic, headID);
-			inputField.getDocument().addDocumentListener(dl);
-			// inputField.addActionListener(new ActionListener() {
-			// @Override
-			// public void actionPerformed(ActionEvent e) {
-			// try {
-			// System.out.println(inputField.getText());
-			// } catch (DialogReturnException rex) {
-			// result[0] = rex.getValue();
-			// dialog.dispose();
-			// } catch (RuntimeException rex) {
-			// //
-			// }
-			// }
-			// });
-		}
-
-		public int[] expectedArgSize(IAST ast) {
-			return IOFunctions.ARGS_1_2;
-		}
-	}
-
-	private final static class DialogReturn extends AbstractCoreFunctionEvaluator {
-
-		@Override
-		public IExpr evaluate(final IAST ast, EvalEngine engine) {
-			if (ast.isAST1()) {
-				IExpr arg1 = ast.arg1();
-				if (arg1.isFalse()) {
-					throw DialogReturnException.DIALOG_RETURN_FALSE;
-				}
-				if (arg1.isTrue()) {
-					throw DialogReturnException.DIALOG_RETURN_TRUE;
-				}
-				arg1 = engine.evaluate(arg1);
-				if (arg1.isFalse()) {
-					throw DialogReturnException.DIALOG_RETURN_FALSE;
-				}
-				if (arg1.isTrue()) {
-					throw DialogReturnException.DIALOG_RETURN_TRUE;
-				}
-				throw new DialogReturnException(arg1);
-			}
-			throw new DialogReturnException();
-		}
-
-		public int[] expectedArgSize(IAST ast) {
-			return IOFunctions.ARGS_0_1;
-		}
-
-		@Override
-		public void setUp(final ISymbol newSymbol) {
 		}
 
 	}
@@ -612,6 +202,47 @@ public class IOFunctions {
 
 		public int[] expectedArgSize(IAST ast) {
 			return IOFunctions.ARGS_0_1;
+		}
+
+	}
+
+	private static class Print extends AbstractCoreFunctionEvaluator {
+
+		@Override
+		public IExpr evaluate(final IAST ast, EvalEngine engine) {
+			final PrintStream s = engine.getOutPrintStream();
+			final PrintStream stream;
+			if (s == null) {
+				stream = System.out;
+			} else {
+				stream = s;
+			}
+			final StringBuilder buf = new StringBuilder();
+			OutputFormFactory out = OutputFormFactory.get(engine.isRelaxedSyntax());
+			boolean[] convert = new boolean[] { true };
+			ast.forEach(x -> {
+				IExpr temp = engine.evaluate(x);
+				printExpression(temp, out, buf, convert, engine);
+			});
+			if (!convert[0]) {
+				stream.println("ERROR-IN-OUTPUTFORM");
+				return F.Null;
+			}
+			stream.println(buf.toString());
+			return F.Null;
+		}
+
+		protected static void printExpression(IExpr x, OutputFormFactory out, final StringBuilder buf,
+				boolean[] convert, EvalEngine engine) {
+			if (x instanceof IStringX) {
+				buf.append(x.toString());
+			} else {
+				if (x.isASTSizeGE(S.Style, 2)) {
+					printExpression(x.first(), out, buf, convert, engine);
+				} else if (convert[0] && !out.convert(buf, x)) {
+					convert[0] = false;
+				}
+			}
 		}
 
 	}
