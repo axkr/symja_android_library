@@ -1,14 +1,12 @@
 package org.matheclipse.core.img;
-
-import java.awt.Color;
+  
 import java.util.stream.IntStream;
 
-import org.matheclipse.core.eval.exception.Validate;
+import org.matheclipse.core.convert.RGBColor;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IExpr;
-import org.matheclipse.core.interfaces.IInteger;
-import org.matheclipse.core.tensor.io.ImageFormat;
+import org.matheclipse.core.interfaces.IInteger; 
 
 /**
  * mappings between {@link IAST}, {@link Color}, and 0xAA:RR:GG:BB integer
@@ -32,7 +30,7 @@ public enum ColorFormat {
 	 * @param color
 	 * @return vector with {@link IExpr} entries as {R, G, B, A}
 	 */
-	public static IAST toVector(Color color) {
+	public static IAST toVector(RGBColor color) {
 		return F.List( //
 				LOOKUP[color.getRed()], //
 				LOOKUP[color.getGreen()], //
@@ -46,7 +44,7 @@ public enum ColorFormat {
 	 * @return vector with {@link IExpr} entries as {R, G, B, A}
 	 */
 	public static IAST toVector(int argb) {
-		return toVector(new Color(argb, true));
+		return toVector(new RGBColor(argb, true));
 	}
 
 	/**
@@ -56,12 +54,12 @@ public enum ColorFormat {
 	 * @throws Exception
 	 *             if either color value is outside the allowed range [0, ..., 255]
 	 */
-	public static Color toColor(IAST vector) {
+	public static RGBColor toColor(IAST vector) {
 		if (vector.size() != 5) {
 			throw new IllegalArgumentException("ColorFormat#toColor() exppects 4 arguments");
 		}
 
-		return new Color( //
+		return new RGBColor( //
 				((IInteger) vector.arg1()).toInt(), //
 				((IInteger) vector.arg2()).toInt(), //
 				((IInteger) vector.arg3()).toInt(), //
