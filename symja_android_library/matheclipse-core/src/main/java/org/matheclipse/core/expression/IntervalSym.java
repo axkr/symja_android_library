@@ -298,8 +298,10 @@ public class IntervalSym {
 	 * Replaces the most common code. Determines the result depending on the fulfillment of conditions
 	 * 
 	 * @param ast
-	 * @param exclusive, true or false
-	 * @param processors, conditions to be met
+	 * @param exclusive,
+	 *            true or false
+	 * @param processors,
+	 *            conditions to be met
 	 * @return IAST result, append value or F.NIL;
 	 */
 	private static IAST mutableProcessorConditions(final IAST ast, boolean exclusive, IExprProcessor... processors) {
@@ -912,78 +914,49 @@ public class IntervalSym {
 
 	/**
 	 * <p>
-	 * Calculate <code>Interval({lower, upper},...,...) ^ exp</code>.
+	 * Calculate <code>Interval({lower, upper},...,...) ^ exponent</code>.
 	 * </p>
 	 * <p>
-	 * See: <a href= "https://de.wikipedia.org/wiki/Intervallarithmetik#Elementare_Funktionen"> Intervallarithmetik -
-	 * Elementare Funktionen</a>
+	 * See: <a href= "https://en.wikipedia.org/wiki/Interval_arithmetic#Elementary_functions">Interval arithmetic -
+	 * Elementary functions</a>
 	 * </p>
 	 * 
-	 * @param ast
-	 * @param exp
+	 * @param baseInterval
+	 * @param exponent
 	 * @return
 	 */
-	public static IExpr power(final IAST ast, IInteger exp) {
-		IAST interval = normalize(ast);
+	public static IExpr power(final IAST baseInterval, IInteger exponent) {
+		IAST interval = normalize(baseInterval);
 		if (interval.isPresent()) {
 			boolean negative = false;
 
-			if (exp.isNegative()) {
+			if (exponent.isNegative()) {
 				negative = true;
-				exp = exp.negate();
+				exponent = exponent.negate();
 			}
-			if (exp.isOne()) {
+			if (exponent.isOne()) {
 				if (negative) {
 					return inverse(interval);
-					// IASTAppendable result = F.IntervalAlloc(interval.size());
-					// for (int i = 1; i < interval.size(); i++) {
-					// IAST list = (IAST) interval.get(i);
-					// if (list.arg1().isRealResult() && list.arg2().isRealResult()) {
-					// if (list.arg1().isNegativeResult()) {
-					// if (list.arg2().isNegativeResult()) {
-					// result.append(F.List(list.arg1().inverse(), list.arg2().inverse()));
-					// } else {
-					// result.append(F.List(F.CNInfinity, list.arg1().inverse()));
-					// if (!list.arg2().isZero()) {
-					// result.append(F.List(list.arg2().inverse(), F.CInfinity));
-					// }
-					//
-					// }
-					// } else {
-					// if (list.arg1().isZero()) {
-					// if (list.arg2().isZero()) {
-					// result.append(F.List(F.CNInfinity, F.CInfinity));
-					// } else {
-					// result.append(F.List(list.arg2().inverse(), F.CInfinity));
-					// }
-					// } else {
-					// result.append(F.List(list.arg1().inverse(), list.arg2().inverse()));
-					// }
-					// }
-					// } else {
-					// return F.NIL;
-					// }
-					// }
-					// return result;
 				}
-				return ast;
+				return baseInterval;
 			}
-			IASTAppendable result = F.IntervalAlloc(ast.size());
+			IASTAppendable result = F.IntervalAlloc(baseInterval.size());
 			for (int i = 1; i < interval.size(); i++) {
 				IAST list = (IAST) interval.get(i);
 				if (list.arg1().isRealResult() && list.arg2().isRealResult()) {
-					if (exp.isEven()) {
+					if (exponent.isEven()) {
 						if (list.arg1().isNonNegativeResult()) {
-							result.append(F.List(list.arg1().power(exp), list.arg2().power(exp)));
+							result.append(F.List(list.arg1().power(exponent), list.arg2().power(exponent)));
 						} else {
 							if (list.arg2().isNegativeResult()) {
-								result.append(F.List(list.arg2().power(exp), list.arg1().power(exp)));
+								result.append(F.List(list.arg2().power(exponent), list.arg1().power(exponent)));
 							} else {
-								result.append(F.List(F.C0, F.Max(list.arg1().power(exp), list.arg2().power(exp))));
+								result.append(
+										F.List(F.C0, F.Max(list.arg1().power(exponent), list.arg2().power(exponent))));
 							}
 						}
 					} else {
-						result.append(F.List(list.arg1().power(exp), list.arg2().power(exp)));
+						result.append(F.List(list.arg1().power(exponent), list.arg2().power(exponent)));
 					}
 				} else {
 					return F.NIL;
@@ -997,17 +970,68 @@ public class IntervalSym {
 		return F.NIL;
 	}
 
-	public static IExpr power(IExpr base, final IAST ast) {
-		IAST interval = normalize(ast);
+	/**
+	 * <p>
+	 * Calculate <code>Interval({lower, upper},...,...) ^ exponent</code>.
+	 * </p>
+	 * <p>
+	 * See: <a href= "https://en.wikipedia.org/wiki/Interval_arithmetic#Elementary_functions">Interval arithmetic -
+	 * Elementary functions</a>
+	 * </p>
+	 * 
+	 * @param baseInterval
+	 * @param exponent
+	 * @return
+	 */
+	public static IExpr power(final IAST baseInterval, ISignedNumber exponent) {
+		IAST interval = normalize(baseInterval);
+		if (interval.isPresent()) {
+			boolean negative = false;
+
+			if (exponent.isNegative()) {
+				negative = true;
+				exponent = exponent.negate();
+			}
+			if (exponent.isOne()) {
+				if (negative) {
+					return inverse(interval);
+				}
+				return baseInterval;
+			}
+			IASTAppendable result = F.IntervalAlloc(baseInterval.size());
+			for (int i = 1; i < interval.size(); i++) {
+				IAST list = (IAST) interval.get(i);
+				if (list.arg1().isNonNegativeResult() && list.arg2().isNonNegativeResult()) {
+					result.append(F.List(list.arg1().power(exponent), list.arg2().power(exponent)));
+				} else {
+					return F.NIL;
+				}
+			}
+			if (negative) {
+				return F.Power(result, F.CN1);
+			}
+			return result;
+		}
+		return F.NIL;
+	}
+
+	/**
+	 * Calculate <code>base ^ intervalExponent</code>.
+	 * 
+	 * @param base
+	 * @param intervalExponent
+	 * @return <code>F.NIL</code> if no evauation is possible.
+	 */
+	public static IExpr power(IExpr base, final IAST intervalExponent) {
+		IAST interval = normalize(intervalExponent);
 		if (interval.isPresent()) {
 			if (base.isNegative()) {
 				if (base.isMinusOne()) {
 					return F.NIL;
 				}
-				return F.Times(F.Power(F.CN1, ast), F.Power(base.negate(), ast));
+				return F.Times(F.Power(F.CN1, intervalExponent), F.Power(base.negate(), intervalExponent));
 			}
-			// if (EvalEngine.get().evalTrue(F.Greater(base, F.C1))) {
-			IASTAppendable result = F.IntervalAlloc(ast.size());
+			IASTAppendable result = F.IntervalAlloc(intervalExponent.size());
 			for (int i = 1; i < interval.size(); i++) {
 				IAST list = (IAST) interval.get(i);
 				if (base.isZero()) {
@@ -1018,7 +1042,6 @@ public class IntervalSym {
 				result.append(F.List(base.power(list.arg1()), base.power(list.arg2())));
 			}
 			return result;
-			// }
 		}
 		return F.NIL;
 	}
