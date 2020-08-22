@@ -6,6 +6,13 @@ Head(expr)
 
 > returns the head of the expression or atom `expr`.
 
+```
+Head(expr, newHead)
+```
+
+> returns `newHead(Head(expr))`.
+
+
 ### Examples
 
 ```

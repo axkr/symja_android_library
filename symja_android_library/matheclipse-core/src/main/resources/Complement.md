@@ -1,7 +1,7 @@
 ## Complement 
 
 ``` 
-Complement (set1, set2)
+Complement(set1, set2)
 ```
 
 > get the complement set from `set1` and `set2`.

@@ -29,3 +29,6 @@ Interval({0.15,16.2})
 >> ArcCot(Interval({-1, Infinity})) 
 Interval({-Pi/2,-Pi/4},{0,Pi/2})
 ```
+
+### Related terms 
+[IntervalIntersection](IntervalIntersection.md), [IntervalMemberQ](IntervalMemberQ.md), [IntervalUnion](IntervalUnion.md) 

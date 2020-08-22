@@ -5,6 +5,13 @@ Manipulate(plot, {x, min, max})
 ```
 
 > generate a JavaScript control for the expression `plot` which can be manipulated by a range slider `{x, min, max}`.
+
+
+```
+Manipulate(formula, {x, min, max, step})  
+```
+
+> display generated `formula`s and define the `step`s in which the values for `x` should change.
 	 
 **Note**: This feature is not available on all supported platforms.
 
