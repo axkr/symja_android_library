@@ -12,3 +12,6 @@ Trace(expr)
 >> Trace(D(Sin(x),x))
 {{Cos(#1)&[x],Cos(x)},D(x,x)*Cos(x),{D(x,x),1},1*Cos(x),Cos(x)}
 ```
+
+### Related terms
+[Stack](Stack.md), [StackBegin](StackBegin.md)
