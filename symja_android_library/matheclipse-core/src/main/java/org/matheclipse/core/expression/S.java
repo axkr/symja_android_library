@@ -308,9 +308,15 @@ public class S {
 	public final static IBuiltInSymbol AxesStyle = F.initFinalSymbol("AxesStyle", ID.AxesStyle);
 
 	/***/
-	public final static IBuiltInSymbol Background = F.initFinalSymbol("Background", ID.Background);
+	public final static IBuiltInSymbol BSplineFunction = F.initFinalSymbol("BSplineFunction", ID.BSplineFunction);
 
 	/***/
+	public final static IBuiltInSymbol Background = F.initFinalSymbol("Background", ID.Background);
+
+	/**
+	 * BarChart(list-of-values, options) - plot a bar chart for a `list-of-values` with option `BarOrigin->Bottom` or
+	 * `BarOrigin->Bottom`
+	 */
 	public final static IBuiltInSymbol BarChart = F.initFinalSymbol("BarChart", ID.BarChart);
 
 	/***/
@@ -371,9 +377,6 @@ public class S {
 	/***/
 	public final static IBuiltInSymbol BetaRegularized = F.initFinalSymbol("BetaRegularized", ID.BetaRegularized);
 
-	/***/
-	public final static IBuiltInSymbol BinaryDistance = F.initFinalSymbol("BinaryDistance", ID.BinaryDistance);
-
 	/**
 	 * BinCounts(list, width-of-bin) - count the number of elements, if `list`, is divided into successive bins with
 	 * width `width-of-bin`.
@@ -382,6 +385,12 @@ public class S {
 
 	/** BinaryDeserialize(byte-array) - deserialize the `byte-array` from WXF format into a Symja expression. */
 	public final static IBuiltInSymbol BinaryDeserialize = F.initFinalSymbol("BinaryDeserialize", ID.BinaryDeserialize);
+
+	/**
+	 * BinaryDistance(u, v) - returns the binary distance between `u` and `v`. `0` if `u` and `v` are unequal. `1` if
+	 * `u` and `v` are equal.
+	 */
+	public final static IBuiltInSymbol BinaryDistance = F.initFinalSymbol("BinaryDistance", ID.BinaryDistance);
 
 	/** BinarySerialize(expr) - serialize the Symja `expr` into a byte array expression in WXF format. */
 	public final static IBuiltInSymbol BinarySerialize = F.initFinalSymbol("BinarySerialize", ID.BinarySerialize);
@@ -461,7 +470,7 @@ public class S {
 	/***/
 	public final static IBuiltInSymbol Bottom = F.initFinalSymbol("Bottom", ID.Bottom);
 
-	/***/
+	/** BoxWhiskerChart( ) - plot a box whisker chart. */
 	public final static IBuiltInSymbol BoxWhiskerChart = F.initFinalSymbol("BoxWhiskerChart", ID.BoxWhiskerChart);
 
 	/** BrayCurtisDistance(u, v) - returns the Bray Curtis distance between `u` and `v`. */
@@ -473,9 +482,6 @@ public class S {
 
 	/***/
 	public final static IBuiltInSymbol Brown = F.initFinalSymbol("Brown", ID.Brown);
-	
-	/***/
-	public final static IBuiltInSymbol BSplineFunction = F.initFinalSymbol("BSplineFunction", ID.BSplineFunction);
 
 	/***/
 	public final static IBuiltInSymbol Button = F.initFinalSymbol("Button", ID.Button);
@@ -637,7 +643,7 @@ public class S {
 	/***/
 	public final static IBuiltInSymbol Column = F.initFinalSymbol("Column", ID.Column);
 
-	/***/
+	/** Commonest(data-values-list) - the mode of a list of data values is the value that appears most often. */
 	public final static IBuiltInSymbol Commonest = F.initFinalSymbol("Commonest", ID.Commonest);
 
 	/***/
@@ -791,7 +797,7 @@ public class S {
 	/** Count(list, pattern) - returns the number of times `pattern` appears in `list`. */
 	public final static IBuiltInSymbol Count = F.initFinalSymbol("Count", ID.Count);
 
-	/***/
+	/** CountDistinct(list) - returns the number of distinct entries in `list`. */
 	public final static IBuiltInSymbol CountDistinct = F.initFinalSymbol("CountDistinct", ID.CountDistinct);
 
 	/**
@@ -883,12 +889,16 @@ public class S {
 	/** DeleteDuplicates(list) - deletes duplicates from `list`. */
 	public final static IBuiltInSymbol DeleteDuplicates = F.initFinalSymbol("DeleteDuplicates", ID.DeleteDuplicates);
 
+	/***/
+	public final static IBuiltInSymbol DeleteDuplicatesBy = F.initFinalSymbol("DeleteDuplicatesBy",
+			ID.DeleteDuplicatesBy);
+
 	/**
 	 * Denominator(expr) - gives the denominator in `expr`. Denominator collects expressions with negative exponents.
 	 */
 	public final static IBuiltInSymbol Denominator = F.initFinalSymbol("Denominator", ID.Denominator);
 
-	/***/
+	/** DensityHistogram( list-of-pair-values ) - plot a density histogram for a `list-of-pair-values` */
 	public final static IBuiltInSymbol DensityHistogram = F.initFinalSymbol("DensityHistogram", ID.DensityHistogram);
 
 	/***/
@@ -1022,6 +1032,9 @@ public class S {
 	public final static IBuiltInSymbol Drop = F.initFinalSymbol("Drop", ID.Drop);
 
 	/***/
+	public final static IBuiltInSymbol DuplicateFreeQ = F.initFinalSymbol("DuplicateFreeQ", ID.DuplicateFreeQ);
+
+	/***/
 	public final static IBuiltInSymbol Dynamic = F.initFinalSymbol("Dynamic", ID.Dynamic);
 
 	/** E - Euler's constant E */
@@ -1029,6 +1042,12 @@ public class S {
 
 	/***/
 	public final static IBuiltInSymbol EasterSunday = F.initFinalSymbol("EasterSunday", ID.EasterSunday);
+	
+	/***/
+	public final static IBuiltInSymbol Echo = F.initFinalSymbol("Echo", ID.Echo);
+	
+	/***/
+	public final static IBuiltInSymbol EchoFunction = F.initFinalSymbol("EchoFunction", ID.EchoFunction);
 
 	/***/
 	public final static IBuiltInSymbol EdgeCount = F.initFinalSymbol("EdgeCount", ID.EdgeCount);
@@ -1238,7 +1257,10 @@ public class S {
 	/** Fibonacci(n) - returns the Fibonacci number of the integer `n` */
 	public final static IBuiltInSymbol Fibonacci = F.initFinalSymbol("Fibonacci", ID.Fibonacci);
 
-	/***/
+	/**
+	 * FindClusters(list-of-data-points, k) - Clustering algorithm based on David Arthur and Sergei Vassilvitski
+	 * k-means++ algorithm. Create `k` number of clusters to split the `list-of-data-points` into.
+	 */
 	public final static IBuiltInSymbol FindClusters = F.initFinalSymbol("FindClusters", ID.FindClusters);
 
 	/***/
@@ -1311,7 +1333,7 @@ public class S {
 	 */
 	public final static IBuiltInSymbol Fit = F.initFinalSymbol("Fit", ID.Fit);
 
-	/***/
+	/** FittedModel( ) - `FittedModel`holds the model generated with `LinearModelFit` */
 	public final static IBuiltInSymbol FittedModel = F.initFinalSymbol("FittedModel", ID.FittedModel);
 
 	/**
@@ -1442,7 +1464,10 @@ public class S {
 	/***/
 	public final static IBuiltInSymbol FunctionRange = F.initFinalSymbol("FunctionRange", ID.FunctionRange);
 
-	/***/
+	/**
+	 * FunctionURL(built-in-symbol) - returns the GitHub URL of the `built-in-symbol` implementation in the [Symja
+	 * GitHub repository](https://github.com/axkr/symja_android_library).
+	 */
 	public final static IBuiltInSymbol FunctionURL = F.initFinalSymbol("FunctionURL", ID.FunctionURL);
 
 	/** GCD(n1, n2, ...) - computes the greatest common divisor of the given integers. */
@@ -1622,7 +1647,7 @@ public class S {
 	/** HilbertMatrix(n) - gives the hilbert matrix with `n` rows and columns. */
 	public final static IBuiltInSymbol HilbertMatrix = F.initFinalSymbol("HilbertMatrix", ID.HilbertMatrix);
 
-	/***/
+	/** Histogram(list-of-values) - plots a histogram for a `list-of-values` */
 	public final static IBuiltInSymbol Histogram = F.initFinalSymbol("Histogram", ID.Histogram);
 
 	/** Hold(expr) - `Hold` doesn't evaluate `expr`. */
@@ -1820,6 +1845,13 @@ public class S {
 
 	/** Interval({a, b}) - represents the interval from `a` to `b`. */
 	public final static IBuiltInSymbol Interval = F.initFinalSymbol("Interval", ID.Interval);
+
+	public final static IBuiltInSymbol IntervalIntersection = F.initFinalSymbol("IntervalIntersection",
+			ID.IntervalIntersection);
+
+	public final static IBuiltInSymbol IntervalMemberQ = F.initFinalSymbol("IntervalMemberQ", ID.IntervalMemberQ);
+
+	public final static IBuiltInSymbol IntervalUnion = F.initFinalSymbol("IntervalUnion", ID.IntervalUnion);
 
 	/** Inverse(matrix) - computes the inverse of the `matrix`. */
 	public final static IBuiltInSymbol Inverse = F.initFinalSymbol("Inverse", ID.Inverse);
@@ -2036,10 +2068,10 @@ public class S {
 	public final static IBuiltInSymbol LightCyan = F.initFinalSymbol("LightCyan", ID.LightCyan);
 
 	/***/
-	public final static IBuiltInSymbol LightGreen = F.initFinalSymbol("LightGreen", ID.LightGreen);
+	public final static IBuiltInSymbol LightGray = F.initFinalSymbol("LightGray", ID.LightGray);
 
 	/***/
-	public final static IBuiltInSymbol LightGray = F.initFinalSymbol("LightGray", ID.LightGray);
+	public final static IBuiltInSymbol LightGreen = F.initFinalSymbol("LightGreen", ID.LightGreen);
 
 	/***/
 	public final static IBuiltInSymbol LightMagenta = F.initFinalSymbol("LightMagenta", ID.LightMagenta);
@@ -2065,7 +2097,11 @@ public class S {
 	/***/
 	public final static IBuiltInSymbol Line = F.initFinalSymbol("Line", ID.Line);
 
-	/***/
+	/**
+	 * LinearModelFit(list-of-data-points, expr, symbol) - In statistics, linear regression is a linear approach to
+	 * modeling the relationship between a scalar response (or dependent variable) and one or more explanatory variables
+	 * (or independent variables).
+	 */
 	public final static IBuiltInSymbol LinearModelFit = F.initFinalSymbol("LinearModelFit", ID.LinearModelFit);
 
 	/**
@@ -2240,7 +2276,7 @@ public class S {
 	public final static IBuiltInSymbol MatrixMinimalPolynomial = F.initFinalSymbol("MatrixMinimalPolynomial",
 			ID.MatrixMinimalPolynomial);
 
-	/***/
+	/** MatrixPlot( matrix ) - create a matrix plot. */
 	public final static IBuiltInSymbol MatrixPlot = F.initFinalSymbol("MatrixPlot", ID.MatrixPlot);
 
 	/** MatrixPower(matrix, n) - computes the `n`th power of a `matrix` */
@@ -2725,7 +2761,7 @@ public class S {
 	/** Pi - is the constant `Pi`. */
 	public final static IBuiltInSymbol Pi = F.initFinalSymbol("Pi", ID.Pi);
 
-	/***/
+	/** PieChart(list-of-values) - plot a pie chart from a `list-of-values`. */
 	public final static IBuiltInSymbol PieChart = F.initFinalSymbol("PieChart", ID.PieChart);
 
 	/** Piecewise({{expr1, cond1}, ...}) - represents a piecewise function. */
@@ -3099,7 +3135,12 @@ public class S {
 	/** Reverse(list) - reverse the elements of the `list`. */
 	public final static IBuiltInSymbol Reverse = F.initFinalSymbol("Reverse", ID.Reverse);
 
-	/***/
+	/**
+	 * RiccatiSolve({A,B},{Q,R}) - An algebraic Riccati equation is a type of nonlinear equation that arises in the
+	 * context of infinite-horizon optimal control problems in continuous time or discrete time. The continuous time
+	 * algebraic Riccati equation (CARE): `A^{T}·X+X·A-X·B·R^{-1}·B^{T}·X+Q==0`. And the respective linear controller
+	 * is: `K = R^{-1}·B^{T}·P`. The solver receives `A`, `B`, `Q` and `R` and computes `P`.
+	 */
 	public final static IBuiltInSymbol RiccatiSolve = F.initFinalSymbol("RiccatiSolve", ID.RiccatiSolve);
 
 	/** Riffle(list1, list2) - insert elements of `list2` between the elements of `list1`. */
@@ -3257,10 +3298,10 @@ public class S {
 
 	/***/
 	public final static IBuiltInSymbol Share = F.initFinalSymbol("Share", ID.Share);
-	
+
 	/***/
 	public final static IBuiltInSymbol Short = F.initFinalSymbol("Short", ID.Short);
-	
+
 	/***/
 	public final static IBuiltInSymbol Show = F.initFinalSymbol("Show", ID.Show);
 
@@ -3268,10 +3309,13 @@ public class S {
 	public final static IBuiltInSymbol Sign = F.initFinalSymbol("Sign", ID.Sign);
 
 	/***/
-	public final static IBuiltInSymbol Signature = F.initFinalSymbol("Signature", ID.Signature);
-
-	/***/
 	public final static IBuiltInSymbol SignCmp = F.initFinalSymbol("SignCmp", ID.SignCmp);
+
+	/**
+	 * Signature(permutation-list) - determine if the `permutation-list` has odd (`-1`) or even (`1`) parity. Returns
+	 * `0` if two elements in the `permutation-list` are equal.
+	 */
+	public final static IBuiltInSymbol Signature = F.initFinalSymbol("Signature", ID.Signature);
 
 	/** Simplify(expr) - simplifies `expr` */
 	public final static IBuiltInSymbol Simplify = F.initFinalSymbol("Simplify", ID.Simplify);
@@ -3370,6 +3414,12 @@ public class S {
 	public final static IBuiltInSymbol SquaredEuclideanDistance = F.initFinalSymbol("SquaredEuclideanDistance",
 			ID.SquaredEuclideanDistance);
 
+	/***/
+	public final static IBuiltInSymbol Stack = F.initFinalSymbol("Stack", ID.Stack);
+
+	/***/
+	public final static IBuiltInSymbol StackBegin = F.initFinalSymbol("StackBegin", ID.StackBegin);
+
 	/**
 	 * StandardDeviation(list) - computes the standard deviation of `list`. `list` may consist of numerical values or
 	 * symbols. Numerical values may be real or complex.
@@ -3462,6 +3512,9 @@ public class S {
 
 	/***/
 	public final static IBuiltInSymbol Style = F.initFinalSymbol("Style", ID.Style);
+	
+	/***/
+	public final static IBuiltInSymbol StyleForm = F.initFinalSymbol("StyleForm", ID.StyleForm);
 
 	/** Subdivide(n) - returns a list with `n+1` entries obtained by subdividing the range `0` to `1`. */
 	public final static IBuiltInSymbol Subdivide = F.initFinalSymbol("Subdivide", ID.Subdivide);
@@ -3822,7 +3875,7 @@ public class S {
 
 	/***/
 	public final static IBuiltInSymbol ViewPoint = F.initFinalSymbol("ViewPoint", ID.ViewPoint);
-
+	
 	/** WeibullDistribution(a, b) - returns a Weibull distribution. */
 	public final static IBuiltInSymbol WeibullDistribution = F.initFinalSymbol("WeibullDistribution",
 			ID.WeibullDistribution);

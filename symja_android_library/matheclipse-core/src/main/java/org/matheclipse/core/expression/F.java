@@ -1,5 +1,5 @@
 package org.matheclipse.core.expression;
-
+ 
 import java.awt.Desktop;
 import java.io.BufferedWriter;
 import java.io.File;
@@ -48,6 +48,7 @@ import org.matheclipse.core.builtin.HypergeometricFunctions;
 import org.matheclipse.core.builtin.IOFunctions;
 import org.matheclipse.core.builtin.ImageFunctions;
 import org.matheclipse.core.builtin.IntegerFunctions;
+import org.matheclipse.core.builtin.IntervalFunctions;
 import org.matheclipse.core.builtin.LinearAlgebra;
 import org.matheclipse.core.builtin.ListFunctions;
 import org.matheclipse.core.builtin.ManipulateFunction;
@@ -942,6 +943,7 @@ public class F extends S {
 			CurveFitterFunctions.initialize();
 			VectorAnalysisFunctions.initialize();
 			QuantityFunctions.initialize();
+			IntervalFunctions.initialize();
 			FinancialFunctions.initialize();
 			WXFFunctions.initialize();
 			WindowFunctions.initialize();
@@ -5608,6 +5610,10 @@ public class F extends S {
 		return new AST1(RandomComplex, a0);
 	}
 
+	public static IAST RandomInteger(final IExpr a0) {
+		return new AST1(RandomInteger, a0);
+	}
+	
 	public static IAST RandomReal(final IExpr a0) {
 		return new AST1(RandomReal, a0);
 	}
