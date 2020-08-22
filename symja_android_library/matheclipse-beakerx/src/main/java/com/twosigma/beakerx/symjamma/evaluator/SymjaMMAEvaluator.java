@@ -16,6 +16,8 @@
 package com.twosigma.beakerx.symjamma.evaluator;
 
 import static com.twosigma.beakerx.symjamma.evaluator.EnvVariablesFilter.envVariablesFilter;
+import static org.matheclipse.core.expression.S.SemanticImport;
+import static org.matheclipse.core.expression.S.SemanticImportString;
 
 import java.io.File;
 import java.io.IOException;
@@ -30,6 +32,7 @@ import org.matheclipse.core.expression.F;
 import org.matheclipse.core.form.output.OutputFormFactory;
 import org.matheclipse.core.form.tex.TeXFormFactory;
 import org.matheclipse.core.interfaces.IExpr;
+import org.matheclipse.io.IOInit;
 import org.matheclipse.parser.client.FEConfig;
 
 import com.twosigma.beakerx.BeakerXClient;
@@ -71,7 +74,7 @@ public class SymjaMMAEvaluator extends BaseEvaluator {
 		// distinguish between lower- and uppercase identifiers
 		FEConfig.PARSER_USE_LOWERCASE_SYMBOLS = false;
 		F.initSymbols(null, null, true);
-
+		IOInit.init(); 
 	}
 
 	/**

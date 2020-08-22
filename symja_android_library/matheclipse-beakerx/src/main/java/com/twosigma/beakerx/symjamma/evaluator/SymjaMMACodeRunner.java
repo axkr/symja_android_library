@@ -19,7 +19,6 @@ import static com.twosigma.beakerx.evaluator.BaseEvaluator.INTERUPTED_MSG;
 import static com.twosigma.beakerx.symjamma.evaluator.SymjaMMAStackTracePrettyPrinter.printStacktrace;
 
 import java.io.IOException;
-import java.io.PrintWriter;
 import java.io.StringWriter;
 import java.lang.reflect.InvocationTargetException;
 import java.util.concurrent.Callable;
@@ -29,6 +28,7 @@ import org.matheclipse.core.eval.EvalControlledCallable;
 import org.matheclipse.core.eval.ExprEvaluator;
 import org.matheclipse.core.eval.exception.AbortException;
 import org.matheclipse.core.expression.F;
+import org.matheclipse.core.expression.S;
 import org.matheclipse.core.form.output.OutputFormFactory;
 import org.matheclipse.core.graphics.Show2SVG;
 import org.matheclipse.core.interfaces.IAST;
@@ -79,7 +79,7 @@ class SymjaMMACodeRunner implements Callable<TryResult> {
 						true, new EvalControlledCallable(fEvaluator.getEvalEngine()));
 			}
 			if (result != null) {
-				if (result.equals(F.Null)) {
+				if (result.equals(S.Null)) {
 					return "Null";
 				} else {
 					return result;
