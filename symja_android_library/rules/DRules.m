@@ -119,7 +119,7 @@
     
   D(Hypergeometric2F1(a_, b_, c_, f_), x_?NotListQ) := (a*b*Hypergeometric2F1(1 + a, 1 + b, 1 + c, f)*D(f,x))/c
     /; FreeQ({a,b,c},x),
-  D(Hypergeometric2F1(a_, b_, c_, f_), {x_,n_}) := (Hypergeometric2F1(a + n, b + n, c + n, x)*Pochhammer(a, n)*Pochhammer(b, n))/Pochhammer(c, n)
+  D(Hypergeometric2F1(a_, b_, c_, x_), {x_,n_}) := Hypergeometric2F1(a + n, b + n, c + n, x)*(Pochhammer(a, n)*Pochhammer(b, n))/Pochhammer(c, n)
     /; FreeQ({a,b,c,n},x) && Negative(n)=!=True,
   
   D(HypergeometricU(f_, g_, h_),x_?NotListQ) :=-f*HypergeometricU(1+f,1+g,h)*D(h,x)
