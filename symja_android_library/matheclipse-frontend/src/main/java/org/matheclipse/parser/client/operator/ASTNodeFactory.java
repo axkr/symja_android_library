@@ -149,7 +149,6 @@ public class ASTNodeFactory implements INodeParserFactory {
 		}
 	}
 
-
 	static final String[] HEADER_STRINGS = { "MessageName", "Get", "PatternTest", "MapAll", "TimesBy", "Plus", "UpSet",
 			"CompoundExpression", "Apply", "Map", "Unset", "Apply", "Apply", "ReplaceRepeated", "Less", "And", "Divide",
 			"Set", "Increment", "Factorial2", "LessEqual", "NonCommutativeMultiply", "Factorial", "Times", "Power",
@@ -157,8 +156,8 @@ public class ASTNodeFactory implements INodeParserFactory {
 			"Or", "Span", "Equal", "StringJoin", "Unequal", "Decrement", "SubtractFrom", "PrePlus", "RepeatedNull",
 			"UnsameQ", "Rule", "UpSetDelayed", "PreIncrement", "Function", "Greater", "PreDecrement", "Subtract",
 			"SetDelayed", "Alternatives", "AddTo", "Repeated", "ReplaceAll", "TagSet", "Composition",
-			"StringExpression", "TwoWayRule", "TwoWayRule", "DirectedEdge", "UndirectedEdge", "CenterDot",
-			"CircleDot" };
+			"StringExpression", "TwoWayRule", "TwoWayRule", "DirectedEdge", "UndirectedEdge", "CenterDot", "CircleDot",
+			"Element", "Intersection", "NotEqual", "Wedge" };
 
 	static final String[] OPERATOR_STRINGS = { "::", "<<", "?", "//@", "*=", "+", "^=", ";", "@", "/@", "=.", "@@",
 			"@@@", "//.", "<", "&&", "/", "=", "++", "!!", "<=", "**", "!", "*", "^", ".", "!", "-", "===", ":>", ">=",
@@ -169,7 +168,11 @@ public class ASTNodeFactory implements INodeParserFactory {
 			"\uF3D5", // DirectedEdge
 			"\uF3D4", // UndirectedEdge
 			"\u00B7", // CenterDot
-			"\u2299" // CircleDot
+			"\u2299", // CircleDot0
+			"\u2208", // Element
+			"\u22C2", // Intersection
+			"\u2260", // NotEqual,
+			"\u22C0" // Wedge
 	};
 
 	public static final ApplyOperator APPLY_HEAD_OPERATOR = new ApplyOperator("@", "Apply", Precedence.APPLY_HEAD,
@@ -204,21 +207,24 @@ public class ASTNodeFactory implements INodeParserFactory {
 	private static class Initializer {
 
 		private static void init() {
-			OPERATORS = new Operator[] { new InfixOperator("::", "MessageName", Precedence.MESSAGENAME, InfixOperator.NONE),
+			OPERATORS = new Operator[] {
+					new InfixOperator("::", "MessageName", Precedence.MESSAGENAME, InfixOperator.NONE),
 					new PrefixOperator("<<", "Get", Precedence.GET),
 					new InfixOperator("?", "PatternTest", Precedence.PATTERNTEST, InfixOperator.NONE),
 					new InfixOperator("//@", "MapAll", Precedence.MAPALL, InfixOperator.RIGHT_ASSOCIATIVE),
 					new InfixOperator("*=", "TimesBy", Precedence.TIMESBY, InfixOperator.RIGHT_ASSOCIATIVE),
 					new InfixOperator("+", "Plus", Precedence.PLUS, InfixOperator.NONE),
 					new InfixOperator("^=", "UpSet", Precedence.UPSET, InfixOperator.RIGHT_ASSOCIATIVE),
-					new InfixOperator(";", "CompoundExpression", Precedence.COMPOUNDEXPRESSION, InfixOperator.NONE), APPLY_HEAD_OPERATOR,
+					new InfixOperator(";", "CompoundExpression", Precedence.COMPOUNDEXPRESSION, InfixOperator.NONE),
+					APPLY_HEAD_OPERATOR,
 					new InfixOperator("/@", "Map", Precedence.MAP, InfixOperator.RIGHT_ASSOCIATIVE),
 					new PostfixOperator("=.", "Unset", Precedence.UNSET), APPLY_OPERATOR, APPLY_LEVEL_OPERATOR,
 					// new ApplyOperator("@@", "Apply", APPLY_PRECEDENCE,
 					// InfixOperator.RIGHT_ASSOCIATIVE),
 					// new ApplyOperator("@@@", "Apply", APPLY_PRECEDENCE,
 					// InfixOperator.RIGHT_ASSOCIATIVE),
-					new InfixOperator("//.", "ReplaceRepeated", Precedence.REPLACEREPEATED, InfixOperator.LEFT_ASSOCIATIVE),
+					new InfixOperator("//.", "ReplaceRepeated", Precedence.REPLACEREPEATED,
+							InfixOperator.LEFT_ASSOCIATIVE),
 					new InfixOperator("<", "Less", Precedence.LESS, InfixOperator.NONE),
 					new InfixOperator("&&", "And", Precedence.AND, InfixOperator.NONE),
 					new DivideOperator("/", "Divide", Precedence.DIVIDE, InfixOperator.LEFT_ASSOCIATIVE),
@@ -267,10 +273,16 @@ public class ASTNodeFactory implements INodeParserFactory {
 					new InfixOperator("~~", "StringExpression", Precedence.STRINGEXPRESSION, InfixOperator.NONE),
 					new InfixOperator("<->", "TwoWayRule", Precedence.TWOWAYRULE, InfixOperator.RIGHT_ASSOCIATIVE),
 					new InfixOperator("\uF120", "TwoWayRule", Precedence.TWOWAYRULE, InfixOperator.RIGHT_ASSOCIATIVE),
-					new InfixOperator("\uF3D5", "DirectedEdge", Precedence.DIRECTEDEDGE, InfixOperator.RIGHT_ASSOCIATIVE),
-					new InfixOperator("\uF3D4", "UndirectedEdge", Precedence.UNDIRECTEDEDGE, InfixOperator.RIGHT_ASSOCIATIVE),
+					new InfixOperator("\uF3D5", "DirectedEdge", Precedence.DIRECTEDEDGE,
+							InfixOperator.RIGHT_ASSOCIATIVE),
+					new InfixOperator("\uF3D4", "UndirectedEdge", Precedence.UNDIRECTEDEDGE,
+							InfixOperator.RIGHT_ASSOCIATIVE),
 					new InfixOperator("\u00B7", "CenterDot", Precedence.CENTERDOT, InfixOperator.NONE), //
-					new InfixOperator("\u2299", "CircleDot", Precedence.CIRCLEDOT, InfixOperator.NONE) //
+					new InfixOperator("\u2299", "CircleDot", Precedence.CIRCLEDOT, InfixOperator.NONE), //
+					new InfixOperator("\u2208", "Element", Precedence.ELEMENT, InfixOperator.NONE), //
+					new InfixOperator("\u22C2", "Intersection", Precedence.INTERSECTION, InfixOperator.NONE), //
+					new InfixOperator("\u2260", "Unequal", Precedence.UNEQUAL, InfixOperator.NONE), //
+					new InfixOperator("\u22C0", "Wedge", Precedence.WEDGE, InfixOperator.NONE)//
 
 			};
 			StringBuilder buf = new StringBuilder(BASIC_OPERATOR_CHARACTERS);

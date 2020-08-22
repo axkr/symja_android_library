@@ -872,14 +872,14 @@ public class Parser extends Scanner {
 		return lhs;
 	}
 
-	private ASTNode parseCompoundExpressionNull(InfixOperator infixOperator, ASTNode rhs) {
+	private ASTNode parseCompoundExpressionNull(InfixOperator infixOperator, ASTNode lhs) {
 		if (infixOperator.isOperator(";")) {
 			if (fToken == TT_EOF || fToken == TT_ARGUMENTS_CLOSE || fToken == TT_LIST_CLOSE
 					|| fToken == TT_PRECEDENCE_CLOSE || fToken == TT_COMMA) {
-				return infixOperator.createFunction(fFactory, rhs, fFactory.createSymbol("Null"));
+				return infixOperator.createFunction(fFactory, lhs, fFactory.createSymbol("Null"));
 			}
 			if (fPackageMode && fRecursionDepth < 1) {
-				return infixOperator.createFunction(fFactory, rhs, fFactory.createSymbol("Null"));
+				return infixOperator.createFunction(fFactory, lhs, fFactory.createSymbol("Null"));
 			}
 		}
 		return null;
@@ -901,28 +901,22 @@ public class Parser extends Scanner {
 					|| fToken == TT_PRECEDENCE_CLOSE) {
 				span.add(fFactory.createSymbol(IConstantOperators.All));
 				return span;
-			}
-			span.add(parseExpression(parsePrimary(0), 0));
-			return span;
-		}
-		ASTNode temp = parseExpression(parsePrimary(0), 0);
-
-		if (fToken == TT_SPAN) {
-			FunctionNode span = fFactory.createFunction(fFactory.createSymbol(IConstantOperators.Span));
-			span.add(temp);
-			getNextToken();
-			if (fToken == TT_SPAN) {
-				span.add(fFactory.createSymbol(IConstantOperators.All));
-				getNextToken();
-				if (fToken == TT_COMMA || fToken == TT_PARTCLOSE || fToken == TT_ARGUMENTS_CLOSE
-						|| fToken == TT_PRECEDENCE_CLOSE) {
-					return span;
+			} else if (fToken == TT_OPERATOR) { 
+				InfixOperator infixOperator = determineBinaryOperator();
+				if (infixOperator != null && //
+						infixOperator.getOperatorString().equals(";")) {
+					span.add(fFactory.createSymbol(IConstantOperators.All));
+					getNextToken();
+					ASTNode compoundExpressionNull = parseCompoundExpressionNull(infixOperator, span);
+					if (compoundExpressionNull != null) {
+						return compoundExpressionNull;
+					}
+					while (fToken == TT_NEWLINE) {
+						getNextToken();
+					}
+					return parseInfixOperator(span, infixOperator);
 				}
-			} else if (fToken == TT_COMMA || fToken == TT_PARTCLOSE || fToken == TT_ARGUMENTS_CLOSE
-					|| fToken == TT_PRECEDENCE_CLOSE) {
-				span.add(fFactory.createSymbol(IConstantOperators.All));
-				return span;
-			}
+			} 
 			span.add(parseExpression(parsePrimary(0), 0));
 			if (fToken == TT_SPAN) {
 				getNextToken();
@@ -932,6 +926,59 @@ public class Parser extends Scanner {
 				}
 				span.add(parseExpression(parsePrimary(0), 0));
 			}
+			return span;
+		}
+		ASTNode temp = parseExpression(parsePrimary(0), 0);
+
+		if (fToken == TT_SPAN) {
+			FunctionNode span = fFactory.createFunction(fFactory.createSymbol(IConstantOperators.Span));
+			span.add(temp);
+			getNextToken(); 
+			if (fToken == TT_SPAN) {
+				span.add(fFactory.createSymbol(IConstantOperators.All));
+				getNextToken();
+				if (fToken == TT_COMMA || fToken == TT_PARTCLOSE || fToken == TT_ARGUMENTS_CLOSE
+						|| fToken == TT_PRECEDENCE_CLOSE) {
+					return span;
+				} else if (fToken == TT_OPERATOR) {
+					FunctionNode times = fFactory.createAST(new SymbolNode("Times"));
+					times.add(span);
+					span = fFactory.createFunction(fFactory.createSymbol(IConstantOperators.Span));
+					span.add(fFactory.createInteger(1));
+					span.add(fFactory.createSymbol(IConstantOperators.All));
+					times.add(span);
+					return parseExpression(times, 0);
+				}
+			} else if (fToken == TT_COMMA || fToken == TT_PARTCLOSE || fToken == TT_ARGUMENTS_CLOSE
+					|| fToken == TT_PRECEDENCE_CLOSE) {
+				span.add(fFactory.createSymbol(IConstantOperators.All));
+				return span;
+			} else if (fToken == TT_OPERATOR) { 
+				InfixOperator infixOperator = determineBinaryOperator();
+				if (infixOperator != null && //
+						infixOperator.getOperatorString().equals(";")) {
+					span.add(fFactory.createSymbol(IConstantOperators.All));
+					getNextToken();
+					ASTNode compoundExpressionNull = parseCompoundExpressionNull(infixOperator, span);
+					if (compoundExpressionNull != null) {
+						return compoundExpressionNull;
+					}
+					while (fToken == TT_NEWLINE) {
+						getNextToken();
+					}
+					return parseInfixOperator(span, infixOperator);
+				}
+			} 
+			span.add(parseExpression(parsePrimary(0), 0));
+			if (fToken == TT_SPAN) {
+				getNextToken();
+				if (fToken == TT_COMMA || fToken == TT_PARTCLOSE || fToken == TT_ARGUMENTS_CLOSE
+						|| fToken == TT_PRECEDENCE_CLOSE) {
+					return span;
+				}
+				span.add(parseExpression(parsePrimary(0), 0));
+			}
+
 			return span;
 		}
 		return temp;

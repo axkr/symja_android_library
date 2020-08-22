@@ -613,7 +613,7 @@ public abstract class Scanner {
 						}
 					}
 				}
-			} 
+			}
 		}
 		return false;
 	}
@@ -697,6 +697,12 @@ public abstract class Scanner {
 					break;
 				case ']':
 					fToken = TT_ARGUMENTS_CLOSE;
+					break;
+				case '\u301A': // LeftDoubleBracket
+					fToken = TT_PARTOPEN;
+					break;
+				case '\u301B': // RightDoubleBracket
+					fToken = TT_PARTCLOSE;
 					break;
 				case '<':
 					if (isValidPosition()) {

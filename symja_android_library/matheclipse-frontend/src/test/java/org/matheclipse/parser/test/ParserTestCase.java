@@ -278,7 +278,18 @@ public class ParserTestCase extends TestCase {
 		}
 	}
 
-	public void testParser21() {
+	public void testParser21a() {
+		try {
+			Parser p = new Parser();
+			ASTNode obj = p.parse("B[[ ;;1;;-1]]");
+			assertEquals(obj.toString(), "Part(B, Span(1, 1, -1))");
+		} catch (Exception e) {
+			e.printStackTrace();
+			assertEquals("", e.getMessage());
+		}
+	}
+	
+	public void testParser21b() {
 		try {
 			Parser p = new Parser();
 			ASTNode obj = p.parse("B[[3;;1;;-1]]");
@@ -288,7 +299,18 @@ public class ParserTestCase extends TestCase {
 			assertEquals("", e.getMessage());
 		}
 	}
-
+	
+	public void testParser21c() {
+		try {
+			Parser p = new Parser();
+			ASTNode obj = p.parse("B[[;;;;-1]]");
+			assertEquals(obj.toString(), "Part(B, Span(1, All, -1))");
+		} catch (Exception e) {
+			e.printStackTrace();
+			assertEquals("", e.getMessage());
+		}
+	}
+	
 	public void testParserFunction() {
 		try {
 			Parser p = new Parser(true);
@@ -644,13 +666,97 @@ public class ParserTestCase extends TestCase {
 			assertEquals("", e.getMessage());
 		}
 	}
-	
+
 	public void testParser47() {
 		try {
 			Parser p = new Parser();
 			ASTNode obj = p.parse("123456789012345678901234567890");
 			assertEquals(obj.toString(), //
 					"123456789012345678901234567890");
+		} catch (Exception e) {
+			e.printStackTrace();
+			assertEquals("", e.getMessage());
+		}
+	}
+
+	public void testParser48a() {
+		try {
+			Parser p = new Parser();
+			ASTNode obj = p.parse("FullForm[Hold[;;; ]]");
+			assertEquals(obj.toString(), //
+					"FullForm(Hold(CompoundExpression(Span(1, All), Null)))");
+		} catch (Exception e) {
+			e.printStackTrace();
+			assertEquals("", e.getMessage());
+		}
+	}
+	
+	public void testParser48b() {
+		try {
+			Parser p = new Parser();
+			ASTNode obj = p.parse("FullForm[Hold[abc;;; ]]");
+			assertEquals(obj.toString(), //
+					"FullForm(Hold(CompoundExpression(Span(abc, All), Null)))");
+		} catch (Exception e) {
+			e.printStackTrace();
+			assertEquals("", e.getMessage());
+		}
+	}
+	
+	public void testParser48c() {
+		try {
+			Parser p = new Parser();
+			ASTNode obj = p.parse("FullForm[Hold[abc;;;d ]]");
+			assertEquals(obj.toString(), //
+					"FullForm(Hold(CompoundExpression(Span(abc, All), d)))");
+		} catch (Exception e) {
+			e.printStackTrace();
+			assertEquals("", e.getMessage());
+		}
+	}
+
+	public void testParser49() {
+		try {
+			Parser p = new Parser();
+			ASTNode obj = p.parse("FullForm[Hold[abc;;;;; ]]");
+			assertEquals(obj.toString(), //
+					"FullForm(Hold(CompoundExpression(Times(Span(abc, All), Span(1, All)), Null)))");
+		} catch (Exception e) {
+			e.printStackTrace();
+			assertEquals("", e.getMessage());
+		}
+	}
+
+	public void testParser50() {
+		try {
+			Parser p = new Parser();
+			ASTNode obj = p.parse("FullForm[Hold[{a, b, c, d, e, f, g, h, i, j, k}[[3 ;; -3 ;; 2]]]]");
+			assertEquals(obj.toString(), //
+					"FullForm(Hold(Part(List(a, b, c, d, e, f, g, h, i, j, k), Span(3, -3, 2))))");
+		} catch (Exception e) {
+			e.printStackTrace();
+			assertEquals("", e.getMessage());
+		}
+	}
+
+	public void testParser51() {
+		try {
+			Parser p = new Parser();
+			ASTNode obj = p.parse("FullForm[Hold[UT[n, ttt\\[Lambda]abc0]]]");
+			assertEquals(obj.toString(), //
+					"FullForm(Hold(UT(n, tttλabc0)))");
+		} catch (Exception e) {
+			e.printStackTrace();
+			assertEquals("", e.getMessage());
+		}
+	}
+
+	public void testParser52() {
+		try {
+			Parser p = new Parser();
+			ASTNode obj = p.parse("FullForm[Hold[{1, 2, 3, 4, 5}[[;; ;; -1]]]]");
+			assertEquals(obj.toString(), //
+					"FullForm(Hold(Part(List(1, 2, 3, 4, 5), Span(1, All, -1))))");
 		} catch (Exception e) {
 			e.printStackTrace();
 			assertEquals("", e.getMessage());

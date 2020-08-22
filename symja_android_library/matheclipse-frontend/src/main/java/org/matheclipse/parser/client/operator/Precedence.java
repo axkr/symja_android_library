@@ -24,6 +24,7 @@ public class Precedence {
 	public final static int DIVIDE = 470;
 	public final static int DIVIDEBY = 100;
 	public final static int DOT = 490;
+	public final static int ELEMENT = 250;
 	/**
 	 * See <a href=
 	 * "https://github.com/axkr/symja_android_library/blob/master/symja_android_library/doc/functions/Equal.md">Equal</a>
@@ -36,6 +37,7 @@ public class Precedence {
 	public final static int GREATER = 290;
 	public final static int GREATEREQUAL = 290;
 	public final static int INCREMENT = 660;
+	public final static int INTERSECTION = 305;
 	public final static int LESS = 290;
 	public final static int LESSEQUAL = 290;
 	public final static int MAP = 620;
@@ -87,4 +89,5 @@ public class Precedence {
 	public final static int UNSET = 670;
 	public final static int UPSET = 40;
 	public final static int UPSETDELAYED = 40;
+	public final static int WEDGE = 440;
 }
