@@ -2,11 +2,11 @@ package org.matheclipse.core.eval;
 
 import java.io.PrintStream;
 import java.io.Serializable;
+import java.util.ArrayDeque;
 import java.util.HashMap;
 import java.util.IdentityHashMap;
 import java.util.Map;
 import java.util.Set;
-import java.util.Stack;
 import java.util.concurrent.atomic.AtomicLong;
 import java.util.function.DoubleUnaryOperator;
 import java.util.function.Predicate;
@@ -33,13 +33,13 @@ import org.matheclipse.core.expression.ApfloatNum;
 import org.matheclipse.core.expression.Context;
 import org.matheclipse.core.expression.ContextPath;
 import org.matheclipse.core.expression.F;
+import org.matheclipse.core.expression.S;
 import org.matheclipse.core.integrate.rubi.UtilityFunctionCtors;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IASTAppendable;
 import org.matheclipse.core.interfaces.IASTMutable;
 import org.matheclipse.core.interfaces.IAssociation;
 import org.matheclipse.core.interfaces.IBuiltInSymbol;
-import org.matheclipse.core.interfaces.IDataExpr;
 import org.matheclipse.core.interfaces.IEvalStepListener;
 import org.matheclipse.core.interfaces.IEvaluator;
 import org.matheclipse.core.interfaces.IExpr;
@@ -72,7 +72,7 @@ public class EvalEngine implements Serializable {
 	 */
 	private static final long serialVersionUID = 8402201556123198590L;
 
-	public transient Cache<IAST, IExpr> REMEMBER_AST_CACHE = null;
+	public transient Cache<IAST, IExpr> rememberASTCache = null;
 
 	public final static boolean DEBUG = false;
 
@@ -182,7 +182,7 @@ public class EvalEngine implements Serializable {
 	 */
 	transient PrintStream fErrorPrintStream = null;
 
-	transient Stack<ContextPath> fContextPathStack;
+	transient ArrayDeque<ContextPath> fContextPathStack;
 
 	transient ContextPath fContextPath;
 
@@ -233,6 +233,8 @@ public class EvalEngine implements Serializable {
 	 * If not null, this map contains the header symbols for which the interactive trace should be printed.
 	 */
 	transient IdentityHashMap<ISymbol, ISymbol> fOnOffMap = null;
+
+	transient ArrayDeque<IExpr> fStack;
 
 	/**
 	 * The history list for the <code>Out[]</code> function.
@@ -393,9 +395,9 @@ public class EvalEngine implements Serializable {
 	 * 
 	 * @return
 	 */
-	public EvalEngine copy() {
+	public synchronized EvalEngine copy() {
 		EvalEngine engine = new EvalEngine();
-		engine.REMEMBER_AST_CACHE = REMEMBER_AST_CACHE;
+		engine.rememberASTCache = null; // rememberASTCache;
 		engine.fAnswer = fAnswer;
 		engine.fAssumptions = fAssumptions;
 		engine.fContextPath = fContextPath.copy();
@@ -570,7 +572,7 @@ public class EvalEngine implements Serializable {
 			if ((ISymbol.HOLDFIRST & attr) == ISymbol.NOATTRIBUTE) {
 				// the HoldFirst attribute is disabled
 				try {
-					if (!x.isAST(F.Unevaluated)) {
+					if (!x.isAST(S.Unevaluated)) {
 						selectNumericMode(attr, ISymbol.NHOLDFIRST, localNumericMode);
 						evalArg(rlist, ast, x, 1, isNumericFunction);
 						if (astSize == 2 && rlist[0].isPresent()) {
@@ -585,7 +587,7 @@ public class EvalEngine implements Serializable {
 			} else {
 				// the HoldFirst attribute is set here
 				try {
-					if (x.isAST(F.Evaluate)) {
+					if (x.isAST(S.Evaluate)) {
 						selectNumericMode(attr, ISymbol.NHOLDFIRST, localNumericMode);
 						evalArg(rlist, ast, x, 1, isNumericFunction);
 						if (astSize == 2 && rlist[0].isPresent()) {
@@ -606,7 +608,7 @@ public class EvalEngine implements Serializable {
 					try {
 						selectNumericMode(attr, ISymbol.NHOLDREST, localNumericMode);
 						ast.forEach(2, astSize, (arg, i) -> {
-							if (!arg.isAST(F.Unevaluated)) {
+							if (!arg.isAST(S.Unevaluated,2)) {
 								evalArg(rlist, ast, arg, i, isNumericFunction);
 							}
 						});
@@ -1187,7 +1189,11 @@ public class EvalEngine implements Serializable {
 		try {
 			IExpr temp;
 			fRecursionCounter++;
+			stackPush(expr);
 			if (fTraceMode) {
+				if (result.isAST(S.Unevaluated, 2)) {
+					return result.first();
+				}
 				fTraceStack.setUp(expr, fRecursionCounter);
 				temp = result.evaluate(this);
 				if (temp.isPresent()) {
@@ -1198,6 +1204,9 @@ public class EvalEngine implements Serializable {
 					result = temp;
 					long iterationCounter = 1;
 					while (true) {
+						if (result.isAST(S.Unevaluated, 2)) {
+							return result.first();
+						}
 						temp = result.evaluate(this);
 						if (temp.isPresent()) {
 							if (fStopRequested) {
@@ -1221,6 +1230,9 @@ public class EvalEngine implements Serializable {
 					}
 				}
 			} else {
+				if (result.isAST(S.Unevaluated, 2)) {
+					return result.first();
+				}
 				temp = result.evaluate(this);
 				if (temp.isPresent()) {
 					if (fStopRequested) {
@@ -1236,6 +1248,9 @@ public class EvalEngine implements Serializable {
 					result = temp;
 					long iterationCounter = 1;
 					while (true) {
+						if (result.isAST(S.Unevaluated, 2)) {
+							return result.first();
+						}
 						temp = result.evaluate(this);
 						if (temp.isPresent()) {
 							if (fStopRequested) {
@@ -1280,6 +1295,7 @@ public class EvalEngine implements Serializable {
 			printMessage("Evaluation aborted: " + result.toString());
 			throw AbortException.ABORTED;
 		} finally {
+			stackPop();
 			if (fTraceMode) {
 				fTraceStack.tearDown(fRecursionCounter);
 			}
@@ -1478,8 +1494,8 @@ public class EvalEngine implements Serializable {
 		IAST ast;
 		if (argsAST.exists(x -> x.isAST(F.Unevaluated, 2))) {
 			ast = argsAST.map(x -> {
-				if (x.isAST(F.Unevaluated, 2)) {
-					return ((IAST) x).arg1();
+				if (x.isAST(S.Unevaluated, 2)) {
+					return x.first();
 				}
 				return x;
 			}, 1);
@@ -1598,10 +1614,15 @@ public class EvalEngine implements Serializable {
 
 			if ((ISymbol.HOLDFIRST & attr) == ISymbol.NOATTRIBUTE) {
 				// the HoldFirst attribute isn't set here
-				if (astSize > 1 && ast.arg1().isAST()) {
+				if (astSize > 1) {
 					IExpr expr = ast.arg1();
 					if (expr.isAST()) {
 						resultList = evalSetAttributeArg(ast, 1, (IAST) expr, resultList, noEvaluation, level);
+					} else if (!expr.isPatternExpr()) {
+						IExpr temp = expr.evaluate(this);
+						if (temp.isPresent()) {
+							resultList = ast.setAtCopy(1, temp);
+						}
 					}
 				}
 			}
@@ -1612,6 +1633,15 @@ public class EvalEngine implements Serializable {
 						IExpr expr = ast.get(i);
 						if (expr.isAST()) {
 							resultList = evalSetAttributeArg(ast, i, (IAST) expr, resultList, noEvaluation, level);
+						} else if (!expr.isPatternExpr()) {
+							IExpr temp = expr.evaluate(this);
+							if (temp.isPresent()) {
+								if (resultList.isPresent()) {
+									resultList.set(i, temp);
+								} else {
+									resultList = ast.setAtCopy(i, temp);
+								}
+							}
 						}
 					}
 				}
@@ -1923,6 +1953,9 @@ public class EvalEngine implements Serializable {
 	}
 
 	public int getIterationLimit() {
+		if (fStopRequested) {
+			throw TimeoutException.TIMED_OUT;
+		}
 		return fIterationLimit;
 	}
 
@@ -1973,6 +2006,9 @@ public class EvalEngine implements Serializable {
 	}
 
 	public int getRecursionCounter() {
+		if (fStopRequested) {
+			throw TimeoutException.TIMED_OUT;
+		}
 		return fRecursionCounter;
 	}
 
@@ -1980,6 +2016,9 @@ public class EvalEngine implements Serializable {
 	 * @return
 	 */
 	public int getRecursionLimit() {
+		if (fStopRequested) {
+			throw TimeoutException.TIMED_OUT;
+		}
 		return fRecursionLimit;
 	}
 
@@ -1992,6 +2031,15 @@ public class EvalEngine implements Serializable {
 	 */
 	public String getSessionID() {
 		return fSessionID;
+	}
+
+	/**
+	 * Get the current stack of expression evaluation.
+	 * 
+	 * @return
+	 */
+	public ArrayDeque<IExpr> getStack() {
+		return fStack;
 	}
 
 	/**
@@ -2041,6 +2089,7 @@ public class EvalEngine implements Serializable {
 	 * Initialize this <code>EvalEngine</code>
 	 */
 	final public void init() {
+		stackBegin();
 		fNumericPrecision = 15;
 		fSignificantFigures = 6;
 		fRecursionCounter = 0;
@@ -2059,9 +2108,25 @@ public class EvalEngine implements Serializable {
 		fSeconds = 0;
 		fModifiedVariablesList = null;
 		fMessageShortcut = null;
-		fContextPathStack = new Stack<ContextPath>();
+		fContextPathStack = new ArrayDeque<ContextPath>();
 		fContextPath = ContextPath.initialContext();
-		REMEMBER_AST_CACHE = null;
+		rememberASTCache = null;
+	}
+
+	public ArrayDeque<IExpr> stackBegin() {
+		fStack = new ArrayDeque<IExpr>(256);
+		return fStack;
+	}
+
+	public void stackPush(IExpr expr) {
+		fStack.push(expr);
+	}
+
+	public IExpr stackPop() {
+		if (fStack.isEmpty()) {
+			return F.NIL;
+		}
+		return fStack.pop();
 	}
 
 	/**
@@ -2269,6 +2334,7 @@ public class EvalEngine implements Serializable {
 	 * 
 	 */
 	public void reset() {
+		stackBegin();
 		fNumericPrecision = 15;
 		fSignificantFigures = 6;
 		fNumericMode = false;
@@ -2283,7 +2349,7 @@ public class EvalEngine implements Serializable {
 		fSeconds = 0;
 		fModifiedVariablesList = null;
 		fMessageShortcut = null;
-		REMEMBER_AST_CACHE = null;
+		rememberASTCache = null;
 
 		if (fOnOffMode && fOnOffUnique) {
 			fOnOffUniqueMap = new HashMap<IExpr, IExpr>();
@@ -2456,6 +2522,15 @@ public class EvalEngine implements Serializable {
 	 */
 	public void setSessionID(final String string) {
 		fSessionID = string;
+	}
+
+	/**
+	 * Set the stack which should be active for the evaluation engine.
+	 * 
+	 * @param stack
+	 */
+	public void setStack(ArrayDeque<IExpr> stack) {
+		fStack = stack;
 	}
 
 	/**

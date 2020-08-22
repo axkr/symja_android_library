@@ -8,14 +8,15 @@ import org.matheclipse.core.eval.exception.ValidateException;
 import org.matheclipse.core.eval.interfaces.AbstractEvaluator;
 import org.matheclipse.core.eval.interfaces.ISetEvaluator;
 import org.matheclipse.core.expression.ASTAssociation;
-import org.matheclipse.core.expression.ASTDataset;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.expression.S;
 import org.matheclipse.core.generic.Predicates;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IASTAppendable;
+import org.matheclipse.core.interfaces.IASTDataset;
 import org.matheclipse.core.interfaces.IASTMutable;
 import org.matheclipse.core.interfaces.IAssociation;
+import org.matheclipse.core.interfaces.IBuiltInSymbol;
 import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.interfaces.ISymbol;
 import org.matheclipse.parser.client.FEConfig;
@@ -98,18 +99,19 @@ public class AssociationFunctions {
 			newSymbol.setAttributes(ISymbol.HOLDALL);
 		}
 
-		public IExpr evaluateSet(final IExpr leftHandSide, IExpr rightHandSide, EvalEngine engine) {
+		public IExpr evaluateSet(final IExpr leftHandSide, IExpr rightHandSide, IBuiltInSymbol builtinSymbol,
+				EvalEngine engine) {
 			if (leftHandSide.head().isSymbol()) {
 				ISymbol symbol = (ISymbol) leftHandSide.head();
 
 				IExpr temp = symbol.assignedValue();
 				if (temp == null) {
 					// `1` is not a variable with a value, so its value cannot be changed.
-					return IOFunctions.printMessage(F.Set, "rvalue", F.List(symbol), engine);
+					return IOFunctions.printMessage(builtinSymbol, "rvalue", F.List(symbol), engine);
 				} else {
 					if (symbol.isProtected()) {
 						// Symbol `1` is Protected.
-						return IOFunctions.printMessage(F.Set, "wrsym", F.List(symbol), EvalEngine.get());
+						return IOFunctions.printMessage(builtinSymbol, "wrsym", F.List(symbol), EvalEngine.get());
 					}
 					try {
 						IExpr lhsHead = engine.evaluate(symbol);
@@ -121,7 +123,7 @@ public class AssociationFunctions {
 							return rightHandSide;
 						}
 					} catch (ValidateException ve) {
-						return engine.printMessage(F.Set, ve);
+						return engine.printMessage(builtinSymbol, ve);
 						// } catch (RuntimeException rex) {
 						// if (FEConfig.SHOW_STACKTRACE) {
 						// rex.printStackTrace();
@@ -214,8 +216,7 @@ public class AssociationFunctions {
 				return mapHeadIfPresent(list, head);
 			}
 			if (arg1.isDataSet()) {
-				ASTDataset dataset = (ASTDataset) arg1;
-				return dataset.columnNames();
+				return ((IASTDataset) arg1).columnNames();
 			}
 			if (arg1.isList()) {
 				if (arg1.isListOfRules(true)) {
@@ -233,7 +234,7 @@ public class AssociationFunctions {
 				}
 
 				// thread over Lists in first argument
-				return ((IAST) arg1).mapThread(ast.setAtCopy(1, F.Null), 1);
+				return ((IAST) arg1).mapThread(ast.setAtCopy(1, S.Null), 1);
 			}
 			return F.NIL;
 		}
@@ -335,8 +336,7 @@ public class AssociationFunctions {
 		public IExpr evaluate(final IAST ast, EvalEngine engine) {
 			IExpr arg1 = ast.arg1();
 			if (arg1.isDataSet()) {
-				ASTDataset dataset = (ASTDataset) arg1;
-				return dataset.structure();
+				return ((IASTDataset) arg1).structure();
 			}
 			return F.NIL;
 		}
@@ -353,8 +353,7 @@ public class AssociationFunctions {
 		public IExpr evaluate(final IAST ast, EvalEngine engine) {
 			IExpr arg1 = ast.arg1();
 			if (arg1.isDataSet()) {
-				ASTDataset dataset = (ASTDataset) arg1;
-				return dataset.summary();
+				return ((IASTDataset) arg1).summary();
 			}
 			return F.NIL;
 		}
@@ -391,7 +390,7 @@ public class AssociationFunctions {
 				}
 
 				// thread over Lists in first argument
-				return ((IAST) arg1).mapThread(ast.setAtCopy(1, F.Null), 1);
+				return ((IAST) arg1).mapThread(ast.setAtCopy(1, S.Null), 1);
 			}
 			return F.NIL;
 		}

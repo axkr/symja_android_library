@@ -143,8 +143,8 @@ public class ExprEvaluatorTests extends TestCase {
 				F.List(F.x, F.CN2, F.C3), //
 				F.List(F.x, F.C5, F.CN3), //
 				F.List(F.x, F.CN3, F.CN1D2), //
-				F.List(F.CN5), //  simulate level spec
-				F.List(F.C7), //  simulate level spec
+				F.List(F.CN5), // simulate level spec
+				F.List(F.C7), // simulate level spec
 				F.C1DSqrt5, //
 				F.Divide(F.Plus(F.C1, F.Sqrt(5)), F.C2), // GoldenRatio
 				F.Divide(F.C2, F.Plus(F.C1, F.Sqrt(5))), // 1/GoldenRatio
@@ -295,11 +295,11 @@ public class ExprEvaluatorTests extends TestCase {
 		Config.MAX_OUTPUT_SIZE = 10000;
 		Config.MAX_INPUT_LEAVES = 100L;
 		Config.MAX_MATRIX_DIMENSION_SIZE = 100;
-		Config.MAX_PRECISION_APFLOAT = 100;  
+		Config.MAX_PRECISION_APFLOAT = 100;
 		Config.MAX_BIT_LENGTH = 200000;
 		Config.MAX_POLYNOMIAL_DEGREE = 100;
 		Config.FILESYSTEM_ENABLED = false;
-		
+
 		EvalEngine engine = new EvalEngine(true);
 		engine.setRecursionLimit(256);
 		engine.setIterationLimit(1000);
@@ -364,8 +364,8 @@ public class ExprEvaluatorTests extends TestCase {
 				F.List(F.x, F.CN2, F.C3), //
 				F.List(F.x, F.C5, F.CN3), //
 				F.List(F.x, F.CN3, F.CN1D2), //
-				F.List(F.CN5), //  simulate level spec
-				F.List(F.C7), //  simulate level spec
+				F.List(F.CN5), // simulate level spec
+				F.List(F.C7), // simulate level spec
 				F.C1DSqrt5, //
 				F.Divide(F.Plus(F.C1, F.Sqrt(5)), F.C2), // GoldenRatio
 				F.Divide(F.C2, F.Plus(F.C1, F.Sqrt(5))), // 1/GoldenRatio
@@ -439,7 +439,7 @@ public class ExprEvaluatorTests extends TestCase {
 		Config.MAX_OUTPUT_SIZE = 10000;
 		Config.MAX_INPUT_LEAVES = 100L;
 		Config.MAX_MATRIX_DIMENSION_SIZE = 100;
-		Config.MAX_PRECISION_APFLOAT = 100;  
+		Config.MAX_PRECISION_APFLOAT = 100;
 		Config.MAX_BIT_LENGTH = 200000;
 		Config.MAX_POLYNOMIAL_DEGREE = 100;
 		Config.FILESYSTEM_ENABLED = false;
@@ -500,8 +500,8 @@ public class ExprEvaluatorTests extends TestCase {
 				F.List(F.x, F.CN2, F.C3), //
 				F.List(F.x, F.C5, F.CN3), //
 				F.List(F.x, F.CN3, F.CN1D2), //
-				F.List(F.CN5), //  simulate level spec
-				F.List(F.C7), //  simulate level spec
+				F.List(F.CN5), // simulate level spec
+				F.List(F.C7), // simulate level spec
 				F.C1DSqrt5, //
 				F.C2Pi, //
 				F.CN3D2, //
@@ -646,8 +646,10 @@ public class ExprEvaluatorTests extends TestCase {
 					fail();
 				}
 			} finally {
-				thread.terminate();
-				thread.interrupt();
+				if (thread != null) {
+					thread.terminate();
+					thread.interrupt();
+				}
 			}
 		}
 	}

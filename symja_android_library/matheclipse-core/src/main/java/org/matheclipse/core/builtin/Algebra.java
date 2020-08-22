@@ -17,7 +17,6 @@ import static org.matheclipse.core.expression.S.Assumptions;
 import static org.matheclipse.core.expression.S.E;
 import static org.matheclipse.core.expression.S.I;
 import static org.matheclipse.core.expression.S.Log;
-import static org.matheclipse.core.expression.S.Null;
 import static org.matheclipse.core.expression.S.Pi;
 import static org.matheclipse.core.expression.S.Power;
 
@@ -3521,7 +3520,7 @@ public class Algebra {
 						IAST timesAST = (IAST) x1;
 						// Log[x_ * y_ * z_] :> Log(x)+Log(y)+Log(z)
 						IAST logResult = timesAST.setAtCopy(0, F.Plus);
-						logResult = logResult.mapThread(F.Log(F.Null), 1);
+						logResult = logResult.mapThread(F.Log(S.Null), 1);
 						return powerExpand(logResult, assumptions);
 					}
 				}
@@ -3551,7 +3550,7 @@ public class Algebra {
 					if (x1.isTimes()) {
 						// Power[x_ * y_, z_] :> x^z * y^z
 						IAST timesAST = (IAST) x1;
-						IASTMutable timesResult = timesAST.mapThread(Power(Null, x2), 1);
+						IASTMutable timesResult = timesAST.mapThread(Power(S.Null, x2), 1);
 						if (assumptions) {
 							IASTAppendable plusResult = F.PlusAlloc(timesAST.size() + 1);
 							plusResult.append(C1D2);

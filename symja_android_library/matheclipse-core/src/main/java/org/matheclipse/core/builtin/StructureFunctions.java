@@ -20,12 +20,12 @@ import org.matheclipse.core.eval.interfaces.AbstractFunctionEvaluator;
 import org.matheclipse.core.eval.util.Lambda;
 import org.matheclipse.core.eval.util.OpenFixedSizeMap;
 import org.matheclipse.core.eval.util.OptionArgs;
-import org.matheclipse.core.expression.ASTDataset;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.expression.S;
 import org.matheclipse.core.generic.Predicates;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IASTAppendable;
+import org.matheclipse.core.interfaces.IASTDataset;
 import org.matheclipse.core.interfaces.IASTMutable;
 import org.matheclipse.core.interfaces.IAssociation;
 import org.matheclipse.core.interfaces.IComplex;
@@ -204,7 +204,7 @@ public class StructureFunctions {
 			}
 			IExpr arg1 = evaledAST.arg1();
 			IExpr arg2 = evaledAST.arg2();
-			if (arg1.isQuantity()||arg2.isQuantity()) {
+			if (arg1.isQuantity() || arg2.isQuantity()) {
 				return F.NIL;
 			}
 			return evalApply(arg1, arg2, evaledAST, lastIndex, heads, engine);
@@ -675,35 +675,64 @@ public class StructureFunctions {
 
 	/**
 	 * <pre>
-	 * Head(expr)
+	 * <code>Head(expr)
+	 * </code>
 	 * </pre>
 	 * 
 	 * <blockquote>
 	 * <p>
 	 * returns the head of the expression or atom <code>expr</code>.
 	 * </p>
+	 * </blockquote>
+	 * 
+	 * <pre>
+	 * <code>Head(expr, newHead)
+	 * </code>
+	 * </pre>
+	 * 
+	 * <blockquote>
+	 * <p>
+	 * returns <code>newHead(Head(expr))</code>.
+	 * </p>
+	 * </blockquote>
 	 * <h3>Examples</h3>
 	 * 
 	 * <pre>
-	 * &gt; Head(a * b)
+	 * <code>&gt;&gt; Head(a * b)
 	 * Times
-	 * &gt; Head(6)
-	 * Integer
-	 * &gt; Head(x)
-	 * Symbol
-	 * </pre>
 	 * 
-	 * </blockquote>
+	 * &gt;&gt; Head(6)
+	 * Integer
+	 * 
+	 * &gt;&gt; Head(6+I)
+	 * Complex
+	 * 
+	 * &gt;&gt; Head(6.0)
+	 * Real
+	 * 
+	 * &gt;&gt; Head(6.0+I)
+	 * Complex
+	 * 
+	 * &gt;&gt; Head(3/4)
+	 * Rational
+	 * 
+	 * &gt;&gt; Head(x)
+	 * Symbol
+	 * </code>
+	 * </pre>
 	 */
 	private static class Head extends AbstractCoreFunctionEvaluator {
 		@Override
 		public IExpr evaluate(final IAST ast, EvalEngine engine) {
-			if (ast.isAST1()) {
-				return engine.evaluate(ast.arg1()).head();
+			if (ast.isAST2()) {
+				return F.unaryAST1(engine.evaluate(ast.arg2()), engine.evaluate(ast.arg1()).head());
 			}
-			return S.Symbol;
+			return engine.evaluate(ast.arg1()).head();
 		}
 
+		public int[] expectedArgSize(IAST ast) {
+			return IOFunctions.ARGS_1_2;
+		}
 	}
 
 	/**
@@ -1739,8 +1768,7 @@ public class StructureFunctions {
 					if (ast.arg1().isDataSet()) {
 						List<String> listOfStrings = Convert.toStringList(ast.arg2());
 						if (listOfStrings != null) {
-							ASTDataset dataset = (ASTDataset) ast.arg1();
-							return dataset.groupBy(listOfStrings);
+							return ((IASTDataset) ast.arg1()).groupBy(listOfStrings);
 						}
 						return F.NIL;
 					}

@@ -1010,8 +1010,8 @@ public class Integrate extends AbstractFunctionEvaluator {
 			boolean newCache = false;
 			try {
 
-				if (engine.REMEMBER_AST_CACHE != null) {
-					IExpr result = engine.REMEMBER_AST_CACHE.getIfPresent(ast);
+				if (engine.rememberASTCache != null) {
+					IExpr result = engine.rememberASTCache.getIfPresent(ast);
 					if (result != null) {// &&engine.getRecursionCounter()>0) {
 						if (result.isPresent()) {
 							return result;
@@ -1020,7 +1020,7 @@ public class Integrate extends AbstractFunctionEvaluator {
 					}
 				} else {
 					newCache = true;
-					engine.REMEMBER_AST_CACHE = CacheBuilder.newBuilder().maximumSize(50).build();
+					engine.rememberASTCache = CacheBuilder.newBuilder().maximumSize(50).build();
 				}
 				try {
 					engine.setQuietMode(true);
@@ -1029,7 +1029,7 @@ public class Integrate extends AbstractFunctionEvaluator {
 					}
 
 					// System.out.println(ast.toString());
-					engine.REMEMBER_AST_CACHE.put(ast, F.NIL);
+					engine.rememberASTCache.put(ast, F.NIL);
 					IExpr temp = F.Integrate.evalDownRule(EvalEngine.get(), ast);
 					if (temp.isPresent()) {
 						if (temp.equals(ast)) {
@@ -1040,7 +1040,7 @@ public class Integrate extends AbstractFunctionEvaluator {
 							return F.NIL;
 						}
 						if (temp.isAST()) {
-							engine.REMEMBER_AST_CACHE.put(ast, temp);
+							engine.rememberASTCache.put(ast, temp);
 						}
 						return temp;
 					}
@@ -1070,7 +1070,7 @@ public class Integrate extends AbstractFunctionEvaluator {
 			} finally {
 				engine.setRecursionLimit(limit);
 				if (newCache) {
-					engine.REMEMBER_AST_CACHE = null;
+					engine.rememberASTCache = null;
 				}
 				engine.setQuietMode(quietMode);
 			}

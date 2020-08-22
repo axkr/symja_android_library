@@ -598,8 +598,7 @@ public final class Validate {
 		IASTAppendable termsEqualZeroList;
 		if (expr.isList() || expr.isAnd()) {
 
-			// a list of equations or inequations or a boolean AND expression of
-			// equations
+			// a list of equations or inequations or a boolean AND expression of equations
 			eqns = (IAST) expr;
 			termsEqualZeroList = F.ListAlloc(eqns.size());
 			for (int i = 1; i < eqns.size(); i++) {
@@ -608,7 +607,7 @@ public final class Validate {
 					termsEqualZeroList.append(checkEquationAndInequation(eq));
 				} else {
 					// not an equation or inequation
-					throw new ArgumentTypeException("equation or inequation expression expected at position " + i);
+					throw new ArgumentTypeException("binary equation or inequation expression expected at position " + i);
 				}
 			}
 			return termsEqualZeroList;
@@ -625,7 +624,7 @@ public final class Validate {
 					F.C0 };
 			return F.function(F.Equal, arr);
 		}
-		if (eq.isAST()) {
+		if (eq.isAST2()) {
 			IAST equal = (IAST) eq;
 			IExpr head = equal.head();
 			if (head.equals(F.Equal) || head.equals(F.Unequal) || head.equals(F.Greater) || head.equals(F.GreaterEqual)
@@ -640,7 +639,7 @@ public final class Validate {
 			return F.False;
 		}
 		// not an equation or inequation
-		throw new ArgumentTypeException("equation or inequation expression expected instead of " + eq.toString());
+		throw new ArgumentTypeException("binary equation or inequation expression expected instead of " + eq.toString());
 	}
 
 	/**

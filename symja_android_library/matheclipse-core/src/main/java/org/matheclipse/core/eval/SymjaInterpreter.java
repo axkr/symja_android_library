@@ -82,7 +82,7 @@ public class SymjaInterpreter extends EvalUtilities {
 				if (result.equals(F.Null)) {
 					return buf.toString();
 				}
-				if (OutputFormFactory.get(true).convert(buf, result)) {
+				if (OutputFormFactory.get(engine.isRelaxedSyntax()).convert(buf, result)) {
 					return buf.toString();
 				}
 			}
@@ -93,7 +93,7 @@ public class SymjaInterpreter extends EvalUtilities {
 			if (expr.equals(F.Null)) {
 				return buf.toString();
 			}
-			if (OutputFormFactory.get(true).convert(buf, expr)) {
+			if (OutputFormFactory.get(engine.isRelaxedSyntax()).convert(buf, expr)) {
 				return buf.toString();
 			}
 		} catch (final RuntimeException re) {
@@ -152,7 +152,7 @@ public class SymjaInterpreter extends EvalUtilities {
 					if (result.equals(F.Null)) {
 						return buf.toString();
 					}
-					if (OutputFormFactory.get(true).convert(buf, result)) {
+					if (OutputFormFactory.get(engine.isRelaxedSyntax()).convert(buf, result)) {
 						return buf.toString();
 					}
 				}

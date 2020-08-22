@@ -5,8 +5,6 @@ import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.interfaces.ISignedNumber;
 import org.matheclipse.parser.client.math.MathException;
 
-import com.univocity.parsers.csv.CsvFormat;
-
 /**
  * {@link IQuantity} represents a magnitude and unit.
  * 

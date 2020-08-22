@@ -220,7 +220,7 @@ public class ExprEvaluatorTest extends TestCase {
 			assertEquals("1.7999999999999998", expr.toString());
 
 			StringWriter buf = new StringWriter();
-			OutputFormFactory.get(true).convert(buf, expr);
+			OutputFormFactory.get(util.getEvalEngine().isRelaxedSyntax()).convert(buf, expr);
 			assertEquals("1.7999999999999998", buf.toString());
 
 			buf = new StringWriter();
@@ -233,7 +233,7 @@ public class ExprEvaluatorTest extends TestCase {
 			assertEquals("1.0E-15", expr.toString());
 
 			buf = new StringWriter();
-			OutputFormFactory.get(true).convert(buf, expr);
+			OutputFormFactory.get(util.getEvalEngine().isRelaxedSyntax()).convert(buf, expr);
 			assertEquals("1.0E-15", buf.toString());
 
 		} catch (SyntaxError e) {

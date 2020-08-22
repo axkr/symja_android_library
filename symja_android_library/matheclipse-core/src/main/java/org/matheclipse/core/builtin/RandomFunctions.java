@@ -211,7 +211,16 @@ public final class RandomFunctions {
 					upperLimit = upperLimit.negate();
 					negative = true;
 				}
-				if (ast.isAST2()) {
+				if (ast.isAST2()&&!ast.arg2().isEmptyList()) {
+					if (ast.arg2().isList()) {
+						IAST list = (IAST) ast.arg2();
+						IExpr[] arr = new IExpr[list.size()];
+						arr[0] = F.RandomInteger(ast.arg1());
+						for (int i = 1; i < list.size(); i++) {
+							arr[i] = F.List(list.get(i));
+						}
+						return F.ast(arr, F.Table);
+					}
 					int size = ast.arg2().toIntDefault(Integer.MIN_VALUE);
 					if (size >= 0) {
 						IASTAppendable list = F.ListAlloc(size);
@@ -220,7 +229,7 @@ public final class RandomFunctions {
 						}
 						return list;
 					}
-
+					
 				} else {
 					return randomBigInteger(upperLimit, negative, tlr);
 				}

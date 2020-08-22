@@ -177,7 +177,7 @@ public class ASTAssociation extends AST implements IAssociation {
 
 	/** {@inheritDoc} */
 	@Override
-	public IASTAppendable copyHead(final int intialCapacity) {
+	public IAssociation copyHead(final int intialCapacity) {
 		return new ASTAssociation(intialCapacity, false);
 	}
 
@@ -347,6 +347,13 @@ public class ASTAssociation extends AST implements IAssociation {
 		return F.C0;
 	}
 
+	;
+	@Override
+	public IAST getRule(int position) {
+		IAST ast = normal(false);
+		return (IAST)ast.get(position); 
+	}
+	
 	@Override
 	public IExpr getValue(IExpr key) {
 		return getValue(key, () -> F.Missing(F.stringx("KeyAbsent"), key));

@@ -9,6 +9,7 @@ import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.exception.ConditionException;
 import org.matheclipse.core.eval.exception.ReturnException;
 import org.matheclipse.core.expression.F;
+import org.matheclipse.core.expression.S;
 import org.matheclipse.core.interfaces.ExprUtil;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IExpr;
@@ -206,7 +207,7 @@ public class PatternMatcherAndEvaluator extends PatternMatcher implements Extern
 			return true;
 		}
 
-		if (!(fRightHandSide.isCondition() || fRightHandSide.isModule() || fRightHandSide.isWith())) {
+		if (!(fRightHandSide.isCondition()|| fRightHandSide.isAST(S.Block,3) || fRightHandSide.isModule() || fRightHandSide.isWith())) {
 			return true;
 		} else {
 			if (!patternMap.isAllPatternsAssigned()) {

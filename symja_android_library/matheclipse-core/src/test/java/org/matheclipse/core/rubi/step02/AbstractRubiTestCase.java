@@ -92,7 +92,7 @@ public abstract class AbstractRubiTestCase extends TestCase {
 			}
 		}
 		final StringWriter buf = new StringWriter();
-		OutputFormFactory.get(true).convert(buf, result);
+		OutputFormFactory.get(fEvaluator.getEvalEngine().isRelaxedSyntax()).convert(buf, result);
 		return buf.toString();
 	}
 

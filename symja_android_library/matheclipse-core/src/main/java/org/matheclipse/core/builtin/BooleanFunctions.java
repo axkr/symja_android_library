@@ -21,7 +21,6 @@ import org.logicng.formulas.Variable;
 import org.logicng.solvers.MiniSat;
 import org.logicng.solvers.SATSolver;
 import org.logicng.transformations.cnf.BDDCNFTransformation;
-import org.logicng.transformations.dnf.CanonicalDNFEnumeration;
 import org.logicng.transformations.dnf.DNFFactorization;
 import org.logicng.transformations.simplification.AdvancedSimplifier;
 import org.logicng.transformations.simplification.DefaultRatingFunction;
@@ -434,7 +433,7 @@ public final class BooleanFunctions {
 
 			// initialize all list elements with Null
 			for (int i = 0; i < map.size(); i++) {
-				list.set(i + 1, F.Null);
+				list.set(i + 1, S.Null);
 			}
 
 			for (Literal a : literals) {
@@ -455,7 +454,7 @@ public final class BooleanFunctions {
 
 			// initialize all list elements with Null
 			for (int i = 0; i < map.size(); i++) {
-				list.set(i + 1, F.Null);
+				list.set(i + 1, S.Null);
 			}
 
 			for (Literal a : literals) {
@@ -923,7 +922,7 @@ public final class BooleanFunctions {
 			try {
 				FormulaFactory factory = new FormulaFactory();
 				LogicFormula lf = new LogicFormula(factory);
-				Formula formula = lf.expr2BooleanFunction(ast.arg1()); 
+				Formula formula = lf.expr2BooleanFunction(ast.arg1());
 				final AdvancedSimplifier simplifier = new AdvancedSimplifier(new DefaultRatingFunction());
 				FormulaTransformation transformation = transformation(ast, engine);
 				if (transformation == null) {
@@ -933,7 +932,7 @@ public final class BooleanFunctions {
 				final Formula simplified = formula.transform(simplifier).transform(transformation);
 				// formula = QuineMcCluskeyAlgorithm.compute(formula);
 				// System.out.println(formula.toString());
-				IExpr result = lf.booleanFunction2Expr(simplified); 
+				IExpr result = lf.booleanFunction2Expr(simplified);
 				return result;
 			} catch (final ValidateException ve) {
 				// int number validation
@@ -4488,7 +4487,7 @@ public final class BooleanFunctions {
 						}
 						singleBit <<= 1;
 					}
-					if ((count % 2) == 1) {
+					if ((count & 1) == 1) {
 						IASTMutable andAST = F.ast(F.And, size, true);
 						singleBit = 0b1;
 						int startPos = 1;

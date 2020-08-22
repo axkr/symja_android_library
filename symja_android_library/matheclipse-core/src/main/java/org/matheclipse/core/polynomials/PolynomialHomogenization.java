@@ -268,7 +268,7 @@ public class PolynomialHomogenization {
 				if (power.isPresent()) {
 					return power;
 				}
-				final IExpr b = ast.base();
+				final IExpr b = ast.base(); 
 				IExpr exp = ast.exponent();
 				if (exp.isReal()) {
 					IExpr base = replacePower(b, (ISignedNumber) exp);

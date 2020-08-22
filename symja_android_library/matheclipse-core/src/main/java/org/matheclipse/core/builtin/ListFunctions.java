@@ -38,7 +38,6 @@ import org.matheclipse.core.eval.util.LevelSpec;
 import org.matheclipse.core.eval.util.LevelSpecification;
 import org.matheclipse.core.eval.util.OptionArgs;
 import org.matheclipse.core.eval.util.Sequence;
-import org.matheclipse.core.expression.ASTDataset;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.expression.S;
 import org.matheclipse.core.generic.Comparators;
@@ -46,6 +45,7 @@ import org.matheclipse.core.generic.Functors;
 import org.matheclipse.core.generic.Predicates;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IASTAppendable;
+import org.matheclipse.core.interfaces.IASTDataset;
 import org.matheclipse.core.interfaces.IASTMutable;
 import org.matheclipse.core.interfaces.IAssociation;
 import org.matheclipse.core.interfaces.IExpr;
@@ -152,7 +152,9 @@ public final class ListFunctions {
 			S.CountDistinct.setEvaluator(new CountDistinct());
 			S.Delete.setEvaluator(new Delete());
 			S.DeleteDuplicates.setEvaluator(new DeleteDuplicates());
+			S.DeleteDuplicatesBy.setEvaluator(new DeleteDuplicatesBy());
 			S.DeleteCases.setEvaluator(new DeleteCases());
+			S.DuplicateFreeQ.setEvaluator(new DuplicateFreeQ());
 			S.Drop.setEvaluator(new Drop());
 			S.Extract.setEvaluator(new Extract());
 			S.First.setEvaluator(new First());
@@ -275,6 +277,10 @@ public final class ListFunctions {
 		@Override
 		public void remove() {
 			throw new UnsupportedOperationException();
+		}
+
+		public int allocHint() {
+			return fTo - fFrom;
 		}
 
 	}
@@ -467,22 +473,6 @@ public final class ListFunctions {
 				}
 			}
 			return result;
-		}
-	}
-
-	private static class PositionConverter implements IPositionConverter<IExpr> {
-		@Override
-		public IExpr toObject(final int i) {
-			return F.ZZ(i);
-		}
-
-		@Override
-		public int toInt(final IExpr position) {
-			int val = position.toIntDefault();
-			if (val < 0) {
-				return -1;
-			}
-			return val;
 		}
 	}
 
@@ -1244,6 +1234,52 @@ public final class ListFunctions {
 		}
 	}
 
+	/**
+	 * <pre>
+	 * <code>Commonest(data-values-list)
+	 * </code>
+	 * </pre>
+	 * 
+	 * <blockquote>
+	 * <p>
+	 * the mode of a list of data values is the value that appears most often.
+	 * </p>
+	 * </blockquote>
+	 * 
+	 * <pre>
+	 * <code>Commonest(data-values-list, n)
+	 * </code>
+	 * </pre>
+	 * 
+	 * <blockquote>
+	 * <p>
+	 * return the <code>n</code> values that appears most often.
+	 * </p>
+	 * </blockquote>
+	 * <p>
+	 * See
+	 * </p>
+	 * <ul>
+	 * <li><a href="https://en.wikipedia.org/wiki/Mode_(statistics)">Wikipedia - Mode (statistics)</a></li>
+	 * </ul>
+	 * <h3>Examples</h3>
+	 * 
+	 * <pre>
+	 * <code>&gt;&gt; Commonest({1, 3, 6, 6, 6, 6, 7, 7, 12, 12, 17}) 
+	 * {6}
+	 * </code>
+	 * </pre>
+	 * <p>
+	 * Given the list of data <code>{1, 1, 2, 4, 4}</code> the mode is not unique – the dataset may be said to be
+	 * <strong>bimodal</strong>, while a set with more than two modes may be described as <strong>multimodal</strong>.
+	 * </p>
+	 * 
+	 * <pre>
+	 * <code>&gt;&gt; Commonest({1, 1, 2, 4, 4}) 
+	 * {1,4}
+	 * </code>
+	 * </pre>
+	 */
 	private final static class Commonest extends AbstractEvaluator {
 
 		@Override
@@ -1661,6 +1697,28 @@ public final class ListFunctions {
 		}
 	}
 
+	/**
+	 * <pre>
+	 * <code>CountDistinct(list)
+	 * </code>
+	 * </pre>
+	 * 
+	 * <blockquote>
+	 * <p>
+	 * returns the number of distinct entries in <code>list</code>.
+	 * </p>
+	 * </blockquote>
+	 * <h3>Examples</h3>
+	 * 
+	 * <pre>
+	 * <code>&gt;&gt; CountDistinct({3, 7, 10, 7, 5, 3, 7, 10})
+	 * 4
+	 * 
+	 * &gt;&gt; CountDistinct({{a, a}, {a, a, a}, a, a}) 
+	 * 3
+	 * </code>
+	 * </pre>
+	 */
 	private final static class CountDistinct extends AbstractCoreFunctionEvaluator {
 
 		@Override
@@ -1969,6 +2027,91 @@ public final class ListFunctions {
 				return result;
 			}
 			return F.NIL;
+		}
+
+		@Override
+		public int[] expectedArgSize(IAST ast) {
+			return IOFunctions.ARGS_1_2;
+		}
+	}
+
+	private final static class DeleteDuplicatesBy extends AbstractFunctionEvaluator {
+
+		@Override
+		public IExpr evaluate(IAST ast, EvalEngine engine) {
+			if (ast.isAST1()) {
+				ast = F.operatorFormAppend(ast);
+				if (!ast.isPresent()) {
+					return F.NIL;
+				}
+			}
+			if (ast.isAST2()) {
+				if (ast.arg1().isList() || ast.arg1().isAssociation()) {
+					IExpr test = ast.arg2();
+					Set<IExpr> set = new HashSet<IExpr>();
+					if (ast.arg1().isList()) {
+						IAST list = (IAST) ast.arg1();
+						int size = list.size();
+						final IASTAppendable result = list.copyHead(size);
+						for (int i = 1; i < size; i++) {
+							IExpr arg = list.get(i);
+							IExpr x = engine.evaluate(F.unaryAST1(test, arg));
+							if (!set.contains(x)) {
+								result.append(arg);
+								set.add(x);
+							}
+						}
+						return result;
+					} else {
+						IAssociation list = (IAssociation) ast.arg1();
+						int size = list.size();
+						final IAssociation result = list.copyHead(size);
+						for (int i = 1; i < size; i++) {
+							IAST rule = list.getRule(i);
+							IExpr x = engine.evaluate(F.unaryAST1(test, rule.second()));
+							if (!set.contains(x)) {
+								result.appendRule(rule);
+								set.add(x);
+							}
+						}
+						return result;
+					}
+
+				}
+			}
+			return F.NIL;
+		}
+
+		@Override
+		public int[] expectedArgSize(IAST ast) {
+			return IOFunctions.ARGS_1_2;
+		}
+	}
+
+	private final static class DuplicateFreeQ extends AbstractFunctionEvaluator {
+
+		@Override
+		public IExpr evaluate(IAST ast, EvalEngine engine) {
+			IExpr test = F.Equal;
+			if (ast.isAST2()) {
+				test = ast.arg2();
+			}
+			if (ast.arg1().isList()) {
+				IAST list = (IAST) ast.arg1();
+				IExpr temp;
+				BiPredicate<IExpr, IExpr> biPredicate = Predicates.isBinaryTrue(test);
+				int size = list.size();
+				for (int i = 1; i < size; i++) {
+					temp = list.get(i);
+					for (int j = i + 1; j < list.size(); j++) {
+						if (biPredicate.test(list.get(j), temp)) {
+							return S.False;
+						}
+					}
+				}
+				return S.True;
+			}
+			return S.False;
 		}
 
 		@Override
@@ -2556,44 +2699,44 @@ public final class ListFunctions {
 
 		@Override
 		public IExpr evaluate(final IAST ast, EvalEngine engine) {
+			if (!ast.arg1().isList()) {
+				return IOFunctions.printMessage(ast.topHead(), "list", F.List(), engine);
+			}
+			IAST arg1 = (IAST) ast.arg1();
 			if (ast.isAST1()) {
-				return F.GatherBy(ast.arg1(), F.Identity);
+				return F.GatherBy(arg1, F.Identity);
 			}
-			if (ast.arg1().isAST()) {
-				IAST arg1 = (IAST) ast.arg1();
-				IExpr arg2 = ast.arg2();
-				if (arg2.isList()) {
-					final IAST list2 = (IAST) arg2;
-					final int size2 = list2.argSize();
-					switch (size2) {
-					case 0:
-						return F.GatherBy(ast.arg1(), F.Identity);
-					case 1:
-						return F.GatherBy(ast.arg1(), list2.arg1());
-					case 2:
-						return F.Map(F.Function(F.GatherBy(F.Slot1, list2.arg2())), F.GatherBy(arg1, list2.arg1()));
-					}
-					IAST r = list2.copyUntil(size2);
-					IExpr f = list2.last();
-					// GatherBy(l_, {r__, f_}) := Map(GatherBy(#, f)&, GatherBy(l, {r}), {Length({r})})
-					return F.Map(F.Function(F.GatherBy(F.Slot1, f)), F.GatherBy(arg1, r), F.List(F.ZZ(r.argSize())));
+			IExpr arg2 = ast.arg2();
+			if (arg2.isList()) {
+				final IAST list2 = (IAST) arg2;
+				final int size2 = list2.argSize();
+				switch (size2) {
+				case 0:
+					return F.GatherBy(ast.arg1(), F.Identity);
+				case 1:
+					return F.GatherBy(ast.arg1(), list2.arg1());
+				case 2:
+					return F.Map(F.Function(F.GatherBy(F.Slot1, list2.arg2())), F.GatherBy(arg1, list2.arg1()));
 				}
-				java.util.Map<IExpr, IASTAppendable> map = new TreeMap<IExpr, IASTAppendable>();
-				IASTAppendable result = F.ListAlloc(map.size());
-				for (int i = 1; i < arg1.size(); i++) {
-					IExpr temp = engine.evaluate(F.unaryAST1(arg2, arg1.get(i)));
-					IASTAppendable list = map.get(temp);
-					if (list == null) {
-						IASTAppendable subList = F.ListAlloc(arg1.get(i));
-						map.put(temp, subList);
-						result.append(subList);
-					} else {
-						list.append(arg1.get(i));
-					}
-				}
-				return result;
+				IAST r = list2.copyUntil(size2);
+				IExpr f = list2.last();
+				// GatherBy(l_, {r__, f_}) := Map(GatherBy(#, f)&, GatherBy(l, {r}), {Length({r})})
+				return F.Map(F.Function(F.GatherBy(F.Slot1, f)), F.GatherBy(arg1, r), F.List(F.ZZ(r.argSize())));
 			}
-			return F.NIL;
+			java.util.Map<IExpr, IASTAppendable> map = new TreeMap<IExpr, IASTAppendable>();
+			IASTAppendable result = F.ListAlloc(map.size());
+			for (int i = 1; i < arg1.size(); i++) {
+				IExpr temp = engine.evaluate(F.unaryAST1(arg2, arg1.get(i)));
+				IASTAppendable list = map.get(temp);
+				if (list == null) {
+					IASTAppendable subList = F.ListAlloc(arg1.get(i));
+					map.put(temp, subList);
+					result.append(subList);
+				} else {
+					list.append(arg1.get(i));
+				}
+			}
+			return result;
 		}
 
 		@Override
@@ -2622,8 +2765,7 @@ public final class ListFunctions {
 					if (ast.arg1().isDataSet()) {
 						List<String> listOfStrings = Convert.toStringList(ast.arg2());
 						if (listOfStrings != null) {
-							ASTDataset dataset = (ASTDataset) ast.arg1();
-							return dataset.groupBy(listOfStrings);
+							return ((IASTDataset) ast.arg1()).groupBy(listOfStrings);
 						}
 					}
 				} catch (RuntimeException rex) {
@@ -3802,6 +3944,22 @@ public final class ListFunctions {
 	 * </pre>
 	 */
 	private final static class Position extends AbstractCoreFunctionEvaluator {
+		
+		private static class PositionConverter implements IPositionConverter<IExpr> {
+			@Override
+			public IExpr toObject(final int i) {
+				return F.ZZ(i);
+			}
+
+			@Override
+			public int toInt(final IExpr position) {
+				int val = position.toIntDefault();
+				if (val < 0) {
+					return -1;
+				}
+				return val;
+			}
+		}
 
 		/**
 		 * Add the positions to the <code>resultCollection</code> where the matching expressions appear in

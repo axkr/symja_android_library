@@ -33,7 +33,6 @@ public final class FunctionDefinitions {
 			InterpolatingFunction.setEvaluator(new org.matheclipse.core.reflection.system.InterpolatingFunction());
 			InterpolatingPolynomial.setEvaluator(new org.matheclipse.core.reflection.system.InterpolatingPolynomial());
 			Interpolation.setEvaluator(new org.matheclipse.core.reflection.system.Interpolation());
-			Interval.setEvaluator(new org.matheclipse.core.reflection.system.Interval());
 			InverseFourier.setEvaluator(new org.matheclipse.core.reflection.system.InverseFourier());
 			InverseFunction.setEvaluator(new org.matheclipse.core.reflection.system.InverseFunction());
 			InverseLaplaceTransform.setEvaluator(new org.matheclipse.core.reflection.system.InverseLaplaceTransform());
@@ -68,10 +67,7 @@ public final class FunctionDefinitions {
 				CreateDirectory.setEvaluator(new org.matheclipse.core.reflection.system.CreateDirectory());
 				Export.setEvaluator(new org.matheclipse.core.reflection.system.Export());
 				ExportString.setEvaluator(new org.matheclipse.core.reflection.system.ExportString());
-				Import.setEvaluator(new org.matheclipse.core.reflection.system.Import());
 				OptimizeExpression.setEvaluator(new org.matheclipse.core.reflection.system.OptimizeExpression());
-				SemanticImport.setEvaluator(new org.matheclipse.core.reflection.system.SemanticImport());
-				SemanticImportString.setEvaluator(new org.matheclipse.core.reflection.system.SemanticImportString());
 				Share.setEvaluator(new org.matheclipse.core.reflection.system.Share());
 			}
 		}

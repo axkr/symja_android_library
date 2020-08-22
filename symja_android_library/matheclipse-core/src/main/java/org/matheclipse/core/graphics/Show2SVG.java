@@ -1,11 +1,11 @@
 package org.matheclipse.core.graphics;
 
-import java.awt.Color;
 import java.text.DecimalFormat;
 import java.text.DecimalFormatSymbols;
 import java.util.Locale;
 
 import org.matheclipse.core.basic.Config;
+import org.matheclipse.core.convert.RGBColor;
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.util.OptionArgs;
 import org.matheclipse.core.expression.F;
@@ -51,7 +51,7 @@ public class Show2SVG {
 		IAST numericAST = (IAST) engine.evalN(ast);
 		Dimensions2D dim = new Dimensions2D(350, 350);
 		// set a default value
-		dim.color = Color.BLUE;
+		dim.color = RGBColor.BLUE;
 		if (numericAST.size() > 2) {
 			final OptionArgs options = new OptionArgs(numericAST.topHead(), numericAST, 2, engine);
 			IExpr option = options.getOption(F.PlotRange);

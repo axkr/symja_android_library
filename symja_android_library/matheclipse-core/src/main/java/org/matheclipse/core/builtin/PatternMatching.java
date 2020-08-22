@@ -393,7 +393,7 @@ public final class PatternMatching {
 		}
 
 		@Override
-		public IExpr evaluateSet(final IExpr leftHandSide, IExpr rightHandSide, EvalEngine engine) {
+		public IExpr evaluateSet(final IExpr leftHandSide, IExpr rightHandSide, IBuiltInSymbol builtinSymbol, EvalEngine engine) {
 			if (leftHandSide.isAST(F.Default) && leftHandSide.size() > 1) {
 				ISymbol symbol = (ISymbol) leftHandSide.first();
 				if (symbol.isProtected()) {
@@ -1394,7 +1394,7 @@ public final class PatternMatching {
 						IBuiltInSymbol symbol = (IBuiltInSymbol) head;
 						IEvaluator eval = symbol.getEvaluator();
 						if (eval instanceof ISetEvaluator) {
-							IExpr temp = ((ISetEvaluator) eval).evaluateSet(leftHandSide, rightHandSide, engine);
+							IExpr temp = ((ISetEvaluator) eval).evaluateSet(leftHandSide, rightHandSide, S.Set, engine);
 							if (temp.isPresent()) {
 								return temp;
 							}
@@ -1512,9 +1512,25 @@ public final class PatternMatching {
 		@Override
 		public IExpr evaluate(final IAST ast, EvalEngine engine) {
 			final IExpr leftHandSide = ast.arg1();
+			IExpr head = engine.evaluate(leftHandSide.head());
+			if (head.isAssociation()) {
+				head = F.Association;
+			}
 			try {
 				final IExpr rightHandSide = ast.arg2();
 
+				if (head.isBuiltInSymbol()) {
+					if (leftHandSide.isAST()) {
+						IBuiltInSymbol symbol = (IBuiltInSymbol) head;
+						IEvaluator eval = symbol.getEvaluator();
+						if (eval instanceof ISetEvaluator) {
+							IExpr temp = ((ISetEvaluator) eval).evaluateSet(leftHandSide, rightHandSide, S.SetDelayed, engine);
+							if (temp.isPresent()) {
+								return temp;
+							}
+						}
+					}
+				}
 				createPatternMatcher(leftHandSide, rightHandSide, engine.isPackageMode(), engine);
 
 				return F.Null;

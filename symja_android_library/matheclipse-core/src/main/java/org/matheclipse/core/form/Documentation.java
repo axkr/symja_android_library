@@ -6,9 +6,12 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 
 import org.matheclipse.core.builtin.IOFunctions;
+import org.matheclipse.core.builtin.SourceCodeFunctions;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.interfaces.IAST;
+import org.matheclipse.core.interfaces.IBuiltInSymbol;
 import org.matheclipse.core.interfaces.IExpr;
+import org.matheclipse.core.interfaces.ISymbol;
 
 public class Documentation {
 
@@ -20,6 +23,11 @@ public class Documentation {
 	 * @return
 	 */
 	public static boolean getMarkdown(Appendable out, String builinFunctionName) {
+		ISymbol symbol = F.symbol(builinFunctionName);
+		String url = null;
+		if (symbol instanceof IBuiltInSymbol) {
+			url = SourceCodeFunctions.functionURL((IBuiltInSymbol) symbol);
+		}
 		// read markdown file
 		String fileName = builinFunctionName + ".md";
 
@@ -37,6 +45,11 @@ public class Documentation {
 				}
 				f.close();
 				is.close();
+				if (url != null) {
+					out.append("[Github master](");
+					out.append(url);
+					out.append(")\n\n");
+				}
 				return true;
 			}
 		} catch (IOException e) {
@@ -89,6 +102,11 @@ public class Documentation {
 	 * @param symbolName
 	 */
 	public static boolean printDocumentation(Appendable out, String symbolName) {
+		ISymbol symbol = F.symbol(symbolName);
+		String url = null;
+		if (symbol instanceof IBuiltInSymbol) {
+			url = SourceCodeFunctions.functionURL((IBuiltInSymbol) symbol);
+		}
 		// read markdown file
 		String fileName = symbolName + ".md";
 
@@ -115,6 +133,12 @@ public class Documentation {
 					}
 					out.append(line);
 					out.append("\n");
+				}
+				
+				if (url != null) {
+					out.append("[Github master](");
+					out.append(url);
+					out.append(")\n\n");
 				}
 				f.close();
 				is.close();

@@ -11,6 +11,7 @@ import org.matheclipse.core.expression.ID;
 import org.matheclipse.core.expression.S;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IASTAppendable;
+import org.matheclipse.core.interfaces.IBuiltInSymbol;
 import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.interfaces.ISymbol;
 
@@ -70,10 +71,10 @@ public class AttributeFunctions {
 			return F.NIL;
 		}
 
-		public IExpr evaluateSet(final IExpr leftHandSide, IExpr rightHandSide, EvalEngine engine) {
+		public IExpr evaluateSet(final IExpr leftHandSide, IExpr rightHandSide, IBuiltInSymbol builtinSymbol, EvalEngine engine) {
 			if (leftHandSide.isAST(F.Attributes, 2)) {
 				IExpr temp = engine.evaluate(F.SetAttributes(leftHandSide.first(), rightHandSide));
-				if (temp.equals(F.Null)) {
+				if (temp.equals(S.Null)) {
 					return rightHandSide;
 				}
 			}
@@ -133,7 +134,7 @@ public class AttributeFunctions {
 								clearAttributes(sym, arg2, engine);
 							}
 						}
-						return F.Null;
+						return S.Null;
 
 					}
 				}
@@ -164,7 +165,7 @@ public class AttributeFunctions {
 			if (attributes.isSymbol()) {
 				ISymbol attribute = (ISymbol) attributes;
 				clearAttributes(sym, attribute);
-				return F.Null;
+				return S.Null;
 			} else {
 				if (attributes.isList()) {
 					final IAST lst = (IAST) attributes;
@@ -173,10 +174,10 @@ public class AttributeFunctions {
 					// ISymbol attribute = (ISymbol) lst.get(i);
 					// clearAttributes(sym, attribute);
 					// }
-					return F.Null;
+					return S.Null;
 				}
 			}
-			return F.Null;
+			return S.Null;
 		}
 
 		/**
@@ -358,7 +359,6 @@ public class AttributeFunctions {
 			if (attributes.isSymbol()) {
 				ISymbol attribute = (ISymbol) attributes;
 				addAttributes(sym, attribute);
-				return F.Null;
 			} else if (attributes.isList()) {
 				final IAST lst = (IAST) attributes;
 				lst.forEach(x -> addAttributes(sym, (ISymbol) x));
@@ -366,9 +366,8 @@ public class AttributeFunctions {
 				// ISymbol attribute = (ISymbol) lst.get(i);
 				// addAttributes(sym, attribute);
 				// }
-				return F.Null;
 			}
-			return F.Null;
+			return S.Null;
 		}
 
 		/**
@@ -524,7 +523,7 @@ public class AttributeFunctions {
 				SetAttributes.addAttributes(sym, attributes, engine);
 			}
 		}
-		return F.Null;
+		return S.Null;
 	}
 
 	public static void initialize() {

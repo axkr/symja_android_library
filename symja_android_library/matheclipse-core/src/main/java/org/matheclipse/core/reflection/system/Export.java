@@ -7,8 +7,6 @@ import java.io.UnsupportedEncodingException;
 import java.io.Writer;
 import java.nio.charset.Charset;
 
-import javax.imageio.ImageIO;
-
 import org.jgrapht.Graph;
 import org.jgrapht.graph.DefaultEdge;
 import org.jgrapht.io.CSVExporter;
@@ -22,19 +20,14 @@ import org.matheclipse.core.basic.Config;
 import org.matheclipse.core.builtin.IOFunctions;
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.interfaces.AbstractEvaluator;
-import org.matheclipse.core.expression.ASTDataset;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.expression.WL;
 import org.matheclipse.core.expression.data.GraphExpr;
 import org.matheclipse.core.interfaces.IAST;
+import org.matheclipse.core.interfaces.IASTDataset;
 import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.interfaces.IStringX;
 import org.matheclipse.core.io.Extension;
-import org.matheclipse.core.tensor.io.ImageFormat;
-
-import com.univocity.parsers.csv.CsvFormat;
-
-import tech.tablesaw.api.Table;
 
 /**
  * Export some data from file system.
@@ -71,8 +64,8 @@ public class Export extends AbstractEvaluator {
 				}
 
 				if (format.equals(Extension.CSV)) {
-					if (arg2 instanceof ASTDataset) {
-						((ASTDataset) arg2).csv(writer);
+					if (arg2.isDataSet()) {
+						((IASTDataset) arg2).csv(writer);
 						return arg1;
 					}
 				} else if (format.equals(Extension.TABLE)) {

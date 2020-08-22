@@ -11,7 +11,6 @@ import org.matheclipse.core.basic.Config;
 import org.matheclipse.core.builtin.Algebra;
 import org.matheclipse.core.convert.AST2Expr;
 import org.matheclipse.core.eval.EvalEngine;
-import org.matheclipse.core.expression.ASTDataset;
 import org.matheclipse.core.expression.ASTRealMatrix;
 import org.matheclipse.core.expression.ASTRealVector;
 import org.matheclipse.core.expression.ASTSeriesData;
@@ -38,7 +37,7 @@ import org.matheclipse.core.interfaces.IPatternObject;
 import org.matheclipse.core.interfaces.IRational;
 import org.matheclipse.core.interfaces.ISignedNumber;
 import org.matheclipse.core.interfaces.ISymbol;
-import org.matheclipse.core.tensor.qty.IQuantity;
+import org.matheclipse.core.tensor.qty.IQuantity; 
 import org.matheclipse.parser.client.FEConfig;
 import org.matheclipse.parser.client.operator.ASTNodeFactory;
 import org.matheclipse.parser.client.operator.InfixOperator;
@@ -987,7 +986,7 @@ public class OutputFormFactory {
 	private void convert(final Appendable buf, final IExpr o, final int precedence, boolean isASTHead)
 			throws IOException {
 		if (o instanceof IAST) {
-			if (o instanceof ASTDataset) {
+			if (o.isDataSet()) {
 				// TODO improve output
 				buf.append(o.toString());
 				return;

@@ -59,8 +59,8 @@ public abstract class AbstractRubiTestCase extends TestCase {
 						// the expressions are textual equal
 						return expectedResult;
 					}
-					ExprParser parser =new ExprParser(fEvaluator.getEvalEngine(), true);
-					IExpr expr2=parser.parse(manuallyCheckedResult);
+					ExprParser parser = new ExprParser(fEvaluator.getEvalEngine(), true);
+					IExpr expr2 = parser.parse(manuallyCheckedResult);
 					IExpr expected = fEvaluator.eval(expr2);
 					if (result.equals(expected)) {
 						// the expressions are structurally equal
@@ -88,7 +88,7 @@ public abstract class AbstractRubiTestCase extends TestCase {
 					// the expressions are structurally equal
 					return expectedResult;
 				} else {
-					System.out.println("PossibleZeroQ[\n" + temp.toString()+ " \n]");
+					System.out.println("PossibleZeroQ[\n" + temp.toString() + " \n]");
 				}
 				// IExpr resultTogether= F.Together.of(F.ExpandAll(result));
 				// IExpr expectedTogether = F.Together.of(F.ExpandAll(expected));
@@ -99,7 +99,7 @@ public abstract class AbstractRubiTestCase extends TestCase {
 			}
 		}
 		final StringWriter buf = new StringWriter();
-		OutputFormFactory.get(true).convert(buf, result);
+		OutputFormFactory.get(fEvaluator.getEvalEngine().isRelaxedSyntax()).convert(buf, result);
 		return buf.toString();
 	}
 
@@ -139,7 +139,7 @@ public abstract class AbstractRubiTestCase extends TestCase {
 				System.err.flush();
 				return "";
 			}
-		} catch (final SyntaxError se) { 
+		} catch (final SyntaxError se) {
 			String msg = se.getMessage();
 			System.err.println(msg);
 			System.err.println();

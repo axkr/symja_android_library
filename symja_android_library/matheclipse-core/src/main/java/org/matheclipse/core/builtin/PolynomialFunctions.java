@@ -442,10 +442,14 @@ public class PolynomialFunctions {
 		public IExpr evaluate(final IAST ast, EvalEngine engine) {
 			int n = ast.arg1().toIntDefault(-1);
 			if (n >= 0) {
-				if (n > Config.MAX_POLYNOMIAL_DEGREE * 2) {
+				if (n / 100 > Config.MAX_POLYNOMIAL_DEGREE) {
 					PolynomialDegreeLimitExceeded.throwIt(n);
 				}
 				return cyclotomic(n, ast.arg2());
+			}
+			if (ast.arg1().isNumber()) {
+				// Non-negative machine-sized integer expected at position `2` in `1`.
+				IOFunctions.printMessage(ast.topHead(), "intnm", F.List(F.C1, ast), engine);
 			}
 			return F.NIL;
 		}

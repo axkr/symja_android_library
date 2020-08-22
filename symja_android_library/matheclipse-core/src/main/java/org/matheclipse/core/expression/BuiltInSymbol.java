@@ -24,6 +24,7 @@ import org.matheclipse.core.interfaces.IEvaluator;
 import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.interfaces.IPredicate;
 import org.matheclipse.core.interfaces.ISymbol;
+import org.matheclipse.parser.client.FEConfig;
 
 /**
  * Implements Symbols for function, constant and variable names
@@ -93,7 +94,11 @@ public class BuiltInSymbol extends Symbol implements IBuiltInSymbol {
 		super(symbolName, Context.SYSTEM);
 		fEvaluator = DUMMY_EVALUATOR;
 		fOrdinal = ordinal;
-		fAttributes = ISymbol.PROTECTED;
+		if (symbolName.charAt(0) != '$') {
+			fAttributes = ISymbol.PROTECTED;
+		} else if (FEConfig.PARSER_USE_LOWERCASE_SYMBOLS) {
+			fAttributes = ISymbol.PROTECTED;
+		}
 	}
 
 	// private BuiltInSymbol(final String symbolName, final IEvaluator evaluator) {
@@ -213,7 +218,7 @@ public class BuiltInSymbol extends Symbol implements IBuiltInSymbol {
 	protected String internalJavaStringAsFactoryMethod() {
 		if (Config.RUBI_CONVERT_SYMBOLS) {
 			if (fOrdinal >= 1) {
-				if (Config.RUBI_CONVERT_SYMBOLS && "C".equals(fSymbolName)  ) {
+				if (Config.RUBI_CONVERT_SYMBOLS && "C".equals(fSymbolName)) {
 					return fSymbolName + "Symbol";
 				}
 				return fSymbolName;

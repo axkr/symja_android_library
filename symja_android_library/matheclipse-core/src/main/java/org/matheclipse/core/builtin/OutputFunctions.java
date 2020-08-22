@@ -17,7 +17,6 @@ import org.matheclipse.core.eval.exception.Validate;
 import org.matheclipse.core.eval.interfaces.AbstractCoreFunctionEvaluator;
 import org.matheclipse.core.eval.interfaces.AbstractFunctionEvaluator;
 import org.matheclipse.core.eval.util.OptionArgs;
-import org.matheclipse.core.expression.ASTDataset;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.expression.S;
 import org.matheclipse.core.expression.data.GraphExpr;
@@ -25,6 +24,7 @@ import org.matheclipse.core.form.output.DoubleFormFactory;
 import org.matheclipse.core.form.output.JavaDoubleFormFactory;
 import org.matheclipse.core.form.output.JavaScriptFormFactory;
 import org.matheclipse.core.interfaces.IAST;
+import org.matheclipse.core.interfaces.IASTDataset;
 import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.interfaces.IInteger;
 import org.matheclipse.core.interfaces.IStringX;
@@ -569,8 +569,8 @@ public final class OutputFunctions {
 					String manipulateStr = ((IAST) arg1).arg1().toString();
 					return F.$str(manipulateStr, IStringX.APPLICATION_JAVASCRIPT);
 				}
-				if (arg1 instanceof ASTDataset) {
-					return F.$str(ASTDataset.datasetToJSForm((ASTDataset) arg1), IStringX.TEXT_HTML);
+				if (arg1.isDataSet()) {
+					return F.$str(((IASTDataset) arg1).datasetToJSForm(), IStringX.TEXT_HTML);
 				}
 				if (arg1 instanceof GraphExpr) {
 					return F.$str(GraphFunctions.graphToJSForm((GraphExpr) arg1), IStringX.APPLICATION_JAVASCRIPT);

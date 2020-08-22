@@ -3,14 +3,11 @@ package org.matheclipse.core.reflection.system;
 import org.matheclipse.core.builtin.IOFunctions;
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.interfaces.AbstractEvaluator;
-import org.matheclipse.core.expression.ASTDataset;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.interfaces.IAST;
+import org.matheclipse.core.interfaces.IASTDataset;
 import org.matheclipse.core.interfaces.IExpr;
-import org.matheclipse.core.interfaces.ISymbol;
 import org.matheclipse.parser.client.FEConfig;
-
-import jdk.nashorn.internal.ir.ExpressionStatement;
 
 /**
  * Import semantic data into a DataSet
@@ -29,8 +26,8 @@ public class Dataset extends AbstractEvaluator {
 				// return DataSetExpr.newInstance((IAST) ast.arg1());
 			}
 		}
-		if (ast.head() instanceof ASTDataset) {
-			ASTDataset dataSet = (ASTDataset) ast.head();
+		if (ast.head().isDataSet()) {
+			IASTDataset dataSet = (IASTDataset) ast.head();
 			IExpr arg1 = ast.arg1();
 			try {
 				IExpr arg2 = F.All;
@@ -46,13 +43,13 @@ public class Dataset extends AbstractEvaluator {
 							arg1.isAST(F.TakeLargest, 2) || //
 							arg1.isAST(F.TakeLargestBy, 3)) {
 						IExpr expr = dataSet.select(F.All, arg2);
-						if (expr instanceof ASTDataset) {
-							return F.unaryAST1(arg1, ((ASTDataset) expr).normal(false));
+						if (expr.isDataSet()) {
+							return F.unaryAST1(arg1, ((IASTDataset) expr).normal(false));
 						}
 					} else {
 						IExpr expr = engine.evaluate(F.unaryAST1(arg1, dataSet));
-						if (expr instanceof ASTDataset) {
-							return ((ASTDataset) expr).select(F.All, arg2);
+						if (expr.isDataSet()) {
+							return ((IASTDataset) expr).select(F.All, arg2);
 							// } else if (expr.isList() && ((IAST) expr).forAll(x -> x.isAssociation())) {
 							// return DataSetExpr.newInstance((IAST) ast.arg1());
 						}

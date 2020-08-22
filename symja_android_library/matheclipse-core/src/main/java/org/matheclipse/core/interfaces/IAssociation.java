@@ -19,12 +19,25 @@ public interface IAssociation extends IASTAppendable {
 	public IAssociation copy();
 
 	/**
+	 * Copy this association as empty association
+	 */
+	public IAssociation copyHead(final int intialCapacity);
+
+	/**
 	 * Return the key which points to the <code>position</code>.
 	 * 
 	 * @param position
 	 * @return
 	 */
 	public IExpr getKey(int position);
+
+	/**
+	 * Return the rule at the given <code>position</code>.
+	 * 
+	 * @param position
+	 * @return
+	 */
+	public IAST getRule(int position);
 
 	/**
 	 * Return the value associated to the <code>key</code>. If no value is available return
@@ -104,7 +117,7 @@ public interface IAssociation extends IASTAppendable {
 	 * @return the sorted association
 	 */
 	public IAssociation sort(Comparator<IExpr> comparator);
-	
+
 	/**
 	 * Get the values of this association as a<code>List(value1, value2,...)</code>
 	 * 

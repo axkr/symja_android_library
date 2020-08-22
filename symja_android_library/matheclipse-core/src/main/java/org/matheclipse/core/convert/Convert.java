@@ -1,6 +1,5 @@
 package org.matheclipse.core.convert;
-
-import java.awt.Color;
+ 
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -644,31 +643,31 @@ public class Convert {
 	}
 
 	/**
-	 * Convert the <code>RGBColor(r,g,b)</code> to a <code>java.awt.Color</code>
+	 * Convert the <code>RGBColor(r,g,b)</code> to a <code>org.matheclipse.core.convert.RGBColor</code>
 	 * 
-	 * @param rgbAST
+	 * @param rgbColorAST
 	 * @return <code>null</code> if the conversion is not possible
 	 */
-	public static java.awt.Color toAWTColor(IExpr rgbAST) { 
-		return  toAWTColorDefault(rgbAST, null);
+	public static RGBColor toAWTColor(IExpr rgbColorAST) { 
+		return  toAWTColorDefault(rgbColorAST, null);
 	}
 
-	public static java.awt.Color toAWTColorDefault(IExpr rgbAST, Color defaultColor) {
-		if (rgbAST.isAST(F.RGBColor, 4, 5)) {
-			IAST rgbColor = (IAST) rgbAST;
+	public static RGBColor toAWTColorDefault(IExpr rgbColorAST, RGBColor defaultColor) {
+		if (rgbColorAST.isAST(F.RGBColor, 4, 5)) {
+			IAST rgbColor = (IAST) rgbColorAST;
 			float r = (float) rgbColor.arg1().evalDouble();
 			float g = (float) rgbColor.arg2().evalDouble();
 			float b = (float) rgbColor.arg3().evalDouble();
-			return new Color(r, g, b);
+			return new RGBColor(r, g, b);
 		}
 		return defaultColor;
 	}
 
-	public static java.awt.Color toAWTColorDefault(IAST rgbColor) {
-		return toAWTColorDefault(rgbColor, Color.BLACK);
+	public static RGBColor toAWTColorDefault(IAST rgbColor) {
+		return toAWTColorDefault(rgbColor, RGBColor.BLACK);
 	}
 	
-	public static String toHex(java.awt.Color c) {
+	public static String toHex(RGBColor c) {
 		return "#"+Integer.toHexString(c.getRGB()).substring(2);
 	}
 }

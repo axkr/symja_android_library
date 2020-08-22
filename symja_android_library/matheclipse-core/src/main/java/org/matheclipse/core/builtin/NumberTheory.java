@@ -971,7 +971,7 @@ public final class NumberTheory {
 			}
 			// int ip = (int) doubleValue;
 			IASTAppendable continuedFractionList = F
-					.ListAlloc(iterationLimit > 0 && iterationLimit < 1000 ? iterationLimit + 10 : 10);
+					.ListAlloc(iterationLimit > 0 && iterationLimit < 1000 ? iterationLimit + 10 : 100);
 			int aNow = (int) doubleValue;
 			double tNow = doubleValue - aNow;
 			double tNext;

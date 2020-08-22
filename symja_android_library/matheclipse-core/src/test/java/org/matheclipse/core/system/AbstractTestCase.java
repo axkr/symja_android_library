@@ -184,7 +184,7 @@ public abstract class AbstractTestCase extends TestCase {
 				Config.MAX_AST_SIZE = 20000;
 				Config.MAX_MATRIX_DIMENSION_SIZE = 100;
 				Config.MAX_BIT_LENGTH = 200000;
-				Config.MAX_POLYNOMIAL_DEGREE=100;
+ 				Config.MAX_POLYNOMIAL_DEGREE=100;
 				Config.FILESYSTEM_ENABLED = false;
 				EvalEngine engine = new EvalEngine();
 				fScriptEngine = new MathScriptEngine(engine);// fScriptManager.getEngineByExtension("m");

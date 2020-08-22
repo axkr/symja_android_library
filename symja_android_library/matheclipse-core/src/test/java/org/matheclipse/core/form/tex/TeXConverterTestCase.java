@@ -205,17 +205,17 @@ public class TeXConverterTestCase extends TestCase {
 
 	public void testTeX030() {
 		check("a\\in \\mathbb{B}", //
-				"Element(a,Booleans)");
+				"a∈Booleans");
 		check("a\\in \\mathbb{C}", //
-				"Element(a,Complexes)");
+				"a∈Complexes");
 		check("a\\in \\mathbb{P}", //
-				"Element(a,Primes)");
+				"a∈Primes");
 		check("a\\in \\mathbb{Q}", //
-				"Element(a,Rationals)");
+				"a∈Rationals");
 		check("a\\in \\mathbb{Z}", //
-				"Element(a,Integers)");
+				"a∈Integers");
 		check("a\\in \\mathbb{R}", //
-				"Element(a,Reals)");
+				"a∈Reals");
 	}
 
 	public void testTeX031() {

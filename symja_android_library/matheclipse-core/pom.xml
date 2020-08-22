@@ -43,16 +43,6 @@
 			<version>1.10.0-SNAPSHOT</version>
 		</dependency>
 		<dependency>
-			<groupId>com.google.guava</groupId>
-			<artifactId>failureaccess</artifactId>
-			<version>1.0.1</version>
-		</dependency>
-		<dependency>
-			<groupId>com.google.guava</groupId>
-			<artifactId>guava</artifactId>
-			<version>29.0-jre</version>
-		</dependency>
-		<dependency>
 			<groupId>org.apache.logging.log4j</groupId>
 			<artifactId>log4j-core</artifactId>
 			<version>2.13.2</version>
@@ -117,11 +107,6 @@
 			<version>1.14</version>
 		</dependency>
 		<dependency>
-			<groupId>org.apache.commons</groupId>
-			<artifactId>commons-csv</artifactId>
-			<version>1.4</version>
-		</dependency>
-		<dependency>
 			<groupId>com.google.code.findbugs</groupId>
 			<artifactId>jsr305</artifactId>
 			<version>3.0.0</version>
@@ -170,29 +155,14 @@
 			<version>1.1.3</version>
 		</dependency>
 		<dependency>
-			<groupId>tech.tablesaw</groupId>
-			<artifactId>tablesaw-core</artifactId>
-			<version>0.38.1</version>
+			<groupId>it.unimi.dsi</groupId>
+			<artifactId>fastutil</artifactId>
+			<version>8.3.0</version>
 		</dependency>
 		<dependency>
-			<groupId>tech.tablesaw</groupId>
-			<artifactId>tablesaw-html</artifactId>
-			<version>0.38.1</version>
-		</dependency>
-		<dependency>
-			<groupId>tech.tablesaw</groupId>
-			<artifactId>tablesaw-jsplot</artifactId>
-			<version>0.38.1</version>
-		</dependency>
-		<dependency>
-			<groupId>tech.tablesaw</groupId>
-			<artifactId>tablesaw-json</artifactId>
-			<version>0.38.1</version>
-		</dependency>
-		<dependency>
-			<groupId>tech.tablesaw</groupId>
-			<artifactId>tablesaw-excel</artifactId>
-			<version>0.38.1</version>
+			<groupId>com.ibm.icu</groupId>
+			<artifactId>icu4j</artifactId>
+			<version>65.1</version>
 		</dependency>
 	</dependencies>
 

@@ -1,14 +1,13 @@
 package org.matheclipse.core.graphics;
 
-import java.awt.Color;
-
+import org.matheclipse.core.convert.RGBColor;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.ISignedNumber;
 
 public class Dimensions2D {
 
-	public Color color;
+	public RGBColor color;
 	public int width;
 	public int height;
 
@@ -25,7 +24,7 @@ public class Dimensions2D {
 	}
 
 	public Dimensions2D(int width, int height) {
-		this.color = Color.BLACK;
+		this.color = RGBColor.BLACK;
 		this.width = width;
 		this.height = height;
 		this.xMin = Double.MAX_VALUE;
@@ -93,12 +92,12 @@ public class Dimensions2D {
 	}
 
 	public void setColorRGB(IAST rgbColor) {
-		if (rgbColor.size()==4||rgbColor.size()==5) {
-			float r=(float) rgbColor.arg1().evalDouble();
-			float g=(float) rgbColor.arg2().evalDouble();
-			float b=(float) rgbColor.arg3().evalDouble();
-			color=new Color(r, g, b);
-		} 
+		if (rgbColor.size() == 4 || rgbColor.size() == 5) {
+			float r = (float) rgbColor.arg1().evalDouble();
+			float g = (float) rgbColor.arg2().evalDouble();
+			float b = (float) rgbColor.arg3().evalDouble();
+			color = new RGBColor(r, g, b);
+		}
 	}
 
 	public void setPlotRange(IAST p1, IAST p2) {

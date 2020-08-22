@@ -437,7 +437,7 @@ public final class Arithmetic {
 							return F.NIL;
 						}
 						IExpr rhs = engine.evaluate(F.binaryAST2(getArithmeticSymbol(), temp, ast.arg2()));
-						return ((ISetEvaluator) eval).evaluateSet(leftHandSide, rhs, engine);
+						return ((ISetEvaluator) eval).evaluateSet(leftHandSide, rhs, S.Set, engine);
 					}
 				}
 				if (leftHandSide.isSymbol()) {
@@ -530,7 +530,7 @@ public final class Arithmetic {
 				arg1 = ast.arg1();
 			}
 			if (arg1.isList()) {
-				return ((IAST) arg1).mapThread(F.Arg(F.Null), 1);
+				return ((IAST) arg1).mapThread(F.Arg(S.Null), 1);
 			}
 			if (arg1.isIndeterminate()) {
 				return F.Indeterminate;
@@ -653,7 +653,7 @@ public final class Arithmetic {
 				if (arg1.isAST()) {
 					IAST list = (IAST) arg1;
 					// Chop[{a,b,c}] -> {Chop[a],Chop[b],Chop[c]}
-					return list.mapThread(F.Chop(F.Null), 1);
+					return list.mapThread(F.Chop(S.Null), 1);
 				}
 				if (arg1.isNumber()) {
 					return F.chopNumber((INumber) arg1, delta);
@@ -1129,7 +1129,7 @@ public final class Arithmetic {
 				}
 			}
 			if (arg1.isPlus()) {
-				return ((IAST) arg1).mapThread((IASTMutable) F.Conjugate(F.Null), 1);
+				return ((IAST) arg1).mapThread((IASTMutable) F.Conjugate(S.Null), 1);
 			}
 			if (arg1.isTimes()) {
 				IASTAppendable result = F.NIL;
@@ -3204,8 +3204,11 @@ public final class Arithmetic {
 			} else if (base.isAST()) {
 				if (base.isInterval()) {
 					if (exponent.isInteger()) {
-						IInteger ii = (IInteger) exponent;
-						return org.matheclipse.core.expression.IntervalSym.power((IAST) base, ii);
+						return IntervalSym.power((IAST) base, (IInteger) exponent);
+						// return powerInterval(base, ii);
+					}
+					if (exponent.isReal()) {
+						return IntervalSym.power((IAST) base, (ISignedNumber) exponent);
 						// return powerInterval(base, ii);
 					}
 					// } else if (base.isQuantity()) {
@@ -4574,7 +4577,7 @@ public final class Arithmetic {
 				arg1 = ast.arg1();
 			}
 			if (arg1.isList()) {
-				return ((IAST) arg1).mapThread(F.Sign(F.Null), 1);
+				return ((IAST) arg1).mapThread(F.Sign(S.Null), 1);
 			}
 
 			if (arg1.isNumber()) {
@@ -5279,7 +5282,7 @@ public final class Arithmetic {
 				if (temp.isPlus()) {
 					IAST plus = (IAST) temp;
 					if (AbstractFunctionEvaluator.isNegativeWeighted(plus, true)) {
-						temp = EvalEngine.get().evaluate(plus.mapThread(F.binaryAST2(Times, CN1, F.Null), 2));
+						temp = EvalEngine.get().evaluate(plus.mapThread(F.binaryAST2(Times, CN1, S.Null), 2));
 						result = times.copyAppendable();
 						result.set(i, temp);
 						result.remove(1);

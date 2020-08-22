@@ -512,7 +512,7 @@ public class LowercaseTestCase extends AbstractTestCase {
 		check("f @@ {{a, b}, {c}, d}", //
 				"f({a,b},{c},d)");
 		check("apply(head, {3,4,5})", //
-				"Symbol");
+				"Head(3,4,5)");
 		check("apply(f, a)", //
 				"a");
 		check("apply(f, {a, \"string\", 3}, {-1})", //
@@ -1033,7 +1033,13 @@ public class LowercaseTestCase extends AbstractTestCase {
 		// TODO return 0
 		// check("Array(f,0,1,Plus)", //
 		// "0");
+		check("m=Array(Greater, {4, 4})", //
+				"{{False,False,False,False},{True,False,False,False},{True,True,False,False},{True,True,True,False}}");
+		check("Boole(m)", //
+				"{{0,0,0,0},{1,0,0,0},{1,1,0,0},{1,1,1,0}}");
 
+		check("Array(11,10)", //
+				"{11[1],11[2],11[3],11[4],11[5],11[6],11[7],11[8],11[9],11[10]}");
 		check("Array(Cos(#1/4)&,12,-1)", //
 				"{Cos(1/4),1,Cos(1/4),Cos(1/2),Cos(3/4),Cos(1),Cos(5/4),Cos(3/2),Cos(7/4),Cos(2),Cos(\n"
 						+ "9/4),Cos(5/2)}");
@@ -1888,6 +1894,15 @@ public class LowercaseTestCase extends AbstractTestCase {
 		check("f(3)", //
 				"f(3)");
 
+		check("m=i^2;Block({i = a}, i + m)", //
+				"a+a^2");
+		check("m=i^2;Module({i = a}, i + m)", //
+				"a+i^2");
+
+		check("h(x_):=Block({t}, t^2 - 1 /; (t = x - 4) > 1); h(10)", //
+				"35");
+		check("h(x_):=Block({t}, t^2 - 1 /; (t = x - 4) > 1); h(5)", //
+				"h(5)");
 	}
 
 	public void testBinaryDistance() {
@@ -2370,6 +2385,11 @@ public class LowercaseTestCase extends AbstractTestCase {
 	}
 
 	public void testCases() {
+		check("Cases({1,2,3,a}, _?NumberQ)", //
+				"{1,2,3}");
+		check("Cases({-2,7,-1.2,0,-5-3*I}, _?Negative)", //
+				"{-2,-1.2}");
+
 		check("Cases({{a, a}, {b, a}, {a, b, c}, {b, b}, {c, a}, {b, b, b}}, {__, a | b} | {c, __})", //
 				"{{a,a},{b,a},{b,b},{c,a},{b,b,b}}");
 		check("Cases({{2,1,0},{3,2,0},{2,0,0},{3,3,1}}, {_, 1 | 2, _})", //
@@ -3246,6 +3266,13 @@ public class LowercaseTestCase extends AbstractTestCase {
 	}
 
 	public void testCommonest() {
+		// https://en.wikipedia.org/wiki/Mode_(statistics)
+		check("Commonest({1, 3, 6, 6, 6, 6, 7, 7, 12, 12, 17})", //
+				"{6}");
+		// bimodal
+		check("Commonest({1, 1, 2, 4, 4})", //
+				"{1,4}");
+
 		check("Commonest({b, a, c, 2, a, b, 1, 2}, 4)", //
 				"{b,a,2,c}");
 		check("Commonest({b, a, c, 2, a, b, 1, 2})", //
@@ -4146,6 +4173,11 @@ public class LowercaseTestCase extends AbstractTestCase {
 	}
 
 	public void testCountDistinct() {
+		check("CountDistinct({3, 7, 10, 7, 5, 3, 7, 10})", //
+				"4");
+		check("CountDistinct({{a, a}, {a, a, a}, a, a})", //
+				"3");
+
 		check("CountDistinct({a, b, b, c, a})", //
 				"3");
 		check("CountDistinct(<|a -> 1, b -> 2, c -> 2|>)", //
@@ -4313,6 +4345,8 @@ public class LowercaseTestCase extends AbstractTestCase {
 	}
 
 	public void testCyclotomic() {
+		check("Cyclotomic(10, z)", //
+				"1-z+z^2-z^3+z^4");
 		check("Cyclotomic(101,-Infinity)", //
 				"Indeterminate");
 		check("Cyclotomic(2147483647,3/4)", //
@@ -4556,6 +4590,8 @@ public class LowercaseTestCase extends AbstractTestCase {
 	}
 
 	public void testDefault() {
+		check("Default(test) := 1", //
+				"1");
 		check("Default(test) = 1", //
 				"1");
 		check("test(x_., y_.) = {x, y}", //
@@ -4716,6 +4752,20 @@ public class LowercaseTestCase extends AbstractTestCase {
 				"{3,3,4}");
 		check("DeleteDuplicates({})", //
 				"{}");
+
+		check("l = {{0, 0, 0, 1, 0}, {1, 0, 1, 0, 1}, {1, 1, 1, 0, 0}, {0, 0, 0, 0, 1}, {1, 1, 1, 0, 1}};", //
+				"");
+		check("DeleteDuplicates(l, Total(#1) == Total(#2) &)", //
+				"{{0,0,0,1,0},{1,0,1,0,1},{1,1,1,0,1}}");
+	}
+
+	public void testDeleteDuplicatesBy() {
+		check("DeleteDuplicatesBy(<|a -> 1, b -> -1, c -> 2, d -> -2|>, Abs)", //
+				"<|a->1,c->2|>");
+		check("DeleteDuplicatesBy({{a, y}, {b, y}, {c, z}, {d, y}}, Last)", //
+				"{{a,y},{c,z}}");
+		check("DeleteDuplicatesBy(Last) @ {{a, y}, {b, y}, {c, z}, {d, y}}", //
+				"{{a,y},{c,z}}");
 	}
 
 	public void testDateObject() {
@@ -5532,6 +5582,8 @@ public class LowercaseTestCase extends AbstractTestCase {
 	}
 
 	public void testDo() {
+		check("Do(marray(i,10-i+1)=1, {i,1,10});marray(1,10)", //
+				"1");
 		check("Do(Print(i0),{})", //
 				"Do(Print(i0),{})");
 
@@ -5674,25 +5726,34 @@ public class LowercaseTestCase extends AbstractTestCase {
 				"DSolve({},y,t)");
 		check("DSolve(y'(t)==t+y(t), y, t)", //
 				"{{y->Function({t},-1-t+E^t*C(1))}}");
-		check("DSolve(y'(t)==y(t), y, t)", "{{y->Function({t},E^t*C(1))}}");
+		check("DSolve(y'(t)==y(t), y, t)", //
+				"{{y->Function({t},E^t*C(1))}}");
 
-		check("DSolve(y'(x)==2*x*y(x)^2, y, x)", "{{y->Function({x},1/(-x^2-C(1)))}}");
-		check("DSolve(y'(x)==2*x*y(x)^2, y(x), x)", "{{y(x)->1/(-x^2-C(1))}}");
-		check("DSolve({y'(x)==2*x*y(x)^2},y(x), x)", "{{y(x)->1/(-x^2-C(1))}}");
+		check("DSolve(y'(x)==2*x*y(x)^2, y, x)", //
+				"{{y->Function({x},1/(-x^2-C(1)))}}");
+		check("DSolve(y'(x)==2*x*y(x)^2, y(x), x)", //
+				"{{y(x)->1/(-x^2-C(1))}}");
+		check("DSolve({y'(x)==2*x*y(x)^2},y(x), x)", //
+				"{{y(x)->1/(-x^2-C(1))}}");
 
-		check("DSolve(D(f(x, y), x) == D(f(x, y), y), f, {x, y})",
+		check("DSolve(D(f(x, y), x) == D(f(x, y), y), f, {x, y})", //
 				"DSolve(Derivative(1,0)[f][x,y]==Derivative(0,1)[f][x,y],f,{x,y})");
 
 		// check("DSolve({y'(x)==y(x),y(0)==1},y(x), x)", "{{y(x)->E^x}}");
 		check("DSolve({y'(x)==y(x)+2,y(0)==1},y(x), x)", "{{y(x)->-2+3*E^x}}");
 
-		check("DSolve({y(0)==0,y'(x) + y(x) == a*Sin(x)}, y(x), x)", "{{y(x)->a/(2*E^x)-1/2*a*Cos(x)+1/2*a*Sin(x)}}");
-		check("DSolve({y'(x) + y(x) == a*Sin(x),y(0)==0}, y(x), x)", "{{y(x)->a/(2*E^x)-1/2*a*Cos(x)+1/2*a*Sin(x)}}");
+		check("DSolve({y(0)==0,y'(x) + y(x) == a*Sin(x)}, y(x), x)", //
+				"{{y(x)->a/(2*E^x)-1/2*a*Cos(x)+1/2*a*Sin(x)}}");
+		check("DSolve({y'(x) + y(x) == a*Sin(x),y(0)==0}, y(x), x)", //
+				"{{y(x)->a/(2*E^x)-1/2*a*Cos(x)+1/2*a*Sin(x)}}");
 
-		check("DSolve(y'(x) + y(x) == a*Sin(x), y(x), x)", "{{y(x)->C(1)/E^x-1/2*a*Cos(x)+1/2*a*Sin(x)}}");
+		check("DSolve(y'(x) + y(x) == a*Sin(x), y(x), x)", //
+				"{{y(x)->C(1)/E^x-1/2*a*Cos(x)+1/2*a*Sin(x)}}");
 
-		check("DSolve(y'(x)-x ==0, y(x), x)", "{{y(x)->x^2/2+C(1)}}");
-		check("DSolve(y'(x)+k*y(x) ==0, y(x), x)", "{{y(x)->C(1)/E^(k*x)}}");
+		check("DSolve(y'(x)-x ==0, y(x), x)", //
+				"{{y(x)->x^2/2+C(1)}}");
+		check("DSolve(y'(x)+k*y(x) ==0, y(x), x)", //
+				"{{y(x)->C(1)/E^(k*x)}}");
 
 		check("DSolve(y'(x)-3/x*y(x)-7==0, y(x), x)", //
 				"{{y(x)->-7/2*x+x^3*C(1)}}");
@@ -5717,11 +5778,62 @@ public class LowercaseTestCase extends AbstractTestCase {
 				"{{y(x)->1/(1/2+3*x)}}");
 	}
 
+	public void testDuplicateFreeQ() {
+		check("DuplicateFreeQ({1, 7, 8, 4, 3, 9, 2})", //
+				"True");
+		check("DuplicateFreeQ({1, 7, 8, 4, 3, 4, 1, 9, 9, 2})", //
+				"False");
+
+		check("l = {{0, 0, 0, 1, 0}, {1, 0, 1, 0, 1}, {1, 1, 1, 0, 0}, {0, 0, 0, 0, 1}, {1, 1, 1, 0, 1}};", //
+				"");
+		check("DuplicateFreeQ(l, Total(#1) == Total(#2) &)", //
+				"False");
+	}
+
 	public void testEasterSunday() {
 		check("EasterSunday(2000)", //
 				"{2000,4,23}");
 		check("EasterSunday(2030)", //
 				"{2030,4,21}");
+	}
+
+	public void testEcho() {
+		check("{Echo(f(x,y)), Print(g(a,b))}", //
+				// >> f(x,y)
+				// >> g(a,b)
+				"{f(x,y),Null}");
+		check("Echo(2*2)+Echo(3^4)", //
+				// >> 4
+				// >> 81
+				"85");
+		check("expr1; x = Echo(1 + 1, \"sum: \"); expr2", //
+				// >> sum: 2
+				"expr2");
+		check("expr1; x = Echo(f(x,g(y,z)), \"leaf count: \",LeafCount); expr2", //
+				// >> leaf count: 5
+				"expr2");
+		check("x = Echo[Unevaluated[1 + 1]]; x^2", //
+				// >> 1+1
+				"4");
+
+	}
+
+	public void testEchoFunction() {
+		check("{EchoFunction()[f(x,y)], Print(g(a,b))}", //
+				// >> f(x,y)
+				// >> g(a,b)
+				"{f(x,y),Null}");
+		check("EchoFunction()[2*2]+EchoFunction()[3^4]", //
+				// >> 4
+				// >> 81
+				"85");
+		check("EchoFunction(\"test: \", f)[expr]", //
+				// >> test: f(expr)
+				"expr");
+		check("EchoFunction(f)[expr]", //
+				// >> f(expr)
+				"expr");
+
 	}
 
 	public void testEdgeList() {
@@ -5813,13 +5925,13 @@ public class LowercaseTestCase extends AbstractTestCase {
 		check("Element(-Infinity, Reals)", //
 				"False");
 		check("Element(a | b | c, Reals)", //
-				"Element(a|b|c,Reals)");
+				"(a|b|c)∈Reals");
 		check("Element(a | 2 | c, Reals)", //
 				"True");
 		check("Element(pi, reals)", //
 				"True");
 		check("Element(sin, reals)", //
-				"Element(Sin,Reals)");
+				"Sin∈Reals");
 		// check("Element(Sqrt(2), #) & /@ {Complexes, Algebraics, Reals, Rationals, Integers, Primes}",//
 		// "");
 		check("Element(E, Algebraics)", //
@@ -7125,6 +7237,11 @@ public class LowercaseTestCase extends AbstractTestCase {
 	public void testFactorialPower() {
 		// check("FactorialPower(2-I, 2)", //
 		// "1-I*3"
+		// TODO
+		// check("Gamma(2.0+1.0)/Gamma(2.0-0.9+1.0)", //
+		// "1.91116");
+		// check("FactorialPower(2, 0.9)", //
+		// "1.91116");
 
 		check("FactorialPower(-1,1317624576693539401,1+Sqrt(2))", //
 				"FactorialPower(-1,1317624576693539401,1+Sqrt(2))");
@@ -8284,10 +8401,13 @@ public class LowercaseTestCase extends AbstractTestCase {
 	}
 
 	public void testFixedPointList() {
+		check("FixedPointList(-1+I,{x,-2,3})", //
+				"Iteration limit of 500 exceeded for FixedPointList(-1+I,{x,-2,3}).");
+
 		check("FixedPointList(x^2,1.5707963267948966)", //
 				"Recursion depth of 256 exceeded during evaluation of Null.");
 		check("FixedPointList(x_,Null)", //
-				"Recursion depth of 2147483647 exceeded during evaluation of Null.");
+				"Iteration limit of 500 exceeded for FixedPointList(x_,Null).");
 		check("FixedPointList(-1/2,14)", //
 				"FixedPointList(-1/2,14)");
 		check("FixedPointList(Cos, 1.0, 4)", //
@@ -9038,7 +9158,6 @@ public class LowercaseTestCase extends AbstractTestCase {
 		// TODO
 		// check("FunctionRange(Sqrt(x^2 - 1)/x, x, y)", //
 		// "");
-
 		check("FunctionRange(x^2-1, x, y)", //
 				"y>=-1");
 		check("FunctionRange(x/(1 + x^2), x, y)", //
@@ -11038,6 +11157,44 @@ public class LowercaseTestCase extends AbstractTestCase {
 	}
 
 	public void testInterval() {
+		check("Sqrt(Interval({1.0,2.0}))", //
+				"Interval({1.0,1.41421})");
+		check("Sqrt(Interval({-1,1}))", //
+				"Sqrt(Interval({-1,1}))");
+		check("Interval({1,2})+Interval({3,4})", //
+				"Interval({4,6})");
+		check("Interval({1,2})*Interval({3,4})", //
+				"Interval({3,8})");
+		check("Interval({1,2})/Interval({3,4})", //
+				"Interval({1/4,2/3})");
+		check("Interval({1.0,2.0})^2", //
+				"Interval({1.0,4.0})");
+		check("Interval({0.1,10.0})^(3/4)", //
+				"Interval({0.177828,5.62341})");
+		check("Interval({0.1,10.0})^(4/3)", //
+				"Interval({0.0464159,21.54435})");
+		check("Interval({0.1,10.0})^0.75", //
+				"Interval({0.177828,5.62341})");
+		check("Interval({0.1,10.0})^1.33333", //
+				"Interval({0.0464162,21.54418})");
+
+		check("Interval({-2,5})", //
+				"Interval({-2,5})");
+		check("Interval({-2,5})^2", //
+				"Interval({0,25})");
+		check("1/Interval({-2,5})", //
+				"Interval({-Infinity,-1/2},{1/5,Infinity})");
+		check("Abs(Interval({-Infinity,-1/2},{1/5,Infinity}))", //
+				"Interval({1/5,Infinity})");
+		check("Solve(3*x+2==Interval({-2,5}),x)", //
+				"{{x->Interval({-4/3,1})}}");
+		check("Limit(Sin(1/x)+1/2*Cos(x), x->Infinity)", //
+				"Interval({-1/2,1/2})");
+		check("Limit(2*Sin(1/x)+1/2*Cos(x), x->0)", //
+				"Indeterminate");
+		check("Limit(Sin(1/x), x->0)", //
+				"Indeterminate");
+
 		check("Interval(0.0``40)", //
 				"Interval({0,0})");
 		check("Interval(N(Pi,60))+Pi", //
@@ -11491,6 +11648,53 @@ public class LowercaseTestCase extends AbstractTestCase {
 
 	}
 
+	public void testIntervalMemberQ() {
+		check("IntervalMemberQ(Interval({4,6}), 2*E)", //
+				"True");
+		check("IntervalMemberQ(Interval({4,6}), 5.5)", //
+				"True");
+		check("IntervalMemberQ(Interval({4,10}), Interval({2*Pi, 3*Pi}))", //
+				"True");
+		check("IntervalMemberQ(Interval({4,10}), Interval({2*Pi, 4*Pi}))", //
+				"False");
+		check("IntervalMemberQ(Interval({4,6}), Interval({4, 6}))", //
+				"True");
+		check("IntervalMemberQ(Interval({3,7}), Interval({4, 6}))", //
+				"True");
+
+		// only floating-point values in intervals define a (small) extended interval
+		check("IntervalMemberQ(Interval(1.0), Interval(1))", //
+				"True");
+		check("IntervalMemberQ(Interval(1), Interval(1.0))", //
+				"False");
+
+	}
+
+	public void testIntervalIntersection() {
+		check("IntervalIntersection(Interval({-2, 3}), Interval({1, 4}))", //
+				"Interval({1,3})");
+		check("IntervalIntersection(Interval({-2, 0}), Interval({1, 4}))", //
+				"Interval()");
+		check("IntervalIntersection(Interval({-2, Pi}), Interval({E, 4}))", //
+				"Interval({E,Pi})");
+		check("IntervalIntersection(Interval({1, 2}, {3, 4}, {5, 7}, {8, 8.5}), Interval({1.5, 3.5}, {4.1, 6}, {9, 10}))", //
+				"Interval({1.5,2},{3,3.5},{5,6})");
+
+	}
+
+	public void testIntervalUnion() {
+		check("IntervalUnion(Interval({-2, 3}), Interval({1, 4}))", //
+				"Interval({-2,4})");
+		check("IntervalUnion(Interval({-2, 0}), Interval({1, 4}))", //
+				"Interval({-2,0},{1,4})");
+		check("IntervalUnion(Interval({-2, Pi}), Interval({E, 4}))", //
+				"Interval({-2,4})");
+		check("IntervalUnion(Interval({-2, E}), Interval({Pi, 4}))", //
+				"Interval({-2,E},{Pi,4})");
+		check("IntervalUnion(Interval({1, 2}, {3, 4}, {5, 7}, {8, 8.5}), Interval({1.5, 3.5}, {4.1, 6}, {9, 10}))", //
+				"Interval({1,4},{4.1,7},{8,8.5},{9,10})");
+	}
+
 	public void testInverse() {
 		check("Inverse(-2)", //
 				"Inverse(-2)");
@@ -11798,6 +12002,7 @@ public class LowercaseTestCase extends AbstractTestCase {
 	}
 
 	public void testJSForm() {
+		EvalEngine.get().resetModuleCounter4JUnit();
 		// check("JSForm(Ramp(x))", //
 		// "((x>=0) ? x : ( 0 ))");
 
@@ -11831,16 +12036,16 @@ public class LowercaseTestCase extends AbstractTestCase {
 				"(20.085536923187664)-Math.cos((9.869604401089358)/x)");
 		// JSXGraph.org syntax
 		check("JSForm(Manipulate(Plot(Sin(x)*Cos(1 + a*x), {x, 0, 2*Pi}, PlotRange->{-1,2}), {a,0,10}))", //
-				"var board = JXG.JSXGraph.initBoard('jxgbox', {axis:true,boundingbox:[-0.8641592653589794,2.7,7.147344572538565,-1.7]});\n"
+				"var board = JXG.JSXGraph.initBoard('jxgbox', {axis:true,boundingbox:[-0.3141592653589793,2.15,6.5973445725385655,-1.15]});\n"
 						+ "board.suspendUpdate();\n"
-						+ "var a = board.create('slider',[[-0.0630088815692249,2.2600000000000002],[6.346194188748811,2.2600000000000002],[0,0,10]],{name:'a'});\n"
+						+ "var a = board.create('slider',[[0.37699111843077515,1.8199999999999998],[5.906194188748811,1.8199999999999998],[0,0,10]],{name:'a'});\n"
 						+ "\n"
-						+ "function z1(x) { try { return mul(cos(add(1,mul(a.Value(),x))),sin(x));} catch(e) { return Number.NaN;} }\n"
-						+ "var p1 = board.create('functiongraph',[z1, 0, (6.283185307179586)],{strokecolor:'#5e81b5'});\n"
-						+ "var data = [ p1 ];\n" + "\n" + "\n" + "board.unsuspendUpdate();\n" + "");
+						+ "function $f1(x) { try { return mul(cos(add(1,mul(a.Value(),x))),sin(x));} catch(e) { return Number.NaN;} }\n"
+						+ "board.create('functiongraph',[$f1, 0, (6.283185307179586)],{strokecolor:'#5e81b5'});\n"
+						+ "\n" + "\n" + "board.unsuspendUpdate();\n" + "");
 		// Mathcell syntax / generate TeX for MathJAX
 		check("JSForm(Manipulate(Factor(x^n + 1), {n, 1, 5, 1}))", //
-				"MathCell( id, [ { type: 'slider', min: 1, max: 5, step: 1, name: 'n', label: 'n' }\n" + //
+				"MathCell( id, [ { type: 'slider', min: 1.0, max: 5.0, step: 1.0, name: 'n', label: 'n' }\n" + //
 						" ] );\n" + //
 						"\n" + //
 						"parent.update = function( id ) {\n" + //
@@ -11855,7 +12060,7 @@ public class LowercaseTestCase extends AbstractTestCase {
 						"'\\\\\\\\left( 1+x\\\\\\\\right) \\\\\\\\,\\\\\\\\left( 1 - x+{x}^{2} - {x}^{3}+{x}^{4}\\\\\\\\right) ' ];\n"
 						+ //
 						"\n" + //
-						"  var data = '\\\\\\\\[' + expressions[n-1] + '\\\\\\\\]';\n" + //
+						"  var data = '\\\\\\\\[' + expressions[Math.trunc((n-1.0)/1.0)] + '\\\\\\\\]';\n" + //
 						"\n" + //
 						"  data = data.replace( /\\\\\\\\/g, '&#92;' );\n" + //
 						"\n" + //
@@ -11868,34 +12073,63 @@ public class LowercaseTestCase extends AbstractTestCase {
 						"}");
 		// JSXGraph.org syntax
 		check("JSForm(ListPlot(Prime(Range(25))))", //
-				"var board = JXG.JSXGraph.initBoard('jxgbox', {axis:true,boundingbox:[-0.8,102.3,27.8,-3.3]});\n"
-						+ "board.suspendUpdate();\n" + "\n"
-						+ "board.create('point', [function() {return 1;},function() {return 2;}],  {color:'#5e81b5' ,name:'', face:'o', size: 2 } );\n"
-						+ "board.create('point', [function() {return 2;},function() {return 3;}],  {color:'#5e81b5' ,name:'', face:'o', size: 2 } );\n"
-						+ "board.create('point', [function() {return 3;},function() {return 5;}],  {color:'#5e81b5' ,name:'', face:'o', size: 2 } );\n"
-						+ "board.create('point', [function() {return 4;},function() {return 7;}],  {color:'#5e81b5' ,name:'', face:'o', size: 2 } );\n"
-						+ "board.create('point', [function() {return 5;},function() {return 11;}],  {color:'#5e81b5' ,name:'', face:'o', size: 2 } );\n"
-						+ "board.create('point', [function() {return 6;},function() {return 13;}],  {color:'#5e81b5' ,name:'', face:'o', size: 2 } );\n"
-						+ "board.create('point', [function() {return 7;},function() {return 17;}],  {color:'#5e81b5' ,name:'', face:'o', size: 2 } );\n"
-						+ "board.create('point', [function() {return 8;},function() {return 19;}],  {color:'#5e81b5' ,name:'', face:'o', size: 2 } );\n"
-						+ "board.create('point', [function() {return 9;},function() {return 23;}],  {color:'#5e81b5' ,name:'', face:'o', size: 2 } );\n"
-						+ "board.create('point', [function() {return 10;},function() {return 29;}],  {color:'#5e81b5' ,name:'', face:'o', size: 2 } );\n"
-						+ "board.create('point', [function() {return 11;},function() {return 31;}],  {color:'#5e81b5' ,name:'', face:'o', size: 2 } );\n"
-						+ "board.create('point', [function() {return 12;},function() {return 37;}],  {color:'#5e81b5' ,name:'', face:'o', size: 2 } );\n"
-						+ "board.create('point', [function() {return 13;},function() {return 41;}],  {color:'#5e81b5' ,name:'', face:'o', size: 2 } );\n"
-						+ "board.create('point', [function() {return 14;},function() {return 43;}],  {color:'#5e81b5' ,name:'', face:'o', size: 2 } );\n"
-						+ "board.create('point', [function() {return 15;},function() {return 47;}],  {color:'#5e81b5' ,name:'', face:'o', size: 2 } );\n"
-						+ "board.create('point', [function() {return 16;},function() {return 53;}],  {color:'#5e81b5' ,name:'', face:'o', size: 2 } );\n"
-						+ "board.create('point', [function() {return 17;},function() {return 59;}],  {color:'#5e81b5' ,name:'', face:'o', size: 2 } );\n"
-						+ "board.create('point', [function() {return 18;},function() {return 61;}],  {color:'#5e81b5' ,name:'', face:'o', size: 2 } );\n"
-						+ "board.create('point', [function() {return 19;},function() {return 67;}],  {color:'#5e81b5' ,name:'', face:'o', size: 2 } );\n"
-						+ "board.create('point', [function() {return 20;},function() {return 71;}],  {color:'#5e81b5' ,name:'', face:'o', size: 2 } );\n"
-						+ "board.create('point', [function() {return 21;},function() {return 73;}],  {color:'#5e81b5' ,name:'', face:'o', size: 2 } );\n"
-						+ "board.create('point', [function() {return 22;},function() {return 79;}],  {color:'#5e81b5' ,name:'', face:'o', size: 2 } );\n"
-						+ "board.create('point', [function() {return 23;},function() {return 83;}],  {color:'#5e81b5' ,name:'', face:'o', size: 2 } );\n"
-						+ "board.create('point', [function() {return 24;},function() {return 89;}],  {color:'#5e81b5' ,name:'', face:'o', size: 2 } );\n"
-						+ "board.create('point', [function() {return 25;},function() {return 97;}],  {color:'#5e81b5' ,name:'', face:'o', size: 2 } );\n"
-						+ "\n" + "\n" + "board.unsuspendUpdate();\n" + "");
+				"var board = JXG.JSXGraph.initBoard('jxgbox', {axis:true,boundingbox:[-1.3,101.75,27.3,-2.75]});\n" + //
+						"board.suspendUpdate();\n" + //
+						"\n" + //
+						"board.create('point', [function() {return 1;},function() {return 2;}],  {color:'#5e81b5' ,name:'', face:'o', size: 2 } );\n"
+						+ //
+						"board.create('point', [function() {return 2;},function() {return 3;}],  {color:'#5e81b5' ,name:'', face:'o', size: 2 } );\n"
+						+ //
+						"board.create('point', [function() {return 3;},function() {return 5;}],  {color:'#5e81b5' ,name:'', face:'o', size: 2 } );\n"
+						+ //
+						"board.create('point', [function() {return 4;},function() {return 7;}],  {color:'#5e81b5' ,name:'', face:'o', size: 2 } );\n"
+						+ //
+						"board.create('point', [function() {return 5;},function() {return 11;}],  {color:'#5e81b5' ,name:'', face:'o', size: 2 } );\n"
+						+ //
+						"board.create('point', [function() {return 6;},function() {return 13;}],  {color:'#5e81b5' ,name:'', face:'o', size: 2 } );\n"
+						+ //
+						"board.create('point', [function() {return 7;},function() {return 17;}],  {color:'#5e81b5' ,name:'', face:'o', size: 2 } );\n"
+						+ //
+						"board.create('point', [function() {return 8;},function() {return 19;}],  {color:'#5e81b5' ,name:'', face:'o', size: 2 } );\n"
+						+ //
+						"board.create('point', [function() {return 9;},function() {return 23;}],  {color:'#5e81b5' ,name:'', face:'o', size: 2 } );\n"
+						+ //
+						"board.create('point', [function() {return 10;},function() {return 29;}],  {color:'#5e81b5' ,name:'', face:'o', size: 2 } );\n"
+						+ //
+						"board.create('point', [function() {return 11;},function() {return 31;}],  {color:'#5e81b5' ,name:'', face:'o', size: 2 } );\n"
+						+ //
+						"board.create('point', [function() {return 12;},function() {return 37;}],  {color:'#5e81b5' ,name:'', face:'o', size: 2 } );\n"
+						+ //
+						"board.create('point', [function() {return 13;},function() {return 41;}],  {color:'#5e81b5' ,name:'', face:'o', size: 2 } );\n"
+						+ //
+						"board.create('point', [function() {return 14;},function() {return 43;}],  {color:'#5e81b5' ,name:'', face:'o', size: 2 } );\n"
+						+ //
+						"board.create('point', [function() {return 15;},function() {return 47;}],  {color:'#5e81b5' ,name:'', face:'o', size: 2 } );\n"
+						+ //
+						"board.create('point', [function() {return 16;},function() {return 53;}],  {color:'#5e81b5' ,name:'', face:'o', size: 2 } );\n"
+						+ //
+						"board.create('point', [function() {return 17;},function() {return 59;}],  {color:'#5e81b5' ,name:'', face:'o', size: 2 } );\n"
+						+ //
+						"board.create('point', [function() {return 18;},function() {return 61;}],  {color:'#5e81b5' ,name:'', face:'o', size: 2 } );\n"
+						+ //
+						"board.create('point', [function() {return 19;},function() {return 67;}],  {color:'#5e81b5' ,name:'', face:'o', size: 2 } );\n"
+						+ //
+						"board.create('point', [function() {return 20;},function() {return 71;}],  {color:'#5e81b5' ,name:'', face:'o', size: 2 } );\n"
+						+ //
+						"board.create('point', [function() {return 21;},function() {return 73;}],  {color:'#5e81b5' ,name:'', face:'o', size: 2 } );\n"
+						+ //
+						"board.create('point', [function() {return 22;},function() {return 79;}],  {color:'#5e81b5' ,name:'', face:'o', size: 2 } );\n"
+						+ //
+						"board.create('point', [function() {return 23;},function() {return 83;}],  {color:'#5e81b5' ,name:'', face:'o', size: 2 } );\n"
+						+ //
+						"board.create('point', [function() {return 24;},function() {return 89;}],  {color:'#5e81b5' ,name:'', face:'o', size: 2 } );\n"
+						+ //
+						"board.create('point', [function() {return 25;},function() {return 97;}],  {color:'#5e81b5' ,name:'', face:'o', size: 2 } );\n"
+						+ //
+						"\n" + //
+						"\n" + //
+						"board.unsuspendUpdate();\n" + //
+						"");
 	}
 
 	public void testJoin() {
@@ -12626,7 +12860,7 @@ public class LowercaseTestCase extends AbstractTestCase {
 		check("Limit(((a+x)/(x))^(c+x),x->Infinity)", //
 				"E^a");
 		check("Limit(x^(a/x), x->Infinity)", //
-				"ConditionalExpression(1,Element(a,Reals))");
+				"ConditionalExpression(1,a∈Reals)");
 		check("Limit(x^(4/x), x->Infinity)", //
 				"1");
 		// TODO github #175
@@ -13611,6 +13845,36 @@ public class LowercaseTestCase extends AbstractTestCase {
 	}
 
 	public void testMatchQ() {
+
+		check("MatchQ({a,b,c}, {___Symbol})", //
+				"True");
+		check("MatchQ({a,2,c}, {___Symbol})", //
+				"False");
+		check("MatchQ({a,b,c}, _)", //
+				"True");
+		check("MatchQ({a,b,c}, {_})", //
+				"False");
+		check("MatchQ({a,b,c}, __)", //
+				"True");
+		check("MatchQ({a,b,c}, x__)", //
+				"True");
+		check("MatchQ({ }, __)", //
+				"True");
+		check("MatchQ(Plus(a,b,c), Plus(__))", //
+				"True");
+		check("MatchQ({4,6,8}, x_/;Length(x)>4)", //
+				"False");
+		// Print error message
+		check("MatchQ({4,6,8}, {x___}/;Length(x)>4)", //
+				"False");
+		check("MatchQ({4,6,8}, {x___}/;Plus(x)>10)", //
+				"True");
+		check("MatchQ({1,2,3}, _List)", //
+				"True");
+		check("MatchQ({1,2,3}, _?NumberQ)", //
+				"False");
+		check("MatchQ({1,2,3}, {__?NumberQ})", //
+				"True");
 
 		check("MatchQ({x*(Sqrt(2*Pi*x)/(x!))^(1/x),x->Infinity}, {x_*(Sqrt(2*Pi*x_)/(x_!))^(1/x_), x_->Infinity})", //
 				"True");
@@ -14666,7 +14930,7 @@ public class LowercaseTestCase extends AbstractTestCase {
 
 	public void testNames() {
 		check("Names(\"Int*\" )",
-				"{Interval,IntegerDigits,IntegerExponent,IntegerLength,IntegerName,IntegerPart,IntegerPartitions,IntegerQ,Integrate,Interpolation,InterpolatingFunction,InterpolatingPolynomial,IntersectingQ,Interrupt,Intersection,Integer,Integers}");
+				"{IntegerDigits,IntegerExponent,IntegerLength,IntegerName,IntegerPart,IntegerPartitions,IntegerQ,Integrate,Interpolation,InterpolatingFunction,InterpolatingPolynomial,IntersectingQ,Interrupt,Intersection,Interval,IntervalIntersection,IntervalMemberQ,IntervalUnion,Integer,Integers}");
 		check("Names(\"Integer*\" )",
 				"{IntegerDigits,IntegerExponent,IntegerLength,IntegerName,IntegerPart,IntegerPartitions,IntegerQ,Integer,Integers}");
 		check("Names(\"IntegerPart\" )", "{IntegerPart}");
@@ -14709,8 +14973,9 @@ public class LowercaseTestCase extends AbstractTestCase {
 
 	public void testNDSolve() {
 
-//		check("model = NDSolve({x'(t) == -y(t) - x(t)^2, y'(t) == 2*x(t) - y(t)^3, x(0) == y(0) == 1}, {x, y}, {t, 20});", //
-//				"");
+		// check("model = NDSolve({x'(t) == -y(t) - x(t)^2, y'(t) == 2*x(t) - y(t)^3, x(0) == y(0) == 1}, {x, y}, {t,
+		// 20});", //
+		// "");
 		// check("ListPlot(Table({Evaluate(x(t) /.model),Evaluate(y(t) /.model)}, {t, 20}) )", //
 		// "");
 
@@ -15196,7 +15461,7 @@ public class LowercaseTestCase extends AbstractTestCase {
 		check("Normal( ConditionalExpression( 1, Element(a,Reals)&&b>0&&n>0 ) + z^3 )", //
 				"1+z^3");
 		check("Normal( ConditionalExpression( 1, Element(a,Reals)&&b>0&&n>0 ) + z^3, ByteArray)", //
-				"ConditionalExpression(1+z^3,Element(a,Reals)&&b>0&&n>0)");
+				"ConditionalExpression(1+z^3,a∈Reals&&b>0&&n>0)");
 		check("Normal( ConditionalExpression( 1, Element(a,Reals)&&b>0&&n>0 ) + z^3, {ConditionalExpression})", //
 				"1+z^3");
 	}
@@ -18192,6 +18457,9 @@ public class LowercaseTestCase extends AbstractTestCase {
 	}
 
 	public void testPrint() {
+		// in console simply print the styled text
+		check("Print(Style(\"AbBbCc\", Red))", //
+				"");
 		check("do(print(i0);if(i0>4,Return(toobig)), {i0,1,10})", //
 				"toobig");
 	}
@@ -18853,7 +19121,8 @@ public class LowercaseTestCase extends AbstractTestCase {
 	}
 
 	public void testRandom() {
-
+		// check("RandomInteger(20,{10,3})", //
+		// "");
 		// message: RandomPrime: Positive integer value expected.
 		check("RandomPrime(-11)", //
 				"RandomPrime(-11)");
@@ -20900,318 +21169,6 @@ public class LowercaseTestCase extends AbstractTestCase {
 				"1");
 	}
 
-	public void testSemanticImport() {
-		String s = System.getProperty("os.name");
-
-		// Config.FILESYSTEM_ENABLED = true;
-		// check("ds=SemanticImport(\"./data/color_data.csv\");ds(All, {\"r\",\"g\",\"b\"})//Normal //Values //
-		// InputForm", //
-		// "");
-
-		//
-		// if (s.contains("Windows")) {
-		// check("dset = Dataset({\n" + //
-		// "<|\"a\" -> 1, \"b\" -> \"x\", \"c\" -> {1}|>,\n" + //
-		// "<|\"a\" -> 2, \"b\" -> \"y\", \"c\" -> {2, 3}|>,\n" + //
-		// "<|\"a\" -> 3, \"b\" -> \"z\", \"c\" -> {3}|>,\n" + //
-		// "<|\"a\" -> 4, \"b\" -> \"x\", \"c\" -> {4, 5}|>,\n" + //
-		// "<|\"a\" -> 5, \"b\" -> \"y\", \"c\" -> {5, 6, 7}|>,\n" + //
-		// "<|\"a\" -> 6, \"b\" -> \"z\", \"c\" -> {}|>})", //
-		// "");
-
-		// check("Normal(SemanticImport(\"./data/test.csv\"))", //
-		// "{<|Products->a,Sales->5500,Market_Share->3|>,<|Products->b,Sales->12200,Market_Share->\n" + //
-		// "4|>,<|Products->c,Sales->60000,Market_Share->33|>}");
-		//
-		// check("ds=SemanticImport(\"./data/test.csv\");", //
-		// "");
-
-		// check("ds=SemanticImport(\"./data/tornadoes_1950-2014.csv\");", //
-		// "");
-		// check("ExportString(ds, \"csv\");", //
-		// "");
-		// }
-
-	}
-
-	public void testSemanticImportString() {
-		String s = System.getProperty("os.name");
-		if (s.contains("Windows")) {
-			check("SemanticImportString(\"Products,Sales,Market_Share\n" + //
-					"a,5500,3\n" + //
-					"b,12200,4\n" + //
-					"c,60000,33\n" + //
-					"\")", //
-					"                                       \r\n" + //
-							" Products  |  Sales  |  Market_Share  |\r\n" + //
-							"---------------------------------------\r\n" + //
-							"        a  |   5500  |             3  |\r\n" + //
-							"        b  |  12200  |             4  |\r\n" + //
-							"        c  |  60000  |            33  |");
-			check("SemanticImportString(\"Date\\tCity\\tSales\r\n" + //
-					" 2014/1/1\\tBoston\\t198\r\n" + //
-					" 2014/1/1\\tNew York\\t220\r\n" + //
-					" 2014/1/1\\tParis\\t215\r\n" + //
-					" 2014/1/1\\tLondon\\t225\r\n" + //
-					" 2014/1/1\\tShanghai\\t241\r\n" + //
-					" 2014/1/1\\tTokio\\t218\r\n" + //
-					" 2014/1/2\\tBoston\\t189\r\n" + //
-					" 2014/1/2\\tNew York\\t232\r\n" + //
-					" 2014/1/2\\tParis\\t211\r\n" + //
-					" 2014/1/2\\tLondon\\t228\r\n" + //
-					" 2014/1/2\\tShanghai\\t242\r\n" + //
-					" 2014/1/2\\tTokio\\t229\r\n" + //
-					" 2014/1/3\\tBoston\\t196\r\n" + //
-					" 2014/1/3\\tNew York\\t235\")", //
-					"                         \r\n" + //
-							"    Date	City	Sales     |\r\n" + //
-							"-------------------------\r\n" + //
-							"   2014/1/1	Boston	198  |\r\n" + //
-							" 2014/1/1	New York	220  |\r\n" + //
-							"    2014/1/1	Paris	215  |\r\n" + //
-							"   2014/1/1	London	225  |\r\n" + //
-							" 2014/1/1	Shanghai	241  |\r\n" + //
-							"    2014/1/1	Tokio	218  |\r\n" + //
-							"   2014/1/2	Boston	189  |\r\n" + //
-							" 2014/1/2	New York	232  |\r\n" + //
-							"    2014/1/2	Paris	211  |\r\n" + //
-							"   2014/1/2	London	228  |\r\n" + //
-							" 2014/1/2	Shanghai	242  |\r\n" + //
-							"    2014/1/2	Tokio	229  |\r\n" + //
-							"   2014/1/3	Boston	196  |\r\n" + //
-							" 2014/1/3	New York	235  |");
-
-			check("ds=SemanticImportString(\"Products,Sales,Market_Share,Date,Time\n" + //
-					"a,12200,4,1950-01-03,11:10:00\n" + //
-					"b,5500,3,1970-12-31,23:10:00\n" + //
-					"c,60000,33,2020-04-18,11:35:36\n" + //
-					"\")", //
-					"                                                                   \r\n" + //
-							" Products  |  Sales  |  Market_Share  |     Date     |    Time    |\r\n" + //
-							"-------------------------------------------------------------------\r\n" + //
-							"        a  |  12200  |             4  |  1950-01-03  |  11:10:00  |\r\n" + //
-							"        b  |   5500  |             3  |  1970-12-31  |  23:10:00  |\r\n" + //
-							"        c  |  60000  |            33  |  2020-04-18  |  11:35:36  |");
-			check("st=Structure(ds)", //
-					"              Structure of                \r\n" + //
-							" Index  |  Column Name   |  Column Type  |\r\n" + //
-							"------------------------------------------\r\n" + //
-							"     0  |      Products  |       STRING  |\r\n" + //
-							"     1  |         Sales  |      INTEGER  |\r\n" + //
-							"     2  |  Market_Share  |      INTEGER  |\r\n" + //
-							"     3  |          Date  |   LOCAL_DATE  |\r\n" + //
-							"     4  |          Time  |   LOCAL_TIME  |");
-			check("st(Select(Slot(\"Column Type\") == \"INTEGER\" &))", //
-					"              Structure of                \r\n" + //
-							" Index  |  Column Name   |  Column Type  |\r\n" + //
-							"------------------------------------------\r\n" + //
-							"     1  |         Sales  |      INTEGER  |\r\n" + //
-							"     2  |  Market_Share  |      INTEGER  |"); //
-			check("st(Select(#\"Column Type\" == \"INTEGER\" &))", //
-					"              Structure of                \r\n" + //
-							" Index  |  Column Name   |  Column Type  |\r\n" + //
-							"------------------------------------------\r\n" + //
-							"     1  |         Sales  |      INTEGER  |\r\n" + //
-							"     2  |  Market_Share  |      INTEGER  |"); //
-			check("Summary(ds)", //
-					"                                                                                                 \r\n"
-							+ //
-							"  Summary   |  Products  |        Sales         |     Market_Share     |     Date     |  Time   |\r\n"
-							+ //
-							"-------------------------------------------------------------------------------------------------\r\n"
-							+ //
-							"     Count  |         3  |                   3  |                   3  |           3  |      3  |\r\n"
-							+ //
-							"    Unique  |         3  |                      |                      |              |         |\r\n"
-							+ //
-							"       Top  |         a  |                      |                      |              |         |\r\n"
-							+ //
-							" Top Freq.  |         1  |                      |                      |              |         |\r\n"
-							+ //
-							"       sum  |            |               77700  |                  40  |              |         |\r\n"
-							+ //
-							"      Mean  |            |               25900  |  13.333333333333334  |              |         |\r\n"
-							+ //
-							"       Min  |            |                5500  |                   3  |              |         |\r\n"
-							+ //
-							"       Max  |            |               60000  |                  33  |              |         |\r\n"
-							+ //
-							"     Range  |            |               54500  |                  30  |              |         |\r\n"
-							+ //
-							"  Variance  |            |           883330000  |  290.33333333333337  |              |         |\r\n"
-							+ //
-							"  Std. Dev  |            |  29720.868089610034  |  17.039170558842745  |              |         |\r\n"
-							+ //
-							"   Missing  |            |                      |                      |           0  |      0  |\r\n"
-							+ //
-							"  Earliest  |            |                      |                      |  1950-01-03  |  11:10  |\r\n"
-							+ //
-							"    Latest  |            |                      |                      |  2020-04-18  |  23:10  |");
-			check("First(ds)", //
-					"                                                                   \r\n" + //
-							" Products  |  Sales  |  Market_Share  |     Date     |    Time    |\r\n" + //
-							"-------------------------------------------------------------------\r\n" + //
-							"        a  |  12200  |             4  |  1950-01-03  |  11:10:00  |");
-			check("Keys(ds)", //
-					"{Products,Sales,Market_Share,Date,Time}");
-			check("ds[[1,2]]", //
-					"12200");
-			check("ds(TakeLargest(2), \"Sales\") ", //
-					"{60000,12200}");
-			// TODO rewrite GroupBy
-			check("ds(GroupBy(\"Sales\"), \"Sales\") ", //
-					"         \r\n" + //
-							" Sales  |\r\n" + //
-							"---------\r\n" + //
-							"  5500  |\r\n" + //
-							" 12200  |\r\n" + //
-							" 60000  |");
-			// TODO rewrite SortBy
-			check("ds(SortBy(\"Sales\"), \"Sales\") ", //
-					"         \r\n" + //
-							" Sales  |\r\n" + //
-							"---------\r\n" + //
-							"  5500  |\r\n" + //
-							" 12200  |\r\n" + //
-							" 60000  |");
-			check("ds(Select(#Sales < 13000 &), {\"Products\", \"Market_Share\"})", //
-					"                             \r\n" + //
-							" Products  |  Market_Share  |\r\n" + //
-							"-----------------------------\r\n" + //
-							"        a  |             4  |\r\n" + //
-							"        b  |             3  |");
-			check("ds(Select(#Products == \"a\" &), {\"Products\", \"Market_Share\"})", //
-					"                             \r\n" + //
-							" Products  |  Market_Share  |\r\n" + //
-							"-----------------------------\r\n" + //
-							"        a  |             4  |");
-			// print: "Dataset: Column Invalid is not present in table"
-			check("ds(Select(#Invalid < 13000 &) ,All)", //
-					"                                                                   \r\n" + //
-							" Products  |  Sales  |  Market_Share  |     Date     |    Time    |\r\n" + //
-							"-------------------------------------------------------------------\r\n" + //
-							"        a  |  12200  |             4  |  1950-01-03  |  11:10:00  |\r\n" + //
-							"        b  |   5500  |             3  |  1970-12-31  |  23:10:00  |\r\n" + //
-							"        c  |  60000  |            33  |  2020-04-18  |  11:35:36  |[Select(Slot(Invalid)<13000&),All]");
-			check("ds(All, \"Sales\") // Normal", //
-					"{12200,5500,60000}");
-
-			check("ds(Counts, \"Sales\")", //
-					"<|60000->1,12200->1,5500->1|>");
-
-			check("ds(Total, \"Sales\")", //
-					"77700");
-
-			check("ds(Mean, \"Sales\")", //
-					"25900");
-			check("ds(Median, \"Sales\")", //
-					"12200");
-			check("ds(StandardDeviation, \"Sales\")", //
-					"100*Sqrt(88333)");
-
-			check("ds(StringJoin, \"Products\")", //
-					"abc");
-
-			check("ds(3, \"Sales\")", //
-					"60000");
-
-			// all rows of column Market_Share
-			check("ds(All, \"Market_Share\")", //
-					"                \r\n" + //
-							" Market_Share  |\r\n" + //
-							"----------------\r\n" + //
-							"            4  |\r\n" + //
-							"            3  |\r\n" + //
-							"           33  |");
-
-			// all rows - Column 1 and 2
-			check("ds(All,1;;2)", //
-					"                      \r\n" + //
-							" Products  |  Sales  |\r\n" + //
-							"----------------------\r\n" + //
-							"        a  |  12200  |\r\n" + //
-							"        b  |   5500  |\r\n" + //
-							"        c  |  60000  |");
-
-			// rows 2 and 3
-			check("ds(2;;3)", //
-					"                                                                   \r\n" + //
-							" Products  |  Sales  |  Market_Share  |     Date     |    Time    |\r\n" + //
-							"-------------------------------------------------------------------\r\n" + //
-							"        b  |   5500  |             3  |  1970-12-31  |  23:10:00  |\r\n" + //
-							"        c  |  60000  |            33  |  2020-04-18  |  11:35:36  |");
-
-			// row 2
-			check("ds(2)", //
-					"                                                                   \r\n" + //
-							" Products  |  Sales  |  Market_Share  |     Date     |    Time    |\r\n" + //
-							"-------------------------------------------------------------------\r\n" + //
-							"        b  |   5500  |             3  |  1970-12-31  |  23:10:00  |");
-
-			check("ds(2) // Normal", //
-					"<|Products->b,Sales->5500,Market_Share->3,Date->1970-12-31T00:00,Time->23:10:00|>");
-
-			// row 3 column 2
-			check("ds(3, 2)", //
-					"60000");
-
-			// all rows column 2
-			check("ds(All, 2)", //
-					"         \r\n" + //
-							" Sales  |\r\n" + //
-							"---------\r\n" + //
-							" 12200  |\r\n" + //
-							"  5500  |\r\n" + //
-							" 60000  |");
-
-			// all rows column 1 and 2
-			check("ds(All,{1,2})", //
-					"                      \r\n" + //
-							" Products  |  Sales  |\r\n" + //
-							"----------------------\r\n" + //
-							"        a  |  12200  |\r\n" + //
-							"        b  |   5500  |\r\n" + //
-							"        c  |  60000  |");
-
-			check("ds(All,{\"Products\", \"Market_Share\"})", //
-					"                             \r\n" + //
-							" Products  |  Market_Share  |\r\n" + //
-							"-----------------------------\r\n" + //
-							"        a  |             4  |\r\n" + //
-							"        b  |             3  |\r\n" + //
-							"        c  |            33  |");
-			check("ds/.x->3", //
-					"                                                                   \r\n" + //
-							" Products  |  Sales  |  Market_Share  |     Date     |    Time    |\r\n" + //
-							"-------------------------------------------------------------------\r\n" + //
-							"        a  |  12200  |             4  |  1950-01-03  |  11:10:00  |\r\n" + //
-							"        b  |   5500  |             3  |  1970-12-31  |  23:10:00  |\r\n" + //
-							"        c  |  60000  |            33  |  2020-04-18  |  11:35:36  |");
-		}
-	}
-
-	public void testSemanticImportStringWikipedia() {
-		// https://en.wikipedia.org/wiki/Comma-separated_values
-		String s = System.getProperty("os.name");
-		if (s.contains("Windows")) {
-			check("SemanticImportString(\"Year,Make,Model,Description,Price\n" + //
-					"1997,Ford,E350,\\\"ac, abs, moon\\\",3000.00\n" + //
-					"1999,Chevy,\\\"Venture \\\"\\\"Extended Edition\\\"\\\"\\\",\\\"\\\",4900.00\n" + //
-					"1999,Chevy,\\\"Venture \\\"\\\"Extended Edition, Very Large\\\"\\\"\\\",,5000.00\n" + //
-					"1996,Jeep,Grand Cherokee,\\\"MUST SELL!\n" + //
-					"air, moon roof, loaded\\\",4799.00\n" + //
-					"\")", //
-					"                                                                                                             \r\n"
-							+ " Year  |  Make   |                  Model                   |             Description             |  Price  |\r\n"
-							+ "-------------------------------------------------------------------------------------------------------------\r\n"
-							+ " 1997  |   Ford  |                                    E350  |                      ac, abs, moon  |   3000  |\r\n"
-							+ " 1999  |  Chevy  |              Venture \"Extended Edition\"  |                                     |   4900  |\r\n"
-							+ " 1999  |  Chevy  |  Venture \"Extended Edition, Very Large\"  |                                     |   5000  |\r\n"
-							+ " 1996  |   Jeep  |                          Grand Cherokee  |  MUST SELL!\n"
-							+ "air, moon roof, loaded  |   4799  |");
-		}
-	}
-
 	public void testSequence() {
 		check("Hold(a, Sequence(b, c))", //
 				"Hold(a,b,c)");
@@ -21233,6 +21190,18 @@ public class LowercaseTestCase extends AbstractTestCase {
 				"Sequence(a,b,c)");
 		check("{a, Sequence(b), c, Identity(d)}", //
 				"{a,b,c,d}");
+		// print message
+		check("Head(Sequence(a,b))", //
+				"b(Symbol)");
+		check("u->Sequence[a,b]", //
+				"u->Sequence(a,b)");
+
+		check("myOpts(func_, target_) := {o1 -> thick,  If(func === target, o2 -> 0, Sequence @@ {})}", //
+				"");
+		check("myOpts(x^2,x^2)", //
+				"{o1->thick,o2->0}");
+		check("myOpts(3*x,x^2)", //
+				"{o1->thick}");
 	}
 
 	public void testSet() {
@@ -21944,7 +21913,7 @@ public class LowercaseTestCase extends AbstractTestCase {
 		check("Solve(1-1/10*i*1==0,{},Integers)", //
 				"{{i->10}}");
 		check("Solve(1-1/10*i*1==0,{i,Null},Integers)", //
-				"{{i->ConditionalExpression(10,Element(Null,Integers))}}");
+				"{{i->ConditionalExpression(10,Null∈Integers)}}");
 		check("Solve({},{x,y},Integers)", //
 				"{{}}");
 
@@ -22042,23 +22011,23 @@ public class LowercaseTestCase extends AbstractTestCase {
 		// check("Factor(E^(3*x)-4*E^x+3*E^(-x))", //
 		// "((-1+E^x)*(1+E^x)*(-3+E^(2*x)))/E^x");
 		check("Solve((-3+E^(2*x))==0,x)", //
-				"{{x->ConditionalExpression(1/2*(I*2*Pi*C(1)+Log(3)),Element(C(1),Integers))}}");
+				"{{x->ConditionalExpression(1/2*(I*2*Pi*C(1)+Log(3)),C(1)∈Integers)}}");
 		check("Solve(E^(3*x)-4*E^x+3*E^(-x)==0,x)", //
-				"{{x->ConditionalExpression(I*2*Pi*C(1),Element(C(1),Integers))},{x->ConditionalExpression(I*Pi+\n" + //
-						"I*2*Pi*C(1),Element(C(1),Integers))},{x->ConditionalExpression(1/2*(I*2*Pi*C(1)+Log(\n" + //
-						"3)),Element(C(1),Integers))}}");
+				"{{x->ConditionalExpression(I*2*Pi*C(1),C(1)∈Integers)},{x->ConditionalExpression(I*Pi+\n" + //
+						"I*2*Pi*C(1),C(1)∈Integers)},{x->ConditionalExpression(1/2*(I*2*Pi*C(1)+Log(3)),C(\n" + //
+						"1)∈Integers)}}");
 		check("NSolve(E^(3*x)-4*E^x+3*E^(-x)==0,x)", //
-				"{{x->ConditionalExpression(I*3.14159+(I*6.28319)*C(1.0),Element(C(1),Integers))},{x->ConditionalExpression(0.5*(1.09861+(I*6.28319)*C(1.0)),Element(C(\n"
+				"{{x->ConditionalExpression(I*3.14159+(I*6.28319)*C(1.0),C(1)∈Integers)},{x->ConditionalExpression(0.5*(1.09861+(I*6.28319)*C(1.0)),C(\n"
 						+ //
-						"1),Integers))},{x->ConditionalExpression((I*6.28319)*C(1.0),Element(C(1),Integers))}}");
+						"1)∈Integers)},{x->ConditionalExpression((I*6.28319)*C(1.0),C(1)∈Integers)}}");
 
 		check("Solve(1+E^x==0,x)", //
-				"{{x->ConditionalExpression(I*Pi+I*2*Pi*C(1),Element(C(1),Integers))}}");
+				"{{x->ConditionalExpression(I*Pi+I*2*Pi*C(1),C(1)∈Integers)}}");
 		check("Solve(a+E^(b*x)==0,x)", //
-				"{{x->ConditionalExpression((I*2*Pi*C(1)+Log(-a))/b,Element(C(1),Integers))}}");
+				"{{x->ConditionalExpression((I*2*Pi*C(1)+Log(-a))/b,C(1)∈Integers)}}");
 
 		check("Solve(E^x==b,x)", //
-				"{{x->ConditionalExpression(I*2*Pi*C(1)+Log(b),Element(C(1),Integers))}}");
+				"{{x->ConditionalExpression(I*2*Pi*C(1)+Log(b),C(1)∈Integers)}}");
 		check("Solve(a^x==42,x)", //
 				"{{x->Log(42)/Log(a)}}");
 		// check("Solve(2+(-I*(E^(-I*x)-E^(I*x)))/(E^(-I*x)+E^(I*x))+(I*3*(E^(-I*3*x)-E^(I*3*x)))/(E^(-I*3*x)+E^(I*3*x))==0,x)",
@@ -22676,6 +22645,23 @@ public class LowercaseTestCase extends AbstractTestCase {
 				"{{(Sqrt(2)*(a+1/2*(-a-c)))/Sqrt((a-c)*(Conjugate(a)-Conjugate(c))),(Sqrt(2)*(b+1/\n"
 						+ "2*(-b-d)))/Sqrt((b-d)*(Conjugate(b)-Conjugate(d)))},\n"
 						+ " {(Sqrt(2)*(1/2*(-a-c)+c))/Sqrt((a-c)*(Conjugate(a)-Conjugate(c))),(Sqrt(2)*(1/2*(-b-d)+d))/Sqrt((b-d)*(Conjugate(b)-Conjugate(d)))}}");
+	}
+
+	public void testStack() {
+		// print: {f,g,CompoundExpression,Print}
+		check("f(g(1, Print(Stack()); 2))", //
+				"f(g(1,2))");
+
+		check("f(g(1, Print(Stack(_)); 2))", //
+				"f(g(1,2))");
+	}
+
+	public void testStackBegin() {
+		// print: {Plus,Times,g,CompoundExpression,Print}
+		check("1 + x + f(StackBegin(2 + x*g(Print(Stack( )); 2)))", //
+				"1+x+f(2+x*g(2))");
+		check("1 + x + f(StackBegin(2 + x*g(Print(Stack(_)); 2)))", //
+				"1+x+f(2+x*g(2))");
 	}
 
 	public void testStandardDeviation() {
@@ -25087,7 +25073,9 @@ public class LowercaseTestCase extends AbstractTestCase {
 				"False");
 	}
 
-	public void testUnevaluate() {
+	public void testUnevaluated() {
+		check("Length(Unevaluated(5 + 6 + 7 + 8))", //
+				"4");
 		check("f(x_) := x^2", //
 				"");
 		check("ReplaceAll(Unevaluated(f(3)), 3 -> 1)", //

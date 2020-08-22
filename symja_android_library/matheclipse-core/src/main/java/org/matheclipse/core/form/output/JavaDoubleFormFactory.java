@@ -168,7 +168,10 @@ public class JavaDoubleFormFactory extends DoubleFormFactory {
 			}
 		}
 		if (function.headID() > 0) {
-			if (function.isAST(S.Evaluate, 2)) {
+			if (function.isAST(S.Defer, 2) || //
+					function.isAST(S.Evaluate, 2) || //
+					function.isAST(S.Hold, 2) || //
+					function.isAST(S.Unevaluated, 2)) {
 				convertInternal(buf, function.first());
 				return;
 			}

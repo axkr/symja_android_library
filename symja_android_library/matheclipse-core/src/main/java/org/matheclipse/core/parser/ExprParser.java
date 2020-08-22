@@ -32,6 +32,7 @@ import org.matheclipse.core.eval.interfaces.IFunctionEvaluator;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.expression.ID;
 import org.matheclipse.core.expression.NumStr;
+import org.matheclipse.core.expression.S;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IASTAppendable;
 import org.matheclipse.core.interfaces.IASTMutable;
@@ -45,7 +46,11 @@ import org.matheclipse.core.visit.VisitorExpr;
 import org.matheclipse.parser.client.FEConfig;
 import org.matheclipse.parser.client.Scanner;
 import org.matheclipse.parser.client.SyntaxError;
+import org.matheclipse.parser.client.ast.ASTNode;
+import org.matheclipse.parser.client.ast.FunctionNode;
+import org.matheclipse.parser.client.ast.IConstantOperators;
 import org.matheclipse.parser.client.ast.IParserFactory;
+import org.matheclipse.parser.client.ast.SymbolNode;
 import org.matheclipse.parser.client.math.MathException;
 import org.matheclipse.parser.client.operator.InfixOperator;
 import org.matheclipse.parser.client.operator.Operator;
@@ -1196,11 +1201,11 @@ public class ExprParser extends Scanner {
 		}
 	}
 
-	private IExpr parseCompoundExpressionNull(InfixExprOperator infixOperator, IExpr rhs) {
+	private IExpr parseCompoundExpressionNull(InfixExprOperator infixOperator, IExpr lhs) {
 		if (infixOperator.isOperator(";")) {
 			if (fToken == TT_EOF || fToken == TT_ARGUMENTS_CLOSE || fToken == TT_LIST_CLOSE
 					|| fToken == TT_PRECEDENCE_CLOSE || fToken == TT_COMMA) {
-				return createInfixFunction(infixOperator, rhs, F.Null);
+				return createInfixFunction(infixOperator, lhs, F.Null);
 				// return infixOperator.createFunction(fFactory, rhs,
 				// fFactory.createSymbol("Null"));
 			}
@@ -1221,14 +1226,29 @@ public class ExprParser extends Scanner {
 				getNextToken();
 				if (fToken == TT_COMMA || fToken == TT_PARTCLOSE || fToken == TT_ARGUMENTS_CLOSE
 						|| fToken == TT_PRECEDENCE_CLOSE) {
-					return span;
+  					return span;  
 				}
 			} else if (fToken == TT_COMMA || fToken == TT_PARTCLOSE || fToken == TT_ARGUMENTS_CLOSE
 					|| fToken == TT_PRECEDENCE_CLOSE) {
 				span.append(F.All);
 				return span;
+			} else if (fToken == TT_OPERATOR) { 
+				InfixExprOperator infixOperator = determineBinaryOperator();
+				if (infixOperator != null && //
+						infixOperator.getOperatorString().equals(";")) {
+					span.append(F.All);
+					getNextToken();
+					IExpr compoundExpressionNull = parseCompoundExpressionNull(infixOperator, span);
+					if (compoundExpressionNull != null) {
+						return compoundExpressionNull;
+					}
+					while (fToken == TT_NEWLINE) {
+						getNextToken();
+					}
+					return parseInfixOperator(span, infixOperator);
+				} 
 			}
-			span.append(parseExpression(parsePrimary(0), 0));
+			span.append(parseExpression()); 
 			return span;
 		}
 		IExpr temp = parseExpression(parsePrimary(0), 0);
@@ -1243,11 +1263,28 @@ public class ExprParser extends Scanner {
 				if (fToken == TT_COMMA || fToken == TT_PARTCLOSE || fToken == TT_ARGUMENTS_CLOSE
 						|| fToken == TT_PRECEDENCE_CLOSE) {
 					return span;
+				} else if (fToken == TT_OPERATOR) {
+					return parseExpression(F.Times(span,F.Span(F.C1,S.All)), 0);
 				}
 			} else if (fToken == TT_COMMA || fToken == TT_PARTCLOSE || fToken == TT_ARGUMENTS_CLOSE
 					|| fToken == TT_PRECEDENCE_CLOSE) {
 				span.append(F.All);
 				return span;
+			} else if (fToken == TT_OPERATOR) { 
+				InfixExprOperator infixOperator = determineBinaryOperator();
+				if (infixOperator != null && //
+						infixOperator.getOperatorString().equals(";")) {
+					span.append(F.All);
+					getNextToken();
+					IExpr compoundExpressionNull = parseCompoundExpressionNull(infixOperator, span);
+					if (compoundExpressionNull != null) {
+						return compoundExpressionNull;
+					}
+					while (fToken == TT_NEWLINE) {
+						getNextToken();
+					}
+					return parseInfixOperator(span, infixOperator);
+				}
 			}
 			span.append(parseExpression(parsePrimary(0), 0));
 			if (fToken == TT_SPAN) {

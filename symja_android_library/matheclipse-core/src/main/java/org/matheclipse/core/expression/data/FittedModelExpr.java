@@ -1,6 +1,6 @@
 package org.matheclipse.core.expression.data;
-
-import org.apache.commons.math3.stat.regression.SimpleRegression;
+ 
+import org.hipparchus.stat.regression.SimpleRegression;
 import org.hipparchus.stat.regression.UpdatingMultipleLinearRegression;
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.expression.DataExpr;

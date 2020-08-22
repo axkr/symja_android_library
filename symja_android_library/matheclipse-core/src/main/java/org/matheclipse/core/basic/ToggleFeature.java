@@ -23,12 +23,7 @@ public class ToggleFeature {
 	 * If <code>true</code>, enable <code>org.matheclipse.core.reflection.system.ReplaceList</code> function.
 	 */
 	public static boolean REPLACE_LIST = true;
-
-	/**
-	 * If <code>true</code>, enable <code>org.matheclipse.core.builtin.function.Unevaluated</code> function.
-	 */
-	public static boolean UNEVALUATED = true;
-
+ 
 	/**
 	 * If <code>true</code>, enable <code>org.matheclipse.core.reflection.system.DSolve</code> function.
 	 */
