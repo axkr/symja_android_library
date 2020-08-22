@@ -63,7 +63,7 @@
 	<dependencies>
 		<dependency>
 			<groupId>org.matheclipse</groupId>
-			<artifactId>matheclipse-core</artifactId>
+			<artifactId>matheclipse-io</artifactId>
 			<version>1.0.0-SNAPSHOT</version>
 		</dependency>
 		<dependency>

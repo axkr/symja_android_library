@@ -2,6 +2,11 @@
 <classpath>
 	<classpathentry kind="lib" path="lib/fastutil-8.3.0.jar"/>
 	<classpathentry kind="src" path="matheclipse-core/src/test/resources"/>
+	<classpathentry kind="src" path="matheclipse-io/src/test/resources"/>
+	<classpathentry kind="src" path="matheclipse-external/src/main/resources"/>
+	<classpathentry kind="src" path="matheclipse-io/src/main/java"/>
+	<classpathentry kind="src" path="matheclipse-io/src/main/resources"/>
+	<classpathentry kind="src" path="matheclipse-io/src/test/java"/>
 	<classpathentry kind="src" path="matheclipse-external/src/main/java"/>
 	<classpathentry kind="src" path="matheclipse-frontend/src/main/java"/>
 	<classpathentry kind="src" path="matheclipse-frontend/src/test/java"/>
@@ -58,7 +63,6 @@
 	<classpathentry kind="lib" path="lib/tablesaw-core-0.38.1.jar"/>
 	<classpathentry kind="lib" path="lib/tablesaw-excel-0.38.1.jar"/>
 	<classpathentry kind="lib" path="lib/tablesaw-html-0.38.1.jar"/>
-	<classpathentry kind="lib" path="lib/tablesaw-jsplot-0.38.1.jar"/>
 	<classpathentry kind="lib" path="lib/jackson-annotations-2.10.3.jar"/>
 	<classpathentry kind="lib" path="lib/jackson-core-2.10.3.jar"/>
 	<classpathentry kind="lib" path="lib/jackson-databind-2.10.3.jar"/>
