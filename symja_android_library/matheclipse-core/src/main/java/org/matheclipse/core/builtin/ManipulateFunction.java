@@ -1414,8 +1414,14 @@ public class ManipulateFunction {
 			}
 
 			// add some "padding" around bounding box
-			double xPadding = (boundingbox[2] - boundingbox[0]) / 20;
-			double yPadding = (boundingbox[1] - boundingbox[3]) / 20;
+			double xPadding = (boundingbox[2] - boundingbox[0]) / 20.0;
+			double yPadding = (boundingbox[1] - boundingbox[3]) / 20.0;
+			if (F.isZero(xPadding)) {
+				xPadding = 5.0;
+			}
+			if (F.isZero(yPadding)) {
+				yPadding = 5.0;
+			}
 			boundingbox[0] = boundingbox[0] - xPadding;// xMin
 			boundingbox[2] = boundingbox[2] + xPadding;// xMax
 			boundingbox[1] = boundingbox[1] + yPadding;// yMax
