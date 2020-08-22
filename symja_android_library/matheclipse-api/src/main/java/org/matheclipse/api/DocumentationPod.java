@@ -97,7 +97,7 @@ public class DocumentationPod implements IPod, PodDefaultsRules {
 				int form = Pods.internFormat(Pods.SYMJA, podOut.second().toString());
 				Pods.addPod(podsArray, plot2D, podOut, podOut.first().toString(), StringFunctions.inputForm(plot2D),
 						"Plot", "Plotter", form, engine);
-				numpods++;
+				++numpods;
 			}
 		}
 
@@ -117,7 +117,7 @@ public class DocumentationPod implements IPod, PodDefaultsRules {
 		if ((formats & Pods.HTML) != 0x00) {
 			node.put("html", generateHTMLString(buf.toString()));
 		}
-		return numpods++;
+		return ++numpods;
 	}
 
 	private static String generateHTMLString(final String markdownStr) {

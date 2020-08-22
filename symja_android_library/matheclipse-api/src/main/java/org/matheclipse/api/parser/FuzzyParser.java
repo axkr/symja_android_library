@@ -32,6 +32,7 @@ import org.matheclipse.core.eval.interfaces.IFunctionEvaluator;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.expression.ID;
 import org.matheclipse.core.expression.NumStr;
+import org.matheclipse.core.expression.S;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IASTAppendable;
 import org.matheclipse.core.interfaces.IASTMutable;
@@ -423,7 +424,7 @@ public class FuzzyParser extends Scanner {
 
 			getNextToken();
 			if (fToken == TT_PRECEDENCE_CLOSE || fToken == TT_ARGUMENTS_CLOSE) {
-				function.append(F.Null);
+				function.append(S.Null);
 				break;
 			}
 		} while (true);
@@ -1205,7 +1206,7 @@ public class FuzzyParser extends Scanner {
 		if (infixOperator.isOperator(";")) {
 			if (fToken == TT_EOF || fToken == TT_ARGUMENTS_CLOSE || fToken == TT_LIST_CLOSE
 					|| fToken == TT_PRECEDENCE_CLOSE || fToken == TT_COMMA) {
-				return createInfixFunction(infixOperator, rhs, F.Null);
+				return createInfixFunction(infixOperator, rhs, S.Null);
 				// return infixOperator.createFunction(fFactory, rhs,
 				// fFactory.createSymbol("Null"));
 			}
@@ -1383,7 +1384,7 @@ public class FuzzyParser extends Scanner {
 				if (infixOperator.isOperator(";")) {
 					if (fToken == TT_EOF || fToken == TT_ARGUMENTS_CLOSE || fToken == TT_LIST_CLOSE
 							|| fToken == TT_PRECEDENCE_CLOSE || fToken == TT_COMMA) {
-						ast.append(F.Null);
+						ast.append(S.Null);
 						break;
 					}
 				}

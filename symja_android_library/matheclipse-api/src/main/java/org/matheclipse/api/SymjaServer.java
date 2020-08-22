@@ -36,10 +36,11 @@ public class SymjaServer {
 			String appid = getAppID(queryParameters, "appid");
 			if (appid != null) {
 				if (appid.equals("DEMO")) {
+					String strict = SymjaServer.getParam(queryParameters, "strict", "s", "");
 					String inputStr = SymjaServer.getParam(queryParameters, "input", "i", "");
 					String[] formformatStrs = SymjaServer.getParams(queryParameters, "format", "f", Pods.PLAIN_STR);
 					int formats = Pods.internFormat(formformatStrs);
-					ObjectNode messageJSON = Pods.createResult(inputStr, formats);
+					ObjectNode messageJSON = Pods.createResult(inputStr, formats, !strict.isEmpty());
 					jsonStr = messageJSON.toString();
 				} else {
 					jsonStr = Pods.errorJSONString("1", "Invalid appid");
@@ -62,7 +63,7 @@ public class SymjaServer {
 		Config.MAX_AST_SIZE = 10000;
 		Config.MAX_OUTPUT_SIZE = 10000;
 		Config.MAX_BIT_LENGTH = 200000;
-		Config.MAX_POLYNOMIAL_DEGREE=100;
+		Config.MAX_POLYNOMIAL_DEGREE = 100;
 		Config.FILESYSTEM_ENABLED = false;
 		Config.MAX_INPUT_LEAVES = 100L;
 		Config.MAX_MATRIX_DIMENSION_SIZE = 100;

@@ -10,7 +10,6 @@ import java.util.Comparator;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
-import java.util.function.Supplier;
 
 import org.apache.commons.codec.language.Soundex;
 import org.apache.commons.lang3.StringUtils;
@@ -24,7 +23,6 @@ import org.matheclipse.api.parser.FuzzyParser;
 import org.matheclipse.core.basic.Config;
 import org.matheclipse.core.builtin.GraphFunctions;
 import org.matheclipse.core.builtin.StringFunctions;
-import org.matheclipse.core.convert.AST2Expr;
 import org.matheclipse.core.convert.VariablesSet;
 import org.matheclipse.core.data.ElementData1;
 import org.matheclipse.core.eval.EvalEngine;
@@ -33,6 +31,7 @@ import org.matheclipse.core.eval.TeXUtilities;
 import org.matheclipse.core.eval.util.WriterOutputStream;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.expression.ID;
+import org.matheclipse.core.expression.S;
 import org.matheclipse.core.expression.data.GraphExpr;
 import org.matheclipse.core.form.Documentation;
 import org.matheclipse.core.form.tex.TeXParser;
@@ -46,6 +45,7 @@ import org.matheclipse.core.interfaces.IFraction;
 import org.matheclipse.core.interfaces.IInteger;
 import org.matheclipse.core.interfaces.IStringX;
 import org.matheclipse.core.interfaces.ISymbol;
+import org.matheclipse.core.parser.ExprParser;
 import org.matheclipse.parser.client.FEConfig;
 import org.matheclipse.parser.client.SyntaxError;
 import org.matheclipse.parser.trie.Trie;
@@ -713,6 +713,10 @@ public class Pods {
 	}
 
 	public static ObjectNode createResult(String inputStr, int formats) {
+		return createResult(inputStr, formats, false);
+	}
+
+	public static ObjectNode createResult(String inputStr, int formats, boolean strictSymja) {
 		ObjectNode messageJSON = JSON_OBJECT_MAPPER.createObjectNode();
 
 		ObjectNode queryresult = JSON_OBJECT_MAPPER.createObjectNode();
@@ -724,17 +728,83 @@ public class Pods {
 
 		boolean error = false;
 		int numpods = 0;
-		IExpr inExpr = F.Null;
-		IExpr outExpr = F.Null;
+		IExpr inExpr = S.Null;
+		IExpr outExpr = S.Null;
 		EvalEngine engine = EvalEngine.get();
 		try {
 			ArrayNode podsArray = JSON_OBJECT_MAPPER.createArrayNode();
+			if (strictSymja) {
+				engine.setPackageMode(false);
+				final ExprParser parser = new ExprParser(engine, true);
+				try {
+					inExpr = parser.parse(inputStr);
+					if (inExpr.isPresent()) {
+						long numberOfLeaves = inExpr.leafCount();
+						if (numberOfLeaves < Config.MAX_INPUT_LEAVES) {
+							outExpr = inExpr;
+
+							final StringWriter errorWriter = new StringWriter();
+							WriterOutputStream werrors = new WriterOutputStream(errorWriter);
+							PrintStream errors = new PrintStream(werrors);
+							IExpr firstEval = F.NIL;
+							try {
+								engine.setErrorPrintStream(errors);
+								firstEval = engine.evaluateNull(inExpr);
+							} finally {
+								engine.setErrorPrintStream(null);
+							}
+							addSymjaPod(podsArray, inExpr, inExpr, "Input", "Identity", formats, engine);
+							numpods++;
+							String errorString = "";
+							if (firstEval.isPresent()) {
+								outExpr = firstEval;
+							} else {
+								errorString = errorWriter.toString().trim();
+							}
+							outExpr = engine.evaluate(inExpr);
+							if (outExpr instanceof GraphExpr) {
+								String javaScriptStr = GraphFunctions.graphToJSForm((GraphExpr) outExpr);
+								if (javaScriptStr != null) {
+									String html = VISJS_IFRAME;
+									html = StringUtils.replace(html, "`1`", javaScriptStr);
+									html = StringUtils.replace(html, "`2`", //
+											"  var options = { };\n" //
+									);
+									// html = StringEscapeUtils.escapeHtml4(html);
+									int form = internFormat(SYMJA, "visjs");
+									addPod(podsArray, inExpr, outExpr, html, "Graph data", "Graph", form, engine);
+									numpods++;
+								} else {
+									addSymjaPod(podsArray, inExpr, outExpr, errorString, "Evaluated result",
+											"Expression", formats, engine, true);
+									numpods++;
+								}
+							} else {
+								addSymjaPod(podsArray, inExpr, outExpr, errorString, "Evaluated result", "Expression",
+										formats, engine, true);
+								numpods++;
+							}
+							resultStatistics(queryresult, error, numpods, podsArray);
+							return messageJSON;
+						}
+					}
+				} catch (SyntaxError serr) {
+					// this includes syntax errors
+					if (FEConfig.SHOW_STACKTRACE) {
+						serr.printStackTrace();
+					}
+					return errorJSON("0", serr.getMessage());
+				}
+				queryresult.put("error", error ? "true" : "false");
+				return messageJSON;
+
+			}
 			inExpr = parseInput(inputStr, engine);
 			if (inExpr.isPresent()) {
 				long numberOfLeaves = inExpr.leafCount();
 				if (numberOfLeaves < Config.MAX_INPUT_LEAVES) {
 					outExpr = inExpr;
-					// inExpr may be sorted and by evaluation
+
 					final StringWriter errorWriter = new StringWriter();
 					WriterOutputStream werrors = new WriterOutputStream(errorWriter);
 					PrintStream errors = new PrintStream(werrors);
@@ -847,32 +917,32 @@ public class Pods {
 						if (outExpr.isSymbol() || outExpr.isString()) {
 							String inputWord = outExpr.toString();
 							StringBuilder buf = new StringBuilder();
-							if (outExpr.isBuiltInSymbol()) {
-								inExpr = F.FunctionURL(outExpr);
-								podOut = engine.evaluate(inExpr);
-								if (podOut.isString()) {
-									int htmlFormats = formats | HTML;
-									if ((htmlFormats & PLAIN) == PLAIN) {
-										htmlFormats ^= PLAIN;
-									}
-									if ((htmlFormats & LATEX) == LATEX) {
-										htmlFormats ^= LATEX; 
-									}
-									StringBuilder html = new StringBuilder();
-									html.append("<a href=\"");
-									html.append(podOut.toString());
-									html.append("\">");
-									html.append(outExpr.toString());
-									html.append(" - Symja Java function definition</a>");
-									addSymjaPod(podsArray, inExpr, podOut, html.toString(), "Git source code",
-											"FunctionURL", htmlFormats, engine);
-									numpods++;
-								}
-							}
+							// if (outExpr.isBuiltInSymbol()) {
+							// inExpr = F.FunctionURL(outExpr);
+							// podOut = engine.evaluate(inExpr);
+							// if (podOut.isString()) {
+							// int htmlFormats = formats | HTML;
+							// if ((htmlFormats & PLAIN) == PLAIN) {
+							// htmlFormats ^= PLAIN;
+							// }
+							// if ((htmlFormats & LATEX) == LATEX) {
+							// htmlFormats ^= LATEX;
+							// }
+							// StringBuilder html = new StringBuilder();
+							// html.append("<a href=\"");
+							// html.append(podOut.toString());
+							// html.append("\">");
+							// html.append(outExpr.toString());
+							// html.append(" - Symja Java function definition</a>");
+							// addSymjaPod(podsArray, inExpr, podOut, html.toString(), "Git source code",
+							// "FunctionURL", htmlFormats, engine);
+							// numpods++;
+							// }
+							// }
 							if (outExpr.isSymbol() && Documentation.getMarkdown(buf, inputWord)) {
-								DocumentationPod.addDocumentationPod(new DocumentationPod((ISymbol) outExpr), podsArray,
-										buf, formats);
-								numpods++;
+
+								numpods += DocumentationPod.addDocumentationPod(new DocumentationPod((ISymbol) outExpr),
+										podsArray, buf, formats);
 								resultStatistics(queryresult, error, numpods, podsArray);
 								return messageJSON;
 							} else {

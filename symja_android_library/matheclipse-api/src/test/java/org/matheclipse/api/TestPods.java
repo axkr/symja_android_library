@@ -9,6 +9,7 @@ import org.matheclipse.core.basic.Config;
 import org.matheclipse.core.basic.ToggleFeature;
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.expression.F;
+import org.matheclipse.parser.client.FEConfig;
 
 import com.fasterxml.jackson.databind.node.ObjectNode;
 
@@ -22,6 +23,7 @@ public class TestPods {
 
 	static {
 		ToggleFeature.COMPILE = false;
+		FEConfig.PARSER_USE_LOWERCASE_SYMBOLS = true;
 		Config.FUZZY_PARSER = true;
 		Config.UNPROTECT_ALLOWED = false;
 		Config.USE_MANIPULATE_JS = true;
@@ -63,6 +65,7 @@ public class TestPods {
 
 	@Test
 	public void testMarkdownHelp() {
+		EvalEngine.get().resetModuleCounter4JUnit();
 		String s = System.getProperty("os.name");
 		ObjectNode messageJSON = Pods.createResult("Sin", formatsHTML);
 		final String jsonStr = messageJSON.toPrettyString();
@@ -84,22 +87,13 @@ public class TestPods {
 					"        \"sinput\" : \"Sin\"\r\n" + 
 					"      } ]\r\n" + 
 					"    }, {\r\n" + 
-					"      \"title\" : \"Git source code\",\r\n" + 
-					"      \"scanner\" : \"FunctionURL\",\r\n" + 
-					"      \"error\" : \"false\",\r\n" + 
-					"      \"numsubpods\" : 1,\r\n" + 
-					"      \"subpods\" : [ {\r\n" + 
-					"        \"html\" : \"&lt;a href=\\\"https://github.com/axkr/symja_android_library/blob/master/symja_android_library/matheclipse-core/src/main/java/org/matheclipse/core/builtin/ExpTrigsFunctions.java#L2487\\\"&gt;Sin - Symja Java function definition&lt;/a&gt;\",\r\n" + 
-					"        \"sinput\" : \"FunctionURL(Sin)\"\r\n" + 
-					"      } ]\r\n" + 
-					"    }, {\r\n" + 
 					"      \"title\" : \"Plot\",\r\n" + 
 					"      \"scanner\" : \"Plotter\",\r\n" + 
 					"      \"error\" : \"false\",\r\n" + 
 					"      \"numsubpods\" : 1,\r\n" + 
 					"      \"subpods\" : [ {\r\n" + 
 					"        \"sinput\" : \"Manipulate(Plot(Sin(a*x),{x,-10.0,10.0},PlotRange-&gt;{-2.0,2.0}),{a,1,10})\",\r\n" + 
-					"        \"jsxgraph\" : \"<iframe srcdoc=\\\"&lt;?xml version=&quot;1.0&quot; encoding=&quot;UTF-8&quot;?&gt;\\n\\n&lt;!DOCTYPE html PUBLIC\\n  &quot;-//W3C//DTD XHTML 1.1 plus MathML 2.0 plus SVG 1.1//EN&quot;\\n  &quot;http://www.w3.org/2002/04/xhtml-math-svg/xhtml-math-svg.dtd&quot;&gt;\\n\\n&lt;html xmlns=&quot;http://www.w3.org/1999/xhtml&quot; style=&quot;width: 100%; height: 100%; margin: 0; padding: 0&quot;&gt;\\n&lt;head&gt;\\n&lt;meta charset=&quot;utf-8&quot;&gt;\\n&lt;title&gt;JSXGraph&lt;/title&gt;\\n\\n&lt;body style=&quot;width: 100%; height: 100%; margin: 0; padding: 0&quot;&gt;\\n\\n&lt;link rel=&quot;stylesheet&quot; type=&quot;text/css&quot; href=&quot;https://cdnjs.cloudflare.com/ajax/libs/jsxgraph/1.1.0/jsxgraph.min.css&quot; /&gt;\\n&lt;script src=&quot;https://cdn.jsdelivr.net/gh/paulmasson/math@1.2.9/build/math.js&quot;&gt;&lt;/script&gt;\\n&lt;script src=&quot;https://cdnjs.cloudflare.com/ajax/libs/jsxgraph/1.1.0/jsxgraphcore.min.js&quot;\\n        type=&quot;text/javascript&quot;&gt;&lt;/script&gt;\\n&lt;script src=&quot;https://cdnjs.cloudflare.com/ajax/libs/jsxgraph/1.1.0/geonext.min.js&quot;\\n        type=&quot;text/javascript&quot;&gt;&lt;/script&gt;\\n\\n&lt;div id=&quot;jxgbox&quot; class=&quot;jxgbox&quot; style=&quot;display: flex; width:99%; height:99%; margin: 0; flex-direction: column; overflow: hidden&quot;&gt;\\n&lt;script&gt;\\nvar board = JXG.JSXGraph.initBoard('jxgbox', {axis:true,boundingbox:[-11.55,2.75,11.55,-2.75]});\\nboard.suspendUpdate();\\nvar a = board.create('slider',[[-9.24,2.2],[9.24,2.2],[1,1,10]],{name:'a'});\\n\\nfunction z1(x) { try { return sin(mul(a.Value(),x));} catch(e) { return Number.NaN;} }\\nvar p1 = board.create('functiongraph',[z1, -10.0, 10.0],{strokecolor:'#5e81b5'});\\nvar data = [ p1 ];\\n\\n\\nboard.unsuspendUpdate();\\n\\n&lt;/script&gt;\\n&lt;/div&gt;\\n\\n&lt;/body&gt;\\n&lt;/html&gt;\\\" style=\\\"display: block; width: 100%; height: 100%; border: none;\\\" ></iframe>\"\r\n" + 
+					"        \"jsxgraph\" : \"<iframe srcdoc=\\\"&lt;?xml version=&quot;1.0&quot; encoding=&quot;UTF-8&quot;?&gt;\\n\\n&lt;!DOCTYPE html PUBLIC\\n  &quot;-//W3C//DTD XHTML 1.1 plus MathML 2.0 plus SVG 1.1//EN&quot;\\n  &quot;http://www.w3.org/2002/04/xhtml-math-svg/xhtml-math-svg.dtd&quot;&gt;\\n\\n&lt;html xmlns=&quot;http://www.w3.org/1999/xhtml&quot; style=&quot;width: 100%; height: 100%; margin: 0; padding: 0&quot;&gt;\\n&lt;head&gt;\\n&lt;meta charset=&quot;utf-8&quot;&gt;\\n&lt;title&gt;JSXGraph&lt;/title&gt;\\n\\n&lt;body style=&quot;width: 100%; height: 100%; margin: 0; padding: 0&quot;&gt;\\n\\n&lt;link rel=&quot;stylesheet&quot; type=&quot;text/css&quot; href=&quot;https://cdnjs.cloudflare.com/ajax/libs/jsxgraph/1.1.0/jsxgraph.min.css&quot; /&gt;\\n&lt;script src=&quot;https://cdn.jsdelivr.net/gh/paulmasson/math@1.2.9/build/math.js&quot;&gt;&lt;/script&gt;\\n&lt;script src=&quot;https://cdnjs.cloudflare.com/ajax/libs/jsxgraph/1.1.0/jsxgraphcore.min.js&quot;\\n        type=&quot;text/javascript&quot;&gt;&lt;/script&gt;\\n&lt;script src=&quot;https://cdnjs.cloudflare.com/ajax/libs/jsxgraph/1.1.0/geonext.min.js&quot;\\n        type=&quot;text/javascript&quot;&gt;&lt;/script&gt;\\n\\n&lt;div id=&quot;jxgbox&quot; class=&quot;jxgbox&quot; style=&quot;display: flex; width:99%; height:99%; margin: 0; flex-direction: column; overflow: hidden&quot;&gt;\\n&lt;script&gt;\\nvar board = JXG.JSXGraph.initBoard('jxgbox', {axis:true,boundingbox:[-11.0,2.2,11.0,-2.2]});\\nboard.suspendUpdate();\\nvar a = board.create('slider',[[-8.8,1.7600000000000002],[8.8,1.7600000000000002],[1,1,10]],{name:'a'});\\n\\nfunction $f1(x) { try { return sin(mul(a.Value(),x));} catch(e) { return Number.NaN;} }\\nboard.create('functiongraph',[$f1, -10.0, 10.0],{strokecolor:'#5e81b5'});\\n\\n\\nboard.unsuspendUpdate();\\n\\n&lt;/script&gt;\\n&lt;/div&gt;\\n\\n&lt;/body&gt;\\n&lt;/html&gt;\\\" style=\\\"display: block; width: 100%; height: 100%; border: none;\\\" ></iframe>\"\r\n" + 
 					"      } ]\r\n" + 
 					"    }, {\r\n" + 
 					"      \"title\" : \"Documentation\",\r\n" + 
@@ -107,8 +101,8 @@ public class TestPods {
 					"      \"error\" : \"false\",\r\n" + 
 					"      \"numsubpods\" : 1,\r\n" + 
 					"      \"subpods\" : [ {\r\n" + 
-					"        \"markdown\" : \"## Sin\\n\\n```\\nSin(expr)\\n```\\n\\n> returns the sine of `expr` (measured in radians).\\n \\n`Sin(expr)` will evaluate automatically in the case `expr` is a multiple of `Pi, Pi/2, Pi/3, Pi/4` and `Pi/6`.\\n\\nSee\\n* [Wikipedia - Sine](https://en.wikipedia.org/wiki/Sine)\\n* [Fungrim - Sine](http://fungrim.org/topic/Sine/)\\n\\n### Examples\\n\\n```\\n>> Sin(0)\\n0\\n\\n>> Sin(0.5)\\n0.479425538604203\\n\\n>> Sin(3*Pi)\\n0\\n\\n>> Sin(1.0 + I)\\n1.2984575814159773+I*0.6349639147847361\\n```\\n \\n\",\r\n" + 
-					"        \"html\" : \"<h2>Sin</h2>\\n<pre><code>Sin(expr)\\n</code></pre>\\n<blockquote>\\n<p>returns the sine of <code>expr</code> (measured in radians).</p>\\n</blockquote>\\n<p><code>Sin(expr)</code> will evaluate automatically in the case <code>expr</code> is a multiple of <code>Pi, Pi/2, Pi/3, Pi/4</code> and <code>Pi/6</code>.</p>\\n<p>See</p>\\n<ul>\\n<li><a href=\\\"https://en.wikipedia.org/wiki/Sine\\\">Wikipedia - Sine</a></li>\\n<li><a href=\\\"http://fungrim.org/topic/Sine/\\\">Fungrim - Sine</a></li>\\n</ul>\\n<h3>Examples</h3>\\n<pre><code>&gt;&gt; Sin(0)\\n0\\n\\n&gt;&gt; Sin(0.5)\\n0.479425538604203\\n\\n&gt;&gt; Sin(3*Pi)\\n0\\n\\n&gt;&gt; Sin(1.0 + I)\\n1.2984575814159773+I*0.6349639147847361\\n</code></pre>\\n\"\r\n" + 
+					"        \"markdown\" : \"## Sin\\n\\n```\\nSin(expr)\\n```\\n\\n> returns the sine of `expr` (measured in radians).\\n \\n`Sin(expr)` will evaluate automatically in the case `expr` is a multiple of `Pi, Pi/2, Pi/3, Pi/4` and `Pi/6`.\\n\\nSee\\n* [Wikipedia - Sine](https://en.wikipedia.org/wiki/Sine)\\n* [Fungrim - Sine](http://fungrim.org/topic/Sine/)\\n\\n### Examples\\n\\n```\\n>> Sin(0)\\n0\\n\\n>> Sin(0.5)\\n0.479425538604203\\n\\n>> Sin(3*Pi)\\n0\\n\\n>> Sin(1.0 + I)\\n1.2984575814159773+I*0.6349639147847361\\n```\\n \\n[Github master](https://github.com/axkr/symja_android_library/blob/master/symja_android_library/matheclipse-core/src/main/java/org/matheclipse/core/builtin/ExpTrigsFunctions.java#L2487)\\n\\n\",\r\n" + 
+					"        \"html\" : \"<h2>Sin</h2>\\n<pre><code>Sin(expr)\\n</code></pre>\\n<blockquote>\\n<p>returns the sine of <code>expr</code> (measured in radians).</p>\\n</blockquote>\\n<p><code>Sin(expr)</code> will evaluate automatically in the case <code>expr</code> is a multiple of <code>Pi, Pi/2, Pi/3, Pi/4</code> and <code>Pi/6</code>.</p>\\n<p>See</p>\\n<ul>\\n<li><a href=\\\"https://en.wikipedia.org/wiki/Sine\\\">Wikipedia - Sine</a></li>\\n<li><a href=\\\"http://fungrim.org/topic/Sine/\\\">Fungrim - Sine</a></li>\\n</ul>\\n<h3>Examples</h3>\\n<pre><code>&gt;&gt; Sin(0)\\n0\\n\\n&gt;&gt; Sin(0.5)\\n0.479425538604203\\n\\n&gt;&gt; Sin(3*Pi)\\n0\\n\\n&gt;&gt; Sin(1.0 + I)\\n1.2984575814159773+I*0.6349639147847361\\n</code></pre>\\n<p><a href=\\\"https://github.com/axkr/symja_android_library/blob/master/symja_android_library/matheclipse-core/src/main/java/org/matheclipse/core/builtin/ExpTrigsFunctions.java#L2487\\\">Github master</a></p>\\n\"\r\n" + 
 					"      } ]\r\n" + 
 					"    } ]\r\n" + 
 					"  }\r\n" + 
@@ -485,6 +479,7 @@ public class TestPods {
 
 	@Test
 	public void testPlotSin() {
+		EvalEngine.get().resetModuleCounter4JUnit();
 		String s = System.getProperty("os.name");
 		ObjectNode messageJSON = Pods.createResult("Plot(Sin(x), {x, 0, 6*Pi} )", formatsTEX);
 		final String jsonStr = messageJSON.toPrettyString();
@@ -513,15 +508,17 @@ public class TestPods {
 					"      \"numsubpods\" : 1,\r\n" + 
 					"      \"subpods\" : [ {\r\n" + 
 					"        \"sinput\" : \"Plot(Sin(x),{x,0,6*Pi})\",\r\n" + 
-					"        \"jsxgraph\" : \"<iframe srcdoc=\\\"&lt;?xml version=&quot;1.0&quot; encoding=&quot;UTF-8&quot;?&gt;\\n\\n&lt;!DOCTYPE html PUBLIC\\n  &quot;-//W3C//DTD XHTML 1.1 plus MathML 2.0 plus SVG 1.1//EN&quot;\\n  &quot;http://www.w3.org/2002/04/xhtml-math-svg/xhtml-math-svg.dtd&quot;&gt;\\n\\n&lt;html xmlns=&quot;http://www.w3.org/1999/xhtml&quot; style=&quot;width: 100%; height: 100%; margin: 0; padding: 0&quot;&gt;\\n&lt;head&gt;\\n&lt;meta charset=&quot;utf-8&quot;&gt;\\n&lt;title&gt;JSXGraph&lt;/title&gt;\\n\\n&lt;body style=&quot;width: 100%; height: 100%; margin: 0; padding: 0&quot;&gt;\\n\\n&lt;link rel=&quot;stylesheet&quot; type=&quot;text/css&quot; href=&quot;https://cdnjs.cloudflare.com/ajax/libs/jsxgraph/1.1.0/jsxgraph.min.css&quot; /&gt;\\n&lt;script src=&quot;https://cdn.jsdelivr.net/gh/paulmasson/math@1.2.9/build/math.js&quot;&gt;&lt;/script&gt;\\n&lt;script src=&quot;https://cdnjs.cloudflare.com/ajax/libs/jsxgraph/1.1.0/jsxgraphcore.min.js&quot;\\n        type=&quot;text/javascript&quot;&gt;&lt;/script&gt;\\n&lt;script src=&quot;https://cdnjs.cloudflare.com/ajax/libs/jsxgraph/1.1.0/geonext.min.js&quot;\\n        type=&quot;text/javascript&quot;&gt;&lt;/script&gt;\\n\\n&lt;div id=&quot;jxgbox&quot; class=&quot;jxgbox&quot; style=&quot;display: flex; width:99%; height:99%; margin: 0; flex-direction: column; overflow: hidden&quot;&gt;\\n&lt;script&gt;\\nvar board = JXG.JSXGraph.initBoard('jxgbox', {axis:true,boundingbox:[-1.492477796076938,1.65,20.342033717615696,-1.65]});\\nboard.suspendUpdate();\\n\\nfunction z1(x) { try { return sin(x);} catch(e) { return Number.NaN;} }\\nvar p1 = board.create('functiongraph',[z1, 0, (18.84955592153876)],{strokecolor:'#5e81b5'});\\nvar data = [ p1 ];\\n\\n\\nboard.unsuspendUpdate();\\n\\n&lt;/script&gt;\\n&lt;/div&gt;\\n\\n&lt;/body&gt;\\n&lt;/html&gt;\\\" style=\\\"display: block; width: 100%; height: 100%; border: none;\\\" ></iframe>\"\r\n" + 
+					"        \"jsxgraph\" : \"<iframe srcdoc=\\\"&lt;?xml version=&quot;1.0&quot; encoding=&quot;UTF-8&quot;?&gt;\\n\\n&lt;!DOCTYPE html PUBLIC\\n  &quot;-//W3C//DTD XHTML 1.1 plus MathML 2.0 plus SVG 1.1//EN&quot;\\n  &quot;http://www.w3.org/2002/04/xhtml-math-svg/xhtml-math-svg.dtd&quot;&gt;\\n\\n&lt;html xmlns=&quot;http://www.w3.org/1999/xhtml&quot; style=&quot;width: 100%; height: 100%; margin: 0; padding: 0&quot;&gt;\\n&lt;head&gt;\\n&lt;meta charset=&quot;utf-8&quot;&gt;\\n&lt;title&gt;JSXGraph&lt;/title&gt;\\n\\n&lt;body style=&quot;width: 100%; height: 100%; margin: 0; padding: 0&quot;&gt;\\n\\n&lt;link rel=&quot;stylesheet&quot; type=&quot;text/css&quot; href=&quot;https://cdnjs.cloudflare.com/ajax/libs/jsxgraph/1.1.0/jsxgraph.min.css&quot; /&gt;\\n&lt;script src=&quot;https://cdn.jsdelivr.net/gh/paulmasson/math@1.2.9/build/math.js&quot;&gt;&lt;/script&gt;\\n&lt;script src=&quot;https://cdnjs.cloudflare.com/ajax/libs/jsxgraph/1.1.0/jsxgraphcore.min.js&quot;\\n        type=&quot;text/javascript&quot;&gt;&lt;/script&gt;\\n&lt;script src=&quot;https://cdnjs.cloudflare.com/ajax/libs/jsxgraph/1.1.0/geonext.min.js&quot;\\n        type=&quot;text/javascript&quot;&gt;&lt;/script&gt;\\n\\n&lt;div id=&quot;jxgbox&quot; class=&quot;jxgbox&quot; style=&quot;display: flex; width:99%; height:99%; margin: 0; flex-direction: column; overflow: hidden&quot;&gt;\\n&lt;script&gt;\\nvar board = JXG.JSXGraph.initBoard('jxgbox', {axis:true,boundingbox:[-0.9424777960769379,1.1,19.792033717615695,-1.1]});\\nboard.suspendUpdate();\\n\\nfunction $f1(x) { try { return sin(x);} catch(e) { return Number.NaN;} }\\nboard.create('functiongraph',[$f1, 0, (18.84955592153876)],{strokecolor:'#5e81b5'});\\n\\n\\nboard.unsuspendUpdate();\\n\\n&lt;/script&gt;\\n&lt;/div&gt;\\n\\n&lt;/body&gt;\\n&lt;/html&gt;\\\" style=\\\"display: block; width: 100%; height: 100%; border: none;\\\" ></iframe>\"\r\n" + 
 					"      } ]\r\n" + 
 					"    } ]\r\n" + 
 					"  }\r\n" + 
 					"}");//
 		}
 	}
+
 	@Test
 	public void testPlot002() {
+		EvalEngine.get().resetModuleCounter4JUnit();
 		String s = System.getProperty("os.name");
 		ObjectNode messageJSON = Pods.createResult("Plot({Sin(x),Cos(x),Tan(x)},{x,-2*Pi,2*Pi}) // JSForm", formatsTEX);
 		final String jsonStr = messageJSON.toPrettyString();
@@ -549,15 +546,17 @@ public class TestPods {
 					"      \"error\" : \"false\",\r\n" + 
 					"      \"numsubpods\" : 1,\r\n" + 
 					"      \"subpods\" : [ {\r\n" + 
-					"        \"html\" : \"&lt;iframe srcdoc=\\\"&amp;lt;?xml version=&amp;quot;1.0&amp;quot; encoding=&amp;quot;UTF-8&amp;quot;?&amp;gt;\\n\\n&amp;lt;!DOCTYPE html PUBLIC\\n  &amp;quot;-//W3C//DTD XHTML 1.1 plus MathML 2.0 plus SVG 1.1//EN&amp;quot;\\n  &amp;quot;http://www.w3.org/2002/04/xhtml-math-svg/xhtml-math-svg.dtd&amp;quot;&amp;gt;\\n\\n&amp;lt;html xmlns=&amp;quot;http://www.w3.org/1999/xhtml&amp;quot; style=&amp;quot;width: 100%; height: 100%; margin: 0; padding: 0&amp;quot;&amp;gt;\\n&amp;lt;head&amp;gt;\\n&amp;lt;meta charset=&amp;quot;utf-8&amp;quot;&amp;gt;\\n&amp;lt;title&amp;gt;Highlight&amp;lt;/title&amp;gt;\\n\\n&amp;lt;link rel=&amp;quot;stylesheet&amp;quot; type=&amp;quot;text/css&amp;quot; href=&amp;quot;https://cdnjs.cloudflare.com/ajax/libs/highlight.js/10.1.1/styles/default.min.css&amp;quot; /&amp;gt;\\n  &amp;lt;script type=&amp;quot;text/javascript&amp;quot; src=&amp;quot;https://cdnjs.cloudflare.com/ajax/libs/highlight.js/10.1.1/highlight.min.js&amp;quot;&amp;gt;&amp;lt;/script&amp;gt;\\n&amp;lt;script&amp;gt;hljs.initHighlightingOnLoad();&amp;lt;/script&amp;gt;&amp;lt;/head&amp;gt;\\n&amp;lt;body style=&amp;quot;width: 100%; height: 100%; margin: 0; padding: 0&amp;quot;&amp;gt;\\n\\n&amp;lt;div id=&amp;quot;highlight&amp;quot; style=&amp;quot;width: 600px; height: 800px; margin: 0;  padding: .25in .5in .5in .5in; flex-direction: column; overflow: hidden&amp;quot;&amp;gt;\\n&amp;lt;pre&amp;gt;&amp;lt;code class=&amp;quot;javascript&amp;quot;&amp;gt;\\nvar board = JXG.JSXGraph.initBoard('jxgbox', {axis:true,boundingbox:[-7.461503837897545,1.65,7.461503837897545,-1.65]});\\nboard.suspendUpdate();\\n\\nfunction z1(x) { try { return sin(x);} catch(e) { return Number.NaN;} }\\nfunction z2(x) { try { return cos(x);} catch(e) { return Number.NaN;} }\\nfunction z3(x) { try { return tan(x);} catch(e) { return Number.NaN;} }\\nvar p1 = board.create('functiongraph',[z1, (-6.283185307179586), (6.283185307179586)],{strokecolor:'#5e81b5'});\\nvar p2 = board.create('functiongraph',[z2, (-6.283185307179586), (6.283185307179586)],{strokecolor:'#e19c24'});\\nvar p3 = board.create('functiongraph',[z3, (-6.283185307179586), (6.283185307179586)],{strokecolor:'#8fb032'});\\nvar data = [ p1, p2, p3 ];\\n\\n\\nboard.unsuspendUpdate();\\n\\n&amp;lt;/code&amp;gt;&amp;lt;/pre&amp;gt;\\n&amp;lt;/div&amp;gt;\\n&amp;lt;/body&amp;gt;\\n&amp;lt;/html&amp;gt;\\\" style=\\\"display: block; width: 100%; height: 100%; border: none;\\\" &gt;&lt;/iframe&gt;\"\r\n" + 
+					"        \"html\" : \"&lt;iframe srcdoc=\\\"&amp;lt;?xml version=&amp;quot;1.0&amp;quot; encoding=&amp;quot;UTF-8&amp;quot;?&amp;gt;\\n\\n&amp;lt;!DOCTYPE html PUBLIC\\n  &amp;quot;-//W3C//DTD XHTML 1.1 plus MathML 2.0 plus SVG 1.1//EN&amp;quot;\\n  &amp;quot;http://www.w3.org/2002/04/xhtml-math-svg/xhtml-math-svg.dtd&amp;quot;&amp;gt;\\n\\n&amp;lt;html xmlns=&amp;quot;http://www.w3.org/1999/xhtml&amp;quot; style=&amp;quot;width: 100%; height: 100%; margin: 0; padding: 0&amp;quot;&amp;gt;\\n&amp;lt;head&amp;gt;\\n&amp;lt;meta charset=&amp;quot;utf-8&amp;quot;&amp;gt;\\n&amp;lt;title&amp;gt;Highlight&amp;lt;/title&amp;gt;\\n\\n&amp;lt;link rel=&amp;quot;stylesheet&amp;quot; type=&amp;quot;text/css&amp;quot; href=&amp;quot;https://cdnjs.cloudflare.com/ajax/libs/highlight.js/10.1.1/styles/default.min.css&amp;quot; /&amp;gt;\\n  &amp;lt;script type=&amp;quot;text/javascript&amp;quot; src=&amp;quot;https://cdnjs.cloudflare.com/ajax/libs/highlight.js/10.1.1/highlight.min.js&amp;quot;&amp;gt;&amp;lt;/script&amp;gt;\\n&amp;lt;script&amp;gt;hljs.initHighlightingOnLoad();&amp;lt;/script&amp;gt;&amp;lt;/head&amp;gt;\\n&amp;lt;body style=&amp;quot;width: 100%; height: 100%; margin: 0; padding: 0&amp;quot;&amp;gt;\\n\\n&amp;lt;div id=&amp;quot;highlight&amp;quot; style=&amp;quot;width: 600px; height: 800px; margin: 0;  padding: .25in .5in .5in .5in; flex-direction: column; overflow: hidden&amp;quot;&amp;gt;\\n&amp;lt;pre&amp;gt;&amp;lt;code class=&amp;quot;javascript&amp;quot;&amp;gt;\\nvar board = JXG.JSXGraph.initBoard('jxgbox', {axis:true,boundingbox:[-6.911503837897545,17.48399932825398,6.911503837897545,-17.483999328251276]});\\nboard.suspendUpdate();\\n\\nfunction $f1(x) { try { return sin(x);} catch(e) { return Number.NaN;} }\\nfunction $f2(x) { try { return cos(x);} catch(e) { return Number.NaN;} }\\nfunction $f3(x) { try { return tan(x);} catch(e) { return Number.NaN;} }\\nboard.create('functiongraph',[$f1, (-6.283185307179586), (6.283185307179586)],{strokecolor:'#5e81b5'});\\nboard.create('functiongraph',[$f2, (-6.283185307179586), (6.283185307179586)],{strokecolor:'#e19c24'});\\nboard.create('functiongraph',[$f3, (-6.283185307179586), (6.283185307179586)],{strokecolor:'#8fb032'});\\n\\n\\nboard.unsuspendUpdate();\\n\\n&amp;lt;/code&amp;gt;&amp;lt;/pre&amp;gt;\\n&amp;lt;/div&amp;gt;\\n&amp;lt;/body&amp;gt;\\n&amp;lt;/html&amp;gt;\\\" style=\\\"display: block; width: 100%; height: 100%; border: none;\\\" &gt;&lt;/iframe&gt;\"\r\n" + 
 					"      } ]\r\n" + 
 					"    } ]\r\n" + 
 					"  }\r\n" + 
 					"}");//
 		}
 	}
+
 	@Test
 	public void testPlotF() {
+		EvalEngine.get().resetModuleCounter4JUnit();
 		String s = System.getProperty("os.name");
 		ObjectNode messageJSON = Pods.createResult("Plot(f(x), {x, 0, 6*Pi} )", formatsTEX);
 		final String jsonStr = messageJSON.toPrettyString();
@@ -582,7 +581,48 @@ public class TestPods {
 	}
 
 	@Test
+	public void testPlotBessel() {
+		EvalEngine.get().resetModuleCounter4JUnit();
+		String s = System.getProperty("os.name");
+		ObjectNode messageJSON = Pods.createResult("Plot(Evaluate(Table(BesselJ(n, x), {n, 4})), {x, 0, 10})",
+				formatsTEX);
+		final String jsonStr = messageJSON.toPrettyString();
+		if (s.contains("Windows")) {
+			assertEquals(jsonStr, //
+					"{\r\n" + 
+					"  \"queryresult\" : {\r\n" + 
+					"    \"success\" : \"true\",\r\n" + 
+					"    \"error\" : \"false\",\r\n" + 
+					"    \"numpods\" : 2,\r\n" + 
+					"    \"version\" : \"0.1\",\r\n" + 
+					"    \"pods\" : [ {\r\n" + 
+					"      \"title\" : \"Input\",\r\n" + 
+					"      \"scanner\" : \"Identity\",\r\n" + 
+					"      \"error\" : \"false\",\r\n" + 
+					"      \"numsubpods\" : 1,\r\n" + 
+					"      \"subpods\" : [ {\r\n" + 
+					"        \"plaintext\" : \"Plot(Evaluate(Table(BesselJ(n,x),{n,4})),{x,0,10})\",\r\n" + 
+					"        \"sinput\" : \"Plot(Evaluate(Table(BesselJ(n,x),{n,4})),{x,0,10})\",\r\n" + 
+					"        \"latex\" : \"\\\\text{Plot}(\\\\text{Evaluate}(\\\\text{Table}(\\\\text{BesselJ}(n,x),\\\\{n,4\\\\})),\\\\{x,0,10\\\\})\"\r\n" + 
+					"      } ]\r\n" + 
+					"    }, {\r\n" + 
+					"      \"title\" : \"Function\",\r\n" + 
+					"      \"scanner\" : \"Plotter\",\r\n" + 
+					"      \"error\" : \"false\",\r\n" + 
+					"      \"numsubpods\" : 1,\r\n" + 
+					"      \"subpods\" : [ {\r\n" + 
+					"        \"sinput\" : \"Plot(Evaluate(Table(BesselJ(n,x),{n,4})),{x,0,10})\",\r\n" + 
+					"        \"jsxgraph\" : \"<iframe srcdoc=\\\"&lt;?xml version=&quot;1.0&quot; encoding=&quot;UTF-8&quot;?&gt;\\n\\n&lt;!DOCTYPE html PUBLIC\\n  &quot;-//W3C//DTD XHTML 1.1 plus MathML 2.0 plus SVG 1.1//EN&quot;\\n  &quot;http://www.w3.org/2002/04/xhtml-math-svg/xhtml-math-svg.dtd&quot;&gt;\\n\\n&lt;html xmlns=&quot;http://www.w3.org/1999/xhtml&quot; style=&quot;width: 100%; height: 100%; margin: 0; padding: 0&quot;&gt;\\n&lt;head&gt;\\n&lt;meta charset=&quot;utf-8&quot;&gt;\\n&lt;title&gt;JSXGraph&lt;/title&gt;\\n\\n&lt;body style=&quot;width: 100%; height: 100%; margin: 0; padding: 0&quot;&gt;\\n\\n&lt;link rel=&quot;stylesheet&quot; type=&quot;text/css&quot; href=&quot;https://cdnjs.cloudflare.com/ajax/libs/jsxgraph/1.1.0/jsxgraph.min.css&quot; /&gt;\\n&lt;script src=&quot;https://cdn.jsdelivr.net/gh/paulmasson/math@1.2.9/build/math.js&quot;&gt;&lt;/script&gt;\\n&lt;script src=&quot;https://cdnjs.cloudflare.com/ajax/libs/jsxgraph/1.1.0/jsxgraphcore.min.js&quot;\\n        type=&quot;text/javascript&quot;&gt;&lt;/script&gt;\\n&lt;script src=&quot;https://cdnjs.cloudflare.com/ajax/libs/jsxgraph/1.1.0/geonext.min.js&quot;\\n        type=&quot;text/javascript&quot;&gt;&lt;/script&gt;\\n\\n&lt;div id=&quot;jxgbox&quot; class=&quot;jxgbox&quot; style=&quot;display: flex; width:99%; height:99%; margin: 0; flex-direction: column; overflow: hidden&quot;&gt;\\n&lt;script&gt;\\nvar board = JXG.JSXGraph.initBoard('jxgbox', {axis:true,boundingbox:[-0.5,5.5,10.5,-5.5]});\\nboard.suspendUpdate();\\n\\nfunction $f1(x) { try { return [besselJ(1,x),besselJ(2,x),besselJ(3,x),besselJ(4,x)];} catch(e) { return Number.NaN;} }\\nboard.create('functiongraph',[$f1, 0, 10],{strokecolor:'#5e81b5'});\\n\\n\\nboard.unsuspendUpdate();\\n\\n&lt;/script&gt;\\n&lt;/div&gt;\\n\\n&lt;/body&gt;\\n&lt;/html&gt;\\\" style=\\\"display: block; width: 100%; height: 100%; border: none;\\\" ></iframe>\"\r\n" + 
+					"      } ]\r\n" + 
+					"    } ]\r\n" + 
+					"  }\r\n" + 
+					"}");//
+		}
+	}
+
+	@Test
 	public void testSin() {
+		EvalEngine.get().resetModuleCounter4JUnit();
 		String s = System.getProperty("os.name");
 		ObjectNode messageJSON = Pods.createResult("Sin(x)", formatsTEX);
 		final String jsonStr = messageJSON.toPrettyString();
@@ -611,7 +651,7 @@ public class TestPods {
 					"      \"numsubpods\" : 1,\r\n" + 
 					"      \"subpods\" : [ {\r\n" + 
 					"        \"sinput\" : \"Plot(Sin(x),{x,-7.0,7.0})\",\r\n" + 
-					"        \"jsxgraph\" : \"<iframe srcdoc=\\\"&lt;?xml version=&quot;1.0&quot; encoding=&quot;UTF-8&quot;?&gt;\\n\\n&lt;!DOCTYPE html PUBLIC\\n  &quot;-//W3C//DTD XHTML 1.1 plus MathML 2.0 plus SVG 1.1//EN&quot;\\n  &quot;http://www.w3.org/2002/04/xhtml-math-svg/xhtml-math-svg.dtd&quot;&gt;\\n\\n&lt;html xmlns=&quot;http://www.w3.org/1999/xhtml&quot; style=&quot;width: 100%; height: 100%; margin: 0; padding: 0&quot;&gt;\\n&lt;head&gt;\\n&lt;meta charset=&quot;utf-8&quot;&gt;\\n&lt;title&gt;JSXGraph&lt;/title&gt;\\n\\n&lt;body style=&quot;width: 100%; height: 100%; margin: 0; padding: 0&quot;&gt;\\n\\n&lt;link rel=&quot;stylesheet&quot; type=&quot;text/css&quot; href=&quot;https://cdnjs.cloudflare.com/ajax/libs/jsxgraph/1.1.0/jsxgraph.min.css&quot; /&gt;\\n&lt;script src=&quot;https://cdn.jsdelivr.net/gh/paulmasson/math@1.2.9/build/math.js&quot;&gt;&lt;/script&gt;\\n&lt;script src=&quot;https://cdnjs.cloudflare.com/ajax/libs/jsxgraph/1.1.0/jsxgraphcore.min.js&quot;\\n        type=&quot;text/javascript&quot;&gt;&lt;/script&gt;\\n&lt;script src=&quot;https://cdnjs.cloudflare.com/ajax/libs/jsxgraph/1.1.0/geonext.min.js&quot;\\n        type=&quot;text/javascript&quot;&gt;&lt;/script&gt;\\n\\n&lt;div id=&quot;jxgbox&quot; class=&quot;jxgbox&quot; style=&quot;display: flex; width:99%; height:99%; margin: 0; flex-direction: column; overflow: hidden&quot;&gt;\\n&lt;script&gt;\\nvar board = JXG.JSXGraph.initBoard('jxgbox', {axis:true,boundingbox:[-8.25,1.65,8.25,-1.65]});\\nboard.suspendUpdate();\\n\\nfunction z1(x) { try { return sin(x);} catch(e) { return Number.NaN;} }\\nvar p1 = board.create('functiongraph',[z1, -7.0, 7.0],{strokecolor:'#5e81b5'});\\nvar data = [ p1 ];\\n\\n\\nboard.unsuspendUpdate();\\n\\n&lt;/script&gt;\\n&lt;/div&gt;\\n\\n&lt;/body&gt;\\n&lt;/html&gt;\\\" style=\\\"display: block; width: 100%; height: 100%; border: none;\\\" ></iframe>\"\r\n" + 
+					"        \"jsxgraph\" : \"<iframe srcdoc=\\\"&lt;?xml version=&quot;1.0&quot; encoding=&quot;UTF-8&quot;?&gt;\\n\\n&lt;!DOCTYPE html PUBLIC\\n  &quot;-//W3C//DTD XHTML 1.1 plus MathML 2.0 plus SVG 1.1//EN&quot;\\n  &quot;http://www.w3.org/2002/04/xhtml-math-svg/xhtml-math-svg.dtd&quot;&gt;\\n\\n&lt;html xmlns=&quot;http://www.w3.org/1999/xhtml&quot; style=&quot;width: 100%; height: 100%; margin: 0; padding: 0&quot;&gt;\\n&lt;head&gt;\\n&lt;meta charset=&quot;utf-8&quot;&gt;\\n&lt;title&gt;JSXGraph&lt;/title&gt;\\n\\n&lt;body style=&quot;width: 100%; height: 100%; margin: 0; padding: 0&quot;&gt;\\n\\n&lt;link rel=&quot;stylesheet&quot; type=&quot;text/css&quot; href=&quot;https://cdnjs.cloudflare.com/ajax/libs/jsxgraph/1.1.0/jsxgraph.min.css&quot; /&gt;\\n&lt;script src=&quot;https://cdn.jsdelivr.net/gh/paulmasson/math@1.2.9/build/math.js&quot;&gt;&lt;/script&gt;\\n&lt;script src=&quot;https://cdnjs.cloudflare.com/ajax/libs/jsxgraph/1.1.0/jsxgraphcore.min.js&quot;\\n        type=&quot;text/javascript&quot;&gt;&lt;/script&gt;\\n&lt;script src=&quot;https://cdnjs.cloudflare.com/ajax/libs/jsxgraph/1.1.0/geonext.min.js&quot;\\n        type=&quot;text/javascript&quot;&gt;&lt;/script&gt;\\n\\n&lt;div id=&quot;jxgbox&quot; class=&quot;jxgbox&quot; style=&quot;display: flex; width:99%; height:99%; margin: 0; flex-direction: column; overflow: hidden&quot;&gt;\\n&lt;script&gt;\\nvar board = JXG.JSXGraph.initBoard('jxgbox', {axis:true,boundingbox:[-7.7,1.099478413666027,7.7,-1.0994784136660272]});\\nboard.suspendUpdate();\\n\\nfunction $f1(x) { try { return sin(x);} catch(e) { return Number.NaN;} }\\nboard.create('functiongraph',[$f1, -7.0, 7.0],{strokecolor:'#5e81b5'});\\n\\n\\nboard.unsuspendUpdate();\\n\\n&lt;/script&gt;\\n&lt;/div&gt;\\n\\n&lt;/body&gt;\\n&lt;/html&gt;\\\" style=\\\"display: block; width: 100%; height: 100%; border: none;\\\" ></iframe>\"\r\n" + 
 					"      } ]\r\n" + 
 					"    }, {\r\n" + 
 					"      \"title\" : \"Alternate form\",\r\n" + 
@@ -651,6 +691,7 @@ public class TestPods {
 
 	@Test
 	public void testPolynomialQuotientRemainder() {
+		EvalEngine.get().resetModuleCounter4JUnit();
 		String s = System.getProperty("os.name");
 		ObjectNode messageJSON = Pods.createResult(" x**2-4,x-2", formatsTEX);
 		final String jsonStr = messageJSON.toPrettyString();
@@ -689,7 +730,7 @@ public class TestPods {
 					"      \"numsubpods\" : 1,\r\n" + 
 					"      \"subpods\" : [ {\r\n" + 
 					"        \"sinput\" : \"Plot({-4+x^2,-2+x},{x,-7.0,7.0})\",\r\n" + 
-					"        \"jsxgraph\" : \"<iframe srcdoc=\\\"&lt;?xml version=&quot;1.0&quot; encoding=&quot;UTF-8&quot;?&gt;\\n\\n&lt;!DOCTYPE html PUBLIC\\n  &quot;-//W3C//DTD XHTML 1.1 plus MathML 2.0 plus SVG 1.1//EN&quot;\\n  &quot;http://www.w3.org/2002/04/xhtml-math-svg/xhtml-math-svg.dtd&quot;&gt;\\n\\n&lt;html xmlns=&quot;http://www.w3.org/1999/xhtml&quot; style=&quot;width: 100%; height: 100%; margin: 0; padding: 0&quot;&gt;\\n&lt;head&gt;\\n&lt;meta charset=&quot;utf-8&quot;&gt;\\n&lt;title&gt;JSXGraph&lt;/title&gt;\\n\\n&lt;body style=&quot;width: 100%; height: 100%; margin: 0; padding: 0&quot;&gt;\\n\\n&lt;link rel=&quot;stylesheet&quot; type=&quot;text/css&quot; href=&quot;https://cdnjs.cloudflare.com/ajax/libs/jsxgraph/1.1.0/jsxgraph.min.css&quot; /&gt;\\n&lt;script src=&quot;https://cdn.jsdelivr.net/gh/paulmasson/math@1.2.9/build/math.js&quot;&gt;&lt;/script&gt;\\n&lt;script src=&quot;https://cdnjs.cloudflare.com/ajax/libs/jsxgraph/1.1.0/jsxgraphcore.min.js&quot;\\n        type=&quot;text/javascript&quot;&gt;&lt;/script&gt;\\n&lt;script src=&quot;https://cdnjs.cloudflare.com/ajax/libs/jsxgraph/1.1.0/geonext.min.js&quot;\\n        type=&quot;text/javascript&quot;&gt;&lt;/script&gt;\\n\\n&lt;div id=&quot;jxgbox&quot; class=&quot;jxgbox&quot; style=&quot;display: flex; width:99%; height:99%; margin: 0; flex-direction: column; overflow: hidden&quot;&gt;\\n&lt;script&gt;\\nvar board = JXG.JSXGraph.initBoard('jxgbox', {axis:true,boundingbox:[-8.25,5.475,8.25,-4.975]});\\nboard.suspendUpdate();\\n\\nfunction z1(x) { try { return add(-4,pow(x,2));} catch(e) { return Number.NaN;} }\\nfunction z2(x) { try { return add(-2,x);} catch(e) { return Number.NaN;} }\\nvar p1 = board.create('functiongraph',[z1, -7.0, 7.0],{strokecolor:'#5e81b5'});\\nvar p2 = board.create('functiongraph',[z2, -7.0, 7.0],{strokecolor:'#e19c24'});\\nvar data = [ p1, p2 ];\\n\\n\\nboard.unsuspendUpdate();\\n\\n&lt;/script&gt;\\n&lt;/div&gt;\\n\\n&lt;/body&gt;\\n&lt;/html&gt;\\\" style=\\\"display: block; width: 100%; height: 100%; border: none;\\\" ></iframe>\"\r\n" + 
+					"        \"jsxgraph\" : \"<iframe srcdoc=\\\"&lt;?xml version=&quot;1.0&quot; encoding=&quot;UTF-8&quot;?&gt;\\n\\n&lt;!DOCTYPE html PUBLIC\\n  &quot;-//W3C//DTD XHTML 1.1 plus MathML 2.0 plus SVG 1.1//EN&quot;\\n  &quot;http://www.w3.org/2002/04/xhtml-math-svg/xhtml-math-svg.dtd&quot;&gt;\\n\\n&lt;html xmlns=&quot;http://www.w3.org/1999/xhtml&quot; style=&quot;width: 100%; height: 100%; margin: 0; padding: 0&quot;&gt;\\n&lt;head&gt;\\n&lt;meta charset=&quot;utf-8&quot;&gt;\\n&lt;title&gt;JSXGraph&lt;/title&gt;\\n\\n&lt;body style=&quot;width: 100%; height: 100%; margin: 0; padding: 0&quot;&gt;\\n\\n&lt;link rel=&quot;stylesheet&quot; type=&quot;text/css&quot; href=&quot;https://cdnjs.cloudflare.com/ajax/libs/jsxgraph/1.1.0/jsxgraph.min.css&quot; /&gt;\\n&lt;script src=&quot;https://cdn.jsdelivr.net/gh/paulmasson/math@1.2.9/build/math.js&quot;&gt;&lt;/script&gt;\\n&lt;script src=&quot;https://cdnjs.cloudflare.com/ajax/libs/jsxgraph/1.1.0/jsxgraphcore.min.js&quot;\\n        type=&quot;text/javascript&quot;&gt;&lt;/script&gt;\\n&lt;script src=&quot;https://cdnjs.cloudflare.com/ajax/libs/jsxgraph/1.1.0/geonext.min.js&quot;\\n        type=&quot;text/javascript&quot;&gt;&lt;/script&gt;\\n\\n&lt;div id=&quot;jxgbox&quot; class=&quot;jxgbox&quot; style=&quot;display: flex; width:99%; height:99%; margin: 0; flex-direction: column; overflow: hidden&quot;&gt;\\n&lt;script&gt;\\nvar board = JXG.JSXGraph.initBoard('jxgbox', {axis:true,boundingbox:[-7.7,47.7,7.7,-11.7]});\\nboard.suspendUpdate();\\n\\nfunction $f1(x) { try { return add(-4,pow(x,2));} catch(e) { return Number.NaN;} }\\nfunction $f2(x) { try { return add(-2,x);} catch(e) { return Number.NaN;} }\\nboard.create('functiongraph',[$f1, -7.0, 7.0],{strokecolor:'#5e81b5'});\\nboard.create('functiongraph',[$f2, -7.0, 7.0],{strokecolor:'#e19c24'});\\n\\n\\nboard.unsuspendUpdate();\\n\\n&lt;/script&gt;\\n&lt;/div&gt;\\n\\n&lt;/body&gt;\\n&lt;/html&gt;\\\" style=\\\"display: block; width: 100%; height: 100%; border: none;\\\" ></iframe>\"\r\n" + 
 					"      } ]\r\n" + 
 					"    }, {\r\n" + 
 					"      \"title\" : \"Derivative\",\r\n" + 
@@ -752,42 +793,27 @@ public class TestPods {
 		// ObjectNode messageJSON = Pods.createResult("TreeForm(a+(b*q*s)^(2*y)+Sin(c)^(3-z))", formatsTEX);
 		ObjectNode messageJSON = Pods.createResult(//
 				"Yellow", //
-				formatsTEX); 
+				formatsTEX);
 		final String jsonStr = messageJSON.toPrettyString();
 		if (s.contains("Windows")) {
 			assertEquals(jsonStr, //
-					"{\r\n" + 
-					"  \"queryresult\" : {\r\n" + 
-					"    \"success\" : \"true\",\r\n" + 
-					"    \"error\" : \"false\",\r\n" + 
-					"    \"numpods\" : 2,\r\n" + 
-					"    \"version\" : \"0.1\",\r\n" + 
-					"    \"pods\" : [ {\r\n" + 
-					"      \"title\" : \"Input\",\r\n" + 
-					"      \"scanner\" : \"Identity\",\r\n" + 
-					"      \"error\" : \"false\",\r\n" + 
-					"      \"numsubpods\" : 1,\r\n" + 
-					"      \"subpods\" : [ {\r\n" + 
-					"        \"plaintext\" : \"Yellow\",\r\n" + 
-					"        \"sinput\" : \"Yellow\",\r\n" + 
-					"        \"latex\" : \"Yellow\"\r\n" + 
-					"      } ]\r\n" + 
-					"    }, {\r\n" + 
-					"      \"title\" : \"Result\",\r\n" + 
-					"      \"scanner\" : \"Identity\",\r\n" + 
-					"      \"error\" : \"false\",\r\n" + 
-					"      \"numsubpods\" : 1,\r\n" + 
-					"      \"subpods\" : [ {\r\n" + 
-					"        \"plaintext\" : \"RGBColor(1.0,1.0,0.0)\",\r\n" + 
-					"        \"sinput\" : \"Yellow\",\r\n" + 
-					"        \"latex\" : \"\\\\text{RGBColor}(1.0,1.0,0.0)\"\r\n" + 
-					"      } ]\r\n" + 
-					"    } ]\r\n" + 
-					"  }\r\n" + 
-					"}");//
+					"{\r\n" + "  \"queryresult\" : {\r\n" + "    \"success\" : \"true\",\r\n"
+							+ "    \"error\" : \"false\",\r\n" + "    \"numpods\" : 2,\r\n"
+							+ "    \"version\" : \"0.1\",\r\n" + "    \"pods\" : [ {\r\n"
+							+ "      \"title\" : \"Input\",\r\n" + "      \"scanner\" : \"Identity\",\r\n"
+							+ "      \"error\" : \"false\",\r\n" + "      \"numsubpods\" : 1,\r\n"
+							+ "      \"subpods\" : [ {\r\n" + "        \"plaintext\" : \"Yellow\",\r\n"
+							+ "        \"sinput\" : \"Yellow\",\r\n" + "        \"latex\" : \"Yellow\"\r\n"
+							+ "      } ]\r\n" + "    }, {\r\n" + "      \"title\" : \"Result\",\r\n"
+							+ "      \"scanner\" : \"Identity\",\r\n" + "      \"error\" : \"false\",\r\n"
+							+ "      \"numsubpods\" : 1,\r\n" + "      \"subpods\" : [ {\r\n"
+							+ "        \"plaintext\" : \"RGBColor(1.0,1.0,0.0)\",\r\n"
+							+ "        \"sinput\" : \"Yellow\",\r\n"
+							+ "        \"latex\" : \"\\\\text{RGBColor}(1.0,1.0,0.0)\"\r\n" + "      } ]\r\n"
+							+ "    } ]\r\n" + "  }\r\n" + "}");//
 		}
 	}
-	
+
 	@Test
 	public void testComplexPlot3D() {
 		String s = System.getProperty("os.name");
@@ -819,73 +845,48 @@ public class TestPods {
 		ObjectNode messageJSON = Pods.createResult("Histogram(RandomVariate(NormalDistribution(0, 1), 200))",
 				formatsMATHML);
 		final String jsonStr = messageJSON.toPrettyString();
-		if (s.contains("Windows")) {
-			// RandomVariate gives random results
+		// if (s.contains("Windows")) {
+		// RandomVariate gives random results
 
-		}
+		// }
 	}
 
 	@Test
 	public void testList() {
+		EvalEngine.get().resetModuleCounter4JUnit();
 		String s = System.getProperty("os.name");
 		ObjectNode messageJSON = Pods.createResult("1,2,3", formatsMATHML);
 		final String jsonStr = messageJSON.toPrettyString();
 		if (s.contains("Windows")) {
 			assertEquals(jsonStr, //
-					"{\r\n" + 
-					"  \"queryresult\" : {\r\n" + 
-					"    \"success\" : \"true\",\r\n" + 
-					"    \"error\" : \"false\",\r\n" + 
-					"    \"numpods\" : 5,\r\n" + 
-					"    \"version\" : \"0.1\",\r\n" + 
-					"    \"pods\" : [ {\r\n" + 
-					"      \"title\" : \"Input\",\r\n" + 
-					"      \"scanner\" : \"Identity\",\r\n" + 
-					"      \"error\" : \"false\",\r\n" + 
-					"      \"numsubpods\" : 1,\r\n" + 
-					"      \"subpods\" : [ {\r\n" + 
-					"        \"plaintext\" : \"{1,2,3}\",\r\n" + 
-					"        \"mathml\" : \"<math xmlns=\\\"http://www.w3.org/1999/xhtml\\\"><mrow><mo>{</mo><mrow><mn>1</mn><mo>,</mo><mn>2</mn><mo>,</mo><mn>3</mn></mrow><mo>}</mo></mrow></math>\"\r\n" + 
-					"      } ]\r\n" + 
-					"    }, {\r\n" + 
-					"      \"title\" : \"Total\",\r\n" + 
-					"      \"scanner\" : \"List\",\r\n" + 
-					"      \"error\" : \"false\",\r\n" + 
-					"      \"numsubpods\" : 1,\r\n" + 
-					"      \"subpods\" : [ {\r\n" + 
-					"        \"plaintext\" : \"6\",\r\n" + 
-					"        \"mathml\" : \"<math xmlns=\\\"http://www.w3.org/1999/xhtml\\\"><mn>6</mn></math>\"\r\n" + 
-					"      } ]\r\n" + 
-					"    }, {\r\n" + 
-					"      \"title\" : \"Vector length\",\r\n" + 
-					"      \"scanner\" : \"List\",\r\n" + 
-					"      \"error\" : \"false\",\r\n" + 
-					"      \"numsubpods\" : 1,\r\n" + 
-					"      \"subpods\" : [ {\r\n" + 
-					"        \"plaintext\" : \"3.7416573867739413\",\r\n" + 
-					"        \"mathml\" : \"<math xmlns=\\\"http://www.w3.org/1999/xhtml\\\"><mn>3.74166</mn></math>\"\r\n" + 
-					"      } ]\r\n" + 
-					"    }, {\r\n" + 
-					"      \"title\" : \"Normalized vector\",\r\n" + 
-					"      \"scanner\" : \"List\",\r\n" + 
-					"      \"error\" : \"false\",\r\n" + 
-					"      \"numsubpods\" : 1,\r\n" + 
-					"      \"subpods\" : [ {\r\n" + 
-					"        \"plaintext\" : \"{1/Sqrt(14),Sqrt(2/7),3/Sqrt(14)}\",\r\n" + 
-					"        \"mathml\" : \"<math xmlns=\\\"http://www.w3.org/1999/xhtml\\\"><mrow><mo>{</mo><mrow><mfrac><mn>1</mn><msqrt><mn>14</mn></msqrt></mfrac><mo>,</mo><msqrt><mrow><mfrac><mn>2</mn><mn>7</mn></mfrac></mrow></msqrt><mo>,</mo><mfrac><mn>3</mn><msqrt><mn>14</mn></msqrt></mfrac></mrow><mo>}</mo></mrow></math>\"\r\n" + 
-					"      } ]\r\n" + 
-					"    }, {\r\n" + 
-					"      \"title\" : \"Plot points\",\r\n" + 
-					"      \"scanner\" : \"Plotter\",\r\n" + 
-					"      \"error\" : \"false\",\r\n" + 
-					"      \"numsubpods\" : 1,\r\n" + 
-					"      \"subpods\" : [ {\r\n" + 
-					"        \"sinput\" : \"ListPlot({1.0,2.0,3.0})\",\r\n" + 
-					"        \"jsxgraph\" : \"<iframe srcdoc=\\\"&lt;?xml version=&quot;1.0&quot; encoding=&quot;UTF-8&quot;?&gt;\\n\\n&lt;!DOCTYPE html PUBLIC\\n  &quot;-//W3C//DTD XHTML 1.1 plus MathML 2.0 plus SVG 1.1//EN&quot;\\n  &quot;http://www.w3.org/2002/04/xhtml-math-svg/xhtml-math-svg.dtd&quot;&gt;\\n\\n&lt;html xmlns=&quot;http://www.w3.org/1999/xhtml&quot; style=&quot;width: 100%; height: 100%; margin: 0; padding: 0&quot;&gt;\\n&lt;head&gt;\\n&lt;meta charset=&quot;utf-8&quot;&gt;\\n&lt;title&gt;JSXGraph&lt;/title&gt;\\n\\n&lt;body style=&quot;width: 100%; height: 100%; margin: 0; padding: 0&quot;&gt;\\n\\n&lt;link rel=&quot;stylesheet&quot; type=&quot;text/css&quot; href=&quot;https://cdnjs.cloudflare.com/ajax/libs/jsxgraph/1.1.0/jsxgraph.min.css&quot; /&gt;\\n&lt;script src=&quot;https://cdn.jsdelivr.net/gh/paulmasson/math@1.2.9/build/math.js&quot;&gt;&lt;/script&gt;\\n&lt;script src=&quot;https://cdnjs.cloudflare.com/ajax/libs/jsxgraph/1.1.0/jsxgraphcore.min.js&quot;\\n        type=&quot;text/javascript&quot;&gt;&lt;/script&gt;\\n&lt;script src=&quot;https://cdnjs.cloudflare.com/ajax/libs/jsxgraph/1.1.0/geonext.min.js&quot;\\n        type=&quot;text/javascript&quot;&gt;&lt;/script&gt;\\n\\n&lt;div id=&quot;jxgbox&quot; class=&quot;jxgbox&quot; style=&quot;display: flex; width:99%; height:99%; margin: 0; flex-direction: column; overflow: hidden&quot;&gt;\\n&lt;script&gt;\\nvar board = JXG.JSXGraph.initBoard('jxgbox', {axis:true,boundingbox:[0.3,3.65,4.7,0.35]});\\nboard.suspendUpdate();\\n\\nboard.create('point', [function() {return 1;},function() {return 1.0;}],  {color:'#5e81b5' ,name:'', face:'o', size: 2 } );\\nboard.create('point', [function() {return 2;},function() {return 2.0;}],  {color:'#5e81b5' ,name:'', face:'o', size: 2 } );\\nboard.create('point', [function() {return 3;},function() {return 3.0;}],  {color:'#5e81b5' ,name:'', face:'o', size: 2 } );\\n\\n\\nboard.unsuspendUpdate();\\n\\n&lt;/script&gt;\\n&lt;/div&gt;\\n\\n&lt;/body&gt;\\n&lt;/html&gt;\\\" style=\\\"display: block; width: 100%; height: 100%; border: none;\\\" ></iframe>\"\r\n" + 
-					"      } ]\r\n" + 
-					"    } ]\r\n" + 
-					"  }\r\n" + 
-					"}");//
+					"{\r\n" + "  \"queryresult\" : {\r\n" + "    \"success\" : \"true\",\r\n"
+							+ "    \"error\" : \"false\",\r\n" + "    \"numpods\" : 5,\r\n"
+							+ "    \"version\" : \"0.1\",\r\n" + "    \"pods\" : [ {\r\n"
+							+ "      \"title\" : \"Input\",\r\n" + "      \"scanner\" : \"Identity\",\r\n"
+							+ "      \"error\" : \"false\",\r\n" + "      \"numsubpods\" : 1,\r\n"
+							+ "      \"subpods\" : [ {\r\n" + "        \"plaintext\" : \"{1,2,3}\",\r\n"
+							+ "        \"mathml\" : \"<math xmlns=\\\"http://www.w3.org/1999/xhtml\\\"><mrow><mo>{</mo><mrow><mn>1</mn><mo>,</mo><mn>2</mn><mo>,</mo><mn>3</mn></mrow><mo>}</mo></mrow></math>\"\r\n"
+							+ "      } ]\r\n" + "    }, {\r\n" + "      \"title\" : \"Total\",\r\n"
+							+ "      \"scanner\" : \"List\",\r\n" + "      \"error\" : \"false\",\r\n"
+							+ "      \"numsubpods\" : 1,\r\n" + "      \"subpods\" : [ {\r\n"
+							+ "        \"plaintext\" : \"6\",\r\n"
+							+ "        \"mathml\" : \"<math xmlns=\\\"http://www.w3.org/1999/xhtml\\\"><mn>6</mn></math>\"\r\n"
+							+ "      } ]\r\n" + "    }, {\r\n" + "      \"title\" : \"Vector length\",\r\n"
+							+ "      \"scanner\" : \"List\",\r\n" + "      \"error\" : \"false\",\r\n"
+							+ "      \"numsubpods\" : 1,\r\n" + "      \"subpods\" : [ {\r\n"
+							+ "        \"plaintext\" : \"3.7416573867739413\",\r\n"
+							+ "        \"mathml\" : \"<math xmlns=\\\"http://www.w3.org/1999/xhtml\\\"><mn>3.74166</mn></math>\"\r\n"
+							+ "      } ]\r\n" + "    }, {\r\n" + "      \"title\" : \"Normalized vector\",\r\n"
+							+ "      \"scanner\" : \"List\",\r\n" + "      \"error\" : \"false\",\r\n"
+							+ "      \"numsubpods\" : 1,\r\n" + "      \"subpods\" : [ {\r\n"
+							+ "        \"plaintext\" : \"{1/Sqrt(14),Sqrt(2/7),3/Sqrt(14)}\",\r\n"
+							+ "        \"mathml\" : \"<math xmlns=\\\"http://www.w3.org/1999/xhtml\\\"><mrow><mo>{</mo><mrow><mfrac><mn>1</mn><msqrt><mn>14</mn></msqrt></mfrac><mo>,</mo><msqrt><mrow><mfrac><mn>2</mn><mn>7</mn></mfrac></mrow></msqrt><mo>,</mo><mfrac><mn>3</mn><msqrt><mn>14</mn></msqrt></mfrac></mrow><mo>}</mo></mrow></math>\"\r\n"
+							+ "      } ]\r\n" + "    }, {\r\n" + "      \"title\" : \"Plot points\",\r\n"
+							+ "      \"scanner\" : \"Plotter\",\r\n" + "      \"error\" : \"false\",\r\n"
+							+ "      \"numsubpods\" : 1,\r\n" + "      \"subpods\" : [ {\r\n"
+							+ "        \"sinput\" : \"ListPlot({1.0,2.0,3.0})\",\r\n"
+							+ "        \"jsxgraph\" : \"<iframe srcdoc=\\\"&lt;?xml version=&quot;1.0&quot; encoding=&quot;UTF-8&quot;?&gt;\\n\\n&lt;!DOCTYPE html PUBLIC\\n  &quot;-//W3C//DTD XHTML 1.1 plus MathML 2.0 plus SVG 1.1//EN&quot;\\n  &quot;http://www.w3.org/2002/04/xhtml-math-svg/xhtml-math-svg.dtd&quot;&gt;\\n\\n&lt;html xmlns=&quot;http://www.w3.org/1999/xhtml&quot; style=&quot;width: 100%; height: 100%; margin: 0; padding: 0&quot;&gt;\\n&lt;head&gt;\\n&lt;meta charset=&quot;utf-8&quot;&gt;\\n&lt;title&gt;JSXGraph&lt;/title&gt;\\n\\n&lt;body style=&quot;width: 100%; height: 100%; margin: 0; padding: 0&quot;&gt;\\n\\n&lt;link rel=&quot;stylesheet&quot; type=&quot;text/css&quot; href=&quot;https://cdnjs.cloudflare.com/ajax/libs/jsxgraph/1.1.0/jsxgraph.min.css&quot; /&gt;\\n&lt;script src=&quot;https://cdn.jsdelivr.net/gh/paulmasson/math@1.2.9/build/math.js&quot;&gt;&lt;/script&gt;\\n&lt;script src=&quot;https://cdnjs.cloudflare.com/ajax/libs/jsxgraph/1.1.0/jsxgraphcore.min.js&quot;\\n        type=&quot;text/javascript&quot;&gt;&lt;/script&gt;\\n&lt;script src=&quot;https://cdnjs.cloudflare.com/ajax/libs/jsxgraph/1.1.0/geonext.min.js&quot;\\n        type=&quot;text/javascript&quot;&gt;&lt;/script&gt;\\n\\n&lt;div id=&quot;jxgbox&quot; class=&quot;jxgbox&quot; style=&quot;display: flex; width:99%; height:99%; margin: 0; flex-direction: column; overflow: hidden&quot;&gt;\\n&lt;script&gt;\\nvar board = JXG.JSXGraph.initBoard('jxgbox', {axis:true,boundingbox:[-0.2,3.1,4.2,0.9]});\\nboard.suspendUpdate();\\n\\nboard.create('point', [function() {return 1;},function() {return 1.0;}],  {color:'#5e81b5' ,name:'', face:'o', size: 2 } );\\nboard.create('point', [function() {return 2;},function() {return 2.0;}],  {color:'#5e81b5' ,name:'', face:'o', size: 2 } );\\nboard.create('point', [function() {return 3;},function() {return 3.0;}],  {color:'#5e81b5' ,name:'', face:'o', size: 2 } );\\n\\n\\nboard.unsuspendUpdate();\\n\\n&lt;/script&gt;\\n&lt;/div&gt;\\n\\n&lt;/body&gt;\\n&lt;/html&gt;\\\" style=\\\"display: block; width: 100%; height: 100%; border: none;\\\" ></iframe>\"\r\n"
+							+ "      } ]\r\n" + "    } ]\r\n" + "  }\r\n" + "}");//
 		}
 	}
 
@@ -927,62 +928,36 @@ public class TestPods {
 		final String jsonStr = messageJSON.toPrettyString();
 		if (s.contains("Windows")) {
 			assertEquals(jsonStr, //
-					"{\r\n" + 
-					"  \"queryresult\" : {\r\n" + 
-					"    \"success\" : \"true\",\r\n" + 
-					"    \"error\" : \"false\",\r\n" + 
-					"    \"numpods\" : 5,\r\n" + 
-					"    \"version\" : \"0.1\",\r\n" + 
-					"    \"pods\" : [ {\r\n" + 
-					"      \"title\" : \"Input\",\r\n" + 
-					"      \"scanner\" : \"Identity\",\r\n" + 
-					"      \"error\" : \"false\",\r\n" + 
-					"      \"numsubpods\" : 1,\r\n" + 
-					"      \"subpods\" : [ {\r\n" + 
-					"        \"plaintext\" : \"{{1,3},{3,4}}\",\r\n" + 
-					"        \"sinput\" : \"{{1,3},{3,4}}\",\r\n" + 
-					"        \"latex\" : \"\\\\{\\\\{1,3\\\\},\\\\{3,4\\\\}\\\\}\"\r\n" + 
-					"      } ]\r\n" + 
-					"    }, {\r\n" + 
-					"      \"title\" : \"Properties\",\r\n" + 
-					"      \"scanner\" : \"Matrix\",\r\n" + 
-					"      \"error\" : \"false\",\r\n" + 
-					"      \"numsubpods\" : 1,\r\n" + 
-					"      \"subpods\" : [ {\r\n" + 
-					"        \"plaintext\" : \"The matrix is symmetric.\",\r\n" + 
-					"        \"sinput\" : \"SymmetricMatrixQ({{1,3}, {3,4}})\"\r\n" + 
-					"      } ]\r\n" + 
-					"    }, {\r\n" + 
-					"      \"title\" : \"Properties\",\r\n" + 
-					"      \"scanner\" : \"Matrix\",\r\n" + 
-					"      \"error\" : \"false\",\r\n" + 
-					"      \"numsubpods\" : 1,\r\n" + 
-					"      \"subpods\" : [ {\r\n" + 
-					"        \"plaintext\" : \"The determinant of the matrix is -5\",\r\n" + 
-					"        \"sinput\" : \"Det({{1,3}, {3,4}})\"\r\n" + 
-					"      } ]\r\n" + 
-					"    }, {\r\n" + 
-					"      \"title\" : \"Inverse of matrix\",\r\n" + 
-					"      \"scanner\" : \"Matrix\",\r\n" + 
-					"      \"error\" : \"false\",\r\n" + 
-					"      \"numsubpods\" : 1,\r\n" + 
-					"      \"subpods\" : [ {\r\n" + 
-					"        \"plaintext\" : \"{{-4/5,3/5},\\n {3/5,-1/5}}\",\r\n" + 
-					"        \"sinput\" : \"Inverse({{1,3}, {3,4}})\",\r\n" + 
-					"        \"latex\" : \"\\\\left(\\n\\\\begin{array}{cc}\\n\\\\frac{-4}{5} & \\\\frac{3}{5} \\\\\\\\\\n\\\\frac{3}{5} & \\\\frac{-1}{5} \\\\\\n\\\\\\\\\\n\\\\end{array}\\n\\\\right) \"\r\n" + 
-					"      } ]\r\n" + 
-					"    }, {\r\n" + 
-					"      \"title\" : \"Plot points\",\r\n" + 
-					"      \"scanner\" : \"Plotter\",\r\n" + 
-					"      \"error\" : \"false\",\r\n" + 
-					"      \"numsubpods\" : 1,\r\n" + 
-					"      \"subpods\" : [ {\r\n" + 
-					"        \"sinput\" : \"ListPlot({{1.0,3.0},\\n {3.0,4.0}})\",\r\n" + 
-					"        \"jsxgraph\" : \"<iframe srcdoc=\\\"&lt;?xml version=&quot;1.0&quot; encoding=&quot;UTF-8&quot;?&gt;\\n\\n&lt;!DOCTYPE html PUBLIC\\n  &quot;-//W3C//DTD XHTML 1.1 plus MathML 2.0 plus SVG 1.1//EN&quot;\\n  &quot;http://www.w3.org/2002/04/xhtml-math-svg/xhtml-math-svg.dtd&quot;&gt;\\n\\n&lt;html xmlns=&quot;http://www.w3.org/1999/xhtml&quot; style=&quot;width: 100%; height: 100%; margin: 0; padding: 0&quot;&gt;\\n&lt;head&gt;\\n&lt;meta charset=&quot;utf-8&quot;&gt;\\n&lt;title&gt;JSXGraph&lt;/title&gt;\\n\\n&lt;body style=&quot;width: 100%; height: 100%; margin: 0; padding: 0&quot;&gt;\\n\\n&lt;link rel=&quot;stylesheet&quot; type=&quot;text/css&quot; href=&quot;https://cdnjs.cloudflare.com/ajax/libs/jsxgraph/1.1.0/jsxgraph.min.css&quot; /&gt;\\n&lt;script src=&quot;https://cdn.jsdelivr.net/gh/paulmasson/math@1.2.9/build/math.js&quot;&gt;&lt;/script&gt;\\n&lt;script src=&quot;https://cdnjs.cloudflare.com/ajax/libs/jsxgraph/1.1.0/jsxgraphcore.min.js&quot;\\n        type=&quot;text/javascript&quot;&gt;&lt;/script&gt;\\n&lt;script src=&quot;https://cdnjs.cloudflare.com/ajax/libs/jsxgraph/1.1.0/geonext.min.js&quot;\\n        type=&quot;text/javascript&quot;&gt;&lt;/script&gt;\\n\\n&lt;div id=&quot;jxgbox&quot; class=&quot;jxgbox&quot; style=&quot;display: flex; width:99%; height:99%; margin: 0; flex-direction: column; overflow: hidden&quot;&gt;\\n&lt;script&gt;\\nvar board = JXG.JSXGraph.initBoard('jxgbox', {axis:true,boundingbox:[0.35,4.6,3.65,2.4]});\\nboard.suspendUpdate();\\n\\nboard.create('point', [function() {return 1.0;},function() {return 3.0;}],  {color:'#5e81b5' ,name:'', face:'o', size: 2 } );\\nboard.create('point', [function() {return 3.0;},function() {return 4.0;}],  {color:'#5e81b5' ,name:'', face:'o', size: 2 } );\\n\\n\\nboard.unsuspendUpdate();\\n\\n&lt;/script&gt;\\n&lt;/div&gt;\\n\\n&lt;/body&gt;\\n&lt;/html&gt;\\\" style=\\\"display: block; width: 100%; height: 100%; border: none;\\\" ></iframe>\"\r\n" + 
-					"      } ]\r\n" + 
-					"    } ]\r\n" + 
-					"  }\r\n" + 
-					"}");//
+					"{\r\n" + "  \"queryresult\" : {\r\n" + "    \"success\" : \"true\",\r\n"
+							+ "    \"error\" : \"false\",\r\n" + "    \"numpods\" : 5,\r\n"
+							+ "    \"version\" : \"0.1\",\r\n" + "    \"pods\" : [ {\r\n"
+							+ "      \"title\" : \"Input\",\r\n" + "      \"scanner\" : \"Identity\",\r\n"
+							+ "      \"error\" : \"false\",\r\n" + "      \"numsubpods\" : 1,\r\n"
+							+ "      \"subpods\" : [ {\r\n" + "        \"plaintext\" : \"{{1,3},{3,4}}\",\r\n"
+							+ "        \"sinput\" : \"{{1,3},{3,4}}\",\r\n"
+							+ "        \"latex\" : \"\\\\{\\\\{1,3\\\\},\\\\{3,4\\\\}\\\\}\"\r\n" + "      } ]\r\n"
+							+ "    }, {\r\n" + "      \"title\" : \"Properties\",\r\n"
+							+ "      \"scanner\" : \"Matrix\",\r\n" + "      \"error\" : \"false\",\r\n"
+							+ "      \"numsubpods\" : 1,\r\n" + "      \"subpods\" : [ {\r\n"
+							+ "        \"plaintext\" : \"The matrix is symmetric.\",\r\n"
+							+ "        \"sinput\" : \"SymmetricMatrixQ({{1,3}, {3,4}})\"\r\n" + "      } ]\r\n"
+							+ "    }, {\r\n" + "      \"title\" : \"Properties\",\r\n"
+							+ "      \"scanner\" : \"Matrix\",\r\n" + "      \"error\" : \"false\",\r\n"
+							+ "      \"numsubpods\" : 1,\r\n" + "      \"subpods\" : [ {\r\n"
+							+ "        \"plaintext\" : \"The determinant of the matrix is -5\",\r\n"
+							+ "        \"sinput\" : \"Det({{1,3}, {3,4}})\"\r\n" + "      } ]\r\n" + "    }, {\r\n"
+							+ "      \"title\" : \"Inverse of matrix\",\r\n" + "      \"scanner\" : \"Matrix\",\r\n"
+							+ "      \"error\" : \"false\",\r\n" + "      \"numsubpods\" : 1,\r\n"
+							+ "      \"subpods\" : [ {\r\n"
+							+ "        \"plaintext\" : \"{{-4/5,3/5},\\n {3/5,-1/5}}\",\r\n"
+							+ "        \"sinput\" : \"Inverse({{1,3}, {3,4}})\",\r\n"
+							+ "        \"latex\" : \"\\\\left(\\n\\\\begin{array}{cc}\\n\\\\frac{-4}{5} & \\\\frac{3}{5} \\\\\\\\\\n\\\\frac{3}{5} & \\\\frac{-1}{5} \\\\\\n\\\\\\\\\\n\\\\end{array}\\n\\\\right) \"\r\n"
+							+ "      } ]\r\n" + "    }, {\r\n" + "      \"title\" : \"Plot points\",\r\n"
+							+ "      \"scanner\" : \"Plotter\",\r\n" + "      \"error\" : \"false\",\r\n"
+							+ "      \"numsubpods\" : 1,\r\n" + "      \"subpods\" : [ {\r\n"
+							+ "        \"sinput\" : \"ListPlot({{1.0,3.0},\\n {3.0,4.0}})\",\r\n"
+							+ "        \"jsxgraph\" : \"<iframe srcdoc=\\\"&lt;?xml version=&quot;1.0&quot; encoding=&quot;UTF-8&quot;?&gt;\\n\\n&lt;!DOCTYPE html PUBLIC\\n  &quot;-//W3C//DTD XHTML 1.1 plus MathML 2.0 plus SVG 1.1//EN&quot;\\n  &quot;http://www.w3.org/2002/04/xhtml-math-svg/xhtml-math-svg.dtd&quot;&gt;\\n\\n&lt;html xmlns=&quot;http://www.w3.org/1999/xhtml&quot; style=&quot;width: 100%; height: 100%; margin: 0; padding: 0&quot;&gt;\\n&lt;head&gt;\\n&lt;meta charset=&quot;utf-8&quot;&gt;\\n&lt;title&gt;JSXGraph&lt;/title&gt;\\n\\n&lt;body style=&quot;width: 100%; height: 100%; margin: 0; padding: 0&quot;&gt;\\n\\n&lt;link rel=&quot;stylesheet&quot; type=&quot;text/css&quot; href=&quot;https://cdnjs.cloudflare.com/ajax/libs/jsxgraph/1.1.0/jsxgraph.min.css&quot; /&gt;\\n&lt;script src=&quot;https://cdn.jsdelivr.net/gh/paulmasson/math@1.2.9/build/math.js&quot;&gt;&lt;/script&gt;\\n&lt;script src=&quot;https://cdnjs.cloudflare.com/ajax/libs/jsxgraph/1.1.0/jsxgraphcore.min.js&quot;\\n        type=&quot;text/javascript&quot;&gt;&lt;/script&gt;\\n&lt;script src=&quot;https://cdnjs.cloudflare.com/ajax/libs/jsxgraph/1.1.0/geonext.min.js&quot;\\n        type=&quot;text/javascript&quot;&gt;&lt;/script&gt;\\n\\n&lt;div id=&quot;jxgbox&quot; class=&quot;jxgbox&quot; style=&quot;display: flex; width:99%; height:99%; margin: 0; flex-direction: column; overflow: hidden&quot;&gt;\\n&lt;script&gt;\\nvar board = JXG.JSXGraph.initBoard('jxgbox', {axis:true,boundingbox:[0.9,4.05,3.1,2.95]});\\nboard.suspendUpdate();\\n\\nboard.create('point', [function() {return 1.0;},function() {return 3.0;}],  {color:'#5e81b5' ,name:'', face:'o', size: 2 } );\\nboard.create('point', [function() {return 3.0;},function() {return 4.0;}],  {color:'#5e81b5' ,name:'', face:'o', size: 2 } );\\n\\n\\nboard.unsuspendUpdate();\\n\\n&lt;/script&gt;\\n&lt;/div&gt;\\n\\n&lt;/body&gt;\\n&lt;/html&gt;\\\" style=\\\"display: block; width: 100%; height: 100%; border: none;\\\" ></iframe>\"\r\n"
+							+ "      } ]\r\n" + "    } ]\r\n" + "  }\r\n" + "}");//
 		}
 	}
 
@@ -993,54 +968,29 @@ public class TestPods {
 		final String jsonStr = messageJSON.toPrettyString();
 		if (s.contains("Windows")) {
 			assertEquals(jsonStr, //
-					"{\r\n" + 
-					"  \"queryresult\" : {\r\n" + 
-					"    \"success\" : \"true\",\r\n" + 
-					"    \"error\" : \"false\",\r\n" + 
-					"    \"numpods\" : 4,\r\n" + 
-					"    \"version\" : \"0.1\",\r\n" + 
-					"    \"pods\" : [ {\r\n" + 
-					"      \"title\" : \"Input\",\r\n" + 
-					"      \"scanner\" : \"Identity\",\r\n" + 
-					"      \"error\" : \"false\",\r\n" + 
-					"      \"numsubpods\" : 1,\r\n" + 
-					"      \"subpods\" : [ {\r\n" + 
-					"        \"plaintext\" : \"3+x==10\",\r\n" + 
-					"        \"sinput\" : \"3+x==10\",\r\n" + 
-					"        \"latex\" : \"3+x == 10\"\r\n" + 
-					"      } ]\r\n" + 
-					"    }, {\r\n" + 
-					"      \"title\" : \"Function\",\r\n" + 
-					"      \"scanner\" : \"Plotter\",\r\n" + 
-					"      \"error\" : \"false\",\r\n" + 
-					"      \"numsubpods\" : 1,\r\n" + 
-					"      \"subpods\" : [ {\r\n" + 
-					"        \"sinput\" : \"Plot({x,7},{x,-20.0,20.0})\",\r\n" + 
-					"        \"jsxgraph\" : \"<iframe srcdoc=\\\"&lt;?xml version=&quot;1.0&quot; encoding=&quot;UTF-8&quot;?&gt;\\n\\n&lt;!DOCTYPE html PUBLIC\\n  &quot;-//W3C//DTD XHTML 1.1 plus MathML 2.0 plus SVG 1.1//EN&quot;\\n  &quot;http://www.w3.org/2002/04/xhtml-math-svg/xhtml-math-svg.dtd&quot;&gt;\\n\\n&lt;html xmlns=&quot;http://www.w3.org/1999/xhtml&quot; style=&quot;width: 100%; height: 100%; margin: 0; padding: 0&quot;&gt;\\n&lt;head&gt;\\n&lt;meta charset=&quot;utf-8&quot;&gt;\\n&lt;title&gt;JSXGraph&lt;/title&gt;\\n\\n&lt;body style=&quot;width: 100%; height: 100%; margin: 0; padding: 0&quot;&gt;\\n\\n&lt;link rel=&quot;stylesheet&quot; type=&quot;text/css&quot; href=&quot;https://cdnjs.cloudflare.com/ajax/libs/jsxgraph/1.1.0/jsxgraph.min.css&quot; /&gt;\\n&lt;script src=&quot;https://cdn.jsdelivr.net/gh/paulmasson/math@1.2.9/build/math.js&quot;&gt;&lt;/script&gt;\\n&lt;script src=&quot;https://cdnjs.cloudflare.com/ajax/libs/jsxgraph/1.1.0/jsxgraphcore.min.js&quot;\\n        type=&quot;text/javascript&quot;&gt;&lt;/script&gt;\\n&lt;script src=&quot;https://cdnjs.cloudflare.com/ajax/libs/jsxgraph/1.1.0/geonext.min.js&quot;\\n        type=&quot;text/javascript&quot;&gt;&lt;/script&gt;\\n\\n&lt;div id=&quot;jxgbox&quot; class=&quot;jxgbox&quot; style=&quot;display: flex; width:99%; height:99%; margin: 0; flex-direction: column; overflow: hidden&quot;&gt;\\n&lt;script&gt;\\nvar board = JXG.JSXGraph.initBoard('jxgbox', {axis:true,boundingbox:[-22.55,5.5,22.55,-5.5]});\\nboard.suspendUpdate();\\n\\nfunction z1(x) { try { return x;} catch(e) { return Number.NaN;} }\\nfunction z2(x) { try { return 7;} catch(e) { return Number.NaN;} }\\nvar p1 = board.create('functiongraph',[z1, -20.0, 20.0],{strokecolor:'#5e81b5'});\\nvar p2 = board.create('functiongraph',[z2, -20.0, 20.0],{strokecolor:'#e19c24'});\\nvar data = [ p1, p2 ];\\n\\n\\nboard.unsuspendUpdate();\\n\\n&lt;/script&gt;\\n&lt;/div&gt;\\n\\n&lt;/body&gt;\\n&lt;/html&gt;\\\" style=\\\"display: block; width: 100%; height: 100%; border: none;\\\" ></iframe>\"\r\n" + 
-					"      } ]\r\n" + 
-					"    }, {\r\n" + 
-					"      \"title\" : \"Alternate form\",\r\n" + 
-					"      \"scanner\" : \"Simplification\",\r\n" + 
-					"      \"error\" : \"false\",\r\n" + 
-					"      \"numsubpods\" : 1,\r\n" + 
-					"      \"subpods\" : [ {\r\n" + 
-					"        \"plaintext\" : \"-7+x==0\",\r\n" + 
-					"        \"sinput\" : \"-7+x==0\",\r\n" + 
-					"        \"latex\" : \"-7+x == 0\"\r\n" + 
-					"      } ]\r\n" + 
-					"    }, {\r\n" + 
-					"      \"title\" : \"Solution\",\r\n" + 
-					"      \"scanner\" : \"Reduce\",\r\n" + 
-					"      \"error\" : \"false\",\r\n" + 
-					"      \"numsubpods\" : 1,\r\n" + 
-					"      \"subpods\" : [ {\r\n" + 
-					"        \"plaintext\" : \"{{x-&gt;7}}\",\r\n" + 
-					"        \"sinput\" : \"Solve(x==7,{x})\",\r\n" + 
-					"        \"latex\" : \"\\\\{\\\\{x\\\\to 7\\\\}\\\\}\"\r\n" + 
-					"      } ]\r\n" + 
-					"    } ]\r\n" + 
-					"  }\r\n" + 
-					"}");//
+					"{\r\n" + "  \"queryresult\" : {\r\n" + "    \"success\" : \"true\",\r\n"
+							+ "    \"error\" : \"false\",\r\n" + "    \"numpods\" : 4,\r\n"
+							+ "    \"version\" : \"0.1\",\r\n" + "    \"pods\" : [ {\r\n"
+							+ "      \"title\" : \"Input\",\r\n" + "      \"scanner\" : \"Identity\",\r\n"
+							+ "      \"error\" : \"false\",\r\n" + "      \"numsubpods\" : 1,\r\n"
+							+ "      \"subpods\" : [ {\r\n" + "        \"plaintext\" : \"3+x==10\",\r\n"
+							+ "        \"sinput\" : \"3+x==10\",\r\n" + "        \"latex\" : \"3+x == 10\"\r\n"
+							+ "      } ]\r\n" + "    }, {\r\n" + "      \"title\" : \"Function\",\r\n"
+							+ "      \"scanner\" : \"Plotter\",\r\n" + "      \"error\" : \"false\",\r\n"
+							+ "      \"numsubpods\" : 1,\r\n" + "      \"subpods\" : [ {\r\n"
+							+ "        \"sinput\" : \"Plot({x,7},{x,-20.0,20.0})\",\r\n"
+							+ "        \"jsxgraph\" : \"<iframe srcdoc=\\\"&lt;?xml version=&quot;1.0&quot; encoding=&quot;UTF-8&quot;?&gt;\\n\\n&lt;!DOCTYPE html PUBLIC\\n  &quot;-//W3C//DTD XHTML 1.1 plus MathML 2.0 plus SVG 1.1//EN&quot;\\n  &quot;http://www.w3.org/2002/04/xhtml-math-svg/xhtml-math-svg.dtd&quot;&gt;\\n\\n&lt;html xmlns=&quot;http://www.w3.org/1999/xhtml&quot; style=&quot;width: 100%; height: 100%; margin: 0; padding: 0&quot;&gt;\\n&lt;head&gt;\\n&lt;meta charset=&quot;utf-8&quot;&gt;\\n&lt;title&gt;JSXGraph&lt;/title&gt;\\n\\n&lt;body style=&quot;width: 100%; height: 100%; margin: 0; padding: 0&quot;&gt;\\n\\n&lt;link rel=&quot;stylesheet&quot; type=&quot;text/css&quot; href=&quot;https://cdnjs.cloudflare.com/ajax/libs/jsxgraph/1.1.0/jsxgraph.min.css&quot; /&gt;\\n&lt;script src=&quot;https://cdn.jsdelivr.net/gh/paulmasson/math@1.2.9/build/math.js&quot;&gt;&lt;/script&gt;\\n&lt;script src=&quot;https://cdnjs.cloudflare.com/ajax/libs/jsxgraph/1.1.0/jsxgraphcore.min.js&quot;\\n        type=&quot;text/javascript&quot;&gt;&lt;/script&gt;\\n&lt;script src=&quot;https://cdnjs.cloudflare.com/ajax/libs/jsxgraph/1.1.0/geonext.min.js&quot;\\n        type=&quot;text/javascript&quot;&gt;&lt;/script&gt;\\n\\n&lt;div id=&quot;jxgbox&quot; class=&quot;jxgbox&quot; style=&quot;display: flex; width:99%; height:99%; margin: 0; flex-direction: column; overflow: hidden&quot;&gt;\\n&lt;script&gt;\\nvar board = JXG.JSXGraph.initBoard('jxgbox', {axis:true,boundingbox:[-22.0,21.99999999999999,22.0,-22.0]});\\nboard.suspendUpdate();\\n\\nfunction $f1(x) { try { return x;} catch(e) { return Number.NaN;} }\\nfunction $f2(x) { try { return 7;} catch(e) { return Number.NaN;} }\\nboard.create('functiongraph',[$f1, -20.0, 20.0],{strokecolor:'#5e81b5'});\\nboard.create('functiongraph',[$f2, -20.0, 20.0],{strokecolor:'#e19c24'});\\n\\n\\nboard.unsuspendUpdate();\\n\\n&lt;/script&gt;\\n&lt;/div&gt;\\n\\n&lt;/body&gt;\\n&lt;/html&gt;\\\" style=\\\"display: block; width: 100%; height: 100%; border: none;\\\" ></iframe>\"\r\n"
+							+ "      } ]\r\n" + "    }, {\r\n" + "      \"title\" : \"Alternate form\",\r\n"
+							+ "      \"scanner\" : \"Simplification\",\r\n" + "      \"error\" : \"false\",\r\n"
+							+ "      \"numsubpods\" : 1,\r\n" + "      \"subpods\" : [ {\r\n"
+							+ "        \"plaintext\" : \"-7+x==0\",\r\n" + "        \"sinput\" : \"-7+x==0\",\r\n"
+							+ "        \"latex\" : \"-7+x == 0\"\r\n" + "      } ]\r\n" + "    }, {\r\n"
+							+ "      \"title\" : \"Solution\",\r\n" + "      \"scanner\" : \"Reduce\",\r\n"
+							+ "      \"error\" : \"false\",\r\n" + "      \"numsubpods\" : 1,\r\n"
+							+ "      \"subpods\" : [ {\r\n" + "        \"plaintext\" : \"{{x-&gt;7}}\",\r\n"
+							+ "        \"sinput\" : \"Solve(x==7,{x})\",\r\n"
+							+ "        \"latex\" : \"\\\\{\\\\{x\\\\to 7\\\\}\\\\}\"\r\n" + "      } ]\r\n"
+							+ "    } ]\r\n" + "  }\r\n" + "}");//
 		}
 	}
 
@@ -1051,54 +1001,29 @@ public class TestPods {
 		final String jsonStr = messageJSON.toPrettyString();
 		if (s.contains("Windows")) {//
 			assertEquals(jsonStr, //
-					"{\r\n" + 
-					"  \"queryresult\" : {\r\n" + 
-					"    \"success\" : \"true\",\r\n" + 
-					"    \"error\" : \"false\",\r\n" + 
-					"    \"numpods\" : 4,\r\n" + 
-					"    \"version\" : \"0.1\",\r\n" + 
-					"    \"pods\" : [ {\r\n" + 
-					"      \"title\" : \"Input\",\r\n" + 
-					"      \"scanner\" : \"Identity\",\r\n" + 
-					"      \"error\" : \"false\",\r\n" + 
-					"      \"numsubpods\" : 1,\r\n" + 
-					"      \"subpods\" : [ {\r\n" + 
-					"        \"plaintext\" : \"1+x^2==0\",\r\n" + 
-					"        \"sinput\" : \"1+x^2==0\",\r\n" + 
-					"        \"latex\" : \"1+{x}^{2} == 0\"\r\n" + 
-					"      } ]\r\n" + 
-					"    }, {\r\n" + 
-					"      \"title\" : \"Function\",\r\n" + 
-					"      \"scanner\" : \"Plotter\",\r\n" + 
-					"      \"error\" : \"false\",\r\n" + 
-					"      \"numsubpods\" : 1,\r\n" + 
-					"      \"subpods\" : [ {\r\n" + 
-					"        \"sinput\" : \"Plot({x^2,-1},{x,-20.0,20.0})\",\r\n" + 
-					"        \"jsxgraph\" : \"<iframe srcdoc=\\\"&lt;?xml version=&quot;1.0&quot; encoding=&quot;UTF-8&quot;?&gt;\\n\\n&lt;!DOCTYPE html PUBLIC\\n  &quot;-//W3C//DTD XHTML 1.1 plus MathML 2.0 plus SVG 1.1//EN&quot;\\n  &quot;http://www.w3.org/2002/04/xhtml-math-svg/xhtml-math-svg.dtd&quot;&gt;\\n\\n&lt;html xmlns=&quot;http://www.w3.org/1999/xhtml&quot; style=&quot;width: 100%; height: 100%; margin: 0; padding: 0&quot;&gt;\\n&lt;head&gt;\\n&lt;meta charset=&quot;utf-8&quot;&gt;\\n&lt;title&gt;JSXGraph&lt;/title&gt;\\n\\n&lt;body style=&quot;width: 100%; height: 100%; margin: 0; padding: 0&quot;&gt;\\n\\n&lt;link rel=&quot;stylesheet&quot; type=&quot;text/css&quot; href=&quot;https://cdnjs.cloudflare.com/ajax/libs/jsxgraph/1.1.0/jsxgraph.min.css&quot; /&gt;\\n&lt;script src=&quot;https://cdn.jsdelivr.net/gh/paulmasson/math@1.2.9/build/math.js&quot;&gt;&lt;/script&gt;\\n&lt;script src=&quot;https://cdnjs.cloudflare.com/ajax/libs/jsxgraph/1.1.0/jsxgraphcore.min.js&quot;\\n        type=&quot;text/javascript&quot;&gt;&lt;/script&gt;\\n&lt;script src=&quot;https://cdnjs.cloudflare.com/ajax/libs/jsxgraph/1.1.0/geonext.min.js&quot;\\n        type=&quot;text/javascript&quot;&gt;&lt;/script&gt;\\n\\n&lt;div id=&quot;jxgbox&quot; class=&quot;jxgbox&quot; style=&quot;display: flex; width:99%; height:99%; margin: 0; flex-direction: column; overflow: hidden&quot;&gt;\\n&lt;script&gt;\\nvar board = JXG.JSXGraph.initBoard('jxgbox', {axis:true,boundingbox:[-22.55,5.275,22.55,-0.775]});\\nboard.suspendUpdate();\\n\\nfunction z1(x) { try { return pow(x,2);} catch(e) { return Number.NaN;} }\\nfunction z2(x) { try { return -1;} catch(e) { return Number.NaN;} }\\nvar p1 = board.create('functiongraph',[z1, -20.0, 20.0],{strokecolor:'#5e81b5'});\\nvar p2 = board.create('functiongraph',[z2, -20.0, 20.0],{strokecolor:'#e19c24'});\\nvar data = [ p1, p2 ];\\n\\n\\nboard.unsuspendUpdate();\\n\\n&lt;/script&gt;\\n&lt;/div&gt;\\n\\n&lt;/body&gt;\\n&lt;/html&gt;\\\" style=\\\"display: block; width: 100%; height: 100%; border: none;\\\" ></iframe>\"\r\n" + 
-					"      } ]\r\n" + 
-					"    }, {\r\n" + 
-					"      \"title\" : \"Alternate form\",\r\n" + 
-					"      \"scanner\" : \"Simplification\",\r\n" + 
-					"      \"error\" : \"false\",\r\n" + 
-					"      \"numsubpods\" : 1,\r\n" + 
-					"      \"subpods\" : [ {\r\n" + 
-					"        \"plaintext\" : \"1+x^2==0\",\r\n" + 
-					"        \"sinput\" : \"1+x^2==0\",\r\n" + 
-					"        \"latex\" : \"1+{x}^{2} == 0\"\r\n" + 
-					"      } ]\r\n" + 
-					"    }, {\r\n" + 
-					"      \"title\" : \"Solution\",\r\n" + 
-					"      \"scanner\" : \"Reduce\",\r\n" + 
-					"      \"error\" : \"false\",\r\n" + 
-					"      \"numsubpods\" : 1,\r\n" + 
-					"      \"subpods\" : [ {\r\n" + 
-					"        \"plaintext\" : \"{{x-&gt;-I},{x-&gt;I}}\",\r\n" + 
-					"        \"sinput\" : \"Solve(x^2==-1,{x})\",\r\n" + 
-					"        \"latex\" : \"\\\\{\\\\{x\\\\to  - i \\\\},\\\\{x\\\\to i \\\\}\\\\}\"\r\n" + 
-					"      } ]\r\n" + 
-					"    } ]\r\n" + 
-					"  }\r\n" + 
-					"}");//
+					"{\r\n" + "  \"queryresult\" : {\r\n" + "    \"success\" : \"true\",\r\n"
+							+ "    \"error\" : \"false\",\r\n" + "    \"numpods\" : 4,\r\n"
+							+ "    \"version\" : \"0.1\",\r\n" + "    \"pods\" : [ {\r\n"
+							+ "      \"title\" : \"Input\",\r\n" + "      \"scanner\" : \"Identity\",\r\n"
+							+ "      \"error\" : \"false\",\r\n" + "      \"numsubpods\" : 1,\r\n"
+							+ "      \"subpods\" : [ {\r\n" + "        \"plaintext\" : \"1+x^2==0\",\r\n"
+							+ "        \"sinput\" : \"1+x^2==0\",\r\n" + "        \"latex\" : \"1+{x}^{2} == 0\"\r\n"
+							+ "      } ]\r\n" + "    }, {\r\n" + "      \"title\" : \"Function\",\r\n"
+							+ "      \"scanner\" : \"Plotter\",\r\n" + "      \"error\" : \"false\",\r\n"
+							+ "      \"numsubpods\" : 1,\r\n" + "      \"subpods\" : [ {\r\n"
+							+ "        \"sinput\" : \"Plot({x^2,-1},{x,-20.0,20.0})\",\r\n"
+							+ "        \"jsxgraph\" : \"<iframe srcdoc=\\\"&lt;?xml version=&quot;1.0&quot; encoding=&quot;UTF-8&quot;?&gt;\\n\\n&lt;!DOCTYPE html PUBLIC\\n  &quot;-//W3C//DTD XHTML 1.1 plus MathML 2.0 plus SVG 1.1//EN&quot;\\n  &quot;http://www.w3.org/2002/04/xhtml-math-svg/xhtml-math-svg.dtd&quot;&gt;\\n\\n&lt;html xmlns=&quot;http://www.w3.org/1999/xhtml&quot; style=&quot;width: 100%; height: 100%; margin: 0; padding: 0&quot;&gt;\\n&lt;head&gt;\\n&lt;meta charset=&quot;utf-8&quot;&gt;\\n&lt;title&gt;JSXGraph&lt;/title&gt;\\n\\n&lt;body style=&quot;width: 100%; height: 100%; margin: 0; padding: 0&quot;&gt;\\n\\n&lt;link rel=&quot;stylesheet&quot; type=&quot;text/css&quot; href=&quot;https://cdnjs.cloudflare.com/ajax/libs/jsxgraph/1.1.0/jsxgraph.min.css&quot; /&gt;\\n&lt;script src=&quot;https://cdn.jsdelivr.net/gh/paulmasson/math@1.2.9/build/math.js&quot;&gt;&lt;/script&gt;\\n&lt;script src=&quot;https://cdnjs.cloudflare.com/ajax/libs/jsxgraph/1.1.0/jsxgraphcore.min.js&quot;\\n        type=&quot;text/javascript&quot;&gt;&lt;/script&gt;\\n&lt;script src=&quot;https://cdnjs.cloudflare.com/ajax/libs/jsxgraph/1.1.0/geonext.min.js&quot;\\n        type=&quot;text/javascript&quot;&gt;&lt;/script&gt;\\n\\n&lt;div id=&quot;jxgbox&quot; class=&quot;jxgbox&quot; style=&quot;display: flex; width:99%; height:99%; margin: 0; flex-direction: column; overflow: hidden&quot;&gt;\\n&lt;script&gt;\\nvar board = JXG.JSXGraph.initBoard('jxgbox', {axis:true,boundingbox:[-22.0,407.3472000000001,22.0,-38.707200000000014]});\\nboard.suspendUpdate();\\n\\nfunction $f3(x) { try { return pow(x,2);} catch(e) { return Number.NaN;} }\\nfunction $f4(x) { try { return -1;} catch(e) { return Number.NaN;} }\\nboard.create('functiongraph',[$f3, -20.0, 20.0],{strokecolor:'#5e81b5'});\\nboard.create('functiongraph',[$f4, -20.0, 20.0],{strokecolor:'#e19c24'});\\n\\n\\nboard.unsuspendUpdate();\\n\\n&lt;/script&gt;\\n&lt;/div&gt;\\n\\n&lt;/body&gt;\\n&lt;/html&gt;\\\" style=\\\"display: block; width: 100%; height: 100%; border: none;\\\" ></iframe>\"\r\n"
+							+ "      } ]\r\n" + "    }, {\r\n" + "      \"title\" : \"Alternate form\",\r\n"
+							+ "      \"scanner\" : \"Simplification\",\r\n" + "      \"error\" : \"false\",\r\n"
+							+ "      \"numsubpods\" : 1,\r\n" + "      \"subpods\" : [ {\r\n"
+							+ "        \"plaintext\" : \"1+x^2==0\",\r\n" + "        \"sinput\" : \"1+x^2==0\",\r\n"
+							+ "        \"latex\" : \"1+{x}^{2} == 0\"\r\n" + "      } ]\r\n" + "    }, {\r\n"
+							+ "      \"title\" : \"Solution\",\r\n" + "      \"scanner\" : \"Reduce\",\r\n"
+							+ "      \"error\" : \"false\",\r\n" + "      \"numsubpods\" : 1,\r\n"
+							+ "      \"subpods\" : [ {\r\n" + "        \"plaintext\" : \"{{x-&gt;-I},{x-&gt;I}}\",\r\n"
+							+ "        \"sinput\" : \"Solve(x^2==-1,{x})\",\r\n"
+							+ "        \"latex\" : \"\\\\{\\\\{x\\\\to  - i \\\\},\\\\{x\\\\to i \\\\}\\\\}\"\r\n"
+							+ "      } ]\r\n" + "    } ]\r\n" + "  }\r\n" + "}");//
 		}
 	}
 
@@ -1109,35 +1034,21 @@ public class TestPods {
 		final String jsonStr = messageJSON.toPrettyString();
 		if (s.contains("Windows")) {
 			assertEquals(jsonStr, //
-					"{\r\n" + 
-					"  \"queryresult\" : {\r\n" + 
-					"    \"success\" : \"true\",\r\n" + 
-					"    \"error\" : \"false\",\r\n" + 
-					"    \"numpods\" : 2,\r\n" + 
-					"    \"version\" : \"0.1\",\r\n" + 
-					"    \"pods\" : [ {\r\n" + 
-					"      \"title\" : \"Input\",\r\n" + 
-					"      \"scanner\" : \"Identity\",\r\n" + 
-					"      \"error\" : \"false\",\r\n" + 
-					"      \"numsubpods\" : 1,\r\n" + 
-					"      \"subpods\" : [ {\r\n" + 
-					"        \"plaintext\" : \"Solve(x+3==10)\",\r\n" + 
-					"        \"sinput\" : \"Solve(x+3==10)\",\r\n" + 
-					"        \"latex\" : \"\\\\text{Solve}(x+3 == 10)\"\r\n" + 
-					"      } ]\r\n" + 
-					"    }, {\r\n" + 
-					"      \"title\" : \"Solve equation\",\r\n" + 
-					"      \"scanner\" : \"Solver\",\r\n" + 
-					"      \"error\" : \"false\",\r\n" + 
-					"      \"numsubpods\" : 1,\r\n" + 
-					"      \"subpods\" : [ {\r\n" + 
-					"        \"plaintext\" : \"{{x-&gt;7}}\",\r\n" + 
-					"        \"sinput\" : \"Solve(3+x==10,{x})\",\r\n" + 
-					"        \"latex\" : \"\\\\{\\\\{x\\\\to 7\\\\}\\\\}\"\r\n" + 
-					"      } ]\r\n" + 
-					"    } ]\r\n" + 
-					"  }\r\n" + 
-					"}");//
+					"{\r\n" + "  \"queryresult\" : {\r\n" + "    \"success\" : \"true\",\r\n"
+							+ "    \"error\" : \"false\",\r\n" + "    \"numpods\" : 2,\r\n"
+							+ "    \"version\" : \"0.1\",\r\n" + "    \"pods\" : [ {\r\n"
+							+ "      \"title\" : \"Input\",\r\n" + "      \"scanner\" : \"Identity\",\r\n"
+							+ "      \"error\" : \"false\",\r\n" + "      \"numsubpods\" : 1,\r\n"
+							+ "      \"subpods\" : [ {\r\n" + "        \"plaintext\" : \"Solve(x+3==10)\",\r\n"
+							+ "        \"sinput\" : \"Solve(x+3==10)\",\r\n"
+							+ "        \"latex\" : \"\\\\text{Solve}(x+3 == 10)\"\r\n" + "      } ]\r\n"
+							+ "    }, {\r\n" + "      \"title\" : \"Solve equation\",\r\n"
+							+ "      \"scanner\" : \"Solver\",\r\n" + "      \"error\" : \"false\",\r\n"
+							+ "      \"numsubpods\" : 1,\r\n" + "      \"subpods\" : [ {\r\n"
+							+ "        \"plaintext\" : \"{{x-&gt;7}}\",\r\n"
+							+ "        \"sinput\" : \"Solve(3+x==10,{x})\",\r\n"
+							+ "        \"latex\" : \"\\\\{\\\\{x\\\\to 7\\\\}\\\\}\"\r\n" + "      } ]\r\n"
+							+ "    } ]\r\n" + "  }\r\n" + "}");//
 		}
 	}
 
@@ -1501,262 +1412,191 @@ public class TestPods {
 
 	@Test
 	public void testListPlot001() {
+		EvalEngine.get().resetModuleCounter4JUnit();
 		String s = System.getProperty("os.name");
 		ObjectNode messageJSON = Pods.createResult("3,Sin(1),Pi,3/4,42,1.2", formatsTEX);
 		final String jsonStr = messageJSON.toPrettyString();
 		if (s.contains("Windows")) {
 			assertEquals(jsonStr, //
-					"{\r\n" + 
-					"  \"queryresult\" : {\r\n" + 
-					"    \"success\" : \"true\",\r\n" + 
-					"    \"error\" : \"false\",\r\n" + 
-					"    \"numpods\" : 8,\r\n" + 
-					"    \"version\" : \"0.1\",\r\n" + 
-					"    \"pods\" : [ {\r\n" + 
-					"      \"title\" : \"Input\",\r\n" + 
-					"      \"scanner\" : \"Identity\",\r\n" + 
-					"      \"error\" : \"false\",\r\n" + 
-					"      \"numsubpods\" : 1,\r\n" + 
-					"      \"subpods\" : [ {\r\n" + 
-					"        \"plaintext\" : \"{3,Sin(1),Pi,3/4,42,1.2}\",\r\n" + 
-					"        \"sinput\" : \"{3,Sin(1),Pi,3/4,42,1.2}\",\r\n" + 
-					"        \"latex\" : \"\\\\{3,\\\\sin (1),\\\\pi,\\\\frac{3}{4},42,1.2\\\\}\"\r\n" + 
-					"      } ]\r\n" + 
-					"    }, {\r\n" + 
-					"      \"title\" : \"Total\",\r\n" + 
-					"      \"scanner\" : \"List\",\r\n" + 
-					"      \"error\" : \"false\",\r\n" + 
-					"      \"numsubpods\" : 1,\r\n" + 
-					"      \"subpods\" : [ {\r\n" + 
-					"        \"plaintext\" : \"50.93306363839769\",\r\n" + 
-					"        \"sinput\" : \"Total({3.0,0.8414709848078965,3.141592653589793,0.75,42.0,1.2})\",\r\n" + 
-					"        \"latex\" : \"50.93306\"\r\n" + 
-					"      } ]\r\n" + 
-					"    }, {\r\n" + 
-					"      \"title\" : \"Vector length\",\r\n" + 
-					"      \"scanner\" : \"List\",\r\n" + 
-					"      \"error\" : \"false\",\r\n" + 
-					"      \"numsubpods\" : 1,\r\n" + 
-					"      \"subpods\" : [ {\r\n" + 
-					"        \"plaintext\" : \"42.256125920620825\",\r\n" + 
-					"        \"sinput\" : \"Norm({3.0,0.8414709848078965,3.141592653589793,0.75,42.0,1.2})\",\r\n" + 
-					"        \"latex\" : \"42.25613\"\r\n" + 
-					"      } ]\r\n" + 
-					"    }, {\r\n" + 
-					"      \"title\" : \"Normalized vector\",\r\n" + 
-					"      \"scanner\" : \"List\",\r\n" + 
-					"      \"error\" : \"false\",\r\n" + 
-					"      \"numsubpods\" : 1,\r\n" + 
-					"      \"subpods\" : [ {\r\n" + 
-					"        \"plaintext\" : \"{0.0709956233478567,0.01991358569852382,0.07434644291555152,0.017748905836964174,0.9939387268699937,0.028398249339142676}\",\r\n" + 
-					"        \"sinput\" : \"Normalize({3.0,0.8414709848078965,3.141592653589793,0.75,42.0,1.2})\",\r\n" + 
-					"        \"latex\" : \"\\\\{0.0709956,0.0199136,0.0743464,0.0177489,0.993939,0.0283982\\\\}\"\r\n" + 
-					"      } ]\r\n" + 
-					"    }, {\r\n" + 
-					"      \"title\" : \"Plot points\",\r\n" + 
-					"      \"scanner\" : \"Plotter\",\r\n" + 
-					"      \"error\" : \"false\",\r\n" + 
-					"      \"numsubpods\" : 1,\r\n" + 
-					"      \"subpods\" : [ {\r\n" + 
-					"        \"sinput\" : \"ListPlot({3.0,0.8414709848078965,3.141592653589793,0.75,42.0,1.2})\",\r\n" + 
-					"        \"jsxgraph\" : \"<iframe srcdoc=\\\"&lt;?xml version=&quot;1.0&quot; encoding=&quot;UTF-8&quot;?&gt;\\n\\n&lt;!DOCTYPE html PUBLIC\\n  &quot;-//W3C//DTD XHTML 1.1 plus MathML 2.0 plus SVG 1.1//EN&quot;\\n  &quot;http://www.w3.org/2002/04/xhtml-math-svg/xhtml-math-svg.dtd&quot;&gt;\\n\\n&lt;html xmlns=&quot;http://www.w3.org/1999/xhtml&quot; style=&quot;width: 100%; height: 100%; margin: 0; padding: 0&quot;&gt;\\n&lt;head&gt;\\n&lt;meta charset=&quot;utf-8&quot;&gt;\\n&lt;title&gt;JSXGraph&lt;/title&gt;\\n\\n&lt;body style=&quot;width: 100%; height: 100%; margin: 0; padding: 0&quot;&gt;\\n\\n&lt;link rel=&quot;stylesheet&quot; type=&quot;text/css&quot; href=&quot;https://cdnjs.cloudflare.com/ajax/libs/jsxgraph/1.1.0/jsxgraph.min.css&quot; /&gt;\\n&lt;script src=&quot;https://cdn.jsdelivr.net/gh/paulmasson/math@1.2.9/build/math.js&quot;&gt;&lt;/script&gt;\\n&lt;script src=&quot;https://cdnjs.cloudflare.com/ajax/libs/jsxgraph/1.1.0/jsxgraphcore.min.js&quot;\\n        type=&quot;text/javascript&quot;&gt;&lt;/script&gt;\\n&lt;script src=&quot;https://cdnjs.cloudflare.com/ajax/libs/jsxgraph/1.1.0/geonext.min.js&quot;\\n        type=&quot;text/javascript&quot;&gt;&lt;/script&gt;\\n\\n&lt;div id=&quot;jxgbox&quot; class=&quot;jxgbox&quot; style=&quot;display: flex; width:99%; height:99%; margin: 0; flex-direction: column; overflow: hidden&quot;&gt;\\n&lt;script&gt;\\nvar board = JXG.JSXGraph.initBoard('jxgbox', {axis:true,boundingbox:[0.15000000000000002,44.6125,7.85,-1.8624999999999998]});\\nboard.suspendUpdate();\\n\\nboard.create('point', [function() {return 1;},function() {return 3.0;}],  {color:'#5e81b5' ,name:'', face:'o', size: 2 } );\\nboard.create('point', [function() {return 2;},function() {return 0.8414709848078965;}],  {color:'#5e81b5' ,name:'', face:'o', size: 2 } );\\nboard.create('point', [function() {return 3;},function() {return 3.141592653589793;}],  {color:'#5e81b5' ,name:'', face:'o', size: 2 } );\\nboard.create('point', [function() {return 4;},function() {return 0.75;}],  {color:'#5e81b5' ,name:'', face:'o', size: 2 } );\\nboard.create('point', [function() {return 5;},function() {return 42.0;}],  {color:'#5e81b5' ,name:'', face:'o', size: 2 } );\\nboard.create('point', [function() {return 6;},function() {return 1.2;}],  {color:'#5e81b5' ,name:'', face:'o', size: 2 } );\\n\\n\\nboard.unsuspendUpdate();\\n\\n&lt;/script&gt;\\n&lt;/div&gt;\\n\\n&lt;/body&gt;\\n&lt;/html&gt;\\\" style=\\\"display: block; width: 100%; height: 100%; border: none;\\\" ></iframe>\"\r\n" + 
-					"      } ]\r\n" + 
-					"    }, {\r\n" + 
-					"      \"title\" : \"Five-number summary\",\r\n" + 
-					"      \"scanner\" : \"Statistics\",\r\n" + 
-					"      \"error\" : \"false\",\r\n" + 
-					"      \"numsubpods\" : 1,\r\n" + 
-					"      \"subpods\" : [ {\r\n" + 
-					"        \"plaintext\" : \"{0.75,0.8414709848078965,2.1,3.141592653589793,42.0}\",\r\n" + 
-					"        \"sinput\" : \"FiveNum({3,Sin(1),Pi,3/4,42,1.2})\",\r\n" + 
-					"        \"latex\" : \"\\\\{0.75,0.841471,2.1,3.14159,42.0\\\\}\"\r\n" + 
-					"      } ]\r\n" + 
-					"    }, {\r\n" + 
-					"      \"title\" : \"Histogram\",\r\n" + 
-					"      \"scanner\" : \"Plotter\",\r\n" + 
-					"      \"error\" : \"false\",\r\n" + 
-					"      \"numsubpods\" : 1,\r\n" + 
-					"      \"subpods\" : [ {\r\n" + 
-					"        \"sinput\" : \"Histogram({3,Sin(1),Pi,3/4,42,1.2})\",\r\n" + 
-					"        \"plotly\" : \"<iframe srcdoc=\\\"&lt;?xml version=&quot;1.0&quot; encoding=&quot;UTF-8&quot;?&gt;\\n\\n&lt;!DOCTYPE html PUBLIC\\n  &quot;-//W3C//DTD XHTML 1.1 plus MathML 2.0 plus SVG 1.1//EN&quot;\\n  &quot;http://www.w3.org/2002/04/xhtml-math-svg/xhtml-math-svg.dtd&quot;&gt;\\n\\n&lt;html xmlns=&quot;http://www.w3.org/1999/xhtml&quot; style=&quot;width: 100%; height: 100%; margin: 0; padding: 0&quot;&gt;\\n&lt;head&gt;\\n&lt;meta charset=&quot;utf-8&quot;&gt;\\n&lt;title&gt;Plotly&lt;/title&gt;\\n\\n   &lt;script src=&quot;https://cdn.plot.ly/plotly-latest.min.js&quot;&gt;&lt;/script&gt;\\n&lt;/head&gt;\\n&lt;body&gt;\\n&lt;div id='plotly' &gt;&lt;/div&gt;\\n    &lt;script&gt;\\n        var target_plotly = document.getElementById('plotly');\\n        var layout = {\\n    autosize: true,\\n\\n\\n};\\n\\r\\nvar trace0 =\\n{\\nx: [&quot;3.0&quot;,&quot;0.8414709848078965&quot;,&quot;3.141592653589793&quot;,&quot;0.75&quot;,&quot;42.0&quot;,&quot;1.2&quot;],\\nopacity: '1.0',\\nnbinsx: 0,\\nautobinx: false,\\nnbinsy: 0,\\nautobiny: false,\\n    histnorm: '',\\n    histfunc: 'count',\\nxaxis: 'x',\\nyaxis: 'y',\\ntype: 'histogram',\\nname: '',\\n};\\r\\n\\r\\n        var data = [ trace0];\\r\\nPlotly.newPlot(target_plotly, data, layout);            &lt;/script&gt;\\n\\n&lt;/body&gt;\\n&lt;/html&gt;\\\" style=\\\"display: block; width: 100%; height: 100%; border: none;\\\" ></iframe>\"\r\n" + 
-					"      } ]\r\n" + 
-					"    }, {\r\n" + 
-					"      \"title\" : \"Alternate form\",\r\n" + 
-					"      \"scanner\" : \"Simplification\",\r\n" + 
-					"      \"error\" : \"false\",\r\n" + 
-					"      \"numsubpods\" : 1,\r\n" + 
-					"      \"subpods\" : [ {\r\n" + 
-					"        \"plaintext\" : \"{3,(I*1/2)/E^I-I*1/2*E^I,Pi,3/4,42,1.2}\",\r\n" + 
-					"        \"sinput\" : \"TrigToExp({3,Sin(1),Pi,3/4,42,1.2})\",\r\n" + 
-					"        \"latex\" : \"\\\\{3,\\\\frac{\\\\frac{1}{2}\\\\,i }{{e}^{i }} + \\\\left( \\\\frac{-1}{2}\\\\,i \\\\right) \\\\cdot {e}^{i },\\\\pi,\\\\frac{3}{4},42,1.2\\\\}\"\r\n" + 
-					"      } ]\r\n" + 
-					"    } ]\r\n" + 
-					"  }\r\n" + 
-					"}");//
+					"{\r\n" + "  \"queryresult\" : {\r\n" + "    \"success\" : \"true\",\r\n"
+							+ "    \"error\" : \"false\",\r\n" + "    \"numpods\" : 8,\r\n"
+							+ "    \"version\" : \"0.1\",\r\n" + "    \"pods\" : [ {\r\n"
+							+ "      \"title\" : \"Input\",\r\n" + "      \"scanner\" : \"Identity\",\r\n"
+							+ "      \"error\" : \"false\",\r\n" + "      \"numsubpods\" : 1,\r\n"
+							+ "      \"subpods\" : [ {\r\n"
+							+ "        \"plaintext\" : \"{3,Sin(1),Pi,3/4,42,1.2}\",\r\n"
+							+ "        \"sinput\" : \"{3,Sin(1),Pi,3/4,42,1.2}\",\r\n"
+							+ "        \"latex\" : \"\\\\{3,\\\\sin (1),\\\\pi,\\\\frac{3}{4},42,1.2\\\\}\"\r\n"
+							+ "      } ]\r\n" + "    }, {\r\n" + "      \"title\" : \"Total\",\r\n"
+							+ "      \"scanner\" : \"List\",\r\n" + "      \"error\" : \"false\",\r\n"
+							+ "      \"numsubpods\" : 1,\r\n" + "      \"subpods\" : [ {\r\n"
+							+ "        \"plaintext\" : \"50.93306363839769\",\r\n"
+							+ "        \"sinput\" : \"Total({3.0,0.8414709848078965,3.141592653589793,0.75,42.0,1.2})\",\r\n"
+							+ "        \"latex\" : \"50.93306\"\r\n" + "      } ]\r\n" + "    }, {\r\n"
+							+ "      \"title\" : \"Vector length\",\r\n" + "      \"scanner\" : \"List\",\r\n"
+							+ "      \"error\" : \"false\",\r\n" + "      \"numsubpods\" : 1,\r\n"
+							+ "      \"subpods\" : [ {\r\n" + "        \"plaintext\" : \"42.256125920620825\",\r\n"
+							+ "        \"sinput\" : \"Norm({3.0,0.8414709848078965,3.141592653589793,0.75,42.0,1.2})\",\r\n"
+							+ "        \"latex\" : \"42.25613\"\r\n" + "      } ]\r\n" + "    }, {\r\n"
+							+ "      \"title\" : \"Normalized vector\",\r\n" + "      \"scanner\" : \"List\",\r\n"
+							+ "      \"error\" : \"false\",\r\n" + "      \"numsubpods\" : 1,\r\n"
+							+ "      \"subpods\" : [ {\r\n"
+							+ "        \"plaintext\" : \"{0.0709956233478567,0.01991358569852382,0.07434644291555152,0.017748905836964174,0.9939387268699937,0.028398249339142676}\",\r\n"
+							+ "        \"sinput\" : \"Normalize({3.0,0.8414709848078965,3.141592653589793,0.75,42.0,1.2})\",\r\n"
+							+ "        \"latex\" : \"\\\\{0.0709956,0.0199136,0.0743464,0.0177489,0.993939,0.0283982\\\\}\"\r\n"
+							+ "      } ]\r\n" + "    }, {\r\n" + "      \"title\" : \"Plot points\",\r\n"
+							+ "      \"scanner\" : \"Plotter\",\r\n" + "      \"error\" : \"false\",\r\n"
+							+ "      \"numsubpods\" : 1,\r\n" + "      \"subpods\" : [ {\r\n"
+							+ "        \"sinput\" : \"ListPlot({3.0,0.8414709848078965,3.141592653589793,0.75,42.0,1.2})\",\r\n"
+							+ "        \"jsxgraph\" : \"<iframe srcdoc=\\\"&lt;?xml version=&quot;1.0&quot; encoding=&quot;UTF-8&quot;?&gt;\\n\\n&lt;!DOCTYPE html PUBLIC\\n  &quot;-//W3C//DTD XHTML 1.1 plus MathML 2.0 plus SVG 1.1//EN&quot;\\n  &quot;http://www.w3.org/2002/04/xhtml-math-svg/xhtml-math-svg.dtd&quot;&gt;\\n\\n&lt;html xmlns=&quot;http://www.w3.org/1999/xhtml&quot; style=&quot;width: 100%; height: 100%; margin: 0; padding: 0&quot;&gt;\\n&lt;head&gt;\\n&lt;meta charset=&quot;utf-8&quot;&gt;\\n&lt;title&gt;JSXGraph&lt;/title&gt;\\n\\n&lt;body style=&quot;width: 100%; height: 100%; margin: 0; padding: 0&quot;&gt;\\n\\n&lt;link rel=&quot;stylesheet&quot; type=&quot;text/css&quot; href=&quot;https://cdnjs.cloudflare.com/ajax/libs/jsxgraph/1.1.0/jsxgraph.min.css&quot; /&gt;\\n&lt;script src=&quot;https://cdn.jsdelivr.net/gh/paulmasson/math@1.2.9/build/math.js&quot;&gt;&lt;/script&gt;\\n&lt;script src=&quot;https://cdnjs.cloudflare.com/ajax/libs/jsxgraph/1.1.0/jsxgraphcore.min.js&quot;\\n        type=&quot;text/javascript&quot;&gt;&lt;/script&gt;\\n&lt;script src=&quot;https://cdnjs.cloudflare.com/ajax/libs/jsxgraph/1.1.0/geonext.min.js&quot;\\n        type=&quot;text/javascript&quot;&gt;&lt;/script&gt;\\n\\n&lt;div id=&quot;jxgbox&quot; class=&quot;jxgbox&quot; style=&quot;display: flex; width:99%; height:99%; margin: 0; flex-direction: column; overflow: hidden&quot;&gt;\\n&lt;script&gt;\\nvar board = JXG.JSXGraph.initBoard('jxgbox', {axis:true,boundingbox:[-0.35,44.0625,7.35,-1.3125]});\\nboard.suspendUpdate();\\n\\nboard.create('point', [function() {return 1;},function() {return 3.0;}],  {color:'#5e81b5' ,name:'', face:'o', size: 2 } );\\nboard.create('point', [function() {return 2;},function() {return 0.8414709848078965;}],  {color:'#5e81b5' ,name:'', face:'o', size: 2 } );\\nboard.create('point', [function() {return 3;},function() {return 3.141592653589793;}],  {color:'#5e81b5' ,name:'', face:'o', size: 2 } );\\nboard.create('point', [function() {return 4;},function() {return 0.75;}],  {color:'#5e81b5' ,name:'', face:'o', size: 2 } );\\nboard.create('point', [function() {return 5;},function() {return 42.0;}],  {color:'#5e81b5' ,name:'', face:'o', size: 2 } );\\nboard.create('point', [function() {return 6;},function() {return 1.2;}],  {color:'#5e81b5' ,name:'', face:'o', size: 2 } );\\n\\n\\nboard.unsuspendUpdate();\\n\\n&lt;/script&gt;\\n&lt;/div&gt;\\n\\n&lt;/body&gt;\\n&lt;/html&gt;\\\" style=\\\"display: block; width: 100%; height: 100%; border: none;\\\" ></iframe>\"\r\n"
+							+ "      } ]\r\n" + "    }, {\r\n" + "      \"title\" : \"Five-number summary\",\r\n"
+							+ "      \"scanner\" : \"Statistics\",\r\n" + "      \"error\" : \"false\",\r\n"
+							+ "      \"numsubpods\" : 1,\r\n" + "      \"subpods\" : [ {\r\n"
+							+ "        \"plaintext\" : \"{0.75,0.8414709848078965,2.1,3.141592653589793,42.0}\",\r\n"
+							+ "        \"sinput\" : \"FiveNum({3,Sin(1),Pi,3/4,42,1.2})\",\r\n"
+							+ "        \"latex\" : \"\\\\{0.75,0.841471,2.1,3.14159,42.0\\\\}\"\r\n" + "      } ]\r\n"
+							+ "    }, {\r\n" + "      \"title\" : \"Histogram\",\r\n"
+							+ "      \"scanner\" : \"Plotter\",\r\n" + "      \"error\" : \"false\",\r\n"
+							+ "      \"numsubpods\" : 1,\r\n" + "      \"subpods\" : [ {\r\n"
+							+ "        \"sinput\" : \"Histogram({3,Sin(1),Pi,3/4,42,1.2})\",\r\n"
+							+ "        \"plotly\" : \"<iframe srcdoc=\\\"&lt;?xml version=&quot;1.0&quot; encoding=&quot;UTF-8&quot;?&gt;\\n\\n&lt;!DOCTYPE html PUBLIC\\n  &quot;-//W3C//DTD XHTML 1.1 plus MathML 2.0 plus SVG 1.1//EN&quot;\\n  &quot;http://www.w3.org/2002/04/xhtml-math-svg/xhtml-math-svg.dtd&quot;&gt;\\n\\n&lt;html xmlns=&quot;http://www.w3.org/1999/xhtml&quot; style=&quot;width: 100%; height: 100%; margin: 0; padding: 0&quot;&gt;\\n&lt;head&gt;\\n&lt;meta charset=&quot;utf-8&quot;&gt;\\n&lt;title&gt;Plotly&lt;/title&gt;\\n\\n   &lt;script src=&quot;https://cdn.plot.ly/plotly-latest.min.js&quot;&gt;&lt;/script&gt;\\n&lt;/head&gt;\\n&lt;body&gt;\\n&lt;div id='plotly' &gt;&lt;/div&gt;\\n    &lt;script&gt;\\r\\n        var target_plotly = document.getElementById('plotly');\\r\\n        var layout = {\\r\\n    autosize: true,\\r\\n\\r\\n\\r\\n};\\r\\n\\r\\nvar trace0 =\\r\\n{\\r\\nx: [&quot;3.0&quot;,&quot;0.8414709848078965&quot;,&quot;3.141592653589793&quot;,&quot;0.75&quot;,&quot;42.0&quot;,&quot;1.2&quot;],\\r\\nopacity: '1.0',\\r\\nnbinsx: 0,\\r\\nautobinx: false,\\r\\nnbinsy: 0,\\r\\nautobiny: false,\\r\\n    histnorm: '',\\r\\n    histfunc: 'count',\\r\\nxaxis: 'x',\\r\\nyaxis: 'y',\\r\\ntype: 'histogram',\\r\\nname: '',\\r\\n};\\r\\n\\r\\n        var data = [ trace0];\\r\\nPlotly.newPlot(target_plotly, data, layout);            &lt;/script&gt;\\r\\n\\n&lt;/body&gt;\\n&lt;/html&gt;\\\" style=\\\"display: block; width: 100%; height: 100%; border: none;\\\" ></iframe>\"\r\n"
+							+ "      } ]\r\n" + "    }, {\r\n" + "      \"title\" : \"Alternate form\",\r\n"
+							+ "      \"scanner\" : \"Simplification\",\r\n" + "      \"error\" : \"false\",\r\n"
+							+ "      \"numsubpods\" : 1,\r\n" + "      \"subpods\" : [ {\r\n"
+							+ "        \"plaintext\" : \"{3,(I*1/2)/E^I-I*1/2*E^I,Pi,3/4,42,1.2}\",\r\n"
+							+ "        \"sinput\" : \"TrigToExp({3,Sin(1),Pi,3/4,42,1.2})\",\r\n"
+							+ "        \"latex\" : \"\\\\{3,\\\\frac{\\\\frac{1}{2}\\\\,i }{{e}^{i }} + \\\\left( \\\\frac{-1}{2}\\\\,i \\\\right) \\\\cdot {e}^{i },\\\\pi,\\\\frac{3}{4},42,1.2\\\\}\"\r\n"
+							+ "      } ]\r\n" + "    } ]\r\n" + "  }\r\n" + "}");//
 		}
 	}
 
 	@Test
 	public void testListPlot002() {
+		EvalEngine.get().resetModuleCounter4JUnit();
 		String s = System.getProperty("os.name");
 		ObjectNode messageJSON = Pods.createResult("Table({Sin(t*0.33), Cos(t*1.1)}, {t, 100})", formatsTEX);
 		final String jsonStr = messageJSON.toPrettyString();
 		if (s.contains("Windows")) {
 			assertEquals(jsonStr, //
-					"{\r\n" + 
-					"  \"queryresult\" : {\r\n" + 
-					"    \"success\" : \"true\",\r\n" + 
-					"    \"error\" : \"false\",\r\n" + 
-					"    \"numpods\" : 3,\r\n" + 
-					"    \"version\" : \"0.1\",\r\n" + 
-					"    \"pods\" : [ {\r\n" + 
-					"      \"title\" : \"Input\",\r\n" + 
-					"      \"scanner\" : \"Identity\",\r\n" + 
-					"      \"error\" : \"false\",\r\n" + 
-					"      \"numsubpods\" : 1,\r\n" + 
-					"      \"subpods\" : [ {\r\n" + 
-					"        \"plaintext\" : \"Table({Sin(t*0.33),Cos(t*1.1)},{t,100})\",\r\n" + 
-					"        \"sinput\" : \"Table({Sin(t*0.33),Cos(t*1.1)},{t,100})\",\r\n" + 
-					"        \"latex\" : \"\\\\text{Table}(\\\\{\\\\sin (t\\\\cdot 0.33),\\\\cos (t\\\\cdot 1.1)\\\\},\\\\{t,100\\\\})\"\r\n" + 
-					"      } ]\r\n" + 
-					"    }, {\r\n" + 
-					"      \"title\" : \"Plot points\",\r\n" + 
-					"      \"scanner\" : \"Plotter\",\r\n" + 
-					"      \"error\" : \"false\",\r\n" + 
-					"      \"numsubpods\" : 1,\r\n" + 
-					"      \"subpods\" : [ {\r\n" + 
-					"        \"sinput\" : \"ListPlot({{0.32404302839486837,0.4535961214255773},\\n {0.6131168519734338,-0.5885011172553458},\\n {0.8360259786005205,-0.9874797699088649},\\n {0.9687151001182652,-0.30733286997841935},\\n {0.9968650284539189,0.70866977429126},\\n {0.9174379552818098,0.9502325919585293},\\n {0.7390052780594708,0.15337386203786346},\\n {0.48082261498864826,-0.811093014061656},\\n {0.17075182895114532,-0.8891911526253609},\\n {-0.15774569414324865,0.004425697988050785},\\n {-0.4692200412887275,0.8932061115093233},\\n {-0.7300583608392995,0.8058839576404497},\\n {-0.9121122039130803,-0.16211443649971827},\\n {-0.9957351730622453,-0.9529529168871809},\\n {-0.9719030694018208,-0.7023970575027135},\\n {-0.8431877418564167,0.31574375491924334},\\n {-0.6234795452786853,0.9888373426941465},\\n {-0.3364883584585042,0.5813218118144357},\\n {-0.013184925133521251,-0.46146670441591253},\\n {0.3115413635133787,-0.9999608263946371},\\n {0.602647568421973,-0.44569000044433316},\\n {0.8287188723898359,0.5956343152752115},\\n {0.965358719901792,0.9860448308379632},\\n {0.9978215790530743,0.2988979063644682},\\n {0.9226042102393402,-0.7148869687796675},\\n {0.7478237193548898,-0.9474378189567576},\\n {0.49234159776988917,-0.14462127116171977},\\n {0.183728278586583,0.8162385236075724},\\n {-0.14471213527691454,0.8851065280947882},\\n {-0.4575358937753214,-0.013276747223059479},\\n {-0.7209845231142057,-0.897151090185845},\\n {-0.9066278820139979,-0.8006117624589936},\\n {-0.9944322093031953,0.17084230974765666},\\n {-0.9749220735246146,0.9555985806128415},\\n {-0.8502029170863663,0.6960693098638897},\\n {-0.6337338467854989,-0.3241299022175636},\\n {-0.34887519008606005,-0.990117442831766},\\n {-0.026367558070356484,-0.5740969614310336},\\n {0.2989855372260583,0.4693011327771151},\\n {0.5920735147072245,0.9998433086476912},\\n {0.8212676935633646,0.43774896089470705},\\n {0.9618345122584528,-0.6027208470078607},\\n {0.9986046585635748,-0.9845326379049143},\\n {0.9276100706332453,-0.2904395249332599},\\n {0.756512151641241,0.7210481538680871},\\n {0.5037749870595187,0.9445688168445349},\\n {0.19667278709629893,0.1358573496123707},\\n {-0.13165341823383273,-0.8213200831418752},\\n {-0.4457722037352182,-0.8809525579365433},\\n {-0.711785342369123,0.022126756261962838},\\n {-0.900985943032865,0.901025779576851},\\n {-0.9929563636967662,0.7952768415790757},\\n {-0.9777715876333635,-0.17955679797714888},\\n {-0.857070284703512,-0.9581693758551366},\\n {-0.6438779737855393,-0.6896870271361613},\\n {-0.36120136982925244,0.3324906548421391},\\n {-0.03954560701231674,0.9913199700294487},\\n {0.2863777323608796,0.5668271321520202},\\n {0.5813965291263834,-0.47709879270357103},\\n {0.8136737375071054,-0.99964745596635},\\n {0.9581430898710656,-0.42977362493499033},\\n {0.9992141308471991,0.6097601572433005},\\n {0.9324546661956634,0.9829433095858163},\\n {0.7650690644362526,0.281958388375392},\\n {0.515120795165023,-0.7271528468448446},\\n {0.20958310407999373,-0.9416258104001715},\\n {-0.11857181326943754,-0.1270827840186229},\\n {-0.433931016283655,0.8263372945385548},\\n {-0.7024624178798466,0.876729567602604},\\n {-0.8951873678196818,-0.03097503173121646},\\n {-0.9913078928184317,-0.9048298761112383},\\n {-0.9804511163405908,-0.7898796129768653},\\n {-0.8637886508173204,0.18825721843235974},\\n {-0.6539101627242901,0.9606651011994307},\\n {-0.3734647547841147,0.6832507093535931},\\n {-0.052716780958143236,-0.3408253577513085},\\n {0.2737201407822824,-0.9924448300725429},\\n {0.5706184678713274,-0.5595128935482332},\\n {0.805938324428851,0.48485907327037797},\\n {0.954285094492698,0.9993732836951247},\\n {0.9996498899473084,0.4217646174105228},\\n {0.9371371546945932,-0.6167516944712085},\\n {0.7734929701222879,-0.9812769704001121},\\n {0.5263770496198482,-0.27345516116425417},\\n {0.2224569850815534,0.7332005694242952},\\n {-0.1054695946182271,0.9386090302000182},\\n {-0.42201439000878305,0.118298261843216},\\n {-0.6930173704349996,-0.8312897647130846},\\n {-0.889233164455629,-0.8724378879524822},\\n {-0.9894870832545356,0.039820880393153096},\\n {-0.9829601938107485,0.9085630817486479},\\n {-0.8703568474411396,0.784420499510169},\\n {-0.6638286695076421,-0.19694288945960042},\\n {-0.38566321296353945,-0.9630855611126041},\\n {-0.0658787901017895,-0.6767608607837051},\\n {0.26101496301011606,0.3491333579443536},\\n {0.5597412047059207,0.9934919348314017},\\n {0.7980627991286724,0.5521548186698774},\\n {0.9502611968351016,-0.4925813664811991},\\n {0.9999118601072672,-0.9990208133146474}})\",\r\n" + 
-					"        \"jsxgraph\" : \"<iframe srcdoc=\\\"&lt;?xml version=&quot;1.0&quot; encoding=&quot;UTF-8&quot;?&gt;\\n\\n&lt;!DOCTYPE html PUBLIC\\n  &quot;-//W3C//DTD XHTML 1.1 plus MathML 2.0 plus SVG 1.1//EN&quot;\\n  &quot;http://www.w3.org/2002/04/xhtml-math-svg/xhtml-math-svg.dtd&quot;&gt;\\n\\n&lt;html xmlns=&quot;http://www.w3.org/1999/xhtml&quot; style=&quot;width: 100%; height: 100%; margin: 0; padding: 0&quot;&gt;\\n&lt;head&gt;\\n&lt;meta charset=&quot;utf-8&quot;&gt;\\n&lt;title&gt;JSXGraph&lt;/title&gt;\\n\\n&lt;body style=&quot;width: 100%; height: 100%; margin: 0; padding: 0&quot;&gt;\\n\\n&lt;link rel=&quot;stylesheet&quot; type=&quot;text/css&quot; href=&quot;https://cdnjs.cloudflare.com/ajax/libs/jsxgraph/1.1.0/jsxgraph.min.css&quot; /&gt;\\n&lt;script src=&quot;https://cdn.jsdelivr.net/gh/paulmasson/math@1.2.9/build/math.js&quot;&gt;&lt;/script&gt;\\n&lt;script src=&quot;https://cdnjs.cloudflare.com/ajax/libs/jsxgraph/1.1.0/jsxgraphcore.min.js&quot;\\n        type=&quot;text/javascript&quot;&gt;&lt;/script&gt;\\n&lt;script src=&quot;https://cdnjs.cloudflare.com/ajax/libs/jsxgraph/1.1.0/geonext.min.js&quot;\\n        type=&quot;text/javascript&quot;&gt;&lt;/script&gt;\\n\\n&lt;div id=&quot;jxgbox&quot; class=&quot;jxgbox&quot; style=&quot;display: flex; width:99%; height:99%; margin: 0; flex-direction: column; overflow: hidden&quot;&gt;\\n&lt;script&gt;\\nvar board = JXG.JSXGraph.initBoard('jxgbox', {axis:true,boundingbox:[-1.6455175247207208,1.6498335153998076,1.6496942117657427,-1.6499510331467535]});\\nboard.suspendUpdate();\\n\\nboard.create('point', [function() {return 0.32404302839486837;},function() {return 0.4535961214255773;}],  {color:'#5e81b5' ,name:'', face:'o', size: 2 } );\\nboard.create('point', [function() {return 0.6131168519734338;},function() {return -0.5885011172553458;}],  {color:'#5e81b5' ,name:'', face:'o', size: 2 } );\\nboard.create('point', [function() {return 0.8360259786005205;},function() {return -0.9874797699088649;}],  {color:'#5e81b5' ,name:'', face:'o', size: 2 } );\\nboard.create('point', [function() {return 0.9687151001182652;},function() {return -0.30733286997841935;}],  {color:'#5e81b5' ,name:'', face:'o', size: 2 } );\\nboard.create('point', [function() {return 0.9968650284539189;},function() {return 0.70866977429126;}],  {color:'#5e81b5' ,name:'', face:'o', size: 2 } );\\nboard.create('point', [function() {return 0.9174379552818098;},function() {return 0.9502325919585293;}],  {color:'#5e81b5' ,name:'', face:'o', size: 2 } );\\nboard.create('point', [function() {return 0.7390052780594708;},function() {return 0.15337386203786346;}],  {color:'#5e81b5' ,name:'', face:'o', size: 2 } );\\nboard.create('point', [function() {return 0.48082261498864826;},function() {return -0.811093014061656;}],  {color:'#5e81b5' ,name:'', face:'o', size: 2 } );\\nboard.create('point', [function() {return 0.17075182895114532;},function() {return -0.8891911526253609;}],  {color:'#5e81b5' ,name:'', face:'o', size: 2 } );\\nboard.create('point', [function() {return -0.15774569414324865;},function() {return 0.004425697988050785;}],  {color:'#5e81b5' ,name:'', face:'o', size: 2 } );\\nboard.create('point', [function() {return -0.4692200412887275;},function() {return 0.8932061115093233;}],  {color:'#5e81b5' ,name:'', face:'o', size: 2 } );\\nboard.create('point', [function() {return -0.7300583608392995;},function() {return 0.8058839576404497;}],  {color:'#5e81b5' ,name:'', face:'o', size: 2 } );\\nboard.create('point', [function() {return -0.9121122039130803;},function() {return -0.16211443649971827;}],  {color:'#5e81b5' ,name:'', face:'o', size: 2 } );\\nboard.create('point', [function() {return -0.9957351730622453;},function() {return -0.9529529168871809;}],  {color:'#5e81b5' ,name:'', face:'o', size: 2 } );\\nboard.create('point', [function() {return -0.9719030694018208;},function() {return -0.7023970575027135;}],  {color:'#5e81b5' ,name:'', face:'o', size: 2 } );\\nboard.create('point', [function() {return -0.8431877418564167;},function() {return 0.31574375491924334;}],  {color:'#5e81b5' ,name:'', face:'o', size: 2 } );\\nboard.create('point', [function() {return -0.6234795452786853;},function() {return 0.9888373426941465;}],  {color:'#5e81b5' ,name:'', face:'o', size: 2 } );\\nboard.create('point', [function() {return -0.3364883584585042;},function() {return 0.5813218118144357;}],  {color:'#5e81b5' ,name:'', face:'o', size: 2 } );\\nboard.create('point', [function() {return -0.013184925133521251;},function() {return -0.46146670441591253;}],  {color:'#5e81b5' ,name:'', face:'o', size: 2 } );\\nboard.create('point', [function() {return 0.3115413635133787;},function() {return -0.9999608263946371;}],  {color:'#5e81b5' ,name:'', face:'o', size: 2 } );\\nboard.create('point', [function() {return 0.602647568421973;},function() {return -0.44569000044433316;}],  {color:'#5e81b5' ,name:'', face:'o', size: 2 } );\\nboard.create('point', [function() {return 0.8287188723898359;},function() {return 0.5956343152752115;}],  {color:'#5e81b5' ,name:'', face:'o', size: 2 } );\\nboard.create('point', [function() {return 0.965358719901792;},function() {return 0.9860448308379632;}],  {color:'#5e81b5' ,name:'', face:'o', size: 2 } );\\nboard.create('point', [function() {return 0.9978215790530743;},function() {return 0.2988979063644682;}],  {color:'#5e81b5' ,name:'', face:'o', size: 2 } );\\nboard.create('point', [function() {return 0.9226042102393402;},function() {return -0.7148869687796675;}],  {color:'#5e81b5' ,name:'', face:'o', size: 2 } );\\nboard.create('point', [function() {return 0.7478237193548898;},function() {return -0.9474378189567576;}],  {color:'#5e81b5' ,name:'', face:'o', size: 2 } );\\nboard.create('point', [function() {return 0.49234159776988917;},function() {return -0.14462127116171977;}],  {color:'#5e81b5' ,name:'', face:'o', size: 2 } );\\nboard.create('point', [function() {return 0.183728278586583;},function() {return 0.8162385236075724;}],  {color:'#5e81b5' ,name:'', face:'o', size: 2 } );\\nboard.create('point', [function() {return -0.14471213527691454;},function() {return 0.8851065280947882;}],  {color:'#5e81b5' ,name:'', face:'o', size: 2 } );\\nboard.create('point', [function() {return -0.4575358937753214;},function() {return -0.013276747223059479;}],  {color:'#5e81b5' ,name:'', face:'o', size: 2 } );\\nboard.create('point', [function() {return -0.7209845231142057;},function() {return -0.897151090185845;}],  {color:'#5e81b5' ,name:'', face:'o', size: 2 } );\\nboard.create('point', [function() {return -0.9066278820139979;},function() {return -0.8006117624589936;}],  {color:'#5e81b5' ,name:'', face:'o', size: 2 } );\\nboard.create('point', [function() {return -0.9944322093031953;},function() {return 0.17084230974765666;}],  {color:'#5e81b5' ,name:'', face:'o', size: 2 } );\\nboard.create('point', [function() {return -0.9749220735246146;},function() {return 0.9555985806128415;}],  {color:'#5e81b5' ,name:'', face:'o', size: 2 } );\\nboard.create('point', [function() {return -0.8502029170863663;},function() {return 0.6960693098638897;}],  {color:'#5e81b5' ,name:'', face:'o', size: 2 } );\\nboard.create('point', [function() {return -0.6337338467854989;},function() {return -0.3241299022175636;}],  {color:'#5e81b5' ,name:'', face:'o', size: 2 } );\\nboard.create('point', [function() {return -0.34887519008606005;},function() {return -0.990117442831766;}],  {color:'#5e81b5' ,name:'', face:'o', size: 2 } );\\nboard.create('point', [function() {return -0.026367558070356484;},function() {return -0.5740969614310336;}],  {color:'#5e81b5' ,name:'', face:'o', size: 2 } );\\nboard.create('point', [function() {return 0.2989855372260583;},function() {return 0.4693011327771151;}],  {color:'#5e81b5' ,name:'', face:'o', size: 2 } );\\nboard.create('point', [function() {return 0.5920735147072245;},function() {return 0.9998433086476912;}],  {color:'#5e81b5' ,name:'', face:'o', size: 2 } );\\nboard.create('point', [function() {return 0.8212676935633646;},function() {return 0.43774896089470705;}],  {color:'#5e81b5' ,name:'', face:'o', size: 2 } );\\nboard.create('point', [function() {return 0.9618345122584528;},function() {return -0.6027208470078607;}],  {color:'#5e81b5' ,name:'', face:'o', size: 2 } );\\nboard.create('point', [function() {return 0.9986046585635748;},function() {return -0.9845326379049143;}],  {color:'#5e81b5' ,name:'', face:'o', size: 2 } );\\nboard.create('point', [function() {return 0.9276100706332453;},function() {return -0.2904395249332599;}],  {color:'#5e81b5' ,name:'', face:'o', size: 2 } );\\nboard.create('point', [function() {return 0.756512151641241;},function() {return 0.7210481538680871;}],  {color:'#5e81b5' ,name:'', face:'o', size: 2 } );\\nboard.create('point', [function() {return 0.5037749870595187;},function() {return 0.9445688168445349;}],  {color:'#5e81b5' ,name:'', face:'o', size: 2 } );\\nboard.create('point', [function() {return 0.19667278709629893;},function() {return 0.1358573496123707;}],  {color:'#5e81b5' ,name:'', face:'o', size: 2 } );\\nboard.create('point', [function() {return -0.13165341823383273;},function() {return -0.8213200831418752;}],  {color:'#5e81b5' ,name:'', face:'o', size: 2 } );\\nboard.create('point', [function() {return -0.4457722037352182;},function() {return -0.8809525579365433;}],  {color:'#5e81b5' ,name:'', face:'o', size: 2 } );\\nboard.create('point', [function() {return -0.711785342369123;},function() {return 0.022126756261962838;}],  {color:'#5e81b5' ,name:'', face:'o', size: 2 } );\\nboard.create('point', [function() {return -0.900985943032865;},function() {return 0.901025779576851;}],  {color:'#5e81b5' ,name:'', face:'o', size: 2 } );\\nboard.create('point', [function() {return -0.9929563636967662;},function() {return 0.7952768415790757;}],  {color:'#5e81b5' ,name:'', face:'o', size: 2 } );\\nboard.create('point', [function() {return -0.9777715876333635;},function() {return -0.17955679797714888;}],  {color:'#5e81b5' ,name:'', face:'o', size: 2 } );\\nboard.create('point', [function() {return -0.857070284703512;},function() {return -0.9581693758551366;}],  {color:'#5e81b5' ,name:'', face:'o', size: 2 } );\\nboard.create('point', [function() {return -0.6438779737855393;},function() {return -0.6896870271361613;}],  {color:'#5e81b5' ,name:'', face:'o', size: 2 } );\\nboard.create('point', [function() {return -0.36120136982925244;},function() {return 0.3324906548421391;}],  {color:'#5e81b5' ,name:'', face:'o', size: 2 } );\\nboard.create('point', [function() {return -0.03954560701231674;},function() {return 0.9913199700294487;}],  {color:'#5e81b5' ,name:'', face:'o', size: 2 } );\\nboard.create('point', [function() {return 0.2863777323608796;},function() {return 0.5668271321520202;}],  {color:'#5e81b5' ,name:'', face:'o', size: 2 } );\\nboard.create('point', [function() {return 0.5813965291263834;},function() {return -0.47709879270357103;}],  {color:'#5e81b5' ,name:'', face:'o', size: 2 } );\\nboard.create('point', [function() {return 0.8136737375071054;},function() {return -0.99964745596635;}],  {color:'#5e81b5' ,name:'', face:'o', size: 2 } );\\nboard.create('point', [function() {return 0.9581430898710656;},function() {return -0.42977362493499033;}],  {color:'#5e81b5' ,name:'', face:'o', size: 2 } );\\nboard.create('point', [function() {return 0.9992141308471991;},function() {return 0.6097601572433005;}],  {color:'#5e81b5' ,name:'', face:'o', size: 2 } );\\nboard.create('point', [function() {return 0.9324546661956634;},function() {return 0.9829433095858163;}],  {color:'#5e81b5' ,name:'', face:'o', size: 2 } );\\nboard.create('point', [function() {return 0.7650690644362526;},function() {return 0.281958388375392;}],  {color:'#5e81b5' ,name:'', face:'o', size: 2 } );\\nboard.create('point', [function() {return 0.515120795165023;},function() {return -0.7271528468448446;}],  {color:'#5e81b5' ,name:'', face:'o', size: 2 } );\\nboard.create('point', [function() {return 0.20958310407999373;},function() {return -0.9416258104001715;}],  {color:'#5e81b5' ,name:'', face:'o', size: 2 } );\\nboard.create('point', [function() {return -0.11857181326943754;},function() {return -0.1270827840186229;}],  {color:'#5e81b5' ,name:'', face:'o', size: 2 } );\\nboard.create('point', [function() {return -0.433931016283655;},function() {return 0.8263372945385548;}],  {color:'#5e81b5' ,name:'', face:'o', size: 2 } );\\nboard.create('point', [function() {return -0.7024624178798466;},function() {return 0.876729567602604;}],  {color:'#5e81b5' ,name:'', face:'o', size: 2 } );\\nboard.create('point', [function() {return -0.8951873678196818;},function() {return -0.03097503173121646;}],  {color:'#5e81b5' ,name:'', face:'o', size: 2 } );\\nboard.create('point', [function() {return -0.9913078928184317;},function() {return -0.9048298761112383;}],  {color:'#5e81b5' ,name:'', face:'o', size: 2 } );\\nboard.create('point', [function() {return -0.9804511163405908;},function() {return -0.7898796129768653;}],  {color:'#5e81b5' ,name:'', face:'o', size: 2 } );\\nboard.create('point', [function() {return -0.8637886508173204;},function() {return 0.18825721843235974;}],  {color:'#5e81b5' ,name:'', face:'o', size: 2 } );\\nboard.create('point', [function() {return -0.6539101627242901;},function() {return 0.9606651011994307;}],  {color:'#5e81b5' ,name:'', face:'o', size: 2 } );\\nboard.create('point', [function() {return -0.3734647547841147;},function() {return 0.6832507093535931;}],  {color:'#5e81b5' ,name:'', face:'o', size: 2 } );\\nboard.create('point', [function() {return -0.052716780958143236;},function() {return -0.3408253577513085;}],  {color:'#5e81b5' ,name:'', face:'o', size: 2 } );\\nboard.create('point', [function() {return 0.2737201407822824;},function() {return -0.9924448300725429;}],  {color:'#5e81b5' ,name:'', face:'o', size: 2 } );\\nboard.create('point', [function() {return 0.5706184678713274;},function() {return -0.5595128935482332;}],  {color:'#5e81b5' ,name:'', face:'o', size: 2 } );\\nboard.create('point', [function() {return 0.805938324428851;},function() {return 0.48485907327037797;}],  {color:'#5e81b5' ,name:'', face:'o', size: 2 } );\\nboard.create('point', [function() {return 0.954285094492698;},function() {return 0.9993732836951247;}],  {color:'#5e81b5' ,name:'', face:'o', size: 2 } );\\nboard.create('point', [function() {return 0.9996498899473084;},function() {return 0.4217646174105228;}],  {color:'#5e81b5' ,name:'', face:'o', size: 2 } );\\nboard.create('point', [function() {return 0.9371371546945932;},function() {return -0.6167516944712085;}],  {color:'#5e81b5' ,name:'', face:'o', size: 2 } );\\nboard.create('point', [function() {return 0.7734929701222879;},function() {return -0.9812769704001121;}],  {color:'#5e81b5' ,name:'', face:'o', size: 2 } );\\nboard.create('point', [function() {return 0.5263770496198482;},function() {return -0.27345516116425417;}],  {color:'#5e81b5' ,name:'', face:'o', size: 2 } );\\nboard.create('point', [function() {return 0.2224569850815534;},function() {return 0.7332005694242952;}],  {color:'#5e81b5' ,name:'', face:'o', size: 2 } );\\nboard.create('point', [function() {return -0.1054695946182271;},function() {return 0.9386090302000182;}],  {color:'#5e81b5' ,name:'', face:'o', size: 2 } );\\nboard.create('point', [function() {return -0.42201439000878305;},function() {return 0.118298261843216;}],  {color:'#5e81b5' ,name:'', face:'o', size: 2 } );\\nboard.create('point', [function() {return -0.6930173704349996;},function() {return -0.8312897647130846;}],  {color:'#5e81b5' ,name:'', face:'o', size: 2 } );\\nboard.create('point', [function() {return -0.889233164455629;},function() {return -0.8724378879524822;}],  {color:'#5e81b5' ,name:'', face:'o', size: 2 } );\\nboard.create('point', [function() {return -0.9894870832545356;},function() {return 0.039820880393153096;}],  {color:'#5e81b5' ,name:'', face:'o', size: 2 } );\\nboard.create('point', [function() {return -0.9829601938107485;},function() {return 0.9085630817486479;}],  {color:'#5e81b5' ,name:'', face:'o', size: 2 } );\\nboard.create('point', [function() {return -0.8703568474411396;},function() {return 0.784420499510169;}],  {color:'#5e81b5' ,name:'', face:'o', size: 2 } );\\nboard.create('point', [function() {return -0.6638286695076421;},function() {return -0.19694288945960042;}],  {color:'#5e81b5' ,name:'', face:'o', size: 2 } );\\nboard.create('point', [function() {return -0.38566321296353945;},function() {return -0.9630855611126041;}],  {color:'#5e81b5' ,name:'', face:'o', size: 2 } );\\nboard.create('point', [function() {return -0.0658787901017895;},function() {return -0.6767608607837051;}],  {color:'#5e81b5' ,name:'', face:'o', size: 2 } );\\nboard.create('point', [function() {return 0.26101496301011606;},function() {return 0.3491333579443536;}],  {color:'#5e81b5' ,name:'', face:'o', size: 2 } );\\nboard.create('point', [function() {return 0.5597412047059207;},function() {return 0.9934919348314017;}],  {color:'#5e81b5' ,name:'', face:'o', size: 2 } );\\nboard.create('point', [function() {return 0.7980627991286724;},function() {return 0.5521548186698774;}],  {color:'#5e81b5' ,name:'', face:'o', size: 2 } );\\nboard.create('point', [function() {return 0.9502611968351016;},function() {return -0.4925813664811991;}],  {color:'#5e81b5' ,name:'', face:'o', size: 2 } );\\nboard.create('point', [function() {return 0.9999118601072672;},function() {return -0.9990208133146474;}],  {color:'#5e81b5' ,name:'', face:'o', size: 2 } );\\n\\n\\nboard.unsuspendUpdate();\\n\\n&lt;/script&gt;\\n&lt;/div&gt;\\n\\n&lt;/body&gt;\\n&lt;/html&gt;\\\" style=\\\"display: block; width: 100%; height: 100%; border: none;\\\" ></iframe>\"\r\n" + 
-					"      } ]\r\n" + 
-					"    }, {\r\n" + 
-					"      \"title\" : \"Result\",\r\n" + 
-					"      \"scanner\" : \"Identity\",\r\n" + 
-					"      \"error\" : \"false\",\r\n" + 
-					"      \"numsubpods\" : 1,\r\n" + 
-					"      \"subpods\" : [ {\r\n" + 
-					"        \"plaintext\" : \"{{0.32404302839486837,0.4535961214255773},\\n {0.6131168519734338,-0.5885011172553458},\\n {0.8360259786005205,-0.9874797699088649},\\n {0.9687151001182652,-0.30733286997841935},\\n {0.9968650284539189,0.70866977429126},\\n {0.9174379552818098,0.9502325919585293},\\n {0.7390052780594708,0.15337386203786346},\\n {0.48082261498864826,-0.811093014061656},\\n {0.17075182895114532,-0.8891911526253609},\\n {-0.15774569414324865,0.004425697988050785},\\n {-0.4692200412887275,0.8932061115093233},\\n {-0.7300583608392995,0.8058839576404497},\\n {-0.9121122039130803,-0.16211443649971827},\\n {-0.9957351730622453,-0.9529529168871809},\\n {-0.9719030694018208,-0.7023970575027135},\\n {-0.8431877418564167,0.31574375491924334},\\n {-0.6234795452786853,0.9888373426941465},\\n {-0.3364883584585042,0.5813218118144357},\\n {-0.013184925133521251,-0.46146670441591253},\\n {0.3115413635133787,-0.9999608263946371},\\n {0.602647568421973,-0.44569000044433316},\\n {0.8287188723898359,0.5956343152752115},\\n {0.965358719901792,0.9860448308379632},\\n {0.9978215790530743,0.2988979063644682},\\n {0.9226042102393402,-0.7148869687796675},\\n {0.7478237193548898,-0.9474378189567576},\\n {0.49234159776988917,-0.14462127116171977},\\n {0.183728278586583,0.8162385236075724},\\n {-0.14471213527691454,0.8851065280947882},\\n {-0.4575358937753214,-0.013276747223059479},\\n {-0.7209845231142057,-0.897151090185845},\\n {-0.9066278820139979,-0.8006117624589936},\\n {-0.9944322093031953,0.17084230974765666},\\n {-0.9749220735246146,0.9555985806128415},\\n {-0.8502029170863663,0.6960693098638897},\\n {-0.6337338467854989,-0.3241299022175636},\\n {-0.34887519008606005,-0.990117442831766},\\n {-0.026367558070356484,-0.5740969614310336},\\n {0.2989855372260583,0.4693011327771151},\\n {0.5920735147072245,0.9998433086476912},\\n {0.8212676935633646,0.43774896089470705},\\n {0.9618345122584528,-0.6027208470078607},\\n {0.9986046585635748,-0.9845326379049143},\\n {0.9276100706332453,-0.2904395249332599},\\n {0.756512151641241,0.7210481538680871},\\n {0.5037749870595187,0.9445688168445349},\\n {0.19667278709629893,0.1358573496123707},\\n {-0.13165341823383273,-0.8213200831418752},\\n {-0.4457722037352182,-0.8809525579365433},\\n {-0.711785342369123,0.022126756261962838},\\n {-0.900985943032865,0.901025779576851},\\n {-0.9929563636967662,0.7952768415790757},\\n {-0.9777715876333635,-0.17955679797714888},\\n {-0.857070284703512,-0.9581693758551366},\\n {-0.6438779737855393,-0.6896870271361613},\\n {-0.36120136982925244,0.3324906548421391},\\n {-0.03954560701231674,0.9913199700294487},\\n {0.2863777323608796,0.5668271321520202},\\n {0.5813965291263834,-0.47709879270357103},\\n {0.8136737375071054,-0.99964745596635},\\n {0.9581430898710656,-0.42977362493499033},\\n {0.9992141308471991,0.6097601572433005},\\n {0.9324546661956634,0.9829433095858163},\\n {0.7650690644362526,0.281958388375392},\\n {0.515120795165023,-0.7271528468448446},\\n {0.20958310407999373,-0.9416258104001715},\\n {-0.11857181326943754,-0.1270827840186229},\\n {-0.433931016283655,0.8263372945385548},\\n {-0.7024624178798466,0.876729567602604},\\n {-0.8951873678196818,-0.03097503173121646},\\n {-0.9913078928184317,-0.9048298761112383},\\n {-0.9804511163405908,-0.7898796129768653},\\n {-0.8637886508173204,0.18825721843235974},\\n {-0.6539101627242901,0.9606651011994307},\\n {-0.3734647547841147,0.6832507093535931},\\n {-0.052716780958143236,-0.3408253577513085},\\n {0.2737201407822824,-0.9924448300725429},\\n {0.5706184678713274,-0.5595128935482332},\\n {0.805938324428851,0.48485907327037797},\\n {0.954285094492698,0.9993732836951247},\\n {0.9996498899473084,0.4217646174105228},\\n {0.9371371546945932,-0.6167516944712085},\\n {0.7734929701222879,-0.9812769704001121},\\n {0.5263770496198482,-0.27345516116425417},\\n {0.2224569850815534,0.7332005694242952},\\n {-0.1054695946182271,0.9386090302000182},\\n {-0.42201439000878305,0.118298261843216},\\n {-0.6930173704349996,-0.8312897647130846},\\n {-0.889233164455629,-0.8724378879524822},\\n {-0.9894870832545356,0.039820880393153096},\\n {-0.9829601938107485,0.9085630817486479},\\n {-0.8703568474411396,0.784420499510169},\\n {-0.6638286695076421,-0.19694288945960042},\\n {-0.38566321296353945,-0.9630855611126041},\\n {-0.0658787901017895,-0.6767608607837051},\\n {0.26101496301011606,0.3491333579443536},\\n {0.5597412047059207,0.9934919348314017},\\n {0.7980627991286724,0.5521548186698774},\\n {0.9502611968351016,-0.4925813664811991},\\n {0.9999118601072672,-0.9990208133146474}}\",\r\n" + 
-					"        \"sinput\" : \"Table({Sin(t*0.33),Cos(t*1.1)},{t,100})\",\r\n" + 
-					"        \"latex\" : \"\\\\left(\\n\\\\begin{array}{cc}\\n0.324043 & 0.453596 \\\\\\\\\\n0.613117 & -0.588501 \\\\\\\\\\n0.836026 & -0.98748 \\\\\\\\\\n0.968715 & -0.307333 \\\\\\\\\\n0.996865 & 0.70867 \\\\\\\\\\n0.917438 & 0.950233 \\\\\\\\\\n0.739005 & 0.153374 \\\\\\\\\\n0.480823 & -0.811093 \\\\\\\\\\n0.170752 & -0.889191 \\\\\\\\\\n-0.157746 & 0.0044257 \\\\\\\\\\n-0.46922 & 0.893206 \\\\\\\\\\n-0.730058 & 0.805884 \\\\\\\\\\n-0.912112 & -0.162114 \\\\\\\\\\n-0.995735 & -0.952953 \\\\\\\\\\n-0.971903 & -0.702397 \\\\\\\\\\n-0.843188 & 0.315744 \\\\\\\\\\n-0.62348 & 0.988837 \\\\\\\\\\n-0.336488 & 0.581322 \\\\\\\\\\n-0.0131849 & -0.461467 \\\\\\\\\\n0.311541 & -0.999961 \\\\\\\\\\n0.602648 & -0.44569 \\\\\\\\\\n0.828719 & 0.595634 \\\\\\\\\\n0.965359 & 0.986045 \\\\\\\\\\n0.997822 & 0.298898 \\\\\\\\\\n0.922604 & -0.714887 \\\\\\\\\\n0.747824 & -0.947438 \\\\\\\\\\n0.492342 & -0.144621 \\\\\\\\\\n0.183728 & 0.816239 \\\\\\\\\\n-0.144712 & 0.885107 \\\\\\\\\\n-0.457536 & -0.0132767 \\\\\\\\\\n-0.720985 & -0.897151 \\\\\\\\\\n-0.906628 & -0.800612 \\\\\\\\\\n-0.994432 & 0.170842 \\\\\\\\\\n-0.974922 & 0.955599 \\\\\\\\\\n-0.850203 & 0.696069 \\\\\\\\\\n-0.633734 & -0.32413 \\\\\\\\\\n-0.348875 & -0.990117 \\\\\\\\\\n-0.0263676 & -0.574097 \\\\\\\\\\n0.298986 & 0.469301 \\\\\\\\\\n0.592074 & 0.999843 \\\\\\\\\\n0.821268 & 0.437749 \\\\\\\\\\n0.961835 & -0.602721 \\\\\\\\\\n0.998605 & -0.984533 \\\\\\\\\\n0.92761 & -0.29044 \\\\\\\\\\n0.756512 & 0.721048 \\\\\\\\\\n0.503775 & 0.944569 \\\\\\\\\\n0.196673 & 0.135857 \\\\\\\\\\n-0.131653 & -0.82132 \\\\\\\\\\n-0.445772 & -0.880953 \\\\\\\\\\n-0.711785 & 0.0221268 \\\\\\\\\\n-0.900986 & 0.901026 \\\\\\\\\\n-0.992956 & 0.795277 \\\\\\\\\\n-0.977772 & -0.179557 \\\\\\\\\\n-0.85707 & -0.958169 \\\\\\\\\\n-0.643878 & -0.689687 \\\\\\\\\\n-0.361201 & 0.332491 \\\\\\\\\\n-0.0395456 & 0.99132 \\\\\\\\\\n0.286378 & 0.566827 \\\\\\\\\\n0.581397 & -0.477099 \\\\\\\\\\n0.813674 & -0.999647 \\\\\\\\\\n0.958143 & -0.429774 \\\\\\\\\\n0.999214 & 0.60976 \\\\\\\\\\n0.932455 & 0.982943 \\\\\\\\\\n0.765069 & 0.281958 \\\\\\\\\\n0.515121 & -0.727153 \\\\\\\\\\n0.209583 & -0.941626 \\\\\\\\\\n-0.118572 & -0.127083 \\\\\\\\\\n-0.433931 & 0.826337 \\\\\\\\\\n-0.702462 & 0.87673 \\\\\\\\\\n-0.895187 & -0.030975 \\\\\\\\\\n-0.991308 & -0.90483 \\\\\\\\\\n-0.980451 & -0.78988 \\\\\\\\\\n-0.863789 & 0.188257 \\\\\\\\\\n-0.65391 & 0.960665 \\\\\\\\\\n-0.373465 & 0.683251 \\\\\\\\\\n-0.0527168 & -0.340825 \\\\\\\\\\n0.27372 & -0.992445 \\\\\\\\\\n0.570618 & -0.559513 \\\\\\\\\\n0.805938 & 0.484859 \\\\\\\\\\n0.954285 & 0.999373 \\\\\\\\\\n0.99965 & 0.421765 \\\\\\\\\\n0.937137 & -0.616752 \\\\\\\\\\n0.773493 & -0.981277 \\\\\\\\\\n0.526377 & -0.273455 \\\\\\\\\\n0.222457 & 0.733201 \\\\\\\\\\n-0.10547 & 0.938609 \\\\\\\\\\n-0.422014 & 0.118298 \\\\\\\\\\n-0.693017 & -0.83129 \\\\\\\\\\n-0.889233 & -0.872438 \\\\\\\\\\n-0.989487 & 0.0398209 \\\\\\\\\\n-0.98296 & 0.908563 \\\\\\\\\\n-0.870357 & 0.78442 \\\\\\\\\\n-0.663829 & -0.196943 \\\\\\\\\\n-0.385663 & -0.963086 \\\\\\\\\\n-0.0658788 & -0.676761 \\\\\\\\\\n0.261015 & 0.349133 \\\\\\\\\\n0.559741 & 0.993492 \\\\\\\\\\n0.798063 & 0.552155 \\\\\\\\\\n0.950261 & -0.492581 \\\\\\\\\\n0.999912 & -0.999021 \\\\\\n\\\\\\\\\\n\\\\end{array}\\n\\\\right) \"\r\n" + 
-					"      } ]\r\n" + 
-					"    } ]\r\n" + 
-					"  }\r\n" + 
-					"}");//
+					"{\r\n" + "  \"queryresult\" : {\r\n" + "    \"success\" : \"true\",\r\n"
+							+ "    \"error\" : \"false\",\r\n" + "    \"numpods\" : 3,\r\n"
+							+ "    \"version\" : \"0.1\",\r\n" + "    \"pods\" : [ {\r\n"
+							+ "      \"title\" : \"Input\",\r\n" + "      \"scanner\" : \"Identity\",\r\n"
+							+ "      \"error\" : \"false\",\r\n" + "      \"numsubpods\" : 1,\r\n"
+							+ "      \"subpods\" : [ {\r\n"
+							+ "        \"plaintext\" : \"Table({Sin(t*0.33),Cos(t*1.1)},{t,100})\",\r\n"
+							+ "        \"sinput\" : \"Table({Sin(t*0.33),Cos(t*1.1)},{t,100})\",\r\n"
+							+ "        \"latex\" : \"\\\\text{Table}(\\\\{\\\\sin (t\\\\cdot 0.33),\\\\cos (t\\\\cdot 1.1)\\\\},\\\\{t,100\\\\})\"\r\n"
+							+ "      } ]\r\n" + "    }, {\r\n" + "      \"title\" : \"Plot points\",\r\n"
+							+ "      \"scanner\" : \"Plotter\",\r\n" + "      \"error\" : \"false\",\r\n"
+							+ "      \"numsubpods\" : 1,\r\n" + "      \"subpods\" : [ {\r\n"
+							+ "        \"sinput\" : \"ListPlot({{0.32404302839486837,0.4535961214255773},\\n {0.6131168519734338,-0.5885011172553458},\\n {0.8360259786005205,-0.9874797699088649},\\n {0.9687151001182652,-0.30733286997841935},\\n {0.9968650284539189,0.70866977429126},\\n {0.9174379552818098,0.9502325919585293},\\n {0.7390052780594708,0.15337386203786346},\\n {0.48082261498864826,-0.811093014061656},\\n {0.17075182895114532,-0.8891911526253609},\\n {-0.15774569414324865,0.004425697988050785},\\n {-0.4692200412887275,0.8932061115093233},\\n {-0.7300583608392995,0.8058839576404497},\\n {-0.9121122039130803,-0.16211443649971827},\\n {-0.9957351730622453,-0.9529529168871809},\\n {-0.9719030694018208,-0.7023970575027135},\\n {-0.8431877418564167,0.31574375491924334},\\n {-0.6234795452786853,0.9888373426941465},\\n {-0.3364883584585042,0.5813218118144357},\\n {-0.013184925133521251,-0.46146670441591253},\\n {0.3115413635133787,-0.9999608263946371},\\n {0.602647568421973,-0.44569000044433316},\\n {0.8287188723898359,0.5956343152752115},\\n {0.965358719901792,0.9860448308379632},\\n {0.9978215790530743,0.2988979063644682},\\n {0.9226042102393402,-0.7148869687796675},\\n {0.7478237193548898,-0.9474378189567576},\\n {0.49234159776988917,-0.14462127116171977},\\n {0.183728278586583,0.8162385236075724},\\n {-0.14471213527691454,0.8851065280947882},\\n {-0.4575358937753214,-0.013276747223059479},\\n {-0.7209845231142057,-0.897151090185845},\\n {-0.9066278820139979,-0.8006117624589936},\\n {-0.9944322093031953,0.17084230974765666},\\n {-0.9749220735246146,0.9555985806128415},\\n {-0.8502029170863663,0.6960693098638897},\\n {-0.6337338467854989,-0.3241299022175636},\\n {-0.34887519008606005,-0.990117442831766},\\n {-0.026367558070356484,-0.5740969614310336},\\n {0.2989855372260583,0.4693011327771151},\\n {0.5920735147072245,0.9998433086476912},\\n {0.8212676935633646,0.43774896089470705},\\n {0.9618345122584528,-0.6027208470078607},\\n {0.9986046585635748,-0.9845326379049143},\\n {0.9276100706332453,-0.2904395249332599},\\n {0.756512151641241,0.7210481538680871},\\n {0.5037749870595187,0.9445688168445349},\\n {0.19667278709629893,0.1358573496123707},\\n {-0.13165341823383273,-0.8213200831418752},\\n {-0.4457722037352182,-0.8809525579365433},\\n {-0.711785342369123,0.022126756261962838},\\n {-0.900985943032865,0.901025779576851},\\n {-0.9929563636967662,0.7952768415790757},\\n {-0.9777715876333635,-0.17955679797714888},\\n {-0.857070284703512,-0.9581693758551366},\\n {-0.6438779737855393,-0.6896870271361613},\\n {-0.36120136982925244,0.3324906548421391},\\n {-0.03954560701231674,0.9913199700294487},\\n {0.2863777323608796,0.5668271321520202},\\n {0.5813965291263834,-0.47709879270357103},\\n {0.8136737375071054,-0.99964745596635},\\n {0.9581430898710656,-0.42977362493499033},\\n {0.9992141308471991,0.6097601572433005},\\n {0.9324546661956634,0.9829433095858163},\\n {0.7650690644362526,0.281958388375392},\\n {0.515120795165023,-0.7271528468448446},\\n {0.20958310407999373,-0.9416258104001715},\\n {-0.11857181326943754,-0.1270827840186229},\\n {-0.433931016283655,0.8263372945385548},\\n {-0.7024624178798466,0.876729567602604},\\n {-0.8951873678196818,-0.03097503173121646},\\n {-0.9913078928184317,-0.9048298761112383},\\n {-0.9804511163405908,-0.7898796129768653},\\n {-0.8637886508173204,0.18825721843235974},\\n {-0.6539101627242901,0.9606651011994307},\\n {-0.3734647547841147,0.6832507093535931},\\n {-0.052716780958143236,-0.3408253577513085},\\n {0.2737201407822824,-0.9924448300725429},\\n {0.5706184678713274,-0.5595128935482332},\\n {0.805938324428851,0.48485907327037797},\\n {0.954285094492698,0.9993732836951247},\\n {0.9996498899473084,0.4217646174105228},\\n {0.9371371546945932,-0.6167516944712085},\\n {0.7734929701222879,-0.9812769704001121},\\n {0.5263770496198482,-0.27345516116425417},\\n {0.2224569850815534,0.7332005694242952},\\n {-0.1054695946182271,0.9386090302000182},\\n {-0.42201439000878305,0.118298261843216},\\n {-0.6930173704349996,-0.8312897647130846},\\n {-0.889233164455629,-0.8724378879524822},\\n {-0.9894870832545356,0.039820880393153096},\\n {-0.9829601938107485,0.9085630817486479},\\n {-0.8703568474411396,0.784420499510169},\\n {-0.6638286695076421,-0.19694288945960042},\\n {-0.38566321296353945,-0.9630855611126041},\\n {-0.0658787901017895,-0.6767608607837051},\\n {0.26101496301011606,0.3491333579443536},\\n {0.5597412047059207,0.9934919348314017},\\n {0.7980627991286724,0.5521548186698774},\\n {0.9502611968351016,-0.4925813664811991},\\n {0.9999118601072672,-0.9990208133146474}})\",\r\n"
+							+ "        \"jsxgraph\" : \"<iframe srcdoc=\\\"&lt;?xml version=&quot;1.0&quot; encoding=&quot;UTF-8&quot;?&gt;\\n\\n&lt;!DOCTYPE html PUBLIC\\n  &quot;-//W3C//DTD XHTML 1.1 plus MathML 2.0 plus SVG 1.1//EN&quot;\\n  &quot;http://www.w3.org/2002/04/xhtml-math-svg/xhtml-math-svg.dtd&quot;&gt;\\n\\n&lt;html xmlns=&quot;http://www.w3.org/1999/xhtml&quot; style=&quot;width: 100%; height: 100%; margin: 0; padding: 0&quot;&gt;\\n&lt;head&gt;\\n&lt;meta charset=&quot;utf-8&quot;&gt;\\n&lt;title&gt;JSXGraph&lt;/title&gt;\\n\\n&lt;body style=&quot;width: 100%; height: 100%; margin: 0; padding: 0&quot;&gt;\\n\\n&lt;link rel=&quot;stylesheet&quot; type=&quot;text/css&quot; href=&quot;https://cdnjs.cloudflare.com/ajax/libs/jsxgraph/1.1.0/jsxgraph.min.css&quot; /&gt;\\n&lt;script src=&quot;https://cdn.jsdelivr.net/gh/paulmasson/math@1.2.9/build/math.js&quot;&gt;&lt;/script&gt;\\n&lt;script src=&quot;https://cdnjs.cloudflare.com/ajax/libs/jsxgraph/1.1.0/jsxgraphcore.min.js&quot;\\n        type=&quot;text/javascript&quot;&gt;&lt;/script&gt;\\n&lt;script src=&quot;https://cdnjs.cloudflare.com/ajax/libs/jsxgraph/1.1.0/geonext.min.js&quot;\\n        type=&quot;text/javascript&quot;&gt;&lt;/script&gt;\\n\\n&lt;div id=&quot;jxgbox&quot; class=&quot;jxgbox&quot; style=&quot;display: flex; width:99%; height:99%; margin: 0; flex-direction: column; overflow: hidden&quot;&gt;\\n&lt;script&gt;\\nvar board = JXG.JSXGraph.initBoard('jxgbox', {axis:true,boundingbox:[-1.095517524720721,1.0998335153998076,1.099694211765743,-1.0999510331467535]});\\nboard.suspendUpdate();\\n\\nboard.create('point', [function() {return 0.32404302839486837;},function() {return 0.4535961214255773;}],  {color:'#5e81b5' ,name:'', face:'o', size: 2 } );\\nboard.create('point', [function() {return 0.6131168519734338;},function() {return -0.5885011172553458;}],  {color:'#5e81b5' ,name:'', face:'o', size: 2 } );\\nboard.create('point', [function() {return 0.8360259786005205;},function() {return -0.9874797699088649;}],  {color:'#5e81b5' ,name:'', face:'o', size: 2 } );\\nboard.create('point', [function() {return 0.9687151001182652;},function() {return -0.30733286997841935;}],  {color:'#5e81b5' ,name:'', face:'o', size: 2 } );\\nboard.create('point', [function() {return 0.9968650284539189;},function() {return 0.70866977429126;}],  {color:'#5e81b5' ,name:'', face:'o', size: 2 } );\\nboard.create('point', [function() {return 0.9174379552818098;},function() {return 0.9502325919585293;}],  {color:'#5e81b5' ,name:'', face:'o', size: 2 } );\\nboard.create('point', [function() {return 0.7390052780594708;},function() {return 0.15337386203786346;}],  {color:'#5e81b5' ,name:'', face:'o', size: 2 } );\\nboard.create('point', [function() {return 0.48082261498864826;},function() {return -0.811093014061656;}],  {color:'#5e81b5' ,name:'', face:'o', size: 2 } );\\nboard.create('point', [function() {return 0.17075182895114532;},function() {return -0.8891911526253609;}],  {color:'#5e81b5' ,name:'', face:'o', size: 2 } );\\nboard.create('point', [function() {return -0.15774569414324865;},function() {return 0.004425697988050785;}],  {color:'#5e81b5' ,name:'', face:'o', size: 2 } );\\nboard.create('point', [function() {return -0.4692200412887275;},function() {return 0.8932061115093233;}],  {color:'#5e81b5' ,name:'', face:'o', size: 2 } );\\nboard.create('point', [function() {return -0.7300583608392995;},function() {return 0.8058839576404497;}],  {color:'#5e81b5' ,name:'', face:'o', size: 2 } );\\nboard.create('point', [function() {return -0.9121122039130803;},function() {return -0.16211443649971827;}],  {color:'#5e81b5' ,name:'', face:'o', size: 2 } );\\nboard.create('point', [function() {return -0.9957351730622453;},function() {return -0.9529529168871809;}],  {color:'#5e81b5' ,name:'', face:'o', size: 2 } );\\nboard.create('point', [function() {return -0.9719030694018208;},function() {return -0.7023970575027135;}],  {color:'#5e81b5' ,name:'', face:'o', size: 2 } );\\nboard.create('point', [function() {return -0.8431877418564167;},function() {return 0.31574375491924334;}],  {color:'#5e81b5' ,name:'', face:'o', size: 2 } );\\nboard.create('point', [function() {return -0.6234795452786853;},function() {return 0.9888373426941465;}],  {color:'#5e81b5' ,name:'', face:'o', size: 2 } );\\nboard.create('point', [function() {return -0.3364883584585042;},function() {return 0.5813218118144357;}],  {color:'#5e81b5' ,name:'', face:'o', size: 2 } );\\nboard.create('point', [function() {return -0.013184925133521251;},function() {return -0.46146670441591253;}],  {color:'#5e81b5' ,name:'', face:'o', size: 2 } );\\nboard.create('point', [function() {return 0.3115413635133787;},function() {return -0.9999608263946371;}],  {color:'#5e81b5' ,name:'', face:'o', size: 2 } );\\nboard.create('point', [function() {return 0.602647568421973;},function() {return -0.44569000044433316;}],  {color:'#5e81b5' ,name:'', face:'o', size: 2 } );\\nboard.create('point', [function() {return 0.8287188723898359;},function() {return 0.5956343152752115;}],  {color:'#5e81b5' ,name:'', face:'o', size: 2 } );\\nboard.create('point', [function() {return 0.965358719901792;},function() {return 0.9860448308379632;}],  {color:'#5e81b5' ,name:'', face:'o', size: 2 } );\\nboard.create('point', [function() {return 0.9978215790530743;},function() {return 0.2988979063644682;}],  {color:'#5e81b5' ,name:'', face:'o', size: 2 } );\\nboard.create('point', [function() {return 0.9226042102393402;},function() {return -0.7148869687796675;}],  {color:'#5e81b5' ,name:'', face:'o', size: 2 } );\\nboard.create('point', [function() {return 0.7478237193548898;},function() {return -0.9474378189567576;}],  {color:'#5e81b5' ,name:'', face:'o', size: 2 } );\\nboard.create('point', [function() {return 0.49234159776988917;},function() {return -0.14462127116171977;}],  {color:'#5e81b5' ,name:'', face:'o', size: 2 } );\\nboard.create('point', [function() {return 0.183728278586583;},function() {return 0.8162385236075724;}],  {color:'#5e81b5' ,name:'', face:'o', size: 2 } );\\nboard.create('point', [function() {return -0.14471213527691454;},function() {return 0.8851065280947882;}],  {color:'#5e81b5' ,name:'', face:'o', size: 2 } );\\nboard.create('point', [function() {return -0.4575358937753214;},function() {return -0.013276747223059479;}],  {color:'#5e81b5' ,name:'', face:'o', size: 2 } );\\nboard.create('point', [function() {return -0.7209845231142057;},function() {return -0.897151090185845;}],  {color:'#5e81b5' ,name:'', face:'o', size: 2 } );\\nboard.create('point', [function() {return -0.9066278820139979;},function() {return -0.8006117624589936;}],  {color:'#5e81b5' ,name:'', face:'o', size: 2 } );\\nboard.create('point', [function() {return -0.9944322093031953;},function() {return 0.17084230974765666;}],  {color:'#5e81b5' ,name:'', face:'o', size: 2 } );\\nboard.create('point', [function() {return -0.9749220735246146;},function() {return 0.9555985806128415;}],  {color:'#5e81b5' ,name:'', face:'o', size: 2 } );\\nboard.create('point', [function() {return -0.8502029170863663;},function() {return 0.6960693098638897;}],  {color:'#5e81b5' ,name:'', face:'o', size: 2 } );\\nboard.create('point', [function() {return -0.6337338467854989;},function() {return -0.3241299022175636;}],  {color:'#5e81b5' ,name:'', face:'o', size: 2 } );\\nboard.create('point', [function() {return -0.34887519008606005;},function() {return -0.990117442831766;}],  {color:'#5e81b5' ,name:'', face:'o', size: 2 } );\\nboard.create('point', [function() {return -0.026367558070356484;},function() {return -0.5740969614310336;}],  {color:'#5e81b5' ,name:'', face:'o', size: 2 } );\\nboard.create('point', [function() {return 0.2989855372260583;},function() {return 0.4693011327771151;}],  {color:'#5e81b5' ,name:'', face:'o', size: 2 } );\\nboard.create('point', [function() {return 0.5920735147072245;},function() {return 0.9998433086476912;}],  {color:'#5e81b5' ,name:'', face:'o', size: 2 } );\\nboard.create('point', [function() {return 0.8212676935633646;},function() {return 0.43774896089470705;}],  {color:'#5e81b5' ,name:'', face:'o', size: 2 } );\\nboard.create('point', [function() {return 0.9618345122584528;},function() {return -0.6027208470078607;}],  {color:'#5e81b5' ,name:'', face:'o', size: 2 } );\\nboard.create('point', [function() {return 0.9986046585635748;},function() {return -0.9845326379049143;}],  {color:'#5e81b5' ,name:'', face:'o', size: 2 } );\\nboard.create('point', [function() {return 0.9276100706332453;},function() {return -0.2904395249332599;}],  {color:'#5e81b5' ,name:'', face:'o', size: 2 } );\\nboard.create('point', [function() {return 0.756512151641241;},function() {return 0.7210481538680871;}],  {color:'#5e81b5' ,name:'', face:'o', size: 2 } );\\nboard.create('point', [function() {return 0.5037749870595187;},function() {return 0.9445688168445349;}],  {color:'#5e81b5' ,name:'', face:'o', size: 2 } );\\nboard.create('point', [function() {return 0.19667278709629893;},function() {return 0.1358573496123707;}],  {color:'#5e81b5' ,name:'', face:'o', size: 2 } );\\nboard.create('point', [function() {return -0.13165341823383273;},function() {return -0.8213200831418752;}],  {color:'#5e81b5' ,name:'', face:'o', size: 2 } );\\nboard.create('point', [function() {return -0.4457722037352182;},function() {return -0.8809525579365433;}],  {color:'#5e81b5' ,name:'', face:'o', size: 2 } );\\nboard.create('point', [function() {return -0.711785342369123;},function() {return 0.022126756261962838;}],  {color:'#5e81b5' ,name:'', face:'o', size: 2 } );\\nboard.create('point', [function() {return -0.900985943032865;},function() {return 0.901025779576851;}],  {color:'#5e81b5' ,name:'', face:'o', size: 2 } );\\nboard.create('point', [function() {return -0.9929563636967662;},function() {return 0.7952768415790757;}],  {color:'#5e81b5' ,name:'', face:'o', size: 2 } );\\nboard.create('point', [function() {return -0.9777715876333635;},function() {return -0.17955679797714888;}],  {color:'#5e81b5' ,name:'', face:'o', size: 2 } );\\nboard.create('point', [function() {return -0.857070284703512;},function() {return -0.9581693758551366;}],  {color:'#5e81b5' ,name:'', face:'o', size: 2 } );\\nboard.create('point', [function() {return -0.6438779737855393;},function() {return -0.6896870271361613;}],  {color:'#5e81b5' ,name:'', face:'o', size: 2 } );\\nboard.create('point', [function() {return -0.36120136982925244;},function() {return 0.3324906548421391;}],  {color:'#5e81b5' ,name:'', face:'o', size: 2 } );\\nboard.create('point', [function() {return -0.03954560701231674;},function() {return 0.9913199700294487;}],  {color:'#5e81b5' ,name:'', face:'o', size: 2 } );\\nboard.create('point', [function() {return 0.2863777323608796;},function() {return 0.5668271321520202;}],  {color:'#5e81b5' ,name:'', face:'o', size: 2 } );\\nboard.create('point', [function() {return 0.5813965291263834;},function() {return -0.47709879270357103;}],  {color:'#5e81b5' ,name:'', face:'o', size: 2 } );\\nboard.create('point', [function() {return 0.8136737375071054;},function() {return -0.99964745596635;}],  {color:'#5e81b5' ,name:'', face:'o', size: 2 } );\\nboard.create('point', [function() {return 0.9581430898710656;},function() {return -0.42977362493499033;}],  {color:'#5e81b5' ,name:'', face:'o', size: 2 } );\\nboard.create('point', [function() {return 0.9992141308471991;},function() {return 0.6097601572433005;}],  {color:'#5e81b5' ,name:'', face:'o', size: 2 } );\\nboard.create('point', [function() {return 0.9324546661956634;},function() {return 0.9829433095858163;}],  {color:'#5e81b5' ,name:'', face:'o', size: 2 } );\\nboard.create('point', [function() {return 0.7650690644362526;},function() {return 0.281958388375392;}],  {color:'#5e81b5' ,name:'', face:'o', size: 2 } );\\nboard.create('point', [function() {return 0.515120795165023;},function() {return -0.7271528468448446;}],  {color:'#5e81b5' ,name:'', face:'o', size: 2 } );\\nboard.create('point', [function() {return 0.20958310407999373;},function() {return -0.9416258104001715;}],  {color:'#5e81b5' ,name:'', face:'o', size: 2 } );\\nboard.create('point', [function() {return -0.11857181326943754;},function() {return -0.1270827840186229;}],  {color:'#5e81b5' ,name:'', face:'o', size: 2 } );\\nboard.create('point', [function() {return -0.433931016283655;},function() {return 0.8263372945385548;}],  {color:'#5e81b5' ,name:'', face:'o', size: 2 } );\\nboard.create('point', [function() {return -0.7024624178798466;},function() {return 0.876729567602604;}],  {color:'#5e81b5' ,name:'', face:'o', size: 2 } );\\nboard.create('point', [function() {return -0.8951873678196818;},function() {return -0.03097503173121646;}],  {color:'#5e81b5' ,name:'', face:'o', size: 2 } );\\nboard.create('point', [function() {return -0.9913078928184317;},function() {return -0.9048298761112383;}],  {color:'#5e81b5' ,name:'', face:'o', size: 2 } );\\nboard.create('point', [function() {return -0.9804511163405908;},function() {return -0.7898796129768653;}],  {color:'#5e81b5' ,name:'', face:'o', size: 2 } );\\nboard.create('point', [function() {return -0.8637886508173204;},function() {return 0.18825721843235974;}],  {color:'#5e81b5' ,name:'', face:'o', size: 2 } );\\nboard.create('point', [function() {return -0.6539101627242901;},function() {return 0.9606651011994307;}],  {color:'#5e81b5' ,name:'', face:'o', size: 2 } );\\nboard.create('point', [function() {return -0.3734647547841147;},function() {return 0.6832507093535931;}],  {color:'#5e81b5' ,name:'', face:'o', size: 2 } );\\nboard.create('point', [function() {return -0.052716780958143236;},function() {return -0.3408253577513085;}],  {color:'#5e81b5' ,name:'', face:'o', size: 2 } );\\nboard.create('point', [function() {return 0.2737201407822824;},function() {return -0.9924448300725429;}],  {color:'#5e81b5' ,name:'', face:'o', size: 2 } );\\nboard.create('point', [function() {return 0.5706184678713274;},function() {return -0.5595128935482332;}],  {color:'#5e81b5' ,name:'', face:'o', size: 2 } );\\nboard.create('point', [function() {return 0.805938324428851;},function() {return 0.48485907327037797;}],  {color:'#5e81b5' ,name:'', face:'o', size: 2 } );\\nboard.create('point', [function() {return 0.954285094492698;},function() {return 0.9993732836951247;}],  {color:'#5e81b5' ,name:'', face:'o', size: 2 } );\\nboard.create('point', [function() {return 0.9996498899473084;},function() {return 0.4217646174105228;}],  {color:'#5e81b5' ,name:'', face:'o', size: 2 } );\\nboard.create('point', [function() {return 0.9371371546945932;},function() {return -0.6167516944712085;}],  {color:'#5e81b5' ,name:'', face:'o', size: 2 } );\\nboard.create('point', [function() {return 0.7734929701222879;},function() {return -0.9812769704001121;}],  {color:'#5e81b5' ,name:'', face:'o', size: 2 } );\\nboard.create('point', [function() {return 0.5263770496198482;},function() {return -0.27345516116425417;}],  {color:'#5e81b5' ,name:'', face:'o', size: 2 } );\\nboard.create('point', [function() {return 0.2224569850815534;},function() {return 0.7332005694242952;}],  {color:'#5e81b5' ,name:'', face:'o', size: 2 } );\\nboard.create('point', [function() {return -0.1054695946182271;},function() {return 0.9386090302000182;}],  {color:'#5e81b5' ,name:'', face:'o', size: 2 } );\\nboard.create('point', [function() {return -0.42201439000878305;},function() {return 0.118298261843216;}],  {color:'#5e81b5' ,name:'', face:'o', size: 2 } );\\nboard.create('point', [function() {return -0.6930173704349996;},function() {return -0.8312897647130846;}],  {color:'#5e81b5' ,name:'', face:'o', size: 2 } );\\nboard.create('point', [function() {return -0.889233164455629;},function() {return -0.8724378879524822;}],  {color:'#5e81b5' ,name:'', face:'o', size: 2 } );\\nboard.create('point', [function() {return -0.9894870832545356;},function() {return 0.039820880393153096;}],  {color:'#5e81b5' ,name:'', face:'o', size: 2 } );\\nboard.create('point', [function() {return -0.9829601938107485;},function() {return 0.9085630817486479;}],  {color:'#5e81b5' ,name:'', face:'o', size: 2 } );\\nboard.create('point', [function() {return -0.8703568474411396;},function() {return 0.784420499510169;}],  {color:'#5e81b5' ,name:'', face:'o', size: 2 } );\\nboard.create('point', [function() {return -0.6638286695076421;},function() {return -0.19694288945960042;}],  {color:'#5e81b5' ,name:'', face:'o', size: 2 } );\\nboard.create('point', [function() {return -0.38566321296353945;},function() {return -0.9630855611126041;}],  {color:'#5e81b5' ,name:'', face:'o', size: 2 } );\\nboard.create('point', [function() {return -0.0658787901017895;},function() {return -0.6767608607837051;}],  {color:'#5e81b5' ,name:'', face:'o', size: 2 } );\\nboard.create('point', [function() {return 0.26101496301011606;},function() {return 0.3491333579443536;}],  {color:'#5e81b5' ,name:'', face:'o', size: 2 } );\\nboard.create('point', [function() {return 0.5597412047059207;},function() {return 0.9934919348314017;}],  {color:'#5e81b5' ,name:'', face:'o', size: 2 } );\\nboard.create('point', [function() {return 0.7980627991286724;},function() {return 0.5521548186698774;}],  {color:'#5e81b5' ,name:'', face:'o', size: 2 } );\\nboard.create('point', [function() {return 0.9502611968351016;},function() {return -0.4925813664811991;}],  {color:'#5e81b5' ,name:'', face:'o', size: 2 } );\\nboard.create('point', [function() {return 0.9999118601072672;},function() {return -0.9990208133146474;}],  {color:'#5e81b5' ,name:'', face:'o', size: 2 } );\\n\\n\\nboard.unsuspendUpdate();\\n\\n&lt;/script&gt;\\n&lt;/div&gt;\\n\\n&lt;/body&gt;\\n&lt;/html&gt;\\\" style=\\\"display: block; width: 100%; height: 100%; border: none;\\\" ></iframe>\"\r\n"
+							+ "      } ]\r\n" + "    }, {\r\n" + "      \"title\" : \"Result\",\r\n"
+							+ "      \"scanner\" : \"Identity\",\r\n" + "      \"error\" : \"false\",\r\n"
+							+ "      \"numsubpods\" : 1,\r\n" + "      \"subpods\" : [ {\r\n"
+							+ "        \"plaintext\" : \"{{0.32404302839486837,0.4535961214255773},\\n {0.6131168519734338,-0.5885011172553458},\\n {0.8360259786005205,-0.9874797699088649},\\n {0.9687151001182652,-0.30733286997841935},\\n {0.9968650284539189,0.70866977429126},\\n {0.9174379552818098,0.9502325919585293},\\n {0.7390052780594708,0.15337386203786346},\\n {0.48082261498864826,-0.811093014061656},\\n {0.17075182895114532,-0.8891911526253609},\\n {-0.15774569414324865,0.004425697988050785},\\n {-0.4692200412887275,0.8932061115093233},\\n {-0.7300583608392995,0.8058839576404497},\\n {-0.9121122039130803,-0.16211443649971827},\\n {-0.9957351730622453,-0.9529529168871809},\\n {-0.9719030694018208,-0.7023970575027135},\\n {-0.8431877418564167,0.31574375491924334},\\n {-0.6234795452786853,0.9888373426941465},\\n {-0.3364883584585042,0.5813218118144357},\\n {-0.013184925133521251,-0.46146670441591253},\\n {0.3115413635133787,-0.9999608263946371},\\n {0.602647568421973,-0.44569000044433316},\\n {0.8287188723898359,0.5956343152752115},\\n {0.965358719901792,0.9860448308379632},\\n {0.9978215790530743,0.2988979063644682},\\n {0.9226042102393402,-0.7148869687796675},\\n {0.7478237193548898,-0.9474378189567576},\\n {0.49234159776988917,-0.14462127116171977},\\n {0.183728278586583,0.8162385236075724},\\n {-0.14471213527691454,0.8851065280947882},\\n {-0.4575358937753214,-0.013276747223059479},\\n {-0.7209845231142057,-0.897151090185845},\\n {-0.9066278820139979,-0.8006117624589936},\\n {-0.9944322093031953,0.17084230974765666},\\n {-0.9749220735246146,0.9555985806128415},\\n {-0.8502029170863663,0.6960693098638897},\\n {-0.6337338467854989,-0.3241299022175636},\\n {-0.34887519008606005,-0.990117442831766},\\n {-0.026367558070356484,-0.5740969614310336},\\n {0.2989855372260583,0.4693011327771151},\\n {0.5920735147072245,0.9998433086476912},\\n {0.8212676935633646,0.43774896089470705},\\n {0.9618345122584528,-0.6027208470078607},\\n {0.9986046585635748,-0.9845326379049143},\\n {0.9276100706332453,-0.2904395249332599},\\n {0.756512151641241,0.7210481538680871},\\n {0.5037749870595187,0.9445688168445349},\\n {0.19667278709629893,0.1358573496123707},\\n {-0.13165341823383273,-0.8213200831418752},\\n {-0.4457722037352182,-0.8809525579365433},\\n {-0.711785342369123,0.022126756261962838},\\n {-0.900985943032865,0.901025779576851},\\n {-0.9929563636967662,0.7952768415790757},\\n {-0.9777715876333635,-0.17955679797714888},\\n {-0.857070284703512,-0.9581693758551366},\\n {-0.6438779737855393,-0.6896870271361613},\\n {-0.36120136982925244,0.3324906548421391},\\n {-0.03954560701231674,0.9913199700294487},\\n {0.2863777323608796,0.5668271321520202},\\n {0.5813965291263834,-0.47709879270357103},\\n {0.8136737375071054,-0.99964745596635},\\n {0.9581430898710656,-0.42977362493499033},\\n {0.9992141308471991,0.6097601572433005},\\n {0.9324546661956634,0.9829433095858163},\\n {0.7650690644362526,0.281958388375392},\\n {0.515120795165023,-0.7271528468448446},\\n {0.20958310407999373,-0.9416258104001715},\\n {-0.11857181326943754,-0.1270827840186229},\\n {-0.433931016283655,0.8263372945385548},\\n {-0.7024624178798466,0.876729567602604},\\n {-0.8951873678196818,-0.03097503173121646},\\n {-0.9913078928184317,-0.9048298761112383},\\n {-0.9804511163405908,-0.7898796129768653},\\n {-0.8637886508173204,0.18825721843235974},\\n {-0.6539101627242901,0.9606651011994307},\\n {-0.3734647547841147,0.6832507093535931},\\n {-0.052716780958143236,-0.3408253577513085},\\n {0.2737201407822824,-0.9924448300725429},\\n {0.5706184678713274,-0.5595128935482332},\\n {0.805938324428851,0.48485907327037797},\\n {0.954285094492698,0.9993732836951247},\\n {0.9996498899473084,0.4217646174105228},\\n {0.9371371546945932,-0.6167516944712085},\\n {0.7734929701222879,-0.9812769704001121},\\n {0.5263770496198482,-0.27345516116425417},\\n {0.2224569850815534,0.7332005694242952},\\n {-0.1054695946182271,0.9386090302000182},\\n {-0.42201439000878305,0.118298261843216},\\n {-0.6930173704349996,-0.8312897647130846},\\n {-0.889233164455629,-0.8724378879524822},\\n {-0.9894870832545356,0.039820880393153096},\\n {-0.9829601938107485,0.9085630817486479},\\n {-0.8703568474411396,0.784420499510169},\\n {-0.6638286695076421,-0.19694288945960042},\\n {-0.38566321296353945,-0.9630855611126041},\\n {-0.0658787901017895,-0.6767608607837051},\\n {0.26101496301011606,0.3491333579443536},\\n {0.5597412047059207,0.9934919348314017},\\n {0.7980627991286724,0.5521548186698774},\\n {0.9502611968351016,-0.4925813664811991},\\n {0.9999118601072672,-0.9990208133146474}}\",\r\n"
+							+ "        \"sinput\" : \"Table({Sin(t*0.33),Cos(t*1.1)},{t,100})\",\r\n"
+							+ "        \"latex\" : \"\\\\left(\\n\\\\begin{array}{cc}\\n0.324043 & 0.453596 \\\\\\\\\\n0.613117 & -0.588501 \\\\\\\\\\n0.836026 & -0.98748 \\\\\\\\\\n0.968715 & -0.307333 \\\\\\\\\\n0.996865 & 0.70867 \\\\\\\\\\n0.917438 & 0.950233 \\\\\\\\\\n0.739005 & 0.153374 \\\\\\\\\\n0.480823 & -0.811093 \\\\\\\\\\n0.170752 & -0.889191 \\\\\\\\\\n-0.157746 & 0.0044257 \\\\\\\\\\n-0.46922 & 0.893206 \\\\\\\\\\n-0.730058 & 0.805884 \\\\\\\\\\n-0.912112 & -0.162114 \\\\\\\\\\n-0.995735 & -0.952953 \\\\\\\\\\n-0.971903 & -0.702397 \\\\\\\\\\n-0.843188 & 0.315744 \\\\\\\\\\n-0.62348 & 0.988837 \\\\\\\\\\n-0.336488 & 0.581322 \\\\\\\\\\n-0.0131849 & -0.461467 \\\\\\\\\\n0.311541 & -0.999961 \\\\\\\\\\n0.602648 & -0.44569 \\\\\\\\\\n0.828719 & 0.595634 \\\\\\\\\\n0.965359 & 0.986045 \\\\\\\\\\n0.997822 & 0.298898 \\\\\\\\\\n0.922604 & -0.714887 \\\\\\\\\\n0.747824 & -0.947438 \\\\\\\\\\n0.492342 & -0.144621 \\\\\\\\\\n0.183728 & 0.816239 \\\\\\\\\\n-0.144712 & 0.885107 \\\\\\\\\\n-0.457536 & -0.0132767 \\\\\\\\\\n-0.720985 & -0.897151 \\\\\\\\\\n-0.906628 & -0.800612 \\\\\\\\\\n-0.994432 & 0.170842 \\\\\\\\\\n-0.974922 & 0.955599 \\\\\\\\\\n-0.850203 & 0.696069 \\\\\\\\\\n-0.633734 & -0.32413 \\\\\\\\\\n-0.348875 & -0.990117 \\\\\\\\\\n-0.0263676 & -0.574097 \\\\\\\\\\n0.298986 & 0.469301 \\\\\\\\\\n0.592074 & 0.999843 \\\\\\\\\\n0.821268 & 0.437749 \\\\\\\\\\n0.961835 & -0.602721 \\\\\\\\\\n0.998605 & -0.984533 \\\\\\\\\\n0.92761 & -0.29044 \\\\\\\\\\n0.756512 & 0.721048 \\\\\\\\\\n0.503775 & 0.944569 \\\\\\\\\\n0.196673 & 0.135857 \\\\\\\\\\n-0.131653 & -0.82132 \\\\\\\\\\n-0.445772 & -0.880953 \\\\\\\\\\n-0.711785 & 0.0221268 \\\\\\\\\\n-0.900986 & 0.901026 \\\\\\\\\\n-0.992956 & 0.795277 \\\\\\\\\\n-0.977772 & -0.179557 \\\\\\\\\\n-0.85707 & -0.958169 \\\\\\\\\\n-0.643878 & -0.689687 \\\\\\\\\\n-0.361201 & 0.332491 \\\\\\\\\\n-0.0395456 & 0.99132 \\\\\\\\\\n0.286378 & 0.566827 \\\\\\\\\\n0.581397 & -0.477099 \\\\\\\\\\n0.813674 & -0.999647 \\\\\\\\\\n0.958143 & -0.429774 \\\\\\\\\\n0.999214 & 0.60976 \\\\\\\\\\n0.932455 & 0.982943 \\\\\\\\\\n0.765069 & 0.281958 \\\\\\\\\\n0.515121 & -0.727153 \\\\\\\\\\n0.209583 & -0.941626 \\\\\\\\\\n-0.118572 & -0.127083 \\\\\\\\\\n-0.433931 & 0.826337 \\\\\\\\\\n-0.702462 & 0.87673 \\\\\\\\\\n-0.895187 & -0.030975 \\\\\\\\\\n-0.991308 & -0.90483 \\\\\\\\\\n-0.980451 & -0.78988 \\\\\\\\\\n-0.863789 & 0.188257 \\\\\\\\\\n-0.65391 & 0.960665 \\\\\\\\\\n-0.373465 & 0.683251 \\\\\\\\\\n-0.0527168 & -0.340825 \\\\\\\\\\n0.27372 & -0.992445 \\\\\\\\\\n0.570618 & -0.559513 \\\\\\\\\\n0.805938 & 0.484859 \\\\\\\\\\n0.954285 & 0.999373 \\\\\\\\\\n0.99965 & 0.421765 \\\\\\\\\\n0.937137 & -0.616752 \\\\\\\\\\n0.773493 & -0.981277 \\\\\\\\\\n0.526377 & -0.273455 \\\\\\\\\\n0.222457 & 0.733201 \\\\\\\\\\n-0.10547 & 0.938609 \\\\\\\\\\n-0.422014 & 0.118298 \\\\\\\\\\n-0.693017 & -0.83129 \\\\\\\\\\n-0.889233 & -0.872438 \\\\\\\\\\n-0.989487 & 0.0398209 \\\\\\\\\\n-0.98296 & 0.908563 \\\\\\\\\\n-0.870357 & 0.78442 \\\\\\\\\\n-0.663829 & -0.196943 \\\\\\\\\\n-0.385663 & -0.963086 \\\\\\\\\\n-0.0658788 & -0.676761 \\\\\\\\\\n0.261015 & 0.349133 \\\\\\\\\\n0.559741 & 0.993492 \\\\\\\\\\n0.798063 & 0.552155 \\\\\\\\\\n0.950261 & -0.492581 \\\\\\\\\\n0.999912 & -0.999021 \\\\\\n\\\\\\\\\\n\\\\end{array}\\n\\\\right) \"\r\n"
+							+ "      } ]\r\n" + "    } ]\r\n" + "  }\r\n" + "}");//
 		}
 	}
 
-	@Test 
+	@Test
 	public void testListPlot004() {
+		EvalEngine.get().resetModuleCounter4JUnit();
 		String s = System.getProperty("os.name");
 		ObjectNode messageJSON = Pods.createResult("1, 2, 3, None, 3, 5, f(), 2, 1, foo, 2, 3", formatsTEX);
 		final String jsonStr = messageJSON.toPrettyString();
 		if (s.contains("Windows")) {
 			assertEquals(jsonStr, //
-					"{\r\n" + 
-					"  \"queryresult\" : {\r\n" + 
-					"    \"success\" : \"true\",\r\n" + 
-					"    \"error\" : \"false\",\r\n" + 
-					"    \"numpods\" : 3,\r\n" + 
-					"    \"version\" : \"0.1\",\r\n" + 
-					"    \"pods\" : [ {\r\n" + 
-					"      \"title\" : \"Input\",\r\n" + 
-					"      \"scanner\" : \"Identity\",\r\n" + 
-					"      \"error\" : \"false\",\r\n" + 
-					"      \"numsubpods\" : 1,\r\n" + 
-					"      \"subpods\" : [ {\r\n" + 
-					"        \"plaintext\" : \"{1,2,3,None,3,5,f(),2,1,foo,2,3}\",\r\n" + 
-					"        \"sinput\" : \"{1,2,3,None,3,5,f(),2,1,foo,2,3}\",\r\n" + 
-					"        \"latex\" : \"\\\\{1,2,3,None,3,5,f(),2,1,foo,2,3\\\\}\"\r\n" + 
-					"      } ]\r\n" + 
-					"    }, {\r\n" + 
-					"      \"title\" : \"Five-number summary\",\r\n" + 
-					"      \"scanner\" : \"Statistics\",\r\n" + 
-					"      \"error\" : \"false\",\r\n" + 
-					"      \"numsubpods\" : 1,\r\n" + 
-					"      \"subpods\" : [ {\r\n" + 
-					"        \"plaintext\" : \"{Min(1,foo,None,f()),5/2,5/2,1/2*(2-f())+f(),Max(5,foo,None,f())}\",\r\n" + 
-					"        \"sinput\" : \"FiveNum({1,2,3,None,3,5,f(),2,1,foo,2,3})\",\r\n" + 
-					"        \"latex\" : \"\\\\{\\\\text{Min}(1,foo,None,f()),\\\\frac{5}{2},\\\\frac{5}{2},\\\\frac{2 - f()}{2}+f(),\\\\text{Max}(5,foo,None,f())\\\\}\"\r\n" + 
-					"      } ]\r\n" + 
-					"    }, {\r\n" + 
-					"      \"title\" : \"Histogram\",\r\n" + 
-					"      \"scanner\" : \"Plotter\",\r\n" + 
-					"      \"error\" : \"false\",\r\n" + 
-					"      \"numsubpods\" : 1,\r\n" + 
-					"      \"subpods\" : [ {\r\n" + 
-					"        \"sinput\" : \"Histogram({1,2,3,None,3,5,f(),2,1,foo,2,3})\",\r\n" + 
-					"        \"plotly\" : \"<iframe srcdoc=\\\"&lt;?xml version=&quot;1.0&quot; encoding=&quot;UTF-8&quot;?&gt;\\n\\n&lt;!DOCTYPE html PUBLIC\\n  &quot;-//W3C//DTD XHTML 1.1 plus MathML 2.0 plus SVG 1.1//EN&quot;\\n  &quot;http://www.w3.org/2002/04/xhtml-math-svg/xhtml-math-svg.dtd&quot;&gt;\\n\\n&lt;html xmlns=&quot;http://www.w3.org/1999/xhtml&quot; style=&quot;width: 100%; height: 100%; margin: 0; padding: 0&quot;&gt;\\n&lt;head&gt;\\n&lt;meta charset=&quot;utf-8&quot;&gt;\\n&lt;title&gt;Plotly&lt;/title&gt;\\n\\n   &lt;script src=&quot;https://cdn.plot.ly/plotly-latest.min.js&quot;&gt;&lt;/script&gt;\\n&lt;/head&gt;\\n&lt;body&gt;\\n&lt;div id='plotly' &gt;&lt;/div&gt;\\n    &lt;script&gt;\\n        var target_plotly = document.getElementById('plotly');\\n        var layout = {\\n    autosize: true,\\n\\n\\n};\\n\\r\\nvar trace0 =\\n{\\nx: [&quot;1.0&quot;,&quot;2.0&quot;,&quot;3.0&quot;,&quot;3.0&quot;,&quot;5.0&quot;,&quot;2.0&quot;,&quot;1.0&quot;,&quot;2.0&quot;,&quot;3.0&quot;],\\nopacity: '1.0',\\nnbinsx: 0,\\nautobinx: false,\\nnbinsy: 0,\\nautobiny: false,\\n    histnorm: '',\\n    histfunc: 'count',\\nxaxis: 'x',\\nyaxis: 'y',\\ntype: 'histogram',\\nname: '',\\n};\\r\\n\\r\\n        var data = [ trace0];\\r\\nPlotly.newPlot(target_plotly, data, layout);            &lt;/script&gt;\\n\\n&lt;/body&gt;\\n&lt;/html&gt;\\\" style=\\\"display: block; width: 100%; height: 100%; border: none;\\\" ></iframe>\"\r\n" + 
-					"      } ]\r\n" + 
-					"    } ]\r\n" + 
-					"  }\r\n" + 
-					"}");//
+					"{\r\n" + "  \"queryresult\" : {\r\n" + "    \"success\" : \"true\",\r\n"
+							+ "    \"error\" : \"false\",\r\n" + "    \"numpods\" : 3,\r\n"
+							+ "    \"version\" : \"0.1\",\r\n" + "    \"pods\" : [ {\r\n"
+							+ "      \"title\" : \"Input\",\r\n" + "      \"scanner\" : \"Identity\",\r\n"
+							+ "      \"error\" : \"false\",\r\n" + "      \"numsubpods\" : 1,\r\n"
+							+ "      \"subpods\" : [ {\r\n"
+							+ "        \"plaintext\" : \"{1,2,3,None,3,5,f(),2,1,foo,2,3}\",\r\n"
+							+ "        \"sinput\" : \"{1,2,3,None,3,5,f(),2,1,foo,2,3}\",\r\n"
+							+ "        \"latex\" : \"\\\\{1,2,3,None,3,5,f(),2,1,foo,2,3\\\\}\"\r\n" + "      } ]\r\n"
+							+ "    }, {\r\n" + "      \"title\" : \"Five-number summary\",\r\n"
+							+ "      \"scanner\" : \"Statistics\",\r\n" + "      \"error\" : \"false\",\r\n"
+							+ "      \"numsubpods\" : 1,\r\n" + "      \"subpods\" : [ {\r\n"
+							+ "        \"plaintext\" : \"{Min(1,foo,None,f()),5/2,5/2,1/2*(2-f())+f(),Max(5,foo,None,f())}\",\r\n"
+							+ "        \"sinput\" : \"FiveNum({1,2,3,None,3,5,f(),2,1,foo,2,3})\",\r\n"
+							+ "        \"latex\" : \"\\\\{\\\\text{Min}(1,foo,None,f()),\\\\frac{5}{2},\\\\frac{5}{2},\\\\frac{2 - f()}{2}+f(),\\\\text{Max}(5,foo,None,f())\\\\}\"\r\n"
+							+ "      } ]\r\n" + "    }, {\r\n" + "      \"title\" : \"Histogram\",\r\n"
+							+ "      \"scanner\" : \"Plotter\",\r\n" + "      \"error\" : \"false\",\r\n"
+							+ "      \"numsubpods\" : 1,\r\n" + "      \"subpods\" : [ {\r\n"
+							+ "        \"sinput\" : \"Histogram({1,2,3,None,3,5,f(),2,1,foo,2,3})\",\r\n"
+							+ "        \"plotly\" : \"<iframe srcdoc=\\\"&lt;?xml version=&quot;1.0&quot; encoding=&quot;UTF-8&quot;?&gt;\\n\\n&lt;!DOCTYPE html PUBLIC\\n  &quot;-//W3C//DTD XHTML 1.1 plus MathML 2.0 plus SVG 1.1//EN&quot;\\n  &quot;http://www.w3.org/2002/04/xhtml-math-svg/xhtml-math-svg.dtd&quot;&gt;\\n\\n&lt;html xmlns=&quot;http://www.w3.org/1999/xhtml&quot; style=&quot;width: 100%; height: 100%; margin: 0; padding: 0&quot;&gt;\\n&lt;head&gt;\\n&lt;meta charset=&quot;utf-8&quot;&gt;\\n&lt;title&gt;Plotly&lt;/title&gt;\\n\\n   &lt;script src=&quot;https://cdn.plot.ly/plotly-latest.min.js&quot;&gt;&lt;/script&gt;\\n&lt;/head&gt;\\n&lt;body&gt;\\n&lt;div id='plotly' &gt;&lt;/div&gt;\\n    &lt;script&gt;\\r\\n        var target_plotly = document.getElementById('plotly');\\r\\n        var layout = {\\r\\n    autosize: true,\\r\\n\\r\\n\\r\\n};\\r\\n\\r\\nvar trace0 =\\r\\n{\\r\\nx: [&quot;1.0&quot;,&quot;2.0&quot;,&quot;3.0&quot;,&quot;3.0&quot;,&quot;5.0&quot;,&quot;2.0&quot;,&quot;1.0&quot;,&quot;2.0&quot;,&quot;3.0&quot;],\\r\\nopacity: '1.0',\\r\\nnbinsx: 0,\\r\\nautobinx: false,\\r\\nnbinsy: 0,\\r\\nautobiny: false,\\r\\n    histnorm: '',\\r\\n    histfunc: 'count',\\r\\nxaxis: 'x',\\r\\nyaxis: 'y',\\r\\ntype: 'histogram',\\r\\nname: '',\\r\\n};\\r\\n\\r\\n        var data = [ trace0];\\r\\nPlotly.newPlot(target_plotly, data, layout);            &lt;/script&gt;\\r\\n\\n&lt;/body&gt;\\n&lt;/html&gt;\\\" style=\\\"display: block; width: 100%; height: 100%; border: none;\\\" ></iframe>\"\r\n"
+							+ "      } ]\r\n" + "    } ]\r\n" + "  }\r\n" + "}");//
+		}
+	}
+
+	@Test
+	public void testListPlot005() {
+		EvalEngine.get().resetModuleCounter4JUnit();
+		String s = System.getProperty("os.name");
+		ObjectNode messageJSON = Pods.createResult("1, 2, 3, 4, 5", formatsTEX);
+		final String jsonStr = messageJSON.toPrettyString();
+		if (s.contains("Windows")) {
+			assertEquals(jsonStr, //
+					"{\r\n" + "  \"queryresult\" : {\r\n" + "    \"success\" : \"true\",\r\n"
+							+ "    \"error\" : \"false\",\r\n" + "    \"numpods\" : 5,\r\n"
+							+ "    \"version\" : \"0.1\",\r\n" + "    \"pods\" : [ {\r\n"
+							+ "      \"title\" : \"Input\",\r\n" + "      \"scanner\" : \"Identity\",\r\n"
+							+ "      \"error\" : \"false\",\r\n" + "      \"numsubpods\" : 1,\r\n"
+							+ "      \"subpods\" : [ {\r\n" + "        \"plaintext\" : \"{1,2,3,4,5}\",\r\n"
+							+ "        \"sinput\" : \"{1,2,3,4,5}\",\r\n"
+							+ "        \"latex\" : \"\\\\{1,2,3,4,5\\\\}\"\r\n" + "      } ]\r\n" + "    }, {\r\n"
+							+ "      \"title\" : \"Total\",\r\n" + "      \"scanner\" : \"List\",\r\n"
+							+ "      \"error\" : \"false\",\r\n" + "      \"numsubpods\" : 1,\r\n"
+							+ "      \"subpods\" : [ {\r\n" + "        \"plaintext\" : \"15\",\r\n"
+							+ "        \"sinput\" : \"Total({1,2,3,4,5})\",\r\n" + "        \"latex\" : \"15\"\r\n"
+							+ "      } ]\r\n" + "    }, {\r\n" + "      \"title\" : \"Vector length\",\r\n"
+							+ "      \"scanner\" : \"List\",\r\n" + "      \"error\" : \"false\",\r\n"
+							+ "      \"numsubpods\" : 1,\r\n" + "      \"subpods\" : [ {\r\n"
+							+ "        \"plaintext\" : \"7.416198487095663\",\r\n"
+							+ "        \"sinput\" : \"N(Norm({1,2,3,4,5}))\",\r\n"
+							+ "        \"latex\" : \"7.4162\"\r\n" + "      } ]\r\n" + "    }, {\r\n"
+							+ "      \"title\" : \"Normalized vector\",\r\n" + "      \"scanner\" : \"List\",\r\n"
+							+ "      \"error\" : \"false\",\r\n" + "      \"numsubpods\" : 1,\r\n"
+							+ "      \"subpods\" : [ {\r\n"
+							+ "        \"plaintext\" : \"{1/Sqrt(55),2/Sqrt(55),3/Sqrt(55),4/Sqrt(55),Sqrt(5/11)}\",\r\n"
+							+ "        \"sinput\" : \"Normalize({1,2,3,4,5})\",\r\n"
+							+ "        \"latex\" : \"\\\\{{55}^{\\\\frac{-1}{2}},\\\\frac{2}{\\\\sqrt{55}},\\\\frac{3}{\\\\sqrt{55}},\\\\frac{4}{\\\\sqrt{55}},\\\\sqrt{\\\\frac{5}{11}}\\\\}\"\r\n"
+							+ "      } ]\r\n" + "    }, {\r\n" + "      \"title\" : \"Plot points\",\r\n"
+							+ "      \"scanner\" : \"Plotter\",\r\n" + "      \"error\" : \"false\",\r\n"
+							+ "      \"numsubpods\" : 1,\r\n" + "      \"subpods\" : [ {\r\n"
+							+ "        \"sinput\" : \"ListPlot({1.0,2.0,3.0,4.0,5.0})\",\r\n"
+							+ "        \"jsxgraph\" : \"<iframe srcdoc=\\\"&lt;?xml version=&quot;1.0&quot; encoding=&quot;UTF-8&quot;?&gt;\\n\\n&lt;!DOCTYPE html PUBLIC\\n  &quot;-//W3C//DTD XHTML 1.1 plus MathML 2.0 plus SVG 1.1//EN&quot;\\n  &quot;http://www.w3.org/2002/04/xhtml-math-svg/xhtml-math-svg.dtd&quot;&gt;\\n\\n&lt;html xmlns=&quot;http://www.w3.org/1999/xhtml&quot; style=&quot;width: 100%; height: 100%; margin: 0; padding: 0&quot;&gt;\\n&lt;head&gt;\\n&lt;meta charset=&quot;utf-8&quot;&gt;\\n&lt;title&gt;JSXGraph&lt;/title&gt;\\n\\n&lt;body style=&quot;width: 100%; height: 100%; margin: 0; padding: 0&quot;&gt;\\n\\n&lt;link rel=&quot;stylesheet&quot; type=&quot;text/css&quot; href=&quot;https://cdnjs.cloudflare.com/ajax/libs/jsxgraph/1.1.0/jsxgraph.min.css&quot; /&gt;\\n&lt;script src=&quot;https://cdn.jsdelivr.net/gh/paulmasson/math@1.2.9/build/math.js&quot;&gt;&lt;/script&gt;\\n&lt;script src=&quot;https://cdnjs.cloudflare.com/ajax/libs/jsxgraph/1.1.0/jsxgraphcore.min.js&quot;\\n        type=&quot;text/javascript&quot;&gt;&lt;/script&gt;\\n&lt;script src=&quot;https://cdnjs.cloudflare.com/ajax/libs/jsxgraph/1.1.0/geonext.min.js&quot;\\n        type=&quot;text/javascript&quot;&gt;&lt;/script&gt;\\n\\n&lt;div id=&quot;jxgbox&quot; class=&quot;jxgbox&quot; style=&quot;display: flex; width:99%; height:99%; margin: 0; flex-direction: column; overflow: hidden&quot;&gt;\\n&lt;script&gt;\\nvar board = JXG.JSXGraph.initBoard('jxgbox', {axis:true,boundingbox:[-0.3,5.2,6.3,0.8]});\\nboard.suspendUpdate();\\n\\nboard.create('point', [function() {return 1;},function() {return 1.0;}],  {color:'#5e81b5' ,name:'', face:'o', size: 2 } );\\nboard.create('point', [function() {return 2;},function() {return 2.0;}],  {color:'#5e81b5' ,name:'', face:'o', size: 2 } );\\nboard.create('point', [function() {return 3;},function() {return 3.0;}],  {color:'#5e81b5' ,name:'', face:'o', size: 2 } );\\nboard.create('point', [function() {return 4;},function() {return 4.0;}],  {color:'#5e81b5' ,name:'', face:'o', size: 2 } );\\nboard.create('point', [function() {return 5;},function() {return 5.0;}],  {color:'#5e81b5' ,name:'', face:'o', size: 2 } );\\n\\n\\nboard.unsuspendUpdate();\\n\\n&lt;/script&gt;\\n&lt;/div&gt;\\n\\n&lt;/body&gt;\\n&lt;/html&gt;\\\" style=\\\"display: block; width: 100%; height: 100%; border: none;\\\" ></iframe>\"\r\n"
+							+ "      } ]\r\n" + "    } ]\r\n" + "  }\r\n" + "}");//
 		}
 	}
 
 	@Test
 	public void testListPlot003() {
+		EvalEngine.get().resetModuleCounter4JUnit();
 		String s = System.getProperty("os.name");
 		ObjectNode messageJSON = Pods.createResult("plot ([x,x**2,x**3,x**4])", formatsTEX);
 		final String jsonStr = messageJSON.toPrettyString();
 		if (s.contains("Windows")) {
 			assertEquals(jsonStr, //
-					"{\r\n" + 
-					"  \"queryresult\" : {\r\n" + 
-					"    \"success\" : \"true\",\r\n" + 
-					"    \"error\" : \"false\",\r\n" + 
-					"    \"numpods\" : 5,\r\n" + 
-					"    \"version\" : \"0.1\",\r\n" + 
-					"    \"pods\" : [ {\r\n" + 
-					"      \"title\" : \"Input\",\r\n" + 
-					"      \"scanner\" : \"Identity\",\r\n" + 
-					"      \"error\" : \"false\",\r\n" + 
-					"      \"numsubpods\" : 1,\r\n" + 
-					"      \"subpods\" : [ {\r\n" + 
-					"        \"plaintext\" : \"Plot({x,x^2,x^3,x^4})\",\r\n" + 
-					"        \"sinput\" : \"Plot({x,x^2,x^3,x^4})\",\r\n" + 
-					"        \"latex\" : \"\\\\text{Plot}(\\\\{x,{x}^{2},{x}^{3},{x}^{4}\\\\})\"\r\n" + 
-					"      } ]\r\n" + 
-					"    }, {\r\n" + 
-					"      \"title\" : \"Result\",\r\n" + 
-					"      \"scanner\" : \"Identity\",\r\n" + 
-					"      \"error\" : \"false\",\r\n" + 
-					"      \"numsubpods\" : 1,\r\n" + 
-					"      \"subpods\" : [ {\r\n" + 
-					"        \"plaintext\" : \"{x,x^2,x^3,x^4}\",\r\n" + 
-					"        \"sinput\" : \"Plot({x,x^2,x^3,x^4})\",\r\n" + 
-					"        \"latex\" : \"\\\\{x,{x}^{2},{x}^{3},{x}^{4}\\\\}\"\r\n" + 
-					"      } ]\r\n" + 
-					"    }, {\r\n" + 
-					"      \"title\" : \"Function\",\r\n" + 
-					"      \"scanner\" : \"Plotter\",\r\n" + 
-					"      \"error\" : \"false\",\r\n" + 
-					"      \"numsubpods\" : 1,\r\n" + 
-					"      \"subpods\" : [ {\r\n" + 
-					"        \"sinput\" : \"Plot({x,x^2,x^3,x^4},{x,-7.0,7.0})\",\r\n" + 
-					"        \"jsxgraph\" : \"<iframe srcdoc=\\\"&lt;?xml version=&quot;1.0&quot; encoding=&quot;UTF-8&quot;?&gt;\\n\\n&lt;!DOCTYPE html PUBLIC\\n  &quot;-//W3C//DTD XHTML 1.1 plus MathML 2.0 plus SVG 1.1//EN&quot;\\n  &quot;http://www.w3.org/2002/04/xhtml-math-svg/xhtml-math-svg.dtd&quot;&gt;\\n\\n&lt;html xmlns=&quot;http://www.w3.org/1999/xhtml&quot; style=&quot;width: 100%; height: 100%; margin: 0; padding: 0&quot;&gt;\\n&lt;head&gt;\\n&lt;meta charset=&quot;utf-8&quot;&gt;\\n&lt;title&gt;JSXGraph&lt;/title&gt;\\n\\n&lt;body style=&quot;width: 100%; height: 100%; margin: 0; padding: 0&quot;&gt;\\n\\n&lt;link rel=&quot;stylesheet&quot; type=&quot;text/css&quot; href=&quot;https://cdnjs.cloudflare.com/ajax/libs/jsxgraph/1.1.0/jsxgraph.min.css&quot; /&gt;\\n&lt;script src=&quot;https://cdn.jsdelivr.net/gh/paulmasson/math@1.2.9/build/math.js&quot;&gt;&lt;/script&gt;\\n&lt;script src=&quot;https://cdnjs.cloudflare.com/ajax/libs/jsxgraph/1.1.0/jsxgraphcore.min.js&quot;\\n        type=&quot;text/javascript&quot;&gt;&lt;/script&gt;\\n&lt;script src=&quot;https://cdnjs.cloudflare.com/ajax/libs/jsxgraph/1.1.0/geonext.min.js&quot;\\n        type=&quot;text/javascript&quot;&gt;&lt;/script&gt;\\n\\n&lt;div id=&quot;jxgbox&quot; class=&quot;jxgbox&quot; style=&quot;display: flex; width:99%; height:99%; margin: 0; flex-direction: column; overflow: hidden&quot;&gt;\\n&lt;script&gt;\\nvar board = JXG.JSXGraph.initBoard('jxgbox', {axis:true,boundingbox:[-8.25,5.275,8.25,-0.775]});\\nboard.suspendUpdate();\\n\\nfunction z1(x) { try { return x;} catch(e) { return Number.NaN;} }\\nfunction z2(x) { try { return pow(x,2);} catch(e) { return Number.NaN;} }\\nfunction z3(x) { try { return pow(x,3);} catch(e) { return Number.NaN;} }\\nfunction z4(x) { try { return pow(x,4);} catch(e) { return Number.NaN;} }\\nvar p1 = board.create('functiongraph',[z1, -7.0, 7.0],{strokecolor:'#5e81b5'});\\nvar p2 = board.create('functiongraph',[z2, -7.0, 7.0],{strokecolor:'#e19c24'});\\nvar p3 = board.create('functiongraph',[z3, -7.0, 7.0],{strokecolor:'#8fb032'});\\nvar p4 = board.create('functiongraph',[z4, -7.0, 7.0],{strokecolor:'#eb6235'});\\nvar data = [ p1, p2, p3, p4 ];\\n\\n\\nboard.unsuspendUpdate();\\n\\n&lt;/script&gt;\\n&lt;/div&gt;\\n\\n&lt;/body&gt;\\n&lt;/html&gt;\\\" style=\\\"display: block; width: 100%; height: 100%; border: none;\\\" ></iframe>\"\r\n" + 
-					"      } ]\r\n" + 
-					"    }, {\r\n" + 
-					"      \"title\" : \"Derivative\",\r\n" + 
-					"      \"scanner\" : \"Derivative\",\r\n" + 
-					"      \"error\" : \"false\",\r\n" + 
-					"      \"numsubpods\" : 1,\r\n" + 
-					"      \"subpods\" : [ {\r\n" + 
-					"        \"plaintext\" : \"{1,2*x,3*x^2,4*x^3}\",\r\n" + 
-					"        \"sinput\" : \"D({x,x^2,x^3,x^4},x)\",\r\n" + 
-					"        \"latex\" : \"\\\\{1,2\\\\cdot x,3\\\\cdot {x}^{2},4\\\\cdot {x}^{3}\\\\}\"\r\n" + 
-					"      } ]\r\n" + 
-					"    }, {\r\n" + 
-					"      \"title\" : \"Indefinite integral\",\r\n" + 
-					"      \"scanner\" : \"Integral\",\r\n" + 
-					"      \"error\" : \"false\",\r\n" + 
-					"      \"numsubpods\" : 1,\r\n" + 
-					"      \"subpods\" : [ {\r\n" + 
-					"        \"plaintext\" : \"{x^2/2,x^3/3,x^4/4,x^5/5}\",\r\n" + 
-					"        \"sinput\" : \"Integrate({x,x^2,x^3,x^4},x)\",\r\n" + 
-					"        \"latex\" : \"\\\\{\\\\frac{{x}^{2}}{2},\\\\frac{{x}^{3}}{3},\\\\frac{{x}^{4}}{4},\\\\frac{{x}^{5}}{5}\\\\}\"\r\n" + 
-					"      } ]\r\n" + 
-					"    } ]\r\n" + 
-					"  }\r\n" + 
-					"}");//
+					"{\r\n" + "  \"queryresult\" : {\r\n" + "    \"success\" : \"true\",\r\n"
+							+ "    \"error\" : \"false\",\r\n" + "    \"numpods\" : 2,\r\n"
+							+ "    \"version\" : \"0.1\",\r\n" + "    \"pods\" : [ {\r\n"
+							+ "      \"title\" : \"Input\",\r\n" + "      \"scanner\" : \"Identity\",\r\n"
+							+ "      \"error\" : \"false\",\r\n" + "      \"numsubpods\" : 1,\r\n"
+							+ "      \"subpods\" : [ {\r\n" + "        \"plaintext\" : \"Plot({x,x^2,x^3,x^4})\",\r\n"
+							+ "        \"sinput\" : \"Plot({x,x^2,x^3,x^4})\",\r\n"
+							+ "        \"latex\" : \"\\\\text{Plot}(\\\\{x,{x}^{2},{x}^{3},{x}^{4}\\\\})\"\r\n"
+							+ "      } ]\r\n" + "    }, {\r\n" + "      \"title\" : \"Function\",\r\n"
+							+ "      \"scanner\" : \"Plotter\",\r\n" + "      \"error\" : \"false\",\r\n"
+							+ "      \"numsubpods\" : 1,\r\n" + "      \"subpods\" : [ {\r\n"
+							+ "        \"sinput\" : \"Plot({x,x^2,x^3,x^4})\",\r\n"
+							+ "        \"jsxgraph\" : \"<iframe srcdoc=\\\"&lt;?xml version=&quot;1.0&quot; encoding=&quot;UTF-8&quot;?&gt;\\n\\n&lt;!DOCTYPE html PUBLIC\\n  &quot;-//W3C//DTD XHTML 1.1 plus MathML 2.0 plus SVG 1.1//EN&quot;\\n  &quot;http://www.w3.org/2002/04/xhtml-math-svg/xhtml-math-svg.dtd&quot;&gt;\\n\\n&lt;html xmlns=&quot;http://www.w3.org/1999/xhtml&quot; style=&quot;width: 100%; height: 100%; margin: 0; padding: 0&quot;&gt;\\n&lt;head&gt;\\n&lt;meta charset=&quot;utf-8&quot;&gt;\\n&lt;title&gt;JSXGraph&lt;/title&gt;\\n\\n&lt;body style=&quot;width: 100%; height: 100%; margin: 0; padding: 0&quot;&gt;\\n\\n&lt;link rel=&quot;stylesheet&quot; type=&quot;text/css&quot; href=&quot;https://cdnjs.cloudflare.com/ajax/libs/jsxgraph/1.1.0/jsxgraph.min.css&quot; /&gt;\\n&lt;script src=&quot;https://cdn.jsdelivr.net/gh/paulmasson/math@1.2.9/build/math.js&quot;&gt;&lt;/script&gt;\\n&lt;script src=&quot;https://cdnjs.cloudflare.com/ajax/libs/jsxgraph/1.1.0/jsxgraphcore.min.js&quot;\\n        type=&quot;text/javascript&quot;&gt;&lt;/script&gt;\\n&lt;script src=&quot;https://cdnjs.cloudflare.com/ajax/libs/jsxgraph/1.1.0/geonext.min.js&quot;\\n        type=&quot;text/javascript&quot;&gt;&lt;/script&gt;\\n\\n&lt;div id=&quot;jxgbox&quot; class=&quot;jxgbox&quot; style=&quot;display: flex; width:99%; height:99%; margin: 0; flex-direction: column; overflow: hidden&quot;&gt;\\n&lt;script&gt;\\nvar board = JXG.JSXGraph.initBoard('jxgbox', {axis:true,boundingbox:[Infinity,-8.988465674311579E306,-8.988465674311579E306,Infinity]});\\nboard.suspendUpdate();\\n\\n\\n\\nboard.unsuspendUpdate();\\n\\n&lt;/script&gt;\\n&lt;/div&gt;\\n\\n&lt;/body&gt;\\n&lt;/html&gt;\\\" style=\\\"display: block; width: 100%; height: 100%; border: none;\\\" ></iframe>\"\r\n"
+							+ "      } ]\r\n" + "    } ]\r\n" + "  }\r\n" + "}");//
 		}
 	}
 
@@ -1791,6 +1631,7 @@ public class TestPods {
 	//
 	@Test
 	public void testHornerForm() {
+		EvalEngine.get().resetModuleCounter4JUnit();
 		String s = System.getProperty("os.name");
 		ObjectNode messageJSON = Pods.createResult("HornerForm(x^2+x^3+2*x^14)", formatsTEX);
 		final String jsonStr = messageJSON.toPrettyString();
@@ -1829,7 +1670,7 @@ public class TestPods {
 					"      \"numsubpods\" : 1,\r\n" + 
 					"      \"subpods\" : [ {\r\n" + 
 					"        \"sinput\" : \"Plot(x^2*(1+x*(1+2*x^11)),{x,-7.0,7.0})\",\r\n" + 
-					"        \"jsxgraph\" : \"<iframe srcdoc=\\\"&lt;?xml version=&quot;1.0&quot; encoding=&quot;UTF-8&quot;?&gt;\\n\\n&lt;!DOCTYPE html PUBLIC\\n  &quot;-//W3C//DTD XHTML 1.1 plus MathML 2.0 plus SVG 1.1//EN&quot;\\n  &quot;http://www.w3.org/2002/04/xhtml-math-svg/xhtml-math-svg.dtd&quot;&gt;\\n\\n&lt;html xmlns=&quot;http://www.w3.org/1999/xhtml&quot; style=&quot;width: 100%; height: 100%; margin: 0; padding: 0&quot;&gt;\\n&lt;head&gt;\\n&lt;meta charset=&quot;utf-8&quot;&gt;\\n&lt;title&gt;JSXGraph&lt;/title&gt;\\n\\n&lt;body style=&quot;width: 100%; height: 100%; margin: 0; padding: 0&quot;&gt;\\n\\n&lt;link rel=&quot;stylesheet&quot; type=&quot;text/css&quot; href=&quot;https://cdnjs.cloudflare.com/ajax/libs/jsxgraph/1.1.0/jsxgraph.min.css&quot; /&gt;\\n&lt;script src=&quot;https://cdn.jsdelivr.net/gh/paulmasson/math@1.2.9/build/math.js&quot;&gt;&lt;/script&gt;\\n&lt;script src=&quot;https://cdnjs.cloudflare.com/ajax/libs/jsxgraph/1.1.0/jsxgraphcore.min.js&quot;\\n        type=&quot;text/javascript&quot;&gt;&lt;/script&gt;\\n&lt;script src=&quot;https://cdnjs.cloudflare.com/ajax/libs/jsxgraph/1.1.0/geonext.min.js&quot;\\n        type=&quot;text/javascript&quot;&gt;&lt;/script&gt;\\n\\n&lt;div id=&quot;jxgbox&quot; class=&quot;jxgbox&quot; style=&quot;display: flex; width:99%; height:99%; margin: 0; flex-direction: column; overflow: hidden&quot;&gt;\\n&lt;script&gt;\\nvar board = JXG.JSXGraph.initBoard('jxgbox', {axis:true,boundingbox:[-8.25,5.275,8.25,-0.775]});\\nboard.suspendUpdate();\\n\\nfunction z1(x) { try { return mul(pow(x,2),add(1,mul(x,add(1,mul(2,pow(x,11))))));} catch(e) { return Number.NaN;} }\\nvar p1 = board.create('functiongraph',[z1, -7.0, 7.0],{strokecolor:'#5e81b5'});\\nvar data = [ p1 ];\\n\\n\\nboard.unsuspendUpdate();\\n\\n&lt;/script&gt;\\n&lt;/div&gt;\\n\\n&lt;/body&gt;\\n&lt;/html&gt;\\\" style=\\\"display: block; width: 100%; height: 100%; border: none;\\\" ></iframe>\"\r\n" + 
+					"        \"jsxgraph\" : \"<iframe srcdoc=\\\"&lt;?xml version=&quot;1.0&quot; encoding=&quot;UTF-8&quot;?&gt;\\n\\n&lt;!DOCTYPE html PUBLIC\\n  &quot;-//W3C//DTD XHTML 1.1 plus MathML 2.0 plus SVG 1.1//EN&quot;\\n  &quot;http://www.w3.org/2002/04/xhtml-math-svg/xhtml-math-svg.dtd&quot;&gt;\\n\\n&lt;html xmlns=&quot;http://www.w3.org/1999/xhtml&quot; style=&quot;width: 100%; height: 100%; margin: 0; padding: 0&quot;&gt;\\n&lt;head&gt;\\n&lt;meta charset=&quot;utf-8&quot;&gt;\\n&lt;title&gt;JSXGraph&lt;/title&gt;\\n\\n&lt;body style=&quot;width: 100%; height: 100%; margin: 0; padding: 0&quot;&gt;\\n\\n&lt;link rel=&quot;stylesheet&quot; type=&quot;text/css&quot; href=&quot;https://cdnjs.cloudflare.com/ajax/libs/jsxgraph/1.1.0/jsxgraph.min.css&quot; /&gt;\\n&lt;script src=&quot;https://cdn.jsdelivr.net/gh/paulmasson/math@1.2.9/build/math.js&quot;&gt;&lt;/script&gt;\\n&lt;script src=&quot;https://cdnjs.cloudflare.com/ajax/libs/jsxgraph/1.1.0/jsxgraphcore.min.js&quot;\\n        type=&quot;text/javascript&quot;&gt;&lt;/script&gt;\\n&lt;script src=&quot;https://cdnjs.cloudflare.com/ajax/libs/jsxgraph/1.1.0/geonext.min.js&quot;\\n        type=&quot;text/javascript&quot;&gt;&lt;/script&gt;\\n\\n&lt;div id=&quot;jxgbox&quot; class=&quot;jxgbox&quot; style=&quot;display: flex; width:99%; height:99%; margin: 0; flex-direction: column; overflow: hidden&quot;&gt;\\n&lt;script&gt;\\nvar board = JXG.JSXGraph.initBoard('jxgbox', {axis:true,boundingbox:[-7.7,6.30310852195858E11,7.7,-5.9893791385126785E10]});\\nboard.suspendUpdate();\\n\\nfunction $f1(x) { try { return mul(pow(x,2),add(1,mul(x,add(1,mul(2,pow(x,11))))));} catch(e) { return Number.NaN;} }\\nboard.create('functiongraph',[$f1, -7.0, 7.0],{strokecolor:'#5e81b5'});\\n\\n\\nboard.unsuspendUpdate();\\n\\n&lt;/script&gt;\\n&lt;/div&gt;\\n\\n&lt;/body&gt;\\n&lt;/html&gt;\\\" style=\\\"display: block; width: 100%; height: 100%; border: none;\\\" ></iframe>\"\r\n" + 
 					"      } ]\r\n" + 
 					"    }, {\r\n" + 
 					"      \"title\" : \"Factor\",\r\n" + 
@@ -1905,6 +1746,7 @@ public class TestPods {
 
 	@Test
 	public void testCoshIntegral001() {
+		EvalEngine.get().resetModuleCounter4JUnit();
 		String s = System.getProperty("os.name");
 		ObjectNode messageJSON = Pods.createResult(//
 				"CoshIntegral", //
@@ -1930,22 +1772,13 @@ public class TestPods {
 					"        \"latex\" : \"CoshIntegral\"\r\n" + 
 					"      } ]\r\n" + 
 					"    }, {\r\n" + 
-					"      \"title\" : \"Git source code\",\r\n" + 
-					"      \"scanner\" : \"FunctionURL\",\r\n" + 
-					"      \"error\" : \"false\",\r\n" + 
-					"      \"numsubpods\" : 1,\r\n" + 
-					"      \"subpods\" : [ {\r\n" + 
-					"        \"html\" : \"&lt;a href=\\\"https://github.com/axkr/symja_android_library/blob/master/symja_android_library/matheclipse-core/src/main/java/org/matheclipse/core/builtin/HypergeometricFunctions.java#L165\\\"&gt;CoshIntegral - Symja Java function definition&lt;/a&gt;\",\r\n" + 
-					"        \"sinput\" : \"FunctionURL(CoshIntegral)\"\r\n" + 
-					"      } ]\r\n" + 
-					"    }, {\r\n" + 
 					"      \"title\" : \"Plot\",\r\n" + 
 					"      \"scanner\" : \"Plotter\",\r\n" + 
 					"      \"error\" : \"false\",\r\n" + 
 					"      \"numsubpods\" : 1,\r\n" + 
 					"      \"subpods\" : [ {\r\n" + 
 					"        \"sinput\" : \"Manipulate(Plot({Re(CoshIntegral(a*x)),Im(CoshIntegral(a*x))},{x,-2.0,2.0},PlotRange-&gt;{-5.0,5.0}),{a,1,10})\",\r\n" + 
-					"        \"jsxgraph\" : \"<iframe srcdoc=\\\"&lt;?xml version=&quot;1.0&quot; encoding=&quot;UTF-8&quot;?&gt;\\n\\n&lt;!DOCTYPE html PUBLIC\\n  &quot;-//W3C//DTD XHTML 1.1 plus MathML 2.0 plus SVG 1.1//EN&quot;\\n  &quot;http://www.w3.org/2002/04/xhtml-math-svg/xhtml-math-svg.dtd&quot;&gt;\\n\\n&lt;html xmlns=&quot;http://www.w3.org/1999/xhtml&quot; style=&quot;width: 100%; height: 100%; margin: 0; padding: 0&quot;&gt;\\n&lt;head&gt;\\n&lt;meta charset=&quot;utf-8&quot;&gt;\\n&lt;title&gt;JSXGraph&lt;/title&gt;\\n\\n&lt;body style=&quot;width: 100%; height: 100%; margin: 0; padding: 0&quot;&gt;\\n\\n&lt;link rel=&quot;stylesheet&quot; type=&quot;text/css&quot; href=&quot;https://cdnjs.cloudflare.com/ajax/libs/jsxgraph/1.1.0/jsxgraph.min.css&quot; /&gt;\\n&lt;script src=&quot;https://cdn.jsdelivr.net/gh/paulmasson/math@1.2.9/build/math.js&quot;&gt;&lt;/script&gt;\\n&lt;script src=&quot;https://cdnjs.cloudflare.com/ajax/libs/jsxgraph/1.1.0/jsxgraphcore.min.js&quot;\\n        type=&quot;text/javascript&quot;&gt;&lt;/script&gt;\\n&lt;script src=&quot;https://cdnjs.cloudflare.com/ajax/libs/jsxgraph/1.1.0/geonext.min.js&quot;\\n        type=&quot;text/javascript&quot;&gt;&lt;/script&gt;\\n\\n&lt;div id=&quot;jxgbox&quot; class=&quot;jxgbox&quot; style=&quot;display: flex; width:99%; height:99%; margin: 0; flex-direction: column; overflow: hidden&quot;&gt;\\n&lt;script&gt;\\nvar board = JXG.JSXGraph.initBoard('jxgbox', {axis:true,boundingbox:[-2.75,6.05,2.75,-6.05]});\\nboard.suspendUpdate();\\nvar a = board.create('slider',[[-2.2,4.84],[2.2,4.84],[1,1,10]],{name:'a'});\\n\\nfunction z1(x) { try { return re(coshIntegral(mul(a.Value(),x)));} catch(e) { return Number.NaN;} }\\nfunction z2(x) { try { return im(coshIntegral(mul(a.Value(),x)));} catch(e) { return Number.NaN;} }\\nvar p1 = board.create('functiongraph',[z1, -2.0, 2.0],{strokecolor:'#5e81b5'});\\nvar p2 = board.create('functiongraph',[z2, -2.0, 2.0],{strokecolor:'#e19c24'});\\nvar data = [ p1, p2 ];\\n\\n\\nboard.unsuspendUpdate();\\n\\n&lt;/script&gt;\\n&lt;/div&gt;\\n\\n&lt;/body&gt;\\n&lt;/html&gt;\\\" style=\\\"display: block; width: 100%; height: 100%; border: none;\\\" ></iframe>\"\r\n" + 
+					"        \"jsxgraph\" : \"<iframe srcdoc=\\\"&lt;?xml version=&quot;1.0&quot; encoding=&quot;UTF-8&quot;?&gt;\\n\\n&lt;!DOCTYPE html PUBLIC\\n  &quot;-//W3C//DTD XHTML 1.1 plus MathML 2.0 plus SVG 1.1//EN&quot;\\n  &quot;http://www.w3.org/2002/04/xhtml-math-svg/xhtml-math-svg.dtd&quot;&gt;\\n\\n&lt;html xmlns=&quot;http://www.w3.org/1999/xhtml&quot; style=&quot;width: 100%; height: 100%; margin: 0; padding: 0&quot;&gt;\\n&lt;head&gt;\\n&lt;meta charset=&quot;utf-8&quot;&gt;\\n&lt;title&gt;JSXGraph&lt;/title&gt;\\n\\n&lt;body style=&quot;width: 100%; height: 100%; margin: 0; padding: 0&quot;&gt;\\n\\n&lt;link rel=&quot;stylesheet&quot; type=&quot;text/css&quot; href=&quot;https://cdnjs.cloudflare.com/ajax/libs/jsxgraph/1.1.0/jsxgraph.min.css&quot; /&gt;\\n&lt;script src=&quot;https://cdn.jsdelivr.net/gh/paulmasson/math@1.2.9/build/math.js&quot;&gt;&lt;/script&gt;\\n&lt;script src=&quot;https://cdnjs.cloudflare.com/ajax/libs/jsxgraph/1.1.0/jsxgraphcore.min.js&quot;\\n        type=&quot;text/javascript&quot;&gt;&lt;/script&gt;\\n&lt;script src=&quot;https://cdnjs.cloudflare.com/ajax/libs/jsxgraph/1.1.0/geonext.min.js&quot;\\n        type=&quot;text/javascript&quot;&gt;&lt;/script&gt;\\n\\n&lt;div id=&quot;jxgbox&quot; class=&quot;jxgbox&quot; style=&quot;display: flex; width:99%; height:99%; margin: 0; flex-direction: column; overflow: hidden&quot;&gt;\\n&lt;script&gt;\\nvar board = JXG.JSXGraph.initBoard('jxgbox', {axis:true,boundingbox:[-2.2,5.5,2.2,-5.5]});\\nboard.suspendUpdate();\\nvar a = board.create('slider',[[-1.7600000000000002,4.4],[1.7600000000000002,4.4],[1,1,10]],{name:'a'});\\n\\nfunction $f1(x) { try { return re(coshIntegral(mul(a.Value(),x)));} catch(e) { return Number.NaN;} }\\nfunction $f2(x) { try { return im(coshIntegral(mul(a.Value(),x)));} catch(e) { return Number.NaN;} }\\nboard.create('functiongraph',[$f1, -2.0, 2.0],{strokecolor:'#5e81b5'});\\nboard.create('functiongraph',[$f2, -2.0, 2.0],{strokecolor:'#e19c24'});\\n\\n\\nboard.unsuspendUpdate();\\n\\n&lt;/script&gt;\\n&lt;/div&gt;\\n\\n&lt;/body&gt;\\n&lt;/html&gt;\\\" style=\\\"display: block; width: 100%; height: 100%; border: none;\\\" ></iframe>\"\r\n" + 
 					"      } ]\r\n" + 
 					"    }, {\r\n" + 
 					"      \"title\" : \"Documentation\",\r\n" + 
@@ -1953,7 +1786,7 @@ public class TestPods {
 					"      \"error\" : \"false\",\r\n" + 
 					"      \"numsubpods\" : 1,\r\n" + 
 					"      \"subpods\" : [ {\r\n" + 
-					"        \"markdown\" : \"## CoshIntegral\\n\\n```\\nCoshIntegral(expr)\\n```\\n\\n> returns the hyperbolic cosine integral of `expr`.\\n  \\nSee\\n* [Wikipedia - Trigonometric integral](https://en.wikipedia.org/wiki/Trigonometric_integral)\\n\\n### Examples\\n\\n```\\n>> CoshIntegral(0)\\n-Infinity\\n```\\n \\n\"\r\n" + 
+					"        \"markdown\" : \"## CoshIntegral\\n\\n```\\nCoshIntegral(expr)\\n```\\n\\n> returns the hyperbolic cosine integral of `expr`.\\n  \\nSee\\n* [Wikipedia - Trigonometric integral](https://en.wikipedia.org/wiki/Trigonometric_integral)\\n\\n### Examples\\n\\n```\\n>> CoshIntegral(0)\\n-Infinity\\n```\\n \\n[Github master](https://github.com/axkr/symja_android_library/blob/master/symja_android_library/matheclipse-core/src/main/java/org/matheclipse/core/builtin/HypergeometricFunctions.java#L165)\\n\\n\"\r\n" + 
 					"      } ]\r\n" + 
 					"    } ]\r\n" + 
 					"  }\r\n" + 
@@ -1963,6 +1796,7 @@ public class TestPods {
 
 	@Test
 	public void testPolynomial001() {
+		EvalEngine.get().resetModuleCounter4JUnit();
 		String s = System.getProperty("os.name");
 		ObjectNode messageJSON = Pods.createResult("-x^2 + 4*x + 4", formatsTEX);
 		final String jsonStr = messageJSON.toPrettyString();
@@ -1991,7 +1825,7 @@ public class TestPods {
 					"      \"numsubpods\" : 1,\r\n" + 
 					"      \"subpods\" : [ {\r\n" + 
 					"        \"sinput\" : \"Plot(4+4*x-x^2,{x,-7.0,7.0})\",\r\n" + 
-					"        \"jsxgraph\" : \"<iframe srcdoc=\\\"&lt;?xml version=&quot;1.0&quot; encoding=&quot;UTF-8&quot;?&gt;\\n\\n&lt;!DOCTYPE html PUBLIC\\n  &quot;-//W3C//DTD XHTML 1.1 plus MathML 2.0 plus SVG 1.1//EN&quot;\\n  &quot;http://www.w3.org/2002/04/xhtml-math-svg/xhtml-math-svg.dtd&quot;&gt;\\n\\n&lt;html xmlns=&quot;http://www.w3.org/1999/xhtml&quot; style=&quot;width: 100%; height: 100%; margin: 0; padding: 0&quot;&gt;\\n&lt;head&gt;\\n&lt;meta charset=&quot;utf-8&quot;&gt;\\n&lt;title&gt;JSXGraph&lt;/title&gt;\\n\\n&lt;body style=&quot;width: 100%; height: 100%; margin: 0; padding: 0&quot;&gt;\\n\\n&lt;link rel=&quot;stylesheet&quot; type=&quot;text/css&quot; href=&quot;https://cdnjs.cloudflare.com/ajax/libs/jsxgraph/1.1.0/jsxgraph.min.css&quot; /&gt;\\n&lt;script src=&quot;https://cdn.jsdelivr.net/gh/paulmasson/math@1.2.9/build/math.js&quot;&gt;&lt;/script&gt;\\n&lt;script src=&quot;https://cdnjs.cloudflare.com/ajax/libs/jsxgraph/1.1.0/jsxgraphcore.min.js&quot;\\n        type=&quot;text/javascript&quot;&gt;&lt;/script&gt;\\n&lt;script src=&quot;https://cdnjs.cloudflare.com/ajax/libs/jsxgraph/1.1.0/geonext.min.js&quot;\\n        type=&quot;text/javascript&quot;&gt;&lt;/script&gt;\\n\\n&lt;div id=&quot;jxgbox&quot; class=&quot;jxgbox&quot; style=&quot;display: flex; width:99%; height:99%; margin: 0; flex-direction: column; overflow: hidden&quot;&gt;\\n&lt;script&gt;\\nvar board = JXG.JSXGraph.initBoard('jxgbox', {axis:true,boundingbox:[-8.25,9.175,8.25,-5.675]});\\nboard.suspendUpdate();\\n\\nfunction z1(x) { try { return add(add(4,mul(4,x)),mul(-1,pow(x,2)));} catch(e) { return Number.NaN;} }\\nvar p1 = board.create('functiongraph',[z1, -7.0, 7.0],{strokecolor:'#5e81b5'});\\nvar data = [ p1 ];\\n\\n\\nboard.unsuspendUpdate();\\n\\n&lt;/script&gt;\\n&lt;/div&gt;\\n\\n&lt;/body&gt;\\n&lt;/html&gt;\\\" style=\\\"display: block; width: 100%; height: 100%; border: none;\\\" ></iframe>\"\r\n" + 
+					"        \"jsxgraph\" : \"<iframe srcdoc=\\\"&lt;?xml version=&quot;1.0&quot; encoding=&quot;UTF-8&quot;?&gt;\\n\\n&lt;!DOCTYPE html PUBLIC\\n  &quot;-//W3C//DTD XHTML 1.1 plus MathML 2.0 plus SVG 1.1//EN&quot;\\n  &quot;http://www.w3.org/2002/04/xhtml-math-svg/xhtml-math-svg.dtd&quot;&gt;\\n\\n&lt;html xmlns=&quot;http://www.w3.org/1999/xhtml&quot; style=&quot;width: 100%; height: 100%; margin: 0; padding: 0&quot;&gt;\\n&lt;head&gt;\\n&lt;meta charset=&quot;utf-8&quot;&gt;\\n&lt;title&gt;JSXGraph&lt;/title&gt;\\n\\n&lt;body style=&quot;width: 100%; height: 100%; margin: 0; padding: 0&quot;&gt;\\n\\n&lt;link rel=&quot;stylesheet&quot; type=&quot;text/css&quot; href=&quot;https://cdnjs.cloudflare.com/ajax/libs/jsxgraph/1.1.0/jsxgraph.min.css&quot; /&gt;\\n&lt;script src=&quot;https://cdn.jsdelivr.net/gh/paulmasson/math@1.2.9/build/math.js&quot;&gt;&lt;/script&gt;\\n&lt;script src=&quot;https://cdnjs.cloudflare.com/ajax/libs/jsxgraph/1.1.0/jsxgraphcore.min.js&quot;\\n        type=&quot;text/javascript&quot;&gt;&lt;/script&gt;\\n&lt;script src=&quot;https://cdnjs.cloudflare.com/ajax/libs/jsxgraph/1.1.0/geonext.min.js&quot;\\n        type=&quot;text/javascript&quot;&gt;&lt;/script&gt;\\n\\n&lt;div id=&quot;jxgbox&quot; class=&quot;jxgbox&quot; style=&quot;display: flex; width:99%; height:99%; margin: 0; flex-direction: column; overflow: hidden&quot;&gt;\\n&lt;script&gt;\\nvar board = JXG.JSXGraph.initBoard('jxgbox', {axis:true,boundingbox:[-7.7,12.04832,7.7,-77.04992]});\\nboard.suspendUpdate();\\n\\nfunction $f1(x) { try { return add(add(4,mul(4,x)),mul(-1,pow(x,2)));} catch(e) { return Number.NaN;} }\\nboard.create('functiongraph',[$f1, -7.0, 7.0],{strokecolor:'#5e81b5'});\\n\\n\\nboard.unsuspendUpdate();\\n\\n&lt;/script&gt;\\n&lt;/div&gt;\\n\\n&lt;/body&gt;\\n&lt;/html&gt;\\\" style=\\\"display: block; width: 100%; height: 100%; border: none;\\\" ></iframe>\"\r\n" + 
 					"      } ]\r\n" + 
 					"    }, {\r\n" + 
 					"      \"title\" : \"Factor\",\r\n" + 
