@@ -429,9 +429,9 @@ public class JSSP {
 			}
 		}
 		Solver solver = new ParallelSolver(solvers);
-		Monitor monitor = new Monitor();
-		// monitor.setX(0, (int)(timeout/1000));
-		solver.setMonitor(monitor);
+//		Monitor monitor = new Monitor();
+//		// monitor.setX(0, (int)(timeout/1000));
+//		solver.setMonitor(monitor);
 		Solution solution = solver.findBest(timeout);
 		System.out.println("Best = " + solution.getObjectiveIntValue());
 	}

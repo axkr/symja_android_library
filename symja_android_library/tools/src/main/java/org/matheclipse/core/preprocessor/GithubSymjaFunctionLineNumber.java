@@ -52,17 +52,22 @@ public class GithubSymjaFunctionLineNumber {
 				if (sym instanceof IBuiltInSymbol) {
 					IBuiltInSymbol builtin = (IBuiltInSymbol) sym;
 					IEvaluator eval = builtin.getEvaluator();
-					Class<? extends IEvaluator> clazz = eval.getClass();
-					if (eval != null && eval != BuiltInSymbol.DUMMY_EVALUATOR && //
-							!clazz.isAnonymousClass() && !clazz.isSynthetic() && //
-							!clazz.isInterface() && !clazz.isPrimitive()) { //
-						String fileName = buildFileNameL(clazz);
-						File sourceLocation = new File(fileName);
-						int lineCounter = lineNumberOfClass(sourceLocation, list.get(i));
-						System.out.print(lineCounter);
+					if (eval != null && eval != BuiltInSymbol.DUMMY_EVALUATOR) {
+						Class<? extends IEvaluator> clazz = eval.getClass();
+						if (!clazz.isAnonymousClass() && !clazz.isSynthetic() && //
+								!clazz.isInterface() && !clazz.isPrimitive()) { //
+							String fileName = buildFileNameL(clazz);
+							File sourceLocation = new File(fileName);
+							int lineCounter = lineNumberOfClass(sourceLocation, list.get(i));
+							System.out.print(lineCounter);
+						} else {
+							System.out.print("0");
+						}
 					} else {
 						System.out.print("0");
 					}
+				} else {
+					System.out.print("0");
 				}
 				if (i < list.size() - 1) {
 					System.out.print(",");

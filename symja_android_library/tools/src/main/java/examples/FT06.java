@@ -76,9 +76,9 @@ public class FT06 {
 			solver = new ParallelSolver(new Solver[] { sa, taboo });
 		}
 		if (showMonitor) {
-			Monitor monitor = new Monitor();
-			monitor.setX(0, (int) (timeout / 1000));
-			solver.setMonitor(monitor);
+//			Monitor monitor = new Monitor();
+//			monitor.setX(0, (int) (timeout / 1000));
+//			solver.setMonitor(monitor);
 		}
 
 		System.out.println("Start " + solver + ", timeout = " + timeout
