@@ -17,7 +17,7 @@ public interface DRules {
 
   final public static IAST RULES = List(
     IInit(D, SIZES),
-    // D(Abs(f_),x_?NotListQ):=D(f,x)*x/Abs(x)/;Element(x,Reals)
+    // D(Abs(f_),x_?NotListQ):=D(f,x)*x/Abs(x)/;x∈Reals
     ISetDelayed(D(Abs(f_),PatternTest(x_,NotListQ)),
       Condition(Times(D(f,x),x,Power(Abs(x),CN1)),Element(x,Reals))),
     // D(AiryAi(f_),x_?NotListQ):=D(f,x)*AiryAiPrime(f)

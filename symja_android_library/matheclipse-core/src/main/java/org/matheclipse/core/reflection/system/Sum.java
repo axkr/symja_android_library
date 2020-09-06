@@ -155,8 +155,8 @@ public class Sum extends ListFunctions.Table implements SumRules {
 			arg1 = F.expand(arg1, false, false, false);
 		}
 		if (arg1.isPlus()) {
-			IAST sum = ast.setAtCopy(1, null);
-			return ((IAST) arg1).mapThread(sum, 1);
+			// IAST sum = ast.setAtCopy(1, null);
+			return ((IAST) arg1).mapThread(ast, 1);
 		}
 		if (ast.size() > 2) {
 			IAST list;

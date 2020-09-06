@@ -70,14 +70,14 @@ public class InverseLaplaceTransform extends AbstractFunctionEvaluator implement
 						// IExpr temp = Algebra.partialFractionDecompositionRational(new PartialFractionGenerator(),
 						// parts,s);
 						if (temp.isPlus()) {
-							return ((IAST) temp).mapThread(F.InverseLaplaceTransform(F.Null, s, t), 1);
+							return ((IAST) temp).mapThread(F.InverseLaplaceTransform(F.Slot1, s, t), 1);
 						}
 					}
 				}
 				if (arg1.isPlus()) {
 					// InverseLaplaceTransform[a_+b_+c_,s_,t_] ->
 					// InverseLaplaceTransform[a,s,t]+InverseLaplaceTransform[b,s,t]+InverseLaplaceTransform[c,s,t]
-					return arg1.mapThread(F.InverseLaplaceTransform(F.Null, s, t), 1);
+					return arg1.mapThread(F.InverseLaplaceTransform(F.Slot1, s, t), 1);
 				}
 			}
 		}

@@ -359,6 +359,7 @@ public class IOFunctions {
 			"nsmet", "This system cannot be solved with the methods available to `1`", //
 			"openx", "`1` is not open.", //
 			"optb", "Optional object `1` in `2` is not a single blank.", //
+			"optnf", "Option name `2` not found in defaults for `1`", //
 			"optx", "Unknown option `1` in `2`.", //
 			"ovfl", "Overflow occurred in computation.", //
 			"padlevel", "The padding specification `1` involves `2` levels; the list `3` has only `4` level.", //
@@ -371,6 +372,7 @@ public class IOFunctions {
 			"pspec", "Part specification `1` is neither an integer nor a list of integer.", //
 			"poly", "`1` is not a polynomial.", //
 			"polynomial", "Polynomial expected at position `1` in `2`.", //
+			"posr", "The left hand side of `2` in `1` doesn't match an int-array of depth `3`.", //
 			"pkspec1", "The expression `1` cannot be used as a part specification.", //
 			"precsm", "Requested precision `1` is smaller than `2`.", //
 			"precgt", "Requested precision `1` is greater than `2`.", //
