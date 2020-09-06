@@ -152,16 +152,19 @@ public class ASTNodeFactory implements INodeParserFactory {
 	static final String[] HEADER_STRINGS = { "MessageName", "Get", "PatternTest", "MapAll", "TimesBy", "Plus", "UpSet",
 			"CompoundExpression", "Apply", "Map", "Unset", "Apply", "Apply", "ReplaceRepeated", "Less", "And", "Divide",
 			"Set", "Increment", "Factorial2", "LessEqual", "NonCommutativeMultiply", "Factorial", "Times", "Power",
-			"Dot", "Not", "PreMinus", "SameQ", "RuleDelayed", "GreaterEqual", "Condition", "Colon", "//", "DivideBy",
-			"Or", "Span", "Equal", "StringJoin", "Unequal", "Decrement", "SubtractFrom", "PrePlus", "RepeatedNull",
-			"UnsameQ", "Rule", "UpSetDelayed", "PreIncrement", "Function", "Greater", "PreDecrement", "Subtract",
-			"SetDelayed", "Alternatives", "AddTo", "Repeated", "ReplaceAll", "TagSet", "Composition",
+			"Dot", "Not", "PreMinus", "SameQ", "RuleDelayed", "GreaterEqual", "Condition",
+			// "Colon",
+			"//", "DivideBy", "Or", "Span", "Equal", "StringJoin", "Unequal", "Decrement", "SubtractFrom", "PrePlus",
+			"RepeatedNull", "UnsameQ", "Rule", "UpSetDelayed", "PreIncrement", "Function", "Greater", "PreDecrement",
+			"Subtract", "SetDelayed", "Alternatives", "AddTo", "Repeated", "ReplaceAll", "TagSet", "Composition",
 			"StringExpression", "TwoWayRule", "TwoWayRule", "DirectedEdge", "UndirectedEdge", "CenterDot", "CircleDot",
 			"Element", "Intersection", "NotEqual", "Wedge" };
 
 	static final String[] OPERATOR_STRINGS = { "::", "<<", "?", "//@", "*=", "+", "^=", ";", "@", "/@", "=.", "@@",
 			"@@@", "//.", "<", "&&", "/", "=", "++", "!!", "<=", "**", "!", "*", "^", ".", "!", "-", "===", ":>", ">=",
-			"/;", ":", "//", "/=", "||", ";;", "==", "<>", "!=", "--", "-=", "+", "...", "=!=", "->", "^:=", "++", "&",
+			"/;", 
+			//":", 
+			"//", "/=", "||", ";;", "==", "<>", "!=", "--", "-=", "+", "...", "=!=", "->", "^:=", "++", "&",
 			">", "--", "-", ":=", "|", "+=", "..", "/.", "/:", "@*", "~~", //
 			"<->", // TwoWayRule
 			"\uF120", // TwoWayRule
@@ -243,7 +246,7 @@ public class ASTNodeFactory implements INodeParserFactory {
 					new InfixOperator(":>", "RuleDelayed", Precedence.RULEDELAYED, InfixOperator.RIGHT_ASSOCIATIVE),
 					new InfixOperator(">=", "GreaterEqual", Precedence.GREATEREQUAL, InfixOperator.NONE),
 					new InfixOperator("/;", "Condition", Precedence.CONDITION, InfixOperator.LEFT_ASSOCIATIVE),
-					new InfixOperator(":", "Colon", Precedence.COLON, InfixOperator.NONE),
+					// new InfixOperator(":", "Colon", Precedence.COLON, InfixOperator.NONE),
 					new InfixOperator("//", "//", 70, InfixOperator.LEFT_ASSOCIATIVE),
 					new InfixOperator("/=", "DivideBy", Precedence.DIVIDEBY, InfixOperator.RIGHT_ASSOCIATIVE),
 					new InfixOperator("||", "Or", Precedence.OR, InfixOperator.NONE),
