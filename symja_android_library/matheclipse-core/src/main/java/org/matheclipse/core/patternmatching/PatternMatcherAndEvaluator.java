@@ -4,17 +4,14 @@ import java.io.Externalizable;
 import java.io.IOException;
 import java.io.ObjectInput;
 import java.io.ObjectOutput;
-import java.util.IdentityHashMap;
 
 import org.matheclipse.core.eval.EvalEngine;
-import org.matheclipse.core.eval.OptionsStack;
 import org.matheclipse.core.eval.exception.ConditionException;
 import org.matheclipse.core.eval.exception.ReturnException;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.expression.S;
 import org.matheclipse.core.interfaces.ExprUtil;
 import org.matheclipse.core.interfaces.IAST;
-import org.matheclipse.core.interfaces.IASTAppendable;
 import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.interfaces.ISymbol;
 import org.matheclipse.parser.client.FEConfig;
@@ -220,8 +217,7 @@ public class PatternMatcherAndEvaluator extends PatternMatcher implements Extern
 				boolean matched = false;
 				IExpr rhs = patternMap.substituteSymbols(fRightHandSide);
 
-				OptionsStack optionsStack = engine.getOptionsStack();
-				optionsStack.push(new IdentityHashMap<ISymbol, IASTAppendable>());
+				engine.pushOptionsStack();
 				try {
 					engine.setOptionsPattern(fLhsPatternExpr.topHead(), patternMap);
 					fReturnResult = engine.evaluate(rhs);
@@ -232,7 +228,7 @@ public class PatternMatcherAndEvaluator extends PatternMatcher implements Extern
 					fReturnResult = e.getValue();
 					matched = true;
 				} finally {
-					optionsStack.pop();
+					engine.popOptionsStack();
 				}
 				patternMap.setRHSEvaluated(matched);
 				return matched;
@@ -295,8 +291,7 @@ public class PatternMatcherAndEvaluator extends PatternMatcher implements Extern
 
 				IExpr result = patternMap.substituteSymbols(fRightHandSide);
 				if (evaluate) {
-					OptionsStack optionsStack = engine.getOptionsStack();
-					optionsStack.push(new IdentityHashMap<ISymbol, IASTAppendable>());
+					engine.pushOptionsStack();
 					try {
 						engine.setOptionsPattern(fLhsPatternExpr.topHead(), patternMap);
 						return engine.evaluate(result);
@@ -308,7 +303,7 @@ public class PatternMatcherAndEvaluator extends PatternMatcher implements Extern
 					} catch (final ReturnException e) {
 						return e.getValue();
 					} finally {
-						optionsStack.pop();
+						engine.popOptionsStack();
 					}
 				} else {
 					return result;

@@ -20,7 +20,6 @@ import java.util.Map;
 import org.matheclipse.core.basic.Config;
 import org.matheclipse.core.convert.AST2Expr;
 import org.matheclipse.core.eval.EvalEngine;
-import org.matheclipse.core.eval.OptionsStack;
 import org.matheclipse.core.eval.exception.ConditionException;
 import org.matheclipse.core.eval.exception.FailedException;
 import org.matheclipse.core.eval.exception.ReturnException;
@@ -1346,21 +1345,18 @@ public final class PatternMatching {
 						optionValue = F.$str(((ISymbol) arg2).getSymbolName());
 					}
 					if (arg1.isSymbol()) {
-						OptionsStack stack = engine.getOptionsStack();
-						if (!stack.isEmpty()) {
-							Iterator<IdentityHashMap<ISymbol, IASTAppendable>> iter = stack.iterator();
-							do {
-								IdentityHashMap<ISymbol, IASTAppendable> map = iter.next();
-								if (map != null) {
-									optionsPattern = map.get(arg1);
-									if (optionsPattern != null) {
-										rhsRuleValue = rhsRuleValue(optionValue, optionsPattern);
-										if (rhsRuleValue.isPresent()) {
-											return rhsRuleValue;
-										}
+						Iterator<IdentityHashMap<ISymbol, IASTAppendable>> iter = engine.optionsStackIterator();
+						while (iter.hasNext()) {
+							IdentityHashMap<ISymbol, IASTAppendable> map = iter.next();
+							if (map != null) {
+								optionsPattern = map.get(arg1);
+								if (optionsPattern != null) {
+									rhsRuleValue = rhsRuleValue(optionValue, optionsPattern);
+									if (rhsRuleValue.isPresent()) {
+										return rhsRuleValue;
 									}
 								}
-							} while (iter.hasNext());
+							}
 						}
 					} else {
 						if (arg1.isAST()) {
@@ -1385,32 +1381,23 @@ public final class PatternMatching {
 					if (arg1.isSymbol()) {
 						optionValue = F.$str(((ISymbol) arg1).getSymbolName());
 					}
-					OptionsStack stack = engine.getOptionsStack();
-					if (!stack.isEmpty()) {
-						Iterator<IdentityHashMap<ISymbol, IASTAppendable>> iter = stack.iterator();
-						do {
-							IdentityHashMap<ISymbol, IASTAppendable> map = iter.next();
-							if (map != null) {
-								optionsPattern = map.get(S.LHS_HEAD);
-								if (optionsPattern != null) {
-									ISymbol lhsHead = optionsPattern.topHead();
-									optionsPattern = map.get(lhsHead);
-									// optionsList = optionsList(lhsHead);
-									// if (optionsList != null) {
-									// if (optionsPattern == null) {
-									// optionsPattern = F.ListAlloc(10);
-									// }
-									// extractRules(optionsList, optionsPattern);
 
-									rhsRuleValue = rhsRuleValue(optionValue, optionsPattern);
-									if (rhsRuleValue.isPresent()) {
-										return rhsRuleValue;
-									}
-									// }
+					Iterator<IdentityHashMap<ISymbol, IASTAppendable>> iter = engine.optionsStackIterator();
+					while (iter.hasNext()) {
+						IdentityHashMap<ISymbol, IASTAppendable> map = iter.next();
+						if (map != null) {
+							optionsPattern = map.get(S.LHS_HEAD);
+							if (optionsPattern != null) {
+								ISymbol lhsHead = optionsPattern.topHead();
+								optionsPattern = map.get(lhsHead);
+								rhsRuleValue = rhsRuleValue(optionValue, optionsPattern);
+								if (rhsRuleValue.isPresent()) {
+									return rhsRuleValue;
 								}
 							}
-						} while (iter.hasNext());
+						}
 					}
+
 				}
 
 				if (optionsPattern != null) {

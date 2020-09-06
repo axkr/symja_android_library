@@ -5,6 +5,7 @@ import java.io.Serializable;
 import java.util.ArrayDeque;
 import java.util.HashMap;
 import java.util.IdentityHashMap;
+import java.util.Iterator;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.atomic.AtomicLong;
@@ -69,7 +70,22 @@ import com.google.common.cache.Cache;
  */
 public class EvalEngine implements Serializable {
 
-	// public final static Map<IBuiltInSymbol, Integer> STATISTICS = new TreeMap<IBuiltInSymbol, Integer>();
+	/**
+	 * Stack to manage the <code>OptionsPattern()</code> mappings for a pattern-matching rule.
+	 * 
+	 */
+	private static class OptionsStack extends ArrayDeque<IdentityHashMap<ISymbol, IASTAppendable>> {
+
+		private static final long serialVersionUID = 2720088062330091827L;
+
+		public OptionsStack() {
+			super();
+		}
+
+		public void push() {
+			push(new IdentityHashMap<ISymbol, IASTAppendable>());
+		}
+	}
 
 	/**
 	 * 
@@ -413,15 +429,15 @@ public class EvalEngine implements Serializable {
 		if (defaultOptions.isPresent()) {
 			IAST optionsList = null;
 			if (defaultOptions.isSymbol()) {
-				optionsList = PatternMatching.optionsList((ISymbol) defaultOptions,true);
+				optionsList = PatternMatching.optionsList((ISymbol) defaultOptions, true);
 				PatternMatching.extractRules(optionsList, list);
-//				list.appendArgs(optionsList);
+				// list.appendArgs(optionsList);
 			} else if (defaultOptions.isList()) {
 				PatternMatching.extractRules(defaultOptions, list);
-//				list.appendArgs((IAST) defaultOptions);
+				// list.appendArgs((IAST) defaultOptions);
 			} else if (defaultOptions.isRuleAST()) {
 				PatternMatching.extractRules(defaultOptions, list);
-//				list.append(defaultOptions);
+				// list.append(defaultOptions);
 			}
 		} else {
 			if (rule != null && rule.isRuleAST()) {
@@ -2032,8 +2048,17 @@ public class EvalEngine implements Serializable {
 		return fOutList;
 	}
 
-	public OptionsStack getOptionsStack() {
+	public OptionsStack pushOptionsStack() {
+		fOptionsStack.push();
 		return fOptionsStack;
+	}
+
+	public void popOptionsStack() {
+		fOptionsStack.pop();
+	}
+
+	public Iterator<IdentityHashMap<ISymbol, IASTAppendable>> optionsStackIterator() {
+		return fOptionsStack.iterator();
 	}
 
 	public PrintStream getOutPrintStream() {
