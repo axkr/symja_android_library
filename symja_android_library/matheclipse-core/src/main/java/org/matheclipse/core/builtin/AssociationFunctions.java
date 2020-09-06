@@ -48,6 +48,7 @@ public class AssociationFunctions {
 
 		private static void init() {
 			S.Association.setEvaluator(new Association());
+			S.AssociationThread.setEvaluator(new AssociationThread());
 			S.Counts.setEvaluator(new Counts());
 			S.KeyExistsQ.setEvaluator(new KeyExistsQ());
 			S.Keys.setEvaluator(new Keys());
@@ -136,6 +137,44 @@ public class AssociationFunctions {
 		}
 	}
 
+	private static class AssociationThread extends AbstractEvaluator {
+
+		@Override
+		public IExpr evaluate(final IAST ast, EvalEngine engine) {
+			IExpr arg1 = ast.arg1();
+			if (ast.isAST2()) {
+				IExpr arg2 = ast.arg2();
+				return associationThread(F.Rule, arg1, arg2);
+			}
+			if (arg1.isRuleAST()) {
+				IAST rule = (IAST) arg1;
+
+				return associationThread((ISymbol) rule.head(), rule.arg1(), rule.arg2());
+			}
+			return F.NIL;
+		}
+
+		private static IExpr associationThread(ISymbol symbol, IExpr arg1, IExpr arg2) {
+			if (arg1.isList() && arg2.isList()) {
+				if (arg1.size() == arg2.size()) {
+					IAST list1 = (IAST) arg1;
+					IAST list2 = (IAST) arg2;
+					IASTAppendable listOfRules = F.ListAlloc(arg1.size());
+					for (int i = 1; i < list1.size(); i++) {
+						listOfRules.append(F.binaryAST2(symbol, list1.get(i), list2.get(i)));
+					}
+					return F.assoc(listOfRules);
+				}
+			}
+			return F.NIL;
+		}
+
+		@Override
+		public int[] expectedArgSize(IAST ast) {
+			return IOFunctions.ARGS_1_2;
+		}
+	}
+
 	private static class Counts extends AbstractEvaluator {
 
 		@Override
@@ -187,7 +226,7 @@ public class AssociationFunctions {
 					IAST listOfRules = (IAST) arg1;
 					for (int i = 1; i < listOfRules.size(); i++) {
 						IExpr rule = listOfRules.get(i);
-						if (rule.isRule() || rule.isRuleDelayed()) {
+						if (rule.isRuleAST()) {
 							if (arg2.equals(rule.first())) {
 								return F.True;
 							}
@@ -224,7 +263,7 @@ public class AssociationFunctions {
 					IASTAppendable list = F.ast(F.List, listOfRules.argSize(), false);
 					for (int i = 1; i < listOfRules.size(); i++) {
 						IExpr rule = listOfRules.get(i);
-						if (rule.isRule() || rule.isRuleDelayed()) {
+						if (rule.isRuleAST()) {
 							list.append(rule.first());
 						} else if (rule.isEmptyList()) {
 							list.append(rule);
@@ -234,7 +273,7 @@ public class AssociationFunctions {
 				}
 
 				// thread over Lists in first argument
-				return ((IAST) arg1).mapThread(ast.setAtCopy(1, S.Null), 1);
+				return ((IAST) arg1).mapThread(ast.setAtCopy(1, F.Slot1), 1);
 			}
 			return F.NIL;
 		}
@@ -286,7 +325,7 @@ public class AssociationFunctions {
 						IAST listOfRules = (IAST) arg1;
 						for (int i = 1; i < listOfRules.size(); i++) {
 							IExpr rule = listOfRules.get(i);
-							if (rule.isRule() || rule.isRuleDelayed()) {
+							if (rule.isRuleAST()) {
 								if (rule.first().equals(key)) {
 									return rule.second();
 								}
@@ -380,7 +419,7 @@ public class AssociationFunctions {
 					IASTAppendable list = F.ast(F.List, listOfRules.argSize(), false);
 					for (int i = 1; i < listOfRules.size(); i++) {
 						IExpr rule = listOfRules.get(i);
-						if (rule.isRule() || rule.isRuleDelayed()) {
+						if (rule.isRuleAST()) {
 							list.append(rule.second());
 						} else if (rule.isEmptyList()) {
 							list.append(rule);
@@ -390,7 +429,7 @@ public class AssociationFunctions {
 				}
 
 				// thread over Lists in first argument
-				return ((IAST) arg1).mapThread(ast.setAtCopy(1, S.Null), 1);
+				return ((IAST) arg1).mapThread(ast.setAtCopy(1, F.Slot1), 1);
 			}
 			return F.NIL;
 		}
