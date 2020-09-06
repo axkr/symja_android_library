@@ -17,6 +17,7 @@ import org.matheclipse.core.basic.Config;
 import org.matheclipse.core.convert.Convert;
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.exception.ASTElementLimitExceeded;
+import org.matheclipse.core.eval.exception.ArgumentTypeException;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IASTAppendable;
 import org.matheclipse.core.interfaces.IASTMutable;
@@ -279,6 +280,12 @@ public class ASTRealMatrix extends AbstractAST implements Cloneable, Externaliza
 		// if ((getEvalFlags() & IAST.DEFER_AST) == IAST.DEFER_AST) {
 		// return F.NIL;
 		// }
+		return F.NIL;
+	}
+	
+
+	@Override
+	public   IExpr evalEvaluate(EvalEngine engine) { 
 		return F.NIL;
 	}
 

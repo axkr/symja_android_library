@@ -269,6 +269,11 @@ public class ASTRealVector extends AbstractAST implements Cloneable, Externaliza
 		return F.NIL;
 	}
 
+	@Override
+	public IExpr evalEvaluate(EvalEngine engine) { 
+		return F.NIL;
+	}
+	
 	/** {@inheritDoc} */
 	@Override
 	public final IAST filterFunction(IASTAppendable filterAST, IASTAppendable restAST,

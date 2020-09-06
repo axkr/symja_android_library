@@ -109,6 +109,11 @@ public class ASTDataset extends AbstractAST implements IDataExpr<Table>, IASTDat
 		return F.NIL;
 	}
 
+	@Override
+	public IExpr evalEvaluate(EvalEngine engine) { 
+		return F.NIL;
+	}
+	
 	/** {@inheritDoc} */
 	@Override
 	public String fullFormString() {
