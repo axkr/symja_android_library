@@ -238,7 +238,7 @@ public final class StringFunctions {
 			if (ast.isAST2()) {
 				IExpr arg1 = ast.arg1();
 				if (arg1.isList()) {
-					return ((IAST) arg1).mapThread(ast.copy(), 1);
+					return ((IAST) arg1).mapThread(ast, 1);
 				}
 				if (arg1.isString()) {
 					final String s1 = arg1.toString();
@@ -335,7 +335,7 @@ public final class StringFunctions {
 			if (ast.isAST2()) {
 				IExpr arg1 = ast.arg1();
 				if (arg1.isList()) {
-					return ((IAST) arg1).mapThread(ast.copy(), 1);
+					return ((IAST) arg1).mapThread(ast, 1);
 				}
 				IExpr arg2 = ast.arg2();
 				if (arg2.isAST(F.StringExpression)) {
@@ -488,7 +488,7 @@ public final class StringFunctions {
 			if (ast.isAST2()) {
 				IExpr arg1 = ast.arg1();
 				if (arg1.isList()) {
-					return ((IAST) arg1).mapThread(ast.copy(), 1);
+					return ((IAST) arg1).mapThread(ast, 1);
 				}
 				if (arg1.isString()) {
 					IExpr arg2 = ast.arg2();
@@ -521,7 +521,7 @@ public final class StringFunctions {
 
 			IExpr arg2 = ast.arg2();
 			if (arg2.isList()) {
-				return ((IAST) arg2).mapThread(ast.copy(), 2);
+				return ((IAST) arg2).mapThread(ast, 2);
 			}
 			String str = ((IStringX) ast.arg1()).toString();
 			int part = arg2.toIntDefault();

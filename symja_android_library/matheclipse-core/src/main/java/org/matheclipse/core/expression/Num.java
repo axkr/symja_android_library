@@ -284,7 +284,7 @@ public class Num implements INum {
 		if (Double.isNaN(fDouble)) {
 			return F.Indeterminate;
 		}
-		if (engine.isNumericMode() && engine.isApfloat()) {
+		if (engine.isNumericMode() && engine.isApfloatMode()) {
 			return ApfloatNum.valueOf(fDouble, engine.getNumericPrecision());
 		}
 		return F.NIL;

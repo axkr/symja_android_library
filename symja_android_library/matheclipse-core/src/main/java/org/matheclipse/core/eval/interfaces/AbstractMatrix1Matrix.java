@@ -66,7 +66,7 @@ public abstract class AbstractMatrix1Matrix extends AbstractFunctionEvaluator {
 
 			int[] dims = checkMatrixDimensions(ast.arg1());
 			if (dims != null) {
-				if (engine.isApfloat()) {
+				if (engine.isApfloatMode()) {
 					final IAST list = (IAST) ast.arg1();
 					FieldMatrix<IExpr> fieldMatrix = Convert.list2Matrix(list);
 					if (fieldMatrix == null) {

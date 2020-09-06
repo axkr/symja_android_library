@@ -993,7 +993,7 @@ public class HypergeometricFunctions {
 			IExpr c = ast.arg3();
 			if (c.isList()) {
 				// thread elementwise over list in arg3
-				return ((IAST) c).mapThread(ast.setAtCopy(3, F.Null), 3);
+				return ((IAST) c).mapThread(ast.setAtCopy(3, F.Slot1), 3);
 			}
 
 			if (engine.isDoubleMode() && a.isVector() > 0 && b.isVector() > 0) {

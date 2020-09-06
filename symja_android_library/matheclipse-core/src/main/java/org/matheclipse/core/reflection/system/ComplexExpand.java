@@ -82,10 +82,10 @@ public class ComplexExpand extends AbstractEvaluator {
 					return F.ComplexExpand.of(fEngine, expanded);
 				}
 			}
-			if (ast.isPower() && ast.base().isNegative() //
+			if (ast.isPower()  //
 					&& ast.exponent().isRational()) {
 				IExpr base = ast.base();
-				if (base.isInteger()) {
+				if (base.isInteger()&& ast.base().isNegative()) {
 					IExpr exponent = ast.exponent();
 					// ((base^2)^(exponent/2))
 					IExpr coeff = F.Power(F.Power(base, F.C2), F.C1D2.times(exponent));

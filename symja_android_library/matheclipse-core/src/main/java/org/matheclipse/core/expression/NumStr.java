@@ -75,7 +75,7 @@ public final class NumStr extends Num {
 	
 	@Override
 	public IExpr evaluate(EvalEngine engine) {
-		if (engine.isNumericMode() && engine.isApfloat()) {
+		if (engine.isNumericMode() && engine.isApfloatMode()) {
 			long precision = fPrecision < engine.getNumericPrecision() ? engine.getNumericPrecision() : fPrecision;
 			// engine.setNumericPrecision(precision);
 			if (fExponent == 0) {
@@ -87,7 +87,7 @@ public final class NumStr extends Num {
 	}
 
 	public INumber evaluatePrecision(EvalEngine engine) {
-		if (engine.isApfloat()) {
+		if (engine.isApfloatMode()) {
 			long precision = fPrecision < engine.getNumericPrecision() ? engine.getNumericPrecision() : fPrecision;
 			// long precision = fPrecision;
 			// if (engine.isApfloat()) {

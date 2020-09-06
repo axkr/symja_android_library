@@ -115,8 +115,8 @@ public class Product extends ListFunctions.Table implements ProductRules {
 			}
 		}
 		if (arg1.isTimes()) {
-			IASTMutable prod = ast.setAtCopy(1, null);
-			return ((IAST) arg1).mapThread(prod, 1);
+			// IASTMutable prod = ast.setAtCopy(1, null);
+			return ((IAST) arg1).mapThread(ast, 1);
 		}
 		if (ast.size() > 2) {
 			IAST list;

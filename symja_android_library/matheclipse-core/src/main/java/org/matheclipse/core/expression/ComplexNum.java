@@ -389,7 +389,7 @@ public class ComplexNum implements IComplexNum {
 		if (fComplex.isNaN()) {
 			return F.Indeterminate;
 		}
-		if (engine.isNumericMode() && engine.isApfloat()) {
+		if (engine.isNumericMode() && engine.isApfloatMode()) {
 			return ApcomplexNum.valueOf(getRealPart(), getImaginaryPart(), engine.getNumericPrecision());
 		}
 		// if (F.isZero(getImaginaryPart())) {

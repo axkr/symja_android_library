@@ -1182,7 +1182,7 @@ public class Solve extends AbstractFunctionEvaluator {
 		}
 		// copy the termsEqualZeroList back to a list of F.Equal(...) expressions
 		// because Eliminate() operates on equations.
-		IAST equalsASTList = termsEqualZeroList.mapThread(F.Equal(F.Null, F.C0), 1);
+		IAST equalsASTList = termsEqualZeroList.mapThread(F.Equal(F.Slot1, F.C0), 1);
 		IAST[] tempAST = Eliminate.eliminateOneVariable(equalsASTList, variable, engine);
 		if (tempAST != null && tempAST[1] != null && tempAST[1].isRule() && tempAST[1].second().isTrue()) {
 			return F.CEmptyList;

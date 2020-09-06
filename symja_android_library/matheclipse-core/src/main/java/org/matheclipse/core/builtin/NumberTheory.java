@@ -2347,7 +2347,7 @@ public final class NumberTheory {
 			for (int i = 1; i < n; i++) {
 				IExpr temp = fibonacci;
 				if (fibonacci.isPlus()) {
-					fibonacci = ((IAST) fibonacci).mapThread(F.Times(x, null), 2);
+					fibonacci = ((IAST) fibonacci).mapThread(F.Times(x, F.Slot1), 2);
 				} else {
 					fibonacci = F.Times(x, fibonacci);
 				}
@@ -2844,7 +2844,7 @@ public final class NumberTheory {
 			for (int i = 1; i < n; i++) {
 				IExpr temp = lucalsL;
 				if (lucalsL.isPlus()) {
-					lucalsL = ((IAST) lucalsL).mapThread(F.Times(x, null), 2);
+					lucalsL = ((IAST) lucalsL).mapThread(F.Times(x, F.Slot1), 2);
 				} else {
 					lucalsL = F.Times(x, lucalsL);
 				}

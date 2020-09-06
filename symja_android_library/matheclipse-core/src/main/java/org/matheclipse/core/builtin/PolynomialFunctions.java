@@ -2203,7 +2203,7 @@ public class PolynomialFunctions {
 				if ((m < symbols.size()) && !symbols.get(m).isZero()) {
 					IExpr bellY = bellY(n - m, k - 1, symbols, ast, engine);
 					if (bellY.isPlus()) {
-						bellY = ((IAST) bellY).mapThread(F.Times(a, null, symbols.get(m)), 2);
+						bellY = ((IAST) bellY).mapThread(F.Times(a, F.Slot1, symbols.get(m)), 2);
 					} else {
 						bellY = F.Times(a, bellY, symbols.get(m));
 

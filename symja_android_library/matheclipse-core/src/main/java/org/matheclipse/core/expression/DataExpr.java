@@ -23,7 +23,7 @@ public abstract class DataExpr<T> implements IDataExpr<T> {
 
 	private static final long serialVersionUID = 4987827851920443376L;
 
-	private IBuiltInSymbol fHead;
+	protected IBuiltInSymbol fHead;
 
 	protected T fData;
 

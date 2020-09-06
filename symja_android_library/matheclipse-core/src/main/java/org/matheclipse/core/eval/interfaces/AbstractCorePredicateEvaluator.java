@@ -39,7 +39,7 @@ public abstract class AbstractCorePredicateEvaluator extends AbstractCoreFunctio
 		if (arg1.isList()) {
 			// thread over list?
 			if ((ast.topHead().getAttributes() & ISymbol.LISTABLE) == ISymbol.LISTABLE) {
-				return ((IAST) arg1).mapThread(ast.copy(), 1);
+				return ((IAST) arg1).mapThread(ast, 1);
 			}
 		}
 		if (ast.size() == 3) {

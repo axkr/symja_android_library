@@ -2074,8 +2074,8 @@ public class StructureFunctions {
 		if (expr.size() > 1 && expr.isAST()) {
 			IAST ast = (IAST) expr;
 			if (LOGIC_EQUATION_HEADS.contains(ast.head())) {
-				IASTMutable copy = replacement.setAtCopy(position, null);
-				return ast.mapThread(copy, position);
+				// IASTMutable copy = replacement.setAtCopy(position, null);
+				return ast.mapThread(replacement, position);
 			}
 		}
 		return F.NIL;
@@ -2099,8 +2099,8 @@ public class StructureFunctions {
 		if (expr.size() > 1 && expr.isAST()) {
 			IAST ast = (IAST) expr;
 			if (PLUS_LOGIC_EQUATION_HEADS.contains(ast.head())) {
-				IASTMutable copy = replacement.setAtCopy(position, null);
-				return ast.mapThread(copy, position);
+				// IASTMutable copy = replacement.setAtCopy(position, null);
+				return ast.mapThread(replacement, position);
 			}
 		}
 		return F.NIL;
@@ -2125,8 +2125,8 @@ public class StructureFunctions {
 		if (expr.size() > 1 && expr.isAST()) {
 			IAST ast = (IAST) expr;
 			if (LIST_LOGIC_EQUATION_HEADS.contains(ast.head())) {
-				IASTMutable copy = replacement.setAtCopy(position, null);
-				return ast.mapThread(copy, position);
+				// IASTMutable copy = replacement.setAtCopy(position, null);
+				return ast.mapThread(replacement, position);
 			}
 		}
 		return F.NIL;
