@@ -27,7 +27,6 @@ import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.exception.ASTElementLimitExceeded;
 import org.matheclipse.core.eval.exception.ArgumentTypeException;
 import org.matheclipse.core.eval.exception.IterationLimitExceeded;
-import org.matheclipse.core.eval.exception.TimeoutException;
 import org.matheclipse.core.eval.util.AbstractAssumptions;
 import org.matheclipse.core.expression.ASTRealMatrix;
 import org.matheclipse.core.expression.ASTRealVector;
@@ -1632,6 +1631,28 @@ public interface IExpr extends Comparable<IExpr>, GcdRingElem<IExpr>, Serializab
 	}
 
 	/**
+	 * Are the given evaluation flags disabled for this list ?
+	 * 
+	 * @param flags
+	 * @return
+	 * @see IAST#NO_FLAG
+	 */
+	default boolean isEvalFlagOff(int flags){
+		return true;
+	}
+
+	/**
+	 * Are the given evaluation flags enabled for this list ?
+	 * 
+	 * @param flags
+	 * @return
+	 * @see IAST#NO_FLAG
+	 */	
+	default boolean isEvalFlagOn(int flags) {
+		return false;
+	}
+
+	/**
 	 * Test if this expression is an AST list, which contains a <b>header element</b> (i.e. a function symbol like for
 	 * example <code>Dot, Plus or Times</code>) with attribute <code>Flat</code> at index position <code>0</code> and
 	 * some optional <b>argument elements</b> at the index positions <code>1..(size()-1)</code>. Examples for
@@ -2709,9 +2730,9 @@ public interface IExpr extends Comparable<IExpr>, GcdRingElem<IExpr>, Serializab
 	 * @return
 	 */
 	default boolean isRepeated() {
-		return false; 
+		return false;
 	}
-	
+
 	/**
 	 * Test if this expression is a symbolic rational function (i.e. a number, a symbolic constant or an rational
 	 * function where all arguments are also &quot;rational functions&quot;)
@@ -2946,15 +2967,16 @@ public interface IExpr extends Comparable<IExpr>, GcdRingElem<IExpr>, Serializab
 	default int[] isSpan(int size) {
 		return null;
 	}
-	
+
 	/**
 	 * Test if this expression is a instance of SparseArrayExpr
+	 * 
 	 * @return
 	 */
 	default boolean isSparseArray() {
 		return false;
 	}
-	
+
 	/**
 	 * Test if this expression is the function <code>Power[&lt;arg1&gt;, 1/2]</code> (i.e.
 	 * <code>Sqrt[&lt;arg1&gt;]</code>).

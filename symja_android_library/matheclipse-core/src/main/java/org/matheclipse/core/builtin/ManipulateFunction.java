@@ -401,12 +401,11 @@ public class ManipulateFunction {
 				for (int i = 1; i < listOfFunctions.size(); i++) {
 					function.append("function z" + i + "(");
 					toJS.convert(function, plotSymbolX);
-					function.append(") { "); //return  ");
+					function.append(") { return  ");
 					// toJS.convert(function, plotSymbolX);
 					// function.append(", ");
 					// toJS.convert(function, plotSymbolY);
-					// toJS.convert(function, listOfFunctions.get(i));
-					unaryJSFunction(toJS, function, listOfFunctions, i);
+					toJS.convert(function, listOfFunctions.get(i));
 					function.append("; }\n");
 				}
 			} else {
@@ -415,9 +414,8 @@ public class ManipulateFunction {
 					function.append(i);
 					function.append("(");
 					toJS.convert(function, plotSymbolX);
-					function.append(") { ");//return ");
-					// toJS.convert(function, listOfFunctions.get(i));
-					unaryJSFunction(toJS, function, listOfFunctions, i);
+					function.append(") { return ");
+					toJS.convert(function, listOfFunctions.get(i));
 					function.append("; }\n");
 				}
 

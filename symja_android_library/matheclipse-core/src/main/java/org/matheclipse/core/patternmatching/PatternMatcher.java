@@ -279,7 +279,7 @@ public class PatternMatcher extends IPatternMatcher implements Externalizable {
 	public IPatternMap getPatternMap() {
 		return fPatternMap;
 	}
-	
+
 	public IPatternMap createPatternMap() {
 		if (fPatternMap == null) {
 			int[] priority = new int[] { IPatternMap.DEFAULT_RULE_PRIORITY };
@@ -316,6 +316,9 @@ public class PatternMatcher extends IPatternMatcher implements Externalizable {
 			int[] priority = new int[] { IPatternMap.DEFAULT_RULE_PRIORITY };
 			fPatternMap = determinePatterns(priority);
 			this.fLHSPriority = priority[0];
+			if (this.fLhsPatternExpr.isEvalFlagOn(IAST.CONTAINS_PATTERN_SEQUENCE)) {
+				this.fLHSPriority = IPatternMap.DEFAULT_RULE_PRIORITY;
+			}
 			if (patternExpr.isCondition()) {
 				this.fLHSPriority -= 100;
 			}
@@ -1632,7 +1635,7 @@ public class PatternMatcher extends IPatternMatcher implements Externalizable {
 		fPatternMap.initPattern();
 		return matchExpr(fLhsPatternExpr, leftHandSide, engine);
 	}
-	
+
 	@Override
 	public boolean testBlank(final IExpr leftHandSide, EvalEngine engine) {
 		if (isRuleWithoutPatterns()) {

@@ -55,7 +55,7 @@ public class BasicPatternPropertiesTestCase extends TestCase {
 		checkPriority("x_ . y_", "2147483586");
 		checkPriority("x_+y_", "2147483586");
 		checkPriority("f[x_]", "2147483592");
-		checkPriority("f[x__]", "2147483597");
+		checkPriority("f[x__]", "2147483647");
 		checkPriority("f[x_,y_]", "2147483586");
 		checkPriority("g[x_,y_]", "2147483586");
 		checkPriority("g[x_,42, y_]", "2147483537");
