@@ -3,6 +3,9 @@
  ArcSin(Sqrt(x_^2)) := (Sqrt(x^2)*ArcSin(x))/x,
  ArcTan(Sqrt(x_^2)) := (Sqrt(x^2)*ArcTan(x))/x,
  
+ BetaRegularized(z_, a_, b_) := (Beta(z, a, b)*Gamma(a + b))/(Gamma(a)*Gamma(b)),
+ BetaRegularized(y_, z_, a_, b_) := ((-Beta(y, a, b) + Beta(z, a, b))*Gamma(a + b))/(Gamma(a)*Gamma(b)),
+  
  ChebyshevT(n_,x_) :=  Cos(n*ArcCos(x)),
  ChebyshevU(n_,x_) :=  Sin((1 + n)*ArcCos(x))/(Sqrt(1 - x)*Sqrt(1 + x)),
  

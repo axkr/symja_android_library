@@ -18,6 +18,12 @@ public interface FunctionExpandRules {
     // ArcTan(Sqrt(x_^2)):=(Sqrt(x^2)*ArcTan(x))/x
     SetDelayed(ArcTan(Sqrt(Sqr(x_))),
       Times(Power(x,CN1),Sqrt(Sqr(x)),ArcTan(x))),
+    // BetaRegularized(z_,a_,b_):=(Beta(z,a,b)*Gamma(a+b))/(Gamma(a)*Gamma(b))
+    SetDelayed(BetaRegularized(z_,a_,b_),
+      Times(Beta(z,a,b),Power(Times(Gamma(a),Gamma(b)),CN1),Gamma(Plus(a,b)))),
+    // BetaRegularized(y_,z_,a_,b_):=((-Beta(y,a,b)+Beta(z,a,b))*Gamma(a+b))/(Gamma(a)*Gamma(b))
+    SetDelayed(BetaRegularized(y_,z_,a_,b_),
+      Times(Plus(Negate(Beta(y,a,b)),Beta(z,a,b)),Power(Times(Gamma(a),Gamma(b)),CN1),Gamma(Plus(a,b)))),
     // ChebyshevT(n_,x_):=Cos(n*ArcCos(x))
     SetDelayed(ChebyshevT(n_,x_),
       Cos(Times(n,ArcCos(x)))),
@@ -27,10 +33,10 @@ public interface FunctionExpandRules {
     // Cos(n_Integer*ArcSin(z_)):=ChebyshevT(n,Sqrt(1-z^2))/;n>0
     SetDelayed(Cos(Times(ArcSin(z_),$p(n, Integer))),
       Condition(ChebyshevT(n,Sqrt(Subtract(C1,Sqr(z)))),Greater(n,C0))),
-    // Fibonacci(m_Integer+n_):=1/2*Fibonacci(m)*LucasL(n)+1/2*Fibonacci(n)*LucasL(m)/;Element(n,Integers)
+    // Fibonacci(m_Integer+n_):=1/2*Fibonacci(m)*LucasL(n)+1/2*Fibonacci(n)*LucasL(m)/;n∈Integers
     SetDelayed(Fibonacci(Plus($p(m, Integer),n_)),
       Condition(Plus(Times(C1D2,Fibonacci(m),LucasL(n)),Times(C1D2,Fibonacci(n),LucasL(m))),Element(n,Integers))),
-    // Fibonacci(n_+a_):=((2/(1+Sqrt(5)))^(-a-n)-Cos((a+n)*Pi)/(1/2*(1+Sqrt(5)))^(a+n))/Sqrt(5)/;Element(n,Integers)
+    // Fibonacci(n_+a_):=((2/(1+Sqrt(5)))^(-a-n)-Cos((a+n)*Pi)/(1/2*(1+Sqrt(5)))^(a+n))/Sqrt(5)/;n∈Integers
     SetDelayed(Fibonacci(Plus(a_,n_)),
       Condition(Times(C1DSqrt5,Plus(Power(Times(C2,Power(Plus(C1,CSqrt5),CN1)),Subtract(Negate(a),n)),Times(CN1,Power(Times(C1D2,Plus(C1,CSqrt5)),Subtract(Negate(a),n)),Cos(Times(Plus(a,n),Pi))))),Element(n,Integers))),
     // Gamma(-1,z_):=1/(E^z*z)+ExpIntegralEi(-z)+1/2*(Log(-1/z)-Log(-z))+Log(z)
