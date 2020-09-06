@@ -121,6 +121,9 @@ public class S {
 	/***/
 	public final static IBuiltInSymbol AbsoluteTime = F.initFinalSymbol("AbsoluteTime", ID.AbsoluteTime);
 
+	/***/
+	public final static IBuiltInSymbol AbsoluteTiming = F.initFinalSymbol("AbsoluteTiming", ID.AbsoluteTiming);
+
 	/** Accumulate(list) - accumulate the values of `list` returning a new list. */
 	public final static IBuiltInSymbol Accumulate = F.initFinalSymbol("Accumulate", ID.Accumulate);
 
@@ -267,7 +270,10 @@ public class S {
 
 	/** ArrayQ(expr) - tests whether expr is a full array. */
 	public final static IBuiltInSymbol ArrayQ = F.initFinalSymbol("ArrayQ", ID.ArrayQ);
-
+	
+	/***/
+	public final static IBuiltInSymbol ArrayRules = F.initFinalSymbol("ArrayRules", ID.ArrayRules);
+	
 	/**
 	 * ArrayReshape(list-of-values, list-of-dimension) - returns the `list-of-values` elements reshaped as nested list
 	 * with dimensions according to the `list-of-dimension`.
@@ -279,7 +285,10 @@ public class S {
 
 	/** Association(list-of-rules) - create a `key->value` association map from the `list-of-rules`. */
 	public final static IBuiltInSymbol Association = F.initFinalSymbol("Association", ID.Association);
-
+	
+	/***/
+	public final static IBuiltInSymbol AssociationThread = F.initFinalSymbol("AssociationThread", ID.AssociationThread);
+	
 	/** AssociationQ(expr) - returns `True` if `expr` is an association, and `False` otherwise. */
 	public final static IBuiltInSymbol AssociationQ = F.initFinalSymbol("AssociationQ", ID.AssociationQ);
 
@@ -1042,10 +1051,10 @@ public class S {
 
 	/***/
 	public final static IBuiltInSymbol EasterSunday = F.initFinalSymbol("EasterSunday", ID.EasterSunday);
-	
+
 	/***/
 	public final static IBuiltInSymbol Echo = F.initFinalSymbol("Echo", ID.Echo);
-	
+
 	/***/
 	public final static IBuiltInSymbol EchoFunction = F.initFinalSymbol("EchoFunction", ID.EchoFunction);
 
@@ -2650,6 +2659,12 @@ public class S {
 	/***/
 	public final static IBuiltInSymbol Options = F.initFinalSymbol("Options", ID.Options);
 
+	/***/
+	public final static IBuiltInSymbol OptionsPattern = F.initFinalSymbol("OptionsPattern", ID.OptionsPattern);
+
+	/***/
+	public final static IBuiltInSymbol OptionValue = F.initFinalSymbol("OptionValue", ID.OptionValue);
+
 	/**
 	 * Or(expr1, expr2, ...)' - `expr1 || expr2 || ...` evaluates each expression in turn, returning `True` as soon as
 	 * an expression evaluates to `True`. If all expressions evaluate to `False`, `Or` returns `False`.
@@ -3378,6 +3393,9 @@ public class S {
 	/** Span - is the head of span ranges like `1;;3`. */
 	public final static IBuiltInSymbol Span = F.initFinalSymbol("Span", ID.Span);
 
+	/***/
+	public final static IBuiltInSymbol SparseArray = F.initFinalSymbol("SparseArray", ID.SparseArray);
+
 	/** SphericalBesselJ(n, z) - spherical Bessel function `J(n, x)`. */
 	public final static IBuiltInSymbol SphericalBesselJ = F.initFinalSymbol("SphericalBesselJ", ID.SphericalBesselJ);
 
@@ -3512,7 +3530,7 @@ public class S {
 
 	/***/
 	public final static IBuiltInSymbol Style = F.initFinalSymbol("Style", ID.Style);
-	
+
 	/***/
 	public final static IBuiltInSymbol StyleForm = F.initFinalSymbol("StyleForm", ID.StyleForm);
 
@@ -3593,6 +3611,9 @@ public class S {
 
 	/***/
 	public final static IBuiltInSymbol TableForm = F.initFinalSymbol("TableForm", ID.TableForm);
+
+	/***/
+	public final static IBuiltInSymbol TableHeadings = F.initFinalSymbol("TableHeadings", ID.TableHeadings);
 
 	/***/
 	public final static IBuiltInSymbol TagSet = F.initFinalSymbol("TagSet", ID.TagSet);
@@ -3875,7 +3896,7 @@ public class S {
 
 	/***/
 	public final static IBuiltInSymbol ViewPoint = F.initFinalSymbol("ViewPoint", ID.ViewPoint);
-	
+
 	/** WeibullDistribution(a, b) - returns a Weibull distribution. */
 	public final static IBuiltInSymbol WeibullDistribution = F.initFinalSymbol("WeibullDistribution",
 			ID.WeibullDistribution);
@@ -4019,6 +4040,12 @@ public class S {
 	public final static ISymbol GSymbol = initFinalHiddenSymbol("G");
 	public final static ISymbol PSymbol = initFinalHiddenSymbol("P");
 	public final static ISymbol QSymbol = initFinalHiddenSymbol("Q");
+
+	/**
+	 * Used to represent a formal parameter <code>LHS_HEAD</code> that will never be assigned a value. Used for setting
+	 * the left-hand-side in pattern-matching for <code>OptionValue(...)</code>
+	 */
+	public final static ISymbol LHS_HEAD = initFinalHiddenSymbol("LHSHead");
 
 	/**
 	 * Convert the symbolName to lowercase (if <code>Config.PARSER_USE_LOWERCASE_SYMBOLS</code> is set) and insert a new
