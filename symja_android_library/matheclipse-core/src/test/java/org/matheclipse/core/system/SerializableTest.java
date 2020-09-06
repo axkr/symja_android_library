@@ -5,6 +5,8 @@ import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
+import java.time.LocalDateTime;
+import java.time.LocalTime;
 
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.expression.ASTRealMatrix;
@@ -12,6 +14,9 @@ import org.matheclipse.core.expression.ASTRealVector;
 import org.matheclipse.core.expression.ASTSeriesData;
 import org.matheclipse.core.expression.Context;
 import org.matheclipse.core.expression.F;
+import org.matheclipse.core.expression.data.ByteArrayExpr;
+import org.matheclipse.core.expression.data.DateObjectExpr;
+import org.matheclipse.core.expression.data.TimeObjectExpr;
 import org.matheclipse.core.interfaces.IAssociation;
 import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.interfaces.ISparseArray;
@@ -35,9 +40,25 @@ public class SerializableTest extends TestCase {
 		equalsCopy(assoc);
 	}
 
+	public void testByteArray() {
+		ByteArrayExpr ba = ByteArrayExpr.newInstance(new byte[] { 0, 1, 2, 3 });
+		equalsCopy(ba);
+	}
+
 	public void testSparseArray() {
 		ISparseArray sparse = F.sparseArray(F.List(F.Rule(F.List(1, 2, 3), F.b), F.Rule(F.List(1, 4, 5), F.a)));
 		equalsCopy(sparse);
+	}
+
+	public void testDateObject() {
+		DateObjectExpr ldt = DateObjectExpr.newInstance(LocalDateTime.now());
+		equalsCopy(ldt);
+	}
+
+	public void testTimeObject() {
+		LocalTime now = LocalTime.now();
+		TimeObjectExpr ldt = TimeObjectExpr.newInstance(LocalTime.of(now.getHour(), now.getMinute(), now.getSecond()));
+		equalsCopy(ldt);
 	}
 
 	public void testNum() {

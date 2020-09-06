@@ -401,11 +401,12 @@ public class ManipulateFunction {
 				for (int i = 1; i < listOfFunctions.size(); i++) {
 					function.append("function z" + i + "(");
 					toJS.convert(function, plotSymbolX);
-					function.append(") { return  ");
+					function.append(") { "); //return  ");
 					// toJS.convert(function, plotSymbolX);
 					// function.append(", ");
 					// toJS.convert(function, plotSymbolY);
-					toJS.convert(function, listOfFunctions.get(i));
+					// toJS.convert(function, listOfFunctions.get(i));
+					unaryJSFunction(toJS, function, listOfFunctions, i);
 					function.append("; }\n");
 				}
 			} else {
@@ -414,8 +415,9 @@ public class ManipulateFunction {
 					function.append(i);
 					function.append("(");
 					toJS.convert(function, plotSymbolX);
-					function.append(") { return ");
-					toJS.convert(function, listOfFunctions.get(i));
+					function.append(") { ");//return ");
+					// toJS.convert(function, listOfFunctions.get(i));
+					unaryJSFunction(toJS, function, listOfFunctions, i);
 					function.append("; }\n");
 				}
 
@@ -624,7 +626,7 @@ public class ManipulateFunction {
 			if (sliderRange.size() == 5) {
 				stepValue = sliderRange.arg4().evalDouble();
 			} else {
-				stepValue = (maxValue - minValue) / 100.0; 
+				stepValue = (maxValue - minValue) / 100.0;
 				newsliderRange.append(F.num(stepValue));
 			}
 			IExpr list = engine.evaluate(F.Table(formula, newsliderRange));
@@ -1163,13 +1165,6 @@ public class ManipulateFunction {
 			}
 			return true;
 
-		}
-
-		private static void unaryJSFunction(JavaScriptFormFactory toJS, StringBuilder function, IAST listOfFunctions,
-				int i) {
-			function.append("{ try { return ");
-			toJS.convert(function, listOfFunctions.get(i));
-			function.append(";} catch(e) { return Number.NaN;} }\n");
 		}
 
 		private static boolean parametricPlot(IAST plotRangeX, final IAST manipulateAST, EvalEngine engine, int plotID,
@@ -2290,6 +2285,13 @@ public class ManipulateFunction {
 	private static boolean isNonReal(IExpr lastPointX, IExpr lastPointY) {
 		return isNonReal(lastPointX) || //
 				isNonReal(lastPointY);
+	}
+
+	private static void unaryJSFunction(JavaScriptFormFactory toJS, StringBuilder function, IAST listOfFunctions,
+			int i) {
+		function.append("{ try { return ");
+		toJS.convert(function, listOfFunctions.get(i));
+		function.append(";} catch(e) { return Number.NaN;} }\n");
 	}
 
 	public static void unaryPlotParameters(final ISymbol xVariable, final double xMin, final double xMax,

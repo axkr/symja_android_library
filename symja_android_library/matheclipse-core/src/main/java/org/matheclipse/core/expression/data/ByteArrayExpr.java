@@ -1,14 +1,21 @@
 package org.matheclipse.core.expression.data;
 
+import java.io.Externalizable;
+import java.io.IOException;
+import java.io.ObjectInput;
+import java.io.ObjectOutput;
 import java.util.Arrays;
 
+import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.expression.DataExpr;
 import org.matheclipse.core.expression.S;
 import org.matheclipse.core.expression.WL;
+import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IASTMutable;
 import org.matheclipse.core.interfaces.IExpr;
+import org.matheclipse.parser.trie.Tries;
 
-public class ByteArrayExpr extends DataExpr<byte[]> {
+public class ByteArrayExpr extends DataExpr<byte[]> implements Externalizable {
 
 	/**
 	 * 
@@ -22,6 +29,10 @@ public class ByteArrayExpr extends DataExpr<byte[]> {
 	 */
 	public static ByteArrayExpr newInstance(final byte[] value) {
 		return new ByteArrayExpr(value);
+	}
+
+	public ByteArrayExpr() {
+		super(S.ByteArray, null);
 	}
 
 	protected ByteArrayExpr(final byte[] array) {
@@ -57,5 +68,18 @@ public class ByteArrayExpr extends DataExpr<byte[]> {
 	public IASTMutable normal(boolean nilIfUnevaluated) {
 		byte[] bArray = toData();
 		return WL.toList(bArray);
+	}
+
+	@Override
+	public void readExternal(ObjectInput in) throws IOException, ClassNotFoundException {
+		final int len = in.readInt();
+		fData = new byte[len];
+		in.read(fData);
+	}
+
+	@Override
+	public void writeExternal(ObjectOutput output) throws IOException {
+		output.writeInt(fData.length);
+		output.write(fData);
 	}
 }
