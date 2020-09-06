@@ -1,7 +1,5 @@
 package org.matheclipse.core.expression;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.fail;
 import static org.matheclipse.core.expression.F.ArcTan;
 import static org.matheclipse.core.expression.F.C1D2;
 import static org.matheclipse.core.expression.F.CN1D2;
