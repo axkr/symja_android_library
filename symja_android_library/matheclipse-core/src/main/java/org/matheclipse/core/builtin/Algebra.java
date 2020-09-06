@@ -823,7 +823,7 @@ public class Algebra {
 				IExpr expandedArg1 = F.evalExpandAll(arg1, engine);
 
 				if (expandedArg1.isPlus()) {
-					return ((IAST) expandedArg1).mapThread(F.Cancel(null), 1);
+					return ((IAST) expandedArg1).mapThread(F.Cancel(F.Slot1), 1);
 				} else if (expandedArg1.isTimes() || expandedArg1.isPower()) {
 					IExpr result = cancelPowerTimes(expandedArg1, engine);
 					if (result.isPresent()) {
@@ -3520,7 +3520,7 @@ public class Algebra {
 						IAST timesAST = (IAST) x1;
 						// Log[x_ * y_ * z_] :> Log(x)+Log(y)+Log(z)
 						IAST logResult = timesAST.setAtCopy(0, F.Plus);
-						logResult = logResult.mapThread(F.Log(S.Null), 1);
+						logResult = logResult.mapThread(F.Log(F.Slot1), 1);
 						return powerExpand(logResult, assumptions);
 					}
 				}
@@ -3550,7 +3550,7 @@ public class Algebra {
 					if (x1.isTimes()) {
 						// Power[x_ * y_, z_] :> x^z * y^z
 						IAST timesAST = (IAST) x1;
-						IASTMutable timesResult = timesAST.mapThread(Power(S.Null, x2), 1);
+						IASTMutable timesResult = timesAST.mapThread(Power(F.Slot1, x2), 1);
 						if (assumptions) {
 							IASTAppendable plusResult = F.PlusAlloc(timesAST.size() + 1);
 							plusResult.append(C1D2);
@@ -3786,8 +3786,8 @@ public class Algebra {
 			@Override
 			public IExpr visit(IASTMutable ast) {
 				if (!ast.isAST(F.Root)) {
-					IAST copied = replacement.setAtCopy(1, null);
-					return ast.mapThread(copied, 1);
+					// IAST copied = replacement.setAtCopy(1, null);
+					return ast.mapThread(replacement, 1);
 				}
 				return F.NIL;
 			}
