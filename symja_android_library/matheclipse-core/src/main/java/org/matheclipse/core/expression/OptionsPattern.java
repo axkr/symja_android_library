@@ -1,0 +1,137 @@
+package org.matheclipse.core.expression;
+
+import org.matheclipse.core.interfaces.IAST;
+import org.matheclipse.core.interfaces.IExpr;
+import org.matheclipse.core.interfaces.ISymbol;
+import org.matheclipse.core.patternmatching.IPatternMap;
+
+public class OptionsPattern extends PatternSequence {
+
+	private static final long serialVersionUID = 1086461999754718513L;
+ 
+	public static OptionsPattern valueOf(final ISymbol symbol) {
+		return valueOf(symbol, F.NIL);
+	}
+
+	public static OptionsPattern valueOf(final ISymbol symbol, IExpr defaultOptions) {
+		OptionsPattern p = new OptionsPattern();
+		p.fSymbol = symbol;
+		p.fCondition = null;
+		p.fDefault = false;
+		p.fZeroArgsAllowed = true;
+		p.fDefaultOptions = defaultOptions;
+		p.fOptionsPatternHead = null;
+		return p;
+	}
+
+	protected IExpr fDefaultOptions = F.NIL;
+
+	private ISymbol fOptionsPatternHead = null;
+
+	protected OptionsPattern() {
+		super();
+	}
+
+	@Override
+	public IExpr copy() {
+		try {
+			return (IExpr) clone();
+		} catch (CloneNotSupportedException e) {
+			e.printStackTrace();
+			return null;
+		}
+	}
+
+	@Override
+	public boolean equals(final Object obj) {
+		if (this == obj) {
+			return true;
+		}
+		if (obj instanceof OptionsPattern) {
+			OptionsPattern pattern = (OptionsPattern) obj;
+			if (fSymbol == null) {
+				if (pattern.fSymbol == null) {
+					if (fDefault == pattern.fDefault && fZeroArgsAllowed == pattern.fZeroArgsAllowed) {
+						return fDefaultOptions.equals(pattern.fDefaultOptions);
+					}
+				}
+				return false;
+			}
+			if (fSymbol.equals(pattern.fSymbol) && fDefault == pattern.fDefault
+					&& fZeroArgsAllowed == pattern.fZeroArgsAllowed) {
+				return fDefaultOptions.equals(pattern.fDefaultOptions);
+			}
+		}
+		return false;
+	}
+
+	public IExpr getDefaultOptions() {
+		return fDefaultOptions;
+	}
+
+	public ISymbol getOptionsPatternHead() {
+		return fOptionsPatternHead;
+	}
+
+	@Override
+	public int hashCode() {
+		return (fSymbol == null) ? 213 : 37 + fSymbol.hashCode();
+	}
+
+	@Override
+	public boolean isOptionsPattern() {
+		return true;
+	}
+
+	@Override
+	public boolean matchPatternSequence(final IAST sequence, IPatternMap patternMap, ISymbol optionsPatternHead) {
+		// if (!isConditionMatchedSequence(sequence, patternMap)) {
+		// return false;
+		// }
+		if (this.fOptionsPatternHead != null) {
+			if (!this.fOptionsPatternHead.equals(optionsPatternHead)) {
+				return false;
+			}
+
+		}
+		if (sequence.size() == 1) {
+			this.fOptionsPatternHead = optionsPatternHead;
+			return patternMap.setValue(this, sequence);
+		}
+		for (int i = 1; i < sequence.size(); i++) {
+			if (!sequence.get(i).isRuleAST()) {
+				return false;
+			}
+		}
+
+		IExpr value = patternMap.getValue(this);
+		if (value != null) {
+			if (value.isList() || value.isSequence()) {
+				IAST list = (IAST) value;
+				for (int i = 1; i < list.size(); i++) {
+					if (!list.get(i).isRuleAST()) {
+						return false;
+					}
+				}
+			} else if (!value.isRuleAST()) {
+				return false;
+			}
+			this.fOptionsPatternHead = optionsPatternHead;
+			return true;
+		}
+		this.fOptionsPatternHead = optionsPatternHead;
+		return patternMap.setValue(this, sequence);
+	}
+
+	@Override
+	public String toString() {
+		final StringBuilder buffer = new StringBuilder();
+		if (fSymbol == null) {
+			buffer.append("OptionsPattern()");
+		} else {
+			buffer.append(fSymbol.toString());
+			buffer.append(":OptionsPattern()");
+		}
+		return buffer.toString();
+	}
+}
