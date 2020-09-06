@@ -62,107 +62,129 @@ public class SparseArrayExpr extends DataExpr<Trie<int[], IExpr>> implements ISp
 	 * @param arrayRulesList
 	 * @param defaultDimension
 	 * @param defaultValue
-	 *            default value for positions not specified in arrayRulesList
+	 *            default value for positions not specified in arrayRulesList. If <code>F.NIL</code> determine from '_'
+	 *            (Blank) rule.
 	 * @param engine
 	 * @return <code>null</code> if a new <code>SparseArrayExpr</code> cannot be created.
 	 */
 	public static SparseArrayExpr newInstance(IAST arrayRulesList, int defaultDimension, IExpr defaultValue,
 			EvalEngine engine) {
-		int[] dimension = null;
-		if (arrayRulesList.size() > 1) {
-			IExpr arg1 = arrayRulesList.arg1();
-			if (arg1.isRule()) {
-				IAST rule1 = (IAST) arg1;
-				int[] positions = null;
-				int depth = 1;
-				if (rule1.arg1().isList()) {
-					IAST positionList = (IAST) rule1.arg1();
-					depth = positionList.argSize();
+		IExpr[] defValue = new IExpr[] { defaultValue };
+		final Trie<int[], IExpr> value = Tries.forInts();
+		int[] determinedDimension = createTrie(arrayRulesList, value, defaultDimension, defValue, engine);
+		if (determinedDimension != null) {
+			return new SparseArrayExpr(value, determinedDimension, defValue[0].orElse(F.C0));
+		}
+		return null;
+	}
+
+	private static int[] createTrie(IAST arrayRulesList, final Trie<int[], IExpr> value, int defaultDimension,
+			IExpr[] defaultValue, EvalEngine engine) {
+		int[] determinedDimension = null;
+		IExpr arg1 = arrayRulesList.arg1();
+		IAST rule1 = (IAST) arg1;
+		int[] positions = null;
+		int depth = 1;
+		if (rule1.arg1().isList()) {
+			IAST positionList = (IAST) rule1.arg1();
+			depth = positionList.argSize();
+			positions = checkPositions(arrayRulesList, positionList, engine);
+			if (positions == null) {
+				if (positionList.forAll(x -> x.isBlank())) {
+					if (!defaultValue[0].isPresent()) {
+						defaultValue[0] = rule1.arg2();
+					} else if (!defaultValue[0].equals(rule1.arg2())) {
+						// The left hand side of `2` in `1` doesn't match an int-array of depth `3`.
+						IOFunctions.printMessage(S.SparseArray, "posr",
+								F.List(arrayRulesList, rule1.arg1(), F.ZZ(depth)), engine);
+						return null;
+					}
+				} else {
+					// The left hand side of `2` in `1` doesn't match an int-array of depth `3`.
+					IOFunctions.printMessage(S.SparseArray, "posr", F.List(arrayRulesList, positionList, F.ZZ(depth)),
+							EvalEngine.get());
+					return null;
+				}
+			}
+		} else {
+			int n = rule1.arg1().toIntDefault();
+			if (n <= 0) {
+				return null;
+			}
+			positions = new int[1];
+			positions[0] = n;
+		}
+
+		if (positions != null) {
+
+			determinedDimension = new int[depth];
+			if (defaultDimension > 0) {
+				for (int i = 0; i < depth; i++) {
+					determinedDimension[i] = defaultDimension;
+				}
+			} else {
+				for (int i = 0; i < depth; i++) {
+					if (positions[i] > determinedDimension[i]) {
+						determinedDimension[i] = positions[i];
+					}
+				}
+			}
+
+			value.put(positions, rule1.arg2());
+		}
+		for (int j = 2; j < arrayRulesList.size(); j++) {
+			IExpr arg = arrayRulesList.get(j);
+			if (arg.isRule()) {
+				IAST rule = (IAST) arg;
+				if (rule.arg1().isList()) {
+					IAST positionList = (IAST) rule.arg1();
 					positions = checkPositions(arrayRulesList, positionList, engine);
 					if (positions == null) {
-						if (!defaultValue.isPresent() && positionList.forAll(x -> x.isBlank())) {
-							defaultValue = rule1.arg2();
+						if (positionList.forAll(x -> x.isBlank())) {
+							if (!defaultValue[0].isPresent()) {
+								defaultValue[0] = rule.arg2();
+								continue;
+							} else if (!defaultValue[0].equals(rule.arg2())) {
+								// The left hand side of `2` in `1` doesn't match an int-array of depth `3`.
+								IOFunctions.printMessage(S.SparseArray, "posr",
+										F.List(arrayRulesList, rule.arg1(), F.ZZ(depth)), engine);
+								return null;
+							}
 						} else {
 							// The left hand side of `2` in `1` doesn't match an int-array of depth `3`.
 							IOFunctions.printMessage(S.SparseArray, "posr",
-									F.List(arrayRulesList, positionList, F.ZZ(depth)), engine);
+									F.List(arrayRulesList, rule.arg1(), F.ZZ(depth)), engine);
 							return null;
 						}
+					} else {
+						if (positions.length != depth) {
+							// The left hand side of `2` in `1` doesn't match an int-array of depth `3`.
+							IOFunctions.printMessage(S.SparseArray, "posr",
+									F.List(arrayRulesList, rule.arg1(), F.ZZ(depth)), engine);
+							return null;
+						}
+						for (int i = 0; i < depth; i++) {
+							if (positions[i] > determinedDimension[i]) {
+								determinedDimension[i] = positions[i];
+							}
+						}
+						value.putIfAbsent(positions, rule.arg2());
 					}
 				} else {
-					int n = rule1.arg1().toIntDefault();
+					int n = rule.arg1().toIntDefault();
 					if (n <= 0) {
 						return null;
 					}
 					positions = new int[1];
 					positions[0] = n;
-				}
-				final Trie<int[], IExpr> value = Tries.forInts();// new Trie<int[], IExpr>(INT_COMPARATOR);
-				if (positions != null) {
-					dimension = new int[depth];
-					if (defaultDimension > 0) {
-						for (int i = 0; i < depth; i++) {
-							dimension[i] = defaultDimension;
-						}
-					} else {
-						for (int i = 0; i < depth; i++) {
-							if (positions[i] > dimension[i]) {
-								dimension[i] = positions[i];
-							}
-						}
+					if (n > determinedDimension[0]) {
+						determinedDimension[0] = n;
 					}
-
-					value.put(positions, rule1.arg2());
+					value.putIfAbsent(positions, rule.arg2());
 				}
-				for (int j = 2; j < arrayRulesList.size(); j++) {
-					IExpr arg = arrayRulesList.get(j);
-					if (arg.isRule()) {
-						IAST rule = (IAST) arg;
-						if (rule.arg1().isList()) {
-							IAST positionList = (IAST) rule.arg1();
-							positions = checkPositions(arrayRulesList, positionList, engine);
-							if (positions == null) {
-								if (!defaultValue.isPresent() && positionList.forAll(x -> x.isBlank())) {
-									defaultValue = rule.arg2();
-									continue;
-								}
-								// The left hand side of `2` in `1` doesn't match an int-array of depth `3`.
-								IOFunctions.printMessage(S.SparseArray, "posr",
-										F.List(arrayRulesList, rule.arg1(), F.ZZ(depth)), engine);
-								return null;
-							}
-							if (positions.length != depth) {
-								// The left hand side of `2` in `1` doesn't match an int-array of depth `3`.
-								IOFunctions.printMessage(S.SparseArray, "posr",
-										F.List(arrayRulesList, rule.arg1(), F.ZZ(depth)), engine);
-								return null;
-							}
-							for (int i = 0; i < depth; i++) {
-								if (positions[i] > dimension[i]) {
-									dimension[i] = positions[i];
-								}
-							}
-							value.putIfAbsent(positions, rule.arg2());
-						} else {
-							int n = rule.arg1().toIntDefault();
-							if (n <= 0) {
-								return null;
-							}
-							positions = new int[1];
-							positions[0] = n;
-							if (n > dimension[0]) {
-								dimension[0] = n;
-							}
-							value.putIfAbsent(positions, rule.arg2());
-						}
-					}
-				}
-
-				return new SparseArrayExpr(value, dimension, defaultValue.orElse(F.C0));
-
 			}
 		}
-		return null;
+		return determinedDimension;
 	}
 
 	private transient IAST normalCache = null;
@@ -176,6 +198,13 @@ public class SparseArrayExpr extends DataExpr<Trie<int[], IExpr>> implements ISp
 	 * The default value for the positions with no entry in the map. Usually <code>0</code>.
 	 */
 	IExpr defaultValue;
+
+	/**
+	 * Constructor for serialization.
+	 */
+	public SparseArrayExpr() {
+		super(S.SparseArray, null);
+	}
 
 	/**
 	 * See <a href="https://en.wikipedia.org/wiki/Trie">Wikipedia - Trie</a>.
@@ -295,10 +324,10 @@ public class SparseArrayExpr extends DataExpr<Trie<int[], IExpr>> implements ISp
 				}
 				if (evaled) {
 					int[] newKey = new int[len];
-					int j=0;
+					int j = 0;
 					for (int i = 0; i < partIndex.length; i++) {
 						if (partIndex[i] == (-1)) {
-							newKey[j++]=key[i]; 
+							newKey[j++] = key[i];
 						}
 					}
 					value.put(newKey, entry.getValue());
@@ -396,8 +425,13 @@ public class SparseArrayExpr extends DataExpr<Trie<int[], IExpr>> implements ISp
 		for (int i = 0; i < len; i++) {
 			dimension[i] = in.readInt();
 		}
-		IAST rules = arrayRules();
-		rules = (IAST) in.readObject();
+		IAST arrayRulesList = (IAST) in.readObject();
+		fData = Tries.forInts();
+		IExpr[] defValue = new IExpr[] { defaultValue };
+		int[] determinedDimension = createTrie(arrayRulesList, fData, -1, defValue, EvalEngine.get());
+		if (determinedDimension == null) {
+			throw new java.io.InvalidClassException("no valid Trie creation");
+		}
 	}
 
 	public IExpr set(int i, IExpr value) {

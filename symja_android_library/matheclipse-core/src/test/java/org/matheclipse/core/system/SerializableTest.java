@@ -14,6 +14,7 @@ import org.matheclipse.core.expression.Context;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.interfaces.IAssociation;
 import org.matheclipse.core.interfaces.IExpr;
+import org.matheclipse.core.interfaces.ISparseArray;
 import org.matheclipse.core.patternmatching.RulesData;
 import org.matheclipse.core.reflection.system.Share;
 import org.matheclipse.core.visit.AbstractVisitor;
@@ -32,6 +33,11 @@ public class SerializableTest extends TestCase {
 	public void testAssociation() {
 		IAssociation assoc = F.assoc(F.List(F.Rule(F.a, F.b)));
 		equalsCopy(assoc);
+	}
+
+	public void testSparseArray() {
+		ISparseArray sparse = F.sparseArray(F.List(F.Rule(F.List(1, 2, 3), F.b), F.Rule(F.List(1, 4, 5), F.a)));
+		equalsCopy(sparse);
 	}
 
 	public void testNum() {

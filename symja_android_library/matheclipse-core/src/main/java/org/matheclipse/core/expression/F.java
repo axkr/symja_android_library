@@ -83,6 +83,7 @@ import org.matheclipse.core.eval.interfaces.ICoreFunctionEvaluator;
 import org.matheclipse.core.eval.util.IAssumptions;
 import org.matheclipse.core.eval.util.Lambda;
 import org.matheclipse.core.expression.data.GraphExpr;
+import org.matheclipse.core.expression.data.SparseArrayExpr;
 import org.matheclipse.core.form.Documentation;
 import org.matheclipse.core.generic.Functors;
 import org.matheclipse.core.graphics.Show2SVG;
@@ -103,6 +104,7 @@ import org.matheclipse.core.interfaces.IPattern;
 import org.matheclipse.core.interfaces.IPatternSequence;
 import org.matheclipse.core.interfaces.IRational;
 import org.matheclipse.core.interfaces.ISignedNumber;
+import org.matheclipse.core.interfaces.ISparseArray;
 import org.matheclipse.core.interfaces.IStringX;
 import org.matheclipse.core.interfaces.ISymbol;
 import org.matheclipse.core.parser.ExprParser;
@@ -1825,6 +1827,10 @@ public class F extends S {
 		return new ASTAssociation(listOfRules);
 	}
 
+	public static ISparseArray sparseArray(final IAST arrayRulesList) {
+		return SparseArrayExpr.newInstance(arrayRulesList, -1, F.C0, EvalEngine.get());
+	}
+
 	/**
 	 * Creates a new AST from the given <code>ast</code> and <code>head</code>. if <code>include</code> is set to
 	 * <code>true </code> all arguments from index first to last-1 are copied in the new list if <code>include</code> is
@@ -2042,11 +2048,11 @@ public class F extends S {
 	public final static IASTMutable binaryAST2(final IExpr head, final IExpr arg1, final IExpr arg2) {
 		return new AST2(head, arg1, arg2);
 	}
-	
+
 	public final static IASTMutable binaryAST2(final IExpr head, final String arg1, final IExpr arg2) {
 		return new AST2(head, F.$str(arg1), arg2);
 	}
-	
+
 	public final static IASTMutable binaryAST2(final IExpr head, final String arg1, final String arg2) {
 		return new AST2(head, F.$str(arg1), F.$str(arg2));
 	}
