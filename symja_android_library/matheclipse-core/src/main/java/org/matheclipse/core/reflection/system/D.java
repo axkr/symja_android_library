@@ -350,7 +350,7 @@ public class D extends AbstractFunctionEvaluator implements DRules {
 				final IExpr header = listArg1.head();
 				if (listArg1.isPlus()) {
 					// D[a_+b_+c_,x_] -> D[a,x]+D[b,x]+D[c,x]
-					return listArg1.mapThread(F.D(F.Null, x), 1);
+					return listArg1.mapThread(F.D(F.Slot1, x), 1);
 				} else if (listArg1.isTimes()) {
 					return listArg1.map(F.PlusAlloc(16), new BinaryBindIth1st(listArg1, F.D(F.Null, x)));
 				} else if (listArg1.isPower()) {

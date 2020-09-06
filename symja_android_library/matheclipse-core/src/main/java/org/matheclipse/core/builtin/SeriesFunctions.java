@@ -857,9 +857,9 @@ public class SeriesFunctions {
 						.printMessage(ast.topHead() + ": variable symbol for rule definition expected at position 2!");
 			}
 			if (arg1.isList()) {
-				IASTMutable clone = ast.copy();
-				clone.set(1, null);
-				return ((IAST) arg1).mapThread(clone, 1);
+				// IASTMutable clone = ast.copy();
+				// clone.set(1, F.Slot1);
+				return ((IAST) arg1).mapThread(ast, 1);
 			}
 			boolean numericMode = engine.isNumericMode();
 			try {

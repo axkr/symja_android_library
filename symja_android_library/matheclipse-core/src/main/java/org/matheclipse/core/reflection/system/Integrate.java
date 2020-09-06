@@ -964,7 +964,7 @@ public class Integrate extends AbstractFunctionEvaluator {
 	 * @return
 	 */
 	private static IExpr mapIntegrate(IAST ast, final IExpr x) {
-		return ast.mapThread(F.Integrate(null, x), 1);
+		return ast.mapThread(F.Integrate(F.Slot1, x), 1);
 	}
 
 	/**

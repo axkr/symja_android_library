@@ -1454,7 +1454,7 @@ public final class BooleanFunctions {
 					if (boole.isTrue()) {
 						return result;
 					} else {
-						return result.mapThread(F.Not(null), 1);
+						return result.mapThread(F.Not(F.Slot1), 1);
 					}
 				}
 				return result;

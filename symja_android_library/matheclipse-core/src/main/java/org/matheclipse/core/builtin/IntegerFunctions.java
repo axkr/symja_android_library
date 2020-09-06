@@ -1447,7 +1447,7 @@ public class IntegerFunctions {
 			try {
 				IExpr arg1 = engine.evaluate(ast.arg1());
 				if (arg1.isList()) {
-					return ((IAST) arg1).mapThread(ast.setAtCopy(1, F.Null), 1);
+					return ((IAST) arg1).mapThread(ast.setAtCopy(1, F.Slot1), 1);
 				}
 				if (ast.isAST2()) {
 					// Round(z, a)

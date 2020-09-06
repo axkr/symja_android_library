@@ -48,11 +48,13 @@ import org.apfloat.Apcomplex;
 import org.apfloat.ApcomplexMath;
 import org.apfloat.Apfloat;
 import org.apfloat.ApfloatMath;
+import org.hipparchus.complex.Complex;
 import org.hipparchus.fraction.BigFraction;
 import org.hipparchus.linear.Array2DRowRealMatrix;
 import org.hipparchus.linear.ArrayRealVector;
 import org.matheclipse.core.basic.Config;
 import org.matheclipse.core.builtin.functions.GammaJS;
+import org.matheclipse.core.builtin.functions.HypergeometricJS;
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.PlusOp;
 import org.matheclipse.core.eval.exception.IterationLimitExceeded;
@@ -530,7 +532,7 @@ public final class Arithmetic {
 				arg1 = ast.arg1();
 			}
 			if (arg1.isList()) {
-				return ((IAST) arg1).mapThread(F.Arg(S.Null), 1);
+				return ((IAST) arg1).mapThread(F.Arg(F.Slot1), 1);
 			}
 			if (arg1.isIndeterminate()) {
 				return F.Indeterminate;
@@ -653,7 +655,7 @@ public final class Arithmetic {
 				if (arg1.isAST()) {
 					IAST list = (IAST) arg1;
 					// Chop[{a,b,c}] -> {Chop[a],Chop[b],Chop[c]}
-					return list.mapThread(F.Chop(S.Null), 1);
+					return list.mapThread(F.Chop(F.Slot1), 1);
 				}
 				if (arg1.isNumber()) {
 					return F.chopNumber((INumber) arg1, delta);
@@ -1129,7 +1131,7 @@ public final class Arithmetic {
 				}
 			}
 			if (arg1.isPlus()) {
-				return ((IAST) arg1).mapThread((IASTMutable) F.Conjugate(S.Null), 1);
+				return ((IAST) arg1).mapThread((IASTMutable) F.Conjugate(F.Slot1), 1);
 			}
 			if (arg1.isTimes()) {
 				IASTAppendable result = F.NIL;
@@ -1807,19 +1809,27 @@ public final class Arithmetic {
 
 	/**
 	 * <pre>
-	 * HarmonicNumber(n)
+	 * <code>HarmonicNumber(n)
+	 * </code>
 	 * </pre>
 	 * 
 	 * <blockquote>
 	 * <p>
-	 * returns the <code>n</code>th harmonic number.<br />
+	 * returns the <code>n</code>th harmonic number.
 	 * </p>
 	 * </blockquote>
+	 * <p>
+	 * See
+	 * </p>
+	 * <ul>
+	 * <li><a href="https://en.wikipedia.org/wiki/Harmonic_number">Wikipedia - Harmonic number</a></li>
+	 * </ul>
 	 * <h3>Examples</h3>
 	 * 
 	 * <pre>
-	 * &gt;&gt; Table(HarmonicNumber(n), {n, 8})
-	 * {1,3/2,11/6,25/12,137/60,49/20,363/140,761/280}
+	 * <code>&gt;&gt; Table(HarmonicNumber(n), {n, 8})
+	 * {1,3/2,11/6,25/12,137/60,49/20,363/140,761/280} 
+	 * </code>
 	 * </pre>
 	 */
 	private final static class HarmonicNumber extends AbstractEvaluator {
@@ -1830,80 +1840,111 @@ public final class Arithmetic {
 			try {
 				if (ast.isAST2()) {
 					IExpr arg2 = ast.arg2();
-					if (arg2.isOne()) {
-						return F.HarmonicNumber(arg1);
-					} else {
-						// generalized harmonic number
-						if (arg2.isInteger()) {
-							if (arg1.isInfinity()) {
-								if (arg2.isPositive() && ((IInteger) arg2).isEven()) {
-									// Module({v=s/2},((2*Pi)^(2*v)*(-1)^(v+1)*BernoulliB(2*v))/(2*(2*v)!))
-									IExpr v = Times(C1D2, arg2);
-									return Times(Power(Times(C2, Pi), Times(C2, v)), Power(CN1, Plus(v, C1)),
-											BernoulliB(Times(C2, v)), Power(Times(C2, Factorial(Times(C2, v))), CN1));
-								}
-								return F.NIL;
-							}
-						}
-						if (arg2.isInteger() && !arg2.isPositive()) {
-							IExpr z = arg1;
-							IExpr n = arg2.negate();
-							return
-							// [$ (1/(n + 1))*BernoulliB(n + 1, z + 1) + ((-1)^n/(n + 1))* BernoulliB(n + 1) $]
-							F.Plus(F.Times(F.Power(F.Plus(n, F.C1), F.CN1),
-									F.BernoulliB(F.Plus(n, F.C1), F.Plus(z, F.C1))),
-									F.Times(F.Power(F.CN1, n), F.Power(F.Plus(n, F.C1), F.CN1),
-											F.BernoulliB(F.Plus(n, F.C1)))); // $$;
-						}
+					return harmonic(arg1, arg2, ast, engine);
+				}
+				return harmonic(arg1, ast, engine);
+			} catch (final ValidateException ve) {
+				// int number validation
+				return engine.printMessage(ast.topHead(), ve);
+			}
+		}
 
-						if (arg1.isInteger()) {
-							if (arg1.isNegative() && arg2.isNumber() && arg2.isPositive()) {
-								return F.CComplexInfinity;
-							}
+		private static IExpr harmonic(IExpr arg1, final IAST ast, EvalEngine engine) {
+//			if (engine.isDoubleMode()) {
+//				try {
+//					double a = Double.NaN;
+//					try {
+//						a = arg1.evalDouble();
+//					} catch (ValidateException ve) {
+//					}
+//					if (Double.isNaN(a) || a < 0) {
+//						org.hipparchus.complex.Complex ac = arg1.evalComplex();
+//					} else {
+//						// approximate
+//						double aSqr = a * a;
+//						if (a > 100.0) {
+//							return F.num(Math.log(a) + ConstantDefinitions.EULER_GAMMA + 0.5 / a - 1.0 / (12.0 * aSqr));
+//						} else {
+//							// denominators https://oeis.org/A006953
+//							double aQuad = aSqr * aSqr;
+//							return F.num(//
+//									Math.log(a) //
+//											+ ConstantDefinitions.EULER_GAMMA //
+//											+ 0.5 / a //
+//											- 1.0 / (12.0 * aSqr) //
+//											+ 1.0 / (120.0 * aQuad) //
+//											- 1.0 / (252.0 * aQuad * aSqr)); //
+//							// + 1.0 / (240.0 * aQuad*aQuad)//
+//							// - 1.0 / (132.0 * aQuad*aQuad*aSqr) //
+//							// + 1.0 / (32760.0 * aQuad*aQuad*aQuad));
+//						}
+//					}
+//
+//				} catch (ValidateException ve) {
+//					if (FEConfig.SHOW_STACKTRACE) {
+//						ve.printStackTrace();
+//					}
+//				} catch (RuntimeException rex) {
+//					// rex.printStackTrace();
+//					return engine.printMessage(ast.topHead(), rex);
+//				}
+//			}
+			if (arg1.isInteger()) {
+				if (arg1.isNegative()) {
+					return F.CComplexInfinity;
+				}
+				int n = Validate.checkIntType(ast, 1, Integer.MIN_VALUE);
+				if (n < 0) {
+					return F.NIL;
+				}
+				if (n == 0) {
+					return C0;
+				}
+				if (n == 1) {
+					return C1;
+				}
 
-							int n = Validate.checkIntType(ast, 1, Integer.MIN_VALUE);
-							if (n < 0) {
-								return F.NIL;
-							}
-							if (n == 0) {
-								return C0;
-							}
+				return QQ(harmonicNumber(n));
+			}
+			if (arg1.isInfinity()) {
+				return arg1;
+			}
+			if (arg1.isNegativeInfinity()) {
+				return F.CComplexInfinity;
+			}
+			return F.NIL;
+		}
 
-							int iterationLimit = EvalEngine.get().getIterationLimit();
-							if (iterationLimit >= 0 && iterationLimit <= n) {
-								IterationLimitExceeded.throwIt(n, ast);
-							}
-							int intArg2 = arg2.toIntDefault();
-							if (intArg2 != Integer.MIN_VALUE) {
-								int exponent = intArg2;
-								if (intArg2 < 0) {
-									exponent *= -1;
-								}
-								IRational result = F.C0;
-								for (int i = 1; i <= n; i++) {
-									IInteger pow = F.ZZ(i).pow(exponent);
-									if (intArg2 < 0) {
-										result = result.add(pow);
-									} else {
-										result = result.add(pow.inverse());
-									}
-									result.checkBitLength();
-								}
-								return result;
-							}
-
-							final IExpr arg2Negate = arg2.negate();
-							return F.sum(i -> Power(i, arg2Negate), 1, n);
-							// IASTAppendable result = F.PlusAlloc(n);
-							// return result.appendArgs(n + 1, i -> Power(F.ZZ(i), arg2Negate));
+		private static IExpr harmonic(IExpr arg1, IExpr arg2, final IAST ast, EvalEngine engine) {
+			if (arg2.isOne()) {
+				return F.HarmonicNumber(arg1);
+			} else {
+				// generalized harmonic number
+				if (arg2.isInteger()) {
+					if (arg1.isInfinity()) {
+						if (arg2.isPositive() && ((IInteger) arg2).isEven()) {
+							// Module({v=s/2},((2*Pi)^(2*v)*(-1)^(v+1)*BernoulliB(2*v))/(2*(2*v)!))
+							IExpr v = Times(C1D2, arg2);
+							return Times(Power(Times(C2, Pi), Times(C2, v)), Power(CN1, Plus(v, C1)),
+									BernoulliB(Times(C2, v)), Power(Times(C2, Factorial(Times(C2, v))), CN1));
 						}
 						return F.NIL;
 					}
 				}
+				if (arg2.isInteger() && !arg2.isPositive()) {
+					IExpr z = arg1;
+					IExpr n = arg2.negate();
+					return
+					// [$ (1/(n + 1))*BernoulliB(n + 1, z + 1) + ((-1)^n/(n + 1))* BernoulliB(n + 1) $]
+					F.Plus(F.Times(F.Power(F.Plus(n, F.C1), F.CN1), F.BernoulliB(F.Plus(n, F.C1), F.Plus(z, F.C1))),
+							F.Times(F.Power(F.CN1, n), F.Power(F.Plus(n, F.C1), F.CN1), F.BernoulliB(F.Plus(n, F.C1)))); // $$;
+				}
+
 				if (arg1.isInteger()) {
-					if (arg1.isNegative()) {
+					if (arg1.isNegative() && arg2.isNumber() && arg2.isPositive()) {
 						return F.CComplexInfinity;
 					}
+
 					int n = Validate.checkIntType(ast, 1, Integer.MIN_VALUE);
 					if (n < 0) {
 						return F.NIL;
@@ -1911,23 +1952,37 @@ public final class Arithmetic {
 					if (n == 0) {
 						return C0;
 					}
-					if (n == 1) {
-						return C1;
+
+					int iterationLimit = EvalEngine.get().getIterationLimit();
+					if (iterationLimit >= 0 && iterationLimit <= n) {
+						IterationLimitExceeded.throwIt(n, ast);
+					}
+					int intArg2 = arg2.toIntDefault();
+					if (intArg2 != Integer.MIN_VALUE) {
+						int exponent = intArg2;
+						if (intArg2 < 0) {
+							exponent *= -1;
+						}
+						IRational result = F.C0;
+						for (int i = 1; i <= n; i++) {
+							IInteger pow = F.ZZ(i).pow(exponent);
+							if (intArg2 < 0) {
+								result = result.add(pow);
+							} else {
+								result = result.add(pow.inverse());
+							}
+							result.checkBitLength();
+						}
+						return result;
 					}
 
-					return QQ(harmonicNumber(n));
+					final IExpr arg2Negate = arg2.negate();
+					return F.sum(i -> Power(i, arg2Negate), 1, n);
+					// IASTAppendable result = F.PlusAlloc(n);
+					// return result.appendArgs(n + 1, i -> Power(F.ZZ(i), arg2Negate));
 				}
-				if (arg1.isInfinity()) {
-					return arg1;
-				}
-				if (arg1.isNegativeInfinity()) {
-					return F.CComplexInfinity;
-				}
-			} catch (final ValidateException ve) {
-				// int number validation
-				return engine.printMessage(ast.topHead(), ve);
+				return F.NIL;
 			}
-			return F.NIL;
 		}
 
 		@Override
@@ -1942,7 +1997,7 @@ public final class Arithmetic {
 		 *            the index, non-negative.
 		 * @return the H_1=1 for n=1, H_2=3/2 for n=2 etc. For values of n less than 1, zero is returned.
 		 */
-		public BigFraction harmonicNumber(int n) {
+		public static BigFraction harmonicNumber(int n) {
 			if (n < 1)
 				return BigFraction.ZERO;
 			else {
@@ -1967,7 +2022,7 @@ public final class Arithmetic {
 
 		@Override
 		public void setUp(final ISymbol newSymbol) {
-			newSymbol.setAttributes(ISymbol.LISTABLE);
+			newSymbol.setAttributes(ISymbol.LISTABLE | ISymbol.NUMERICFUNCTION);
 		}
 
 	}
@@ -2051,7 +2106,7 @@ public final class Arithmetic {
 
 			}
 			if (arg1.isPlus()) {
-				return ((IAST) arg1).mapThread((IAST) F.Im(null), 1);
+				return ((IAST) arg1).mapThread((IAST) F.Im(F.Slot1), 1);
 			}
 			if (arg1.isPower()) {
 				IExpr base = arg1.base();
@@ -3713,7 +3768,7 @@ public final class Arithmetic {
 				if (powBase.isTimes()) {
 					if (exponent.isInteger() || exponent.isMinusOne()) {
 						// (a * b * c)^n => a^n * b^n * c^n
-						return powBase.mapThread(Power(null, exponent), 1);
+						return powBase.mapThread(Power(F.Slot1, exponent), 1);
 					}
 					if (base.first().isMinusOne() && exponent.isReal() && base.isRealResult()) {
 						// ((-1) * rest) ^ (exponent) ;rest is real result
@@ -4117,7 +4172,7 @@ public final class Arithmetic {
 					return F.Times(F.CN1, F.Power(F.CN1, F.C3D4));
 				}
 			}
-			if (base.isComplex() && exponent.isPositive()) {
+			if (exponent.isPositive()) {
 				if (base.isImaginaryUnit()) {
 					return F.Power(F.CN1, F.C1D2.times(exponent));
 				} else if (base.isNegativeImaginaryUnit()) {
@@ -4132,6 +4187,12 @@ public final class Arithmetic {
 					denominator = rat.denominator().multiply(F.C2);
 					return F.Times(F.CN1, F.Power(F.CNI, div),
 							F.Power(F.CN1, F.fraction(denominator.subtract(numerator), denominator)));
+				}
+				if (exponent.equals(F.C1D2)) {
+					IComplex sqrt = base.sqrtCC();
+					if (sqrt != null) {
+						return sqrt;
+					}
 				}
 			}
 			return F.NIL;
@@ -4467,7 +4528,7 @@ public final class Arithmetic {
 
 			}
 			if (expr.isPlus()) {
-				return ((IAST) expr).mapThread((IAST) F.Re(null), 1);
+				return ((IAST) expr).mapThread((IAST) F.Re(F.Slot1), 1);
 			}
 			if (expr.isPower()) {
 				IExpr base = expr.base();
@@ -4577,7 +4638,7 @@ public final class Arithmetic {
 				arg1 = ast.arg1();
 			}
 			if (arg1.isList()) {
-				return ((IAST) arg1).mapThread(F.Sign(S.Null), 1);
+				return ((IAST) arg1).mapThread(F.Sign(F.Slot1), 1);
 			}
 
 			if (arg1.isNumber()) {
@@ -5282,7 +5343,7 @@ public final class Arithmetic {
 				if (temp.isPlus()) {
 					IAST plus = (IAST) temp;
 					if (AbstractFunctionEvaluator.isNegativeWeighted(plus, true)) {
-						temp = EvalEngine.get().evaluate(plus.mapThread(F.binaryAST2(Times, CN1, S.Null), 2));
+						temp = EvalEngine.get().evaluate(plus.mapThread(F.binaryAST2(Times, CN1, F.Slot1), 2));
 						result = times.copyAppendable();
 						result.set(i, temp);
 						result.remove(1);
@@ -5605,7 +5666,7 @@ public final class Arithmetic {
 					}
 					// distribute the number over the sum:
 					final IAST arg2 = (IAST) ast1.arg2();
-					return arg2.mapThread(F.Times(ast1.arg1(), null), 2);
+					return arg2.mapThread(F.Times(ast1.arg1(), F.Slot1), 2);
 				}
 				IExpr temp = distributeLeadingFactor(binaryOperator(ast1, ast1.arg1(), ast1.arg2(), engine), ast1);
 				if (!temp.isPresent()) {
