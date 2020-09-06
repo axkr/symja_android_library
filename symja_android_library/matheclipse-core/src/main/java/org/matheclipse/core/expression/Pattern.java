@@ -3,6 +3,7 @@ package org.matheclipse.core.expression;
 import java.io.ObjectStreamException;
 import java.util.List;
 
+import org.hipparchus.util.Pair;
 import org.matheclipse.core.basic.Config;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IExpr;
@@ -75,7 +76,7 @@ public class Pattern extends Blank {
 	}
 
 	@Override
-	public int[] addPattern(List<IExpr> patternIndexMap) {
+	public int[] addPattern(List<Pair<IExpr, IPatternObject>> patternIndexMap) {
 		IPatternMap.addPattern(patternIndexMap, this);
 		int[] result = new int[2];
 		if (isPatternDefault() || isPatternOptional()) {
@@ -110,6 +111,11 @@ public class Pattern extends Blank {
 		return super.compareTo(expr);
 	}
 
+	@Override
+	public IExpr copy() {
+		return new Pattern(fSymbol, fHeadTest, fDefault);
+	}
+	
 	@Override
 	public boolean equals(final Object obj) {
 		if (this == obj) {

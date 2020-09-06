@@ -392,8 +392,21 @@ public class ExprParser extends Scanner {
 		switch (fToken) {
 		case TT_IDENTIFIER:
 			temp = getSymbol();
-			if (temp.isSymbol() && fToken >= TT_BLANK && fToken <= TT_BLANK_COLON) {
-				temp = getBlankPatterns(temp);
+			if (temp.isSymbol()) {
+				ISymbol symbol = (ISymbol) temp;
+				if (fToken == TT_COLON) {
+					getNextToken();
+					if (fToken == TT_IDENTIFIER) {
+						temp = getSymbol();
+						temp = parseArguments(temp);
+						return F.Pattern(symbol, temp);
+					} else {
+						temp = getFactor(0);
+					}
+					temp = F.Pattern(symbol, temp);
+				} else if (fToken >= TT_BLANK && fToken <= TT_BLANK_COLON) {
+					temp = getBlankPatterns(symbol);
+				}
 			}
 			return parseArguments(temp);
 
@@ -515,7 +528,7 @@ public class ExprParser extends Scanner {
 					throwSyntaxError("\'|>\' expected.");
 				}
 				try {
-					temp = F.assoc(function); 
+					temp = F.assoc(function);
 				} catch (MathException mex) {
 					// fallback if no rules were parsed
 					function.set(0, F.Association);
@@ -949,7 +962,11 @@ public class ExprParser extends Scanner {
 	}
 
 	protected boolean isOperatorCharacters() {
-		return fFactory.isOperatorChar(fCurrentChar);// getOperatorCharacters().indexOf(fCurrentChar) >= 0;
+		return fFactory.isOperatorChar(fCurrentChar);
+	}
+
+	protected boolean isOperatorCharacters(char ch) {
+		return fFactory.isOperatorChar(ch);
 	}
 
 	final protected List<Operator> getOperator() {
@@ -993,13 +1010,16 @@ public class ExprParser extends Scanner {
 	 * 
 	 */
 	private IExpr getPart(final int min_precedence) throws SyntaxError {
+		IASTAppendable function = null;
 		IExpr temp = getFactor(min_precedence);
-
+		if (fToken == TT_COLON) {
+			getNextToken(); 
+			return F.Optional(temp, parseExpression());
+		}
 		if (fToken != TT_PARTOPEN) {
 			return temp;
 		}
 
-		IASTAppendable function = null;
 		do {
 			if (function == null) {
 				function = F.Part(2, temp);
@@ -1226,13 +1246,13 @@ public class ExprParser extends Scanner {
 				getNextToken();
 				if (fToken == TT_COMMA || fToken == TT_PARTCLOSE || fToken == TT_ARGUMENTS_CLOSE
 						|| fToken == TT_PRECEDENCE_CLOSE) {
-  					return span;  
+					return span;
 				}
 			} else if (fToken == TT_COMMA || fToken == TT_PARTCLOSE || fToken == TT_ARGUMENTS_CLOSE
 					|| fToken == TT_PRECEDENCE_CLOSE) {
 				span.append(F.All);
 				return span;
-			} else if (fToken == TT_OPERATOR) { 
+			} else if (fToken == TT_OPERATOR) {
 				InfixExprOperator infixOperator = determineBinaryOperator();
 				if (infixOperator != null && //
 						infixOperator.getOperatorString().equals(";")) {
@@ -1246,9 +1266,9 @@ public class ExprParser extends Scanner {
 						getNextToken();
 					}
 					return parseInfixOperator(span, infixOperator);
-				} 
+				}
 			}
-			span.append(parseExpression()); 
+			span.append(parseExpression());
 			return span;
 		}
 		IExpr temp = parseExpression(parsePrimary(0), 0);
@@ -1264,13 +1284,13 @@ public class ExprParser extends Scanner {
 						|| fToken == TT_PRECEDENCE_CLOSE) {
 					return span;
 				} else if (fToken == TT_OPERATOR) {
-					return parseExpression(F.Times(span,F.Span(F.C1,S.All)), 0);
+					return parseExpression(F.Times(span, F.Span(F.C1, S.All)), 0);
 				}
 			} else if (fToken == TT_COMMA || fToken == TT_PARTCLOSE || fToken == TT_ARGUMENTS_CLOSE
 					|| fToken == TT_PRECEDENCE_CLOSE) {
 				span.append(F.All);
 				return span;
-			} else if (fToken == TT_OPERATOR) { 
+			} else if (fToken == TT_OPERATOR) {
 				InfixExprOperator infixOperator = determineBinaryOperator();
 				if (infixOperator != null && //
 						infixOperator.getOperatorString().equals(";")) {

@@ -288,7 +288,7 @@ public class ParserTestCase extends TestCase {
 			assertEquals("", e.getMessage());
 		}
 	}
-	
+
 	public void testParser21b() {
 		try {
 			Parser p = new Parser();
@@ -299,7 +299,7 @@ public class ParserTestCase extends TestCase {
 			assertEquals("", e.getMessage());
 		}
 	}
-	
+
 	public void testParser21c() {
 		try {
 			Parser p = new Parser();
@@ -310,7 +310,7 @@ public class ParserTestCase extends TestCase {
 			assertEquals("", e.getMessage());
 		}
 	}
-	
+
 	public void testParserFunction() {
 		try {
 			Parser p = new Parser(true);
@@ -690,7 +690,7 @@ public class ParserTestCase extends TestCase {
 			assertEquals("", e.getMessage());
 		}
 	}
-	
+
 	public void testParser48b() {
 		try {
 			Parser p = new Parser();
@@ -702,7 +702,7 @@ public class ParserTestCase extends TestCase {
 			assertEquals("", e.getMessage());
 		}
 	}
-	
+
 	public void testParser48c() {
 		try {
 			Parser p = new Parser();
@@ -757,6 +757,68 @@ public class ParserTestCase extends TestCase {
 			ASTNode obj = p.parse("FullForm[Hold[{1, 2, 3, 4, 5}[[;; ;; -1]]]]");
 			assertEquals(obj.toString(), //
 					"FullForm(Hold(Part(List(1, 2, 3, 4, 5), Span(1, All, -1))))");
+		} catch (Exception e) {
+			e.printStackTrace();
+			assertEquals("", e.getMessage());
+		}
+	}
+ 
+	public void testParser53() {
+		try {
+			Parser p = new Parser();
+			ASTNode obj = p.parse("opts : OptionsPattern[]");
+			assertEquals(obj.toString(), //
+					"Pattern(opts, OptionsPattern())");
+		} catch (Exception e) {
+			e.printStackTrace();
+			assertEquals("", e.getMessage());
+		}
+	}
+	
+	public void testParser54() {
+		try {
+			Parser p = new Parser();
+			ASTNode obj = p.parse("f[x_, opts : OptionsPattern[]]");
+			assertEquals(obj.toString(), //
+					"f(x_, Pattern(opts, OptionsPattern()))");
+		} catch (Exception e) {
+			e.printStackTrace();
+			assertEquals("", e.getMessage());
+		}
+	}
+	
+	public void testParser55() {
+		try {
+			Parser p = new Parser();
+			ASTNode obj = p.parse("a:b:c:d");
+			assertEquals(obj.toString(), //
+					"Optional(Pattern(a, b), Pattern(c, d))");
+		} catch (Exception e) {
+			e.printStackTrace();
+			assertEquals("", e.getMessage());
+		}
+	}
+	
+	public void testParser56() {
+		// see https://github.com/halirutan/Wolfram-Language-IntelliJ-Plugin-Archive/issues/166
+		try {
+			Parser p = new Parser();
+			ASTNode obj = p.parse("x y : z");
+			assertEquals(obj.toString(), //
+					"Times(x, Pattern(y, z))");
+		} catch (Exception e) {
+			e.printStackTrace();
+			assertEquals("", e.getMessage());
+		}
+	}
+	
+	public void testParser57() {
+		// see https://github.com/halirutan/Wolfram-Language-IntelliJ-Plugin-Archive/issues/166
+		try {
+			Parser p = new Parser();
+			ASTNode obj = p.parse("x y_ : z");
+			assertEquals(obj.toString(), //
+					"Times(x, Optional(y_, z))");
 		} catch (Exception e) {
 			e.printStackTrace();
 			assertEquals("", e.getMessage());

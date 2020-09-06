@@ -214,7 +214,24 @@ public class Parser extends Scanner {
 		switch (fToken) {
 		case TT_IDENTIFIER:
 			final SymbolNode symbol = getSymbol();
-			if (fToken >= TT_BLANK && fToken <= TT_BLANK_COLON) {
+			if (fToken == TT_COLON) {
+				getNextToken();
+				if (fToken == TT_IDENTIFIER) {
+					temp = getSymbol();
+					temp = parseArguments(temp);
+					final FunctionNode pattern = fFactory
+							.createFunction(fFactory.createSymbol(IConstantOperators.Pattern));
+					pattern.add(symbol);
+					pattern.add(temp);
+					return pattern;
+				} else {
+					temp = getFactor(0);
+				}
+				final FunctionNode pattern = fFactory.createFunction(fFactory.createSymbol(IConstantOperators.Pattern));
+				pattern.add(symbol);
+				pattern.add(temp);
+				temp = pattern;
+			} else if (fToken >= TT_BLANK && fToken <= TT_BLANK_COLON) {
 				temp = getBlankPatterns(symbol);
 			} else {
 				temp = symbol;
@@ -631,6 +648,10 @@ public class Parser extends Scanner {
 		return fFactory.isOperatorChar(fCurrentChar);
 	}
 
+	protected boolean isOperatorCharacters(char ch) {
+		return fFactory.isOperatorChar(ch);
+	}
+
 	/**
 	 * protected List<Operator> getOperator()
 	 * 
@@ -731,13 +752,18 @@ public class Parser extends Scanner {
 	 * 
 	 */
 	private ASTNode getPart(final int min_precedence) throws SyntaxError {
+		FunctionNode function = null;
 		ASTNode temp = getFactor(min_precedence);
-
+		if (fToken == TT_COLON) {
+			getNextToken();
+			function = fFactory.createFunction(fFactory.createSymbol(IConstantOperators.Optional), temp);
+			function.add(parseExpression());
+			return function;
+		}
 		if (fToken != TT_PARTOPEN) {
 			return temp;
 		}
 
-		FunctionNode function = null;
 		do {
 			if (function == null) {
 				function = fFactory.createFunction(fFactory.createSymbol(IConstantOperators.Part), temp);
@@ -901,7 +927,7 @@ public class Parser extends Scanner {
 					|| fToken == TT_PRECEDENCE_CLOSE) {
 				span.add(fFactory.createSymbol(IConstantOperators.All));
 				return span;
-			} else if (fToken == TT_OPERATOR) { 
+			} else if (fToken == TT_OPERATOR) {
 				InfixOperator infixOperator = determineBinaryOperator();
 				if (infixOperator != null && //
 						infixOperator.getOperatorString().equals(";")) {
@@ -916,7 +942,7 @@ public class Parser extends Scanner {
 					}
 					return parseInfixOperator(span, infixOperator);
 				}
-			} 
+			}
 			span.add(parseExpression(parsePrimary(0), 0));
 			if (fToken == TT_SPAN) {
 				getNextToken();
@@ -933,7 +959,7 @@ public class Parser extends Scanner {
 		if (fToken == TT_SPAN) {
 			FunctionNode span = fFactory.createFunction(fFactory.createSymbol(IConstantOperators.Span));
 			span.add(temp);
-			getNextToken(); 
+			getNextToken();
 			if (fToken == TT_SPAN) {
 				span.add(fFactory.createSymbol(IConstantOperators.All));
 				getNextToken();
@@ -953,7 +979,7 @@ public class Parser extends Scanner {
 					|| fToken == TT_PRECEDENCE_CLOSE) {
 				span.add(fFactory.createSymbol(IConstantOperators.All));
 				return span;
-			} else if (fToken == TT_OPERATOR) { 
+			} else if (fToken == TT_OPERATOR) {
 				InfixOperator infixOperator = determineBinaryOperator();
 				if (infixOperator != null && //
 						infixOperator.getOperatorString().equals(";")) {
@@ -968,7 +994,7 @@ public class Parser extends Scanner {
 					}
 					return parseInfixOperator(span, infixOperator);
 				}
-			} 
+			}
 			span.add(parseExpression(parsePrimary(0), 0));
 			if (fToken == TT_SPAN) {
 				getNextToken();

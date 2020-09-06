@@ -88,6 +88,11 @@ public abstract class Scanner {
 	final static protected int TT_OPERATOR = 31;
 
 	/**
+	 * ':' operator
+	 */
+	final static protected int TT_COLON = 133;
+	
+	/**
 	 * ',' operator
 	 */
 	final static protected int TT_COMMA = 134;
@@ -720,6 +725,17 @@ public abstract class Scanner {
 					}
 
 					break;
+				case ':': 
+					if (isValidPosition()) {
+						char ch= charAtPosition();
+						if (isOperatorCharacters(ch)) { 
+							fOperList = getOperator();
+							fToken = TT_OPERATOR;
+							return;
+						}
+					}
+					fToken = TT_COLON;
+					break;
 				case ';':
 					if (isValidPosition()) {
 						if (charAtPosition() == ';') {
@@ -1153,6 +1169,8 @@ public abstract class Scanner {
 	}
 
 	abstract protected boolean isOperatorCharacters();
+	
+	abstract protected boolean isOperatorCharacters(char ch);
 
 	protected static final boolean isComparatorOperator(String operatorString) {
 		return operatorString.equals("==") || operatorString.equals("!=") || //

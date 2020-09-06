@@ -973,7 +973,11 @@ public class FuzzyParser extends Scanner {
 	}
 
 	protected boolean isOperatorCharacters() {
-		return fFactory.isOperatorChar(fCurrentChar);// getOperatorCharacters().indexOf(fCurrentChar) >= 0;
+		return fFactory.isOperatorChar(fCurrentChar); 
+	}
+	
+	protected boolean isOperatorCharacters(char ch) {
+		return fFactory.isOperatorChar(ch); 
 	}
 
 	final protected List<Operator> getOperator() {
