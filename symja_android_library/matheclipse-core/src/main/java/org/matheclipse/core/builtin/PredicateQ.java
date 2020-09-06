@@ -620,6 +620,11 @@ public class PredicateQ {
 
 			if (ast.isAST2()) {
 				final IExpr arg2 = engine.evaluate(ast.arg2());
+				if (arg2.isSparseArray()) {
+					// TODO SparseArray
+					return F.NIL;
+				}
+					
 				IASTAppendable temp = F.ast(arg2);
 				temp.append(F.Slot1);
 				IAST matrix = (IAST) arg1;
@@ -1327,6 +1332,10 @@ public class PredicateQ {
 
 			if (ast.isAST2()) {
 				final IExpr arg2 = engine.evaluate(ast.arg2());
+				if (arg2.isSparseArray()) {
+					// TODO SparseArray
+					return F.NIL;
+				}
 				IASTAppendable temp = F.ast(arg2);
 				temp.append(F.Slot1);
 

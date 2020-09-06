@@ -1,5 +1,5 @@
 package org.matheclipse.core.expression;
- 
+
 import java.awt.Desktop;
 import java.io.BufferedWriter;
 import java.io.File;
@@ -64,6 +64,7 @@ import org.matheclipse.core.builtin.RandomFunctions;
 import org.matheclipse.core.builtin.SeriesFunctions;
 import org.matheclipse.core.builtin.SimplifyFunctions;
 import org.matheclipse.core.builtin.SourceCodeFunctions;
+import org.matheclipse.core.builtin.SparseArrayFunctions;
 import org.matheclipse.core.builtin.SpecialFunctions;
 import org.matheclipse.core.builtin.StatisticsFunctions;
 import org.matheclipse.core.builtin.StringFunctions;
@@ -691,7 +692,7 @@ public class F extends S {
 
 	public static IExpr[] DENOMINATOR_TRIG_TRUE_EXPRS = null;
 
-	public static ISymbol[] NUMERAATOR_NUMERATOR_SYMBOLS = null;
+	public static ISymbol[] NUMERATOR_NUMERATOR_SYMBOLS = null;
 
 	public static IExpr[] NUMERATOR_TRIG_TRUE_EXPRS = null;
 
@@ -955,8 +956,10 @@ public class F extends S {
 			ManipulateFunction.initialize();
 			ImageFunctions.initialize();
 			EntityFunctions.initialize();
-			ClusteringFunctions.initialize(); 
+			ClusteringFunctions.initialize();
 			SourceCodeFunctions.initialize();
+			SparseArrayFunctions.initialize();
+
 			ComputationalGeometryFunctions.initialize();
 
 			F.Integrate.setEvaluator(org.matheclipse.core.reflection.system.Integrate.CONST);
@@ -969,13 +972,13 @@ public class F extends S {
 	}
 
 	private static void createNumeratorFunctionMap() {
-		NUMERAATOR_NUMERATOR_SYMBOLS = new ISymbol[6];
-		NUMERAATOR_NUMERATOR_SYMBOLS[0] = Sin;
-		NUMERAATOR_NUMERATOR_SYMBOLS[1] = Cos;
-		NUMERAATOR_NUMERATOR_SYMBOLS[2] = Tan;
-		NUMERAATOR_NUMERATOR_SYMBOLS[3] = Csc;
-		NUMERAATOR_NUMERATOR_SYMBOLS[4] = Sec;
-		NUMERAATOR_NUMERATOR_SYMBOLS[5] = Cot;
+		NUMERATOR_NUMERATOR_SYMBOLS = new ISymbol[6];
+		NUMERATOR_NUMERATOR_SYMBOLS[0] = Sin;
+		NUMERATOR_NUMERATOR_SYMBOLS[1] = Cos;
+		NUMERATOR_NUMERATOR_SYMBOLS[2] = Tan;
+		NUMERATOR_NUMERATOR_SYMBOLS[3] = Csc;
+		NUMERATOR_NUMERATOR_SYMBOLS[4] = Sec;
+		NUMERATOR_NUMERATOR_SYMBOLS[5] = Cot;
 		NUMERATOR_TRIG_TRUE_EXPRS = new IExpr[6];
 		NUMERATOR_TRIG_TRUE_EXPRS[0] = Sin;
 		NUMERATOR_TRIG_TRUE_EXPRS[1] = Cos;
@@ -1285,6 +1288,18 @@ public class F extends S {
 	public static IPatternSequence $ps(final ISymbol symbol, final IExpr check, final boolean def,
 			boolean zeroArgsAllowed) {
 		return PatternSequence.valueOf(symbol, check, def, zeroArgsAllowed);
+	}
+
+	public static IPatternSequence $OptionsPattern(final ISymbol symbol) {
+		return org.matheclipse.core.expression.OptionsPattern.valueOf(symbol);
+	}
+
+	public static IPatternSequence $OptionsPattern(final ISymbol symbol, final IExpr defaultOptions) {
+		return org.matheclipse.core.expression.OptionsPattern.valueOf(symbol, defaultOptions);
+	}
+
+	public static IPatternSequence $Repeated(final IExpr patternExpr, EvalEngine engine) {
+		return org.matheclipse.core.expression.RepeatedPattern.valueOf(patternExpr, engine);
 	}
 
 	/**
@@ -2027,6 +2042,14 @@ public class F extends S {
 	public final static IASTMutable binaryAST2(final IExpr head, final IExpr arg1, final IExpr arg2) {
 		return new AST2(head, arg1, arg2);
 	}
+	
+	public final static IASTMutable binaryAST2(final IExpr head, final String arg1, final IExpr arg2) {
+		return new AST2(head, F.$str(arg1), arg2);
+	}
+	
+	public final static IASTMutable binaryAST2(final IExpr head, final String arg1, final String arg2) {
+		return new AST2(head, F.$str(arg1), F.$str(arg2));
+	}
 
 	public static IAST Binomial(final IExpr a0, final IExpr a1) {
 		return new AST2(F.Binomial, a0, a1);
@@ -2123,6 +2146,10 @@ public class F extends S {
 
 	public static IAST BetaRegularized(final IExpr a0, final IExpr a1, final IExpr a2) {
 		return new AST3(BetaRegularized, a0, a1, a2);
+	}
+
+	public static IAST BetaRegularized(final IExpr a0, final IExpr a1, final IExpr a2, final IExpr a3) {
+		return quaternary(BetaRegularized, a0, a1, a2, a3);
 	}
 
 	public static IAST Break() {
@@ -2531,7 +2558,7 @@ public class F extends S {
 		final IRational realFraction = value.getRealPart();
 		final IRational imagFraction = value.getImaginaryPart();
 		final EvalEngine engine = EvalEngine.get();
-		if (engine.isApfloat()) {
+		if (engine.isApfloatMode()) {
 			return ApcomplexNum.valueOf(realFraction.toBigNumerator(), realFraction.toBigDenominator(),
 					imagFraction.toBigNumerator(), imagFraction.toBigDenominator(), engine.getNumericPrecision());
 		}
@@ -2546,7 +2573,7 @@ public class F extends S {
 
 	public static IComplexNum complexNum(final IFraction value) {
 		final EvalEngine engine = EvalEngine.get();
-		if (engine.isApfloat()) {
+		if (engine.isApfloatMode()) {
 			return ApcomplexNum.valueOf(value.toBigNumerator(), value.toBigDenominator(), BigInteger.ZERO,
 					BigInteger.ONE, engine.getNumericPrecision());
 		}
@@ -2555,7 +2582,7 @@ public class F extends S {
 
 	public static IComplexNum complexNum(final IInteger value) {
 		final EvalEngine engine = EvalEngine.get();
-		if (engine.isApfloat()) {
+		if (engine.isApfloatMode()) {
 			return ApcomplexNum.valueOf(value.toBigNumerator(), BigInteger.ONE, BigInteger.ZERO, BigInteger.ONE,
 					engine.getNumericPrecision());
 		}
@@ -3504,7 +3531,7 @@ public class F extends S {
 	public static IAST FunctionURL(final IExpr a0) {
 		return new AST1(FunctionURL, a0);
 	}
-	
+
 	public static IAST Get(final IExpr a0) {
 		return new AST1(Get, a0);
 	}
@@ -3931,8 +3958,8 @@ public class F extends S {
 
 	public static IAST Interpolation(final IExpr list) {
 		return new AST1(Interpolation, list);
-	} 
-	
+	}
+
 	public static IAST InterpolatingPolynomial(final IExpr a0, final IExpr a1) {
 		return new AST2(InterpolatingPolynomial, a0, a1);
 	}
@@ -5053,7 +5080,7 @@ public class F extends S {
 
 	public static INum num(final IFraction value) {
 		EvalEngine engine = EvalEngine.get();
-		if (engine.isApfloat()) {
+		if (engine.isApfloatMode()) {
 			return ApfloatNum.valueOf(value.toBigNumerator(), value.toBigDenominator(), engine.getNumericPrecision());
 		}
 		final double n = value.toBigNumerator().doubleValue();
@@ -5063,7 +5090,7 @@ public class F extends S {
 
 	public static INum num(final IInteger value) {
 		EvalEngine engine = EvalEngine.get();
-		if (engine.isApfloat()) {
+		if (engine.isApfloatMode()) {
 			return ApfloatNum.valueOf(value.toBigNumerator(), engine.getNumericPrecision());
 		}
 		return num(value.doubleValue());
@@ -5078,7 +5105,7 @@ public class F extends S {
 	 */
 	public static INum num(final String valueString) {
 		EvalEngine engine = EvalEngine.get();
-		if (engine.isApfloat()) {
+		if (engine.isApfloatMode()) {
 			return ApfloatNum.valueOf(valueString, engine.getNumericPrecision());
 		}
 		return Num.valueOf(Double.parseDouble(valueString));
@@ -5613,7 +5640,7 @@ public class F extends S {
 	public static IAST RandomInteger(final IExpr a0) {
 		return new AST1(RandomInteger, a0);
 	}
-	
+
 	public static IAST RandomReal(final IExpr a0) {
 		return new AST1(RandomReal, a0);
 	}

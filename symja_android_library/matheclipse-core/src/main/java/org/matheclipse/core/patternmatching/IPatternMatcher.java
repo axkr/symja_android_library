@@ -169,7 +169,6 @@ public abstract class IPatternMatcher implements Predicate<IExpr>, Cloneable, Se
 	 * @return the priority
 	 */
 	public abstract int getLHSPriority();
-	
 
 	/**
 	 * Get the current pattern map of this matcher. If not initialized return <code>null</code>.
@@ -179,7 +178,7 @@ public abstract class IPatternMatcher implements Predicate<IExpr>, Cloneable, Se
 	public IPatternMap getPatternMap() {
 		return null;
 	}
-	
+
 	public abstract int getPatternHash();
 
 	/**
@@ -241,10 +240,23 @@ public abstract class IPatternMatcher implements Predicate<IExpr>, Cloneable, Se
 	public abstract boolean test(IExpr expr);
 
 	/**
-	 * Start pattern matching.
+	 * Start pattern matching. Initialize all patterns before matching.
 	 * 
 	 * @param expr
+	 * @param engine
 	 * @return <code>true</code> if the <code>expr</code> matches the pattern-matchings left-hand-side expression.
 	 */
 	public abstract boolean test(IExpr expr, EvalEngine engine);
+
+	/**
+	 * Start pattern matching. Initialize only <code>Blank...()</code> patterns (without assigned symbol name) before
+	 * matching.
+	 * 
+	 * @param expr
+	 * @param engine
+	 * @return <code>true</code> if the <code>expr</code> matches the pattern-matchings left-hand-side expression.
+	 */
+	public boolean testBlank(IExpr expr, EvalEngine engine) {
+		return test(expr, engine);
+	}
 }

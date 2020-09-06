@@ -6,7 +6,7 @@ package org.matheclipse.core.interfaces;
  */
 public interface IComplex extends IBigNumber {
 	void checkBitLength();
-	
+
 	public IComplex add(IComplex val);
 
 	/**
@@ -48,6 +48,13 @@ public interface IComplex extends IBigNumber {
 	public IComplex pow(long n);
 
 	public IComplex[] quotientRemainder(final IComplex c2);
+
+	/**
+	 * If possible, calculate the square root of this complex number. Otherwise return <code>null</code>.
+	 * 
+	 * @return <code>null</code> if no symbolic complex root is found
+	 */
+	public IComplex sqrtCC();
 
 	/**
 	 * Return the normalized form of this number (i.e. if the imaginary part equals zero, return the real part as a

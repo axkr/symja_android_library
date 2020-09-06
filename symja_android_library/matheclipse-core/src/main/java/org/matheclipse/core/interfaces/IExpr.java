@@ -163,6 +163,8 @@ public interface IExpr extends Comparable<IExpr>, GcdRingElem<IExpr>, Serializab
 
 	public final static int INTERPOLATEDFUNCTONID = DATAID + 8;
 
+	public final static int SPARSEARRAYID = DATAID + 9;
+
 	/**
 	 * Operator overloading for Scala operator <code>/</code>. Calls <code>divide(that)</code>.
 	 * 
@@ -255,7 +257,6 @@ public interface IExpr extends Comparable<IExpr>, GcdRingElem<IExpr>, Serializab
 	 */
 	public long accept(IVisitorLong visitor);
 
-	
 	@Override
 	default IExpr add(IExpr that) {
 		return plus(that);
@@ -1584,12 +1585,22 @@ public interface IExpr extends Comparable<IExpr>, GcdRingElem<IExpr>, Serializab
 	}
 
 	/**
-	 * Test if this expression is the <code>Except</code> function <code>Except[&lt;pattern1&gt;]</code> or
-	 * <code>Except[&lt;pattern1&gt;, &lt;pattern2&gt;]</code>
+	 * Test if this expression is the <code>Except</code> function <code>Except(&lt;pattern1&gt;)</code> or
+	 * <code>Except(&lt;pattern1&gt;, &lt;pattern2&gt;)</code>
 	 * 
 	 * @return
 	 */
 	default boolean isExcept() {
+		return false;
+	}
+
+	/**
+	 * Test if this expression is the <code>OptionsPattern</code> function <code>OptionsPattern()</code> or
+	 * <code>OptionsPattern(&lt;symbol&gt;)</code>
+	 * 
+	 * @return
+	 */
+	default boolean isOptionsPattern() {
 		return false;
 	}
 
@@ -2028,9 +2039,10 @@ public interface IExpr extends Comparable<IExpr>, GcdRingElem<IExpr>, Serializab
 	}
 
 	/**
-	 * Test if this expression is a matrix and return the dimensions as array [row-dimension, column-dimension]. This
-	 * expression is only a matrix, if it is a <code>ASTRealMatrix</code> or a <code>List(...)</code> where all elements
-	 * are lists with the header <code>List</code> and have the same size.
+	 * Test if this expression is a matrix and return the lengths as array [row-length, column-length]. This expression
+	 * is only a matrix, if it is a <code>ASTRealMatrix</code> or a <code>List(...)</code> where all elements are lists
+	 * with the header <code>List</code> and have the same size or a <code>SparseArray(...)</code> of dimension
+	 * <code>2</code>;
 	 * 
 	 * @return <code>null</code> if the expression is not a matrix
 	 */
@@ -2692,6 +2704,15 @@ public interface IExpr extends Comparable<IExpr>, GcdRingElem<IExpr>, Serializab
 	}
 
 	/**
+	 * Test if this expression is the <code>Repetead</code> function <code>Repetead(&lt;pattern1&gt;)</code>.
+	 * 
+	 * @return
+	 */
+	default boolean isRepeated() {
+		return false; 
+	}
+	
+	/**
 	 * Test if this expression is a symbolic rational function (i.e. a number, a symbolic constant or an rational
 	 * function where all arguments are also &quot;rational functions&quot;)
 	 * 
@@ -2925,7 +2946,15 @@ public interface IExpr extends Comparable<IExpr>, GcdRingElem<IExpr>, Serializab
 	default int[] isSpan(int size) {
 		return null;
 	}
-
+	
+	/**
+	 * Test if this expression is a instance of SparseArrayExpr
+	 * @return
+	 */
+	default boolean isSparseArray() {
+		return false;
+	}
+	
 	/**
 	 * Test if this expression is the function <code>Power[&lt;arg1&gt;, 1/2]</code> (i.e.
 	 * <code>Sqrt[&lt;arg1&gt;]</code>).
@@ -3075,9 +3104,9 @@ public interface IExpr extends Comparable<IExpr>, GcdRingElem<IExpr>, Serializab
 	}
 
 	/**
-	 * Test if this expression is a vector and return the dimension of the vector. This expression is only a vector, if
-	 * the expression is a <code>ASTRealVector</code> or a <code>List(...)</code> and no element is itself a
-	 * <code>List(...)</code>.
+	 * Test if this expression is a vector and return the length of the vector. This expression is only a vector, if the
+	 * expression is a <code>ASTRealVector</code> or a <code>List(...)</code> and no element is itself a
+	 * <code>List(...)</code> or a <code>SparseArray(...)</code> of dimension <code>1</code>;
 	 * 
 	 * @return <code>-1</code> if the expression is no vector or <code>size()-1</code> of this vector AST.
 	 */
@@ -3351,10 +3380,10 @@ public interface IExpr extends Comparable<IExpr>, GcdRingElem<IExpr>, Serializab
 				IExpr temp = ((IAST) this).map(x -> x.multiplyDistributed(that), 1);
 				return EvalEngine.get().evaluate(temp);
 			}
-			IExpr temp = ((IAST) this).mapThread(F.binaryAST2(S.Times, null, that), 1);
+			IExpr temp = ((IAST) this).mapThread(F.binaryAST2(S.Times, F.Slot1, that), 1);
 			return EvalEngine.get().evaluate(temp);
 		} else if (that.isPlus()) {
-			IExpr temp = ((IAST) that).mapThread(F.binaryAST2(S.Times, this, null), 2);
+			IExpr temp = ((IAST) that).mapThread(F.binaryAST2(S.Times, this, F.Slot1), 2);
 			return EvalEngine.get().evaluate(temp);
 		}
 		return times(that);

@@ -15,6 +15,7 @@ import org.hipparchus.complex.Complex;
 import org.matheclipse.core.basic.Config;
 import org.matheclipse.core.builtin.Arithmetic;
 import org.matheclipse.core.builtin.IOFunctions;
+import org.matheclipse.core.builtin.PatternMatching;
 import org.matheclipse.core.builtin.Programming;
 import org.matheclipse.core.eval.exception.AbortException;
 import org.matheclipse.core.eval.exception.ArgumentTypeException;
@@ -33,6 +34,8 @@ import org.matheclipse.core.expression.ApfloatNum;
 import org.matheclipse.core.expression.Context;
 import org.matheclipse.core.expression.ContextPath;
 import org.matheclipse.core.expression.F;
+import org.matheclipse.core.expression.ID;
+import org.matheclipse.core.expression.OptionsPattern;
 import org.matheclipse.core.expression.S;
 import org.matheclipse.core.integrate.rubi.UtilityFunctionCtors;
 import org.matheclipse.core.interfaces.IAST;
@@ -49,6 +52,7 @@ import org.matheclipse.core.interfaces.ISignedNumber;
 import org.matheclipse.core.interfaces.ISymbol;
 import org.matheclipse.core.parser.ExprParser;
 import org.matheclipse.core.parser.ExprParserFactory;
+import org.matheclipse.core.patternmatching.IPatternMap;
 import org.matheclipse.core.patternmatching.IPatternMatcher;
 import org.matheclipse.core.patternmatching.PatternMatcher;
 import org.matheclipse.core.patternmatching.RulesData;
@@ -243,6 +247,11 @@ public class EvalEngine implements Serializable {
 	private transient LastCalculationsHistory fOutList = null;
 
 	/**
+	 * Contains possible options in a function call hierarchy
+	 */
+	private transient OptionsStack fOptionsStack;
+
+	/**
 	 * Contains the last result (&quot;answer&quot;) expression of this evaluation engine or <code>null</code> if no
 	 * answer is stored in the evaluation engine.
 	 */
@@ -312,6 +321,7 @@ public class EvalEngine implements Serializable {
 	 */
 	public EvalEngine(final String sessionID, final int recursionLimit, final int iterationLimit,
 			final PrintStream outStream, PrintStream errorStream, boolean relaxedSyntax) {
+		fOptionsStack = new OptionsStack();
 		fSessionID = sessionID;
 		// fExpressionFactory = f;
 		fRecursionLimit = recursionLimit;
@@ -385,6 +395,45 @@ public class EvalEngine implements Serializable {
 		fOutList.add(fAnswer);
 	}
 
+	/**
+	 * 
+	 * @param op
+	 * @param rule
+	 *            may be <code>null</code>
+	 */
+	public void addOptionsPattern(OptionsPattern op, IAST rule) {
+		IdentityHashMap<ISymbol, IASTAppendable> optionsPattern = fOptionsStack.peek();
+		IASTAppendable list = optionsPattern.get(op.getOptionsPatternHead());
+		if (list == null) {
+			list = F.ListAlloc(10);
+			optionsPattern.put(op.getOptionsPatternHead(), list);
+		}
+
+		IExpr defaultOptions = op.getDefaultOptions();
+		if (defaultOptions.isPresent()) {
+			IAST optionsList = null;
+			if (defaultOptions.isSymbol()) {
+				optionsList = PatternMatching.optionsList((ISymbol) defaultOptions,true);
+				PatternMatching.extractRules(optionsList, list);
+//				list.appendArgs(optionsList);
+			} else if (defaultOptions.isList()) {
+				PatternMatching.extractRules(defaultOptions, list);
+//				list.appendArgs((IAST) defaultOptions);
+			} else if (defaultOptions.isRuleAST()) {
+				PatternMatching.extractRules(defaultOptions, list);
+//				list.append(defaultOptions);
+			}
+		} else {
+			if (rule != null && rule.isRuleAST()) {
+				if (rule.first().isSymbol()) {
+					list.append(F.binaryAST2(rule.topHead(), ((ISymbol) rule.first()).getSymbolName(), rule.second()));
+				} else {
+					list.append(rule);
+				}
+			}
+		}
+	}
+
 	private void beginTrace(Predicate<IExpr> matcher, IAST list) {
 		setTraceMode(true);
 		fTraceStack = new TraceStack(matcher, list);
@@ -411,6 +460,7 @@ public class EvalEngine implements Serializable {
 		engine.fNumericPrecision = fNumericPrecision;
 		engine.fSignificantFigures = fSignificantFigures;
 		engine.fOutList = fOutList;
+		engine.fOptionsStack = fOptionsStack;
 		engine.fOutListDisabled = fOutListDisabled;
 		engine.fOutPrintStream = fOutPrintStream;
 		engine.fOnOffMap = fOnOffMap;
@@ -525,7 +575,7 @@ public class EvalEngine implements Serializable {
 	 * @param isNumericFunction
 	 *            if <code>true</code> the <code>NumericFunction</code> attribute is set for the <code>ast</code>'s head
 	 */
-	private void evalArg(IASTMutable[] result0, final IAST ast, IExpr arg, int i, boolean isNumericFunction) {
+	public void evalArg(IASTMutable[] result0, final IAST ast, IExpr arg, int i, boolean isNumericFunction) {
 		IExpr temp = evalLoop(arg);
 		if (temp.isPresent()) {
 			if (!result0[0].isPresent()) {
@@ -608,7 +658,7 @@ public class EvalEngine implements Serializable {
 					try {
 						selectNumericMode(attr, ISymbol.NHOLDREST, localNumericMode);
 						ast.forEach(2, astSize, (arg, i) -> {
-							if (!arg.isAST(S.Unevaluated,2)) {
+							if (!arg.isAST(S.Unevaluated, 2)) {
 								evalArg(rlist, ast, arg, i, isNumericFunction);
 							}
 						});
@@ -1023,22 +1073,6 @@ public class EvalEngine implements Serializable {
 			}
 		}
 		throw new ArgumentTypeException("conversion into a double numeric value is not possible!");
-	}
-
-	/**
-	 * Evaluate arguments with the head <code>F.Evaluate</code>, i.e. <code>f(a, ... , Evaluate(x), ...)</code>
-	 * 
-	 * @param ast
-	 * @return
-	 */
-	public final IExpr evalEvaluate(IAST ast) {
-		IASTMutable[] rlist = new IASTMutable[] { F.NIL };
-		ast.forEach(1, ast.size(), (x, i) -> {
-			if (x.isAST(F.Evaluate)) {
-				evalArg(rlist, ast, x, i, false);
-			}
-		});
-		return rlist[0];
 	}
 
 	/**
@@ -1602,8 +1636,17 @@ public class EvalEngine implements Serializable {
 			// AbstractFunctionEvaluator#setUp() method
 			((IBuiltInSymbol) symbol).getEvaluator();
 		}
-		if (ast.isAST(F.Optional, 2)) {
-			return ((IFunctionEvaluator) F.Optional.getEvaluator()).evaluate(ast, this);
+		int headID = ast.headID();
+		if (headID >= 0) {
+			if (headID == ID.Blank || //
+					headID == ID.BlankSequence || //
+					headID == ID.BlankNullSequence || //
+					headID == ID.Pattern || //
+					headID == ID.Optional || //
+					headID == ID.OptionsPattern || //
+					headID == ID.Repeated) {
+				return ((IFunctionEvaluator) ((IBuiltInSymbol) ast.head()).getEvaluator()).evaluate(ast, this);
+			}
 		}
 
 		final int attr = symbol.getAttributes();
@@ -1989,6 +2032,10 @@ public class EvalEngine implements Serializable {
 		return fOutList;
 	}
 
+	public OptionsStack getOptionsStack() {
+		return fOptionsStack;
+	}
+
 	public PrintStream getOutPrintStream() {
 		return fOutPrintStream;
 	}
@@ -2110,6 +2157,7 @@ public class EvalEngine implements Serializable {
 		fMessageShortcut = null;
 		fContextPathStack = new ArrayDeque<ContextPath>();
 		fContextPath = ContextPath.initialContext();
+		fOptionsStack = new OptionsStack();
 		rememberASTCache = null;
 	}
 
@@ -2137,8 +2185,9 @@ public class EvalEngine implements Serializable {
 	 * @return <code>true</code> if the required precision is greater than <code>EvalEngine.DOUBLE_PRECISION</code>
 	 * @see ApfloatNum
 	 * @see ApcomplexNum
+	 * @see isDoubleMode()
 	 */
-	public final boolean isApfloat() {
+	public final boolean isApfloatMode() {
 		return fNumericPrecision > Config.MACHINE_PRECISION;
 	}
 
@@ -2173,9 +2222,10 @@ public class EvalEngine implements Serializable {
 	/**
 	 * @return <code>true</code> if the EvalEngine runs in numeric mode and Java <code>double</code> numbers should be
 	 *         used for evaluating numeric functions.
+	 * @see #isApfloatMode()
 	 */
 	public final boolean isDoubleMode() {
-		return fNumericMode && !isApfloat();
+		return fNumericMode && !isApfloatMode();
 	}
 
 	/**
@@ -2350,6 +2400,7 @@ public class EvalEngine implements Serializable {
 		fModifiedVariablesList = null;
 		fMessageShortcut = null;
 		rememberASTCache = null;
+		fOptionsStack = new OptionsStack();
 
 		if (fOnOffMode && fOnOffUnique) {
 			fOnOffUniqueMap = new HashMap<IExpr, IExpr>();
@@ -2464,6 +2515,28 @@ public class EvalEngine implements Serializable {
 		fOnOffUnique = uniqueTrace;
 		if (uniqueTrace) {
 			fOnOffUniqueMap = new HashMap<IExpr, IExpr>();
+		}
+	}
+
+	public void setOptionsPattern(ISymbol lhsHead, IPatternMap patternMap) {
+		IdentityHashMap<ISymbol, IASTAppendable> optionsPattern = fOptionsStack.peek();
+		boolean setHead = patternMap.setOptionsPattern(this, lhsHead);
+		if (!optionsPattern.isEmpty()) {
+			for (Map.Entry<ISymbol, IASTAppendable> element : optionsPattern.entrySet()) {
+				ISymbol symbol = element.getKey();
+				IAST list = PatternMatching.optionsList(element.getKey(), true);
+				if (list.size() > 1) {
+					IASTAppendable tempList = optionsPattern.get(symbol);
+					if (tempList == null) {
+						tempList = F.ListAlloc(10);
+						optionsPattern.put(symbol, tempList);
+					}
+					tempList.appendArgs(list);
+				}
+			}
+		}
+		if (setHead) {
+			optionsPattern.put(S.LHS_HEAD, F.ast(lhsHead));
 		}
 	}
 

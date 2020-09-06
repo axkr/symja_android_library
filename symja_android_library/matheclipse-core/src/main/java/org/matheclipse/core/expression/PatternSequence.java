@@ -4,6 +4,7 @@ import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 
+import org.hipparchus.util.Pair;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.interfaces.IPatternObject;
@@ -86,25 +87,25 @@ public class PatternSequence implements IPatternSequence {
 	/**
 	 * The expression which should check this pattern sequence
 	 */
-	private IExpr fCondition;
+	protected IExpr fCondition;
 
 	/**
 	 * The associated symbol for this pattern sequence
 	 */
-	private ISymbol fSymbol;
+	protected ISymbol fSymbol;
 
 	/**
 	 * Use default value, if no matching was found
 	 */
-	private boolean fDefault = false;
+	protected boolean fDefault = false;
 
-	private boolean fZeroArgsAllowed = false;
+	protected boolean fZeroArgsAllowed = false;
 
-	private PatternSequence() {
+	protected PatternSequence() {
 	}
 
 	@Override
-	public int[] addPattern(List<IExpr> patternIndexMap) {
+	public int[] addPattern(List<Pair<IExpr, IPatternObject>> patternIndexMap) {
 		IPatternMap.addPattern(patternIndexMap, this);
 		// the ast contains a pattern sequence (i.e. "x__")
 		int[] result = new int[2];
@@ -179,11 +180,11 @@ public class PatternSequence implements IPatternSequence {
 	@Override
 	public boolean matchPattern(final IExpr expr, IPatternMap patternMap) {
 		IAST sequence = F.Sequence(expr);
-		return matchPatternSequence(sequence, patternMap);
+		return matchPatternSequence(sequence, patternMap, S.Missing);
 	}
 
 	@Override
-	public boolean matchPatternSequence(final IAST sequence, IPatternMap patternMap) {
+	public boolean matchPatternSequence(final IAST sequence, IPatternMap patternMap, ISymbol optionsPatternHead) {
 		if (!isConditionMatchedSequence(sequence, patternMap)) {
 			return false;
 		}

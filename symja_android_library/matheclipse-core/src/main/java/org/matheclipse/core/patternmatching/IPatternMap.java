@@ -1,16 +1,19 @@
 package org.matheclipse.core.patternmatching;
 
+import static org.matheclipse.core.patternmatching.IPatternMap.addOptionsPattern;
+
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
+import org.hipparchus.util.Pair;
 import org.matheclipse.core.eval.EvalAttributes;
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.expression.F;
+import org.matheclipse.core.expression.OptionsPattern;
 import org.matheclipse.core.expression.Pattern;
 import org.matheclipse.core.interfaces.IAST;
-import org.matheclipse.core.interfaces.IASTAppendable;
 import org.matheclipse.core.interfaces.IASTMutable;
 import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.interfaces.IPatternObject;
@@ -149,6 +152,11 @@ public interface IPatternMap extends Cloneable {
 			buf.append("]");
 			return buf.toString();
 		}
+
+		@Override
+		public boolean setOptionsPattern(EvalEngine engine, ISymbol lhsHead) {
+			return false;
+		}
 	}
 
 	static final class PatternMap1 implements IPatternMap {
@@ -156,6 +164,8 @@ public interface IPatternMap extends Cloneable {
 
 		IExpr fSymbol1;
 		IExpr fValue1;
+		IPatternObject fPatternObject1;
+
 		private transient boolean evaluatedRHS = false;
 
 		@Override
@@ -164,6 +174,7 @@ public interface IPatternMap extends Cloneable {
 			result.evaluatedRHS = false;
 			result.fSymbol1 = this.fSymbol1;
 			result.fValue1 = this.fValue1;
+			result.fPatternObject1 = this.fPatternObject1;
 			return result;
 		};
 
@@ -280,6 +291,16 @@ public interface IPatternMap extends Cloneable {
 		}
 
 		@Override
+		public boolean setOptionsPattern(EvalEngine engine, ISymbol lhsHead) {
+			if (fPatternObject1.isOptionsPattern()) {
+				OptionsPattern op = (OptionsPattern) fPatternObject1;
+				addOptionsPattern(op, fValue1, engine);
+				return lhsHead == op.getOptionsPatternHead();
+			}
+			return false;
+		}
+
+		@Override
 		public boolean setValue(IPatternObject pattern, IExpr expr) {
 			ISymbol sym = pattern.getSymbol();
 			IExpr temp = pattern;
@@ -358,8 +379,12 @@ public interface IPatternMap extends Cloneable {
 
 		IExpr fSymbol1;
 		IExpr fValue1;
+		IPatternObject fPatternObject1;
+
 		IExpr fSymbol2;
 		IExpr fValue2;
+		IPatternObject fPatternObject2;
+
 		private transient boolean evaluatedRHS = false;
 
 		@Override
@@ -368,8 +393,11 @@ public interface IPatternMap extends Cloneable {
 			result.evaluatedRHS = false;
 			result.fSymbol1 = this.fSymbol1;
 			result.fValue1 = this.fValue1;
+			result.fPatternObject1 = this.fPatternObject1;
+
 			result.fSymbol2 = this.fSymbol2;
 			result.fValue2 = this.fValue2;
+			result.fPatternObject2 = this.fPatternObject2;
 			return result;
 		};
 
@@ -457,6 +485,17 @@ public interface IPatternMap extends Cloneable {
 		}
 
 		@Override
+		public void initPatternBlank() {
+			evaluatedRHS = false;
+			if (fSymbol1 instanceof IPatternObject) {
+				fValue1 = null;
+			}
+			if (fSymbol2 instanceof IPatternObject) {
+				fValue2 = null;
+			}
+		}
+
+		@Override
 		public final void initSlotValues() {
 			fValue1 = F.Slot1;
 			fValue2 = F.Slot2;
@@ -503,6 +542,26 @@ public interface IPatternMap extends Cloneable {
 			evaluatedRHS = false;
 			fValue1 = patternValuesArray[0];
 			fValue2 = patternValuesArray[1];
+		}
+
+		@Override
+		public boolean setOptionsPattern(EvalEngine engine, ISymbol lhsHead) {
+			boolean result = false;
+			if (fPatternObject1.isOptionsPattern()) {
+				OptionsPattern op = (OptionsPattern) fPatternObject1;
+				addOptionsPattern(op, fValue1, engine);
+				if (lhsHead == op.getOptionsPatternHead()) {
+					result = true;
+				}
+			}
+			if (fPatternObject2.isOptionsPattern()) {
+				OptionsPattern op = (OptionsPattern) fPatternObject2;
+				addOptionsPattern(op, fValue2, engine);
+				if (lhsHead == op.getOptionsPatternHead()) {
+					result = true;
+				}
+			}
+			return result;
 		}
 
 		@Override
@@ -616,10 +675,16 @@ public interface IPatternMap extends Cloneable {
 
 		IExpr fSymbol1;
 		IExpr fValue1;
+		IPatternObject fPatternObject1;
+
 		IExpr fSymbol2;
 		IExpr fValue2;
+		IPatternObject fPatternObject2;
+
 		IExpr fSymbol3;
 		IExpr fValue3;
+		IPatternObject fPatternObject3;
+
 		private transient boolean evaluatedRHS = false;
 
 		@Override
@@ -628,10 +693,16 @@ public interface IPatternMap extends Cloneable {
 			result.evaluatedRHS = false;
 			result.fSymbol1 = this.fSymbol1;
 			result.fValue1 = this.fValue1;
+			result.fPatternObject1 = this.fPatternObject1;
+
 			result.fSymbol2 = this.fSymbol2;
 			result.fValue2 = this.fValue2;
+			result.fPatternObject2 = this.fPatternObject2;
+
 			result.fSymbol3 = this.fSymbol3;
 			result.fValue3 = this.fValue3;
+			result.fPatternObject3 = this.fPatternObject3;
+
 			return result;
 		};
 
@@ -787,6 +858,33 @@ public interface IPatternMap extends Cloneable {
 			fValue1 = patternValuesArray[0];
 			fValue2 = patternValuesArray[1];
 			fValue3 = patternValuesArray[2];
+		}
+
+		@Override
+		public boolean setOptionsPattern(EvalEngine engine, ISymbol lhsHead) {
+			boolean result = false;
+			if (fPatternObject1.isOptionsPattern()) {
+				OptionsPattern op = (OptionsPattern) fPatternObject1;
+				addOptionsPattern(op, fValue1, engine);
+				if (lhsHead == op.getOptionsPatternHead()) {
+					result = true;
+				}
+			}
+			if (fPatternObject2.isOptionsPattern()) {
+				OptionsPattern op = (OptionsPattern) fPatternObject2;
+				addOptionsPattern(op, fValue2, engine);
+				if (lhsHead == op.getOptionsPatternHead()) {
+					result = true;
+				}
+			}
+			if (fPatternObject3.isOptionsPattern()) {
+				OptionsPattern op = (OptionsPattern) fPatternObject3;
+				addOptionsPattern(op, fValue3, engine);
+				if (lhsHead == op.getOptionsPatternHead()) {
+					result = true;
+				}
+			}
+			return result;
 		}
 
 		@Override
@@ -951,6 +1049,12 @@ public interface IPatternMap extends Cloneable {
 		 */
 		IExpr[] fSymbolsOrPatternValues;
 
+		/**
+		 * Store a reference of the determined pattern object which should be immutable after method
+		 * <code>determinePatterns()</code>
+		 */
+		IPatternObject[] fPatternObjects;
+
 		private transient boolean evaluatedRHS = false;
 
 		public PatternMap() {
@@ -968,6 +1072,7 @@ public interface IPatternMap extends Cloneable {
 			result.evaluatedRHS = false;
 			// don't clone the fSymbolsOrPattern array which is final after the #determinePatterns() method
 			result.fSymbolsOrPattern = this.fSymbolsOrPattern;
+			result.fPatternObjects = this.fPatternObjects;
 			// avoid Arrays.copyOf because of Android version
 			final int length = this.fSymbolsOrPatternValues.length;
 			result.fSymbolsOrPatternValues = new IExpr[length];
@@ -1194,6 +1299,23 @@ public interface IPatternMap extends Cloneable {
 		// return true;
 		// }
 
+		@Override
+		public boolean setOptionsPattern(EvalEngine engine, ISymbol lhsHead) {
+			boolean result = false;
+			if (fSymbolsOrPatternValues != null) {
+				for (int i = 0; i < fPatternObjects.length; i++) {
+					if (fPatternObjects[i].isOptionsPattern()) {
+						OptionsPattern op = (OptionsPattern) fPatternObjects[i];
+						addOptionsPattern(op, fSymbolsOrPatternValues[i], engine);
+						if (lhsHead == op.getOptionsPatternHead()) {
+							result = true;
+						}
+					}
+				}
+			}
+			return result;
+		}
+
 		public final void setRHSEvaluated(boolean evaluated) {
 			evaluatedRHS = evaluated;
 		}
@@ -1322,18 +1444,18 @@ public interface IPatternMap extends Cloneable {
 	 * @param patternIndexMap
 	 * @param pattern
 	 */
-	static void addPattern(List<IExpr> patternIndexMap, IPatternObject pattern) {
+	static void addPattern(List<Pair<IExpr, IPatternObject>> patternIndexMap, IPatternObject pattern) {
 		ISymbol sym = pattern.getSymbol();
 		if (sym != null) {
 			for (int i = 0; i < patternIndexMap.size(); i++) {
-				if (patternIndexMap.get(i) == sym) {
+				if (patternIndexMap.get(i).getKey() == sym) {
 					return;
 				}
 			}
-			patternIndexMap.add(sym);
+			patternIndexMap.add(new Pair(sym, pattern));
 			return;
 		}
-		patternIndexMap.add(pattern);
+		patternIndexMap.add(new Pair(pattern, pattern));
 	}
 
 	/**
@@ -1349,34 +1471,43 @@ public interface IPatternMap extends Cloneable {
 		// int[] priority = new int[] { DEFAULT_RULE_PRIORITY };
 
 		if (lhsPatternExpr instanceof IAST) {
-			List<IExpr> patternIndexMap = new ArrayList<IExpr>();
+			List<Pair<IExpr, IPatternObject>> patternIndexMap = new ArrayList<Pair<IExpr, IPatternObject>>();
 			boolean[] ruleWithoutPattern = new boolean[] { true };
 			determinePatternsRecursive(patternIndexMap, (IAST) lhsPatternExpr, priority, ruleWithoutPattern, 1);
 			final int size = patternIndexMap.size();
 			switch (size) {
 			case 1:
 				PatternMap1 patternMap1 = new PatternMap1();
-				patternMap1.fSymbol1 = patternIndexMap.get(0);
+				patternMap1.fSymbol1 = patternIndexMap.get(0).getFirst();
+				patternMap1.fPatternObject1 = patternIndexMap.get(0).getSecond();
 				return patternMap1;
 			case 2:
 				PatternMap2 patternMap2 = new PatternMap2();
-				patternMap2.fSymbol1 = patternIndexMap.get(0);
-				patternMap2.fSymbol2 = patternIndexMap.get(1);
+				patternMap2.fSymbol1 = patternIndexMap.get(0).getFirst();
+				patternMap2.fPatternObject1 = patternIndexMap.get(0).getSecond();
+				patternMap2.fSymbol2 = patternIndexMap.get(1).getFirst();
+				patternMap2.fPatternObject2 = patternIndexMap.get(1).getSecond();
 				return patternMap2;
 			case 3:
 				PatternMap3 patternMap3 = new PatternMap3();
-				patternMap3.fSymbol1 = patternIndexMap.get(0);
-				patternMap3.fSymbol2 = patternIndexMap.get(1);
-				patternMap3.fSymbol3 = patternIndexMap.get(2);
+				patternMap3.fSymbol1 = patternIndexMap.get(0).getFirst();
+				patternMap3.fPatternObject1 = patternIndexMap.get(0).getSecond();
+				patternMap3.fSymbol2 = patternIndexMap.get(1).getFirst();
+				patternMap3.fPatternObject2 = patternIndexMap.get(1).getSecond();
+				patternMap3.fSymbol3 = patternIndexMap.get(2).getFirst();
+				patternMap3.fPatternObject3 = patternIndexMap.get(2).getSecond();
 				return patternMap3;
 			}
 			PatternMap patternMap = new PatternMap();
 			patternMap.fRuleWithoutPattern = ruleWithoutPattern[0];
 			patternMap.fSymbolsOrPattern = new IExpr[size];
 			patternMap.fSymbolsOrPatternValues = new IExpr[size];
+			patternMap.fPatternObjects = new IPatternObject[size];
 			int i = 0;
-			for (IExpr entry : patternIndexMap) {
-				patternMap.fSymbolsOrPattern[i++] = entry;
+			for (Pair<IExpr, IPatternObject> entry : patternIndexMap) {
+				patternMap.fSymbolsOrPattern[i] = entry.getFirst();
+				patternMap.fPatternObjects[i] = entry.getSecond();
+				i++;
 			}
 			return patternMap;
 		} else if (lhsPatternExpr instanceof IPatternObject) {
@@ -1385,6 +1516,7 @@ public interface IPatternMap extends Cloneable {
 			IPatternObject pattern = (IPatternObject) lhsPatternExpr;
 			final ISymbol sym = pattern.getSymbol();
 			patternMap1.fSymbol1 = (sym != null) ? sym : pattern;
+			patternMap1.fPatternObject1 = pattern;
 			return patternMap1;
 		}
 		return PATTERN_MAP0;
@@ -1401,12 +1533,19 @@ public interface IPatternMap extends Cloneable {
 	 * @param treeLevel
 	 *            the level of the tree where the patterns are determined
 	 */
-	static int determinePatternsRecursive(List<IExpr> patternIndexMap, final IAST lhsPatternExpr, int[] priority,
-			boolean[] ruleWithoutPattern, int treeLevel) {
-		if (lhsPatternExpr.isAlternatives() || lhsPatternExpr.isExcept()) {
-			ruleWithoutPattern[0] = false;
-		}
+	static int determinePatternsRecursive(List<Pair<IExpr, IPatternObject>> patternIndexMap, final IAST lhsPatternExpr,
+			int[] priority, boolean[] ruleWithoutPattern, int treeLevel) {
+
 		int[] listEvalFlags = new int[] { IAST.NO_FLAG };
+		if (lhsPatternExpr.isAlternatives() || //
+				lhsPatternExpr.isExcept() || //
+				lhsPatternExpr.isRepeated()) {
+			ruleWithoutPattern[0] = false;
+			if (lhsPatternExpr.isRepeated()) {
+				listEvalFlags[0] = IAST.CONTAINS_PATTERN_SEQUENCE;
+			}
+		}
+
 		lhsPatternExpr.forEach(x -> {
 			if (x.isAST()) {
 				final IAST lhsPatternAST = (IAST) x;
@@ -1486,6 +1625,10 @@ public interface IPatternMap extends Cloneable {
 	 * Set all pattern values to <code>null</code>;
 	 */
 	public void initPattern();
+
+	default void initPatternBlank() {
+		initPattern();
+	}
 
 	public void initSlotValues();
 
@@ -1670,4 +1813,26 @@ public interface IPatternMap extends Cloneable {
 	 */
 	public IExpr substituteSymbols(final IExpr rhsExpr);
 
+	public boolean setOptionsPattern(final EvalEngine engine, ISymbol lhsHead);
+
+	/**
+	 * 
+	 * @param op
+	 * @param x
+	 *            may be <code>null</code>
+	 * @param engine
+	 */
+	public static void addOptionsPattern(OptionsPattern op, IExpr x, EvalEngine engine) {
+		if (x.size() > 1 && //
+				(x.isSequence() || x.isList())) {
+			IAST list = (IAST) x;
+			for (int i = 1; i < list.size(); i++) {
+				// also for nested lists
+				addOptionsPattern(op, list.get(i), engine);
+			}
+		} else {
+			engine.addOptionsPattern(op, (IAST) x);
+		}
+
+	}
 }

@@ -170,7 +170,7 @@ public class BuiltInSymbol extends Symbol implements IBuiltInSymbol {
 		// final IEvaluator module = getEvaluator();
 		if (fEvaluator instanceof ISymbolEvaluator) {
 			if (engine.isNumericMode()) {
-				if (engine.isApfloat()) {
+				if (engine.isApfloatMode()) {
 					return ((ISymbolEvaluator) fEvaluator).apfloatEval(this, engine);
 				} else {
 					return ((ISymbolEvaluator) fEvaluator).numericEval(this);

@@ -12,6 +12,7 @@ import org.matheclipse.core.combinatoric.NumberPartitionsIterator;
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.exception.ConditionException;
 import org.matheclipse.core.eval.exception.ReturnException;
+import org.matheclipse.core.expression.Blank;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.expression.ID;
 import org.matheclipse.core.interfaces.IAST;
@@ -22,7 +23,6 @@ import org.matheclipse.core.interfaces.IPattern;
 import org.matheclipse.core.interfaces.IPatternObject;
 import org.matheclipse.core.interfaces.IPatternSequence;
 import org.matheclipse.core.interfaces.IRational;
-import org.matheclipse.core.interfaces.ISignedNumber;
 import org.matheclipse.core.interfaces.ISymbol;
 import org.matheclipse.parser.client.FEConfig;
 
@@ -641,7 +641,8 @@ public class PatternMatcher extends IPatternMatcher implements Externalizable {
 							// a pattern sequence, is handled here
 							IASTAppendable seq = F.Sequence();
 							seq.appendAll(lhsEvalAST, lastPosition, lhsEvalSize);
-							if (((IPatternSequence) patternTest.arg1()).matchPatternSequence(seq, fPatternMap)) {
+							if (((IPatternSequence) patternTest.arg1()).matchPatternSequence(seq, fPatternMap,
+									lhsPatternAST.topHead())) {
 								if (matchAST(lhsPatternAST.removeFromEnd(lastPosition),
 										lhsEvalAST.removeFromEnd(lastPosition), engine, stackMatcher)) {
 									return fPatternMap.isPatternTest(patternTest.arg1(), patternTest.arg2(), engine);
@@ -710,7 +711,7 @@ public class PatternMatcher extends IPatternMatcher implements Externalizable {
 			try {
 				IASTAppendable seq = F.Sequence();
 				seq.appendAll(lhsEvalAST, 1, lhsEvalAST.size());
-				if (patternSequence.matchPatternSequence(seq, fPatternMap)) {
+				if (patternSequence.matchPatternSequence(seq, fPatternMap, lhsPatternAST.topHead())) {
 					matched = stackMatcher.matchRest();
 					if (matched) {
 						return true;
@@ -739,7 +740,7 @@ public class PatternMatcher extends IPatternMatcher implements Externalizable {
 				IASTAppendable seq = F.Sequence();
 				seq.appendAll(lhsEvalAST, startPosition, lhsEvalIndex);
 
-				if (patternSequence.matchPatternSequence(seq, fPatternMap)) {
+				if (patternSequence.matchPatternSequence(seq, fPatternMap, lhsPatternAST.topHead())) {
 					matched = matchAST(reducedLHSPatternAST, lhsEvalAST.copyFrom(lhsEvalIndex), engine, stackMatcher);
 					if (matched) {
 						return true;
@@ -1302,7 +1303,8 @@ public class PatternMatcher extends IPatternMatcher implements Externalizable {
 					// a pattern sequence, is handled here
 					IASTAppendable seq = F.Sequence();
 					seq.appendAll(lhsEval, 1, lhsEvalSize);
-					if (((IPatternSequence) lhsPatternAST.arg1()).matchPatternSequence(seq, fPatternMap)) {
+					if (((IPatternSequence) lhsPatternAST.arg1()).matchPatternSequence(seq, fPatternMap,
+							lhsPatternAST.topHead())) {
 						return true;
 					}
 				}
@@ -1628,6 +1630,17 @@ public class PatternMatcher extends IPatternMatcher implements Externalizable {
 		}
 
 		fPatternMap.initPattern();
+		return matchExpr(fLhsPatternExpr, leftHandSide, engine);
+	}
+	
+	@Override
+	public boolean testBlank(final IExpr leftHandSide, EvalEngine engine) {
+		if (isRuleWithoutPatterns()) {
+			// no patterns found match equally:
+			return fLhsPatternExpr.equals(leftHandSide);
+		}
+
+		fPatternMap.initPatternBlank();
 		return matchExpr(fLhsPatternExpr, leftHandSide, engine);
 	}
 

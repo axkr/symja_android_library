@@ -25,6 +25,7 @@ import org.matheclipse.core.expression.F;
 import org.matheclipse.core.expression.ID;
 import org.matheclipse.core.expression.IntervalSym;
 import org.matheclipse.core.expression.Num;
+import org.matheclipse.core.expression.data.SparseArrayExpr;
 import org.matheclipse.core.form.ApfloatToMMA;
 import org.matheclipse.core.form.DoubleToMMA;
 import org.matheclipse.core.form.output.OutputFormFactory;
@@ -1445,6 +1446,14 @@ public class MathMLFormFactory extends AbstractMathMLFormFactory {
 					return;
 				}
 				break;
+			case ID.SparseArray:
+				if (list.isSparseArray()) {
+					tagStart(buf, "mtext");
+					buf.append(list.toString());
+					tagEnd(buf, "mtext");
+					return;
+				}
+				break;
 			case ID.Defer:
 			case ID.HoldForm:
 				if ((list.isAST1())) {
@@ -2484,28 +2493,21 @@ public class MathMLFormFactory extends AbstractMathMLFormFactory {
 		CONVERTERS.put(F.Binomial, new Binomial());
 		CONVERTERS.put(F.C, new C());
 		CONVERTERS.put(F.Ceiling, new Ceiling());
-		CONVERTERS.put(F.CompoundExpression,
-				new MMLOperator(Precedence.COMPOUNDEXPRESSION, ";"));
+		CONVERTERS.put(F.CompoundExpression, new MMLOperator(Precedence.COMPOUNDEXPRESSION, ";"));
 		CONVERTERS.put(F.D, new D());
-		CONVERTERS.put(F.DirectedEdge,
-				new MMLOperator(Precedence.DIRECTEDEDGE, "-&gt;"));
+		CONVERTERS.put(F.DirectedEdge, new MMLOperator(Precedence.DIRECTEDEDGE, "-&gt;"));
 		CONVERTERS.put(F.Dot, new MMLOperator(Precedence.DOT, "."));
 		CONVERTERS.put(F.Element, new Element());
 		CONVERTERS.put(F.Equal, new MMLOperator(Precedence.EQUAL, "=="));
-		CONVERTERS.put(F.Factorial,
-				new MMLPostfix("!", Precedence.FACTORIAL));
-		CONVERTERS.put(F.Factorial2,
-				new MMLPostfix("!!", Precedence.FACTORIAL2));
+		CONVERTERS.put(F.Factorial, new MMLPostfix("!", Precedence.FACTORIAL));
+		CONVERTERS.put(F.Factorial2, new MMLPostfix("!!", Precedence.FACTORIAL2));
 		CONVERTERS.put(F.Floor, new Floor());
 		CONVERTERS.put(F.Function, new Function());
-		CONVERTERS.put(F.Greater,
-				new MMLOperator(Precedence.GREATER, "&gt;"));
-		CONVERTERS.put(F.GreaterEqual,
-				new MMLOperator(Precedence.GREATEREQUAL, "&#x2265;"));
+		CONVERTERS.put(F.Greater, new MMLOperator(Precedence.GREATER, "&gt;"));
+		CONVERTERS.put(F.GreaterEqual, new MMLOperator(Precedence.GREATEREQUAL, "&#x2265;"));
 		CONVERTERS.put(F.Integrate, new Integrate());
 		CONVERTERS.put(F.Less, new MMLOperator(Precedence.LESS, "&lt;"));
-		CONVERTERS.put(F.LessEqual,
-				new MMLOperator(Precedence.LESSEQUAL, "&#x2264;"));
+		CONVERTERS.put(F.LessEqual, new MMLOperator(Precedence.LESSEQUAL, "&#x2264;"));
 		CONVERTERS.put(F.MatrixForm, new MatrixForm(false));
 		CONVERTERS.put(F.TableForm, new MatrixForm(true));
 		CONVERTERS.put(F.Not, new Not());
@@ -2515,26 +2517,19 @@ public class MathMLFormFactory extends AbstractMathMLFormFactory {
 		CONVERTERS.put(F.Product, new Product());
 		CONVERTERS.put(F.Rational, new Rational());
 		CONVERTERS.put(F.Rule, new MMLOperator(Precedence.RULE, "-&gt;"));
-		CONVERTERS.put(F.RuleDelayed,
-				new MMLOperator(Precedence.RULEDELAYED, "&#x29F4;"));
+		CONVERTERS.put(F.RuleDelayed, new MMLOperator(Precedence.RULEDELAYED, "&#x29F4;"));
 		CONVERTERS.put(F.Set, new MMLOperator(Precedence.SET, "="));
-		CONVERTERS.put(F.SetDelayed,
-				new MMLOperator(Precedence.SETDELAYED, ":="));
+		CONVERTERS.put(F.SetDelayed, new MMLOperator(Precedence.SETDELAYED, ":="));
 		CONVERTERS.put(F.Sqrt, new Sqrt());
 		CONVERTERS.put(F.Subscript, new Subscript());
 		CONVERTERS.put(F.Superscript, new Superscript());
 		CONVERTERS.put(F.Sum, new Sum());
 		CONVERTERS.put(F.Surd, new Surd());
 		CONVERTERS.put(F.Times, new Times());
-		CONVERTERS.put(F.TwoWayRule,
-				new MMLOperator(Precedence.TWOWAYRULE, "&lt;-&gt;"));
-		CONVERTERS.put(F.UndirectedEdge,
-				new MMLOperator(Precedence.UNDIRECTEDEDGE, "&lt;-&gt;"));
-		CONVERTERS.put(F.Unequal,
-				new MMLOperator(Precedence.UNEQUAL, "!="));
-		CONVERTERS.put(F.CenterDot,
-				new MMLOperator(Precedence.CENTERDOT, "&#183;"));
-		CONVERTERS.put(F.CircleDot,
-				new MMLOperator(Precedence.CIRCLEDOT, "&#8857;"));
+		CONVERTERS.put(F.TwoWayRule, new MMLOperator(Precedence.TWOWAYRULE, "&lt;-&gt;"));
+		CONVERTERS.put(F.UndirectedEdge, new MMLOperator(Precedence.UNDIRECTEDEDGE, "&lt;-&gt;"));
+		CONVERTERS.put(F.Unequal, new MMLOperator(Precedence.UNEQUAL, "!="));
+		CONVERTERS.put(F.CenterDot, new MMLOperator(Precedence.CENTERDOT, "&#183;"));
+		CONVERTERS.put(F.CircleDot, new MMLOperator(Precedence.CIRCLEDOT, "&#8857;"));
 	}
 }

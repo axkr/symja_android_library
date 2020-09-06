@@ -1,5 +1,7 @@
 package org.matheclipse.core.expression;
 
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.fail;
 import static org.matheclipse.core.expression.F.ArcTan;
 import static org.matheclipse.core.expression.F.C1D2;
 import static org.matheclipse.core.expression.F.CN1D2;
@@ -742,14 +744,14 @@ public class ComplexSym implements IComplex {
 		return r;
 	}
 
-	 public void checkBitLength() {
+	public void checkBitLength() {
 		if (Integer.MAX_VALUE > Config.MAX_BIT_LENGTH) {
 			long bitLength = fReal.toBigNumerator().bitLength() + fReal.toBigDenominator().bitLength();
-			if (bitLength > Config.MAX_BIT_LENGTH/4) {
+			if (bitLength > Config.MAX_BIT_LENGTH / 4) {
 				BigIntegerLimitExceeded.throwIt(bitLength);
 			}
 			bitLength = fImaginary.toBigNumerator().bitLength() + fImaginary.toBigDenominator().bitLength();
-			if (bitLength > Config.MAX_BIT_LENGTH/4) {
+			if (bitLength > Config.MAX_BIT_LENGTH / 4) {
 				BigIntegerLimitExceeded.throwIt(bitLength);
 			}
 		}
@@ -785,6 +787,29 @@ public class ComplexSym implements IComplex {
 	@Override
 	public INumber round() {
 		return valueOf((IRational) fReal.round(), (IRational) fImaginary.round());
+	}
+
+	public IComplex sqrtCC() {
+		// https://math.stackexchange.com/a/44414
+		// this == c + d*I
+		IRational c = fReal;
+		IRational d = fImaginary;
+		IExpr val1 = c.multiply(c).add(d.multiply(d)).sqrt();
+		if (val1.isRational()) {
+			IExpr a = c.add((IRational) val1).divide(F.C2).sqrt();
+			if (a.isRational()) {
+				IExpr val2 = ((IRational) val1).subtract(c).divide(F.C2).sqrt();
+				if (val2.isRational()) {
+					// Sqrt(c + d*I) -> a + b*I
+					IRational b = ((IRational) val2);
+					return valueOf( //
+							(IRational) a, //
+							(d.sign() >= 0) ? b : b.negate()//
+					);
+				}
+			}
+		}
+		return null;
 	}
 
 	@Override

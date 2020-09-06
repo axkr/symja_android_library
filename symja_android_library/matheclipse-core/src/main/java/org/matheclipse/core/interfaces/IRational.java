@@ -139,6 +139,8 @@ public interface IRational extends ISignedNumber, IBigNumber {
 	}
 
 	public IRational multiply(IRational parm1);
+	
+	public IRational multiply(int n);
 
 	@Override
 	public IRational negate();

@@ -588,6 +588,21 @@ public class FractionSym extends AbstractFractionSym {
 		return valueOf(newnum, toBigDenominator());
 	}
 
+	@Override
+	public IRational multiply(int n) {
+		if (isZero() || n == 0) {
+			return F.C0;
+		}
+		if (n == 1) {
+			return this;
+		}
+		if (n == -1) {
+			return this.negate();
+		}
+		long newnum = (long) fNumerator * (long) n;
+		return valueOf(newnum, fDenominator);
+	}
+
 	/**
 	 * Returns a new rational equal to <code>-this</code>.
 	 * 
@@ -674,6 +689,6 @@ public class FractionSym extends AbstractFractionSym {
 	}
 
 	private Object writeReplace() throws ObjectStreamException {
-		return optional( );
+		return optional();
 	}
 }

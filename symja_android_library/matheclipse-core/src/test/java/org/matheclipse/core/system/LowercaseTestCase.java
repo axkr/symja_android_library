@@ -1159,6 +1159,22 @@ public class LowercaseTestCase extends AbstractTestCase {
 
 	}
 
+	public void testArrayRules() {
+		check("a = {{{0,0},{1,1}},{{0,1},{0,1}}}", //
+				"{{{0,0},{1,1}},{{0,1},{0,1}}}");
+		check("ArrayRules(a)", //
+				"{{1,2,1}->1,{1,2,2}->1,{2,1,2}->1,{2,2,2}->1,{_,_,_}->0}");
+
+		check("s1=SparseArray({{1, 1} -> 1, {2, 2} -> 2, {4, 3} -> 3, {1, 4} -> 4, {3, 5} -> 2} )", //
+				"SparseArray(Number of elements: 5 Dimensions: {4,5})");
+		check("ar=ArrayRules(s1)", //
+				"{{1,1}->1,{1,4}->4,{2,2}->2,{3,5}->2,{4,3}->3,{_,_}->0}");
+		check("s2=SparseArray(ar)", //
+				"SparseArray(Number of elements: 5 Dimensions: {4,5})");
+		check("s1===s2", //
+				"True");
+	}
+
 	public void testAtomQ() {
 		check("AtomQ(Sin(Pi))", //
 				"True");
@@ -1292,6 +1308,15 @@ public class LowercaseTestCase extends AbstractTestCase {
 		check("<|a, b|>", //
 				"Association(a,b)");
 
+	}
+
+	public void testAssociationThread() {
+		check("AssociationThread({\"U\",\"V\"},{1,2})", //
+				"<|U->1,V->2|>");
+		check("AssociationThread({U,V}->{1,2})", //
+				"<|U->1,V->2|>");
+		check("AssociationThread({U,V}:>{1,2})", //
+				"<|U:>1,V:>2|>");
 	}
 
 	public void testAttributes() {
@@ -3337,6 +3362,9 @@ public class LowercaseTestCase extends AbstractTestCase {
 	}
 
 	public void testComplexExpand() {
+		// TODO
+		// check("ComplexExpand(Sqrt(1+I))", //
+		// "");
 		check("ComplexExpand(x^2)", //
 				"x^2");
 		check("ComplexExpand(Sin(x), x)", //
@@ -5186,6 +5214,18 @@ public class LowercaseTestCase extends AbstractTestCase {
 	}
 
 	public void testDimensions() {
+		check("s = SparseArray({{1, 1} -> 1, {2, 2} -> 2, {3, 3} -> 3, {1, 3} -> 4});", //
+				"");
+		check("Dimensions(s)", //
+				"{3,3}");
+		check("AtomQ(s)", //
+				"True");
+		check("Dimensions(s,1)", //
+				"{3}");
+		check("Dimensions(s,2)", //
+				"{3,3}");
+		check("Dimensions(s,3)", //
+				"{3,3}");
 		check("Dimensions({a, b})", //
 				"{2}");
 		check("Dimensions({{a, b, c}, {d, e, f}})", //
@@ -9176,6 +9216,11 @@ public class LowercaseTestCase extends AbstractTestCase {
 	}
 
 	public void testFunctionExpand() {
+		check("FunctionExpand(BetaRegularized(z,a,b))", //
+				"(Beta(z,a,b)*Gamma(a+b))/(Gamma(a)*Gamma(b))");
+		check("FunctionExpand(BetaRegularized(z0,z1,a,b))", //
+				"((-Beta(z0,a,b)+Beta(z1,a,b))*Gamma(a+b))/(Gamma(a)*Gamma(b))");
+
 		check("FunctionExpand(ProductLog(a*Log(a)), a > 42)", //
 				"Log(a)");
 		check("FunctionExpand(ProductLog(a*Log(a)), a >= 42)", //
@@ -9769,6 +9814,10 @@ public class LowercaseTestCase extends AbstractTestCase {
 
 	public void testHarmonicNumber() {
 		// HarmonicNumber(10007,{-1,-2,3})
+		// check("HarmonicNumber(130.71)", //
+		// "5.45402");
+		// check("HarmonicNumber(0.8)", //
+		// "0.848864");
 
 		check("HarmonicNumber(2147483647,2)", //
 				"Iteration limit of 2147483647 exceeded for HarmonicNumber(2147483647,2).");
@@ -13845,6 +13894,13 @@ public class LowercaseTestCase extends AbstractTestCase {
 	}
 
 	public void testMatchQ() {
+		check("MatchQ({f(a, b), f(a, c), f(a, d)}, {f(_, x_) ..})", //
+				"False");
+		check("MatchQ({f(a, b), f(a, c), f(a, d)}, {f(x_, _) ..})", //
+				"True");
+
+		check("MatchQ({\"U\",\"V\"}, {_String ..})", //
+				"True");
 
 		check("MatchQ({a,b,c}, {___Symbol})", //
 				"True");
@@ -15893,6 +15949,14 @@ public class LowercaseTestCase extends AbstractTestCase {
 	}
 
 	public void testOptions() {
+		check("Options(f) = {a -> 1, b -> 2};", //
+				"");
+		check("Options(f)", //
+				"{a->1,b->2}");
+		check("f(x_, OptionsPattern()) := {x, OptionValue(a)}", //
+				"");
+		check("f(7, a -> uuu)", //
+				"{7,uuu}");
 		check("Options(Plus)", //
 				"{}");
 		check("Options(Factor)", //
@@ -15983,6 +16047,105 @@ public class LowercaseTestCase extends AbstractTestCase {
 
 		// check("Default(h)=0", "0");
 		// check("h(a) /. h(x_, y_.) -> {x, y}", "");
+
+	}
+
+	public void testOptionValue() {
+		// TODO
+		check("OptionValue({foo`a -> 1}, bar`a)", //
+				"1");
+		//
+		check("Options(tt) = {\"aa\" -> a1, \"bb\" -> b1}", //
+				"{aa->a1,bb->b1}");
+		check("tt(x_, opts : OptionsPattern()) := {x, opts}", //
+				"");
+		check("tt(test, \"aa\"->r1)", //
+				"{test,aa->r1}");
+		check("tt(test,  aa ->r1)", //
+				"{test,aa->r1}");
+		check("tt(test, \"aa\"->r1, \"a2\"->r2 )", //
+				"{test,aa->r1,a2->r2}");
+		check("ClearAll(tt)", //
+				"");
+		check("Options(tt) = {\"aa\" -> a1, \"bb\" -> b1}", //
+				"{aa->a1,bb->b1}");
+		check("tt(x_,  OptionsPattern()) := {x, OptionValue(aa)}", //
+				"");
+		check("tt(test,  \"aa\" ->r1)", //
+				"{test,r1}");
+		check("tt(test,  aa ->r1)", //
+				"{test,r1}");
+		check("tt(test)", //
+				"{test,a1}");
+
+		check("Options(f) = {a -> 1}; " + //
+				"Options(g) = {a -> 2};" + //
+				"f(g(OptionsPattern()), OptionsPattern()) := " + //
+				"{OptionValue(a), OptionValue(f,a), OptionValue(g,a)}", //
+				"");
+
+		check("f(g(a->10),a->11)", //
+				"{11,11,10}");
+		check("f(g( ),a->11)", //
+				"{11,11,2}");
+		check("f(g())", //
+				"{1,1,2}");
+
+		check("Options(f) = {a -> a0, b -> b0}", //
+				"{a->a0,b->b0}");
+		check("f(x_, OptionsPattern()) := {x, OptionValue(a)}", //
+				"");
+		check("f(7, a -> test)", //
+				"{7,test}");
+		check("f(7)", //
+				"{7,a0}");
+
+		check("Options(f) = {a -> x, b -> y}", //
+				"{a->x,b->y}");
+		check("OptionValue(f, {b -> 5}, {a, b})", //
+				"{x,5}");
+		check("{a, b} /. {b -> 5} /. Options(f)", //
+				"{x,5}");
+		check("OptionValue(f, {a -> 7, b -> a}, {a, b})", //
+				"{7,a}");
+		check("{a, b} /. {a -> 7, b -> a} /. Options(f)", //
+				"{7,x}");
+
+		check("OptionValue({a -> 1}, {a, b})", //
+				"{1,b}");
+		check("OptionValue({opt -> 1}, opt)", //
+				"1");
+		check("OptionValue({\"opt\" -> 1}, \"opt\")", //
+				"1");
+		check("OptionValue({opt -> 1}, \"opt\")", //
+				"1");
+		check("OptionValue({\"opt\" -> 1}, opt)", //
+				"1");
+
+		check("ClearAll(f,g)", //
+				"");
+		check("Options(f) = {a -> 1}; " + //
+				"Options(g) = {a -> 2};" + //
+				"f(g(OptionsPattern())) := " + //
+				"{OptionValue(a), OptionValue(f,a), OptionValue(g,a)}", //
+				"");
+		check("f(g())", //
+				"{OptionValue(a),1,2}");
+	}
+
+	public void testOptionsPattern() {
+		check("Options(f)={a->a0, b->b0};", //
+				"");
+		check("f(x_,OptionsPattern()):={x, OptionValue(a)}", //
+				"");
+		check("f(11, a->iam)", //
+				"{11,iam}");
+		check("f(22)", //
+				"{22,a0}");
+		check("f(x_,OptionsPattern({a -> a0, b -> b0})):={x, OptionValue(a)}", //
+				"");
+		check("f(11)", //
+				"{11,a0}");
 
 	}
 
@@ -16714,6 +16877,24 @@ public class LowercaseTestCase extends AbstractTestCase {
 				"{a,3}");
 		// check("f(y, a->3) /. f(x_, OptionsPattern({a->2, b->5})) -> {x,
 		// OptionValue(a), OptionValue(b)}", "");
+	}
+
+	public void testPattern() {
+		check("x y_ : z", //
+				"x*y_:z");
+		check("x y : z", //
+				"x*Pattern(y,z)");
+		check("a:b:c:d", //
+				"Optional(Pattern(a,b),Pattern(c,d))");
+
+		check("Options(f) = { a  -> 1, b  -> 2 }", //
+				"{a->1,b->2}");
+		check("f(x_, opts : OptionsPattern()) := {x, Automatic, opts}", //
+				"");
+		check("f(a)", //
+				"{a,Automatic}");
+		check("f(a,c -> Automatic)", //
+				"{a,Automatic,c->Automatic}");
 	}
 
 	public void testPatternSequence() {
@@ -17678,6 +17859,10 @@ public class LowercaseTestCase extends AbstractTestCase {
 			check("(-9223372036854775807/9223372036854775808-I*9223372036854775808/9223372036854775807)^10007", //
 					"BigInteger bit length 229469 exceeded");
 		}
+
+		check("Sqrt(-7 + 24*I)", //
+				"3+I*4");
+
 		check("(-8/27*(-2/3)^(2/5))^2147483647", //
 				"BigInteger bit length 254105 exceeded");
 		// SLOW in factorSmallPrimes()
@@ -18493,6 +18678,9 @@ public class LowercaseTestCase extends AbstractTestCase {
 	}
 
 	public void testProduct() {
+		// Config.MAX_BIT_LENGTH = Integer.MAX_VALUE;
+		// check("AbsoluteTiming(Product(i,{i,1,10^6});)", //
+		// "");
 		check("Product(i^2,x)", //
 				"(i^2)^(-1+x)");
 		check("Product(i^2,Indeterminate)", //
@@ -19694,6 +19882,13 @@ public class LowercaseTestCase extends AbstractTestCase {
 	}
 
 	public void testReplaceAll() {
+		check("{{}, {a, a}, {a, b}, {a, a, a}, {a}} /. {a ..} -> x", //
+				"{{},x,{a,b},x,x}");
+		check("{{}, {f(a), f(b)}, {f(a)}, {f(a, b)}, {f(a), g(b)}} /. {f(_) ..} -> x", //
+				"{{},x,x,{f(a,b)},{f(a),g(b)}}");
+		check("{f( ), f(a,a), f(a,b), f(a,a,a)} /.  f(a..) -> x", //
+				"{f(),x,f(a,b),x}");
+
 		check("f(a,b,23,4,5,6)/. x_Integer->test", //
 				"f(a,b,test,test,test,test)");
 		check("Indeterminate/.x->3", //
@@ -22636,6 +22831,44 @@ public class LowercaseTestCase extends AbstractTestCase {
 				"{b,c,d,e}");
 		check("{a, b, c, d, e, f, g, h}[[2 ;; All]]", //
 				"{b,c,d,e,f,g,h}");
+	}
+
+	public void testSparseArray() {
+		check("r=SparseArray({{{0,0,3},{1,1,5}},{{0,1,0},{0,1,2}}})", //
+				"SparseArray(Number of elements: 7 Dimensions: {2,2,3})");
+		check("ArrayRules(r)", //
+				"{{1,1,3}->3,{1,2,1}->1,{1,2,2}->1,{1,2,3}->5,{2,1,2}->1,{2,2,2}->1,{2,2,3}->2,{_,_,_}->\n" + 
+				"0}");
+		check("r[[1,All,3]] // Normal", //
+				"{3,5}");
+		check("s=SparseArray({{1, 1} -> 1, {2, 2} -> 2, {4, 3} -> 3, {1, 4} -> 4, {3, 5} -> 2} )", //
+				"SparseArray(Number of elements: 5 Dimensions: {4,5})");
+		check("s[[1,1]]  ", //
+				"1");
+		check("s[[1,1,2]]  ", //
+				"(SparseArray(Number of elements: 5 Dimensions: {4,5}))[[1,1,2]]");
+		check("s[[All,1]] // Normal", //
+				"{1,0,0,0}");
+		check("s[[All,2]] // Normal", //
+				"{0,2,0,0}");
+		check("s[[2,All ]] // Normal", //
+				"{0,2,0,0,0}");
+		check("Normal(s)", //
+				"{{1,0,0,4,0},{0,2,0,0,0},{0,0,0,0,2},{0,0,3,0,0}}");
+		check("Normal(SparseArray({{1, 1} -> 1, {1, 1} -> 2}))", //
+				"{{1}}");
+		check("Normal(SparseArray({1 -> 2, 10 -> 7, 3 -> 2}))", //
+				"{2,0,2,0,0,0,0,0,0,7}");
+		check("s=SparseArray({3, 3} -> 1, 5)", //
+				"SparseArray(Number of elements: 1 Dimensions: {5,5})");
+		check("Normal(s)", //
+				"{{0,0,0,0,0},{0,0,0,0,0},{0,0,1,0,0},{0,0,0,0,0},{0,0,0,0,0}}");
+		check("Normal(SparseArray(10 -> 1, 19))", //
+				"{0,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0}");
+		check("s = SparseArray({{1, 1} -> 1, {2, 2} -> 2, {3, 3} -> 3, {1, 3} -> 4})", //
+				"SparseArray(Number of elements: 4 Dimensions: {3,3})");
+		check("Normal(s)", //
+				"{{1,0,4},{0,2,0},{0,0,3}}");
 	}
 
 	public void testStandardize() {

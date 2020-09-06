@@ -364,6 +364,12 @@ public abstract class AbstractAST implements IASTMutable {
 		}
 
 		@Override
+		public IExpr evalEvaluate(EvalEngine engine) {
+			ArgumentTypeException.throwNIL();
+			return F.NIL;
+		}
+
+		@Override
 		public boolean exists(ObjIntPredicate<? super IExpr> predicate, int startOffset) {
 			return false;
 		}
@@ -1476,6 +1482,22 @@ public abstract class AbstractAST implements IASTMutable {
 		return null;
 	}
 
+	/**
+	 * Evaluate arguments with the head <code>F.Evaluate</code>, i.e. <code>f(a, ... , Evaluate(x), ...)</code>
+	 * 
+	 * @param ast
+	 * @return
+	 */
+	public IExpr evalEvaluate(EvalEngine engine) {
+		IASTMutable[] rlist = new IASTMutable[] { F.NIL };
+		forEach(1, size(), (x, i) -> {
+			if (x.isAST(F.Evaluate)) {
+				engine.evalArg(rlist, this, x, i, false);
+			}
+		});
+		return rlist[0];
+	}
+
 	/** {@inheritDoc} */
 	@Override
 	public IExpr evaluate(EvalEngine engine) {
@@ -1517,7 +1539,7 @@ public abstract class AbstractAST implements IASTMutable {
 						// }
 						// }
 
-						IExpr evaluateTemp = engine.evalEvaluate(this);
+						IExpr evaluateTemp = evalEvaluate(engine);
 						if (evaluateTemp.isPresent()) {
 							return evaluateTemp;
 						}
@@ -2718,7 +2740,7 @@ public abstract class AbstractAST implements IASTMutable {
 	/** {@inheritDoc} */
 	@Override
 	public boolean isExcept() {
-		return isAST(F.Except, 2, 3);
+		return isAST(S.Except, 2, 3);
 	}
 
 	/** {@inheritDoc} */
@@ -3766,11 +3788,11 @@ public abstract class AbstractAST implements IASTMutable {
 	@Override
 	public final boolean isPatternMatchingFunction() {
 		final int id = headID();
-		if (id >= ID.Alternatives && id <= ID.Rational) {
+		if (id >= ID.Alternatives && id <= ID.Repeated) {
 			if (size() >= 2) {
 				return id == ID.HoldPattern || id == ID.Literal || id == ID.Condition || id == ID.Alternatives || //
 						id == ID.Except || id == ID.Complex || id == ID.Rational || id == ID.Optional || //
-						id == ID.PatternTest;
+						id == ID.PatternTest || id == ID.Repeated;
 			}
 		}
 		return false;
@@ -3832,8 +3854,8 @@ public abstract class AbstractAST implements IASTMutable {
 			return argSize();
 		}
 		if (isList()) {
-			final int dim = argSize();
-			if (dim > 0) {
+			final int length = argSize();
+			if (length > 0) {
 				if (arg1().isList()) {
 					return -1;
 				}
@@ -3845,7 +3867,7 @@ public abstract class AbstractAST implements IASTMutable {
 				}
 			}
 			addEvalFlags(IAST.IS_VECTOR);
-			return dim;
+			return length;
 		}
 		return -1;
 	}
@@ -3853,7 +3875,7 @@ public abstract class AbstractAST implements IASTMutable {
 	/** {@inheritDoc} */
 	@Override
 	public boolean isNumericAST() {
-		return exists(x->x.isInexactNumber());
+		return exists(x -> x.isInexactNumber());
 	}
 
 	/** {@inheritDoc} */

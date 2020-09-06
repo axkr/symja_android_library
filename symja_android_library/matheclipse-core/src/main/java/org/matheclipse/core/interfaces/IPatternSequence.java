@@ -22,10 +22,10 @@ public interface IPatternSequence extends IPatternObject, IExpr {
 	 *            the sequence which should be matched.
 	 * @param patternMap
 	 *            a map from a pattern to a possibly found value during pattern-matching.
-	 * 
+	 * @param optionsPatternHead TODO
 	 * @return
 	 */
-	public boolean matchPatternSequence(final IAST sequence, IPatternMap patternMap);
+	public boolean matchPatternSequence(final IAST sequence, IPatternMap patternMap, ISymbol optionsPatternHead);
 	
 	/**
 	 * Return <code>true</code>, if all of the elements in the <code>sequence</code> fulfill the pattern sequences additional

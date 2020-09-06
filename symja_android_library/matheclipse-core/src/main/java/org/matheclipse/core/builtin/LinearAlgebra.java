@@ -72,6 +72,7 @@ import org.matheclipse.core.interfaces.IBuiltInSymbol;
 import org.matheclipse.core.interfaces.IEvalStepListener;
 import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.interfaces.INumber;
+import org.matheclipse.core.interfaces.ISparseArray;
 import org.matheclipse.core.interfaces.ISymbol;
 import org.matheclipse.parser.client.FEConfig;
 
@@ -1096,6 +1097,18 @@ public final class LinearAlgebra {
 			if (ast.arg1().isAST()) {
 				if (maximumLevel > 0) {
 					return getDimensions(ast, maximumLevel);
+				}
+				return F.List();
+			} else if (ast.arg1().isSparseArray()) {
+				if (maximumLevel > 0) {
+					ISparseArray array = (ISparseArray) ast.arg1();
+					int[] dims = array.getDimension();
+					if (dims.length > maximumLevel) {
+						int[] dest = new int[maximumLevel];
+						System.arraycopy(dims, 0, dest, 0, maximumLevel);
+						return F.ast(F.List, dest);
+					}
+					return F.ast(F.List, dims);
 				}
 				return F.List();
 			}

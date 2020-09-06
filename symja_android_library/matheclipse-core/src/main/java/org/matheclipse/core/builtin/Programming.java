@@ -3,7 +3,6 @@ package org.matheclipse.core.builtin;
 import static org.matheclipse.core.expression.F.Divide;
 import static org.matheclipse.core.expression.F.List;
 
-import java.io.PrintStream;
 import java.util.ArrayDeque;
 import java.util.ArrayList;
 import java.util.IdentityHashMap;
@@ -39,7 +38,7 @@ import org.matheclipse.core.eval.util.Iterator;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.expression.S;
 import org.matheclipse.core.expression.data.CompiledFunctionExpr;
-import org.matheclipse.core.form.output.OutputFormFactory;
+import org.matheclipse.core.expression.data.SparseArrayExpr;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IASTAppendable;
 import org.matheclipse.core.interfaces.IASTMutable;
@@ -48,7 +47,7 @@ import org.matheclipse.core.interfaces.IBuiltInSymbol;
 import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.interfaces.IIterator;
 import org.matheclipse.core.interfaces.ISignedNumber;
-import org.matheclipse.core.interfaces.IStringX;
+import org.matheclipse.core.interfaces.ISparseArray;
 import org.matheclipse.core.interfaces.ISymbol;
 import org.matheclipse.core.patternmatching.IPatternMatcher;
 import org.matheclipse.core.patternmatching.RulesData;
@@ -70,6 +69,7 @@ public final class Programming {
 
 		private static void init() {
 			S.Abort.setEvaluator(new Abort());
+			S.AbsoluteTiming.setEvaluator(new AbsoluteTiming());
 			S.Break.setEvaluator(new Break());
 			S.Block.setEvaluator(new Block());
 			S.Catch.setEvaluator(new Catch());
@@ -148,6 +148,24 @@ public final class Programming {
 		public void setUp(final ISymbol newSymbol) {
 		}
 
+	}
+
+	private static class AbsoluteTiming extends Timing {
+
+		@Override
+		public IExpr evaluate(final IAST ast, EvalEngine engine) {
+			if (ast.size() == 2) {
+				final long begin = System.currentTimeMillis();
+				final IExpr result = engine.evaluate(ast.arg1());
+				return List(Divide(F.num(System.currentTimeMillis() - begin), F.ZZ(1000L)), F.HoldForm(result));
+			}
+			return F.NIL;
+		}
+
+		@Override
+		public void setUp(final ISymbol newSymbol) {
+			newSymbol.setAttributes(ISymbol.HOLDALL);
+		}
 	}
 
 	/**
@@ -272,6 +290,35 @@ public final class Programming {
 
 	}
 
+	/**
+	 * <pre>
+	 * <code>Check(expr, failure)
+	 * </code>
+	 * </pre>
+	 * 
+	 * <blockquote>
+	 * <p>
+	 * evaluates <code>expr</code>, and returns the result, unless messages were generated, in which case
+	 * <code>failure</code> will be returned.
+	 * </p>
+	 * </blockquote>
+	 * <h3>Examples</h3>
+	 * 
+	 * <pre>
+	 * <code>&gt;&gt; Check(2^(3), err)
+	 * 8
+	 * </code>
+	 * </pre>
+	 * <p>
+	 * <code>0^(-42)</code> prints message: &quot;Power: Infinite expression 1/0^42 encountered.&quot;
+	 * </p>
+	 * 
+	 * <pre>
+	 * <code>&gt;&gt; Check(0^(-42), failure)
+	 * failure
+	 * </code>
+	 * </pre>
+	 */
 	private final static class Check extends AbstractCoreFunctionEvaluator {
 
 		@Override
@@ -1114,6 +1161,28 @@ public final class Programming {
 
 	}
 
+	/**
+	 * <pre>
+	 * <code>Interrupt( )
+	 * </code>
+	 * </pre>
+	 * 
+	 * <blockquote>
+	 * <p>
+	 * Interrupt an evaluation and returns <code>$Aborted</code>.
+	 * </p>
+	 * </blockquote>
+	 * <h3>Examples</h3>
+	 * <p>
+	 * <code>Print(test1)</code> prints string: &quot;test1&quot;
+	 * </p>
+	 * 
+	 * <pre>
+	 * <code>&gt;&gt; Print(test1); Interrupt(); Print(test2)
+	 * $Aborted
+	 * </code>
+	 * </pre>
+	 */
 	private final static class Interrupt extends AbstractCoreFunctionEvaluator {
 
 		@Override
@@ -1916,25 +1985,34 @@ public final class Programming {
 		@Override
 		public IExpr evaluate(final IAST ast, EvalEngine engine) {
 			if (ast.size() >= 3) {
+				if (ast.isEvalFlagOn(IAST.BUILT_IN_EVALED)) {
+					return F.NIL;
+				}
+				IASTMutable evaledAST = F.NIL;
 				IExpr arg1 = engine.evaluateNull(ast.arg1());
 				if (arg1.isPresent()) {
+					evaledAST = ast.setAtCopy(1, arg1);
 					if (!arg1.isAST()) {
-						IExpr result = ast.setAtCopy(1, arg1);
+						if (arg1.isSparseArray()) {
+							return sparseEvaluate(evaledAST, (ISparseArray) arg1, engine).orElse(evaledAST);
+						}
 						// Part specification `1` is longer than depth of object.
-						IOFunctions.printMessage(F.Part, "partd", F.List(result), engine);
+						IOFunctions.printMessage(F.Part, "partd", F.List(evaledAST), engine);
 						// return the evaluated result:
-						return result;
+						return evaledAST;
 					}
 				} else {
 					arg1 = ast.arg1();
 					if (!arg1.isAST()) {
+						if (arg1.isSparseArray()) {
+							return sparseEvaluate(ast, (ISparseArray) arg1, engine);
+						}
 						// Part specification `1` is longer than depth of object.
 						return IOFunctions.printMessage(F.Part, "partd", F.List(ast), engine);
 					}
 				}
 				IAST arg1AST = (IAST) arg1;
-				IASTMutable evaledAST = F.NIL;
-
+				
 				IExpr temp;
 
 				int astSize = ast.size();
@@ -1954,6 +2032,35 @@ public final class Programming {
 					return part(arg1AST, evaledAST, 2, engine);
 				}
 				return part(arg1AST, ast, 2, engine);
+			}
+			return F.NIL;
+		}
+
+		public IExpr sparseEvaluate(final IAST ast, ISparseArray arg1, EvalEngine engine) {
+
+			ast.addEvalFlags(IAST.BUILT_IN_EVALED);
+			if (ast.size() >= 3) {
+				IASTMutable evaledAST = F.NIL;
+
+				IExpr temp;
+
+				int astSize = ast.size();
+				for (int i = 2; i < astSize; i++) {
+					temp = engine.evaluateNull(ast.get(i));
+					if (temp.isPresent()) {
+						if (evaledAST.isPresent()) {
+							evaledAST.set(i, temp);
+						} else {
+							evaledAST = ast.setAtCopy(i, temp);
+							evaledAST.addEvalFlags(ast.getEvalFlags() & IAST.IS_MATRIX_OR_VECTOR);
+						}
+					}
+				}
+
+				if (evaledAST.isPresent()) {
+					return sparsePart(arg1, evaledAST, 2, engine);
+				}
+				return sparsePart(arg1, ast, 2, engine);
 			}
 			return F.NIL;
 		}
@@ -2770,7 +2877,7 @@ public final class Programming {
 		}
 
 		@Override
-		public void setUp(ISymbol newSymbol) { 
+		public void setUp(ISymbol newSymbol) {
 			newSymbol.setAttributes(ISymbol.HOLDALLCOMPLETE);
 		}
 	}
@@ -3183,6 +3290,19 @@ public final class Programming {
 		return ast.get(position);
 	}
 
+	private static IExpr getSparseIndex(ISparseArray ast, final int pos, EvalEngine engine) {
+		// int position = pos;
+		// if (position < 0) {
+		// position = ast.size() + position;
+		// }
+		// if ((position < 0) || (position >= ast.size())) {
+		// // Part `1` of `2` does not exist.
+		// return IOFunctions.printMessage(F.Part, "partw", F.List(F.ZZ(pos), ast), engine);
+		// }
+		// return ast.get(position);
+		return F.NIL;
+	}
+
 	/**
 	 * Get the <code>Part[...]</code> of an expression. If the expression is no <code>IAST</code> return the expression.
 	 * 
@@ -3286,6 +3406,16 @@ public final class Programming {
 		}
 		// The expression `1` cannot be used as a part specification.
 		return IOFunctions.printMessage(F.Part, "pkspec1", F.List(arg2), engine);
+	}
+
+	public static IExpr sparsePart(final ISparseArray arg1, final IAST ast, int pos, EvalEngine engine) {
+		if (ast.forAll(x -> (x.isInteger() && x.isPositive()) || x.equals(S.All), 2)) {
+			return arg1.getPart(ast, 2);
+		} 
+		// TODO implement more combinations for SparseArray
+		
+		// The expression `1` cannot be used as a part specification.
+		return IOFunctions.printMessage(F.Part, "pkspec1", F.List(ast), engine);
 	}
 
 	private static IExpr spanPart(final IAST ast, int pos, final IAST arg1, final IExpr arg2, int start, int last,

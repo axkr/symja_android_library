@@ -4,14 +4,17 @@ import java.io.Externalizable;
 import java.io.IOException;
 import java.io.ObjectInput;
 import java.io.ObjectOutput;
+import java.util.IdentityHashMap;
 
 import org.matheclipse.core.eval.EvalEngine;
+import org.matheclipse.core.eval.OptionsStack;
 import org.matheclipse.core.eval.exception.ConditionException;
 import org.matheclipse.core.eval.exception.ReturnException;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.expression.S;
 import org.matheclipse.core.interfaces.ExprUtil;
 import org.matheclipse.core.interfaces.IAST;
+import org.matheclipse.core.interfaces.IASTAppendable;
 import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.interfaces.ISymbol;
 import org.matheclipse.parser.client.FEConfig;
@@ -207,7 +210,8 @@ public class PatternMatcherAndEvaluator extends PatternMatcher implements Extern
 			return true;
 		}
 
-		if (!(fRightHandSide.isCondition()|| fRightHandSide.isAST(S.Block,3) || fRightHandSide.isModule() || fRightHandSide.isWith())) {
+		if (!(fRightHandSide.isCondition() || fRightHandSide.isAST(S.Block, 3) || fRightHandSide.isModule()
+				|| fRightHandSide.isWith())) {
 			return true;
 		} else {
 			if (!patternMap.isAllPatternsAssigned()) {
@@ -215,11 +219,11 @@ public class PatternMatcherAndEvaluator extends PatternMatcher implements Extern
 			} else {
 				boolean matched = false;
 				IExpr rhs = patternMap.substituteSymbols(fRightHandSide);
+
+				OptionsStack optionsStack = engine.getOptionsStack();
+				optionsStack.push(new IdentityHashMap<ISymbol, IASTAppendable>());
 				try {
-					// if (fLhsPatternExpr.isAST(F.Integrate)) {
-					// System.out.println(" :: " + getLHSPriority()+ " "+fLhsPatternExpr +" -> " +rhs);
-					// }
-					// System.out.println(rhs.toString());
+					engine.setOptionsPattern(fLhsPatternExpr.topHead(), patternMap);
 					fReturnResult = engine.evaluate(rhs);
 					matched = true;
 				} catch (final ConditionException e) {
@@ -227,6 +231,8 @@ public class PatternMatcherAndEvaluator extends PatternMatcher implements Extern
 				} catch (final ReturnException e) {
 					fReturnResult = e.getValue();
 					matched = true;
+				} finally {
+					optionsStack.pop();
 				}
 				patternMap.setRHSEvaluated(matched);
 				return matched;
@@ -286,22 +292,27 @@ public class PatternMatcherAndEvaluator extends PatternMatcher implements Extern
 				if (fReturnResult.isPresent()) {
 					return fReturnResult;
 				}
-				IExpr result = patternMap.substituteSymbols(fRightHandSide);
-				try {
-					// System.out.println(result.toString());
-					if (evaluate) {
-						result = engine.evaluate(result);
-					}
-					return result;
-				} catch (final ConditionException e) {
-					if (FEConfig.SHOW_STACKTRACE) {
-						logConditionFalse(leftHandSide, fLhsPatternExpr, fRightHandSide);
-					}
-					return F.NIL;
-				} catch (final ReturnException e) {
-					return e.getValue();
-				}
 
+				IExpr result = patternMap.substituteSymbols(fRightHandSide);
+				if (evaluate) {
+					OptionsStack optionsStack = engine.getOptionsStack();
+					optionsStack.push(new IdentityHashMap<ISymbol, IASTAppendable>());
+					try {
+						engine.setOptionsPattern(fLhsPatternExpr.topHead(), patternMap);
+						return engine.evaluate(result);
+					} catch (final ConditionException e) {
+						if (FEConfig.SHOW_STACKTRACE) {
+							logConditionFalse(leftHandSide, fLhsPatternExpr, fRightHandSide);
+						}
+						return F.NIL;
+					} catch (final ReturnException e) {
+						return e.getValue();
+					} finally {
+						optionsStack.pop();
+					}
+				} else {
+					return result;
+				}
 			}
 		}
 

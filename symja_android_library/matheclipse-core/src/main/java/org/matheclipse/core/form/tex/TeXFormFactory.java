@@ -1159,20 +1159,20 @@ public class TeXFormFactory {
 				} else {
 					fFactory.convertInternal(buf, timesAST.get(i), fPrecedence);
 				}
-				if (i < timesAST.argSize()){
-				buf.append(timesOperator);
+				if (i < timesAST.argSize()) {
+					buf.append(timesOperator);
 				}
-//				if ((i < timesAST.argSize()) && (fOperator.compareTo("") != 0)) {
-//					if (isTeXNumberDigit(timesAST.get(i)) && isTeXNumberDigit(timesAST.get(i + 1))) {
-//						// Issue #67, #117: if we have 2 TeX number expressions we
-//						// use
-//						// the \cdot operator see
-//						// http://tex.stackexchange.com/questions/40794/when-should-cdot-be-used-to-indicate-multiplication
-//						buf.append("\\cdot ");
-//					} else {
-//						buf.append("\\,");
-//					}
-//				}
+				// if ((i < timesAST.argSize()) && (fOperator.compareTo("") != 0)) {
+				// if (isTeXNumberDigit(timesAST.get(i)) && isTeXNumberDigit(timesAST.get(i + 1))) {
+				// // Issue #67, #117: if we have 2 TeX number expressions we
+				// // use
+				// // the \cdot operator see
+				// // http://tex.stackexchange.com/questions/40794/when-should-cdot-be-used-to-indicate-multiplication
+				// buf.append("\\cdot ");
+				// } else {
+				// buf.append("\\,");
+				// }
+				// }
 			}
 			precedenceClose(buf, precedence);
 			return true;
@@ -1487,6 +1487,14 @@ public class TeXFormFactory {
 							}
 						}
 						buf.append(")");
+						return;
+					}
+					break;
+				case ID.SparseArray:
+					if (list.isSparseArray()) {
+						buf.append("\\textnormal{");
+						buf.append(list.toString());
+						buf.append("}");
 						return;
 					}
 					break;

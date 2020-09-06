@@ -1,16 +1,47 @@
 package org.matheclipse.core.expression;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.fail;
 
 import java.math.BigInteger;
 
-import org.hipparchus.fraction.BigFraction;
 import org.junit.Test;
-import org.matheclipse.core.interfaces.IComplex;
+import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.interfaces.IInteger;
 import org.matheclipse.core.numbertheory.GaussianInteger;
 
 public class ComplexSymTest {
+
+	@Test
+	public void testSqrt1() {
+		// https://math.stackexchange.com/a/44414
+		ComplexSym c1 = ComplexSym.valueOf(BigInteger.valueOf(-7), BigInteger.valueOf(24));
+		IInteger[] parm1 = c1.gaussianIntegers();
+		
+		// c + d*I
+		IInteger c = parm1[0];
+		IInteger d = parm1[1];
+		
+		ComplexSym c2 = ComplexSym.valueOf(BigInteger.valueOf(3), BigInteger.valueOf(4));
+		IInteger[] expected = c2.gaussianIntegers();
+		
+		IExpr val1 =c.multiply(c).add(d.multiply(d)).sqrt();
+		if (val1.isInteger()) {
+			IExpr a = c.add((IInteger) val1).divide(F.C2).sqrt();
+			if (a.isInteger()) {
+				assertEquals(expected[0], a);
+
+				IExpr val2 = ((IInteger) val1).subtract(c).divide(F.C2).sqrt();
+				if (val2.isInteger()) {
+					// Sqrt(c + d*I) -> a + b*I
+					IExpr b = ((IInteger) val2).multiply(d.sign());
+					assertEquals(expected[1], b);
+					return;
+				}
+			}
+		}
+		fail("testSqrt1()"); 
+	}
 
 	@Test
 	public void testIntegerPartDivisionGaussian1() {

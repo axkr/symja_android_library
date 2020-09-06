@@ -59,7 +59,7 @@ public final class RulesData implements Serializable {
 				if (isComplicatedPatternExpr(a1) || !a1.head().isFreeOfPatterns()) {
 					return true;
 				}
-				if (lhsAST.exists(x -> x.isPatternDefault(), 2)) {
+				if (lhsAST.exists(x -> x.isPatternDefault() || x.isPatternSequence(false))) {
 					return true;
 				}
 			}

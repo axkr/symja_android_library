@@ -37,7 +37,7 @@ import org.matheclipse.core.interfaces.IPatternObject;
 import org.matheclipse.core.interfaces.IRational;
 import org.matheclipse.core.interfaces.ISignedNumber;
 import org.matheclipse.core.interfaces.ISymbol;
-import org.matheclipse.core.tensor.qty.IQuantity; 
+import org.matheclipse.core.tensor.qty.IQuantity;
 import org.matheclipse.parser.client.FEConfig;
 import org.matheclipse.parser.client.operator.ASTNodeFactory;
 import org.matheclipse.parser.client.operator.InfixOperator;
@@ -1104,6 +1104,12 @@ public class OutputFormFactory {
 							}
 						}
 						break;
+					case ID.SparseArray:
+						if (list.isSparseArray()) {
+							buf.append(list.toString());
+							return;
+						}
+						break;
 					case ID.List:
 						convertList(buf, list);
 						return;
@@ -1181,9 +1187,7 @@ public class OutputFormFactory {
 			convertAST(buf, list);
 			return;
 		}
-		if (o instanceof ISignedNumber)
-
-		{
+		if (o instanceof ISignedNumber) {
 			convertNumber(buf, (ISignedNumber) o, precedence, NO_PLUS_CALL);
 			return;
 		}

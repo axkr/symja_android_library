@@ -495,12 +495,15 @@ public class BigFractionSym extends AbstractFractionSym {
 	public IFraction mul(BigInteger other) {
 		if (other.bitLength() < 2) {
 			int oint = other.intValue();
-			if (oint == 1)
+			if (oint == 1) {
 				return this;
-			if (oint == -1)
+			}
+			if (oint == -1) {
 				return this.negate();
-			if (oint == 0)
+			}
+			if (oint == 0) {
 				return AbstractFractionSym.ZERO;
+			}
 		}
 		return valueOf(toBigNumerator().multiply(other), toBigDenominator());
 	}
@@ -521,6 +524,21 @@ public class BigFractionSym extends AbstractFractionSym {
 		}
 		IInteger p1 = (IInteger) parm1;
 		BigInteger newnum = toBigNumerator().multiply(p1.toBigNumerator());
+		return valueOf(newnum, toBigDenominator());
+	}
+
+	@Override
+	public IRational multiply(int n) {
+		if (n == 1) {
+			return this;
+		}
+		if (n == 0) {
+			return AbstractFractionSym.ZERO;
+		}
+		if (n == -1) {
+			return this.negate();
+		}
+		BigInteger newnum = toBigNumerator().multiply(BigInteger.valueOf(n));
 		return valueOf(newnum, toBigDenominator());
 	}
 

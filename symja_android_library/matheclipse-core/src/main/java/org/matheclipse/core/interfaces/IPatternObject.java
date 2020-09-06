@@ -2,6 +2,7 @@ package org.matheclipse.core.interfaces;
 
 import java.util.List;
 
+import org.hipparchus.util.Pair;
 import org.matheclipse.core.patternmatching.IPatternMap;
 
 /**
@@ -16,7 +17,7 @@ public interface IPatternObject extends IExpr {
 	 * 
 	 * @return
 	 */
-	public int[] addPattern(List<IExpr> patternIndexMap);
+	public int[] addPattern(List<Pair<IExpr, IPatternObject>> patternIndexMap);
 
 	/**
 	 * Check if the two left-hand-side pattern expressions are equivalent. (i.e. <code>f[x_,y_]</code> is equivalent to
