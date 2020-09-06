@@ -23,7 +23,7 @@ public interface PowerRules {
     // E^(3/2*I*Pi)=-I
     ISet(Exp(Times(CC(0L,1L,3L,2L),Pi)),
       CNI),
-    // E^(I*Pi*n_):=(-1)^n/;Element(n,Integers)
+    // E^(I*Pi*n_):=(-1)^n/;n∈Integers
     ISetDelayed(Exp(Times(CI,Pi,n_)),
       Condition(Power(CN1,n),Element(n,Integers))),
     // E^(Pi*c_Complex):=Module({r=Re(c),j=Im(c)},If(EvenQ(j),1,-1)/;r==0&&IntegerQ(j))
