@@ -2012,7 +2012,7 @@ public final class Programming {
 					}
 				}
 				IAST arg1AST = (IAST) arg1;
-				
+
 				IExpr temp;
 
 				int astSize = ast.size();
@@ -3411,9 +3411,13 @@ public final class Programming {
 	public static IExpr sparsePart(final ISparseArray arg1, final IAST ast, int pos, EvalEngine engine) {
 		if (ast.forAll(x -> (x.isInteger() && x.isPositive()) || x.equals(S.All), 2)) {
 			return arg1.getPart(ast, 2);
-		} 
+		}
 		// TODO implement more combinations for SparseArray
-		
+
+		IExpr temp = arg1.normal(false);
+		if (temp.isList()) {
+			return part((IAST)temp, ast, pos, engine);
+		}
 		// The expression `1` cannot be used as a part specification.
 		return IOFunctions.printMessage(F.Part, "pkspec1", F.List(ast), engine);
 	}

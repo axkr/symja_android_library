@@ -22894,6 +22894,15 @@ public class LowercaseTestCase extends AbstractTestCase {
 	}
 
 	public void testSparseArray() {
+		check("r=SparseArray({{1, 1} -> 1, {2, 2} -> 2, {4, 3} -> 3, {1, 4} -> 4, {3, 5} -> 2})", //
+				"SparseArray(Number of elements: 5 Dimensions: {4,5})");
+		check("rmat.Transpose(r[[{1},All]])", //
+				"rmat.\n" + //
+						"{{1},\n" + //
+						" {0},\n" + //
+						" {0},\n" + //
+						" {4},\n" + //
+						" {0}}");
 		check("r=SparseArray({{{0,0,3},{1,1,5}},{{0,1,0},{0,1,2}}})", //
 				"SparseArray(Number of elements: 7 Dimensions: {2,2,3})");
 		check("ArrayRules(r)", //
