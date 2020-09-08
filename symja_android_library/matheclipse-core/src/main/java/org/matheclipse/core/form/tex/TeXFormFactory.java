@@ -837,11 +837,10 @@ public class TeXFormFactory {
 	private final static class Subscript extends AbstractConverter {
 		@Override
 		public boolean convert(final StringBuilder buf, final IAST f, final int precedence) {
-			if (f.size() != 3) {
+			if (f.size() < 3) {
 				return false;
 			}
 			IExpr arg1 = f.arg1();
-			IExpr arg2 = f.arg2();
 
 			// http://en.wikibooks.org/wiki/LaTeX/Mathematics#Powers_and_indices
 			// For powers with more than one digit, surround the power with {}.
@@ -851,7 +850,13 @@ public class TeXFormFactory {
 			buf.append("_");
 
 			buf.append('{');
-			fFactory.convertInternal(buf, arg2, precedence);
+
+			for (int i = 2; i < f.size(); i++) {
+				fFactory.convertInternal(buf, f.get(i), precedence);
+				if (i < f.size() - 1) {
+					buf.append(',');
+				}
+			}
 			buf.append('}');
 			return true;
 		}

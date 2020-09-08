@@ -835,15 +835,31 @@ public class MathMLFormFactory extends AbstractMathMLFormFactory {
 		 */
 		@Override
 		public boolean convert(final StringBuilder buf, final IAST f, final int precedence) {
-			if (f.size() != 3) {
+			if (f.size() < 3) {
 				return false;
 			}
-			IExpr arg1 = f.arg1();
-			IExpr arg2 = f.arg2();
+			if (f.isAST2()) {
+				IExpr arg1 = f.arg1();
+				IExpr arg2 = f.arg2();
+				precedenceOpen(buf, precedence);
+				fFactory.tagStart(buf, "msub");
+				fFactory.convertInternal(buf, arg1, fPrecedence, false);
+				fFactory.convertInternal(buf, arg2, fPrecedence, false);
+				fFactory.tagEnd(buf, "msub");
+				precedenceClose(buf, precedence);
+				return true;
+			}
 			precedenceOpen(buf, precedence);
 			fFactory.tagStart(buf, "msub");
-			fFactory.convertInternal(buf, arg1, fPrecedence, false);
-			fFactory.convertInternal(buf, arg2, fPrecedence, false);
+			fFactory.convertInternal(buf, f.arg1(), fPrecedence, false);
+			fFactory.tagStart(buf, "mrow");
+			for (int i = 2; i < f.size(); i++) {
+				fFactory.convertInternal(buf, f.get(i), fPrecedence, false);
+				if (i < f.size() - 1) {
+					buf.append("<mo>,</mo>");
+				}
+			}
+			fFactory.tagEnd(buf, "mrow");
 			fFactory.tagEnd(buf, "msub");
 			precedenceClose(buf, precedence);
 			return true;

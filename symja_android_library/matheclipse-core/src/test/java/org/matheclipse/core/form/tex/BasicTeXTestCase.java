@@ -402,6 +402,9 @@ public class BasicTeXTestCase extends TestCase {
 		IExpr expr = EvalEngine.get().evaluate("Subscript(\"zzz\",36)");
 		check(expr, //
 				"{\\textnormal{zzz}}_{36}");
+		expr = EvalEngine.get().evaluate("Subscript(a,1,2,3)");
+		check(expr, //
+				"{a}_{1,2,3}");
 	}
 
 	public void testTeX041() {

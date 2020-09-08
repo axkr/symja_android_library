@@ -24,7 +24,7 @@ public class MathMLPresentationTestCase extends TestCase {
 	/**
 	 * Test mathml function
 	 */
-	public void testMathMLPresentation() {		
+	public void testMathMLPresentation() {
 		check("TableForm({a,b,c,d})", //
 				"<mtable columnalign=\"center\"><mtr><mtd columnalign=\"center\"><mi>a</mi></mtd></mtr><mtr><mtd columnalign=\"center\"><mi>b</mi></mtd></mtr><mtr><mtd columnalign=\"center\"><mi>c</mi></mtd></mtr><mtr><mtd columnalign=\"center\"><mi>d</mi></mtd></mtr></mtable>");
 
@@ -282,19 +282,19 @@ public class MathMLPresentationTestCase extends TestCase {
 		check(expr, //
 				"<mrow><mrow><mo>(</mo><mrow><mi>a</mi><mo>&#x2227;</mo><mi>c</mi></mrow><mo>)</mo></mrow><mo>&#x2228;</mo><mrow><mo>(</mo><mrow><mi>a</mi><mo>&#x2227;</mo><mi>d</mi></mrow><mo>)</mo></mrow><mo>&#x2228;</mo><mrow><mo>(</mo><mrow><mi>b</mi><mo>&#x2227;</mo><mi>c</mi></mrow><mo>)</mo></mrow><mo>&#x2228;</mo><mrow><mo>(</mo><mrow><mi>b</mi><mo>&#x2227;</mo><mi>d</mi></mrow><mo>)</mo></mrow></mrow>");
 	}
-	
+
 	public void testNot001() {
 		IExpr expr = EvalEngine.get().evaluate("!f(x)");
 		check(expr, //
 				"<mrow><mo>&#x00AC;</mo><mrow><mi>f</mi><mo>&#x2061;</mo><mrow><mo>(</mo><mrow><mi>x</mi></mrow><mo>)</mo></mrow></mrow></mrow>");
 	}
-	
+
 	public void testNot002() {
 		IExpr expr = EvalEngine.get().evaluate("!(x&&x)");
 		check(expr, //
 				"<mrow><mo>&#x00AC;</mo><mrow><mrow><mo>(</mo><mi>x</mi><mo>&#x2227;</mo><mi>x</mi><mo>)</mo></mrow></mrow></mrow>");
 	}
-	
+
 	public void testRational() {
 		IExpr expr = EvalEngine.get().parse("Rational(a, b)");
 		check(expr, //
@@ -401,6 +401,9 @@ public class MathMLPresentationTestCase extends TestCase {
 		IExpr expr = EvalEngine.get().evaluate("Subscript(\"zzz\",36)");
 		check(expr, //
 				"<msub><mtext>zzz</mtext><mn>36</mn></msub>");
+		expr = EvalEngine.get().evaluate("Subscript(a,1,2,3)");
+		check(expr, //
+				"<msub><mi>a</mi><mrow><mn>1</mn><mo>,</mo><mn>2</mn><mo>,</mo><mn>3</mn></mrow></msub>");
 	}
 
 	public void testSuperscript() {
