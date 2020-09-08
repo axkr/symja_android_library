@@ -1656,6 +1656,10 @@ public class ManipulateFunction {
 			if (!arg1.isList()) {
 				arg1 = engine.evaluate(arg1);
 			}
+//			if (!arg1.isList()) {
+//				// example SparseArray
+//				arg1 = arg1.normal(false);
+//			}
 
 			if (plot.isAST(F.DensityHistogram)) {
 				return densityHistogram(arg1);
@@ -1681,8 +1685,8 @@ public class ManipulateFunction {
 				for (int i = 0; i < rowCount; i++) {
 					yStrs[i] = Integer.toString(i + 1);
 				}
-				String[] xStrs = new String[rowCount];
 				final int colCount = matrix[0].length;
+				String[] xStrs = new String[colCount];
 				for (int i = 0; i < colCount; i++) {
 					xStrs[i] = Integer.toString(i + 1);
 				}

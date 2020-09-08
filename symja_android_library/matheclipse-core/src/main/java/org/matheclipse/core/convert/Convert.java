@@ -1,5 +1,5 @@
 package org.matheclipse.core.convert;
- 
+
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -24,10 +24,12 @@ import org.matheclipse.core.expression.ASTRealVector;
 //import org.matheclipse.commons.math.linear.FieldMatrix;
 //import org.matheclipse.commons.math.linear.FieldVector;
 import org.matheclipse.core.expression.F;
+import org.matheclipse.core.expression.data.SparseArrayExpr;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IASTAppendable;
 import org.matheclipse.core.interfaces.IASTMutable;
 import org.matheclipse.core.interfaces.IExpr;
+import org.matheclipse.core.interfaces.ISparseArray;
 import org.matheclipse.core.interfaces.IStringX;
 import org.matheclipse.core.interfaces.ISymbol;
 
@@ -86,27 +88,34 @@ public class Convert {
 		if (dim == null || dim[0] == 0 || dim[1] == 0) {
 			return null;
 		}
-		IAST list = (IAST) expr;
-		IAST currInRow = (IAST) list.arg1();
-		if (currInRow.isAST0()) {
-			// special case 0-Matrix
-			IExpr[][] array = new IExpr[0][0];
-			return new Array2DRowFieldMatrix<IExpr>(array, false);
+		if (expr.isSparseArray()) {
+			ISparseArray array = (ISparseArray) expr;
+			return array.toFieldMatrix();
 		}
-		final int rowSize = expr.argSize();
-		final int colSize = currInRow.argSize();
+		if (expr.isList()) {
+			IAST list = (IAST) expr;
+			IAST currInRow = (IAST) list.arg1();
+			if (currInRow.isAST0()) {
+				// special case 0-Matrix
+				IExpr[][] array = new IExpr[0][0];
+				return new Array2DRowFieldMatrix<IExpr>(array, false);
+			}
+			final int rowSize = expr.argSize();
+			final int colSize = currInRow.argSize();
 
-		final IExpr[][] elements = new IExpr[rowSize][colSize];
-		for (int i = 1; i < rowSize + 1; i++) {
-			currInRow = (IAST) list.get(i);
-			if (currInRow.isVector() < 0 || colSize != currInRow.argSize()) {
-				return null;
+			final IExpr[][] elements = new IExpr[rowSize][colSize];
+			for (int i = 1; i < rowSize + 1; i++) {
+				currInRow = (IAST) list.get(i);
+				if (currInRow.isVector() < 0 || colSize != currInRow.argSize()) {
+					return null;
+				}
+				for (int j = 1; j < colSize + 1; j++) {
+					elements[i - 1][j - 1] = currInRow.get(j);
+				}
 			}
-			for (int j = 1; j < colSize + 1; j++) {
-				elements[i - 1][j - 1] = currInRow.get(j);
-			}
+			return new Array2DRowFieldMatrix<IExpr>(elements, false);
 		}
-		return new Array2DRowFieldMatrix<IExpr>(elements, false);
+		return null;
 	}
 
 	/**
@@ -149,6 +158,34 @@ public class Convert {
 				elements[i - 1][j - 1] = currInRow.get(j);
 			}
 			elements[i - 1][colSize] = listVector.get(i);
+		}
+		return new Array2DRowFieldMatrix<IExpr>(elements, false);
+	}
+
+	public static FieldMatrix<IExpr> augmentedFieldMatrix(final FieldMatrix<IExpr> listMatrix,
+			final FieldVector<IExpr> listVector) throws ClassCastException, IndexOutOfBoundsException {
+		if (listMatrix == null || listVector == null) {
+			return null;
+		}
+		int matrixRows = listMatrix.getRowDimension();
+		int matrixColumns = listMatrix.getColumnDimension();
+		int vectorDimension = listVector.getDimension();
+		if (matrixRows != vectorDimension) {
+			return null;
+		}
+
+		if (matrixColumns == 0) {
+			// special case 0-Matrix
+			IExpr[][] array = new IExpr[0][0];
+			return new Array2DRowFieldMatrix<IExpr>(array, false);
+		}
+
+		final IExpr[][] elements = new IExpr[matrixRows][matrixColumns + 1];
+		for (int i = 0; i < matrixRows; i++) {
+			for (int j = 0; j < matrixColumns; j++) {
+				elements[i][j] = listMatrix.getEntry(i, j);
+			}
+			elements[i][matrixColumns] = listVector.getEntry(i);
 		}
 		return new Array2DRowFieldMatrix<IExpr>(elements, false);
 	}
@@ -232,14 +269,20 @@ public class Convert {
 		if (dim <= 0) {
 			return null;
 		}
-
-		final int rowSize = expr.argSize();
-		IAST list = (IAST) expr;
-		final IExpr[] elements = new IExpr[rowSize];
-		for (int i = 0; i < rowSize; i++) {
-			elements[i] = list.get(i + 1);
+		if (expr.isSparseArray()) {
+			ISparseArray array = (ISparseArray) expr;
+			return array.toFieldVector();
 		}
-		return new ArrayFieldVector<IExpr>(elements, false);
+		if (expr.isList()) {
+			final int rowSize = expr.argSize();
+			IAST list = (IAST) expr;
+			final IExpr[] elements = new IExpr[rowSize];
+			for (int i = 0; i < rowSize; i++) {
+				elements[i] = list.get(i + 1);
+			}
+			return new ArrayFieldVector<IExpr>(elements, false);
+		}
+		return null;
 	}
 
 	public static Complex[] list2Complex(final IAST vector) throws ClassCastException {
@@ -459,6 +502,7 @@ public class Convert {
 	public static IASTAppendable complexVector2List(final FieldVector<Complex> vector) {
 		return complexVector2List(vector, true);
 	}
+
 	/**
 	 * Convert a RealVector to a IAST list.
 	 * 
@@ -480,7 +524,7 @@ public class Convert {
 		out.addEvalFlags(IAST.IS_VECTOR);
 		return out;
 	}
-	
+
 	/**
 	 * Convert a RealVector to a IAST list.
 	 * 
@@ -648,8 +692,8 @@ public class Convert {
 	 * @param rgbColorAST
 	 * @return <code>null</code> if the conversion is not possible
 	 */
-	public static RGBColor toAWTColor(IExpr rgbColorAST) { 
-		return  toAWTColorDefault(rgbColorAST, null);
+	public static RGBColor toAWTColor(IExpr rgbColorAST) {
+		return toAWTColorDefault(rgbColorAST, null);
 	}
 
 	public static RGBColor toAWTColorDefault(IExpr rgbColorAST, RGBColor defaultColor) {
@@ -666,8 +710,8 @@ public class Convert {
 	public static RGBColor toAWTColorDefault(IAST rgbColor) {
 		return toAWTColorDefault(rgbColor, RGBColor.BLACK);
 	}
-	
+
 	public static String toHex(RGBColor c) {
-		return "#"+Integer.toHexString(c.getRGB()).substring(2);
+		return "#" + Integer.toHexString(c.getRGB()).substring(2);
 	}
 }

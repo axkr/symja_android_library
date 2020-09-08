@@ -4648,20 +4648,25 @@ public abstract class AbstractAST implements IASTMutable {
 		if (dim == null) {
 			return null;
 		}
-		double[][] result = new double[dim[0]][dim[1]];
-		ISignedNumber signedNumber;
-		for (int i = 1; i <= dim[0]; i++) {
-			IAST row = (IAST) get(i);
-			for (int j = 1; j <= dim[1]; j++) {
-				signedNumber = row.get(j).evalReal();
-				if (signedNumber != null) {
-					result[i - 1][j - 1] = signedNumber.doubleValue();
-				} else {
-					return null;
+		try {
+			double[][] result = new double[dim[0]][dim[1]];
+			ISignedNumber signedNumber;
+			for (int i = 1; i <= dim[0]; i++) {
+				IAST row = (IAST) get(i);
+				for (int j = 1; j <= dim[1]; j++) {
+					signedNumber = row.get(j).evalReal();
+					if (signedNumber != null) {
+						result[i - 1][j - 1] = signedNumber.evalDouble();
+					} else {
+						return null;
+					}
 				}
 			}
+			return result;
+		} catch (ArgumentTypeException rex) {
+
 		}
-		return result;
+		return null;
 	}
 
 	/** {@inheritDoc} */
@@ -4805,30 +4810,10 @@ public abstract class AbstractAST implements IASTMutable {
 
 	/** {@inheritDoc} */
 	@Override
-	public RealMatrix toRealMatrix() {
-		final double[][] elements = toDoubleMatrix();
-		if (elements != null) {
-			return new Array2DRowRealMatrix(elements, false);
-		}
-		return null;
-	}
-
-	/** {@inheritDoc} */
-	@Override
 	public RealMatrix toRealMatrixIgnore() {
 		final double[][] elements = toDoubleMatrixIgnore();
 		if (elements != null) {
 			return new Array2DRowRealMatrix(elements, false);
-		}
-		return null;
-	}
-
-	/** {@inheritDoc} */
-	@Override
-	public RealVector toRealVector() {
-		final double[] elements = toDoubleVector();
-		if (elements != null) {
-			return new ArrayRealVector(elements, false);
 		}
 		return null;
 	}

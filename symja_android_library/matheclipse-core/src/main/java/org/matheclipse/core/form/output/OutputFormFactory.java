@@ -1113,6 +1113,14 @@ public class OutputFormFactory {
 					case ID.List:
 						convertList(buf, list);
 						return;
+					case ID.MatrixForm:
+						if (list.isAST() && list.size() > 1) {
+							// see also MatrixForm in MathML or TeX format for "graphical representation".
+							IExpr normal = list.arg1().normal(false);
+							convert(buf, normal, Integer.MIN_VALUE, false);
+							return;
+						}
+						break;
 					case ID.Part:
 						if (list.size() >= 3) {
 							convertPart(buf, list);

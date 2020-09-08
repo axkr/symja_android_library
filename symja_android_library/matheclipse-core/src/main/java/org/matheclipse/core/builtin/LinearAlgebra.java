@@ -569,13 +569,17 @@ public final class LinearAlgebra {
 
 		@Override
 		public IExpr evaluate(final IAST ast, EvalEngine engine) {
-			if (ast.arg1().isAST()) {
-				IAST list = (IAST) ast.arg1();
+			IExpr arg1 = ast.arg1();
+			if (arg1.isAST()) {
+				IAST list = (IAST) arg1;
 				IExpr header = list.head();
 				ArrayList<Integer> dims = LinearAlgebra.dimensions(list, header, Integer.MAX_VALUE);
 				return F.ZZ(dims.size());
 			}
-
+			if (arg1.isSparseArray()) {
+				int[] dims = ((ISparseArray) arg1).getDimension();
+				return F.ZZ(dims.length);
+			}
 			return F.C0;
 
 		}
@@ -638,7 +642,7 @@ public final class LinearAlgebra {
 			int[] dimensions = ast.arg1().isMatrix();
 			if (dimensions != null && dimensions[0] == dimensions[1]) {
 				// a matrix with square dimensions
-				IAST matrix = (IAST) ast.arg1();
+				IAST matrix = (IAST) ast.arg1().normal(false);
 				IExpr variable = ast.arg2();
 				if (!variable.isVariable()) {
 					// `1` is not a valid variable.
@@ -772,15 +776,17 @@ public final class LinearAlgebra {
 				int dim1 = arg1.isVector();
 				int dim2 = arg2.isVector();
 				if (dim1 == 2 && dim2 == 2) {
-					final IAST v1 = (IAST) arg1;
-					final IAST v2 = (IAST) arg2;
+					final IAST v1 = (IAST) arg1.normal(false);
+					final IAST v2 = (IAST) arg2.normal(false);
+
 					if ((v1.isAST2()) || (v2.isAST2())) {
 						// Cross({a,b}, {c,d})", "a*d-b*c
 						return F.Subtract(Times(v1.arg1(), v2.arg2()), Times(v1.arg2(), v2.arg1()));
 					}
 				} else if (dim1 == 3 && dim2 == 3) {
-					final IAST v1 = (IAST) arg1;
-					final IAST v2 = (IAST) arg2;
+					final IAST v1 = (IAST) arg1.normal(false);
+					final IAST v2 = (IAST) arg2.normal(false);
+
 					if ((v1.isAST3()) || (v2.isAST3())) {
 						return List(Plus(Times(v1.arg2(), v2.arg3()), Times(CN1, v1.arg3(), v2.arg2())),
 								Plus(Times(v1.arg3(), v2.arg1()), Times(CN1, v1.arg1(), v2.arg3())),
@@ -790,7 +796,7 @@ public final class LinearAlgebra {
 			} else if (ast.isAST1()) {
 				int dim1 = arg1.isVector();
 				if (dim1 == 2) {
-					final IAST v1 = (IAST) arg1;
+					final IAST v1 = (IAST) arg1.normal(false);
 					return List(Negate(v1.arg2()), v1.arg1());
 				}
 			} else if (ast.size() > 3) {
@@ -1000,8 +1006,22 @@ public final class LinearAlgebra {
 		@Override
 		public IExpr evaluate(final IAST ast, EvalEngine engine) {
 			try {
-				if (ast.arg1().isAST()) {
-					IAST vector = (IAST) ast.arg1();
+				IExpr arg1 = ast.arg1();
+				int dimension = arg1.isVector();
+				final IAST vector;
+				if (dimension >= 0) {
+					IExpr normal = arg1.normal(false);
+					if (normal.isAST()) {
+						vector = (IAST) normal;
+					} else {
+						vector = F.NIL;
+					}
+				} else if (arg1.isAST()) {
+					vector = (IAST) arg1;
+				} else {
+					vector = F.NIL;
+				}
+				if (vector.isPresent()) {
 					int m = vector.size();
 					final int offset = ast.isAST2() ? Validate.checkIntType(ast, 2, Integer.MIN_VALUE) : 0;
 					return F.matrix((i, j) -> (i + offset) == j ? vector.get(i + 1) : F.C0, m - 1, m - 1);
@@ -1204,52 +1224,50 @@ public final class LinearAlgebra {
 				FieldVector<IExpr> vector0;
 				FieldVector<IExpr> vector1;
 
-				IAST list;
-
 				int[] dim1 = arg1.isMatrix();
 				if (dim1 != null && dim1[1] != 0) {
-					list = (IAST) arg1;
-					matrix0 = Convert.list2Matrix(list);
+
+					matrix0 = Convert.list2Matrix(arg1);
 					if (matrix0 != null) {
 						if (arg2.isMatrix() != null) {
-							list = (IAST) arg2;
-							matrix1 = Convert.list2Matrix(list);
+
+							matrix1 = Convert.list2Matrix(arg2);
 							if (matrix1 != null) {
 								return Convert.matrix2List(matrix0.multiply(matrix1));
 							}
 						} else if (arg2.isVector() != (-1)) {
-							list = (IAST) arg2;
-							vector1 = Convert.list2Vector(list);
+
+							vector1 = Convert.list2Vector(arg2);
 							if (vector1 != null) {
 								return Convert.vector2List(matrix0.operate(vector1));
 							}
 						}
 					}
 					return engine.printMessage(ast.topHead() + ": Error in matrix");
-				} else if (arg1.isVector() != (-1)) {
-					list = (IAST) arg1;
-					if (list.isEmpty()) {
-						if (arg2.isVector() == 0) {
-							return F.C0;
-						}
-					} else {
-						vector0 = Convert.list2Vector(list);
-						if (vector0 != null) {
-							if (arg2.isMatrix() != null) {
-								list = (IAST) arg2;
-								matrix1 = Convert.list2Matrix(list);
-								if (matrix1 != null) {
-									return Convert.vector2List(matrix1.preMultiply(vector0));
-								}
-							} else if (arg2.isVector() != (-1)) {
-								list = (IAST) arg2;
-								vector1 = Convert.list2Vector(list);
-								if (vector1 != null) {
-									return vector0.dotProduct(vector1);
+				} else {
+					int dim = arg1.isVector();
+					if (dim != (-1)) {
+						if (dim == 0) {
+							if (arg2.isVector() == 0) {
+								return F.C0;
+							}
+						} else {
+							vector0 = Convert.list2Vector(arg1);
+							if (vector0 != null) {
+								if (arg2.isMatrix() != null) {
+									matrix1 = Convert.list2Matrix(arg2);
+									if (matrix1 != null) {
+										return Convert.vector2List(matrix1.preMultiply(vector0));
+									}
+								} else if (arg2.isVector() != (-1)) {
+									vector1 = Convert.list2Vector(arg2);
+									if (vector1 != null) {
+										return vector0.dotProduct(vector1);
+									}
 								}
 							}
+							return engine.printMessage(ast.topHead() + ": Error in vector");
 						}
-						return engine.printMessage(ast.topHead() + ": Error in vector");
 					}
 				}
 
@@ -1399,7 +1417,7 @@ public final class LinearAlgebra {
 							return List(((IAST) arg1).getPart(1, 1));
 						}
 						if (dim[0] == 2 && dim[1] == 2) {
-							matrix = Convert.list2Matrix((IAST) arg1);
+							matrix = Convert.list2Matrix(arg1);
 							if (matrix != null) {
 								// Eigenvalues({{a, b}, {c, d}}) =>
 								// {
@@ -1499,7 +1517,7 @@ public final class LinearAlgebra {
 							return C1;
 						}
 						if (dim[0] == 2 && dim[1] == 2) {
-							matrix = Convert.list2Matrix((IAST) ast.arg1());
+							matrix = Convert.list2Matrix(ast.arg1());
 							if (matrix != null) {
 								if (matrix.getEntry(1, 0).isZero()) {
 									if (matrix.getEntry(0, 0).equals(matrix.getEntry(1, 1))) {
@@ -2168,15 +2186,13 @@ public final class LinearAlgebra {
 			final int[] matrixDims = ast.arg1().isMatrix();
 			if (matrixDims != null && ast.arg2().isVector() >= 0) {
 				try {
-					final IAST mat = (IAST) ast.arg1();
-					final IAST vec = (IAST) ast.arg2();
-					final FieldMatrix<IExpr> matrix = Convert.list2Matrix(mat);
-					final FieldVector<IExpr> vector = Convert.list2Vector(vec);
+					final FieldMatrix<IExpr> matrix = Convert.list2Matrix(ast.arg1());
+					final FieldVector<IExpr> vector = Convert.list2Vector(ast.arg2());
 					if (matrix != null && vector != null) {
 						if (matrixDims[0] > matrixDims[1]) {
 							if (vector.getDimension() == matrix.getRowDimension()
 									&& vector.getDimension() <= matrix.getColumnDimension()) {
-								return underdeterminedSystem(mat, vec, engine);
+								return underdeterminedSystem(matrix, vector, engine);
 							}
 							return engine.printMessage("LinearSolve: first argument is not a square matrix.");
 						}
@@ -2188,24 +2204,24 @@ public final class LinearAlgebra {
 							if (temp.isPresent()) {
 								return temp;
 							}
-							return underdeterminedSystem(mat, vec, engine);
+							return underdeterminedSystem(matrix, vector, engine);
 						}
 						if (matrixDims[0] == 2 && matrixDims[1] == 2) {
 							IExpr temp = eval2x2Matrix(matrix, vector, engine);
 							if (temp.isPresent()) {
 								return temp;
 							}
-							return underdeterminedSystem(mat, vec, engine);
+							return underdeterminedSystem(matrix, vector, engine);
 						}
 						if (matrixDims[0] == 3 && matrixDims[1] == 3) {
 							IExpr temp = eval3x3Matrix(matrix, vector, engine);
 							if (temp.isPresent()) {
 								return temp;
 							}
-							return underdeterminedSystem(mat, vec, engine);
+							return underdeterminedSystem(matrix, vector, engine);
 						}
 						if (matrixDims[0] != matrixDims[1]) {
-							return underdeterminedSystem(mat, vec, engine);
+							return underdeterminedSystem(matrix, vector, engine);
 						}
 						FieldDecompositionSolver<IExpr> solver = new FieldLUDecomposition<IExpr>(matrix).getSolver();
 						if (solver.isNonSingular()) {
@@ -2213,12 +2229,12 @@ public final class LinearAlgebra {
 							for (int i = 0; i < resultVector.getDimension(); i++) {
 								if (resultVector.getEntry(i).isIndeterminate() || //
 										resultVector.getEntry(i).isDirectedInfinity()) {
-									return underdeterminedSystem(mat, vec, engine);
+									return underdeterminedSystem(matrix, vector, engine);
 								}
 							}
 							return Convert.vector2List(resultVector);
 						} else {
-							return underdeterminedSystem(mat, vec, engine);
+							return underdeterminedSystem(matrix, vector, engine);
 						}
 					}
 				} catch (LimitException le) {
@@ -2246,8 +2262,9 @@ public final class LinearAlgebra {
 		 * @param engine
 		 * @return
 		 */
-		private IExpr underdeterminedSystem(final IAST matrix, IAST vector, EvalEngine engine) {
-			FieldMatrix<IExpr> augmentedMatrix = Convert.list2Matrix(matrix, vector);
+		private IExpr underdeterminedSystem(final FieldMatrix<IExpr> matrix, FieldVector<IExpr> vector,
+				EvalEngine engine) {
+			FieldMatrix<IExpr> augmentedMatrix = Convert.augmentedFieldMatrix(matrix, vector);
 			if (augmentedMatrix != null) {
 				return LinearAlgebra.rowReduced2List(augmentedMatrix, true, engine);
 			}
@@ -2466,9 +2483,9 @@ public final class LinearAlgebra {
 			boolean togetherMode = engine.isTogetherMode();
 			try {
 				engine.setTogetherMode(true);
-				if (ast.arg1().isList()) {
-					final IAST list = (IAST) ast.arg1();
-					matrix = Convert.list2Matrix(list);
+				int[] dim = ast.arg1().isMatrix();
+				if (dim != null && dim[0] > 0 && dim[1] > 0) {
+					matrix = Convert.list2Matrix(ast.arg1());
 					if (matrix != null) {
 						final FieldLUDecomposition<IExpr> lu = new FieldLUDecomposition<IExpr>(matrix);
 						final FieldMatrix<IExpr> lMatrix = lu.getL();
@@ -2479,10 +2496,6 @@ public final class LinearAlgebra {
 						final IASTAppendable iList = F.ListAlloc(size);
 						// +1 because in Symja the offset is +1 compared to java arrays
 						iList.appendArgs(0, size, i -> F.ZZ(iArr[i] + 1));
-						// for (int i = 0; i < size; i++) {
-						// // +1 because in Symja the offset is +1 compared to java arrays
-						// iList.append(F.integer(iArr[i] + 1));
-						// }
 						return F.List(Convert.matrix2List(lMatrix), Convert.matrix2List(uMatrix), iList);
 					}
 				}
@@ -2556,7 +2569,7 @@ public final class LinearAlgebra {
 			int[] dimensions = ast.arg1().isMatrix(false);
 			if (dimensions != null && dimensions[0] == dimensions[1] && dimensions[0] > 0) {
 				// a matrix with square dimensions
-				IAST matrix = (IAST) ast.arg1();
+				IExpr matrix = ast.arg1();
 				IExpr variable = ast.arg2();
 				if (!variable.isVariable()) {
 					// `1` is not a valid variable.
@@ -2628,8 +2641,9 @@ public final class LinearAlgebra {
 			boolean togetherMode = engine.isTogetherMode();
 			try {
 				engine.setTogetherMode(true);
-				if (ast.arg1().isList()) {
-					matrix = Convert.list2Matrix((IAST) ast.arg1());
+				int[] dimensions = ast.arg1().isMatrix(false);
+				if (dimensions != null && dimensions[1] > 0 && dimensions[0] > 0) {
+					matrix = Convert.list2Matrix(ast.arg1());
 					if (matrix == null) {
 						return F.NIL;
 					}
@@ -2732,8 +2746,7 @@ public final class LinearAlgebra {
 			try {
 				IExpr arg1 = engine.evaluate(ast.arg1());
 				if (arg1.isMatrix() != null) {
-					final IAST astMatrix = (IAST) arg1;
-					matrix = Convert.list2Matrix(astMatrix);
+					matrix = Convert.list2Matrix(arg1);
 					if (matrix != null) {
 						FieldReducedRowEchelonForm fmw = new FieldReducedRowEchelonForm(matrix);
 						return F.ZZ(fmw.getMatrixRank());
@@ -3015,9 +3028,9 @@ public final class LinearAlgebra {
 			boolean togetherMode = engine.isTogetherMode();
 			try {
 				engine.setTogetherMode(true);
-				if (ast.arg1().isList()) {
-					final IAST list = (IAST) ast.arg1();
-					matrix = Convert.list2Matrix(list);
+				int[] dims = ast.arg1().isMatrix();
+				if (dims != null) {
+					matrix = Convert.list2Matrix(ast.arg1());
 					if (matrix != null) {
 						FieldReducedRowEchelonForm fmw = new FieldReducedRowEchelonForm(matrix);
 						FieldMatrix<IExpr> nullspace = fmw.getNullSpace(F.CN1);
@@ -3423,9 +3436,9 @@ public final class LinearAlgebra {
 			boolean togetherMode = engine.isTogetherMode();
 			try {
 				engine.setTogetherMode(true);
-				if (ast.arg1().isList()) {
-					final IAST list = (IAST) ast.arg1();
-					matrix = Convert.list2Matrix(list);
+				int[] dims = ast.arg1().isMatrix();
+				if (dims != null) {
+					matrix = Convert.list2Matrix(ast.arg1());
 					if (matrix != null) {
 						FieldReducedRowEchelonForm fmw = new FieldReducedRowEchelonForm(matrix);
 						return Convert.matrix2List(fmw.getRowReducedMatrix());
@@ -3833,8 +3846,12 @@ public final class LinearAlgebra {
 			}
 			final int[] dim = ast.arg1().isMatrix();
 			if (dim != null) {
-				final IAST originalMatrix = (IAST) ast.arg1();
-				return transpose(originalMatrix, dim[0], dim[1]);
+				// TODO improve for sparse arrays
+				final IAST originalMatrix = (IAST) ast.arg1().normal(false);
+				final FieldMatrix matrix = Convert.list2Matrix(ast.arg1());
+				final FieldMatrix transposed = matrix.transpose();
+				return Convert.matrix2List(transposed);
+				// return transpose(originalMatrix, dim[0], dim[1]);
 			}
 			return F.NIL;
 		}

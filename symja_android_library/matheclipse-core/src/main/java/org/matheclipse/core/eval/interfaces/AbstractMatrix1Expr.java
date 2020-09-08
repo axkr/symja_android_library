@@ -32,24 +32,13 @@ public abstract class AbstractMatrix1Expr extends AbstractFunctionEvaluator {
 	public IExpr evaluate(final IAST ast, final EvalEngine engine) {
 		FieldMatrix<IExpr> matrix;
 		try {
-
 			int[] dim = checkMatrixDimensions(ast.arg1());
 			if (dim != null) {
-				final IAST list = (IAST) ast.arg1();
-				matrix = Convert.list2Matrix(list);
+				matrix = Convert.list2Matrix(ast.arg1());
 				if (matrix != null) {
 					return matrixEval(matrix);
 				}
 			}
-
-			// } catch (final ClassCastException e) {
-			// if (Config.SHOW_STACKTRACE) {
-			// e.printStackTrace();
-			// }
-			// } catch (final IndexOutOfBoundsException e) {
-			// if (Config.SHOW_STACKTRACE) {
-			// e.printStackTrace();
-			// }
 		} catch (LimitException le) {
 			throw le;
 		} catch (final MathRuntimeException mre) {
@@ -84,21 +73,20 @@ public abstract class AbstractMatrix1Expr extends AbstractFunctionEvaluator {
 		RealMatrix matrix;
 		IExpr arg1 = ast.arg1();
 		int[] dim = checkMatrixDimensions(arg1);
-		if (dim != null && arg1.isList()) {
-			final IAST list = (IAST) arg1;
+		if (dim != null) {
 			try {
 				if (engine.isApfloatMode()) {
-					FieldMatrix<IExpr> fieldMatrix = Convert.list2Matrix(list);
+					FieldMatrix<IExpr> fieldMatrix = Convert.list2Matrix(arg1);
 					if (fieldMatrix != null) {
 						return matrixEval(fieldMatrix);
 					}
 					return F.NIL;
 				}
-				matrix = list.toRealMatrix();
+				matrix = arg1.toRealMatrix();
 				if (matrix != null) {
 					return realMatrixEval(matrix);
 				} else {
-					FieldMatrix<IExpr> fieldMatrix = Convert.list2Matrix(list);
+					FieldMatrix<IExpr> fieldMatrix = Convert.list2Matrix(arg1);
 					if (fieldMatrix != null) {
 						return matrixEval(fieldMatrix);
 					}

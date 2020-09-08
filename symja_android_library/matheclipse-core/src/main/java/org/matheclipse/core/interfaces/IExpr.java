@@ -16,6 +16,8 @@ import org.hipparchus.Field;
 import org.hipparchus.FieldElement;
 import org.hipparchus.complex.Complex;
 import org.hipparchus.exception.MathRuntimeException;
+import org.hipparchus.linear.Array2DRowRealMatrix;
+import org.hipparchus.linear.ArrayRealVector;
 import org.hipparchus.linear.RealMatrix;
 import org.hipparchus.linear.RealVector;
 import org.jgrapht.GraphType;
@@ -1637,7 +1639,7 @@ public interface IExpr extends Comparable<IExpr>, GcdRingElem<IExpr>, Serializab
 	 * @return
 	 * @see IAST#NO_FLAG
 	 */
-	default boolean isEvalFlagOff(int flags){
+	default boolean isEvalFlagOff(int flags) {
 		return true;
 	}
 
@@ -1647,7 +1649,7 @@ public interface IExpr extends Comparable<IExpr>, GcdRingElem<IExpr>, Serializab
 	 * @param flags
 	 * @return
 	 * @see IAST#NO_FLAG
-	 */	
+	 */
 	default boolean isEvalFlagOn(int flags) {
 		return false;
 	}
@@ -4109,6 +4111,10 @@ public interface IExpr extends Comparable<IExpr>, GcdRingElem<IExpr>, Serializab
 	 * @return <code>null</code> if this object can not be converted into a RealMatrix
 	 */
 	default RealMatrix toRealMatrix() {
+		final double[][] elements = toDoubleMatrix();
+		if (elements != null) {
+			return new Array2DRowRealMatrix(elements, false);
+		}
 		return null;
 	}
 
@@ -4127,6 +4133,10 @@ public interface IExpr extends Comparable<IExpr>, GcdRingElem<IExpr>, Serializab
 	 * @return <code>null</code> if this object can not be converted into a RealVector
 	 */
 	default RealVector toRealVector() {
+		final double[] elements = toDoubleVector();
+		if (elements != null) {
+			return new ArrayRealVector(elements, false);
+		}
 		return null;
 	}
 

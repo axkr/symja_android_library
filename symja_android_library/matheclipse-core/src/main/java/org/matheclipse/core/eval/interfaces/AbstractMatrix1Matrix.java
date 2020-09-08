@@ -24,9 +24,8 @@ public abstract class AbstractMatrix1Matrix extends AbstractFunctionEvaluator {
 		try {
 			engine.setTogetherMode(true);
 			int[] dims = checkMatrixDimensions(ast.arg1());
-			if (dims != null) {
-				final IAST list = (IAST) ast.arg1();
-				matrix = Convert.list2Matrix(list);
+			if (dims != null) { 
+				matrix = Convert.list2Matrix(ast.arg1());
 				if (matrix != null) {
 					matrix = matrixEval(matrix);
 					return Convert.matrix2List(matrix);
@@ -67,8 +66,7 @@ public abstract class AbstractMatrix1Matrix extends AbstractFunctionEvaluator {
 			int[] dims = checkMatrixDimensions(ast.arg1());
 			if (dims != null) {
 				if (engine.isApfloatMode()) {
-					final IAST list = (IAST) ast.arg1();
-					FieldMatrix<IExpr> fieldMatrix = Convert.list2Matrix(list);
+					FieldMatrix<IExpr> fieldMatrix = Convert.list2Matrix(ast.arg1());
 					if (fieldMatrix == null) {
 						return F.NIL;
 					}
@@ -76,8 +74,7 @@ public abstract class AbstractMatrix1Matrix extends AbstractFunctionEvaluator {
 					return Convert.matrix2List(fieldMatrix);
 				}
 
-				final IAST list = (IAST) ast.arg1();
-				matrix = list.toRealMatrix();
+				matrix = ast.arg1().toRealMatrix();
 				if (matrix != null) {
 					matrix = realMatrixEval(matrix);
 					if (matrix != null) {

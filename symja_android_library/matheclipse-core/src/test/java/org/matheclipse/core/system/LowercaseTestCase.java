@@ -5107,6 +5107,8 @@ public class LowercaseTestCase extends AbstractTestCase {
 				"x");
 		check("Det({{1, 1, 0}, {1, 0, 1}, {0, 1, 1}})", //
 				"-2");
+		check("Det(SparseArray({{1, 1, 0}, {1, 0, 1}, {0, 1, 1}}))", //
+				"-2");
 		check("Det({{a11, a12},{a21,a22}})", //
 				"-a12*a21+a11*a22");
 		check("Det({{a,b,c},{d,e,f},{g,h,i}})", //
@@ -5122,6 +5124,17 @@ public class LowercaseTestCase extends AbstractTestCase {
 				"{2,6}");
 		check("Diagonal({{1,2,3},{4,5,6},{7,8,9}}, -1)", //
 				"{4,8}");
+	}
+
+	public void testDiagonalMatrix() {
+		check("DiagonalMatrix(SparseArray({1, 2, 3}))", //
+				"{{1,0,0},\n" + //
+						" {0,2,0},\n" + //
+						" {0,0,3}}");
+		check("DiagonalMatrix({1, 2, 3})", //
+				"{{1,0,0},\n" + //
+						" {0,2,0},\n" + //
+						" {0,0,3}}");
 	}
 
 	public void testDiceDissimilarity() {
@@ -5679,6 +5692,7 @@ public class LowercaseTestCase extends AbstractTestCase {
 
 		check("#1.#123 // FullForm", //
 				"Dot(Slot(1), Slot(123))");
+
 		check("{{1, 2}, {3.0, 4}, {5, 6}}.{1,1}", //
 				"{3.0,7.0,11.0}");
 		check("{{1, 2}, {3.0, 4}, {5, 6}}.{{1},{1}}", //
@@ -5700,6 +5714,31 @@ public class LowercaseTestCase extends AbstractTestCase {
 				"{{9,12}}");
 		check("{1,2,3}.{4,5,6}", //
 				"32");
+	}
+
+	public void testDotSparseArray() {
+		check("{1,2,3.0}.SparseArray({4,5.0,6}) // Normal", //
+				"32.0");
+		check("SparseArray({1,2,3.0}).{4,5.0,6} // Normal", //
+				"32.0");
+		check("{{1, 2}, {3, 4}, {5, 6}}.SparseArray({{1},{1}}) // Normal", //
+				"{{3},\n" + //
+						" {7},\n" + //
+						" {11}}");
+		check("SparseArray({{1, 2}, {3, 4}, {5, 6}}).{{1},{1}} // Normal", //
+				"{{3},\n" + //
+						" {7},\n" + //
+						" {11}}");
+		check("SparseArray({{1, 2}, {3.0, 4}, {5, 6}}).SparseArray({1,1}) // Normal", //
+				"{3,7.0,11}");
+		check("SparseArray({1,1,1}).SparseArray({{1, 2}, {3.0, 4}, {5, 6}}) // Normal", //
+				"{9.0,12}");
+		check("SparseArray({1,2,3.0}).SparseArray({4,5.0,6}) // Normal", //
+				"32.0");
+		check("SparseArray({{1, 2}, {3, 4}, {5, 6}}).SparseArray({{1},{1}}) // Normal", //
+				"{{3},\n" + //
+						" {7},\n" + //
+						" {11}}");
 	}
 
 	public void testDrop() {
@@ -5921,8 +5960,11 @@ public class LowercaseTestCase extends AbstractTestCase {
 		// "x==0||x==15/2-3/2*Sqrt(33)||x==15/2+3/2*Sqrt(33)");
 		// check("EigenValues(m)",//
 		// "{15/2+3/2*Sqrt(33),15/2-3/2*Sqrt(33),0}");
+		check("Eigenvalues(SparseArray({{1.0, 2, 3}, {4, 5, 6}, {7, 8, 9}}))", //
+				"{16.11684,-1.11684,-9.29650*10^-16}");
 
-		check("Eigenvalues(A)", "Eigenvalues(A)");
+		check("Eigenvalues(A)", //
+				"Eigenvalues(A)");
 		check("Eigenvalues({{1.0, 2, 3}, {4, 5, 6}, {7, 8, 9}})", //
 				"{16.11684,-1.11684,-9.29650*10^-16}");
 		check("Eigenvalues({{a}})", //
@@ -5940,6 +5982,9 @@ public class LowercaseTestCase extends AbstractTestCase {
 	}
 
 	public void testEigenvectors() {
+		check("Eigenvectors(SparseArray({{1, 2, 3}, {4, 5, 6}, {7, 8, 9}}))", //
+				"{{0.231971,0.525322,0.818673},{0.816964,0.0901884,-0.636587},{0.408248,-0.816497,0.408248}}");
+
 		check("Eigenvectors(A)", //
 				"Eigenvectors(A)");
 		check("Eigenvectors({{a}})", //
@@ -11745,6 +11790,10 @@ public class LowercaseTestCase extends AbstractTestCase {
 	}
 
 	public void testInverse() {
+
+		check("Inverse(SparseArray({{1, 2, 0}, {2, 3, 0}, {3, 4, 1}}))", //
+				"{{-3,2,0},\n" + " {2,-1,0},\n" + " {1,-2,1}}");
+
 		check("Inverse(-2)", //
 				"Inverse(-2)");
 		check("Inverse({{}})", //
@@ -20703,6 +20752,11 @@ public class LowercaseTestCase extends AbstractTestCase {
 	}
 
 	public void testRowReduce() {
+		check("RowReduce(SparseArray({{1,2,2,8},{-1,1,4,4},{-1,-1,1,9}}))", //
+				"{{1,0,0,26},\n" + //
+						" {0,1,0,-22},\n" + //
+						" {0,0,1,13}}");
+
 		//
 		check("RowReduce({{1, 2, 3, 1}, {5, 6, 7, 1}, {7, 8, 9, 1}})", //
 				"{{1,0,-1,-1},\n" + //
@@ -22837,8 +22891,7 @@ public class LowercaseTestCase extends AbstractTestCase {
 		check("r=SparseArray({{{0,0,3},{1,1,5}},{{0,1,0},{0,1,2}}})", //
 				"SparseArray(Number of elements: 7 Dimensions: {2,2,3})");
 		check("ArrayRules(r)", //
-				"{{1,1,3}->3,{1,2,1}->1,{1,2,2}->1,{1,2,3}->5,{2,1,2}->1,{2,2,2}->1,{2,2,3}->2,{_,_,_}->\n" + 
-				"0}");
+				"{{1,1,3}->3,{1,2,1}->1,{1,2,2}->1,{1,2,3}->5,{2,1,2}->1,{2,2,2}->1,{2,2,3}->2,{_,_,_}->\n" + "0}");
 		check("r[[1,All,3]] // Normal", //
 				"{3,5}");
 		check("s=SparseArray({{1, 1} -> 1, {2, 2} -> 2, {4, 3} -> 3, {1, 4} -> 4, {3, 5} -> 2} )", //
@@ -24972,6 +25025,10 @@ public class LowercaseTestCase extends AbstractTestCase {
 	}
 
 	public void testTranspose() {
+		check("Transpose(SparseArray({{1, 2, 3}, {4, 5, 6}}))", //
+				"{{1,4},\n" + //
+						" {2,5},\n" + //
+						" {3,6}}");
 		check("Transpose({{1, 2, 3}, {4, 5, 6}}, {2,1})", //
 				"{{1,4},{2,5},{3,6}}");
 		check("Transpose({{1, 2, 3}, {4, 5, 6}}, {1,2})", //
@@ -24990,7 +25047,9 @@ public class LowercaseTestCase extends AbstractTestCase {
 				"{{{a(1,1,1),a(1,1,2)},{a(2,1,1),a(2,1,2)}},{{a(1,2,1),a(1,2,2)},{a(2,2,1),a(2,2,\n"
 						+ "2)}},{{a(1,3,1),a(1,3,2)},{a(2,3,1),a(2,3,2)}}}");
 		check("Transpose({{1, 2, 3}, {4, 5, 6}})", //
-				"{{1,4},\n" + " {2,5},\n" + " {3,6}}");
+				"{{1,4},\n" + //
+						" {2,5},\n" + //
+						" {3,6}}");
 	}
 
 	public void testTreeForm() {
