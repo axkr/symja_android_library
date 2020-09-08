@@ -3612,12 +3612,18 @@ public class LowercaseTestCase extends AbstractTestCase {
 
 	public void testConjugateTranspose() {
 		check("ConjugateTranspose({{1,2+I,3},{4,5-I,6},{7,8,9}})", //
-				"{{1,4,7},\n" + " {2-I,5+I,8},\n" + " {3,6,9}}");
+				"{{1,4,7},\n" + //
+						" {2-I,5+I,8},\n" + //
+						" {3,6,9}}");
 		check("ConjugateTranspose(N({{1,2+I,3},{4,5-I,6},{7,8,9}}))", //
-				"{{1.0,4.0,7.0},\n" + " {2.0+I*(-1.0),5.0+I*1.0,8.0},\n" + " {3.0,6.0,9.0}}");
+				"{{1.0,4.0,7.0},\n" + //
+						" {2.0+I*(-1.0),5.0+I*1.0,8.0},\n" + //
+						" {3.0,6.0,9.0}}");
 
 		check("ConjugateTranspose({{1, 2*I, 3}, {3 + 4*I, 5, I}})", //
-				"{{1,3-I*4},\n" + " {-I*2,5},\n" + " {3,-I}}");
+				"{{1,3-I*4},\n" + //
+						" {-I*2,5},\n" + //
+						" {3,-I}}");
 	}
 
 	public void testConstant() {

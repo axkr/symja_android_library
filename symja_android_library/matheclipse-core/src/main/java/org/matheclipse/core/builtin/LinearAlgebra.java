@@ -3847,10 +3847,14 @@ public final class LinearAlgebra {
 			final int[] dim = ast.arg1().isMatrix();
 			if (dim != null) {
 				// TODO improve for sparse arrays
-				final IAST originalMatrix = (IAST) ast.arg1().normal(false);
-				final FieldMatrix matrix = Convert.list2Matrix(ast.arg1());
-				final FieldMatrix transposed = matrix.transpose();
-				return Convert.matrix2List(transposed);
+				// final IAST originalMatrix = (IAST) ast.arg1().normal(false);
+				final FieldMatrix<IExpr> matrix = Convert.list2Matrix(ast.arg1());
+				final FieldMatrix<IExpr> transposed = matrix.transpose();
+				IExpr transposedMatrix = Convert.matrix2List(transposed).map(x -> transform(x));
+				// because the rows can contain sub lists the IAST.IS_MATRIX flag cannot be set directly. isMatrix()
+				// must be used!
+				transposedMatrix.isMatrix(true);
+				return transposedMatrix;
 				// return transpose(originalMatrix, dim[0], dim[1]);
 			}
 			return F.NIL;
