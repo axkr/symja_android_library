@@ -40,6 +40,7 @@ import org.matheclipse.core.eval.util.OptionArgs;
 import org.matheclipse.core.eval.util.Sequence;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.expression.S;
+import org.matheclipse.core.expression.data.DispatchExpr;
 import org.matheclipse.core.generic.Comparators;
 import org.matheclipse.core.generic.Functors;
 import org.matheclipse.core.generic.Predicates;
@@ -59,6 +60,7 @@ import org.matheclipse.core.reflection.system.Product;
 import org.matheclipse.core.reflection.system.Sum;
 import org.matheclipse.core.visit.VisitorLevelSpecification;
 import org.matheclipse.core.visit.VisitorRemoveLevelSpecification;
+import org.matheclipse.core.visit.VisitorReplaceAll;
 import org.matheclipse.parser.client.FEConfig;
 
 public final class ListFunctions {
@@ -154,6 +156,7 @@ public final class ListFunctions {
 			S.DeleteDuplicates.setEvaluator(new DeleteDuplicates());
 			S.DeleteDuplicatesBy.setEvaluator(new DeleteDuplicatesBy());
 			S.DeleteCases.setEvaluator(new DeleteCases());
+			S.Dispatch.setEvaluator(new Dispatch());
 			S.DuplicateFreeQ.setEvaluator(new DuplicateFreeQ());
 			S.Drop.setEvaluator(new Drop());
 			S.Extract.setEvaluator(new Extract());
@@ -2088,6 +2091,35 @@ public final class ListFunctions {
 		}
 	}
 
+	private static class Dispatch extends AbstractCoreFunctionEvaluator {
+
+		@Override
+		public IExpr evaluate(final IAST ast, EvalEngine engine) {
+			if (ast instanceof DispatchExpr) {
+				return F.NIL;
+			}
+			if (ast.isAST1()) {
+				IExpr arg1 = engine.evaluate(ast.arg1());
+
+				if (arg1.isListOfRules(false)) {
+					return DispatchExpr.newInstance((IAST) arg1);
+				} else if (arg1.isRuleAST()) {
+					return DispatchExpr.newInstance(F.List(arg1));
+				} else if (arg1.isAssociation()) {
+					return DispatchExpr.newInstance((IAssociation) arg1);
+				} else {
+					throw new ArgumentTypeException("rule expressions (x->y) expected instead of " + arg1.toString());
+				}
+			}
+			return F.NIL;
+		}
+
+		@Override
+		public void setUp(final ISymbol newSymbol) {
+			newSymbol.setAttributes(ISymbol.HOLDALL);
+		}
+	}
+
 	private final static class DuplicateFreeQ extends AbstractFunctionEvaluator {
 
 		@Override
@@ -3944,7 +3976,7 @@ public final class ListFunctions {
 	 * </pre>
 	 */
 	private final static class Position extends AbstractCoreFunctionEvaluator {
-		
+
 		private static class PositionConverter implements IPositionConverter<IExpr> {
 			@Override
 			public IExpr toObject(final int i) {
@@ -4504,30 +4536,31 @@ public final class ListFunctions {
 		}
 
 		private static IExpr replaceExpr(final IAST ast, IExpr arg1, IExpr rules, final EvalEngine engine) {
-			if (rules.isListOfLists()) {
-				IAST rulesList = (IAST) rules;
-				IASTAppendable result = F.ListAlloc(rulesList.size());
-
-				for (IExpr list : rulesList) {
-					IAST subList = (IAST) list;
-					IExpr temp = F.NIL;
-					for (IExpr element : subList) {
-						if (element.isRuleAST()) {
-							IAST rule = (IAST) element;
-							Function<IExpr, IExpr> function = Functors.rules(rule, engine);
-							temp = function.apply(arg1);
-							if (temp.isPresent()) {
-								break;
-							}
-						} else {
-							throw new ArgumentTypeException(
-									"rule expressions (x->y) expected instead of " + element.toString());
-						}
-					}
-					result.append(temp.orElse(arg1));
-				}
-				return result;
-			} else if (rules.isList()) {
+			// if (rules.isListOfLists()) {
+			// IAST rulesList = (IAST) rules;
+			// IASTAppendable result = F.ListAlloc(rulesList.size());
+			//
+			// for (IExpr list : rulesList) {
+			// IAST subList = (IAST) list;
+			// IExpr temp = F.NIL;
+			// for (IExpr element : subList) {
+			// if (element.isRuleAST()) {
+			// IAST rule = (IAST) element;
+			// Function<IExpr, IExpr> function = Functors.rules(rule, engine);
+			// temp = function.apply(arg1);
+			// if (temp.isPresent()) {
+			// break;
+			// }
+			// } else {
+			// throw new ArgumentTypeException(
+			// "rule expressions (x->y) expected instead of " + element.toString());
+			// }
+			// }
+			// result.append(temp.orElse(arg1));
+			// }
+			// return result;
+			// } else
+			if (rules.isList()) {
 				for (IExpr element : (IAST) rules) {
 					if (element.isRuleAST()) {
 						IAST rule = (IAST) element;
@@ -4559,29 +4592,29 @@ public final class ListFunctions {
 			VisitorLevelSpecification level = new VisitorLevelSpecification(replaceFunction, exprLevelSpecification,
 					false, engine);
 
-			if (rules.isListOfLists()) {
-				IAST rulesList = (IAST) rules;
-				IASTAppendable result = F.ListAlloc(rulesList.size());
-				for (IExpr list : rulesList) {
-					IExpr temp = F.NIL;
-					IAST subList = (IAST) list;
-					for (IExpr element : subList) {
-						if (element.isRuleAST()) {
-							IAST rule = (IAST) element;
-							replaceFunction.setRule(rule);
-							temp = arg1.accept(level);
-							if (temp.isPresent()) {
-								break;
-							}
-						} else {
-							throw new ArgumentTypeException(
-									"rule expressions (x->y) expected instead of " + element.toString());
-						}
-					}
-					result.append(temp.orElse(arg1));
-				}
-				return result;
-			}
+			// if (rules.isListOfLists()) {
+			// IAST rulesList = (IAST) rules;
+			// IASTAppendable result = F.ListAlloc(rulesList.size());
+			// for (IExpr list : rulesList) {
+			// IExpr temp = F.NIL;
+			// IAST subList = (IAST) list;
+			// for (IExpr element : subList) {
+			// if (element.isRuleAST()) {
+			// IAST rule = (IAST) element;
+			// replaceFunction.setRule(rule);
+			// temp = arg1.accept(level);
+			// if (temp.isPresent()) {
+			// break;
+			// }
+			// } else {
+			// throw new ArgumentTypeException(
+			// "rule expressions (x->y) expected instead of " + element.toString());
+			// }
+			// }
+			// result.append(temp.orElse(arg1));
+			// }
+			// return result;
+			// }
 
 			replaceFunction.setRule(rules);
 			return arg1.accept(level).orElse(arg1);
@@ -4616,6 +4649,9 @@ public final class ListFunctions {
 			}
 			IExpr arg1 = ast.arg1();
 			IExpr rules = engine.evaluate(ast.arg2());
+			if (rules.isListOfLists()) {
+				return ((IAST) rules).mapThread(ast, 2);
+			}
 
 			if (ast.isAST3()) {
 				// arg3 should contain a "level specification":
@@ -4686,30 +4722,14 @@ public final class ListFunctions {
 				}
 			}
 			if (ast.size() == 3) {
-
 				IExpr arg1 = ast.arg1();
 				IExpr arg2 = ast.arg2();
-
-				if (arg2.isListOfRules(false)) {
-					return arg1.replaceAll((IAST) arg2).orElse(arg1);
-				} else if (arg2.isListOfLists()) {
-					IAST list = (IAST) arg2;
-					IASTAppendable result = F.ListAlloc(list.size());
-					for (IExpr subList : list) {
-						if (subList.isListOfRules(false)) {
-							result.append(F.subst(arg1, (IAST) subList));
-						} else {
-							throw new ArgumentTypeException(
-									"rule expressions (x->y) expected instead of " + subList.toString());
-						}
-					}
-					return result;
-				} else if (arg2.isRuleAST()) {
-					return F.subst(arg1, (IAST) arg2);
-				} else {
-					throw new ArgumentTypeException("rule expressions (x->y) expected instead of " + arg2.toString());
+				if (arg2.isListOfLists()) {
+					return ((IAST) arg2).mapThread(ast, 2);
 				}
 
+				VisitorReplaceAll visitor = VisitorReplaceAll.createVisitor(arg1, arg2, ast);
+				return arg1.replaceAll(visitor).orElse(arg1);
 			}
 			return F.NIL;
 		}
@@ -5013,23 +5033,31 @@ public final class ListFunctions {
 				}
 			}
 
+			IExpr arg1 = ast.arg1();
 			IExpr arg2 = ast.arg2();
 			if (arg2.isListOfLists()) {
-				IAST list = (IAST) arg2;
-				IASTAppendable result = F.ListAlloc(list.size());
-				for (IExpr subList : list) {
-					IExpr temp = engine.evaluate(subList);
-					if (temp.isAST()) {
-						result.append(ast.arg1().replaceRepeated((IAST) temp));
-					}
-				}
-				return result;
+				return ((IAST) arg2).mapThread(ast, 2);
 			}
-			if (arg2.isAST()) {
-				return ast.arg1().replaceRepeated((IAST) arg2);
-			} else {
-				throw new ArgumentTypeException("rule expressions (x->y) expected instead of " + arg2.toString());
-			}
+
+			VisitorReplaceAll visitor = VisitorReplaceAll.createVisitor(arg1, arg2, ast);
+			return arg1.replaceRepeated(visitor);
+
+			// if (arg2.isListOfLists()) {
+			// IAST list = (IAST) arg2;
+			// IASTAppendable result = F.ListAlloc(list.size());
+			// for (IExpr subList : list) {
+			// IExpr temp = engine.evaluate(subList);
+			// if (temp.isAST()) {
+			// result.append(ast.arg1().replaceRepeated((IAST) temp));
+			// }
+			// }
+			// return result;
+			// }
+			// if (arg2.isAST()) {
+			// return ast.arg1().replaceRepeated((IAST) arg2);
+			// } else {
+			// throw new ArgumentTypeException("rule expressions (x->y) expected instead of " + arg2.toString());
+			// }
 		}
 
 		@Override

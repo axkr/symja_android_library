@@ -4,10 +4,13 @@ import java.util.Map;
 import java.util.function.Function;
 
 import org.matheclipse.core.eval.EvalEngine;
+import org.matheclipse.core.eval.exception.ArgumentTypeException;
 import org.matheclipse.core.expression.F;
+import org.matheclipse.core.expression.data.DispatchExpr;
 import org.matheclipse.core.generic.Functors;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IASTMutable;
+import org.matheclipse.core.interfaces.IAssociation;
 import org.matheclipse.core.interfaces.IComplex;
 import org.matheclipse.core.interfaces.IComplexNum;
 import org.matheclipse.core.interfaces.IDataExpr;
@@ -42,6 +45,20 @@ public class VisitorReplaceAll extends VisitorExpr {
 		this.fOffset = offset;
 	}
 
+	public VisitorReplaceAll(IAST ast) {
+		this(ast, 0);
+	}
+
+	public VisitorReplaceAll(IAssociation assoc) {
+		this(assoc.normal(false), 0);
+	}
+
+	public VisitorReplaceAll(IAST ast, int offset) {
+		super();
+		this.fFunction = Functors.rules(ast, EvalEngine.get());
+		this.fOffset = offset;
+	}
+
 	public VisitorReplaceAll(Map<? extends IExpr, ? extends IExpr> map) {
 		this(map, 0);
 	}
@@ -58,33 +75,59 @@ public class VisitorReplaceAll extends VisitorExpr {
 		this.fOffset = offset;
 	}
 
-	public VisitorReplaceAll(IAST ast) {
-		this(ast, 0);
-	}
-
-	public VisitorReplaceAll(IAST ast, int offset) {
-		super();
-		this.fFunction = Functors.rules(ast, EvalEngine.get());
-		this.fOffset = offset;
+	@Override
+	public boolean equals(Object obj) {
+		if (this == obj)
+			return true;
+		if (obj == null)
+			return false;
+		if (getClass() != obj.getClass())
+			return false;
+		VisitorReplaceAll other = (VisitorReplaceAll) obj;
+		if (fFunction == null) {
+			if (other.fFunction != null)
+				return false;
+		} else if (!fFunction.equals(other.fFunction))
+			return false;
+		if (fOffset != other.fOffset)
+			return false;
+		if (fPostProcessing == null) {
+			if (other.fPostProcessing != null)
+				return false;
+		} else if (!fPostProcessing.equals(other.fPostProcessing))
+			return false;
+		return true;
 	}
 
 	@Override
-	public IExpr visit(IDataExpr element) {
-		return fFunction.apply(element);
+	public int hashCode() {
+		final int prime = 31;
+		int result = 1;
+		result = prime * result + ((fFunction == null) ? 0 : fFunction.hashCode());
+		result = prime * result + fOffset;
+		result = prime * result + ((fPostProcessing == null) ? 0 : fPostProcessing.hashCode());
+		return result;
 	}
-	
-	@Override
-	public IExpr visit(IInteger element) {
-		return fFunction.apply(element);
+
+	private IExpr postProcessing(IASTMutable result) {
+		if (fPostProcessing != null) {
+			return fPostProcessing.apply(result);
+		}
+		return result;
 	}
 
 	/**
+	 * Define an optional post-processing function for the result of a substitution.
 	 * 
-	 * @return <code>F.NIL</code>, if no evaluation is possible
+	 * @param postProcessing
 	 */
+	public void setPostProcessing(Function<IASTMutable, IExpr> postProcessing) {
+		this.fPostProcessing = postProcessing;
+	}
+
 	@Override
-	public IExpr visit(IFraction element) {
-		return fFunction.apply(element);
+	public IExpr visit(IASTMutable ast) {
+		return fFunction.apply(ast).orElseGet(() -> visitAST(ast));
 	}
 
 	/**
@@ -101,25 +144,35 @@ public class VisitorReplaceAll extends VisitorExpr {
 	 * @return <code>F.NIL</code>, if no evaluation is possible
 	 */
 	@Override
-	public IExpr visit(INum element) {
-		return fFunction.apply(element);
-	}
-
-	/**
-	 * 
-	 * @return <code>F.NIL</code>, if no evaluation is possible
-	 */
-	@Override
 	public IExpr visit(IComplexNum element) {
 		return fFunction.apply(element);
 	}
 
+	@Override
+	public IExpr visit(IDataExpr element) {
+		return fFunction.apply(element);
+	}
+
 	/**
 	 * 
 	 * @return <code>F.NIL</code>, if no evaluation is possible
 	 */
 	@Override
-	public IExpr visit(ISymbol element) {
+	public IExpr visit(IFraction element) {
+		return fFunction.apply(element);
+	}
+
+	@Override
+	public IExpr visit(IInteger element) {
+		return fFunction.apply(element);
+	}
+
+	/**
+	 * 
+	 * @return <code>F.NIL</code>, if no evaluation is possible
+	 */
+	@Override
+	public IExpr visit(INum element) {
 		return fFunction.apply(element);
 	}
 
@@ -167,9 +220,13 @@ public class VisitorReplaceAll extends VisitorExpr {
 		return fFunction.apply(element);
 	}
 
+	/**
+	 * 
+	 * @return <code>F.NIL</code>, if no evaluation is possible
+	 */
 	@Override
-	public IExpr visit(IASTMutable ast) {
-		return fFunction.apply(ast).orElseGet(() -> visitAST(ast));
+	public IExpr visit(ISymbol element) {
+		return fFunction.apply(element);
 	}
 
 	@Override
@@ -186,7 +243,7 @@ public class VisitorReplaceAll extends VisitorExpr {
 					if (t.isPresent()) {
 						result.set(j, t);
 					}
-				}); 
+				});
 				return postProcessing(result);
 
 			}
@@ -195,19 +252,19 @@ public class VisitorReplaceAll extends VisitorExpr {
 		return F.NIL;
 	}
 
-	private IExpr postProcessing(IASTMutable result) {
-		if (fPostProcessing != null) {
-			return fPostProcessing.apply(result);
+	public static VisitorReplaceAll createVisitor(IExpr arg1, IExpr arg2, IAST ast) {
+		VisitorReplaceAll visitor;
+		if (arg2 instanceof DispatchExpr) {
+			visitor = ((DispatchExpr) arg2).getVisitor();
+		} else if (arg2.isListOfRules(false) || //
+				arg2.isRuleAST()) {
+			visitor = new VisitorReplaceAll((IAST) arg2);
+		} else if (arg2.isAssociation()) {
+			visitor = new VisitorReplaceAll((IAST) arg2.normal(false));
+		} else {
+			throw new ArgumentTypeException(
+					ast.topHead() + ": rule expressions (x->y) expected instead of " + arg2.toString());
 		}
-		return result;
-	}
-
-	/**
-	 * Define an optional post-processing function for the result of a substitution.
-	 * 
-	 * @param postProcessing
-	 */
-	public void setPostProcessing(Function<IASTMutable, IExpr> postProcessing) {
-		this.fPostProcessing = postProcessing;
+		return visitor;
 	}
 }

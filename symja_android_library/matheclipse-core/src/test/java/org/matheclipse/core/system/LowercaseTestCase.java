@@ -5459,6 +5459,32 @@ public class LowercaseTestCase extends AbstractTestCase {
 				"False");
 	}
 
+	public void testDispatch() {
+		check("rul = {a -> b, b -> c, c -> a, d -> e, e -> d};", //
+				"");
+		check("dis= Dispatch(rul);", //
+				"");
+		check("{a, b, c, d, e} /. rul", //
+				"{b,c,a,e,d}");
+		check("{a, b, c, d, e} /. dis", //
+				"{b,c,a,e,d}");
+
+		check("Atomq(dis)", //
+				"True");
+		check("Normal(dis)", //
+				"{a->b,b->c,c->a,d->e,e->d}");
+
+		check("dis= Dispatch({1 -> a, 2 -> b, c_?NumericQ -> Infinity})", //
+				"Dispatch({1->a,2->b,c_?NumericQ->Infinity})");
+		check("{1, 2, 3, Pi, Sin[x], Cos[3]} /. dis", //
+				"{a,b,Infinity,Infinity,Sin(x),Infinity}");
+
+		check("dis= Dispatch(<|a -> b, c -> d|>);", //
+				"");
+		check("{a, b, c, d, e} /. dis", //
+				"{b,b,d,d,e}");
+	}
+
 	public void testDistribute() {
 		check("Distribute((a + b).(x + y + z))", //
 				"a.x+a.y+a.z+b.x+b.y+b.z");
@@ -19916,6 +19942,8 @@ public class LowercaseTestCase extends AbstractTestCase {
 
 		check("Replace(x, {{x -> a}, {x -> b}})", //
 				"{a,b}");
+		check("Replace(x, {{x -> a}, {d -> b}})", //
+				"{a,x}");
 		check("Replace(x, {{e->q, x -> a}, {x -> b}})", //
 				"{a,b}");
 
@@ -19937,6 +19965,13 @@ public class LowercaseTestCase extends AbstractTestCase {
 	}
 
 	public void testReplaceAll() {
+		check("<|a -> 1|> /. <|a -> x_|> :> x", //
+				"1");
+		check("{1, 2} /. Dispatch({1 -> a, 3 -> b})", //
+				"{a,2}");
+		check("{1, 2} /. <|4 -> a, 2 -> b|>", //
+				"{1,b}");
+		
 		check("{{}, {a, a}, {a, b}, {a, a, a}, {a}} /. {a ..} -> x", //
 				"{{},x,{a,b},x,x}");
 		check("{{}, {f(a), f(b)}, {f(a)}, {f(a, b)}, {f(a), g(b)}} /. {f(_) ..} -> x", //

@@ -12,11 +12,12 @@ import org.matheclipse.core.combinatoric.NumberPartitionsIterator;
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.exception.ConditionException;
 import org.matheclipse.core.eval.exception.ReturnException;
-import org.matheclipse.core.expression.Blank;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.expression.ID;
+import org.matheclipse.core.expression.S;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IASTAppendable;
+import org.matheclipse.core.interfaces.IAssociation;
 import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.interfaces.INumber;
 import org.matheclipse.core.interfaces.IPattern;
@@ -962,6 +963,28 @@ public class PatternMatcher extends IPatternMatcher implements Externalizable {
 		if (functionID >= ID.Alternatives && functionID <= ID.Rational) {
 			boolean matched = false;
 			switch (functionID) {
+			case ID.Association:
+				if (lhsPatternAST.isAST(S.Association, 2)) {
+					final IExpr[] patternValues = fPatternMap.copyPattern();
+					try {
+						if (lhsEvalExpr.isAssociation()) {
+							IAssociation lhsPatternAssociation = (IAssociation) lhsPatternAST;
+							// TODO set/determine pattern matching flags?
+							IAST lhsPatternList = lhsPatternAssociation.normal(false);
+							IAssociation lhsEvalAssociation = (IAssociation) lhsEvalExpr;
+							IAST lhsEvalList = lhsEvalAssociation.normal(false);
+							matched = matchExpr(lhsPatternList, lhsEvalList, engine, stackMatcher);
+							return matched;
+						}
+						matched = matchASTExpr(lhsPatternAST, lhsEvalExpr, engine, stackMatcher);
+						return matched;
+					} finally {
+						if (!matched) {
+							fPatternMap.resetPattern(patternValues);
+						}
+					}
+				}
+				break;
 			case ID.HoldPattern:
 			case ID.Literal:
 				if (lhsPatternAST.isHoldPatternOrLiteral()) {

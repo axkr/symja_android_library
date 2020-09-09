@@ -65,7 +65,7 @@ public class ByteArrayExpr extends DataExpr<byte[]> implements Externalizable {
 		return new ByteArrayExpr(fData);
 	}
 
-	public IASTMutable normal(boolean nilIfUnevaluated) {
+	public IAST normal(boolean nilIfUnevaluated) {
 		byte[] bArray = toData();
 		return WL.toList(bArray);
 	}

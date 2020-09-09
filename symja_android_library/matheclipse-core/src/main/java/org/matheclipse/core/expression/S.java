@@ -999,6 +999,9 @@ public class S {
 	public final static IBuiltInSymbol DisjointQ = F.initFinalSymbol("DisjointQ", ID.DisjointQ);
 
 	/***/
+	public final static IBuiltInSymbol Dispatch = F.initFinalSymbol("Dispatch", ID.Dispatch);
+	
+	/***/
 	public final static IBuiltInSymbol Disputed = F.initFinalSymbol("Disputed", ID.Disputed);
 
 	/***/

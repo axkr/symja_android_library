@@ -2994,7 +2994,7 @@ public abstract class AbstractAST implements IASTMutable {
 	/** {@inheritDoc} */
 	@Override
 	public boolean isListOfLists() {
-		if (head().equals(F.List)) {
+		if (isList() && size() > 1) {
 			for (int i = 1; i < size(); i++) {
 				if (!get(i).isList()) {
 					// the row is no list
@@ -3009,7 +3009,7 @@ public abstract class AbstractAST implements IASTMutable {
 	/** {@inheritDoc} */
 	@Override
 	public boolean isListOfMatrices() {
-		if (head().equals(F.List)) {
+		if (isList() && size() > 1) {
 			for (int i = 1; i < size(); i++) {
 				if (get(i).isMatrix(false) == null) {
 					// the row is no matrix

@@ -166,6 +166,8 @@ public interface IExpr extends Comparable<IExpr>, GcdRingElem<IExpr>, Serializab
 
 	public final static int SPARSEARRAYID = DATAID + 9;
 
+	public final static int DISPATCHID = DATAID + 10;
+	
 	/**
 	 * Operator overloading for Scala operator <code>/</code>. Calls <code>divide(that)</code>.
 	 * 
@@ -3789,6 +3791,10 @@ public interface IExpr extends Comparable<IExpr>, GcdRingElem<IExpr>, Serializab
 	 */
 	default IExpr replaceAll(final Map<? extends IExpr, ? extends IExpr> map) {
 		return accept(new VisitorReplaceAll(map));
+	}
+	
+	default IExpr replaceAll(VisitorReplaceAll visitor) {
+		return accept(visitor);
 	}
 
 	/**
