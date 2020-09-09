@@ -868,17 +868,26 @@ public class SparseArrayExpr extends DataExpr<Trie<int[], IExpr>> implements ISp
 	public IExpr getPart(IAST ast, int startPosition) {
 		int[] dims = getDimension();
 
-		if (dims.length >= ast.size() - startPosition) {
+		final int partSize = ast.size() - startPosition;
+		if (dims.length >= partSize) {
+
 			int len = 0;
-			int[] partIndex = new int[ast.size() - startPosition];
+			int[] partIndex = new int[dims.length];
 			int count = 0;
 			for (int i = startPosition; i < ast.size(); i++) {
 				partIndex[i - startPosition] = ast.get(i).toIntDefault(-1);
 				if (partIndex[i - startPosition] == -1) {
 					count++;
+				} else if (partIndex[i - startPosition] > dims[i - startPosition] || //
+						partIndex[i - startPosition] <= 0) {
+					return IOFunctions.printMessage(F.Part, "partw", F.List(ast.get(i), ast), EvalEngine.get());
 				}
 			}
-			if (count == 0 && partIndex.length == dims.length) {
+			for (int i = partSize; i < dims.length; i++) {
+				partIndex[i] = -1;
+				count++;
+			}
+			if (count == 0 && partSize == dims.length) {
 				IExpr temp = fData.get(partIndex);
 				if (temp == null) {
 					return defaultValue;

@@ -7,6 +7,14 @@ import org.matheclipse.parser.trie.Trie;
 public interface ISparseArray extends IDataExpr<Trie<int[], IExpr>> {
 	public int[] getDimension();
 
+	/**
+	 * Get the <code>Part(-ISparseArray-,...)</code> of a sparse array, with index being an integer number or symbol
+	 * <code>All</code>.
+	 * 
+	 * @param ast
+	 * @param startPosition
+	 * @return
+	 */
 	public IExpr getPart(IAST ast, int startPosition);
 
 	/**
@@ -27,7 +35,7 @@ public interface ISparseArray extends IDataExpr<Trie<int[], IExpr>> {
 	 * @return the corresponding FieldMatrix if possible, otherwise return <code>null</code>.
 	 */
 	public FieldMatrix<IExpr> toFieldMatrix();
-	
+
 	/**
 	 * Convert this sparse array to a FieldMatrix. If conversion is not possible, return <code>null</code>.
 	 * 

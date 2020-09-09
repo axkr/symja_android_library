@@ -22907,6 +22907,15 @@ public class LowercaseTestCase extends AbstractTestCase {
 				"SparseArray(Number of elements: 7 Dimensions: {2,2,3})");
 		check("ArrayRules(r)", //
 				"{{1,1,3}->3,{1,2,1}->1,{1,2,2}->1,{1,2,3}->5,{2,1,2}->1,{2,2,2}->1,{2,2,3}->2,{_,_,_}->\n" + "0}");
+		check("r[[2,All]] // Normal", //
+				"{{0,1,0},{0,1,2}}");
+		// index 3 does not exist
+		check("r[[All,3]] // Normal", //
+				"{{{0,0,3},{1,1,5}},{{0,1,0},{0,1,2}}}[[All,3]]");
+		check("r[[All,1]] // Normal", //
+				"{{0,0,3},{0,1,0}}");
+		check("r[[All,All]] // Normal", //
+				"{{{0,0,3},{1,1,5}},{{0,1,0},{0,1,2}}}");
 		check("r[[1,All,3]] // Normal", //
 				"{3,5}");
 		check("s=SparseArray({{1, 1} -> 1, {2, 2} -> 2, {4, 3} -> 3, {1, 4} -> 4, {3, 5} -> 2} )", //
