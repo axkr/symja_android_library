@@ -2070,7 +2070,7 @@ public final class ListFunctions {
 						int size = list.size();
 						final IAssociation result = list.copyHead(size);
 						for (int i = 1; i < size; i++) {
-							IAST rule = list.getRule(i);
+							IExpr rule = list.getRule(i);
 							IExpr x = engine.evaluate(F.unaryAST1(test, rule.second()));
 							if (!set.contains(x)) {
 								result.appendRule(rule);

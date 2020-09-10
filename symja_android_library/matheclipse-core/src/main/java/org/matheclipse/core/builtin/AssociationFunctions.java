@@ -67,19 +67,46 @@ public class AssociationFunctions {
 			if (ast.isAssociation()) {
 				return F.NIL;
 			}
-			if (ast.isAST1()) {
+			if (ast.isAST0()) {
+				return F.assoc(F.List());
+			} else if (ast.size() > 1) {
 				try {
 
 					IExpr arg1 = engine.evaluate(ast.arg1());
-					if (arg1.isListOfRules(true)) {
-						return F.assoc((IAST) arg1);
+					IAssociation assoc = null;
+					if (arg1.isAssociation()) {
+						assoc = (IAssociation) arg1;
+					} else if (arg1.isRuleAST()) {
+						assoc = F.assoc(F.List(arg1));
+					} else if (arg1.isListOfRules(true)) {
+						assoc = F.assoc((IAST) arg1);
 					} else if (arg1.isAST(F.List, 2)) {
 						arg1 = arg1.first();
 						if (arg1.isListOfRules(true)) {
-							return F.assoc((IAST) arg1);
+							assoc = F.assoc((IAST) arg1);
 						}
 					}
-
+					if (assoc == null) {
+						return F.NIL;
+					}
+					for (int i = 2; i < ast.size(); i++) {
+						IExpr arg = ast.get(i);
+						if (arg.isAssociation()) {
+							assoc.appendRules((IAST) arg.normal(false));
+						} else if (arg.isRuleAST()) {
+							assoc.appendRule((IAST) arg);
+						} else if (arg.isListOfRules(true)) {
+							assoc.appendRules((IAST) arg);
+						} else if (arg.isAST(F.List, 2)) {
+							arg = arg.first();
+							if (arg.isListOfRules(true)) {
+								assoc.appendRules((IAST) arg);
+							}
+						} else {
+							return F.NIL;
+						}
+					}
+					return assoc == null ? F.NIL : assoc;
 				} catch (ValidateException ve) {
 					if (FEConfig.SHOW_STACKTRACE) {
 						ve.printStackTrace();
@@ -88,11 +115,6 @@ public class AssociationFunctions {
 				}
 			}
 			return F.NIL;
-		}
-
-		@Override
-		public int[] expectedArgSize(IAST ast) {
-			return IOFunctions.ARGS_1_INFINITY;
 		}
 
 		@Override
@@ -253,11 +275,14 @@ public class AssociationFunctions {
 			if (arg1.isAssociation()) {
 				IASTMutable list = ((IAssociation) arg1).keys();
 				return mapHeadIfPresent(list, head);
-			}
-			if (arg1.isDataSet()) {
+			} else if (arg1.isDataSet()) {
 				return ((IASTDataset) arg1).columnNames();
-			}
-			if (arg1.isList()) {
+			} else if (arg1.isRuleAST()) {
+				if (head.isPresent()) {
+					return F.unaryAST1(head, arg1.first());
+				}
+				return arg1.first();
+			} else if (arg1.isList()) {
 				if (arg1.isListOfRules(true)) {
 					IAST listOfRules = (IAST) arg1;
 					IASTAppendable list = F.ast(F.List, listOfRules.argSize(), false);
@@ -412,8 +437,12 @@ public class AssociationFunctions {
 			if (arg1.isAssociation()) {
 				IASTMutable list = ((IAssociation) arg1).values();
 				return mapHeadIfPresent(list, head);
-			}
-			if (arg1.isList()) {
+			} else if (arg1.isRuleAST()) {
+				if (head.isPresent()) {
+					return F.unaryAST1(head, arg1.second());
+				}
+				return arg1.second();
+			} else if (arg1.isList()) {
 				if (arg1.isListOfRules(true)) {
 					IAST listOfRules = (IAST) arg1;
 					IASTAppendable list = F.ast(F.List, listOfRules.argSize(), false);

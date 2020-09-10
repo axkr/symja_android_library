@@ -223,7 +223,7 @@ public class MathScriptEngine extends AbstractScriptEngine {
 		if (Config.FUZZ_TESTING) {
 			throw new NullPointerException();
 		}
-		return "ERROR-IN-OUTPUTFORM";
+		return "ScriptEngine: ERROR-IN-OUTPUTFORM";
 	}
 
 	@Override

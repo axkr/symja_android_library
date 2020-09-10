@@ -298,6 +298,17 @@ public interface IASTAppendable extends IASTMutable {
 	 * @return <code>this</code> ast after adding the subAST
 	 */
 	public IAST appendOneIdentity(IAST subAST);
+	
+	/**
+	 * Adds the specified rule at the end of this association.
+	 * 
+	 * @param rule
+	 *            the rule to add at the end of this association
+	 * @return always true
+	 */
+	default void appendRule(IExpr expr) {
+		append(expr);
+	}
 
 	/**
 	 * Removes all elements from this {@code IAST}, leaving it empty (optional).

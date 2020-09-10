@@ -1835,8 +1835,8 @@ public final class PatternMatching {
 		public IExpr evaluate(final IAST ast, EvalEngine engine) {
 			final IExpr leftHandSide = ast.arg1();
 			IExpr head = engine.evaluate(leftHandSide.head());
-			if (head.isAssociation()) {
-				head = F.Association;
+			if (head.topHead().equals(S.Association)) {
+				head = S.Association;
 			}
 			IExpr rightHandSide = ast.arg2();
 			try {

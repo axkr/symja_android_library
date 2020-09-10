@@ -1216,6 +1216,19 @@ public class LowercaseTestCase extends AbstractTestCase {
 	}
 
 	public void testAssociation() {
+		check("assoc = <|a -> x, \"b\" -> y, c -> z|>", //
+				"<|a->x,b->y,c->z|>");
+		check("assoc[\"b\"] = w", //
+				"w");
+		check("assoc", //
+				"<|a->x,b->w,c->z|>");
+
+		check("Association()", //
+				"<||>");
+		check("Association(a->x)", //
+				"<|a->x|>");
+		check("Association({f->g,h->o},<|A->1,B->2,C->3,D->4|>,<|a->1,b->2,c->3,d->4,e->5|>,<|U->1,V->2|>)", //
+				"<|f->g,h->o,A->1,B->2,C->3,D->4,a->1,b->2,c->3,d->4,e->5,U->1,V->2|>");
 		// TODO
 		// check("f(<|1 -> 2, 3 -> 4|>) /. f(<|a_ -> b_, ___|>) -> f(a, b)", //
 		// "");
@@ -12293,6 +12306,10 @@ public class LowercaseTestCase extends AbstractTestCase {
 	}
 
 	public void testKeys() {
+		check("Keys(<|k->v|>)", //
+				"{k}");
+		check("Keys(k:>v,f)", //
+				"f(k)");
 		check("Keys(<|ahey->avalue, bkey->bvalue, ckey->cvalue|>)", //
 				"{ahey,bkey,ckey}");
 		check("Keys( <|a -> 2, Nothing -> 2|>, Hold )", //
@@ -12346,6 +12363,10 @@ public class LowercaseTestCase extends AbstractTestCase {
 	}
 
 	public void testValues() {
+		check("Values(<|k->v|>)", //
+				"{v}");
+		check("Values(k:>v,f)", //
+				"f(v)");
 		check("Values(<|ahey->avalue, bkey->bvalue, ckey->cvalue|>)", //
 				"{avalue,bvalue,cvalue}");
 		check("Values(<|a :> 1 + 1, b -> Nothing|>, Hold)", //
@@ -19971,7 +19992,7 @@ public class LowercaseTestCase extends AbstractTestCase {
 				"{a,2}");
 		check("{1, 2} /. <|4 -> a, 2 -> b|>", //
 				"{1,b}");
-		
+
 		check("{{}, {a, a}, {a, b}, {a, a, a}, {a}} /. {a ..} -> x", //
 				"{{},x,{a,b},x,x}");
 		check("{{}, {f(a), f(b)}, {f(a)}, {f(a, b)}, {f(a), g(b)}} /. {f(_) ..} -> x", //

@@ -969,6 +969,17 @@ public interface IAST extends IExpr, Cloneable, Iterable<IExpr> {
 	public IExpr getPart(final List<Integer> positions);
 
 	/**
+	 * If this is an <code>IAssociation</code> return the rule at the position. Otherwise call
+	 * <code>get(position)</code>
+	 * 
+	 * @param position
+	 * @return
+	 */
+	default IExpr getRule(int position) {
+		return get(position);
+	}
+
+	/**
 	 * Test if one of the arguments gives <code>true</code> for the <code>isNumericArgument()</code> method
 	 * 
 	 * @return <code>true</code> if one of the arguments gives <code>true</code> for the

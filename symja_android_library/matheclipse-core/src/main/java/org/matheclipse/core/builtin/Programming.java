@@ -3290,6 +3290,27 @@ public final class Programming {
 		return ast.get(position);
 	}
 
+	/**
+	 * If <code>ast</code> is an instance of IAssociation return the rule defined at the given position in the
+	 * association. Otherwise return the element at that position.
+	 * 
+	 * @param ast
+	 * @param pos
+	 * @param engine
+	 * @return
+	 */
+	private static IExpr getIndexRule(IAST ast, final int pos, EvalEngine engine) {
+		int position = pos;
+		if (position < 0) {
+			position = ast.size() + position;
+		}
+		if ((position < 0) || (position >= ast.size())) {
+			// Part `1` of `2` does not exist.
+			return IOFunctions.printMessage(F.Part, "partw", F.List(F.ZZ(pos), ast), engine);
+		}
+		return ast.getRule(position);
+	}
+
 	private static IExpr getSparseIndex(ISparseArray ast, final int pos, EvalEngine engine) {
 		// int position = pos;
 		// if (position < 0) {
@@ -3416,7 +3437,7 @@ public final class Programming {
 
 		IExpr temp = arg1.normal(false);
 		if (temp.isList()) {
-			return part((IAST)temp, ast, pos, engine);
+			return part((IAST) temp, ast, pos, engine);
 		}
 		// The expression `1` cannot be used as a part specification.
 		return IOFunctions.printMessage(F.Part, "pkspec1", F.List(ast), engine);
@@ -3429,9 +3450,9 @@ public final class Programming {
 		if (step < 0 && start >= last) {
 			for (int i = start; i >= last; i += step) {
 				if (p1 >= ast.size()) {
-					IExpr temp = getIndex(arg1, i, engine);
+					IExpr temp = getIndexRule(arg1, i, engine);
 					if (temp.isPresent()) {
-						result.append(temp);
+						result.appendRule(temp);
 						continue;
 					}
 					return F.NIL;
@@ -3453,9 +3474,9 @@ public final class Programming {
 		} else if (step > 0 && (last != 1 || start <= last)) {
 			for (int i = start; i <= last; i += step) {
 				if (p1 >= ast.size()) {
-					IExpr temp = getIndex(arg1, i, engine);
+					IExpr temp = getIndexRule(arg1, i, engine);
 					if (temp.isPresent()) {
-						result.append(temp);
+						result.appendRule(temp);
 						continue;
 					}
 					return F.NIL;

@@ -7,11 +7,29 @@ import java.util.function.Supplier;
 public interface IAssociation extends IASTAppendable {
 
 	/**
-	 * Append a <code>Rule(a,b)</code> or <code>RuleDelayed(a,b)</code> expression.
+	 * Append a list of rules.
+	 * 
+	 * @param listOfRules
+	 */
+	public void appendRules(IAST listOfRules);
+
+	/**
+	 * Append a range of a list of rules.
+	 * 
+	 * @param listOfRules
+	 * @param startPosition
+	 *            the start position inclusive
+	 * @param endPosition
+	 *            the end position exclusive
+	 */
+	public void appendRules(IAST listOfRules, int startPosition, int endPosition);
+
+	/**
+	 * Append a single <code>Rule(a,b)</code> or <code>RuleDelayed(a,b)</code> expression.
 	 * 
 	 * @param rule
 	 */
-	public void appendRule(IAST rule);
+	public void appendRule(IExpr rule);
 
 	/**
 	 * Copy this association
@@ -30,14 +48,6 @@ public interface IAssociation extends IASTAppendable {
 	 * @return
 	 */
 	public IExpr getKey(int position);
-
-	/**
-	 * Return the rule at the given <code>position</code>.
-	 * 
-	 * @param position
-	 * @return
-	 */
-	public IAST getRule(int position);
 
 	/**
 	 * Return the value associated to the <code>key</code>. If no value is available return

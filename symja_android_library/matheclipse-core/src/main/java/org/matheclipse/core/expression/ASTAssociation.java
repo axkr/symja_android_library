@@ -52,8 +52,17 @@ public class ASTAssociation extends AST implements IAssociation {
 		map = new Object2IntOpenHashMap<IExpr>();
 		append(F.Association);
 
-		int index = 1;
-		for (int i = 1; i < listOfRules.size(); i++) {
+		appendRules(listOfRules);
+	}
+
+	public void appendRules(IAST listOfRules) {
+		appendRules(listOfRules,1,listOfRules.size());
+	}
+	
+	public void appendRules(IAST listOfRules, int startPosition, int endPosition) {
+		int index = size();
+		normalCache = null;
+		for (int i = startPosition; i < endPosition; i++) {
 			IExpr rule = listOfRules.get(i);
 			if (rule.isRule()) {
 				int value = getIndex(rule.first());
@@ -90,9 +99,10 @@ public class ASTAssociation extends AST implements IAssociation {
 	 * @return always true
 	 */
 	@Override
-	public final void appendRule(IAST rule) {
+	public final void appendRule(IExpr rule) {
 		int index = size();
 		if (rule.isRule()) {
+			normalCache = null;
 			int value = getIndex(rule.first());
 			if (value == 0) {
 				append(rule.second());
@@ -101,8 +111,8 @@ public class ASTAssociation extends AST implements IAssociation {
 				set(value, rule.second());
 				map.put(rule.first(), value);
 			}
-			normalCache = null;
 		} else if (rule.isRuleDelayed()) {
+			normalCache = null;
 			int value = getIndex(rule.first());
 			if (value == 0) {
 				append(rule.second());
@@ -112,7 +122,6 @@ public class ASTAssociation extends AST implements IAssociation {
 				set(value, rule.second());
 				map.put(rule.first(), -value);
 			}
-			normalCache = null;
 		} else if (rule.isEmptyList()) {
 			// ignore empty list entries
 		} else {
@@ -177,9 +186,44 @@ public class ASTAssociation extends AST implements IAssociation {
 
 	/** {@inheritDoc} */
 	@Override
+	public IAssociation copyHead() {
+		return new ASTAssociation(size(), false);
+	}
+
+	/** {@inheritDoc} */
+	@Override
 	public IAssociation copyHead(final int intialCapacity) {
 		return new ASTAssociation(intialCapacity, false);
 	}
+
+	/** {@inheritDoc} */
+	@Override
+	public IASTAppendable copyUntil(int index) {
+		return copyUntil(index, index);
+	}
+
+	/** {@inheritDoc} */
+	@Override
+	public final IASTAppendable copyUntil(final int intialCapacity, int index) {
+		ASTAssociation result = new ASTAssociation(intialCapacity, false);
+		result.appendRules(this.normal(false), 1, index);
+		return result;
+	}
+
+//	public boolean appendAllRules(ASTAssociation ast, int startPosition, int endPosition) {
+//		if (ast.size() > 0 && startPosition < endPosition) {
+//			normalCache = null;
+//			appendAll(ast, startPosition, endPosition);
+//			for (Object2IntMap.Entry<IExpr> element : ast.map.object2IntEntrySet()) {
+//				int value = element.getIntValue();
+//				if (Math.abs(value) >= startPosition && Math.abs(value) < endPosition) {
+//					map.put(element.getKey(), value);
+//				}
+//			}
+//			return true;
+//		}
+//		return false;
+//	}
 
 	/** {@inheritDoc} */
 	@Override
@@ -347,13 +391,12 @@ public class ASTAssociation extends AST implements IAssociation {
 		return F.C0;
 	}
 
-	;
 	@Override
 	public IAST getRule(int position) {
 		IAST ast = normal(false);
-		return (IAST)ast.get(position); 
+		return (IAST) ast.get(position);
 	}
-	
+
 	@Override
 	public IExpr getValue(IExpr key) {
 		return getValue(key, () -> F.Missing(F.stringx("KeyAbsent"), key));
@@ -490,6 +533,7 @@ public class ASTAssociation extends AST implements IAssociation {
 
 	@Override
 	public IAssociation sort(Comparator<IExpr> comp) {
+		normalCache = null;
 		List<Integer> indices = new ArrayList<Integer>(argSize());
 		for (int i = 1; i < size(); i++) {
 			indices.add(i);
@@ -565,6 +609,7 @@ public class ASTAssociation extends AST implements IAssociation {
 
 	@Override
 	public void readExternal(ObjectInput objectInput) throws IOException, ClassNotFoundException {
+		normalCache = null;
 		append(F.Association);
 		IAST ast = (IAST) objectInput.readObject();
 		for (int i = 1; i < ast.size(); i++) {
