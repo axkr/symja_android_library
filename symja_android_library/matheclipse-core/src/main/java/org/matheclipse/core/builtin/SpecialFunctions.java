@@ -285,9 +285,9 @@ public class SpecialFunctions {
 							if (nInt > iterationLimit && iterationLimit > 0) {
 								IterationLimitExceeded.throwIt(nInt, ast.topHead());
 							}
-							// TODO improve with regularizedIncompleteBetaFunction() -
+							// TODO improve with regularizedIncompleteBetaFunction() ???
 							// https://github.com/haifengl/smile/blob/master/math/src/main/java/smile/math/special/Beta.java
-							return F.num(de.lab4inf.math.functions.IncompleteBeta.incBeta(zn, an, nn));
+							return F.num(GammaJS.betaRegularized(zn, an, nn));
 						} catch (IllegalArgumentException rex) {
 							// from de.lab4inf.math.functions.IncompleteBeta.checkParameters()
 						} catch (ValidateException ve) {

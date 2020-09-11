@@ -19,6 +19,7 @@ import org.matheclipse.core.expression.F;
 import org.matheclipse.core.interfaces.INumber;
 
 import de.lab4inf.math.Function;
+import de.lab4inf.math.functions.IncompleteBeta;
 import de.lab4inf.math.gof.Visitor;
 import de.lab4inf.math.util.ContinuedFraction;
 
@@ -181,12 +182,38 @@ public class GammaJS {
 				.divide(y);
 	}
 
+	public static Complex beta(Complex x, Complex y, Complex z, Complex w) {
+		return beta(y, z, w).subtract(beta(x, z, w));
+	}
+
 	public static double beta(double x, double y) {
 		return Gamma.gamma(x) * Gamma.gamma(y) / Gamma.gamma(x + y);
 	}
 
 	public static double beta(double x, double y, double z) {
 		return Math.pow(x, y) * HypergeometricJS.hypergeometric2F1(y, 1.0 - z, y + 1.0, x) / y;
+	}
+
+	public static double beta(double x, double y, double z, double w) {
+		return beta(y, z, w) - beta(x, z, w);
+	}
+
+	public static Complex betaRegularized(Complex x, Complex y, Complex z) {
+		return beta(x, y, z).divide(beta(y, z));
+	}
+
+	public static Complex betaRegularized(Complex x, Complex y, Complex z, Complex w) {
+		return beta(x, y, z, w).divide(beta(z, w));
+	}
+
+	public static double betaRegularized(double x, double y, double z) {
+		// use A&amp;ST26.5.4 and A&amp;ST26.5.5
+		return IncompleteBeta.incBeta(x, y, z);
+		// return beta(x, y, z) / beta(y, z);
+	}
+
+	public static double betaRegularized(double x, double y, double z, double w) {
+		return beta(x, y, z, w) / beta(z, w);
 	}
 
 	public static INumber incompleteBeta(double x, double y, double z) {
@@ -453,6 +480,23 @@ public class GammaJS {
 		Complex result = gamma1.add(gamma2.add(x.log().negate()).add(xNegate.log())).multiply(-0.5);
 
 		return result;
+	}
+
+	public static Complex gammaRegularized(Complex x, double y, Complex z) {
+		return gamma(x, y, z).divide(gamma(x));
+	}
+
+	public static Complex gammaRegularized(Complex x, Complex y) {
+		return gamma(x, y).divide(gamma(x));
+	}
+
+	public static Complex gammaRegularized(double x, double y, double z) {
+		Complex cx = new Complex(x);
+		return gamma(cx, y, new Complex(z)).divide(gamma(cx));
+	}
+
+	public static double gammaRegularized(double x, double y) {
+		return gamma(x, y) / gamma(x);
 	}
 
 	/**
