@@ -33,6 +33,7 @@ import org.matheclipse.core.interfaces.IComplexNum;
 import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.interfaces.IFraction;
 import org.matheclipse.core.interfaces.IInteger;
+import org.matheclipse.core.interfaces.ISparseArray;
 import org.matheclipse.core.interfaces.ISymbol;
 import org.matheclipse.core.patternmatching.IPatternMap;
 import org.matheclipse.core.patternmatching.IPatternMap.PatternMap;
@@ -957,13 +958,16 @@ public class StructureFunctions {
 				if (option.isTrue()) {
 					heads = true;
 				}
-				// } else {
-				// Validate.checkRange(ast, 3, 4);
 			}
 
 			try {
 				IExpr arg1 = ast.arg1();
 				IExpr arg2 = ast.arg2();
+				if (ast.isAST2()) {
+					if (arg2.isSparseArray()) {
+						return ((ISparseArray) arg2).map(x -> F.unaryAST1(arg1, x));
+					}
+				}
 				VisitorLevelSpecification level;
 				if (lastIndex == 3) {
 					level = new VisitorLevelSpecification(x -> F.unaryAST1(arg1, x), ast.get(lastIndex), heads, engine);

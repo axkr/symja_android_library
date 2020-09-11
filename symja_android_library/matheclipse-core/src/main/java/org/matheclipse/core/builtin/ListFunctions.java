@@ -38,6 +38,7 @@ import org.matheclipse.core.eval.util.LevelSpec;
 import org.matheclipse.core.eval.util.LevelSpecification;
 import org.matheclipse.core.eval.util.OptionArgs;
 import org.matheclipse.core.eval.util.Sequence;
+import org.matheclipse.core.expression.ASTAssociation;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.expression.S;
 import org.matheclipse.core.expression.data.DispatchExpr;
@@ -5148,13 +5149,23 @@ public final class ListFunctions {
 			if (functionList.size() != 2) {
 				return F.NIL;
 			}
-			if (functionList.arg1().isAST()) {
-				IAST list = (IAST) functionList.arg1();
+			IExpr arg1 = functionList.arg1();
+			if (arg1.isAssociation()) {
+				IAssociation sparseArray = (IAssociation) arg1;
+				return sparseArray.reverse(new ASTAssociation(arg1.size(), false));
+			}
+			if (arg1.isAST()) {
+				IAST list = (IAST) arg1;
 				return reverse(list);
 			}
+
 			return F.NIL;
 		}
 
+		@Override
+		public int[] expectedArgSize(IAST ast) {
+			return IOFunctions.ARGS_1_1;
+		}
 	}
 
 	/**

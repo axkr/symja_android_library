@@ -1,5 +1,7 @@
 package org.matheclipse.core.interfaces;
 
+import java.util.function.Function;
+
 import org.hipparchus.linear.FieldMatrix;
 import org.hipparchus.linear.FieldVector;
 import org.matheclipse.parser.trie.Trie;
@@ -42,8 +44,27 @@ public interface ISparseArray extends IDataExpr<Trie<int[], IExpr>> {
 	 */
 	public boolean isSparseArray();
 
+	/**
+	 * Maps the values of this sparse array with the unary <code>functor</code>. If the <code>functor</code> returns
+	 * <code>F.NIL</code> the original element of this AST list is used.
+	 * 
+	 * <br />
+	 * <br />
+	 * Example for mapping with <code>Functors#replace1st()</code>, where the first argument will be replaced by the
+	 * current argument of this AST:
+	 * 
+	 * <pre>
+	 * plusAST.map(Functors.replace1st(F.D(null, dAST.arg2())));
+	 * </pre>
+	 * 
+	 * @param functor
+	 *            a unary function
+	 * @return
+	 */
+	public ISparseArray map(final Function<IExpr, IExpr> function);
+
 	public ISparseArray mapThread(final IAST replacement, int position);
-	
+
 	/**
 	 * Convert this sparse array to a FieldMatrix. If conversion is not possible, return <code>null</code>.
 	 * 

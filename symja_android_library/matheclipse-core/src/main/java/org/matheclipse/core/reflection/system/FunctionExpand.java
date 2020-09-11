@@ -304,7 +304,7 @@ public class FunctionExpand extends AbstractEvaluator implements FunctionExpandR
 	private static IExpr sqrtDenest(IRational arg1, IExpr arg2) {
 		if (arg1.isNegative()) {
 			return sqrtDenest(arg1.negate(), arg2.negate()).//
-					map(x -> F.Times(F.CI, x));
+					mapExpr(x -> F.Times(F.CI, x));
 		} else {
 			final EvalEngine engine = EvalEngine.get();
 			boolean arg2IsNegative = false;

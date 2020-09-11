@@ -13816,6 +13816,13 @@ public class LowercaseTestCase extends AbstractTestCase {
 	}
 
 	public void testMap() {
+		check("s=SparseArray({1 -> 1, 2 -> 2, 100 -> 100})", //
+				"SparseArray(Number of elements: 3 Dimensions: {100} Default value: 0)");
+		check("t=Map(f,s)", //
+				"SparseArray(Number of elements: 3 Dimensions: {100} Default value: f(0))");
+		check("ArrayRules(t)", //
+				"{{1}->f(1),{2}->f(2),{100}->f(100),{_}->f(0)}");
+
 		check("Map(1/Sqrt(5),ByteArray[{}],I,y_)", //
 				"ByteArray[0 Bytes]");
 		check("Map(#2,1/Sqrt(5),2,Heads->True)", //
@@ -20576,6 +20583,8 @@ public class LowercaseTestCase extends AbstractTestCase {
 	}
 
 	public void testReverse() {
+		check("Reverse(<|U->1,V->2|>)", //
+				"<|V->2,U->1|>");
 		check("Reverse({1, 2, 3})", //
 				"{3,2,1}");
 		check("Reverse(x(a,b,c))", //
@@ -22955,11 +22964,7 @@ public class LowercaseTestCase extends AbstractTestCase {
 		check("s = SparseArray({{i_, i_} -> -2, {i_, j_} /; Abs(i - j) == 1 -> 1}, {5, 5})", //
 				"SparseArray(Number of elements: 13 Dimensions: {5,5} Default value: 0)");
 		check("MatrixForm(s)", //
-				"{{-2,1,0,0,0},\n" + 
-				" {1,-2,1,0,0},\n" + 
-				" {0,1,-2,1,0},\n" + 
-				" {0,0,1,-2,1},\n" + 
-				" {0,0,0,1,-2}}");
+				"{{-2,1,0,0,0},\n" + " {1,-2,1,0,0},\n" + " {0,1,-2,1,0},\n" + " {0,0,1,-2,1},\n" + " {0,0,0,1,-2}}");
 
 		check("SparseArray(Table({2^i, 3^i + i} -> 1, {i, 10}))", //
 				"SparseArray(Number of elements: 10 Dimensions: {1024,59059} Default value: 0)");

@@ -1116,6 +1116,25 @@ public interface IAST extends IExpr, Cloneable, Iterable<IExpr> {
 	 * 
 	 * @param functor
 	 *            a unary function
+	 * @return
+	 */
+	public IAST map(final Function<IExpr, IExpr> function);
+	
+	/**
+	 * Maps the elements of this IAST with the unary <code>functor</code>. If the <code>functor</code> returns
+	 * <code>F.NIL</code> the original element of this AST list is used.
+	 * 
+	 * <br />
+	 * <br />
+	 * Example for mapping with <code>Functors#replace1st()</code>, where the first argument will be replaced by the
+	 * current argument of this AST:
+	 * 
+	 * <pre>
+	 * plusAST.map(Functors.replace1st(F.D(null, dAST.arg2())));
+	 * </pre>
+	 * 
+	 * @param functor
+	 *            a unary function
 	 * @param startOffset
 	 *            the startOffset from there the <code>functor</code> should be used.
 	 * @return

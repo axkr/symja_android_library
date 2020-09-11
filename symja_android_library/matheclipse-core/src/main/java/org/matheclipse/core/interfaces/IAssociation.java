@@ -4,6 +4,8 @@ import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.function.Supplier;
 
+import org.matheclipse.core.expression.ASTAssociation;
+
 public interface IAssociation extends IASTAppendable {
 
 	/**
@@ -134,4 +136,6 @@ public interface IAssociation extends IASTAppendable {
 	 * @return
 	 */
 	public IASTMutable values();
+
+	public IAssociation reverse(IAssociation newAssoc);
 }

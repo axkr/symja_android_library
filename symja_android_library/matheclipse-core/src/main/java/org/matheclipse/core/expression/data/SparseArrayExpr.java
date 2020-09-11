@@ -1173,10 +1173,12 @@ public class SparseArrayExpr extends DataExpr<Trie<int[], IExpr>> implements ISp
 	@Override
 	public final SparseArrayExpr mapThread(final IAST replacement, int position) {
 		final Function<IExpr, IExpr> function = x -> replacement.setAtCopy(position, x);
-		return mapValues(function);
+		return map(function);
 	}
 
-	public SparseArrayExpr mapValues(final Function<IExpr, IExpr> function) {
+	/** {@inheritDoc} */
+	@Override
+	public SparseArrayExpr map(final Function<IExpr, IExpr> function) {
 		SparseArrayExpr result = copy();
 		for (TrieNode<int[], IExpr> entry : result.fData.nodeSet()) {
 			IExpr value = entry.getValue();

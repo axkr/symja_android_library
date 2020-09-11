@@ -56,9 +56,9 @@ public class ASTAssociation extends AST implements IAssociation {
 	}
 
 	public void appendRules(IAST listOfRules) {
-		appendRules(listOfRules,1,listOfRules.size());
+		appendRules(listOfRules, 1, listOfRules.size());
 	}
-	
+
 	public void appendRules(IAST listOfRules, int startPosition, int endPosition) {
 		int index = size();
 		normalCache = null;
@@ -210,20 +210,20 @@ public class ASTAssociation extends AST implements IAssociation {
 		return result;
 	}
 
-//	public boolean appendAllRules(ASTAssociation ast, int startPosition, int endPosition) {
-//		if (ast.size() > 0 && startPosition < endPosition) {
-//			normalCache = null;
-//			appendAll(ast, startPosition, endPosition);
-//			for (Object2IntMap.Entry<IExpr> element : ast.map.object2IntEntrySet()) {
-//				int value = element.getIntValue();
-//				if (Math.abs(value) >= startPosition && Math.abs(value) < endPosition) {
-//					map.put(element.getKey(), value);
-//				}
-//			}
-//			return true;
-//		}
-//		return false;
-//	}
+	// public boolean appendAllRules(ASTAssociation ast, int startPosition, int endPosition) {
+	// if (ast.size() > 0 && startPosition < endPosition) {
+	// normalCache = null;
+	// appendAll(ast, startPosition, endPosition);
+	// for (Object2IntMap.Entry<IExpr> element : ast.map.object2IntEntrySet()) {
+	// int value = element.getIntValue();
+	// if (Math.abs(value) >= startPosition && Math.abs(value) < endPosition) {
+	// map.put(element.getKey(), value);
+	// }
+	// }
+	// return true;
+	// }
+	// return false;
+	// }
 
 	/** {@inheritDoc} */
 	@Override
@@ -524,6 +524,13 @@ public class ASTAssociation extends AST implements IAssociation {
 			return removeAtCopy(1);
 		}
 		return this;
+	}
+
+	public IAssociation reverse(IAssociation newAssoc) {
+		for (int i = argSize(); i >= 1; i--) {
+			newAssoc.appendRule(getRule(i));
+		}
+		return newAssoc;
 	}
 
 	@Override

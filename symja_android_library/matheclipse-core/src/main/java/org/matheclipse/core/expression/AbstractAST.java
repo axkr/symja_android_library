@@ -772,7 +772,7 @@ public abstract class AbstractAST implements IASTMutable {
 		}
 
 		@Override
-		public IExpr map(Function<? super IExpr, ? extends IExpr> mapper) {
+		public IExpr mapExpr(Function<? super IExpr, ? extends IExpr> mapper) {
 			return this;
 		}
 
@@ -4063,6 +4063,12 @@ public abstract class AbstractAST implements IASTMutable {
 			return ((IAST) arg1()).arg1();
 		}
 		return F.NIL;
+	}
+
+	/** {@inheritDoc} */
+	@Override
+	public IAST map(final Function<IExpr, IExpr> function) {
+		return map(function, 1);
 	}
 
 	/** {@inheritDoc} */

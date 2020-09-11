@@ -3308,7 +3308,7 @@ public interface IExpr extends Comparable<IExpr>, GcdRingElem<IExpr>, Serializab
 	default public IExpr lower() {
 		return F.NIL;
 	}
-
+	
 	/**
 	 * If a value is present (i.e. this unequals F.NIL), apply the provided mapping function to it, and if the result is
 	 * non-NIL, return the result. Otherwise return <code>F.NIL</code>
@@ -3318,7 +3318,7 @@ public interface IExpr extends Comparable<IExpr>, GcdRingElem<IExpr>, Serializab
 	 * @return an IExpr describing the result of applying a mapping function to the value of this object, if a value is
 	 *         present, otherwise return <code>F.NIL</code>.
 	 */
-	default IExpr map(Function<? super IExpr, ? extends IExpr> mapper) {
+	default IExpr mapExpr(Function<? super IExpr, ? extends IExpr> mapper) {
 		return mapper.apply(this);
 	}
 
