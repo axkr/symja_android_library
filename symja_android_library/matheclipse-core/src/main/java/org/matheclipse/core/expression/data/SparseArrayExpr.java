@@ -4,7 +4,9 @@ import java.io.Externalizable;
 import java.io.IOException;
 import java.io.ObjectInput;
 import java.io.ObjectOutput;
+import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.function.Function;
 
 import org.hipparchus.Field;
 import org.hipparchus.exception.LocalizedCoreFormats;
@@ -16,6 +18,7 @@ import org.hipparchus.linear.FieldMatrix;
 import org.hipparchus.linear.FieldVector;
 import org.hipparchus.util.MathUtils;
 import org.matheclipse.core.builtin.IOFunctions;
+import org.matheclipse.core.builtin.LinearAlgebra;
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.exception.ArgumentTypeException;
 import org.matheclipse.core.expression.DataExpr;
@@ -43,32 +46,192 @@ import org.matheclipse.parser.trie.Tries;
  */
 public class SparseArrayExpr extends DataExpr<Trie<int[], IExpr>> implements ISparseArray, Externalizable {
 	/**
+	 * Create a sparse <code>FieldMatrix</code>.
+	 *
+	 * <b>Note:</b> in Symja sparse arrays the offset is +1 compared to java arrays or hipparchus
+	 * <code>FieldMatrix</code>.
+	 *
+	 */
+	public static class SparseExprMatrix extends AbstractFieldMatrix<IExpr> {
+		final SparseArrayExpr array;
+
+		/**
+		 * Create a new SparseExprMatrix with the supplied row and column dimensions.
+		 *
+		 * @param rowDimension
+		 *            Number of rows in the new matrix.
+		 * @param columnDimension
+		 *            Number of columns in the new matrix.
+		 * @throws org.hipparchus.exception.MathIllegalArgumentException
+		 *             if row or column dimension is not positive.
+		 */
+		public SparseExprMatrix(final int rowDimension, final int columnDimension, IExpr defaultValue) {
+			super(ExprField.CONST, rowDimension, columnDimension);
+			this.array = new SparseArrayExpr(Tries.forInts(), new int[] { rowDimension, columnDimension }, defaultValue,
+					false);
+		}
+
+		public SparseExprMatrix(SparseArrayExpr array) {
+			super(ExprField.CONST, array.dimension[0], array.dimension[1]);
+			this.array = array;
+		}
+
+		/**
+		 * Copy constructor.
+		 *
+		 * @param other
+		 *            Instance to copy.
+		 */
+		public SparseExprMatrix(SparseExprMatrix other) {
+			super(ExprField.CONST, other.array.dimension[0], other.array.dimension[1]);
+			this.array = new SparseArrayExpr(other.array.fData, other.array.dimension, other.array.defaultValue, true);
+		}
+
+		@Override
+		public void addToEntry(int row, int column, IExpr increment) throws MathIllegalArgumentException {
+			final Trie<int[], IExpr> map = array.fData;
+			final int[] key = new int[] { row + 1, column + 1 };
+			IExpr value = map.get(key);
+			value = S.Plus.of(value != null ? value : array.defaultValue, increment);
+			if (value.equals(array.defaultValue)) {
+				map.remove(key);
+			} else {
+				map.put(key, value);
+			}
+		}
+
+		@Override
+		public FieldMatrix<IExpr> copy() {
+			return new SparseExprMatrix(this);
+		}
+
+		@Override
+		public SparseExprMatrix createMatrix(int rowDimension, int columnDimension)
+				throws MathIllegalArgumentException {
+			return new SparseExprMatrix(rowDimension, columnDimension, F.C0);
+		}
+
+		@Override
+		public int getColumnDimension() {
+			return array.dimension[1];
+		}
+
+		@Override
+		public IExpr getEntry(int arg0, int arg1) throws MathIllegalArgumentException {
+			IExpr value = array.fData.get(new int[] { arg0 + 1, arg1 + 1 });
+			return value == null ? array.defaultValue : value;
+		}
+
+		@Override
+		public int getRowDimension() {
+			return array.dimension[0];
+		}
+
+		public SparseArrayExpr getSparseArray() {
+			return array;
+		}
+
+		/** {@inheritDoc} */
+		@Override
+		public SparseExprMatrix multiply(final FieldMatrix<IExpr> m) throws MathIllegalArgumentException {
+			// safety check
+			checkMultiplicationCompatible(m);
+
+			final int nRows = getRowDimension();
+			final int nCols = m.getColumnDimension();
+			final int nSum = getColumnDimension();
+			final SparseExprMatrix out = createMatrix(nRows, nCols);
+			for (int row = 0; row < nRows; ++row) {
+				for (int col = 0; col < nCols; ++col) {
+					IExpr sum = F.C0;
+					for (int i = 0; i < nSum; ++i) {
+						sum = sum.add(getEntry(row, i).multiply(m.getEntry(i, col)));
+					}
+					out.setEntry(row, col, sum);
+				}
+			}
+
+			return out;
+		}
+
+		@Override
+		public void multiplyEntry(int row, int column, IExpr factor) throws MathIllegalArgumentException {
+			final Trie<int[], IExpr> map = array.fData;
+			final int[] key = new int[] { row + 1, column + 1 };
+			IExpr value = map.get(key);
+			value = S.Times.of(value != null ? value : array.defaultValue, factor);
+			if (value.equals(array.defaultValue)) {
+				map.remove(key);
+			} else {
+				map.put(key, value);
+			}
+		}
+
+		/** {@inheritDoc} */
+		@Override
+		public SparseExprVector operate(final FieldVector<IExpr> fv) throws MathIllegalArgumentException {
+			if (fv instanceof SparseExprVector) {
+				SparseExprVector v = (SparseExprVector) fv;
+				final int nRows = getRowDimension();
+				final int nCols = getColumnDimension();
+				if (v.getDimension() != nCols) {
+					throw new MathIllegalArgumentException(LocalizedCoreFormats.DIMENSIONS_MISMATCH, v.getDimension(),
+							nCols);
+				}
+
+				SparseExprVector out = new SparseExprVector(nRows, array.defaultValue);
+				for (int row = 0; row < nRows; row++) {
+					IExpr sum = F.C0;
+					for (int i = 0; i < nCols; i++) {
+						sum = sum.add(getEntry(row, i).multiply(v.getEntry(i)));
+					}
+					out.setEntry(row, sum);
+				}
+
+				return out;
+			}
+			return null;
+		}
+
+		@Override
+		public void setEntry(int row, int column, IExpr value) throws MathIllegalArgumentException {
+			final Trie<int[], IExpr> map = array.fData;
+			final int[] key = new int[] { row + 1, column + 1 };
+			if (value.equals(array.defaultValue)) {
+				map.remove(key);
+			} else {
+				map.put(key, value);
+			}
+		}
+	}
+
+	/**
 	 * Create a sparse <code>FieldVector</code>.
 	 * 
 	 * <b>Note:</b> in Symja sparse arrays the offset is +1 compared to java arrays or hipparchus
 	 * <code>FieldVector</code>.
 	 */
-	private static class SparseExprVector implements FieldVector<IExpr> {
+	public static class SparseExprVector implements FieldVector<IExpr> {
 		final SparseArrayExpr array;
 		/** Dimension of the vector. */
 		private final int virtualSize;
 
+		/**
+		 * Create a new SparseExprVector with the supplied row dimensions.
+		 *
+		 * @param dimension
+		 *            Number of elements in the new vector.
+		 * @throws org.hipparchus.exception.MathIllegalArgumentException
+		 *             if row or column dimension is not positive.
+		 */
+		public SparseExprVector(final int dimension, IExpr defaultValue) {
+			this.array = new SparseArrayExpr(Tries.forInts(), new int[] { dimension }, defaultValue, false);
+			this.virtualSize = dimension;
+		}
+
 		public SparseExprVector(SparseArrayExpr array) {
 			this.array = array;
 			this.virtualSize = array.dimension[0];
-		}
-
-		/**
-		 * Build a resized vector, for use with append.
-		 *
-		 * @param v
-		 *            Original vector
-		 * @param resize
-		 *            Amount to add.
-		 */
-		protected SparseExprVector(SparseExprVector v, int resize) {
-			this.array = new SparseArrayExpr(v.array.fData, v.array.dimension, v.array.defaultValue, true);
-			this.virtualSize = v.array.dimension[0] + resize;
 		}
 
 		/**
@@ -96,16 +259,53 @@ public class SparseArrayExpr extends DataExpr<Trie<int[], IExpr>> implements ISp
 		}
 
 		/**
-		 * Create a new SparseExprVector with the supplied row dimensions.
+		 * Build a resized vector, for use with append.
 		 *
-		 * @param dimension
-		 *            Number of elements in the new vector.
-		 * @throws org.hipparchus.exception.MathIllegalArgumentException
-		 *             if row or column dimension is not positive.
+		 * @param v
+		 *            Original vector
+		 * @param resize
+		 *            Amount to add.
 		 */
-		public SparseExprVector(final int dimension, IExpr defaultValue) {
-			this.array = new SparseArrayExpr(Tries.forInts(), new int[] { dimension }, defaultValue, false);
-			this.virtualSize = dimension;
+		protected SparseExprVector(SparseExprVector v, int resize) {
+			this.array = new SparseArrayExpr(v.array.fData, v.array.dimension, v.array.defaultValue, true);
+			this.virtualSize = v.array.dimension[0] + resize;
+		}
+
+		@Override
+		public SparseExprVector add(FieldVector<IExpr> v) throws MathIllegalArgumentException {
+			// if (v instanceof SparseExprVector) {
+			// return add((SparseExprVector) v);
+			// } else {
+			final int n = v.getDimension();
+			checkVectorDimensions(n);
+			SparseExprVector res = new SparseExprVector(getDimension(), array.defaultValue);
+			for (int i = 0; i < n; i++) {
+				res.setEntry(i, v.getEntry(i).add(getEntry(i)));
+			}
+			return res;
+			// }
+		}
+
+		@Override
+		public SparseExprVector append(FieldVector<IExpr> v) {
+			// if (v instanceof SparseFieldVector<?>) {
+			// return append((SparseFieldVector<T>) v);
+			// } else {
+			final int n = v.getDimension();
+			SparseExprVector res = new SparseExprVector(array, n);
+			for (int i = 0; i < n; i++) {
+				res.setEntry(i + virtualSize, v.getEntry(i));
+			}
+			return res;
+			// }
+		}
+
+		@Override
+		public SparseExprVector append(IExpr d) {
+			MathUtils.checkNotNull(d);
+			SparseExprVector res = new SparseExprVector(this, 1);
+			res.setEntry(virtualSize, d);
+			return res;
 		}
 
 		/**
@@ -166,65 +366,6 @@ public class SparseArrayExpr extends DataExpr<Trie<int[], IExpr>> implements ISp
 		}
 
 		@Override
-		public int getDimension() {
-			return array.dimension[0];
-		}
-
-		@Override
-		public IExpr getEntry(int row) throws MathIllegalArgumentException {
-			IExpr value = array.fData.get(new int[] { row + 1 });
-			return value == null ? array.defaultValue : value;
-		}
-
-		@Override
-		public void setEntry(int row, IExpr value) throws MathIllegalArgumentException {
-			final Trie<int[], IExpr> map = array.fData;
-			final int[] key = new int[] { row + 1 };
-			if (value.equals(array.defaultValue)) {
-				map.remove(key);
-			} else {
-				map.put(key, value);
-			}
-		}
-
-		@Override
-		public SparseExprVector add(FieldVector<IExpr> v) throws MathIllegalArgumentException {
-			// if (v instanceof SparseExprVector) {
-			// return add((SparseExprVector) v);
-			// } else {
-			final int n = v.getDimension();
-			checkVectorDimensions(n);
-			SparseExprVector res = new SparseExprVector(getDimension(), array.defaultValue);
-			for (int i = 0; i < n; i++) {
-				res.setEntry(i, v.getEntry(i).add(getEntry(i)));
-			}
-			return res;
-			// }
-		}
-
-		@Override
-		public SparseExprVector append(FieldVector<IExpr> v) {
-			// if (v instanceof SparseFieldVector<?>) {
-			// return append((SparseFieldVector<T>) v);
-			// } else {
-			final int n = v.getDimension();
-			SparseExprVector res = new SparseExprVector(array, n);
-			for (int i = 0; i < n; i++) {
-				res.setEntry(i + virtualSize, v.getEntry(i));
-			}
-			return res;
-			// }
-		}
-
-		@Override
-		public SparseExprVector append(IExpr d) {
-			MathUtils.checkNotNull(d);
-			SparseExprVector res = new SparseExprVector(this, 1);
-			res.setEntry(virtualSize, d);
-			return res;
-		}
-
-		@Override
 		public IExpr dotProduct(FieldVector<IExpr> v) throws MathIllegalArgumentException {
 			checkVectorDimensions(v.getDimension());
 			IASTAppendable plus = F.PlusAlloc(array.fData.size());
@@ -264,8 +405,23 @@ public class SparseArrayExpr extends DataExpr<Trie<int[], IExpr>> implements ISp
 		}
 
 		@Override
+		public int getDimension() {
+			return array.dimension[0];
+		}
+
+		@Override
+		public IExpr getEntry(int row) throws MathIllegalArgumentException {
+			IExpr value = array.fData.get(new int[] { row + 1 });
+			return value == null ? array.defaultValue : value;
+		}
+
+		@Override
 		public Field<IExpr> getField() {
 			return ExprField.CONST;
+		}
+
+		public SparseArrayExpr getSparseArray() {
+			return array;
 		}
 
 		@Override
@@ -400,6 +556,17 @@ public class SparseArrayExpr extends DataExpr<Trie<int[], IExpr>> implements ISp
 		}
 
 		@Override
+		public void setEntry(int row, IExpr value) throws MathIllegalArgumentException {
+			final Trie<int[], IExpr> map = array.fData;
+			final int[] key = new int[] { row + 1 };
+			if (value.equals(array.defaultValue)) {
+				map.remove(key);
+			} else {
+				map.put(key, value);
+			}
+		}
+
+		@Override
 		public void setSubVector(int index, FieldVector<IExpr> v) throws MathIllegalArgumentException {
 			checkIndex(index);
 			checkIndex(index + v.getDimension() - 1);
@@ -415,7 +582,7 @@ public class SparseArrayExpr extends DataExpr<Trie<int[], IExpr>> implements ISp
 			if (fv instanceof SparseExprVector) {
 				SparseExprVector v = (SparseExprVector) fv;
 				checkVectorDimensions(v.getDimension());
-				SparseExprVector res = (SparseExprVector) copy();
+				SparseExprVector res = copy();
 
 				Trie<int[], IExpr> map = v.array.fData;
 				for (TrieNode<int[], IExpr> entry : map.nodeSet()) {
@@ -448,159 +615,48 @@ public class SparseArrayExpr extends DataExpr<Trie<int[], IExpr>> implements ISp
 	}
 
 	/**
-	 * Create a sparse <code>FieldMatrix</code>.
-	 *
-	 * <b>Note:</b> in Symja sparse arrays the offset is +1 compared to java arrays or hipparchus
-	 * <code>FieldMatrix</code>.
-	 *
+	 * Create array rules from the nested lists. From array rules a sparse array can be created.
+	 * 
+	 * @param nestedListsOfValues
+	 * @return
 	 */
-	private static class SparseExprMatrix extends AbstractFieldMatrix<IExpr> {
-		final SparseArrayExpr array;
-
-		public SparseExprMatrix(SparseArrayExpr array) {
-			super(ExprField.CONST, array.dimension[0], array.dimension[1]);
-			this.array = array;
+	public static IAST arrayRules(IAST nestedListsOfValues, IExpr defaultValue) {
+		int depth = SparseArrayExpr.depth(nestedListsOfValues, 1);
+		if (depth < 0) {
+			return F.NIL;
 		}
-
-		/**
-		 * Copy constructor.
-		 *
-		 * @param other
-		 *            Instance to copy.
-		 */
-		public SparseExprMatrix(SparseExprMatrix other) {
-			super(ExprField.CONST, other.array.dimension[0], other.array.dimension[1]);
-			this.array = new SparseArrayExpr(other.array.fData, other.array.dimension, other.array.defaultValue, true);
+		IASTAppendable result = F.ListAlloc();
+		IASTMutable positions = F.constantArray(F.C1, depth);
+		if (SparseArrayExpr.arrayRulesRecursive(nestedListsOfValues, depth + 1, depth, positions, defaultValue,
+				result)) {
+			result.append(F.Rule(F.constantArray(F.$b(), depth), defaultValue));
+			return result;
 		}
+		return F.NIL;
+	}
 
-		/**
-		 * Create a new SparseExprMatrix with the supplied row and column dimensions.
-		 *
-		 * @param rowDimension
-		 *            Number of rows in the new matrix.
-		 * @param columnDimension
-		 *            Number of columns in the new matrix.
-		 * @throws org.hipparchus.exception.MathIllegalArgumentException
-		 *             if row or column dimension is not positive.
-		 */
-		public SparseExprMatrix(final int rowDimension, final int columnDimension, IExpr defaultValue) {
-			super(ExprField.CONST, rowDimension, columnDimension);
-			this.array = new SparseArrayExpr(Tries.forInts(), new int[] { rowDimension, columnDimension }, defaultValue,
-					false);
-		}
-
-		@Override
-		public void addToEntry(int row, int column, IExpr increment) throws MathIllegalArgumentException {
-			final Trie<int[], IExpr> map = array.fData;
-			final int[] key = new int[] { row + 1, column + 1 };
-			IExpr value = map.get(key);
-			value = S.Plus.of(value != null ? value : array.defaultValue, increment);
-			if (value.equals(array.defaultValue)) {
-				map.remove(key);
+	private static boolean arrayRulesRecursive(IAST nestedListsOfValues, int count, int level, IASTMutable positions,
+			IExpr defaultValue, IASTAppendable result) {
+		final int position = count - level;
+		level--;
+		for (int i = 1; i < nestedListsOfValues.size(); i++) {
+			IExpr arg = nestedListsOfValues.get(i);
+			positions.set(position, F.ZZ(i));
+			if (level == 0) {
+				if (arg.isList()) {
+					return false;
+				}
+				if (!arg.equals(defaultValue)) {
+					result.append(F.Rule(positions.copy(), arg));
+				}
 			} else {
-				map.put(key, value);
-			}
-		}
-
-		@Override
-		public FieldMatrix<IExpr> copy() {
-			return new SparseExprMatrix(this);
-		}
-
-		@Override
-		public SparseExprMatrix createMatrix(int rowDimension, int columnDimension)
-				throws MathIllegalArgumentException {
-			return new SparseExprMatrix(rowDimension, columnDimension, F.C0);
-		}
-
-		@Override
-		public int getColumnDimension() {
-			return array.dimension[1];
-		}
-
-		@Override
-		public IExpr getEntry(int arg0, int arg1) throws MathIllegalArgumentException {
-			IExpr value = array.fData.get(new int[] { arg0 + 1, arg1 + 1 });
-			return value == null ? array.defaultValue : value;
-		}
-
-		@Override
-		public int getRowDimension() {
-			return array.dimension[0];
-		}
-
-		/** {@inheritDoc} */
-		@Override
-		public SparseExprMatrix multiply(final FieldMatrix<IExpr> m) throws MathIllegalArgumentException {
-			// safety check
-			checkMultiplicationCompatible(m);
-
-			final int nRows = getRowDimension();
-			final int nCols = m.getColumnDimension();
-			final int nSum = getColumnDimension();
-			final SparseExprMatrix out = createMatrix(nRows, nCols);
-			for (int row = 0; row < nRows; ++row) {
-				for (int col = 0; col < nCols; ++col) {
-					IExpr sum = F.C0;
-					for (int i = 0; i < nSum; ++i) {
-						sum = sum.add(getEntry(row, i).multiply(m.getEntry(i, col)));
-					}
-					out.setEntry(row, col, sum);
+				if (!arg.isList() || //
+						!arrayRulesRecursive((IAST) arg, count, level, positions, defaultValue, result)) {
+					return false;
 				}
 			}
-
-			return out;
 		}
-
-		@Override
-		public void multiplyEntry(int row, int column, IExpr factor) throws MathIllegalArgumentException {
-			final Trie<int[], IExpr> map = array.fData;
-			final int[] key = new int[] { row + 1, column + 1 };
-			IExpr value = map.get(key);
-			value = S.Times.of(value != null ? value : array.defaultValue, factor);
-			if (value.equals(array.defaultValue)) {
-				map.remove(key);
-			} else {
-				map.put(key, value);
-			}
-		}
-
-		/** {@inheritDoc} */
-		@Override
-		public SparseExprVector operate(final FieldVector<IExpr> fv) throws MathIllegalArgumentException {
-			if (fv instanceof SparseExprVector) {
-				SparseExprVector v = (SparseExprVector) fv;
-				final int nRows = getRowDimension();
-				final int nCols = getColumnDimension();
-				if (v.getDimension() != nCols) {
-					throw new MathIllegalArgumentException(LocalizedCoreFormats.DIMENSIONS_MISMATCH, v.getDimension(),
-							nCols);
-				}
-
-				SparseExprVector out = new SparseExprVector(nRows, array.defaultValue);
-				for (int row = 0; row < nRows; row++) {
-					IExpr sum = F.C0;
-					for (int i = 0; i < nCols; i++) {
-						sum = sum.add(getEntry(row, i).multiply(v.getEntry(i)));
-					}
-					out.setEntry(row, sum);
-				}
-
-				return out;
-			}
-			return null;
-		}
-
-		@Override
-		public void setEntry(int row, int column, IExpr value) throws MathIllegalArgumentException {
-			final Trie<int[], IExpr> map = array.fData;
-			final int[] key = new int[] { row + 1, column + 1 };
-			if (value.equals(array.defaultValue)) {
-				map.remove(key);
-			} else {
-				map.put(key, value);
-			}
-		}
+		return true;
 	}
 
 	private static int[] checkPositions(IAST ast, IExpr arg, EvalEngine engine) {
@@ -626,27 +682,6 @@ public class SparseArrayExpr extends DataExpr<Trie<int[], IExpr>> implements ISp
 					rex.printStackTrace();
 				}
 			}
-		}
-		return null;
-	}
-
-	/**
-	 * 
-	 * @param arrayRulesList
-	 * @param defaultDimension
-	 * @param defaultValue
-	 *            default value for positions not specified in arrayRulesList. If <code>F.NIL</code> determine from '_'
-	 *            (Blank) rule.
-	 * @param engine
-	 * @return <code>null</code> if a new <code>SparseArrayExpr</code> cannot be created.
-	 */
-	public static SparseArrayExpr newInstance(IAST arrayRulesList, int defaultDimension, IExpr defaultValue,
-			EvalEngine engine) {
-		IExpr[] defValue = new IExpr[] { defaultValue };
-		final Trie<int[], IExpr> value = Tries.forInts();
-		int[] determinedDimension = createTrie(arrayRulesList, value, defaultDimension, defValue, engine);
-		if (determinedDimension != null) {
-			return new SparseArrayExpr(value, determinedDimension, defValue[0].orElse(F.C0), false);
 		}
 		return null;
 	}
@@ -760,6 +795,61 @@ public class SparseArrayExpr extends DataExpr<Trie<int[], IExpr>> implements ISp
 		return determinedDimension;
 	}
 
+	/**
+	 * Determine the sparse array depth from the first entry, which isn't a <code>List(...)</code>.
+	 * 
+	 * @param list
+	 * @param count
+	 * @return
+	 */
+	private static int depth(IAST list, int count) {
+		if (list.size() > 1) {
+			if (list.arg1().isList()) {
+				return depth((IAST) list.arg1(), ++count);
+			}
+			return count;
+		}
+		return -1;
+	}
+
+	public static SparseArrayExpr newInstance(IAST list, IExpr defaultValue) {
+		ArrayList<Integer> dims = LinearAlgebra.dimensions(list);
+		if (dims != null && dims.size() > 0) {
+			defaultValue = defaultValue.orElse(F.C0);
+			IAST listOfRules = SparseArrayExpr.arrayRules(list, defaultValue);
+			if (listOfRules.isPresent()) {
+				SparseArrayExpr result = SparseArrayExpr.newInstance(listOfRules, -1, defaultValue);
+				int[] dimension = new int[dims.size()];
+				for (int i = 0; i < dims.size(); i++) {
+					dimension[i] = dims.get(i);
+				}
+				result.dimension = dimension;
+				return result;
+			}
+		}
+		return null;
+	}
+
+	/**
+	 * 
+	 * @param arrayRulesList
+	 * @param defaultDimension
+	 * @param defaultValue
+	 *            default value for positions not specified in arrayRulesList. If <code>F.NIL</code> determine from '_'
+	 *            (Blank) rule.
+	 * @param engine
+	 * @return <code>null</code> if a new <code>SparseArrayExpr</code> cannot be created.
+	 */
+	public static SparseArrayExpr newInstance(IAST arrayRulesList, int defaultDimension, IExpr defaultValue) {
+		IExpr[] defValue = new IExpr[] { defaultValue };
+		final Trie<int[], IExpr> value = Tries.forInts();
+		int[] determinedDimension = createTrie(arrayRulesList, value, defaultDimension, defValue, EvalEngine.get());
+		if (determinedDimension != null) {
+			return new SparseArrayExpr(value, determinedDimension, defValue[0].orElse(F.C0), false);
+		}
+		return null;
+	}
+
 	private transient IAST normalCache = null;
 
 	/**
@@ -800,6 +890,7 @@ public class SparseArrayExpr extends DataExpr<Trie<int[], IExpr>> implements ISp
 			}
 			this.dimension = new int[dimension.length];
 			System.arraycopy(dimension, 0, this.dimension, 0, dimension.length);
+			this.defaultValue = defaultValue;
 		} else {
 			this.dimension = dimension;
 			this.defaultValue = defaultValue;
@@ -810,13 +901,14 @@ public class SparseArrayExpr extends DataExpr<Trie<int[], IExpr>> implements ISp
 	/**
 	 * Convert this sparse array to array rules list format.
 	 */
+	@Override
 	public IAST arrayRules() {
 		IASTAppendable result = F.ListAlloc(fData.size() + 1);
 
 		for (TrieNode<int[], IExpr> entry : fData.nodeSet()) {
 			int[] key = entry.getKey();
 			IExpr value = entry.getValue();
-			IAST lhs = F.ast(F.List, key);
+			IAST lhs = F.ast(S.List, key);
 			result.append(F.Rule(lhs, value));
 		}
 		result.append(F.Rule(F.constantArray(F.$b(), dimension.length), defaultValue));
@@ -824,7 +916,7 @@ public class SparseArrayExpr extends DataExpr<Trie<int[], IExpr>> implements ISp
 	}
 
 	@Override
-	public IExpr copy() {
+	public SparseArrayExpr copy() {
 		return new SparseArrayExpr(fData, dimension, defaultValue, true);
 	}
 
@@ -857,14 +949,17 @@ public class SparseArrayExpr extends DataExpr<Trie<int[], IExpr>> implements ISp
 		return false;
 	}
 
+	@Override
 	public IExpr getDefaultValue() {
 		return defaultValue;
 	}
 
+	@Override
 	public int[] getDimension() {
 		return dimension;
 	}
 
+	@Override
 	public IExpr getPart(IAST ast, int startPosition) {
 		int[] dims = getDimension();
 
@@ -880,7 +975,7 @@ public class SparseArrayExpr extends DataExpr<Trie<int[], IExpr>> implements ISp
 					count++;
 				} else if (partIndex[i - startPosition] > dims[i - startPosition] || //
 						partIndex[i - startPosition] <= 0) {
-					return IOFunctions.printMessage(F.Part, "partw", F.List(ast.get(i), ast), EvalEngine.get());
+					return IOFunctions.printMessage(S.Part, "partw", F.List(ast.get(i), ast), EvalEngine.get());
 				}
 			}
 			for (int i = partSize; i < dims.length; i++) {
@@ -929,7 +1024,7 @@ public class SparseArrayExpr extends DataExpr<Trie<int[], IExpr>> implements ISp
 			return new SparseArrayExpr(value, newDimension, defaultValue.orElse(F.C0), false);
 
 		}
-		return IOFunctions.printMessage(F.Part, "partd", F.List(ast), EvalEngine.get());
+		return IOFunctions.printMessage(S.Part, "partd", F.List(ast), EvalEngine.get());
 
 	}
 
@@ -961,6 +1056,29 @@ public class SparseArrayExpr extends DataExpr<Trie<int[], IExpr>> implements ISp
 	@Override
 	public int isVector() {
 		return (dimension.length == 1) ? dimension[0] : -1;
+	}
+
+	/** {@inheritDoc} */
+	@Override
+	public final SparseArrayExpr mapThread(final IAST replacement, int position) {
+		final Function<IExpr, IExpr> function = x -> replacement.setAtCopy(position, x);
+		return mapValues(function);
+	}
+
+	public SparseArrayExpr mapValues(final Function<IExpr, IExpr> function ) {
+		SparseArrayExpr result = copy();
+		for (TrieNode<int[], IExpr> entry : result.fData.nodeSet()) {
+			IExpr value = entry.getValue();
+			IExpr temp = function.apply(value);
+			if (temp.isPresent()) {
+				result.fData.put(entry.getKey(), temp); 
+			}
+		}
+		IExpr temp = function.apply(result.defaultValue);
+		if (temp.isPresent()) {
+			result.defaultValue=temp; 
+		} 
+		return result;
 	}
 
 	@Override
@@ -1043,22 +1161,6 @@ public class SparseArrayExpr extends DataExpr<Trie<int[], IExpr>> implements ISp
 		return dimension[0];
 	}
 
-	@Override
-	public FieldMatrix<IExpr> toFieldMatrix() {
-		if (dimension.length == 2 && dimension[0] > 0 && dimension[1] > 0) {
-			return new SparseExprMatrix(this);
-		}
-		return null;
-	}
-
-	@Override
-	public FieldVector<IExpr> toFieldVector() {
-		if (dimension.length == 1 && dimension[0] > 0) {
-			return new SparseExprVector(this);
-		}
-		return null;
-	}
-
 	/** {@inheritDoc} */
 	@Override
 	public double[][] toDoubleMatrix() {
@@ -1112,6 +1214,22 @@ public class SparseArrayExpr extends DataExpr<Trie<int[], IExpr>> implements ISp
 	}
 
 	@Override
+	public FieldMatrix<IExpr> toFieldMatrix() {
+		if (dimension.length == 2 && dimension[0] > 0 && dimension[1] > 0) {
+			return new SparseExprMatrix(this);
+		}
+		return null;
+	}
+
+	@Override
+	public FieldVector<IExpr> toFieldVector() {
+		if (dimension.length == 1 && dimension[0] > 0) {
+			return new SparseExprVector(this);
+		}
+		return null;
+	}
+
+	@Override
 	public String toString() {
 		StringBuilder buf = new StringBuilder();
 		buf.append("SparseArray(Number of elements: ");
@@ -1123,8 +1241,9 @@ public class SparseArrayExpr extends DataExpr<Trie<int[], IExpr>> implements ISp
 				buf.append(",");
 			}
 		}
-		buf.append("})");
-
+		buf.append("} Default value: ");
+		buf.append(defaultValue.toString());
+		buf.append(")");
 		return buf.toString();
 	}
 
@@ -1137,67 +1256,6 @@ public class SparseArrayExpr extends DataExpr<Trie<int[], IExpr>> implements ISp
 		}
 		IAST rules = arrayRules();
 		output.writeObject(rules);
-	}
-
-	/**
-	 * Determine the sparse array depth from the first entry, which isn't a <code>List(...)</code>.
-	 * 
-	 * @param list
-	 * @param count
-	 * @return
-	 */
-	private static int depth(IAST list, int count) {
-		if (list.size() > 1) {
-			if (list.arg1().isList()) {
-				return depth((IAST) list.arg1(), ++count);
-			}
-			return count;
-		}
-		return -1;
-	}
-
-	private static boolean arrayRulesRecursive(IAST nestedListsOfValues, int count, int level, IASTMutable positions,
-			IASTAppendable result) {
-		final int position = count - level;
-		level--;
-		for (int i = 1; i < nestedListsOfValues.size(); i++) {
-			IExpr arg = nestedListsOfValues.get(i);
-			positions.set(position, F.ZZ(i));
-			if (level == 0) {
-				if (arg.isList()) {
-					return false;
-				}
-				if (!arg.isZero()) {
-					result.append(F.Rule(positions.copy(), arg));
-				}
-			} else {
-				if (!arg.isList() || //
-						!arrayRulesRecursive((IAST) arg, count, level, positions, result)) {
-					return false;
-				}
-			}
-		}
-		return true;
-	}
-
-	/**
-	 * Create array rules from the nested lists. From array rules a sparse array can be created.
-	 * 
-	 * @param nestedListsOfValues
-	 * @return
-	 */
-	public static IAST arrayRules(IAST nestedListsOfValues) {
-		int depth = SparseArrayExpr.depth((IAST) nestedListsOfValues, 1);
-		if (depth < 0) {
-			return F.NIL;
-		}
-		IASTAppendable result = F.ListAlloc();
-		IASTMutable positions = F.constantArray(F.C1, depth);
-		if (SparseArrayExpr.arrayRulesRecursive((IAST) nestedListsOfValues, depth + 1, depth, positions, result)) {
-			result.append(F.Rule(F.constantArray(F.$b(), depth), F.C0));
-			return result;
-		}
-		return F.NIL;
 	}
 
 }

@@ -64,6 +64,7 @@ import org.matheclipse.core.expression.ASTRealVector;
 import org.matheclipse.core.expression.ExprField;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.expression.S;
+import org.matheclipse.core.expression.data.SparseArrayExpr;
 import org.matheclipse.core.generic.Comparators.ExprReverseComparator;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IASTAppendable;
@@ -1233,13 +1234,13 @@ public final class LinearAlgebra {
 
 							matrix1 = Convert.list2Matrix(arg2);
 							if (matrix1 != null) {
-								return Convert.matrix2List(matrix0.multiply(matrix1));
+								return Convert.matrix2Expr(matrix0.multiply(matrix1));
 							}
 						} else if (arg2.isVector() != (-1)) {
 
 							vector1 = Convert.list2Vector(arg2);
 							if (vector1 != null) {
-								return Convert.vector2List(matrix0.operate(vector1));
+								return Convert.vector2Expr(matrix0.operate(vector1));
 							}
 						}
 					}
@@ -1257,7 +1258,7 @@ public final class LinearAlgebra {
 								if (arg2.isMatrix() != null) {
 									matrix1 = Convert.list2Matrix(arg2);
 									if (matrix1 != null) {
-										return Convert.vector2List(matrix1.preMultiply(vector0));
+										return Convert.vector2Expr(matrix1.preMultiply(vector0));
 									}
 								} else if (arg2.isVector() != (-1)) {
 									vector1 = Convert.list2Vector(arg2);
@@ -3850,7 +3851,7 @@ public final class LinearAlgebra {
 				// final IAST originalMatrix = (IAST) ast.arg1().normal(false);
 				final FieldMatrix<IExpr> matrix = Convert.list2Matrix(ast.arg1());
 				final FieldMatrix<IExpr> transposed = matrix.transpose();
-				IExpr transposedMatrix = Convert.matrix2List(transposed).map(x -> transform(x));
+				IExpr transposedMatrix = Convert.matrix2Expr(transposed).map(x -> transform(x));
 				// because the rows can contain sub lists the IAST.IS_MATRIX flag cannot be set directly. isMatrix()
 				// must be used!
 				transposedMatrix.isMatrix(true);

@@ -50,6 +50,7 @@ import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.interfaces.INumber;
 import org.matheclipse.core.interfaces.IPatternObject;
 import org.matheclipse.core.interfaces.ISignedNumber;
+import org.matheclipse.core.interfaces.ISparseArray;
 import org.matheclipse.core.interfaces.ISymbol;
 import org.matheclipse.core.parser.ExprParser;
 import org.matheclipse.core.parser.ExprParserFactory;
@@ -772,6 +773,8 @@ public class EvalEngine implements Serializable {
 				} else if (arg1.isAssociation()) {
 					// thread over the association
 					return ((IAssociation) arg1).mapThread(ast, 1);
+				} else if (arg1.isSparseArray()) { 
+					return ((ISparseArray) arg1).mapThread(ast, 1);
 				} else if (arg1.isConditionalExpression()) {
 					IExpr temp = ast.extractConditionalExpression(true);
 					if (temp.isPresent()) {
@@ -2364,8 +2367,9 @@ public class EvalEngine implements Serializable {
 	 * 
 	 * @param str
 	 *            the message which should be printed
+	 * @return <code>F.NIL</code>
 	 */
-	public IAST printMessage(String str) {
+	public IAST printMessage(String str) throws ArgumentTypeException {
 		if (!isQuietMode()) {
 			PrintStream stream = getErrorPrintStream();
 			if (stream == null) {

@@ -333,6 +333,19 @@ public class Convert {
 	}
 
 	/**
+	 * Converts a FieldMatrix to the sparse array or list expression representation.
+	 * 
+	 * @param matrix
+	 * @return <code>F.NIL</code> if no conversion was possible
+	 */
+	public static IExpr matrix2Expr(final FieldMatrix<IExpr> matrix) {
+		if (matrix instanceof SparseArrayExpr.SparseExprMatrix) {
+			return ((SparseArrayExpr.SparseExprMatrix) matrix).getSparseArray();
+		}
+		return Convert.matrix2List(matrix);
+	}
+
+	/**
 	 * Converts a FieldMatrix to the list expression representation.
 	 * 
 	 * @param matrix
@@ -623,6 +636,22 @@ public class Convert {
 		return out;
 	}
 
+	/**
+	 * Converts a FieldVector to the sparse array or list expression representation.
+	 * 
+	 * @param matrix
+	 * @return <code>F.NIL</code> if no conversion was possible
+	 */
+	public static IExpr vector2Expr(final FieldVector<IExpr> vector) {
+		if (vector == null) {
+			return F.NIL;
+		}
+		if (vector instanceof SparseArrayExpr.SparseExprVector) {
+			return ((SparseArrayExpr.SparseExprVector) vector).getSparseArray();
+		}
+		return Convert.vector2List(vector);
+	}
+	
 	private Convert() {
 	}
 

@@ -3437,8 +3437,13 @@ public final class Programming {
 
 		IExpr temp = arg1.normal(false);
 		if (temp.isList()) {
-			return part((IAST) temp, ast, pos, engine);
+			IExpr res = part((IAST) temp, ast, pos, engine);
+			if (res.isList()) {
+				return SparseArrayExpr.newInstance((IAST) res, arg1.getDefaultValue());
+			}
+			return temp;
 		}
+		
 		// The expression `1` cannot be used as a part specification.
 		return IOFunctions.printMessage(F.Part, "pkspec1", F.List(ast), engine);
 	}

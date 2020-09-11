@@ -1166,11 +1166,11 @@ public class LowercaseTestCase extends AbstractTestCase {
 				"{{1,2,1}->1,{1,2,2}->1,{2,1,2}->1,{2,2,2}->1,{_,_,_}->0}");
 
 		check("s1=SparseArray({{1, 1} -> 1, {2, 2} -> 2, {4, 3} -> 3, {1, 4} -> 4, {3, 5} -> 2} )", //
-				"SparseArray(Number of elements: 5 Dimensions: {4,5})");
+				"SparseArray(Number of elements: 5 Dimensions: {4,5} Default value: 0)");
 		check("ar=ArrayRules(s1)", //
 				"{{1,1}->1,{1,4}->4,{2,2}->2,{3,5}->2,{4,3}->3,{_,_}->0}");
 		check("s2=SparseArray(ar)", //
-				"SparseArray(Number of elements: 5 Dimensions: {4,5})");
+				"SparseArray(Number of elements: 5 Dimensions: {4,5} Default value: 0)");
 		check("s1===s2", //
 				"True");
 	}
@@ -3624,6 +3624,10 @@ public class LowercaseTestCase extends AbstractTestCase {
 	}
 
 	public void testConjugateTranspose() {
+		check("ConjugateTranspose(SparseArray({{1,2+I,3},{4,5-I,6},{7,8,9}}))", //
+				"SparseArray(Number of elements: 9 Dimensions: {3,3} Default value: Conjugate(0))");
+		check("ConjugateTranspose(SparseArray({{1,2+I,3},{4,5-I,6},{7,8,9}})) // Normal", //
+				"{{1,4,7},{2-I,5+I,8},{3,6,9}}");
 		check("ConjugateTranspose({{1,2+I,3},{4,5-I,6},{7,8,9}})", //
 				"{{1,4,7},\n" + //
 						" {2-I,5+I,8},\n" + //
@@ -5771,9 +5775,7 @@ public class LowercaseTestCase extends AbstractTestCase {
 						" {7},\n" + //
 						" {11}}");
 		check("SparseArray({{1, 2}, {3, 4}, {5, 6}}).{{1},{1}} // Normal", //
-				"{{3},\n" + //
-						" {7},\n" + //
-						" {11}}");
+				"{{3},{7},{11}}");
 		check("SparseArray({{1, 2}, {3.0, 4}, {5, 6}}).SparseArray({1,1}) // Normal", //
 				"{3,7.0,11}");
 		check("SparseArray({1,1,1}).SparseArray({{1, 2}, {3.0, 4}, {5, 6}}) // Normal", //
@@ -5781,9 +5783,7 @@ public class LowercaseTestCase extends AbstractTestCase {
 		check("SparseArray({1,2,3.0}).SparseArray({4,5.0,6}) // Normal", //
 				"32.0");
 		check("SparseArray({{1, 2}, {3, 4}, {5, 6}}).SparseArray({{1},{1}}) // Normal", //
-				"{{3},\n" + //
-						" {7},\n" + //
-						" {11}}");
+				"{{3},{7},{11}}");
 	}
 
 	public void testDrop() {
@@ -22950,17 +22950,18 @@ public class LowercaseTestCase extends AbstractTestCase {
 	}
 
 	public void testSparseArray() {
-		check("r=SparseArray({{1, 1} -> 1, {2, 2} -> 2, {4, 3} -> 3, {1, 4} -> 4, {3, 5} -> 2})", //
-				"SparseArray(Number of elements: 5 Dimensions: {4,5})");
-		check("rmat.Transpose(r[[{1},All]])", //
-				"rmat.\n" + //
-						"{{1},\n" + //
-						" {0},\n" + //
-						" {0},\n" + //
-						" {4},\n" + //
-						" {0}}");
+//		check("r=SparseArray({{1, 1} -> 1, {2, 2} -> 2, {4, 3} -> 3, {1, 4} -> 4, {3, 5} -> 2})", //
+//				"SparseArray(Number of elements: 5 Dimensions: {4,5} Default value: 0)");
+//		check("r[[1,All]]", //
+//				"SparseArray(Number of elements: 2 Dimensions: {5} Default value: 0)");
+//		check("r[[{1},All]]", //
+//				"SparseArray(Number of elements: 2 Dimensions: {1,5} Default value: 0)");
+//		check("Transpose(r[[{1},All]])", //
+//				"SparseArray(Number of elements: 2 Dimensions: {5,1} Default value: 0)");
+//		check("SparseArray({{1,1,1,1,1}}).Transpose(r[[{1},All]]) ", //
+//				"SparseArray(Number of elements: 1 Dimensions: {1,1} Default value: 0)");
 		check("r=SparseArray({{{0,0,3},{1,1,5}},{{0,1,0},{0,1,2}}})", //
-				"SparseArray(Number of elements: 7 Dimensions: {2,2,3})");
+				"SparseArray(Number of elements: 7 Dimensions: {2,2,3} Default value: 0)");
 		check("ArrayRules(r)", //
 				"{{1,1,3}->3,{1,2,1}->1,{1,2,2}->1,{1,2,3}->5,{2,1,2}->1,{2,2,2}->1,{2,2,3}->2,{_,_,_}->\n" + "0}");
 		check("r[[2,All]] // Normal", //
@@ -22975,11 +22976,11 @@ public class LowercaseTestCase extends AbstractTestCase {
 		check("r[[1,All,3]] // Normal", //
 				"{3,5}");
 		check("s=SparseArray({{1, 1} -> 1, {2, 2} -> 2, {4, 3} -> 3, {1, 4} -> 4, {3, 5} -> 2} )", //
-				"SparseArray(Number of elements: 5 Dimensions: {4,5})");
+				"SparseArray(Number of elements: 5 Dimensions: {4,5} Default value: 0)");
 		check("s[[1,1]]  ", //
 				"1");
 		check("s[[1,1,2]]  ", //
-				"(SparseArray(Number of elements: 5 Dimensions: {4,5}))[[1,1,2]]");
+				"(SparseArray(Number of elements: 5 Dimensions: {4,5} Default value: 0))[[1,1,2]]");
 		check("s[[All,1]] // Normal", //
 				"{1,0,0,0}");
 		check("s[[All,2]] // Normal", //
@@ -22993,13 +22994,13 @@ public class LowercaseTestCase extends AbstractTestCase {
 		check("Normal(SparseArray({1 -> 2, 10 -> 7, 3 -> 2}))", //
 				"{2,0,2,0,0,0,0,0,0,7}");
 		check("s=SparseArray({3, 3} -> 1, 5)", //
-				"SparseArray(Number of elements: 1 Dimensions: {5,5})");
+				"SparseArray(Number of elements: 1 Dimensions: {5,5} Default value: 0)");
 		check("Normal(s)", //
 				"{{0,0,0,0,0},{0,0,0,0,0},{0,0,1,0,0},{0,0,0,0,0},{0,0,0,0,0}}");
 		check("Normal(SparseArray(10 -> 1, 19))", //
 				"{0,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0}");
 		check("s = SparseArray({{1, 1} -> 1, {2, 2} -> 2, {3, 3} -> 3, {1, 3} -> 4})", //
-				"SparseArray(Number of elements: 4 Dimensions: {3,3})");
+				"SparseArray(Number of elements: 4 Dimensions: {3,3} Default value: 0)");
 		check("Normal(s)", //
 				"{{1,0,4},{0,2,0},{0,0,3}}");
 	}
@@ -25105,10 +25106,10 @@ public class LowercaseTestCase extends AbstractTestCase {
 	}
 
 	public void testTranspose() {
+		check("Transpose(SparseArray({{1, 2, 3}, {4, 5, 6}})) // Normal", //
+				"{{1,4},{2,5},{3,6}}");
 		check("Transpose(SparseArray({{1, 2, 3}, {4, 5, 6}}))", //
-				"{{1,4},\n" + //
-						" {2,5},\n" + //
-						" {3,6}}");
+				"SparseArray(Number of elements: 6 Dimensions: {3,2} Default value: 0)");
 		check("Transpose({{1, 2, 3}, {4, 5, 6}}, {2,1})", //
 				"{{1,4},{2,5},{3,6}}");
 		check("Transpose({{1, 2, 3}, {4, 5, 6}}, {1,2})", //

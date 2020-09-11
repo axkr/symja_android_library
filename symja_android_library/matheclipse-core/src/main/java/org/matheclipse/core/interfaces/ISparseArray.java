@@ -5,7 +5,20 @@ import org.hipparchus.linear.FieldVector;
 import org.matheclipse.parser.trie.Trie;
 
 public interface ISparseArray extends IDataExpr<Trie<int[], IExpr>> {
+
+	/**
+	 * Get the dimensions of the sparse array.
+	 * 
+	 * @return
+	 */
 	public int[] getDimension();
+
+	/**
+	 * Get the default value of the sparse array. Typically <code>0</code>.
+	 * 
+	 * @return
+	 */
+	public IExpr getDefaultValue();
 
 	/**
 	 * Get the <code>Part(-ISparseArray-,...)</code> of a sparse array, with index being an integer number or symbol
@@ -29,6 +42,8 @@ public interface ISparseArray extends IDataExpr<Trie<int[], IExpr>> {
 	 */
 	public boolean isSparseArray();
 
+	public ISparseArray mapThread(final IAST replacement, int position);
+	
 	/**
 	 * Convert this sparse array to a FieldMatrix. If conversion is not possible, return <code>null</code>.
 	 * 

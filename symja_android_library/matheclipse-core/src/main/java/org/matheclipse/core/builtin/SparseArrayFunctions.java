@@ -30,18 +30,34 @@ public class SparseArrayFunctions {
 		@Override
 		public IExpr evaluate(final IAST ast, EvalEngine engine) {
 			IExpr arg1 = ast.arg1();
+			IExpr defaultValue = F.C0;
+			if (ast.isAST2()) {
+				defaultValue = ast.arg2();
+			}
 			if (arg1.isSparseArray()) {
-				return ((ISparseArray) arg1).arrayRules();
+
+				ISparseArray sparseArray = (ISparseArray) arg1;
+				IExpr d = sparseArray.getDefaultValue();
+				if (ast.isAST1()) {
+					defaultValue = d;
+				} else if (ast.isAST2()) {
+					if (!d.equals(defaultValue)) {
+						return engine.printMessage(ast.topHead().toString() + ": Sparse array default value: "
+								+ d.toString() + " unequals default value " + defaultValue.toString());
+					}
+				}
+				return sparseArray.arrayRules();
+
 			}
 			if (arg1.isList()) {
-				return SparseArrayExpr.arrayRules((IAST) arg1);
+				return SparseArrayExpr.arrayRules((IAST) arg1, defaultValue);
 			}
 			return F.NIL;
 		}
 
 		@Override
 		public int[] expectedArgSize(IAST ast) {
-			return IOFunctions.ARGS_1_1;
+			return IOFunctions.ARGS_1_2;
 		}
 
 	}
@@ -68,15 +84,15 @@ public class SparseArrayFunctions {
 
 			IExpr arg1 = engine.evaluate(ast.arg1());
 			if (arg1.isListOfRules()) {
-				result = SparseArrayExpr.newInstance((IAST) arg1, defaultDimension, defaultValue, engine);
+				result = SparseArrayExpr.newInstance((IAST) arg1, defaultDimension, defaultValue);
 			} else if (arg1.isList()) {
-				IAST listOfRules = SparseArrayExpr.arrayRules((IAST) arg1);
-				if (listOfRules.isPresent()) {
-					result = SparseArrayExpr.newInstance((IAST) listOfRules, defaultDimension, defaultValue, engine);
-				}
-				
+				result = SparseArrayExpr.newInstance((IAST) arg1, defaultValue);
+				// IAST listOfRules = SparseArrayExpr.arrayRules((IAST) arg1);
+				// if (listOfRules.isPresent()) {
+				// result = SparseArrayExpr.newInstance((IAST) listOfRules, defaultDimension, defaultValue);
+				// }
 			} else if (arg1.isRule()) {
-				result = SparseArrayExpr.newInstance(F.List(arg1), defaultDimension, defaultValue, engine);
+				result = SparseArrayExpr.newInstance(F.List(arg1), defaultDimension, defaultValue);
 			}
 			if (result != null) {
 				return result;

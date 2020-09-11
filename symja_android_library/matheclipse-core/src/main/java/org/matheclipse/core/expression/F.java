@@ -1828,7 +1828,7 @@ public class F extends S {
 	}
 
 	public static ISparseArray sparseArray(final IAST arrayRulesList) {
-		return SparseArrayExpr.newInstance(arrayRulesList, -1, F.C0, EvalEngine.get());
+		return SparseArrayExpr.newInstance(arrayRulesList, -1, F.C0);
 	}
 
 	/**
