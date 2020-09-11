@@ -490,13 +490,16 @@ public class GammaJS {
 		return gamma(x, y).divide(gamma(x));
 	}
 
-	public static Complex gammaRegularized(double x, double y, double z) {
-		Complex cx = new Complex(x);
-		return gamma(cx, y, new Complex(z)).divide(gamma(cx));
+	public static double gammaRegularized(double x, double y, double z) {
+		return org.hipparchus.special.Gamma.regularizedGammaQ(x, y) - //
+				org.hipparchus.special.Gamma.regularizedGammaQ(x, z);
+		// Complex cx = new Complex(x);
+		// return gamma(cx, y, new Complex(z)).divide(gamma(cx));
 	}
 
 	public static double gammaRegularized(double x, double y) {
-		return gamma(x, y) / gamma(x);
+		return org.hipparchus.special.Gamma.regularizedGammaQ(x, y);
+		// return gamma(x, y) / gamma(x);
 	}
 
 	/**

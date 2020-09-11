@@ -245,79 +245,130 @@ public class SpecialFunctions {
 
 		@Override
 		public IExpr evaluate(final IAST ast, EvalEngine engine) {
-			if (ast.size() == 4) {
-				try {
-					IExpr z = ast.arg1();
-					IExpr a = ast.arg2();
-					IExpr n = ast.arg3();
-					if (a.isZero() || (a.isInteger() && a.isNegative())) {
-						if (n.isZero() || (n.isInteger() && n.isNegative())) {
-							return F.Indeterminate;
-						}
-						return F.C1;
-					}
+			if (ast.isAST3()) {
+				return betaRegularized3(ast, engine);
+			}
+			if (ast.argSize()==4) {
+				return betaRegularized4(ast, engine);
+			}
+			return F.NIL;
+		}
+
+		private static IExpr betaRegularized3(final IAST ast, EvalEngine engine) {
+			try {
+				IExpr z = ast.arg1();
+				IExpr a = ast.arg2();
+				IExpr n = ast.arg3();
+				if (a.isZero() || (a.isInteger() && a.isNegative())) {
 					if (n.isZero() || (n.isInteger() && n.isNegative())) {
+						return F.Indeterminate;
+					}
+					return F.C1;
+				}
+				if (n.isZero() || (n.isInteger() && n.isNegative())) {
+					return F.C0;
+				}
+				if (z.isZero()) {
+					if (engine.evalTrue(F.Greater(F.Re(a), F.C0))) {
 						return F.C0;
 					}
-					if (z.isZero()) {
-						if (engine.evalTrue(F.Greater(F.Re(a), F.C0))) {
-							return F.C0;
-						}
-						if (engine.evalTrue(F.Less(F.Re(a), F.C0))) {
-							return F.CComplexInfinity;
-						}
-					} else if (z.isOne()) {
-						if (engine.evalTrue(F.Greater(F.Re(n), F.C0))) {
-							return F.C1;
-						}
+					if (engine.evalTrue(F.Less(F.Re(a), F.C0))) {
+						return F.CComplexInfinity;
 					}
-					if (engine.isDoubleMode()) {
-						try {
-							double zn = engine.evalDouble(z);
-							double an = engine.evalDouble(a);
-							double nn = engine.evalDouble(n);
-							int iterationLimit = EvalEngine.get().getIterationLimit();
-							int aInt = (int) an;
-							if (aInt > iterationLimit && iterationLimit > 0) {
-								IterationLimitExceeded.throwIt(aInt, ast.topHead());
-							}
-							int nInt = (int) nn;
-							if (nInt > iterationLimit && iterationLimit > 0) {
-								IterationLimitExceeded.throwIt(nInt, ast.topHead());
-							}
-							// TODO improve with regularizedIncompleteBetaFunction() ???
-							// https://github.com/haifengl/smile/blob/master/math/src/main/java/smile/math/special/Beta.java
-							return F.num(GammaJS.betaRegularized(zn, an, nn));
-						} catch (IllegalArgumentException rex) {
-							// from de.lab4inf.math.functions.IncompleteBeta.checkParameters()
-						} catch (ValidateException ve) {
-							// from org.matheclipse.core.eval.EvalEngine.evalDouble()
-						}
+				} else if (z.isOne()) {
+					if (engine.evalTrue(F.Greater(F.Re(n), F.C0))) {
+						return F.C1;
 					}
-					int ni = n.toIntDefault(Integer.MIN_VALUE);
-					if (ni != Integer.MIN_VALUE) {
-						if (ni < 0) {
-							// for n>=0; BetaRegularized(z, a, -n)=0
-							return F.C0;
+				}
+				if (engine.isDoubleMode()) {
+					try {
+						double zn = engine.evalDouble(z);
+						double an = engine.evalDouble(a);
+						double nn = engine.evalDouble(n);
+						int iterationLimit = EvalEngine.get().getIterationLimit();
+						int aInt = (int) an;
+						if (aInt > iterationLimit && iterationLimit > 0) {
+							IterationLimitExceeded.throwIt(aInt, ast.topHead());
 						}
-						if (ni > Config.MAX_POLYNOMIAL_DEGREE) {
-							PolynomialDegreeLimitExceeded.throwIt(ni);
+						int nInt = (int) nn;
+						if (nInt > iterationLimit && iterationLimit > 0) {
+							IterationLimitExceeded.throwIt(nInt, ast.topHead());
 						}
-						IASTAppendable sum = F.PlusAlloc(ni);
-						// {k, 0, n - 1}
-						for (int k = 0; k < ni; k++) {
-							// (Pochhammer(a, k)*(1 - z)^k)/k!
-							IInteger kk = F.ZZ(k);
-							sum.append(F.Times(F.Power(F.Plus(F.C1, F.Negate(z)), kk), F.Power(F.Factorial(kk), -1),
-									F.Pochhammer(a, kk)));
-						}
-						// z^a * sum
-						return F.Times(F.Power(z, a), sum);
+						// TODO improve with regularizedIncompleteBetaFunction() ???
+						// https://github.com/haifengl/smile/blob/master/math/src/main/java/smile/math/special/Beta.java
+						return F.num(GammaJS.betaRegularized(zn, an, nn));
+					} catch (IllegalArgumentException rex) {
+						// from de.lab4inf.math.functions.IncompleteBeta.checkParameters()
+					} catch (ValidateException ve) {
+						// from org.matheclipse.core.eval.EvalEngine.evalDouble()
 					}
-				} catch (RuntimeException rex) {
-					if (FEConfig.SHOW_STACKTRACE) {
-						rex.printStackTrace();
+				}
+				int ni = n.toIntDefault(Integer.MIN_VALUE);
+				if (ni != Integer.MIN_VALUE) {
+					if (ni < 0) {
+						// for n>=0; BetaRegularized(z, a, -n)=0
+						return F.C0;
 					}
+					if (ni > Config.MAX_POLYNOMIAL_DEGREE) {
+						PolynomialDegreeLimitExceeded.throwIt(ni);
+					}
+					IASTAppendable sum = F.PlusAlloc(ni);
+					// {k, 0, n - 1}
+					for (int k = 0; k < ni; k++) {
+						// (Pochhammer(a, k)*(1 - z)^k)/k!
+						IInteger kk = F.ZZ(k);
+						sum.append(F.Times(F.Power(F.Plus(F.C1, F.Negate(z)), kk), F.Power(F.Factorial(kk), -1),
+								F.Pochhammer(a, kk)));
+					}
+					// z^a * sum
+					return F.Times(F.Power(z, a), sum);
+				}
+			} catch (RuntimeException rex) {
+				if (FEConfig.SHOW_STACKTRACE) {
+					rex.printStackTrace();
+				}
+			}
+			return F.NIL;
+		}
+
+		/**
+		 * Evaluate for 4 arguments
+		 * 
+		 * @param ast
+		 * @param engine
+		 * @return
+		 */
+		private static IExpr betaRegularized4(final IAST ast, EvalEngine engine) {
+			try {
+				IExpr z = ast.arg1();
+				IExpr a = ast.arg2();
+				IExpr n = ast.arg3();
+				IExpr w = ast.arg4();
+				if (engine.isDoubleMode()) {
+					try {
+						double zn = engine.evalDouble(z);
+						double an = engine.evalDouble(a);
+						double nn = engine.evalDouble(n);
+						double wn = engine.evalDouble(w);
+						int iterationLimit = EvalEngine.get().getIterationLimit();
+						int aInt = (int) an;
+						if (aInt > iterationLimit && iterationLimit > 0) {
+							IterationLimitExceeded.throwIt(aInt, ast.topHead());
+						}
+						int nInt = (int) nn;
+						if (nInt > iterationLimit && iterationLimit > 0) {
+							IterationLimitExceeded.throwIt(nInt, ast.topHead());
+						}
+						return F.num(GammaJS.betaRegularized(zn, an, nn, wn));
+					} catch (IllegalArgumentException rex) {
+						// from de.lab4inf.math.functions.IncompleteBeta.checkParameters()
+					} catch (ValidateException ve) {
+						// from org.matheclipse.core.eval.EvalEngine.evalDouble()
+					}
+				}
+			} catch (RuntimeException rex) {
+				if (FEConfig.SHOW_STACKTRACE) {
+					rex.printStackTrace();
 				}
 			}
 			return F.NIL;
@@ -587,51 +638,9 @@ public class SpecialFunctions {
 				IExpr z1 = ast.arg2();
 				if (ast.isAST3()) {
 					IExpr z2 = ast.arg3();
-					if (engine.isDoubleMode() && //
-							a.isNumericFunction() && z1.isNumericFunction()) {
-						double x = a.evalDouble();
-						return F.num(org.hipparchus.special.Gamma.regularizedGammaQ(x, z1.evalDouble()) - //
-								org.hipparchus.special.Gamma.regularizedGammaQ(x, z2.evalDouble()));
-					}
-					if (a.isOne()) {
-						// E^(-arg2)-E^(-arg3)
-						return F.Subtract(F.Power(F.E, F.Negate(z1)), F.Power(F.E, F.Negate(z2)));
-					}
-					if (a.isInteger() && a.isNegative()) {
-						return F.C0;
-					}
-					// TODO add more rules
-					return F.NIL;
+					return gammaRegularzed3(a, z1, z2, ast, engine);
 				}
-
-				if (a.isZero()) {
-					return F.C0;
-				} else if (a.isNumEqualRational(F.C1D2)) {
-					// Erfc(Sqrt(z))
-					return F.Erfc(F.Sqrt(z1));
-				} else if (a.isOne()) {
-					// E^(-z)
-					return F.Power(F.E, F.Negate(z1));
-				} else if (a.isInteger() && a.isNegative()) {
-					return F.C0;
-				}
-				if (engine.isDoubleMode() && //
-						a.isNumericFunction() && z1.isNumericFunction()) {
-					return F.num(org.hipparchus.special.Gamma.regularizedGammaQ(a.evalDouble(), z1.evalDouble()));
-				}
-
-				if (z1.isZero()) {
-					IExpr temp = a.re();
-					if (temp.isPositive()) {
-						return F.C1;
-					}
-					if (temp.isNegative()) {
-						return F.CComplexInfinity;
-					}
-				} else if (z1.isMinusOne()) {
-					// (E/Gamma[a])*Subfactorial(a - 1)
-					return F.Times(F.E, F.Power(F.Gamma(a), -1), F.Subfactorial(F.Plus(F.CN1, a)));
-				}
+				return gammaRegularized2(a, z1, ast, engine);
 			} catch (MathIllegalArgumentException miae) {
 				return IOFunctions.printMessage(F.GammaRegularized, "argillegal",
 						F.List(F.stringx(miae.getMessage()), ast), engine);
@@ -639,6 +648,109 @@ public class SpecialFunctions {
 				return IOFunctions.printMessage(F.GammaRegularized, "argillegal",
 						F.List(F.stringx(rex.getMessage()), ast), engine);
 			}
+		}
+
+		private static IExpr gammaRegularized2(IExpr a, IExpr z1, IAST ast, EvalEngine engine) {
+			if (a.isZero()) {
+				return F.C0;
+			} else if (a.isNumEqualRational(F.C1D2)) {
+				// Erfc(Sqrt(z))
+				return F.Erfc(F.Sqrt(z1));
+			} else if (a.isOne()) {
+				// E^(-z)
+				return F.Power(F.E, F.Negate(z1));
+			} else if (a.isInteger() && a.isNegative()) {
+				return F.C0;
+			}
+			if (engine.isDoubleMode()) {
+				try {
+					double aDouble = Double.NaN;
+					double z1Double = Double.NaN;
+					try {
+						aDouble = a.evalDouble();
+						z1Double = z1.evalDouble();
+					} catch (ValidateException ve) {
+					}
+					if (Double.isNaN(aDouble) || Double.isNaN(z1Double)) {
+						// TODO complex numbers
+					} else {
+						return F.num(GammaJS.gammaRegularized(aDouble, z1Double));
+					}
+				} catch (ThrowException te) {
+					if (FEConfig.SHOW_STACKTRACE) {
+						te.printStackTrace();
+					}
+					return te.getValue();
+				} catch (ValidateException ve) {
+					if (FEConfig.SHOW_STACKTRACE) {
+						ve.printStackTrace();
+					}
+					return engine.printMessage(ast.topHead() + ": " + ve.getMessage());
+				} catch (RuntimeException rex) {
+					// rex.printStackTrace();
+					return engine.printMessage(ast.topHead() + ": " + rex.getMessage());
+				}
+			}
+			if (z1.isZero()) {
+				IExpr temp = a.re();
+				if (temp.isPositive()) {
+					return F.C1;
+				}
+				if (temp.isNegative()) {
+					return F.CComplexInfinity;
+				}
+			} else if (z1.isMinusOne()) {
+				// (E/Gamma[a])*Subfactorial(a - 1)
+				return F.Times(F.E, F.Power(F.Gamma(a), -1), F.Subfactorial(F.Plus(F.CN1, a)));
+			}
+			return F.NIL;
+		}
+
+		private static IExpr gammaRegularzed3(IExpr a, IExpr z1, IExpr z2, final IAST ast, EvalEngine engine) {
+			if (engine.isDoubleMode()) {
+				try {
+					double aDouble = Double.NaN;
+					double z1Double = Double.NaN;
+					double z2Double = Double.NaN;
+					try {
+						aDouble = a.evalDouble();
+						z1Double = z1.evalDouble();
+						z2Double = z2.evalDouble();
+					} catch (ValidateException ve) {
+					}
+					if (Double.isNaN(aDouble) || Double.isNaN(z1Double) || //
+							Double.isNaN(z2Double)) {
+						// TODO
+						// Complex sc = s.evalComplex();
+						// Complex ac = a.evalComplex();
+						// return F.complexNum(ZetaJS.hurwitzZeta(sc, ac));
+					} else {
+						return F.num(GammaJS.gammaRegularized(aDouble, z1Double, z2Double));
+					}
+				} catch (ThrowException te) {
+					if (FEConfig.SHOW_STACKTRACE) {
+						te.printStackTrace();
+					}
+					return te.getValue();
+				} catch (ValidateException ve) {
+					if (FEConfig.SHOW_STACKTRACE) {
+						ve.printStackTrace();
+					}
+					return engine.printMessage(ast.topHead() + ": " + ve.getMessage());
+				} catch (RuntimeException rex) {
+					// rex.printStackTrace();
+					return engine.printMessage(ast.topHead() + ": " + rex.getMessage());
+				}
+			}
+
+			if (a.isOne()) {
+				// E^(-arg2)-E^(-arg3)
+				return F.Subtract(F.Power(F.E, F.Negate(z1)), F.Power(F.E, F.Negate(z2)));
+			}
+			if (a.isInteger() && a.isNegative()) {
+				return F.C0;
+			}
+			// TODO add more rules
 			return F.NIL;
 		}
 
