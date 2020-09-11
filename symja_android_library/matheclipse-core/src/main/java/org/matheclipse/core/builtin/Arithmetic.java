@@ -48,13 +48,11 @@ import org.apfloat.Apcomplex;
 import org.apfloat.ApcomplexMath;
 import org.apfloat.Apfloat;
 import org.apfloat.ApfloatMath;
-import org.hipparchus.complex.Complex;
 import org.hipparchus.fraction.BigFraction;
 import org.hipparchus.linear.Array2DRowRealMatrix;
 import org.hipparchus.linear.ArrayRealVector;
 import org.matheclipse.core.basic.Config;
 import org.matheclipse.core.builtin.functions.GammaJS;
-import org.matheclipse.core.builtin.functions.HypergeometricJS;
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.PlusOp;
 import org.matheclipse.core.eval.exception.IterationLimitExceeded;
@@ -69,6 +67,7 @@ import org.matheclipse.core.eval.interfaces.AbstractCoreFunctionEvaluator;
 import org.matheclipse.core.eval.interfaces.AbstractEvaluator;
 import org.matheclipse.core.eval.interfaces.AbstractFunctionEvaluator;
 import org.matheclipse.core.eval.interfaces.AbstractTrigArg1;
+import org.matheclipse.core.eval.interfaces.ICoreFunctionEvaluator;
 import org.matheclipse.core.eval.interfaces.IFunctionEvaluator;
 import org.matheclipse.core.eval.interfaces.INumeric;
 import org.matheclipse.core.eval.interfaces.ISetEvaluator;
@@ -1850,45 +1849,45 @@ public final class Arithmetic {
 		}
 
 		private static IExpr harmonic(IExpr arg1, final IAST ast, EvalEngine engine) {
-//			if (engine.isDoubleMode()) {
-//				try {
-//					double a = Double.NaN;
-//					try {
-//						a = arg1.evalDouble();
-//					} catch (ValidateException ve) {
-//					}
-//					if (Double.isNaN(a) || a < 0) {
-//						org.hipparchus.complex.Complex ac = arg1.evalComplex();
-//					} else {
-//						// approximate
-//						double aSqr = a * a;
-//						if (a > 100.0) {
-//							return F.num(Math.log(a) + ConstantDefinitions.EULER_GAMMA + 0.5 / a - 1.0 / (12.0 * aSqr));
-//						} else {
-//							// denominators https://oeis.org/A006953
-//							double aQuad = aSqr * aSqr;
-//							return F.num(//
-//									Math.log(a) //
-//											+ ConstantDefinitions.EULER_GAMMA //
-//											+ 0.5 / a //
-//											- 1.0 / (12.0 * aSqr) //
-//											+ 1.0 / (120.0 * aQuad) //
-//											- 1.0 / (252.0 * aQuad * aSqr)); //
-//							// + 1.0 / (240.0 * aQuad*aQuad)//
-//							// - 1.0 / (132.0 * aQuad*aQuad*aSqr) //
-//							// + 1.0 / (32760.0 * aQuad*aQuad*aQuad));
-//						}
-//					}
-//
-//				} catch (ValidateException ve) {
-//					if (FEConfig.SHOW_STACKTRACE) {
-//						ve.printStackTrace();
-//					}
-//				} catch (RuntimeException rex) {
-//					// rex.printStackTrace();
-//					return engine.printMessage(ast.topHead(), rex);
-//				}
-//			}
+			// if (engine.isDoubleMode()) {
+			// try {
+			// double a = Double.NaN;
+			// try {
+			// a = arg1.evalDouble();
+			// } catch (ValidateException ve) {
+			// }
+			// if (Double.isNaN(a) || a < 0) {
+			// org.hipparchus.complex.Complex ac = arg1.evalComplex();
+			// } else {
+			// // approximate
+			// double aSqr = a * a;
+			// if (a > 100.0) {
+			// return F.num(Math.log(a) + ConstantDefinitions.EULER_GAMMA + 0.5 / a - 1.0 / (12.0 * aSqr));
+			// } else {
+			// // denominators https://oeis.org/A006953
+			// double aQuad = aSqr * aSqr;
+			// return F.num(//
+			// Math.log(a) //
+			// + ConstantDefinitions.EULER_GAMMA //
+			// + 0.5 / a //
+			// - 1.0 / (12.0 * aSqr) //
+			// + 1.0 / (120.0 * aQuad) //
+			// - 1.0 / (252.0 * aQuad * aSqr)); //
+			// // + 1.0 / (240.0 * aQuad*aQuad)//
+			// // - 1.0 / (132.0 * aQuad*aQuad*aSqr) //
+			// // + 1.0 / (32760.0 * aQuad*aQuad*aQuad));
+			// }
+			// }
+			//
+			// } catch (ValidateException ve) {
+			// if (FEConfig.SHOW_STACKTRACE) {
+			// ve.printStackTrace();
+			// }
+			// } catch (RuntimeException rex) {
+			// // rex.printStackTrace();
+			// return engine.printMessage(ast.topHead(), rex);
+			// }
+			// }
 			if (arg1.isInteger()) {
 				if (arg1.isNegative()) {
 					return F.CComplexInfinity;

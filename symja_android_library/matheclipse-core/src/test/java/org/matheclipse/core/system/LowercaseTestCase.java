@@ -22950,16 +22950,25 @@ public class LowercaseTestCase extends AbstractTestCase {
 	}
 
 	public void testSparseArray() {
-//		check("r=SparseArray({{1, 1} -> 1, {2, 2} -> 2, {4, 3} -> 3, {1, 4} -> 4, {3, 5} -> 2})", //
-//				"SparseArray(Number of elements: 5 Dimensions: {4,5} Default value: 0)");
-//		check("r[[1,All]]", //
-//				"SparseArray(Number of elements: 2 Dimensions: {5} Default value: 0)");
-//		check("r[[{1},All]]", //
-//				"SparseArray(Number of elements: 2 Dimensions: {1,5} Default value: 0)");
-//		check("Transpose(r[[{1},All]])", //
-//				"SparseArray(Number of elements: 2 Dimensions: {5,1} Default value: 0)");
-//		check("SparseArray({{1,1,1,1,1}}).Transpose(r[[{1},All]]) ", //
-//				"SparseArray(Number of elements: 1 Dimensions: {1,1} Default value: 0)");
+		check("s = SparseArray({{i_, i_} -> -2, {i_, j_} /; Abs(i - j) == 1 -> 1}, {100, 100})", //
+				"SparseArray(Number of elements: 298 Dimensions: {100,100} Default value: 0)");
+		check("s = SparseArray({{i_, i_} -> -2, {i_, j_} /; Abs(i - j) == 1 -> 1}, {5, 5})", //
+				"SparseArray(Number of elements: 13 Dimensions: {5,5} Default value: 0)");
+		check("MatrixForm(s)", //
+				"{{-2,1,0,0,0},{1,-2,1,0,0},{0,1,-2,1,0},{0,0,1,-2,1},{0,0,0,1,-2}}");
+
+		check("SparseArray(Table({2^i, 3^i + i} -> 1, {i, 10}))", //
+				"SparseArray(Number of elements: 10 Dimensions: {1024,59059} Default value: 0)");
+		check("r=SparseArray({{1, 1} -> 1, {2, 2} -> 2, {4, 3} -> 3, {1, 4} -> 4, {3, 5} -> 2})", //
+				"SparseArray(Number of elements: 5 Dimensions: {4,5} Default value: 0)");
+		check("r[[1,All]]", //
+				"SparseArray(Number of elements: 2 Dimensions: {5} Default value: 0)");
+		check("r[[{1},All]]", //
+				"SparseArray(Number of elements: 2 Dimensions: {1,5} Default value: 0)");
+		check("Transpose(r[[{1},All]])", //
+				"SparseArray(Number of elements: 2 Dimensions: {5,1} Default value: 0)");
+		check("SparseArray({{1,1,1,1,1}}).Transpose(r[[{1},All]]) ", //
+				"SparseArray(Number of elements: 1 Dimensions: {1,1} Default value: 0)");
 		check("r=SparseArray({{{0,0,3},{1,1,5}},{{0,1,0},{0,1,2}}})", //
 				"SparseArray(Number of elements: 7 Dimensions: {2,2,3} Default value: 0)");
 		check("ArrayRules(r)", //

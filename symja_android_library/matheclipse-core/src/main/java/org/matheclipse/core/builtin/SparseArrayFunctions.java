@@ -1,6 +1,7 @@
 package org.matheclipse.core.builtin;
 
 import org.matheclipse.core.eval.EvalEngine;
+import org.matheclipse.core.eval.exception.Validate;
 import org.matheclipse.core.eval.interfaces.AbstractCoreFunctionEvaluator;
 import org.matheclipse.core.eval.interfaces.AbstractFunctionEvaluator;
 import org.matheclipse.core.expression.F;
@@ -62,7 +63,7 @@ public class SparseArrayFunctions {
 
 	}
 
-	private static class SparseArray extends AbstractCoreFunctionEvaluator {
+	private static class SparseArray extends AbstractFunctionEvaluator {
 
 		@Override
 		public IExpr evaluate(final IAST ast, EvalEngine engine) {
@@ -74,25 +75,26 @@ public class SparseArrayFunctions {
 				defaultValue = engine.evaluate(ast.arg3());
 			}
 			int defaultDimension = -1;
+			int[] dimension = null;
 			if (ast.isAST2()) {
-				defaultDimension = engine.evaluate(ast.arg2()).toIntDefault();
-				if (defaultDimension < 0) {
-					return F.NIL;
+				if (ast.arg2().isList()) {
+					dimension = Validate.checkListOfInts(ast, ast.arg2(), 1, Integer.MAX_VALUE, engine);
+				} else {
+					defaultDimension = engine.evaluate(ast.arg2()).toIntDefault();
+					if (defaultDimension < 0) {
+						return F.NIL;
+					}
 				}
 			}
 			ISparseArray result = null;
 
 			IExpr arg1 = engine.evaluate(ast.arg1());
 			if (arg1.isListOfRules()) {
-				result = SparseArrayExpr.newInstance((IAST) arg1, defaultDimension, defaultValue);
+				result = SparseArrayExpr.newInstance((IAST) arg1, dimension, defaultDimension, defaultValue);
 			} else if (arg1.isList()) {
 				result = SparseArrayExpr.newInstance((IAST) arg1, defaultValue);
-				// IAST listOfRules = SparseArrayExpr.arrayRules((IAST) arg1);
-				// if (listOfRules.isPresent()) {
-				// result = SparseArrayExpr.newInstance((IAST) listOfRules, defaultDimension, defaultValue);
-				// }
 			} else if (arg1.isRule()) {
-				result = SparseArrayExpr.newInstance(F.List(arg1), defaultDimension, defaultValue);
+				result = SparseArrayExpr.newInstance(F.List(arg1), dimension, defaultDimension, defaultValue);
 			}
 			if (result != null) {
 				return result;
@@ -103,7 +105,7 @@ public class SparseArrayFunctions {
 
 		@Override
 		public void setUp(final ISymbol newSymbol) {
-			newSymbol.setAttributes(ISymbol.HOLDALL);
+			// newSymbol.setAttributes(ISymbol.HOLDALL);
 		}
 	}
 

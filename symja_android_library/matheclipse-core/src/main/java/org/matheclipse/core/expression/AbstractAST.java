@@ -1532,13 +1532,6 @@ public abstract class AbstractAST implements IASTMutable {
 						}
 
 						ICoreFunctionEvaluator functionEvaluator = (ICoreFunctionEvaluator) evaluator;
-						// int[] expected;
-						// if ((expected = functionEvaluator.expectedArgSize()) != null) {
-						// if (argSize < expected[0] || argSize > expected[1]) {
-						// return IOFunctions.printArgMessage(this, expected, engine);
-						// }
-						// }
-
 						IExpr evaluateTemp = evalEvaluate(engine);
 						if (evaluateTemp.isPresent()) {
 							return evaluateTemp;
@@ -1571,17 +1564,6 @@ public abstract class AbstractAST implements IASTMutable {
 			return temp;
 		}
 		return engine.evalRules(symbol, this);
-
-		// if (Config.SHOW_CONSOLE) {
-		// if (temp.isPresent() && (topHead().getAttributes() & ISymbol.CONSOLE_OUTPUT) == ISymbol.CONSOLE_OUTPUT) {
-		// System.out.println(toString());
-		// System.out.println(" => " + temp.toString());
-		// }
-		//
-		// }
-		//
-		// return temp;
-
 	}
 
 	/** {@inheritDoc} */
