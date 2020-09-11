@@ -22955,7 +22955,11 @@ public class LowercaseTestCase extends AbstractTestCase {
 		check("s = SparseArray({{i_, i_} -> -2, {i_, j_} /; Abs(i - j) == 1 -> 1}, {5, 5})", //
 				"SparseArray(Number of elements: 13 Dimensions: {5,5} Default value: 0)");
 		check("MatrixForm(s)", //
-				"{{-2,1,0,0,0},{1,-2,1,0,0},{0,1,-2,1,0},{0,0,1,-2,1},{0,0,0,1,-2}}");
+				"{{-2,1,0,0,0},\n" + 
+				" {1,-2,1,0,0},\n" + 
+				" {0,1,-2,1,0},\n" + 
+				" {0,0,1,-2,1},\n" + 
+				" {0,0,0,1,-2}}");
 
 		check("SparseArray(Table({2^i, 3^i + i} -> 1, {i, 10}))", //
 				"SparseArray(Number of elements: 10 Dimensions: {1024,59059} Default value: 0)");
