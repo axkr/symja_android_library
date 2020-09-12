@@ -3026,19 +3026,29 @@ public final class ListFunctions {
 			int size = 0;
 			IExpr head = null;
 			IAST temp;
+			boolean isAssociation = false;
 			for (int i = 1; i < astSize; i++) {
 				temp = (IAST) ast.get(i);
 				size += temp.argSize();
 				if (head == null) {
 					head = temp.head();
+					isAssociation = temp.isAssociation();
 				} else {
 					if (!head.equals(temp.head())) {
-						engine.printMessage("Join: Heads " + head.toString() + " and " + temp.head().toString()
-								+ " are expected to be the same.");
-						return F.NIL;
+						return IOFunctions.printMessage(ast.topHead(), "incpt", F.List(ast), engine);
+					}
+					if (temp.isAssociation() != isAssociation) {
+						return IOFunctions.printMessage(ast.topHead(), "incpt", F.List(ast), engine);
 					}
 				}
 
+			}
+			if ( isAssociation) {
+				final IAssociation result = F.assoc(F.CEmptyList);
+				for (int i = 1; i < ast.size(); i++) {
+					result.appendRules((IAST)ast.get(i));
+				}
+				return result;
 			}
 			final IASTAppendable result = F.ast(head, size, false);
 			for (int i = 1; i < ast.size(); i++) {

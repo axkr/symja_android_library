@@ -11,6 +11,12 @@ AssociationQ(expr)
 ```
 >> AssociationQ(<|ahey->avalue, bkey->bvalue, ckey->cvalue|>)
 True
+
+>> AssociationQ(<|a -> 1, b :> 2|>)
+True
+
+>> AssociationQ(<|a, b|>)
+False     
 ```
 
 ### Related terms  

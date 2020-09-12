@@ -326,17 +326,19 @@ public class Parser extends Scanner {
 			fRecursionDepth++;
 			try {
 				getNextToken();
-				do {
-					function.add(parseExpression());
-					if (fToken != TT_COMMA) {
-						break;
-					}
-
-					getNextToken();
-				} while (true);
-
 				if (fToken != TT_ASSOCIATION_CLOSE) {
-					throwSyntaxError("\'|>\' expected.");
+					do {
+						function.add(parseExpression());
+						if (fToken != TT_COMMA) {
+							break;
+						}
+
+						getNextToken();
+					} while (true);
+
+					if (fToken != TT_ASSOCIATION_CLOSE) {
+						throwSyntaxError("\'|>\' expected.");
+					}
 				}
 				final FunctionNode assoc = fFactory
 						.createFunction(fFactory.createSymbol(IConstantOperators.Association));

@@ -1216,6 +1216,16 @@ public class LowercaseTestCase extends AbstractTestCase {
 	}
 
 	public void testAssociation() {
+
+		check("<|a -> x, b -> y, <|a -> z, d -> t|>|>", //
+				"<|a->z,b->y,d->t|>");
+		check("<|a -> x, b -> y, <|a -> z, d -> t|>|>[\"s\"]", //
+				"Missing(KeyAbsent,s)");
+		check("<|a -> x, b + c -> y, {<|{}|>, a -> {z}}|>", //
+				"<|a->{z},b+c->y|>");
+		check("<|<|a -> v|> -> x, <|b -> y, a -> <|c -> z|>, {}, <||>|>, {d}|>[c]", //
+				"Association(<|a->v|>->x,<|b->y,a-><|c->z|>|>,{d})[c]");
+
 		check("assoc = <|a -> x, \"b\" -> y, c -> z|>", //
 				"<|a->x,b->y,c->z|>");
 		check("assoc[\"b\"] = w", //
@@ -1312,15 +1322,21 @@ public class LowercaseTestCase extends AbstractTestCase {
 		check("Count(<|1 -> 1 + x^2, 2 -> x^4, 3 -> a + (1 + x^2)^2|>, x^_, Infinity)", //
 				"3");
 
-		check("AssociationQ(<|a->x, b->y, c->z|>)", //
-				"True");
-		check("AssociationQ(<|a, b|>)", //
-				"False");
-		check("AssociationQ(<|ahey->avalue, bkey->bvalue, ckey->cvalue|>)", "True");
 		// Fall back if no rules were parsed
 		check("<|a, b|>", //
 				"Association(a,b)");
 
+	}
+
+	public void testAssociationQ() {
+		check("AssociationQ(<|a, b|>)", //
+				"False");
+		check("AssociationQ(<|a->x, b->y, c->z|>)", //
+				"True");
+		check("AssociationQ(<|a, b|>)", //
+				"False");
+		check("AssociationQ(<|ahey->avalue, bkey->bvalue, ckey->cvalue|>)", //
+				"True");
 	}
 
 	public void testAssociationThread() {
@@ -12276,6 +12292,12 @@ public class LowercaseTestCase extends AbstractTestCase {
 	}
 
 	public void testJoin() {
+
+		check("Join(<|A->1,B->2,C->3,D->4|>,<|A->1,B->2,C->3,D->4|>)", //
+				"<|A->1,B->2,C->3,D->4|>");
+		check("Join(<|a -> b|>, <|c -> d, a -> e|>)", //
+				"<|a->e,c->d|>");
+		
 		// http://oeis.org/A001597 - Perfect powers: m^k where m > 0 and k >= 2. //
 		check("Join({1}, Select(Range(1770), GCD@@FactorInteger(#)[[All, 2]]>1&))", //
 				"{1,4,8,9,16,25,27,32,36,49,64,81,100,121,125,128,144,169,196,216,225,243,256,289,\n"
@@ -12306,6 +12328,45 @@ public class LowercaseTestCase extends AbstractTestCase {
 	}
 
 	public void testKeys() {
+		check("Keys(<|a -> x, b -> y|>)", //
+				"{a,b}");
+		check("Keys({a -> x, b -> y})", //
+				"{a,b}");
+		check("Keys({<|a -> x, b -> y|>, {w -> z, {}}})", //
+				"{{a,b},{w,{}}}");
+		check("Keys({c -> z, b -> y, a -> x})", //
+				"{c,b,a}");
+		check("Keys(a:>x)", //
+				"a");
+		check("Keys({a -> x, a -> y, {a -> z, <|b -> t|>, <||>, {}}})", //
+				"{a,a,{a,{b},{},{}}}");
+		check("Keys({a -> x, a -> y, <|a -> z, {b -> t}, <||>, {}|>})", //
+				"{a,a,{a,b}}");
+		check("Keys(<|a -> x, a -> y, <|a -> z, <|b -> t|>, <||>, {}|>|>)", //
+				"{a,b}");
+		check("Keys(<|a -> x, a -> y, {a -> z, {b -> t}, <||>, {}}|>)", //
+				"{a,b}");
+		/*
+    #> Keys[<|a -> x, a -> y, {a -> z, {b -> t}, <||>, {}}|>]
+     = {a, b}
+    #> Keys[<|a -> x, <|a -> y, b|>|>]
+     : The argument Association[a -> x, Association[a -> y, b]] is not a valid Association or a list of rules.
+     = Keys[Association[a -> x, Association[a -> y, b]]]
+    #> Keys[<|a -> x, {a -> y, b}|>]
+     : The argument Association[a -> x, {a -> y, b}] is not a valid Association or a list of rules.
+     = Keys[Association[a -> x, {a -> y, b}]]
+    #> Keys[{a -> x, <|a -> y, b|>}]
+     : The argument Association[a -> y, b] is not a valid Association or a list of rules.
+     = Keys[{a -> x, Association[a -> y, b]}]
+    #> Keys[{a -> x, {a -> y, b}}]
+     : The argument b is not a valid Association or a list of rules.
+     = Keys[{a -> x, {a -> y, b}}]
+		 */
+//		check("Keys({a -> x, {a -> y, b}})", //
+//				"");
+		check("Keys(a -> x, b -> y)", //
+				"(b->y)[a]");
+		
 		check("Keys(<|k->v|>)", //
 				"{k}");
 		check("Keys(k:>v,f)", //
@@ -13822,6 +13883,8 @@ public class LowercaseTestCase extends AbstractTestCase {
 				"SparseArray(Number of elements: 3 Dimensions: {100} Default value: f(0))");
 		check("ArrayRules(t)", //
 				"{{1}->f(1),{2}->f(2),{100}->f(100),{_}->f(0)}");
+		check("t[[2]]", //
+				"f(2)");
 
 		check("Map(1/Sqrt(5),ByteArray[{}],I,y_)", //
 				"ByteArray[0 Bytes]");

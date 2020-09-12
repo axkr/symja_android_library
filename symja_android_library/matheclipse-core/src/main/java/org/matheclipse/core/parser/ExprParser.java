@@ -515,17 +515,19 @@ public class ExprParser extends Scanner {
 			fRecursionDepth++;
 			try {
 				getNextToken();
-				do {
-					function.append(parseExpression());
-					if (fToken != TT_COMMA) {
-						break;
-					}
-
-					getNextToken();
-				} while (true);
-
 				if (fToken != TT_ASSOCIATION_CLOSE) {
-					throwSyntaxError("\'|>\' expected.");
+					do {
+						function.append(parseExpression());
+						if (fToken != TT_COMMA) {
+							break;
+						}
+
+						getNextToken();
+					} while (true);
+
+					if (fToken != TT_ASSOCIATION_CLOSE) {
+						throwSyntaxError("\'|>\' expected.");
+					}
 				}
 				try {
 					temp = F.assoc(function);
@@ -1013,7 +1015,7 @@ public class ExprParser extends Scanner {
 		IASTAppendable function = null;
 		IExpr temp = getFactor(min_precedence);
 		if (fToken == TT_COLON) {
-			getNextToken(); 
+			getNextToken();
 			return F.Optional(temp, parseExpression());
 		}
 		if (fToken != TT_PARTOPEN) {

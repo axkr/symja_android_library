@@ -4,8 +4,10 @@ import java.util.HashMap;
 import java.util.Map;
 
 import org.matheclipse.core.eval.EvalEngine;
+import org.matheclipse.core.eval.exception.ArgumentTypeException;
 import org.matheclipse.core.eval.exception.ValidateException;
 import org.matheclipse.core.eval.interfaces.AbstractEvaluator;
+import org.matheclipse.core.eval.interfaces.ICoreFunctionEvaluator;
 import org.matheclipse.core.eval.interfaces.ISetEvaluator;
 import org.matheclipse.core.expression.ASTAssociation;
 import org.matheclipse.core.expression.F;
@@ -73,45 +75,21 @@ public class AssociationFunctions {
 				try {
 
 					IExpr arg1 = engine.evaluate(ast.arg1());
-					IAssociation assoc = null;
-					if (arg1.isAssociation()) {
-						assoc = (IAssociation) arg1;
-					} else if (arg1.isRuleAST()) {
-						assoc = F.assoc(F.List(arg1));
-					} else if (arg1.isListOfRules(true)) {
-						assoc = F.assoc((IAST) arg1);
-					} else if (arg1.isAST(F.List, 2)) {
-						arg1 = arg1.first();
-						if (arg1.isListOfRules(true)) {
-							assoc = F.assoc((IAST) arg1);
-						}
-					}
-					if (assoc == null) {
-						return F.NIL;
-					}
-					for (int i = 2; i < ast.size(); i++) {
-						IExpr arg = ast.get(i);
-						if (arg.isAssociation()) {
-							assoc.appendRules((IAST) arg.normal(false));
-						} else if (arg.isRuleAST()) {
-							assoc.appendRule((IAST) arg);
-						} else if (arg.isListOfRules(true)) {
-							assoc.appendRules((IAST) arg);
-						} else if (arg.isAST(F.List, 2)) {
-							arg = arg.first();
-							if (arg.isListOfRules(true)) {
-								assoc.appendRules((IAST) arg);
-							}
+					IAssociation assoc = F.assoc(F.CEmptyList);
+					for (int i = 1; i < ast.size(); i++) {
+						if (ast.get(i).isAST()) {
+							assoc.appendRules((IAST) ast.get(i));
 						} else {
-							return F.NIL;
+							throw new ArgumentTypeException(
+									"rule expression expected instead of " + ast.get(i).toString());
 						}
 					}
-					return assoc == null ? F.NIL : assoc;
+					return assoc;
 				} catch (ValidateException ve) {
 					if (FEConfig.SHOW_STACKTRACE) {
 						ve.printStackTrace();
 					}
-					return engine.printMessage(ast.topHead(), ve);
+					// print no message
 				}
 			}
 			return F.NIL;
@@ -119,7 +97,7 @@ public class AssociationFunctions {
 
 		@Override
 		public void setUp(final ISymbol newSymbol) {
-			newSymbol.setAttributes(ISymbol.HOLDALL);
+			newSymbol.setAttributes(ISymbol.HOLDALLCOMPLETE);
 		}
 
 		public IExpr evaluateSet(final IExpr leftHandSide, IExpr rightHandSide, IBuiltInSymbol builtinSymbol,
@@ -292,6 +270,9 @@ public class AssociationFunctions {
 							list.append(rule.first());
 						} else if (rule.isEmptyList()) {
 							list.append(rule);
+						} else {
+							// The argument `1` is not a vaild Association or list of rules.
+							throw new ArgumentTypeException(IOFunctions.getMessage("invrl", F.List(rule)));
 						}
 					}
 					return mapHeadIfPresent(list, head);
@@ -332,7 +313,7 @@ public class AssociationFunctions {
 		}
 	}
 
-	private static class Lookup extends AbstractEvaluator {
+	private static class Lookup extends AbstractEvaluator implements ICoreFunctionEvaluator {
 
 		@Override
 		public IExpr evaluate(IAST ast, EvalEngine engine) {
@@ -357,7 +338,7 @@ public class AssociationFunctions {
 							}
 						}
 						if (ast.isAST3()) {
-							return ast.arg3();
+							return engine.evaluate(ast.arg3());
 						}
 						return F.Missing(F.stringx("KeyAbsent"), key);
 					}
@@ -377,7 +358,7 @@ public class AssociationFunctions {
 						return ((IAST) key).mapThread(ast, 2);
 					}
 					final IExpr arg3 = ast.arg3();
-					return ((IAssociation) arg1).getValue(key, () -> arg3);
+					return ((IAssociation) arg1).getValue(key, () -> engine.evaluate(arg3));
 				}
 			}
 			return F.NIL;
@@ -390,7 +371,7 @@ public class AssociationFunctions {
 
 		@Override
 		public void setUp(final ISymbol newSymbol) {
-			newSymbol.setAttributes(ISymbol.HOLDALL);
+			newSymbol.setAttributes(ISymbol.HOLDALLCOMPLETE);
 		}
 	}
 

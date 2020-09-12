@@ -95,7 +95,7 @@ public class IOFunctions {
 				case 1:
 					return F.unaryAST1(S.Echo, ast.arg1());
 				case 2:
-					return echo(ast.arg1(), ast.head().first(),engine);
+					return echo(ast.arg1(), ast.head().first(), engine);
 				case 3:
 					return F.ternaryAST3(S.Echo, ast.arg1(), ast.head().first(), ast.head().second());
 				default:
@@ -311,6 +311,7 @@ public class IOFunctions {
 			"fnsym", "First argument in `1` is not a symbol or a string naming a symbol.", //
 			"heads", "Heads `1` and `2` are expected to be the same.", //
 			"ilsnn", "Single or list of non-negative integers expected at position `1`.", //
+			"incpt", "incompatible elements in `1` cannot be joined.", //
 			"indet", "Indeterminate expression `1` encountered.", //
 			"infy", "Infinite expression `1` encountered.", //
 			"innf", "Non-negative integer or Infinity expected at position `1`.", //
@@ -323,6 +324,7 @@ public class IOFunctions {
 			"intm", "Machine-sized integer expected at position `2` in `1`.", //
 			"intpm", "Positive machine-sized integer expected at position `2` in `1`.", //
 			"intrange", "Integer expected in range `1` to `2`.", //
+			"invrl", "The argument `1` is not a vaild Association or list of rules.", //
 			"iterb", "Iterator does not have appropriate bounds.", //
 			"itform", "Argument `1` at position `2` does not have the correct form for an iterator.", //
 			"itlim", "Iteration limit of `1` exceeded for `2`.", //

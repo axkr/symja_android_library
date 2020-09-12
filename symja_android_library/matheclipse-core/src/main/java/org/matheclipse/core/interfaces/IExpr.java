@@ -167,7 +167,7 @@ public interface IExpr extends Comparable<IExpr>, GcdRingElem<IExpr>, Serializab
 	public final static int SPARSEARRAYID = DATAID + 9;
 
 	public final static int DISPATCHID = DATAID + 10;
-	
+
 	/**
 	 * Operator overloading for Scala operator <code>/</code>. Calls <code>divide(that)</code>.
 	 * 
@@ -2023,6 +2023,10 @@ public interface IExpr extends Comparable<IExpr>, GcdRingElem<IExpr>, Serializab
 		return false;
 	}
 
+	default boolean isListOfRulesOrAssociation(boolean ignoreEmptyList) {
+		return false;
+	}
+
 	/**
 	 * Test if this expression is a list with at least one element (i.e. a list <code>{element, ...}</code>)
 	 * 
@@ -3308,7 +3312,7 @@ public interface IExpr extends Comparable<IExpr>, GcdRingElem<IExpr>, Serializab
 	default public IExpr lower() {
 		return F.NIL;
 	}
-	
+
 	/**
 	 * If a value is present (i.e. this unequals F.NIL), apply the provided mapping function to it, and if the result is
 	 * non-NIL, return the result. Otherwise return <code>F.NIL</code>
@@ -3792,7 +3796,7 @@ public interface IExpr extends Comparable<IExpr>, GcdRingElem<IExpr>, Serializab
 	default IExpr replaceAll(final Map<? extends IExpr, ? extends IExpr> map) {
 		return accept(new VisitorReplaceAll(map));
 	}
-	
+
 	default IExpr replaceAll(VisitorReplaceAll visitor) {
 		return accept(visitor);
 	}

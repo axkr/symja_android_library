@@ -611,6 +611,12 @@ public abstract class AbstractAST implements IASTMutable {
 
 		/** {@inheritDoc} */
 		@Override
+		public final boolean isListOfRulesOrAssociation(boolean ignoreEmptyList) {
+			return false;
+		}
+		
+		/** {@inheritDoc} */
+		@Override
 		public int[] isMatrix(boolean setMatrixFormat) {
 			return null;
 		}
@@ -3063,6 +3069,30 @@ public abstract class AbstractAST implements IASTMutable {
 		return false;
 	}
 
+	/** {@inheritDoc} */
+	@Override
+	public boolean isListOfRulesOrAssociation(boolean ignoreEmptyList) {
+		if (head().equals(F.List)) {
+			for (int i = 1; i < size(); i++) {
+				if (!get(i).isRuleAST()) {
+					if (get(i).isAssociation()) {
+						if (!ignoreEmptyList && get(i).size()<=1) {
+							return false;
+						}
+						continue;
+					}
+					if (ignoreEmptyList && get(i).isEmptyList()) {
+						continue;
+					}
+					// the row is no list
+					return false;
+				}
+			}
+			return true;
+		}
+		return false;
+	}
+	
 	/** {@inheritDoc} */
 	@Override
 	public final boolean isLog() {

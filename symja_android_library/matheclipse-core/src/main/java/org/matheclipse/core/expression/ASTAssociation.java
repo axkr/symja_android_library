@@ -62,31 +62,59 @@ public class ASTAssociation extends AST implements IAssociation {
 	public void appendRules(IAST listOfRules, int startPosition, int endPosition) {
 		int index = size();
 		normalCache = null;
-		for (int i = startPosition; i < endPosition; i++) {
-			IExpr rule = listOfRules.get(i);
-			if (rule.isRule()) {
-				int value = getIndex(rule.first());
-				if (value == 0) {
-					append(rule.second());
-					map.put(rule.first(), index++);
-				} else {
-					set(value, rule.second());
-					map.put(rule.first(), value);
-				}
-			} else if (rule.isRuleDelayed()) {
-				int value = getIndex(rule.first());
-				if (value == 0) {
-					append(rule.second());
-					map.put(rule.first(), -index);
-					index++;
-				} else {
-					set(value, rule.second());
-					map.put(rule.first(), -value);
-				}
-			} else if (rule.isEmptyList()) {
-				// ignore empty list entries
+		if (listOfRules.isRule()) {
+			int value = getIndex(listOfRules.first());
+			if (value == 0) {
+				append(listOfRules.second());
+				map.put(listOfRules.first(), index++);
 			} else {
-				throw new ArgumentTypeException("rule expression expected instead of " + rule.toString());
+				set(value, listOfRules.second());
+				map.put(listOfRules.first(), value);
+			}
+		} else if (listOfRules.isRuleDelayed()) {
+			int value = getIndex(listOfRules.first());
+			if (value == 0) {
+				append(listOfRules.second());
+				map.put(listOfRules.first(), -index);
+				index++;
+			} else {
+				set(value, listOfRules.second());
+				map.put(listOfRules.first(), -value);
+			}
+		} else {
+			for (int i = startPosition; i < endPosition; i++) {
+
+				IExpr rule = listOfRules.getRule(i);
+				if (rule.isAssociation()) {
+					ASTAssociation assoc = (ASTAssociation) rule;
+					for (int j = 1; j < assoc.size(); j++) {
+						appendRule(assoc.getRule(j));
+					}
+				} else if (rule.isRule()) {
+					int value = getIndex(rule.first());
+					if (value == 0) {
+						append(rule.second());
+						map.put(rule.first(), index++);
+					} else {
+						set(value, rule.second());
+						map.put(rule.first(), value);
+					}
+				} else if (rule.isRuleDelayed()) {
+					int value = getIndex(rule.first());
+					if (value == 0) {
+						append(rule.second());
+						map.put(rule.first(), -index);
+						index++;
+					} else {
+						set(value, rule.second());
+						map.put(rule.first(), -value);
+					}
+				} else if (rule.isList()) {
+					IAST list = (IAST) rule;
+					appendRules(list, 1, list.size());
+				} else {
+					throw new ArgumentTypeException("rule expression expected instead of " + rule.toString());
+				}
 			}
 		}
 	}
