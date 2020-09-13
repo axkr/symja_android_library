@@ -1935,6 +1935,17 @@ public interface IExpr extends Comparable<IExpr>, GcdRingElem<IExpr>, Serializab
 	default boolean isList() {
 		return false;
 	}
+	
+	/**
+	 * Test if this expression is a list (i.e. an AST with head List) or an Association
+	 * 
+	 * @return
+	 */
+	default boolean isListOrAssociation() {
+		return isList();
+	}
+	
+	
 
 	/**
 	 * Test if this expression is a list (i.e. an AST with head List) with exactly 2 arguments

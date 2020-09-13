@@ -75,7 +75,7 @@ public class ContainsFunctions {
 		}
 
 		public boolean validateArgs(IExpr arg1, IExpr arg2, EvalEngine engine) {
-			return arg1.isList() && arg2.isList();
+			return arg1.isListOrAssociation() && arg2.isListOrAssociation();
 		}
 
 		public IExpr containsFunction(IAST list1, IAST list2, IExpr sameTest, EvalEngine engine) {
@@ -85,12 +85,6 @@ public class ContainsFunctions {
 				if (list2.exists(x -> engine.evalTrue(F.binaryAST2(sameTest, list1Arg, x)))) {
 					return F.True;
 				}
-				// for (int j = 1; j < list2.size(); j++) {
-				// IExpr list2Arg = list2.get(j);
-				// if (engine.evalTrue(F.binaryAST2(sameTest, list1Arg, list2Arg))) {
-				// return F.True;
-				// }
-				// }
 			}
 			return F.False;
 		}
@@ -177,12 +171,6 @@ public class ContainsFunctions {
 				if (list2.exists(x -> engine.evalTrue(F.binaryAST2(sameTest, list1Arg, x)))) {
 					return F.False;
 				}
-				// for (int j = 1; j < list2.size(); j++) {
-				// IExpr list2Arg = list2.get(j);
-				// if (engine.evalTrue(F.binaryAST2(sameTest, list1Arg, list2Arg))) {
-				// return F.False;
-				// }
-				// }
 			}
 			return F.True;
 		}

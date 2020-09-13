@@ -473,6 +473,12 @@ public class ASTAssociation extends AST implements IAssociation {
 	public boolean isKey(IExpr key) {
 		return map.containsKey(key);
 	}
+	
+	/** {@inheritDoc} */
+	@Override
+	public boolean isListOrAssociation() {
+		return true;
+	}
 
 	@Override
 	public ArrayList<String> keyNames() {

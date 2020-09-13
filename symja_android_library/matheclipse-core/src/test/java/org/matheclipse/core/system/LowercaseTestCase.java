@@ -1218,10 +1218,10 @@ public class LowercaseTestCase extends AbstractTestCase {
 	public void testAssociation() {
 		check("<|\"a\" -> b, \"c\" -> d|>[\"c\"]", //
 				"d");
-		 
+
 		check("<|\"a\" -> b, \"c\" -> d|>[[\"c\"]]", //
 				"d");
-		 
+
 		check("<|a -> x, b -> y, <|a -> z, d -> t|>|>", //
 				"<|a->z,b->y,d->t|>");
 		check("<|a -> x, b -> y, <|a -> z, d -> t|>|>[\"s\"]", //
@@ -3734,6 +3734,10 @@ public class LowercaseTestCase extends AbstractTestCase {
 	}
 
 	public void testContainsOnly() {
+		check("ContainsOnly(<|a -> x, b -> y|>, {x, y, z})", //
+				"True");
+		check("ContainsOnly(<|a -> x, b -> y|>, <|1 -> x, 2 -> y, 3 -> z|>)", //
+				"True");
 		check("ContainsOnly({b, a, a}, {a, b, c})", //
 				"True");
 		check("ContainsOnly({b, a, d}, {a, b, c})", //
@@ -10427,8 +10431,8 @@ public class LowercaseTestCase extends AbstractTestCase {
 						+ "2.45436,0.688641,0.312167,0.173724,0.1086,0.0732253,0.0520871,0.0385635}");
 		check("Table( HypergeometricU(3, 1.0, x), {x,-2.0,2,0.25})", //
 				"{0.0852414+I*0.212584,0.0312283+I*0.264433,-0.0527303+I*0.306681,-0.171748+I*0.323467,-0.325706+I*0.288932," //
-				+ "-0.500123+I*0.162311,-0.642219+I*(-0.119092),-0.575265+I*(-0.649898),Indeterminate,0.214115,0.105593,0.0644474," //
-				+ "0.0436079,0.0314298,0.0236577,0.0183874,0.0146502}");
+						+ "-0.500123+I*0.162311,-0.642219+I*(-0.119092),-0.575265+I*(-0.649898),Indeterminate,0.214115,0.105593,0.0644474," //
+						+ "0.0436079,0.0314298,0.0236577,0.0183874,0.0146502}");
 	}
 
 	public void testI() {
@@ -12426,8 +12430,27 @@ public class LowercaseTestCase extends AbstractTestCase {
 	}
 
 	public void testValues() {
-		check("Values(<|k->v|>)", //
-				"{v}");
+		check("Values(<|a -> x, b -> y|>)", //
+				"{x,y}");
+		check("Values({a -> x, b -> y})", //
+				"{x,y}");
+		check("Values({<|a -> x, b -> y|>, {c -> z, {}}})", //
+				"{{x,y},{z,{}}}");
+		check("Values({c -> z, b -> y, a -> x})", //
+				"{z,y,x}");
+		check("Values(a->x)", //
+				"x");
+		check("Values({a -> x, a -> y, {a -> z, <|b -> t|>, <||>, {}}})", //
+				"{x,y,{z,{t},{},{}}}");
+		check("Values({a -> x, a -> y, <|a -> z, {b -> t}, <||>, {}|>})", //
+				"{x,y,{z,t}}");
+		check("Values(<|a -> x, a -> y, <|a -> z, <|b -> t|>, <||>, {}|>|>)", //
+				"{z,t}");
+		check("Values(<|a -> x, a -> y, {a -> z, {b -> t}, <||>, {}}|>)", //
+				"{z,t}");
+		check("Values({a -> x, <|a -> y, b|>})", //
+				"{x,Values(Association(a->y,b))}");
+
 		check("Values(k:>v,f)", //
 				"f(v)");
 		check("Values(<|ahey->avalue, bkey->bvalue, ckey->cvalue|>)", //
