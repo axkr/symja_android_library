@@ -1550,6 +1550,10 @@ public class F extends S {
 		return bSymbol;
 	}
 
+	final static public IStringX $str(final char ch) {
+		return StringX.valueOf(ch);
+	}
+	
 	/**
 	 * Create a string expression
 	 * 

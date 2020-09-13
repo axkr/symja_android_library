@@ -270,10 +270,10 @@ public class S {
 
 	/** ArrayQ(expr) - tests whether expr is a full array. */
 	public final static IBuiltInSymbol ArrayQ = F.initFinalSymbol("ArrayQ", ID.ArrayQ);
-	
+
 	/***/
 	public final static IBuiltInSymbol ArrayRules = F.initFinalSymbol("ArrayRules", ID.ArrayRules);
-	
+
 	/**
 	 * ArrayReshape(list-of-values, list-of-dimension) - returns the `list-of-values` elements reshaped as nested list
 	 * with dimensions according to the `list-of-dimension`.
@@ -285,10 +285,10 @@ public class S {
 
 	/** Association(list-of-rules) - create a `key->value` association map from the `list-of-rules`. */
 	public final static IBuiltInSymbol Association = F.initFinalSymbol("Association", ID.Association);
-	
+
 	/***/
 	public final static IBuiltInSymbol AssociationThread = F.initFinalSymbol("AssociationThread", ID.AssociationThread);
-	
+
 	/** AssociationQ(expr) - returns `True` if `expr` is an association, and `False` otherwise. */
 	public final static IBuiltInSymbol AssociationQ = F.initFinalSymbol("AssociationQ", ID.AssociationQ);
 
@@ -1000,7 +1000,7 @@ public class S {
 
 	/***/
 	public final static IBuiltInSymbol Dispatch = F.initFinalSymbol("Dispatch", ID.Dispatch);
-	
+
 	/***/
 	public final static IBuiltInSymbol Disputed = F.initFinalSymbol("Disputed", ID.Disputed);
 
@@ -1991,6 +1991,9 @@ public class S {
 	/** Keys(association) - return a list of keys of the `association`. */
 	public final static IBuiltInSymbol Keys = F.initFinalSymbol("Keys", ID.Keys);
 
+	/***/
+	public final static IBuiltInSymbol KeyTake = F.initFinalSymbol("KeyTake", ID.KeyTake);
+
 	/** Khinchin - Khinchin's constant */
 	public final static IBuiltInSymbol Khinchin = F.initFinalSymbol("Khinchin", ID.Khinchin);
 
@@ -2055,6 +2058,9 @@ public class S {
 
 	/** LessEqual(x, y) - yields `True` if `x` is known to be less than or equal `y`. */
 	public final static IBuiltInSymbol LessEqual = F.initFinalSymbol("LessEqual", ID.LessEqual);
+
+	/***/
+	public final static IBuiltInSymbol LetterCounts = F.initFinalSymbol("LetterCounts", ID.LetterCounts);
 
 	/** LetterQ(expr) - tests whether `expr` is a string, which only contains letters. */
 	public final static IBuiltInSymbol LetterQ = F.initFinalSymbol("LetterQ", ID.LetterQ);

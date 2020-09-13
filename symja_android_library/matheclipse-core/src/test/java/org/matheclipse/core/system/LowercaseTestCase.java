@@ -1330,6 +1330,12 @@ public class LowercaseTestCase extends AbstractTestCase {
 		// Fall back if no rules were parsed
 		check("<|a, b|>", //
 				"Association(a,b)");
+		check("<|a -> 6, b -> 2, c -> 3|> + 500", //
+				"<|a->506,b->502,c->503|>");
+		check("f(#[\"apples\"], #[\"oranges\"]) &[<|\"apples\" -> 10, \"oranges\" -> 12, \"pears\" -> 4|>]", //
+				"f(10,12)");
+		check("f(#apples, #oranges) &[<|\"apples\" -> 10, \"oranges\" -> 12, \"pears\" -> 4|>] ", //
+				"f(10,12)");
 
 	}
 
@@ -4246,6 +4252,11 @@ public class LowercaseTestCase extends AbstractTestCase {
 				"4");
 		check("count({3, 4, x, x^2, x^3}, x^_)", //
 				"2");
+	}
+
+	public void testCounts() {
+		check("Counts({a, a, b, c, a, a, b, c, c, a, a})", //
+				"<|a->6,b->2,c->3|>");
 	}
 
 	public void testCountDistinct() {
@@ -12389,6 +12400,11 @@ public class LowercaseTestCase extends AbstractTestCase {
 				"{{a,b},{w,{}}}");
 	}
 
+	public void testKeySort() {
+		check("KeySort(<|c -> 1, b -> 2, a -> 4|>)", //
+				"<|a->4,b->2,c->1|>");
+	}
+
 	public void testKeyExistsQ() {
 		check("KeyExistsQ(<|a -> x, b -> y, c -> z|>)[a]", //
 				"True");
@@ -12907,6 +12923,11 @@ public class LowercaseTestCase extends AbstractTestCase {
 				"x<=1/2*(-5+Sqrt(5))");
 		check("(-2*x+5)<=(5^(1/2))", //
 				"x>=1/2*(5-Sqrt(5))");
+	}
+
+	public void testLetterCounts() {
+		check("LetterCounts(\"The quick brown fox jumps over the lazy dog\") // InputForm", //
+				"<|\"T\"->1,\" \"->8,\"a\"->1,\"b\"->1,\"c\"->1,\"d\"->1,\"e\"->3,\"f\"->1,\"g\"->1,\"h\"->2,\"i\"->1,\"j\"->1,\"k\"->1,\"l\"->1,\"m\"->1,\"n\"->1,\"o\"->4,\"p\"->1,\"q\"->1,\"r\"->2,\"s\"->1,\"t\"->1,\"u\"->2,\"v\"->1,\"w\"->1,\"x\"->1,\"y\"->1,\"z\"->1|>");
 	}
 
 	public void testLetterQ() {

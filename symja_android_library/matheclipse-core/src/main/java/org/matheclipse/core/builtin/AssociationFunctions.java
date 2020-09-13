@@ -20,6 +20,7 @@ import org.matheclipse.core.interfaces.IASTMutable;
 import org.matheclipse.core.interfaces.IAssociation;
 import org.matheclipse.core.interfaces.IBuiltInSymbol;
 import org.matheclipse.core.interfaces.IExpr;
+import org.matheclipse.core.interfaces.IStringX;
 import org.matheclipse.core.interfaces.ISymbol;
 import org.matheclipse.parser.client.FEConfig;
 
@@ -55,6 +56,7 @@ public class AssociationFunctions {
 			S.KeyExistsQ.setEvaluator(new KeyExistsQ());
 			S.Keys.setEvaluator(new Keys());
 			S.KeySort.setEvaluator(new KeySort());
+			S.LetterCounts.setEvaluator(new LetterCounts());
 			S.Lookup.setEvaluator(new Lookup());
 			S.Structure.setEvaluator(new Structure());
 			S.Summary.setEvaluator(new Summary());
@@ -310,6 +312,37 @@ public class AssociationFunctions {
 		@Override
 		public int[] expectedArgSize(IAST ast) {
 			return IOFunctions.ARGS_1_2;
+		}
+	}
+
+	private static class LetterCounts extends AbstractEvaluator {
+
+		@Override
+		public IExpr evaluate(final IAST ast, EvalEngine engine) {
+			IExpr arg1 = ast.arg1();
+			if (arg1.isString()) {
+				String str = ((IStringX) arg1).toString();
+				try {
+					HashMap<Character, MutableInt> map = new HashMap<Character, MutableInt>();
+					for (int i = 0; i < str.length(); i++) {
+						map.compute(str.charAt(i), //
+								(k, v) -> (v == null) ? new MutableInt(1) : v.increment());
+					}
+					IAssociation assoc = new ASTAssociation(map.size(), false);
+					for (Map.Entry<Character, AssociationFunctions.MutableInt> elem : map.entrySet()) {
+						assoc.appendRule(F.Rule(F.$str(elem.getKey()), F.ZZ(elem.getValue().value())));
+					}
+					return assoc;
+				} catch (ValidateException ve) {
+					return engine.printMessage(ast.topHead(), ve);
+				}
+			}
+			return F.NIL;
+		}
+
+		@Override
+		public int[] expectedArgSize(IAST ast) {
+			return IOFunctions.ARGS_1_1;
 		}
 	}
 
