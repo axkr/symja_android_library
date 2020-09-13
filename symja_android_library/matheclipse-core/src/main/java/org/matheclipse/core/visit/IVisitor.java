@@ -1,6 +1,7 @@
 package org.matheclipse.core.visit;
 
 import org.matheclipse.core.interfaces.IASTMutable;
+import org.matheclipse.core.interfaces.IAssociation;
 import org.matheclipse.core.interfaces.IComplex;
 import org.matheclipse.core.interfaces.IComplexNum;
 import org.matheclipse.core.interfaces.IDataExpr;
@@ -21,7 +22,7 @@ import org.matheclipse.core.interfaces.ISymbol;
  * @see org.matheclipse.core.interfaces.IExpr
  */
 public interface IVisitor {
-	
+
 	public abstract IExpr visit(IDataExpr data);
 
 	public abstract IExpr visit(IInteger element);
@@ -44,4 +45,7 @@ public interface IVisitor {
 
 	public abstract IExpr visit(IASTMutable ast);
 
+	default IExpr visit(IAssociation assoc) {
+		return visit((IASTMutable) assoc);
+	}
 }

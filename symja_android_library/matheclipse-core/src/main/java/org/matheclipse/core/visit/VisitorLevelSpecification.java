@@ -5,10 +5,12 @@ import java.util.function.Function;
 import org.matheclipse.core.builtin.IOFunctions;
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.exception.ArgumentTypeException;
+import org.matheclipse.core.eval.exception.SymjaMathException;
 import org.matheclipse.core.eval.exception.Validate;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IASTMutable;
+import org.matheclipse.core.interfaces.IAssociation;
 import org.matheclipse.core.interfaces.IComplex;
 import org.matheclipse.core.interfaces.IComplexNum;
 import org.matheclipse.core.interfaces.IExpr;
@@ -314,6 +316,46 @@ public class VisitorLevelSpecification extends AbstractVisitor {
 	}
 
 	@Override
+	public IExpr visit(IAssociation assoc) {
+		IAssociation[] result = new IAssociation[] { F.NIL };
+		if (assoc.isPresent()) {
+			int[] minDepth = new int[] { 0 };
+			try {
+				fCurrentLevel++;
+				if (fIncludeHeads) {
+					// no include head for associations 
+				}
+				assoc.forEach((x, i) -> {
+					final IExpr temp = x.accept(this);
+					if (temp.isPresent()) {
+						if (!result[0].isPresent()) {
+							result[0] = createResult(assoc, temp);
+						}
+						result[0].set(i, assoc.getRule(i).setAtCopy(2, temp));
+					}
+					if (fCurrentDepth < minDepth[0]) {
+						minDepth[0] = fCurrentDepth;
+					}
+				});
+			} finally {
+				fCurrentLevel--;
+			}
+			fCurrentDepth = --minDepth[0];
+			if (isInRange(fCurrentLevel, minDepth[0])) {
+				if (!result[0].isPresent()) {
+					return fFunction.apply(assoc);
+				} else {
+					IExpr temp = fFunction.apply(result[0]);
+					if (temp.isPresent()) {
+						return temp;
+					}
+				}
+			}
+		}
+		return result[0];
+	}
+
+	@Override
 	public IExpr visit(IASTMutable ast) {
 		IASTMutable[] result = new IASTMutable[] { F.NIL };
 		if (ast.isPresent()) {
@@ -360,6 +402,10 @@ public class VisitorLevelSpecification extends AbstractVisitor {
 			}
 		}
 		return result[0];
+	}
+
+	public IAssociation createResult(IAssociation assoc, final IExpr x) {
+		return assoc.copy();
 	}
 
 	public IASTMutable createResult(IASTMutable ast, final IExpr x) {

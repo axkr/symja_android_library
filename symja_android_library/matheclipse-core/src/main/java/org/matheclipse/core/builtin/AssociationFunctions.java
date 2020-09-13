@@ -74,7 +74,7 @@ public class AssociationFunctions {
 			} else if (ast.size() > 1) {
 				try {
 
-					IExpr arg1 = engine.evaluate(ast.arg1());
+					// IExpr arg1 = engine.evaluate(ast.arg1());
 					IAssociation assoc = F.assoc(F.CEmptyList);
 					for (int i = 1; i < ast.size(); i++) {
 						if (ast.get(i).isAST()) {

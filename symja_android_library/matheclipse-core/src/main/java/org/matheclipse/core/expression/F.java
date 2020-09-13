@@ -201,7 +201,7 @@ public class F extends S {
 	 * 
 	 * @see java.util.Optional#isPresent
 	 */
-	public final static IASTAppendable NIL = AbstractAST.NIL;
+	public final static IAssociation NIL = AbstractAST.NIL;
 
 	// public final static ISymbol usage = initFinalHiddenSymbol("usage");
 

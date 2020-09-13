@@ -1226,15 +1226,14 @@ public class OutputFormFactory {
 	}
 
 	private void convertAssociation(final Appendable buf, final IAssociation association) throws IOException {
-		IAST list = association.normal(false);
 		append(buf, "<|");
-		final int listSize = list.size();
-		if (listSize > 1) {
-			convert(buf, list.arg1(), Integer.MIN_VALUE, false);
+		final int size = association.size();
+		if (size > 1) {
+			convert(buf, association.getRule(1), Integer.MIN_VALUE, false);
 		}
-		for (int i = 2; i < listSize; i++) {
+		for (int i = 2; i < size; i++) {
 			append(buf, ",");
-			convert(buf, list.get(i), Integer.MIN_VALUE, false);
+			convert(buf, association.getRule(i), Integer.MIN_VALUE, false);
 		}
 		append(buf, "|>");
 		return;

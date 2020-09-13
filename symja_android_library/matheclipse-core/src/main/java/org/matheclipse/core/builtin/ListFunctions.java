@@ -3043,10 +3043,10 @@ public final class ListFunctions {
 				}
 
 			}
-			if ( isAssociation) {
+			if (isAssociation) {
 				final IAssociation result = F.assoc(F.CEmptyList);
 				for (int i = 1; i < ast.size(); i++) {
-					result.appendRules((IAST)ast.get(i));
+					result.appendRules((IAST) ast.get(i));
 				}
 				return result;
 			}
@@ -4045,7 +4045,7 @@ public final class ListFunctions {
 				if (matcher.test(ast.get(i))) {
 					if (level.isInRange()) {
 						clone = prototypeList.copyAppendable(1);
-						if (ast.isAssociation()) {
+						if (ast.isAssociation() && i > 0) {
 							clone.append(((IAssociation) ast).getKey(i));
 						} else {
 							clone.append(positionConverter.toObject(i));
@@ -5161,8 +5161,8 @@ public final class ListFunctions {
 			}
 			IExpr arg1 = functionList.arg1();
 			if (arg1.isAssociation()) {
-				IAssociation sparseArray = (IAssociation) arg1;
-				return sparseArray.reverse(new ASTAssociation(arg1.size(), false));
+				IAssociation assoc = (IAssociation) arg1;
+				return assoc.reverse(new ASTAssociation(arg1.size(), false));
 			}
 			if (arg1.isAST()) {
 				IAST list = (IAST) arg1;
@@ -6302,7 +6302,7 @@ public final class ListFunctions {
 
 		private static IAST take(final IAssociation assoc2, final int level, final ISequence[] sequenceSpecifications) {
 			ISequence sequ = sequenceSpecifications[level];
-			IAST normal = assoc2.normal(false);
+			// IAST normal = assoc2.normal(false);
 			int size = assoc2.size();
 			sequ.setListSize(size);
 			final IAssociation resultAssoc = (IAssociation) assoc2.copyHead(10 > size ? size : 10);
@@ -6320,7 +6320,7 @@ public final class ListFunctions {
 				}
 				// negative step used here
 				for (int i = start; i >= end; i += step) {
-					IAST rule = (IAST) normal.get(i);
+					IAST rule = assoc2.getRule(i);
 					IExpr arg = rule.second();
 					if (sequenceSpecifications.length > newLevel) {
 						if (arg.isAssociation()) {
@@ -6347,7 +6347,7 @@ public final class ListFunctions {
 					throw new ArgumentTypeException(str);
 				}
 				for (int i = start; i < end; i += step) {
-					IAST rule = (IAST) normal.get(i);
+					IAST rule = assoc2.getRule(i);
 					IExpr arg = rule.second();
 					if (sequenceSpecifications.length > newLevel) {
 						if (arg.isAssociation()) {

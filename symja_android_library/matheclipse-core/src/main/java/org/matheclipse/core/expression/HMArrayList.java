@@ -463,7 +463,7 @@ public abstract class HMArrayList extends AbstractAST implements IASTAppendable,
 	 * @see IExpr#head()
 	 */
 	@Override
-	public final IExpr arg1() {
+	public IExpr arg1() {
 		return array[firstIndex + 1];
 	}
 
@@ -477,7 +477,7 @@ public abstract class HMArrayList extends AbstractAST implements IASTAppendable,
 	 * @see IExpr#head()
 	 */
 	@Override
-	public final IExpr arg2() {
+	public IExpr arg2() {
 		return array[firstIndex + 2];
 	}
 
@@ -491,7 +491,7 @@ public abstract class HMArrayList extends AbstractAST implements IASTAppendable,
 	 * @see IExpr#head()
 	 */
 	@Override
-	public final IExpr arg3() {
+	public IExpr arg3() {
 		return array[firstIndex + 3];
 	}
 
@@ -505,7 +505,7 @@ public abstract class HMArrayList extends AbstractAST implements IASTAppendable,
 	 * @see IExpr#head()
 	 */
 	@Override
-	public final IExpr arg4() {
+	public IExpr arg4() {
 		return array[firstIndex + 4];
 	}
 
@@ -519,7 +519,7 @@ public abstract class HMArrayList extends AbstractAST implements IASTAppendable,
 	 * @see IExpr#head()
 	 */
 	@Override
-	public final IExpr arg5() {
+	public IExpr arg5() {
 		return array[firstIndex + 5];
 	}
 
@@ -607,7 +607,7 @@ public abstract class HMArrayList extends AbstractAST implements IASTAppendable,
 	}
 
 	@Override
-	public final boolean equals(final Object obj) {
+	public boolean equals(final Object obj) {
 		if (obj == this) {
 			return true;
 		}
@@ -629,7 +629,7 @@ public abstract class HMArrayList extends AbstractAST implements IASTAppendable,
 			if (hashCode() != ast.hashCode()) {
 				return false;
 			}
-			return forAll((x, i) -> x.equals(ast.get(i)), 1);
+			return forAll((x, i) -> x.equals(ast.getRule(i)), 1);
 		}
 		return false;
 	}
@@ -751,7 +751,7 @@ public abstract class HMArrayList extends AbstractAST implements IASTAppendable,
 	}
 
 	@Override
-	public final IExpr get(int location) {
+	public IExpr get(int location) {
 		if (FEConfig.SHOW_STACKTRACE) {
 			int index;
 			if ((index = firstIndex + location) < lastIndex) {
@@ -848,7 +848,7 @@ public abstract class HMArrayList extends AbstractAST implements IASTAppendable,
 	}
 
 	@Override
-	public final int hashCode() {
+	public int hashCode() {
 		if (hashValue == 0) {
 			hashValue = 0x811c9dc5;// decimal 2166136261;
 			for (int i = firstIndex; i < lastIndex; i++) {
@@ -879,7 +879,7 @@ public abstract class HMArrayList extends AbstractAST implements IASTAppendable,
 
 	/** {@inheritDoc} */
 	@Override
-	public final IAST map(final Function<IExpr, IExpr> function, final int startOffset) {
+	public IAST map(final Function<IExpr, IExpr> function, final int startOffset) {
 		IASTMutable result = F.NIL;
 		int i = firstIndex + startOffset;
 		int j = startOffset;
@@ -1045,7 +1045,7 @@ public abstract class HMArrayList extends AbstractAST implements IASTAppendable,
 	 *             when {@code location < 0 || >= size()}
 	 */
 	@Override
-	public final IExpr set(int location, IExpr object) {
+	public IExpr set(int location, IExpr object) {
 		hashValue = 0;
 		// if (0 <= location && location < (lastIndex - firstIndex)) {
 		IExpr result = array[firstIndex + location];

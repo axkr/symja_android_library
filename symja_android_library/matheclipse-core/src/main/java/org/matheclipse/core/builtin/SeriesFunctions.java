@@ -952,6 +952,10 @@ public class SeriesFunctions {
 				}
 			}
 			final IExpr arg1 = ast.arg1();
+			// IExpr normal=arg1.normal(true);
+			// if (normal.isPresent()) {
+			// return normal;
+			// }
 			IExpr result = arg1.replaceAll(normal(heads));
 			return result.orElse(arg1);
 		}

@@ -31,7 +31,7 @@ public interface IAssociation extends IASTAppendable {
 	 * 
 	 * @param rule
 	 */
-	public void appendRule(IExpr rule);
+	// public void appendRule(IExpr rule);
 
 	/**
 	 * Copy this association
@@ -59,6 +59,8 @@ public interface IAssociation extends IASTAppendable {
 	 * @return
 	 */
 	public IExpr getValue(IExpr key);
+
+	public IAST getRule(int position);
 
 	/**
 	 * Return the value associated to the <code>key</code>. If no value is available return the

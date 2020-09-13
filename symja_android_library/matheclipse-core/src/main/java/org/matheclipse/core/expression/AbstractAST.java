@@ -1,8 +1,10 @@
 package org.matheclipse.core.expression;
 
 import java.io.ObjectStreamException;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.Comparator;
 import java.util.EnumMap;
 import java.util.Iterator;
 import java.util.List;
@@ -22,9 +24,7 @@ import java.util.stream.Stream;
 
 import org.hipparchus.complex.Complex;
 import org.hipparchus.linear.Array2DRowRealMatrix;
-import org.hipparchus.linear.ArrayRealVector;
 import org.hipparchus.linear.RealMatrix;
-import org.hipparchus.linear.RealVector;
 import org.jgrapht.GraphType;
 import org.jgrapht.graph.DefaultGraphType;
 import org.jgrapht.graph.DefaultGraphType.Builder;
@@ -162,7 +162,7 @@ public abstract class AbstractAST implements IASTMutable {
 	 * @see org.matheclipse.core.expression.F#NIL
 	 * @see java.util.Optional#isPresent
 	 */
-	private final static class NILPointer extends AbstractAST implements IASTAppendable {
+	private final static class NILPointer extends AbstractAST implements IAssociation {
 
 		private static final long serialVersionUID = -3552302876858011292L;
 
@@ -174,6 +174,13 @@ public abstract class AbstractAST implements IASTMutable {
 		 * @see F#NIL
 		 */
 		protected NILPointer() {
+		}
+
+		/** {@inheritDoc} */
+		@Override
+		public IExpr accept(IVisitor visitor) {
+			ArgumentTypeException.throwNIL();
+			return null;
 		}
 
 		@Override
@@ -332,23 +339,23 @@ public abstract class AbstractAST implements IASTMutable {
 		}
 
 		@Override
-		public IASTAppendable copy() {
+		public IAssociation copy() {
 			ArgumentTypeException.throwNIL();
-			return F.NIL;
+			return null;
 			// throw new UnsupportedOperationException();
 		}
 
 		@Override
 		public IASTAppendable copyAppendable() {
 			ArgumentTypeException.throwNIL();
-			return F.NIL;
+			return null;
 			// throw new UnsupportedOperationException();
 		}
 
 		@Override
 		public IASTAppendable copyAppendable(int additionalCapacity) {
 			ArgumentTypeException.throwNIL();
-			return F.NIL;
+			return null;
 			// throw new UnsupportedOperationException();
 		}
 
@@ -614,7 +621,7 @@ public abstract class AbstractAST implements IASTMutable {
 		public final boolean isListOfRulesOrAssociation(boolean ignoreEmptyList) {
 			return false;
 		}
-		
+
 		/** {@inheritDoc} */
 		@Override
 		public int[] isMatrix(boolean setMatrixFormat) {
@@ -892,6 +899,116 @@ public abstract class AbstractAST implements IASTMutable {
 		public String toString() {
 			return "NIL";
 		}
+
+		@Override
+		public void appendRules(IAST listOfRules) {
+			ArgumentTypeException.throwNIL();
+		}
+
+		@Override
+		public void appendRules(IAST listOfRules, int startPosition, int endPosition) {
+			ArgumentTypeException.throwNIL();
+		}
+
+		@Override
+		public IAssociation copyHead(int intialCapacity) {
+			ArgumentTypeException.throwNIL();
+			return null;
+		}
+
+		@Override
+		public IExpr getKey(int position) {
+			ArgumentTypeException.throwNIL();
+			return null;
+		}
+
+		@Override
+		public IAST getRule(int position) {
+			ArgumentTypeException.throwNIL();
+			return null;
+		}
+
+		public IExpr getValue(int position) {
+			ArgumentTypeException.throwNIL();
+			return null;
+		}
+
+		@Override
+		public IExpr getValue(IExpr key) {
+			ArgumentTypeException.throwNIL();
+			return null;
+		}
+
+		@Override
+		public IExpr getValue(IExpr key, Supplier<IExpr> defaultValue) {
+			ArgumentTypeException.throwNIL();
+			return null;
+		}
+
+		@Override
+		public boolean isKey(IExpr expr) {
+			return false;
+		}
+
+		@Override
+		public IASTMutable keys() {
+			ArgumentTypeException.throwNIL();
+			return null;
+		}
+
+		@Override
+		public ArrayList<String> keyNames() {
+			ArgumentTypeException.throwNIL();
+			return null;
+		}
+
+		@Override
+		public IAssociation keySort() {
+			ArgumentTypeException.throwNIL();
+			return null;
+		}
+
+		@Override
+		public IAssociation keySort(Comparator<IExpr> comparator) {
+			ArgumentTypeException.throwNIL();
+			return null;
+		}
+
+		@Override
+		public IAST normal(boolean nilIfUnevaluated) {
+			ArgumentTypeException.throwNIL();
+			return null;
+		}
+
+		@Override
+		public IAST matrixOrList() {
+			ArgumentTypeException.throwNIL();
+			return null;
+		}
+
+		@Override
+		public IAssociation sort() {
+			ArgumentTypeException.throwNIL();
+			return null;
+		}
+
+		@Override
+		public IAssociation sort(Comparator<IExpr> comparator) {
+			ArgumentTypeException.throwNIL();
+			return null;
+		}
+
+		@Override
+		public IASTMutable values() {
+			ArgumentTypeException.throwNIL();
+			return null;
+		}
+
+		@Override
+		public IAssociation reverse(IAssociation newAssoc) {
+			ArgumentTypeException.throwNIL();
+			return null;
+		}
 	}
 
 	/**
@@ -1054,7 +1171,7 @@ public abstract class AbstractAST implements IASTMutable {
 
 	/** {@inheritDoc} */
 	@Override
-	public final IExpr accept(IVisitor visitor) {
+	public IExpr accept(IVisitor visitor) {
 		return visitor.visit(this);
 	}
 
@@ -3076,7 +3193,7 @@ public abstract class AbstractAST implements IASTMutable {
 			for (int i = 1; i < size(); i++) {
 				if (!get(i).isRuleAST()) {
 					if (get(i).isAssociation()) {
-						if (!ignoreEmptyList && get(i).size()<=1) {
+						if (!ignoreEmptyList && get(i).size() <= 1) {
 							return false;
 						}
 						continue;
@@ -3092,7 +3209,7 @@ public abstract class AbstractAST implements IASTMutable {
 		}
 		return false;
 	}
-	
+
 	/** {@inheritDoc} */
 	@Override
 	public final boolean isLog() {

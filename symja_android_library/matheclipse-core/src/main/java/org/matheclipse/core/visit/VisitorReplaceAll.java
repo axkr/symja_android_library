@@ -229,6 +229,38 @@ public class VisitorReplaceAll extends VisitorExpr {
 		return fFunction.apply(element);
 	}
 
+	/**
+	 * 
+	 * @return <code>F.NIL</code>, if no evaluation is possible
+	 */
+	@Override
+	public IExpr visit(IAssociation assoc) {
+		IExpr replacement = fFunction.apply(assoc);
+		if (replacement.isPresent()) {
+			return replacement;
+		}
+		int i = fOffset;
+		int size = assoc.size();
+		while (i < size) {
+			IExpr temp = assoc.getValue(i).accept(this);
+			if (temp.isPresent()) {
+				// something was evaluated - return a new IAST:
+				IASTMutable result = assoc.setAtCopy(i, assoc.getRule(i).setAtCopy(2, temp));
+				i++;
+				assoc.forEach(i, size, (x, j) -> {
+					IExpr t = x.accept(this);
+					if (t.isPresent()) {
+						result.set(j, assoc.getRule(j).setAtCopy(2, t));
+					}
+				});
+				return postProcessing(result);
+
+			}
+			i++;
+		}
+		return F.NIL;
+	}
+
 	@Override
 	protected IExpr visitAST(IAST ast) {
 		int i = fOffset;

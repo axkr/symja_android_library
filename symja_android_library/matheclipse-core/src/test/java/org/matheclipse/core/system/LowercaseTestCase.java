@@ -1216,7 +1216,12 @@ public class LowercaseTestCase extends AbstractTestCase {
 	}
 
 	public void testAssociation() {
-
+		check("<|\"a\" -> b, \"c\" -> d|>[\"c\"]", //
+				"d");
+		 
+		check("<|\"a\" -> b, \"c\" -> d|>[[\"c\"]]", //
+				"d");
+		 
 		check("<|a -> x, b -> y, <|a -> z, d -> t|>|>", //
 				"<|a->z,b->y,d->t|>");
 		check("<|a -> x, b -> y, <|a -> z, d -> t|>|>[\"s\"]", //
@@ -10420,6 +10425,10 @@ public class LowercaseTestCase extends AbstractTestCase {
 				"{0.19001+I*(-0.148415),0.27603+I*(-0.141362),0.39355+I*(-0.107638),0.553199+I*(-0.0227102)," //
 						+ "0.76904+I*0.163012,1.05965+I*0.56395,1.44956+I*1.52035,1.97105+I*4.83136,ComplexInfinity," //
 						+ "2.45436,0.688641,0.312167,0.173724,0.1086,0.0732253,0.0520871,0.0385635}");
+		check("Table( HypergeometricU(3, 1.0, x), {x,-2.0,2,0.25})", //
+				"{0.0852414+I*0.212584,0.0312283+I*0.264433,-0.0527303+I*0.306681,-0.171748+I*0.323467,-0.325706+I*0.288932," //
+				+ "-0.500123+I*0.162311,-0.642219+I*(-0.119092),-0.575265+I*(-0.649898),Indeterminate,0.214115,0.105593,0.0644474," //
+				+ "0.0436079,0.0314298,0.0236577,0.0183874,0.0146502}");
 	}
 
 	public void testI() {
@@ -12297,7 +12306,7 @@ public class LowercaseTestCase extends AbstractTestCase {
 				"<|A->1,B->2,C->3,D->4|>");
 		check("Join(<|a -> b|>, <|c -> d, a -> e|>)", //
 				"<|a->e,c->d|>");
-		
+
 		// http://oeis.org/A001597 - Perfect powers: m^k where m > 0 and k >= 2. //
 		check("Join({1}, Select(Range(1770), GCD@@FactorInteger(#)[[All, 2]]>1&))", //
 				"{1,4,8,9,16,25,27,32,36,49,64,81,100,121,125,128,144,169,196,216,225,243,256,289,\n"
@@ -12347,26 +12356,19 @@ public class LowercaseTestCase extends AbstractTestCase {
 		check("Keys(<|a -> x, a -> y, {a -> z, {b -> t}, <||>, {}}|>)", //
 				"{a,b}");
 		/*
-    #> Keys[<|a -> x, a -> y, {a -> z, {b -> t}, <||>, {}}|>]
-     = {a, b}
-    #> Keys[<|a -> x, <|a -> y, b|>|>]
-     : The argument Association[a -> x, Association[a -> y, b]] is not a valid Association or a list of rules.
-     = Keys[Association[a -> x, Association[a -> y, b]]]
-    #> Keys[<|a -> x, {a -> y, b}|>]
-     : The argument Association[a -> x, {a -> y, b}] is not a valid Association or a list of rules.
-     = Keys[Association[a -> x, {a -> y, b}]]
-    #> Keys[{a -> x, <|a -> y, b|>}]
-     : The argument Association[a -> y, b] is not a valid Association or a list of rules.
-     = Keys[{a -> x, Association[a -> y, b]}]
-    #> Keys[{a -> x, {a -> y, b}}]
-     : The argument b is not a valid Association or a list of rules.
-     = Keys[{a -> x, {a -> y, b}}]
+		 * #> Keys[<|a -> x, a -> y, {a -> z, {b -> t}, <||>, {}}|>] = {a, b} #> Keys[<|a -> x, <|a -> y, b|>|>] : The
+		 * argument Association[a -> x, Association[a -> y, b]] is not a valid Association or a list of rules. =
+		 * Keys[Association[a -> x, Association[a -> y, b]]] #> Keys[<|a -> x, {a -> y, b}|>] : The argument
+		 * Association[a -> x, {a -> y, b}] is not a valid Association or a list of rules. = Keys[Association[a -> x, {a
+		 * -> y, b}]] #> Keys[{a -> x, <|a -> y, b|>}] : The argument Association[a -> y, b] is not a valid Association
+		 * or a list of rules. = Keys[{a -> x, Association[a -> y, b]}] #> Keys[{a -> x, {a -> y, b}}] : The argument b
+		 * is not a valid Association or a list of rules. = Keys[{a -> x, {a -> y, b}}]
 		 */
-//		check("Keys({a -> x, {a -> y, b}})", //
-//				"");
+		// check("Keys({a -> x, {a -> y, b}})", //
+		// "");
 		check("Keys(a -> x, b -> y)", //
 				"(b->y)[a]");
-		
+
 		check("Keys(<|k->v|>)", //
 				"{k}");
 		check("Keys(k:>v,f)", //
@@ -18592,10 +18594,10 @@ public class LowercaseTestCase extends AbstractTestCase {
 	}
 
 	public void testPrepend() {
-		check("Prepend(Infinity,-I)", //
-				"DirectedInfinity(-I,1)");
 		check("Prepend(1/Sqrt(5),<|x->y|>)", //
 				"<|x->y^(1/Sqrt(5))|>");
+		check("Prepend(Infinity,-I)", //
+				"DirectedInfinity(-I,1)");
 		check("Prepend({2, 3, 4}, 1)", //
 				"{1,2,3,4}");
 		check("Prepend(f(b, c), a)", //

@@ -385,7 +385,7 @@ public interface IAST extends IExpr, Cloneable, Iterable<IExpr> {
 
 	/**
 	 * Return a copy of the pure <code>IAST</code> instance (the elements themselves are not copied). Additionally to
-	 * the <code>copy()</code> method, this method tries to avaoid <code>AssociationAST</code> objects by transforming
+	 * the <code>copy()</code> method, this method tries to avoid <code>AssociationAST</code> objects by transforming
 	 * them to <code>AST</code> objects if possible.
 	 * 
 	 * @return a copy of this <code>IAST</code> instance.
@@ -886,6 +886,10 @@ public interface IAST extends IExpr, Cloneable, Iterable<IExpr> {
 	 *             if {@code location < 0 || >= size()}
 	 */
 	public IExpr get(int location);
+	
+	default IExpr getValue(int location) {
+		return get(location);
+	}
 
 	/**
 	 * Returns <code>length</code> number of elements specified in the <code>items</code> position array in this

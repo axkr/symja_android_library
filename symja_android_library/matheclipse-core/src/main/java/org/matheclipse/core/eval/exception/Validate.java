@@ -607,7 +607,8 @@ public final class Validate {
 					termsEqualZeroList.append(checkEquationAndInequation(eq));
 				} else {
 					// not an equation or inequation
-					throw new ArgumentTypeException("binary equation or inequation expression expected at position " + i);
+					throw new ArgumentTypeException(
+							"binary equation or inequation expression expected at position " + i);
 				}
 			}
 			return termsEqualZeroList;
@@ -639,7 +640,8 @@ public final class Validate {
 			return F.False;
 		}
 		// not an equation or inequation
-		throw new ArgumentTypeException("binary equation or inequation expression expected instead of " + eq.toString());
+		throw new ArgumentTypeException(
+				"binary equation or inequation expression expected instead of " + eq.toString());
 	}
 
 	/**
@@ -670,6 +672,9 @@ public final class Validate {
 	}
 
 	public static void printException(final Appendable buf, final Throwable e) {
+		if (FEConfig.SHOW_STACKTRACE) {
+			e.printStackTrace();
+		}
 		String msg = e.getMessage();
 		try {
 			if (msg != null) {
