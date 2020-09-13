@@ -59,12 +59,13 @@ public class JavaScriptFormFactory extends DoubleFormFactory {
 	private final static Map<ISymbol, String> FUNCTIONS_STR_MATHCELL = new HashMap<ISymbol, String>();
 	private final static Map<ISymbol, String> FUNCTIONS_STR_PURE_JS = new HashMap<ISymbol, String>();
 	static {
-
+		FUNCTIONS_STR_MATHCELL.put(S.BetaRegularized, "betaRegularized");
 		FUNCTIONS_STR_MATHCELL.put(S.AiryAi, "airyAi");
 		FUNCTIONS_STR_MATHCELL.put(S.AiryBi, "airyBi");
 		FUNCTIONS_STR_MATHCELL.put(S.DirichletEta, "dirichletEta");
 		FUNCTIONS_STR_MATHCELL.put(S.HankelH1, "hankel1");
 		FUNCTIONS_STR_MATHCELL.put(S.HankelH2, "hankel2");
+		FUNCTIONS_STR_MATHCELL.put(S.GammaRegularized, "gammaRegularized");
 		FUNCTIONS_STR_MATHCELL.put(S.InverseWeierstrassP, "inverseWeierstrassP");
 		FUNCTIONS_STR_MATHCELL.put(S.PolyGamma, "digamma");
 		FUNCTIONS_STR_MATHCELL.put(S.SphericalBesselJ, "sphericalBesselJ");
