@@ -3,6 +3,7 @@ package org.matheclipse.core.builtin.functions;
 import static java.lang.Math.abs;
 
 import java.util.ArrayList;
+import java.util.function.Function;
 import java.util.function.IntFunction;
 
 import org.hipparchus.complex.Complex;
@@ -23,6 +24,14 @@ import org.matheclipse.core.expression.F;
 public class HypergeometricJS {
 
 	private HypergeometricJS() {
+	}
+
+	public static Complex complexAverage(Function<Complex, Complex> f, Complex x) {
+		return complexAverage(f, x, 1e-5);
+	}
+
+	public static Complex complexAverage(Function<Complex, Complex> f, Complex x, double offset) {
+		return f.apply(x.add(offset)).add(f.apply(x.subtract(offset))).divide(2.0);
 	}
 
 	public static Complex hypergeometricSeries(Complex[] A, Complex[] B, Complex x) { // , double tolerance
@@ -658,6 +667,11 @@ public class HypergeometricJS {
 			return x.pow(a.negate())
 					.multiply(hypergeometric2F0(a, a.add(b.negate()).add(1.0), x.reciprocal().negate()));
 
+		}
+
+		if (b.equals(Complex.ONE) || //
+				(F.isNumIntValue(b.getReal(), 1) && F.isZero(b.getImaginary()))) {
+			return complexAverage(arg -> hypergeometricU(a, arg, x), b);
 		}
 
 		Complex t1 = Arithmetic.lanczosApproxGamma(b.subtract(1))
