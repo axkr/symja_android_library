@@ -886,9 +886,24 @@ public interface IAST extends IExpr, Cloneable, Iterable<IExpr> {
 	 *             if {@code location < 0 || >= size()}
 	 */
 	public IExpr get(int location);
-	
+
 	default IExpr getValue(int location) {
 		return get(location);
+	}
+
+	/**
+	 * Assuming this is a list of rules or an <code>IAssociation</code>. Return the first rule which equals the
+	 * <code>key</code> argument.
+	 * 
+	 * @param key
+	 * @return
+	 */
+	default IAST getRule(IExpr key) {
+		int index = indexOf(x -> x.isRuleAST() && x.first().equals(key));
+		if (index > 0) {
+			return (IAST) get(index);
+		}
+		return F.NIL;
 	}
 
 	/**
@@ -1123,7 +1138,7 @@ public interface IAST extends IExpr, Cloneable, Iterable<IExpr> {
 	 * @return
 	 */
 	public IAST map(final Function<IExpr, IExpr> function);
-	
+
 	/**
 	 * Maps the elements of this IAST with the unary <code>functor</code>. If the <code>functor</code> returns
 	 * <code>F.NIL</code> the original element of this AST list is used.

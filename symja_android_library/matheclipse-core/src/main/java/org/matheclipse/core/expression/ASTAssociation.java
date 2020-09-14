@@ -430,7 +430,15 @@ public class ASTAssociation extends AST implements IAssociation {
 			return (IAST) temp;
 		}
 		return F.NIL;
-		// return (IAST) super.get(position);
+	}
+	
+	@Override
+	public IAST getRule(IExpr key) {
+		int index=map.getInt(key);
+		if (index>0) {
+			return getRule(index);
+		} 
+		return F.NIL;
 	}
 
 	@Override

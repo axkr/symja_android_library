@@ -12419,6 +12419,23 @@ public class LowercaseTestCase extends AbstractTestCase {
 				"False");
 	}
 
+	public void testKeyTake() {
+		// operator form
+		check("KeyTake({a, e})[<|a -> b, c -> d, e -> f, g -> h|>]", //
+				"<|a->b,e->f|>");
+
+		check("KeyTake({<|a -> 1, b -> 2|>, <|b -> 2, c -> 3|>}, {a, b})", //
+				"{<|a->1,b->2|>,<|b->2|>}");
+		check("KeyTake({1 -> 2, 2 -> 4, 3 -> 9, 4 -> 16, 5 -> 25}, {2, 3})", //
+				"<|2->4,3->9|>");
+		check("KeyTake({{1 -> 2, 2 -> 4, 3 -> 9}, {4 -> 16, 5 -> 25}}, {2, 3})", //
+				"{<|2->4,3->9|>,<||>}");
+		check("KeyTake({a -> b, b -> c, c -> d}, b)", //
+				"<|b->c|>");
+		check("KeyTake(<|a -> 1, b -> 2, c -> 3|>, {a, b})", //
+				"<|a->1,b->2|>");
+	}
+
 	public void testKleinInvariantJ() {
 		//
 		check("KleinInvariantJ(-1.5707963267948966)", //

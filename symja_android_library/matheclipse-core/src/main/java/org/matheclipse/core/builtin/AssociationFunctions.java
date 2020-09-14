@@ -6,9 +6,12 @@ import java.util.Map;
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.exception.ArgumentTypeException;
 import org.matheclipse.core.eval.exception.ValidateException;
+import org.matheclipse.core.eval.interfaces.AbstractCoreFunctionEvaluator;
 import org.matheclipse.core.eval.interfaces.AbstractEvaluator;
 import org.matheclipse.core.eval.interfaces.ICoreFunctionEvaluator;
 import org.matheclipse.core.eval.interfaces.ISetEvaluator;
+import org.matheclipse.core.eval.util.ISequence;
+import org.matheclipse.core.eval.util.Sequence;
 import org.matheclipse.core.expression.ASTAssociation;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.expression.S;
@@ -56,6 +59,7 @@ public class AssociationFunctions {
 			S.KeyExistsQ.setEvaluator(new KeyExistsQ());
 			S.Keys.setEvaluator(new Keys());
 			S.KeySort.setEvaluator(new KeySort());
+			S.KeyTake.setEvaluator(new KeyTake());
 			S.LetterCounts.setEvaluator(new LetterCounts());
 			S.Lookup.setEvaluator(new Lookup());
 			S.Structure.setEvaluator(new Structure());
@@ -422,6 +426,69 @@ public class AssociationFunctions {
 		@Override
 		public int[] expectedArgSize(IAST ast) {
 			return IOFunctions.ARGS_1_1;
+		}
+	}
+
+	private final static class KeyTake extends AbstractCoreFunctionEvaluator {
+
+		@Override
+		public IExpr evaluate(IAST ast, EvalEngine engine) {
+			if (ast.isAST1()) {
+				ast = F.operatorFormAppend(ast);
+				if (!ast.isPresent()) {
+					return F.NIL;
+				}
+			}
+			IAST evaledAST = (IAST) engine.evalAttributes(F.KeyTake, ast);
+			if (!evaledAST.isPresent()) {
+				evaledAST = ast;
+			}
+			try {
+				if (evaledAST.arg1().isListOfRulesOrAssociation(true) || evaledAST.arg1().isListOfLists()) {
+					final IAST arg1 = (IAST) evaledAST.arg1();
+					if (arg1.forAll(x -> x.isListOfRulesOrAssociation(true))) {
+						return arg1.mapThread(ast, 1);
+					}
+					IExpr arg2 = evaledAST.arg2();
+					if (!arg2.isList()) {
+						arg2 = F.List(arg2);
+					}
+					return keyTake(arg1, (IAST) arg2);
+				} else {
+					return engine.printMessage("KeyTake: Association or list of rules expected at position 1.");
+				}
+			} catch (final ValidateException ve) {
+				return engine.printMessage(ast.topHead(), ve);
+			} catch (final RuntimeException rex) {
+				if (FEConfig.SHOW_STACKTRACE) {
+					rex.printStackTrace();
+				}
+			}
+
+			return F.NIL;
+		}
+
+		@Override
+		public int[] expectedArgSize(IAST ast) {
+			return IOFunctions.ARGS_1_2;
+		}
+
+		private static IAST keyTake(final IAST expr, final IAST list) {
+			final int size = list.size();
+			// final IASTAppendable assoc = F.assoc(expr);
+			final IASTAppendable resultAssoc =  F.assoc(10 > size ? size : 10);
+			for (int i = 1; i < size; i++) {
+				IExpr rule = expr.getRule(list.get(i));
+				if (rule.isPresent()) {
+					resultAssoc.appendRule(rule);
+				}
+			}
+			return resultAssoc;
+		}
+
+		@Override
+		public void setUp(final ISymbol newSymbol) {
+			newSymbol.setAttributes(ISymbol.NHOLDREST);
 		}
 	}
 

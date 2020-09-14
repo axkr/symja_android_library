@@ -1009,6 +1009,12 @@ public abstract class AbstractAST implements IASTMutable {
 			ArgumentTypeException.throwNIL();
 			return null;
 		}
+
+		@Override
+		public IAST getRule(IExpr key) {
+			ArgumentTypeException.throwNIL();
+			return null;
+		}
 	}
 
 	/**
@@ -3189,6 +3195,9 @@ public abstract class AbstractAST implements IASTMutable {
 	/** {@inheritDoc} */
 	@Override
 	public boolean isListOfRulesOrAssociation(boolean ignoreEmptyList) {
+		if (isAssociation()) {
+			return true;
+		}
 		if (head().equals(F.List)) {
 			for (int i = 1; i < size(); i++) {
 				if (!get(i).isRuleAST()) {

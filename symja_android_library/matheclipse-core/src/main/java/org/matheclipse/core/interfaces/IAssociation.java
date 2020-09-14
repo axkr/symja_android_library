@@ -60,6 +60,15 @@ public interface IAssociation extends IASTAppendable {
 	 */
 	public IExpr getValue(IExpr key);
 
+	/**
+	 * Assuming this is a list of rules or an <code>IAssociation</code>. Return the first rule which equals the
+	 * <code>key</code> argument.
+	 * 
+	 * @param key
+	 * @return
+	 */
+	public IAST getRule(IExpr key);
+		 
 	public IAST getRule(int position);
 
 	/**

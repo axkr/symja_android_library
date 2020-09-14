@@ -1553,7 +1553,7 @@ public class F extends S {
 	final static public IStringX $str(final char ch) {
 		return StringX.valueOf(ch);
 	}
-	
+
 	/**
 	 * Create a string expression
 	 * 
@@ -1829,6 +1829,10 @@ public class F extends S {
 			return new ASTAssociation((IAST) listOfRules.arg1());
 		}
 		return new ASTAssociation(listOfRules);
+	}
+
+	public static IAssociation assoc(final int capacity) {
+		return new ASTAssociation(capacity, false);
 	}
 
 	public static ISparseArray sparseArray(final IAST arrayRulesList) {
