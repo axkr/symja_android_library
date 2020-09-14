@@ -659,7 +659,7 @@ public class HypergeometricJS {
 
 	public static Complex hypergeometricU(Complex a, Complex b, Complex x) {
 
-		double useAsymptotic = 15;
+		double useAsymptotic = 20;
 
 		// asymptotic form as per Johansson arxiv.org/abs/1606.06977
 		if (x.abs() > useAsymptotic) {
