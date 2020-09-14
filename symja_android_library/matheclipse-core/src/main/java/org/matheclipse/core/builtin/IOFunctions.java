@@ -324,7 +324,8 @@ public class IOFunctions {
 			"intm", "Machine-sized integer expected at position `2` in `1`.", //
 			"intpm", "Positive machine-sized integer expected at position `2` in `1`.", //
 			"intrange", "Integer expected in range `1` to `2`.", //
-			"invrl", "The argument `1` is not a vaild Association or list of rules.", //
+			"invdt", "The argument is not a rule or a list of rules.", //
+			"invrl", "The argument `1` is not a valid Association or list of rules.", //
 			"iterb", "Iterator does not have appropriate bounds.", //
 			"itform", "Argument `1` at position `2` does not have the correct form for an iterator.", //
 			"itlim", "Iteration limit of `1` exceeded for `2`.", //

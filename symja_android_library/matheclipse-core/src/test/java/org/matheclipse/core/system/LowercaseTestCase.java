@@ -1216,6 +1216,15 @@ public class LowercaseTestCase extends AbstractTestCase {
 	}
 
 	public void testAssociation() {
+		check("pinfo = <|\"firstName\" -> \"John\", \"lastName\" -> \"Doe\"|>", //
+				"<|firstName->John,lastName->Doe|>");
+		check("pinfo[[\"lastName\"]]", //
+				"Doe");
+//		check("pinfo[[{\"firstName\", \"lastName\"}]]", //
+//				"");
+		check("AppendTo(pinfo, \"lastName\" -> \"Wayne\")", //
+				"<|firstName->John,lastName->Wayne|>");
+		
 		check("<|\"a\" -> b, \"c\" -> d|>[\"c\"]", //
 				"d");
 
@@ -18655,6 +18664,8 @@ public class LowercaseTestCase extends AbstractTestCase {
 	}
 
 	public void testPrepend() {
+		check("Prepend(<|1 -> a, 2 -> b|>, {3 -> d, 4 -> e})", //
+				"<|4->e,3->d,1->a,2->b|>");
 		check("Prepend(1/Sqrt(5),<|x->y|>)", //
 				"<|x->y^(1/Sqrt(5))|>");
 		check("Prepend(Infinity,-I)", //

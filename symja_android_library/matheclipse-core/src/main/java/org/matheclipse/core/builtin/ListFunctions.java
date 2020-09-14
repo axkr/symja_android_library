@@ -576,6 +576,16 @@ public final class ListFunctions {
 				return F.NIL;
 			}
 			IExpr arg2 = engine.evaluate(ast.arg2());
+			if (arg1.isAssociation()) {
+				if (arg2.isRuleAST() || arg2.isListOfRules()) {
+					IAssociation result = ((IAssociation) arg1).copy();
+					result.appendRules((IAST) arg2);
+					return result;
+				} else {
+					// The argument is not a rule or a list of rules.
+					return IOFunctions.printMessage(ast.topHead(), "invdt", F.List(), EvalEngine.get());
+				}
+			}
 			return arg1AST.appendClone(arg2);
 		}
 
@@ -645,6 +655,16 @@ public final class ListFunctions {
 
 			@Override
 			public IExpr apply(final IExpr symbolValue) {
+				if (symbolValue.isAssociation()) {
+					if (value.isRuleAST() || value.isListOfRules()) {
+						IAssociation result = ((IAssociation) symbolValue).copy();
+						result.appendRules((IAST) value);
+						return result;
+					} else {
+						// The argument is not a rule or a list of rules.
+						return IOFunctions.printMessage(S.Append, "invdt", F.List(), EvalEngine.get());
+					}
+				}
 				if (!symbolValue.isAST()) {
 					return F.NIL;
 				}
@@ -4211,6 +4231,16 @@ public final class ListFunctions {
 				return F.NIL;
 			}
 			IExpr arg2 = engine.evaluate(ast.arg2());
+			if (arg1.isAssociation()) {
+				if (arg2.isRuleAST() || arg2.isListOfRules()) {
+					IAssociation result = ((IAssociation) arg1).copy();
+					result.prependRules((IAST) arg2);
+					return result;
+				} else {
+					// The argument is not a rule or a list of rules.
+					return IOFunctions.printMessage(ast.topHead(), "invdt", F.List(), EvalEngine.get());
+				}
+			}
 			return arg1AST.appendAtClone(1, arg2);
 		}
 
@@ -4307,6 +4337,16 @@ public final class ListFunctions {
 
 			@Override
 			public IExpr apply(final IExpr symbolValue) {
+				if (symbolValue.isAssociation()) {
+					if (value.isRuleAST() || value.isListOfRules()) {
+						IAssociation result = ((IAssociation) symbolValue).copy();
+						result.prependRules((IAST) value);
+						return result;
+					} else {
+						// The argument is not a rule or a list of rules.
+						return IOFunctions.printMessage(S.PrependTo, "invdt", F.List(), EvalEngine.get());
+					}
+				}
 				if (!symbolValue.isAST()) {
 					return F.NIL;
 				}

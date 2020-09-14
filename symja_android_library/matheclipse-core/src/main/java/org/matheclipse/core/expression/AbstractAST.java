@@ -1015,6 +1015,16 @@ public abstract class AbstractAST implements IASTMutable {
 			ArgumentTypeException.throwNIL();
 			return null;
 		}
+
+		@Override
+		public void prependRules(IAST listOfRules) {
+			ArgumentTypeException.throwNIL();
+		}
+
+		@Override
+		public void prependRules(IAST listOfRules, int startPosition, int endPosition) {
+			ArgumentTypeException.throwNIL();
+		}
 	}
 
 	/**

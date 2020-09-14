@@ -173,7 +173,7 @@ public interface IASTAppendable extends IASTMutable {
 	 * Adds the mappings in the specified map as <code>Rule(...)</code> to the end of this {@code List}. The objects are
 	 * added in the order in which they are returned from the map's iterator.
 	 * 
-	 * @param map 
+	 * @param map
 	 * @return
 	 */
 	public boolean appendAll(Map<? extends IExpr, ? extends IExpr> map);
@@ -298,7 +298,7 @@ public interface IASTAppendable extends IASTMutable {
 	 * @return <code>this</code> ast after adding the subAST
 	 */
 	public IAST appendOneIdentity(IAST subAST);
-	
+
 	/**
 	 * Adds the specified rule at the end of this association.
 	 * 
@@ -308,6 +308,17 @@ public interface IASTAppendable extends IASTMutable {
 	 */
 	default void appendRule(IExpr expr) {
 		append(expr);
+	}
+
+	/**
+	 * Adds the specified rule at the start of this association.
+	 * 
+	 * @param rule
+	 *            the rule to add at the end of this association
+	 * @return always true
+	 */
+	default void prependRule(IExpr rule) {
+		append(1, rule);
 	}
 
 	/**
