@@ -1215,16 +1215,36 @@ public class LowercaseTestCase extends AbstractTestCase {
 				"1.83463+I*(-0.191462)");
 	}
 
+	public void testAssociateTo() {
+		check("assoc = Association({a -> 1, b -> 2, c -> 3})", //
+				"<|a->1,b->2,c->3|>");
+		check("AssociateTo(assoc, a -> 11)", //
+				"<|a->11,b->2,c->3|>");
+		check("AssociateTo(assoc, d -> 4)", //
+				"<|a->11,b->2,c->3,d->4|>");
+
+		check("assoc = Association({a -> 1, b -> 2})", //
+				"<|a->1,b->2|>");
+		check("assoc2 = <|c -> 3|>", //
+				"<|c->3|>");
+		check("AssociateTo(assoc, assoc2)", //
+				"<|a->1,b->2,c->3|>");
+		check("AppendTo(assoc, assoc2)", //
+				"<|a->1,b->2,c->3|>");
+	}
+
 	public void testAssociation() {
 		check("pinfo = <|\"firstName\" -> \"John\", \"lastName\" -> \"Doe\"|>", //
 				"<|firstName->John,lastName->Doe|>");
 		check("pinfo[[\"lastName\"]]", //
 				"Doe");
-//		check("pinfo[[{\"firstName\", \"lastName\"}]]", //
-//				"");
+		check("pinfo[[{\"lastName\"}]]", //
+				"<|lastName->Doe|>");
+		check("pinfo[[{\"firstName\", \"lastName\"}]]", //
+				"<|firstName->John,lastName->Doe|>");
 		check("AppendTo(pinfo, \"lastName\" -> \"Wayne\")", //
 				"<|firstName->John,lastName->Wayne|>");
-		
+
 		check("<|\"a\" -> b, \"c\" -> d|>[\"c\"]", //
 				"d");
 
@@ -1346,6 +1366,18 @@ public class LowercaseTestCase extends AbstractTestCase {
 		check("f(#apples, #oranges) &[<|\"apples\" -> 10, \"oranges\" -> 12, \"pears\" -> 4|>] ", //
 				"f(10,12)");
 
+	}
+
+	public void testAssociationMap() {
+		check("AssociationMap(f, {a, b, c, d})", //
+				"<|a->f(a),b->f(b),c->f(c),d->f(d)|>");
+		check("AssociationMap(Reverse, <|a -> 1, b -> 2, c -> 3, d -> 4|>)", //
+				"<|1->a,2->b,3->c,4->d|>");
+		
+		check("AssociationMap(f) @ {a, b, c, d}", //
+				"<|a->f(a),b->f(b),c->f(c),d->f(d)|>");
+		check("AssociationMap[Length, <|a -> 1, b -> 2|>]", //
+				"Association(2,2)");
 	}
 
 	public void testAssociationQ() {

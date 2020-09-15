@@ -2,16 +2,16 @@ package org.matheclipse.core.builtin;
 
 import java.util.HashMap;
 import java.util.Map;
+import java.util.function.Function;
 
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.exception.ArgumentTypeException;
+import org.matheclipse.core.eval.exception.Validate;
 import org.matheclipse.core.eval.exception.ValidateException;
 import org.matheclipse.core.eval.interfaces.AbstractCoreFunctionEvaluator;
 import org.matheclipse.core.eval.interfaces.AbstractEvaluator;
 import org.matheclipse.core.eval.interfaces.ICoreFunctionEvaluator;
 import org.matheclipse.core.eval.interfaces.ISetEvaluator;
-import org.matheclipse.core.eval.util.ISequence;
-import org.matheclipse.core.eval.util.Sequence;
 import org.matheclipse.core.expression.ASTAssociation;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.expression.S;
@@ -53,7 +53,9 @@ public class AssociationFunctions {
 	private static class Initializer {
 
 		private static void init() {
+			S.AssociateTo.setEvaluator(new AssociateTo());
 			S.Association.setEvaluator(new Association());
+			S.AssociationMap.setEvaluator(new AssociationMap());
 			S.AssociationThread.setEvaluator(new AssociationThread());
 			S.Counts.setEvaluator(new Counts());
 			S.KeyExistsQ.setEvaluator(new KeyExistsQ());
@@ -65,6 +67,57 @@ public class AssociationFunctions {
 			S.Structure.setEvaluator(new Structure());
 			S.Summary.setEvaluator(new Summary());
 			S.Values.setEvaluator(new Values());
+		}
+	}
+
+	private final static class AssociateTo extends AbstractCoreFunctionEvaluator {
+
+		private static class AssociateToFunction implements Function<IExpr, IExpr> {
+			private final IExpr value;
+
+			public AssociateToFunction(final IExpr value) {
+				this.value = value;
+			}
+
+			@Override
+			public IExpr apply(final IExpr symbolValue) {
+				if (symbolValue.isAssociation()) {
+					if (value.isRuleAST() || value.isListOfRules() || value.isAssociation()) {
+						IAssociation result = ((IAssociation) symbolValue).copy();
+						result.appendRules((IAST) value);
+						return result;
+					} else {
+						// The argument is not a rule or a list of rules.
+						return IOFunctions.printMessage(S.AssociateTo, "invdt", F.List(), EvalEngine.get());
+					}
+				}
+				return F.NIL;
+			}
+
+		}
+
+		@Override
+		public IExpr evaluate(final IAST ast, EvalEngine engine) {
+			IExpr sym = Validate.checkSymbolType(ast, 1, engine);
+			if (sym.isPresent()) {
+				IExpr arg2 = engine.evaluate(ast.arg2());
+				Function<IExpr, IExpr> function = new AssociateToFunction(arg2);
+				IExpr[] results = ((ISymbol) sym).reassignSymbolValue(function, S.AssociateTo, engine);
+				if (results != null) {
+					return results[1];
+				}
+			}
+			return F.NIL;
+		}
+
+		@Override
+		public int[] expectedArgSize(IAST ast) {
+			return IOFunctions.ARGS_2_2;
+		}
+
+		@Override
+		public void setUp(final ISymbol newSymbol) {
+			newSymbol.setAttributes(ISymbol.HOLDFIRST);
 		}
 	}
 
@@ -140,6 +193,52 @@ public class AssociationFunctions {
 				}
 			}
 			return F.NIL;
+		}
+	}
+
+	private static class AssociationMap extends AbstractEvaluator {
+
+		@Override
+		public IExpr evaluate(IAST ast, EvalEngine engine) {
+			if (ast.isAST1()) {
+				ast = F.operatorFormPrepend(ast);
+				if (!ast.isPresent()) {
+					return F.NIL;
+				}
+			}
+			IExpr arg1 = ast.arg1();
+			if (ast.isAST2()) {
+				IExpr arg2 = ast.arg2();
+				return associationMap(F.Rule, arg1, arg2, engine);
+			}
+			return F.NIL;
+		}
+
+		private static IExpr associationMap(ISymbol symbol, IExpr arg1, IExpr arg2, EvalEngine engine) {
+			if (arg2.isList()) {
+				IAST list2 = (IAST) arg2;
+				IAssociation result = F.assoc(list2.size());
+				for (int i = 1; i < list2.size(); i++) {
+					IExpr function = engine.evaluate(F.unaryAST1(arg1, list2.get(i)));
+					result.append(F.binaryAST2(symbol, list2.get(i), function));
+				}
+				return result;
+			}
+			if (arg2.isAssociation()) {
+				IAssociation list2 = (IAssociation) arg2;
+				IASTAppendable result = F.ast(F.Association, list2.size(), false);
+				for (int i = 1; i < list2.size(); i++) {
+					IExpr function = engine.evaluate(F.unaryAST1(arg1, list2.getRule(i)));
+					result.appendRule(function);
+				}
+				return result;
+			}
+			return F.NIL;
+		}
+
+		@Override
+		public int[] expectedArgSize(IAST ast) {
+			return IOFunctions.ARGS_1_2;
 		}
 	}
 
@@ -476,7 +575,7 @@ public class AssociationFunctions {
 		private static IAST keyTake(final IAST expr, final IAST list) {
 			final int size = list.size();
 			// final IASTAppendable assoc = F.assoc(expr);
-			final IASTAppendable resultAssoc =  F.assoc(10 > size ? size : 10);
+			final IASTAppendable resultAssoc = F.assoc(10 > size ? size : 10);
 			for (int i = 1; i < size; i++) {
 				IExpr rule = expr.getRule(list.get(i));
 				if (rule.isPresent()) {

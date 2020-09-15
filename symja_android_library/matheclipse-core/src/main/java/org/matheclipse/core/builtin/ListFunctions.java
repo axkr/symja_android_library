@@ -577,7 +577,7 @@ public final class ListFunctions {
 			}
 			IExpr arg2 = engine.evaluate(ast.arg2());
 			if (arg1.isAssociation()) {
-				if (arg2.isRuleAST() || arg2.isListOfRules()) {
+				if (arg2.isRuleAST() || arg2.isListOfRules() || arg2.isAssociation()) {
 					IAssociation result = ((IAssociation) arg1).copy();
 					result.appendRules((IAST) arg2);
 					return result;
@@ -656,13 +656,13 @@ public final class ListFunctions {
 			@Override
 			public IExpr apply(final IExpr symbolValue) {
 				if (symbolValue.isAssociation()) {
-					if (value.isRuleAST() || value.isListOfRules()) {
+					if (value.isRuleAST() || value.isListOfRules() || value.isAssociation()) {
 						IAssociation result = ((IAssociation) symbolValue).copy();
 						result.appendRules((IAST) value);
 						return result;
 					} else {
 						// The argument is not a rule or a list of rules.
-						return IOFunctions.printMessage(S.Append, "invdt", F.List(), EvalEngine.get());
+						return IOFunctions.printMessage(S.AppendTo, "invdt", F.List(), EvalEngine.get());
 					}
 				}
 				if (!symbolValue.isAST()) {
@@ -4232,7 +4232,7 @@ public final class ListFunctions {
 			}
 			IExpr arg2 = engine.evaluate(ast.arg2());
 			if (arg1.isAssociation()) {
-				if (arg2.isRuleAST() || arg2.isListOfRules()) {
+				if (arg2.isRuleAST() || arg2.isListOfRules() || arg2.isAssociation()) {
 					IAssociation result = ((IAssociation) arg1).copy();
 					result.prependRules((IAST) arg2);
 					return result;
@@ -4338,7 +4338,7 @@ public final class ListFunctions {
 			@Override
 			public IExpr apply(final IExpr symbolValue) {
 				if (symbolValue.isAssociation()) {
-					if (value.isRuleAST() || value.isListOfRules()) {
+					if (value.isRuleAST() || value.isListOfRules() || value.isAssociation()) {
 						IAssociation result = ((IAssociation) symbolValue).copy();
 						result.prependRules((IAST) value);
 						return result;

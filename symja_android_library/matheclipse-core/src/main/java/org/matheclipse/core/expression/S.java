@@ -283,9 +283,15 @@ public class S {
 	/***/
 	public final static IBuiltInSymbol Arrays = F.initFinalSymbol("Arrays", ID.Arrays);
 
+	/***/
+	public final static IBuiltInSymbol AssociateTo = F.initFinalSymbol("AssociateTo", ID.AssociateTo);
+	
 	/** Association(list-of-rules) - create a `key->value` association map from the `list-of-rules`. */
 	public final static IBuiltInSymbol Association = F.initFinalSymbol("Association", ID.Association);
 
+	/***/
+	public final static IBuiltInSymbol AssociationMap = F.initFinalSymbol("AssociationMap", ID.AssociationMap);
+	
 	/***/
 	public final static IBuiltInSymbol AssociationThread = F.initFinalSymbol("AssociationThread", ID.AssociationThread);
 

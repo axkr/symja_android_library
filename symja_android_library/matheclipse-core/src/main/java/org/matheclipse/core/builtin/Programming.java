@@ -3367,6 +3367,69 @@ public final class Programming {
 				return result;
 			}
 			return F.NIL;
+		} else if (arg1.isAssociation()) {
+			IAssociation assoc = (IAssociation) arg1;
+			if (arg2.isList()) {
+				IExpr temp = null;
+				final IAST list = (IAST) arg2;
+				final IAssociation result = F.assoc(list.size());
+
+				for (int i = 1; i < list.size(); i++) {
+					final IExpr listArg = list.get(i);
+					if (listArg.isReal()) {
+						final int indx = listArg.toIntDefault(Integer.MIN_VALUE);
+						if (indx == Integer.MIN_VALUE) {
+							// Part `1` of `2` does not exist.
+							return IOFunctions.printMessage(F.Part, "partw", F.List(listArg, arg1), engine);
+						}
+						IExpr ires = getIndex(arg1, indx, engine);
+						if (ires.isPresent()) {
+							if (p1 < ast.size()) {
+								if (ires.isAST()) {
+									temp = part((IAST) ires, ast, p1, engine);
+									if (temp.isPresent()) {
+										result.append(temp);
+									} else {
+										// an error occurred
+										return F.NIL;
+									}
+								} else {
+									// Part specification `1` is longer than depth of object.
+									return IOFunctions.printMessage(F.Part, "partd", F.List(ires), engine);
+								}
+							} else {
+								result.append(ires);
+							}
+						} else {
+							return F.NIL;
+						}
+					} else if (listArg.isAST(F.Key, 2)) {
+						result.appendRule( assoc.getRule(listArg.first()));
+					} else if (listArg.isString()) {
+						result.appendRule( assoc.getRule(listArg));
+					}
+				}
+				return result;
+			}
+
+			IExpr result = F.NIL;
+			if (arg2.isAST(F.Key, 2)) {
+				result = assoc.getValue(arg2.first());
+			} else if (arg2.isString()) {
+				result = assoc.getValue(arg2);
+			}
+
+			if (result.isPresent()) {
+				if (p1 < ast.size()) {
+					if (result.isAST()) {
+						return part((IAST) result, ast, p1, engine);
+					} else {
+						// Part specification `1` is longer than depth of object.
+						return IOFunctions.printMessage(F.Part, "partd", F.List(result), engine);
+					}
+				}
+				return result;
+			}
 		} else if (arg2.isList()) {
 			IExpr temp = null;
 			final IAST list = (IAST) arg2;
@@ -3405,26 +3468,7 @@ public final class Programming {
 			}
 			return result;
 		}
-		if (arg1.isAssociation()) {
-			IExpr result = F.NIL;
-			if (arg2.isAST(F.Key, 2)) {
-				result = ((IAssociation) arg1).getValue(arg2.first());
-			} else if (arg2.isString()) {
-				result = ((IAssociation) arg1).getValue(arg2);
-			}
 
-			if (result.isPresent()) {
-				if (p1 < ast.size()) {
-					if (result.isAST()) {
-						return part((IAST) result, ast, p1, engine);
-					} else {
-						// Part specification `1` is longer than depth of object.
-						return IOFunctions.printMessage(F.Part, "partd", F.List(result), engine);
-					}
-				}
-				return result;
-			}
-		}
 		// The expression `1` cannot be used as a part specification.
 		return IOFunctions.printMessage(F.Part, "pkspec1", F.List(arg2), engine);
 	}
@@ -3443,7 +3487,7 @@ public final class Programming {
 			}
 			return temp;
 		}
-		
+
 		// The expression `1` cannot be used as a part specification.
 		return IOFunctions.printMessage(F.Part, "pkspec1", F.List(ast), engine);
 	}
