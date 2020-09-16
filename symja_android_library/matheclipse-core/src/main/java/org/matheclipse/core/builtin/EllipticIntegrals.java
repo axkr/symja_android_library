@@ -955,7 +955,7 @@ public class EllipticIntegrals {
 
 		@Override
 		public IExpr evaluate(IAST ast, EvalEngine engine) {
-			if (ast.arg1().isVector() == 2) {
+			if (ast.arg1().isList2()) {
 				IAST list = (IAST) ast.arg1();
 				IExpr g2 = list.arg1();
 				IExpr g3 = list.arg2();
@@ -989,7 +989,7 @@ public class EllipticIntegrals {
 
 		@Override
 		public IExpr evaluate(IAST ast, EvalEngine engine) {
-			if (ast.arg1().isVector() == 2) {
+			if (ast.arg1().isList2()) {
 				IAST list = (IAST) ast.arg1();
 				IExpr g2 = list.arg1();
 				IExpr g3 = list.arg2();
@@ -1027,7 +1027,7 @@ public class EllipticIntegrals {
 			if (u.isZero()) {
 				return F.CComplexInfinity;
 			}
-			if (ast.arg2().isVector() == 2) {
+			if (ast.arg2().isList2()) {
 				IAST list = (IAST) ast.arg2();
 				IExpr g2 = list.arg1();
 				IExpr g3 = list.arg2();
@@ -1071,7 +1071,7 @@ public class EllipticIntegrals {
 			if (u.isZero()) {
 				return F.CComplexInfinity;
 			}
-			if (ast.arg2().isVector() == 2) {
+			if (ast.arg2().isList2()) {
 				IAST list = (IAST) ast.arg2();
 				IExpr g2 = list.arg1();
 				IExpr g3 = list.arg2();

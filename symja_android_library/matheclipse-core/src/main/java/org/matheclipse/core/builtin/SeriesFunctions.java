@@ -1710,7 +1710,8 @@ public class SeriesFunctions {
 				IExpr x = ast.arg1();
 				IExpr x0 = ast.arg2();
 
-				if (ast.arg3().isVector() < 0) {
+				if (ast.arg3().isVector() < 0 || //
+						!ast.arg3().isAST()) {
 					return F.NIL;
 				}
 				IAST coefficients = (IAST) ast.arg3();

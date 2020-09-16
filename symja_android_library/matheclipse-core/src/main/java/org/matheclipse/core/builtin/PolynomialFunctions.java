@@ -1725,7 +1725,7 @@ public class PolynomialFunctions {
 		public IExpr evaluate(final IAST ast, EvalEngine engine) {
 			if (ast.size() >= 3) {
 
-				if (ast.arg1().isVector() < 0 || ast.arg2().isVector() < 0) {
+				if (!ast.arg1().isList() || !ast.arg2().isList()) {
 					return F.NIL;
 				}
 				TermOrder termOrder = TermOrderByName.Lexicographic;

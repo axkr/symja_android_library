@@ -74,6 +74,7 @@ import org.matheclipse.core.interfaces.IEvalStepListener;
 import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.interfaces.INumber;
 import org.matheclipse.core.interfaces.ISparseArray;
+import org.matheclipse.core.interfaces.IStringX;
 import org.matheclipse.core.interfaces.ISymbol;
 import org.matheclipse.parser.client.FEConfig;
 
@@ -1674,22 +1675,38 @@ public final class LinearAlgebra {
 
 		@Override
 		public IExpr evaluate(final IAST ast, EvalEngine engine) {
-			int dim = ast.arg1().isVector();
+			IExpr arg1 = ast.arg1();
+			int dim = arg1.isVector();
 			if (dim > 0) {
-				IAST list = (IAST) ast.arg1();
-				if (dim == 2) {
-					IExpr r = list.arg1();
-					IExpr theta = list.arg2();
-					return F.List(F.Times(r, F.Cos(theta)), F.Times(r, F.Sin(theta)));
-				} else if (dim == 3) {
-					IExpr r = list.arg1();
-					IExpr theta = list.arg2();
-					IExpr phi = list.arg3();
-					return F.List(F.Times(r, F.Cos(theta)), F.Times(r, F.Cos(phi), F.Sin(theta)),
-							F.Times(r, F.Sin(theta), F.Sin(phi)));
+				if (arg1.isAST()) {
+					IAST list = (IAST) arg1;
+					if (dim == 2) {
+						IExpr r = list.arg1();
+						IExpr theta = list.arg2();
+						return F.List(F.Times(r, F.Cos(theta)), F.Times(r, F.Sin(theta)));
+					} else if (dim == 3) {
+						IExpr r = list.arg1();
+						IExpr theta = list.arg2();
+						IExpr phi = list.arg3();
+						return F.List(F.Times(r, F.Cos(theta)), F.Times(r, F.Cos(phi), F.Sin(theta)),
+								F.Times(r, F.Sin(theta), F.Sin(phi)));
+					}
+				} else {
+					FieldVector<IExpr> vector = Convert.list2Vector(arg1);
+					if (dim == 2) {
+						IExpr r = vector.getEntry(0);
+						IExpr theta = vector.getEntry(1);
+						return F.List(F.Times(r, F.Cos(theta)), F.Times(r, F.Sin(theta)));
+					} else if (dim == 3) {
+						IExpr r = vector.getEntry(0);
+						IExpr theta = vector.getEntry(1);
+						IExpr phi = vector.getEntry(2);
+						return F.List(F.Times(r, F.Cos(theta)), F.Times(r, F.Cos(phi), F.Sin(theta)),
+								F.Times(r, F.Sin(theta), F.Sin(phi)));
+					}
 				}
-			} else if (ast.arg1().isList()) {
-				return ((IAST) ast.arg1()).mapThreadEvaled(engine, F.ListAlloc(ast.size()), ast, 1);
+			} else if (arg1.isList()) {
+				return ((IAST) arg1).mapThreadEvaled(engine, F.ListAlloc(ast.size()), ast, 1);
 			}
 			return F.NIL;
 		}
@@ -2045,14 +2062,27 @@ public final class LinearAlgebra {
 				}
 				if (variables.isPresent()) {
 					int variablesSize = variables.size();
-					IAST vector = (IAST) ast.arg1();
-					int vectorSize = vector.size();
-					IASTAppendable jacobiMatrix = F.ListAlloc(vectorSize);
-					final IAST vars = variables;
-					return jacobiMatrix.appendArgs(vectorSize, i -> {
-						IASTAppendable jacobiRow = F.ListAlloc(variablesSize);
-						return jacobiRow.appendArgs(variablesSize, j -> F.D(vector.get(i), vars.get(j)));
-					});
+					if (ast.arg1().isAST()) {
+						IAST vector = (IAST) ast.arg1();
+						int vectorSize = vector.size();
+						IASTAppendable jacobiMatrix = F.ListAlloc(vectorSize);
+						final IAST vars = variables;
+						return jacobiMatrix.appendArgs(vectorSize, i -> {
+							IASTAppendable jacobiRow = F.ListAlloc(variablesSize);
+							return jacobiRow.appendArgs(variablesSize, j -> F.D(vector.get(i), vars.get(j)));
+						});
+					} else {
+						FieldVector<IExpr> vector = Convert.list2Vector(ast.arg1());
+						if (vector != null) {
+							int vectorSize = vector.getDimension();
+							IASTAppendable jacobiMatrix = F.ListAlloc(vectorSize);
+							final IAST vars = variables;
+							return jacobiMatrix.appendArgs(vectorSize, i -> {
+								IASTAppendable jacobiRow = F.ListAlloc(variablesSize);
+								return jacobiRow.appendArgs(variablesSize, j -> F.D(vector.getEntry(i), vars.get(j)));
+							});
+						}
+					}
 				}
 			}
 
@@ -2088,46 +2118,48 @@ public final class LinearAlgebra {
 		@Override
 		public IExpr evaluate(final IAST ast, EvalEngine engine) {
 			if (ast.arg1().isMatrix() != null && ast.arg2().isVector() >= 0) {
-				IAST matrix = (IAST) ast.arg1();
-				IAST vector = (IAST) ast.arg2();
-				try {
-					if (matrix.isNumericMode() || vector.isNumericMode()) {
-						RealMatrix realMatrix = ast.arg1().toRealMatrix();
-						if (realMatrix != null) {
-							RealVector realVector = ast.arg2().toRealVector();
-							if (realVector != null) {
-								// for numerical stability use: Dot(PseudoInverse(matrix), vector)
-								realMatrix = PseudoInverse.CONST.realMatrixEval(realMatrix);
-								if (realMatrix != null) {
-									return new ASTRealVector(realMatrix.operate(realVector), false);
+				IAST matrix = (IAST) ast.arg1().normal(false);
+				IAST vector = (IAST) ast.arg2().normal(false);
+				if (matrix.isList() && vector.isList()) {
+					try {
+						if (matrix.isNumericMode() || vector.isNumericMode()) {
+							RealMatrix realMatrix = ast.arg1().toRealMatrix();
+							if (realMatrix != null) {
+								RealVector realVector = ast.arg2().toRealVector();
+								if (realVector != null) {
+									// for numerical stability use: Dot(PseudoInverse(matrix), vector)
+									realMatrix = PseudoInverse.CONST.realMatrixEval(realMatrix);
+									if (realMatrix != null) {
+										return new ASTRealVector(realMatrix.operate(realVector), false);
+									}
 								}
 							}
+							return F.NIL;
 						}
-						return F.NIL;
+					} catch (final MathRuntimeException mre) {
+						// org.hipparchus.exception.MathIllegalArgumentException: inconsistent dimensions: 0 != 3
+						return engine.printMessage(ast.topHead(), mre);
+					} catch (final ClassCastException e) {
+						if (FEConfig.SHOW_STACKTRACE) {
+							e.printStackTrace();
+						}
+					} catch (final IndexOutOfBoundsException e) {
+						if (FEConfig.SHOW_STACKTRACE) {
+							e.printStackTrace();
+						}
 					}
-				} catch (final MathRuntimeException mre) {
-					// org.hipparchus.exception.MathIllegalArgumentException: inconsistent dimensions: 0 != 3
-					return engine.printMessage(ast.topHead(), mre);
-				} catch (final ClassCastException e) {
-					if (FEConfig.SHOW_STACKTRACE) {
-						e.printStackTrace();
-					}
-				} catch (final IndexOutOfBoundsException e) {
-					if (FEConfig.SHOW_STACKTRACE) {
-						e.printStackTrace();
-					}
-				}
-				try {
-					IAST matrixTransposed = (IAST) F.ConjugateTranspose.of(engine, matrix);
-					return F.Expand(F.LinearSolve(F.ConjugateTranspose(F.Dot(matrixTransposed, matrix)),
-							F.Dot(matrixTransposed, vector)));
-				} catch (final ClassCastException e) {
-					if (FEConfig.SHOW_STACKTRACE) {
-						e.printStackTrace();
-					}
-				} catch (final IndexOutOfBoundsException e) {
-					if (FEConfig.SHOW_STACKTRACE) {
-						e.printStackTrace();
+					try {
+						IAST matrixTransposed = (IAST) F.ConjugateTranspose.of(engine, matrix);
+						return F.Expand(F.LinearSolve(F.ConjugateTranspose(F.Dot(matrixTransposed, matrix)),
+								F.Dot(matrixTransposed, vector)));
+					} catch (final ClassCastException e) {
+						if (FEConfig.SHOW_STACKTRACE) {
+							e.printStackTrace();
+						}
+					} catch (final IndexOutOfBoundsException e) {
+						if (FEConfig.SHOW_STACKTRACE) {
+							e.printStackTrace();
+						}
 					}
 				}
 			}
@@ -2879,27 +2911,31 @@ public final class LinearAlgebra {
 				if (dim == 0) {
 					return F.NIL;
 				}
-				IAST vector = (IAST) arg1;
-				if (ast.isAST2()) {
-					IExpr p = ast.arg2();
-					if (p.isInfinity()) {
-						return vector.map(F.Max, x -> F.Abs(x));
-					} else {
-						if (p.isSymbol() || p.isReal()) {
-							if (p.isZero()) {
-								engine.printMessage("Norm: 0 not allowed as second argument!");
-								return F.NIL;
+				arg1 = arg1.normal(false);
+				if (arg1.isList()) {
+					IAST vector = (IAST) arg1;
+					if (ast.isAST2()) {
+						IExpr p = ast.arg2();
+						if (p.isInfinity()) {
+							return vector.map(F.Max, x -> F.Abs(x));
+						} else {
+							if (p.isSymbol() || p.isReal()) {
+								if (p.isZero()) {
+									engine.printMessage("Norm: 0 not allowed as second argument!");
+									return F.NIL;
+								}
+								if (p.isReal() && p.lessThan(F.C1).isTrue()) {
+									engine.printMessage("Norm: Second argument is < 1!");
+									return F.NIL;
+								}
+								return F.Power(vector.map(F.Plus, x -> F.Power(F.Abs(x), p)), p.inverse());
 							}
-							if (p.isReal() && p.lessThan(F.C1).isTrue()) {
-								engine.printMessage("Norm: Second argument is < 1!");
-								return F.NIL;
-							}
-							return F.Power(vector.map(F.Plus, x -> F.Power(F.Abs(x), p)), p.inverse());
 						}
+						return F.NIL;
 					}
-					return F.NIL;
+					return F.Sqrt(vector.map(F.Plus, x -> F.Sqr(F.Abs(x))));
 				}
-				return F.Sqrt(vector.map(F.Plus, x -> F.Sqr(F.Abs(x))));
+				return F.NIL;
 			}
 			if (arg1.isNumber()) {
 				if (ast.isAST2()) {
@@ -3648,22 +3684,38 @@ public final class LinearAlgebra {
 
 		@Override
 		public IExpr evaluate(final IAST ast, EvalEngine engine) {
-			int dim = ast.arg1().isVector();
+			final IExpr arg1 = ast.arg1();
+			int dim = arg1.isVector();
 			if (dim > 0) {
-				IAST list = (IAST) ast.arg1();
-				if (dim == 2) {
-					IExpr x = list.arg1();
-					IExpr y = list.arg2();
-					return F.List(F.Sqrt(F.Plus(F.Sqr(x), F.Sqr(y))), F.ArcTan(x, y));
-				} else if (dim == 3) {
-					IExpr x = list.arg1();
-					IExpr y = list.arg2();
-					IExpr z = list.arg3();
-					IAST sqrtExpr = F.Sqrt(F.Plus(F.Sqr(x), F.Sqr(y), F.Sqr(z)));
-					return F.List(sqrtExpr, F.ArcCos(F.Divide(x, sqrtExpr)), F.ArcTan(y, z));
+				if (arg1.isAST()) {
+					IAST list = (IAST) arg1;
+					if (dim == 2) {
+						IExpr x = list.arg1();
+						IExpr y = list.arg2();
+						return F.List(F.Sqrt(F.Plus(F.Sqr(x), F.Sqr(y))), F.ArcTan(x, y));
+					} else if (dim == 3) {
+						IExpr x = list.arg1();
+						IExpr y = list.arg2();
+						IExpr z = list.arg3();
+						IAST sqrtExpr = F.Sqrt(F.Plus(F.Sqr(x), F.Sqr(y), F.Sqr(z)));
+						return F.List(sqrtExpr, F.ArcCos(F.Divide(x, sqrtExpr)), F.ArcTan(y, z));
+					}
+				} else {
+					FieldVector<IExpr> vector = Convert.list2Vector(arg1);
+					if (dim == 2) {
+						IExpr x = vector.getEntry(0);
+						IExpr y = vector.getEntry(1);
+						return F.List(F.Sqrt(F.Plus(F.Sqr(x), F.Sqr(y))), F.ArcTan(x, y));
+					} else if (dim == 3) {
+						IExpr x = vector.getEntry(0);
+						IExpr y = vector.getEntry(1);
+						IExpr z = vector.getEntry(2);
+						IAST sqrtExpr = F.Sqrt(F.Plus(F.Sqr(x), F.Sqr(y), F.Sqr(z)));
+						return F.List(sqrtExpr, F.ArcCos(F.Divide(x, sqrtExpr)), F.ArcTan(y, z));
+					}
 				}
-			} else if (ast.arg1().isList()) {
-				IAST list = (IAST) ast.arg1();
+			} else if (arg1.isList()) {
+				IAST list = (IAST) arg1;
 				return list.mapThreadEvaled(engine, F.ListAlloc(list.size()), ast, 1);
 			}
 			return F.NIL;

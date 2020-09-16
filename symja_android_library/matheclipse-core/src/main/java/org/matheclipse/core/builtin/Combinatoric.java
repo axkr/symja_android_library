@@ -245,8 +245,8 @@ public final class Combinatoric {
 			int dim1 = ast.arg1().isVector();
 			int dim2 = ast.arg2().isVector();
 			if (dim1 == dim2 && dim1 > 0) {
-				IAST u = (IAST) ast.arg1();
-				IAST v = (IAST) ast.arg2();
+				IAST u = (IAST) ast.arg1().normal(false);
+				IAST v = (IAST) ast.arg2().normal(false);
 				int length = u.size();
 				int n10 = 0;
 				int n01 = 0;
@@ -611,8 +611,8 @@ public final class Combinatoric {
 			int dim1 = ast.arg1().isVector();
 			int dim2 = ast.arg2().isVector();
 			if (dim1 == dim2 && dim1 > 0) {
-				IAST u = (IAST) ast.arg1();
-				IAST v = (IAST) ast.arg2();
+				IAST u = (IAST) ast.arg1().normal(false);
+				IAST v = (IAST) ast.arg2().normal(false);
 				int length = u.size();
 				int n10 = 0;
 				int n01 = 0;
@@ -661,7 +661,7 @@ public final class Combinatoric {
 		@Override
 		public IExpr evaluate(final IAST ast, EvalEngine engine) {
 			final int k = ast.arg2().toIntDefault();
-			if (ast.arg1().size() > 1 && k > 0) {
+			if (ast.arg1().isAST() && ast.arg1().size() > 1 && k > 0) {
 				final IAST listArg0 = (IAST) ast.arg1();
 				if (k == 1) {
 					return F.List(listArg0);
@@ -981,8 +981,8 @@ public final class Combinatoric {
 			int dim1 = ast.arg1().isVector();
 			int dim2 = ast.arg2().isVector();
 			if (dim1 == dim2 && dim1 > 0) {
-				IAST u = (IAST) ast.arg1();
-				IAST v = (IAST) ast.arg2();
+				IAST u = (IAST) ast.arg1().normal(false);
+				IAST v = (IAST) ast.arg2().normal(false);
 				int length = u.size();
 				int n10 = 0;
 				int n01 = 0;
@@ -1393,8 +1393,8 @@ public final class Combinatoric {
 			int dim1 = ast.arg1().isVector();
 			int dim2 = ast.arg2().isVector();
 			if (dim1 == dim2 && dim1 > 0) {
-				IAST u = (IAST) ast.arg1();
-				IAST v = (IAST) ast.arg2();
+				IAST u = (IAST) ast.arg1().normal(false);
+				IAST v = (IAST) ast.arg2().normal(false);
 				int length = u.size();
 				int n10 = 0;
 				int n01 = 0;
@@ -1453,8 +1453,8 @@ public final class Combinatoric {
 			int dim1 = ast.arg1().isVector();
 			int dim2 = ast.arg2().isVector();
 			if (dim1 == dim2 && dim1 > 0) {
-				IAST u = (IAST) ast.arg1();
-				IAST v = (IAST) ast.arg2();
+				IAST u = (IAST) ast.arg1().normal(false);
+				IAST v = (IAST) ast.arg2().normal(false);
 				int length = u.size();
 				int n10 = 0;
 				int n01 = 0;
@@ -1541,8 +1541,8 @@ public final class Combinatoric {
 			int dim1 = ast.arg1().isVector();
 			int dim2 = ast.arg2().isVector();
 			if (dim1 == dim2 && dim1 > 0) {
-				IAST u = (IAST) ast.arg1();
-				IAST v = (IAST) ast.arg2();
+				IAST u = (IAST) ast.arg1().normal(false);
+				IAST v = (IAST) ast.arg2().normal(false);
 				int length = u.size();
 				int n10 = 0;
 				int n01 = 0;
@@ -1892,8 +1892,8 @@ public final class Combinatoric {
 			int dim1 = ast.arg1().isVector();
 			int dim2 = ast.arg2().isVector();
 			if (dim1 == dim2 && dim1 > 0) {
-				IAST u = (IAST) ast.arg1();
-				IAST v = (IAST) ast.arg2();
+				IAST u = (IAST) ast.arg1().normal(false);
+				IAST v = (IAST) ast.arg2().normal(false);
 				int length = u.size();
 				int n10 = 0;
 				int n01 = 0;

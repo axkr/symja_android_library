@@ -2512,7 +2512,7 @@ public final class BooleanFunctions {
 	 * x
 	 * </pre>
 	 */
-	private static class Max extends AbstractFunctionEvaluator {
+	private static class Max extends Min {
 
 		@Override
 		public IExpr evaluate(final IAST ast, EvalEngine engine) {
@@ -2524,19 +2524,16 @@ public final class BooleanFunctions {
 				return IntervalSym.max((IAST) ast.arg1());
 			}
 
-			IAST resultList = EvalAttributes.flattenDeep(F.List, ast);
-			if (resultList.isPresent()) {
-				return maximum(resultList, true);
-			}
-
-			return maximum(ast, false);
+			IASTAppendable result = F.ast(F.Max, ast.size(), false);
+			boolean evaled = flattenList(ast, result);
+			return maximum((IAST) result, evaled);
 		}
 
 		public int[] expectedArgSize(IAST ast) {
 			return null;
 		}
 
-		private IExpr maximum(IAST list, boolean flattenedList) {
+		private static IExpr maximum(IAST list, boolean flattenedList) {
 			boolean evaled = false;
 			// int j = 1;
 			IASTAppendable f = list.remove(x -> x.isNegativeInfinity());
@@ -2661,20 +2658,38 @@ public final class BooleanFunctions {
 			if (ast.arg1().isInterval()) {
 				return IntervalSym.min((IAST) ast.arg1());
 			}
-
-			IAST resultList = EvalAttributes.flattenDeep(F.List, ast);
-			if (resultList.isPresent()) {
-				return minimum(resultList, true);
-			}
-
-			return minimum(ast, false);
+			IASTAppendable result = F.ast(F.Min, ast.size(), false);
+			boolean evaled = flattenList(ast, result);
+			return minimum((IAST) result, evaled);
 		}
 
 		public int[] expectedArgSize(IAST ast) {
 			return null;
 		}
 
-		private IExpr minimum(IAST list, final boolean flattenedList) {
+		protected boolean flattenList(IAST ast, IASTAppendable result) {
+			boolean evaled = false;
+			for (int i = 1; i < ast.size(); i++) {
+				final IExpr arg = ast.get(i);
+				int dim = arg.isVector();
+				if (dim >= 0) {
+					IExpr normal = arg.normal(false);
+					if (normal.isList()) {
+						flattenList((IAST) normal, result);
+						evaled = true;
+						continue;
+					}
+				} else if (arg.isList()) {
+					flattenList((IAST) arg, result);
+					evaled = true;
+					continue;
+				}
+				result.append(arg);
+			}
+			return evaled;
+		}
+
+		private static IExpr minimum(IAST list, final boolean flattenedList) {
 			boolean evaled = false;
 			IASTAppendable f = list.remove(x -> x.isInfinity());
 			if (f.isPresent()) {

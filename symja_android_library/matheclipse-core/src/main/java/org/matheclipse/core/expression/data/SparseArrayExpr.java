@@ -853,6 +853,9 @@ public class SparseArrayExpr extends DataExpr<Trie<int[], IExpr>> implements ISp
 
 	private static boolean patternPositionsList(final Trie<int[], IExpr> value, IAST rule, int[] dimension,
 			IAST arrayRulesList, EvalEngine engine) {
+		if (dimension == null) {
+			return false;
+		}
 		final int depth = dimension.length;
 		PatternMatcherAndEvaluator matcher = new PatternMatcherAndEvaluator(rule.arg1(), rule.arg2());
 		if (matcher.isRuleWithoutPatterns()) {
@@ -1189,15 +1192,15 @@ public class SparseArrayExpr extends DataExpr<Trie<int[], IExpr>> implements ISp
 	 *            the dimension of the matrix
 	 * @param f
 	 *            a unary function
-	 * @return 
+	 * @return
 	 */
- 	@Override
+	@Override
 	public IExpr mapMatrixColumns(int[] dim, Function<IExpr, IExpr> f) {
- 		// TODO improve performance; return a sparse array?
- 		IAST matrix= normal(false); 
- 		return matrix.mapMatrixColumns(dim, f); 
+		// TODO improve performance; return a sparse array?
+		IAST matrix = normal(false);
+		return matrix.mapMatrixColumns(dim, f);
 	}
-	
+
 	/** {@inheritDoc} */
 	@Override
 	public SparseArrayExpr map(final Function<IExpr, IExpr> function) {
@@ -1328,7 +1331,7 @@ public class SparseArrayExpr extends DataExpr<Trie<int[], IExpr>> implements ISp
 	public double[] toDoubleVector() {
 		if (dimension.length == 1 && dimension[0] > 0) {
 			try {
-				double[] result = new double[argSize()];
+				double[] result = new double[dimension[0]];
 				if (!defaultValue.isZero()) {
 					double d = defaultValue.evalDouble();
 					for (int i = 0; i < result.length; i++) {

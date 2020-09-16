@@ -353,6 +353,8 @@ public class ExprEvaluatorTests extends TestCase {
 				F.CEmptyList, //
 				F.assoc(F.List(F.Rule(F.a, F.C0), F.RuleDelayed(F.b, F.C1))), F.assoc(F.List()), //
 				F.assoc(F.List(F.Rule(F.stringx("s1"), F.C0), F.RuleDelayed(F.stringx("s2"), F.C1))), //
+				SparseArrayExpr.newInstance(F.List(F.C0, F.C0), F.C0), //
+				SparseArrayExpr.newInstance(F.List(F.C0, F.C1, F.C0, F.C2), F.C0), //
 				SparseArrayExpr.newInstance(F.List(F.List(F.C0, F.C0), F.List(F.C0, F.C0)), F.C0), //
 				SparseArrayExpr.newInstance(F.List(F.List(F.C1, F.C0), F.List(F.C0, F.C1)), F.C0), //
 				F.List(F.List(F.C0)), //
@@ -491,6 +493,12 @@ public class ExprEvaluatorTests extends TestCase {
 				F.x_, //
 				F.y_, //
 				F.CEmptyList, //
+				F.assoc(F.List(F.Rule(F.a, F.C0), F.RuleDelayed(F.b, F.C1))), F.assoc(F.List()), //
+				F.assoc(F.List(F.Rule(F.stringx("s1"), F.C0), F.RuleDelayed(F.stringx("s2"), F.C1))), //
+				SparseArrayExpr.newInstance(F.List(F.C0, F.C0), F.C0), //
+				SparseArrayExpr.newInstance(F.List(F.C0, F.C1, F.C0, F.C2), F.C0), //
+				SparseArrayExpr.newInstance(F.List(F.List(F.C0, F.C0), F.List(F.C0, F.C0)), F.C0), //
+				SparseArrayExpr.newInstance(F.List(F.List(F.C1, F.C0), F.List(F.C0, F.C1)), F.C0), //
 				F.List(F.List(F.C0)), //
 				F.List(F.List(F.C1)), //
 				F.List(F.List(F.CN1)), //

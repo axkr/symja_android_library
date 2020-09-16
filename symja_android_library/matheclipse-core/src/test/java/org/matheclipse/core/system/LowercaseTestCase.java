@@ -6064,15 +6064,23 @@ public class LowercaseTestCase extends AbstractTestCase {
 		if (ToggleFeature.FINANCE) {
 			check("EffectiveInterest(a,b)", //
 					"-1+(1+a*b)^(1/b)");
+			
 			check("EffectiveInterest({.05, .065, .07, .085}, 1/12)", //
 					"{0.0511619,0.0669719,0.0722901,0.0883909}");
+			check("EffectiveInterest(SparseArray({.05, .065, .07, .085}), 1/12)", //
+					"{0.0511619,0.0669719,0.0722901,0.0883909}");
+			
+			
 			check("EffectiveInterest({.05, .065, .07, .085}, 1/12)", //
 					"{0.0511619,0.0669719,0.0722901,0.0883909}");
 			check("EffectiveInterest(.1, 0)", //
 					"0.105171");
 			check("EffectiveInterest(.06, 3)", //
 					"0.0567218");
+			
 			check("EffectiveInterest({a,b,c,d})", //
+					"-1+((1+a)*(1+b)*(1+c)*(1+d))^(1/4)");
+			check("EffectiveInterest(SparseArray({a,b,c,d}))", //
 					"-1+((1+a)*(1+b)*(1+c)*(1+d))^(1/4)");
 
 			check("FindRoot(EffectiveInterest(r, 1/4) == .05, {r, .05})", //
@@ -8577,6 +8585,8 @@ public class LowercaseTestCase extends AbstractTestCase {
 				"{0,1/2,15/2,44,63}");
 		check("FiveNum({20,12,16,32,27,65,44,45,22,18})", //
 				"{12,18,49/2,44,65}");
+		check("FiveNum(SparseArray({20,12,16,32,27,65,44,45,22,18}))", //
+				"{12,18,49/2,44,65}");
 	}
 
 	public void testFixedPoint() {
@@ -9202,6 +9212,11 @@ public class LowercaseTestCase extends AbstractTestCase {
 	}
 
 	public void testFromPolarCoordinates() {
+		check("FromPolarCoordinates(SparseArray({r, t}))", //
+				"{r*Cos(t),r*Sin(t)}");
+		check("FromPolarCoordinates(SparseArray({r, t, p}))", //
+				"{r*Cos(t),r*Cos(p)*Sin(t),r*Sin(p)*Sin(t)}");
+		
 		check("FromPolarCoordinates({r, t})", //
 				"{r*Cos(t),r*Sin(t)}");
 		check("FromPolarCoordinates({r, t, p})", //
@@ -12559,7 +12574,8 @@ public class LowercaseTestCase extends AbstractTestCase {
 				+ "-0.20922486, -0.15265994}", //
 				"{0.532366,-1.3675,-1.47239,-0.125179,-1.24041,1.90357,-0.544295,2.22084,-1.17209<<SHORT>>", //
 				80);
-
+		check("KolmogorovSmirnovTest(SparseArray(data1))", //
+				"0.744855");
 		check("KolmogorovSmirnovTest(data1)", //
 				"0.744855");
 		check("KolmogorovSmirnovTest(data1, NormalDistribution(), \"TestData\")", //
@@ -12846,8 +12862,12 @@ public class LowercaseTestCase extends AbstractTestCase {
 				"{-1577780898195/827587904419-I*11087326045520/827587904419,35583840059240/\n"
 						+ "5793115330933+I*275839049310660/5793115330933,-3352155369084/827587904419-\n"
 						+ "I*28321055437140/827587904419}");
+		
 		check("LeastSquares({{1, 1}, {1, 2}, {1, 3.0}}, {7, 7, 8})", //
 				"{6.33333,0.5}");
+		check("LeastSquares(SparseArray({{1, 1}, {1, 2}, {1, 3.0}}), SparseArray({7, 7, 8}))", //
+				"{6.33333,0.5}");
+		
 		check("LeastSquares({{1, 1}, {1, 2}, {1, 3}}, {7, 7, 8})", //
 				"{19/3,1/2}");
 		check("LeastSquares({{1, 1}, {1, 2}, {1, 3}}, {7, 7, x})", //
@@ -14450,11 +14470,11 @@ public class LowercaseTestCase extends AbstractTestCase {
 	}
 
 	public void testMax() {
-		check("Max(Interval({1,2}))", //
-				"2");
-
+		
 		check("Refine(Max(Infinity,x), x>0)", //
 				"Infinity");
+		check("Max(Interval({1,2}))", //
+				"2");
 		check("Refine(Max(Infinity,x,y), x>0&&y>0)", //
 				"Infinity");
 		check("Refine(Max(Infinity,x,y), x>0)", //
@@ -14491,6 +14511,9 @@ public class LowercaseTestCase extends AbstractTestCase {
 	}
 
 	public void testMaxFilter() {
+		check("MaxFilter({a,b,c}, 1)", //
+				"{Max(a,b),Max(a,b,c),Max(b,c)}");
+		
 		check("MaxFilter({1, 2, 3, 2, 1}, 1)", //
 				"{2,3,3,3,2}");
 		check("MaxFilter({0, 3, 8, 2}, 1)", //
@@ -14577,6 +14600,8 @@ public class LowercaseTestCase extends AbstractTestCase {
 	}
 
 	public void testMeanDeviation() {
+		check("MeanDeviation(SparseArray({{1, 2}, {4, 8}, {5, 3}, {2, 15}}))", //
+				"{3/2,9/2}");
 		check("MeanDeviation(1+(-1)*1)", //
 				"MeanDeviation(0)");
 		check("MeanDeviation({a, b, c})", //
@@ -15767,6 +15792,8 @@ public class LowercaseTestCase extends AbstractTestCase {
 		check("Norm({a,b,c})", //
 				"Sqrt(Abs(a)^2+Abs(b)^2+Abs(c)^2)");
 
+		check("Norm(SparseArray({x, y, z}), Infinity)", //
+				"Max(Abs(x),Abs(y),Abs(z))");
 		check("Norm({x, y, z}, Infinity)", //
 				"Max(Abs(x),Abs(y),Abs(z))");
 		check("Norm({x, y, z})", //
@@ -15775,6 +15802,8 @@ public class LowercaseTestCase extends AbstractTestCase {
 				"(Abs(x)^p+Abs(y)^p+Abs(z)^p)^(1/p)");
 
 		check("Norm(-2+I)", //
+				"Sqrt(5)");
+		check("Norm(SparseArray({1, 0, 1, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0, 0, 1}))", //
 				"Sqrt(5)");
 		check("Norm({1, 0, 1, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0, 0, 1})", //
 				"Sqrt(5)");
@@ -25107,6 +25136,11 @@ public class LowercaseTestCase extends AbstractTestCase {
 		check(" Arg(1) <= Pi/2", //
 				"True");
 
+		check("ToPolarCoordinates(SparseArray({1, 1}))", //
+				"{Sqrt(2),Pi/4}");
+		check("ToPolarCoordinates(SparseArray({x, y, z}))", //
+				"{Sqrt(x^2+y^2+z^2),ArcCos(x/Sqrt(x^2+y^2+z^2)),ArcTan(y,z)}");
+		
 		check("ToPolarCoordinates({x, y})", //
 				"{Sqrt(x^2+y^2),ArcTan(x,y)}");
 		check("ToPolarCoordinates({1, 1})", //

@@ -62,10 +62,13 @@ public class FinancialFunctions {
 			if (ast.size() == 2) {
 				int dim = a.isVector();
 				if (dim >= 0) {
-					IAST l = ((IAST) a).map(x -> x.inc(), 1);
-					return
-					// [$ -1 + GeometricMean(l) $]
-					F.Plus(F.CN1, F.GeometricMean(l)); // $$;
+					IExpr normal = a.normal(false);
+					if (normal.isList()) {
+						IAST l = ((IAST) normal).map(x -> x.inc(), 1);
+						return
+						// [$ -1 + GeometricMean(l) $]
+						F.Plus(F.CN1, F.GeometricMean(l)); // $$;
+					}
 				}
 				return F.NIL;
 			}
@@ -73,7 +76,11 @@ public class FinancialFunctions {
 				final IExpr b = ast.arg2();
 				int dim = a.isVector();
 				if (dim >= 0) {
-					return ((IAST) a).map(x -> effectiveInterestFormula(x, b), 1);
+					IExpr normal = a.normal(false);
+					if (normal.isList()) {
+						return ((IAST) normal).map(x -> effectiveInterestFormula(x, b));
+					}
+					return F.NIL;
 				}
 				return effectiveInterestFormula(a, b);
 			}

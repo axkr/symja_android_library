@@ -14,9 +14,11 @@ import org.hipparchus.distribution.RealDistribution;
 import org.hipparchus.exception.MathRuntimeException;
 import org.hipparchus.linear.FieldMatrix;
 import org.hipparchus.linear.RealMatrix;
+import org.hipparchus.linear.RealVector;
 import org.hipparchus.random.RandomDataGenerator;
 import org.hipparchus.stat.StatUtils;
 import org.hipparchus.stat.correlation.PearsonsCorrelation;
+import org.hipparchus.stat.descriptive.StatisticalSummary;
 import org.hipparchus.util.FastMath;
 import org.hipparchus.util.MathUtils;
 import org.matheclipse.core.basic.Config;
@@ -1460,7 +1462,20 @@ public class StatisticsFunctions {
 				IAST param = F.List(F.List(F.C1D2, F.C0), //
 						F.List(F.C0, F.C1));
 
-				IAST list = (IAST) ast.arg1();
+				IExpr list = ast.arg1();
+				// if (engine.isDoubleMode()) {
+				// RealVector doubleArray = list.toRealVector();
+				// if (doubleArray != null) {
+				// IASTAppendable result = F.ListAlloc(5);
+				// result.append(F.num(doubleArray.getMinValue()));
+				// result.append(F.Quantile(list, F.C1D4, param));
+				// result.append(F.Median(list));
+				// result.append(F.Quantile(list, F.C3D4, param));
+				// result.append(F.num(doubleArray.getMaxValue()));
+				//
+				// return result;
+				// }
+				// }
 				IASTAppendable result = F.ListAlloc(5);
 
 				result.append(F.Min(list));
@@ -3891,12 +3906,16 @@ public class StatisticsFunctions {
 
 			int length = arg1.isVector();
 			if (length > 0) {
-				IAST vector = (IAST) arg1;
-				int size = vector.size();
-				IASTAppendable sum = F.PlusAlloc(size);
-				final IExpr mean = F.Mean.of(engine, F.Negate(vector));
-				vector.forEach(x -> sum.append(F.Abs(F.Plus(x, mean))));
-				return F.Times(F.Power(F.ZZ(size - 1), -1), sum);
+				arg1 = arg1.normal(false);
+				if (arg1.isList()) {
+					IAST vector = (IAST) arg1;
+					int size = vector.size();
+					IASTAppendable sum = F.PlusAlloc(size);
+					final IExpr mean = F.Mean.of(engine, F.Negate(vector));
+					vector.forEach(x -> sum.append(F.Abs(F.Plus(x, mean))));
+					return F.Times(F.Power(F.ZZ(size - 1), -1), sum);
+				}
+				return F.NIL;
 			}
 
 			if (arg1.isNumber()) {
@@ -4040,17 +4059,21 @@ public class StatisticsFunctions {
 			if (dim != null) {
 				return arg1.mapMatrixColumns(dim, x -> F.Median(x));
 			}
-			if (arg1.isList()) {
-				final IAST list = (IAST) arg1;
-				if (list.size() > 1) {
-					final IAST sortedList = EvalAttributes.copySortLess(list);
-					int size = sortedList.size();
-					if ((size & 0x00000001) == 0x00000001) {
-						// odd number of elements
-						size = size / 2;
-						return F.Times(F.Plus(sortedList.get(size), sortedList.get(size + 1)), F.C1D2);
-					} else {
-						return sortedList.get(size / 2);
+			int dimension = arg1.isVector();
+			if (dimension >= 0 || arg1.isList()) {
+				IExpr normal = arg1.normal(false);
+				if (normal.isList()) {
+					IAST list = (IAST) normal;
+					if (list.size() > 1) {
+						final IAST sortedList = EvalAttributes.copySortLess(list);
+						int size = sortedList.size();
+						if ((size & 0x00000001) == 0x00000001) {
+							// odd number of elements
+							size = size / 2;
+							return F.Times(F.Plus(sortedList.get(size), sortedList.get(size + 1)), F.C1D2);
+						} else {
+							return sortedList.get(size / 2);
+						}
 					}
 				}
 			}
@@ -4896,85 +4919,90 @@ public class StatisticsFunctions {
 				return arg1.mapMatrixColumns(dim, (IExpr x) -> ast.setAtCopy(1, x));
 			}
 
-			if (arg1.isList()) {
-				IExpr a = F.C0;
-				IExpr b = F.C0;
-				IExpr c = F.C1;
-				IExpr d = F.C0;
-				if (ast.size() == 4) {
-					IExpr arg3 = ast.arg3();
-					int[] dimParameters = arg3.isMatrix();
-					if (dimParameters == null || dimParameters[0] != 2 || dimParameters[1] != 2) {
-						return F.NIL;
+			int dimension = arg1.isVector();
+			if (dimension >= 0 || arg1.isList()) {
+				IExpr normal = arg1.normal(false);
+				if (normal.isList()) {
+					IAST list = (IAST) normal;
+					IExpr a = F.C0;
+					IExpr b = F.C0;
+					IExpr c = F.C1;
+					IExpr d = F.C0;
+					if (ast.size() == 4) {
+						IExpr arg3 = ast.arg3();
+						int[] dimParameters = arg3.isMatrix();
+						if (dimParameters == null || dimParameters[0] != 2 || dimParameters[1] != 2) {
+							return F.NIL;
+						}
+						a = arg3.first().first();
+						b = arg3.first().second();
+						c = arg3.second().first();
+						d = arg3.second().second();
 					}
-					a = arg3.first().first();
-					b = arg3.first().second();
-					c = arg3.second().first();
-					d = arg3.second().second();
-				}
 
-				IAST list = (IAST) arg1;
-				int dim1 = list.argSize();
-				try {
-					if (dim1 >= 0 && ast.size() >= 3) {
+					int dim1 = list.argSize();
+					try {
+						if (dim1 >= 0 && ast.size() >= 3) {
 
-						final IAST s = EvalAttributes.copySortLess(list);
-						final IInteger length = F.ZZ(s.argSize());
+							final IAST s = EvalAttributes.copySortLess(list);
+							final IInteger length = F.ZZ(s.argSize());
 
-						IExpr q = ast.arg2();
-						int dim2 = q.isVector();
-						if (dim2 >= 0) {
-							final IAST vector = ((IAST) q);
-							return vector.mapThread(ast, 2);
-							// if (vector.forAll(x -> x.isReal())) {
-							// return vector.map(scalar -> of(s, length, (ISignedNumber) scalar), 1);
-							// }
-						} else {
-							if (q.isReal()) {
-								ISignedNumber qi = (ISignedNumber) q;
-								if (!qi.isRange(F.C0, F.C1)) {
-									return IOFunctions.printMessage(ast.topHead(), "nquan", F.List(qi, F.C0, F.C1),
-											engine);
-								}
-								// x = a + (length + b) * q
-								IExpr x = q.isZero() ? a : F.Plus.of(engine, a, F.Times(F.Plus(length, b), q));
-								if (x.isNumIntValue()) {
-									int index = x.toIntDefault(Integer.MIN_VALUE);
-									if (index != Integer.MIN_VALUE) {
-										if (index < 1) {
-											index = 1;
-										} else if (index > s.argSize()) {
-											index = s.argSize();
-										}
-										return s.get(index);
+							IExpr q = ast.arg2();
+							int dim2 = q.isVector();
+							if (dim2 >= 0 && q.isList()) {
+								final IAST vector = ((IAST) q);
+								return vector.mapThread(ast, 2);
+								// if (vector.forAll(x -> x.isReal())) {
+								// return vector.map(scalar -> of(s, length, (ISignedNumber) scalar), 1);
+								// }
+							} else {
+								if (q.isReal()) {
+									ISignedNumber qi = (ISignedNumber) q;
+									if (!qi.isRange(F.C0, F.C1)) {
+										return IOFunctions.printMessage(ast.topHead(), "nquan", F.List(qi, F.C0, F.C1),
+												engine);
 									}
-								}
-								if (x.isReal()) {
-									ISignedNumber xi = (ISignedNumber) x;
-									int xFloor = xi.floorFraction().toIntDefault();
-									int xCeiling = xi.ceilFraction().toIntDefault();
-									if (xFloor != Integer.MIN_VALUE && xCeiling != Integer.MIN_VALUE) {
-										if (xFloor < 1) {
-											xFloor = 1;
+									// x = a + (length + b) * q
+									IExpr x = q.isZero() ? a : F.Plus.of(engine, a, F.Times(F.Plus(length, b), q));
+									if (x.isNumIntValue()) {
+										int index = x.toIntDefault(Integer.MIN_VALUE);
+										if (index != Integer.MIN_VALUE) {
+											if (index < 1) {
+												index = 1;
+											} else if (index > s.argSize()) {
+												index = s.argSize();
+											}
+											return s.get(index);
 										}
-										if (xCeiling > s.argSize()) {
-											xCeiling = s.argSize();
-										}
-										// factor = c + d * FractionalPart(x);
-										IExpr factor = d.isZero() || xi.isZero() ? c
-												: F.Plus.of(engine, c, F.Times(d, xi.fractionalPart()));
-										// s[[Floor(x)]]+(s[[Ceiling(x)]]-s[[Floor(x)]]) * (c + d * FractionalPart(x))
-										return F.Plus(s.get(xFloor), //
-												F.Times(F.Subtract(s.get(xCeiling), s.get(xFloor)), factor));
 									}
+									if (x.isReal()) {
+										ISignedNumber xi = (ISignedNumber) x;
+										int xFloor = xi.floorFraction().toIntDefault();
+										int xCeiling = xi.ceilFraction().toIntDefault();
+										if (xFloor != Integer.MIN_VALUE && xCeiling != Integer.MIN_VALUE) {
+											if (xFloor < 1) {
+												xFloor = 1;
+											}
+											if (xCeiling > s.argSize()) {
+												xCeiling = s.argSize();
+											}
+											// factor = c + d * FractionalPart(x);
+											IExpr factor = d.isZero() || xi.isZero() ? c
+													: F.Plus.of(engine, c, F.Times(d, xi.fractionalPart()));
+											// s[[Floor(x)]]+(s[[Ceiling(x)]]-s[[Floor(x)]]) * (c + d *
+											// FractionalPart(x))
+											return F.Plus(s.get(xFloor), //
+													F.Times(F.Subtract(s.get(xCeiling), s.get(xFloor)), factor));
+										}
+									}
+									// return of(s, length, q);
 								}
-								// return of(s, length, q);
 							}
 						}
-					}
-				} catch (ArithmeticException ae) {
-					if (FEConfig.SHOW_STACKTRACE) {
-						ae.printStackTrace();
+					} catch (ArithmeticException ae) {
+						if (FEConfig.SHOW_STACKTRACE) {
+							ae.printStackTrace();
+						}
 					}
 				}
 			} else if (arg1.isDistribution() && ast.size() >= 3) {
@@ -5370,7 +5398,7 @@ public class StatisticsFunctions {
 			}
 			if (dim != null) {
 				IExpr temp = arg1.mapMatrixColumns(dim, v -> F.Standardize(v));
-				return temp.ifPresent(x->F.Transpose(x));
+				return temp.ifPresent(x -> F.Transpose(x));
 			}
 
 			IExpr sd = F.StandardDeviation.of(engine, arg1);
