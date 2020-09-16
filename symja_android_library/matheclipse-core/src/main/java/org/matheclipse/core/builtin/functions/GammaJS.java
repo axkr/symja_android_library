@@ -384,7 +384,10 @@ public class GammaJS {
 				i++;
 			}
 
-			return s.multiply(x.exp()).multiply(xInverse);
+			// combination of logarithms merely adds/subtracts Complex(0,Pi)
+			int sign = x.getImaginary() > 0 ? 1 : x.getImaginary() < 0 ? -1 : 0;
+
+			return s.multiply(x.exp()).multiply(xInverse).add(new Complex(0.0, sign * Math.PI));
 
 		}
 
