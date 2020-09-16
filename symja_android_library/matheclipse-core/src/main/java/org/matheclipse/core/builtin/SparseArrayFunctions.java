@@ -72,7 +72,7 @@ public class SparseArrayFunctions {
 			}
 			IExpr defaultValue = F.NIL;
 			if (ast.isAST3()) {
-				defaultValue = engine.evaluate(ast.arg3());
+				defaultValue = ast.arg3();
 			}
 			int defaultDimension = -1;
 			int[] dimension = null;
@@ -80,7 +80,7 @@ public class SparseArrayFunctions {
 				if (ast.arg2().isList()) {
 					dimension = Validate.checkListOfInts(ast, ast.arg2(), 1, Integer.MAX_VALUE, engine);
 				} else {
-					defaultDimension = engine.evaluate(ast.arg2()).toIntDefault();
+					defaultDimension = ast.arg2().toIntDefault();
 					if (defaultDimension < 0) {
 						return F.NIL;
 					}
@@ -88,13 +88,24 @@ public class SparseArrayFunctions {
 			}
 			ISparseArray result = null;
 
-			IExpr arg1 = engine.evaluate(ast.arg1());
+			IExpr arg1 = ast.arg1();
 			if (arg1.isListOfRules()) {
+				if (arg1.size() < 2) {
+					// The dimensions cannot be determined from the position `1`.
+					return IOFunctions.printMessage(ast.topHead(), "exdims", F.List(arg1), engine);
+				}
 				result = SparseArrayExpr.newInstance((IAST) arg1, dimension, defaultDimension, defaultValue);
 			} else if (arg1.isList()) {
+				if (arg1.size() < 2) {
+					// The dimensions cannot be determined from the position `1`.
+					return IOFunctions.printMessage(ast.topHead(), "exdims", F.List(arg1), engine);
+				}
 				result = SparseArrayExpr.newInstance((IAST) arg1, defaultValue);
 			} else if (arg1.isRule()) {
 				result = SparseArrayExpr.newInstance(F.List(arg1), dimension, defaultDimension, defaultValue);
+			} else {
+				// List expected at position `1` in `2`.
+				return IOFunctions.printMessage(ast.topHead(), "list", F.List(F.C1, ast), engine);
 			}
 			if (result != null) {
 				return result;
@@ -105,7 +116,6 @@ public class SparseArrayFunctions {
 
 		@Override
 		public void setUp(final ISymbol newSymbol) {
-			// newSymbol.setAttributes(ISymbol.HOLDALL);
 		}
 	}
 

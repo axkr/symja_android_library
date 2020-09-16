@@ -9,6 +9,9 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
 
+import org.hipparchus.linear.FieldMatrix;
+import org.hipparchus.linear.FieldVector;
+import org.matheclipse.core.convert.Convert;
 import org.matheclipse.core.convert.VariablesSet;
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.MathMLUtilities;
@@ -214,6 +217,19 @@ public final class OutputFunctions {
 					}
 					return F.stringx(sb.toString(), IStringX.TEXT_PLAIN);
 				}
+				int dim = arg1.isVector();
+				if (dim >= 0) {
+					FieldVector<IExpr> vector = Convert.list2Vector(arg1);
+					if (vector != null) {
+						StringBuilder sb = new StringBuilder();
+						for (int i = 0; i < dim; i++) {
+							sb.append(vector.getEntry(i).toString());
+							sb.append("\n");
+						}
+						return F.stringx(sb.toString(), IStringX.TEXT_PLAIN);
+					}
+				}
+				return F.stringx(arg1.toString(), IStringX.TEXT_PLAIN);
 			}
 			return F.NIL;
 		}
@@ -844,37 +860,72 @@ public final class OutputFunctions {
 			java.util.function.Function<IExpr, String> function, boolean fillUpWithSPACE) {
 		int[] dim = expr.isMatrix();
 		if (dim != null && dim[0] > 0 && dim[1] > 0) {
-			IAST matrix = (IAST) expr;
 			int rowDimension = dim[0];
 			int columnDimension = dim[1];
 			StringBuilder[] sb = new StringBuilder[rowDimension];
 			for (int j = 0; j < rowDimension; j++) {
 				sb[j] = new StringBuilder();
 			}
-			int rowLength = 0;
-
-			for (int i = 0; i < columnDimension; i++) {
-				int columnLength = 0;
-				for (int j = 0; j < rowDimension; j++) {
-					String str = function.apply(matrix.getPart(j + 1, i + 1));
-					if (str.length() > columnLength) {
-						columnLength = str.length();
-					}
-					sb[j].append(str);
-					if (i < columnDimension - 1) {
-						sb[j].append(delimiter);
-					}
-				}
-				if (i < columnDimension - 1) {
-					rowLength += columnLength + 1;
-				} else {
-					rowLength += columnLength;
-				}
-				if (fillUpWithSPACE) {
+			if (expr.isAST()) {
+				IAST matrix = (IAST) expr;
+				int rowLength = 0;
+				for (int i = 0; i < columnDimension; i++) {
+					int columnLength = 0;
 					for (int j = 0; j < rowDimension; j++) {
-						int rest = rowLength - sb[j].length();
-						for (int k = 0; k < rest; k++) {
-							sb[j].append(' ');
+						String str = function.apply(matrix.getPart(j + 1, i + 1));
+						if (str.length() > columnLength) {
+							columnLength = str.length();
+						}
+						sb[j].append(str);
+						if (i < columnDimension - 1) {
+							sb[j].append(delimiter);
+						}
+					}
+					if (i < columnDimension - 1) {
+						rowLength += columnLength + 1;
+					} else {
+						rowLength += columnLength;
+					}
+					if (fillUpWithSPACE) {
+						for (int j = 0; j < rowDimension; j++) {
+							int rest = rowLength - sb[j].length();
+							for (int k = 0; k < rest; k++) {
+								sb[j].append(' ');
+							}
+						}
+					}
+				}
+			} else {
+				FieldMatrix<IExpr> matrix = Convert.list2Matrix(expr);
+				int rowLength = 0;
+				if (matrix == null) {
+					return false;
+				} else {
+					for (int i = 0; i < columnDimension; i++) {
+						int columnLength = 0;
+						for (int j = 0; j < rowDimension; j++) {
+							IExpr arg = matrix.getEntry(j, i);
+							String str = function.apply(arg);
+							if (str.length() > columnLength) {
+								columnLength = str.length();
+							}
+							sb[j].append(str);
+							if (i < columnDimension - 1) {
+								sb[j].append(delimiter);
+							}
+						}
+						if (i < columnDimension - 1) {
+							rowLength += columnLength + 1;
+						} else {
+							rowLength += columnLength;
+						}
+						if (fillUpWithSPACE) {
+							for (int j = 0; j < rowDimension; j++) {
+								int rest = rowLength - sb[j].length();
+								for (int k = 0; k < rest; k++) {
+									sb[j].append(' ');
+								}
+							}
 						}
 					}
 				}

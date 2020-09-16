@@ -2066,8 +2066,7 @@ public class StatisticsFunctions {
 					return F.NIL;
 				}
 				if (dim != null) {
-					IAST matrix = list;
-					return matrix.mapMatrixColumns(dim, x -> F.GeometricMean(x));
+					return list.mapMatrixColumns(dim, x -> F.GeometricMean(x));
 				}
 				if (arg1.isRealVector()) {
 					double[] arg1DoubleArray = arg1.toDoubleVector();
@@ -2527,8 +2526,7 @@ public class StatisticsFunctions {
 					return F.NIL;
 				}
 				if (dim != null) {
-					IAST matrix = list;
-					return matrix.mapMatrixColumns(dim, x -> F.HarmonicMean(x));
+					return list.mapMatrixColumns(dim, x -> F.HarmonicMean(x));
 				}
 
 				IASTMutable result = list.apply(F.Plus);
@@ -3888,8 +3886,7 @@ public class StatisticsFunctions {
 				return F.NIL;
 			}
 			if (dim != null) {
-				IAST matrix = (IAST) arg1;
-				return matrix.mapMatrixColumns(dim, x -> F.MeanDeviation(x));
+				return arg1.mapMatrixColumns(dim, x -> F.MeanDeviation(x));
 			}
 
 			int length = arg1.isVector();
@@ -4041,8 +4038,7 @@ public class StatisticsFunctions {
 				return F.NIL;
 			}
 			if (dim != null) {
-				IAST matrix = (IAST) arg1;
-				return matrix.mapMatrixColumns(dim, x -> F.Median(x));
+				return arg1.mapMatrixColumns(dim, x -> F.Median(x));
 			}
 			if (arg1.isList()) {
 				final IAST list = (IAST) arg1;
@@ -4897,8 +4893,7 @@ public class StatisticsFunctions {
 				return F.NIL;
 			}
 			if (dim != null) {
-				IAST matrix = (IAST) arg1;
-				return matrix.mapMatrixColumns(dim, (IExpr x) -> ast.setAtCopy(1, x));
+				return arg1.mapMatrixColumns(dim, (IExpr x) -> ast.setAtCopy(1, x));
 			}
 
 			if (arg1.isList()) {
@@ -5346,8 +5341,7 @@ public class StatisticsFunctions {
 					return F.NIL;
 				}
 				if (dim != null) {
-					IAST matrix = arg1;
-					return matrix.mapMatrixColumns(dim, x -> F.StandardDeviation(x));
+					return arg1.mapMatrixColumns(dim, x -> F.StandardDeviation(x));
 				}
 			}
 			return F.Sqrt(F.Variance(ast.arg1()));
@@ -5375,8 +5369,8 @@ public class StatisticsFunctions {
 				return F.NIL;
 			}
 			if (dim != null) {
-				IAST matrix = (IAST) arg1;
-				return F.Transpose(matrix.mapMatrixColumns(dim, v -> F.Standardize(v)));
+				IExpr temp = arg1.mapMatrixColumns(dim, v -> F.Standardize(v));
+				return temp.ifPresent(x->F.Transpose(x));
 			}
 
 			IExpr sd = F.StandardDeviation.of(engine, arg1);

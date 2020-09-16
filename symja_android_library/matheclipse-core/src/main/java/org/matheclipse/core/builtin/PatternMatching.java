@@ -1323,7 +1323,7 @@ public final class PatternMatching {
 					extractRules(arg2, optionsPattern);
 					extractRules(optionsList, optionsPattern);
 					optionValue = arg3;
-					if (arg1.isSymbol()) {
+					if (arg3.isSymbol()) {
 						optionValue = F.$str(((ISymbol) arg3).getSymbolName());
 					}
 					if (optionsPattern != null) {

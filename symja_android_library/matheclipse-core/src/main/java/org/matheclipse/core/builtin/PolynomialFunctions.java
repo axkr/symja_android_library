@@ -1620,13 +1620,14 @@ public class PolynomialFunctions {
 
 		@Override
 		public IExpr evaluate(final IAST ast, EvalEngine engine) {
+			IExpr arg1 = ast.arg1();
 			if (ast.isAST1()) {
-				int[] dim = ast.arg1().isMatrix();
-				if (dim != null) {
+				int[] dim = arg1.isMatrix();
+				if (dim != null && arg1.isAST()) {
 					if (dim[0] == 0 && dim[1] == 0) {
 						return F.C0;
 					}
-					IAST matrixArg1 = (IAST) ast.arg1();
+					IAST matrixArg1 = (IAST) arg1;
 
 					if (dim[0] == 1) {
 						if (dim[1] == 1) {
@@ -1643,8 +1644,8 @@ public class PolynomialFunctions {
 			if (ast.isAST2()) {
 				return F.NIL;
 			}
-			if (ast.arg1().isInteger() && ast.arg2().isInteger()) {
-				int n = ast.arg1().toIntDefault(Integer.MIN_VALUE);
+			if (arg1.isInteger() && ast.arg2().isInteger()) {
+				int n = arg1.toIntDefault(Integer.MIN_VALUE);
 				int k = ast.arg2().toIntDefault(Integer.MIN_VALUE);
 				if (n < 0 || k < 0 || //
 						!ast.arg3().isList() || //

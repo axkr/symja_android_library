@@ -306,6 +306,7 @@ public class IOFunctions {
 			"drop", "Cannot drop positions `1` through `2` in `3`.", //
 			"eqf", "`1` is not a well-formed equation.", //
 			"exact", "Argument `1` is not an exact number.", //
+			"exdims", "The dimensions cannot be determined from the position `1`.", //
 			"fftl", "Argument `1` is not a non-empty list or rectangular array of numeric quantities.", //
 			"fpct", "To many parameters in `1` to be filled from `2`.", //
 			"fnsym", "First argument in `1` is not a symbol or a string naming a symbol.", //

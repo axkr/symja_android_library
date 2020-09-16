@@ -940,7 +940,8 @@ public final class LinearAlgebra {
 
 		@Override
 		public IExpr evaluate(final IAST ast, EvalEngine engine) {
-			final int[] dim = ast.arg1().isMatrix();
+			IExpr arg1 = ast.arg1();
+			final int[] dim = arg1.isMatrix();
 			if (dim != null) {
 				int diff = 0;
 				if (ast.size() > 2) {
@@ -949,20 +950,33 @@ public final class LinearAlgebra {
 						return F.NIL;
 					}
 				}
-				final IAST matrix = (IAST) ast.arg1();
-
-				int rowLength = dim[0];
-				int columnLength = dim[1];
-				IAST row;
-				IASTAppendable result = F.ListAlloc(rowLength);
-				for (int i = 1; i <= rowLength; i++) {
-					row = (IAST) matrix.get(i);
-					int indx = i + diff;
-					if (indx > 0 && indx <= columnLength) {
-						result.append(row.get(indx));
+				if (arg1.isAST()) {
+					final IAST matrix = (IAST) arg1;
+					int rowLength = dim[0];
+					int columnLength = dim[1];
+					IAST row;
+					IASTAppendable result = F.ListAlloc(rowLength);
+					for (int i = 1; i <= rowLength; i++) {
+						row = (IAST) matrix.get(i);
+						int indx = i + diff;
+						if (indx > 0 && indx <= columnLength) {
+							result.append(row.get(indx));
+						}
+					}
+					return result;
+				} else {
+					FieldMatrix<IExpr> matrix = Convert.list2Matrix(arg1);
+					if (matrix != null) {
+						IASTAppendable result = F.ListAlloc(dim[0]);
+						for (int i = 0; i < dim[0]; i++) {
+							int indx = i + diff;
+							if (indx >= 0 && indx < dim[1]) {
+								result.append(matrix.getEntry(i, indx));
+							}
+						}
+						return result;
 					}
 				}
-				return result;
 			}
 			return F.NIL;
 		}
@@ -2429,8 +2443,8 @@ public final class LinearAlgebra {
 					}
 					int m = dim[0];
 					int n = dim[1];
-					IAST matrix = (IAST) ast.arg1();
-					return F.matrix((i, j) -> i >= j - k ? matrix.getPart(i + 1, j + 1) : F.C0, m, n);
+					FieldMatrix<IExpr> matrix = Convert.list2Matrix(ast.arg1());
+					return F.matrix((i, j) -> i >= j - k ? matrix.getEntry(i, j) : F.C0, m, n);
 				}
 			} catch (final ValidateException ve) {
 				// int number validation
@@ -3711,18 +3725,41 @@ public final class LinearAlgebra {
 
 			final int[] dim = arg1.isMatrix();
 			if (dim != null) {
-				final IAST mat = (IAST) arg1;
-				int len = dim[0] < dim[1] ? dim[0] : dim[1];
-				IASTAppendable tr = F.ast(header, len, true);
-				mat.forEach(1, len + 1, (x, i) -> tr.set(i, ((IAST) x).get(i)));
-				return tr;
+				if (arg1.isAST()) {
+					final IAST mat = (IAST) arg1;
+					int len = dim[0] < dim[1] ? dim[0] : dim[1];
+					IASTAppendable tr = F.ast(header, len, true);
+					mat.forEach(1, len + 1, (x, i) -> tr.set(i, ((IAST) x).get(i)));
+					return tr;
+				} else {
+					FieldMatrix<IExpr> matrix = Convert.list2Matrix(arg1);
+					if (matrix != null) {
+						int len = dim[0] < dim[1] ? dim[0] : dim[1];
+						IASTAppendable tr = F.ast(header, len, true);
+						for (int i = 0; i < len; i++) {
+							tr.set(i + 1, matrix.getEntry(i, i));
+						}
+						return tr;
+					}
+				}
 			}
 
 			final int len = arg1.isVector();
 			if (len >= 0) {
-				IASTAppendable tr = F.ast(header, len, true);
-				((IAST) arg1).forEach(1, len + 1, (x, i) -> tr.set(i, x));
-				return tr;
+				if (arg1.isAST()) {
+					IASTAppendable tr = F.ast(header, len, true);
+					((IAST) arg1).forEach(1, len + 1, (x, i) -> tr.set(i, x));
+					return tr;
+				} else {
+					FieldVector<IExpr> vector = Convert.list2Vector(arg1);
+					if (vector != null) {
+						IASTAppendable tr = F.ast(header, len, true);
+						for (int i = 0; i < len; i++) {
+							tr.set(i + 1, vector.getEntry(i));
+						}
+						return tr;
+					}
+				}
 			}
 			return F.NIL;
 		}
@@ -4004,8 +4041,8 @@ public final class LinearAlgebra {
 					}
 					int m = dim[0];
 					int n = dim[1];
-					IAST matrix = (IAST) ast.arg1();
-					return F.matrix((i, j) -> i <= j - k ? matrix.getPart(i + 1, j + 1) : F.C0, m, n);
+					FieldMatrix<IExpr> matrix = Convert.list2Matrix(ast.arg1());
+					return F.matrix((i, j) -> i <= j - k ? matrix.getEntry(i, j) : F.C0, m, n);
 				} catch (final ValidateException ve) {
 					// int number validation
 					return engine.printMessage(ast.topHead(), ve);

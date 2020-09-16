@@ -5216,6 +5216,13 @@ public class LowercaseTestCase extends AbstractTestCase {
 	}
 
 	public void testDiagonal() {
+		check("Diagonal(SparseArray({{1,2,3},{4,5,6},{7,8,9}}))", //
+				"{1,5,9}");
+		check("Diagonal(SparseArray({{1,2,3},{4,5,6},{7,8,9}}), 1)", //
+				"{2,6}");
+		check("Diagonal(SparseArray({{1,2,3},{4,5,6},{7,8,9}}), -1)", //
+				"{4,8}");
+		
 		check("Diagonal({{1,0}, {0,1},0})", //
 				"Diagonal({{1,0},{0,1},0})");
 		check("Diagonal({{1,2,3},{4,5,6},{7,8,9}})", //
@@ -13888,6 +13895,11 @@ public class LowercaseTestCase extends AbstractTestCase {
 	}
 
 	public void testLowerTriangularize() {
+		check("LowerTriangularize(SparseArray({{a,b,c,d}, {d,e,f,g}, {h,i,j,k}, {l,m,n,o}}))", //
+				"{{a,0,0,0},\n" + 
+				" {d,e,0,0},\n" + 
+				" {h,i,j,0},\n" + 
+				" {l,m,n,o}}");
 		check("LowerTriangularize({{1,0}, {0,1}},{})", //
 				"LowerTriangularize({{1,0},{0,1}},{})");
 		check("LowerTriangularize({{a,b,c,d}, {d,e,f,g}, {h,i,j,k}, {l,m,n,o}}, -1)", //
@@ -14389,6 +14401,8 @@ public class LowercaseTestCase extends AbstractTestCase {
 		check("MatrixQ({{}}, NumberQ)", //
 				"True");
 		check("MatrixQ({{a, b, f}, {c, d, e}})", //
+				"True");
+		check("MatrixQ(SparseArray({{1, 3}, {4.0, 3/2}}), NumberQ)", //
 				"True");
 		check("MatrixQ({{1, 3}, {4.0, 3/2}}, NumberQ)", //
 				"True");
@@ -16619,6 +16633,8 @@ public class LowercaseTestCase extends AbstractTestCase {
 
 	public void testOrthogonalMatrixQ() {
 		// https://en.wikipedia.org/wiki/Orthogonal_matrix
+		check("OrthogonalMatrixQ(SparseArray({{0, 0, 0, 1}, {0, 0, 1, 0}, {1, 0, 0, 0}, {0, 1, 0, 0}}))", //
+				"True");
 		check("OrthogonalMatrixQ({{0, 0, 0, 1}, {0, 0, 1, 0}, {1, 0, 0, 0}, {0, 1, 0, 0}})", //
 				"True");
 
@@ -23193,6 +23209,10 @@ public class LowercaseTestCase extends AbstractTestCase {
 	}
 
 	public void testStandardize() {
+		check("Standardize(SparseArray({{a,b},{c,d}}))", //
+				"{{(Sqrt(2)*(a+1/2*(-a-c)))/Sqrt((a-c)*(Conjugate(a)-Conjugate(c))),(Sqrt(2)*(b+1/\n"
+						+ "2*(-b-d)))/Sqrt((b-d)*(Conjugate(b)-Conjugate(d)))},\n"
+						+ " {(Sqrt(2)*(1/2*(-a-c)+c))/Sqrt((a-c)*(Conjugate(a)-Conjugate(c))),(Sqrt(2)*(1/2*(-b-d)+d))/Sqrt((b-d)*(Conjugate(b)-Conjugate(d)))}}");
 		check("Standardize({6.5, 3.8, 6.6, 5.7, 6.0, 6.4, 5.3})", //
 				"{0.75705,-1.99453,0.85896,-0.0582346,0.247497,0.655139,-0.465877}");
 		check("Standardize({{a,b},{c,d}})", //
@@ -24157,6 +24177,8 @@ public class LowercaseTestCase extends AbstractTestCase {
 
 	public void testSymmetricMatrixQ() {
 		// example from https://en.wikipedia.org/wiki/Symmetric_matrix
+		check("SymmetricMatrixQ(SparseArray({{1,7,3}, {7,4,-5}, {3,-5,6}}))", //
+				"True");
 		check("SymmetricMatrixQ({{1,7,3}, {7,4,-5}, {3,-5,6}})", //
 				"True");
 
@@ -24248,6 +24270,12 @@ public class LowercaseTestCase extends AbstractTestCase {
 	}
 
 	public void testTableForm() {
+		check("TableForm(SparseArray(Array(a, {2})))", //
+				"a(1)\n" + "a(2)\n");
+		check("TableForm(SparseArray(Array(a, {2,2})))", //
+				"a(1,1) a(1,2)\n" + //
+						"a(2,1) a(2,2)");
+		
 		check("TableForm(Array(a, {2}))", //
 				"a(1)\n" + "a(2)\n");
 		check("TableForm(Array(a, {2,2}))", //
@@ -25335,6 +25363,8 @@ public class LowercaseTestCase extends AbstractTestCase {
 	}
 
 	public void testTr() {
+		check("Tr(SparseArray({1,2,3}))", //
+				"6");
 		check("Tr({1,2,3})", //
 				"6");
 		check("Tr({{}})", //
@@ -25348,6 +25378,8 @@ public class LowercaseTestCase extends AbstractTestCase {
 		check("Tr({{a, b, c}, {d, e, f}, {g, h, i}})", //
 				"a+e+i");
 		check("Tr({{1, 2, 3}, {4, 5, 6}, {7, 8, 9}}, f)", //
+				"f(1,5,9)");
+		check("Tr(SparseArray({{1, 2, 3}, {4, 5, 6}, {7, 8, 9}}), f)", //
 				"f(1,5,9)");
 	}
 
@@ -25808,6 +25840,11 @@ public class LowercaseTestCase extends AbstractTestCase {
 	}
 
 	public void testUpperTriangularize() {
+		check("UpperTriangularize(SparseArray({{a,b,c,d}, {d,e,f,g}, {h,i,j,k}, {l,m,n,o}}))", //
+				"{{a,b,c,d},\n" + //
+				" {0,e,f,g},\n" + //
+				" {0,0,j,k},\n" + //
+				" {0,0,0,o}}");
 		check("UpperTriangularize({{1,0}, {0,1}},{})", //
 				"UpperTriangularize({{1,0},{0,1}},{})");
 		check("UpperTriangularize({{a,b,c,d}, {d,e,f,g}, {h,i,j,k}, {l,m,n,o}}, 1)", //
@@ -25975,9 +26012,11 @@ public class LowercaseTestCase extends AbstractTestCase {
 	}
 
 	public void testVectorQ() {
-		check("VectorQ({a, b, c})", //
+		check("VectorQ(SparseArray({1, 1/2, 3, I}), NumberQ)", //
 				"True");
 		check("VectorQ({1, 1/2, 3, I}, NumberQ)", //
+				"True");
+		check("VectorQ({a, b, c})", //
 				"True");
 	}
 

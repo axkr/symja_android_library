@@ -797,17 +797,14 @@ public interface IExpr extends Comparable<IExpr>, GcdRingElem<IExpr>, Serializab
 
 	/**
 	 * If this expression unequals <code>F.NIL</code>, invoke the specified consumer with the <code>this</code> object,
-	 * otherwise do nothing.
+	 * otherwise return <code>F#NIL</code>.
 	 *
 	 * @param function
 	 *            function to be executed if this expression unequals <code>F.NIL</code>
 	 * @see java.util.Optional#ifPresent(Consumer)
 	 */
 	default IExpr ifPresent(Function<? super IExpr, IExpr> function) {
-		if (this.isPresent()) {
-			return function.apply(this);
-		}
-		return F.NIL;
+		return this.isPresent() ? function.apply(this) : F.NIL;
 	}
 
 	/**
@@ -1935,7 +1932,7 @@ public interface IExpr extends Comparable<IExpr>, GcdRingElem<IExpr>, Serializab
 	default boolean isList() {
 		return false;
 	}
-	
+
 	/**
 	 * Test if this expression is a list (i.e. an AST with head List) or an Association
 	 * 
@@ -1944,8 +1941,6 @@ public interface IExpr extends Comparable<IExpr>, GcdRingElem<IExpr>, Serializab
 	default boolean isListOrAssociation() {
 		return isList();
 	}
-	
-	
 
 	/**
 	 * Test if this expression is a list (i.e. an AST with head List) with exactly 2 arguments
@@ -3321,6 +3316,24 @@ public interface IExpr extends Comparable<IExpr>, GcdRingElem<IExpr>, Serializab
 	 * @return <code>F.NIL</code> if this expression is no interval and no signed number.
 	 */
 	default public IExpr lower() {
+		return F.NIL;
+	}
+
+	/**
+	 * <p>
+	 * This method assumes that <code>this</code> is a list of lists in matrix form. It combines the column values in a
+	 * list as argument for the given <code>function</code>.
+	 * </p>
+	 * <b>Example</b> a matrix <code>{{x1, y1,...}, {x2, y2, ...}, ...}</code> will be converted to
+	 * <code>{f.apply({x1, x2,...}), f.apply({y1, y2, ...}), ...}</code>
+	 * 
+	 * @param dim
+	 *            the dimension of the matrix
+	 * @param f
+	 *            a unary function
+	 * @return
+	 */
+	default IExpr mapMatrixColumns(int[] dim, Function<IExpr, IExpr> f) {
 		return F.NIL;
 	}
 

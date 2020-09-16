@@ -17,6 +17,7 @@ import org.matheclipse.core.eval.exception.ValidateException;
 import org.matheclipse.core.eval.interfaces.IFunctionEvaluator;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.expression.data.ByteArrayExpr;
+import org.matheclipse.core.expression.data.SparseArrayExpr;
 import org.matheclipse.core.form.output.OutputFormFactory;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IASTAppendable;
@@ -350,8 +351,10 @@ public class ExprEvaluatorTests extends TestCase {
 				F.x_, //
 				F.y_, //
 				F.CEmptyList, //
-				F.assoc(F.List(F.Rule(F.a, F.C0), F.RuleDelayed(F.b, F.C1))), F.assoc(F.List()),
-				F.assoc(F.List(F.Rule(F.stringx("s1"), F.C0), F.RuleDelayed(F.stringx("s2"), F.C1))),
+				F.assoc(F.List(F.Rule(F.a, F.C0), F.RuleDelayed(F.b, F.C1))), F.assoc(F.List()), //
+				F.assoc(F.List(F.Rule(F.stringx("s1"), F.C0), F.RuleDelayed(F.stringx("s2"), F.C1))), //
+				SparseArrayExpr.newInstance(F.List(F.List(F.C0, F.C0), F.List(F.C0, F.C0)), F.C0), //
+				SparseArrayExpr.newInstance(F.List(F.List(F.C1, F.C0), F.List(F.C0, F.C1)), F.C0), //
 				F.List(F.List(F.C0)), //
 				F.List(F.List(F.C1)), //
 				F.List(F.List(F.CN1)), //

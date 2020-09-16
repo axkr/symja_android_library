@@ -21,6 +21,7 @@ import org.matheclipse.core.builtin.IOFunctions;
 import org.matheclipse.core.builtin.LinearAlgebra;
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.exception.ArgumentTypeException;
+import org.matheclipse.core.expression.ASTRealVector;
 import org.matheclipse.core.expression.DataExpr;
 import org.matheclipse.core.expression.ExprField;
 import org.matheclipse.core.expression.F;
@@ -1176,6 +1177,27 @@ public class SparseArrayExpr extends DataExpr<Trie<int[], IExpr>> implements ISp
 		return map(function);
 	}
 
+	/**
+	 * <p>
+	 * This method assumes that <code>this</code> is a list of lists in matrix form. It combines the column values in a
+	 * list as argument for the given <code>function</code>.
+	 * </p>
+	 * <b>Example</b> a matrix <code>{{x1, y1,...}, {x2, y2, ...}, ...}</code> will be converted to
+	 * <code>{f.apply({x1, x2,...}), f.apply({y1, y2, ...}), ...}</code>
+	 * 
+	 * @param dim
+	 *            the dimension of the matrix
+	 * @param f
+	 *            a unary function
+	 * @return 
+	 */
+ 	@Override
+	public IExpr mapMatrixColumns(int[] dim, Function<IExpr, IExpr> f) {
+ 		// TODO improve performance; return a sparse array?
+ 		IAST matrix= normal(false); 
+ 		return matrix.mapMatrixColumns(dim, f); 
+	}
+	
 	/** {@inheritDoc} */
 	@Override
 	public SparseArrayExpr map(final Function<IExpr, IExpr> function) {

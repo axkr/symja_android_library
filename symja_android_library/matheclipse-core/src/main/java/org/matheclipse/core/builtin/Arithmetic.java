@@ -2516,7 +2516,7 @@ public final class Arithmetic {
 		public IExpr evaluate(final IAST ast, EvalEngine engine) {
 			IExpr arg1 = ast.arg1();
 			int[] dim = arg1.isMatrix(false);
-			if (dim == null || dim[0] <= 0 || dim[1] != 2) {
+			if (dim == null || dim[0] <= 0 || dim[1] != 2 || !arg1.isAST()) {
 				if (arg1.isEmptyList()) {
 					if (ast.isAST2()) {
 						return ast.arg2();
