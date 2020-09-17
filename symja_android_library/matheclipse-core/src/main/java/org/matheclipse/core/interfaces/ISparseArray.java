@@ -68,14 +68,18 @@ public interface ISparseArray extends IDataExpr<Trie<int[], IExpr>> {
 	/**
 	 * Convert this sparse array to a FieldMatrix. If conversion is not possible, return <code>null</code>.
 	 * 
+	 * @param copyArray
+	 *            Whether to copy or reference the input array.
 	 * @return the corresponding FieldMatrix if possible, otherwise return <code>null</code>.
 	 */
-	public FieldMatrix<IExpr> toFieldMatrix();
+	public FieldMatrix<IExpr> toFieldMatrix(boolean arrayCopy);
 
 	/**
 	 * Convert this sparse array to a FieldMatrix. If conversion is not possible, return <code>null</code>.
 	 * 
+	 * @param copyArray
+	 *            Whether to copy or reference the input array.
 	 * @return the corresponding FieldMatrix if possible, otherwise return <code>null</code>.
 	 */
-	public FieldVector<IExpr> toFieldVector();
+	public FieldVector<IExpr> toFieldVector(boolean arrayCopy);
 }

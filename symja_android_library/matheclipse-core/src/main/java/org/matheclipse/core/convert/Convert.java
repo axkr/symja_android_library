@@ -90,7 +90,7 @@ public class Convert {
 		}
 		if (expr.isSparseArray()) {
 			ISparseArray array = (ISparseArray) expr;
-			return array.toFieldMatrix();
+			return array.toFieldMatrix(false);
 		}
 		if (expr.isList()) {
 			IAST list = (IAST) expr;
@@ -271,7 +271,7 @@ public class Convert {
 		}
 		if (expr.isSparseArray()) {
 			ISparseArray array = (ISparseArray) expr;
-			return array.toFieldVector();
+			return array.toFieldVector(false);
 		}
 		if (expr.isList()) {
 			final int rowSize = expr.argSize();
