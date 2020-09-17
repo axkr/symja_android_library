@@ -583,9 +583,21 @@ public final class StringFunctions {
 					return F.NIL;
 				}
 			}
-			if (ast.size() == 3) {
+			if (ast.size() >= 3) {
+				IExpr arg1 = ast.arg1();
+				if (arg1.isList()) {
+					return ((IAST) arg1).mapThread(ast, 1);
+				}
 				if (!ast.arg1().isString()) {
 					return F.NIL;
+				}
+				boolean ignoreCase = false;
+				if (ast.size() > 3) {
+					final OptionArgs options = new OptionArgs(ast.topHead(), ast, 3, engine, true);
+					IExpr option = options.getOption(S.IgnoreCase);
+					if (option.isTrue()) {
+						ignoreCase = true;
+					}
 				}
 				String str = ((IStringX) ast.arg1()).toString();
 				IExpr arg2 = ast.arg2();
@@ -599,11 +611,17 @@ public final class StringFunctions {
 				IAST list = (IAST) arg2;
 				for (int i = 1; i < list.size(); i++) {
 					IAST rule = (IAST) list.get(i);
-					if (!rule.arg1().isString() || !rule.arg2().isString()) {
+					if (!rule.arg2().isString()) {
+						// if (!rule.arg1().isString() || !rule.arg2().isString()) {
 						return F.NIL;
 					}
-					str = str.replace(((IStringX) rule.arg1()).toString(), //
-							((IStringX) rule.arg2()).toString());
+
+					java.util.regex.Pattern pattern = toRegexPattern(ast, rule.arg1(), true, ignoreCase, engine);
+					if (pattern == null) {
+						return F.NIL;
+					}
+					java.util.regex.Matcher matcher = pattern.matcher(str);
+					str= pattern.matcher(str).replaceAll(rule.arg2().toString());
 				}
 				return F.$str(str);
 			}

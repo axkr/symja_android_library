@@ -23432,12 +23432,12 @@ public class LowercaseTestCase extends AbstractTestCase {
 				"True");
 		check("StringMatchQ(\"acggtaagc\", Characters[\"acgt\"] ..)", //
 				"True");
-		
+
 		check("StringMatchQ(\"abc 123 a\", RegularExpression[\"a.*\"] ~~ DigitCharacter ..)", //
 				"False");
 		check("StringMatchQ(\"abc 123\", RegularExpression[\"a.*\"] ~~ DigitCharacter ..)", //
 				"True");
-		
+
 		check("StringMatchQ(\"acggtATTCaagc\", __ ~~ \"aT\" ~~ __, IgnoreCase -> True)", //
 				"True");
 		check("StringMatchQ(\"acggtATTCaagc\", __ ~~ \"aT\" ~~ __, IgnoreCase -> False)", //
@@ -23497,6 +23497,24 @@ public class LowercaseTestCase extends AbstractTestCase {
 	}
 
 	public void testStringReplace() {
+		check("StringReplace(\"ab\" .. -> \"X\")[\"ababbabbaaababa\"]", //
+				"XbXbaaXa");
+		check("StringReplace(\"abc abcb abdc\", \"ab\" ~~ _ -> \"X\")", //
+				"X Xb Xc");
+		check("StringReplace(\"abc abcd abcd\", WordBoundary ~~ \"abc\" ~~ WordBoundary -> \"XX\")", //
+				"XX abcd abcd");
+		check("StringReplace(\"abcd acbd\", RegularExpression[\"[ab]\"] -> \"XX\")", //
+				"XXXXcd XXcXXd");
+		check("StringReplace(\"abcdabcdaabcabcd\", {\"abc\" -> \"Y\", \"d\" -> \"XXX\"})", //
+				"YXXXYXXXaYYXXX");
+		check("StringReplace(\"product: A \\[CirclePlus] B\" , \"\\[CirclePlus]\" -> \"x\")", //
+				"product: A x B");
+		check("StringReplace({\"aaabbbbaaaa\", \"bbbaaaab\", \"aaabab\"}, \"ab\" -> \"X\")", //
+				"{aaXbbbaaaa,bbbaaaX,aaXX}");
+		 
+		check("StringReplace(\"The cat in the hat.\", \"the\" -> \"a\", IgnoreCase -> True)", //
+				"a cat in a hat.");
+
 		check("StringReplace(\"the quick brown fox jumps over the lazy dog\", \"the\" -> \"a\")", //
 				"a quick brown fox jumps over a lazy dog");
 		// operator form:
