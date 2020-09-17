@@ -1263,12 +1263,12 @@ public class Solve extends AbstractFunctionEvaluator {
 				if (augmentedMatrix != null) {
 					IAST subSolutionList = LinearAlgebra.rowReduced2RulesList(augmentedMatrix, variables, resultList,
 							engine);
-					return solveInequations((IASTMutable) subSolutionList, inequationsList, variables,
-							maximumNumberOfResults, engine);
+					return solveInequations((IASTMutable) subSolutionList, inequationsList, maximumNumberOfResults,
+							engine);
 				}
 				return F.NIL;
 			}
-			return solveInequations(resultList, inequationsList, variables, maximumNumberOfResults, engine);
+			return solveInequations(resultList, inequationsList, maximumNumberOfResults, engine);
 			// return sortASTArguments(resultList);
 		} catch (NoSolution e) {
 			if (e.getType() == NoSolution.WRONG_SOLUTION) {
@@ -1278,31 +1278,33 @@ public class Solve extends AbstractFunctionEvaluator {
 		}
 	}
 
-	protected static IASTMutable solveInequations(IASTMutable subSolutionList, IAST inequationsList, IAST variables,
+	protected static IASTMutable solveInequations(IASTMutable subSolutionList, IAST inequationsList,
 			int maximumNumberOfResults, EvalEngine engine) {
 		if (inequationsList.isEmpty()) {
 			return QuarticSolver.sortASTArguments(subSolutionList);
 		}
-		try {
-			IExpr temp = F.subst(inequationsList, subSolutionList);
-			boolean[] isNumeric = new boolean[] { false };
-			temp = engine.evaluate(temp);
-			if (temp.isAST()) {
-				IASTMutable[] lists = SolveUtils.filterSolveLists((IASTMutable) temp, subSolutionList, isNumeric);
-				if (lists[2].isPresent()) {
-					return lists[2];
+
+		if (subSolutionList.isListOfLists()) {
+			IASTAppendable result = F.ListAlloc(subSolutionList.size());
+			for (int i = 1; i < subSolutionList.size(); i++) {
+				IASTMutable list = (IASTMutable) subSolutionList.get(i);
+				IExpr temp = F.subst(inequationsList, list);
+				boolean[] isNumeric = new boolean[] { false };
+				temp = engine.evaluate(temp);
+				if (temp.isAST()) {
+					IASTMutable[] lists = SolveUtils.filterSolveLists((IASTMutable) temp, list, isNumeric);
+					if (lists[2].isPresent()) {
+						if (!lists[2].isEmptyList()) {
+							result.append(lists[2]);
+						}
+					}
 				}
 			}
-			// TODO solve the inequations here
-
-			// } catch (NoSolution e) {
-			// if (e.getType() == NoSolution.WRONG_SOLUTION) {
-			// return F.List();
-			// }
-			// return F.NIL;
-		} finally {
-
+			return result;
 		}
+
+		// TODO solve inequations here?
+
 		return F.NIL;
 	}
 

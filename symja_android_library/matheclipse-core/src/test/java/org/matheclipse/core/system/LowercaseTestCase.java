@@ -22430,6 +22430,14 @@ public class LowercaseTestCase extends AbstractTestCase {
 	}
 
 	public void testSolve() {
+		// github #200
+		check("Solve({x^2+5x+3==0, x<0}, x)", //
+				"{{x->1/2*(-5-Sqrt(13))},{x->1/2*(-5+Sqrt(13))}}");
+		check("Solve({x^2+5x+3==0, x>0}, x)", //
+				"{}");
+		check("Solve({x^2 == 4, x > 0}, x)", //
+				"{{x->2}}");
+		
 		check("Solve(2*x^(x-3)==3^(x-2),x)", //
 				"Solve(2/x^(3-x)==3^(-2+x),x)");
 
