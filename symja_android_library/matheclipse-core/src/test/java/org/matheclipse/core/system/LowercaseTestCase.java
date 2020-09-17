@@ -1373,7 +1373,7 @@ public class LowercaseTestCase extends AbstractTestCase {
 				"<|a->f(a),b->f(b),c->f(c),d->f(d)|>");
 		check("AssociationMap(Reverse, <|a -> 1, b -> 2, c -> 3, d -> 4|>)", //
 				"<|1->a,2->b,3->c,4->d|>");
-		
+
 		check("AssociationMap(f) @ {a, b, c, d}", //
 				"<|a->f(a),b->f(b),c->f(c),d->f(d)|>");
 		check("AssociationMap[Length, <|a -> 1, b -> 2|>]", //
@@ -5222,7 +5222,7 @@ public class LowercaseTestCase extends AbstractTestCase {
 				"{2,6}");
 		check("Diagonal(SparseArray({{1,2,3},{4,5,6},{7,8,9}}), -1)", //
 				"{4,8}");
-		
+
 		check("Diagonal({{1,0}, {0,1},0})", //
 				"Diagonal({{1,0},{0,1},0})");
 		check("Diagonal({{1,2,3},{4,5,6},{7,8,9}})", //
@@ -6064,20 +6064,19 @@ public class LowercaseTestCase extends AbstractTestCase {
 		if (ToggleFeature.FINANCE) {
 			check("EffectiveInterest(a,b)", //
 					"-1+(1+a*b)^(1/b)");
-			
+
 			check("EffectiveInterest({.05, .065, .07, .085}, 1/12)", //
 					"{0.0511619,0.0669719,0.0722901,0.0883909}");
 			check("EffectiveInterest(SparseArray({.05, .065, .07, .085}), 1/12)", //
 					"{0.0511619,0.0669719,0.0722901,0.0883909}");
-			
-			
+
 			check("EffectiveInterest({.05, .065, .07, .085}, 1/12)", //
 					"{0.0511619,0.0669719,0.0722901,0.0883909}");
 			check("EffectiveInterest(.1, 0)", //
 					"0.105171");
 			check("EffectiveInterest(.06, 3)", //
 					"0.0567218");
-			
+
 			check("EffectiveInterest({a,b,c,d})", //
 					"-1+((1+a)*(1+b)*(1+c)*(1+d))^(1/4)");
 			check("EffectiveInterest(SparseArray({a,b,c,d}))", //
@@ -9216,7 +9215,7 @@ public class LowercaseTestCase extends AbstractTestCase {
 				"{r*Cos(t),r*Sin(t)}");
 		check("FromPolarCoordinates(SparseArray({r, t, p}))", //
 				"{r*Cos(t),r*Cos(p)*Sin(t),r*Sin(p)*Sin(t)}");
-		
+
 		check("FromPolarCoordinates({r, t})", //
 				"{r*Cos(t),r*Sin(t)}");
 		check("FromPolarCoordinates({r, t, p})", //
@@ -12862,12 +12861,12 @@ public class LowercaseTestCase extends AbstractTestCase {
 				"{-1577780898195/827587904419-I*11087326045520/827587904419,35583840059240/\n"
 						+ "5793115330933+I*275839049310660/5793115330933,-3352155369084/827587904419-\n"
 						+ "I*28321055437140/827587904419}");
-		
+
 		check("LeastSquares({{1, 1}, {1, 2}, {1, 3.0}}, {7, 7, 8})", //
 				"{6.33333,0.5}");
 		check("LeastSquares(SparseArray({{1, 1}, {1, 2}, {1, 3.0}}), SparseArray({7, 7, 8}))", //
 				"{6.33333,0.5}");
-		
+
 		check("LeastSquares({{1, 1}, {1, 2}, {1, 3}}, {7, 7, 8})", //
 				"{19/3,1/2}");
 		check("LeastSquares({{1, 1}, {1, 2}, {1, 3}}, {7, 7, x})", //
@@ -13916,10 +13915,7 @@ public class LowercaseTestCase extends AbstractTestCase {
 
 	public void testLowerTriangularize() {
 		check("LowerTriangularize(SparseArray({{a,b,c,d}, {d,e,f,g}, {h,i,j,k}, {l,m,n,o}}))", //
-				"{{a,0,0,0},\n" + 
-				" {d,e,0,0},\n" + 
-				" {h,i,j,0},\n" + 
-				" {l,m,n,o}}");
+				"{{a,0,0,0},\n" + " {d,e,0,0},\n" + " {h,i,j,0},\n" + " {l,m,n,o}}");
 		check("LowerTriangularize({{1,0}, {0,1}},{})", //
 				"LowerTriangularize({{1,0},{0,1}},{})");
 		check("LowerTriangularize({{a,b,c,d}, {d,e,f,g}, {h,i,j,k}, {l,m,n,o}}, -1)", //
@@ -14470,7 +14466,7 @@ public class LowercaseTestCase extends AbstractTestCase {
 	}
 
 	public void testMax() {
-		
+
 		check("Refine(Max(Infinity,x), x>0)", //
 				"Infinity");
 		check("Max(Interval({1,2}))", //
@@ -14513,7 +14509,7 @@ public class LowercaseTestCase extends AbstractTestCase {
 	public void testMaxFilter() {
 		check("MaxFilter({a,b,c}, 1)", //
 				"{Max(a,b),Max(a,b,c),Max(b,c)}");
-		
+
 		check("MaxFilter({1, 2, 3, 2, 1}, 1)", //
 				"{2,3,3,3,2}");
 		check("MaxFilter({0, 3, 8, 2}, 1)", //
@@ -23374,10 +23370,28 @@ public class LowercaseTestCase extends AbstractTestCase {
 				"{True,False,True}");
 		check("StringContainsQ({\"a\", \"b\", \"ab\", \"abcd\", \"bcde\"}, \"a\")", //
 				"{True,False,True,True,False}");
+		check("StringContainsQ(\"C\" ~~ _ ~~ \"C\")/@ {\"CAC1\", \"CTG1\", \"ACT1\", \"CGA1\", \"CTC1\"}", //
+				"{True,False,False,False,True}");
 
-		// StringContainsQ: StringExpression currently not supported in StringContainsQ.
+		check("StringContainsQ(\"abcd\", \"BC\" , IgnoreCase -> False)", //
+				"False");
+		check("StringContainsQ(\"abcd\", \"BC\" , IgnoreCase -> True)", //
+				"True");
+
+		// StringContainsQ: StringExpression currently only partial supported in StringContainsQ.
 		check("StringContainsQ(\"bcde\", \"c\" ~~ __ ~~ \"t\")", //
-				"StringContainsQ(bcde,c~~__~~t)");
+				"False");
+		check("StringContainsQ(\"bcde\", \"c\" ~~ __ ~~ \"e\")", //
+				"True");
+
+		check("StringContainsQ(\"bcde\", \"b\" ~~ _ ~~ \"e\")", //
+				"False");
+		check("StringContainsQ(\"bcde\", \"b\" ~~ __ ~~ \"e\")", //
+				"True");
+		check("StringContainsQ(\"be\", \"b\" ~~ __ ~~ \"e\")", //
+				"False");
+		check("StringContainsQ(\"be\", \"b\" ~~ ___ ~~ \"e\")", //
+				"True");
 	}
 
 	public void testStringDrop() {
@@ -23410,6 +23424,25 @@ public class LowercaseTestCase extends AbstractTestCase {
 	}
 
 	public void testStringMatchQ() {
+		check("StringMatchQ(\"apppbb\", \"a\" ~~ ___ ~~ \"b\")", //
+				"True");
+		check("StringMatchQ(\"apppbb\", \"a*b\")", //
+				"True");
+		check("StringMatchQ(\"a*b\")[\"apppbb\"]", //
+				"True");
+		check("StringMatchQ(\"acggtaagc\", Characters[\"acgt\"] ..)", //
+				"True");
+		
+		check("StringMatchQ(\"abc 123 a\", RegularExpression[\"a.*\"] ~~ DigitCharacter ..)", //
+				"False");
+		check("StringMatchQ(\"abc 123\", RegularExpression[\"a.*\"] ~~ DigitCharacter ..)", //
+				"True");
+		
+		check("StringMatchQ(\"acggtATTCaagc\", __ ~~ \"aT\" ~~ __, IgnoreCase -> True)", //
+				"True");
+		check("StringMatchQ(\"acggtATTCaagc\", __ ~~ \"aT\" ~~ __, IgnoreCase -> False)", //
+				"False");
+
 		check("StringMatchQ(\"acggtaagc\", RegularExpression(\"[acgt]+\"))", //
 				"True");
 		check("StringMatchQ({\"ExpandAll\", \"listable\", \"test\"}, RegularExpression(\"li(.+?)le\"))", //
@@ -24304,7 +24337,7 @@ public class LowercaseTestCase extends AbstractTestCase {
 		check("TableForm(SparseArray(Array(a, {2,2})))", //
 				"a(1,1) a(1,2)\n" + //
 						"a(2,1) a(2,2)");
-		
+
 		check("TableForm(Array(a, {2}))", //
 				"a(1)\n" + "a(2)\n");
 		check("TableForm(Array(a, {2,2}))", //
@@ -25140,7 +25173,7 @@ public class LowercaseTestCase extends AbstractTestCase {
 				"{Sqrt(2),Pi/4}");
 		check("ToPolarCoordinates(SparseArray({x, y, z}))", //
 				"{Sqrt(x^2+y^2+z^2),ArcCos(x/Sqrt(x^2+y^2+z^2)),ArcTan(y,z)}");
-		
+
 		check("ToPolarCoordinates({x, y})", //
 				"{Sqrt(x^2+y^2),ArcTan(x,y)}");
 		check("ToPolarCoordinates({1, 1})", //
@@ -25876,9 +25909,9 @@ public class LowercaseTestCase extends AbstractTestCase {
 	public void testUpperTriangularize() {
 		check("UpperTriangularize(SparseArray({{a,b,c,d}, {d,e,f,g}, {h,i,j,k}, {l,m,n,o}}))", //
 				"{{a,b,c,d},\n" + //
-				" {0,e,f,g},\n" + //
-				" {0,0,j,k},\n" + //
-				" {0,0,0,o}}");
+						" {0,e,f,g},\n" + //
+						" {0,0,j,k},\n" + //
+						" {0,0,0,o}}");
 		check("UpperTriangularize({{1,0}, {0,1}},{})", //
 				"UpperTriangularize({{1,0},{0,1}},{})");
 		check("UpperTriangularize({{a,b,c,d}, {d,e,f,g}, {h,i,j,k}, {l,m,n,o}}, 1)", //

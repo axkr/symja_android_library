@@ -11,13 +11,18 @@ import org.matheclipse.core.eval.exception.Validate;
 import org.matheclipse.core.eval.exception.ValidateException;
 import org.matheclipse.core.eval.interfaces.AbstractCoreFunctionEvaluator;
 import org.matheclipse.core.eval.interfaces.AbstractFunctionEvaluator;
+import org.matheclipse.core.eval.util.OptionArgs;
 import org.matheclipse.core.expression.F;
+import org.matheclipse.core.expression.ID;
+import org.matheclipse.core.expression.PatternSequence;
+import org.matheclipse.core.expression.RepeatedPattern;
 import org.matheclipse.core.expression.S;
 import org.matheclipse.core.expression.StringX;
 import org.matheclipse.core.form.output.OutputFormFactory;
 import org.matheclipse.core.form.tex.TeXParser;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IASTAppendable;
+import org.matheclipse.core.interfaces.IBuiltInSymbol;
 import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.interfaces.IPredicate;
 import org.matheclipse.core.interfaces.IStringX;
@@ -332,32 +337,41 @@ public final class StringFunctions {
 					return F.NIL;
 				}
 			}
-			if (ast.isAST2()) {
+			boolean ignoreCase = false;
+			if (ast.size() > 3) {
+				final OptionArgs options = new OptionArgs(ast.topHead(), ast, 3, engine, true);
+				IExpr option = options.getOption(S.IgnoreCase);
+				if (option.isTrue()) {
+					ignoreCase = true;
+				}
+			}
+
+			if (ast.size() >= 3) {
 				IExpr arg1 = ast.arg1();
 				if (arg1.isList()) {
 					return ((IAST) arg1).mapThread(ast, 1);
 				}
-				IExpr arg2 = ast.arg2();
-				if (arg2.isAST(F.StringExpression)) {
-					// `1` currently not supported in `2`.
-					return IOFunctions.printMessage(ast.topHead(), "unsupported",
-							F.List(F.StringExpression, ast.topHead()), engine);
-
-				}
 				if (arg1.isString()) {
-					String s1 = arg1.toString();
-					if (arg2.isString()) {
-						String s2 = arg2.toString();
-						return F.bool(s1.contains(s2));
+					IExpr arg2 = ast.arg2();
+					java.util.regex.Pattern pattern = toRegexPattern(ast, arg2, true, ignoreCase, engine);
+					if (pattern == null) {
+						return F.NIL;
 					}
+					String s1 = arg1.toString();
+					java.util.regex.Matcher matcher = pattern.matcher(s1);
+					if (matcher.find()) {
+						return S.True;
+					}
+					return S.False;
 				}
+				return F.NIL;
 			}
 			return F.NIL;
 		}
 
 		@Override
 		public int[] expectedArgSize(IAST ast) {
-			return IOFunctions.ARGS_1_2;
+			return IOFunctions.ARGS_1_4;
 		}
 	}
 
@@ -485,28 +499,39 @@ public final class StringFunctions {
 					return F.NIL;
 				}
 			}
-			if (ast.isAST2()) {
+			if (ast.size() >= 3) {
+				boolean ignoreCase = false;
+				if (ast.size() > 3) {
+					final OptionArgs options = new OptionArgs(ast.topHead(), ast, 3, engine, true);
+					IExpr option = options.getOption(S.IgnoreCase);
+					if (option.isTrue()) {
+						ignoreCase = true;
+					}
+				}
+
 				IExpr arg1 = ast.arg1();
 				if (arg1.isList()) {
 					return ((IAST) arg1).mapThread(ast, 1);
 				}
-				if (arg1.isString()) {
-					IExpr arg2 = ast.arg2();
-					if (arg2.isAST(F.RegularExpression, 2) && arg2.first().isString()) {
-						return F.bool(Pattern.matches(((IStringX) arg2.first()).toString(), arg1.toString()));
-					} else {
-						// `1` currently not supported in `2`.
-						return IOFunctions.printMessage(ast.topHead(), "unsupported",
-								F.List(arg2.topHead(), ast.topHead()), engine);
-					}
+
+				IExpr arg2 = ast.arg2();
+				java.util.regex.Pattern pattern = toRegexPattern(ast, arg2, true, ignoreCase, engine);
+				if (pattern == null) {
+					return F.NIL;
 				}
+				String s1 = arg1.toString();
+				java.util.regex.Matcher matcher = pattern.matcher(s1);
+				if (matcher.matches()) {
+					return S.True;
+				}
+				return S.False;
 			}
 			return F.NIL;
 		}
 
 		@Override
 		public int[] expectedArgSize(IAST ast) {
-			return IOFunctions.ARGS_1_2;
+			return IOFunctions.ARGS_1_4;
 		}
 	}
 
@@ -1024,6 +1049,7 @@ public final class StringFunctions {
 		public int[] expectedArgSize(IAST ast) {
 			return IOFunctions.ARGS_1_1;
 		}
+
 	}
 
 	public static String inputForm(final IExpr expression, boolean relaxedSyntax) {
@@ -1048,6 +1074,132 @@ public final class StringFunctions {
 			return StringFunctions.inputForm(expression, true);
 		}
 		return StringFunctions.inputForm(expression, false);
+	}
+
+	private static java.util.regex.Pattern toRegexPattern(IAST ast, IExpr arg, boolean abbreviatedPatterns,
+			boolean ignoreCase, EvalEngine engine) {
+		String regex = toRegexString(ast, arg, abbreviatedPatterns, engine);
+		if (regex != null) {
+			java.util.regex.Pattern pattern;
+			if (ignoreCase) {
+				pattern = java.util.regex.Pattern.compile(regex, Pattern.CASE_INSENSITIVE);
+			} else {
+				pattern = java.util.regex.Pattern.compile(regex);
+			}
+			return pattern;
+		}
+		return null;
+	}
+
+	private static String toRegexString(IAST ast, IExpr arg, boolean abbreviatedPatterns, EvalEngine engine) {
+		if (arg.isString()) {
+			final String str = arg.toString();
+			if (abbreviatedPatterns) {
+				StringBuilder pieces = new StringBuilder();
+				for (int i = 0; i < str.length(); i++) {
+					char c = str.charAt(i);
+					if (c == '\\') {
+						//
+					} else if (c == '*') {
+						pieces.append("(.*)");
+					} else if (c == '@') {
+						// one or more characters, excluding uppercase letters
+						pieces.append("([^A-Z]+)");
+					} else {
+						pieces.append(c);
+					}
+				}
+				return pieces.toString();
+			} else {
+				return str;
+			}
+		} else if (arg.isAST(S.Characters, 2) && arg.first().isString()) {
+			String str = ((IStringX) arg.first()).toString();
+			return "[" + str + "]";
+		} else if (arg.isAST(S.RegularExpression, 2) && arg.first().isString()) {
+			return ((IStringX) arg.first()).toString();
+		} else if (arg instanceof RepeatedPattern) {
+			RepeatedPattern repeated = (RepeatedPattern) arg;
+			IExpr expr = repeated.getRepeatedExpr();
+			if (expr == null) {
+				return null;
+			}
+			if (repeated.isNullSequence()) {
+				String str = toRegexString(ast, expr, abbreviatedPatterns, engine);
+				if (str == null) {
+					return null;
+				}
+				return "(" + str + ")*";
+			} else {
+				String str = toRegexString(ast, expr, abbreviatedPatterns, engine);
+				if (str == null) {
+					return null;
+				}
+				return "(" + str + ")+";
+			}
+		} else if (arg.isAST(F.StringExpression)) {
+			IAST stringExpression = (IAST) arg;
+			return toRegexString(ast, stringExpression, abbreviatedPatterns, engine);
+		} else if (arg.isBlank()) {
+			return "(.|\\n)";
+		} else if (arg.isPatternSequence(false)) {
+			PatternSequence ps = ((PatternSequence) arg);
+			if (ps.isNullSequence()) {
+				return "(.|\\n)*";
+			} else {
+				return "(.|\\n)+";
+			}
+		} else if (arg.isBuiltInSymbol()) {
+			int ordinal = ((IBuiltInSymbol) arg).ordinal();
+			switch (ordinal) {
+			case ID.NumberString:
+				return "[-|+]?(\\d+(\\.\\d*)?|\\.\\d+)?";
+			case ID.Whitespace:
+				return "(?u)\\s+";
+			case ID.DigitCharacter:
+				return "\\d";
+			case ID.WhitespaceCharacter:
+				return "(?u)\\s";
+			case ID.WordCharacter:
+				return "(?u)[^\\W_]";
+			case ID.StartOfLine:
+				return "^";
+			case ID.EndOfLine:
+				return "$";
+			case ID.StartOfString:
+				return "\\A";
+			case ID.EndOfString:
+				return "\\Z";
+			case ID.WordBoundary:
+				return "\\b";
+			case ID.LetterCharacter:
+				return "(?u)[^\\W_0-9]";
+			case ID.HexidecimalCharacter:
+				return "[0-9a-fA-F]";
+			default:
+				// `1` currently not supported in `2`.
+				IOFunctions.printMessage(ast.topHead(), "unsupported", F.List(arg, ast.topHead()), engine);
+				return null;
+			}
+		} else {
+			// `1` currently not supported in `2`.
+			IOFunctions.printMessage(ast.topHead(), "unsupported", F.List(F.StringExpression, ast.topHead()), engine);
+		}
+		return null;
+	}
+
+	private static String toRegexString(IAST ast, IAST stringExpression, boolean abbreviatedPatterns,
+			EvalEngine engine) {
+		StringBuilder regex = new StringBuilder();
+		for (int i = 1; i < stringExpression.size(); i++) {
+			IExpr arg = stringExpression.get(i);
+			String str = toRegexString(ast, arg, abbreviatedPatterns, engine);
+			if (str == null) {
+				return null;
+			}
+			regex.append(str);
+		}
+		return regex.toString();
 	}
 
 	public static void initialize() {

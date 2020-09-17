@@ -53,20 +53,21 @@ public class AST2Expr {
 	public final static String[] SYMBOL_STRINGS = { "All", "Algebraics", "Automatic", "Axes", "AxesOrigin", "AxesStyle",
 			"Background", "BarOrigin", "Black", "Blue", "Booleans", "Bottom", "Brown", "CharacterEncoding",
 			"ColorFunction", "ComplexInfinity", "Catalan", "Complexes", "ComplexityFunction", "Constant", "Cyan",
-			"Degree", "DegreeLexicographic", "DegreeReverseLexicographic", "Disputed", "DistanceFunction",
-			"EliminationOrder", "EulerGamma", "Expression", "Extension", "False", "Flat", "Float", "Full",
-			"GaussianIntegers", "General", "Glaisher", "GoldenAngle", "GoldenRatio", "Gray", "Green", "Heads",
-			"HoldAll", "HoldComplete", "HoldAllComplete", "HoldFirst", "HoldRest", "Indeterminate", "Infinity",
-			"Integer", "Integers", "Khinchin", "Left", "Lexicographic", "LightBlue", "LightBrown", "LightCyan",
-			"LightGray", "LightGreen", "LightMagenta", "LightOrange", "LightPink", "LightPurple", "LightRed",
-			"LightYellow", "Listable", "LongForm", "Magenta", "MaxIterations", "MaxPoints", "Method", "Modulus",
-			"MonomialOrder", "NegativeDegreeLexicographic", "NegativeDegreeReverseLexicographic",
-			"NegativeLexicographic", "NHoldAll", "NHoldFirst", "NHoldRest", "None", "Nothing", "Nonexistent",
-			"NotApplicable", "NotAvailable", "Now", "Null", "Number", "NumberString", "NumericFunction", "OneIdentity",
-			"Orange", "Orderless", "Pi", "Pink", "PrecisionGoal", "Primes", "Protected", "Purple", "Rationals",
-			"ReadProtected", "Real", "Red", "Reals", "Right", "SameTest", "Second", "SequenceHold", "Slot",
-			"SlotSequence", "Strict", "String", "Symbol", "TableHeadings", "Today", "TooLarge", "Top", "Trig", "True",
-			"Unknown", "Variable", "ViewPoint", "White", "Whitespace", "Yellow" };
+			"Degree", "DegreeLexicographic", "DegreeReverseLexicographic", "DigitCharacter", "Disputed",
+			"DistanceFunction", "EliminationOrder", "EndOfLine", "EndOfString", "EulerGamma", "Expression", "Extension",
+			"False", "Flat", "Float", "Full", "GaussianIntegers", "General", "Glaisher", "GoldenAngle", "GoldenRatio",
+			"Gray", "Green", "Heads", "HexidecimalCharacter", "HoldAll", "HoldComplete", "HoldAllComplete", "HoldFirst",
+			"HoldRest", "IgnoreCase", "Indeterminate", "Infinity", "Integer", "Integers", "Khinchin", "Left",
+			"LetterCharacter", "Lexicographic", "LightBlue", "LightBrown", "LightCyan", "LightGray", "LightGreen",
+			"LightMagenta", "LightOrange", "LightPink", "LightPurple", "LightRed", "LightYellow", "Listable",
+			"LongForm", "Magenta", "MaxIterations", "MaxPoints", "Method", "Modulus", "MonomialOrder",
+			"NegativeDegreeLexicographic", "NegativeDegreeReverseLexicographic", "NegativeLexicographic", "NHoldAll",
+			"NHoldFirst", "NHoldRest", "None", "Nothing", "Nonexistent", "NotApplicable", "NotAvailable", "Now", "Null",
+			"Number", "NumberString", "NumericFunction", "OneIdentity", "Orange", "Orderless", "Pi", "Pink",
+			"PrecisionGoal", "Primes", "Protected", "Purple", "Rationals", "ReadProtected", "Real", "Red", "Reals",
+			"Right", "SameTest", "Second", "SequenceHold", "Slot", "SlotSequence", "StartOfLine", "StartOfString",
+			"Strict", "String", "Symbol", "TableHeadings", "Today", "TooLarge", "Top", "Trig", "True", "Unknown",
+			"Variable", "ViewPoint", "White", "Whitespace", "WhitespaceCharacter", "WordCharacter", "Yellow" };
 
 	public final static String[] FUNCTION_STRINGS = { "Abort", "Abs", "AbsArg", "AbsoluteCorrelation", "AbsoluteTime",
 			"AbsoluteTiming", "Accumulate", "AddTo", "AdjacencyMatrix", "AiryAi", "AiryAiPrime", "AiryBi",
@@ -84,7 +85,7 @@ public class AST2Expr {
 			"BooleanQ", "BooleanConvert", "BooleanMinimize", "BooleanTable", "BooleanVariables", "BoxWhiskerChart",
 			"BrayCurtisDistance", "Break", "BSplineFunction", "Button", "ByteArray", "ByteArrayQ", "ByteCount",
 			"CanberraDistance", "Cancel", "CancelButton", "CarmichaelLambda", "CartesianProduct", "Cases",
-			"CatalanNumber", "Catch", "Catenate", "CDF", "Ceiling", "CenterDot", "CentralMoment", "CForm",
+			"CatalanNumber", "Catch", "Catenate", "CDF", "Ceiling", "CenterDot", "CentralMoment", "CForm", "Characters",
 			"CharacteristicPolynomial", "ChebyshevT", "ChebyshevU", "Check", "ChessboardDistance", "ChineseRemainder",
 			"ChiSquareDistribution", "CholeskyDecomposition", "Chop", "CircleDot", "CirclePoints", "Clear", "ClearAll",
 			"ClearAttributes", "Clip", "CMYColor", "Coefficient", "CoefficientList", "CoefficientRules", "Colon",
@@ -204,7 +205,7 @@ public class AST2Expr {
 			"Variance", "VectorAngle", "VectorQ", "VertexEccentricity", "VertexList", "VertexQ", "WeibullDistribution",
 			"WeierstrassHalfPeriods", "WeierstrassInvariants", "WeierstrassP", "WeierstrassPPrime",
 			"WeightedAdjacencyMatrix", "WeightedData", "Which", "While", "With", "WhittakerM", "WhittakerW",
-			"WriteString", "Xor", "YuleDissimilarity", "ZeroSymmetric", "Zeta" };
+			"WriteString", "WordBoundary", "Xor", "YuleDissimilarity", "ZeroSymmetric", "Zeta" };
 
 	public static Map<String, Integer> RUBI_STATISTICS_MAP;
 

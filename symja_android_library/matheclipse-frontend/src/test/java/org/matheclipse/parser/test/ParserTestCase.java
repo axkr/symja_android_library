@@ -762,7 +762,7 @@ public class ParserTestCase extends TestCase {
 			assertEquals("", e.getMessage());
 		}
 	}
- 
+
 	public void testParser53() {
 		try {
 			Parser p = new Parser();
@@ -774,7 +774,7 @@ public class ParserTestCase extends TestCase {
 			assertEquals("", e.getMessage());
 		}
 	}
-	
+
 	public void testParser54() {
 		try {
 			Parser p = new Parser();
@@ -786,7 +786,7 @@ public class ParserTestCase extends TestCase {
 			assertEquals("", e.getMessage());
 		}
 	}
-	
+
 	public void testParser55() {
 		try {
 			Parser p = new Parser();
@@ -798,7 +798,7 @@ public class ParserTestCase extends TestCase {
 			assertEquals("", e.getMessage());
 		}
 	}
-	
+
 	public void testParser56() {
 		// see https://github.com/halirutan/Wolfram-Language-IntelliJ-Plugin-Archive/issues/166
 		try {
@@ -811,7 +811,7 @@ public class ParserTestCase extends TestCase {
 			assertEquals("", e.getMessage());
 		}
 	}
-	
+
 	public void testParser57() {
 		// see https://github.com/halirutan/Wolfram-Language-IntelliJ-Plugin-Archive/issues/166
 		try {
@@ -819,6 +819,18 @@ public class ParserTestCase extends TestCase {
 			ASTNode obj = p.parse("x y_ : z");
 			assertEquals(obj.toString(), //
 					"Times(x, Optional(y_, z))");
+		} catch (Exception e) {
+			e.printStackTrace();
+			assertEquals("", e.getMessage());
+		}
+	}
+
+	public void testParser58() {
+		try {
+			Parser p = new Parser();
+			ASTNode obj = p.parse("StringContainsQ[\"bcde\", \"c\" ~~ __ ~~ \"t\"]");
+			assertEquals(obj.toString(), //
+					"StringContainsQ(bcde, StringExpression(c, __, t))");
 		} catch (Exception e) {
 			e.printStackTrace();
 			assertEquals("", e.getMessage());

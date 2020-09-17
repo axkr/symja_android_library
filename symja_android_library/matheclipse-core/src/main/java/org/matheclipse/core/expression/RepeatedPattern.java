@@ -11,13 +11,6 @@ public class RepeatedPattern extends PatternSequence {
 
 	private static final long serialVersionUID = 1086461999754718513L;
 
-	protected IExpr fRepeatedExpr;
-	protected IPatternMatcher fMatcher;
-	//
-	// public static RepeatedPattern valueOf(IExpr patternExpr, EvalEngine engine) {
-	// return valueOf(null, patternExpr, engine);
-	// }
-
 	public static RepeatedPattern valueOf(IExpr patternExpr, EvalEngine engine) {
 		RepeatedPattern p = new RepeatedPattern();
 		p.fSymbol = null;
@@ -28,9 +21,26 @@ public class RepeatedPattern extends PatternSequence {
 		p.fMatcher = engine.evalPatternMatcher(patternExpr);
 		return p;
 	}
+	protected IExpr fRepeatedExpr;
+
+	protected IPatternMatcher fMatcher;
+	//
+	// public static RepeatedPattern valueOf(IExpr patternExpr, EvalEngine engine) {
+	// return valueOf(null, patternExpr, engine);
+	// }
 
 	protected RepeatedPattern() {
 		super();
+	}
+
+	@Override
+	public IExpr copy() {
+		try {
+			return (IExpr) clone();
+		} catch (CloneNotSupportedException e) {
+			e.printStackTrace();
+			return null;
+		}
 	}
 
 	@Override
@@ -56,9 +66,18 @@ public class RepeatedPattern extends PatternSequence {
 		return false;
 	}
 
+	public IExpr getRepeatedExpr() {
+		return fRepeatedExpr;
+	}
+
 	@Override
 	public int hashCode() {
 		return (fSymbol == null) ? 213 : 37 + fSymbol.hashCode();
+	}
+
+	@Override
+	public boolean isRepeated() {
+		return true;
 	}
 
 	@Override
@@ -73,21 +92,6 @@ public class RepeatedPattern extends PatternSequence {
 			}
 		}
 		return true;
-	}
-
-	@Override
-	public boolean isRepeated() {
-		return true;
-	}
-
-	@Override
-	public IExpr copy() {
-		try {
-			return (IExpr) clone();
-		} catch (CloneNotSupportedException e) {
-			e.printStackTrace();
-			return null;
-		}
 	}
 
 	@Override
