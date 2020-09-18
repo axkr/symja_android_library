@@ -55,6 +55,7 @@ public final class StringFunctions {
 			S.StringRiffle.setEvaluator(new StringRiffle());
 			S.StringSplit.setEvaluator(new StringSplit());
 			S.StringTake.setEvaluator(new StringTake());
+			S.StringTrim.setEvaluator(new StringTrim());
 			S.SyntaxLength.setEvaluator(new SyntaxLength());
 			S.TextString.setEvaluator(new TextString());
 			S.ToCharacterCode.setEvaluator(new ToCharacterCode());
@@ -620,8 +621,7 @@ public final class StringFunctions {
 					if (pattern == null) {
 						return F.NIL;
 					}
-					java.util.regex.Matcher matcher = pattern.matcher(str);
-					str= pattern.matcher(str).replaceAll(rule.arg2().toString());
+					str = pattern.matcher(str).replaceAll(rule.arg2().toString());
 				}
 				return F.$str(str);
 			}
@@ -809,6 +809,45 @@ public final class StringFunctions {
 		@Override
 		public int[] expectedArgSize(IAST ast) {
 			return IOFunctions.ARGS_2_2;
+		}
+	}
+
+	private static class StringTrim extends AbstractFunctionEvaluator {
+
+		@Override
+		public IExpr evaluate(final IAST ast, EvalEngine engine) {
+			if (ast.arg1().isString()) {
+				if (ast.isAST1()) {
+					return F.$str(ast.arg1().toString().trim());
+				}
+				if (ast.isAST2()) {
+					if (!ast.arg1().isString()) {
+						return F.NIL;
+					}
+					String str = ((IStringX) ast.arg1()).toString();
+					String regex = toRegexString(ast.arg2(), true, ast, engine);
+					if (regex != null) {
+						// prepend StartOfString
+						java.util.regex.Pattern pattern = java.util.regex.Pattern.compile("\\A" + regex);
+						str = pattern.matcher(str).replaceAll("");
+						// append EndOfString
+						pattern = java.util.regex.Pattern.compile(regex + "\\Z");
+						str = pattern.matcher(str).replaceAll("");
+						return F.$str(str);
+					}
+				}
+			}
+			return F.NIL;
+		}
+
+		@Override
+		public int[] expectedArgSize(IAST ast) {
+			return IOFunctions.ARGS_1_2;
+		}
+
+		@Override
+		public void setUp(final ISymbol newSymbol) {
+			newSymbol.setAttributes(ISymbol.LISTABLE);
 		}
 	}
 
@@ -1096,7 +1135,7 @@ public final class StringFunctions {
 
 	private static java.util.regex.Pattern toRegexPattern(IAST ast, IExpr arg, boolean abbreviatedPatterns,
 			boolean ignoreCase, EvalEngine engine) {
-		String regex = toRegexString(ast, arg, abbreviatedPatterns, engine);
+		String regex = toRegexString(arg, abbreviatedPatterns, ast, engine);
 		if (regex != null) {
 			java.util.regex.Pattern pattern;
 			if (ignoreCase) {
@@ -1109,9 +1148,24 @@ public final class StringFunctions {
 		return null;
 	}
 
-	private static String toRegexString(IAST ast, IExpr arg, boolean abbreviatedPatterns, EvalEngine engine) {
-		if (arg.isString()) {
-			final String str = arg.toString();
+	/**
+	 * See: <a href="https://github.com/mathics/Mathics/blob/master/mathics/builtin/strings.py#L78">to_regex()
+	 * function</a>
+	 * 
+	 * @param partOfRegex
+	 *            the expression which represents a regex 'piece'
+	 * @param abbreviatedPatterns
+	 *            if <code>true</code> allow 'abbreviated patterns" in strings (i.e. '\','*' and '@' operatore)
+	 * @param stringFunction
+	 *            the original string function, used in error messages
+	 * @param engine
+	 * 
+	 * @return
+	 */
+	private static String toRegexString(IExpr partOfRegex, boolean abbreviatedPatterns, IAST stringFunction,
+			EvalEngine engine) {
+		if (partOfRegex.isString()) {
+			final String str = partOfRegex.toString();
 			if (abbreviatedPatterns) {
 				StringBuilder pieces = new StringBuilder();
 				for (int i = 0; i < str.length(); i++) {
@@ -1131,44 +1185,44 @@ public final class StringFunctions {
 			} else {
 				return str;
 			}
-		} else if (arg.isAST(S.Characters, 2) && arg.first().isString()) {
-			String str = ((IStringX) arg.first()).toString();
+		} else if (partOfRegex.isAST(S.Characters, 2) && partOfRegex.first().isString()) {
+			String str = ((IStringX) partOfRegex.first()).toString();
 			return "[" + str + "]";
-		} else if (arg.isAST(S.RegularExpression, 2) && arg.first().isString()) {
-			return ((IStringX) arg.first()).toString();
-		} else if (arg instanceof RepeatedPattern) {
-			RepeatedPattern repeated = (RepeatedPattern) arg;
+		} else if (partOfRegex.isAST(S.RegularExpression, 2) && partOfRegex.first().isString()) {
+			return ((IStringX) partOfRegex.first()).toString();
+		} else if (partOfRegex instanceof RepeatedPattern) {
+			RepeatedPattern repeated = (RepeatedPattern) partOfRegex;
 			IExpr expr = repeated.getRepeatedExpr();
 			if (expr == null) {
 				return null;
 			}
 			if (repeated.isNullSequence()) {
-				String str = toRegexString(ast, expr, abbreviatedPatterns, engine);
+				String str = toRegexString(expr, abbreviatedPatterns, stringFunction, engine);
 				if (str == null) {
 					return null;
 				}
 				return "(" + str + ")*";
 			} else {
-				String str = toRegexString(ast, expr, abbreviatedPatterns, engine);
+				String str = toRegexString(expr, abbreviatedPatterns, stringFunction, engine);
 				if (str == null) {
 					return null;
 				}
 				return "(" + str + ")+";
 			}
-		} else if (arg.isAST(F.StringExpression)) {
-			IAST stringExpression = (IAST) arg;
-			return toRegexString(ast, stringExpression, abbreviatedPatterns, engine);
-		} else if (arg.isBlank()) {
+		} else if (partOfRegex.isAST(F.StringExpression)) {
+			IAST stringExpression = (IAST) partOfRegex;
+			return toRegexString(stringFunction, stringExpression, abbreviatedPatterns, engine);
+		} else if (partOfRegex.isBlank()) {
 			return "(.|\\n)";
-		} else if (arg.isPatternSequence(false)) {
-			PatternSequence ps = ((PatternSequence) arg);
+		} else if (partOfRegex.isPatternSequence(false)) {
+			PatternSequence ps = ((PatternSequence) partOfRegex);
 			if (ps.isNullSequence()) {
 				return "(.|\\n)*";
 			} else {
 				return "(.|\\n)+";
 			}
-		} else if (arg.isBuiltInSymbol()) {
-			int ordinal = ((IBuiltInSymbol) arg).ordinal();
+		} else if (partOfRegex.isBuiltInSymbol()) {
+			int ordinal = ((IBuiltInSymbol) partOfRegex).ordinal();
 			switch (ordinal) {
 			case ID.NumberString:
 				return "[-|+]?(\\d+(\\.\\d*)?|\\.\\d+)?";
@@ -1196,12 +1250,14 @@ public final class StringFunctions {
 				return "[0-9a-fA-F]";
 			default:
 				// `1` currently not supported in `2`.
-				IOFunctions.printMessage(ast.topHead(), "unsupported", F.List(arg, ast.topHead()), engine);
+				IOFunctions.printMessage(stringFunction.topHead(), "unsupported",
+						F.List(partOfRegex, stringFunction.topHead()), engine);
 				return null;
 			}
 		} else {
 			// `1` currently not supported in `2`.
-			IOFunctions.printMessage(ast.topHead(), "unsupported", F.List(F.StringExpression, ast.topHead()), engine);
+			IOFunctions.printMessage(stringFunction.topHead(), "unsupported",
+					F.List(F.StringExpression, stringFunction.topHead()), engine);
 		}
 		return null;
 	}
@@ -1211,7 +1267,7 @@ public final class StringFunctions {
 		StringBuilder regex = new StringBuilder();
 		for (int i = 1; i < stringExpression.size(); i++) {
 			IExpr arg = stringExpression.get(i);
-			String str = toRegexString(ast, arg, abbreviatedPatterns, engine);
+			String str = toRegexString(arg, abbreviatedPatterns, ast, engine);
 			if (str == null) {
 				return null;
 			}

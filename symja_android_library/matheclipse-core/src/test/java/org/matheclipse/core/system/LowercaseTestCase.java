@@ -23447,12 +23447,12 @@ public class LowercaseTestCase extends AbstractTestCase {
 				"True");
 		check("StringMatchQ(\"a*b\")[\"apppbb\"]", //
 				"True");
-		check("StringMatchQ(\"acggtaagc\", Characters[\"acgt\"] ..)", //
+		check("StringMatchQ(\"acggtaagc\", Characters(\"acgt\") ..)", //
 				"True");
 
-		check("StringMatchQ(\"abc 123 a\", RegularExpression[\"a.*\"] ~~ DigitCharacter ..)", //
+		check("StringMatchQ(\"abc 123 a\", RegularExpression(\"a.*\") ~~ DigitCharacter ..)", //
 				"False");
-		check("StringMatchQ(\"abc 123\", RegularExpression[\"a.*\"] ~~ DigitCharacter ..)", //
+		check("StringMatchQ(\"abc 123\", RegularExpression(\"a.*\") ~~ DigitCharacter ..)", //
 				"True");
 
 		check("StringMatchQ(\"acggtATTCaagc\", __ ~~ \"aT\" ~~ __, IgnoreCase -> True)", //
@@ -23464,7 +23464,9 @@ public class LowercaseTestCase extends AbstractTestCase {
 				"True");
 		check("StringMatchQ({\"ExpandAll\", \"listable\", \"test\"}, RegularExpression(\"li(.+?)le\"))", //
 				"{False,True,False}");
-
+		check("StringMatchQ(\"abaababbat\", ___ ~~ \"t\" ~~ EndOfString)", //
+				"True");
+	 
 	}
 
 	public void testStringPart() {
@@ -23480,6 +23482,14 @@ public class LowercaseTestCase extends AbstractTestCase {
 				"{a,c,e}");
 		check("StringPart(\"1234567890\",  {1, 3, 10})", //
 				"{1,3,0}");
+	}
+
+	public void testStringTrim() {
+		check("StringTrim(\"   aaa bbb ccc   \") // FullForm", //
+				"\"aaa bbb ccc\"");
+
+		check("StringTrim(\"   aaa bbb ccc   \", RegularExpression(\"^ *\")) // FullForm", //
+				"\"aaa bbb ccc   \"");
 	}
 
 	public void testStringQ() {
@@ -23520,7 +23530,7 @@ public class LowercaseTestCase extends AbstractTestCase {
 				"X Xb Xc");
 		check("StringReplace(\"abc abcd abcd\", WordBoundary ~~ \"abc\" ~~ WordBoundary -> \"XX\")", //
 				"XX abcd abcd");
-		check("StringReplace(\"abcd acbd\", RegularExpression[\"[ab]\"] -> \"XX\")", //
+		check("StringReplace(\"abcd acbd\", RegularExpression(\"[ab]\") -> \"XX\")", //
 				"XXXXcd XXcXXd");
 		check("StringReplace(\"abcdabcdaabcabcd\", {\"abc\" -> \"Y\", \"d\" -> \"XXX\"})", //
 				"YXXXYXXXaYYXXX");
@@ -23540,6 +23550,10 @@ public class LowercaseTestCase extends AbstractTestCase {
 
 		check("StringReplace(\"abbaabbaa\", \"ab\" -> \"X\")", //
 				"XbaXbaa");
+		check("StringReplace(\"ababbabbaaaCb\", LetterCharacter ~~ EndOfString -> \"t\")", //
+				"ababbabbaaaCt");
+		check("StringReplace(\"  see you later alligator.  \", (Whitespace ~~ EndOfString) ->  \"\")// FullForm", //
+				"\"  see you later alligator.\"");
 	}
 
 	public void testStringRiffle() {
