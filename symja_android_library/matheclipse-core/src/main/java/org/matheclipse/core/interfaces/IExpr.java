@@ -732,6 +732,20 @@ public interface IExpr extends Comparable<IExpr>, GcdRingElem<IExpr>, Serializab
 	}
 
 	/**
+	 * Returns <code>false</code>, if <b>all of the elements</b> in the subexpressions or the expression itself, aren't
+	 * a symbolic or numerical complex number or a structure with complex number arguments.
+	 * 
+	 * @return <code>true</code> if this expression is a complex number or a structure with complex number arguments.
+	 */
+	default boolean hasComplexNumber() {
+		return !isFree(x -> (x.isComplex() || //
+				x.isComplexNumeric() || //
+				x == S.I || //
+				x.isAST(S.Complex)), //
+				false);
+	}
+
+	/**
 	 * Returns <code>true</code>, if <b>at least one of the elements</b> in the subexpressions or the expression itself,
 	 * match the given pattern.
 	 * 

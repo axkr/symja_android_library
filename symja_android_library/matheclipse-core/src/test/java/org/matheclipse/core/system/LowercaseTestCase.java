@@ -9908,6 +9908,10 @@ public class LowercaseTestCase extends AbstractTestCase {
 	}
 
 	public void testGreater() {
+		// github #200
+		check("-I*Sqrt(11)>0", //
+				"-I*Sqrt(11)>0");
+
 		check("x>x", //
 				"x>x");
 		check("x+1>x", //
@@ -22430,14 +22434,19 @@ public class LowercaseTestCase extends AbstractTestCase {
 	}
 
 	public void testSolve() {
-		// github #200
+		// github #200 begin
+		check("Solve({x^2+y^2==5, x+y^2==-7, y>0}, {x,y})", //
+				"{}");
+		check("Solve({x^2+y^2==5, x+y^2==-7, x>0}, {x,y})", //
+				"{{x->4,y->-I*Sqrt(11)},{x->4,y->I*Sqrt(11)}}");
 		check("Solve({x^2+5x+3==0, x<0}, x)", //
 				"{{x->1/2*(-5-Sqrt(13))},{x->1/2*(-5+Sqrt(13))}}");
 		check("Solve({x^2+5x+3==0, x>0}, x)", //
 				"{}");
 		check("Solve({x^2 == 4, x > 0}, x)", //
 				"{{x->2}}");
-		
+		// github #200 end
+
 		check("Solve(2*x^(x-3)==3^(x-2),x)", //
 				"Solve(2/x^(3-x)==3^(-2+x),x)");
 
@@ -23519,7 +23528,7 @@ public class LowercaseTestCase extends AbstractTestCase {
 				"product: A x B");
 		check("StringReplace({\"aaabbbbaaaa\", \"bbbaaaab\", \"aaabab\"}, \"ab\" -> \"X\")", //
 				"{aaXbbbaaaa,bbbaaaX,aaXX}");
-		 
+
 		check("StringReplace(\"The cat in the hat.\", \"the\" -> \"a\", IgnoreCase -> True)", //
 				"a cat in a hat.");
 

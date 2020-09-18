@@ -1925,6 +1925,10 @@ public final class BooleanFunctions {
 				if (lhsAST.isTimes()) {
 					IAST result = lhsAST.partitionTimes(x -> x.isNumericFunction(), F.C0, F.C1, F.List);
 					if (!result.arg1().isZero()) {
+						if (result.arg1().hasComplexNumber() || result.arg2().hasComplexNumber()) {
+							return IOFunctions.printMessage(originalHead, "nord", F.List(result.arg1()),
+									EvalEngine.get());
+						}
 						if (result.arg1().isNegative()) {
 							useOppositeHeader = !useOppositeHeader;
 						}
@@ -1935,6 +1939,10 @@ public final class BooleanFunctions {
 				} else if (lhsAST.isPlus()) {
 					IAST result = lhsAST.partitionPlus(x -> x.isNumericFunction(), F.C0, F.C0, F.List);
 					if (!result.arg1().isZero()) {
+						if (result.arg1().hasComplexNumber() || result.arg2().hasComplexNumber()) {
+							return IOFunctions.printMessage(originalHead, "nord", F.List(result.arg1()),
+									EvalEngine.get());
+						}
 						rhs = rhs.subtract(result.arg1());
 						return createComparatorResult(result.arg2(), rhs, useOppositeHeader, originalHead,
 								oppositeHead);
