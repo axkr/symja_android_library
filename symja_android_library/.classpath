@@ -88,7 +88,7 @@
 	<classpathentry kind="lib" path="lib/archunit-0.14.1.jar"/>
 	<classpathentry kind="lib" path="lib/archunit-junit4-0.14.1.jar"/>
 	<classpathentry kind="lib" path="lib/hipparchus-clustering-1.7.jar"/>
-	<classpathentry kind="lib" path="lib/logicng-2.0.0.jar"/>
+	<classpathentry kind="lib" path="lib/logicng-2.0.1.jar"/>
 	<classpathentry kind="lib" path="lib/antlr4-runtime-4.8.jar"/>
 	<classpathentry kind="output" path="bin/classes"/>
 </classpath>
