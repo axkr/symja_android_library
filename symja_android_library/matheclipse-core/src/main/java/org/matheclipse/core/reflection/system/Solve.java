@@ -1290,7 +1290,7 @@ public class Solve extends AbstractFunctionEvaluator {
 				IASTMutable list = (IASTMutable) subSolutionList.get(i);
 				IExpr temp = F.subst(inequationsList, list);
 				boolean[] isNumeric = new boolean[] { false };
-				temp = engine.evaluate(temp);
+				temp = engine.evalQuiet(temp);
 				if (temp.isAST()) {
 					IASTMutable[] lists = SolveUtils.filterSolveLists((IASTMutable) temp, list, isNumeric);
 					if (lists[2].isPresent()) {
