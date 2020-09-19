@@ -3,6 +3,7 @@ package org.matheclipse.core.builtin;
 
 import java.io.UnsupportedEncodingException;
 import java.util.function.Predicate;
+import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import org.matheclipse.core.basic.Config;
@@ -241,90 +242,55 @@ public final class StringFunctions {
 					return F.NIL;
 				}
 			}
-			if (ast.isAST2()) {
+			if (ast.size() >= 3) {
 				IExpr arg1 = ast.arg1();
 				if (arg1.isList()) {
 					return ((IAST) arg1).mapThread(ast, 1);
 				}
 				if (arg1.isString()) {
-					final String s1 = arg1.toString();
-					IExpr arg2 = ast.arg2();
-					if (arg2.isString()) {
-						IASTAppendable result = F.ListAlloc();
-						String s2 = arg2.toString();
-						appendMatches(s1, s2, result);
-						return result;
-					} else if (arg2.isList() || arg2.isAlternatives()) {
-						IASTAppendable result = F.ListAlloc();
-						IAST list = (IAST) arg2;
-						for (int i = 1; i < list.size(); i++) {
-							if (!list.get(i).isString()) {
-								// `1` currently not supported in `2`.
-								return IOFunctions.printMessage(ast.topHead(), "unsupported",
-										F.List(list.get(i).topHead(), ast.topHead()), engine);
-							}
+					boolean ignoreCase = false;
+					if (ast.size() > 3) {
+						final OptionArgs options = new OptionArgs(ast.topHead(), ast, 3, engine, true);
+						IExpr option = options.getOption(S.IgnoreCase);
+						if (option.isTrue()) {
+							ignoreCase = true;
 						}
-						appendMatches(s1, list, result);
-						return result;
-					} else {
-						// `1` currently not supported in `2`.
-						return IOFunctions.printMessage(ast.topHead(), "unsupported",
-								F.List(arg2.topHead(), ast.topHead()), engine);
+						// TODO Overlaps option
+						// IExpr option = options.getOption(S.Overlaps);
+						// if (option.isTrue()) {
+						// ignoreCase = true;
+						// }
 					}
+					String str = ((IStringX) ast.arg1()).toString();
+					IExpr arg2 = ast.arg2();
+					if (!arg2.isList()) {
+						arg2 = F.List(arg2);
+					}
+					IAST list = (IAST) arg2;
+					IASTAppendable result = F.ListAlloc();
+					for (int i = 1; i < list.size(); i++) {
+						IExpr arg = list.get(i);
+
+						java.util.regex.Pattern pattern = toRegexPattern(ast, arg, true, ignoreCase, engine);
+						if (pattern == null) {
+							return F.NIL;
+						}
+						Matcher m = pattern.matcher(str);
+						while (m.find()) {
+							String s = m.group();
+							result.append(F.$str(s));
+						}
+
+					}
+					return result;
 				}
 			}
 			return F.NIL;
 		}
 
-		/**
-		 * Append matches of the <code>list</code> elements expression in <code>s1</code> into the <code>result</code>
-		 * list.
-		 * 
-		 * @param s1
-		 * @param list
-		 * @param result
-		 */
-		private static void appendMatches(String s1, IAST list, IASTAppendable result) {
-			if (list.isEmpty()) {
-				return;
-			}
-			int i = 1;
-			String s2 = list.get(i++).toString();
-			int lastIndex = -1;
-			int index = s1.indexOf(s2);
-			while (index >= 0 || i < list.size()) {
-				if (index < 0) {
-					if (i >= list.size()) {
-						return;
-					}
-					s2 = list.get(i++).toString();
-					index = s1.indexOf(s2, lastIndex + 1);
-					continue;
-				}
-				result.append(F.stringx(s2));
-				lastIndex = index + s2.length();
-				index = s1.indexOf(s2, lastIndex + 1);
-			}
-		}
-
-		/**
-		 * Append matches of the <code>s2</code> expression in <code>s1</code> into the <code>result</code> list.
-		 * 
-		 * @param s1
-		 * @param s2
-		 * @param result
-		 */
-		private static void appendMatches(String s1, String s2, IASTAppendable result) {
-			int index = s1.indexOf(s2);
-			while (index >= 0) {
-				result.append(F.stringx(s2));
-				index = s1.indexOf(s2, index + 1);
-			}
-		}
-
 		@Override
 		public int[] expectedArgSize(IAST ast) {
-			return IOFunctions.ARGS_1_2;
+			return IOFunctions.ARGS_1_4;
 		}
 	}
 
@@ -783,7 +749,20 @@ public final class StringFunctions {
 			int to = 1;
 			try {
 				if (ast.arg1().isString()) {
+					// final ISequence[] sequ = Sequence.createSequences(ast, 2, "take", engine);
+					// if (sequ == null) {
+					// return F.NIL;
+					// }
 					String s = ast.arg1().toString();
+					IExpr arg2 = ast.arg2();
+					if (arg2.isAST(S.UpTo, 2)) {
+						int upTo = Validate.checkUpTo((IAST) arg2, engine);
+						if (upTo == Integer.MIN_VALUE) {
+							return F.NIL;
+						}
+						upTo = s.length() > upTo ? upTo : s.length();
+						return F.$str(s.substring(0, upTo));
+					}
 					to = Validate.checkIntType(ast, 2, Integer.MIN_VALUE);
 					if (to >= 0) {
 
@@ -1165,25 +1144,39 @@ public final class StringFunctions {
 	private static String toRegexString(IExpr partOfRegex, boolean abbreviatedPatterns, IAST stringFunction,
 			EvalEngine engine) {
 		if (partOfRegex.isString()) {
+			// Guide to Escaping Characters in Java RegExps - https://www.baeldung.com/java-regexp-escape-char
 			final String str = partOfRegex.toString();
 			if (abbreviatedPatterns) {
 				StringBuilder pieces = new StringBuilder();
-				for (int i = 0; i < str.length(); i++) {
-					char c = str.charAt(i);
-					if (c == '\\') {
-						//
+				int beginIndex = 0;
+				int endIndex = 0;
+				final int len = str.length();
+				while (endIndex < len) {
+					char c = str.charAt(endIndex);
+					if (c == '\\' && endIndex + 1 < len) {
+						pieces.append(Pattern.quote(str.substring(beginIndex, endIndex)));
+						pieces.append(Pattern.quote(str.substring(endIndex + 1, endIndex + 2)));
+						endIndex += 2;
+						beginIndex = endIndex;
 					} else if (c == '*') {
+						pieces.append(Pattern.quote(str.substring(beginIndex, endIndex)));
 						pieces.append("(.*)");
+						endIndex += 1;
+						beginIndex = endIndex;
 					} else if (c == '@') {
-						// one or more characters, excluding uppercase letters
+						pieces.append(Pattern.quote(str.substring(beginIndex, endIndex)));
+						// one or more characters, excluding upper case letters
 						pieces.append("([^A-Z]+)");
+						endIndex += 1;
+						beginIndex = endIndex;
 					} else {
-						pieces.append(c);
+						endIndex += 1;
 					}
 				}
+				pieces.append(Pattern.quote(str.substring(beginIndex, endIndex)));
 				return pieces.toString();
 			} else {
-				return str;
+				return Pattern.quote(str);
 			}
 		} else if (partOfRegex.isAST(S.Characters, 2) && partOfRegex.first().isString()) {
 			String str = ((IStringX) partOfRegex.first()).toString();
@@ -1209,7 +1202,7 @@ public final class StringFunctions {
 				}
 				return "(" + str + ")+";
 			}
-		} else if (partOfRegex.isAST(F.StringExpression)) {
+		} else if (partOfRegex.isAST(S.StringExpression)) {
 			IAST stringExpression = (IAST) partOfRegex;
 			return toRegexString(stringFunction, stringExpression, abbreviatedPatterns, engine);
 		} else if (partOfRegex.isBlank()) {
@@ -1217,10 +1210,26 @@ public final class StringFunctions {
 		} else if (partOfRegex.isPatternSequence(false)) {
 			PatternSequence ps = ((PatternSequence) partOfRegex);
 			if (ps.isNullSequence()) {
+				// RepeatedNull
 				return "(.|\\n)*";
 			} else {
+				// Repeated
 				return "(.|\\n)+";
 			}
+		} else if (partOfRegex.isAlternatives()) {
+			IAST alternatives = (IAST) partOfRegex;
+			StringBuilder pieces = new StringBuilder();
+			for (int i = 1; i < alternatives.size(); i++) {
+				String str = toRegexString(alternatives.get(i), abbreviatedPatterns, stringFunction, engine);
+				if (str == null) {
+					return null;
+				}
+				pieces.append(str);
+				if (i < alternatives.size() - 1) {
+					pieces.append('|');
+				}
+			}
+			return pieces.toString();
 		} else if (partOfRegex.isBuiltInSymbol()) {
 			int ordinal = ((IBuiltInSymbol) partOfRegex).ordinal();
 			switch (ordinal) {

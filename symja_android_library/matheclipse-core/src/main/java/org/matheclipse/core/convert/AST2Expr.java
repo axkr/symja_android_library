@@ -201,9 +201,9 @@ public class AST2Expr {
 			"TrigExpand", "TrigReduce", "TrigToExp", "TrueQ", "TukeyWindow", "Tuples", "TwoWayRule", "Undefined",
 			"Underoverscript", "UndirectedEdge", "Unequal", "Unevaluated", "UniformDistribution", "Union", "Unique",
 			"UnitaryMatrixQ", "UnitConvert", "Unitize", "UnitStep", "UnitVector", "Unprotect", "UnsameQ", "Unset",
-			"UpperCaseQ", "UpperTriangularize", "UpSet", "UpSetDelayed", "ValueQ", "Values", "VandermondeMatrix",
-			"Variables", "Variance", "VectorAngle", "VectorQ", "VertexEccentricity", "VertexList", "VertexQ",
-			"WeibullDistribution", "WeierstrassHalfPeriods", "WeierstrassInvariants", "WeierstrassP",
+			"UpperCaseQ", "UpperTriangularize", "UpSet", "UpSetDelayed", "UpTo", "ValueQ", "Values",
+			"VandermondeMatrix", "Variables", "Variance", "VectorAngle", "VectorQ", "VertexEccentricity", "VertexList",
+			"VertexQ", "WeibullDistribution", "WeierstrassHalfPeriods", "WeierstrassInvariants", "WeierstrassP",
 			"WeierstrassPPrime", "WeightedAdjacencyMatrix", "WeightedData", "Which", "While", "With", "WhittakerM",
 			"WhittakerW", "WriteString", "WordBoundary", "Xor", "YuleDissimilarity", "ZeroSymmetric", "Zeta" };
 

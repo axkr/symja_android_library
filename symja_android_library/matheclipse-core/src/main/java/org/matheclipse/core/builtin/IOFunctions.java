@@ -315,7 +315,7 @@ public class IOFunctions {
 			"incpt", "incompatible elements in `1` cannot be joined.", //
 			"indet", "Indeterminate expression `1` encountered.", //
 			"infy", "Infinite expression `1` encountered.", //
-			"innf", "Non-negative integer or Infinity expected at position `1`.", //
+			"innf", "Non-negative integer or Infinity expected at position `1` in `2`.", //
 			"int", "Integer expected at position `2` in `1`.", //
 			"intjava", "Java int value greater equal `1` expected instead of `2`.", //
 			"intlevel", "Level specification value greater equal `1` expected instead of `2`.", //

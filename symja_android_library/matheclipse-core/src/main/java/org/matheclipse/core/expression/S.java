@@ -3911,6 +3911,9 @@ public class S {
 	public final static IBuiltInSymbol UpSet = F.initFinalSymbol("UpSet", ID.UpSet);
 
 	/***/
+	public final static IBuiltInSymbol UpTo = F.initFinalSymbol("UpTo", ID.UpTo);
+
+	/***/
 	public final static IBuiltInSymbol UpSetDelayed = F.initFinalSymbol("UpSetDelayed", ID.UpSetDelayed);
 
 	/** UpperCaseQ(str) - is `True` if the given `str` is a string which only contains upper case characters. */

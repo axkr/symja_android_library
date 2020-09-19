@@ -29,6 +29,8 @@ public class Sequence extends ListSizeSequence {
 	 * @param ast
 	 * @param offset
 	 *            the position in <code>ast</code>, where the first ISequence specification starts.
+	 * @param messageShortcut
+	 * @param engine
 	 * @return <code>null</code> if no <code>Sequence[]</code> can be created
 	 */
 	public static Sequence[] createSequences(final IAST ast, final int offset, String messageShortcut,

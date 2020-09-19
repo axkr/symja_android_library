@@ -7,6 +7,7 @@ import org.matheclipse.core.builtin.IOFunctions;
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.expression.IntegerSym;
+import org.matheclipse.core.expression.S;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IASTAppendable;
 import org.matheclipse.core.interfaces.IExpr;
@@ -685,6 +686,28 @@ public final class Validate {
 		} catch (IOException e1) {
 			// ignore
 		}
+	}
+
+	/**
+	 * Test if a non-negative integer or Infinity is defined in <code>upToAST.arg1()</code>.
+	 * 
+	 * @param upToAST
+	 * @param engine
+	 * @return
+	 */
+	public static int checkUpTo(IAST upToAST, EvalEngine engine) {
+		int upTo = Integer.MIN_VALUE;
+		if (upToAST.arg1().isInfinity()) {
+			upTo = Integer.MAX_VALUE;
+		} else {
+			upTo = upToAST.arg1().toIntDefault();
+		}
+		if (upTo < 0) {
+			// Non-negative integer or Infinity expected at position `1` in `2`.
+			IOFunctions.printMessage(S.UpTo, "innf", F.List(F.C1, upToAST), engine);
+			return Integer.MIN_VALUE;
+		}
+		return upTo;
 	}
 
 }

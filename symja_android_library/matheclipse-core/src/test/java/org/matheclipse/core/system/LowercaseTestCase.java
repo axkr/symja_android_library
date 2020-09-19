@@ -23389,6 +23389,15 @@ public class LowercaseTestCase extends AbstractTestCase {
 				"{abc,abc,cd}");
 		check("StringCases(\"12341235678\", \"123\" | \"78\")", //
 				"{123,123,78}");
+
+		// TODO
+		// check("StringCases(\"abcadcacb\", \"a\" ~~ x_ ~~ \"c\" -> x)", //
+		// "{b,d}");
+		check("StringCases(\"a\" ~~ _ ~~ \"c\")[\"abcadcacb\"]", //
+				"{abc,adc}");
+		check("StringCases(\"ab bac adaf\", \"a\" ~~ LetterCharacter ..)", //
+				"{ab,ac,adaf}");
+
 	}
 
 	public void testStringContainsQ() {
@@ -23459,6 +23468,8 @@ public class LowercaseTestCase extends AbstractTestCase {
 		check("StringMatchQ(\"acggtaagc\", Characters(\"acgt\") ..)", //
 				"True");
 
+		check("StringMatchQ(\"tester\", \"t\" ~~ __ ~~ \"t\")", //
+				"False");
 		check("StringMatchQ(\"abc 123 a\", RegularExpression(\"a.*\") ~~ DigitCharacter ..)", //
 				"False");
 		check("StringMatchQ(\"abc 123\", RegularExpression(\"a.*\") ~~ DigitCharacter ..)", //
@@ -23583,6 +23594,23 @@ public class LowercaseTestCase extends AbstractTestCase {
 	}
 
 	public void testStringTake() {
+		check("StringTake(\"abcdefghijklm\", UpTo(-100))", //
+				"StringTake(abcdefghijklm,UpTo(-100))");
+		check("StringTake(\"abcdefghijklm\", UpTo(Infinity))", //
+				"abcdefghijklm");
+		check("StringTake(\"abcdefghijklm\", UpTo(20))", //
+				"abcdefghijklm");
+		check("StringTake(\"abcdefghijklm\", UpTo(11))", //
+				"abcdefghijk");
+		check("StringTake(\"abcdefghijklm\", UpTo(12))", //
+				"abcdefghijkl");
+		check("StringTake(\"abcdefghijklm\", UpTo(13))", //
+				"abcdefghijklm");
+		check("StringTake(\"abcdefghijklm\", UpTo(14))", //
+				"abcdefghijklm");
+		check("StringTake(\"abcdefghijklm\", UpTo(0))", //
+				"");
+
 		// StringTake: Cannot take positions 1 through 1 in .
 		check("StringTake(\"\", 1)", //
 				"StringTake(,1)");
@@ -23594,7 +23622,8 @@ public class LowercaseTestCase extends AbstractTestCase {
 				"abcdef");
 		check("StringTake(\"abcdefghijklm\", -4)", //
 				"jklm");
-		// check("StringTake(\"abcdefghijklm\", {5, 10})", "efghij");
+		// check("StringTake(\"abcdefghijklm\", {5, 10})", //
+		// "efghij");
 	}
 
 	public void testStruveH() {
