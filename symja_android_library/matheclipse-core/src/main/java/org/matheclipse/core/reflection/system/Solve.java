@@ -1386,9 +1386,15 @@ public class Solve extends AbstractFunctionEvaluator {
 				if (temp.size() > 1) {
 					for (int k = 1; k < temp.size(); k++) {
 						IExpr solution = temp.get(k);
-						IExpr zeroCrossCheck = engine.evalN(F.ReplaceAll(times, solution));
+						IExpr replaceAll = engine.evaluate(F.ReplaceAll(times, solution));
+						IExpr zeroCrossCheck = engine.evalN(replaceAll);
 						if (zeroCrossCheck.isZero()) {
 							subSolutionSet.add(solution);
+						} else {
+							if (replaceAll.isPlusTimesPower() && //
+									F.PossibleZeroQ.ofQ(engine, replaceAll)) {
+								subSolutionSet.add(solution);
+							}
 						}
 					}
 				} else {
