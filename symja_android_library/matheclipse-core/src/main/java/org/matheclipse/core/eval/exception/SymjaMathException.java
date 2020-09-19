@@ -33,7 +33,7 @@ public class SymjaMathException extends MathException {
 	 * 
 	 */
 	public SymjaMathException() {
-		super(null, null, false, false);
+		super(null, null, false, FEConfig.SHOW_STACKTRACE);
 	}
 
 	public SymjaMathException(String message) {
@@ -50,7 +50,7 @@ public class SymjaMathException extends MathException {
 
 	@Override
 	public synchronized Throwable fillInStackTrace() {
-		if (FEConfig.SHOW_STACKTRACE) {
+ 		if (FEConfig.SHOW_STACKTRACE) {
 			// doesn't fill the stack for FlowControlExceptions
 			return super.fillInStackTrace();
 		} else {

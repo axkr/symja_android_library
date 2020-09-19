@@ -22434,6 +22434,15 @@ public class LowercaseTestCase extends AbstractTestCase {
 	}
 
 	public void testSolve() {
+		// github #201 begin
+		check("Solve({m1 u1^2 + m2 u2^2 == m1 v1^2 + m2 v2^2, m1 u1 + m2 u2 == m1 v1 + m2 v2}, {v1, v2})", //
+				"{{v2->u2,v1->u1}}");
+		check("Solve({m1 u1 + m2 u2 == m1 v1 + m2 v2, u2 - u1 == v2 - v1}, {v1, v2})", //
+				"{{v1->(-m1*u1-m2*u2+m2*(-u1+u2))/(-m1-m2),v2->(-m1*u1+m1*(u1-u2)-m2*u2)/(-m1-m2)}}");
+		check("Solve({m1 u1 + m2 u2 == m1 v1 + m2 v2, u2 - u1 == -(v2 - v1)}, {v1, v2})", //
+				"{{v1->(m1*u1+m2*u2+m2*(-u1+u2))/(m1+m2),v2->(m1*u1+m1*(u1-u2)+m2*u2)/(m1+m2)}}");
+		// github #201 end
+
 		// github #200 begin
 		check("Solve({x^2+y^2==5, x+y^2==-7, y>0}, {x,y})", //
 				"{}");
@@ -23466,7 +23475,7 @@ public class LowercaseTestCase extends AbstractTestCase {
 				"{False,True,False}");
 		check("StringMatchQ(\"abaababbat\", ___ ~~ \"t\" ~~ EndOfString)", //
 				"True");
-	 
+
 	}
 
 	public void testStringPart() {

@@ -986,6 +986,9 @@ public class Solve extends AbstractFunctionEvaluator {
 								EvalAttributes.sort((IASTMutable) resultList);
 								return resultList;
 							} catch (LimitException le) {
+								if (FEConfig.SHOW_STACKTRACE) {
+									le.printStackTrace();
+								}
 								throw le;
 							} catch (RuntimeException rex) {
 								if (FEConfig.SHOW_STACKTRACE) {
@@ -1020,8 +1023,14 @@ public class Solve extends AbstractFunctionEvaluator {
 				return checkDomain(result, domain);
 			}
 		} catch (LimitException le) {
+			if (FEConfig.SHOW_STACKTRACE) {
+				le.printStackTrace();
+			}
 			throw le;
 		} catch (ValidateException ve) {
+			if (FEConfig.SHOW_STACKTRACE) {
+				ve.printStackTrace();
+			}
 			return engine.printMessage(F.Solve, ve);
 		} catch (RuntimeException rex) {
 			if (FEConfig.SHOW_STACKTRACE) {
@@ -1354,6 +1363,9 @@ public class Solve extends AbstractFunctionEvaluator {
 			}
 			return resultList;
 		} catch (LimitException le) {
+			if (FEConfig.SHOW_STACKTRACE) {
+				le.printStackTrace();
+			}
 			throw le;
 		} catch (RuntimeException rex) {
 			if (FEConfig.SHOW_STACKTRACE) {

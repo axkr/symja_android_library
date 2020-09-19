@@ -188,6 +188,7 @@ public class Functors {
 	 * itself is taken as the <code>Rule[lhs, rhs]</code>.
 	 * 
 	 * @param astRules
+	 *            a possibly nested list of rules of the form <code>x-&gt;y</code> or <code>x:&gt;y</code>
 	 * @return
 	 */
 	public static Function<IExpr, IExpr> rules(IAST astRules, EvalEngine engine) {
@@ -195,42 +196,14 @@ public class Functors {
 		IAST rule;
 		List<PatternMatcherAndEvaluator> matchers = new ArrayList<PatternMatcherAndEvaluator>();
 		if (astRules.isList()) {
-			if (astRules.size() > 1) {
-				// assuming multiple rules in a list
-
-				int argsSize = astRules.argSize();
-				if (argsSize <= 5) {
-					equalRules = new OpenFixedSizeMap<IExpr, IExpr>(argsSize * 3 - 1);
-				} else {
-					equalRules = new HashMap<IExpr, IExpr>();
-				}
-
-				for (final IExpr expr : astRules) {
-					if (expr.isRuleAST()) {
-						rule = (IAST) expr;
-						addRuleToCollection(equalRules, matchers, rule);
-					} else {
-						throw new ArgumentTypeException(
-								"rule expression (x->y) expected instead of " + expr.toString());
-					}
-				}
-				if (matchers.size() > 0) {
-					return new RulesPatternFunctor(equalRules, matchers, engine);
-				}
-				if (argsSize == 1) {
-					return equalRule((IAST) astRules.arg1());
-				}
-				return rules(equalRules);
-			}
-			equalRules = new HashMap<IExpr, IExpr>();
-			return rules(equalRules);
+			return rulesFromNestedList(astRules, engine, matchers);
 		} else {
 			if (astRules.isRuleAST()) {
 				rule = astRules;
 				equalRules = new OpenFixedSizeMap<IExpr, IExpr>(3);
 				addRuleToCollection(equalRules, matchers, rule);
 			} else {
-				throw new ArgumentTypeException("rule expression (x->y) expected instead of " + astRules.toString());
+				throw new ArgumentTypeException("rule expression (x->y or x:>y) expected instead of " + astRules.toString());
 			}
 			if (matchers.size() > 0) {
 				return new RulesPatternFunctor(equalRules, matchers, engine);
@@ -238,6 +211,45 @@ public class Functors {
 			return equalRule(rule);
 		}
 
+	}
+
+	private static Function<IExpr, IExpr> rulesFromNestedList(IAST astRules, EvalEngine engine,
+			List<PatternMatcherAndEvaluator> matchers) {
+		final Map<IExpr, IExpr> equalRules;
+		IAST rule;
+		if (astRules.size() > 1) {
+			// assuming multiple rules in a list
+
+			int argsSize = astRules.argSize();
+			if (argsSize <= 5) {
+				equalRules = new OpenFixedSizeMap<IExpr, IExpr>(argsSize * 3 - 1);
+			} else {
+				equalRules = new HashMap<IExpr, IExpr>();
+			}
+
+			for (final IExpr expr : astRules) {
+				if (expr.isRuleAST()) {
+					rule = (IAST) expr;
+					addRuleToCollection(equalRules, matchers, rule);
+				} else {
+					if (astRules.isList()) {
+						return rulesFromNestedList((IAST) expr, engine, matchers);
+					} else {
+						throw new ArgumentTypeException(
+								"rule expression (x->y or x:>y) expected instead of " + expr.toString());
+					}
+				}
+			}
+			if (matchers.size() > 0) {
+				return new RulesPatternFunctor(equalRules, matchers, engine);
+			}
+			if (argsSize == 1) {
+				return equalRule((IAST) astRules.arg1());
+			}
+			return rules(equalRules);
+		}
+		equalRules = new HashMap<IExpr, IExpr>();
+		return rules(equalRules);
 	}
 
 	public static Function<IExpr, IExpr> listRules(IAST astRules, IASTAppendable result, EvalEngine engine) {
@@ -260,7 +272,7 @@ public class Functors {
 						createPatternMatcherList(equalRules, matchers, rule);
 					} else {
 						throw new ArgumentTypeException(
-								"rule expression (x->y) expected instead of " + expr.toString());
+								"rule expression (x->y or x:>y) expected instead of " + expr.toString());
 					}
 				}
 			} else {
@@ -271,7 +283,7 @@ public class Functors {
 				equalRules = new OpenFixedSizeMap<IExpr, IExpr>(3);
 				createPatternMatcherList(equalRules, matchers, astRules);
 			} else {
-				throw new ArgumentTypeException("rule expression (x->y) expected instead of " + astRules.toString());
+				throw new ArgumentTypeException("rule expression (x->y or x:>y) expected instead of " + astRules.toString());
 			}
 		}
 		if (matchers.size() > 0) {
