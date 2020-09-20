@@ -1086,17 +1086,25 @@ public class Solve extends AbstractFunctionEvaluator {
 	}
 
 	/**
-	 * Solve the list of equations recursively.
+	 * <p>
+	 * Solve the list of equations recursively. Return a list of rules <code>{var1->expr1, var1->expr2, ...}</code>
+	 * (typically for NSolve function) or return a &quot;list of list of rules&quot; (typically for Solve function)
+	 * <code>{{var1->expr11, var1->expr12,...}, {var1->expr21, var1->expr22,...}, ...}</code>. The method solves for the
+	 * first variable from the <code>variables</code> list and inserts the solution back in the remaining equations and
+	 * calls the method recursively again with this new system.
+	 * </p>
 	 * 
 	 * @param termsEqualZeroList
 	 *            the list of expressions, which should equal <code>0</code>
 	 * @param inequationsList
+	 *            a list of inequality constraints
 	 * @param numericFlag
 	 *            if <code>true</code>, try to find a numeric solution
 	 * @param variables
 	 *            the variables for which the equations should be solved
 	 * @param engine
-	 * @return
+	 * @return a list of rules (typically NSolve) or a list of list of rules (typically Solve) of the solutions,
+	 *         <code>F.NIL</code> otherwise.
 	 */
 	private static IExpr solveRecursive(IASTMutable termsEqualZeroList, IASTMutable inequationsList,
 			boolean numericFlag, IAST variables, EvalEngine engine) {
@@ -1134,26 +1142,29 @@ public class Solve extends AbstractFunctionEvaluator {
 				// oneVariableRule = ( firstVariable -> reducedExpression )
 				IAST oneVariableRule = reduced[1];
 				IExpr replaced = termsEqualZeroList.replaceAll(oneVariableRule);
-				if (replaced.isPresent() && replaced.isList()) {
+				if (replaced.isList()) {
 					IExpr subResult = solveRecursive((IASTMutable) replaced, inequationsList, numericFlag, variables,
 							engine);
-					if (subResult.isList()) {
+					if (subResult.isListOfLists()) {
+						IASTAppendable result = F.ListAlloc(subResult.size());
+						IASTAppendable appendable;
+						for (int i = 1; i < subResult.size(); i++) {
+							IAST listOfRules = (IAST) subResult.getAt(i);
+							replaced = oneVariableRule.second().replaceAll(listOfRules);
+							if (replaced.isPresent()) {
+								replaced = F.Simplify.of(engine, replaced);
+								appendable = listOfRules.copyAppendable();
+								appendable.append(F.Rule(firstVariable, replaced));
+								result.append(appendable);
+							}
+						}
+						return result;
+					} else if (subResult.isList()) { // important for NSolve
 						replaced = oneVariableRule.second().replaceAll((IAST) subResult);
 						if (replaced.isPresent()) {
-							if (subResult.isListOfLists()) {
-								IASTAppendable result = F.ListAlloc(subResult.size());
-								IASTAppendable appendable;
-								for (int i = 1; i < subResult.size(); i++) {
-									appendable = ((IAST) ((IAST) subResult).get(i)).copyAppendable();
-									appendable.append(F.Rule(firstVariable, replaced));
-									result.append(appendable);
-								}
-								return result;
-							} else {
-								IASTAppendable appendable = ((IAST) subResult).copyAppendable();
-								appendable.append(F.Rule(firstVariable, replaced));
-								return appendable;
-							}
+							IASTAppendable appendable = ((IAST) subResult).copyAppendable();
+							appendable.append(F.Rule(firstVariable, replaced));
+							return appendable;
 						}
 					}
 				}
