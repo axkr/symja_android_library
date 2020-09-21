@@ -48,6 +48,10 @@ public class Compile extends AbstractCoreFunctionEvaluator {
 			return F.NIL;
 		}
 		try {
+			if (ast.isAST3()) {
+				// TODO implement for 3 args
+				return F.NIL;
+			}
 			IAST variables = Validate.checkIsVariableOrVariableList(ast, 1, engine);
 			JavaStringCompiler compiler = new JavaStringCompiler();
 			Map<String, byte[]> results;
@@ -81,6 +85,6 @@ public class Compile extends AbstractCoreFunctionEvaluator {
 	}
 
 	public int[] expectedArgSize(IAST ast) {
-		return IOFunctions.ARGS_2_2;
+		return IOFunctions.ARGS_2_3;
 	}
 }

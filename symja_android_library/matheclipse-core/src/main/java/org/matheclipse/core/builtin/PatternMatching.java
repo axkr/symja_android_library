@@ -1295,7 +1295,7 @@ public final class PatternMatching {
 
 		@Override
 		public void setUp(final ISymbol newSymbol) {
-			newSymbol.setAttributes(ISymbol.HOLDALL);
+			newSymbol.addAttributes(ISymbol.HOLDALL);
 		}
 
 	}
