@@ -1,10 +1,10 @@
 ## StringMatchQ
 
 ```
-StringMatchQ(str, RegularExpression(pattern-string))
+StringMatchQ(string, regex-pattern)
 ```
 
-> check if the regular expression `pattern-string` matches the string `str`.
+> check if the regular expression `regex-pattern` matches the `string`.
   
 See
 * [Wikipedia - Regular expression](https://en.wikipedia.org/wiki/Regular_expression)
@@ -14,4 +14,7 @@ See
 ```
 >> StringMatchQ({"ExpandAll", "listable", "test"}, RegularExpression("li(.+?)le"))
 {False,True,False}
+
+>> StringMatchQ("15a94xcZ6", (DigitCharacter | LetterCharacter)..)
+True
 ```

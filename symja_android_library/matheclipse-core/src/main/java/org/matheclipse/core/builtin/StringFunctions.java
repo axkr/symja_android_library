@@ -45,6 +45,7 @@ public final class StringFunctions {
 			S.LetterQ.setEvaluator(new LetterQ());
 			S.LowerCaseQ.setEvaluator(new LowerCaseQ());
 			S.StringCases.setEvaluator(new StringCases());
+			S.StringCount.setEvaluator(new StringCount());
 			S.StringContainsQ.setEvaluator(new StringContainsQ());
 			S.StringDrop.setEvaluator(new StringDrop());
 			S.StringExpression.setEvaluator(new StringExpression());
@@ -283,6 +284,67 @@ public final class StringFunctions {
 
 					}
 					return result;
+				}
+			}
+			return F.NIL;
+		}
+
+		@Override
+		public int[] expectedArgSize(IAST ast) {
+			return IOFunctions.ARGS_1_4;
+		}
+	}
+
+	private static class StringCount extends AbstractFunctionEvaluator {
+
+		@Override
+		public IExpr evaluate(IAST ast, EvalEngine engine) {
+			if (ast.isAST1()) {
+				ast = F.operatorFormAppend(ast);
+				if (!ast.isPresent()) {
+					return F.NIL;
+				}
+			}
+			if (ast.size() >= 3) {
+				IExpr arg1 = ast.arg1();
+				if (arg1.isList()) {
+					return ((IAST) arg1).mapThread(ast, 1);
+				}
+				if (arg1.isString()) {
+					boolean ignoreCase = false;
+					if (ast.size() > 3) {
+						final OptionArgs options = new OptionArgs(ast.topHead(), ast, 3, engine, true);
+						IExpr option = options.getOption(S.IgnoreCase);
+						if (option.isTrue()) {
+							ignoreCase = true;
+						}
+						// TODO Overlaps option
+						// IExpr option = options.getOption(S.Overlaps);
+						// if (option.isTrue()) {
+						// ignoreCase = true;
+						// }
+					}
+					String str = ((IStringX) ast.arg1()).toString();
+					IExpr arg2 = ast.arg2();
+					if (!arg2.isList()) {
+						arg2 = F.List(arg2);
+					}
+					IAST list = (IAST) arg2;
+					int counter = 0;
+					for (int i = 1; i < list.size(); i++) {
+						IExpr arg = list.get(i);
+
+						java.util.regex.Pattern pattern = toRegexPattern(ast, arg, true, ignoreCase, engine);
+						if (pattern == null) {
+							return F.NIL;
+						}
+						Matcher m = pattern.matcher(str);
+						while (m.find()) {
+							counter++;
+						}
+
+					}
+					return F.ZZ(counter);
 				}
 			}
 			return F.NIL;
@@ -1118,9 +1180,10 @@ public final class StringFunctions {
 		if (regex != null) {
 			java.util.regex.Pattern pattern;
 			if (ignoreCase) {
-				pattern = java.util.regex.Pattern.compile(regex, Pattern.CASE_INSENSITIVE);
+				pattern = java.util.regex.Pattern.compile(regex,
+						Pattern.UNICODE_CHARACTER_CLASS | Pattern.CASE_INSENSITIVE);
 			} else {
-				pattern = java.util.regex.Pattern.compile(regex);
+				pattern = java.util.regex.Pattern.compile(regex, Pattern.UNICODE_CHARACTER_CLASS);
 			}
 			return pattern;
 		}

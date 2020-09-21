@@ -7,10 +7,10 @@ StringJoin(str1, str2, ... strN)
 or
 
 ```
-StringJoin(str1, str2, ... strN)
+str1 <> str2 <>  ... <> strN
 ```
 
-> concatenate the strings `str1, str2, ... strN` into one string.
+> returns the concatenation of the strings `str1, str2, ... strN`.
 
 ### Examples
 
@@ -20,4 +20,7 @@ Java8
 
 >> StringJoin("Java", ToString(8))
 Java8
+
+>> StringJoin({"a", "b"})// InputForm
+"ab"
 ```

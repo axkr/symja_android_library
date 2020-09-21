@@ -1,16 +1,20 @@
 ## StringCases
 
 ```
-StringCases(str, {"p1", "p2",...})
-
-StringCases(str, "p1" | "p2")
+StringCases(string, pattern)
 ```
 
-> return a list of matches for `"p1", "p2",...` list of strings in the string `str`.
+> gives all occurences of `pattern` in `string`.
   
 ### Examples
 
 ```
 >> StringCases("12341235678", "123" | "78") 
 {123,123,78}
+
+>> StringCases("a#ä_123", WordCharacter) 
+{a,ä,1,2,3}
+
+StringCases("a#ä_123", LetterCharacter)
+{a,ä}
 ```

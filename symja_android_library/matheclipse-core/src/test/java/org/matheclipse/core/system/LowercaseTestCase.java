@@ -1216,6 +1216,11 @@ public class LowercaseTestCase extends AbstractTestCase {
 	}
 
 	public void testAssociateTo() {
+		check("assoc = <|\"A\" -> <|\"a\" -> 1, \"b\" -> 2, \"c\" -> 3|>|>", //
+				"<|A-><|a->1,b->2,c->3|>|>");
+		check("AssociateTo(assoc, \"A\" -> 11)", //
+				"<|A->11|>");
+
 		check("assoc = Association({a -> 1, b -> 2, c -> 3})", //
 				"<|a->1,b->2,c->3|>");
 		check("AssociateTo(assoc, a -> 11)", //
@@ -23382,7 +23387,29 @@ public class LowercaseTestCase extends AbstractTestCase {
 						"next line");
 	}
 
+	public void testStringCount() {
+		check("StringCount(\"a#ä_123\", WordCharacter)", //
+				"5");
+		check("StringCount(\"a#ä_123\", LetterCharacter)", //
+				"2");
+		check("StringCount(\"the cat in the hat\", RegularExpression[\"(?<=the )\"] ~~ WordCharacter ..)", //
+				"2");
+		check("StringCount({\"ability\", \"argument\", \"listable\"}, \"a\" ~~ ___ ~~ \"l\")", //
+				"{1,0,1}");
+		check("StringCount(\"abAB\", \"a\")", //
+				"1");
+		check("StringCount(\"abAB\", \"a\", IgnoreCase -> True)", //
+				"2");
+		check("StringCount(\"abaababba\", \"a\" ~~ ___ ~~ \"b\")", //
+				"1");
+	}
+
 	public void testStringCases() {
+		check("StringCases(\"a#ä_123\", WordCharacter)", //
+				"{a,ä,1,2,3}");
+		check("StringCases(\"a#ä_123\", LetterCharacter)", //
+				"{a,ä}");
+
 		check("StringCases(\"\",  {})", //
 				"{}");
 		check("StringCases(\"abcdabcdcd\", \"abc\")", //
@@ -23441,6 +23468,8 @@ public class LowercaseTestCase extends AbstractTestCase {
 	}
 
 	public void testStringJoin() {
+		check("StringJoin({\"a\", \"b\"})// InputForm", //
+				"\"ab\"");
 		check("StringJoin(\"test\")", //
 				"test");
 		check("\"Hello\" <> \" \" <> \"world!\"", //
@@ -23461,6 +23490,8 @@ public class LowercaseTestCase extends AbstractTestCase {
 	}
 
 	public void testStringMatchQ() {
+		check("StringMatchQ(\"15a94xcZ6\", (DigitCharacter | LetterCharacter)..)", //
+				"True");
 		check("StringMatchQ(\"apppbb\", \"a\" ~~ ___ ~~ \"b\")", //
 				"True");
 		check("StringMatchQ(\"apppbb\", \"a*b\")", //
@@ -23546,6 +23577,8 @@ public class LowercaseTestCase extends AbstractTestCase {
 	}
 
 	public void testStringReplace() {
+		check("StringReplace(\"01101100010\", \"01\" .. -> \"x\")", //
+				"x1x100x0");
 		check("StringReplace(\"ab\" .. -> \"X\")[\"ababbabbaaababa\"]", //
 				"XbXbaaXa");
 		check("StringReplace(\"abc abcb abdc\", \"ab\" ~~ _ -> \"X\")", //

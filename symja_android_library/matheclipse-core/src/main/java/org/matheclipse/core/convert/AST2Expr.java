@@ -186,7 +186,7 @@ public class AST2Expr {
 			"SokalSneathDissimilarity", "Solve", "Sort", "SortBy", "Sow", "Span", "SparseArray", "SphericalBesselJ",
 			"SphericalBesselY", "SphericalHankelH1", "SphericalHankelH2", "Split", "SplitBy", "Sqrt",
 			"SquaredEuclideanDistance", "SquareFreeQ", "SquareMatrixQ", "Stack", "StackBegin", "StandardDeviation",
-			"StandardForm", "Standardize", "StieltjesGamma", "StirlingS1", "StirlingS2", "StringCases",
+			"StandardForm", "Standardize", "StieltjesGamma", "StirlingS1", "StirlingS2", "StringCases", "StringCount",
 			"StringContainsQ", "StringDrop", "StringExpression", "StringJoin", "StringLength", "StringMatchQ",
 			"StringPart", "StringRiffle", "StringSplit", "StringTake", "StringTrim", "StringQ", "StringReplace",
 			"Structure", "StruveH", "StruveL", "StudentTDistribution", "Style", "StyleForm", "Subdivide",

@@ -3536,7 +3536,10 @@ public class S {
 	 * `str`.
 	 */
 	public final static IBuiltInSymbol StringCases = F.initFinalSymbol("StringCases", ID.StringCases);
-
+	
+	/***/
+	public final static IBuiltInSymbol StringCount = F.initFinalSymbol("StringCount", ID.StringCount);
+	
 	/**
 	 * StringContainsQ(str1, str2) - return a list of matches for `"p1", "p2",...` list of strings in the string `str`.
 	 */

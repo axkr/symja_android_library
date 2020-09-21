@@ -1,14 +1,17 @@
 ## StringLength
 
 ```
-StringLength(str)
+StringLength(string)
 ```
 
-> return the length of the string `str`.
+> gives the length of `string`.
   
 ### Examples
 
 ```
 >> StringLength("symja")
 5
+
+>> StringLength[{"a", "bc"}]
+{1, 2}
 ```
