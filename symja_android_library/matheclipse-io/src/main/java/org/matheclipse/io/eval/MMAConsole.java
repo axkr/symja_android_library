@@ -232,7 +232,7 @@ public class MMAConsole {
 		final String lineSeparator = System.getProperty("line.separator");
 		final StringBuilder msg = new StringBuilder();
 		msg.append(Config.SYMJA);
-		msg.append("org.matheclipse.core.eval.MMAConsole [options]" + lineSeparator);
+		msg.append("org.matheclipse.io.eval.MMAConsole [options]" + lineSeparator);
 		msg.append(lineSeparator);
 		msg.append("Program arguments: " + lineSeparator);
 		msg.append("  -h or -help                                 print usage messages" + lineSeparator);
