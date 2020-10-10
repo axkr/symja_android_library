@@ -4,6 +4,8 @@ import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.function.Supplier;
 
+import org.matheclipse.core.expression.F;
+
 public interface IAssociation extends IASTAppendable {
 
 	/**
@@ -53,10 +55,20 @@ public interface IAssociation extends IASTAppendable {
 
 	/**
 	 * Assuming this is a list of rules or an <code>IAssociation</code>. Return the first rule which equals the
-	 * <code>key</code> argument.
+	 * <code>key</code> argument, otherwise return <code>F.NIL</code>.
 	 * 
 	 * @param key
-	 * @return
+	 * @return <code>F.NIL</code> if no rule was found.
+	 */
+	@Override
+	public IAST getRule(String key);
+
+	/**
+	 * Assuming this is a list of rules or an <code>IAssociation</code>. Return the first rule which equals the
+	 * <code>key</code> argument, otherwise return <code>F.NIL</code>.
+	 * 
+	 * @param key
+	 * @return <code>F.NIL</code> if no rule was found.
 	 */
 	@Override
 	public IAST getRule(IExpr key);
@@ -128,7 +140,7 @@ public interface IAssociation extends IASTAppendable {
 	 * Return the list of rules <code>{a->b, c:>d, ...}</code> represented by this association.
 	 */
 	@Override
-	public IAST normal(boolean nilIfUnevaluated);
+	public IASTMutable normal(boolean nilIfUnevaluated);
 
 	/**
 	 * Prepend a list of rules.

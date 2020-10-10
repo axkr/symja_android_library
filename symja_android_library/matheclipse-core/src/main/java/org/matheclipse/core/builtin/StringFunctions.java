@@ -12,7 +12,9 @@ import org.matheclipse.core.eval.exception.Validate;
 import org.matheclipse.core.eval.exception.ValidateException;
 import org.matheclipse.core.eval.interfaces.AbstractCoreFunctionEvaluator;
 import org.matheclipse.core.eval.interfaces.AbstractFunctionEvaluator;
+import org.matheclipse.core.eval.util.ISequence;
 import org.matheclipse.core.eval.util.OptionArgs;
+import org.matheclipse.core.eval.util.Sequence;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.expression.ID;
 import org.matheclipse.core.expression.PatternSequence;
@@ -272,7 +274,7 @@ public final class StringFunctions {
 					for (int i = 1; i < list.size(); i++) {
 						IExpr arg = list.get(i);
 
-						java.util.regex.Pattern pattern = toRegexPattern(ast, arg, true, ignoreCase, engine);
+						java.util.regex.Pattern pattern = toRegexPattern(arg, true, ignoreCase, ast, engine);
 						if (pattern == null) {
 							return F.NIL;
 						}
@@ -334,7 +336,7 @@ public final class StringFunctions {
 					for (int i = 1; i < list.size(); i++) {
 						IExpr arg = list.get(i);
 
-						java.util.regex.Pattern pattern = toRegexPattern(ast, arg, true, ignoreCase, engine);
+						java.util.regex.Pattern pattern = toRegexPattern(arg, true, ignoreCase, ast, engine);
 						if (pattern == null) {
 							return F.NIL;
 						}
@@ -382,7 +384,7 @@ public final class StringFunctions {
 				}
 				if (arg1.isString()) {
 					IExpr arg2 = ast.arg2();
-					java.util.regex.Pattern pattern = toRegexPattern(ast, arg2, true, ignoreCase, engine);
+					java.util.regex.Pattern pattern = toRegexPattern(arg2, true, ignoreCase, ast, engine);
 					if (pattern == null) {
 						return F.NIL;
 					}
@@ -544,7 +546,7 @@ public final class StringFunctions {
 				}
 
 				IExpr arg2 = ast.arg2();
-				java.util.regex.Pattern pattern = toRegexPattern(ast, arg2, true, ignoreCase, engine);
+				java.util.regex.Pattern pattern = toRegexPattern(arg2, true, ignoreCase, ast, engine);
 				if (pattern == null) {
 					return F.NIL;
 				}
@@ -645,7 +647,7 @@ public final class StringFunctions {
 						return F.NIL;
 					}
 
-					java.util.regex.Pattern pattern = toRegexPattern(ast, rule.arg1(), true, ignoreCase, engine);
+					java.util.regex.Pattern pattern = toRegexPattern(rule.arg1(), true, ignoreCase, ast, engine);
 					if (pattern == null) {
 						return F.NIL;
 					}
@@ -824,6 +826,49 @@ public final class StringFunctions {
 						}
 						upTo = s.length() > upTo ? upTo : s.length();
 						return F.$str(s.substring(0, upTo));
+					} else if (arg2.isList()) {
+						int[] sequ = Validate.checkListOfInts(ast, arg2, Integer.MIN_VALUE, Integer.MAX_VALUE, engine);
+						if (sequ == null || sequ.length == 0 || sequ.length > 3) {
+							return F.NIL;
+						}
+						switch (sequ.length) {
+						case 1:
+							from = sequ[0];
+							if (from < 0) {
+								from = s.length() + from + 1;
+							}
+							to = from;
+							return F.$str(s.substring(from - 1, to));
+						case 2:
+							from = sequ[0];
+							if (from < 0) {
+								from = s.length() + from + 1;
+							}
+							to = sequ[1];
+							if (to < 0) {
+								to = s.length() + to + 1;
+							}
+							return F.$str(s.substring(from - 1, to));
+						case 3:
+							from = sequ[0];
+							if (from < 0) {
+								from = s.length() + from + 1;
+							}
+							to = sequ[1];
+							if (to < 0) {
+								to = s.length() + to + 1;
+							}
+							int step = sequ[2];
+							if (step < 0) {
+								return F.NIL;
+							}
+							StringBuilder buf = new StringBuilder();
+							while (from <= to) {
+								buf.append(s.substring(from - 1, from));
+								from += step;
+							}
+							return F.$str(buf.toString());
+						}
 					}
 					to = Validate.checkIntType(ast, 2, Integer.MIN_VALUE);
 					if (to >= 0) {
@@ -1174,9 +1219,34 @@ public final class StringFunctions {
 		return StringFunctions.inputForm(expression, false);
 	}
 
-	private static java.util.regex.Pattern toRegexPattern(IAST ast, IExpr arg, boolean abbreviatedPatterns,
-			boolean ignoreCase, EvalEngine engine) {
-		String regex = toRegexString(arg, abbreviatedPatterns, ast, engine);
+	/**
+	 * Unicode version of predefined character classes and POSIX character classes are enabled in the resulting regex
+	 * Pattern object.
+	 * 
+	 * See:
+	 * <ul>
+	 * <li><a href="https://github.com/mathics/Mathics/blob/master/mathics/builtin/strings.py#L78">to_regex()
+	 * function</a></li>
+	 * <li><a href="https://en.wikipedia.org/wiki/Perl_Compatible_Regular_Expressions">Wikipedia - Perl Compatible
+	 * Regular Expression</a>
+	 * </ul>
+	 * 
+	 * @param partOfRegex
+	 *            the expression which represents a regex 'piece'
+	 * @param abbreviatedPatterns
+	 *            if <code>true</code> allow 'abbreviated patterns" in strings (i.e. '\','*' and '@' operatore)
+	 * @param ignoreCase
+	 *            if <code>true</code> enables case-insensitive matching.
+	 * @param stringFunction
+	 *            the original string function, used in error messages
+	 * @param engine
+	 *            the evaluation engine
+	 * 
+	 * @return
+	 */
+	private static java.util.regex.Pattern toRegexPattern(IExpr partOfRegex, boolean abbreviatedPatterns,
+			boolean ignoreCase, IAST stringFunction, EvalEngine engine) {
+		String regex = toRegexString(partOfRegex, abbreviatedPatterns, stringFunction, engine);
 		if (regex != null) {
 			java.util.regex.Pattern pattern;
 			if (ignoreCase) {
@@ -1191,8 +1261,13 @@ public final class StringFunctions {
 	}
 
 	/**
-	 * See: <a href="https://github.com/mathics/Mathics/blob/master/mathics/builtin/strings.py#L78">to_regex()
-	 * function</a>
+	 * See:
+	 * <ul>
+	 * <li><a href="https://github.com/mathics/Mathics/blob/master/mathics/builtin/strings.py#L78">to_regex()
+	 * function</a></li>
+	 * <li><a href="https://en.wikipedia.org/wiki/Perl_Compatible_Regular_Expressions">Wikipedia - Perl Compatible
+	 * Regular Expression</a>
+	 * </ul>
 	 * 
 	 * @param partOfRegex
 	 *            the expression which represents a regex 'piece'
@@ -1201,6 +1276,7 @@ public final class StringFunctions {
 	 * @param stringFunction
 	 *            the original string function, used in error messages
 	 * @param engine
+	 *            the evaluation engine
 	 * 
 	 * @return
 	 */

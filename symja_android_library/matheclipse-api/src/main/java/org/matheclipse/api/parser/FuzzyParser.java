@@ -946,15 +946,15 @@ public class FuzzyParser extends Scanner {
 					if (isValidPosition() && fInputString[fCurrentPosition] == '`') {
 						fCurrentPosition += 2;
 						long precision = getJavaLong();
-						if (precision < Config.MACHINE_PRECISION) {
-							precision = Config.MACHINE_PRECISION;
+						if (precision < FEConfig.MACHINE_PRECISION) {
+							precision = FEConfig.MACHINE_PRECISION;
 						}
 						return F.num(new Apfloat(number, precision));
 					} else {
 						fCurrentPosition++;
 						long precision = getJavaLong();
-						if (precision < Config.MACHINE_PRECISION) {
-							precision = Config.MACHINE_PRECISION;
+						if (precision < FEConfig.MACHINE_PRECISION) {
+							precision = FEConfig.MACHINE_PRECISION;
 						}
 						return F.num(new Apfloat(number, precision));
 					}
@@ -965,7 +965,7 @@ public class FuzzyParser extends Scanner {
 				temp = F.ZZ(number, numFormat);
 				// temp = fFactory.createInteger(number, numFormat);
 			}
-		} catch (final Throwable e) {
+		} catch (final RuntimeException rex) {
 			throwSyntaxError("Number format error: " + number, number.length());
 		}
 		getNextToken();

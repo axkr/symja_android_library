@@ -21,6 +21,7 @@ public class RepeatedPattern extends PatternSequence {
 		p.fMatcher = engine.evalPatternMatcher(patternExpr);
 		return p;
 	}
+
 	protected IExpr fRepeatedExpr;
 
 	protected IPatternMatcher fMatcher;
@@ -31,6 +32,21 @@ public class RepeatedPattern extends PatternSequence {
 
 	protected RepeatedPattern() {
 		super();
+	}
+
+	/**
+	 * Compares this expression with the specified expression for order. Returns a negative integer, zero, or a positive
+	 * integer as this expression is canonical less than, equal to, or greater than the specified expression.
+	 */
+	@Override
+	public int compareTo(final IExpr expr) {
+		if (expr instanceof RepeatedPattern) {
+			int cp = fRepeatedExpr.compareTo(((RepeatedPattern) expr).fRepeatedExpr);
+			if (cp != 0) {
+				return cp;
+			}
+		}
+		return super.compareTo(expr);
 	}
 
 	@Override

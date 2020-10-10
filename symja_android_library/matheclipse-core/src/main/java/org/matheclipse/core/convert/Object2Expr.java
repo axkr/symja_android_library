@@ -59,7 +59,7 @@ public class Object2Expr {
 	 * </pre>
 	 * 
 	 */
-	public static IExpr convert(Object obj) throws ConversionException {
+	public static IExpr convert(Object obj) {
 		if (obj == null) {
 			return F.Null;
 		}
@@ -134,9 +134,8 @@ public class Object2Expr {
 	 * @param obj
 	 *            the object which should be converted to a Symja object
 	 * @return
-	 * @throws ConversionException
 	 */
-	public static IExpr convertString(Object obj) throws ConversionException {
+	public static IExpr convertString(Object obj)   {
 		if (obj instanceof String) {
 			return F.stringx((String) obj);
 		}
@@ -187,8 +186,7 @@ public class Object2Expr {
 		}
 	}
 
-	public static IAST convertComplex(boolean evalComplex, org.hipparchus.complex.Complex[] array)
-			throws ConversionException {
+	public static IAST convertComplex(boolean evalComplex, org.hipparchus.complex.Complex[] array) {
 		return F.ast(F.List, evalComplex, array);
 	}
 }

@@ -51,15 +51,15 @@ public class BinaryNumerical implements BiFunction<IExpr, IExpr, IExpr> {
 		IExpr value1 = variable1.assignedValue();
 		IExpr value2 = variable2.assignedValue();
 		try {
-			variable1.assign(Num.valueOf(x));
-			variable2.assign(Num.valueOf(y));
+			variable1.assignValue(Num.valueOf(x));
+			variable2.assignValue(Num.valueOf(y));
 			final double[] stack = new double[10];
 			result = DoubleStackEvaluator.eval(stack, 0, fun);
 		} catch (RuntimeException rex) {
 			return Double.NaN;
 		} finally {
-			variable1.assign(value1);
-			variable2.assign(value2);
+			variable1.assignValue(value1);
+			variable2.assignValue(value2);
 		}
 		return result;
 

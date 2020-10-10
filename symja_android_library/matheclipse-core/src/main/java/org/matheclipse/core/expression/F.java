@@ -39,6 +39,7 @@ import org.matheclipse.core.builtin.CurveFitterFunctions;
 import org.matheclipse.core.builtin.EllipticIntegrals;
 import org.matheclipse.core.builtin.EntityFunctions;
 import org.matheclipse.core.builtin.ExpTrigsFunctions;
+import org.matheclipse.core.builtin.FileFunctions;
 import org.matheclipse.core.builtin.FinancialFunctions;
 import org.matheclipse.core.builtin.FunctionDefinitions;
 import org.matheclipse.core.builtin.GeodesyFunctions;
@@ -70,6 +71,7 @@ import org.matheclipse.core.builtin.StatisticsFunctions;
 import org.matheclipse.core.builtin.StringFunctions;
 import org.matheclipse.core.builtin.StructureFunctions;
 import org.matheclipse.core.builtin.TensorFunctions;
+import org.matheclipse.core.builtin.UnitTestingFunctions;
 import org.matheclipse.core.builtin.VectorAnalysisFunctions;
 import org.matheclipse.core.builtin.WXFFunctions;
 import org.matheclipse.core.builtin.WindowFunctions;
@@ -439,6 +441,11 @@ public class F extends S {
 	public final static Num CD1 = new Num(1.0);
 
 	/**
+	 * Represents the empty Smyja string <code>""</code>
+	 */
+	public static IStringX CEmptyString;
+
+	/**
 	 * Represents <code>List()</code> (i.e. the constant empty list)
 	 */
 	public static IAST CEmptyList;
@@ -729,6 +736,7 @@ public class F extends S {
 			List.setEvaluator(ICoreFunctionEvaluator.ARGS_EVALUATOR);
 
 			CEmptyList = headAST0(List);
+			CEmptyString = $str("");
 			CListC0 = new B1.List(C0);
 			CListC1 = new B1.List(C1);
 			CListC2 = new B1.List(C2);
@@ -920,6 +928,7 @@ public class F extends S {
 			IOFunctions.initialize();
 			Programming.initialize();
 			PatternMatching.initialize();
+			FileFunctions.initialize();
 			Algebra.initialize();
 			SimplifyFunctions.initialize();
 			StructureFunctions.initialize();
@@ -961,6 +970,7 @@ public class F extends S {
 			ClusteringFunctions.initialize();
 			SourceCodeFunctions.initialize();
 			SparseArrayFunctions.initialize();
+			UnitTestingFunctions.initialize();
 
 			ComputationalGeometryFunctions.initialize();
 
@@ -1054,7 +1064,7 @@ public class F extends S {
 	 * @param a
 	 * @return
 	 */
-	public final static IAST $(final IExpr head, final IExpr... a) {
+	public final static IASTMutable $(final IExpr head, final IExpr... a) {
 		return ast(a, head);
 	}
 
@@ -1836,7 +1846,7 @@ public class F extends S {
 	}
 
 	public static ISparseArray sparseArray(final IAST arrayRulesList) {
-		return SparseArrayExpr.newInstance(arrayRulesList, null, -1, F.C0);
+		return SparseArrayExpr.newArrayRules(arrayRulesList, null, -1, F.C0);
 	}
 
 	/**
@@ -2572,7 +2582,7 @@ public class F extends S {
 		final IRational realFraction = value.getRealPart();
 		final IRational imagFraction = value.getImaginaryPart();
 		final EvalEngine engine = EvalEngine.get();
-		if (engine.isApfloatMode()) {
+		if (engine.isArbitraryMode()) {
 			return ApcomplexNum.valueOf(realFraction.toBigNumerator(), realFraction.toBigDenominator(),
 					imagFraction.toBigNumerator(), imagFraction.toBigDenominator(), engine.getNumericPrecision());
 		}
@@ -2587,7 +2597,7 @@ public class F extends S {
 
 	public static IComplexNum complexNum(final IFraction value) {
 		final EvalEngine engine = EvalEngine.get();
-		if (engine.isApfloatMode()) {
+		if (engine.isArbitraryMode()) {
 			return ApcomplexNum.valueOf(value.toBigNumerator(), value.toBigDenominator(), BigInteger.ZERO,
 					BigInteger.ONE, engine.getNumericPrecision());
 		}
@@ -2596,7 +2606,7 @@ public class F extends S {
 
 	public static IComplexNum complexNum(final IInteger value) {
 		final EvalEngine engine = EvalEngine.get();
-		if (engine.isApfloatMode()) {
+		if (engine.isArbitraryMode()) {
 			return ApcomplexNum.valueOf(value.toBigNumerator(), BigInteger.ONE, BigInteger.ZERO, BigInteger.ONE,
 					engine.getNumericPrecision());
 		}
@@ -5094,7 +5104,7 @@ public class F extends S {
 
 	public static INum num(final IFraction value) {
 		EvalEngine engine = EvalEngine.get();
-		if (engine.isApfloatMode()) {
+		if (engine.isArbitraryMode()) {
 			return ApfloatNum.valueOf(value.toBigNumerator(), value.toBigDenominator(), engine.getNumericPrecision());
 		}
 		final double n = value.toBigNumerator().doubleValue();
@@ -5104,7 +5114,7 @@ public class F extends S {
 
 	public static INum num(final IInteger value) {
 		EvalEngine engine = EvalEngine.get();
-		if (engine.isApfloatMode()) {
+		if (engine.isArbitraryMode()) {
 			return ApfloatNum.valueOf(value.toBigNumerator(), engine.getNumericPrecision());
 		}
 		return num(value.doubleValue());
@@ -5119,7 +5129,7 @@ public class F extends S {
 	 */
 	public static INum num(final String valueString) {
 		EvalEngine engine = EvalEngine.get();
-		if (engine.isApfloatMode()) {
+		if (engine.isArbitraryMode()) {
 			return ApfloatNum.valueOf(valueString, engine.getNumericPrecision());
 		}
 		return Num.valueOf(Double.parseDouble(valueString));
@@ -5985,6 +5995,14 @@ public class F extends S {
 
 	public static IAST RowReduce(final IExpr a0) {
 		return new AST1(RowReduce, a0);
+	}
+
+	public static IAST Rule(final String str, final IExpr a1) {
+		return new B2.Rule(F.$str(str), a1);
+	}
+
+	public static IAST Rule(final String str0, final String str1) {
+		return new B2.Rule(F.$str(str0), F.$str(str1));
 	}
 
 	public static IAST Rule(final IExpr a0, final IExpr a1) {

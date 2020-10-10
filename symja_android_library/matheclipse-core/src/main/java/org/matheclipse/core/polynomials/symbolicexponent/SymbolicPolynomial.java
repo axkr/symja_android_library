@@ -2344,22 +2344,20 @@ public class SymbolicPolynomial implements RingElem<SymbolicPolynomial>, Iterabl
 	 * @return the monomials of a polynomial
 	 */
 	public IAST coefficientRules() {
-//		IASTAppendable resultList = F.ListAlloc(polyExpr.length());
-//		for (Monomial<IExpr> monomial : polyExpr) {
-//
-//			IExpr coeff = monomial.coefficient();
-//			ExpVector exp = monomial.exponent();
-//			int len = exp.length();
-//			IASTAppendable ruleList = F.ListAlloc(len);
-//			for (int i = 0; i < len; i++) {
-//				ruleList.append(F.ZZ(exp.getVal(len - i - 1)));
-//			}
-//			resultList.append(F.Rule(ruleList, coeff));
-//		}
-//		return resultList;
-		
-		
-		
+		// IASTAppendable resultList = F.ListAlloc(polyExpr.length());
+		// for (Monomial<IExpr> monomial : polyExpr) {
+		//
+		// IExpr coeff = monomial.coefficient();
+		// ExpVector exp = monomial.exponent();
+		// int len = exp.length();
+		// IASTAppendable ruleList = F.ListAlloc(len);
+		// for (int i = 0; i < len; i++) {
+		// ruleList.append(F.ZZ(exp.getVal(len - i - 1)));
+		// }
+		// resultList.append(F.Rule(ruleList, coeff));
+		// }
+		// return resultList;
+
 		IASTAppendable result = F.ListAlloc(val.size());
 		for (Map.Entry<ExpVectorSymbolic, IExpr> monomial : val.entrySet()) {
 			IExpr coeff = monomial.getValue();
@@ -2367,7 +2365,7 @@ public class SymbolicPolynomial implements RingElem<SymbolicPolynomial>, Iterabl
 			IExpr[] vector = exp.getVal();
 			boolean isRealVector = true;
 			for (int i = 0; i < vector.length; i++) {
-				if (!vector[i].isInteger()||vector[i].isNegative()) {
+				if (!vector[i].isInteger() || vector[i].isNegative()) {
 					// exponent is not a real number
 					isRealVector = false;
 					break;
@@ -2517,12 +2515,13 @@ public class SymbolicPolynomial implements RingElem<SymbolicPolynomial>, Iterabl
 		IExpr exp;
 		IExpr coefficient;
 		ExpVectorSymbolic copy;
-		for (ExpVectorSymbolic expArray : val.keySet()) {
-			exp = expArray.getVal(0);
+		for (Map.Entry<ExpVectorSymbolic, IExpr> entry : val.entrySet()) {
+			ExpVectorSymbolic key = entry.getKey();
+			exp = key.getVal(0);
 			if (!exp.isZero()) {
-				copy = expArray.copy();
+				copy = key.copy();
 				copy.val[0] = exp.dec();
-				coefficient = val.get(expArray).times(exp);
+				coefficient = entry.getValue().times(exp);
 				result.doAddTo(coefficient, copy);
 			}
 		}

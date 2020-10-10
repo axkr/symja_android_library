@@ -1094,7 +1094,8 @@ public class SimplifyFunctions {
 						//
 					}
 				} else {
-					if (expr.isLog()) {
+					if (expr.isLog() || //
+							(expr.isPower() && expr.first().isAbs())) {
 						try {
 							expr = F.eval(F.FunctionExpand(expr));
 							sResult.checkLessEqual(expr, fComplexityFunction.apply(expr));

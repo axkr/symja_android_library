@@ -3,9 +3,11 @@ package org.matheclipse.core.builtin;
 import static org.matheclipse.core.expression.F.Power;
 import static org.matheclipse.core.expression.F.Times;
 
+import java.io.File;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.time.LocalDateTime;
 import java.util.Calendar;
-import java.util.Properties;
 
 import org.apfloat.Apfloat;
 import org.apfloat.ApfloatMath;
@@ -19,7 +21,8 @@ import org.matheclipse.core.expression.F;
 import org.matheclipse.core.expression.S;
 import org.matheclipse.core.expression.data.DateObjectExpr;
 import org.matheclipse.core.interfaces.IExpr;
-import org.matheclipse.core.interfaces.ISymbol; 
+import org.matheclipse.core.interfaces.ISymbol;
+import org.matheclipse.parser.client.FEConfig;
 
 public class ConstantDefinitions {
 
@@ -72,7 +75,12 @@ public class ConstantDefinitions {
 			S.$HomeDirectory.setEvaluator(new $HomeDirectory());
 			S.$MachineEpsilon.setEvaluator(new $MachineEpsilon());
 			S.$MachinePrecision.setEvaluator(new $MachinePrecision());
+			S.$Path.setEvaluator(new $Path());
+			S.$PathnameSeparator.setEvaluator(new $PathnameSeparator());
+
 			S.$UserName.setEvaluator(new $UserName());
+			S.$RootDirectory.setEvaluator(new $RootDirectory());
+			S.$TemporaryDirectory.setEvaluator(new $TemporaryDirectory());
 			S.$Version.setEvaluator(new $Version());
 
 			// System.out.println(S.$CreationDate.of().toString());
@@ -158,7 +166,7 @@ public class ConstantDefinitions {
 		public IExpr evaluate(final ISymbol symbol) {
 			String userHome = System.getProperty("user.home");
 			if (userHome == null) {
-				return F.stringx("");
+				return F.CEmptyString;
 			}
 			return F.stringx(userHome);
 		}
@@ -179,7 +187,56 @@ public class ConstantDefinitions {
 
 		@Override
 		public IExpr evaluate(final ISymbol symbol) {
-			return F.ZZ(Config.MACHINE_PRECISION);
+			return F.ZZ(FEConfig.MACHINE_PRECISION);
+		}
+
+	}
+
+	private static class $Path extends AbstractSymbolEvaluator {
+
+		@Override
+		public IExpr evaluate(final ISymbol symbol) {
+			String path = System.getenv("PATH");
+			if (path == null) {
+				return F.CEmptyString;
+			}
+			return F.stringx(path);
+		}
+
+	}
+
+	private static class $PathnameSeparator extends AbstractSymbolEvaluator {
+
+		@Override
+		public IExpr evaluate(final ISymbol symbol) {
+			return F.stringx(File.separator);
+		}
+
+	}
+
+	private static class $RootDirectory extends AbstractSymbolEvaluator {
+
+		@Override
+		public IExpr evaluate(final ISymbol symbol) {
+			Path root = Paths.get(System.getProperty("user.dir")).getFileSystem().getRootDirectories().iterator()
+					.next();
+			if (root == null) {
+				return F.stringx("/");
+			}
+			return F.stringx(root.toString());
+		}
+
+	}
+
+	private static class $TemporaryDirectory extends AbstractSymbolEvaluator {
+
+		@Override
+		public IExpr evaluate(final ISymbol symbol) {
+			String tempDirectory = System.getProperty("java.io.tmpdir");
+			if (tempDirectory == null) {
+				return F.CEmptyString;
+			}
+			return F.stringx(tempDirectory);
 		}
 
 	}

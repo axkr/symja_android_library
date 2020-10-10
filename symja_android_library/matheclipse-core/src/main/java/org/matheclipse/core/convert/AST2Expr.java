@@ -48,7 +48,8 @@ public class AST2Expr {
 	public final static String[] DOLLAR_STRINGS = { "$Aborted", "$Assumptions", "$Cancel", "$Context", "$CreationDate",
 			"$ContextPath", "$DisplayFunction", "$Failed", "$HistoryLength", "$HomeDirectory", "$IterationLimit",
 			"$Line", "$MachineEpsilon", "$MachinePrecision", "$MaxMachineNumber", "$MessageList", "$MinMachineNumber",
-			"$OutputSizeLimit", "$PrePrint", "$PreRead", "$RecursionLimit", "$UserName", "$Version" };
+			"$OutputSizeLimit", "$Path", "$PathnameSeparator", "$PrePrint", "$PreRead", "$RecursionLimit",
+			"$RootDirectory", "$TemporaryDirectory", "$UserName", "$Version" };
 
 	public final static String[] SYMBOL_STRINGS = { "All", "Algebraics", "Automatic", "Axes", "AxesOrigin", "AxesStyle",
 			"Background", "BarOrigin", "Black", "Blue", "Booleans", "Bottom", "Brown", "CharacterEncoding",
@@ -66,8 +67,9 @@ public class AST2Expr {
 			"Number", "NumberString", "NumericFunction", "OneIdentity", "Orange", "Orderless", "Pi", "Pink",
 			"PrecisionGoal", "Primes", "Protected", "Purple", "Rationals", "ReadProtected", "Real", "Red", "Reals",
 			"Right", "SameTest", "Second", "SequenceHold", "Slot", "SlotSequence", "StartOfLine", "StartOfString",
-			"Strict", "String", "Symbol", "TableHeadings", "Today", "TooLarge", "Top", "Trig", "True", "Unknown",
-			"Variable", "ViewPoint", "White", "Whitespace", "WhitespaceCharacter", "WordCharacter", "Yellow" };
+			"Strict", "String", "Symbol", "TableHeadings", "TestID", "Today", "TooLarge", "Top", "Trig", "True",
+			"Unknown", "Variable", "ViewPoint", "White", "Whitespace", "WhitespaceCharacter", "WordCharacter",
+			"Yellow" };
 
 	public final static String[] FUNCTION_STRINGS = { "Abort", "Abs", "AbsArg", "AbsoluteCorrelation", "AbsoluteTime",
 			"AbsoluteTiming", "Accumulate", "AddTo", "AdjacencyMatrix", "AiryAi", "AiryAiPrime", "AiryBi",
@@ -173,12 +175,12 @@ public class AST2Expr {
 			"PseudoInverse", "Put", "QRDecomposition", "Quantile", "Quantity", "QuantityDistribution",
 			"QuantityMagnitude", "QuantityQ", "Quartiles", "Quiet", "Quit", "Quotient", "QuotientRemainder", "Ramp",
 			"RandomChoice", "RandomComplex", "RandomInteger", "RandomPrime", "RandomReal", "RandomSample",
-			"RandomVariate", "Range", "Rational", "Rationalize", "Re", "RealDigits", "RealNumberQ", "Reap", "Rectangle",
-			"Reduce", "Refine", "RegularExpression", "Remove", "Repeated", "RepeatedNull", "Replace", "ReplaceAll",
-			"ReplaceList", "ReplacePart", "ReplaceRepeated", "Rescale", "Rest", "Resultant", "Return", "Reverse",
-			"RGBColor", "RiccatiSolve", "Riffle", "RogersTanimotoDissimilarity", "RomanNumeral", "RootIntervals",
-			"Root", "RootOf", "Roots", "RotateLeft", "RotateRight", "RotationMatrix", "Round", "Row", "RowReduce",
-			"Rule", "RuleDelayed", "RussellRaoDissimilarity", "Surd", "SameQ", "SatisfiabilityCount",
+			"RandomVariate", "Range", "Rational", "Rationalize", "Re", "ReadString", "RealDigits", "RealNumberQ",
+			"Reap", "Rectangle", "Reduce", "Refine", "RegularExpression", "Remove", "Repeated", "RepeatedNull",
+			"Replace", "ReplaceAll", "ReplaceList", "ReplacePart", "ReplaceRepeated", "Rescale", "Rest", "Resultant",
+			"Return", "Reverse", "RGBColor", "RiccatiSolve", "Riffle", "RogersTanimotoDissimilarity", "RomanNumeral",
+			"RootIntervals", "Root", "RootOf", "Roots", "RotateLeft", "RotateRight", "RotationMatrix", "Round", "Row",
+			"RowReduce", "Rule", "RuleDelayed", "RussellRaoDissimilarity", "Surd", "SameQ", "SatisfiabilityCount",
 			"SatisfiabilityInstances", "SatisfiableQ", "Scaled", "Scan", "Sec", "Sech", "Select", "SelectFirst",
 			"SemanticImport", "SemanticImportString", "Sequence", "Series", "SeriesCoefficient", "SeriesData", "Set",
 			"SetAttributes", "SetDelayed", "Share", "Short", "Show", "Sign", "Signature", "SignCmp", "Simplify", "Sin",
@@ -194,18 +196,19 @@ public class AST2Expr {
 			"Sum", "Superscript", "SurfaceGraphics", "SurvivalFunction", "Switch", "SyntaxLength", "SymbolName",
 			"SymbolQ", "Symmetric", "SymmetricMatrixQ", "SyntaxQ", "SystemDialogInput", "Table", "TableForm", "TagSet",
 			"TagSetDelayed", "Take", "TakeLargest", "TakeLargestBy", "Tally", "Tan", "Tanh", "TautologyQ", "Taylor",
-			"TensorDimensions", "TensorProduct", "TensorRank", "TensorSymmetry", "TextCell", "TextString", "TeXForm",
-			"Thread", "Through", "Throw", "TimeConstrained", "Times", "TimesBy", "TimeObject", "TimeValue", "Timing",
-			"ToCharacterCode", "ToExpression", "ToeplitzMatrix", "Together", "ToPolarCoordinates", "ToRadicals",
-			"ToString", "Total", "ToUnicode", "Tr", "Trace", "TraceForm", "TraditionalForm", "Transpose", "TreeForm",
-			"TrigExpand", "TrigReduce", "TrigToExp", "TrueQ", "TukeyWindow", "Tuples", "TwoWayRule", "Undefined",
-			"Underoverscript", "UndirectedEdge", "Unequal", "Unevaluated", "UniformDistribution", "Union", "Unique",
-			"UnitaryMatrixQ", "UnitConvert", "Unitize", "UnitStep", "UnitVector", "Unprotect", "UnsameQ", "Unset",
-			"UpperCaseQ", "UpperTriangularize", "UpSet", "UpSetDelayed", "UpTo", "ValueQ", "Values",
-			"VandermondeMatrix", "Variables", "Variance", "VectorAngle", "VectorQ", "VertexEccentricity", "VertexList",
-			"VertexQ", "WeibullDistribution", "WeierstrassHalfPeriods", "WeierstrassInvariants", "WeierstrassP",
-			"WeierstrassPPrime", "WeightedAdjacencyMatrix", "WeightedData", "Which", "While", "With", "WhittakerM",
-			"WhittakerW", "WriteString", "WordBoundary", "Xor", "YuleDissimilarity", "ZeroSymmetric", "Zeta" };
+			"TensorDimensions", "TensorProduct", "TensorRank", "TensorSymmetry", "TestReport", "TestReportObject",
+			"TestResultObject", "TextCell", "TextString", "TeXForm", "Thread", "Through", "Throw", "TimeConstrained",
+			"Times", "TimesBy", "TimeObject", "TimeValue", "Timing", "ToCharacterCode", "ToExpression",
+			"ToeplitzMatrix", "Together", "ToPolarCoordinates", "ToRadicals", "ToString", "Total", "ToUnicode", "Tr",
+			"Trace", "TraceForm", "TraditionalForm", "Transpose", "TreeForm", "TrigExpand", "TrigReduce", "TrigToExp",
+			"TrueQ", "TukeyWindow", "Tuples", "TwoWayRule", "Undefined", "Underoverscript", "UndirectedEdge", "Unequal",
+			"Unevaluated", "UniformDistribution", "Union", "Unique", "UnitaryMatrixQ", "UnitConvert", "Unitize",
+			"UnitStep", "UnitVector", "Unprotect", "UnsameQ", "Unset", "UpperCaseQ", "UpperTriangularize", "UpSet",
+			"UpSetDelayed", "UpTo", "ValueQ", "Values", "VandermondeMatrix", "Variables", "Variance", "VectorAngle",
+			"VectorQ", "VertexEccentricity", "VertexList", "VerificationTest", "VertexQ", "WeibullDistribution",
+			"WeierstrassHalfPeriods", "WeierstrassInvariants", "WeierstrassP", "WeierstrassPPrime",
+			"WeightedAdjacencyMatrix", "WeightedData", "Which", "While", "With", "WhittakerM", "WhittakerW",
+			"WriteString", "WordBoundary", "Xor", "YuleDissimilarity", "ZeroSymmetric", "Zeta" };
 
 	public static Map<String, Integer> RUBI_STATISTICS_MAP;
 
@@ -346,9 +349,8 @@ public class AST2Expr {
 	 * @param ast
 	 *            the empty <code>IAST</code> instance without any elements
 	 * @return the <code>ast</code>with the added elements
-	 * @throws ConversionException
 	 */
-	public IAST convert(FunctionNode functionNode, IASTAppendable ast) throws ConversionException {
+	public IAST convert(FunctionNode functionNode, IASTAppendable ast) {
 		ast.set(0, convertNode(functionNode.get(0)));
 		for (int i = 1; i < functionNode.size(); i++) {
 			ast.append(convertNode(functionNode.get(i)));
@@ -356,7 +358,7 @@ public class AST2Expr {
 		return ast;
 	}
 
-	public IExpr convert(ASTNode node) throws ConversionException {
+	public IExpr convert(ASTNode node) {
 		fPrecision = fEngine.getNumericPrecision();
 		return convertNode(node);
 	}
@@ -368,7 +370,7 @@ public class AST2Expr {
 	 *            the parsed ASTNode
 	 * @return the Symja expression
 	 */
-	private IExpr convertNode(ASTNode node) throws ConversionException {
+	private IExpr convertNode(ASTNode node) {
 		if (node == null) {
 			return null;
 		}
@@ -455,6 +457,24 @@ public class AST2Expr {
 							}
 						}
 						break;
+					case ID.Blank:
+						expr = PatternMatching.Blank.CONST.evaluate(ast, fEngine);
+						if (expr.isPresent()) {
+							return expr;
+						}
+						break;
+					case ID.BlankSequence:
+						expr = PatternMatching.BlankSequence.CONST.evaluate(ast, fEngine);
+						if (expr.isPresent()) {
+							return expr;
+						}
+						break;
+					case ID.BlankNullSequence:
+						expr = PatternMatching.BlankNullSequence.CONST.evaluate(ast, fEngine);
+						if (expr.isPresent()) {
+							return expr;
+						}
+						break;
 					case ID.Pattern:
 						expr = PatternMatching.Pattern.CONST.evaluate(ast, fEngine);
 						if (expr.isPresent()) {
@@ -467,8 +487,14 @@ public class AST2Expr {
 							return expr;
 						}
 						break;
-					case ID.Blank:
-						expr = PatternMatching.Blank.CONST.evaluate(ast, fEngine);
+					// case ID.OptionsPattern:
+					// expr = PatternMatching.OptionsPattern.CONST.evaluate(ast, fEngine);
+					// if (expr.isPresent()) {
+					// return expr;
+					// }
+					// break;
+					case ID.Repeated:
+						expr = PatternMatching.Repeated.CONST.evaluate(ast, fEngine);
 						if (expr.isPresent()) {
 							return expr;
 						}

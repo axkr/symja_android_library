@@ -1327,7 +1327,7 @@ public class ExprPolynomialRing implements RingFactory<ExprPolynomial> {
 			pols.add(p);
 		}
 		return pols;
-	} 
+	}
 
 	/**
 	 * Extend variables. Used e.g. in module embedding. Extend number of variables by length(vn).
@@ -1352,8 +1352,8 @@ public class ExprPolynomialRing implements RingFactory<ExprPolynomial> {
 		ExprTermOrder to = tord.extend(nvar, i);
 		ExprPolynomialRing pfac = new ExprPolynomialRing(coFac, v, nvar + i, to);
 		return pfac;
-	} 
-	
+	}
+
 	/**
 	 * Distributive representation as polynomial with all main variables.
 	 * 
@@ -1376,8 +1376,6 @@ public class ExprPolynomialRing implements RingFactory<ExprPolynomial> {
 		// }
 		// return pfac;
 	}
-
-	 
 
 	/**
 	 * Get PolynomialComparator.
@@ -1595,7 +1593,7 @@ public class ExprPolynomialRing implements RingFactory<ExprPolynomial> {
 					continue;
 				}
 				if (pol.val.get(f) != null) {
-					System.out.println("error f in pol = " + f + ", " + pol.getMap().get(f));
+					// System.out.println("error f in pol = " + f + ", " + pol.getMap().get(f));
 					throw new RuntimeException("error in iterator");
 				}
 				pol.doPutToMap(f, c);

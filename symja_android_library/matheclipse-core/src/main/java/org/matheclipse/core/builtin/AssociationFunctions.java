@@ -83,7 +83,7 @@ public class AssociationFunctions {
 			public IExpr apply(final IExpr symbolValue) {
 				if (symbolValue.isAssociation()) {
 					if (value.isRuleAST() || value.isListOfRules() || value.isAssociation()) {
-						IAssociation result = ((IAssociation) symbolValue).copy();
+						IAssociation result = ((IAssociation) symbolValue);// .copy();
 						result.appendRules((IAST) value);
 						return result;
 					} else {
@@ -179,7 +179,7 @@ public class AssociationFunctions {
 							IAssociation assoc = ((IAssociation) lhsHead);
 							assoc = assoc.copy();
 							assoc.appendRule(F.Rule(((IAST) leftHandSide).arg1(), rightHandSide));
-							symbol.assign(assoc);
+							symbol.assignValue(assoc);
 							return rightHandSide;
 						}
 					} catch (ValidateException ve) {
@@ -464,6 +464,12 @@ public class AssociationFunctions {
 				if (ast.size() > 2) {
 					if (arg1.isListOfRules(true)) {
 						IExpr key = engine.evaluate(ast.arg2());
+						if (key.isList()) {
+							return ((IAST) key).mapThread(ast, 2);
+						}
+						if (key.isAST(S.Key, 2)) {
+							key = key.first();
+						} 
 						IAST listOfRules = (IAST) arg1;
 						for (int i = 1; i < listOfRules.size(); i++) {
 							IExpr rule = listOfRules.get(i);
@@ -486,6 +492,10 @@ public class AssociationFunctions {
 					if (key.isList()) {
 						return ((IAST) key).mapThread(ast, 2);
 					}
+					if (key.isAST(S.Key, 2)) {
+						key = key.first();
+					}
+
 					return ((IAssociation) arg1).getValue(key);
 				}
 				if (ast.isAST3()) {
@@ -493,12 +503,18 @@ public class AssociationFunctions {
 					if (key.isList()) {
 						return ((IAST) key).mapThread(ast, 2);
 					}
+					if (key.isAST(S.Key, 2)) {
+						key = key.first();
+					}
 					final IExpr arg3 = ast.arg3();
 					return ((IAssociation) arg1).getValue(key, () -> engine.evaluate(arg3));
 				}
+			} else {
+				// The argument `1` is not a valid Association or list of rules.
+				return IOFunctions.printMessage(ast.topHead(), "invrl", F.List(), engine);
 			}
 			return F.NIL;
-		}
+		} 
 
 		@Override
 		public int[] expectedArgSize(IAST ast) {

@@ -23,6 +23,9 @@ Thread(f(args), h)
  
 >> Thread(f(a + b + c), Plus)
 f(a)+f(b)+f(c)
+
+>> Thread(Tuples({0, 1}, 2) -> {a, b, c, d}) 
+{{0,0}->a,{0,1}->b,{1,0}->c,{1,1}->d}
 ```
 
 Functions with attribute `Listable` are automatically threaded over lists:

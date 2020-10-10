@@ -18,8 +18,7 @@ import org.matheclipse.core.img.ColorFormat;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.interfaces.IInteger;
-import org.matheclipse.core.tensor.io.Extension;
-import org.matheclipse.core.tensor.io.Filename;
+import org.matheclipse.core.io.Extension;
 
 /**
  * ImageFormat uses the data alignment of {@link BufferedImage}.
@@ -42,14 +41,14 @@ public enum ImageFormat {
 	 * @return
 	 * @throws IOException
 	 */
-	static IAST of(Filename filename, InputStream inputStream) throws IOException {
-		Extension extension = filename.extension();
-		if (extension.equals(Extension.GZ))
-			try (GZIPInputStream gzipInputStream = new GZIPInputStream(inputStream)) {
-				return of(filename.truncate().extension(), gzipInputStream);
-			}
-		return of(extension, inputStream);
-	}
+//	static IAST of(Filename filename, InputStream inputStream) throws IOException {
+//		Extension extension = filename.extension();
+//		if (extension.equals(Extension.GZ))
+//			try (GZIPInputStream gzipInputStream = new GZIPInputStream(inputStream)) {
+//				return of(filename.truncate().extension(), gzipInputStream);
+//			}
+//		return of(extension, inputStream);
+//	}
 
 	private static IAST of(Extension extension, InputStream inputStream) throws IOException {
 		switch (extension) {

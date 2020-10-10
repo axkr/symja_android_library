@@ -464,7 +464,7 @@ public class SwingFunctions {
 						}
 					}
 					if (expr.isPresent()) {
-						dynamic.assign(expr);
+						dynamic.assignValue(expr);
 					}
 					// System.out.println(F.eval(dynamic).toString());
 				}

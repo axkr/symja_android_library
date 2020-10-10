@@ -57,7 +57,7 @@ public class Pattern extends Blank {
 	/**
 	 * The associated symbol for this pattern
 	 */
-	final private ISymbol fSymbol;
+	final protected ISymbol fSymbol;
 
 	/** package private */
 	Pattern(final ISymbol symbol) {

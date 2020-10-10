@@ -20,6 +20,7 @@ import org.matheclipse.core.visit.IVisitor;
 import org.matheclipse.core.visit.IVisitorBoolean;
 import org.matheclipse.core.visit.IVisitorInt;
 import org.matheclipse.core.visit.IVisitorLong;
+import org.matheclipse.parser.client.FEConfig;
 
 import com.google.common.math.DoubleMath;
 
@@ -284,7 +285,7 @@ public class Num implements INum {
 		if (Double.isNaN(fDouble)) {
 			return F.Indeterminate;
 		}
-		if (engine.isNumericMode() && engine.isApfloatMode()) {
+		if (engine.isNumericMode() && engine.isArbitraryMode()) {
 			return ApfloatNum.valueOf(fDouble, engine.getNumericPrecision());
 		}
 		return F.NIL;
@@ -424,7 +425,7 @@ public class Num implements INum {
 	/** {@inheritDoc} */
 	@Override
 	public long determinePrecision() {
-		return Config.MACHINE_PRECISION;
+		return FEConfig.MACHINE_PRECISION;
 	}
 
 	/** {@inheritDoc} */

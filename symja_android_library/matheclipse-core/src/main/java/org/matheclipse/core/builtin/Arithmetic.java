@@ -2426,8 +2426,8 @@ public final class Arithmetic {
 					final int maxSize = (Config.MAX_OUTPUT_SIZE > Short.MAX_VALUE) ? Short.MAX_VALUE
 							: Config.MAX_OUTPUT_SIZE;
 					significantFigures = (numericPrecision > maxSize) ? maxSize : (int) numericPrecision;
-					if (numericPrecision < Config.MACHINE_PRECISION) {
-						numericPrecision = Config.MACHINE_PRECISION;
+					if (numericPrecision < FEConfig.MACHINE_PRECISION) {
+						numericPrecision = FEConfig.MACHINE_PRECISION;
 					}
 				}
 
@@ -3432,21 +3432,21 @@ public final class Arithmetic {
 		 * 
 		 * @return <code>{nth-root, rest factor}</code> or <code>null</code> if the root is not available
 		 */
-		private static IInteger[] calculateRoot(IInteger a, IInteger root) {
-			if (a.isOne() || a.isMinusOne()) {
-				return null;
-			}
-			int n = root.toIntDefault(Integer.MIN_VALUE);
-			if (n > 0) {
-				IInteger[] result = a.nthRootSplit(n);
-				if (result[1].equals(a)) {
-					// no roots found
-					return null;
-				}
-				return result;
-			}
-			return null;
-		}
+//		private static IInteger[] calculateRoot(IInteger a, IInteger root) {
+//			if (a.isOne() || a.isMinusOne()) {
+//				return null;
+//			}
+//			int n = root.toIntDefault(Integer.MIN_VALUE);
+//			if (n > 0) {
+//				IInteger[] result = a.nthRootSplit(n);
+//				if (result[1].equals(a)) {
+//					// no roots found
+//					return null;
+//				}
+//				return result;
+//			}
+//			return null;
+//		}
 
 		private static IExpr e2ApcomplexArg(final ApcomplexNum base, final ApcomplexNum exponent) {
 			return base.pow(exponent);
@@ -4241,10 +4241,6 @@ public final class Arithmetic {
 				}
 			}
 			return F.NIL;
-		}
-
-		public int[] expectedArgSize(IAST ast) {
-			return null;
 		}
 
 		/** {@inheritDoc} */

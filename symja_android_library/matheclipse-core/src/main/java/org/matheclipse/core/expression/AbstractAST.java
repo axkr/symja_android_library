@@ -975,7 +975,7 @@ public abstract class AbstractAST implements IASTMutable {
 		}
 
 		@Override
-		public IAST normal(boolean nilIfUnevaluated) {
+		public IASTMutable normal(boolean nilIfUnevaluated) {
 			ArgumentTypeException.throwNIL();
 			return null;
 		}
@@ -1006,6 +1006,12 @@ public abstract class AbstractAST implements IASTMutable {
 
 		@Override
 		public IAssociation reverse(IAssociation newAssoc) {
+			ArgumentTypeException.throwNIL();
+			return null;
+		}
+
+		@Override
+		public IAST getRule(String key) {
 			ArgumentTypeException.throwNIL();
 			return null;
 		}
@@ -1509,7 +1515,7 @@ public abstract class AbstractAST implements IASTMutable {
 				return determinedPrecision;
 			}
 			int p = arg2().toIntDefault();
-			if (p >= Config.MACHINE_PRECISION) {
+			if (p >= FEConfig.MACHINE_PRECISION) {
 				precision = p;
 			}
 			return precision;
@@ -4415,6 +4421,10 @@ public abstract class AbstractAST implements IASTMutable {
 	public IExpr normal(boolean nilIfUnevaluated) {
 		if (isConditionalExpression()) {
 			return arg1();
+		}
+		IExpr temp = map(x -> x.normal(nilIfUnevaluated));
+		if (temp.isPresent() && temp != this) {
+			return temp;
 		}
 		return nilIfUnevaluated ? F.NIL : this;
 	}

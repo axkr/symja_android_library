@@ -173,7 +173,7 @@ public class Iterator {
 		@Override
 		public IExpr next() {
 			if (variable != null && variable != count) {
-				variable.assign(count);
+				variable.assignValue(count);
 			}
 			final IExpr temp = count;
 			if (maxCounterOrList.isList()) {
@@ -238,7 +238,7 @@ public class Iterator {
 				count = lowerLimit;
 			}
 			if (variable != null && variable != count) {
-				variable.assign(count);
+				variable.assignValue(count);
 			}
 			return true;
 		}
@@ -250,7 +250,7 @@ public class Iterator {
 		@Override
 		public void tearDown() {
 			if (variable != null) {
-				variable.assign(null);
+				variable.assignValue(null);
 			}
 			EvalEngine.get().setNumericMode(fNumericMode);
 		}
@@ -351,7 +351,7 @@ public class Iterator {
 		public IExpr next() {
 			final IExpr temp = F.num(count);
 			if (variable != null) {
-				variable.assign(temp);
+				variable.assignValue(temp);
 			}
 			count += step;
 			return temp;
@@ -383,7 +383,7 @@ public class Iterator {
 			}
 
 			if (variable != null) {
-				variable.assign(originalLowerLimit);
+				variable.assignValue(originalLowerLimit);
 			}
 			return true;
 		}
@@ -395,7 +395,7 @@ public class Iterator {
 		@Override
 		public void tearDown() {
 			if (variable != null) {
-				variable.assign(variableValue);
+				variable.assignValue(variableValue);
 			}
 		}
 	}
@@ -498,7 +498,7 @@ public class Iterator {
 		public IExpr next() {
 			final ISignedNumber temp = count;
 			if (variable != null) {
-				variable.assign(temp);
+				variable.assignValue(temp);
 			}
 			count = (IRational) count.plus(step);
 			return temp;
@@ -527,7 +527,7 @@ public class Iterator {
 			}
 			if (variable != null) {
 				variableValue = variable.assignedValue();
-				variable.assign(originalLowerLimit);
+				variable.assignValue(originalLowerLimit);
 			}
 			return true;
 		}
@@ -539,7 +539,7 @@ public class Iterator {
 		@Override
 		public void tearDown() {
 			if (variable != null) {
-				variable.assign(variableValue);
+				variable.assignValue(variableValue);
 			}
 		}
 	}
@@ -685,7 +685,7 @@ public class Iterator {
 		public IExpr next() {
 			final IQuantity temp = count;
 			if (variable != null) {
-				variable.assign(temp);
+				variable.assignValue(temp);
 			}
 			count = (IQuantity) count.plus(step);
 			return temp;
@@ -714,7 +714,7 @@ public class Iterator {
 			}
 			if (variable != null) {
 				variableValue = variable.assignedValue();
-				variable.assign(originalLowerLimit);
+				variable.assignValue(originalLowerLimit);
 			}
 			return true;
 		}
@@ -726,7 +726,7 @@ public class Iterator {
 		@Override
 		public void tearDown() {
 			if (variable != null) {
-				variable.assign(variableValue);
+				variable.assignValue(variableValue);
 			}
 		}
 	}
@@ -823,7 +823,7 @@ public class Iterator {
 		public IExpr next() {
 			final ISignedNumber temp = count;
 			if (variable != null) {
-				variable.assign(temp);
+				variable.assignValue(temp);
 			}
 			count = (ISignedNumber) count.plus(step);
 			return temp;
@@ -855,7 +855,7 @@ public class Iterator {
 			}
 
 			if (variable != null) {
-				variable.assign(originalLowerLimit);
+				variable.assignValue(originalLowerLimit);
 			}
 			return true;
 		}
@@ -867,7 +867,7 @@ public class Iterator {
 		@Override
 		public void tearDown() {
 			if (variable != null) {
-				variable.assign(variableValue);
+				variable.assignValue(variableValue);
 			}
 		}
 	}
@@ -978,7 +978,7 @@ public class Iterator {
 		public IExpr next() {
 			final IExpr temp = F.ZZ(count);
 			if (variable != null) {
-				variable.assign(temp);
+				variable.assignValue(temp);
 			}
 			count += step;
 			return temp;
@@ -1010,7 +1010,7 @@ public class Iterator {
 			}
 
 			if (variable != null) {
-				variable.assign(originalLowerLimit);
+				variable.assignValue(originalLowerLimit);
 			}
 			return true;
 		}
@@ -1022,7 +1022,7 @@ public class Iterator {
 		@Override
 		public void tearDown() {
 			if (variable != null) {
-				variable.assign(variableValue);
+				variable.assignValue(variableValue);
 			}
 		}
 	}

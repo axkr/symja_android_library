@@ -205,6 +205,7 @@ public class Parser extends Scanner {
 				function.add(new SymbolNode("Null"));
 				break;
 			}
+			
 		} while (true);
 	}
 
@@ -738,6 +739,31 @@ public class Parser extends Scanner {
 				number = '-' + number;
 			}
 			if (numFormat < 0) {
+				if (fCurrentChar == '`' && isValidPosition()) {
+					fCurrentPosition++;
+					if (isValidPosition() && fInputString[fCurrentPosition] == '`') {
+						fCurrentPosition += 2;
+						long precision = getJavaLong();
+						if (precision < FEConfig.MACHINE_PRECISION) {
+							precision = FEConfig.MACHINE_PRECISION;
+						}
+						return fFactory.createDouble(number);
+						// return F.num(new Apfloat(number, precision));
+					} else {
+						fCurrentPosition++;
+						long precision = FEConfig.MACHINE_PRECISION;
+						if (isValidPosition() && Character.isDigit(fInputString[fCurrentPosition])) {
+							precision = getJavaLong();
+							if (precision < FEConfig.MACHINE_PRECISION) {
+								precision = FEConfig.MACHINE_PRECISION;
+							}
+							return fFactory.createDouble(number);
+						} else {
+							getNextToken();
+							return fFactory.createDouble(number);
+						}
+					}
+				}
 				temp = fFactory.createDouble(number);
 			} else {
 				temp = fFactory.createInteger(number, numFormat);

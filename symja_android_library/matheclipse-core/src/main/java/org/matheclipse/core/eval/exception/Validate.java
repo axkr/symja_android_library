@@ -47,69 +47,82 @@ public final class Validate {
 	public static long[] checkListOfLongs(IAST ast, IExpr arg, long startValue, boolean quiet, EvalEngine engine) {
 		if (arg.isList()) {
 			IAST list = (IAST) arg;
-			long[] result = new long[list.argSize()];
-			long longValue = 0;
-			try {
-				IExpr expr;
-				for (int i = 1; i < list.size(); i++) {
-					expr = list.get(i);
-					// the following may throw an ArithmeticException
-					if (expr instanceof IInteger) {
-						longValue = ((IInteger) expr).toLong();
-					} else if (expr instanceof INum) {
-						longValue = ((INum) expr).toLong();
-					}
-					if (startValue > longValue) {
-						if (!quiet) {
-							// List of Java long numbers expected in `1`.
-							IOFunctions.printMessage(ast.topHead(), "listoflongs", F.List(arg), engine);
+			if (list.argSize() > 0) {
+				long[] result = new long[list.argSize()];
+				long longValue = 0;
+				try {
+					IExpr expr;
+					for (int i = 1; i < list.size(); i++) {
+						expr = list.get(i);
+						// the following may throw an ArithmeticException
+						if (expr instanceof IInteger) {
+							longValue = ((IInteger) expr).toLong();
+						} else if (expr instanceof INum) {
+							longValue = ((INum) expr).toLong();
 						}
-						return null;
+						if (startValue > longValue) {
+							if (!quiet) {
+								// List of Java long numbers expected in `1`.
+								IOFunctions.printMessage(ast.topHead(), "listoflongs", F.List(arg), engine);
+							}
+							return null;
+						}
+						result[i - 1] = longValue;
 					}
-					result[i - 1] = longValue;
+					return result;
+				} catch (RuntimeException rex) {
+					//
 				}
-				return result;
-			} catch (RuntimeException rex) {
-				//
 			}
 		}
 		if (!quiet) {
+			// List of Java long numbers expected in `1`.
 			IOFunctions.printMessage(ast.topHead(), "listoflongs", F.List(arg), engine);
 		}
 		return null;
 	}
 
+	/**
+	 * 
+	 * @param ast
+	 * @param arg
+	 * @param nonNegative
+	 * @param engine
+	 * @return <code>null</code> if the conversion isn't possible
+	 */
 	public static BigInteger[] checkListOfBigIntegers(IAST ast, IExpr arg, boolean nonNegative, EvalEngine engine) {
 		if (arg.isNonEmptyList()) {
 			IAST list = (IAST) arg;
-			BigInteger[] result = new BigInteger[list.argSize()];
+			if (list.argSize() > 0) {
+				BigInteger[] result = new BigInteger[list.argSize()];
 
-			try {
-				IExpr expr;
-				for (int i = 1; i < list.size(); i++) {
-					BigInteger longValue = null;
-					expr = list.get(i);
-					// the following may throw an ArithmeticException
-					if (expr instanceof IInteger) {
-						longValue = ((IInteger) expr).toBigNumerator();
-					} else if (expr instanceof INum) {
-						longValue = BigInteger.valueOf(((INum) expr).toLong());
+				try {
+					IExpr expr;
+					for (int i = 1; i < list.size(); i++) {
+						BigInteger longValue = null;
+						expr = list.get(i);
+						// the following may throw an ArithmeticException
+						if (expr instanceof IInteger) {
+							longValue = ((IInteger) expr).toBigNumerator();
+						} else if (expr instanceof INum) {
+							longValue = BigInteger.valueOf(((INum) expr).toLong());
+						}
+						if (longValue == null) {
+							// The first argument `1` of `2` should be a non-empty list of positive integers.
+							IOFunctions.printMessage(ast.topHead(), "coef", F.List(arg, ast.topHead()), engine);
+							return null;
+						} else if (nonNegative && longValue.compareTo(BigInteger.ZERO) < 0) {
+							// The first argument `1` of `2` should be a non-empty list of positive integers.
+							IOFunctions.printMessage(ast.topHead(), "coef", F.List(arg, ast.topHead()), engine);
+							return null;
+						}
+						result[i - 1] = longValue;
 					}
-					if (longValue == null) {
-						// The first argument `1` of `2` should be a non-empty list of positive integers.
-						IOFunctions.printMessage(ast.topHead(), "coef", F.List(arg, ast.topHead()), engine);
-						return null;
-					} else if (nonNegative && longValue.compareTo(BigInteger.ZERO) < 0) {
-						// The first argument `1` of `2` should be a non-empty list of positive integers.
-						IOFunctions.printMessage(ast.topHead(), "coef", F.List(arg, ast.topHead()), engine);
-						return null;
+					return result;
+				} catch (RuntimeException rex) {
+					if (FEConfig.SHOW_STACKTRACE) {
+						rex.printStackTrace();
 					}
-					result[i - 1] = longValue;
-				}
-				return result;
-			} catch (RuntimeException rex) {
-				if (FEConfig.SHOW_STACKTRACE) {
-					rex.printStackTrace();
 				}
 			}
 		}
@@ -118,32 +131,42 @@ public final class Validate {
 		return null;
 	}
 
+	/**
+	 * 
+	 * @param ast
+	 * @param arg
+	 * @param nonNegative
+	 * @param engine
+	 * @return <code>null</code> if the conversion isn't possible
+	 */
 	public static int[] checkListOfInts(IAST ast, IExpr arg, boolean nonNegative, EvalEngine engine) {
 		if (arg.isNonEmptyList()) {
 			IAST list = (IAST) arg;
-			int[] result = new int[list.argSize()];
+			if (list.argSize() > 0) {
+				int[] result = new int[list.argSize()];
 
-			try {
-				IExpr expr;
-				for (int i = 1; i < list.size(); i++) {
-					expr = list.get(i);
-					int intValue = expr.toIntDefault();
-					if (intValue == Integer.MIN_VALUE) {
-						// The first argument `1` of `2` should be a non-empty list of positive integers.
-						IOFunctions.printMessage(ast.topHead(), "coef", F.List(arg, ast.topHead()), engine);
-						return null;
+				try {
+					IExpr expr;
+					for (int i = 1; i < list.size(); i++) {
+						expr = list.get(i);
+						int intValue = expr.toIntDefault();
+						if (intValue == Integer.MIN_VALUE) {
+							// The first argument `1` of `2` should be a non-empty list of positive integers.
+							IOFunctions.printMessage(ast.topHead(), "coef", F.List(arg, ast.topHead()), engine);
+							return null;
+						}
+						if (nonNegative && intValue < 0) {
+							// The first argument `1` of `2` should be a non-empty list of positive integers.
+							IOFunctions.printMessage(ast.topHead(), "coef", F.List(arg, ast.topHead()), engine);
+							return null;
+						}
+						result[i - 1] = intValue;
 					}
-					if (nonNegative && intValue < 0) {
-						// The first argument `1` of `2` should be a non-empty list of positive integers.
-						IOFunctions.printMessage(ast.topHead(), "coef", F.List(arg, ast.topHead()), engine);
-						return null;
+					return result;
+				} catch (RuntimeException rex) {
+					if (FEConfig.SHOW_STACKTRACE) {
+						rex.printStackTrace();
 					}
-					result[i - 1] = intValue;
-				}
-				return result;
-			} catch (RuntimeException rex) {
-				if (FEConfig.SHOW_STACKTRACE) {
-					rex.printStackTrace();
 				}
 			}
 		}
@@ -166,27 +189,29 @@ public final class Validate {
 	public static int[] checkListOfInts(IAST ast, IExpr arg, int minValue, int maxValue, EvalEngine engine) {
 		if (arg.isList()) {
 			IAST list = (IAST) arg;
-			int[] result = new int[list.argSize()];
-			int intValue = 0;
-			try {
-				IExpr expr;
-				for (int i = 1; i < list.size(); i++) {
-					intValue = list.get(i).toIntDefault();
-					if (intValue == Integer.MIN_VALUE) {
-						// List of Java int numbers expected in `1`.
-						IOFunctions.printMessage(ast.topHead(), "listofints", F.List(arg), engine);
-						return null;
+			if (list.argSize() > 0) {
+				int[] result = new int[list.argSize()];
+				int intValue = 0;
+				try {
+					IExpr expr;
+					for (int i = 1; i < list.size(); i++) {
+						intValue = list.get(i).toIntDefault();
+						if (intValue == Integer.MIN_VALUE) {
+							// List of Java int numbers expected in `1`.
+							IOFunctions.printMessage(ast.topHead(), "listofints", F.List(arg), engine);
+							return null;
+						}
+						if (minValue > intValue || intValue > maxValue) {
+							// List of Java int numbers expected in `1`.
+							IOFunctions.printMessage(ast.topHead(), "listofints", F.List(arg), engine);
+							return null;
+						}
+						result[i - 1] = intValue;
 					}
-					if (minValue > intValue || intValue > maxValue) {
-						// List of Java int numbers expected in `1`.
-						IOFunctions.printMessage(ast.topHead(), "listofints", F.List(arg), engine);
-						return null;
-					}
-					result[i - 1] = intValue;
+					return result;
+				} catch (RuntimeException rex) {
+					//
 				}
-				return result;
-			} catch (RuntimeException rex) {
-				//
 			}
 		}
 		IOFunctions.printMessage(ast.topHead(), "listofints", F.List(arg), engine);

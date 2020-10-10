@@ -12,8 +12,10 @@ import org.matheclipse.core.patternmatching.IPatternMap;
 public interface IPatternObject extends IExpr {
 
 	/**
-	 * Add this pattern to the given <code>patternMap</code> and <code>patternIndexMap</code>.
-	 * @param patternIndexMap a map from the pattern symbol to the intern array index
+	 * Add this pattern to the given <code>patternIndexMap</code>.
+	 * 
+	 * @param patternIndexMap
+	 *            a map from the pattern symbol to the intern array index
 	 * 
 	 * @return
 	 */
@@ -47,7 +49,8 @@ public interface IPatternObject extends IExpr {
 	/**
 	 * Get the pattern-matchers index in the <code>PatternMap</code>
 	 * 
-	 * @param pm the PatternMap from which we determine the index.
+	 * @param pm
+	 *            the PatternMap from which we determine the index.
 	 * @return
 	 */
 	public int getIndex(IPatternMap pm);
@@ -62,8 +65,10 @@ public interface IPatternObject extends IExpr {
 	/**
 	 * Check if this pattern object matches the given <code>expr</code>.
 	 * 
-	 * @param expr       the expression which should be matched.
-	 * @param patternMap a map from a pattern to a possibly found value during pattern-matching.
+	 * @param expr
+	 *            the expression which should be matched.
+	 * @param patternMap
+	 *            a map from a pattern to a possibly found value during pattern-matching.
 	 * 
 	 * @return
 	 */

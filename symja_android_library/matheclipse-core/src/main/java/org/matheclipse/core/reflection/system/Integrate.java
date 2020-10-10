@@ -1033,10 +1033,10 @@ public class Integrate extends AbstractFunctionEvaluator {
 					IExpr temp = F.Integrate.evalDownRule(EvalEngine.get(), ast);
 					if (temp.isPresent()) {
 						if (temp.equals(ast)) {
-							// if (Config.SHOW_STACKTRACE) {
-							engine.setQuietMode(false);
-							IOFunctions.printMessage(F.Integrate, "rubiendless", F.List(temp), engine);
-							// }
+							if (FEConfig.SHOW_STACKTRACE) {
+								engine.setQuietMode(false);
+								IOFunctions.printMessage(F.Integrate, "rubiendless", F.List(temp), engine);
+							}
 							return F.NIL;
 						}
 						if (temp.isAST()) {

@@ -24,6 +24,7 @@ import org.matheclipse.core.generic.UnaryVariable2Slot;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IASTAppendable;
 import org.matheclipse.core.interfaces.IASTMutable;
+import org.matheclipse.core.interfaces.IBuiltInSymbol;
 import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.interfaces.INumber;
 import org.matheclipse.core.interfaces.ISignedNumber;
@@ -52,7 +53,7 @@ public class Symbol implements ISymbol, Serializable {
 	/**
 	 * The value associate with this symbol.
 	 */
-	protected transient IExpr fValue;
+	private transient IExpr fValue;
 
 	/**
 	 * The pattern matching &quot;down value&quot; rules associated with this symbol.
@@ -130,13 +131,20 @@ public class Symbol implements ISymbol, Serializable {
 
 	/** {@inheritDoc} */
 	@Override
+	public void clearValue() {
+		fValue = null;
+		clearAttributes(DIRTY_FLAG_ASSIGNED_VALUE);
+	}
+
+	/** {@inheritDoc} */
+	@Override
 	public final void clear(EvalEngine engine) {
 		if (!engine.isPackageMode()) {
 			if (isLocked()) {
 				throw new RuleCreationError(this);
 			}
 		}
-		fValue = null;
+		clearValue();
 		if (fRulesData != null) {
 			fRulesData = null;
 		}
@@ -240,8 +248,8 @@ public class Symbol implements ISymbol, Serializable {
 			rules = fRulesData.definition();
 		}
 		IASTAppendable result = F.ListAlloc(rules == null ? 1 : rules.size());
-		if (fValue != null) {
-			result.append(F.Set(this, fValue));
+		if (hasAssignedSymbolValue()) {
+			result.append(F.Set(this, assignedValue()));
 		}
 		if (rules != null) {
 			result.appendAll(rules);
@@ -307,7 +315,7 @@ public class Symbol implements ISymbol, Serializable {
 			if (result.isNumber()) {
 				return (INumber) result;
 			}
-		} else if (fValue != null) {
+		} else if (hasAssignedSymbolValue()) {
 			IExpr temp = assignedValue();
 			if (temp != null && temp.isNumericFunction()) {
 				IExpr result = F.evaln(this);
@@ -335,7 +343,7 @@ public class Symbol implements ISymbol, Serializable {
 			if (result.isReal()) {
 				return (ISignedNumber) result;
 			}
-		} else if (fValue != null) {
+		} else if (hasAssignedSymbolValue()) {
 			IExpr temp = assignedValue();
 			if (temp != null && temp.isNumericFunction()) {
 				IExpr result = F.evaln(this);
@@ -358,8 +366,8 @@ public class Symbol implements ISymbol, Serializable {
 	/** {@inheritDoc} */
 	@Override
 	public IExpr evaluate(EvalEngine engine) {
-		if (fValue != null) {
-			return fValue;
+		if (hasAssignedSymbolValue()) {
+			return assignedValue();
 		}
 		// if (hasLocalVariableStack()) {
 		// return ExprUtil.ofNullable(get());
@@ -377,7 +385,7 @@ public class Symbol implements ISymbol, Serializable {
 
 	/** {@inheritDoc} */
 	@Override
-	public final IExpr evalUpRule(final EvalEngine engine, final IExpr expression) {
+	public final IExpr evalUpRules(final IExpr expression, final EvalEngine engine) {
 		if (fRulesData == null) {
 			return F.NIL;
 		}
@@ -403,6 +411,10 @@ public class Symbol implements ISymbol, Serializable {
 	 */
 	@Override
 	public final IExpr assignedValue() {
+		if (this instanceof IBuiltInSymbol) {
+			return fValue;
+		}
+		addAttributes(DIRTY_FLAG_ASSIGNED_VALUE);
 		return fValue;
 	}
 
@@ -609,7 +621,7 @@ public class Symbol implements ISymbol, Serializable {
 		if (isConstantAttribute()) {
 			return true;
 		}
-		if (fValue != null) {
+		if (hasAssignedSymbolValue()) {
 			IExpr temp = assignedValue();
 			if (temp != null) {
 				EvalEngine engine = EvalEngine.get();
@@ -772,7 +784,7 @@ public class Symbol implements ISymbol, Serializable {
 			engine.addModifiedVariable(this);
 		}
 		if (leftHandSide.isSymbol()) {
-			fValue = rightHandSide;
+			assignValue(rightHandSide);
 			return;
 		}
 		if (fRulesData == null) {
@@ -835,7 +847,8 @@ public class Symbol implements ISymbol, Serializable {
 	private void readObject(java.io.ObjectInputStream stream) throws IOException, ClassNotFoundException {
 		fSymbolName = stream.readUTF();
 		fAttributes = stream.read();
-		fValue = (IExpr) stream.readObject();
+		IExpr value = (IExpr) stream.readObject();
+		assignValue(value);
 		int contextNumber = stream.readInt();
 		switch (contextNumber) {
 		case 1:
@@ -857,6 +870,7 @@ public class Symbol implements ISymbol, Serializable {
 			} else {
 				symbol.fAttributes = fAttributes;
 				symbol.fValue = fValue;
+				symbol.clearAttributes(DIRTY_FLAG_ASSIGNED_VALUE);
 			}
 			boolean hasDownRulesData = stream.readBoolean();
 			if (hasDownRulesData) {
@@ -887,12 +901,16 @@ public class Symbol implements ISymbol, Serializable {
 	 */
 	@Override
 	public IExpr[] reassignSymbolValue(Function<IExpr, IExpr> function, ISymbol functionSymbol, EvalEngine engine) {
-		if (fValue != null) {
+		if (hasAssignedSymbolValue()) {
 			IExpr[] result = new IExpr[2];
 			result[0] = fValue;
-			IExpr calculatedResult = function.apply(fValue);
+			if (((fAttributes & DIRTY_FLAG_ASSIGNED_VALUE) == DIRTY_FLAG_ASSIGNED_VALUE) //
+					&& result[0].isAST()) {
+				result[0] = ((IAST) result[0]).copy();
+			}
+			IExpr calculatedResult = function.apply(result[0]);
 			if (calculatedResult.isPresent()) {
-				assign(calculatedResult);
+				assignValue(calculatedResult);
 				result[1] = calculatedResult;
 				return result;
 			}
@@ -907,13 +925,16 @@ public class Symbol implements ISymbol, Serializable {
 	 */
 	@Override
 	public IExpr[] reassignSymbolValue(IASTMutable ast, ISymbol functionSymbol, EvalEngine engine) {
-		if (fValue != null) {
+		if (hasAssignedSymbolValue()) {
 			IExpr[] result = new IExpr[2];
 			result[0] = fValue;
-			ast.set(1, fValue);
+			// if (fReferences > 0 && result[0].isAST()) {
+			// result[0] = ((IAST) result[0]).copy();
+			// }
+			ast.set(1, result[0]);
 			IExpr calculatedResult = engine.evaluate(ast);// F.binaryAST2(this, symbolValue, value));
 			if (calculatedResult != null) {
-				assign(calculatedResult);
+				assignValue(calculatedResult);
 				result[1] = calculatedResult;
 				return result;
 			}
@@ -934,7 +955,7 @@ public class Symbol implements ISymbol, Serializable {
 			EvalEngine.get().addModifiedVariable(this);
 		}
 		if (leftHandSide.isSymbol()) {
-			fValue = null;
+			clearValue();
 			return true;
 		} else if (fRulesData != null) {
 			return fRulesData.removeRule(setSymbol, equalRule, leftHandSide);
@@ -944,8 +965,9 @@ public class Symbol implements ISymbol, Serializable {
 
 	/** {@inheritDoc} */
 	@Override
-	public void assign(final IExpr value) {
+	public void assignValue(final IExpr value) {
 		fValue = value;
+		clearAttributes(DIRTY_FLAG_ASSIGNED_VALUE);
 	}
 
 	/** {@inheritDoc} */
@@ -1039,10 +1061,6 @@ public class Symbol implements ISymbol, Serializable {
 			stream.writeObject(fRulesData);
 		}
 		return true;
-	}
-
-	void addValue(IdentityHashMap<ISymbol, IExpr> map) {
-		map.put(this, fValue);
 	}
 
 }

@@ -112,7 +112,7 @@ public final class RulesData implements Serializable {
 	private transient IntArrayList fPriorityDownRules;
 
 	private Map<IExpr, PatternMatcherEquals> fEqualUpRules;
-	private OpenIntToSet<IPatternMatcher> fSimplePatternUpRules;
+	private List<IPatternMatcher> fSimplePatternUpRules;
 
 	public RulesData() {
 		clear();
@@ -164,33 +164,27 @@ public final class RulesData implements Serializable {
 			}
 		}
 		if (fSimplePatternUpRules != null && fSimplePatternUpRules.size() > 0) {
-			Iterator<IPatternMatcher> listIter;
-			Set<IPatternMatcher>[] setArr = fSimplePatternUpRules.getValues();
-			for (int i = 0; i < setArr.length; i++) {
-				if (setArr[i] != null) {
-					listIter = setArr[i].iterator();
-					IPatternMatcher elem;
-					while (listIter.hasNext()) {
-						elem = listIter.next();
-						if (elem instanceof PatternMatcherAndEvaluator) {
-							pmEvaluator = (PatternMatcherAndEvaluator) elem;
-							if (pmEvaluator.getLHS().isAST()) {
-								pmEvaluator.getLHS().accept(visitor);
-							}
-							if (pmEvaluator.getRHS().isAST()) {
-								pmEvaluator.getRHS().accept(visitor);
-							}
-							condition = pmEvaluator.getCondition();
-							if (condition != null) {
-								if (condition.isAST()) {
-									condition.accept(visitor);
-								}
+			List<IPatternMatcher> upRules = fSimplePatternUpRules;
+			for (int i = 0; i < upRules.size(); i++) {
+				if (upRules.get(i) != null) {
+					IPatternMatcher elem = upRules.get(i);
+
+					if (elem instanceof PatternMatcherAndEvaluator) {
+						pmEvaluator = (PatternMatcherAndEvaluator) elem;
+						if (pmEvaluator.getLHS().isAST()) {
+							pmEvaluator.getLHS().accept(visitor);
+						}
+						if (pmEvaluator.getRHS().isAST()) {
+							pmEvaluator.getRHS().accept(visitor);
+						}
+						condition = pmEvaluator.getCondition();
+						if (condition != null) {
+							if (condition.isAST()) {
+								condition.accept(visitor);
 							}
 						}
-						// if (elem instanceof PatternMatcherAndInvoker) {
-						// don't show internal methods associated with a pattern
-						// }
 					}
+
 				}
 			}
 		}
@@ -233,11 +227,26 @@ public final class RulesData implements Serializable {
 	 * @return
 	 */
 	private PatternMatcher addSimplePatternUpRule(final IExpr leftHandSide, final PatternMatcher pmEvaluator) {
-		final int hash = ((IAST) leftHandSide).topHead().hashCode();
-		if (F.isSystemInitialized && fSimplePatternUpRules.containsEntry(hash, pmEvaluator)) {
-			fSimplePatternUpRules.remove(hash, pmEvaluator);
+		IExpr head = ((IAST) leftHandSide).head();
+		if (head.isFreeOfPatterns()) {
+			 final int hash = ((IAST) leftHandSide).topHead().hashCode();
+			 if (F.isSystemInitialized) {
+					int indx = fSimplePatternUpRules.indexOf(pmEvaluator);
+					if (indx >= 0) {
+						fSimplePatternUpRules.remove(indx);
+					}
+				}
+				fSimplePatternUpRules.add(pmEvaluator);
+				return pmEvaluator;
 		}
-		fSimplePatternUpRules.put(hash, pmEvaluator);
+		
+		if (F.isSystemInitialized) {
+			int indx = fSimplePatternUpRules.indexOf(pmEvaluator);
+			if (indx >= 0) {
+				fSimplePatternUpRules.remove(indx);
+			}
+		}
+		fSimplePatternUpRules.add(pmEvaluator);
 		return pmEvaluator;
 	}
 
@@ -263,20 +272,12 @@ public final class RulesData implements Serializable {
 				definitionList.add(pmEquals.getAsAST());
 			}
 		}
-		if (fSimplePatternUpRules != null && fSimplePatternUpRules.size() > 0) {
-			Iterator<IPatternMatcher> listIter;
-			Set<IPatternMatcher>[] setArr = fSimplePatternUpRules.getValues();
-			for (int i = 0; i < setArr.length; i++) {
-				if (setArr[i] != null) {
-					listIter = setArr[i].iterator();
-					IPatternMatcher elem;
-					while (listIter.hasNext()) {
-						elem = listIter.next();
-						if (elem instanceof PatternMatcherAndEvaluator) {
-							pmEvaluator = (PatternMatcherAndEvaluator) elem;
-							definitionList.add(pmEvaluator.getAsAST());
-						}
-					}
+		if (fSimplePatternUpRules != null) {
+			for (int i = 0; i < fSimplePatternUpRules.size(); i++) {
+				IPatternMatcher elem = fSimplePatternUpRules.get(i);
+				if (elem instanceof PatternMatcherAndEvaluator) {
+					pmEvaluator = (PatternMatcherAndEvaluator) elem;
+					definitionList.add(pmEvaluator.getAsAST());
 				}
 			}
 		}
@@ -483,25 +484,15 @@ public final class RulesData implements Serializable {
 		try {
 			IPatternMatcher pmEvaluator;
 			if ((fSimplePatternUpRules != null) && (expression.isAST())) {
-				final int hash = ((IAST) expression).topHead().hashCode();
-				if (fSimplePatternUpRules.containsKey(hash)) {
-					Set<IPatternMatcher> set = fSimplePatternUpRules.get(hash);
-					if (set != null) {
-						final IPatternMatcher[] list = set.toArray(new IPatternMatcher[0]);
-						if (list != null) {
-							IExpr result;
-							for (int i = 0; i < list.length; i++) {
-								pmEvaluator = (IPatternMatcher) list[i].clone();
-								result = pmEvaluator.eval(expression, engine);
-								if (result.isPresent()) {
-									return result;
-								}
-							}
-						}
+				IExpr result;
+				for (int i = 0; i < fSimplePatternUpRules.size(); i++) {
+					pmEvaluator = (IPatternMatcher) fSimplePatternUpRules.get(i).clone();
+					result = pmEvaluator.eval(expression, engine);
+					if (result.isPresent()) {
+						return result;
 					}
 				}
 			}
-
 		} catch (CloneNotSupportedException cnse) {
 			cnse.printStackTrace();
 		}
@@ -545,9 +536,9 @@ public final class RulesData implements Serializable {
 		return fEqualUpRules;
 	}
 
-	private OpenIntToSet<IPatternMatcher> getSimplePatternUpRules() {
+	private List<IPatternMatcher> getSimplePatternUpRules() {
 		if (fSimplePatternUpRules == null) {
-			fSimplePatternUpRules = new OpenIntToSet<IPatternMatcher>(IPatternMatcher.EQUIVALENCE_COMPARATOR);
+			fSimplePatternUpRules = new ArrayList<IPatternMatcher>();//IPatternMatcher.EQUIVALENCE_COMPARATOR);
 		}
 		return fSimplePatternUpRules;
 	}

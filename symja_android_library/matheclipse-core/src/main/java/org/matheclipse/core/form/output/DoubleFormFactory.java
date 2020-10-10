@@ -751,7 +751,7 @@ public abstract class DoubleFormFactory {
 			if (oper.getGrouping() == InfixOperator.RIGHT_ASSOCIATIVE && list.arg1().head().equals(list.head())) {
 				append(buf, "(");
 			} else {
-				if (oper.getOperatorString() == "^") {
+				if (oper.getOperatorString().equals("^")) {
 					final Operator operator = getOperator(list.arg1().topHead());
 					if (operator instanceof PostfixOperator) {
 						append(buf, "(");
@@ -762,7 +762,7 @@ public abstract class DoubleFormFactory {
 			if (oper.getGrouping() == InfixOperator.RIGHT_ASSOCIATIVE && list.arg1().head().equals(list.head())) {
 				append(buf, ")");
 			} else {
-				if (oper.getOperatorString() == "^") {
+				if (oper.getOperatorString().equals("^")) {
 					final Operator operator = getOperator(list.arg1().topHead());
 					if (operator instanceof PostfixOperator) {
 						append(buf, ")");

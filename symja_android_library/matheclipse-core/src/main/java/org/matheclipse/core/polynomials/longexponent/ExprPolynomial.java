@@ -2405,22 +2405,22 @@ public class ExprPolynomial implements RingElem<ExprPolynomial>, Iterable<ExprMo
 				for (int i = 0; i < exprs.length; i++) {
 					exprs[i] = F.C0;
 				}
-				for (ExpVectorLong expArray : val.keySet()) {
-					exp = expArray.getVal(0);
-					exprs[(int) exp] = val.get(expArray);
+				for (Map.Entry<ExpVectorLong,IExpr> entry : val.entrySet()) {
+					exp = entry.getKey().getVal(0);
+					exprs[(int) exp] = entry.getValue();
 				}
 				return F.function(F.List, exprs);
 			} else {
 				long lastDegree = 0L;
 				IASTAppendable result = F.ListAlloc(val.size());
-				for (ExpVectorLong expArray : val.keySet()) {
-					exp = expArray.getVal(0);
+				for (Map.Entry<ExpVectorLong,IExpr> entry : val.entrySet()) {
+					exp = entry.getKey().getVal(0);
 					while (lastDegree < exp) {
 						result.append(F.C0);
 						lastDegree++;
 					}
 					if (lastDegree == exp) {
-						result.append(val.get(expArray));
+						result.append(entry.getValue());
 						lastDegree++;
 					}
 				}

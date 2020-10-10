@@ -1,11 +1,11 @@
 package org.matheclipse.core.expression;
 
 import org.apfloat.Apfloat;
-import org.matheclipse.core.basic.Config;
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.interfaces.INum;
 import org.matheclipse.core.interfaces.INumber;
+import org.matheclipse.parser.client.FEConfig;
 
 public final class NumStr extends Num {
 	/**
@@ -44,8 +44,8 @@ public final class NumStr extends Num {
 		} else if (fFloatStr.indexOf(".") > 0) {
 			fPrecision--;
 		}
-		if (fPrecision < Config.MACHINE_PRECISION) {
-			fPrecision = Config.MACHINE_PRECISION;
+		if (fPrecision < FEConfig.MACHINE_PRECISION) {
+			fPrecision = FEConfig.MACHINE_PRECISION;
 		}
 	}
 
@@ -75,7 +75,7 @@ public final class NumStr extends Num {
 	
 	@Override
 	public IExpr evaluate(EvalEngine engine) {
-		if (engine.isNumericMode() && engine.isApfloatMode()) {
+		if (engine.isNumericMode() && engine.isArbitraryMode()) {
 			long precision = fPrecision < engine.getNumericPrecision() ? engine.getNumericPrecision() : fPrecision;
 			// engine.setNumericPrecision(precision);
 			if (fExponent == 0) {
@@ -87,7 +87,7 @@ public final class NumStr extends Num {
 	}
 
 	public INumber evaluatePrecision(EvalEngine engine) {
-		if (engine.isApfloatMode()) {
+		if (engine.isArbitraryMode()) {
 			long precision = fPrecision < engine.getNumericPrecision() ? engine.getNumericPrecision() : fPrecision;
 			// long precision = fPrecision;
 			// if (engine.isApfloat()) {

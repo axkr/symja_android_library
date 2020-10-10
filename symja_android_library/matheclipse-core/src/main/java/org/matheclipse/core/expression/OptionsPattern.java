@@ -8,7 +8,7 @@ import org.matheclipse.core.patternmatching.IPatternMap;
 public class OptionsPattern extends PatternSequence {
 
 	private static final long serialVersionUID = 1086461999754718513L;
- 
+
 	public static OptionsPattern valueOf(final ISymbol symbol) {
 		return valueOf(symbol, F.NIL);
 	}
@@ -30,6 +30,29 @@ public class OptionsPattern extends PatternSequence {
 
 	protected OptionsPattern() {
 		super();
+	}
+
+	/**
+	 * Compares this expression with the specified expression for order. Returns a negative integer, zero, or a positive
+	 * integer as this expression is canonical less than, equal to, or greater than the specified expression.
+	 */
+	@Override
+	public int compareTo(final IExpr expr) {
+		if (expr instanceof OptionsPattern) {
+			OptionsPattern optionsPattern = (OptionsPattern) expr;
+			if (fDefaultOptions.isPresent() && optionsPattern.fDefaultOptions.isPresent()) {
+				int cp = fDefaultOptions.compareTo(optionsPattern.fDefaultOptions);
+				if (cp != 0) {
+					return cp;
+				}
+			} else {
+				if (!fDefaultOptions.isPresent()) {
+					return -1;
+				}
+				return 1;
+			}
+		}
+		return super.compareTo(expr);
 	}
 
 	@Override

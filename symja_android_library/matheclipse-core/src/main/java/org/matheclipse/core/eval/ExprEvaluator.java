@@ -198,7 +198,7 @@ public class ExprEvaluator {
 		fVariableMap.clear();
 		// pop all local variables from local variable stack
 		for (int i = 0; i < fVariables.size(); i++) {
-			fVariables.get(i).assign(null);
+			fVariables.get(i).assignValue(null);
 		}
 	}
 
@@ -232,7 +232,7 @@ public class ExprEvaluator {
 		if (value != null) {
 			// this evaluation step may throw an exception
 			IExpr temp = engine.evaluate(value);
-			variable.assign(temp);
+			variable.assignValue(temp);
 		}
 		fVariables.add(variable);
 		fVariableMap.put(variable, value);

@@ -115,4 +115,27 @@ public class RelaxedParserTestCase extends TestCase {
 			assertEquals("", e.getMessage());
 		}
 	}
+	
+	public void testParser9() {
+		try {
+			Parser p = new Parser(true);
+			ASTNode obj = p.parse("2.33`");
+			assertEquals(obj.toString(), "2.33");
+		} catch (Exception e) {
+			e.printStackTrace();
+			assertEquals("", e.getMessage());
+		}
+	}
+	
+	public void testParser10() {
+		try {
+			Parser p = new Parser(true);
+			ASTNode obj = p.parse("f(t_) = Simplify( r'(t) / Norm( r'(t)), t ∈ Reals);");
+			assertEquals(obj.toString(), //
+					"CompoundExpression(Set(f(t_), Simplify(Times(Derivative(1)[r][t], Power(Norm(Derivative(1)[r][t]), -1)), Element(t, Reals))), Null)");
+		} catch (Exception e) {
+			e.printStackTrace();
+			assertEquals("", e.getMessage());
+		}
+	}
 }

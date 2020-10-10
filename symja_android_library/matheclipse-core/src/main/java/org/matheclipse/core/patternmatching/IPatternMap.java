@@ -13,6 +13,7 @@ import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.expression.OptionsPattern;
 import org.matheclipse.core.expression.Pattern;
+import org.matheclipse.core.expression.PatternNested;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IASTMutable;
 import org.matheclipse.core.interfaces.IExpr;
@@ -1467,14 +1468,20 @@ public interface IPatternMap extends Cloneable {
 	 *            the (left-hand-side) expression which could contain pattern objects.
 	 * @return the priority of this pattern-matcher
 	 */
-	static IPatternMap determinePatterns(final IExpr lhsPatternExpr, int[] priority) {
+	static IPatternMap determinePatterns(final IExpr lhsPatternExpr, int[] priority, PatternNested p2) {
 		// int[] priority = new int[] { DEFAULT_RULE_PRIORITY };
 
 		if (lhsPatternExpr instanceof IAST) {
 			List<Pair<IExpr, IPatternObject>> patternIndexMap = new ArrayList<Pair<IExpr, IPatternObject>>();
 			boolean[] ruleWithoutPattern = new boolean[] { true };
+			if (p2 != null) {
+				ruleWithoutPattern[0] = false;
+				int[] result = p2.addPattern(patternIndexMap);
+				priority[0] -= result[1];
+			}
+			
 			determinePatternsRecursive(patternIndexMap, (IAST) lhsPatternExpr, priority, ruleWithoutPattern, 1);
-			final int size = patternIndexMap.size();
+			int size = patternIndexMap.size();
 			switch (size) {
 			case 1:
 				PatternMap1 patternMap1 = new PatternMap1();
@@ -1510,8 +1517,26 @@ public interface IPatternMap extends Cloneable {
 				i++;
 			}
 			return patternMap;
-		} else if (lhsPatternExpr instanceof IPatternObject) {
-			// patternMap.addSinglePattern((IPatternObject) lhsPatternExpr);
+		} else if (lhsPatternExpr instanceof PatternNested) {
+			PatternNested pattern2 = (PatternNested) lhsPatternExpr;
+//			PatternMap1 patternMap1 = new PatternMap1();
+//			IPatternObject pattern = (IPatternObject) lhsPatternExpr;
+//			final ISymbol sym = pattern.getSymbol();
+//			patternMap1.fSymbol1 = (sym != null) ? sym : pattern;
+//			patternMap1.fPatternObject1 = pattern;
+			return determinePatterns(pattern2.getPatternExpr(), priority, pattern2);
+		} else if (lhsPatternExpr instanceof IPatternObject) { 
+			if (p2 != null) {  
+				PatternMap2 patternMap2 = new PatternMap2(); 
+				patternMap2.fSymbol1 = p2.getSymbol();
+				patternMap2.fPatternObject1 = p2; 
+				
+				IPatternObject pattern = (IPatternObject) lhsPatternExpr;
+				final ISymbol sym = pattern.getSymbol();
+				patternMap2.fSymbol2 = (sym != null) ? sym : pattern;
+				patternMap2.fPatternObject2 = pattern;
+				return patternMap2;
+			}
 			PatternMap1 patternMap1 = new PatternMap1();
 			IPatternObject pattern = (IPatternObject) lhsPatternExpr;
 			final ISymbol sym = pattern.getSymbol();
@@ -1563,6 +1588,18 @@ public interface IPatternMap extends Cloneable {
 				int[] result = ((IPatternObject) x).addPattern(patternIndexMap);
 				listEvalFlags[0] |= result[0];
 				priority[0] -= result[1];
+				if (x instanceof PatternNested) {
+					IExpr patternExpr = ((PatternNested) x).getPatternExpr();
+					if (patternExpr.isAST()) {
+						listEvalFlags[0] |= determinePatternsRecursive(patternIndexMap, (IAST) patternExpr, priority,
+								ruleWithoutPattern, treeLevel + 1);
+						priority[0] -= 11;
+						if (x.isPatternDefault()) {
+							listEvalFlags[0] |= IAST.CONTAINS_DEFAULT_PATTERN;
+						}
+					}
+				}
+
 			} else {
 				priority[0] -= (50 - treeLevel);
 			}

@@ -142,7 +142,8 @@ public final class OutputFunctions {
 
 		@Override
 		public IExpr evaluate(final IAST ast, EvalEngine engine) {
-			return F.stringx(engine.evaluate(ast.arg1()).fullFormString(), IStringX.APPLICATION_SYMJA);
+			String fullForm = engine.evaluate(ast.arg1()).fullFormString();
+			return F.stringx(fullForm, IStringX.APPLICATION_SYMJA);
 		}
 
 		@Override

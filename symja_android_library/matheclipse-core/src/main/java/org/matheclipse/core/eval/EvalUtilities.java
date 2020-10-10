@@ -233,9 +233,9 @@ public class EvalUtilities extends MathMLUtilities {
 			if (result.isPresent()) {
 				return toMathML(result, out);
 			}
-		} catch (final Throwable e) {
+		} catch (final RuntimeException rex) {
 			if (FEConfig.SHOW_STACKTRACE) {
-				e.printStackTrace();
+				rex.printStackTrace();
 			}
 		}
 		return false;

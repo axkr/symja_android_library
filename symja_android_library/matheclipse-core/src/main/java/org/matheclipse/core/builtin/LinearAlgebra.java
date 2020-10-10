@@ -1259,7 +1259,8 @@ public final class LinearAlgebra {
 							}
 						}
 					}
-					return engine.printMessage(ast.topHead() + ": Error in matrix");
+					return F.NIL;
+					// return engine.printMessage(ast.topHead() + ": Error in matrix");
 				} else {
 					int dim = arg1.isVector();
 					if (dim != (-1)) {
@@ -2057,7 +2058,7 @@ public final class LinearAlgebra {
 				IAST variables = F.NIL;
 				if (ast.arg2().isSymbol()) {
 					variables = F.List();
-				} else if (ast.arg2().isVector() >= 0) {
+				} else if (ast.arg2().isList() && ast.arg2().size() > 1) {
 					variables = (IAST) ast.arg2();
 				}
 				if (variables.isPresent()) {
@@ -2909,7 +2910,8 @@ public final class LinearAlgebra {
 			int dim = arg1.isVector();
 			if (dim > (-1)) {
 				if (dim == 0) {
-					return F.NIL;
+					// The first Norm argument should be a scalar, vector or matrix.
+					return IOFunctions.printMessage(ast.topHead(), "nvm", F.List(), engine);
 				}
 				arg1 = arg1.normal(false);
 				if (arg1.isList()) {
@@ -2917,7 +2919,7 @@ public final class LinearAlgebra {
 					if (ast.isAST2()) {
 						IExpr p = ast.arg2();
 						if (p.isInfinity()) {
-							return vector.map(F.Max, x -> F.Abs(x));
+							return vector.map(S.Max, x -> F.Abs(x));
 						} else {
 							if (p.isSymbol() || p.isReal()) {
 								if (p.isZero()) {
@@ -2928,14 +2930,55 @@ public final class LinearAlgebra {
 									engine.printMessage("Norm: Second argument is < 1!");
 									return F.NIL;
 								}
-								return F.Power(vector.map(F.Plus, x -> F.Power(F.Abs(x), p)), p.inverse());
+								return F.Power(vector.map(S.Plus, x -> F.Power(F.Abs(x), p)), p.inverse());
 							}
 						}
 						return F.NIL;
 					}
-					return F.Sqrt(vector.map(F.Plus, x -> F.Sqr(F.Abs(x))));
+					return F.Sqrt(vector.map(S.Plus, x -> F.Sqr(F.Abs(x))));
 				}
 				return F.NIL;
+			}
+			int[] matrixDim = arg1.isMatrix();
+			if (matrixDim != null) {
+				if (matrixDim[1] == 0) {
+					// The first Norm argument should be a scalar, vector or matrix.
+					return IOFunctions.printMessage(ast.topHead(), "nvm", F.List(), engine);
+				}
+				RealMatrix matrix;
+				try {
+					matrix = arg1.toRealMatrix();
+					if (matrix != null) {
+						if (ast.size() > 2 && ast.arg2().isString("Frobenius")) {
+							return F.Norm(F.Flatten(arg1));
+						}
+						if (matrixDim[0] < matrixDim[1]) {
+							int d = matrixDim[0];
+							matrixDim[0] = matrixDim[1];
+							matrixDim[1] = d;
+							matrix = matrix.transpose();
+						}
+						final org.hipparchus.linear.SingularValueDecomposition svd = new org.hipparchus.linear.SingularValueDecomposition(
+								matrix);
+						RealMatrix sSVD = svd.getS();
+						IASTAppendable result = F.ast(S.Max, matrixDim[1], false);
+						for (int i = 0; i < matrixDim[1]; i++) {
+							result.append(F.num(sSVD.getEntry(i, i)));
+						}
+						return result;
+					}
+
+				} catch (final ValidateException ve) {
+					if (FEConfig.SHOW_STACKTRACE) {
+						ve.printStackTrace();
+					}
+					return engine.printMessage(ast.topHead(), ve);
+				} catch (final IndexOutOfBoundsException e) {
+					if (FEConfig.SHOW_STACKTRACE) {
+						e.printStackTrace();
+					}
+				}
+
 			}
 			if (arg1.isNumber()) {
 				if (ast.isAST2()) {
@@ -2951,7 +2994,8 @@ public final class LinearAlgebra {
 				// absolute Value
 				return F.Abs(arg1);
 			}
-			return F.NIL;
+			// The first Norm argument should be a scalar, vector or matrix.
+			return IOFunctions.printMessage(ast.topHead(), "nvm", F.List(), engine);
 		}
 
 		@Override
@@ -3216,8 +3260,8 @@ public final class LinearAlgebra {
 						return F.CEmptyList;
 					}
 					if (head.equals(F.Dot)) {
-						FieldVector<IExpr> u = Convert.list2Vector((IAST) ast.arg1());
-						FieldVector<IExpr> v = Convert.list2Vector((IAST) ast.arg2());
+						FieldVector<IExpr> u = Convert.list2Vector(ast.arg1());
+						FieldVector<IExpr> v = Convert.list2Vector(ast.arg2());
 						if (u != null && v != null) {
 							return Convert.vector2List(u.projection(v));
 						}
@@ -3231,8 +3275,8 @@ public final class LinearAlgebra {
 				if (dim1 == 0) {
 					return F.CEmptyList;
 				}
-				FieldVector<IExpr> u = Convert.list2Vector((IAST) ast.arg1());
-				FieldVector<IExpr> v = Convert.list2Vector((IAST) ast.arg2());
+				FieldVector<IExpr> u = Convert.list2Vector(ast.arg1());
+				FieldVector<IExpr> v = Convert.list2Vector(ast.arg2());
 				FieldVector<IExpr> vConjugate = v.copy();
 				for (int i = 0; i < dim2; i++) {
 					vConjugate.setEntry(i, vConjugate.getEntry(i).conjugate());

@@ -8,6 +8,7 @@ import java.util.function.*;
 import java.util.prefs.*;
 import java.util.regex.*;
 import java.util.stream.*;
+import org.matheclipse.io.eval.*;
 import org.matheclipse.core.expression.*;
 import org.matheclipse.core.eval.*;
 import org.matheclipse.core.interfaces.*;

@@ -210,13 +210,13 @@ public class FractionSym extends AbstractFractionSym {
 
 	/** {@inheritDoc} */
 	@Override
-	public IExpr dec() {
+	public IRational dec() {
 		return add(F.CN1);
 	}
 
 	/** {@inheritDoc} */
 	@Override
-	public IExpr inc() {
+	public IRational inc() {
 		return add(F.C1);
 	}
 

@@ -17,11 +17,14 @@ public interface IRational extends ISignedNumber, IBigNumber {
 
 	public IRational add(IRational parm1);
 
-	public void checkBitLength( );
-
 	public IInteger ceil();
 
+	public void checkBitLength();
+
 	public int compareInt(final int value);
+
+	@Override
+	public IRational dec();
 
 	/**
 	 * Returns the denominator of this fraction.
@@ -73,6 +76,7 @@ public interface IRational extends ISignedNumber, IBigNumber {
 	 * 
 	 * @return
 	 */
+	@Override
 	public IRational fractionalPart();
 
 	/**
@@ -81,6 +85,7 @@ public interface IRational extends ISignedNumber, IBigNumber {
 	 * @return denominator
 	 * @deprecated use {@link #denominator()}
 	 */
+	@Deprecated
 	default IInteger getDenominator() {
 		return denominator();
 	}
@@ -91,6 +96,7 @@ public interface IRational extends ISignedNumber, IBigNumber {
 	 * @return <code>this</code> number s big fraction.
 	 * @deprecated use {@link #toBigFraction()}
 	 */
+	@Deprecated
 	default BigFraction getFraction() {
 		return toBigFraction();
 	}
@@ -101,17 +107,22 @@ public interface IRational extends ISignedNumber, IBigNumber {
 	 * @return
 	 * @deprecated use {@link #numerator()}
 	 */
+	@Deprecated
 	default IInteger getNumerator() {
 		return numerator();
 	}
 
-	/** {@inheritDoc} */
 	@Override
-	public IRational inverse();
-
 	default IRational imRational() {
 		return F.C0;
 	}
+
+	@Override
+	public IRational inc();
+
+	/** {@inheritDoc} */
+	@Override
+	public IRational inverse();
 
 	/**
 	 * <p>
@@ -138,9 +149,10 @@ public interface IRational extends ISignedNumber, IBigNumber {
 		return subtract(m.multiply(this.divideBy(m).floorFraction()));
 	}
 
-	public IRational multiply(IRational parm1);
-	
+	@Override
 	public IRational multiply(int n);
+
+	public IRational multiply(IRational parm1);
 
 	@Override
 	public IRational negate();
@@ -172,10 +184,12 @@ public interface IRational extends ISignedNumber, IBigNumber {
 	 */
 	public IRational pow(final long exp) throws ArithmeticException;
 
+	@Override
 	default IRational reRational() {
 		return this;
 	}
 
+	@Override
 	public IRational roundClosest(ISignedNumber factor);
 
 	public IRational subtract(IRational parm1);

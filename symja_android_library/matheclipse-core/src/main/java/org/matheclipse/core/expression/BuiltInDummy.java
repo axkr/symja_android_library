@@ -60,7 +60,7 @@ public class BuiltInDummy implements IBuiltInSymbol, Serializable {
 	 */
 	protected String fSymbolName;
 
-	IExpr fValue = null;
+	private IExpr fValue = null;
 
 	public BuiltInDummy(final String symbolName) {
 		super();
@@ -129,10 +129,17 @@ public class BuiltInDummy implements IBuiltInSymbol, Serializable {
 				throw new RuleCreationError(this);
 			}
 		}
-		fValue = null;
+		clearValue();
 		if (fRulesData != null) {
 			fRulesData = null;
 		}
+	}
+
+	/** {@inheritDoc} */
+	@Override
+	public void clearValue() {
+		fValue = null;
+		clearAttributes(DIRTY_FLAG_ASSIGNED_VALUE);
 	}
 
 	/** {@inheritDoc} */
@@ -207,8 +214,8 @@ public class BuiltInDummy implements IBuiltInSymbol, Serializable {
 	@Override
 	public IAST definition() {
 		IASTAppendable result = F.ListAlloc();
-		if (fValue != null) {
-			result.append(F.Set(this, fValue));
+		if (hasAssignedSymbolValue()) {
+			result.append(F.Set(this, assignedValue()));
 		}
 		if (fRulesData != null) {
 			result.appendAll(fRulesData.definition());
@@ -335,7 +342,7 @@ public class BuiltInDummy implements IBuiltInSymbol, Serializable {
 			return globalSubstitute.evaluate(engine);
 		}
 
-		if (fValue != null) {
+		if (hasAssignedSymbolValue()) {
 			return ExprUtil.ofNullable(assignedValue());
 		}
 		return F.NIL;
@@ -346,13 +353,13 @@ public class BuiltInDummy implements IBuiltInSymbol, Serializable {
 		ISymbol globalSubstitute = globalContext.get(fSymbolName);
 		if (globalSubstitute != null) {
 			globalSubstitute.setAttributes(fAttributes);
-			globalSubstitute.assign(fValue);
+			globalSubstitute.assignValue(assignedValue());
 			return globalSubstitute;
 		}
 		globalSubstitute = new Symbol(fSymbolName, globalContext);
 		globalContext.put(fSymbolName, globalSubstitute);
 		globalSubstitute.setAttributes(fAttributes);
-		globalSubstitute.assign(fValue);
+		globalSubstitute.assignValue(assignedValue());
 		return globalSubstitute;
 	}
 
@@ -369,7 +376,7 @@ public class BuiltInDummy implements IBuiltInSymbol, Serializable {
 
 	/** {@inheritDoc} */
 	@Override
-	public final IExpr evalUpRule(final EvalEngine engine, final IExpr expression) {
+	public final IExpr evalUpRules(final IExpr expression, final EvalEngine engine) {
 		if (fRulesData == null) {
 			return F.NIL;
 		}
@@ -400,6 +407,7 @@ public class BuiltInDummy implements IBuiltInSymbol, Serializable {
 		if (globalSubstitute != null) {
 			return globalSubstitute.assignedValue();
 		}
+		addAttributes(DIRTY_FLAG_ASSIGNED_VALUE);
 		return fValue;
 	}
 
@@ -799,7 +807,8 @@ public class BuiltInDummy implements IBuiltInSymbol, Serializable {
 	private void readObject(java.io.ObjectInputStream stream) throws IOException, ClassNotFoundException {
 		fSymbolName = stream.readUTF();
 		fAttributes = stream.read();
-		fValue = (IExpr) stream.readObject();
+		IExpr value = (IExpr) stream.readObject();
+		assignValue(value);
 		// fContext = (Context) stream.readObject();
 		// if (fContext == null) {
 		// fContext = Context.SYSTEM;
@@ -841,13 +850,16 @@ public class BuiltInDummy implements IBuiltInSymbol, Serializable {
 	 */
 	@Override
 	public IExpr[] reassignSymbolValue(Function<IExpr, IExpr> function, ISymbol functionSymbol, EvalEngine engine) {
-		IExpr temp = assignedValue();
-		if (temp != null) {
+		if (hasAssignedSymbolValue()) {
 			IExpr[] result = new IExpr[2];
-			result[0] = temp;
-			IExpr calculatedResult = function.apply(temp);
+			result[0] = fValue;
+			if (((fAttributes & DIRTY_FLAG_ASSIGNED_VALUE) == DIRTY_FLAG_ASSIGNED_VALUE) //
+					&& result[0].isAST()) {
+				result[0] = ((IAST) result[0]).copy();
+			}
+			IExpr calculatedResult = function.apply(result[0]);
 			if (calculatedResult.isPresent()) {
-				assign(calculatedResult);
+				assignValue(calculatedResult);
 				result[1] = calculatedResult;
 				return result;
 			}
@@ -870,7 +882,7 @@ public class BuiltInDummy implements IBuiltInSymbol, Serializable {
 			ast.set(1, temp);
 			IExpr calculatedResult = engine.evaluate(ast);// F.binaryAST2(this, symbolValue, value));
 			if (calculatedResult != null) {
-				assign(calculatedResult);
+				assignValue(calculatedResult);
 				result[1] = calculatedResult;
 				return result;
 			}
@@ -891,7 +903,7 @@ public class BuiltInDummy implements IBuiltInSymbol, Serializable {
 			EvalEngine.get().addModifiedVariable(this);
 		}
 		if (leftHandSide.isSymbol()) {
-			fValue = null;
+			clearValue();
 			return true;
 		} else if (fRulesData != null) {
 			return fRulesData.removeRule(setSymbol, equalRule, leftHandSide);
@@ -901,14 +913,15 @@ public class BuiltInDummy implements IBuiltInSymbol, Serializable {
 
 	/** {@inheritDoc} */
 	@Override
-	public final void assign(final IExpr value) {
+	public final void assignValue(final IExpr value) {
 		Context globalContext = EvalEngine.get().getContextPath().getGlobalContext();
 		ISymbol globalSubstitute = globalContext.get(fSymbolName);
 		if (globalSubstitute != null) {
-			globalSubstitute.assign(value);
+			globalSubstitute.assignValue(value);
 			return;
 		}
 		fValue = value;
+		clearAttributes(DIRTY_FLAG_ASSIGNED_VALUE);
 		// final Deque<IExpr> localVariableStack = EvalEngine.get().localStack(this);
 		// localVariableStack.remove();
 		// localVariableStack.push(value);
@@ -978,7 +991,7 @@ public class BuiltInDummy implements IBuiltInSymbol, Serializable {
 	}
 
 	private Object writeReplace() throws ObjectStreamException {
-		return optional( );
+		return optional();
 	}
 
 	/** {@inheritDoc} */

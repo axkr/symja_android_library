@@ -1,6 +1,7 @@
 package org.matheclipse.core.parser;
 
 import org.matheclipse.core.expression.F;
+import org.matheclipse.core.interfaces.IASTMutable;
 import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.parser.client.ast.IParserFactory;
 import org.matheclipse.parser.client.operator.Operator;
@@ -11,7 +12,7 @@ class PostfixExprOperator extends Operator {
 		super(oper, functionName, precedence);
 	}
 
-	public IExpr createFunction(final IParserFactory factory, final IExpr argument) {
+	public IASTMutable createFunction(final IParserFactory factory, final IExpr argument) {
 		return F.$(F.$s(getFunctionName()), argument);
 	}
 }

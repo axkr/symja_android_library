@@ -55,8 +55,8 @@ public class VectorAnalysisFunctions {
 		public IExpr evaluate(final IAST ast, EvalEngine engine) {
 			if (ast.arg1().isVector() >= 3) {
 				if (ast.arg2().isVector() == 3) {
-					IAST variables = (IAST) ast.arg2();
-					IAST vector = (IAST) ast.arg1();
+					IAST variables = (IAST) ast.arg2().normal(false);
+					IAST vector = (IAST) ast.arg1().normal(false);
 					IASTAppendable curlVector = F.ListAlloc(vector.size());
 					curlVector.append(
 							F.Subtract(F.D(vector.arg3(), variables.arg2()), F.D(vector.arg2(), variables.arg3())));
@@ -107,8 +107,8 @@ public class VectorAnalysisFunctions {
 		@Override
 		public IExpr evaluate(final IAST ast, EvalEngine engine) {
 			if ((ast.arg1().isVector() == ast.arg2().isVector()) && (ast.arg1().isVector() >= 0)) {
-				IAST vector = (IAST) ast.arg1();
-				IAST variables = (IAST) ast.arg2();
+				IAST vector = (IAST) ast.arg1().normal(false);
+				IAST variables = (IAST) ast.arg2().normal(false);
 				int size = vector.size();
 				IASTAppendable divergenceValue = F.PlusAlloc(size);
 				return divergenceValue.appendArgs(size, i -> F.D(vector.get(i), variables.get(i)));

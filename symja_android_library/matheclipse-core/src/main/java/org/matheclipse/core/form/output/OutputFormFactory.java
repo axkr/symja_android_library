@@ -828,7 +828,7 @@ public class OutputFormFactory {
 			if (oper.getGrouping() == InfixOperator.RIGHT_ASSOCIATIVE && arg1.head().equals(list.head())) {
 				append(buf, "(");
 			} else {
-				if (oper.getOperatorString() == "^") {
+				if (oper.getOperatorString().equals("^")) {
 					final Operator operator = getOperator(arg1.topHead());
 					if (operator instanceof PostfixOperator) {
 						append(buf, "(");
@@ -845,7 +845,7 @@ public class OutputFormFactory {
 			if (oper.getGrouping() == InfixOperator.RIGHT_ASSOCIATIVE && arg1.head().equals(list.head())) {
 				append(buf, ")");
 			} else {
-				if (oper.getOperatorString() == "^") {
+				if (oper.getOperatorString().equals("^")) {
 					final Operator operator = getOperator(arg1.topHead());
 					if (operator instanceof PostfixOperator) {
 						append(buf, ")");

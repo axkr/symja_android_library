@@ -1006,16 +1006,16 @@ public final class BooleanFunctions {
 					ISymbol symbol = (ISymbol) sym;
 					IExpr value = symbol.assignedValue();
 					try {
-						symbol.assign(F.True);
+						symbol.assignValue(F.True);
 						booleanTable(expr, position + 1);
 					} finally {
-						symbol.assign(value);
+						symbol.assignValue(value);
 					}
 					try {
-						symbol.assign(F.False);
+						symbol.assignValue(F.False);
 						booleanTable(expr, position + 1);
 					} finally {
-						symbol.assign(value);
+						symbol.assignValue(value);
 					}
 				}
 				return resultList;
@@ -3785,20 +3785,20 @@ public final class BooleanFunctions {
 				ISymbol symbol = (ISymbol) sym;
 				IExpr value = symbol.assignedValue();
 				try {
-					symbol.assign(F.True);
+					symbol.assignValue(F.True);
 					if (bruteForceSatisfiableQ(expr, variables, position + 1)) {
 						return true;
 					}
 				} finally {
-					symbol.assign(value);
+					symbol.assignValue(value);
 				}
 				try {
-					symbol.assign(F.False);
+					symbol.assignValue(F.False);
 					if (bruteForceSatisfiableQ(expr, variables, position + 1)) {
 						return true;
 					}
 				} finally {
-					symbol.assign(value);
+					symbol.assignValue(value);
 				}
 			}
 			return false;
@@ -3897,20 +3897,20 @@ public final class BooleanFunctions {
 				ISymbol symbol = (ISymbol) sym;
 				IExpr value = symbol.assignedValue();
 				try {
-					symbol.assign(F.True);
+					symbol.assignValue(F.True);
 					if (!bruteForceTautologyQ(expr, variables, position + 1)) {
 						return false;
 					}
 				} finally {
-					symbol.assign(value);
+					symbol.assignValue(value);
 				}
 				try {
-					symbol.assign(F.False);
+					symbol.assignValue(F.False);
 					if (!bruteForceTautologyQ(expr, variables, position + 1)) {
 						return false;
 					}
 				} finally {
-					symbol.assign(value);
+					symbol.assignValue(value);
 				}
 			}
 			return true;

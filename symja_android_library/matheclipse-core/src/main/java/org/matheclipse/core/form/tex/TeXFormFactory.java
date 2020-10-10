@@ -727,6 +727,12 @@ public class TeXFormFactory {
 			}
 			IExpr arg1 = f.arg1();
 			IExpr arg2 = f.arg2();
+			if (arg2.isNegative()) {
+				buf.append("\\frac{1}{");
+				fFactory.convertInternal(buf, F.Power(arg1, arg2.negate()), 0);
+				buf.append('}');
+				return true;
+			}
 			if (arg2.isNumEqualRational(F.C1D2)) {
 				buf.append("\\sqrt{");
 				fFactory.convertInternal(buf, arg1, fPrecedence);

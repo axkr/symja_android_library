@@ -149,7 +149,9 @@ public class JavaDoubleFormFactory extends DoubleFormFactory {
 		if (function.isNumericFunction()) {
 			try {
 				double value = EvalEngine.get().evalDouble(function);
-				buf.append("(" + value + ")");
+				buf.append("(");
+				buf.append(value);
+				buf.append(")");
 				return;
 			} catch (RuntimeException rex) {
 				//

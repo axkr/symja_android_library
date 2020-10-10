@@ -18,12 +18,10 @@ import org.hipparchus.linear.AbstractFieldMatrix;
 import org.hipparchus.linear.FieldMatrix;
 import org.hipparchus.linear.FieldVector;
 import org.hipparchus.util.MathUtils;
-import org.hipparchus.util.OpenIntToFieldHashMap;
 import org.matheclipse.core.builtin.IOFunctions;
 import org.matheclipse.core.builtin.LinearAlgebra;
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.exception.ArgumentTypeException;
-import org.matheclipse.core.expression.ASTRealVector;
 import org.matheclipse.core.expression.DataExpr;
 import org.matheclipse.core.expression.ExprField;
 import org.matheclipse.core.expression.F;
@@ -1203,6 +1201,125 @@ public class SparseArrayExpr extends DataExpr<Trie<int[], IExpr>> implements ISp
 		return dimension;
 	}
 
+	/**
+	 * Determine the sparse array depth from the first entry, which isn't a <code>List(...)</code>.
+	 * 
+	 * @param list
+	 * @param count
+	 * @return
+	 */
+	private static int depth(IAST list, int count) {
+		if (list.size() > 1) {
+			if (list.arg1().isList()) {
+				return depth((IAST) list.arg1(), ++count);
+			}
+			return count;
+		}
+		return -1;
+	}
+
+	/**
+	 * Create a sparse array from the array rules list.
+	 * 
+	 * @param arrayRulesList
+	 * @param dimension
+	 * @param defaultDimension
+	 * @param defaultValue
+	 *            default value for positions not specified in arrayRulesList. If <code>F.NIL</code> determine from '_'
+	 *            (Blank) rule.
+	 * @return <code>null</code> if a new <code>SparseArrayExpr</code> cannot be created.
+	 */
+	public static SparseArrayExpr newArrayRules(IAST arrayRulesList, int[] dimension, int defaultDimension,
+			IExpr defaultValue) {
+		IExpr[] defValue = new IExpr[] { defaultValue };
+		final Trie<int[], IExpr> value = Tries.forInts();
+		int[] determinedDimension = createTrie(arrayRulesList, value, dimension, defaultDimension, defValue,
+				EvalEngine.get());
+		if (determinedDimension != null) {
+			return new SparseArrayExpr(value, determinedDimension, defValue[0].orElse(F.C0), false);
+		}
+		return null;
+	}
+
+	/**
+	 * Create a sparse array from the dense list representation (for example dense vectors and matrices)
+	 * 
+	 * @param denseList
+	 * @param defaultValue
+	 *            default value for positions not specified in the dense list representation.
+	 * @return <code>null</code> if a new <code>SparseArrayExpr</code> cannot be created.
+	 */
+	public static SparseArrayExpr newDenseList(IAST denseList, IExpr defaultValue) {
+		ArrayList<Integer> dims = LinearAlgebra.dimensions(denseList);
+		if (dims != null && dims.size() > 0) {
+			defaultValue = defaultValue.orElse(F.C0);
+			IAST listOfRules = SparseArrayExpr.arrayRules(denseList, defaultValue);
+			if (listOfRules.isPresent()) {
+				SparseArrayExpr result = SparseArrayExpr.newArrayRules(listOfRules, null, -1, defaultValue);
+				int[] dimension = new int[dims.size()];
+				for (int i = 0; i < dims.size(); i++) {
+					dimension[i] = dims.get(i);
+				}
+				result.dimension = dimension;
+				return result;
+			}
+		}
+		return null;
+	}
+
+	/**
+	 * <p>
+	 * Create a sparse array from the compressed sparse row (CSR) storage format (input form):
+	 * <code>SparseArray(Automatic, dimension, defaultValue, {1,{rowPointers, columnIndiceMatrix}, nonZeroValues})</code>.
+	 * </p>
+	 * See: <a href="http://netlib.org/utk/papers/templates/node91.html">Netlib - Compressed Row Storage (CRS)</a>
+	 * 
+	 * @param dimension
+	 *            the dimension of the sparse array
+	 * @param defaultValue
+	 *            default value for positions not specified in input form.
+	 * @param rowPointers
+	 * @param columnIndiceMatrix
+	 * @param nonZeroValues
+	 * @return <code>null</code> if a new <code>SparseArrayExpr</code> cannot be created.
+	 */
+	public static SparseArrayExpr newInputForm(int[] dimension, IExpr defaultValue, int[] rowPointers,
+			IAST columnIndiceMatrix, IAST nonZeroValues) {
+		int first = 0;
+		final Trie<int[], IExpr> value = Tries.forInts();
+		final int depth = dimension.length;
+		int k = 0;
+		for (int i = 1; i < columnIndiceMatrix.size(); i++) {
+			IAST row = (IAST) columnIndiceMatrix.get(i);
+			int[] key = new int[depth];
+			if (depth == 1) {
+				for (int j = 1; j < row.size(); j++) {
+					int p = row.get(j).toIntDefault();
+					if (p < 1) {
+						return null;
+					}
+					key[0] = p;
+				}
+			} else {
+				while (rowPointers[k] < i) {
+					k++;
+					first++;
+				}
+				key[0] = first;
+				for (int j = 1; j < row.size(); j++) {
+					int p = row.get(j).toIntDefault();
+					if (p < 1) {
+						return null;
+					}
+					key[j] = p;
+				}
+			}
+			value.put(key, nonZeroValues.get(i));
+
+		}
+		return new SparseArrayExpr(value, dimension, defaultValue, false);
+	}
+
 	private static boolean patternPositionsList(final Trie<int[], IExpr> value, IAST rule, int[] dimension,
 			IAST arrayRulesList, EvalEngine engine) {
 		if (dimension == null) {
@@ -1251,73 +1368,26 @@ public class SparseArrayExpr extends DataExpr<Trie<int[], IExpr>> implements ISp
 	}
 
 	/**
-	 * Determine the sparse array depth from the first entry, which isn't a <code>List(...)</code>.
+	 * The maximum number of elements this sparse array could contain.
 	 * 
-	 * @param list
-	 * @param count
+	 * @param dimension
+	 *            assumes dimension contains at least one element.
 	 * @return
 	 */
-	private static int depth(IAST list, int count) {
-		if (list.size() > 1) {
-			if (list.arg1().isList()) {
-				return depth((IAST) list.arg1(), ++count);
-			}
-			return count;
+	private static int totalSize(int[] dimension) {
+		int total = 1;
+		for (int i = 0; i < dimension.length; i++) {
+			total *= dimension[i];
 		}
-		return -1;
+		return total;
 	}
 
-	public static SparseArrayExpr newInstance(IAST list, IExpr defaultValue) {
-		ArrayList<Integer> dims = LinearAlgebra.dimensions(list);
-		if (dims != null && dims.size() > 0) {
-			defaultValue = defaultValue.orElse(F.C0);
-			IAST listOfRules = SparseArrayExpr.arrayRules(list, defaultValue);
-			if (listOfRules.isPresent()) {
-				SparseArrayExpr result = SparseArrayExpr.newInstance(listOfRules, null, -1, defaultValue);
-				int[] dimension = new int[dims.size()];
-				for (int i = 0; i < dims.size(); i++) {
-					dimension[i] = dims.get(i);
-				}
-				result.dimension = dimension;
-				return result;
-			}
-		}
-		return null;
-	}
-
+	// private transient IAST normalCache = null;
 	/**
+	 * Flags for controlling evaluation and left-hand-side pattern-matching expressions
 	 * 
-	 * @param arrayRulesList
-	 * @param defaultDimension
-	 * @param defaultValue
-	 *            default value for positions not specified in arrayRulesList. If <code>F.NIL</code> determine from '_'
-	 *            (Blank) rule.
-	 * @param engine
-	 * @return <code>null</code> if a new <code>SparseArrayExpr</code> cannot be created.
 	 */
-	public static SparseArrayExpr newInstance(IAST arrayRulesList, int[] dimension, int defaultDimension,
-			IExpr defaultValue) {
-		IExpr[] defValue = new IExpr[] { defaultValue };
-		final Trie<int[], IExpr> value = Tries.forInts();
-		int[] determinedDimension = createTrie(arrayRulesList, value, dimension, defaultDimension, defValue,
-				EvalEngine.get());
-		if (determinedDimension != null) {
-			return new SparseArrayExpr(value, determinedDimension, defValue[0].orElse(F.C0), false);
-		}
-		return null;
-	}
-
-	// public static SparseArrayExpr newInstance(IAST arrayRulesList, int[] dimension, IExpr defaultValue) {
-	// IExpr[] defValue = new IExpr[] { defaultValue };
-	// final Trie<int[], IExpr> value = Tries.forInts();
-	// int[] determinedDimension = createTrie(arrayRulesList, value, dimension, -1, defValue, EvalEngine.get());
-	// if (determinedDimension != null) {
-	// return new SparseArrayExpr(value, dimension, defValue[0].orElse(F.C0), false);
-	// }
-	// return null;
-	// }
-
-	private transient IAST normalCache = null;
+	protected int fEvalFlags = 0;
 
 	/**
 	 * The dimension of the sparse array.
@@ -1353,7 +1423,10 @@ public class SparseArrayExpr extends DataExpr<Trie<int[], IExpr>> implements ISp
 		if (deepCopy) {
 			this.fData = Tries.forInts();
 			for (TrieNode<int[], IExpr> entry : trie.nodeSet()) {
-				this.fData.put(entry.getKey(), entry.getValue());
+				int[] key = entry.getKey();
+				int[] newKey = new int[key.length];
+				System.arraycopy(key, 0, newKey, 0, key.length);
+				this.fData.put(newKey, entry.getValue());
 			}
 			this.dimension = new int[dimension.length];
 			System.arraycopy(dimension, 0, this.dimension, 0, dimension.length);
@@ -1363,6 +1436,13 @@ public class SparseArrayExpr extends DataExpr<Trie<int[], IExpr>> implements ISp
 			this.defaultValue = defaultValue;
 		}
 		// this.addEvalFlags(IAST.SEQUENCE_FLATTENED);
+	}
+
+	/** {@inheritDoc} */
+	@Override
+	public final ISparseArray addEvalFlags(final int i) {
+		fEvalFlags |= i;
+		return this;
 	}
 
 	/**
@@ -1414,6 +1494,186 @@ public class SparseArrayExpr extends DataExpr<Trie<int[], IExpr>> implements ISp
 			}
 		}
 		return false;
+	}
+
+	/** {@inheritDoc} */
+	@Override
+	public IExpr evaluate(EvalEngine engine) {
+		if (isEvalFlagOff(IAST.BUILT_IN_EVALED)) {
+			boolean evaled = false;
+			IExpr newDefaultValue = defaultValue;
+			IExpr temp = engine.evaluateNull(defaultValue);
+			if (temp.isPresent()) {
+				evaled = true;
+				newDefaultValue = temp;
+			}
+			final Trie<int[], IExpr> trie = Tries.forInts();
+			for (TrieNode<int[], IExpr> entry : fData.nodeSet()) {
+				IExpr value = entry.getValue();
+				temp = engine.evaluateNull(value);
+				if (temp.isPresent()) {
+					evaled = true;
+					trie.put(entry.getKey(), temp);
+				} else {
+					trie.put(entry.getKey(), value);
+				}
+			}
+			if (evaled) {
+				SparseArrayExpr result = new SparseArrayExpr(trie, dimension, newDefaultValue, false);
+				result.addEvalFlags(IAST.BUILT_IN_EVALED);
+				return result;
+			}
+			addEvalFlags(IAST.BUILT_IN_EVALED);
+		}
+		return F.NIL;
+	}
+
+	@Override
+	public ISparseArray flatten() {
+		if (dimension.length <= 1) {
+			return this;
+		}
+		int vectorDim = totalSize(dimension);
+		int[] offsets = new int[dimension.length];
+		int val = dimension[dimension.length - 1];
+		for (int i = offsets.length - 1; i >= 0; i--) {
+			offsets[i] = val;
+			if (i > 0) {
+				val *= dimension[i - 1];
+			}
+		}
+		final Trie<int[], IExpr> result = Tries.forInts();
+		for (TrieNode<int[], IExpr> entry : fData.nodeSet()) {
+			int[] key = entry.getKey();
+			int keyDim = key[key.length - 1];
+			for (int i = 0; i < key.length - 1; i++) {
+				keyDim += (key[i] - 1) * offsets[i + 1];
+			}
+			result.put(new int[] { keyDim }, entry.getValue());
+		}
+
+		return new SparseArrayExpr(result, new int[] { vectorDim }, defaultValue, false);
+
+	}
+
+	/**
+	 * <p>
+	 * For the FullForm create a compressed sparse row (CSR) representation internally:
+	 * <code>SparseArray(Automatic, dimension, defaultValue, {1,{rowPointers, columnIndiceMatrix}, nonZeroValues})</code>.
+	 * </p>
+	 * See: <a href="http://netlib.org/utk/papers/templates/node91.html">Netlib - Compressed Row Storage (CRS)</a>
+	 */
+	@Override
+	public String fullFormString() {
+		IAST dimensionList = F.ast(S.List, dimension);
+		IASTAppendable result = F.ast(S.SparseArray, 6, false);
+		result.append(S.Automatic);
+		result.append(dimensionList);
+		result.append(defaultValue);
+		// create compressed sparse row (CSR) storage format (input form):
+		// SparseArray(Automatic, dimension, defaultValue, {1,{rowPointers, columnIndiceMatrix}, nonZeroValues})
+		IASTAppendable list1 = F.ListAlloc(4);
+		result.append(list1);
+		list1.append(F.C1);
+
+		IASTAppendable subList = F.ListAlloc(2);
+		list1.append(subList);
+		IASTAppendable rowPointers = F.ListAlloc(fData.size());
+		subList.append(rowPointers);
+		IASTAppendable columnIndiceMatrix = F.ListAlloc(fData.size());
+		subList.append(columnIndiceMatrix);
+		IASTAppendable nonZeroValues = F.ListAlloc(fData.size());
+
+		int columnIndex = 0;
+		int rowCounter = 0;
+		if (dimension.length > 1) {
+			// matrix, general case
+			for (TrieNode<int[], IExpr> entry : fData.nodeSet()) {
+				int[] key = entry.getKey();
+				int row = key[0];
+				while (rowCounter < row) {
+					rowPointers.append(F.ZZ(columnIndex));
+					rowCounter++;
+				}
+				columnIndex++;
+				int[] newKey = new int[key.length - 1];
+				System.arraycopy(key, 1, newKey, 0, newKey.length);
+				IAST indice = F.ast(S.List, newKey);
+				columnIndiceMatrix.append(indice);
+				nonZeroValues.append(entry.getValue());
+			}
+		} else {
+			// vector case
+			rowPointers.append(F.ZZ(columnIndex));
+			for (TrieNode<int[], IExpr> entry : fData.nodeSet()) {
+				int[] key = entry.getKey();
+				columnIndex++;
+				IAST indice = F.ast(S.List, key);
+				columnIndiceMatrix.append(indice);
+				nonZeroValues.append(entry.getValue());
+			}
+		}
+		rowPointers.append(F.ZZ(columnIndex));
+		list1.append(nonZeroValues);
+		return result.fullFormString();
+	}
+
+	@Override
+	public IExpr get(int position) {
+		int[] dims = getDimension();
+
+		final int partSize = 1;
+
+		int len = 0;
+		int[] partIndex = new int[dims.length];
+		int count = 0;
+		partIndex[0] = position;
+
+		for (int i = partSize; i < dims.length; i++) {
+			partIndex[i] = -1;
+			count++;
+		}
+		if (count == 0 && partSize == dims.length) {
+			IExpr temp = fData.get(partIndex);
+			if (temp == null) {
+				return defaultValue;
+			}
+			return temp;
+		}
+		int[] newDimension = new int[count];
+		count = 0;
+		for (int i = 0; i < partIndex.length; i++) {
+			if (partIndex[i] == (-1)) {
+				len++;
+				newDimension[count++] = dims[i];
+			}
+		}
+		final Trie<int[], IExpr> value = Tries.forInts();
+		for (TrieNode<int[], IExpr> entry : fData.nodeSet()) {
+			int[] key = entry.getKey();
+			boolean evaled = true;
+			for (int i = 0; i < partIndex.length; i++) {
+				if (partIndex[i] == (-1)) {
+					continue;
+				}
+				if (partIndex[i] != key[i]) {
+					evaled = false;
+					break;
+				}
+			}
+			if (evaled) {
+				int[] newKey = new int[len];
+				int j = 0;
+				for (int i = 0; i < partIndex.length; i++) {
+					if (partIndex[i] == (-1)) {
+						newKey[j++] = key[i];
+					}
+				}
+				value.put(newKey, entry.getValue());
+			}
+		}
+		return new SparseArrayExpr(value, newDimension, defaultValue.orElse(F.C0), false);
+
 	}
 
 	@Override
@@ -1497,7 +1757,7 @@ public class SparseArrayExpr extends DataExpr<Trie<int[], IExpr>> implements ISp
 
 	@Override
 	public int hashCode() {
-		return (fData == null) ? 541 : 541 + fData.hashCode();
+		return (fData == null) ? 541 : 541 + fData.size() + defaultValue.hashCode();
 	}
 
 	@Override
@@ -1525,11 +1785,39 @@ public class SparseArrayExpr extends DataExpr<Trie<int[], IExpr>> implements ISp
 		return (dimension.length == 1) ? dimension[0] : -1;
 	}
 
+	@Override
+	public ISparseArray join(ISparseArray that) {
+		SparseArrayExpr thatArray = (SparseArrayExpr) that;
+		SparseArrayExpr result = copy();
+		int rowDimension = result.dimension[0];
+		for (TrieNode<int[], IExpr> entry : thatArray.fData.nodeSet()) {
+			int[] key = entry.getKey();
+			int[] newKey = new int[key.length];
+			System.arraycopy(key, 0, newKey, 0, key.length);
+			newKey[0] += rowDimension;
+			result.fData.put(newKey, entry.getValue());
+		}
+		result.dimension[0] += thatArray.dimension[0];
+		// result.normalCache = null;
+		return result;
+	}
+
 	/** {@inheritDoc} */
 	@Override
-	public final SparseArrayExpr mapThread(final IAST replacement, int position) {
-		final Function<IExpr, IExpr> function = x -> replacement.setAtCopy(position, x);
-		return map(function);
+	public SparseArrayExpr map(final Function<IExpr, IExpr> function) {
+		SparseArrayExpr result = copy();
+		for (TrieNode<int[], IExpr> entry : result.fData.nodeSet()) {
+			IExpr value = entry.getValue();
+			IExpr temp = function.apply(value);
+			if (temp.isPresent()) {
+				result.fData.put(entry.getKey(), temp);
+			}
+		}
+		IExpr temp = function.apply(result.defaultValue);
+		if (temp.isPresent()) {
+			result.defaultValue = temp;
+		}
+		return result;
 	}
 
 	/**
@@ -1555,38 +1843,33 @@ public class SparseArrayExpr extends DataExpr<Trie<int[], IExpr>> implements ISp
 
 	/** {@inheritDoc} */
 	@Override
-	public SparseArrayExpr map(final Function<IExpr, IExpr> function) {
-		SparseArrayExpr result = copy();
-		for (TrieNode<int[], IExpr> entry : result.fData.nodeSet()) {
-			IExpr value = entry.getValue();
-			IExpr temp = function.apply(value);
-			if (temp.isPresent()) {
-				result.fData.put(entry.getKey(), temp);
-			}
-		}
-		IExpr temp = function.apply(result.defaultValue);
-		if (temp.isPresent()) {
-			result.defaultValue = temp;
-		}
-		return result;
+	public final SparseArrayExpr mapThread(final IAST replacement, int position) {
+		final Function<IExpr, IExpr> function = x -> replacement.setAtCopy(position, x);
+		return map(function);
 	}
 
 	@Override
-	public IAST normal(boolean nilIfUnevaluated) {
+	public IASTMutable normal(boolean nilIfUnevaluated) {
 		if (dimension.length > 0) {
-			if (normalCache != null) {
-				return normalCache;
-			}
-			IASTAppendable list = normalAppendable();
-			normalCache = list;
-			return normalCache;
+			return normalAppendable(S.List, dimension);
+			// if (normalCache != null) {
+			// return normalCache;
+			// }
+			// IASTAppendable list = normalAppendable(S.List, dimension);
+			// normalCache = list;
+			// return normalCache;
 		}
 		return F.headAST0(S.List);
 	}
 
-	private void normal(Trie<int[], IExpr> map, IASTMutable list, int[] dimension, int position, int[] index) {
-		if (dimension.length - 1 == position) {
-			int size = dimension[position];
+	@Override
+	public IASTMutable normal(int[] dims) {
+		return normalAppendable(S.List, dims);
+	}
+
+	private void normal(Trie<int[], IExpr> map, IASTMutable list, int[] dims, int position, int[] index) {
+		if (dims.length - 1 == position) {
+			int size = dims[position];
 			for (int i = 1; i <= size; i++) {
 				index[position] = i;
 				IExpr expr = map.get(index);
@@ -1598,23 +1881,23 @@ public class SparseArrayExpr extends DataExpr<Trie<int[], IExpr>> implements ISp
 			}
 			return;
 		}
-		int size1 = dimension[position];
-		int size2 = dimension[position + 1];
+		int size1 = dims[position];
+		int size2 = dims[position + 1];
 		for (int i = 1; i <= size1; i++) {
 			index[position] = i;
 			IASTAppendable currentList = F.ast(S.List, size2, true);
 			list.set(i, currentList);
-			normal(map, currentList, dimension, position + 1, index);
+			normal(map, currentList, dims, position + 1, index);
 		}
 	}
 
-	private IASTAppendable normalAppendable() {
-		IASTAppendable list = F.ast(S.List, dimension[0], true);
-		int[] index = new int[dimension.length];
+	private IASTAppendable normalAppendable(IExpr head, int[] dims) {
+		IASTAppendable list = F.ast(head, dims[0], true);
+		int[] index = new int[dims.length];
 		for (int i = 0; i < index.length; i++) {
 			index[i] = 1;
 		}
-		normal(fData, list, dimension, 0, index);
+		normal(fData, list, dims, 0, index);
 		return list;
 	}
 
@@ -1735,6 +2018,49 @@ public class SparseArrayExpr extends DataExpr<Trie<int[], IExpr>> implements ISp
 		buf.append(defaultValue.toString());
 		buf.append(")");
 		return buf.toString();
+	}
+
+	@Override
+	public IExpr total(IExpr head) {
+		if (head.equals(S.Plus) && defaultValue.isZero()) {
+			IASTAppendable result = F.PlusAlloc(fData.size());
+			for (TrieNode<int[], IExpr> entry : fData.nodeSet()) {
+				result.append(entry.getValue());
+			}
+			return result;
+		}
+		IASTAppendable result = F.ast(head, totalSize(dimension), false);
+		return totalAppendable(result);
+	}
+
+	private void total(Trie<int[], IExpr> map, int[] dimension, int position, int[] index, IASTAppendable result) {
+		if (dimension.length - 1 == position) {
+			int size = dimension[position];
+			for (int i = 1; i <= size; i++) {
+				index[position] = i;
+				IExpr expr = map.get(index);
+				if (expr == null) {
+					result.append(defaultValue);
+				} else {
+					result.append(expr);
+				}
+			}
+			return;
+		}
+		int size1 = dimension[position];
+		for (int i = 1; i <= size1; i++) {
+			index[position] = i;
+			total(map, dimension, position + 1, index, result);
+		}
+	}
+
+	private IASTAppendable totalAppendable(IASTAppendable result) {
+		int[] index = new int[dimension.length];
+		for (int i = 0; i < index.length; i++) {
+			index[i] = 1;
+		}
+		total(fData, dimension, 0, index, result);
+		return result;
 	}
 
 	@Override

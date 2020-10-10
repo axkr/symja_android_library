@@ -10,6 +10,7 @@ import org.hipparchus.util.Precision;
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.interfaces.ISymbol;
+import org.matheclipse.parser.client.FEConfig;
 
 import com.google.common.cache.Cache;
 import com.google.common.cache.CacheBuilder;
@@ -154,6 +155,12 @@ public class Config {
 	// public final static boolean SHOW_CONSOLE = false;
 
 	/**
+	 * Shorten an output string to a maximum length of <code>SHORTEN_STRING_LENGTH</code> characters. Print <<SHORT>> as
+	 * substitute of the middle of the expression if necessary.
+	 */
+	public static int SHORTEN_STRING_LENGTH = 80;
+
+	/**
 	 * Show the pattern-matching evaluation steps in the console output.
 	 * 
 	 */
@@ -275,8 +282,9 @@ public class Config {
 
 	/**
 	 * Use <code>Num</code> objects for numeric calculations up to 16 digits precision.
+	 * @deprecated use {@link FEConfig#MACHINE_PRECISION}
 	 */
-	public static final long MACHINE_PRECISION = 16L;
+	public static final long MACHINE_PRECISION = FEConfig.MACHINE_PRECISION;
 
 	/**
 	 * The maximum precision which could be requested from a user for numerical calculations.

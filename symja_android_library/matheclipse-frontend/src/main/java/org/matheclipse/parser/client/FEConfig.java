@@ -14,6 +14,11 @@ public class FEConfig {
 	public final static boolean SHOW_STACKTRACE = false;
 	
 	/**
+	 * Use <code>Num</code> objects for numeric calculations up to 16 digits precision.
+	 */
+	public static final long MACHINE_PRECISION = 16L;
+	
+	/**
 	 * If <code>true</code> the parser doesn't distinguish between lower- or uppercase symbols (i.e. constants, function
 	 * names,...), with the exception of symbols with only one character (i.e. the variable &quot;i&quot; is different
 	 * from the imaginary unit &quot;I&quot;)

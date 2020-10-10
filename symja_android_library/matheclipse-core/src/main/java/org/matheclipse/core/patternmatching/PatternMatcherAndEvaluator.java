@@ -207,8 +207,7 @@ public class PatternMatcherAndEvaluator extends PatternMatcher implements Extern
 			return true;
 		}
 
-		if (!(fRightHandSide.isCondition() || fRightHandSide.isAST(S.Block, 3) || fRightHandSide.isModule()
-				|| fRightHandSide.isWith())) {
+		if (!(fRightHandSide.isCondition() || fRightHandSide.isModule() || fRightHandSide.isWith())) {
 			return true;
 		} else {
 			if (!patternMap.isAllPatternsAssigned()) {
@@ -463,7 +462,7 @@ public class PatternMatcherAndEvaluator extends PatternMatcher implements Extern
 
 		if (fLhsPatternExpr != null) {
 			int[] priority = new int[] { IPatternMap.DEFAULT_RULE_PRIORITY };
-			this.fPatternMap = IPatternMap.determinePatterns(fLhsPatternExpr, priority);
+			this.fPatternMap = IPatternMap.determinePatterns(fLhsPatternExpr, priority, null);
 		}
 		initRHSleafCountSimplify();
 	}

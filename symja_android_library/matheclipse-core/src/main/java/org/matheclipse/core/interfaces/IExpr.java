@@ -168,6 +168,10 @@ public interface IExpr extends Comparable<IExpr>, GcdRingElem<IExpr>, Serializab
 
 	public final static int DISPATCHID = DATAID + 10;
 
+	public final static int TESTREPORTOBJECT = DATAID + 11;
+
+	public final static int TESTRESULTOBJECT = DATAID + 12;
+
 	/**
 	 * Operator overloading for Scala operator <code>/</code>. Calls <code>divide(that)</code>.
 	 * 
@@ -263,6 +267,20 @@ public interface IExpr extends Comparable<IExpr>, GcdRingElem<IExpr>, Serializab
 	@Override
 	default IExpr add(IExpr that) {
 		return plus(that);
+	}
+
+	/**
+	 * <p>
+	 * Set an evaluation flag.
+	 * </p>
+	 * <b>Note</b> only certain data structures like <code>IAST</code> and <code>ISparseArray</code> support evaluation
+	 * flags, otherwise the <code>this</code> object will be returned without modification.
+	 * 
+	 * @param evalFlags
+	 * @return
+	 */
+	default IExpr addEvalFlags(final int evalFlags) {
+		return this;
 	}
 
 	/**

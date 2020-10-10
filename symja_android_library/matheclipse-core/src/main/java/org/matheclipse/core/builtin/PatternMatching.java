@@ -3,22 +3,13 @@ package org.matheclipse.core.builtin;
 import static org.matheclipse.core.expression.F.Rule;
 import static org.matheclipse.core.expression.F.RuleDelayed;
 
-import java.io.BufferedReader;
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileWriter;
 import java.io.IOException;
-import java.io.InputStreamReader;
 import java.io.PrintStream;
-import java.nio.charset.Charset;
-import java.nio.file.FileSystems;
 import java.util.IdentityHashMap;
 import java.util.Iterator;
-import java.util.List;
 import java.util.Map;
 
 import org.matheclipse.core.basic.Config;
-import org.matheclipse.core.convert.AST2Expr;
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.exception.ConditionException;
 import org.matheclipse.core.eval.exception.FailedException;
@@ -32,9 +23,9 @@ import org.matheclipse.core.eval.interfaces.ISetEvaluator;
 import org.matheclipse.core.eval.util.Lambda;
 import org.matheclipse.core.eval.util.OptionArgs;
 import org.matheclipse.core.expression.F;
+import org.matheclipse.core.expression.PatternNested;
 import org.matheclipse.core.expression.S;
 import org.matheclipse.core.form.Documentation;
-import org.matheclipse.core.form.output.OutputFormFactory;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IASTAppendable;
 import org.matheclipse.core.interfaces.IASTMutable;
@@ -49,10 +40,6 @@ import org.matheclipse.core.patternmatching.IPatternMatcher;
 import org.matheclipse.core.patternmatching.PatternMatcherEquals;
 import org.matheclipse.core.patternmatching.RulesData;
 import org.matheclipse.parser.client.FEConfig;
-import org.matheclipse.parser.client.Parser;
-import org.matheclipse.parser.client.ast.ASTNode;
-
-import com.google.common.io.Files;
 
 public final class PatternMatching {
 
@@ -81,10 +68,6 @@ public final class PatternMatching {
 			// }
 			S.Unique.setEvaluator(new Unique());
 			if (!Config.FUZZY_PARSER) {
-				S.BeginPackage.setEvaluator(new BeginPackage());
-				S.EndPackage.setEvaluator(new EndPackage());
-				S.Begin.setEvaluator(new Begin());
-				S.End.setEvaluator(new End());
 				S.Blank.setEvaluator(Blank.CONST);
 				S.BlankSequence.setEvaluator(BlankSequence.CONST);
 				S.BlankNullSequence.setEvaluator(BlankNullSequence.CONST);
@@ -95,10 +78,8 @@ public final class PatternMatching {
 				S.Default.setEvaluator(new Default());
 				S.Definition.setEvaluator(new Definition());
 				S.Evaluate.setEvaluator(new Evaluate());
-				S.Get.setEvaluator(new Get());
-				S.OptionsPattern.setEvaluator(new OptionsPattern());
-				S.Put.setEvaluator(new Put());
-				S.Repeated.setEvaluator(new Repeated());
+				S.OptionsPattern.setEvaluator(OptionsPattern.CONST);
+				S.Repeated.setEvaluator(Repeated.CONST);
 				S.TagSet.setEvaluator(new TagSet());
 				S.TagSetDelayed.setEvaluator(new TagSetDelayed());
 				S.Unset.setEvaluator(new Unset());
@@ -106,167 +87,6 @@ public final class PatternMatching {
 				S.UpSetDelayed.setEvaluator(new UpSetDelayed());
 			}
 		}
-	}
-
-	private final static class Begin extends AbstractCoreFunctionEvaluator {
-		@Override
-		public IExpr evaluate(final IAST ast, EvalEngine engine) {
-			try {
-				String contextName = Validate.checkContextName(ast, 1);
-				org.matheclipse.core.expression.Context pack = EvalEngine.get().getContextPath().currentContext();
-				// String packageName = pack.getContextName();
-				// if (packageName.equals(Context.GLOBAL_CONTEXT_NAME)) {
-				// completeContextName = contextName;
-				// } else {
-				// completeContextName = packageName.substring(0, packageName.length() - 1) + contextName;
-				// }
-				org.matheclipse.core.expression.Context context = engine.begin(contextName, pack);
-				return F.stringx(context.completeContextName());
-			} catch (ValidateException ve) {
-				return engine.printMessage(ve.getMessage(ast.topHead()));
-			}
-		}
-
-		@Override
-		public int[] expectedArgSize(IAST ast) {
-			return IOFunctions.ARGS_1_1;
-		}
-
-		@Override
-		public void setUp(ISymbol newSymbol) {
-			newSymbol.setAttributes(ISymbol.HOLDALL);
-		}
-	}
-
-	private final static class BeginPackage extends AbstractFunctionEvaluator {
-		@Override
-		public IExpr evaluate(final IAST ast, EvalEngine engine) {
-			if (ast.size() > 1) {
-				try {
-					String contextName = Validate.checkContextName(ast, 1);
-					engine.beginPackage(contextName);
-					if (Config.isFileSystemEnabled(engine)) {
-						try {
-							for (int j = 2; j < ast.size(); j++) {
-								// FileReader reader = new FileReader(ast.get(j).toString());
-								FileInputStream fis = new FileInputStream(ast.get(j).toString());
-								BufferedReader reader = new BufferedReader(new InputStreamReader(fis, "UTF-8"));
-								Get.loadPackage(engine, reader);
-								reader.close();
-								fis.close();
-							}
-						} catch (IOException e) {
-							if (FEConfig.SHOW_STACKTRACE) {
-								e.printStackTrace();
-							}
-						}
-					}
-					return F.Null;
-
-				} catch (ValidateException ve) {
-					return engine.printMessage(ve.getMessage(ast.topHead()));
-				}
-			}
-			return F.NIL;
-		}
-
-	}
-
-	/**
-	 * <pre>
-	 * <code>End( )
-	 * </code>
-	 * </pre>
-	 * 
-	 * <blockquote>
-	 * <p>
-	 * end a context definition started with <code>Begin</code>
-	 * </p>
-	 * </blockquote>
-	 * <h3>Examples</h3>
-	 * 
-	 * <pre>
-	 * <code>&gt;&gt; Begin(&quot;mytest`&quot;) 
-	 * 
-	 * &gt;&gt; Context()
-	 * mytest`
-	 * 
-	 * &gt;&gt; $ContextPath
-	 * {System`,Global`} 
-	 * 
-	 * &gt;&gt; End()
-	 * mytest`
-	 * 
-	 * &gt;&gt; Context()
-	 * Global`
-	 * 
-	 * &gt;&gt; $ContextPath
-	 * {System`,Global`}
-	 * 
-	 * </code>
-	 * </pre>
-	 */
-
-	private final static class End extends AbstractCoreFunctionEvaluator {
-		@Override
-		public IExpr evaluate(final IAST ast, EvalEngine engine) {
-			org.matheclipse.core.expression.Context context = engine.end();
-			if (context == null) {
-				return F.NIL;
-			}
-			return F.stringx(context.completeContextName());
-		}
-
-		@Override
-		public int[] expectedArgSize(IAST ast) {
-			return IOFunctions.ARGS_0_0;
-		}
-
-		@Override
-		public void setUp(ISymbol newSymbol) {
-			newSymbol.setAttributes(ISymbol.HOLDALL);
-		}
-	}
-
-	/**
-	 * <pre>
-	 * <code>EndPackage( )
-	 * </code>
-	 * </pre>
-	 * 
-	 * <blockquote>
-	 * <p>
-	 * end a package definition
-	 * </p>
-	 * </blockquote>
-	 * <h3>Examples</h3>
-	 * 
-	 * <pre>
-	 * <code>&gt;&gt; BeginPackage(&quot;Test`&quot;)
-	 * 
-	 * &gt;&gt; $ContextPath
-	 * {Test`,System`}
-	 * 
-	 * &gt;&gt; EndPackage( )
-	 * 
-	 * &gt;&gt; $ContextPath
-	 * {Test`,System`,Global`}
-	 * </code>
-	 * </pre>
-	 */
-	private final static class EndPackage extends AbstractCoreFunctionEvaluator {
-
-		@Override
-		public IExpr evaluate(final IAST ast, EvalEngine engine) {
-			engine.endPackage();
-			return F.Null;
-		}
-
-		@Override
-		public void setUp(ISymbol newSymbol) {
-			newSymbol.setAttributes(ISymbol.HOLDALL);
-		}
-
 	}
 
 	public final static class Blank extends AbstractCoreFunctionEvaluator {
@@ -296,7 +116,7 @@ public final class PatternMatching {
 		}
 	}
 
-	private final static class BlankSequence extends AbstractCoreFunctionEvaluator {
+	public final static class BlankSequence extends AbstractCoreFunctionEvaluator {
 		public final static BlankSequence CONST = new BlankSequence();
 
 		@Override
@@ -323,7 +143,7 @@ public final class PatternMatching {
 		}
 	}
 
-	private final static class BlankNullSequence extends AbstractCoreFunctionEvaluator {
+	public final static class BlankNullSequence extends AbstractCoreFunctionEvaluator {
 		public final static BlankNullSequence CONST = new BlankNullSequence();
 
 		@Override
@@ -683,194 +503,6 @@ public final class PatternMatching {
 		public void setUp(final ISymbol newSymbol) {
 		}
 
-	}
-
-	/**
-	 * Get[{&lt;file name&gt;}}
-	 * 
-	 */
-	private final static class Get extends AbstractFunctionEvaluator {
-
-		// private static int addContextToPath(ContextPath contextPath, final List<ASTNode> node, int i,
-		// final EvalEngine engine, ISymbol endSymbol) {
-		// ContextPath path = engine.getContextPath();
-		// try {
-		// engine.setContextPath(contextPath);
-		// AST2Expr ast2Expr = new AST2Expr(engine.isRelaxedSyntax(), engine);
-		// while (i < node.size()) {
-		// IExpr temp = ast2Expr.convert(node.get(i++));
-		// if (temp.isAST()) {
-		// IExpr head = temp.head();
-		// IAST ast = (IAST) temp;
-		// if (head.equals(endSymbol) && ast.isAST0()) {
-		// continue;
-		// } else if (head.equals(F.Begin) && ast.size() >= 2) {
-		// try {
-		// contextPath.add(engine.getContextPath().getContext(ast.arg1().toString()));
-		// i = addContextToPath(contextPath, node, i, engine, F.End);
-		// } finally {
-		// contextPath.remove(contextPath.size() - 1);
-		// }
-		// continue;
-		// }
-		// }
-		// engine.evaluate(temp);
-		// }
-		// // TODO add error message
-		// } finally {
-		// engine.setContextPath(path);
-		// }
-		// return i;
-		// }
-
-		/**
-		 * Load a package from the given reader
-		 * 
-		 * @param engine
-		 * @param is
-		 * @return the last evaluated expression result
-		 */
-		protected static IExpr loadPackage(final EvalEngine engine, final String is) {
-			org.matheclipse.core.expression.Context packageContext = null;
-			try {
-				final List<ASTNode> node = parseReader(is, engine);
-				return evaluatePackage(node, engine);
-			} catch (final Exception e) {
-				e.printStackTrace();
-			} finally {
-				if (packageContext != null) {
-					engine.getContextPath().add(packageContext);
-				}
-			}
-			return F.Null;
-		}
-
-		/**
-		 * Load a package from the given reader
-		 * 
-		 * @param engine
-		 * @param is
-		 * @return the last evaluated expression result
-		 */
-		protected static IExpr loadPackage(final EvalEngine engine, final BufferedReader is) {
-			final BufferedReader r = is;
-			org.matheclipse.core.expression.Context packageContext = null;
-			try {
-				final List<ASTNode> node = parseReader(r, engine);
-
-				return evaluatePackage(node, engine);
-			} catch (final Exception e) {
-				e.printStackTrace();
-			} finally {
-				if (packageContext != null) {
-					engine.getContextPath().add(packageContext);
-				}
-				try {
-					r.close();
-					is.close();
-				} catch (IOException e) {
-					e.printStackTrace();
-				}
-			}
-			return F.Null;
-		}
-
-		/**
-		 * <p>
-		 * Parse the <code>reader</code> input.
-		 * </p>
-		 * <p>
-		 * This method ignores the first line of the script if it starts with the <code>#!</code> characters (i.e. Unix
-		 * Script Executables)
-		 * </p>
-		 * <p>
-		 * <b>Note</b>: uses the <code>ASTNode</code> parser and not the <code>ExprParser</code>, because otherwise the
-		 * symbols couldn't be assigned to the contexts.
-		 * </p>
-		 * 
-		 * @param reader
-		 * @param engine
-		 * @return
-		 * @throws IOException
-		 */
-		public static List<ASTNode> parseReader(final BufferedReader reader, final EvalEngine engine)
-				throws IOException {
-			String record;
-			StringBuilder builder = new StringBuilder(2048);
-			if ((record = reader.readLine()) != null) {
-				// ignore the first line of the script if it starts with the #!
-				// characters (i.e. Unix Script Executables)
-				if (!record.startsWith("!#")) {
-					builder.append(record);
-					builder.append('\n');
-				}
-			}
-			while ((record = reader.readLine()) != null) {
-				builder.append(record);
-				builder.append('\n');
-			}
-			final Parser parser = new Parser(engine.isRelaxedSyntax(), true);
-			final List<ASTNode> node = parser.parsePackage(builder.toString());
-			return node;
-		}
-
-		/**
-		 * <p>
-		 * Parse the <code>reader</code> input.
-		 * </p>
-		 * <p>
-		 * This method ignores the first line of the script if it starts with the <code>#!</code> characters (i.e. Unix
-		 * Script Executables)
-		 * </p>
-		 * <p>
-		 * <b>Note</b>: uses the <code>ASTNode</code> parser and not the <code>ExprParser</code>, because otherwise the
-		 * symbols couldn't be assigned to the contexts.
-		 * </p>
-		 * 
-		 * @param reader
-		 * @param engine
-		 * @return
-		 * @throws IOException
-		 */
-		public static List<ASTNode> parseReader(final String reader, final EvalEngine engine) throws IOException {
-			final Parser parser = new Parser(engine.isRelaxedSyntax(), true);
-			final List<ASTNode> node = parser.parsePackage(reader);
-			return node;
-		}
-
-		@Override
-		public IExpr evaluate(final IAST ast, EvalEngine engine) {
-			if (Config.isFileSystemEnabled(engine)) {
-
-				if (!(ast.arg1() instanceof IStringX)) {
-					return IOFunctions.printMessage(F.Get, "string", F.List(), engine);
-				}
-				IStringX arg1 = (IStringX) ast.arg1();
-				File file = new File(arg1.toString());
-
-				if (file.exists()) {
-					// System.out.println(file.toString());
-					return getFile(file, engine);
-				} else {
-					file = FileSystems.getDefault().getPath(arg1.toString()).toAbsolutePath().toFile();
-					if (file.exists()) {
-						return getFile(file, engine);
-					}
-				}
-
-			}
-			return F.NIL;
-		}
-
-		@Override
-		public int[] expectedArgSize(IAST ast) {
-			return IOFunctions.ARGS_1_1;
-		}
-
-		@Override
-		public void setUp(ISymbol newSymbol) {
-			newSymbol.setAttributes(ISymbol.HOLDALL);
-		}
 	}
 
 	/**
@@ -1457,7 +1089,9 @@ public final class PatternMatching {
 		}
 	}
 
-	private final static class OptionsPattern extends AbstractCoreFunctionEvaluator {
+	public final static class OptionsPattern extends AbstractCoreFunctionEvaluator {
+		public final static OptionsPattern CONST = new OptionsPattern();
+
 		@Override
 		public IExpr evaluate(final IAST ast, EvalEngine engine) {
 			if (ast.head().equals(S.OptionsPattern)) {
@@ -1491,38 +1125,48 @@ public final class PatternMatching {
 				if (ast.size() == 3) {
 					if (ast.arg1().isSymbol()) {
 						final ISymbol symbol = (ISymbol) ast.arg1();
-						final IExpr arg2 = ast.arg2();
+
+						IExpr arg2 = ast.arg2();
 						if (arg2.isBlank()) {
-							IPatternObject blank = (IPatternObject) arg2;
-							return F.$p(symbol, blank.getHeadTest());
+							return F.$p(symbol, ((IPattern) arg2).getHeadTest());
 						}
-						if (arg2.size() == 1) {
-							if (arg2.isAST(F.Blank, 1)) {
-								return F.$p(symbol);
+						if (arg2.isAST()) {
+
+							if (arg2.size() == 1) {
+								if (arg2.isAST(F.Blank)) {
+									return F.$p(symbol);
+								}
+								if (arg2.isAST(F.BlankSequence)) {
+									return F.$ps(symbol, null, false, false);
+								}
+								if (arg2.isAST(F.BlankNullSequence)) {
+									return F.$ps(symbol, null, false, true);
+								}
+								if (arg2.isAST(F.OptionsPattern)) {
+									return F.$OptionsPattern(symbol);
+								}
+							} else if (arg2.size() == 2) {
+								IExpr first = arg2.first();
+								if (first.isAST()) {
+									first = engine.evalHoldPattern((IAST) first);
+								}
+								if (arg2.isAST(F.Blank)) {
+									return F.$p(symbol, first);
+								}
+								if (arg2.isAST(F.BlankSequence)) {
+									return F.$ps(symbol, first, false, false);
+								}
+								if (arg2.isAST(F.BlankNullSequence)) {
+									return F.$ps(symbol, first, false, true);
+								}
+								if (arg2.isAST(F.OptionsPattern)) {
+									return F.$OptionsPattern(symbol, first);
+								}
 							}
-							if (arg2.isAST(F.BlankSequence, 1)) {
-								return F.$ps(symbol, null, false, false);
-							}
-							if (arg2.isAST(F.BlankNullSequence, 1)) {
-								return F.$ps(symbol, null, false, true);
-							}
-							if (arg2.isAST(F.OptionsPattern, 1)) {
-								return F.$OptionsPattern(symbol);
-							}
-						} else if (arg2.size() == 2) {
-							if (arg2.isAST(F.Blank, 2)) {
-								return F.$p(symbol, arg2.first());
-							}
-							if (arg2.isAST(F.BlankSequence, 2)) {
-								return F.$ps(symbol, arg2.first(), false, false);
-							}
-							if (arg2.isAST(F.BlankNullSequence, 2)) {
-								return F.$ps(symbol, arg2.first(), false, true);
-							}
-							if (arg2.isAST(F.OptionsPattern, 2)) {
-								return F.$OptionsPattern(symbol, arg2.first());
-							}
+
+							arg2 = engine.evalHoldPattern((IAST) arg2);
 						}
+						return PatternNested.valueOf(symbol, arg2);
 					}
 				}
 			}
@@ -1540,66 +1184,9 @@ public final class PatternMatching {
 		}
 	}
 
-	/**
-	 * Put[{&lt;file name&gt;}}
-	 * 
-	 */
-	private final static class Put extends AbstractFunctionEvaluator {
+	public final static class Repeated extends AbstractCoreFunctionEvaluator {
+		public final static Repeated CONST = new Repeated();
 
-		@Override
-		public IExpr evaluate(final IAST ast, EvalEngine engine) {
-			if (Config.isFileSystemEnabled(engine)) {
-
-				final int argSize = ast.argSize();
-				if (!(ast.last() instanceof IStringX)) {
-					return IOFunctions.printMessage(F.Put, "string", F.List(), engine);
-				}
-				IStringX fileName = (IStringX) ast.last();
-				FileWriter writer = null;
-				try {
-
-					final StringBuilder buf = new StringBuilder();
-					for (int i = 1; i < argSize; i++) {
-						IExpr temp = engine.evaluate(ast.get(i));
-						if (!OutputFormFactory.get().convert(buf, temp)) {
-							return engine.printMessage("Put: file " + fileName.toString() + "ERROR-IN_OUTPUTFORM");
-						}
-						buf.append('\n');
-						if (i < argSize - 1) {
-							buf.append('\n');
-						}
-					}
-					writer = new FileWriter(fileName.toString());
-					writer.write(buf.toString());
-				} catch (IOException e) {
-					return engine.printMessage("Put: file " + fileName.toString() + " I/O exception !");
-				} finally {
-					if (writer != null) {
-						try {
-							writer.close();
-						} catch (IOException e) {
-							// TODO Auto-generated catch block
-							e.printStackTrace();
-						}
-					}
-				}
-				return F.Null;
-			}
-			return F.NIL;
-		}
-
-		@Override
-		public int[] expectedArgSize(IAST ast) {
-			return IOFunctions.ARGS_2_INFINITY;
-		}
-
-		@Override
-		public void setUp(ISymbol newSymbol) {
-			newSymbol.setAttributes(ISymbol.HOLDALL);
-		}
-	}
-
-	private final static class Repeated extends AbstractCoreFunctionEvaluator {
 		@Override
 		public IExpr evaluate(final IAST ast, EvalEngine engine) {
 			if (ast.head().equals(S.Repeated)) {
@@ -2039,7 +1626,7 @@ public final class PatternMatching {
 				IOFunctions.printMessage(F.SetDelayed, "wrsym", F.List(lhsSymbol), EvalEngine.get());
 				throw new FailedException();
 			}
-			lhsSymbol.assign(rightHandSide);
+			lhsSymbol.assignValue(rightHandSide);
 			return rightHandSide;
 		}
 
@@ -2068,7 +1655,7 @@ public final class PatternMatching {
 			return rightHandSide;
 		}
 		if (leftHandSide.isSymbol()) {
-			((ISymbol) leftHandSide).assign(rightHandSide);
+			((ISymbol) leftHandSide).assignValue(rightHandSide);
 			return rightHandSide;
 		}
 
@@ -2107,7 +1694,7 @@ public final class PatternMatching {
 				IOFunctions.printMessage(F.SetDelayed, "wrsym", F.List(lhsSymbol), EvalEngine.get());
 				throw new FailedException();
 			}
-			((ISymbol) leftHandSide).assign(rightHandSide);
+			((ISymbol) leftHandSide).assignValue(rightHandSide);
 			return;
 		}
 		throw new RuleCreationError(leftHandSide);
@@ -2122,7 +1709,7 @@ public final class PatternMatching {
 			return;
 		}
 		if (leftHandSide.isSymbol()) {
-			((ISymbol) leftHandSide).assign(rightHandSide);
+			((ISymbol) leftHandSide).assignValue(rightHandSide);
 			return;
 		}
 		throw new RuleCreationError(leftHandSide);
@@ -2137,6 +1724,13 @@ public final class PatternMatching {
 				ISymbol symbol = (ISymbol) arg1;
 				final IExpr leftHandSide = ast.arg2();
 				IExpr rightHandSide = ast.arg3();
+				try {
+					rightHandSide = engine.evaluate(rightHandSide);
+				} catch (final ConditionException e) {
+					// System.out.println("Condition[] in right-hand-side of Set[]");
+				} catch (final ReturnException e) {
+					rightHandSide = e.getValue();
+				}
 				if (symbol.isProtected()) {
 					IOFunctions.printMessage(F.SetDelayed, "write", F.List(symbol, leftHandSide), EvalEngine.get());
 					throw new FailedException();
@@ -2178,14 +1772,6 @@ public final class PatternMatching {
 			// }
 			int[] flags = new int[] { IPatternMatcher.NOFLAG };
 			leftHandSide = evalLHS(leftHandSide, flags, engine);
-
-			try {
-				rightHandSide = engine.evaluate(rightHandSide);
-			} catch (final ConditionException e) {
-				System.out.println("Condition[] in right-hand-side of UpSet[]");
-			} catch (final ReturnException e) {
-				rightHandSide = e.getValue();
-			}
 
 			result[0] = null; // IPatternMatcher
 			result[1] = rightHandSide;
@@ -2387,7 +1973,26 @@ public final class PatternMatching {
 					if (temp.isPresent()) {
 						return engine.evaluate(temp);
 					}
+					return F.NIL;
 				}
+
+				if (leftHandSide.isAST()) {
+					final ISymbol lhsSymbol = determineRuleTag(leftHandSide);
+					if (lhsSymbol.isProtected()) {
+						// Symbol `1` is Protected.
+						IOFunctions.printMessage(ast.topHead(), "wrsym", F.List(lhsSymbol), EvalEngine.get());
+						throw new FailedException();
+					}
+				}
+				if (leftHandSide.isSymbol()) {
+					final ISymbol lhsSymbol = (ISymbol) leftHandSide;
+					if (lhsSymbol.isProtected()) {
+						// Symbol `1` is Protected.
+						IOFunctions.printMessage(ast.topHead(), "wrsym", F.List(lhsSymbol), EvalEngine.get());
+						throw new FailedException();
+					}
+				}
+
 				removePatternMatcher(leftHandSide, engine.isPackageMode(), engine);
 				return F.Null;
 			} catch (RuleCreationError rce) {
@@ -2402,7 +2007,7 @@ public final class PatternMatching {
 			return IOFunctions.ARGS_1_1;
 		}
 
-		public void removePatternMatcher(IExpr leftHandSide, boolean packageMode, EvalEngine engine)
+		private static void removePatternMatcher(IExpr leftHandSide, boolean packageMode, EvalEngine engine)
 				throws RuleCreationError {
 
 			if (leftHandSide.isAST()) {
@@ -2411,7 +2016,7 @@ public final class PatternMatching {
 			removeRule(leftHandSide, packageMode);
 		}
 
-		public void removeRule(IExpr leftHandSide, boolean packageMode) {
+		private static void removeRule(IExpr leftHandSide, boolean packageMode) {
 			if (leftHandSide.isAST()) {
 				final ISymbol lhsSymbol = ((IAST) leftHandSide).topHead();
 				if (!lhsSymbol.removeRule(IPatternMatcher.SET, false, leftHandSide, packageMode)) {
@@ -2431,7 +2036,7 @@ public final class PatternMatching {
 			throw new RuleCreationError(leftHandSide);
 		}
 
-		private void printAssignmentNotFound(final IExpr leftHandSide) {
+		private static void printAssignmentNotFound(final IExpr leftHandSide) {
 			EvalEngine.get().printMessage("Assignment not found for: " + leftHandSide.toString());
 		}
 
@@ -2483,7 +2088,7 @@ public final class PatternMatching {
 			try {
 				rightHandSide = engine.evaluate(rightHandSide);
 			} catch (final ConditionException e) {
-				System.out.println("Condition[] in right-hand-side of UpSet[]");
+				// System.out.println("Condition[] in right-hand-side of UpSet[]");
 			} catch (final ReturnException e) {
 				rightHandSide = e.getValue();
 			}
@@ -2495,6 +2100,11 @@ public final class PatternMatching {
 			for (int i = 1; i < lhsAST.size(); i++) {
 				IExpr temp = lhsAST.get(i);
 				if (temp instanceof IPatternObject) {
+					IExpr headTest = ((IPatternObject) temp).getHeadTest();
+					if (headTest != null && headTest.isSymbol()) {
+						ISymbol lhsSymbol = (ISymbol) headTest;
+						result[0] = lhsSymbol.putUpRule(flags[0] | IPatternMatcher.UPSET, false, lhsAST, rightHandSide);
+					}
 					continue;
 				}
 				ISymbol lhsSymbol = null;
@@ -2539,10 +2149,6 @@ public final class PatternMatching {
 				EvalEngine engine) throws RuleCreationError {
 			final Object[] result = new Object[2];
 
-			// if (leftHandSide.isAST()
-			// && (((IAST) leftHandSide).getEvalFlags() & IAST.IS_FLATTENED_OR_SORTED_MASK) == IAST.NO_FLAG) {
-			// leftHandSide = engine.evalHoldPattern((IAST) leftHandSide);
-			// }
 			int[] flags = new int[] { IPatternMatcher.NOFLAG };
 			leftHandSide = evalLHS(leftHandSide, flags, engine);
 
@@ -2553,6 +2159,12 @@ public final class PatternMatching {
 			for (int i = 1; i < lhsAST.size(); i++) {
 				IExpr temp = lhsAST.get(i);
 				if (temp instanceof IPatternObject) {
+					IExpr headTest = ((IPatternObject) temp).getHeadTest();
+					if (headTest != null && headTest.isSymbol()) {
+						ISymbol lhsSymbol = (ISymbol) headTest;
+						result[0] = lhsSymbol.putUpRule(flags[0] | IPatternMatcher.UPSET_DELAYED, false, lhsAST,
+								rightHandSide);
+					}
 					continue;
 				}
 				ISymbol lhsSymbol = null;
@@ -2583,58 +2195,6 @@ public final class PatternMatching {
 			return engine.evalHoldPattern((IAST) leftHandSide);
 		}
 		return leftHandSide;
-	}
-
-	public static IExpr evaluatePackage(final List<ASTNode> node, final EvalEngine engine) {
-		IExpr temp;
-		int i = 0;
-		AST2Expr ast2Expr = new AST2Expr(engine.isRelaxedSyntax(), engine);
-		IExpr result = F.Null;
-		while (i < node.size()) {
-			temp = ast2Expr.convert(node.get(i++));
-			// if (temp.isAST()) {
-			// IAST ast = (IAST) temp;
-			// IExpr head = ast.head();
-			// if (ast.isASTSizeGE(F.BeginPackage, 2)) {
-			// String contextName = Validate.checkContextName(ast, 1);
-			// packageContext = engine.getContextPath().getContext(contextName);
-			// ISymbol endSymbol = F.EndPackage;
-			// for (int j = 2; j < ast.size(); j++) {
-			// // FileReader reader = new FileReader(ast.get(j).toString());
-			// BufferedReader reader = new BufferedReader(
-			// new InputStreamReader(new FileInputStream(ast.get(j).toString()), "UTF-8"));
-			// Get.loadPackage(engine, reader);
-			// reader.close();
-			// }
-			// i = addContextToPath(new ContextPath(packageContext), node, i, engine, endSymbol);
-			// continue;
-			// } else if (head.equals(F.Begin) && ast.size() >= 2) {
-			// String contextName = Validate.checkContextName(ast, 1);
-			// ISymbol endSymbol = F.End;
-			// i = addContextToPath(new ContextPath(contextName), node, i, engine, endSymbol);
-			// continue;
-			// }
-			// }
-			result = engine.evaluate(temp);
-		}
-		return result;
-	}
-
-	public static IExpr getFile(File file, EvalEngine engine) {
-		boolean packageMode = engine.isPackageMode();
-		try {
-			engine.setPackageMode(true);
-			String str = Files.asCharSource(file, Charset.defaultCharset()).read();
-			return Get.loadPackage(engine, str);
-		} catch (IOException e) {
-			if (FEConfig.SHOW_STACKTRACE) {
-				e.printStackTrace();
-			}
-			engine.printMessage("Get exception: " + e.getMessage());
-		} finally {
-			engine.setPackageMode(packageMode);
-		}
-		return F.Null;
 	}
 
 	public static void extractRules(IExpr x, IASTAppendable optionsPattern) {

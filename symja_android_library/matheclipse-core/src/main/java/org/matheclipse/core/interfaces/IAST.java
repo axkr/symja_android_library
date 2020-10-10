@@ -898,6 +898,21 @@ public interface IAST extends IExpr, Cloneable, Iterable<IExpr> {
 	 * @param key
 	 * @return
 	 */
+	default IAST getRule(String key) {
+		int index = indexOf(x -> x.isRuleAST() && x.first().equals(F.$str(key)));
+		if (index > 0) {
+			return (IAST) get(index);
+		}
+		return F.NIL;
+	}
+	
+	/**
+	 * Assuming this is a list of rules or an <code>IAssociation</code>. Return the first rule which equals the
+	 * <code>key</code> argument.
+	 * 
+	 * @param key
+	 * @return
+	 */
 	default IAST getRule(IExpr key) {
 		int index = indexOf(x -> x.isRuleAST() && x.first().equals(key));
 		if (index > 0) {

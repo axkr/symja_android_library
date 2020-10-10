@@ -130,8 +130,12 @@ public class ExprEvaluatorTests extends TestCase {
 				F.x_, //
 				F.y_, //
 				F.CEmptyList, //
-				F.assoc(F.List(F.Rule(F.a, F.C0), F.RuleDelayed(F.b, F.C1))), F.assoc(F.List()),
-				F.assoc(F.List(F.Rule(F.stringx("s1"), F.C0), F.RuleDelayed(F.stringx("s2"), F.C1))),
+				F.assoc(F.List(F.Rule(F.a, F.C0), F.RuleDelayed(F.b, F.C1))), F.assoc(F.List()), //
+				F.assoc(F.List(F.Rule(F.stringx("s1"), F.C0), F.RuleDelayed(F.stringx("s2"), F.C1))), //
+				SparseArrayExpr.newDenseList(F.List(F.C0, F.C0), F.C0), //
+				SparseArrayExpr.newDenseList(F.List(F.C0, F.C1, F.C0, F.C2), F.C0), //
+				SparseArrayExpr.newDenseList(F.List(F.List(F.C0, F.C0), F.List(F.C0, F.C0)), F.C0), //
+				SparseArrayExpr.newDenseList(F.List(F.List(F.C1, F.C0), F.List(F.C0, F.C1)), F.C0), //
 				F.List(F.List(F.C0)), //
 				F.List(F.List(F.C1)), //
 				F.List(F.List(F.CN1)), //
@@ -162,8 +166,12 @@ public class ExprEvaluatorTests extends TestCase {
 				F.CN3D2, //
 				F.C3D2, //
 				F.C3D4, //
-				F.QQ(Long.MAX_VALUE, 7L), F.QQ(Long.MIN_VALUE, 11L), F.QQ(7, Long.MAX_VALUE), F.QQ(11, Long.MAX_VALUE),
-				F.QQ(Long.MAX_VALUE, Long.MAX_VALUE), F.QQ(Long.MIN_VALUE, Long.MAX_VALUE), F.Slot2, //
+				F.QQ(Long.MAX_VALUE, 7L), //
+				F.QQ(Long.MIN_VALUE, 11L), //
+				F.QQ(7, Long.MAX_VALUE), //
+				F.QQ(11, Long.MAX_VALUE), F.QQ(Long.MAX_VALUE, Long.MAX_VALUE), //
+				F.QQ(Long.MIN_VALUE, Long.MAX_VALUE), //
+				F.Slot2, //
 				IQuantity.of(1.2, "m"), //
 				F.stringx(""), //
 				F.stringx("\\"), //
@@ -282,7 +290,6 @@ public class ExprEvaluatorTests extends TestCase {
 
 	@Override
 	protected void setUp() throws Exception {
-		// Config.FUZZ_TESTING = true;
 		Config.UNPROTECT_ALLOWED = false;
 		super.setUp();
 		// wait for initializing of Integrate() rules:
@@ -353,10 +360,10 @@ public class ExprEvaluatorTests extends TestCase {
 				F.CEmptyList, //
 				F.assoc(F.List(F.Rule(F.a, F.C0), F.RuleDelayed(F.b, F.C1))), F.assoc(F.List()), //
 				F.assoc(F.List(F.Rule(F.stringx("s1"), F.C0), F.RuleDelayed(F.stringx("s2"), F.C1))), //
-				SparseArrayExpr.newInstance(F.List(F.C0, F.C0), F.C0), //
-				SparseArrayExpr.newInstance(F.List(F.C0, F.C1, F.C0, F.C2), F.C0), //
-				SparseArrayExpr.newInstance(F.List(F.List(F.C0, F.C0), F.List(F.C0, F.C0)), F.C0), //
-				SparseArrayExpr.newInstance(F.List(F.List(F.C1, F.C0), F.List(F.C0, F.C1)), F.C0), //
+				SparseArrayExpr.newDenseList(F.List(F.C0, F.C0), F.C0), //
+				SparseArrayExpr.newDenseList(F.List(F.C0, F.C1, F.C0, F.C2), F.C0), //
+				SparseArrayExpr.newDenseList(F.List(F.List(F.C0, F.C0), F.List(F.C0, F.C0)), F.C0), //
+				SparseArrayExpr.newDenseList(F.List(F.List(F.C1, F.C0), F.List(F.C0, F.C1)), F.C0), //
 				F.List(F.List(F.C0)), //
 				F.List(F.List(F.C1)), //
 				F.List(F.List(F.CN1)), //
@@ -387,8 +394,13 @@ public class ExprEvaluatorTests extends TestCase {
 				F.CN3D2, //
 				F.C3D2, //
 				F.C3D4, //
-				F.QQ(Long.MAX_VALUE, 7L), F.QQ(Long.MIN_VALUE, 11L), F.QQ(7, Long.MAX_VALUE), F.QQ(11, Long.MAX_VALUE),
-				F.QQ(Long.MAX_VALUE, Long.MAX_VALUE), F.QQ(Long.MIN_VALUE, Long.MAX_VALUE), F.Slot2, //
+				F.QQ(Long.MAX_VALUE, 7L), //
+				F.QQ(Long.MIN_VALUE, 11L), //
+				F.QQ(7, Long.MAX_VALUE), //
+				F.QQ(11, Long.MAX_VALUE), //
+				F.QQ(Long.MAX_VALUE, Long.MAX_VALUE), //
+				F.QQ(Long.MIN_VALUE, Long.MAX_VALUE), //
+				F.Slot2, //
 				IQuantity.of(1.2, "m"), //
 				F.stringx(""), //
 				F.stringx("\\"), //
@@ -406,10 +418,13 @@ public class ExprEvaluatorTests extends TestCase {
 			for (int i = 0; i < functionStrs.length; i++) {
 				IBuiltInSymbol sym = (IBuiltInSymbol) F.symbol(functionStrs[i]);
 				if (sym == F.PolynomialGCD || //
+						sym == F.TestReport || //
+						sym == F.VerificationTest || //
 						sym == F.On || //
 						sym == F.Off || //
 						sym == F.Compile || //
 						sym == F.CompiledFunction || //
+						sym == F.FactorialPower || //
 						sym == F.Set || //
 						sym == F.SetDelayed || //
 						sym == F.UpSet || //
@@ -429,9 +444,15 @@ public class ExprEvaluatorTests extends TestCase {
 							generateASTs(sym, start, end, seedList, random, counter, (IFunctionEvaluator) evaluator,
 									engine);
 							continue;
+						} else {
+							int start = random.nextInt(argSize[0], 10);
+							generateASTs(sym, start, start + 4, seedList, random, counter,
+									(IFunctionEvaluator) evaluator, engine);
 						}
 					} else {
-						generateASTs(sym, 1, 5, seedList, random, counter, (IFunctionEvaluator) evaluator, engine);
+						int start = random.nextInt(1, 7);
+						generateASTs(sym, start, start + 4, seedList, random, counter, (IFunctionEvaluator) evaluator,
+								engine);
 					}
 				}
 			}
@@ -495,10 +516,10 @@ public class ExprEvaluatorTests extends TestCase {
 				F.CEmptyList, //
 				F.assoc(F.List(F.Rule(F.a, F.C0), F.RuleDelayed(F.b, F.C1))), F.assoc(F.List()), //
 				F.assoc(F.List(F.Rule(F.stringx("s1"), F.C0), F.RuleDelayed(F.stringx("s2"), F.C1))), //
-				SparseArrayExpr.newInstance(F.List(F.C0, F.C0), F.C0), //
-				SparseArrayExpr.newInstance(F.List(F.C0, F.C1, F.C0, F.C2), F.C0), //
-				SparseArrayExpr.newInstance(F.List(F.List(F.C0, F.C0), F.List(F.C0, F.C0)), F.C0), //
-				SparseArrayExpr.newInstance(F.List(F.List(F.C1, F.C0), F.List(F.C0, F.C1)), F.C0), //
+				SparseArrayExpr.newDenseList(F.List(F.C0, F.C0), F.C0), //
+				SparseArrayExpr.newDenseList(F.List(F.C0, F.C1, F.C0, F.C2), F.C0), //
+				SparseArrayExpr.newDenseList(F.List(F.List(F.C0, F.C0), F.List(F.C0, F.C0)), F.C0), //
+				SparseArrayExpr.newDenseList(F.List(F.List(F.C1, F.C0), F.List(F.C0, F.C1)), F.C0), //
 				F.List(F.List(F.C0)), //
 				F.List(F.List(F.C1)), //
 				F.List(F.List(F.CN1)), //
@@ -663,13 +684,5 @@ public class ExprEvaluatorTests extends TestCase {
 				}
 			}
 		}
-	}
-
-	private IAST generate(ISymbol sym, int numberOfArgs, IExpr arg) {
-		IASTAppendable ast = F.ast(sym);
-		for (int j = 0; j < numberOfArgs; j++) {
-			ast.append(arg);
-		}
-		return ast;
 	}
 }

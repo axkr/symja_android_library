@@ -75,6 +75,9 @@ public interface FunctionExpandRules {
     // PolyGamma(n_Integer,1/2):=(-1)^(n+1)*n!*(-1+2^(n+1))*Zeta(n+1)/;n>0
     SetDelayed(PolyGamma($p(n, Integer),C1D2),
       Condition(Times(Power(CN1,Plus(n,C1)),Factorial(n),Plus(CN1,Power(C2,Plus(n,C1))),Zeta(Plus(n,C1))),Greater(n,C0))),
+    // Abs(x_)^y_Integer:=x^y/;EvenQ(y)&&x∈Reals
+    SetDelayed(Power(Abs(x_),$p(y, Integer)),
+      Condition(Power(x,y),And(EvenQ(y),Element(x,Reals)))),
     // ProductLog(x_*Log(x_)):=Log(x)/;x>1/E
     SetDelayed(ProductLog(Times(Log(x_),x_)),
       Condition(Log(x),Greater(x,Exp(CN1)))),

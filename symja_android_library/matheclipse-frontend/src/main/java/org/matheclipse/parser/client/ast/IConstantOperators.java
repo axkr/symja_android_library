@@ -30,21 +30,26 @@ public interface IConstantOperators {
 	public final static String Association = "Association";
 
 	/**
+	 * Head for partial derivative
+	 */
+	public final static String Derivative = "Derivative";
+
+	/**
 	 * Head for lists (i.e. {a,b,c,...} )
 	 */
 	public final static String List = "List";
-	
+
 	public final static String Optional = "Optional";
-	
+
 	/**
 	 * Head for the Out history (needed for the % operator)
 	 */
 	public final static String Out = "Out";
 
 	public final static String Part = "Part";
-	
+
 	public final static String Pattern = "Pattern";
-	
+
 	public final static String Slot = "Slot";
 
 	public final static String Span = "Span";

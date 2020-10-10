@@ -836,4 +836,16 @@ public class ParserTestCase extends TestCase {
 			assertEquals("", e.getMessage());
 		}
 	}
+	
+	public void testParser59() {
+		try {
+			Parser p = new Parser();
+			ASTNode obj = p.parse("f[t_] = Simplify[ r'[t] / Norm[ r'[t] ], t ∈ Reals];");
+			assertEquals(obj.toString(), //
+					"CompoundExpression(Set(f(t_), Simplify(Times(Derivative(1)[r][t], Power(Norm(Derivative(1)[r][t]), -1)), Element(t, Reals))), Null)");
+		} catch (Exception e) {
+			e.printStackTrace();
+			assertEquals("", e.getMessage());
+		}
+	}
 }

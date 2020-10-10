@@ -1498,12 +1498,12 @@ public class SpecialFunctions {
 				return d;
 			}
 			try {
-				return F.num(ApfloatMath.w(new Apfloat(new BigDecimal(d.doubleValue()), Config.MACHINE_PRECISION)));
+				return F.num(ApfloatMath.w(new Apfloat(new BigDecimal(d.doubleValue()), FEConfig.MACHINE_PRECISION)));
 			} catch (Exception ce) {
 
 			}
 			return F.complexNum(
-					ApcomplexMath.w(new Apfloat(new BigDecimal(d.doubleValue()), Config.MACHINE_PRECISION)));
+					ApcomplexMath.w(new Apfloat(new BigDecimal(d.doubleValue()), FEConfig.MACHINE_PRECISION)));
 		}
 
 		@Override
@@ -1511,8 +1511,8 @@ public class SpecialFunctions {
 			if (arg1.isZero()) {
 				return arg1;
 			}
-			Apcomplex c = new Apcomplex(new Apfloat(new BigDecimal(arg1.getRealPart()), Config.MACHINE_PRECISION),
-					new Apfloat(new BigDecimal(arg1.getImaginaryPart()), Config.MACHINE_PRECISION));
+			Apcomplex c = new Apcomplex(new Apfloat(new BigDecimal(arg1.getRealPart()), FEConfig.MACHINE_PRECISION),
+					new Apfloat(new BigDecimal(arg1.getImaginaryPart()), FEConfig.MACHINE_PRECISION));
 			// if (Config.FUZZ_TESTING) {
 			// System.err.println(c.toString());
 			// }
@@ -1595,8 +1595,8 @@ public class SpecialFunctions {
 						if (z instanceof ComplexNum) {
 							ComplexNum cn = (ComplexNum) z;
 							Apcomplex c = new Apcomplex(
-									new Apfloat(new BigDecimal(cn.getRealPart()), Config.MACHINE_PRECISION),
-									new Apfloat(new BigDecimal(cn.getImaginaryPart()), Config.MACHINE_PRECISION));
+									new Apfloat(new BigDecimal(cn.getRealPart()), FEConfig.MACHINE_PRECISION),
+									new Apfloat(new BigDecimal(cn.getImaginaryPart()), FEConfig.MACHINE_PRECISION));
 							return F.complexNum(ApcomplexMath.w(c, ki));
 						}
 					}
@@ -1607,7 +1607,7 @@ public class SpecialFunctions {
 					if (z instanceof Num) {
 						Num n = (Num) z;
 						return F.complexNum(ApcomplexMath
-								.w(new Apfloat(new BigDecimal(n.doubleValue()), Config.MACHINE_PRECISION), ki));
+								.w(new Apfloat(new BigDecimal(n.doubleValue()), FEConfig.MACHINE_PRECISION), ki));
 					}
 				}
 			}

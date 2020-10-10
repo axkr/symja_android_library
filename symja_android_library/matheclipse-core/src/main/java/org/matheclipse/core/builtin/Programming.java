@@ -1980,7 +1980,7 @@ public final class Programming {
 	 * {1,2,3,4}[[3;;1]]
 	 * </pre>
 	 */
-	private final static class Part extends AbstractCoreFunctionEvaluator implements ISetEvaluator {
+	private final static class Part extends AbstractFunctionEvaluator implements ISetEvaluator {
 
 		@Override
 		public IExpr evaluate(final IAST ast, EvalEngine engine) {
@@ -2085,14 +2085,14 @@ public final class Programming {
 								IExpr res = Programming.assignPart(temp, part, 2, (IAST) rightHandSide, 1, engine);
 								if (res.isPresent()) {
 									// symbol.putDownRule(IPatternMatcher.SET, true, symbol, res, false);
-									symbol.assign(res);
+									symbol.assignValue(res);
 								}
 								return rightHandSide;
 							} else {
 								IExpr res = Programming.assignPart(temp, part, 2, rightHandSide, engine);
 								if (res.isPresent()) {
 									// symbol.putDownRule(IPatternMatcher.SET, true, symbol, res, false);
-									symbol.assign(res);
+									symbol.assignValue(res);
 								}
 								return rightHandSide;
 							}
@@ -2106,6 +2106,11 @@ public final class Programming {
 
 			}
 			return F.NIL;
+		}
+		
+		@Override
+		public void setUp(ISymbol newSymbol) {
+			newSymbol.setAttributes(ISymbol.NHOLDREST);
 		}
 	}
 
@@ -3210,7 +3215,7 @@ public final class Programming {
 		for (int i = 1; i < variablesList.size(); i++) {
 			if (variablesList.get(i).isSymbol()) {
 				variableSymbol = symbolList[i];
-				variableSymbol.assign(null);
+				variableSymbol.assignValue(null);
 				variableSymbol.setRulesData(null);
 			} else {
 				if (variablesList.get(i).isAST(F.Set, 3)) {
@@ -3218,7 +3223,7 @@ public final class Programming {
 					if (setFun.arg1().isSymbol()) {
 						variableSymbol = symbolList[i];
 						IExpr temp = engine.evaluate(setFun.arg2());
-						variableSymbol.assign(temp);
+						variableSymbol.assignValue(temp);
 						variableSymbol.setRulesData(null);
 					}
 				}
@@ -3382,13 +3387,13 @@ public final class Programming {
 							// Part `1` of `2` does not exist.
 							return IOFunctions.printMessage(F.Part, "partw", F.List(listArg, arg1), engine);
 						}
-						IExpr ires = getIndex(arg1, indx, engine);
+						IExpr ires = getIndexRule(arg1, indx, engine);
 						if (ires.isPresent()) {
 							if (p1 < ast.size()) {
 								if (ires.isAST()) {
 									temp = part((IAST) ires, ast, p1, engine);
 									if (temp.isPresent()) {
-										result.append(temp);
+										result.appendRule(temp);
 									} else {
 										// an error occurred
 										return F.NIL;
@@ -3398,7 +3403,7 @@ public final class Programming {
 									return IOFunctions.printMessage(F.Part, "partd", F.List(ires), engine);
 								}
 							} else {
-								result.append(ires);
+								result.appendRule(ires);
 							}
 						} else {
 							return F.NIL;
@@ -3483,9 +3488,12 @@ public final class Programming {
 		if (temp.isList()) {
 			IExpr res = part((IAST) temp, ast, pos, engine);
 			if (res.isList()) {
-				return SparseArrayExpr.newInstance((IAST) res, arg1.getDefaultValue());
+				ISparseArray sparseArray= SparseArrayExpr.newDenseList((IAST) res, arg1.getDefaultValue());
+				if (sparseArray!=null) {
+					return sparseArray;
+				}
 			}
-			return temp;
+			// return temp;
 		}
 
 		// The expression `1` cannot be used as a part specification.

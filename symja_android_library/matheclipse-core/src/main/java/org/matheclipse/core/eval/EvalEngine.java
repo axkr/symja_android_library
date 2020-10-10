@@ -128,7 +128,7 @@ public class EvalEngine implements Serializable {
 	 * @see ApcomplexNum
 	 */
 	public static boolean isApfloat(long precision) {
-		return precision > Config.MACHINE_PRECISION;
+		return precision > FEConfig.MACHINE_PRECISION;
 	}
 
 	/**
@@ -773,7 +773,7 @@ public class EvalEngine implements Serializable {
 				} else if (arg1.isAssociation()) {
 					// thread over the association
 					return ((IAssociation) arg1).mapThread(ast, 1);
-				} else if (arg1.isSparseArray()) { 
+				} else if (arg1.isSparseArray()) {
 					return ((ISparseArray) arg1).mapThread(ast, 1);
 				} else if (arg1.isConditionalExpression()) {
 					IExpr temp = ast.extractConditionalExpression(true);
@@ -792,7 +792,7 @@ public class EvalEngine implements Serializable {
 
 		if (!(arg1 instanceof IPatternObject) && arg1.isPresent()) {
 			ISymbol lhsSymbol = arg1.isSymbol() ? (ISymbol) arg1 : arg1.topHead();
-			return lhsSymbol.evalUpRule(this, ast);
+			return lhsSymbol.evalUpRules(ast, this);
 		}
 		return F.NIL;
 	}
@@ -944,7 +944,7 @@ public class EvalEngine implements Serializable {
 				}
 				int indx = tempAST.indexOf(x -> x.isAssociation());
 				if (indx > 0) {
-					return ((IAST) tempAST.get(indx)).mapThread(tempAST, indx);
+					return ((IAssociation) tempAST.get(indx)).mapThread(tempAST, indx);
 				}
 			}
 
@@ -992,13 +992,13 @@ public class EvalEngine implements Serializable {
 				for (int i = 1; i < localVariablesList.size(); i++) {
 					if (localVariablesList.get(i).isSymbol()) {
 						variableSymbol = symbolList[i];
-						variableSymbol.assign(blockVariables[i]);
+						variableSymbol.assignValue(blockVariables[i]);
 						variableSymbol.setRulesData(blockVariablesRulesData[i]);
 					} else if (localVariablesList.get(i).isAST(F.Set, 3)) {
 						final IAST setFun = (IAST) localVariablesList.get(i);
 						if (setFun.arg1().isSymbol()) {
 							variableSymbol = symbolList[i];
-							variableSymbol.assign(blockVariables[i]);
+							variableSymbol.assignValue(blockVariables[i]);
 							variableSymbol.setRulesData(blockVariablesRulesData[i]);
 						}
 					}
@@ -1559,7 +1559,7 @@ public class EvalEngine implements Serializable {
 		result[0] = F.NIL;
 		if (ast.exists(x -> {
 			if (!(x instanceof IPatternObject) && x.isPresent()) {
-				result[0] = x.topHead().evalUpRule(this, ast);
+				result[0] = x.topHead().evalUpRules(ast, this);
 				if (result[0].isPresent()) {
 					return true;
 				}
@@ -2206,17 +2206,26 @@ public class EvalEngine implements Serializable {
 	}
 
 	/**
-	 * Check if the <code>ApfloatNum</code> number type should be used instead of the <code>Num</code> type and the
-	 * <code>ApcomplexxNum</code> number type should be used instead of the <code>ComplexNum</code> type for numeric
-	 * evaluations.
+	 * Check if the engine is in arbitrary precision mode and that <code>ApfloatNum</code> number type should be used
+	 * instead of the <code>Num</code> type and the <code>ApcomplexxNum</code> number type should be used instead of the
+	 * <code>ComplexNum</code> type for numeric evaluations.
 	 * 
 	 * @return <code>true</code> if the required precision is greater than <code>EvalEngine.DOUBLE_PRECISION</code>
 	 * @see ApfloatNum
 	 * @see ApcomplexNum
-	 * @see isDoubleMode()
+	 * @see #isDoubleMode()
+	 */
+	public final boolean isArbitraryMode() {
+		return fNumericPrecision > FEConfig.MACHINE_PRECISION;
+	}
+
+	/**
+	 * 
+	 * @return
+	 * @deprecated use {@link #isArbitraryMode()}
 	 */
 	public final boolean isApfloatMode() {
-		return fNumericPrecision > Config.MACHINE_PRECISION;
+		return isArbitraryMode();
 	}
 
 	/**
@@ -2250,10 +2259,10 @@ public class EvalEngine implements Serializable {
 	/**
 	 * @return <code>true</code> if the EvalEngine runs in numeric mode and Java <code>double</code> numbers should be
 	 *         used for evaluating numeric functions.
-	 * @see #isApfloatMode()
+	 * @see #isArbitraryMode()
 	 */
 	public final boolean isDoubleMode() {
-		return fNumericMode && !isApfloatMode();
+		return fNumericMode && !isArbitraryMode();
 	}
 
 	/**
@@ -2706,14 +2715,32 @@ public class EvalEngine implements Serializable {
 	 * @return the resulting ast with the <code>argHead</code> threaded into each ast argument or <code>F.NIL</code>
 	 */
 	public IASTMutable threadASTListArgs(final IASTMutable ast) {
-
+		ISymbol[] head = new ISymbol[] { null };
 		int[] listLength = new int[] { -1 };
 		if (ast.exists(x -> {
 			if (x.isList()) {
+				if (head[0] == null) {
+					head[0] = S.List;
+				}
 				if (listLength[0] < 0) {
 					listLength[0] = ((IAST) x).argSize();
 				} else {
 					if (listLength[0] != ((IAST) x).argSize()) {
+						// Objects of unequal length in `1` cannot be combined.
+						IOFunctions.printMessage(F.Thread, "tdlen", F.List(ast), EvalEngine.get());
+						// ast.addEvalFlags(IAST.IS_LISTABLE_THREADED);
+						return true;
+					}
+				}
+			} else if (x.isSparseArray()) {
+				if (head[0] == null) {
+					head[0] = S.SparseArray;
+				}
+				ISparseArray sp = (ISparseArray) x;
+				if (listLength[0] < 0) {
+					listLength[0] = sp.getDimension()[0];
+				} else {
+					if (listLength[0] != sp.getDimension()[0]) {
 						// Objects of unequal length in `1` cannot be combined.
 						IOFunctions.printMessage(F.Thread, "tdlen", F.List(ast), EvalEngine.get());
 						// ast.addEvalFlags(IAST.IS_LISTABLE_THREADED);
@@ -2726,7 +2753,7 @@ public class EvalEngine implements Serializable {
 			return F.NIL;
 		}
 		if (listLength[0] != -1) {
-			IASTMutable result = EvalAttributes.threadList(ast, F.List, ast.head(), listLength[0]);
+			IASTMutable result = EvalAttributes.threadList(ast, head[0], ast.head(), listLength[0]);
 			result.addEvalFlags(IAST.IS_LISTABLE_THREADED);
 			return result;
 		}

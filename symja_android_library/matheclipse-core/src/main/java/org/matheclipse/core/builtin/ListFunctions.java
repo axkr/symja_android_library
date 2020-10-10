@@ -42,6 +42,7 @@ import org.matheclipse.core.expression.ASTAssociation;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.expression.S;
 import org.matheclipse.core.expression.data.DispatchExpr;
+import org.matheclipse.core.expression.data.SparseArrayExpr;
 import org.matheclipse.core.generic.Comparators;
 import org.matheclipse.core.generic.Functors;
 import org.matheclipse.core.generic.Predicates;
@@ -55,6 +56,7 @@ import org.matheclipse.core.interfaces.IInteger;
 import org.matheclipse.core.interfaces.IIterator;
 import org.matheclipse.core.interfaces.INumber;
 import org.matheclipse.core.interfaces.ISignedNumber;
+import org.matheclipse.core.interfaces.ISparseArray;
 import org.matheclipse.core.interfaces.ISymbol;
 import org.matheclipse.core.patternmatching.IPatternMatcher;
 import org.matheclipse.core.reflection.system.Product;
@@ -657,7 +659,7 @@ public final class ListFunctions {
 			public IExpr apply(final IExpr symbolValue) {
 				if (symbolValue.isAssociation()) {
 					if (value.isRuleAST() || value.isListOfRules() || value.isAssociation()) {
-						IAssociation result = ((IAssociation) symbolValue).copy();
+						IAssociation result = ((IAssociation) symbolValue);
 						result.appendRules((IAST) value);
 						return result;
 					} else {
@@ -3038,8 +3040,13 @@ public final class ListFunctions {
 
 		@Override
 		public IExpr evaluate(final IAST ast, EvalEngine engine) {
-			if (ast.exists(x -> x.isAtom())) {
-				return F.NIL;
+			int index = ast.indexOf(x -> x.isAtom() && !x.isSparseArray());
+			if (index > 0) {
+				// Nonatomic expression expected at position `1` in `2`.
+				return IOFunctions.printMessage(ast.topHead(), "normal", F.List(F.ZZ(index), ast), engine);
+			}
+			if (ast.size() == 2) {
+				return ast.arg1();
 			}
 
 			int astSize = ast.size();
@@ -3047,32 +3054,88 @@ public final class ListFunctions {
 			IExpr head = null;
 			IAST temp;
 			boolean isAssociation = false;
+			boolean isSparseArray = false;
+			boolean useNormal = false;
 			for (int i = 1; i < astSize; i++) {
-				temp = (IAST) ast.get(i);
+				IExpr arg = ast.get(i);
+				if (arg.isSparseArray()) {
+					isSparseArray = true;
+					if (head == S.List || useNormal) {
+						useNormal = true;
+						continue;
+					}
+					if (i > 1 && !isSparseArray) {
+						// incompatible elements in `1` cannot be joined.
+						return IOFunctions.printMessage(ast.topHead(), "incpt", F.List(ast), engine);
+					}
+					continue;
+				}
+
+				useNormal = true;
+				temp = (IAST) arg;
 				size += temp.argSize();
 				if (head == null) {
 					head = temp.head();
 					isAssociation = temp.isAssociation();
 				} else {
 					if (!head.equals(temp.head())) {
+						// incompatible elements in `1` cannot be joined.
 						return IOFunctions.printMessage(ast.topHead(), "incpt", F.List(ast), engine);
 					}
 					if (temp.isAssociation() != isAssociation) {
+						// incompatible elements in `1` cannot be joined.
 						return IOFunctions.printMessage(ast.topHead(), "incpt", F.List(ast), engine);
 					}
 				}
 
 			}
 			if (isAssociation) {
+				if (isSparseArray) {
+					// incompatible elements in `1` cannot be joined.
+					return IOFunctions.printMessage(ast.topHead(), "incpt", F.List(ast), engine);
+				}
 				final IAssociation result = F.assoc(F.CEmptyList);
 				for (int i = 1; i < ast.size(); i++) {
-					result.appendRules((IAST) ast.get(i));
+					IExpr arg = ast.get(i);
+					result.appendRules((IAST) arg);
+				}
+				return result;
+			}
+			if (isSparseArray && !useNormal) {
+				ISparseArray result = (ISparseArray) ast.arg1();
+				int[] dim1 = result.getDimension();
+				IExpr defaultValue1 = result.getDefaultValue();
+				if (dim1.length != 2) {
+					return F.NIL;
+				}
+				for (int i = 2; i < ast.size(); i++) {
+					ISparseArray arg = (ISparseArray) ast.get(i);
+					int[] dim = arg.getDimension();
+					if (dim.length != dim1.length) {
+						return F.NIL;
+					}
+					if (dim[dim.length - 1] != dim1[dim.length - 1]) {
+						return F.NIL;
+					}
+					if (!defaultValue1.equals(arg.getDefaultValue())) {
+						return F.NIL;
+					}
+				}
+				for (int i = 2; i < ast.size(); i++) {
+					ISparseArray arg = (ISparseArray) ast.get(i);
+					result = result.join(arg);
 				}
 				return result;
 			}
 			final IASTAppendable result = F.ast(head, size, false);
 			for (int i = 1; i < ast.size(); i++) {
-				result.appendArgs((IAST) ast.get(i));
+				IExpr arg = ast.get(i);
+				if (arg.isSparseArray()) {
+					if (useNormal) {
+						arg = arg.normal(false);
+					}
+				}
+				result.appendArgs((IAST) arg);
 			}
 			return result;
 		}
@@ -4339,7 +4402,7 @@ public final class ListFunctions {
 			public IExpr apply(final IExpr symbolValue) {
 				if (symbolValue.isAssociation()) {
 					if (value.isRuleAST() || value.isListOfRules() || value.isAssociation()) {
-						IAssociation result = ((IAssociation) symbolValue).copy();
+						IAssociation result = ((IAssociation) symbolValue);
 						result.prependRules((IAST) value);
 						return result;
 					} else {
@@ -6578,7 +6641,7 @@ public final class ListFunctions {
 		public IExpr evaluate(final IAST ast, EvalEngine engine) {
 			try {
 				VisitorLevelSpecification level = null;
-				Function<IExpr, IExpr> tf = x -> x.isAST() ? ((IAST) x).setAtCopy(0, F.Plus) : x;
+				Function<IExpr, IExpr> tf = x -> x.isAST() ? ((IAST) x).setAtCopy(0, S.Plus) : x;
 
 				if (ast.isAST2()) {
 					level = new TotalLevelSpecification(tf, ast.arg2(), false, engine);
@@ -6587,10 +6650,23 @@ public final class ListFunctions {
 					level = new TotalLevelSpecification(tf, 1, false);
 				}
 
-				if (ast.arg1().isAST()) {
+				IExpr arg1 = ast.arg1();
+				if (arg1.isSparseArray()) {
+					ISparseArray sparseArray = (ISparseArray) arg1;
+					if (ast.isAST2()) {
+						int[] dims = sparseArray.getDimension();
+						IExpr arg2 = ast.arg2();
+						if (arg2.isInfinity() || //
+								arg2.toIntDefault() >= dims.length) {
+							return sparseArray.total(S.Plus);
+						}
+					}
+					arg1 = sparseArray.normal(false);
+				}
+				if (arg1.isAST()) {
 					// increment level because we select only subexpressions
 					level.incCurrentLevel();
-					IExpr temp = ((IAST) ast.arg1()).copyAST().accept(level);
+					IExpr temp = ((IAST) arg1).copyAST().accept(level);
 					if (temp.isPresent()) {
 						boolean te = engine.isThrowError();
 						try {

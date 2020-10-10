@@ -17,7 +17,6 @@ import org.commonmark.renderer.html.HtmlRenderer;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.form.Documentation;
 
-import com.google.common.base.Charsets;
 import com.google.common.io.Files;
 
 /**
@@ -49,7 +48,7 @@ public class MarkdownToHTML {
 							try {
 								Set<Extension> EXTENSIONS = Collections.singleton(TablesExtension.create());
 								Parser parser = Parser.builder().extensions(EXTENSIONS).build();
-								Node document = parser.parse(Files.asCharSource(file, Charsets.UTF_8).read());
+								Node document = parser.parse(Files.asCharSource(file, StandardCharsets.UTF_8).read());
 								HtmlRenderer renderer = HtmlRenderer.builder().extensions(EXTENSIONS).build();
 								html = renderer.render(document);
 								if (javadoc) {

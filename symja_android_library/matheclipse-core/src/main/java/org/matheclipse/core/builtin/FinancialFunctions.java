@@ -74,15 +74,24 @@ public class FinancialFunctions {
 			}
 			if (ast.size() == 3) {
 				final IExpr b = ast.arg2();
-				int dim = a.isVector();
-				if (dim >= 0) {
+				int length = a.isVector();
+				if (length >= 0) {
 					IExpr normal = a.normal(false);
 					if (normal.isList()) {
 						return ((IAST) normal).map(x -> effectiveInterestFormula(x, b));
 					}
 					return F.NIL;
 				}
-				return effectiveInterestFormula(a, b);
+				int[] dim = a.isMatrix(false);
+				if (dim != null) {
+					if (dim[1] == 2) {
+						IExpr normal = a.normal(false);
+					}
+					return F.NIL;
+				}
+				if (!a.isList()) {
+					return effectiveInterestFormula(a, b);
+				}
 			}
 			return F.NIL;
 		}

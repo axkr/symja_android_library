@@ -392,7 +392,7 @@ public class Algebra {
 		 *            <code>a^(-x+y)</code> into numerator <code>a^y</code> and denominator <code>a^x</code>
 		 * @return the numerator and denominator expression
 		 */
-		public static IExpr[] fractionalPartsPower(final IAST powerAST, boolean trig, boolean splitPowerPlusExponents) {
+		private static IExpr[] fractionalPartsPower(final IAST powerAST, boolean trig, boolean splitPowerPlusExponents) {
 			IExpr[] parts = new IExpr[2];
 			parts[0] = F.C1;
 

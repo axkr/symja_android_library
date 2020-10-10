@@ -908,12 +908,12 @@ public class SymbolicPolynomialRing implements RingFactory<SymbolicPolynomial> {
 			// ModIntegerRing mn = (ModIntegerRing) ((Object) coFac);
 			// res = "Mod " + mn.getModul() + " ";
 			// }
-			if (res == null) {
-				res = coFac.toString();
-				if (res.matches("[0-9].*")) {
-					res = scf;
-				}
+			// if (res == null) {
+			res = coFac.toString();
+			if (res.matches("[0-9].*")) {
+				res = scf;
 			}
+			// }
 			res += "( " + varsToString() + " ) " + tord.toString() + " ";
 		} else {
 			res = this.getClass().getSimpleName() + "[ " + coFac.toString() + " ";
@@ -1657,7 +1657,7 @@ public class SymbolicPolynomialRing implements RingFactory<SymbolicPolynomial> {
 					continue;
 				}
 				if (pol.val.get(f) != null) {
-					System.out.println("error f in pol = " + f + ", " + pol.getMap().get(f));
+					// System.out.println("error f in pol = " + f + ", " + pol.getMap().get(f));
 					throw new RuntimeException("error in iterator");
 				}
 				pol.doPutToMap(f, c);

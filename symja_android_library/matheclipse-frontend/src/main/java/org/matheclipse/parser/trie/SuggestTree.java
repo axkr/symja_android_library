@@ -744,32 +744,32 @@ public class SuggestTree {
 		}
 	}
 
-	public static void main(String[] args) {
-		SuggestTree st = new SuggestTree(10);
-
-		st.put("data", 1);
-		st.put("tables", 1);
-		st.put("order", 1);
-		st.put("ascending", 1);
-		st.put("descending", 1);
-		st.put("select", 1);
-		st.put("select-options", 1);
-		st.put("selection", 1);
-		st.put("from", 1);
-		st.put("endif", 1);
-		st.put("endwhile", 1);
-		st.put("exit", 1);
-		st.put("return", 1);
-		st.put("enddo", 1);
-		st.put("endcase", 1);
-
-		Node n = st.getAutocompleteSuggestions("sel");
-		if (n != null) {
-			for (int i = 0; i < n.listLength(); i++) {
-				System.out.println(n.getSuggestion(i).getTerm());
-			}
-		}
-
-	}
+	// public static void main(String[] args) {
+	// SuggestTree st = new SuggestTree(10);
+	//
+	// st.put("data", 1);
+	// st.put("tables", 1);
+	// st.put("order", 1);
+	// st.put("ascending", 1);
+	// st.put("descending", 1);
+	// st.put("select", 1);
+	// st.put("select-options", 1);
+	// st.put("selection", 1);
+	// st.put("from", 1);
+	// st.put("endif", 1);
+	// st.put("endwhile", 1);
+	// st.put("exit", 1);
+	// st.put("return", 1);
+	// st.put("enddo", 1);
+	// st.put("endcase", 1);
+	//
+	// Node n = st.getAutocompleteSuggestions("sel");
+	// if (n != null) {
+	// for (int i = 0; i < n.listLength(); i++) {
+	// System.out.println(n.getSuggestion(i).getTerm());
+	// }
+	// }
+	//
+	// }
 
 }

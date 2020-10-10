@@ -30,7 +30,7 @@ public class ClusteringFunctions {
 
 	private static abstract class AbstractDistance extends AbstractEvaluator implements DistanceMeasure {
 
-		public abstract IExpr distance(IAST a, IAST b);
+		public abstract IExpr distance(IExpr a, IExpr b);
 
 		@Override
 		public IExpr evaluate(final IAST ast, EvalEngine engine) {
@@ -63,7 +63,7 @@ public class ClusteringFunctions {
 					}
 				}
 			}
-			return distance((IAST) arg1, (IAST) arg2);
+			return distance(arg1, arg2);
 		}
 
 		@Override
@@ -93,11 +93,11 @@ public class ClusteringFunctions {
 
 		protected IExpr vectorDistance(IExpr arg1, IExpr arg2, EvalEngine engine) {
 			// don't call numeric case here!
-			return distance((IAST) arg1, (IAST) arg2);
+			return distance(arg1, arg2);
 		}
 
 		@Override
-		public IExpr distance(IAST a, IAST b) {
+		public IExpr distance(IExpr a, IExpr b) {
 			return a.equals(b) ? F.C1 : F.C0;
 		}
 	}
@@ -134,7 +134,7 @@ public class ClusteringFunctions {
 		}
 
 		@Override
-		public IExpr distance(IAST a, IAST b) {
+		public IExpr distance(IExpr a, IExpr b) {
 			return F.Divide(F.Total(F.Abs(F.Subtract(a, b))), F.Total(F.Abs(F.Plus(a, b))));
 		}
 
@@ -167,7 +167,7 @@ public class ClusteringFunctions {
 		}
 
 		@Override
-		public IAST distance(IAST a, IAST b) {
+		public IAST distance(IExpr a, IExpr b) {
 			return F.Total(F.Divide(F.Abs(F.Subtract(a, b)), F.Plus(F.Abs(a), F.Abs(b))));
 		}
 
@@ -205,9 +205,11 @@ public class ClusteringFunctions {
 		}
 
 		@Override
-		public IExpr distance(IAST a, IAST b) {
+		public IExpr distance(IExpr a, IExpr b) {
+			IAST vect1 = (IAST) a.normal(false);
+			IAST vect2 = (IAST) b.normal(false);
 			IASTAppendable maxAST = F.Max();
-			return maxAST.appendArgs(a.size(), i -> F.Abs(F.Subtract(a.get(i), b.get(i))));
+			return maxAST.appendArgs(a.size(), i -> F.Abs(F.Subtract(vect1.get(i), vect2.get(i))));
 		}
 
 		@Override
@@ -245,7 +247,7 @@ public class ClusteringFunctions {
 		}
 
 		@Override
-		public IExpr distance(IAST arg1, IAST arg2) {
+		public IExpr distance(IExpr arg1, IExpr arg2) {
 			return F.Subtract(F.C1, F.Divide(F.Dot(arg1, arg2), F.Times(F.Norm(arg1), F.Norm(arg2))));
 		}
 
@@ -285,10 +287,12 @@ public class ClusteringFunctions {
 		}
 
 		@Override
-		public IExpr distance(IAST a, IAST b) {
+		public IExpr distance(IExpr a, IExpr b) {
+			IAST vect1 = (IAST) a.normal(false);
+			IAST vect2 = (IAST) b.normal(false);
 			int size = a.size();
 			IASTAppendable plusAST = F.PlusAlloc(size);
-			plusAST.appendArgs(size, i -> F.Sqr(F.Abs(F.Subtract(a.get(i), b.get(i)))));
+			plusAST.appendArgs(size, i -> F.Sqr(F.Abs(F.Subtract(vect1.get(i), vect2.get(i)))));
 			return F.Sqrt(plusAST);
 		}
 	}
@@ -465,10 +469,12 @@ public class ClusteringFunctions {
 		}
 
 		@Override
-		public IExpr distance(IAST a, IAST b) {
+		public IExpr distance(IExpr a, IExpr b) {
+			IAST vect1 = (IAST) a.normal(false);
+			IAST vect2 = (IAST) b.normal(false);
 			int size = a.size();
 			IASTAppendable plusAST = F.PlusAlloc(size);
-			return plusAST.appendArgs(size, i -> F.Abs(F.Subtract(a.get(i), b.get(i))));
+			return plusAST.appendArgs(size, i -> F.Abs(F.Subtract(vect1.get(i), vect2.get(i))));
 		}
 
 	}
@@ -503,10 +509,12 @@ public class ClusteringFunctions {
 		}
 
 		@Override
-		public IExpr distance(IAST a, IAST b) {
+		public IExpr distance(IExpr a, IExpr b) {
+			IAST vect1 = (IAST) a.normal(false);
+			IAST vect2 = (IAST) b.normal(false);
 			int size = a.size();
 			IASTAppendable plusAST = F.PlusAlloc(size);
-			return plusAST.appendArgs(size, i -> F.Sqr(F.Abs(F.Subtract(a.get(i), b.get(i)))));
+			return plusAST.appendArgs(size, i -> F.Sqr(F.Abs(F.Subtract(vect1.get(i), vect2.get(i)))));
 		}
 
 		@Override

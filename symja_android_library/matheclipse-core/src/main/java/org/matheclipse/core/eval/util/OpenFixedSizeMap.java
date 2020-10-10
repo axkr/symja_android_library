@@ -46,17 +46,13 @@ public class OpenFixedSizeMap<K, V> extends AbstractMap<K, V> implements Map<K, 
 	}
 
 	@Override
-	public OpenFixedSizeMap<K, V> clone() {
-		OpenFixedSizeMap<K, V> result = null;
-		try {
-			result = (OpenFixedSizeMap<K, V>) super.clone();
-			result.table = new Object[table.length];
-			result.size = size;
-			for (int i = 0; i < table.length; i++) {
-				result.table[i] = table[i];
-			}
-		} catch (CloneNotSupportedException e) {
-		}
+	public OpenFixedSizeMap<K, V> clone() throws CloneNotSupportedException {
+		OpenFixedSizeMap<K, V> result = (OpenFixedSizeMap<K, V>) super.clone(); 
+		result.table = new Object[table.length];
+		result.size = size;
+		for (int i = 0; i < table.length; i++) {
+			result.table[i] = table[i];
+		} 
 		return result;
 	}
 

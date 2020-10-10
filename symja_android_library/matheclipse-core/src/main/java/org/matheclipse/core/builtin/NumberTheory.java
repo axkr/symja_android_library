@@ -1545,12 +1545,10 @@ public final class NumberTheory {
 
 					// The list of all Euler numbers as a vector, n=0,2,4,....
 					ArrayList<IInteger> a = new ArrayList<IInteger>();
-					if (a.size() == 0) {
-						a.add(F.C1);
-						a.add(F.C1);
-						a.add(F.C5);
-						a.add(AbstractIntegerSym.valueOf(61));
-					}
+					a.add(F.C1);
+					a.add(F.C1);
+					a.add(F.C5);
+					a.add(AbstractIntegerSym.valueOf(61));
 
 					IInteger eulerE = eulerE(a, n);
 					if (n > 0) {
@@ -1967,7 +1965,21 @@ public final class NumberTheory {
 
 		@Override
 		public IExpr evaluate(final IAST ast, EvalEngine engine) {
+			IExpr x = ast.arg1();
 			IExpr n = ast.arg2();
+			if (ast.isAST2()) {
+				if (x.isInteger() && n.isInteger() && x.isNonNegativeResult() && n.isNonNegativeResult()) {
+					if (((IInteger) x).isLT((IInteger) n)) {
+						return F.C0;
+					}
+					if (((IInteger) x).equals((IInteger) n)) {
+						if (x.isZero()) {
+							return F.C1;
+						}
+						return x;
+					}
+				}
+			}
 			int ni = n.toIntDefault();
 			if (ni >= 0) {
 				if (Config.MAX_AST_SIZE < ni) {
@@ -1985,7 +1997,7 @@ public final class NumberTheory {
 
 			if (ast.isAST2()) {
 				IExpr result = F.C1;
-				IExpr x = ast.arg1();
+
 				// x*(x-1)* (x-(n-1))
 				if (engine.evalTrue(F.Less(n, F.C0))) {
 					return F.NIL;
@@ -1994,19 +2006,45 @@ public final class NumberTheory {
 				} else if (n.isOne()) {
 					return x;
 				} else {
-					double real = x.evalComplex().getReal();
-					double dN = n.evalDouble();
-					double i = real - dN + 1;
-					while (real >= i) {
-						result = result.multiply(x);
-						x = x.dec();
-						real--;
+					if (engine.isDoubleMode()) {
+						double real = Double.NaN;
+						try {
+							real = x.evalDouble();
+						} catch (ArgumentTypeException ate) {
+							Complex temp = x.evalComplex();
+							if (temp == null) {
+								return F.NIL;
+							}
+							real = temp.getReal();
+						}
+						if (Double.isNaN(real)) {
+							return F.NIL;
+						}
+						double dN = n.evalDouble();
+						double i = real - dN + 1;
+						while (real >= i) {
+							result = result.multiply(x);
+							x = x.dec();
+							real--;
+						}
+						return result;
+					} else if (x.isExactNumber() && n.isRational()) {
+						IRational real = (IRational) ((INumber) x).re();
+						IRational dN = (IRational) n;
+						IRational i = real.subtract(dN).inc();
+						while (real.isGE(i)) {
+							result = result.multiply(x);
+							x = x.dec();
+							real = real.dec();
+						}
+						return result;
 					}
-					return result;
 				}
-			} else if (ast.isAST3()) {
+				return F.NIL;
+			}
+
+			if (ast.isAST3()) {
 				IExpr result = F.C1;
-				IExpr x = ast.arg1();
 				IExpr h = ast.arg3();
 				// x*(x-h)* (x-(n-1)*h)
 				if (engine.evalTrue(F.Less(n, F.C0))) {
@@ -2016,29 +2054,70 @@ public final class NumberTheory {
 				} else if (n.isOne()) {
 					return x;
 				} else {
-					double real = x.evalComplex().getReal();
-					double dN = n.evalDouble();
-					double doubleH = h.evalDouble();
-					if (h.isZero()) {
-						while (engine.evalTrue(F.Greater(n, F.C0))) {
-							result = result.multiply(x);
-							n = n.dec();
+					if (engine.isDoubleMode()) {
+						double real = Double.NaN;
+						try {
+							real = x.evalDouble();
+						} catch (ArgumentTypeException ate) {
+							Complex temp = x.evalComplex();
+							if (temp == null) {
+								return F.NIL;
+							}
+							real = temp.getReal();
 						}
-						return result;
-					} else if (engine.evalTrue(F.Greater(h, F.C0))) {
-						double i = real - (dN - 1) * doubleH;
-						while (real >= i) {
-							result = result.multiply(x);
-							x = x.minus(h);
-							real -= doubleH;
+						if (Double.isNaN(real)) {
+							return F.NIL;
 						}
-						return result;
-					} else {
-						double i = real - (dN - 1) * doubleH;
-						while (real <= i) {
+						double dN = n.evalDouble();
+						double doubleH = h.evalDouble();
+						if (h.isZero()) {
+							while (engine.evalTrue(F.Greater(n, F.C0))) {
+								result = result.multiply(x);
+								n = n.dec();
+							}
+							return result;
+						} else if (engine.evalTrue(F.Greater(h, F.C0))) {
+							double i = real - (dN - 1) * doubleH;
+							while (real >= i) {
+								result = result.multiply(x);
+								x = x.minus(h);
+								real -= doubleH;
+							}
+							return result;
+						} else {
+							double i = real - (dN - 1) * doubleH;
+							while (real <= i) {
+								result = result.multiply(x);
+								x = x.minus(h);
+								real -= doubleH;
+							}
+							return result;
+						}
+					} else if (x.isExactNumber() && n.isRational() && h.isRational()) {
+						IRational real = (IRational) ((INumber) x).re();
+						IRational dN = (IRational) n;
+						IRational H = (IRational) h;
+						if (H.isZero()) {
+							while (dN.isGT(F.C0)) {
+								result = result.multiply(x);
+								dN = dN.dec();
+							}
+							return result;
+						}
+						if (H.isGT(F.C0)) {
+							IRational i = real.subtract(dN.dec().multiply(H));
+							while (real.isGE(i)) {
+								result = result.multiply(x);
+								x = x.minus(H);
+								real = real.subtract(H);
+							}
+							return result;
+						}
+						IRational i = real.subtract(dN.dec().multiply(H));
+						while (real.isLE(i)) {
 							result = result.multiply(x);
-							x = x.minus(h);
-							real -= doubleH;
+							x = x.minus(H);
+							real = real.subtract(H);
 						}
 						return result;
 					}
@@ -2286,10 +2365,12 @@ public final class NumberTheory {
 				int n = ((IInteger) arg1).toIntDefault(Integer.MIN_VALUE);
 				if (n > Integer.MIN_VALUE) {
 					if (ast.isAST2()) {
-						if (ast.arg2().isQuantity()) {
-							return F.NIL;
+						if (ast.arg2().isSymbol() || //
+								ast.arg2().isNumber() || //
+								ast.arg2().isAST()) {
+							return fibonacciPolynomialIterative(n, ast.arg2(), ast, engine);
 						}
-						return fibonacciPolynomialIterative(n, ast.arg2(), ast, engine);
+						return F.NIL;
 					}
 					return fibonacci(n);
 				}

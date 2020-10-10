@@ -346,8 +346,8 @@ public class StatisticsFunctions {
 
 		@Override
 		public IExpr e2DblComArg(final IComplexNum a, final IComplexNum b) {
-			ApcomplexNum a1 = a.apcomplexNumValue(Config.MACHINE_PRECISION);
-			ApcomplexNum b1 = b.apcomplexNumValue(Config.MACHINE_PRECISION);
+			ApcomplexNum a1 = a.apcomplexNumValue(FEConfig.MACHINE_PRECISION);
+			ApcomplexNum b1 = b.apcomplexNumValue(FEConfig.MACHINE_PRECISION);
 			Apcomplex agm = ApcomplexMath.agm(a1.apcomplexValue(), b1.apcomplexValue());
 			return F.complex(agm.real().doubleValue(), agm.imag().doubleValue());
 			// IComplexNum a1 = a;
@@ -694,7 +694,7 @@ public class StatisticsFunctions {
 				//
 				IExpr a = dist.arg1();
 				IExpr b = dist.arg2();
-				if (!engine.isApfloatMode() && //
+				if (!engine.isArbitraryMode() && //
 						(a.isNumericArgument() || b.isNumericArgument() || k.isNumericArgument())) {
 					try {
 						return F.num(new org.hipparchus.distribution.continuous.BetaDistribution(a.evalDouble(),
@@ -721,7 +721,7 @@ public class StatisticsFunctions {
 				//
 				IExpr a = dist.arg1();
 				IExpr b = dist.arg2();
-				if (!engine.isApfloatMode() && //
+				if (!engine.isArbitraryMode() && //
 						(a.isNumericArgument() || b.isNumericArgument() || k.isNumericArgument())) {
 					try {
 						return F.num(new org.hipparchus.distribution.continuous.BetaDistribution(a.evalDouble(),
@@ -812,7 +812,7 @@ public class StatisticsFunctions {
 				//
 				IExpr a = dist.arg1();
 				IExpr b = dist.arg2();
-				if (!engine.isApfloatMode() && //
+				if (!engine.isArbitraryMode() && //
 						(a.isNumericArgument() || b.isNumericArgument() || k.isNumericArgument())) {
 					try {
 						return F.num(new org.hipparchus.distribution.continuous.BetaDistribution(a.evalDouble(),
@@ -1239,7 +1239,7 @@ public class StatisticsFunctions {
 		public IExpr cdf(IAST dist, IExpr k, EvalEngine engine) {
 			if (dist.isAST1()) {
 				IExpr v = dist.arg1();
-				if (!engine.isApfloatMode() && //
+				if (!engine.isArbitraryMode() && //
 						(v.isNumericArgument() || k.isNumericArgument())) {
 					try {
 						return F.num(new org.hipparchus.distribution.continuous.ChiSquaredDistribution(v.evalDouble()) //
@@ -1263,7 +1263,7 @@ public class StatisticsFunctions {
 		public IExpr inverseCDF(IAST dist, IExpr k, EvalEngine engine) {
 			if (dist.isAST1()) {
 				IExpr v = dist.arg1();
-				if (!engine.isApfloatMode() && //
+				if (!engine.isArbitraryMode() && //
 						(v.isNumericArgument() || k.isNumericArgument())) {
 					try {
 						return F.num(new org.hipparchus.distribution.continuous.ChiSquaredDistribution(v.evalDouble()) //
@@ -1291,7 +1291,7 @@ public class StatisticsFunctions {
 		public IExpr pdf(IAST dist, IExpr k, EvalEngine engine) {
 			if (dist.isAST1()) {
 				IExpr v = dist.arg1();
-				if (!engine.isApfloatMode() && //
+				if (!engine.isArbitraryMode() && //
 						(v.isNumericArgument() || k.isNumericArgument())) {
 					try {
 						return F.num(new org.hipparchus.distribution.continuous.ChiSquaredDistribution(v.evalDouble()) //
@@ -1538,7 +1538,7 @@ public class StatisticsFunctions {
 			if (dist.isAST2()) {
 				IExpr n = dist.arg1();
 				IExpr m = dist.arg2();
-				if (!engine.isApfloatMode() && //
+				if (!engine.isArbitraryMode() && //
 						(n.isNumericArgument() || m.isNumericArgument() || k.isNumericArgument())) {
 					try {
 						return F.num(
@@ -1564,7 +1564,7 @@ public class StatisticsFunctions {
 			if (dist.isAST2()) {
 				IExpr n = dist.arg1();
 				IExpr m = dist.arg2();
-				if (!engine.isApfloatMode() && //
+				if (!engine.isArbitraryMode() && //
 						(n.isNumericArgument() || m.isNumericArgument() || k.isNumericArgument())) {
 					try {
 						return F.num(
@@ -1595,7 +1595,7 @@ public class StatisticsFunctions {
 			if (dist.isAST2()) {
 				IExpr n = dist.arg1();
 				IExpr m = dist.arg2();
-				if (!engine.isApfloatMode() && //
+				if (!engine.isArbitraryMode() && //
 						(n.isNumericArgument() || m.isNumericArgument() || k.isNumericArgument())) {
 					try {
 						return F.num(
@@ -1847,7 +1847,7 @@ public class StatisticsFunctions {
 				//
 				IExpr a = dist.arg1();
 				IExpr b = dist.arg2();
-				if (!engine.isApfloatMode() && //
+				if (!engine.isArbitraryMode() && //
 						(a.isNumericArgument() || b.isNumericArgument() || k.isNumericArgument())) {
 					try {
 						return F.num(new org.hipparchus.distribution.continuous.GammaDistribution(a.evalDouble(),
@@ -1892,7 +1892,7 @@ public class StatisticsFunctions {
 				//
 				IExpr a = dist.arg1();
 				IExpr b = dist.arg2();
-				if (!engine.isApfloatMode() && //
+				if (!engine.isArbitraryMode() && //
 						(a.isNumericArgument() || b.isNumericArgument() || k.isNumericArgument())) {
 					try {
 						return F.num(new org.hipparchus.distribution.continuous.GammaDistribution(a.evalDouble(),
@@ -2018,7 +2018,7 @@ public class StatisticsFunctions {
 				//
 				IExpr a = dist.arg1();
 				IExpr b = dist.arg2();
-				if (!engine.isApfloatMode() && //
+				if (!engine.isArbitraryMode() && //
 						(a.isNumericArgument() || b.isNumericArgument() || k.isNumericArgument())) {
 					try {
 						return F.num(new org.hipparchus.distribution.continuous.GammaDistribution(a.evalDouble(),
@@ -2406,7 +2406,7 @@ public class StatisticsFunctions {
 			if (dist.isAST2()) {
 				IExpr n = dist.arg1();
 				IExpr m = dist.arg2();
-				if (!engine.isApfloatMode() && //
+				if (!engine.isArbitraryMode() && //
 						(n.isNumericArgument() || m.isNumericArgument() || k.isNumericArgument())) {
 					try {
 						final double z = (k.evalDouble() - n.evalDouble()) / m.evalDouble();
@@ -2432,7 +2432,7 @@ public class StatisticsFunctions {
 			if (dist.isAST2()) {
 				IExpr n = dist.arg1();
 				IExpr m = dist.arg2();
-				if (!engine.isApfloatMode() && //
+				if (!engine.isArbitraryMode() && //
 						(n.isNumericArgument() || m.isNumericArgument() || k.isNumericArgument())) {
 					try {
 						double p = k.evalDouble();
@@ -3337,7 +3337,7 @@ public class StatisticsFunctions {
 		public IExpr cdf(IAST dist, IExpr k, EvalEngine engine) {
 			if (dist.isAST1()) {
 				IExpr n = dist.arg1();
-				if (!engine.isApfloatMode() && //
+				if (!engine.isArbitraryMode() && //
 						(n.isNumericArgument() || k.isNumericArgument())) {
 					try {
 						double x = k.evalDouble();
@@ -3366,7 +3366,7 @@ public class StatisticsFunctions {
 		public IExpr inverseCDF(IAST dist, IExpr k, EvalEngine engine) {
 			if (dist.isAST1()) {
 				IExpr n = dist.arg1();
-				if (!engine.isApfloatMode() && //
+				if (!engine.isArbitraryMode() && //
 						(n.isNumericArgument() || k.isNumericArgument())) {
 					try {
 						double x = k.evalDouble();
@@ -3669,7 +3669,7 @@ public class StatisticsFunctions {
 				IExpr n = dist.arg1();
 				IExpr m = dist.arg2();
 				//
-				if (!engine.isApfloatMode() && //
+				if (!engine.isArbitraryMode() && //
 						(n.isNumericArgument() || m.isNumericArgument() || k.isNumericArgument())) {
 					try {
 						return F.num(new org.hipparchus.distribution.continuous.LogNormalDistribution(n.evalDouble(),
@@ -3698,7 +3698,7 @@ public class StatisticsFunctions {
 			if (dist.isAST2()) {
 				IExpr n = dist.arg1();
 				IExpr m = dist.arg2();
-				if (!engine.isApfloatMode() && //
+				if (!engine.isArbitraryMode() && //
 						(n.isNumericArgument() || m.isNumericArgument() || k.isNumericArgument())) {
 					try {
 						return F.num(new org.hipparchus.distribution.continuous.LogNormalDistribution(n.evalDouble(),
@@ -3730,7 +3730,7 @@ public class StatisticsFunctions {
 				IExpr n = dist.arg1();
 				IExpr m = dist.arg2();
 				//
-				if (!engine.isApfloatMode() && //
+				if (!engine.isArbitraryMode() && //
 						(n.isNumericArgument() || m.isNumericArgument() || k.isNumericArgument())) {
 					try {
 						return F.num(new org.hipparchus.distribution.continuous.LogNormalDistribution(n.evalDouble(),
@@ -4187,7 +4187,7 @@ public class StatisticsFunctions {
 			if (dist.isAST2()) {
 				IExpr n = dist.arg1();
 				IExpr m = dist.arg2();
-				if (!engine.isApfloatMode() && //
+				if (!engine.isArbitraryMode() && //
 						(n.isNumericArgument() || m.isNumericArgument() || k.isNumericArgument())) {
 					try {
 						return F.num(new org.hipparchus.distribution.continuous.NakagamiDistribution(n.evalDouble(),
@@ -4213,7 +4213,7 @@ public class StatisticsFunctions {
 			if (dist.isAST2()) {
 				IExpr n = dist.arg1();
 				IExpr m = dist.arg2();
-				if (!engine.isApfloatMode() && //
+				if (!engine.isArbitraryMode() && //
 						(n.isNumericArgument() || m.isNumericArgument() || k.isNumericArgument())) {
 					try {
 						return F.num(new org.hipparchus.distribution.continuous.NakagamiDistribution(n.evalDouble(),
@@ -4244,7 +4244,7 @@ public class StatisticsFunctions {
 				IExpr n = dist.arg1();
 				IExpr m = dist.arg2();
 				//
-				if (!engine.isApfloatMode() && //
+				if (!engine.isArbitraryMode() && //
 						(n.isNumericArgument() || m.isNumericArgument() || k.isNumericArgument())) {
 					try {
 						return F.num(new org.hipparchus.distribution.continuous.NakagamiDistribution(n.evalDouble(),
@@ -4425,7 +4425,7 @@ public class StatisticsFunctions {
 				//
 				IExpr n = dist.arg1();
 				IExpr m = dist.arg2();
-				if (!engine.isApfloatMode() && //
+				if (!engine.isArbitraryMode() && //
 						(n.isNumericArgument() || m.isNumericArgument() || k.isNumericArgument())) {
 					try {
 						return F.num(new org.hipparchus.distribution.continuous.NormalDistribution(n.evalDouble(),
@@ -4456,7 +4456,7 @@ public class StatisticsFunctions {
 			} else if (dist.isAST2()) {
 				IExpr n = dist.arg1();
 				IExpr m = dist.arg2();
-				if (!engine.isApfloatMode() && //
+				if (!engine.isArbitraryMode() && //
 						(n.isNumericArgument() || m.isNumericArgument() || k.isNumericArgument())) {
 					try {
 						return F.num(new org.hipparchus.distribution.continuous.NormalDistribution(n.evalDouble(),
@@ -4487,7 +4487,7 @@ public class StatisticsFunctions {
 				//
 				IExpr n = dist.arg1();
 				IExpr m = dist.arg2();
-				if (!engine.isApfloatMode() && //
+				if (!engine.isArbitraryMode() && //
 						(n.isNumericArgument() || m.isNumericArgument() || k.isNumericArgument())) {
 					try {
 						return F.num(new org.hipparchus.distribution.continuous.NormalDistribution(n.evalDouble(),
@@ -4942,7 +4942,11 @@ public class StatisticsFunctions {
 
 					int dim1 = list.argSize();
 					try {
-						if (dim1 >= 0 && ast.size() >= 3) {
+						if (dim1==0) {
+							// Argument `1` should be a non-empty list.
+							return IOFunctions.printMessage(ast.topHead(), "empt", F.List(list), engine);
+						}
+						if (dim1 > 0 && ast.size() >= 3) {
 
 							final IAST s = EvalAttributes.copySortLess(list);
 							final IInteger length = F.ZZ(s.argSize());
@@ -5455,7 +5459,7 @@ public class StatisticsFunctions {
 		public IExpr cdf(IAST dist, IExpr k, EvalEngine engine) {
 			if (dist.isAST1()) {
 				IExpr n = dist.arg1();
-				if (!engine.isApfloatMode() && //
+				if (!engine.isArbitraryMode() && //
 						(n.isNumericArgument() || k.isNumericArgument())) {
 					try {
 						return F.num(new org.hipparchus.distribution.continuous.TDistribution(n.evalDouble()) //
@@ -5486,7 +5490,7 @@ public class StatisticsFunctions {
 		public IExpr inverseCDF(IAST dist, IExpr k, EvalEngine engine) {
 			if (dist.isAST1()) {
 				IExpr n = dist.arg1();
-				if (!engine.isApfloatMode() && //
+				if (!engine.isArbitraryMode() && //
 						(n.isNumericArgument() || k.isNumericArgument())) {
 					try {
 						return F.num(new org.hipparchus.distribution.continuous.TDistribution(n.evalDouble()) //
@@ -5530,7 +5534,7 @@ public class StatisticsFunctions {
 			if (dist.isAST1()) {
 				IExpr n = dist.arg1();
 				//
-				if (!engine.isApfloatMode() && //
+				if (!engine.isArbitraryMode() && //
 						(n.isNumericArgument() || k.isNumericArgument())) {
 					try {
 						return F.num(new org.hipparchus.distribution.continuous.TDistribution(n.evalDouble()) //
@@ -5739,7 +5743,7 @@ public class StatisticsFunctions {
 			if (minMax != null) {
 				IExpr a = minMax[0];
 				IExpr b = minMax[1];
-				if (!engine.isApfloatMode() && //
+				if (!engine.isArbitraryMode() && //
 						(a.isNumericArgument() || b.isNumericArgument() || k.isNumericArgument())) {
 					try {
 						return F.num(new org.hipparchus.distribution.continuous.UniformRealDistribution(a.evalDouble(),
@@ -5767,7 +5771,7 @@ public class StatisticsFunctions {
 			if (minMax != null) {
 				IExpr a = minMax[0];
 				IExpr b = minMax[1];
-				if (!engine.isApfloatMode() && //
+				if (!engine.isArbitraryMode() && //
 						(a.isNumericArgument() || b.isNumericArgument() || k.isNumericArgument())) {
 					try {
 						return F.num(new org.hipparchus.distribution.continuous.UniformRealDistribution(a.evalDouble(),
@@ -6028,7 +6032,7 @@ public class StatisticsFunctions {
 				IExpr n = dist.arg1();
 				IExpr m = dist.arg2();
 				//
-				if (!engine.isApfloatMode() && //
+				if (!engine.isArbitraryMode() && //
 						(n.isNumericArgument() || m.isNumericArgument() || k.isNumericArgument())) {
 					try {
 						return F.num(new org.hipparchus.distribution.continuous.WeibullDistribution(n.evalDouble(),
@@ -6058,7 +6062,7 @@ public class StatisticsFunctions {
 			if (dist.isAST2()) {
 				IExpr n = dist.arg1();
 				IExpr m = dist.arg2();
-				if (!engine.isApfloatMode() && //
+				if (!engine.isArbitraryMode() && //
 						(n.isNumericArgument() || m.isNumericArgument() || k.isNumericArgument())) {
 					try {
 						return F.num(new org.hipparchus.distribution.continuous.WeibullDistribution(n.evalDouble(),
@@ -6091,7 +6095,7 @@ public class StatisticsFunctions {
 				IExpr n = dist.arg1();
 				IExpr m = dist.arg2();
 				//
-				if (!engine.isApfloatMode() && //
+				if (!engine.isArbitraryMode() && //
 						(n.isNumericArgument() || m.isNumericArgument() || k.isNumericArgument())) {
 					try {
 						return F.num(new org.hipparchus.distribution.continuous.WeibullDistribution(n.evalDouble(),

@@ -32,12 +32,10 @@ public class SerializeInspect {
         return gson.toJson(object, type);
     }
     public void saveToFile(String json){
-        try {
-            File file = new File("beakerx_inspect.json");
-            FileWriter fileWriter = new FileWriter(file);
+    	File file = new File("beakerx_inspect.json");
+        try(FileWriter fileWriter = new FileWriter(file)) {
             fileWriter.write(json);
             fileWriter.flush();
-            fileWriter.close();
         } catch (IOException e) {
             e.printStackTrace();
         }

@@ -222,14 +222,27 @@ public class ExprParser extends Scanner {
 				}
 				break;
 
-			case ID.Pattern:
-				expr = PatternMatching.Pattern.CONST.evaluate(ast, fEngine);
-				break;
-
 			case ID.Blank:
 				expr = PatternMatching.Blank.CONST.evaluate(ast, fEngine);
 				break;
-
+			case ID.BlankSequence:
+				expr = PatternMatching.BlankSequence.CONST.evaluate(ast, fEngine);
+				break;
+			case ID.BlankNullSequence:
+				expr = PatternMatching.BlankNullSequence.CONST.evaluate(ast, fEngine);
+				break;
+			case ID.Pattern:
+				expr = PatternMatching.Pattern.CONST.evaluate(ast, fEngine);
+				break;
+			case ID.Optional:
+				expr = PatternMatching.Optional.CONST.evaluate(ast, fEngine);
+				break;
+			// case ID.OptionsPattern:
+			// expr = PatternMatching.OptionsPattern.CONST.evaluate(ast, fEngine);
+			// break;
+			case ID.Repeated:
+				expr = PatternMatching.Repeated.CONST.evaluate(ast, fEngine);
+				break;
 			case ID.Complex:
 				expr = Arithmetic.CONST_COMPLEX.evaluate(ast, fEngine);
 				break;
@@ -937,17 +950,23 @@ public class ExprParser extends Scanner {
 					if (isValidPosition() && fInputString[fCurrentPosition] == '`') {
 						fCurrentPosition += 2;
 						long precision = getJavaLong();
-						if (precision < Config.MACHINE_PRECISION) {
-							precision = Config.MACHINE_PRECISION;
+						if (precision < FEConfig.MACHINE_PRECISION) {
+							precision = FEConfig.MACHINE_PRECISION;
 						}
 						return F.num(new Apfloat(number, precision));
 					} else {
 						fCurrentPosition++;
-						long precision = getJavaLong();
-						if (precision < Config.MACHINE_PRECISION) {
-							precision = Config.MACHINE_PRECISION;
+						long precision = FEConfig.MACHINE_PRECISION;
+						if (isValidPosition() && Character.isDigit(fInputString[fCurrentPosition])) {
+							precision = getJavaLong();
+							if (precision < FEConfig.MACHINE_PRECISION) {
+								precision = FEConfig.MACHINE_PRECISION;
+							}
+							return F.num(new Apfloat(number, precision));
+						} else {
+							getNextToken();
+							return F.num(number);
 						}
-						return F.num(new Apfloat(number, precision));
 					}
 				}
 				temp = new NumStr(number);
@@ -956,7 +975,7 @@ public class ExprParser extends Scanner {
 				temp = F.ZZ(number, numFormat);
 				// temp = fFactory.createInteger(number, numFormat);
 			}
-		} catch (final Throwable e) {
+		} catch (final RuntimeException rex) {
 			throwSyntaxError("Number format error: " + number, number.length());
 		}
 		getNextToken();
@@ -1493,7 +1512,7 @@ public class ExprParser extends Scanner {
 
 	private final IExpr parsePostfixOperator(IExpr lhs, PostfixExprOperator postfixOperator) {
 		getNextToken();
-		lhs = postfixOperator.createFunction(fFactory, lhs);
+		lhs = convert(postfixOperator.createFunction(fFactory, lhs));
 		lhs = parseArguments(lhs);
 		return lhs;
 	}
@@ -1552,7 +1571,7 @@ public class ExprParser extends Scanner {
 							// rhs =
 							// F.$(F.$s(postfixOperator.getFunctionName()),
 							// rhs);
-							rhs = postfixOperator.createFunction(fFactory, rhs);
+							rhs = convert(postfixOperator.createFunction(fFactory, rhs));
 							continue;
 						}
 					}

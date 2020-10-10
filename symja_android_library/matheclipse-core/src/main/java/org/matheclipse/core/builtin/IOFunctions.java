@@ -5,12 +5,12 @@ import java.util.ArrayList;
 import java.util.List;
 
 import org.apache.commons.lang3.StringUtils;
+import org.matheclipse.core.basic.Config;
 import org.matheclipse.core.convert.AST2Expr;
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.interfaces.AbstractCoreFunctionEvaluator;
 import org.matheclipse.core.eval.interfaces.AbstractEvaluator;
 import org.matheclipse.core.eval.interfaces.AbstractFunctionEvaluator;
-import org.matheclipse.core.expression.AST2;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.expression.S;
 import org.matheclipse.core.form.output.OutputFormFactory;
@@ -304,6 +304,7 @@ public class IOFunctions {
 			"dmval",
 			"Input value `1` lies outside the range of data in the interpolating function. Extrapolation will be used.",
 			"drop", "Cannot drop positions `1` through `2` in `3`.", //
+			"empt", "Argument `1` should be a non-empty list.", //
 			"eqf", "`1` is not a well-formed equation.", //
 			"exact", "Argument `1` is not an exact number.", //
 			"exdims", "The dimensions cannot be determined from the position `1`.", //
@@ -359,8 +360,10 @@ public class IOFunctions {
 			"The expression `1` is not a valid interval.", //
 			"notunicode",
 			"A character unicode, which should be a non-negative integer less than 1114112, is expected at position `2` in `1`.", //
+			"noprime", "There are no primes in the specified interval.", //
 			"noval", "Symbol `1` in part assignment does not have an immediate value.", //
 			"nsmet", "This system cannot be solved with the methods available to `1`", //
+			"nvm", "The first Norm argument should be a scalar, vector or matrix.", //
 			"openx", "`1` is not open.", //
 			"optb", "Optional object `1` in `2` is not a single blank.", //
 			"optnf", "Option name `2` not found in defaults for `1`", //
@@ -447,10 +450,12 @@ public class IOFunctions {
 	}
 
 	/**
+	 * Format a message according to the shortcut from the <code>MESSAGES</code> array and print it to the error stream
+	 * with the <code>engine.printMessage()</code>method.
 	 * 
 	 * @param symbol
 	 * @param messageShortcut
-	 *            the message shortcut defined in <code>MESSAGES</code> array
+	 *            the message shortcut defined in the <code>MESSAGES</code> array
 	 * @param listOfArgs
 	 *            a list of arguments which should be inserted into the message shortcuts placeholder
 	 * @param engine
@@ -522,14 +527,15 @@ public class IOFunctions {
 	}
 
 	/**
-	 * Shorten the output string generated from <code>expr</code> to a maximum length of <code>80</code> characters.
-	 * Print <<SHORT>> as substitute of the middle of the expression if necessary.
+	 * Shorten the output string generated from <code>expr</code> to a maximum length of
+	 * <code>Config.SHORTEN_STRING_LENGTH</code> characters. Print <<SHORT>> as substitute of the middle of the
+	 * expression if necessary.
 	 * 
 	 * @param expr
 	 * @return
 	 */
 	public static String shorten(IExpr expr) {
-		return shorten(expr, 80);
+		return shorten(expr, Config.SHORTEN_STRING_LENGTH);
 	}
 
 	/**

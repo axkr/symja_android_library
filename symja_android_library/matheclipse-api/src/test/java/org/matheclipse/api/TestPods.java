@@ -1542,36 +1542,64 @@ public class TestPods {
 		final String jsonStr = messageJSON.toPrettyString();
 		if (s.contains("Windows")) {
 			assertEquals(jsonStr, //
-					"{\r\n" + "  \"queryresult\" : {\r\n" + "    \"success\" : \"true\",\r\n"
-							+ "    \"error\" : \"false\",\r\n" + "    \"numpods\" : 5,\r\n"
-							+ "    \"version\" : \"0.1\",\r\n" + "    \"pods\" : [ {\r\n"
-							+ "      \"title\" : \"Input\",\r\n" + "      \"scanner\" : \"Identity\",\r\n"
-							+ "      \"error\" : \"false\",\r\n" + "      \"numsubpods\" : 1,\r\n"
-							+ "      \"subpods\" : [ {\r\n" + "        \"plaintext\" : \"{1,2,3,4,5}\",\r\n"
-							+ "        \"sinput\" : \"{1,2,3,4,5}\",\r\n"
-							+ "        \"latex\" : \"\\\\{1,2,3,4,5\\\\}\"\r\n" + "      } ]\r\n" + "    }, {\r\n"
-							+ "      \"title\" : \"Total\",\r\n" + "      \"scanner\" : \"List\",\r\n"
-							+ "      \"error\" : \"false\",\r\n" + "      \"numsubpods\" : 1,\r\n"
-							+ "      \"subpods\" : [ {\r\n" + "        \"plaintext\" : \"15\",\r\n"
-							+ "        \"sinput\" : \"Total({1,2,3,4,5})\",\r\n" + "        \"latex\" : \"15\"\r\n"
-							+ "      } ]\r\n" + "    }, {\r\n" + "      \"title\" : \"Vector length\",\r\n"
-							+ "      \"scanner\" : \"List\",\r\n" + "      \"error\" : \"false\",\r\n"
-							+ "      \"numsubpods\" : 1,\r\n" + "      \"subpods\" : [ {\r\n"
-							+ "        \"plaintext\" : \"7.416198487095663\",\r\n"
-							+ "        \"sinput\" : \"N(Norm({1,2,3,4,5}))\",\r\n"
-							+ "        \"latex\" : \"7.4162\"\r\n" + "      } ]\r\n" + "    }, {\r\n"
-							+ "      \"title\" : \"Normalized vector\",\r\n" + "      \"scanner\" : \"List\",\r\n"
-							+ "      \"error\" : \"false\",\r\n" + "      \"numsubpods\" : 1,\r\n"
-							+ "      \"subpods\" : [ {\r\n"
-							+ "        \"plaintext\" : \"{1/Sqrt(55),2/Sqrt(55),3/Sqrt(55),4/Sqrt(55),Sqrt(5/11)}\",\r\n"
-							+ "        \"sinput\" : \"Normalize({1,2,3,4,5})\",\r\n"
-							+ "        \"latex\" : \"\\\\{{55}^{\\\\frac{-1}{2}},\\\\frac{2}{\\\\sqrt{55}},\\\\frac{3}{\\\\sqrt{55}},\\\\frac{4}{\\\\sqrt{55}},\\\\sqrt{\\\\frac{5}{11}}\\\\}\"\r\n"
-							+ "      } ]\r\n" + "    }, {\r\n" + "      \"title\" : \"Plot points\",\r\n"
-							+ "      \"scanner\" : \"Plotter\",\r\n" + "      \"error\" : \"false\",\r\n"
-							+ "      \"numsubpods\" : 1,\r\n" + "      \"subpods\" : [ {\r\n"
-							+ "        \"sinput\" : \"ListPlot({1.0,2.0,3.0,4.0,5.0})\",\r\n"
-							+ "        \"jsxgraph\" : \"<iframe srcdoc=\\\"&lt;?xml version=&quot;1.0&quot; encoding=&quot;UTF-8&quot;?&gt;\\n\\n&lt;!DOCTYPE html PUBLIC\\n  &quot;-//W3C//DTD XHTML 1.1 plus MathML 2.0 plus SVG 1.1//EN&quot;\\n  &quot;http://www.w3.org/2002/04/xhtml-math-svg/xhtml-math-svg.dtd&quot;&gt;\\n\\n&lt;html xmlns=&quot;http://www.w3.org/1999/xhtml&quot; style=&quot;width: 100%; height: 100%; margin: 0; padding: 0&quot;&gt;\\n&lt;head&gt;\\n&lt;meta charset=&quot;utf-8&quot;&gt;\\n&lt;title&gt;JSXGraph&lt;/title&gt;\\n\\n&lt;body style=&quot;width: 100%; height: 100%; margin: 0; padding: 0&quot;&gt;\\n\\n&lt;link rel=&quot;stylesheet&quot; type=&quot;text/css&quot; href=&quot;https://cdnjs.cloudflare.com/ajax/libs/jsxgraph/1.1.0/jsxgraph.min.css&quot; /&gt;\\n&lt;script src=&quot;https://cdn.jsdelivr.net/gh/paulmasson/math@1.3.0/build/math.js&quot;&gt;&lt;/script&gt;\\n&lt;script src=&quot;https://cdnjs.cloudflare.com/ajax/libs/jsxgraph/1.1.0/jsxgraphcore.min.js&quot;\\n        type=&quot;text/javascript&quot;&gt;&lt;/script&gt;\\n&lt;script src=&quot;https://cdnjs.cloudflare.com/ajax/libs/jsxgraph/1.1.0/geonext.min.js&quot;\\n        type=&quot;text/javascript&quot;&gt;&lt;/script&gt;\\n\\n&lt;div id=&quot;jxgbox&quot; class=&quot;jxgbox&quot; style=&quot;display: flex; width:99%; height:99%; margin: 0; flex-direction: column; overflow: hidden&quot;&gt;\\n&lt;script&gt;\\nvar board = JXG.JSXGraph.initBoard('jxgbox', {axis:true,boundingbox:[-0.3,5.2,6.3,0.8]});\\nboard.suspendUpdate();\\n\\nboard.create('point', [function() {return 1;},function() {return 1.0;}],  {color:'#5e81b5' ,name:'', face:'o', size: 2 } );\\nboard.create('point', [function() {return 2;},function() {return 2.0;}],  {color:'#5e81b5' ,name:'', face:'o', size: 2 } );\\nboard.create('point', [function() {return 3;},function() {return 3.0;}],  {color:'#5e81b5' ,name:'', face:'o', size: 2 } );\\nboard.create('point', [function() {return 4;},function() {return 4.0;}],  {color:'#5e81b5' ,name:'', face:'o', size: 2 } );\\nboard.create('point', [function() {return 5;},function() {return 5.0;}],  {color:'#5e81b5' ,name:'', face:'o', size: 2 } );\\n\\n\\nboard.unsuspendUpdate();\\n\\n&lt;/script&gt;\\n&lt;/div&gt;\\n\\n&lt;/body&gt;\\n&lt;/html&gt;\\\" style=\\\"display: block; width: 100%; height: 100%; border: none;\\\" ></iframe>\"\r\n"
-							+ "      } ]\r\n" + "    } ]\r\n" + "  }\r\n" + "}");//
+					"{\r\n" + 
+					"  \"queryresult\" : {\r\n" + 
+					"    \"success\" : \"true\",\r\n" + 
+					"    \"error\" : \"false\",\r\n" + 
+					"    \"numpods\" : 5,\r\n" + 
+					"    \"version\" : \"0.1\",\r\n" + 
+					"    \"pods\" : [ {\r\n" + 
+					"      \"title\" : \"Input\",\r\n" + 
+					"      \"scanner\" : \"Identity\",\r\n" + 
+					"      \"error\" : \"false\",\r\n" + 
+					"      \"numsubpods\" : 1,\r\n" + 
+					"      \"subpods\" : [ {\r\n" + 
+					"        \"plaintext\" : \"{1,2,3,4,5}\",\r\n" + 
+					"        \"sinput\" : \"{1,2,3,4,5}\",\r\n" + 
+					"        \"latex\" : \"\\\\{1,2,3,4,5\\\\}\"\r\n" + 
+					"      } ]\r\n" + 
+					"    }, {\r\n" + 
+					"      \"title\" : \"Total\",\r\n" + 
+					"      \"scanner\" : \"List\",\r\n" + 
+					"      \"error\" : \"false\",\r\n" + 
+					"      \"numsubpods\" : 1,\r\n" + 
+					"      \"subpods\" : [ {\r\n" + 
+					"        \"plaintext\" : \"15\",\r\n" + 
+					"        \"sinput\" : \"Total({1,2,3,4,5})\",\r\n" + 
+					"        \"latex\" : \"15\"\r\n" + 
+					"      } ]\r\n" + 
+					"    }, {\r\n" + 
+					"      \"title\" : \"Vector length\",\r\n" + 
+					"      \"scanner\" : \"List\",\r\n" + 
+					"      \"error\" : \"false\",\r\n" + 
+					"      \"numsubpods\" : 1,\r\n" + 
+					"      \"subpods\" : [ {\r\n" + 
+					"        \"plaintext\" : \"7.416198487095663\",\r\n" + 
+					"        \"sinput\" : \"N(Norm({1,2,3,4,5}))\",\r\n" + 
+					"        \"latex\" : \"7.4162\"\r\n" + 
+					"      } ]\r\n" + 
+					"    }, {\r\n" + 
+					"      \"title\" : \"Normalized vector\",\r\n" + 
+					"      \"scanner\" : \"List\",\r\n" + 
+					"      \"error\" : \"false\",\r\n" + 
+					"      \"numsubpods\" : 1,\r\n" + 
+					"      \"subpods\" : [ {\r\n" + 
+					"        \"plaintext\" : \"{1/Sqrt(55),2/Sqrt(55),3/Sqrt(55),4/Sqrt(55),Sqrt(5/11)}\",\r\n" + 
+					"        \"sinput\" : \"Normalize({1,2,3,4,5})\",\r\n" + 
+					"        \"latex\" : \"\\\\{\\\\frac{1}{\\\\sqrt{55}},\\\\frac{2}{\\\\sqrt{55}},\\\\frac{3}{\\\\sqrt{55}},\\\\frac{4}{\\\\sqrt{55}},\\\\sqrt{\\\\frac{5}{11}}\\\\}\"\r\n" + 
+					"      } ]\r\n" + 
+					"    }, {\r\n" + 
+					"      \"title\" : \"Plot points\",\r\n" + 
+					"      \"scanner\" : \"Plotter\",\r\n" + 
+					"      \"error\" : \"false\",\r\n" + 
+					"      \"numsubpods\" : 1,\r\n" + 
+					"      \"subpods\" : [ {\r\n" + 
+					"        \"sinput\" : \"ListPlot({1.0,2.0,3.0,4.0,5.0})\",\r\n" + 
+					"        \"jsxgraph\" : \"<iframe srcdoc=\\\"&lt;?xml version=&quot;1.0&quot; encoding=&quot;UTF-8&quot;?&gt;\\n\\n&lt;!DOCTYPE html PUBLIC\\n  &quot;-//W3C//DTD XHTML 1.1 plus MathML 2.0 plus SVG 1.1//EN&quot;\\n  &quot;http://www.w3.org/2002/04/xhtml-math-svg/xhtml-math-svg.dtd&quot;&gt;\\n\\n&lt;html xmlns=&quot;http://www.w3.org/1999/xhtml&quot; style=&quot;width: 100%; height: 100%; margin: 0; padding: 0&quot;&gt;\\n&lt;head&gt;\\n&lt;meta charset=&quot;utf-8&quot;&gt;\\n&lt;title&gt;JSXGraph&lt;/title&gt;\\n\\n&lt;body style=&quot;width: 100%; height: 100%; margin: 0; padding: 0&quot;&gt;\\n\\n&lt;link rel=&quot;stylesheet&quot; type=&quot;text/css&quot; href=&quot;https://cdnjs.cloudflare.com/ajax/libs/jsxgraph/1.1.0/jsxgraph.min.css&quot; /&gt;\\n&lt;script src=&quot;https://cdn.jsdelivr.net/gh/paulmasson/math@1.3.0/build/math.js&quot;&gt;&lt;/script&gt;\\n&lt;script src=&quot;https://cdnjs.cloudflare.com/ajax/libs/jsxgraph/1.1.0/jsxgraphcore.min.js&quot;\\n        type=&quot;text/javascript&quot;&gt;&lt;/script&gt;\\n&lt;script src=&quot;https://cdnjs.cloudflare.com/ajax/libs/jsxgraph/1.1.0/geonext.min.js&quot;\\n        type=&quot;text/javascript&quot;&gt;&lt;/script&gt;\\n\\n&lt;div id=&quot;jxgbox&quot; class=&quot;jxgbox&quot; style=&quot;display: flex; width:99%; height:99%; margin: 0; flex-direction: column; overflow: hidden&quot;&gt;\\n&lt;script&gt;\\nvar board = JXG.JSXGraph.initBoard('jxgbox', {axis:true,boundingbox:[-0.3,5.2,6.3,0.8]});\\nboard.suspendUpdate();\\n\\nboard.create('point', [function() {return 1;},function() {return 1.0;}],  {color:'#5e81b5' ,name:'', face:'o', size: 2 } );\\nboard.create('point', [function() {return 2;},function() {return 2.0;}],  {color:'#5e81b5' ,name:'', face:'o', size: 2 } );\\nboard.create('point', [function() {return 3;},function() {return 3.0;}],  {color:'#5e81b5' ,name:'', face:'o', size: 2 } );\\nboard.create('point', [function() {return 4;},function() {return 4.0;}],  {color:'#5e81b5' ,name:'', face:'o', size: 2 } );\\nboard.create('point', [function() {return 5;},function() {return 5.0;}],  {color:'#5e81b5' ,name:'', face:'o', size: 2 } );\\n\\n\\nboard.unsuspendUpdate();\\n\\n&lt;/script&gt;\\n&lt;/div&gt;\\n\\n&lt;/body&gt;\\n&lt;/html&gt;\\\" style=\\\"display: block; width: 100%; height: 100%; border: none;\\\" ></iframe>\"\r\n" + 
+					"      } ]\r\n" + 
+					"    } ]\r\n" + 
+					"  }\r\n" + 
+					"}");//
 		}
 	}
 

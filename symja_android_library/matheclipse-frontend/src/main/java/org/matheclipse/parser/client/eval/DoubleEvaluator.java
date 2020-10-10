@@ -218,14 +218,14 @@ public class DoubleEvaluator {
 
 	static {
 		SYMBOL_DOUBLE_MAP = new ConcurrentHashMap<String, Double>();
-		SYMBOL_DOUBLE_MAP.put("Catalan", new Double(0.91596559417721901505460351493238411077414937428167));
-		SYMBOL_DOUBLE_MAP.put("Degree", new Double(Math.PI / 180));
-		SYMBOL_DOUBLE_MAP.put("E", new Double(Math.E));
-		SYMBOL_DOUBLE_MAP.put("Pi", new Double(Math.PI));
-		SYMBOL_DOUBLE_MAP.put("EulerGamma", new Double(0.57721566490153286060651209008240243104215933593992));
-		SYMBOL_DOUBLE_MAP.put("Glaisher", new Double(1.2824271291006226368753425688697917277676889273250));
-		SYMBOL_DOUBLE_MAP.put("GoldenRatio", new Double(1.6180339887498948482045868343656381177203091798058));
-		SYMBOL_DOUBLE_MAP.put("Khinchin", new Double(2.6854520010653064453097148354817956938203822939945));
+		SYMBOL_DOUBLE_MAP.put("Catalan", Double.valueOf(0.91596559417721901505460351493238411077414937428167));
+		SYMBOL_DOUBLE_MAP.put("Degree", Double.valueOf(Math.PI / 180));
+		SYMBOL_DOUBLE_MAP.put("E", Double.valueOf(Math.E));
+		SYMBOL_DOUBLE_MAP.put("Pi", Double.valueOf(Math.PI));
+		SYMBOL_DOUBLE_MAP.put("EulerGamma", Double.valueOf(0.57721566490153286060651209008240243104215933593992));
+		SYMBOL_DOUBLE_MAP.put("Glaisher", Double.valueOf(1.2824271291006226368753425688697917277676889273250));
+		SYMBOL_DOUBLE_MAP.put("GoldenRatio", Double.valueOf(1.6180339887498948482045868343656381177203091798058));
+		SYMBOL_DOUBLE_MAP.put("Khinchin", Double.valueOf(2.6854520010653064453097148354817956938203822939945));
 
 		SYMBOL_BOOLEAN_MAP = new ConcurrentHashMap<String, Boolean>();
 		SYMBOL_BOOLEAN_MAP.put("False", Boolean.FALSE);
@@ -439,17 +439,17 @@ public class DoubleEvaluator {
 		if (fRelaxedSyntax) {
 			if (SYMBOL_DOUBLE_MAP.get("pi") == null) {
 				// init tables for relaxed mode
-				for (String key : SYMBOL_DOUBLE_MAP.keySet()) {
-					SYMBOL_DOUBLE_MAP.put(key.toLowerCase(), SYMBOL_DOUBLE_MAP.get(key));
+				for (Map.Entry<String, Double> entry : SYMBOL_DOUBLE_MAP.entrySet()) {
+					SYMBOL_DOUBLE_MAP.put(entry.getKey().toLowerCase(), entry.getValue());
 				}
-				for (String key : SYMBOL_BOOLEAN_MAP.keySet()) {
-					SYMBOL_BOOLEAN_MAP.put(key.toLowerCase(), SYMBOL_BOOLEAN_MAP.get(key));
+				for (Map.Entry<String, Boolean> entry : SYMBOL_BOOLEAN_MAP.entrySet()) {
+					SYMBOL_BOOLEAN_MAP.put(entry.getKey().toLowerCase(), entry.getValue());
 				}
-				for (String key : FUNCTION_DOUBLE_MAP.keySet()) {
-					FUNCTION_DOUBLE_MAP.put(key.toLowerCase(), FUNCTION_DOUBLE_MAP.get(key));
+				for (Map.Entry<String, Object> entry : FUNCTION_DOUBLE_MAP.entrySet()) {
+					FUNCTION_DOUBLE_MAP.put(entry.getKey().toLowerCase(), entry.getValue());
 				}
-				for (String key : FUNCTION_BOOLEAN_MAP.keySet()) {
-					FUNCTION_BOOLEAN_MAP.put(key.toLowerCase(), FUNCTION_BOOLEAN_MAP.get(key));
+				for (Map.Entry<String, Object> entry : FUNCTION_BOOLEAN_MAP.entrySet()) {
+					FUNCTION_BOOLEAN_MAP.put(entry.getKey().toLowerCase(), entry.getValue());
 				}
 			}
 		}

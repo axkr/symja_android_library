@@ -1,4 +1,4 @@
-package org.matheclipse.core.eval;
+package org.matheclipse.io.eval;
 
 import java.awt.Desktop;
 import java.io.BufferedReader;
@@ -12,6 +12,9 @@ import java.util.Locale;
 import java.util.concurrent.TimeUnit;
 
 import org.matheclipse.core.basic.Config;
+import org.matheclipse.core.eval.EvalControlledCallable;
+import org.matheclipse.core.eval.EvalEngine;
+import org.matheclipse.core.eval.ExprEvaluator;
 import org.matheclipse.core.eval.exception.AbortException;
 import org.matheclipse.core.eval.exception.FailedException;
 import org.matheclipse.core.eval.exception.ReturnException;
@@ -90,6 +93,7 @@ public class MMAConsole {
 		Locale.setDefault(Locale.US);
 		// distinguish between lower- and uppercase identifiers
 		FEConfig.PARSER_USE_LOWERCASE_SYMBOLS = false;
+		Config.SHORTEN_STRING_LENGTH = 1024;
 		Config.USE_VISJS = true;
 		Config.FILESYSTEM_ENABLED = true;
 		F.initSymbols(null, null, true);
@@ -353,7 +357,7 @@ public class MMAConsole {
 				}
 
 				function = args[i + 1];
-				i++; 
+				i++;
 			} else if (arg.equals("-args") || arg.equals("-a")) {
 				try {
 					if (function != null) {
@@ -464,7 +468,7 @@ public class MMAConsole {
 		} catch (final SyntaxError se) {
 			String msg = se.getMessage();
 			stderr.println(msg);
-			stderr.println();
+			// stderr.println();
 			stderr.flush();
 			return "";
 		} catch (final RuntimeException re) {
@@ -592,7 +596,7 @@ public class MMAConsole {
 					}
 					if ((s.length() > 0) && (s.charAt(s.length() - 1) != '\\')) {
 						input.append(s);
-						if (org.matheclipse.parser.client.Scanner.isBalancedCode(input)) {
+						if (org.matheclipse.parser.client.Scanner.isBalancedCode(input) >= 0) {
 							done = true;
 						}
 					} else {

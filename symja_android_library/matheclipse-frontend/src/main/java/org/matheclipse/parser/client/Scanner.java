@@ -91,7 +91,7 @@ public abstract class Scanner {
 	 * ':' operator
 	 */
 	final static protected int TT_COLON = 133;
-	
+
 	/**
 	 * ',' operator
 	 */
@@ -273,7 +273,17 @@ public abstract class Scanner {
 		return sourceCode;
 	}
 
-	public static boolean isBalancedCode(CharSequence sourceCode) {
+	/**
+	 * <ul>
+	 * <li><code>0</code> - means all bracket levels are balanced
+	 * <li><code>-1</code> - means a closing bracket is missing
+	 * <li><code>1</code> - means an opening bracket is missing and there are too much closing brackets
+	 * </ul>
+	 * 
+	 * @param sourceCode
+	 * @return
+	 */
+	public static int isBalancedCode(CharSequence sourceCode) {
 		Stack<Character> openBracketStack = new Stack<Character>();
 
 		for (int j = 0; j < sourceCode.length(); j++) {
@@ -286,29 +296,29 @@ public abstract class Scanner {
 				break;
 			case '}':
 				if (openBracketStack.isEmpty()) {
-					return false;
+					return 1;
 				}
 				ch = openBracketStack.pop();
 				if (!(ch == '{')) {
-					return false;
+					return -1;
 				}
 				break;
 			case ')':
 				if (openBracketStack.isEmpty()) {
-					return false;
+					return 1;
 				}
 				ch = openBracketStack.pop();
 				if (!(ch == '(')) {
-					return false;
+					return -1;
 				}
 				break;
 			case ']':
 				if (openBracketStack.isEmpty()) {
-					return false;
+					return 1;
 				}
 				ch = openBracketStack.pop();
 				if (!(ch == '[')) {
-					return false;
+					return -1;
 				}
 				break;
 			default:
@@ -316,9 +326,9 @@ public abstract class Scanner {
 			}
 		}
 		if (!openBracketStack.isEmpty()) {
-			return false;
+			return -1;
 		}
-		return true;
+		return 0;
 	}
 
 	/**
@@ -725,10 +735,10 @@ public abstract class Scanner {
 					}
 
 					break;
-				case ':': 
+				case ':':
 					if (isValidPosition()) {
-						char ch= charAtPosition();
-						if (isOperatorCharacters(ch)) { 
+						char ch = charAtPosition();
+						if (isOperatorCharacters(ch)) {
 							fOperList = getOperator();
 							fToken = TT_OPERATOR;
 							return;
@@ -1169,7 +1179,7 @@ public abstract class Scanner {
 	}
 
 	abstract protected boolean isOperatorCharacters();
-	
+
 	abstract protected boolean isOperatorCharacters(char ch);
 
 	protected static final boolean isComparatorOperator(String operatorString) {
@@ -1429,16 +1439,87 @@ public abstract class Scanner {
 			}
 			String line = new String(fInputString, fCurrentColumnStartPosition, eol - fCurrentColumnStartPosition);
 			final StringBuilder buf = new StringBuilder(line.length() + 256);
-			buf.append(line + "\n");
+			buf.append(line);
+			buf.append("\n");
 			int indx = fCurrentPosition - fCurrentColumnStartPosition;
 			for (int i = 0; i < indx; i++) {
 				buf.append(' ');
 			}
-			buf.append("^\n");
+			buf.append("^(");
+			buf.append(tokenToString(fToken));
+			buf.append("-");
+			buf.append(fToken);
+			buf.append(")\n");
 			return buf.toString();
 		} catch (IndexOutOfBoundsException ioob) {
 			// thrown by new String(...)
 		}
 		return "<end-of-line>";
+	}
+
+	/**
+	 * Get the current token string for debugging purposes.
+	 */
+	private static String tokenToString(int token) {
+		switch (token) {
+		case TT_EOF:
+			return "TT_EOF";
+		case TT_ASSOCIATION_OPEN:
+			return "TT_ASSOCIATION_OPEN";
+		case TT_ASSOCIATION_CLOSE:
+			return "TT_ASSOCIATION_CLOSE";
+		case TT_ARGUMENTS_OPEN:
+			return "TT_ARGUMENTS_OPEN";
+		case TT_ARGUMENTS_CLOSE:
+			return "TT_ARGUMENTS_CLOSE";
+		case TT_PRECEDENCE_OPEN:
+			return "TT_PRECEDENCE_OPEN";
+		case TT_PRECEDENCE_CLOSE:
+			return "TT_PRECEDENCE_CLOSE";
+		case TT_LIST_OPEN:
+			return "TT_LIST_OPEN";
+		case TT_LIST_CLOSE:
+			return "TT_LIST_CLOSE";
+		case TT_PARTOPEN:
+			return "TT_PARTOPEN";
+		case TT_PARTCLOSE:
+			return "TT_PARTCLOSE";
+		case TT_SPAN:
+			return "TT_SPAN";
+		case TT_OPERATOR:
+			return "TT_OPERATOR";
+		case TT_COLON:
+			return "TT_COLON";
+		case TT_COMMA:
+			return "TT_COMMA";
+		case TT_PERCENT:
+			return "TT_PERCENT";
+		case TT_STRING:
+			return "TT_STRING";
+		case TT_IDENTIFIER:
+			return "TT_IDENTIFIER";
+		case TT_DIGIT:
+			return "TT_DIGIT";
+		case TT_SLOT:
+			return "TT_SLOT";
+		case TT_SLOTSEQUENCE:
+			return "TT_SLOTSEQUENCE";
+		case TT_BLANK:
+			return "TT_BLANK";
+		case TT_BLANK_BLANK:
+			return "TT_BLANK_BLANK";
+		case TT_BLANK_BLANK_BLANK:
+			return "TT_BLANK_BLANK_BLANK";
+		case TT_BLANK_OPTIONAL:
+			return "TT_BLANK_OPTIONAL";
+		case TT_BLANK_COLON:
+			return "TT_BLANK_COLON";
+		case TT_DERIVATIVE:
+			return "TT_DERIVATIVE";
+		case TT_NEWLINE:
+			return "TT_NEWLINE";
+		default:
+			return "token undefined";
+		}
 	}
 }

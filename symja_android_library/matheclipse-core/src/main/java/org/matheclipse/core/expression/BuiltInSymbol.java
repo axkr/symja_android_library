@@ -112,8 +112,8 @@ public class BuiltInSymbol extends Symbol implements IBuiltInSymbol {
 
 	/** {@inheritDoc} */
 	@Override
-	public final void assign(final IExpr value) {
-		fValue = value;
+	public final void assignValue(final IExpr value) {
+		super.assignValue(value);
 		if (Config.FUZZ_TESTING) {
 			// Cannot assign to raw object `1`.
 			throw new NullPointerException();
@@ -170,7 +170,7 @@ public class BuiltInSymbol extends Symbol implements IBuiltInSymbol {
 		// final IEvaluator module = getEvaluator();
 		if (fEvaluator instanceof ISymbolEvaluator) {
 			if (engine.isNumericMode()) {
-				if (engine.isApfloatMode()) {
+				if (engine.isArbitraryMode()) {
 					return ((ISymbolEvaluator) fEvaluator).apfloatEval(this, engine);
 				} else {
 					return ((ISymbolEvaluator) fEvaluator).numericEval(this);
@@ -178,8 +178,8 @@ public class BuiltInSymbol extends Symbol implements IBuiltInSymbol {
 			}
 			return ((ISymbolEvaluator) fEvaluator).evaluate(this);
 		}
-		if (fValue != null) {
-			return fValue;
+		if (hasAssignedSymbolValue()) {
+			return assignedValue();
 		}
 		// if (hasLocalVariableStack()) {
 		// return ExprUtil.ofNullable(get());

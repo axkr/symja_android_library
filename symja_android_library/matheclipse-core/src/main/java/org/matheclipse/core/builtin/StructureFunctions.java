@@ -484,6 +484,15 @@ public class StructureFunctions {
 		public IExpr evaluate(final IAST ast, EvalEngine engine) {
 
 			IExpr arg1 = engine.evaluate(ast.arg1());
+			if (ast.isAST1()) {
+				if (arg1.isSparseArray()) {
+					ISparseArray sparseArray = (ISparseArray) arg1;
+					return sparseArray.flatten();
+				}
+			}
+			if (arg1.isSparseArray()) {
+				arg1 = arg1.normal(false);
+			}
 			if (arg1.isAST()) {
 				IAST arg1AST = (IAST) arg1;
 				try {
@@ -1503,10 +1512,10 @@ public class StructureFunctions {
 				// IPatternMap patternMap2 = pmEvaluator2.getPatternMap();
 
 				int[] priority1 = new int[] { PatternMap.DEFAULT_RULE_PRIORITY };
-				IPatternMap.determinePatterns(arg1, priority1);
+				IPatternMap.determinePatterns(arg1, priority1, null);
 				// patternMap1.determinePatterns(arg1, priority1);
 				int[] priority2 = new int[] { PatternMap.DEFAULT_RULE_PRIORITY };
-				IPatternMap.determinePatterns(arg2, priority2);
+				IPatternMap.determinePatterns(arg2, priority2, null);
 				// patternMap2.determinePatterns(arg2, priority2);
 				if (pmEvaluator1.isRuleWithoutPatterns()) {
 					if (pmEvaluator2.isRuleWithoutPatterns()) {

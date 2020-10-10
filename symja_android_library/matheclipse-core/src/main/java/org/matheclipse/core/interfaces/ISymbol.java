@@ -148,6 +148,11 @@ public interface ISymbol extends IExpr {
 	public final static int DELAYED_RULE_EVALUATION = 0x00020000;
 
 	/**
+	 * ISymbol flag to indicate that the symbols value is used by a method
+	 */
+	public final static int DIRTY_FLAG_ASSIGNED_VALUE = 0x10000000;
+
+	/**
 	 * Add the attributes to the existing attributes bit-set.
 	 * 
 	 * @param attributes
@@ -158,7 +163,7 @@ public interface ISymbol extends IExpr {
 	 * Set the value of this variable
 	 * 
 	 */
-	public void assign(IExpr value);
+	public void assignValue(IExpr value);
 
 	/**
 	 * Get the value which is assigned to the symbol or <code>null</code>, if no value is assigned.
@@ -174,6 +179,11 @@ public interface ISymbol extends IExpr {
 	 *            the evaluation engine
 	 */
 	public void clear(EvalEngine engine);
+
+	/**
+	 * Clear the value which is assigned to the symbo.
+	 */
+	public void clearValue();
 
 	/**
 	 * Clear all associated rules and attributes for this symbol.
@@ -235,13 +245,15 @@ public interface ISymbol extends IExpr {
 	public IExpr evalMessage(String messageName);
 
 	/**
-	 * Evaluate the given expression for the &quot;up value&quot; rules associated with this symbol
+	 * Evaluate the given expression for the &quot;up value&quot; rules (i.e. defined with UpSet and UpsetDelayed)
+	 * associated with this symbol.
 	 * 
-	 * @param engine
 	 * @param expression
+	 * @param engine
+	 * 
 	 * @return <code>F.NIL</code> if no evaluation was possible
 	 */
-	public IExpr evalUpRule(EvalEngine engine, IExpr expression);
+	public IExpr evalUpRules(IExpr expression, EvalEngine engine);
 
 	default IAST f(IExpr arg1) {
 		return F.unaryAST1(this, arg1);
@@ -633,7 +645,7 @@ public interface ISymbol extends IExpr {
 
 	/**
 	 * Apply the function to the currently assigned value of the symbol and reassign the result value to the symbol.
-	 * Used for functions like AppendTo, Decrement, Increment,...
+	 * Used for functions like <code>AppendTo, AssociateTo, Decrement, Increment, PrependTo,...</code>
 	 * 
 	 * @param function
 	 *            the function which should be applied
