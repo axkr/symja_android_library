@@ -224,38 +224,6 @@ public class FileFunctions {
 	 */
 	private final static class Get extends AbstractFunctionEvaluator {
 
-		// private static int addContextToPath(ContextPath contextPath, final List<ASTNode> node, int i,
-		// final EvalEngine engine, ISymbol endSymbol) {
-		// ContextPath path = engine.getContextPath();
-		// try {
-		// engine.setContextPath(contextPath);
-		// AST2Expr ast2Expr = new AST2Expr(engine.isRelaxedSyntax(), engine);
-		// while (i < node.size()) {
-		// IExpr temp = ast2Expr.convert(node.get(i++));
-		// if (temp.isAST()) {
-		// IExpr head = temp.head();
-		// IAST ast = (IAST) temp;
-		// if (head.equals(endSymbol) && ast.isAST0()) {
-		// continue;
-		// } else if (head.equals(F.Begin) && ast.size() >= 2) {
-		// try {
-		// contextPath.add(engine.getContextPath().getContext(ast.arg1().toString()));
-		// i = addContextToPath(contextPath, node, i, engine, F.End);
-		// } finally {
-		// contextPath.remove(contextPath.size() - 1);
-		// }
-		// continue;
-		// }
-		// }
-		// engine.evaluate(temp);
-		// }
-		// // TODO add error message
-		// } finally {
-		// engine.setContextPath(path);
-		// }
-		// return i;
-		// }
-
 		/**
 		 * Load a package from the given reader
 		 * 
@@ -295,6 +263,40 @@ public class FileFunctions {
 				} catch (IOException e) {
 					e.printStackTrace();
 				}
+			}
+			return F.Null;
+		}
+
+		private static IExpr getFile(File file, EvalEngine engine) {
+			boolean packageMode = engine.isPackageMode();
+			try {
+				engine.setPackageMode(true);
+				String str = Files.asCharSource(file, Charset.defaultCharset()).read();
+				return Get.loadPackage(engine, str);
+			} catch (IOException e) {
+				if (FEConfig.SHOW_STACKTRACE) {
+					e.printStackTrace();
+				}
+				engine.printMessage("Get exception: " + e.getMessage());
+			} finally {
+				engine.setPackageMode(packageMode);
+			}
+			return F.Null;
+		}
+
+		private static IExpr getURL(URL url, EvalEngine engine) {
+			boolean packageMode = engine.isPackageMode();
+			try {
+				engine.setPackageMode(true);
+				String str = Resources.toString(url, StandardCharsets.UTF_8);
+				return loadPackage(engine, str);
+			} catch (IOException e) {
+				if (FEConfig.SHOW_STACKTRACE) {
+					e.printStackTrace();
+				}
+				engine.printMessage("Get exception: " + e.getMessage());
+			} finally {
+				engine.setPackageMode(packageMode);
 			}
 			return F.Null;
 		}
@@ -501,40 +503,6 @@ public class FileFunctions {
 			result = engine.evaluate(temp);
 		}
 		return result;
-	}
-
-	public static IExpr getFile(File file, EvalEngine engine) {
-		boolean packageMode = engine.isPackageMode();
-		try {
-			engine.setPackageMode(true);
-			String str = Files.asCharSource(file, Charset.defaultCharset()).read();
-			return Get.loadPackage(engine, str);
-		} catch (IOException e) {
-			if (FEConfig.SHOW_STACKTRACE) {
-				e.printStackTrace();
-			}
-			engine.printMessage("Get exception: " + e.getMessage());
-		} finally {
-			engine.setPackageMode(packageMode);
-		}
-		return F.Null;
-	}
-
-	public static IExpr getURL(URL url, EvalEngine engine) {
-		boolean packageMode = engine.isPackageMode();
-		try {
-			engine.setPackageMode(true);
-			String str = Resources.toString(url, StandardCharsets.UTF_8);
-			return Get.loadPackage(engine, str);
-		} catch (IOException e) {
-			if (FEConfig.SHOW_STACKTRACE) {
-				e.printStackTrace();
-			}
-			engine.printMessage("Get exception: " + e.getMessage());
-		} finally {
-			engine.setPackageMode(packageMode);
-		}
-		return F.Null;
 	}
 
 	/**

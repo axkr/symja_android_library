@@ -19,6 +19,7 @@ import org.matheclipse.core.form.output.OutputFormFactory;
 import org.matheclipse.core.graphics.Show2SVG;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IExpr;
+import org.matheclipse.io.IOInit;
 import org.matheclipse.script.engine.MathScriptEngine;
 
 import junit.framework.TestCase;
@@ -185,7 +186,7 @@ public abstract class AbstractTestCase extends TestCase {
 				Config.MAX_MATRIX_DIMENSION_SIZE = 100;
 				Config.MAX_BIT_LENGTH = 200000;
  				Config.MAX_POLYNOMIAL_DEGREE=100;
-				Config.FILESYSTEM_ENABLED = false;
+				Config.FILESYSTEM_ENABLED = true;
 				EvalEngine engine = new EvalEngine();
 				fScriptEngine = new MathScriptEngine(engine);// fScriptManager.getEngineByExtension("m");
 				fScriptEngine.put("PRINT_STACKTRACE", Boolean.TRUE);
@@ -195,6 +196,7 @@ public abstract class AbstractTestCase extends TestCase {
 				fNumericScriptEngine = new MathScriptEngine();// fScriptManager.getEngineByExtension("m");
 				fNumericScriptEngine.put("RELAXED_SYNTAX", Boolean.TRUE);
 				F.await();
+				IOInit.init();
 
 				EvalEngine.set(engine);
 				engine.init();

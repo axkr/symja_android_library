@@ -2,7 +2,10 @@ package org.matheclipse.core.builtin;
 
 import java.io.File;
 import java.io.IOException;
+import java.net.MalformedURLException;
+import java.net.URL;
 import java.nio.charset.Charset;
+import java.nio.charset.StandardCharsets;
 import java.nio.file.FileSystems;
 import java.util.List;
 
@@ -24,6 +27,7 @@ import org.matheclipse.parser.client.FEConfig;
 import org.matheclipse.parser.client.ast.ASTNode;
 
 import com.google.common.io.Files;
+import com.google.common.io.Resources;
 
 public class UnitTestingFunctions {
 	final static boolean DEBUG = false;
@@ -67,8 +71,21 @@ public class UnitTestingFunctions {
 				if (!(ast.arg1() instanceof IStringX)) {
 					return IOFunctions.printMessage(ast.topHead(), "string", F.List(), engine);
 				}
-				IStringX arg1 = (IStringX) ast.arg1();
-				File file = new File(arg1.toString());
+				String arg1 = ast.arg1().toString();
+				if (arg1.startsWith("https://") || //
+						arg1.startsWith("http://")) {
+					URL url;
+					try {
+						url = new URL(arg1);
+						return getURL(url, engine);
+					} catch (MalformedURLException mue) {
+						if (FEConfig.SHOW_STACKTRACE) {
+							mue.printStackTrace();
+						}
+						return engine.printMessage(ast.topHead() + ": " + mue.getMessage());
+					}
+				}
+				File file = new File(arg1);
 
 				if (file.exists()) {
 					return getFile(file, engine);
@@ -82,25 +99,46 @@ public class UnitTestingFunctions {
 			return F.NIL;
 		}
 
-		public static IExpr getFile(File file, EvalEngine engine) {
-			boolean packageMode = engine.isPackageMode();
+		private static IExpr getFile(File file, EvalEngine engine) {
+			// boolean packageMode = engine.isPackageMode();
 			try {
-				engine.setPackageMode(true);
+				// engine.setPackageMode(true);
 				String str = Files.asCharSource(file, Charset.defaultCharset()).read();
-				final List<ASTNode> node = FileFunctions.parseReader(str, engine);
-				IAssociation testResults = evaluatePackage(node, engine);
-				IAssociation testResultObject = F.assoc(node.size());
-				testResultObject.appendRule(F.Rule("TestResults", testResults));
-				return TestReportObjectExpr.newInstance(testResultObject);
+				return runTests(engine, str);
 			} catch (IOException e) {
 				if (FEConfig.SHOW_STACKTRACE) {
 					e.printStackTrace();
 				}
-				engine.printMessage("Get exception: " + e.getMessage());
+				engine.printMessage("TestReport exception: " + e.getMessage());
 			} finally {
-				engine.setPackageMode(packageMode);
+				// engine.setPackageMode(packageMode);
 			}
 			return F.Null;
+		}
+
+		private static IExpr getURL(URL url, EvalEngine engine) {
+			// boolean packageMode = engine.isPackageMode();
+			try {
+				// engine.setPackageMode(true);
+				String str = Resources.toString(url, StandardCharsets.UTF_8);
+				return runTests(engine, str);
+			} catch (IOException e) {
+				if (FEConfig.SHOW_STACKTRACE) {
+					e.printStackTrace();
+				}
+				engine.printMessage("TestReport exception: " + e.getMessage());
+			} finally {
+				// engine.setPackageMode(packageMode);
+			}
+			return F.Null;
+		}
+
+		private static IExpr runTests(EvalEngine engine, String str) throws IOException {
+			final List<ASTNode> node = FileFunctions.parseReader(str, engine);
+			IAssociation testResults = evaluatePackage(node, engine);
+			IAssociation testResultObject = F.assoc(node.size());
+			testResultObject.appendRule(F.Rule("TestResults", testResults));
+			return TestReportObjectExpr.newInstance(testResultObject);
 		}
 
 		public static IAssociation evaluatePackage(final List<ASTNode> node, final EvalEngine engine) {
@@ -190,7 +228,7 @@ public class UnitTestingFunctions {
 				if (result.isTrue()) {
 					success(assoc);
 				} else {
-					if (sameTest.equals(S.SameQ)) { 
+					if (sameTest.equals(S.SameQ)) {
 						String actualOutputFullForm = tempActualOutput.fullFormString();
 						String expectedOutputFullForm = expectedOutput.fullFormString();
 						if (actualOutputFullForm.equals(expectedOutputFullForm)) {

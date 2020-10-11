@@ -1,14 +1,9 @@
 package org.matheclipse.io.test;
 
+import org.matheclipse.core.basic.Config;
 import org.matheclipse.io.IOInit;
 
 public class FunctionsTestCase extends AbstractTestCase {
-	@Override
-	protected void setUp() {
-		// TODO Auto-generated method stub
-		super.setUp();
-		IOInit.init();
-	}
 
 	public FunctionsTestCase(String name) {
 		super(name);

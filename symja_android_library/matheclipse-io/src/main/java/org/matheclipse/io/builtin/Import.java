@@ -26,6 +26,7 @@ import org.matheclipse.core.convert.AST2Expr;
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.interfaces.AbstractEvaluator;
 import org.matheclipse.core.expression.F;
+import org.matheclipse.core.expression.S;
 import org.matheclipse.core.expression.WL;
 import org.matheclipse.core.expression.data.ExprEdge;
 import org.matheclipse.core.expression.data.GraphExpr;
@@ -61,7 +62,7 @@ public class Import extends AbstractEvaluator {
 
 			if (ast.size() > 2) {
 				if (!(ast.arg2() instanceof IStringX)) {
-					return F.NIL; 
+					return F.NIL;
 				}
 				format = Extension.importExtension(((IStringX) ast.arg2()).toString());
 			}
@@ -75,7 +76,11 @@ public class Import extends AbstractEvaluator {
 					// graph Format
 					reader = new FileReader(fileName);
 					return graphImport(reader, format, engine);
-
+				case M:
+					if (ast.isAST1()) {
+						return S.Get.of(engine, ast.arg1());
+					}
+					break;
 				case TABLE:
 					reader = new FileReader(fileName);
 					AST2Expr ast2Expr = new AST2Expr(engine.isRelaxedSyntax(), engine);
@@ -140,8 +145,8 @@ public class Import extends AbstractEvaluator {
 	}
 
 	private GraphMLImporter<IExpr, ExprEdge> createGraphImporter(Graph<IExpr, ExprEdge> g,
-			Map<String, Map<String, Attribute>> vertexAttributes,
-			Map<ExprEdge, Map<String, Attribute>> edgeAttributes, EvalEngine engine) {
+			Map<String, Map<String, Attribute>> vertexAttributes, Map<ExprEdge, Map<String, Attribute>> edgeAttributes,
+			EvalEngine engine) {
 		return createGraphImporter(g, (label, attributes) -> {
 			vertexAttributes.put(label, attributes);
 			return engine.parse(label);
@@ -152,8 +157,8 @@ public class Import extends AbstractEvaluator {
 		});
 	}
 
-	private GraphMLImporter<IExpr, ExprEdge> createGraphImporter(Graph<IExpr, ExprEdge> g,
-			VertexProvider<IExpr> vp, EdgeProvider<IExpr, ExprEdge> ep) {
+	private GraphMLImporter<IExpr, ExprEdge> createGraphImporter(Graph<IExpr, ExprEdge> g, VertexProvider<IExpr> vp,
+			EdgeProvider<IExpr, ExprEdge> ep) {
 		return new GraphMLImporter<IExpr, ExprEdge>(vp, ep);
 	}
 

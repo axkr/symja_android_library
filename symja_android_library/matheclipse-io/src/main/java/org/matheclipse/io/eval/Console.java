@@ -23,6 +23,7 @@ import org.matheclipse.core.form.Documentation;
 import org.matheclipse.core.form.output.ASCIIPrettyPrinter3;
 import org.matheclipse.core.form.output.OutputFormFactory;
 import org.matheclipse.core.interfaces.IExpr;
+import org.matheclipse.io.IOInit;
 import org.matheclipse.parser.client.FEConfig;
 import org.matheclipse.parser.client.Scanner;
 import org.matheclipse.parser.client.SyntaxError;
@@ -95,6 +96,7 @@ public class Console {
 		Config.USE_VISJS = true;
 		Config.FILESYSTEM_ENABLED = true;
 		F.initSymbols(null, null, true);
+		IOInit.init(); 
 		Console console;
 		try {
 			console = new Console();
