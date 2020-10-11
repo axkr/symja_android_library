@@ -16560,6 +16560,9 @@ public class LowercaseTestCase extends AbstractTestCase {
 	}
 
 	public void testPart() {
+
+		check("{1, 2, 3}[[2]] = 0.5", //
+				"0.5");
 		check("<|2 -> b, 1 -> a|>[[Key[1]]]", //
 				"a");
 		check("<|2 -> b, 1 -> a|>[[1]]", //

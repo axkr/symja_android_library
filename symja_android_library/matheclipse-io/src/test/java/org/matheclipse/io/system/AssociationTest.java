@@ -332,7 +332,7 @@ public class AssociationTest extends AbstractTestCase {
 				"<|f->1,g->2,D->3|>");
 		check("Lookup(rowNames,Keys(rmatRowNames),None)", //
 				"{None,None,None,3}");
-		
+
 		check("Lookup(a)@ <|a -> 1|>", //
 				"1");
 		check("Lookup({a -> 1, b -> 2}, b)", //
@@ -367,6 +367,8 @@ public class AssociationTest extends AbstractTestCase {
 	}
 
 	public void testPart() {
+		check("<|a->1, b->2, c->3|>[[2]] = 0.5", //
+				"0.5");
 		check("assoc = <|a ->  <|a -> x, b -> y, c -> z|> , b -> y, c -> z|>", //
 				"<|a-><|a->x,b->y,c->z|>,b->y,c->z|>");
 		check("Part[assoc,1,All]", //
@@ -427,9 +429,9 @@ public class AssociationTest extends AbstractTestCase {
 		Config.MAX_AST_SIZE = 1000000;
 		EvalEngine.get().setIterationLimit(50000);
 	}
-	
+
 	@Override
-	protected void tearDown() throws Exception { 
+	protected void tearDown() throws Exception {
 		super.tearDown();
 		Config.SHORTEN_STRING_LENGTH = 80;
 	}

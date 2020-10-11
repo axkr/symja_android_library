@@ -191,8 +191,10 @@ public class AssociationFunctions {
 						// return engine.printMessage(F.Set, rex);
 					}
 				}
+
 			}
-			return F.NIL;
+			IOFunctions.printMessage(builtinSymbol, "setps", F.List(leftHandSide.head()), engine);
+			return rightHandSide;
 		}
 	}
 
@@ -469,7 +471,7 @@ public class AssociationFunctions {
 						}
 						if (key.isAST(S.Key, 2)) {
 							key = key.first();
-						} 
+						}
 						IAST listOfRules = (IAST) arg1;
 						for (int i = 1; i < listOfRules.size(); i++) {
 							IExpr rule = listOfRules.get(i);
@@ -514,7 +516,7 @@ public class AssociationFunctions {
 				return IOFunctions.printMessage(ast.topHead(), "invrl", F.List(), engine);
 			}
 			return F.NIL;
-		} 
+		}
 
 		@Override
 		public int[] expectedArgSize(IAST ast) {

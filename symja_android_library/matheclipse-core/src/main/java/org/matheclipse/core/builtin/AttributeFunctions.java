@@ -72,7 +72,11 @@ public class AttributeFunctions {
 		}
 
 		public IExpr evaluateSet(final IExpr leftHandSide, IExpr rightHandSide, IBuiltInSymbol builtinSymbol, EvalEngine engine) {
-			if (leftHandSide.isAST(F.Attributes, 2)) {
+			if (leftHandSide.isAST(S.Attributes, 2)) {
+				if (!leftHandSide.first().isSymbol()) {
+					IOFunctions.printMessage(builtinSymbol, "setps", F.List(leftHandSide.first()), engine);
+					return rightHandSide;
+				}
 				IExpr temp = engine.evaluate(F.SetAttributes(leftHandSide.first(), rightHandSide));
 				if (temp.equals(S.Null)) {
 					return rightHandSide;

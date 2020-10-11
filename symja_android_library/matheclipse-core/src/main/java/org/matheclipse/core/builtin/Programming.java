@@ -1250,11 +1250,6 @@ public final class Programming {
 				EvalEngine engine) {
 			if (leftHandSide.isList()) {
 				// thread over lists
-				try {
-					rightHandSide = engine.evaluate(rightHandSide);
-				} catch (final ReturnException e) {
-					rightHandSide = e.getValue();
-				}
 				IExpr temp = engine.threadASTListArgs((IASTMutable) F.Set(leftHandSide, rightHandSide));
 				if (temp.isPresent()) {
 					return engine.evaluate(temp);
@@ -2102,6 +2097,9 @@ public final class Programming {
 							// return rightHandSide;
 						}
 					}
+				} else {
+					IOFunctions.printMessage(builtinSymbol, "setps", F.List(part), engine);
+					return rightHandSide;
 				}
 
 			}

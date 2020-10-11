@@ -380,7 +380,11 @@ public final class PatternMatching {
 		@Override
 		public IExpr evaluateSet(final IExpr leftHandSide, IExpr rightHandSide, IBuiltInSymbol builtinSymbol,
 				EvalEngine engine) {
-			if (leftHandSide.isAST(F.Default) && leftHandSide.size() > 1) {
+			if (leftHandSide.isAST(S.Default) && leftHandSide.size() > 1) {
+				if (!leftHandSide.first().isSymbol()) {
+					IOFunctions.printMessage(builtinSymbol, "setps", F.List(leftHandSide.first()), engine);
+					return rightHandSide;
+				}
 				ISymbol symbol = (ISymbol) leftHandSide.first();
 				if (symbol.isProtected()) {
 					IOFunctions.printMessage(F.Default, "write", F.List(symbol, leftHandSide), EvalEngine.get());
