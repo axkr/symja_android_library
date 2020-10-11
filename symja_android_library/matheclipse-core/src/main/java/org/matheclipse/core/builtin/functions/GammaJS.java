@@ -332,7 +332,7 @@ public class GammaJS {
 	}
 
 	public static double expIntegralEi(double x) {
-		double useAsymptotic = 30.0;
+		double useAsymptotic = 26.0;
 
 		if (x < 0.0) {
 			return expIntegralEi(new Complex(x)).getReal();
@@ -369,7 +369,7 @@ public class GammaJS {
 	}
 
 	public static Complex expIntegralEi(Complex x) {
-		double useAsymptotic = 30.0;
+		double useAsymptotic = 26.0;
 		if (x.abs() > useAsymptotic) {
 
 			Complex s = Complex.ONE;
@@ -384,7 +384,7 @@ public class GammaJS {
 				i++;
 			}
 
-			// combination of logarithms merely adds/subtracts Complex(0,Pi)
+			// combination of logarithms adds/subtracts Complex(0,Pi)
 			int sign = x.getImaginary() > 0 ? 1 : x.getImaginary() < 0 ? -1 : 0;
 
 			return s.multiply(x.exp()).multiply(xInverse).add(new Complex(0.0, sign * Math.PI));
@@ -402,13 +402,11 @@ public class GammaJS {
 		}
 
 		s = s.add(ConstantDefinitions.EULER_GAMMA).add(x.log());
-		// form (log(x)-log(1/x))/2 has wrong phase from -0 in division
-		// can either chop inv(x) or set phase explicitly
 
-		// TODO check this
-		// if (x.getReal() < 0.0 && F.isZero(x.getImaginary())) {
-		// return new Complex(s.getReal());
-		// }
+		// real on negative real axis, set phase explicitly rather than log combo
+		if (x.getReal() < 0.0 && F.isZero(x.getImaginary())) {
+			return new Complex(s.getReal(), 0.0);
+		}
 
 		return s;
 	}
