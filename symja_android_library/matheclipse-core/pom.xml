@@ -105,7 +105,7 @@
 			<groupId>commons-codec</groupId>
 			<artifactId>commons-codec</artifactId>
 			<version>1.14</version>
-		</dependency> 
+		</dependency>
 		<dependency>
 			<groupId>com.google.code.findbugs</groupId>
 			<artifactId>jsr305</artifactId>
@@ -161,63 +161,5 @@
 				<filtering>true</filtering>
 			</resource>
 		</resources>
-		<pluginManagement>
-			<plugins>
-				<plugin>
-					<groupId>org.codehaus.mojo</groupId>
-					<artifactId>exec-maven-plugin</artifactId>
-					<version>1.4.0</version>
-					<configuration>
-						<executable>java</executable>
-						<mainClass>org.matheclipse.core.eval.Console</mainClass>
-					</configuration>
-					<executions>
-						<execution>
-							<id>symja</id>
-							<goals>
-								<goal>java</goal>
-							</goals>
-							<configuration>
-								<mainClass>org.matheclipse.core.eval.Console</mainClass>
-							</configuration>
-						</execution>
-						<execution>
-							<id>mma</id>
-							<goals>
-								<goal>java</goal>
-							</goals>
-							<configuration>
-								<mainClass>org.matheclipse.core.eval.MMAConsole</mainClass>
-							</configuration>
-						</execution>
-					</executions>
-
-				</plugin>
-
-				<plugin>
-					<artifactId>maven-assembly-plugin</artifactId>
-					<configuration>
-						<archive>
-							<manifest>
-								<mainClass>org.matheclipse.core.eval.Console</mainClass>
-							</manifest>
-						</archive>
-						<descriptorRefs>
-							<descriptorRef>jar-with-dependencies</descriptorRef>
-						</descriptorRefs>
-					</configuration>
-					<executions>
-						<execution>
-							<id>make-assembly</id> <!-- this is used for inheritance merges -->
-							<phase>package</phase> <!-- bind to the packaging phase -->
-							<goals>
-								<goal>single</goal>
-							</goals>
-						</execution>
-					</executions>
-				</plugin>
-
-			</plugins>
-		</pluginManagement>
 	</build>
 </project>
