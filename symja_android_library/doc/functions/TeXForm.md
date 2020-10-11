@@ -6,6 +6,9 @@ TeXForm(expr)
 
 > returns the TeX form of the evaluated `expr`. 
  
+See
+* [Wikipedia - LaTeX](https://en.wikipedia.org/wiki/LaTeX)
+
 ### Examples
 
 ```
