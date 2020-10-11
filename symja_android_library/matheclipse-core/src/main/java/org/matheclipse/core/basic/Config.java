@@ -535,7 +535,7 @@ public class Config {
 					"<div class=\"mathcell\" style=\"width: 100%; height: 100%; padding: .25in .5in .5in .5in;\">\n" + //
 					"<script>\n" + //
 					"\n" + //
-					"var parent = document.scripts[ document.scripts.length - 1 ].parentNode;\n" + //
+					"var parent = document.currentScript.parentNode;\n" + //
 					"\n" + //
 					"var id = generateId();\n" + //
 					"parent.id = id;\n" + //

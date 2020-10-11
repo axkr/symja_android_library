@@ -204,7 +204,7 @@ public class Pods {
 					+ //
 					"<script>\n" + //
 					"\n" + //
-					"var parent = document.scripts[ document.scripts.length - 1 ].parentNode;\n" + //
+					"var parent = document.currentScript.parentNode;\n" + //
 					"\n" + //
 					"var id = generateId();\n" + //
 					"parent.id = id;\n" + //
