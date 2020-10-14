@@ -760,24 +760,21 @@ public final class StringFunctions {
 			if (ast.isAST1()) {
 				return splitList(str1, str1.split("\\s+"));
 			}
+			boolean ignoreCase = false;
+			if (ast.size() > 3) {
+				final OptionArgs options = new OptionArgs(ast.topHead(), ast, 3, engine, true);
+				IExpr option = options.getOption(S.IgnoreCase);
+				if (option.isTrue()) {
+					ignoreCase = true;
+				}
+			}
 			if (ast.isAST2()) {
 				IExpr arg2 = ast.arg2();
-				if (arg2.isBuiltInSymbol()) {
-					if (arg2 == F.Whitespace) {
-						return splitList(str1, str1.split("\\s+"));
-					}
-					if (arg2 == F.NumberString) {
-						return splitList(str1, str1.split("[0-9]{1,13}(\\.[0-9]+)?"));
-					}
+				java.util.regex.Pattern pattern = toRegexPattern(arg2, true, ignoreCase, ast, engine);
+				if (pattern == null) {
+					return F.NIL;
 				}
-				if (arg2.isString()) {
-					String str2 = ((IStringX) arg2).toString();
-					return splitList(str1, str1.split(Pattern.quote(str2)));
-				}
-				if (arg2.isAST(F.RegularExpression, 2) && arg2.first().isString()) {
-					Pattern strPattern = Pattern.compile(((IStringX) arg2.first()).toString());
-					return splitList(str1, strPattern.split(str1));
-				}
+				return splitList(str1, pattern.split(str1));
 			}
 			return F.NIL;
 
@@ -1373,7 +1370,10 @@ public final class StringFunctions {
 			int ordinal = ((IBuiltInSymbol) partOfRegex).ordinal();
 			switch (ordinal) {
 			case ID.NumberString:
-				return "[-|+]?(\\d+(\\.\\d*)?|\\.\\d+)?";
+				// better suitable for StringSplit?
+				return "[0-9]{1,13}(\\.[0-9]+)?";
+			// mathics:
+			// return "[-|+]?(\\d+(\\.\\d*)?|\\.\\d+)?";
 			case ID.Whitespace:
 				return "(?u)\\s+";
 			case ID.DigitCharacter:

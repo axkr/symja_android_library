@@ -348,6 +348,7 @@ public class IOFunctions {
 			"Local variable specification `1` contains `2`, which is an assignment to `3`; only assignments to symbols are allowed.", //
 			"matrix", "Argument `1` at position `2` is not a non-empty rectangular matrix.", //
 			"matsq", "Argument `1` at position `2` is not a non-empty square matrix.", //
+			"nliter", "Non-list iterator `1` at position `2` does not evaluate to a real numeric value.", //
 			"nil", "unexpected NIL expression encountered.", //
 			"noneg", "Surd is not defined for even roots of negative values.", //
 			"noopen", "Cannot open `1`.", //

@@ -25,6 +25,7 @@ import org.matheclipse.core.interfaces.IStringX;
 import org.matheclipse.core.interfaces.ISymbol;
 import org.matheclipse.parser.client.FEConfig;
 import org.matheclipse.parser.client.ast.ASTNode;
+import org.matheclipse.parser.client.ast.FunctionNode;
 
 import com.google.common.io.Files;
 import com.google.common.io.Resources;
@@ -77,29 +78,32 @@ public class UnitTestingFunctions {
 					URL url;
 					try {
 						url = new URL(arg1);
-						return getURL(url, engine);
+						return getURL(url, ast, engine);
 					} catch (MalformedURLException mue) {
 						if (FEConfig.SHOW_STACKTRACE) {
 							mue.printStackTrace();
 						}
-						return engine.printMessage(ast.topHead() + ": " + mue.getMessage());
+						// Cannot open `1`.
+						return IOFunctions.printMessage(ast.topHead(), "noopen", F.List(ast.arg1()), engine);
 					}
 				}
 				File file = new File(arg1);
 
 				if (file.exists()) {
-					return getFile(file, engine);
+					return getFile(file, ast, engine);
 				} else {
 					file = FileSystems.getDefault().getPath(arg1.toString()).toAbsolutePath().toFile();
 					if (file.exists()) {
-						return getFile(file, engine);
+						return getFile(file, ast, engine);
 					}
 				}
+				// Cannot open `1`.
+				return IOFunctions.printMessage(ast.topHead(), "noopen", F.List(ast.arg1()), engine);
 			}
 			return F.NIL;
 		}
 
-		private static IExpr getFile(File file, EvalEngine engine) {
+		private static IExpr getFile(File file, IAST ast, EvalEngine engine) {
 			// boolean packageMode = engine.isPackageMode();
 			try {
 				// engine.setPackageMode(true);
@@ -109,14 +113,14 @@ public class UnitTestingFunctions {
 				if (FEConfig.SHOW_STACKTRACE) {
 					e.printStackTrace();
 				}
-				engine.printMessage("TestReport exception: " + e.getMessage());
+				// Cannot open `1`.
+				return IOFunctions.printMessage(ast.topHead(), "noopen", F.List(ast.arg1()), engine);
 			} finally {
 				// engine.setPackageMode(packageMode);
 			}
-			return F.Null;
 		}
 
-		private static IExpr getURL(URL url, EvalEngine engine) {
+		private static IExpr getURL(URL url, IAST ast, EvalEngine engine) {
 			// boolean packageMode = engine.isPackageMode();
 			try {
 				// engine.setPackageMode(true);
@@ -126,11 +130,11 @@ public class UnitTestingFunctions {
 				if (FEConfig.SHOW_STACKTRACE) {
 					e.printStackTrace();
 				}
-				engine.printMessage("TestReport exception: " + e.getMessage());
+				// Cannot open `1`.
+				return IOFunctions.printMessage(ast.topHead(), "noopen", F.List(ast.arg1()), engine);
 			} finally {
 				// engine.setPackageMode(packageMode);
 			}
-			return F.Null;
 		}
 
 		private static IExpr runTests(EvalEngine engine, String str) throws IOException {

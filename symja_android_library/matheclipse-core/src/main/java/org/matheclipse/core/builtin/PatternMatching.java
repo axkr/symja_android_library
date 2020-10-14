@@ -51,6 +51,7 @@ public final class PatternMatching {
 	private static class Initializer {
 
 		private static void init() {
+			S.FilterRules.setEvaluator(new FilterRules());
 			S.Hold.setEvaluator(new Hold());
 			S.HoldPattern.setEvaluator(new HoldPattern());
 			S.Identity.setEvaluator(new Identity());
@@ -71,6 +72,7 @@ public final class PatternMatching {
 				S.Blank.setEvaluator(Blank.CONST);
 				S.BlankSequence.setEvaluator(BlankSequence.CONST);
 				S.BlankNullSequence.setEvaluator(BlankNullSequence.CONST);
+				S.DownValues.setEvaluator(new DownValues());
 				S.Pattern.setEvaluator(Pattern.CONST);
 				S.Clear.setEvaluator(new Clear());
 				S.ClearAll.setEvaluator(new ClearAll());
@@ -79,12 +81,14 @@ public final class PatternMatching {
 				S.Definition.setEvaluator(new Definition());
 				S.Evaluate.setEvaluator(new Evaluate());
 				S.OptionsPattern.setEvaluator(OptionsPattern.CONST);
+				S.OwnValues.setEvaluator(new OwnValues());
 				S.Repeated.setEvaluator(Repeated.CONST);
 				S.TagSet.setEvaluator(new TagSet());
 				S.TagSetDelayed.setEvaluator(new TagSetDelayed());
 				S.Unset.setEvaluator(new Unset());
 				S.UpSet.setEvaluator(new UpSet());
 				S.UpSetDelayed.setEvaluator(new UpSetDelayed());
+				S.UpValues.setEvaluator(new UpValues());
 			}
 		}
 	}
@@ -478,6 +482,34 @@ public final class PatternMatching {
 
 	}
 
+	private final static class DownValues extends AbstractCoreFunctionEvaluator {
+
+		@Override
+		public IExpr evaluate(final IAST ast, EvalEngine engine) {
+			IExpr arg1 = Validate.checkSymbolType(ast, 1, engine);
+			if (arg1.isPresent()) {
+				ISymbol symbol = (ISymbol) arg1;
+				RulesData rulesData = symbol.getRulesData();
+				if (rulesData == null) {
+					return F.CEmptyList;
+				}
+				return rulesData.downValues();
+			}
+			return F.NIL;
+		}
+
+		@Override
+		public int[] expectedArgSize(IAST ast) {
+			return IOFunctions.ARGS_1_1;
+		}
+
+		@Override
+		public void setUp(ISymbol newSymbol) {
+			newSymbol.setAttributes(ISymbol.HOLDALL);
+		}
+
+	}
+	
 	/**
 	 * <pre>
 	 * <code>Evaluate(expr)
@@ -505,6 +537,48 @@ public final class PatternMatching {
 
 		@Override
 		public void setUp(final ISymbol newSymbol) {
+		}
+
+	}
+
+	private final static class FilterRules extends AbstractFunctionEvaluator {
+
+		@Override
+		public IExpr evaluate(final IAST ast, EvalEngine engine) {
+			if (ast.arg1().isListOfRules()) {
+				IAST listOfRules = (IAST) ast.arg1();
+				if (ast.arg2().isList()) {
+					IAST list2 = (IAST) ast.arg2();
+					IASTAppendable result = F.ListAlloc(listOfRules.size());
+					for (int i = 1; i < listOfRules.size(); i++) {
+						IExpr listOfRulesArg = listOfRules.get(i);
+						if (listOfRulesArg.isRuleAST()) {
+							IAST rule = (IAST) listOfRulesArg;
+							for (int j = 1; j < list2.size(); j++) {
+								IExpr list2Arg = list2.get(j);
+								if (list2Arg.isRuleAST()) {
+									if (rule.first().equals(list2Arg.first())) {
+										result.append(rule);
+										break;
+									}
+								} else {
+									if (rule.first().equals(list2Arg)) {
+										result.append(rule);
+										break;
+									}
+								}
+							}
+						}
+					}
+					return result;
+				}
+			}
+			return F.NIL;
+		}
+
+		@Override
+		public int[] expectedArgSize(IAST ast) {
+			return IOFunctions.ARGS_2_2;
 		}
 
 	}
@@ -1091,6 +1165,34 @@ public final class PatternMatching {
 		public void setUp(ISymbol newSymbol) {
 			newSymbol.setAttributes(ISymbol.HOLDALL);
 		}
+	}
+
+	private final static class OwnValues extends AbstractCoreFunctionEvaluator {
+
+		@Override
+		public IExpr evaluate(final IAST ast, EvalEngine engine) {
+			IExpr arg1 = Validate.checkSymbolType(ast, 1, engine);
+			if (arg1.isPresent()) {
+				ISymbol symbol = (ISymbol) arg1;
+				IExpr value = symbol.assignedValue();
+				if (value == null) {
+					return F.CEmptyList;
+				}
+				return F.List(F.RuleDelayed(F.HoldPattern(symbol), value));
+			}
+			return F.NIL;
+		}
+
+		@Override
+		public int[] expectedArgSize(IAST ast) {
+			return IOFunctions.ARGS_1_1;
+		}
+
+		@Override
+		public void setUp(ISymbol newSymbol) {
+			newSymbol.setAttributes(ISymbol.HOLDALL);
+		}
+
 	}
 
 	public final static class OptionsPattern extends AbstractCoreFunctionEvaluator {
@@ -2184,6 +2286,34 @@ public final class PatternMatching {
 
 		@Override
 		public void setUp(final ISymbol newSymbol) {
+			newSymbol.setAttributes(ISymbol.HOLDALL);
+		}
+
+	}
+	
+	private final static class UpValues extends AbstractCoreFunctionEvaluator {
+
+		@Override
+		public IExpr evaluate(final IAST ast, EvalEngine engine) {
+			IExpr arg1 = Validate.checkSymbolType(ast, 1, engine);
+			if (arg1.isPresent()) {
+				ISymbol symbol = (ISymbol) arg1;
+				RulesData rulesData = symbol.getRulesData();
+				if (rulesData == null) {
+					return F.CEmptyList;
+				}
+				return rulesData.upValues();
+			}
+			return F.NIL;
+		}
+
+		@Override
+		public int[] expectedArgSize(IAST ast) {
+			return IOFunctions.ARGS_1_1;
+		}
+
+		@Override
+		public void setUp(ISymbol newSymbol) {
 			newSymbol.setAttributes(ISymbol.HOLDALL);
 		}
 

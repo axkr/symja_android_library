@@ -17,6 +17,7 @@ import org.matheclipse.core.eval.exception.Validate;
 import org.matheclipse.core.eval.exception.ValidateException;
 import org.matheclipse.core.eval.interfaces.AbstractCoreFunctionEvaluator;
 import org.matheclipse.core.eval.interfaces.AbstractFunctionEvaluator;
+import org.matheclipse.core.eval.interfaces.ISymbolEvaluator;
 import org.matheclipse.core.eval.util.Lambda;
 import org.matheclipse.core.eval.util.OpenFixedSizeMap;
 import org.matheclipse.core.eval.util.OptionArgs;
@@ -64,6 +65,7 @@ public class StructureFunctions {
 			S.Apply.setEvaluator(new Apply());
 			S.ByteCount.setEvaluator(new ByteCount());
 			S.Depth.setEvaluator(new Depth());
+			S.Exit.setEvaluator(new QuitExit());
 			S.Flatten.setEvaluator(new Flatten());
 			S.FlattenAt.setEvaluator(new FlattenAt());
 			S.Function.setEvaluator(new Function());
@@ -78,7 +80,7 @@ public class StructureFunctions {
 			S.OrderedQ.setEvaluator(new OrderedQ());
 			S.Operate.setEvaluator(new Operate());
 			S.PatternOrder.setEvaluator(new PatternOrder());
-			S.Quit.setEvaluator(new Quit());
+			S.Quit.setEvaluator(new QuitExit());
 			S.Scan.setEvaluator(new Scan());
 			S.Sort.setEvaluator(new Sort());
 			S.SortBy.setEvaluator(new SortBy());
@@ -1540,10 +1542,18 @@ public class StructureFunctions {
 
 	}
 
-	private final static class Quit extends AbstractFunctionEvaluator {
+	/**
+	 * Implements both the <code>Exit()</code> and <code>Quit()</code> function.
+	 *
+	 */
+	private final static class QuitExit extends AbstractFunctionEvaluator {
 
 		@Override
 		public IExpr evaluate(final IAST ast, EvalEngine engine) {
+			return quitEngine(ast, engine);
+		}
+
+		private static IExpr quitEngine(final IAST ast, EvalEngine engine) {
 			EvalEngine newEngine = new EvalEngine("", engine.getRecursionLimit(), engine.getIterationLimit(),
 					engine.getOutPrintStream(), engine.getErrorPrintStream(), engine.isRelaxedSyntax());
 
@@ -1553,12 +1563,27 @@ public class StructureFunctions {
 			}
 			engine.reset();
 			EvalEngine.set(newEngine);
+			if (ast.isAST1()) {
+				int value = ast.arg1().toIntDefault();
+				if (value < 0) {
+					return IOFunctions.printMessage(ast.topHead(), "intnn", F.List(), newEngine);
+				}
+				if (value > 0) {
+					return F.ZZ(value);
+				}
+			}
 			return S.Null;
 		}
 
 		public int[] expectedArgSize(IAST ast) {
-			return IOFunctions.ARGS_0_0;
+			return IOFunctions.ARGS_0_1;
 		}
+
+		@Override
+		public void setUp(final ISymbol newSymbol) {
+			newSymbol.setAttributes(ISymbol.HOLDALL);
+		}
+
 	}
 
 	/**

@@ -5659,6 +5659,15 @@ public class LowercaseTestCase extends AbstractTestCase {
 				"32");
 	}
 
+	public void testDownValues() {
+		check("f(1)=3", //
+				"3");
+		check("f(x_):=x^3", //
+				"");
+		check("DownValues(f)", //
+				"{HoldPattern(f(1)):>3,HoldPattern(f(x_)):>x^3}");
+	}
+
 	public void testDrop() {
 
 		check("Drop({a,b,c,d},1317624576693539401)", //
@@ -7863,6 +7872,15 @@ public class LowercaseTestCase extends AbstractTestCase {
 
 	}
 
+	public void testFilterRules() {
+		check("FilterRules({a -> 1, b -> 2, c -> 3}, {b, a})", //
+				"{a->1,b->2}");
+		check("Options(f) = {a -> 1, b -> 2}", //
+				"{a->1,b->2}");
+		check("FilterRules({b -> 3, MaxIterations -> 5}, Options(f))", //
+				"{b->3}");
+	}
+
 	public void testFindClusters() {
 		// Test data generator http://people.cs.nctu.edu.tw/~rsliang/dbscan/testdatagen.html
 		// check("FindClusters({{83.08303244924173,58.83387754182331},{45.05445510940626,23.469642649637535},{14.96417921432294,69.0264096390456},{73.53189604333602,34.896145021310076},{73.28498173551634,33.96860806993209},{73.45828098873608,33.92584423092194},{73.9657889183145,35.73191006924026},{74.0074097183533,36.81735596177168},{73.41247541410848,34.27314856695011},{73.9156256353017,36.83206791547127},{74.81499205809087,37.15682749846019},{74.03144880081527,37.57399178552441},{74.51870941207744,38.674258946906775},{74.50754595105536,35.58903978415765},{74.51322752749547,36.030572259100154},{59.27900996617973,46.41091720294207},{59.73744793841615,46.20015558367595},{58.81134076672606,45.71150126331486},{58.52225539437495,47.416083617601544},{58.218626647023484,47.36228902172297},{60.27139669447206,46.606106348801404},{60.894962462363765,46.976924697402865},{62.29048673878424,47.66970563563518},{61.03857608977705,46.212924720020965}},
@@ -9661,8 +9679,12 @@ public class LowercaseTestCase extends AbstractTestCase {
 				"7031.6370551943855[mi]");
 	}
 
-	public void testGet() {
+	public void testGet() { 
 		if (Config.FILESYSTEM_ENABLED) {
+			// message: Get: Cannot open noopen-file-test.m.
+			check("Get(\"noopen-file-test.m\")", //
+					"True");
+			
 			String pathToVectorAnalysis = getClass().getResource("/symja/VectorAnalysis.m").getFile();
 			// remove 'file:/'
 			// pathToVectorAnalysis = pathToVectorAnalysis.substring(6);
@@ -15992,6 +16014,9 @@ public class LowercaseTestCase extends AbstractTestCase {
 	}
 
 	public void testOptions() {
+		// TODO define options for Plot and other built-ins
+		// check("Options(Plot)", //
+		// "");
 		check("Options(f) = {a -> 1, b -> 2};", //
 				"");
 		check("Options(f)", //
@@ -16439,6 +16464,19 @@ public class LowercaseTestCase extends AbstractTestCase {
 				"{{0,1,0},{1,0,1},{0,ComplexInfinity,0}}");
 		check("Outer(StringJoin, {\"\", \"re\", \"un\"}, {\"cover\", \"draw\", \"wind\"}, {\"\", \"ing\", \"s\"})", //
 				"{{{cover,covering,covers},{draw,drawing,draws},{wind,winding,winds}},{{recover,recovering,recovers},{redraw,redrawing,redraws},{rewind,rewinding,rewinds}},{{uncover,uncovering,uncovers},{undraw,undrawing,undraws},{unwind,unwinding,unwinds}}}");
+	}
+
+	public void testOwnValues() {
+		check("a=42", //
+				"42");
+		check("OwnValues(a)", //
+				"{HoldPattern(a):>42}");
+
+		check("a=21", //
+				"21");
+		// TODO
+		check("Hold(a) /. OwnValues(a)", //
+				"Hold(21)");
 	}
 
 	public void testPadLeft() {
@@ -23323,7 +23361,14 @@ public class LowercaseTestCase extends AbstractTestCase {
 				"True");
 	}
 
-	public void testStringSplit() {
+	public void testStringSplit() { 
+		check("StringSplit(\"13  a22    bbb\", WhitespaceCharacter) // InputForm", //
+				"{\"13\",\"\",\"a22\",\"\",\"\",\"\",\"bbb\"}");
+		check("StringSplit(\"13 a22 bbb\", WhitespaceCharacter) // InputForm", //
+				"{\"13\",\"a22\",\"bbb\"}");
+		check("StringSplit(\"13  a22    bbb\", Whitespace) // InputForm", //
+				"{\"13\",\"a22\",\"bbb\"}");
+		
 		check("StringSplit(\"\")", //
 				"{}");
 		check("StringSplit(\"test\")", //
@@ -24184,6 +24229,10 @@ public class LowercaseTestCase extends AbstractTestCase {
 	}
 
 	public void testTable() {
+		// message nliter
+		check("s={x,1,10};Table(f(x),s)", //
+				"Table(f(x),s)");
+
 		check("Table(Sum(k^n, {k, 0, m}), {n, 1, 5, 1})", //
 				"{1/2*m*(1+m),m/6+m^2/2+m^3/3,m^2/4+m^3/2+m^4/4,-m/30+m^3/3+m^4/2+m^5/5,-m^2/12+5/\n" + //
 						"12*m^4+m^5/2+m^6/6}");
@@ -25855,6 +25904,13 @@ public class LowercaseTestCase extends AbstractTestCase {
 		check("UpperTriangularize({{a,b,c,d}, {d,e,f,g}, {h,i,j,k}, {l,m,n,o}})", //
 				"{{a,b,c,d},\n" + " {0,e,f,g},\n" + " {0,0,j,k},\n" + " {0,0,0,o}}");
 
+	}
+
+	public void testUpValues() {
+		check("u /: v(x_u) := {x}", //
+				"");
+		check("UpValues(u)", //
+				"{HoldPattern(v(x_u)):>{x}}");
 	}
 
 	public void testUpSet() {

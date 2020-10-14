@@ -189,7 +189,13 @@ public class Sum extends ListFunctions.Table implements SumRules {
 				if (argN.isList()) {
 					iterator = Iterator.create((IAST) argN, ast.argSize(), engine);
 				} else {
-					iterator = Iterator.create(F.List(argN), ast.argSize(), engine);
+					if (argN.isReal()) { 
+						iterator = Iterator.create(F.List(argN), ast.argSize(), engine);
+					} else {
+						// Non-list iterator `1` at position `2` does not evaluate to a real numeric value.
+						return IOFunctions.printMessage(ast.topHead(), "nliter", F.List(argN, F.ZZ(ast.size()-1)),
+								engine);
+					}
 				}
 
 				// if (iterator.isSetIterator() || iterator.isNumericFunction()) {

@@ -16,6 +16,7 @@ import org.matheclipse.core.eval.util.OpenIntToSet;
 import org.matheclipse.core.expression.Context;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.interfaces.IAST;
+import org.matheclipse.core.interfaces.IASTAppendable;
 import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.interfaces.IStringX;
 import org.matheclipse.core.interfaces.ISymbol;
@@ -229,17 +230,17 @@ public final class RulesData implements Serializable {
 	private PatternMatcher addSimplePatternUpRule(final IExpr leftHandSide, final PatternMatcher pmEvaluator) {
 		IExpr head = ((IAST) leftHandSide).head();
 		if (head.isFreeOfPatterns()) {
-			 final int hash = ((IAST) leftHandSide).topHead().hashCode();
-			 if (F.isSystemInitialized) {
-					int indx = fSimplePatternUpRules.indexOf(pmEvaluator);
-					if (indx >= 0) {
-						fSimplePatternUpRules.remove(indx);
-					}
+			final int hash = ((IAST) leftHandSide).topHead().hashCode();
+			if (F.isSystemInitialized) {
+				int indx = fSimplePatternUpRules.indexOf(pmEvaluator);
+				if (indx >= 0) {
+					fSimplePatternUpRules.remove(indx);
 				}
-				fSimplePatternUpRules.add(pmEvaluator);
-				return pmEvaluator;
+			}
+			fSimplePatternUpRules.add(pmEvaluator);
+			return pmEvaluator;
 		}
-		
+
 		if (F.isSystemInitialized) {
 			int indx = fSimplePatternUpRules.indexOf(pmEvaluator);
 			if (indx >= 0) {
@@ -304,6 +305,66 @@ public final class RulesData implements Serializable {
 		}
 
 		return definitionList;
+	}
+
+	/**
+	 * Give the <code>DownValues()</code> of a symbol as a list of <code>RuleDelayed</code> (delayed rules) with the
+	 * left-hand-side wrapped in a <code>HoldPattern()</code> expression.
+	 * 
+	 * @return a list of <code>RuleDelayed(HoldPattern(lhs), rhs)</code> rules
+	 */
+	public IAST downValues() {
+		int size = 1;
+		if (fEqualDownRules != null) {
+			size += fEqualDownRules.size();
+		}
+		if (fPatternDownRules != null) {
+			size += fPatternDownRules.size();
+		}
+		IASTAppendable result = F.ListAlloc(size);
+		if (fEqualDownRules != null) {
+			for (Map.Entry<IExpr, PatternMatcherEquals> entry : fEqualDownRules.entrySet()) {
+				PatternMatcherEquals value = entry.getValue();
+				result.append(F.RuleDelayed(F.HoldPattern(value.getLHS()), value.getRHS()));
+			}
+		}
+		if (fPatternDownRules != null ) {
+			for (int i = 0; i < fPatternDownRules.size(); i++) {
+				IPatternMatcher matcher=fPatternDownRules.get(i);
+				result.append(F.RuleDelayed(F.HoldPattern(matcher.getLHS()), matcher.getRHS()));
+			}
+		}
+		return result;
+	}
+
+	/**
+	 * Give the <code>UpValues()</code> of a symbol as a list of <code>RuleDelayed</code> (delayed rules) with the
+	 * left-hand-side wrapped in a <code>HoldPattern()</code> expression.
+	 * 
+	 * @return a list of <code>RuleDelayed(HoldPattern(lhs), rhs)</code> rules
+	 */
+	public IAST upValues() {
+		int size = 1;
+		if (fEqualUpRules != null) {
+			size += fEqualUpRules.size();
+		}
+		if (fSimplePatternUpRules != null) {
+			size += fSimplePatternUpRules.size();
+		}
+		IASTAppendable result = F.ListAlloc(size);
+		if (fEqualUpRules != null) {
+			for (Map.Entry<IExpr, PatternMatcherEquals> entry : fEqualUpRules.entrySet()) {
+				PatternMatcherEquals value = entry.getValue();
+				result.append(F.RuleDelayed(F.HoldPattern(value.getLHS()), value.getRHS()));
+			}
+		}
+		if (fSimplePatternUpRules != null ) {
+			for (int i = 0; i < fSimplePatternUpRules.size(); i++) {
+				IPatternMatcher matcher=fSimplePatternUpRules.get(i);
+				result.append(F.RuleDelayed(F.HoldPattern(matcher.getLHS()), matcher.getRHS()));
+			}
+		}
+		return result;
 	}
 
 	@Override
@@ -538,7 +599,7 @@ public final class RulesData implements Serializable {
 
 	private List<IPatternMatcher> getSimplePatternUpRules() {
 		if (fSimplePatternUpRules == null) {
-			fSimplePatternUpRules = new ArrayList<IPatternMatcher>();//IPatternMatcher.EQUIVALENCE_COMPARATOR);
+			fSimplePatternUpRules = new ArrayList<IPatternMatcher>();// IPatternMatcher.EQUIVALENCE_COMPARATOR);
 		}
 		return fSimplePatternUpRules;
 	}

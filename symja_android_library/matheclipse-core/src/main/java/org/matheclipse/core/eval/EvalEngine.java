@@ -223,6 +223,10 @@ public class EvalEngine implements Serializable {
 
 	protected boolean fPackageMode = Config.PACKAGE_MODE;
 
+	/**
+	 * If <code>true</code> this engine doesn't distinguish between lower and upper case identifiers, with the exception
+	 * of identifiers with length 1.
+	 */
 	private boolean fRelaxedSyntax;
 
 	/**
@@ -2301,6 +2305,9 @@ public class EvalEngine implements Serializable {
 	}
 
 	/**
+	 * If <code>true</code> this engine doesn't distinguish between lower and upper case identifiers, with the exception
+	 * of identifiers with length 1.
+	 * 
 	 * @return the fRelaxedSyntax
 	 */
 	public final boolean isRelaxedSyntax() {

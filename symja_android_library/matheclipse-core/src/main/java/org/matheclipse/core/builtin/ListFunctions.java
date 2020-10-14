@@ -5967,7 +5967,14 @@ public final class ListFunctions {
 						if (ast.get(i).isList()) {
 							iterList.add(Iterator.create((IAST) ast.get(i), i, engine));
 						} else {
-							iterList.add(Iterator.create(F.List(ast.get(i)), i, engine));
+							IExpr arg = engine.evaluate(ast.get(i));
+							if (arg.isReal()) {
+								iterList.add(Iterator.create(F.List(arg), i, engine));
+							} else {
+								// Non-list iterator `1` at position `2` does not evaluate to a real numeric value.
+								return IOFunctions.printMessage(ast.topHead(), "nliter", F.List(ast.get(i), F.ZZ(i)),
+										engine);
+							}
 						}
 					}
 

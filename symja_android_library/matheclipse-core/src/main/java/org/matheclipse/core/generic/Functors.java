@@ -11,6 +11,7 @@ import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.exception.ArgumentTypeException;
 import org.matheclipse.core.eval.util.OpenFixedSizeMap;
 import org.matheclipse.core.expression.F;
+import org.matheclipse.core.expression.S;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IASTAppendable;
 import org.matheclipse.core.interfaces.IExpr;
@@ -160,6 +161,9 @@ public class Functors {
 	 * @return
 	 */
 	public static Function<IExpr, IExpr> equalRule(IAST rule) {
+		if (rule.first().isAST(S.HoldPattern, 2)) {
+			return new SingleRuleFunctor(rule.setAtCopy(1, rule.first().first()));
+		}
 		return new SingleRuleFunctor(rule);
 	}
 
@@ -203,7 +207,8 @@ public class Functors {
 				equalRules = new OpenFixedSizeMap<IExpr, IExpr>(3);
 				addRuleToCollection(equalRules, matchers, rule);
 			} else {
-				throw new ArgumentTypeException("rule expression (x->y or x:>y) expected instead of " + astRules.toString());
+				throw new ArgumentTypeException(
+						"rule expression (x->y or x:>y) expected instead of " + astRules.toString());
 			}
 			if (matchers.size() > 0) {
 				return new RulesPatternFunctor(equalRules, matchers, engine);
@@ -283,7 +288,8 @@ public class Functors {
 				equalRules = new OpenFixedSizeMap<IExpr, IExpr>(3);
 				createPatternMatcherList(equalRules, matchers, astRules);
 			} else {
-				throw new ArgumentTypeException("rule expression (x->y or x:>y) expected instead of " + astRules.toString());
+				throw new ArgumentTypeException(
+						"rule expression (x->y or x:>y) expected instead of " + astRules.toString());
 			}
 		}
 		if (matchers.size() > 0) {
@@ -313,27 +319,31 @@ public class Functors {
 
 	private static void addRuleToCollection(Map<IExpr, IExpr> equalRules, List<PatternMatcherAndEvaluator> matchers,
 			IAST rule) {
-		if (rule.arg1().isFree(PATTERNQ_PREDICATE, true)) {
-			IExpr temp = equalRules.get(rule.arg1());
+		IExpr lhs = rule.arg1();
+		final IExpr rhs = rule.arg2();
+
+		if (lhs.isAST(S.HoldPattern, 2)) {
+			lhs = lhs.first();
+		}
+
+		if (lhs.isFree(PATTERNQ_PREDICATE, true)) {
+			IExpr temp = equalRules.get(lhs);
 			if (temp == null) {
-				if (rule.arg1().isOrderlessAST() || rule.arg1().isFlatAST()) {
+				if (lhs.isOrderlessAST() || lhs.isFlatAST()) {
 					if (rule.isRuleDelayed()) {
-						matchers.add(
-								new PatternMatcherAndEvaluator(IPatternMatcher.SET_DELAYED, rule.arg1(), rule.arg2()));
+						matchers.add(new PatternMatcherAndEvaluator(IPatternMatcher.SET_DELAYED, lhs, rhs));
 					} else {
-						matchers.add(new PatternMatcherAndEvaluator(IPatternMatcher.SET, rule.arg1(),
-								evalOneIdentity(rule.arg2())));
+						matchers.add(new PatternMatcherAndEvaluator(IPatternMatcher.SET, lhs, evalOneIdentity(rhs)));
 					}
 					return;
 				}
-				equalRules.put(rule.arg1(), rule.arg2());
+				equalRules.put(lhs, rhs);
 			}
 		} else {
 			if (rule.isRuleDelayed()) {
-				matchers.add(new PatternMatcherAndEvaluator(IPatternMatcher.SET_DELAYED, rule.arg1(), rule.arg2()));
+				matchers.add(new PatternMatcherAndEvaluator(IPatternMatcher.SET_DELAYED, lhs, rhs));
 			} else {
-				matchers.add(
-						new PatternMatcherAndEvaluator(IPatternMatcher.SET, rule.arg1(), evalOneIdentity(rule.arg2())));
+				matchers.add(new PatternMatcherAndEvaluator(IPatternMatcher.SET, lhs, evalOneIdentity(rhs)));
 			}
 		}
 	}

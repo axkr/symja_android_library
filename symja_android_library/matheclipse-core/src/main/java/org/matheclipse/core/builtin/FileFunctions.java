@@ -19,7 +19,6 @@ import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.exception.Validate;
 import org.matheclipse.core.eval.exception.ValidateException;
 import org.matheclipse.core.eval.interfaces.AbstractCoreFunctionEvaluator;
-import org.matheclipse.core.eval.interfaces.AbstractEvaluator;
 import org.matheclipse.core.eval.interfaces.AbstractFunctionEvaluator;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.expression.S;
@@ -31,6 +30,7 @@ import org.matheclipse.core.interfaces.ISymbol;
 import org.matheclipse.parser.client.FEConfig;
 import org.matheclipse.parser.client.Parser;
 import org.matheclipse.parser.client.ast.ASTNode;
+import org.matheclipse.parser.client.ast.FunctionNode;
 
 import com.google.common.io.Files;
 import com.google.common.io.Resources;
@@ -267,7 +267,7 @@ public class FileFunctions {
 			return F.Null;
 		}
 
-		private static IExpr getFile(File file, EvalEngine engine) {
+		private static IExpr getFile(File file, IAST ast, EvalEngine engine) {
 			boolean packageMode = engine.isPackageMode();
 			try {
 				engine.setPackageMode(true);
@@ -277,14 +277,14 @@ public class FileFunctions {
 				if (FEConfig.SHOW_STACKTRACE) {
 					e.printStackTrace();
 				}
-				engine.printMessage("Get exception: " + e.getMessage());
+				// Cannot open `1`.
+				return IOFunctions.printMessage(ast.topHead(), "noopen", F.List(ast.arg1()), engine);
 			} finally {
 				engine.setPackageMode(packageMode);
 			}
-			return F.Null;
 		}
 
-		private static IExpr getURL(URL url, EvalEngine engine) {
+		private static IExpr getURL(URL url, IAST ast, EvalEngine engine) {
 			boolean packageMode = engine.isPackageMode();
 			try {
 				engine.setPackageMode(true);
@@ -294,11 +294,11 @@ public class FileFunctions {
 				if (FEConfig.SHOW_STACKTRACE) {
 					e.printStackTrace();
 				}
-				engine.printMessage("Get exception: " + e.getMessage());
+				// Cannot open `1`.
+				return IOFunctions.printMessage(ast.topHead(), "noopen", F.List(ast.arg1()), engine);
 			} finally {
 				engine.setPackageMode(packageMode);
 			}
-			return F.Null;
 		}
 
 		@Override
@@ -308,13 +308,13 @@ public class FileFunctions {
 				if (!(ast.arg1() instanceof IStringX)) {
 					return IOFunctions.printMessage(ast.topHead(), "string", F.List(), engine);
 				}
-				String arg1 = ((IStringX) ast.arg1()).toString();
-				if (arg1.startsWith("https://") || //
-						arg1.startsWith("http://")) {
+				String arg1Str = ((IStringX) ast.arg1()).toString();
+				if (arg1Str.startsWith("https://") || //
+						arg1Str.startsWith("http://")) {
 					URL url;
 					try {
-						url = new URL(arg1);
-						return getURL(url, engine);
+						url = new URL(arg1Str);
+						return getURL(url, ast, engine);
 					} catch (MalformedURLException mue) {
 						if (FEConfig.SHOW_STACKTRACE) {
 							mue.printStackTrace();
@@ -322,17 +322,17 @@ public class FileFunctions {
 						return engine.printMessage(ast.topHead() + ": " + mue.getMessage());
 					}
 				}
-				File file = new File(arg1);
+				File file = new File(arg1Str);
 				if (file.exists()) {
-					// System.out.println(file.toString());
-					return getFile(file, engine);
+					return getFile(file, ast, engine);
 				} else {
-					file = FileSystems.getDefault().getPath(arg1).toAbsolutePath().toFile();
+					file = FileSystems.getDefault().getPath(arg1Str).toAbsolutePath().toFile();
 					if (file.exists()) {
-						return getFile(file, engine);
+						return getFile(file, ast, engine);
 					}
 				}
-
+				// Cannot open `1`.
+				return IOFunctions.printMessage(ast.topHead(), "noopen", F.List(ast.arg1()), engine);
 			}
 			return F.NIL;
 		}
@@ -494,13 +494,25 @@ public class FileFunctions {
 	}
 
 	public static IExpr evaluatePackage(final List<ASTNode> node, final EvalEngine engine) {
-		IExpr temp;
-		int i = 0;
 		AST2Expr ast2Expr = new AST2Expr(engine.isRelaxedSyntax(), engine);
-		IExpr result = F.Null;
+		String compoundExpression = engine.isRelaxedSyntax() ? "compoundexpression" : "CompoundExpression";
+		return evaluatePackageRecursive(node, 0, compoundExpression, ast2Expr, engine);
+	}
+
+	private static IExpr evaluatePackageRecursive(final List<ASTNode> node, int i, String compoundExpression,
+			AST2Expr ast2Expr, final EvalEngine engine) {
+		IExpr temp;
+		IExpr result = S.Null;
 		while (i < node.size()) {
-			temp = ast2Expr.convert(node.get(i++));
-			result = engine.evaluate(temp);
+			ASTNode astNode = node.get(i);
+			if (astNode instanceof FunctionNode && //
+					((FunctionNode) astNode).get(0).getString().equals(compoundExpression)) {
+				result = evaluatePackageRecursive(((FunctionNode) astNode), 1, compoundExpression, ast2Expr, engine);
+			} else {
+				temp = ast2Expr.convert(astNode);
+				result = engine.evaluate(temp);
+			}
+			i++;
 		}
 		return result;
 	}

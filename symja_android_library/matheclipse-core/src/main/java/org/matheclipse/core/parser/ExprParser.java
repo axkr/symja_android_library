@@ -186,8 +186,18 @@ public class ExprParser extends Scanner {
 			IExpr expr = F.NIL;
 			// ID.Blank is lowest integer >ID in switch statement
 			switch (headID) {
+			case ID.Get:
+				if (ast.isAST1() && ast.arg1().isString()) {
+					return S.Get.of(ast.arg1());
+				}
+				break;
+			case ID.Import:
+				if (ast.isAST1() && ast.arg1().isString()) {
+					return S.Import.of(ast.arg1());
+				}
+				break;
 			case ID.Exp:
-				if (ast.isAST(F.Exp, 2)) {
+				if (ast.isAST1()) {
 					// rewrite from input: Exp(x) => E^x
 					return F.Power(F.E, ast.arg1());
 				}
@@ -204,7 +214,7 @@ public class ExprParser extends Scanner {
 			// break;
 
 			case ID.Sqrt:
-				if (ast.isAST(F.Sqrt, 2)) {
+				if (ast.isAST1()) {
 					// rewrite from input: Sqrt(x) => Power(x, 1/2)
 					return F.Power(ast.arg1(), F.C1D2);
 				}
