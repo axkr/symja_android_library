@@ -293,6 +293,7 @@ public class IOFunctions {
 			"argx", "`1` called with `2` arguments; 1 argument is expected.", //
 			"argt", "`1` called with `2` arguments; `3` or `4` arguments are expected.", //
 			"argtu", "`1` called with 1 argument; `2` or `3` arguments are expected.", //
+			"argtype", "Arguments `1` and `2` of `3` should be either non-negative integers or one-character strings.", //
 			"base", "Requested base `1` in `2` should be between 2 and `3`.", //
 			"boxfmt", "`1` is not a box formatting type.", //
 			"coef", "The first argument `1` of `2` should be a non-empty list of positive integers.", //
