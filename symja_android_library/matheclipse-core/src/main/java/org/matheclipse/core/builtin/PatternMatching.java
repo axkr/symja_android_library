@@ -83,6 +83,7 @@ public final class PatternMatching {
 				S.OptionsPattern.setEvaluator(OptionsPattern.CONST);
 				S.OwnValues.setEvaluator(new OwnValues());
 				S.Repeated.setEvaluator(Repeated.CONST);
+				S.RepeatedNull.setEvaluator(RepeatedNull.CONST);
 				S.TagSet.setEvaluator(new TagSet());
 				S.TagSetDelayed.setEvaluator(new TagSetDelayed());
 				S.Unset.setEvaluator(new Unset());
@@ -509,7 +510,7 @@ public final class PatternMatching {
 		}
 
 	}
-	
+
 	/**
 	 * <pre>
 	 * <code>Evaluate(expr)
@@ -1290,7 +1291,7 @@ public final class PatternMatching {
 		}
 	}
 
-	public final static class Repeated extends AbstractCoreFunctionEvaluator {
+	public static class Repeated extends AbstractCoreFunctionEvaluator {
 		public final static Repeated CONST = new Repeated();
 
 		@Override
@@ -1315,6 +1316,24 @@ public final class PatternMatching {
 		public void setUp(ISymbol newSymbol) {
 			newSymbol.setAttributes(ISymbol.HOLDALL);
 		}
+	}
+
+	public final static class RepeatedNull extends Repeated {
+		public final static RepeatedNull CONST = new RepeatedNull();
+
+		@Override
+		public IExpr evaluate(final IAST ast, EvalEngine engine) {
+			if (ast.head().equals(S.RepeatedNull)) {
+				if (ast.isAST1()) {
+					return F.$RepeatedNull(ast.arg1(), engine);
+				}
+				if (ast.isAST2()) {
+					// TODO
+				}
+			}
+			return F.NIL;
+		}
+
 	}
 
 	/**
@@ -2290,7 +2309,7 @@ public final class PatternMatching {
 		}
 
 	}
-	
+
 	private final static class UpValues extends AbstractCoreFunctionEvaluator {
 
 		@Override
