@@ -20,4 +20,4 @@ InterpolatingFunction({{0,17},{1,3},{2,5},{3,4},{4,3},{5,0},{6,23}})
 ```
 
 ### Related terms 
-[InterpolatingPolynomial](InterpolatingPolynomial.md) 
+[InterpolatingPolynomial](InterpolatingPolynomial.md), [NDSolve](NDSolve.md) 
