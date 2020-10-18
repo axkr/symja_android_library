@@ -6,6 +6,7 @@ import org.matheclipse.core.eval.exception.ValidateException;
 import org.matheclipse.core.eval.interfaces.AbstractFunctionEvaluator;
 import org.matheclipse.core.expression.ASTSeriesData;
 import org.matheclipse.core.expression.F;
+import org.matheclipse.core.expression.S;
 import org.matheclipse.core.generic.BinaryBindIth1st;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IASTAppendable;
@@ -356,21 +357,23 @@ public class D extends AbstractFunctionEvaluator implements DRules {
 				} else if (listArg1.isPower()) {
 					// f ^ g
 					final IExpr f = listArg1.base();
-					final IExpr g = listArg1.exponent();
-					final IExpr y = ast.arg2();
+					final IExpr g = listArg1.exponent(); 
 					if (g.isFree(x)) {
 						// g*D(f,y)*f^(g-1)
-						return F.Times(g, F.D(f, y), F.Power(f, g.dec()));
+						return F.Times(g, F.D(f, x), F.Power(f, g.dec()));
 					}
 					if (f.isFree(x)) {
+						if (f.isE()) {
+							return F.Times(F.D(g, x), F.Exp(g));
+						}
 						// D(g,y)*Log(f)*f^g
-						return F.Times(F.D(g, y), F.Log(f), F.Power(f, g));
+						return F.Times(F.D(g, x), F.Log(f), F.Power(f, g));
 					}
 
 					// D[f_^g_,y_]:= f^g*(((g*D[f,y])/f)+Log[f]*D[g,y])
 					final IASTAppendable resultList = F.TimesAlloc(2);
 					resultList.append(F.Power(f, g));
-					resultList.append(F.Plus(F.Times(g, F.D(f, y), F.Power(f, F.CN1)), F.Times(F.Log(f), F.D(g, y))));
+					resultList.append(F.Plus(F.Times(g, F.D(f, x), F.Power(f, F.CN1)), F.Times(F.Log(f), F.D(g, x))));
 					return resultList;
 				} else if ((header == F.Log) && (listArg1.isAST2())) {
 					if (listArg1.isFreeAt(1, x)) {
