@@ -2,6 +2,9 @@
 package org.matheclipse.core.builtin;
 
 import java.io.UnsupportedEncodingException;
+import java.util.Enumeration;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.function.Predicate;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -12,9 +15,7 @@ import org.matheclipse.core.eval.exception.Validate;
 import org.matheclipse.core.eval.exception.ValidateException;
 import org.matheclipse.core.eval.interfaces.AbstractCoreFunctionEvaluator;
 import org.matheclipse.core.eval.interfaces.AbstractFunctionEvaluator;
-import org.matheclipse.core.eval.util.ISequence;
 import org.matheclipse.core.eval.util.OptionArgs;
-import org.matheclipse.core.eval.util.Sequence;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.expression.ID;
 import org.matheclipse.core.expression.PatternSequence;
@@ -33,7 +34,11 @@ import org.matheclipse.core.interfaces.ISymbol;
 import org.matheclipse.core.parser.ExprParser;
 import org.matheclipse.parser.client.FEConfig;
 
+import com.google.common.base.CharMatcher;
+import com.ibm.icu.text.Transliterator;
+
 public final class StringFunctions {
+	final static private Map<String, String> LANGUAGE_MAP = new HashMap<String, String>();
 
 	/**
 	 * 
@@ -43,9 +48,14 @@ public final class StringFunctions {
 	private static class Initializer {
 
 		private static void init() {
+			LANGUAGE_MAP.put("English", "Latin");
+			S.Characters.setEvaluator(new Characters());
+			S.CharacterRange.setEvaluator(new CharacterRange());
 			S.FromCharacterCode.setEvaluator(new FromCharacterCode());
 			S.LetterQ.setEvaluator(new LetterQ());
 			S.LowerCaseQ.setEvaluator(new LowerCaseQ());
+			S.PrintableASCIIQ.setEvaluator(new PrintableASCIIQ());
+ 			S.RemoveDiacritics.setEvaluator(new RemoveDiacritics());
 			S.StringCases.setEvaluator(new StringCases());
 			S.StringCount.setEvaluator(new StringCount());
 			S.StringContainsQ.setEvaluator(new StringContainsQ());
@@ -65,6 +75,7 @@ public final class StringFunctions {
 			S.ToCharacterCode.setEvaluator(new ToCharacterCode());
 			S.ToString.setEvaluator(new ToString());
 			S.ToUnicode.setEvaluator(new ToUnicode());
+			S.Transliterate.setEvaluator(new Transliterate());
 			S.UpperCaseQ.setEvaluator(new UpperCaseQ());
 
 			TeXParser.initialize();
@@ -72,6 +83,88 @@ public final class StringFunctions {
 				S.ToExpression.setEvaluator(new ToExpression());
 			}
 		}
+	}
+
+	private static class Characters extends AbstractFunctionEvaluator {
+
+		@Override
+		public IExpr evaluate(final IAST ast, EvalEngine engine) {
+			if (!(ast.arg1() instanceof IStringX)) {
+				return F.NIL;
+			}
+			String str = ast.arg1().toString();
+			IASTAppendable result = F.ListAlloc(str.length());
+			for (int i = 0; i < str.length(); i++) {
+				result.append(F.$str(str.charAt(i)));
+			}
+			return result;
+		}
+
+		@Override
+		public int[] expectedArgSize(IAST ast) {
+			return IOFunctions.ARGS_1_1;
+		}
+
+		@Override
+		public void setUp(final ISymbol newSymbol) {
+			newSymbol.setAttributes(ISymbol.LISTABLE);
+		}
+	}
+
+	private static class CharacterRange extends AbstractFunctionEvaluator {
+
+		@Override
+		public IExpr evaluate(final IAST ast, EvalEngine engine) {
+			if (!(ast.arg1() instanceof IStringX) || !(ast.arg2() instanceof IStringX)) {
+				if (!(ast.arg1().isInteger()) || !(ast.arg2().isInteger())) {
+					// Arguments `1` and `2` of `3` should be either non-negative integers or one-character strings.
+					return IOFunctions.printMessage(ast.topHead(), "argtype",
+							F.List(ast.arg1(), ast.arg2(), ast.topHead()), engine);
+				} else {
+					int from = ast.arg1().toIntDefault();
+					int to = ast.arg2().toIntDefault();
+					if (from < 0 || to < 0) {
+						// Arguments `1` and `2` of `3` should be either non-negative integers or one-character strings.
+						return IOFunctions.printMessage(ast.topHead(), "argtype",
+								F.List(ast.arg1(), ast.arg2(), ast.topHead()), engine);
+					}
+					int size = to - from;
+					if (size <= 0) {
+						return F.CEmptyList;
+					}
+					IASTAppendable result = F.ListAlloc(size);
+					for (int i = from; i <= to; i++) {
+						result.append(F.$str((char) i));
+					}
+					return result;
+				}
+			} else {
+				String str1 = ast.arg1().toString();
+				String str2 = ast.arg2().toString();
+				if (str1.length() != 1 || str2.length() != 1) {
+					// Arguments `1` and `2` of `3` should be either non-negative integers or one-character strings.
+					return IOFunctions.printMessage(ast.topHead(), "argtype",
+							F.List(ast.arg1(), ast.arg2(), ast.topHead()), engine);
+				}
+				char from = str1.charAt(0);
+				char to = str2.charAt(0);
+				int size = ((int) to) - ((int) from);
+				if (size <= 0) {
+					return F.CEmptyList;
+				}
+				IASTAppendable result = F.ListAlloc(size);
+				for (char i = from; i <= to; i++) {
+					result.append(F.$str(i));
+				}
+				return result;
+			}
+		}
+
+		@Override
+		public int[] expectedArgSize(IAST ast) {
+			return IOFunctions.ARGS_2_2;
+		}
+
 	}
 
 	private static class FromCharacterCode extends AbstractFunctionEvaluator {
@@ -235,7 +328,63 @@ public final class StringFunctions {
 		}
 	}
 
-	private static class StringCases extends AbstractFunctionEvaluator {
+	private static class PrintableASCIIQ extends AbstractFunctionEvaluator implements Predicate<IExpr> {
+
+		@Override
+		public IExpr evaluate(final IAST ast, EvalEngine engine) {
+			IExpr arg1 = Validate.checkStringType(ast, 1, engine);
+			if (arg1.isPresent()) {
+				return F.bool(test(arg1));
+			}
+			return F.NIL;
+		}
+
+		@Override
+		public int[] expectedArgSize(IAST ast) {
+			return IOFunctions.ARGS_1_1;
+		}
+
+		@Override
+		public void setUp(final ISymbol newSymbol) {
+			newSymbol.setAttributes(ISymbol.LISTABLE);
+		}
+
+		@Override
+		public boolean test(final IExpr obj) {
+			final String str = obj.toString();
+			if (str.length() == 0) {
+				return true;
+			}
+			return CharMatcher.inRange('\u0020', '\u007E').matchesAllOf(str);
+		}
+	}
+
+	private static class RemoveDiacritics extends AbstractFunctionEvaluator {
+
+		@Override
+		public IExpr evaluate(final IAST ast, EvalEngine engine) {
+			if (!(ast.arg1() instanceof IStringX)) {
+				return F.NIL;
+			}
+			String str = ast.arg1().toString();
+			Transliterator transform = Transliterator.getInstance("NFD; [:Nonspacing Mark:] Remove; NFC");
+			String value = transform.transliterate(str);
+			return F.$str(value);
+
+		}
+
+		@Override
+		public int[] expectedArgSize(IAST ast) {
+			return IOFunctions.ARGS_1_1;
+		}
+
+		@Override
+		public void setUp(final ISymbol newSymbol) {
+			newSymbol.setAttributes(ISymbol.LISTABLE);
+		}
+	}
+
+	private static class StringCases extends AbstractCoreFunctionEvaluator {
 
 		@Override
 		public IExpr evaluate(IAST ast, EvalEngine engine) {
@@ -246,7 +395,7 @@ public final class StringFunctions {
 				}
 			}
 			if (ast.size() >= 3) {
-				IExpr arg1 = ast.arg1();
+				IExpr arg1 = engine.evaluate(ast.arg1());
 				if (arg1.isList()) {
 					return ((IAST) arg1).mapThread(ast, 1);
 				}
@@ -264,7 +413,7 @@ public final class StringFunctions {
 						// ignoreCase = true;
 						// }
 					}
-					String str = ((IStringX) ast.arg1()).toString();
+					String str = ((IStringX) arg1).toString();
 					IExpr arg2 = ast.arg2();
 					if (!arg2.isList()) {
 						arg2 = F.List(arg2);
@@ -297,7 +446,7 @@ public final class StringFunctions {
 		}
 	}
 
-	private static class StringCount extends AbstractFunctionEvaluator {
+	private static class StringCount extends AbstractCoreFunctionEvaluator {
 
 		@Override
 		public IExpr evaluate(IAST ast, EvalEngine engine) {
@@ -308,7 +457,7 @@ public final class StringFunctions {
 				}
 			}
 			if (ast.size() >= 3) {
-				IExpr arg1 = ast.arg1();
+				IExpr arg1 = engine.evaluate(ast.arg1());
 				if (arg1.isList()) {
 					return ((IAST) arg1).mapThread(ast, 1);
 				}
@@ -326,7 +475,7 @@ public final class StringFunctions {
 						// ignoreCase = true;
 						// }
 					}
-					String str = ((IStringX) ast.arg1()).toString();
+					String str = ((IStringX) arg1).toString();
 					IExpr arg2 = ast.arg2();
 					if (!arg2.isList()) {
 						arg2 = F.List(arg2);
@@ -358,7 +507,7 @@ public final class StringFunctions {
 		}
 	}
 
-	private static class StringContainsQ extends AbstractFunctionEvaluator {
+	private static class StringContainsQ extends AbstractCoreFunctionEvaluator {
 
 		@Override
 		public IExpr evaluate(IAST ast, EvalEngine engine) {
@@ -378,7 +527,7 @@ public final class StringFunctions {
 			}
 
 			if (ast.size() >= 3) {
-				IExpr arg1 = ast.arg1();
+				IExpr arg1 = engine.evaluate(ast.arg1());
 				if (arg1.isList()) {
 					return ((IAST) arg1).mapThread(ast, 1);
 				}
@@ -520,7 +669,7 @@ public final class StringFunctions {
 		}
 	}
 
-	private static class StringMatchQ extends AbstractFunctionEvaluator {
+	private static class StringMatchQ extends AbstractCoreFunctionEvaluator {
 
 		@Override
 		public IExpr evaluate(IAST ast, EvalEngine engine) {
@@ -540,7 +689,7 @@ public final class StringFunctions {
 					}
 				}
 
-				IExpr arg1 = ast.arg1();
+				IExpr arg1 = engine.evaluate(ast.arg1());
 				if (arg1.isList()) {
 					return ((IAST) arg1).mapThread(ast, 1);
 				}
@@ -604,7 +753,7 @@ public final class StringFunctions {
 		}
 	}
 
-	private static class StringReplace extends AbstractFunctionEvaluator {
+	private static class StringReplace extends AbstractCoreFunctionEvaluator {
 
 		@Override
 		public IExpr evaluate(IAST ast, EvalEngine engine) {
@@ -615,11 +764,11 @@ public final class StringFunctions {
 				}
 			}
 			if (ast.size() >= 3) {
-				IExpr arg1 = ast.arg1();
+				IExpr arg1 = engine.evaluate(ast.arg1());
 				if (arg1.isList()) {
 					return ((IAST) arg1).mapThread(ast, 1);
 				}
-				if (!ast.arg1().isString()) {
+				if (!arg1.isString()) {
 					return F.NIL;
 				}
 				boolean ignoreCase = false;
@@ -630,7 +779,7 @@ public final class StringFunctions {
 						ignoreCase = true;
 					}
 				}
-				String str = ((IStringX) ast.arg1()).toString();
+				String str = ((IStringX) arg1).toString();
 				IExpr arg2 = ast.arg2();
 				if (!arg2.isListOfRules(false)) {
 					if (arg2.isRuleAST()) {
@@ -748,15 +897,15 @@ public final class StringFunctions {
 
 	}
 
-	private static class StringSplit extends AbstractFunctionEvaluator {
+	private static class StringSplit extends AbstractCoreFunctionEvaluator {
 
 		@Override
 		public IExpr evaluate(final IAST ast, EvalEngine engine) {
-
-			if (!ast.arg1().isString()) {
+			IExpr arg1 = engine.evaluate(ast.arg1());
+			if (!arg1.isString()) {
 				return F.NIL;
 			}
-			String str1 = ((IStringX) ast.arg1()).toString().trim();
+			String str1 = ((IStringX) arg1).toString().trim();
 			if (ast.isAST1()) {
 				return splitList(str1, str1.split("\\s+"));
 			}
@@ -796,10 +945,6 @@ public final class StringFunctions {
 			return IOFunctions.ARGS_1_3;
 		}
 
-		@Override
-		public void setUp(final ISymbol newSymbol) {
-
-		}
 	}
 
 	private static class StringTake extends AbstractFunctionEvaluator {
@@ -1139,6 +1284,79 @@ public final class StringFunctions {
 		}
 	}
 
+	private static class Transliterate extends AbstractFunctionEvaluator {
+
+		@Override
+		public IExpr evaluate(final IAST ast, EvalEngine engine) {
+			if (!(ast.arg1() instanceof IStringX)) {
+				return F.NIL;
+			}
+			Enumeration<String> ids = Transliterator.getAvailableIDs();
+
+			while (ids.hasMoreElements()) {
+				String s = ids.nextElement();
+				System.out.println(s);
+			}
+			if (ast.isAST2()) {
+				if (ast.arg2().isRuleAST()) {
+					if (ast.arg2().first().isString() && //
+							ast.arg2().second().isString()) {
+						try {
+							String str1 = mapToICU4J(ast.arg2().first().toString());
+							String str2 = mapToICU4J(ast.arg2().second().toString());
+							String str = ast.arg1().toString();
+							Transliterator transform = Transliterator.getInstance(str1 + "-" + str2);
+							String result = transform.transliterate(str);
+							return F.$str(result);
+						} catch (IllegalArgumentException iae) {
+
+						}
+					}
+				} else if (ast.arg2().isString()) {
+					try {
+						String str1 = "Latin";
+						String str2 = mapToICU4J(ast.arg2().toString());
+						String str = ast.arg1().toString();
+						Transliterator transform = Transliterator.getInstance(str1 + "-" + str2);
+						String result = transform.transliterate(str);
+						return F.$str(result);
+					} catch (IllegalArgumentException iae) {
+
+					}
+				}
+				return F.NIL;
+			}
+			if (ast.isAST1()) {
+				String str = ast.arg1().toString();
+				Transliterator transform = Transliterator.getInstance("Any-Latin");
+				String latin = transform.transliterate(str);
+				transform = Transliterator.getInstance("Latin-ASCII");
+				// "NFD; [:Nonspacing Mark:] Remove; NFC."
+				String ascii = transform.transliterate(latin);
+				return F.$str(ascii);
+			}
+			return F.NIL;
+		}
+
+		private static String mapToICU4J(String language) {
+			String temp = LANGUAGE_MAP.get(language);
+			if (temp != null) {
+				language = temp;
+			}
+			return language;
+		}
+
+		@Override
+		public int[] expectedArgSize(IAST ast) {
+			return IOFunctions.ARGS_1_2;
+		}
+
+		@Override
+		public void setUp(final ISymbol newSymbol) {
+			newSymbol.setAttributes(ISymbol.LISTABLE);
+		}
+	}
+
 	/**
 	 * <pre>
 	 * UpperCaseQ(str)
@@ -1246,13 +1464,20 @@ public final class StringFunctions {
 		String regex = toRegexString(partOfRegex, abbreviatedPatterns, stringFunction, engine);
 		if (regex != null) {
 			java.util.regex.Pattern pattern;
-			if (ignoreCase) {
-				pattern = java.util.regex.Pattern.compile(regex,
-						Pattern.UNICODE_CHARACTER_CLASS | Pattern.CASE_INSENSITIVE);
-			} else {
-				pattern = java.util.regex.Pattern.compile(regex, Pattern.UNICODE_CHARACTER_CLASS);
+			try {
+				if (ignoreCase) {
+					pattern = java.util.regex.Pattern.compile(regex,
+							Pattern.UNICODE_CHARACTER_CLASS | Pattern.CASE_INSENSITIVE);
+				} else {
+					pattern = java.util.regex.Pattern.compile(regex, Pattern.UNICODE_CHARACTER_CLASS);
+				}
+				return pattern;
+			} catch (IllegalArgumentException iae) {
+				// for example java.util.regex.PatternSyntaxException
+				if (FEConfig.SHOW_STACKTRACE) {
+					iae.printStackTrace();
+				}
 			}
-			return pattern;
 		}
 		return null;
 	}
@@ -1352,6 +1577,18 @@ public final class StringFunctions {
 				// Repeated
 				return "(.|\\n)+";
 			}
+		} else if (partOfRegex.isAST(S.CharacterRange, 3)) {
+			String[] characterRange = characterRange((IAST) partOfRegex);
+			if (characterRange == null) {
+				return null;
+			}
+			StringBuilder buf = new StringBuilder();
+			buf.append("[");
+			buf.append(Pattern.quote(characterRange[0]));
+			buf.append("-");
+			buf.append(Pattern.quote(characterRange[1]));
+			buf.append("]");
+			return buf.toString();
 		} else if (partOfRegex.isAlternatives()) {
 			IAST alternatives = (IAST) partOfRegex;
 			StringBuilder pieces = new StringBuilder();
@@ -1422,6 +1659,38 @@ public final class StringFunctions {
 			regex.append(str);
 		}
 		return regex.toString();
+	}
+
+	/**
+	 * Get the character range of <code>CharacterRange(from, to)</code>
+	 * 
+	 * @param ast
+	 *            <code>CharacterRange(a,b)</code>
+	 * @param engine
+	 * @return <code>from</code> at offset 0 and <code>to</code> at offset 1. <code>null</code> if the character range
+	 *         cannot be generated
+	 */
+	private static String[] characterRange(final IAST characterRangeAST) {
+		if (!(characterRangeAST.arg1() instanceof IStringX) || !(characterRangeAST.arg2() instanceof IStringX)) {
+			if (!(characterRangeAST.arg1().isInteger()) || !(characterRangeAST.arg2().isInteger())) {
+				return null;
+			}
+			int from = characterRangeAST.arg1().toIntDefault();
+			int to = characterRangeAST.arg2().toIntDefault();
+			if (from < 0 || to < 0) {
+				return null;
+			}
+			return new String[] { String.valueOf((char) from), String.valueOf((char) to) };
+
+		}
+		String str1 = characterRangeAST.arg1().toString();
+		String str2 = characterRangeAST.arg2().toString();
+		if (str1.length() != 1 || str2.length() != 1) {
+			return null;
+		}
+		char from = str1.charAt(0);
+		char to = str2.charAt(0);
+		return new String[] { String.valueOf(from), String.valueOf(to) };
 	}
 
 	public static void initialize() {
