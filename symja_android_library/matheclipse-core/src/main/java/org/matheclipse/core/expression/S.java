@@ -365,7 +365,7 @@ public class S {
 
 	/***/
 	public final static IBuiltInSymbol BeginTestSection = F.initFinalSymbol("BeginTestSection", ID.BeginTestSection);
-	
+
 	/**
 	 * BellB(n) - the Bell number function counts the number of different ways to partition a set that has exactly `n`
 	 * elements
@@ -583,6 +583,9 @@ public class S {
 
 	/***/
 	public final static IBuiltInSymbol CharacterEncoding = F.initFinalSymbol("CharacterEncoding", ID.CharacterEncoding);
+
+	/***/
+	public final static IBuiltInSymbol CharacterRange = F.initFinalSymbol("CharacterRange", ID.CharacterRange);
 
 	/**
 	 * CharacteristicPolynomial(matrix, var) - computes the characteristic polynomial of a `matrix` for the variable
@@ -1072,7 +1075,7 @@ public class S {
 	public final static IBuiltInSymbol Dot = F.initFinalSymbol("Dot", ID.Dot);
 
 	/***/
-    public final static IBuiltInSymbol DownValues = F.initFinalSymbol("DownValues", ID.DownValues);
+	public final static IBuiltInSymbol DownValues = F.initFinalSymbol("DownValues", ID.DownValues);
 
 	/** Drop(expr, n) - returns `expr` with the first `n` leaves removed. */
 	public final static IBuiltInSymbol Drop = F.initFinalSymbol("Drop", ID.Drop);
@@ -1163,7 +1166,7 @@ public class S {
 
 	/***/
 	public final static IBuiltInSymbol EndTestSection = F.initFinalSymbol("EndTestSection", ID.EndTestSection);
-	
+
 	/***/
 	public final static IBuiltInSymbol Entity = F.initFinalSymbol("Entity", ID.Entity);
 
@@ -2281,6 +2284,9 @@ public class S {
 	public final static IBuiltInSymbol LogisticSigmoid = F.initFinalSymbol("LogisticSigmoid", ID.LogisticSigmoid);
 
 	/***/
+	public final static IBuiltInSymbol Longest = F.initFinalSymbol("Longest", ID.Longest);
+
+	/***/
 	public final static IBuiltInSymbol LongForm = F.initFinalSymbol("LongForm", ID.LongForm);
 
 	/**
@@ -2793,8 +2799,8 @@ public class S {
 	public final static IBuiltInSymbol OutputStream = F.initFinalSymbol("OutputStream", ID.OutputStream);
 
 	/***/
-    public final static IBuiltInSymbol OwnValues = F.initFinalSymbol("OwnValues", ID.OwnValues);
-    
+	public final static IBuiltInSymbol OwnValues = F.initFinalSymbol("OwnValues", ID.OwnValues);
+
 	/** PDF(distribution, value) - returns the probability density function of `value`. */
 	public final static IBuiltInSymbol PDF = F.initFinalSymbol("PDF", ID.PDF);
 
@@ -2839,6 +2845,9 @@ public class S {
 	 * `True`.
 	 */
 	public final static IBuiltInSymbol PatternTest = F.initFinalSymbol("PatternTest", ID.PatternTest);
+
+	/***/
+	public final static IBuiltInSymbol Pause = F.initFinalSymbol("Pause", ID.Pause);
 
 	/***/
 	public final static IBuiltInSymbol PearsonChiSquareTest = F.initFinalSymbol("PearsonChiSquareTest",
@@ -3034,6 +3043,9 @@ public class S {
 	/** Print(expr) - print the `expr` to the default output stream and return `Null`. */
 	public final static IBuiltInSymbol Print = F.initFinalSymbol("Print", ID.Print);
 
+	/***/
+	public final static IBuiltInSymbol PrintableASCIIQ = F.initFinalSymbol("PrintableASCIIQ", ID.PrintableASCIIQ);
+
 	/**
 	 * Probability(pure-function, data-set) - returns the probability of the `pure-function` for the given `data-set`.
 	 */
@@ -3190,6 +3202,9 @@ public class S {
 
 	/***/
 	public final static IBuiltInSymbol Remove = F.initFinalSymbol("Remove", ID.Remove);
+
+	/***/
+	public final static IBuiltInSymbol RemoveDiacritics = F.initFinalSymbol("RemoveDiacritics", ID.RemoveDiacritics);
 
 	/***/
 	public final static IBuiltInSymbol Repeated = F.initFinalSymbol("Repeated", ID.Repeated);
@@ -3405,6 +3420,9 @@ public class S {
 
 	/***/
 	public final static IBuiltInSymbol Short = F.initFinalSymbol("Short", ID.Short);
+
+	/***/
+	public final static IBuiltInSymbol Shortest = F.initFinalSymbol("Shortest", ID.Shortest);
 
 	/***/
 	public final static IBuiltInSymbol Show = F.initFinalSymbol("Show", ID.Show);
@@ -3858,6 +3876,9 @@ public class S {
 	/***/
 	public final static IBuiltInSymbol TraditionalForm = F.initFinalSymbol("TraditionalForm", ID.TraditionalForm);
 
+	/***/
+	public final static IBuiltInSymbol Transliterate = F.initFinalSymbol("Transliterate", ID.Transliterate);
+
 	/** Transpose(m) - transposes rows and columns in the matrix `m`. */
 	public final static IBuiltInSymbol Transpose = F.initFinalSymbol("Transpose", ID.Transpose);
 
@@ -3961,8 +3982,8 @@ public class S {
 	public final static IBuiltInSymbol UpTo = F.initFinalSymbol("UpTo", ID.UpTo);
 
 	/***/
-    public final static IBuiltInSymbol UpValues = F.initFinalSymbol("UpValues", ID.UpValues);
-    
+	public final static IBuiltInSymbol UpValues = F.initFinalSymbol("UpValues", ID.UpValues);
+
 	/** UpperCaseQ(str) - is `True` if the given `str` is a string which only contains upper case characters. */
 	public final static IBuiltInSymbol UpperCaseQ = F.initFinalSymbol("UpperCaseQ", ID.UpperCaseQ);
 
