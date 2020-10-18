@@ -1,8 +1,9 @@
 package org.matheclipse.core.builtin;
 
-import static org.matheclipse.core.expression.F.Divide;
 import static org.matheclipse.core.expression.F.List;
 
+import java.lang.management.ManagementFactory;
+import java.lang.management.ThreadMXBean;
 import java.util.ArrayDeque;
 import java.util.ArrayList;
 import java.util.IdentityHashMap;
@@ -91,6 +92,7 @@ public final class Programming {
 			S.NestWhile.setEvaluator(new NestWhile());
 			S.NestWhileList.setEvaluator(new NestWhileList());
 			S.Part.setEvaluator(new Part());
+			S.Pause.setEvaluator(new Pause());
 			S.Quiet.setEvaluator(new Quiet());
 			S.Reap.setEvaluator(new Reap());
 			S.Return.setEvaluator(new Return());
@@ -150,21 +152,26 @@ public final class Programming {
 
 	}
 
-	private static class AbsoluteTiming extends Timing {
+	private static class AbsoluteTiming extends AbstractCoreFunctionEvaluator {
 
 		@Override
 		public IExpr evaluate(final IAST ast, EvalEngine engine) {
 			if (ast.size() == 2) {
 				final long begin = System.currentTimeMillis();
 				final IExpr result = engine.evaluate(ast.arg1());
-				return List(Divide(F.num(System.currentTimeMillis() - begin), F.ZZ(1000L)), F.HoldForm(result));
+				double value = (System.currentTimeMillis() - begin) / 1000.0;
+				return F.List(F.num(value), F.HoldForm(result));
 			}
 			return F.NIL;
 		}
 
+		public int[] expectedArgSize(IAST ast) {
+			return IOFunctions.ARGS_1_1;
+		}
+
 		@Override
 		public void setUp(final ISymbol newSymbol) {
-			newSymbol.setAttributes(ISymbol.HOLDALL);
+			newSymbol.setAttributes(ISymbol.HOLDALL | ISymbol.SEQUENCEHOLD);
 		}
 	}
 
@@ -2105,11 +2112,32 @@ public final class Programming {
 			}
 			return F.NIL;
 		}
-		
+
 		@Override
 		public void setUp(ISymbol newSymbol) {
 			newSymbol.setAttributes(ISymbol.NHOLDREST);
 		}
+	}
+
+	private final static class Pause extends AbstractFunctionEvaluator {
+
+		@Override
+		public IExpr evaluate(final IAST ast, EvalEngine engine) {
+			int pause = ast.arg1().toIntDefault();
+			if (pause > 0) {
+				try {
+					TimeUnit.SECONDS.sleep(pause);
+				} catch (InterruptedException e) {
+				}
+				return S.Null;
+			}
+			return F.NIL;
+		}
+
+		public int[] expectedArgSize(IAST ast) {
+			return IOFunctions.ARGS_1_1;
+		}
+
 	}
 
 	/**
@@ -2682,21 +2710,27 @@ public final class Programming {
 	 * Calculate the time needed for evaluating an expression
 	 * 
 	 */
-	private static class Timing extends AbstractCoreFunctionEvaluator {
+	private static class Timing extends AbsoluteTiming {
 
 		@Override
 		public IExpr evaluate(final IAST ast, EvalEngine engine) {
-			if (ast.size() == 2) {
-				final long begin = System.currentTimeMillis();
+
+			ThreadMXBean bean = ManagementFactory.getThreadMXBean();
+			if (bean.isCurrentThreadCpuTimeSupported()) {
+				final long begin = bean.getCurrentThreadCpuTime();
 				final IExpr result = engine.evaluate(ast.arg1());
-				return List(Divide(F.num(System.currentTimeMillis() - begin), F.ZZ(1000L)), F.HoldForm(result));
+				final long end = bean.getCurrentThreadCpuTime();
+				double value = ((double)(end - begin)) / 1000000000.0;
+				System.out.println(begin);
+				System.out.println(end);
+				return List(F.num(value), F.HoldForm(result));
 			}
-			return F.NIL;
+			// fall back to AbsoluteTiming
+			return super.evaluate(ast, engine);
 		}
 
-		@Override
-		public void setUp(final ISymbol newSymbol) {
-			newSymbol.setAttributes(ISymbol.HOLDALL);
+		public int[] expectedArgSize(IAST ast) {
+			return IOFunctions.ARGS_1_1;
 		}
 	}
 
@@ -3407,9 +3441,9 @@ public final class Programming {
 							return F.NIL;
 						}
 					} else if (listArg.isAST(F.Key, 2)) {
-						result.appendRule( assoc.getRule(listArg.first()));
+						result.appendRule(assoc.getRule(listArg.first()));
 					} else if (listArg.isString()) {
-						result.appendRule( assoc.getRule(listArg));
+						result.appendRule(assoc.getRule(listArg));
 					}
 				}
 				return result;
@@ -3486,8 +3520,8 @@ public final class Programming {
 		if (temp.isList()) {
 			IExpr res = part((IAST) temp, ast, pos, engine);
 			if (res.isList()) {
-				ISparseArray sparseArray= SparseArrayExpr.newDenseList((IAST) res, arg1.getDefaultValue());
-				if (sparseArray!=null) {
+				ISparseArray sparseArray = SparseArrayExpr.newDenseList((IAST) res, arg1.getDefaultValue());
+				if (sparseArray != null) {
 					return sparseArray;
 				}
 			}
