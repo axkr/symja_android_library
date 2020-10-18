@@ -12,11 +12,15 @@ public class RepeatedPattern extends PatternSequence {
 	private static final long serialVersionUID = 1086461999754718513L;
 
 	public static RepeatedPattern valueOf(IExpr patternExpr, EvalEngine engine) {
+		return valueOf(patternExpr, false, engine);
+	}
+
+	public static RepeatedPattern valueOf(IExpr patternExpr, boolean zeroArgsAllowed, EvalEngine engine) {
 		RepeatedPattern p = new RepeatedPattern();
 		p.fSymbol = null;
 		p.fCondition = null;
 		p.fDefault = false;
-		p.fZeroArgsAllowed = false;
+		p.fZeroArgsAllowed = zeroArgsAllowed;
 		p.fRepeatedExpr = patternExpr;
 		p.fMatcher = engine.evalPatternMatcher(patternExpr);
 		return p;
@@ -82,6 +86,19 @@ public class RepeatedPattern extends PatternSequence {
 		return false;
 	}
 
+	@Override
+	public String fullFormString() {
+		StringBuilder buf = new StringBuilder();
+		if (fZeroArgsAllowed) {
+			buf.append("RepeatedNull[");
+		} else {
+			buf.append("Repeated[");
+		}
+		buf.append(fRepeatedExpr.fullFormString());
+		buf.append(']');
+		return buf.toString();
+	}
+
 	public IExpr getRepeatedExpr() {
 		return fRepeatedExpr;
 	}
@@ -98,7 +115,7 @@ public class RepeatedPattern extends PatternSequence {
 
 	@Override
 	public boolean matchPatternSequence(final IAST sequence, IPatternMap patternMap, ISymbol optionsPatternHead) {
-		if (sequence.size() == 1) {
+		if (sequence.size() == 1 && !isNullSequence()) {
 			return false;
 		}
 		EvalEngine engine = EvalEngine.get();
@@ -113,9 +130,12 @@ public class RepeatedPattern extends PatternSequence {
 	@Override
 	public String toString() {
 		final StringBuilder buffer = new StringBuilder();
-		buffer.append("Repeated(");
 		buffer.append(fRepeatedExpr.toString());
-		buffer.append(")");
+		if (fZeroArgsAllowed) {
+			buffer.append("...");
+		} else {
+			buffer.append("..");
+		}
 		return buffer.toString();
 	}
 }

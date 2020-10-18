@@ -88,6 +88,20 @@ public class OptionsPattern extends PatternSequence {
 		return false;
 	}
 
+	@Override
+	public String fullFormString() {
+		StringBuilder buf = new StringBuilder();
+		
+		if (fSymbol != null) {
+			buf.append("Pattern[");
+			buf.append(fSymbol.fullFormString());
+			buf.append(",OptionsPattern[]]");
+		}else {
+			buf.append("OptionsPattern[]");
+		} 
+		return buf.toString();
+	}
+
 	public IExpr getDefaultOptions() {
 		return fDefaultOptions;
 	}

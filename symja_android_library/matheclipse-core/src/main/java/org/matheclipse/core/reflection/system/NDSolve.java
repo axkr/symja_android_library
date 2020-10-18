@@ -143,7 +143,6 @@ public class NDSolve extends AbstractFunctionEvaluator {
 						for (int j = 0; j < primaryState.length; j++) {
 							resultLists[j] = F.ListAlloc();
 						}
-						IASTAppendable list;
 						for (double time = tMin; time < tMax; time += tStep) {
 							final ODEStateAndDerivative finalstate = abstractIntegrator.integrate(ode,
 									new ODEState(time, primaryState), time + tStep);
