@@ -2,6 +2,7 @@
 package org.matheclipse.core.builtin;
 
 import java.io.UnsupportedEncodingException;
+import java.util.Arrays;
 import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.Map;
@@ -55,12 +56,13 @@ public final class StringFunctions {
 			S.LetterQ.setEvaluator(new LetterQ());
 			S.LowerCaseQ.setEvaluator(new LowerCaseQ());
 			S.PrintableASCIIQ.setEvaluator(new PrintableASCIIQ());
- 			S.RemoveDiacritics.setEvaluator(new RemoveDiacritics());
+			S.RemoveDiacritics.setEvaluator(new RemoveDiacritics());
 			S.StringCases.setEvaluator(new StringCases());
 			S.StringCount.setEvaluator(new StringCount());
 			S.StringContainsQ.setEvaluator(new StringContainsQ());
 			S.StringDrop.setEvaluator(new StringDrop());
 			S.StringExpression.setEvaluator(new StringExpression());
+			S.StringInsert.setEvaluator(new StringInsert());
 			S.StringJoin.setEvaluator(new StringJoin());
 			S.StringLength.setEvaluator(new StringLength());
 			S.StringMatchQ.setEvaluator(new StringMatchQ());
@@ -610,6 +612,74 @@ public final class StringFunctions {
 		@Override
 		public int[] expectedArgSize(IAST ast) {
 			return IOFunctions.ARGS_1_INFINITY;
+		}
+	}
+
+	private static class StringInsert extends AbstractFunctionEvaluator {
+
+		@Override
+		public IExpr evaluate(final IAST ast, EvalEngine engine) {
+			IExpr arg1 = ast.arg1();
+			if (arg1.isList()) {
+				return ((IAST) arg1).mapThread(ast, 1);
+			}
+			if (!arg1.isString()) {
+				return F.NIL;
+			}
+			IExpr arg2 = ast.arg2();
+			if (!arg2.isString()) {
+				return F.NIL;
+			}
+			String str1 = ((IStringX) arg1).toString();
+			String str2 = ((IStringX) arg2).toString();
+			int[] listOfInts;
+			if (ast.arg3().isList()) {
+				listOfInts = Validate.checkListOfInts(ast, ast.arg3(), -str1.length() - 1, str1.length() + 1, engine);
+			} else {
+				int pos = ast.arg3().toIntDefault();
+				if (Math.abs(pos) > str1.length() + 1) {
+					return IOFunctions.printMessage(ast.topHead(), "ins", F.List(ast.arg3(), arg1), engine);
+				}
+				listOfInts = new int[] { pos };
+			}
+			if (listOfInts == null) {
+				return F.NIL;
+			}
+			try {
+				StringBuilder buf = new StringBuilder(str1.length() + str2.length() * listOfInts.length);
+				for (int i = 0; i < listOfInts.length; i++) {
+					if (listOfInts[i] < 0) {
+						listOfInts[i] = str1.length() + listOfInts[i] + 2;
+					} else if (listOfInts[i] == 0) {
+						return IOFunctions.printMessage(ast.topHead(), "ins", F.List(F.C0, arg1), engine);
+					}
+				}
+				Arrays.sort(listOfInts);
+				int lastPos = 0;
+				for (int i = 0; i < listOfInts.length; i++) {
+					buf.append(str1.substring(lastPos, listOfInts[i] - 1));
+					lastPos = listOfInts[i] - 1;
+					buf.append(str2);
+				}
+				buf.append(str1.substring(lastPos));
+				return F.$str(buf.toString());
+			} catch (RuntimeException rex) {
+				// example java.lang.StringIndexOutOfBoundsException
+				if (FEConfig.SHOW_STACKTRACE) {
+					rex.printStackTrace();
+				}
+				return engine.printMessage(ast.topHead(), rex);
+			}
+		}
+
+		@Override
+		public void setUp(final ISymbol newSymbol) {
+			newSymbol.setAttributes(ISymbol.ONEIDENTITY | ISymbol.FLAT);
+		}
+
+		@Override
+		public int[] expectedArgSize(IAST ast) {
+			return IOFunctions.ARGS_3_3;
 		}
 	}
 

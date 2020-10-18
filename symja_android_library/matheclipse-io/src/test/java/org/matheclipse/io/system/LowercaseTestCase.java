@@ -19997,14 +19997,14 @@ public class LowercaseTestCase extends AbstractTestCase {
 				"x==0");
 
 	}
-	
-	public void testRemoveDiacritics() { 
+
+	public void testRemoveDiacritics() {
 		check("RemoveDiacritics(\"\\[CapitalEpsilon]\\[Upsilon]\\[Rho]\\[Omega]\\[Pi]\\[Eta]\")", //
 				"Ευρωπη");
 		check("RemoveDiacritics(\"éèáàâ\")", //
 				"eeaaa");
 	}
-	
+
 	public void testReplace() {
 
 		check("Replace(x,x -> 1)", //
@@ -23362,6 +23362,29 @@ public class LowercaseTestCase extends AbstractTestCase {
 				"abcdefghi");
 		check("StringDrop(\"\",-1)", //
 				"StringDrop(,-1)");
+	}
+
+	public void testStringInsert() {
+		check("StringInsert({\"\", \"Symja\"}, \"X\", {1, 1, -1})", //
+				"{XXX,XXSymjaX}");
+		check("StringInsert({\"abcdefghijklm\", \"Symja\"}, \"X\", {0, 2})", //
+				"{StringInsert(abcdefghijklm,X,{0,2}),StringInsert(Symja,X,{0,2})}");
+		check("StringInsert(\"abcdefghijklm\", \"X\", {1, -1, 14, -14})", //
+				"XXabcdefghijklmXX");
+		check("StringInsert(\"adac\", \"he\", {1, 5})", //
+				"headache");
+		check("StringInsert(\"noting\", \"h\", 4)", //
+				"nothing");
+		check("StringInsert(\"abcdefghijklm\", \"XYZ\", -4)", //
+				"abcdefghijXYZklm");
+		check("StringInsert(\"abcdefghijklm\", \"XYZ\", {2, 3, 7})", //
+				"aXYZbXYZcdefXYZghijklm");
+
+		// StringInsert: Cannot insert at position 15 in abcdefghijklm.
+		check("StringInsert(\"abcdefghijklm\", \"X\", 15)", //
+				"StringInsert(abcdefghijklm,X,15)");
+		check("StringInsert(\"1234567890123456\", \".\", Range(-16, -4, 3))", //
+				"1.234.567.890.123.456");
 	}
 
 	public void testStringJoin() {

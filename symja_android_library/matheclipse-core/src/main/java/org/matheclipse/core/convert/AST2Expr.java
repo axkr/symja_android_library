@@ -192,7 +192,7 @@ public class AST2Expr {
 			"SphericalBesselY", "SphericalHankelH1", "SphericalHankelH2", "Split", "SplitBy", "Sqrt",
 			"SquaredEuclideanDistance", "SquareFreeQ", "SquareMatrixQ", "Stack", "StackBegin", "StandardDeviation",
 			"StandardForm", "Standardize", "StieltjesGamma", "StirlingS1", "StirlingS2", "StringCases", "StringCount",
-			"StringContainsQ", "StringDrop", "StringExpression", "StringJoin", "StringLength", "StringMatchQ",
+			"StringContainsQ", "StringDrop", "StringExpression", "StringInsert", "StringJoin", "StringLength", "StringMatchQ",
 			"StringPart", "StringRiffle", "StringSplit", "StringTake", "StringTrim", "StringQ", "StringReplace",
 			"Structure", "StruveH", "StruveL", "StudentTDistribution", "Style", "StyleForm", "Subdivide",
 			"Subfactorial", "Summary", "Subscript", "Subsuperscript", "SubsetQ", "Subsets", "Subtract", "SubtractFrom",

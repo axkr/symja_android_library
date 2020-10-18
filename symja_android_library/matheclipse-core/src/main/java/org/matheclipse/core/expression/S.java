@@ -3601,6 +3601,9 @@ public class S {
 	/***/
 	public final static IBuiltInSymbol StringExpression = F.initFinalSymbol("StringExpression", ID.StringExpression);
 
+	/***/
+	public final static IBuiltInSymbol StringInsert = F.initFinalSymbol("StringInsert", ID.StringInsert);
+	
 	/** StringJoin(str1, str2, ... strN) - returns the concatenation of the strings `str1, str2, ... strN`. */
 	public final static IBuiltInSymbol StringJoin = F.initFinalSymbol("StringJoin", ID.StringJoin);
 
