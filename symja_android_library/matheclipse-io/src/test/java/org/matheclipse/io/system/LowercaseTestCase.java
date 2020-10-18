@@ -2583,6 +2583,8 @@ public class LowercaseTestCase extends AbstractTestCase {
 	}
 
 	public void testCharacterRange() {
+		check("CharacterRange(\" \", \"~\")", //
+				"{ ,!,\",#,$,%,&,',(,),*,+,,,-,.,/,0,1,2,3,4,5,6,7,8,9,:,;,<,=,>,?,@,A,B,C,D,E,F,G,H,I,J,K,L,M,N,O,P,Q,R,S,T,U,V,W,X,Y,Z,[,\\,],^,_,`,a,b,c,d,e,f,g,h,i,j,k,l,m,n,o,p,q,r,s,t,u,v,w,x,y,z,{,|,},~}");
 		check("CharacterRange(1000, 1020)", //
 				"{Ϩ,ϩ,Ϫ,ϫ,Ϭ,ϭ,Ϯ,ϯ,ϰ,ϱ,ϲ,ϳ,ϴ,ϵ,϶,Ϸ,ϸ,Ϲ,Ϻ,ϻ,ϼ}");
 		check("CharacterRange(\"a\", \"z\")", //
@@ -18768,6 +18770,8 @@ public class LowercaseTestCase extends AbstractTestCase {
 	}
 
 	public void testPrintableASCIIQ() {
+		check("PrintableASCIIQ(\"Symja\")", //
+				"True");
 		check("PrintableASCIIQ({\"a\", \"b\", \"c\", \"Â¤\", \"d\", \"Ë©\"})", //
 				"{True,True,True,False,True,False}");
 		check("PrintableASCIIQ(\"\")", //
@@ -23365,6 +23369,8 @@ public class LowercaseTestCase extends AbstractTestCase {
 	}
 
 	public void testStringInsert() {
+		check("StringInsert({\"\", \"Symja\"}, \"\", {1, 1, -1})", //
+				"{,Symja}");
 		check("StringInsert({\"\", \"Symja\"}, \"X\", {1, 1, -1})", //
 				"{XXX,XXSymjaX}");
 		check("StringInsert({\"abcdefghijklm\", \"Symja\"}, \"X\", {0, 2})", //

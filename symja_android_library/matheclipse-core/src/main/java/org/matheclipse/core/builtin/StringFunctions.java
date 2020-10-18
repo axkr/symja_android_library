@@ -113,6 +113,29 @@ public final class StringFunctions {
 		}
 	}
 
+	/**
+	 * <pre>
+	 * <code>CharacterRange(min-character, max-character)
+	 * </code>
+	 * </pre>
+	 * 
+	 * <blockquote>
+	 * <p>
+	 * computes a list of character strings from <code>min-character</code> to <code>max-character</code>
+	 * </p>
+	 * </blockquote>
+	 * <h3>Examples</h3>
+	 * <p>
+	 * The printable ASCII characters:
+	 * </p>
+	 * 
+	 * <pre>
+	 * <code>&gt;&gt; CharacterRange(&quot; &quot;, &quot;~&quot;) 
+	 * { ,!,&quot;,#,$,%,&amp;,',(,),*,+,,,-,.,/,0,1,2,3,4,5,6,7,8,9,:,;,&lt;,=,&gt;,?,@,A,B,C,D,E,F,G,H,I,J,K,L,M,N,O,P,Q,R,S,T,U,V,W,X,Y,Z,[,\,],^,_,`,a,b,c,d,e,f,g,h,i,j,k,l,m,n,o,p,q,r,s,t,u,v,w,x,y,z,{,|,},~}
+	 * 
+	 * </code>
+	 * </pre>
+	 */
 	private static class CharacterRange extends AbstractFunctionEvaluator {
 
 		@Override
@@ -169,6 +192,30 @@ public final class StringFunctions {
 
 	}
 
+	/**
+	 * <pre>
+	 * <code>FromCharacterCode({ch1, ch2, ...})
+	 * </code>
+	 * </pre>
+	 * 
+	 * <blockquote>
+	 * <p>
+	 * converts the <code>ch1, ch2,...</code> character codes into a string of corresponding characters.
+	 * </p>
+	 * </blockquote>
+	 * <h3>Examples</h3>
+	 * 
+	 * <pre>
+	 * <code>&gt;&gt; FromCharacterCode({97,45,51})
+	 * a-3
+	 * </code>
+	 * </pre>
+	 * 
+	 * <h3>Related terms</h3>
+	 * <p>
+	 * <a href="ToCharacterCode.md">ToCharacterCode</a>
+	 * </p>
+	 */
 	private static class FromCharacterCode extends AbstractFunctionEvaluator {
 
 		@Override
@@ -292,8 +339,16 @@ public final class StringFunctions {
 	}
 
 	/**
-	 * Returns <code>True</code>, if the given expression is a string which only contains lower case characters
+	 * <pre>
+	 * <code>LowerCaseQ(str)
+	 * </code>
+	 * </pre>
 	 * 
+	 * <blockquote>
+	 * <p>
+	 * is <code>True</code> if the given <code>str</code> is a string which only contains lower case characters.
+	 * </p>
+	 * </blockquote>
 	 */
 	private static class LowerCaseQ extends AbstractFunctionEvaluator implements Predicate<IExpr> {
 
@@ -330,6 +385,32 @@ public final class StringFunctions {
 		}
 	}
 
+	/**
+	 * <pre>
+	 * <code>PrintableASCIIQ(str)
+	 * </code>
+	 * </pre>
+	 * 
+	 * <blockquote>
+	 * <p>
+	 * returns <code>True</code> if all characters in <code>str</code> are ASCII characters.
+	 * </p>
+	 * </blockquote>
+	 * <p>
+	 * See:
+	 * </p>
+	 * <ul>
+	 * <li><a href="https://en.wikipedia.org/wiki/ASCII">Wikipedia - ASCII</a></li>
+	 * <li><a href="https://en.wikipedia.org/wiki/UTF-8">Wikipedia - UTF-8</a></li>
+	 * </ul>
+	 * <h3>Examples</h3>
+	 * 
+	 * <pre>
+	 * <code>&gt;&gt; PrintableASCIIQ(&quot;Symja&quot;)
+	 * True
+	 * </code>
+	 * </pre>
+	 */
 	private static class PrintableASCIIQ extends AbstractFunctionEvaluator implements Predicate<IExpr> {
 
 		@Override
@@ -361,6 +442,31 @@ public final class StringFunctions {
 		}
 	}
 
+	/**
+	 * <pre>
+	 * <code>RemoveDiacritics(&quot;string&quot;)
+	 * </code>
+	 * </pre>
+	 * 
+	 * <blockquote>
+	 * <p>
+	 * replace characters with diacritics with characters without diacritics.
+	 * </p>
+	 * </blockquote>
+	 * <p>
+	 * See:
+	 * </p>
+	 * <ul>
+	 * <li><a href="https://en.wikipedia.org/wiki/Diacritic">Wikipedia - Diacritic</a></li>
+	 * </ul>
+	 * <h3>Examples</h3>
+	 * 
+	 * <pre>
+	 * <code>&gt;&gt; RemoveDiacritics(&quot;éèáàâ&quot;)
+	 * eeaaa
+	 * </code>
+	 * </pre>
+	 */
 	private static class RemoveDiacritics extends AbstractFunctionEvaluator {
 
 		@Override
@@ -386,6 +492,31 @@ public final class StringFunctions {
 		}
 	}
 
+	/**
+	 * <pre>
+	 * <code>StringCases(string, pattern)
+	 * </code>
+	 * </pre>
+	 * 
+	 * <blockquote>
+	 * <p>
+	 * gives all occurences of <code>pattern</code> in <code>string</code>.
+	 * </p>
+	 * </blockquote>
+	 * <h3>Examples</h3>
+	 * 
+	 * <pre>
+	 * <code>&gt;&gt; StringCases(&quot;12341235678&quot;, &quot;123&quot; | &quot;78&quot;) 
+	 * {123,123,78}
+	 * 
+	 * &gt;&gt; StringCases(&quot;a#ä_123&quot;, WordCharacter) 
+	 * {a,ä,1,2,3}
+	 * 
+	 * StringCases(&quot;a#ä_123&quot;, LetterCharacter)
+	 * {a,ä}
+	 * </code>
+	 * </pre>
+	 */
 	private static class StringCases extends AbstractCoreFunctionEvaluator {
 
 		@Override
@@ -448,6 +579,28 @@ public final class StringFunctions {
 		}
 	}
 
+	/**
+	 * <pre>
+	 * <code>StringCount(string, pattern)
+	 * </code>
+	 * </pre>
+	 * 
+	 * <blockquote>
+	 * <p>
+	 * counts all occurences of <code>pattern</code> in <code>string</code>.
+	 * </p>
+	 * </blockquote>
+	 * <h3>Examples</h3>
+	 * 
+	 * <pre>
+	 * <code>&gt;&gt; StringCount(&quot;a#ä_123&quot;, WordCharacter)
+	 * 5
+	 * 
+	 * &gt;&gt; StringCount(&quot;a#ä_123&quot;, LetterCharacter) 
+	 * 2 
+	 * </code>
+	 * </pre>
+	 */
 	private static class StringCount extends AbstractCoreFunctionEvaluator {
 
 		@Override
@@ -509,6 +662,26 @@ public final class StringFunctions {
 		}
 	}
 
+	/**
+	 * <pre>
+	 * <code>StringContainsQ(str1, str2)
+	 * </code>
+	 * </pre>
+	 * 
+	 * <blockquote>
+	 * <p>
+	 * return a list of matches for <code>&quot;p1&quot;, &quot;p2&quot;,...</code> list of strings in the string
+	 * <code>str</code>.
+	 * </p>
+	 * </blockquote>
+	 * <h3>Examples</h3>
+	 * 
+	 * <pre>
+	 * <code>&gt;&gt; StringContainsQ({&quot;the quick brown fox&quot;, &quot;jumps&quot;, &quot;over the lazy dog&quot;}, &quot;the&quot;)
+	 * {True,False,True}
+	 * </code>
+	 * </pre>
+	 */
 	private static class StringContainsQ extends AbstractCoreFunctionEvaluator {
 
 		@Override
@@ -615,6 +788,59 @@ public final class StringFunctions {
 		}
 	}
 
+	/**
+	 * <pre>
+	 * <code>StringInsert(string, new-string, position)
+	 * </code>
+	 * </pre>
+	 * 
+	 * <blockquote>
+	 * <p>
+	 * returns a string with <code>new-string</code> inserted starting at <code>position</code> in <code>string</code>.
+	 * </p>
+	 * </blockquote>
+	 * 
+	 * <pre>
+	 * <code>StringInsert(string, new-string, -position)
+	 * </code>
+	 * </pre>
+	 * 
+	 * <blockquote>
+	 * <p>
+	 * returns a string with <code>new-string</code> inserted starting at <code>position</code> from the end of
+	 * <code>string</code>.
+	 * </p>
+	 * </blockquote>
+	 * 
+	 * <pre>
+	 * <code>StringInsert(string, new-string, {pos1, pos2,...})
+	 * </code>
+	 * </pre>
+	 * 
+	 * <blockquote>
+	 * <p>
+	 * returns a string with <code>new-string</code> inserted at each position <code>posN</code> in <code>string</code>.
+	 * </p>
+	 * </blockquote>
+	 * 
+	 * <pre>
+	 * <code>StringInsert({str1, strr2,...}, new-string, position)
+	 * </code>
+	 * </pre>
+	 * 
+	 * <blockquote>
+	 * <p>
+	 * gives the list of results for each of the strings <code>strN</code>
+	 * </p>
+	 * </blockquote>
+	 * <h3>Examples</h3>
+	 * 
+	 * <pre>
+	 * <code>&gt;&gt; StringInsert({&quot;&quot;, &quot;Symja&quot;}, &quot;X&quot;, {1, 1, -1}) 
+	 * {XXX,XXSymjaX}
+	 * </code>
+	 * </pre>
+	 */
 	private static class StringInsert extends AbstractFunctionEvaluator {
 
 		@Override
@@ -683,6 +909,39 @@ public final class StringFunctions {
 		}
 	}
 
+	/**
+	 * <pre>
+	 * <code>StringJoin(str1, str2, ... strN)
+	 * </code>
+	 * </pre>
+	 * <p>
+	 * or
+	 * </p>
+	 * 
+	 * <pre>
+	 * <code>str1 &lt;&gt; str2 &lt;&gt;  ... &lt;&gt; strN
+	 * </code>
+	 * </pre>
+	 * 
+	 * <blockquote>
+	 * <p>
+	 * returns the concatenation of the strings <code>str1, str2, ... strN</code>.
+	 * </p>
+	 * </blockquote>
+	 * <h3>Examples</h3>
+	 * 
+	 * <pre>
+	 * <code>&gt;&gt; &quot;Java&quot; &lt;&gt; ToString(8)
+	 * Java8
+	 * 
+	 * &gt;&gt; StringJoin(&quot;Java&quot;, ToString(8))
+	 * Java8
+	 * 
+	 * &gt;&gt; StringJoin({&quot;a&quot;, &quot;b&quot;})// InputForm
+	 * &quot;ab&quot;
+	 * </code>
+	 * </pre>
+	 */
 	private static class StringJoin extends AbstractFunctionEvaluator {
 
 		@Override
@@ -718,6 +977,28 @@ public final class StringFunctions {
 		}
 	}
 
+	/**
+	 * <pre>
+	 * <code>StringLength(string)
+	 * </code>
+	 * </pre>
+	 * 
+	 * <blockquote>
+	 * <p>
+	 * gives the length of <code>string</code>.
+	 * </p>
+	 * </blockquote>
+	 * <h3>Examples</h3>
+	 * 
+	 * <pre>
+	 * <code>&gt;&gt; StringLength(&quot;symja&quot;)
+	 * 5
+	 * 
+	 * &gt;&gt; StringLength[{&quot;a&quot;, &quot;bc&quot;}]
+	 * {1, 2}
+	 * </code>
+	 * </pre>
+	 */
 	private static class StringLength extends AbstractFunctionEvaluator {
 
 		@Override
@@ -739,6 +1020,34 @@ public final class StringFunctions {
 		}
 	}
 
+	/**
+	 * <pre>
+	 * <code>StringMatchQ(string, regex-pattern)
+	 * </code>
+	 * </pre>
+	 * 
+	 * <blockquote>
+	 * <p>
+	 * check if the regular expression <code>regex-pattern</code> matches the <code>string</code>.
+	 * </p>
+	 * </blockquote>
+	 * <p>
+	 * See
+	 * </p>
+	 * <ul>
+	 * <li><a href="https://en.wikipedia.org/wiki/Regular_expression">Wikipedia - Regular expression</a></li>
+	 * </ul>
+	 * <h3>Examples</h3>
+	 * 
+	 * <pre>
+	 * <code>&gt;&gt; StringMatchQ({&quot;ExpandAll&quot;, &quot;listable&quot;, &quot;test&quot;}, RegularExpression(&quot;li(.+?)le&quot;))
+	 * {False,True,False}
+	 * 
+	 * &gt;&gt; StringMatchQ(&quot;15a94xcZ6&quot;, (DigitCharacter | LetterCharacter)..)
+	 * True
+	 * </code>
+	 * </pre>
+	 */
 	private static class StringMatchQ extends AbstractCoreFunctionEvaluator {
 
 		@Override
@@ -785,6 +1094,38 @@ public final class StringFunctions {
 		}
 	}
 
+	/**
+	 * <pre>
+	 * <code>StringPart(str, pos)
+	 * </code>
+	 * </pre>
+	 * 
+	 * <blockquote>
+	 * <p>
+	 * return the character at position <code>pos</code> from the <code>str</code> string expression.
+	 * </p>
+	 * </blockquote>
+	 * 
+	 * <pre>
+	 * <code>StringPart(str, {pos1, pos2, pos3,....})
+	 * </code>
+	 * </pre>
+	 * 
+	 * <blockquote>
+	 * <p>
+	 * return the characters at the position in the list <code>{pos1, pos2, pos3,....}</code> from the <code>str</code>
+	 * string expression.
+	 * </p>
+	 * </blockquote>
+	 * <h3>Examples</h3>
+	 * 
+	 * <pre>
+	 * <code>&gt;&gt; StringPart(&quot;1234567890&quot;,  {1, 3, 10}) 
+	 * {1,3,0}
+	 * </code>
+	 * </pre>
+	 */
+
 	private static class StringPart extends AbstractFunctionEvaluator {
 
 		@Override
@@ -823,6 +1164,28 @@ public final class StringFunctions {
 		}
 	}
 
+	/**
+	 * <pre>
+	 * <code>StringReplace(string, fromStr -&gt; toStr)
+	 * </code>
+	 * </pre>
+	 * 
+	 * <blockquote>
+	 * <p>
+	 * replaces each occurrence of <code>fromStr</code> with <code>toStr</code> in <code>string</code>.
+	 * </p>
+	 * </blockquote>
+	 * <h3>Examples</h3>
+	 * 
+	 * <pre>
+	 * <code>&gt;&gt; StringReplace(&quot;the quick brown fox jumps over the lazy dog&quot;, &quot;the&quot; -&gt; &quot;a&quot;) 
+	 * a quick brown fox jumps over a lazy dog
+	 * 
+	 * &gt;&gt; StringReplace(&quot;01101100010&quot;, &quot;01&quot; .. -&gt; &quot;x&quot;)
+	 * x1x100x0
+	 * </code>
+	 * </pre>
+	 */
 	private static class StringReplace extends AbstractCoreFunctionEvaluator {
 
 		@Override
@@ -967,6 +1330,59 @@ public final class StringFunctions {
 
 	}
 
+	/**
+	 * <pre>
+	 * <code>StringSplit(str)
+	 * </code>
+	 * </pre>
+	 * 
+	 * <blockquote>
+	 * <p>
+	 * split the string <code>str</code> by whitespaces into a list of strings.
+	 * </p>
+	 * </blockquote>
+	 * 
+	 * <pre>
+	 * <code>StringSplit(str1, str2)
+	 * </code>
+	 * </pre>
+	 * 
+	 * <blockquote>
+	 * <p>
+	 * split the string <code>str1</code> by <code>str2</code> into a list of strings.
+	 * </p>
+	 * </blockquote>
+	 * 
+	 * <pre>
+	 * <code>StringSplit(str1, RegularExpression(str2))
+	 * </code>
+	 * </pre>
+	 * 
+	 * <blockquote>
+	 * <p>
+	 * split the string <code>str1</code> by the regular expression <code>str2</code> into a list of strings.
+	 * </p>
+	 * </blockquote>
+	 * <p>
+	 * See
+	 * </p>
+	 * <ul>
+	 * <li><a href="https://en.wikipedia.org/wiki/Regular_expression">Wikipedia - Regular expression</a></li>
+	 * </ul>
+	 * <h3>Examples</h3>
+	 * 
+	 * <pre>
+	 * <code>&gt;&gt; StringSplit(&quot;128.0.0.1&quot;, &quot;.&quot;) 
+	 * {128,0,0,1}
+	 * 
+	 * &gt;&gt; StringSplit(&quot;128.0.0.1&quot;, RegularExpression(&quot;\\W+&quot;))
+	 * {128,0,0,1}
+	 * 
+	 * &gt;&gt; StringSplit(&quot;a1b2.2c0.333d4444.0efghijlkm&quot;, NumberString)
+	 * {a,b,c,d,efghijlkm}	
+	 * </code>
+	 * </pre>
+	 */
 	private static class StringSplit extends AbstractCoreFunctionEvaluator {
 
 		@Override
@@ -1203,6 +1619,33 @@ public final class StringFunctions {
 
 	}
 
+	/**
+	 * <pre>
+	 * <code>ToCharacterCode(string)
+	 * </code>
+	 * </pre>
+	 * 
+	 * <blockquote>
+	 * <p>
+	 * converts <code>string</code> into a list of corresponding integer character codes.
+	 * </p>
+	 * </blockquote>
+	 * <h3>Examples</h3>
+	 * 
+	 * <pre>
+	 * <code>&gt;&gt; ToCharacterCode(&quot;ABCD abcd&quot;)
+	 * {65,66,67,68,32,97,98,99,100}
+	 * 
+	 * &gt;&gt; &quot;a-3&quot; // ToCharacterCode
+	 * {97,45,51}
+	 * </code>
+	 * </pre>
+	 * 
+	 * <h3>Related terms</h3>
+	 * <p>
+	 * <a href="FromCharacterCode.md">FromCharacterCode</a>
+	 * </p>
+	 */
 	private static class ToCharacterCode extends AbstractFunctionEvaluator {
 
 		@Override
@@ -1243,6 +1686,25 @@ public final class StringFunctions {
 		}
 	}
 
+	/**
+	 * <pre>
+	 * <code>ToExpression(&quot;string&quot;, form)
+	 * </code>
+	 * </pre>
+	 * 
+	 * <blockquote>
+	 * <p>
+	 * converts the <code>string</code> given in <code>form</code> into an expression.
+	 * </p>
+	 * </blockquote>
+	 * <h3>Examples</h3>
+	 * 
+	 * <pre>
+	 * <code>&gt;&gt; ToExpression(&quot;1 + 2 - x \\times 4 \\div 5&quot;, TeXForm)
+	 * 3-4/5*x
+	 * </code>
+	 * </pre>
+	 */
 	private final static class ToExpression extends AbstractFunctionEvaluator {
 		@Override
 		public IExpr evaluate(final IAST ast, EvalEngine engine) {
@@ -1289,6 +1751,25 @@ public final class StringFunctions {
 		}
 	}
 
+	/**
+	 * <pre>
+	 * <code>ToString(expr)
+	 * </code>
+	 * </pre>
+	 * 
+	 * <blockquote>
+	 * <p>
+	 * converts <code>expr</code> into a string.
+	 * </p>
+	 * </blockquote>
+	 * <h3>Examples</h3>
+	 * 
+	 * <pre>
+	 * <code>&gt;&gt; &quot;Java&quot; &lt;&gt; ToString(8)
+	 * Java8
+	 * </code>
+	 * </pre>
+	 */
 	private static class ToString extends AbstractFunctionEvaluator {
 
 		@Override
@@ -1305,6 +1786,30 @@ public final class StringFunctions {
 		}
 	}
 
+	/**
+	 * <pre>
+	 * <code>ToUnicode(string)
+	 * </code>
+	 * </pre>
+	 * 
+	 * <blockquote>
+	 * <p>
+	 * converts <code>string</code> into a string of corresponding unicode character codes.
+	 * </p>
+	 * </blockquote>
+	 * <h3>Examples</h3>
+	 * 
+	 * <pre>
+	 * <code>&gt;&gt; ToUnicode(&quot;123abcABC&quot;)
+	 * &quot;\u0031\u0032\u0033\u0061\u0062\u0063\u0041\u0042\u0043&quot;
+	 * </code>
+	 * </pre>
+	 * 
+	 * <h3>Related terms</h3>
+	 * <p>
+	 * <a href="FromCharacterCode.md">FromCharacterCode</a>, <a href="ToCharacterCode.md">ToCharacterCode</a>
+	 * </p>
+	 */
 	private static class ToUnicode extends AbstractFunctionEvaluator {
 		private final static String UNICODE_PREFIX = "\\u";
 
@@ -1354,6 +1859,33 @@ public final class StringFunctions {
 		}
 	}
 
+	/**
+	 * <pre>
+	 * <code>Transliterate(&quot;string&quot;)
+	 * </code>
+	 * </pre>
+	 * 
+	 * <blockquote>
+	 * <p>
+	 * try converting the given string to a similar ASCII string
+	 * </p>
+	 * </blockquote>
+	 * <p>
+	 * See:
+	 * </p>
+	 * <ul>
+	 * <li><a href="https://en.wikipedia.org/wiki/Transliteration">Wikipedia - Transliteration</a></li>
+	 * <li><a href="https://unicode-org.github.io/icu/userguide/transforms/general/">unicode-org.github.io - General
+	 * Transforms </a></li>
+	 * </ul>
+	 * <h3>Examples</h3>
+	 * 
+	 * <pre>
+	 * <code>&gt;&gt; Transliterate(&quot;Горбачёв, Михаил Сергеевич&quot;)
+	 * Gorbacev, Mihail Sergeevic
+	 * </code>
+	 * </pre>
+	 */
 	private static class Transliterate extends AbstractFunctionEvaluator {
 
 		@Override

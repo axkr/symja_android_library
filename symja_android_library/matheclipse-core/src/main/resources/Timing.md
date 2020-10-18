@@ -4,7 +4,7 @@
 Timing(x)
 ```
 
-> returns a list with the first entry containing the evaluation time of `x` and the second entry is the evaluation result of `x`.
+> returns a list with the first entry containing the evaluation CPU time of `x` and the second entry is the evaluation result of `x`.
 
 ### Examples
 

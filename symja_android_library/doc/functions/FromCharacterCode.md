@@ -15,4 +15,4 @@ a-3
 ```
 
 ### Related terms 
-[ToCharacterCode](ToCharacterCode.md)
+[ToCharacterCode](ToCharacterCode.md), [ToUnicode](ToUnicode.md)

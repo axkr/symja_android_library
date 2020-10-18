@@ -2801,8 +2801,8 @@ public class MainTestCase extends AbstractTestCase {
 	}
 
 	public void testSystem360() {
-		check("ToUnicode(\"123abcABC\")", //
-				"\\u0031\\u0032\\u0033\\u0061\\u0062\\u0063\\u0041\\u0042\\u0043");
+		check("ToUnicode(\"123abcABC\") // InputForm", //
+				"\"\\u0031\\u0032\\u0033\\u0061\\u0062\\u0063\\u0041\\u0042\\u0043\"");
 	}
 
 	public void testSystem361() {

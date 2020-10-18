@@ -18,4 +18,4 @@ ToCharacterCode(string)
 ```
 
 ### Related terms 
-[FromCharacterCode](FromCharacterCode.md)
+[FromCharacterCode](FromCharacterCode.md), [ToUnicode](ToUnicode.md)
