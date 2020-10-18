@@ -171,6 +171,13 @@ public class MainTestCase extends AbstractTestCase {
 
 		check("2.33`", //
 				"2.33");
+
+		check("\"a\\[NewLine]test\"", //
+				"a\n" + "test");
+		// second backslash creates tabulator \t
+		check("\"a\\\\[RawBackslash]\\[RawBackslash]test\"", //
+				"a\\[RawBackslash]	est");
+		
 	}
 
 	public void testOut() {

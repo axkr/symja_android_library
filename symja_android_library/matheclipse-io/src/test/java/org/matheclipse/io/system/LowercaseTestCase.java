@@ -124,6 +124,13 @@ public class LowercaseTestCase extends AbstractTestCase {
 				"{{1,1,0},{0,Pi/2,0}}");
 	}
 
+	public void testAbsoluteTiming() {
+		// check("AbsoluteTiming(x = 1; Pause(x); x + 3)[[1]]>1", //
+		// "True");
+		// check("Timing(x = 1; Pause(x); x + 3)[[1]]<1", //
+		// "True");
+	}
+
 	public void testAbsoluteCorrelation() {
 		check("AbsoluteCorrelation({5, 3/4, 1}, {2, 1/2, 1})", //
 				"91/24");
@@ -2575,6 +2582,20 @@ public class LowercaseTestCase extends AbstractTestCase {
 				"0.100845");
 	}
 
+	public void testCharacterRange() {
+		check("CharacterRange(1000, 1020)", //
+				"{Ϩ,ϩ,Ϫ,ϫ,Ϭ,ϭ,Ϯ,ϯ,ϰ,ϱ,ϲ,ϳ,ϴ,ϵ,϶,Ϸ,ϸ,Ϲ,Ϻ,ϻ,ϼ}");
+		check("CharacterRange(\"a\", \"z\")", //
+				"{a,b,c,d,e,f,g,h,i,j,k,l,m,n,o,p,q,r,s,t,u,v,w,x,y,z}");
+		check("CharacterRange(\"0\", \"9\")", //
+				"{0,1,2,3,4,5,6,7,8,9}");
+	}
+
+	public void testCharacters() {
+		check("Partition(Characters(\"this is a string\"), 3, 1) // InputForm", //
+				"{{\"t\",\"h\",\"i\"},{\"h\",\"i\",\"s\"},{\"i\",\"s\",\" \"},{\"s\",\" \",\"i\"},{\" \",\"i\",\"s\"},{\"i\",\"s\",\" \"},{\"s\",\" \",\"a\"},{\" \",\"a\",\" \"},{\"a\",\" \",\"s\"},{\" \",\"s\",\"t\"},{\"s\",\"t\",\"r\"},{\"t\",\"r\",\"i\"},{\"r\",\"i\",\"n\"},{\"i\",\"n\",\"g\"}}");
+	}
+
 	public void testCharacteristicPolynomial() {
 		check("CharacteristicPolynomial({{a, b}, {c, d}}, x)", //
 				"-b*c+a*d-a*x-d*x+x^2");
@@ -4316,6 +4337,9 @@ public class LowercaseTestCase extends AbstractTestCase {
 	}
 
 	public void testD() {
+		check("D(E^f(x),x)", //
+				"E^f(x)*f'(x)");
+
 		check("D(AiryAi(Sqrt(x)),x)", //
 				"AiryAiPrime(Sqrt(x))/(2*Sqrt(x))");
 		check("D(AiryAiPrime(Sqrt(x)),x)", //
@@ -6990,6 +7014,9 @@ public class LowercaseTestCase extends AbstractTestCase {
 	public void testFactor() {
 		System.out.println();
 
+		check("Factor(x^34+x^17+1)", //
+				"(1+x+x^2)*(1-x+x^3-x^4+x^6-x^7+x^9-x^10+x^12-x^13+x^15-x^16+x^17-x^19+x^20-x^22+x^\n"
+						+ "23-x^25+x^26-x^28+x^29-x^31+x^32)");
 		check("Factor(I,GaussianIntegers->True)", //
 				"I");
 		// https://github.com/kredel/java-algebra-system/issues/12
@@ -9679,12 +9706,12 @@ public class LowercaseTestCase extends AbstractTestCase {
 				"7031.6370551943855[mi]");
 	}
 
-	public void testGet() { 
+	public void testGet() {
 		if (Config.FILESYSTEM_ENABLED) {
 			// message: Get: Cannot open noopen-file-test.m.
 			check("Get(\"noopen-file-test.m\")", //
 					"True");
-			
+
 			String pathToVectorAnalysis = getClass().getResource("/symja/VectorAnalysis.m").getFile();
 			// remove 'file:/'
 			// pathToVectorAnalysis = pathToVectorAnalysis.substring(6);
@@ -16214,7 +16241,10 @@ public class LowercaseTestCase extends AbstractTestCase {
 				"");
 		check("f(11)", //
 				"{11,a0}");
-
+		check("opts:OptionsPattern() // FullForm", //
+				"Pattern[opts,OptionsPattern[]]");
+		check("OptionsPattern() // FullForm", //
+				"OptionsPattern[]");
 	}
 
 	public void testOr() {
@@ -18737,6 +18767,35 @@ public class LowercaseTestCase extends AbstractTestCase {
 				"toobig");
 	}
 
+	public void testPrintableASCIIQ() {
+		check("PrintableASCIIQ({\"a\", \"b\", \"c\", \"Â¤\", \"d\", \"Ë©\"})", //
+				"{True,True,True,False,True,False}");
+		check("PrintableASCIIQ(\"\")", //
+				"True");
+		check("PrintableASCIIQ(\" \")", //
+				"True");
+		check("PrintableASCIIQ(\"!\")", //
+				"True");
+		check("PrintableASCIIQ(\"~\")", //
+				"True");
+		check("PrintableASCIIQ(\"\\\"\")", //
+				"True");
+		check("PrintableASCIIQ(FromCharacterCode(32))", //
+				"True");
+		check("PrintableASCIIQ(FromCharacterCode /@ Range(0, 127))", //
+				"{False,False,False,False,False,False,False,False,False,False,False,False," //
+						+ "False,False,False,False,False,False,False,False,False,False,False,False," //
+						+ "False,False,False,False,False,False,False,False,True,True,True,True," //
+						+ "True,True,True,True,True,True,True,True,True,True,True,True," //
+						+ "True,True,True,True,True,True,True,True,True,True,True,True," //
+						+ "True,True,True,True,True,True,True,True,True,True,True,True," //
+						+ "True,True,True,True,True,True,True,True,True,True,True,True," //
+						+ "True,True,True,True,True,True,True,True,True,True,True,True," //
+						+ "True,True,True,True,True,True,True,True,True,True,True,True," //
+						+ "True,True,True,True,True,True,True,True,True,True,True,True," //
+						+ "True,True,True,True,True,True,True,False}");
+	}
+
 	public void testProbability() {
 		// check("RandomVariate(NormalDistribution(), 10)", //
 		// "{-0.21848,1.67503,0.78687,0.9887,2.06587,-1.27856,0.79225,-0.01164,2.48227,-0.07223}");
@@ -19436,6 +19495,10 @@ public class LowercaseTestCase extends AbstractTestCase {
 	}
 
 	public void testRandomChoice() {
+
+		// check("Table(StringJoin(RandomChoice(CharacterRange(\"a\", \"z\"), 5)), {10}) // InputForm", //
+		// "{\"jbuhp\",\"uneaw\",\"icixu\",\"vsrsy\",\"ycxsx\",\"atfvl\",\"kivvj\",\"xjllp\",\"xtwms\",\"ixwuk\"}");
+
 		// check("RandomChoice({1,2,3,4,5,6,7},11.0)", "{2,1,5,3,5,7,4,5,5,6,5}");
 		// check("RandomChoice({1,2,3,4,5,6,7},10)", "{3,7,3,6,2,7,4,1,1,4}");
 		// check("RandomChoice({False, True})", "True");
@@ -19730,6 +19793,20 @@ public class LowercaseTestCase extends AbstractTestCase {
 				"{395,{{1,4,9,16,25,36,49,64,81,100}}}");
 	}
 
+	public void testRepeated() {
+		check("Repeated(a)", //
+				"a..");
+		check("Repeated(a)  // FullForm", //
+				"Repeated[a]");
+	}
+
+	public void testRepeatedNull() {
+		check("RepeatedNull(a)", //
+				"a...");
+		check("RepeatedNull(a)  // FullForm", //
+				"RepeatedNull[a]");
+	}
+
 	public void testRefine() {
 		// TODO
 		// check("Refine((E)^(Pi*I*2*(1/4+x)), Element(x, Integers))", //
@@ -19920,7 +19997,14 @@ public class LowercaseTestCase extends AbstractTestCase {
 				"x==0");
 
 	}
-
+	
+	public void testRemoveDiacritics() { 
+		check("RemoveDiacritics(\"\\[CapitalEpsilon]\\[Upsilon]\\[Rho]\\[Omega]\\[Pi]\\[Eta]\")", //
+				"Ευρωπη");
+		check("RemoveDiacritics(\"éèáàâ\")", //
+				"eeaaa");
+	}
+	
 	public void testReplace() {
 
 		check("Replace(x,x -> 1)", //
@@ -23197,6 +23281,8 @@ public class LowercaseTestCase extends AbstractTestCase {
 	}
 
 	public void testStringCount() {
+		check("StringCount(\"https://github.com/axkr/symja_android_library\", #) & /@ CharacterRange(\"a\", \"z\")", //
+				"{4,2,1,2,0,0,1,2,3,1,1,1,2,1,2,1,0,4,2,3,1,0,0,1,2,0}");
 		check("StringCount(\"a#ä_123\", WordCharacter)", //
 				"5");
 		check("StringCount(\"a#ä_123\", LetterCharacter)", //
@@ -23214,6 +23300,8 @@ public class LowercaseTestCase extends AbstractTestCase {
 	}
 
 	public void testStringCases() {
+		check("StringCases(\"AaBBccDDeefG\", CharacterRange(\"A\", \"Z\") ..)", //
+				"{A,BB,DD,G}");
 		check("StringCases(\"a#ä_123\", WordCharacter)", //
 				"{a,ä,1,2,3}");
 		check("StringCases(\"a#ä_123\", LetterCharacter)", //
@@ -23361,14 +23449,14 @@ public class LowercaseTestCase extends AbstractTestCase {
 				"True");
 	}
 
-	public void testStringSplit() { 
+	public void testStringSplit() {
 		check("StringSplit(\"13  a22    bbb\", WhitespaceCharacter) // InputForm", //
 				"{\"13\",\"\",\"a22\",\"\",\"\",\"\",\"bbb\"}");
 		check("StringSplit(\"13 a22 bbb\", WhitespaceCharacter) // InputForm", //
 				"{\"13\",\"a22\",\"bbb\"}");
 		check("StringSplit(\"13  a22    bbb\", Whitespace) // InputForm", //
 				"{\"13\",\"a22\",\"bbb\"}");
-		
+
 		check("StringSplit(\"\")", //
 				"{}");
 		check("StringSplit(\"test\")", //
@@ -23393,6 +23481,8 @@ public class LowercaseTestCase extends AbstractTestCase {
 	}
 
 	public void testStringReplace() {
+		check("StringReplace(\"this is text\", CharacterRange(\"a\", \"z\") -> \"X\")", //
+				"XXXX XX XXXX");
 		check("StringReplace(\"01101100010\", \"01\" .. -> \"x\")", //
 				"x1x100x0");
 		check("StringReplace(\"ab\" .. -> \"X\")[\"ababbabbaaababa\"]", //
@@ -24179,8 +24269,8 @@ public class LowercaseTestCase extends AbstractTestCase {
 				"Symbol");
 		check("Symbol(\"x\") + Symbol(\"x\")", //
 				"2*x");
-		check("i\\[CapitalGamma]j\\(hjgg)", //
-				"iγj\\(hjgg)");
+		check("i\\[CapitalGamma]j(hjgg)", //
+				"iγj(hjgg)");
 		check("i\\[Alpha]j=10;i\\[Alpha]j", //
 				"10");
 	}
@@ -25366,6 +25456,19 @@ public class LowercaseTestCase extends AbstractTestCase {
 				"{6,15,24}");
 		check("Total({{1,2,3},{4,5,6},{7,8,9}},2)", //
 				"45");
+	}
+
+	public void testTransliterate() {
+		check("Transliterate(\"fish\",\"Bopomofo\")", //
+				"ㄈㄧ˙ㄕ");
+		check("Transliterate(\"Фёдоров, Николай Алексеевич\",\"Cyrillic\"->\"English\")", //
+				"Fëdorov, Nikolaj Alekseevič");
+		check("Transliterate(\"Фёдоров, Николай Алексеевич\")", //
+				"Fedorov, Nikolaj Alekseevic");
+		check("Transliterate(\"Горбачёв, Михаил Сергеевич\")", //
+				"Gorbacev, Mihail Sergeevic");
+		check("Transliterate(\"\\[CapitalAlpha]\\[Lambda]\\[CurlyPhi]\\[Alpha]\\[Beta]\\[Eta]\\[Tau]\\[Iota]\\[Kappa]\\[Omega]\\[FinalSigma]\")", //
+				"Alphabetikos");
 	}
 
 	public void testTranspose() {
