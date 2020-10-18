@@ -1311,7 +1311,11 @@ public class F extends S {
 	}
 
 	public static IPatternSequence $Repeated(final IExpr patternExpr, EvalEngine engine) {
-		return org.matheclipse.core.expression.RepeatedPattern.valueOf(patternExpr, engine);
+		return org.matheclipse.core.expression.RepeatedPattern.valueOf(patternExpr, false, engine);
+	}
+
+	public static IPatternSequence $RepeatedNull(final IExpr patternExpr, EvalEngine engine) {
+		return org.matheclipse.core.expression.RepeatedPattern.valueOf(patternExpr, true, engine);
 	}
 
 	/**
