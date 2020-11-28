@@ -1,0 +1,117 @@
+swagger: "2.0"
+info:
+  description: "A Symja API server."
+  version: "0.1"
+  title: "SymjaTalk"
+  termsOfService: "http://symja.org/about.html"
+  contact:
+    email: "axelclk@gmail.com"
+  license:
+    name: "GPL-3.0 License"
+    url: "https://www.gnu.org/licenses/gpl-3.0.html"
+host: "symja.org"
+basePath: "/v1"
+tags:
+- name: "api"
+  description: "SymjaTalk"
+  externalDocs:
+    description: "Find out more"
+    url: "https://github.com/axkr/symja_android_library"
+schemes:
+- "https"
+- "http"
+paths:
+  /api:
+    get:
+      tags:
+      - "symjatalk"
+      summary: "Get an answer from the server"
+      description: ""
+      operationId: "answer"
+      consumes:
+      - "application/json" 
+      produces: 
+      - "application/json"
+      parameters:
+      - in: "query"
+        name: "i"
+        description: "Input expresssion"
+        required: true
+        type: string
+      - in: "query"
+        name: "appid"
+        description: "DEMO"
+        required: true
+        type: string
+      - in: "query"
+        name: "s"
+        description: "Parse strict Symja syntax"
+        required: false
+        type: string
+      - in: "query"
+        name: "f"
+        description: "Output format"
+        required: false
+        type: string
+      responses:
+        '200':
+          description: OK
+          schema:
+            $ref: "#/definitions/queryresult"
+        "405":
+          description: "Invalid input"
+definitions: 
+  queryresult: 
+    type: object
+    properties: 
+      success: 
+        type: string
+        example: true
+      error: 
+        type: string
+        example: false
+      numpods: 
+        type: number
+        example: 3
+      version: 
+        type: string
+        example: 0.1
+      pods: 
+        type: array
+        items: 
+          type: object
+          properties: 
+            title: 
+              type: string
+              example: Input
+            scanner: 
+              type: string
+              example: Identity
+            error: 
+              type: string
+              example: false
+            numsubpods: 
+              type: number
+              example: 1
+            subpods: 
+              type: array
+              items: 
+                type: object
+                properties: 
+                  plaintext: 
+                    type: string
+                    example: Integrate(Cos(x)^5,x)
+                  sinput: 
+                    type: string
+                    example: Integrate(Cos(x)^5,x)
+                  mathml: 
+                    type: string
+                    example: <math xmlns=http://www.w3.org/1999/xhtml><mo>&#x222B;</mo><msup><mrow><mi>Cos</mi><mo>&#x2061;</mo><mrow><mo>(</mo><mrow><mi>x</mi></mrow><mo>)</mo></mrow></mrow><mn>5</mn></msup><mrow><mo>&#x2146;</mo><mi>x</mi></mrow></math>
+                  latex: 
+                    type: string
+                    example: \int  \cos (x)^5\\mathrmdx
+                  html: 
+                    type: string
+externalDocs:
+  description: "Find out more about Symja"
+  url: "https://github.com/axkr/symja_android_library"
