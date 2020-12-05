@@ -1051,9 +1051,9 @@ public class SpecialFunctions {
           }
           if (engine.isDoubleMode()
               && //
-              (z.isNumericFunction(true)
-                  && a.isNumericFunction(true)
-                  && b.isNumericFunction(true))) {
+              (z.isNumericFunction()
+                  && a.isNumericFunction()
+                  && b.isNumericFunction())) {
             org.hipparchus.distribution.continuous.BetaDistribution beta = //
                 new org.hipparchus.distribution.continuous.BetaDistribution(
                     a.evalDouble(), b.evalDouble());
