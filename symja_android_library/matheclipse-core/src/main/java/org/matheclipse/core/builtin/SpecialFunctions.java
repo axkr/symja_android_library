@@ -255,21 +255,6 @@ public class SpecialFunctions {
     }
 
     private static IExpr betaRegularized3(final IAST ast, EvalEngine engine) {
-      /** Calculate the machine accuracy, which is the smallest eps with 1<1+eps */
-      float feps = 2.E-6f;
-      float fy = 1.0f + feps;
-      while (fy > 1.0f) {
-        feps /= 2.0f;
-        fy = 1.0f + feps;
-      }
-      double FEPS = feps * 8;
-      double deps = ((double) feps) * ((double) 2.E-6f);
-      double dy = 1.0 + deps;
-      while (dy > 1.0) {
-        deps /= 2.0;
-        dy = 1.0 + deps;
-      }
-      double DEPS = deps * 8.0;
 
       try {
         IExpr z = ast.arg1();
@@ -314,7 +299,7 @@ public class SpecialFunctions {
             // https://github.com/haifengl/smile/blob/master/math/src/main/java/smile/math/special/Beta.java
             return F.num(GammaJS.betaRegularized(zn, an, nn));
           } catch (ArgumentTypeException ate) {
-            
+
           } catch (ValidateException ve) {
             // from org.matheclipse.core.eval.EvalEngine.evalDouble()
           }
@@ -1050,10 +1035,7 @@ public class SpecialFunctions {
             }
           }
           if (engine.isDoubleMode()
-              && //
-              (z.isNumericFunction()
-                  && a.isNumericFunction()
-                  && b.isNumericFunction())) {
+              && (z.isNumericFunction() && a.isNumericFunction() && b.isNumericFunction())) {
             org.hipparchus.distribution.continuous.BetaDistribution beta = //
                 new org.hipparchus.distribution.continuous.BetaDistribution(
                     a.evalDouble(), b.evalDouble());
