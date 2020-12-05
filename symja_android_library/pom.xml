@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
 	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
 	<modelVersion>4.0.0</modelVersion>
 	<groupId>org.matheclipse</groupId>
@@ -42,7 +43,7 @@
 		<endorsed.dir>${project.build.directory}/endorsed</endorsed.dir>
 		<maven.compiler.source>1.8</maven.compiler.source>
 		<maven.compiler.target>1.8</maven.compiler.target>
-		<hipparchus.version>1.7</hipparchus.version>
+		<hipparchus.version>1.8</hipparchus.version>
 		<timestamp>${maven.build.timestamp}</timestamp>
 		<maven.build.timestamp.format>yyyyMMddHHmmss</maven.build.timestamp.format>
 	</properties>
@@ -54,7 +55,7 @@
 		<module>matheclipse-api</module>
 		<module>matheclipse-io</module>
 		<module>matheclipse-beakerx</module>
- 
+
 	</modules>
 
 	<build>
