@@ -3453,6 +3453,11 @@ public final class Arithmetic {
 		}
 
 		private static IExpr e2ApfloatArg(final ApfloatNum base, final ApfloatNum exponent) {
+			if (exponent.sign() < 0) {
+		    	  ApcomplexNum b=base.apcomplexNumValue(base.precision());
+		    	  ApcomplexNum e=exponent.apcomplexNumValue(base.precision());
+		    	  return b.pow(e);
+		    }
 			return base.pow(exponent);
 		}
 
