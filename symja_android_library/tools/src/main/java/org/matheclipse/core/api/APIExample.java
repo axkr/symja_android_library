@@ -16,7 +16,7 @@ public class APIExample {
     ObjectMapper mapper = new ObjectMapper();
     try {
       JsonNode node =
-          mapper.readTree(new URL(BASE_URL + "/api?i=D(sin(x)%2Cx)&f=plaintext&appid=DEMO"));
+          mapper.readTree(new URL(BASE_URL + "/v1/api?i=D(sin(x)%2Cx)&f=plaintext&appid=DEMO"));
       System.out.println(node.toPrettyString());
     } catch (JsonParseException e) {
       e.printStackTrace();
