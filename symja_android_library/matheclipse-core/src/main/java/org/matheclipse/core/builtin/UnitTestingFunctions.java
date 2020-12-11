@@ -8,6 +8,7 @@ import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.FileSystems;
 import java.util.List;
+import java.util.function.Consumer;
 
 import org.matheclipse.core.basic.Config;
 import org.matheclipse.core.convert.AST2Expr;
@@ -25,7 +26,6 @@ import org.matheclipse.core.interfaces.IStringX;
 import org.matheclipse.core.interfaces.ISymbol;
 import org.matheclipse.parser.client.FEConfig;
 import org.matheclipse.parser.client.ast.ASTNode;
-import org.matheclipse.parser.client.ast.FunctionNode;
 
 import com.google.common.io.Files;
 import com.google.common.io.Resources;
@@ -175,7 +175,7 @@ public class UnitTestingFunctions {
 
     @Override
     public int[] expectedArgSize(IAST ast) {
-      return IOFunctions.ARGS_1_1;
+      return ARGS_1_1;
     }
 
     @Override
@@ -210,8 +210,11 @@ public class UnitTestingFunctions {
       }
 
       IExpr input = ast.arg1();
+      Consumer<IExpr> out = Config.PRINT_OUT;
       try {
+        out.accept(input);
         actualOutput = engine.evaluate(input);
+
       } catch (Exception ex) {
         if (DEBUG) {
           ex.printStackTrace();
@@ -264,14 +267,14 @@ public class UnitTestingFunctions {
     }
 
     private static void failure(IAssociation assoc) {
-      assoc.appendRule(F.Rule("Outcome", F.$str("Failure")));
+      assoc.appendRule(F.Rule("Outcome", "Failure"));
       if (DEBUG) {
         System.out.print(" - Failure");
       }
     }
 
     private static void success(IAssociation assoc) {
-      assoc.appendRule(F.Rule("Outcome", F.$str("Success")));
+      assoc.appendRule(F.Rule("Outcome", "Success"));
       if (DEBUG) {
         System.out.print(" - Success");
       }
@@ -279,7 +282,7 @@ public class UnitTestingFunctions {
 
     @Override
     public int[] expectedArgSize(IAST ast) {
-      return IOFunctions.ARGS_1_4;
+      return ARGS_1_4;
     }
 
     @Override
