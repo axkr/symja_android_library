@@ -25,6 +25,12 @@ import java.nio.ByteBuffer;
  */
 public class TrieSequencerByteBuffer implements TrieSequencer<ByteBuffer> {
 
+  /** */
+  private static final long serialVersionUID = 1L;
+
+  /** Only a single instance is needed of this sequencer. */
+  public static final TrieSequencerByteBuffer INSTANCE = new TrieSequencerByteBuffer();
+
   @Override
   public int matches(
       ByteBuffer sequenceA, int indexA, ByteBuffer sequenceB, int indexB, int count) {
@@ -45,5 +51,14 @@ public class TrieSequencerByteBuffer implements TrieSequencer<ByteBuffer> {
   @Override
   public int hashOf(ByteBuffer sequence, int i) {
     return sequence.get(i) & 0xFF;
+  }
+
+  /**
+   * When deserialized, just return the single instance.
+   *
+   * @return {@link #INSTANCE}
+   */
+  protected Object readResolve() {
+    return INSTANCE;
   }
 }

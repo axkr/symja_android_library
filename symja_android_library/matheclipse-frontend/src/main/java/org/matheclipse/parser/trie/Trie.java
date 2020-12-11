@@ -16,12 +16,14 @@
 
 package org.matheclipse.parser.trie;
 
+import java.io.Serializable;
 import java.util.AbstractCollection;
 import java.util.AbstractSet;
 import java.util.Collection;
 import java.util.Iterator;
 import java.util.Map;
 import java.util.Set;
+import java.util.function.Function;
 
 /**
  * An implementation of a compact Trie. <br>
@@ -37,19 +39,39 @@ import java.util.Set;
  * @param <T> The value type.
  */
 @SuppressWarnings("unchecked")
-public class Trie<S, T> implements Map<S, T> {
+public class Trie<S, T> implements Map<S, T>, Serializable {
+
+  /** */
+  private static final long serialVersionUID = 1L;
 
   /** An empty collection/set to return. */
   private static final EmptyContainer<?> EMPTY_CONTAINER = new EmptyContainer<Object>();
 
-  private final TrieNode<S, T> root;
-  private TrieSequencer<S> sequencer;
-  private TrieMatch defaultMatch = TrieMatch.EXACT; // STARTS_WITH;
+  /** The root of the Trie. */
+  protected final TrieNode<S, T> root;
 
-  private SequenceSet sequences;
-  private ValueCollection values;
-  private EntrySet entries;
-  private NodeSet nodes;
+  /** The implementation that understands the Trie's sequences. */
+  protected TrieSequencer<S> sequencer;
+
+  /** The default match of the Trie when one is not specified. */
+  protected TrieMatch defaultMatch = TrieMatch.STARTS_WITH;
+
+  /** The cached set of sequences stored in this Trie. */
+  protected transient SequenceSet sequences;
+
+  /** The cached collection of values stored in this Trie. */
+  protected transient ValueCollection values;
+
+  /** The cached set of Entries stored in this Trie. */
+  protected transient EntrySet entries;
+
+  /** The cached set of Nodes stored in this Trie. */
+  protected transient NodeSet nodes;
+
+  /** Instantiates a new Trie for deserialization. */
+  protected Trie() {
+    this(null, null);
+  }
 
   /**
    * Instantiates a new Trie.
@@ -88,12 +110,21 @@ public class Trie<S, T> implements Map<S, T> {
   }
 
   /**
+   * Gets the default value of the Trie, which is the value returned when a query is unsuccessful.
+   *
+   * @return The default value of the Trie.
+   */
+  public T getDefaultValue() {
+    return root.value;
+  }
+
+  /**
    * Returns a Trie with the same default value, match, and {@link TrieSequencer} as this Trie.
    *
    * @return The reference to a new Trie.
    */
   public Trie<S, T> newEmptyClone() {
-    Trie<S, T> t = new Trie<S, T>(sequencer, root.value);
+    Trie<S, T> t = new Trie<S, T>(sequencer, getDefaultValue());
     t.defaultMatch = defaultMatch;
     return t;
   }
@@ -106,9 +137,34 @@ public class Trie<S, T> implements Map<S, T> {
    * @return The previous value in the Trie with the same sequence if one existed, otherwise null.
    */
   public T put(S query, T value) {
+    return this.put(query, (previousValue) -> value, null);
+  }
+
+  /**
+   * Updates the value at the given sequence. If no value exists then null is passed to the
+   * function. The result of the function replaces the previous value.
+   *
+   * @param query The sequence.
+   * @param updater The function which takes the previous value (if any) and returns a new value.
+   * @return The previous value in the Trie with the same sequence if one existed, otherwise null.
+   */
+  public T put(S query, Function<T, T> updater) {
+    return this.put(query, updater, null);
+  }
+
+  /**
+   * Updates the value at the given sequence. If no value exists then null is passed to the
+   * function. The result of the function replaces the previous value.
+   *
+   * @param query The sequence.
+   * @param updater The function which takes the previous value (if any) and returns a new value.
+   * @param defaultPrevious The value to pass to the update function when adding to the Trie.
+   * @return The previous value in the Trie with the same sequence if one existed, otherwise null.
+   */
+  public T put(S query, Function<T, T> updater, T defaultPrevious) {
     final int queryLength = sequencer.lengthOf(query);
 
-    if (value == null || queryLength == 0) {
+    if (queryLength == 0) {
       return null;
     }
 
@@ -118,7 +174,7 @@ public class Trie<S, T> implements Map<S, T> {
     // The root doesn't have a child that starts with the given sequence...
     if (node == null) {
       // Add the sequence and value directly to root!
-      return putReturnNull(root, value, query, queryOffset, queryLength);
+      return putReturnNull(root, updater.apply(defaultPrevious), query, queryOffset, queryLength);
     }
 
     while (node != null) {
@@ -133,12 +189,12 @@ public class Trie<S, T> implements Map<S, T> {
       if (matches != max) {
         node.split(matches, null, sequencer);
 
-        return putReturnNull(node, value, query, queryOffset, queryLength);
+        return putReturnNull(node, updater.apply(defaultPrevious), query, queryOffset, queryLength);
       }
 
       // partial match to the current node
       if (max < nodeLength) {
-        node.split(max, value, sequencer);
+        node.split(max, updater.apply(defaultPrevious), sequencer);
         node.sequence = query;
 
         return null;
@@ -148,19 +204,19 @@ public class Trie<S, T> implements Map<S, T> {
       if (queryOffset == queryLength) {
         node.sequence = query;
 
-        return node.setValue(value);
+        return node.update(updater);
       }
 
       // full match, end of the query or node
       if (node.children == null) {
-        return putReturnNull(node, value, query, queryOffset, queryLength);
+        return putReturnNull(node, updater.apply(defaultPrevious), query, queryOffset, queryLength);
       }
 
       // full match, end of node
       TrieNode<S, T> next = node.children.get(sequencer.hashOf(query, queryOffset));
 
       if (next == null) {
-        return putReturnNull(node, value, query, queryOffset, queryLength);
+        return putReturnNull(node, updater.apply(defaultPrevious), query, queryOffset, queryLength);
       }
 
       // full match, query or node remaining
@@ -197,7 +253,7 @@ public class Trie<S, T> implements Map<S, T> {
   public T get(S sequence, TrieMatch match) {
     TrieNode<S, T> n = search(root, sequence, match);
 
-    return (n != null ? n.value : root.value);
+    return (n != null ? n.value : getDefaultValue());
   }
 
   /**
@@ -483,10 +539,28 @@ public class Trie<S, T> implements Map<S, T> {
     return values;
   }
 
+  /**
+   * Returns a {@link Collection} of the values that match the given sequence given the default
+   * matching logic. If no matches were found then a Collection with size 0 will be returned. The
+   * Collection returned can have values removed directly from it and they will be removed from this
+   * Trie.
+   *
+   * @param sequence The sequence to match on.
+   * @return The reference to a Collection of values that matched.
+   */
   public Collection<T> values(S sequence) {
     return values(sequence, defaultMatch);
   }
 
+  /**
+   * Returns a {@link Collection} of the values that match the given sequence and the given matching
+   * logic. If no matches were found then a Collection with size 0 will be returned. The Collection
+   * returned can have values removed directly from it and they will be removed from this Trie.
+   *
+   * @param sequence The sequence to match on.
+   * @param match The matching logic to use.
+   * @return The reference to a Collection of values that matched.
+   */
   public Collection<T> values(S sequence, TrieMatch match) {
     TrieNode<S, T> node = search(root, sequence, match);
 
@@ -509,11 +583,12 @@ public class Trie<S, T> implements Map<S, T> {
   /**
    * Searches in the Trie based on the sequence query and the matching logic.
    *
+   * @param root The node to start searching from.
    * @param query The query sequence.
    * @param match The matching logic.
    * @return The node that best matched the query based on the logic.
    */
-  private TrieNode<S, T> search(TrieNode<S, T> root, S query, TrieMatch match) {
+  protected TrieNode<S, T> search(TrieNode<S, T> root, S query, TrieMatch match) {
     final int queryLength = sequencer.lengthOf(query);
 
     // If the query is empty or matching logic is not given, return null.
@@ -551,7 +626,7 @@ public class Trie<S, T> implements Map<S, T> {
       }
 
       // Potentially PARTIAL match
-      if (max != nodeLength) {
+      if (max != nodeLength && matches == max) {
         return (match != TrieMatch.PARTIAL ? null : node);
       }
 

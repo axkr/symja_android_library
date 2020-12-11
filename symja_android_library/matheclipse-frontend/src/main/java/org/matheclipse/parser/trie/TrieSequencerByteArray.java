@@ -23,6 +23,12 @@ package org.matheclipse.parser.trie;
  */
 public class TrieSequencerByteArray implements TrieSequencer<byte[]> {
 
+  /** */
+  private static final long serialVersionUID = 1L;
+
+  /** Only a single instance is needed of this sequencer. */
+  public static final TrieSequencerByteArray INSTANCE = new TrieSequencerByteArray();
+
   @Override
   public int matches(byte[] sequenceA, int indexA, byte[] sequenceB, int indexB, int count) {
     for (int i = 0; i < count; i++) {
@@ -42,5 +48,14 @@ public class TrieSequencerByteArray implements TrieSequencer<byte[]> {
   @Override
   public int hashOf(byte[] sequence, int i) {
     return sequence[i];
+  }
+
+  /**
+   * When deserialized, just return the single instance.
+   *
+   * @return {@link #INSTANCE}
+   */
+  protected Object readResolve() {
+    return INSTANCE;
   }
 }

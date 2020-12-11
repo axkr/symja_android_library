@@ -16,6 +16,7 @@
 
 package org.matheclipse.parser.trie;
 
+import java.io.Serializable;
 import java.util.Arrays;
 
 /**
@@ -27,10 +28,18 @@ import java.util.Arrays;
  * @param <T> The value type.
  */
 @SuppressWarnings("unchecked")
-public class PerfectHashMap<T> {
+public class PerfectHashMap<T> implements Serializable {
 
+  /** */
+  private static final long serialVersionUID = 1L;
+
+  /** The smallest key in the map. */
   private int min;
+
+  /** The difference between the largest key and the smallest key. */
   private int size;
+
+  /** The values in this map. */
   private T[] values;
 
   /** Instantiates an Empty PerfectHashMap. */

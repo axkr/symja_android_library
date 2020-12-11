@@ -25,6 +25,13 @@ package org.matheclipse.parser.trie;
 public class TrieSequencerCharSequenceCaseInsensitive<S extends CharSequence>
     extends TrieSequencerCharSequence<S> {
 
+  /** */
+  private static final long serialVersionUID = 1L;
+
+  /** Only a single instance is needed of this sequencer. */
+  public static final TrieSequencerCharSequenceCaseInsensitive<String> INSTANCE =
+      new TrieSequencerCharSequenceCaseInsensitive<String>();
+
   @Override
   public int matches(S sequenceA, int indexA, S sequenceB, int indexB, int count) {
     for (int i = 0; i < count; i++) {
@@ -42,5 +49,14 @@ public class TrieSequencerCharSequenceCaseInsensitive<S extends CharSequence>
   @Override
   public int hashOf(S sequence, int i) {
     return Character.toLowerCase(sequence.charAt(i));
+  }
+
+  /**
+   * When deserialized, just return the single instance.
+   *
+   * @return {@link #INSTANCE}
+   */
+  protected Object readResolve() {
+    return INSTANCE;
   }
 }

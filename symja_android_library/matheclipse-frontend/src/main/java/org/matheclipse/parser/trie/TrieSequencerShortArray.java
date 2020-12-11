@@ -23,6 +23,12 @@ package org.matheclipse.parser.trie;
  */
 public class TrieSequencerShortArray implements TrieSequencer<short[]> {
 
+  /** */
+  private static final long serialVersionUID = 1L;
+
+  /** Only a single instance is needed of this sequencer. */
+  public static final TrieSequencerShortArray INSTANCE = new TrieSequencerShortArray();
+
   @Override
   public int matches(short[] sequenceA, int indexA, short[] sequenceB, int indexB, int count) {
     for (int i = 0; i < count; i++) {
@@ -42,5 +48,14 @@ public class TrieSequencerShortArray implements TrieSequencer<short[]> {
   @Override
   public int hashOf(short[] sequence, int i) {
     return sequence[i];
+  }
+
+  /**
+   * When deserialized, just return the single instance.
+   *
+   * @return {@link #INSTANCE}
+   */
+  protected Object readResolve() {
+    return INSTANCE;
   }
 }

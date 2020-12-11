@@ -16,7 +16,9 @@
 
 package org.matheclipse.parser.trie;
 
+import java.io.Serializable;
 import java.util.Map.Entry;
+import java.util.function.Function;
 
 /**
  * A TrieNode is an {@link java.util.Map.Entry Entry} in a Trie that stores the sequence (key),
@@ -53,15 +55,37 @@ import java.util.Map.Entry;
  *
  * @author Philip Diffenderfer
  */
-public class TrieNode<S, T> implements Entry<S, T> {
+public class TrieNode<S, T> implements Entry<S, T>, Serializable {
 
+  /** */
+  private static final long serialVersionUID = 1L;
+
+  /** The parent of this node. */
   protected TrieNode<S, T> parent;
+
+  /** The value of this node. */
   protected T value;
+
+  /**
+   * The sequence of this node. The subsequence between start and end are the important part of this
+   * sequence.
+   */
   protected S sequence;
+
+  /** The start index of this node into it's sequence. */
   protected int start;
+
+  /** The end index of this node into it's sequence. */
   protected int end;
+
+  /** The array of child nodes. */
   protected PerfectHashMap<TrieNode<S, T>> children = null;
+
+  /** The number of values beyond this node. */
   protected int size;
+
+  /** Instantiates a new TrieNode for deserialization. */
+  protected TrieNode() {}
 
   /**
    * Instantiates a new TrieNode.
@@ -331,9 +355,20 @@ public class TrieNode<S, T> implements Entry<S, T> {
 
   @Override
   public T setValue(T newValue) {
+    return update((previousValue) -> newValue);
+  }
+
+  /**
+   * Updates the value in this node with an update function which is given the previous value and
+   * expects the new value to be returned.
+   *
+   * @param updater The function which returns the new value.
+   * @return The previous value of this node.
+   */
+  public T update(Function<T, T> updater) {
     T previousValue = value;
 
-    value = newValue;
+    value = updater.apply(previousValue);
 
     if (previousValue == null && value != null) {
       addSize(1);

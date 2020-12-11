@@ -16,13 +16,16 @@
 
 package org.matheclipse.parser.trie;
 
+import java.io.Serializable;
+
 /**
- * A TrieSequencer enables a Trie to use keys of type S. A sequence is a linear set of elements.
+ * A TrieSequencer enables a {@link Trie} to use keys of type S. A sequence is a linear set of
+ * elements.
  *
  * @author Philip Diffenderfer
  * @param <S> The sequence type.
  */
-public interface TrieSequencer<S> {
+public interface TrieSequencer<S> extends Serializable {
 
   /**
    * Determines the maximum number of elements that match between sequences A and B where comparison

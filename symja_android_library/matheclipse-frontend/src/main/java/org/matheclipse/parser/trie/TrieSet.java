@@ -16,6 +16,7 @@
 
 package org.matheclipse.parser.trie;
 
+import java.io.Serializable;
 import java.util.Collection;
 import java.util.Iterator;
 import java.util.Set;
@@ -27,7 +28,10 @@ import java.util.Set;
  * @author Philip Diffenderfer
  * @param <E> The element type.
  */
-public class TrieSet<E> implements Set<E> {
+public class TrieSet<E> implements Set<E>, Serializable {
+
+  /** */
+  private static final long serialVersionUID = 1L;
 
   /**
    * The flag used in the underlying Trie of a TrieSet to indicate the given value exists in the
@@ -41,12 +45,13 @@ public class TrieSet<E> implements Set<E> {
    */
   public static final Object FLAG_NONE = null;
 
+  /** The Trie of this set. */
   protected Trie<E, Object> trie;
 
   /**
-   * Instantiates a TrieSet given a trie.
-   *
-   * <h3>Example Usage</h3>
+   * Instantiates a TrieSet given a trie.<br>
+   * <br>
+   * <strong>Example Usage</strong>
    *
    * <pre>
    * TrieSet&lt;String&gt; set = new TrieSet&lt;String&gt;( Tries.forStrings() );
