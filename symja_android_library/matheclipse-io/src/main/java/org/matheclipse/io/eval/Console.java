@@ -92,11 +92,13 @@ public class Console {
     Config.SHORTEN_STRING_LENGTH = 1024;
     Config.USE_VISJS = true;
     Config.FILESYSTEM_ENABLED = true;
+
     F.initSymbols(null, null, true);
     IOInit.init();
     Console console;
     try {
       console = new Console();
+      Config.PRINT_OUT = console::printOut;
     } catch (final SyntaxError e1) {
       e1.printStackTrace();
       return;
@@ -112,7 +114,7 @@ public class Console {
     // if (file != null) {
     // try {
     // final BufferedReader f = new BufferedReader(new InputStreamReader(new FileInputStream(file),
-    // "UTF-8"));
+    // StandardCharsets.UTF_8));
     // final StringBuilder buff = new StringBuilder(1024);
     // String line;
     // while ((line = f.readLine()) != null) {
@@ -206,7 +208,7 @@ public class Console {
             stderr.println("Automatically closing brackets: " + postfix);
             trimmedInput = trimmedInput + postfix;
           }
-          stdout.println("In [" + COUNTER + "]: " + trimmedInput);
+          stdout.println("In[" + COUNTER + "]:= " + trimmedInput);
           stdout.flush();
           // if (console.fPrettyPrinter) {
           // console.prettyPrinter(inputExpression);
@@ -228,7 +230,7 @@ public class Console {
   private String resultPrinter(String inputExpression) {
     String outputExpression = interpreter(inputExpression);
     if (outputExpression.length() > 0) {
-      stdout.println("Out[" + COUNTER + "]: " + outputExpression);
+      stdout.println("Out[" + COUNTER + "]= " + outputExpression);
       stdout.flush();
     }
     return outputExpression;
@@ -300,7 +302,7 @@ public class Console {
 
   /** Create a console which appends each evaluation output in a history list. */
   public Console() {
-    fEvaluator = new ExprEvaluator(false, 100);
+    fEvaluator = new ExprEvaluator(false, (short) 100);
     fOutputFactory = OutputFormFactory.get(true, false, 5, 7);
     fEvaluator.getEvalEngine().setFileSystemEnabled(true);
     fOutputTraditionalFactory = OutputFormFactory.get(true, false, 5, 7);
@@ -498,7 +500,7 @@ public class Console {
     }
     switch (fUsedForm) {
       case JAVAFORM:
-        return result.internalJavaString(false, -1, false, true, false);
+        return result.internalJavaString(false, -1, false, true, false, F.CNullFunction);
       case TRADITIONALFORM:
         StringBuilder traditionalBuffer = new StringBuilder();
         fOutputTraditionalFactory.reset();
@@ -533,13 +535,23 @@ public class Console {
             return html;
           }
         }
-        StringBuilder strBuffer = new StringBuilder();
-        fOutputFactory.reset();
-        if (fOutputFactory.convert(strBuffer, result)) {
-          return strBuffer.toString();
-        }
-        return "ERROR-IN-OUTPUTFORM";
+        return exprToString(result);
     }
+  }
+
+  private String exprToString(IExpr result) {
+    StringBuilder strBuffer = new StringBuilder();
+    fOutputFactory.reset();
+    if (fOutputFactory.convert(strBuffer, result)) {
+      return strBuffer.toString();
+    }
+    return "ERROR-IN-OUTPUTFORM";
+  }
+
+  private void printOut(IExpr result) {
+    String outputExpression = exprToString(result);
+    stdout.println("Out[" + COUNTER + "]= " + outputExpression);
+    stdout.flush();
   }
 
   // private String[] prettyPrinter3Lines(final String inputExpression) {

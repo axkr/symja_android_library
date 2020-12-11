@@ -94,11 +94,13 @@ public class MMAConsole {
     Config.SHORTEN_STRING_LENGTH = 1024;
     Config.USE_VISJS = true;
     Config.FILESYSTEM_ENABLED = true;
+
     F.initSymbols(null, null, true);
     IOInit.init();
     MMAConsole console;
     try {
       console = new MMAConsole();
+      Config.PRINT_OUT = console::printOut;
     } catch (final SyntaxError e1) {
       e1.printStackTrace();
       return;
@@ -124,9 +126,9 @@ public class MMAConsole {
     // f.close();
     // inputExpression = buff.toString();
     // outputExpression = console.interpreter(inputExpression);
-    // stdout.println("In [" + COUNTER + "]: " + inputExpression);
+    // stdout.println("In[" + COUNTER + "]:= " + inputExpression);
     // if (outputExpression.length() > 0) {
-    // stdout.println("Out[" + COUNTER + "]: " + outputExpression);
+    // stdout.println("Out[" + COUNTER + "]= " + outputExpression);
     // }
     // COUNTER++;
     // } catch (final IOException ioe) {
@@ -193,7 +195,7 @@ public class MMAConsole {
           // continue;
           // }
           // console.interpreter(trimmedInput);
-          stdout.println("In [" + COUNTER + "]: " + trimmedInput);
+          stdout.println("In[" + COUNTER + "]:= " + trimmedInput);
           stdout.flush();
           // if (outputExpression.length() > 0) {
           // stdout.println("Out[" + COUNTER + "]: " + outputExpression);
@@ -218,7 +220,7 @@ public class MMAConsole {
   private String resultPrinter(String trimmedInput) {
     String outputExpression = interpreter(trimmedInput);
     if (outputExpression.length() > 0) {
-      stdout.println("Out[" + COUNTER + "]: " + outputExpression);
+      stdout.println("Out[" + COUNTER + "]= " + outputExpression);
       stdout.flush();
     }
     return outputExpression;
@@ -307,13 +309,16 @@ public class MMAConsole {
   /** Create a console which appends each evaluation output in a history list. */
   public MMAConsole() {
     EvalEngine engine = new EvalEngine(false);
-    fEvaluator = new ExprEvaluator(engine, false, 100);
+    fEvaluator = new ExprEvaluator(engine, false, (short) 100);
     EvalEngine evalEngine = fEvaluator.getEvalEngine();
     evalEngine.setFileSystemEnabled(true);
+    evalEngine.setRecursionLimit(256);
+    evalEngine.setIterationLimit(500);
     fOutputFactory = OutputFormFactory.get(false, false, 5, 7);
     fOutputTraditionalFactory = OutputFormFactory.get(true, false, 5, 7);
     fInputFactory = OutputFormFactory.get(false, false, 5, 7);
     fInputFactory.setQuotes(true);
+
     // F.$PreRead.assign(//
     // F.Function(F.ReplaceAll(F.Unevaluated(F.Slot1), //
     // F.List(F.RuleDelayed(F.binaryAST2(F.Plot, F.x_, F.y_), F.Manipulate(F.binaryAST2(F.Plot, F.x,
@@ -514,15 +519,14 @@ public class MMAConsole {
 
   private String printResult(IExpr result) throws IOException {
     EvalEngine engine = fEvaluator.getEvalEngine();
-    EvalEngine.set(engine);
+    EvalEngine.setReset(engine);
     try {
-      engine.reset();
       if (result.equals(F.Null)) {
         return "";
       }
       switch (fUsedForm) {
         case JAVAFORM:
-          return result.internalJavaString(false, -1, false, true, false);
+          return result.internalJavaString(false, -1, false, true, false, F.CNullFunction);
         case TRADITIONALFORM:
           StringBuilder traditionalBuffer = new StringBuilder();
           fOutputTraditionalFactory.reset();
@@ -558,17 +562,26 @@ public class MMAConsole {
             }
           }
 
-          StringBuilder strBuffer = new StringBuilder();
-          fOutputFactory.reset();
-          if (fOutputFactory.convert(strBuffer, result)) {
-            return strBuffer.toString();
-          } else {
-            return "ERROR-IN-OUTPUTFORM";
-          }
+          return exprToString(result);
       }
     } finally {
 
     }
+  }
+
+  private String exprToString(IExpr result) {
+    StringBuilder strBuffer = new StringBuilder();
+    fOutputFactory.reset();
+    if (fOutputFactory.convert(strBuffer, result)) {
+      return strBuffer.toString();
+    }
+    return "ERROR-IN-OUTPUTFORM";
+  }
+
+  private void printOut(IExpr result) {
+    String outputExpression = exprToString(result);
+    stdout.println("Out[" + COUNTER + "]= " + outputExpression);
+    stdout.flush();
   }
 
   /**
