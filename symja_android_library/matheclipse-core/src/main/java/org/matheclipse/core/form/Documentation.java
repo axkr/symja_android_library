@@ -6,12 +6,15 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 
 import org.matheclipse.core.builtin.IOFunctions;
+import org.matheclipse.core.builtin.PatternMatching;
 import org.matheclipse.core.builtin.SourceCodeFunctions;
+import org.matheclipse.core.eval.exception.Validate;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IBuiltInSymbol;
 import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.interfaces.ISymbol;
+import org.matheclipse.parser.client.Scanner;
 
 public class Documentation {
 
@@ -30,7 +33,7 @@ public class Documentation {
       url = SourceCodeFunctions.functionURL((IBuiltInSymbol) symbol);
     }
     // read markdown file
-    String fileName = builinFunctionName + ".md";
+    String fileName = buildFunctionFilename(builinFunctionName);
 
     // Get file from resources folder
     ClassLoader classloader = Thread.currentThread().getContextClassLoader();
@@ -76,8 +79,16 @@ public class Documentation {
   }
 
   public static void usageDocumentation(Appendable out, String name) {
-    IAST list = IOFunctions.getNamesByPrefix(name);
     try {
+      if (Scanner.isIdentifier(name)) {
+        ISymbol symbol = F.symbol(name);
+        IExpr temp = symbol.evalMessage("usage");
+        if (temp.isPresent()) {
+          out.append(temp.toString());
+        }
+      }
+      IAST list = IOFunctions.getNamesByPrefix(name);
+
       if (list.size() > 2) {
         for (int i = 1; i < list.size(); i++) {
           out.append(list.get(i).toString());
@@ -113,7 +124,7 @@ public class Documentation {
       url = SourceCodeFunctions.functionURL((IBuiltInSymbol) symbol);
     }
     // read markdown file
-    String fileName = symbolName + ".md";
+    String fileName = buildFunctionFilename(symbolName);
 
     // Get file from resources folder
     ClassLoader classloader = Thread.currentThread().getContextClassLoader();
@@ -155,9 +166,17 @@ public class Documentation {
     return false;
   }
 
+  public static String buildFunctionFilename(String symbolName) {
+    return "doc/functions/" + symbolName + ".md";
+  }
+
+  public static String buildDocFilename(String docName) {
+    return "doc/" + docName + ".md";
+  }
+
   public static boolean extraxtDocumentation(Appendable out, String symbolName) {
     // read markdown file
-    String fileName = symbolName + ".md";
+    String fileName = buildFunctionFilename(symbolName);
 
     // Get file from resources folder
     ClassLoader classloader = Thread.currentThread().getContextClassLoader();
@@ -180,12 +199,14 @@ public class Documentation {
           }
 
           if (line.startsWith("> ")) {
+            out.append("\n        /**");
             out.append(" ");
             if (shortdesc != null) {
               out.append(shortdesc);
               out.append(" - ");
             }
             out.append(line.substring(2));
+            out.append("*/");
             return true;
           }
         }

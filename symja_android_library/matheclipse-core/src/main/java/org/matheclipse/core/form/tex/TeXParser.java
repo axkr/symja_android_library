@@ -1,11 +1,13 @@
 package org.matheclipse.core.form.tex;
 
 import java.io.UnsupportedEncodingException;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.function.BiFunction;
 import java.util.function.Function;
 
+import org.matheclipse.core.basic.Config;
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.exception.AbortException;
 import org.matheclipse.core.eval.util.Lambda;
@@ -15,10 +17,11 @@ import org.matheclipse.core.interfaces.IASTAppendable;
 import org.matheclipse.core.interfaces.IASTMutable;
 import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.interfaces.ISymbol;
-import org.matheclipse.core.parser.ExprParserFactory;
 import org.matheclipse.parser.client.FEConfig;
 import org.matheclipse.parser.client.operator.Operator;
 import org.matheclipse.parser.client.operator.Precedence;
+import org.matheclipse.parser.trie.TrieBuilder;
+import org.matheclipse.parser.trie.TrieMatch;
 import org.matheclipse.parser.trie.Tries;
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
@@ -135,7 +138,8 @@ public class TeXParser {
   private static class Initializer {
 
     private static void init() {
-      UNICODE_OPERATOR_MAP = Tries.forStrings();
+      UNICODE_OPERATOR_MAP =
+          Config.TRIE_STRING2EXPR_BUILDER.withMatch(TrieMatch.EXACT).build(); // Tries.forStrings();
       UNICODE_OPERATOR_MAP.put("\u2218", F.Degree);
       UNICODE_OPERATOR_MAP.put("\u00B0", F.Degree);
       UNICODE_OPERATOR_MAP.put("\u222b", F.Integrate);
@@ -147,21 +151,31 @@ public class TeXParser {
       UNICODE_OPERATOR_MAP.put("\u2149", F.CI); // double-struck italic letter j
       UNICODE_OPERATOR_MAP.put("\u2107", F.E); // euler's constant
 
-      FUNCTION_HEADER_MAP = Tries.forStrings();
+      FUNCTION_HEADER_MAP =
+          Config.TRIE_STRING2EXPR_BUILDER.withMatch(TrieMatch.EXACT).build(); // Tries.forStrings();
       FUNCTION_HEADER_MAP.put("ln", F.Log);
       FUNCTION_HEADER_MAP.put("lim", F.Limit);
 
-      BINARY_OPERATOR_MAP = Tries.forStrings();
+      TrieBuilder<String, BinaryOperator, ArrayList<BinaryOperator>> binaryBuilder =
+          TrieBuilder.create();
+      BINARY_OPERATOR_MAP = binaryBuilder.withMatch(TrieMatch.EXACT).build(); // Tries.forStrings();
       for (int i = 0; i < BINARY_OPERATORS.length; i++) {
         String headStr = BINARY_OPERATORS[i].getOperatorString();
         BINARY_OPERATOR_MAP.put(headStr, BINARY_OPERATORS[i]);
       }
-      PREFIX_OPERATOR_MAP = Tries.forStrings();
+
+      TrieBuilder<String, PrefixOperator, ArrayList<PrefixOperator>> prefixBuilder =
+          TrieBuilder.create();
+      PREFIX_OPERATOR_MAP = prefixBuilder.withMatch(TrieMatch.EXACT).build(); // Tries.forStrings();
       for (int i = 0; i < PREFIX_OPERATORS.length; i++) {
         String headStr = PREFIX_OPERATORS[i].getOperatorString();
         PREFIX_OPERATOR_MAP.put(headStr, PREFIX_OPERATORS[i]);
       }
-      POSTFIX_OPERATOR_MAP = Tries.forStrings();
+
+      TrieBuilder<String, PostfixOperator, ArrayList<PostfixOperator>> postfixBuilder =
+          TrieBuilder.create();
+      POSTFIX_OPERATOR_MAP =
+          postfixBuilder.withMatch(TrieMatch.EXACT).build(); // Tries.forStrings();
       for (int i = 0; i < POSTFIX_OPERATORS.length; i++) {
         String headStr = POSTFIX_OPERATORS[i].getOperatorString();
         POSTFIX_OPERATOR_MAP.put(headStr, POSTFIX_OPERATORS[i]);

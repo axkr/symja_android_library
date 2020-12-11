@@ -18,6 +18,7 @@ import org.matheclipse.core.expression.ApcomplexNum;
 import org.matheclipse.core.expression.Context;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.expression.Num;
+import org.matheclipse.core.expression.S;
 import org.matheclipse.core.form.DoubleToMMA;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IASTAppendable;
@@ -422,16 +423,16 @@ public abstract class DoubleFormFactory {
   }
 
   public void convertSymbol(final StringBuilder buf, final ISymbol symbol) {
-    if (symbol == F.E) {
+    if (symbol == S.E) {
       buf.append("Math.E");
       return;
-    } else if (symbol == F.Pi) {
+    } else if (symbol == S.Pi) {
       buf.append("Math.PI");
       return;
-    } else if (symbol == F.False) {
+    } else if (symbol == S.False) {
       buf.append("false");
       return;
-    } else if (symbol == F.True) {
+    } else if (symbol == S.True) {
       buf.append("true");
       return;
     } else if (symbol == F.Indeterminate) {
@@ -1415,7 +1416,7 @@ public abstract class DoubleFormFactory {
    * @throws IOException
    */
   public void convertAST(final StringBuilder buf, final IAST function) {
-    if (function.isNumericFunction()) {
+    if (function.isNumericFunction(true)) {
       try {
         double value = EvalEngine.get().evalDouble(function);
         buf.append("(" + value + ")");

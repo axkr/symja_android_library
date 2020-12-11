@@ -2,6 +2,7 @@ package org.matheclipse.core.form.output;
 
 import java.io.IOException;
 import java.math.BigInteger;
+import java.util.ArrayList;
 
 import org.apfloat.Apcomplex;
 import org.apfloat.Apfloat;
@@ -9,6 +10,7 @@ import org.hipparchus.linear.RealMatrix;
 import org.hipparchus.linear.RealVector;
 import org.matheclipse.core.basic.Config;
 import org.matheclipse.core.builtin.Algebra;
+import org.matheclipse.core.builtin.LinearAlgebra;
 import org.matheclipse.core.convert.AST2Expr;
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.expression.ASTRealMatrix;
@@ -20,6 +22,7 @@ import org.matheclipse.core.expression.Context;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.expression.ID;
 import org.matheclipse.core.expression.Num;
+import org.matheclipse.core.expression.S;
 import org.matheclipse.core.form.ApfloatToMMA;
 import org.matheclipse.core.form.DoubleToMMA;
 import org.matheclipse.core.interfaces.IAST;
@@ -537,7 +540,7 @@ public class OutputFormFactory {
       append(buf, symbol.getSymbolName());
       return;
     }
-    if (FEConfig.PARSER_USE_LOWERCASE_SYMBOLS && context.equals(Context.SYSTEM)) {
+    if (context.equals(Context.SYSTEM)) {
       String str = AST2Expr.PREDEFINED_SYMBOLS_MAP.get(symbol.getSymbolName());
       if (str != null) {
         append(buf, str);
@@ -1030,7 +1033,7 @@ public class OutputFormFactory {
   private void convert(final Appendable buf, final IExpr o, final int precedence, boolean isASTHead)
       throws IOException {
     if (o instanceof IAST) {
-      if (o.isDataSet()) {
+      if (o.isDataset()) {
         // TODO improve output
         buf.append(o.toString());
         return;
@@ -1159,15 +1162,16 @@ public class OutputFormFactory {
               }
               break;
             case ID.List:
-              convertList(buf, list);
+              convertList(buf, list, false);
               return;
             case ID.MatrixForm:
-              if (list.isAST() && list.size() > 1) {
+              if (list.isASTOrAssociation() && list.size() > 1) {
                 // see also MatrixForm in MathML or TeX format for "graphical representation".
                 IExpr normal = list.arg1().normal(false);
-
-                if (normal.isList() && normal.isMatrix() != null) {
-                  convertList(buf, (IAST) normal);
+                if (normal.isList()) { // && normal.isMatrix() != null) {
+                  ArrayList<Integer> dims =
+                      LinearAlgebra.dimensions((IAST) normal, S.List, Integer.MAX_VALUE);
+                  convertList(buf, (IAST) normal, dims.size() >= 2);
                   return;
                 }
                 convert(buf, normal, Integer.MIN_VALUE, false);
@@ -1239,7 +1243,7 @@ public class OutputFormFactory {
           }
         } else {
           if (list instanceof ASTRealVector || list instanceof ASTRealMatrix) {
-            convertList(buf, list);
+            convertList(buf, list, false);
             return;
           }
         }
@@ -1419,7 +1423,8 @@ public class OutputFormFactory {
     }
   }
 
-  public void convertList(final Appendable buf, final IAST list) throws IOException {
+  public void convertList(final Appendable buf, final IAST list, boolean isMatrix)
+      throws IOException {
     if (list instanceof ASTRealVector) {
       try {
         RealVector vector = ((ASTRealVector) list).getRealVector();
@@ -1471,7 +1476,7 @@ public class OutputFormFactory {
       }
       return;
     }
-    if (list.isEvalFlagOn(IAST.IS_MATRIX)) {
+    if (list.isEvalFlagOn(IAST.IS_MATRIX) || isMatrix) {
       if (!fEmpty) {
         newLine(buf);
       }
@@ -1483,7 +1488,7 @@ public class OutputFormFactory {
     }
     for (int i = 2; i < listSize; i++) {
       append(buf, ",");
-      if (list.isEvalFlagOn(IAST.IS_MATRIX)) {
+      if (list.isEvalFlagOn(IAST.IS_MATRIX) || isMatrix) {
         newLine(buf);
         append(buf, ' ');
       }
@@ -1503,7 +1508,7 @@ public class OutputFormFactory {
     IExpr arg1 = list.arg1();
 
     boolean parentheses = false;
-    if (arg1.isAST()) {
+    if (arg1.isASTOrAssociation()) {
       final Operator operator = getOperator(arg1.topHead());
       if (operator != null) {
         parentheses = true;

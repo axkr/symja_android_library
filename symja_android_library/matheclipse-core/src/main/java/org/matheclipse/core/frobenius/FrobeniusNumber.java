@@ -32,6 +32,9 @@ import java.math.BigInteger;
 import java.util.Arrays;
 import java.util.HashMap;
 
+import org.matheclipse.core.basic.Config;
+import org.matheclipse.core.eval.exception.ASTElementLimitExceeded;
+
 import static java.math.BigInteger.ONE;
 import static java.math.BigInteger.ZERO;
 
@@ -129,6 +132,10 @@ public class FrobeniusNumber {
 
   private static BigInteger frobeniusNumberIntegerArray(BigInteger[] array) {
     int array0 = intValue(array[0]);
+    if (array0 > Config.MAX_AST_SIZE) {
+      ASTElementLimitExceeded.throwIt(array0);
+    }
+
     BigInteger[] ns = new BigInteger[array0];
     Arrays.fill(ns, MINUS_ONE);
     ns[0] = ZERO;
@@ -169,8 +176,10 @@ public class FrobeniusNumber {
   private static final BigInteger MAX_VALUE = BigInteger.valueOf(Integer.MAX_VALUE);
 
   private static int intValue(BigInteger integer) {
-    if (integer.compareTo(MAX_VALUE) > 0)
-      throw new UnsupportedOperationException("Integer overflow.");
+    if (integer.compareTo(MAX_VALUE) > 0) {
+      ASTElementLimitExceeded.throwIt(Integer.MAX_VALUE);
+      //      throw new UnsupportedOperationException("Integer overflow.");
+    }
     return integer.intValue();
   }
 }

@@ -3,6 +3,7 @@ package org.matheclipse.core.form.mathml;
 import java.io.IOException;
 import java.math.BigInteger;
 import java.text.NumberFormat;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -49,6 +50,8 @@ import org.matheclipse.parser.client.operator.InfixOperator;
 import org.matheclipse.parser.client.operator.PostfixOperator;
 import org.matheclipse.parser.client.operator.Precedence;
 import org.matheclipse.parser.client.operator.PrefixOperator;
+import org.matheclipse.parser.trie.TrieBuilder;
+import org.matheclipse.parser.trie.TrieMatch;
 import org.matheclipse.parser.trie.Tries;
 
 /** Generates MathML presentation output */
@@ -255,7 +258,7 @@ public class MathMLFormFactory extends AbstractMathMLFormFactory {
     }
   }
 
-  public interface IConverter {
+  private interface IConverter {
     /**
      * Converts a given function into the corresponding MathML output
      *
@@ -373,7 +376,7 @@ public class MathMLFormFactory extends AbstractMathMLFormFactory {
           }
         }
       } else {
-        final IAST matrix = (IAST) f.arg1();
+        final IAST matrix = (IAST) f.arg1().normal(false);
         if (!tableForm) {
           fFactory.tagStart(buf, "mrow");
           fFactory.tag(buf, "mo", "(");
@@ -1087,14 +1090,21 @@ public class MathMLFormFactory extends AbstractMathMLFormFactory {
   public static final HashMap<ISymbol, IConverter> CONVERTERS =
       new HashMap<ISymbol, IConverter>(199);
 
+  private static final TrieBuilder<String, Object, ArrayList<Object>> constantBuilder =
+      TrieBuilder.create();
   /** Table for constant symbols */
-  public static final Map<String, Object> CONSTANT_SYMBOLS = Tries.forStrings();
+  public static final Map<String, Object> CONSTANT_SYMBOLS =
+      constantBuilder.withMatch(TrieMatch.EXACT).build();
+
+  private static final TrieBuilder<String, AbstractConverter, ArrayList<AbstractConverter>>
+      converterBuilder = TrieBuilder.create();
+
+  /** Description of the Field */
+  public static final Map<String, AbstractConverter> OPERATORS =
+      converterBuilder.withMatch(TrieMatch.EXACT).build();
 
   /** Table for constant expressions */
   public static final HashMap<IExpr, String> CONSTANT_EXPRS = new HashMap<IExpr, String>();
-
-  /** Description of the Field */
-  public static final Map<String, AbstractConverter> OPERATORS = Tries.forStrings();
 
   private boolean fRelaxedSyntax;
 
@@ -1117,6 +1127,19 @@ public class MathMLFormFactory extends AbstractMathMLFormFactory {
       int significantFigures) {
     super(tagPrefix, numberFormat);
     fRelaxedSyntax = true;
+    fExponentFigures = exponentFigures;
+    fSignificantFigures = significantFigures;
+    init();
+  }
+
+  public MathMLFormFactory(
+      final String tagPrefix,
+      boolean relaxedSyntax,
+      NumberFormat numberFormat,
+      int exponentFigures,
+      int significantFigures) {
+    super(tagPrefix, numberFormat);
+    fRelaxedSyntax = relaxedSyntax;
     fExponentFigures = exponentFigures;
     fSignificantFigures = significantFigures;
     init();

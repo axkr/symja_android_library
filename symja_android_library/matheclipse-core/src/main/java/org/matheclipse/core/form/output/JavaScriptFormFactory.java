@@ -122,6 +122,10 @@ public class JavaScriptFormFactory extends DoubleFormFactory {
     FUNCTIONS_STR_MATHCELL.put(S.Erfc, "erfc");
     FUNCTIONS_STR_MATHCELL.put(S.FresnelC, "fresnelC");
     FUNCTIONS_STR_MATHCELL.put(S.FresnelS, "fresnelS");
+    // PM: Since polylog is a shortened form of the full function name, polylogarithm, the small "l"
+    // is
+    // more appropriate here:
+    FUNCTIONS_STR_MATHCELL.put(S.PolyLog, "polylog");
 
     FUNCTIONS_STR_MATHCELL.put(S.CosIntegral, "cosIntegral");
     FUNCTIONS_STR_MATHCELL.put(S.CoshIntegral, "coshIntegral");
@@ -351,7 +355,7 @@ public class JavaScriptFormFactory extends DoubleFormFactory {
   }
 
   public void convertAST(final StringBuilder buf, final IAST function) {
-    if (function.isNumericFunction()) {
+    if (function.isNumericFunction(true)) {
       try {
         double value = EvalEngine.get().evalDouble(function);
         buf.append("(" + value + ")");
@@ -402,12 +406,9 @@ public class JavaScriptFormFactory extends DoubleFormFactory {
       return;
     }
     if (function.isAST(S.Defer, 2)
-        || //
-        function.isAST(S.Evaluate, 2)
-        || //
-        function.isAST(S.Hold, 2)
-        || //
-        function.isAST(S.Unevaluated, 2)) {
+        || function.isAST(S.Evaluate, 2)
+        || function.isAST(S.Hold, 2)
+        || function.isUnevaluated()) {
       convertInternal(buf, function.first());
       return;
     }

@@ -150,7 +150,7 @@ public class JavaDoubleFormFactory extends DoubleFormFactory {
   }
 
   public void convertAST(final StringBuilder buf, final IAST function) {
-    if (function.isNumericFunction()) {
+    if (function.isNumericFunction(true)) {
       try {
         double value = EvalEngine.get().evalDouble(function);
         buf.append("(");
@@ -180,7 +180,7 @@ public class JavaDoubleFormFactory extends DoubleFormFactory {
           || //
           function.isAST(S.Hold, 2)
           || //
-          function.isAST(S.Unevaluated, 2)) {
+          function.isUnevaluated()) {
         convertInternal(buf, function.first());
         return;
       }

@@ -40,7 +40,7 @@ import org.matheclipse.parser.client.Characters;
 import org.matheclipse.parser.client.FEConfig;
 import org.matheclipse.parser.client.operator.ASTNodeFactory;
 import org.matheclipse.parser.client.operator.Precedence;
-import org.matheclipse.parser.trie.Tries;
+import org.matheclipse.parser.trie.TrieMatch;
 
 /** Generates TeX presentation output */
 public class TeXFormFactory {
@@ -172,6 +172,24 @@ public class TeXFormFactory {
         }
         buf.append("\\imag");
       }
+      return true;
+    }
+  }
+
+  private static final class Conjugate extends AbstractOperator {
+    public Conjugate() {
+      super(ASTNodeFactory.MMA_STYLE_FACTORY.get("Times").getPrecedence(), "^*");
+    }
+    /** {@inheritDoc} */
+    @Override
+    public boolean convert(final StringBuilder buf, final IAST f, final int precedence) {
+      if (f.size() != 2) {
+        return false;
+      }
+      precedenceOpen(buf, precedence);
+      fFactory.convertInternal(buf, f.arg1(), 0);
+      buf.append("^*");
+      precedenceClose(buf, precedence);
       return true;
     }
   }
@@ -482,7 +500,7 @@ public class TeXFormFactory {
           buf.append("\\end{pmatrix}");
         }
       } else {
-        final IAST matrix = (IAST) f.arg1();
+        final IAST matrix = (IAST) f.arg1().normal(false);
         if (Config.MATRIX_TEXFORM) {
           // problem with KaTeX?
           buf.append("\\left(\n\\begin{array}{");
@@ -1219,7 +1237,8 @@ public class TeXFormFactory {
   }
 
   /** Table for constant symbols */
-  public static final Map<String, Object> CONSTANT_SYMBOLS = Tries.forStrings();
+  public static final Map<String, String> CONSTANT_SYMBOLS =
+      FEConfig.TRIE_STRING2STRING_BUILDER.withMatch(TrieMatch.EXACT).build(); // Tries.forStrings();
 
   /** Table for constant expressions */
   public static final HashMap<IExpr, String> CONSTANT_EXPRS = new HashMap<IExpr, String>(199);
@@ -1910,6 +1929,7 @@ public class TeXFormFactory {
     operTab.put(F.Abs, new UnaryFunction("|", "|"));
     operTab.put(F.Binomial, new Binomial());
     operTab.put(F.Ceiling, new UnaryFunction(" \\left \\lceil ", " \\right \\rceil "));
+    operTab.put(F.Conjugate, new Conjugate());
     operTab.put(F.Complex, new Complex());
     operTab.put(
         F.CompoundExpression,
