@@ -1,0 +1,5 @@
+User-agent: *
+Disallow: /en/
+Disallow: /cmd
+Disallow: /commandlist/
+Disallow: /media
