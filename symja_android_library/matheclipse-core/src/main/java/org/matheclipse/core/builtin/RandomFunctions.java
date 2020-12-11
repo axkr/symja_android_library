@@ -1,25 +1,34 @@
 package org.matheclipse.core.builtin;
 
 import java.math.BigInteger;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.concurrent.ThreadLocalRandom;
 import java.util.function.Supplier;
 
 import org.hipparchus.complex.Complex;
+import org.hipparchus.random.RandomDataGenerator;
 import org.hipparchus.util.FastMath;
 import org.hipparchus.util.MathArrays;
+import org.hipparchus.util.Pair;
 import org.matheclipse.core.basic.Config;
+import org.matheclipse.core.builtin.StatisticsFunctions.IRandomVariate;
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.exception.ASTElementLimitExceeded;
 import org.matheclipse.core.eval.exception.Validate;
 import org.matheclipse.core.eval.interfaces.AbstractFunctionEvaluator;
+import org.matheclipse.core.eval.interfaces.IFunctionEvaluator;
 import org.matheclipse.core.expression.ASTRealVector;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.expression.S;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IASTAppendable;
 import org.matheclipse.core.interfaces.IASTMutable;
+import org.matheclipse.core.interfaces.IBuiltInSymbol;
+import org.matheclipse.core.interfaces.IEvaluator;
 import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.interfaces.IInteger;
+import org.matheclipse.core.interfaces.ISymbol;
 import org.matheclipse.parser.client.FEConfig;
 
 public final class RandomFunctions {
@@ -61,13 +70,91 @@ public final class RandomFunctions {
    * </pre>
    */
   private static final class RandomChoice extends AbstractFunctionEvaluator {
+    /**
+     * Sampler for enumerated distributions.
+     *
+     * @param <T> type of sample space objects
+     */
+    private final class EnumeratedDistributionSampler {
+      /** Probabilities */
+      private final double[] weights;
+
+      /**
+       * Create an EnumeratedDistributionSampler from the provided pmf.
+       *
+       * @param pmf probability mass function describing the distribution
+       */
+      EnumeratedDistributionSampler(double[] weights) {
+        this.weights = weights;
+      }
+
+      /**
+       * Generates a random sample of size sampleSize from {0, 1, ... , weights.length - 1}, using
+       * weights as probabilities.
+       *
+       * <p>For 0 &lt; i &lt; weights.length, the probability that i is selected (on any draw) is
+       * weights[i]. If necessary, the weights array is normalized to sum to 1 so that weights[i] is
+       * a probability and the array sums to 1.
+       *
+       * <p>Weights can be 0, but must not be negative, infinite or NaN. At least one weight must be
+       * positive.
+       *
+       * @param sampleSize size of sample to generate
+       * @return a random array of indexes from the distribution
+       */
+      public int[] sample(int sampleSize) {
+        RandomDataGenerator rg = new RandomDataGenerator();
+        return rg.nextSampleWithReplacement(sampleSize, weights);
+      }
+    }
 
     @Override
     public IExpr evaluate(final IAST ast, EvalEngine engine) {
-      if (ast.size() > 1 && ast.arg1().isList()) {
-        IAST list = (IAST) ast.arg1();
+
+      IExpr arg1 = ast.arg1();
+      if (arg1.isRuleAST()
+          && arg1.first().isList()
+          && arg1.second().isList()
+          && arg1.first().size() == arg1.second().size()) {
+        IAST weights = (IAST) arg1.first();
+        IAST items = (IAST) arg1.second();
+        double[] itemWeights = weights.toDoubleVector();
+        if (itemWeights != null) {
+          EnumeratedDistributionSampler sampler = new EnumeratedDistributionSampler(itemWeights);
+          if (ast.size() == 2) {
+            int[] chosen = sampler.sample(1);
+            return items.get(chosen[0] + 1);
+          }
+          if (ast.isAST2()) {
+            IExpr arg2 = ast.arg2();
+            //
+            if (arg2.isList()) {
+              // n1 x n2 x n3 ... array
+              int[] dimension = Validate.checkListOfInts(ast, arg2, 1, Integer.MAX_VALUE, engine);
+              if (dimension == null) {
+                return F.NIL;
+              }
+              return ArrayBuilder.build(
+                  () -> {
+                    return items.get(sampler.sample(1)[0] + 1);
+                  },
+                  dimension);
+            }
+            int n = arg2.toIntDefault(Integer.MIN_VALUE);
+            if (n > 0) {
+              IASTAppendable result = F.ListAlloc(n);
+              int[] chosen = sampler.sample(n);
+              for (int i = 0; i < n; i++) {
+                result.append(items.get(chosen[i] + 1));
+              }
+              return result;
+            }
+          }
+        }
+      } else if (arg1.isList()) {
+        IAST list = (IAST) arg1;
         ThreadLocalRandom random = ThreadLocalRandom.current();
-        int listSize = list.argSize();
+        final int listSize = list.argSize();
         if (listSize == 0) {
           return F.NIL;
         }
@@ -75,8 +162,24 @@ public final class RandomFunctions {
         if (ast.size() == 2) {
           return list.get(randomIndex + 1);
         }
-        if (ast.size() == 3) {
-          int n = ast.arg2().toIntDefault(Integer.MIN_VALUE);
+        if (ast.isAST2()) {
+          IExpr arg2 = ast.arg2();
+          //
+          if (arg2.isList()) {
+            // n1 x n2 x n3 ... array
+            int[] dimension = Validate.checkListOfInts(ast, arg2, 1, Integer.MAX_VALUE, engine);
+            if (dimension == null) {
+              return F.NIL;
+            }
+            int[] randomValue = new int[1];
+            return ArrayBuilder.build(
+                () -> {
+                  randomValue[0] = random.nextInt(listSize);
+                  return list.get(randomValue[0] + 1);
+                },
+                dimension);
+          }
+          int n = arg2.toIntDefault(Integer.MIN_VALUE);
           if (n > 0) {
             IASTAppendable result = F.ListAlloc(n);
             for (int i = 0; i < n; i++) {
@@ -89,6 +192,10 @@ public final class RandomFunctions {
       }
 
       return F.NIL;
+    }
+
+    public int[] expectedArgSize(IAST ast) {
+      return ARGS_1_2;
     }
   }
 
@@ -154,6 +261,10 @@ public final class RandomFunctions {
       }
       return F.NIL;
     }
+
+    public int[] expectedArgSize(IAST ast) {
+      return ARGS_0_2;
+    }
   }
 
   /**
@@ -196,6 +307,9 @@ public final class RandomFunctions {
             if (min == max) {
               return F.ZZ(min);
             }
+          }
+          if (max == Integer.MAX_VALUE) {
+            return F.NIL;
           }
           ThreadLocalRandom tlr = ThreadLocalRandom.current();
           if (ast.isAST2()) {
@@ -274,7 +388,7 @@ public final class RandomFunctions {
     }
 
     public int[] expectedArgSize(IAST ast) {
-      return IOFunctions.ARGS_0_2;
+      return ARGS_0_2;
     }
   }
 
@@ -314,7 +428,7 @@ public final class RandomFunctions {
     }
 
     public int[] expectedArgSize(IAST ast) {
-      return IOFunctions.ARGS_1_1;
+      return ARGS_1_1;
     }
   }
 
@@ -432,6 +546,19 @@ public final class RandomFunctions {
         }
 
       } else {
+        if (arg1.isAST()) {
+          IAST dist = (IAST) arg1;
+          if (dist.head().isSymbol()) {
+            ISymbol head = (ISymbol) dist.head();
+            if (head instanceof IBuiltInSymbol) {
+              IEvaluator evaluator = ((IBuiltInSymbol) head).getEvaluator();
+              if (evaluator instanceof IRandomVariate) {
+                // TODO refactor/optimize call
+                return S.RandomVariate.ofNIL(engine, arg1, F.ZZ(n));
+              }
+            }
+          }
+        }
         boolean isNegative = false;
         double max = engine.evalDouble(arg1);
         if (max < 0) {
@@ -446,7 +573,7 @@ public final class RandomFunctions {
           }
           array[i] = tlr.nextDouble(max);
           if (isNegative) {
-            array[i] *= -1;
+            array[i] *= -1.0;
           }
         }
       }
@@ -503,7 +630,7 @@ public final class RandomFunctions {
 
     @Override
     public int[] expectedArgSize(IAST ast) {
-      return IOFunctions.ARGS_1_2;
+      return ARGS_1_2;
     }
 
     public static IAST shuffle(IAST list, int n) {
@@ -537,11 +664,11 @@ public final class RandomFunctions {
     public static IASTMutable build(Supplier<IExpr> supplier, int[] dims) {
       ArrayBuilder builder = new ArrayBuilder(supplier, dims);
       IASTAppendable result = F.ast(S.List, dims[0], true);
-      builder.array(0, result);
+      builder.arrayRecursive(0, result);
       return result;
     }
 
-    private void array(int position, IASTMutable list) {
+    private void arrayRecursive(int position, IASTMutable list) {
       if (dims.length - 1 == position) {
         int size = dims[position];
         for (int i = 1; i <= size; i++) {
@@ -554,7 +681,7 @@ public final class RandomFunctions {
       for (int i = 1; i <= size1; i++) {
         IASTAppendable currentList = F.ast(S.List, size2, true);
         list.set(i, currentList);
-        array(position + 1, currentList);
+        arrayRecursive(position + 1, currentList);
       }
     }
   }
