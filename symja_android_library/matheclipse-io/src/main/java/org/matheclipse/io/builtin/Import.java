@@ -21,10 +21,10 @@ import org.jgrapht.io.GraphMLImporter;
 import org.jgrapht.io.ImportException;
 import org.jgrapht.io.VertexProvider;
 import org.matheclipse.core.basic.Config;
-import org.matheclipse.core.builtin.IOFunctions;
 import org.matheclipse.core.convert.AST2Expr;
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.interfaces.AbstractEvaluator;
+import org.matheclipse.core.eval.interfaces.IFunctionEvaluator;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.expression.S;
 import org.matheclipse.core.expression.WL;
@@ -121,7 +121,7 @@ public class Import extends AbstractEvaluator {
   }
 
   public int[] expectedArgSize(IAST ast) {
-    return IOFunctions.ARGS_1_2;
+    return IFunctionEvaluator.ARGS_1_2;
   }
 
   public static IExpr of(File file, EvalEngine engine) throws IOException {

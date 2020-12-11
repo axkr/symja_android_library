@@ -31,13 +31,13 @@ import javax.swing.filechooser.FileSystemView;
 
 import org.apache.commons.lang3.StringUtils;
 import org.matheclipse.core.basic.Config;
-import org.matheclipse.core.builtin.IOFunctions;
 import org.matheclipse.core.convert.AST2Expr;
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.exception.ArgumentTypeException;
 import org.matheclipse.core.eval.exception.DialogReturnException;
 import org.matheclipse.core.eval.interfaces.AbstractCoreFunctionEvaluator;
 import org.matheclipse.core.eval.interfaces.AbstractFunctionEvaluator;
+import org.matheclipse.core.eval.interfaces.IFunctionEvaluator;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.expression.ID;
 import org.matheclipse.core.expression.S;
@@ -132,7 +132,7 @@ public class SwingFunctions {
     }
 
     public int[] expectedArgSize(IAST ast) {
-      return IOFunctions.ARGS_0_1;
+      return IFunctionEvaluator.ARGS_0_1;
     }
   }
 
@@ -178,7 +178,7 @@ public class SwingFunctions {
     }
 
     public int[] expectedArgSize(IAST ast) {
-      return IOFunctions.ARGS_1_2;
+      return IFunctionEvaluator.ARGS_1_2;
     }
   }
 
@@ -197,7 +197,7 @@ public class SwingFunctions {
     }
 
     public int[] expectedArgSize(IAST ast) {
-      return IOFunctions.ARGS_0_1;
+      return IFunctionEvaluator.ARGS_0_1;
     }
   }
 
@@ -477,7 +477,7 @@ public class SwingFunctions {
             }
           }
           if (expr.isPresent()) {
-            dynamic.assignValue(expr);
+            dynamic.assignValue(expr, false);
           }
           // System.out.println(F.eval(dynamic).toString());
         }
@@ -523,7 +523,7 @@ public class SwingFunctions {
     }
 
     public int[] expectedArgSize(IAST ast) {
-      return IOFunctions.ARGS_1_2;
+      return IFunctionEvaluator.ARGS_1_2;
     }
   }
 
@@ -552,7 +552,7 @@ public class SwingFunctions {
     }
 
     public int[] expectedArgSize(IAST ast) {
-      return IOFunctions.ARGS_0_1;
+      return IFunctionEvaluator.ARGS_0_1;
     }
 
     @Override

@@ -1,20 +1,16 @@
 package org.matheclipse.io.builtin;
 
-import java.io.IOException;
-
-import org.matheclipse.core.basic.Config;
-import org.matheclipse.core.builtin.IOFunctions;
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.interfaces.AbstractEvaluator;
+import org.matheclipse.core.eval.interfaces.IFunctionEvaluator;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.interfaces.IStringX;
-import org.matheclipse.core.io.Extension;
 import org.matheclipse.io.expression.ASTDataset;
-import org.matheclipse.parser.client.SyntaxError;
 
 import tech.tablesaw.api.Table;
+import tech.tablesaw.io.csv.CsvReadOptions;
 
 /** Import semantic data into a DataSet */
 public class SemanticImportString extends AbstractEvaluator {
@@ -29,15 +25,73 @@ public class SemanticImportString extends AbstractEvaluator {
 
     IStringX arg1 = (IStringX) ast.arg1();
     try {
-      Table table = Table.read().csv(arg1.toString(), "");
-      return ASTDataset.newInstance(table);
-    } catch (RuntimeException rex) {
+      String contents = arg1.toString();
+      char delimiter = determineDelimiter(contents);
+      CsvReadOptions.Builder builder =
+          CsvReadOptions.builderFromString(contents).separator(delimiter);
+      CsvReadOptions options = builder.build();
+      Table table = Table.read().usingOptions(options);
+      return ASTDataset.newTablesawTable(table);
+    } catch (Exception rex) {
       return engine.printMessage("SemanticImportString: " + " - " + rex.getMessage());
     } finally {
     }
   }
 
+  /**
+   * Determine the delimiter from the first line of the CSV content. Default delimiter is <code>,
+   * </code>.
+   *
+   * @param contents
+   * @return
+   */
+  public static char determineDelimiter(String contents) {
+    char delimiter = ',';
+    int index = contents.indexOf('\n');
+    if (index > 0) {
+      int[] count = new int[4];
+      for (int i = 0; i < index; i++) {
+        char ch = contents.charAt(i);
+        if (ch == ';') {
+          count[0]++;
+        } else if (ch == ',') {
+          count[1]++;
+        } else if (ch == '\t') {
+          count[2]++;
+        } else if (ch == ':') {
+          count[3]++;
+        }
+      }
+      int countIndx = -1;
+      int max = -1;
+      for (int i = 0; i < count.length; i++) {
+        if (count[i] > max) {
+          countIndx = i;
+          max = count[i];
+        }
+      }
+      if (countIndx > 0) {
+        switch (countIndx) {
+          case 0:
+            delimiter = ';';
+            break;
+          case 1:
+            delimiter = ',';
+            break;
+          case 2:
+            delimiter = '\t';
+            break;
+          case 3:
+            delimiter = ':';
+            break;
+          default:
+        }
+      }
+    }
+    return delimiter;
+  }
+
   public int[] expectedArgSize(IAST ast) {
-    return IOFunctions.ARGS_1_2;
+    return IFunctionEvaluator.ARGS_1_2;
   }
 }

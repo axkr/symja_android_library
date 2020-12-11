@@ -4,9 +4,9 @@ import java.io.File;
 import java.io.IOException;
 
 import org.matheclipse.core.basic.Config;
-import org.matheclipse.core.builtin.IOFunctions;
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.interfaces.AbstractEvaluator;
+import org.matheclipse.core.eval.interfaces.IFunctionEvaluator;
 import org.matheclipse.core.expression.F;
 // import org.matheclipse.core.expression.data.DataSetExpr;
 import org.matheclipse.core.interfaces.IAST;
@@ -16,6 +16,7 @@ import org.matheclipse.core.io.Extension;
 import org.matheclipse.io.expression.ASTDataset;
 
 import tech.tablesaw.api.Table;
+import tech.tablesaw.io.csv.CsvReadOptions;
 
 /** Import semantic data into a DataSet */
 public class SemanticImport extends AbstractEvaluator {
@@ -32,14 +33,14 @@ public class SemanticImport extends AbstractEvaluator {
       IStringX arg1 = (IStringX) ast.arg1();
       Extension format = Extension.importFilename(arg1.toString());
       String fileName = arg1.toString();
-      if (format.equals(Extension.CSV)) {
+      if (format.equals(Extension.CSV) || format.equals(Extension.TSV)) {
         try {
           File file = new File(arg1.toString());
           if (file.exists()) {
             Table table = Table.read().csv(file);
             // System.out.println(table.printAll());
             // System.out.println(table.structure().printAll());
-            return ASTDataset.newInstance(table);
+            return ASTDataset.newTablesawTable(table);
           }
           return engine.printMessage("SemanticImport: file " + fileName + " does not exist!");
         } catch (IOException ioe) {
@@ -54,6 +55,6 @@ public class SemanticImport extends AbstractEvaluator {
   }
 
   public int[] expectedArgSize(IAST ast) {
-    return IOFunctions.ARGS_1_2;
+    return IFunctionEvaluator.ARGS_1_2;
   }
 }
