@@ -2,9 +2,9 @@
  * 2016-09-04: Copied and modified under Lesser GPL license from
  * <a href="http://redberry.cc/">Redberry: symbolic tensor computations</a> with
  * permission from the original authors Stanislav Poslavsky and Dmitry Bolotin.
- * 
+ *
  * Following is the original header:
- * 
+ *
  * Redberry: symbolic tensor computations.
  *
  * Copyright (c) 2010-2012:
@@ -36,57 +36,57 @@ import java.util.Iterator;
  * @author Stanislav Poslavsky
  */
 public interface OutputPortUnsafe<T> {
-    T take();
+  T take();
 
-    public static final class Singleton<T> implements OutputPortUnsafe<T> {
-        private T element;
+  public static final class Singleton<T> implements OutputPortUnsafe<T> {
+    private T element;
 
-        public Singleton(T element) {
-            this.element = element;
-        }
-
-        @Override
-        public T take() {
-            T newElement = element;
-            element = null;
-            return newElement;
-        }
+    public Singleton(T element) {
+      this.element = element;
     }
 
-    public static final class PortIterator<T> implements Iterator<T> {
-        private final OutputPortUnsafe<T> opu;
-        private T next;
+    @Override
+    public T take() {
+      T newElement = element;
+      element = null;
+      return newElement;
+    }
+  }
 
-        public PortIterator(OutputPortUnsafe<T> opu) {
-            this.opu = opu;
-        }
+  public static final class PortIterator<T> implements Iterator<T> {
+    private final OutputPortUnsafe<T> opu;
+    private T next;
 
-        @Override
-        public boolean hasNext() {
-            return (next = opu.take()) != null;
-        }
-
-        @Override
-        public T next() {
-            return next;
-        }
-
-        @Override
-        public void remove() {
-            throw new UnsupportedOperationException("Not supported yet.");
-        }
+    public PortIterator(OutputPortUnsafe<T> opu) {
+      this.opu = opu;
     }
 
-    public static final class PortIterable<T> implements Iterable<T> {
-        private final OutputPortUnsafe<T> opu;
-
-        public PortIterable(OutputPortUnsafe<T> opu) {
-            this.opu = opu;
-        }
-
-        @Override
-        public Iterator<T> iterator() {
-            return new PortIterator<T>(opu);
-        }
+    @Override
+    public boolean hasNext() {
+      return (next = opu.take()) != null;
     }
+
+    @Override
+    public T next() {
+      return next;
+    }
+
+    @Override
+    public void remove() {
+      throw new UnsupportedOperationException("Not supported yet.");
+    }
+  }
+
+  public static final class PortIterable<T> implements Iterable<T> {
+    private final OutputPortUnsafe<T> opu;
+
+    public PortIterable(OutputPortUnsafe<T> opu) {
+      this.opu = opu;
+    }
+
+    @Override
+    public Iterator<T> iterator() {
+      return new PortIterator<T>(opu);
+    }
+  }
 }

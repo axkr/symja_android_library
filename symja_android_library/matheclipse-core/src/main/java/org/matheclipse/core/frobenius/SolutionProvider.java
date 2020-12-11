@@ -2,13 +2,13 @@
  * 2016-09-04: Copied and modified under Lesser GPL license from
  * <a href="http://redberry.cc/">Redberry: symbolic tensor computations</a> with
  * permission from the original authors Stanislav Poslavsky and Dmitry Bolotin.
- * 
+ *
  * Following is the original header: * 2016-09-04: Copied and modified under Lesser GPL license from
  * <a href="http://redberry.cc/">Redberry: symbolic tensor computations</a> with
  * permission from the original authors Stanislav Poslavsky and Dmitry Bolotin.
- * 
+ *
  * Following is the original header:
- * 
+ *
  * Redberry: symbolic tensor computations.
  *
  * Copyright (c) 2010-2012:
@@ -35,11 +35,11 @@ package org.matheclipse.core.frobenius;
 import org.matheclipse.core.interfaces.IInteger;
 
 /**
- *
  * @author Dmitry Bolotin
  * @author Stanislav Poslavsky
  */
 interface SolutionProvider extends OutputPortUnsafe<IInteger[]> {
-    boolean tick();
-    IInteger[] currentRemainders();
+  boolean tick();
+
+  IInteger[] currentRemainders();
 }

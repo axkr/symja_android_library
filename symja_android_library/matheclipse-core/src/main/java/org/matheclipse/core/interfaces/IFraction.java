@@ -3,99 +3,94 @@ package org.matheclipse.core.interfaces;
 import org.hipparchus.fraction.BigFraction;
 import java.math.BigInteger;
 
-/**
- * interface for "fractional" numbers
- * 
- */
+/** interface for "fractional" numbers */
 public interface IFraction extends IRational {
-	
-	
-	public void checkBitLength();
 
-	/** {@inheritDoc} */
-	@Override
-	public IFraction abs();
+  public void checkBitLength();
 
-	@Override
-	public abstract IInteger floorFraction();
+  /** {@inheritDoc} */
+  @Override
+  public IFraction abs();
 
-	/**
-	 * Return the fractional part of this fraction
-	 * 
-	 * @return
-	 */
-	public IFraction fractionalPart();
+  @Override
+  public abstract IInteger floorFraction();
 
-	public IFraction add(IFraction parm1);
+  /**
+   * Return the fractional part of this fraction
+   *
+   * @return
+   */
+  public IFraction fractionalPart();
 
-	public IFraction div(IFraction other);
+  public IFraction add(IFraction parm1);
 
-	/**
-	 * Returns an array of two BigIntegers containing (numerator / denominator) followed by (numerator % denominator).
-	 * 
-	 * @return
-	 */
-	public IInteger[] divideAndRemainder();
+  public IFraction div(IFraction other);
 
-	/**
-	 * Returns a new rational representing the inverse of <code>this</code>.
-	 * 
-	 * @return Inverse of <code>this</code>.
-	 */
-	@Override
-	public IFraction inverse();
+  /**
+   * Returns an array of two BigIntegers containing (numerator / denominator) followed by (numerator
+   * % denominator).
+   *
+   * @return
+   */
+  public IInteger[] divideAndRemainder();
 
-	public IFraction gcd(IFraction other);
+  /**
+   * Returns a new rational representing the inverse of <code>this</code>.
+   *
+   * @return Inverse of <code>this</code>.
+   */
+  @Override
+  public IFraction inverse();
 
-	public IFraction mul(IFraction other);
+  public IFraction gcd(IFraction other);
 
-	/**
-	 * Returns a new rational equal to <code>-this</code>.
-	 * 
-	 * @return <code>-this</code>.
-	 */
-	@Override
-	public IFraction negate();
+  public IFraction mul(IFraction other);
 
-	@Override
-	public IRational normalize();
+  /**
+   * Returns a new rational equal to <code>-this</code>.
+   *
+   * @return <code>-this</code>.
+   */
+  @Override
+  public IFraction negate();
 
-	/**
-	 * Returns this number raised at the specified exponent. See
-	 * <a href="https://en.wikipedia.org/wiki/Exponentiation_by_squaring">Wikipedia - Exponentiation by squaring</a>
-	 * 
-	 * @param exp
-	 *            the exponent.
-	 * @return <code>this<sup>exp</sup></code>
-	 * @throws ArithmeticException
-	 *             if {@code 0^0} is given.
-	 */
-	@Override
-	public IFraction pow(final long exp) throws ArithmeticException;
+  @Override
+  public IRational normalize();
 
-	public IFraction sub(IFraction parm1);
+  /**
+   * Returns this number raised at the specified exponent. See <a
+   * href="https://en.wikipedia.org/wiki/Exponentiation_by_squaring">Wikipedia - Exponentiation by
+   * squaring</a>
+   *
+   * @param exp the exponent.
+   * @return <code>this<sup>exp</sup></code>
+   * @throws ArithmeticException if {@code 0^0} is given.
+   */
+  @Override
+  public IFraction pow(final long exp) throws ArithmeticException;
 
-	/**
-	 * Returns the denominator of this fraction.
-	 * 
-	 * @return denominator
-	 */
-	@Override
-	public BigInteger toBigDenominator();
+  public IFraction sub(IFraction parm1);
 
-	/**
-	 * Return the <code>org.apache.commons.math3.fraction.BigFraction</code> representation.
-	 * 
-	 * @return
-	 */
-	public BigFraction toBigFraction();
+  /**
+   * Returns the denominator of this fraction.
+   *
+   * @return denominator
+   */
+  @Override
+  public BigInteger toBigDenominator();
 
-	/**
-	 * Returns the numerator of this fraction.
-	 * 
-	 * @return numerator
-	 */
-	@Override
-	public BigInteger toBigNumerator();
+  /**
+   * Return the <code>org.apache.commons.math3.fraction.BigFraction</code> representation.
+   *
+   * @return
+   */
+  public BigFraction toBigFraction();
 
+  /**
+   * Returns the numerator of this fraction.
+   *
+   * @return numerator
+   */
+  @Override
+  public BigInteger toBigNumerator();
 }

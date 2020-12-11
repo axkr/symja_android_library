@@ -15,156 +15,154 @@ import org.matheclipse.core.parser.ExprParser;
 import org.matheclipse.parser.client.FEConfig;
 
 public class PatternMatcherAndInvoker extends PatternMatcher {
-	private static final long serialVersionUID = -2448717771259975643L;
+  private static final long serialVersionUID = -2448717771259975643L;
 
-	private transient Method fMethod;
-	private transient Type[] fTypes;
-	private transient IFunctionEvaluator fInstance;
+  private transient Method fMethod;
+  private transient Type[] fTypes;
+  private transient IFunctionEvaluator fInstance;
 
-	@Override
-	public Object clone() throws CloneNotSupportedException {
-		PatternMatcherAndInvoker v = (PatternMatcherAndInvoker) super.clone();
-		v.fMethod = fMethod;
-		v.fTypes = fTypes;
-		v.fInstance = fInstance;
-		return v;
-	}
+  @Override
+  public Object clone() throws CloneNotSupportedException {
+    PatternMatcherAndInvoker v = (PatternMatcherAndInvoker) super.clone();
+    v.fMethod = fMethod;
+    v.fTypes = fTypes;
+    v.fInstance = fInstance;
+    return v;
+  }
 
-	/**
-	 * Void constructor for Externalizable.
-	 */
-	@SuppressWarnings("unused")
-	private PatternMatcherAndInvoker() {
-		super(null);
-	}
+  /** Void constructor for Externalizable. */
+  @SuppressWarnings("unused")
+  private PatternMatcherAndInvoker() {
+    super(null);
+  }
 
-	/**
-	 * Create a pattern-matching rule which invokes the method name in the given instance, if leftHandSide is matching.
-	 * 
-	 * @param leftHandSide
-	 *            could contain pattern expressions for "pattern-matching"
-	 * @param instance
-	 *            instance of an IFunctionEvaluator interface
-	 * @param methodName
-	 *            method to call
-	 */
-	public PatternMatcherAndInvoker(final IExpr leftHandSide, IFunctionEvaluator instance, final String methodName) {
-		super(leftHandSide);
-		this.fInstance = instance;
-		initInvoker(instance, methodName);
-	}
+  /**
+   * Create a pattern-matching rule which invokes the method name in the given instance, if
+   * leftHandSide is matching.
+   *
+   * @param leftHandSide could contain pattern expressions for "pattern-matching"
+   * @param instance instance of an IFunctionEvaluator interface
+   * @param methodName method to call
+   */
+  public PatternMatcherAndInvoker(
+      final IExpr leftHandSide, IFunctionEvaluator instance, final String methodName) {
+    super(leftHandSide);
+    this.fInstance = instance;
+    initInvoker(instance, methodName);
+  }
 
-	/**
-	 * Create a pattern-matching rule which invokes the method name in the given instance, if leftHandSide is matching.
-	 * 
-	 * @param leftHandSide
-	 * @param instance
-	 * @param methodName
-	 */
-	public PatternMatcherAndInvoker(final String leftHandSide, IFunctionEvaluator instance, final String methodName) {
-		this.fInstance = instance;
+  /**
+   * Create a pattern-matching rule which invokes the method name in the given instance, if
+   * leftHandSide is matching.
+   *
+   * @param leftHandSide
+   * @param instance
+   * @param methodName
+   */
+  public PatternMatcherAndInvoker(
+      final String leftHandSide, IFunctionEvaluator instance, final String methodName) {
+    this.fInstance = instance;
 
-		final ExprParser parser = new ExprParser(EvalEngine.get());
-		IExpr lhs = parser.parse(leftHandSide);
+    final ExprParser parser = new ExprParser(EvalEngine.get());
+    IExpr lhs = parser.parse(leftHandSide);
 
-		fLhsPatternExpr = lhs;
-		int[] priority = new int[] {IPatternMap.DEFAULT_RULE_PRIORITY};
-		determinePatterns(priority);
-		this.fLHSPriority = priority[0];
-		initInvoker(instance, methodName);
-	}
+    fLhsPatternExpr = lhs;
+    int[] priority = new int[] {IPatternMap.DEFAULT_RULE_PRIORITY};
+    determinePatterns(priority);
+    this.fLHSPriority = priority[0];
+    initInvoker(instance, methodName);
+  }
 
-	private void initInvoker(IFunctionEvaluator instance, final String methodName) {
-		Class<? extends IFunctionEvaluator> c = instance.getClass();
-		Method[] declaredMethods = c.getDeclaredMethods();
-		List<Method> namedMethods = new ArrayList<Method>();
-		for (Method method : declaredMethods) {
-			if (method.getName().equals(methodName))
-				namedMethods.add(method);
-		}
-		if (namedMethods.size() == 1) {
-			this.fMethod = namedMethods.get(0);
-			this.fTypes = fMethod.getGenericParameterTypes();
-		} else {
-			// throw an exception ?
-		}
-	}
+  private void initInvoker(IFunctionEvaluator instance, final String methodName) {
+    Class<? extends IFunctionEvaluator> c = instance.getClass();
+    Method[] declaredMethods = c.getDeclaredMethods();
+    List<Method> namedMethods = new ArrayList<Method>();
+    for (Method method : declaredMethods) {
+      if (method.getName().equals(methodName)) namedMethods.add(method);
+    }
+    if (namedMethods.size() == 1) {
+      this.fMethod = namedMethods.get(0);
+      this.fTypes = fMethod.getGenericParameterTypes();
+    } else {
+      // throw an exception ?
+    }
+  }
 
-	/** {@inheritDoc} */
-	@Override
-	public IExpr eval(final IExpr leftHandSide, EvalEngine engine) {
+  /** {@inheritDoc} */
+  @Override
+  public IExpr eval(final IExpr leftHandSide, EvalEngine engine) {
 
-		if (isRuleWithoutPatterns() && fLhsPatternExpr.equals(leftHandSide)) {
-			if (fTypes.length != 0) {
-				return F.NIL;
-			}
-			IExpr result = F.NIL;
-			try {
-				result = (IExpr) fMethod.invoke(fInstance);
-			} catch (ValidateException e) {
-				if (FEConfig.SHOW_STACKTRACE) {
-					e.printStackTrace();
-				}
-			} catch (IllegalArgumentException e) {
-				if (FEConfig.SHOW_STACKTRACE) {
-					e.printStackTrace();
-				}
-			} catch (IllegalAccessException e) {
-				if (FEConfig.SHOW_STACKTRACE) {
-					e.printStackTrace();
-				}
-			} catch (InvocationTargetException e) {
-				if (FEConfig.SHOW_STACKTRACE) {
-					e.printStackTrace();
-				}
-			}
-			return result != null ? result : F.NIL;
-		}
-		IPatternMap patternMap = createPatternMap();
-		if (fTypes.length != patternMap.size()) {
-			return F.NIL;
-		}
-		patternMap.initPattern();
-		if (matchExpr(fLhsPatternExpr, leftHandSide, engine)) {
+    if (isRuleWithoutPatterns() && fLhsPatternExpr.equals(leftHandSide)) {
+      if (fTypes.length != 0) {
+        return F.NIL;
+      }
+      IExpr result = F.NIL;
+      try {
+        result = (IExpr) fMethod.invoke(fInstance);
+      } catch (ValidateException e) {
+        if (FEConfig.SHOW_STACKTRACE) {
+          e.printStackTrace();
+        }
+      } catch (IllegalArgumentException e) {
+        if (FEConfig.SHOW_STACKTRACE) {
+          e.printStackTrace();
+        }
+      } catch (IllegalAccessException e) {
+        if (FEConfig.SHOW_STACKTRACE) {
+          e.printStackTrace();
+        }
+      } catch (InvocationTargetException e) {
+        if (FEConfig.SHOW_STACKTRACE) {
+          e.printStackTrace();
+        }
+      }
+      return result != null ? result : F.NIL;
+    }
+    IPatternMap patternMap = createPatternMap();
+    if (fTypes.length != patternMap.size()) {
+      return F.NIL;
+    }
+    patternMap.initPattern();
+    if (matchExpr(fLhsPatternExpr, leftHandSide, engine)) {
 
-			List<IExpr> args = patternMap.getValuesAsList();
-			try {
-				if (args != null) {
-					IExpr result = (IExpr) fMethod.invoke(fInstance, args.toArray());
-					return result != null ? result : F.NIL;
-				}
-			} catch (IllegalArgumentException e) {
-				if (FEConfig.SHOW_STACKTRACE) {
-					e.printStackTrace();
-				}
-			} catch (IllegalAccessException e) {
-				if (FEConfig.SHOW_STACKTRACE) {
-					e.printStackTrace();
-				}
-			} catch (InvocationTargetException e) {
-				if (FEConfig.SHOW_STACKTRACE) {
-					e.printStackTrace();
-				}
-			}
-		}
-		return F.NIL;
-	}
+      List<IExpr> args = patternMap.getValuesAsList();
+      try {
+        if (args != null) {
+          IExpr result = (IExpr) fMethod.invoke(fInstance, args.toArray());
+          return result != null ? result : F.NIL;
+        }
+      } catch (IllegalArgumentException e) {
+        if (FEConfig.SHOW_STACKTRACE) {
+          e.printStackTrace();
+        }
+      } catch (IllegalAccessException e) {
+        if (FEConfig.SHOW_STACKTRACE) {
+          e.printStackTrace();
+        }
+      } catch (InvocationTargetException e) {
+        if (FEConfig.SHOW_STACKTRACE) {
+          e.printStackTrace();
+        }
+      }
+    }
+    return F.NIL;
+  }
 
-	@Override
-	public boolean equals(final Object obj) {
-		if (this == obj) {
-			return true;
-		}
-		if (obj instanceof PatternMatcherAndInvoker) {
-			// don't compare fInstance, fMethod, fTypes here
-			return super.equals(obj);
-		}
+  @Override
+  public boolean equals(final Object obj) {
+    if (this == obj) {
+      return true;
+    }
+    if (obj instanceof PatternMatcherAndInvoker) {
+      // don't compare fInstance, fMethod, fTypes here
+      return super.equals(obj);
+    }
 
-		return false;
-	}
+    return false;
+  }
 
-	@Override
-	public int hashCode() {
-		return super.hashCode() * 47;
-	}
+  @Override
+  public int hashCode() {
+    return super.hashCode() * 47;
+  }
 }

@@ -5,20 +5,19 @@ import org.matheclipse.core.interfaces.IExpr;
 
 public class DialogReturnException extends ReturnException {
 
-	/**
-	 * 
-	 */
-	private static final long serialVersionUID = -3723154693002116846L;
+  /** */
+  private static final long serialVersionUID = -3723154693002116846L;
 
-	public final static DialogReturnException DIALOG_RETURN_FALSE = new DialogReturnException(F.False);
-	
-	public final static DialogReturnException DIALOG_RETURN_TRUE = new DialogReturnException(F.True);
-	
-	public DialogReturnException() {
-		this(F.Null);
-	}
+  public static final DialogReturnException DIALOG_RETURN_FALSE =
+      new DialogReturnException(F.False);
 
-	public DialogReturnException(final IExpr val) {
-		super(val);
-	} 
+  public static final DialogReturnException DIALOG_RETURN_TRUE = new DialogReturnException(F.True);
+
+  public DialogReturnException() {
+    this(F.Null);
+  }
+
+  public DialogReturnException(final IExpr val) {
+    super(val);
+  }
 }

@@ -24,27 +24,21 @@ import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.interfaces.INum;
 import org.matheclipse.core.interfaces.ISymbol;
 
-/**
- * 
- * Plot a list of Points in 3 dimesnsions
- *
- */
+/** Plot a list of Points in 3 dimesnsions */
 public class ListPlot3D extends AbstractEvaluator {
-	public ListPlot3D() {
-	}
+  public ListPlot3D() {}
 
-	@Override
-	public IExpr evaluate(final IAST ast, EvalEngine engine) {
-		if (Config.USE_MANIPULATE_JS) {
-			IExpr temp = F.Manipulate.of(engine, ast);
-			if (temp.headID() == ID.JSFormData) {
-				return temp;
-			}
-		}
-		return F.NIL;
-	}
+  @Override
+  public IExpr evaluate(final IAST ast, EvalEngine engine) {
+    if (Config.USE_MANIPULATE_JS) {
+      IExpr temp = F.Manipulate.of(engine, ast);
+      if (temp.headID() == ID.JSFormData) {
+        return temp;
+      }
+    }
+    return F.NIL;
+  }
 
-	@Override
-	public void setUp(final ISymbol newSymbol) {
-	}
+  @Override
+  public void setUp(final ISymbol newSymbol) {}
 }

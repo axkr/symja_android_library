@@ -13,40 +13,40 @@ import org.matheclipse.parser.client.eval.DoubleEvaluator;
 import org.matheclipse.parser.client.eval.IDoubleCallbackFunction;
 
 /**
- * A call back function which could be used in <code>DoubleEvaluator</code>, for evaluating Symja numerical functions.
- * 
+ * A call back function which could be used in <code>DoubleEvaluator</code>, for evaluating Symja
+ * numerical functions.
  */
 public class CoreCallbackFunction implements IDoubleCallbackFunction {
-	public final static CoreCallbackFunction CONST = new CoreCallbackFunction();
+  public static final CoreCallbackFunction CONST = new CoreCallbackFunction();
 
-	@Override
-	public double evaluate(DoubleEvaluator doubleEngine, FunctionNode functionNode, double[] args) {
-		ASTNode node = functionNode.getNode(0);
-		if (node instanceof SymbolNode) {
-			AST2Expr ast2Expr = new AST2Expr();
-			IExpr head = ast2Expr.convert(node);
-			IASTAppendable fun = F.ast(head, args.length, false);
-			fun.appendArgs(0, args.length, i -> F.num(args[i]));
-			// for (int i = 0; i < args.length; i++) {
-			// fun.append(F.num(args[i]));
-			// }
-			final IExpr result = F.evaln(fun);
-			if (result.isReal()) {
-				return ((ISignedNumber) result).doubleValue();
-			}
-		} else if (node instanceof FunctionNode) {
-			AST2Expr ast2Expr = new AST2Expr();
-			IExpr head = ast2Expr.convert(node);
-			IASTAppendable fun = F.ast(head);
-			for (int i = 0; i < args.length; i++) {
-				fun.append(F.num(args[i]));
-			}
-			final IExpr result = F.evaln(fun);
-			if (result.isReal()) {
-				return ((ISignedNumber) result).doubleValue();
-			}
-		}
-		throw new SymjaMathException("CoreCallbackFunction#evaluate() not possible for: " + functionNode.toString());
-	}
-
+  @Override
+  public double evaluate(DoubleEvaluator doubleEngine, FunctionNode functionNode, double[] args) {
+    ASTNode node = functionNode.getNode(0);
+    if (node instanceof SymbolNode) {
+      AST2Expr ast2Expr = new AST2Expr();
+      IExpr head = ast2Expr.convert(node);
+      IASTAppendable fun = F.ast(head, args.length, false);
+      fun.appendArgs(0, args.length, i -> F.num(args[i]));
+      // for (int i = 0; i < args.length; i++) {
+      // fun.append(F.num(args[i]));
+      // }
+      final IExpr result = F.evaln(fun);
+      if (result.isReal()) {
+        return ((ISignedNumber) result).doubleValue();
+      }
+    } else if (node instanceof FunctionNode) {
+      AST2Expr ast2Expr = new AST2Expr();
+      IExpr head = ast2Expr.convert(node);
+      IASTAppendable fun = F.ast(head);
+      for (int i = 0; i < args.length; i++) {
+        fun.append(F.num(args[i]));
+      }
+      final IExpr result = F.evaln(fun);
+      if (result.isReal()) {
+        return ((ISignedNumber) result).doubleValue();
+      }
+    }
+    throw new SymjaMathException(
+        "CoreCallbackFunction#evaluate() not possible for: " + functionNode.toString());
+  }
 }

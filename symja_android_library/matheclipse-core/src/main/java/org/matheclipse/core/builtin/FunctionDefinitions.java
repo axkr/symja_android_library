@@ -6,78 +6,82 @@ import org.matheclipse.core.basic.Config;
 import org.matheclipse.core.expression.F;
 
 public final class FunctionDefinitions {
-	/**
-	 * 
-	 * See <a href="https://pangin.pro/posts/computation-in-static-initializer">Beware of computation in static
-	 * initializer</a>
-	 */
-	private static class Initializer {
+  /**
+   * See <a href="https://pangin.pro/posts/computation-in-static-initializer">Beware of computation
+   * in static initializer</a>
+   */
+  private static class Initializer {
 
-		private static void init() {
-			ComplexExpand.setEvaluator(new org.matheclipse.core.reflection.system.ComplexExpand());
-			Dataset.setEvaluator(new org.matheclipse.core.reflection.system.Dataset());
-			D.setEvaluator(new org.matheclipse.core.reflection.system.D());
-			Derivative.setEvaluator(new org.matheclipse.core.reflection.system.Derivative());
-			DSolve.setEvaluator(new org.matheclipse.core.reflection.system.DSolve());
-			EasterSunday.setEvaluator(new org.matheclipse.core.reflection.system.EasterSunday());
-			ElementData.setEvaluator(new org.matheclipse.core.data.ElementData());
-			Eliminate.setEvaluator(new org.matheclipse.core.reflection.system.Eliminate());
-			ExpToTrig.setEvaluator(new org.matheclipse.core.reflection.system.ExpToTrig());
-			FindInstance.setEvaluator(new org.matheclipse.core.reflection.system.FindInstance());
-			FindRoot.setEvaluator(new org.matheclipse.core.reflection.system.FindRoot());
-			Fourier.setEvaluator(new org.matheclipse.core.reflection.system.Fourier());
-			FrobeniusSolve.setEvaluator(new org.matheclipse.core.reflection.system.FrobeniusSolve());
-			FunctionExpand.setEvaluator(new org.matheclipse.core.reflection.system.FunctionExpand());
-			HeavisideTheta.setEvaluator(new org.matheclipse.core.reflection.system.HeavisideTheta());
-			Horner.setEvaluator(new org.matheclipse.core.reflection.system.Horner());
-			InterpolatingFunction.setEvaluator(new org.matheclipse.core.reflection.system.InterpolatingFunction());
-			InterpolatingPolynomial.setEvaluator(new org.matheclipse.core.reflection.system.InterpolatingPolynomial());
-			Interpolation.setEvaluator(new org.matheclipse.core.reflection.system.Interpolation());
-			InverseFourier.setEvaluator(new org.matheclipse.core.reflection.system.InverseFourier());
-			InverseFunction.setEvaluator(new org.matheclipse.core.reflection.system.InverseFunction());
-			InverseLaplaceTransform.setEvaluator(new org.matheclipse.core.reflection.system.InverseLaplaceTransform());
-			LaplaceTransform.setEvaluator(new org.matheclipse.core.reflection.system.LaplaceTransform());
-			LinearProgramming.setEvaluator(new org.matheclipse.core.reflection.system.LinearProgramming());
-			ListLinePlot.setEvaluator(new org.matheclipse.core.reflection.system.ListLinePlot());
-			ListPlot.setEvaluator(new org.matheclipse.core.reflection.system.ListPlot());
-			ListPlot3D.setEvaluator(new org.matheclipse.core.reflection.system.ListPlot3D());
-			ND.setEvaluator(new org.matheclipse.core.reflection.system.ND());
-			NDSolve.setEvaluator(new org.matheclipse.core.reflection.system.NDSolve());
-			NFourierTransform.setEvaluator(new org.matheclipse.core.reflection.system.NFourierTransform());
-			NIntegrate.setEvaluator(new org.matheclipse.core.reflection.system.NIntegrate());
-			NonCommutativeMultiply.setEvaluator(new org.matheclipse.core.reflection.system.NonCommutativeMultiply());
-			NSolve.setEvaluator(new org.matheclipse.core.reflection.system.NSolve());
-			Out.setEvaluator(new org.matheclipse.core.reflection.system.Out());
-			Outer.setEvaluator(new org.matheclipse.core.reflection.system.Outer());
-			ParametricPlot.setEvaluator(new org.matheclipse.core.reflection.system.ParametricPlot());
-			Plot.setEvaluator(new org.matheclipse.core.reflection.system.Plot());
-			Plot3D.setEvaluator(new org.matheclipse.core.reflection.system.Plot3D());
-			PolarPlot.setEvaluator(new org.matheclipse.core.reflection.system.PolarPlot());
-			Product.setEvaluator(new org.matheclipse.core.reflection.system.Product());
-			Ramp.setEvaluator(new org.matheclipse.core.reflection.system.Ramp());
-			Solve.setEvaluator(new org.matheclipse.core.reflection.system.Solve());
-			Sum.setEvaluator(new org.matheclipse.core.reflection.system.Sum());
-			Taylor.setEvaluator(new org.matheclipse.core.reflection.system.Taylor());
-			TrigExpand.setEvaluator(new org.matheclipse.core.reflection.system.TrigExpand());
-			TrigReduce.setEvaluator(new org.matheclipse.core.reflection.system.TrigReduce());
-			TrigToExp.setEvaluator(new org.matheclipse.core.reflection.system.TrigToExp());
-			
-			if (!Config.FUZZY_PARSER) {
-				Compile.setEvaluator(new org.matheclipse.core.reflection.system.Compile());
-				CreateDirectory.setEvaluator(new org.matheclipse.core.reflection.system.CreateDirectory());
-				Export.setEvaluator(new org.matheclipse.core.reflection.system.Export());
-				ExportString.setEvaluator(new org.matheclipse.core.reflection.system.ExportString());
-				OptimizeExpression.setEvaluator(new org.matheclipse.core.reflection.system.OptimizeExpression());
-				Share.setEvaluator(new org.matheclipse.core.reflection.system.Share());
-			}
-		}
-	}
+    private static void init() {
+      ComplexExpand.setEvaluator(new org.matheclipse.core.reflection.system.ComplexExpand());
+      Dataset.setEvaluator(new org.matheclipse.core.reflection.system.Dataset());
+      D.setEvaluator(new org.matheclipse.core.reflection.system.D());
+      Derivative.setEvaluator(new org.matheclipse.core.reflection.system.Derivative());
+      DSolve.setEvaluator(new org.matheclipse.core.reflection.system.DSolve());
+      EasterSunday.setEvaluator(new org.matheclipse.core.reflection.system.EasterSunday());
+      ElementData.setEvaluator(new org.matheclipse.core.data.ElementData());
+      Eliminate.setEvaluator(new org.matheclipse.core.reflection.system.Eliminate());
+      ExpToTrig.setEvaluator(new org.matheclipse.core.reflection.system.ExpToTrig());
+      FindInstance.setEvaluator(new org.matheclipse.core.reflection.system.FindInstance());
+      FindRoot.setEvaluator(new org.matheclipse.core.reflection.system.FindRoot());
+      Fourier.setEvaluator(new org.matheclipse.core.reflection.system.Fourier());
+      FrobeniusSolve.setEvaluator(new org.matheclipse.core.reflection.system.FrobeniusSolve());
+      FunctionExpand.setEvaluator(new org.matheclipse.core.reflection.system.FunctionExpand());
+      HeavisideTheta.setEvaluator(new org.matheclipse.core.reflection.system.HeavisideTheta());
+      Horner.setEvaluator(new org.matheclipse.core.reflection.system.Horner());
+      InterpolatingFunction.setEvaluator(
+          new org.matheclipse.core.reflection.system.InterpolatingFunction());
+      InterpolatingPolynomial.setEvaluator(
+          new org.matheclipse.core.reflection.system.InterpolatingPolynomial());
+      Interpolation.setEvaluator(new org.matheclipse.core.reflection.system.Interpolation());
+      InverseFourier.setEvaluator(new org.matheclipse.core.reflection.system.InverseFourier());
+      InverseFunction.setEvaluator(new org.matheclipse.core.reflection.system.InverseFunction());
+      InverseLaplaceTransform.setEvaluator(
+          new org.matheclipse.core.reflection.system.InverseLaplaceTransform());
+      LaplaceTransform.setEvaluator(new org.matheclipse.core.reflection.system.LaplaceTransform());
+      LinearProgramming.setEvaluator(
+          new org.matheclipse.core.reflection.system.LinearProgramming());
+      ListLinePlot.setEvaluator(new org.matheclipse.core.reflection.system.ListLinePlot());
+      ListPlot.setEvaluator(new org.matheclipse.core.reflection.system.ListPlot());
+      ListPlot3D.setEvaluator(new org.matheclipse.core.reflection.system.ListPlot3D());
+      ND.setEvaluator(new org.matheclipse.core.reflection.system.ND());
+      NDSolve.setEvaluator(new org.matheclipse.core.reflection.system.NDSolve());
+      NFourierTransform.setEvaluator(
+          new org.matheclipse.core.reflection.system.NFourierTransform());
+      NIntegrate.setEvaluator(new org.matheclipse.core.reflection.system.NIntegrate());
+      NonCommutativeMultiply.setEvaluator(
+          new org.matheclipse.core.reflection.system.NonCommutativeMultiply());
+      NSolve.setEvaluator(new org.matheclipse.core.reflection.system.NSolve());
+      Out.setEvaluator(new org.matheclipse.core.reflection.system.Out());
+      Outer.setEvaluator(new org.matheclipse.core.reflection.system.Outer());
+      ParametricPlot.setEvaluator(new org.matheclipse.core.reflection.system.ParametricPlot());
+      Plot.setEvaluator(new org.matheclipse.core.reflection.system.Plot());
+      Plot3D.setEvaluator(new org.matheclipse.core.reflection.system.Plot3D());
+      PolarPlot.setEvaluator(new org.matheclipse.core.reflection.system.PolarPlot());
+      Product.setEvaluator(new org.matheclipse.core.reflection.system.Product());
+      Ramp.setEvaluator(new org.matheclipse.core.reflection.system.Ramp());
+      Solve.setEvaluator(new org.matheclipse.core.reflection.system.Solve());
+      Sum.setEvaluator(new org.matheclipse.core.reflection.system.Sum());
+      Taylor.setEvaluator(new org.matheclipse.core.reflection.system.Taylor());
+      TrigExpand.setEvaluator(new org.matheclipse.core.reflection.system.TrigExpand());
+      TrigReduce.setEvaluator(new org.matheclipse.core.reflection.system.TrigReduce());
+      TrigToExp.setEvaluator(new org.matheclipse.core.reflection.system.TrigToExp());
 
-	public static void initialize() {
-		Initializer.init();
-	}
+      if (!Config.FUZZY_PARSER) {
+        Compile.setEvaluator(new org.matheclipse.core.reflection.system.Compile());
+        CreateDirectory.setEvaluator(new org.matheclipse.core.reflection.system.CreateDirectory());
+        Export.setEvaluator(new org.matheclipse.core.reflection.system.Export());
+        ExportString.setEvaluator(new org.matheclipse.core.reflection.system.ExportString());
+        OptimizeExpression.setEvaluator(
+            new org.matheclipse.core.reflection.system.OptimizeExpression());
+        Share.setEvaluator(new org.matheclipse.core.reflection.system.Share());
+      }
+    }
+  }
 
-	private FunctionDefinitions() {
+  public static void initialize() {
+    Initializer.init();
+  }
 
-	}
+  private FunctionDefinitions() {}
 }

@@ -8,14 +8,16 @@ import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.interfaces.ISymbol;
 
 /**
- * <p>
- * Interface for &quot;core functions&quot; which can specially evaluated like <code>Attributes, List, Part</code>
- * </p>
- * 
+ * Interface for &quot;core functions&quot; which can specially evaluated like <code>
+ * Attributes, List, Part</code>
  */
 public interface ISetEvaluator extends IFunctionEvaluator {
-	
-	default IExpr evaluateSet(final IExpr leftHandSide, IExpr rightHandSide, IBuiltInSymbol builtinSymbol, final EvalEngine engine) {
-		return F.NIL;
-	}
+
+  default IExpr evaluateSet(
+      final IExpr leftHandSide,
+      IExpr rightHandSide,
+      IBuiltInSymbol builtinSymbol,
+      final EvalEngine engine) {
+    return F.NIL;
+  }
 }

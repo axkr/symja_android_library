@@ -31,269 +31,266 @@ import com.google.common.io.Files;
 import com.google.common.io.Resources;
 
 public class UnitTestingFunctions {
-	final static boolean DEBUG = false;
+  static final boolean DEBUG = false;
 
-	/**
-	 * 
-	 * See <a href="https://pangin.pro/posts/computation-in-static-initializer">Beware of computation in static
-	 * initializer</a>
-	 */
-	private static class Initializer {
+  /**
+   * See <a href="https://pangin.pro/posts/computation-in-static-initializer">Beware of computation
+   * in static initializer</a>
+   */
+  private static class Initializer {
 
-		private static void init() {
-			S.TestReport.setEvaluator(new TestReport());
-			S.VerificationTest.setEvaluator(new VerificationTest());
-		}
-	}
+    private static void init() {
+      S.TestReport.setEvaluator(new TestReport());
+      S.VerificationTest.setEvaluator(new VerificationTest());
+    }
+  }
 
-	private static class TestReport extends AbstractEvaluator {
+  private static class TestReport extends AbstractEvaluator {
 
-		@Override
-		public IExpr evaluate(final IAST ast, EvalEngine engine) {
-			if (Config.isFileSystemEnabled(engine)) {
-				if (ast.arg1().isList()) {
-					IAST listÜfVerificationTest = (IAST) ast.arg1();
-					if (listÜfVerificationTest.forAll(x -> x.isAST(S.VerificationTest))) {
-						IAssociation testResults = F.assoc(listÜfVerificationTest.size());
-						int testCounter = 1;
-						for (int j = 1; j < listÜfVerificationTest.size(); j++) {
-							IAST verificationTest = (IAST) listÜfVerificationTest.get(j);
-							IExpr result = engine.evaluate(verificationTest);
-							if (result instanceof TestResultObjectExpr) {
-								testResults.appendRule(F.Rule(F.ZZ(testCounter++), result));
-							}
-						}
-						IAssociation testReportObject = F.assoc(10);
-						testReportObject.appendRule(F.Rule("TestResults", testResults));
-						return TestReportObjectExpr.newInstance(testReportObject);
-					}
-					return F.NIL;
-				}
-				if (!(ast.arg1() instanceof IStringX)) {
-					return IOFunctions.printMessage(ast.topHead(), "string", F.List(), engine);
-				}
-				String arg1 = ast.arg1().toString();
-				if (arg1.startsWith("https://") || //
-						arg1.startsWith("http://")) {
-					URL url;
-					try {
-						url = new URL(arg1);
-						return getURL(url, ast, engine);
-					} catch (MalformedURLException mue) {
-						if (FEConfig.SHOW_STACKTRACE) {
-							mue.printStackTrace();
-						}
-						// Cannot open `1`.
-						return IOFunctions.printMessage(ast.topHead(), "noopen", F.List(ast.arg1()), engine);
-					}
-				}
-				File file = new File(arg1);
+    @Override
+    public IExpr evaluate(final IAST ast, EvalEngine engine) {
+      if (Config.isFileSystemEnabled(engine)) {
+        if (ast.arg1().isList()) {
+          IAST listÜfVerificationTest = (IAST) ast.arg1();
+          if (listÜfVerificationTest.forAll(x -> x.isAST(S.VerificationTest))) {
+            IAssociation testResults = F.assoc(listÜfVerificationTest.size());
+            int testCounter = 1;
+            for (int j = 1; j < listÜfVerificationTest.size(); j++) {
+              IAST verificationTest = (IAST) listÜfVerificationTest.get(j);
+              IExpr result = engine.evaluate(verificationTest);
+              if (result instanceof TestResultObjectExpr) {
+                testResults.appendRule(F.Rule(F.ZZ(testCounter++), result));
+              }
+            }
+            IAssociation testReportObject = F.assoc(10);
+            testReportObject.appendRule(F.Rule("TestResults", testResults));
+            return TestReportObjectExpr.newInstance(testReportObject);
+          }
+          return F.NIL;
+        }
+        if (!(ast.arg1() instanceof IStringX)) {
+          return IOFunctions.printMessage(ast.topHead(), "string", F.List(), engine);
+        }
+        String arg1 = ast.arg1().toString();
+        if (arg1.startsWith("https://")
+            || //
+            arg1.startsWith("http://")) {
+          URL url;
+          try {
+            url = new URL(arg1);
+            return getURL(url, ast, engine);
+          } catch (MalformedURLException mue) {
+            if (FEConfig.SHOW_STACKTRACE) {
+              mue.printStackTrace();
+            }
+            // Cannot open `1`.
+            return IOFunctions.printMessage(ast.topHead(), "noopen", F.List(ast.arg1()), engine);
+          }
+        }
+        File file = new File(arg1);
 
-				if (file.exists()) {
-					return getFile(file, ast, engine);
-				} else {
-					file = FileSystems.getDefault().getPath(arg1.toString()).toAbsolutePath().toFile();
-					if (file.exists()) {
-						return getFile(file, ast, engine);
-					}
-				}
-				// Cannot open `1`.
-				return IOFunctions.printMessage(ast.topHead(), "noopen", F.List(ast.arg1()), engine);
-			}
-			return F.NIL;
-		}
+        if (file.exists()) {
+          return getFile(file, ast, engine);
+        } else {
+          file = FileSystems.getDefault().getPath(arg1.toString()).toAbsolutePath().toFile();
+          if (file.exists()) {
+            return getFile(file, ast, engine);
+          }
+        }
+        // Cannot open `1`.
+        return IOFunctions.printMessage(ast.topHead(), "noopen", F.List(ast.arg1()), engine);
+      }
+      return F.NIL;
+    }
 
-		private static IExpr getFile(File file, IAST ast, EvalEngine engine) {
-			// boolean packageMode = engine.isPackageMode();
-			try {
-				// engine.setPackageMode(true);
-				String str = Files.asCharSource(file, Charset.defaultCharset()).read();
-				return runTests(engine, str);
-			} catch (IOException e) {
-				if (FEConfig.SHOW_STACKTRACE) {
-					e.printStackTrace();
-				}
-				// Cannot open `1`.
-				return IOFunctions.printMessage(ast.topHead(), "noopen", F.List(ast.arg1()), engine);
-			} finally {
-				// engine.setPackageMode(packageMode);
-			}
-		}
+    private static IExpr getFile(File file, IAST ast, EvalEngine engine) {
+      // boolean packageMode = engine.isPackageMode();
+      try {
+        // engine.setPackageMode(true);
+        String str = Files.asCharSource(file, Charset.defaultCharset()).read();
+        return runTests(engine, str);
+      } catch (IOException e) {
+        if (FEConfig.SHOW_STACKTRACE) {
+          e.printStackTrace();
+        }
+        // Cannot open `1`.
+        return IOFunctions.printMessage(ast.topHead(), "noopen", F.List(ast.arg1()), engine);
+      } finally {
+        // engine.setPackageMode(packageMode);
+      }
+    }
 
-		private static IExpr getURL(URL url, IAST ast, EvalEngine engine) {
-			// boolean packageMode = engine.isPackageMode();
-			try {
-				// engine.setPackageMode(true);
-				String str = Resources.toString(url, StandardCharsets.UTF_8);
-				return runTests(engine, str);
-			} catch (IOException e) {
-				if (FEConfig.SHOW_STACKTRACE) {
-					e.printStackTrace();
-				}
-				// Cannot open `1`.
-				return IOFunctions.printMessage(ast.topHead(), "noopen", F.List(ast.arg1()), engine);
-			} finally {
-				// engine.setPackageMode(packageMode);
-			}
-		}
+    private static IExpr getURL(URL url, IAST ast, EvalEngine engine) {
+      // boolean packageMode = engine.isPackageMode();
+      try {
+        // engine.setPackageMode(true);
+        String str = Resources.toString(url, StandardCharsets.UTF_8);
+        return runTests(engine, str);
+      } catch (IOException e) {
+        if (FEConfig.SHOW_STACKTRACE) {
+          e.printStackTrace();
+        }
+        // Cannot open `1`.
+        return IOFunctions.printMessage(ast.topHead(), "noopen", F.List(ast.arg1()), engine);
+      } finally {
+        // engine.setPackageMode(packageMode);
+      }
+    }
 
-		private static IExpr runTests(EvalEngine engine, String str) throws IOException {
-			final List<ASTNode> node = FileFunctions.parseReader(str, engine);
-			IAssociation testResults = evaluatePackage(node, engine);
-			IAssociation testResultObject = F.assoc(node.size());
-			testResultObject.appendRule(F.Rule("TestResults", testResults));
-			return TestReportObjectExpr.newInstance(testResultObject);
-		}
+    private static IExpr runTests(EvalEngine engine, String str) throws IOException {
+      final List<ASTNode> node = FileFunctions.parseReader(str, engine);
+      IAssociation testResults = evaluatePackage(node, engine);
+      IAssociation testResultObject = F.assoc(node.size());
+      testResultObject.appendRule(F.Rule("TestResults", testResults));
+      return TestReportObjectExpr.newInstance(testResultObject);
+    }
 
-		public static IAssociation evaluatePackage(final List<ASTNode> node, final EvalEngine engine) {
-			IExpr temp;
-			int i = 0;
-			AST2Expr ast2Expr = new AST2Expr(engine.isRelaxedSyntax(), engine);
-			IExpr result = S.Null;
-			IAssociation assoc = F.assoc(node.size());
-			int testCounter = 1;
-			while (i < node.size()) {
-				temp = ast2Expr.convert(node.get(i++));
-				if (temp.isAST(S.CompoundExpression)) {
-					IAST compoundExpression = (IAST) temp;
-					for (int j = 1; j < compoundExpression.size(); j++) {
-						temp = compoundExpression.get(j);
-						result = engine.evaluate(temp);
-						if (result instanceof TestResultObjectExpr) {
-							assoc.appendRule(F.Rule(F.ZZ(testCounter++), result));
-						}
-					}
-				} else {
-					result = engine.evaluate(temp);
-					if (result instanceof TestResultObjectExpr) {
-						assoc.appendRule(F.Rule(F.ZZ(testCounter++), result));
-					}
-				}
-			}
-			return assoc;
-		}
+    public static IAssociation evaluatePackage(final List<ASTNode> node, final EvalEngine engine) {
+      IExpr temp;
+      int i = 0;
+      AST2Expr ast2Expr = new AST2Expr(engine.isRelaxedSyntax(), engine);
+      IExpr result = S.Null;
+      IAssociation assoc = F.assoc(node.size());
+      int testCounter = 1;
+      while (i < node.size()) {
+        temp = ast2Expr.convert(node.get(i++));
+        if (temp.isAST(S.CompoundExpression)) {
+          IAST compoundExpression = (IAST) temp;
+          for (int j = 1; j < compoundExpression.size(); j++) {
+            temp = compoundExpression.get(j);
+            result = engine.evaluate(temp);
+            if (result instanceof TestResultObjectExpr) {
+              assoc.appendRule(F.Rule(F.ZZ(testCounter++), result));
+            }
+          }
+        } else {
+          result = engine.evaluate(temp);
+          if (result instanceof TestResultObjectExpr) {
+            assoc.appendRule(F.Rule(F.ZZ(testCounter++), result));
+          }
+        }
+      }
+      return assoc;
+    }
 
-		@Override
-		public int[] expectedArgSize(IAST ast) {
-			return IOFunctions.ARGS_1_1;
-		}
+    @Override
+    public int[] expectedArgSize(IAST ast) {
+      return IOFunctions.ARGS_1_1;
+    }
 
-		@Override
-		public void setUp(final ISymbol newSymbol) {
-			newSymbol.setAttributes(ISymbol.HOLDFIRST);
-		}
-	}
+    @Override
+    public void setUp(final ISymbol newSymbol) {
+      newSymbol.setAttributes(ISymbol.HOLDFIRST);
+    }
+  }
 
-	private static class VerificationTest extends AbstractEvaluator {
+  private static class VerificationTest extends AbstractEvaluator {
 
-		@Override
-		public IExpr evaluate(final IAST ast, EvalEngine engine) {
-			IExpr sameTest = S.SameQ;
-			IExpr testID = S.None;
-			IExpr actualOutput = S.None;
-			IExpr expectedOutput = S.True;
-			int size = ast.size();
-			final OptionArgs options = new OptionArgs(ast.topHead(), ast, 2, engine);
-			if (options.isInvalidPosition()) {
-				size = options.getInvalidPosition() + 1;
-			}
-			IExpr option = options.getOption(S.SameTest);
-			if (option.isPresent()) {
-				sameTest = option;
-			}
-			option = options.getOption(S.TestID);
-			if (option.isPresent()) {
-				testID = engine.evaluate(option);
-				if (DEBUG) {
-					System.out.print("\n\n>>>" + testID.toString());
-				}
-			}
+    @Override
+    public IExpr evaluate(final IAST ast, EvalEngine engine) {
+      IExpr sameTest = S.SameQ;
+      IExpr testID = S.None;
+      IExpr actualOutput = S.None;
+      IExpr expectedOutput = S.True;
+      int size = ast.size();
+      final OptionArgs options = new OptionArgs(ast.topHead(), ast, 2, engine);
+      if (options.isInvalidPosition()) {
+        size = options.getInvalidPosition() + 1;
+      }
+      IExpr option = options.getOption(S.SameTest);
+      if (option.isPresent()) {
+        sameTest = option;
+      }
+      option = options.getOption(S.TestID);
+      if (option.isPresent()) {
+        testID = engine.evaluate(option);
+        if (DEBUG) {
+          System.out.print("\n\n>>>" + testID.toString());
+        }
+      }
 
-			IExpr input = ast.arg1();
-			try {
-				actualOutput = engine.evaluate(input);
-			} catch (Exception ex) {
-				if (DEBUG) {
-					ex.printStackTrace();
-				}
-				actualOutput = S.None;
-			}
+      IExpr input = ast.arg1();
+      try {
+        actualOutput = engine.evaluate(input);
+      } catch (Exception ex) {
+        if (DEBUG) {
+          ex.printStackTrace();
+        }
+        actualOutput = S.None;
+      }
 
-			if (size > 2) {
-				expectedOutput = ast.arg2();
-			}
+      if (size > 2) {
+        expectedOutput = ast.arg2();
+      }
 
-			try {
-				IExpr tempActualOutput = engine.evaluate(actualOutput);
-				IExpr tempExpectedOutput = engine.evaluate(expectedOutput);
-				IExpr result = engine.evaluate(F.binaryAST2(sameTest, tempActualOutput, tempExpectedOutput));
+      try {
+        IExpr tempActualOutput = engine.evaluate(actualOutput);
+        IExpr tempExpectedOutput = engine.evaluate(expectedOutput);
+        IExpr result =
+            engine.evaluate(F.binaryAST2(sameTest, tempActualOutput, tempExpectedOutput));
 
-				IAssociation assoc = F.assoc(12);
-				if (result.isTrue()) {
-					success(assoc);
-				} else {
-					if (sameTest.equals(S.SameQ)) {
-						String actualOutputFullForm = tempActualOutput.fullFormString();
-						String expectedOutputFullForm = expectedOutput.fullFormString();
-						if (actualOutputFullForm.equals(expectedOutputFullForm)) {
-							success(assoc);
-						} else {
-							boolean test = tempActualOutput.equals(tempExpectedOutput);
-							if (!test) {
-								failure(assoc);
-							} else {
-								success(assoc);
-							}
-						}
-					} else {
-						failure(assoc);
-					}
-				}
-				assoc.appendRule(F.Rule("Input", F.HoldForm(input)));
-				assoc.appendRule(F.Rule("ExpectedOutput", F.HoldForm(expectedOutput)));
-				assoc.appendRule(F.Rule("ActualOutput", F.HoldForm(actualOutput)));
-				assoc.appendRule(F.Rule("TestID", testID));
-				return TestResultObjectExpr.newInstance(assoc);
-			} catch (Exception ex) {
-				if (FEConfig.SHOW_STACKTRACE) {
-					ex.printStackTrace();
-				}
-			}
-			return F.NIL;
-		}
+        IAssociation assoc = F.assoc(12);
+        if (result.isTrue()) {
+          success(assoc);
+        } else {
+          if (sameTest.equals(S.SameQ)) {
+            String actualOutputFullForm = tempActualOutput.fullFormString();
+            String expectedOutputFullForm = expectedOutput.fullFormString();
+            if (actualOutputFullForm.equals(expectedOutputFullForm)) {
+              success(assoc);
+            } else {
+              boolean test = tempActualOutput.equals(tempExpectedOutput);
+              if (!test) {
+                failure(assoc);
+              } else {
+                success(assoc);
+              }
+            }
+          } else {
+            failure(assoc);
+          }
+        }
+        assoc.appendRule(F.Rule("Input", F.HoldForm(input)));
+        assoc.appendRule(F.Rule("ExpectedOutput", F.HoldForm(expectedOutput)));
+        assoc.appendRule(F.Rule("ActualOutput", F.HoldForm(actualOutput)));
+        assoc.appendRule(F.Rule("TestID", testID));
+        return TestResultObjectExpr.newInstance(assoc);
+      } catch (Exception ex) {
+        if (FEConfig.SHOW_STACKTRACE) {
+          ex.printStackTrace();
+        }
+      }
+      return F.NIL;
+    }
 
-		private static void failure(IAssociation assoc) {
-			assoc.appendRule(F.Rule("Outcome", F.$str("Failure")));
-			if (DEBUG) {
-				System.out.print(" - Failure");
-			}
-		}
+    private static void failure(IAssociation assoc) {
+      assoc.appendRule(F.Rule("Outcome", F.$str("Failure")));
+      if (DEBUG) {
+        System.out.print(" - Failure");
+      }
+    }
 
-		private static void success(IAssociation assoc) {
-			assoc.appendRule(F.Rule("Outcome", F.$str("Success")));
-			if (DEBUG) {
-				System.out.print(" - Success");
-			}
-		}
+    private static void success(IAssociation assoc) {
+      assoc.appendRule(F.Rule("Outcome", F.$str("Success")));
+      if (DEBUG) {
+        System.out.print(" - Success");
+      }
+    }
 
-		@Override
-		public int[] expectedArgSize(IAST ast) {
-			return IOFunctions.ARGS_1_4;
-		}
+    @Override
+    public int[] expectedArgSize(IAST ast) {
+      return IOFunctions.ARGS_1_4;
+    }
 
-		@Override
-		public void setUp(final ISymbol newSymbol) {
-			newSymbol.setAttributes(ISymbol.HOLDALLCOMPLETE);
-		}
+    @Override
+    public void setUp(final ISymbol newSymbol) {
+      newSymbol.setAttributes(ISymbol.HOLDALLCOMPLETE);
+    }
+  }
 
-	}
+  public static void initialize() {
+    Initializer.init();
+  }
 
-	public static void initialize() {
-		Initializer.init();
-	}
-
-	private UnitTestingFunctions() {
-
-	}
-
+  private UnitTestingFunctions() {}
 }

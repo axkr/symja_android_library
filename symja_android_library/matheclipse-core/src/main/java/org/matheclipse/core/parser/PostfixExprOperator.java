@@ -8,11 +8,11 @@ import org.matheclipse.parser.client.operator.Operator;
 
 class PostfixExprOperator extends Operator {
 
-	public PostfixExprOperator(final String oper, final String functionName, final int precedence) {
-		super(oper, functionName, precedence);
-	}
+  public PostfixExprOperator(final String oper, final String functionName, final int precedence) {
+    super(oper, functionName, precedence);
+  }
 
-	public IASTMutable createFunction(final IParserFactory factory, final IExpr argument) {
-		return F.$(F.$s(getFunctionName()), argument);
-	}
+  public IASTMutable createFunction(final IParserFactory factory, final IExpr argument) {
+    return F.$(F.$s(getFunctionName()), argument);
+  }
 }

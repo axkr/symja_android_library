@@ -6,7 +6,8 @@ import org.matheclipse.core.tensor.io.ResourceData;
 /* package */ enum BuiltIn {
   SI;
   // ---
-  final static UnitSystem unitSystem = SimpleUnitSystem.from(ResourceData.properties("/unit/si.properties"));
-  final static UnitConvert unitConvert = new UnitConvert(unitSystem);
-  final static QuantityMagnitude quantityMagnitude = new QuantityMagnitude(unitSystem);
+  static final UnitSystem unitSystem =
+      SimpleUnitSystem.from(ResourceData.properties("/unit/si.properties"));
+  static final UnitConvert unitConvert = new UnitConvert(unitSystem);
+  static final QuantityMagnitude quantityMagnitude = new QuantityMagnitude(unitSystem);
 }

@@ -5,94 +5,77 @@ import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IEvaluator;
 import org.matheclipse.core.interfaces.IExpr;
 
-/**
- * Common interface for built-in Symja functions.
- * 
- */
+/** Common interface for built-in Symja functions. */
 public interface IFunctionEvaluator extends IEvaluator {
 
-	/**
-	 * <p>
-	 * <b>Symbolic evaluation</b> of a function. The method <code>ast.get(0)</code> (or alternatively
-	 * <code>ast.head()</code>) contains the <i>head</i> (i.e. the function symbol) of this abstract syntax tree (AST).
-	 * </p>
-	 * <p>
-	 * From <code>ast.get(1)</code> to <code>ast.get(n)</code> the <code>ast</code> contains the first to n-th argument
-	 * of the function (alternatively you get the first to fifth argument with the methods <code>arg1()</code>,
-	 * <code>arg2()</code>,... <code>arg5()</code>).
-	 * </p>
-	 * <p>
-	 * <b>Example:</b> the expression <code>Binomial(n,m)</code> is represented as AST with
-	 * <code>ast.head() <=> F.Binomial</code>, <code>ast.arg1() <=> n</code> and <code>ast.arg2() <=> m</code>
-	 * </p>
-	 * <p>
-	 * If necessary use the methods from the <code>Validate</code> class to check the number or types of arguments in
-	 * the evaluate method.
-	 * </p>
-	 * <p>
-	 * <b>Note:</b> if the symbolic evaluation isn't possible or no result is found the evaluate method returns with a
-	 * <code>F#NIL</code> value without throwing an exception!
-	 * </p>
-	 * 
-	 * @param ast
-	 *            the abstract syntax tree (AST) which should be evaluated
-	 * @param engine
-	 *            the users current evaluation engine
-	 * @return the evaluated object or <code>F#NIL</code>, if evaluation isn't possible
-	 * @see org.matheclipse.core.eval.exception.Validate
-	 * @see IExpr#head()
-	 * @see IAST#arg1()
-	 * @see IAST#arg2()
-	 * @see IAST#arg3()
-	 */
-	public IExpr evaluate(IAST ast, final EvalEngine engine);
+  /**
+   * <b>Symbolic evaluation</b> of a function. The method <code>ast.get(0)</code> (or alternatively
+   * <code>ast.head()</code>) contains the <i>head</i> (i.e. the function symbol) of this abstract
+   * syntax tree (AST).
+   *
+   * <p>From <code>ast.get(1)</code> to <code>ast.get(n)</code> the <code>ast</code> contains the
+   * first to n-th argument of the function (alternatively you get the first to fifth argument with
+   * the methods <code>arg1()</code>, <code>arg2()</code>,... <code>arg5()</code>).
+   *
+   * <p><b>Example:</b> the expression <code>Binomial(n,m)</code> is represented as AST with <code>
+   * ast.head() <=> F.Binomial</code>, <code>ast.arg1() <=> n</code> and <code>ast.arg2() <=> m
+   * </code>
+   *
+   * <p>If necessary use the methods from the <code>Validate</code> class to check the number or
+   * types of arguments in the evaluate method.
+   *
+   * <p><b>Note:</b> if the symbolic evaluation isn't possible or no result is found the evaluate
+   * method returns with a <code>F#NIL</code> value without throwing an exception!
+   *
+   * @param ast the abstract syntax tree (AST) which should be evaluated
+   * @param engine the users current evaluation engine
+   * @return the evaluated object or <code>F#NIL</code>, if evaluation isn't possible
+   * @see org.matheclipse.core.eval.exception.Validate
+   * @see IExpr#head()
+   * @see IAST#arg1()
+   * @see IAST#arg2()
+   * @see IAST#arg3()
+   */
+  public IExpr evaluate(IAST ast, final EvalEngine engine);
 
-	/**
-	 * <p>
-	 * <b>Numeric evaluation</b> of a function. The method <code>ast.get(0)</code> (or alternatively
-	 * <code>ast.head()</code>) contains the <i>head</i> (i.e. the function symbol) of this abstract syntax tree (AST).
-	 * </p>
-	 * <p>
-	 * From <code>ast.get(1)</code> to <code>ast.get(n)</code> the <code>ast</code> contains the first to n-th argument
-	 * of the function (alternatively you get the first to fifth argument with the methods <code>arg1()</code>,
-	 * <code>arg2()</code>,... <code>arg5()</code>).
-	 * </p>
-	 * <p>
-	 * <b>Example:</b> the expression <code>Binomial(n,m)</code> is represented as AST with
-	 * <code>ast.head() <=> F.Binomial</code>, <code>ast.arg1() <=> n</code> and <code>ast.arg2() <=> m</code>
-	 * </p>
-	 * <p>
-	 * If necessary use the methods from the <code>Validate</code> class to check the number or types of arguments in
-	 * the evaluate method.
-	 * </p>
-	 * <p>
-	 * <b>Note:</b> if the symbolic evaluation isn't possible or no result is found the evaluate method returns with a
-	 * <code>F#NIL</code> value without throwing an exception!
-	 * </p>
-	 * 
-	 * @param ast
-	 *            the abstract syntax tree (AST) which should be evaluated
-	 * @param engine
-	 *            the users current evaluation engine
-	 * @return the evaluated object or <code>F#NIL</code>, if evaluation isn't possible
-	 * @see org.matheclipse.core.eval.exception.Validate
-	 * @see IExpr#head()
-	 * @see IAST#arg1()
-	 * @see IAST#arg2()
-	 * @see IAST#arg3()
-	 */
-	public IExpr numericEval(IAST ast, final EvalEngine engine);
+  /**
+   * <b>Numeric evaluation</b> of a function. The method <code>ast.get(0)</code> (or alternatively
+   * <code>ast.head()</code>) contains the <i>head</i> (i.e. the function symbol) of this abstract
+   * syntax tree (AST).
+   *
+   * <p>From <code>ast.get(1)</code> to <code>ast.get(n)</code> the <code>ast</code> contains the
+   * first to n-th argument of the function (alternatively you get the first to fifth argument with
+   * the methods <code>arg1()</code>, <code>arg2()</code>,... <code>arg5()</code>).
+   *
+   * <p><b>Example:</b> the expression <code>Binomial(n,m)</code> is represented as AST with <code>
+   * ast.head() <=> F.Binomial</code>, <code>ast.arg1() <=> n</code> and <code>ast.arg2() <=> m
+   * </code>
+   *
+   * <p>If necessary use the methods from the <code>Validate</code> class to check the number or
+   * types of arguments in the evaluate method.
+   *
+   * <p><b>Note:</b> if the symbolic evaluation isn't possible or no result is found the evaluate
+   * method returns with a <code>F#NIL</code> value without throwing an exception!
+   *
+   * @param ast the abstract syntax tree (AST) which should be evaluated
+   * @param engine the users current evaluation engine
+   * @return the evaluated object or <code>F#NIL</code>, if evaluation isn't possible
+   * @see org.matheclipse.core.eval.exception.Validate
+   * @see IExpr#head()
+   * @see IAST#arg1()
+   * @see IAST#arg2()
+   * @see IAST#arg3()
+   */
+  public IExpr numericEval(IAST ast, final EvalEngine engine);
 
-	/**
-	 * At index 0 return the &quot;from&quot;, at index 1 return the &quot;to&quot; number of arguments, which are
-	 * expected by this function.
-	 * 
-	 * @param ast
-	 *            the abstract syntax tree (AST) those arguments should be checked
-	 * 
-	 * @return <code>null</code> is no range for the number of arguments is specified.
-	 */
-	default int[] expectedArgSize(IAST ast) {
-		return null;
-	}
+  /**
+   * At index 0 return the &quot;from&quot;, at index 1 return the &quot;to&quot; number of
+   * arguments, which are expected by this function.
+   *
+   * @param ast the abstract syntax tree (AST) those arguments should be checked
+   * @return <code>null</code> is no range for the number of arguments is specified.
+   */
+  default int[] expectedArgSize(IAST ast) {
+    return null;
+  }
 }

@@ -25,189 +25,161 @@ import org.matheclipse.core.visit.AbstractVisitor;
 import org.matheclipse.core.visit.VisitorExpr;
 
 /**
- * Try to share common sub-<code>IASTs</code> expressions with the same object-id internally to minimize memory
- * consumption. Returns the number f shared sub-expressions
- *
+ * Try to share common sub-<code>IASTs</code> expressions with the same object-id internally to
+ * minimize memory consumption. Returns the number f shared sub-expressions
  */
 public class Share extends AbstractFunctionEvaluator {
-	private static class ShareFunction implements Function<IExpr, IExpr> {
-		java.util.Map<IExpr, IExpr> map;
+  private static class ShareFunction implements Function<IExpr, IExpr> {
+    java.util.Map<IExpr, IExpr> map;
 
-		public ShareFunction() {
-			map = new HashMap<IExpr, IExpr>();
-		}
+    public ShareFunction() {
+      map = new HashMap<IExpr, IExpr>();
+    }
 
-		@Override
-		public IExpr apply(IExpr t) {
-			IExpr value = map.get(t);
-			if (value == null) {
-				map.put(t, t);
-			} else {
-				if (value == t) {
-					return null;
-				}
-			}
-			return value;
-		}
-	}
+    @Override
+    public IExpr apply(IExpr t) {
+      IExpr value = map.get(t);
+      if (value == null) {
+        map.put(t, t);
+      } else {
+        if (value == t) {
+          return null;
+        }
+      }
+      return value;
+    }
+  }
 
-	/**
-	 * Replace all occurrences of expressions where the given <code>function.apply()</code> method returns a non
-	 * <code>F.NIL</code> value. The visitors <code>visit()</code> methods return <code>F.NIL</code> if no substitution
-	 * occurred.
-	 */
-	private static class ShareReplaceAll extends VisitorExpr {
-		final Function<IExpr, IExpr> fFunction;
-		final int fOffset;
-		public int fCounter;
+  /**
+   * Replace all occurrences of expressions where the given <code>function.apply()</code> method
+   * returns a non <code>F.NIL</code> value. The visitors <code>visit()</code> methods return <code>
+   * F.NIL</code> if no substitution occurred.
+   */
+  private static class ShareReplaceAll extends VisitorExpr {
+    final Function<IExpr, IExpr> fFunction;
+    final int fOffset;
+    public int fCounter;
 
-		public ShareReplaceAll(Function<IExpr, IExpr> function, int offset) {
-			super();
-			this.fFunction = function;
-			this.fOffset = offset;
-			fCounter = 0;
-		}
+    public ShareReplaceAll(Function<IExpr, IExpr> function, int offset) {
+      super();
+      this.fFunction = function;
+      this.fOffset = offset;
+      fCounter = 0;
+    }
 
-		@Override
-		public IExpr visit(IInteger element) {
-			return null;
-		}
+    @Override
+    public IExpr visit(IInteger element) {
+      return null;
+    }
 
-		/**
-		 * 
-		 * @return <code>F.NIL</code>, if no evaluation is possible
-		 */
-		@Override
-		public IExpr visit(IFraction element) {
-			return null;
-		}
+    /** @return <code>F.NIL</code>, if no evaluation is possible */
+    @Override
+    public IExpr visit(IFraction element) {
+      return null;
+    }
 
-		/**
-		 * 
-		 * @return <code>F.NIL</code>, if no evaluation is possible
-		 */
-		@Override
-		public IExpr visit(IComplex element) {
-			return null;
-		}
+    /** @return <code>F.NIL</code>, if no evaluation is possible */
+    @Override
+    public IExpr visit(IComplex element) {
+      return null;
+    }
 
-		/**
-		 * 
-		 * @return <code>F.NIL</code>, if no evaluation is possible
-		 */
-		@Override
-		public IExpr visit(INum element) {
-			return null;
-		}
+    /** @return <code>F.NIL</code>, if no evaluation is possible */
+    @Override
+    public IExpr visit(INum element) {
+      return null;
+    }
 
-		/**
-		 * 
-		 * @return <code>F.NIL</code>, if no evaluation is possible
-		 */
-		@Override
-		public IExpr visit(IComplexNum element) {
-			return null;
-		}
+    /** @return <code>F.NIL</code>, if no evaluation is possible */
+    @Override
+    public IExpr visit(IComplexNum element) {
+      return null;
+    }
 
-		/**
-		 * 
-		 * @return <code>F.NIL</code>, if no evaluation is possible
-		 */
-		@Override
-		public IExpr visit(ISymbol element) {
-			return null;
-		}
+    /** @return <code>F.NIL</code>, if no evaluation is possible */
+    @Override
+    public IExpr visit(ISymbol element) {
+      return null;
+    }
 
-		/**
-		 * 
-		 * @return <code>F.NIL</code>, if no evaluation is possible
-		 */
-		@Override
-		public IExpr visit(IPattern element) {
-			return null;
-		}
+    /** @return <code>F.NIL</code>, if no evaluation is possible */
+    @Override
+    public IExpr visit(IPattern element) {
+      return null;
+    }
 
-		/**
-		 * 
-		 * @return <code>F.NIL</code>, if no evaluation is possible
-		 */
-		@Override
-		public IExpr visit(IPatternSequence element) {
-			return null;
-		}
+    /** @return <code>F.NIL</code>, if no evaluation is possible */
+    @Override
+    public IExpr visit(IPatternSequence element) {
+      return null;
+    }
 
-		/**
-		 * 
-		 * @return <code>F.NIL</code>, if no evaluation is possible
-		 */
-		@Override
-		public IExpr visit(IStringX element) {
-			return null;
-		}
+    /** @return <code>F.NIL</code>, if no evaluation is possible */
+    @Override
+    public IExpr visit(IStringX element) {
+      return null;
+    }
 
-		@Override
-		public IExpr visit(IASTMutable ast) {
-			IExpr temp = fFunction.apply(ast);
-			if (temp != null) {
-				return temp;
-			}
-			return visitAST(ast);
-		}
+    @Override
+    public IExpr visit(IASTMutable ast) {
+      IExpr temp = fFunction.apply(ast);
+      if (temp != null) {
+        return temp;
+      }
+      return visitAST(ast);
+    }
 
-		@Override
-		protected IExpr visitAST(IAST ast) {
-			IExpr temp;
-			boolean evaled = false;
-			int i = fOffset;
-			while (i < ast.size()) {
-				temp = ast.get(i);
-				if (temp.isAST()) {
-					temp = temp.accept(this);
-					if (temp != null) {
-						// share the object with the same id:
-						((IASTMutable) ast).set(i, temp);
-						evaled = true;
-						fCounter++;
-					}
-				}
-				i++;
-			}
-			return evaled ? ast : null;
-		}
-	}
+    @Override
+    protected IExpr visitAST(IAST ast) {
+      IExpr temp;
+      boolean evaled = false;
+      int i = fOffset;
+      while (i < ast.size()) {
+        temp = ast.get(i);
+        if (temp.isAST()) {
+          temp = temp.accept(this);
+          if (temp != null) {
+            // share the object with the same id:
+            ((IASTMutable) ast).set(i, temp);
+            evaled = true;
+            fCounter++;
+          }
+        }
+        i++;
+      }
+      return evaled ? ast : null;
+    }
+  }
 
-	public Share() {
-	}
+  public Share() {}
 
-	@Override
-	public IExpr evaluate(final IAST ast, EvalEngine engine) {
-		if (ast.arg1().isAST()) {
-			return F.ZZ(shareAST((IAST) ast.arg1()));
-		}
-		return F.C0;
-	}
+  @Override
+  public IExpr evaluate(final IAST ast, EvalEngine engine) {
+    if (ast.arg1().isAST()) {
+      return F.ZZ(shareAST((IAST) ast.arg1()));
+    }
+    return F.C0;
+  }
 
-	@Override
-	public int[] expectedArgSize(IAST ast) {
-		return IOFunctions.ARGS_1_1;
-	}
-	
-	/**
-	 * Try to share common sub-<code>IASTs</code> expressions with the same object-id internally to minimize memory
-	 * consumption and return the number of shared sub-expressions
-	 *
-	 * @param ast
-	 *            the ast whose internal memory consumption should be minimized
-	 * @return the number of shared sub-expressions
-	 */
-	private static int shareAST(final IAST ast) {
-		ShareReplaceAll sra = new ShareReplaceAll(new ShareFunction(), 1);
-		ast.accept(sra);
-		return sra.fCounter;
-	}
+  @Override
+  public int[] expectedArgSize(IAST ast) {
+    return IOFunctions.ARGS_1_1;
+  }
 
-	public static AbstractVisitor createVisitor() {
-		return new ShareReplaceAll(new ShareFunction(), 1);
-	}
+  /**
+   * Try to share common sub-<code>IASTs</code> expressions with the same object-id internally to
+   * minimize memory consumption and return the number of shared sub-expressions
+   *
+   * @param ast the ast whose internal memory consumption should be minimized
+   * @return the number of shared sub-expressions
+   */
+  private static int shareAST(final IAST ast) {
+    ShareReplaceAll sra = new ShareReplaceAll(new ShareFunction(), 1);
+    ast.accept(sra);
+    return sra.fCounter;
+  }
 
+  public static AbstractVisitor createVisitor() {
+    return new ShareReplaceAll(new ShareFunction(), 1);
+  }
 }

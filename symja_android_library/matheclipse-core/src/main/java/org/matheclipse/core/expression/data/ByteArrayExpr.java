@@ -17,69 +17,66 @@ import org.matheclipse.parser.trie.Tries;
 
 public class ByteArrayExpr extends DataExpr<byte[]> implements Externalizable {
 
-	/**
-	 * 
-	 */
-	private static final long serialVersionUID = 5799157739970931450L;
+  /** */
+  private static final long serialVersionUID = 5799157739970931450L;
 
-	/**
-	 * 
-	 * @param value
-	 * @return
-	 */
-	public static ByteArrayExpr newInstance(final byte[] value) {
-		return new ByteArrayExpr(value);
-	}
+  /**
+   * @param value
+   * @return
+   */
+  public static ByteArrayExpr newInstance(final byte[] value) {
+    return new ByteArrayExpr(value);
+  }
 
-	public ByteArrayExpr() {
-		super(S.ByteArray, null);
-	}
+  public ByteArrayExpr() {
+    super(S.ByteArray, null);
+  }
 
-	protected ByteArrayExpr(final byte[] array) {
-		super(S.ByteArray, array);
-	}
+  protected ByteArrayExpr(final byte[] array) {
+    super(S.ByteArray, array);
+  }
 
-	@Override
-	public boolean equals(final Object obj) {
-		if (this == obj) {
-			return true;
-		}
-		if (obj instanceof ByteArrayExpr) {
-			return Arrays.equals(fData, ((ByteArrayExpr) obj).fData);
-		}
-		return false;
-	}
+  @Override
+  public boolean equals(final Object obj) {
+    if (this == obj) {
+      return true;
+    }
+    if (obj instanceof ByteArrayExpr) {
+      return Arrays.equals(fData, ((ByteArrayExpr) obj).fData);
+    }
+    return false;
+  }
 
-	@Override
-	public int hierarchy() {
-		return BYTEARRAYID;
-	}
+  @Override
+  public int hierarchy() {
+    return BYTEARRAYID;
+  }
 
-	@Override
-	public int hashCode() {
-		return (fData == null) ? 541 : 541 + Arrays.hashCode(fData);
-	}
+  @Override
+  public int hashCode() {
+    return (fData == null) ? 541 : 541 + Arrays.hashCode(fData);
+  }
 
-	@Override
-	public IExpr copy() {
-		return new ByteArrayExpr(fData);
-	}
+  @Override
+  public IExpr copy() {
+    return new ByteArrayExpr(fData);
+  }
 
-	public IAST normal(boolean nilIfUnevaluated) {
-		byte[] bArray = toData();
-		return WL.toList(bArray);
-	}
+  public IAST normal(boolean nilIfUnevaluated) {
+    byte[] bArray = toData();
+    return WL.toList(bArray);
+  }
 
-	@Override
-	public void readExternal(ObjectInput in) throws IOException, ClassNotFoundException {
-		final int len = in.readInt();
-		fData = new byte[len];
-		in.read(fData);
-	}
+  @Override
+  public void readExternal(ObjectInput in) throws IOException, ClassNotFoundException {
+    final int len = in.readInt();
+    fData = new byte[len];
+    in.read(fData);
+  }
 
-	@Override
-	public void writeExternal(ObjectOutput output) throws IOException {
-		output.writeInt(fData.length);
-		output.write(fData);
-	}
+  @Override
+  public void writeExternal(ObjectOutput output) throws IOException {
+    output.writeInt(fData.length);
+    output.write(fData);
+  }
 }

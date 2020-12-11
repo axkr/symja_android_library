@@ -2,9 +2,9 @@
  * 2016-09-04: Copied and modified under Lesser GPL license from
  * <a href="http://redberry.cc/">Redberry: symbolic tensor computations</a> with
  * permission from the original authors Stanislav Poslavsky and Dmitry Bolotin.
- * 
+ *
  * Following is the original header:
- * 
+ *
  * Redberry: symbolic tensor computations.
  *
  * Copyright (c) 2010-2012:
@@ -31,53 +31,52 @@ package org.matheclipse.core.frobenius;
 import org.matheclipse.core.interfaces.IInteger;
 
 /**
- *
  * @author Dmitry Bolotin
  * @author Stanislav Poslavsky
  */
 final class FinalSolutionProvider extends SolutionProviderAbstract {
-	public FinalSolutionProvider(SolutionProvider provider, int position, IInteger coefficient[]) {
-		super(provider, position, coefficient);
-	}
+  public FinalSolutionProvider(SolutionProvider provider, int position, IInteger coefficient[]) {
+    super(provider, position, coefficient);
+  }
 
-	@Override
-	public IInteger[] take() {
-		if (currentSolution == null) {
-			return null;
-		}
+  @Override
+  public IInteger[] take() {
+    if (currentSolution == null) {
+      return null;
+    }
 
-		int i = 0;
-		// non zero coefficient
-		while (i < coefficients.length && coefficients[i++].isZero()) {
-			//
-		}
-		--i;
+    int i = 0;
+    // non zero coefficient
+    while (i < coefficients.length && coefficients[i++].isZero()) {
+      //
+    }
+    --i;
 
-		assert i == 0 || i != coefficients.length;
+    assert i == 0 || i != coefficients.length;
 
-		if (!currentRemainder[i].mod(coefficients[i]).isZero()) {
-			currentSolution = null;
-			return null;
-		}
+    if (!currentRemainder[i].mod(coefficients[i]).isZero()) {
+      currentSolution = null;
+      return null;
+    }
 
-		currentCounter = currentRemainder[i].div(coefficients[i]);
-		for (i = 0; i < coefficients.length; ++i) {
-			if (coefficients[i].isZero()) {
-				if (!currentRemainder[i].isZero()) {
-					currentSolution = null;
-					return null;
-				}
-			} else if (!currentRemainder[i].mod(coefficients[i]).isZero()) {
-				currentSolution = null;
-				return null;
-			} else if (!currentRemainder[i].div(coefficients[i]).equals(currentCounter)) {
-				currentSolution = null;
-				return null;
-			}
-		}
-		IInteger[] solution = currentSolution.clone();
-		solution[position] = solution[position].add(currentCounter);
-		currentSolution = null;
-		return solution;
-	}
+    currentCounter = currentRemainder[i].div(coefficients[i]);
+    for (i = 0; i < coefficients.length; ++i) {
+      if (coefficients[i].isZero()) {
+        if (!currentRemainder[i].isZero()) {
+          currentSolution = null;
+          return null;
+        }
+      } else if (!currentRemainder[i].mod(coefficients[i]).isZero()) {
+        currentSolution = null;
+        return null;
+      } else if (!currentRemainder[i].div(coefficients[i]).equals(currentCounter)) {
+        currentSolution = null;
+        return null;
+      }
+    }
+    IInteger[] solution = currentSolution.clone();
+    solution[position] = solution[position].add(currentCounter);
+    currentSolution = null;
+    return solution;
+  }
 }

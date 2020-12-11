@@ -14,238 +14,221 @@ import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.interfaces.ISymbol;
 
 /**
- * Matches a given expression by simply comparing the left-hand-side expression of this pattern matcher with the
- * <code>equals()</code> method.
- * 
+ * Matches a given expression by simply comparing the left-hand-side expression of this pattern
+ * matcher with the <code>equals()</code> method.
  */
 public class PatternMatcherEquals extends IPatternMatcher implements Externalizable {
-	/**
-	 * 
-	 */
-	private static final long serialVersionUID = 3566534441225675728L;
+  /** */
+  private static final long serialVersionUID = 3566534441225675728L;
 
-	/**
-	 * Contains the "pattern-matching" expression
-	 * 
-	 */
-	// protected IExpr fLhsPatternExpr;
+  /** Contains the "pattern-matching" expression */
+  // protected IExpr fLhsPatternExpr;
 
-	protected IExpr fRightHandSide;
+  protected IExpr fRightHandSide;
 
-	/**
-	 * Contains the flag for the "set" symbol used to define this pattern matcher
-	 * 
-	 */
-	private int fSetFlags;
+  /** Contains the flag for the "set" symbol used to define this pattern matcher */
+  private int fSetFlags;
 
-	/**
-	 * Public constructor for serialization.
-	 */
-	public PatternMatcherEquals() {
+  /** Public constructor for serialization. */
+  public PatternMatcherEquals() {}
 
-	}
+  /**
+   * @param setSymbol the symbol which defines this pattern-matching rule (i.e. Set, SetDelayed,...)
+   * @param leftHandSide could contain pattern expressions for "pattern-matching"
+   * @param rightHandSide the result which should be evaluated if the "pattern-matching" succeeds
+   */
+  public PatternMatcherEquals(
+      final int setSymbol, final IExpr leftHandSide, final IExpr rightHandSide) {
+    super(leftHandSide);
+    fSetFlags = setSymbol;
+    fRightHandSide = rightHandSide;
+  }
 
-	/**
-	 * 
-	 * @param setSymbol
-	 *            the symbol which defines this pattern-matching rule (i.e. Set, SetDelayed,...)
-	 * @param leftHandSide
-	 *            could contain pattern expressions for "pattern-matching"
-	 * @param rightHandSide
-	 *            the result which should be evaluated if the "pattern-matching" succeeds
-	 */
-	public PatternMatcherEquals(final int setSymbol, final IExpr leftHandSide, final IExpr rightHandSide) {
-		super(leftHandSide);
-		fSetFlags = setSymbol;
-		fRightHandSide = rightHandSide;
-	}
+  @Override
+  public boolean test(IExpr lhsEvalExpr) {
+    return fLhsPatternExpr.equals(lhsEvalExpr);
+  }
 
-	@Override
-	public boolean test(IExpr lhsEvalExpr) {
-		return fLhsPatternExpr.equals(lhsEvalExpr);
-	}
+  @Override
+  public boolean test(IExpr lhsEvalExpr, EvalEngine engine) {
+    return fLhsPatternExpr.equals(lhsEvalExpr);
+  }
 
-	@Override
-	public boolean test(IExpr lhsEvalExpr, EvalEngine engine) {
-		return fLhsPatternExpr.equals(lhsEvalExpr);
-	}
+  @Override
+  public Object clone() throws CloneNotSupportedException {
+    PatternMatcherEquals v = (PatternMatcherEquals) super.clone();
+    v.fRightHandSide = fRightHandSide;
+    v.fSetFlags = fSetFlags;
+    return v;
+  }
 
-	@Override
-	public Object clone() throws CloneNotSupportedException {
-		PatternMatcherEquals v = (PatternMatcherEquals) super.clone();
-		v.fRightHandSide = fRightHandSide;
-		v.fSetFlags = fSetFlags;
-		return v;
-	}
+  /** {@inheritDoc} */
+  @Override
+  public IExpr eval(IExpr leftHandSide, EvalEngine engine) {
+    if (test(leftHandSide)) {
+      return fRightHandSide;
+    }
+    return F.NIL;
+  }
 
-	/** {@inheritDoc} */
-	@Override
-	public IExpr eval(IExpr leftHandSide, EvalEngine engine) {
-		if (test(leftHandSide)) {
-			return fRightHandSide;
-		}
-		return F.NIL;
-	}
+  @Override
+  public void getPatterns(List<IExpr> resultList, IExpr patternExpr) {}
 
-	@Override
-	public void getPatterns(List<IExpr> resultList, IExpr patternExpr) {
-	}
+  /** {@inheritDoc} */
+  @Override
+  public IExpr getRHS() {
+    return ExprUtil.ofNullable(fRightHandSide);
+  }
 
-	/** {@inheritDoc} */
-	@Override
-	public IExpr getRHS() {
-		return ExprUtil.ofNullable(fRightHandSide);
-	}
+  /**
+   * Return <code>Set</code> or <code>SetDelayed</code> symbol.
+   *
+   * @return <code>null</code> if no symbol was defined
+   */
+  public ISymbol getSetSymbol() {
+    if (isFlagOn(SET_DELAYED)) {
+      return F.SetDelayed;
+    }
+    if (isFlagOn(SET)) {
+      return F.Set;
+    }
+    if (isFlagOn(UPSET_DELAYED)) {
+      return F.UpSetDelayed;
+    }
+    if (isFlagOn(UPSET)) {
+      return F.UpSet;
+    }
+    if (isFlagOn(TAGSET_DELAYED)) {
+      return F.TagSetDelayed;
+    }
+    if (isFlagOn(TAGSET)) {
+      return F.TagSet;
+    }
+    return null;
+  }
 
-	/**
-	 * Return <code>Set</code> or <code>SetDelayed</code> symbol.
-	 * 
-	 * @return <code>null</code> if no symbol was defined
-	 */
-	public ISymbol getSetSymbol() {
-		if (isFlagOn(SET_DELAYED)) {
-			return F.SetDelayed;
-		}
-		if (isFlagOn(SET)) {
-			return F.Set;
-		}
-		if (isFlagOn(UPSET_DELAYED)) {
-			return F.UpSetDelayed;
-		}
-		if (isFlagOn(UPSET)) {
-			return F.UpSet;
-		}
-		if (isFlagOn(TAGSET_DELAYED)) {
-			return F.TagSetDelayed;
-		}
-		if (isFlagOn(TAGSET)) {
-			return F.TagSet;
-		}
-		return null;
-	}
+  /**
+   * Are the given flags disabled ?
+   *
+   * @param flags
+   * @return
+   * @see IAST#NO_FLAG
+   */
+  public final boolean isFlagOff(final int flags) {
+    return (fSetFlags & flags) == 0;
+  }
 
-	/**
-	 * Are the given flags disabled ?
-	 * 
-	 * @param flags
-	 * @return
-	 * @see IAST#NO_FLAG
-	 */
-	public final boolean isFlagOff(final int flags) {
-		return (fSetFlags & flags) == 0;
-	}
+  /**
+   * Are the given flags enabled ?
+   *
+   * @param flags
+   * @return
+   * @see IAST#NO_FLAG
+   */
+  public final boolean isFlagOn(int flags) {
+    return (fSetFlags & flags) == flags;
+  }
 
-	/**
-	 * Are the given flags enabled ?
-	 * 
-	 * @param flags
-	 * @return
-	 * @see IAST#NO_FLAG
-	 */
-	public final boolean isFlagOn(int flags) {
-		return (fSetFlags & flags) == flags;
-	}
+  /** {@inheritDoc} */
+  @Override
+  public boolean isPatternHashAllowed(int patternHash) {
+    return true;
+  }
 
-	/** {@inheritDoc} */
-	@Override
-	public boolean isPatternHashAllowed(int patternHash) {
-		return true;
-	}
+  @Override
+  public boolean isRuleWithoutPatterns() {
+    return true;
+  }
 
-	@Override
-	public boolean isRuleWithoutPatterns() {
-		return true;
-	}
+  public void setRHS(IExpr rightHandSide) {
+    fRightHandSide = rightHandSide;
+  }
 
-	public void setRHS(IExpr rightHandSide) {
-		fRightHandSide = rightHandSide;
-	}
+  // @Override
+  // public int compareTo(IPatternMatcher o) {
+  // if (getPriority() < o.getPriority()) {
+  // return -1;
+  // }
+  // if (getPriority() > o.getPriority()) {
+  // return 1;
+  // }
+  // return 0;
+  // }
 
-	// @Override
-	// public int compareTo(IPatternMatcher o) {
-	// if (getPriority() < o.getPriority()) {
-	// return -1;
-	// }
-	// if (getPriority() > o.getPriority()) {
-	// return 1;
-	// }
-	// return 0;
-	// }
+  @Override
+  public int equivalentTo(IPatternMatcher o) {
+    if (getLHSPriority() < o.getLHSPriority()) {
+      return -1;
+    }
+    if (getLHSPriority() > o.getLHSPriority()) {
+      return 1;
+    }
+    return 0;
+    // return equivalent(o);
+  }
 
-	@Override
-	public int equivalentTo(IPatternMatcher o) {
-		if (getLHSPriority() < o.getLHSPriority()) {
-			return -1;
-		}
-		if (getLHSPriority() > o.getLHSPriority()) {
-			return 1;
-		}
-		return 0;
-		// return equivalent(o);
-	}
+  @Override
+  public int getPatternHash() {
+    return 0;
+  }
 
-	@Override
-	public int getPatternHash() {
-		return 0;
-	}
+  @Override
+  public int getLHSPriority() {
+    return 0;
+  }
 
-	@Override
-	public int getLHSPriority() {
-		return 0;
-	}
+  public IAST getAsAST() {
+    ISymbol setSymbol = getSetSymbol();
+    IAST temp = F.binaryAST2(setSymbol, getLHS(), getRHS());
+    if (isFlagOn(HOLDPATTERN)) {
+      return F.HoldPattern(temp);
+    }
+    if (isFlagOn(LITERAL)) {
+      return F.Literal(temp);
+    }
+    return temp;
+  }
 
-	public IAST getAsAST() {
-		ISymbol setSymbol = getSetSymbol();
-		IAST temp = F.binaryAST2(setSymbol, getLHS(), getRHS());
-		if (isFlagOn(HOLDPATTERN)) {
-			return F.HoldPattern(temp);
-		}
-		if (isFlagOn(LITERAL)) {
-			return F.Literal(temp);
-		}
-		return temp;
-	}
+  @Override
+  public String toString() {
+    return getAsAST().toString();
+  }
 
-	@Override
-	public String toString() {
-		return getAsAST().toString();
-	}
+  @Override
+  public void writeExternal(ObjectOutput objectOutput) throws IOException {
+    objectOutput.writeShort(fSetFlags);
+    objectOutput.writeObject(fLhsPatternExpr);
+    objectOutput.writeObject(fRightHandSide);
+  }
 
-	@Override
-	public void writeExternal(ObjectOutput objectOutput) throws IOException {
-		objectOutput.writeShort(fSetFlags);
-		objectOutput.writeObject(fLhsPatternExpr);
-		objectOutput.writeObject(fRightHandSide);
-	}
+  @Override
+  public void readExternal(ObjectInput objectInput) throws IOException, ClassNotFoundException {
+    fSetFlags = objectInput.readShort();
+    fLhsPatternExpr = (IExpr) objectInput.readObject();
+    fRightHandSide = (IExpr) objectInput.readObject();
+  }
 
-	@Override
-	public void readExternal(ObjectInput objectInput) throws IOException, ClassNotFoundException {
-		fSetFlags = objectInput.readShort();
-		fLhsPatternExpr = (IExpr) objectInput.readObject();
-		fRightHandSide = (IExpr) objectInput.readObject();
-	}
+  @Override
+  public int equivalentLHS(IPatternMatcher obj) {
+    return equivalentTo(obj);
+  }
 
-	@Override
-	public int equivalentLHS(IPatternMatcher obj) {
-		return equivalentTo(obj);
-	}
+  @Override
+  public int hashCode() {
+    final int prime = 31;
+    int result = super.hashCode();
+    result = prime * result + fSetFlags;
+    return result;
+  }
 
-	@Override
-	public int hashCode() {
-		final int prime = 31;
-		int result = super.hashCode();
-		result = prime * result + fSetFlags;
-		return result;
-	}
-
-	@Override
-	public boolean equals(Object obj) {
-		if (obj instanceof PatternMatcherEquals) {
-			if (!super.equals(obj)) {
-				return false;
-			}
-			return fSetFlags == ((PatternMatcherEquals) obj).fSetFlags;
-		}
-		return false;
-	}
+  @Override
+  public boolean equals(Object obj) {
+    if (obj instanceof PatternMatcherEquals) {
+      if (!super.equals(obj)) {
+        return false;
+      }
+      return fSetFlags == ((PatternMatcherEquals) obj).fSetFlags;
+    }
+    return false;
+  }
 }

@@ -10,86 +10,87 @@ import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.parser.client.FEConfig;
 
 public class ImageFunctions {
-	/**
-	 * 
-	 * See <a href="https://pangin.pro/posts/computation-in-static-initializer">Beware of computation in static
-	 * initializer</a>
-	 */
-	private static class Initializer {
+  /**
+   * See <a href="https://pangin.pro/posts/computation-in-static-initializer">Beware of computation
+   * in static initializer</a>
+   */
+  private static class Initializer {
 
-		private static void init() {
-			S.MaxFilter.setEvaluator(new MaxFilter());
-			S.MeanFilter.setEvaluator(new MeanFilter());
-			S.MedianFilter.setEvaluator(new MedianFilter());
-			S.MinFilter.setEvaluator(new MinFilter());
-		}
-	}
+    private static void init() {
+      S.MaxFilter.setEvaluator(new MaxFilter());
+      S.MeanFilter.setEvaluator(new MeanFilter());
+      S.MedianFilter.setEvaluator(new MedianFilter());
+      S.MinFilter.setEvaluator(new MinFilter());
+    }
+  }
 
-	private static class MinFilter extends AbstractEvaluator {
+  private static class MinFilter extends AbstractEvaluator {
 
-		protected IExpr filterHead() {
-			return S.Min;
-		}
+    protected IExpr filterHead() {
+      return S.Min;
+    }
 
-		@Override
-		public IExpr evaluate(final IAST ast, EvalEngine engine) {
-			try {
-				if (ast.arg1().isList()) {
-					IAST list = (IAST) ast.arg1();
-					final int radius = ast.arg2().toIntDefault();
-					if (radius >= 0) {
-						return filterHead(list, radius, filterHead(), engine);
-					}
-				}
-			} catch (RuntimeException rex) {
-				if (FEConfig.SHOW_STACKTRACE) {
-					rex.printStackTrace();
-				}
-			}
-			return F.NIL;
-		}
+    @Override
+    public IExpr evaluate(final IAST ast, EvalEngine engine) {
+      try {
+        if (ast.arg1().isList()) {
+          IAST list = (IAST) ast.arg1();
+          final int radius = ast.arg2().toIntDefault();
+          if (radius >= 0) {
+            return filterHead(list, radius, filterHead(), engine);
+          }
+        }
+      } catch (RuntimeException rex) {
+        if (FEConfig.SHOW_STACKTRACE) {
+          rex.printStackTrace();
+        }
+      }
+      return F.NIL;
+    }
 
-		private static IExpr filterHead(IAST list, final int radius, IExpr filterHead, EvalEngine engine) {
-			final IASTMutable result = list.copy();
-			final int size = list.size();
-			list.forEach((x, i) -> result.set(i, engine.evaluate(//
-					F.unaryAST1(//
-							filterHead, //
-							list.slice(Math.max(1, i - radius), Math.min(size, i + radius + 1))//
-					))));
-			return result;
-		}
+    private static IExpr filterHead(
+        IAST list, final int radius, IExpr filterHead, EvalEngine engine) {
+      final IASTMutable result = list.copy();
+      final int size = list.size();
+      list.forEach(
+          (x, i) ->
+              result.set(
+                  i,
+                  engine.evaluate( //
+                      F.unaryAST1( //
+                          filterHead, //
+                          list.slice(Math.max(1, i - radius), Math.min(size, i + radius + 1)) //
+                          ))));
+      return result;
+    }
 
-		@Override
-		public int[] expectedArgSize(IAST ast) {
-			return IOFunctions.ARGS_2_2;
-		}
-	}
+    @Override
+    public int[] expectedArgSize(IAST ast) {
+      return IOFunctions.ARGS_2_2;
+    }
+  }
 
-	private static class MaxFilter extends MinFilter {
-		protected IExpr filterHead() {
-			return S.Max;
-		}
-	}
+  private static class MaxFilter extends MinFilter {
+    protected IExpr filterHead() {
+      return S.Max;
+    }
+  }
 
-	private static class MeanFilter extends MinFilter {
-		protected IExpr filterHead() {
-			return S.Mean;
-		}
-	}
+  private static class MeanFilter extends MinFilter {
+    protected IExpr filterHead() {
+      return S.Mean;
+    }
+  }
 
-	private static class MedianFilter extends MinFilter {
-		protected IExpr filterHead() {
-			return S.Median;
-		}
-	}
+  private static class MedianFilter extends MinFilter {
+    protected IExpr filterHead() {
+      return S.Median;
+    }
+  }
 
-	public static void initialize() {
-		Initializer.init();
-	}
+  public static void initialize() {
+    Initializer.init();
+  }
 
-	private ImageFunctions() {
-
-	}
-
+  private ImageFunctions() {}
 }

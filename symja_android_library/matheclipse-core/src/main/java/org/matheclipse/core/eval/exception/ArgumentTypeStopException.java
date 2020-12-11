@@ -5,31 +5,29 @@ import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.interfaces.ISymbol;
 
-/**
- */
+/** */
 public class ArgumentTypeStopException extends LimitException {
 
-	private static final long serialVersionUID = -464391877949488192L;
-	
-	final String fMessage;
+  private static final long serialVersionUID = -464391877949488192L;
 
-	public ArgumentTypeStopException(String message) {
-		fMessage = message;
-	}
+  final String fMessage;
 
-	@Override
-	public String getMessage() {
-		return fMessage;
-	}
+  public ArgumentTypeStopException(String message) {
+    fMessage = message;
+  }
 
-	public static void throwNIL() {
-		// unexpected NIL expression encountered.
-		String str = IOFunctions.getMessage("nil", F.CEmptyList, EvalEngine.get());
-		throw new ArgumentTypeStopException(str);
-	}
+  @Override
+  public String getMessage() {
+    return fMessage;
+  }
 
-	public String getMessage(ISymbol symbol) {
-		return symbol.toString() + ": " + fMessage;
-	}
+  public static void throwNIL() {
+    // unexpected NIL expression encountered.
+    String str = IOFunctions.getMessage("nil", F.CEmptyList, EvalEngine.get());
+    throw new ArgumentTypeStopException(str);
+  }
 
+  public String getMessage(ISymbol symbol) {
+    return symbol.toString() + ": " + fMessage;
+  }
 }

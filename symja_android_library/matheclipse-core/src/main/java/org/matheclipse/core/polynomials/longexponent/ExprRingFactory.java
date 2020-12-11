@@ -10,131 +10,124 @@ import org.matheclipse.core.interfaces.IExpr;
 
 import edu.jas.structure.RingFactory;
 
-/**
- * Singleton ring factory class.
- * 
- */
+/** Singleton ring factory class. */
 public class ExprRingFactory implements RingFactory<IExpr> {
-	/**
-	 * 
-	 */
-	private static final long serialVersionUID = -6146597389011632638L;
+  /** */
+  private static final long serialVersionUID = -6146597389011632638L;
 
-	public final static ExprRingFactory CONST = new ExprRingFactory();
+  public static final ExprRingFactory CONST = new ExprRingFactory();
 
-	private ExprRingFactory() {
-		super();
-	}
+  private ExprRingFactory() {
+    super();
+  }
 
-	/**
-	 * Query if this ring is a field.
-	 * 
-	 * @return true.
-	 */
-	@Override
-	public boolean isField() {
-		return false;
-	}
+  /**
+   * Query if this ring is a field.
+   *
+   * @return true.
+   */
+  @Override
+  public boolean isField() {
+    return false;
+  }
 
-	/**
-	 * Characteristic of this ring.
-	 * 
-	 * @return characteristic of this ring.
-	 */
-	@Override
-	public java.math.BigInteger characteristic() {
-		return java.math.BigInteger.ZERO;
-	}
+  /**
+   * Characteristic of this ring.
+   *
+   * @return characteristic of this ring.
+   */
+  @Override
+  public java.math.BigInteger characteristic() {
+    return java.math.BigInteger.ZERO;
+  }
 
-	/**
-	 * Get a BigRational element from a long.
-	 * 
-	 * @param a
-	 *            long.
-	 * @return BigRational from a.
-	 */
-	@Override
-	public IExpr fromInteger(long a) {
-		return F.ZZ(a);
-	}
+  /**
+   * Get a BigRational element from a long.
+   *
+   * @param a long.
+   * @return BigRational from a.
+   */
+  @Override
+  public IExpr fromInteger(long a) {
+    return F.ZZ(a);
+  }
 
-	/**
-	 * Get a BigRational element from a long.
-	 * 
-	 * @param a
-	 *            long.
-	 * @return BigRational from a.
-	 */
-	public static IExpr valueOf(long a) {
-		return F.ZZ(a);
-	}
+  /**
+   * Get a BigRational element from a long.
+   *
+   * @param a long.
+   * @return BigRational from a.
+   */
+  public static IExpr valueOf(long a) {
+    return F.ZZ(a);
+  }
 
-	@Override
-	public IExpr getZERO() {
-		return F.C0;
-	}
+  @Override
+  public IExpr getZERO() {
+    return F.C0;
+  }
 
-	@Override
-	public IExpr copy(IExpr c) {
-		return null;
-	}
+  @Override
+  public IExpr copy(IExpr c) {
+    return null;
+  }
 
-	@Override
-	public IExpr fromInteger(BigInteger a) {
-		return F.ZZ(a);
-	}
+  @Override
+  public IExpr fromInteger(BigInteger a) {
+    return F.ZZ(a);
+  }
 
-	@Override
-	public List<IExpr> generators() {
-		// TODO Auto-generated method stub
-		return null;
-	}
+  @Override
+  public List<IExpr> generators() {
+    // TODO Auto-generated method stub
+    return null;
+  }
 
-	@Override
-	public boolean isFinite() {
-		return false;
-	}
+  @Override
+  public boolean isFinite() {
+    return false;
+  }
 
-	@Override
-	public IExpr parse(String s) {
-		return F.Null;
-	}
+  @Override
+  public IExpr parse(String s) {
+    return F.Null;
+  }
 
-	@Override
-	public IExpr parse(Reader r) {
-		// TODO Auto-generated method stub
-		return null;
-	}
+  @Override
+  public IExpr parse(Reader r) {
+    // TODO Auto-generated method stub
+    return null;
+  }
 
-	@Override
-	public IExpr random(int n) {
-		// TODO Auto-generated method stub
-		return null;
-	}
+  @Override
+  public IExpr random(int n) {
+    // TODO Auto-generated method stub
+    return null;
+  }
 
-	@Override
-	public IExpr random(int n, Random random) {
-		// TODO Auto-generated method stub
-		return null;
-	}
+  @Override
+  public IExpr random(int n, Random random) {
+    // TODO Auto-generated method stub
+    return null;
+  }
 
-	@Override
-	public String toScript() {
-		return "ExprRingFactory";
-	}
+  @Override
+  public String toScript() {
+    return "ExprRingFactory";
+  }
 
-	@Override
-	public IExpr getONE() {
-		return F.C1;
-	}
+  @Override
+  public IExpr getONE() {
+    return F.C1;
+  }
 
-	@Override
-	public boolean isAssociative() {
-		return true;
-	}
+  @Override
+  public boolean isAssociative() {
+    return true;
+  }
 
-	@Override
-	public boolean isCommutative() {
-		return true;
-	}
+  @Override
+  public boolean isCommutative() {
+    return true;
+  }
 }

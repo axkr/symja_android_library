@@ -18,37 +18,37 @@ import org.matheclipse.core.interfaces.ISymbol;
 
 public class NFourierTransform extends AbstractFunctionEvaluator {
 
-	public NFourierTransform() {
-	}
+  public NFourierTransform() {}
 
-	@Override
-	public IExpr evaluate(final IAST ast, EvalEngine engine) {
-		IExpr expr = ast.arg1();
-		IExpr symbol = Validate.checkSymbolType(ast, 2, engine);
-		if (symbol.isPresent()) {
-			// IExpr omega = ast.arg3();
-			if (ast.size() > 4) {
-				// final OptionArgs options = new OptionArgs(ast.topHead(), ast, 4, engine);
-				// IExpr optionFourierParameters = options.getOption(F.FourierParameters);
-				// if (optionFourierParameters.isList()) {
-				// // analyze the parameters, if they are correct
-				// }
-			}
+  @Override
+  public IExpr evaluate(final IAST ast, EvalEngine engine) {
+    IExpr expr = ast.arg1();
+    IExpr symbol = Validate.checkSymbolType(ast, 2, engine);
+    if (symbol.isPresent()) {
+      // IExpr omega = ast.arg3();
+      if (ast.size() > 4) {
+        // final OptionArgs options = new OptionArgs(ast.topHead(), ast, 4, engine);
+        // IExpr optionFourierParameters = options.getOption(F.FourierParameters);
+        // if (optionFourierParameters.isList()) {
+        // // analyze the parameters, if they are correct
+        // }
+      }
 
-			UnivariateFunction f = new UnaryNumerical(expr, (ISymbol)symbol, engine);
-			FastFourierTransformer fft = new FastFourierTransformer(DftNormalization.STANDARD);
-			org.hipparchus.complex.Complex[] result = fft.transform(f, -1.0, 1.0, 8, TransformType.FORWARD);
-			return Object2Expr.convertComplex(true, result);
-		}
-		return F.NIL;
-	}
+      UnivariateFunction f = new UnaryNumerical(expr, (ISymbol) symbol, engine);
+      FastFourierTransformer fft = new FastFourierTransformer(DftNormalization.STANDARD);
+      org.hipparchus.complex.Complex[] result =
+          fft.transform(f, -1.0, 1.0, 8, TransformType.FORWARD);
+      return Object2Expr.convertComplex(true, result);
+    }
+    return F.NIL;
+  }
 
-	public int[] expectedArgSize(IAST ast) {
-		return IOFunctions.ARGS_3_4;
-	}
+  public int[] expectedArgSize(IAST ast) {
+    return IOFunctions.ARGS_3_4;
+  }
 
-	@Override
-	public void setUp(final ISymbol newSymbol) {
-		newSymbol.setAttributes(ISymbol.HOLDFIRST);
-	}
+  @Override
+  public void setUp(final ISymbol newSymbol) {
+    newSymbol.setAttributes(ISymbol.HOLDFIRST);
+  }
 }

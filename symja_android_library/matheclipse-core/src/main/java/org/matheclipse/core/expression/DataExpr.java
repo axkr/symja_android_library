@@ -16,143 +16,138 @@ import org.matheclipse.core.visit.IVisitorLong;
 
 /**
  * A concrete IDataExpr implementation. Container for a header and data object.
- * 
+ *
  * @see org.matheclipse.core.interfaces.IDataExpr
  */
 public abstract class DataExpr<T> implements IDataExpr<T> {
 
-	private static final long serialVersionUID = 4987827851920443376L;
+  private static final long serialVersionUID = 4987827851920443376L;
 
-	protected IBuiltInSymbol fHead;
+  protected IBuiltInSymbol fHead;
 
-	protected T fData;
+  protected T fData;
 
-	protected DataExpr(final IBuiltInSymbol head, final T data) {
-		fHead = head;
-		fData = data;
-	}
+  protected DataExpr(final IBuiltInSymbol head, final T data) {
+    fHead = head;
+    fData = data;
+  }
 
-	/** {@inheritDoc} */
-	@Override
-	public IExpr accept(IVisitor visitor) {
-		return visitor.visit(this);
-	}
+  /** {@inheritDoc} */
+  @Override
+  public IExpr accept(IVisitor visitor) {
+    return visitor.visit(this);
+  }
 
-	/**
-	 * {@inheritDoc}
-	 */
-	@Override
-	public boolean accept(IVisitorBoolean visitor) {
-		return false;
-	}
+  /** {@inheritDoc} */
+  @Override
+  public boolean accept(IVisitorBoolean visitor) {
+    return false;
+  }
 
-	/**
-	 * {@inheritDoc}
-	 */
-	@Override
-	public int accept(IVisitorInt visitor) {
-		return 0;
-	}
+  /** {@inheritDoc} */
+  @Override
+  public int accept(IVisitorInt visitor) {
+    return 0;
+  }
 
-	/** {@inheritDoc} */
-	@Override
-	public long accept(IVisitorLong visitor) {
-		return 0L;
-	}
+  /** {@inheritDoc} */
+  @Override
+  public long accept(IVisitorLong visitor) {
+    return 0L;
+  }
 
-	@Override
-	public boolean equals(final Object obj) {
-		if (this == obj) {
-			return true;
-		}
-		if (obj instanceof DataExpr) {
-			return fData.equals(((DataExpr) obj).fData);
-		}
-		return false;
-	}
+  @Override
+  public boolean equals(final Object obj) {
+    if (this == obj) {
+      return true;
+    }
+    if (obj instanceof DataExpr) {
+      return fData.equals(((DataExpr) obj).fData);
+    }
+    return false;
+  }
 
-	@Override
-	public int compareTo(IExpr expr) {
-		if (expr instanceof DataExpr) {
-			DataExpr<T> de = ((DataExpr<T>) expr);
-			if (fData != null) {
-				if (de.fData != null) {
-					if (fData.getClass() == de.fData.getClass()) {
-						if (fData instanceof Comparable) {
-							return ((Comparable<T>) fData).compareTo(de.fData);
-						}
-					}
-					final int x = hierarchy();
-					final int y = expr.hierarchy();
-					return (x < y) ? -1 : ((x == y) ? 0 : 1);
-				}
-				return 1;
-			}
-			return -1;
-		}
-		if (expr.isAST()) {
-//			if (expr.isDirectedInfinity()) {
-				return -1 * expr.compareTo(this);
-//			}
-		}
-		final int x = hierarchy();
-		final int y = expr.hierarchy();
-		return (x < y) ? -1 : ((x == y) ? 0 : 1);
-	}
+  @Override
+  public int compareTo(IExpr expr) {
+    if (expr instanceof DataExpr) {
+      DataExpr<T> de = ((DataExpr<T>) expr);
+      if (fData != null) {
+        if (de.fData != null) {
+          if (fData.getClass() == de.fData.getClass()) {
+            if (fData instanceof Comparable) {
+              return ((Comparable<T>) fData).compareTo(de.fData);
+            }
+          }
+          final int x = hierarchy();
+          final int y = expr.hierarchy();
+          return (x < y) ? -1 : ((x == y) ? 0 : 1);
+        }
+        return 1;
+      }
+      return -1;
+    }
+    if (expr.isAST()) {
+      //			if (expr.isDirectedInfinity()) {
+      return -1 * expr.compareTo(this);
+      //			}
+    }
+    final int x = hierarchy();
+    final int y = expr.hierarchy();
+    return (x < y) ? -1 : ((x == y) ? 0 : 1);
+  }
 
-	@Override
-	public IExpr evaluate(EvalEngine engine) {
-		return F.NIL;
-	}
+  @Override
+  public IExpr evaluate(EvalEngine engine) {
+    return F.NIL;
+  }
 
-	/** {@inheritDoc} */
-	@Override
-	public String fullFormString() {
-		if (fHead.equals(F.Graph)) {
-			if (fData instanceof AbstractBaseGraph) {
-				AbstractBaseGraph<IExpr, ExprEdge> g = (AbstractBaseGraph<IExpr, ExprEdge>) fData;
-				return GraphFunctions.graphToIExpr(g).fullFormString();
-			}
-		}
-		return fHead + "(" + fData.toString() + ")";
-	}
+  /** {@inheritDoc} */
+  @Override
+  public String fullFormString() {
+    if (fHead.equals(F.Graph)) {
+      if (fData instanceof AbstractBaseGraph) {
+        AbstractBaseGraph<IExpr, ExprEdge> g = (AbstractBaseGraph<IExpr, ExprEdge>) fData;
+        return GraphFunctions.graphToIExpr(g).fullFormString();
+      }
+    }
+    return fHead + "(" + fData.toString() + ")";
+  }
 
-	@Override
-	public int hashCode() {
-		return (fData == null) ? 181 : 181 + fData.hashCode();
-	}
+  @Override
+  public int hashCode() {
+    return (fData == null) ? 181 : 181 + fData.hashCode();
+  }
 
-	@Override
-	public ISymbol head() {
-		return fHead;
-	}
+  @Override
+  public ISymbol head() {
+    return fHead;
+  }
 
-	@Override
-	public int hierarchy() {
-		return DATAID;
-	}
+  @Override
+  public int hierarchy() {
+    return DATAID;
+  }
 
-	@Override
-	public T toData() {
-		return fData;
-	}
+  @Override
+  public T toData() {
+    return fData;
+  }
 
-	@Override
-	public String toString() {
-		if (fHead.equals(F.Graph)) {
-			if (fData instanceof AbstractBaseGraph) {
-				AbstractBaseGraph<IExpr, ?> g = (AbstractBaseGraph<IExpr, ?>) fData;
-				if (g.getType().isWeighted()) {
-					return GraphFunctions.weightedGraphToIExpr((AbstractBaseGraph<IExpr, ExprWeightedEdge>) g)
-							.toString();
-				}
-				return GraphFunctions.graphToIExpr((AbstractBaseGraph<IExpr, ExprEdge>) g).toString();
-			}
-		}
-		if (fHead.equals(F.ByteArray)) {
-			return fHead.toString() + "[" + ((byte[]) fData).length + " Bytes]";
-		}
-		return fHead + "[" + fData.toString() + "]";
-	}
-
+  @Override
+  public String toString() {
+    if (fHead.equals(F.Graph)) {
+      if (fData instanceof AbstractBaseGraph) {
+        AbstractBaseGraph<IExpr, ?> g = (AbstractBaseGraph<IExpr, ?>) fData;
+        if (g.getType().isWeighted()) {
+          return GraphFunctions.weightedGraphToIExpr((AbstractBaseGraph<IExpr, ExprWeightedEdge>) g)
+              .toString();
+        }
+        return GraphFunctions.graphToIExpr((AbstractBaseGraph<IExpr, ExprEdge>) g).toString();
+      }
+    }
+    if (fHead.equals(F.ByteArray)) {
+      return fHead.toString() + "[" + ((byte[]) fData).length + " Bytes]";
+    }
+    return fHead + "[" + fData.toString() + "]";
+  }
 }

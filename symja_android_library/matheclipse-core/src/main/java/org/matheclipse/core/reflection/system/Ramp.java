@@ -11,33 +11,34 @@ import org.matheclipse.core.interfaces.ISymbol;
 
 public class Ramp extends AbstractEvaluator {
 
-	public Ramp() {
-	}
+  public Ramp() {}
 
-	@Override
-	public IExpr evaluate(final IAST ast, EvalEngine engine) {
-		IExpr expr = ast.arg1();
+  @Override
+  public IExpr evaluate(final IAST ast, EvalEngine engine) {
+    IExpr expr = ast.arg1();
 
-		if (expr.isPositiveResult() || //
-				expr.isInfinity()) {
-			return expr;
-		}
-		if (expr.isNegativeResult() || //
-				expr.isNegativeInfinity() || //
-				expr.isZero()) {
-			return F.C0;
-		}
-		return F.NIL;
+    if (expr.isPositiveResult()
+        || //
+        expr.isInfinity()) {
+      return expr;
+    }
+    if (expr.isNegativeResult()
+        || //
+        expr.isNegativeInfinity()
+        || //
+        expr.isZero()) {
+      return F.C0;
+    }
+    return F.NIL;
+  }
 
-	}
+  @Override
+  public int[] expectedArgSize(IAST ast) {
+    return IOFunctions.ARGS_1_1;
+  }
 
-	@Override
-	public int[] expectedArgSize(IAST ast) {
-		return IOFunctions.ARGS_1_1;
-	}
-
-	@Override
-	public void setUp(ISymbol newSymbol) {
-		newSymbol.setAttributes(ISymbol.LISTABLE | ISymbol.NUMERICFUNCTION);
-	}
+  @Override
+  public void setUp(ISymbol newSymbol) {
+    newSymbol.setAttributes(ISymbol.LISTABLE | ISymbol.NUMERICFUNCTION);
+  }
 }

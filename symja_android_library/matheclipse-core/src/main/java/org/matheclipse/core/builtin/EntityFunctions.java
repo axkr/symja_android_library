@@ -10,38 +10,34 @@ import org.matheclipse.core.reflection.system.rules.RGBColorRules;
 
 public class EntityFunctions {
 
-	private static class Initializer {
+  private static class Initializer {
 
-		private static void init() {
-			S.RGBColor.setEvaluator(new RGBColor());
-		}
-	}
+    private static void init() {
+      S.RGBColor.setEvaluator(new RGBColor());
+    }
+  }
 
-	private static class RGBColor extends AbstractFunctionEvaluator implements RGBColorRules {
+  private static class RGBColor extends AbstractFunctionEvaluator implements RGBColorRules {
 
-		@Override
-		public IExpr evaluate(final IAST ast, EvalEngine engine) {
-			return F.NIL;
-		}
+    @Override
+    public IExpr evaluate(final IAST ast, EvalEngine engine) {
+      return F.NIL;
+    }
 
-		@Override
-		public IAST getRuleAST() {
-			return RULES;
-		}
+    @Override
+    public IAST getRuleAST() {
+      return RULES;
+    }
 
-		@Override
-		public int[] expectedArgSize(IAST ast) {
-			return IOFunctions.ARGS_3_4;
-		}
+    @Override
+    public int[] expectedArgSize(IAST ast) {
+      return IOFunctions.ARGS_3_4;
+    }
+  }
 
-	}
+  public static void initialize() {
+    Initializer.init();
+  }
 
-	public static void initialize() {
-		Initializer.init();
-	}
-
-	private EntityFunctions() {
-
-	}
-
+  private EntityFunctions() {}
 }

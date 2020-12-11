@@ -9,18 +9,16 @@ import org.matheclipse.core.interfaces.ISymbol;
 
 public class NonCommutativeMultiply extends AbstractFunctionEvaluator {
 
-	public NonCommutativeMultiply() {
-	}
+  public NonCommutativeMultiply() {}
 
-	@Override
-	public IExpr evaluate(final IAST lst, EvalEngine engine) {
-		return F.NIL;
-	}
+  @Override
+  public IExpr evaluate(final IAST lst, EvalEngine engine) {
+    return F.NIL;
+  }
 
-	@Override
-	public void setUp(final ISymbol newSymbol) {
-		// don't set OneIdentity attribute!
-		newSymbol.setAttributes(ISymbol.FLAT | ISymbol.LISTABLE);
-	}
-
+  @Override
+  public void setUp(final ISymbol newSymbol) {
+    // don't set OneIdentity attribute!
+    newSymbol.setAttributes(ISymbol.FLAT | ISymbol.LISTABLE);
+  }
 }

@@ -10,33 +10,34 @@ import org.matheclipse.core.interfaces.IASTAppendable;
 import org.matheclipse.core.interfaces.IExpr;
 
 public class PatternMatcherList extends PatternMatcherAndEvaluator {
-	IASTAppendable fReplaceList;
+  IASTAppendable fReplaceList;
 
-	public IASTAppendable getReplaceList() {
-		return fReplaceList;
-	}
+  public IASTAppendable getReplaceList() {
+    return fReplaceList;
+  }
 
-	public PatternMatcherList(final int setSymbol, final IExpr leftHandSide, final IExpr rightHandSide) {
-		super(setSymbol, leftHandSide, rightHandSide, true, 0);
-		fReplaceList = F.ListAlloc();
-	}
+  public PatternMatcherList(
+      final int setSymbol, final IExpr leftHandSide, final IExpr rightHandSide) {
+    super(setSymbol, leftHandSide, rightHandSide, true, 0);
+    fReplaceList = F.ListAlloc();
+  }
 
-	protected IExpr replaceSubExpressionOrderlessFlat(final IAST lhsPatternAST, final IAST lhsEvalAST,
-			final IExpr rhsExpr, EvalEngine engine) {
-		return F.NIL;
-	}
-	
-	@Override
-	public boolean checkRHSCondition(EvalEngine engine) {
-		IPatternMap patternMap = createPatternMap();
+  protected IExpr replaceSubExpressionOrderlessFlat(
+      final IAST lhsPatternAST, final IAST lhsEvalAST, final IExpr rhsExpr, EvalEngine engine) {
+    return F.NIL;
+  }
 
-		if (patternMap.isAllPatternsAssigned()) {
-			IExpr result = patternMap.substituteSymbols(fRightHandSide);
-			if (result.isPresent()) {
-				fReplaceList.append(result);
-				return false;
-			}
-		}
-		return super.checkRHSCondition(engine);
-	}
+  @Override
+  public boolean checkRHSCondition(EvalEngine engine) {
+    IPatternMap patternMap = createPatternMap();
+
+    if (patternMap.isAllPatternsAssigned()) {
+      IExpr result = patternMap.substituteSymbols(fRightHandSide);
+      if (result.isPresent()) {
+        fReplaceList.append(result);
+        return false;
+      }
+    }
+    return super.checkRHSCondition(engine);
+  }
 }

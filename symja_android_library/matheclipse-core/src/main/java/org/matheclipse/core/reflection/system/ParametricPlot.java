@@ -9,34 +9,28 @@ import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.interfaces.ISymbol;
 
-/**
- * Plots x/y functions
- *
- */
+/** Plots x/y functions */
 public class ParametricPlot extends AbstractEvaluator {
-	/**
-	 * Constructor for the singleton
-	 */
-	public final static ParametricPlot CONST = new ParametricPlot();
+  /** Constructor for the singleton */
+  public static final ParametricPlot CONST = new ParametricPlot();
 
-	// private final static int N = 100;
+  // private final static int N = 100;
 
-	public ParametricPlot() {
-	}
+  public ParametricPlot() {}
 
-	@Override
-	public IExpr evaluate(final IAST ast, EvalEngine engine) {
-		if (Config.USE_MANIPULATE_JS) {
-			IExpr temp = F.Manipulate.of(engine, ast);
-			if (temp.headID() == ID.JSFormData) {
-				return temp;
-			}
-		}
-		return F.NIL;
-	}
+  @Override
+  public IExpr evaluate(final IAST ast, EvalEngine engine) {
+    if (Config.USE_MANIPULATE_JS) {
+      IExpr temp = F.Manipulate.of(engine, ast);
+      if (temp.headID() == ID.JSFormData) {
+        return temp;
+      }
+    }
+    return F.NIL;
+  }
 
-	@Override
-	public void setUp(final ISymbol newSymbol) {
-		newSymbol.setAttributes(ISymbol.HOLDALL);
-	}
+  @Override
+  public void setUp(final ISymbol newSymbol) {
+    newSymbol.setAttributes(ISymbol.HOLDALL);
+  }
 }

@@ -15,20 +15,23 @@ public class UnitConvert {
 
   private final UnitSystem unitSystem;
 
-  /** @param unitSystem
-   * @throws Exception if given {@link UnitSystem} is null */
+  /**
+   * @param unitSystem
+   * @throws Exception if given {@link UnitSystem} is null
+   */
   public UnitConvert(UnitSystem unitSystem) {
     this.unitSystem = Objects.requireNonNull(unitSystem);
   }
 
-  /** Example:
-   * <code>
+  /**
+   * Example: <code>
    * UnitConvert.SI().to(Unit.of("N")).apply(Quantity.of(981, "cm*kg*s^-2"))
    * == Quantity.fromString("981/100[N]")
    * </code>
-   * 
+   *
    * @param unit
-   * @return operator that maps a quantity to the quantity of given unit */
+   * @return operator that maps a quantity to the quantity of given unit
+   */
   public UnaryOperator<IExpr> to(IUnit unit) {
     IExpr base = unitSystem.apply(IQuantity.of(F.C1, unit));
     return scalar -> IQuantity.of(unitSystem.apply(scalar).divide(base), unit);

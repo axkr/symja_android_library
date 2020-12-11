@@ -12,33 +12,38 @@ import javax.imageio.ImageIO;
 
 import org.matheclipse.core.interfaces.IAST;
 
-
-
 /** functionality used in {@link Import} and {@link ResourceData} */
 /* package */ enum ImportHelper {
   ;
 
-  /** @param inputStream
-   * @return lines in given inputStream as stream of strings */
+  /**
+   * @param inputStream
+   * @return lines in given inputStream as stream of strings
+   */
   static Stream<String> lines(InputStream inputStream) {
     return new BufferedReader(new InputStreamReader(inputStream)).lines();
   }
 
-  /** @param inputStream
+  /**
+   * @param inputStream
    * @return
    * @throws IOException
    * @throws ClassNotFoundException
-   * @throws DataFormatException */
-//  static <T> T object(InputStream inputStream) throws IOException, ClassNotFoundException, DataFormatException {
-//    int length = inputStream.available();
-//    byte[] bytes = new byte[length];
-//    inputStream.read(bytes);
-//    return ObjectFormat.parse(bytes);
-//  }
+   * @throws DataFormatException
+   */
+  //  static <T> T object(InputStream inputStream) throws IOException, ClassNotFoundException,
+  // DataFormatException {
+  //    int length = inputStream.available();
+  //    byte[] bytes = new byte[length];
+  //    inputStream.read(bytes);
+  //    return ObjectFormat.parse(bytes);
+  //  }
 
-  /** @param inputStream
+  /**
+   * @param inputStream
    * @return
-   * @throws IOException */
+   * @throws IOException
+   */
   static Properties properties(InputStream inputStream) throws IOException {
     Properties properties = new Properties();
     properties.load(inputStream);

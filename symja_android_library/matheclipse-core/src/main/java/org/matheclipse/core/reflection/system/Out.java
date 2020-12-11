@@ -13,32 +13,32 @@ import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.interfaces.IInteger;
 
 /**
- * Get the specified history line from the <code>EvalEngine's</code> history list. <br />
+ * Get the specified history line from the <code>EvalEngine's</code> history list. <br>
  * <b>Note</b> that the history maybe disabled in the <code>EvalEngine</code>.
  */
 public class Out extends AbstractFunctionEvaluator {
 
-	@Override
-	public IExpr evaluate(final IAST ast, EvalEngine engine) {
-		if (ast.isAST0()) {
-			final LastCalculationsHistory list = engine.getOutList();
-			if (list != null) {
-				return list.entry(-1);
-			}
-			return F.NIL;
-		}
+  @Override
+  public IExpr evaluate(final IAST ast, EvalEngine engine) {
+    if (ast.isAST0()) {
+      final LastCalculationsHistory list = engine.getOutList();
+      if (list != null) {
+        return list.entry(-1);
+      }
+      return F.NIL;
+    }
 
-		final int position = ast.arg1().toIntDefault(0);
-		if (position != 0) {
-			final LastCalculationsHistory list = engine.getOutList();
-			if (list != null) {
-				return list.entry(position);
-			}
-		}
-		return F.NIL;
-	}
+    final int position = ast.arg1().toIntDefault(0);
+    if (position != 0) {
+      final LastCalculationsHistory list = engine.getOutList();
+      if (list != null) {
+        return list.entry(position);
+      }
+    }
+    return F.NIL;
+  }
 
-	public int[] expectedArgSize(IAST ast) {
-		return IOFunctions.ARGS_0_1;
-	}
+  public int[] expectedArgSize(IAST ast) {
+    return IOFunctions.ARGS_0_1;
+  }
 }

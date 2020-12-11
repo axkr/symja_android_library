@@ -5,43 +5,38 @@ import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.interfaces.IExpr;
 
-/**
- * Exception which will be thrown, if the iteration limit of the evaluation loop was exceeded.
- */
+/** Exception which will be thrown, if the iteration limit of the evaluation loop was exceeded. */
 public class IterationLimitExceeded extends LimitException {
 
-	/**
-	 * 
-	 */
-	private static final long serialVersionUID = -5953619629034039117L;
+  /** */
+  private static final long serialVersionUID = -5953619629034039117L;
 
-	/**
-	 * 
-	 */
-	final long fLimit;
-	final IExpr fExpr;
+  /** */
+  final long fLimit;
 
-	public IterationLimitExceeded(final long limit) {
-		this(limit, F.NIL);
-	}
+  final IExpr fExpr;
 
-	public IterationLimitExceeded(final long limit, IExpr expr) {
-		fLimit = limit;
-		fExpr = expr;
-	}
+  public IterationLimitExceeded(final long limit) {
+    this(limit, F.NIL);
+  }
 
-	@Override
-	public String getMessage() {
-		// Iteration limit of `1` exceeded for `2`.
-		return IOFunctions.getMessage("itlim", F.List(F.ZZ(fLimit), fExpr), EvalEngine.get());
-	}
+  public IterationLimitExceeded(final long limit, IExpr expr) {
+    fLimit = limit;
+    fExpr = expr;
+  }
 
-	public static void throwIt(long iterationCounter, final IExpr expr) {
-		// HeapContext.enter();
-		// try {
-		throw new IterationLimitExceeded(iterationCounter, expr);// expr.copy());
-		// } finally {
-		// HeapContext.exit();
-		// }
-	}
+  @Override
+  public String getMessage() {
+    // Iteration limit of `1` exceeded for `2`.
+    return IOFunctions.getMessage("itlim", F.List(F.ZZ(fLimit), fExpr), EvalEngine.get());
+  }
+
+  public static void throwIt(long iterationCounter, final IExpr expr) {
+    // HeapContext.enter();
+    // try {
+    throw new IterationLimitExceeded(iterationCounter, expr); // expr.copy());
+    // } finally {
+    // HeapContext.exit();
+    // }
+  }
 }

@@ -13,24 +13,22 @@ import org.matheclipse.core.interfaces.ISymbol;
 
 public class InterpolatingFunction extends AbstractEvaluator {
 
-	public InterpolatingFunction() {
-	}
+  public InterpolatingFunction() {}
 
-	@Override
-	public IExpr evaluate(final IAST ast, EvalEngine engine) {
-		IExpr head = ast.head();
-		if (head instanceof InterpolatingFunctionExpr) {
-			try {
-				return ((InterpolatingFunctionExpr<IExpr>) head).evaluate(ast, engine);
-			} catch (RuntimeException rex) {
-				engine.printMessage(ast.topHead(), rex);
-			}
-			return F.NIL;
-		}
-		return F.NIL;
-	}
+  @Override
+  public IExpr evaluate(final IAST ast, EvalEngine engine) {
+    IExpr head = ast.head();
+    if (head instanceof InterpolatingFunctionExpr) {
+      try {
+        return ((InterpolatingFunctionExpr<IExpr>) head).evaluate(ast, engine);
+      } catch (RuntimeException rex) {
+        engine.printMessage(ast.topHead(), rex);
+      }
+      return F.NIL;
+    }
+    return F.NIL;
+  }
 
-	@Override
-	public void setUp(final ISymbol newSymbol) {
-	}
+  @Override
+  public void setUp(final ISymbol newSymbol) {}
 }
