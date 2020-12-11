@@ -146,12 +146,12 @@ public class FunctionsTestCase extends AbstractTestCase {
       // check("ds=SemanticImport(\"./data/test.csv\");", //
       // "");
 
-      check(
-          "ds=SemanticImport(\"./data/tornadoes_1950-2014.csv\");", //
-          "");
-      check(
-          "ExportString(ds, \"csv\");", //
-          "");
+      //      check(
+      //          "ds=SemanticImport(\"./data/tornadoes_1950-2014.csv\");", //
+      //          "");
+      //      check(
+      //          "ExportString(ds, \"csv\");", //
+      //          "");
     }
   }
 
