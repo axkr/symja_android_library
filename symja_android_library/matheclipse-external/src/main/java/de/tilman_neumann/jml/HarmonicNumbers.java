@@ -31,231 +31,242 @@ import de.tilman_neumann.util.ConfigUtil;
 
 /**
  * Computation of harmonic and "hyper-harmonic" numbers.
- * 
+ *
  * @author Tilman Neumann
  */
 public class HarmonicNumbers {
-	private static final Logger LOG = Logger.getLogger(HarmonicNumbers.class);
+  private static final Logger LOG = Logger.getLogger(HarmonicNumbers.class);
 
-	private HarmonicNumbers() {
-		// static class
-	}
-	
-	/**
-	 * Simple series computation of harmonic numbers H_{n} = 1/1 + 1/2 + 1/3 + ... + 1/n.
-	 * @param n
-	 * @return harmonic number H_{n}
-	 */
-	public static BigRational harmonic(int n) {
-		if (n<1) throw new IllegalArgumentException("argument n must be positive, but is " + n);
-		BigRational result = new BigRational(I_0);
-		for (int i=1; i<=n; i++) {
-			result = result.add(new BigRational(I_1, BigInteger.valueOf(i)));
-			// Every now and then we should reduce the fraction...
-			// each 100th time is much better than each 10th, which was better than never...
-			if (i % 200 == 0) {
-				result = result.normalize();
-			}
-		}
-		return result.normalize();
-	}
-	
-	/**
-	 * Simple series computation of harmonic numbers H_{n} = 1/1 + 1/2 + 1/3 + ... + 1/n.
-	 * @param n
-	 * @return harmonic number H_{n}
-	 */
-	public static double harmonic_dbl(int n) {
-		if (n<1) throw new IllegalArgumentException("argument n must be positive, but is " + n);
-		double result = 0;
-		for (int i=1; i<=n; i++) {
-			result += 1.0/i;
-		}
-		return result;
-	}
+  private HarmonicNumbers() {
+    // static class
+  }
 
-	/**
-	 * Upper bound for the harmonic number H_n.
-	 * From http://fredrik-j.blogspot.com/2009/02/how-not-to-compute-harmonic-numbers.html:
-	 * H_n = ln(n) + gamma + 1/2*n^-1 - 1/12*n^-2 + 1/120*n^-4 + O(n^-6)
-	 * 
-	 * @param n
-	 * @param scale number of exact after-komma digits
-	 * @return upper bound for the harmonic number H_n
-	 */
-	public static BigDecimal harmonic_upperBound(BigInteger n, Scale scale) {
-		BigDecimal result = EulerConstant.gamma(scale);
-		result.setScale(scale.digits(), RoundingMode.CEILING);
-		result = result.add(Ln.ln(new BigDecimal(n), scale));
-		BigInteger den = n.shiftLeft(1); // 2n
-		result = result.add(F_1.divide(new BigDecimal(den), scale.digits(), RoundingMode.HALF_EVEN));
-		den = den.multiply(I_6).multiply(n); // 12 n^2
-		result = result.subtract(F_1.divide(new BigDecimal(den), scale.digits(), RoundingMode.HALF_EVEN));
-		den = den.multiply(I_10).multiply(n.multiply(n)); // 120 n^4
-		result = result.add(F_1.divide(new BigDecimal(den), scale.digits(), RoundingMode.HALF_EVEN));
-		return result;
-	}
+  /**
+   * Simple series computation of harmonic numbers H_{n} = 1/1 + 1/2 + 1/3 + ... + 1/n.
+   *
+   * @param n
+   * @return harmonic number H_{n}
+   */
+  public static BigRational harmonic(int n) {
+    if (n < 1) throw new IllegalArgumentException("argument n must be positive, but is " + n);
+    BigRational result = new BigRational(I_0);
+    for (int i = 1; i <= n; i++) {
+      result = result.add(new BigRational(I_1, BigInteger.valueOf(i)));
+      // Every now and then we should reduce the fraction...
+      // each 100th time is much better than each 10th, which was better than never...
+      if (i % 200 == 0) {
+        result = result.normalize();
+      }
+    }
+    return result.normalize();
+  }
 
-	/**
-	 * Lower bound for the harmonic number H_n.
-	 * From https://math.stackexchange.com/questions/306371/simple-proof-of-showing-the-harmonic-number-h-n-theta-log-n:
-	 * H_n = ln(n) + gamma + 1/2*n^-1 - 1/12*n^-2 + 1/120*n^-4 - 1/252*n^-6 + O(n^-8)
-	 * 
-	 * @param n
-	 * @param scale number of exact after-komma digits
-	 * @return lower bound for the harmonic number H_n
-	 */
-	// TODO larger series expansion using Bernoulli numbers, see https://en.wikipedia.org/wiki/Harmonic_number#Calculation
-	public static BigDecimal harmonic_lowerBound(BigInteger n, Scale scale) {
-		BigDecimal result = EulerConstant.gamma(scale);
-		result.setScale(scale.digits(), RoundingMode.FLOOR);
-		result = result.add(Ln.ln(new BigDecimal(n), scale));
-		BigInteger den = n.shiftLeft(1); // 2n
-		result = result.add(F_1.divide(new BigDecimal(den), scale.digits(), RoundingMode.HALF_EVEN));
-		den = den.multiply(I_6).multiply(n); // 12 n^2
-		result = result.subtract(F_1.divide(new BigDecimal(den), scale.digits(), RoundingMode.HALF_EVEN));
-		BigInteger nSquare = n.multiply(n);
-		BigInteger tmp = den.multiply(nSquare); // 12 n^4
-		den = tmp.multiply(I_10); // 120 n^4
-		result = result.add(F_1.divide(new BigDecimal(den), scale.digits(), RoundingMode.HALF_EVEN));
-		den = tmp.multiply(I_21).multiply(nSquare); // 252 n^6
-		result = result.subtract(F_1.divide(new BigDecimal(den), scale.digits(), RoundingMode.HALF_EVEN));
-		return result;
-	}
+  /**
+   * Simple series computation of harmonic numbers H_{n} = 1/1 + 1/2 + 1/3 + ... + 1/n.
+   *
+   * @param n
+   * @return harmonic number H_{n}
+   */
+  public static double harmonic_dbl(int n) {
+    if (n < 1) throw new IllegalArgumentException("argument n must be positive, but is " + n);
+    double result = 0;
+    for (int i = 1; i <= n; i++) {
+      result += 1.0 / i;
+    }
+    return result;
+  }
 
-	/**
-	 * Closed-form evaluation of "hyper-harmonic numbers" defined by<br>
-	 * H_{n,1} = sum_{i=1..n} 1/i<br>
-	 * H_{n,r} = sum_{i=1..n} H_{i,r-1}; r>1
-	 * @param n principal argument
-	 * @param r order
-	 * @return hyper-harmonic number H_{n,r}
-	 */
-	public static BigRational hyperharmonic_closedForm(int n, int r) {
-		if (n<1) throw new IllegalArgumentException("argument n must be positive, but is " + n);
-		if (r>1) return (harmonic(n+r-1).subtract(harmonic(r-1))).multiply(Binomial.binomial((n+r-1), (r-1)));
-		if (r<1) throw new IllegalArgumentException("argument r must be positive, but is " + r);
-		return harmonic(n);
-	}
+  /**
+   * Upper bound for the harmonic number H_n. From
+   * http://fredrik-j.blogspot.com/2009/02/how-not-to-compute-harmonic-numbers.html: H_n = ln(n) +
+   * gamma + 1/2*n^-1 - 1/12*n^-2 + 1/120*n^-4 + O(n^-6)
+   *
+   * @param n
+   * @param scale number of exact after-komma digits
+   * @return upper bound for the harmonic number H_n
+   */
+  public static BigDecimal harmonic_upperBound(BigInteger n, Scale scale) {
+    BigDecimal result = EulerConstant.gamma(scale);
+    result.setScale(scale.digits(), RoundingMode.CEILING);
+    result = result.add(Ln.ln(new BigDecimal(n), scale));
+    BigInteger den = n.shiftLeft(1); // 2n
+    result = result.add(F_1.divide(new BigDecimal(den), scale.digits(), RoundingMode.HALF_EVEN));
+    den = den.multiply(I_6).multiply(n); // 12 n^2
+    result =
+        result.subtract(F_1.divide(new BigDecimal(den), scale.digits(), RoundingMode.HALF_EVEN));
+    den = den.multiply(I_10).multiply(n.multiply(n)); // 120 n^4
+    result = result.add(F_1.divide(new BigDecimal(den), scale.digits(), RoundingMode.HALF_EVEN));
+    return result;
+  }
 
-	/**
-	 * Recurrent computation of "hyper-harmonic numbers" defined by<br>
-	 * H_{n,1} = sum_{i=1..n} 1/i<br>
-	 * H_{n,r} = sum_{i=1..n} H_{i,r-1}; r>1
-	 * @param n principal argument
-	 * @param r order
-	 * @return hyper-harmonic number H_{n,r}
-	 */
-	public static BigRational hyperharmonic_recurrent(int n, int r) {
-		if (n<1) throw new IllegalArgumentException("argument n must be positive, but is " + n);
-		if (r<1) throw new IllegalArgumentException("argument r must be positive, but is " + r);
-		return _hyperharmonic_recurrent(n, r);
-	}
-	
-	private static BigRational _hyperharmonic_recurrent(int n, int r) {
-		// arguments are already checked
-		if (r>1) {
-			BigRational ret = new BigRational(I_0, I_1);
-			for (int i=1; i<=n; i++) {
-				ret = ret.add(_hyperharmonic_recurrent(i,r-1));
-			}
-			return ret.normalize();
-		}
-		// r==1
-		return harmonic(n);
-	}
+  /**
+   * Lower bound for the harmonic number H_n. From
+   * https://math.stackexchange.com/questions/306371/simple-proof-of-showing-the-harmonic-number-h-n-theta-log-n:
+   * H_n = ln(n) + gamma + 1/2*n^-1 - 1/12*n^-2 + 1/120*n^-4 - 1/252*n^-6 + O(n^-8)
+   *
+   * @param n
+   * @param scale number of exact after-komma digits
+   * @return lower bound for the harmonic number H_n
+   */
+  // TODO larger series expansion using Bernoulli numbers, see
+  // https://en.wikipedia.org/wiki/Harmonic_number#Calculation
+  public static BigDecimal harmonic_lowerBound(BigInteger n, Scale scale) {
+    BigDecimal result = EulerConstant.gamma(scale);
+    result.setScale(scale.digits(), RoundingMode.FLOOR);
+    result = result.add(Ln.ln(new BigDecimal(n), scale));
+    BigInteger den = n.shiftLeft(1); // 2n
+    result = result.add(F_1.divide(new BigDecimal(den), scale.digits(), RoundingMode.HALF_EVEN));
+    den = den.multiply(I_6).multiply(n); // 12 n^2
+    result =
+        result.subtract(F_1.divide(new BigDecimal(den), scale.digits(), RoundingMode.HALF_EVEN));
+    BigInteger nSquare = n.multiply(n);
+    BigInteger tmp = den.multiply(nSquare); // 12 n^4
+    den = tmp.multiply(I_10); // 120 n^4
+    result = result.add(F_1.divide(new BigDecimal(den), scale.digits(), RoundingMode.HALF_EVEN));
+    den = tmp.multiply(I_21).multiply(nSquare); // 252 n^6
+    result =
+        result.subtract(F_1.divide(new BigDecimal(den), scale.digits(), RoundingMode.HALF_EVEN));
+    return result;
+  }
 
-	/**
-	 * Harmonic power series H_{n,r} = sum_{i=1..n} 1/i^r.
-	 * Can also be understood as a finite version of Riemanns zeta function.
-	 * @param n
-	 * @param r
-	 * @return
-	 */
-	public static BigRational harmonicPower(int n, int r) {
-		if (n<1) throw new IllegalArgumentException("argument n must be positive, but is " + n);
-		if (r>1) {
-			BigRational ret = new BigRational(I_0, I_1);
-			for (int i=1; i<=n; i++) {
-				ret = ret.add(new BigRational(I_1, BigInteger.valueOf(i).pow(r)));
-			}
-			return ret.normalize();
-		}
-		if (r<1) throw new IllegalArgumentException("argument r must be positive, but is " + r);
-		// r==1
-		return harmonic(n);
-	}
-	
-	private static void print(BigRational[] arr) {
-		StringBuffer bu = new StringBuffer();
-		for (int i=0;i<arr.length; i++) {
-			if (i>0) bu.append(" ");
-			bu.append(arr[i]);
-		}
-		LOG.info(bu.toString());
-	}
+  /**
+   * Closed-form evaluation of "hyper-harmonic numbers" defined by<br>
+   * H_{n,1} = sum_{i=1..n} 1/i<br>
+   * H_{n,r} = sum_{i=1..n} H_{i,r-1}; r>1
+   *
+   * @param n principal argument
+   * @param r order
+   * @return hyper-harmonic number H_{n,r}
+   */
+  public static BigRational hyperharmonic_closedForm(int n, int r) {
+    if (n < 1) throw new IllegalArgumentException("argument n must be positive, but is " + n);
+    if (r > 1)
+      return (harmonic(n + r - 1).subtract(harmonic(r - 1)))
+          .multiply(Binomial.binomial((n + r - 1), (r - 1)));
+    if (r < 1) throw new IllegalArgumentException("argument r must be positive, but is " + r);
+    return harmonic(n);
+  }
 
-	private static void print(BigRational[][] arr) {
-		for (int i=0;i<arr.length; i++) {
-			print(arr[i]);
-		}
-	}
-	
-	@SuppressWarnings("unused")
-	private static void computeAndPrintHyperharmonic_recurrent(int nMax, int rMax) {
-    	BigRational[][] results = new BigRational[nMax][rMax];
-    	for (int n=1; n<=nMax; n++) {
-    		results[n-1] = new BigRational[rMax];
-        	for (int r=1; r<=rMax; r++) {
-        		results[n-1][r-1] = hyperharmonic_recurrent(n,r);
-        	}
-    	}
-    	print(results);
-	}
-	
-	private static void computeAndPrintHyperharmonic_closedForm(int nMax, int rMax) {
-    	BigRational[][] results = new BigRational[nMax][rMax];
-    	for (int n=1; n<=nMax; n++) {
-    		results[n-1] = new BigRational[rMax];
-        	for (int r=1; r<=rMax; r++) {
-        		results[n-1][r-1] = hyperharmonic_closedForm(n,r);
-        	}
-    	}
-    	print(results);
-	}
+  /**
+   * Recurrent computation of "hyper-harmonic numbers" defined by<br>
+   * H_{n,1} = sum_{i=1..n} 1/i<br>
+   * H_{n,r} = sum_{i=1..n} H_{i,r-1}; r>1
+   *
+   * @param n principal argument
+   * @param r order
+   * @return hyper-harmonic number H_{n,r}
+   */
+  public static BigRational hyperharmonic_recurrent(int n, int r) {
+    if (n < 1) throw new IllegalArgumentException("argument n must be positive, but is " + n);
+    if (r < 1) throw new IllegalArgumentException("argument r must be positive, but is " + r);
+    return _hyperharmonic_recurrent(n, r);
+  }
 
-	private static void computeAndPrintHarmonicPowers(int nMax, int rMax) {
-    	BigRational[][] results = new BigRational[nMax][rMax];
-    	for (int n=1; n<=nMax; n++) {
-    		results[n-1] = new BigRational[rMax];
-        	for (int r=1; r<=rMax; r++) {
-        		results[n-1][r-1] = harmonicPower(n,r);
-        	}
-    	}
-    	print(results);
-	}
+  private static BigRational _hyperharmonic_recurrent(int n, int r) {
+    // arguments are already checked
+    if (r > 1) {
+      BigRational ret = new BigRational(I_0, I_1);
+      for (int i = 1; i <= n; i++) {
+        ret = ret.add(_hyperharmonic_recurrent(i, r - 1));
+      }
+      return ret.normalize();
+    }
+    // r==1
+    return harmonic(n);
+  }
 
-	private static void printHarmonic() {
-		int n = 2;
-		for (int i=0; i<15; i++) {
-			BigDecimal h = harmonic(n).toBigDecimal(Scale.valueOf(20));
-			LOG.info("H(" + n + ") = " + h);
-			n *= 2;
-		}
-	}
-	
-	public static void main(String[] args) {
-    	ConfigUtil.initProject();
-    	
-    	printHarmonic();
+  /**
+   * Harmonic power series H_{n,r} = sum_{i=1..n} 1/i^r. Can also be understood as a finite version
+   * of Riemanns zeta function.
+   *
+   * @param n
+   * @param r
+   * @return
+   */
+  public static BigRational harmonicPower(int n, int r) {
+    if (n < 1) throw new IllegalArgumentException("argument n must be positive, but is " + n);
+    if (r > 1) {
+      BigRational ret = new BigRational(I_0, I_1);
+      for (int i = 1; i <= n; i++) {
+        ret = ret.add(new BigRational(I_1, BigInteger.valueOf(i).pow(r)));
+      }
+      return ret.normalize();
+    }
+    if (r < 1) throw new IllegalArgumentException("argument r must be positive, but is " + r);
+    // r==1
+    return harmonic(n);
+  }
 
-    	int nMax = 10;
-    	int rMax = 10;
-    	LOG.info("nMax = " + nMax + ", rMax = " + rMax);
-    	//computeAndPrintHyperharmonic_recurrent(nMax, rMax);
-    	computeAndPrintHyperharmonic_closedForm(nMax, rMax);
-    	// result: both forms are equal!
-    	computeAndPrintHarmonicPowers(nMax, rMax);
-    	// different, but very interesting !!!
-	}
+  private static void print(BigRational[] arr) {
+    StringBuffer bu = new StringBuffer();
+    for (int i = 0; i < arr.length; i++) {
+      if (i > 0) bu.append(" ");
+      bu.append(arr[i]);
+    }
+    LOG.info(bu.toString());
+  }
+
+  private static void print(BigRational[][] arr) {
+    for (int i = 0; i < arr.length; i++) {
+      print(arr[i]);
+    }
+  }
+
+  @SuppressWarnings("unused")
+  private static void computeAndPrintHyperharmonic_recurrent(int nMax, int rMax) {
+    BigRational[][] results = new BigRational[nMax][rMax];
+    for (int n = 1; n <= nMax; n++) {
+      results[n - 1] = new BigRational[rMax];
+      for (int r = 1; r <= rMax; r++) {
+        results[n - 1][r - 1] = hyperharmonic_recurrent(n, r);
+      }
+    }
+    print(results);
+  }
+
+  private static void computeAndPrintHyperharmonic_closedForm(int nMax, int rMax) {
+    BigRational[][] results = new BigRational[nMax][rMax];
+    for (int n = 1; n <= nMax; n++) {
+      results[n - 1] = new BigRational[rMax];
+      for (int r = 1; r <= rMax; r++) {
+        results[n - 1][r - 1] = hyperharmonic_closedForm(n, r);
+      }
+    }
+    print(results);
+  }
+
+  private static void computeAndPrintHarmonicPowers(int nMax, int rMax) {
+    BigRational[][] results = new BigRational[nMax][rMax];
+    for (int n = 1; n <= nMax; n++) {
+      results[n - 1] = new BigRational[rMax];
+      for (int r = 1; r <= rMax; r++) {
+        results[n - 1][r - 1] = harmonicPower(n, r);
+      }
+    }
+    print(results);
+  }
+
+  private static void printHarmonic() {
+    int n = 2;
+    for (int i = 0; i < 15; i++) {
+      BigDecimal h = harmonic(n).toBigDecimal(Scale.valueOf(20));
+      LOG.info("H(" + n + ") = " + h);
+      n *= 2;
+    }
+  }
+
+  public static void main(String[] args) {
+    ConfigUtil.initProject();
+
+    printHarmonic();
+
+    int nMax = 10;
+    int rMax = 10;
+    LOG.info("nMax = " + nMax + ", rMax = " + rMax);
+    // computeAndPrintHyperharmonic_recurrent(nMax, rMax);
+    computeAndPrintHyperharmonic_closedForm(nMax, rMax);
+    // result: both forms are equal!
+    computeAndPrintHarmonicPowers(nMax, rMax);
+    // different, but very interesting !!!
+  }
 }

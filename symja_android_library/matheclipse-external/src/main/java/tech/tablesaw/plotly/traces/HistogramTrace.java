@@ -6,7 +6,7 @@ import java.io.IOException;
 import java.io.StringWriter;
 import java.io.UncheckedIOException;
 import java.io.Writer;
-import java.util.Map; 
+import java.util.Map;
 import tech.tablesaw.plotly.Utils;
 import tech.tablesaw.plotly.components.Marker;
 
@@ -65,14 +65,14 @@ public class HistogramTrace extends AbstractTrace {
     return new HistogramBuilder(values);
   }
 
-//  public static HistogramBuilder builder(NumericColumn<? extends Number> values) {
-//    return new HistogramBuilder(values.asDoubleArray());
-//  }
+  //  public static HistogramBuilder builder(NumericColumn<? extends Number> values) {
+  //    return new HistogramBuilder(values.asDoubleArray());
+  //  }
 
-//  public static HistogramBuilder builder(
-//      Column<?> xValues, NumericColumn<? extends Number> values) {
-//    return new HistogramBuilder(xValues.asObjectArray(), values.asDoubleArray());
-//  }
+  //  public static HistogramBuilder builder(
+  //      Column<?> xValues, NumericColumn<? extends Number> values) {
+  //    return new HistogramBuilder(xValues.asObjectArray(), values.asDoubleArray());
+  //  }
 
   private HistogramTrace(HistogramBuilder builder) {
     super(builder);
@@ -266,10 +266,10 @@ public class HistogramTrace extends AbstractTrace {
       return this;
     }
 
-//    public HistogramBuilder y(NumericColumn<? extends Number> values) {
-//      this.y = values.asObjectArray();
-//      return this;
-//    }
+    //    public HistogramBuilder y(NumericColumn<? extends Number> values) {
+    //      this.y = values.asObjectArray();
+    //      return this;
+    //    }
 
     public HistogramTrace build() {
       return new HistogramTrace(this);

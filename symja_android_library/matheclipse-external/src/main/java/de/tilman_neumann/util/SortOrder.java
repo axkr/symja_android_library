@@ -15,20 +15,22 @@ package de.tilman_neumann.util;
 
 /**
  * Sort orders.
- * 
+ *
  * @author Tilman Neumann
  */
 public enum SortOrder {
-    /** Ascending order. */  ASCENDING(1),
-    /** Descending order. */ DESCENDING(-1);
-    
-    private int multiplier;
-    
-    private SortOrder(int multiplier) {
-    	this.multiplier = multiplier;
-    }
-    
-    public int getMultiplier() {
-    	return multiplier;
-    }
+  /** Ascending order. */
+  ASCENDING(1),
+  /** Descending order. */
+  DESCENDING(-1);
+
+  private int multiplier;
+
+  private SortOrder(int multiplier) {
+    this.multiplier = multiplier;
+  }
+
+  public int getMultiplier() {
+    return multiplier;
+  }
 }

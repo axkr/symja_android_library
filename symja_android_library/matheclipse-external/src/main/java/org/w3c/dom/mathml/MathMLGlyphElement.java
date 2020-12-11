@@ -1,6 +1,6 @@
 /*
  * Copyright 2007 - 2007 JEuclid, http://jeuclid.sf.net
- * 
+ *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
@@ -21,58 +21,50 @@ package org.w3c.dom.mathml;
  * elements, please correct the stylesheet instead.
  */
 
-/**
- * This interface supports the mglyph element .
- * 
- * 
- */
+/** This interface supports the mglyph element . */
 public interface MathMLGlyphElement extends MathMLPresentationElement {
-    /**
-     * A string giving an alternate name for the character. Represents the
-     * mglyph's alt attribute.
-     * 
-     * @return value of the alt attribute.
-     */
-    String getAlt();
+  /**
+   * A string giving an alternate name for the character. Represents the mglyph's alt attribute.
+   *
+   * @return value of the alt attribute.
+   */
+  String getAlt();
 
-    /**
-     * setter for the alt attribute.
-     * 
-     * @param alt
-     *            new value for alt.
-     * @see #getAlt()
-     */
-    void setAlt(String alt);
+  /**
+   * setter for the alt attribute.
+   *
+   * @param alt new value for alt.
+   * @see #getAlt()
+   */
+  void setAlt(String alt);
 
-    /**
-     * A string representing the font family.
-     * 
-     * @return value of the fontfamily attribute.
-     */
-    String getFontfamily();
+  /**
+   * A string representing the font family.
+   *
+   * @return value of the fontfamily attribute.
+   */
+  String getFontfamily();
 
-    /**
-     * setter for the fontfamily attribute.
-     * 
-     * @param fontfamily
-     *            new value for fontfamily.
-     * @see #getFontfamily()
-     */
-    void setFontfamily(String fontfamily);
+  /**
+   * setter for the fontfamily attribute.
+   *
+   * @param fontfamily new value for fontfamily.
+   * @see #getFontfamily()
+   */
+  void setFontfamily(String fontfamily);
 
-    /**
-     * An unsigned integer giving the glyph's position within the font.
-     * 
-     * @return value of the index attribute.
-     */
-    int getIndex();
+  /**
+   * An unsigned integer giving the glyph's position within the font.
+   *
+   * @return value of the index attribute.
+   */
+  int getIndex();
 
-    /**
-     * setter for the index attribute.
-     * 
-     * @param index
-     *            new value for index.
-     * @see #getIndex()
-     */
-    void setIndex(int index);
+  /**
+   * setter for the index attribute.
+   *
+   * @param index new value for index.
+   * @see #getIndex()
+   */
+  void setIndex(int index);
 };

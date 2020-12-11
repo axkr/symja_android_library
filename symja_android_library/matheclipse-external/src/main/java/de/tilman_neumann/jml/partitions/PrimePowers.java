@@ -17,13 +17,15 @@ import java.math.BigInteger;
 
 /**
  * Product of primes implemented as an multipartite integer.
+ *
  * @author Tilman Neumann
  */
 public interface PrimePowers extends Mpi {
-	/**
-	 * Return the prime base of index i.
-	 * @param index
-	 * @return
-	 */
-	BigInteger getPrime(int index);
+  /**
+   * Return the prime base of index i.
+   *
+   * @param index
+   * @return
+   */
+  BigInteger getPrime(int index);
 }

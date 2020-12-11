@@ -7,12 +7,12 @@ package uk.ac.ed.ph.snuggletex.semantics;
 
 /**
  * Base for math-specific semantic interpretations.
- * 
- * @author  David McKain
+ *
+ * @author David McKain
  * @version $Revision:179 $
  */
 public interface MathInterpretation extends Interpretation {
-    
-    /* Marker interface only */
+
+  /* Marker interface only */
 
 }

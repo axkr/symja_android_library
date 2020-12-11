@@ -7,25 +7,25 @@
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
-* You may obtain a copy of the License at
-*
-*     http://www.apache.org/licenses/LICENSE-2.0
-*
-* Unless required by applicable law or agreed to in writing, software
-* distributed under the License is distributed on an "AS IS" BASIS,
-* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-* See the License for the specific language governing permissions and
-* limitations under the License.
-*
-*/
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ *
+ */
 package de.lab4inf.math;
 
 import java.util.Set;
 
 /**
- * Service interface to resolve function implementations by name.
- * Services like this can be injected via the ServiceLoader or more
- * easier by the L4MLoader utility class like:
+ * Service interface to resolve function implementations by name. Services like this can be injected
+ * via the ServiceLoader or more easier by the L4MLoader utility class like:
+ *
  * <pre>
  * FunctionResolver service = L4MLoader.load(FunctionResolver.class);
  * Function fct = service.byName("sin");
@@ -39,20 +39,19 @@ import java.util.Set;
  */
 @Service
 public interface FunctionResolver {
-    /**
-     * Return the names of all service known functions as set.
-     *
-     * @return Set with function names
-     */
-    Set<String> functionNames();
+  /**
+   * Return the names of all service known functions as set.
+   *
+   * @return Set with function names
+   */
+  Set<String> functionNames();
 
-    /**
-     * Find a function implementation by name,
-     *
-     * @param fctName the spoken name for the function
-     * @return Function implementation
-     * @throws NoSuchMethodException if fctName is unknown
-     */
-    Function byName(String fctName) throws NoSuchMethodException;
+  /**
+   * Find a function implementation by name,
+   *
+   * @param fctName the spoken name for the function
+   * @return Function implementation
+   * @throws NoSuchMethodException if fctName is unknown
+   */
+  Function byName(String fctName) throws NoSuchMethodException;
 }
- 

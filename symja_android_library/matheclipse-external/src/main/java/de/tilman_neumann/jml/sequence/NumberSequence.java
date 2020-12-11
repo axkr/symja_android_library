@@ -15,23 +15,17 @@ package de.tilman_neumann.jml.sequence;
 
 /**
  * Interface for number sequences of type T.
+ *
  * @author Tilman Neumann
- * 
  * @param <T> sequence element type
  */
 public interface NumberSequence<T> {
-	/**
-	 * @return the name of this sequence generator
-	 */
-	String getName();
-	
-	/** 
-	 * Reset sequence so that it starts again with its first element. 
-	 */
-	void reset();
+  /** @return the name of this sequence generator */
+  String getName();
 
-	/**
-	 * @return the next integer
-	 */
-	T next();
+  /** Reset sequence so that it starts again with its first element. */
+  void reset();
+
+  /** @return the next integer */
+  T next();
 }

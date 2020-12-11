@@ -1,6 +1,6 @@
 /*
  * Copyright 2007 - 2007 JEuclid, http://jeuclid.sf.net
- * 
+ *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
@@ -22,13 +22,9 @@ package org.w3c.dom.mathml;
  */
 
 /**
- * This interface represents MathML Presentation elements that may contain
- * arbitrarily many child elements. Elements directly supported by this
- * interface include mrow, mphantom and merror. All attributes and methods are
- * derived from the base MathMLPresentationElement and MathMLContainer
+ * This interface represents MathML Presentation elements that may contain arbitrarily many child
+ * elements. Elements directly supported by this interface include mrow, mphantom and merror. All
+ * attributes and methods are derived from the base MathMLPresentationElement and MathMLContainer
  * interfaces.
- * 
  */
-public interface MathMLPresentationContainer extends
-        MathMLPresentationElement, MathMLContainer {
-};
+public interface MathMLPresentationContainer extends MathMLPresentationElement, MathMLContainer {};

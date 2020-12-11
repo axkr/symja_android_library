@@ -1,6 +1,6 @@
 /*
  * Copyright 2007 - 2007 JEuclid, http://jeuclid.sf.net
- * 
+ *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
@@ -22,48 +22,41 @@ package org.w3c.dom.mathml;
  */
 
 /**
- * The piece element represents one of a sequence of cases used in the
- * piecewise definition of a function. It contains two child elements, each
- * represented by a MathMLContentElement. The first child determines the
- * subset of the domain affected, normally by giving a condition to be
- * satisfied. The second gives the value of the function over the indicated
- * subset of its domain.
- * 
+ * The piece element represents one of a sequence of cases used in the piecewise definition of a
+ * function. It contains two child elements, each represented by a MathMLContentElement. The first
+ * child determines the subset of the domain affected, normally by giving a condition to be
+ * satisfied. The second gives the value of the function over the indicated subset of its domain.
  */
 public interface MathMLCaseElement extends MathMLContentElement {
-    /**
-     * Accesses the MathMLContentElement representing the condition to be
-     * satisfied in order for this branch of the piecewise definition to be
-     * used.
-     * 
-     * @return value of the caseCondition attribute.
-     */
-    MathMLContentElement getCaseCondition();
+  /**
+   * Accesses the MathMLContentElement representing the condition to be satisfied in order for this
+   * branch of the piecewise definition to be used.
+   *
+   * @return value of the caseCondition attribute.
+   */
+  MathMLContentElement getCaseCondition();
 
-    /**
-     * setter for the caseCondition attribute.
-     * 
-     * @param caseCondition
-     *            new value for caseCondition.
-     * @see #getCaseCondition()
-     */
-    void setCaseCondition(MathMLContentElement caseCondition);
+  /**
+   * setter for the caseCondition attribute.
+   *
+   * @param caseCondition new value for caseCondition.
+   * @see #getCaseCondition()
+   */
+  void setCaseCondition(MathMLContentElement caseCondition);
 
-    /**
-     * Accesses the MathMLContentElement representing the value to be taken by
-     * the piecewise function when the condition described by caseCondition is
-     * true.
-     * 
-     * @return value of the caseValue attribute.
-     */
-    MathMLContentElement getCaseValue();
+  /**
+   * Accesses the MathMLContentElement representing the value to be taken by the piecewise function
+   * when the condition described by caseCondition is true.
+   *
+   * @return value of the caseValue attribute.
+   */
+  MathMLContentElement getCaseValue();
 
-    /**
-     * setter for the caseValue attribute.
-     * 
-     * @param caseValue
-     *            new value for caseValue.
-     * @see #getCaseValue()
-     */
-    void setCaseValue(MathMLContentElement caseValue);
+  /**
+   * setter for the caseValue attribute.
+   *
+   * @param caseValue new value for caseValue.
+   * @see #getCaseValue()
+   */
+  void setCaseValue(MathMLContentElement caseValue);
 };

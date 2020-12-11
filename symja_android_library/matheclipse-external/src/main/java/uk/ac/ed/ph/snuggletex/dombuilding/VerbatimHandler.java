@@ -18,47 +18,47 @@ import org.w3c.dom.Element;
 /**
  * Handles the <tt>verbatim</tt> environment and <tt>\\verb<//tt> command.
  *
- * @author  David McKain
+ * @author David McKain
  * @version $Revision:179 $
  */
 public final class VerbatimHandler implements CommandHandler, EnvironmentHandler {
-    
-    /** Set to handled 'starred' variants, e.g <tt>\\verb*</tt> */
-    private final boolean starred;
-    
-    public VerbatimHandler(final boolean starred) {
-        this.starred = starred;
+
+  /** Set to handled 'starred' variants, e.g <tt>\\verb*</tt> */
+  private final boolean starred;
+
+  public VerbatimHandler(final boolean starred) {
+    this.starred = starred;
+  }
+
+  public void handleCommand(DOMBuilder builder, Element parentElement, CommandToken token) {
+    ArgumentContainerToken argumentToken = token.getArguments()[0];
+    String verbContent = argumentToken.getSlice().extract().toString();
+    if (starred) {
+      verbContent = verbContent.replace(' ', '\u2423'); /* Convert spaces to open boxes */
+    } else {
+      verbContent = verbContent.replace(' ', '\u00a0'); /* Convert spaces to non-breaking spaces */
     }
-    
-    public void handleCommand(DOMBuilder builder, Element parentElement, CommandToken token) {
-        ArgumentContainerToken argumentToken = token.getArguments()[0];
-        String verbContent = argumentToken.getSlice().extract().toString();
-        if (starred) {
-            verbContent = verbContent.replace(' ', '\u2423'); /* Convert spaces to open boxes */
-        }
-        else {
-            verbContent = verbContent.replace(' ', '\u00a0'); /* Convert spaces to non-breaking spaces */
-        }
-        Element verbatimElement = builder.appendXHTMLElement(parentElement, "tt");
-        verbatimElement.setAttribute("class", "verb");
-        builder.appendTextNode(verbatimElement, verbContent, false);
-        appendEmbeddedErrors(builder, parentElement, argumentToken);
+    Element verbatimElement = builder.appendXHTMLElement(parentElement, "tt");
+    verbatimElement.setAttribute("class", "verb");
+    builder.appendTextNode(verbatimElement, verbContent, false);
+    appendEmbeddedErrors(builder, parentElement, argumentToken);
+  }
+
+  public void handleEnvironment(DOMBuilder builder, Element parentElement, EnvironmentToken token) {
+    String verbatimContent = token.getContent().getSlice().extract().toString();
+    Element verbatimElement = builder.appendXHTMLElement(parentElement, "pre");
+    verbatimElement.setAttribute("class", "verbatim");
+    builder.appendTextNode(verbatimElement, verbatimContent, false);
+    appendEmbeddedErrors(builder, parentElement, token.getContent());
+  }
+
+  private void appendEmbeddedErrors(
+      DOMBuilder builder, Element parentElement, ArgumentContainerToken content) {
+    /* Extract any errors within the argument token */
+    for (FlowToken flowToken : content.getContents()) {
+      if (flowToken.getType() == TokenType.ERROR) {
+        builder.appendErrorElement(parentElement, (ErrorToken) flowToken);
+      }
     }
-    
-    public void handleEnvironment(DOMBuilder builder, Element parentElement, EnvironmentToken token) {
-        String verbatimContent = token.getContent().getSlice().extract().toString();
-        Element verbatimElement = builder.appendXHTMLElement(parentElement, "pre");
-        verbatimElement.setAttribute("class", "verbatim");
-        builder.appendTextNode(verbatimElement, verbatimContent, false);
-        appendEmbeddedErrors(builder, parentElement, token.getContent());
-    }
-    
-    private void appendEmbeddedErrors(DOMBuilder builder, Element parentElement, ArgumentContainerToken content) {
-        /* Extract any errors within the argument token */
-        for (FlowToken flowToken : content.getContents()) {
-            if (flowToken.getType()==TokenType.ERROR) {
-                builder.appendErrorElement(parentElement, (ErrorToken) flowToken);
-            }
-        }
-    }
+  }
 }

@@ -8,11 +8,11 @@ package uk.ac.ed.ph.snuggletex.definitions;
 /**
  * Base interface for LaTeX commands, i.e. things entered in the form <tt>\\command</tt>.
  *
- * @author  David McKain
+ * @author David McKain
  * @version $Revision:179 $
  */
 public interface Command extends CommandOrEnvironment {
-    
-    /* (This interface currently adds nothing to the superinterface) */
-    
+
+  /* (This interface currently adds nothing to the superinterface) */
+
 }

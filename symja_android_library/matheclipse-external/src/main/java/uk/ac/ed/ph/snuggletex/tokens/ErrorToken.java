@@ -12,19 +12,19 @@ import uk.ac.ed.ph.snuggletex.definitions.TextFlowContext;
 /**
  * Special token encapsulating a client error in parsing.
  *
- * @author  David McKain
+ * @author David McKain
  * @version $Revision:179 $
  */
 public final class ErrorToken extends FlowToken {
-    
-    private final InputError error;
 
-    public ErrorToken(final InputError error, final LaTeXMode latexMode) {
-        super(error.getSlice(), TokenType.ERROR, latexMode, TextFlowContext.START_NEW_XHTML_BLOCK);
-        this.error = error;
-    }
+  private final InputError error;
 
-    public InputError getError() {
-        return error;
-    }
+  public ErrorToken(final InputError error, final LaTeXMode latexMode) {
+    super(error.getSlice(), TokenType.ERROR, latexMode, TextFlowContext.START_NEW_XHTML_BLOCK);
+    this.error = error;
+  }
+
+  public InputError getError() {
+    return error;
+  }
 }

@@ -10,24 +10,25 @@ import uk.ac.ed.ph.snuggletex.internal.FrozenSlice;
 /**
  * Represents a user-defined {@link Command}, i.e. one defined in the client data using
  * <tt>\\newcommand</tt>.
- * 
+ *
  * @see UserDefinedEnvironment
- * 
- * @author  David McKain
+ * @author David McKain
  * @version $Revision: 525 $
  */
-public final class UserDefinedCommand extends UserDefinedCommandOrEnvironment
-        implements Command {
- 
-    private final FrozenSlice definitionSlice;
-    
-    public UserDefinedCommand(final String texName, final String optionalArgument,
-            final int argumentCount, final FrozenSlice definitionSlice) {
-        super(texName, optionalArgument, argumentCount);
-        this.definitionSlice = definitionSlice;
-    }
+public final class UserDefinedCommand extends UserDefinedCommandOrEnvironment implements Command {
 
-    public FrozenSlice getDefinitionSlice() {
-        return definitionSlice;
-    }
+  private final FrozenSlice definitionSlice;
+
+  public UserDefinedCommand(
+      final String texName,
+      final String optionalArgument,
+      final int argumentCount,
+      final FrozenSlice definitionSlice) {
+    super(texName, optionalArgument, argumentCount);
+    this.definitionSlice = definitionSlice;
+  }
+
+  public FrozenSlice getDefinitionSlice() {
+    return definitionSlice;
+  }
 }

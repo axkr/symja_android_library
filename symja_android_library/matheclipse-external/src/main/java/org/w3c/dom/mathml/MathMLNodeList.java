@@ -1,6 +1,6 @@
 /*
  * Copyright 2007 - 2007 JEuclid, http://jeuclid.sf.net
- * 
+ *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
@@ -24,15 +24,10 @@ import org.w3c.dom.NodeList;
  */
 
 /**
- * This interface is provided as a specialization of the NodeList interface.
- * The child Nodes of this NodeList must be MathMLElements or Text nodes. Note
- * that MathMLNodeLists are frequently used in the DOM as values of readonly
- * attributes, encapsulating, for instance, various collections of child
- * elements. When used in this way, these objects are always understood to be
- * live, in the sense that changes to the document are immediately reflected
- * in them.
- * 
- * 
+ * This interface is provided as a specialization of the NodeList interface. The child Nodes of this
+ * NodeList must be MathMLElements or Text nodes. Note that MathMLNodeLists are frequently used in
+ * the DOM as values of readonly attributes, encapsulating, for instance, various collections of
+ * child elements. When used in this way, these objects are always understood to be live, in the
+ * sense that changes to the document are immediately reflected in them.
  */
-public interface MathMLNodeList extends NodeList {
-};
+public interface MathMLNodeList extends NodeList {};

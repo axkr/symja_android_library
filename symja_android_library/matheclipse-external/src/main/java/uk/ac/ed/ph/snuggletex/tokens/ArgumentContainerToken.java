@@ -18,70 +18,77 @@ import uk.ac.ed.ph.snuggletex.definitions.LaTeXMode;
 import uk.ac.ed.ph.snuggletex.internal.FrozenSlice;
 
 /**
- * This token is used as a container for the arguments specified for a particular
- * {@link Command} or {@link Environment}, along with regions of input that have
- * been enclosed in braces.
- * 
- * @author  David McKain
+ * This token is used as a container for the arguments specified for a particular {@link Command} or
+ * {@link Environment}, along with regions of input that have been enclosed in braces.
+ *
+ * @author David McKain
  * @version $Revision: 525 $
  */
 @ObjectDumperOptions(DumpMode.DEEP)
 public final class ArgumentContainerToken extends Token implements Iterable<FlowToken> {
-    
-    public static final ArgumentContainerToken[] EMPTY_ARRAY = new ArgumentContainerToken[0];
-    
-    private final List<FlowToken> contents;
-    
-    public ArgumentContainerToken(final FrozenSlice slice, final LaTeXMode latexMode,
-            final List<FlowToken> contents) {
-        super(slice, TokenType.ARGUMENT_CONTAINER, latexMode);
-        this.contents = contents;
+
+  public static final ArgumentContainerToken[] EMPTY_ARRAY = new ArgumentContainerToken[0];
+
+  private final List<FlowToken> contents;
+
+  public ArgumentContainerToken(
+      final FrozenSlice slice, final LaTeXMode latexMode, final List<FlowToken> contents) {
+    super(slice, TokenType.ARGUMENT_CONTAINER, latexMode);
+    this.contents = contents;
+  }
+
+  public static ArgumentContainerToken createFromSingleToken(
+      final LaTeXMode latexMode, final FlowToken content) {
+    List<FlowToken> contentList = new ArrayList<FlowToken>();
+    contentList.add(content);
+    return new ArgumentContainerToken(content.getSlice(), latexMode, contentList);
+  }
+
+  public static ArgumentContainerToken createFromContiguousTokens(
+      final Token parentToken,
+      final LaTeXMode latexMode,
+      final List<? extends FlowToken> contents) {
+    return createFromContiguousTokens(parentToken, latexMode, contents, 0, contents.size());
+  }
+
+  public static ArgumentContainerToken createFromContiguousTokens(
+      final Token parentToken,
+      final LaTeXMode latexMode,
+      final List<? extends FlowToken> contents,
+      final int startIndex,
+      final int endIndex) {
+    if (startIndex > endIndex) {
+      throw new IllegalArgumentException("startIndex must be <= endIndex");
     }
-    
-    public static ArgumentContainerToken createFromSingleToken(final LaTeXMode latexMode,
-            final FlowToken content) {
-        List<FlowToken> contentList = new ArrayList<FlowToken>();
-        contentList.add(content);
-        return new ArgumentContainerToken(content.getSlice(), latexMode, contentList);
+    ArgumentContainerToken result;
+    if (contents.size() > 0) {
+      FrozenSlice startSlice = contents.get(startIndex).getSlice();
+      FrozenSlice endSlice = contents.get(endIndex - 1).getSlice();
+      FrozenSlice resultSlice = startSlice.rightOuterSpan(endSlice);
+
+      result =
+          new ArgumentContainerToken(
+              resultSlice,
+              latexMode,
+              new ArrayList<FlowToken>(contents.subList(startIndex, endIndex)));
+    } else {
+      result = createEmptyContainer(parentToken, latexMode);
     }
-    
-    public static ArgumentContainerToken createFromContiguousTokens(final Token parentToken,
-            final LaTeXMode latexMode, final List<? extends FlowToken> contents) {
-        return createFromContiguousTokens(parentToken, latexMode, contents, 0, contents.size());
-    }
-    
-    public static ArgumentContainerToken createFromContiguousTokens(final Token parentToken,
-            final LaTeXMode latexMode, final List<? extends FlowToken> contents,
-            final int startIndex, final int endIndex) {
-        if (startIndex>endIndex) {
-            throw new IllegalArgumentException("startIndex must be <= endIndex");
-        }
-        ArgumentContainerToken result;
-        if (contents.size()>0) {
-            FrozenSlice startSlice = contents.get(startIndex).getSlice();
-            FrozenSlice endSlice = contents.get(endIndex-1).getSlice();
-            FrozenSlice resultSlice = startSlice.rightOuterSpan(endSlice);
-            
-            result = new ArgumentContainerToken(resultSlice, latexMode,
-                    new ArrayList<FlowToken>(contents.subList(startIndex, endIndex)));
-        }
-        else {
-            result = createEmptyContainer(parentToken, latexMode);
-        }
-        return result;
-    }
-    
-    public static ArgumentContainerToken createEmptyContainer(final Token parentToken, final LaTeXMode latexMode) {
-        List<FlowToken> emptyTokens = Collections.emptyList();
-        return new ArgumentContainerToken(parentToken.getSlice(), latexMode, emptyTokens);
-    }
-    
-    @ObjectDumperOptions(DumpMode.DEEP)
-    public List<FlowToken> getContents() {
-        return contents;
-    }
-    
-    public Iterator<FlowToken> iterator() {
-        return contents.iterator();
-    }
+    return result;
+  }
+
+  public static ArgumentContainerToken createEmptyContainer(
+      final Token parentToken, final LaTeXMode latexMode) {
+    List<FlowToken> emptyTokens = Collections.emptyList();
+    return new ArgumentContainerToken(parentToken.getSlice(), latexMode, emptyTokens);
+  }
+
+  @ObjectDumperOptions(DumpMode.DEEP)
+  public List<FlowToken> getContents() {
+    return contents;
+  }
+
+  public Iterator<FlowToken> iterator() {
+    return contents.iterator();
+  }
 }

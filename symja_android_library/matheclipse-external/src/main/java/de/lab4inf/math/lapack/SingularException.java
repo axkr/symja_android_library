@@ -7,17 +7,17 @@
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
-* You may obtain a copy of the License at
-*
-*     http://www.apache.org/licenses/LICENSE-2.0
-*
-* Unless required by applicable law or agreed to in writing, software
-* distributed under the License is distributed on an "AS IS" BASIS,
-* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-* See the License for the specific language governing permissions and
-* limitations under the License.
-*
-*/
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ *
+ */
 package de.lab4inf.math.lapack;
 
 /**
@@ -28,15 +28,12 @@ package de.lab4inf.math.lapack;
  * @since 31.03.2008
  */
 
-/**
- * Internal exception to throw for a singular matrix.
- */
+/** Internal exception to throw for a singular matrix. */
 class SingularException extends IllegalArgumentException {
-    /** reference to the serialVersionUID attribute.  */
-    private static final long serialVersionUID = -7781732438847981681L;
+  /** reference to the serialVersionUID attribute. */
+  private static final long serialVersionUID = -7781732438847981681L;
 
-    public SingularException(final String msg) {
-        super(msg);
-    }
+  public SingularException(final String msg) {
+    super(msg);
+  }
 }
- 

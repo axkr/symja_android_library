@@ -16,17 +16,22 @@ import org.w3c.dom.Element;
 /**
  * Handles the <tt>\\not</tt> combiner command.
  *
- * @author  David McKain
+ * @author David McKain
  * @version $Revision: 525 $
  */
 public final class MathNotHandler implements CommandHandler {
-    
-    public void handleCommand(DOMBuilder builder, Element parentElement, CommandToken notToken) {
-        MathNegatableInterpretation combinerInterpretation = (MathNegatableInterpretation) notToken.getCombinerTarget().getInterpretation(InterpretationType.MATH_NEGATABLE);
-        if (combinerInterpretation==null) {
-            throw new SnuggleLogicException("Expeted combiner of \\not to have a " + InterpretationType.MATH_NEGATABLE + " Interpretation");
-        }
-        builder.appendMathMLOperatorElement(parentElement, combinerInterpretation.getMathMLNegatedOperatorContent());
-    }
 
+  public void handleCommand(DOMBuilder builder, Element parentElement, CommandToken notToken) {
+    MathNegatableInterpretation combinerInterpretation =
+        (MathNegatableInterpretation)
+            notToken.getCombinerTarget().getInterpretation(InterpretationType.MATH_NEGATABLE);
+    if (combinerInterpretation == null) {
+      throw new SnuggleLogicException(
+          "Expeted combiner of \\not to have a "
+              + InterpretationType.MATH_NEGATABLE
+              + " Interpretation");
+    }
+    builder.appendMathMLOperatorElement(
+        parentElement, combinerInterpretation.getMathMLNegatedOperatorContent());
+  }
 }

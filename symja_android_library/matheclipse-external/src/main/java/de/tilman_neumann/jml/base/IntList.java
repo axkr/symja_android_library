@@ -18,30 +18,32 @@ import java.util.StringTokenizer;
 
 /**
  * Integer list, with factory method from comma-separated string.
+ *
  * @author Tilman Neumann
  */
 public class IntList extends ArrayList<Integer> {
 
-	private static final long serialVersionUID = -9086114515836575213L;
+  private static final long serialVersionUID = -9086114515836575213L;
 
-	/**
-	 * Converts the given comma-separated string into a list of Integers.
-	 * @param str
-	 * @return list of sequence elements
-	 */
-	public static IntList valueOf(String str) {
-		IntList list = new IntList();
-		if (str!=null) {
-	        StringTokenizer tokenizer = new StringTokenizer(str.trim(), ",");
-	        while (tokenizer.hasMoreTokens()) {
-	        	String token = tokenizer.nextToken().trim();
-	        	try {
-	        		list.add(Integer.decode(token));
-	        	} catch (NumberFormatException nfe) {
-	        		throw new IllegalArgumentException("str contains illegal value '" + token + "'");
-	        	}
-	        }
-		}
-	    return list;
-	}
+  /**
+   * Converts the given comma-separated string into a list of Integers.
+   *
+   * @param str
+   * @return list of sequence elements
+   */
+  public static IntList valueOf(String str) {
+    IntList list = new IntList();
+    if (str != null) {
+      StringTokenizer tokenizer = new StringTokenizer(str.trim(), ",");
+      while (tokenizer.hasMoreTokens()) {
+        String token = tokenizer.nextToken().trim();
+        try {
+          list.add(Integer.decode(token));
+        } catch (NumberFormatException nfe) {
+          throw new IllegalArgumentException("str contains illegal value '" + token + "'");
+        }
+      }
+    }
+    return list;
+  }
 }

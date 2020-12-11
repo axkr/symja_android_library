@@ -13,22 +13,23 @@ import org.w3c.dom.Element;
 
 /**
  * Handles <tt>\\units</tt>, generating an <tt>mi</tt> element of the form:
- * 
+ *
  * <pre><![CDATA[
  *   <mi mathvariant="normal" class="MathML-Unit">...</mi>
  * ]]></pre>
- * 
- * @see <a href="http://www.w3.org/TR/mathml-units/">Units in MathML</a>
  *
- * @author  David McKain
+ * @see <a href="http://www.w3.org/TR/mathml-units/">Units in MathML</a>
+ * @author David McKain
  * @version $Revision: 525 $
  */
 public final class UnitsHandler implements CommandHandler {
-    
-    public void handleCommand(DOMBuilder builder, Element parentElement, CommandToken token)
-            throws SnuggleParseException {
-        Element mi = builder.appendMathMLIdentifierElement(parentElement, builder.extractStringValue(token.getArguments()[0]));
-        mi.setAttribute("mathvariant", "normal");
-        mi.setAttribute("class", "MathML-Unit");
-    }
+
+  public void handleCommand(DOMBuilder builder, Element parentElement, CommandToken token)
+      throws SnuggleParseException {
+    Element mi =
+        builder.appendMathMLIdentifierElement(
+            parentElement, builder.extractStringValue(token.getArguments()[0]));
+    mi.setAttribute("mathvariant", "normal");
+    mi.setAttribute("class", "MathML-Unit");
+  }
 }

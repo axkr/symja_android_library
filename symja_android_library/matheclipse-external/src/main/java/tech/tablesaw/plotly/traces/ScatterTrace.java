@@ -9,7 +9,7 @@ import java.io.IOException;
 import java.io.StringWriter;
 import java.io.UncheckedIOException;
 import java.io.Writer;
-import java.util.Map;  
+import java.util.Map;
 import tech.tablesaw.plotly.components.HoverLabel;
 import tech.tablesaw.plotly.components.Line;
 import tech.tablesaw.plotly.components.Marker;
@@ -83,18 +83,18 @@ public class ScatterTrace extends AbstractTrace {
     return new ScatterBuilder(x, y);
   }
 
-//  public static ScatterBuilder builder(Column<?> x, Column<?> y) {
-//    return new ScatterBuilder(x, y);
-//  }
-//
-//  public static ScatterBuilder builder(
-//      Column<?> x,
-//      NumericColumn<? extends Number> open,
-//      NumericColumn<? extends Number> high,
-//      NumericColumn<? extends Number> low,
-//      NumericColumn<? extends Number> close) {
-//    return new ScatterBuilder(x, open, high, low, close);
-//  }
+  //  public static ScatterBuilder builder(Column<?> x, Column<?> y) {
+  //    return new ScatterBuilder(x, y);
+  //  }
+  //
+  //  public static ScatterBuilder builder(
+  //      Column<?> x,
+  //      NumericColumn<? extends Number> open,
+  //      NumericColumn<? extends Number> high,
+  //      NumericColumn<? extends Number> low,
+  //      NumericColumn<? extends Number> close) {
+  //    return new ScatterBuilder(x, open, high, low, close);
+  //  }
 
   private ScatterTrace(ScatterBuilder builder) {
     super(builder);
@@ -267,23 +267,23 @@ public class ScatterTrace extends AbstractTrace {
       this.y = y1;
     }
 
-//    private ScatterBuilder(Column<?> x, Column<?> y) {
-//      this.x = x.asObjectArray();
-//      this.y = y.asObjectArray();
-//    }
-//
-//    private ScatterBuilder(
-//        Column<?> x,
-//        NumericColumn<? extends Number> open,
-//        NumericColumn<? extends Number> high,
-//        NumericColumn<? extends Number> low,
-//        NumericColumn<? extends Number> close) {
-//      this.x = x.asObjectArray();
-//      this.open = open.asDoubleArray();
-//      this.high = high.asDoubleArray();
-//      this.low = low.asDoubleArray();
-//      this.close = close.asDoubleArray();
-//    }
+    //    private ScatterBuilder(Column<?> x, Column<?> y) {
+    //      this.x = x.asObjectArray();
+    //      this.y = y.asObjectArray();
+    //    }
+    //
+    //    private ScatterBuilder(
+    //        Column<?> x,
+    //        NumericColumn<? extends Number> open,
+    //        NumericColumn<? extends Number> high,
+    //        NumericColumn<? extends Number> low,
+    //        NumericColumn<? extends Number> close) {
+    //      this.x = x.asObjectArray();
+    //      this.open = open.asDoubleArray();
+    //      this.high = high.asDoubleArray();
+    //      this.low = low.asDoubleArray();
+    //      this.close = close.asDoubleArray();
+    //    }
 
     public ScatterBuilder mode(Mode mode) {
       this.mode = mode;

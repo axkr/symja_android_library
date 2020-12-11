@@ -14,32 +14,30 @@ import org.w3c.dom.Element;
 /**
  * Handles <tt>\\mbox</tt>, <tt>\\fbox</tt> and friends.
  *
- * @author  David McKain
+ * @author David McKain
  * @version $Revision: 537 $
  */
 public final class BoxHandler implements CommandHandler {
-    
-    private final String xhtmlClassName;
-    
-    public BoxHandler(final String xhtmlClassName) {
-        this.xhtmlClassName = xhtmlClassName;
-    }
-    
-    public void handleCommand(DOMBuilder builder, Element parentElement, CommandToken token)
-            throws SnuggleParseException {
-        /* We just descend into contents - \mbox doesn't actually "do" anything to the output
-         * though its children will output different things because of a combination of being
-         * in LR mode and the XML application the parent element belongs.
-         */
-        Element containerElement;
-        if (builder.isBuildingMathMLIsland()) {
-            containerElement = builder.appendMathMLElement(parentElement, "mrow");
-        }
-        else {
-            containerElement = builder.appendXHTMLElement(parentElement, "span");
-            builder.applyCSSStyle(containerElement, xhtmlClassName);
-        }
-        builder.handleTokens(containerElement, token.getArguments()[0], false);
-    }
 
+  private final String xhtmlClassName;
+
+  public BoxHandler(final String xhtmlClassName) {
+    this.xhtmlClassName = xhtmlClassName;
+  }
+
+  public void handleCommand(DOMBuilder builder, Element parentElement, CommandToken token)
+      throws SnuggleParseException {
+    /* We just descend into contents - \mbox doesn't actually "do" anything to the output
+     * though its children will output different things because of a combination of being
+     * in LR mode and the XML application the parent element belongs.
+     */
+    Element containerElement;
+    if (builder.isBuildingMathMLIsland()) {
+      containerElement = builder.appendMathMLElement(parentElement, "mrow");
+    } else {
+      containerElement = builder.appendXHTMLElement(parentElement, "span");
+      builder.applyCSSStyle(containerElement, xhtmlClassName);
+    }
+    builder.handleTokens(containerElement, token.getArguments()[0], false);
+  }
 }

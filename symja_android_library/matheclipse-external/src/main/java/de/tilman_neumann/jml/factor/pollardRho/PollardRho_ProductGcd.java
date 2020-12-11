@@ -24,58 +24,60 @@ import de.tilman_neumann.jml.factor.FactorAlgorithm;
 
 /**
  * Pollard's Rho algorithm improved by doing the GCD on products.
- * 
+ *
  * @author Tilman Neumann
  */
 public class PollardRho_ProductGcd extends FactorAlgorithm {
-	@SuppressWarnings("unused")
-	private static final Logger LOG = Logger.getLogger(PollardRho_ProductGcd.class);
-	private static final SecureRandom RNG = new SecureRandom();
+  @SuppressWarnings("unused")
+  private static final Logger LOG = Logger.getLogger(PollardRho_ProductGcd.class);
 
-	private BigInteger N;
+  private static final SecureRandom RNG = new SecureRandom();
 
-	@Override
-	public String getName() {
-		return "PollardRho_Prod";
-	}
-	
-	@Override
-	public BigInteger findSingleFactor(BigInteger N) {
-		this.N = N;
-		int bitLength = N.bitLength();
-        BigInteger product, gcd;
-        
-        do {
-	        // start with random x0, c from [0, 2^n] where n=upper(ld N)
-        	BigInteger c = new BigInteger(bitLength, RNG);
-            BigInteger x = new BigInteger(bitLength, RNG);
-            BigInteger xx = x;
-	        
-	        do {
-	        	product = I_1;
-	        	for (int i=0; i<100; i++) {
-		            x  = addModN( x.multiply(x) .mod(N), c);
-		            xx = addModN(xx.multiply(xx).mod(N), c);
-		            xx = addModN(xx.multiply(xx).mod(N), c);
-		            product = product.multiply(x.subtract(xx)).mod(N);
-	        	}
-	            gcd = product.gcd(N); // the gcd function must give gcd(0,N) = N
-	        } while(gcd.equals(I_1));
-	        
-	    // leave loop if factor found; otherwise continue with new random x0, c
-        } while (gcd.equals(N));
-		//LOG.debug("Found factor of " + N + " = " + factor);
-        return gcd;
-	}
+  private BigInteger N;
 
-	/**
-	 * Addition modulo N, with <code>a, b < N</code>.
-	 * @param a
-	 * @param b
-	 * @return (a+b) mod N
-	 */
-	private BigInteger addModN(BigInteger a, BigInteger b) {
-		BigInteger sum = a.add(b);
-		return sum.compareTo(N)<0 ? sum : sum.subtract(N);
-	}
+  @Override
+  public String getName() {
+    return "PollardRho_Prod";
+  }
+
+  @Override
+  public BigInteger findSingleFactor(BigInteger N) {
+    this.N = N;
+    int bitLength = N.bitLength();
+    BigInteger product, gcd;
+
+    do {
+      // start with random x0, c from [0, 2^n] where n=upper(ld N)
+      BigInteger c = new BigInteger(bitLength, RNG);
+      BigInteger x = new BigInteger(bitLength, RNG);
+      BigInteger xx = x;
+
+      do {
+        product = I_1;
+        for (int i = 0; i < 100; i++) {
+          x = addModN(x.multiply(x).mod(N), c);
+          xx = addModN(xx.multiply(xx).mod(N), c);
+          xx = addModN(xx.multiply(xx).mod(N), c);
+          product = product.multiply(x.subtract(xx)).mod(N);
+        }
+        gcd = product.gcd(N); // the gcd function must give gcd(0,N) = N
+      } while (gcd.equals(I_1));
+
+      // leave loop if factor found; otherwise continue with new random x0, c
+    } while (gcd.equals(N));
+    // LOG.debug("Found factor of " + N + " = " + factor);
+    return gcd;
+  }
+
+  /**
+   * Addition modulo N, with <code>a, b < N</code>.
+   *
+   * @param a
+   * @param b
+   * @return (a+b) mod N
+   */
+  private BigInteger addModN(BigInteger a, BigInteger b) {
+    BigInteger sum = a.add(b);
+    return sum.compareTo(N) < 0 ? sum : sum.subtract(N);
+  }
 }

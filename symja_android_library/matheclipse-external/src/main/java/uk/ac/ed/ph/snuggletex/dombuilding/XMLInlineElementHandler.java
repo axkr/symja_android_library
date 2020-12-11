@@ -8,13 +8,13 @@ package uk.ac.ed.ph.snuggletex.dombuilding;
 /**
  * Builds custom inline XML elements.
  *
- * @author  David McKain
+ * @author David McKain
  * @version $Revision:179 $
  */
 public final class XMLInlineElementHandler extends AbstractCustomXMLElementHandler {
-    
-    @Override
-    protected boolean isBlock() {
-        return false;
-    }
+
+  @Override
+  protected boolean isBlock() {
+    return false;
+  }
 }

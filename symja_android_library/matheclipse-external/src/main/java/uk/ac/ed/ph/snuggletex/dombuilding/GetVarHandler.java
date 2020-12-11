@@ -14,21 +14,21 @@ import org.w3c.dom.Element;
 /**
  * Handles the <tt>\\getvar</tt> macro.
  *
- * @author  David McKain
+ * @author David McKain
  * @version $Revision: 525 $
  */
 public final class GetVarHandler implements CommandHandler {
-    
-    public void handleCommand(DOMBuilder builder, Element parentElement, CommandToken token)
-            throws SnuggleParseException {
-        String namespace = null;
-        if (token.getOptionalArgument()!=null) {
-            namespace = builder.extractStringValue(token.getOptionalArgument());
-        }
-        String variableName = builder.extractStringValue(token.getArguments()[0]);
-        Object value = builder.getVariableManager().getVariable(namespace, variableName);
-        if (value!=null) {
-            builder.appendTextNode(parentElement, value.toString(), false);
-        }
+
+  public void handleCommand(DOMBuilder builder, Element parentElement, CommandToken token)
+      throws SnuggleParseException {
+    String namespace = null;
+    if (token.getOptionalArgument() != null) {
+      namespace = builder.extractStringValue(token.getOptionalArgument());
     }
+    String variableName = builder.extractStringValue(token.getArguments()[0]);
+    Object value = builder.getVariableManager().getVariable(namespace, variableName);
+    if (value != null) {
+      builder.appendTextNode(parentElement, value.toString(), false);
+    }
+  }
 }

@@ -1,6 +1,6 @@
 /*
  * Copyright 2007 - 2007 JEuclid, http://jeuclid.sf.net
- * 
+ *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
@@ -24,39 +24,34 @@ import org.w3c.dom.Document;
  */
 
 /**
- * This interface extends the Document interface to add access to document
- * properties relating to navigation. The documentElement attribute for a
- * MathMLDocument should be the MathMLMathElement representing the top-level
- * math element which is the root of the document.
- * 
+ * This interface extends the Document interface to add access to document properties relating to
+ * navigation. The documentElement attribute for a MathMLDocument should be the MathMLMathElement
+ * representing the top-level math element which is the root of the document.
  */
 public interface MathMLDocument extends Document {
-    /**
-     * The URI of the page that linked to this document, if available. This is
-     * null if the user navigated directly to the page. If this is not a
-     * stand-alone MathML document (e.g. is embedded in an XHTML document),
-     * this may be retrieved from the parent Document if available.
-     * 
-     * @return value of the referrer attribute.
-     */
-    String getReferrer();
+  /**
+   * The URI of the page that linked to this document, if available. This is null if the user
+   * navigated directly to the page. If this is not a stand-alone MathML document (e.g. is embedded
+   * in an XHTML document), this may be retrieved from the parent Document if available.
+   *
+   * @return value of the referrer attribute.
+   */
+  String getReferrer();
 
-    /**
-     * The domain name of the server that served the document, or null if the
-     * server cannot be identified by a domain name, or if it is not
-     * available. If this is not a stand-alone MathML document (e.g. is
-     * embedded in an XHTML document), this may be retrieved from the parent
-     * Document if available.
-     * 
-     * @return value of the domain attribute.
-     */
-    String getDomain();
+  /**
+   * The domain name of the server that served the document, or null if the server cannot be
+   * identified by a domain name, or if it is not available. If this is not a stand-alone MathML
+   * document (e.g. is embedded in an XHTML document), this may be retrieved from the parent
+   * Document if available.
+   *
+   * @return value of the domain attribute.
+   */
+  String getDomain();
 
-    /**
-     * The complete URI of this document. This is null if this is not a
-     * stand-alone MathML document.
-     * 
-     * @return value of the URI attribute.
-     */
-    String getURI();
+  /**
+   * The complete URI of this document. This is null if this is not a stand-alone MathML document.
+   *
+   * @return value of the URI attribute.
+   */
+  String getURI();
 };

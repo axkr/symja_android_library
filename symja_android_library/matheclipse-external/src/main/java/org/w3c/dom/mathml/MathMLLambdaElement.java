@@ -1,6 +1,6 @@
 /*
  * Copyright 2007 - 2007 JEuclid, http://jeuclid.sf.net
- * 
+ *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
@@ -22,27 +22,23 @@ package org.w3c.dom.mathml;
  */
 
 /**
- * The lambda element is used to construct a user-defined function from an
- * expression and one or more free variables.
- * 
- * 
+ * The lambda element is used to construct a user-defined function from an expression and one or
+ * more free variables.
  */
 public interface MathMLLambdaElement extends MathMLContentContainer {
-    /**
-     * The MathMLElement representing the expression. This is included only as
-     * a convenience; getting it should give the same result as
-     * MathMLContentContainer::getArgument(1).
-     * 
-     * @return value of the expression attribute.
-     */
-    MathMLElement getExpression();
+  /**
+   * The MathMLElement representing the expression. This is included only as a convenience; getting
+   * it should give the same result as MathMLContentContainer::getArgument(1).
+   *
+   * @return value of the expression attribute.
+   */
+  MathMLElement getExpression();
 
-    /**
-     * setter for the expression attribute.
-     * 
-     * @param expression
-     *            new value for expression.
-     * @see #getExpression()
-     */
-    void setExpression(MathMLElement expression);
+  /**
+   * setter for the expression attribute.
+   *
+   * @param expression new value for expression.
+   * @see #getExpression()
+   */
+  void setExpression(MathMLElement expression);
 };

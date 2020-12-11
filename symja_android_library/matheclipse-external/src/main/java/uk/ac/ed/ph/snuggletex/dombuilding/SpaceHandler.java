@@ -15,42 +15,39 @@ import org.w3c.dom.Element;
 /**
  * Creates preset spacing elements in MATH and/or TEXT modes.
  *
- * @author  David McKain
+ * @author David McKain
  * @version $Revision: 525 $
  */
 public final class SpaceHandler implements CommandHandler {
 
-    /** String to use to create space text Node in TEXT mode, null if not supported */
-    private final String textString;
-    
-    /** Width attribute for <tt>mspace</tt> Element in MATH mode, null if not supported */
-    private final String mathWidth;
+  /** String to use to create space text Node in TEXT mode, null if not supported */
+  private final String textString;
 
-    public SpaceHandler(final String textString, final String mathWidth) {
-        this.textString = textString;
-        this.mathWidth = mathWidth;
-    }
-    
-    public void handleCommand(DOMBuilder builder, Element parentElement, CommandToken token) {
-        if (token.getLatexMode()==LaTeXMode.MATH) {
-            /* Create <mspace/> */
-            if (mathWidth!=null) {
-                Element mspace = builder.appendMathMLElement(parentElement, "mspace");
-                mspace.setAttribute("width", mathWidth);
-            }
-            else {
-                throw new SnuggleLogicException("Spacing token " + token + " expectedly used in MATH mode");
-            }
+  /** Width attribute for <tt>mspace</tt> Element in MATH mode, null if not supported */
+  private final String mathWidth;
 
-        }
-        else {
-            /* Text mode, so this just a character */
-            if (textString!=null) {
-                builder.appendTextNode(parentElement, textString, false);
-            }
-            else {
-                throw new SnuggleLogicException("Spacing token " + token + " expectedly used in TEXT mode");
-            }
-        }
+  public SpaceHandler(final String textString, final String mathWidth) {
+    this.textString = textString;
+    this.mathWidth = mathWidth;
+  }
+
+  public void handleCommand(DOMBuilder builder, Element parentElement, CommandToken token) {
+    if (token.getLatexMode() == LaTeXMode.MATH) {
+      /* Create <mspace/> */
+      if (mathWidth != null) {
+        Element mspace = builder.appendMathMLElement(parentElement, "mspace");
+        mspace.setAttribute("width", mathWidth);
+      } else {
+        throw new SnuggleLogicException("Spacing token " + token + " expectedly used in MATH mode");
+      }
+
+    } else {
+      /* Text mode, so this just a character */
+      if (textString != null) {
+        builder.appendTextNode(parentElement, textString, false);
+      } else {
+        throw new SnuggleLogicException("Spacing token " + token + " expectedly used in TEXT mode");
+      }
     }
+  }
 }

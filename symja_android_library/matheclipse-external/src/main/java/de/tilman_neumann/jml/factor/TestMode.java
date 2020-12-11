@@ -15,16 +15,13 @@ package de.tilman_neumann.jml.factor;
 
 /**
  * Factoring test mode.
+ *
  * @author Tilman Neumann
  */
 public enum TestMode {
-	/** 
-	 * Find the first factor of some N.
-	 */
-	FIRST_FACTOR,
-	
-	/**
-	 * Find the prime factorization of a given N.
-	 */
-	PRIME_FACTORIZATION
+  /** Find the first factor of some N. */
+  FIRST_FACTOR,
+
+  /** Find the prime factorization of a given N. */
+  PRIME_FACTORIZATION
 }

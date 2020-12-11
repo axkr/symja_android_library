@@ -11,15 +11,15 @@ import uk.ac.ed.ph.snuggletex.tokens.CommandToken;
 import org.w3c.dom.Element;
 
 /**
- * This builder calls back directly to the {@link DOMBuilder} to handle mathematical
- * tokens with certain types of simple semantic interpretations.
+ * This builder calls back directly to the {@link DOMBuilder} to handle mathematical tokens with
+ * certain types of simple semantic interpretations.
  *
- * @author  David McKain
+ * @author David McKain
  * @version $Revision: 525 $
  */
 public final class InterpretableSimpleMathHandler implements CommandHandler {
-    
-    public void handleCommand(DOMBuilder builder, Element parentElement, CommandToken token) {
-        builder.appendSimpleMathElement(parentElement, token);
-    }
+
+  public void handleCommand(DOMBuilder builder, Element parentElement, CommandToken token) {
+    builder.appendSimpleMathElement(parentElement, token);
+  }
 }

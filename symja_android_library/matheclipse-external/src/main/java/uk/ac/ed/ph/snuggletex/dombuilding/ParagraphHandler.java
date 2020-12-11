@@ -18,46 +18,46 @@ import org.w3c.dom.Element;
 
 /**
  * This builds the content of a (fixed) {@link CorePackageDefinitions#CMD_PARAGRAPH} token.
- * 
- * @author  David McKain
+ *
+ * @author David McKain
  * @version $Revision: 525 $
  */
 public final class ParagraphHandler implements CommandHandler {
-    
-    public void handleCommand(DOMBuilder builder, Element parentElement, CommandToken token)
-            throws SnuggleParseException {
-        buildParagraph(builder, parentElement, token.getArguments()[0].getContents());
+
+  public void handleCommand(DOMBuilder builder, Element parentElement, CommandToken token)
+      throws SnuggleParseException {
+    buildParagraph(builder, parentElement, token.getArguments()[0].getContents());
+  }
+
+  /**
+   * Builds a single paragraph, being careful to consider how best to represent it in the output
+   * tree at the existing position.
+   *
+   * @param builder
+   * @param parentElement
+   * @param inlineContent
+   * @throws DOMException
+   * @throws SnuggleParseException
+   */
+  private void buildParagraph(
+      DOMBuilder builder, Element parentElement, List<FlowToken> inlineContent)
+      throws SnuggleParseException {
+    Element resultElement;
+    boolean isInline;
+    if (builder.isBuildingMathMLIsland()) {
+      /* Paragraphs inside MathML are not allowed!
+       *
+       * So we won't create an element. Instead, once building reaching the text content,
+       * it will be wrapped inside an <mtext/>
+       */
+      resultElement = parentElement;
+      isInline = true;
+    } else {
+      resultElement = builder.appendXHTMLElement(parentElement, "p");
+      isInline = false;
     }
-    
-    /**
-     * Builds a single paragraph, being careful to consider how best to represent it in the output
-     * tree at the existing position.
-     * 
-     * @param builder
-     * @param parentElement
-     * @param inlineContent
-     * @throws DOMException
-     * @throws SnuggleParseException
-     */
-    private void buildParagraph(DOMBuilder builder, Element parentElement, List<FlowToken> inlineContent)
-            throws SnuggleParseException {
-        Element resultElement;
-        boolean isInline;
-        if (builder.isBuildingMathMLIsland()) {
-            /* Paragraphs inside MathML are not allowed!
-             * 
-             * So we won't create an element. Instead, once building reaching the text content,
-             * it will be wrapped inside an <mtext/>
-             */
-            resultElement = parentElement;
-            isInline = true;
-        }
-        else {
-            resultElement = builder.appendXHTMLElement(parentElement, "p");
-            isInline = false;
-        }
-        
-        /* Handle content */
-        builder.handleTokens(resultElement, inlineContent, !isInline);
-    }
+
+    /* Handle content */
+    builder.handleTokens(resultElement, inlineContent, !isInline);
+  }
 }

@@ -14,46 +14,46 @@ import javax.xml.transform.TransformerFactory;
  * Implementation of {@link TransformerFactoryChooser} that is hard-wired to use whichever version
  * of Saxon can be found in the ClassPath under the <tt>net.sf.saxon</tt> package hierarchy, thus
  * providing support for XSLT 2.0.
- * 
- * @since 1.2.0
  *
+ * @since 1.2.0
  * @author David McKain
  * @version $Revision: 525 $
  */
 public final class SaxonTransformerFactoryChooser implements TransformerFactoryChooser {
 
-    /** Singleton instance */
-    private static final SaxonTransformerFactoryChooser singletonInstance;
-    
-    static {
-        singletonInstance = new SaxonTransformerFactoryChooser();
+  /** Singleton instance */
+  private static final SaxonTransformerFactoryChooser singletonInstance;
+
+  static {
+    singletonInstance = new SaxonTransformerFactoryChooser();
+  }
+
+  public static SaxonTransformerFactoryChooser getInstance() {
+    return singletonInstance;
+  }
+
+  // -----------------------------------------------------------
+
+  public boolean isXSLT20SupportAvailable() {
+    return true;
+  }
+
+  public TransformerFactory getSuitableXSLT10TransformerFactory() {
+    return getSaxonTransformerFactory();
+  }
+
+  public TransformerFactory getSuitableXSLT20TransformerFactory() {
+    return getSaxonTransformerFactory();
+  }
+
+  public TransformerFactory getSaxonTransformerFactory() {
+    try {
+      return XMLUtilities.createSaxonTransformerFactory();
+    } catch (SnuggleRuntimeException e) {
+      throw new SnuggleRuntimeException(
+          getClass().getSimpleName()
+              + " could not instantiate the TransformerFactoryImpl provided by Saxon",
+          e);
     }
-    
-    public static SaxonTransformerFactoryChooser getInstance() {
-        return singletonInstance;
-    }
-    
-    //-----------------------------------------------------------
-    
-    public boolean isXSLT20SupportAvailable() {
-        return true;
-    }
-    
-    public TransformerFactory getSuitableXSLT10TransformerFactory() {
-        return getSaxonTransformerFactory();
-    }
-    
-    public TransformerFactory getSuitableXSLT20TransformerFactory() {
-        return getSaxonTransformerFactory();
-    }
-    
-    public TransformerFactory getSaxonTransformerFactory() {
-        try {
-            return XMLUtilities.createSaxonTransformerFactory();
-        }
-        catch (SnuggleRuntimeException e) {
-            throw new SnuggleRuntimeException(getClass().getSimpleName()
-                    + " could not instantiate the TransformerFactoryImpl provided by Saxon", e);
-        }
-    }
+  }
 }

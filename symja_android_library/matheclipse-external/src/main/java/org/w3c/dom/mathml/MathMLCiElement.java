@@ -1,6 +1,6 @@
 /*
  * Copyright 2007 - 2007 JEuclid, http://jeuclid.sf.net
- * 
+ *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
@@ -21,27 +21,22 @@ package org.w3c.dom.mathml;
  * elements, please correct the stylesheet instead.
  */
 
-/**
- * The ci element is used to specify a symbolic name.
- * 
- * 
- */
+/** The ci element is used to specify a symbolic name. */
 public interface MathMLCiElement extends MathMLContentToken {
-    /**
-     * Values include integer, rational, real, float, complex, complex-polar,
-     * complex-cartesian, constant, function, any of the MathML content
-     * container types (vector, matrix, set, list etc.) or their types.
-     * 
-     * @return value of the type attribute.
-     */
-    String getType();
+  /**
+   * Values include integer, rational, real, float, complex, complex-polar, complex-cartesian,
+   * constant, function, any of the MathML content container types (vector, matrix, set, list etc.)
+   * or their types.
+   *
+   * @return value of the type attribute.
+   */
+  String getType();
 
-    /**
-     * setter for the type attribute.
-     * 
-     * @param type
-     *            new value for type.
-     * @see #getType()
-     */
-    void setType(String type);
+  /**
+   * setter for the type attribute.
+   *
+   * @param type new value for type.
+   * @see #getType()
+   */
+  void setType(String type);
 };

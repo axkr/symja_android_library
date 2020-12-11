@@ -1,6 +1,6 @@
 /*
  * Copyright 2007 - 2007 JEuclid, http://jeuclid.sf.net
- * 
+ *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
@@ -22,14 +22,10 @@ package org.w3c.dom.mathml;
  */
 
 /**
- * This interface is provided to serve as a base interface for various MathML
- * Presentation interfaces. It contains no new attributes or methods at this
- * time; however, it is felt that the distinction between Presentation and
- * Content MathML entities should be indicated in the MathMLElement hierarchy.
- * In particular, future versions of the MathML DOM may add functionality on
- * this interface; it may also serve as an aid to implementors.
- * 
- * 
+ * This interface is provided to serve as a base interface for various MathML Presentation
+ * interfaces. It contains no new attributes or methods at this time; however, it is felt that the
+ * distinction between Presentation and Content MathML entities should be indicated in the
+ * MathMLElement hierarchy. In particular, future versions of the MathML DOM may add functionality
+ * on this interface; it may also serve as an aid to implementors.
  */
-public interface MathMLPresentationElement extends MathMLElement {
-};
+public interface MathMLPresentationElement extends MathMLElement {};

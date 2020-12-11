@@ -8,14 +8,13 @@ package uk.ac.ed.ph.snuggletex.definitions;
 import uk.ac.ed.ph.snuggletex.tokens.FlowToken;
 
 /**
- * This interface is used to specify which {@link FlowToken}s are valid as combiner targets
- * for {@link Command}s of type {@link CommandType#COMBINER}
+ * This interface is used to specify which {@link FlowToken}s are valid as combiner targets for
+ * {@link Command}s of type {@link CommandType#COMBINER}
  *
- * @author  David McKain
+ * @author David McKain
  * @version $Revision: 525 $
  */
 public interface CombinerTargetMatcher {
-    
-    boolean isAllowed(FlowToken target);
 
+  boolean isAllowed(FlowToken target);
 }

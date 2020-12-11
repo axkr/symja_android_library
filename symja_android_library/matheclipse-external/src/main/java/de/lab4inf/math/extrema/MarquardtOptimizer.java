@@ -7,17 +7,17 @@
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
-* You may obtain a copy of the License at
-*
-*     http://www.apache.org/licenses/LICENSE-2.0
-*
-* Unless required by applicable law or agreed to in writing, software
-* distributed under the License is distributed on an "AS IS" BASIS,
-* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-* See the License for the specific language governing permissions and
-* limitations under the License.
-*
-*/
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ *
+ */
 package de.lab4inf.math.extrema;
 
 import de.lab4inf.math.Function;
@@ -41,83 +41,78 @@ import static java.lang.String.format;
  * @since 20.07.2009
  */
 public class MarquardtOptimizer extends GenericOptimizer {
-    /**
-     * maximal number internal marquardt updates.
-     */
-    private static final int MAX_MARQUARDTS = 50;
+  /** maximal number internal marquardt updates. */
+  private static final int MAX_MARQUARDTS = 50;
 
-    /*
-     *     (non-Javadoc)
-     * @see de.lab4inf.math.extrema.GenericOptimizer#runMaximisation(de.lab4inf.math.Function, double[])
-     */
-    @Override
-    protected boolean runMaximisation(final Function fct, final double... guess) {
-        return runMinimisation(new MinimizerFct(fct), guess);
-    }
+  /*
+   *     (non-Javadoc)
+   * @see de.lab4inf.math.extrema.GenericOptimizer#runMaximisation(de.lab4inf.math.Function, double[])
+   */
+  @Override
+  protected boolean runMaximisation(final Function fct, final double... guess) {
+    return runMinimisation(new MinimizerFct(fct), guess);
+  }
 
-    /*
-     * (non-Javadoc)
-     * @see de.lab4inf.math.extrema.GenericOptimizer#runMinimisation(de.lab4inf.math.Function, double[])
-     */
-    @Override
-    public boolean runMinimisation(final Function fct, final double... guess) {
-        int iteration = 0, m;
-        int n = guess.length;
-        double f, fo, fvu, vu = 5, lamda = 0.01;
-        double[] dx, xo, x = copy(guess), grad, xvu;
-        double[][] hesslp, hess, id;
-        Gradient g = getGradient(fct);
-        Hessian h = getHessian(fct);
-        setTarget(fct);
-        id = identity(n);
-        fo = fct.f(x);
-        if (DEBUG) {
-            logger.info(format("%3d %s f:%.2g", iteration, display(x), fo));
-        }
-        do {
-            xo = x;
-            // solve the equation: (Hess(F) + lambda*Id)* dx = -grad(F)
-            grad = g.gradient(x);
-            hess = h.hessian(x);
-            hesslp = add(hess, mult(id, lamda));
-            dx = laSolver.solveSymmetric(hesslp, grad);
-            x = sub(xo, dx);
-            f = fct.f(x);
-            m = 0;
-            do {
-                m++;
-                hesslp = add(hess, mult(id, lamda / vu));
-                dx = laSolver.solveSymmetric(hesslp, grad);
-                xvu = sub(xo, dx);
-                fvu = fct.f(xvu);
-                if (fvu <= fo) {
-                    f = fvu;
-                    x = xvu;
-                    lamda /= vu;
-                } else if (f < fo) {
-                    break;
-                } else {
-                    lamda *= vu;
-                }
-            } while (f > fo && m < MAX_MARQUARDTS);
-            if (m >= MAX_MARQUARDTS) {
-                String msg = "Marquardt iterations exceeded";
-                logger.error(msg);
-                throw new ArithmeticException(msg);
-            }
-            fo = f;
-            if (DEBUG) {
-                logger.info(format("%15s %3d %s f:%.2g lambda:%.5f", iteration,
-                        display(x), f, lamda));
-            }
-            informIterationIsFinished(iteration, x);
-        } while (!hasConverged(x, xo, getPrecision(), ++iteration,
-                getMaxIterations()));
-        for (int i = 0; i < guess.length; i++) {
-            guess[i] = round(x[i], getPrecision());
-        }
-        informOptimizationIsFinished(iteration, guess);
-        return iteration < getMaxIterations();
+  /*
+   * (non-Javadoc)
+   * @see de.lab4inf.math.extrema.GenericOptimizer#runMinimisation(de.lab4inf.math.Function, double[])
+   */
+  @Override
+  public boolean runMinimisation(final Function fct, final double... guess) {
+    int iteration = 0, m;
+    int n = guess.length;
+    double f, fo, fvu, vu = 5, lamda = 0.01;
+    double[] dx, xo, x = copy(guess), grad, xvu;
+    double[][] hesslp, hess, id;
+    Gradient g = getGradient(fct);
+    Hessian h = getHessian(fct);
+    setTarget(fct);
+    id = identity(n);
+    fo = fct.f(x);
+    if (DEBUG) {
+      logger.info(format("%3d %s f:%.2g", iteration, display(x), fo));
     }
+    do {
+      xo = x;
+      // solve the equation: (Hess(F) + lambda*Id)* dx = -grad(F)
+      grad = g.gradient(x);
+      hess = h.hessian(x);
+      hesslp = add(hess, mult(id, lamda));
+      dx = laSolver.solveSymmetric(hesslp, grad);
+      x = sub(xo, dx);
+      f = fct.f(x);
+      m = 0;
+      do {
+        m++;
+        hesslp = add(hess, mult(id, lamda / vu));
+        dx = laSolver.solveSymmetric(hesslp, grad);
+        xvu = sub(xo, dx);
+        fvu = fct.f(xvu);
+        if (fvu <= fo) {
+          f = fvu;
+          x = xvu;
+          lamda /= vu;
+        } else if (f < fo) {
+          break;
+        } else {
+          lamda *= vu;
+        }
+      } while (f > fo && m < MAX_MARQUARDTS);
+      if (m >= MAX_MARQUARDTS) {
+        String msg = "Marquardt iterations exceeded";
+        logger.error(msg);
+        throw new ArithmeticException(msg);
+      }
+      fo = f;
+      if (DEBUG) {
+        logger.info(format("%15s %3d %s f:%.2g lambda:%.5f", iteration, display(x), f, lamda));
+      }
+      informIterationIsFinished(iteration, x);
+    } while (!hasConverged(x, xo, getPrecision(), ++iteration, getMaxIterations()));
+    for (int i = 0; i < guess.length; i++) {
+      guess[i] = round(x[i], getPrecision());
+    }
+    informOptimizationIsFinished(iteration, guess);
+    return iteration < getMaxIterations();
+  }
 }
- 

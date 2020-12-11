@@ -1,6 +1,6 @@
 /*
  * Copyright 2007 - 2007 JEuclid, http://jeuclid.sf.net
- * 
+ *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
@@ -22,27 +22,23 @@ package org.w3c.dom.mathml;
  */
 
 /**
- * This interface extends the MathMLPresentationElement interface for the
- * MathML alignment mark element malignmark.
- * 
- * 
+ * This interface extends the MathMLPresentationElement interface for the MathML alignment mark
+ * element malignmark.
  */
 public interface MathMLAlignMarkElement extends MathMLPresentationElement {
-    /**
-     * A string specifying alignment on the right edge of the preceding
-     * element or the left edge of the following element. Allowed values are
-     * left and right.
-     * 
-     * @return value of the edge attribute.
-     */
-    String getEdge();
+  /**
+   * A string specifying alignment on the right edge of the preceding element or the left edge of
+   * the following element. Allowed values are left and right.
+   *
+   * @return value of the edge attribute.
+   */
+  String getEdge();
 
-    /**
-     * setter for the edge attribute.
-     * 
-     * @param edge
-     *            new value for edge.
-     * @see #getEdge()
-     */
-    void setEdge(String edge);
+  /**
+   * setter for the edge attribute.
+   *
+   * @param edge new value for edge.
+   * @see #getEdge()
+   */
+  void setEdge(String edge);
 };

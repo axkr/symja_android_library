@@ -14,79 +14,81 @@ import java.util.EnumSet;
 
 /**
  * Partial base class for {@link BuiltinCommand} and {@link BuiltinEnvironment}.
- * 
- * @param <H> type of "handler" used to generate DOM subtrees.
  *
- * @author  David McKain
+ * @param <H> type of "handler" used to generate DOM subtrees.
+ * @author David McKain
  * @version $Revision: 525 $
  */
 abstract class BuiltinCommandOrEnvironment<H> implements CommandOrEnvironment {
-    
-    protected final String texName;
-    protected final boolean allowingOptionalArgument;
-    protected final int argumentCount;
-    protected final EnumSet<LaTeXMode> allowedModes;
-    protected final EnumMap<InterpretationType, Interpretation> interpretationMap;
-    protected final TextFlowContext textFlowContext;
-    protected final H domBuildingHandler;
-    
-    protected BuiltinCommandOrEnvironment(final String texName, final boolean allowingOptionalArgument,
-            final int argumentCount, final EnumSet<LaTeXMode> allowedModes,
-            final EnumMap<InterpretationType, Interpretation> interpretationMap, final TextFlowContext textFlowContext,
-            final H domBuildingHandler) {
-        ConstraintUtilities.ensureNotNull(texName, "texName");
-        ConstraintUtilities.ensureNotNull(allowedModes, "allowedModes");
-        this.texName = texName;
-        this.allowingOptionalArgument = allowingOptionalArgument;
-        this.argumentCount = argumentCount;
-        this.allowedModes = allowedModes;
-        this.interpretationMap = interpretationMap;
-        this.textFlowContext = textFlowContext;
-        this.domBuildingHandler = domBuildingHandler;
-    }
 
-    public String getTeXName() {
-        return texName;
-    }
-    
-    public boolean isAllowingOptionalArgument() {
-        return allowingOptionalArgument;
-    }
-    
-    public int getArgumentCount() {
-        return argumentCount;
-    }
-    
-    public EnumSet<LaTeXMode> getAllowedModes() {
-        return allowedModes;
-    }
-    
-    public EnumMap<InterpretationType, Interpretation> getInterpretationMap() {
-        return interpretationMap;
-    }
-    
-    public boolean hasInterpretation(InterpretationType type) {
-        return interpretationMap!=null && interpretationMap.containsKey(type);
-    }
-    
-    public Interpretation getInterpretation(InterpretationType type) {
-        return interpretationMap!=null ? interpretationMap.get(type) : null;
-    }
+  protected final String texName;
+  protected final boolean allowingOptionalArgument;
+  protected final int argumentCount;
+  protected final EnumSet<LaTeXMode> allowedModes;
+  protected final EnumMap<InterpretationType, Interpretation> interpretationMap;
+  protected final TextFlowContext textFlowContext;
+  protected final H domBuildingHandler;
 
-    
-    public TextFlowContext getTextFlowContext() {
-        return textFlowContext;
-    }
-    
-    public H getDOMBuildingHandler() {
-        return domBuildingHandler;
-    }
-    
-    @Override
-    public final String toString() {
-        return getClass().getSimpleName()
-            + "("
-            + (texName!=null ? texName : "@" + Integer.toHexString(hashCode()))
-            + ")";
-    }
+  protected BuiltinCommandOrEnvironment(
+      final String texName,
+      final boolean allowingOptionalArgument,
+      final int argumentCount,
+      final EnumSet<LaTeXMode> allowedModes,
+      final EnumMap<InterpretationType, Interpretation> interpretationMap,
+      final TextFlowContext textFlowContext,
+      final H domBuildingHandler) {
+    ConstraintUtilities.ensureNotNull(texName, "texName");
+    ConstraintUtilities.ensureNotNull(allowedModes, "allowedModes");
+    this.texName = texName;
+    this.allowingOptionalArgument = allowingOptionalArgument;
+    this.argumentCount = argumentCount;
+    this.allowedModes = allowedModes;
+    this.interpretationMap = interpretationMap;
+    this.textFlowContext = textFlowContext;
+    this.domBuildingHandler = domBuildingHandler;
+  }
+
+  public String getTeXName() {
+    return texName;
+  }
+
+  public boolean isAllowingOptionalArgument() {
+    return allowingOptionalArgument;
+  }
+
+  public int getArgumentCount() {
+    return argumentCount;
+  }
+
+  public EnumSet<LaTeXMode> getAllowedModes() {
+    return allowedModes;
+  }
+
+  public EnumMap<InterpretationType, Interpretation> getInterpretationMap() {
+    return interpretationMap;
+  }
+
+  public boolean hasInterpretation(InterpretationType type) {
+    return interpretationMap != null && interpretationMap.containsKey(type);
+  }
+
+  public Interpretation getInterpretation(InterpretationType type) {
+    return interpretationMap != null ? interpretationMap.get(type) : null;
+  }
+
+  public TextFlowContext getTextFlowContext() {
+    return textFlowContext;
+  }
+
+  public H getDOMBuildingHandler() {
+    return domBuildingHandler;
+  }
+
+  @Override
+  public final String toString() {
+    return getClass().getSimpleName()
+        + "("
+        + (texName != null ? texName : "@" + Integer.toHexString(hashCode()))
+        + ")";
+  }
 }

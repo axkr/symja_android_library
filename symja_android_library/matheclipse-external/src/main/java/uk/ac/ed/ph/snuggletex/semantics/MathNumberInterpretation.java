@@ -9,28 +9,28 @@ import uk.ac.ed.ph.snuggletex.internal.util.ObjectUtilities;
 
 /**
  * Represents the interpretation of a mathematical number.
- * 
- * @author  David McKain
+ *
+ * @author David McKain
  * @version $Revision: 525 $
  */
 public final class MathNumberInterpretation implements MathInterpretation {
-    
-    private final CharSequence number;
-    
-    public MathNumberInterpretation(final CharSequence number) {
-        this.number = number;
-    }
-    
-    public CharSequence getNumber() {
-        return number;
-    }
-    
-    public InterpretationType getType() {
-        return InterpretationType.MATH_NUMBER;
-    }
-    
-    @Override
-    public String toString() {
-        return ObjectUtilities.beanToString(this);
-    }
+
+  private final CharSequence number;
+
+  public MathNumberInterpretation(final CharSequence number) {
+    this.number = number;
+  }
+
+  public CharSequence getNumber() {
+    return number;
+  }
+
+  public InterpretationType getType() {
+    return InterpretationType.MATH_NUMBER;
+  }
+
+  @Override
+  public String toString() {
+    return ObjectUtilities.beanToString(this);
+  }
 }

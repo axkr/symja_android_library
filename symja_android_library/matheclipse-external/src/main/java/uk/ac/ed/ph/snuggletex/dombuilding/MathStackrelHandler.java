@@ -15,21 +15,21 @@ import org.w3c.dom.Element;
 /**
  * Handles the <tt>\\stackrel</tt> command.
  *
- * @author  David McKain
+ * @author David McKain
  * @version $Revision: 525 $
  */
 public final class MathStackrelHandler implements CommandHandler {
-    
-    public void handleCommand(DOMBuilder builder, Element parentElement, CommandToken token)
-            throws SnuggleParseException {
-        Element result = builder.appendMathMLElement(parentElement, "mover");
 
-        /* Extract the top and bottom tokens */
-        ArgumentContainerToken topToken = token.getArguments()[0];
-        ArgumentContainerToken bottomToken = token.getArguments()[1];
-        
-        /* Generate MathML content (note the change of order!) */
-        builder.handleMathTokensAsSingleElement(result, bottomToken);
-        builder.handleMathTokensAsSingleElement(result, topToken);
-    }
+  public void handleCommand(DOMBuilder builder, Element parentElement, CommandToken token)
+      throws SnuggleParseException {
+    Element result = builder.appendMathMLElement(parentElement, "mover");
+
+    /* Extract the top and bottom tokens */
+    ArgumentContainerToken topToken = token.getArguments()[0];
+    ArgumentContainerToken bottomToken = token.getArguments()[1];
+
+    /* Generate MathML content (note the change of order!) */
+    builder.handleMathTokensAsSingleElement(result, bottomToken);
+    builder.handleMathTokensAsSingleElement(result, topToken);
+  }
 }

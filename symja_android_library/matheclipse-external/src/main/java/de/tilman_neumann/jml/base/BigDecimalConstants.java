@@ -17,15 +17,15 @@ import java.math.BigDecimal;
 
 public class BigDecimalConstants {
 
-	public static final BigDecimal F_0 = BigDecimal.ZERO;
-	public static final BigDecimal F_0_5 = new BigDecimal("0.5");
-	public static final BigDecimal F_1 = BigDecimal.ONE;
-	public static final BigDecimal F_2 = BigDecimal.valueOf(2);
-	public static final BigDecimal F_2_5 = new BigDecimal("2.5");
-	public static final BigDecimal F_3 = BigDecimal.valueOf(3);
-	public static final BigDecimal F_4 = BigDecimal.valueOf(4);
-	public static final BigDecimal F_5 = BigDecimal.valueOf(5);
-	public static final BigDecimal F_8 = BigDecimal.valueOf(8);
-	public static final BigDecimal F_10 = BigDecimal.TEN;
-	public static final BigDecimal F_12 = BigDecimal.valueOf(12);
+  public static final BigDecimal F_0 = BigDecimal.ZERO;
+  public static final BigDecimal F_0_5 = new BigDecimal("0.5");
+  public static final BigDecimal F_1 = BigDecimal.ONE;
+  public static final BigDecimal F_2 = BigDecimal.valueOf(2);
+  public static final BigDecimal F_2_5 = new BigDecimal("2.5");
+  public static final BigDecimal F_3 = BigDecimal.valueOf(3);
+  public static final BigDecimal F_4 = BigDecimal.valueOf(4);
+  public static final BigDecimal F_5 = BigDecimal.valueOf(5);
+  public static final BigDecimal F_8 = BigDecimal.valueOf(8);
+  public static final BigDecimal F_10 = BigDecimal.TEN;
+  public static final BigDecimal F_12 = BigDecimal.valueOf(12);
 }

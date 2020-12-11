@@ -20,69 +20,70 @@ import de.tilman_neumann.jml.factor.FactorAlgorithm;
 import de.tilman_neumann.jml.factor.tdiv.TDiv63Inverse;
 
 /**
- * Simple implementation of Lehmans factor algorithm,
- * following https://programmingpraxis.com/2017/08/22/lehmans-factoring-algorithm/,
- * using fast inverse trial division.
- * 
- * This implementation is pretty slow, but useful for illustrating the basic algorithm.
- * It may fail for N>=47 bit where 4*k*N produces a long-overflow.
+ * Simple implementation of Lehmans factor algorithm, following
+ * https://programmingpraxis.com/2017/08/22/lehmans-factoring-algorithm/, using fast inverse trial
+ * division.
+ *
+ * <p>This implementation is pretty slow, but useful for illustrating the basic algorithm. It may
+ * fail for N>=47 bit where 4*k*N produces a long-overflow.
  *
  * @author Tilman Neumann
  */
 public class Lehman_Simple extends FactorAlgorithm {
-	private final Gcd63 gcdEngine = new Gcd63();
+  private final Gcd63 gcdEngine = new Gcd63();
 
-	private boolean doTDivFirst;
+  private boolean doTDivFirst;
 
-	private static final TDiv63Inverse tdiv = new TDiv63Inverse(1<<21);
+  private static final TDiv63Inverse tdiv = new TDiv63Inverse(1 << 21);
 
-	/**
-	 * Full constructor.
-	 * @param doTDivFirst If true then trial division is done before the Lehman loop.
-	 * This is recommended if arguments N are known to have factors < cbrt(N) frequently.
-	 */
-	public Lehman_Simple(boolean doTDivFirst) {
-		this.doTDivFirst = doTDivFirst;
-	}
+  /**
+   * Full constructor.
+   *
+   * @param doTDivFirst If true then trial division is done before the Lehman loop. This is
+   *     recommended if arguments N are known to have factors < cbrt(N) frequently.
+   */
+  public Lehman_Simple(boolean doTDivFirst) {
+    this.doTDivFirst = doTDivFirst;
+  }
 
-	@Override
-	public String getName() {
-		return "Lehman_Simple(" + doTDivFirst + ")";
-	}
+  @Override
+  public String getName() {
+    return "Lehman_Simple(" + doTDivFirst + ")";
+  }
 
-	@Override
-	public BigInteger findSingleFactor(BigInteger N) {
-		return BigInteger.valueOf(findSingleFactor(N.longValue()));
-	}
-	
-	public long findSingleFactor(long N) {
-		int cbrt = (int) Math.ceil(Math.cbrt(N));
+  @Override
+  public BigInteger findSingleFactor(BigInteger N) {
+    return BigInteger.valueOf(findSingleFactor(N.longValue()));
+  }
 
-		// do trial division before Lehman loop ?
-		long factor;
-		tdiv.setTestLimit(cbrt);
-		if (doTDivFirst && (factor = tdiv.findSingleFactor(N))>1) return factor;
+  public long findSingleFactor(long N) {
+    int cbrt = (int) Math.ceil(Math.cbrt(N));
 
-		// Lehman loop
-		double sixthRoot = Math.pow(N, 1/6.0); // double precision is required for stability
-		for (int k=1; k <= cbrt; k++) {
-			long fourKN = k*N<<2; // long overflow possible for N>=47 bit
-			double fourSqrtK = Math.sqrt(k<<4);
-			long sqrt4kN = (long) Math.ceil(Math.sqrt(fourKN)); // ceil() is required for stability
-			long limit = (long) (sqrt4kN + sixthRoot / fourSqrtK);
-			for (long a = sqrt4kN; a <= limit; a++) {
-				long test = a*a - fourKN;
-				long b = (long) Math.sqrt(test);
-				if (b*b == test) {
-					long gcd = gcdEngine.gcd(a+b, N);
-					if (gcd>1 && gcd<N) return gcd;
-				}
-			}
-	    }
+    // do trial division before Lehman loop ?
+    long factor;
+    tdiv.setTestLimit(cbrt);
+    if (doTDivFirst && (factor = tdiv.findSingleFactor(N)) > 1) return factor;
 
-		// do trial division after Lehman loop ?
-		if (!doTDivFirst && (factor = tdiv.findSingleFactor(N))>1) return factor;
+    // Lehman loop
+    double sixthRoot = Math.pow(N, 1 / 6.0); // double precision is required for stability
+    for (int k = 1; k <= cbrt; k++) {
+      long fourKN = k * N << 2; // long overflow possible for N>=47 bit
+      double fourSqrtK = Math.sqrt(k << 4);
+      long sqrt4kN = (long) Math.ceil(Math.sqrt(fourKN)); // ceil() is required for stability
+      long limit = (long) (sqrt4kN + sixthRoot / fourSqrtK);
+      for (long a = sqrt4kN; a <= limit; a++) {
+        long test = a * a - fourKN;
+        long b = (long) Math.sqrt(test);
+        if (b * b == test) {
+          long gcd = gcdEngine.gcd(a + b, N);
+          if (gcd > 1 && gcd < N) return gcd;
+        }
+      }
+    }
 
-		return 0; // Fail
-	}
+    // do trial division after Lehman loop ?
+    if (!doTDivFirst && (factor = tdiv.findSingleFactor(N)) > 1) return factor;
+
+    return 0; // Fail
+  }
 }

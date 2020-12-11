@@ -1,6 +1,6 @@
 /*
  * Copyright 2007 - 2007 JEuclid, http://jeuclid.sf.net
- * 
+ *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
@@ -24,104 +24,90 @@ import org.w3c.dom.DOMException;
  */
 
 /**
- * This interface extends the MathMLPresentationElement interface for the
- * MathML underscript, overscript and overscript-underscript pair elements
- * munder, mover and munderover.
- * 
- * 
+ * This interface extends the MathMLPresentationElement interface for the MathML underscript,
+ * overscript and overscript-underscript pair elements munder, mover and munderover.
  */
 public interface MathMLUnderOverElement extends MathMLPresentationElement {
-    /**
-     * Either true or false if present; a string controlling whether
-     * underscript is drawn as an accent or as a limit, if specified; this is
-     * the element's accentunder attribute. This must return null for an
-     * mover.
-     * 
-     * @return value of the accentunder attribute.
-     */
-    String getAccentunder();
+  /**
+   * Either true or false if present; a string controlling whether underscript is drawn as an accent
+   * or as a limit, if specified; this is the element's accentunder attribute. This must return null
+   * for an mover.
+   *
+   * @return value of the accentunder attribute.
+   */
+  String getAccentunder();
 
-    /**
-     * setter for the accentunder attribute.
-     * 
-     * @param accentunder
-     *            new value for accentunder.
-     * @see #getAccentunder()
-     */
-    void setAccentunder(String accentunder);
+  /**
+   * setter for the accentunder attribute.
+   *
+   * @param accentunder new value for accentunder.
+   * @see #getAccentunder()
+   */
+  void setAccentunder(String accentunder);
 
-    /**
-     * Either true or false if present; a string controlling whether
-     * overscript is drawn as an accent or as a limit, if specified; this is
-     * the element's accent attribute. This must return null for an munder.
-     * 
-     * @return value of the accent attribute.
-     */
-    String getAccent();
+  /**
+   * Either true or false if present; a string controlling whether overscript is drawn as an accent
+   * or as a limit, if specified; this is the element's accent attribute. This must return null for
+   * an munder.
+   *
+   * @return value of the accent attribute.
+   */
+  String getAccent();
 
-    /**
-     * setter for the accent attribute.
-     * 
-     * @param accent
-     *            new value for accent.
-     * @see #getAccent()
-     */
-    void setAccent(String accent);
+  /**
+   * setter for the accent attribute.
+   *
+   * @param accent new value for accent.
+   * @see #getAccent()
+   */
+  void setAccent(String accent);
 
-    /**
-     * A MathMLElement representing the base of the script. This is the first
-     * child of the element.
-     * 
-     * @return value of the base attribute.
-     */
-    MathMLElement getBase();
+  /**
+   * A MathMLElement representing the base of the script. This is the first child of the element.
+   *
+   * @return value of the base attribute.
+   */
+  MathMLElement getBase();
 
-    /**
-     * setter for the base attribute.
-     * 
-     * @param base
-     *            new value for base.
-     * @see #getBase()
-     */
-    void setBase(MathMLElement base);
+  /**
+   * setter for the base attribute.
+   *
+   * @param base new value for base.
+   * @see #getBase()
+   */
+  void setBase(MathMLElement base);
 
-    /**
-     * A MathMLElement representing the underscript of the script. This is the
-     * second child of a munder or munderover; retrieval must return null for
-     * an mover.
-     * 
-     * @return value of the underscript attribute.
-     */
-    MathMLElement getUnderscript();
+  /**
+   * A MathMLElement representing the underscript of the script. This is the second child of a
+   * munder or munderover; retrieval must return null for an mover.
+   *
+   * @return value of the underscript attribute.
+   */
+  MathMLElement getUnderscript();
 
-    /**
-     * setter for the underscript attribute.
-     * 
-     * @param underscript
-     *            new value for underscript.
-     * @see #getUnderscript()
-     * @throws DOMException
-     *             HIERARCHY_REQUEST_ERR: Raised when the element is a mover.
-     */
-    void setUnderscript(MathMLElement underscript);
+  /**
+   * setter for the underscript attribute.
+   *
+   * @param underscript new value for underscript.
+   * @see #getUnderscript()
+   * @throws DOMException HIERARCHY_REQUEST_ERR: Raised when the element is a mover.
+   */
+  void setUnderscript(MathMLElement underscript);
 
-    /**
-     * A MathMLElement representing the overscript of the script. This is the
-     * second child of a mover or the third child of a munderover; retrieval
-     * must return null for an munder.
-     * 
-     * @return value of the overscript attribute.
-     */
-    MathMLElement getOverscript();
+  /**
+   * A MathMLElement representing the overscript of the script. This is the second child of a mover
+   * or the third child of a munderover; retrieval must return null for an munder.
+   *
+   * @return value of the overscript attribute.
+   */
+  MathMLElement getOverscript();
 
-    /**
-     * setter for the overscript attribute.
-     * 
-     * @param overscript
-     *            new value for overscript.
-     * @see #getOverscript()
-     * @throws DOMException
-     *             HIERARCHY_REQUEST_ERR: Raised when the element is a munder.
-     */
-    void setOverscript(MathMLElement overscript);
+  /**
+   * setter for the overscript attribute.
+   *
+   * @param overscript new value for overscript.
+   * @see #getOverscript()
+   * @throws DOMException HIERARCHY_REQUEST_ERR: Raised when the element is a munder.
+   */
+  void setOverscript(MathMLElement overscript);
 };

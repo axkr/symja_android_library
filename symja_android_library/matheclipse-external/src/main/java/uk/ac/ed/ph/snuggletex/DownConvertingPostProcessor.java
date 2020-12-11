@@ -11,19 +11,17 @@ import uk.ac.ed.ph.snuggletex.utilities.StylesheetManager;
 import org.w3c.dom.Document;
 
 /**
- * Trivial implementation of {@link DOMPostProcessor} that hooks into the
- * {@link MathMLDownConverter}. See {@link MathMLDownConverter} for information on what
- * this does.
+ * Trivial implementation of {@link DOMPostProcessor} that hooks into the {@link
+ * MathMLDownConverter}. See {@link MathMLDownConverter} for information on what this does.
  *
- * @author  David McKain
+ * @author David McKain
  * @version $Revision: 525 $
  */
 public final class DownConvertingPostProcessor implements DOMPostProcessor {
-    
-    public Document postProcessDOM(Document workDocument, DOMOutputOptions options,
-            StylesheetManager stylesheetManager) {
-        MathMLDownConverter downConverter = new MathMLDownConverter(stylesheetManager, options);
-        return downConverter.downConvertDOM(workDocument);
-    }
 
+  public Document postProcessDOM(
+      Document workDocument, DOMOutputOptions options, StylesheetManager stylesheetManager) {
+    MathMLDownConverter downConverter = new MathMLDownConverter(stylesheetManager, options);
+    return downConverter.downConvertDOM(workDocument);
+  }
 }

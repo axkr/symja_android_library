@@ -1,6 +1,6 @@
 /*
  * Copyright 2007 - 2007 JEuclid, http://jeuclid.sf.net
- * 
+ *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
@@ -22,12 +22,8 @@ package org.w3c.dom.mathml;
  */
 
 /**
- * This interface represents the MathML bound variable element bvar. The
- * interface currently provides no functionality beyond that of
- * MathMLContentContainer, but is useful for defining the type of bound
- * variable access functions.
- * 
- * 
+ * This interface represents the MathML bound variable element bvar. The interface currently
+ * provides no functionality beyond that of MathMLContentContainer, but is useful for defining the
+ * type of bound variable access functions.
  */
-public interface MathMLBvarElement extends MathMLContentContainer {
-};
+public interface MathMLBvarElement extends MathMLContentContainer {};

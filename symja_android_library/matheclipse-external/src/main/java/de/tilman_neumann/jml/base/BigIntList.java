@@ -21,84 +21,80 @@ import static de.tilman_neumann.jml.base.BigIntConstants.*;
 
 /**
  * A list of big integers.
- * 
+ *
  * @author Tilman Neumann
  */
 public class BigIntList extends ArrayList<BigInteger> {
 
-	private static final long serialVersionUID = -5780972400272364758L;
+  private static final long serialVersionUID = -5780972400272364758L;
 
-	/**
-	 * Constructor for an empty list with standard initial capacity.
-	 */
-	public BigIntList() {
-		super();
-	}
-	
-	/**
-	 * Constructor for an empty list with specified initial capacity.
-	 * @param size initial capacity
-	 */
-	public BigIntList(int size) {
-		super(size);
-	}
+  /** Constructor for an empty list with standard initial capacity. */
+  public BigIntList() {
+    super();
+  }
 
-	/**
-	 * Factory method creating a list of big integers from the given comma-separated string.
-	 * @param str
-	 * @return list of big integers
-	 */
-	public static BigIntList valueOf(String str) {
-		if (str==null) { return null; }
+  /**
+   * Constructor for an empty list with specified initial capacity.
+   *
+   * @param size initial capacity
+   */
+  public BigIntList(int size) {
+    super(size);
+  }
 
-		BigIntList list = new BigIntList();
-        StringTokenizer tokenizer = new StringTokenizer(str.trim(), ",");
+  /**
+   * Factory method creating a list of big integers from the given comma-separated string.
+   *
+   * @param str
+   * @return list of big integers
+   */
+  public static BigIntList valueOf(String str) {
+    if (str == null) {
+      return null;
+    }
 
-        while (tokenizer.hasMoreTokens()) {
-        	String token = tokenizer.nextToken().trim();
-        	try {
-        		list.add(new BigInteger(token));
-        	} catch (NumberFormatException nfe) {
-        		throw new IllegalArgumentException("str contains illegal value '" + token + "'");
-        	}
-        }
-        return list;
-	}
+    BigIntList list = new BigIntList();
+    StringTokenizer tokenizer = new StringTokenizer(str.trim(), ",");
 
-	/**
-	 * @return The sum of all elements.
-	 */
-	public BigInteger sum() {
-		BigInteger sum = I_0;
-		for (BigInteger elem : this) {
-			sum = sum.add(elem);
-		}
-		return sum;
-	}
+    while (tokenizer.hasMoreTokens()) {
+      String token = tokenizer.nextToken().trim();
+      try {
+        list.add(new BigInteger(token));
+      } catch (NumberFormatException nfe) {
+        throw new IllegalArgumentException("str contains illegal value '" + token + "'");
+      }
+    }
+    return list;
+  }
 
-	/**
-	 * @return The sum of the absolute values of the elements.
-	 */
-	public BigInteger absSum() {
-		BigInteger sum = I_0;
-		for (BigInteger elem : this) {
-			sum = sum.add(elem.abs());
-		}
-		return sum;
-	}
+  /** @return The sum of all elements. */
+  public BigInteger sum() {
+    BigInteger sum = I_0;
+    for (BigInteger elem : this) {
+      sum = sum.add(elem);
+    }
+    return sum;
+  }
 
-	/**
-	 * @return The product of all elements, 0 if the list is empty.
-	 */
-	public BigInteger product() {
-		if (this.isEmpty()) {
-			return I_0;
-		}
-		
-		BigInteger prod = I_1;
-		for (BigInteger elem : this) {
-			prod = prod.multiply(elem);
-		}
-		return prod;
-	}
+  /** @return The sum of the absolute values of the elements. */
+  public BigInteger absSum() {
+    BigInteger sum = I_0;
+    for (BigInteger elem : this) {
+      sum = sum.add(elem.abs());
+    }
+    return sum;
+  }
+
+  /** @return The product of all elements, 0 if the list is empty. */
+  public BigInteger product() {
+    if (this.isEmpty()) {
+      return I_0;
+    }
+
+    BigInteger prod = I_1;
+    for (BigInteger elem : this) {
+      prod = prod.multiply(elem);
+    }
+    return prod;
+  }
 }

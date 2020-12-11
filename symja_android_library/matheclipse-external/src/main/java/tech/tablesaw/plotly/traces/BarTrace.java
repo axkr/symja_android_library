@@ -28,7 +28,7 @@ public class BarTrace extends AbstractTrace {
 
   public static BarBuilder builder(Object[] x, double[] y) {
     return new BarBuilder(x, y);
-  } 
+  }
 
   @Override
   public String asJavascript(int i) {

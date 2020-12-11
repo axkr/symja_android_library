@@ -24,20 +24,23 @@ import static de.tilman_neumann.jml.base.BigDecimalConstants.*;
 
 /**
  * Inverse hyperbolic tangens function.
+ *
  * @author Tilman Neumann
  */
 public class ArcTanH {
 
-	/**
-	 * atanh(x) implemented by ln() formula.
-	 * @param x real argument with |x| < 1
-	 * @param scale wanted accuracy in after-comma digits
-	 * @return atanh(x)
-	 */
-	public static BigDecimal atanh(BigDecimal x, Scale scale) {
-		if (x.abs().compareTo(F_1)>=0) throw new ArithmeticException("atanh(x) requires |x|<1 but x=" + x);
-		BigDecimal fraction = BigDecimalMath.divide(F_1.add(x), F_1.subtract(x), scale);
-		BigDecimal lnTerm = Ln.ln(fraction, scale);
-		return Pow2.divPow2(lnTerm, 1);
-	}
+  /**
+   * atanh(x) implemented by ln() formula.
+   *
+   * @param x real argument with |x| < 1
+   * @param scale wanted accuracy in after-comma digits
+   * @return atanh(x)
+   */
+  public static BigDecimal atanh(BigDecimal x, Scale scale) {
+    if (x.abs().compareTo(F_1) >= 0)
+      throw new ArithmeticException("atanh(x) requires |x|<1 but x=" + x);
+    BigDecimal fraction = BigDecimalMath.divide(F_1.add(x), F_1.subtract(x), scale);
+    BigDecimal lnTerm = Ln.ln(fraction, scale);
+    return Pow2.divPow2(lnTerm, 1);
+  }
 }

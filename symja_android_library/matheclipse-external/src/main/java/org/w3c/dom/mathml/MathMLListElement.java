@@ -1,6 +1,6 @@
 /*
  * Copyright 2007 - 2007 JEuclid, http://jeuclid.sf.net
- * 
+ *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
@@ -22,35 +22,30 @@ package org.w3c.dom.mathml;
  */
 
 /**
- * The list element is the container element which represents a list of
- * elements. Elements can be defined either by explicitly listing the
- * elements, or by using the bvar and condition elements.
- * 
- * 
+ * The list element is the container element which represents a list of elements. Elements can be
+ * defined either by explicitly listing the elements, or by using the bvar and condition elements.
  */
 public interface MathMLListElement extends MathMLContentContainer {
-    /**
-     * This is true if the list is specified by giving its elements
-     * explicitly.
-     * 
-     * @return value of the isExplicit attribute.
-     */
-    boolean getIsExplicit();
+  /**
+   * This is true if the list is specified by giving its elements explicitly.
+   *
+   * @return value of the isExplicit attribute.
+   */
+  boolean getIsExplicit();
 
-    /**
-     * The order attribute of the represented element. Predefined values are
-     * numeric and lexicographic. See and .
-     * 
-     * @return value of the ordering attribute.
-     */
-    String getOrdering();
+  /**
+   * The order attribute of the represented element. Predefined values are numeric and
+   * lexicographic. See and .
+   *
+   * @return value of the ordering attribute.
+   */
+  String getOrdering();
 
-    /**
-     * setter for the ordering attribute.
-     * 
-     * @param ordering
-     *            new value for ordering.
-     * @see #getOrdering()
-     */
-    void setOrdering(String ordering);
+  /**
+   * setter for the ordering attribute.
+   *
+   * @param ordering new value for ordering.
+   * @see #getOrdering()
+   */
+  void setOrdering(String ordering);
 };

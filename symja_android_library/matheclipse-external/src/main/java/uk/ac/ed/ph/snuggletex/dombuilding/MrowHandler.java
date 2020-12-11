@@ -14,14 +14,14 @@ import org.w3c.dom.Element;
 /**
  * Builds MathML <tt>mrow</tt>s.
  *
- * @author  David McKain
+ * @author David McKain
  * @version $Revision: 525 $
  */
 public class MrowHandler implements CommandHandler {
-    
-    public void handleCommand(DOMBuilder builder, Element parentElement, CommandToken token)
-            throws SnuggleParseException {
-        Element mrow = builder.appendMathMLElement(parentElement, "mrow");
-        builder.handleTokens(mrow, token.getArguments()[0], false);
-    }
+
+  public void handleCommand(DOMBuilder builder, Element parentElement, CommandToken token)
+      throws SnuggleParseException {
+    Element mrow = builder.appendMathMLElement(parentElement, "mrow");
+    builder.handleTokens(mrow, token.getArguments()[0], false);
+  }
 }

@@ -1,6 +1,6 @@
 /*
  * Copyright 2007 - 2007 JEuclid, http://jeuclid.sf.net
- * 
+ *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
@@ -22,27 +22,23 @@ package org.w3c.dom.mathml;
  */
 
 /**
- * This interface extends the MathMLPresentationElement interface for the
- * MathML group -alignment element maligngroup.
- * 
- * 
+ * This interface extends the MathMLPresentationElement interface for the MathML group -alignment
+ * element maligngroup.
  */
 public interface MathMLAlignGroupElement extends MathMLPresentationElement {
-    /**
-     * A string specifying how the alignment group is to be aligned with other
-     * alignment groups above or below it. Allowed values are left, right,
-     * center, or decimalpoint.
-     * 
-     * @return value of the groupalign attribute.
-     */
-    String getGroupalign();
+  /**
+   * A string specifying how the alignment group is to be aligned with other alignment groups above
+   * or below it. Allowed values are left, right, center, or decimalpoint.
+   *
+   * @return value of the groupalign attribute.
+   */
+  String getGroupalign();
 
-    /**
-     * setter for the groupalign attribute.
-     * 
-     * @param groupalign
-     *            new value for groupalign.
-     * @see #getGroupalign()
-     */
-    void setGroupalign(String groupalign);
+  /**
+   * setter for the groupalign attribute.
+   *
+   * @param groupalign new value for groupalign.
+   * @see #getGroupalign()
+   */
+  void setGroupalign(String groupalign);
 };

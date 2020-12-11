@@ -25,50 +25,51 @@ import de.tilman_neumann.util.ConfigUtil;
  * @author Tilman Neumann
  */
 public class PrimeCountsBetweenSquares implements SieveCallback {
-	private static final Logger LOG = Logger.getLogger(PrimeCountsBetweenSquares.class);
-	
-	private SegmentedSieve sieve;
-	private long limit;
-	private int count = 0;
+  private static final Logger LOG = Logger.getLogger(PrimeCountsBetweenSquares.class);
 
-	/** base of lower square */
-	private long b0, b1;
-	/** upper square */
-	private long s1;
+  private SegmentedSieve sieve;
+  private long limit;
+  private int count = 0;
 
-	
-	public PrimeCountsBetweenSquares(long limit) {
-		sieve = new SegmentedSieve(this);
-		this.limit = limit;
-	}
+  /** base of lower square */
+  private long b0, b1;
+  /** upper square */
+  private long s1;
 
-	public void run() {
-		b0=1; b1=2; s1=4;
-		count = 0;
-		sieve.sieve(limit);
-	}
-	
-	@Override
-	public void processPrime(long prime) {
-		if (prime<s1) {
-			//LOG.debug("prime = " + prime);
-			count++;
-		} else {
-			// overflow of current range (s0, s1)
-			LOG.info("#primes between " + b0 + "^2 and " + b1 + "^2 = " + count);
-			b0 = b1;
-			b1++;
-			s1 = b1*b1;
-			//LOG.debug("prime = " + prime);
-			count = 1;
-		}
-	}
-	
-	public static void main(String[] args) {
-		ConfigUtil.initProject();
-		new PrimeCountsBetweenSquares(100000000000L).run();
-		// result: A014085 = 2, 2, 2, 3, 2, 4, 3, 4, 3, 5, 4, 5, 5, 4, 6, 7, 5, 6, 6, 7, 7, 7, ...
-		// In that entry we also see that a stronger conjecture exists:
-		// There is at least one prime in n^k...n^(k+1) with k = log(127)/log(16) ~ 1.747171172
-	}
+  public PrimeCountsBetweenSquares(long limit) {
+    sieve = new SegmentedSieve(this);
+    this.limit = limit;
+  }
+
+  public void run() {
+    b0 = 1;
+    b1 = 2;
+    s1 = 4;
+    count = 0;
+    sieve.sieve(limit);
+  }
+
+  @Override
+  public void processPrime(long prime) {
+    if (prime < s1) {
+      // LOG.debug("prime = " + prime);
+      count++;
+    } else {
+      // overflow of current range (s0, s1)
+      LOG.info("#primes between " + b0 + "^2 and " + b1 + "^2 = " + count);
+      b0 = b1;
+      b1++;
+      s1 = b1 * b1;
+      // LOG.debug("prime = " + prime);
+      count = 1;
+    }
+  }
+
+  public static void main(String[] args) {
+    ConfigUtil.initProject();
+    new PrimeCountsBetweenSquares(100000000000L).run();
+    // result: A014085 = 2, 2, 2, 3, 2, 4, 3, 4, 3, 5, 4, 5, 5, 4, 6, 7, 5, 6, 6, 7, 7, 7, ...
+    // In that entry we also see that a stronger conjecture exists:
+    // There is at least one prime in n^k...n^(k+1) with k = log(127)/log(16) ~ 1.747171172
+  }
 }

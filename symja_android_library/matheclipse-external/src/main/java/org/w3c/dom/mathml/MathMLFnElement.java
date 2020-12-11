@@ -1,6 +1,6 @@
 /*
  * Copyright 2007 - 2007 JEuclid, http://jeuclid.sf.net
- * 
+ *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
@@ -22,44 +22,38 @@ package org.w3c.dom.mathml;
  */
 
 /**
- * The fn element makes explicit the fact that a more general MathML object is
- * intended to be used in the same manner as if it were a pre-defined function
- * such as sin or plus.
- * 
- * 
+ * The fn element makes explicit the fact that a more general MathML object is intended to be used
+ * in the same manner as if it were a pre-defined function such as sin or plus.
  */
 public interface MathMLFnElement extends MathMLContentContainer {
-    /**
-     * A URI pointing to a definition for this function-type element. Note
-     * that there is no stipulation about the form this definition may take!
-     * 
-     * @return value of the definitionURL attribute.
-     */
-    String getDefinitionURL();
+  /**
+   * A URI pointing to a definition for this function-type element. Note that there is no
+   * stipulation about the form this definition may take!
+   *
+   * @return value of the definitionURL attribute.
+   */
+  String getDefinitionURL();
 
-    /**
-     * setter for the definitionURL attribute.
-     * 
-     * @param definitionURL
-     *            new value for definitionURL.
-     * @see #getDefinitionURL()
-     */
-    void setDefinitionURL(String definitionURL);
+  /**
+   * setter for the definitionURL attribute.
+   *
+   * @param definitionURL new value for definitionURL.
+   * @see #getDefinitionURL()
+   */
+  void setDefinitionURL(String definitionURL);
 
-    /**
-     * A string describing the syntax in which the definition located at
-     * definitionURL is given.
-     * 
-     * @return value of the encoding attribute.
-     */
-    String getEncoding();
+  /**
+   * A string describing the syntax in which the definition located at definitionURL is given.
+   *
+   * @return value of the encoding attribute.
+   */
+  String getEncoding();
 
-    /**
-     * setter for the encoding attribute.
-     * 
-     * @param encoding
-     *            new value for encoding.
-     * @see #getEncoding()
-     */
-    void setEncoding(String encoding);
+  /**
+   * setter for the encoding attribute.
+   *
+   * @param encoding new value for encoding.
+   * @see #getEncoding()
+   */
+  void setEncoding(String encoding);
 };

@@ -22,46 +22,45 @@ import de.tilman_neumann.jml.factor.siqs.tdiv.TDiv_QS;
 
 /**
  * Interface for polynomial generators.
+ *
  * @author Tilman Neumann
  */
 public interface PolyGenerator {
 
-	/**
-	 * @return the name of this polynomial generator
-	 */
-	String getName();
+  /** @return the name of this polynomial generator */
+  String getName();
 
-	/**
-	 * Initialize the polynomial generator for a new N.
-	 * Inside this method we require aParamGenerator.qCount -> aParamGenerator must have been initialized before.
-	 * 
-	 * @param k multiplier
-	 * @param N
-	 * @param kN
-	 * @param d the d-parameter of quadratic polynomials Q(x) = (d*a*x + b)^2 - kN
-	 * @param sieveParams basic sieve parameters for a new N
-	 * @param baseArrays primes, power arrays after adding powers
-	 * @param aParamGenerator generator for a-parameters
-	 * @param sieveEngine
-	 * @param tDivEngine
-	 */
-	void initializeForN(
-			int k, BigInteger N, BigInteger kN, int d, SieveParams sieveParams, BaseArrays baseArrays, 
-			AParamGenerator aParamGenerator, Sieve sieveEngine, TDiv_QS tDivEngine);
+  /**
+   * Initialize the polynomial generator for a new N. Inside this method we require
+   * aParamGenerator.qCount -> aParamGenerator must have been initialized before.
+   *
+   * @param k multiplier
+   * @param N
+   * @param kN
+   * @param d the d-parameter of quadratic polynomials Q(x) = (d*a*x + b)^2 - kN
+   * @param sieveParams basic sieve parameters for a new N
+   * @param baseArrays primes, power arrays after adding powers
+   * @param aParamGenerator generator for a-parameters
+   * @param sieveEngine
+   * @param tDivEngine
+   */
+  void initializeForN(
+      int k,
+      BigInteger N,
+      BigInteger kN,
+      int d,
+      SieveParams sieveParams,
+      BaseArrays baseArrays,
+      AParamGenerator aParamGenerator,
+      Sieve sieveEngine,
+      TDiv_QS tDivEngine);
 
-	/**
-	 * Compute a new polynomial.
-	 */
-	void nextPolynomial();
+  /** Compute a new polynomial. */
+  void nextPolynomial();
 
-	/**
-	 * @return description of the durations of the individual sub-phases
-	 */
-	PolyReport getReport();
+  /** @return description of the durations of the individual sub-phases */
+  PolyReport getReport();
 
-	/**
-	 * Release memory after a factorization.
-	 */
-	void cleanUp();
-
+  /** Release memory after a factorization. */
+  void cleanUp();
 }

@@ -8,7 +8,7 @@ import java.io.IOException;
 import java.io.StringWriter;
 import java.io.UncheckedIOException;
 import java.io.Writer;
-import java.util.Map; 
+import java.util.Map;
 
 public class BoxTrace extends AbstractTrace {
 
@@ -25,9 +25,9 @@ public class BoxTrace extends AbstractTrace {
     return new BoxBuilder(x, y);
   }
 
-//  public static BoxBuilder builder(CategoricalColumn<?> x, NumericColumn<? extends Number> y) {
-//    return new BoxBuilder(x, y);
-//  }
+  //  public static BoxBuilder builder(CategoricalColumn<?> x, NumericColumn<? extends Number> y) {
+  //    return new BoxBuilder(x, y);
+  //  }
 
   public static BoxBuilder builder(double[] x, double[] y) {
     Double[] xObjs = new Double[x.length];
@@ -79,10 +79,10 @@ public class BoxTrace extends AbstractTrace {
       return this;
     }
 
-//    BoxBuilder(CategoricalColumn<?> x, NumericColumn<? extends Number> y) {
-//      this.x = columnToStringArray(x);
-//      this.y = y.asDoubleArray();
-//    }
+    //    BoxBuilder(CategoricalColumn<?> x, NumericColumn<? extends Number> y) {
+    //      this.x = columnToStringArray(x);
+    //      this.y = y.asDoubleArray();
+    //    }
 
     public BoxTrace build() {
       return new BoxTrace(this);

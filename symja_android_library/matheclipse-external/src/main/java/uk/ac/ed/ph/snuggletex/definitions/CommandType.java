@@ -7,20 +7,19 @@ package uk.ac.ed.ph.snuggletex.definitions;
 
 /**
  * Enumerates different types of LaTeX commands.
- * 
- * @author  David McKain
+ *
+ * @author David McKain
  * @version $Revision:179 $
  */
 public enum CommandType {
-    
-    /** Takes no arguments */
-    SIMPLE,
-    
-    /** Takes no arguments, absorbs the following token */
-    COMBINER,
-    
-    /** Takes arguments */
-    COMPLEX,
-    
-    ;
+
+  /** Takes no arguments */
+  SIMPLE,
+
+  /** Takes no arguments, absorbs the following token */
+  COMBINER,
+
+  /** Takes arguments */
+  COMPLEX,
+  ;
 }

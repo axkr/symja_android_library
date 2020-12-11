@@ -15,37 +15,46 @@ import java.util.EnumSet;
 
 /**
  * Defines a built-in LaTeX environment, as specified within a {@link SnugglePackage}.
- * 
+ *
  * @see BuiltinCommand
  * @see CorePackageDefinitions
- * 
- * @author  David McKain
+ * @author David McKain
  * @version $Revision:179 $
  */
 public final class BuiltinEnvironment extends BuiltinCommandOrEnvironment<EnvironmentHandler>
-        implements Environment {
-    
-    /** 
-     * Mode to use when parsing content. If null, will preserve mode that environment
-     * is called in.
-     */
-    private final LaTeXMode contentMode;
-    
-    public BuiltinEnvironment(final String texName, final boolean allowingOptionalArgument,
-            final int argumentCount, final EnumSet<LaTeXMode> allowedModes,
-            final LaTeXMode contentMode, final EnumMap<InterpretationType, Interpretation> interpretations,
-            final EnvironmentHandler domBuildingHandler, final TextFlowContext textFlowContext) {
-        super(texName, allowingOptionalArgument, argumentCount, allowedModes, interpretations,
-                textFlowContext, domBuildingHandler);
-        this.contentMode = contentMode;
-    }
-    
-    /** (Currently all built-in environments parse their arguments in {@link LaTeXMode#PARAGRAPH}.) */
-    public LaTeXMode getArgumentMode(int argumentIndex) {
-        return LaTeXMode.PARAGRAPH;
-    }
-    
-    public LaTeXMode getContentMode() {
-        return contentMode;
-    }
+    implements Environment {
+
+  /**
+   * Mode to use when parsing content. If null, will preserve mode that environment is called in.
+   */
+  private final LaTeXMode contentMode;
+
+  public BuiltinEnvironment(
+      final String texName,
+      final boolean allowingOptionalArgument,
+      final int argumentCount,
+      final EnumSet<LaTeXMode> allowedModes,
+      final LaTeXMode contentMode,
+      final EnumMap<InterpretationType, Interpretation> interpretations,
+      final EnvironmentHandler domBuildingHandler,
+      final TextFlowContext textFlowContext) {
+    super(
+        texName,
+        allowingOptionalArgument,
+        argumentCount,
+        allowedModes,
+        interpretations,
+        textFlowContext,
+        domBuildingHandler);
+    this.contentMode = contentMode;
+  }
+
+  /** (Currently all built-in environments parse their arguments in {@link LaTeXMode#PARAGRAPH}.) */
+  public LaTeXMode getArgumentMode(int argumentIndex) {
+    return LaTeXMode.PARAGRAPH;
+  }
+
+  public LaTeXMode getContentMode() {
+    return contentMode;
+  }
 }

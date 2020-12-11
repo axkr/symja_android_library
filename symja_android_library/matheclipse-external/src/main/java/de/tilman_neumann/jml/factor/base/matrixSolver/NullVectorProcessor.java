@@ -20,13 +20,15 @@ import de.tilman_neumann.jml.factor.base.congruence.AQPair;
 
 /**
  * Simple interface to decouple congruence solver classes.
+ *
  * @author Tilman Neumann
  */
 public interface NullVectorProcessor {
-	/**
-	 * Process a null vector found by a matrix solver.
-	 * @param aqPairs the AQ-pairs of the null vector.
-	 * @throws FactorException
-	 */
-	void processNullVector(Set<AQPair> aqPairs) throws FactorException;
+  /**
+   * Process a null vector found by a matrix solver.
+   *
+   * @param aqPairs the AQ-pairs of the null vector.
+   * @throws FactorException
+   */
+  void processNullVector(Set<AQPair> aqPairs) throws FactorException;
 }

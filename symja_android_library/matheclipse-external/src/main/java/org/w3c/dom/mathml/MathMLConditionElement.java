@@ -1,6 +1,6 @@
 /*
  * Copyright 2007 - 2007 JEuclid, http://jeuclid.sf.net
- * 
+ *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
@@ -22,25 +22,21 @@ package org.w3c.dom.mathml;
  */
 
 /**
- * The condition element is used to place a condition on one or more free
- * variables or identifiers.
- * 
- * 
+ * The condition element is used to place a condition on one or more free variables or identifiers.
  */
 public interface MathMLConditionElement extends MathMLContentElement {
-    /**
-     * A MathMLApplyElement that represents the condition.
-     * 
-     * @return value of the condition attribute.
-     */
-    MathMLApplyElement getCondition();
+  /**
+   * A MathMLApplyElement that represents the condition.
+   *
+   * @return value of the condition attribute.
+   */
+  MathMLApplyElement getCondition();
 
-    /**
-     * setter for the condition attribute.
-     * 
-     * @param condition
-     *            new value for condition.
-     * @see #getCondition()
-     */
-    void setCondition(MathMLApplyElement condition);
+  /**
+   * setter for the condition attribute.
+   *
+   * @param condition new value for condition.
+   * @see #getCondition()
+   */
+  void setCondition(MathMLApplyElement condition);
 };

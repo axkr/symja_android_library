@@ -9,27 +9,24 @@ import uk.ac.ed.ph.snuggletex.ErrorGroup;
 import uk.ac.ed.ph.snuggletex.SnugglePackage;
 
 /**
- * Defines the groupings for the various types of client-induced errors that can arise 
- * when using the functionality provided by the core SnuggleTeX module.
- * 
- * @since 1.2.0
+ * Defines the groupings for the various types of client-induced errors that can arise when using
+ * the functionality provided by the core SnuggleTeX module.
  *
- * @author  David McKain
+ * @since 1.2.0
+ * @author David McKain
  * @version $Revision:179 $
  */
 public enum CoreErrorGroup implements ErrorGroup {
-    
-    TTE(), /* Tokenisation errors */
-    TFE(), /* Token fixing errors */
-    TDE(), /* DOM Building errors */
+  TTE(), /* Tokenisation errors */
+  TFE(), /* Token fixing errors */
+  TDE(), /* DOM Building errors */
+  ;
 
-    ;
-    
-    public String getName() {
-        return name();
-    }
+  public String getName() {
+    return name();
+  }
 
-    public SnugglePackage getPackage() {
-        return CorePackageDefinitions.getPackage();
-    }
+  public SnugglePackage getPackage() {
+    return CorePackageDefinitions.getPackage();
+  }
 }

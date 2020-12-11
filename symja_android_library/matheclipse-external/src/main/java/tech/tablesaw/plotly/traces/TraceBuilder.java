@@ -1,6 +1,6 @@
 package tech.tablesaw.plotly.traces;
 
-import com.google.common.base.Preconditions; 
+import com.google.common.base.Preconditions;
 import tech.tablesaw.plotly.components.HoverLabel;
 
 public abstract class TraceBuilder {
@@ -78,13 +78,13 @@ public abstract class TraceBuilder {
     return this;
   }
 
-//  protected static String[] columnToStringArray(Column<?> column) {
-//    String[] x = new String[column.size()];
-//    for (int i = 0; i < column.size(); i++) {
-//      x[i] = column.getString(i);
-//    }
-//    return x;
-//  }
+  //  protected static String[] columnToStringArray(Column<?> column) {
+  //    String[] x = new String[column.size()];
+  //    for (int i = 0; i < column.size(); i++) {
+  //      x[i] = column.getString(i);
+  //    }
+  //    return x;
+  //  }
 
   public TraceBuilder xAxis(String xAxis) {
     Preconditions.checkArgument(xAxis.matches("^x[0-9]*$"));

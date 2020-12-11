@@ -14,23 +14,29 @@ import uk.ac.ed.ph.snuggletex.semantics.InterpretationType;
 import java.util.EnumMap;
 
 /**
- * Represents a "simple" LaTeX token. See {@link TokenType} for
- * the sorts of things this covers.
- * 
+ * Represents a "simple" LaTeX token. See {@link TokenType} for the sorts of things this covers.
+ *
  * @see TokenType
- * 
- * @author  David McKain
+ * @author David McKain
  * @version $Revision: 525 $
  */
 public final class SimpleToken extends FlowToken {
-    
-    public SimpleToken(final FrozenSlice slice, final TokenType tokenType, final LaTeXMode latexMode,
-            final TextFlowContext context, final Interpretation... interpretations) {
-        super(slice, tokenType, latexMode, context, interpretations);
-    }
 
-    public SimpleToken(final FrozenSlice slice, final TokenType tokenType, final LaTeXMode latexMode,
-            final TextFlowContext context, final EnumMap<InterpretationType, Interpretation> interpretations) {
-        super(slice, tokenType, latexMode, context, interpretations);
-    }
+  public SimpleToken(
+      final FrozenSlice slice,
+      final TokenType tokenType,
+      final LaTeXMode latexMode,
+      final TextFlowContext context,
+      final Interpretation... interpretations) {
+    super(slice, tokenType, latexMode, context, interpretations);
+  }
+
+  public SimpleToken(
+      final FrozenSlice slice,
+      final TokenType tokenType,
+      final LaTeXMode latexMode,
+      final TextFlowContext context,
+      final EnumMap<InterpretationType, Interpretation> interpretations) {
+    super(slice, tokenType, latexMode, context, interpretations);
+  }
 }

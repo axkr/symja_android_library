@@ -19,36 +19,38 @@ import static de.tilman_neumann.jml.base.BigIntConstants.*;
 
 /**
  * Hyperfactorials.
- * 
+ *
  * @author Tilman Neumann
  */
 public class HyperFactorial {
-	/**
-	 * A002109 or the standard "hyperfactorial" is the product {1^1*2^2*..n^n}.
-	 * @param n
-	 * @return hyperfactorial(n)
-	 */
-	public static BigInteger standard(int n) {
-		BigInteger result = I_1;
-		for (int k=2; k<=n; k++) {
-			result = result.multiply(BigInteger.valueOf(k).pow(k));
-		}
-		return result;
-	}
-	
-	/**
-	 * A000197 or what I call the "inverse hyperfactorial" is the product
-	 * 1^n*2^(n-1)*..*(n-1)^2*n^1 = 1!*2!*3!*...(n-1)!*n!.
-	 * @param n
-	 * @return the "inverse hyperfactorial" of n aka 1!*2!*3!*...(n-1)!*n!
-	 */
-	public static BigInteger inverse(int n) {
-		BigInteger result = I_1;
-		BigInteger kFactorial = I_1;
-		for (int k=2; k<=n; k++) {
-			kFactorial = kFactorial.multiply(BigInteger.valueOf(k));
-			result = result.multiply(kFactorial);
-		}
-		return result;
-	}
+  /**
+   * A002109 or the standard "hyperfactorial" is the product {1^1*2^2*..n^n}.
+   *
+   * @param n
+   * @return hyperfactorial(n)
+   */
+  public static BigInteger standard(int n) {
+    BigInteger result = I_1;
+    for (int k = 2; k <= n; k++) {
+      result = result.multiply(BigInteger.valueOf(k).pow(k));
+    }
+    return result;
+  }
+
+  /**
+   * A000197 or what I call the "inverse hyperfactorial" is the product 1^n*2^(n-1)*..*(n-1)^2*n^1 =
+   * 1!*2!*3!*...(n-1)!*n!.
+   *
+   * @param n
+   * @return the "inverse hyperfactorial" of n aka 1!*2!*3!*...(n-1)!*n!
+   */
+  public static BigInteger inverse(int n) {
+    BigInteger result = I_1;
+    BigInteger kFactorial = I_1;
+    for (int k = 2; k <= n; k++) {
+      kFactorial = kFactorial.multiply(BigInteger.valueOf(k));
+      result = result.multiply(kFactorial);
+    }
+    return result;
+  }
 }

@@ -13,21 +13,21 @@ import uk.ac.ed.ph.snuggletex.utilities.MessageFormatter;
  * Internal Exception thrown by {@link SnuggleSession#registerError(InputError)} when a parsing
  * error occurs and the client has requested immediate failure in such circumstances.
  *
- * @author  David McKain
+ * @author David McKain
  * @version $Revision: 525 $
  */
 public final class SnuggleParseException extends Exception {
 
-    private static final long serialVersionUID = -4623002490712268496L;
-    
-    private final InputError error;
-    
-    public SnuggleParseException(InputError error) {
-        super(MessageFormatter.formatErrorAsString(error));
-        this.error = error;
-    }
+  private static final long serialVersionUID = -4623002490712268496L;
 
-    public InputError getError() {
-        return error;
-    }
+  private final InputError error;
+
+  public SnuggleParseException(InputError error) {
+    super(MessageFormatter.formatErrorAsString(error));
+    this.error = error;
+  }
+
+  public InputError getError() {
+    return error;
+  }
 }

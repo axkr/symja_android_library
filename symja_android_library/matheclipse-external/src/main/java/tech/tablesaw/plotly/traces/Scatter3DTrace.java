@@ -9,7 +9,7 @@ import java.io.IOException;
 import java.io.StringWriter;
 import java.io.UncheckedIOException;
 import java.io.Writer;
-import java.util.Map; 
+import java.util.Map;
 import tech.tablesaw.plotly.components.HoverLabel;
 import tech.tablesaw.plotly.components.Marker;
 
@@ -27,12 +27,12 @@ public class Scatter3DTrace extends AbstractTrace {
     return new Scatter3DBuilder(x, y, z);
   }
 
-//  public static Scatter3DBuilder builder(
-//      NumericColumn<? extends Number> x,
-//      NumericColumn<? extends Number> y,
-//      NumericColumn<? extends Number> z) {
-//    return new Scatter3DBuilder(x, y, z);
-//  }
+  //  public static Scatter3DBuilder builder(
+  //      NumericColumn<? extends Number> x,
+  //      NumericColumn<? extends Number> y,
+  //      NumericColumn<? extends Number> z) {
+  //    return new Scatter3DBuilder(x, y, z);
+  //  }
 
   private Scatter3DTrace(Scatter3DBuilder builder) {
     super(builder);
@@ -120,14 +120,14 @@ public class Scatter3DTrace extends AbstractTrace {
       this.z = z;
     }
 
-//    private Scatter3DBuilder(
-//        NumericColumn<? extends Number> x,
-//        NumericColumn<? extends Number> y,
-//        NumericColumn<? extends Number> z) {
-//      this.x = x.asDoubleArray();
-//      this.y = y.asDoubleArray();
-//      this.z = z.asDoubleArray();
-//    }
+    //    private Scatter3DBuilder(
+    //        NumericColumn<? extends Number> x,
+    //        NumericColumn<? extends Number> y,
+    //        NumericColumn<? extends Number> z) {
+    //      this.x = x.asDoubleArray();
+    //      this.y = y.asDoubleArray();
+    //      this.z = z.asDoubleArray();
+    //    }
 
     public Scatter3DBuilder mode(Mode mode) {
       this.mode = mode;

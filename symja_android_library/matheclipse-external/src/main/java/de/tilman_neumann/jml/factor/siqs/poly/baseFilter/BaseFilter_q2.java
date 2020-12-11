@@ -22,65 +22,73 @@ import de.tilman_neumann.jml.factor.siqs.data.BaseArrays;
 import de.tilman_neumann.jml.factor.siqs.data.SolutionArrays;
 
 /**
- * Alternative implementation of a BaseFilter that removes the q-values of the a-parameter and their powers from the base to sieve with.
+ * Alternative implementation of a BaseFilter that removes the q-values of the a-parameter and their
+ * powers from the base to sieve with.
+ *
  * @author Tilman Neumann
  */
 public class BaseFilter_q2 implements BaseFilter {
-	private static final Logger LOG = Logger.getLogger(BaseFilter_q2.class);
-	private static final boolean DEBUG = false;
+  private static final Logger LOG = Logger.getLogger(BaseFilter_q2.class);
+  private static final boolean DEBUG = false;
 
-	@Override
-	public Result filter(SolutionArrays solutionArrays, BaseArrays baseArrays, int mergedBaseSize, int[] qArray, int qCount, int k) {
-		int[] mergedPrimes = baseArrays.primes;
-		int[] mergedExponents = baseArrays.exponents;
-		int[] mergedPowers = baseArrays.pArray;
-		int[] mergedTArray = baseArrays.tArray;
-		byte[] mergedlogPArray = baseArrays.logPArray;
-		double[] mergedPinvArrayD = baseArrays.pinvArrayD;
-		long[] mergedPinvArrayL = baseArrays.pinvArrayL;
+  @Override
+  public Result filter(
+      SolutionArrays solutionArrays,
+      BaseArrays baseArrays,
+      int mergedBaseSize,
+      int[] qArray,
+      int qCount,
+      int k) {
+    int[] mergedPrimes = baseArrays.primes;
+    int[] mergedExponents = baseArrays.exponents;
+    int[] mergedPowers = baseArrays.pArray;
+    int[] mergedTArray = baseArrays.tArray;
+    byte[] mergedlogPArray = baseArrays.logPArray;
+    double[] mergedPinvArrayD = baseArrays.pinvArrayD;
+    long[] mergedPinvArrayL = baseArrays.pinvArrayL;
 
-		int[] filteredPrimes = solutionArrays.primes;
-		int[] filteredExponents = solutionArrays.exponents;
-		int[] filteredPowers = solutionArrays.pArray;
-		int[] filteredTArray = solutionArrays.tArray;
-		byte[] filteredLogPArray = solutionArrays.logPArray;
-		double[] filteredPinvArrayD = solutionArrays.pinvArrayD;
-		long[] filteredPinvArrayL = solutionArrays.pinvArrayL;
+    int[] filteredPrimes = solutionArrays.primes;
+    int[] filteredExponents = solutionArrays.exponents;
+    int[] filteredPowers = solutionArrays.pArray;
+    int[] filteredTArray = solutionArrays.tArray;
+    byte[] filteredLogPArray = solutionArrays.logPArray;
+    double[] filteredPinvArrayD = solutionArrays.pinvArrayD;
+    long[] filteredPinvArrayL = solutionArrays.pinvArrayL;
 
-		// Collect q in a hash set to permit fast filtering of powers of q
-		HashSet<Integer> qSet = new HashSet<Integer>();
-		for (int q : qArray) {
-			qSet.add(q);
-		}
-		
-		int filteredBaseSize = 0;
-		for (int i=0; i<mergedBaseSize; i++) {
-			int p = mergedPrimes[i];
-			if (!qSet.contains(p)) {
-				filteredPrimes[filteredBaseSize] = mergedPrimes[i];
-				filteredExponents[filteredBaseSize] = mergedExponents[i];
-				filteredPowers[filteredBaseSize] = mergedPowers[i];
-				filteredTArray[filteredBaseSize] = mergedTArray[i];
-				filteredLogPArray[filteredBaseSize] = mergedlogPArray[i];
-				filteredPinvArrayD[filteredBaseSize] = mergedPinvArrayD[i];
-				filteredPinvArrayL[filteredBaseSize] = mergedPinvArrayL[i];
-				filteredBaseSize++;
-			}
-		}
-		
-		if (DEBUG) {
-			// qArray[] entries must be sorted bottom up
-			LOG.debug("qArray = " + Arrays.toString(qArray));
-			LOG.debug("mergedPrimes = " + Arrays.toString(mergedPrimes));
-			LOG.debug("mergedPowers = " + Arrays.toString(mergedPowers));
-			LOG.debug("filteredPrimes = " + Arrays.toString(filteredPrimes));
-		}
-		
-		return new Result(solutionArrays, filteredBaseSize, qArray);
-	}
-	
-	@Override
-	public String getName() {
-		return "qFilter2";
-	}
+    // Collect q in a hash set to permit fast filtering of powers of q
+    HashSet<Integer> qSet = new HashSet<Integer>();
+    for (int q : qArray) {
+      qSet.add(q);
+    }
+
+    int filteredBaseSize = 0;
+    for (int i = 0; i < mergedBaseSize; i++) {
+      int p = mergedPrimes[i];
+      if (!qSet.contains(p)) {
+        filteredPrimes[filteredBaseSize] = mergedPrimes[i];
+        filteredExponents[filteredBaseSize] = mergedExponents[i];
+        filteredPowers[filteredBaseSize] = mergedPowers[i];
+        filteredTArray[filteredBaseSize] = mergedTArray[i];
+        filteredLogPArray[filteredBaseSize] = mergedlogPArray[i];
+        filteredPinvArrayD[filteredBaseSize] = mergedPinvArrayD[i];
+        filteredPinvArrayL[filteredBaseSize] = mergedPinvArrayL[i];
+        filteredBaseSize++;
+      }
+    }
+
+    if (DEBUG) {
+      // qArray[] entries must be sorted bottom up
+      LOG.debug("qArray = " + Arrays.toString(qArray));
+      LOG.debug("mergedPrimes = " + Arrays.toString(mergedPrimes));
+      LOG.debug("mergedPowers = " + Arrays.toString(mergedPowers));
+      LOG.debug("filteredPrimes = " + Arrays.toString(filteredPrimes));
+    }
+
+    return new Result(solutionArrays, filteredBaseSize, qArray);
+  }
+
+  @Override
+  public String getName() {
+    return "qFilter2";
+  }
 }

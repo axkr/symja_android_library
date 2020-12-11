@@ -20,27 +20,29 @@ import de.tilman_neumann.util.SortedMultiset;
 
 /**
  * A perfect smooth congruence.
+ *
  * @author Tilman Neumann
  */
 public class Smooth_Perfect extends Smooth_Simple {
 
-	/**
-	 * Full constructor.
-	 * @param A
-	 * @param smallFactors small factors of Q
-	 */
-	public Smooth_Perfect(BigInteger A, SortedIntegerArray smallFactors) {
-		super(A, smallFactors);
-	}
-	
-	@Override
-	public SortedMultiset<Long> getAllQFactors() {
-		// a perfect smooth congruence has no large factors
-		return super.getSmallQFactors();
-	}
-	
-	@Override
-	public int getNumberOfLargeQFactors() {
-		return 0;
-	}
+  /**
+   * Full constructor.
+   *
+   * @param A
+   * @param smallFactors small factors of Q
+   */
+  public Smooth_Perfect(BigInteger A, SortedIntegerArray smallFactors) {
+    super(A, smallFactors);
+  }
+
+  @Override
+  public SortedMultiset<Long> getAllQFactors() {
+    // a perfect smooth congruence has no large factors
+    return super.getSmallQFactors();
+  }
+
+  @Override
+  public int getNumberOfLargeQFactors() {
+    return 0;
+  }
 }

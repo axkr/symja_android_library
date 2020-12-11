@@ -1,6 +1,6 @@
 /*
  * Copyright 2007 - 2007 JEuclid, http://jeuclid.sf.net
- * 
+ *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
@@ -24,103 +24,88 @@ import org.w3c.dom.DOMException;
  */
 
 /**
- * This interface extends the MathMLPresentationElement interface for the
- * MathML subscript, superscript and subscript-superscript pair elements msub,
- * msup, and msubsup.
- * 
- * 
+ * This interface extends the MathMLPresentationElement interface for the MathML subscript,
+ * superscript and subscript-superscript pair elements msub, msup, and msubsup.
  */
 public interface MathMLScriptElement extends MathMLPresentationElement {
-    /**
-     * A string representing the minimum amount to shift the baseline of the
-     * subscript down, if specified; this is the element's subscriptshift
-     * attribute. This must return null for an msup.
-     * 
-     * @return value of the subscriptshift attribute.
-     */
-    String getSubscriptshift();
+  /**
+   * A string representing the minimum amount to shift the baseline of the subscript down, if
+   * specified; this is the element's subscriptshift attribute. This must return null for an msup.
+   *
+   * @return value of the subscriptshift attribute.
+   */
+  String getSubscriptshift();
 
-    /**
-     * setter for the subscriptshift attribute.
-     * 
-     * @param subscriptshift
-     *            new value for subscriptshift.
-     * @see #getSubscriptshift()
-     */
-    void setSubscriptshift(String subscriptshift);
+  /**
+   * setter for the subscriptshift attribute.
+   *
+   * @param subscriptshift new value for subscriptshift.
+   * @see #getSubscriptshift()
+   */
+  void setSubscriptshift(String subscriptshift);
 
-    /**
-     * A string representing the minimum amount to shift the baseline of the
-     * superscript up, if specified; this is the element's superscriptshift
-     * attribute. This must return null for a msub.
-     * 
-     * @return value of the superscriptshift attribute.
-     */
-    String getSuperscriptshift();
+  /**
+   * A string representing the minimum amount to shift the baseline of the superscript up, if
+   * specified; this is the element's superscriptshift attribute. This must return null for a msub.
+   *
+   * @return value of the superscriptshift attribute.
+   */
+  String getSuperscriptshift();
 
-    /**
-     * setter for the superscriptshift attribute.
-     * 
-     * @param superscriptshift
-     *            new value for superscriptshift.
-     * @see #getSuperscriptshift()
-     */
-    void setSuperscriptshift(String superscriptshift);
+  /**
+   * setter for the superscriptshift attribute.
+   *
+   * @param superscriptshift new value for superscriptshift.
+   * @see #getSuperscriptshift()
+   */
+  void setSuperscriptshift(String superscriptshift);
 
-    /**
-     * A MathMLElement representing the base of the script. This is the first
-     * child of the element.
-     * 
-     * @return value of the base attribute.
-     */
-    MathMLElement getBase();
+  /**
+   * A MathMLElement representing the base of the script. This is the first child of the element.
+   *
+   * @return value of the base attribute.
+   */
+  MathMLElement getBase();
 
-    /**
-     * setter for the base attribute.
-     * 
-     * @param base
-     *            new value for base.
-     * @see #getBase()
-     */
-    void setBase(MathMLElement base);
+  /**
+   * setter for the base attribute.
+   *
+   * @param base new value for base.
+   * @see #getBase()
+   */
+  void setBase(MathMLElement base);
 
-    /**
-     * A MathMLElement representing the subscript of the script. This is the
-     * second child of a msub or msubsup; retrieval must return null for an
-     * msup.
-     * 
-     * @return value of the subscript attribute.
-     */
-    MathMLElement getSubscript();
+  /**
+   * A MathMLElement representing the subscript of the script. This is the second child of a msub or
+   * msubsup; retrieval must return null for an msup.
+   *
+   * @return value of the subscript attribute.
+   */
+  MathMLElement getSubscript();
 
-    /**
-     * setter for the subscript attribute.
-     * 
-     * @param subscript
-     *            new value for subscript.
-     * @see #getSubscript()
-     * @throws DOMException
-     *             HIERARCHY_REQUEST_ERR: Raised when the element is a msup.
-     */
-    void setSubscript(MathMLElement subscript);
+  /**
+   * setter for the subscript attribute.
+   *
+   * @param subscript new value for subscript.
+   * @see #getSubscript()
+   * @throws DOMException HIERARCHY_REQUEST_ERR: Raised when the element is a msup.
+   */
+  void setSubscript(MathMLElement subscript);
 
-    /**
-     * A MathMLElement representing the superscript of the script. This is the
-     * second child of a msup or the third child of a msubsup; retrieval must
-     * return null for an msub.
-     * 
-     * @return value of the superscript attribute.
-     */
-    MathMLElement getSuperscript();
+  /**
+   * A MathMLElement representing the superscript of the script. This is the second child of a msup
+   * or the third child of a msubsup; retrieval must return null for an msub.
+   *
+   * @return value of the superscript attribute.
+   */
+  MathMLElement getSuperscript();
 
-    /**
-     * setter for the superscript attribute.
-     * 
-     * @param superscript
-     *            new value for superscript.
-     * @see #getSuperscript()
-     * @throws DOMException
-     *             HIERARCHY_REQUEST_ERR: Raised when the element is a msub.
-     */
-    void setSuperscript(MathMLElement superscript);
+  /**
+   * setter for the superscript attribute.
+   *
+   * @param superscript new value for superscript.
+   * @see #getSuperscript()
+   * @throws DOMException HIERARCHY_REQUEST_ERR: Raised when the element is a msub.
+   */
+  void setSuperscript(MathMLElement superscript);
 };

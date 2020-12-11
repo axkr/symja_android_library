@@ -1,6 +1,6 @@
 /*
  * Copyright 2007 - 2007 JEuclid, http://jeuclid.sf.net
- * 
+ *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
@@ -22,12 +22,8 @@ package org.w3c.dom.mathml;
  */
 
 /**
- * This interface represents the csymbol element. Although it currently has no
- * attributes or methods distinct from those of MathMLContentToken, a separate
- * interface is provided to emphasize the conceptual role of the csymbol
- * element.
- * 
- * 
+ * This interface represents the csymbol element. Although it currently has no attributes or methods
+ * distinct from those of MathMLContentToken, a separate interface is provided to emphasize the
+ * conceptual role of the csymbol element.
  */
-public interface MathMLCsymbolElement extends MathMLContentToken {
-};
+public interface MathMLCsymbolElement extends MathMLContentToken {};

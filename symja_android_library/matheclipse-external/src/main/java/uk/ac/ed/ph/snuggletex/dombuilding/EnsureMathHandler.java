@@ -15,24 +15,23 @@ import org.w3c.dom.Element;
 /**
  * This handles the <tt>\\ensuremath</tt> command.
  *
- * @author  David McKain
+ * @author David McKain
  * @version $Revision: 525 $
  */
 public final class EnsureMathHandler implements CommandHandler {
-    
-    public void handleCommand(DOMBuilder builder, Element parentElement, CommandToken token)
-            throws SnuggleParseException {
-        ArgumentContainerToken contentToken = token.getArguments()[0];
-        if (builder.isBuildingMathMLIsland()) {
-            /* Already doing MathML so we just descend as normal */
-            builder.handleTokens(parentElement, contentToken, false);
-        }
-        else {
-            /* Not doing MathML yet so need to open a <math/>.
-             * 
-             * To do this, we simply delegate to MathEnvironmentBuilder
-             */
-            builder.buildMathElement(parentElement, token, contentToken, false);
-        }
+
+  public void handleCommand(DOMBuilder builder, Element parentElement, CommandToken token)
+      throws SnuggleParseException {
+    ArgumentContainerToken contentToken = token.getArguments()[0];
+    if (builder.isBuildingMathMLIsland()) {
+      /* Already doing MathML so we just descend as normal */
+      builder.handleTokens(parentElement, contentToken, false);
+    } else {
+      /* Not doing MathML yet so need to open a <math/>.
+       *
+       * To do this, we simply delegate to MathEnvironmentBuilder
+       */
+      builder.buildMathElement(parentElement, token, contentToken, false);
     }
+  }
 }

@@ -8,21 +8,21 @@ package uk.ac.ed.ph.snuggletex.semantics;
 import uk.ac.ed.ph.snuggletex.internal.util.ObjectUtilities;
 
 /**
- * Supplementary marker interpretation to be attached to operators which can "own big limits",
- * in the sense that they should be rendered in MathML using munder/mover/munderover
- * rather than msub/msup/msubsup.
+ * Supplementary marker interpretation to be attached to operators which can "own big limits", in
+ * the sense that they should be rendered in MathML using munder/mover/munderover rather than
+ * msub/msup/msubsup.
  *
- * @author  David McKain
+ * @author David McKain
  * @version $Revision: 525 $
  */
 public final class MathBigLimitOwnerInterpretation implements MathInterpretation {
 
-    public InterpretationType getType() {
-        return InterpretationType.MATH_BIG_LIMIT_OWNER;
-    }
-    
-    @Override
-    public String toString() {
-        return ObjectUtilities.beanToString(this);
-    }
+  public InterpretationType getType() {
+    return InterpretationType.MATH_BIG_LIMIT_OWNER;
+  }
+
+  @Override
+  public String toString() {
+    return ObjectUtilities.beanToString(this);
+  }
 }

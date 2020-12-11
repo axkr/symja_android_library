@@ -6,7 +6,7 @@ import java.io.IOException;
 import java.io.StringWriter;
 import java.io.UncheckedIOException;
 import java.io.Writer;
-import java.util.Map; 
+import java.util.Map;
 import tech.tablesaw.plotly.Utils;
 
 public class Histogram2DTrace extends AbstractTrace {
@@ -18,10 +18,10 @@ public class Histogram2DTrace extends AbstractTrace {
     return new Histogram2DBuilder(x, y);
   }
 
-	// public static Histogram2DBuilder builder(
-	// NumericColumn<? extends Number> x, NumericColumn<? extends Number> y) {
-	// return new Histogram2DBuilder(x.asDoubleArray(), y.asDoubleArray());
-	// }
+  // public static Histogram2DBuilder builder(
+  // NumericColumn<? extends Number> x, NumericColumn<? extends Number> y) {
+  // return new Histogram2DBuilder(x.asDoubleArray(), y.asDoubleArray());
+  // }
 
   private Histogram2DTrace(Histogram2DBuilder builder) {
     super(builder);

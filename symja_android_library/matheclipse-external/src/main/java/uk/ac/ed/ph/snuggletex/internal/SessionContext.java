@@ -19,24 +19,24 @@ import java.util.Map;
 /**
  * Provides access to session-related Objects used during the various parts of the snuggle process.
  *
- * @author  David McKain
+ * @author David McKain
  * @version $Revision: 525 $
  */
 public interface SessionContext {
 
-    SessionConfiguration getConfiguration();
+  SessionConfiguration getConfiguration();
 
-    List<InputError> getErrors();
+  List<InputError> getErrors();
 
-    BuiltinCommand getBuiltinCommandByTeXName(String texName);
-    
-    BuiltinEnvironment getBuiltinEnvironmentByTeXName(String texName);
-    
-    Map<String, UserDefinedCommand> getUserCommandMap();
-    
-    Map<String, UserDefinedEnvironment> getUserEnvironmentMap();
-    
-    StylesheetManager getStylesheetManager();
-    
-    void registerError(InputError error) throws SnuggleParseException;
+  BuiltinCommand getBuiltinCommandByTeXName(String texName);
+
+  BuiltinEnvironment getBuiltinEnvironmentByTeXName(String texName);
+
+  Map<String, UserDefinedCommand> getUserCommandMap();
+
+  Map<String, UserDefinedEnvironment> getUserEnvironmentMap();
+
+  StylesheetManager getStylesheetManager();
+
+  void registerError(InputError error) throws SnuggleParseException;
 }

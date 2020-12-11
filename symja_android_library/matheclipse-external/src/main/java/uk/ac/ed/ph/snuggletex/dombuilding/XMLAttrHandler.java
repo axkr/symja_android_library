@@ -16,14 +16,13 @@ import org.w3c.dom.Element;
  * Handles lonely instances of <tt>\\xmlAttr</tt>, which results in {@link CoreErrorCode#TDEX02}
  * being emitted.
  *
- * @author  David McKain
+ * @author David McKain
  * @version $Revision: 525 $
  */
 public final class XMLAttrHandler implements CommandHandler {
-    
-    public void handleCommand(DOMBuilder builder, Element parentElement, CommandToken token)
-            throws SnuggleParseException {
-        builder.appendOrThrowError(parentElement, token, CoreErrorCode.TDEX02);
-    }
 
+  public void handleCommand(DOMBuilder builder, Element parentElement, CommandToken token)
+      throws SnuggleParseException {
+    builder.appendOrThrowError(parentElement, token, CoreErrorCode.TDEX02);
+  }
 }

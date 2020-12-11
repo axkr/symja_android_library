@@ -13,48 +13,60 @@ import uk.ac.ed.ph.snuggletex.internal.FrozenSlice;
 
 /**
  * Represents a {@link BuiltinEnvironment}.
- * 
- * @author  David McKain
+ *
+ * @author David McKain
  * @version $Revision: 525 $
  */
 public final class EnvironmentToken extends FlowToken {
-    
-    private final BuiltinEnvironment environment;
-    private final ArgumentContainerToken optionalArgument;
-    private final ArgumentContainerToken[] arguments;
-    private final ArgumentContainerToken content;
-    
-    public EnvironmentToken(final FrozenSlice slice, final LaTeXMode latexMode,
-            final BuiltinEnvironment environment, final ArgumentContainerToken content) {
-        this(slice, latexMode, environment, null, ArgumentContainerToken.EMPTY_ARRAY, content);
-    }
-    
-    public EnvironmentToken(final FrozenSlice slice, final LaTeXMode latexMode,
-            final BuiltinEnvironment environment, final ArgumentContainerToken optionalArgument,
-            final ArgumentContainerToken[] arguments, final ArgumentContainerToken content) {
-        super(slice, TokenType.ENVIRONMENT, latexMode, environment.getTextFlowContext(), environment.getInterpretationMap());
-        this.environment = environment;
-        this.optionalArgument = optionalArgument;
-        this.arguments = arguments;
-        this.content = content;
-    }
 
-    public BuiltinEnvironment getEnvironment() {
-        return environment;
-    }
-    
-    @ObjectDumperOptions(DumpMode.DEEP)
-    public ArgumentContainerToken getOptionalArgument() {
-        return optionalArgument;
-    }
-    
-    @ObjectDumperOptions(DumpMode.DEEP)
-    public ArgumentContainerToken[] getArguments() {
-        return arguments;
-    }
-    
-    @ObjectDumperOptions(DumpMode.DEEP)
-    public ArgumentContainerToken getContent() {
-        return content;
-    }
+  private final BuiltinEnvironment environment;
+  private final ArgumentContainerToken optionalArgument;
+  private final ArgumentContainerToken[] arguments;
+  private final ArgumentContainerToken content;
+
+  public EnvironmentToken(
+      final FrozenSlice slice,
+      final LaTeXMode latexMode,
+      final BuiltinEnvironment environment,
+      final ArgumentContainerToken content) {
+    this(slice, latexMode, environment, null, ArgumentContainerToken.EMPTY_ARRAY, content);
+  }
+
+  public EnvironmentToken(
+      final FrozenSlice slice,
+      final LaTeXMode latexMode,
+      final BuiltinEnvironment environment,
+      final ArgumentContainerToken optionalArgument,
+      final ArgumentContainerToken[] arguments,
+      final ArgumentContainerToken content) {
+    super(
+        slice,
+        TokenType.ENVIRONMENT,
+        latexMode,
+        environment.getTextFlowContext(),
+        environment.getInterpretationMap());
+    this.environment = environment;
+    this.optionalArgument = optionalArgument;
+    this.arguments = arguments;
+    this.content = content;
+  }
+
+  public BuiltinEnvironment getEnvironment() {
+    return environment;
+  }
+
+  @ObjectDumperOptions(DumpMode.DEEP)
+  public ArgumentContainerToken getOptionalArgument() {
+    return optionalArgument;
+  }
+
+  @ObjectDumperOptions(DumpMode.DEEP)
+  public ArgumentContainerToken[] getArguments() {
+    return arguments;
+  }
+
+  @ObjectDumperOptions(DumpMode.DEEP)
+  public ArgumentContainerToken getContent() {
+    return content;
+  }
 }
