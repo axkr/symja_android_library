@@ -31,6 +31,7 @@ import org.matheclipse.core.eval.exception.RecursionLimitExceeded;
 import org.matheclipse.core.eval.exception.Validate;
 import org.matheclipse.core.eval.interfaces.AbstractCoreFunctionEvaluator;
 import org.matheclipse.core.eval.interfaces.AbstractFunctionEvaluator;
+import org.matheclipse.core.eval.interfaces.IFunctionEvaluator;
 import org.matheclipse.core.eval.util.OptionArgs;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.expression.S;
@@ -40,6 +41,8 @@ import org.matheclipse.core.interfaces.IASTMutable;
 import org.matheclipse.core.interfaces.IEvalStepListener;
 import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.interfaces.IInteger;
+import org.matheclipse.core.interfaces.INumber;
+import org.matheclipse.core.interfaces.IRational;
 import org.matheclipse.core.interfaces.ISignedNumber;
 import org.matheclipse.core.interfaces.ISymbol;
 import org.matheclipse.core.numbertheory.Primality;
@@ -76,10 +79,13 @@ import edu.jas.poly.OptimizedPolynomialList;
 import edu.jas.poly.OrderedPolynomialList;
 import edu.jas.poly.TermOrder;
 import edu.jas.poly.TermOrderByName;
+import edu.jas.root.AlgebraicRoots;
 import edu.jas.root.ComplexRootsAbstract;
 import edu.jas.root.ComplexRootsSturm;
+import edu.jas.root.DecimalRoots;
 import edu.jas.root.InvalidBoundaryException;
 import edu.jas.root.Rectangle;
+import edu.jas.root.RootFactory;
 import edu.jas.ufd.GCDFactory;
 import edu.jas.ufd.GreatestCommonDivisor;
 import edu.jas.ufd.GreatestCommonDivisorAbstract;
@@ -237,7 +243,7 @@ public class PolynomialFunctions {
 
     @Override
     public int[] expectedArgSize(IAST ast) {
-      return IOFunctions.ARGS_2_3;
+      return ARGS_2_3;
     }
 
     @Override
@@ -257,7 +263,7 @@ public class PolynomialFunctions {
 
     @Override
     public int[] expectedArgSize(IAST ast) {
-      return IOFunctions.ARGS_2_2;
+      return ARGS_2_2;
     }
   }
 
@@ -331,7 +337,7 @@ public class PolynomialFunctions {
 
     @Override
     public int[] expectedArgSize(IAST ast) {
-      return IOFunctions.ARGS_1_4;
+      return ARGS_1_4;
     }
 
     /**
@@ -456,7 +462,7 @@ public class PolynomialFunctions {
 
     @Override
     public int[] expectedArgSize(IAST ast) {
-      return IOFunctions.ARGS_2_2;
+      return ARGS_2_2;
     }
 
     private static IExpr cyclotomic(int n, final IExpr x) {
@@ -475,6 +481,9 @@ public class PolynomialFunctions {
         return F.C1;
       }
       if (LongMath.isPrime(n)) {
+        if (x.isRational()) {
+          return F.sumRational(i -> ((IRational) x).pow(i), 0, n - 1);
+        }
         return F.sum(i -> x.power(i), 0, n - 1);
       }
       if ((n & 0x00000001) == 0x00000000) {
@@ -709,7 +718,7 @@ public class PolynomialFunctions {
 
     @Override
     public int[] expectedArgSize(IAST ast) {
-      return IOFunctions.ARGS_2_2;
+      return ARGS_2_2;
     }
 
     @Override
@@ -841,7 +850,7 @@ public class PolynomialFunctions {
 
     @Override
     public int[] expectedArgSize(IAST ast) {
-      return IOFunctions.ARGS_2_3;
+      return ARGS_2_3;
     }
 
     private static IExpr powerExponent(
@@ -962,7 +971,7 @@ public class PolynomialFunctions {
 
     @Override
     public int[] expectedArgSize(IAST ast) {
-      return IOFunctions.ARGS_3_3;
+      return ARGS_3_3;
     }
 
     private IExpr resultant(IExpr a, IExpr b, ISymbol x, EvalEngine engine) {
@@ -1201,7 +1210,7 @@ public class PolynomialFunctions {
 
     @Override
     public int[] expectedArgSize(IAST ast) {
-      return IOFunctions.ARGS_1_2;
+      return ARGS_1_2;
     }
 
     /**
@@ -1327,7 +1336,7 @@ public class PolynomialFunctions {
 
     @Override
     public int[] expectedArgSize(IAST ast) {
-      return IOFunctions.ARGS_1_1;
+      return ARGS_1_1;
     }
 
     /**
@@ -1479,7 +1488,7 @@ public class PolynomialFunctions {
 
     @Override
     public int[] expectedArgSize(IAST ast) {
-      return IOFunctions.ARGS_2_2;
+      return ARGS_2_2;
     }
   }
 
@@ -1546,7 +1555,7 @@ public class PolynomialFunctions {
 
     @Override
     public int[] expectedArgSize(IAST ast) {
-      return IOFunctions.ARGS_2_2;
+      return ARGS_2_2;
     }
 
     @Override
@@ -1650,7 +1659,7 @@ public class PolynomialFunctions {
 
     @Override
     public int[] expectedArgSize(IAST ast) {
-      return IOFunctions.ARGS_2_2;
+      return ARGS_2_2;
     }
 
     @Override
@@ -1746,7 +1755,7 @@ public class PolynomialFunctions {
 
     @Override
     public int[] expectedArgSize(IAST ast) {
-      return IOFunctions.ARGS_1_3;
+      return ARGS_1_3;
     }
 
     @Override
@@ -1918,7 +1927,7 @@ public class PolynomialFunctions {
 
     @Override
     public int[] expectedArgSize(IAST ast) {
-      return IOFunctions.ARGS_2_2;
+      return ARGS_2_2;
     }
   }
 
@@ -2046,7 +2055,7 @@ public class PolynomialFunctions {
 
     @Override
     public int[] expectedArgSize(IAST ast) {
-      return IOFunctions.ARGS_2_3;
+      return ARGS_2_3;
     }
   }
 
@@ -2093,7 +2102,7 @@ public class PolynomialFunctions {
 
     @Override
     public int[] expectedArgSize(IAST ast) {
-      return IOFunctions.ARGS_2_3;
+      return ARGS_2_3;
     }
 
     @Override
@@ -2144,7 +2153,7 @@ public class PolynomialFunctions {
           PolynomialDegreeLimitExceeded.throwIt(arg1);
         }
       }
-      return IOFunctions.ARGS_2_3;
+      return ARGS_2_3;
     }
 
     @Override
@@ -2238,7 +2247,7 @@ public class PolynomialFunctions {
     }
 
     public int[] expectedArgSize(IAST ast) {
-      return IOFunctions.ARGS_1_4;
+      return ARGS_1_4;
     }
 
     /**
@@ -2609,6 +2618,52 @@ public class PolynomialFunctions {
   }
 
   /**
+   * Solve polynomials of the form <code>a * x^n + b == 0</code>.
+   *
+   * @param n
+   * @param polynomial
+   * @return
+   */
+  private static IASTAppendable nthComplexRoot(int n, ExprPolynomial polynomial) {
+    IExpr coefficientN = C0;
+    IExpr coefficient0 = C0;
+    for (ExprMonomial monomial : polynomial) {
+      IExpr coefficient = monomial.coefficient();
+      long lExp = monomial.exponent().getVal(0);
+      if (lExp == n) {
+        coefficientN = coefficient;
+      } else if (lExp == 0) {
+        coefficient0 = coefficient;
+      } else {
+        return F.NIL;
+      }
+    }
+    if (coefficientN.isZero() || coefficient0.isZero()) {
+      return F.NIL;
+    }
+
+    EvalEngine engine = EvalEngine.get();
+    IExpr a = engine.evaluate(F.Divide(F.Negate(coefficient0), coefficientN));
+    if (a.isNumber()) {
+      // z = r*(Cos(θ)+I*Sin(θ))
+      IAST z = ((INumber) a).toPolarCoordinates();
+      IExpr r = z.arg1();
+      IExpr theta = z.arg2();
+
+      IRational fraction = F.fraction(1, n);
+      IExpr f1 = F.Power(r, fraction);
+      IASTAppendable result = F.ListAlloc(n);
+      for (int k = 0; k < n; k++) {
+        IAST argCosSin = F.Times(fraction, F.Plus(theta, F.Times(F.ZZ(k + k), S.Pi)));
+        IAST f2 = F.Plus(F.Cos(argCosSin), F.Times(F.CI, F.Sin(argCosSin)));
+        result.append(F.Times(f1, f2));
+      }
+      return result;
+    }
+    return F.NIL;
+  }
+
+  /**
    * Solve polynomials of the form <code>a * x^varDegree + b == 0</code>
    *
    * @param varDegree
@@ -2616,10 +2671,8 @@ public class PolynomialFunctions {
    * @return
    */
   private static IASTAppendable unitPolynomial(int varDegree, ExprPolynomial polynomial) {
-    IExpr a;
-    IExpr b;
-    a = C0;
-    b = C0;
+    IExpr a = C0;
+    IExpr b = C0;
     for (ExprMonomial monomial : polynomial) {
       IExpr coeff = monomial.coefficient();
       long lExp = monomial.exponent().getVal(0);
@@ -2631,32 +2684,99 @@ public class PolynomialFunctions {
         return F.NIL;
       }
     }
+    if (a.isZero() || b.isZero()) {
+      return F.NIL;
+    }
 
-    // a * x^varDegree + b
-    if (!a.isOne()) {
-      a = F.Power(a, F.fraction(-1, varDegree));
-    }
-    if (!b.isOne()) {
-      b = F.Power(b, F.fraction(1, varDegree));
-    }
+    boolean isNegative = false;
+    IExpr rhsNumerator = EvalEngine.get().evaluate(b.negate());
+    IExpr rhsDenominator = a; // EvalEngine.get().evaluate(F.Divide(F.C1, a));
     if ((varDegree & 0x0001) == 0x0001) {
       // odd
-      IASTAppendable result = F.ListAlloc(varDegree);
-      for (int i = 1; i <= varDegree; i++) {
-        result.append(
-            F.Times(F.Power(F.CN1, i - 1), F.Power(F.CN1, F.fraction(i, varDegree)), b, a));
+      IExpr zNumerator;
+      if (rhsNumerator.isTimes()) {
+        IASTMutable temp =
+            ((IAST) rhsNumerator).mapThread(F.Power(F.Slot1, F.fraction(1, varDegree)), 1);
+        if (rhsNumerator.first().isNegative()) {
+          isNegative = true;
+          temp.set(1, rhsNumerator.first().negate());
+        }
+        zNumerator = EvalEngine.get().evaluate(temp);
+      } else {
+        if (rhsNumerator.isNegative()) {
+          isNegative = true;
+          rhsNumerator = rhsNumerator.negate();
+        }
+        zNumerator = EvalEngine.get().evaluate(F.Power(rhsNumerator, F.fraction(1, varDegree)));
       }
+      IExpr zDenominator;
+      if (rhsDenominator.isTimes()) {
+        IASTMutable temp =
+            ((IAST) rhsDenominator).mapThread(F.Power(F.Slot1, F.fraction(-1, varDegree)), 1);
+        if (rhsDenominator.first().isNegative()) {
+          isNegative = !isNegative;
+          temp.set(1, rhsDenominator.first().negate());
+        }
+        zDenominator = EvalEngine.get().evaluate(temp);
+      } else {
+        if (rhsDenominator.isNegative()) {
+          isNegative = !isNegative;
+          rhsDenominator = rhsDenominator.negate();
+        }
+        zDenominator =
+            EvalEngine.get().evaluate(F.Power(rhsDenominator, F.fraction(-1, varDegree)));
+      }
+      IASTAppendable result = F.ListAlloc(varDegree);
+      for (int i = 0; i < varDegree; i++) {
+        if (isNegative) {
+          result.append(
+              F.Times(
+                  F.Power(F.CN1, i + 1),
+                  F.Power(F.CN1, F.fraction(i, varDegree)),
+                  zNumerator,
+                  zDenominator));
+        } else {
+          result.append(
+              F.Times(
+                  F.Power(F.CN1, i),
+                  F.Power(F.CN1, F.fraction(i, varDegree)),
+                  zNumerator,
+                  zDenominator));
+        }
+      }
+      //      IExpr temp = EvalEngine.get().evaluate(result);
+      //      System.out.println(temp.toString());
       return result;
     } else {
       // even
+      IExpr zNumerator;
+      if (rhsNumerator.isTimes()) {
+        IExpr temp = ((IAST) rhsNumerator).mapThread(F.Power(F.Slot1, F.fraction(1, varDegree)), 1);
+        zNumerator = EvalEngine.get().evaluate(temp);
+      } else {
+        zNumerator = EvalEngine.get().evaluate(F.Power(rhsNumerator, F.fraction(1, varDegree)));
+      }
+      IExpr zDenominator;
+      if (rhsDenominator.isTimes()) {
+        IExpr temp =
+            ((IAST) rhsDenominator).mapThread(F.Power(F.Slot1, F.fraction(-1, varDegree)), 1);
+        zDenominator = EvalEngine.get().evaluate(temp);
+      } else {
+        zDenominator =
+            EvalEngine.get().evaluate(F.Power(rhsDenominator, F.fraction(-1, varDegree)));
+      }
+
       IASTAppendable result = F.ListAlloc(varDegree);
       long size = varDegree / 2;
-      int k = 1;
+      int k = 0; // isNegative?1:0;
       for (int i = 1; i <= size; i++) {
-        result.append(F.Times(F.CN1, F.Power(F.CN1, F.fraction(k, varDegree)), b, a));
-        result.append(F.Times(F.Power(F.CN1, F.fraction(k, varDegree)), b, a));
+        result.append(
+            F.Times(F.CN1, F.Power(F.CN1, F.fraction(k, varDegree)), zNumerator, zDenominator));
+        result.append(F.Times(F.Power(F.CN1, F.fraction(k, varDegree)), zNumerator, zDenominator));
         k += 2;
       }
+      // IExpr temp = EvalEngine.get().evaluate(result);
+      // System.out.println(temp.toString());
       return result;
     }
   }
