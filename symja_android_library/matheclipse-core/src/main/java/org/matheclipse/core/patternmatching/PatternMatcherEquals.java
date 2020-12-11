@@ -8,7 +8,6 @@ import java.util.List;
 
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.expression.F;
-import org.matheclipse.core.interfaces.ExprUtil;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.interfaces.ISymbol;
@@ -55,11 +54,8 @@ public class PatternMatcherEquals extends IPatternMatcher implements Externaliza
   }
 
   @Override
-  public Object clone() throws CloneNotSupportedException {
-    PatternMatcherEquals v = (PatternMatcherEquals) super.clone();
-    v.fRightHandSide = fRightHandSide;
-    v.fSetFlags = fSetFlags;
-    return v;
+  public IPatternMatcher clone() {
+    return new PatternMatcherEquals(fSetFlags, fLhsPatternExpr, fRightHandSide);
   }
 
   /** {@inheritDoc} */
@@ -77,7 +73,7 @@ public class PatternMatcherEquals extends IPatternMatcher implements Externaliza
   /** {@inheritDoc} */
   @Override
   public IExpr getRHS() {
-    return ExprUtil.ofNullable(fRightHandSide);
+    return IExpr.ofNullable(fRightHandSide);
   }
 
   /**

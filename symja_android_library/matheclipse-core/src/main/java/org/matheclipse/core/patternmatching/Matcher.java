@@ -6,8 +6,8 @@ import java.util.function.Function;
 import java.util.function.Predicate;
 
 import org.matheclipse.core.eval.EvalEngine;
-import org.matheclipse.core.expression.Context;
 import org.matheclipse.core.expression.F;
+import org.matheclipse.core.expression.S;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IASTAppendable;
 import org.matheclipse.core.interfaces.IASTMutable;
@@ -43,7 +43,7 @@ public class Matcher implements Function<IExpr, IExpr> {
       boolean evaled = false;
       IExpr temp = matcher.apply(list);
       if (temp.isPresent()) {
-        if (temp.isAST()) {
+        if (temp.isASTOrAssociation()) {
           list = (IAST) temp;
           evaled = true;
         } else {
@@ -133,7 +133,7 @@ public class Matcher implements Function<IExpr, IExpr> {
       IPatternMap pm = createPatternMap();
       IExpr arg1 = pm.getValue(0);
       IExpr arg2 = pm.getValue(1);
-      return fRightHandSide.test(arg1, arg2) ? F.True : F.False;
+      return fRightHandSide.test(arg1, arg2) ? S.True : S.False;
     }
   }
 
@@ -182,7 +182,7 @@ public class Matcher implements Function<IExpr, IExpr> {
     IExpr evalMethod() {
       IPatternMap pm = createPatternMap();
       IExpr arg1 = pm.getValue(0);
-      return fRightHandSide.test(arg1) ? F.True : F.False;
+      return fRightHandSide.test(arg1) ? S.True : S.False;
     }
   }
 
@@ -207,7 +207,7 @@ public class Matcher implements Function<IExpr, IExpr> {
   }
 
   /**
-   * If this rule matches the evaluation will return <code>F.True</code> or <code>F.False</code>
+   * If this rule matches the evaluation will return <code>S.True</code> or <code>S.False</code>
    * depending on the <code>predicates</code> result.
    *
    * @param patternMatchingRule
@@ -219,7 +219,7 @@ public class Matcher implements Function<IExpr, IExpr> {
   }
 
   /**
-   * If this rule matches the evaluation will return <code>F.True</code> or <code>F.False</code>
+   * If this rule matches the evaluation will return <code>S.True</code> or <code>S.False</code>
    * depending on the <code>predicates</code> result.
    *
    * @param patternMatchingRule

@@ -23,7 +23,7 @@ import org.matheclipse.core.interfaces.ISymbol;
 import org.matheclipse.core.visit.VisitorReplaceAllWithPatternFlags;
 
 /** Interface for mapping ISymbol objects to int values. */
-public interface IPatternMap extends Cloneable {
+public interface IPatternMap {
   /**
    * The default priority when associating a new rule to a symbol. Lower values have higher
    * priorities.
@@ -36,7 +36,7 @@ public interface IPatternMap extends Cloneable {
     private static final int SIZE = 0;
 
     @Override
-    public IPatternMap clone() {
+    public IPatternMap copy() {
       return new PatternMap0();
     };
 
@@ -135,7 +135,7 @@ public interface IPatternMap extends Cloneable {
     }
 
     @Override
-    public IExpr substituteSymbols(IExpr rhsExpr) {
+    public IExpr substituteSymbols(final IExpr rhsExpr, final IExpr nilOrEmptySequence) {
       return rhsExpr;
     };
 
@@ -163,7 +163,7 @@ public interface IPatternMap extends Cloneable {
     private transient boolean evaluatedRHS = false;
 
     @Override
-    public IPatternMap clone() {
+    public IPatternMap copy() {
       PatternMap1 result = new PatternMap1();
       result.evaluatedRHS = false;
       result.fSymbol1 = this.fSymbol1;
@@ -236,6 +236,14 @@ public interface IPatternMap extends Cloneable {
     public void initPattern() {
       evaluatedRHS = false;
       fValue1 = null;
+    }
+
+    @Override
+    public void initPatternBlank() {
+      evaluatedRHS = false;
+      if (fSymbol1 instanceof IPatternObject) {
+        fValue1 = null;
+      }
     }
 
     @Override
@@ -342,14 +350,14 @@ public interface IPatternMap extends Cloneable {
     }
 
     @Override
-    public IExpr substituteSymbols(IExpr rhsExpr) {
+    public IExpr substituteSymbols(final IExpr rhsExpr, final IExpr nilOrEmptySequence) {
       return rhsExpr
           .replaceAll(
               (IExpr input) -> {
                 if (input.isSymbol()) {
                   // compare object references with operator '==' here !
                   if ((ISymbol) input == fSymbol1) {
-                    return fValue1 != null ? fValue1 : F.NIL;
+                    return fValue1 != null ? fValue1 : nilOrEmptySequence;
                   }
                 }
                 return F.NIL;
@@ -387,7 +395,7 @@ public interface IPatternMap extends Cloneable {
     private transient boolean evaluatedRHS = false;
 
     @Override
-    public IPatternMap clone() {
+    public IPatternMap copy() {
       PatternMap2 result = new PatternMap2();
       result.evaluatedRHS = false;
       result.fSymbol1 = this.fSymbol1;
@@ -630,17 +638,17 @@ public interface IPatternMap extends Cloneable {
     }
 
     @Override
-    public IExpr substituteSymbols(IExpr rhsExpr) {
+    public IExpr substituteSymbols(final IExpr rhsExpr, final IExpr nilOrEmptySequence) {
       return rhsExpr
           .replaceAll(
               (IExpr input) -> {
                 if (input.isSymbol()) {
                   // compare object references with operator '==' here !
                   if ((ISymbol) input == fSymbol1) {
-                    return fValue1 != null ? fValue1 : F.NIL;
+                    return fValue1 != null ? fValue1 : nilOrEmptySequence;
                   }
                   if ((ISymbol) input == fSymbol2) {
-                    return fValue2 != null ? fValue2 : F.NIL;
+                    return fValue2 != null ? fValue2 : nilOrEmptySequence;
                   }
                 }
                 return F.NIL;
@@ -692,7 +700,7 @@ public interface IPatternMap extends Cloneable {
     private transient boolean evaluatedRHS = false;
 
     @Override
-    public IPatternMap clone() {
+    public IPatternMap copy() {
       PatternMap3 result = new PatternMap3();
       result.evaluatedRHS = false;
       result.fSymbol1 = this.fSymbol1;
@@ -807,6 +815,20 @@ public interface IPatternMap extends Cloneable {
       fValue1 = null;
       fValue2 = null;
       fValue3 = null;
+    }
+
+    @Override
+    public void initPatternBlank() {
+      evaluatedRHS = false;
+      if (fSymbol1 instanceof IPatternObject) {
+        fValue1 = null;
+      }
+      if (fSymbol2 instanceof IPatternObject) {
+        fValue2 = null;
+      }
+      if (fSymbol3 instanceof IPatternObject) {
+        fValue3 = null;
+      }
     }
 
     @Override
@@ -973,20 +995,20 @@ public interface IPatternMap extends Cloneable {
     }
 
     @Override
-    public IExpr substituteSymbols(IExpr rhsExpr) {
+    public IExpr substituteSymbols(final IExpr rhsExpr, final IExpr nilOrEmptySequence) {
       return rhsExpr
           .replaceAll(
               (IExpr input) -> {
                 if (input.isSymbol()) {
                   // compare object references with operator '==' here !
                   if ((ISymbol) input == fSymbol1) {
-                    return fValue1 != null ? fValue1 : F.NIL;
+                    return fValue1 != null ? fValue1 : nilOrEmptySequence;
                   }
                   if ((ISymbol) input == fSymbol2) {
-                    return fValue2 != null ? fValue2 : F.NIL;
+                    return fValue2 != null ? fValue2 : nilOrEmptySequence;
                   }
                   if ((ISymbol) input == fSymbol3) {
-                    return fValue3 != null ? fValue3 : F.NIL;
+                    return fValue3 != null ? fValue3 : nilOrEmptySequence;
                   }
                 }
                 return F.NIL;
@@ -1071,7 +1093,7 @@ public interface IPatternMap extends Cloneable {
     }
 
     @Override
-    public IPatternMap clone() {
+    public IPatternMap copy() {
       PatternMap result = new PatternMap(null);
       result.evaluatedRHS = false;
       // don't clone the fSymbolsOrPattern array which is final after the #determinePatterns()
@@ -1198,6 +1220,18 @@ public interface IPatternMap extends Cloneable {
     public final void initPattern() {
       evaluatedRHS = false;
       Arrays.fill(fSymbolsOrPatternValues, null);
+    }
+
+    @Override
+    public void initPatternBlank() {
+      evaluatedRHS = false;
+      final int length = fSymbolsOrPattern.length;
+      for (int i = 0; i < length; i++) {
+        IExpr arg = fSymbolsOrPattern[i];
+        if (arg instanceof IPatternObject) {
+          fSymbolsOrPatternValues[i] = null;
+        }
+      }
     }
 
     public final void initSlotValues() {
@@ -1386,7 +1420,7 @@ public interface IPatternMap extends Cloneable {
      *     values
      * @return
      */
-    public IExpr substituteSymbols(final IExpr rhsExpr) {
+    public IExpr substituteSymbols(final IExpr rhsExpr, final IExpr nilOrEmptySequence) {
       if (fSymbolsOrPatternValues != null) {
         return rhsExpr
             .replaceAll(
@@ -1399,7 +1433,7 @@ public interface IPatternMap extends Cloneable {
                       if (symbol == fSymbolsOrPattern[i]) {
                         return fSymbolsOrPatternValues[i] != null
                             ? fSymbolsOrPatternValues[i]
-                            : F.NIL;
+                            : nilOrEmptySequence;
                       }
                     }
                   }
@@ -1527,11 +1561,11 @@ public interface IPatternMap extends Cloneable {
       return patternMap;
     } else if (lhsPatternExpr instanceof PatternNested) {
       PatternNested pattern2 = (PatternNested) lhsPatternExpr;
-      //			PatternMap1 patternMap1 = new PatternMap1();
-      //			IPatternObject pattern = (IPatternObject) lhsPatternExpr;
-      //			final ISymbol sym = pattern.getSymbol();
-      //			patternMap1.fSymbol1 = (sym != null) ? sym : pattern;
-      //			patternMap1.fPatternObject1 = pattern;
+      // PatternMap1 patternMap1 = new PatternMap1();
+      // IPatternObject pattern = (IPatternObject) lhsPatternExpr;
+      // final ISymbol sym = pattern.getSymbol();
+      // patternMap1.fSymbol1 = (sym != null) ? sym : pattern;
+      // patternMap1.fPatternObject1 = pattern;
       return determinePatterns(pattern2.getPatternExpr(), priority, pattern2);
     } else if (lhsPatternExpr instanceof IPatternObject) {
       if (p2 != null) {
@@ -1585,7 +1619,7 @@ public interface IPatternMap extends Cloneable {
 
     lhsPatternExpr.forEach(
         x -> {
-          if (x.isAST()) {
+          if (x.isASTOrAssociation()) {
             final IAST lhsPatternAST = (IAST) x;
             if (lhsPatternAST.isPatternMatchingFunction()) {
               listEvalFlags[0] |= IAST.CONTAINS_PATTERN;
@@ -1604,7 +1638,7 @@ public interface IPatternMap extends Cloneable {
             priority[0] -= result[1];
             if (x instanceof PatternNested) {
               IExpr patternExpr = ((PatternNested) x).getPatternExpr();
-              if (patternExpr.isAST()) {
+              if (patternExpr.isASTOrAssociation()) {
                 listEvalFlags[0] |=
                     determinePatternsRecursive(
                         patternIndexMap,
@@ -1630,7 +1664,7 @@ public interface IPatternMap extends Cloneable {
     return listEvalFlags[0];
   }
 
-  public IPatternMap clone();
+  public IPatternMap copy();
 
   /**
    * Copy the current values into a new array.
@@ -1866,9 +1900,10 @@ public interface IPatternMap extends Cloneable {
    *
    * @param rhsExpr right-hand-side expression, substitute all symbols from the pattern-matching
    *     values
+   * @param nilOrEmptySequence default value <code>F.NIL</code> or <code>F.Sequence()</code>
    * @return
    */
-  public IExpr substituteSymbols(final IExpr rhsExpr);
+  public IExpr substituteSymbols(final IExpr rhsExpr, final IExpr nilOrEmptySequence);
 
   public boolean setOptionsPattern(final EvalEngine engine, ISymbol lhsHead);
 

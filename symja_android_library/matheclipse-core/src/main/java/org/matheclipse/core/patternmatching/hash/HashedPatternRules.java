@@ -3,7 +3,6 @@ package org.matheclipse.core.patternmatching.hash;
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.expression.Context;
 import org.matheclipse.core.expression.F;
-import org.matheclipse.core.interfaces.ExprUtil;
 import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.interfaces.ISymbol;
 import org.matheclipse.core.patternmatching.IPatternMatcher;
@@ -84,7 +83,7 @@ public class HashedPatternRules extends AbstractHashedPatternRules {
 
   /** @return the right-hand-side result */
   public IExpr getRHS() {
-    return ExprUtil.ofNullable(fRHS);
+    return IExpr.ofNullable(fRHS);
   }
 
   /**

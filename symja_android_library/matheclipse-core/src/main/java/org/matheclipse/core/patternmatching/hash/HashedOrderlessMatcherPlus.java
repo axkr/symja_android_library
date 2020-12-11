@@ -23,7 +23,7 @@ public class HashedOrderlessMatcherPlus extends HashedOrderlessMatcher {
   protected void createHashValues(final IAST orderlessAST, int[] hashValues) {
     for (int i = 0; i < hashValues.length; i++) {
       IExpr temp = orderlessAST.get(i + 1);
-      if (temp.isTimes() && temp.first().isInteger() && temp.size() == 3) {
+      if (temp.isTimes2() && temp.first().isInteger()) {
         hashValues[i] = temp.second().head().hashCode();
       } else {
         if (temp.isPresent()) {
@@ -39,7 +39,7 @@ public class HashedOrderlessMatcherPlus extends HashedOrderlessMatcher {
   protected void createSpecialHashValues(final IAST orderlessAST, int[] hashValues) {
     for (int i = 0; i < hashValues.length; i++) {
       IExpr temp = orderlessAST.get(i + 1);
-      if (temp.isTimes() && temp.first().isInteger() && temp.size() == 3) {
+      if (temp.isTimes2() && temp.first().isInteger()) {
         hashValues[i] = temp.second().accept(HashValueVisitor.HASH_VALUE_VISITOR);
       } else {
         hashValues[i] = temp.accept(HashValueVisitor.HASH_VALUE_VISITOR);
@@ -59,13 +59,13 @@ public class HashedOrderlessMatcherPlus extends HashedOrderlessMatcher {
     IExpr temp;
     IExpr arg1 = orderlessAST.get(i + 1);
     ISignedNumber num1 = F.C1;
-    if (arg1.isTimes() && arg1.first().isInteger() && arg1.size() == 3) {
+    if (arg1.isTimes2() && arg1.first().isInteger()) {
       num1 = (ISignedNumber) ((IAST) arg1).arg1();
       arg1 = ((IAST) arg1).arg2();
     }
     IExpr arg2 = orderlessAST.get(j + 1);
     ISignedNumber num2 = F.C1;
-    if (arg2.isTimes() && arg2.first().isInteger() && arg2.size() == 3) {
+    if (arg2.isTimes2() && arg2.first().isInteger()) {
       num2 = (ISignedNumber) arg2.first();
       arg2 = arg2.second();
     }

@@ -12,7 +12,7 @@ import org.matheclipse.core.interfaces.IExpr;
 
 /** Interface for the pattern matcher */
 public abstract class IPatternMatcher
-    implements Predicate<IExpr>, Cloneable, Serializable { // Comparable<IPatternMatcher>,
+    implements Cloneable, Predicate<IExpr>, Serializable { // Comparable<IPatternMatcher>,
 
   public static final int NOFLAG = 0x0000;
 
@@ -84,13 +84,11 @@ public abstract class IPatternMatcher
     fLhsPatternExpr = lhsPatternExpr;
   }
 
-  @Override
   public Object clone() throws CloneNotSupportedException {
     IPatternMatcher v = (IPatternMatcher) super.clone();
     v.fLhsPatternExpr = fLhsPatternExpr;
     return v;
   }
-
   // public int determinePatterns() {
   // return PatternMap.DEFAULT_RULE_PRIORITY;
   // }

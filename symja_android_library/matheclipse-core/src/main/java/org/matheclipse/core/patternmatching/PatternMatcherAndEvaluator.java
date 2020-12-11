@@ -10,7 +10,6 @@ import org.matheclipse.core.eval.exception.ConditionException;
 import org.matheclipse.core.eval.exception.ReturnException;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.expression.S;
-import org.matheclipse.core.interfaces.ExprUtil;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.interfaces.ISymbol;
@@ -205,14 +204,14 @@ public class PatternMatcherAndEvaluator extends PatternMatcher implements Extern
       return true;
     }
 
-    if (!(fRightHandSide.isCondition() || fRightHandSide.isModule() || fRightHandSide.isWith())) {
+    if (!(fRightHandSide.isCondition() || fRightHandSide.isModuleOrWithCondition())) {
       return true;
     } else {
       if (!patternMap.isAllPatternsAssigned()) {
         return true;
       } else {
         boolean matched = false;
-        IExpr rhs = patternMap.substituteSymbols(fRightHandSide);
+        IExpr rhs = patternMap.substituteSymbols(fRightHandSide, F.CEmptySequence);
 
         engine.pushOptionsStack();
         try {
@@ -276,7 +275,7 @@ public class PatternMatcherAndEvaluator extends PatternMatcher implements Extern
 
         if (RulesData.showSteps) {
           if (fLhsPatternExpr.head().equals(F.Integrate)) {
-            IExpr rhs = fRightHandSide.orElse(F.Null);
+            IExpr rhs = fRightHandSide.orElse(S.Null);
             System.out.println(
                 "\nCOMPLEX: " + fLhsPatternExpr.toString() + " := " + rhs.toString());
             System.out.println("\n>>>>> " + toString());
@@ -287,7 +286,7 @@ public class PatternMatcherAndEvaluator extends PatternMatcher implements Extern
           return fReturnResult;
         }
 
-        IExpr result = patternMap.substituteSymbols(fRightHandSide);
+        IExpr result = patternMap.substituteSymbols(fRightHandSide, F.CEmptySequence);
         if (evaluate) {
           engine.pushOptionsStack();
           try {
@@ -309,7 +308,7 @@ public class PatternMatcherAndEvaluator extends PatternMatcher implements Extern
       }
     }
 
-    if (fLhsPatternExpr.isAST() && leftHandSide.isAST()) {
+    if (fLhsPatternExpr.isASTOrAssociation() && leftHandSide.isASTOrAssociation()) {
       return replaceSubExpressionOrderlessFlat(
           (IAST) fLhsPatternExpr, (IAST) leftHandSide, fRightHandSide, engine);
     }
@@ -327,7 +326,7 @@ public class PatternMatcherAndEvaluator extends PatternMatcher implements Extern
 
   @Override
   public IExpr getRHS() {
-    return ExprUtil.ofNullable(fRightHandSide);
+    return IExpr.ofNullable(fRightHandSide);
   }
 
   /**

@@ -3,8 +3,7 @@ package org.matheclipse.core.patternmatching;
 import java.util.function.Predicate;
 
 import org.matheclipse.core.eval.EvalEngine;
-import org.matheclipse.core.expression.Context;
-import org.matheclipse.core.expression.F;
+import org.matheclipse.core.expression.S;
 import org.matheclipse.core.interfaces.IExpr;
 
 /** The Tester defines a pattern matching rule set. */
@@ -28,7 +27,7 @@ public class Tester implements Predicate<IExpr> {
    * @return a
    */
   public void caseOf(final IExpr patternMatchingRule) {
-    rules.putDownRule(patternMatchingRule, F.True);
+    rules.putDownRule(patternMatchingRule, S.True);
   }
 
   public EvalEngine getEngine() {

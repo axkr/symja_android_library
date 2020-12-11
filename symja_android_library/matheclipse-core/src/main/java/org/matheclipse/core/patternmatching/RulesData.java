@@ -7,14 +7,13 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 
 import org.matheclipse.core.basic.Config;
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.util.OpenIntToIExprHashMap;
-import org.matheclipse.core.eval.util.OpenIntToSet;
 import org.matheclipse.core.expression.Context;
 import org.matheclipse.core.expression.F;
+import org.matheclipse.core.expression.S;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IASTAppendable;
 import org.matheclipse.core.interfaces.IExpr;
@@ -23,10 +22,16 @@ import org.matheclipse.core.interfaces.ISymbol;
 import org.matheclipse.core.patternmatching.IPatternMap.PatternMap;
 import org.matheclipse.core.visit.AbstractVisitor;
 import org.matheclipse.parser.client.FEConfig;
+import org.matheclipse.parser.trie.TrieMatch;
 
 import it.unimi.dsi.fastutil.ints.IntArrayList;
 
-/** The pattern matching rules associated with a symbol. */
+/**
+ * The pattern matching rules associated with a symbol. Contains <code>DownValues</code> and <code>
+ * UpValues</code> rules for pattern matching.
+ *
+ * <p><b>Note:</b> <code>OwnValues</code> are directly stored in a symbol.
+ */
 public final class RulesData implements Serializable {
   private static final long serialVersionUID = -7747268035549814899L;
 
@@ -43,11 +48,10 @@ public final class RulesData implements Serializable {
    * @return
    */
   public static boolean isComplicatedPatternRule(final IExpr lhs) {
-    if (lhs.isAST()) {
+    if (lhs.isASTOrAssociation()) {
       final IAST lhsAST = ((IAST) lhs);
       if (lhsAST.size() > 1) {
-        int attr = lhsAST.topHead().getAttributes();
-        if ((ISymbol.ORDERLESS & attr) == ISymbol.ORDERLESS) {
+        if (lhsAST.topHead().hasOrderlessAttribute()) {
           return true;
         }
 
@@ -71,7 +75,7 @@ public final class RulesData implements Serializable {
       return true;
     } else if (a1.isPatternSequence(false)) {
       return true;
-    } else if (a1.isAST()) {
+    } else if (a1.isASTOrAssociation()) {
 
       if (a1.isPatternMatchingFunction()) {
         return true;
@@ -104,9 +108,9 @@ public final class RulesData implements Serializable {
   private List<IPatternMatcher> fPatternDownRules;
 
   /**
-   * Sorted int array of the priorities of the correponding <code>fPatternDownRules</code> matcher.
+   * Sorted int array of the priorities of the corresponding <code>fPatternDownRules</code> matcher.
    */
-  private transient IntArrayList fPriorityDownRules;
+  private IntArrayList fPriorityDownRules;
 
   private Map<IExpr, PatternMatcherEquals> fEqualUpRules;
   private List<IPatternMatcher> fSimplePatternUpRules;
@@ -134,10 +138,10 @@ public final class RulesData implements Serializable {
    * Run the given visitor on every IAST stored in the rule database. Example: optimize internal
    * memory usage by sharing common objects.
    *
-   * @param visitor the visitor whch manipulates the IAST objects
+   * @param visitor the visitor which manipulates the IAST objects
    * @return
    */
-  public IAST accept(AbstractVisitor visitor) {
+  public void accept(AbstractVisitor visitor) {
     Iterator<IExpr> iter;
     IExpr key;
     PatternMatcherEquals pmEquals;
@@ -149,10 +153,10 @@ public final class RulesData implements Serializable {
       while (iter.hasNext()) {
         key = iter.next();
         pmEquals = fEqualUpRules.get(key);
-        if (key.isAST()) {
+        if (key.isASTOrAssociation()) {
           key.accept(visitor);
         }
-        if (pmEquals.getRHS().isAST()) {
+        if (pmEquals.getRHS().isASTOrAssociation()) {
           pmEquals.getRHS().accept(visitor);
         }
       }
@@ -165,15 +169,15 @@ public final class RulesData implements Serializable {
 
           if (elem instanceof PatternMatcherAndEvaluator) {
             pmEvaluator = (PatternMatcherAndEvaluator) elem;
-            if (pmEvaluator.getLHS().isAST()) {
+            if (pmEvaluator.getLHS().isASTOrAssociation()) {
               pmEvaluator.getLHS().accept(visitor);
             }
-            if (pmEvaluator.getRHS().isAST()) {
+            if (pmEvaluator.getRHS().isASTOrAssociation()) {
               pmEvaluator.getRHS().accept(visitor);
             }
             condition = pmEvaluator.getCondition();
             if (condition != null) {
-              if (condition.isAST()) {
+              if (condition.isASTOrAssociation()) {
                 condition.accept(visitor);
               }
             }
@@ -188,7 +192,7 @@ public final class RulesData implements Serializable {
         key = iter.next();
         pmEquals = fEqualDownRules.get(key);
         ast = pmEquals.getAsAST();
-        if (key.isAST()) {
+        if (key.isASTOrAssociation()) {
           key.accept(visitor);
         }
         ast.accept(visitor);
@@ -206,8 +210,6 @@ public final class RulesData implements Serializable {
         }
       }
     }
-
-    return null;
   }
 
   /**
@@ -249,6 +251,11 @@ public final class RulesData implements Serializable {
     fPriorityDownRules = null;
     fEqualUpRules = null;
     fSimplePatternUpRules = null;
+  }
+
+  public void clearAll() {
+    clear();
+    fMessages = null;
   }
 
   public List<IAST> definition() {
@@ -408,7 +415,7 @@ public final class RulesData implements Serializable {
       }
     }
 
-    if (!expr.isAST()) {
+    if (!expr.isASTOrAssociation()) {
       return F.NIL;
     }
 
@@ -419,7 +426,7 @@ public final class RulesData implements Serializable {
       if (fPatternDownRules != null) {
         IExpr result;
         int patternHash = 0;
-        if (expr.isAST()) {
+        if (expr.isASTOrAssociation()) {
           patternHash = ((IAST) expr).patternHashCode();
         }
         for (IPatternMatcher patternEvaluator : fPatternDownRules) {
@@ -433,7 +440,7 @@ public final class RulesData implements Serializable {
             pmEvaluator = (IPatternMatcher) patternEvaluator.clone();
             if (showSteps) {
               if (isShowSteps(pmEvaluator)) {
-                IExpr rhs = pmEvaluator.getRHS().orElse(F.Null);
+                IExpr rhs = pmEvaluator.getRHS().orElse(S.Null);
                 System.out.println(
                     " COMPLEX: " + pmEvaluator.getLHS().toString() + " := " + rhs.toString());
               }
@@ -500,7 +507,7 @@ public final class RulesData implements Serializable {
 
   private boolean isShowSteps(IPatternMatcher pmEvaluator) {
     IExpr head = pmEvaluator.getLHS().head();
-    if (head.isSymbol() && ((ISymbol) head).getContext().equals(Context.RUBI)) {
+    if (head.isSymbol() && ((ISymbol) head).isContext(Context.RUBI)) {
       return true;
     }
     return head.equals(F.Integrate);
@@ -522,7 +529,7 @@ public final class RulesData implements Serializable {
 
     try {
       IPatternMatcher pmEvaluator;
-      if ((fSimplePatternUpRules != null) && (expression.isAST())) {
+      if ((fSimplePatternUpRules != null) && (expression.isASTOrAssociation())) {
         IExpr result;
         for (int i = 0; i < fSimplePatternUpRules.size(); i++) {
           pmEvaluator = (IPatternMatcher) fSimplePatternUpRules.get(i).clone();
@@ -548,7 +555,10 @@ public final class RulesData implements Serializable {
   /** @return Returns the equalRules. */
   public final Map<String, IStringX> getMessages() {
     if (fMessages == null) {
-      fMessages = new HashMap<String, IStringX>();
+      fMessages =
+          Config.TRIE_STRING2STRINGX_BUILDER
+              .withMatch(TrieMatch.EXACT)
+              .build(); // Tries.forStrings();
     }
     return fMessages;
   }
@@ -699,9 +709,9 @@ public final class RulesData implements Serializable {
           if (matcher.isPatternHashAllowed(patternHash)) {
             if (IPatternMatcher.EQUIVALENCE_COMPARATOR.compare(newPatternMatcher, matcher) == 0) {
               if (pmSlotValuesMap == null) {
-                pmSlotValuesMap = newPatternMatcher.getPatternMap().clone();
+                pmSlotValuesMap = newPatternMatcher.getPatternMap().copy();
                 pmSlotValuesMap.initSlotValues();
-                pmRHS = pmSlotValuesMap.substituteSymbols(newPatternMatcher.getRHS());
+                pmRHS = pmSlotValuesMap.substituteSymbols(newPatternMatcher.getRHS(), F.NIL);
                 pmSlotValuesLHS =
                     pmSlotValuesMap.substitutePatternOrSymbols(newPatternMatcher.getLHS(), true);
               }
@@ -743,13 +753,13 @@ public final class RulesData implements Serializable {
     if (oldMap.size() != newNumberOfPatterns) {
       return false;
     }
-    oldMap = oldMap.clone();
+    oldMap = oldMap.copy();
     oldMap.initSlotValues();
     IExpr oldSlotValuesLHS = oldMap.substitutePatternOrSymbols(matcher.getLHS(), true);
     if (oldSlotValuesLHS.equals(newSlotValuesLHS)) {
       IExpr rhs = matcher.getRHS();
       if (newSlotValuesRHS.isCondition() && rhs.isCondition()) {
-        IExpr oldSlotValuesRHS = oldMap.substituteSymbols(rhs.second());
+        IExpr oldSlotValuesRHS = oldMap.substituteSymbols(rhs.second(), F.NIL);
         return newSlotValuesRHS.second().equals(oldSlotValuesRHS);
       }
       return !(rhs.isCondition() || newSlotValuesRHS.isCondition());

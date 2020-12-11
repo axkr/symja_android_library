@@ -32,7 +32,7 @@ public class PatternMatcherList extends PatternMatcherAndEvaluator {
     IPatternMap patternMap = createPatternMap();
 
     if (patternMap.isAllPatternsAssigned()) {
-      IExpr result = patternMap.substituteSymbols(fRightHandSide);
+      IExpr result = patternMap.substituteSymbols(fRightHandSide, F.CEmptySequence);
       if (result.isPresent()) {
         fReplaceList.append(result);
         return false;
