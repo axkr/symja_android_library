@@ -82,7 +82,7 @@ public class MathScriptEngine extends AbstractScriptEngine {
 
     try {
       // first assign the EvalEngine to the current thread:
-      fUtility.startRequest();
+      EvalEngine.setReset(fEngine);
 
       // final Bindings bindings = context.getBindings(ScriptContext.ENGINE_SCOPE);
       // ISymbol symbol;
@@ -107,7 +107,7 @@ public class MathScriptEngine extends AbstractScriptEngine {
       final Object enableHistoryBoolean = get("ENABLE_HISTORY");
       if (Boolean.TRUE.equals(enableHistoryBoolean)) {
         disableHistory = false;
-        fEngine.setOutListDisabled(disableHistory, 100);
+        fEngine.setOutListDisabled(disableHistory, (short) 100);
       }
 
       // evaluate an expression
