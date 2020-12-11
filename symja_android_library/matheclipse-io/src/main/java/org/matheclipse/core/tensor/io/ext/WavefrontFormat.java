@@ -4,10 +4,12 @@ import java.util.stream.Stream;
 
 public enum WavefrontFormat {
   ;
-  /** parse Wavefront .obj file
-   * 
+  /**
+   * parse Wavefront .obj file
+   *
    * @param stream
-   * @return */
+   * @return
+   */
   public static Wavefront parse(Stream<String> stream) {
     return new WavefrontImpl(stream);
   }

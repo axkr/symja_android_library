@@ -40,147 +40,152 @@ import org.matheclipse.parser.client.Parser;
 import org.matheclipse.parser.client.SyntaxError;
 import org.matheclipse.parser.client.ast.ASTNode;
 
-/**
- * Import some data from file system.
- *
- */
+/** Import some data from file system. */
 public class Import extends AbstractEvaluator {
 
-	public Import() {
-	}
+  public Import() {}
 
-	@Override
-	public IExpr evaluate(final IAST ast, EvalEngine engine) {
-		if (Config.isFileSystemEnabled(engine)) {
-			if (!(ast.arg1() instanceof IStringX)) {
-				return F.NIL;
-			}
+  @Override
+  public IExpr evaluate(final IAST ast, EvalEngine engine) {
+    if (Config.isFileSystemEnabled(engine)) {
+      if (!(ast.arg1() instanceof IStringX)) {
+        return F.NIL;
+      }
 
-			IStringX arg1 = (IStringX) ast.arg1();
-			Extension format = Extension.importFilename(arg1.toString());
-			String fileName = arg1.toString();
+      IStringX arg1 = (IStringX) ast.arg1();
+      Extension format = Extension.importFilename(arg1.toString());
+      String fileName = arg1.toString();
 
-			if (ast.size() > 2) {
-				if (!(ast.arg2() instanceof IStringX)) {
-					return F.NIL;
-				}
-				format = Extension.importExtension(((IStringX) ast.arg2()).toString());
-			}
-			FileReader reader = null;
+      if (ast.size() > 2) {
+        if (!(ast.arg2() instanceof IStringX)) {
+          return F.NIL;
+        }
+        format = Extension.importExtension(((IStringX) ast.arg2()).toString());
+      }
+      FileReader reader = null;
 
-			try {
-				File file = new File(fileName);
-				switch (format) {
-				case DOT:
-				case GRAPHML:
-					// graph Format
-					reader = new FileReader(fileName);
-					return graphImport(reader, format, engine);
-				case M:
-					if (ast.isAST1()) {
-						return S.Get.of(engine, ast.arg1());
-					}
-					break;
-				case TABLE:
-					reader = new FileReader(fileName);
-					AST2Expr ast2Expr = new AST2Expr(engine.isRelaxedSyntax(), engine);
-					final Parser parser = new Parser(engine.isRelaxedSyntax(), true);
+      try {
+        File file = new File(fileName);
+        switch (format) {
+          case DOT:
+          case GRAPHML:
+            // graph Format
+            reader = new FileReader(fileName);
+            return graphImport(reader, format, engine);
+          case M:
+            if (ast.isAST1()) {
+              return S.Get.of(engine, ast.arg1());
+            }
+            break;
+          case TABLE:
+            reader = new FileReader(fileName);
+            AST2Expr ast2Expr = new AST2Expr(engine.isRelaxedSyntax(), engine);
+            final Parser parser = new Parser(engine.isRelaxedSyntax(), true);
 
-					CSVFormat csvFormat = CSVFormat.RFC4180.withDelimiter(' ');
-					Iterable<CSVRecord> records = csvFormat.parse(reader);
-					IASTAppendable rowList = F.ListAlloc(256);
-					for (CSVRecord record : records) {
-						IASTAppendable columnList = F.ListAlloc(record.size());
-						for (String string : record) {
-							final ASTNode node = parser.parse(string);
-							IExpr temp = ast2Expr.convert(node);
-							columnList.append(temp);
-						}
-						rowList.append(columnList);
-					}
-					return rowList;
-				case STRING:
-					return of(file, engine);
-				case WXF:
-					byte[] byteArray = com.google.common.io.Files.toByteArray(file);
-					return WL.deserialize(byteArray);
-				default:
-				}
-			} catch (IOException ioe) {
-				return engine.printMessage("Import: file " + fileName + " not found!");
-			} catch (SyntaxError se) {
-				return engine.printMessage("Import: file " + fileName + " syntax error!");
-			} catch (Exception ex) {
-				return engine.printMessage("Import: file " + fileName + " - " + ex.getMessage());
-			} finally {
-				if (reader != null) {
-					try {
-						reader.close();
-					} catch (IOException e) {
-					}
-				}
-			}
-		}
-		return F.NIL;
-	}
+            CSVFormat csvFormat = CSVFormat.RFC4180.withDelimiter(' ');
+            Iterable<CSVRecord> records = csvFormat.parse(reader);
+            IASTAppendable rowList = F.ListAlloc(256);
+            for (CSVRecord record : records) {
+              IASTAppendable columnList = F.ListAlloc(record.size());
+              for (String string : record) {
+                final ASTNode node = parser.parse(string);
+                IExpr temp = ast2Expr.convert(node);
+                columnList.append(temp);
+              }
+              rowList.append(columnList);
+            }
+            return rowList;
+          case STRING:
+            return of(file, engine);
+          case WXF:
+            byte[] byteArray = com.google.common.io.Files.toByteArray(file);
+            return WL.deserialize(byteArray);
+          default:
+        }
+      } catch (IOException ioe) {
+        return engine.printMessage("Import: file " + fileName + " not found!");
+      } catch (SyntaxError se) {
+        return engine.printMessage("Import: file " + fileName + " syntax error!");
+      } catch (Exception ex) {
+        return engine.printMessage("Import: file " + fileName + " - " + ex.getMessage());
+      } finally {
+        if (reader != null) {
+          try {
+            reader.close();
+          } catch (IOException e) {
+          }
+        }
+      }
+    }
+    return F.NIL;
+  }
 
-	public int[] expectedArgSize(IAST ast) {
-		return IOFunctions.ARGS_1_2;
-	}
+  public int[] expectedArgSize(IAST ast) {
+    return IOFunctions.ARGS_1_2;
+  }
 
-	public static IExpr of(File file, EvalEngine engine) throws IOException {
-		String filename = file.getName();
-		Extension extension = Extension.importFilename(filename);
-		// Extension extension = filename.extension();
-		if (extension.equals(Extension.JPG) || extension.equals(Extension.PNG)) {
-			// if (filename.hasExtension("jpg") || filename.hasExtension("png")) {
-			return ImageFormat.from(ImageIO.read(file));
-		}
+  public static IExpr of(File file, EvalEngine engine) throws IOException {
+    String filename = file.getName();
+    Extension extension = Extension.importFilename(filename);
+    // Extension extension = filename.extension();
+    if (extension.equals(Extension.JPG) || extension.equals(Extension.PNG)) {
+      // if (filename.hasExtension("jpg") || filename.hasExtension("png")) {
+      return ImageFormat.from(ImageIO.read(file));
+    }
 
-		AST2Expr ast2Expr = new AST2Expr(engine.isRelaxedSyntax(), engine);
-		final Parser parser = new Parser(engine.isRelaxedSyntax(), true);
-		String str = com.google.common.io.Files.asCharSource(file, Charset.defaultCharset()).read();
-		final ASTNode node = parser.parse(str);
-		return ast2Expr.convert(node);
-	}
+    AST2Expr ast2Expr = new AST2Expr(engine.isRelaxedSyntax(), engine);
+    final Parser parser = new Parser(engine.isRelaxedSyntax(), true);
+    String str = com.google.common.io.Files.asCharSource(file, Charset.defaultCharset()).read();
+    final ASTNode node = parser.parse(str);
+    return ast2Expr.convert(node);
+  }
 
-	private GraphMLImporter<IExpr, ExprEdge> createGraphImporter(Graph<IExpr, ExprEdge> g,
-			Map<String, Map<String, Attribute>> vertexAttributes, Map<ExprEdge, Map<String, Attribute>> edgeAttributes,
-			EvalEngine engine) {
-		return createGraphImporter(g, (label, attributes) -> {
-			vertexAttributes.put(label, attributes);
-			return engine.parse(label);
-		}, (from, to, label, attributes) -> {
-			ExprEdge e = g.getEdgeSupplier().get();
-			edgeAttributes.put(e, attributes);
-			return e;
-		});
-	}
+  private GraphMLImporter<IExpr, ExprEdge> createGraphImporter(
+      Graph<IExpr, ExprEdge> g,
+      Map<String, Map<String, Attribute>> vertexAttributes,
+      Map<ExprEdge, Map<String, Attribute>> edgeAttributes,
+      EvalEngine engine) {
+    return createGraphImporter(
+        g,
+        (label, attributes) -> {
+          vertexAttributes.put(label, attributes);
+          return engine.parse(label);
+        },
+        (from, to, label, attributes) -> {
+          ExprEdge e = g.getEdgeSupplier().get();
+          edgeAttributes.put(e, attributes);
+          return e;
+        });
+  }
 
-	private GraphMLImporter<IExpr, ExprEdge> createGraphImporter(Graph<IExpr, ExprEdge> g, VertexProvider<IExpr> vp,
-			EdgeProvider<IExpr, ExprEdge> ep) {
-		return new GraphMLImporter<IExpr, ExprEdge>(vp, ep);
-	}
+  private GraphMLImporter<IExpr, ExprEdge> createGraphImporter(
+      Graph<IExpr, ExprEdge> g, VertexProvider<IExpr> vp, EdgeProvider<IExpr, ExprEdge> ep) {
+    return new GraphMLImporter<IExpr, ExprEdge>(vp, ep);
+  }
 
-	private IExpr graphImport(Reader reader, Extension format, EvalEngine engine) throws ImportException {
-		Graph<IExpr, ExprEdge> result;
-		switch (format) {
-		case DOT:
-			DOTImporter<IExpr, ExprEdge> dotImporter = new DOTImporter<IExpr, ExprEdge>(
-					(label, attributes) -> engine.parse(label), (from, to, label, attributes) -> new ExprEdge());
-			result = new DefaultDirectedGraph<IExpr, ExprEdge>(ExprEdge.class);
-			dotImporter.importGraph(result, reader);
-			return GraphExpr.newInstance(result);
-		case GRAPHML:
-			result = new DefaultDirectedGraph<IExpr, ExprEdge>(ExprEdge.class);
-			Map<String, Map<String, Attribute>> vertexAttributes = new HashMap<>();
-			Map<ExprEdge, Map<String, Attribute>> edgeAttributes = new HashMap<ExprEdge, Map<String, Attribute>>();
-			GraphMLImporter<IExpr, ExprEdge> graphmlImporter = createGraphImporter(result, vertexAttributes,
-					edgeAttributes, engine);
-			graphmlImporter.importGraph(result, reader);
-			return GraphExpr.newInstance(result);
-		default:
-		}
-		return F.NIL;
-	}
+  private IExpr graphImport(Reader reader, Extension format, EvalEngine engine)
+      throws ImportException {
+    Graph<IExpr, ExprEdge> result;
+    switch (format) {
+      case DOT:
+        DOTImporter<IExpr, ExprEdge> dotImporter =
+            new DOTImporter<IExpr, ExprEdge>(
+                (label, attributes) -> engine.parse(label),
+                (from, to, label, attributes) -> new ExprEdge());
+        result = new DefaultDirectedGraph<IExpr, ExprEdge>(ExprEdge.class);
+        dotImporter.importGraph(result, reader);
+        return GraphExpr.newInstance(result);
+      case GRAPHML:
+        result = new DefaultDirectedGraph<IExpr, ExprEdge>(ExprEdge.class);
+        Map<String, Map<String, Attribute>> vertexAttributes = new HashMap<>();
+        Map<ExprEdge, Map<String, Attribute>> edgeAttributes =
+            new HashMap<ExprEdge, Map<String, Attribute>>();
+        GraphMLImporter<IExpr, ExprEdge> graphmlImporter =
+            createGraphImporter(result, vertexAttributes, edgeAttributes, engine);
+        graphmlImporter.importGraph(result, reader);
+        return GraphExpr.newInstance(result);
+      default:
+    }
+    return F.NIL;
+  }
 }

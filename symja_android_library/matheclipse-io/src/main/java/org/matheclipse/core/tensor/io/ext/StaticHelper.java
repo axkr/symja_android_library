@@ -9,11 +9,12 @@ import java.util.stream.Stream;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.interfaces.IAST;
 
-
 /* package */ enum StaticHelper {
   ;
-  /** @param inputStream
-   * @return lines in given inputStream as stream of strings */
+  /**
+   * @param inputStream
+   * @return lines in given inputStream as stream of strings
+   */
   static Stream<String> lines(InputStream inputStream) {
     return new BufferedReader(new InputStreamReader(inputStream)).lines();
   }

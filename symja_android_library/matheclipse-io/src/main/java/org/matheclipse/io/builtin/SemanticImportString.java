@@ -16,33 +16,28 @@ import org.matheclipse.parser.client.SyntaxError;
 
 import tech.tablesaw.api.Table;
 
-/**
- * Import semantic data into a DataSet
- *
- */
+/** Import semantic data into a DataSet */
 public class SemanticImportString extends AbstractEvaluator {
 
-	public SemanticImportString() {
-	}
+  public SemanticImportString() {}
 
-	@Override
-	public IExpr evaluate(final IAST ast, EvalEngine engine) {
-		if (!(ast.arg1() instanceof IStringX)) {
-			return F.NIL;
-		}
+  @Override
+  public IExpr evaluate(final IAST ast, EvalEngine engine) {
+    if (!(ast.arg1() instanceof IStringX)) {
+      return F.NIL;
+    }
 
-		IStringX arg1 = (IStringX) ast.arg1(); 
-		try {
-			Table table = Table.read().csv(arg1.toString(), "");
-			return ASTDataset.newInstance(table);
-		} catch (RuntimeException rex) {
-			return engine.printMessage("SemanticImportString: " + " - " + rex.getMessage());
-		} finally {
-		}
-	}
+    IStringX arg1 = (IStringX) ast.arg1();
+    try {
+      Table table = Table.read().csv(arg1.toString(), "");
+      return ASTDataset.newInstance(table);
+    } catch (RuntimeException rex) {
+      return engine.printMessage("SemanticImportString: " + " - " + rex.getMessage());
+    } finally {
+    }
+  }
 
-	public int[] expectedArgSize(IAST ast) {
-		return IOFunctions.ARGS_1_2;
-	}
-
+  public int[] expectedArgSize(IAST ast) {
+    return IOFunctions.ARGS_1_2;
+  }
 }
