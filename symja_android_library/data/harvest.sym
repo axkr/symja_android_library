@@ -23969,7 +23969,7 @@ Head(x)
 Symbol("x") + Symbol("x")
 
 
-i\[CapitalGamma]j\(hjgg)
+i\[CapitalGamma]j(hjgg)
 
 
 i\[Alpha]j=10;i\[Alpha]j
