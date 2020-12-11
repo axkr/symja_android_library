@@ -1,20 +1,24 @@
 package org.matheclipse.core.builtin;
 
-import java.io.UnsupportedEncodingException;
+import java.nio.charset.Charset;
+import java.nio.charset.StandardCharsets;
 import java.util.Arrays;
-import java.util.Enumeration;
+import java.util.Base64;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.function.Predicate;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+import java.util.regex.PatternSyntaxException;
 
+import org.apache.commons.text.similarity.LevenshteinDistance;
 import org.matheclipse.core.basic.Config;
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.exception.Validate;
 import org.matheclipse.core.eval.exception.ValidateException;
 import org.matheclipse.core.eval.interfaces.AbstractCoreFunctionEvaluator;
 import org.matheclipse.core.eval.interfaces.AbstractFunctionEvaluator;
+import org.matheclipse.core.eval.interfaces.IFunctionEvaluator;
 import org.matheclipse.core.eval.util.OptionArgs;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.expression.ID;
@@ -22,11 +26,13 @@ import org.matheclipse.core.expression.PatternSequence;
 import org.matheclipse.core.expression.RepeatedPattern;
 import org.matheclipse.core.expression.S;
 import org.matheclipse.core.expression.StringX;
+import org.matheclipse.core.expression.data.ByteArrayExpr;
 import org.matheclipse.core.form.output.OutputFormFactory;
 import org.matheclipse.core.form.tex.TeXParser;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IASTAppendable;
 import org.matheclipse.core.interfaces.IBuiltInSymbol;
+import org.matheclipse.core.interfaces.IDataExpr;
 import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.interfaces.IPredicate;
 import org.matheclipse.core.interfaces.IStringX;
@@ -48,9 +54,14 @@ public final class StringFunctions {
 
     private static void init() {
       LANGUAGE_MAP.put("English", "Latin");
+      S.BaseDecode.setEvaluator(new BaseDecode());
+      S.BaseEncode.setEvaluator(new BaseEncode());
+      S.ByteArrayToString.setEvaluator(new ByteArrayToString());
       S.Characters.setEvaluator(new Characters());
       S.CharacterRange.setEvaluator(new CharacterRange());
+      S.EditDistance.setEvaluator(new EditDistance());
       S.FromCharacterCode.setEvaluator(new FromCharacterCode());
+      S.HammingDistance.setEvaluator(new HammingDistance());
       S.LetterQ.setEvaluator(new LetterQ());
       S.LowerCaseQ.setEvaluator(new LowerCaseQ());
       S.PrintableASCIIQ.setEvaluator(new PrintableASCIIQ());
@@ -60,15 +71,18 @@ public final class StringFunctions {
       S.StringContainsQ.setEvaluator(new StringContainsQ());
       S.StringDrop.setEvaluator(new StringDrop());
       S.StringExpression.setEvaluator(new StringExpression());
+      S.StringFreeQ.setEvaluator(new StringFreeQ());
       S.StringInsert.setEvaluator(new StringInsert());
       S.StringJoin.setEvaluator(new StringJoin());
       S.StringLength.setEvaluator(new StringLength());
       S.StringMatchQ.setEvaluator(new StringMatchQ());
       S.StringPart.setEvaluator(new StringPart());
+      S.StringPosition.setEvaluator(new StringPosition());
       S.StringReplace.setEvaluator(new StringReplace());
       S.StringRiffle.setEvaluator(new StringRiffle());
       S.StringSplit.setEvaluator(new StringSplit());
       S.StringTake.setEvaluator(new StringTake());
+      S.StringToByteArray.setEvaluator(new StringToByteArray());
       S.StringTrim.setEvaluator(new StringTrim());
       S.SyntaxLength.setEvaluator(new SyntaxLength());
       S.TextString.setEvaluator(new TextString());
@@ -82,6 +96,90 @@ public final class StringFunctions {
       if (!Config.FUZZY_PARSER) {
         S.ToExpression.setEvaluator(new ToExpression());
       }
+    }
+  }
+
+  private static class BaseDecode extends AbstractFunctionEvaluator {
+
+    @Override
+    public IExpr evaluate(final IAST ast, EvalEngine engine) {
+      if (!(ast.arg1() instanceof IStringX)) {
+        return F.NIL;
+      }
+      String str = ast.arg1().toString();
+      try {
+        byte[] bArray = Base64.getDecoder().decode(str.toString());
+        return ByteArrayExpr.newInstance(bArray);
+      } catch (IllegalArgumentException iae) {
+        //
+      }
+      return F.NIL;
+    }
+
+    @Override
+    public int[] expectedArgSize(IAST ast) {
+      return ARGS_1_1;
+    }
+
+    @Override
+    public void setUp(final ISymbol newSymbol) {
+      newSymbol.setAttributes(ISymbol.LISTABLE);
+    }
+  }
+
+  private static class BaseEncode extends AbstractFunctionEvaluator {
+
+    @Override
+    public IExpr evaluate(final IAST ast, EvalEngine engine) {
+      IExpr arg1 = ast.arg1();
+      if (arg1 instanceof ByteArrayExpr) {
+        byte[] bArray = (byte[]) ((IDataExpr) arg1).toData();
+        if (bArray.length == 0) {
+          return F.$str("");
+        }
+
+        String str = Base64.getEncoder().encodeToString(bArray);
+        return F.$str(str);
+      }
+      return F.NIL;
+    }
+
+    @Override
+    public int[] expectedArgSize(IAST ast) {
+      return ARGS_1_1;
+    }
+
+    @Override
+    public void setUp(final ISymbol newSymbol) {
+      newSymbol.setAttributes(ISymbol.LISTABLE);
+    }
+  }
+
+  private static class ByteArrayToString extends AbstractFunctionEvaluator {
+
+    @Override
+    public IExpr evaluate(final IAST ast, EvalEngine engine) {
+      IExpr arg1 = ast.arg1();
+      if (arg1 instanceof ByteArrayExpr) {
+        byte[] bArray = (byte[]) ((IDataExpr) arg1).toData();
+        if (bArray.length == 0) {
+          return F.$str("");
+        }
+
+        String str = new String(bArray, StandardCharsets.UTF_8);
+        return F.$str(str);
+      }
+      return F.NIL;
+    }
+
+    @Override
+    public int[] expectedArgSize(IAST ast) {
+      return ARGS_1_1;
+    }
+
+    @Override
+    public void setUp(final ISymbol newSymbol) {
+      newSymbol.setAttributes(ISymbol.LISTABLE);
     }
   }
 
@@ -102,7 +200,7 @@ public final class StringFunctions {
 
     @Override
     public int[] expectedArgSize(IAST ast) {
-      return IOFunctions.ARGS_1_1;
+      return ARGS_1_1;
     }
 
     @Override
@@ -191,7 +289,7 @@ public final class StringFunctions {
 
     @Override
     public int[] expectedArgSize(IAST ast) {
-      return IOFunctions.ARGS_2_2;
+      return ARGS_2_2;
     }
   }
 
@@ -285,6 +383,46 @@ public final class StringFunctions {
     // }
   }
 
+  private static final class HammingDistance extends AbstractFunctionEvaluator {
+
+    @Override
+    public IExpr evaluate(final IAST ast, EvalEngine engine) {
+
+      IExpr arg1 = ast.arg1();
+      IExpr arg2 = ast.arg2();
+      if (arg1.isString() && arg2.isString()) {
+        boolean ignoreCase = false;
+        if (ast.size() > 3) {
+          final OptionArgs options = new OptionArgs(ast.topHead(), ast, 3, engine, true);
+          IExpr option = options.getOption(S.IgnoreCase);
+          if (option.isTrue()) {
+            ignoreCase = true;
+          }
+        }
+
+        org.apache.commons.text.similarity.HammingDistance hammingDistance =
+            new org.apache.commons.text.similarity.HammingDistance();
+        String str1 = arg1.toString();
+        String str2 = arg2.toString();
+        if (str1.length() != str2.length()) {
+          // `1` and `2` must have the same length.
+          return IOFunctions.printMessage(ast.topHead(), "idim", F.List(arg1, arg2), engine);
+        }
+
+        if (ignoreCase) {
+          return F.ZZ(hammingDistance.apply(str1.toLowerCase(), str2.toLowerCase()));
+        }
+        return F.ZZ(hammingDistance.apply(str1, str2));
+      }
+      return F.NIL;
+    }
+
+    @Override
+    public int[] expectedArgSize(IAST ast) {
+      return ARGS_2_3;
+    }
+  }
+
   /**
    *
    *
@@ -324,7 +462,7 @@ public final class StringFunctions {
 
     @Override
     public int[] expectedArgSize(IAST ast) {
-      return IOFunctions.ARGS_1_1;
+      return ARGS_1_1;
     }
 
     @Override
@@ -374,7 +512,7 @@ public final class StringFunctions {
 
     @Override
     public int[] expectedArgSize(IAST ast) {
-      return IOFunctions.ARGS_1_1;
+      return ARGS_1_1;
     }
 
     @Override
@@ -393,6 +531,40 @@ public final class StringFunctions {
         }
       }
       return true;
+    }
+  }
+
+  private static final class EditDistance extends AbstractFunctionEvaluator {
+
+    @Override
+    public IExpr evaluate(final IAST ast, EvalEngine engine) {
+
+      IExpr arg1 = ast.arg1();
+      IExpr arg2 = ast.arg2();
+      if (arg1.isString() && arg2.isString()) {
+        boolean ignoreCase = false;
+        if (ast.size() > 3) {
+          final OptionArgs options = new OptionArgs(ast.topHead(), ast, 3, engine, true);
+          IExpr option = options.getOption(S.IgnoreCase);
+          if (option.isTrue()) {
+            ignoreCase = true;
+          }
+        }
+
+        LevenshteinDistance levenshteinDistance = new LevenshteinDistance();
+        if (ignoreCase) {
+          return F.ZZ(
+              levenshteinDistance.apply(
+                  arg1.toString().toLowerCase(), arg2.toString().toLowerCase()));
+        }
+        return F.ZZ(levenshteinDistance.apply(arg1.toString(), arg2.toString()));
+      }
+      return F.NIL;
+    }
+
+    @Override
+    public int[] expectedArgSize(IAST ast) {
+      return ARGS_2_3;
     }
   }
 
@@ -439,7 +611,7 @@ public final class StringFunctions {
 
     @Override
     public int[] expectedArgSize(IAST ast) {
-      return IOFunctions.ARGS_1_1;
+      return ARGS_1_1;
     }
 
     @Override
@@ -500,7 +672,7 @@ public final class StringFunctions {
 
     @Override
     public int[] expectedArgSize(IAST ast) {
-      return IOFunctions.ARGS_1_1;
+      return ARGS_1_1;
     }
 
     @Override
@@ -541,12 +713,12 @@ public final class StringFunctions {
 
     @Override
     public IExpr evaluate(IAST ast, EvalEngine engine) {
-      if (ast.isAST1()) {
-        ast = F.operatorFormAppend(ast);
-        if (!ast.isPresent()) {
-          return F.NIL;
-        }
-      }
+      //      if (ast.isAST1()) {
+      //        ast = F.operatorForm1Append(ast);
+      //        if (!ast.isPresent()) {
+      //          return F.NIL;
+      //        }
+      //      }
       if (ast.size() >= 3) {
         IExpr arg1 = engine.evaluate(ast.arg1());
         if (arg1.isList()) {
@@ -594,7 +766,7 @@ public final class StringFunctions {
 
     @Override
     public int[] expectedArgSize(IAST ast) {
-      return IOFunctions.ARGS_1_4;
+      return ARGS_1_4_1;
     }
   }
 
@@ -627,12 +799,12 @@ public final class StringFunctions {
 
     @Override
     public IExpr evaluate(IAST ast, EvalEngine engine) {
-      if (ast.isAST1()) {
-        ast = F.operatorFormAppend(ast);
-        if (!ast.isPresent()) {
-          return F.NIL;
-        }
-      }
+      //      if (ast.isAST1()) {
+      //        ast = F.operatorForm1Append(ast);
+      //        if (!ast.isPresent()) {
+      //          return F.NIL;
+      //        }
+      //      }
       if (ast.size() >= 3) {
         IExpr arg1 = engine.evaluate(ast.arg1());
         if (arg1.isList()) {
@@ -679,7 +851,7 @@ public final class StringFunctions {
 
     @Override
     public int[] expectedArgSize(IAST ast) {
-      return IOFunctions.ARGS_1_4;
+      return ARGS_1_4_1;
     }
   }
 
@@ -710,12 +882,12 @@ public final class StringFunctions {
 
     @Override
     public IExpr evaluate(IAST ast, EvalEngine engine) {
-      if (ast.isAST1()) {
-        ast = F.operatorFormAppend(ast);
-        if (!ast.isPresent()) {
-          return F.NIL;
-        }
-      }
+      //      if (ast.isAST1()) {
+      //        ast = F.operatorForm1Append(ast);
+      //        if (!ast.isPresent()) {
+      //          return F.NIL;
+      //        }
+      //      }
       boolean ignoreCase = false;
       if (ast.size() > 3) {
         final OptionArgs options = new OptionArgs(ast.topHead(), ast, 3, engine, true);
@@ -750,7 +922,7 @@ public final class StringFunctions {
 
     @Override
     public int[] expectedArgSize(IAST ast) {
-      return IOFunctions.ARGS_1_4;
+      return ARGS_1_4_1;
     }
   }
 
@@ -787,7 +959,7 @@ public final class StringFunctions {
 
     @Override
     public int[] expectedArgSize(IAST ast) {
-      return IOFunctions.ARGS_2_2;
+      return ARGS_2_2;
     }
   }
 
@@ -795,10 +967,16 @@ public final class StringFunctions {
 
     @Override
     public IExpr evaluate(final IAST ast, EvalEngine engine) {
-      // if (ast.arg1().isString()) {
-      // String s = ast.arg1().toString();
-      // }
-      return F.NIL;
+      StringBuilder buf = new StringBuilder();
+      for (int i = 1; i < ast.size(); i++) {
+        IExpr arg = ast.get(i);
+        if (arg.isString()) {
+          buf.append(arg.toString());
+        } else {
+          return F.NIL;
+        }
+      }
+      return F.$str(buf.toString());
     }
 
     @Override
@@ -808,7 +986,69 @@ public final class StringFunctions {
 
     @Override
     public int[] expectedArgSize(IAST ast) {
-      return IOFunctions.ARGS_1_INFINITY;
+      return ARGS_1_INFINITY;
+    }
+  }
+
+  private static class StringFreeQ extends AbstractCoreFunctionEvaluator {
+
+    @Override
+    public IExpr evaluate(IAST ast, EvalEngine engine) {
+      //      if (ast.isAST1()) {
+      //        ast = F.operatorForm1Append(ast);
+      //        if (!ast.isPresent()) {
+      //          return F.NIL;
+      //        }
+      //      }
+      if (ast.size() >= 3) {
+        boolean ignoreCase = false;
+        if (ast.size() > 3) {
+          final OptionArgs options = new OptionArgs(ast.topHead(), ast, 3, engine, true);
+          IExpr option = options.getOption(S.IgnoreCase);
+          if (option.isTrue()) {
+            ignoreCase = true;
+          }
+        }
+
+        IExpr arg1 = engine.evaluate(ast.arg1());
+        if (arg1.isList()) {
+          return ((IAST) arg1).mapThread(ast, 1);
+        }
+
+        IExpr arg2 = ast.arg2();
+        if (arg2.isList()) {
+          IAST list = (IAST) arg2;
+          for (int i = 1; i < list.size(); i++) {
+            IExpr temp = stringFreeQ(ast, arg1, list.get(i), ignoreCase, engine);
+            if (temp.isTrue()) {
+              continue;
+            }
+            return temp;
+          }
+          return S.True;
+        }
+        return stringFreeQ(ast, arg1, arg2, ignoreCase, engine);
+      }
+      return F.NIL;
+    }
+
+    private static IExpr stringFreeQ(
+        IAST ast, IExpr arg1, IExpr arg2, boolean ignoreCase, EvalEngine engine) {
+      java.util.regex.Pattern pattern = toRegexPattern(arg2, true, ignoreCase, ast, engine);
+      if (pattern == null) {
+        return F.NIL;
+      }
+      String s1 = arg1.toString();
+      java.util.regex.Matcher matcher = pattern.matcher(s1);
+      if (matcher.find()) {
+        return S.False;
+      }
+      return S.True;
+    }
+
+    @Override
+    public int[] expectedArgSize(IAST ast) {
+      return ARGS_1_4_1;
     }
   }
 
@@ -930,13 +1170,8 @@ public final class StringFunctions {
     }
 
     @Override
-    public void setUp(final ISymbol newSymbol) {
-      newSymbol.setAttributes(ISymbol.ONEIDENTITY | ISymbol.FLAT);
-    }
-
-    @Override
     public int[] expectedArgSize(IAST ast) {
-      return IOFunctions.ARGS_3_3;
+      return ARGS_3_3;
     }
   }
 
@@ -1046,7 +1281,7 @@ public final class StringFunctions {
 
     @Override
     public int[] expectedArgSize(IAST ast) {
-      return IOFunctions.ARGS_1_1;
+      return ARGS_1_1;
     }
 
     @Override
@@ -1091,12 +1326,12 @@ public final class StringFunctions {
 
     @Override
     public IExpr evaluate(IAST ast, EvalEngine engine) {
-      if (ast.isAST1()) {
-        ast = F.operatorFormAppend(ast);
-        if (!ast.isPresent()) {
-          return F.NIL;
-        }
-      }
+      //      if (ast.isAST1()) {
+      //        ast = F.operatorForm1Append(ast);
+      //        if (!ast.isPresent()) {
+      //          return F.NIL;
+      //        }
+      //      }
       if (ast.size() >= 3) {
         boolean ignoreCase = false;
         if (ast.size() > 3) {
@@ -1129,7 +1364,7 @@ public final class StringFunctions {
 
     @Override
     public int[] expectedArgSize(IAST ast) {
-      return IOFunctions.ARGS_1_4;
+      return ARGS_1_4_1;
     }
   }
 
@@ -1197,13 +1432,93 @@ public final class StringFunctions {
 
     @Override
     public int[] expectedArgSize(IAST ast) {
-      return IOFunctions.ARGS_2_2;
+      return ARGS_2_2;
     }
 
     @Override
     public void setUp(final ISymbol newSymbol) {}
   }
 
+  private static class StringPosition extends AbstractCoreFunctionEvaluator {
+
+    @Override
+    public IExpr evaluate(IAST ast, EvalEngine engine) {
+      //      if (ast.isAST1()) {
+      //        ast = F.operatorForm1Append(ast);
+      //        if (!ast.isPresent()) {
+      //          return F.NIL;
+      //        }
+      //      }
+      if (ast.size() >= 3) {
+        int maxOccurences = Integer.MAX_VALUE;
+        boolean ignoreCase = false;
+        if (ast.size() > 3) {
+          maxOccurences = ast.arg3().toIntDefault();
+          if (maxOccurences < 0) {
+            maxOccurences = Integer.MAX_VALUE;
+          }
+          final OptionArgs options = new OptionArgs(ast.topHead(), ast, 3, engine, true);
+          IExpr option = options.getOption(S.IgnoreCase);
+          if (option.isTrue()) {
+            ignoreCase = true;
+          }
+        }
+
+        IExpr arg1 = engine.evaluate(ast.arg1());
+        if (arg1.isList()) {
+          return ((IAST) arg1).mapThread(ast, 1);
+        }
+
+        IExpr arg2 = ast.arg2();
+        IASTAppendable result = F.ListAlloc();
+
+        if (arg2.isList()) {
+          IAST list = (IAST) arg2;
+          for (int i = 1; i < list.size(); i++) {
+            IExpr temp =
+                stringPosition(ast, arg1, list.get(i), maxOccurences, ignoreCase, result, engine);
+            if (!temp.isPresent()) {
+              return F.NIL;
+            }
+            if (maxOccurences < result.size()) {
+              return result;
+            }
+          }
+          return result;
+        }
+        return stringPosition(ast, arg1, arg2, maxOccurences, ignoreCase, result, engine);
+      }
+      return F.NIL;
+    }
+
+    private static IExpr stringPosition(
+        IAST ast,
+        IExpr arg1,
+        IExpr arg2,
+        int maxOccurences,
+        boolean ignoreCase,
+        IASTAppendable result,
+        EvalEngine engine) {
+      java.util.regex.Pattern pattern = toRegexPattern(arg2, true, ignoreCase, ast, engine);
+      if (pattern == null) {
+        return F.NIL;
+      }
+      String s1 = arg1.toString();
+      java.util.regex.Matcher matcher = pattern.matcher(s1);
+      while (matcher.find()) {
+        if (maxOccurences < result.size()) {
+          return result;
+        }
+        result.append(F.List(F.ZZ(matcher.start() + 1), F.ZZ(matcher.end())));
+      }
+      return result;
+    }
+
+    @Override
+    public int[] expectedArgSize(IAST ast) {
+      return ARGS_1_4_1;
+    }
+  }
   /**
    *
    *
@@ -1234,12 +1549,12 @@ public final class StringFunctions {
 
     @Override
     public IExpr evaluate(IAST ast, EvalEngine engine) {
-      if (ast.isAST1()) {
-        ast = F.operatorFormAppend(ast);
-        if (!ast.isPresent()) {
-          return F.NIL;
-        }
-      }
+      //      if (ast.isAST1()) {
+      //        ast = F.operatorForm1Append(ast);
+      //        if (!ast.isPresent()) {
+      //          return F.NIL;
+      //        }
+      //      }
       if (ast.size() >= 3) {
         IExpr arg1 = engine.evaluate(ast.arg1());
         if (arg1.isList()) {
@@ -1287,7 +1602,7 @@ public final class StringFunctions {
 
     @Override
     public int[] expectedArgSize(IAST ast) {
-      return IOFunctions.ARGS_1_3;
+      return ARGS_1_3_1;
     }
 
     @Override
@@ -1367,7 +1682,7 @@ public final class StringFunctions {
 
     @Override
     public int[] expectedArgSize(IAST ast) {
-      return IOFunctions.ARGS_1_3;
+      return ARGS_1_3;
     }
   }
 
@@ -1473,7 +1788,7 @@ public final class StringFunctions {
 
     @Override
     public int[] expectedArgSize(IAST ast) {
-      return IOFunctions.ARGS_1_3;
+      return ARGS_1_3;
     }
   }
 
@@ -1483,13 +1798,14 @@ public final class StringFunctions {
     public IExpr evaluate(final IAST ast, EvalEngine engine) {
       int from = 1;
       int to = 1;
+      IExpr arg1 = ast.arg1();
       try {
-        if (ast.arg1().isString()) {
+        if (arg1.isString()) {
           // final ISequence[] sequ = Sequence.createSequences(ast, 2, "take", engine);
           // if (sequ == null) {
           // return F.NIL;
           // }
-          String s = ast.arg1().toString();
+          String s = arg1.toString();
           IExpr arg2 = ast.arg2();
           if (arg2.isAST(S.UpTo, 2)) {
             int upTo = Validate.checkUpTo((IAST) arg2, engine);
@@ -1498,10 +1814,65 @@ public final class StringFunctions {
             }
             upTo = s.length() > upTo ? upTo : s.length();
             return F.$str(s.substring(0, upTo));
+          } else if (arg2.equals(S.All)) {
+            return arg1;
           } else if (arg2.isList()) {
+            //        	  int[][] sequ =
+            //                      Validate.checkListOfSequenceSpec(ast, arg2, 2,
+            // s.length(),Integer.MIN_VALUE, Integer.MAX_VALUE, engine);
+            //                  if (sequ == null || sequ.length == 0) {
+            //                    return F.NIL;
+            //                  }
+            //                 if( sequ.length >1) {
+            //                	 return ((IAST) arg2).mapThread(ast, 2);
+            //                 }
+            //                  switch (sequ.length) {
+            //                    case 1:
+            //                      from = sequ[0];
+            //                      if (from < 0) {
+            //                        from = s.length() + from + 1;
+            //                      }
+            //                      to = from;
+            //                      return F.$str(s.substring(from - 1, to));
+            //                    case 2:
+            //                      from = sequ[0];
+            //                      if (from < 0) {
+            //                        from = s.length() + from + 1;
+            //                      }
+            //                      to = sequ[1];
+            //                      if (to < 0) {
+            //                        to = s.length() + to + 1;
+            //                      }
+            //                      return F.$str(s.substring(from - 1, to));
+            //                    case 3:
+            //                      from = sequ[0];
+            //                      if (from < 0) {
+            //                        from = s.length() + from + 1;
+            //                      }
+            //                      to = sequ[1];
+            //                      if (to < 0) {
+            //                        to = s.length() + to + 1;
+            //                      }
+            //                      int step = sequ[2];
+            //                      if (step < 0) {
+            //                        return F.NIL;
+            //                      }
+            //                      if (step == 0) {
+            //                        return ((IAST) arg2).mapThread(ast, 2);
+            //                      }
+            //                      StringBuilder buf = new StringBuilder();
+            //                      while (from <= to) {
+            //                        buf.append(s.substring(from - 1, from));
+            //                        from += step;
+            //                      }
+            //                      return F.$str(buf.toString());
+            //                    default:
+            //                      return ((IAST) arg2).mapThread(ast, 2);
+            //                  }
+
             int[] sequ =
                 Validate.checkListOfInts(ast, arg2, Integer.MIN_VALUE, Integer.MAX_VALUE, engine);
-            if (sequ == null || sequ.length == 0 || sequ.length > 3) {
+            if (sequ == null || sequ.length == 0) {
               return F.NIL;
             }
             switch (sequ.length) {
@@ -1535,12 +1906,17 @@ public final class StringFunctions {
                 if (step < 0) {
                   return F.NIL;
                 }
+                if (step == 0) {
+                  return ((IAST) arg2).mapThread(ast, 2);
+                }
                 StringBuilder buf = new StringBuilder();
                 while (from <= to) {
                   buf.append(s.substring(from - 1, from));
                   from += step;
                 }
                 return F.$str(buf.toString());
+              default:
+                return ((IAST) arg2).mapThread(ast, 2);
             }
           }
           to = Validate.checkIntType(ast, 2, Integer.MIN_VALUE);
@@ -1557,7 +1933,7 @@ public final class StringFunctions {
         // from substring
         // Cannot take positions `1` through `2` in `3`.
         return IOFunctions.printMessage(
-            ast.topHead(), "take", F.List(F.ZZ(from), F.ZZ(to), ast.arg1()), engine);
+            ast.topHead(), "take", F.List(F.ZZ(from), F.ZZ(to), arg1), engine);
       } catch (final ValidateException ve) {
         // int number validation
         return engine.printMessage(ve.getMessage(ast.topHead()));
@@ -1567,7 +1943,35 @@ public final class StringFunctions {
 
     @Override
     public int[] expectedArgSize(IAST ast) {
-      return IOFunctions.ARGS_2_2;
+      return ARGS_2_2;
+    }
+  }
+
+  private static class StringToByteArray extends AbstractFunctionEvaluator {
+
+    @Override
+    public IExpr evaluate(final IAST ast, EvalEngine engine) {
+      if (!(ast.arg1() instanceof IStringX)) {
+        return F.NIL;
+      }
+      String str = ast.arg1().toString();
+      try {
+        byte[] bArray = str.getBytes(StandardCharsets.UTF_8);
+        return ByteArrayExpr.newInstance(bArray);
+      } catch (IllegalArgumentException iae) {
+        //
+      }
+      return F.NIL;
+    }
+
+    @Override
+    public int[] expectedArgSize(IAST ast) {
+      return ARGS_1_1;
+    }
+
+    @Override
+    public void setUp(final ISymbol newSymbol) {
+      newSymbol.setAttributes(ISymbol.LISTABLE);
     }
   }
 
@@ -1584,15 +1988,20 @@ public final class StringFunctions {
             return F.NIL;
           }
           String str = ((IStringX) ast.arg1()).toString();
-          String regex = toRegexString(ast.arg2(), true, ast, engine);
-          if (regex != null) {
-            // prepend StartOfString
-            java.util.regex.Pattern pattern = java.util.regex.Pattern.compile("\\A" + regex);
-            str = pattern.matcher(str).replaceAll("");
-            // append EndOfString
-            pattern = java.util.regex.Pattern.compile(regex + "\\Z");
-            str = pattern.matcher(str).replaceAll("");
-            return F.$str(str);
+          try {
+            String regex = toRegexString(ast.arg2(), true, ast, engine);
+            if (regex != null) {
+              // prepend StartOfString
+              java.util.regex.Pattern pattern = java.util.regex.Pattern.compile("\\A" + regex);
+              str = pattern.matcher(str).replaceAll("");
+              // append EndOfString
+              pattern = java.util.regex.Pattern.compile(regex + "\\Z");
+              str = pattern.matcher(str).replaceAll("");
+              return F.$str(str);
+            }
+          } catch (IllegalArgumentException iae) {
+            // for example java.util.regex.PatternSyntaxException
+            return regexErrorHandling(ast, iae, engine);
           }
         }
       }
@@ -1601,7 +2010,7 @@ public final class StringFunctions {
 
     @Override
     public int[] expectedArgSize(IAST ast) {
-      return IOFunctions.ARGS_1_2;
+      return ARGS_1_2;
     }
 
     @Override
@@ -1623,7 +2032,7 @@ public final class StringFunctions {
 
     @Override
     public int[] expectedArgSize(IAST ast) {
-      return IOFunctions.ARGS_1_1;
+      return ARGS_1_1;
     }
 
     @Override
@@ -1657,7 +2066,7 @@ public final class StringFunctions {
 
     @Override
     public int[] expectedArgSize(IAST ast) {
-      return IOFunctions.ARGS_1_1;
+      return ARGS_1_1;
     }
   }
 
@@ -1698,12 +2107,12 @@ public final class StringFunctions {
         return F.NIL;
       }
 
-      return toCharacterCode(ast.arg1().toString(), "UTF-8");
+      return toCharacterCode(ast.arg1().toString(), StandardCharsets.UTF_8);
     }
 
     @Override
     public int[] expectedArgSize(IAST ast) {
-      return IOFunctions.ARGS_1_1;
+      return ARGS_1_1;
     }
 
     @Override
@@ -1711,22 +2120,23 @@ public final class StringFunctions {
       newSymbol.setAttributes(ISymbol.LISTABLE);
     }
 
-    public static IAST toCharacterCode(final String unicodeInput, final String inputEncoding) {
-      try {
+    public static IAST toCharacterCode(final String unicodeInput, final Charset inputEncoding) {
+      //      try {
 
-        final String utf8String = new String(unicodeInput.getBytes(inputEncoding), "UTF-8");
-        int characterCode;
-        final int length = utf8String.length();
-        IASTAppendable list = F.ListAlloc(length);
-        for (int i = 0; i < length; i++) {
-          characterCode = utf8String.charAt(i);
-          list.append(F.ZZ(characterCode));
-        }
-        return list;
-      } catch (final UnsupportedEncodingException e) {
-        e.printStackTrace();
+      final String utf8String =
+          new String(unicodeInput.getBytes(inputEncoding), StandardCharsets.UTF_8);
+      int characterCode;
+      final int length = utf8String.length();
+      IASTAppendable list = F.ListAlloc(length);
+      for (int i = 0; i < length; i++) {
+        characterCode = utf8String.charAt(i);
+        list.append(F.ZZ(characterCode));
       }
-      return F.NIL;
+      return list;
+      //      } catch (final UnsupportedEncodingException e) {
+      //        e.printStackTrace();
+      //      }
+      //      return F.NIL;
     }
   }
 
@@ -1789,7 +2199,7 @@ public final class StringFunctions {
 
     @Override
     public int[] expectedArgSize(IAST ast) {
-      return IOFunctions.ARGS_1_2;
+      return ARGS_1_2;
     }
 
     @Override
@@ -1830,7 +2240,7 @@ public final class StringFunctions {
 
     @Override
     public int[] expectedArgSize(IAST ast) {
-      return IOFunctions.ARGS_1_1;
+      return ARGS_1_1;
     }
   }
 
@@ -1870,12 +2280,12 @@ public final class StringFunctions {
         return F.NIL;
       }
 
-      return StringX.valueOf(toUnicodeString(ast.arg1().toString(), "UTF-8"));
+      return StringX.valueOf(toUnicodeString(ast.arg1().toString(), StandardCharsets.UTF_8));
     }
 
     @Override
     public int[] expectedArgSize(IAST ast) {
-      return IOFunctions.ARGS_1_1;
+      return ARGS_1_1;
     }
 
     @Override
@@ -1883,29 +2293,30 @@ public final class StringFunctions {
       newSymbol.setAttributes(ISymbol.LISTABLE);
     }
 
-    public static String toUnicodeString(final String unicodeInput, final String inputEncoding) {
+    public static String toUnicodeString(final String unicodeInput, final Charset inputEncoding) {
       final StringBuilder unicodeStringBuilder = new StringBuilder();
       String unicodeString = null;
 
-      try {
-        final String utf8String = new String(unicodeInput.getBytes(inputEncoding), "UTF-8");
-        String hexValueString = null;
-        int hexValueLength = 0;
-        for (int i = 0; i < utf8String.length(); i++) {
-          hexValueString = Integer.toHexString(utf8String.charAt(i));
-          hexValueLength = hexValueString.length();
-          if (hexValueLength < 4) {
-            for (int j = 0; j < (4 - hexValueLength); j++) {
-              hexValueString = "0" + hexValueString;
-            }
+      //      try {
+      final String utf8String =
+          new String(unicodeInput.getBytes(inputEncoding), StandardCharsets.UTF_8);
+      String hexValueString = null;
+      int hexValueLength = 0;
+      for (int i = 0; i < utf8String.length(); i++) {
+        hexValueString = Integer.toHexString(utf8String.charAt(i));
+        hexValueLength = hexValueString.length();
+        if (hexValueLength < 4) {
+          for (int j = 0; j < (4 - hexValueLength); j++) {
+            hexValueString = "0" + hexValueString;
           }
-          unicodeStringBuilder.append(UNICODE_PREFIX);
-          unicodeStringBuilder.append(hexValueString);
         }
-        unicodeString = unicodeStringBuilder.toString();
-      } catch (final UnsupportedEncodingException e) {
-        e.printStackTrace();
+        unicodeStringBuilder.append(UNICODE_PREFIX);
+        unicodeStringBuilder.append(hexValueString);
       }
+      unicodeString = unicodeStringBuilder.toString();
+      //      } catch (final UnsupportedEncodingException e) {
+      //        e.printStackTrace();
+      //      }
       return unicodeString;
     }
   }
@@ -1948,12 +2359,12 @@ public final class StringFunctions {
       if (!(ast.arg1() instanceof IStringX)) {
         return F.NIL;
       }
-      Enumeration<String> ids = Transliterator.getAvailableIDs();
-
-      while (ids.hasMoreElements()) {
-        String s = ids.nextElement();
-        System.out.println(s);
-      }
+      // Enumeration<String> ids = Transliterator.getAvailableIDs();
+      //
+      // while (ids.hasMoreElements()) {
+      // String s = ids.nextElement();
+      // System.out.println(s);
+      // }
       if (ast.isAST2()) {
         if (ast.arg2().isRuleAST()) {
           if (ast.arg2().first().isString()
@@ -2006,7 +2417,7 @@ public final class StringFunctions {
 
     @Override
     public int[] expectedArgSize(IAST ast) {
-      return IOFunctions.ARGS_1_2;
+      return ARGS_1_2;
     }
 
     @Override
@@ -2067,7 +2478,7 @@ public final class StringFunctions {
     }
 
     public int[] expectedArgSize(IAST ast) {
-      return IOFunctions.ARGS_1_1;
+      return ARGS_1_1;
     }
   }
 
@@ -2095,6 +2506,24 @@ public final class StringFunctions {
     return StringFunctions.inputForm(expression, false);
   }
 
+  private static IExpr regexErrorHandling(
+      final IAST ast, IllegalArgumentException iae, EvalEngine engine) {
+    if (FEConfig.SHOW_STACKTRACE) {
+      iae.printStackTrace();
+    }
+    if (iae instanceof PatternSyntaxException) {
+      PatternSyntaxException pse = (PatternSyntaxException) iae;
+      // Regex expression `1` error message: `2`
+      return IOFunctions.printMessage(
+          S.RegularExpression,
+          "zzregex",
+          F.List(F.$str(pse.getPattern()), F.$str(pse.getMessage())),
+          engine);
+    } else {
+      return IOFunctions.printMessage(ast.topHead(), iae, engine);
+    }
+  }
+
   /**
    * Unicode version of predefined character classes and POSIX character classes are enabled in the
    * resulting regex Pattern object.
@@ -2117,7 +2546,7 @@ public final class StringFunctions {
    * @param engine the evaluation engine
    * @return
    */
-  private static java.util.regex.Pattern toRegexPattern(
+  public static java.util.regex.Pattern toRegexPattern(
       IExpr partOfRegex,
       boolean abbreviatedPatterns,
       boolean ignoreCase,
@@ -2137,9 +2566,7 @@ public final class StringFunctions {
         return pattern;
       } catch (IllegalArgumentException iae) {
         // for example java.util.regex.PatternSyntaxException
-        if (FEConfig.SHOW_STACKTRACE) {
-          iae.printStackTrace();
-        }
+        regexErrorHandling(stringFunction, iae, engine);
       }
     }
     return null;
@@ -2158,7 +2585,7 @@ public final class StringFunctions {
    *
    * @param partOfRegex the expression which represents a regex 'piece'
    * @param abbreviatedPatterns if <code>true</code> allow 'abbreviated patterns" in strings (i.e.
-   *     '\','*' and '@' operatore)
+   *     '\','*' and '@' operators)
    * @param stringFunction the original string function, used in error messages
    * @param engine the evaluation engine
    * @return
@@ -2283,7 +2710,7 @@ public final class StringFunctions {
         case ID.WordCharacter:
           return "(?u)[^\\W_]";
         case ID.StartOfLine:
-          return "^";
+          return "\\R";
         case ID.EndOfLine:
           return "$";
         case ID.StartOfString:
@@ -2310,7 +2737,7 @@ public final class StringFunctions {
       IOFunctions.printMessage(
           stringFunction.topHead(),
           "unsupported",
-          F.List(F.StringExpression, stringFunction.topHead()),
+          F.List(partOfRegex, stringFunction.topHead()),
           engine);
     }
     return null;
