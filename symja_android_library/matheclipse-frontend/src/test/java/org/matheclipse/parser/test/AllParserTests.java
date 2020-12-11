@@ -5,17 +5,16 @@ import junit.framework.TestCase;
 import junit.framework.TestSuite;
 
 public class AllParserTests extends TestCase {
-	public AllParserTests(String name) {
-		super(name);
-	}
+  public AllParserTests(String name) {
+    super(name);
+  }
 
-	public static Test suite() {
-		TestSuite s = new TestSuite();
+  public static Test suite() {
+    TestSuite s = new TestSuite();
 
-		s.addTestSuite(ParserTestCase.class);
-		s.addTestSuite(RelaxedParserTestCase.class);
-		s.addTestSuite(BracketBalancerTestCase.class);
-		return s;
-	}
-
+    s.addTestSuite(ParserTestCase.class);
+    s.addTestSuite(RelaxedParserTestCase.class);
+    s.addTestSuite(BracketBalancerTestCase.class);
+    return s;
+  }
 }
