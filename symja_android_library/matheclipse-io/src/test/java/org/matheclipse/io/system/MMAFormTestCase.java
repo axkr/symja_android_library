@@ -46,6 +46,7 @@ public class MMAFormTestCase extends AbstractTestCase {
     EvalEngine engine = new EvalEngine("", 256, 256, System.out, System.err, true);
     ExprParser parser = new ExprParser(engine, true);
     IExpr expr = parser.parse("{f'(x), f''(x), f'''(x)} // Together");
-    assertEquals(expr.toMMA(), "Together[{Derivative[1][f][x], Derivative[2][f][x], Derivative[3][f][x]}]");
+    assertEquals(
+        expr.toMMA(), "Together[{Derivative[1][f][x], Derivative[2][f][x], Derivative[3][f][x]}]");
   }
 }
