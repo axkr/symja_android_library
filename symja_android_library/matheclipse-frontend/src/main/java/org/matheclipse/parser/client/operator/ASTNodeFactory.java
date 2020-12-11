@@ -16,7 +16,6 @@
 package org.matheclipse.parser.client.operator;
 
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -32,6 +31,8 @@ import org.matheclipse.parser.client.ast.Pattern3Node;
 import org.matheclipse.parser.client.ast.PatternNode;
 import org.matheclipse.parser.client.ast.StringNode;
 import org.matheclipse.parser.client.ast.SymbolNode;
+import org.matheclipse.parser.trie.Trie;
+import org.matheclipse.parser.trie.TrieMatch;
 
 public class ASTNodeFactory implements INodeParserFactory {
   /** The matcher for characters, which could form an operator */
@@ -114,6 +115,23 @@ public class ASTNodeFactory implements INodeParserFactory {
           factory.createSymbol("Times"),
           lhs,
           factory.createFunction(factory.createSymbol("Power"), rhs, factory.createInteger(-1)));
+    }
+  }
+
+  private static class MessageNameOperator extends InfixOperator {
+    public MessageNameOperator(
+        final String oper, final String functionName, final int precedence, final int grouping) {
+      super(oper, functionName, precedence, grouping);
+    }
+
+    @Override
+    public ASTNode createFunction(
+        final INodeParserFactory factory, final ASTNode lhs, final ASTNode rhs) {
+      if (rhs instanceof SymbolNode) {
+        return factory.createFunction(
+            factory.createSymbol(getFunctionName()), lhs, new StringNode(rhs.toString()));
+      }
+      return factory.createFunction(factory.createSymbol(getFunctionName()), lhs, rhs);
     }
   }
 
@@ -321,10 +339,10 @@ public class ASTNodeFactory implements INodeParserFactory {
   public static final ASTNodeFactory RELAXED_STYLE_FACTORY = new ASTNodeFactory(true);
 
   /** */
-  private static HashMap<String, Operator> fOperatorMap;
+  private static Trie<String, Operator> fOperatorMap;
 
   /** */
-  private static HashMap<String, ArrayList<Operator>> fOperatorTokenStartSet;
+  private static Trie<String, ArrayList<Operator>> fOperatorTokenStartSet;
 
   /**
    * See <a href="https://pangin.pro/posts/computation-in-static-initializer">Beware of computation
@@ -335,7 +353,8 @@ public class ASTNodeFactory implements INodeParserFactory {
     private static void init() {
       OPERATORS =
           new Operator[] {
-            new InfixOperator("::", "MessageName", Precedence.MESSAGENAME, InfixOperator.NONE),
+            new MessageNameOperator(
+                "::", "MessageName", Precedence.MESSAGENAME, InfixOperator.NONE),
             new PrefixOperator("<<", "Get", Precedence.GET),
             new InfixOperator("?", "PatternTest", Precedence.PATTERNTEST, InfixOperator.NONE),
             new InfixOperator("//@", "MapAll", Precedence.MAPALL, InfixOperator.RIGHT_ASSOCIATIVE),
@@ -433,8 +452,10 @@ public class ASTNodeFactory implements INodeParserFactory {
             new InfixOperator("\u22C0", "Wedge", Precedence.WEDGE, InfixOperator.NONE) //
           };
       StringBuilder buf = new StringBuilder(BASIC_OPERATOR_CHARACTERS);
-      fOperatorMap = new HashMap<String, Operator>();
-      fOperatorTokenStartSet = new HashMap<String, ArrayList<Operator>>();
+
+      fOperatorMap = FEConfig.TRIE_STRING2OPERATOR_BUILDER.withMatch(TrieMatch.EXACT).build();
+      fOperatorTokenStartSet =
+          FEConfig.TRIE_STRING2OPERATORLIST_BUILDER.withMatch(TrieMatch.EXACT).build();
       for (int i = 0; i < HEADER_STRINGS.length; i++) {
         addOperator(
             fOperatorMap,
@@ -475,9 +496,8 @@ public class ASTNodeFactory implements INodeParserFactory {
       final String operatorStr,
       final String headStr,
       final Operator oper) {
-    ArrayList<Operator> list;
     operatorMap.put(headStr, oper);
-    list = operatorTokenStartSet.get(operatorStr);
+    ArrayList<Operator> list = operatorTokenStartSet.get(operatorStr);
     if (list == null) {
       list = new ArrayList<Operator>(2);
       list.add(oper);
@@ -512,30 +532,24 @@ public class ASTNodeFactory implements INodeParserFactory {
 
   public static InfixOperator createInfixOperator(
       final String operatorStr, final String headStr, final int precedence, final int grouping) {
-    InfixOperator oper;
     if (headStr.equals("Apply")) {
-      oper = new ApplyOperator(operatorStr, headStr, precedence, grouping);
+      return new ApplyOperator(operatorStr, headStr, precedence, grouping);
     } else if (headStr.equals("Divide")) {
-      oper = new DivideOperator(operatorStr, headStr, precedence, grouping);
+      return new DivideOperator(operatorStr, headStr, precedence, grouping);
     } else if (headStr.equals("Subtract")) {
-      oper = new SubtractOperator(operatorStr, headStr, precedence, grouping);
-    } else {
-      oper = new InfixOperator(operatorStr, headStr, precedence, grouping);
+      return new SubtractOperator(operatorStr, headStr, precedence, grouping);
     }
-    return oper;
+    return new InfixOperator(operatorStr, headStr, precedence, grouping);
   }
 
   public static PrefixOperator createPrefixOperator(
       final String operatorStr, final String headStr, final int precedence) {
-    PrefixOperator oper;
     if (headStr.equals("PreMinus")) {
-      oper = new PreMinusOperator(operatorStr, headStr, precedence);
+      return new PreMinusOperator(operatorStr, headStr, precedence);
     } else if (headStr.equals("PrePlus")) {
-      oper = new PrePlusOperator(operatorStr, headStr, precedence);
-    } else {
-      oper = new PrefixOperator(operatorStr, headStr, precedence);
+      return new PrePlusOperator(operatorStr, headStr, precedence);
     }
-    return oper;
+    return new PrefixOperator(operatorStr, headStr, precedence);
   }
 
   public static PostfixOperator createPostfixOperator(

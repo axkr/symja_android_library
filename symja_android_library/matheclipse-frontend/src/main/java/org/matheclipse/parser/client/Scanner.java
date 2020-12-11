@@ -291,7 +291,8 @@ public abstract class Scanner {
   public static int isBalancedCode(CharSequence sourceCode) {
     Stack<Character> openBracketStack = new Stack<Character>();
 
-    for (int j = 0; j < sourceCode.length(); j++) {
+    int length = sourceCode.length();
+    for (int j = 0; j < length; j++) {
       char ch = sourceCode.charAt(j);
       switch (ch) {
         case '{':
@@ -299,12 +300,17 @@ public abstract class Scanner {
         case '[':
           openBracketStack.push(ch);
           break;
+        case '<':
+          if (j < length - 1 && sourceCode.charAt(j + 1) == '|') {
+            openBracketStack.push(ch);
+          }
+          break;
         case '}':
           if (openBracketStack.isEmpty()) {
             return 1;
           }
           ch = openBracketStack.pop();
-          if (!(ch == '{')) {
+          if (ch != '{') {
             return -1;
           }
           break;
@@ -313,7 +319,7 @@ public abstract class Scanner {
             return 1;
           }
           ch = openBracketStack.pop();
-          if (!(ch == '(')) {
+          if (ch != '(') {
             return -1;
           }
           break;
@@ -322,8 +328,19 @@ public abstract class Scanner {
             return 1;
           }
           ch = openBracketStack.pop();
-          if (!(ch == '[')) {
+          if (ch != '[') {
             return -1;
+          }
+          break;
+        case '|':
+          if (j < length - 1 && sourceCode.charAt(j + 1) == '>') {
+            if (openBracketStack.isEmpty()) {
+              return 1;
+            }
+            ch = openBracketStack.pop();
+            if (ch != '<') {
+              return -1;
+            }
           }
           break;
         default:
@@ -400,7 +417,7 @@ public abstract class Scanner {
    *
    * @return the character at the current position in the parsed input string.
    */
-  private final char charAtPosition() {
+  protected final char charAtPosition() {
     return fInputString[fCurrentPosition];
   }
 
@@ -698,6 +715,21 @@ public abstract class Scanner {
             break;
           case '\u301B': // RightDoubleBracket
             fToken = TT_PARTCLOSE;
+            break;
+          case '.':
+            if (isValidPosition()) {
+              if (Character.isDigit(charAtPosition())) {
+                fToken = TT_DIGIT;
+                skipWhitespace();
+                break;
+              }
+            }
+            if (isOperatorCharacters()) {
+              fOperList = getOperator();
+              fToken = TT_OPERATOR;
+              return;
+            }
+
             break;
           case '<':
             if (isValidPosition()) {
@@ -1165,6 +1197,24 @@ public abstract class Scanner {
   protected abstract boolean isOperatorCharacters();
 
   protected abstract boolean isOperatorCharacters(char ch);
+
+  public static boolean isIdentifier(String ident) {
+    if (ident.length() == 0) {
+      return false;
+    }
+    char ch = ident.charAt(0);
+    if ((Character.isJavaIdentifierStart(ch) && (ch != '_')) || (ch == '$')) {
+      for (int i = 1; i < ident.length(); i++) {
+        ch = ident.charAt(i);
+        if ((Character.isJavaIdentifierPart(ch) && (ch != '_')) || (ch == '$') || (ch == '`')) {
+          continue;
+        }
+        return false;
+      }
+    }
+
+    return true;
+  }
 
   protected static final boolean isComparatorOperator(String operatorString) {
     return operatorString.equals("==")

@@ -15,7 +15,6 @@ import org.matheclipse.parser.client.math.MathException;
  * interactivly.
  *
  * @see DoubleEvaluator
- * @see ComplexEvaluator
  */
 public class Console {
 

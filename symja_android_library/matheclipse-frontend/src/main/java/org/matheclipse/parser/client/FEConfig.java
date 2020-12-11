@@ -1,5 +1,10 @@
 package org.matheclipse.parser.client;
 
+import java.util.ArrayList;
+
+import org.matheclipse.parser.client.operator.Operator;
+import org.matheclipse.parser.trie.TrieBuilder;
+
 /** Frontend configuration */
 public class FEConfig {
 
@@ -51,4 +56,14 @@ public class FEConfig {
    * cases. I.e. <code>1/2Pi</code> is parsed as <code>Times(Rational(1,2), Pi)</code>.
    */
   public static boolean DOMINANT_IMPLICIT_TIMES = false;
+
+  /** A trie builder for mapping strings to other strings. */
+  public static final TrieBuilder<String, String, ArrayList<String>> TRIE_STRING2STRING_BUILDER =
+      TrieBuilder.create();
+
+  public static final TrieBuilder<String, Operator, ArrayList<Operator>>
+      TRIE_STRING2OPERATOR_BUILDER = TrieBuilder.create();
+
+  public static final TrieBuilder<String, ArrayList<Operator>, ArrayList<ArrayList<Operator>>>
+      TRIE_STRING2OPERATORLIST_BUILDER = TrieBuilder.create();
 }

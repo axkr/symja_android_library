@@ -2,15 +2,18 @@ package org.matheclipse.parser.client;
 
 import java.util.Map;
 
+import org.matheclipse.parser.trie.TrieMatch;
 import org.matheclipse.parser.trie.Tries;
 
 public class Characters {
+  public static Map<String, String> NamedCharactersMap =
+      FEConfig.TRIE_STRING2STRING_BUILDER.withMatch(TrieMatch.EXACT).build(); // Tries.forStrings();
 
-  public static Map<String, String> NamedCharactersMap = Tries.forStrings();
+  private static Map<String, String> ReversedNamedCharactersMap =
+      FEConfig.TRIE_STRING2STRING_BUILDER.withMatch(TrieMatch.EXACT).build(); // Tries.forStrings();
 
-  private static Map<String, String> ReversedNamedCharactersMap = Tries.forStrings();
-
-  public static Map<String, String> CharacterNamesMap = Tries.forStrings();
+  public static Map<String, String> CharacterNamesMap =
+      FEConfig.TRIE_STRING2STRING_BUILDER.withMatch(TrieMatch.EXACT).build(); // Tries.forStrings();
 
   /**
    * See: <a
@@ -2151,7 +2154,6 @@ public class Characters {
   public static String unicodeName(String unicode) {
     if (ReversedNamedCharactersMap.size() == 0) {
       // create unicode to name map
-      ReversedNamedCharactersMap = Tries.forStrings();
       for (int i = 0; i < NamedCharacters.length; i += 2) {
         ReversedNamedCharactersMap.put(NamedCharacters[i + 1], NamedCharacters[i]);
       }

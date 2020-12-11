@@ -650,6 +650,10 @@ public class Parser extends Scanner {
     }
     getChar();
     while (fFactory.isOperatorChar(fCurrentChar)) {
+      if (fCurrentChar == '.' && isValidPosition() && Character.isDigit(charAtPosition())) {
+        // special case "dot is start of floating number" -- 1/.2 => 0.5
+        break;
+      }
       lastChar = fCurrentChar;
       fOperatorString = new String(fInputString, startPosition, fCurrentPosition - startPosition);
       list = fFactory.getOperatorList(fOperatorString);
@@ -779,9 +783,21 @@ public class Parser extends Scanner {
           getNextToken();
 
           if (fToken == TT_ARGUMENTS_CLOSE) {
-            if (fInputString.length > fCurrentPosition && fInputString[fCurrentPosition] == ']') {
-              throwSyntaxError("Statement (i.e. index) expected in [[ ]].");
+            skipWhitespace();
+            // scanner-step begin: (instead of getNextToken() call):
+            if (fInputString.length > fCurrentPosition) {
+              if (fInputString[fCurrentPosition] == ']') {
+                fCurrentPosition++;
+                getNextToken();
+                // fToken = TT_PARTCLOSE;
+                return function;
+              }
             }
+            // scanner-step end
+            // if (fInputString.length > fCurrentPosition && fInputString[fCurrentPosition] == ']')
+            // {
+            // throwSyntaxError("Statement (i.e. index) expected in [[ ]].");
+            // }
           }
 
           function.add(parseExpression());
