@@ -13,7 +13,9 @@ import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 import java.util.function.Supplier;
 
 import org.matheclipse.core.basic.Config;
@@ -23,6 +25,7 @@ import org.matheclipse.core.eval.exception.MemoryLimitExceeded;
 import org.matheclipse.core.expression.ASTAssociation;
 import org.matheclipse.core.expression.AbstractAST;
 import org.matheclipse.core.expression.F;
+import org.matheclipse.core.expression.S;
 import org.matheclipse.core.expression.data.DateObjectExpr;
 import org.matheclipse.core.expression.data.TimeObjectExpr;
 import org.matheclipse.core.interfaces.IAST;
@@ -39,6 +42,7 @@ import com.google.common.cache.Cache;
 import com.google.common.cache.CacheBuilder;
 
 import tech.tablesaw.api.ColumnType;
+import tech.tablesaw.api.ExprColumn;
 import tech.tablesaw.api.Row;
 import tech.tablesaw.api.Table;
 import tech.tablesaw.columns.Column;
@@ -50,13 +54,61 @@ public class ASTDataset extends AbstractAST
   private static final long serialVersionUID = 7276828936929270780L;
 
   /**
-   * Create an AST dataset from a <a href="https://github.com/jtablesaw/tablesaw">Tablesaw table</a>
+   * Create a dataset from a <a href="https://github.com/jtablesaw/tablesaw">Tablesaw table</a>
    *
-   * @param value
-   * @return
+   * @param table
+   * @return {@link F#NIL} if the dataset cannot be created
    */
-  public static ASTDataset newInstance(Table value) {
-    return new ASTDataset(value);
+  public static ASTDataset newTablesawTable(Table table) {
+    return new ASTDataset(table);
+  }
+
+  /**
+   * Create a dataset from a <code>List(...)</code> of associations. Each association represents a
+   * row in the dataset. The left-hand-side of each singular rule in an association was assumed to
+   * be the name of the resulting dataset columns. Identical names maps the right-hand-side values
+   * of the rule to the same columns in the resulting dataset.
+   *
+   * @param listOfAssociations
+   * @return {@link F#NIL} if the dataset cannot be created
+   */
+  public static IExpr newListOfAssociations(IAST listOfAssociations) {
+    // 1. phase: build up column names
+    List<String> colNames = new ArrayList<String>();
+    Set<String> colNamesSet = new HashSet<String>();
+    for (int i = 1; i < listOfAssociations.size(); i++) {
+      IAssociation assoc = (IAssociation) listOfAssociations.get(i);
+      for (int j = 1; j < assoc.size(); j++) {
+        IAST rule = assoc.getRule(j);
+        String columnName = rule.first().toString();
+        if (!colNamesSet.contains(columnName)) {
+          colNamesSet.add(columnName);
+          colNames.add(columnName);
+        }
+      }
+    }
+    if (colNames.size() > 0) {
+      // 2. phase: define the columns
+      Table table = Table.create();
+      Column<?>[] cols = new Column<?>[colNames.size()];
+      for (int i = 0; i < colNames.size(); i++) {
+        cols[i] = ExprColumn.create(colNames.get(i));
+      }
+      table.addColumns(cols);
+      // 3. phase: add the values
+      for (int i = 1; i < listOfAssociations.size(); i++) {
+        IAssociation assoc = (IAssociation) listOfAssociations.get(i);
+        Row row = table.appendRow();
+        for (int j = 1; j < assoc.size(); j++) {
+          IAST rule = assoc.getRule(j);
+          String columnName = rule.first().toString();
+          IExpr value = rule.second();
+          row.setExpr(columnName, value);
+        }
+      }
+      return newTablesawTable(table);
+    }
+    return F.NIL;
   }
 
   private static void ruleCache(Cache<IAST, IAST> cache, IAssociation assoc, IAST rule) {
@@ -129,7 +181,7 @@ public class ASTDataset extends AbstractAST
     if (fTable.rowCount() == 1) {
       return getColumnValue(0, location - 1);
     }
-    return newInstance(fTable.rows(location - 1));
+    return newTablesawTable(fTable.rows(location - 1));
   }
 
   private IExpr getColumnValue(int rowPosition, int columnPosition) {
@@ -139,9 +191,9 @@ public class ASTDataset extends AbstractAST
     if (t.equals(ColumnType.BOOLEAN)) {
       Boolean b = (Boolean) obj;
       if (b.booleanValue()) {
-        return F.True;
+        return S.True;
       } else {
-        return F.False;
+        return S.False;
       }
     } else if (t.equals(ColumnType.SHORT)) {
       short sValue = (Short) obj;
@@ -170,13 +222,13 @@ public class ASTDataset extends AbstractAST
   @Override
   public IAST getItems(int[] items, int length) {
     if (length <= 0) {
-      return newInstance(Table.create(fTable.name()));
+      return newTablesawTable(Table.create(fTable.name()));
     }
     int[] rows = new int[length];
     for (int i = 0; i < length; i++) {
       rows[i] = items[i] - 1;
     }
-    return newInstance(fTable.rows(rows));
+    return newTablesawTable(fTable.rows(rows));
   }
 
   /**
@@ -212,7 +264,7 @@ public class ASTDataset extends AbstractAST
     if (table.columnCount() == 0) {
       return defaultValue.get();
     }
-    return newInstance(table);
+    return newTablesawTable(table);
   }
 
   public IExpr sortBy(List<String> group) {
@@ -221,7 +273,7 @@ public class ASTDataset extends AbstractAST
       strings[i] = group.get(i);
     }
     Table table = fTable.sortAscendingOn(strings);
-    return newInstance(table);
+    return newTablesawTable(table);
   }
 
   public IExpr groupBy(List<String> group) {
@@ -230,7 +282,7 @@ public class ASTDataset extends AbstractAST
       strings[i] = group.get(i);
     }
     Table table = fTable.sortAscendingOn(strings);
-    return newInstance(table);
+    return newTablesawTable(table);
   }
 
   @Override
@@ -270,45 +322,9 @@ public class ASTDataset extends AbstractAST
       IASTAppendable resultList = F.ListAlloc(column.size());
       for (int j = 0; j < column.size(); j++) {
         Object obj = column.get(j);
-        if (t.equals(ColumnType.BOOLEAN)) {
-          Boolean b = (Boolean) obj;
-          if (b.booleanValue()) {
-            resultList.append(F.True);
-          } else {
-            resultList.append(F.False);
-          }
-        } else if (t.equals(ColumnType.SHORT)) {
-          short sValue = (Short) obj;
-          resultList.append(F.ZZ(sValue));
-        } else if (t.equals(ColumnType.INTEGER)) {
-          int iValue = (Integer) obj;
-          resultList.append(F.ZZ(iValue));
-        } else if (t.equals(ColumnType.LONG)) {
-          long lValue = (Long) obj;
-          resultList.append(F.ZZ(lValue));
-        } else if (t.equals(ColumnType.FLOAT)) {
-          float fValue = (Float) obj;
-          resultList.append(F.num(fValue));
-        } else if (t.equals(ColumnType.DOUBLE)) {
-          double dValue = (Double) obj;
-          resultList.append(F.num(dValue));
-        } else if (t.equals(ColumnType.STRING)) {
-          resultList.append(F.stringx((String) obj));
-        } else if (t.equals(ColumnType.SKIP)) {
-          // ruleCache(cache, assoc, F.Rule(colName, F.Missing));
-        } else if (t.equals(ColumnType.LOCAL_DATE_TIME)) {
-          LocalDateTime lDate = (LocalDateTime) obj;
-          resultList.append(DateObjectExpr.newInstance(lDate));
-        } else if (t.equals(ColumnType.LOCAL_DATE)) {
-          LocalDate date = (LocalDate) obj;
-          resultList.append(DateObjectExpr.newInstance(date.atStartOfDay()));
-        } else if (t.equals(ColumnType.LOCAL_TIME)) {
-          LocalTime lTime = (LocalTime) obj;
-          resultList.append(TimeObjectExpr.newInstance(lTime));
-        } else {
-          IExpr valueStr = F.stringx(obj.toString());
-          resultList.append(valueStr);
-        }
+        IExpr expr = F.NIL;
+        expr = dataToExpr(obj, t);
+        resultList.append(expr);
       }
       return resultList;
     }
@@ -323,12 +339,15 @@ public class ASTDataset extends AbstractAST
         IStringX colName = namesStr.get(j);
         ColumnType t = row.getColumnType(columnName);
         Object obj = row.getObject(j);
-        if (t.equals(ColumnType.BOOLEAN)) {
+        if (t.equals(ColumnType.EXPR)) {
+          IExpr expr = (IExpr) obj;
+          ruleCache(cache, assoc, F.Rule(colName, expr));
+        } else if (t.equals(ColumnType.BOOLEAN)) {
           Boolean b = row.getBoolean(j);
           if (b.booleanValue()) {
-            ruleCache(cache, assoc, F.Rule(colName, F.True));
+            ruleCache(cache, assoc, F.Rule(colName, S.True));
           } else {
-            ruleCache(cache, assoc, F.Rule(colName, F.False));
+            ruleCache(cache, assoc, F.Rule(colName, S.False));
           }
         } else if (t.equals(ColumnType.SHORT)) {
           short sValue = row.getShort(j);
@@ -359,6 +378,7 @@ public class ASTDataset extends AbstractAST
           ruleCache(cache, assoc, F.Rule(colName, TimeObjectExpr.newInstance(lTime)));
         } else if (t.equals(ColumnType.SKIP)) {
           // ruleCache(cache, assoc, F.Rule(colName, F.Missing));
+          ruleCache(cache, assoc, F.Rule(colName, F.Missing(S.NotAvailable)));
         } else {
           IExpr valueStr = F.stringx(obj.toString());
           ruleCache(cache, assoc, F.Rule(colName, valueStr));
@@ -370,6 +390,102 @@ public class ASTDataset extends AbstractAST
       list.append(assoc);
     }
     return list;
+  }
+
+  private static IExpr dataToExpr(Object obj, ColumnType t) {
+    IExpr expr;
+    if (t.equals(ColumnType.EXPR)) {
+      expr = (IExpr) obj;
+    } else if (t.equals(ColumnType.BOOLEAN)) {
+      Boolean b = (Boolean) obj;
+      if (b.booleanValue()) {
+        expr = S.True;
+      } else {
+        expr = S.False;
+      }
+    } else if (t.equals(ColumnType.SHORT)) {
+      short sValue = (Short) obj;
+      expr = F.ZZ(sValue);
+    } else if (t.equals(ColumnType.INTEGER)) {
+      int iValue = (Integer) obj;
+      expr = F.ZZ(iValue);
+    } else if (t.equals(ColumnType.LONG)) {
+      long lValue = (Long) obj;
+      expr = F.ZZ(lValue);
+    } else if (t.equals(ColumnType.FLOAT)) {
+      float fValue = (Float) obj;
+      expr = F.num(fValue);
+    } else if (t.equals(ColumnType.DOUBLE)) {
+      double dValue = (Double) obj;
+      expr = F.num(dValue);
+    } else if (t.equals(ColumnType.STRING)) {
+      expr = F.stringx((String) obj);
+    } else if (t.equals(ColumnType.SKIP)) {
+      // ruleCache(cache, assoc, F.Rule(colName, F.Missing));
+      expr = F.Missing(S.NotAvailable);
+    } else if (t.equals(ColumnType.LOCAL_DATE_TIME)) {
+      LocalDateTime lDate = (LocalDateTime) obj;
+      expr = DateObjectExpr.newInstance(lDate);
+    } else if (t.equals(ColumnType.LOCAL_DATE)) {
+      LocalDate date = (LocalDate) obj;
+      expr = DateObjectExpr.newInstance(date.atStartOfDay());
+    } else if (t.equals(ColumnType.LOCAL_TIME)) {
+      LocalTime lTime = (LocalTime) obj;
+      expr = TimeObjectExpr.newInstance(lTime);
+    } else {
+      expr = F.stringx(obj.toString());
+    }
+    return expr;
+  }
+
+  public IExpr select(IAST ast) {
+
+    IExpr row = ast.arg1();
+    IExpr column = ast.arg2();
+    IExpr[] part = new IExpr[ast.size() - 3];
+    IExpr result = select(row, column);
+    if (part.length == 0) {
+      return result;
+    }
+    if (result.isDataset()) {
+      for (int i = 0; i < part.length; i++) {
+        part[i] = ast.get(i + 3);
+      }
+      EvalEngine engine = EvalEngine.get();
+      ASTDataset dataset = (ASTDataset) result;
+      Table table = dataset.fTable;
+      final List<String> names = table.columnNames();
+
+      if (names.size() > 0) {
+        Table resultTable = Table.create();
+        Column<?>[] cols = new Column<?>[names.size()];
+        for (int i = 0; i < names.size(); i++) {
+          cols[i] = ExprColumn.create(names.get(i));
+        }
+        resultTable.addColumns(cols);
+
+        for (int i = 0; i < table.rowCount(); i++) {
+          Row currentRow = table.row(i);
+          Row resultRow = resultTable.appendRow();
+          for (int j = 0; j < table.columnCount(); j++) {
+            String columnName = names.get(j);
+            ColumnType t = currentRow.getColumnType(columnName);
+            IExpr arg = dataToExpr(table.get(i, j), t);
+
+            IExpr value = S.Part.of1(engine, arg, part);
+            if (value.isAST(S.Part) || !value.isPresent()) {
+              IASTAppendable missing = F.ast(S.Missing);
+              missing.append(F.$str("PartAbsent"));
+              missing.appendAll(part, 0, part.length);
+              value = missing;
+            }
+            resultRow.setExpr(columnName, value);
+          }
+        }
+        return ASTDataset.newTablesawTable(resultTable);
+      }
+    }
+    return F.NIL;
   }
 
   public IExpr select(IExpr row, IExpr column) {
@@ -406,8 +522,7 @@ public class ASTDataset extends AbstractAST
     } else {
       int colIndex = column.toIntDefault();
       if (colIndex > 0) {
-        table = fTable;
-        table = table.select(table.columnNames().get(colIndex - 1));
+        table = fTable.select(table.columnNames().get(colIndex - 1));
       } else {
         return F.NIL;
       }
@@ -418,9 +533,9 @@ public class ASTDataset extends AbstractAST
       int rowStart = span[0] - 1;
       int rowEnd = span[1];
       table = table.inRange(rowStart, rowEnd);
-      return newInstance(table);
+      return newTablesawTable(table);
     } else if (row.equals(F.All)) {
-      return newInstance(table);
+      return newTablesawTable(table);
     } else if (row.isList()) {
       IAST list = (IAST) row;
       int[] iList = new int[list.argSize()];
@@ -435,7 +550,7 @@ public class ASTDataset extends AbstractAST
       if (table.columnCount() == 1) {
         return Object2Expr.convertString(table.get(0, 0));
       }
-      return newInstance(table);
+      return newTablesawTable(table);
     } else {
       int rowIndex = row.toIntDefault();
       if (rowIndex > 0) {
@@ -443,7 +558,7 @@ public class ASTDataset extends AbstractAST
         if (table.columnCount() == 1) {
           return Object2Expr.convertString(table.get(0, 0));
         }
-        return newInstance(table);
+        return newTablesawTable(table);
       }
     }
     return F.NIL;
@@ -470,13 +585,13 @@ public class ASTDataset extends AbstractAST
       for (int i = 0; i < strList.length; i++) {
         strList[i] = list.get(i + 1).toString();
       }
-      return newInstance(table.select(strList));
+      return newTablesawTable(table.select(strList));
     }
     List<String> columnNames = table.columnNames();
     for (int i = 0; i < vector.length; i++) {
       strList[i] = columnNames.get(vector[i] - 1);
     }
-    return newInstance(table.select(strList));
+    return newTablesawTable(table.select(strList));
   }
 
   /**
@@ -489,7 +604,7 @@ public class ASTDataset extends AbstractAST
     String[] strList = new String[1];
     Table table = fTable;
     strList[0] = table.columnNames().get(column - 1);
-    return newInstance(table.select(strList));
+    return newTablesawTable(table.select(strList));
   }
 
   @Override
@@ -516,11 +631,11 @@ public class ASTDataset extends AbstractAST
   }
 
   public ASTDataset structure() {
-    return newInstance(fTable.structure());
+    return newTablesawTable(fTable.structure());
   }
 
   public ASTDataset summary() {
-    return newInstance(fTable.summary());
+    return newTablesawTable(fTable.summary());
   }
 
   @Override
