@@ -8,6 +8,7 @@ import org.matheclipse.core.expression.S;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.interfaces.IPredicate;
+import org.matheclipse.core.interfaces.ISymbol;
 
 public class ContainsFunctions {
 
@@ -51,12 +52,12 @@ public class ContainsFunctions {
 
     @Override
     public IExpr evaluate(IAST ast, EvalEngine engine) {
-      if (ast.isAST1()) {
-        ast = F.operatorFormAppend(ast);
-        if (!ast.isPresent()) {
-          return F.NIL;
-        }
-      }
+      //      if (ast.isAST1()) {
+      //        ast = F.operatorForm1Append(ast);
+      //        if (!ast.isPresent()) {
+      //          return F.NIL;
+      //        }
+      //      }
       IExpr sameTest = F.SameQ;
       if (validateArgs(ast.arg1(), ast.arg2(), engine)) {
         if (ast.isAST3()) {
@@ -83,20 +84,22 @@ public class ContainsFunctions {
         IExpr list1Arg = list1.get(i);
 
         if (list2.exists(x -> engine.evalTrue(F.binaryAST2(sameTest, list1Arg, x)))) {
-          return F.True;
+          return S.True;
         }
       }
-      return F.False;
+      return S.False;
     }
 
     @Override
     public int[] expectedArgSize(IAST ast) {
-      return IOFunctions.ARGS_1_3;
+      return ARGS_2_3_1;
     }
 
     @Override
-    public IAST options() {
-      return F.List(F.Rule(F.SameTest, F.Automatic));
+    public void setUp(final ISymbol newSymbol) {
+      setOptions(
+          newSymbol, //
+          F.List(F.Rule(F.SameTest, S.Automatic)));
     }
   }
 
@@ -106,10 +109,10 @@ public class ContainsFunctions {
     public IExpr containsFunction(IAST list1, IAST list2, IExpr sameTest, EvalEngine engine) {
       if (ContainsAll.CONST.containsFunction(list1, list2, sameTest, engine).isTrue()) {
         if (ContainsOnly.CONST.containsFunction(list1, list2, sameTest, engine).isTrue()) {
-          return F.True;
+          return S.True;
         }
       }
-      return F.False;
+      return S.False;
     }
   }
 
@@ -129,10 +132,10 @@ public class ContainsFunctions {
           }
         }
         if (!evaledTrue) {
-          return F.False;
+          return S.False;
         }
       }
-      return F.True;
+      return S.True;
     }
   }
 
@@ -152,10 +155,10 @@ public class ContainsFunctions {
           }
         }
         if (!evaledTrue) {
-          return F.False;
+          return S.False;
         }
       }
-      return F.True;
+      return S.True;
     }
   }
 
@@ -166,10 +169,10 @@ public class ContainsFunctions {
       for (int i = 1; i < list1.size(); i++) {
         IExpr list1Arg = list1.get(i);
         if (list2.exists(x -> engine.evalTrue(F.binaryAST2(sameTest, list1Arg, x)))) {
-          return F.False;
+          return S.False;
         }
       }
-      return F.True;
+      return S.True;
     }
   }
 

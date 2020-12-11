@@ -46,6 +46,7 @@ import org.matheclipse.core.eval.interfaces.AbstractArg12;
 import org.matheclipse.core.eval.interfaces.AbstractEvaluator;
 import org.matheclipse.core.eval.interfaces.AbstractFunctionEvaluator;
 import org.matheclipse.core.eval.interfaces.AbstractTrigArg1;
+import org.matheclipse.core.eval.interfaces.IFunctionEvaluator;
 import org.matheclipse.core.eval.interfaces.INumeric;
 import org.matheclipse.core.eval.interfaces.IRewrite;
 import org.matheclipse.core.eval.util.AbstractAssumptions;
@@ -180,7 +181,7 @@ public class ExpTrigsFunctions {
 
     @Override
     public int[] expectedArgSize(IAST ast) {
-      return IOFunctions.ARGS_1_2;
+      return ARGS_1_2;
     }
 
     @Override
@@ -385,7 +386,7 @@ public class ExpTrigsFunctions {
 
     @Override
     public IExpr e1ApfloatArg(Apfloat arg1) {
-      if (arg1.equals(Apcomplex.ZERO)) {
+      if (arg1.equals(Apfloat.ZERO)) {
         // Pi / 2
         return F.num(ApfloatMath.pi(arg1.precision()).divide(new Apfloat(2)));
       }
@@ -488,10 +489,10 @@ public class ExpTrigsFunctions {
 
     @Override
     public IExpr e1ApfloatArg(Apfloat arg1) {
-      if (arg1.equals(Apcomplex.ZERO)) {
+      if (arg1.equals(Apfloat.ZERO)) {
         // I*Pi / 2
         return F.complexNum(
-            new Apcomplex(Apcomplex.ZERO, ApfloatMath.pi(arg1.precision())).divide(new Apfloat(2)));
+            new Apcomplex(Apfloat.ZERO, ApfloatMath.pi(arg1.precision())).divide(new Apfloat(2)));
       }
       return F.num(ApfloatMath.atanh(ApfloatMath.inverseRoot(arg1, 1)));
     }
@@ -985,11 +986,11 @@ public class ExpTrigsFunctions {
         }
         return F.NIL;
       }
-      if (y.isZero() && x.isNumericFunction() && !x.isZero()) {
+      if (y.isZero() && x.isNumericFunction(true) && !x.isZero()) {
         return F.Times(F.Subtract(F.C1, x.unitStep()), F.Pi);
       }
       IExpr yUnitStep = y.unitStep();
-      if (x.isNumericFunction() && yUnitStep.isInteger()) {
+      if (x.isNumericFunction(true) && yUnitStep.isInteger()) {
         if (x.re().isNegative()) {
           return F.Plus(
               F.ArcTan(F.Divide(y, x)), F.Times(F.Subtract(F.Times(F.C2, yUnitStep), F.C1), F.Pi));
@@ -1176,28 +1177,32 @@ public class ExpTrigsFunctions {
     public IExpr evaluate(final IAST ast, EvalEngine engine) {
       final IExpr arg1 = ast.arg1();
       if (arg1.isReal()) {
-        if (arg1.isInteger()) {
-          int i = ((IInteger) arg1).toIntDefault(Integer.MIN_VALUE);
-          if (i > 0) {
-            // Pi/i - Pi/2
-            final IExpr start =
-                engine.evaluate(F.Plus(F.Times(F.QQ(1, i), F.Pi), F.Times(F.CN1D2, F.Pi)));
-            // (2/i)*Pi
-            final IExpr angle = engine.evaluate(F.Times(F.QQ(2, i), F.Pi));
+        if (arg1.isNegative()) {
+          // Argument `1` should be a real non-negative number.
+          return IOFunctions.printMessage(ast.topHead(), "noneg", F.List(arg1), engine);
+        }
+        int i = arg1.toIntDefault(Integer.MIN_VALUE);
+        if (i > 0) {
+          // Pi/i - Pi/2
+          final IExpr start =
+              engine.evaluate(F.Plus(F.Times(F.QQ(1, i), F.Pi), F.Times(F.CN1D2, F.Pi)));
+          // (2/i)*Pi
+          final IExpr angle = engine.evaluate(F.Times(F.QQ(2, i), F.Pi));
 
-            IASTAppendable result = F.ListAlloc(i);
-            for (int j = 0; j < i; j++) {
-              result.append(F.AngleVector(F.Plus(start, F.ZZ(j).times(angle))));
-            }
-            return result;
+          IASTAppendable result = F.ListAlloc(i);
+          for (int j = 0; j < i; j++) {
+            result.append(F.AngleVector(F.Plus(start, F.ZZ(j).times(angle))));
           }
+          return result;
+        } else if (i == 0) {
+          return F.CEmptyList;
         }
       }
       return F.NIL;
     }
 
     public int[] expectedArgSize(IAST ast) {
-      return IOFunctions.ARGS_1_1;
+      return ARGS_1_1;
     }
 
     @Override
@@ -2041,7 +2046,7 @@ public class ExpTrigsFunctions {
     @Override
     public IExpr evaluate(final IAST ast, EvalEngine engine) {
       final IExpr arg1 = ast.arg1();
-      if (arg1.isNumber() || arg1.isNumericFunction()) {
+      if (arg1.isNumber() || arg1.isNumericFunction(true)) {
         // 1/2 * (1-Cos(x))
         return F.Times(F.C1D2, F.Subtract(F.C1, F.Cos(arg1)));
         // return F.Power(F.Sin(F.C1D2.times(ast.arg1())), F.C2);
@@ -2050,7 +2055,7 @@ public class ExpTrigsFunctions {
     }
 
     public int[] expectedArgSize(IAST ast) {
-      return IOFunctions.ARGS_1_1;
+      return ARGS_1_1;
     }
 
     @Override
@@ -2064,14 +2069,14 @@ public class ExpTrigsFunctions {
     @Override
     public IExpr evaluate(final IAST ast, EvalEngine engine) {
       final IExpr arg1 = ast.arg1();
-      if (arg1.isNumber() || arg1.isNumericFunction()) {
+      if (arg1.isNumber() || arg1.isNumericFunction(true)) {
         return F.Times(F.C2, F.ArcSin(F.Sqrt(arg1)));
       }
       return F.NIL;
     }
 
     public int[] expectedArgSize(IAST ast) {
-      return IOFunctions.ARGS_1_1;
+      return ARGS_1_1;
     }
 
     @Override
@@ -2222,7 +2227,7 @@ public class ExpTrigsFunctions {
     }
 
     public int[] expectedArgSize(IAST ast) {
-      return IOFunctions.ARGS_1_1;
+      return ARGS_1_1;
     }
 
     @Override
@@ -2734,8 +2739,8 @@ public class ExpTrigsFunctions {
 
     @Override
     public IExpr e1ApfloatArg(Apfloat arg1) {
-      if (arg1.equals(Apcomplex.ZERO)) {
-        return F.num(Apcomplex.ONE);
+      if (arg1.equals(Apfloat.ZERO)) {
+        return F.num(Apfloat.ONE);
       }
       return F.num(ApfloatMath.sin(arg1).divide(arg1));
     }

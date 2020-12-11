@@ -11,12 +11,13 @@ import java.util.function.Predicate;
 import org.matheclipse.core.convert.Convert;
 import org.matheclipse.core.eval.EvalAttributes;
 import org.matheclipse.core.eval.EvalEngine;
-import org.matheclipse.core.eval.LastCalculationsHistory;
+import org.matheclipse.core.eval.EvalHistory;
 import org.matheclipse.core.eval.exception.ReturnException;
 import org.matheclipse.core.eval.exception.Validate;
 import org.matheclipse.core.eval.exception.ValidateException;
 import org.matheclipse.core.eval.interfaces.AbstractCoreFunctionEvaluator;
 import org.matheclipse.core.eval.interfaces.AbstractFunctionEvaluator;
+import org.matheclipse.core.eval.interfaces.IFunctionEvaluator;
 import org.matheclipse.core.eval.interfaces.ISymbolEvaluator;
 import org.matheclipse.core.eval.util.Lambda;
 import org.matheclipse.core.eval.util.OpenFixedSizeMap;
@@ -189,12 +190,12 @@ public class StructureFunctions {
 
     @Override
     public IExpr evaluate(IAST ast, EvalEngine engine) {
-      if (ast.isAST1()) {
-        ast = F.operatorFormPrepend(ast);
-        if (!ast.isPresent()) {
-          return F.NIL;
-        }
-      }
+      //      if (ast.isAST1()) {
+      //        ast = F.operatorForm2Prepend(ast);
+      //        if (!ast.isPresent()) {
+      //          return F.NIL;
+      //        }
+      //      }
       IASTAppendable evaledAST = ast.copyAppendable();
       evaledAST.setArgs(evaledAST.size(), i -> engine.evaluate(evaledAST.get(i)));
       // for (int i = 1; i < evaledAST.size(); i++) {
@@ -223,7 +224,7 @@ public class StructureFunctions {
     }
 
     public int[] expectedArgSize(IAST ast) {
-      return IOFunctions.ARGS_1_4;
+      return ARGS_1_4_2;
     }
 
     public static IExpr evalApply(
@@ -270,7 +271,7 @@ public class StructureFunctions {
     }
 
     public int[] expectedArgSize(IAST ast) {
-      return IOFunctions.ARGS_1_1;
+      return ARGS_1_1;
     }
   }
 
@@ -322,34 +323,14 @@ public class StructureFunctions {
     @Override
     public IExpr evaluate(final IAST ast, EvalEngine engine) {
       final IExpr arg1 = engine.evaluate(ast.arg1());
-      if (!(arg1.isAST())) {
-        return F.C1;
-      }
-      return F.ZZ(depth((IAST) arg1, 1));
+      //      if (!(arg1.isASTOrAssociation())) {
+      //        return F.C1;
+      //      }
+      return F.ZZ(arg1.depth());
     }
 
     public int[] expectedArgSize(IAST ast) {
-      return IOFunctions.ARGS_1_1;
-    }
-
-    /**
-     * Calculates the depth of an expression. Atomic expressions (no sublists) have depth <code>1
-     * </code> Example: the nested list <code>[x,[y]]</code> has depth <code>3</code>
-     *
-     * @param headOffset
-     */
-    public static int depth(final IAST list, int headOffset) {
-      int maxDepth = 1;
-      int d;
-      for (int i = headOffset; i < list.size(); i++) {
-        if (list.get(i).isAST()) {
-          d = depth((IAST) list.get(i), headOffset);
-          if (d > maxDepth) {
-            maxDepth = d;
-          }
-        }
-      }
-      return ++maxDepth;
+      return ARGS_1_1;
     }
   }
 
@@ -542,7 +523,7 @@ public class StructureFunctions {
     }
 
     public int[] expectedArgSize(IAST ast) {
-      return IOFunctions.ARGS_1_3;
+      return ARGS_1_3;
     }
 
     @Override
@@ -578,12 +559,12 @@ public class StructureFunctions {
 
     @Override
     public IExpr evaluate(IAST ast, EvalEngine engine) {
-      if (ast.isAST1()) {
-        ast = F.operatorFormAppend(ast);
-        if (!ast.isPresent()) {
-          return F.NIL;
-        }
-      }
+      //      if (ast.isAST1()) {
+      //        ast = F.operatorForm1Append(ast);
+      //        if (!ast.isPresent()) {
+      //          return F.NIL;
+      //        }
+      //      }
       IExpr arg1 = engine.evaluate(ast.arg1());
       IExpr arg2 = engine.evaluate(ast.arg2());
       if (arg1.isAST()) {
@@ -614,7 +595,7 @@ public class StructureFunctions {
     }
 
     public int[] expectedArgSize(IAST ast) {
-      return IOFunctions.ARGS_1_2;
+      return ARGS_2_2_1;
     }
 
     @Override
@@ -759,7 +740,7 @@ public class StructureFunctions {
     }
 
     public int[] expectedArgSize(IAST ast) {
-      return IOFunctions.ARGS_1_2;
+      return ARGS_1_2;
     }
   }
 
@@ -900,7 +881,7 @@ public class StructureFunctions {
     }
 
     public int[] expectedArgSize(IAST ast) {
-      return IOFunctions.ARGS_1_1;
+      return ARGS_1_1;
     }
   }
 
@@ -960,12 +941,12 @@ public class StructureFunctions {
   private static class Map extends AbstractFunctionEvaluator {
     @Override
     public IExpr evaluate(IAST ast, EvalEngine engine) {
-      if (ast.isAST1()) {
-        ast = F.operatorFormPrepend(ast);
-        if (!ast.isPresent()) {
-          return F.NIL;
-        }
-      }
+      //      if (ast.isAST1()) {
+      //        ast = F.operatorForm2Prepend(ast);
+      //        if (!ast.isPresent()) {
+      //          return F.NIL;
+      //        }
+      //      }
 
       int lastIndex = ast.argSize();
       boolean heads = false;
@@ -1004,7 +985,7 @@ public class StructureFunctions {
     }
 
     public int[] expectedArgSize(IAST ast) {
-      return IOFunctions.ARGS_1_4;
+      return ARGS_2_4_2;
     }
   }
 
@@ -1021,7 +1002,7 @@ public class StructureFunctions {
     }
 
     public int[] expectedArgSize(IAST ast) {
-      return IOFunctions.ARGS_2_2;
+      return ARGS_2_2;
     }
   }
 
@@ -1135,7 +1116,7 @@ public class StructureFunctions {
     }
 
     public int[] expectedArgSize(IAST ast) {
-      return IOFunctions.ARGS_2_3;
+      return ARGS_2_3;
     }
   }
 
@@ -1253,12 +1234,12 @@ public class StructureFunctions {
 
     @Override
     public IExpr evaluate(IAST ast, EvalEngine engine) {
-      if (ast.isAST1()) {
-        ast = F.operatorFormPrepend(ast);
-        if (!ast.isPresent()) {
-          return F.NIL;
-        }
-      }
+      //      if (ast.isAST1()) {
+      //        ast = F.operatorForm2Prepend(ast);
+      //        if (!ast.isPresent()) {
+      //          return F.NIL;
+      //        }
+      //      }
       if (ast.arg2().isAST()) {
         int level = 1;
         if (ast.isAST3()) {
@@ -1289,7 +1270,7 @@ public class StructureFunctions {
     }
 
     public int[] expectedArgSize(IAST ast) {
-      return IOFunctions.ARGS_1_3;
+      return ARGS_2_3_2;
     }
   }
 
@@ -1340,7 +1321,7 @@ public class StructureFunctions {
     }
 
     public int[] expectedArgSize(IAST ast) {
-      return IOFunctions.ARGS_2_2;
+      return ARGS_2_2;
     }
   }
 
@@ -1371,7 +1352,7 @@ public class StructureFunctions {
   private static final class OrderedQ extends AbstractFunctionEvaluator implements Predicate<IAST> {
     @Override
     public IExpr evaluate(final IAST ast, EvalEngine engine) {
-      IAST arg1AST = Validate.checkASTType(ast, ast.arg1(), 1, engine);
+      IAST arg1AST = Validate.checkASTOrAssociationType(ast, ast.arg1(), 1, engine);
       if (arg1AST.isPresent()) {
         return F.bool(test(arg1AST));
       }
@@ -1379,7 +1360,7 @@ public class StructureFunctions {
     }
 
     public int[] expectedArgSize(IAST ast) {
-      return IOFunctions.ARGS_1_1;
+      return ARGS_1_1;
     }
 
     @Override
@@ -1516,7 +1497,7 @@ public class StructureFunctions {
     }
 
     public int[] expectedArgSize(IAST ast) {
-      return IOFunctions.ARGS_2_3;
+      return ARGS_2_3;
     }
   }
 
@@ -1579,12 +1560,11 @@ public class StructureFunctions {
               engine.getErrorPrintStream(),
               engine.isRelaxedSyntax());
 
-      LastCalculationsHistory lch = engine.getOutList();
+      EvalHistory lch = engine.getEvalHistory();
       if (lch != null) {
-        newEngine.setOutListDisabled(false, lch.size());
+        newEngine.setOutListDisabled(false, lch.getHistoryLength());
       }
-      engine.reset();
-      EvalEngine.set(newEngine);
+      EvalEngine.setReset(newEngine);
       if (ast.isAST1()) {
         int value = ast.arg1().toIntDefault();
         if (value < 0) {
@@ -1598,7 +1578,7 @@ public class StructureFunctions {
     }
 
     public int[] expectedArgSize(IAST ast) {
-      return IOFunctions.ARGS_0_1;
+      return ARGS_0_1;
     }
 
     @Override
@@ -1652,13 +1632,13 @@ public class StructureFunctions {
 
     @Override
     public IExpr evaluate(IAST ast, EvalEngine engine) {
-      // Validate.checkRange(ast, 3, 5);
-      if (ast.isAST1()) {
-        ast = F.operatorFormPrepend(ast);
-        if (!ast.isPresent()) {
-          return F.NIL;
-        }
-      }
+
+      //      if (ast.isAST1()) {
+      //        ast = F.operatorForm2Prepend(ast);
+      //        if (!ast.isPresent()) {
+      //          return F.NIL;
+      //        }
+      //      }
       if (ast.size() >= 3 && ast.size() < 5) {
         int lastIndex = ast.argSize();
         boolean heads = false;
@@ -1706,7 +1686,7 @@ public class StructureFunctions {
     }
 
     public int[] expectedArgSize(IAST ast) {
-      return IOFunctions.ARGS_1_4;
+      return ARGS_1_4_2;
     }
   }
 
@@ -1744,7 +1724,7 @@ public class StructureFunctions {
 
     @Override
     public IExpr evaluate(final IAST ast, EvalEngine engine) {
-      if (ast.arg1().isAST()) {
+      if (ast.arg1().isASTOrAssociation()) {
         IAST arg1 = (IAST) ast.arg1();
         if (ast.isAST1()) {
           if (arg1.isEvalFlagOn(IAST.IS_SORTED)) {
@@ -1781,7 +1761,7 @@ public class StructureFunctions {
     }
 
     public int[] expectedArgSize(IAST ast) {
-      return IOFunctions.ARGS_1_2;
+      return ARGS_1_2;
     }
   }
 
@@ -1828,22 +1808,22 @@ public class StructureFunctions {
 
     @Override
     public IExpr evaluate(IAST ast, EvalEngine engine) {
-      if (ast.isAST1()) {
-        ast = F.operatorFormAppend(ast);
-        if (!ast.isPresent()) {
-          return F.NIL;
-        }
-      }
+      //      if (ast.isAST1()) {
+      //        ast = F.operatorForm1Append(ast);
+      //        if (!ast.isPresent()) {
+      //          return F.NIL;
+      //        }
+      //      }
       if (ast.isAST2()) {
         try {
-          if (ast.arg1().isDataSet()) {
+          if (ast.arg1().isDataset()) {
             List<String> listOfStrings = Convert.toStringList(ast.arg2());
             if (listOfStrings != null) {
               return ((IASTDataset) ast.arg1()).groupBy(listOfStrings);
             }
             return F.NIL;
           }
-          if (ast.arg1().isAST()) {
+          if (ast.arg1().isASTOrAssociation()) {
             IAST arg1 = (IAST) ast.arg1();
             IExpr arg2 = ast.arg2();
 
@@ -1876,7 +1856,7 @@ public class StructureFunctions {
     }
 
     public int[] expectedArgSize(IAST ast) {
-      return IOFunctions.ARGS_1_2;
+      return ARGS_1_2_1;
     }
   }
 
@@ -1920,7 +1900,7 @@ public class StructureFunctions {
     }
 
     public int[] expectedArgSize(IAST ast) {
-      return IOFunctions.ARGS_1_1;
+      return ARGS_1_1;
     }
   }
 
@@ -1957,7 +1937,7 @@ public class StructureFunctions {
     }
 
     public int[] expectedArgSize(IAST ast) {
-      return IOFunctions.ARGS_1_1;
+      return ARGS_1_1;
     }
   }
 
@@ -2029,7 +2009,7 @@ public class StructureFunctions {
     }
 
     public int[] expectedArgSize(IAST ast) {
-      return IOFunctions.ARGS_1_2;
+      return ARGS_1_2;
     }
 
     /**
@@ -2130,7 +2110,7 @@ public class StructureFunctions {
     }
 
     public int[] expectedArgSize(IAST ast) {
-      return IOFunctions.ARGS_1_2;
+      return ARGS_1_2;
     }
   }
 

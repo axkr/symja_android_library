@@ -6,6 +6,7 @@ import org.gavaghan.geodesy.GeodeticMeasurement;
 import org.gavaghan.geodesy.GlobalPosition;
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.interfaces.AbstractEvaluator;
+import org.matheclipse.core.eval.interfaces.IFunctionEvaluator;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.expression.IntervalSym;
 import org.matheclipse.core.expression.S;
@@ -16,6 +17,7 @@ import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.interfaces.ISymbol;
 
 public class IntervalFunctions {
+
   /**
    * See <a href="https://pangin.pro/posts/computation-in-static-initializer">Beware of computation
    * in static initializer</a>
@@ -162,18 +164,18 @@ public class IntervalFunctions {
                       F.GreaterEqual.ofQ(engine, max1, max2)) {
                     copyInterval2.remove(j);
                     if (copyInterval2.size() <= 1) {
-                      return F.True;
+                      return S.True;
                     }
                     included = true;
                     break;
                   }
                 }
                 if (!included) {
-                  return F.False;
+                  return S.False;
                 }
               }
               if (copyInterval2.size() <= 1) {
-                return F.True;
+                return S.True;
               }
             }
           }
@@ -186,16 +188,16 @@ public class IntervalFunctions {
             if (F.LessEqual.ofQ(engine, min1, arg2)
                 && //
                 F.GreaterEqual.ofQ(engine, max1, arg2)) {
-              return F.True;
+              return S.True;
             }
           }
         }
       }
-      return F.False;
+      return S.False;
     }
 
     public int[] expectedArgSize(IAST ast) {
-      return IOFunctions.ARGS_2_2;
+      return ARGS_2_2;
     }
 
     @Override
@@ -303,7 +305,7 @@ public class IntervalFunctions {
     }
 
     public int[] expectedArgSize(IAST ast) {
-      return IOFunctions.ARGS_1_INFINITY;
+      return ARGS_1_INFINITY;
     }
 
     @Override
@@ -383,7 +385,7 @@ public class IntervalFunctions {
     }
 
     public int[] expectedArgSize(IAST ast) {
-      return IOFunctions.ARGS_1_INFINITY;
+      return ARGS_1_INFINITY;
     }
 
     @Override

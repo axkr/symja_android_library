@@ -16,6 +16,7 @@ import org.hipparchus.util.FastMath;
 import org.hipparchus.util.MathArrays;
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.interfaces.AbstractEvaluator;
+import org.matheclipse.core.eval.interfaces.IFunctionEvaluator;
 import org.matheclipse.core.eval.util.OptionArgs;
 import org.matheclipse.core.expression.ASTRealVector;
 import org.matheclipse.core.expression.F;
@@ -70,7 +71,7 @@ public class ClusteringFunctions {
 
     @Override
     public int[] expectedArgSize(IAST ast) {
-      return IOFunctions.ARGS_2_2;
+      return ARGS_2_2;
     }
   }
 
@@ -180,7 +181,7 @@ public class ClusteringFunctions {
 
     @Override
     public int[] expectedArgSize(IAST ast) {
-      return IOFunctions.ARGS_2_2;
+      return ARGS_2_2;
     }
   }
 
@@ -223,7 +224,7 @@ public class ClusteringFunctions {
 
     @Override
     public int[] expectedArgSize(IAST ast) {
-      return IOFunctions.ARGS_2_2;
+      return ARGS_2_2;
     }
   }
 
@@ -264,7 +265,7 @@ public class ClusteringFunctions {
 
     @Override
     public int[] expectedArgSize(IAST ast) {
-      return IOFunctions.ARGS_2_2;
+      return ARGS_2_2;
     }
   }
 
@@ -426,7 +427,7 @@ public class ClusteringFunctions {
 
     @Override
     public int[] expectedArgSize(IAST ast) {
-      return IOFunctions.ARGS_1_5;
+      return ARGS_1_5;
     }
   }
 
@@ -539,7 +540,7 @@ public class ClusteringFunctions {
 
     @Override
     public int[] expectedArgSize(IAST ast) {
-      return IOFunctions.ARGS_2_2;
+      return ARGS_2_2;
     }
   }
 

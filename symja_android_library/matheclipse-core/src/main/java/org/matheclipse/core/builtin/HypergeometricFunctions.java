@@ -20,6 +20,7 @@ import org.matheclipse.core.eval.exception.ThrowException;
 import org.matheclipse.core.eval.exception.ValidateException;
 import org.matheclipse.core.eval.interfaces.AbstractFunctionEvaluator;
 import org.matheclipse.core.eval.interfaces.AbstractTrigArg1;
+import org.matheclipse.core.eval.interfaces.IFunctionEvaluator;
 import org.matheclipse.core.eval.interfaces.INumeric;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.expression.S;
@@ -37,6 +38,7 @@ import org.matheclipse.core.reflection.system.rules.WhittakerWRules;
 import org.matheclipse.parser.client.FEConfig;
 
 public class HypergeometricFunctions {
+
   /**
    * See <a href="https://pangin.pro/posts/computation-in-static-initializer">Beware of computation
    * in static initializer</a>
@@ -152,7 +154,7 @@ public class HypergeometricFunctions {
     }
 
     public int[] expectedArgSize(IAST ast) {
-      return IOFunctions.ARGS_1_1;
+      return ARGS_1_1;
     }
 
     @Override
@@ -255,7 +257,7 @@ public class HypergeometricFunctions {
     }
 
     public int[] expectedArgSize(IAST ast) {
-      return IOFunctions.ARGS_1_1;
+      return ARGS_1_1;
     }
   }
 
@@ -313,7 +315,7 @@ public class HypergeometricFunctions {
     }
 
     public int[] expectedArgSize(IAST ast) {
-      return IOFunctions.ARGS_2_2;
+      return ARGS_2_2;
     }
 
     @Override
@@ -417,7 +419,7 @@ public class HypergeometricFunctions {
     }
 
     public int[] expectedArgSize(IAST ast) {
-      return IOFunctions.ARGS_1_1;
+      return ARGS_1_1;
     }
 
     @Override
@@ -487,7 +489,7 @@ public class HypergeometricFunctions {
     }
 
     public int[] expectedArgSize(IAST ast) {
-      return IOFunctions.ARGS_1_1;
+      return ARGS_1_1;
     }
 
     @Override
@@ -557,7 +559,7 @@ public class HypergeometricFunctions {
     }
 
     public int[] expectedArgSize(IAST ast) {
-      return IOFunctions.ARGS_1_1;
+      return ARGS_1_1;
     }
 
     @Override
@@ -685,7 +687,7 @@ public class HypergeometricFunctions {
 
     @Override
     public int[] expectedArgSize(IAST ast) {
-      return IOFunctions.ARGS_2_3;
+      return ARGS_2_3;
     }
 
     @Override
@@ -744,7 +746,7 @@ public class HypergeometricFunctions {
     }
 
     public int[] expectedArgSize(IAST ast) {
-      return IOFunctions.ARGS_2_2;
+      return ARGS_2_2;
     }
 
     @Override
@@ -867,7 +869,7 @@ public class HypergeometricFunctions {
     }
 
     public int[] expectedArgSize(IAST ast) {
-      return IOFunctions.ARGS_3_3;
+      return ARGS_3_3;
     }
 
     @Override
@@ -1013,7 +1015,7 @@ public class HypergeometricFunctions {
     }
 
     public int[] expectedArgSize(IAST ast) {
-      return IOFunctions.ARGS_4_4;
+      return ARGS_4_4;
     }
 
     @Override
@@ -1071,7 +1073,7 @@ public class HypergeometricFunctions {
     }
 
     public int[] expectedArgSize(IAST ast) {
-      return IOFunctions.ARGS_3_3;
+      return ARGS_3_3;
     }
 
     @Override
@@ -1172,7 +1174,7 @@ public class HypergeometricFunctions {
     }
 
     public int[] expectedArgSize(IAST ast) {
-      return IOFunctions.ARGS_3_3;
+      return ARGS_3_3;
     }
 
     @Override
@@ -1281,7 +1283,7 @@ public class HypergeometricFunctions {
     }
 
     public int[] expectedArgSize(IAST ast) {
-      return IOFunctions.ARGS_1_1;
+      return ARGS_1_1;
     }
 
     @Override
@@ -1392,7 +1394,7 @@ public class HypergeometricFunctions {
     }
 
     public int[] expectedArgSize(IAST ast) {
-      return IOFunctions.ARGS_1_1;
+      return ARGS_1_1;
     }
 
     @Override
@@ -1470,7 +1472,7 @@ public class HypergeometricFunctions {
     }
 
     public int[] expectedArgSize(IAST ast) {
-      return IOFunctions.ARGS_1_1;
+      return ARGS_1_1;
     }
 
     @Override
@@ -1533,7 +1535,7 @@ public class HypergeometricFunctions {
     }
 
     public int[] expectedArgSize(IAST ast) {
-      return IOFunctions.ARGS_3_3;
+      return ARGS_3_3;
     }
 
     @Override
@@ -1595,7 +1597,7 @@ public class HypergeometricFunctions {
     }
 
     public int[] expectedArgSize(IAST ast) {
-      return IOFunctions.ARGS_3_3;
+      return ARGS_3_3;
     }
 
     @Override

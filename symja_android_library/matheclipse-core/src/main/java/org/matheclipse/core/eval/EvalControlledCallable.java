@@ -3,8 +3,12 @@ package org.matheclipse.core.eval;
 import java.io.StringWriter;
 import java.util.concurrent.Callable;
 
+import org.matheclipse.core.builtin.IOFunctions;
+import org.matheclipse.core.eval.exception.IterationLimitExceeded;
+import org.matheclipse.core.eval.exception.RecursionLimitExceeded;
 import org.matheclipse.core.eval.exception.Validate;
 import org.matheclipse.core.expression.F;
+import org.matheclipse.core.expression.S;
 import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.parser.client.FEConfig;
 import org.matheclipse.parser.client.SyntaxError;
@@ -25,20 +29,40 @@ public class EvalControlledCallable implements Callable<IExpr> {
   @Override
   public IExpr call() throws Exception {
     EvalEngine.remove();
-    EvalEngine.set(fEngine);
+    EvalEngine.setReset(fEngine);
     final StringWriter buf = new StringWriter();
     try {
-      fEngine.reset();
+      //      fEngine.reset();<>
       IExpr preRead = F.$PreRead.assignedValue();
       IExpr temp;
-      if (preRead != null && preRead.isPresent()) {
-        temp = fEngine.evaluate(F.unaryAST1(preRead, fExpr));
-      } else {
-        temp = fEngine.evaluate(fExpr);
+      try {
+        if (preRead != null && preRead.isPresent()) {
+          temp = fEngine.evaluate(F.unaryAST1(preRead, fExpr));
+        } else {
+          temp = fEngine.evaluate(fExpr);
+        }
+      } catch (final IterationLimitExceeded e) {
+        // Iteration limit of `1` exceeded.
+        int iterationLimit = fEngine.getIterationLimit();
+        IOFunctions.printMessage(
+            S.$IterationLimit,
+            "itlim",
+            F.List(iterationLimit < 0 ? F.CInfinity : F.ZZ(iterationLimit), fExpr),
+            fEngine);
+        temp = F.Hold(fExpr);
+      } catch (final RecursionLimitExceeded e) {
+        // Recursion depth of `1` exceeded during evaluation of `2`.
+        int recursionLimit = fEngine.getRecursionLimit();
+        IOFunctions.printMessage(
+            S.$RecursionLimit,
+            "reclim2",
+            F.List(recursionLimit < 0 ? F.CInfinity : F.ZZ(recursionLimit), fExpr),
+            fEngine);
+        temp = F.Hold(fExpr);
       }
       //			IExpr temp = fEngine.evaluate(fExpr);
       if (!fEngine.isOutListDisabled()) {
-        fEngine.addOut(temp);
+        fEngine.addInOut(fExpr, temp);
       }
       return temp;
     } catch (org.matheclipse.core.eval.exception.TimeoutException e) {

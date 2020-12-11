@@ -6,6 +6,7 @@ import org.matheclipse.core.basic.Config;
 import org.matheclipse.core.expression.F;
 
 public final class FunctionDefinitions {
+
   /**
    * See <a href="https://pangin.pro/posts/computation-in-static-initializer">Beware of computation
    * in static initializer</a>
@@ -14,7 +15,6 @@ public final class FunctionDefinitions {
 
     private static void init() {
       ComplexExpand.setEvaluator(new org.matheclipse.core.reflection.system.ComplexExpand());
-      Dataset.setEvaluator(new org.matheclipse.core.reflection.system.Dataset());
       D.setEvaluator(new org.matheclipse.core.reflection.system.D());
       Derivative.setEvaluator(new org.matheclipse.core.reflection.system.Derivative());
       DSolve.setEvaluator(new org.matheclipse.core.reflection.system.DSolve());
@@ -29,6 +29,7 @@ public final class FunctionDefinitions {
       FunctionExpand.setEvaluator(new org.matheclipse.core.reflection.system.FunctionExpand());
       HeavisideTheta.setEvaluator(new org.matheclipse.core.reflection.system.HeavisideTheta());
       Horner.setEvaluator(new org.matheclipse.core.reflection.system.Horner());
+      In.setEvaluator(new org.matheclipse.core.reflection.system.In());
       InterpolatingFunction.setEvaluator(
           new org.matheclipse.core.reflection.system.InterpolatingFunction());
       InterpolatingPolynomial.setEvaluator(
@@ -68,7 +69,6 @@ public final class FunctionDefinitions {
       TrigToExp.setEvaluator(new org.matheclipse.core.reflection.system.TrigToExp());
 
       if (!Config.FUZZY_PARSER) {
-        Compile.setEvaluator(new org.matheclipse.core.reflection.system.Compile());
         CreateDirectory.setEvaluator(new org.matheclipse.core.reflection.system.CreateDirectory());
         Export.setEvaluator(new org.matheclipse.core.reflection.system.Export());
         ExportString.setEvaluator(new org.matheclipse.core.reflection.system.ExportString());

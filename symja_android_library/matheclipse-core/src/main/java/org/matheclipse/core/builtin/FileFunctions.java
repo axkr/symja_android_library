@@ -20,6 +20,8 @@ import org.matheclipse.core.eval.exception.Validate;
 import org.matheclipse.core.eval.exception.ValidateException;
 import org.matheclipse.core.eval.interfaces.AbstractCoreFunctionEvaluator;
 import org.matheclipse.core.eval.interfaces.AbstractFunctionEvaluator;
+import org.matheclipse.core.eval.interfaces.IFunctionEvaluator;
+import org.matheclipse.core.expression.ContextPath;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.expression.S;
 import org.matheclipse.core.form.output.OutputFormFactory;
@@ -49,8 +51,10 @@ public class FileFunctions {
         S.Begin.setEvaluator(new Begin());
         S.End.setEvaluator(new End());
         S.Get.setEvaluator(new Get());
+        S.Needs.setEvaluator(new Needs());
         S.Put.setEvaluator(new Put());
         S.ReadString.setEvaluator(new ReadString());
+        S.URLFetch.setEvaluator(new URLFetch());
         S.WriteString.setEvaluator(new WriteString());
       }
     }
@@ -78,7 +82,7 @@ public class FileFunctions {
 
     @Override
     public int[] expectedArgSize(IAST ast) {
-      return IOFunctions.ARGS_1_1;
+      return ARGS_1_1;
     }
 
     @Override
@@ -99,7 +103,8 @@ public class FileFunctions {
               for (int j = 2; j < ast.size(); j++) {
                 // FileReader reader = new FileReader(ast.get(j).toString());
                 FileInputStream fis = new FileInputStream(ast.get(j).toString());
-                BufferedReader reader = new BufferedReader(new InputStreamReader(fis, "UTF-8"));
+                BufferedReader reader =
+                    new BufferedReader(new InputStreamReader(fis, StandardCharsets.UTF_8));
                 Get.loadPackage(engine, reader);
                 reader.close();
                 fis.close();
@@ -169,7 +174,7 @@ public class FileFunctions {
 
     @Override
     public int[] expectedArgSize(IAST ast) {
-      return IOFunctions.ARGS_0_0;
+      return ARGS_0_0;
     }
 
     @Override
@@ -222,7 +227,7 @@ public class FileFunctions {
   }
 
   /** Get[{&lt;file name&gt;}} */
-  private static final class Get extends AbstractFunctionEvaluator {
+  private static class Get extends AbstractFunctionEvaluator {
 
     /**
      * Load a package from the given reader
@@ -332,6 +337,7 @@ public class FileFunctions {
             return getFile(file, ast, engine);
           }
         }
+        String contextName = Validate.checkContextName(ast, 1);
         // Cannot open `1`.
         return IOFunctions.printMessage(ast.topHead(), "noopen", F.List(ast.arg1()), engine);
       }
@@ -340,10 +346,30 @@ public class FileFunctions {
 
     @Override
     public int[] expectedArgSize(IAST ast) {
-      return IOFunctions.ARGS_1_1;
+      return ARGS_1_1;
     }
   }
 
+  private static final class Needs extends Get {
+    @Override
+    public IExpr evaluate(final IAST ast, EvalEngine engine) {
+      String contextName = Validate.checkContextName(ast, 1);
+      if (!ContextPath.PACKAGES.contains(contextName)) {
+        return super.evaluate(ast, engine);
+      }
+      return F.Null;
+    }
+
+    @Override
+    public int[] expectedArgSize(IAST ast) {
+      return ARGS_1_1;
+    }
+
+    @Override
+    public void setUp(ISymbol newSymbol) {
+      newSymbol.setAttributes(ISymbol.HOLDALL);
+    }
+  }
   /** Put[{&lt;file name&gt;}} */
   private static final class Put extends AbstractFunctionEvaluator {
 
@@ -392,7 +418,7 @@ public class FileFunctions {
 
     @Override
     public int[] expectedArgSize(IAST ast) {
-      return IOFunctions.ARGS_2_INFINITY;
+      return ARGS_2_INFINITY;
     }
   }
 
@@ -441,7 +467,41 @@ public class FileFunctions {
 
     @Override
     public int[] expectedArgSize(IAST ast) {
-      return IOFunctions.ARGS_1_1;
+      return ARGS_1_1;
+    }
+  }
+
+  private static final class URLFetch extends AbstractFunctionEvaluator {
+
+    @Override
+    public IExpr evaluate(final IAST ast, EvalEngine engine) {
+      if (!(ast.arg1() instanceof IStringX)) {
+        return IOFunctions.printMessage(ast.topHead(), "string", F.List(), engine);
+      }
+      String arg1Str = ((IStringX) ast.arg1()).toString();
+      if (arg1Str.startsWith("https://")
+          || //
+          arg1Str.startsWith("http://")) {
+        URL url;
+        try {
+          url = new URL(arg1Str);
+          String str = Resources.toString(url, StandardCharsets.UTF_8);
+          return F.$s(str);
+        } catch (IOException e) {
+          if (FEConfig.SHOW_STACKTRACE) {
+            e.printStackTrace();
+          }
+          // Cannot open `1`.
+          return IOFunctions.printMessage(ast.topHead(), "noopen", F.List(ast.arg1()), engine);
+        }
+      }
+      // Cannot open `1`.
+      return IOFunctions.printMessage(ast.topHead(), "noopen", F.List(ast.arg1()), engine);
+    }
+
+    @Override
+    public int[] expectedArgSize(IAST ast) {
+      return ARGS_1_1;
     }
   }
 
@@ -486,7 +546,7 @@ public class FileFunctions {
 
     @Override
     public int[] expectedArgSize(IAST ast) {
-      return IOFunctions.ARGS_2_2;
+      return ARGS_2_2;
     }
   }
 

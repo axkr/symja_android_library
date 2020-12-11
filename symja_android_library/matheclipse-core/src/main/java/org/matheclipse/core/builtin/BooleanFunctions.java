@@ -224,9 +224,9 @@ public final class BooleanFunctions {
         org.logicng.formulas.Not a = (org.logicng.formulas.Not) formula;
         return F.Not(booleanFunction2Expr(a.operand()));
       } else if (formula instanceof CFalse) {
-        return F.False;
+        return S.False;
       } else if (formula instanceof CTrue) {
-        return F.True;
+        return S.True;
       } else if (formula instanceof Literal) {
         // also used for Variable
         Literal a = (Literal) formula;
@@ -444,9 +444,9 @@ public final class BooleanFunctions {
         Integer val = map.get(a.name());
         if (val != null) {
           if (a.phase()) {
-            list.set(val + 1, F.True);
+            list.set(val + 1, S.True);
           } else {
-            list.set(val + 1, F.False);
+            list.set(val + 1, S.False);
           }
         }
       }
@@ -465,9 +465,9 @@ public final class BooleanFunctions {
         Integer val = map.get(a.name());
         if (val != null) {
           if (a.phase()) {
-            list.set(val + 1, F.Rule(variable2symbolMap.get(a.variable()), F.True));
+            list.set(val + 1, F.Rule(variable2symbolMap.get(a.variable()), S.True));
           } else {
-            list.set(val + 1, F.Rule(variable2symbolMap.get(a.variable()), F.False));
+            list.set(val + 1, F.Rule(variable2symbolMap.get(a.variable()), S.False));
           }
         }
       }
@@ -478,7 +478,13 @@ public final class BooleanFunctions {
   private static class AllTrue extends AbstractFunctionEvaluator {
 
     @Override
-    public IExpr evaluate(final IAST ast, EvalEngine engine) {
+    public IExpr evaluate(IAST ast, EvalEngine engine) {
+      //      if (ast.isAST1()) {
+      //        ast = F.operatorForm1Append(ast);
+      //        if (!ast.isPresent()) {
+      //          return F.NIL;
+      //        }
+      //      }
       if (ast.arg1().isAST()) {
         IAST list = (IAST) ast.arg1();
         IExpr head = ast.arg2();
@@ -488,7 +494,7 @@ public final class BooleanFunctions {
     }
 
     public int[] expectedArgSize(IAST ast) {
-      return IOFunctions.ARGS_2_2;
+      return ARGS_2_2_1;
     }
 
     /**
@@ -515,13 +521,13 @@ public final class BooleanFunctions {
             logicalAnd.append(temp);
             return true;
           })) {
-        return F.False;
+        return S.False;
       }
 
       if (logicalAnd.size() > 1) {
         return logicalAnd;
       }
-      return F.True;
+      return S.True;
     }
 
     @Override
@@ -563,7 +569,7 @@ public final class BooleanFunctions {
     @Override
     public IExpr evaluate(final IAST ast, EvalEngine engine) {
       if (ast.isAST0()) {
-        return F.True;
+        return S.True;
       }
 
       boolean evaled = false;
@@ -583,7 +589,7 @@ public final class BooleanFunctions {
         temp = flattenedAST.get(i);
         if (temp.isBuiltInSymbol()) {
           if (temp.isFalse()) {
-            return F.False;
+            return S.False;
           } else if (temp.isTrue()) {
             continue;
           }
@@ -592,7 +598,7 @@ public final class BooleanFunctions {
         temp = engine.evaluateNull(temp);
         if (temp.isPresent()) {
           if (temp.isFalse()) {
-            return F.False;
+            return S.False;
           } else if (temp.isTrue()) {
             continue;
           }
@@ -604,7 +610,7 @@ public final class BooleanFunctions {
         break;
       }
       if (start < 0) {
-        return F.True;
+        return S.True;
       }
 
       IASTAppendable result = flattenedAST.copyFrom(start);
@@ -615,7 +621,7 @@ public final class BooleanFunctions {
       for (int i = start; i < flattenedAST.size(); i++) {
         temp = flattenedAST.get(i);
         if (temp.isFalse()) {
-          return F.False;
+          return S.False;
         } else if (temp.isTrue()) {
           result.remove(index);
           evaled = true;
@@ -625,7 +631,7 @@ public final class BooleanFunctions {
         temp = engine.evaluateNull(temp);
         if (temp.isPresent()) {
           if (temp.isFalse()) {
-            return F.False;
+            return S.False;
           } else if (temp.isTrue()) {
             result.remove(index);
             evaled = true;
@@ -654,7 +660,7 @@ public final class BooleanFunctions {
                 && symbols[i] == notSymbols[j]
                 && (result.equalsAt(i, result.get(j).first()))) {
               // And[a, Not[a]] => False
-              return F.False;
+              return S.False;
             }
           }
         }
@@ -664,7 +670,7 @@ public final class BooleanFunctions {
       }
       if (evaled) {
         if (result.isAST0()) {
-          return F.True;
+          return S.True;
         }
 
         return result;
@@ -727,7 +733,13 @@ public final class BooleanFunctions {
   private static class AnyTrue extends AbstractFunctionEvaluator {
 
     @Override
-    public IExpr evaluate(final IAST ast, EvalEngine engine) {
+    public IExpr evaluate(IAST ast, EvalEngine engine) {
+      //      if (ast.isAST1()) {
+      //        ast = F.operatorForm1Append(ast);
+      //        if (!ast.isPresent()) {
+      //          return F.NIL;
+      //        }
+      //      }
       if (ast.arg1().isAST()) {
         IAST list = (IAST) ast.arg1();
         IExpr head = ast.arg2();
@@ -737,7 +749,7 @@ public final class BooleanFunctions {
     }
 
     public int[] expectedArgSize(IAST ast) {
-      return IOFunctions.ARGS_2_2;
+      return ARGS_2_2_1;
     }
 
     /**
@@ -753,9 +765,9 @@ public final class BooleanFunctions {
     public IExpr anyTrue(IAST list, IExpr head, EvalEngine engine) {
       IASTAppendable logicalOr = F.Or();
       if (list.exists(x -> anyTrueArgument(x, head, logicalOr, engine))) {
-        return F.True;
+        return S.True;
       }
-      return logicalOr.isAST0() ? F.False : logicalOr;
+      return logicalOr.isAST0() ? S.False : logicalOr;
     }
 
     private static boolean anyTrueArgument(
@@ -828,7 +840,7 @@ public final class BooleanFunctions {
 
     @Override
     public int[] expectedArgSize(IAST ast) {
-      return IOFunctions.ARGS_1_1;
+      return ARGS_1_1;
     }
 
     @Override
@@ -899,7 +911,7 @@ public final class BooleanFunctions {
     }
 
     public int[] expectedArgSize(IAST ast) {
-      return IOFunctions.ARGS_1_2;
+      return ARGS_1_2;
     }
   }
 
@@ -957,7 +969,7 @@ public final class BooleanFunctions {
     }
 
     public int[] expectedArgSize(IAST ast) {
-      return IOFunctions.ARGS_1_2;
+      return ARGS_1_2;
     }
   }
 
@@ -1004,12 +1016,12 @@ public final class BooleanFunctions {
             IAST list = (IAST) expr;
             IASTAppendable newList = F.ListAlloc(list.size());
             for (int i = 1; i < list.size(); i++) {
-              newList.append(engine.evalTrue(list.get(i)) ? F.True : F.False);
+              newList.append(engine.evalTrue(list.get(i)) ? S.True : S.False);
             }
             resultList.append(newList);
             return resultList;
           } else {
-            resultList.append(engine.evalTrue(expr) ? F.True : F.False);
+            resultList.append(engine.evalTrue(expr) ? S.True : S.False);
             return resultList;
           }
         }
@@ -1023,16 +1035,16 @@ public final class BooleanFunctions {
           ISymbol symbol = (ISymbol) sym;
           IExpr value = symbol.assignedValue();
           try {
-            symbol.assignValue(F.True);
+            symbol.assignValue(S.True, false);
             booleanTable(expr, position + 1);
           } finally {
-            symbol.assignValue(value);
+            symbol.assignValue(value, false);
           }
           try {
-            symbol.assignValue(F.False);
+            symbol.assignValue(S.False, false);
             booleanTable(expr, position + 1);
           } finally {
-            symbol.assignValue(value);
+            symbol.assignValue(value, false);
           }
         }
         return resultList;
@@ -1053,7 +1065,7 @@ public final class BooleanFunctions {
     }
 
     public int[] expectedArgSize(IAST ast) {
-      return IOFunctions.ARGS_1_2;
+      return ARGS_1_2;
     }
   }
 
@@ -1086,7 +1098,7 @@ public final class BooleanFunctions {
     }
 
     public int[] expectedArgSize(IAST ast) {
-      return IOFunctions.ARGS_1_1;
+      return ARGS_1_1;
     }
 
     private static IAST booleanVariables(final IExpr expr) {
@@ -1254,7 +1266,7 @@ public final class BooleanFunctions {
           IExpr arg2 = F.expandAll(result.get(i), true, true);
           b = prepareCompare(arg1, arg2, engine);
           if (b == IExpr.COMPARE_TERNARY.FALSE) {
-            return F.False;
+            return S.False;
           } else if (b == IExpr.COMPARE_TERNARY.TRUE) {
             evaled = true;
             result.remove(i - 1);
@@ -1266,13 +1278,13 @@ public final class BooleanFunctions {
         }
         if (evaled) {
           if (result.isAST1()) {
-            return F.True;
+            return S.True;
           }
           return result;
         }
         return F.NIL;
       }
-      return F.True;
+      return S.True;
     }
 
     /**
@@ -1308,12 +1320,12 @@ public final class BooleanFunctions {
       }
       IExpr a0 = arg1;
       IExpr a1 = arg2;
-      if (!a0.isReal() && a0.isNumericFunction()) {
+      if (!a0.isReal() && a0.isNumericFunction(true)) {
         a0 = engine.evalN(a0);
       } else if (a1.isInexactNumber() && a0.isInexactNumber()) {
         a0 = engine.evalN(a0);
       }
-      if (!a1.isReal() && a1.isNumericFunction()) {
+      if (!a1.isReal() && a1.isNumericFunction(true)) {
         a1 = engine.evalN(a1);
       } else if (a0.isInexactNumber() && a1.isRational()) {
         a1 = engine.evalN(a1);
@@ -1423,7 +1435,7 @@ public final class BooleanFunctions {
     @Override
     public IExpr evaluate(final IAST ast, EvalEngine engine) {
       if (ast.isAST0() || ast.isAST1()) {
-        return F.True;
+        return S.True;
       }
       IASTAppendable result = ast.copyHead();
       IExpr last = F.NIL;
@@ -1434,19 +1446,19 @@ public final class BooleanFunctions {
         IExpr temp = ast.get(i);
         if (temp.isFalse()) {
           if (!boole.isPresent()) {
-            boole = F.False;
+            boole = S.False;
             evaled = true;
           } else if (boole.isTrue()) {
-            return F.False;
+            return S.False;
           } else {
             evaled = true;
           }
         } else if (temp.isTrue()) {
           if (!boole.isPresent()) {
-            boole = F.True;
+            boole = S.True;
             evaled = true;
           } else if (boole.isFalse()) {
-            return F.False;
+            return S.False;
           } else {
             evaled = true;
           }
@@ -1463,10 +1475,10 @@ public final class BooleanFunctions {
       if (evaled) {
         if (result.isAST0()) {
           if (boole.isPresent()) {
-            return F.True;
+            return S.True;
           }
         } else if (result.isAST1() && !boole.isPresent()) {
-          return F.True;
+          return S.True;
         }
         if (boole.isPresent()) {
           result = result.apply(F.And);
@@ -1529,7 +1541,7 @@ public final class BooleanFunctions {
     }
 
     public int[] expectedArgSize(IAST ast) {
-      return IOFunctions.ARGS_2_3;
+      return ARGS_2_3;
     }
 
     @Override
@@ -1580,7 +1592,7 @@ public final class BooleanFunctions {
     }
 
     public int[] expectedArgSize(IAST ast) {
-      return IOFunctions.ARGS_2_3;
+      return ARGS_2_3;
     }
 
     @Override
@@ -1634,32 +1646,32 @@ public final class BooleanFunctions {
      *
      * @param arg1 the left-hand-side of the comparison
      * @param arg2 the right-hand-side of the comparison which is tested with {@link
-     *     IExpr#isNumericFunction()} equals <code>true</code>.
+     *     IExpr#isNumericFunction(boolean)} equals <code>true</code>.
      * @return
      */
     protected IExpr checkAssumptions(IExpr arg1, IExpr arg2) {
       if (arg2.isNegative()) {
         // arg1 > "negative number"
         if (arg1.isNonNegativeResult() || arg1.isPositiveResult()) {
-          return F.True;
+          return S.True;
         }
       } else if (arg2.isZero()) {
         // arg1 > 0
         if (arg1.isPositiveResult()) {
-          return F.True;
+          return S.True;
         }
         if (arg1.isNegativeResult()) {
-          return F.False;
+          return S.False;
         }
       } else {
         // arg1 < "positive number"
         if (arg1.isNegativeResult() || arg1.isZero()) {
-          return F.False;
+          return S.False;
         }
       }
       ISignedNumber a2 = arg2.evalReal();
       if (a2 != null && AbstractAssumptions.assumeGreaterThan(arg1, a2)) {
-        return F.True;
+        return S.True;
       }
       return F.NIL;
     }
@@ -1768,7 +1780,7 @@ public final class BooleanFunctions {
     @Override
     public IExpr evaluate(IAST ast, EvalEngine engine) {
       if (ast.size() <= 2) {
-        return F.True;
+        return S.True;
       }
 
       IASTAppendable flattened;
@@ -1790,7 +1802,7 @@ public final class BooleanFunctions {
           // (i.e. Less instead of Greater)
           return result;
         }
-        if (arg2.isNumericFunction()) {
+        if (arg2.isNumericFunction(true)) {
           // this part is used in other comparator operations like
           // Less,
           // GreaterEqual,...
@@ -1808,7 +1820,7 @@ public final class BooleanFunctions {
       for (int i = 1; i < astEvaled.argSize(); i++) {
         b = prepareCompare(result.get(i), result.get(i + 1), engine);
         if (b == IExpr.COMPARE_TERNARY.FALSE) {
-          return F.False;
+          return S.False;
         }
         if (b == IExpr.COMPARE_TERNARY.TRUE) {
           evaled = true;
@@ -1834,7 +1846,7 @@ public final class BooleanFunctions {
 
       if (evaled) {
         if (result.size() <= 2) {
-          return F.True;
+          return S.True;
         }
         return result;
       }
@@ -1842,12 +1854,12 @@ public final class BooleanFunctions {
     }
 
     private IExpr.COMPARE_TERNARY prepareCompare(IExpr a0, IExpr a1, EvalEngine engine) {
-      if (!a0.isReal() && a0.isNumericFunction()) {
+      if (!a0.isReal() && a0.isNumericFunction(true)) {
         a0 = engine.evalN(a0);
       } else if (a1.isInexactNumber() && a0.isRational()) {
         a0 = engine.evalN(a0);
       }
-      if (!a1.isReal() && a1.isNumericFunction()) {
+      if (!a1.isReal() && a1.isNumericFunction(true)) {
         a1 = engine.evalN(a1);
       } else if (a0.isInexactNumber() && a1.isRational()) {
         a1 = engine.evalN(a1);
@@ -1858,6 +1870,10 @@ public final class BooleanFunctions {
 
     public IExpr.COMPARE_TERNARY prepareCompare(final IExpr o0, final IExpr o1) {
       return prepareCompare(o0, o1, EvalEngine.get());
+    }
+
+    public int[] expectedArgSize(IAST ast) {
+      return ARGS_0_INFINITY;
     }
 
     @Override
@@ -1888,7 +1904,7 @@ public final class BooleanFunctions {
      *     started
      * @param oppositeHead opposite of the symbol of the comparator operator for which the
      *     comparison was started
-     * @param setTrue if <code>true</code> return F.True otherwise F.False
+     * @param setTrue if <code>true</code> return S.True otherwise S.False
      * @return the simplified comparator expression or <code>F.NIL</code> if no simplification was
      *     found
      */
@@ -1899,18 +1915,18 @@ public final class BooleanFunctions {
         IBuiltInSymbol oppositeHead,
         boolean setTrue) {
       if (a1.isInfinity() && a2.isInfinity()) {
-        return F.False;
+        return S.False;
       }
       if (a1.isNegativeInfinity() && a2.isNegativeInfinity()) {
-        return F.False;
+        return S.False;
       }
       IExpr lhs = F.NIL;
       IExpr rhs = F.NIL;
       boolean useOppositeHeader = false;
-      if (a2.isNumericFunction()) {
+      if (a2.isNumericFunction(true)) {
         lhs = a1;
         rhs = a2;
-      } else if (a1.isNumericFunction()) {
+      } else if (a1.isNumericFunction(true)) {
         lhs = a2;
         rhs = a1;
         useOppositeHeader = true;
@@ -1928,22 +1944,22 @@ public final class BooleanFunctions {
         }
         if (lhsAST.isInfinity() && rhs.isRealResult()) {
           // Infinity > rhs ?
-          return setTrue ? F.True : F.False;
+          return setTrue ? S.True : S.False;
         }
         if (lhsAST.isNegativeInfinity() && rhs.isRealResult()) {
           // -Infinity > rhs ?
-          return setTrue ? F.False : F.True;
+          return setTrue ? S.False : S.True;
         }
         if (rhs.isInfinity() && lhsAST.isRealResult()) {
           // lhs > Infinity ?
-          return setTrue ? F.False : F.True;
+          return setTrue ? S.False : S.True;
         }
         if (rhs.isNegativeInfinity() && lhsAST.isRealResult()) {
           // lhs > -Infinity ?
-          return setTrue ? F.True : F.False;
+          return setTrue ? S.True : S.False;
         }
         if (lhsAST.isTimes()) {
-          IAST result = lhsAST.partitionTimes(x -> x.isNumericFunction(), F.C0, F.C1, F.List);
+          IAST result = lhsAST.partitionTimes(x -> x.isNumericFunction(true), F.C0, F.C1, F.List);
           if (!result.arg1().isZero()) {
             if (result.arg1().hasComplexNumber() || result.arg2().hasComplexNumber()) {
               return IOFunctions.printMessage(
@@ -1957,7 +1973,7 @@ public final class BooleanFunctions {
                 result.arg2(), rhs, useOppositeHeader, originalHead, oppositeHead);
           }
         } else if (lhsAST.isPlus()) {
-          IAST result = lhsAST.partitionPlus(x -> x.isNumericFunction(), F.C0, F.C0, F.List);
+          IAST result = lhsAST.partitionPlus(x -> x.isNumericFunction(true), F.C0, F.C0, F.List);
           if (!result.arg1().isZero()) {
             if (result.arg1().hasComplexNumber() || result.arg2().hasComplexNumber()) {
               return IOFunctions.printMessage(
@@ -2018,25 +2034,25 @@ public final class BooleanFunctions {
       if (arg2.isNegative()) {
         // arg1 >= "negative number"
         if (arg1.isNonNegativeResult() || arg1.isPositiveResult()) {
-          return F.True;
+          return S.True;
         }
       } else if (arg2.isZero()) {
         // arg1 >= 0
         if (arg1.isNonNegativeResult() || arg1.isPositiveResult()) {
-          return F.True;
+          return S.True;
         }
         if (arg1.isNegativeResult()) {
-          return F.False;
+          return S.False;
         }
       } else {
         // arg1 >= "positive number" > 0
         if (arg1.isNegativeResult() || arg1.isZero()) {
-          return F.False;
+          return S.False;
         }
       }
       ISignedNumber a2 = arg2.evalReal();
       if (a2 != null && AbstractAssumptions.assumeGreaterEqual(arg1, a2)) {
-        return F.True;
+        return S.True;
       }
       return F.NIL;
     }
@@ -2045,10 +2061,10 @@ public final class BooleanFunctions {
     @Override
     protected IExpr simplifyCompare(IExpr a1, IExpr a2) {
       if (a1.isInfinity() && a2.isInfinity()) {
-        return F.True;
+        return S.True;
       }
       if (a1.isNegativeInfinity() && a2.isNegativeInfinity()) {
-        return F.True;
+        return S.True;
       }
       return simplifyCompare(a1, a2, F.GreaterEqual, F.LessEqual, true);
     }
@@ -2117,7 +2133,7 @@ public final class BooleanFunctions {
         return ast.arg2();
       }
       if (arg1.isFalse()) {
-        return F.True;
+        return S.True;
       }
 
       IExpr arg2 = engine.evaluateNull(ast.arg2());
@@ -2127,13 +2143,13 @@ public final class BooleanFunctions {
         arg2 = ast.arg2();
       }
       if (arg2.isTrue()) {
-        return F.True;
+        return S.True;
       }
       if (arg2.isFalse()) {
         return F.Not(arg1);
       }
       if (arg1.equals(arg2)) {
-        return F.True;
+        return S.True;
       }
 
       if (evaled) {
@@ -2143,7 +2159,7 @@ public final class BooleanFunctions {
     }
 
     public int[] expectedArgSize(IAST ast) {
-      return IOFunctions.ARGS_2_2;
+      return ARGS_2_2;
     }
 
     @Override
@@ -2175,7 +2191,7 @@ public final class BooleanFunctions {
     @Override
     public IExpr evaluate(final IAST ast, EvalEngine engine) {
       if (ast.size() == 2) {
-        return F.True;
+        return S.True;
       }
       try {
         // Validate.checkRange(ast, 4, Integer.MAX_VALUE);
@@ -2231,7 +2247,7 @@ public final class BooleanFunctions {
           for (int rhsI = 2 * i + 3; rhsI < ast.size(); rhsI += 2) {
             IExpr temp = engine.evaluate(F.binaryAST2(op, lhs, ast.get(rhsI)));
             if (temp.isFalse()) {
-              return F.False;
+              return S.False;
             }
           }
           IExpr evalRes = engine.evaluate(F.binaryAST2(op, lhs, rhs));
@@ -2250,7 +2266,7 @@ public final class BooleanFunctions {
           }
         }
         if (res.isEmpty()) {
-          return F.True;
+          return S.True;
         }
         if (res.size() == 4) {
           return F.binaryAST2(res.arg2(), res.arg1(), res.arg3());
@@ -2315,26 +2331,26 @@ public final class BooleanFunctions {
       if (arg2.isNegative()) {
         // arg1 < "negative number"
         if (arg1.isPositiveResult()) {
-          return F.False;
+          return S.False;
         }
 
       } else if (arg2.isZero()) {
         // arg1 < 0
         if (arg1.isNegativeResult()) {
-          return F.True;
+          return S.True;
         }
         if (arg1.isPositiveResult()) {
-          return F.False;
+          return S.False;
         }
       } else {
         // arg1 < "positive number"
         if (arg1.isNegativeResult() || arg1.isZero()) {
-          return F.True;
+          return S.True;
         }
       }
       ISignedNumber a2 = arg2.evalReal();
       if (a2 != null && AbstractAssumptions.assumeLessThan(arg1, a2)) {
-        return F.True;
+        return S.True;
       }
       return F.NIL;
     }
@@ -2343,10 +2359,10 @@ public final class BooleanFunctions {
     @Override
     protected IExpr simplifyCompare(IExpr a1, IExpr a2) {
       if (a1.isInfinity() && a2.isInfinity()) {
-        return F.False;
+        return S.False;
       }
       if (a1.isNegativeInfinity() && a2.isNegativeInfinity()) {
-        return F.False;
+        return S.False;
       }
       return simplifyCompare(a1, a2, F.Less, F.Greater, false);
     }
@@ -2402,25 +2418,25 @@ public final class BooleanFunctions {
       if (arg2.isNegative()) {
         // arg1 <= "negative number"
         if (arg1.isNonNegativeResult() || arg1.isPositiveResult()) {
-          return F.False;
+          return S.False;
         }
       } else if (arg2.isZero()) {
         // arg1 <= 0
         if (arg1.isNegativeResult()) {
-          return F.True;
+          return S.True;
         }
         if (arg1.isPositiveResult()) {
-          return F.False;
+          return S.False;
         }
       } else {
         // arg1 <= "positive number"
         if (arg1.isNegativeResult() || arg1.isZero()) {
-          return F.True;
+          return S.True;
         }
       }
       ISignedNumber a2 = arg2.evalReal();
       if (a2 != null && AbstractAssumptions.assumeLessEqual(arg1, a2)) {
-        return F.True;
+        return S.True;
       }
       return F.NIL;
     }
@@ -2429,10 +2445,10 @@ public final class BooleanFunctions {
     @Override
     protected IExpr simplifyCompare(IExpr a1, IExpr a2) {
       if (a1.isInfinity() && a2.isInfinity()) {
-        return F.True;
+        return S.True;
       }
       if (a1.isNegativeInfinity() && a2.isNegativeInfinity()) {
-        return F.True;
+        return S.True;
       }
       return simplifyCompare(a1, a2, F.LessEqual, F.GreaterEqual, false);
     }
@@ -2493,7 +2509,7 @@ public final class BooleanFunctions {
     }
 
     public int[] expectedArgSize(IAST ast) {
-      return IOFunctions.ARGS_1_1;
+      return ARGS_1_1;
     }
 
     @Override
@@ -2809,17 +2825,17 @@ public final class BooleanFunctions {
           if (arg2.isList()) {
             if (arg2.size() == 3
                 && //
-                arg2.first().isNumericFunction()
+                arg2.first().isNumericFunction(true)
                 && //
-                arg2.second().isNumericFunction()) {
+                arg2.second().isNumericFunction(true)) {
               return F.List(
                   F.Subtract(F.Min(arg1), arg2.first()), F.Plus(F.Max(arg1), arg2.second()));
             }
-          } else if (arg2.isNumericFunction()) {
+          } else if (arg2.isNumericFunction(true)) {
             return F.List(F.Subtract(F.Min(arg1), arg2), F.Plus(F.Max(arg1), arg2));
           } else if (arg2.isAST(F.Scaled, 2)
               && //
-              arg2.first().isNumericFunction()) {
+              arg2.first().isNumericFunction(true)) {
             IExpr delta =
                 engine.evaluate(F.Times(arg2.first(), F.Subtract(F.Max(arg1), F.Min(arg1))));
             return F.List(F.Subtract(F.Min(arg1), delta), F.Plus(F.Max(arg1), delta));
@@ -2831,7 +2847,7 @@ public final class BooleanFunctions {
     }
 
     public int[] expectedArgSize(IAST ast) {
-      return IOFunctions.ARGS_1_2;
+      return ARGS_1_2;
     }
 
     @Override
@@ -2868,7 +2884,7 @@ public final class BooleanFunctions {
     @Override
     public IExpr evaluate(final IAST ast, EvalEngine engine) {
       if (ast.isAST0()) {
-        return F.False;
+        return S.False;
       }
       if (ast.isAST1()) {
         return F.Not(ast.arg1());
@@ -2879,7 +2895,7 @@ public final class BooleanFunctions {
       for (int i = 1; i < ast.size(); i++) {
         IExpr temp = engine.evaluate(ast.get(i));
         if (temp.isFalse()) {
-          return F.True;
+          return S.True;
         } else if (temp.isTrue()) {
           evaled = true;
         } else {
@@ -2888,7 +2904,7 @@ public final class BooleanFunctions {
       }
       if (evaled) {
         if (result.isAST0()) {
-          return F.False;
+          return S.False;
         }
         if (result.isAST1()) {
           return F.Not(result.arg1());
@@ -2949,26 +2965,26 @@ public final class BooleanFunctions {
 
       IExpr arg1 = ast.arg1();
       if (arg1.isNegativeResult()) {
-        return F.True;
+        return S.True;
       }
       if (arg1.isNumber()) {
-        return F.False;
+        return S.False;
       }
       ISignedNumber signedNumber = arg1.evalReal();
       if (signedNumber != null) {
         return F.bool(signedNumber.isNegative());
       }
       if (arg1.isNegativeInfinity()) {
-        return F.True;
+        return S.True;
       }
       if (arg1.isInfinity()) {
-        return F.False;
+        return S.False;
       }
       return F.NIL;
     }
 
     public int[] expectedArgSize(IAST ast) {
-      return IOFunctions.ARGS_1_1;
+      return ARGS_1_1;
     }
 
     @Override
@@ -3026,7 +3042,13 @@ public final class BooleanFunctions {
   private static class NoneTrue extends AbstractFunctionEvaluator {
 
     @Override
-    public IExpr evaluate(final IAST ast, EvalEngine engine) {
+    public IExpr evaluate(IAST ast, EvalEngine engine) {
+      //      if (ast.isAST1()) {
+      //        ast = F.operatorForm1Append(ast);
+      //        if (!ast.isPresent()) {
+      //          return F.NIL;
+      //        }
+      //      }
       if (ast.arg1().isAST()) {
         IAST list = (IAST) ast.arg1();
         IExpr head = ast.arg2();
@@ -3036,7 +3058,7 @@ public final class BooleanFunctions {
     }
 
     public int[] expectedArgSize(IAST ast) {
-      return IOFunctions.ARGS_2_2;
+      return ARGS_2_2_1;
     }
 
     /**
@@ -3052,9 +3074,9 @@ public final class BooleanFunctions {
     public IExpr noneTrue(IAST list, IExpr head, EvalEngine engine) {
       IASTAppendable logicalNor = F.ast(F.Nor);
       if (list.exists(x -> noneTrueArgument(x, head, logicalNor, engine))) {
-        return F.False;
+        return S.False;
       }
-      return logicalNor.isAST0() ? F.True : logicalNor;
+      return logicalNor.isAST0() ? S.True : logicalNor;
     }
 
     private static boolean noneTrueArgument(
@@ -3099,26 +3121,26 @@ public final class BooleanFunctions {
 
       IExpr arg1 = ast.arg1();
       if (arg1.isNonNegativeResult()) {
-        return F.True;
+        return S.True;
       }
       if (arg1.isNumber()) {
-        return F.False;
+        return S.False;
       }
       ISignedNumber signedNumber = arg1.evalReal();
       if (signedNumber != null) {
         return F.bool(!signedNumber.isNegative());
       }
       if (arg1.isNegativeInfinity()) {
-        return F.False;
+        return S.False;
       }
       if (arg1.isInfinity()) {
-        return F.True;
+        return S.True;
       }
       return F.NIL;
     }
 
     public int[] expectedArgSize(IAST ast) {
-      return IOFunctions.ARGS_1_1;
+      return ARGS_1_1;
     }
 
     @Override
@@ -3154,10 +3176,10 @@ public final class BooleanFunctions {
 
       IExpr arg1 = ast.arg1();
       if (arg1.isNegativeResult() || arg1.isZero()) {
-        return F.True;
+        return S.True;
       }
       if (arg1.isNumber()) {
-        return F.False;
+        return S.False;
       }
       ISignedNumber signedNumber = arg1.evalReal();
       if (signedNumber != null) {
@@ -3167,7 +3189,7 @@ public final class BooleanFunctions {
     }
 
     public int[] expectedArgSize(IAST ast) {
-      return IOFunctions.ARGS_1_1;
+      return ARGS_1_1;
     }
 
     @Override
@@ -3206,7 +3228,7 @@ public final class BooleanFunctions {
     @Override
     public IExpr evaluate(final IAST ast, EvalEngine engine) {
       if (ast.isAST0()) {
-        return F.True;
+        return S.True;
       }
       if (ast.isAST1()) {
         return F.Not(ast.arg1());
@@ -3217,7 +3239,7 @@ public final class BooleanFunctions {
       for (int i = 1; i < ast.size(); i++) {
         IExpr temp = engine.evaluate(ast.get(i));
         if (temp.isTrue()) {
-          return F.False;
+          return S.False;
         } else if (temp.isFalse()) {
           evaled = true;
         } else {
@@ -3226,7 +3248,7 @@ public final class BooleanFunctions {
       }
       if (evaled) {
         if (result.isAST0()) {
-          return F.True;
+          return S.True;
         }
         if (result.isAST1()) {
           return F.Not(result.arg1());
@@ -3278,10 +3300,10 @@ public final class BooleanFunctions {
     @Override
     public IExpr e1ObjArg(final IExpr o) {
       if (o.isTrue()) {
-        return F.False;
+        return S.False;
       }
       if (o.isFalse()) {
-        return F.True;
+        return S.True;
       }
       if (o.isAST()) {
         IAST temp = (IAST) o;
@@ -3353,7 +3375,7 @@ public final class BooleanFunctions {
     @Override
     public IExpr evaluate(final IAST ast, EvalEngine engine) {
       if (ast.isAST0()) {
-        return F.False;
+        return S.False;
       }
 
       boolean evaled = false;
@@ -3374,7 +3396,7 @@ public final class BooleanFunctions {
       for (int i = 1; i < flattenedAST.size(); i++) {
         temp = flattenedAST.get(i);
         if (temp.isTrue()) {
-          return F.True;
+          return S.True;
         }
         if (temp.isFalse()) {
           result.remove(index);
@@ -3385,7 +3407,7 @@ public final class BooleanFunctions {
         temp = engine.evaluateNull(flattenedAST.get(i));
         if (temp.isPresent()) {
           if (temp.isTrue()) {
-            return F.True;
+            return S.True;
           }
           if (temp.isFalse()) {
             result.remove(index);
@@ -3415,7 +3437,7 @@ public final class BooleanFunctions {
                 && symbols[i] == notSymbols[j]
                 && (result.equalsAt(i, result.get(j).first()))) {
               // Or[a, Not[a]] => True
-              return F.True;
+              return S.True;
             }
           }
         }
@@ -3425,7 +3447,7 @@ public final class BooleanFunctions {
       }
       if (evaled) {
         if (result.isAST0()) {
-          return F.False;
+          return S.False;
         }
         return result;
       }
@@ -3485,26 +3507,26 @@ public final class BooleanFunctions {
 
       IExpr arg1 = ast.arg1();
       if (arg1.isPositiveResult()) {
-        return F.True;
+        return S.True;
       }
       if (arg1.isNumber()) {
-        return F.False;
+        return S.False;
       }
       ISignedNumber signedNumber = arg1.evalReal();
       if (signedNumber != null) {
         return F.bool(signedNumber.isPositive());
       }
       if (arg1.isNegativeInfinity()) {
-        return F.False;
+        return S.False;
       }
       if (arg1.isInfinity()) {
-        return F.True;
+        return S.True;
       }
       return F.NIL;
     }
 
     public int[] expectedArgSize(IAST ast) {
-      return IOFunctions.ARGS_1_1;
+      return ARGS_1_1;
     }
 
     @Override
@@ -3553,7 +3575,7 @@ public final class BooleanFunctions {
         IAST temp = engine.evalArgs(ast, ISymbol.NOATTRIBUTE).orElse(ast);
         return F.bool(!temp.existsLeft((x, y) -> !x.isSame(y)));
       }
-      return F.False;
+      return S.False;
     }
   }
 
@@ -3622,7 +3644,7 @@ public final class BooleanFunctions {
     }
 
     public int[] expectedArgSize(IAST ast) {
-      return IOFunctions.ARGS_1_3;
+      return ARGS_1_3;
     }
 
     /**
@@ -3733,7 +3755,7 @@ public final class BooleanFunctions {
     }
 
     public int[] expectedArgSize(IAST ast) {
-      return IOFunctions.ARGS_1_3;
+      return ARGS_1_3;
     }
   }
 
@@ -3791,7 +3813,7 @@ public final class BooleanFunctions {
         } else {
           return logicNGSatisfiableQ(arg1);
         }
-        return bruteForceSatisfiableQ(arg1, userDefinedVariables, 1) ? F.True : F.False;
+        return bruteForceSatisfiableQ(arg1, userDefinedVariables, 1) ? S.True : S.False;
 
       } catch (final ValidateException ve) {
         // int number validation
@@ -3800,7 +3822,7 @@ public final class BooleanFunctions {
     }
 
     public int[] expectedArgSize(IAST ast) {
-      return IOFunctions.ARGS_1_3;
+      return ARGS_1_3;
     }
 
     /**
@@ -3817,10 +3839,10 @@ public final class BooleanFunctions {
       miniSat.add(formula);
       final Tristate result = miniSat.sat();
       if (result == Tristate.TRUE) {
-        return F.True;
+        return S.True;
       }
       if (result == Tristate.FALSE) {
-        return F.False;
+        return S.False;
       }
       return F.NIL;
     }
@@ -3847,20 +3869,20 @@ public final class BooleanFunctions {
         ISymbol symbol = (ISymbol) sym;
         IExpr value = symbol.assignedValue();
         try {
-          symbol.assignValue(F.True);
+          symbol.assignValue(S.True, false);
           if (bruteForceSatisfiableQ(expr, variables, position + 1)) {
             return true;
           }
         } finally {
-          symbol.assignValue(value);
+          symbol.assignValue(value, false);
         }
         try {
-          symbol.assignValue(F.False);
+          symbol.assignValue(S.False, false);
           if (bruteForceSatisfiableQ(expr, variables, position + 1)) {
             return true;
           }
         } finally {
-          symbol.assignValue(value);
+          symbol.assignValue(value, false);
         }
       }
       return false;
@@ -3911,7 +3933,7 @@ public final class BooleanFunctions {
           return logicNGTautologyQ(arg1);
         }
 
-        return bruteForceTautologyQ(arg1, userDefinedVariables, 1) ? F.True : F.False;
+        return bruteForceTautologyQ(arg1, userDefinedVariables, 1) ? S.True : S.False;
       } catch (final ValidateException ve) {
         // int number validation
         return engine.printMessage(ast.topHead(), ve);
@@ -3919,7 +3941,7 @@ public final class BooleanFunctions {
     }
 
     public int[] expectedArgSize(IAST ast) {
-      return IOFunctions.ARGS_1_2;
+      return ARGS_1_2;
     }
 
     /**
@@ -3934,7 +3956,7 @@ public final class BooleanFunctions {
     private static IExpr logicNGTautologyQ(IExpr arg1) {
       IExpr temp = SatisfiableQ.logicNGSatisfiableQ(F.Not(arg1));
       if (temp.isPresent()) {
-        return temp.isTrue() ? F.False : F.True;
+        return temp.isTrue() ? S.False : S.True;
       }
       return F.NIL;
     }
@@ -3961,20 +3983,20 @@ public final class BooleanFunctions {
         ISymbol symbol = (ISymbol) sym;
         IExpr value = symbol.assignedValue();
         try {
-          symbol.assignValue(F.True);
+          symbol.assignValue(S.True, false);
           if (!bruteForceTautologyQ(expr, variables, position + 1)) {
             return false;
           }
         } finally {
-          symbol.assignValue(value);
+          symbol.assignValue(value, false);
         }
         try {
-          symbol.assignValue(F.False);
+          symbol.assignValue(S.False, false);
           if (!bruteForceTautologyQ(expr, variables, position + 1)) {
             return false;
           }
         } finally {
-          symbol.assignValue(value);
+          symbol.assignValue(value, false);
         }
       }
       return true;
@@ -4009,12 +4031,12 @@ public final class BooleanFunctions {
 
     @Override
     public IExpr evaluate(final IAST ast, EvalEngine engine) {
-      return F.bool(ast.equalsAt(1, F.True));
+      return F.bool(ast.equalsAt(1, S.True));
     }
 
     @Override
     public int[] expectedArgSize(IAST ast) {
-      return IOFunctions.ARGS_1_1;
+      return ARGS_1_1;
     }
 
     @Override
@@ -4113,7 +4135,7 @@ public final class BooleanFunctions {
           while (j < result.size()) {
             b = compareTernary(result.get(i - 1), result.get(j++));
             if (b == IExpr.COMPARE_TERNARY.TRUE) {
-              return F.False;
+              return S.False;
             } else if (b == IExpr.COMPARE_TERNARY.UNDECIDABLE) {
               return F.NIL;
             }
@@ -4121,7 +4143,7 @@ public final class BooleanFunctions {
           i++;
         }
       }
-      return F.True;
+      return S.True;
     }
   }
 
@@ -4172,14 +4194,14 @@ public final class BooleanFunctions {
           j = i;
           while (j < temp.size()) {
             if (temp.get(i - 1).isSame(temp.get(j++))) {
-              return F.False;
+              return S.False;
             }
           }
           i++;
         }
-        return F.True;
+        return S.True;
       }
-      return F.False;
+      return S.False;
     }
   }
 
@@ -4232,7 +4254,7 @@ public final class BooleanFunctions {
     @Override
     public IExpr evaluate(final IAST ast, EvalEngine engine) {
       if (ast.isEmpty()) {
-        return F.False;
+        return S.False;
       }
       if (ast.size() == 2) {
         return ast.arg1();
@@ -4247,23 +4269,23 @@ public final class BooleanFunctions {
         temp = ast.get(i);
         if (temp.isTrue()) {
           if (result.isTrue()) {
-            result = F.False;
+            result = S.False;
           } else if (result.isFalse()) {
-            result = F.True;
+            result = S.True;
           } else {
             result = F.Not.of(engine, result);
           }
           evaled = true;
         } else if (temp.isFalse()) {
           if (result.isTrue()) {
-            result = F.True;
+            result = S.True;
           } else if (result.isFalse()) {
-            result = F.False;
+            result = S.False;
           }
           evaled = true;
         } else {
           if (temp.equals(result)) {
-            result = F.False;
+            result = S.False;
             evaled = true;
           } else {
             if (result.isTrue()) {
@@ -4303,7 +4325,7 @@ public final class BooleanFunctions {
       if (a1.isQuantity() && a2.isQuantity()) {
         return quantityEquals((IQuantity) a1, (IQuantity) a2);
       }
-      return a1.equals(a2) ? F.True : F.False;
+      return a1.equals(a2) ? S.True : S.False;
     }
     IExpr.COMPARE_TERNARY b;
     IExpr arg1 = F.expandAll(a1, true, true);
@@ -4311,10 +4333,10 @@ public final class BooleanFunctions {
 
     b = CONST_EQUAL.prepareCompare(arg1, arg2, engine);
     if (b == IExpr.COMPARE_TERNARY.FALSE) {
-      return F.False;
+      return S.False;
     }
     if (b == IExpr.COMPARE_TERNARY.TRUE) {
-      return F.True;
+      return S.True;
     }
 
     return Equal.simplifyCompare(F.Equal, a1, a2);
@@ -4322,7 +4344,7 @@ public final class BooleanFunctions {
 
   /**
    * If the <code>IQuantity#equals()</code> method could be executed because the same unit types
-   * could be derived for comparison, return the result <code>F.True or F.False</code> otherwise
+   * could be derived for comparison, return the result <code>S.True or S.False</code> otherwise
    * return <code>F.NIL</code>.
    *
    * @param q1
@@ -4347,7 +4369,7 @@ public final class BooleanFunctions {
 
   /**
    * If the <code>IQuantity#equals()</code> method could be executed because the same unit types
-   * could be derived for comparison, return the result <code>F.True or F.False</code> otherwise
+   * could be derived for comparison, return the result <code>S.True or S.False</code> otherwise
    * return <code>F.NIL</code>.
    *
    * @param q1
@@ -4408,17 +4430,17 @@ public final class BooleanFunctions {
       if (a1.isQuantity() && a2.isQuantity()) {
         return quantityUnequals((IQuantity) a1, (IQuantity) a2);
       }
-      return a1.equals(a2) ? F.False : F.True;
+      return a1.equals(a2) ? S.False : S.True;
     }
     IExpr.COMPARE_TERNARY b;
     IExpr arg1 = F.expandAll(a1, true, true);
     IExpr arg2 = F.expandAll(a2, true, true);
     b = CONST_EQUAL.prepareCompare(arg1, arg2, engine);
     if (b == IExpr.COMPARE_TERNARY.FALSE) {
-      return F.True;
+      return S.True;
     }
     if (b == IExpr.COMPARE_TERNARY.TRUE) {
-      return F.False;
+      return S.False;
     }
 
     return Unequal.simplifyCompare(F.Unequal, arg1, arg2);

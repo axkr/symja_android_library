@@ -33,7 +33,7 @@ public class UnaryVariable2Slot implements Function<IExpr, IExpr> {
   public IExpr apply(final IExpr firstArg) {
     if (firstArg.isVariable()) {
       if ((firstArg.toString().charAt(0) >= 'A') && (firstArg.toString().charAt(0) <= 'Z')) {
-        if ((((ISymbol) firstArg).getAttributes() & ISymbol.ORDERLESS) == ISymbol.ORDERLESS) {
+        if (((ISymbol) firstArg).hasOrderlessAttribute()) {
           return F.NIL;
         }
         if (firstArg.equals(F.Print)) {

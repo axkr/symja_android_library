@@ -1,6 +1,7 @@
 package org.matheclipse.core.builtin;
 
 import java.io.Serializable;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.function.Supplier;
@@ -10,6 +11,7 @@ import org.jgrapht.generate.GeneralizedPetersenGraphGenerator;
 import org.jgrapht.graph.builder.GraphTypeBuilder;
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.interfaces.AbstractEvaluator;
+import org.matheclipse.core.eval.interfaces.IFunctionEvaluator;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.expression.S;
 import org.matheclipse.core.expression.data.ExprEdge;
@@ -18,13 +20,18 @@ import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.interfaces.IInteger;
 import org.matheclipse.core.interfaces.IStringX;
+import org.matheclipse.core.interfaces.ISymbol;
 import org.matheclipse.parser.client.FEConfig;
+import org.matheclipse.parser.trie.TrieBuilder;
+import org.matheclipse.parser.trie.TrieMatch;
 import org.matheclipse.parser.trie.Tries;
 
 /** Functions for graph theory algorithms. */
 public class GraphDataFunctions {
-
-  private static Map<String, Supplier<Graph>> GRAPH_MAP = Tries.forStrings();
+  private static final TrieBuilder<String, Supplier<Graph>, ArrayList<Supplier<Graph>>>
+      TRIE_STRING2GRAPH_BUILDER = TrieBuilder.create();
+  private static Map<String, Supplier<Graph>> GRAPH_MAP =
+      TRIE_STRING2GRAPH_BUILDER.withMatch(TrieMatch.EXACT).build(); // Tries.forStrings();
 
   /**
    * See <a href="https://pangin.pro/posts/computation-in-static-initializer">Beware of computation
@@ -80,13 +87,15 @@ public class GraphDataFunctions {
     }
 
     @Override
-    public IAST options() {
-      return F.List(F.Rule(F.EdgeWeight, F.Automatic));
+    public void setUp(final ISymbol newSymbol) {
+      setOptions(
+          newSymbol, //
+          F.List(F.Rule(F.EdgeWeight, S.Automatic)));
     }
 
     @Override
     public int[] expectedArgSize(IAST ast) {
-      return IOFunctions.ARGS_1_1;
+      return ARGS_1_1;
     }
   }
 

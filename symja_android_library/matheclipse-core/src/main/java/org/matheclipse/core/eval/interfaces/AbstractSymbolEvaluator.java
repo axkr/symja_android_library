@@ -9,18 +9,18 @@ import org.matheclipse.core.interfaces.ISymbol;
 public abstract class AbstractSymbolEvaluator implements ISymbolEvaluator {
 
   @Override
-  public IExpr evaluate(final ISymbol symbol) {
+  public IExpr evaluate(final ISymbol symbol, EvalEngine engine) {
     return F.NIL;
   }
 
   @Override
-  public IExpr numericEval(final ISymbol symbol) {
-    return evaluate(symbol);
+  public IExpr numericEval(final ISymbol symbol, EvalEngine engine) {
+    return evaluate(symbol, null);
   }
 
   @Override
   public IExpr apfloatEval(ISymbol symbol, EvalEngine engine) {
-    return numericEval(symbol);
+    return numericEval(symbol, engine);
   }
 
   @Override

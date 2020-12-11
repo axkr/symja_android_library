@@ -1,34 +1,32 @@
 package org.matheclipse.core.reflection.system;
 
-import static org.matheclipse.core.expression.F.Abs;
 import static org.matheclipse.core.expression.F.C2;
 import static org.matheclipse.core.expression.F.CI;
 import static org.matheclipse.core.expression.F.CN1;
 import static org.matheclipse.core.expression.F.Cos;
 import static org.matheclipse.core.expression.F.Cosh;
-import static org.matheclipse.core.expression.F.Cot;
-import static org.matheclipse.core.expression.F.Csc;
-import static org.matheclipse.core.expression.F.Im;
 import static org.matheclipse.core.expression.F.Negate;
 import static org.matheclipse.core.expression.F.Plus;
 import static org.matheclipse.core.expression.F.Power;
-import static org.matheclipse.core.expression.F.Re;
-import static org.matheclipse.core.expression.F.Sec;
 import static org.matheclipse.core.expression.F.Sin;
 import static org.matheclipse.core.expression.F.Sinh;
-import static org.matheclipse.core.expression.F.Sqrt;
-import static org.matheclipse.core.expression.F.Tan;
 import static org.matheclipse.core.expression.F.Times;
+import static org.matheclipse.core.expression.S.Abs;
+import static org.matheclipse.core.expression.S.Cos;
+import static org.matheclipse.core.expression.S.Cot;
+import static org.matheclipse.core.expression.S.Csc;
+import static org.matheclipse.core.expression.S.Sec;
 
 import java.util.List;
 
-import org.matheclipse.core.builtin.IOFunctions;
 import org.matheclipse.core.builtin.StructureFunctions;
 import org.matheclipse.core.convert.VariablesSet;
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.interfaces.AbstractEvaluator;
+import org.matheclipse.core.eval.interfaces.IFunctionEvaluator;
 import org.matheclipse.core.eval.util.IAssumptions;
 import org.matheclipse.core.expression.F;
+import org.matheclipse.core.expression.S;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IASTAppendable;
 import org.matheclipse.core.interfaces.IASTMutable;
@@ -111,18 +109,18 @@ public class ComplexExpand extends AbstractEvaluator {
       if (result.isPresent()) {
         x = result;
       }
-      IExpr reX = x.re();
-      IExpr imX = x.im();
-      if (head.equals(Abs)) {
-        // Sqrt[reX^2 + imX^2]
+      IExpr reX = F.Re.of(fEngine, x);
+      IExpr imX = F.Im.of(fEngine, x);
+      if (head.equals(S.Abs)) {
+        // Sqrt(reX^2 + imX^2)
         return F.Sqrt(Plus(Power(reX, C2), Power(imX, C2)));
       }
-      if (head.equals(Cos)) {
-        // Cosh[Im[x]]*Cos[Re[x]]+I*Sinh[Im[x]]*Sin[Re[x]]
+      if (head.equals(S.Cos)) {
+        // Cosh(Im(x))*Cos(Re(x))+I*Sinh(Im(x))*Sin(Re(x))
         return Plus(Times(Cos(reX), Cosh(imX)), Times(CI, Sin(reX), Sinh(imX)));
       }
-      if (head.equals(Cot)) {
-        // -(Sin[2*Re[x]]/(Cos[2*Re[x]]-Cosh[2*Im[x]]))+(I*Sinh[2*Im[x]])/(Cos[2*Re[x]]-Cosh[2*Im[x]])
+      if (head.equals(S.Cot)) {
+        // -(Sin(2*Re(x))/(Cos(2*Re(x))-Cosh(2*Im(x))))+(I*Sinh(2*Im(x)))/(Cos(2*Re(x))-Cosh(2*Im(x)))
         return Plus(
             Times(
                 CN1,
@@ -133,27 +131,27 @@ public class ComplexExpand extends AbstractEvaluator {
                 Sinh(Times(C2, imX)),
                 Power(Plus(Cos(Times(C2, reX)), Negate(Cosh(Times(C2, imX)))), CN1)));
       }
-      if (head.equals(Csc)) {
-        // (-2 Cosh[Im[x]] Sin[Re[x]])/(Cos[2 Re[x]] - Cosh[2 Im[x]]) +
-        // ((2 I) Cos[Re[x]] Sinh[Im[x]])/(Cos[2 Re[x]]-Cosh[2
-        // Im[x]])
+      if (head.equals(S.Csc)) {
+        // (-2 Cosh(Im(x)) Sin(Re(x)))/(Cos(2 Re(x)) - Cosh(2 Im(x))) +
+        // ((2 I) Cos(Re(x)) Sinh(Im(x)))/(Cos(2 Re(x))-Cosh(2
+        // Im(x)))
         return Plus(
             Times(
                 F.CN2,
                 Cosh(imX),
                 Sin(reX),
-                Power(Plus(Cos(Times(C2, reX)), Times(CN1, Cosh(Times(C2, imX)))), CN1)),
+                Power(Plus(Cos(Times(F.C2, reX)), Times(F.CN1, Cosh(Times(F.C2, imX)))), F.CN1)),
             Times(
-                C2,
-                CI,
+                F.C2,
+                F.CI,
                 Cos(reX),
                 Sinh(imX),
-                Power(Plus(Cos(Times(C2, reX)), Times(CN1, Cosh(Times(C2, imX)))), CN1)));
+                Power(Plus(Cos(Times(F.C2, reX)), Times(F.CN1, Cosh(Times(F.C2, imX)))), F.CN1)));
       }
-      if (head.equals(Sec)) {
-        // (2 Cos[Re[x]] Cosh[Im[x]])/(Cos[2 Re[x]] + Cosh[2 Im[x]]) +
-        // ((2 I) Sin[Re[x]] Sinh[Im[x]])/(Cos[2 Re[x]] + Cosh[2
-        // Im[x]])
+      if (head.equals(S.Sec)) {
+        // (2 Cos(Re(x)) Cosh(Im(x)))/(Cos(2 Re(x)) + Cosh(2 Im(x))) +
+        // ((2 I) Sin(Re(x)) Sinh(Im(x)))/(Cos(2 Re(x)) + Cosh(2
+        // Im(x)))
         return Plus(
             Times(
                 C2,
@@ -167,13 +165,18 @@ public class ComplexExpand extends AbstractEvaluator {
                 Sinh(imX),
                 Power(Plus(Cos(Times(C2, reX)), Cosh(Times(C2, imX))), CN1)));
       }
-      if (head.equals(Sin)) {
-        // Cosh[Im[x]]*Sin[Re[x]]+I*Sinh[Im[x]]*Cos[Re[x]]
+      if (head.equals(S.ProductLog)) {
+        // I*Im(ProductLog(x + I*y)) + Re(ProductLog(x + I*y))
+        IExpr productLog = F.ProductLog(F.Plus(reX, F.Times(F.CI, imX)));
+        return Plus(Times(F.CI, F.Im(productLog)), F.Re(productLog));
+      }
+      if (head.equals(S.Sin)) {
+        // Cosh(Im(x))*Sin(Re(x))+I*Sinh(Im(x))*Cos(Re(x))
         return Plus(Times(Cosh(imX), Sin(reX)), Times(CI, Sinh(imX), Cos(reX)));
       }
-      if (head.equals(Tan)) {
-        // Sin[2*Re[x]]/(Cos[2*Re[x]] + Cosh[2*Im[x]]) +
-        // (I*Sinh[2*Im[x]])/(Cos[2*Re[x]] + Cosh[2*Im[x]])
+      if (head.equals(S.Tan)) {
+        // Sin(2*Re(x))/(Cos(2*Re(x)) + Cosh(2*Im(x))) +
+        // (I*Sinh(2*Im(x)))/(Cos(2*Re(x)) + Cosh(2*Im(x)))
         return Plus(
             Times(Sin(Times(C2, reX)), Power(Plus(Cos(Times(C2, reX)), Cosh(Times(C2, imX))), CN1)),
             Times(
@@ -240,7 +243,7 @@ public class ComplexExpand extends AbstractEvaluator {
   }
 
   public int[] expectedArgSize(IAST ast) {
-    return IOFunctions.ARGS_1_2;
+    return IFunctionEvaluator.ARGS_1_2;
   }
 
   // private static IExpr complexExpandNull(IExpr arg1, EvalEngine engine) {

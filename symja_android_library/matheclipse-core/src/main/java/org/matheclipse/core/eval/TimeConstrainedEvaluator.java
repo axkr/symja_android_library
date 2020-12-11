@@ -41,7 +41,6 @@ public class TimeConstrainedEvaluator extends EvalUtilities implements Runnable 
   @Override
   public void run() {
     try {
-      startRequest();
       if (fTraceEvaluation) {
         fEvaluationResult = evalTrace(fParsedExpression, null, F.List());
       } else {
@@ -78,11 +77,11 @@ public class TimeConstrainedEvaluator extends EvalUtilities implements Runnable 
     fEvaluationResult = F.NIL;
     fException = null;
     fParsedExpression = null;
+    EvalEngine.setReset(fEvalEngine);
     fEvalEngine.setStopRequested(false);
     fTraceEvaluation = traceEvaluation;
 
     try {
-      EvalEngine.set(fEvalEngine);
       fParsedExpression = fEvalEngine.parse(inputString);
     } catch (final RuntimeException e) {
       throw e;

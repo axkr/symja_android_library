@@ -4,6 +4,7 @@ import static org.matheclipse.core.expression.F.Divide;
 import static org.matheclipse.core.expression.F.Less;
 import static org.matheclipse.core.expression.F.Subtract;
 
+import org.matheclipse.core.basic.Config;
 import org.matheclipse.core.builtin.IOFunctions;
 import org.matheclipse.core.builtin.QuantityFunctions;
 import org.matheclipse.core.eval.EvalEngine;
@@ -14,6 +15,7 @@ import org.matheclipse.core.eval.exception.NoEvalException;
 import org.matheclipse.core.eval.exception.ValidateException;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.expression.Num;
+import org.matheclipse.core.expression.S;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.interfaces.IInteger;
@@ -156,9 +158,9 @@ public class Iterator {
 
     @Override
     public boolean isNumericFunction() {
-      return originalLowerLimit.isNumericFunction()
-          && originalStep.isNumericFunction()
-          && originalUpperLimit.isNumericFunction();
+      return originalLowerLimit.isNumericFunction(true)
+          && originalStep.isNumericFunction(true)
+          && originalUpperLimit.isNumericFunction(true);
     }
 
     @Override
@@ -183,7 +185,7 @@ public class Iterator {
     @Override
     public IExpr next() {
       if (variable != null && variable != count) {
-        variable.assignValue(count);
+        variable.assignValue(count, false);
       }
       final IExpr temp = count;
       if (maxCounterOrList.isList()) {
@@ -226,11 +228,11 @@ public class Iterator {
       }
       if (step.isReal()) {
         if (step.isNegative()) {
-          if (evalEngine.evaluate(Less(lowerLimit, maxCounterOrList)) == F.True) {
+          if (evalEngine.evaluate(Less(lowerLimit, maxCounterOrList)) == S.True) {
             return false;
           }
         } else {
-          if (evalEngine.evaluate(Less(maxCounterOrList, lowerLimit)) == F.True) {
+          if (evalEngine.evaluate(Less(maxCounterOrList, lowerLimit)) == S.True) {
             return false;
           }
         }
@@ -245,7 +247,7 @@ public class Iterator {
         count = lowerLimit;
       }
       if (variable != null && variable != count) {
-        variable.assignValue(count);
+        variable.assignValue(count, false);
       }
       return true;
     }
@@ -254,7 +256,7 @@ public class Iterator {
     @Override
     public void tearDown() {
       if (variable != null) {
-        variable.assignValue(null);
+        variable.assignValue(null, false);
       }
       EvalEngine.get().setNumericMode(fNumericMode);
     }
@@ -326,10 +328,12 @@ public class Iterator {
      */
     @Override
     public boolean hasNext() {
-      if (step < 0) {
-        return count >= upperLimit;
+      if (step < 0.0) {
+        return count >= upperLimit
+            || F.isFuzzyEquals(count, upperLimit, Config.SPECIAL_FUNCTIONS_TOLERANCE);
       }
-      return count <= upperLimit;
+      return count <= upperLimit
+          || F.isFuzzyEquals(count, upperLimit, Config.SPECIAL_FUNCTIONS_TOLERANCE);
     }
 
     @Override
@@ -356,7 +360,7 @@ public class Iterator {
     public IExpr next() {
       final IExpr temp = F.num(count);
       if (variable != null) {
-        variable.assignValue(temp);
+        variable.assignValue(temp, false);
       }
       count += step;
       return temp;
@@ -385,7 +389,7 @@ public class Iterator {
       }
 
       if (variable != null) {
-        variable.assignValue(originalLowerLimit);
+        variable.assignValue(originalLowerLimit, false);
       }
       return true;
     }
@@ -394,7 +398,7 @@ public class Iterator {
     @Override
     public void tearDown() {
       if (variable != null) {
-        variable.assignValue(variableValue);
+        variable.assignValue(variableValue, false);
       }
     }
   }
@@ -501,7 +505,7 @@ public class Iterator {
     public IExpr next() {
       final ISignedNumber temp = count;
       if (variable != null) {
-        variable.assignValue(temp);
+        variable.assignValue(temp, false);
       }
       count = (IRational) count.plus(step);
       return temp;
@@ -527,7 +531,7 @@ public class Iterator {
       }
       if (variable != null) {
         variableValue = variable.assignedValue();
-        variable.assignValue(originalLowerLimit);
+        variable.assignValue(originalLowerLimit, false);
       }
       return true;
     }
@@ -536,7 +540,7 @@ public class Iterator {
     @Override
     public void tearDown() {
       if (variable != null) {
-        variable.assignValue(variableValue);
+        variable.assignValue(variableValue, false);
       }
     }
   }
@@ -683,7 +687,7 @@ public class Iterator {
     public IExpr next() {
       final IQuantity temp = count;
       if (variable != null) {
-        variable.assignValue(temp);
+        variable.assignValue(temp, false);
       }
       count = (IQuantity) count.plus(step);
       return temp;
@@ -709,7 +713,7 @@ public class Iterator {
       }
       if (variable != null) {
         variableValue = variable.assignedValue();
-        variable.assignValue(originalLowerLimit);
+        variable.assignValue(originalLowerLimit, false);
       }
       return true;
     }
@@ -718,7 +722,7 @@ public class Iterator {
     @Override
     public void tearDown() {
       if (variable != null) {
-        variable.assignValue(variableValue);
+        variable.assignValue(variableValue, false);
       }
     }
   }
@@ -819,7 +823,7 @@ public class Iterator {
     public IExpr next() {
       final ISignedNumber temp = count;
       if (variable != null) {
-        variable.assignValue(temp);
+        variable.assignValue(temp, false);
       }
       count = (ISignedNumber) count.plus(step);
       return temp;
@@ -848,7 +852,7 @@ public class Iterator {
       }
 
       if (variable != null) {
-        variable.assignValue(originalLowerLimit);
+        variable.assignValue(originalLowerLimit, false);
       }
       return true;
     }
@@ -857,7 +861,7 @@ public class Iterator {
     @Override
     public void tearDown() {
       if (variable != null) {
-        variable.assignValue(variableValue);
+        variable.assignValue(variableValue, false);
       }
     }
   }
@@ -970,7 +974,7 @@ public class Iterator {
     public IExpr next() {
       final IExpr temp = F.ZZ(count);
       if (variable != null) {
-        variable.assignValue(temp);
+        variable.assignValue(temp, false);
       }
       count += step;
       return temp;
@@ -999,7 +1003,7 @@ public class Iterator {
       }
 
       if (variable != null) {
-        variable.assignValue(originalLowerLimit);
+        variable.assignValue(originalLowerLimit, false);
       }
       return true;
     }
@@ -1008,7 +1012,7 @@ public class Iterator {
     @Override
     public void tearDown() {
       if (variable != null) {
-        variable.assignValue(variableValue);
+        variable.assignValue(variableValue, false);
       }
     }
   }
@@ -1091,7 +1095,9 @@ public class Iterator {
             }
             variable = sym;
           } else {
-            variable = null;
+            // Raw object `1` cannot be used as an iterator.
+            throw new ArgumentTypeException(
+                IOFunctions.getMessage("itraw", F.List(list.arg1()), EvalEngine.get()));
           }
           if (upperLimit instanceof Num) {
             return new DoubleIterator(variable, 1.0, ((INum) upperLimit).doubleValue(), 1.0);
@@ -1130,7 +1136,9 @@ public class Iterator {
             }
             variable = sym;
           } else {
-            variable = null;
+            // Raw object `1` cannot be used as an iterator.
+            throw new ArgumentTypeException(
+                IOFunctions.getMessage("itraw", F.List(list.arg1()), EvalEngine.get()));
           }
           if (lowerLimit instanceof Num && upperLimit instanceof Num) {
             return new DoubleIterator(
@@ -1176,7 +1184,9 @@ public class Iterator {
             }
             variable = sym;
           } else {
-            variable = null;
+            // Raw object `1` cannot be used as an iterator.
+            throw new ArgumentTypeException(
+                IOFunctions.getMessage("itraw", F.List(list.arg1()), EvalEngine.get()));
           }
           if (lowerLimit instanceof Num && upperLimit instanceof Num && step instanceof Num) {
             return new DoubleIterator(
@@ -1228,6 +1238,8 @@ public class Iterator {
       return new ExprIterator(variable, evalEngine, lowerLimit, upperLimit, step, fNumericMode);
     } catch (LimitException le) {
       throw le;
+    } catch (ArgumentTypeException atex) {
+      throw atex;
     } catch (RuntimeException rex) {
       // Argument `1` at position `2` does not have the correct form for an iterator.
       String str = IOFunctions.getMessage("itform", F.List(list, F.ZZ(position)), EvalEngine.get());
@@ -1377,6 +1389,8 @@ public class Iterator {
       return new ExprIterator(variable, evalEngine, lowerLimit, upperLimit, step, fNumericMode);
     } catch (LimitException le) {
       throw le;
+    } catch (ArgumentTypeException atex) {
+      throw atex;
     } catch (RuntimeException rex) {
       throw new ClassCastException();
     } finally {

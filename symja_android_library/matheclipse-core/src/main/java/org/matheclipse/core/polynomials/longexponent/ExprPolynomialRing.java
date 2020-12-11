@@ -466,7 +466,7 @@ public class ExprPolynomialRing implements RingFactory<ExprPolynomial> {
         return new ExprPolynomial(this, ast);
       }
       if (numericFunction) {
-        if (ast.isNumericFunction()) {
+        if (ast.isNumericFunction(true)) {
           return new ExprPolynomial(this, ast);
         }
       }
@@ -478,7 +478,7 @@ public class ExprPolynomialRing implements RingFactory<ExprPolynomial> {
         return new ExprPolynomial(this, exprPoly);
       }
       if (numericFunction) {
-        if (exprPoly.isNumericFunction()) {
+        if (exprPoly.isNumericFunction(true)) {
           return new ExprPolynomial(this, exprPoly);
         }
         throw new ClassCastException(exprPoly.toString());
@@ -723,7 +723,7 @@ public class ExprPolynomialRing implements RingFactory<ExprPolynomial> {
         return true;
       }
       if (numericFunction) {
-        if (ast.isNumericFunction()) {
+        if (ast.isNumericFunction(true)) {
           return true;
         }
       }
@@ -732,7 +732,7 @@ public class ExprPolynomialRing implements RingFactory<ExprPolynomial> {
         return true;
       }
       if (numericFunction) {
-        if (expression.isNumericFunction()) {
+        if (expression.isNumericFunction(true)) {
           return true;
         }
         return false;

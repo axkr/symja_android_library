@@ -1,5 +1,9 @@
 package org.matheclipse.core.builtin;
 
+import static org.matheclipse.core.expression.F.C2;
+import static org.matheclipse.core.expression.F.Plus;
+import static org.matheclipse.core.expression.F.Power;
+import static org.matheclipse.core.expression.F.Times;
 import static org.matheclipse.core.expression.S.Power;
 
 import java.util.ArrayList;
@@ -21,6 +25,7 @@ import org.matheclipse.core.eval.exception.ValidateException;
 import org.matheclipse.core.eval.interfaces.AbstractCoreFunctionEvaluator;
 import org.matheclipse.core.eval.interfaces.AbstractEvaluator;
 import org.matheclipse.core.eval.interfaces.AbstractFunctionEvaluator;
+import org.matheclipse.core.eval.interfaces.IFunctionEvaluator;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.expression.S;
 import org.matheclipse.core.interfaces.IAST;
@@ -98,7 +103,7 @@ public class MinMaxFunctions {
 
     @Override
     public int[] expectedArgSize(IAST ast) {
-      return IOFunctions.ARGS_2_2;
+      return ARGS_2_2;
     }
   }
 
@@ -149,7 +154,7 @@ public class MinMaxFunctions {
 
     @Override
     public int[] expectedArgSize(IAST ast) {
-      return IOFunctions.ARGS_2_2;
+      return ARGS_2_2;
     }
   }
 
@@ -162,6 +167,21 @@ public class MinMaxFunctions {
         super();
         this.engine = engine;
       }
+
+      //      @Override
+      //      public IExpr visit2(IExpr head, IExpr arg1) {
+      //        boolean evaled = false;
+      //        IExpr x = arg1;
+      //        IExpr result = arg1.accept(this);
+      //        if (result.isPresent()) {
+      //          evaled = true;
+      //          x = result;
+      //        }
+      //         if (evaled) {
+      //          return F.unaryAST1(head, x);
+      //        }
+      //        return F.NIL;
+      //      }
 
       /** {@inheritDoc} */
       @Override
@@ -288,7 +308,7 @@ public class MinMaxFunctions {
     }
 
     public int[] expectedArgSize(IAST ast) {
-      return IOFunctions.ARGS_3_3;
+      return ARGS_3_3;
     }
   }
 
@@ -352,7 +372,7 @@ public class MinMaxFunctions {
 
     @Override
     public int[] expectedArgSize(IAST ast) {
-      return IOFunctions.ARGS_2_2;
+      return ARGS_2_2;
     }
   }
 
@@ -408,7 +428,7 @@ public class MinMaxFunctions {
 
     @Override
     public int[] expectedArgSize(IAST ast) {
-      return IOFunctions.ARGS_2_2;
+      return ARGS_2_2;
     }
   }
 
@@ -503,7 +523,7 @@ public class MinMaxFunctions {
 
     @Override
     public int[] expectedArgSize(IAST ast) {
-      return IOFunctions.ARGS_2_2;
+      return ARGS_2_2;
     }
   }
 
@@ -604,7 +624,7 @@ public class MinMaxFunctions {
 
     @Override
     public int[] expectedArgSize(IAST ast) {
-      return IOFunctions.ARGS_2_2;
+      return ARGS_2_2;
     }
 
     protected static LinearObjectiveFunction getObjectiveFunction(

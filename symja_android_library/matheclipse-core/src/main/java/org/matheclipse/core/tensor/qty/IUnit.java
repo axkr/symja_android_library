@@ -58,7 +58,7 @@ public interface IUnit extends Comparable<IUnit>, Serializable {
    * [kg*m^2] * 3 -> [kg^3*m^6]
    *
    * @param factor
-   * @return
+   * @return <code>null</code> is the evaluation is not possible.
    */
   IUnit multiply(IExpr factor);
 

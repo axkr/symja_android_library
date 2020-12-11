@@ -12,9 +12,9 @@ import org.hipparchus.exception.MathIllegalArgumentException;
 import org.hipparchus.exception.MathIllegalStateException;
 import org.hipparchus.exception.MathRuntimeException;
 import org.hipparchus.util.Precision;
-import org.matheclipse.core.builtin.IOFunctions;
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.interfaces.AbstractFunctionEvaluator;
+import org.matheclipse.core.eval.interfaces.IFunctionEvaluator;
 import org.matheclipse.core.eval.util.OptionArgs;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.expression.Num;
@@ -224,7 +224,7 @@ public class NIntegrate extends AbstractFunctionEvaluator {
   }
 
   public int[] expectedArgSize(IAST ast) {
-    return IOFunctions.ARGS_2_INFINITY;
+    return IFunctionEvaluator.ARGS_2_INFINITY;
   }
 
   @Override

@@ -23,7 +23,7 @@ import org.matheclipse.core.interfaces.IASTAppendable;
  */
 public class OpenFixedSizeMap<K, V> extends AbstractMap<K, V>
     implements Map<K, V>, Cloneable, Serializable {
-  /** */
+
   private static final long serialVersionUID = -7777565424942239816L;
 
   private Object[] table;

@@ -521,7 +521,7 @@ public class SymbolicPolynomialRing implements RingFactory<SymbolicPolynomial> {
         return new SymbolicPolynomial(this, ast);
       }
       if (numericFunction) {
-        if (ast.isNumericFunction()) {
+        if (ast.isNumericFunction(true)) {
           return new SymbolicPolynomial(this, ast);
         }
       }
@@ -530,7 +530,7 @@ public class SymbolicPolynomialRing implements RingFactory<SymbolicPolynomial> {
         return new SymbolicPolynomial(this, exprPoly);
       }
       if (numericFunction) {
-        if (exprPoly.isNumericFunction()) {
+        if (exprPoly.isNumericFunction(true)) {
           return new SymbolicPolynomial(this, exprPoly);
         }
         throw new ClassCastException(exprPoly.toString());
@@ -775,7 +775,7 @@ public class SymbolicPolynomialRing implements RingFactory<SymbolicPolynomial> {
         return true;
       }
       if (numericFunction) {
-        if (ast.isNumericFunction()) {
+        if (ast.isNumericFunction(true)) {
           return true;
         }
       }
@@ -784,7 +784,7 @@ public class SymbolicPolynomialRing implements RingFactory<SymbolicPolynomial> {
         return true;
       }
       if (numericFunction) {
-        if (expression.isNumericFunction()) {
+        if (expression.isNumericFunction(true)) {
           return true;
         }
         return false;

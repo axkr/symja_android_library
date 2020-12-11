@@ -30,6 +30,8 @@ public enum Extension {
   STRING,
   /** table format */
   TABLE,
+  /** Tab-Separated Values */
+  TSV, //
   /** WXF format */
   WXF;
 

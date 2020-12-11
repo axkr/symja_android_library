@@ -44,6 +44,7 @@ import org.matheclipse.core.eval.exception.LimitException;
 import org.matheclipse.core.eval.exception.Validate;
 import org.matheclipse.core.eval.interfaces.AbstractCoreFunctionEvaluator;
 import org.matheclipse.core.eval.interfaces.AbstractFunctionEvaluator;
+import org.matheclipse.core.eval.interfaces.IFunctionEvaluator;
 import org.matheclipse.core.eval.util.OptionArgs;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.expression.S;
@@ -487,7 +488,7 @@ public class Algebra {
     }
 
     public int[] expectedArgSize(IAST ast) {
-      return IOFunctions.ARGS_1_2;
+      return ARGS_1_2;
     }
 
     @Override
@@ -768,7 +769,7 @@ public class Algebra {
     }
 
     public int[] expectedArgSize(IAST ast) {
-      return IOFunctions.ARGS_1_1;
+      return ARGS_1_1;
     }
 
     private IExpr cancelFractionPowers(EvalEngine engine, IExpr arg1) {
@@ -1188,17 +1189,15 @@ public class Algebra {
     }
 
     public int[] expectedArgSize(IAST ast) {
-      return IOFunctions.ARGS_1_2;
+      return ARGS_1_2;
     }
 
     @Override
     public void setUp(final ISymbol newSymbol) {
       newSymbol.setAttributes(ISymbol.LISTABLE);
-    }
-
-    @Override
-    public IAST options() {
-      return F.List(F.Rule(F.Trig, F.False));
+      setOptions(
+          newSymbol, //
+          F.List(F.Rule(S.Trig, S.False)));
     }
 
     /**
@@ -1295,7 +1294,7 @@ public class Algebra {
     }
 
     public int[] expectedArgSize(IAST ast) {
-      return IOFunctions.ARGS_1_5;
+      return ARGS_1_5;
     }
 
     private void distributePosition(
@@ -1856,7 +1855,7 @@ public class Algebra {
     }
 
     public int[] expectedArgSize(IAST ast) {
-      return IOFunctions.ARGS_1_2;
+      return ARGS_1_2;
     }
   }
 
@@ -1916,7 +1915,7 @@ public class Algebra {
     }
 
     public int[] expectedArgSize(IAST ast) {
-      return IOFunctions.ARGS_1_2;
+      return ARGS_1_2;
     }
 
     private static IExpr setAllExpanded(
@@ -1962,8 +1961,10 @@ public class Algebra {
   private static class Factor extends AbstractFunctionEvaluator {
 
     @Override
-    public IAST options() {
-      return F.List(F.Rule(F.GaussianIntegers, F.False), F.Rule(F.Modulus, F.C0));
+    public void setUp(final ISymbol newSymbol) {
+      setOptions(
+          newSymbol, //
+          F.List(F.Rule(F.GaussianIntegers, S.False), F.Rule(F.Modulus, F.C0)));
     }
 
     @Override
@@ -2021,7 +2022,7 @@ public class Algebra {
     }
 
     public int[] expectedArgSize(IAST ast) {
-      return IOFunctions.ARGS_1_2;
+      return ARGS_1_2;
     }
 
     public IExpr factorExpr(
@@ -2262,7 +2263,7 @@ public class Algebra {
     }
 
     public int[] expectedArgSize(IAST ast) {
-      return IOFunctions.ARGS_1_2;
+      return ARGS_1_2;
     }
   }
 
@@ -2309,7 +2310,7 @@ public class Algebra {
     }
 
     public int[] expectedArgSize(IAST ast) {
-      return IOFunctions.ARGS_1_1;
+      return ARGS_1_1;
     }
 
     private static IExpr factorList(IExpr expr, List<IExpr> varList, boolean factorSquareFree)
@@ -2333,7 +2334,7 @@ public class Algebra {
             FactorFactory.getImplementation(edu.jas.arith.BigInteger.ONE);
 
         if (factorSquareFree) {
-          map = factorAbstract.squarefreeFactors(poly); // factors(poly);
+          map = factorAbstract.squarefreeFactors(poly);
         } else {
           map = factorAbstract.factors(poly);
         }
@@ -2469,7 +2470,7 @@ public class Algebra {
     }
 
     public int[] expectedArgSize(IAST ast) {
-      return IOFunctions.ARGS_1_2;
+      return ARGS_1_2;
     }
 
     /**
@@ -2584,17 +2585,15 @@ public class Algebra {
     }
 
     public int[] expectedArgSize(IAST ast) {
-      return IOFunctions.ARGS_1_2;
+      return ARGS_1_2;
     }
 
     @Override
     public void setUp(final ISymbol newSymbol) {
       newSymbol.setAttributes(ISymbol.LISTABLE);
-    }
-
-    @Override
-    public IAST options() {
-      return F.List(F.Rule(F.Trig, F.False));
+      setOptions(
+          newSymbol, //
+          F.List(F.Rule(F.Trig, S.False)));
     }
 
     /**
@@ -2779,17 +2778,15 @@ public class Algebra {
     }
 
     public int[] expectedArgSize(IAST ast) {
-      return IOFunctions.ARGS_3_4;
+      return ARGS_3_4;
     }
 
     @Override
     public void setUp(final ISymbol newSymbol) {
       newSymbol.setAttributes(ISymbol.HOLDALL);
-    }
-
-    @Override
-    public IAST options() {
-      return F.List(F.Rule(F.Modulus, F.C0));
+      setOptions(
+          newSymbol, //
+          F.List(F.Rule(F.Modulus, F.C0)));
     }
   }
 
@@ -2967,11 +2964,9 @@ public class Algebra {
     @Override
     public void setUp(final ISymbol newSymbol) {
       // newSymbol.setAttributes(ISymbol.HOLDALL);
-    }
-
-    @Override
-    public IAST options() {
-      return F.List(F.Rule(F.Modulus, F.C0));
+      setOptions(
+          newSymbol, //
+          F.List(F.Rule(F.Modulus, F.C0)));
     }
   }
 
@@ -3126,11 +3121,9 @@ public class Algebra {
     @Override
     public void setUp(final ISymbol newSymbol) {
       // newSymbol.setAttributes(ISymbol.HOLDALL);
-    }
-
-    @Override
-    public IAST options() {
-      return F.List(F.Rule(F.Modulus, F.C0));
+      setOptions(
+          newSymbol, //
+          F.List(F.Rule(F.Modulus, F.C0)));
     }
   }
 
@@ -3192,14 +3185,14 @@ public class Algebra {
         return result;
       }
       if (ast.isAST1()) {
-        return F.True;
+        return S.True;
       }
-      return F.False;
+      return S.False;
     }
 
     @Override
     public int[] expectedArgSize(IAST ast) {
-      return IOFunctions.ARGS_1_2;
+      return ARGS_1_2;
     }
 
     @Override
@@ -3291,8 +3284,10 @@ public class Algebra {
     }
 
     @Override
-    public IAST options() {
-      return F.List(F.Rule(F.Modulus, F.C0));
+    public void setUp(final ISymbol newSymbol) {
+      setOptions(
+          newSymbol, //
+          F.List(F.Rule(F.Modulus, F.C0)));
     }
   }
 
@@ -3427,7 +3422,7 @@ public class Algebra {
     }
 
     public int[] expectedArgSize(IAST ast) {
-      return IOFunctions.ARGS_3_4;
+      return ARGS_3_4;
     }
 
     public IExpr[] quotientRemainderModInteger(
@@ -3452,8 +3447,10 @@ public class Algebra {
     }
 
     @Override
-    public IAST options() {
-      return F.List(F.Rule(F.Modulus, F.C0));
+    public void setUp(final ISymbol newSymbol) {
+      setOptions(
+          newSymbol, //
+          F.List(F.Rule(F.Modulus, F.C0)));
     }
   }
 
@@ -3539,12 +3536,14 @@ public class Algebra {
     }
 
     public int[] expectedArgSize(IAST ast) {
-      return IOFunctions.ARGS_3_4;
+      return ARGS_3_4;
     }
 
     @Override
-    public IAST options() {
-      return F.List(F.Rule(F.Modulus, F.C0));
+    public void setUp(final ISymbol newSymbol) {
+      setOptions(
+          newSymbol, //
+          F.List(F.Rule(F.Modulus, F.C0)));
     }
   }
 
@@ -3598,16 +3597,16 @@ public class Algebra {
       @Override
       public IExpr visit2(IExpr head, IExpr arg1) {
         boolean evaled = false;
-        IExpr x1 = arg1;
+        //        IExpr x1 = arg1;
         IExpr result = arg1.accept(this);
         if (result.isPresent()) {
           evaled = true;
-          x1 = result;
+          arg1 = result;
         }
-        if (head.equals(Log)) {
-          if (x1.isPower()) {
+        if (head.equals(S.Log)) {
+          if (arg1.isPower()) {
             // Log[x_ ^ y_] :> y * Log(x)
-            IAST logResult = Times(x1.exponent(), powerExpand(Log(x1.base()), assumptions));
+            IAST logResult = Times(arg1.exponent(), powerExpand(Log(arg1.base()), assumptions));
             if (assumptions) {
               IAST floorResult = Floor(Divide(Subtract(Pi, Im(logResult)), Times(C2, Pi)));
               IAST timesResult = Times(C2, I, Pi, floorResult);
@@ -3615,16 +3614,28 @@ public class Algebra {
             }
             return logResult;
           }
-          if (x1.isTimes()) {
-            IAST timesAST = (IAST) x1;
+          if (arg1.isTimes()) {
+            IAST timesAST = (IAST) arg1;
             // Log[x_ * y_ * z_] :> Log(x)+Log(y)+Log(z)
             IAST logResult = timesAST.setAtCopy(0, F.Plus);
             logResult = logResult.mapThread(F.Log(F.Slot1), 1);
             return powerExpand(logResult, assumptions);
           }
+        } else if (head.equals(S.ProductLog)) {
+          if (arg1.isTimes2()) {
+            // ProductLog[x_ * Exp[x_]] :> x
+            IExpr a1 = arg1.first();
+            IExpr a2 = arg1.second();
+            if (a2.isExp() && a2.second().equals(a1)) {
+              return a1;
+            }
+            if (a1.isExp() && a1.second().equals(a2)) {
+              return a2;
+            }
+          }
         }
         if (evaled) {
-          return F.unaryAST1(head, x1);
+          return F.unaryAST1(head, arg1);
         }
         return F.NIL;
       }
@@ -3710,7 +3721,7 @@ public class Algebra {
     }
 
     public int[] expectedArgSize(IAST ast) {
-      return IOFunctions.ARGS_1_2;
+      return ARGS_1_2;
     }
 
     public static IExpr powerExpand(final IAST ast, boolean assumptions) {
@@ -3721,11 +3732,9 @@ public class Algebra {
     @Override
     public void setUp(final ISymbol newSymbol) {
       newSymbol.setAttributes(ISymbol.LISTABLE);
-    }
-
-    @Override
-    public IAST options() {
-      return F.List(F.Rule(F.Assumptions, F.Automatic));
+      setOptions(
+          newSymbol, //
+          F.List(F.Rule(S.Assumptions, S.Automatic)));
     }
   }
 
@@ -4359,7 +4368,7 @@ public class Algebra {
     }
 
     public int[] expectedArgSize(IAST ast) {
-      return IOFunctions.ARGS_1_1;
+      return ARGS_1_1;
     }
 
     private static IExpr togetherExpr(IExpr arg1, EvalEngine engine) {
@@ -4449,7 +4458,7 @@ public class Algebra {
     }
 
     public int[] expectedArgSize(IAST ast) {
-      return IOFunctions.ARGS_1_1;
+      return ARGS_1_1;
     }
 
     @Override

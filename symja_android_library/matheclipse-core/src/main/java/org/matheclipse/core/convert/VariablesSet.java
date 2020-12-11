@@ -47,13 +47,13 @@ public class VariablesSet {
           return false;
         } else if (exponent.isNumber()) {
           fCollection.add(list);
-        } else if (!base.isNumericFunction()) {
+        } else if (!base.isNumericFunction(true)) {
           fCollection.add(list);
         }
       } else {
         if (!list.head().isBuiltInSymbol()
             || ((ISymbol) list.head()).isNumericFunctionAttribute()) {
-          if (!list.isNumericFunction()) {
+          if (!list.isNumericFunction(true)) {
             fCollection.add(list);
           }
         }
@@ -154,7 +154,7 @@ public class VariablesSet {
       }
       IExpr head = list.head();
       if (head.isVariable() && list.forAll(x -> x.isInteger())) {
-        if (!list.isNumericFunction()) {
+        if (!list.isNumericFunction(true)) {
           fCollection.add(list);
           return true;
         }

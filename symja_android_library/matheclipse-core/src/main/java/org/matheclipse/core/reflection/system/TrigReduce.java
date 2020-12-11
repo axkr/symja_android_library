@@ -17,10 +17,10 @@ import static org.matheclipse.core.expression.F.x_;
 import static org.matheclipse.core.expression.F.y;
 import static org.matheclipse.core.expression.F.y_;
 
-import org.matheclipse.core.builtin.IOFunctions;
 import org.matheclipse.core.builtin.StructureFunctions;
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.interfaces.AbstractEvaluator;
+import org.matheclipse.core.eval.interfaces.IFunctionEvaluator;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IASTMutable;
@@ -145,7 +145,7 @@ public class TrigReduce extends AbstractEvaluator {
 
   @Override
   public int[] expectedArgSize(IAST ast) {
-    return IOFunctions.ARGS_1_1;
+    return IFunctionEvaluator.ARGS_1_1;
   }
 
   @Override

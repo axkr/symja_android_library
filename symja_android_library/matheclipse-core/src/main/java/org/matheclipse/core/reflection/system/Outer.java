@@ -1,9 +1,9 @@
 package org.matheclipse.core.reflection.system;
 
-import org.matheclipse.core.builtin.IOFunctions;
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.exception.Validate;
 import org.matheclipse.core.eval.interfaces.AbstractFunctionEvaluator;
+import org.matheclipse.core.eval.interfaces.IFunctionEvaluator;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IASTAppendable;
@@ -128,6 +128,6 @@ public class Outer extends AbstractFunctionEvaluator {
   }
 
   public int[] expectedArgSize(IAST ast) {
-    return IOFunctions.ARGS_3_INFINITY;
+    return IFunctionEvaluator.ARGS_3_INFINITY;
   }
 }

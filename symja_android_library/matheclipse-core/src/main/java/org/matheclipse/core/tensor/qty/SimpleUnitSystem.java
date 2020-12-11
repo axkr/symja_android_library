@@ -68,6 +68,7 @@ public class SimpleUnitSystem implements UnitSystem {
     if (scalar instanceof IQuantity) {
       final IQuantity quantity = (IQuantity) scalar;
       IExpr value = quantity.value();
+      IExpr v1;
       for (Entry<String, IExpr> entry : quantity.unit().map().entrySet()) {
         IExpr lookup = map.get(entry.getKey());
         IExpr entryValue = entry.getValue();
@@ -78,9 +79,18 @@ public class SimpleUnitSystem implements UnitSystem {
                     ? ((IQuantity) lookup).power(entryValue) //
                     : F.Power.of(lookup, entryValue);
         if (temp.isQuantity()) {
-          value = temp.times(value);
+          v1 = temp.times(value);
         } else {
-          value = value.times(temp);
+          v1 = value.times(temp);
+        }
+        if (v1.isPresent()) {
+          value = v1;
+        } else {
+          if (temp.isQuantity()) {
+            value = F.Times(temp, value);
+          } else {
+            value = F.Times(value, temp);
+          }
         }
       }
       return value;

@@ -4,6 +4,7 @@ import org.matheclipse.core.basic.Config;
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.exception.FailedException;
 import org.matheclipse.core.eval.exception.RuleCreationError;
+import org.matheclipse.core.eval.exception.Validate;
 import org.matheclipse.core.eval.interfaces.AbstractCoreFunctionEvaluator;
 import org.matheclipse.core.eval.interfaces.ISetEvaluator;
 import org.matheclipse.core.expression.F;
@@ -57,18 +58,23 @@ public class AttributeFunctions {
     @Override
     public IExpr evaluate(final IAST ast, EvalEngine engine) {
       if (ast.isAST1()) {
-        if (ast.arg1().isSymbol()) {
-          return attributesList(((ISymbol) ast.arg1()));
-        }
-        if (ast.arg1().isList()) {
-          IAST list = (IAST) ast.arg1();
+        IExpr arg1 = ast.arg1();
+        if (arg1.isList()) {
+          IAST list = (IAST) arg1;
           if (list.exists(x -> !x.isSymbol())) {
             return F.NIL;
           }
           final IASTAppendable result = F.ListAlloc(list.size());
-          list.forEach(x -> result.append(attributesList(((ISymbol) x))));
+          for (int i = 1; i < list.size(); i++) {
+            IExpr temp = attributesList(list.get(i), ast, engine);
+            if (!temp.isPresent()) {
+              return F.NIL;
+            }
+            result.append(temp);
+          }
           return result;
         }
+        return attributesList(arg1, ast, engine);
       }
 
       return F.NIL;
@@ -132,21 +138,21 @@ public class AttributeFunctions {
     public IExpr evaluate(final IAST ast, EvalEngine engine) {
       try {
         if (ast.isAST2()) {
-          if (ast.arg1().isSymbol()) {
-            IExpr arg2 = engine.evaluate(ast.arg2());
-            final ISymbol sym = ((ISymbol) ast.arg1());
-            return clearAttributes(sym, arg2, engine);
-          }
           if (ast.arg1().isList()) {
             IAST list = (IAST) ast.arg1();
             IExpr arg2 = engine.evaluate(ast.arg2());
             for (int i = 1; i < list.size(); i++) {
-              if (list.get(i).isSymbol()) {
-                final ISymbol sym = ((ISymbol) list.get(i));
-                clearAttributes(sym, arg2, engine);
+              IExpr temp = clearAttributes(list.get(i), arg2, ast, engine);
+              if (!temp.isPresent()) {
+                return F.NIL;
               }
             }
             return S.Null;
+          }
+          if (ast.arg1().isSymbol()) {
+            IExpr arg2 = engine.evaluate(ast.arg2());
+            final ISymbol sym = ((ISymbol) ast.arg1());
+            return clearAttributes(sym, arg2, ast, engine);
           }
         }
       } catch (RuntimeException rex) {
@@ -158,12 +164,17 @@ public class AttributeFunctions {
     /**
      * Remove the attribute from the symbols existing attributes bit-set.
      *
-     * @param sym
+     * @param expr
      * @param attributes
      * @param engine
-     * @return
+     * @return {@link F#NIL} if <code>expr</code> is not a symbol
      */
-    private IExpr clearAttributes(final ISymbol sym, IExpr attributes, EvalEngine engine) {
+    private IExpr clearAttributes(final IExpr expr, IExpr attributes, IAST ast, EvalEngine engine) {
+      IExpr x = Validate.checkIdentifierHoldPattern(expr, ast, engine);
+      if (!x.isPresent()) {
+        return F.NIL;
+      }
+      ISymbol sym = (ISymbol) x;
       if (!engine.isPackageMode()) {
         if (Config.SERVER_MODE && (sym.toString().charAt(0) != '$')) {
           throw new RuleCreationError(sym);
@@ -180,11 +191,11 @@ public class AttributeFunctions {
       } else {
         if (attributes.isList()) {
           final IAST lst = (IAST) attributes;
-          lst.forEach(x -> clearAttributes(sym, (ISymbol) x));
-          // for (int i = 1; i < lst.size(); i++) {
-          // ISymbol attribute = (ISymbol) lst.get(i);
-          // clearAttributes(sym, attribute);
-          // }
+          // lst.forEach(x -> clearAttributes(sym, (ISymbol) x));
+          for (int i = 1; i < lst.size(); i++) {
+            ISymbol attribute = (ISymbol) lst.get(i);
+            clearAttributes(sym, attribute);
+          }
           return S.Null;
         }
       }
@@ -341,20 +352,33 @@ public class AttributeFunctions {
     public IExpr evaluate(final IAST ast, EvalEngine engine) {
       try {
         if (ast.isAST2()) {
-          if (ast.arg1().isSymbol()) {
-            IExpr arg2 = engine.evaluate(ast.arg2());
-            final ISymbol sym = ((ISymbol) ast.arg1());
-            return addAttributes(sym, arg2, engine);
-          }
           if (ast.arg1().isList()) {
             IAST list = (IAST) ast.arg1();
-            return setSymbolsAttributes(list, ast.arg2(), engine);
+            return setSymbolsAttributes(list, ast.arg2(), ast, engine);
           }
+          IExpr arg1 = ast.arg1();
+          IExpr arg2 = engine.evaluate(ast.arg2());
+          final ISymbol sym = ((ISymbol) ast.arg1());
+          return addAttributes(arg1, arg2, ast, engine);
         }
       } catch (RuntimeException rex) {
         //
       }
       return F.NIL;
+    }
+
+    private static IExpr setSymbolsAttributes(
+        IAST listOfSymbols, IExpr attributes, IAST ast, EvalEngine engine) {
+      attributes = engine.evaluate(attributes);
+      for (int i = 1; i < listOfSymbols.size(); i++) {
+        if (listOfSymbols.get(i).isSymbol()) {
+          IExpr temp = addAttributes(listOfSymbols.get(i), attributes, ast, engine);
+          if (!temp.isPresent()) {
+            return F.NIL;
+          }
+        }
+      }
+      return S.Null;
     }
 
     /**
@@ -363,12 +387,18 @@ public class AttributeFunctions {
      * @param sym
      * @param attributes
      * @param engine
-     * @return
+     * @return {@link F#NIL} if <code>expr</code> is not a symbol
      */
-    private static IExpr addAttributes(final ISymbol sym, IExpr attributes, EvalEngine engine) {
+    private static IExpr addAttributes(
+        final IExpr expr, IExpr attributes, IAST ast, EvalEngine engine) {
+      IExpr x = Validate.checkIdentifierHoldPattern(expr, ast, engine);
+      if (!x.isPresent()) {
+        return F.NIL;
+      }
+      ISymbol sym = (ISymbol) x;
       if (!engine.isPackageMode()) {
         if (Config.SERVER_MODE && (sym.toString().charAt(0) != '$')) {
-          throw new RuleCreationError(sym);
+          throw new RuleCreationError(expr);
         }
       }
       if (attributes.isSymbol()) {
@@ -376,11 +406,11 @@ public class AttributeFunctions {
         addAttributes(sym, attribute);
       } else if (attributes.isList()) {
         final IAST lst = (IAST) attributes;
-        lst.forEach(x -> addAttributes(sym, (ISymbol) x));
-        // for (int i = 1; i < lst.size(); i++) {
-        // ISymbol attribute = (ISymbol) lst.get(i);
-        // addAttributes(sym, attribute);
-        // }
+        // lst.forEach(x -> addAttributes(sym, (ISymbol) x));
+        for (int i = 1; i < lst.size(); i++) {
+          ISymbol attribute = (ISymbol) lst.get(i);
+          addAttributes(sym, attribute);
+        }
       }
       return S.Null;
     }
@@ -456,87 +486,94 @@ public class AttributeFunctions {
   }
 
   /**
+   * Get the attrbutes of this <code>expr</code> as symbolic constants in a list.
+   *
+   * @param expr
+   * @param ast
+   * @param engine
+   * @return {@link F#NIL} if <code>expr</code> is not a symbol
+   */
+  public static IAST attributesList(final IExpr expr, IAST ast, EvalEngine engine) {
+    IExpr x = Validate.checkIdentifierHoldPattern(expr, ast, engine);
+    if (!x.isPresent()) {
+      return F.NIL;
+    }
+    ISymbol symbol = (ISymbol) x;
+    return attributesList(symbol);
+  }
+
+  /**
    * Get the attrbutes of this <code>symbol</code> as symbolic constants in a list.
    *
    * @param symbol
    * @return
    */
-  public static IAST attributesList(final ISymbol symbol) {
+  public static IAST attributesList(ISymbol symbol) {
     IASTAppendable result = F.ListAlloc(4);
     int attributes = symbol.getAttributes();
 
     if ((attributes & ISymbol.CONSTANT) != ISymbol.NOATTRIBUTE) {
-      result.append(F.Constant);
+      result.append(S.Constant);
     }
 
     if ((attributes & ISymbol.FLAT) != ISymbol.NOATTRIBUTE) {
-      result.append(F.Flat);
+      result.append(S.Flat);
     }
 
     if ((attributes & ISymbol.HOLDALLCOMPLETE) == ISymbol.HOLDALLCOMPLETE) {
-      result.append(F.HoldAllComplete);
+      result.append(S.HoldAllComplete);
     } else if ((attributes & ISymbol.HOLDCOMPLETE) == ISymbol.HOLDCOMPLETE) {
-      result.append(F.HoldComplete);
+      result.append(S.HoldComplete);
     } else if ((attributes & ISymbol.HOLDALL) == ISymbol.HOLDALL) {
-      result.append(F.HoldAll);
+      result.append(S.HoldAll);
     } else {
       if ((attributes & ISymbol.HOLDFIRST) != ISymbol.NOATTRIBUTE) {
-        result.append(F.HoldFirst);
+        result.append(S.HoldFirst);
       }
 
       if ((attributes & ISymbol.HOLDREST) != ISymbol.NOATTRIBUTE) {
-        result.append(F.HoldRest);
+        result.append(S.HoldRest);
       }
     }
 
     if ((attributes & ISymbol.LISTABLE) != ISymbol.NOATTRIBUTE) {
-      result.append(F.Listable);
+      result.append(S.Listable);
     }
 
     if ((attributes & ISymbol.NHOLDALL) == ISymbol.NHOLDALL) {
-      result.append(F.NHoldAll);
+      result.append(S.NHoldAll);
     } else {
       if ((attributes & ISymbol.NHOLDFIRST) != ISymbol.NOATTRIBUTE) {
-        result.append(F.NHoldFirst);
+        result.append(S.NHoldFirst);
       }
 
       if ((attributes & ISymbol.NHOLDREST) != ISymbol.NOATTRIBUTE) {
-        result.append(F.NHoldRest);
+        result.append(S.NHoldRest);
       }
     }
 
     if ((attributes & ISymbol.NUMERICFUNCTION) != ISymbol.NOATTRIBUTE) {
-      result.append(F.NumericFunction);
+      result.append(S.NumericFunction);
     }
 
     if ((attributes & ISymbol.ONEIDENTITY) != ISymbol.NOATTRIBUTE) {
-      result.append(F.OneIdentity);
+      result.append(S.OneIdentity);
     }
 
     if ((attributes & ISymbol.ORDERLESS) != ISymbol.NOATTRIBUTE) {
-      result.append(F.Orderless);
+      result.append(S.Orderless);
     }
 
     if ((attributes & ISymbol.PROTECTED) != ISymbol.NOATTRIBUTE) {
-      result.append(F.Protected);
+      result.append(S.Protected);
     }
 
-    if ((attributes & ISymbol.SEQUENCEHOLD) == ISymbol.SEQUENCEHOLD) {
-      result.append(F.SequenceHold);
+    if ((attributes & ISymbol.SEQUENCEHOLD) == ISymbol.SEQUENCEHOLD
+        && ((attributes & ISymbol.HOLDALLCOMPLETE) != ISymbol.HOLDALLCOMPLETE)) {
+      result.append(S.SequenceHold);
     }
 
     return result;
-  }
-
-  static IExpr setSymbolsAttributes(IAST listOfSymbols, IExpr attributes, EvalEngine engine) {
-    attributes = engine.evaluate(attributes);
-    for (int i = 1; i < listOfSymbols.size(); i++) {
-      if (listOfSymbols.get(i).isSymbol()) {
-        final ISymbol sym = ((ISymbol) listOfSymbols.get(i));
-        SetAttributes.addAttributes(sym, attributes, engine);
-      }
-    }
-    return S.Null;
   }
 
   public static void initialize() {

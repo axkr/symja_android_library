@@ -2,15 +2,23 @@ package org.matheclipse.core.basic;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.Properties;
 import java.util.Set;
+import java.util.function.Consumer;
 
 import org.hipparchus.util.Precision;
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.interfaces.IExpr;
+import org.matheclipse.core.interfaces.IPattern;
+import org.matheclipse.core.interfaces.IPatternSequence;
+import org.matheclipse.core.interfaces.IStringX;
 import org.matheclipse.core.interfaces.ISymbol;
 import org.matheclipse.parser.client.FEConfig;
+import org.matheclipse.parser.trie.TrieBuilder;
+import org.matheclipse.parser.trie.TrieMatch;
+import org.matheclipse.parser.trie.TrieSequencerIntArray;
 
 import com.google.common.cache.Cache;
 import com.google.common.cache.CacheBuilder;
@@ -262,6 +270,8 @@ public class Config {
 
   /** Default package mode with which the EvalEngines initially can be started */
   public static boolean PACKAGE_MODE = true;
+
+  public static Consumer<IExpr> PRINT_OUT = x -> {};
 
   /** Use JavaScript libraries for the <code>Manipulate()</code> function */
   public static boolean USE_MANIPULATE_JS = true;
@@ -617,7 +627,7 @@ public class Config {
           + //
           "<body>\n"
           + //
-          "<script src=\"https://cdn.jsdelivr.net/gh/paulmasson/math@1.4.0/build/math.js\"></script>"
+          "<script src=\"https://cdn.jsdelivr.net/gh/paulmasson/math@1.4.3/build/math.js\"></script>"
           + //
           "\n"
           + //
@@ -683,7 +693,7 @@ public class Config {
           + //
           "<link rel=\"stylesheet\" type=\"text/css\" href=\"https://cdnjs.cloudflare.com/ajax/libs/jsxgraph/1.1.0/jsxgraph.min.css\" />\n"
           + //
-          "<script src=\"https://cdn.jsdelivr.net/gh/paulmasson/math@1.4.0/build/math.js\"></script>\n"
+          "<script src=\"https://cdn.jsdelivr.net/gh/paulmasson/math@1.4.3/build/math.js\"></script>\n"
           + "<script src=\"https://cdnjs.cloudflare.com/ajax/libs/jsxgraph/1.1.0/jsxgraphcore.min.js\"\n"
           + //
           "        type='text/javascript'></script>\n"
@@ -780,4 +790,33 @@ public class Config {
     }
     return "1.0.0-SNAPSHOT";
   }
+
+  /** A trie builder for mapping int[] sequences to IExpr. */
+  public static final TrieBuilder<int[], IExpr, ArrayList<IExpr>> TRIE_INT2EXPR_BUILDER =
+      new TrieBuilder<int[], IExpr, ArrayList<IExpr>>(
+          TrieSequencerIntArray.INSTANCE,
+          TrieMatch.EXACT,
+          () -> new ArrayList<IExpr>(),
+          (IExpr) null,
+          false);
+
+  /** A trie builder for mapping strings to IExpr. */
+  public static final TrieBuilder<String, IExpr, ArrayList<IExpr>> TRIE_STRING2EXPR_BUILDER =
+      TrieBuilder.create();
+
+  /** A trie builder for mapping strings to ISymbol. */
+  public static final TrieBuilder<String, ISymbol, ArrayList<ISymbol>> TRIE_STRING2SYMBOL_BUILDER =
+      TrieBuilder.create();
+
+  /** A trie builder for mapping strings to IStringX. */
+  public static final TrieBuilder<String, IStringX, ArrayList<IStringX>>
+      TRIE_STRING2STRINGX_BUILDER = TrieBuilder.create();
+
+  /** A trie builder for mapping strings to IPattern. */
+  public static final TrieBuilder<String, IPattern, ArrayList<IPattern>>
+      TRIE_STRING2PATTERN_BUILDER = TrieBuilder.create();
+
+  /** A trie builder for mapping strings to IPatternSequence. */
+  public static final TrieBuilder<String, IPatternSequence, ArrayList<IPatternSequence>>
+      TRIE_STRING2PATTERNSEQUENCE_BUILDER = TrieBuilder.create();
 }

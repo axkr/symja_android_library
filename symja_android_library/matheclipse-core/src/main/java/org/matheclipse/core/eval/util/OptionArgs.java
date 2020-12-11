@@ -5,6 +5,7 @@ import static org.matheclipse.core.expression.F.ReplaceAll;
 
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.expression.F;
+import org.matheclipse.core.expression.S;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IASTAppendable;
 import org.matheclipse.core.interfaces.IExpr;
@@ -167,7 +168,7 @@ public class OptionArgs {
   }
 
   /**
-   * Get the option from the internal options list and check if it's set to <code>F.True</code>.
+   * Get the option from the internal options list and check if it's set to <code>S.True</code>.
    *
    * @param option the option
    * @return <code>true</code> if the option is set to <code>True</code> or <code>false</code>
@@ -178,7 +179,7 @@ public class OptionArgs {
   }
 
   /**
-   * Get the option from the internal options list and check if it's set to <code>F.False</code>.
+   * Get the option from the internal options list and check if it's set to <code>S.False</code>.
    *
    * @param option the option
    * @return <code>true</code> if the option is set to <code>False</code> or <code>false</code>
@@ -196,7 +197,7 @@ public class OptionArgs {
    */
   public IExpr getOptionAutomatic(final ISymbol option) {
     IExpr temp = getOption(option);
-    if (temp == F.Automatic) {
+    if (temp == S.Automatic) {
       return F.NIL;
     }
     return temp;

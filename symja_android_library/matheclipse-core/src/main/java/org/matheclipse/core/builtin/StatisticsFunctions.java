@@ -25,6 +25,7 @@ import org.matheclipse.core.basic.Config;
 import org.matheclipse.core.convert.Convert;
 import org.matheclipse.core.eval.EvalAttributes;
 import org.matheclipse.core.eval.EvalEngine;
+import org.matheclipse.core.eval.exception.ASTElementLimitExceeded;
 import org.matheclipse.core.eval.exception.Validate;
 import org.matheclipse.core.eval.exception.ValidateException;
 import org.matheclipse.core.eval.interfaces.AbstractArg2;
@@ -32,6 +33,7 @@ import org.matheclipse.core.eval.interfaces.AbstractEvaluator;
 import org.matheclipse.core.eval.interfaces.AbstractFunctionEvaluator;
 import org.matheclipse.core.eval.interfaces.AbstractMatrix1Expr;
 import org.matheclipse.core.eval.interfaces.AbstractTrigArg1;
+import org.matheclipse.core.eval.interfaces.IFunctionEvaluator;
 import org.matheclipse.core.expression.ASTRealMatrix;
 import org.matheclipse.core.expression.ASTRealVector;
 import org.matheclipse.core.expression.ApcomplexNum;
@@ -210,7 +212,7 @@ public class StatisticsFunctions {
 
     @Override
     public int[] expectedArgSize(IAST ast) {
-      return IOFunctions.ARGS_2_2;
+      return ARGS_2_2;
     }
   }
 
@@ -562,7 +564,7 @@ public class StatisticsFunctions {
 
     @Override
     public int[] expectedArgSize(IAST ast) {
-      return IOFunctions.ARGS_1_1;
+      return ARGS_1_1;
     }
 
     @Override
@@ -661,7 +663,6 @@ public class StatisticsFunctions {
         // see exception handling in RandonmVariate() function
         double p = dist.arg1().evalDouble();
         if (0 <= p && p <= 1) {
-          // return F.ZZ(new BinomialGenerator(1, p, random).nextValue());
           RandomDataGenerator rdg = new RandomDataGenerator();
           int[] vector =
               rdg.nextDeviates(
@@ -897,9 +898,9 @@ public class StatisticsFunctions {
           IAST vector = (IAST) ast.arg1();
           vector = dropNonReals(engine, vector);
           if (ast.size() == 3) {
-            return binCounts(vector, ast.arg2(), engine);
+            return binCounts(ast, vector, ast.arg2(), engine);
           } else if (ast.size() == 2) {
-            return binCounts(vector, F.C1, engine);
+            return binCounts(ast, vector, F.C1, engine);
           }
         }
       } catch (ArithmeticException rex) {
@@ -912,10 +913,10 @@ public class StatisticsFunctions {
 
     @Override
     public int[] expectedArgSize(IAST ast) {
-      return IOFunctions.ARGS_1_2;
+      return ARGS_1_2;
     }
 
-    private static IExpr binCounts(IAST vector, final IExpr arg2, EvalEngine engine) {
+    private static IExpr binCounts(IAST ast, IAST vector, final IExpr arg2, EvalEngine engine) {
       INum dxNum = F.CD1;
       int dx = 1;
       int xMin = 0;
@@ -923,16 +924,20 @@ public class StatisticsFunctions {
       if (arg2.isList()) {
         IAST list = (IAST) arg2;
         if (list.size() == 4) {
-          dx = list.arg3().toIntDefault(Integer.MIN_VALUE);
+          dx = list.arg3().toIntDefault();
+          if (dx == Integer.MIN_VALUE) {
+            return F.NIL;
+          }
           if (dx < 0) {
+            // The step size `1` is expected to be positive
+            return IOFunctions.printMessage(ast.topHead(), "step", F.List(list.arg3()), engine);
+          }
+          xMin = list.arg1().toIntDefault();
+          if (xMin == Integer.MIN_VALUE) {
             return F.NIL;
           }
-          xMin = list.arg1().toIntDefault(Integer.MIN_VALUE);
-          if (xMin < 0) {
-            return F.NIL;
-          }
-          xMax = list.arg2().toIntDefault(Integer.MIN_VALUE);
-          if (xMax < 0) {
+          xMax = list.arg2().toIntDefault();
+          if (xMax == Integer.MIN_VALUE) {
             return F.NIL;
           }
           if (xMax <= xMin) {
@@ -945,32 +950,38 @@ public class StatisticsFunctions {
         dx = Integer.MIN_VALUE;
         dxNum = F.num(arg2.evalDouble());
         IExpr dXMax = F.Max.of(engine, vector);
-        xMax =
-            F.Floor.of(engine, F.Divide(F.Plus(dXMax, arg2), arg2)).toIntDefault(Integer.MIN_VALUE);
+        xMax = F.Floor.of(engine, F.Divide(F.Plus(dXMax, arg2), arg2)).toIntDefault();
         if (xMax < 0) {
           return F.NIL;
         }
       }
-      if (xMin >= 0 && xMax >= xMin) {
-        int[] res = new int[xMax - xMin];
+      if (xMax >= xMin) {
+        final int capacity = xMax - xMin;
+        if (capacity > Config.MAX_AST_SIZE) {
+          ASTElementLimitExceeded.throwIt(capacity);
+        }
+        int[] res = new int[capacity];
         for (int i = 1; i < vector.size(); i++) {
           IExpr temp = vector.get(i);
           int index = -1;
           if (dx != Integer.MIN_VALUE) {
-            index =
-                (((ISignedNumber) temp).floorFraction()).div(dx).toIntDefault(Integer.MIN_VALUE);
+            index = (((ISignedNumber) temp).floorFraction()).div(dx).toIntDefault();
+            if ((dx > 1) && temp.isInteger() && ((IInteger) temp).mod(dx).isZero()) {
+              index--;
+            }
           } else {
-            index =
-                F.Floor.of(engine, (((ISignedNumber) temp).divide(dxNum)))
-                    .toIntDefault(Integer.MIN_VALUE);
+            index = F.Floor.of(engine, (((ISignedNumber) temp).divide(dxNum))).toIntDefault();
           }
-          if (index < 0 || index >= res.length) {
-            return engine.printMessage(
-                "BinCounts: determined not allowed bin index for " + temp.toString());
+          if (index == Integer.MIN_VALUE) {
+            return F.NIL;
           }
-          res[index - xMin]++;
+          int binIndex = index - xMin;
+          if (binIndex < 0 || binIndex >= res.length) {
+            continue;
+          }
+          res[binIndex]++;
         }
-        IASTAppendable result = F.ListAlloc(xMax - xMin + 1);
+        IASTAppendable result = F.ListAlloc(capacity + 1);
         for (int i = 0; i < res.length; i++) {
           result.append(F.ZZ(res[i]));
         }
@@ -1233,7 +1244,7 @@ public class StatisticsFunctions {
 
     @Override
     public int[] expectedArgSize(IAST ast) {
-      return IOFunctions.ARGS_2_2;
+      return ARGS_2_2;
     }
 
     @Override
@@ -1480,7 +1491,7 @@ public class StatisticsFunctions {
 
     @Override
     public int[] expectedArgSize(IAST ast) {
-      return IOFunctions.ARGS_1_2;
+      return ARGS_1_2;
     }
   }
 
@@ -1560,7 +1571,7 @@ public class StatisticsFunctions {
 
     @Override
     public int[] expectedArgSize(IAST ast) {
-      return IOFunctions.ARGS_1_1;
+      return ARGS_1_1;
     }
 
     @Override
@@ -1811,7 +1822,7 @@ public class StatisticsFunctions {
 
     @Override
     public int[] expectedArgSize(IAST ast) {
-      return IOFunctions.ARGS_2_2;
+      return ARGS_2_2;
     }
 
     @Override
@@ -2297,7 +2308,7 @@ public class StatisticsFunctions {
 
     @Override
     public int[] expectedArgSize(IAST ast) {
-      return IOFunctions.ARGS_1_1;
+      return ARGS_1_1;
     }
 
     @Override
@@ -2320,7 +2331,7 @@ public class StatisticsFunctions {
 
     @Override
     public int[] expectedArgSize(IAST ast) {
-      return IOFunctions.ARGS_1_1;
+      return ARGS_1_1;
     }
 
     @Override
@@ -2571,7 +2582,7 @@ public class StatisticsFunctions {
 
     @Override
     public int[] expectedArgSize(IAST ast) {
-      return IOFunctions.ARGS_2_2;
+      return ARGS_2_2;
     }
 
     @Override
@@ -2813,7 +2824,7 @@ public class StatisticsFunctions {
 
     @Override
     public int[] expectedArgSize(IAST ast) {
-      return IOFunctions.ARGS_1_1;
+      return ARGS_1_1;
     }
   }
 
@@ -2854,7 +2865,7 @@ public class StatisticsFunctions {
 
     @Override
     public int[] expectedArgSize(IAST ast) {
-      return IOFunctions.ARGS_3_3;
+      return ARGS_3_3;
     }
 
     private int[] parameters(IAST hypergeometricDistribution) {
@@ -3108,7 +3119,7 @@ public class StatisticsFunctions {
 
     @Override
     public int[] expectedArgSize(IAST ast) {
-      return IOFunctions.ARGS_1_2;
+      return ARGS_1_2;
     }
 
     private static IExpr evaluateArg2(final IAST arg1, final IAST arg2, EvalEngine engine) {
@@ -3214,7 +3225,7 @@ public class StatisticsFunctions {
 
     @Override
     public int[] expectedArgSize(IAST ast) {
-      return IOFunctions.ARGS_1_1;
+      return ARGS_1_1;
     }
 
     @Override
@@ -3402,7 +3413,7 @@ public class StatisticsFunctions {
 
     @Override
     public int[] expectedArgSize(IAST ast) {
-      return IOFunctions.ARGS_2_2;
+      return ARGS_2_2;
     }
 
     @Override
@@ -3637,7 +3648,7 @@ public class StatisticsFunctions {
 
     @Override
     public int[] expectedArgSize(IAST ast) {
-      return IOFunctions.ARGS_1_1;
+      return ARGS_1_1;
     }
 
     @Override
@@ -3977,7 +3988,7 @@ public class StatisticsFunctions {
 
     @Override
     public int[] expectedArgSize(IAST ast) {
-      return IOFunctions.ARGS_1_1;
+      return ARGS_1_1;
     }
 
     @Override
@@ -4339,7 +4350,7 @@ public class StatisticsFunctions {
 
     @Override
     public int[] expectedArgSize(IAST ast) {
-      return IOFunctions.ARGS_1_1;
+      return ARGS_1_1;
     }
 
     @Override
@@ -4440,7 +4451,7 @@ public class StatisticsFunctions {
       public int compare(Integer index1, Integer index2) {
         IExpr arg1 = ast.get(index1);
         IExpr arg2 = ast.get(index2);
-        if (arg1.isNumericFunction() && arg2.isNumericFunction()) {
+        if (arg1.isNumericFunction(true) && arg2.isNumericFunction(true)) {
           if (engine.evalTrue(F.Greater(arg1, arg2))) {
             return 1;
           }
@@ -5250,7 +5261,7 @@ public class StatisticsFunctions {
 
     @Override
     public int[] expectedArgSize(IAST ast) {
-      return IOFunctions.ARGS_1_1;
+      return ARGS_1_1;
     }
 
     @Override
@@ -5513,7 +5524,7 @@ public class StatisticsFunctions {
 
     @Override
     public int[] expectedArgSize(IAST ast) {
-      return IOFunctions.ARGS_1_3;
+      return ARGS_1_3;
     }
 
     // private IExpr of(IAST sorted, IInteger length, ISignedNumber scalar) {
@@ -5563,7 +5574,7 @@ public class StatisticsFunctions {
 
     @Override
     public int[] expectedArgSize(IAST ast) {
-      return IOFunctions.ARGS_1_2;
+      return ARGS_1_2;
     }
   }
 
@@ -5625,7 +5636,7 @@ public class StatisticsFunctions {
 
     @Override
     public int[] expectedArgSize(IAST ast) {
-      return IOFunctions.ARGS_1_2;
+      return ARGS_1_2;
     }
 
     private static IAST createArray(
@@ -5731,7 +5742,7 @@ public class StatisticsFunctions {
 
     @Override
     public int[] expectedArgSize(IAST ast) {
-      return IOFunctions.ARGS_1_3;
+      return ARGS_1_3;
     }
 
     private static IExpr rescale(IExpr x, IExpr min, IExpr max, EvalEngine engine) {
@@ -5792,7 +5803,7 @@ public class StatisticsFunctions {
 
     @Override
     public int[] expectedArgSize(IAST ast) {
-      return IOFunctions.ARGS_1_1;
+      return ARGS_1_1;
     }
 
     @Override
@@ -5883,7 +5894,7 @@ public class StatisticsFunctions {
 
     @Override
     public int[] expectedArgSize(IAST ast) {
-      return IOFunctions.ARGS_1_1;
+      return ARGS_1_1;
     }
 
     @Override
@@ -5916,7 +5927,7 @@ public class StatisticsFunctions {
 
     @Override
     public int[] expectedArgSize(IAST ast) {
-      return IOFunctions.ARGS_1_1;
+      return ARGS_1_1;
     }
   }
 
@@ -6206,7 +6217,7 @@ public class StatisticsFunctions {
 
     @Override
     public int[] expectedArgSize(IAST ast) {
-      return IOFunctions.ARGS_1_1;
+      return ARGS_1_1;
     }
 
     @Override
@@ -6505,7 +6516,7 @@ public class StatisticsFunctions {
 
     @Override
     public int[] expectedArgSize(IAST ast) {
-      return IOFunctions.ARGS_1_1;
+      return ARGS_1_1;
     }
   }
 
@@ -6546,7 +6557,7 @@ public class StatisticsFunctions {
 
     @Override
     public int[] expectedArgSize(IAST ast) {
-      return IOFunctions.ARGS_2_3;
+      return ARGS_2_3;
     }
 
     @Override

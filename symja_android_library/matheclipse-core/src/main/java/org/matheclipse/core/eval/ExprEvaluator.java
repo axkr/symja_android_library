@@ -8,9 +8,13 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
 
-import org.matheclipse.core.eval.exception.LimitException;
+import org.matheclipse.core.builtin.IOFunctions;
+import org.matheclipse.core.eval.exception.IterationLimitExceeded;
+import org.matheclipse.core.eval.exception.RecursionLimitExceeded;
 import org.matheclipse.core.eval.exception.SymjaMathException;
+import org.matheclipse.core.eval.exception.ThrowException;
 import org.matheclipse.core.expression.F;
+import org.matheclipse.core.expression.S;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.interfaces.ISignedNumber;
@@ -130,7 +134,7 @@ public class ExprEvaluator {
   private final List<ISymbol> fVariables;
 
   // Quit() function may set a new engine,so "final" is not possible here
-  private EvalEngine engine;
+  private EvalEngine fEngine;
 
   private IExpr fExpr;
 
@@ -140,7 +144,7 @@ public class ExprEvaluator {
    * evaluate to the last result.
    */
   public ExprEvaluator() {
-    this(true, 0);
+    this(true, (short) 0);
   }
 
   /**
@@ -154,7 +158,7 @@ public class ExprEvaluator {
    *     variable or the <code>%</code> operator) will be unevaluated.
    * @param historyCapacity the number of last entries of the calculations which should be stored.
    */
-  public ExprEvaluator(boolean outListDisabled, int historyCapacity) {
+  public ExprEvaluator(boolean outListDisabled, short historyCapacity) {
     this(new EvalEngine(true), outListDisabled, historyCapacity);
   }
 
@@ -170,10 +174,10 @@ public class ExprEvaluator {
    *     variable or the <code>%</code> operator) will be unevaluated.
    * @param historyCapacity the number of last entries of the calculations which should be stored.
    */
-  public ExprEvaluator(EvalEngine engine, boolean outListDisabled, int historyCapacity) {
+  public ExprEvaluator(EvalEngine engine, boolean outListDisabled, short historyCapacity) {
     this.fVariableMap = new IdentityHashMap<>();
     this.fVariables = new ArrayList<>();
-    this.engine = engine;
+    this.fEngine = engine;
     EvalEngine.set(engine);
     if (!outListDisabled) {
       engine.setOutListDisabled(outListDisabled, historyCapacity);
@@ -191,7 +195,7 @@ public class ExprEvaluator {
     fVariableMap.clear();
     // pop all local variables from local variable stack
     for (int i = 0; i < fVariables.size(); i++) {
-      fVariables.get(i).assignValue(null);
+      fVariables.get(i).assignValue(null, false);
     }
   }
 
@@ -224,8 +228,8 @@ public class ExprEvaluator {
   public ISymbol defineVariable(ISymbol variable, IExpr value) {
     if (value != null) {
       // this evaluation step may throw an exception
-      IExpr temp = engine.evaluate(value);
-      variable.assignValue(temp);
+      IExpr temp = fEngine.evaluate(value);
+      variable.assignValue(temp, false);
     }
     fVariables.add(variable);
     fVariableMap.put(variable, value);
@@ -238,7 +242,7 @@ public class ExprEvaluator {
    * @param variableName
    */
   public ISymbol defineVariable(String variableName) {
-    return defineVariable(F.symbol(variableName, engine), null);
+    return defineVariable(F.symbol(variableName, fEngine), null);
   }
 
   /**
@@ -248,7 +252,7 @@ public class ExprEvaluator {
    * @param value
    */
   public void defineVariable(String variableName, boolean value) {
-    defineVariable(F.symbol(variableName, engine), value ? F.True : F.False);
+    defineVariable(F.symbol(variableName, fEngine), value ? S.True : S.False);
   }
 
   /**
@@ -258,7 +262,7 @@ public class ExprEvaluator {
    * @param value
    */
   public ISymbol defineVariable(String variableName, double value) {
-    return defineVariable(F.symbol(variableName, engine), F.num(value));
+    return defineVariable(F.symbol(variableName, fEngine), F.num(value));
   }
 
   /**
@@ -268,7 +272,7 @@ public class ExprEvaluator {
    * @param value
    */
   public ISymbol defineVariable(String variableName, IExpr value) {
-    return defineVariable(F.symbol(variableName, engine), value);
+    return defineVariable(F.symbol(variableName, fEngine), value);
   }
 
   /**
@@ -319,34 +323,90 @@ public class ExprEvaluator {
    */
   public IExpr eval(final IExpr expr) {
     fExpr = expr;
+    EvalEngine[] engineRef = new EvalEngine[] {fEngine};
+    IExpr result = evalTopLevel(expr, engineRef);
+    fEngine = engineRef[0];
+    return result;
+  }
+
+  /**
+   * Evaluate an expression. If evaluation is not possible return the input object.
+   *
+   * @param expr
+   * @param engineRef
+   * @return
+   */
+  public static IExpr evalTopLevel(final IExpr expr, EvalEngine[] engineRef) {
     // F.join();
     try {
-      EvalEngine.set(engine);
-      engine.reset();
-      IExpr preRead = F.$PreRead.assignedValue();
-      IExpr temp;
+      return evalTryCatch(expr, engineRef);
+    } catch (SymjaMathException sma) {
+      if (FEConfig.SHOW_STACKTRACE) {
+        sma.printStackTrace();
+      }
+      return expr;
+    } finally {
+      // Quit may set a new engine
+      engineRef[0] = EvalEngine.get();
+    }
+  }
+
+  public static IExpr evalTryCatch(final IExpr expr, EvalEngine[] engineRef) {
+    EvalEngine engine = engineRef[0];
+    EvalEngine.set(engine);
+    //  engine.reset()  must be done before parsing step
+    IExpr preRead = F.$PreRead.assignedValue();
+    IExpr temp;
+    try {
       if (preRead != null && preRead.isPresent()) {
         temp = engine.evaluate(F.unaryAST1(preRead, expr));
       } else {
         temp = engine.evaluate(expr);
       }
-      if (!engine.isOutListDisabled()) {
-        engine.addOut(temp);
+    } catch (final ThrowException e) {
+      if (FEConfig.SHOW_STACKTRACE) {
+        e.printStackTrace();
       }
-      return temp;
-    } catch (SymjaMathException sma) {
-      return expr;
-    } finally {
-      // Quit may set a new engine
-      engine = EvalEngine.get();
+      // Uncaught `1` returned to top level.
+      IAST ast = F.Throw(e.getValue());
+      IOFunctions.printMessage(S.Throw, "nocatch", F.List(ast), engine);
+      temp = F.Hold(ast);
+    } catch (final IterationLimitExceeded e) {
+      if (FEConfig.SHOW_STACKTRACE) {
+        e.printStackTrace();
+      }
+      // Iteration limit of `1` exceeded.
+      int iterationLimit = engine.getIterationLimit();
+      IOFunctions.printMessage(
+          S.$IterationLimit,
+          "itlim",
+          F.List(iterationLimit < 0 ? F.CInfinity : F.ZZ(iterationLimit), expr),
+          engine);
+      temp = F.Hold(expr);
+    } catch (final RecursionLimitExceeded e) {
+      if (FEConfig.SHOW_STACKTRACE) {
+        e.printStackTrace();
+      }
+      // Recursion depth of `1` exceeded during evaluation of `2`.
+      int recursionLimit = engine.getRecursionLimit();
+      IOFunctions.printMessage(
+          S.$RecursionLimit,
+          "reclim2",
+          F.List(recursionLimit < 0 ? F.CInfinity : F.ZZ(recursionLimit), expr),
+          engine);
+      temp = F.Hold(expr);
     }
+    if (!engine.isOutListDisabled()) {
+      engine.addInOut(expr, temp);
+    }
+    return temp;
   }
 
   /**
-   * Evaluate an expression and test if the result is <code>F.True</code>.
+   * Evaluate an expression and test if the result is <code>S.True</code>.
    *
    * @param expr the expression which should be evaluated
-   * @return <code>true</code> if the result is <code>F.True</code> otherwise return <code>false
+   * @return <code>true</code> if the result is <code>S.True</code> otherwise return <code>false
    *     </code>
    */
   public boolean isTrue(final IExpr expr) {
@@ -354,10 +414,10 @@ public class ExprEvaluator {
   }
 
   /**
-   * Evaluate an expression and test if the result is <code>F.False</code>.
+   * Evaluate an expression and test if the result is <code>S.False</code>.
    *
    * @param expr the expression which should be evaluated
-   * @return <code>true</code> if the result is <code>F.False</code> otherwise return <code>false
+   * @return <code>true</code> if the result is <code>S.False</code> otherwise return <code>false
    *     </code>
    */
   public boolean isFalse(final IExpr expr) {
@@ -373,9 +433,8 @@ public class ExprEvaluator {
    */
   public IExpr eval(final String inputExpression) {
     if (inputExpression != null) {
-      EvalEngine.set(engine);
-      engine.reset();
-      fExpr = engine.parse(inputExpression);
+      EvalEngine.setReset(fEngine);
+      fExpr = fEngine.parse(inputExpression);
       if (fExpr != null) {
         return eval(fExpr);
       }
@@ -395,9 +454,8 @@ public class ExprEvaluator {
   public IExpr parse(final String inputExpression) {
     // try {
     if (inputExpression != null) {
-      EvalEngine.set(engine);
-      engine.reset();
-      return engine.parse(inputExpression);
+      EvalEngine.setReset(fEngine);
+      return fEngine.parse(inputExpression);
     }
     // } finally {
     // EvalEngine.remove();
@@ -425,13 +483,12 @@ public class ExprEvaluator {
       EvalControlledCallable call) {
     if (inputExpression != null) {
       // F.join();
-      EvalEngine.set(engine);
+      EvalEngine.setReset(fEngine);
       try {
-        engine.reset();
-        fExpr = engine.parse(inputExpression);
+        fExpr = fEngine.parse(inputExpression);
         if (fExpr != null) {
           final ExecutorService executor = Executors.newSingleThreadExecutor();
-          EvalControlledCallable work = call == null ? new EvalControlledCallable(engine) : call;
+          EvalControlledCallable work = call == null ? new EvalControlledCallable(fEngine) : call;
           work.setExpr(fExpr);
           try {
             F.await();
@@ -468,7 +525,7 @@ public class ExprEvaluator {
                 executor.shutdownNow(); // Cancel currently executing tasks
                 // Wait a while for tasks to respond to being cancelled
                 if (!executor.awaitTermination(2, TimeUnit.SECONDS)) {
-                  engine.printMessage("ExprEvaluator: pool did not terminate");
+                  fEngine.printMessage("ExprEvaluator: pool did not terminate");
                 }
               }
             } catch (InterruptedException ie) {
@@ -500,9 +557,8 @@ public class ExprEvaluator {
    */
   public double evalf(final String inputExpression) {
     if (inputExpression != null) {
-      EvalEngine.set(engine);
-      engine.reset();
-      fExpr = engine.parse(inputExpression);
+      EvalEngine.setReset(fEngine);
+      fExpr = fEngine.parse(inputExpression);
       if (fExpr != null) {
         IExpr temp = eval(F.N(fExpr));
         if (temp.isReal()) {
@@ -555,8 +611,7 @@ public class ExprEvaluator {
    * @return <code>Double.NaN</code> if no <code>double</code> value could be evaluated
    */
   public double evalf(final IExpr expr) {
-    EvalEngine.set(engine);
-    engine.reset();
+    EvalEngine.setReset(fEngine);
     IExpr temp = eval(F.N(expr));
     if (temp.isReal()) {
       return ((ISignedNumber) temp).doubleValue();
@@ -570,7 +625,7 @@ public class ExprEvaluator {
    * @return
    */
   public EvalEngine getEvalEngine() {
-    return engine;
+    return fEngine;
   }
 
   /**
@@ -581,7 +636,7 @@ public class ExprEvaluator {
    * @return
    */
   public IExpr getVariable(String variableName) {
-    return fVariableMap.get(F.symbol(variableName, engine));
+    return fVariableMap.get(F.symbol(variableName, fEngine));
   }
 
   /**
@@ -592,7 +647,7 @@ public class ExprEvaluator {
   public String toJavaForm(final String inputExpression) throws SymjaMathException {
     IExpr parsedExpression;
     if (inputExpression != null) {
-      ExprParser parser = new ExprParser(engine);
+      ExprParser parser = new ExprParser(fEngine);
       parsedExpression = parser.parse(inputExpression);
       return parsedExpression.internalFormString(false, 0);
     }
@@ -608,7 +663,7 @@ public class ExprEvaluator {
   public String toScalaForm(final String inputExpression) throws SymjaMathException {
     IExpr parsedExpression;
     if (inputExpression != null) {
-      ExprParser parser = new ExprParser(engine);
+      ExprParser parser = new ExprParser(fEngine);
       parsedExpression = parser.parse(inputExpression);
       return parsedExpression.internalScalaString(false, 0);
     }

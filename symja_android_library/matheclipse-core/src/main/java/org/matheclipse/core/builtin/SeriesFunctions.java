@@ -9,6 +9,7 @@ import org.matheclipse.core.basic.ToggleFeature;
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.exception.RecursionLimitExceeded;
 import org.matheclipse.core.eval.interfaces.AbstractFunctionEvaluator;
+import org.matheclipse.core.eval.interfaces.IFunctionEvaluator;
 import org.matheclipse.core.eval.util.OptionArgs;
 import org.matheclipse.core.expression.ASTSeriesData;
 import org.matheclipse.core.expression.F;
@@ -213,7 +214,7 @@ public class SeriesFunctions {
       final IExpr limitValue = data.limitValue();
 
       IExpr result = EvalEngine.get().evalQuiet(expression);
-      if (result.isNumericFunction()) {
+      if (result.isNumericFunction(true)) {
         return result;
       }
       if (!result.equals(S.Indeterminate)) {
@@ -228,7 +229,7 @@ public class SeriesFunctions {
         return limitValue;
       }
 
-      if (limitValue.isNumericFunction()) {
+      if (limitValue.isNumericFunction(true)) {
         IExpr temp = evalReplaceAll(expression, data);
         if (temp.isPresent()) {
           return temp;
@@ -244,7 +245,7 @@ public class SeriesFunctions {
             || //
             limitValue.isNegativeInfinity()) {
           IExpr temp = evalReplaceAll(expression, data);
-          if (temp.isNumericFunction()) {
+          if (temp.isNumericFunction(true)) {
             return temp;
           }
         }
@@ -255,7 +256,7 @@ public class SeriesFunctions {
       }
 
       if (expression.isAST()) {
-        if (!limitValue.isNumericFunction()
+        if (!limitValue.isNumericFunction(true)
             && limitValue.isFree(S.DirectedInfinity)
             && limitValue.isFree(data.variable())) {
           // example Limit(E^(3*x), x->a) ==> E^(3*a)
@@ -282,7 +283,7 @@ public class SeriesFunctions {
       IExpr result = expression.replaceAll(data.rule());
       if (result.isPresent()) {
         result = EvalEngine.get().evalQuiet(result);
-        if (result.isNumericFunction() || result.isInfinity() || result.isNegativeInfinity()) {
+        if (result.isNumericFunction(true) || result.isInfinity() || result.isNegativeInfinity()) {
           return result;
         }
       }
@@ -631,7 +632,7 @@ public class SeriesFunctions {
       if (exponent.isFree(data.variable())) {
         final IExpr temp = evalLimitQuiet(base, data);
         if (temp.isPresent()) {
-          if (temp.isZero() && !exponent.isNumericFunction()) {
+          if (temp.isZero() && !exponent.isNumericFunction(true)) {
             // ConditionalExpression(0, exponent > 0)
             return F.ConditionalExpression(F.C0, F.Greater(exponent, F.C0));
           }
@@ -651,11 +652,11 @@ public class SeriesFunctions {
           }
         }
       }
-      if (exponent.isNumericFunction()) {
+      if (exponent.isNumericFunction(true)) {
         // Limit[a_^exp_,sym->lim] -> Limit[a,sym->lim]^exp
         // IExpr temp = F.evalQuiet(F.Limit(arg1.arg1(), rule));?
         IExpr temp = evalLimitQuiet(base, data);
-        if (temp.isNumericFunction()) {
+        if (temp.isNumericFunction(true)) {
           if (temp.isZero()) {
             if (exponent.isPositive()) {
               // 0 ^ (positve exponent)
@@ -888,7 +889,7 @@ public class SeriesFunctions {
               direction = Direction.FROM_BELOW;
             } else if (option.isMinusOne()) {
               direction = Direction.FROM_ABOVE;
-            } else if (option.equals(F.Automatic)
+            } else if (option.equals(S.Automatic)
                 || //
                 option.equals(F.Reals)) {
               direction = Direction.TWO_SIDED;
@@ -925,7 +926,7 @@ public class SeriesFunctions {
 
     @Override
     public int[] expectedArgSize(IAST ast) {
-      return IOFunctions.ARGS_2_3;
+      return ARGS_2_3;
     }
 
     @Override
@@ -996,7 +997,7 @@ public class SeriesFunctions {
 
     @Override
     public int[] expectedArgSize(IAST ast) {
-      return IOFunctions.ARGS_1_2;
+      return ARGS_1_2;
     }
   }
 

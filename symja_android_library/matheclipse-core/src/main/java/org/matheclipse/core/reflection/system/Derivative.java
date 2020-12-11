@@ -225,6 +225,9 @@ public class Derivative extends AbstractFunctionEvaluator implements DerivativeR
         return F.NIL;
       }
       symbol = fullDerivative.arg1();
+      if (!symbol.isVariable()) {
+        return F.NIL;
+      }
     }
     newFunction = engine.evaluate(F.unaryAST1(headDerivative.arg1(), symbol));
 
@@ -243,6 +246,9 @@ public class Derivative extends AbstractFunctionEvaluator implements DerivativeR
       return F.Function(dResult);
     }
     if (n > 1) {
+      if (!symbol.isVariable()) {
+        return F.NIL;
+      }
       for (int i = 0; i < n; i++) {
         dExpr = F.D(newFunction, symbol);
         dExpr.setEvalFlags(IAST.IS_DERIVATIVE_EVALED);

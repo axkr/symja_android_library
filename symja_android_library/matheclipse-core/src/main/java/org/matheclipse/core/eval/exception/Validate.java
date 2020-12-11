@@ -16,6 +16,7 @@ import org.matheclipse.core.interfaces.INum;
 import org.matheclipse.core.interfaces.IStringX;
 import org.matheclipse.core.interfaces.ISymbol;
 import org.matheclipse.parser.client.FEConfig;
+import org.matheclipse.parser.client.Scanner;
 
 /**
  * Static methods to be called at the start of the built-in <code>IFunctionEvaluator#evaluate()
@@ -107,7 +108,7 @@ public final class Validate {
               // The first argument `1` of `2` should be a non-empty list of positive integers.
               IOFunctions.printMessage(ast.topHead(), "coef", F.List(arg, ast.topHead()), engine);
               return null;
-            } else if (nonNegative && longValue.compareTo(BigInteger.ZERO) < 0) {
+            } else if (nonNegative && longValue.compareTo(BigInteger.ZERO) <= 0) {
               // The first argument `1` of `2` should be a non-empty list of positive integers.
               IOFunctions.printMessage(ast.topHead(), "coef", F.List(arg, ast.topHead()), engine);
               return null;
@@ -203,6 +204,74 @@ public final class Validate {
               return null;
             }
             result[i - 1] = intValue;
+          }
+          return result;
+        } catch (RuntimeException rex) {
+          //
+        }
+      }
+    }
+    IOFunctions.printMessage(ast.topHead(), "listofints", F.List(arg), engine);
+    return null;
+  }
+
+  public static int[][] checkListOfSequenceSpec(
+      IAST ast,
+      IExpr arg,
+      int position,
+      int stringLength,
+      int minValue,
+      int maxValue,
+      EvalEngine engine) {
+    if (arg.isList()) {
+      IAST list = (IAST) arg;
+      if (list.argSize() > 0) {
+        int[][] result = new int[list.argSize()][2];
+        int intValue = 0;
+        try {
+          IExpr expr;
+          for (int i = 1; i < list.size(); i++) {
+            expr = list.get(i);
+            if (expr.isList2()) {
+              intValue = expr.first().toIntDefault();
+              if (intValue == Integer.MIN_VALUE) {
+                // Sequence specification or a list of sequence specifications expected at position
+                // `1` in `2`.
+                IOFunctions.printMessage(
+                    ast.topHead(), "mseqs", F.List(F.ZZ(position), ast), engine);
+                return null;
+              }
+              result[i - 1][0] = intValue;
+
+              intValue = expr.second().toIntDefault();
+              if (intValue == Integer.MIN_VALUE) {
+                // Sequence specification or a list of sequence specifications expected at position
+                // `1` in `2`.
+                IOFunctions.printMessage(
+                    ast.topHead(), "mseqs", F.List(F.ZZ(position), ast), engine);
+                return null;
+              }
+              result[i - 1][0] = intValue;
+            } else {
+              intValue = expr.toIntDefault();
+              if (intValue == Integer.MIN_VALUE) {
+                // List of Java int numbers expected in `1`.
+                IOFunctions.printMessage(ast.topHead(), "listofints", F.List(arg), engine);
+                return null;
+              }
+              if (minValue > intValue || intValue > maxValue) {
+                // List of Java int numbers expected in `1`.
+                IOFunctions.printMessage(ast.topHead(), "listofints", F.List(arg), engine);
+                return null;
+              }
+              if (intValue >= 0) {
+                result[i - 1][0] = 1;
+                result[i - 1][1] = intValue;
+              } else {
+                result[i - 1][0] = stringLength + intValue;
+                result[i - 1][1] = stringLength;
+              }
+            }
           }
           return result;
         } catch (RuntimeException rex) {
@@ -471,6 +540,42 @@ public final class Validate {
   }
 
   /**
+   * Check if the argument at the given position is a list of symbols.
+   *
+   * @param ast
+   * @param position the position which has to be a list of symbols
+   * @param engine the evaluation engine
+   * @return a list of symbols defined at <code>ast.get(position)</code> or otherwise <code>F.NIL
+   */
+  public static IAST checkLocalVariableList(IAST ast, int position, EvalEngine engine) {
+    if (ast.get(position).isList()) {
+      IAST listOfSymbols = (IAST) ast.get(position);
+      for (int i = 1; i < listOfSymbols.size(); i++) {
+        IExpr arg = listOfSymbols.get(i);
+        if (arg.isSymbol()) {
+          continue;
+        }
+        if (arg.isAST(S.Set, 3)) {
+          if (arg.first().isSymbol()) {
+            continue;
+          }
+        } else if (arg.isAST(S.SetDelayed, 3)) {
+          if (arg.first().isSymbol()) {
+            continue;
+          }
+        }
+        // Local variable specification `1` contains `2` which is not a symbol or an assignment to
+        // a symbol.
+        return IOFunctions.printMessage(
+            ast.topHead(), "lvsym", F.List(ast.get(position), arg), engine);
+      }
+      return listOfSymbols;
+    }
+    // Local variable specification `1` is not a List.
+    return IOFunctions.printMessage(ast.topHead(), "lvlist", F.List(ast.get(position)), engine);
+  }
+
+  /**
    * Check if the argument at the given position is a single variable or a list of variables.
    *
    * @param ast
@@ -564,6 +669,23 @@ public final class Validate {
     return IOFunctions.printMessage(ast.topHead(), "normal", F.List(F.ZZ(position), ast), engine);
   }
 
+  /**
+   * Check if the expression is an IAST or an IAssociation
+   *
+   * @param ast TODO
+   * @param position
+   * @param engine
+   * @return <code>F.NIL</code> if the expression is no <code>IAST</code> object.
+   */
+  public static IAST checkASTOrAssociationType(
+      IAST ast, IExpr arg1, int position, EvalEngine engine) {
+    if (arg1.isASTOrAssociation()) {
+      return (IAST) arg1;
+    }
+    // Nonatomic expression expected.
+    return IOFunctions.printMessage(ast.topHead(), "normal", F.List(F.ZZ(position), ast), engine);
+  }
+
   private Validate() {}
 
   /**
@@ -651,9 +773,9 @@ public final class Validate {
         return F.ast(arr, head);
       }
     } else if (eq.isTrue()) {
-      return F.True;
+      return S.True;
     } else if (eq.isFalse()) {
-      return F.False;
+      return S.False;
     }
     // not an equation or inequation
     throw new ArgumentTypeException(
@@ -675,11 +797,11 @@ public final class Validate {
       }
 
     } else if (expr.isTrue()) {
-      termsEqualNumberList.append(F.True);
-      // return F.True;
+      termsEqualNumberList.append(S.True);
+      // return S.True;
     } else if (expr.isFalse()) {
-      termsEqualNumberList.append(F.False);
-      // return F.False;
+      termsEqualNumberList.append(S.False);
+      // return S.False;
     } else {
       // not an equation
       throw new ArgumentTypeException(
@@ -723,5 +845,73 @@ public final class Validate {
       return Integer.MIN_VALUE;
     }
     return upTo;
+  }
+
+  /**
+   * Test if <code>expr</code> is a symbol or a string which can be converted into a symbol.
+   *
+   * @param expr
+   * @param ast
+   * @param engine
+   * @return {@link F#NIL} if <code>expr</code> cannot be converted into a symbol
+   * @deprecated use {@link #checkIdentifierHoldPattern(IExpr, IAST, EvalEngine)})
+   */
+  public static IExpr checkIdentifier(final IExpr expr, IAST ast, EvalEngine engine) {
+    ISymbol sym = null;
+    if (expr.isString()) {
+      String identifier = expr.toString();
+      if (!Scanner.isIdentifier(identifier)) {
+        // Argument `1` at position `2` is expected to be a symbol.
+        return IOFunctions.printMessage(ast.topHead(), "sym", F.List(expr, F.C1), engine);
+      }
+      sym = F.symbol(identifier, engine);
+    } else if (expr.isSymbol()) {
+      sym = (ISymbol) expr;
+    } else {
+      // Argument `1` at position `2` is expected to be a symbol.
+      return IOFunctions.printMessage(ast.topHead(), "sym", F.List(expr, F.C1), engine);
+    }
+    return sym;
+  }
+
+  public static IExpr checkIdentifierHoldPattern(final IExpr expr, IAST ast, EvalEngine engine) {
+    ISymbol sym = null;
+    if (expr.isString()) {
+      String identifier = expr.toString();
+      if (!Scanner.isIdentifier(identifier)) {
+        // Argument `1` at position `2` is expected to be a symbol.
+        return IOFunctions.printMessage(ast.topHead(), "sym", F.List(expr, F.C1), engine);
+      }
+      sym = F.symbol(identifier, engine);
+    } else if (expr.isSymbol()) {
+      sym = (ISymbol) expr;
+    } else if (expr.isAST(S.HoldPattern, 2) && expr.first().isSymbol()) {
+      sym = (ISymbol) expr.first();
+    } else {
+      // Symbol, string or HoldPattern(symbol) expected at position `2` in `1`.
+      return IOFunctions.printMessage(ast.topHead(), "ssle", F.List(expr, F.C1), engine);
+    }
+    return sym;
+  }
+
+  /**
+   * Test if <code>expr</code> is a symbol or a string which can be converted into a MessageName
+   * tag.
+   *
+   * @param expr
+   * @param ast
+   * @param engine
+   * @return <code>null</code> if <code>expr</code> cannot be converted into a symbol
+   */
+  public static String checkMessageNameTag(final IExpr expr, IAST ast, EvalEngine engine) {
+    if (expr.isString()) {
+      return expr.toString();
+    } else if (expr.isSymbol()) {
+      return expr.toString();
+    } else {
+      // Argument `1` at position `2` is expected to be a symbol.
+      IOFunctions.printMessage(ast.topHead(), "sym", F.List(expr, F.C1), engine);
+    }
+    return null;
   }
 }

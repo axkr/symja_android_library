@@ -13,6 +13,7 @@ import org.matheclipse.core.convert.VariablesSet;
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.exception.ValidateException;
 import org.matheclipse.core.eval.interfaces.AbstractFunctionEvaluator;
+import org.matheclipse.core.eval.interfaces.IFunctionEvaluator;
 import org.matheclipse.core.eval.util.IAssumptions;
 import org.matheclipse.core.eval.util.OptionArgs;
 import org.matheclipse.core.expression.F;
@@ -1323,13 +1324,16 @@ public class SimplifyFunctions {
     }
 
     public int[] expectedArgSize(IAST ast) {
-      return IOFunctions.ARGS_1_INFINITY;
+      return ARGS_1_INFINITY;
     }
 
     @Override
-    public IAST options() {
-      return F.List(
-          F.Rule(F.Assumptions, F.$Assumptions), F.Rule(F.ComplexityFunction, F.Automatic));
+    public void setUp(final ISymbol newSymbol) {
+      setOptions(
+          newSymbol, //
+          F.List(
+              F.Rule(F.Assumptions, F.$Assumptions), //
+              F.Rule(F.ComplexityFunction, S.Automatic)));
     }
 
     private static IExpr simplifyStep(
@@ -1436,7 +1440,7 @@ public class SimplifyFunctions {
     }
 
     public int[] expectedArgSize(IAST ast) {
-      return IOFunctions.ARGS_1_2;
+      return ARGS_1_2;
     }
 
     @Override

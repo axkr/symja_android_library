@@ -232,7 +232,7 @@ public class JASIExpr {
           }
         }
       } else if (fNumericFunction) {
-        if (ast.isNumericFunction()) {
+        if (ast.isNumericFunction(true)) {
           return new GenPolynomial<IExpr>(fPolyFactory, ast);
         }
       }
@@ -244,7 +244,7 @@ public class JASIExpr {
         return fPolyFactory.getONE().multiply(e);
       }
       if (fNumericFunction) {
-        if (exprPoly.isNumericFunction()) {
+        if (exprPoly.isNumericFunction(true)) {
           return new GenPolynomial<IExpr>(fPolyFactory, exprPoly);
         }
         throw new ClassCastException(exprPoly.toString());

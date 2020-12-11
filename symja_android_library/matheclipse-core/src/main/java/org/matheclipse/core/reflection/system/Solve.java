@@ -13,9 +13,8 @@ import org.matheclipse.core.builtin.BooleanFunctions;
 import org.matheclipse.core.builtin.IOFunctions;
 import org.matheclipse.core.builtin.LinearAlgebra;
 import org.matheclipse.core.builtin.PolynomialFunctions;
-import org.matheclipse.core.convert.ChocoConvert;
-import org.matheclipse.core.convert.CreamConvert;
 import org.matheclipse.core.convert.Convert;
+import org.matheclipse.core.convert.CreamConvert;
 import org.matheclipse.core.convert.VariablesSet;
 import org.matheclipse.core.eval.EvalAttributes;
 import org.matheclipse.core.eval.EvalEngine;
@@ -25,8 +24,10 @@ import org.matheclipse.core.eval.exception.NoEvalException;
 import org.matheclipse.core.eval.exception.Validate;
 import org.matheclipse.core.eval.exception.ValidateException;
 import org.matheclipse.core.eval.interfaces.AbstractFunctionEvaluator;
+import org.matheclipse.core.eval.interfaces.IFunctionEvaluator;
 import org.matheclipse.core.eval.util.SolveUtils;
 import org.matheclipse.core.expression.F;
+import org.matheclipse.core.expression.S;
 import org.matheclipse.core.generic.Predicates;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IASTAppendable;
@@ -428,7 +429,7 @@ public class Solve extends AbstractFunctionEvaluator {
         }
       } else if (ast.isTimes()
           && ast.size() == 3
-          && ast.first().isNumericFunction()
+          && ast.first().isNumericFunction(true)
           && ast.second().isAST1()) {
         IAST timesArg2 = (IAST) ast.second();
         IASTAppendable inverseFunction = InverseFunction.getUnaryInverseFunction(timesArg2);
@@ -493,7 +494,7 @@ public class Solve extends AbstractFunctionEvaluator {
             return rewritePowerFractions(plusAST, i, F.C1, function.base(), function.exponent());
           } else if (function.isTimes()
               && function.size() == 3
-              && function.arg1().isNumericFunction()) {
+              && function.arg1().isNumericFunction(true)) {
             if (function.arg2().isPower()) {
               // function is num*Power(x, fraction)
               IAST power = (IAST) function.arg2();
@@ -512,6 +513,15 @@ public class Solve extends AbstractFunctionEvaluator {
                   return temp;
                 }
               }
+            }
+          } else if (function.isAST(S.GammaRegularized, 3)) {
+            IAST temp = plusAST.removeAtCopy(i);
+            int position = fListOfVariables.indexOf(function.arg2());
+            if (position > 0
+                && function.arg1().isFree(fListOfVariables)
+                && temp.isFree(fListOfVariables)) {
+              fEngine.printMessage("Solve: using of inverse functions may omit some solutions.");
+              return fEngine.evaluate(F.InverseGammaRegularized(function.arg1(), temp.negate()));
             }
           }
         }
@@ -572,7 +582,7 @@ public class Solve extends AbstractFunctionEvaluator {
       // remove constant sub-expressions from Times() expression
       for (int i = 1; i < times.size(); i++) {
         if (times.get(i).isFree(Predicates.in(fListOfVariables), true)
-            && times.get(i).isNumericFunction()) {
+            && times.get(i).isNumericFunction(true)) {
           if (!result.isPresent()) {
             result = times.copyAppendable();
           }
@@ -921,7 +931,7 @@ public class Solve extends AbstractFunctionEvaluator {
   }
 
   public int[] expectedArgSize(IAST ast) {
-    return IOFunctions.ARGS_2_3;
+    return IFunctionEvaluator.ARGS_2_3;
   }
 
   /**
@@ -1233,7 +1243,7 @@ public class Solve extends AbstractFunctionEvaluator {
         IExpr eq = F.Equal.of(equationTerm, F.C0);
         if (eq.isEqual()) {
           IExpr arg1 = eq.first();
-          if (arg1.isPlus() && arg1.size() == 3) {
+          if (arg1.isPlus2()) {
             if (arg1.first().isSqrtExpr() && arg1.second().isSqrtExpr()) {
               // Sqrt() + Sqrt() == constant
               termsEqualZeroList.set(

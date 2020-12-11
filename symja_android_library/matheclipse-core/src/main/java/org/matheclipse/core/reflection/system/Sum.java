@@ -28,6 +28,7 @@ import org.matheclipse.core.eval.exception.RecursionLimitExceeded;
 import org.matheclipse.core.eval.exception.Validate;
 import org.matheclipse.core.eval.exception.ValidateException;
 import org.matheclipse.core.eval.interfaces.IArrayFunction;
+import org.matheclipse.core.eval.interfaces.IFunctionEvaluator;
 import org.matheclipse.core.eval.util.Iterator;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.interfaces.IAST;
@@ -319,7 +320,7 @@ public class Sum extends ListFunctions.Table implements SumRules {
   }
 
   public int[] expectedArgSize(IAST ast) {
-    return IOFunctions.ARGS_2_INFINITY;
+    return IFunctionEvaluator.ARGS_2_INFINITY;
   }
 
   private IExpr collectConstantFactors(final IAST ast, IAST prod, VariablesSet variablesSet) {

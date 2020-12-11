@@ -18,6 +18,7 @@ import org.matheclipse.core.eval.exception.ValidateException;
 import org.matheclipse.core.eval.interfaces.AbstractCoreFunctionEvaluator;
 import org.matheclipse.core.eval.interfaces.AbstractEvaluator;
 import org.matheclipse.core.eval.interfaces.AbstractFunctionEvaluator;
+import org.matheclipse.core.eval.interfaces.IFunctionEvaluator;
 import org.matheclipse.core.eval.interfaces.INumeric;
 import org.matheclipse.core.expression.ComplexNum;
 import org.matheclipse.core.expression.ComplexSym;
@@ -42,6 +43,7 @@ import it.unimi.dsi.fastutil.objects.Object2IntMap;
 import it.unimi.dsi.fastutil.objects.Object2IntOpenHashMap;
 
 public class IntegerFunctions {
+
   /**
    * See <a href="https://pangin.pro/posts/computation-in-static-initializer">Beware of computation
    * in static initializer</a>
@@ -111,7 +113,7 @@ public class IntegerFunctions {
     }
 
     public int[] expectedArgSize(IAST ast) {
-      return IOFunctions.ARGS_1_1;
+      return ARGS_1_1;
     }
 
     @Override
@@ -218,7 +220,7 @@ public class IntegerFunctions {
 
     @Override
     public int[] expectedArgSize(IAST ast) {
-      return IOFunctions.ARGS_1_2;
+      return ARGS_1_2;
     }
 
     public IExpr evalCeiling(IExpr arg1) {
@@ -321,7 +323,7 @@ public class IntegerFunctions {
     }
 
     public int[] expectedArgSize(IAST ast) {
-      return IOFunctions.ARGS_1_3;
+      return ARGS_1_3;
     }
 
     @Override
@@ -420,7 +422,7 @@ public class IntegerFunctions {
 
     @Override
     public int[] expectedArgSize(IAST ast) {
-      return IOFunctions.ARGS_1_3;
+      return ARGS_1_3;
     }
 
     @Override
@@ -475,7 +477,7 @@ public class IntegerFunctions {
 
     @Override
     public int[] expectedArgSize(IAST ast) {
-      return IOFunctions.ARGS_1_2;
+      return ARGS_1_2;
     }
 
     @Override
@@ -599,7 +601,7 @@ public class IntegerFunctions {
 
     @Override
     public int[] expectedArgSize(IAST ast) {
-      return IOFunctions.ARGS_1_2;
+      return ARGS_1_2;
     }
 
     public IExpr evalFloor(IExpr arg1) {
@@ -728,7 +730,7 @@ public class IntegerFunctions {
     }
 
     public int[] expectedArgSize(IAST ast) {
-      return IOFunctions.ARGS_1_1;
+      return ARGS_1_1;
     }
 
     @Override
@@ -785,7 +787,7 @@ public class IntegerFunctions {
 
     @Override
     public int[] expectedArgSize(IAST ast) {
-      return IOFunctions.ARGS_1_2;
+      return ARGS_1_2;
     }
 
     private IExpr fromDigits(IAST list, IExpr radix) {
@@ -897,7 +899,7 @@ public class IntegerFunctions {
 
     @Override
     public int[] expectedArgSize(IAST ast) {
-      return IOFunctions.ARGS_1_2;
+      return ARGS_1_2;
     }
 
     @Override
@@ -979,7 +981,7 @@ public class IntegerFunctions {
     }
 
     public int[] expectedArgSize(IAST ast) {
-      return IOFunctions.ARGS_1_1;
+      return ARGS_1_1;
     }
 
     @Override
@@ -1077,7 +1079,7 @@ public class IntegerFunctions {
         return F.Indeterminate;
       }
       if (div.isNumber()
-          || div.isNumericFunction()
+          || div.isNumericFunction(true)
           || div.isDirectedInfinity()
           || div.isComplexInfinity()) {
         return F.Subtract(m, F.Times(n, F.Floor(div)));
@@ -1087,7 +1089,7 @@ public class IntegerFunctions {
     }
 
     public int[] expectedArgSize(IAST ast) {
-      return IOFunctions.ARGS_2_3;
+      return ARGS_2_3;
     }
 
     @Override
@@ -1154,7 +1156,7 @@ public class IntegerFunctions {
     }
 
     public int[] expectedArgSize(IAST ast) {
-      return IOFunctions.ARGS_3_3;
+      return ARGS_3_3;
     }
 
     @Override
@@ -1239,7 +1241,7 @@ public class IntegerFunctions {
           }
         }
 
-        if (z.isNumericFunction() && n.isNumericFunction()) {
+        if (z.isNumericFunction(true) && n.isNumericFunction(true)) {
           try {
             double zDouble = Double.NaN;
             double nDouble = Double.NaN;
@@ -1282,7 +1284,7 @@ public class IntegerFunctions {
     }
 
     public int[] expectedArgSize(IAST ast) {
-      return IOFunctions.ARGS_2_3;
+      return ARGS_2_3;
     }
 
     @Override
@@ -1376,7 +1378,7 @@ public class IntegerFunctions {
           }
         }
 
-        if (arg1.isNumericFunction() && arg2.isNumericFunction()) {
+        if (arg1.isNumericFunction(true) && arg2.isNumericFunction(true)) {
           try {
             double zDouble = Double.NaN;
             double nDouble = Double.NaN;
@@ -1416,7 +1418,7 @@ public class IntegerFunctions {
 
     @Override
     public int[] expectedArgSize(IAST ast) {
-      return IOFunctions.ARGS_1_2;
+      return ARGS_1_2;
     }
 
     @Override
@@ -1479,14 +1481,32 @@ public class IntegerFunctions {
      */
     @Override
     public IExpr evaluate(final IAST ast, EvalEngine engine) {
+      IExpr res = F.NIL;
       try {
-        IExpr arg1 = engine.evaluate(ast.arg1());
+        IExpr arg1 = ast.arg1();
+        IExpr temp = engine.evaluateNull(arg1);
+        if (temp.isPresent()) {
+          arg1 = temp;
+          res = ast.setAtCopy(1, temp);
+        }
+
         if (arg1.isList()) {
           return ((IAST) arg1).mapThread(ast.setAtCopy(1, F.Slot1), 1);
         }
         if (ast.isAST2()) {
           // Round(z, a)
-          ISignedNumber multiple = ast.arg2().evalReal();
+
+          IExpr arg2 = ast.arg2();
+          temp = engine.evaluateNull(arg2);
+          if (temp.isPresent()) {
+            arg2 = temp;
+            if (!res.isPresent()) {
+              res = ast.setAtCopy(2, temp);
+            } else {
+              ((IASTMutable) res).set(2, temp);
+            }
+          }
+          ISignedNumber multiple = arg2.evalReal();
           if (multiple != null) {
             if (multiple.isZero()) {
               return F.Indeterminate;
@@ -1512,7 +1532,7 @@ public class IntegerFunctions {
             }
           }
 
-          return F.NIL;
+          return res;
         }
 
         if (arg1.isIntegerResult()) {
@@ -1548,11 +1568,11 @@ public class IntegerFunctions {
       } catch (ArithmeticException ae) {
         // ISignedNumber#round() may throw ArithmeticException
       }
-      return F.NIL;
+      return res;
     }
 
     public int[] expectedArgSize(IAST ast) {
-      return IOFunctions.ARGS_1_2;
+      return ARGS_1_2;
     }
 
     @Override

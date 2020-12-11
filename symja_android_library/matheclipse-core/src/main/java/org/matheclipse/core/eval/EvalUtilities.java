@@ -3,7 +3,12 @@ package org.matheclipse.core.eval;
 import java.io.Writer;
 import java.util.function.Predicate;
 
+import org.matheclipse.core.builtin.IOFunctions;
+import org.matheclipse.core.eval.exception.IterationLimitExceeded;
+import org.matheclipse.core.eval.exception.RecursionLimitExceeded;
+import org.matheclipse.core.eval.exception.ThrowException;
 import org.matheclipse.core.expression.F;
+import org.matheclipse.core.expression.S;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.parser.ExprParser;
@@ -54,17 +59,50 @@ public class EvalUtilities extends MathMLUtilities {
    * @return <code>F.NIL</code>, if the inputExpression is <code>null</code>
    */
   public IExpr evaluate(final String inputExpression) {
+    EvalEngine.setReset(fEvalEngine);
     if (inputExpression != null) {
       try {
-        startRequest();
-        EvalEngine.set(fEvalEngine);
-        fEvalEngine.reset();
         IExpr parsedExpression = fEvalEngine.parse(inputExpression);
         if (parsedExpression != null) {
-          // F.join();
-          IExpr temp = fEvalEngine.evaluate(parsedExpression);
-          fEvalEngine.addOut(temp);
-          return temp;
+          EvalEngine[] engineRef = new EvalEngine[] {fEvalEngine};
+          IExpr result = ExprEvaluator.evalTryCatch(parsedExpression, engineRef);
+          fEvalEngine = engineRef[0];
+          return result;
+          //                    IExpr temp;
+          //                    try {
+          //                      // F.join();
+          //                      temp = fEvalEngine.evaluate(parsedExpression);
+          //                    } catch (final ThrowException e) {
+          //                        // Iteration limit of `1` exceeded.
+          //                        IAST ast = F.Throw(e.getValue());
+          //                        IOFunctions.printMessage(S.Throw, "nocatch", F.List(ast),
+          // fEvalEngine);
+          //                        temp = F.Hold(ast);
+          //                    } catch (final IterationLimitExceeded e) {
+          //                      // Iteration limit of `1` exceeded.
+          //                      int iterationLimit = fEvalEngine.getIterationLimit();
+          //                      IOFunctions.printMessage(
+          //                          S.$IterationLimit,
+          //                          "itlim",
+          //                          F.List(iterationLimit < 0 ? F.CInfinity :
+          // F.ZZ(iterationLimit),
+          //           parsedExpression),
+          //                          fEvalEngine);
+          //                      temp = F.Hold(parsedExpression);
+          //                    } catch (final RecursionLimitExceeded e) {
+          //                      // Recursion depth of `1` exceeded during evaluation of `2`.
+          //                      int recursionLimit = fEvalEngine.getRecursionLimit();
+          //                      IOFunctions.printMessage(
+          //                          S.$RecursionLimit,
+          //                          "reclim2",
+          //                          F.List(recursionLimit < 0 ? F.CInfinity :
+          // F.ZZ(recursionLimit),
+          //           parsedExpression),
+          //                          fEvalEngine);
+          //                      temp = F.Hold(parsedExpression);
+          //                    }
+          //                    fEvalEngine.addInOut(parsedExpression, temp);
+          //                    return temp;
         }
       } finally {
         // Quit may set a new engine
@@ -108,9 +146,9 @@ public class EvalUtilities extends MathMLUtilities {
       }
       if (parsedExpression != null) {
         // F.join();
-        evalEngine.reset();
+        EvalEngine.setReset(evalEngine);
         IExpr temp = evalEngine.evaluate(parsedExpression);
-        evalEngine.addOut(temp);
+        evalEngine.addInOut(parsedExpression, temp);
         return temp;
       }
     }
@@ -127,11 +165,8 @@ public class EvalUtilities extends MathMLUtilities {
     if (parsedExpression != null) {
       try {
         // F.join();
-        startRequest();
-        EvalEngine.set(fEvalEngine);
-        fEvalEngine.reset();
         IExpr temp = fEvalEngine.evaluate(parsedExpression);
-        fEvalEngine.addOut(temp);
+        fEvalEngine.addInOut(parsedExpression, temp);
         return temp;
       } finally {
         // Quit may set a new engine
@@ -148,8 +183,7 @@ public class EvalUtilities extends MathMLUtilities {
    */
   public String toJavaForm(final String inputExpression) {
     if (inputExpression != null) {
-      EvalEngine.set(fEvalEngine);
-      fEvalEngine.reset();
+      EvalEngine.setReset(fEvalEngine);
       ExprParser parser = new ExprParser(fEvalEngine);
       IExpr parsedExpression = parser.parse(inputExpression);
       return parsedExpression.internalFormString(false, 0);
@@ -172,14 +206,12 @@ public class EvalUtilities extends MathMLUtilities {
 
     if (inputExpression != null) {
       // try {
-      startRequest();
-      EvalEngine.set(fEvalEngine);
+      EvalEngine.setReset(fEvalEngine);
       IExpr parsedExpression = fEvalEngine.parse(inputExpression);
       if (parsedExpression != null) {
         // F.join();
-        fEvalEngine.reset();
         IAST temp = fEvalEngine.evalTrace(parsedExpression, matcher, list);
-        fEvalEngine.addOut(temp);
+        fEvalEngine.addInOut(parsedExpression, temp);
         return temp;
       }
     }
@@ -201,9 +233,6 @@ public class EvalUtilities extends MathMLUtilities {
       throws RuntimeException {
     if (parsedExpression != null) {
       // F.join();
-      startRequest();
-      EvalEngine.set(fEvalEngine);
-      fEvalEngine.reset();
       IAST temp = fEvalEngine.evalTrace(parsedExpression, matcher, list);
       return temp;
     }
@@ -214,8 +243,6 @@ public class EvalUtilities extends MathMLUtilities {
   @Override
   public synchronized boolean toMathML(final String inputExpression, final Writer out) {
     try {
-      EvalEngine.set(fEvalEngine);
-      fEvalEngine.reset();
       final IExpr result = evaluate(inputExpression);
       if (result.isPresent()) {
         return toMathML(result, out);

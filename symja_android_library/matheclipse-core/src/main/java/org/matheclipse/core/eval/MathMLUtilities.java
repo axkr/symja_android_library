@@ -56,9 +56,7 @@ public class MathMLUtilities {
   public MathMLUtilities(
       final EvalEngine evalEngine, final boolean mathMLTagPrefix, final boolean mathMLHeader) {
     fEvalEngine = evalEngine;
-    EvalEngine.set(fEvalEngine);
-    // set the thread local instance
-    startRequest();
+    EvalEngine.setReset(fEvalEngine);
     //		if (mathMLTagPrefix) {
     //			fMathMLFactory = new MathMLFormFactory("m:", numberFormat);
     //		} else {
@@ -120,22 +118,14 @@ public class MathMLUtilities {
 
     if (objectExpression != null) {
       try {
-        MathMLFormFactory mathMLFactory;
-        if (fMSIE) {
-          mathMLFactory =
-              new MathMLFormFactory(
-                  "m:",
-                  null,
-                  fEvalEngine.getSignificantFigures() - 1,
-                  fEvalEngine.getSignificantFigures() + 1);
-        } else {
-          mathMLFactory =
-              new MathMLFormFactory(
-                  "",
-                  null,
-                  fEvalEngine.getSignificantFigures() - 1,
-                  fEvalEngine.getSignificantFigures() + 1);
-        }
+        MathMLFormFactory mathMLFactory =
+            new MathMLFormFactory(
+                fMSIE ? "m:" : "",
+                fEvalEngine.isRelaxedSyntax(),
+                null,
+                fEvalEngine.getSignificantFigures() - 1,
+                fEvalEngine.getSignificantFigures() + 1);
+
         if (mathMLFactory.convert(buf, objectExpression, Integer.MIN_VALUE, false)) {
           if (fMSIE) {
             out.write("<m:math>");
@@ -156,9 +146,6 @@ public class MathMLUtilities {
             }
 
             out.write(buf.toString());
-            // if (useMstyle) {
-            // out.write("</mstyle>");
-            // }
             out.write("</math>");
           }
           return true;
@@ -185,7 +172,8 @@ public class MathMLUtilities {
         parsedExpression = parser.parse(inputExpression);
         // node = fEvalEngine.parseNode(inputExpression);
         // parsedExpression = AST2Expr.CONST.convert(node, fEvalEngine);
-        out.write(parsedExpression.internalJavaString(false, -1, false, true, false));
+        out.write(
+            parsedExpression.internalJavaString(false, -1, false, true, false, F.CNullFunction));
       } catch (final IOException ioe) {
         //
       } catch (final RuntimeException rex) {
@@ -194,14 +182,6 @@ public class MathMLUtilities {
         }
       }
     }
-  }
-
-  /**
-   * Assign the associated EvalEngine to the current thread. Every subsequent action evaluation in
-   * this thread affects the EvalEngine in this class.
-   */
-  public void startRequest() {
-    EvalEngine.set(fEvalEngine);
   }
 
   /** Stop the current evaluation thread. */

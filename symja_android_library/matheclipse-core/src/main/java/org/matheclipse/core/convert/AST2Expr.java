@@ -11,7 +11,6 @@ import org.matheclipse.core.basic.Config;
 import org.matheclipse.core.builtin.Arithmetic;
 import org.matheclipse.core.builtin.PatternMatching;
 import org.matheclipse.core.eval.EvalEngine;
-import org.matheclipse.core.eval.exception.Validate;
 import org.matheclipse.core.eval.exception.ValidateException;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.expression.ID;
@@ -36,6 +35,7 @@ import org.matheclipse.parser.client.ast.StringNode;
 import org.matheclipse.parser.client.ast.SymbolNode;
 import org.matheclipse.parser.client.eval.DoubleNode;
 import org.matheclipse.parser.trie.SuggestTree;
+import org.matheclipse.parser.trie.TrieMatch;
 import org.matheclipse.parser.trie.Tries;
 
 /**
@@ -65,6 +65,7 @@ public class AST2Expr {
     "$MessageList",
     "$MinMachineNumber",
     "$OutputSizeLimit",
+    "$Packages",
     "$Path",
     "$PathnameSeparator",
     "$PrePrint",
@@ -78,6 +79,7 @@ public class AST2Expr {
 
   public static final String[] SYMBOL_STRINGS = {
     "All",
+    "AllowedHeads",
     "Algebraics",
     "Automatic",
     "Axes",
@@ -130,9 +132,11 @@ public class AST2Expr {
     "HoldRest",
     "IgnoreCase",
     "Indeterminate",
+    "Inherited",
     "Infinity",
     "Integer",
     "Integers",
+    "KeyAbsent",
     "Khinchin",
     "Left",
     "LetterCharacter",
@@ -277,6 +281,8 @@ public class AST2Expr {
     "Attributes",
     "BarChart",
     "BartlettWindow",
+    "BaseDecode",
+    "BaseEncode",
     "BaseForm",
     "Begin",
     "BeginPackage",
@@ -320,6 +326,7 @@ public class AST2Expr {
     "BSplineFunction",
     "Button",
     "ByteArray",
+    "ByteArrayToString",
     "ByteArrayQ",
     "ByteCount",
     "CanberraDistance",
@@ -366,6 +373,7 @@ public class AST2Expr {
     "Complement",
     "Compile",
     "CompiledFunction",
+    "CompilePrint",
     "Complex",
     "ComplexExpand",
     "ComplexPlot3D",
@@ -474,6 +482,7 @@ public class AST2Expr {
     "EdgeList",
     "EdgeQ",
     "EdgeWeight",
+    "EditDistance",
     "EffectiveInterest",
     "Eigenvalues",
     "Eigenvectors",
@@ -489,6 +498,7 @@ public class AST2Expr {
     "EndPackage",
     "EndTestSection",
     "Entity",
+    "Entropy",
     "Equal",
     "Equivalent",
     "Erf",
@@ -609,6 +619,7 @@ public class AST2Expr {
     "GroupBy",
     "GumbelDistribution",
     "HamiltonianGraphQ",
+    "HammingDistance",
     "HammingWindow",
     "HankelH1",
     "HankelH2",
@@ -643,6 +654,7 @@ public class AST2Expr {
     "Im",
     "Implies",
     "Import",
+    "In",
     "Increment",
     "Inequality",
     "InexactNumberQ",
@@ -705,6 +717,7 @@ public class AST2Expr {
     "Key",
     "KeyExistsQ",
     "Keys",
+    "KeySelect",
     "KeySort",
     "KeyTake",
     "KleinInvariantJ",
@@ -816,6 +829,7 @@ public class AST2Expr {
     "ND",
     "NDSolve",
     "Nearest",
+    "Needs",
     "Negative",
     "Nest",
     "NestList",
@@ -844,6 +858,9 @@ public class AST2Expr {
     "NumberFieldRootsOfUnity",
     "NumberQ",
     "Numerator",
+    "NumericArray",
+    "NumericArrayQ",
+    "NumericArrayType",
     "NumericQ",
     "NuttallWindow",
     "OddQ",
@@ -884,6 +901,7 @@ public class AST2Expr {
     "PatternTest",
     "PDF",
     "Permutations",
+    "Pick",
     "PieChart",
     "Piecewise",
     "PiecewiseExpand",
@@ -966,6 +984,7 @@ public class AST2Expr {
     "Reduce",
     "Refine",
     "RegularExpression",
+    "ReleaseHold",
     "Remove",
     "RemoveDiacritics",
     "Repeated",
@@ -1063,14 +1082,17 @@ public class AST2Expr {
     "StringContainsQ",
     "StringDrop",
     "StringExpression",
+    "StringFreeQ",
     "StringInsert",
     "StringJoin",
     "StringLength",
     "StringMatchQ",
     "StringPart",
+    "StringPosition",
     "StringRiffle",
     "StringSplit",
     "StringTake",
+    "StringToByteArray",
     "StringTrim",
     "StringQ",
     "StringReplace",
@@ -1177,6 +1199,7 @@ public class AST2Expr {
     "UpSetDelayed",
     "UpTo",
     "UpValues",
+    "URLFetch",
     "ValueQ",
     "Values",
     "VandermondeMatrix",
@@ -1184,6 +1207,7 @@ public class AST2Expr {
     "Variance",
     "VectorAngle",
     "VectorQ",
+    "Verbatim",
     "VertexEccentricity",
     "VertexList",
     "VerificationTest",
@@ -1210,7 +1234,8 @@ public class AST2Expr {
 
   public static Map<String, Integer> RUBI_STATISTICS_MAP;
 
-  public static final Map<String, String> PREDEFINED_SYMBOLS_MAP = Tries.forStrings();
+  public static final Map<String, String> PREDEFINED_SYMBOLS_MAP =
+      FEConfig.TRIE_STRING2STRING_BUILDER.withMatch(TrieMatch.EXACT).build(); // Tries.forStrings();
 
   /** The alias name of some functions */
   private static final String[] ALIASES_STRINGS = { //
@@ -1254,7 +1279,8 @@ public class AST2Expr {
   };
 
   /** Aliases which are mapped to the standard function symbols. */
-  public static final Map<String, String> PREDEFINED_ALIASES_MAP = Tries.forStrings();
+  public static final Map<String, String> PREDEFINED_ALIASES_MAP =
+      FEConfig.TRIE_STRING2STRING_BUILDER.withMatch(TrieMatch.EXACT).build(); // Tries.forStrings();
 
   public static final String TIMES_STRING =
       FEConfig.PARSER_USE_LOWERCASE_SYMBOLS ? "times" : "Times";
@@ -1585,13 +1611,13 @@ public class AST2Expr {
         case ID.Sqrt:
           if (ast.isAST1()) {
             // rewrite from input: Sqrt(x) => Power(x, 1/2)
-            return F.Power(ast.arg1(), F.C1D2);
+            return F.Power(ast.getUnevaluated(1), F.C1D2);
           }
           break;
         case ID.Exp:
           if (ast.isAST1()) {
             // rewrite from input: Exp(x) => E^x
-            return F.Power(S.E, ast.arg1());
+            return F.Power(S.E, ast.getUnevaluated(1));
           }
           break;
         case ID.Power:
@@ -1601,7 +1627,8 @@ public class AST2Expr {
               // Division operator
               // rewrite from input: Power(Power(x, <number>),-1) =>
               // Power(x, - <number>)
-              return F.Power(arg1Power.base(), ((INumber) arg1Power.exponent()).negate());
+              return F.Power(
+                  arg1Power.getUnevaluated(1), ((INumber) arg1Power.getUnevaluated(2)).negate());
             }
           }
           break;

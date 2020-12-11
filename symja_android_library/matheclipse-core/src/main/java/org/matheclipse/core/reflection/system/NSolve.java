@@ -5,11 +5,11 @@ import java.util.Collections;
 import java.util.HashSet;
 
 import org.matheclipse.core.builtin.Algebra;
-import org.matheclipse.core.builtin.IOFunctions;
 import org.matheclipse.core.builtin.PolynomialFunctions;
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.exception.Validate;
 import org.matheclipse.core.eval.interfaces.AbstractFunctionEvaluator;
+import org.matheclipse.core.eval.interfaces.IFunctionEvaluator;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.generic.Predicates;
 import org.matheclipse.core.interfaces.IAST;
@@ -510,6 +510,6 @@ public class NSolve extends AbstractFunctionEvaluator {
   }
 
   public int[] expectedArgSize(IAST ast) {
-    return IOFunctions.ARGS_2_3;
+    return IFunctionEvaluator.ARGS_2_3;
   }
 }

@@ -14,6 +14,7 @@ import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.expression.ASTRealMatrix;
 import org.matheclipse.core.expression.ASTRealVector;
 import org.matheclipse.core.expression.F;
+import org.matheclipse.core.expression.S;
 import org.matheclipse.core.expression.data.DateObjectExpr;
 import org.matheclipse.core.expression.data.TimeObjectExpr;
 import org.matheclipse.core.interfaces.IAST;
@@ -63,15 +64,15 @@ public class Object2Expr {
     if (obj instanceof IExpr) {
       return (IExpr) obj;
     }
-    if (obj instanceof Boolean) {
-      return ((Boolean) obj).booleanValue() ? F.True : F.False;
-    }
-    if (obj instanceof Number) {
-      return convert((Number) obj);
-    }
     if (obj instanceof String) {
       final ExprParser parser = new ExprParser(EvalEngine.get());
       return parser.parse((String) obj);
+    }
+    if (obj instanceof Boolean) {
+      return ((Boolean) obj).booleanValue() ? S.True : S.False;
+    }
+    if (obj instanceof Number) {
+      return convert((Number) obj);
     }
     if (obj instanceof java.util.Collection) {
       return convertList((java.util.Collection<?>) obj);
@@ -112,7 +113,7 @@ public class Object2Expr {
       final boolean[] array = (boolean[]) obj;
       final IASTAppendable list = F.ListAlloc(array.length);
       for (int i = 0; i < array.length; i++) {
-        list.append(array[i] ? F.True : F.False);
+        list.append(array[i] ? S.True : S.False);
       }
       return list;
     }

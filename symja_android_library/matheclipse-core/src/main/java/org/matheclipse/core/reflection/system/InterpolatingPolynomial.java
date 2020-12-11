@@ -5,9 +5,9 @@ import org.hipparchus.exception.MathIllegalArgumentException;
 import org.hipparchus.exception.MathRuntimeException;
 import org.hipparchus.util.MathArrays;
 import org.hipparchus.util.MathArrays.OrderDirection;
-import org.matheclipse.core.builtin.IOFunctions;
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.interfaces.AbstractEvaluator;
+import org.matheclipse.core.eval.interfaces.IFunctionEvaluator;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IASTAppendable;
@@ -253,7 +253,7 @@ public class InterpolatingPolynomial extends AbstractEvaluator {
 
   @Override
   public int[] expectedArgSize(IAST ast) {
-    return IOFunctions.ARGS_2_2;
+    return IFunctionEvaluator.ARGS_2_2;
   }
 
   @Override

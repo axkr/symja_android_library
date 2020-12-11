@@ -13,6 +13,7 @@ import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.exception.ASTElementLimitExceeded;
 import org.matheclipse.core.eval.interfaces.AbstractEvaluator;
 import org.matheclipse.core.eval.interfaces.AbstractFunctionEvaluator;
+import org.matheclipse.core.eval.interfaces.IFunctionEvaluator;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.expression.S;
 import org.matheclipse.core.interfaces.IAST;
@@ -106,8 +107,8 @@ public class CurveFitterFunctions {
         this.engine = engine;
         this.gradientList = gradientList;
         this.listOfRules = F.ListAlloc(gradientList.size());
-        this.listOfRules.append(F.Rule(x, F.Null));
-        listOfSymbols.forEach(arg -> this.listOfRules.append(F.Rule(arg, F.Null)));
+        this.listOfRules.append(F.Rule(x, S.Null));
+        listOfSymbols.forEach(arg -> this.listOfRules.append(F.Rule(arg, S.Null)));
         // for (int i = 1; i < listOfSymbols.size(); i++) {
         // this.listOfRules.append(F.Rule(listOfSymbols.get(i), F.Null));
         // }
@@ -196,7 +197,7 @@ public class CurveFitterFunctions {
     }
 
     public int[] expectedArgSize(IAST ast) {
-      return IOFunctions.ARGS_4_4;
+      return ARGS_4_4;
     }
 
     /**
@@ -331,7 +332,7 @@ public class CurveFitterFunctions {
     }
 
     public int[] expectedArgSize(IAST ast) {
-      return IOFunctions.ARGS_3_3;
+      return ARGS_3_3;
     }
   }
 
@@ -368,7 +369,7 @@ public class CurveFitterFunctions {
 
     @Override
     public int[] expectedArgSize(IAST ast) {
-      return IOFunctions.ARGS_3_3;
+      return ARGS_3_3;
     }
   }
 

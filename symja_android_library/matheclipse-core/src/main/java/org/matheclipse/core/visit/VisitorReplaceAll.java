@@ -3,6 +3,7 @@ package org.matheclipse.core.visit;
 import java.util.Map;
 import java.util.function.Function;
 
+import org.matheclipse.core.builtin.IOFunctions;
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.exception.ArgumentTypeException;
 import org.matheclipse.core.expression.F;
@@ -272,8 +273,8 @@ public class VisitorReplaceAll extends VisitorExpr {
     } else if (arg2.isAssociation()) {
       visitor = new VisitorReplaceAll((IAST) arg2.normal(false));
     } else {
-      throw new ArgumentTypeException(
-          ast.topHead() + ": rule expressions (x->y) expected instead of " + arg2.toString());
+      String str = IOFunctions.getMessage("reps", F.List(arg2));
+      throw new ArgumentTypeException(str);
     }
     return visitor;
   }

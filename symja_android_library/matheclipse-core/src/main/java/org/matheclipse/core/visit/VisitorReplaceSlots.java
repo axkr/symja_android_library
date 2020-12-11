@@ -34,7 +34,7 @@ public class VisitorReplaceSlots extends VisitorExpr {
   }
 
   private IExpr getSlot(IStringX str) {
-    if (astSlots.arg1().isDataSet()) {
+    if (astSlots.arg1().isDataset()) {
       return ((IASTDataset) astSlots.arg1()).getValue(str);
     }
     if (astSlots.arg1().isAssociation()) {
@@ -88,10 +88,12 @@ public class VisitorReplaceSlots extends VisitorExpr {
     int i = 0;
     int j = 0;
     int size = ast.size();
+    IExpr arg;
     while (i < size) {
-      if (!ast.get(i).isFunction()) {
-        if (ast.get(i).isSlotSequence()) {
-          IAST slotSequence = (IAST) ast.get(i);
+      arg = ast.get(i);
+      if (!arg.isPureFunction()) {
+        if (arg.isSlotSequence()) {
+          IAST slotSequence = (IAST) arg;
           if (slotSequence.arg1().isInteger()) {
             // something may be evaluated - return a new IAST:
             result = ast.copyAppendable();
@@ -100,7 +102,7 @@ public class VisitorReplaceSlots extends VisitorExpr {
           }
           break;
         }
-        temp = ast.get(i).accept(this);
+        temp = arg.accept(this);
         if (temp.isPresent()) {
           // something was evaluated - return a new IAST:
           result = ast.setAtClone(i++, temp);
@@ -113,16 +115,17 @@ public class VisitorReplaceSlots extends VisitorExpr {
     }
     if (result.isPresent()) {
       while (i < size) {
-        if (!ast.get(i).isFunction()) {
-          if (ast.get(i).isSlotSequence()) {
-            IAST slotSequence = (IAST) ast.get(i);
+        arg = ast.get(i);
+        if (!arg.isPureFunction()) {
+          if (arg.isSlotSequence()) {
+            IAST slotSequence = (IAST) arg;
             if (slotSequence.arg1().isInteger()) {
               j = getSlotSequence(result, j, (IntegerSym) slotSequence.arg1());
               i++;
             }
             continue;
           }
-          temp = ast.get(i).accept(this);
+          temp = arg.accept(this);
           if (temp.isPresent()) {
             result.set(j, temp);
           }

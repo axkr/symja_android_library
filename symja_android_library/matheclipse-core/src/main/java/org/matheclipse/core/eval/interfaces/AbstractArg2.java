@@ -1,6 +1,5 @@
 package org.matheclipse.core.eval.interfaces;
 
-import org.matheclipse.core.builtin.IOFunctions;
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.exception.LimitException;
 import org.matheclipse.core.eval.exception.ValidateException;
@@ -238,6 +237,6 @@ public abstract class AbstractArg2 extends AbstractFunctionEvaluator {
   }
 
   public int[] expectedArgSize(IAST ast) {
-    return IOFunctions.ARGS_2_2;
+    return IFunctionEvaluator.ARGS_2_2;
   }
 }

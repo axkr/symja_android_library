@@ -15,12 +15,18 @@ import org.apfloat.Apint;
 import org.apfloat.Aprational;
 import org.matheclipse.core.basic.Config;
 import org.matheclipse.core.eval.EvalEngine;
+import org.matheclipse.core.eval.EvalHistory;
 import org.matheclipse.core.eval.interfaces.AbstractSymbolEvaluator;
+import org.matheclipse.core.eval.interfaces.ISetValueEvaluator;
 import org.matheclipse.core.eval.interfaces.ISignedNumberConstant;
+import org.matheclipse.core.expression.ContextPath;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.expression.S;
 import org.matheclipse.core.expression.data.DateObjectExpr;
+import org.matheclipse.core.interfaces.IAST;
+import org.matheclipse.core.interfaces.IASTAppendable;
 import org.matheclipse.core.interfaces.IExpr;
+import org.matheclipse.core.interfaces.IInteger;
 import org.matheclipse.core.interfaces.ISymbol;
 import org.matheclipse.parser.client.FEConfig;
 
@@ -71,13 +77,18 @@ public class ConstantDefinitions {
       S.$Context.setEvaluator(new $Context());
       S.$ContextPath.setEvaluator(new $ContextPath());
       S.$CreationDate.setEvaluator(new $CreationDate());
+      S.$HistoryLength.setEvaluator(new $HistoryLength());
       S.$HomeDirectory.setEvaluator(new $HomeDirectory());
+      S.$IterationLimit.setEvaluator(new $IterationLimit());
+      S.$Line.setEvaluator(new $Line());
       S.$MachineEpsilon.setEvaluator(new $MachineEpsilon());
       S.$MachinePrecision.setEvaluator(new $MachinePrecision());
+      S.$Packages.setEvaluator(new $Packages());
       S.$Path.setEvaluator(new $Path());
       S.$PathnameSeparator.setEvaluator(new $PathnameSeparator());
 
       S.$UserName.setEvaluator(new $UserName());
+      S.$RecursionLimit.setEvaluator(new $RecursionLimit());
       S.$RootDirectory.setEvaluator(new $RootDirectory());
       S.$TemporaryDirectory.setEvaluator(new $TemporaryDirectory());
       S.$Version.setEvaluator(new $Version());
@@ -115,7 +126,7 @@ public class ConstantDefinitions {
     static final NILEvaluator CONST = new NILEvaluator();
 
     @Override
-    public IExpr numericEval(final ISymbol symbol) {
+    public IExpr numericEval(final ISymbol symbol, EvalEngine engine) {
       return F.NIL;
     }
 
@@ -133,7 +144,7 @@ public class ConstantDefinitions {
   private static class $Context extends AbstractSymbolEvaluator {
 
     @Override
-    public IExpr evaluate(final ISymbol symbol) {
+    public IExpr evaluate(final ISymbol symbol, EvalEngine engine) {
       return EvalEngine.get().getContextPath().currentCompleteContextName();
     }
   }
@@ -141,7 +152,7 @@ public class ConstantDefinitions {
   private static class $ContextPath extends AbstractSymbolEvaluator {
 
     @Override
-    public IExpr evaluate(final ISymbol symbol) {
+    public IExpr evaluate(final ISymbol symbol, EvalEngine engine) {
       return EvalEngine.get().getContextPath().pathAsStrings();
     }
   }
@@ -149,15 +160,63 @@ public class ConstantDefinitions {
   private static class $CreationDate extends AbstractSymbolEvaluator {
 
     @Override
-    public IExpr evaluate(final ISymbol symbol) {
+    public IExpr evaluate(final ISymbol symbol, EvalEngine engine) {
       return F.List(F.ZZ(YEAR), F.ZZ(MONTH), F.ZZ(DAY), F.ZZ(HOUR), F.ZZ(MINUTE), F.ZZ(SECOND));
+    }
+  }
+
+  private static class $HistoryLength extends AbstractSymbolEvaluator
+      implements ISetValueEvaluator {
+
+    @Override
+    public IExpr evaluate(final ISymbol symbol, EvalEngine engine) {
+      EvalHistory history = engine.getEvalHistory();
+      if (history == null) {
+        return F.C0;
+      }
+      short historyLength = history.getHistoryLength();
+      if (historyLength == Short.MAX_VALUE) {
+        return F.CInfinity;
+      }
+      return F.ZZ(historyLength);
+    }
+
+    public IExpr evaluateSet(IExpr rightHandSide, boolean setDelayed, final EvalEngine engine) {
+      int iValue = rightHandSide.toIntDefault();
+      short historyLength;
+      if (iValue < 0) {
+        if (rightHandSide.isInfinity()) {
+          historyLength = Short.MAX_VALUE;
+        } else {
+          // Positive machine-sized integer expected at position `2` in `1`.
+          return IOFunctions.printMessage(
+              S.$HistoryLength,
+              "intpm",
+              F.List(F.C2, F.Set(F.$HistoryLength, rightHandSide)),
+              engine);
+        }
+      } else if (iValue < Short.MAX_VALUE) {
+        historyLength = (short) iValue;
+      } else {
+        historyLength = Short.MAX_VALUE;
+      }
+      IInteger value = F.ZZ(historyLength);
+      S.$HistoryLength.assignValue(value, setDelayed);
+      EvalHistory history = engine.getEvalHistory();
+      if (history == null) {
+        history = new EvalHistory(historyLength);
+        engine.setOutListDisabled(history);
+      } else {
+        history.setHistoryLength(historyLength);
+      }
+      return value;
     }
   }
 
   private static class $HomeDirectory extends AbstractSymbolEvaluator {
 
     @Override
-    public IExpr evaluate(final ISymbol symbol) {
+    public IExpr evaluate(final ISymbol symbol, EvalEngine engine) {
       String userHome = System.getProperty("user.home");
       if (userHome == null) {
         return F.CEmptyString;
@@ -166,10 +225,68 @@ public class ConstantDefinitions {
     }
   }
 
+  private static class $IterationLimit extends AbstractSymbolEvaluator
+      implements ISetValueEvaluator {
+
+    @Override
+    public IExpr evaluate(final ISymbol symbol, EvalEngine engine) {
+      int iterationLimit = engine.getIterationLimit();
+      if (symbol.hasAssignedSymbolValue()) {
+        IExpr value = symbol.assignedValue();
+        iterationLimit = value.toIntDefault();
+        engine.setIterationLimit(iterationLimit);
+      }
+
+      return F.ZZ(iterationLimit);
+    }
+
+    public IExpr evaluateSet(IExpr rightHandSide, boolean setDelayed, final EvalEngine engine) {
+      if (rightHandSide.isInfinity()) {
+        S.$IterationLimit.assignValue(F.CN1, false);
+        engine.setIterationLimit(-1);
+        return rightHandSide;
+      }
+      int iterationLimit = rightHandSide.toIntDefault();
+      if (iterationLimit < 20) {
+        // Cannot set $IterationLimit to `1`; value must be Infinity or an integer at least 20.
+        return IOFunctions.printMessage(S.$IterationLimit, "limset", F.List(rightHandSide), engine);
+      }
+      S.$IterationLimit.assignValue(F.ZZ(iterationLimit), setDelayed);
+      engine.setIterationLimit(iterationLimit);
+      return F.ZZ(iterationLimit);
+    }
+  }
+
+  private static class $Line extends AbstractSymbolEvaluator implements ISetValueEvaluator {
+
+    @Override
+    public IExpr evaluate(final ISymbol symbol, EvalEngine engine) {
+      EvalHistory history = engine.getEvalHistory();
+      if (history == null) {
+        return F.C0;
+      }
+      int line = history.getLineCounter();
+      return F.ZZ(line);
+    }
+
+    public IExpr evaluateSet(IExpr rightHandSide, boolean setDelayed, final EvalEngine engine) {
+      int line = rightHandSide.toIntDefault();
+      IInteger value = F.ZZ(line);
+      S.$Line.assignValue(value, setDelayed);
+      EvalHistory history = engine.getEvalHistory();
+      if (history == null) {
+        history = new EvalHistory((short) 100);
+        engine.setOutListDisabled(history);
+      }
+      history.resetLineCounter(line);
+      return value;
+    }
+  }
+
   private static class $MachineEpsilon extends AbstractSymbolEvaluator {
 
     @Override
-    public IExpr evaluate(final ISymbol symbol) {
+    public IExpr evaluate(final ISymbol symbol, EvalEngine engine) {
       // System.out.println(Config.MACHINE_EPSILON);
       return F.num(Config.MACHINE_EPSILON);
     }
@@ -178,15 +295,27 @@ public class ConstantDefinitions {
   private static class $MachinePrecision extends AbstractSymbolEvaluator {
 
     @Override
-    public IExpr evaluate(final ISymbol symbol) {
+    public IExpr evaluate(final ISymbol symbol, EvalEngine engine) {
       return F.ZZ(FEConfig.MACHINE_PRECISION);
+    }
+  }
+
+  private static class $Packages extends AbstractSymbolEvaluator {
+
+    @Override
+    public IExpr evaluate(final ISymbol symbol, EvalEngine engine) {
+      IASTAppendable result = F.ListAlloc(ContextPath.PACKAGES.size());
+      for (String str : ContextPath.PACKAGES) {
+        result.append(F.$str(str));
+      }
+      return result;
     }
   }
 
   private static class $Path extends AbstractSymbolEvaluator {
 
     @Override
-    public IExpr evaluate(final ISymbol symbol) {
+    public IExpr evaluate(final ISymbol symbol, EvalEngine engine) {
       String path = System.getenv("PATH");
       if (path == null) {
         return F.CEmptyString;
@@ -198,15 +327,47 @@ public class ConstantDefinitions {
   private static class $PathnameSeparator extends AbstractSymbolEvaluator {
 
     @Override
-    public IExpr evaluate(final ISymbol symbol) {
+    public IExpr evaluate(final ISymbol symbol, EvalEngine engine) {
       return F.stringx(File.separator);
+    }
+  }
+
+  private static class $RecursionLimit extends AbstractSymbolEvaluator
+      implements ISetValueEvaluator {
+
+    @Override
+    public IExpr evaluate(final ISymbol symbol, EvalEngine engine) {
+      int recursionLimit = engine.getRecursionLimit();
+      if (symbol.hasAssignedSymbolValue()) {
+        IExpr value = symbol.assignedValue();
+        recursionLimit = value.toIntDefault();
+        engine.setRecursionLimit(recursionLimit);
+      }
+
+      return F.ZZ(recursionLimit);
+    }
+
+    public IExpr evaluateSet(IExpr rightHandSide, boolean setDelayed, final EvalEngine engine) {
+      if (rightHandSide.isInfinity()) {
+        S.$RecursionLimit.assignValue(F.CN1, false);
+        engine.setRecursionLimit(-1);
+        return rightHandSide;
+      }
+      int recursionLimit = rightHandSide.toIntDefault();
+      if (recursionLimit < 20) {
+        // Cannot set $RecursionLimit to `1`; value must be Infinity or an integer at least 20.
+        return IOFunctions.printMessage(S.$RecursionLimit, "limset", F.List(rightHandSide), engine);
+      }
+      S.$RecursionLimit.assignValue(F.ZZ(recursionLimit), setDelayed);
+      engine.setRecursionLimit(recursionLimit);
+      return F.ZZ(recursionLimit);
     }
   }
 
   private static class $RootDirectory extends AbstractSymbolEvaluator {
 
     @Override
-    public IExpr evaluate(final ISymbol symbol) {
+    public IExpr evaluate(final ISymbol symbol, EvalEngine engine) {
       Path root =
           Paths.get(System.getProperty("user.dir"))
               .getFileSystem()
@@ -223,7 +384,7 @@ public class ConstantDefinitions {
   private static class $TemporaryDirectory extends AbstractSymbolEvaluator {
 
     @Override
-    public IExpr evaluate(final ISymbol symbol) {
+    public IExpr evaluate(final ISymbol symbol, EvalEngine engine) {
       String tempDirectory = System.getProperty("java.io.tmpdir");
       if (tempDirectory == null) {
         return F.CEmptyString;
@@ -235,7 +396,7 @@ public class ConstantDefinitions {
   private static class $UserName extends AbstractSymbolEvaluator {
 
     @Override
-    public IExpr evaluate(final ISymbol symbol) {
+    public IExpr evaluate(final ISymbol symbol, EvalEngine engine) {
       String userName = System.getProperty("user.name");
       if (userName == null) {
         return F.stringx("");
@@ -247,7 +408,7 @@ public class ConstantDefinitions {
   private static class $Version extends AbstractSymbolEvaluator {
 
     @Override
-    public IExpr evaluate(final ISymbol symbol) {
+    public IExpr evaluate(final ISymbol symbol, EvalEngine engine) {
       return F.stringx(VERSION);
     }
   }
@@ -287,7 +448,7 @@ public class ConstantDefinitions {
     }
 
     @Override
-    public IExpr numericEval(final ISymbol symbol) {
+    public IExpr numericEval(final ISymbol symbol, EvalEngine engine) {
       return F.num(CATALAN);
     }
 
@@ -329,7 +490,7 @@ public class ConstantDefinitions {
   private static class ComplexInfinity extends AbstractSymbolEvaluator {
 
     @Override
-    public IExpr evaluate(final ISymbol symbol) {
+    public IExpr evaluate(final ISymbol symbol, EvalEngine engine) {
       return F.CComplexInfinity;
     }
 
@@ -383,7 +544,7 @@ public class ConstantDefinitions {
 
     /** Constant Degree converted to Pi/180 */
     @Override
-    public IExpr evaluate(final ISymbol symbol) {
+    public IExpr evaluate(final ISymbol symbol, EvalEngine engine) {
       return Times(F.Pi, Power(F.ZZ(180), F.CN1));
     }
 
@@ -395,7 +556,7 @@ public class ConstantDefinitions {
     }
 
     @Override
-    public IExpr numericEval(final ISymbol symbol) {
+    public IExpr numericEval(final ISymbol symbol, EvalEngine engine) {
       return F.num(DEGREE);
     }
 
@@ -440,7 +601,7 @@ public class ConstantDefinitions {
     }
 
     @Override
-    public IExpr numericEval(final ISymbol symbol) {
+    public IExpr numericEval(final ISymbol symbol, EvalEngine engine) {
       return F.num(Math.E);
     }
 
@@ -469,7 +630,7 @@ public class ConstantDefinitions {
     }
 
     @Override
-    public IExpr numericEval(final ISymbol symbol) {
+    public IExpr numericEval(final ISymbol symbol, EvalEngine engine) {
       return F.num(EULER_GAMMA);
     }
 
@@ -507,7 +668,7 @@ public class ConstantDefinitions {
     }
 
     @Override
-    public IExpr numericEval(final ISymbol symbol) {
+    public IExpr numericEval(final ISymbol symbol, EvalEngine engine) {
       return F.num(GLAISHER);
     }
 
@@ -522,7 +683,7 @@ public class ConstantDefinitions {
     public static final double GOLDEN_ANGLE = 2.3999632297286533222315555066336138531249990110581;
 
     @Override
-    public IExpr evaluate(final ISymbol symbol) {
+    public IExpr evaluate(final ISymbol symbol, EvalEngine engine) {
       // (3-Sqrt(5))*Pi
       // return F.Times(F.Subtract(F.C3, F.Sqrt(F.C5)), F.Pi);
       return F.NIL;
@@ -542,7 +703,7 @@ public class ConstantDefinitions {
     }
 
     @Override
-    public IExpr numericEval(final ISymbol symbol) {
+    public IExpr numericEval(final ISymbol symbol, EvalEngine engine) {
       return F.num(GOLDEN_ANGLE);
     }
 
@@ -583,7 +744,7 @@ public class ConstantDefinitions {
     public static final double GOLDEN_RATIO = 1.6180339887498948482045868343656381177203091798058;
 
     @Override
-    public IExpr evaluate(final ISymbol symbol) {
+    public IExpr evaluate(final ISymbol symbol, EvalEngine engine) {
       // 1/2*(1+5^(1/2))
       // return F.Times(F.C1D2, F.Plus(F.C1, F.Power(F.integer(5), F.C1D2)));
       return F.NIL;
@@ -603,7 +764,7 @@ public class ConstantDefinitions {
     }
 
     @Override
-    public IExpr numericEval(final ISymbol symbol) {
+    public IExpr numericEval(final ISymbol symbol, EvalEngine engine) {
       return F.num(GOLDEN_RATIO);
     }
 
@@ -649,12 +810,12 @@ public class ConstantDefinitions {
     }
 
     @Override
-    public IExpr numericEval(final ISymbol symbol) {
+    public IExpr numericEval(final ISymbol symbol, EvalEngine engine) {
       return F.complexNum(0.0, 1.0);
     }
 
     @Override
-    public IExpr evaluate(final ISymbol symbol) {
+    public IExpr evaluate(final ISymbol symbol, EvalEngine engine) {
       return F.complex(F.C0, F.C1);
     }
   }
@@ -708,7 +869,7 @@ public class ConstantDefinitions {
   private static class Infinity extends AbstractSymbolEvaluator {
 
     @Override
-    public IExpr evaluate(final ISymbol symbol) {
+    public IExpr evaluate(final ISymbol symbol, EvalEngine engine) {
       return F.CInfinity; // unaryAST1(F.DirectedInfinity, F.C1);
     }
 
@@ -721,7 +882,7 @@ public class ConstantDefinitions {
   private static class Now extends AbstractSymbolEvaluator {
 
     @Override
-    public IExpr evaluate(final ISymbol symbol) {
+    public IExpr evaluate(final ISymbol symbol, EvalEngine engine) {
       return DateObjectExpr.newInstance(LocalDateTime.now());
     }
 
@@ -734,7 +895,7 @@ public class ConstantDefinitions {
   private static class Today extends AbstractSymbolEvaluator {
 
     @Override
-    public IExpr evaluate(final ISymbol symbol) {
+    public IExpr evaluate(final ISymbol symbol, EvalEngine engine) {
       LocalDateTime now = LocalDateTime.now();
       return DateObjectExpr.newInstance(
           LocalDateTime.of(now.getYear(), now.getMonth(), now.getDayOfMonth(), 0, 0));
@@ -782,7 +943,7 @@ public class ConstantDefinitions {
     }
 
     @Override
-    public IExpr numericEval(final ISymbol symbol) {
+    public IExpr numericEval(final ISymbol symbol, EvalEngine engine) {
       return F.num(KHINCHIN);
     }
 
@@ -820,7 +981,7 @@ public class ConstantDefinitions {
     }
 
     @Override
-    public IExpr numericEval(final ISymbol symbol) {
+    public IExpr numericEval(final ISymbol symbol, EvalEngine engine) {
       return F.num(Math.PI);
     }
 

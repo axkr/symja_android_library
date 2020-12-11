@@ -3,7 +3,6 @@ package org.matheclipse.core.eval.interfaces;
 import org.hipparchus.exception.MathRuntimeException;
 import org.hipparchus.linear.FieldMatrix;
 import org.hipparchus.linear.RealMatrix;
-import org.matheclipse.core.builtin.IOFunctions;
 import org.matheclipse.core.convert.Convert;
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.exception.LimitException;
@@ -55,7 +54,7 @@ public abstract class AbstractMatrix1Expr extends AbstractFunctionEvaluator {
 
   @Override
   public int[] expectedArgSize(IAST ast) {
-    return IOFunctions.ARGS_1_1;
+    return IFunctionEvaluator.ARGS_1_1;
   }
 
   /**

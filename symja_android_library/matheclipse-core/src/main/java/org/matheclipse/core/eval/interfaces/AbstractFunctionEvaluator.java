@@ -319,7 +319,7 @@ public abstract class AbstractFunctionEvaluator extends AbstractEvaluator {
         k = F.C1;
         break;
       }
-      if (temp.isTimes() && temp.size() == 3) {
+      if (temp.isTimes2()) {
         if (temp.first().isRational() && temp.second().equals(F.Pi)) {
           k = (IRational) temp.first();
           break;

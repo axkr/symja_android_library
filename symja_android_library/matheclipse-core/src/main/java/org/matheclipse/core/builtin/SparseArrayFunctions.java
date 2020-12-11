@@ -6,6 +6,7 @@ import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.exception.Validate;
 import org.matheclipse.core.eval.interfaces.AbstractCoreFunctionEvaluator;
 import org.matheclipse.core.eval.interfaces.AbstractFunctionEvaluator;
+import org.matheclipse.core.eval.interfaces.IFunctionEvaluator;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.expression.S;
 import org.matheclipse.core.expression.data.SparseArrayExpr;
@@ -27,6 +28,46 @@ public class SparseArrayFunctions {
     }
   }
 
+  /**
+   *
+   *
+   * <pre>
+   * <code>ArrayRules(sparse-array)
+   * </code>
+   * </pre>
+   *
+   * <blockquote>
+   *
+   * <p>return the array of rules which define the sparse array.
+   *
+   * </blockquote>
+   *
+   * <pre>
+   * <code>ArrayRules(nested-lists)
+   * </code>
+   * </pre>
+   *
+   * <blockquote>
+   *
+   * <p>return the array of rules which define the nested lists.
+   *
+   * </blockquote>
+   *
+   * <h3>Examples</h3>
+   *
+   * <pre>
+   * <code>&gt;&gt; a = {{{0,0},{1,1}},{{0,1},{0,1}}}
+   * {{{0,0},{1,1}},{{0,1},{0,1}}}
+   *
+   * &gt;&gt; ArrayRules(a)
+   * {{1,2,1}-&gt;1,{1,2,2}-&gt;1,{2,1,2}-&gt;1,{2,2,2}-&gt;1,{_,_,_}-&gt;0}
+   * </code>
+   * </pre>
+   *
+   * <h3>Related terms</h3>
+   *
+   * <p><a href="SparseArray.md">SparseArray</a>
+   */
   private static class ArrayRules extends AbstractFunctionEvaluator {
 
     @Override
@@ -62,10 +103,59 @@ public class SparseArrayFunctions {
 
     @Override
     public int[] expectedArgSize(IAST ast) {
-      return IOFunctions.ARGS_1_2;
+      return ARGS_1_2;
     }
   }
 
+  /**
+   *
+   *
+   * <pre><code>SparseArray(nested-list)
+   * </code></pre>
+   *
+   * <blockquote>
+   *
+   * <p>create a sparse array from a <code>nested-list</code> structure.
+   *
+   * </blockquote>
+   *
+   * <pre><code>SparseArray(array-rules, list-of-integers, default-value)
+   * </code></pre>
+   *
+   * <blockquote>
+   *
+   * <p>create a sparse array from <code>array-rules</code> with dimension <code>list-of-integers
+   * </code> and undefined elements are having <code>default-value</code>.
+   *
+   * </blockquote>
+   *
+   * <pre><code>SparseArray(Automatic, list-of-integers, default-value, crs-list)
+   * </code></pre>
+   *
+   * <blockquote>
+   *
+   * <p>create a sparse array from the compressed-row-storage <code>crs-list</code> with dimension
+   * <code>list-of-integers</code> and undefined elements are having <code>default-value</code>.
+   *
+   * </blockquote>
+   *
+   * <p>See
+   *
+   * <ul>
+   *   <li><a href="http://netlib.org/utk/papers/templates/node91.html">Netlib - Compressed Row
+   *       Storage (CRS)</a>
+   * </ul>
+   *
+   * <h3>Examples</h3>
+   *
+   * <pre>
+   * <code>&gt;&gt; SparseArray({{1, 1} -&gt; 1, {2, 2} -&gt; 2, {3, 3} -&gt; 3, {1, 3} -&gt; 4})
+   * SparseArray(Number of elements: 4 Dimensions: {3,3} Default value: 0)
+   *
+   * &gt;&gt; SparseArray({{1, 1} -&gt; 1, {2, 2} -&gt; 2, {3, 3} -&gt; 3, {1, 3} -&gt; 4}, Automatic, 0)
+   * SparseArray(Number of elements: 4 Dimensions: {3,3} Default value: 0)
+   * </code></pre>
+   */
   private static class SparseArray extends AbstractFunctionEvaluator {
 
     @Override
@@ -182,7 +272,7 @@ public class SparseArrayFunctions {
 
     @Override
     public int[] expectedArgSize(IAST ast) {
-      return IOFunctions.ARGS_1_4;
+      return ARGS_1_4;
     }
   }
 

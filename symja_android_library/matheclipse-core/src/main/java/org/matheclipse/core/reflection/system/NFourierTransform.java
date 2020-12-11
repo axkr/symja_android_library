@@ -4,11 +4,11 @@ import org.hipparchus.analysis.UnivariateFunction;
 import org.hipparchus.transform.DftNormalization;
 import org.hipparchus.transform.FastFourierTransformer;
 import org.hipparchus.transform.TransformType;
-import org.matheclipse.core.builtin.IOFunctions;
 import org.matheclipse.core.convert.Object2Expr;
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.exception.Validate;
 import org.matheclipse.core.eval.interfaces.AbstractFunctionEvaluator;
+import org.matheclipse.core.eval.interfaces.IFunctionEvaluator;
 import org.matheclipse.core.eval.util.OptionArgs;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.generic.UnaryNumerical;
@@ -44,7 +44,7 @@ public class NFourierTransform extends AbstractFunctionEvaluator {
   }
 
   public int[] expectedArgSize(IAST ast) {
-    return IOFunctions.ARGS_3_4;
+    return IFunctionEvaluator.ARGS_3_4;
   }
 
   @Override

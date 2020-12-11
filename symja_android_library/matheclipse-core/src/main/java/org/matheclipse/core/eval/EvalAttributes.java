@@ -114,10 +114,11 @@ public class EvalAttributes {
    * @see #flattenDeep(IAST)
    */
   public static IASTAppendable flatten(final IAST ast) {
-    if ((ast.getEvalFlags() & IAST.IS_FLATTENED) == IAST.IS_FLATTENED) {
+    if (ast.isEvalFlagOn(IAST.IS_FLATTENED)) {
       // already flattened
       return F.NIL;
     }
+
     final IExpr sym = ast.head();
     if (sym.isSymbol() && ast.isAST(sym)) {
       IASTAppendable result = flatten((ISymbol) sym, ast);
@@ -193,6 +194,12 @@ public class EvalAttributes {
             flattened[0] = true;
             int temp = ((IAST) expr).argSize(); // flattenAlloc(head, (IAST) expr);
             newSize[0] += temp;
+          } else if (expr.isUnevaluated()
+              && expr.first().head().equals(head)
+              && expr.first().isAST()) {
+            flattened[0] = true;
+            int temp = ((IAST) expr).argSize(); // flattenAlloc(head, (IAST) expr);
+            newSize[0] += temp;
           } else {
             newSize[0]++;
           }
@@ -204,6 +211,11 @@ public class EvalAttributes {
           expr -> {
             if (expr.isAST(head)) {
               result.appendArgs((IAST) expr); // flatten(head, (IAST) expr).orElse((IAST) expr));
+            } else if (expr.isUnevaluated()
+                && expr.first().head().equals(head)
+                && expr.first().isAST()) {
+              IAST unevaluated = (IAST) expr.first();
+              result.appendArgs(unevaluated.map(head, x -> F.Unevaluated(x)));
             } else {
               result.append(expr);
             }

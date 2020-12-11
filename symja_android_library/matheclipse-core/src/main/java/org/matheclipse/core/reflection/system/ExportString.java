@@ -15,9 +15,9 @@ import org.jgrapht.io.GraphExporter;
 import org.jgrapht.io.GraphMLExporter;
 import org.jgrapht.io.IntegerComponentNameProvider;
 import org.matheclipse.core.basic.Config;
-import org.matheclipse.core.builtin.IOFunctions;
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.interfaces.AbstractEvaluator;
+import org.matheclipse.core.eval.interfaces.IFunctionEvaluator;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.expression.data.GraphExpr;
 import org.matheclipse.core.interfaces.IAST;
@@ -47,8 +47,8 @@ public class ExportString extends AbstractEvaluator {
           return F.stringx(writer.toString());
         }
 
-        if (format.equals(Extension.CSV)) {
-          if (arg1.isDataSet()) {
+        if (format.equals(Extension.CSV) || format.equals(Extension.TSV)) {
+          if (arg1.isDataset()) {
             ((IASTDataset) arg1).csv(writer);
             return F.stringx(writer.toString());
           }
@@ -130,6 +130,6 @@ public class ExportString extends AbstractEvaluator {
   }
 
   public int[] expectedArgSize(IAST ast) {
-    return IOFunctions.ARGS_2_2;
+    return IFunctionEvaluator.ARGS_2_2;
   }
 }

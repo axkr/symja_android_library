@@ -3,6 +3,7 @@ package org.matheclipse.core.eval.util;
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.interfaces.ISignedNumberConstant;
 import org.matheclipse.core.expression.F;
+import org.matheclipse.core.expression.S;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IBuiltInSymbol;
 import org.matheclipse.core.interfaces.IExpr;
@@ -28,43 +29,43 @@ public abstract class AbstractAssumptions implements IAssumptions {
    */
   public static ISymbol assumeAlgebraic(final IExpr expr) {
     if (expr.isRational()) {
-      return F.True;
+      return S.True;
     }
     if (expr.isNumber()) {
-      return F.True;
+      return S.True;
     }
     if (expr.equals(F.CComplexInfinity)) {
-      return F.False;
+      return S.False;
     }
     if (expr.isSymbol()) {
       if (expr.equals(F.Degree)) {
-        return F.False;
+        return S.False;
       }
       if (expr.equals(F.Pi)) {
-        return F.False;
+        return S.False;
       }
       if (expr.equals(F.E)) {
-        return F.False;
+        return S.False;
       }
 
       // if (((ISymbol) expr).getEvaluator() instanceof
       // ISignedNumberConstant) {
-      // return F.True;
+      // return S.True;
       // }
     }
     IAssumptions assumptions = EvalEngine.get().getAssumptions();
     if (assumptions != null) {
       if (assumptions.isAlgebraic(expr)) {
-        return F.True;
+        return S.True;
       }
       if (assumptions.isRational(expr)) {
-        return F.True;
+        return S.True;
       }
       if (assumptions.isInteger(expr)) {
-        return F.True;
+        return S.True;
       }
       if (assumptions.isPrime(expr)) {
-        return F.True;
+        return S.True;
       }
     }
     return null;
@@ -79,7 +80,7 @@ public abstract class AbstractAssumptions implements IAssumptions {
    */
   public static ISymbol assumeArray(final IExpr expr) {
     if (expr.isAST(F.Arrays, 4)) {
-      return F.True;
+      return S.True;
     }
     return null;
   }
@@ -88,20 +89,20 @@ public abstract class AbstractAssumptions implements IAssumptions {
    * Test if <code>expr</code> is assumed to be an boolean value.
    *
    * @param expr
-   * @return <code>F.True</code> or <code>F.False</code> if <code>expr</code> is assumed to be a
+   * @return <code>S.True</code> or <code>S.False</code> if <code>expr</code> is assumed to be a
    *     boolean value or no boolean value. In all other cases return <code>null</code>.
    */
   public static ISymbol assumeBoolean(final IExpr expr) {
     if (expr.isTrue() || expr.isFalse()) {
-      return F.True;
+      return S.True;
     }
     if (expr.isNumber()) {
-      return F.False;
+      return S.False;
     }
     IAssumptions assumptions = EvalEngine.get().getAssumptions();
     if (assumptions != null) {
       if (assumptions.isBoolean(expr)) {
-        return F.True;
+        return S.True;
       }
     }
     return null;
@@ -111,35 +112,35 @@ public abstract class AbstractAssumptions implements IAssumptions {
    * Test if <code>expr</code> is assumed to be a complex number.
    *
    * @param expr
-   * @return <code>F.True</code> or <code>F.False</code> if <code>expr</code> is assumed to be a
+   * @return <code>S.True</code> or <code>S.False</code> if <code>expr</code> is assumed to be a
    *     complex number or no complex number. In all other cases return <code>null</code>.
    */
   public static ISymbol assumeComplex(final IExpr expr) {
     if (expr.isNumber()) {
-      return F.True;
+      return S.True;
     }
     if (expr.isRealConstant()) {
-      return F.True;
+      return S.True;
     }
     IAssumptions assumptions = EvalEngine.get().getAssumptions();
     if (assumptions != null) {
       if (assumptions.isComplex(expr)) {
-        return F.True;
+        return S.True;
       }
       if (assumptions.isRational(expr)) {
-        return F.True;
+        return S.True;
       }
       if (assumptions.isInteger(expr)) {
-        return F.True;
+        return S.True;
       }
       if (assumptions.isPrime(expr)) {
-        return F.True;
+        return S.True;
       }
       if (assumptions.isReal(expr)) {
-        return F.True;
+        return S.True;
       }
       if (assumptions.isAlgebraic(expr)) {
-        return F.True;
+        return S.True;
       }
     }
     return null;
@@ -149,23 +150,23 @@ public abstract class AbstractAssumptions implements IAssumptions {
    * Test if <code>expr</code> is assumed to be an integer.
    *
    * @param expr
-   * @return <code>F.True</code> or <code>F.False</code> if <code>expr</code> is assumed to be an
+   * @return <code>S.True</code> or <code>S.False</code> if <code>expr</code> is assumed to be an
    *     integer or no integer. In all other cases return <code>null</code>.
    */
   public static ISymbol assumeInteger(final IExpr expr) {
     if (expr.isInteger()) {
-      return F.True;
+      return S.True;
     }
     if (expr.isNumber()) {
-      return F.False;
+      return S.False;
     }
     IAssumptions assumptions = EvalEngine.get().getAssumptions();
     if (assumptions != null) {
       if (assumptions.isInteger(expr)) {
-        return F.True;
+        return S.True;
       }
       if (assumptions.isPrime(expr)) {
-        return F.True;
+        return S.True;
       }
     }
     return null;
@@ -333,20 +334,20 @@ public abstract class AbstractAssumptions implements IAssumptions {
    * Test if <code>expr</code> is assumed to be an prime number.
    *
    * @param expr
-   * @return <code>F.True</code> or <code>F.False</code> if <code>expr</code> is assumed to be a
+   * @return <code>S.True</code> or <code>S.False</code> if <code>expr</code> is assumed to be a
    *     prime number or no prime number. In all other cases return <code>F.NIL</code>.
    */
   public static IExpr assumePrime(final IExpr expr) {
     if (expr.isInteger() && ((IInteger) expr).isProbablePrime()) {
-      return F.True;
+      return S.True;
     }
     if (expr.isNumber()) {
-      return F.False;
+      return S.False;
     }
     IAssumptions assumptions = EvalEngine.get().getAssumptions();
     if (assumptions != null) {
       if (assumptions.isPrime(expr)) {
-        return F.True;
+        return S.True;
       }
     }
     return F.NIL;
@@ -356,26 +357,26 @@ public abstract class AbstractAssumptions implements IAssumptions {
    * Test if <code>expr</code> is assumed to be a rational number.
    *
    * @param expr
-   * @return <code>F.True</code> or <code>F.False</code> if <code>expr</code> is assumed to be a
+   * @return <code>S.True</code> or <code>S.False</code> if <code>expr</code> is assumed to be a
    *     rational number or no rational number. In all other cases return <code>null</code>.
    */
   public static ISymbol assumeRational(final IExpr expr) {
     if (expr.isRational()) {
-      return F.True;
+      return S.True;
     }
     if (expr.isNumber()) {
-      return F.False;
+      return S.False;
     }
     IAssumptions assumptions = EvalEngine.get().getAssumptions();
     if (assumptions != null) {
       if (assumptions.isRational(expr)) {
-        return F.True;
+        return S.True;
       }
       if (assumptions.isInteger(expr)) {
-        return F.True;
+        return S.True;
       }
       if (assumptions.isPrime(expr)) {
-        return F.True;
+        return S.True;
       }
     }
     return null;
@@ -385,21 +386,21 @@ public abstract class AbstractAssumptions implements IAssumptions {
    * Test if <code>expr</code> is assumed to be a real number.
    *
    * @param expr
-   * @return <code>F.True</code> or <code>F.False</code> if <code>expr</code> is assumed to be a
+   * @return <code>S.True</code> or <code>S.False</code> if <code>expr</code> is assumed to be a
    *     real number or no real number. In all other cases return <code>null</code>.
    */
   public static ISymbol assumeReal(final IExpr expr) {
     if (expr.isReal()) {
-      return F.True;
+      return S.True;
     }
     if (expr.isNumber()) {
-      return F.False;
+      return S.False;
     }
     if (expr.isRealConstant()) {
-      return F.True;
+      return S.True;
     }
     if (expr.isDirectedInfinity()) {
-      return F.False;
+      return S.False;
     }
     if (expr == F.Undefined) {
       return F.Undefined;
@@ -407,16 +408,16 @@ public abstract class AbstractAssumptions implements IAssumptions {
     IAssumptions assumptions = EvalEngine.get().getAssumptions();
     if (assumptions != null) {
       if (assumptions.isReal(expr)) {
-        return F.True;
+        return S.True;
       }
       if (assumptions.isInteger(expr)) {
-        return F.True;
+        return S.True;
       }
       if (assumptions.isPrime(expr)) {
-        return F.True;
+        return S.True;
       }
       if (assumptions.isRational(expr)) {
-        return F.True;
+        return S.True;
       }
     }
     return null;

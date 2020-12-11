@@ -85,8 +85,7 @@ public abstract class AbstractArgMultiple extends AbstractArg2 {
 
       if (evaled) {
 
-        if ((result.isAST1())
-            && ((sym.getAttributes() & ISymbol.ONEIDENTITY) == ISymbol.ONEIDENTITY)) {
+        if ((result.isAST1()) && sym.hasOneIdentityAttribute()) {
           return result.arg1();
         }
 

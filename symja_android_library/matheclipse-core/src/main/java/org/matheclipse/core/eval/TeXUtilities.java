@@ -33,11 +33,15 @@ public class TeXUtilities {
    *
    * @param inputExpression
    * @param out
+   * @param reset TODO
    */
-  public synchronized boolean toTeX(final String inputExpression, final Writer out) {
+  public synchronized boolean toTeX(final String inputExpression, final Writer out, boolean reset) {
     IExpr parsedExpression = null;
     if (inputExpression != null) {
       try {
+        if (reset) {
+          EvalEngine.setReset(fEvalEngine);
+        }
         parsedExpression = fParser.parse(inputExpression);
         return toTeX(parsedExpression, out);
         // parsedExpression = AST2Expr.CONST.convert(node);
@@ -66,7 +70,6 @@ public class TeXUtilities {
       try {
         IExpr result = objectExpression;
         if (objectExpression.isAST()) {
-          fEvalEngine.reset();
           result = fEvalEngine.evalHoldPattern((IAST) objectExpression, true, true);
         }
 

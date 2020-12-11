@@ -3,6 +3,7 @@ package org.matheclipse.core.builtin;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.function.Function;
+import java.util.function.Predicate;
 
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.exception.ArgumentTypeException;
@@ -11,6 +12,7 @@ import org.matheclipse.core.eval.exception.ValidateException;
 import org.matheclipse.core.eval.interfaces.AbstractCoreFunctionEvaluator;
 import org.matheclipse.core.eval.interfaces.AbstractEvaluator;
 import org.matheclipse.core.eval.interfaces.ICoreFunctionEvaluator;
+import org.matheclipse.core.eval.interfaces.IFunctionEvaluator;
 import org.matheclipse.core.eval.interfaces.ISetEvaluator;
 import org.matheclipse.core.expression.ASTAssociation;
 import org.matheclipse.core.expression.F;
@@ -58,7 +60,9 @@ public class AssociationFunctions {
       S.AssociationThread.setEvaluator(new AssociationThread());
       S.Counts.setEvaluator(new Counts());
       S.KeyExistsQ.setEvaluator(new KeyExistsQ());
+      S.Key.setEvaluator(new Key());
       S.Keys.setEvaluator(new Keys());
+      S.KeySelect.setEvaluator(new KeySelect());
       S.KeySort.setEvaluator(new KeySort());
       S.KeyTake.setEvaluator(new KeyTake());
       S.LetterCounts.setEvaluator(new LetterCounts());
@@ -69,6 +73,52 @@ public class AssociationFunctions {
     }
   }
 
+  /**
+   *
+   *
+   * <pre>
+   * <code>AssociateTo(assoc, rule)
+   * </code>
+   * </pre>
+   *
+   * <blockquote>
+   *
+   * <p>append <code>rule</code> to the association <code>assoc</code> and assign the result to
+   * <code>assoc</code>.
+   *
+   * </blockquote>
+   *
+   * <pre>
+   * <code>AssociateTo(assoc, list-of-rules)
+   * </code>
+   * </pre>
+   *
+   * <blockquote>
+   *
+   * <p>append the <code>list-of-rules</code> to the association <code>assoc</code> and assign the
+   * result to <code>assoc</code>.
+   *
+   * </blockquote>
+   *
+   * <h3>Examples</h3>
+   *
+   * <pre>
+   * <code>&gt;&gt; assoc = &lt;|&quot;A&quot; -&gt; &lt;|&quot;a&quot; -&gt; 1, &quot;b&quot; -&gt; 2, &quot;c&quot; -&gt; 3|&gt;|&gt;
+   * &lt;|A-&gt;&lt;|a-&gt;1,b-&gt;2,c-&gt;3|&gt;|&gt;
+   *
+   * &gt;&gt; AssociateTo(assoc, &quot;A&quot; -&gt; 11)
+   * &lt;|A-&gt;11|&gt;
+   * </code>
+   * </pre>
+   *
+   * <h3>Related terms</h3>
+   *
+   * <p><a href="Association.md">Association</a>, <a href="AssociationQ.md">AssociationQ</a>, <a
+   * href="AssociationMap.md">AssociationMap</a>, <a
+   * href="AssociationThread.md">AssociationThread</a>, <a href="Counts.md">Counts</a>, <a
+   * href="Lookup.md">Lookup</a>, <a href="KeyExistsQ.md">KeyExistsQ</a>, <a
+   * href="Keys.md">Keys</a>, <a href="KeySort.md">KeySort</a>, <a href="Values.md">Values</a>
+   */
   private static final class AssociateTo extends AbstractCoreFunctionEvaluator {
 
     private static class AssociateToFunction implements Function<IExpr, IExpr> {
@@ -110,7 +160,7 @@ public class AssociationFunctions {
 
     @Override
     public int[] expectedArgSize(IAST ast) {
-      return IOFunctions.ARGS_2_2;
+      return ARGS_2_2;
     }
 
     @Override
@@ -119,6 +169,56 @@ public class AssociationFunctions {
     }
   }
 
+  /**
+   *
+   *
+   * <pre>
+   * <code>Association(list-of-rules)
+   * </code>
+   * </pre>
+   *
+   * <blockquote>
+   *
+   * <p>create a <code>key-&gt;value</code> association map from the <code>list-of-rules</code>.
+   *
+   * </blockquote>
+   *
+   * <h3>Examples</h3>
+   *
+   * <pre>
+   * <code>&gt;&gt; Association({ahey-&gt;avalue, bkey-&gt;bvalue, ckey-&gt;cvalue})
+   * &lt;|akey-&gt;avalue,bkey-&gt;bvalue,ckey-&gt;cvalue|&gt;
+   * </code>
+   * </pre>
+   *
+   * <p><code>Association</code> is the head of associations:
+   *
+   * <pre>
+   * <code>&gt;&gt; Head(&lt;|a -&gt; x, b -&gt; y, c -&gt; z|&gt;)
+   * Association
+   *
+   * &gt;&gt; &lt;|a -&gt; x, b -&gt; y|&gt;
+   * &lt;|a -&gt; x, b -&gt; y|&gt;
+   *
+   * &gt;&gt; Association({a -&gt; x, b -&gt; y})
+   * &lt;|a -&gt; x, b -&gt; y|&gt;
+   * </code>
+   * </pre>
+   *
+   * <p>Associations can be nested:
+   *
+   * <pre>
+   * <code>&gt;&gt; &lt;|a -&gt; x, b -&gt; y, &lt;|a -&gt; z, d -&gt; t|&gt;|&gt;
+   * &lt;|a -&gt; z, b -&gt; y, d -&gt; t|&gt;
+   * </code>
+   * </pre>
+   *
+   * <h3>Related terms</h3>
+   *
+   * <p><a href="AssociationQ.md">AssociationQ</a>, <a href="Counts.md">Counts</a>, <a
+   * href="Keys.md">Keys</a>, <a href="KeySort.md">KeySort</a>, <a href="Lookup.md">Lookup</a>, <a
+   * href="Values.md">Values</a>
+   */
   private static class Association extends AbstractEvaluator implements ISetEvaluator {
 
     @Override
@@ -134,7 +234,7 @@ public class AssociationFunctions {
           // IExpr arg1 = engine.evaluate(ast.arg1());
           IAssociation assoc = F.assoc(F.CEmptyList);
           for (int i = 1; i < ast.size(); i++) {
-            if (ast.get(i).isAST()) {
+            if (ast.get(i).isASTOrAssociation()) {
               assoc.appendRules((IAST) ast.get(i));
             } else {
               throw new ArgumentTypeException(
@@ -181,7 +281,7 @@ public class AssociationFunctions {
               IAssociation assoc = ((IAssociation) lhsHead);
               assoc = assoc.copy();
               assoc.appendRule(F.Rule(((IAST) leftHandSide).arg1(), rightHandSide));
-              symbol.assignValue(assoc);
+              symbol.assignValue(assoc, false);
               return rightHandSide;
             }
           } catch (ValidateException ve) {
@@ -199,16 +299,61 @@ public class AssociationFunctions {
     }
   }
 
+  /**
+   *
+   *
+   * <pre>
+   * <code>AssociationMap(header, &lt;|k1-&gt;v1, k2-&gt;v2,...|&gt;)
+   * </code>
+   * </pre>
+   *
+   * <blockquote>
+   *
+   * <p>create an association <code>&lt;|header(k1-&gt;v1), header(k2-&gt;v2),...|&gt;</code> with
+   * the rules mapped by the <code>header</code>.
+   *
+   * </blockquote>
+   *
+   * <pre>
+   * <code>AssociationMap(header, {k1, k2,...})
+   * </code>
+   * </pre>
+   *
+   * <blockquote>
+   *
+   * <p>create an association <code>&lt;|k1-&gt;header(k1), k2-&gt;header(k2),...|&gt;</code> with
+   * the rules mapped by the <code>header</code>.
+   *
+   * </blockquote>
+   *
+   * <h3>Examples</h3>
+   *
+   * <pre>
+   * <code>&gt;&gt; AssociationMap(Reverse,&lt;|U-&gt;1,V-&gt;2|&gt;)
+   * &lt;|1-&gt;U,2-&gt;V|&gt;
+   *
+   * &gt;&gt; AssociationMap(f,{U,V})
+   * &lt;|U-&gt;f(U),V-&gt;f(V)|&gt;
+   * </code>
+   * </pre>
+   *
+   * <h3>Related terms</h3>
+   *
+   * <p><a href="Association.md">Association</a>, <a href="AssociationQ.md">AssociationQ</a>, <a
+   * href="AssociationThread.md">AssociationThread</a>, <a href="Counts.md">Counts</a>, <a
+   * href="Lookup.md">Lookup</a>, <a href="KeyExistsQ.md">KeyExistsQ</a>, <a
+   * href="Keys.md">Keys</a>, <a href="KeySort.md">KeySort</a>, <a href="Values.md">Values</a>
+   */
   private static class AssociationMap extends AbstractEvaluator {
 
     @Override
     public IExpr evaluate(IAST ast, EvalEngine engine) {
-      if (ast.isAST1()) {
-        ast = F.operatorFormPrepend(ast);
-        if (!ast.isPresent()) {
-          return F.NIL;
-        }
-      }
+      //      if (ast.isAST1()) {
+      //        ast = F.operatorForm2Prepend(ast);
+      //        if (!ast.isPresent()) {
+      //          return F.NIL;
+      //        }
+      //      }
       IExpr arg1 = ast.arg1();
       if (ast.isAST2()) {
         IExpr arg2 = ast.arg2();
@@ -241,10 +386,56 @@ public class AssociationFunctions {
 
     @Override
     public int[] expectedArgSize(IAST ast) {
-      return IOFunctions.ARGS_1_2;
+      return ARGS_1_2_2;
     }
   }
 
+  /**
+   *
+   *
+   * <pre>
+   * <code>AssociationThread({k1,k2,...}, {v1,v2,...})
+   * </code>
+   * </pre>
+   *
+   * <blockquote>
+   *
+   * <p>create an association with rules from the keys <code>{k1,k2,...}</code> and values <code>
+   * {v1,v2,...}</code>.
+   *
+   * </blockquote>
+   *
+   * <pre>
+   * <code>AssociationThread({k1,k2,...} -&gt; {v1,v2,...})
+   * </code>
+   * </pre>
+   *
+   * <blockquote>
+   *
+   * <p>create an association with rules from the keys <code>{k1,k2,...}</code> and values <code>
+   * {v1,v2,...}</code>.
+   *
+   * </blockquote>
+   *
+   * <h3>Examples</h3>
+   *
+   * <pre>
+   * <code>&gt;&gt; AssociationThread({&quot;U&quot;,&quot;V&quot;},{1,2})
+   * &lt;|U-&gt;1,V-&gt;2|&gt;
+   *
+   * &gt;&gt; AssociationThread({&quot;U&quot;,&quot;V&quot;} :&gt; {1,2})
+   * &lt;|U:&gt;1,V:&gt;2|&gt;
+   * </code>
+   * </pre>
+   *
+   * <h3>Related terms</h3>
+   *
+   * <p><a href="AssociateTo.md">AssociateTo</a>, <a href="Association.md">Association</a>, <a
+   * href="AssociationQ.md">AssociationQ</a>, <a href="AssociationMap.md">AssociationMap</a>, <a
+   * href="Counts.md">Counts</a>, <a href="Lookup.md">Lookup</a>, <a
+   * href="KeyExistsQ.md">KeyExistsQ</a>, <a href="Keys.md">Keys</a>, <a
+   * href="KeySort.md">KeySort</a>, <a href="Values.md">Values</a>
+   */
   private static class AssociationThread extends AbstractEvaluator {
 
     @Override
@@ -279,10 +470,37 @@ public class AssociationFunctions {
 
     @Override
     public int[] expectedArgSize(IAST ast) {
-      return IOFunctions.ARGS_1_2;
+      return ARGS_1_2;
     }
   }
 
+  /**
+   *
+   *
+   * <pre>
+   * <code>Counts({elem1, elem2, elem3, ...})
+   * </code>
+   * </pre>
+   *
+   * <blockquote>
+   *
+   * <p>count the number of each distinct element in the list <code>{elem1, elem2, elem3, ...}
+   * </code> and return the result as an association <code>&lt;|elem1-&gt;counter1, ...|&gt;</code>.
+   *
+   * </blockquote>
+   *
+   * <h3>Examples</h3>
+   *
+   * <pre>
+   * <code>&gt;&gt; Counts({1,2,3,4,5,6,7,8,9,7,5,4,5,6,7,3,2,1,3,4,5,2,2,2,3,3,3,3,3})
+   * &lt;|1-&gt;2,2-&gt;5,3-&gt;8,4-&gt;3,5-&gt;4,6-&gt;2,7-&gt;3,8-&gt;1,9-&gt;1|&gt;
+   * </code>
+   * </pre>
+   *
+   * <h3>Related terms</h3>
+   *
+   * <p><a href="Commonest.md">Commonest</a>, <a href="Tally.md">Tally</a>
+   */
   private static class Counts extends AbstractEvaluator {
 
     @Override
@@ -310,7 +528,7 @@ public class AssociationFunctions {
 
     @Override
     public int[] expectedArgSize(IAST ast) {
-      return IOFunctions.ARGS_1_1;
+      return ARGS_1_1;
     }
   }
 
@@ -318,17 +536,17 @@ public class AssociationFunctions {
 
     @Override
     public IExpr evaluate(IAST ast, EvalEngine engine) {
-      if (ast.isAST1()) {
-        ast = F.operatorFormPrepend(ast);
-        if (!ast.isPresent()) {
-          return F.NIL;
-        }
-      }
+      //      if (ast.isAST1()) {
+      //        ast = F.operatorForm2Prepend(ast);
+      //        if (!ast.isPresent()) {
+      //          return F.NIL;
+      //        }
+      //      }
       if (ast.isAST2()) {
         IExpr arg1 = ast.arg1();
         IExpr arg2 = ast.arg2();
         if (arg1.isAssociation()) {
-          return ((IAssociation) arg1).isKey(arg2) ? F.True : F.False;
+          return ((IAssociation) arg1).isKey(arg2) ? S.True : S.False;
         }
         if (arg1.isListOfRules(true)) {
           IAST listOfRules = (IAST) arg1;
@@ -336,22 +554,74 @@ public class AssociationFunctions {
             IExpr rule = listOfRules.get(i);
             if (rule.isRuleAST()) {
               if (arg2.equals(rule.first())) {
-                return F.True;
+                return S.True;
               }
             }
           }
         }
-        return F.False;
+        return S.False;
       }
       return F.NIL;
     }
 
     @Override
     public int[] expectedArgSize(IAST ast) {
-      return IOFunctions.ARGS_1_2;
+      return ARGS_1_2_2;
     }
   }
 
+  private static class Key extends AbstractEvaluator {
+
+    @Override
+    public IExpr evaluate(final IAST ast, EvalEngine engine) {
+      if (ast.head().isAST(S.Key, 2)) {
+        if (ast.isAST1() && ast.arg1().isAssociation()) {
+          IExpr key = ast.head().first();
+          IAssociation arg1 = (IAssociation) ast.arg1();
+          IAST rule = arg1.getRule(key);
+          if (rule.isPresent()) {
+            return rule.second();
+          }
+          return F.Missing(S.KeyAbsent, key);
+        }
+      }
+      return F.NIL;
+    }
+
+    @Override
+    public int[] expectedArgSize(IAST ast) {
+      return ARGS_0_1_0;
+    }
+  }
+
+  /**
+   *
+   *
+   * <pre>
+   * <code>Keys(association)
+   * </code>
+   * </pre>
+   *
+   * <blockquote>
+   *
+   * <p>return a list of keys of the <code>association</code>.
+   *
+   * </blockquote>
+   *
+   * <h3>Examples</h3>
+   *
+   * <pre>
+   * <code>&gt;&gt; Keys(&lt;|ahey-&gt;avalue, bkey-&gt;bvalue, ckey-&gt;cvalue|&gt;)
+   * {ahey,bkey,ckey}
+   * </code>
+   * </pre>
+   *
+   * <h3>Related terms</h3>
+   *
+   * <p><a href="Association.md">Association</a>, <a href="AssociationQ.md">AssociationQ</a>, <a
+   * href="Counts.md">Counts</a>, <a href="Lookup.md">Lookup</a>, <a href="KeySort.md">KeySort</a>,
+   * <a href="Values.md">Values</a>
+   */
   private static class Keys extends AbstractEvaluator {
 
     @Override
@@ -361,7 +631,7 @@ public class AssociationFunctions {
       if (arg1.isAssociation()) {
         IASTMutable list = ((IAssociation) arg1).keys();
         return mapHeadIfPresent(list, head);
-      } else if (arg1.isDataSet()) {
+      } else if (arg1.isDataset()) {
         return ((IASTDataset) arg1).columnNames();
       } else if (arg1.isRuleAST()) {
         if (head.isPresent()) {
@@ -394,15 +664,146 @@ public class AssociationFunctions {
 
     @Override
     public int[] expectedArgSize(IAST ast) {
-      return IOFunctions.ARGS_1_2;
+      return ARGS_1_2;
     }
   }
 
+  /**
+   *
+   *
+   * <pre>
+   * <code>KeySelect(&lt;|key1-&gt;value1, ...|&gt;, head)
+   * </code>
+   * </pre>
+   *
+   * <blockquote>
+   *
+   * <p>returns an association of the elements for which <code>head(keyi)</code> returns <code>True
+   * </code>.
+   *
+   * </blockquote>
+   *
+   * <pre>
+   * <code>KeySelect({key1-&gt;value1, ...}, head)
+   * </code>
+   * </pre>
+   *
+   * <blockquote>
+   *
+   * <p>returns an association of the elements for which <code>head(keyi)</code> returns <code>True
+   * </code>.
+   *
+   * </blockquote>
+   *
+   * <h3>Examples</h3>
+   *
+   * <pre>
+   * <code>&gt;&gt; r = {beta -&gt; 4, alpha -&gt; 2, x -&gt; 4, z -&gt; 2, w -&gt; 0.8};
+   *
+   * &gt;&gt; KeySelect(r, MatchQ(#,alpha|x)&amp;)
+   * &lt;|alpha-&gt;2,x-&gt;4|&gt;
+   * </code>
+   * </pre>
+   */
+  private static final class KeySelect extends AbstractEvaluator {
+
+    @Override
+    public IExpr evaluate(IAST ast, EvalEngine engine) {
+      //      if (ast.isAST1()) {
+      //        ast = F.operatorForm1Append(ast);
+      //        if (!ast.isPresent()) {
+      //          return F.NIL;
+      //        }
+      //      }
+      int size = ast.size();
+      if (size == 3) {
+        try {
+          IExpr arg1 = ast.arg1();
+          if (arg1.isListOfRulesOrAssociation(false)) {
+            IAST list = (IAST) arg1;
+            IExpr predicateHead = ast.arg2();
+            return keySelect(list, x -> engine.evalTrue(F.unaryAST1(predicateHead, x)));
+          }
+          // The argument `1` is not a valid Association or a list of rules.
+          return IOFunctions.printMessage(ast.topHead(), "invrl", F.List(arg1), engine);
+        } catch (final ValidateException ve) {
+          return engine.printMessage(ve.getMessage(ast.topHead()));
+        }
+      }
+      return F.NIL;
+    }
+
+    private IAST keySelect(IAST assoc, Predicate<? super IExpr> predicate) {
+      int[] items = new int[assoc.size()];
+      int length = 0;
+      for (int i = 1; i < assoc.size(); i++) {
+        IAST rule = (IAST) assoc.getRule(i);
+        if (predicate.test(rule.first())) {
+          items[length++] = i;
+        }
+      }
+      if (length == assoc.size() - 1) {
+        return assoc;
+      }
+      IAssociation result = F.assoc(length);
+      if (length > 0) {
+        for (int i = 0; i < length; i++) {
+          result.appendRule(assoc.getRule(items[i]));
+        }
+      }
+      return result;
+    };
+
+    @Override
+    public int[] expectedArgSize(IAST ast) {
+      return ARGS_1_2_1;
+    }
+
+    @Override
+    public void setUp(final ISymbol newSymbol) {}
+  }
+
+  /**
+   *
+   *
+   * <pre>
+   * <code>KeySort(&lt;|key1-&gt;value1, ...|&gt;)
+   * </code>
+   * </pre>
+   *
+   * <blockquote>
+   *
+   * <p>sort the <code>&lt;|key1-&gt;value1, ...|&gt;</code> entries by the <code>key</code> values.
+   *
+   * </blockquote>
+   *
+   * <pre>
+   * <code>KeySort(&lt;|key1-&gt;value1, ...|&gt;, comparator)
+   * </code>
+   * </pre>
+   *
+   * <blockquote>
+   *
+   * <p>sort the entries by the <code>comparator</code>.
+   *
+   * </blockquote>
+   *
+   * <h3>Examples</h3>
+   *
+   * <pre>
+   * <code>&gt;&gt; KeySort(&lt;|2 -&gt; y, 3 -&gt; z, 1 -&gt; x|&gt;)
+   * &lt;|1-&gt;x,2-&gt;y,3-&gt;z|&gt;
+   *
+   * &gt;&gt; KeySort(&lt;|2 -&gt; y, 3 -&gt; z, 1 -&gt; x|&gt;, Greater)
+   * &lt;|3-&gt;z,2-&gt;y,1-&gt;x|&gt;
+   * </code>
+   * </pre>
+   */
   private static class KeySort extends AbstractEvaluator {
 
     @Override
     public IExpr evaluate(final IAST ast, EvalEngine engine) {
-      if (ast.arg1().isAST()) {
+      if (ast.arg1().isASTOrAssociation()) {
         IAST arg1 = (IAST) ast.arg1();
         if (arg1.isAssociation()) {
           if (ast.isAST2()) {
@@ -417,10 +818,42 @@ public class AssociationFunctions {
 
     @Override
     public int[] expectedArgSize(IAST ast) {
-      return IOFunctions.ARGS_1_2;
+      return ARGS_1_2;
     }
   }
 
+  /**
+   *
+   *
+   * <pre>
+   * <code>LetterCounts(string)
+   * </code>
+   * </pre>
+   *
+   * <blockquote>
+   *
+   * <p>count the number of each distinct character in the <code>string</code> and return the result
+   * as an association <code>&lt;|char-&gt;counter1, ...|&gt;</code>.
+   *
+   * </blockquote>
+   *
+   * <p>See
+   *
+   * <ul>
+   *   <li><a
+   *       href="https://en.wikipedia.org/wiki/The_quick_brown_fox_jumps_over_the_lazy_dog">Wikipedia
+   *       - The quick brown fox jumps over the lazy dog</a>
+   * </ul>
+   *
+   * <h3>Examples</h3>
+   *
+   * <pre>
+   * <code>&gt;&gt; LetterCounts(&quot;The quick brown fox jumps over the lazy dog&quot;) // InputForm
+   * &lt;|&quot;T&quot;-&gt;1,&quot; &quot;-&gt;8,&quot;a&quot;-&gt;1,&quot;b&quot;-&gt;1,&quot;c&quot;-&gt;1,&quot;d&quot;-&gt;1,&quot;e&quot;-&gt;3,&quot;f&quot;-&gt;1,&quot;g&quot;-&gt;1,&quot;h&quot;-&gt;2,&quot;i&quot;-&gt;1,&quot;j&quot;-&gt;1,
+   * &quot;k&quot;-&gt;1,&quot;l&quot;-&gt;1,&quot;m&quot;-&gt;1,&quot;n&quot;-&gt;1,&quot;o&quot;-&gt;4,&quot;p&quot;-&gt;1,&quot;q&quot;-&gt;1,&quot;r&quot;-&gt;2,&quot;s&quot;-&gt;1,&quot;t&quot;-&gt;1,&quot;u&quot;-&gt;2,&quot;v&quot;-&gt;1,&quot;w&quot;-&gt;1,&quot;x&quot;-&gt;1,&quot;y&quot;-&gt;1,&quot;z&quot;-&gt;1|&gt;
+   * </code>
+   * </pre>
+   */
   private static class LetterCounts extends AbstractEvaluator {
 
     @Override
@@ -449,20 +882,67 @@ public class AssociationFunctions {
 
     @Override
     public int[] expectedArgSize(IAST ast) {
-      return IOFunctions.ARGS_1_1;
+      return ARGS_1_1;
     }
   }
 
+  /**
+   *
+   *
+   * <pre>
+   * <code>Lookup(association, key)
+   * </code>
+   * </pre>
+   *
+   * <blockquote>
+   *
+   * <p>return the value in the <code>association</code> which is associated with the <code>key
+   * </code>. If no value is available return <code>Missing(&quot;KeyAbsent&quot;,key)</code>.
+   *
+   * </blockquote>
+   *
+   * <pre>
+   * <code>Lookup(association, key, defaultValue)
+   * </code>
+   * </pre>
+   *
+   * <blockquote>
+   *
+   * <p>return the value in the <code>association</code> which is associated with the <code>key
+   * </code>. If no value is available return <code>defaultValue</code>.
+   *
+   * </blockquote>
+   *
+   * <h3>Examples</h3>
+   *
+   * <pre>
+   * <code>&gt;&gt; Lookup(&lt;|a -&gt; 11, b -&gt; 17|&gt;, a)
+   * 11
+   *
+   * &gt;&gt; Lookup(&lt;|a -&gt; 1, b -&gt; 2|&gt;, c)
+   * Missing(KeyAbsent,c)
+   *
+   * &gt;&gt; Lookup(&lt;|a -&gt; 1, b -&gt; 2|&gt;, c, 42)
+   * 42
+   * </code>
+   * </pre>
+   *
+   * <h3>Related terms</h3>
+   *
+   * <p><a href="Association.md">Association</a>, <a href="AssociationQ.md">AssociationQ</a>, <a
+   * href="Counts.md">Counts</a>, <a href="Keys.md">Keys</a>, <a href="KeySort.md">KeySort</a>, <a
+   * href="Values.md">Values</a>
+   */
   private static class Lookup extends AbstractEvaluator implements ICoreFunctionEvaluator {
 
     @Override
     public IExpr evaluate(IAST ast, EvalEngine engine) {
-      if (ast.isAST1()) {
-        ast = F.operatorFormAppend(ast);
-        if (!ast.isPresent()) {
-          return F.NIL;
-        }
-      }
+      //      if (ast.isAST1()) {
+      //        ast = F.operatorForm1Append(ast);
+      //        if (!ast.isPresent()) {
+      //          return F.NIL;
+      //        }
+      //      }
       IExpr arg1 = engine.evaluate(ast.arg1());
       if (arg1.isList()) {
         if (ast.size() > 2) {
@@ -522,7 +1002,7 @@ public class AssociationFunctions {
 
     @Override
     public int[] expectedArgSize(IAST ast) {
-      return IOFunctions.ARGS_1_3;
+      return ARGS_1_3_1;
     }
 
     @Override
@@ -536,7 +1016,7 @@ public class AssociationFunctions {
     @Override
     public IExpr evaluate(final IAST ast, EvalEngine engine) {
       IExpr arg1 = ast.arg1();
-      if (arg1.isDataSet()) {
+      if (arg1.isDataset()) {
         return ((IASTDataset) arg1).structure();
       }
       return F.NIL;
@@ -544,31 +1024,64 @@ public class AssociationFunctions {
 
     @Override
     public int[] expectedArgSize(IAST ast) {
-      return IOFunctions.ARGS_1_1;
+      return ARGS_1_1;
     }
   }
 
-  private static final class KeyTake extends AbstractCoreFunctionEvaluator {
+  /**
+   *
+   *
+   * <pre>
+   * <code>KeyTake(&lt;|key1-&gt;value1, ...|&gt;, {k1, k2,...})
+   * </code>
+   * </pre>
+   *
+   * <blockquote>
+   *
+   * <p>returns an association of the rules for which the <code>k1, k2,...</code> are keys in the
+   * association.
+   *
+   * </blockquote>
+   *
+   * <pre>
+   * <code>KeySelect({key1-&gt;value1, ...}, {k1, k2,...})
+   * </code>
+   * </pre>
+   *
+   * <blockquote>
+   *
+   * <p>returns an association of the rules for which the <code>k1, k2,...</code> are keys in the
+   * association.
+   *
+   * </blockquote>
+   *
+   * <h3>Examples</h3>
+   *
+   * <pre>
+   * <code>&gt;&gt; r = {beta -&gt; 4, alpha -&gt; 2, x -&gt; 4, z -&gt; 2, w -&gt; 0.8};
+   *
+   * &gt;&gt; KeyTake(r, {alpha,x})
+   * &lt;|alpha-&gt;2,x-&gt;4|&gt;
+   * </code>
+   * </pre>
+   */
+  private static final class KeyTake extends AbstractEvaluator {
 
     @Override
     public IExpr evaluate(IAST ast, EvalEngine engine) {
-      if (ast.isAST1()) {
-        ast = F.operatorFormAppend(ast);
-        if (!ast.isPresent()) {
-          return F.NIL;
-        }
-      }
-      IAST evaledAST = (IAST) engine.evalAttributes(F.KeyTake, ast);
-      if (!evaledAST.isPresent()) {
-        evaledAST = ast;
-      }
+      //      if (ast.isAST1()) {
+      //        ast = F.operatorForm1Append(ast);
+      //        if (!ast.isPresent()) {
+      //          return F.NIL;
+      //        }
+      //      }
       try {
-        if (evaledAST.arg1().isListOfRulesOrAssociation(true) || evaledAST.arg1().isListOfLists()) {
-          final IAST arg1 = (IAST) evaledAST.arg1();
+        if (ast.arg1().isListOfRulesOrAssociation(true) || ast.arg1().isListOfLists()) {
+          final IAST arg1 = (IAST) ast.arg1();
           if (arg1.forAll(x -> x.isListOfRulesOrAssociation(true))) {
             return arg1.mapThread(ast, 1);
           }
-          IExpr arg2 = evaledAST.arg2();
+          IExpr arg2 = ast.arg2();
           if (!arg2.isList()) {
             arg2 = F.List(arg2);
           }
@@ -590,7 +1103,7 @@ public class AssociationFunctions {
 
     @Override
     public int[] expectedArgSize(IAST ast) {
-      return IOFunctions.ARGS_1_2;
+      return ARGS_1_2_1;
     }
 
     private static IAST keyTake(final IAST expr, final IAST list) {
@@ -607,9 +1120,7 @@ public class AssociationFunctions {
     }
 
     @Override
-    public void setUp(final ISymbol newSymbol) {
-      newSymbol.setAttributes(ISymbol.NHOLDREST);
-    }
+    public void setUp(final ISymbol newSymbol) {}
   }
 
   private static class Summary extends AbstractEvaluator {
@@ -617,7 +1128,7 @@ public class AssociationFunctions {
     @Override
     public IExpr evaluate(final IAST ast, EvalEngine engine) {
       IExpr arg1 = ast.arg1();
-      if (arg1.isDataSet()) {
+      if (arg1.isDataset()) {
         return ((IASTDataset) arg1).summary();
       }
       return F.NIL;
@@ -625,10 +1136,38 @@ public class AssociationFunctions {
 
     @Override
     public int[] expectedArgSize(IAST ast) {
-      return IOFunctions.ARGS_1_1;
+      return ARGS_1_1;
     }
   }
 
+  /**
+   *
+   *
+   * <pre>
+   * <code>Values(association)
+   * </code>
+   * </pre>
+   *
+   * <blockquote>
+   *
+   * <p>return a list of values of the <code>association</code>.
+   *
+   * </blockquote>
+   *
+   * <h3>Examples</h3>
+   *
+   * <pre>
+   * <code>&gt;&gt; Values(&lt;|ahey-&gt;avalue, bkey-&gt;bvalue, ckey-&gt;cvalue|&gt;)
+   * {avalue,bvalue,cvalue}
+   * </code>
+   * </pre>
+   *
+   * <h3>Related terms</h3>
+   *
+   * <p><a href="Association.md">Association</a>, <a href="AssociationQ.md">AssociationQ</a>, <a
+   * href="Counts.md">Counts</a>, <a href="Keys.md">Keys</a>, <a href="KeySort.md">KeySort</a>, <a
+   * href="Lookup.md">Lookup</a>
+   */
   private static class Values extends AbstractEvaluator {
 
     @Override
@@ -666,7 +1205,7 @@ public class AssociationFunctions {
 
     @Override
     public int[] expectedArgSize(IAST ast) {
-      return IOFunctions.ARGS_1_2;
+      return ARGS_1_2;
     }
   }
 

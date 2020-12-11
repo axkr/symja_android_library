@@ -64,7 +64,6 @@ import org.matheclipse.core.expression.ASTRealVector;
 import org.matheclipse.core.expression.ExprField;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.expression.S;
-import org.matheclipse.core.expression.data.SparseArrayExpr;
 import org.matheclipse.core.generic.Comparators.ExprReverseComparator;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IASTAppendable;
@@ -73,8 +72,8 @@ import org.matheclipse.core.interfaces.IBuiltInSymbol;
 import org.matheclipse.core.interfaces.IEvalStepListener;
 import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.interfaces.INumber;
+import org.matheclipse.core.interfaces.INumericArray;
 import org.matheclipse.core.interfaces.ISparseArray;
-import org.matheclipse.core.interfaces.IStringX;
 import org.matheclipse.core.interfaces.ISymbol;
 import org.matheclipse.parser.client.FEConfig;
 
@@ -574,6 +573,8 @@ public final class LinearAlgebra {
       if (arg1.isAST()) {
         IAST list = (IAST) arg1;
         IExpr header = list.head();
+        //        ArrayList<Integer> dims = new ArrayList<Integer>();
+        //        arrayDepthRecursive(list, header, dims);
         ArrayList<Integer> dims = LinearAlgebra.dimensions(list, header, Integer.MAX_VALUE);
         return F.ZZ(dims.size());
       }
@@ -581,16 +582,24 @@ public final class LinearAlgebra {
         int[] dims = ((ISparseArray) arg1).getDimension();
         return F.ZZ(dims.length);
       }
+      if (arg1.isNumericArray()) {
+        int[] dims = ((INumericArray) arg1).getDimension();
+        return F.ZZ(dims.length);
+      }
       return F.C0;
     }
 
     @Override
     public int[] expectedArgSize(IAST ast) {
-      return IOFunctions.ARGS_1_1;
+      return ARGS_1_1;
     }
 
     @Override
-    public void setUp(final ISymbol newSymbol) {}
+    public void setUp(final ISymbol newSymbol) {
+      setOptions(
+          newSymbol, //
+          F.List(F.Rule(S.AllowedHeads, S.Automatic)));
+    }
   }
 
   /**
@@ -655,7 +664,7 @@ public final class LinearAlgebra {
 
     @Override
     public int[] expectedArgSize(IAST ast) {
-      return IOFunctions.ARGS_2_2;
+      return ARGS_2_2;
     }
   }
 
@@ -699,7 +708,7 @@ public final class LinearAlgebra {
 
     @Override
     public int[] expectedArgSize(IAST ast) {
-      return IOFunctions.ARGS_1_1;
+      return ARGS_1_1;
     }
   }
 
@@ -819,7 +828,7 @@ public final class LinearAlgebra {
 
     @Override
     public int[] expectedArgSize(IAST ast) {
-      return IOFunctions.ARGS_1_INFINITY;
+      return ARGS_1_INFINITY;
     }
   }
 
@@ -881,7 +890,7 @@ public final class LinearAlgebra {
 
     @Override
     public int[] expectedArgSize(IAST ast) {
-      return IOFunctions.ARGS_3_3;
+      return ARGS_3_3;
     }
 
     @Override
@@ -994,7 +1003,7 @@ public final class LinearAlgebra {
 
     @Override
     public int[] expectedArgSize(IAST ast) {
-      return IOFunctions.ARGS_1_2;
+      return ARGS_1_2;
     }
 
     @Override
@@ -1061,7 +1070,7 @@ public final class LinearAlgebra {
 
     @Override
     public int[] expectedArgSize(IAST ast) {
-      return IOFunctions.ARGS_1_2;
+      return ARGS_1_2;
     }
 
     @Override
@@ -1140,7 +1149,6 @@ public final class LinearAlgebra {
         if (maximumLevel > 0) {
           return getDimensions(ast, maximumLevel);
         }
-        return F.List();
       } else if (ast.arg1().isSparseArray()) {
         if (maximumLevel > 0) {
           ISparseArray array = (ISparseArray) ast.arg1();
@@ -1152,19 +1160,22 @@ public final class LinearAlgebra {
           }
           return F.ast(F.List, dims);
         }
-        return F.List();
       }
 
-      return F.List();
+      return F.CEmptyList;
     }
 
     @Override
     public int[] expectedArgSize(IAST ast) {
-      return IOFunctions.ARGS_1_2;
+      return ARGS_1_2;
     }
 
     @Override
-    public void setUp(final ISymbol newSymbol) {}
+    public void setUp(final ISymbol newSymbol) {
+      setOptions(
+          newSymbol, //
+          F.List(F.Rule(S.AllowedHeads, S.Automatic)));
+    }
   }
 
   /**
@@ -1623,13 +1634,16 @@ public final class LinearAlgebra {
 
     @Override
     public IAST realMatrixEval(RealMatrix matrix) {
-      // ComplexEigenDecomposition ced = new ComplexEigenDecomposition(matrix);
-      // int size = matrix.getColumnDimension();
-      // IASTAppendable list = F.ListAlloc(size);
-      // return list.appendArgs(0, size, i -> {
-      // FieldVector<Complex> rv = ced.getEigenvector(i);
-      // return Convert.complexVector2List(rv);
-      // });
+      //      ComplexEigenDecomposition ced = new ComplexEigenDecomposition(matrix);
+      //      int size = matrix.getColumnDimension();
+      //      IASTAppendable list = F.ListAlloc(size);
+      //      return list.appendArgs(
+      //          0,
+      //          size,
+      //          i -> {
+      //            FieldVector<Complex> rv = ced.getEigenvector(i);
+      //            return Convert.complexVector2List(rv);
+      //          });
       EigenDecomposition ed = new EigenDecomposition(matrix);
       int size = matrix.getColumnDimension();
       IASTAppendable list = F.ListAlloc(size);
@@ -1672,7 +1686,7 @@ public final class LinearAlgebra {
 
     @Override
     public int[] expectedArgSize(IAST ast) {
-      return IOFunctions.ARGS_1_1;
+      return ARGS_1_1;
     }
   }
 
@@ -1721,12 +1735,12 @@ public final class LinearAlgebra {
           if (dim == 2) {
             IExpr r = list.arg1();
             IExpr theta = list.arg2();
-            return F.List(F.Times(r, F.Cos(theta)), F.Times(r, F.Sin(theta)));
+            return F.pair(F.Times(r, F.Cos(theta)), F.Times(r, F.Sin(theta)));
           } else if (dim == 3) {
             IExpr r = list.arg1();
             IExpr theta = list.arg2();
             IExpr phi = list.arg3();
-            return F.List(
+            return F.triple(
                 F.Times(r, F.Cos(theta)),
                 F.Times(r, F.Cos(phi), F.Sin(theta)),
                 F.Times(r, F.Sin(theta), F.Sin(phi)));
@@ -1736,12 +1750,12 @@ public final class LinearAlgebra {
           if (dim == 2) {
             IExpr r = vector.getEntry(0);
             IExpr theta = vector.getEntry(1);
-            return F.List(F.Times(r, F.Cos(theta)), F.Times(r, F.Sin(theta)));
+            return F.pair(F.Times(r, F.Cos(theta)), F.Times(r, F.Sin(theta)));
           } else if (dim == 3) {
             IExpr r = vector.getEntry(0);
             IExpr theta = vector.getEntry(1);
             IExpr phi = vector.getEntry(2);
-            return F.List(
+            return F.triple(
                 F.Times(r, F.Cos(theta)),
                 F.Times(r, F.Cos(phi), F.Sin(theta)),
                 F.Times(r, F.Sin(theta), F.Sin(phi)));
@@ -1755,7 +1769,7 @@ public final class LinearAlgebra {
 
     @Override
     public int[] expectedArgSize(IAST ast) {
-      return IOFunctions.ARGS_1_1;
+      return ARGS_1_1;
     }
 
     @Override
@@ -1821,7 +1835,7 @@ public final class LinearAlgebra {
 
     @Override
     public int[] expectedArgSize(IAST ast) {
-      return IOFunctions.ARGS_1_2;
+      return ARGS_1_2;
     }
   }
 
@@ -1862,7 +1876,7 @@ public final class LinearAlgebra {
 
     @Override
     public int[] expectedArgSize(IAST ast) {
-      return IOFunctions.ARGS_1_1;
+      return ARGS_1_1;
     }
   }
 
@@ -1920,7 +1934,7 @@ public final class LinearAlgebra {
         ArrayList<Integer> list1Dimensions = dimensions(list1, list1.head(), Integer.MAX_VALUE);
         ArrayList<Integer> list2Dimensions = dimensions(list2, list2.head(), Integer.MAX_VALUE);
         list2Dim0 = list2Dimensions.get(0);
-        return recursion(
+        return recursionInner(
             new ArrayList<Integer>(),
             new ArrayList<Integer>(),
             list1Dimensions.subList(0, list1Dimensions.size() - 1),
@@ -1928,7 +1942,7 @@ public final class LinearAlgebra {
       }
 
       @SuppressWarnings("unchecked")
-      private IAST recursion(
+      private IAST recursionInner(
           ArrayList<Integer> list1Cur,
           ArrayList<Integer> list2Cur,
           List<Integer> list1RestDimensions,
@@ -1939,12 +1953,17 @@ public final class LinearAlgebra {
           for (int i = 1; i < size; i++) {
             ArrayList<Integer> list1CurClone = (ArrayList<Integer>) list1Cur.clone();
             list1CurClone.add(i);
-            newResult.append(
-                recursion(
+            IAST recursionInner =
+                recursionInner(
                     list1CurClone,
                     list2Cur,
                     list1RestDimensions.subList(1, list1RestDimensions.size()),
-                    list2RestDimensions));
+                    list2RestDimensions);
+            if (recursionInner.isPresent()) {
+              newResult.append(recursionInner);
+            } else {
+              return F.NIL;
+            }
           }
           return newResult;
         } else if (list2RestDimensions.size() > 0) {
@@ -1953,22 +1972,33 @@ public final class LinearAlgebra {
           for (int i = 1; i < size; i++) {
             ArrayList<Integer> list2CurClone = (ArrayList<Integer>) list2Cur.clone();
             list2CurClone.add(i);
-            newResult.append(
-                recursion(
+            IAST recursionInner =
+                recursionInner(
                     list1Cur,
                     list2CurClone,
                     list1RestDimensions,
-                    list2RestDimensions.subList(1, list2RestDimensions.size())));
+                    list2RestDimensions.subList(1, list2RestDimensions.size()));
+            if (recursionInner.isPresent()) {
+              newResult.append(recursionInner);
+            } else {
+              return F.NIL;
+            }
           }
           return newResult;
         } else {
-          int size = list2Dim0 + 1;
-          IASTAppendable part = F.ast(g, size, false);
-          return part.appendArgs(size, i -> summand(list1Cur, list2Cur, i));
-          // for (int i = 1; i < size; i++) {
-          // part.append(summand(list1Cur, list2Cur, i));
-          // }
-          // return part;
+          try {
+            int size = list2Dim0 + 1;
+            IASTAppendable part = F.ast(g, size, false);
+            return part.appendArgs(size, i -> summand(list1Cur, list2Cur, i));
+            // for (int i = 1; i < size; i++) {
+            // part.append(summand(list1Cur, list2Cur, i));
+            // }
+            // return part;
+          } catch (IndexOutOfBoundsException ioobe) {
+            // TODO Length `1` of dimension `2` in `3` is incommensurate with length `4` of
+            // dimension `5` in `6`.
+            return IOFunctions.printMessage(S.Inner, "incom", F.List(), EvalEngine.get());
+          }
         }
       }
 
@@ -1989,8 +2019,8 @@ public final class LinearAlgebra {
     public IExpr evaluate(final IAST ast, EvalEngine engine) {
       if (ast.arg2().isAST() && ast.arg3().isAST()) {
         IExpr f = ast.arg1();
-        IAST list1 = (IAST) ast.arg2();
-        IAST list2 = (IAST) ast.arg3();
+        IAST list1 = (IAST) ast.arg2().normal(false);
+        IAST list2 = (IAST) ast.arg3().normal(false);
         IExpr g;
         if (ast.isAST3()) {
           g = F.Plus;
@@ -2000,6 +2030,27 @@ public final class LinearAlgebra {
         IExpr head2 = list2.head();
         if (!list1.head().equals(head2)) {
           return F.NIL;
+        }
+        ArrayList<Integer> dim1 = dimensions(list1);
+        ArrayList<Integer> dim2 = dimensions(list2);
+        if (dim1.size() == 0) {
+          // Nonatomic expression expected at position `1` in `2`.
+          return IOFunctions.printMessage(S.Inner, "normal", F.List(F.C2, list1), EvalEngine.get());
+        }
+        if (dim2.size() == 0) {
+          // Nonatomic expression expected at position `1` in `2`.
+          return IOFunctions.printMessage(S.Inner, "normal", F.List(F.C3, list2), EvalEngine.get());
+        }
+        int dimSize1 = dim1.get(dim1.size() - 1);
+        int dimSize2 = dim2.get(0);
+        if (dimSize1 != dimSize2) {
+          // Length `1` of dimension `2` in `3` is incommensurate with length `4` of dimension `5`
+          // in `6`.
+          return IOFunctions.printMessage(
+              S.Inner,
+              "incom",
+              F.List(F.ZZ(dimSize1), F.ZZ(dim1.size()), list1, F.C1, F.ZZ(dimSize2), list2),
+              EvalEngine.get());
         }
         if (list1.size() == list2.size()) {
           InnerAlgorithm ic = new InnerAlgorithm(f, list1, list2, g);
@@ -2011,7 +2062,7 @@ public final class LinearAlgebra {
 
     @Override
     public int[] expectedArgSize(IAST ast) {
-      return IOFunctions.ARGS_3_4;
+      return ARGS_3_4;
     }
   }
 
@@ -2160,7 +2211,7 @@ public final class LinearAlgebra {
 
     @Override
     public int[] expectedArgSize(IAST ast) {
-      return IOFunctions.ARGS_2_2;
+      return ARGS_2_2;
     }
   }
 
@@ -2243,7 +2294,7 @@ public final class LinearAlgebra {
 
     @Override
     public int[] expectedArgSize(IAST ast) {
-      return IOFunctions.ARGS_2_2;
+      return ARGS_2_2;
     }
   }
 
@@ -2374,7 +2425,7 @@ public final class LinearAlgebra {
 
     @Override
     public int[] expectedArgSize(IAST ast) {
-      return IOFunctions.ARGS_2_2;
+      return ARGS_2_2;
     }
 
     /**
@@ -2592,28 +2643,32 @@ public final class LinearAlgebra {
     public IExpr evaluate(final IAST ast, EvalEngine engine) {
       try {
         int[] dim = ast.arg1().isMatrix(false);
-        if (dim != null) {
-          final int k;
-          if (ast.size() == 3) {
-            k = Validate.checkIntType(ast, 2, Integer.MIN_VALUE);
-          } else {
-            k = 0;
-          }
-          int m = dim[0];
-          int n = dim[1];
-          FieldMatrix<IExpr> matrix = Convert.list2Matrix(ast.arg1());
-          return F.matrix((i, j) -> i >= j - k ? matrix.getEntry(i, j) : F.C0, m, n);
+        if (dim == null) {
+          // Argument `1` at position `2` is not a non-empty rectangular matrix.
+          return IOFunctions.printMessage(
+              ast.topHead(), "matrix", F.List(ast.arg1(), F.C1), engine);
         }
+
+        final int k;
+        if (ast.size() == 3) {
+          k = Validate.checkIntType(ast, 2, Integer.MIN_VALUE);
+        } else {
+          k = 0;
+        }
+        int m = dim[0];
+        int n = dim[1];
+        FieldMatrix<IExpr> matrix = Convert.list2Matrix(ast.arg1());
+        return F.matrix((i, j) -> i >= j - k ? matrix.getEntry(i, j) : F.C0, m, n);
+
       } catch (final ValidateException ve) {
         // int number validation
         return engine.printMessage(ast.topHead(), ve);
       }
-      return F.NIL;
     }
 
     @Override
     public int[] expectedArgSize(IAST ast) {
-      return IOFunctions.ARGS_1_2;
+      return ARGS_1_2;
     }
   }
 
@@ -2661,6 +2716,10 @@ public final class LinearAlgebra {
         engine.setTogetherMode(true);
         int[] dim = ast.arg1().isMatrix();
         if (dim != null && dim[0] > 0 && dim[1] > 0) {
+          if (dim[0] != dim[1]) {
+            // Argument `1` at position `2` is not a non-empty square matrix.
+            return IOFunctions.printMessage(ast.topHead(), "matsq", F.List(), engine);
+          }
           matrix = Convert.list2Matrix(ast.arg1());
           if (matrix != null) {
             final FieldLUDecomposition<IExpr> lu = new FieldLUDecomposition<IExpr>(matrix);
@@ -2692,7 +2751,7 @@ public final class LinearAlgebra {
 
     @Override
     public int[] expectedArgSize(IAST ast) {
-      return IOFunctions.ARGS_1_1;
+      return ARGS_1_1;
     }
   }
 
@@ -2778,7 +2837,7 @@ public final class LinearAlgebra {
 
     @Override
     public int[] expectedArgSize(IAST ast) {
-      return IOFunctions.ARGS_2_2;
+      return ARGS_2_2;
     }
   }
 
@@ -2881,7 +2940,7 @@ public final class LinearAlgebra {
 
     @Override
     public int[] expectedArgSize(IAST ast) {
-      return IOFunctions.ARGS_2_2;
+      return ARGS_2_2;
     }
   }
 
@@ -2954,7 +3013,7 @@ public final class LinearAlgebra {
 
     @Override
     public int[] expectedArgSize(IAST ast) {
-      return IOFunctions.ARGS_1_1;
+      return ARGS_1_1;
     }
 
     @Override
@@ -3127,7 +3186,7 @@ public final class LinearAlgebra {
         // absolute Value of a number
         return ((INumber) arg1).abs();
       }
-      if (arg1.isNumericFunction() && !arg1.isList()) {
+      if (arg1.isNumericFunction(true) && !arg1.isList()) {
         if (ast.isAST2()) {
           return F.NIL;
         }
@@ -3140,7 +3199,7 @@ public final class LinearAlgebra {
 
     @Override
     public int[] expectedArgSize(IAST ast) {
-      return IOFunctions.ARGS_1_2;
+      return ARGS_1_2;
     }
   }
 
@@ -3207,7 +3266,7 @@ public final class LinearAlgebra {
 
     @Override
     public int[] expectedArgSize(IAST ast) {
-      return IOFunctions.ARGS_1_2;
+      return ARGS_1_2;
     }
   }
 
@@ -3306,7 +3365,7 @@ public final class LinearAlgebra {
 
     @Override
     public int[] expectedArgSize(IAST ast) {
-      return IOFunctions.ARGS_1_1;
+      return ARGS_1_1;
     }
   }
 
@@ -3352,7 +3411,7 @@ public final class LinearAlgebra {
 
     @Override
     public int[] expectedArgSize(IAST ast) {
-      return IOFunctions.ARGS_1_2;
+      return ARGS_1_2;
     }
 
     @Override
@@ -3446,7 +3505,7 @@ public final class LinearAlgebra {
 
     @Override
     public int[] expectedArgSize(IAST ast) {
-      return IOFunctions.ARGS_2_3;
+      return ARGS_2_3;
     }
 
     @Override
@@ -3639,7 +3698,7 @@ public final class LinearAlgebra {
 
     @Override
     public int[] expectedArgSize(IAST ast) {
-      return IOFunctions.ARGS_2_2;
+      return ARGS_2_2;
     }
   }
 
@@ -3721,7 +3780,7 @@ public final class LinearAlgebra {
 
     @Override
     public int[] expectedArgSize(IAST ast) {
-      return IOFunctions.ARGS_1_1;
+      return ARGS_1_1;
     }
   }
 
@@ -3815,7 +3874,7 @@ public final class LinearAlgebra {
 
     @Override
     public int[] expectedArgSize(IAST ast) {
-      return IOFunctions.ARGS_1_1;
+      return ARGS_1_1;
     }
   }
 
@@ -3858,7 +3917,7 @@ public final class LinearAlgebra {
 
     @Override
     public int[] expectedArgSize(IAST ast) {
-      return IOFunctions.ARGS_1_2;
+      return ARGS_1_2;
     }
   }
 
@@ -3907,26 +3966,26 @@ public final class LinearAlgebra {
           if (dim == 2) {
             IExpr x = list.arg1();
             IExpr y = list.arg2();
-            return F.List(F.Sqrt(F.Plus(F.Sqr(x), F.Sqr(y))), F.ArcTan(x, y));
+            return F.pair(F.Sqrt(F.Plus(F.Sqr(x), F.Sqr(y))), F.ArcTan(x, y));
           } else if (dim == 3) {
             IExpr x = list.arg1();
             IExpr y = list.arg2();
             IExpr z = list.arg3();
             IAST sqrtExpr = F.Sqrt(F.Plus(F.Sqr(x), F.Sqr(y), F.Sqr(z)));
-            return F.List(sqrtExpr, F.ArcCos(F.Divide(x, sqrtExpr)), F.ArcTan(y, z));
+            return F.triple(sqrtExpr, F.ArcCos(F.Divide(x, sqrtExpr)), F.ArcTan(y, z));
           }
         } else {
           FieldVector<IExpr> vector = Convert.list2Vector(arg1);
           if (dim == 2) {
             IExpr x = vector.getEntry(0);
             IExpr y = vector.getEntry(1);
-            return F.List(F.Sqrt(F.Plus(F.Sqr(x), F.Sqr(y))), F.ArcTan(x, y));
+            return F.pair(F.Sqrt(F.Plus(F.Sqr(x), F.Sqr(y))), F.ArcTan(x, y));
           } else if (dim == 3) {
             IExpr x = vector.getEntry(0);
             IExpr y = vector.getEntry(1);
             IExpr z = vector.getEntry(2);
             IAST sqrtExpr = F.Sqrt(F.Plus(F.Sqr(x), F.Sqr(y), F.Sqr(z)));
-            return F.List(sqrtExpr, F.ArcCos(F.Divide(x, sqrtExpr)), F.ArcTan(y, z));
+            return F.triple(sqrtExpr, F.ArcCos(F.Divide(x, sqrtExpr)), F.ArcTan(y, z));
           }
         }
       } else if (arg1.isList()) {
@@ -3938,7 +3997,7 @@ public final class LinearAlgebra {
 
     @Override
     public int[] expectedArgSize(IAST ast) {
-      return IOFunctions.ARGS_1_1;
+      return ARGS_1_1;
     }
 
     @Override
@@ -4033,7 +4092,7 @@ public final class LinearAlgebra {
 
     @Override
     public int[] expectedArgSize(IAST ast) {
-      return IOFunctions.ARGS_1_2;
+      return ARGS_1_2;
     }
 
     @Override
@@ -4146,21 +4205,23 @@ public final class LinearAlgebra {
         // TODO improve for sparse arrays
         // final IAST originalMatrix = (IAST) ast.arg1().normal(false);
         final FieldMatrix<IExpr> matrix = Convert.list2Matrix(ast.arg1());
-        final FieldMatrix<IExpr> transposed = matrix.transpose();
-        IExpr transposedMatrix = Convert.matrix2Expr(transposed).mapExpr(x -> transform(x));
-        // because the rows can contain sub lists the IAST.IS_MATRIX flag cannot be set directly.
-        // isMatrix()
-        // must be used!
-        transposedMatrix.isMatrix(true);
-        return transposedMatrix;
-        // return transpose(originalMatrix, dim[0], dim[1]);
+        if (matrix != null) {
+          final FieldMatrix<IExpr> transposed = matrix.transpose();
+          IExpr transposedMatrix = Convert.matrix2Expr(transposed).mapExpr(x -> transform(x));
+          // because the rows can contain sub lists the IAST.IS_MATRIX flag cannot be set directly.
+          // isMatrix()
+          // must be used!
+          transposedMatrix.isMatrix(true);
+          return transposedMatrix;
+          // return transpose(originalMatrix, dim[0], dim[1]);
+        }
       }
       return F.NIL;
     }
 
     @Override
     public int[] expectedArgSize(IAST ast) {
-      return IOFunctions.ARGS_1_2;
+      return ARGS_1_2;
     }
 
     protected IExpr transform(final IExpr expr) {
@@ -4281,7 +4342,7 @@ public final class LinearAlgebra {
 
     @Override
     public int[] expectedArgSize(IAST ast) {
-      return IOFunctions.ARGS_1_2;
+      return ARGS_1_2;
     }
   }
 
@@ -4290,29 +4351,30 @@ public final class LinearAlgebra {
     @Override
     public IExpr evaluate(final IAST ast, EvalEngine engine) {
       int[] dim = ast.arg1().isMatrix(false);
-      if (dim != null) {
-        try {
-          final int k;
-          if (ast.size() == 3) {
-            k = Validate.checkIntType(ast, 2, Integer.MIN_VALUE);
-          } else {
-            k = 0;
-          }
-          int m = dim[0];
-          int n = dim[1];
-          FieldMatrix<IExpr> matrix = Convert.list2Matrix(ast.arg1());
-          return F.matrix((i, j) -> i <= j - k ? matrix.getEntry(i, j) : F.C0, m, n);
-        } catch (final ValidateException ve) {
-          // int number validation
-          return engine.printMessage(ast.topHead(), ve);
-        }
+      if (dim == null) {
+        // Argument `1` at position `2` is not a non-empty rectangular matrix.
+        return IOFunctions.printMessage(ast.topHead(), "matrix", F.List(ast.arg1(), F.C1), engine);
       }
-      return F.NIL;
+      try {
+        final int k;
+        if (ast.size() == 3) {
+          k = Validate.checkIntType(ast, 2, Integer.MIN_VALUE);
+        } else {
+          k = 0;
+        }
+        int m = dim[0];
+        int n = dim[1];
+        FieldMatrix<IExpr> matrix = Convert.list2Matrix(ast.arg1());
+        return F.matrix((i, j) -> i <= j - k ? matrix.getEntry(i, j) : F.C0, m, n);
+      } catch (final ValidateException ve) {
+        // int number validation
+        return engine.printMessage(ast.topHead(), ve);
+      }
     }
 
     @Override
     public int[] expectedArgSize(IAST ast) {
-      return IOFunctions.ARGS_1_2;
+      return ARGS_1_2;
     }
   }
 
@@ -4382,7 +4444,7 @@ public final class LinearAlgebra {
 
     @Override
     public int[] expectedArgSize(IAST ast) {
-      return IOFunctions.ARGS_1_1;
+      return ARGS_1_1;
     }
   }
 
@@ -4432,7 +4494,7 @@ public final class LinearAlgebra {
 
     @Override
     public int[] expectedArgSize(IAST ast) {
-      return IOFunctions.ARGS_2_2;
+      return ARGS_2_2;
     }
   }
 
@@ -4581,37 +4643,77 @@ public final class LinearAlgebra {
   }
 
   public static ArrayList<Integer> dimensions(IAST ast) {
-    return dimensions(ast, ast.head(), Integer.MAX_VALUE, new ArrayList<Integer>());
+    return dimensionsRecursive(ast, ast.head(), Integer.MAX_VALUE, new ArrayList<Integer>());
   }
 
   public static ArrayList<Integer> dimensions(IAST ast, IExpr header, int maxLevel) {
-    return dimensions(ast, header, maxLevel, new ArrayList<Integer>());
+    return dimensionsRecursive(ast, header, maxLevel, new ArrayList<Integer>());
   }
 
-  public static ArrayList<Integer> dimensions(
+  private static ArrayList<Integer> dimensionsRecursive(
       IAST ast, IExpr header, int maxLevel, ArrayList<Integer> dims) {
+
     int size = ast.size();
     dims.add(size - 1);
     if (size > 1 && ast.arg1().isAST()) {
       IAST arg1AST = (IAST) ast.arg1();
       int arg1Size = arg1AST.size();
-      if (!header.equals(arg1AST.head())) {
+      if (header.equals(S.List)) {
+        if (!arg1AST.isSparseArray() && !header.equals(arg1AST.head())) {
+          return dims;
+        }
+      } else if (!header.equals(arg1AST.head())) {
         return dims;
       }
       if (maxLevel > 0) {
         for (int i = 2; i < size; i++) {
-          if (!ast.get(i).isAST()) {
+          IExpr arg = ast.get(i);
+          if (header.equals(S.List)) {
+            if (!arg.isSparseArray() && !header.equals(arg.head())) {
+              return dims;
+            }
+          } else if (!header.equals(arg.head())) {
             return dims;
           }
-          if (arg1Size != ((IAST) ast.get(i)).size()) {
-            return dims;
+          if (arg.isAST() || arg.isSparseArray()) {
+            if (arg1Size == arg.size()) {
+              continue;
+            }
           }
+          return dims;
         }
-        dimensions(arg1AST, header, maxLevel - 1, dims);
+        dimensionsRecursive(arg1AST, header, maxLevel - 1, dims);
       }
     }
     return dims;
   }
+
+  //  private static ArrayList<Integer> arrayDepthRecursive(
+  //      IAST ast, IExpr header, ArrayList<Integer> dims) {
+  //    int size = ast.size();
+  //    dims.add(size - 1);
+  //    if (size > 1) {
+  //      int arg1Size = ast.arg1().size();
+  //      for (int i = 2; i < size; i++) {
+  //        IExpr arg = ast.get(i);
+  //        if (arg1Size != arg.size()) {
+  //          return dims;
+  //        }
+  //      }
+  //      IExpr arg1 = ast.arg1();
+  //      if (arg1.isAST()) {
+  //        arrayDepthRecursive((IAST) arg1, header, dims);
+  //      }
+  //      if (arg1.isSparseArray() || arg1.isNumericArray()) {
+  //        arg1 = arg1.normal(false);
+  //        if (arg1.isAST()) {
+  //          arrayDepthRecursive((IAST) arg1, header, dims);
+  //        }
+  //      }
+  //    }
+  //
+  //    return dims;
+  //  }
 
   public static void initialize() {
     Initializer.init();

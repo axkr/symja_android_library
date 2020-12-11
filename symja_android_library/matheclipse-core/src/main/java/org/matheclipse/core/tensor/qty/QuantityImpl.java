@@ -79,8 +79,11 @@ public class QuantityImpl extends DataExpr<IUnit> implements IQuantity, External
   }
 
   @Override
-  public INumber conjugate() {
-    return (INumber) ofUnit(F.Conjugate.of(arg1));
+  public IExpr conjugate() {
+    if (arg1.isRealResult()) {
+      return this;
+    }
+    return new QuantityImpl(F.Conjugate(arg1), fData);
   }
 
   /** {@inheritDoc} */
@@ -140,7 +143,10 @@ public class QuantityImpl extends DataExpr<IUnit> implements IQuantity, External
 
   @Override
   public IExpr im() {
-    return ofUnit(F.Im.of(arg1));
+    if (arg1.isRealResult()) {
+      return new QuantityImpl(F.C0, fData);
+    }
+    return new QuantityImpl(F.Im(arg1), fData);
   }
 
   /** {@inheritDoc} */
@@ -198,8 +204,8 @@ public class QuantityImpl extends DataExpr<IUnit> implements IQuantity, External
 
   /** {@inheritDoc} */
   @Override
-  public boolean isNumericFunction() {
-    return arg1.isNumericFunction();
+  public boolean isNumericFunction(boolean allowList) {
+    return arg1.isNumericFunction(true);
   }
 
   /** {@inheritDoc} */
@@ -243,7 +249,10 @@ public class QuantityImpl extends DataExpr<IUnit> implements IQuantity, External
       IQuantity quantity = (IQuantity) scalar;
       return of(arg1.times(quantity.value()), fData.add(quantity.unit()));
     }
-    return ofUnit(arg1.times(scalar));
+    if (scalar.isReal()) {
+      return ofUnit(arg1.times(scalar));
+    }
+    return F.NIL;
   }
 
   public IExpr n() {
@@ -307,12 +316,19 @@ public class QuantityImpl extends DataExpr<IUnit> implements IQuantity, External
     if (exponent instanceof IQuantity) {
       throw MathException.of(this, exponent);
     }
-    return of(F.Power.of(arg1, exponent), fData.multiply(exponent));
+    IUnit product = fData.multiply(exponent);
+    if (product == null) {
+      return F.NIL;
+    }
+    return of(F.Power.of(arg1, exponent), product);
   }
 
   @Override
   public IExpr re() {
-    return ofUnit(F.Re.of(arg1));
+    if (arg1.isRealResult()) {
+      return this;
+    }
+    return new QuantityImpl(F.Re(arg1), fData);
   }
 
   @Override
@@ -333,7 +349,11 @@ public class QuantityImpl extends DataExpr<IUnit> implements IQuantity, External
 
   @Override
   public IExpr sqrt() {
-    return of(F.Sqrt.of(arg1), fData.multiply(F.C1D2));
+    IUnit product = fData.multiply(F.C1D2);
+    if (product == null) {
+      return F.NIL;
+    }
+    return of(F.Sqrt.of(arg1), product);
   }
 
   @Override

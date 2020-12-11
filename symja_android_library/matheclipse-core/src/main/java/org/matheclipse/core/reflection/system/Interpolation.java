@@ -4,6 +4,7 @@ import org.hipparchus.analysis.interpolation.FieldHermiteInterpolator;
 import org.matheclipse.core.builtin.IOFunctions;
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.interfaces.AbstractEvaluator;
+import org.matheclipse.core.eval.interfaces.IFunctionEvaluator;
 import org.matheclipse.core.eval.util.OptionArgs;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.expression.S;
@@ -128,6 +129,6 @@ public class Interpolation extends AbstractEvaluator {
 
   @Override
   public int[] expectedArgSize(IAST ast) {
-    return IOFunctions.ARGS_1_5;
+    return IFunctionEvaluator.ARGS_1_5;
   }
 }

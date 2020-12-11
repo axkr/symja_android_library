@@ -66,12 +66,12 @@ public class UnaryNumerical implements Function<IExpr, IExpr>, UnivariateDiffere
     final double[] stack = new double[10];
     IExpr value = fVariable.assignedValue();
     try {
-      fVariable.assignValue(Num.valueOf(x));
+      fVariable.assignValue(Num.valueOf(x), false);
       result = DoubleStackEvaluator.eval(stack, 0, fFunction);
     } catch (RuntimeException rex) {
       return Double.NaN;
     } finally {
-      fVariable.assignValue(value);
+      fVariable.assignValue(value, false);
     }
     return result;
   }

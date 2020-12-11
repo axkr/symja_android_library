@@ -1,27 +1,20 @@
 package org.matheclipse.core.reflection.system;
 
 import static org.matheclipse.core.expression.F.Graphics;
-import static org.matheclipse.core.expression.F.Line;
 import static org.matheclipse.core.expression.F.List;
 import static org.matheclipse.core.expression.F.Rule;
 import static org.matheclipse.core.expression.F.Show;
 
-import java.util.Arrays;
-
-import org.hipparchus.stat.descriptive.moment.Mean;
-import org.hipparchus.stat.descriptive.moment.StandardDeviation;
 import org.matheclipse.core.basic.Config;
-import org.matheclipse.core.convert.Convert;
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.interfaces.AbstractEvaluator;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.expression.ID;
-import org.matheclipse.core.generic.UnaryNumerical;
+import org.matheclipse.core.expression.S;
 import org.matheclipse.core.graphics.Dimensions2D;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IASTAppendable;
 import org.matheclipse.core.interfaces.IExpr;
-import org.matheclipse.core.interfaces.INum;
 import org.matheclipse.core.interfaces.ISymbol;
 import org.matheclipse.parser.client.FEConfig;
 
@@ -103,13 +96,13 @@ public class ListLinePlot extends AbstractEvaluator {
             plotRange =
                 Rule(F.PlotRange, F.List(F.List(dim.xMin, dim.xMax), F.List(dim.yMin, dim.yMax)));
           } else {
-            plotRange = Rule(F.PlotRange, F.Automatic);
+            plotRange = Rule(F.PlotRange, S.Automatic);
           }
           final IExpr options[] = {
             plotRange,
-            Rule(F.AxesStyle, F.Automatic),
+            Rule(F.AxesStyle, S.Automatic),
             Rule(F.AxesOrigin, List(F.C0, F.C0)),
-            Rule(F.Axes, F.True),
+            Rule(F.Axes, S.True),
             Rule(F.Background, F.White)
           };
           graphics.appendAll(F.function(F.List, options), 1, options.length);

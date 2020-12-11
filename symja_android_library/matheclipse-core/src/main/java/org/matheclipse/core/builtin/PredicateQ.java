@@ -11,6 +11,7 @@ import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.exception.ValidateException;
 import org.matheclipse.core.eval.interfaces.AbstractCoreFunctionEvaluator;
 import org.matheclipse.core.eval.interfaces.AbstractCorePredicateEvaluator;
+import org.matheclipse.core.eval.interfaces.IFunctionEvaluator;
 import org.matheclipse.core.eval.util.OptionArgs;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.expression.S;
@@ -19,6 +20,7 @@ import org.matheclipse.core.interfaces.IASTAppendable;
 import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.interfaces.IInteger;
 import org.matheclipse.core.interfaces.IPredicate;
+import org.matheclipse.core.interfaces.ISparseArray;
 import org.matheclipse.core.interfaces.IStringX;
 import org.matheclipse.core.interfaces.ISymbol;
 import org.matheclipse.core.parser.ExprParser;
@@ -207,7 +209,13 @@ public class PredicateQ {
      */
     private static int determineDepth(final IExpr expr, int depth, Predicate<IExpr> predicate) {
       int resultDepth = depth;
-      if (expr.isList()) {
+      if (expr.isSparseArray()) {
+        int[] dims = ((ISparseArray) expr).getDimension();
+        if (dims == null) {
+          return -1;
+        }
+        return depth + dims.length;
+      } else if (expr.isList()) {
         IAST ast = (IAST) expr;
         int size = ast.size();
         if (size == 1) {
@@ -280,7 +288,7 @@ public class PredicateQ {
     }
 
     public int[] expectedArgSize(IAST ast) {
-      return IOFunctions.ARGS_1_3;
+      return ARGS_1_3;
     }
   }
 
@@ -466,12 +474,12 @@ public class PredicateQ {
 
     @Override
     public IExpr evaluate(IAST ast, EvalEngine engine) {
-      if (ast.isAST1()) {
-        ast = F.operatorFormAppend(ast);
-        if (!ast.isPresent()) {
-          return F.NIL;
-        }
-      }
+      //      if (ast.isAST1()) {
+      //        ast = F.operatorForm1Append(ast);
+      //        if (!ast.isPresent()) {
+      //          return F.NIL;
+      //        }
+      //      }
       if (ast.size() == 3) {
         final IExpr arg1 = engine.evaluate(ast.arg1());
         final IExpr arg2 = engine.evalPattern(ast.arg2());
@@ -495,7 +503,7 @@ public class PredicateQ {
     }
 
     public int[] expectedArgSize(IAST ast) {
-      return IOFunctions.ARGS_1_2;
+      return ARGS_1_2_1;
     }
   }
 
@@ -567,12 +575,12 @@ public class PredicateQ {
 
     @Override
     public IExpr evaluate(IAST ast, EvalEngine engine) {
-      if (ast.isAST1()) {
-        ast = F.operatorFormAppend(ast);
-        if (!ast.isPresent()) {
-          return F.NIL;
-        }
-      }
+      //      if (ast.isAST1()) {
+      //        ast = F.operatorForm1Append(ast);
+      //        if (!ast.isPresent()) {
+      //          return F.NIL;
+      //        }
+      //      }
       if ((ast.isAST2())) {
         IExpr arg1 = ast.arg1();
         IPatternMatcher matcher = engine.evalPatternMatcher(ast.arg2());
@@ -597,7 +605,7 @@ public class PredicateQ {
     }
 
     public int[] expectedArgSize(IAST ast) {
-      return IOFunctions.ARGS_1_2;
+      return ARGS_2_2_1;
     }
   }
 
@@ -687,7 +695,7 @@ public class PredicateQ {
     }
 
     public int[] expectedArgSize(IAST ast) {
-      return IOFunctions.ARGS_1_2;
+      return ARGS_1_2;
     }
 
     @Override
@@ -725,12 +733,12 @@ public class PredicateQ {
 
     @Override
     public IExpr evaluate(IAST ast, EvalEngine engine) {
-      if (ast.isAST1()) {
-        ast = F.operatorFormAppend(ast);
-        if (!ast.isPresent()) {
-          return F.NIL;
-        }
-      }
+      //      if (ast.isAST1()) {
+      //        ast = F.operatorForm1Append(ast);
+      //        if (!ast.isPresent()) {
+      //          return F.NIL;
+      //        }
+      //      }
       try {
         boolean heads = false;
         int size = ast.size();
@@ -774,6 +782,10 @@ public class PredicateQ {
         return x -> x.equals(pattern);
       }
       return new PatternMatcher(pattern);
+    }
+
+    public int[] expectedArgSize(IAST ast) {
+      return ARGS_1_INFINITY_1;
     }
   }
 
@@ -934,7 +946,7 @@ public class PredicateQ {
     }
 
     public int[] expectedArgSize(IAST ast) {
-      return IOFunctions.ARGS_1_1;
+      return ARGS_1_1;
     }
   }
 
@@ -975,7 +987,7 @@ public class PredicateQ {
         IExpr temp =
             ((IAST) expr)
                 .replace( //
-                    x -> x.isNumericFunction(), //
+                    x -> x.isNumericFunction(true), //
                     x -> x.evalNumber());
         if (temp != null) {
           temp = engine.evaluate(temp);
@@ -1202,7 +1214,7 @@ public class PredicateQ {
     }
 
     public int[] expectedArgSize(IAST ast) {
-      return IOFunctions.ARGS_1_1;
+      return ARGS_1_1;
     }
   }
 
@@ -1246,7 +1258,7 @@ public class PredicateQ {
     }
 
     public int[] expectedArgSize(IAST ast) {
-      return IOFunctions.ARGS_1_1;
+      return ARGS_1_1;
     }
   }
 
@@ -1323,7 +1335,7 @@ public class PredicateQ {
     }
 
     public int[] expectedArgSize(IAST ast) {
-      return IOFunctions.ARGS_1_2;
+      return ARGS_1_2;
     }
   }
 
@@ -1396,7 +1408,7 @@ public class PredicateQ {
     }
 
     public int[] expectedArgSize(IAST ast) {
-      return IOFunctions.ARGS_1_1;
+      return ARGS_1_1;
     }
 
     @Override
@@ -1487,7 +1499,7 @@ public class PredicateQ {
     }
 
     public int[] expectedArgSize(IAST ast) {
-      return IOFunctions.ARGS_1_2;
+      return ARGS_1_2;
     }
   }
 

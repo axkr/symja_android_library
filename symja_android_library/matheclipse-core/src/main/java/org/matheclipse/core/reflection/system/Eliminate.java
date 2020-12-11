@@ -10,7 +10,9 @@ import org.matheclipse.core.builtin.IOFunctions;
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.exception.Validate;
 import org.matheclipse.core.eval.interfaces.AbstractFunctionEvaluator;
+import org.matheclipse.core.eval.interfaces.IFunctionEvaluator;
 import org.matheclipse.core.expression.F;
+import org.matheclipse.core.expression.S;
 import org.matheclipse.core.generic.Predicates;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IASTAppendable;
@@ -336,7 +338,7 @@ public class Eliminate extends AbstractFunctionEvaluator {
               inverseFunction.append(exprWithoutVariable);
               return extractVariable(ast.arg1(), inverseFunction, predicate, x, engine);
             }
-            return F.True;
+            return S.True;
           } else {
             // example: Sin(f(x)) == y -> f(x) == ArcSin(y)
             inverseFunction.append(exprWithoutVariable);
@@ -548,13 +550,13 @@ public class Eliminate extends AbstractFunctionEvaluator {
 
   @Override
   public int[] expectedArgSize(IAST ast) {
-    return IOFunctions.ARGS_2_2;
+    return IFunctionEvaluator.ARGS_2_2;
   }
 
   private static IExpr resultAsAndEquations(IAST result) {
     if (result.isList()) {
       if (result.equals(F.CEmptyList)) {
-        return F.True;
+        return S.True;
       }
       return result.apply(F.And);
     }

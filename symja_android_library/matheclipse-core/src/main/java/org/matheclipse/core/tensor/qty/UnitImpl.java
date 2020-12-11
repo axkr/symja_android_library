@@ -61,7 +61,7 @@ import org.matheclipse.parser.client.math.MathException;
       }
       return new UnitImpl(map);
     }
-    throw MathException.of(factor);
+    return null;
   }
 
   @Override // from Unit

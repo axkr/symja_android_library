@@ -47,6 +47,7 @@ public class SymjaInterpreter extends EvalUtilities {
     String evalStr = codeString;
     IExpr expr;
     EvalEngine engine = EvalEngine.get();
+    EvalEngine.setReset(engine);
     try {
       ExprParser p = new ExprParser(engine, true);
       // throws SyntaxError exception, if syntax isn't valid
@@ -119,6 +120,7 @@ public class SymjaInterpreter extends EvalUtilities {
     String evalStr = codeString;
     IExpr expr;
     EvalEngine engine = EvalEngine.get();
+    EvalEngine.setReset(engine);
     try {
       ExprParser p = new ExprParser(engine, true);
       // throws SyntaxError exception, if syntax isn't valid

@@ -218,6 +218,33 @@ public class Functors {
     }
   }
 
+  /**
+   * Create a functor from the given left-hand-side and right-hand-side AST expressions.
+   * left-hand-side and right-hand-side must have equal number of arguments, otherwise only an empty
+   * rule map is returned.
+   *
+   * @param lhsAST a list of left-hand-side expressions of the rules
+   * @param rhsAST a list of right-hand-side expressions of the rules
+   * @return a mapping function from lhs arguments to rhs arguments
+   */
+  public static Function<IExpr, IExpr> equalRules(IAST lhsAST, IAST rhsAST) {
+    final Map<IExpr, IExpr> equalRules;
+    if (lhsAST.size() > 1 && lhsAST.size() == rhsAST.size()) {
+      int argsSize = lhsAST.argSize();
+      if (argsSize <= 5) {
+        equalRules = new OpenFixedSizeMap<IExpr, IExpr>(argsSize * 3 - 1);
+      } else {
+        equalRules = new HashMap<IExpr, IExpr>();
+      }
+      for (int i = 1; i < lhsAST.size(); i++) {
+        equalRules.put(lhsAST.get(i), rhsAST.get(i));
+      }
+      return rules(equalRules);
+    }
+    equalRules = new HashMap<IExpr, IExpr>();
+    return rules(equalRules);
+  }
+
   private static Function<IExpr, IExpr> rulesFromNestedList(
       IAST astRules, EvalEngine engine, List<PatternMatcherAndEvaluator> matchers) {
     final Map<IExpr, IExpr> equalRules;
@@ -396,8 +423,7 @@ public class Functors {
     if (expr.isAST()) {
       IAST arg2AST = (IAST) expr;
       if (arg2AST.isAST1() && arg2AST.head().isSymbol()) {
-        final int attr = ((ISymbol) arg2AST.head()).getAttributes();
-        if ((ISymbol.ONEIDENTITY & attr) == ISymbol.ONEIDENTITY) {
+        if (((ISymbol) arg2AST.head()).hasOneIdentityAttribute()) {
           expr = arg2AST.arg1();
         }
       }

@@ -1,6 +1,5 @@
 package org.matheclipse.core.eval.interfaces;
 
-import org.matheclipse.core.builtin.IOFunctions;
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.util.OptionArgs;
 import org.matheclipse.core.expression.F;
@@ -34,7 +33,7 @@ public abstract class AbstractCorePredicateEvaluator extends AbstractCoreFunctio
   public IExpr evaluate(final IAST ast, final EvalEngine engine) {
     // if (ast.size() >= 2) {
     IExpr arg1 = engine.evaluate(ast.arg1());
-    if (arg1.isList()) {
+    if (arg1.isList() || arg1.isAssociation()) {
       // thread over list?
       if ((ast.topHead().getAttributes() & ISymbol.LISTABLE) == ISymbol.LISTABLE) {
         return ((IAST) arg1).mapThread(ast, 1);
@@ -51,6 +50,6 @@ public abstract class AbstractCorePredicateEvaluator extends AbstractCoreFunctio
   }
 
   public int[] expectedArgSize(IAST ast) {
-    return IOFunctions.ARGS_1_2;
+    return IFunctionEvaluator.ARGS_1_2;
   }
 }

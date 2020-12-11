@@ -679,14 +679,14 @@ public class Convert {
   public static int[] checkNonEmptySquareMatrix(ISymbol symbol, IExpr arg1) {
     int[] dim = arg1.isMatrix();
     if (dim == null || dim[0] != dim[1] || dim[1] == 0) {
-      if (arg1.isNumericFunction()) {
+      if (arg1.isListOrAssociation() || arg1.isSparseArray()) {
         if (arg1.isAST()) {
           ((IAST) arg1).setEvalFlags(IAST.NO_FLAG);
         }
         // Argument `1` at position `2` is not a non-empty square matrix.
         IOFunctions.printMessage(symbol, "matsq", F.List(arg1, F.C1), EvalEngine.get());
+        return null;
       }
-      return null;
     }
     return dim;
   }
@@ -694,7 +694,7 @@ public class Convert {
   public static int[] checkNonEmptyRectangularMatrix(ISymbol symbol, IExpr arg1) {
     int[] dim = arg1.isMatrix();
     if (dim == null || dim[1] == 0) {
-      if (arg1.isNumericFunction()) {
+      if (arg1.isListOrAssociation() || arg1.isSparseArray()) {
         if (arg1.isAST()) {
           ((IAST) arg1).setEvalFlags(IAST.NO_FLAG);
         }

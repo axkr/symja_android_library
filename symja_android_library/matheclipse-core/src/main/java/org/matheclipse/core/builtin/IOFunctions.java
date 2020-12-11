@@ -3,14 +3,19 @@ package org.matheclipse.core.builtin;
 import java.io.PrintStream;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 
 import org.apache.commons.lang3.StringUtils;
 import org.matheclipse.core.basic.Config;
 import org.matheclipse.core.convert.AST2Expr;
 import org.matheclipse.core.eval.EvalEngine;
+import org.matheclipse.core.eval.exception.Validate;
 import org.matheclipse.core.eval.interfaces.AbstractCoreFunctionEvaluator;
 import org.matheclipse.core.eval.interfaces.AbstractEvaluator;
 import org.matheclipse.core.eval.interfaces.AbstractFunctionEvaluator;
+import org.matheclipse.core.eval.util.OptionArgs;
+import org.matheclipse.core.expression.Context;
+import org.matheclipse.core.expression.ContextPath;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.expression.S;
 import org.matheclipse.core.form.output.OutputFormFactory;
@@ -20,6 +25,7 @@ import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.interfaces.IStringX;
 import org.matheclipse.core.interfaces.ISymbol;
 import org.matheclipse.core.patternmatching.IPatternMatcher;
+import org.matheclipse.core.patternmatching.RulesData;
 import org.matheclipse.parser.client.FEConfig;
 import org.matheclipse.parser.trie.SuggestTree;
 import org.matheclipse.parser.trie.SuggestTree.Node;
@@ -37,6 +43,7 @@ public class IOFunctions {
       S.Echo.setEvaluator(new Echo());
       S.EchoFunction.setEvaluator(new EchoFunction());
       S.Message.setEvaluator(new Message());
+      S.Messages.setEvaluator(new Messages());
       S.Names.setEvaluator(new Names());
       S.Print.setEvaluator(new Print());
       S.Short.setEvaluator(new Short());
@@ -47,6 +54,66 @@ public class IOFunctions {
     }
   }
 
+  /**
+   *
+   *
+   * <pre>
+   * <code>Echo(expr)
+   * </code>
+   * </pre>
+   *
+   * <blockquote>
+   *
+   * <p>prints the <code>expr</code> to the default output stream and returns <code>expr</code>.
+   *
+   * </blockquote>
+   *
+   * <pre>
+   * <code>Echo(expr, label)
+   * </code>
+   * </pre>
+   *
+   * <blockquote>
+   *
+   * <p>prints <code>label</code> before printing <code>expr</code>.
+   *
+   * </blockquote>
+   *
+   * <pre>
+   * <code>Echo(expr, label, head)
+   * </code>
+   * </pre>
+   *
+   * <blockquote>
+   *
+   * <p>prints <code>label</code> before printing <code>head(expr)</code> and returns <code>expr
+   * </code>.
+   *
+   * </blockquote>
+   *
+   * <h3>Examples</h3>
+   *
+   * <pre>
+   * <code>&gt;&gt; {Echo(f(x,y)), Print(g(a,b))}
+   * {f(x,y),Null}
+   * </code>
+   * </pre>
+   *
+   * <p>prints
+   *
+   * <pre>
+   * <code>f(x,y)
+   * g(a,b)
+   * </code>
+   * </pre>
+   *
+   * <p>and returns
+   *
+   * <pre>
+   * <code>{f(x,y),Null}
+   * </code>
+   * </pre>
+   */
   private static class Echo extends Print {
 
     @Override
@@ -80,10 +147,71 @@ public class IOFunctions {
     }
 
     public int[] expectedArgSize(IAST ast) {
-      return IOFunctions.ARGS_1_3;
+      return ARGS_1_3;
     }
   }
 
+  /**
+   *
+   *
+   * <pre>
+   * <code>EchoFunction()[expr]
+   * </code>
+   * </pre>
+   *
+   * <blockquote>
+   *
+   * <p>operator form of the <code>Echo</code>function. Print the <code>expr</code> to the default
+   * output stream and return <code>expr</code>.
+   *
+   * </blockquote>
+   *
+   * <pre>
+   * <code>EchoFunction(head)[expr]
+   * </code>
+   * </pre>
+   *
+   * <blockquote>
+   *
+   * <p>prints <code>head(expr)</code> and returns <code>expr</code>.
+   *
+   * </blockquote>
+   *
+   * <pre>
+   * <code>EchoFunction(label, head)[expr]
+   * </code>
+   * </pre>
+   *
+   * <blockquote>
+   *
+   * <p>prints <code>label</code> before printing <code>head(expr)</code> and returns <code>expr
+   * </code>.
+   *
+   * </blockquote>
+   *
+   * <h3>Examples</h3>
+   *
+   * <pre>
+   * <code>&gt;&gt; {EchoFunction()[f(x,y)], Print(g(a,b))}
+   * {f(x,y),Null}
+   * </code>
+   * </pre>
+   *
+   * <p>prints
+   *
+   * <pre>
+   * <code>f(x,y)
+   * g(a,b)
+   * </code>
+   * </pre>
+   *
+   * <p>and returns
+   *
+   * <pre>
+   * <code>{f(x,y),Null}
+   * </code>
+   * </pre>
+   */
   private static final class EchoFunction extends Print {
     @Override
     public IExpr evaluate(IAST ast, EvalEngine engine) {
@@ -122,10 +250,41 @@ public class IOFunctions {
     }
 
     public int[] expectedArgSize(IAST ast) {
-      return IOFunctions.ARGS_0_2;
+      return ARGS_0_2_0;
     }
   }
 
+  /**
+   *
+   *
+   * <pre>
+   * <code>Message(symbol::msg, expr1, expr2, ...)
+   * </code>
+   * </pre>
+   *
+   * <blockquote>
+   *
+   * <p>displays the specified message, replacing placeholders in the message text with the
+   * corresponding expressions.
+   *
+   * </blockquote>
+   *
+   * <h3>Examples</h3>
+   *
+   * <pre>
+   * <code>&gt;&gt; a::b = &quot;Hello world!&quot;
+   * Hello world!
+   *
+   * &gt;&gt; Message(a::b)
+   * a: Hello world!
+   *
+   * &gt;&gt; a::c := &quot;Hello `1`, Mr 00`2`!&quot;
+   *
+   * &gt;&gt; Message(a::c, &quot;you&quot;, 3 + 4)
+   * a: Hello you, Mr 007!
+   * </code>
+   * </pre>
+   */
   private static class Message extends AbstractEvaluator {
 
     @Override
@@ -159,6 +318,41 @@ public class IOFunctions {
     }
   }
 
+  private static class Messages extends AbstractCoreFunctionEvaluator {
+
+    @Override
+    public IExpr evaluate(final IAST ast, EvalEngine engine) {
+      IExpr arg1 = Validate.checkSymbolType(ast, 1, engine);
+      if (arg1.isSymbol()) {
+        ISymbol symbol = (ISymbol) arg1;
+        RulesData rulesData = symbol.getRulesData();
+        if (rulesData != null) {
+          Map<String, IStringX> map = rulesData.getMessages();
+          if (map != null) {
+            IASTAppendable result = F.ListAlloc(map.size());
+            for (Map.Entry<String, IStringX> entry : map.entrySet()) {
+              result.append(
+                  F.RuleDelayed(
+                      F.HoldPattern(F.MessageName(symbol, entry.getKey())), entry.getValue()));
+            }
+            return result;
+          }
+        }
+        return F.CEmptyList;
+      }
+      return F.NIL;
+    }
+
+    public int[] expectedArgSize(IAST ast) {
+      return ARGS_1_1;
+    }
+
+    @Override
+    public void setUp(ISymbol newSymbol) {
+      newSymbol.setAttributes(ISymbol.HOLDALL);
+    }
+  }
+
   private static class Short extends AbstractEvaluator {
 
     @Override
@@ -167,7 +361,7 @@ public class IOFunctions {
     }
 
     public int[] expectedArgSize(IAST ast) {
-      return IOFunctions.ARGS_1_1;
+      return ARGS_1_1;
     }
   }
 
@@ -189,14 +383,31 @@ public class IOFunctions {
         return getAllNames();
       }
 
-      if (ast.arg1() instanceof IStringX) {
-        return getNamesByPrefix(ast.arg1().toString());
+      IExpr arg1 = ast.arg1();
+      boolean ignoreCase = FEConfig.PARSER_USE_LOWERCASE_SYMBOLS ? true : false;
+      if (ast.size() > 2) {
+        final OptionArgs options = new OptionArgs(ast.topHead(), ast, 2, engine, true);
+        IExpr option = options.getOption(S.IgnoreCase);
+        if (option.isTrue()) {
+          ignoreCase = true;
+        }
       }
-      return F.NIL;
+
+      if (arg1.isString() && arg1.toString().indexOf("`") < 0) {
+        arg1 = F.$str("System`" + arg1.toString());
+      }
+      java.util.regex.Pattern pattern =
+          StringFunctions.toRegexPattern(arg1, true, ignoreCase, ast, engine);
+
+      if (pattern == null) {
+        return F.NIL;
+      }
+
+      return getNamesByPattern(pattern, engine);
     }
 
     public int[] expectedArgSize(IAST ast) {
-      return IOFunctions.ARGS_0_1;
+      return ARGS_0_2;
     }
   }
 
@@ -245,42 +456,6 @@ public class IOFunctions {
     }
   }
 
-  public static final int[] ARGS_0_0 = new int[] {0, 0};
-
-  public static final int[] ARGS_0_1 = new int[] {0, 1};
-
-  public static final int[] ARGS_0_2 = new int[] {0, 2};
-
-  public static final int[] ARGS_1_1 = new int[] {1, 1};
-
-  public static final int[] ARGS_1_2 = new int[] {1, 2};
-
-  public static final int[] ARGS_1_5 = new int[] {1, 5};
-
-  public static final int[] ARGS_2_2 = new int[] {2, 2};
-
-  public static final int[] ARGS_1_3 = new int[] {1, 3};
-
-  public static final int[] ARGS_1_4 = new int[] {1, 4};
-
-  public static final int[] ARGS_2_3 = new int[] {2, 3};
-
-  public static final int[] ARGS_2_4 = new int[] {2, 4};
-
-  public static final int[] ARGS_3_3 = new int[] {3, 3};
-
-  public static final int[] ARGS_3_4 = new int[] {3, 4};
-
-  public static final int[] ARGS_4_4 = new int[] {4, 4};
-
-  public static final int[] ARGS_5_5 = new int[] {5, 5};
-
-  public static final int[] ARGS_1_INFINITY = new int[] {1, Integer.MAX_VALUE};
-
-  public static final int[] ARGS_2_INFINITY = new int[] {2, Integer.MAX_VALUE};
-
-  public static final int[] ARGS_3_INFINITY = new int[] {3, Integer.MAX_VALUE};
-
   private static final String[] MESSAGES = { //
     "argillegal",
     "illegal arguments: \"`1`\" in `2`", //
@@ -306,6 +481,8 @@ public class IOFunctions {
     "Requested base `1` in `2` should be between 2 and `3`.", //
     "boxfmt",
     "`1` is not a box formatting type.", //
+    "cfn",
+    "Numerical error encountered, proceeding with uncompiled evaluation.", //
     "coef",
     "The first argument `1` of `2` should be a non-empty list of positive integers.", //
     "color",
@@ -330,6 +507,8 @@ public class IOFunctions {
     "Argument `1` is not an exact number.", //
     "exdims",
     "The dimensions cannot be determined from the position `1`.", //
+    "fdup",
+    "Duplicate parameter `1` found in `2`.", //
     "fftl",
     "Argument `1` is not a non-empty list or rectangular array of numeric quantities.", //
     "fpct",
@@ -338,8 +517,14 @@ public class IOFunctions {
     "First argument in `1` is not a symbol or a string naming a symbol.", //
     "heads",
     "Heads `1` and `2` are expected to be the same.", //
+    "idim",
+    "`1` and `2` must have the same length.", //
     "ilsnn",
     "Single or list of non-negative integers expected at position `1`.", //
+    "incom",
+    "Length `1` of dimension `2` in `3` is incommensurate with length `4` of dimension `5` in `6`.", //
+    "incomp",
+    "Expressions `1` and `2` have incompatible shapes.", //
     "incpt",
     "incompatible elements in `1` cannot be joined.", //
     "indet",
@@ -371,23 +556,29 @@ public class IOFunctions {
     "invdt",
     "The argument is not a rule or a list of rules.", //
     "invrl",
-    "The argument `1` is not a valid Association or list of rules.", //
+    "The argument `1` is not a valid Association or a list of rules.", //
     "iterb",
     "Iterator does not have appropriate bounds.", //
     "itform",
     "Argument `1` at position `2` does not have the correct form for an iterator.", //
     "itlim",
-    "Iteration limit of `1` exceeded for `2`.", //
+    "Iteration limit of `1` exceeded.", //
     "itlimpartial",
     "Iteration limit of `1` exceeded. Returning partial results.", //
     "itendless",
     "Endless iteration detected in `1` in evaluation loop.", //
+    "itraw",
+    "Raw object `1` cannot be used as an iterator.", //
     "ivar",
     "`1` is not a valid variable.", //
     "lend",
     "The argument at position `1` in `2` should be a vector of unsigned byte values or a Base64 encoded string.", //
     "level",
     "Level specification `1` is not of the form n, {n}, or {m, n}.", //
+    "levelpad",
+    "The padding specification `1` involves `2` levels, the list `3` has only `4` level.", //
+    "limset",
+    "Cannot set $RecursionLimit to `1`; value must be Infinity or an integer at least 20.", //
     "list",
     "List expected at position `1` in `2`.", //
     "listofbigints",
@@ -404,15 +595,25 @@ public class IOFunctions {
     "Variable `1` in local variable specification `2` requires assigning a value", //
     "lvset",
     "Local variable specification `1` contains `2`, which is an assignment to `3`; only assignments to symbols are allowed.", //
+    "lvsym",
+    "Local variable specification `1` contains `2` which is not a symbol or an assignment to a symbol.", //
     "matrix",
     "Argument `1` at position `2` is not a non-empty rectangular matrix.", //
     "matsq",
     "Argument `1` at position `2` is not a non-empty square matrix.", //
+    "mseqs",
+    "Sequence specification or a list of sequence specifications expected at position `1` in `2`.", //
+    "nconvss",
+    "The argument `1` cannot be converted to a NumericArray of type `2` using method `3`", //
     "nliter",
     "Non-list iterator `1` at position `2` does not evaluate to a real numeric value.", //
     "nil",
     "unexpected NIL expression encountered.", //
+    "nocatch",
+    "Uncaught `1` returned to top level.", //
     "noneg",
+    "Argument `1` should be a real non-negative number.", //
+    "nonegs",
     "Surd is not defined for even roots of negative values.", //
     "noopen",
     "Cannot open `1`.", //
@@ -476,10 +677,14 @@ public class IOFunctions {
     "Requested precision `1` is greater than `2`.", //
     "range",
     "Range specification in `1` does not have appropriate bounds.", //
+    "realx",
+    "The value `1` is not a real number.", //
     "reclim2",
     "Recursion depth of `1` exceeded during evaluation of `2`.", //
     "rectt",
     "Rectangular array expected at position `1` in `2`.", //
+    "reps",
+    "(`1`) is neither a list of replacement nor a valid dispatch table and cannot be used for replacing.", //
     "rvalue",
     "`1` is not a variable with a value, so its value cannot be changed.", //
     "rubiendless",
@@ -496,6 +701,10 @@ public class IOFunctions {
     "Matrix `1` is singular.", //
     "span",
     "`1` is not a valid Span specification.", //
+    "ssle",
+    "Symbol, string or HoldPattern(symbol) expected at position `2` in `1`.", //
+    "step",
+    "The step size `1` is expected to be positive", //
     "stream",
     "`1` is not string, InputStream[], or OutputStream[]", //
     "string",
@@ -525,7 +734,10 @@ public class IOFunctions {
     "wrsym",
     "Symbol `1` is Protected.", //
     "ucdec",
-    "An invalid unicode sequence was encountered and ignored." //
+    "An invalid unicode sequence was encountered and ignored.", //
+    // Symja special
+    "zzregex",
+    "Regex expression `1` error message: `2`" //
   };
 
   public static void initialize() {
@@ -550,7 +762,17 @@ public class IOFunctions {
     return F.NIL;
   }
 
-  public static IExpr printArgMessage(IAST ast, int[] expected, EvalEngine engine) {
+  /**
+   * argr, argx, argrx, argt messages
+   *
+   * <p><b>Example:</b> &quot;`1` called with 1 argument; `2` arguments are expected.&quot;
+   *
+   * @param ast
+   * @param expected
+   * @param engine
+   * @return
+   */
+  public static IAST printArgMessage(IAST ast, int[] expected, EvalEngine engine) {
     final ISymbol topHead = ast.topHead();
     int argSize = ast.argSize();
     if (expected[0] == expected[1]) {
@@ -683,6 +905,29 @@ public class IOFunctions {
     return str;
   }
 
+  public static IAST getNamesByPattern(java.util.regex.Pattern pattern, EvalEngine engine) {
+    ContextPath cp = engine.getContextPath();
+    IASTAppendable list = F.ListAlloc();
+    for (Context context : cp) {
+      for (Map.Entry<String, ISymbol> entry : context.entrySet()) {
+        String fullName = context.getContextName() + entry.getKey();
+        // System.out.println(fullName);
+        java.util.regex.Matcher matcher = pattern.matcher(fullName);
+        if (matcher.matches()) {
+          if (FEConfig.PARSER_USE_LOWERCASE_SYMBOLS && context.equals(Context.SYSTEM)) {
+            String str = AST2Expr.PREDEFINED_SYMBOLS_MAP.get(entry.getValue().getSymbolName());
+            if (str != null) {
+              list.append(F.$str(str));
+              continue;
+            }
+          }
+          list.append(F.$str(entry.getKey()));
+        }
+      }
+    }
+    return list;
+  }
+
   public static IAST getNamesByPrefix(String name) {
 
     if (name.length() == 0) {
@@ -697,17 +942,23 @@ public class IOFunctions {
       exact = false;
     }
     SuggestTree suggestTree = AST2Expr.getSuggestTree();
-    name = FEConfig.PARSER_USE_LOWERCASE_SYMBOLS ? name.toLowerCase() : name;
+    //    name = FEConfig.PARSER_USE_LOWERCASE_SYMBOLS ? name.toLowerCase() : name;
+    name = name.toLowerCase();
     Node n = suggestTree.getAutocompleteSuggestions(name);
     if (n != null) {
       IASTAppendable list = F.ListAlloc(n.listLength());
       for (int i = 0; i < n.listLength(); i++) {
+        String identifierStr = n.getSuggestion(i).getTerm();
+        String str = AST2Expr.PREDEFINED_SYMBOLS_MAP.get(identifierStr);
+        if (str != null) {
+          identifierStr = str;
+        }
         if (exact) {
-          if (name.equals(n.getSuggestion(i).getTerm())) {
-            list.append(F.$s(n.getSuggestion(i).getTerm()));
+          if (name.equals(identifierStr)) {
+            list.append(F.$s(identifierStr));
           }
         } else {
-          list.append(F.$s(n.getSuggestion(i).getTerm()));
+          list.append(F.$s(identifierStr));
         }
       }
       return list;

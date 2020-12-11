@@ -18,6 +18,7 @@ import org.matheclipse.core.convert.VariablesSet;
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.TeXUtilities;
 import org.matheclipse.core.eval.interfaces.AbstractEvaluator;
+import org.matheclipse.core.eval.interfaces.IFunctionEvaluator;
 import org.matheclipse.core.eval.util.OptionArgs;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.expression.ID;
@@ -317,7 +318,7 @@ public class ManipulateFunction {
           options = new OptionArgs(plot.topHead(), plot, 3, engine);
         }
         IExpr colorFunction = options.getOption(F.ColorFunction);
-        if (colorFunction == F.Automatic) {
+        if (colorFunction == S.Automatic) {
         } else if (colorFunction.isString()) {
           String newColorMap = colorFunction.toString();
           if (newColorMap.equals("CherryTones")) {
@@ -1007,7 +1008,7 @@ public class ManipulateFunction {
         }
       }
       return JSXGraph.boundingBox(
-          manipulateAST, boundingbox, function.toString(), toJS, true, true);
+          manipulateAST, boundingbox, function.toString(), toJS, false, true);
     }
 
     /**
@@ -2109,7 +2110,7 @@ public class ManipulateFunction {
 
     @Override
     public int[] expectedArgSize(IAST ast) {
-      return IOFunctions.ARGS_1_INFINITY;
+      return ARGS_1_INFINITY;
     }
 
     @Override

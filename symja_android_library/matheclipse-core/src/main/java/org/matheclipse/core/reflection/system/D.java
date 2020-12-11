@@ -1,5 +1,6 @@
 package org.matheclipse.core.reflection.system;
 
+import org.matheclipse.core.builtin.IOFunctions;
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.exception.Validate;
 import org.matheclipse.core.eval.exception.ValidateException;
@@ -311,9 +312,12 @@ public class D extends AbstractFunctionEvaluator implements DRules {
           }
         }
         return F.NIL;
-      }
 
-      if (!(x.isList())) {
+      } else {
+        if (!x.isVariable()) {
+          // `1` is not a valid variable.
+          return IOFunctions.printMessage(ast.topHead(), "ivar", F.List(x), engine);
+        }
         int[] dim = fx.isPiecewise();
         if (dim != null) {
           return dPiecewise(dim, (IAST) fx, ast, engine);
@@ -330,7 +334,7 @@ public class D extends AbstractFunctionEvaluator implements DRules {
           }
           return F.C0;
         }
-        if (!(x.isList()) && fx.isFree(x, true)) {
+        if (fx.isFree(x, true)) {
           return F.C0;
         }
       }
@@ -448,7 +452,7 @@ public class D extends AbstractFunctionEvaluator implements DRules {
       if (piecewiseFunction.size() > 2) {
         IASTMutable diff = ((IAST) ast).copy();
         diff.set(1, piecewiseFunction.arg2());
-        pwResult.append(F.List(engine.evaluate(diff), F.True));
+        pwResult.append(F.List(engine.evaluate(diff), S.True));
       }
       IASTMutable piecewise = ((IAST) piecewiseFunction).copy();
       piecewise.set(1, pwResult);

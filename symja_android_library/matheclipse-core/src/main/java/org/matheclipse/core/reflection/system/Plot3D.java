@@ -11,6 +11,7 @@ import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.interfaces.AbstractEvaluator;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.expression.ID;
+import org.matheclipse.core.expression.S;
 import org.matheclipse.core.generic.BinaryNumerical;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IASTAppendable;
@@ -97,7 +98,7 @@ public class Plot3D extends AbstractEvaluator {
           // for (int i = 0; i < optionsArray.length; i++) {
           // options.add(Rule(optionsArray[i], allOptions.get(i)));
           // }
-          options.append(Rule(F.PlotRange, F.Automatic));
+          options.append(Rule(F.PlotRange, S.Automatic));
           options.append(Rule(F.MeshRange, List(List(xMin, xMax), List(yMin, yMax))));
 
           graphics.appendAll(options, 1, options.size());

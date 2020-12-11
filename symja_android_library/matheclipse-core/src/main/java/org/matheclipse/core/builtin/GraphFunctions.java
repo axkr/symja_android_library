@@ -33,6 +33,7 @@ import org.jgrapht.graph.DefaultUndirectedWeightedGraph;
 import org.matheclipse.core.convert.Object2Expr;
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.interfaces.AbstractEvaluator;
+import org.matheclipse.core.eval.interfaces.IFunctionEvaluator;
 import org.matheclipse.core.eval.util.OptionArgs;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.expression.S;
@@ -45,10 +46,12 @@ import org.matheclipse.core.interfaces.IASTAppendable;
 import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.interfaces.IInteger;
 import org.matheclipse.core.interfaces.INum;
+import org.matheclipse.core.interfaces.ISymbol;
 import org.matheclipse.parser.client.FEConfig;
 
 /** Functions for graph theory algorithms. */
 public class GraphFunctions {
+
   /**
    * See <a href="https://pangin.pro/posts/computation-in-static-initializer">Beware of computation
    * in static initializer</a>
@@ -181,13 +184,15 @@ public class GraphFunctions {
     }
 
     @Override
-    public IAST options() {
-      return F.List(F.Rule(S.EdgeWeight, S.Automatic));
+    public void setUp(final ISymbol newSymbol) {
+      setOptions(
+          newSymbol, //
+          F.List(F.Rule(F.EdgeWeight, S.Automatic)));
     }
 
     @Override
     public int[] expectedArgSize(IAST ast) {
-      return IOFunctions.ARGS_1_INFINITY;
+      return ARGS_1_INFINITY;
     }
   }
 
@@ -239,7 +244,7 @@ public class GraphFunctions {
 
     @Override
     public int[] expectedArgSize(IAST ast) {
-      return IOFunctions.ARGS_1_1;
+      return ARGS_1_1;
     }
   }
 
@@ -296,7 +301,7 @@ public class GraphFunctions {
 
     @Override
     public int[] expectedArgSize(IAST ast) {
-      return IOFunctions.ARGS_1_1;
+      return ARGS_1_1;
     }
   }
 
@@ -352,7 +357,7 @@ public class GraphFunctions {
 
     @Override
     public int[] expectedArgSize(IAST ast) {
-      return IOFunctions.ARGS_1_1;
+      return ARGS_1_1;
     }
   }
 
@@ -397,7 +402,7 @@ public class GraphFunctions {
         if (ast.isAST1()) {
           GraphExpr<ExprEdge> gex = createGraph(ast.arg1());
           if (gex != null) {
-            return F.True;
+            return S.True;
           }
         }
       } catch (RuntimeException rex) {
@@ -405,12 +410,12 @@ public class GraphFunctions {
           rex.printStackTrace();
         }
       }
-      return F.False;
+      return S.False;
     }
 
     @Override
     public int[] expectedArgSize(IAST ast) {
-      return IOFunctions.ARGS_1_1;
+      return ARGS_1_1;
     }
   }
 
@@ -465,7 +470,7 @@ public class GraphFunctions {
 
     @Override
     public int[] expectedArgSize(IAST ast) {
-      return IOFunctions.ARGS_1_1;
+      return ARGS_1_1;
     }
   }
 
@@ -619,7 +624,7 @@ public class GraphFunctions {
 
     @Override
     public int[] expectedArgSize(IAST ast) {
-      return IOFunctions.ARGS_1_3;
+      return ARGS_1_3;
     }
   }
 
@@ -679,7 +684,7 @@ public class GraphFunctions {
 
     @Override
     public int[] expectedArgSize(IAST ast) {
-      return IOFunctions.ARGS_1_1;
+      return ARGS_1_1;
     }
   }
 
@@ -738,7 +743,7 @@ public class GraphFunctions {
 
     @Override
     public int[] expectedArgSize(IAST ast) {
-      return IOFunctions.ARGS_1_1;
+      return ARGS_1_1;
     }
   }
 
@@ -793,7 +798,7 @@ public class GraphFunctions {
 
     @Override
     public int[] expectedArgSize(IAST ast) {
-      return IOFunctions.ARGS_1_1;
+      return ARGS_1_1;
     }
   }
 
@@ -847,12 +852,12 @@ public class GraphFunctions {
           rex.printStackTrace();
         }
       }
-      return F.False;
+      return S.False;
     }
 
     @Override
     public int[] expectedArgSize(IAST ast) {
-      return IOFunctions.ARGS_2_2;
+      return ARGS_2_2;
     }
   }
 
@@ -886,7 +891,7 @@ public class GraphFunctions {
           GraphPath<IExpr, ExprEdge> path = eulerianCycle(g);
           if (path != null) {
             // Graph is Eulerian
-            return F.True;
+            return S.True;
           }
         }
       } catch (RuntimeException rex) {
@@ -894,12 +899,12 @@ public class GraphFunctions {
           rex.printStackTrace();
         }
       }
-      return F.False;
+      return S.False;
     }
 
     @Override
     public int[] expectedArgSize(IAST ast) {
-      return IOFunctions.ARGS_1_1;
+      return ARGS_1_1;
     }
   }
 
@@ -949,7 +954,7 @@ public class GraphFunctions {
           GraphPath<IExpr, ExprEdge> path = hamiltonianCycle(g);
           if (path != null) {
             // Graph is Hamiltonian
-            return F.True;
+            return S.True;
           }
         }
       } catch (RuntimeException rex) {
@@ -957,12 +962,12 @@ public class GraphFunctions {
           rex.printStackTrace();
         }
       }
-      return F.False;
+      return S.False;
     }
 
     @Override
     public int[] expectedArgSize(IAST ast) {
-      return IOFunctions.ARGS_1_1;
+      return ARGS_1_1;
     }
   }
 
@@ -1034,7 +1039,7 @@ public class GraphFunctions {
 
     @Override
     public int[] expectedArgSize(IAST ast) {
-      return IOFunctions.ARGS_1_1;
+      return ARGS_1_1;
     }
   }
 
@@ -1102,7 +1107,7 @@ public class GraphFunctions {
 
     @Override
     public int[] expectedArgSize(IAST ast) {
-      return IOFunctions.ARGS_1_1;
+      return ARGS_1_1;
     }
   }
 
@@ -1169,7 +1174,7 @@ public class GraphFunctions {
 
     @Override
     public int[] expectedArgSize(IAST ast) {
-      return IOFunctions.ARGS_1_1;
+      return ARGS_1_1;
     }
   }
 
@@ -1223,7 +1228,7 @@ public class GraphFunctions {
 
     @Override
     public int[] expectedArgSize(IAST ast) {
-      return IOFunctions.ARGS_3_3;
+      return ARGS_3_3;
     }
   }
 
@@ -1286,7 +1291,7 @@ public class GraphFunctions {
 
     @Override
     public int[] expectedArgSize(IAST ast) {
-      return IOFunctions.ARGS_2_2;
+      return ARGS_2_2;
     }
   }
 
@@ -1348,7 +1353,7 @@ public class GraphFunctions {
 
     @Override
     public int[] expectedArgSize(IAST ast) {
-      return IOFunctions.ARGS_1_1;
+      return ARGS_1_1;
     }
   }
 
@@ -1400,12 +1405,12 @@ public class GraphFunctions {
           rex.printStackTrace();
         }
       }
-      return F.False;
+      return S.False;
     }
 
     @Override
     public int[] expectedArgSize(IAST ast) {
-      return IOFunctions.ARGS_2_2;
+      return ARGS_2_2;
     }
   }
 

@@ -1,14 +1,14 @@
 package org.matheclipse.core.eval.exception;
 
-import org.matheclipse.core.expression.F;
+import org.matheclipse.core.expression.S;
 import org.matheclipse.core.interfaces.IExpr;
 
 /** Exception for the <code>Throw[]</code> function. */
 public class ThrowException extends FlowControlException {
 
-  public static final ThrowException THROW_FALSE = new ThrowException(F.False);
+  public static final ThrowException THROW_FALSE = new ThrowException(S.False);
 
-  public static final ThrowException THROW_TRUE = new ThrowException(F.True);
+  public static final ThrowException THROW_TRUE = new ThrowException(S.True);
   /** */
   private static final long serialVersionUID = -8468658696375569705L;
 
@@ -20,7 +20,7 @@ public class ThrowException extends FlowControlException {
   }
 
   public ThrowException(final IExpr val) {
-    this(val, F.None);
+    this(val, S.None);
   }
 
   public ThrowException(final IExpr val, final IExpr tag) {

@@ -95,16 +95,16 @@ public class AssumptionFunctions {
     }
 
     public int[] expectedArgSize(IAST ast) {
-      return IOFunctions.ARGS_2_2;
+      return ARGS_2_2;
     }
 
     /**
-     * Return F.True or F.False if expr is assumed to be in the <code>domain</code> or not to be in
+     * Return S.True or S.False if expr is assumed to be in the <code>domain</code> or not to be in
      * the <code>domain</code>.
      *
      * @param arg1
      * @param domain
-     * @return F.True or F.False if expr is assumed to be in the <code>domain</code> or not to be in
+     * @return S.True or S.False if expr is assumed to be in the <code>domain</code> or not to be in
      *     the <code>domain</code>. In all other cases return <code>F.NIL</code>.
      */
     private IExpr assumeDomain(final IExpr arg1, final ISymbol domain) {
@@ -185,7 +185,7 @@ public class AssumptionFunctions {
     }
 
     public int[] expectedArgSize(IAST ast) {
-      return IOFunctions.ARGS_2_2;
+      return ARGS_2_2;
     }
   }
 
@@ -237,7 +237,7 @@ public class AssumptionFunctions {
 
     @Override
     public int[] expectedArgSize(IAST ast) {
-      return IOFunctions.ARGS_1_2;
+      return ARGS_1_2;
     }
   }
 

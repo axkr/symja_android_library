@@ -2,7 +2,6 @@ package org.matheclipse.core.eval.interfaces;
 
 import org.hipparchus.complex.Complex;
 import org.matheclipse.core.builtin.Algebra;
-import org.matheclipse.core.builtin.IOFunctions;
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.exception.LimitException;
 import org.matheclipse.core.expression.ApcomplexNum;
@@ -53,7 +52,7 @@ public abstract class AbstractTrigArg1 extends AbstractArg1 {
   }
 
   public int[] expectedArgSize(IAST ast) {
-    return IOFunctions.ARGS_1_1;
+    return IFunctionEvaluator.ARGS_1_1;
   }
 
   @Override

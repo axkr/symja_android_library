@@ -1,9 +1,9 @@
 package org.matheclipse.core.convert;
 
 import org.matheclipse.core.expression.F;
+import org.matheclipse.core.expression.S;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IASTAppendable;
-import org.matheclipse.core.interfaces.IExpr;
 
 public class Lists {
 
@@ -21,9 +21,9 @@ public class Lists {
       IASTAppendable ast = F.ListAlloc(p_booleans.length);
       for (int i = 0, t = p_booleans.length; i < t; i++) {
         if (p_booleans[i]) {
-          ast.append(F.True);
+          ast.append(S.True);
         } else {
-          ast.append(F.False);
+          ast.append(S.False);
         }
       }
       return ast;

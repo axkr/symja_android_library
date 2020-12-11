@@ -1,12 +1,12 @@
 package org.matheclipse.core.reflection.system;
 
 import org.matheclipse.core.basic.Config;
-import org.matheclipse.core.builtin.IOFunctions;
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.exception.ASTElementLimitExceeded;
 import org.matheclipse.core.eval.exception.LimitException;
 import org.matheclipse.core.eval.exception.Validate;
 import org.matheclipse.core.eval.interfaces.AbstractEvaluator;
+import org.matheclipse.core.eval.interfaces.IFunctionEvaluator;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.frobenius.FrobeniusSolver;
 import org.matheclipse.core.interfaces.IAST;
@@ -97,7 +97,7 @@ public class FrobeniusSolve extends AbstractEvaluator {
   }
 
   public int[] expectedArgSize(IAST ast) {
-    return IOFunctions.ARGS_2_3;
+    return IFunctionEvaluator.ARGS_2_3;
   }
 
   public static FrobeniusSolver getSolver(int[] listInt, IInteger number) {
