@@ -19,34 +19,34 @@ package com.twosigma.beakerx.symjamma.inspect;
 import java.util.List;
 
 public class ClassInspect {
-    String className;
-    String fullName;
-    String javadoc;
-    List<MethodInspect> methods;
+  String className;
+  String fullName;
+  String javadoc;
+  List<MethodInspect> methods;
 
-    public ClassInspect(String className, String fullName, String javadoc) {
-        this.className = className;
-        this.fullName = fullName;
-        this.javadoc = javadoc;
-    }
+  public ClassInspect(String className, String fullName, String javadoc) {
+    this.className = className;
+    this.fullName = fullName;
+    this.javadoc = javadoc;
+  }
 
-    public String getClassName() {
-        return className;
-    }
+  public String getClassName() {
+    return className;
+  }
 
-    public String getFullName() {
-        return fullName;
-    }
+  public String getFullName() {
+    return fullName;
+  }
 
-    public String getJavadoc() {
-        return javadoc;
-    }
+  public String getJavadoc() {
+    return javadoc;
+  }
 
-    public List<MethodInspect> getMethods() {
-        return methods;
-    }
+  public List<MethodInspect> getMethods() {
+    return methods;
+  }
 
-    public void setMethods(List<MethodInspect> methods) {
-        this.methods = methods;
-    }
+  public void setMethods(List<MethodInspect> methods) {
+    this.methods = methods;
+  }
 }

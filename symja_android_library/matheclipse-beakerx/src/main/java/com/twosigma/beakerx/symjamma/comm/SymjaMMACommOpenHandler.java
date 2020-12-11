@@ -26,11 +26,10 @@ import com.twosigma.beakerx.kernel.handler.CommOpenHandler;
 public class SymjaMMACommOpenHandler extends CommOpenHandler {
 
   private Handler<?>[] KERNEL_CONTROL_CHANNEL_HANDLERS = {
-          new KernelControlCommandListHandler(kernel)};
+    new KernelControlCommandListHandler(kernel)
+  };
 
-  private Handler<?>[] AUTOTRANSLATION_HANDLER = {
-          new AutotranslationHandler(kernel)};
-
+  private Handler<?>[] AUTOTRANSLATION_HANDLER = {new AutotranslationHandler(kernel)};
 
   public SymjaMMACommOpenHandler(KernelFunctionality kernel) {
     super(kernel);
@@ -39,11 +38,12 @@ public class SymjaMMACommOpenHandler extends CommOpenHandler {
   public Handler<Message>[] getKernelControlChanelHandlers(String targetName) {
     if (TargetNamesEnum.KERNEL_CONTROL_CHANNEL.getTargetName().equalsIgnoreCase(targetName)) {
       return (Handler<Message>[]) KERNEL_CONTROL_CHANNEL_HANDLERS;
-    } else if (TargetNamesEnum.BEAKER_AUTOTRANSLATION.getTargetName().equalsIgnoreCase(targetName)) {
+    } else if (TargetNamesEnum.BEAKER_AUTOTRANSLATION
+        .getTargetName()
+        .equalsIgnoreCase(targetName)) {
       return (Handler<Message>[]) AUTOTRANSLATION_HANDLER;
     } else {
       return (Handler<Message>[]) new Handler<?>[0];
     }
   }
-
 }

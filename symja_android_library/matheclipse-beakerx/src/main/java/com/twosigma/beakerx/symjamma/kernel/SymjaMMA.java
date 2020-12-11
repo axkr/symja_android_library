@@ -20,8 +20,8 @@ import com.twosigma.beakerx.CommRepository;
 import com.twosigma.beakerx.NamespaceClient;
 import com.twosigma.beakerx.evaluator.Evaluator;
 import com.twosigma.beakerx.handler.KernelHandler;
-//import com.twosigma.beakerx.kernel.BeakerXJson;
-//import com.twosigma.beakerx.kernel.BeakerXJsonConfig;
+// import com.twosigma.beakerx.kernel.BeakerXJson;
+// import com.twosigma.beakerx.kernel.BeakerXJsonConfig;
 import com.twosigma.beakerx.kernel.CacheFolderFactory;
 import com.twosigma.beakerx.kernel.CloseKernelAction;
 import com.twosigma.beakerx.kernel.CustomMagicCommandsEmptyImpl;
@@ -48,45 +48,49 @@ import static com.twosigma.beakerx.kernel.Utils.uuid;
 
 public class SymjaMMA extends Kernel {
 
-  private SymjaMMA(final String id,
-                 final Evaluator evaluator,
-                 KernelSocketsFactory kernelSocketsFactory,
-                 CommRepository commRepository,
-                 BeakerXServer beakerXServer,
-                 MagicCommandConfiguration magicCommandConfiguration
-//                 ,BeakerXJson beakerXJson
-                 ) {
-    super(id,
-            evaluator,
-            kernelSocketsFactory,
-            new CustomMagicCommandsEmptyImpl(),
-            commRepository,
-            beakerXServer,
-            magicCommandConfiguration
-//            ,beakerXJson
-    );
+  private SymjaMMA(
+      final String id,
+      final Evaluator evaluator,
+      KernelSocketsFactory kernelSocketsFactory,
+      CommRepository commRepository,
+      BeakerXServer beakerXServer,
+      MagicCommandConfiguration magicCommandConfiguration
+      //                 ,BeakerXJson beakerXJson
+      ) {
+    super(
+        id,
+        evaluator,
+        kernelSocketsFactory,
+        new CustomMagicCommandsEmptyImpl(),
+        commRepository,
+        beakerXServer,
+        magicCommandConfiguration
+        //            ,beakerXJson
+        );
   }
 
-  public SymjaMMA(final String id,
-                final Evaluator evaluator,
-                KernelSocketsFactory kernelSocketsFactory,
-                CloseKernelAction closeKernelAction,
-                CacheFolderFactory cacheFolderFactory,
-                CommRepository commRepository,
-                BeakerXServer beakerXServer,
-                MagicCommandConfiguration magicCommandConfiguration
-//                ,BeakerXJson beakerXJson
-                ) {
-    super(id,
-            evaluator,
-            kernelSocketsFactory,
-            closeKernelAction,
-            cacheFolderFactory,
-            new CustomMagicCommandsEmptyImpl(),
-            commRepository,
-            beakerXServer,
-            magicCommandConfiguration);
-//            beakerXJson);
+  public SymjaMMA(
+      final String id,
+      final Evaluator evaluator,
+      KernelSocketsFactory kernelSocketsFactory,
+      CloseKernelAction closeKernelAction,
+      CacheFolderFactory cacheFolderFactory,
+      CommRepository commRepository,
+      BeakerXServer beakerXServer,
+      MagicCommandConfiguration magicCommandConfiguration
+      //                ,BeakerXJson beakerXJson
+      ) {
+    super(
+        id,
+        evaluator,
+        kernelSocketsFactory,
+        closeKernelAction,
+        cacheFolderFactory,
+        new CustomMagicCommandsEmptyImpl(),
+        commRepository,
+        beakerXServer,
+        magicCommandConfiguration);
+    //            beakerXJson);
   }
 
   @Override
@@ -100,30 +104,34 @@ public class SymjaMMA extends Kernel {
   }
 
   public static void main(final String[] args) {
-    KernelRunner.run(() -> {
-      String id = uuid();
-      KernelConfigurationFile configurationFile = new KernelConfigurationFile(args);
-      KernelSocketsFactoryImpl kernelSocketsFactory = new KernelSocketsFactoryImpl(
-              configurationFile);
+    KernelRunner.run(
+        () -> {
+          String id = uuid();
+          KernelConfigurationFile configurationFile = new KernelConfigurationFile(args);
+          KernelSocketsFactoryImpl kernelSocketsFactory =
+              new KernelSocketsFactoryImpl(configurationFile);
 
-      BeakerXCommRepository beakerXCommRepository = new BeakerXCommRepository();
-      NamespaceClient namespaceClient = NamespaceClient.create(id, configurationFile, beakerXCommRepository);
-      MagicCommandConfiguration magicCommandTypesFactory = new MagicCommandConfigurationImpl();
-      SymjaMMAEvaluator evaluator = new SymjaMMAEvaluator(id,
+          BeakerXCommRepository beakerXCommRepository = new BeakerXCommRepository();
+          NamespaceClient namespaceClient =
+              NamespaceClient.create(id, configurationFile, beakerXCommRepository);
+          MagicCommandConfiguration magicCommandTypesFactory = new MagicCommandConfigurationImpl();
+          SymjaMMAEvaluator evaluator =
+              new SymjaMMAEvaluator(
+                  id,
+                  id,
+                  getEvaluatorParameters(),
+                  namespaceClient,
+                  magicCommandTypesFactory.patterns());
+          return new SymjaMMA(
               id,
-              getEvaluatorParameters(),
-              namespaceClient,
-              magicCommandTypesFactory.patterns());
-      return new SymjaMMA(id,
               evaluator,
               kernelSocketsFactory,
               beakerXCommRepository,
               new SymjaMMABeakerXServer(new GetUrlArgHandler(namespaceClient)),
               magicCommandTypesFactory);
-//              new BeakerXJsonConfig());
-    });
+          //              new BeakerXJsonConfig());
+        });
   }
-
 
   public static EvaluatorParameters getEvaluatorParameters() {
     HashMap<String, Object> kernelParameters = new HashMap<>();

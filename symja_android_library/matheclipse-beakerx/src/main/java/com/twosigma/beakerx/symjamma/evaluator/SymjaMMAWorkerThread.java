@@ -25,33 +25,36 @@ import java.util.concurrent.Callable;
 
 class SymjaMMAWorkerThread implements Callable<TryResult> {
 
-	private static final Logger logger = LoggerFactory.getLogger(SymjaMMAWorkerThread.class.getName());
-	private final JobDescriptor j;
-	protected SymjaMMAEvaluator symjaEvaluator;
+  private static final Logger logger =
+      LoggerFactory.getLogger(SymjaMMAWorkerThread.class.getName());
+  private final JobDescriptor j;
+  protected SymjaMMAEvaluator symjaEvaluator;
 
-	SymjaMMAWorkerThread(SymjaMMAEvaluator symjaEvaluator, JobDescriptor j) {
-		this.symjaEvaluator = symjaEvaluator;
-		this.j = j;
-	}
+  SymjaMMAWorkerThread(SymjaMMAEvaluator symjaEvaluator, JobDescriptor j) {
+    this.symjaEvaluator = symjaEvaluator;
+    this.j = j;
+  }
 
-	@Override
-	public TryResult call() {
-		// NamespaceClient nc = null;
-		TryResult r;
-		try {
-			j.outputObject.started();
-			String code = j.codeToBeExecuted;
-			r = symjaEvaluator.executeTask(new SymjaMMACodeRunner(symjaEvaluator, code, j.outputObject),
-					j.getExecutionOptions());
-		} catch (Throwable e) {
-			if (e instanceof SymjaMMANotFoundException) {
-				logger.warn(e.getLocalizedMessage());
-				r = TryResult.createError(e.getLocalizedMessage());
-			} else {
-				e.printStackTrace();
-				r = TryResult.createError(e.getLocalizedMessage());
-			}
-		}
-		return r;
-	}
+  @Override
+  public TryResult call() {
+    // NamespaceClient nc = null;
+    TryResult r;
+    try {
+      j.outputObject.started();
+      String code = j.codeToBeExecuted;
+      r =
+          symjaEvaluator.executeTask(
+              new SymjaMMACodeRunner(symjaEvaluator, code, j.outputObject),
+              j.getExecutionOptions());
+    } catch (Throwable e) {
+      if (e instanceof SymjaMMANotFoundException) {
+        logger.warn(e.getLocalizedMessage());
+        r = TryResult.createError(e.getLocalizedMessage());
+      } else {
+        e.printStackTrace();
+        r = TryResult.createError(e.getLocalizedMessage());
+      }
+    }
+    return r;
+  }
 }

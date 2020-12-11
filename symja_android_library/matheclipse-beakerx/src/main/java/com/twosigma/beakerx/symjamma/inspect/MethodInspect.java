@@ -17,25 +17,25 @@
 package com.twosigma.beakerx.symjamma.inspect;
 
 public class MethodInspect {
-    String methodName;
-    String javadoc;
-    String signature;
+  String methodName;
+  String javadoc;
+  String signature;
 
-    public MethodInspect(String methodName, String javadoc, String signature) {
-        this.methodName = methodName;
-        this.javadoc = javadoc;
-        this.signature = signature;
-    }
+  public MethodInspect(String methodName, String javadoc, String signature) {
+    this.methodName = methodName;
+    this.javadoc = javadoc;
+    this.signature = signature;
+  }
 
-    public String getMethodName() {
-        return methodName;
-    }
+  public String getMethodName() {
+    return methodName;
+  }
 
-    public String getJavadoc() {
-        return javadoc;
-    }
+  public String getJavadoc() {
+    return javadoc;
+  }
 
-    public String getSignature() {
-        return signature;
-    }
+  public String getSignature() {
+    return signature;
+  }
 }

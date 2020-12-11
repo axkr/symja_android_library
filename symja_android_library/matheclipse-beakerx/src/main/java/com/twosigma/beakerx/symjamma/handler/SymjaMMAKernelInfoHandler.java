@@ -29,7 +29,8 @@ public class SymjaMMAKernelInfoHandler extends KernelInfoHandler {
   }
 
   @Override
-  protected HashMap<String, Serializable> doLanguageInfo(HashMap<String, Serializable> languageInfo) {
+  protected HashMap<String, Serializable> doLanguageInfo(
+      HashMap<String, Serializable> languageInfo) {
     languageInfo.put("name", "SymjaMMA");
     languageInfo.put("version", "0.1.0-SNAPSHOT");
     languageInfo.put("mimetype", "");
@@ -42,8 +43,10 @@ public class SymjaMMAKernelInfoHandler extends KernelInfoHandler {
   @Override
   protected HashMap<String, Serializable> doContent(HashMap<String, Serializable> content) {
     content.put("implementation", "symjamma");
-    content.put("banner", String.format(BeakerImplementationInfo.IMPLEMENTATION_VERSION, "SymjaMMA", "0.1.0-SNAPSHOT"));
+    content.put(
+        "banner",
+        String.format(
+            BeakerImplementationInfo.IMPLEMENTATION_VERSION, "SymjaMMA", "0.1.0-SNAPSHOT"));
     return content;
   }
-
 }

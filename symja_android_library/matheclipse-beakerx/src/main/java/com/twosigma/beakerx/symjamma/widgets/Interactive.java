@@ -32,51 +32,52 @@ public class Interactive extends InteractiveBase {
 
   private static final Logger logger = LoggerFactory.getLogger(Interactive.class);
 
-//  @SuppressWarnings("unchecked")
-//  public static void interact(MethodClosure function, Object... parameters) {
-//
-//    final List<ValueWidget<?>> widgets = widgetsFromAbbreviations(parameters);
-//
-//    for (ValueWidget<?> widget : widgets) {
-//      widget.getComm().addMsgCallbackList(widget.new ValueChangeMsgCallbackHandler() {
-//
-//        private void processCode(Object... params) throws Exception {
-//          Object call = function.call(getWidgetValues());
-//          if (call instanceof String || call instanceof Number) {
-//            label.setValue(call);
-//          }
-//        }
-//
-//        @Override
-//        public void updateValue(Object value, Message message) {
-//          try {
-//            processCode();
-//          } catch (Exception e) {
-//            throw new IllegalStateException("Error occurred during updating interactive widget.", e);
-//          }
-//        }
-//
-//        private Object[] getWidgetValues() {
-//          List<Object> ret = new ArrayList<>(widgets.size());
-//          for (ValueWidget<?> wid : widgets) {
-//            ret.add(wid.getValue());
-//          }
-//          return ret.toArray(new Object[ret.size()]);
-//        }
-//
-//      });
-//      logger.info("interact Widget: " + widget.getClass().getName());
-//    }
-//
-//    widgets.forEach(Widget::display);
-//    Object response = function.call(widgets.stream().map(ValueWidget::getValue).toArray());
-//    if (response instanceof Widget) {
-//      ((Widget) response).display();
-//    } else {
-//      label = new Label();
-//      label.setValue(response);
-//      label.display();
-//    }
-//  }
+  //  @SuppressWarnings("unchecked")
+  //  public static void interact(MethodClosure function, Object... parameters) {
+  //
+  //    final List<ValueWidget<?>> widgets = widgetsFromAbbreviations(parameters);
+  //
+  //    for (ValueWidget<?> widget : widgets) {
+  //      widget.getComm().addMsgCallbackList(widget.new ValueChangeMsgCallbackHandler() {
+  //
+  //        private void processCode(Object... params) throws Exception {
+  //          Object call = function.call(getWidgetValues());
+  //          if (call instanceof String || call instanceof Number) {
+  //            label.setValue(call);
+  //          }
+  //        }
+  //
+  //        @Override
+  //        public void updateValue(Object value, Message message) {
+  //          try {
+  //            processCode();
+  //          } catch (Exception e) {
+  //            throw new IllegalStateException("Error occurred during updating interactive
+  // widget.", e);
+  //          }
+  //        }
+  //
+  //        private Object[] getWidgetValues() {
+  //          List<Object> ret = new ArrayList<>(widgets.size());
+  //          for (ValueWidget<?> wid : widgets) {
+  //            ret.add(wid.getValue());
+  //          }
+  //          return ret.toArray(new Object[ret.size()]);
+  //        }
+  //
+  //      });
+  //      logger.info("interact Widget: " + widget.getClass().getName());
+  //    }
+  //
+  //    widgets.forEach(Widget::display);
+  //    Object response = function.call(widgets.stream().map(ValueWidget::getValue).toArray());
+  //    if (response instanceof Widget) {
+  //      ((Widget) response).display();
+  //    } else {
+  //      label = new Label();
+  //      label.setValue(response);
+  //      label.display();
+  //    }
+  //  }
 
 }

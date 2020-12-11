@@ -27,6 +27,5 @@ public class SymjaMMABeakerXServer extends BeakerXServerJavalin {
   }
 
   @Override
-  public void createMapping(Javalin app, KernelFunctionality kernel) {
-  }
+  public void createMapping(Javalin app, KernelFunctionality kernel) {}
 }

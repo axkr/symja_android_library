@@ -26,24 +26,25 @@ import java.lang.reflect.Type;
 import java.util.HashMap;
 
 public class SerializeInspect {
-    private Gson gson = new Gson();
-    public String toJson(HashMap<String, ClassInspect> object){
-        Type type = new TypeToken<HashMap<String, ClassInspect>>(){}.getType();
-        return gson.toJson(object, type);
-    }
-    public void saveToFile(String json){
-    	File file = new File("beakerx_inspect.json");
-        try(FileWriter fileWriter = new FileWriter(file)) {
-            fileWriter.write(json);
-            fileWriter.flush();
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-    }
+  private Gson gson = new Gson();
 
-    public HashMap<String, ClassInspect> fromJson(String json){
-        Type type = new TypeToken<HashMap<String, ClassInspect>>(){}.getType();
-        return gson.fromJson(json, type);
-    }
+  public String toJson(HashMap<String, ClassInspect> object) {
+    Type type = new TypeToken<HashMap<String, ClassInspect>>() {}.getType();
+    return gson.toJson(object, type);
+  }
 
+  public void saveToFile(String json) {
+    File file = new File("beakerx_inspect.json");
+    try (FileWriter fileWriter = new FileWriter(file)) {
+      fileWriter.write(json);
+      fileWriter.flush();
+    } catch (IOException e) {
+      e.printStackTrace();
+    }
+  }
+
+  public HashMap<String, ClassInspect> fromJson(String json) {
+    Type type = new TypeToken<HashMap<String, ClassInspect>>() {}.getType();
+    return gson.fromJson(json, type);
+  }
 }

@@ -22,5 +22,4 @@ class SymjaMMANotFoundException extends RuntimeException {
   public SymjaMMANotFoundException(String message) {
     super(message);
   }
-
 }

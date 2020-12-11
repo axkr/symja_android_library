@@ -17,40 +17,35 @@ package com.twosigma.beakerx.symjamma.kernel;
 
 import com.twosigma.beakerx.DefaultJVMVariables;
 
-/**
- * 
- * @author konst
- *
- */
+/** @author konst */
 public class SymjaMMADefaultVariables extends DefaultJVMVariables {
-  
+
   public SymjaMMADefaultVariables() {
     addImports(
-      "static java.lang.Math.*",
-      //"graxxia.*",
-      //"com.twosigma.beaker.jvm.object.*",
-      "com.twosigma.beakerx.chart.KeyboardCodes",
-      "java.util.concurrent.TimeUnit",
-      "static com.twosigma.beakerx.mimetype.MIMEContainer.HTML",
-      "static com.twosigma.beakerx.mimetype.MIMEContainer.Latex",
-      "static com.twosigma.beakerx.mimetype.MIMEContainer.Markdown",
-      "static com.twosigma.beakerx.mimetype.MIMEContainer.Math",
-      "static com.twosigma.beakerx.mimetype.MIMEContainer.Javascript",
-      "static com.twosigma.beakerx.mimetype.MIMEContainer.IFrame",
-      "static com.twosigma.beakerx.mimetype.MIMEContainer.VimeoVideo",
-      "static com.twosigma.beakerx.mimetype.MIMEContainer.ScribdDocument",
-      "static com.twosigma.beakerx.mimetype.MIMEContainer.YoutubeVideo",
-      "static com.twosigma.beakerx.mimetype.MIMEContainer.Video",
-      "static com.twosigma.beakerx.mimetype.SVGContainer.SVG",
-      "static com.twosigma.beakerx.mimetype.ImageContainer.Image",
-      "static com.twosigma.beakerx.mimetype.FileLinkContainer.FileLink",
-      "static com.twosigma.beakerx.mimetype.FileLinkContainer.FileLinks",
-      "com.twosigma.beakerx.mimetype.MIMEContainer"
-      //"com.twosigma.beaker.table.*",
-      //"com.twosigma.beaker.table.format.*",
-      //"com.twosigma.beaker.table.renderer.*",
-      //"com.twosigma.beaker.table.highlight.*";
-      );
+        "static java.lang.Math.*",
+        // "graxxia.*",
+        // "com.twosigma.beaker.jvm.object.*",
+        "com.twosigma.beakerx.chart.KeyboardCodes",
+        "java.util.concurrent.TimeUnit",
+        "static com.twosigma.beakerx.mimetype.MIMEContainer.HTML",
+        "static com.twosigma.beakerx.mimetype.MIMEContainer.Latex",
+        "static com.twosigma.beakerx.mimetype.MIMEContainer.Markdown",
+        "static com.twosigma.beakerx.mimetype.MIMEContainer.Math",
+        "static com.twosigma.beakerx.mimetype.MIMEContainer.Javascript",
+        "static com.twosigma.beakerx.mimetype.MIMEContainer.IFrame",
+        "static com.twosigma.beakerx.mimetype.MIMEContainer.VimeoVideo",
+        "static com.twosigma.beakerx.mimetype.MIMEContainer.ScribdDocument",
+        "static com.twosigma.beakerx.mimetype.MIMEContainer.YoutubeVideo",
+        "static com.twosigma.beakerx.mimetype.MIMEContainer.Video",
+        "static com.twosigma.beakerx.mimetype.SVGContainer.SVG",
+        "static com.twosigma.beakerx.mimetype.ImageContainer.Image",
+        "static com.twosigma.beakerx.mimetype.FileLinkContainer.FileLink",
+        "static com.twosigma.beakerx.mimetype.FileLinkContainer.FileLinks",
+        "com.twosigma.beakerx.mimetype.MIMEContainer"
+        // "com.twosigma.beaker.table.*",
+        // "com.twosigma.beaker.table.format.*",
+        // "com.twosigma.beaker.table.renderer.*",
+        // "com.twosigma.beaker.table.highlight.*";
+        );
   }
-
 }
