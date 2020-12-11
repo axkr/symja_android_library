@@ -46,11 +46,7 @@ import org.matheclipse.core.visit.VisitorExpr;
 import org.matheclipse.parser.client.FEConfig;
 import org.matheclipse.parser.client.Scanner;
 import org.matheclipse.parser.client.SyntaxError;
-import org.matheclipse.parser.client.ast.ASTNode;
-import org.matheclipse.parser.client.ast.FunctionNode;
-import org.matheclipse.parser.client.ast.IConstantOperators;
 import org.matheclipse.parser.client.ast.IParserFactory;
-import org.matheclipse.parser.client.ast.SymbolNode;
 import org.matheclipse.parser.client.math.MathException;
 import org.matheclipse.parser.client.operator.InfixOperator;
 import org.matheclipse.parser.client.operator.Operator;
@@ -202,7 +198,7 @@ public class ExprParser extends Scanner {
         case ID.Exp:
           if (ast.isAST1()) {
             // rewrite from input: Exp(x) => E^x
-            return F.Power(F.E, ast.arg1());
+            return F.Power(F.E, ast.getUnevaluated(1));
           }
           break;
 
@@ -219,7 +215,7 @@ public class ExprParser extends Scanner {
         case ID.Sqrt:
           if (ast.isAST1()) {
             // rewrite from input: Sqrt(x) => Power(x, 1/2)
-            return F.Power(ast.arg1(), F.C1D2);
+            return F.Power(ast.getUnevaluated(1), F.C1D2);
           }
           break;
 
@@ -230,7 +226,7 @@ public class ExprParser extends Scanner {
               // Division operator
               // rewrite from input: Power(Power(x, <number>),-1) => Power(x,
               // - <number>)
-              return F.Power(arg1Power.base(), arg1Power.exponent().negate());
+              return F.Power(arg1Power.getUnevaluated(1), arg1Power.getUnevaluated(2).negate());
             }
           }
           break;
@@ -403,7 +399,7 @@ public class ExprParser extends Scanner {
 
       getNextToken();
       if (fToken == TT_PRECEDENCE_CLOSE || fToken == TT_ARGUMENTS_CLOSE) {
-        function.append(F.Null);
+        function.append(S.Null);
         break;
       }
     } while (true);
@@ -995,7 +991,7 @@ public class ExprParser extends Scanner {
   }
 
   protected final List<Operator> getOperator() {
-    char lastChar;
+    char lastChar = fCurrentChar;
     final int startPosition = fCurrentPosition - 1;
     fOperatorString = new String(fInputString, startPosition, fCurrentPosition - startPosition);
     List<Operator> list = fFactory.getOperatorList(fOperatorString);
@@ -1007,6 +1003,10 @@ public class ExprParser extends Scanner {
     }
     getChar();
     while (fFactory.isOperatorChar(fCurrentChar)) {
+      if (fCurrentChar == '.' && isValidPosition() && Character.isDigit(charAtPosition())) {
+        // special case "dot is start of floating number" -- 1/.2 => 0.5
+        break;
+      }
       lastChar = fCurrentChar;
       fOperatorString = new String(fInputString, startPosition, fCurrentPosition - startPosition);
       list = fFactory.getOperatorList(fOperatorString);
@@ -1046,14 +1046,8 @@ public class ExprParser extends Scanner {
     do {
       if (function == null) {
         function = F.Part(2, temp);
-        // function =
-        // fFactory.createFunction(fFactory.createSymbol(IConstantOperators.Part),
-        // temp);
       } else {
         function = F.Part(2, function);
-        // function =
-        // fFactory.createFunction(fFactory.createSymbol(IConstantOperators.Part),
-        // function);
       }
 
       fRecursionDepth++;
@@ -1061,39 +1055,22 @@ public class ExprParser extends Scanner {
         do {
           getNextToken();
 
-          // if (fToken == TT_SPAN) {
-          // IASTAppendable span = F.ast(F.Span);
-          // function.append(span);
-          // span.append(F.C1);
-          // getNextToken();
-          // if (fToken == TT_SPAN) {
-          // span.append(F.All);
-          // getNextToken();
-          // if (fToken == TT_COMMA) {
-          // continue;
-          // }
-          // if (fToken == TT_PARTCLOSE || fToken == TT_ARGUMENTS_CLOSE
-          // || fToken == TT_PRECEDENCE_CLOSE) {
-          // break;
-          // }
-          // } else if (fToken == TT_COMMA) {
-          // span.append(F.All);
-          // continue;
-          // } else if (fToken == TT_PARTCLOSE || fToken == TT_ARGUMENTS_CLOSE
-          // || fToken == TT_PRECEDENCE_CLOSE) {
-          // span.append(F.All);
-          // break;
-          // }
-          // span.append(parseExpression());
-          // if (fToken == TT_COMMA) {
-          // continue;
-          // }
-          // break;
-          // }
           if (fToken == TT_ARGUMENTS_CLOSE) {
-            if (fInputString.length > fCurrentPosition && fInputString[fCurrentPosition] == ']') {
-              throwSyntaxError("Statement (i.e. index) expected in [[ ]].");
+            skipWhitespace();
+            // scanner-step begin: (instead of getNextToken() call):
+            if (fInputString.length > fCurrentPosition) {
+              if (fInputString[fCurrentPosition] == ']') {
+                fCurrentPosition++;
+                getNextToken();
+                // fToken = TT_PARTCLOSE;
+                return function;
+              }
             }
+            // scanner-step end
+            // if (fInputString.length > fCurrentPosition && fInputString[fCurrentPosition] == ']')
+            // {
+            // throwSyntaxError("Statement (i.e. index) expected in [[ ]].");
+            // }
           }
 
           temp = parseExpression();
@@ -1249,7 +1226,7 @@ public class ExprParser extends Scanner {
           || fToken == TT_LIST_CLOSE
           || fToken == TT_PRECEDENCE_CLOSE
           || fToken == TT_COMMA) {
-        return createInfixFunction(infixOperator, lhs, F.Null);
+        return createInfixFunction(infixOperator, lhs, S.Null);
         // return infixOperator.createFunction(fFactory, rhs,
         // fFactory.createSymbol("Null"));
       }
@@ -1482,7 +1459,7 @@ public class ExprParser extends Scanner {
               || fToken == TT_LIST_CLOSE
               || fToken == TT_PRECEDENCE_CLOSE
               || fToken == TT_COMMA) {
-            ast.append(F.Null);
+            ast.append(S.Null);
             break;
           }
         }

@@ -19,11 +19,9 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
-import org.matheclipse.core.basic.Config;
-import org.matheclipse.core.convert.AST2Expr;
 import org.matheclipse.core.expression.F;
+import org.matheclipse.core.expression.S;
 import org.matheclipse.core.interfaces.IAST;
-import org.matheclipse.core.interfaces.IASTAppendable;
 import org.matheclipse.core.interfaces.IASTMutable;
 import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.interfaces.IInteger;
@@ -33,6 +31,7 @@ import org.matheclipse.parser.client.operator.InfixOperator;
 import org.matheclipse.parser.client.operator.Operator;
 import org.matheclipse.parser.client.operator.Precedence;
 import org.matheclipse.parser.trie.Trie;
+import org.matheclipse.parser.trie.TrieMatch;
 import org.matheclipse.parser.trie.Tries;
 
 import com.google.common.base.CharMatcher;
@@ -53,7 +52,7 @@ public class ExprParserFactory implements IParserFactory {
 
     public IExpr createFunction(final IParserFactory factory, final IExpr argument) {
       if (fOperatorString.equals("?")) {
-        return F.Information(argument, F.Rule(F.LongForm, F.False));
+        return F.Information(argument, F.Rule(S.LongForm, S.False));
       }
       // ?? operator:
       return F.Information(argument);
@@ -494,8 +493,11 @@ public class ExprParserFactory implements IParserFactory {
                 "\u2299", "CircleDot", Precedence.CIRCLEDOT, InfixExprOperator.NONE) //
           };
       StringBuilder buf = new StringBuilder(BASIC_OPERATOR_CHARACTERS);
-      fOperatorMap = Tries.forStrings();
-      fOperatorTokenStartSet = Tries.forStrings();
+
+      fOperatorMap = FEConfig.TRIE_STRING2OPERATOR_BUILDER.withMatch(TrieMatch.EXACT).build();
+      fOperatorTokenStartSet =
+          FEConfig.TRIE_STRING2OPERATORLIST_BUILDER.withMatch(TrieMatch.EXACT).build();
+
       // if (fuzzyParser) {
       // for (int i = 0; i < HEADER_STRINGS.length; i++) {
       // if (OPERATOR_STRINGS[i] == "=") {
