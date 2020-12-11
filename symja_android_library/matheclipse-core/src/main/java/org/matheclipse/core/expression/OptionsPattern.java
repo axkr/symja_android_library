@@ -163,6 +163,18 @@ public class OptionsPattern extends PatternSequence {
   }
 
   @Override
+  public String toMMA() {
+    final StringBuilder buffer = new StringBuilder();
+    if (fSymbol == null) {
+      buffer.append("OptionsPattern[]");
+    } else {
+      buffer.append(fSymbol.toMMA());
+      buffer.append(":OptionsPattern[]");
+    }
+    return buffer.toString();
+  }
+
+  @Override
   public String toString() {
     final StringBuilder buffer = new StringBuilder();
     if (fSymbol == null) {

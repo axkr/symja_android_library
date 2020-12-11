@@ -2,6 +2,8 @@ package org.matheclipse.core.expression;
 
 import java.io.ObjectStreamException;
 import java.util.List;
+import java.util.Set;
+import java.util.function.Function;
 
 import org.hipparchus.util.Pair;
 import org.matheclipse.core.basic.Config;
@@ -259,7 +261,8 @@ public class Pattern extends Blank {
       int depth,
       boolean useOperaators,
       boolean usePrefix,
-      boolean noSymbolPrefix) {
+      boolean noSymbolPrefix,
+      Function<IExpr, String> variables) {
     final StringBuilder buffer = new StringBuilder();
     String prefix = usePrefix ? "F." : "";
     buffer.append(prefix + "$p(");
@@ -314,7 +317,12 @@ public class Pattern extends Blank {
         buffer.append(
             ","
                 + fHeadTest.internalJavaString(
-                    symbolsAsFactoryMethod, 0, useOperaators, usePrefix, noSymbolPrefix));
+                    symbolsAsFactoryMethod,
+                    0,
+                    useOperaators,
+                    usePrefix,
+                    noSymbolPrefix,
+                    variables));
       }
     }
     if (fDefault) {
@@ -335,6 +343,26 @@ public class Pattern extends Blank {
   @Override
   public final boolean isPattern() {
     return true;
+  }
+
+  @Override
+  public String toMMA() {
+    final StringBuilder buffer = new StringBuilder();
+    if (fHeadTest == null) {
+      buffer.append(fSymbol.toMMA());
+      buffer.append('_');
+      if (fDefault) {
+        buffer.append('.');
+      }
+    } else {
+      buffer.append(fSymbol.toMMA());
+      buffer.append('_');
+      if (fDefault) {
+        buffer.append('.');
+      }
+      buffer.append(fHeadTest.toMMA());
+    }
+    return buffer.toString();
   }
 
   @Override

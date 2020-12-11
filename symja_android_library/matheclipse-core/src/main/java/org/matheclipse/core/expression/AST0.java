@@ -41,7 +41,7 @@ import org.matheclipse.core.interfaces.ISymbol;
  *
  * @see AST
  */
-public class AST0 extends AbstractAST implements Cloneable, Externalizable, RandomAccess {
+public class AST0 extends AbstractAST implements Externalizable, RandomAccess {
 
   private static final int SIZE = 1;
 
@@ -437,7 +437,7 @@ public class AST0 extends AbstractAST implements Cloneable, Externalizable, Rand
 
   /**
    * Replaces the element at the specified location in this {@code ArrayList} with the specified
-   * object.
+   * object. Internally the <code>hashValue</code> will be reset to <code>0</code>.
    *
    * @param location the index at which to put the specified object.
    * @param object the object to add.

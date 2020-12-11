@@ -91,7 +91,7 @@ public class ApfloatNum implements INum {
   @Override
   public boolean isNumEqualInteger(IInteger ii) throws ArithmeticException {
     return fApfloat.truncate().equals(new Apint(ii.toBigNumerator()))
-        && fApfloat.frac().equals(Apcomplex.ZERO);
+        && fApfloat.frac().equals(Apfloat.ZERO);
   }
 
   /** {@inheritDoc} */
@@ -106,7 +106,7 @@ public class ApfloatNum implements INum {
   /** {@inheritDoc} */
   @Override
   public boolean isNumIntValue() {
-    return fApfloat.frac().equals(Apcomplex.ZERO);
+    return fApfloat.frac().equals(Apfloat.ZERO);
   }
 
   /** {@inheritDoc} */
@@ -372,7 +372,7 @@ public class ApfloatNum implements INum {
   /** {@inheritDoc} */
   @Override
   public boolean isE() {
-    return fApfloat.equals(ApfloatMath.exp(Apcomplex.ONE));
+    return fApfloat.equals(ApfloatMath.exp(Apfloat.ONE));
   }
 
   /** {@inheritDoc} */
@@ -384,7 +384,7 @@ public class ApfloatNum implements INum {
   /** {@inheritDoc} */
   @Override
   public boolean isOne() {
-    return fApfloat.equals(Apcomplex.ONE);
+    return fApfloat.equals(Apfloat.ONE);
   }
 
   /** {@inheritDoc} */

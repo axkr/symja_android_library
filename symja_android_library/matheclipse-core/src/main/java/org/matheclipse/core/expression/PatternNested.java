@@ -164,13 +164,26 @@ public class PatternNested extends Pattern {
   }
 
   @Override
+  public String toMMA() {
+    final StringBuilder buffer = new StringBuilder();
+
+    buffer.append('(');
+    buffer.append(fSymbol.toMMA());
+    buffer.append(':');
+    buffer.append(fPatternExpr.toMMA());
+    buffer.append(')');
+
+    return buffer.toString();
+  }
+
+  @Override
   public String toString() {
     final StringBuilder buffer = new StringBuilder();
 
     buffer.append('(');
     buffer.append(fSymbol.toString());
     buffer.append(':');
-    buffer.append(fPatternExpr);
+    buffer.append(fPatternExpr.toString());
     buffer.append(')');
 
     return buffer.toString();

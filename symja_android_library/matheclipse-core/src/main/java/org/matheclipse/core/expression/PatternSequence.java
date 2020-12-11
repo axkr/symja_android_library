@@ -3,6 +3,8 @@ package org.matheclipse.core.expression;
 import java.util.Collection;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
+import java.util.function.Function;
 
 import org.hipparchus.util.Pair;
 import org.matheclipse.core.interfaces.IAST;
@@ -229,7 +231,8 @@ public class PatternSequence implements IPatternSequence {
       int depth,
       boolean useOperators,
       boolean usePrefix,
-      boolean noSymbolPrefix) {
+      boolean noSymbolPrefix,
+      Function<IExpr, String> variables) {
     if (symbolsAsFactoryMethod) {
       String prefix = usePrefix ? "F." : "";
       final StringBuilder buffer = new StringBuilder();
@@ -240,7 +243,12 @@ public class PatternSequence implements IPatternSequence {
           buffer.append(
               ","
                   + fCondition.internalJavaString(
-                      symbolsAsFactoryMethod, 0, useOperators, usePrefix, noSymbolPrefix));
+                      symbolsAsFactoryMethod,
+                      0,
+                      useOperators,
+                      usePrefix,
+                      noSymbolPrefix,
+                      variables));
         }
         if (fDefault) {
           if (fCondition == null) {
@@ -254,7 +262,12 @@ public class PatternSequence implements IPatternSequence {
           buffer.append(
               ","
                   + fCondition.internalJavaString(
-                      symbolsAsFactoryMethod, 0, useOperators, usePrefix, noSymbolPrefix));
+                      symbolsAsFactoryMethod,
+                      0,
+                      useOperators,
+                      usePrefix,
+                      noSymbolPrefix,
+                      variables));
         }
         if (fDefault) {
           buffer.append(",true");
@@ -270,6 +283,45 @@ public class PatternSequence implements IPatternSequence {
   // public void setIndex(final int i) {
   // fIndex = i;
   // }
+
+  @Override
+  public String toMMA() {
+    final StringBuilder buffer = new StringBuilder();
+    if (fSymbol == null) {
+      buffer.append("__");
+      if (fZeroArgsAllowed) {
+        buffer.append('_');
+      }
+      if (fDefault) {
+        buffer.append('.');
+      }
+      if (fCondition != null) {
+        buffer.append(fCondition.toMMA());
+      }
+    } else {
+      if (fCondition == null) {
+        buffer.append(fSymbol.toMMA());
+        buffer.append("__");
+        if (fZeroArgsAllowed) {
+          buffer.append('_');
+        }
+        if (fDefault) {
+          buffer.append('.');
+        }
+      } else {
+        buffer.append(fSymbol.toMMA());
+        buffer.append("__");
+        if (fZeroArgsAllowed) {
+          buffer.append('_');
+        }
+        if (fDefault) {
+          buffer.append('.');
+        }
+        buffer.append(fCondition.toMMA());
+      }
+    }
+    return buffer.toString();
+  }
 
   @Override
   public String toString() {

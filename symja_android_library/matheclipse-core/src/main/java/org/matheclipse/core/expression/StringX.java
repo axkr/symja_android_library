@@ -5,6 +5,8 @@ import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
 import java.text.Collator;
 import java.util.Locale;
+import java.util.Set;
+import java.util.function.Function;
 
 import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.interfaces.IStringX;
@@ -398,7 +400,8 @@ public class StringX implements IStringX {
       int depth,
       boolean useOperators,
       boolean usePrefix,
-      boolean noSymbolPrefix) {
+      boolean noSymbolPrefix,
+      Function<IExpr, String> variables) {
     final StringBuilder buffer = new StringBuilder();
     String prefix = usePrefix ? "F." : "";
     buffer.append(prefix + "$str(\"");
@@ -535,6 +538,11 @@ public class StringX implements IStringX {
    */
   public String toLowerCase(final Locale locale) {
     return fString.toLowerCase(locale);
+  }
+
+  @Override
+  public String toMMA() {
+    return "\"" + fString + "\"";
   }
 
   @Override

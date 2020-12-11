@@ -5,11 +5,12 @@ import static org.matheclipse.core.expression.F.C1D2;
 import static org.matheclipse.core.expression.F.CN1D2;
 import static org.matheclipse.core.expression.F.Divide;
 import static org.matheclipse.core.expression.F.Negate;
-import static org.matheclipse.core.expression.F.Pi;
 import static org.matheclipse.core.expression.F.Plus;
 import static org.matheclipse.core.expression.F.Times;
+import static org.matheclipse.core.expression.S.Pi;
 
 import java.math.BigInteger;
+import java.util.function.Function;
 
 import org.apfloat.Apcomplex;
 import org.apfloat.Apfloat;
@@ -18,6 +19,7 @@ import org.matheclipse.core.basic.Config;
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.exception.BigIntegerLimitExceeded;
 import org.matheclipse.core.form.output.OutputFormFactory;
+import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IComplex;
 import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.interfaces.IFraction;
@@ -475,7 +477,7 @@ public class ComplexSym implements IComplex {
 
   @Override
   public String internalFormString(boolean symbolsAsFactoryMethod, int depth) {
-    return internalJavaString(symbolsAsFactoryMethod, depth, false, false, false);
+    return internalJavaString(symbolsAsFactoryMethod, depth, false, false, false, F.CNullFunction);
   }
 
   @Override
@@ -484,7 +486,8 @@ public class ComplexSym implements IComplex {
       int depth,
       boolean useOperators,
       boolean usePrefix,
-      boolean noSymbolPrefix) {
+      boolean noSymbolPrefix,
+      Function<IExpr, String> variables) {
     String prefix = usePrefix ? "F." : "";
     if (fReal.isZero()) {
       if (fImaginary.isOne()) {
@@ -521,19 +524,19 @@ public class ComplexSym implements IComplex {
         + "CC("
         + //
         fReal.internalJavaString(
-            symbolsAsFactoryMethod, depth, useOperators, usePrefix, noSymbolPrefix)
+            symbolsAsFactoryMethod, depth, useOperators, usePrefix, noSymbolPrefix, variables)
         + //
         ","
         + //
         fImaginary.internalJavaString(
-            symbolsAsFactoryMethod, depth, useOperators, usePrefix, noSymbolPrefix)
+            symbolsAsFactoryMethod, depth, useOperators, usePrefix, noSymbolPrefix, variables)
         + //
         ")";
   }
 
   @Override
   public String internalScalaString(boolean symbolsAsFactoryMethod, int depth) {
-    return internalJavaString(symbolsAsFactoryMethod, depth, true, false, false);
+    return internalJavaString(symbolsAsFactoryMethod, depth, true, false, false, F.CNullFunction);
   }
 
   @Override
@@ -851,6 +854,11 @@ public class ComplexSym implements IComplex {
       return this.multiply(valueOf((IFraction) that));
     }
     return IComplex.super.times(that);
+  }
+
+  @Override
+  public IAST toPolarCoordinates() {
+    return F.pair(abs(), complexArg());
   }
 
   @Override

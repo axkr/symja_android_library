@@ -3,6 +3,8 @@ package org.matheclipse.core.expression;
 import java.io.ObjectStreamException;
 import java.math.BigDecimal;
 import java.math.BigInteger;
+import java.util.Set;
+import java.util.function.Function;
 
 import org.hipparchus.fraction.BigFraction;
 import org.hipparchus.util.ArithmeticUtils;
@@ -403,7 +405,7 @@ public class FractionSym extends AbstractFractionSym {
 
   @Override
   public String internalFormString(boolean symbolsAsFactoryMethod, int depth) {
-    return internalJavaString(symbolsAsFactoryMethod, depth, false, false, false);
+    return internalJavaString(symbolsAsFactoryMethod, depth, false, false, false, F.CNullFunction);
   }
 
   @Override
@@ -412,7 +414,8 @@ public class FractionSym extends AbstractFractionSym {
       int depth,
       boolean useOperators,
       boolean usePrefix,
-      boolean noSymbolPrefix) {
+      boolean noSymbolPrefix,
+      Function<IExpr, String> variables) {
     String prefix = usePrefix ? "F." : "";
     if (fNumerator == 1) {
       switch (fDenominator) {
@@ -441,7 +444,7 @@ public class FractionSym extends AbstractFractionSym {
 
   @Override
   public String internalScalaString(boolean symbolsAsFactoryMethod, int depth) {
-    return internalJavaString(symbolsAsFactoryMethod, depth, true, false, false);
+    return internalJavaString(symbolsAsFactoryMethod, depth, true, false, false, F.CNullFunction);
   }
 
   /**

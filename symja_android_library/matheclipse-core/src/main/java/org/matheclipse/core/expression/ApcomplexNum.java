@@ -11,6 +11,7 @@ import org.apfloat.ApfloatMath;
 import org.apfloat.ApfloatRuntimeException;
 import org.hipparchus.complex.Complex;
 import org.matheclipse.core.eval.EvalEngine;
+import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IComplex;
 import org.matheclipse.core.interfaces.IComplexNum;
 import org.matheclipse.core.interfaces.IExpr;
@@ -436,6 +437,11 @@ public class ApcomplexNum implements IComplexNum {
           ApcomplexNum.valueOf(cn.getRealPart(), cn.getImaginaryPart(), fApcomplex.precision()));
     }
     return IComplexNum.super.times(that);
+  }
+
+  @Override
+  public IAST toPolarCoordinates() {
+    return F.List(abs(), complexArg());
   }
 
   @Override

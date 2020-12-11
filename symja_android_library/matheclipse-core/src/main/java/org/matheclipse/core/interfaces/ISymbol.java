@@ -4,11 +4,11 @@ import java.io.IOException;
 import java.util.function.DoubleFunction;
 import java.util.function.Function;
 
-import org.matheclipse.core.convert.Object2Expr;
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.expression.Context;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.expression.ID;
+import org.matheclipse.core.expression.S;
 import org.matheclipse.core.patternmatching.IPatternMap.PatternMap;
 import org.matheclipse.core.patternmatching.IPatternMatcher;
 import org.matheclipse.core.patternmatching.PatternMatcherAndInvoker;
@@ -103,8 +103,15 @@ public interface ISymbol extends IExpr {
    */
   public static final int DELAYED_RULE_EVALUATION = 0x00020000;
 
+  //
+  // Flags definition starts here
+  //
+
   /** ISymbol flag to indicate that the symbols value is used by a method */
-  public static final int DIRTY_FLAG_ASSIGNED_VALUE = 0x10000000;
+  public static final int DIRTY_FLAG_ASSIGNED_VALUE = 0x00000001;
+
+  /** ISymbol flag to indicate that the symbols value is defined by SetDelayed */
+  public static final int SETDELAYED_FLAG_ASSIGNED_VALUE = 0x10000002;
 
   /**
    * Add the attributes to the existing attributes bit-set.
@@ -113,39 +120,65 @@ public interface ISymbol extends IExpr {
    */
   public void addAttributes(final int attributes);
 
-  /** Set the value of this variable */
-  public void assignValue(IExpr value);
+  /**
+   * Set the <code>OwnValues</code> value of this variable. The value is assigned with the '='
+   * operator.
+   *
+   * @param value the assigned 'right-hand-side' expression
+   */
+  default void assignValue(IExpr value) {
+    assignValue(value, false);
+  }
 
   /**
-   * Get the value which is assigned to the symbol or <code>null</code>, if no value is assigned.
+   * Set the <code>OwnValues</code> value of this variable
+   *
+   * @param value the assigned 'right-hand-side' expression
+   * @param setDelayed if <code>true</code>, the value is assigned with the ':=' SetDelayed operator
+   *     otherwise with the '=' operator.
+   */
+  public void assignValue(IExpr value, boolean setDelayed);
+
+  /**
+   * Get the <code>OwnValues</code> value which is assigned to the symbol or <code>null</code>, if
+   * no value is assigned.
    *
    * @return <code>null</code>, if no value is assigned.
    */
   public IExpr assignedValue();
 
   /**
-   * Clear the associated rules for this symbol
+   * Clear the associated rules (<code>OwnValues</code>, <code>DownValues</code> and <code>UpValues
+   * </code>) for this symbol but don't clear the attribute flags.
    *
    * @param engine the evaluation engine
    */
   public void clear(EvalEngine engine);
 
-  /** Clear the value which is assigned to the symbo. */
+  /** Clear the <code>OwnValues</code> value which is assigned to this symbol. */
   public void clearValue();
 
   /**
-   * Clear all associated rules and attributes for this symbol.
+   * Clear all associated rules (<code>OwnValues</code>, <code>DownValues</code> and <code>UpValues
+   * </code>) and attribute flags for this symbol.
    *
    * @param engine the evaluation engine
    */
   public void clearAll(EvalEngine engine);
 
   /**
-   * Remove the attributes from the existing attributes bit-set.
+   * Remove the attribute flags from the existing attributes bit-set.
    *
    * @param attributes
    */
   public void clearAttributes(final int attributes);
+
+  /**
+   * Remove the evaluation flags from the existing flags bit-set.
+   *
+   * @param flags
+   */
+  public void clearEvalFlags(final int flags);
 
   /**
    * Check if ths symbol contains a "DownRule" or "UpRule"
@@ -258,7 +291,13 @@ public interface ISymbol extends IExpr {
    */
   public IExpr getDefaultValue(int position);
 
-  /** @return <code>null</code> if no rules are defined */
+  /**
+   * Get the pattern matching rules associated with a symbol. <code>RulesData</code> contains <code>
+   * DownValues</code> and <code>UpValues</code> rules for pattern matching. <b>Note:</b> <code>
+   * OwnValues</code> are directly stored in a symbol.
+   *
+   * @return <code>null</code> if no rules are defined
+   */
   public RulesData getRulesData();
 
   /**
@@ -282,6 +321,37 @@ public interface ISymbol extends IExpr {
    *     attribute.
    */
   boolean hasFlatAttribute();
+
+  /**
+   * Does the attributes flag set contains the <code>ISymbol.Flat</code> bit set?
+   *
+   * @return <code>true</code> if this attribute set contains the <code>ISymbol.Flat</code>
+   *     attribute.
+   */
+  public static boolean hasFlatAttribute(int attributes) {
+    return (attributes & FLAT) == FLAT;
+  }
+
+  /**
+   * Does the attributes flag set contains the <code>ISymbol.Flat</code> and <code>ISymbol.Orderless
+   * </code> bits set?
+   *
+   * @return <code>true</code> if this attribute set contains the <code>ISymbol.Flat</code> and
+   *     <code>ISymbol.Orderless</code> attribute.
+   */
+  public static boolean hasOrderlessAttributeFlat(int attributes) {
+    return (attributes & FLATORDERLESS) == FLATORDERLESS;
+  }
+
+  /**
+   * Does this symbols attribute set contains the <code>Orderless</code> attribute?
+   *
+   * @return <code>true</code> if this symbols attribute set contains the <code>Orderless</code>
+   *     attribute.
+   */
+  public static boolean hasOrderlessAttribute(int attributes) {
+    return (attributes & ORDERLESS) == ORDERLESS;
+  }
 
   /**
    * Does this symbols attribute set contains the <code>OneIdentity</code> attribute?
@@ -320,6 +390,15 @@ public interface ISymbol extends IExpr {
   @Override
   default boolean isConstantAttribute() {
     return (getAttributes() & CONSTANT) == CONSTANT;
+  }
+
+  /**
+   * Gives <code>true</code> if this symbol is in the <code>context</code>.
+   *
+   * @return
+   */
+  default boolean isContext(final Context context) {
+    return context == getContext();
   }
 
   /**
@@ -415,6 +494,17 @@ public interface ISymbol extends IExpr {
   public IExpr of(EvalEngine engine, IExpr... args);
 
   /**
+   * Evaluate this symbol for the arguments as function <code>
+   * symbol(arg, part1, part2, .... , partN)</code>.
+   *
+   * @param engine the current evaluation engine
+   * @param arg the main argument
+   * @param parts the arguments for which this function symbol should be evaluated
+   * @return
+   */
+  public IExpr of1(EvalEngine engine, IExpr arg, IExpr... parts);
+
+  /**
    * Evaluate this symbol for the arguments as function <code>symbol(arg1, arg2, .... ,argN)</code>.
    *
    * @param args the arguments for which this function symbol should be evaluated
@@ -441,7 +531,7 @@ public interface ISymbol extends IExpr {
   default IExpr of(boolean... args) {
     IExpr[] array = new IExpr[args.length];
     for (int i = 0; i < array.length; i++) {
-      array[i] = args[i] ? F.True : F.False;
+      array[i] = args[i] ? S.True : S.False;
     }
     return of(array);
   }

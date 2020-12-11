@@ -30,7 +30,7 @@ public interface IAssociation extends IASTAppendable {
 
   /** Copy this association as empty association */
   @Override
-  public IAssociation copyHead(final int intialCapacity);
+  public IASTAppendable copyHead(final int intialCapacity);
 
   /**
    * Append a single <code>Rule(a,b)</code> or <code>RuleDelayed(a,b)</code> expression.

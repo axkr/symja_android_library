@@ -12,11 +12,11 @@ public class RepeatedPattern extends PatternSequence {
   private static final long serialVersionUID = 1086461999754718513L;
 
   public static RepeatedPattern valueOf(IExpr patternExpr, EvalEngine engine) {
-    return valueOf(patternExpr, false, engine);
+    return valueOf(patternExpr, 1, Integer.MAX_VALUE, false, engine);
   }
 
   public static RepeatedPattern valueOf(
-      IExpr patternExpr, boolean zeroArgsAllowed, EvalEngine engine) {
+      IExpr patternExpr, int min, int max, boolean zeroArgsAllowed, EvalEngine engine) {
     RepeatedPattern p = new RepeatedPattern();
     p.fSymbol = null;
     p.fCondition = null;
@@ -24,16 +24,18 @@ public class RepeatedPattern extends PatternSequence {
     p.fZeroArgsAllowed = zeroArgsAllowed;
     p.fRepeatedExpr = patternExpr;
     p.fMatcher = engine.evalPatternMatcher(patternExpr);
+    p.fMin = min;
+    p.fMax = max;
     return p;
   }
 
   protected IExpr fRepeatedExpr;
 
+  protected int fMin;
+
+  protected int fMax;
+
   protected IPatternMatcher fMatcher;
-  //
-  // public static RepeatedPattern valueOf(IExpr patternExpr, EvalEngine engine) {
-  // return valueOf(null, patternExpr, engine);
-  // }
 
   protected RepeatedPattern() {
     super();
@@ -119,7 +121,8 @@ public class RepeatedPattern extends PatternSequence {
   @Override
   public boolean matchPatternSequence(
       final IAST sequence, IPatternMap patternMap, ISymbol optionsPatternHead) {
-    if (sequence.size() == 1 && !isNullSequence()) {
+    final int size = sequence.argSize();
+    if (size < fMin || size > fMax) {
       return false;
     }
     EvalEngine engine = EvalEngine.get();
@@ -129,6 +132,18 @@ public class RepeatedPattern extends PatternSequence {
       }
     }
     return true;
+  }
+
+  @Override
+  public String toMMA() {
+    final StringBuilder buffer = new StringBuilder();
+    buffer.append(fRepeatedExpr.toMMA());
+    if (fZeroArgsAllowed) {
+      buffer.append("...");
+    } else {
+      buffer.append("..");
+    }
+    return buffer.toString();
   }
 
   @Override

@@ -1,6 +1,8 @@
 package org.matheclipse.core.interfaces;
 
 import org.matheclipse.core.expression.F;
+import org.matheclipse.core.patternmatching.IPatternMatcher;
+import org.matheclipse.core.patternmatching.IPatternMap.PatternMap;
 
 /**
  * An IEvaluator can be linked to an ISymbol to define the evaluation behaviour of the symbol at
@@ -20,7 +22,20 @@ public interface IEvaluator {
    */
   public void setUp(ISymbol newSymbol);
 
-  default IAST options() {
-    return F.NIL;
+  /**
+   * Define the default options of a symbol (i.e. <code>Options(symbol) = {SameTest -> SameQ, ...}
+   * </code>.
+   *
+   * @param symbol the symbol for which the default options should be defined
+   * @param listOfRules a list of rules with the default option settings
+   */
+  default void setOptions(final ISymbol symbol, IAST listOfRules) {
+    symbol.putDownRule(
+        IPatternMatcher.SET,
+        true,
+        F.Options(symbol),
+        listOfRules,
+        PatternMap.DEFAULT_RULE_PRIORITY,
+        true);
   }
 }

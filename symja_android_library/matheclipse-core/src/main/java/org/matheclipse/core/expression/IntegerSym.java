@@ -6,6 +6,8 @@ import java.io.ObjectOutput;
 import java.io.ObjectStreamException;
 import java.math.BigInteger;
 import java.math.RoundingMode;
+import java.util.Set;
+import java.util.function.Function;
 
 import org.hipparchus.exception.MathRuntimeException;
 import org.hipparchus.fraction.BigFraction;
@@ -324,7 +326,8 @@ public class IntegerSym extends AbstractIntegerSym {
       int depth,
       boolean useOperators,
       boolean usePrefix,
-      boolean noSymbolPrefix) {
+      boolean noSymbolPrefix,
+      Function<IExpr, String> variables) {
     String prefix = usePrefix ? "F." : "";
     int value = NumberUtil.toInt(fIntValue);
     switch (value) {
@@ -377,7 +380,7 @@ public class IntegerSym extends AbstractIntegerSym {
 
   @Override
   public String internalScalaString(boolean symbolsAsFactoryMethod, int depth) {
-    return internalJavaString(symbolsAsFactoryMethod, depth, true, false, false);
+    return internalJavaString(symbolsAsFactoryMethod, depth, true, false, false, F.CNullFunction);
   }
 
   @Override

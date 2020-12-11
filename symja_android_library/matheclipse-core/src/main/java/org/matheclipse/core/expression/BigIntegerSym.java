@@ -6,6 +6,8 @@ import java.io.ObjectOutput;
 import java.io.ObjectStreamException;
 import java.math.BigInteger;
 import java.math.RoundingMode;
+import java.util.Set;
+import java.util.function.Function;
 
 import org.hipparchus.fraction.BigFraction;
 import org.matheclipse.core.basic.Config;
@@ -366,7 +368,8 @@ public class BigIntegerSym extends AbstractIntegerSym {
       int depth,
       boolean useOperators,
       boolean usePrefix,
-      boolean noSymbolPrefix) {
+      boolean noSymbolPrefix,
+      Function<IExpr, String> variables) {
     String prefix = usePrefix ? "F." : "";
     int value = toIntDefault(); // NumberUtil.toInt(fBigIntValue);
     if (value != Integer.MIN_VALUE) {
@@ -423,7 +426,7 @@ public class BigIntegerSym extends AbstractIntegerSym {
 
   @Override
   public String internalScalaString(boolean symbolsAsFactoryMethod, int depth) {
-    return internalJavaString(symbolsAsFactoryMethod, depth, true, false, false);
+    return internalJavaString(symbolsAsFactoryMethod, depth, true, false, false, x -> null);
   }
 
   @Override

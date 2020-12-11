@@ -2,6 +2,8 @@ package org.matheclipse.core.expression;
 
 import java.math.BigDecimal;
 import java.math.RoundingMode;
+import java.util.Set;
+import java.util.function.Function;
 
 import org.apfloat.Apcomplex;
 import org.apfloat.Apfloat;
@@ -9,6 +11,7 @@ import org.apfloat.ApfloatRuntimeException;
 import org.hipparchus.util.MathUtils;
 import org.matheclipse.core.basic.Config;
 import org.matheclipse.core.eval.EvalEngine;
+import org.matheclipse.core.eval.exception.ArgumentTypeException;
 import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.interfaces.IInteger;
 import org.matheclipse.core.interfaces.INum;
@@ -142,7 +145,12 @@ public class Num implements INum {
   /** {@inheritDoc} */
   @Override
   public IInteger ceilFraction() {
-    return F.ZZ(NumberUtil.toLong(Math.ceil(fDouble)));
+    try {
+      return F.ZZ(NumberUtil.toLong(Math.ceil(fDouble)));
+    } catch (ArithmeticException ae) {
+      ArgumentTypeException.throwArg(this, F.Ceiling(this));
+    }
+    return null;
   }
 
   /** {@inheritDoc} */
@@ -320,7 +328,12 @@ public class Num implements INum {
   /** {@inheritDoc} */
   @Override
   public IInteger floorFraction() {
-    return F.ZZ(NumberUtil.toLong(Math.floor(fDouble)));
+    try {
+      return F.ZZ(NumberUtil.toLong(Math.floor(fDouble)));
+    } catch (ArithmeticException ae) {
+      ArgumentTypeException.throwArg(this, F.Floor(this));
+    }
+    return null;
   }
 
   /** {@inheritDoc} */
@@ -375,7 +388,7 @@ public class Num implements INum {
 
   @Override
   public String internalFormString(boolean symbolsAsFactoryMethod, int depth) {
-    return internalJavaString(symbolsAsFactoryMethod, depth, false, false, false);
+    return internalJavaString(symbolsAsFactoryMethod, depth, false, false, false, F.CNullFunction);
   }
 
   @Override
@@ -384,7 +397,8 @@ public class Num implements INum {
       int depth,
       boolean useOperators,
       boolean usePrefix,
-      boolean noSymbolPrefix) {
+      boolean noSymbolPrefix,
+      Function<IExpr, String> variables) {
     String prefix = usePrefix ? "F." : "";
     if (isZero()) {
       return prefix + "CD0";
@@ -398,7 +412,7 @@ public class Num implements INum {
 
   @Override
   public String internalScalaString(boolean symbolsAsFactoryMethod, int depth) {
-    return internalJavaString(symbolsAsFactoryMethod, depth, true, false, false);
+    return internalJavaString(symbolsAsFactoryMethod, depth, true, false, false, F.CNullFunction);
   }
 
   /** @return */

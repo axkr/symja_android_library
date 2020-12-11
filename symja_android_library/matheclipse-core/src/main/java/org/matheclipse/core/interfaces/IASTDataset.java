@@ -31,7 +31,22 @@ public interface IASTDataset extends IASTMutable {
 
   public IExpr groupBy(List<String> group);
 
+  /**
+   * Select the row and column of a dataset.
+   *
+   * @param row
+   * @param column
+   * @return
+   */
   public IExpr select(IExpr row, IExpr column);
+
+  /**
+   * Select the row and column and parts of a dataset.
+   *
+   * @param ast
+   * @return
+   */
+  public IExpr select(IAST ast);
 
   public IASTDataset structure();
 

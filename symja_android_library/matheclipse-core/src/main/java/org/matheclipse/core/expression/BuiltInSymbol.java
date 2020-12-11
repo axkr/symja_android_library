@@ -8,12 +8,12 @@ import java.util.function.Function;
 import java.util.function.Predicate;
 
 import org.matheclipse.core.basic.Config;
-import org.matheclipse.core.builtin.IOFunctions;
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.exception.ArgumentTypeException;
 import org.matheclipse.core.eval.exception.RuleCreationError;
 import org.matheclipse.core.eval.interfaces.AbstractCorePredicateEvaluator;
 import org.matheclipse.core.eval.interfaces.ICoreFunctionEvaluator;
+import org.matheclipse.core.eval.interfaces.IFunctionEvaluator;
 import org.matheclipse.core.eval.interfaces.ISignedNumberConstant;
 import org.matheclipse.core.eval.interfaces.ISymbolEvaluator;
 import org.matheclipse.core.interfaces.IAST;
@@ -39,7 +39,7 @@ public class BuiltInSymbol extends Symbol implements IBuiltInSymbol {
     /** {@inheritDoc} */
     @Override
     public IExpr evaluate(final IAST ast, EvalEngine engine) {
-      return predicate.test(engine.evaluate(ast.arg1())) ? F.True : F.False;
+      return predicate.test(engine.evaluate(ast.arg1())) ? S.True : S.False;
     }
 
     @Override
@@ -48,7 +48,7 @@ public class BuiltInSymbol extends Symbol implements IBuiltInSymbol {
     }
 
     public int[] expectedArgSize(IAST ast) {
-      return IOFunctions.ARGS_1_1;
+      return IFunctionEvaluator.ARGS_1_1;
     }
   }
 
@@ -109,12 +109,12 @@ public class BuiltInSymbol extends Symbol implements IBuiltInSymbol {
 
   /** {@inheritDoc} */
   @Override
-  public final void assignValue(final IExpr value) {
-    super.assignValue(value);
-    if (Config.FUZZ_TESTING) {
-      // Cannot assign to raw object `1`.
-      throw new NullPointerException();
-    }
+  public final void assignValue(final IExpr value, boolean setDelayed) {
+    super.assignValue(value, setDelayed);
+    //    if (Config.FUZZ_TESTING) {
+    //      // Cannot assign to raw object `1`.
+    //      throw new NullPointerException();
+    //    }
   }
 
   /** {@inheritDoc} */
@@ -170,10 +170,10 @@ public class BuiltInSymbol extends Symbol implements IBuiltInSymbol {
         if (engine.isArbitraryMode()) {
           return ((ISymbolEvaluator) fEvaluator).apfloatEval(this, engine);
         } else {
-          return ((ISymbolEvaluator) fEvaluator).numericEval(this);
+          return ((ISymbolEvaluator) fEvaluator).numericEval(this, engine);
         }
       }
-      return ((ISymbolEvaluator) fEvaluator).evaluate(this);
+      return ((ISymbolEvaluator) fEvaluator).evaluate(this, engine);
     }
     if (hasAssignedSymbolValue()) {
       return assignedValue();
@@ -263,7 +263,7 @@ public class BuiltInSymbol extends Symbol implements IBuiltInSymbol {
   /** {@inheritDoc} */
   @Override
   public final boolean isFalse() {
-    return this == F.False;
+    return this == S.False;
   }
 
   /** {@inheritDoc} */
@@ -313,7 +313,7 @@ public class BuiltInSymbol extends Symbol implements IBuiltInSymbol {
   /** {@inheritDoc} */
   @Override
   public final boolean isTrue() {
-    return this == F.True;
+    return this == S.True;
   }
 
   /** {@inheritDoc} */

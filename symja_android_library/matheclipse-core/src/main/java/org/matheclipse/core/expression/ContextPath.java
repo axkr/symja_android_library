@@ -2,24 +2,27 @@ package org.matheclipse.core.expression;
 
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.Locale;
 import java.util.Map;
+import java.util.Set;
+import java.util.TreeSet;
 
 import org.matheclipse.core.basic.Config;
-import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IASTAppendable;
 import org.matheclipse.core.interfaces.IStringX;
 import org.matheclipse.core.interfaces.ISymbol;
 import org.matheclipse.parser.client.FEConfig;
 
-public final class ContextPath {
-  private HashMap<String, Context> fContextMap;
-  private ArrayList<Context> path = new ArrayList<Context>();
-  private Context fContext;
+public final class ContextPath implements Iterable<Context> {
 
-  private ContextPath() {
-    // for copy() method
+  public static Set<String> PACKAGES = new TreeSet<String>();
+
+  static {
+    PACKAGES.add(Context.RUBI_STR);
+    PACKAGES.add(Context.GLOBAL_CONTEXT_NAME);
+    PACKAGES.add(Context.SYSTEM_CONTEXT_NAME);
   }
 
   /**
@@ -42,6 +45,15 @@ public final class ContextPath {
     return cp;
   }
 
+  private HashMap<String, Context> fContextMap;
+  private ArrayList<Context> path = new ArrayList<Context>();
+
+  private Context fContext;
+
+  private ContextPath() {
+    // for copy() method
+  }
+
   public ContextPath(Context context) {
     fContextMap = new HashMap<String, Context>(17);
     path.add(context);
@@ -53,41 +65,24 @@ public final class ContextPath {
     fContext = context;
   }
 
+  public boolean add(Context context) {
+    return path.add(context);
+  }
+
+  public void add(int index, Context context) {
+    path.add(index, context);
+  }
+
+  public boolean contains(Context context) {
+    return path.contains(context);
+  }
+
   public ContextPath copy() {
     ContextPath cp = new ContextPath();
     cp.fContextMap = (HashMap<String, Context>) fContextMap.clone();
     cp.path = (ArrayList<Context>) path.clone();
     cp.fContext = fContext;
     return cp;
-  }
-
-  public Context getGlobalContext() {
-    return fContextMap.get(Context.GLOBAL_CONTEXT_NAME);
-  }
-
-  /**
-   * Return the context path as list of context strings.
-   *
-   * @return
-   */
-  public IAST pathAsStrings() {
-    int size = path.size();
-    IASTAppendable result = F.ListAlloc(size);
-
-    int start = size - 1;
-    for (int i = 0; i < size; i++) {
-      result.append(F.stringx(path.get(i).getContextName()));
-    }
-    return result;
-  }
-
-  /**
-   * Print the context name without prepending the parent context name.
-   *
-   * @return
-   */
-  public IStringX currentContextString() {
-    return F.stringx(fContext.getContextName());
   }
 
   /**
@@ -102,6 +97,127 @@ public final class ContextPath {
 
   public Context currentContext() {
     return fContext;
+  }
+
+  /**
+   * Print the context name without prepending the parent context name.
+   *
+   * @return
+   */
+  public IStringX currentContextString() {
+    return F.stringx(fContext.getContextName());
+  }
+
+  public Context get(int index) {
+    return path.get(index);
+  }
+
+  public Context getContext(String contextName) {
+    Context context = fContextMap.get(contextName);
+    if (context != null) {
+      return context;
+    }
+    context = new Context(contextName);
+    fContextMap.put(contextName, context);
+    return context;
+  }
+
+  public Context getContext(String contextName, Context parentContext) {
+    String name = contextName;
+    if (parentContext != null) {
+      String packageName = parentContext.getContextName();
+      name = packageName.substring(0, packageName.length() - 1) + name;
+    }
+    Context context = fContextMap.get(name);
+    if (context != null) {
+      return context;
+    }
+    context = new Context(contextName, parentContext);
+    fContextMap.put(name, context);
+    return context;
+  }
+
+  public Context getGlobalContext() {
+    return fContextMap.get(Context.GLOBAL_CONTEXT_NAME);
+  }
+
+  public ISymbol getSymbol(String symbolName, final Context context, boolean relaxedSyntax) {
+    String name = symbolName;
+    if (relaxedSyntax) {
+      if (symbolName.length() == 1) {
+        name = symbolName;
+      } else {
+        name = symbolName.toLowerCase(Locale.ENGLISH);
+      }
+    }
+    ISymbol symbol = context.get(name);
+    if (symbol != null) {
+      return symbol;
+    }
+
+    symbol = new Symbol(name, context);
+    context.put(name, symbol);
+    // engine.putUserVariable(name, symbol);
+    if (Config.SERVER_MODE) {
+      if (name.charAt(0) == '$') {
+        F.SYMBOL_OBSERVER.createUserSymbol(symbol);
+      }
+    }
+
+    return symbol;
+  }
+
+  @Override
+  public Iterator<Context> iterator() {
+    return path.iterator();
+  }
+
+  /**
+   * Return the context path as list of context strings.
+   *
+   * @return
+   */
+  public IAST pathAsStrings() {
+    int size = path.size();
+    IASTAppendable result = F.ListAlloc(size);
+
+    for (int i = 0; i < size; i++) {
+      result.append(F.stringx(path.get(i).getContextName()));
+    }
+    return result;
+  }
+
+  public Context remove(int index) {
+    return path.remove(index);
+  }
+
+  public ISymbol removeSymbol(String symbolName) {
+    String name = symbolName;
+    if (FEConfig.PARSER_USE_LOWERCASE_SYMBOLS) {
+      if (symbolName.length() == 1) {
+        name = symbolName;
+      } else {
+        name = symbolName.toLowerCase(Locale.ENGLISH);
+      }
+    }
+    Context context;
+    ISymbol symbol;
+    for (int i = path.size() - 1; i >= 0; i--) {
+      context = path.get(i);
+      if (context.equals(Context.SYSTEM)) {
+        // don't remove predefined symbols
+        continue;
+      }
+      symbol = context.remove(name);
+      if (symbol != null) {
+        return symbol;
+      }
+    }
+    return null;
+  }
+
+  public Context set(int index, Context element) {
+    return path.set(index, element);
   }
 
   public void setCurrentContext(Context context) {
@@ -131,45 +247,8 @@ public final class ContextPath {
     return false;
   }
 
-  public Context getContext(String contextName) {
-    Context context = fContextMap.get(contextName);
-    if (context != null) {
-      return context;
-    }
-    context = new Context(contextName);
-    fContextMap.put(contextName, context);
-    return context;
-  }
-
-  public Context getContext(String contextName, Context parentContext) {
-    String name = contextName;
-    if (parentContext != null) {
-      String packageName = parentContext.getContextName();
-      name = packageName.substring(0, packageName.length() - 1) + name;
-    }
-    Context context = fContextMap.get(name);
-    if (context != null) {
-      return context;
-    }
-    context = new Context(contextName, parentContext);
-    fContextMap.put(name, context);
-    return context;
-  }
-
-  public boolean contains(Context context) {
-    return path.contains(context);
-  }
-
-  public boolean add(Context context) {
-    return path.add(context);
-  }
-
-  public void add(int index, Context context) {
-    path.add(index, context);
-  }
-
-  public Context get(int index) {
-    return path.get(index);
+  public int size() {
+    return path.size();
   }
 
   public ISymbol symbol(String symbolName, Context newContext, boolean relaxedSyntax) {
@@ -208,61 +287,6 @@ public final class ContextPath {
     return symbol;
   }
 
-  public ISymbol getSymbol(String symbolName, final Context context, boolean relaxedSyntax) {
-    String name = symbolName;
-    if (relaxedSyntax) {
-      if (symbolName.length() == 1) {
-        name = symbolName;
-      } else {
-        name = symbolName.toLowerCase(Locale.ENGLISH);
-      }
-    }
-    ISymbol symbol = context.get(name);
-    if (symbol != null) {
-      return symbol;
-    }
-
-    symbol = new Symbol(name, context);
-    context.put(name, symbol);
-    // engine.putUserVariable(name, symbol);
-    if (Config.SERVER_MODE) {
-      if (name.charAt(0) == '$') {
-        F.SYMBOL_OBSERVER.createUserSymbol(symbol);
-      }
-    }
-
-    return symbol;
-  }
-
-  public ISymbol removeSymbol(String symbolName) {
-    String name = symbolName;
-    if (FEConfig.PARSER_USE_LOWERCASE_SYMBOLS) {
-      if (symbolName.length() == 1) {
-        name = symbolName;
-      } else {
-        name = symbolName.toLowerCase(Locale.ENGLISH);
-      }
-    }
-    Context context;
-    ISymbol symbol;
-    for (int i = path.size() - 1; i >= 0; i--) {
-      context = path.get(i);
-      if (context.equals(Context.SYSTEM)) {
-        // don't remove predefined symbols
-        continue;
-      }
-      symbol = context.remove(name);
-      if (symbol != null) {
-        return symbol;
-      }
-    }
-    return null;
-  }
-
-  public Context remove(int index) {
-    return path.remove(index);
-  }
-
   /**
    * Synchronize the contexts back to this context map.
    *
@@ -279,14 +303,6 @@ public final class ContextPath {
         fContextMap.put(entry.getKey(), entry.getValue());
       }
     }
-  }
-
-  public Context set(int index, Context element) {
-    return path.set(index, element);
-  }
-
-  public int size() {
-    return path.size();
   }
 
   @Override

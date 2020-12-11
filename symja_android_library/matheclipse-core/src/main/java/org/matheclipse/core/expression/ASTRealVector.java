@@ -45,7 +45,7 @@ import org.matheclipse.core.interfaces.ISymbol;
  *
  * @see AST
  */
-public class ASTRealVector extends AbstractAST implements Cloneable, Externalizable, RandomAccess {
+public class ASTRealVector extends AbstractAST implements Externalizable, RandomAccess {
 
   public ASTRealVector() {
     // When Externalizable objects are deserialized, they first need to be constructed by invoking
@@ -418,7 +418,7 @@ public class ASTRealVector extends AbstractAST implements Cloneable, Externaliza
 
   /**
    * Replaces the element at the specified location in this {@code ArrayList} with the specified
-   * object.
+   * object. Internally the <code>hashValue</code> will be reset to <code>0</code>.
    *
    * @param location the index at which to put the specified object.
    * @param object the object to add.

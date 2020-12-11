@@ -2,17 +2,18 @@ package org.matheclipse.core.expression;
 
 import java.util.Map;
 
+import org.matheclipse.core.basic.Config;
 import org.matheclipse.core.interfaces.IBuiltInSymbol;
 import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.interfaces.ISymbol;
 import org.matheclipse.parser.client.FEConfig;
-import org.matheclipse.parser.trie.Tries;
+import org.matheclipse.parser.trie.TrieMatch;
 
 import it.unimi.dsi.fastutil.objects.Object2ShortOpenHashMap;
 
 /**
- * Factory for creating Symja built-in symbols (interface {@link IBuiltInSymbol}). The built-in
- * symbols are generated with the tools class <code>BuiltinGenerator</code>.
+ * Class for creating the static Symja built-in symbols (interface {@link IBuiltInSymbol}). The
+ * built-in symbols are generated with the tools class <code>BuiltinGenerator</code>.
  */
 public class S {
 
@@ -28,108 +29,84 @@ public class S {
   public static final Object2ShortOpenHashMap<IExpr> GLOBAL_IDS_MAP =
       new Object2ShortOpenHashMap<IExpr>(EXPRID_MAX_BUILTIN_LENGTH + 1000);
 
-  public static final Map<String, ISymbol> HIDDEN_SYMBOLS_MAP = Tries.forStrings();
+  public static final Map<String, ISymbol> HIDDEN_SYMBOLS_MAP =
+      Config.TRIE_STRING2SYMBOL_BUILDER.withMatch(TrieMatch.EXACT).build(); // Tries.forStrings();
 
   public static IBuiltInSymbol symbol(int id) {
     return S.BUILT_IN_SYMBOLS[id];
   }
 
-  /** */
   public static final IBuiltInSymbol $Aborted = F.initFinalSymbol("$Aborted", ID.$Aborted);
 
-  /** */
   public static final IBuiltInSymbol $Assumptions =
       F.initFinalSymbol("$Assumptions", ID.$Assumptions);
 
-  /** */
   public static final IBuiltInSymbol $Cancel = F.initFinalSymbol("$Cancel", ID.$Cancel);
 
-  /** */
   public static final IBuiltInSymbol $Context = F.initFinalSymbol("$Context", ID.$Context);
 
-  /** */
   public static final IBuiltInSymbol $ContextPath =
       F.initFinalSymbol("$ContextPath", ID.$ContextPath);
 
-  /** */
   public static final IBuiltInSymbol $CreationDate =
       F.initFinalSymbol("$CreationDate", ID.$CreationDate);
 
-  /** */
   public static final IBuiltInSymbol $DisplayFunction =
       F.initFinalSymbol("$DisplayFunction", ID.$DisplayFunction);
 
-  /** */
   public static final IBuiltInSymbol $Failed = F.initFinalSymbol("$Failed", ID.$Failed);
 
-  /** */
   public static final IBuiltInSymbol $HistoryLength =
       F.initFinalSymbol("$HistoryLength", ID.$HistoryLength);
 
-  /** */
   public static final IBuiltInSymbol $HomeDirectory =
       F.initFinalSymbol("$HomeDirectory", ID.$HomeDirectory);
 
-  /** */
   public static final IBuiltInSymbol $IterationLimit =
       F.initFinalSymbol("$IterationLimit", ID.$IterationLimit);
 
-  /** */
   public static final IBuiltInSymbol $Line = F.initFinalSymbol("$Line", ID.$Line);
 
-  /** */
   public static final IBuiltInSymbol $MachineEpsilon =
       F.initFinalSymbol("$MachineEpsilon", ID.$MachineEpsilon);
 
-  /** */
   public static final IBuiltInSymbol $MachinePrecision =
       F.initFinalSymbol("$MachinePrecision", ID.$MachinePrecision);
 
-  /** */
   public static final IBuiltInSymbol $MaxMachineNumber =
       F.initFinalSymbol("$MaxMachineNumber", ID.$MaxMachineNumber);
 
-  /** */
   public static final IBuiltInSymbol $MessageList =
       F.initFinalSymbol("$MessageList", ID.$MessageList);
 
-  /** */
   public static final IBuiltInSymbol $MinMachineNumber =
       F.initFinalSymbol("$MinMachineNumber", ID.$MinMachineNumber);
 
-  /** */
   public static final IBuiltInSymbol $OutputSizeLimit =
       F.initFinalSymbol("$OutputSizeLimit", ID.$OutputSizeLimit);
 
-  /** */
+  public static final IBuiltInSymbol $Packages = F.initFinalSymbol("$Packages", ID.$Packages);
+
   public static final IBuiltInSymbol $Path = F.initFinalSymbol("$Path", ID.$Path);
 
-  /** */
   public static final IBuiltInSymbol $PathnameSeparator =
       F.initFinalSymbol("$PathnameSeparator", ID.$PathnameSeparator);
 
-  /** */
   public static final IBuiltInSymbol $PrePrint = F.initFinalSymbol("$PrePrint", ID.$PrePrint);
 
-  /** */
   public static final IBuiltInSymbol $PreRead = F.initFinalSymbol("$PreRead", ID.$PreRead);
 
-  /** */
   public static final IBuiltInSymbol $RecursionLimit =
       F.initFinalSymbol("$RecursionLimit", ID.$RecursionLimit);
 
-  /** */
   public static final IBuiltInSymbol $RootDirectory =
       F.initFinalSymbol("$RootDirectory", ID.$RootDirectory);
 
-  /** */
   public static final IBuiltInSymbol $TemporaryDirectory =
       F.initFinalSymbol("$TemporaryDirectory", ID.$TemporaryDirectory);
 
-  /** */
   public static final IBuiltInSymbol $UserName = F.initFinalSymbol("$UserName", ID.$UserName);
 
-  /** */
   public static final IBuiltInSymbol $Version = F.initFinalSymbol("$Version", ID.$Version);
 
   /** Abort() - aborts an evaluation completely and returns `$Aborted`. */
@@ -141,15 +118,16 @@ public class S {
   /** AbsArg(expr) - returns a list of 2 values of the complex number `Abs(expr), Arg(expr)`. */
   public static final IBuiltInSymbol AbsArg = F.initFinalSymbol("AbsArg", ID.AbsArg);
 
-  /** */
   public static final IBuiltInSymbol AbsoluteCorrelation =
       F.initFinalSymbol("AbsoluteCorrelation", ID.AbsoluteCorrelation);
 
-  /** */
   public static final IBuiltInSymbol AbsoluteTime =
       F.initFinalSymbol("AbsoluteTime", ID.AbsoluteTime);
 
-  /** */
+  /**
+   * AbsoluteTiming(x) - returns a list with the first entry containing the evaluation time of `x`
+   * and the second entry is the evaluation result of `x`.
+   */
   public static final IBuiltInSymbol AbsoluteTiming =
       F.initFinalSymbol("AbsoluteTiming", ID.AbsoluteTiming);
 
@@ -175,11 +153,9 @@ public class S {
   /** AiryBiPrime(z) - returns the derivative of the `AiryBi` function. */
   public static final IBuiltInSymbol AiryBiPrime = F.initFinalSymbol("AiryBiPrime", ID.AiryBiPrime);
 
-  /** */
   public static final IBuiltInSymbol AlgebraicNumber =
       F.initFinalSymbol("AlgebraicNumber", ID.AlgebraicNumber);
 
-  /** */
   public static final IBuiltInSymbol Algebraics = F.initFinalSymbol("Algebraics", ID.Algebraics);
 
   /** All - is a possible value for `Span` and `Quiet`. */
@@ -190,6 +166,9 @@ public class S {
    * expr2, ...` evaluate to `True`.
    */
   public static final IBuiltInSymbol AllTrue = F.initFinalSymbol("AllTrue", ID.AllTrue);
+
+  public static final IBuiltInSymbol AllowedHeads =
+      F.initFinalSymbol("AllowedHeads", ID.AllowedHeads);
 
   /**
    * Alternatives(p1, p2, ..., p_i) - is a pattern that matches any of the patterns `p1, p2,....,
@@ -214,7 +193,6 @@ public class S {
   /** AnnuityDue(p, t) - returns an annuity due object. */
   public static final IBuiltInSymbol AnnuityDue = F.initFinalSymbol("AnnuityDue", ID.AnnuityDue);
 
-  /** */
   public static final IBuiltInSymbol AntiSymmetric =
       F.initFinalSymbol("AntiSymmetric", ID.AntiSymmetric);
 
@@ -235,7 +213,6 @@ public class S {
   /** Apart(expr) - rewrites `expr` as a sum of individual fractions. */
   public static final IBuiltInSymbol Apart = F.initFinalSymbol("Apart", ID.Apart);
 
-  /** */
   public static final IBuiltInSymbol AppellF1 = F.initFinalSymbol("AppellF1", ID.AppellF1);
 
   /** Append(expr, item) - returns `expr` with `item` appended to its leaves. */
@@ -321,13 +298,15 @@ public class S {
   public static final IBuiltInSymbol ArrayReshape =
       F.initFinalSymbol("ArrayReshape", ID.ArrayReshape);
 
-  /** */
+  /** ArrayRules(sparse-array) - return the array of rules which define the sparse array. */
   public static final IBuiltInSymbol ArrayRules = F.initFinalSymbol("ArrayRules", ID.ArrayRules);
 
-  /** */
   public static final IBuiltInSymbol Arrays = F.initFinalSymbol("Arrays", ID.Arrays);
 
-  /** */
+  /**
+   * AssociateTo(assoc, rule) - append `rule` to the association `assoc` and assign the result to
+   * `assoc`.
+   */
   public static final IBuiltInSymbol AssociateTo = F.initFinalSymbol("AssociateTo", ID.AssociateTo);
 
   /**
@@ -335,7 +314,10 @@ public class S {
    */
   public static final IBuiltInSymbol Association = F.initFinalSymbol("Association", ID.Association);
 
-  /** */
+  /**
+   * AssociationMap(header, <|k1->v1, k2->v2,...|>) - create an association `<|header(k1->v1),
+   * header(k2->v2),...|>` with the rules mapped by the `header`.
+   */
   public static final IBuiltInSymbol AssociationMap =
       F.initFinalSymbol("AssociationMap", ID.AssociationMap);
 
@@ -343,11 +325,13 @@ public class S {
   public static final IBuiltInSymbol AssociationQ =
       F.initFinalSymbol("AssociationQ", ID.AssociationQ);
 
-  /** */
+  /**
+   * AssociationThread({k1,k2,...}, {v1,v2,...}) - create an association with rules from the keys
+   * `{k1,k2,...}` and values `{v1,v2,...}`.
+   */
   public static final IBuiltInSymbol AssociationThread =
       F.initFinalSymbol("AssociationThread", ID.AssociationThread);
 
-  /** */
   public static final IBuiltInSymbol Assumptions = F.initFinalSymbol("Assumptions", ID.Assumptions);
 
   /**
@@ -359,23 +343,17 @@ public class S {
   /** Attributes(symbol) - returns the list of attributes which are assigned to `symbol` */
   public static final IBuiltInSymbol Attributes = F.initFinalSymbol("Attributes", ID.Attributes);
 
-  /** */
   public static final IBuiltInSymbol Automatic = F.initFinalSymbol("Automatic", ID.Automatic);
 
-  /** */
   public static final IBuiltInSymbol Axes = F.initFinalSymbol("Axes", ID.Axes);
 
-  /** */
   public static final IBuiltInSymbol AxesOrigin = F.initFinalSymbol("AxesOrigin", ID.AxesOrigin);
 
-  /** */
   public static final IBuiltInSymbol AxesStyle = F.initFinalSymbol("AxesStyle", ID.AxesStyle);
 
-  /** */
   public static final IBuiltInSymbol BSplineFunction =
       F.initFinalSymbol("BSplineFunction", ID.BSplineFunction);
 
-  /** */
   public static final IBuiltInSymbol Background = F.initFinalSymbol("Background", ID.Background);
 
   /**
@@ -384,12 +362,14 @@ public class S {
    */
   public static final IBuiltInSymbol BarChart = F.initFinalSymbol("BarChart", ID.BarChart);
 
-  /** */
   public static final IBuiltInSymbol BarOrigin = F.initFinalSymbol("BarOrigin", ID.BarOrigin);
 
-  /** */
   public static final IBuiltInSymbol BartlettWindow =
       F.initFinalSymbol("BartlettWindow", ID.BartlettWindow);
+
+  public static final IBuiltInSymbol BaseDecode = F.initFinalSymbol("BaseDecode", ID.BaseDecode);
+
+  public static final IBuiltInSymbol BaseEncode = F.initFinalSymbol("BaseEncode", ID.BaseEncode);
 
   /** BaseForm(integer, radix) - prints the `integer` number in base `radix` form. */
   public static final IBuiltInSymbol BaseForm = F.initFinalSymbol("BaseForm", ID.BaseForm);
@@ -401,7 +381,6 @@ public class S {
   public static final IBuiltInSymbol BeginPackage =
       F.initFinalSymbol("BeginPackage", ID.BeginPackage);
 
-  /** */
   public static final IBuiltInSymbol BeginTestSection =
       F.initFinalSymbol("BeginTestSection", ID.BeginTestSection);
 
@@ -445,11 +424,9 @@ public class S {
   /** Beta(a, b) - is the beta function of the numbers `a`,`b`. */
   public static final IBuiltInSymbol Beta = F.initFinalSymbol("Beta", ID.Beta);
 
-  /** */
   public static final IBuiltInSymbol BetaDistribution =
       F.initFinalSymbol("BetaDistribution", ID.BetaDistribution);
 
-  /** */
   public static final IBuiltInSymbol BetaRegularized =
       F.initFinalSymbol("BetaRegularized", ID.BetaRegularized);
 
@@ -492,29 +469,22 @@ public class S {
    */
   public static final IBuiltInSymbol BitLength = F.initFinalSymbol("BitLength", ID.BitLength);
 
-  /** */
   public static final IBuiltInSymbol Black = F.initFinalSymbol("Black", ID.Black);
 
-  /** */
   public static final IBuiltInSymbol BlackmanHarrisWindow =
       F.initFinalSymbol("BlackmanHarrisWindow", ID.BlackmanHarrisWindow);
 
-  /** */
   public static final IBuiltInSymbol BlackmanNuttallWindow =
       F.initFinalSymbol("BlackmanNuttallWindow", ID.BlackmanNuttallWindow);
 
-  /** */
   public static final IBuiltInSymbol BlackmanWindow =
       F.initFinalSymbol("BlackmanWindow", ID.BlackmanWindow);
 
-  /** */
   public static final IBuiltInSymbol Blank = F.initFinalSymbol("Blank", ID.Blank);
 
-  /** */
   public static final IBuiltInSymbol BlankNullSequence =
       F.initFinalSymbol("BlankNullSequence", ID.BlankNullSequence);
 
-  /** */
   public static final IBuiltInSymbol BlankSequence =
       F.initFinalSymbol("BlankSequence", ID.BlankSequence);
 
@@ -523,7 +493,6 @@ public class S {
    */
   public static final IBuiltInSymbol Block = F.initFinalSymbol("Block", ID.Block);
 
-  /** */
   public static final IBuiltInSymbol Blue = F.initFinalSymbol("Blue", ID.Blue);
 
   /**
@@ -566,7 +535,6 @@ public class S {
   /** Booleans - is the set of boolean values. */
   public static final IBuiltInSymbol Booleans = F.initFinalSymbol("Booleans", ID.Booleans);
 
-  /** */
   public static final IBuiltInSymbol Bottom = F.initFinalSymbol("Bottom", ID.Bottom);
 
   /** BoxWhiskerChart( ) - plot a box whisker chart. */
@@ -580,19 +548,18 @@ public class S {
   /** Break() - exits a `For`, `While`, or `Do` loop. */
   public static final IBuiltInSymbol Break = F.initFinalSymbol("Break", ID.Break);
 
-  /** */
   public static final IBuiltInSymbol Brown = F.initFinalSymbol("Brown", ID.Brown);
 
-  /** */
   public static final IBuiltInSymbol Button = F.initFinalSymbol("Button", ID.Button);
 
   /** ByteArray({list-of-byte-values}) - converts the `list-of-byte-values` into a byte array. */
   public static final IBuiltInSymbol ByteArray = F.initFinalSymbol("ByteArray", ID.ByteArray);
 
-  /** */
   public static final IBuiltInSymbol ByteArrayQ = F.initFinalSymbol("ByteArrayQ", ID.ByteArrayQ);
 
-  /** */
+  public static final IBuiltInSymbol ByteArrayToString =
+      F.initFinalSymbol("ByteArrayToString", ID.ByteArrayToString);
+
   public static final IBuiltInSymbol ByteCount = F.initFinalSymbol("ByteCount", ID.ByteCount);
 
   /** C(n) - represents the `n`-th constant in a solution to a differential equation. */
@@ -601,10 +568,8 @@ public class S {
   /** CDF(distribution, value) - returns the cumulative distribution function of `value`. */
   public static final IBuiltInSymbol CDF = F.initFinalSymbol("CDF", ID.CDF);
 
-  /** */
   public static final IBuiltInSymbol CForm = F.initFinalSymbol("CForm", ID.CForm);
 
-  /** */
   public static final IBuiltInSymbol CMYColor = F.initFinalSymbol("CMYColor", ID.CMYColor);
 
   /**
@@ -617,7 +582,6 @@ public class S {
   /** Cancel(expr) - cancels out common factors in numerators and denominators. */
   public static final IBuiltInSymbol Cancel = F.initFinalSymbol("Cancel", ID.Cancel);
 
-  /** */
   public static final IBuiltInSymbol CancelButton =
       F.initFinalSymbol("CancelButton", ID.CancelButton);
 
@@ -639,7 +603,6 @@ public class S {
   public static final IBuiltInSymbol CatalanNumber =
       F.initFinalSymbol("CatalanNumber", ID.CatalanNumber);
 
-  /** */
   public static final IBuiltInSymbol Catch = F.initFinalSymbol("Catch", ID.Catch);
 
   /** Catenate({l1, l2, ...}) - concatenates the lists `l1, l2, ...` */
@@ -648,7 +611,6 @@ public class S {
   /** Ceiling(expr) - gives the first integer greater than or equal `expr`. */
   public static final IBuiltInSymbol Ceiling = F.initFinalSymbol("Ceiling", ID.Ceiling);
 
-  /** */
   public static final IBuiltInSymbol CenterDot = F.initFinalSymbol("CenterDot", ID.CenterDot);
 
   /**
@@ -658,11 +620,13 @@ public class S {
   public static final IBuiltInSymbol CentralMoment =
       F.initFinalSymbol("CentralMoment", ID.CentralMoment);
 
-  /** */
   public static final IBuiltInSymbol CharacterEncoding =
       F.initFinalSymbol("CharacterEncoding", ID.CharacterEncoding);
 
-  /** */
+  /**
+   * CharacterRange(min-character, max-character) - computes a list of character strings from
+   * `min-character` to `max-character`
+   */
   public static final IBuiltInSymbol CharacterRange =
       F.initFinalSymbol("CharacterRange", ID.CharacterRange);
 
@@ -673,7 +637,6 @@ public class S {
   public static final IBuiltInSymbol CharacteristicPolynomial =
       F.initFinalSymbol("CharacteristicPolynomial", ID.CharacteristicPolynomial);
 
-  /** */
   public static final IBuiltInSymbol Characters = F.initFinalSymbol("Characters", ID.Characters);
 
   /** ChebyshevT(n, x) - returns the Chebyshev polynomial of the first kind `T_n(x)`. */
@@ -696,7 +659,6 @@ public class S {
   public static final IBuiltInSymbol ChessboardDistance =
       F.initFinalSymbol("ChessboardDistance", ID.ChessboardDistance);
 
-  /** */
   public static final IBuiltInSymbol ChiSquareDistribution =
       F.initFinalSymbol("ChiSquareDistribution", ID.ChiSquareDistribution);
 
@@ -717,7 +679,6 @@ public class S {
    */
   public static final IBuiltInSymbol Chop = F.initFinalSymbol("Chop", ID.Chop);
 
-  /** */
   public static final IBuiltInSymbol CircleDot = F.initFinalSymbol("CircleDot", ID.CircleDot);
 
   /** CirclePoints(i) - gives the `i` points on the unit circle for a positive integer `i`. */
@@ -765,17 +726,13 @@ public class S {
    */
   public static final IBuiltInSymbol Collect = F.initFinalSymbol("Collect", ID.Collect);
 
-  /** */
   public static final IBuiltInSymbol Colon = F.initFinalSymbol("Colon", ID.Colon);
 
-  /** */
   public static final IBuiltInSymbol ColorData = F.initFinalSymbol("ColorData", ID.ColorData);
 
-  /** */
   public static final IBuiltInSymbol ColorFunction =
       F.initFinalSymbol("ColorFunction", ID.ColorFunction);
 
-  /** */
   public static final IBuiltInSymbol Column = F.initFinalSymbol("Column", ID.Column);
 
   /**
@@ -784,16 +741,16 @@ public class S {
    */
   public static final IBuiltInSymbol Commonest = F.initFinalSymbol("Commonest", ID.Commonest);
 
-  /** */
   public static final IBuiltInSymbol CompatibleUnitQ =
       F.initFinalSymbol("CompatibleUnitQ", ID.CompatibleUnitQ);
 
-  /** */
   public static final IBuiltInSymbol Compile = F.initFinalSymbol("Compile", ID.Compile);
 
-  /** */
   public static final IBuiltInSymbol CompiledFunction =
       F.initFinalSymbol("CompiledFunction", ID.CompiledFunction);
+
+  public static final IBuiltInSymbol CompilePrint =
+      F.initFinalSymbol("CompilePrint", ID.CompilePrint);
 
   /** Complement(set1, set2) - get the complement set from `set1` and `set2`. */
   public static final IBuiltInSymbol Complement = F.initFinalSymbol("Complement", ID.Complement);
@@ -822,7 +779,6 @@ public class S {
   /** Complexes - is the set of complex numbers. */
   public static final IBuiltInSymbol Complexes = F.initFinalSymbol("Complexes", ID.Complexes);
 
-  /** */
   public static final IBuiltInSymbol ComplexityFunction =
       F.initFinalSymbol("ComplexityFunction", ID.ComplexityFunction);
 
@@ -870,7 +826,6 @@ public class S {
   public static final IBuiltInSymbol ConjugateTranspose =
       F.initFinalSymbol("ConjugateTranspose", ID.ConjugateTranspose);
 
-  /** */
   public static final IBuiltInSymbol ConnectedGraphQ =
       F.initFinalSymbol("ConnectedGraphQ", ID.ConnectedGraphQ);
 
@@ -881,17 +836,13 @@ public class S {
   public static final IBuiltInSymbol ConstantArray =
       F.initFinalSymbol("ConstantArray", ID.ConstantArray);
 
-  /** */
   public static final IBuiltInSymbol ContainsAll = F.initFinalSymbol("ContainsAll", ID.ContainsAll);
 
-  /** */
   public static final IBuiltInSymbol ContainsAny = F.initFinalSymbol("ContainsAny", ID.ContainsAny);
 
-  /** */
   public static final IBuiltInSymbol ContainsExactly =
       F.initFinalSymbol("ContainsExactly", ID.ContainsExactly);
 
-  /** */
   public static final IBuiltInSymbol ContainsNone =
       F.initFinalSymbol("ContainsNone", ID.ContainsNone);
 
@@ -912,7 +863,6 @@ public class S {
   public static final IBuiltInSymbol ContinuedFraction =
       F.initFinalSymbol("ContinuedFraction", ID.ContinuedFraction);
 
-  /** */
   public static final IBuiltInSymbol ContourPlot = F.initFinalSymbol("ContourPlot", ID.ContourPlot);
 
   /**
@@ -921,7 +871,6 @@ public class S {
    */
   public static final IBuiltInSymbol Convergents = F.initFinalSymbol("Convergents", ID.Convergents);
 
-  /** */
   public static final IBuiltInSymbol ConvexHullMesh =
       F.initFinalSymbol("ConvexHullMesh", ID.ConvexHullMesh);
 
@@ -977,7 +926,6 @@ public class S {
   /** Covariance(a, b) - computes the covariance between the equal-sized vectors `a` and `b`. */
   public static final IBuiltInSymbol Covariance = F.initFinalSymbol("Covariance", ID.Covariance);
 
-  /** */
   public static final IBuiltInSymbol CreateDirectory =
       F.initFinalSymbol("CreateDirectory", ID.CreateDirectory);
 
@@ -996,7 +944,6 @@ public class S {
   /** Curl({f1, f2}, {x1, x2}) - gives the curl. */
   public static final IBuiltInSymbol Curl = F.initFinalSymbol("Curl", ID.Curl);
 
-  /** */
   public static final IBuiltInSymbol Cyan = F.initFinalSymbol("Cyan", ID.Cyan);
 
   /** Cyclotomic(n, x) - returns the Cyclotomic polynomial `C_n(x)`. */
@@ -1011,13 +958,10 @@ public class S {
    */
   public static final IBuiltInSymbol DSolve = F.initFinalSymbol("DSolve", ID.DSolve);
 
-  /** */
   public static final IBuiltInSymbol Dataset = F.initFinalSymbol("Dataset", ID.Dataset);
 
-  /** */
   public static final IBuiltInSymbol DateObject = F.initFinalSymbol("DateObject", ID.DateObject);
 
-  /** */
   public static final IBuiltInSymbol DateValue = F.initFinalSymbol("DateValue", ID.DateValue);
 
   /** Decrement(x) - decrements `x` by `1`, returning the original value of `x`. */
@@ -1029,7 +973,6 @@ public class S {
    */
   public static final IBuiltInSymbol Default = F.initFinalSymbol("Default", ID.Default);
 
-  /** */
   public static final IBuiltInSymbol DefaultButton =
       F.initFinalSymbol("DefaultButton", ID.DefaultButton);
 
@@ -1042,11 +985,9 @@ public class S {
   /** Degree - the constant `Degree` converts angles from degree to `Pi/180` radians. */
   public static final IBuiltInSymbol Degree = F.initFinalSymbol("Degree", ID.Degree);
 
-  /** */
   public static final IBuiltInSymbol DegreeLexicographic =
       F.initFinalSymbol("DegreeLexicographic", ID.DegreeLexicographic);
 
-  /** */
   public static final IBuiltInSymbol DegreeReverseLexicographic =
       F.initFinalSymbol("DegreeReverseLexicographic", ID.DegreeReverseLexicographic);
 
@@ -1079,7 +1020,6 @@ public class S {
   public static final IBuiltInSymbol DensityHistogram =
       F.initFinalSymbol("DensityHistogram", ID.DensityHistogram);
 
-  /** */
   public static final IBuiltInSymbol DensityPlot = F.initFinalSymbol("DensityPlot", ID.DensityPlot);
 
   /** Depth(expr) - gives the depth of `expr`. */
@@ -1108,11 +1048,9 @@ public class S {
   /** DialogInput() - if the file system is enabled, the user can input a string in a dialog box. */
   public static final IBuiltInSymbol DialogInput = F.initFinalSymbol("DialogInput", ID.DialogInput);
 
-  /** */
   public static final IBuiltInSymbol DialogNotebook =
       F.initFinalSymbol("DialogNotebook", ID.DialogNotebook);
 
-  /** */
   public static final IBuiltInSymbol DialogReturn =
       F.initFinalSymbol("DialogReturn", ID.DialogReturn);
 
@@ -1124,10 +1062,8 @@ public class S {
   public static final IBuiltInSymbol DiceDissimilarity =
       F.initFinalSymbol("DiceDissimilarity", ID.DiceDissimilarity);
 
-  /** */
   public static final IBuiltInSymbol Differences = F.initFinalSymbol("Differences", ID.Differences);
 
-  /** */
   public static final IBuiltInSymbol DigitCharacter =
       F.initFinalSymbol("DigitCharacter", ID.DigitCharacter);
 
@@ -1143,7 +1079,6 @@ public class S {
   /** DiracDelta(x) - `DiracDelta` function returns `0` for all real numbers `x` where `x != 0`. */
   public static final IBuiltInSymbol DiracDelta = F.initFinalSymbol("DiracDelta", ID.DiracDelta);
 
-  /** */
   public static final IBuiltInSymbol DirectedEdge =
       F.initFinalSymbol("DirectedEdge", ID.DirectedEdge);
 
@@ -1151,17 +1086,13 @@ public class S {
   public static final IBuiltInSymbol DirectedInfinity =
       F.initFinalSymbol("DirectedInfinity", ID.DirectedInfinity);
 
-  /** */
   public static final IBuiltInSymbol Direction = F.initFinalSymbol("Direction", ID.Direction);
 
-  /** */
   public static final IBuiltInSymbol Directive = F.initFinalSymbol("Directive", ID.Directive);
 
-  /** */
   public static final IBuiltInSymbol DirichletEta =
       F.initFinalSymbol("DirichletEta", ID.DirichletEta);
 
-  /** */
   public static final IBuiltInSymbol DirichletWindow =
       F.initFinalSymbol("DirichletWindow", ID.DirichletWindow);
 
@@ -1183,23 +1114,18 @@ public class S {
   public static final IBuiltInSymbol Discriminant =
       F.initFinalSymbol("Discriminant", ID.Discriminant);
 
-  /** */
   public static final IBuiltInSymbol DisjointQ = F.initFinalSymbol("DisjointQ", ID.DisjointQ);
 
-  /** */
   public static final IBuiltInSymbol Dispatch = F.initFinalSymbol("Dispatch", ID.Dispatch);
 
-  /** */
   public static final IBuiltInSymbol Disputed = F.initFinalSymbol("Disputed", ID.Disputed);
 
-  /** */
   public static final IBuiltInSymbol DistanceFunction =
       F.initFinalSymbol("DistanceFunction", ID.DistanceFunction);
 
   /** Distribute(f(x1, x2, x3,...)) - distributes `f` over `Plus` appearing in any of the `xi`. */
   public static final IBuiltInSymbol Distribute = F.initFinalSymbol("Distribute", ID.Distribute);
 
-  /** */
   public static final IBuiltInSymbol Distributed = F.initFinalSymbol("Distributed", ID.Distributed);
 
   /** Div({f1, f2, f3,...},{x1, x2, x3,...}) - compute the divergence. */
@@ -1233,23 +1159,20 @@ public class S {
   /** Dot(x, y) or x . y - `x . y` computes the vector dot product or matrix product `x . y`. */
   public static final IBuiltInSymbol Dot = F.initFinalSymbol("Dot", ID.Dot);
 
-  /** */
+  /** DownValues(symbol) - prints the down-value rules associated with `symbol`. */
   public static final IBuiltInSymbol DownValues = F.initFinalSymbol("DownValues", ID.DownValues);
 
   /** Drop(expr, n) - returns `expr` with the first `n` leaves removed. */
   public static final IBuiltInSymbol Drop = F.initFinalSymbol("Drop", ID.Drop);
 
-  /** */
   public static final IBuiltInSymbol DuplicateFreeQ =
       F.initFinalSymbol("DuplicateFreeQ", ID.DuplicateFreeQ);
 
-  /** */
   public static final IBuiltInSymbol Dynamic = F.initFinalSymbol("Dynamic", ID.Dynamic);
 
   /** E - Euler's constant E */
   public static final IBuiltInSymbol E = F.initFinalSymbol("E", ID.E);
 
-  /** */
   public static final IBuiltInSymbol EasterSunday =
       F.initFinalSymbol("EasterSunday", ID.EasterSunday);
 
@@ -1263,7 +1186,6 @@ public class S {
   public static final IBuiltInSymbol EchoFunction =
       F.initFinalSymbol("EchoFunction", ID.EchoFunction);
 
-  /** */
   public static final IBuiltInSymbol EdgeCount = F.initFinalSymbol("EdgeCount", ID.EdgeCount);
 
   /** EdgeList(graph) - convert the `graph` into a list of edges. */
@@ -1272,8 +1194,10 @@ public class S {
   /** EdgeQ(graph, edge) - test if `edge` is an edge in the `graph` object. */
   public static final IBuiltInSymbol EdgeQ = F.initFinalSymbol("EdgeQ", ID.EdgeQ);
 
-  /** */
   public static final IBuiltInSymbol EdgeWeight = F.initFinalSymbol("EdgeWeight", ID.EdgeWeight);
+
+  public static final IBuiltInSymbol EditDistance =
+      F.initFinalSymbol("EditDistance", ID.EditDistance);
 
   /** EffectiveInterest(i, n) - returns an effective interest rate object. */
   public static final IBuiltInSymbol EffectiveInterest =
@@ -1301,7 +1225,6 @@ public class S {
    */
   public static final IBuiltInSymbol Eliminate = F.initFinalSymbol("Eliminate", ID.Eliminate);
 
-  /** */
   public static final IBuiltInSymbol EliminationOrder =
       F.initFinalSymbol("EliminationOrder", ID.EliminationOrder);
 
@@ -1317,28 +1240,28 @@ public class S {
   /** EllipticPi(n,m) - returns the complete elliptic integral of the third kind. */
   public static final IBuiltInSymbol EllipticPi = F.initFinalSymbol("EllipticPi", ID.EllipticPi);
 
-  /** */
   public static final IBuiltInSymbol EllipticTheta =
       F.initFinalSymbol("EllipticTheta", ID.EllipticTheta);
 
   /** End( ) - end a context definition started with `Begin` */
   public static final IBuiltInSymbol End = F.initFinalSymbol("End", ID.End);
 
-  /** */
   public static final IBuiltInSymbol EndOfLine = F.initFinalSymbol("EndOfLine", ID.EndOfLine);
 
-  /** */
   public static final IBuiltInSymbol EndOfString = F.initFinalSymbol("EndOfString", ID.EndOfString);
 
   /** EndPackage( ) - end a package definition */
   public static final IBuiltInSymbol EndPackage = F.initFinalSymbol("EndPackage", ID.EndPackage);
 
-  /** */
   public static final IBuiltInSymbol EndTestSection =
       F.initFinalSymbol("EndTestSection", ID.EndTestSection);
 
-  /** */
   public static final IBuiltInSymbol Entity = F.initFinalSymbol("Entity", ID.Entity);
+
+  /**
+   * Entropy(list) - return the base `E` (Shannon) information entropy of the elements in `list`.
+   */
+  public static final IBuiltInSymbol Entropy = F.initFinalSymbol("Entropy", ID.Entropy);
 
   /**
    * Equal(x, y) - yields `True` if `x` and `y` are known to be equal, or `False` if `x` and `y` are
@@ -1404,10 +1327,8 @@ public class S {
    */
   public static final IBuiltInSymbol Except = F.initFinalSymbol("Except", ID.Except);
 
-  /** */
   public static final IBuiltInSymbol Exists = F.initFinalSymbol("Exists", ID.Exists);
 
-  /** */
   public static final IBuiltInSymbol Exit = F.initFinalSymbol("Exit", ID.Exit);
 
   /** Exp(z) - the exponential function `E^z`. */
@@ -1421,7 +1342,6 @@ public class S {
   public static final IBuiltInSymbol ExpIntegralEi =
       F.initFinalSymbol("ExpIntegralEi", ID.ExpIntegralEi);
 
-  /** */
   public static final IBuiltInSymbol ExpToTrig = F.initFinalSymbol("ExpToTrig", ID.ExpToTrig);
 
   /** Expand(expr) - expands out positive rational powers and products of sums in `expr`. */
@@ -1452,11 +1372,9 @@ public class S {
    */
   public static final IBuiltInSymbol Export = F.initFinalSymbol("Export", ID.Export);
 
-  /** */
   public static final IBuiltInSymbol ExportString =
       F.initFinalSymbol("ExportString", ID.ExportString);
 
-  /** */
   public static final IBuiltInSymbol Expression = F.initFinalSymbol("Expression", ID.Expression);
 
   /**
@@ -1464,13 +1382,11 @@ public class S {
    */
   public static final IBuiltInSymbol ExtendedGCD = F.initFinalSymbol("ExtendedGCD", ID.ExtendedGCD);
 
-  /** */
   public static final IBuiltInSymbol Extension = F.initFinalSymbol("Extension", ID.Extension);
 
   /** Extract(expr, list) - extracts parts of `expr` specified by `list`. */
   public static final IBuiltInSymbol Extract = F.initFinalSymbol("Extract", ID.Extract);
 
-  /** */
   public static final IBuiltInSymbol FRatioDistribution =
       F.initFinalSymbol("FRatioDistribution", ID.FRatioDistribution);
 
@@ -1501,17 +1417,19 @@ public class S {
   /** Factorial2(n) - returns the double factorial number of the integer `n`. */
   public static final IBuiltInSymbol Factorial2 = F.initFinalSymbol("Factorial2", ID.Factorial2);
 
-  /** */
   public static final IBuiltInSymbol FactorialPower =
       F.initFinalSymbol("FactorialPower", ID.FactorialPower);
 
-  /** False - the constant `False` represents the boolean value **false ** */
+  /** False - the constant `False` represents the boolean value **false** */
   public static final IBuiltInSymbol False = F.initFinalSymbol("False", ID.False);
 
   /** Fibonacci(n) - returns the Fibonacci number of the integer `n` */
   public static final IBuiltInSymbol Fibonacci = F.initFinalSymbol("Fibonacci", ID.Fibonacci);
 
-  /** */
+  /**
+   * FilterRules(list-of-option-rules, list-of-rules) - filter the `list-of-option-rules` by
+   * `list-of-rules`or `list-of-symbols`.
+   */
   public static final IBuiltInSymbol FilterRules = F.initFinalSymbol("FilterRules", ID.FilterRules);
 
   /**
@@ -1522,7 +1440,6 @@ public class S {
   public static final IBuiltInSymbol FindClusters =
       F.initFinalSymbol("FindClusters", ID.FindClusters);
 
-  /** */
   public static final IBuiltInSymbol FindEdgeCover =
       F.initFinalSymbol("FindEdgeCover", ID.FindEdgeCover);
 
@@ -1536,7 +1453,6 @@ public class S {
    */
   public static final IBuiltInSymbol FindFit = F.initFinalSymbol("FindFit", ID.FindFit);
 
-  /** */
   public static final IBuiltInSymbol FindGraphCommunities =
       F.initFinalSymbol("FindGraphCommunities", ID.FindGraphCommunities);
 
@@ -1544,11 +1460,9 @@ public class S {
   public static final IBuiltInSymbol FindHamiltonianCycle =
       F.initFinalSymbol("FindHamiltonianCycle", ID.FindHamiltonianCycle);
 
-  /** */
   public static final IBuiltInSymbol FindIndependentEdgeSet =
       F.initFinalSymbol("FindIndependentEdgeSet", ID.FindIndependentEdgeSet);
 
-  /** */
   public static final IBuiltInSymbol FindIndependentVertexSet =
       F.initFinalSymbol("FindIndependentVertexSet", ID.FindIndependentVertexSet);
 
@@ -1628,7 +1542,6 @@ public class S {
    */
   public static final IBuiltInSymbol Flat = F.initFinalSymbol("Flat", ID.Flat);
 
-  /** */
   public static final IBuiltInSymbol FlatTopWindow =
       F.initFinalSymbol("FlatTopWindow", ID.FlatTopWindow);
 
@@ -1638,7 +1551,6 @@ public class S {
   /** FlattenAt(expr, position) - flattens out nested lists at the given `position` in `expr`. */
   public static final IBuiltInSymbol FlattenAt = F.initFinalSymbol("FlattenAt", ID.FlattenAt);
 
-  /** */
   public static final IBuiltInSymbol Float = F.initFinalSymbol("Float", ID.Float);
 
   /** Floor(expr) - gives the smallest integer less than or equal `expr`. */
@@ -1659,7 +1571,6 @@ public class S {
    */
   public static final IBuiltInSymbol For = F.initFinalSymbol("For", ID.For);
 
-  /** */
   public static final IBuiltInSymbol ForAll = F.initFinalSymbol("ForAll", ID.ForAll);
 
   /**
@@ -1684,10 +1595,8 @@ public class S {
   /** FreeQ(`expr`, `x`) - returns 'True' if `expr` does not contain the expression `x`. */
   public static final IBuiltInSymbol FreeQ = F.initFinalSymbol("FreeQ", ID.FreeQ);
 
-  /** */
   public static final IBuiltInSymbol FresnelC = F.initFinalSymbol("FresnelC", ID.FresnelC);
 
-  /** */
   public static final IBuiltInSymbol FresnelS = F.initFinalSymbol("FresnelS", ID.FresnelS);
 
   /**
@@ -1728,7 +1637,6 @@ public class S {
   public static final IBuiltInSymbol FromPolarCoordinates =
       F.initFinalSymbol("FromPolarCoordinates", ID.FromPolarCoordinates);
 
-  /** */
   public static final IBuiltInSymbol Full = F.initFinalSymbol("Full", ID.Full);
 
   /** FullForm(expression) - shows the internal representation of the given `expression`. */
@@ -1741,7 +1649,6 @@ public class S {
   public static final IBuiltInSymbol FullSimplify =
       F.initFinalSymbol("FullSimplify", ID.FullSimplify);
 
-  /** */
   public static final IBuiltInSymbol Function = F.initFinalSymbol("Function", ID.Function);
 
   /**
@@ -1751,7 +1658,6 @@ public class S {
   public static final IBuiltInSymbol FunctionExpand =
       F.initFinalSymbol("FunctionExpand", ID.FunctionExpand);
 
-  /** */
   public static final IBuiltInSymbol FunctionRange =
       F.initFinalSymbol("FunctionRange", ID.FunctionRange);
 
@@ -1771,7 +1677,6 @@ public class S {
   public static final IBuiltInSymbol GammaDistribution =
       F.initFinalSymbol("GammaDistribution", ID.GammaDistribution);
 
-  /** */
   public static final IBuiltInSymbol GammaRegularized =
       F.initFinalSymbol("GammaRegularized", ID.GammaRegularized);
 
@@ -1787,22 +1692,18 @@ public class S {
    */
   public static final IBuiltInSymbol GatherBy = F.initFinalSymbol("GatherBy", ID.GatherBy);
 
-  /** */
   public static final IBuiltInSymbol GaussianIntegers =
       F.initFinalSymbol("GaussianIntegers", ID.GaussianIntegers);
 
-  /** */
   public static final IBuiltInSymbol GaussianMatrix =
       F.initFinalSymbol("GaussianMatrix", ID.GaussianMatrix);
 
-  /** */
   public static final IBuiltInSymbol GaussianWindow =
       F.initFinalSymbol("GaussianWindow", ID.GaussianWindow);
 
   /** GegenbauerC(n, a, x) - returns the GegenbauerC polynomial. */
   public static final IBuiltInSymbol GegenbauerC = F.initFinalSymbol("GegenbauerC", ID.GegenbauerC);
 
-  /** */
   public static final IBuiltInSymbol General = F.initFinalSymbol("General", ID.General);
 
   /**
@@ -1811,10 +1712,8 @@ public class S {
    */
   public static final IBuiltInSymbol GeoDistance = F.initFinalSymbol("GeoDistance", ID.GeoDistance);
 
-  /** */
   public static final IBuiltInSymbol GeoPosition = F.initFinalSymbol("GeoPosition", ID.GeoPosition);
 
-  /** */
   public static final IBuiltInSymbol GeodesyData = F.initFinalSymbol("GeodesyData", ID.GeodesyData);
 
   /** GeometricDistribution(p) - returns a geometric distribution. */
@@ -1831,13 +1730,11 @@ public class S {
   /** Glaisher - Glaisher constant. */
   public static final IBuiltInSymbol Glaisher = F.initFinalSymbol("Glaisher", ID.Glaisher);
 
-  /** */
   public static final IBuiltInSymbol GoldenAngle = F.initFinalSymbol("GoldenAngle", ID.GoldenAngle);
 
   /** GoldenRatio - is the golden ratio `(1+Sqrt(5))/2`. */
   public static final IBuiltInSymbol GoldenRatio = F.initFinalSymbol("GoldenRatio", ID.GoldenRatio);
 
-  /** */
   public static final IBuiltInSymbol GompertzMakehamDistribution =
       F.initFinalSymbol("GompertzMakehamDistribution", ID.GompertzMakehamDistribution);
 
@@ -1853,7 +1750,6 @@ public class S {
    */
   public static final IBuiltInSymbol GraphCenter = F.initFinalSymbol("GraphCenter", ID.GraphCenter);
 
-  /** */
   public static final IBuiltInSymbol GraphData = F.initFinalSymbol("GraphData", ID.GraphData);
 
   /** GraphDiameter(graph) - return the diameter of the `graph`. */
@@ -1873,16 +1769,12 @@ public class S {
   /** GraphRadius(graph) - return the radius of the `graph`. */
   public static final IBuiltInSymbol GraphRadius = F.initFinalSymbol("GraphRadius", ID.GraphRadius);
 
-  /** */
   public static final IBuiltInSymbol Graphics = F.initFinalSymbol("Graphics", ID.Graphics);
 
-  /** */
   public static final IBuiltInSymbol Graphics3D = F.initFinalSymbol("Graphics3D", ID.Graphics3D);
 
-  /** */
   public static final IBuiltInSymbol Gray = F.initFinalSymbol("Gray", ID.Gray);
 
-  /** */
   public static final IBuiltInSymbol GrayLevel = F.initFinalSymbol("GrayLevel", ID.GrayLevel);
 
   /** Greater(x, y) - yields `True` if `x` is known to be greater than `y`. */
@@ -1892,7 +1784,6 @@ public class S {
   public static final IBuiltInSymbol GreaterEqual =
       F.initFinalSymbol("GreaterEqual", ID.GreaterEqual);
 
-  /** */
   public static final IBuiltInSymbol Green = F.initFinalSymbol("Green", ID.Green);
 
   /**
@@ -1902,7 +1793,10 @@ public class S {
   public static final IBuiltInSymbol GroebnerBasis =
       F.initFinalSymbol("GroebnerBasis", ID.GroebnerBasis);
 
-  /** */
+  /**
+   * GroupBy(list, head) - return an association where the elements of `list` are grouped by
+   * `head(element)`
+   */
   public static final IBuiltInSymbol GroupBy = F.initFinalSymbol("GroupBy", ID.GroupBy);
 
   /** GumbelDistribution(a, b) - returns a Gumbel distribution. */
@@ -1916,17 +1810,16 @@ public class S {
   public static final IBuiltInSymbol HamiltonianGraphQ =
       F.initFinalSymbol("HamiltonianGraphQ", ID.HamiltonianGraphQ);
 
-  /** */
+  public static final IBuiltInSymbol HammingDistance =
+      F.initFinalSymbol("HammingDistance", ID.HammingDistance);
+
   public static final IBuiltInSymbol HammingWindow =
       F.initFinalSymbol("HammingWindow", ID.HammingWindow);
 
-  /** */
   public static final IBuiltInSymbol HankelH1 = F.initFinalSymbol("HankelH1", ID.HankelH1);
 
-  /** */
   public static final IBuiltInSymbol HankelH2 = F.initFinalSymbol("HankelH2", ID.HankelH2);
 
-  /** */
   public static final IBuiltInSymbol HannWindow = F.initFinalSymbol("HannWindow", ID.HannWindow);
 
   /** HarmonicMean({a, b, c,...}) - returns the harmonic mean of `{a, b, c,...}`. */
@@ -1943,7 +1836,6 @@ public class S {
   /** Head(expr) - returns the head of the expression or atom `expr`. */
   public static final IBuiltInSymbol Head = F.initFinalSymbol("Head", ID.Head);
 
-  /** */
   public static final IBuiltInSymbol Heads = F.initFinalSymbol("Heads", ID.Heads);
 
   /**
@@ -1961,7 +1853,6 @@ public class S {
   public static final IBuiltInSymbol HermitianMatrixQ =
       F.initFinalSymbol("HermitianMatrixQ", ID.HermitianMatrixQ);
 
-  /** */
   public static final IBuiltInSymbol HexidecimalCharacter =
       F.initFinalSymbol("HexidecimalCharacter", ID.HexidecimalCharacter);
 
@@ -1981,11 +1872,9 @@ public class S {
    */
   public static final IBuiltInSymbol HoldAll = F.initFinalSymbol("HoldAll", ID.HoldAll);
 
-  /** */
   public static final IBuiltInSymbol HoldAllComplete =
       F.initFinalSymbol("HoldAllComplete", ID.HoldAllComplete);
 
-  /** */
   public static final IBuiltInSymbol HoldComplete =
       F.initFinalSymbol("HoldComplete", ID.HoldComplete);
 
@@ -2007,13 +1896,11 @@ public class S {
    */
   public static final IBuiltInSymbol HoldRest = F.initFinalSymbol("HoldRest", ID.HoldRest);
 
-  /** */
   public static final IBuiltInSymbol Horner = F.initFinalSymbol("Horner", ID.Horner);
 
   /** HornerForm(polynomial) - Generate the horner scheme for a univariate `polynomial`. */
   public static final IBuiltInSymbol HornerForm = F.initFinalSymbol("HornerForm", ID.HornerForm);
 
-  /** */
   public static final IBuiltInSymbol Hue = F.initFinalSymbol("Hue", ID.Hue);
 
   /** HurwitzZeta(s, a) - returns the Hurwitz zeta function. */
@@ -2027,7 +1914,6 @@ public class S {
   public static final IBuiltInSymbol Hypergeometric1F1 =
       F.initFinalSymbol("Hypergeometric1F1", ID.Hypergeometric1F1);
 
-  /** */
   public static final IBuiltInSymbol Hypergeometric1F1Regularized =
       F.initFinalSymbol("Hypergeometric1F1Regularized", ID.Hypergeometric1F1Regularized);
 
@@ -2043,11 +1929,9 @@ public class S {
   public static final IBuiltInSymbol HypergeometricPFQ =
       F.initFinalSymbol("HypergeometricPFQ", ID.HypergeometricPFQ);
 
-  /** */
   public static final IBuiltInSymbol HypergeometricPFQRegularized =
       F.initFinalSymbol("HypergeometricPFQRegularized", ID.HypergeometricPFQRegularized);
 
-  /** */
   public static final IBuiltInSymbol HypergeometricU =
       F.initFinalSymbol("HypergeometricU", ID.HypergeometricU);
 
@@ -2070,7 +1954,6 @@ public class S {
    */
   public static final IBuiltInSymbol If = F.initFinalSymbol("If", ID.If);
 
-  /** */
   public static final IBuiltInSymbol IgnoreCase = F.initFinalSymbol("IgnoreCase", ID.IgnoreCase);
 
   /** Im(z) - returns the imaginary component of the complex number `z`. */
@@ -2085,6 +1968,8 @@ public class S {
    */
   public static final IBuiltInSymbol Import = F.initFinalSymbol("Import", ID.Import);
 
+  public static final IBuiltInSymbol In = F.initFinalSymbol("In", ID.In);
+
   /** Increment(x) - increments `x` by `1`, returning the original value of `x`. */
   public static final IBuiltInSymbol Increment = F.initFinalSymbol("Increment", ID.Increment);
 
@@ -2092,7 +1977,6 @@ public class S {
   public static final IBuiltInSymbol Indeterminate =
       F.initFinalSymbol("Indeterminate", ID.Indeterminate);
 
-  /** */
   public static final IBuiltInSymbol Inequality = F.initFinalSymbol("Inequality", ID.Inequality);
 
   /**
@@ -2104,11 +1988,11 @@ public class S {
   /** Infinity - represents an infinite real quantity. */
   public static final IBuiltInSymbol Infinity = F.initFinalSymbol("Infinity", ID.Infinity);
 
-  /** */
   public static final IBuiltInSymbol Infix = F.initFinalSymbol("Infix", ID.Infix);
 
-  /** */
   public static final IBuiltInSymbol Information = F.initFinalSymbol("Information", ID.Information);
+
+  public static final IBuiltInSymbol Inherited = F.initFinalSymbol("Inherited", ID.Inherited);
 
   /**
    * Inner(f, x, y, g) - computes a generalized inner product of `x` and `y`, using a multiplication
@@ -2122,16 +2006,13 @@ public class S {
    */
   public static final IBuiltInSymbol Input = F.initFinalSymbol("Input", ID.Input);
 
-  /** */
   public static final IBuiltInSymbol InputField = F.initFinalSymbol("InputField", ID.InputField);
 
-  /** */
   public static final IBuiltInSymbol InputForm = F.initFinalSymbol("InputForm", ID.InputForm);
 
   /** InputString() - if the file system is enabled, the user can input a string. */
   public static final IBuiltInSymbol InputString = F.initFinalSymbol("InputString", ID.InputString);
 
-  /** */
   public static final IBuiltInSymbol Insert = F.initFinalSymbol("Insert", ID.Insert);
 
   /** Integer - is the head of integers. */
@@ -2188,14 +2069,12 @@ public class S {
   public static final IBuiltInSymbol InterpolatingPolynomial =
       F.initFinalSymbol("InterpolatingPolynomial", ID.InterpolatingPolynomial);
 
-  /** */
   public static final IBuiltInSymbol Interpolation =
       F.initFinalSymbol("Interpolation", ID.Interpolation);
 
   /** Interrupt( ) - Interrupt an evaluation and returns `$Aborted`. */
   public static final IBuiltInSymbol Interrupt = F.initFinalSymbol("Interrupt", ID.Interrupt);
 
-  /** */
   public static final IBuiltInSymbol IntersectingQ =
       F.initFinalSymbol("IntersectingQ", ID.IntersectingQ);
 
@@ -2230,7 +2109,6 @@ public class S {
   /** Inverse(matrix) - computes the inverse of the `matrix`. */
   public static final IBuiltInSymbol Inverse = F.initFinalSymbol("Inverse", ID.Inverse);
 
-  /** */
   public static final IBuiltInSymbol InverseBetaRegularized =
       F.initFinalSymbol("InverseBetaRegularized", ID.InverseBetaRegularized);
 
@@ -2258,7 +2136,6 @@ public class S {
   public static final IBuiltInSymbol InverseFunction =
       F.initFinalSymbol("InverseFunction", ID.InverseFunction);
 
-  /** */
   public static final IBuiltInSymbol InverseGammaRegularized =
       F.initFinalSymbol("InverseGammaRegularized", ID.InverseGammaRegularized);
 
@@ -2274,14 +2151,12 @@ public class S {
   public static final IBuiltInSymbol InverseSeries =
       F.initFinalSymbol("InverseSeries", ID.InverseSeries);
 
-  /** */
   public static final IBuiltInSymbol InverseWeierstrassP =
       F.initFinalSymbol("InverseWeierstrassP", ID.InverseWeierstrassP);
 
   /** JSForm(expr) - returns the JavaScript form of the `expr`. */
   public static final IBuiltInSymbol JSForm = F.initFinalSymbol("JSForm", ID.JSForm);
 
-  /** */
   public static final IBuiltInSymbol JSFormData = F.initFinalSymbol("JSFormData", ID.JSFormData);
 
   /**
@@ -2296,13 +2171,11 @@ public class S {
   public static final IBuiltInSymbol JacobiAmplitude =
       F.initFinalSymbol("JacobiAmplitude", ID.JacobiAmplitude);
 
-  /** */
   public static final IBuiltInSymbol JacobiCD = F.initFinalSymbol("JacobiCD", ID.JacobiCD);
 
   /** JacobiCN(x, m) - returns the Jacobian elliptic function `cn(x, m)`. */
   public static final IBuiltInSymbol JacobiCN = F.initFinalSymbol("JacobiCN", ID.JacobiCN);
 
-  /** */
   public static final IBuiltInSymbol JacobiDC = F.initFinalSymbol("JacobiDC", ID.JacobiDC);
 
   /** JacobiDN(x, m) - returns the Jacobian elliptic function `dn(x, m)`. */
@@ -2312,16 +2185,12 @@ public class S {
   public static final IBuiltInSymbol JacobiMatrix =
       F.initFinalSymbol("JacobiMatrix", ID.JacobiMatrix);
 
-  /** */
   public static final IBuiltInSymbol JacobiNC = F.initFinalSymbol("JacobiNC", ID.JacobiNC);
 
-  /** */
   public static final IBuiltInSymbol JacobiND = F.initFinalSymbol("JacobiND", ID.JacobiND);
 
-  /** */
   public static final IBuiltInSymbol JacobiSC = F.initFinalSymbol("JacobiSC", ID.JacobiSC);
 
-  /** */
   public static final IBuiltInSymbol JacobiSD = F.initFinalSymbol("JacobiSD", ID.JacobiSD);
 
   /** JacobiSN(x, m) - returns the Jacobian elliptic function `sn(x, m)`. */
@@ -2331,7 +2200,6 @@ public class S {
   public static final IBuiltInSymbol JacobiSymbol =
       F.initFinalSymbol("JacobiSymbol", ID.JacobiSymbol);
 
-  /** */
   public static final IBuiltInSymbol JacobiZeta = F.initFinalSymbol("JacobiZeta", ID.JacobiZeta);
 
   /**
@@ -2343,25 +2211,32 @@ public class S {
   /** Join(l1, l2) - concatenates the lists `l1` and `l2`. */
   public static final IBuiltInSymbol Join = F.initFinalSymbol("Join", ID.Join);
 
-  /** */
   public static final IBuiltInSymbol KOrderlessPartitions =
       F.initFinalSymbol("KOrderlessPartitions", ID.KOrderlessPartitions);
 
-  /** */
   public static final IBuiltInSymbol KPartitions = F.initFinalSymbol("KPartitions", ID.KPartitions);
 
-  /** */
   public static final IBuiltInSymbol Key = F.initFinalSymbol("Key", ID.Key);
 
-  /** */
+  public static final IBuiltInSymbol KeyAbsent = F.initFinalSymbol("KeyAbsent", ID.KeyAbsent);
+
   public static final IBuiltInSymbol KeyExistsQ = F.initFinalSymbol("KeyExistsQ", ID.KeyExistsQ);
+
+  /**
+   * KeySelect(<|key1->value1, ...|>, head) - returns an association of the elements for which
+   * `head(keyi)` returns `True`.
+   */
+  public static final IBuiltInSymbol KeySelect = F.initFinalSymbol("KeySelect", ID.KeySelect);
 
   /**
    * KeySort(<|key1->value1, ...|>) - sort the `<|key1->value1, ...|>` entries by the `key` values.
    */
   public static final IBuiltInSymbol KeySort = F.initFinalSymbol("KeySort", ID.KeySort);
 
-  /** */
+  /**
+   * KeyTake(<|key1->value1, ...|>, {k1, k2,...}) - returns an association of the rules for which
+   * the `k1, k2,...` are keys in the association.
+   */
   public static final IBuiltInSymbol KeyTake = F.initFinalSymbol("KeyTake", ID.KeyTake);
 
   /** Keys(association) - return a list of keys of the `association`. */
@@ -2370,11 +2245,9 @@ public class S {
   /** Khinchin - Khinchin's constant */
   public static final IBuiltInSymbol Khinchin = F.initFinalSymbol("Khinchin", ID.Khinchin);
 
-  /** */
   public static final IBuiltInSymbol KleinInvariantJ =
       F.initFinalSymbol("KleinInvariantJ", ID.KleinInvariantJ);
 
-  /** */
   public static final IBuiltInSymbol KnownUnitQ = F.initFinalSymbol("KnownUnitQ", ID.KnownUnitQ);
 
   /**
@@ -2423,7 +2296,6 @@ public class S {
   public static final IBuiltInSymbol LeastSquares =
       F.initFinalSymbol("LeastSquares", ID.LeastSquares);
 
-  /** */
   public static final IBuiltInSymbol Left = F.initFinalSymbol("Left", ID.Left);
 
   /** LegendreP(n, x) - returns the Legendre polynomial `P_n(x)`. */
@@ -2441,7 +2313,6 @@ public class S {
   /** LessEqual(x, y) - yields `True` if `x` is known to be less than or equal `y`. */
   public static final IBuiltInSymbol LessEqual = F.initFinalSymbol("LessEqual", ID.LessEqual);
 
-  /** */
   public static final IBuiltInSymbol LetterCharacter =
       F.initFinalSymbol("LetterCharacter", ID.LetterCharacter);
 
@@ -2464,48 +2335,35 @@ public class S {
   /** LevelQ(expr) - tests whether `expr` is a valid level specification. */
   public static final IBuiltInSymbol LevelQ = F.initFinalSymbol("LevelQ", ID.LevelQ);
 
-  /** */
   public static final IBuiltInSymbol Lexicographic =
       F.initFinalSymbol("Lexicographic", ID.Lexicographic);
 
-  /** */
   public static final IBuiltInSymbol LightBlue = F.initFinalSymbol("LightBlue", ID.LightBlue);
 
-  /** */
   public static final IBuiltInSymbol LightBrown = F.initFinalSymbol("LightBrown", ID.LightBrown);
 
-  /** */
   public static final IBuiltInSymbol LightCyan = F.initFinalSymbol("LightCyan", ID.LightCyan);
 
-  /** */
   public static final IBuiltInSymbol LightGray = F.initFinalSymbol("LightGray", ID.LightGray);
 
-  /** */
   public static final IBuiltInSymbol LightGreen = F.initFinalSymbol("LightGreen", ID.LightGreen);
 
-  /** */
   public static final IBuiltInSymbol LightMagenta =
       F.initFinalSymbol("LightMagenta", ID.LightMagenta);
 
-  /** */
   public static final IBuiltInSymbol LightOrange = F.initFinalSymbol("LightOrange", ID.LightOrange);
 
-  /** */
   public static final IBuiltInSymbol LightPink = F.initFinalSymbol("LightPink", ID.LightPink);
 
-  /** */
   public static final IBuiltInSymbol LightPurple = F.initFinalSymbol("LightPurple", ID.LightPurple);
 
-  /** */
   public static final IBuiltInSymbol LightRed = F.initFinalSymbol("LightRed", ID.LightRed);
 
-  /** */
   public static final IBuiltInSymbol LightYellow = F.initFinalSymbol("LightYellow", ID.LightYellow);
 
   /** Limit(expr, x->x0) - gives the limit of `expr` as `x` approaches `x0` */
   public static final IBuiltInSymbol Limit = F.initFinalSymbol("Limit", ID.Limit);
 
-  /** */
   public static final IBuiltInSymbol Line = F.initFinalSymbol("Line", ID.Line);
 
   /**
@@ -2539,14 +2397,12 @@ public class S {
    */
   public static final IBuiltInSymbol LinearSolve = F.initFinalSymbol("LinearSolve", ID.LinearSolve);
 
-  /** */
   public static final IBuiltInSymbol LiouvilleLambda =
       F.initFinalSymbol("LiouvilleLambda", ID.LiouvilleLambda);
 
   /** List(e1, e2, ..., ei) - represents a list containing the elements `e1...ei`. */
   public static final IBuiltInSymbol List = F.initFinalSymbol("List", ID.List);
 
-  /** */
   public static final IBuiltInSymbol ListContourPlot =
       F.initFinalSymbol("ListContourPlot", ID.ListContourPlot);
 
@@ -2592,7 +2448,6 @@ public class S {
    */
   public static final IBuiltInSymbol Listable = F.initFinalSymbol("Listable", ID.Listable);
 
-  /** */
   public static final IBuiltInSymbol Literal = F.initFinalSymbol("Literal", ID.Literal);
 
   /** Log(z) - returns the natural logarithm of `z`. */
@@ -2620,7 +2475,6 @@ public class S {
   public static final IBuiltInSymbol LogNormalDistribution =
       F.initFinalSymbol("LogNormalDistribution", ID.LogNormalDistribution);
 
-  /** */
   public static final IBuiltInSymbol LogicalExpand =
       F.initFinalSymbol("LogicalExpand", ID.LogicalExpand);
 
@@ -2628,11 +2482,9 @@ public class S {
   public static final IBuiltInSymbol LogisticSigmoid =
       F.initFinalSymbol("LogisticSigmoid", ID.LogisticSigmoid);
 
-  /** */
-  public static final IBuiltInSymbol Longest = F.initFinalSymbol("Longest", ID.Longest);
-
-  /** */
   public static final IBuiltInSymbol LongForm = F.initFinalSymbol("LongForm", ID.LongForm);
+
+  public static final IBuiltInSymbol Longest = F.initFinalSymbol("Longest", ID.Longest);
 
   /**
    * Lookup(association, key) - return the value in the `association` which is associated with the
@@ -2640,7 +2492,10 @@ public class S {
    */
   public static final IBuiltInSymbol Lookup = F.initFinalSymbol("Lookup", ID.Lookup);
 
-  /** */
+  /**
+   * LowerCaseQ(str) - is `True` if the given `str` is a string which only contains lower case
+   * characters.
+   */
   public static final IBuiltInSymbol LowerCaseQ = F.initFinalSymbol("LowerCaseQ", ID.LowerCaseQ);
 
   /** LowerTriangularize(matrix) - create a lower triangular matrix from the given `matrix`. */
@@ -2656,7 +2511,6 @@ public class S {
   public static final IBuiltInSymbol MachineNumberQ =
       F.initFinalSymbol("MachineNumberQ", ID.MachineNumberQ);
 
-  /** */
   public static final IBuiltInSymbol Magenta = F.initFinalSymbol("Magenta", ID.Magenta);
 
   /** MangoldtLambda(n) - the von Mangoldt function of `n` */
@@ -2677,17 +2531,14 @@ public class S {
    */
   public static final IBuiltInSymbol Manipulate = F.initFinalSymbol("Manipulate", ID.Manipulate);
 
-  /** */
   public static final IBuiltInSymbol MantissaExponent =
       F.initFinalSymbol("MantissaExponent", ID.MantissaExponent);
 
   /** Map(f, expr) or f /@ expr - applies `f` to each part on the first level of `expr`. */
   public static final IBuiltInSymbol Map = F.initFinalSymbol("Map", ID.Map);
 
-  /** */
   public static final IBuiltInSymbol MapAll = F.initFinalSymbol("MapAll", ID.MapAll);
 
-  /** */
   public static final IBuiltInSymbol MapAt = F.initFinalSymbol("MapAt", ID.MapAt);
 
   /**
@@ -2719,7 +2570,6 @@ public class S {
   /** MatrixExp(matrix) - computes the matrix exponential of the square `matrix`. */
   public static final IBuiltInSymbol MatrixExp = F.initFinalSymbol("MatrixExp", ID.MatrixExp);
 
-  /** */
   public static final IBuiltInSymbol MatrixForm = F.initFinalSymbol("MatrixForm", ID.MatrixForm);
 
   /**
@@ -2747,11 +2597,9 @@ public class S {
   /** MaxFilter(list, r) - filter which evaluates the `Max` of `list` for the radius `r`. */
   public static final IBuiltInSymbol MaxFilter = F.initFinalSymbol("MaxFilter", ID.MaxFilter);
 
-  /** */
   public static final IBuiltInSymbol MaxIterations =
       F.initFinalSymbol("MaxIterations", ID.MaxIterations);
 
-  /** */
   public static final IBuiltInSymbol MaxPoints = F.initFinalSymbol("MaxPoints", ID.MaxPoints);
 
   /**
@@ -2763,7 +2611,6 @@ public class S {
   /** Mean(list) - returns the statistical mean of `list`. */
   public static final IBuiltInSymbol Mean = F.initFinalSymbol("Mean", ID.Mean);
 
-  /** */
   public static final IBuiltInSymbol MeanDeviation =
       F.initFinalSymbol("MeanDeviation", ID.MeanDeviation);
 
@@ -2777,7 +2624,6 @@ public class S {
   public static final IBuiltInSymbol MedianFilter =
       F.initFinalSymbol("MedianFilter", ID.MedianFilter);
 
-  /** */
   public static final IBuiltInSymbol MeijerG = F.initFinalSymbol("MeijerG", ID.MeijerG);
 
   /**
@@ -2800,7 +2646,6 @@ public class S {
   public static final IBuiltInSymbol MersennePrimeExponentQ =
       F.initFinalSymbol("MersennePrimeExponentQ", ID.MersennePrimeExponentQ);
 
-  /** */
   public static final IBuiltInSymbol MeshRange = F.initFinalSymbol("MeshRange", ID.MeshRange);
 
   /**
@@ -2815,10 +2660,8 @@ public class S {
    */
   public static final IBuiltInSymbol MessageName = F.initFinalSymbol("MessageName", ID.MessageName);
 
-  /** */
   public static final IBuiltInSymbol Messages = F.initFinalSymbol("Messages", ID.Messages);
 
-  /** */
   public static final IBuiltInSymbol Method = F.initFinalSymbol("Method", ID.Method);
 
   /** Min(e_1, e_2, ..., e_i) - returns the expression with the lowest value among the `e_i`. */
@@ -2827,10 +2670,8 @@ public class S {
   /** MinFilter(list, r) - filter which evaluates the `Min` of `list` for the radius `r`. */
   public static final IBuiltInSymbol MinFilter = F.initFinalSymbol("MinFilter", ID.MinFilter);
 
-  /** */
   public static final IBuiltInSymbol MinMax = F.initFinalSymbol("MinMax", ID.MinMax);
 
-  /** */
   public static final IBuiltInSymbol MinimalPolynomial =
       F.initFinalSymbol("MinimalPolynomial", ID.MinimalPolynomial);
 
@@ -2843,7 +2684,6 @@ public class S {
   /** Minus(expr) - is the negation of `expr`. */
   public static final IBuiltInSymbol Minus = F.initFinalSymbol("Minus", ID.Minus);
 
-  /** */
   public static final IBuiltInSymbol Missing = F.initFinalSymbol("Missing", ID.Missing);
 
   /** MissingQ(expr) - returns `True` if `expr` is a `Missing()` expression. */
@@ -2858,7 +2698,6 @@ public class S {
    */
   public static final IBuiltInSymbol Module = F.initFinalSymbol("Module", ID.Module);
 
-  /** */
   public static final IBuiltInSymbol Modulus = F.initFinalSymbol("Modulus", ID.Modulus);
 
   /** MoebiusMu(expr) - calculate the Möbius function. */
@@ -2871,7 +2710,6 @@ public class S {
   public static final IBuiltInSymbol MonomialList =
       F.initFinalSymbol("MonomialList", ID.MonomialList);
 
-  /** */
   public static final IBuiltInSymbol MonomialOrder =
       F.initFinalSymbol("MonomialOrder", ID.MonomialOrder);
 
@@ -2894,10 +2732,15 @@ public class S {
    */
   public static final IBuiltInSymbol ND = F.initFinalSymbol("ND", ID.ND);
 
-  /** */
+  public static final IBuiltInSymbol Needs = F.initFinalSymbol("Needs", ID.Needs);
+
+  /**
+   * NDSolve({equation-list}, functions, t) - attempts to solve the linear differential
+   * `equation-list` for the `functions` and the time-dependent-variable `t`. Returns an
+   * `InterpolatingFunction` function object.
+   */
   public static final IBuiltInSymbol NDSolve = F.initFinalSymbol("NDSolve", ID.NDSolve);
 
-  /** */
   public static final IBuiltInSymbol NFourierTransform =
       F.initFinalSymbol("NFourierTransform", ID.NFourierTransform);
 
@@ -2950,31 +2793,29 @@ public class S {
   public static final IBuiltInSymbol NakagamiDistribution =
       F.initFinalSymbol("NakagamiDistribution", ID.NakagamiDistribution);
 
-  /** */
+  /**
+   * Names(string) - return the symbols from the context path matching the `string` or `pattern`.
+   */
   public static final IBuiltInSymbol Names = F.initFinalSymbol("Names", ID.Names);
 
   /**
-   * Nand(arg1, arg2, ...)' - Logical NAND function. It evaluates its arguments in order, giving
+   * Nand(arg1, arg2, ...) - Logical NAND function. It evaluates its arguments in order, giving
    * `True` immediately if any of them are `False`, and `False` if they are all `True`.
    */
   public static final IBuiltInSymbol Nand = F.initFinalSymbol("Nand", ID.Nand);
 
-  /** */
   public static final IBuiltInSymbol Nearest = F.initFinalSymbol("Nearest", ID.Nearest);
 
   /** Negative(x) - returns `True` if `x` is a negative real number. */
   public static final IBuiltInSymbol Negative = F.initFinalSymbol("Negative", ID.Negative);
 
-  /** */
   public static final IBuiltInSymbol NegativeDegreeLexicographic =
       F.initFinalSymbol("NegativeDegreeLexicographic", ID.NegativeDegreeLexicographic);
 
-  /** */
   public static final IBuiltInSymbol NegativeDegreeReverseLexicographic =
       F.initFinalSymbol(
           "NegativeDegreeReverseLexicographic", ID.NegativeDegreeReverseLexicographic);
 
-  /** */
   public static final IBuiltInSymbol NegativeLexicographic =
       F.initFinalSymbol("NegativeLexicographic", ID.NegativeLexicographic);
 
@@ -3007,7 +2848,6 @@ public class S {
   /** NextPrime(n) - gives the next prime after `n`. */
   public static final IBuiltInSymbol NextPrime = F.initFinalSymbol("NextPrime", ID.NextPrime);
 
-  /** */
   public static final IBuiltInSymbol NonCommutativeMultiply =
       F.initFinalSymbol("NonCommutativeMultiply", ID.NonCommutativeMultiply);
 
@@ -3026,7 +2866,6 @@ public class S {
    */
   public static final IBuiltInSymbol NoneTrue = F.initFinalSymbol("NoneTrue", ID.NoneTrue);
 
-  /** */
   public static final IBuiltInSymbol Nonexistent = F.initFinalSymbol("Nonexistent", ID.Nonexistent);
 
   /**
@@ -3038,7 +2877,7 @@ public class S {
   /** Norm(m, l) - computes the `l`-norm of matrix `m` (currently only works for vectors!). */
   public static final IBuiltInSymbol Norm = F.initFinalSymbol("Norm", ID.Norm);
 
-  /** Normal(expr) - converts a special Symja expression `expr` into a standard expression. */
+  /** Normal(expr) - converts a Symja expression `expr` into a normal expression. */
   public static final IBuiltInSymbol Normal = F.initFinalSymbol("Normal", ID.Normal);
 
   /** NormalDistribution(m, s) - returns the normal distribution of mean `m` and sigma `s`. */
@@ -3054,24 +2893,18 @@ public class S {
    */
   public static final IBuiltInSymbol Not = F.initFinalSymbol("Not", ID.Not);
 
-  /** */
   public static final IBuiltInSymbol NotApplicable =
       F.initFinalSymbol("NotApplicable", ID.NotApplicable);
 
-  /** */
   public static final IBuiltInSymbol NotAvailable =
       F.initFinalSymbol("NotAvailable", ID.NotAvailable);
 
-  /** */
   public static final IBuiltInSymbol NotElement = F.initFinalSymbol("NotElement", ID.NotElement);
 
-  /** */
   public static final IBuiltInSymbol NotListQ = F.initFinalSymbol("NotListQ", ID.NotListQ);
 
-  /** */
   public static final IBuiltInSymbol Nothing = F.initFinalSymbol("Nothing", ID.Nothing);
 
-  /** */
   public static final IBuiltInSymbol Now = F.initFinalSymbol("Now", ID.Now);
 
   /** Null - is the implicit result of expressions that do not yield a result. */
@@ -3080,17 +2913,14 @@ public class S {
   /** NullSpace(matrix) - returns a list of vectors that span the nullspace of the `matrix`. */
   public static final IBuiltInSymbol NullSpace = F.initFinalSymbol("NullSpace", ID.NullSpace);
 
-  /** */
   public static final IBuiltInSymbol Number = F.initFinalSymbol("Number", ID.Number);
 
-  /** */
   public static final IBuiltInSymbol NumberFieldRootsOfUnity =
       F.initFinalSymbol("NumberFieldRootsOfUnity", ID.NumberFieldRootsOfUnity);
 
   /** NumberQ(expr) - returns `True` if `expr` is an explicit number, and `False` otherwise. */
   public static final IBuiltInSymbol NumberQ = F.initFinalSymbol("NumberQ", ID.NumberQ);
 
-  /** */
   public static final IBuiltInSymbol NumberString =
       F.initFinalSymbol("NumberString", ID.NumberString);
 
@@ -3100,7 +2930,15 @@ public class S {
    */
   public static final IBuiltInSymbol Numerator = F.initFinalSymbol("Numerator", ID.Numerator);
 
-  /** */
+  public static final IBuiltInSymbol NumericArray =
+      F.initFinalSymbol("NumericArray", ID.NumericArray);
+
+  public static final IBuiltInSymbol NumericArrayQ =
+      F.initFinalSymbol("NumericArrayQ", ID.NumericArrayQ);
+
+  public static final IBuiltInSymbol NumericArrayType =
+      F.initFinalSymbol("NumericArrayType", ID.NumericArrayType);
+
   public static final IBuiltInSymbol NumericFunction =
       F.initFinalSymbol("NumericFunction", ID.NumericFunction);
 
@@ -3110,11 +2948,9 @@ public class S {
    */
   public static final IBuiltInSymbol NumericQ = F.initFinalSymbol("NumericQ", ID.NumericQ);
 
-  /** */
   public static final IBuiltInSymbol NuttallWindow =
       F.initFinalSymbol("NuttallWindow", ID.NuttallWindow);
 
-  /** */
   public static final IBuiltInSymbol O = F.initFinalSymbol("O", ID.O);
 
   /** OddQ(x) - returns `True` if `x` is odd, and `False` otherwise. */
@@ -3142,7 +2978,6 @@ public class S {
   public static final IBuiltInSymbol OptimizeExpression =
       F.initFinalSymbol("OptimizeExpression", ID.OptimizeExpression);
 
-  /** */
   public static final IBuiltInSymbol OptionValue = F.initFinalSymbol("OptionValue", ID.OptionValue);
 
   /**
@@ -3151,10 +2986,9 @@ public class S {
    */
   public static final IBuiltInSymbol Optional = F.initFinalSymbol("Optional", ID.Optional);
 
-  /** */
+  /** Options(symbol) - define option rules for a `symbol`. */
   public static final IBuiltInSymbol Options = F.initFinalSymbol("Options", ID.Options);
 
-  /** */
   public static final IBuiltInSymbol OptionsPattern =
       F.initFinalSymbol("OptionsPattern", ID.OptionsPattern);
 
@@ -3165,7 +2999,6 @@ public class S {
    */
   public static final IBuiltInSymbol Or = F.initFinalSymbol("Or", ID.Or);
 
-  /** */
   public static final IBuiltInSymbol Orange = F.initFinalSymbol("Orange", ID.Orange);
 
   /**
@@ -3200,7 +3033,6 @@ public class S {
   public static final IBuiltInSymbol Orthogonalize =
       F.initFinalSymbol("Orthogonalize", ID.Orthogonalize);
 
-  /** */
   public static final IBuiltInSymbol Out = F.initFinalSymbol("Out", ID.Out);
 
   /**
@@ -3209,20 +3041,17 @@ public class S {
    */
   public static final IBuiltInSymbol Outer = F.initFinalSymbol("Outer", ID.Outer);
 
-  /** */
   public static final IBuiltInSymbol OutputForm = F.initFinalSymbol("OutputForm", ID.OutputForm);
 
-  /** */
   public static final IBuiltInSymbol OutputStream =
       F.initFinalSymbol("OutputStream", ID.OutputStream);
 
-  /** */
+  /** OwnValues(symbol) - prints the own-value rule associated with `symbol`. */
   public static final IBuiltInSymbol OwnValues = F.initFinalSymbol("OwnValues", ID.OwnValues);
 
   /** PDF(distribution, value) - returns the probability density function of `value`. */
   public static final IBuiltInSymbol PDF = F.initFinalSymbol("PDF", ID.PDF);
 
-  /** */
   public static final IBuiltInSymbol Package = F.initFinalSymbol("Package", ID.Package);
 
   /** PadLeft(list, n) - pads `list` to length `n` by adding `0` on the left. */
@@ -3250,14 +3079,11 @@ public class S {
   /** PartitionsQ(n) - gives the number of partitions of the integer `n` into distinct parts */
   public static final IBuiltInSymbol PartitionsQ = F.initFinalSymbol("PartitionsQ", ID.PartitionsQ);
 
-  /** */
   public static final IBuiltInSymbol ParzenWindow =
       F.initFinalSymbol("ParzenWindow", ID.ParzenWindow);
 
-  /** */
   public static final IBuiltInSymbol Pattern = F.initFinalSymbol("Pattern", ID.Pattern);
 
-  /** */
   public static final IBuiltInSymbol PatternOrder =
       F.initFinalSymbol("PatternOrder", ID.PatternOrder);
 
@@ -3267,10 +3093,9 @@ public class S {
    */
   public static final IBuiltInSymbol PatternTest = F.initFinalSymbol("PatternTest", ID.PatternTest);
 
-  /** */
+  /** Pause(seconds) - pause the thread for the number of `seconds`. */
   public static final IBuiltInSymbol Pause = F.initFinalSymbol("Pause", ID.Pause);
 
-  /** */
   public static final IBuiltInSymbol PearsonChiSquareTest =
       F.initFinalSymbol("PearsonChiSquareTest", ID.PearsonChiSquareTest);
 
@@ -3295,6 +3120,12 @@ public class S {
   /** Pi - is the constant `Pi`. */
   public static final IBuiltInSymbol Pi = F.initFinalSymbol("Pi", ID.Pi);
 
+  /**
+   * Pick(nested-list, nested-selection) - returns the elements of `nested-list` that have value
+   * `True` in the corresponding position in `nested-selection`.
+   */
+  public static final IBuiltInSymbol Pick = F.initFinalSymbol("Pick", ID.Pick);
+
   /** PieChart(list-of-values) - plot a pie chart from a `list-of-values`. */
   public static final IBuiltInSymbol PieChart = F.initFinalSymbol("PieChart", ID.PieChart);
 
@@ -3308,7 +3139,6 @@ public class S {
   public static final IBuiltInSymbol PiecewiseExpand =
       F.initFinalSymbol("PiecewiseExpand", ID.PiecewiseExpand);
 
-  /** */
   public static final IBuiltInSymbol Pink = F.initFinalSymbol("Pink", ID.Pink);
 
   /**
@@ -3323,10 +3153,8 @@ public class S {
    */
   public static final IBuiltInSymbol Plot3D = F.initFinalSymbol("Plot3D", ID.Plot3D);
 
-  /** */
   public static final IBuiltInSymbol PlotRange = F.initFinalSymbol("PlotRange", ID.PlotRange);
 
-  /** */
   public static final IBuiltInSymbol PlotStyle = F.initFinalSymbol("PlotStyle", ID.PlotStyle);
 
   /** Plus(a, b, ...) - represents the sum of the terms `a, b, ...`. */
@@ -3338,7 +3166,6 @@ public class S {
    */
   public static final IBuiltInSymbol Pochhammer = F.initFinalSymbol("Pochhammer", ID.Pochhammer);
 
-  /** */
   public static final IBuiltInSymbol Point = F.initFinalSymbol("Point", ID.Point);
 
   /** PoissonDistribution(m) - returns a Poisson distribution. */
@@ -3357,10 +3184,8 @@ public class S {
    */
   public static final IBuiltInSymbol PolyGamma = F.initFinalSymbol("PolyGamma", ID.PolyGamma);
 
-  /** */
   public static final IBuiltInSymbol PolyLog = F.initFinalSymbol("PolyLog", ID.PolyLog);
 
-  /** */
   public static final IBuiltInSymbol Polygon = F.initFinalSymbol("Polygon", ID.Polygon);
 
   /**
@@ -3422,7 +3247,6 @@ public class S {
   public static final IBuiltInSymbol PossibleZeroQ =
       F.initFinalSymbol("PossibleZeroQ", ID.PossibleZeroQ);
 
-  /** */
   public static final IBuiltInSymbol Postefix = F.initFinalSymbol("Postefix", ID.Postefix);
 
   /** Power(a, b) - represents `a` raised to the power of `b`. */
@@ -3442,14 +3266,11 @@ public class S {
   public static final IBuiltInSymbol PreIncrement =
       F.initFinalSymbol("PreIncrement", ID.PreIncrement);
 
-  /** */
   public static final IBuiltInSymbol Precision = F.initFinalSymbol("Precision", ID.Precision);
 
-  /** */
   public static final IBuiltInSymbol PrecisionGoal =
       F.initFinalSymbol("PrecisionGoal", ID.PrecisionGoal);
 
-  /** */
   public static final IBuiltInSymbol Prefix = F.initFinalSymbol("Prefix", ID.Prefix);
 
   /** Prepend(expr, item) - returns `expr` with `item` prepended to its leaves. */
@@ -3473,10 +3294,8 @@ public class S {
   /** PrimeQ(n) - returns `True` if `n` is a integer prime number. */
   public static final IBuiltInSymbol PrimeQ = F.initFinalSymbol("PrimeQ", ID.PrimeQ);
 
-  /** */
   public static final IBuiltInSymbol Primes = F.initFinalSymbol("Primes", ID.Primes);
 
-  /** */
   public static final IBuiltInSymbol PrimitiveRoot =
       F.initFinalSymbol("PrimitiveRoot", ID.PrimitiveRoot);
 
@@ -3487,7 +3306,7 @@ public class S {
   /** Print(expr) - print the `expr` to the default output stream and return `Null`. */
   public static final IBuiltInSymbol Print = F.initFinalSymbol("Print", ID.Print);
 
-  /** */
+  /** PrintableASCIIQ(str) - returns `True` if all characters in `str` are ASCII characters. */
   public static final IBuiltInSymbol PrintableASCIIQ =
       F.initFinalSymbol("PrintableASCIIQ", ID.PrintableASCIIQ);
 
@@ -3512,10 +3331,8 @@ public class S {
    */
   public static final IBuiltInSymbol Projection = F.initFinalSymbol("Projection", ID.Projection);
 
-  /** */
   public static final IBuiltInSymbol Protect = F.initFinalSymbol("Protect", ID.Protect);
 
-  /** */
   public static final IBuiltInSymbol Protected = F.initFinalSymbol("Protected", ID.Protected);
 
   /**
@@ -3525,10 +3342,8 @@ public class S {
   public static final IBuiltInSymbol PseudoInverse =
       F.initFinalSymbol("PseudoInverse", ID.PseudoInverse);
 
-  /** */
   public static final IBuiltInSymbol Purple = F.initFinalSymbol("Purple", ID.Purple);
 
-  /** */
   public static final IBuiltInSymbol Put = F.initFinalSymbol("Put", ID.Put);
 
   /**
@@ -3545,7 +3360,6 @@ public class S {
   /** Quantity(value, unit) - returns the quantity for `value` and `unit` */
   public static final IBuiltInSymbol Quantity = F.initFinalSymbol("Quantity", ID.Quantity);
 
-  /** */
   public static final IBuiltInSymbol QuantityDistribution =
       F.initFinalSymbol("QuantityDistribution", ID.QuantityDistribution);
 
@@ -3553,7 +3367,6 @@ public class S {
   public static final IBuiltInSymbol QuantityMagnitude =
       F.initFinalSymbol("QuantityMagnitude", ID.QuantityMagnitude);
 
-  /** */
   public static final IBuiltInSymbol QuantityQ = F.initFinalSymbol("QuantityQ", ID.QuantityQ);
 
   /** Quartiles(arg) - returns a list of the `1/4`, `1/2` and `3/4` quantile of `arg`. */
@@ -3565,7 +3378,6 @@ public class S {
    */
   public static final IBuiltInSymbol Quiet = F.initFinalSymbol("Quiet", ID.Quiet);
 
-  /** */
   public static final IBuiltInSymbol Quit = F.initFinalSymbol("Quit", ID.Quit);
 
   /** Quotient(m, n) - computes the integer quotient of `m` and `n`. */
@@ -3578,7 +3390,6 @@ public class S {
   public static final IBuiltInSymbol QuotientRemainder =
       F.initFinalSymbol("QuotientRemainder", ID.QuotientRemainder);
 
-  /** */
   public static final IBuiltInSymbol RGBColor = F.initFinalSymbol("RGBColor", ID.RGBColor);
 
   /** Ramp(z) - The `Ramp` function is a unary real function, whose graph is shaped like a ramp. */
@@ -3588,7 +3399,6 @@ public class S {
   public static final IBuiltInSymbol RandomChoice =
       F.initFinalSymbol("RandomChoice", ID.RandomChoice);
 
-  /** */
   public static final IBuiltInSymbol RandomComplex =
       F.initFinalSymbol("RandomComplex", ID.RandomComplex);
 
@@ -3606,7 +3416,6 @@ public class S {
   public static final IBuiltInSymbol RandomSample =
       F.initFinalSymbol("RandomSample", ID.RandomSample);
 
-  /** */
   public static final IBuiltInSymbol RandomVariate =
       F.initFinalSymbol("RandomVariate", ID.RandomVariate);
 
@@ -3622,23 +3431,19 @@ public class S {
    */
   public static final IBuiltInSymbol Rationalize = F.initFinalSymbol("Rationalize", ID.Rationalize);
 
-  /** */
   public static final IBuiltInSymbol Rationals = F.initFinalSymbol("Rationals", ID.Rationals);
 
   /** Re(z) - returns the real component of the complex number `z`. */
   public static final IBuiltInSymbol Re = F.initFinalSymbol("Re", ID.Re);
 
-  /** */
   public static final IBuiltInSymbol ReadProtected =
       F.initFinalSymbol("ReadProtected", ID.ReadProtected);
 
-  /** */
   public static final IBuiltInSymbol ReadString = F.initFinalSymbol("ReadString", ID.ReadString);
 
   /** Real - is the head of real (floating point) numbers. */
   public static final IBuiltInSymbol Real = F.initFinalSymbol("Real", ID.Real);
 
-  /** */
   public static final IBuiltInSymbol RealDigits = F.initFinalSymbol("RealDigits", ID.RealDigits);
 
   /**
@@ -3655,33 +3460,31 @@ public class S {
    */
   public static final IBuiltInSymbol Reap = F.initFinalSymbol("Reap", ID.Reap);
 
-  /** */
   public static final IBuiltInSymbol Rectangle = F.initFinalSymbol("Rectangle", ID.Rectangle);
 
-  /** */
   public static final IBuiltInSymbol Red = F.initFinalSymbol("Red", ID.Red);
 
-  /** */
   public static final IBuiltInSymbol Reduce = F.initFinalSymbol("Reduce", ID.Reduce);
 
   /** Refine(expression, assumptions) - evaluate the `expression` for the given `assumptions`. */
   public static final IBuiltInSymbol Refine = F.initFinalSymbol("Refine", ID.Refine);
 
-  /** */
   public static final IBuiltInSymbol RegularExpression =
       F.initFinalSymbol("RegularExpression", ID.RegularExpression);
 
-  /** */
+  public static final IBuiltInSymbol ReleaseHold = F.initFinalSymbol("ReleaseHold", ID.ReleaseHold);
+
   public static final IBuiltInSymbol Remove = F.initFinalSymbol("Remove", ID.Remove);
 
-  /** */
+  /**
+   * RemoveDiacritics("string") - replace characters with diacritics with characters without
+   * diacritics.
+   */
   public static final IBuiltInSymbol RemoveDiacritics =
       F.initFinalSymbol("RemoveDiacritics", ID.RemoveDiacritics);
 
-  /** */
   public static final IBuiltInSymbol Repeated = F.initFinalSymbol("Repeated", ID.Repeated);
 
-  /** */
   public static final IBuiltInSymbol RepeatedNull =
       F.initFinalSymbol("RepeatedNull", ID.RepeatedNull);
 
@@ -3741,7 +3544,6 @@ public class S {
   /** Riffle(list1, list2) - insert elements of `list2` between the elements of `list1`. */
   public static final IBuiltInSymbol Riffle = F.initFinalSymbol("Riffle", ID.Riffle);
 
-  /** */
   public static final IBuiltInSymbol Right = F.initFinalSymbol("Right", ID.Right);
 
   /**
@@ -3760,14 +3562,11 @@ public class S {
   public static final IBuiltInSymbol RomanNumeral =
       F.initFinalSymbol("RomanNumeral", ID.RomanNumeral);
 
-  /** */
   public static final IBuiltInSymbol Root = F.initFinalSymbol("Root", ID.Root);
 
-  /** */
   public static final IBuiltInSymbol RootIntervals =
       F.initFinalSymbol("RootIntervals", ID.RootIntervals);
 
-  /** */
   public static final IBuiltInSymbol RootOf = F.initFinalSymbol("RootOf", ID.RootOf);
 
   /**
@@ -3789,7 +3588,6 @@ public class S {
   /** Round(expr) - round a given `expr` to nearest integer. */
   public static final IBuiltInSymbol Round = F.initFinalSymbol("Round", ID.Round);
 
-  /** */
   public static final IBuiltInSymbol Row = F.initFinalSymbol("Row", ID.Row);
 
   /** RowReduce(matrix) - returns the reduced row-echelon form of `matrix`. */
@@ -3812,7 +3610,6 @@ public class S {
   /** SameQ(x, y) - returns `True` if `x` and `y` are structurally identical. */
   public static final IBuiltInSymbol SameQ = F.initFinalSymbol("SameQ", ID.SameQ);
 
-  /** */
   public static final IBuiltInSymbol SameTest = F.initFinalSymbol("SameTest", ID.SameTest);
 
   /**
@@ -3838,7 +3635,6 @@ public class S {
   public static final IBuiltInSymbol SatisfiableQ =
       F.initFinalSymbol("SatisfiableQ", ID.SatisfiableQ);
 
-  /** */
   public static final IBuiltInSymbol Scaled = F.initFinalSymbol("Scaled", ID.Scaled);
 
   /** Scan(f, expr) - applies `f` to each element of `expr` and returns 'Null'. */
@@ -3850,11 +3646,10 @@ public class S {
   /** Sech(z) - returns the hyperbolic secant of `z`. */
   public static final IBuiltInSymbol Sech = F.initFinalSymbol("Sech", ID.Sech);
 
-  /** */
   public static final IBuiltInSymbol Second = F.initFinalSymbol("Second", ID.Second);
 
   /**
-   * Select({e1, e2, ...}, f) - returns a list of the elements `ei` for which `f(ei)` returns
+   * Select({e1, e2, ...}, head) - returns a list of the elements `ei` for which `head(ei)` returns
    * `True`.
    */
   public static final IBuiltInSymbol Select = F.initFinalSymbol("Select", ID.Select);
@@ -3879,10 +3674,8 @@ public class S {
   public static final IBuiltInSymbol SemanticImportString =
       F.initFinalSymbol("SemanticImportString", ID.SemanticImportString);
 
-  /** */
   public static final IBuiltInSymbol Sequence = F.initFinalSymbol("Sequence", ID.Sequence);
 
-  /** */
   public static final IBuiltInSymbol SequenceHold =
       F.initFinalSymbol("SequenceHold", ID.SequenceHold);
 
@@ -3914,22 +3707,17 @@ public class S {
   /** SetDelayed(expr, value) - assigns `value` to `expr`, without evaluating `value`. */
   public static final IBuiltInSymbol SetDelayed = F.initFinalSymbol("SetDelayed", ID.SetDelayed);
 
-  /** */
   public static final IBuiltInSymbol Share = F.initFinalSymbol("Share", ID.Share);
 
-  /** */
   public static final IBuiltInSymbol Short = F.initFinalSymbol("Short", ID.Short);
 
-  /** */
   public static final IBuiltInSymbol Shortest = F.initFinalSymbol("Shortest", ID.Shortest);
 
-  /** */
   public static final IBuiltInSymbol Show = F.initFinalSymbol("Show", ID.Show);
 
   /** Sign(x) - gives `-1`, `0` or `1` depending on whether `x` is negative, zero or positive. */
   public static final IBuiltInSymbol Sign = F.initFinalSymbol("Sign", ID.Sign);
 
-  /** */
   public static final IBuiltInSymbol SignCmp = F.initFinalSymbol("SignCmp", ID.SignCmp);
 
   /**
@@ -4008,7 +3796,7 @@ public class S {
   /** Span - is the head of span ranges like `1;;3`. */
   public static final IBuiltInSymbol Span = F.initFinalSymbol("Span", ID.Span);
 
-  /** */
+  /** SparseArray(nested-list) - create a sparse array from a `nested-list` structure. */
   public static final IBuiltInSymbol SparseArray = F.initFinalSymbol("SparseArray", ID.SparseArray);
 
   /** SphericalBesselJ(n, z) - spherical Bessel function `J(n, x)`. */
@@ -4019,11 +3807,9 @@ public class S {
   public static final IBuiltInSymbol SphericalBesselY =
       F.initFinalSymbol("SphericalBesselY", ID.SphericalBesselY);
 
-  /** */
   public static final IBuiltInSymbol SphericalHankelH1 =
       F.initFinalSymbol("SphericalHankelH1", ID.SphericalHankelH1);
 
-  /** */
   public static final IBuiltInSymbol SphericalHankelH2 =
       F.initFinalSymbol("SphericalHankelH2", ID.SphericalHankelH2);
 
@@ -4071,17 +3857,13 @@ public class S {
   public static final IBuiltInSymbol StandardDeviation =
       F.initFinalSymbol("StandardDeviation", ID.StandardDeviation);
 
-  /** */
   public static final IBuiltInSymbol StandardForm =
       F.initFinalSymbol("StandardForm", ID.StandardForm);
 
-  /** */
   public static final IBuiltInSymbol Standardize = F.initFinalSymbol("Standardize", ID.Standardize);
 
-  /** */
   public static final IBuiltInSymbol StartOfLine = F.initFinalSymbol("StartOfLine", ID.StartOfLine);
 
-  /** */
   public static final IBuiltInSymbol StartOfString =
       F.initFinalSymbol("StartOfString", ID.StartOfString);
 
@@ -4098,10 +3880,8 @@ public class S {
    */
   public static final IBuiltInSymbol StirlingS2 = F.initFinalSymbol("StirlingS2", ID.StirlingS2);
 
-  /** */
   public static final IBuiltInSymbol Strict = F.initFinalSymbol("Strict", ID.Strict);
 
-  /** */
   public static final IBuiltInSymbol String = F.initFinalSymbol("String", ID.String);
 
   /** StringCases(string, pattern) - gives all occurences of `pattern` in `string`. */
@@ -4117,14 +3897,17 @@ public class S {
   /** StringCount(string, pattern) - counts all occurences of `pattern` in `string`. */
   public static final IBuiltInSymbol StringCount = F.initFinalSymbol("StringCount", ID.StringCount);
 
-  /** */
   public static final IBuiltInSymbol StringDrop = F.initFinalSymbol("StringDrop", ID.StringDrop);
 
-  /** */
   public static final IBuiltInSymbol StringExpression =
       F.initFinalSymbol("StringExpression", ID.StringExpression);
 
-  /** */
+  public static final IBuiltInSymbol StringFreeQ = F.initFinalSymbol("StringFreeQ", ID.StringFreeQ);
+
+  /**
+   * StringInsert(string, new-string, position) - returns a string with `new-string` inserted
+   * starting at `position` in `string`.
+   */
   public static final IBuiltInSymbol StringInsert =
       F.initFinalSymbol("StringInsert", ID.StringInsert);
 
@@ -4150,6 +3933,9 @@ public class S {
    */
   public static final IBuiltInSymbol StringPart = F.initFinalSymbol("StringPart", ID.StringPart);
 
+  public static final IBuiltInSymbol StringPosition =
+      F.initFinalSymbol("StringPosition", ID.StringPosition);
+
   /** StringQ(x) - is `True` if `x` is a string object, or `False` otherwise. */
   public static final IBuiltInSymbol StringQ = F.initFinalSymbol("StringQ", ID.StringQ);
 
@@ -4160,20 +3946,19 @@ public class S {
   public static final IBuiltInSymbol StringReplace =
       F.initFinalSymbol("StringReplace", ID.StringReplace);
 
-  /** */
   public static final IBuiltInSymbol StringRiffle =
       F.initFinalSymbol("StringRiffle", ID.StringRiffle);
 
   /** StringSplit(str) - split the string `str` by whitespaces into a list of strings. */
   public static final IBuiltInSymbol StringSplit = F.initFinalSymbol("StringSplit", ID.StringSplit);
 
-  /** */
   public static final IBuiltInSymbol StringTake = F.initFinalSymbol("StringTake", ID.StringTake);
 
-  /** */
+  public static final IBuiltInSymbol StringToByteArray =
+      F.initFinalSymbol("StringToByteArray", ID.StringToByteArray);
+
   public static final IBuiltInSymbol StringTrim = F.initFinalSymbol("StringTrim", ID.StringTrim);
 
-  /** */
   public static final IBuiltInSymbol Structure = F.initFinalSymbol("Structure", ID.Structure);
 
   /** StruveH(n, z) - returns the Struve function `H_n(z)`. */
@@ -4186,10 +3971,8 @@ public class S {
   public static final IBuiltInSymbol StudentTDistribution =
       F.initFinalSymbol("StudentTDistribution", ID.StudentTDistribution);
 
-  /** */
   public static final IBuiltInSymbol Style = F.initFinalSymbol("Style", ID.Style);
 
-  /** */
   public static final IBuiltInSymbol StyleForm = F.initFinalSymbol("StyleForm", ID.StyleForm);
 
   /**
@@ -4201,16 +3984,13 @@ public class S {
   public static final IBuiltInSymbol Subfactorial =
       F.initFinalSymbol("Subfactorial", ID.Subfactorial);
 
-  /** */
   public static final IBuiltInSymbol Subscript = F.initFinalSymbol("Subscript", ID.Subscript);
 
-  /** */
   public static final IBuiltInSymbol SubsetQ = F.initFinalSymbol("SubsetQ", ID.SubsetQ);
 
   /** Subsets(list) - finds a list of all possible subsets of `list`. */
   public static final IBuiltInSymbol Subsets = F.initFinalSymbol("Subsets", ID.Subsets);
 
-  /** */
   public static final IBuiltInSymbol Subsuperscript =
       F.initFinalSymbol("Subsuperscript", ID.Subsuperscript);
 
@@ -4227,10 +4007,8 @@ public class S {
    */
   public static final IBuiltInSymbol Sum = F.initFinalSymbol("Sum", ID.Sum);
 
-  /** */
   public static final IBuiltInSymbol Summary = F.initFinalSymbol("Summary", ID.Summary);
 
-  /** */
   public static final IBuiltInSymbol Superscript = F.initFinalSymbol("Superscript", ID.Superscript);
 
   /**
@@ -4238,7 +4016,6 @@ public class S {
    */
   public static final IBuiltInSymbol Surd = F.initFinalSymbol("Surd", ID.Surd);
 
-  /** */
   public static final IBuiltInSymbol SurfaceGraphics =
       F.initFinalSymbol("SurfaceGraphics", ID.SurfaceGraphics);
 
@@ -4264,14 +4041,12 @@ public class S {
   /** SymbolQ(x) - is `True` if `x` is a symbol, or `False` otherwise. */
   public static final IBuiltInSymbol SymbolQ = F.initFinalSymbol("SymbolQ", ID.SymbolQ);
 
-  /** */
   public static final IBuiltInSymbol Symmetric = F.initFinalSymbol("Symmetric", ID.Symmetric);
 
   /** SymmetricMatrixQ(m) - returns `True` if `m` is a symmetric matrix. */
   public static final IBuiltInSymbol SymmetricMatrixQ =
       F.initFinalSymbol("SymmetricMatrixQ", ID.SymmetricMatrixQ);
 
-  /** */
   public static final IBuiltInSymbol SyntaxLength =
       F.initFinalSymbol("SyntaxLength", ID.SyntaxLength);
 
@@ -4290,31 +4065,29 @@ public class S {
    */
   public static final IBuiltInSymbol Table = F.initFinalSymbol("Table", ID.Table);
 
-  /** */
   public static final IBuiltInSymbol TableForm = F.initFinalSymbol("TableForm", ID.TableForm);
 
-  /** */
   public static final IBuiltInSymbol TableHeadings =
       F.initFinalSymbol("TableHeadings", ID.TableHeadings);
 
-  /** */
   public static final IBuiltInSymbol TagSet = F.initFinalSymbol("TagSet", ID.TagSet);
 
-  /** */
   public static final IBuiltInSymbol TagSetDelayed =
       F.initFinalSymbol("TagSetDelayed", ID.TagSetDelayed);
 
   /** Take(expr, n) - returns `expr` with all but the first `n` leaves removed. */
   public static final IBuiltInSymbol Take = F.initFinalSymbol("Take", ID.Take);
 
-  /** */
   public static final IBuiltInSymbol TakeLargest = F.initFinalSymbol("TakeLargest", ID.TakeLargest);
 
-  /** */
   public static final IBuiltInSymbol TakeLargestBy =
       F.initFinalSymbol("TakeLargestBy", ID.TakeLargestBy);
 
-  /** */
+  /**
+   * Tally(list) - return the elements and their number of occurrences in `list` in a new result
+   * list. The `binary-predicate` tests if two elements are equivalent. `SameQ` is used as the
+   * default `binary-predicate`.
+   */
   public static final IBuiltInSymbol Tally = F.initFinalSymbol("Tally", ID.Tally);
 
   /** Tan(expr) - returns the tangent of `expr` (measured in radians). */
@@ -4329,45 +4102,42 @@ public class S {
    */
   public static final IBuiltInSymbol TautologyQ = F.initFinalSymbol("TautologyQ", ID.TautologyQ);
 
-  /** */
   public static final IBuiltInSymbol Taylor = F.initFinalSymbol("Taylor", ID.Taylor);
 
   /** TeXForm(expr) - returns the TeX form of the evaluated `expr`. */
   public static final IBuiltInSymbol TeXForm = F.initFinalSymbol("TeXForm", ID.TeXForm);
 
-  /** */
   public static final IBuiltInSymbol TensorDimensions =
       F.initFinalSymbol("TensorDimensions", ID.TensorDimensions);
 
-  /** */
   public static final IBuiltInSymbol TensorProduct =
       F.initFinalSymbol("TensorProduct", ID.TensorProduct);
 
-  /** */
   public static final IBuiltInSymbol TensorRank = F.initFinalSymbol("TensorRank", ID.TensorRank);
 
-  /** */
   public static final IBuiltInSymbol TensorSymmetry =
       F.initFinalSymbol("TensorSymmetry", ID.TensorSymmetry);
 
-  /** */
   public static final IBuiltInSymbol TestID = F.initFinalSymbol("TestID", ID.TestID);
 
-  /** */
+  /**
+   * TestReport("file-name-string") - load the unit tests from a `file-name-string` and print a
+   * summary of the `VerificationTest` included in the file.
+   */
   public static final IBuiltInSymbol TestReport = F.initFinalSymbol("TestReport", ID.TestReport);
 
-  /** */
   public static final IBuiltInSymbol TestReportObject =
       F.initFinalSymbol("TestReportObject", ID.TestReportObject);
 
-  /** */
+  /**
+   * TestResultObject( ... ) - is an association wrapped in a `TestResultObject`returned from
+   * `VerificationTest` which stores the results from executing a single unit test.
+   */
   public static final IBuiltInSymbol TestResultObject =
       F.initFinalSymbol("TestResultObject", ID.TestResultObject);
 
-  /** */
   public static final IBuiltInSymbol TextCell = F.initFinalSymbol("TextCell", ID.TextCell);
 
-  /** */
   public static final IBuiltInSymbol TextString = F.initFinalSymbol("TextString", ID.TextString);
 
   /** Thread(f(args) - threads `f` over any lists that appear in `args`. */
@@ -4376,14 +4146,11 @@ public class S {
   /** Through(p(f)[x]) - gives `p(f(x))`. */
   public static final IBuiltInSymbol Through = F.initFinalSymbol("Through", ID.Through);
 
-  /** */
   public static final IBuiltInSymbol Throw = F.initFinalSymbol("Throw", ID.Throw);
 
-  /** */
   public static final IBuiltInSymbol TimeConstrained =
       F.initFinalSymbol("TimeConstrained", ID.TimeConstrained);
 
-  /** */
   public static final IBuiltInSymbol TimeObject = F.initFinalSymbol("TimeObject", ID.TimeObject);
 
   /** TimeValue(p, i, n) - returns a time value calculation. */
@@ -4396,8 +4163,8 @@ public class S {
   public static final IBuiltInSymbol TimesBy = F.initFinalSymbol("TimesBy", ID.TimesBy);
 
   /**
-   * Timing(x) - returns a list with the first entry containing the evaluation time of `x` and the
-   * second entry is the evaluation result of `x`.
+   * Timing(x) - returns a list with the first entry containing the evaluation CPU time of `x` and
+   * the second entry is the evaluation result of `x`.
    */
   public static final IBuiltInSymbol Timing = F.initFinalSymbol("Timing", ID.Timing);
 
@@ -4419,16 +4186,16 @@ public class S {
   public static final IBuiltInSymbol ToPolarCoordinates =
       F.initFinalSymbol("ToPolarCoordinates", ID.ToPolarCoordinates);
 
-  /** */
   public static final IBuiltInSymbol ToRadicals = F.initFinalSymbol("ToRadicals", ID.ToRadicals);
 
   /** ToString(expr) - converts `expr` into a string. */
   public static final IBuiltInSymbol ToString = F.initFinalSymbol("ToString", ID.ToString);
 
-  /** */
+  /**
+   * ToUnicode(string) - converts `string` into a string of corresponding unicode character codes.
+   */
   public static final IBuiltInSymbol ToUnicode = F.initFinalSymbol("ToUnicode", ID.ToUnicode);
 
-  /** */
   public static final IBuiltInSymbol Today = F.initFinalSymbol("Today", ID.Today);
 
   /** ToeplitzMatrix(n) - gives a toeplitz matrix with the dimension `n`. */
@@ -4438,10 +4205,8 @@ public class S {
   /** Together(expr) - writes sums of fractions in `expr` together. */
   public static final IBuiltInSymbol Together = F.initFinalSymbol("Together", ID.Together);
 
-  /** */
   public static final IBuiltInSymbol TooLarge = F.initFinalSymbol("TooLarge", ID.TooLarge);
 
-  /** */
   public static final IBuiltInSymbol Top = F.initFinalSymbol("Top", ID.Top);
 
   /** Total(list) - adds all values in `list`. */
@@ -4453,14 +4218,12 @@ public class S {
   /** Trace(expr) - return the evaluation steps which are used to get the result. */
   public static final IBuiltInSymbol Trace = F.initFinalSymbol("Trace", ID.Trace);
 
-  /** */
   public static final IBuiltInSymbol TraceForm = F.initFinalSymbol("TraceForm", ID.TraceForm);
 
-  /** */
   public static final IBuiltInSymbol TraditionalForm =
       F.initFinalSymbol("TraditionalForm", ID.TraditionalForm);
 
-  /** */
+  /** Transliterate("string") - try converting the given string to a similar ASCII string */
   public static final IBuiltInSymbol Transliterate =
       F.initFinalSymbol("Transliterate", ID.Transliterate);
 
@@ -4470,7 +4233,6 @@ public class S {
   /** TreeForm(expr) - create a tree visualization from the given expression `expr`. */
   public static final IBuiltInSymbol TreeForm = F.initFinalSymbol("TreeForm", ID.TreeForm);
 
-  /** */
   public static final IBuiltInSymbol Trig = F.initFinalSymbol("Trig", ID.Trig);
 
   /** TrigExpand(expr) - expands out trigonometric expressions in `expr`. */
@@ -4485,29 +4247,26 @@ public class S {
   /** TrigToExp(expr) - converts trigonometric functions in `expr` to exponentials. */
   public static final IBuiltInSymbol TrigToExp = F.initFinalSymbol("TrigToExp", ID.TrigToExp);
 
-  /** True - the constant `True` represents the boolean value **true ** */
+  /** True - the constant `True` represents the boolean value **true** */
   public static final IBuiltInSymbol True = F.initFinalSymbol("True", ID.True);
 
   /** TrueQ(expr) - returns `True` if and only if `expr` is `True`. */
   public static final IBuiltInSymbol TrueQ = F.initFinalSymbol("TrueQ", ID.TrueQ);
 
-  /** */
   public static final IBuiltInSymbol TukeyWindow = F.initFinalSymbol("TukeyWindow", ID.TukeyWindow);
 
   /** Tuples(list, n) - creates a list of all `n`-tuples of elements in `list`. */
   public static final IBuiltInSymbol Tuples = F.initFinalSymbol("Tuples", ID.Tuples);
 
-  /** */
   public static final IBuiltInSymbol TwoWayRule = F.initFinalSymbol("TwoWayRule", ID.TwoWayRule);
 
-  /** */
+  public static final IBuiltInSymbol URLFetch = F.initFinalSymbol("URLFetch", ID.URLFetch);
+
   public static final IBuiltInSymbol Undefined = F.initFinalSymbol("Undefined", ID.Undefined);
 
-  /** */
   public static final IBuiltInSymbol Underoverscript =
       F.initFinalSymbol("Underoverscript", ID.Underoverscript);
 
-  /** */
   public static final IBuiltInSymbol UndirectedEdge =
       F.initFinalSymbol("UndirectedEdge", ID.UndirectedEdge);
 
@@ -4517,7 +4276,6 @@ public class S {
    */
   public static final IBuiltInSymbol Unequal = F.initFinalSymbol("Unequal", ID.Unequal);
 
-  /** */
   public static final IBuiltInSymbol Unevaluated = F.initFinalSymbol("Unevaluated", ID.Unevaluated);
 
   /** UniformDistribution({min, max}) - returns a uniform distribution. */
@@ -4542,17 +4300,14 @@ public class S {
   /** UnitVector(position) - returns a unit vector with element `1` at the given `position`. */
   public static final IBuiltInSymbol UnitVector = F.initFinalSymbol("UnitVector", ID.UnitVector);
 
-  /** */
   public static final IBuiltInSymbol UnitaryMatrixQ =
       F.initFinalSymbol("UnitaryMatrixQ", ID.UnitaryMatrixQ);
 
   /** Unitize(expr) - maps a non-zero `expr` to `1`, and a zero `expr` to `0`. */
   public static final IBuiltInSymbol Unitize = F.initFinalSymbol("Unitize", ID.Unitize);
 
-  /** */
   public static final IBuiltInSymbol Unknown = F.initFinalSymbol("Unknown", ID.Unknown);
 
-  /** */
   public static final IBuiltInSymbol Unprotect = F.initFinalSymbol("Unprotect", ID.Unprotect);
 
   /** UnsameQ(x, y) - returns `True` if `x` and `y` are not structurally identical. */
@@ -4561,17 +4316,14 @@ public class S {
   /** Unset(expr) - removes any definitions belonging to the left-hand-side `expr`. */
   public static final IBuiltInSymbol Unset = F.initFinalSymbol("Unset", ID.Unset);
 
-  /** */
   public static final IBuiltInSymbol UpSet = F.initFinalSymbol("UpSet", ID.UpSet);
 
-  /** */
   public static final IBuiltInSymbol UpSetDelayed =
       F.initFinalSymbol("UpSetDelayed", ID.UpSetDelayed);
 
-  /** */
   public static final IBuiltInSymbol UpTo = F.initFinalSymbol("UpTo", ID.UpTo);
 
-  /** */
+  /** UpValues(symbol) - prints the up-value rules associated with `symbol`. */
   public static final IBuiltInSymbol UpValues = F.initFinalSymbol("UpValues", ID.UpValues);
 
   /**
@@ -4594,7 +4346,6 @@ public class S {
   public static final IBuiltInSymbol VandermondeMatrix =
       F.initFinalSymbol("VandermondeMatrix", ID.VandermondeMatrix);
 
-  /** */
   public static final IBuiltInSymbol Variable = F.initFinalSymbol("Variable", ID.Variable);
 
   /** Variables(expr) - gives a list of the variables that appear in the polynomial `expr`. */
@@ -4612,7 +4363,12 @@ public class S {
   /** VectorQ(v) - returns `True` if `v` is a list of elements which are not themselves lists. */
   public static final IBuiltInSymbol VectorQ = F.initFinalSymbol("VectorQ", ID.VectorQ);
 
-  /** */
+  public static final IBuiltInSymbol Verbatim = F.initFinalSymbol("Verbatim", ID.Verbatim);
+
+  /**
+   * VerificationTest(test-expr) - create a `TestResultObject` by testing if `test-expr` evaluates
+   * to `True`.
+   */
   public static final IBuiltInSymbol VerificationTest =
       F.initFinalSymbol("VerificationTest", ID.VerificationTest);
 
@@ -4629,18 +4385,15 @@ public class S {
   /** VertexQ(graph, vertex) - test if `vertex` is a vertex in the `graph` object. */
   public static final IBuiltInSymbol VertexQ = F.initFinalSymbol("VertexQ", ID.VertexQ);
 
-  /** */
   public static final IBuiltInSymbol ViewPoint = F.initFinalSymbol("ViewPoint", ID.ViewPoint);
 
   /** WeibullDistribution(a, b) - returns a Weibull distribution. */
   public static final IBuiltInSymbol WeibullDistribution =
       F.initFinalSymbol("WeibullDistribution", ID.WeibullDistribution);
 
-  /** */
   public static final IBuiltInSymbol WeierstrassHalfPeriods =
       F.initFinalSymbol("WeierstrassHalfPeriods", ID.WeierstrassHalfPeriods);
 
-  /** */
   public static final IBuiltInSymbol WeierstrassInvariants =
       F.initFinalSymbol("WeierstrassInvariants", ID.WeierstrassInvariants);
 
@@ -4648,15 +4401,12 @@ public class S {
   public static final IBuiltInSymbol WeierstrassP =
       F.initFinalSymbol("WeierstrassP", ID.WeierstrassP);
 
-  /** */
   public static final IBuiltInSymbol WeierstrassPPrime =
       F.initFinalSymbol("WeierstrassPPrime", ID.WeierstrassPPrime);
 
-  /** */
   public static final IBuiltInSymbol WeightedAdjacencyMatrix =
       F.initFinalSymbol("WeightedAdjacencyMatrix", ID.WeightedAdjacencyMatrix);
 
-  /** */
   public static final IBuiltInSymbol WeightedData =
       F.initFinalSymbol("WeightedData", ID.WeightedData);
 
@@ -4669,20 +4419,15 @@ public class S {
   /** While(test, body) - evaluates `body` as long as test evaluates to `True`. */
   public static final IBuiltInSymbol While = F.initFinalSymbol("While", ID.While);
 
-  /** */
   public static final IBuiltInSymbol White = F.initFinalSymbol("White", ID.White);
 
-  /** */
   public static final IBuiltInSymbol Whitespace = F.initFinalSymbol("Whitespace", ID.Whitespace);
 
-  /** */
   public static final IBuiltInSymbol WhitespaceCharacter =
       F.initFinalSymbol("WhitespaceCharacter", ID.WhitespaceCharacter);
 
-  /** */
   public static final IBuiltInSymbol WhittakerM = F.initFinalSymbol("WhittakerM", ID.WhittakerM);
 
-  /** */
   public static final IBuiltInSymbol WhittakerW = F.initFinalSymbol("WhittakerW", ID.WhittakerW);
 
   /**
@@ -4691,15 +4436,12 @@ public class S {
    */
   public static final IBuiltInSymbol With = F.initFinalSymbol("With", ID.With);
 
-  /** */
   public static final IBuiltInSymbol WordBoundary =
       F.initFinalSymbol("WordBoundary", ID.WordBoundary);
 
-  /** */
   public static final IBuiltInSymbol WordCharacter =
       F.initFinalSymbol("WordCharacter", ID.WordCharacter);
 
-  /** */
   public static final IBuiltInSymbol WriteString = F.initFinalSymbol("WriteString", ID.WriteString);
 
   /**
@@ -4709,7 +4451,6 @@ public class S {
    */
   public static final IBuiltInSymbol Xor = F.initFinalSymbol("Xor", ID.Xor);
 
-  /** */
   public static final IBuiltInSymbol Yellow = F.initFinalSymbol("Yellow", ID.Yellow);
 
   /**
@@ -4720,7 +4461,6 @@ public class S {
   public static final IBuiltInSymbol YuleDissimilarity =
       F.initFinalSymbol("YuleDissimilarity", ID.YuleDissimilarity);
 
-  /** */
   public static final IBuiltInSymbol ZeroSymmetric =
       F.initFinalSymbol("ZeroSymmetric", ID.ZeroSymmetric);
 

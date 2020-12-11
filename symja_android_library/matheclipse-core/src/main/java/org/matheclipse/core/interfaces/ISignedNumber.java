@@ -3,6 +3,7 @@ package org.matheclipse.core.interfaces;
 import org.apfloat.Apfloat;
 import org.matheclipse.core.expression.ApfloatNum;
 import org.matheclipse.core.expression.F;
+import org.matheclipse.core.expression.S;
 
 /** Interface for "rational" numbers (i.e. IInteger, IFraction or INum) */
 public interface ISignedNumber extends INumber {
@@ -302,5 +303,13 @@ public interface ISignedNumber extends INumber {
   @Override
   public default IExpr upper() {
     return this;
+  }
+
+  @Override
+  default IAST toPolarCoordinates() {
+    if (isNegative()) {
+      return F.pair(this.negate(), S.Pi);
+    }
+    return F.pair(this, F.C0);
   }
 }

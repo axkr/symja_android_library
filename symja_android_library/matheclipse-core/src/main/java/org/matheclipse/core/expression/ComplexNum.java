@@ -4,6 +4,8 @@ import static org.matheclipse.core.expression.F.num;
 
 import java.math.BigDecimal;
 import java.math.RoundingMode;
+import java.util.Set;
+import java.util.function.Function;
 
 import org.apfloat.Apcomplex;
 import org.apfloat.Apfloat;
@@ -13,6 +15,8 @@ import org.hipparchus.exception.NullArgumentException;
 import org.matheclipse.core.basic.Config;
 import org.matheclipse.core.builtin.IOFunctions;
 import org.matheclipse.core.eval.EvalEngine;
+import org.matheclipse.core.eval.exception.ArgumentTypeException;
+import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IComplex;
 import org.matheclipse.core.interfaces.IComplexNum;
 import org.matheclipse.core.interfaces.IExpr;
@@ -214,9 +218,14 @@ public class ComplexNum implements IComplexNum {
 
   @Override
   public INumber ceilFraction() throws ArithmeticException {
-    return F.complex(
-        NumberUtil.toLong(Math.ceil(fComplex.getReal())),
-        NumberUtil.toLong(Math.ceil(fComplex.getImaginary())));
+    try {
+      return F.complex(
+          NumberUtil.toLong(Math.ceil(fComplex.getReal())),
+          NumberUtil.toLong(Math.ceil(fComplex.getImaginary())));
+    } catch (ArithmeticException ae) {
+      ArgumentTypeException.throwArg(this, F.Ceiling(this));
+    }
+    return null;
   }
 
   /** {@inheritDoc} */
@@ -439,9 +448,14 @@ public class ComplexNum implements IComplexNum {
 
   @Override
   public INumber floorFraction() throws ArithmeticException {
-    return F.complex(
-        NumberUtil.toLong(Math.floor(fComplex.getReal())),
-        NumberUtil.toLong(Math.floor(fComplex.getImaginary())));
+    try {
+      return F.complex(
+          NumberUtil.toLong(Math.floor(fComplex.getReal())),
+          NumberUtil.toLong(Math.floor(fComplex.getImaginary())));
+    } catch (ArithmeticException ae) {
+      ArgumentTypeException.throwArg(this, F.Floor(this));
+    }
+    return null;
   }
 
   public Complex getCMComplex() {
@@ -517,7 +531,7 @@ public class ComplexNum implements IComplexNum {
 
   @Override
   public String internalFormString(boolean symbolsAsFactoryMethod, int depth) {
-    return internalJavaString(symbolsAsFactoryMethod, depth, false, false, false);
+    return internalJavaString(symbolsAsFactoryMethod, depth, false, false, false, F.CNullFunction);
   }
 
   @Override
@@ -526,14 +540,15 @@ public class ComplexNum implements IComplexNum {
       int depth,
       boolean useOperators,
       boolean usePrefix,
-      boolean noSymbolPrefix) {
+      boolean noSymbolPrefix,
+      Function<IExpr, String> variables) {
     String prefix = usePrefix ? "F." : "";
     return prefix + "complexNum(" + fComplex.getReal() + "," + fComplex.getImaginary() + ")";
   }
 
   @Override
   public String internalScalaString(boolean symbolsAsFactoryMethod, int depth) {
-    return internalJavaString(symbolsAsFactoryMethod, depth, true, false, false);
+    return internalJavaString(symbolsAsFactoryMethod, depth, true, false, false, F.CNullFunction);
   }
 
   @Override
@@ -726,6 +741,11 @@ public class ComplexNum implements IComplexNum {
       return multiply(ComplexNum.valueOf(((Num) that).getRealPart()));
     }
     return IComplexNum.super.times(that);
+  }
+
+  @Override
+  public IAST toPolarCoordinates() {
+    return F.pair(abs(), complexArg());
   }
 
   @Override

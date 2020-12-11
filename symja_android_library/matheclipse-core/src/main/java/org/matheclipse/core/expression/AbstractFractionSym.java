@@ -621,25 +621,25 @@ public abstract class AbstractFractionSym implements IFraction {
       exp >>= 1;
     }
 
-    IFraction r = this;
-    IFraction x = r;
+    IFraction result = this;
+    IFraction x = result;
 
     while ((exp >>= 1) > 0) {
       x = x.mul(x);
       if ((exp & 1) != 0) {
-        r.checkBitLength();
-        r = r.mul(x);
+        result.checkBitLength();
+        result = result.mul(x);
       }
     }
 
     while (b2pow-- > 0) {
-      r.checkBitLength();
-      r = r.mul(r);
+      result.checkBitLength();
+      result = result.mul(result);
     }
     if (n < 0) {
-      return r.inverse();
+      return result.inverse();
     }
-    return r;
+    return result;
   }
 
   public void checkBitLength() {

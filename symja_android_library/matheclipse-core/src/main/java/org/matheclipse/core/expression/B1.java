@@ -20,7 +20,7 @@ import org.matheclipse.core.interfaces.IBuiltInSymbol;
 import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.interfaces.ISymbol;
 
-public abstract class B1 extends AbstractAST implements Cloneable, Externalizable, RandomAccess {
+public abstract class B1 extends AbstractAST implements Externalizable, RandomAccess {
   private static final int SIZE = 2;
 
   public static class Cos extends B1 {
@@ -690,7 +690,7 @@ public abstract class B1 extends AbstractAST implements Cloneable, Externalizabl
 
   /**
    * Replaces the element at the specified location in this {@code ArrayList} with the specified
-   * object.
+   * object.Internally the <code>hashValue</code> will be reset to <code>0</code>.
    *
    * @param location the index at which to put the specified object.
    * @param object the object to add.

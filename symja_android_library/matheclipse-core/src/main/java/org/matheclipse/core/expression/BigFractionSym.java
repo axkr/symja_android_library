@@ -2,16 +2,16 @@ package org.matheclipse.core.expression;
 
 import java.math.BigDecimal;
 import java.math.BigInteger;
+import java.util.Set;
+import java.util.function.Function;
 
 import org.hipparchus.fraction.BigFraction;
 import org.matheclipse.core.basic.Config;
-import org.matheclipse.core.eval.exception.ASTElementLimitExceeded;
 import org.matheclipse.core.eval.exception.BigIntegerLimitExceeded;
 import org.matheclipse.core.form.output.OutputFormFactory;
 import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.interfaces.IFraction;
 import org.matheclipse.core.interfaces.IInteger;
-import org.matheclipse.core.interfaces.INumber;
 import org.matheclipse.core.interfaces.IRational;
 import org.matheclipse.core.interfaces.ISignedNumber;
 import org.matheclipse.parser.client.FEConfig;
@@ -402,7 +402,8 @@ public class BigFractionSym extends AbstractFractionSym {
       int depth,
       boolean useOperators,
       boolean usePrefix,
-      boolean noSymbolPrefix) {
+      boolean noSymbolPrefix,
+      Function<IExpr, String> variables) {
     String prefix = usePrefix ? "F." : "";
     int numerator = NumberUtil.toIntDefault(fFraction.getNumerator());
     if (numerator == 1 || numerator == -1) {

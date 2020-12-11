@@ -7,6 +7,7 @@ import java.io.Serializable;
 import java.util.Collection;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.function.Consumer;
 import java.util.function.Function;
 import java.util.function.Predicate;
@@ -165,11 +166,35 @@ public interface IExpr
 
   public static final int SPARSEARRAYID = DATAID + 9;
 
-  public static final int DISPATCHID = DATAID + 10;
+  public static final int NUMERICARRAYID = DATAID + 10;
 
-  public static final int TESTREPORTOBJECT = DATAID + 11;
+  public static final int DISPATCHID = DATAID + 11;
 
-  public static final int TESTRESULTOBJECT = DATAID + 12;
+  public static final int TESTREPORTOBJECT = DATAID + 12;
+
+  public static final int TESTRESULTOBJECT = DATAID + 13;
+
+  public static IExpr convertToExpr(COMPARE_TERNARY temp) {
+    if (temp == COMPARE_TERNARY.TRUE) {
+      return S.True;
+    }
+    if (temp == COMPARE_TERNARY.FALSE) {
+      return S.False;
+    }
+    return F.NIL;
+  }
+
+  /**
+   * Returns an {@code IExpr} describing the specified value, if non-null, otherwise returns {@code
+   * F.NIL} .
+   *
+   * @param value the possibly-null value to describe
+   * @return an {@code IExpr} with a present value if the specified value is non-null, otherwise an
+   *     empty {@code Optional}
+   */
+  public static IExpr ofNullable(IExpr value) {
+    return value == null ? F.NIL : value;
+  }
 
   /**
    * Operator overloading for Scala operator <code>/</code>. Calls <code>divide(that)</code>.
@@ -455,6 +480,14 @@ public interface IExpr
   }
 
   /**
+   * Calculates the depth of an expression. Atomic expressions (no sublists) have depth <code>1
+   * </code> Example: the nested list <code>[x,[y]]</code> has depth <code>3</code>
+   */
+  default int depth() {
+    return 1;
+  }
+
+  /**
    * Determine precision of this expression. Return -1 for symbolic evaluation.
    *
    * @return the precision of this expression. -1 for symbolic evaluation.
@@ -516,7 +549,7 @@ public interface IExpr
    */
   public default IExpr equalTo(IExpr that) {
     COMPARE_TERNARY temp = BooleanFunctions.CONST_EQUAL.compareTernary(this, that);
-    return ExprUtil.convertToExpr(temp);
+    return convertToExpr(temp);
   }
 
   /**
@@ -546,7 +579,10 @@ public interface IExpr
    */
   default INumber evalNumber() {
     if (isNumber()) {
-      return (INumber) EvalEngine.get().evalN(this);
+      IExpr result = EvalEngine.get().evalN(this);
+      if (result.isNumber()) {
+        return (INumber) result;
+      }
     }
     return null;
   }
@@ -712,7 +748,7 @@ public interface IExpr
    */
   public default IExpr greaterEqualThan(IExpr that) {
     COMPARE_TERNARY temp = BooleanFunctions.CONST_GREATER_EQUAL.prepareCompare(this, that);
-    return ExprUtil.convertToExpr(temp);
+    return convertToExpr(temp);
   }
 
   /**
@@ -728,7 +764,7 @@ public interface IExpr
    */
   public default IExpr greaterThan(IExpr that) {
     COMPARE_TERNARY temp = BooleanFunctions.CONST_GREATER.prepareCompare(this, that);
-    return ExprUtil.convertToExpr(temp);
+    return convertToExpr(temp);
   }
 
   /**
@@ -740,27 +776,6 @@ public interface IExpr
    */
   default boolean has(IExpr pattern) {
     return isFree(pattern, true);
-  }
-
-  /**
-   * Returns <code>false</code>, if <b>all of the elements</b> in the subexpressions or the
-   * expression itself, aren't a symbolic or numerical complex number or a structure with complex
-   * number arguments.
-   *
-   * @return <code>true</code> if this expression is a complex number or a structure with complex
-   *     number arguments.
-   */
-  default boolean hasComplexNumber() {
-    return !isFree(
-        x ->
-            (x.isComplex()
-                || //
-                x.isComplexNumeric()
-                || //
-                x == S.I
-                || //
-                x.isAST(S.Complex)), //
-        false);
   }
 
   /**
@@ -791,6 +806,27 @@ public interface IExpr
    */
   default boolean has(Predicate<IExpr> predicate, boolean heads) {
     return predicate.test(this);
+  }
+
+  /**
+   * Returns <code>false</code>, if <b>all of the elements</b> in the subexpressions or the
+   * expression itself, aren't a symbolic or numerical complex number or a structure with complex
+   * number arguments.
+   *
+   * @return <code>true</code> if this expression is a complex number or a structure with complex
+   *     number arguments.
+   */
+  default boolean hasComplexNumber() {
+    return !isFree(
+        x ->
+            (x.isComplex()
+                || //
+                x.isComplexNumeric()
+                || //
+                x == S.I
+                || //
+                x.isAST(S.Complex)), //
+        false);
   }
 
   /**
@@ -920,6 +956,7 @@ public interface IExpr
    * @param usePrefix use the <code>F....</code> class prefix for generating Java code.
    * @param noSymbolPrefix for symbols like <code>x,y,z,...</code> don't use the <code>F....</code>
    *     class prefix for code generation
+   * @param variables TODO
    * @return the internal Java form of this expression
    */
   default String internalJavaString(
@@ -927,8 +964,13 @@ public interface IExpr
       int depth,
       boolean useOperators,
       boolean usePrefix,
-      boolean noSymbolPrefix) {
+      boolean noSymbolPrefix,
+      Function<IExpr, String> variables) {
     return toString();
+  }
+
+  default String internalJavaString(Function<IExpr, String> variables) {
+    return internalJavaString(false, -1, false, true, false, variables);
   }
 
   /**
@@ -1172,6 +1214,17 @@ public interface IExpr
   }
 
   /**
+   * Test if this expression is an AST function or an Association, which contains a <b>header
+   * element</b> (i.e. the function name) at index position <code>0</code> and some optional
+   * <b>argument elements</b> at the index positions <code>1..n</code>.
+   *
+   * @return
+   */
+  default boolean isASTOrAssociation() {
+    return isAST() || isAssociation();
+  }
+
+  /**
    * Test if this expression is an AST function, which contains a <b>header element</b> (i.e. the
    * function name) at index position <code>0</code> and no <b>argument elements</b>. <br>
    * Therefore this expression is no <b>atomic expression</b>.
@@ -1396,7 +1449,7 @@ public interface IExpr
    *
    * @return
    * @see #isRealResult()
-   * @see #isNumericFunction()
+   * @see #isNumericFunction(boolean)
    */
   default boolean isConstantAttribute() {
     return false;
@@ -1446,7 +1499,7 @@ public interface IExpr
    *
    * @return
    */
-  default boolean isDataSet() {
+  default boolean isDataset() {
     return this instanceof IASTDataset;
   }
 
@@ -1573,11 +1626,42 @@ public interface IExpr
   }
 
   /**
+   * Test if this expression is an empty list (i.e. a list <code>{}</code>)
+   *
+   * @return
+   */
+  default boolean isEmptyList() {
+    return false;
+  }
+
+  /**
    * Test if this expression is the function <code>Equal[&lt;arg1&gt;, &lt;arg2&gt;]</code>
    *
    * @return
    */
   default boolean isEqual() {
+    return false;
+  }
+
+  /**
+   * Are the given evaluation flags disabled for this list ?
+   *
+   * @param flags
+   * @return
+   * @see IAST#NO_FLAG
+   */
+  default boolean isEvalFlagOff(int flags) {
+    return true;
+  }
+
+  /**
+   * Are the given evaluation flags enabled for this list ?
+   *
+   * @param flags
+   * @return
+   * @see IAST#NO_FLAG
+   */
+  default boolean isEvalFlagOn(int flags) {
     return false;
   }
 
@@ -1622,17 +1706,8 @@ public interface IExpr
   }
 
   /**
-   * Test if this expression is the <code>OptionsPattern</code> function <code>OptionsPattern()
-   * </code> or <code>OptionsPattern(&lt;symbol&gt;)</code>
-   *
-   * @return
-   */
-  default boolean isOptionsPattern() {
-    return false;
-  }
-
-  /**
-   * Test if this expression is the function <code>Power[&lt;arg1&gt;, &lt;arg2&gt;]</code>
+   * Test if this expression is the function <code>E^&lt;x&gt;</code> or in full form <code>
+   * Power[E, &lt;x&gt;]</code>
    *
    * @return
    */
@@ -1656,28 +1731,6 @@ public interface IExpr
    * @return
    */
   default boolean isFalse() {
-    return false;
-  }
-
-  /**
-   * Are the given evaluation flags disabled for this list ?
-   *
-   * @param flags
-   * @return
-   * @see IAST#NO_FLAG
-   */
-  default boolean isEvalFlagOff(int flags) {
-    return true;
-  }
-
-  /**
-   * Are the given evaluation flags enabled for this list ?
-   *
-   * @param flags
-   * @return
-   * @see IAST#NO_FLAG
-   */
-  default boolean isEvalFlagOn(int flags) {
     return false;
   }
 
@@ -1779,9 +1832,11 @@ public interface IExpr
   }
 
   /**
-   * Test if this expression is a <code>Function( arg1 )</code> expression with at least 1 argument.
+   * Test if this expression is a <code>Function( arg1 )</code> or <code>Function( arg1, arg2 )
+   * </code> expression with at least 1 argument.
    *
    * @return
+   * @see #isPureFunction()
    */
   default boolean isFunction() {
     return false;
@@ -1934,15 +1989,6 @@ public interface IExpr
   }
 
   /**
-   * Test if this expression is an empty list (i.e. a list <code>{}</code>)
-   *
-   * @return
-   */
-  default boolean isEmptyList() {
-    return false;
-  }
-
-  /**
    * Test if this expression is a list (i.e. an AST with head List)
    *
    * @return
@@ -1951,13 +1997,8 @@ public interface IExpr
     return false;
   }
 
-  /**
-   * Test if this expression is a list (i.e. an AST with head List) or an Association
-   *
-   * @return
-   */
-  default boolean isListOrAssociation() {
-    return isList();
+  default boolean isList(Predicate<IExpr> pred) {
+    return false;
   }
 
   /**
@@ -1985,10 +2026,6 @@ public interface IExpr
    */
   default boolean isList3() {
     return isList() && size() == 4;
-  }
-
-  default boolean isList(Predicate<IExpr> pred) {
-    return false;
   }
 
   /**
@@ -2052,13 +2089,12 @@ public interface IExpr
   }
 
   /**
-   * Test if this expression is a list with at least one element (i.e. a list <code>{element, ...}
-   * </code>)
+   * Test if this expression is a list (i.e. an AST with head List) or an Association
    *
    * @return
    */
-  default boolean isNonEmptyList() {
-    return false;
+  default boolean isListOrAssociation() {
+    return isList();
   }
 
   /**
@@ -2265,6 +2301,16 @@ public interface IExpr
   }
 
   /**
+   * Test if this expression is a list with at least one element (i.e. a list <code>{element, ...}
+   * </code>)
+   *
+   * @return
+   */
+  default boolean isNonEmptyList() {
+    return false;
+  }
+
+  /**
    * Test if this expression has a non-negative result (i.e. greater equal 0) or is assumed to be
    * non-negative.
    *
@@ -2376,6 +2422,15 @@ public interface IExpr
   }
 
   /**
+   * Test if this expression is an instance of NumericArrayExpr
+   *
+   * @return
+   */
+  default boolean isNumericArray() {
+    return false;
+  }
+
+  /**
    * Test if this expression is a numeric number (i.e. an instance of type <code>INum</code> or type
    * <code>IComplexNum</code>), an <code>ASTRealVector</code> or an <code>ASTRealMatrix</code>.
    *
@@ -2389,13 +2444,36 @@ public interface IExpr
   }
 
   /**
+   * Test if this expression is an IAST and contains at least one numeric argument.
+   *
+   * @return
+   */
+  default boolean isNumericAST() {
+    return false;
+  }
+
+  /**
    * Test if this expression is a numeric function (i.e. a number, a symbolic constant or a function
    * (with attribute NumericFunction) where all arguments are also &quot;numeric functions&quot;)
+   * Calls <code>isNumericFunction(false)</code>.
    *
    * @return <code>true</code>, if the given expression is a numeric function or value.
    * @see #isRealResult()
    */
   default boolean isNumericFunction() {
+    return isNumericFunction(false);
+  }
+
+  /**
+   * Test if this expression is a numeric function (i.e. a number, a symbolic constant or a function
+   * (with attribute NumericFunction) where all arguments are also &quot;numeric functions&quot;)
+   *
+   * @param allowList if <code>true</code> a <code>List(...)</code> AST is seen, as if it has
+   *     attribute {@link ISymbol#NUMERICFUNCTION}
+   * @return <code>true</code>, if the given expression is a numeric function or value.
+   * @see #isRealResult()
+   */
+  default boolean isNumericFunction(boolean allowList) {
     return isNumber() || isConstantAttribute();
   }
 
@@ -2408,7 +2486,19 @@ public interface IExpr
    *     variables contained in <code>varSet</code> are also numeric.
    */
   default boolean isNumericFunction(VariablesSet varSet) {
-    return isNumericFunction() || varSet.contains(this);
+    return isNumericFunction(true) || varSet.contains(this);
+  }
+
+  /**
+   * Test if this expression is a numeric function (i.e. a number, a symbolic constant or a function
+   * (with attribute NumericFunction) where all arguments are also &quot;numeric functions&quot;)
+   * under the assumption, that all variables contained in <code>list</code> are also numeric.
+   *
+   * @param list a list of variable symbols
+   * @return
+   */
+  default boolean isNumericFunction(Function<IExpr, String> list) {
+    return isNumericFunction(true) || list.apply(this) != null;
   }
 
   /**
@@ -2474,6 +2564,16 @@ public interface IExpr
    * @return
    */
   default boolean isOptional() {
+    return false;
+  }
+
+  /**
+   * Test if this expression is the <code>OptionsPattern</code> function <code>OptionsPattern()
+   * </code> or <code>OptionsPattern(&lt;symbol&gt;)</code>
+   *
+   * @return
+   */
+  default boolean isOptionsPattern() {
     return false;
   }
 
@@ -2608,6 +2708,26 @@ public interface IExpr
   }
 
   /**
+   * Test if this expression is the multiplication function <code>
+   * Plus[&lt;arg1&gt;, &lt;arg2&gt;]</code> with exactly 2 arguments.
+   *
+   * @return
+   */
+  default boolean isPlus2() {
+    return false;
+  }
+
+  /**
+   * Test if this expression is the multiplication function <code>
+   * Plus[&lt;arg1&gt;, &lt;arg2&gt;, &lt;arg3&gt;]</code> with exactly 3 arguments.
+   *
+   * @return
+   */
+  default boolean isPlus3() {
+    return false;
+  }
+
+  /**
    * Test if this expression is a <code>Plus, Power or Times</code> function.
    *
    * @return
@@ -2727,6 +2847,17 @@ public interface IExpr
   }
 
   /**
+   * Test if this expression is a &quot;pure&quot; or &quot;anonymous&quot; <code>Function( arg1 )
+   * </code> expression with exactly 1 argument.
+   *
+   * @return
+   * @see #isFunction()
+   */
+  default boolean isPureFunction() {
+    return false;
+  }
+
+  /**
    * Test if this expression is a Quantity(a,unit) expression.
    *
    * @return
@@ -2743,16 +2874,6 @@ public interface IExpr
    */
   default boolean isRational() {
     return this instanceof IRational;
-  }
-
-  /**
-   * Test if this expression is the <code>Repetead</code> function <code>Repetead(&lt;pattern1&gt;)
-   * </code>.
-   *
-   * @return
-   */
-  default boolean isRepeated() {
-    return false;
   }
 
   /**
@@ -2845,6 +2966,16 @@ public interface IExpr
    * @return
    */
   default boolean isRealVector() {
+    return false;
+  }
+
+  /**
+   * Test if this expression is the <code>Repetead</code> function <code>Repetead(&lt;pattern1&gt;)
+   * </code>.
+   *
+   * @return
+   */
+  default boolean isRepeated() {
     return false;
   }
 
@@ -3052,6 +3183,16 @@ public interface IExpr
   }
 
   /**
+   * Test if this expression is the function <code>Subscript[var, &lt;integer-value&gt;]</code>.
+   * <code>var</code> has to be a variable.
+   *
+   * @return
+   */
+  default boolean isSubscript() {
+    return false;
+  }
+
+  /**
    * Test if this expression is a symbol (instanceof ISymbol)
    *
    * @return
@@ -3071,7 +3212,7 @@ public interface IExpr
   }
 
   /**
-   * Test if this expression is the function <code>TAn[&lt;arg&gt;]</code>
+   * Test if this expression is the function <code>Tan[&lt;arg&gt;]</code>
    *
    * @return
    */
@@ -3099,6 +3240,26 @@ public interface IExpr
   }
 
   /**
+   * Test if this expression is the multiplication function <code>
+   * Times[&lt;arg1&gt;, &lt;arg2&gt;]</code> with exactly 2 arguments.
+   *
+   * @return
+   */
+  default boolean isTimes2() {
+    return false;
+  }
+
+  /**
+   * Test if this expression is the multiplication function <code>
+   * Times[&lt;arg1&gt;, &lt;arg2&gt;, &lt;arg3&gt;]</code> with exactly 3 arguments.
+   *
+   * @return
+   */
+  default boolean isTimes3() {
+    return false;
+  }
+
+  /**
    * Test if this expression is a trigonometric function.
    *
    * <p><b> Note</b>: ArcTan(x,y) can have 2 arguments and is considered as a trigonometric
@@ -3117,6 +3278,15 @@ public interface IExpr
    *     </code> in all other cases
    */
   default boolean isTrue() {
+    return false;
+  }
+
+  /**
+   * Test if this expression is the function <code>Unevaluated[&lt;arg&gt;]</code>
+   *
+   * @return
+   */
+  default boolean isUnevaluated() {
     return false;
   }
 
@@ -3159,15 +3329,6 @@ public interface IExpr
   default int isVector() {
     // default: no vector
     return -1;
-  }
-
-  /**
-   * Test if this expression is an IAST and contains at least one numeric argument.
-   *
-   * @return
-   */
-  default boolean isNumericAST() {
-    return false;
   }
 
   /**
@@ -3274,7 +3435,7 @@ public interface IExpr
    */
   public default IExpr lessEqualThan(IExpr that) {
     COMPARE_TERNARY temp = BooleanFunctions.CONST_LESS_EQUAL.prepareCompare(this, that);
-    return ExprUtil.convertToExpr(temp);
+    return convertToExpr(temp);
   }
 
   /**
@@ -3290,7 +3451,7 @@ public interface IExpr
    */
   public default IExpr lessThan(IExpr that) {
     COMPARE_TERNARY temp = BooleanFunctions.CONST_LESS.prepareCompare(this, that);
-    return ExprUtil.convertToExpr(temp);
+    return convertToExpr(temp);
   }
 
   /**
@@ -3327,6 +3488,18 @@ public interface IExpr
   }
 
   /**
+   * If a value is present (i.e. this unequals F.NIL), apply the provided mapping function to it,
+   * and if the result is non-NIL, return the result. Otherwise return <code>F.NIL</code>
+   *
+   * @param mapper a mapping function to apply to the value, if present
+   * @return an IExpr describing the result of applying a mapping function to the value of this
+   *     object, if a value is present, otherwise return <code>F.NIL</code>.
+   */
+  default IExpr mapExpr(Function<? super IExpr, ? extends IExpr> mapper) {
+    return mapper.apply(this);
+  }
+
+  /**
    * This method assumes that <code>this</code> is a list of lists in matrix form. It combines the
    * column values in a list as argument for the given <code>function</code>. <b>Example</b> a
    * matrix <code>{{x1, y1,...}, {x2, y2, ...}, ...}</code> will be converted to <code>
@@ -3338,18 +3511,6 @@ public interface IExpr
    */
   default IExpr mapMatrixColumns(int[] dim, Function<IExpr, IExpr> f) {
     return F.NIL;
-  }
-
-  /**
-   * If a value is present (i.e. this unequals F.NIL), apply the provided mapping function to it,
-   * and if the result is non-NIL, return the result. Otherwise return <code>F.NIL</code>
-   *
-   * @param mapper a mapping function to apply to the value, if present
-   * @return an IExpr describing the result of applying a mapping function to the value of this
-   *     object, if a value is present, otherwise return <code>F.NIL</code>.
-   */
-  default IExpr mapExpr(Function<? super IExpr, ? extends IExpr> mapper) {
-    return mapper.apply(this);
   }
 
   /**
@@ -3859,10 +4020,11 @@ public interface IExpr
   default IExpr replaceRepeated(VisitorReplaceAll visitor) {
     IExpr result = this;
     IExpr temp = accept(visitor);
-    final int iterationLimit = EvalEngine.get().getIterationLimit();
+    EvalEngine engine = EvalEngine.get();
+    final int iterationLimit = engine.getIterationLimit();
     int iterationCounter = 1;
     while (temp.isPresent()) {
-      result = temp;
+      result = engine.evaluate(temp);
       temp = result.accept(visitor);
       if (iterationLimit >= 0 && iterationLimit <= ++iterationCounter) {
         IterationLimitExceeded.throwIt(iterationCounter, result);
@@ -3993,6 +4155,10 @@ public interface IExpr
     return add(that);
   }
 
+  // default Object toData() {
+  // return null;
+  // }
+
   /**
    * Returns an <code>IExpr</code> whose value is <code>(this * that)</code>. Calculates <code>
    * F.eval(F.Times(this, that))</code> in the common case and uses a specialized implementation for
@@ -4026,10 +4192,6 @@ public interface IExpr
   public default IExpr timesDistributed(final IExpr that) {
     return times(that);
   }
-
-  // default Object toData() {
-  // return null;
-  // }
 
   /**
    * Convert this object into a <code>Complex[]</code> vector.
@@ -4089,8 +4251,8 @@ public interface IExpr
    * Integer.MIN_VALUE</code> to <code>Integer.MAX_VALUE</code> or the expression is not convertible
    * to the <code>int</code> range.
    *
-   * @return the numeric value represented by this integer after conversion to type <code>int</code>
-   *     .
+   * @return the numeric value represented by this expression after conversion to type <code>int
+   *     </code> or <code>Integer.MIN_VALUE</code> if this expression cannot be converted.
    */
   default int toIntDefault() {
     return toIntDefault(Integer.MIN_VALUE);
@@ -4136,7 +4298,7 @@ public interface IExpr
    */
   default RealMatrix toRealMatrix() {
     final double[][] elements = toDoubleMatrix();
-    if (elements != null) {
+    if (elements != null && elements.length > 0 && elements[0].length > 0) {
       return new Array2DRowRealMatrix(elements, false);
     }
     return null;
@@ -4164,6 +4326,15 @@ public interface IExpr
     return null;
   }
 
+  /**
+   * Return the <code>Mathematica()</code> form of this expression
+   *
+   * @return
+   */
+  default String toMMA() {
+    return toString();
+  }
+
   @Override
   default String toScript() {
     return toString();
@@ -4177,17 +4348,17 @@ public interface IExpr
   /**
    * Compare if <code>this != that</code:
    * <ul>
-   * <li>return F.True if the comparison is <code>true</code></li>
-   * <li>return F.False if the comparison is <code>false</code></li>
+   * <li>return S.True if the comparison is <code>true</code></li>
+   * <li>return S.False if the comparison is <code>false</code></li>
    * <li>return F.NIL if the comparison is undetermined (i.e. could not be evaluated)</li>
    * </ul>
    *
    * @param that
-   * @return <code>F.True, F.False or F.NIL</code
+   * @return <code>S.True, S.False or F.NIL</code
    */
   public default IExpr unequalTo(IExpr that) {
     COMPARE_TERNARY temp = BooleanFunctions.CONST_EQUAL.compareTernary(this, that);
-    return ExprUtil.convertToExpr(temp);
+    return convertToExpr(temp);
   }
 
   /**

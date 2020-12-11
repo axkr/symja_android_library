@@ -83,7 +83,7 @@ public class AST extends HMArrayList implements Externalizable {
       return fDelegate.asSet();
     }
 
-    public IAST clone() throws CloneNotSupportedException {
+    public IAST oopy() {
       return new ASTProxy(fDelegate, fFirstIndex);
     }
 
@@ -389,16 +389,17 @@ public class AST extends HMArrayList implements Externalizable {
    *
    * @return a clone of this <tt>AST</tt> instance.
    */
-  @Override
-  public IAST clone() {
-    AST ast = new AST();
-    // ast.fProperties = null;
-    ast.array = array.clone();
-    ast.hashValue = 0;
-    ast.firstIndex = firstIndex;
-    ast.lastIndex = lastIndex;
-    return ast;
-  }
+  //	@Override
+  //	public IAST clone() {
+  //		 throw new UnsupportedOperationException();
+  ////		AST ast = new AST();
+  ////		// ast.fProperties = null;
+  ////		ast.array = array.clone();
+  ////		ast.hashValue = 0;
+  ////		ast.firstIndex = firstIndex;
+  ////		ast.lastIndex = lastIndex;
+  ////		return ast;
+  //	}
 
   @Override
   public IASTAppendable copyAppendable() {

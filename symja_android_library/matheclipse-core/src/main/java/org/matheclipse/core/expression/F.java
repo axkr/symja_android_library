@@ -1,14 +1,18 @@
 package org.matheclipse.core.expression;
 
+import static java.lang.Math.abs;
+
 import java.awt.Desktop;
 import java.io.BufferedWriter;
 import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.math.BigInteger;
+import java.util.HashSet;
 import java.util.IdentityHashMap;
 import java.util.Locale;
 import java.util.Map;
+import java.util.Set;
 import java.util.concurrent.CountDownLatch;
 import java.util.function.BiFunction;
 import java.util.function.BiPredicate;
@@ -55,6 +59,7 @@ import org.matheclipse.core.builtin.ListFunctions;
 import org.matheclipse.core.builtin.ManipulateFunction;
 import org.matheclipse.core.builtin.MinMaxFunctions;
 import org.matheclipse.core.builtin.NumberTheory;
+import org.matheclipse.core.builtin.NumericArrayFunctions;
 import org.matheclipse.core.builtin.OutputFunctions;
 import org.matheclipse.core.builtin.PatternMatching;
 import org.matheclipse.core.builtin.PolynomialFunctions;
@@ -116,7 +121,7 @@ import org.matheclipse.core.patternmatching.IPatternMatcher;
 import org.matheclipse.core.tensor.QuantityParser;
 import org.matheclipse.parser.client.FEConfig;
 import org.matheclipse.parser.client.SyntaxError;
-import org.matheclipse.parser.trie.Tries;
+import org.matheclipse.parser.trie.TrieMatch;
 
 import com.google.common.cache.Cache;
 import com.google.common.cache.CacheBuilder;
@@ -158,12 +163,14 @@ public class F extends S {
   /**
    * The map for predefined strings for the {@link IExpr#internalFormString(boolean, int)} method.
    */
-  public static final Map<String, String> PREDEFINED_INTERNAL_FORM_STRINGS = Tries.forStrings();
+  public static final Map<String, String> PREDEFINED_INTERNAL_FORM_STRINGS =
+      FEConfig.TRIE_STRING2STRING_BUILDER.withMatch(TrieMatch.EXACT).build();
 
-  public static final Map<String, IPattern> PREDEFINED_PATTERN_MAP = Tries.forStrings();
+  public static final Map<String, IPattern> PREDEFINED_PATTERN_MAP =
+      Config.TRIE_STRING2PATTERN_BUILDER.withMatch(TrieMatch.EXACT).build();
 
   public static final Map<String, IPatternSequence> PREDEFINED_PATTERNSEQUENCE_MAP =
-      Tries.forStrings();
+      Config.TRIE_STRING2PATTERNSEQUENCE_BUILDER.withMatch(TrieMatch.EXACT).build();
 
   public static ISymbolObserver SYMBOL_OBSERVER =
       new ISymbolObserver() {
@@ -180,11 +187,6 @@ public class F extends S {
    * The constant object <code>NIL</code> (not in list) indicates in the evaluation process that no
    * evaluation was possible (i.e. no further definition was found to create a new expression from
    * the existing one).
-   *
-   * <p>Almost every modifying method in this class throws an
-   * <tt>UnsupportedOperationException</tt>, almost every predicate returns <code>false</code>. The
-   * main method to check if the object is valid is the <code>isPresent()</code> method. The method
-   * is similar to <code>java.util.Optional#isPresent()</code>.
    *
    * @see java.util.Optional#isPresent
    */
@@ -328,6 +330,12 @@ public class F extends S {
   /** Constant integer &quot;10&quot; */
   public static final IInteger C10 = AbstractIntegerSym.valueOf(10);
 
+  /** Constant integer &quot;100&quot; */
+  public static final IInteger C100 = AbstractIntegerSym.valueOf(100);
+
+  /** Constant integer &quot;1000&quot; */
+  public static final IInteger C1000 = AbstractIntegerSym.valueOf(1000);
+
   /**
    * Complex imaginary unit. The parsed symbol &quot;I&quot; is converted on input to this constant.
    */
@@ -378,8 +386,15 @@ public class F extends S {
   /** Represents the empty Smyja string <code>""</code> */
   public static IStringX CEmptyString;
 
+  /** Represents <code>Sequence()</code> (i.e. the constant empty list) */
+  public static IAST CEmptySequence;
+
   /** Represents <code>List()</code> (i.e. the constant empty list) */
   public static IAST CEmptyList;
+
+  public static Set<IExpr> CEmptySet;
+
+  public static Function<IExpr, String> CNullFunction = x -> null;
 
   /** Represents <code>List(0)</code> */
   public static IAST CListC0;
@@ -576,8 +591,10 @@ public class F extends S {
       PatternTest.setAttributes(ISymbol.HOLDREST);
       List.setEvaluator(ICoreFunctionEvaluator.ARGS_EVALUATOR);
 
-      CEmptyList = headAST0(List);
+      CEmptySequence = headAST0(S.Sequence);
+      CEmptyList = headAST0(S.List);
       CEmptyString = $str("");
+      CEmptySet = new HashSet<IExpr>();
       CListC0 = new B1.List(C0);
       CListC1 = new B1.List(C1);
       CListC2 = new B1.List(C2);
@@ -1001,6 +1018,7 @@ public class F extends S {
       SourceCodeFunctions.initialize();
       SparseArrayFunctions.initialize();
       UnitTestingFunctions.initialize();
+      NumericArrayFunctions.initialize();
 
       ComputationalGeometryFunctions.initialize();
 
@@ -1321,12 +1339,18 @@ public class F extends S {
     return org.matheclipse.core.expression.OptionsPattern.valueOf(symbol, defaultOptions);
   }
 
-  public static IPatternSequence $Repeated(final IExpr patternExpr, EvalEngine engine) {
-    return org.matheclipse.core.expression.RepeatedPattern.valueOf(patternExpr, false, engine);
-  }
-
-  public static IPatternSequence $RepeatedNull(final IExpr patternExpr, EvalEngine engine) {
-    return org.matheclipse.core.expression.RepeatedPattern.valueOf(patternExpr, true, engine);
+  /**
+   * @param patternExpr
+   * @param min if <code>min==0</code> RepeatedNull is assumed
+   * @param max
+   * @param engine
+   * @return
+   */
+  public static IPatternSequence $Repeated(
+      final IExpr patternExpr, int min, int max, EvalEngine engine) {
+    boolean nullAllowed = (min <= 0);
+    return org.matheclipse.core.expression.RepeatedPattern.valueOf(
+        patternExpr, min, max, nullAllowed, engine);
   }
 
   /**
@@ -1472,7 +1496,7 @@ public class F extends S {
   }
 
   public static IExpr symjify(final boolean value) {
-    return value ? F.True : F.False;
+    return value ? S.True : S.False;
   }
 
   /**
@@ -1556,13 +1580,7 @@ public class F extends S {
   }
 
   public static ISymbol $rubi(final String symbolName, IEvaluator evaluator) {
-    String name =
-        FEConfig.PARSER_USE_LOWERCASE_SYMBOLS //
-            ? (symbolName.length() == 1
-                ? symbolName
-                : //
-                symbolName.toLowerCase(Locale.ENGLISH)) //
-            : symbolName;
+    String name = symbolNameNormalized(symbolName);
     ISymbol symbol = org.matheclipse.core.expression.Context.RUBI.get(name);
     if (symbol != null) {
       return symbol;
@@ -1571,6 +1589,12 @@ public class F extends S {
     bSymbol.setEvaluator(evaluator);
     org.matheclipse.core.expression.Context.RUBI.put(name, bSymbol);
     return bSymbol;
+  }
+
+  public static String symbolNameNormalized(final String symbolName) {
+    return FEConfig.PARSER_USE_LOWERCASE_SYMBOLS
+        ? (symbolName.length() == 1 ? symbolName : symbolName.toLowerCase(Locale.ENGLISH))
+        : symbolName;
   }
 
   public static final IStringX $str(final char ch) {
@@ -3649,6 +3673,10 @@ public class F extends S {
     return new AST2(Grad, a0, a1);
   }
 
+  public static IAST Graph(final IExpr a0) {
+    return new AST1(Graph, a0);
+  }
+
   public static IAST Graph(final IExpr a0, final IExpr a1) {
     return new AST2(Graph, a0, a1);
   }
@@ -3794,6 +3822,10 @@ public class F extends S {
 
   public static IAST Implies(final IExpr a0, final IExpr a1) {
     return new AST2(Implies, a0, a1);
+  }
+
+  public static IAST In(final IExpr a0) {
+    return new AST1(In, a0);
   }
 
   public static IAST Increment(final IExpr a) {
@@ -4074,6 +4106,24 @@ public class F extends S {
     return result;
   }
 
+  public static IRational sumRational(
+      final IntFunction<IRational> function, final int from, final int to, final int step) {
+    IRational result = F.C0;
+    for (int i = from; i <= to; i += step) {
+      result = result.add(function.apply(i));
+    }
+    return result;
+  }
+
+  public static IRational productRational(
+      final IntFunction<IRational> function, final int from, final int to, final int step) {
+    IRational result = F.C1;
+    for (int i = from; i <= to; i += step) {
+      result = result.multiply(function.apply(i));
+    }
+    return result;
+  }
+
   /**
    * Iterate over an integer range <code>from <= i <= to</code> with the step <code>step/code>.
    *
@@ -4290,6 +4340,32 @@ public class F extends S {
         // copySign(x, 1.0) is a branch-free version of abs(x), but with different NaN semantics
         || (a == b) // needed to ensure that infinities equal themselves
         || (Double.isNaN(a) && Double.isNaN(b));
+  }
+
+  /**
+   * Calculate the relative difference between x and y. In case |x+y|/2 is zero the absolute
+   * difference is returned.
+   *
+   * @param x first value
+   * @param y second value
+   * @return relative error
+   */
+  public static double relativeDifference(final double x, final double y) {
+    double error;
+    if (Double.isInfinite(x) && Double.isInfinite(y)) {
+      if (Double.compare(x, y) == 0) {
+        error = 0;
+      } else {
+        error = Double.POSITIVE_INFINITY;
+      }
+    } else {
+      final double z = abs(x + y) / 2;
+      error = abs(x - y);
+      if (z > 0) {
+        error /= z;
+      }
+    }
+    return error;
   }
 
   /**
@@ -4613,6 +4689,21 @@ public class F extends S {
   }
 
   /**
+   * Create an immutable list <code>{ }</code> by converting the expressions into IExpr type.
+   *
+   * @param a
+   * @return
+   * @see {@link #ListAlloc(final IExpr...)} to create an appendable list
+   */
+  public static IAST list(final Object... objects) {
+    IExpr[] a = new IExpr[objects.length];
+    for (int i = 0; i < objects.length; i++) {
+      a[i] = Object2Expr.convert(objects[i]);
+    }
+    return F.List(a);
+  }
+
+  /**
    * Create an immutable list <code>{ }</code>.
    *
    * @param a
@@ -4661,12 +4752,45 @@ public class F extends S {
     return ast(a, List);
   }
 
+  /**
+   * Return a single of value as a <code>List()</code>
+   *
+   * @param a
+   * @return
+   */
+  public static IAST single(final IExpr a) {
+    return new B1.List(a);
+  }
+
+  /**
+   * Return a pair of values as a <code>List()</code>
+   *
+   * @param a0
+   * @param a1
+   * @return
+   */
+  public static IAST pair(final IExpr a0, final IExpr a1) {
+    return new B2.List(a0, a1);
+  }
+
+  /**
+   * Return a triple of values as a <code>List()</code>
+   *
+   * @param a0
+   * @param a1
+   * @param a2
+   * @return
+   */
+  public static IAST triple(final IExpr a0, final IExpr a1, final IExpr a2) {
+    return new AST3(List, a0, a1, a2);
+  }
+
   public static IAST List(final long... numbers) {
     IInteger a[] = new IInteger[numbers.length];
     for (int i = 0; i < numbers.length; i++) {
       a[i] = ZZ(numbers[i]);
     }
-    return function(List, a);
+    return List(a);
   }
 
   public static IAST List(final int... numbers) {
@@ -4894,6 +5018,10 @@ public class F extends S {
 
   public static IAST MessageName(final IExpr a0, final IExpr a1) {
     return new AST2(MessageName, a0, a1);
+  }
+
+  public static IAST MessageName(final ISymbol symbol, final String str) {
+    return new AST2(MessageName, symbol, F.$str(str));
   }
 
   public static IASTAppendable Min() {
@@ -5303,6 +5431,10 @@ public class F extends S {
 
   public static IAST OrderedQ(final IExpr a) {
     return new AST1(OrderedQ, a);
+  }
+
+  public static IAST Out(final IExpr a0) {
+    return new AST1(Out, a0);
   }
 
   public static IASTAppendable Part() {
@@ -5762,6 +5894,14 @@ public class F extends S {
     return new AST2(Refine, a0, a1);
   }
 
+  public static IAST RegularExpression(final IExpr a0) {
+    return new AST1(RegularExpression, a0);
+  }
+
+  public static IAST RegularExpression(final String str) {
+    return new AST1(RegularExpression, F.$str(str));
+  }
+
   public static IAST Replace(final IExpr a0, final IExpr a1) {
     return new AST2(Replace, a0, a1);
   }
@@ -6052,6 +6192,10 @@ public class F extends S {
 
   public static IAST Rule(final IExpr a0, final IExpr a1) {
     return new B2.Rule(a0, a1);
+  }
+
+  public static IAST Rule(final IExpr a0, final String str1) {
+    return new B2.Rule(a0, F.$str(str1));
   }
 
   public static IAST RuleDelayed(final IExpr a0, final IExpr a1) {
@@ -6448,6 +6592,11 @@ public class F extends S {
 
   public static IAST Sum(final IExpr a0, final IExpr a1, final IExpr a2, final IExpr a3) {
     return quaternary(F.Sum, a0, a1, a2, a3);
+  }
+
+  public static IRational sumRational(
+      final IntFunction<IRational> function, final int iMin, final int iMax) {
+    return sumRational(function, iMin, iMax, 1);
   }
 
   /**
@@ -6947,12 +7096,12 @@ public class F extends S {
   /**
    * The operator form <code>op(f)[expr]</code> is transformed to <code>op(expr, f)</code>
    *
-   * @param ast1Arg an IAST with condition <code>ast1Arg.head().isAST1() && ast1Arg.isAST1()</code>
+   * @param ast1 an IAST with condition <code>ast1Arg.head().isAST1() && ast1Arg.isAST1()</code>
    * @return
    */
-  public static IAST operatorFormAppend(final IAST ast1Arg) {
-    if (ast1Arg.head().isAST1() && ast1Arg.isAST1()) {
-      return new AST2(ast1Arg.topHead(), ast1Arg.arg1(), ((IAST) ast1Arg.head()).arg1());
+  public static IAST operatorForm1Append(final IAST ast1) {
+    if (ast1.head().isAST1() && ast1.isAST1()) {
+      return new AST2(ast1.topHead(), ast1.arg1(), ((IAST) ast1.head()).arg1());
     }
     return NIL;
   }
@@ -6978,12 +7127,13 @@ public class F extends S {
   /**
    * The operator form <code>op(f)[expr]</code> is transformed to <code>op(f, expr)</code>
    *
-   * @param ast1Arg an IAST with condition <code>ast1Arg.head().isAST1() && ast1Arg.isAST1()</code>
+   * @param ast1 an <code>IAST</code> with condition <code>
+   *     ast1Arg.head().isAST1() && ast1Arg.isAST1()</code>
    * @return
    */
-  public static IAST operatorFormPrepend(final IAST ast1Arg) {
-    if (ast1Arg.head().isAST1() && ast1Arg.isAST1()) {
-      return new AST2(ast1Arg.topHead(), ((IAST) ast1Arg.head()).arg1(), ast1Arg.arg1());
+  public static IAST operatorForm2Prepend(final IAST ast1) {
+    if (ast1.head().isAST1() && ast1.isAST1()) {
+      return new AST2(ast1.topHead(), ((IAST) ast1.head()).arg1(), ast1.arg1());
     }
     return NIL;
   }

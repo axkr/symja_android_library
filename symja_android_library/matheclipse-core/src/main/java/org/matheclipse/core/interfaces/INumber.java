@@ -48,7 +48,7 @@ public interface INumber extends IExpr {
   public int compareAbsValueToOne();
 
   /**
-   * Get the absolute value for a given number
+   * Get the argument of the complex number
    *
    * @return
    */
@@ -208,4 +208,11 @@ public interface INumber extends IExpr {
    * @return the closest integer to the argument.
    */
   public IExpr round();
+
+  /**
+   * Return the list <code>{r, theta}</code> of the polar coordinates of this number
+   *
+   * @return
+   */
+  public IAST toPolarCoordinates();
 }

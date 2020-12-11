@@ -4,6 +4,8 @@ import java.io.ObjectStreamException;
 import java.util.Collection;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
+import java.util.function.Function;
 
 import org.hipparchus.util.Pair;
 import org.matheclipse.core.interfaces.IAST;
@@ -261,14 +263,15 @@ public class Blank implements IPattern {
       int depth,
       boolean useOperators,
       boolean usePrefix,
-      boolean noSymbolPrefix) {
+      boolean noSymbolPrefix,
+      Function<IExpr, String> variables) {
     String prefix = usePrefix ? "F." : "";
     final StringBuilder buffer = new StringBuilder();
     buffer.append(prefix + "$b(");
     if (fHeadTest != null) {
       buffer.append(
           fHeadTest.internalJavaString(
-              symbolsAsFactoryMethod, 0, useOperators, usePrefix, noSymbolPrefix));
+              symbolsAsFactoryMethod, 0, useOperators, usePrefix, noSymbolPrefix, variables));
     }
     buffer.append(')');
     return buffer.toString();
@@ -330,6 +333,19 @@ public class Blank implements IPattern {
   @Override
   public boolean matchPattern(final IExpr expr, IPatternMap patternMap) {
     return isConditionMatched(expr, patternMap);
+  }
+
+  @Override
+  public String toMMA() {
+    final StringBuilder buffer = new StringBuilder();
+    buffer.append('_');
+    if (fHeadTest != null) {
+      buffer.append(fHeadTest.toMMA());
+    }
+    if (fDefault) {
+      buffer.append('.');
+    }
+    return buffer.toString();
   }
 
   @Override

@@ -18,6 +18,7 @@ import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.exception.MemoryLimitExceeded;
 import org.matheclipse.core.eval.exception.RecursionLimitExceeded;
 import org.matheclipse.core.expression.F;
+import org.matheclipse.core.expression.S;
 import org.matheclipse.core.generic.ObjIntPredicate;
 import org.matheclipse.core.visit.IVisitor;
 
@@ -41,7 +42,7 @@ import org.matheclipse.core.visit.IVisitor;
  * See <a href="http://en.wikipedia.org/wiki/Abstract_syntax_tree">Abstract syntax tree</a>, <a
  * href="https://en.wikipedia.org/wiki/Directed_acyclic_graph">Directed acyclic graph</a>
  */
-public interface IAST extends IExpr, Cloneable, Iterable<IExpr> {
+public interface IAST extends IExpr, Iterable<IExpr> {
 
   /**
    * The enumeration for the properties (keys) of the map possibly associated with this <code>IAST
@@ -213,6 +214,10 @@ public interface IAST extends IExpr, Cloneable, Iterable<IExpr> {
    */
   public IExpr arg1();
 
+  default IExpr getUnevaluated(int position) {
+    return get(position);
+  }
+
   /**
    * Get the second argument (i.e. the third element of the underlying list structure) of the <code>
    * AST</code> function (i.e. get(2) ). <br>
@@ -279,8 +284,8 @@ public interface IAST extends IExpr, Cloneable, Iterable<IExpr> {
    * @return a clone of this <code>IAST</code> instance.
    * @deprecated use {@link #copyAppendable()} or {@link #copy()}
    */
-  @Deprecated
-  public IAST clone() throws CloneNotSupportedException;
+  //  @Deprecated
+  //  public IAST clone() throws CloneNotSupportedException;
 
   /**
    * Compare all adjacent elements from lowest to highest index and return true, if the binary
@@ -377,7 +382,10 @@ public interface IAST extends IExpr, Cloneable, Iterable<IExpr> {
 
   /**
    * Create a copy of this <code>AST</code>, which only contains the head element of the list (i.e.
-   * the element with index 0).
+   * the element with index 0). For <code>ASTAssociation</code>s create a copy of the full form
+   * <code>AST</code>, which only contains the head <code>S.Association</code> (i.e. the element
+   * with index 0). In further evaluation steps this full form can be converted back into a real
+   * <code>ASTAssociation</code>.
    *
    * @return
    */

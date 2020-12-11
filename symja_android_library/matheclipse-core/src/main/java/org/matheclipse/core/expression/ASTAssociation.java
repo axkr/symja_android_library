@@ -87,6 +87,14 @@ public class ASTAssociation extends AST implements IAssociation {
     return visitor.visit(this);
   }
 
+  @Override
+  public boolean append(IExpr expr) {
+    if (expr.isRuleAST() || size() == 0) {
+      return super.append(expr);
+    }
+    throw new UnsupportedOperationException();
+  }
+
   /**
    * Adds the specified rule at the end of this association.Existing duplicate rule keys will be
    * replaced by the new rule.
@@ -203,17 +211,11 @@ public class ASTAssociation extends AST implements IAssociation {
   // return keyToIndexMap.getInt(expr);
   // }
 
-  @Override
-  public IAST clone() {
-    ASTAssociation ast = new ASTAssociation();
-    // ast.fProperties = null;
-    ast.array = array.clone();
-    ast.hashValue = 0;
-    ast.firstIndex = firstIndex;
-    ast.lastIndex = lastIndex;
-    ast.keyToIndexMap = keyToIndexMap.clone();
-    return ast;
-  }
+  //  @Override
+  //  public IAST clone() {
+  //	  throw new UnsupportedOperationException();
+  ////    return copy();
+  //  }
 
   @Override
   public ASTAssociation copy() {
@@ -229,14 +231,7 @@ public class ASTAssociation extends AST implements IAssociation {
 
   @Override
   public IASTAppendable copyAppendable() {
-    ASTAssociation ast = new ASTAssociation();
-    // ast.fProperties = null;
-    ast.array = array.clone();
-    ast.hashValue = 0;
-    ast.firstIndex = firstIndex;
-    ast.lastIndex = lastIndex;
-    ast.keyToIndexMap = keyToIndexMap.clone();
-    return ast;
+    return copy();
   }
 
   @Override
@@ -266,14 +261,16 @@ public class ASTAssociation extends AST implements IAssociation {
 
   /** {@inheritDoc} */
   @Override
-  public IAssociation copyHead() {
-    return new ASTAssociation(size(), false);
+  public IASTAppendable copyHead() {
+    return F.ast(S.Association, size(), false);
+    // return new ASTAssociation(size(), false);
   }
 
   /** {@inheritDoc} */
   @Override
-  public IAssociation copyHead(final int intialCapacity) {
-    return new ASTAssociation(intialCapacity, false);
+  public IASTAppendable copyHead(final int intialCapacity) {
+    return F.ast(S.Association, intialCapacity, false);
+    //    return new ASTAssociation(intialCapacity, false);
   }
 
   // public boolean appendAllRules(ASTAssociation ast, int startPosition, int endPosition) {
@@ -474,7 +471,7 @@ public class ASTAssociation extends AST implements IAssociation {
   @Override
   public IAST getRule(int position) {
     IExpr temp = super.get(position);
-    if (temp.isRuleAST()) {
+    if (temp != null && temp.isRuleAST()) {
       return (IAST) temp;
     }
     return F.NIL;
@@ -526,6 +523,16 @@ public class ASTAssociation extends AST implements IAssociation {
    */
   @Override
   public boolean isAssociation() {
+    return true;
+  }
+
+  @Override
+  public boolean isAST() {
+    return false;
+  }
+
+  @Override
+  public boolean isAtom() {
     return true;
   }
 
@@ -765,11 +772,22 @@ public class ASTAssociation extends AST implements IAssociation {
   }
 
   @Override
-  public IExpr set(int location, IExpr object) {
-    if (location != 0 && !object.isRuleAST()) {
-      ArgumentTypeException.throwArg(object, S.Association);
+  public IExpr set(final int location, final IExpr rule) {
+    if (rule.isRuleAST() && location > 0) {
+      final IAST oldRule = getRule(location);
+      if (oldRule.isPresent()) {
+        keyToIndexMap.removeInt(oldRule.first());
+      }
+      keyToIndexMap.put(rule.first(), location);
+      return super.set(location, rule);
     }
-    return super.set(location, object);
+    if (location == 0) {
+      // set header
+      return super.set(0, rule);
+    }
+    // illegal arguments: \"`1`\" in `2`
+    ArgumentTypeException.throwArg(rule, S.Association);
+    return F.NIL;
   }
 
   @Override
@@ -804,7 +822,6 @@ public class ASTAssociation extends AST implements IAssociation {
     Collections.sort(indices, comparator);
     ASTAssociation result = new ASTAssociation(argSize(), true);
     for (Object2IntMap.Entry<IExpr> element : keyToIndexMap.object2IntEntrySet()) {
-      // for (Map.Entry<IExpr, Integer> element : keyToIndexMap.entrySet()) {
       int indx = element.getIntValue();
       for (int i = 0; i < indices.size(); i++) {
         if (indices.get(i) == indx) {

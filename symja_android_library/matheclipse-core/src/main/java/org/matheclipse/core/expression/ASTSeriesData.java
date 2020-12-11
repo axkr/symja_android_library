@@ -17,7 +17,7 @@ import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.interfaces.IInteger;
 import org.matheclipse.core.interfaces.INumber;
 
-public class ASTSeriesData extends AbstractAST implements Cloneable, Externalizable {
+public class ASTSeriesData extends AbstractAST implements Externalizable {
 
   /** A map of the truncated power series coefficients <code>value != 0</code> */
   OpenIntToIExprHashMap<IExpr> coefficientValues;

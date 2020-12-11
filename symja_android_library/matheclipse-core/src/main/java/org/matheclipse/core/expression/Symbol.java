@@ -5,10 +5,10 @@ import java.io.ObjectStreamException;
 import java.io.Serializable;
 import java.io.StringWriter;
 import java.util.Collection;
-import java.util.IdentityHashMap;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
+import java.util.Set;
 import java.util.function.Function;
 
 import org.hipparchus.complex.Complex;
@@ -30,7 +30,7 @@ import org.matheclipse.core.interfaces.INumber;
 import org.matheclipse.core.interfaces.ISignedNumber;
 import org.matheclipse.core.interfaces.IStringX;
 import org.matheclipse.core.interfaces.ISymbol;
-import org.matheclipse.core.patternmatching.IPatternMap.PatternMap;
+import org.matheclipse.core.patternmatching.IPatternMap;
 import org.matheclipse.core.patternmatching.IPatternMatcher;
 import org.matheclipse.core.patternmatching.PatternMatcherAndInvoker;
 import org.matheclipse.core.patternmatching.RulesData;
@@ -47,6 +47,9 @@ public class Symbol implements ISymbol, Serializable {
 
   /** The attribute values of the symbol represented by single bits. */
   protected int fAttributes = NOATTRIBUTE;
+
+  /** Flags for controlling evaluation and left-hand-side pattern-matching expressions */
+  protected int fEvalFlags = 0;
 
   /** The value associate with this symbol. */
   private transient IExpr fValue;
@@ -107,15 +110,9 @@ public class Symbol implements ISymbol, Serializable {
 
   /** {@inheritDoc} */
   @Override
-  public boolean isLocked(boolean packageMode) {
-    return !packageMode && (fContext == Context.SYSTEM || fContext == Context.RUBI);
-  }
-
-  /** {@inheritDoc} */
-  @Override
-  public boolean isLocked() {
-    return !EvalEngine.get().isPackageMode()
-        && (fContext == Context.SYSTEM || fContext == Context.RUBI);
+  public final ISymbol addEvalFlags(final int flags) {
+    fEvalFlags |= flags;
+    return this;
   }
 
   /** {@inheritDoc} */
@@ -126,9 +123,24 @@ public class Symbol implements ISymbol, Serializable {
 
   /** {@inheritDoc} */
   @Override
-  public void clearValue() {
-    fValue = null;
-    clearAttributes(DIRTY_FLAG_ASSIGNED_VALUE);
+  public final IExpr assignedValue() {
+    if (this instanceof IBuiltInSymbol) {
+      return fValue;
+    }
+    addEvalFlags(DIRTY_FLAG_ASSIGNED_VALUE);
+    return fValue;
+  }
+
+  /** {@inheritDoc} */
+  @Override
+  public void assignValue(final IExpr value, boolean setDelayed) {
+    fValue = value;
+    clearEvalFlags(DIRTY_FLAG_ASSIGNED_VALUE);
+    if (setDelayed) {
+      addEvalFlags(SETDELAYED_FLAG_ASSIGNED_VALUE);
+    } else {
+      clearEvalFlags(SETDELAYED_FLAG_ASSIGNED_VALUE);
+    }
   }
 
   /** {@inheritDoc} */
@@ -141,6 +153,21 @@ public class Symbol implements ISymbol, Serializable {
     }
     clearValue();
     if (fRulesData != null) {
+      fRulesData.clear();
+    }
+  }
+
+  /** {@inheritDoc} */
+  @Override
+  public void clearAll(EvalEngine engine) {
+    if (!engine.isPackageMode()) {
+      if (isLocked()) {
+        throw new RuleCreationError(this);
+      }
+    }
+    fAttributes = NOATTRIBUTE;
+    clearValue();
+    if (fRulesData != null) {
       fRulesData = null;
     }
   }
@@ -148,7 +175,7 @@ public class Symbol implements ISymbol, Serializable {
   /** {@inheritDoc} */
   @Override
   public void clearAttributes(final int attributes) {
-    fAttributes &= (0xffff ^ attributes);
+    fAttributes &= (0xffffffff ^ attributes);
     if (isLocked()) {
       throw new RuleCreationError(this);
     }
@@ -156,11 +183,16 @@ public class Symbol implements ISymbol, Serializable {
     engine.addModifiedVariable(this);
   }
 
+  @Override
+  public void clearEvalFlags(final int flags) {
+    fEvalFlags &= (0xffffffff ^ flags);
+  }
+
   /** {@inheritDoc} */
   @Override
-  public void clearAll(EvalEngine engine) {
-    clear(engine);
-    fAttributes = NOATTRIBUTE;
+  public void clearValue() {
+    fValue = null;
+    clearEvalFlags(DIRTY_FLAG_ASSIGNED_VALUE);
   }
 
   /**
@@ -243,7 +275,11 @@ public class Symbol implements ISymbol, Serializable {
     }
     IASTAppendable result = F.ListAlloc(rules == null ? 1 : rules.size());
     if (hasAssignedSymbolValue()) {
-      result.append(F.Set(this, assignedValue()));
+      if (isEvalFlagOn(SETDELAYED_FLAG_ASSIGNED_VALUE)) {
+        result.append(F.SetDelayed(this, assignedValue()));
+      } else {
+        result.append(F.Set(this, assignedValue()));
+      }
     }
     if (rules != null) {
       result.appendAll(rules);
@@ -256,14 +292,17 @@ public class Symbol implements ISymbol, Serializable {
   public String definitionToString() throws IOException {
     StringWriter buf = new StringWriter();
     IAST attributesList = AttributeFunctions.attributesList(this);
+    if (attributesList.size() > 1) {
+      buf.append("Attributes(");
+      buf.append(this.toString());
+      buf.append(")=");
+      buf.append(attributesList.toString());
+      buf.append("\n");
+    }
+
     OutputFormFactory off = OutputFormFactory.get(EvalEngine.get().isRelaxedSyntax());
     off.setIgnoreNewLine(true);
     IAST list = definition();
-    buf.append("Attributes(");
-    buf.append(this.toString());
-    buf.append(")=");
-    buf.append(attributesList.toString());
-    buf.append("\n");
     for (int i = 1; i < list.size(); i++) {
       if (!off.convert(buf, list.get(i))) {
         return "ERROR-IN-OUTPUTFORM";
@@ -301,17 +340,28 @@ public class Symbol implements ISymbol, Serializable {
     return fRulesData.evalDownRule(expression, engine);
   }
 
+  @Override
+  public IExpr evalMessage(String messageName) {
+    if (fRulesData != null) {
+      IExpr temp = fRulesData.getMessages().get(messageName);
+      if (temp != null) {
+        return temp;
+      }
+    }
+    return F.NIL;
+  }
+
   /** {@inheritDoc} */
   @Override
   public final INumber evalNumber() {
-    if (isNumericFunction()) {
+    if (isNumericFunction(true)) {
       IExpr result = F.evaln(this);
       if (result.isNumber()) {
         return (INumber) result;
       }
     } else if (hasAssignedSymbolValue()) {
       IExpr temp = assignedValue();
-      if (temp != null && temp.isNumericFunction()) {
+      if (temp != null && temp.isNumericFunction(true)) {
         IExpr result = F.evaln(this);
         if (result.isNumber()) {
           return (INumber) result;
@@ -332,14 +382,14 @@ public class Symbol implements ISymbol, Serializable {
   /** {@inheritDoc} */
   @Override
   public final ISignedNumber evalReal() {
-    if (isNumericFunction()) {
+    if (isNumericFunction(true)) {
       IExpr result = F.evaln(this);
       if (result.isReal()) {
         return (ISignedNumber) result;
       }
     } else if (hasAssignedSymbolValue()) {
       IExpr temp = assignedValue();
-      if (temp != null && temp.isNumericFunction()) {
+      if (temp != null && temp.isNumericFunction(true)) {
         IExpr result = F.evaln(this);
         if (result.isReal()) {
           return (ISignedNumber) result;
@@ -400,16 +450,6 @@ public class Symbol implements ISymbol, Serializable {
 
   /** {@inheritDoc} */
   @Override
-  public final IExpr assignedValue() {
-    if (this instanceof IBuiltInSymbol) {
-      return fValue;
-    }
-    addAttributes(DIRTY_FLAG_ASSIGNED_VALUE);
-    return fValue;
-  }
-
-  /** {@inheritDoc} */
-  @Override
   public final int getAttributes() {
     return fAttributes;
   }
@@ -461,7 +501,7 @@ public class Symbol implements ISymbol, Serializable {
 
   @Override
   public final boolean hasFlatAttribute() {
-    return (fAttributes & FLAT) == FLAT;
+    return ISymbol.hasFlatAttribute(fAttributes);
   }
 
   /** {@inheritDoc} */
@@ -477,18 +517,18 @@ public class Symbol implements ISymbol, Serializable {
 
   @Override
   public final boolean hasOrderlessAttribute() {
-    return (fAttributes & ORDERLESS) == ORDERLESS;
+    return ISymbol.hasOrderlessAttribute(fAttributes);
   }
 
   @Override
   public final boolean hasOrderlessFlatAttribute() {
-    return (fAttributes & FLATORDERLESS) == FLATORDERLESS;
+    return ISymbol.hasOrderlessAttributeFlat(fAttributes);
   }
 
   /** {@inheritDoc} */
   @Override
   public final ISymbol head() {
-    return F.Symbol;
+    return S.Symbol;
   }
 
   /** {@inheritDoc} */
@@ -500,7 +540,7 @@ public class Symbol implements ISymbol, Serializable {
   /** {@inheritDoc} */
   @Override
   public String internalFormString(boolean symbolsAsFactoryMethod, int depth) {
-    return internalJavaString(symbolsAsFactoryMethod, depth, false, false, false);
+    return internalJavaString(symbolsAsFactoryMethod, depth, false, false, false, x -> null);
   }
 
   /** {@inheritDoc} */
@@ -510,7 +550,12 @@ public class Symbol implements ISymbol, Serializable {
       int depth,
       boolean useOperators,
       boolean usePrefix,
-      boolean noSymbolPrefix) {
+      boolean noSymbolPrefix,
+      Function<IExpr, String> variables) {
+    String result = variables.apply(this);
+    if (result != null) {
+      return result;
+    }
     String prefix = usePrefix ? "F." : "";
     if (symbolsAsFactoryMethod) {
       return prefix + internalJavaStringAsFactoryMethod();
@@ -589,7 +634,7 @@ public class Symbol implements ISymbol, Serializable {
   /** {@inheritDoc} */
   @Override
   public String internalScalaString(boolean symbolsAsFactoryMethod, int depth) {
-    return internalJavaString(symbolsAsFactoryMethod, depth, true, false, false);
+    return internalJavaString(symbolsAsFactoryMethod, depth, true, false, false, x -> null);
   }
 
   /** {@inheritDoc} */
@@ -600,8 +645,33 @@ public class Symbol implements ISymbol, Serializable {
 
   /** {@inheritDoc} */
   @Override
+  public final boolean isEvalFlagOff(final int i) {
+    return (fEvalFlags & i) == 0;
+  }
+
+  /** {@inheritDoc} */
+  @Override
+  public final boolean isEvalFlagOn(final int i) {
+    return (fEvalFlags & i) == i;
+  }
+
+  /** {@inheritDoc} */
+  @Override
+  public boolean isLocked() {
+    return !EvalEngine.get().isPackageMode()
+        && (fContext == Context.SYSTEM || fContext == Context.RUBI);
+  }
+
+  /** {@inheritDoc} */
+  @Override
+  public boolean isLocked(boolean packageMode) {
+    return !packageMode && (fContext == Context.SYSTEM || fContext == Context.RUBI);
+  }
+
+  /** {@inheritDoc} */
+  @Override
   public boolean isNegative() {
-    if (isNumericFunction()) {
+    if (isNumericFunction(true)) {
       IExpr temp = F.evaln(this);
       if (temp.isReal() && temp.isNegative()) {
         return true;
@@ -611,7 +681,7 @@ public class Symbol implements ISymbol, Serializable {
   }
 
   @Override
-  public boolean isNumericFunction() {
+  public boolean isNumericFunction(boolean allowList) {
     if (isConstantAttribute()) {
       return true;
     }
@@ -626,7 +696,7 @@ public class Symbol implements ISymbol, Serializable {
 
         engine.incRecursionCounter();
         try {
-          if (temp.isNumericFunction() && temp != this) {
+          if (temp.isNumericFunction(true) && temp != this) {
             return true;
           }
         } finally {
@@ -653,14 +723,6 @@ public class Symbol implements ISymbol, Serializable {
 
   /** {@inheritDoc} */
   @Override
-  public boolean isPolynomialStruct() {
-    return ((fAttributes & CONSTANT) == CONSTANT)
-        || //
-        isVariable();
-  }
-
-  /** {@inheritDoc} */
-  @Override
   public boolean isPolynomial(IExpr variable) {
     return isPolynomial(F.List(variable));
     // if (variable == null) {
@@ -682,8 +744,16 @@ public class Symbol implements ISymbol, Serializable {
 
   /** {@inheritDoc} */
   @Override
+  public boolean isPolynomialStruct() {
+    return ((fAttributes & CONSTANT) == CONSTANT)
+        || //
+        isVariable();
+  }
+
+  /** {@inheritDoc} */
+  @Override
   public boolean isPositive() {
-    if (isNumericFunction()) {
+    if (isNumericFunction(true)) {
       IExpr temp = F.evaln(this);
       if (temp.isReal() && temp.isPositive()) {
         return true;
@@ -720,19 +790,34 @@ public class Symbol implements ISymbol, Serializable {
   public final boolean isVariable() {
     return ((fAttributes & CONSTANT) != CONSTANT)
         && //
-        (this != F.ComplexInfinity)
+        (this != S.ComplexInfinity)
         && //
-        (this != F.Indeterminate)
+        (this != S.Indeterminate)
         && //
-        (this != F.DirectedInfinity)
+        (this != S.DirectedInfinity)
         && //
-        (this != F.Infinity);
+        (this != S.Infinity);
   }
 
   /** {@inheritDoc} */
   @Override
   public IExpr of(EvalEngine engine, IExpr... args) {
     IAST ast = F.function(this, args);
+    return engine.evaluate(ast);
+  }
+
+  /** {@inheritDoc} */
+  @Override
+  public final IExpr of(IExpr... args) {
+    return of(EvalEngine.get(), args);
+  }
+
+  /** {@inheritDoc} */
+  @Override
+  public IExpr of1(EvalEngine engine, IExpr arg, IExpr... parts) {
+    IASTAppendable ast = F.ast(this, 1 + parts.length, false);
+    ast.append(arg);
+    ast.appendAll(parts, 0, parts.length);
     return engine.evaluate(ast);
   }
 
@@ -745,12 +830,6 @@ public class Symbol implements ISymbol, Serializable {
       return F.NIL;
     }
     return temp;
-  }
-
-  /** {@inheritDoc} */
-  @Override
-  public final IExpr of(IExpr... args) {
-    return of(EvalEngine.get(), args);
   }
 
   /** {@inheritDoc} */
@@ -778,7 +857,7 @@ public class Symbol implements ISymbol, Serializable {
         equalRule,
         leftHandSide,
         rightHandSide,
-        PatternMap.DEFAULT_RULE_PRIORITY,
+        IPatternMap.DEFAULT_RULE_PRIORITY,
         packageMode);
   }
 
@@ -799,7 +878,7 @@ public class Symbol implements ISymbol, Serializable {
       engine.addModifiedVariable(this);
     }
     if (leftHandSide.isSymbol()) {
-      assignValue(rightHandSide);
+      assignValue(rightHandSide, false);
       return;
     }
     if (fRulesData == null) {
@@ -817,16 +896,7 @@ public class Symbol implements ISymbol, Serializable {
     fRulesData.insertMatcher(pmEvaluator);
   }
 
-  public IExpr evalMessage(String messageName) {
-    if (fRulesData != null) {
-      IExpr temp = fRulesData.getMessages().get(messageName);
-      if (temp != null) {
-        return temp;
-      }
-    }
-    return F.NIL;
-  }
-
+  @Override
   public void putMessage(final int setSymbol, String messageName, IStringX message) {
     if (fRulesData == null) {
       fRulesData = new RulesData();
@@ -839,7 +909,7 @@ public class Symbol implements ISymbol, Serializable {
   public final IPatternMatcher putUpRule(
       final int setSymbol, boolean equalRule, IAST leftHandSide, IExpr rightHandSide) {
     return putUpRule(
-        setSymbol, equalRule, leftHandSide, rightHandSide, PatternMap.DEFAULT_RULE_PRIORITY);
+        setSymbol, equalRule, leftHandSide, rightHandSide, IPatternMap.DEFAULT_RULE_PRIORITY);
   }
 
   /** {@inheritDoc} */
@@ -869,7 +939,7 @@ public class Symbol implements ISymbol, Serializable {
     fSymbolName = stream.readUTF();
     fAttributes = stream.read();
     IExpr value = (IExpr) stream.readObject();
-    assignValue(value);
+    assignValue(value, false);
     int contextNumber = stream.readInt();
     switch (contextNumber) {
       case 1:
@@ -891,7 +961,7 @@ public class Symbol implements ISymbol, Serializable {
         } else {
           symbol.fAttributes = fAttributes;
           symbol.fValue = fValue;
-          symbol.clearAttributes(DIRTY_FLAG_ASSIGNED_VALUE);
+          symbol.clearEvalFlags(DIRTY_FLAG_ASSIGNED_VALUE);
         }
         boolean hasDownRulesData = stream.readBoolean();
         if (hasDownRulesData) {
@@ -924,13 +994,12 @@ public class Symbol implements ISymbol, Serializable {
     if (hasAssignedSymbolValue()) {
       IExpr[] result = new IExpr[2];
       result[0] = fValue;
-      if (((fAttributes & DIRTY_FLAG_ASSIGNED_VALUE) == DIRTY_FLAG_ASSIGNED_VALUE) //
-          && result[0].isAST()) {
+      if (isEvalFlagOn(DIRTY_FLAG_ASSIGNED_VALUE) && result[0].isAST()) {
         result[0] = ((IAST) result[0]).copy();
       }
       IExpr calculatedResult = function.apply(result[0]);
       if (calculatedResult.isPresent()) {
-        assignValue(calculatedResult);
+        assignValue(calculatedResult, false);
         result[1] = calculatedResult;
         return result;
       }
@@ -955,7 +1024,7 @@ public class Symbol implements ISymbol, Serializable {
       ast.set(1, result[0]);
       IExpr calculatedResult = engine.evaluate(ast); // F.binaryAST2(this, symbolValue, value));
       if (calculatedResult != null) {
-        assignValue(calculatedResult);
+        assignValue(calculatedResult, false);
         result[1] = calculatedResult;
         return result;
       }
@@ -989,13 +1058,6 @@ public class Symbol implements ISymbol, Serializable {
 
   /** {@inheritDoc} */
   @Override
-  public void assignValue(final IExpr value) {
-    fValue = value;
-    clearAttributes(DIRTY_FLAG_ASSIGNED_VALUE);
-  }
-
-  /** {@inheritDoc} */
-  @Override
   public void setAttributes(final int attributes) {
     fAttributes = attributes;
     if (isLocked()) {
@@ -1022,6 +1084,7 @@ public class Symbol implements ISymbol, Serializable {
     fRulesData.putfDefaultValues(pos, expr);
   }
 
+  @Override
   public void setRulesData(RulesData rd) {
     fRulesData = rd;
   }
@@ -1035,6 +1098,15 @@ public class Symbol implements ISymbol, Serializable {
     } catch (Exception e1) {
       return fSymbolName;
     }
+  }
+
+  @Override
+  public String toMMA() {
+    String str = AST2Expr.PREDEFINED_SYMBOLS_MAP.get(fSymbolName);
+    if (str != null) {
+      return str;
+    }
+    return fSymbolName;
   }
 
   /** {@inheritDoc} */

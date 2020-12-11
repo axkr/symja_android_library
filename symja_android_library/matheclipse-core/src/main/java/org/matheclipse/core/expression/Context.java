@@ -8,8 +8,10 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
 
+import org.matheclipse.core.basic.Config;
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.interfaces.ISymbol;
+import org.matheclipse.parser.trie.TrieMatch;
 import org.matheclipse.parser.trie.Tries;
 
 public class Context implements Serializable {
@@ -17,7 +19,8 @@ public class Context implements Serializable {
   private static final long serialVersionUID = 8656114325955206899L;
 
   /** The map for predefined (context &quot;System&quot;) symbols */
-  public static final Map<String, ISymbol> PREDEFINED_SYMBOLS_MAP = Tries.forStrings();
+  public static final Map<String, ISymbol> PREDEFINED_SYMBOLS_MAP =
+      Config.TRIE_STRING2SYMBOL_BUILDER.withMatch(TrieMatch.EXACT).build(); // Tries.forStrings();
 
   public static final String DUMMY_CONTEXT_NAME = "DUMMY`";
 

@@ -51,7 +51,7 @@ import org.matheclipse.parser.client.FEConfig;
  * removing, and replacing are supported. The elements can be any objects.
  */
 public abstract class HMArrayList extends AbstractAST
-    implements IASTAppendable, Cloneable, Serializable, RandomAccess {
+    implements IASTAppendable, Serializable, RandomAccess {
 
   private static final long serialVersionUID = 8683452581122892189L;
 
@@ -198,7 +198,7 @@ public abstract class HMArrayList extends AbstractAST
    * @return always true
    */
   @Override
-  public final boolean append(IExpr object) {
+  public boolean append(IExpr object) {
     hashValue = 0;
     if (lastIndex == array.length) {
       growAtEnd(1);
@@ -1056,7 +1056,7 @@ public abstract class HMArrayList extends AbstractAST
 
   /**
    * Replaces the element at the specified location in this {@code ArrayList} with the specified
-   * object.
+   * object. Internally the <code>hashValue</code> will be reset to <code>0</code>.
    *
    * @param location the index at which to put the specified object.
    * @param object the object to add.
