@@ -103,7 +103,7 @@ public class DatasetFunctions {
     }
 
     public int[] expectedArgSize(IAST ast) {
-      return IFunctionEvaluator.ARGS_1_INFINITY;
+      return ARGS_1_INFINITY_0;
     }
   }
 }
