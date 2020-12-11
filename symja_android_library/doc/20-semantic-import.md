@@ -30,10 +30,7 @@ Here we read a `csv` file of tornado data. The `SemanticImport` function infers 
 If you would like to create smaller datasets you can use the `SemanticImportString` function, which creates a `Dataset` from a String representation:
 
 ```
->> sds = SemanticImportString("Products,Sales,Market_Share\n
-a,5500,3\n
-b,12200,4\n
-c,60000,33")
+>> ds = SemanticImportString("Products,Sales,Market_Share\na,5500,3\nb,12200,4\nc,60000,33")
 ```
 
 ### Viewing table metadata
@@ -113,7 +110,7 @@ The `InputForm` function shows that the column names are converted to keys of ty
 Now lets sort the table in reverse order by the id column. The negative sign before the name indicates a descending sort.
 
 ```
-@@snip [sort_on](./src/main/java/tech/tablesaw/docs/Tutorial.java)
+TODO insert Sort() example
 ```
 
 ### Descriptive statistics

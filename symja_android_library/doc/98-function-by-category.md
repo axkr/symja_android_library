@@ -83,6 +83,7 @@
 ## Formatting output
 
 * [HornerForm](functions/HornerForm.md)
+* [InputForm](functions/InputForm.md)
 * [MatrixForm](functions/GraphCenter.md)
 * [MathMLForm](functions/MathMLForm.md) 
 * [TeXForm](functions/TeXForm.md)
