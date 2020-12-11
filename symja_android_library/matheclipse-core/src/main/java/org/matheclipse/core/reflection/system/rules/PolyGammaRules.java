@@ -18,7 +18,7 @@ public interface PolyGammaRules {
    *   <li>index 0 - number of equal rules in <code>RULES</code>
    * </ul>
    */
-  public static final int[] SIZES = {7, 2};
+  public static final int[] SIZES = {8, 2};
 
   public static final IAST RULES =
       List(
@@ -31,6 +31,8 @@ public interface PolyGammaRules {
           ISet(PolyGamma(CN1, C1), C0),
           // PolyGamma(-1,0)=Infinity
           ISet(PolyGamma(CN1, C0), oo),
+          // PolyGamma(1,1)=Pi^2/6
+          ISet(PolyGamma(C1, C1), Times(QQ(1L, 6L), Sqr(Pi))),
           // PolyGamma(1,1/4)=Pi^2+8*Catalan
           ISet(PolyGamma(C1, C1D4), Plus(Times(C8, Catalan), Sqr(Pi))),
           // PolyGamma(1,3/4)=-8*Catalan+Pi^2

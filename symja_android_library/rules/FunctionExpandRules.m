@@ -21,6 +21,8 @@
  Gamma(0, z_) := -ExpIntegralEi(-z) + (1/2)*(-Log(-(1/z)) + Log(-z)) - Log(z),
  Gamma(1/2, z_) := Sqrt(Pi)*(1 - Erf(Sqrt(z))),
 
+ GammaRegularized(a_, z_) := Gamma(a,z) / Gamma(a),
+ 
  GegenbauerC(n_, x_) := (2*Cos(n*ArcCos(x)))/n,
  
  HarmonicNumber(n_) := EulerGamma + PolyGamma(0, 1 + n),
@@ -34,6 +36,8 @@
  LegendreQ(l_, m_, x_) := -((Pi*Csc(m*Pi)*Gamma(1+l+m)*LegendreP(l, -m, x))/(2*Gamma(1+l-m))) + (1/2)*Pi*Cot(m*Pi)*LegendreP(l, m, x),
  LogisticSigmoid(x_) := 1/(1 + E^(-x)),
  
+ LogGamma(x_) := Log(Gamma(x)) 
+  /; x>0,
  PolyGamma(n_Integer, 1/2) := (-1)^(n + 1)*n!*(2^(n + 1) - 1)*Zeta(n+1)  
   /; n>0,
   

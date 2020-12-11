@@ -9,7 +9,7 @@ ProductLog(-1,(-1/2)*Pi) = (-1/2)*Pi*I,
 ProductLog(-1,-E^(-1)) = -1,
 
 ProductLog(Infinity) = Infinity,
-ProductLog(-Infinity) = -Infinity,
+ProductLog(-Infinity) = Infinity,
 ProductLog(I*Infinity) = Infinity,
 ProductLog(-I*Infinity) = Infinity,
 ProductLog(ComplexInfinity) = Infinity

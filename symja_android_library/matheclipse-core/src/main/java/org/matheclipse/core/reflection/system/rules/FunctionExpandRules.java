@@ -84,6 +84,8 @@ public interface FunctionExpandRules {
                   Negate(Log(z)))),
           // Gamma(1/2,z_):=Sqrt(Pi)*(1-Erf(Sqrt(z)))
           SetDelayed(Gamma(C1D2, z_), Times(Sqrt(Pi), Subtract(C1, Erf(Sqrt(z))))),
+          // GammaRegularized(a_,z_):=Gamma(a,z)/Gamma(a)
+          SetDelayed(GammaRegularized(a_, z_), Times(Power(Gamma(a), CN1), Gamma(a, z))),
           // GegenbauerC(n_,x_):=(2*Cos(n*ArcCos(x)))/n
           SetDelayed(GegenbauerC(n_, x_), Times(C2, Power(n, CN1), Cos(Times(n, ArcCos(x))))),
           // HarmonicNumber(n_):=EulerGamma+PolyGamma(0,1+n)
@@ -127,6 +129,8 @@ public interface FunctionExpandRules {
                   Times(C1D2, Pi, Cot(Times(m, Pi)), LegendreP(l, m, x)))),
           // LogisticSigmoid(x_):=1/(1+E^(-x))
           SetDelayed(LogisticSigmoid(x_), Power(Plus(C1, Exp(Negate(x))), CN1)),
+          // LogGamma(x_):=Log(Gamma(x))/;x>0
+          SetDelayed(LogGamma(x_), Condition(Log(Gamma(x)), Greater(x, C0))),
           // PolyGamma(n_Integer,1/2):=(-1)^(n+1)*n!*(-1+2^(n+1))*Zeta(n+1)/;n>0
           SetDelayed(
               PolyGamma($p(n, Integer), C1D2),

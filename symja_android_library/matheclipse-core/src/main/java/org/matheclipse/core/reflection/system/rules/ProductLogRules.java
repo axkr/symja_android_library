@@ -39,8 +39,8 @@ public interface ProductLogRules {
           ISet(ProductLog(CN1, Negate(Exp(CN1))), CN1),
           // ProductLog(Infinity)=Infinity
           ISet(ProductLog(oo), oo),
-          // ProductLog(-Infinity)=-Infinity
-          ISet(ProductLog(Noo), Noo),
+          // ProductLog(-Infinity)=Infinity
+          ISet(ProductLog(Noo), oo),
           // ProductLog(I*Infinity)=Infinity
           ISet(ProductLog(DirectedInfinity(CI)), oo),
           // ProductLog(-I*Infinity)=Infinity

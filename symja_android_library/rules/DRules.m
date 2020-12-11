@@ -181,6 +181,8 @@
   D(Log(x_), {x_, n_Integer}) := ((-1)^(n - 1)*(n - 1)!)/x^n
     /; n >= 0,
     
+  D(PolyGamma(0, x_), {x_, n_}) := PolyGamma(n, x),
+    
   D(ArcTan(f_, g_),x_?NotListQ):= With({d=((-g*D(f,x)+f*D(g,x))/(f^2 + g^2))},If(PossibleZeroQ(d),0,d)),
   D(BesselJ(f_, g_),x_?NotListQ):= 1/2*(BesselJ(-1+f, g)-BesselJ(1+f, g))*D(g,x)+D(f,x)*Derivative(1,0)[BesselJ][f,g],
   D(BesselY(f_, g_),x_?NotListQ):= 1/2*(BesselY(-1+f, g)-BesselY(1+f, g))*D(g,x)+D(f,x)*Derivative(1,0)[BesselY][f,g],

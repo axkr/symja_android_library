@@ -18,7 +18,7 @@ public interface SeriesCoefficientRules {
    *   <li>index 0 - number of equal rules in <code>RULES</code>
    * </ul>
    */
-  public static final int[] SIZES = {0, 45};
+  public static final int[] SIZES = {0, 46};
 
   public static final IAST RULES =
       List(
@@ -591,6 +591,19 @@ public interface SeriesCoefficientRules {
                       List(
                           List(
                               Times(Power(Negate(n), Plus(CN1, n)), Power(Factorial(n), CN1)),
+                              GreaterEqual(n, C1))),
+                      C0),
+                  FreeQ(n, x))),
+          // SeriesCoefficient(PolyGamma(x_),{x_Symbol,0,n_?NotListQ}):=Piecewise({{-1,n==-1},{-EulerGamma,n==0},{(-1)^(1+n)*Zeta(1+n),n>=1}},0)/;FreeQ(n,x)
+          ISetDelayed(
+              SeriesCoefficient(PolyGamma(x_), List(x_Symbol, C0, PatternTest(n_, NotListQ))),
+              Condition(
+                  Piecewise(
+                      List(
+                          List(CN1, Equal(n, CN1)),
+                          List(Negate(EulerGamma), Equal(n, C0)),
+                          List(
+                              Times(Power(CN1, Plus(C1, n)), Zeta(Plus(C1, n))),
                               GreaterEqual(n, C1))),
                       C0),
                   FreeQ(n, x))),

@@ -18,7 +18,7 @@ public interface DRules {
    *   <li>index 0 - number of equal rules in <code>RULES</code>
    * </ul>
    */
-  public static final int[] SIZES = {0, 127};
+  public static final int[] SIZES = {0, 128};
 
   public static final IAST RULES =
       List(
@@ -728,6 +728,8 @@ public interface DRules {
               Condition(
                   Times(Power(CN1, Plus(CN1, n)), Power(Power(x, n), CN1), Factorial(Plus(CN1, n))),
                   GreaterEqual(n, C0))),
+          // D(PolyGamma(0,x_),{x_,n_}):=PolyGamma(n,x)
+          ISetDelayed(D(PolyGamma(C0, x_), List(x_, n_)), PolyGamma(n, x)),
           // D(ArcTan(f_,g_),x_?NotListQ):=With({d=(-g*D(f,x)+f*D(g,x))/(f^2+g^2)},If(PossibleZeroQ(d),0,d))
           ISetDelayed(
               D(ArcTan(f_, g_), PatternTest(x_, NotListQ)),
