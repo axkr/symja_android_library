@@ -17,41 +17,38 @@ package org.matheclipse.parser.client.eval;
 
 import org.matheclipse.parser.client.ast.ASTNode;
 
-/**
- * 
- */
-final public class DoubleNode extends ASTNode {
+/** */
+public final class DoubleNode extends ASTNode {
 
-	private final double value;
+  private final double value;
 
-	public DoubleNode(double value) {
-		super("DoubleNode");
-		this.value = value;
-	}
+  public DoubleNode(double value) {
+    super("DoubleNode");
+    this.value = value;
+  }
 
-	public double doubleValue() {
-		return value;
-	}
+  public double doubleValue() {
+    return value;
+  }
 
-	@Override
-	public boolean equals(Object obj) {
-		if (this == obj) {
-			return true;
-		}
-		if (obj instanceof DoubleNode) {
-			return value == ((DoubleNode) obj).value;
-		}
-		return false;
-	}
+  @Override
+  public boolean equals(Object obj) {
+    if (this == obj) {
+      return true;
+    }
+    if (obj instanceof DoubleNode) {
+      return value == ((DoubleNode) obj).value;
+    }
+    return false;
+  }
 
-	@Override
-	public int hashCode() {
-		return Double.hashCode(value); 
-	}
+  @Override
+  public int hashCode() {
+    return Double.hashCode(value);
+  }
 
-	@Override
-	public String toString() {
-		return Double.toString(value);
-	}
-
+  @Override
+  public String toString() {
+    return Double.toString(value);
+  }
 }

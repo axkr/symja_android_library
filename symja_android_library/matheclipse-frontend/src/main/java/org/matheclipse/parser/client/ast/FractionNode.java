@@ -15,73 +15,71 @@
  */
 package org.matheclipse.parser.client.ast;
 
-/**
- * A node for a parsed fraction string
- * 
- */
-final public class FractionNode extends NumberNode {
-	
-	protected final IntegerNode fNumerator;
+/** A node for a parsed fraction string */
+public final class FractionNode extends NumberNode {
 
-	protected final IntegerNode fDenominator;
+  protected final IntegerNode fNumerator;
 
-	public FractionNode(final IntegerNode numerator, final IntegerNode denominator) {
-		super(null);
-		fNumerator = numerator;
-		fDenominator = denominator;
-	}
+  protected final IntegerNode fDenominator;
 
-	@Override
-	public double doubleValue() {
-		double numer = Double.parseDouble(fNumerator.toString());
-		double denom = Double.parseDouble(fDenominator.toString());
-		if (sign) {
-			return -1.0 * numer / denom;
-		}
-		return numer / denom;
-	}
+  public FractionNode(final IntegerNode numerator, final IntegerNode denominator) {
+    super(null);
+    fNumerator = numerator;
+    fDenominator = denominator;
+  }
 
-	@Override
-	public boolean equals(Object obj) {
-		if (this == obj) {
-			return true;
-		}
-		if (obj instanceof FractionNode) {
-			return fNumerator.equals(((FractionNode) obj).fNumerator) && fDenominator.equals(((FractionNode) obj).fDenominator)
-					&& sign == ((FractionNode) obj).sign;
-		}
-		return false;
-	}
+  @Override
+  public double doubleValue() {
+    double numer = Double.parseDouble(fNumerator.toString());
+    double denom = Double.parseDouble(fDenominator.toString());
+    if (sign) {
+      return -1.0 * numer / denom;
+    }
+    return numer / denom;
+  }
 
-	public IntegerNode getDenominator() {
-		return fDenominator;
-	}
+  @Override
+  public boolean equals(Object obj) {
+    if (this == obj) {
+      return true;
+    }
+    if (obj instanceof FractionNode) {
+      return fNumerator.equals(((FractionNode) obj).fNumerator)
+          && fDenominator.equals(((FractionNode) obj).fDenominator)
+          && sign == ((FractionNode) obj).sign;
+    }
+    return false;
+  }
 
-	public IntegerNode getNumerator() {
-		return fNumerator;
-	}
+  public IntegerNode getDenominator() {
+    return fDenominator;
+  }
 
-	@Override
-	public int hashCode() {
-		if (sign) {
-			return fNumerator.hashCode() + fDenominator.hashCode() * 17;
-		}
-		return fNumerator.hashCode() + fDenominator.hashCode();
-	}
+  public IntegerNode getNumerator() {
+    return fNumerator;
+  }
 
-	@Override
-	public String toString() {
-		final StringBuilder buff = new StringBuilder();
-		if (sign) {
-			buff.append('-');
-		}
-		if (fNumerator != null) {
-			buff.append(fNumerator.toString());
-		}
-		buff.append('/');
-		if (fDenominator != null) {
-			buff.append(fDenominator.toString());
-		}
-		return buff.toString();
-	}
+  @Override
+  public int hashCode() {
+    if (sign) {
+      return fNumerator.hashCode() + fDenominator.hashCode() * 17;
+    }
+    return fNumerator.hashCode() + fDenominator.hashCode();
+  }
+
+  @Override
+  public String toString() {
+    final StringBuilder buff = new StringBuilder();
+    if (sign) {
+      buff.append('-');
+    }
+    if (fNumerator != null) {
+      buff.append(fNumerator.toString());
+    }
+    buff.append('/');
+    if (fDenominator != null) {
+      buff.append(fDenominator.toString());
+    }
+    return buff.toString();
+  }
 }

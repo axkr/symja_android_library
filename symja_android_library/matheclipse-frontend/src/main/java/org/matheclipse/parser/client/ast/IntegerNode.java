@@ -15,77 +15,73 @@
  */
 package org.matheclipse.parser.client.ast;
 
-/**
- * A node for a parsed integer string
- * 
- */
-final public class IntegerNode extends NumberNode {
-	/**
-	 * IntegerNode representing one.
-	 */
-	public final static IntegerNode C1 = new IntegerNode("1", 10);
+/** A node for a parsed integer string */
+public final class IntegerNode extends NumberNode {
+  /** IntegerNode representing one. */
+  public static final IntegerNode C1 = new IntegerNode("1", 10);
 
-	private final int fNumberFormat; 
+  private final int fNumberFormat;
 
-	private final int fIntValue;
+  private final int fIntValue;
 
-	public IntegerNode(final int intValue) {
-		super(null);
-		fNumberFormat = 10;
-		fIntValue = intValue;
-	}
+  public IntegerNode(final int intValue) {
+    super(null);
+    fNumberFormat = 10;
+    fIntValue = intValue;
+  }
 
-	public IntegerNode(final String value) {
-		this(value, 10);
-	}
+  public IntegerNode(final String value) {
+    this(value, 10);
+  }
 
-	public IntegerNode(final String value, final int numberFormat) {
-		super(value);
-		fNumberFormat = numberFormat;
-		fIntValue = 0;
-	}
+  public IntegerNode(final String value, final int numberFormat) {
+    super(value);
+    fNumberFormat = numberFormat;
+    fIntValue = 0;
+  }
 
-	@Override
-	public boolean equals(Object obj) {
-		if (this == obj) {
-			return true;
-		}
-		if (obj instanceof IntegerNode) {
-			if (fStringValue == null) {
-				return toString().equals(obj.toString());
-			}
-			return fStringValue.equals(((NumberNode) obj).fStringValue) && sign == ((NumberNode) obj).sign;
-		}
-		return false;
-	}
+  @Override
+  public boolean equals(Object obj) {
+    if (this == obj) {
+      return true;
+    }
+    if (obj instanceof IntegerNode) {
+      if (fStringValue == null) {
+        return toString().equals(obj.toString());
+      }
+      return fStringValue.equals(((NumberNode) obj).fStringValue)
+          && sign == ((NumberNode) obj).sign;
+    }
+    return false;
+  }
 
-	public int getIntValue() {
-		return fIntValue;
-	}
+  public int getIntValue() {
+    return fIntValue;
+  }
 
-	public int getNumberFormat() {
-		return fNumberFormat;
-	}
+  public int getNumberFormat() {
+    return fNumberFormat;
+  }
 
-	@Override
-	public int hashCode() {
-		if (fStringValue == null) {
-			return toString().hashCode();
-		}
-		return super.hashCode();
-	}
+  @Override
+  public int hashCode() {
+    if (fStringValue == null) {
+      return toString().hashCode();
+    }
+    return super.hashCode();
+  }
 
-	@Override
-	public String toString() {
-		if (fStringValue == null) {
-			if (sign) {
-				return Integer.toString(fIntValue * (-1));
-			}
-			return Integer.toString(fIntValue);
-		}
-		if (sign) {
-			return "-" + fStringValue;
-		}
-		return fStringValue;
-	}
+  @Override
+  public String toString() {
+    if (fStringValue == null) {
+      if (sign) {
+        return Integer.toString(fIntValue * (-1));
+      }
+      return Integer.toString(fIntValue);
+    }
+    if (sign) {
+      return "-" + fStringValue;
+    }
+    return fStringValue;
+  }
 }

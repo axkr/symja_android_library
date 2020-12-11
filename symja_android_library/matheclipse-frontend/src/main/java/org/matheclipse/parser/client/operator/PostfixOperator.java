@@ -20,13 +20,11 @@ import org.matheclipse.parser.client.ast.INodeParserFactory;
 
 public class PostfixOperator extends Operator {
 
-	public PostfixOperator(final String oper, final String functionName, final int precedence) {
-		super(oper, functionName, precedence);
-	} 
+  public PostfixOperator(final String oper, final String functionName, final int precedence) {
+    super(oper, functionName, precedence);
+  }
 
-	public ASTNode createFunction(final INodeParserFactory factory,
-			final ASTNode argument) {
-		return factory.createFunction(factory.createSymbol(getFunctionName()),
-				argument);
-	}
+  public ASTNode createFunction(final INodeParserFactory factory, final ASTNode argument) {
+    return factory.createFunction(factory.createSymbol(getFunctionName()), argument);
+  }
 }

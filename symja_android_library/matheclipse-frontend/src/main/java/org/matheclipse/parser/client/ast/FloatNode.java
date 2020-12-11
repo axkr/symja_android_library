@@ -16,30 +16,28 @@
 package org.matheclipse.parser.client.ast;
 
 /**
- * A node for a parsed floating number string. The floating point string is not
- * converted to a binary float or double type. only the String representation is
- * stored.
- * 
+ * A node for a parsed floating number string. The floating point string is not converted to a
+ * binary float or double type. only the String representation is stored.
  */
-final public class FloatNode extends NumberNode {
-	
-	public FloatNode(final String value) {
-		super(value);
-	}
+public final class FloatNode extends NumberNode {
 
-	@Override
-	public boolean equals(Object obj) {
-		if (this == obj) {
-			return true;
-		}
-		if (obj instanceof FloatNode) {
-			return fStringValue.equals(((FloatNode) obj).fStringValue) && sign == ((FloatNode) obj).sign;
-		}
-		return false;
-	}
-	
-	@Override
-	public int hashCode() {
-		return super.hashCode()*43;
-	}
+  public FloatNode(final String value) {
+    super(value);
+  }
+
+  @Override
+  public boolean equals(Object obj) {
+    if (this == obj) {
+      return true;
+    }
+    if (obj instanceof FloatNode) {
+      return fStringValue.equals(((FloatNode) obj).fStringValue) && sign == ((FloatNode) obj).sign;
+    }
+    return false;
+  }
+
+  @Override
+  public int hashCode() {
+    return super.hashCode() * 43;
+  }
 }

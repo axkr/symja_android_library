@@ -16,29 +16,29 @@
 package org.matheclipse.parser.client.eval;
 
 public class DoubleVariable implements IDoubleValue {
-	double value;
+  double value;
 
-	public DoubleVariable(double v) {
-		value = v;
-	}
+  public DoubleVariable(double v) {
+    value = v;
+  }
 
-	/*
-	 * (non-Javadoc)
-	 * 
-	 * @see org.matheclipse.parser.eval.IDoubleValue#getValue()
-	 */
-	@Override
-	public double getValue() {
-		return value;
-	}
+  /*
+   * (non-Javadoc)
+   *
+   * @see org.matheclipse.parser.eval.IDoubleValue#getValue()
+   */
+  @Override
+  public double getValue() {
+    return value;
+  }
 
-	/*
-	 * (non-Javadoc)
-	 * 
-	 * @see org.matheclipse.parser.eval.IDoubleValue#setValue(double)
-	 */
-	@Override
-	public void setValue(double value) {
-		this.value = value;
-	}
+  /*
+   * (non-Javadoc)
+   *
+   * @see org.matheclipse.parser.eval.IDoubleValue#setValue(double)
+   */
+  @Override
+  public void setValue(double value) {
+    this.value = value;
+  }
 }

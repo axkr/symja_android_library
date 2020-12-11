@@ -15,41 +15,38 @@
  */
 package org.matheclipse.parser.client.ast;
 
-/**
- * A node for a parsed symbol string (i.e. Sin, Cos, Pi, $x,...)
- * 
- */
-final public class SymbolNode extends ASTNode {
-	final String context;
+/** A node for a parsed symbol string (i.e. Sin, Cos, Pi, $x,...) */
+public final class SymbolNode extends ASTNode {
+  final String context;
 
-	/**
-	 * Create symbol in context <code>System`</code>. If <code>context == &quot;&quot;</code> the current context from context
-	 * path is used. 
-	 * 
-	 * @param value
-	 */
-	public SymbolNode(final String value) {
-		this(value, "");
-	}
+  /**
+   * Create symbol in context <code>System`</code>. If <code>context == &quot;&quot;</code> the
+   * current context from context path is used.
+   *
+   * @param value
+   */
+  public SymbolNode(final String value) {
+    this(value, "");
+  }
 
-	/**
-	 * Create symbol in context <code>System`</code>. If <code>context == &quot;&quot;</code> the current context from context
-	 * path is used. 
-	 * 
-	 * @param value
-	 * @param context
-	 */
-	public SymbolNode(final String value, final String context) {
-		super(value);
-		this.context = context;
-	}
+  /**
+   * Create symbol in context <code>System`</code>. If <code>context == &quot;&quot;</code> the
+   * current context from context path is used.
+   *
+   * @param value
+   * @param context
+   */
+  public SymbolNode(final String value, final String context) {
+    super(value);
+    this.context = context;
+  }
 
-	public String context() {
-		return context;
-	}
+  public String context() {
+    return context;
+  }
 
-	@Override
-	public boolean dependsOn(String variableName) {
-		return fStringValue.equals(variableName);
-	}
+  @Override
+  public boolean dependsOn(String variableName) {
+    return fStringValue.equals(variableName);
+  }
 }

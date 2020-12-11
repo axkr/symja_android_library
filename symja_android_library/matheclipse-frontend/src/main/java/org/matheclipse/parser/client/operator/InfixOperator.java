@@ -20,33 +20,35 @@ import org.matheclipse.parser.client.ast.FunctionNode;
 import org.matheclipse.parser.client.ast.INodeParserFactory;
 
 public class InfixOperator extends Operator {
-	private int fGrouping;
+  private int fGrouping;
 
-	public final static int NONE = 0;
+  public static final int NONE = 0;
 
-	public final static int RIGHT_ASSOCIATIVE = 1;
+  public static final int RIGHT_ASSOCIATIVE = 1;
 
-	public final static int LEFT_ASSOCIATIVE = 2;
+  public static final int LEFT_ASSOCIATIVE = 2;
 
-	public InfixOperator(final String oper, final String functionName, final int precedence, final int grouping) {
-		super(oper, functionName, precedence);
-		fGrouping = grouping;
-	}
+  public InfixOperator(
+      final String oper, final String functionName, final int precedence, final int grouping) {
+    super(oper, functionName, precedence);
+    fGrouping = grouping;
+  }
 
-	/**
-	 * Return the grouping of the Infix-Operator (i.e. NONE,LEFT_ASSOCIATIVE, RIGHT_ASSOCIATIVE)
-	 * 
-	 * @return
-	 */
-	public int getGrouping() {
-		return fGrouping;
-	}
+  /**
+   * Return the grouping of the Infix-Operator (i.e. NONE,LEFT_ASSOCIATIVE, RIGHT_ASSOCIATIVE)
+   *
+   * @return
+   */
+  public int getGrouping() {
+    return fGrouping;
+  }
 
-	public ASTNode createFunction(final INodeParserFactory factory, final ASTNode lhs, final ASTNode rhs) {
-		if (fOperatorString.equals("//")) {
-			//   lhs // rhs ==> rhs[lhs]
-			return factory.unaryAST(rhs, lhs);
-		}
-		return factory.createFunction(factory.createSymbol(getFunctionName()), lhs, rhs);
-	}
+  public ASTNode createFunction(
+      final INodeParserFactory factory, final ASTNode lhs, final ASTNode rhs) {
+    if (fOperatorString.equals("//")) {
+      //   lhs // rhs ==> rhs[lhs]
+      return factory.unaryAST(rhs, lhs);
+    }
+    return factory.createFunction(factory.createSymbol(getFunctionName()), lhs, rhs);
+  }
 }

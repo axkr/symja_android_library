@@ -34,479 +34,624 @@ import org.matheclipse.parser.client.ast.StringNode;
 import org.matheclipse.parser.client.ast.SymbolNode;
 
 public class ASTNodeFactory implements INodeParserFactory {
-	/**
-	 * The matcher for characters, which could form an operator
-	 * 
-	 */
-	public static String OPERATOR_CHARACTERS = null;
+  /** The matcher for characters, which could form an operator */
+  public static String OPERATOR_CHARACTERS = null;
 
-	public boolean isOperatorChar(char ch) {
-		return OPERATOR_CHARACTERS != null && OPERATOR_CHARACTERS.indexOf(ch) >= 0;
-	}
+  public boolean isOperatorChar(char ch) {
+    return OPERATOR_CHARACTERS != null && OPERATOR_CHARACTERS.indexOf(ch) >= 0;
+  }
 
-	/**
-	 * @@@ operator (not @@ operator)
-	 *
-	 */
-	private static class ApplyOperator extends InfixOperator {
-		public ApplyOperator(final String oper, final String functionName, final int precedence, final int grouping) {
-			super(oper, functionName, precedence, grouping);
-		}
+  /** @@@ operator (not @@ operator) */
+  private static class ApplyOperator extends InfixOperator {
+    public ApplyOperator(
+        final String oper, final String functionName, final int precedence, final int grouping) {
+      super(oper, functionName, precedence, grouping);
+    }
 
-		@Override
-		public ASTNode createFunction(final INodeParserFactory factory, final ASTNode lhs, final ASTNode rhs) {
-			if (fOperatorString.equals("@")) {
-				return factory.unaryAST(lhs, rhs);
-			}
-			FunctionNode fn = factory.createFunction(factory.createSymbol("Apply"), lhs, rhs);
-			if (fOperatorString.equals("@@")) {
-				return fn;
-			}
-			// case "@@@"
-			fn.add(factory.createFunction(factory.createSymbol("List"), factory.createInteger(1)));
-			return fn;
-		}
-	}
+    @Override
+    public ASTNode createFunction(
+        final INodeParserFactory factory, final ASTNode lhs, final ASTNode rhs) {
+      if (fOperatorString.equals("@")) {
+        return factory.unaryAST(lhs, rhs);
+      }
+      FunctionNode fn = factory.createFunction(factory.createSymbol("Apply"), lhs, rhs);
+      if (fOperatorString.equals("@@")) {
+        return fn;
+      }
+      // case "@@@"
+      fn.add(factory.createFunction(factory.createSymbol("List"), factory.createInteger(1)));
+      return fn;
+    }
+  }
 
-	private static class TagSetOperator extends InfixOperator {
-		public TagSetOperator(final String oper, final String functionName, final int precedence, final int grouping) {
-			super(oper, functionName, precedence, grouping);
-		}
+  private static class TagSetOperator extends InfixOperator {
+    public TagSetOperator(
+        final String oper, final String functionName, final int precedence, final int grouping) {
+      super(oper, functionName, precedence, grouping);
+    }
 
-		@Override
-		public ASTNode createFunction(final INodeParserFactory factory, final ASTNode lhs, final ASTNode rhs) {
-			if (rhs instanceof FunctionNode) {
-				FunctionNode r = (FunctionNode) rhs;
-				if (r.size() == 3) {
-					if (r.get(0).equals(factory.createSymbol("Set"))) {
-						return factory.createFunction(factory.createSymbol("TagSet"), lhs, r.get(1), r.get(2));
-					} else if (r.get(0).equals(factory.createSymbol("SetDelayed"))) {
-						return factory.createFunction(factory.createSymbol("TagSetDelayed"), lhs, r.get(1), r.get(2));
-					}
-				}
-			}
-			return factory.createFunction(factory.createSymbol("TagSet"), lhs, rhs);
-		}
-	}
+    @Override
+    public ASTNode createFunction(
+        final INodeParserFactory factory, final ASTNode lhs, final ASTNode rhs) {
+      if (rhs instanceof FunctionNode) {
+        FunctionNode r = (FunctionNode) rhs;
+        if (r.size() == 3) {
+          if (r.get(0).equals(factory.createSymbol("Set"))) {
+            return factory.createFunction(factory.createSymbol("TagSet"), lhs, r.get(1), r.get(2));
+          } else if (r.get(0).equals(factory.createSymbol("SetDelayed"))) {
+            return factory.createFunction(
+                factory.createSymbol("TagSetDelayed"), lhs, r.get(1), r.get(2));
+          }
+        }
+      }
+      return factory.createFunction(factory.createSymbol("TagSet"), lhs, rhs);
+    }
+  }
 
-	private static class DivideOperator extends InfixOperator {
-		public DivideOperator(final String oper, final String functionName, final int precedence, final int grouping) {
-			super(oper, functionName, precedence, grouping);
-		}
+  private static class DivideOperator extends InfixOperator {
+    public DivideOperator(
+        final String oper, final String functionName, final int precedence, final int grouping) {
+      super(oper, functionName, precedence, grouping);
+    }
 
-		@Override
-		public ASTNode createFunction(final INodeParserFactory factory, final ASTNode lhs, final ASTNode rhs) {
-			if (rhs instanceof IntegerNode) {
-				if (lhs instanceof IntegerNode) {
-					return new FractionNode((IntegerNode) lhs, (IntegerNode) rhs);
-				}
-				return factory.createFunction(factory.createSymbol("Times"),
-						new FractionNode(IntegerNode.C1, (IntegerNode) rhs), lhs);
-			}
-			if (lhs.equals(IntegerNode.C1)) {
-				return factory.createFunction(factory.createSymbol("Power"), rhs, factory.createInteger(-1));
-			}
-			return factory.createFunction(factory.createSymbol("Times"), lhs,
-					factory.createFunction(factory.createSymbol("Power"), rhs, factory.createInteger(-1)));
+    @Override
+    public ASTNode createFunction(
+        final INodeParserFactory factory, final ASTNode lhs, final ASTNode rhs) {
+      if (rhs instanceof IntegerNode) {
+        if (lhs instanceof IntegerNode) {
+          return new FractionNode((IntegerNode) lhs, (IntegerNode) rhs);
+        }
+        return factory.createFunction(
+            factory.createSymbol("Times"),
+            new FractionNode(IntegerNode.C1, (IntegerNode) rhs),
+            lhs);
+      }
+      if (lhs.equals(IntegerNode.C1)) {
+        return factory.createFunction(
+            factory.createSymbol("Power"), rhs, factory.createInteger(-1));
+      }
+      return factory.createFunction(
+          factory.createSymbol("Times"),
+          lhs,
+          factory.createFunction(factory.createSymbol("Power"), rhs, factory.createInteger(-1)));
+    }
+  }
 
-		}
-	}
+  private static class PreMinusOperator extends PrefixOperator {
 
-	private static class PreMinusOperator extends PrefixOperator {
+    public PreMinusOperator(final String oper, final String functionName, final int precedence) {
+      super(oper, functionName, precedence);
+    }
 
-		public PreMinusOperator(final String oper, final String functionName, final int precedence) {
-			super(oper, functionName, precedence);
-		}
+    @Override
+    public ASTNode createFunction(final INodeParserFactory factory, final ASTNode argument) {
+      return factory.createFunction(
+          factory.createSymbol("Times"), factory.createInteger(-1), argument);
+    }
+  }
 
-		@Override
-		public ASTNode createFunction(final INodeParserFactory factory, final ASTNode argument) {
-			return factory.createFunction(factory.createSymbol("Times"), factory.createInteger(-1), argument);
-		}
-	}
+  private static class PrePlusOperator extends PrefixOperator {
 
-	private static class PrePlusOperator extends PrefixOperator {
+    public PrePlusOperator(final String oper, final String functionName, final int precedence) {
+      super(oper, functionName, precedence);
+    }
 
-		public PrePlusOperator(final String oper, final String functionName, final int precedence) {
-			super(oper, functionName, precedence);
-		}
+    @Override
+    public ASTNode createFunction(final INodeParserFactory factory, final ASTNode argument) {
+      return argument;
+    }
+  }
 
-		@Override
-		public ASTNode createFunction(final INodeParserFactory factory, final ASTNode argument) {
-			return argument;
-		}
-	}
+  private static class SubtractOperator extends InfixOperator {
+    public SubtractOperator(
+        final String oper, final String functionName, final int precedence, final int grouping) {
+      super(oper, functionName, precedence, grouping);
+    }
 
-	private static class SubtractOperator extends InfixOperator {
-		public SubtractOperator(final String oper, final String functionName, final int precedence,
-				final int grouping) {
-			super(oper, functionName, precedence, grouping);
-		}
+    @Override
+    public ASTNode createFunction(
+        final INodeParserFactory factory, final ASTNode lhs, final ASTNode rhs) {
+      return factory.createFunction(
+          factory.createSymbol("Plus"),
+          lhs,
+          factory.createFunction(factory.createSymbol("Times"), factory.createInteger(-1), rhs));
+    }
+  }
 
-		@Override
-		public ASTNode createFunction(final INodeParserFactory factory, final ASTNode lhs, final ASTNode rhs) {
-			return factory.createFunction(factory.createSymbol("Plus"), lhs,
-					factory.createFunction(factory.createSymbol("Times"), factory.createInteger(-1), rhs));
-		}
-	}
+  static final String[] HEADER_STRINGS = {
+    "MessageName",
+    "Get",
+    "PatternTest",
+    "MapAll",
+    "TimesBy",
+    "Plus",
+    "UpSet",
+    "CompoundExpression",
+    "Apply",
+    "Map",
+    "Unset",
+    "Apply",
+    "Apply",
+    "ReplaceRepeated",
+    "Less",
+    "And",
+    "Divide",
+    "Set",
+    "Increment",
+    "Factorial2",
+    "LessEqual",
+    "NonCommutativeMultiply",
+    "Factorial",
+    "Times",
+    "Power",
+    "Dot",
+    "Not",
+    "PreMinus",
+    "SameQ",
+    "RuleDelayed",
+    "GreaterEqual",
+    "Condition",
+    // "Colon",
+    "//",
+    "DivideBy",
+    "Or",
+    "Span",
+    "Equal",
+    "StringJoin",
+    "Unequal",
+    "Decrement",
+    "SubtractFrom",
+    "PrePlus",
+    "RepeatedNull",
+    "UnsameQ",
+    "Rule",
+    "UpSetDelayed",
+    "PreIncrement",
+    "Function",
+    "Greater",
+    "PreDecrement",
+    "Subtract",
+    "SetDelayed",
+    "Alternatives",
+    "AddTo",
+    "Repeated",
+    "ReplaceAll",
+    "TagSet",
+    "Composition",
+    "StringExpression",
+    "TwoWayRule",
+    "TwoWayRule",
+    "DirectedEdge",
+    "UndirectedEdge",
+    "CenterDot",
+    "CircleDot",
+    "Element",
+    "Intersection",
+    "NotEqual",
+    "Wedge"
+  };
 
-	static final String[] HEADER_STRINGS = { "MessageName", "Get", "PatternTest", "MapAll", "TimesBy", "Plus", "UpSet",
-			"CompoundExpression", "Apply", "Map", "Unset", "Apply", "Apply", "ReplaceRepeated", "Less", "And", "Divide",
-			"Set", "Increment", "Factorial2", "LessEqual", "NonCommutativeMultiply", "Factorial", "Times", "Power",
-			"Dot", "Not", "PreMinus", "SameQ", "RuleDelayed", "GreaterEqual", "Condition",
-			// "Colon",
-			"//", "DivideBy", "Or", "Span", "Equal", "StringJoin", "Unequal", "Decrement", "SubtractFrom", "PrePlus",
-			"RepeatedNull", "UnsameQ", "Rule", "UpSetDelayed", "PreIncrement", "Function", "Greater", "PreDecrement",
-			"Subtract", "SetDelayed", "Alternatives", "AddTo", "Repeated", "ReplaceAll", "TagSet", "Composition",
-			"StringExpression", "TwoWayRule", "TwoWayRule", "DirectedEdge", "UndirectedEdge", "CenterDot", "CircleDot",
-			"Element", "Intersection", "NotEqual", "Wedge" };
+  static final String[] OPERATOR_STRINGS = {
+    "::",
+    "<<",
+    "?",
+    "//@",
+    "*=",
+    "+",
+    "^=",
+    ";",
+    "@",
+    "/@",
+    "=.",
+    "@@",
+    "@@@",
+    "//.",
+    "<",
+    "&&",
+    "/",
+    "=",
+    "++",
+    "!!",
+    "<=",
+    "**",
+    "!",
+    "*",
+    "^",
+    ".",
+    "!",
+    "-",
+    "===",
+    ":>",
+    ">=",
+    "/;",
+    // ":",
+    "//",
+    "/=",
+    "||",
+    ";;",
+    "==",
+    "<>",
+    "!=",
+    "--",
+    "-=",
+    "+",
+    "...",
+    "=!=",
+    "->",
+    "^:=",
+    "++",
+    "&",
+    ">",
+    "--",
+    "-",
+    ":=",
+    "|",
+    "+=",
+    "..",
+    "/.",
+    "/:",
+    "@*",
+    "~~", //
+    "<->", // TwoWayRule
+    "\uF120", // TwoWayRule
+    "\uF3D5", // DirectedEdge
+    "\uF3D4", // UndirectedEdge
+    "\u00B7", // CenterDot
+    "\u2299", // CircleDot0
+    "\u2208", // Element
+    "\u22C2", // Intersection
+    "\u2260", // NotEqual,
+    "\u22C0" // Wedge
+  };
 
-	static final String[] OPERATOR_STRINGS = { "::", "<<", "?", "//@", "*=", "+", "^=", ";", "@", "/@", "=.", "@@",
-			"@@@", "//.", "<", "&&", "/", "=", "++", "!!", "<=", "**", "!", "*", "^", ".", "!", "-", "===", ":>", ">=",
-			"/;", 
-			//":", 
-			"//", "/=", "||", ";;", "==", "<>", "!=", "--", "-=", "+", "...", "=!=", "->", "^:=", "++", "&",
-			">", "--", "-", ":=", "|", "+=", "..", "/.", "/:", "@*", "~~", //
-			"<->", // TwoWayRule
-			"\uF120", // TwoWayRule
-			"\uF3D5", // DirectedEdge
-			"\uF3D4", // UndirectedEdge
-			"\u00B7", // CenterDot
-			"\u2299", // CircleDot0
-			"\u2208", // Element
-			"\u22C2", // Intersection
-			"\u2260", // NotEqual,
-			"\u22C0" // Wedge
-	};
+  public static final ApplyOperator APPLY_HEAD_OPERATOR =
+      new ApplyOperator("@", "Apply", Precedence.APPLY_HEAD, InfixOperator.RIGHT_ASSOCIATIVE);
+  public static final ApplyOperator APPLY_OPERATOR =
+      new ApplyOperator("@@", "Apply", Precedence.APPLY, InfixOperator.RIGHT_ASSOCIATIVE);
+  public static final ApplyOperator APPLY_LEVEL_OPERATOR =
+      new ApplyOperator("@@@", "Apply", Precedence.APPLY, InfixOperator.RIGHT_ASSOCIATIVE);
 
-	public static final ApplyOperator APPLY_HEAD_OPERATOR = new ApplyOperator("@", "Apply", Precedence.APPLY_HEAD,
-			InfixOperator.RIGHT_ASSOCIATIVE);
-	public static final ApplyOperator APPLY_OPERATOR = new ApplyOperator("@@", "Apply", Precedence.APPLY,
-			InfixOperator.RIGHT_ASSOCIATIVE);
-	public static final ApplyOperator APPLY_LEVEL_OPERATOR = new ApplyOperator("@@@", "Apply", Precedence.APPLY,
-			InfixOperator.RIGHT_ASSOCIATIVE);
+  public static final TagSetOperator TAG_SET_OPERATOR =
+      new TagSetOperator("/:", "TagSet", Precedence.TAGSET, InfixOperator.NONE);
 
-	public static final TagSetOperator TAG_SET_OPERATOR = new TagSetOperator("/:", "TagSet", Precedence.TAGSET,
-			InfixOperator.NONE);
+  private static Operator[] OPERATORS;
 
-	private static Operator[] OPERATORS;
+  public static final ASTNodeFactory MMA_STYLE_FACTORY = new ASTNodeFactory(false);
 
-	public final static ASTNodeFactory MMA_STYLE_FACTORY = new ASTNodeFactory(false);
+  public static final ASTNodeFactory RELAXED_STYLE_FACTORY = new ASTNodeFactory(true);
 
-	public final static ASTNodeFactory RELAXED_STYLE_FACTORY = new ASTNodeFactory(true);
+  /** */
+  private static HashMap<String, Operator> fOperatorMap;
 
-	/**
-	 */
-	private static HashMap<String, Operator> fOperatorMap;
+  /** */
+  private static HashMap<String, ArrayList<Operator>> fOperatorTokenStartSet;
 
-	/**
-	 */
-	private static HashMap<String, ArrayList<Operator>> fOperatorTokenStartSet;
+  /**
+   * See <a href="https://pangin.pro/posts/computation-in-static-initializer">Beware of computation
+   * in static initializer</a>
+   */
+  private static class Initializer {
 
-	/**
-	 * 
-	 * See <a href="https://pangin.pro/posts/computation-in-static-initializer">Beware of computation in static
-	 * initializer</a>
-	 */
-	private static class Initializer {
+    private static void init() {
+      OPERATORS =
+          new Operator[] {
+            new InfixOperator("::", "MessageName", Precedence.MESSAGENAME, InfixOperator.NONE),
+            new PrefixOperator("<<", "Get", Precedence.GET),
+            new InfixOperator("?", "PatternTest", Precedence.PATTERNTEST, InfixOperator.NONE),
+            new InfixOperator("//@", "MapAll", Precedence.MAPALL, InfixOperator.RIGHT_ASSOCIATIVE),
+            new InfixOperator("*=", "TimesBy", Precedence.TIMESBY, InfixOperator.RIGHT_ASSOCIATIVE),
+            new InfixOperator("+", "Plus", Precedence.PLUS, InfixOperator.NONE),
+            new InfixOperator("^=", "UpSet", Precedence.UPSET, InfixOperator.RIGHT_ASSOCIATIVE),
+            new InfixOperator(
+                ";", "CompoundExpression", Precedence.COMPOUNDEXPRESSION, InfixOperator.NONE),
+            APPLY_HEAD_OPERATOR,
+            new InfixOperator("/@", "Map", Precedence.MAP, InfixOperator.RIGHT_ASSOCIATIVE),
+            new PostfixOperator("=.", "Unset", Precedence.UNSET),
+            APPLY_OPERATOR,
+            APPLY_LEVEL_OPERATOR,
+            // new ApplyOperator("@@", "Apply", APPLY_PRECEDENCE,
+            // InfixOperator.RIGHT_ASSOCIATIVE),
+            // new ApplyOperator("@@@", "Apply", APPLY_PRECEDENCE,
+            // InfixOperator.RIGHT_ASSOCIATIVE),
+            new InfixOperator(
+                "//.",
+                "ReplaceRepeated",
+                Precedence.REPLACEREPEATED,
+                InfixOperator.LEFT_ASSOCIATIVE),
+            new InfixOperator("<", "Less", Precedence.LESS, InfixOperator.NONE),
+            new InfixOperator("&&", "And", Precedence.AND, InfixOperator.NONE),
+            new DivideOperator("/", "Divide", Precedence.DIVIDE, InfixOperator.LEFT_ASSOCIATIVE),
+            new InfixOperator("=", "Set", Precedence.SET, InfixOperator.RIGHT_ASSOCIATIVE),
+            new PostfixOperator("++", "Increment", Precedence.INCREMENT), //
+            new PostfixOperator("!!", "Factorial2", Precedence.FACTORIAL2),
+            new InfixOperator("<=", "LessEqual", Precedence.LESSEQUAL, InfixOperator.NONE),
+            new InfixOperator("**", "NonCommutativeMultiply", 510, InfixOperator.NONE),
+            new PostfixOperator("!", "Factorial", Precedence.FACTORIAL),
+            new InfixOperator("*", "Times", Precedence.TIMES, InfixOperator.NONE),
+            new InfixOperator("^", "Power", Precedence.POWER, InfixOperator.RIGHT_ASSOCIATIVE),
+            new InfixOperator(".", "Dot", Precedence.DOT, InfixOperator.NONE), //
+            new PrefixOperator("!", "Not", Precedence.NOT),
+            new PreMinusOperator("-", "PreMinus", Precedence.PREMINUS),
+            new InfixOperator("===", "SameQ", Precedence.SAMEQ, InfixOperator.NONE),
+            new InfixOperator(
+                ":>", "RuleDelayed", Precedence.RULEDELAYED, InfixOperator.RIGHT_ASSOCIATIVE),
+            new InfixOperator(">=", "GreaterEqual", Precedence.GREATEREQUAL, InfixOperator.NONE),
+            new InfixOperator(
+                "/;", "Condition", Precedence.CONDITION, InfixOperator.LEFT_ASSOCIATIVE),
+            // new InfixOperator(":", "Colon", Precedence.COLON, InfixOperator.NONE),
+            new InfixOperator("//", "//", 70, InfixOperator.LEFT_ASSOCIATIVE),
+            new InfixOperator(
+                "/=", "DivideBy", Precedence.DIVIDEBY, InfixOperator.RIGHT_ASSOCIATIVE),
+            new InfixOperator("||", "Or", Precedence.OR, InfixOperator.NONE),
+            new InfixOperator(";;", "Span", Precedence.SPAN, InfixOperator.NONE),
+            new InfixOperator("==", "Equal", Precedence.EQUAL, InfixOperator.NONE),
+            new InfixOperator("<>", "StringJoin", Precedence.STRINGJOIN, InfixOperator.NONE),
+            new InfixOperator("!=", "Unequal", Precedence.UNEQUAL, InfixOperator.NONE),
+            new PostfixOperator("--", "Decrement", Precedence.DECREMENT),
+            new InfixOperator(
+                "-=", "SubtractFrom", Precedence.SUBTRACTFROM, InfixOperator.RIGHT_ASSOCIATIVE),
+            new PrePlusOperator("+", "PrePlus", Precedence.PREPLUS), //
+            new PostfixOperator("...", "RepeatedNull", Precedence.REPEATEDNULL),
+            new InfixOperator("=!=", "UnsameQ", Precedence.UNSAMEQ, InfixOperator.NONE),
+            new InfixOperator("->", "Rule", Precedence.RULE, InfixOperator.RIGHT_ASSOCIATIVE),
+            new InfixOperator(
+                "^:=", "UpSetDelayed", Precedence.UPSETDELAYED, InfixOperator.RIGHT_ASSOCIATIVE),
+            new PrefixOperator("++", "PreIncrement", Precedence.PREINCREMENT), //
+            new PostfixOperator("&", "Function", Precedence.FUNCTION),
+            new InfixOperator(">", "Greater", 290, InfixOperator.NONE),
+            new PrefixOperator("--", "PreDecrement", Precedence.PREDECREMENT),
+            new SubtractOperator(
+                "-", "Subtract", Precedence.SUBTRACT, InfixOperator.LEFT_ASSOCIATIVE),
+            new InfixOperator(
+                ":=", "SetDelayed", Precedence.SETDELAYED, InfixOperator.RIGHT_ASSOCIATIVE),
+            new InfixOperator("|", "Alternatives", Precedence.ALTERNATIVES, InfixOperator.NONE),
+            new InfixOperator("+=", "AddTo", Precedence.ADDTO, InfixOperator.RIGHT_ASSOCIATIVE),
+            new PostfixOperator("..", "Repeated", Precedence.REPEATED),
+            new InfixOperator(
+                "/.", "ReplaceAll", Precedence.REPLACEALL, InfixOperator.LEFT_ASSOCIATIVE), //
+            TAG_SET_OPERATOR, //
+            new InfixOperator("@*", "Composition", Precedence.COMPOSITION, InfixOperator.NONE),
+            new InfixOperator(
+                "~~", "StringExpression", Precedence.STRINGEXPRESSION, InfixOperator.NONE),
+            new InfixOperator(
+                "<->", "TwoWayRule", Precedence.TWOWAYRULE, InfixOperator.RIGHT_ASSOCIATIVE),
+            new InfixOperator(
+                "\uF120", "TwoWayRule", Precedence.TWOWAYRULE, InfixOperator.RIGHT_ASSOCIATIVE),
+            new InfixOperator(
+                "\uF3D5", "DirectedEdge", Precedence.DIRECTEDEDGE, InfixOperator.RIGHT_ASSOCIATIVE),
+            new InfixOperator(
+                "\uF3D4",
+                "UndirectedEdge",
+                Precedence.UNDIRECTEDEDGE,
+                InfixOperator.RIGHT_ASSOCIATIVE),
+            new InfixOperator("\u00B7", "CenterDot", Precedence.CENTERDOT, InfixOperator.NONE), //
+            new InfixOperator("\u2299", "CircleDot", Precedence.CIRCLEDOT, InfixOperator.NONE), //
+            new InfixOperator("\u2208", "Element", Precedence.ELEMENT, InfixOperator.NONE), //
+            new InfixOperator(
+                "\u22C2", "Intersection", Precedence.INTERSECTION, InfixOperator.NONE), //
+            new InfixOperator("\u2260", "Unequal", Precedence.UNEQUAL, InfixOperator.NONE), //
+            new InfixOperator("\u22C0", "Wedge", Precedence.WEDGE, InfixOperator.NONE) //
+          };
+      StringBuilder buf = new StringBuilder(BASIC_OPERATOR_CHARACTERS);
+      fOperatorMap = new HashMap<String, Operator>();
+      fOperatorTokenStartSet = new HashMap<String, ArrayList<Operator>>();
+      for (int i = 0; i < HEADER_STRINGS.length; i++) {
+        addOperator(
+            fOperatorMap,
+            fOperatorTokenStartSet,
+            OPERATOR_STRINGS[i],
+            HEADER_STRINGS[i],
+            OPERATORS[i]);
+        String unicodeChar =
+            org.matheclipse.parser.client.Characters.NamedCharactersMap.get(HEADER_STRINGS[i]);
+        if (unicodeChar != null) {
+          addOperator(
+              fOperatorMap, fOperatorTokenStartSet, unicodeChar, HEADER_STRINGS[i], OPERATORS[i]);
+          buf.append(unicodeChar);
+        }
+      }
+      OPERATOR_CHARACTERS = buf.toString();
+    }
+  }
 
-		private static void init() {
-			OPERATORS = new Operator[] {
-					new InfixOperator("::", "MessageName", Precedence.MESSAGENAME, InfixOperator.NONE),
-					new PrefixOperator("<<", "Get", Precedence.GET),
-					new InfixOperator("?", "PatternTest", Precedence.PATTERNTEST, InfixOperator.NONE),
-					new InfixOperator("//@", "MapAll", Precedence.MAPALL, InfixOperator.RIGHT_ASSOCIATIVE),
-					new InfixOperator("*=", "TimesBy", Precedence.TIMESBY, InfixOperator.RIGHT_ASSOCIATIVE),
-					new InfixOperator("+", "Plus", Precedence.PLUS, InfixOperator.NONE),
-					new InfixOperator("^=", "UpSet", Precedence.UPSET, InfixOperator.RIGHT_ASSOCIATIVE),
-					new InfixOperator(";", "CompoundExpression", Precedence.COMPOUNDEXPRESSION, InfixOperator.NONE),
-					APPLY_HEAD_OPERATOR,
-					new InfixOperator("/@", "Map", Precedence.MAP, InfixOperator.RIGHT_ASSOCIATIVE),
-					new PostfixOperator("=.", "Unset", Precedence.UNSET), APPLY_OPERATOR, APPLY_LEVEL_OPERATOR,
-					// new ApplyOperator("@@", "Apply", APPLY_PRECEDENCE,
-					// InfixOperator.RIGHT_ASSOCIATIVE),
-					// new ApplyOperator("@@@", "Apply", APPLY_PRECEDENCE,
-					// InfixOperator.RIGHT_ASSOCIATIVE),
-					new InfixOperator("//.", "ReplaceRepeated", Precedence.REPLACEREPEATED,
-							InfixOperator.LEFT_ASSOCIATIVE),
-					new InfixOperator("<", "Less", Precedence.LESS, InfixOperator.NONE),
-					new InfixOperator("&&", "And", Precedence.AND, InfixOperator.NONE),
-					new DivideOperator("/", "Divide", Precedence.DIVIDE, InfixOperator.LEFT_ASSOCIATIVE),
-					new InfixOperator("=", "Set", Precedence.SET, InfixOperator.RIGHT_ASSOCIATIVE),
-					new PostfixOperator("++", "Increment", Precedence.INCREMENT), //
-					new PostfixOperator("!!", "Factorial2", Precedence.FACTORIAL2),
-					new InfixOperator("<=", "LessEqual", Precedence.LESSEQUAL, InfixOperator.NONE),
-					new InfixOperator("**", "NonCommutativeMultiply", 510, InfixOperator.NONE),
-					new PostfixOperator("!", "Factorial", Precedence.FACTORIAL),
-					new InfixOperator("*", "Times", Precedence.TIMES, InfixOperator.NONE),
-					new InfixOperator("^", "Power", Precedence.POWER, InfixOperator.RIGHT_ASSOCIATIVE),
-					new InfixOperator(".", "Dot", Precedence.DOT, InfixOperator.NONE), //
-					new PrefixOperator("!", "Not", Precedence.NOT),
-					new PreMinusOperator("-", "PreMinus", Precedence.PREMINUS),
-					new InfixOperator("===", "SameQ", Precedence.SAMEQ, InfixOperator.NONE),
-					new InfixOperator(":>", "RuleDelayed", Precedence.RULEDELAYED, InfixOperator.RIGHT_ASSOCIATIVE),
-					new InfixOperator(">=", "GreaterEqual", Precedence.GREATEREQUAL, InfixOperator.NONE),
-					new InfixOperator("/;", "Condition", Precedence.CONDITION, InfixOperator.LEFT_ASSOCIATIVE),
-					// new InfixOperator(":", "Colon", Precedence.COLON, InfixOperator.NONE),
-					new InfixOperator("//", "//", 70, InfixOperator.LEFT_ASSOCIATIVE),
-					new InfixOperator("/=", "DivideBy", Precedence.DIVIDEBY, InfixOperator.RIGHT_ASSOCIATIVE),
-					new InfixOperator("||", "Or", Precedence.OR, InfixOperator.NONE),
-					new InfixOperator(";;", "Span", Precedence.SPAN, InfixOperator.NONE),
-					new InfixOperator("==", "Equal", Precedence.EQUAL, InfixOperator.NONE),
-					new InfixOperator("<>", "StringJoin", Precedence.STRINGJOIN, InfixOperator.NONE),
-					new InfixOperator("!=", "Unequal", Precedence.UNEQUAL, InfixOperator.NONE),
-					new PostfixOperator("--", "Decrement", Precedence.DECREMENT),
-					new InfixOperator("-=", "SubtractFrom", Precedence.SUBTRACTFROM, InfixOperator.RIGHT_ASSOCIATIVE),
-					new PrePlusOperator("+", "PrePlus", Precedence.PREPLUS), //
-					new PostfixOperator("...", "RepeatedNull", Precedence.REPEATEDNULL),
-					new InfixOperator("=!=", "UnsameQ", Precedence.UNSAMEQ, InfixOperator.NONE),
-					new InfixOperator("->", "Rule", Precedence.RULE, InfixOperator.RIGHT_ASSOCIATIVE),
-					new InfixOperator("^:=", "UpSetDelayed", Precedence.UPSETDELAYED, InfixOperator.RIGHT_ASSOCIATIVE),
-					new PrefixOperator("++", "PreIncrement", Precedence.PREINCREMENT), //
-					new PostfixOperator("&", "Function", Precedence.FUNCTION),
-					new InfixOperator(">", "Greater", 290, InfixOperator.NONE),
-					new PrefixOperator("--", "PreDecrement", Precedence.PREDECREMENT),
-					new SubtractOperator("-", "Subtract", Precedence.SUBTRACT, InfixOperator.LEFT_ASSOCIATIVE),
-					new InfixOperator(":=", "SetDelayed", Precedence.SETDELAYED, InfixOperator.RIGHT_ASSOCIATIVE),
-					new InfixOperator("|", "Alternatives", Precedence.ALTERNATIVES, InfixOperator.NONE),
-					new InfixOperator("+=", "AddTo", Precedence.ADDTO, InfixOperator.RIGHT_ASSOCIATIVE),
-					new PostfixOperator("..", "Repeated", Precedence.REPEATED),
-					new InfixOperator("/.", "ReplaceAll", Precedence.REPLACEALL, InfixOperator.LEFT_ASSOCIATIVE), //
-					TAG_SET_OPERATOR, //
-					new InfixOperator("@*", "Composition", Precedence.COMPOSITION, InfixOperator.NONE),
-					new InfixOperator("~~", "StringExpression", Precedence.STRINGEXPRESSION, InfixOperator.NONE),
-					new InfixOperator("<->", "TwoWayRule", Precedence.TWOWAYRULE, InfixOperator.RIGHT_ASSOCIATIVE),
-					new InfixOperator("\uF120", "TwoWayRule", Precedence.TWOWAYRULE, InfixOperator.RIGHT_ASSOCIATIVE),
-					new InfixOperator("\uF3D5", "DirectedEdge", Precedence.DIRECTEDEDGE,
-							InfixOperator.RIGHT_ASSOCIATIVE),
-					new InfixOperator("\uF3D4", "UndirectedEdge", Precedence.UNDIRECTEDEDGE,
-							InfixOperator.RIGHT_ASSOCIATIVE),
-					new InfixOperator("\u00B7", "CenterDot", Precedence.CENTERDOT, InfixOperator.NONE), //
-					new InfixOperator("\u2299", "CircleDot", Precedence.CIRCLEDOT, InfixOperator.NONE), //
-					new InfixOperator("\u2208", "Element", Precedence.ELEMENT, InfixOperator.NONE), //
-					new InfixOperator("\u22C2", "Intersection", Precedence.INTERSECTION, InfixOperator.NONE), //
-					new InfixOperator("\u2260", "Unequal", Precedence.UNEQUAL, InfixOperator.NONE), //
-					new InfixOperator("\u22C0", "Wedge", Precedence.WEDGE, InfixOperator.NONE)//
+  public static void initialize() {
+    Initializer.init();
+  }
 
-			};
-			StringBuilder buf = new StringBuilder(BASIC_OPERATOR_CHARACTERS);
-			fOperatorMap = new HashMap<String, Operator>();
-			fOperatorTokenStartSet = new HashMap<String, ArrayList<Operator>>();
-			for (int i = 0; i < HEADER_STRINGS.length; i++) {
-				addOperator(fOperatorMap, fOperatorTokenStartSet, OPERATOR_STRINGS[i], HEADER_STRINGS[i], OPERATORS[i]);
-				String unicodeChar = org.matheclipse.parser.client.Characters.NamedCharactersMap.get(HEADER_STRINGS[i]);
-				if (unicodeChar != null) {
-					addOperator(fOperatorMap, fOperatorTokenStartSet, unicodeChar, HEADER_STRINGS[i], OPERATORS[i]);
-					buf.append(unicodeChar);
-				}
-			}
-			OPERATOR_CHARACTERS = buf.toString();
-		}
-	}
+  static {
+    initialize();
+  }
 
-	public static void initialize() {
-		Initializer.init();
-	}
+  protected final boolean fIgnoreCase;
 
-	static {
-		initialize();
-	}
+  /** Create a default ASTNode factory */
+  public ASTNodeFactory(boolean ignoreCase) {
+    this.fIgnoreCase = ignoreCase;
+  }
 
-	protected final boolean fIgnoreCase;
+  public static void addOperator(
+      final Map<String, Operator> operatorMap,
+      final Map<String, ArrayList<Operator>> operatorTokenStartSet,
+      final String operatorStr,
+      final String headStr,
+      final Operator oper) {
+    ArrayList<Operator> list;
+    operatorMap.put(headStr, oper);
+    list = operatorTokenStartSet.get(operatorStr);
+    if (list == null) {
+      list = new ArrayList<Operator>(2);
+      list.add(oper);
+      operatorTokenStartSet.put(operatorStr, list);
+    } else {
+      list.add(oper);
+    }
+  }
 
-	/**
-	 * Create a default ASTNode factory
-	 * 
-	 */
-	public ASTNodeFactory(boolean ignoreCase) {
-		this.fIgnoreCase = ignoreCase;
-	}
+  /** public Map<String, Operator> getIdentifier2OperatorMap() */
+  @Override
+  public Map<String, Operator> getIdentifier2OperatorMap() {
+    return fOperatorMap;
+  }
 
-	static public void addOperator(final Map<String, Operator> operatorMap,
-			final Map<String, ArrayList<Operator>> operatorTokenStartSet, final String operatorStr,
-			final String headStr, final Operator oper) {
-		ArrayList<Operator> list;
-		operatorMap.put(headStr, oper);
-		list = operatorTokenStartSet.get(operatorStr);
-		if (list == null) {
-			list = new ArrayList<Operator>(2);
-			list.add(oper);
-			operatorTokenStartSet.put(operatorStr, list);
-		} else {
-			list.add(oper);
-		}
-	}
+  @Override
+  public Operator get(final String identifier) {
+    return fOperatorMap.get(identifier);
+  }
 
-	/**
-	 * public Map<String, Operator> getIdentifier2OperatorMap()
-	 */
-	@Override
-	public Map<String, Operator> getIdentifier2OperatorMap() {
-		return fOperatorMap;
-	}
+  /** */
+  @Override
+  public Map<String, ArrayList<Operator>> getOperator2ListMap() {
+    return fOperatorTokenStartSet;
+  }
 
-	@Override
-	public Operator get(final String identifier) {
-		return fOperatorMap.get(identifier);
-	}
+  /** */
+  @Override
+  public List<Operator> getOperatorList(final String key) {
+    return fOperatorTokenStartSet.get(key);
+  }
 
-	/**
-	 * 
-	 */
-	@Override
-	public Map<String, ArrayList<Operator>> getOperator2ListMap() {
-		return fOperatorTokenStartSet;
-	}
+  public static InfixOperator createInfixOperator(
+      final String operatorStr, final String headStr, final int precedence, final int grouping) {
+    InfixOperator oper;
+    if (headStr.equals("Apply")) {
+      oper = new ApplyOperator(operatorStr, headStr, precedence, grouping);
+    } else if (headStr.equals("Divide")) {
+      oper = new DivideOperator(operatorStr, headStr, precedence, grouping);
+    } else if (headStr.equals("Subtract")) {
+      oper = new SubtractOperator(operatorStr, headStr, precedence, grouping);
+    } else {
+      oper = new InfixOperator(operatorStr, headStr, precedence, grouping);
+    }
+    return oper;
+  }
 
-	/**
-	 * 
-	 */
-	@Override
-	public List<Operator> getOperatorList(final String key) {
-		return fOperatorTokenStartSet.get(key);
-	}
+  public static PrefixOperator createPrefixOperator(
+      final String operatorStr, final String headStr, final int precedence) {
+    PrefixOperator oper;
+    if (headStr.equals("PreMinus")) {
+      oper = new PreMinusOperator(operatorStr, headStr, precedence);
+    } else if (headStr.equals("PrePlus")) {
+      oper = new PrePlusOperator(operatorStr, headStr, precedence);
+    } else {
+      oper = new PrefixOperator(operatorStr, headStr, precedence);
+    }
+    return oper;
+  }
 
-	static public InfixOperator createInfixOperator(final String operatorStr, final String headStr,
-			final int precedence, final int grouping) {
-		InfixOperator oper;
-		if (headStr.equals("Apply")) {
-			oper = new ApplyOperator(operatorStr, headStr, precedence, grouping);
-		} else if (headStr.equals("Divide")) {
-			oper = new DivideOperator(operatorStr, headStr, precedence, grouping);
-		} else if (headStr.equals("Subtract")) {
-			oper = new SubtractOperator(operatorStr, headStr, precedence, grouping);
-		} else {
-			oper = new InfixOperator(operatorStr, headStr, precedence, grouping);
-		}
-		return oper;
-	}
+  public static PostfixOperator createPostfixOperator(
+      final String operatorStr, final String headStr, final int precedence) {
+    return new PostfixOperator(operatorStr, headStr, precedence);
+  }
 
-	static public PrefixOperator createPrefixOperator(final String operatorStr, final String headStr,
-			final int precedence) {
-		PrefixOperator oper;
-		if (headStr.equals("PreMinus")) {
-			oper = new PreMinusOperator(operatorStr, headStr, precedence);
-		} else if (headStr.equals("PrePlus")) {
-			oper = new PrePlusOperator(operatorStr, headStr, precedence);
-		} else {
-			oper = new PrefixOperator(operatorStr, headStr, precedence);
-		}
-		return oper;
-	}
+  @Override
+  public ASTNode createDouble(final String doubleString) {
+    return new FloatNode(doubleString);
+  }
 
-	static public PostfixOperator createPostfixOperator(final String operatorStr, final String headStr,
-			final int precedence) {
-		return new PostfixOperator(operatorStr, headStr, precedence);
-	}
+  @Override
+  public FunctionNode createFunction(final SymbolNode head) {
+    return new FunctionNode(head);
+  }
 
-	@Override
-	public ASTNode createDouble(final String doubleString) {
-		return new FloatNode(doubleString);
-	}
+  @Override
+  public FunctionNode createFunction(final SymbolNode head, final ASTNode arg0) {
+    return new FunctionNode(head, arg0);
+  }
 
-	@Override
-	public FunctionNode createFunction(final SymbolNode head) {
-		return new FunctionNode(head);
-	}
+  @Override
+  public FunctionNode createFunction(
+      final SymbolNode head, final ASTNode arg1, final ASTNode arg2) {
+    return new FunctionNode(head, arg1, arg2);
+  }
 
-	@Override
-	public FunctionNode createFunction(final SymbolNode head, final ASTNode arg0) {
-		return new FunctionNode(head, arg0);
-	}
+  @Override
+  public FunctionNode createFunction(
+      final SymbolNode head, final ASTNode arg1, final ASTNode arg2, final ASTNode arg3) {
+    return new FunctionNode(head, arg1, arg2, arg3);
+  }
 
-	@Override
-	public FunctionNode createFunction(final SymbolNode head, final ASTNode arg1, final ASTNode arg2) {
-		return new FunctionNode(head, arg1, arg2);
-	}
+  /** Creates a new list with no arguments from the given header object . */
+  @Override
+  public FunctionNode createAST(final ASTNode headExpr) {
+    return new FunctionNode(headExpr);
+  }
 
-	@Override
-	public FunctionNode createFunction(final SymbolNode head, final ASTNode arg1, final ASTNode arg2,
-			final ASTNode arg3) {
-		return new FunctionNode(head, arg1, arg2, arg3);
-	}
+  @Override
+  public FunctionNode unaryAST(final ASTNode head, final ASTNode arg0) {
+    return new FunctionNode(head, arg0);
+  }
 
-	/**
-	 * Creates a new list with no arguments from the given header object .
-	 */
-	@Override
-	public FunctionNode createAST(final ASTNode headExpr) {
-		return new FunctionNode(headExpr);
-	}
+  @Override
+  public IntegerNode createInteger(final String integerString, final int numberFormat) {
+    return new IntegerNode(integerString, numberFormat);
+  }
 
-	@Override
-	public FunctionNode unaryAST(final ASTNode head, final ASTNode arg0) {
-		return new FunctionNode(head, arg0);
-	}
+  @Override
+  public IntegerNode createInteger(final int intValue) {
+    return new IntegerNode(intValue);
+  }
 
-	@Override
-	public IntegerNode createInteger(final String integerString, final int numberFormat) {
-		return new IntegerNode(integerString, numberFormat);
-	}
+  @Override
+  public FractionNode createFraction(final IntegerNode numerator, final IntegerNode denominator) {
+    return new FractionNode(numerator, denominator);
+  }
 
-	@Override
-	public IntegerNode createInteger(final int intValue) {
-		return new IntegerNode(intValue);
-	}
+  @Override
+  public PatternNode createPattern(final SymbolNode patternName, final ASTNode check) {
+    return new PatternNode(patternName, check);
+  }
 
-	@Override
-	public FractionNode createFraction(final IntegerNode numerator, final IntegerNode denominator) {
-		return new FractionNode(numerator, denominator);
-	}
+  @Override
+  public PatternNode createPattern(
+      final SymbolNode patternName, final ASTNode check, boolean optional) {
+    return new PatternNode(patternName, check, optional);
+  }
 
-	@Override
-	public PatternNode createPattern(final SymbolNode patternName, final ASTNode check) {
-		return new PatternNode(patternName, check);
-	}
+  @Override
+  public PatternNode createPattern(
+      final SymbolNode patternName, final ASTNode check, final ASTNode defaultValue) {
+    return new PatternNode(patternName, check, defaultValue);
+  }
 
-	@Override
-	public PatternNode createPattern(final SymbolNode patternName, final ASTNode check, boolean optional) {
-		return new PatternNode(patternName, check, optional);
-	}
+  @Override
+  public PatternNode createPattern2(final SymbolNode patternName, final ASTNode check) {
+    return new Pattern2Node(patternName, check);
+  }
 
-	@Override
-	public PatternNode createPattern(final SymbolNode patternName, final ASTNode check, final ASTNode defaultValue) {
-		return new PatternNode(patternName, check, defaultValue);
-	}
+  @Override
+  public PatternNode createPattern3(final SymbolNode patternName, final ASTNode check) {
+    return new Pattern3Node(patternName, check);
+  }
 
-	@Override
-	public PatternNode createPattern2(final SymbolNode patternName, final ASTNode check) {
-		return new Pattern2Node(patternName, check);
-	}
+  @Override
+  public StringNode createString(final StringBuilder buffer) {
+    return new StringNode(buffer.toString());
+  }
 
-	@Override
-	public PatternNode createPattern3(final SymbolNode patternName, final ASTNode check) {
-		return new Pattern3Node(patternName, check);
-	}
+  @Override
+  public SymbolNode createSymbol(final String symbolName, final String context) {
+    String name = symbolName;
+    if (fIgnoreCase) {
+      if (name.length() > 1) {
+        name = symbolName.toLowerCase();
+      }
+    }
+    // if (FEConfig.RUBI_CONVERT_SYMBOLS) {
+    // name = toRubiString(name);
+    // }
+    // if (fIgnoreCase) {
+    // return new SymbolNode(symbolName.toLowerCase());
+    // }
+    return new SymbolNode(name);
+  }
 
-	@Override
-	public StringNode createString(final StringBuilder buffer) {
-		return new StringNode(buffer.toString());
-	}
+  @Override
+  public SymbolNode createSymbol(final String symbolName) {
+    return createSymbol(symbolName, "");
+  }
 
-	@Override
-	public SymbolNode createSymbol(final String symbolName, final String context) {
-		String name = symbolName;
-		if (fIgnoreCase) {
-			if (name.length() > 1) {
-				name = symbolName.toLowerCase();
-			}
-		}
-		// if (FEConfig.RUBI_CONVERT_SYMBOLS) {
-		// name = toRubiString(name);
-		// }
-		// if (fIgnoreCase) {
-		// return new SymbolNode(symbolName.toLowerCase());
-		// }
-		return new SymbolNode(name);
-	}
-
-	@Override
-	public SymbolNode createSymbol(final String symbolName) {
-		return createSymbol(symbolName, "");
-	}
-
-	@Override
-	public boolean isValidIdentifier(String identifier) {
-		return true;
-	}
-
+  @Override
+  public boolean isValidIdentifier(String identifier) {
+    return true;
+  }
 }

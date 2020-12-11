@@ -17,132 +17,113 @@ package org.matheclipse.parser.client;
 
 import org.matheclipse.parser.client.math.MathException;
 
-/**
- * Exception for a syntax error detected by the Symja parsers
- *
- */
+/** Exception for a syntax error detected by the Symja parsers */
 public class SyntaxError extends MathException {
 
-	/** 
-	 *
-	 */
-	private static final long serialVersionUID = 1849387697719679119L;
+  /** */
+  private static final long serialVersionUID = 1849387697719679119L;
 
-	/**
-	 * offset where the error occurred
-	 */
-	final int fStartOffset;
+  /** offset where the error occurred */
+  final int fStartOffset;
 
-	/**
-	 * row index where the error occurred2
-	 */
-	final int fRowIndex;
+  /** row index where the error occurred2 */
+  final int fRowIndex;
 
-	/**
-	 * column index where the error occurred (offset relative to rowIndex)
-	 */
-	final int fColumnIndex;
+  /** column index where the error occurred (offset relative to rowIndex) */
+  final int fColumnIndex;
 
-	/**
-	 * length of the error
-	 */
-	final int fLength;
+  /** length of the error */
+  final int fLength;
 
-	final String fCurrentLine;
+  final String fCurrentLine;
 
-	final String fError;
+  final String fError;
 
-	/**
-	 * SyntaxError exception
-	 *
-	 * @param startOffset
-	 *            the start offset inside the row
-	 * @param rowIndx
-	 *            the row index
-	 * @param columnIndx
-	 * @param currentLine
-	 * @param error
-	 * @param length
-	 *
-	 */
-	public SyntaxError(final int startOffset, final int rowIndx, final int columnIndx, final String currentLine,
-			final String error, final int length) {
-		super(null, null, false, false);
-		fStartOffset = startOffset;
-		fRowIndex = rowIndx;
-		fColumnIndex = columnIndx;
-		fCurrentLine = currentLine;
-		fError = error;
-		fLength = length;
-	}
+  /**
+   * SyntaxError exception
+   *
+   * @param startOffset the start offset inside the row
+   * @param rowIndx the row index
+   * @param columnIndx
+   * @param currentLine
+   * @param error
+   * @param length
+   */
+  public SyntaxError(
+      final int startOffset,
+      final int rowIndx,
+      final int columnIndx,
+      final String currentLine,
+      final String error,
+      final int length) {
+    super(null, null, false, false);
+    fStartOffset = startOffset;
+    fRowIndex = rowIndx;
+    fColumnIndex = columnIndx;
+    fCurrentLine = currentLine;
+    fError = error;
+    fLength = length;
+  }
 
-	/**
-	 * Column index where the error occurred (offset relative to rowIndex)
-	 * 
-	 * @return the index where the error occurred.
-	 */
-	public int getColumnIndex() {
-		return fColumnIndex;
-	}
+  /**
+   * Column index where the error occurred (offset relative to rowIndex)
+   *
+   * @return the index where the error occurred.
+   */
+  public int getColumnIndex() {
+    return fColumnIndex;
+  }
 
-	/**
-	 * Source code line, where the error occurred
-	 * 
-	 * @return line, where the error occurred
-	 */
-	public String getCurrentLine() {
-		return fCurrentLine;
-	}
+  /**
+   * Source code line, where the error occurred
+   *
+   * @return line, where the error occurred
+   */
+  public String getCurrentLine() {
+    return fCurrentLine;
+  }
 
-	/**
-	 * the error string
-	 */
-	public String getError() {
-		return fError;
-	}
+  /** the error string */
+  public String getError() {
+    return fError;
+  }
 
-	/**
-	 * length of the error
-	 */
-	public int getLength() {
-		return fLength;
-	}
+  /** length of the error */
+  public int getLength() {
+    return fLength;
+  }
 
-	@Override
-	public String getMessage() {
-		final StringBuilder buf = new StringBuilder(256);
-		buf.append("Syntax error in line: ");
-		buf.append(fRowIndex + 1);
-		buf.append(" - " + fError + "\n");
-		buf.append(fCurrentLine + "\n");
-		for (int i = 0; i < (fColumnIndex - 1); i++) {
-			buf.append(' ');
-		}
-		buf.append('^');
-		return buf.toString();
-	}
+  @Override
+  public String getMessage() {
+    final StringBuilder buf = new StringBuilder(256);
+    buf.append("Syntax error in line: ");
+    buf.append(fRowIndex + 1);
+    buf.append(" - " + fError + "\n");
+    buf.append(fCurrentLine + "\n");
+    for (int i = 0; i < (fColumnIndex - 1); i++) {
+      buf.append(' ');
+    }
+    buf.append('^');
+    return buf.toString();
+  }
 
-	/**
-	 * row index where the error occurred
-	 */
-	public int getRowIndex() {
-		return fRowIndex;
-	}
+  /** row index where the error occurred */
+  public int getRowIndex() {
+    return fRowIndex;
+  }
 
-	/**
-	 * offset where the error occurred
-	 */
-	public int getStartOffset() {
-		return fStartOffset;
-	}
+  /** offset where the error occurred */
+  public int getStartOffset() {
+    return fStartOffset;
+  }
 
-	@Override
-	public synchronized Throwable fillInStackTrace() {
-		if (FEConfig.SHOW_STACKTRACE) {
-			// doesn't fill the stack for FlowControlExceptions
-			return super.fillInStackTrace();
-		} else {
-			return this;
-		}
-	}
+  @Override
+  public synchronized Throwable fillInStackTrace() {
+    if (FEConfig.SHOW_STACKTRACE) {
+      // doesn't fill the stack for FlowControlExceptions
+      return super.fillInStackTrace();
+    } else {
+      return this;
+    }
+  }
 }

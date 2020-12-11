@@ -16,17 +16,17 @@
 package org.matheclipse.parser.client.eval;
 
 public class BooleanVariable {
-	boolean value;
+  boolean value;
 
-	public BooleanVariable(boolean v) {
-		value = v;
-	}
+  public BooleanVariable(boolean v) {
+    value = v;
+  }
 
-	public boolean getValue() {
-		return value;
-	}
+  public boolean getValue() {
+    return value;
+  }
 
-	public void setValue(boolean value) {
-		this.value = value;
-	}
+  public void setValue(boolean value) {
+    this.value = value;
+  }
 }

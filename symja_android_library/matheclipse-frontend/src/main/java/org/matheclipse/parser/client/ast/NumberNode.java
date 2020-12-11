@@ -15,58 +15,53 @@
  */
 package org.matheclipse.parser.client.ast;
 
-/**
- * The basic node for storing a parsed number expression string
- * 
- */
+/** The basic node for storing a parsed number expression string */
 public abstract class NumberNode extends ASTNode {
 
-	protected boolean sign;
+  protected boolean sign;
 
-	protected NumberNode(final String value) {
-		super(value);
-		sign = false;
-	}
+  protected NumberNode(final String value) {
+    super(value);
+    sign = false;
+  }
 
-	public double doubleValue() {
-		return Double.parseDouble(toString());
-	}
+  public double doubleValue() {
+    return Double.parseDouble(toString());
+  }
 
-	@Override
-	public abstract boolean equals(Object obj);
+  @Override
+  public abstract boolean equals(Object obj);
 
-	@Override
-	public String getString() {
-		if (sign) {
-			return "-" + fStringValue;
-		}
-		return fStringValue;
-	}
+  @Override
+  public String getString() {
+    if (sign) {
+      return "-" + fStringValue;
+    }
+    return fStringValue;
+  }
 
-	@Override
-	public int hashCode() {
-		if (sign) {
-			return fStringValue.hashCode() * 17;
-		}
-		return fStringValue.hashCode();
-	}
+  @Override
+  public int hashCode() {
+    if (sign) {
+      return fStringValue.hashCode() * 17;
+    }
+    return fStringValue.hashCode();
+  }
 
-	public boolean isSign() {
-		return sign;
-	}
+  public boolean isSign() {
+    return sign;
+  }
 
-	/**
-	 * Toggle the sign of the number.
-	 */
-	public void toggleSign() {
-		sign = !sign;
-	}
+  /** Toggle the sign of the number. */
+  public void toggleSign() {
+    sign = !sign;
+  }
 
-	@Override
-	public String toString() {
-		if (sign) {
-			return "-" + fStringValue;
-		}
-		return fStringValue;
-	}
+  @Override
+  public String toString() {
+    if (sign) {
+      return "-" + fStringValue;
+    }
+    return fStringValue;
+  }
 }

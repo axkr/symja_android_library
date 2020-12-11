@@ -21,61 +21,50 @@ import java.util.Map;
 
 import org.matheclipse.parser.client.operator.Operator;
 
-/**
- * Basic common parser factory methods.
- * 
- */
+/** Basic common parser factory methods. */
 public interface IParserFactory {
-	
-	/**
-	 * The default set of characters, which could form an operator
-	 * 
-	 */
-	public final static String BASIC_OPERATOR_CHARACTERS = ".-:=<>*+;!^|&/@?~";
 
-	/**
-	 * Check if the ch is in the set of operator characters.
-	 * 
-	 */
-	public boolean isOperatorChar(char ch);
+  /** The default set of characters, which could form an operator */
+  public static final String BASIC_OPERATOR_CHARACTERS = ".-:=<>*+;!^|&/@?~";
 
-	/**
-	 * Get the identifier to operator map
-	 * 
-	 * @return the map which stores the Operators for a given head string like Times, Plus, Sin,...
-	 */
-	public Map<String, ? extends Operator> getIdentifier2OperatorMap();
+  /** Check if the ch is in the set of operator characters. */
+  public boolean isOperatorChar(char ch);
 
-	/**
-	 * Get the operator-string to possible operator-list map
-	 * 
-	 * @return the map which stores the operator-list for a given operator string like *, +, ==...
-	 */
-	public Map<String, ArrayList<Operator>> getOperator2ListMap();
+  /**
+   * Get the identifier to operator map
+   *
+   * @return the map which stores the Operators for a given head string like Times, Plus, Sin,...
+   */
+  public Map<String, ? extends Operator> getIdentifier2OperatorMap();
 
-	/**
-	 * Get the operator for a given identifier string like Times, Plus, Sin,...
-	 * 
-	 * @param identifier
-	 * @return
-	 */
-	public Operator get(String identifier);
+  /**
+   * Get the operator-string to possible operator-list map
+   *
+   * @return the map which stores the operator-list for a given operator string like *, +, ==...
+   */
+  public Map<String, ArrayList<Operator>> getOperator2ListMap();
 
-	/**
-	 * Get the operator-list for a given operator-string
-	 * 
-	 * @return the operator-list for a given operator string like *, +, ==...
-	 */
-	public List<Operator> getOperatorList(String operatorString);
+  /**
+   * Get the operator for a given identifier string like Times, Plus, Sin,...
+   *
+   * @param identifier
+   * @return
+   */
+  public Operator get(String identifier);
 
-	/**
-	 * Check if the identifier name is valid.
-	 * 
-	 * @param identifier
-	 *            the currently parsed identifier
-	 * @return <code>false</code> if the identifier is not valid (in this case the parser creates a SyntaxError
-	 *         exception); otherwise return <code>true</code>
-	 */
-	public boolean isValidIdentifier(String identifier);
+  /**
+   * Get the operator-list for a given operator-string
+   *
+   * @return the operator-list for a given operator string like *, +, ==...
+   */
+  public List<Operator> getOperatorList(String operatorString);
 
+  /**
+   * Check if the identifier name is valid.
+   *
+   * @param identifier the currently parsed identifier
+   * @return <code>false</code> if the identifier is not valid (in this case the parser creates a
+   *     SyntaxError exception); otherwise return <code>true</code>
+   */
+  public boolean isValidIdentifier(String identifier);
 }

@@ -15,45 +15,33 @@
  */
 package org.matheclipse.parser.client.ast;
 
-/**
- * Default header operator strings
- * 
- */
+/** Default header operator strings */
 public interface IConstantOperators {
-	public final static String All = "All";
+  public static final String All = "All";
 
-	public final static String Inequality = "Inequality";
+  public static final String Inequality = "Inequality";
 
-	/**
-	 * Head for lists (i.e. &lt;|a->,b,...|&gt; )
-	 */
-	public final static String Association = "Association";
+  /** Head for lists (i.e. &lt;|a->,b,...|&gt; ) */
+  public static final String Association = "Association";
 
-	/**
-	 * Head for partial derivative
-	 */
-	public final static String Derivative = "Derivative";
+  /** Head for partial derivative */
+  public static final String Derivative = "Derivative";
 
-	/**
-	 * Head for lists (i.e. {a,b,c,...} )
-	 */
-	public final static String List = "List";
+  /** Head for lists (i.e. {a,b,c,...} ) */
+  public static final String List = "List";
 
-	public final static String Optional = "Optional";
+  public static final String Optional = "Optional";
 
-	/**
-	 * Head for the Out history (needed for the % operator)
-	 */
-	public final static String Out = "Out";
+  /** Head for the Out history (needed for the % operator) */
+  public static final String Out = "Out";
 
-	public final static String Part = "Part";
+  public static final String Part = "Part";
 
-	public final static String Pattern = "Pattern";
+  public static final String Pattern = "Pattern";
 
-	public final static String Slot = "Slot";
+  public static final String Slot = "Slot";
 
-	public final static String Span = "Span";
+  public static final String Span = "Span";
 
-	public final static String SlotSequence = "SlotSequence";
-
+  public static final String SlotSequence = "SlotSequence";
 }
