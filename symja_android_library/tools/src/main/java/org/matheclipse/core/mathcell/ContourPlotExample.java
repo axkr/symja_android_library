@@ -10,13 +10,13 @@ import org.matheclipse.parser.client.SyntaxError;
 
 public class ContourPlotExample extends BasePlotExample {
 
-	@Override
-	public String exampleFunction() { 
-		return "ContourPlot(Cos(x) + Cos(y), {x, 0, 4*Pi}, {y, 0, 4*Pi})";
-	}
+  @Override
+  public String exampleFunction() {
+    return "ContourPlot(Cos(x) + Cos(y), {x, 0, 4*Pi}, {y, 0, 4*Pi})";
+  }
 
-	public static void main(String[] args) {
-		ContourPlotExample p = new ContourPlotExample();
-		p.generateHTML();
-	}
+  public static void main(String[] args) {
+    ContourPlotExample p = new ContourPlotExample();
+    p.generateHTML();
+  }
 }

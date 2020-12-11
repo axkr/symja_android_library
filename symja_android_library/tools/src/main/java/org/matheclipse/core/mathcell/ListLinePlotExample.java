@@ -10,14 +10,14 @@ import org.matheclipse.parser.client.SyntaxError;
 
 public class ListLinePlotExample extends BasePlotExample {
 
-	@Override
-	public String exampleFunction() {
-		return "ListLinePlot(Table(ElementData(z, \"MeltingPoint\"), {z, 118}))";
-		// return "Manipulate(ListLinePlot(Table({Sin(t), Cos(t*a)}, {t, 50})), {a,1,4,1})";
-	}
+  @Override
+  public String exampleFunction() {
+    //		return "ListLinePlot(Table(ElementData(z, \"MeltingPoint\"), {z, 118}))";
+    return "Manipulate(ListLinePlot(Table({Sin(t), Cos(t*a)}, {t, 50})), {a,1,4,1})";
+  }
 
-	public static void main(String[] args) {
-		ListLinePlotExample p = new ListLinePlotExample();
-		p.generateHTML();
-	}
+  public static void main(String[] args) {
+    ListLinePlotExample p = new ListLinePlotExample();
+    p.generateHTML();
+  }
 }

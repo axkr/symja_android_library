@@ -10,14 +10,13 @@ import org.matheclipse.parser.client.SyntaxError;
 
 public class BoxWhiskerChartExample extends BasePlotExample {
 
-	@Override
-	public String exampleFunction() { 
-		return "BoxWhiskerChart(RandomVariate(NormalDistribution(0, 1), 100))";
-	}
+  @Override
+  public String exampleFunction() {
+    return "BoxWhiskerChart(RandomVariate(NormalDistribution(0, 1), 100))";
+  }
 
-	public static void main(String[] args) {
-		BoxWhiskerChartExample p = new BoxWhiskerChartExample();
-		p.generateHTML();
-	}
-
+  public static void main(String[] args) {
+    BoxWhiskerChartExample p = new BoxWhiskerChartExample();
+    p.generateHTML();
+  }
 }

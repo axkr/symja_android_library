@@ -10,14 +10,13 @@ import org.matheclipse.parser.client.SyntaxError;
 
 public class BarChartExample extends BasePlotExample {
 
-	@Override
-	public String exampleFunction() {  
-		return "BarChart({1, -2, 3}, BarOrigin -> Right)";
-	}
+  @Override
+  public String exampleFunction() {
+    return "BarChart({1, -2, 3}, BarOrigin -> Right)";
+  }
 
-	public static void main(String[] args) {
-		BarChartExample p = new BarChartExample();
-		p.generateHTML();
-	}
-
+  public static void main(String[] args) {
+    BarChartExample p = new BarChartExample();
+    p.generateHTML();
+  }
 }

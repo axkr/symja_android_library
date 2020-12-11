@@ -1,4 +1,3 @@
-
 package org.matheclipse.core.preprocessor;
 
 import java.io.File;
@@ -26,220 +25,225 @@ import org.matheclipse.core.expression.F;
 
 public class KeywordStemmer {
 
-	static class Keyword implements Comparable<Keyword> {
-		private final String stem;
-		private final Set<String> terms = new HashSet<>();
-		private int frequency;
+  static class Keyword implements Comparable<Keyword> {
+    private final String stem;
+    private final Set<String> terms = new HashSet<>();
+    private int frequency;
 
-		public Keyword(String stem) {
-			this.stem = stem;
-		}
+    public Keyword(String stem) {
+      this.stem = stem;
+    }
 
-		public void add(String term) {
-			this.terms.add(term);
-			this.frequency++;
-		}
+    public void add(String term) {
+      this.terms.add(term);
+      this.frequency++;
+    }
 
-		@Override
-		public int compareTo(Keyword keyword) {
-			return Integer.valueOf(keyword.frequency).compareTo(this.frequency);
-		}
+    @Override
+    public int compareTo(Keyword keyword) {
+      return Integer.valueOf(keyword.frequency).compareTo(this.frequency);
+    }
 
-		@Override
-		public int hashCode() {
-			return this.getStem().hashCode();
-		}
+    @Override
+    public int hashCode() {
+      return this.getStem().hashCode();
+    }
 
-		@Override
-		public boolean equals(Object o) {
-			if (this == o)
-				return true;
+    @Override
+    public boolean equals(Object o) {
+      if (this == o) return true;
 
-			if (!(o instanceof Keyword))
-				return false;
+      if (!(o instanceof Keyword)) return false;
 
-			Keyword that = (Keyword) o;
+      Keyword that = (Keyword) o;
 
-			return this.getStem().equals(that.getStem());
-		}
+      return this.getStem().equals(that.getStem());
+    }
 
-		// ----- getters, setters
+    // ----- getters, setters
 
-		public String getStem() {
-			return this.stem;
-		}
+    public String getStem() {
+      return this.stem;
+    }
 
-		public Set<String> getTerms() {
-			return this.terms;
-		}
+    public Set<String> getTerms() {
+      return this.terms;
+    }
 
-		public int getFrequency() {
-			return this.frequency;
-		}
-	}
+    public int getFrequency() {
+      return this.frequency;
+    }
+  }
 
-	static class KeywordsExtractor {
+  static class KeywordsExtractor {
 
-		private List<Keyword> getKeywordsList(String fullText) throws IOException {
+    private List<Keyword> getKeywordsList(String fullText) throws IOException {
 
-			TokenStream tokenStream = null;
+      TokenStream tokenStream = null;
 
-			try {
+      try {
 
-				StandardTokenizer stdToken = new StandardTokenizer();
-				stdToken.setReader(new StringReader(fullText));
+        StandardTokenizer stdToken = new StandardTokenizer();
+        stdToken.setReader(new StringReader(fullText));
 
-				tokenStream = new StopFilter(new ASCIIFoldingFilter(new ClassicFilter(new LowerCaseFilter(stdToken))),
-						EnglishAnalyzer.getDefaultStopSet());
-				tokenStream.reset();
+        tokenStream =
+            new StopFilter(
+                new ASCIIFoldingFilter(new ClassicFilter(new LowerCaseFilter(stdToken))),
+                EnglishAnalyzer.getDefaultStopSet());
+        tokenStream.reset();
 
-				List<Keyword> cardKeywords = new LinkedList<>();
+        List<Keyword> cardKeywords = new LinkedList<>();
 
-				CharTermAttribute token = tokenStream.getAttribute(CharTermAttribute.class);
+        CharTermAttribute token = tokenStream.getAttribute(CharTermAttribute.class);
 
-				while (tokenStream.incrementToken()) {
+        while (tokenStream.incrementToken()) {
 
-					String term = token.toString();
-					String stem = getStemForm(term);
+          String term = token.toString();
+          String stem = getStemForm(term);
 
-					if (stem != null && stem.length() > 3) {
-						Keyword cardKeyword = find(cardKeywords, new Keyword(stem.replaceAll("-0", "-")));
-						// treat the dashed words back, let look them pretty
-						cardKeyword.add(term.replaceAll("-0", "-"));
-					}
-				}
+          if (stem != null && stem.length() > 3) {
+            Keyword cardKeyword = find(cardKeywords, new Keyword(stem.replaceAll("-0", "-")));
+            // treat the dashed words back, let look them pretty
+            cardKeyword.add(term.replaceAll("-0", "-"));
+          }
+        }
 
-				// reverse sort by frequency
-				Collections.sort(cardKeywords);
+        // reverse sort by frequency
+        Collections.sort(cardKeywords);
 
-				return cardKeywords;
-			} finally {
-				if (tokenStream != null) {
-					try {
-						tokenStream.close();
-					} catch (IOException e) {
-						e.printStackTrace();
-					}
-				}
-			}
-		}
+        return cardKeywords;
+      } finally {
+        if (tokenStream != null) {
+          try {
+            tokenStream.close();
+          } catch (IOException e) {
+            e.printStackTrace();
+          }
+        }
+      }
+    }
 
-		private String getStemForm(String term) throws IOException {
+    private String getStemForm(String term) throws IOException {
 
-			TokenStream tokenStream = null;
+      TokenStream tokenStream = null;
 
-			try {
-				StandardTokenizer stdToken = new StandardTokenizer();
-				stdToken.setReader(new StringReader(term));
+      try {
+        StandardTokenizer stdToken = new StandardTokenizer();
+        stdToken.setReader(new StringReader(term));
 
-				tokenStream = new PorterStemFilter(stdToken);
-				tokenStream.reset();
+        tokenStream = new PorterStemFilter(stdToken);
+        tokenStream.reset();
 
-				// eliminate duplicate tokens by adding them to a set
-				Set<String> stems = new HashSet<>();
+        // eliminate duplicate tokens by adding them to a set
+        Set<String> stems = new HashSet<>();
 
-				CharTermAttribute token = tokenStream.getAttribute(CharTermAttribute.class);
+        CharTermAttribute token = tokenStream.getAttribute(CharTermAttribute.class);
 
-				while (tokenStream.incrementToken()) {
-					stems.add(token.toString());
-				}
+        while (tokenStream.incrementToken()) {
+          stems.add(token.toString());
+        }
 
-				// if stem form was not found or more than 2 stems have been found, return null
-				if (stems.size() != 1) {
-					return null;
-				}
+        // if stem form was not found or more than 2 stems have been found, return null
+        if (stems.size() != 1) {
+          return null;
+        }
 
-				String stem = stems.iterator().next();
+        String stem = stems.iterator().next();
 
-				// if the stem form has non-alphanumerical chars, return null
-				if (!stem.matches("[a-zA-Z0-9-]+")) {
-					return null;
-				}
+        // if the stem form has non-alphanumerical chars, return null
+        if (!stem.matches("[a-zA-Z0-9-]+")) {
+          return null;
+        }
 
-				return stem;
-			} finally {
-				if (tokenStream != null) {
-					try {
-						tokenStream.close();
-					} catch (IOException e) {
-						e.printStackTrace();
-					}
-				}
-			}
-		}
+        return stem;
+      } finally {
+        if (tokenStream != null) {
+          try {
+            tokenStream.close();
+          } catch (IOException e) {
+            e.printStackTrace();
+          }
+        }
+      }
+    }
 
-		private <T> T find(Collection<T> collection, T sample) {
+    private <T> T find(Collection<T> collection, T sample) {
 
-			for (T element : collection) {
-				if (element.equals(sample)) {
-					return element;
-				}
-			}
+      for (T element : collection) {
+        if (element.equals(sample)) {
+          return element;
+        }
+      }
 
-			collection.add(sample);
+      collection.add(sample);
 
-			return sample;
-		}
-	}
+      return sample;
+    }
+  }
 
-	private static void extract(String text) throws IOException {
-		KeywordsExtractor keywordsExtractor = new KeywordsExtractor();
-		List<Keyword> keywords = keywordsExtractor.getKeywordsList(text);
+  private static void extract(String text) throws IOException {
+    KeywordsExtractor keywordsExtractor = new KeywordsExtractor();
+    List<Keyword> keywords = keywordsExtractor.getKeywordsList(text);
 
-		for (Keyword keyword : keywords) {
-			StringBuilder buffer = new StringBuilder();
-			// buffer.append(keyword.getFrequency());
-			buffer.append(" \"" + keyword.getStem() + "\"");
-			buffer.append(", F." + text + ", //");
+    for (Keyword keyword : keywords) {
+      StringBuilder buffer = new StringBuilder();
+      // buffer.append(keyword.getFrequency());
+      buffer.append(" \"" + keyword.getStem() + "\"");
+      buffer.append(", F." + text + ", //");
 
-			// buffer.append(" [");
-			// for (String term : keyword.getTerms()) {
-			// buffer.append(term + " ");
-			// }
-			// buffer.append("]");
+      // buffer.append(" [");
+      // for (String term : keyword.getTerms()) {
+      // buffer.append(term + " ");
+      // }
+      // buffer.append("]");
 
-			System.out.println(buffer.toString());
-		}
-	}
+      System.out.println(buffer.toString());
+    }
+  }
 
-	public static void main(String[] args) {
-		try {
-			F.initSymbols();
-			File sourceLocation = new File(
-					// C:\\Users\\dev\\git\\symja_android_library\\
-					"../symja_android_library/doc/functions");
-			if (sourceLocation.exists()) {
-				// Get the list of the files contained in the package
-				final String[] files = sourceLocation.list();
-				if (files != null) {
-					System.out.println("	public static final Object[] STEMS = new Object[] { //");
-					for (int i = 0; i < files.length; i++) {
-						// we are only interested in .md files
-						if (files[i].endsWith(".md")) {
-							String className = files[i].substring(0, files[i].length() - 3);
-							extract(className);
-						}
-					}
-					System.out.println("};");
-				}
-			}
+  public static void main(String[] args) {
+    try {
+      F.initSymbols();
+      File sourceLocation =
+          new File(
+              // C:\\Users\\dev\\git\\symja_android_library\\
+              "../symja_android_library/doc/functions");
+      if (sourceLocation.exists()) {
+        // Get the list of the files contained in the package
+        final String[] files = sourceLocation.list();
+        if (files != null) {
+          System.out.println("	public static final Object[] STEMS = new Object[] { //");
+          for (int i = 0; i < files.length; i++) {
+            // we are only interested in .md files
+            if (files[i].endsWith(".md")) {
+              String className = files[i].substring(0, files[i].length() - 3);
+              extract(className);
+            }
+          }
+          System.out.println("};");
+        }
+      }
 
-			// extract("expandall fullform hornerform horner mathmlform mathml texform tex treeform tree");
-			//
-			// System.out.println("<<<<<");
-			// extract("simplifing expanding converting integrating deriving differentiating factoring Reducing
-			// solving");
-			// System.out.println("<<<<<");
-			// extract("simplify expand convert integrate derive differentiate factor Reduce reducer solve solver");
-			// System.out.println("<<<<<");
-			// extract("simplification expansion conversion integral integration derivation differentiation
-			// factorization reducing solving");
-			// System.out.println("<<<<<");
-			//
-			// System.out.println("<<<<<");
+      // extract("expandall fullform hornerform horner mathmlform mathml texform tex treeform
+      // tree");
+      //
+      // System.out.println("<<<<<");
+      // extract("simplifing expanding converting integrating deriving differentiating factoring
+      // Reducing
+      // solving");
+      // System.out.println("<<<<<");
+      // extract("simplify expand convert integrate derive differentiate factor Reduce reducer solve
+      // solver");
+      // System.out.println("<<<<<");
+      // extract("simplification expansion conversion integral integration derivation
+      // differentiation
+      // factorization reducing solving");
+      // System.out.println("<<<<<");
+      //
+      // System.out.println("<<<<<");
 
-		} catch (Exception ex) {
-			System.err.println("caught ex: " + ex.getMessage());
-		}
-	}
+    } catch (Exception ex) {
+      System.err.println("caught ex: " + ex.getMessage());
+    }
+  }
 }
