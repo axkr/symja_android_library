@@ -2613,13 +2613,18 @@ public final class Programming {
     }
   }
 
-  /** TODO implement &quot;TimeConstrained&quot; mode */
   private static class TimeConstrained extends AbstractCoreFunctionEvaluator {
 
     static class EvalControlledCallable implements Callable<IExpr> {
       private final EvalEngine fEngine;
       private IExpr fExpr;
 
+      /**
+       * Copy the current threads engine state into a new <code>EvalEngine</code> and do the
+       * calculation in this <code>Callable</code> with the new <code>EvalEngine</code>.
+       *
+       * @param engine
+       */
       public EvalControlledCallable(EvalEngine engine) {
         fEngine = engine.copy();
       }

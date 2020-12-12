@@ -274,6 +274,11 @@ public class EvalEngine implements Serializable {
    */
   private transient IExpr fAnswer = null;
 
+  /**
+   * If <code>fCopiedEngine != null</code> the <code>fCopiedEngine</code> engine is used in function
+   * <code>
+   * TimeConstrained</code> to stop a thread after <code>T</code> seconds.
+   */
   private transient EvalEngine fCopiedEngine = null;
 
   /**
@@ -465,7 +470,8 @@ public class EvalEngine implements Serializable {
   }
 
   /**
-   * Copy this EvalEngine into a new EvalEngine.
+   * Copy this EvalEngine into a new EvalEngine. The copied engine is used in function <code>
+   * TimeConstrained</code> to stop a thread after T seconds.
    *
    * @return
    */
@@ -1339,6 +1345,10 @@ public class EvalEngine implements Serializable {
         System.out.println(expr.toString());
       }
       RecursionLimitExceeded.throwIt(fRecursionLimit, expr);
+    }
+    if (fStopRequested) {
+      // check before going one recursion deeper
+      throw TimeoutException.TIMED_OUT;
     }
     IExpr result = expr;
     try {
@@ -2725,13 +2735,10 @@ public class EvalEngine implements Serializable {
   /** @param stopRequested The stopRequested to set. */
   public void setStopRequested(final boolean stopRequested) {
     fStopRequested = stopRequested;
-    if (stopRequested) {
-      if (fCopiedEngine != null) {
-        fCopiedEngine.setStopRequested(true);
-      }
-    } else {
-      fCopiedEngine = null;
+    if (stopRequested && fCopiedEngine != null) {
+      fCopiedEngine.setStopRequested(true);
     }
+    fCopiedEngine = null;
   }
 
   /**
@@ -2764,7 +2771,6 @@ public class EvalEngine implements Serializable {
 
   public void stopRequest() {
     setStopRequested(true);
-    // fStopRequested = true;
   }
 
   /**
