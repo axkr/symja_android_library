@@ -247,6 +247,11 @@ public class Console {
     final String lineSeparator = System.getProperty("line.separator");
     final StringBuilder msg = new StringBuilder();
     msg.append(Config.SYMJA);
+    msg.append(
+        "Symja Console Wiki: "
+            + "https://github.com/axkr/symja_android_library/wiki/Console-apps"
+            + lineSeparator);
+    msg.append(lineSeparator);
     msg.append("org.matheclipse.io.eval.Console [options]" + lineSeparator);
     msg.append(lineSeparator);
     msg.append("Program arguments: " + lineSeparator);

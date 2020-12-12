@@ -9,6 +9,7 @@ import org.matheclipse.api.parser.FuzzyParserFactory;
 import org.matheclipse.core.basic.Config;
 import org.matheclipse.core.basic.ToggleFeature;
 import org.matheclipse.core.eval.EvalEngine;
+import org.matheclipse.core.eval.exception.ReturnException;
 import org.matheclipse.core.expression.F;
 
 import com.fasterxml.jackson.databind.node.ObjectNode;
@@ -23,6 +24,7 @@ import io.undertow.util.Headers;
 import io.undertow.util.HttpString;
 
 public class SymjaServer {
+  static int PORT = 8080;
 
   private static final class APIHandler implements HttpHandler {
     @Override
@@ -59,6 +61,13 @@ public class SymjaServer {
   }
 
   public static void main(final String[] args) {
+    try {
+      if (setArgs("SymjaServer", args) < 0) {
+        return;
+      }
+    } catch (RuntimeException rex) {
+      return;
+    }
     ToggleFeature.COMPILE = false;
     Config.FUZZY_PARSER = true;
     Config.UNPROTECT_ALLOWED = false;
@@ -92,13 +101,70 @@ public class SymjaServer {
     Undertow server =
         Undertow.builder()
             . //
-            addHttpListener(8080, "localhost")
+            addHttpListener(PORT, "localhost")
             . //
             setHandler(path)
             . //
             build();
     server.start();
-    System.out.println("started");
+
+    System.out.println("\n>>> JSON API server started. <<<");
+    System.out.println("Waiting for API calls at http://localhost:" + PORT + "/v1/api");
+    System.out.println("Example client call:");
+    System.out.println(
+        "http://localhost:"
+            + PORT
+            + "/v1/api?i=D(Sin(x)%2Cx)&f=latex&f=plaintext&f=sinput&appid=DEMO");
+  }
+
+  protected static int setArgs(final String serverClass, final String args[]) {
+    for (int i = 0; i < args.length; i++) {
+      final String arg = args[i];
+
+      if (arg.equals("-port") || arg.equals("-p")) {
+        if (i + 1 >= args.length) {
+          System.out.println("You must specify a port number when using the -port argument");
+          throw ReturnException.RETURN_FALSE;
+        }
+
+        String portStr = args[i + 1];
+        i++;
+        PORT = Integer.valueOf(portStr);
+      } else if (arg.equals("-help") || arg.equals("-h")) {
+        printUsage(serverClass);
+        return -1;
+
+      } else if (arg.charAt(0) == '-') {
+        // we don't have any more args to recognize!
+        final String msg = "Unknown arg: " + arg;
+        System.out.println(msg);
+        printUsage(serverClass);
+        return -4;
+      }
+    }
+    printUsage(serverClass);
+    return 1;
+  }
+
+  /** Prints the usage of how to use this class to stdout */
+  private static void printUsage(final String serverClass) {
+    final String lineSeparator = System.getProperty("line.separator");
+    final StringBuilder msg = new StringBuilder();
+    msg.append(Config.SYMJA);
+    msg.append(
+        "Symja JSON API Wiki: "
+            + "https://github.com/axkr/symja_android_library/wiki/API"
+            + lineSeparator);
+    msg.append(lineSeparator);
+    msg.append("org.matheclipse.api." + serverClass + " [options]" + lineSeparator);
+    msg.append(lineSeparator);
+    msg.append("Program arguments: " + lineSeparator);
+    msg.append("  -h or -help print usage messages" + lineSeparator);
+    msg.append("  -p or -port set the port (default port is 8080)" + lineSeparator);
+    msg.append("****+****+****+****+****+****+****+****+****+****+****+****+");
+
+    System.out.println(msg.toString());
+    System.out.flush();
   }
 
   static String getAppID(Map<String, Deque<String>> queryParameters, String shortParameter) {

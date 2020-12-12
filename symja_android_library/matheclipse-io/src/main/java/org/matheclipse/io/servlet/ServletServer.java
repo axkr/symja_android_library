@@ -24,7 +24,9 @@ import io.undertow.servlet.api.DeploymentInfo;
 import io.undertow.servlet.api.DeploymentManager;
 
 public class ServletServer {
-  static int PORT = 8080;
+  /** The port for running JSON API. Default is 8080 */
+  public static int PORT = 8080;
+
   public static final String MYAPP = "/";
 
   public static void main(final String[] args) {
@@ -131,6 +133,11 @@ public class ServletServer {
     final String lineSeparator = System.getProperty("line.separator");
     final StringBuilder msg = new StringBuilder();
     msg.append(Config.SYMJA);
+    msg.append(
+        "Symja Browser Wiki: "
+            + "https://github.com/axkr/symja_android_library/wiki/Browser-apps"
+            + lineSeparator);
+    msg.append(lineSeparator);
     msg.append("org.matheclipse.io.servlet." + serverClass + " [options]" + lineSeparator);
     msg.append(lineSeparator);
     msg.append("Program arguments: " + lineSeparator);
