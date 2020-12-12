@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
 	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
 	<modelVersion>4.0.0</modelVersion>
 	<parent>
@@ -124,6 +125,24 @@
 						<mainClass>org.matheclipse.io.eval.Console</mainClass>
 					</configuration>
 					<executions>
+						<execution>
+							<id>server</id>
+							<goals>
+								<goal>java</goal>
+							</goals>
+							<configuration>
+								<mainClass>org.matheclipse.io.servlet.ServletServer</mainClass>
+							</configuration>
+						</execution>
+						<execution>
+							<id>mmaserver</id>
+							<goals>
+								<goal>java</goal>
+							</goals>
+							<configuration>
+								<mainClass>org.matheclipse.io.servlet.MMAServletServer</mainClass>
+							</configuration>
+						</execution>
 						<execution>
 							<id>symja</id>
 							<goals>
