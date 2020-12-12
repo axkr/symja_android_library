@@ -6,6 +6,7 @@ import java.io.FileWriter;
 import java.io.IOException;
 import java.io.StringWriter;
 import java.util.Locale;
+import java.util.regex.Pattern;
 
 import javax.script.ScriptContext;
 import javax.script.ScriptEngine;
@@ -95,6 +96,22 @@ public abstract class AbstractTestCase extends TestCase {
         }
         assertEquals(expectedResult, evaledResult);
       }
+    } catch (Exception e) {
+      e.printStackTrace();
+      assertEquals("", "1");
+    }
+  }
+
+  public void checkRegex(String evalString, String regex) {
+	  checkRegex(fScriptEngine, evalString, regex);
+  }
+
+  public void checkRegex(ScriptEngine scriptEngine, String evalString, String regex) {
+    try {
+      String evaledResult = (String) scriptEngine.eval(evalString);
+
+      assertEquals(true, Pattern.matches(regex, evaledResult));
+
     } catch (Exception e) {
       e.printStackTrace();
       assertEquals("", "1");
