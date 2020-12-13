@@ -129,7 +129,7 @@ Division by zero is forbidden:
 >> 1 / 0
 ```
 
-Other expressions involving Infinity are evaluated:
+Other expressions involving `Infinity` are evaluated:
 
 ```
 >> Infinity + 2 Infinity
