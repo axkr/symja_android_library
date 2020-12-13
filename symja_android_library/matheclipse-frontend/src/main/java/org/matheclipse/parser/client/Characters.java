@@ -2210,6 +2210,41 @@ public class Characters {
                 break; // while (currentPosition < strLength)
               }
             }
+          } else if (str.charAt(currentPosition) == '.') {
+            final int numberOfUnicodeDigits = 2;
+            final int startPosition = ++currentPosition;
+            if (startPosition + numberOfUnicodeDigits >= strLength) {
+              break;
+            }
+            final String number =
+                str.substring(startPosition, startPosition + numberOfUnicodeDigits);
+            try {
+              int intValue = Integer.parseInt(number, 16);
+              buf = new StringBuilder(str.length());
+              buf.append(str.substring(0, startPosition - 2));
+              buf.append((char) intValue);
+              currentPosition += numberOfUnicodeDigits;
+              break;
+            } catch (final NumberFormatException e) {
+            }
+          } else if (str.charAt(currentPosition) == ':') {
+            final int numberOfUnicodeDigits = 4;
+            final int startPosition = ++currentPosition;
+            if (startPosition + numberOfUnicodeDigits >= strLength) {
+              break;
+            }
+            final String number =
+                str.substring(startPosition, startPosition + numberOfUnicodeDigits);
+
+            try {
+              int intValue = Integer.parseInt(number, 16);
+              buf = new StringBuilder(str.length());
+              buf.append(str.substring(0, startPosition - 2));
+              buf.append((char) intValue);
+              currentPosition += numberOfUnicodeDigits;
+              break;
+            } catch (final NumberFormatException e) {
+            }
           } else {
             // escape next character
             currentPosition++;
@@ -2256,10 +2291,41 @@ public class Characters {
               String subString = str.substring(startPosition, endPosition - 1);
               buf.append(subString);
             }
+          } else if (str.charAt(currentPosition) == '.') {
+            final int numberOfUnicodeDigits = 2;
+            final int startPosition = ++currentPosition;
+            if (startPosition + numberOfUnicodeDigits >= strLength) {
+              break;
+            }
+            final String number =
+                str.substring(startPosition, startPosition + numberOfUnicodeDigits);
+            try {
+              int intValue = Integer.parseInt(number, 16);
+              buf.append((char) intValue);
+              currentPosition += numberOfUnicodeDigits;
+              continue; // while (currentPosition < strLength)
+            } catch (final NumberFormatException e) {
+            }
+          } else if (str.charAt(currentPosition) == ':') {
+            final int numberOfUnicodeDigits = 4;
+            final int startPosition = ++currentPosition;
+            if (startPosition + numberOfUnicodeDigits >= strLength) {
+              break;
+            }
+            final String number =
+                str.substring(startPosition, startPosition + numberOfUnicodeDigits);
+
+            try {
+              int intValue = Integer.parseInt(number, 16);
+              buf.append((char) intValue);
+              currentPosition += numberOfUnicodeDigits;
+              continue; // while (currentPosition < strLength)
+            } catch (final NumberFormatException e) {
+            }
           } else {
             // escape next character
             buf.append(currentChar);
-            currentPosition++;
+//            currentPosition++;
           }
         }
       }

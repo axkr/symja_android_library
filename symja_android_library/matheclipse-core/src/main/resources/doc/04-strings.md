@@ -27,3 +27,17 @@ They have to be converted to strings using `ToString` first:
 >> "Debian" <> ToString(6)
 Debian6
 ```
+
+You can input a named Unicode character like this: `\[Name]`
+
+```
+>>  "\[Epsilon]"
+ϵ
+```
+   
+You can input a 2 or 4 digits hexadecimal Unicode character like this: `\.xx` or `\:xxxx`
+
+```
+>> "\:20AC"
+€
+```
