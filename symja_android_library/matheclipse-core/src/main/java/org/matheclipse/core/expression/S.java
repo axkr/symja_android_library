@@ -374,6 +374,8 @@ public class S {
   /** BaseForm(integer, radix) - prints the `integer` number in base `radix` form. */
   public static final IBuiltInSymbol BaseForm = F.initFinalSymbol("BaseForm", ID.BaseForm);
 
+  public static final IBuiltInSymbol Beep = F.initFinalSymbol("Beep", ID.Beep);
+
   /** Begin("<context-name>") - start a new context definition */
   public static final IBuiltInSymbol Begin = F.initFinalSymbol("Begin", ID.Begin);
 

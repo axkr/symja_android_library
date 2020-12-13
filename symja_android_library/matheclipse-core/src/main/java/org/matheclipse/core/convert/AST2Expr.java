@@ -284,6 +284,7 @@ public class AST2Expr {
     "BaseDecode",
     "BaseEncode",
     "BaseForm",
+    "Beep",
     "Begin",
     "BeginPackage",
     "BeginTestSection",

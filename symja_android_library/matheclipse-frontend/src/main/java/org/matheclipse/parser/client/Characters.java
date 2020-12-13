@@ -2325,7 +2325,7 @@ public class Characters {
           } else {
             // escape next character
             buf.append(currentChar);
-//            currentPosition++;
+            //            currentPosition++;
           }
         }
       }

@@ -14,6 +14,7 @@ public final class FunctionDefinitions {
   private static class Initializer {
 
     private static void init() {
+      Beep.setEvaluator(new org.matheclipse.core.reflection.system.Beep());
       ComplexExpand.setEvaluator(new org.matheclipse.core.reflection.system.ComplexExpand());
       D.setEvaluator(new org.matheclipse.core.reflection.system.D());
       Derivative.setEvaluator(new org.matheclipse.core.reflection.system.Derivative());

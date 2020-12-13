@@ -207,6 +207,12 @@ public class MainTestCase extends AbstractTestCase {
     check("Out()", "2");
   }
 
+  public void testBeep() {
+    check(
+        "Beep()", //
+        "");
+  }
+
   public void testQuit() {
     check(
         "1^(-1)", //
