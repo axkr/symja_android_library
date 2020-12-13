@@ -81,7 +81,7 @@ public class ConstantTest extends AbstractTestCase {
         "44");
     check(
         "Hold(Out(-1))", //
-        "Hold(Out(-1))");
+        "Hold(%)");
     check(
         "Hold(%4)", //
         "Hold(Out(4))");
@@ -102,7 +102,7 @@ public class ConstantTest extends AbstractTestCase {
             + "Out(5)=44\n"
             + "Out(6)=42\n"
             + "Out(7)=44\n"
-            + "Out(8)=Hold(Out(-1))\n"
+            + "Out(8)=Hold(%)\n"
             + "Out(9)=Hold(Out(4))\n"
             + "Out(10)=Out(0)\n"
             + "Out(11)=Null\n"
