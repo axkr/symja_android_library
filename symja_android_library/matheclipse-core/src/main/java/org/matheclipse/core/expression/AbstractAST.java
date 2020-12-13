@@ -30,7 +30,6 @@ import org.jgrapht.graph.DefaultGraphType;
 import org.jgrapht.graph.DefaultGraphType.Builder;
 import org.matheclipse.core.basic.Config;
 import org.matheclipse.core.builtin.BooleanFunctions;
-import org.matheclipse.core.builtin.IOFunctions;
 import org.matheclipse.core.builtin.StructureFunctions.LeafCount;
 import org.matheclipse.core.convert.AST2Expr;
 import org.matheclipse.core.convert.VariablesSet;
@@ -41,10 +40,10 @@ import org.matheclipse.core.eval.exception.LimitException;
 import org.matheclipse.core.eval.exception.SymjaMathException;
 import org.matheclipse.core.eval.exception.Validate;
 import org.matheclipse.core.eval.interfaces.ICoreFunctionEvaluator;
-import org.matheclipse.core.eval.interfaces.IFunctionEvaluator;
 import org.matheclipse.core.eval.interfaces.IRewrite;
 import org.matheclipse.core.eval.util.AbstractAssumptions;
 import org.matheclipse.core.form.output.OutputFormFactory;
+import org.matheclipse.core.form.output.WolframFormFactory;
 import org.matheclipse.core.generic.ObjIntPredicate;
 import org.matheclipse.core.generic.Predicates;
 import org.matheclipse.core.generic.UnaryVariable2Slot;
@@ -5295,88 +5294,6 @@ public abstract class AbstractAST implements IASTMutable {
       return new Array2DRowRealMatrix(elements, false);
     }
     return null;
-  }
-
-  @Override
-  public String toMMA() {
-    try {
-      //      StringBuilder sb = new StringBuilder();
-      //      if (OutputFormFactory.get(false).convert(sb, this)) {
-      //        return sb.toString();
-      //      }
-
-      final StringBuilder buf = new StringBuilder();
-      if (size() > 0 && isList()) {
-        buf.append('{');
-        for (int i = 1; i < size(); i++) {
-          final IExpr o = get(i);
-          buf.append(get(i) == this ? "(this AST)" : o.toMMA());
-          if (i < argSize()) {
-            buf.append(", ");
-          }
-        }
-        buf.append('}');
-        return buf.toString();
-
-      } else if (isAST(F.Slot, 2) && (arg1().isReal())) {
-
-        final int slot = ((ISignedNumber) arg1()).toIntDefault();
-        if (slot <= 0) {
-          final String sep = ", ";
-          IExpr temp = null;
-          if (size() > 0) {
-            temp = head();
-          }
-          StringBuilder text;
-          if (temp == null) {
-            text = new StringBuilder("<null-tag>");
-          } else {
-            text = new StringBuilder(temp.toMMA());
-          }
-          text.append('[');
-          for (int i = 1; i < size(); i++) {
-            final IExpr o = get(i);
-            text = text.append(o == this ? "(this AST)" : o.toMMA());
-            if (i < argSize()) {
-              text.append(sep);
-            }
-          }
-          text.append(']');
-          return text.toString();
-        }
-        if (slot == 1) {
-          return "#";
-        }
-        return "#" + slot;
-      } else {
-        final String sep = ", ";
-        IExpr temp = null;
-        if (size() > 0) {
-          temp = head();
-        }
-        StringBuilder text;
-        if (temp == null) {
-          text = new StringBuilder("<null-tag>");
-        } else {
-          text = new StringBuilder(temp.toMMA());
-        }
-        text.append('[');
-        for (int i = 1; i < size(); i++) {
-          final IExpr o = getRule(i);
-          text = text.append(o == this ? "(this AST)" : o.toMMA());
-          if (i < argSize()) {
-            text.append(sep);
-          }
-        }
-        text.append(']');
-        return text.toString();
-      }
-    } catch (RuntimeException e) {
-      if (FEConfig.SHOW_STACKTRACE) {
-        System.out.println(fullFormString());
-      }
-      throw e;
-    }
   }
 
   @Override

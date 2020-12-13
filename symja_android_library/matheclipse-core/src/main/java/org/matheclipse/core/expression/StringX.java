@@ -541,11 +541,6 @@ public class StringX implements IStringX {
   }
 
   @Override
-  public String toMMA() {
-    return "\"" + fString + "\"";
-  }
-
-  @Override
   public String toString() {
     return fString;
   }

@@ -336,19 +336,6 @@ public class Blank implements IPattern {
   }
 
   @Override
-  public String toMMA() {
-    final StringBuilder buffer = new StringBuilder();
-    buffer.append('_');
-    if (fHeadTest != null) {
-      buffer.append(fHeadTest.toMMA());
-    }
-    if (fDefault) {
-      buffer.append('.');
-    }
-    return buffer.toString();
-  }
-
-  @Override
   public String toString() {
     final StringBuilder buffer = new StringBuilder();
     buffer.append('_');

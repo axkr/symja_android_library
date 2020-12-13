@@ -1235,6 +1235,7 @@ public class AST2Expr {
 
   public static Map<String, Integer> RUBI_STATISTICS_MAP;
 
+  /** Map the lower case identifier name to the upper case Wolfram language function name. */
   public static final Map<String, String> PREDEFINED_SYMBOLS_MAP =
       FEConfig.TRIE_STRING2STRING_BUILDER.withMatch(TrieMatch.EXACT).build(); // Tries.forStrings();
 

@@ -279,50 +279,6 @@ public class PatternSequence implements IPatternSequence {
     return toString();
   }
 
-  // @Override
-  // public void setIndex(final int i) {
-  // fIndex = i;
-  // }
-
-  @Override
-  public String toMMA() {
-    final StringBuilder buffer = new StringBuilder();
-    if (fSymbol == null) {
-      buffer.append("__");
-      if (fZeroArgsAllowed) {
-        buffer.append('_');
-      }
-      if (fDefault) {
-        buffer.append('.');
-      }
-      if (fCondition != null) {
-        buffer.append(fCondition.toMMA());
-      }
-    } else {
-      if (fCondition == null) {
-        buffer.append(fSymbol.toMMA());
-        buffer.append("__");
-        if (fZeroArgsAllowed) {
-          buffer.append('_');
-        }
-        if (fDefault) {
-          buffer.append('.');
-        }
-      } else {
-        buffer.append(fSymbol.toMMA());
-        buffer.append("__");
-        if (fZeroArgsAllowed) {
-          buffer.append('_');
-        }
-        if (fDefault) {
-          buffer.append('.');
-        }
-        buffer.append(fCondition.toMMA());
-      }
-    }
-    return buffer.toString();
-  }
-
   @Override
   public String toString() {
     final StringBuilder buffer = new StringBuilder();

@@ -5,9 +5,10 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.PrintWriter;
-import java.util.Collections;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
@@ -36,10 +37,12 @@ import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.expression.Context;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.form.Documentation;
+import org.matheclipse.core.form.output.WolframFormFactory;
 import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.interfaces.ISymbol;
 import org.matheclipse.core.parser.ExprParser;
 import org.matheclipse.parser.client.FEConfig;
+import org.matheclipse.parser.client.SyntaxError;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ObjectNode;
@@ -50,8 +53,83 @@ public class AJAXDocServlet extends HttpServlet {
 
   public static final ObjectMapper JSON_OBJECT_MAPPER = new ObjectMapper();
 
+  /** A TeX node containing text and other inline nodes as children. */
+  //  private static class TeX extends CustomNode implements Delimited {
+  //
+  //    private static final String DELIMITER = "$";
+  //
+  //    @Override
+  //    public String getOpeningDelimiter() {
+  //      return DELIMITER;
+  //    }
+  //
+  //    @Override
+  //    public String getClosingDelimiter() {
+  //      return DELIMITER;
+  //    }
+  //  }
+  //
+  //  private static class TeXDelimiterProcessor implements DelimiterProcessor {
+  //
+  //    @Override
+  //    public char getOpeningCharacter() {
+  //      return '$';
+  //    }
+  //
+  //    @Override
+  //    public char getClosingCharacter() {
+  //      return '$';
+  //    }
+  //
+  //    @Override
+  //    public int getMinLength() {
+  //      return 2;
+  //    }
+  //
+  //    @Override
+  //    public int getDelimiterUse(DelimiterRun opener, DelimiterRun closer) {
+  //      if (opener.length() >= 2 && closer.length() >= 2) {
+  //        // Use exactly two delimiters even if we have more, and don't care about internal
+  //        // openers/closers.
+  //        return 2;
+  //      } else {
+  //        return 0;
+  //      }
+  //    }
+  //
+  //    @Override
+  //    public void process(Text opener, Text closer, int delimiterCount) {
+  //      // Wrap nodes between delimiters in TeX.
+  //      Node teX = new TeX();
+  //
+  //      Node tmp = opener.getNext();
+  //      while (tmp != null && tmp != closer) {
+  //        Node next = tmp.getNext();
+  //        teX.appendChild(tmp);
+  //        tmp = next;
+  //      }
+  //
+  //      opener.insertAfter(teX);
+  //    }
+  //  }
+  //
+  //  private static class TeXExtension implements Parser.ParserExtension {
+  //
+  //    private TeXExtension() {}
+  //
+  //    public static Extension create() {
+  //      return new TeXExtension();
+  //    }
+  //
+  //    @Override
+  //    public void extend(Parser.Builder parserBuilder) {
+  //      parserBuilder.customDelimiterProcessor(new TeXDelimiterProcessor());
+  //    }
+  //  }
+
   static class DocNodeRenderer extends CoreHtmlNodeRenderer {
     private final HtmlWriter html;
+    private boolean inHeader = false;
 
     public DocNodeRenderer(HtmlNodeRendererContext context) {
       super(context);
@@ -84,10 +162,12 @@ public class AJAXDocServlet extends HttpServlet {
     }
 
     public void fencedCodeBlock(FencedCodeBlock fencedCodeBlock) {
-      //    	System.out.println(fencedCodeBlock.getLiteral() );
+
       String literal = fencedCodeBlock.getLiteral();
+      WolframFormFactory wolframForm = WolframFormFactory.get();
       final String code = literal.trim();
       if (code.contains(">> ")) {
+        //        try {
         int lastIndex = 0;
         int index = 0;
         html.tag("pre");
@@ -107,8 +187,9 @@ public class AJAXDocServlet extends HttpServlet {
                   ExprParser parser = new ExprParser(engine, true);
                   IExpr expr = parser.parse(exampleCommand);
                   if (expr != null) {
-                    exampleCommand = expr.toMMA().trim();
+                    exampleCommand = wolframForm.toString(expr); // expr.toMMA().trim();
                   }
+                } catch (SyntaxError syx) {
                 } catch (RuntimeErrorException rex) {
                   //
                 }
@@ -133,6 +214,10 @@ public class AJAXDocServlet extends HttpServlet {
           html.text(code.substring(lastIndex, code.length()));
         }
         html.tag("/pre");
+        //        } catch (RuntimeException rex) {
+        //          rex.printStackTrace();
+        //          visit(fencedCodeBlock);
+        //        }
       } else {
         visit(fencedCodeBlock);
         //        html.text(code.substring(0, code.length()));
@@ -172,6 +257,53 @@ public class AJAXDocServlet extends HttpServlet {
         visit(link);
       }
     }
+
+    //    @Override
+    //    public void visit(CustomBlock customBlock) {
+    //      if (customBlock instanceof TableBlock) {
+    //        TableBlock tableBlock = (TableBlock) customBlock;
+    //        visitTableBlock(tableBlock);
+    //      } else {
+    //        visitChildren(customBlock);
+    //      }
+    //    }
+    //
+    //    @Override
+    //    public void visit(CustomNode customNode) {
+    //      if (customNode instanceof TableHead) {
+    //        inHeader = true;
+    //        visitChildren(customNode);
+    //
+    //      } else if (customNode instanceof TableBody) {
+    //        inHeader = false;
+    //        visitChildren(customNode);
+    //
+    //      } else if (customNode instanceof org.commonmark.ext.gfm.tables.TableRow) {
+    //        visitChildren(customNode);
+    //      } else if (customNode instanceof TableCell) {
+    //        TableCell cell = (TableCell) customNode;
+    //        visitChildren(cell);
+    //        //  if (inHeader) {
+    //        //
+    //        // }
+    //      } else if (customNode instanceof TeX) {
+    //        visitTeXNode((TeX) customNode);
+    //      } else {
+    //        visitChildren(customNode);
+    //      }
+    //    }
+    //
+    //    private void visitTeXNode(TeX teXNode) {
+    //      System.out.println("content = " + teXNode.toString());
+    //    }
+    //
+    //    private void visitTableBlock(TableBlock tableBlock) {
+    //      try {
+    //        visitChildren(tableBlock);
+    //      } catch (Exception e) {
+    //        e.printStackTrace();
+    //      }
+    //    }
   }
 
   /** */
@@ -222,7 +354,10 @@ public class AJAXDocServlet extends HttpServlet {
   }
 
   public static String generateHTMLString(final String markdownStr) {
-    Set<Extension> EXTENSIONS = Collections.singleton(TablesExtension.create());
+    List<Extension> EXTENSIONS =
+        Arrays.asList( //
+            //            TeXExtension.create(), //
+            TablesExtension.create());
     Parser parser = Parser.builder().extensions(EXTENSIONS).build();
     Node document = parser.parse(markdownStr);
 

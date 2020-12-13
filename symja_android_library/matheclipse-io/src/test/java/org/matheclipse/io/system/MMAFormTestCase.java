@@ -23,30 +23,28 @@ public class MMAFormTestCase extends AbstractTestCase {
   public void testWLForm001() {
     IAST function = Sinc(Times(CI, CInfinity));
 
-    assertEquals(
-        function.toMMA(), //
-        "Sinc[Times[I, DirectedInfinity[1]]]");
+    assertEquals(function.toMMA(), "Sinc[I*Infinity]");
   }
 
   public void testWLForm002() {
     IAST function = Sinc(Times(CI, CInfinity));
-    assertEquals(
-        function.toMMA(), //
-        "Sinc[Times[I, DirectedInfinity[1]]]");
+    assertEquals(function.toMMA(), "Sinc[I*Infinity]");
   }
 
   public void testWLForm003() {
     IAST function = F.Together(Times(2, F.x));
-    assertEquals(
-        function.toMMA(), //
-        "Together[Times[2, x]]");
+    assertEquals(function.toMMA(), "Together[2*x]");
   }
 
   public void testWLForm004() {
     EvalEngine engine = new EvalEngine("", 256, 256, System.out, System.err, true);
     ExprParser parser = new ExprParser(engine, true);
     IExpr expr = parser.parse("{f'(x), f''(x), f'''(x)} // Together");
-    assertEquals(
-        expr.toMMA(), "Together[{Derivative[1][f][x], Derivative[2][f][x], Derivative[3][f][x]}]");
+    assertEquals(expr.toMMA(), "Together[{f'[x],f''[x],Derivative[3][f][x]}]");
+  }
+
+  public void testWLForm005() {
+    IAST function = F.Solve(F.Equal(F.Denominator(F.x), F.C0), F.x);
+    assertEquals(function.toMMA(), "Solve[Denominator[x]==0,x]");
   }
 }

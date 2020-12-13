@@ -135,18 +135,6 @@ public class RepeatedPattern extends PatternSequence {
   }
 
   @Override
-  public String toMMA() {
-    final StringBuilder buffer = new StringBuilder();
-    buffer.append(fRepeatedExpr.toMMA());
-    if (fZeroArgsAllowed) {
-      buffer.append("...");
-    } else {
-      buffer.append("..");
-    }
-    return buffer.toString();
-  }
-
-  @Override
   public String toString() {
     final StringBuilder buffer = new StringBuilder();
     buffer.append(fRepeatedExpr.toString());

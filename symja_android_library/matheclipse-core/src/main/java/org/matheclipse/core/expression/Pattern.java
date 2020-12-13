@@ -346,26 +346,6 @@ public class Pattern extends Blank {
   }
 
   @Override
-  public String toMMA() {
-    final StringBuilder buffer = new StringBuilder();
-    if (fHeadTest == null) {
-      buffer.append(fSymbol.toMMA());
-      buffer.append('_');
-      if (fDefault) {
-        buffer.append('.');
-      }
-    } else {
-      buffer.append(fSymbol.toMMA());
-      buffer.append('_');
-      if (fDefault) {
-        buffer.append('.');
-      }
-      buffer.append(fHeadTest.toMMA());
-    }
-    return buffer.toString();
-  }
-
-  @Override
   public String toString() {
     final StringBuilder buffer = new StringBuilder();
     if (fHeadTest == null) {
