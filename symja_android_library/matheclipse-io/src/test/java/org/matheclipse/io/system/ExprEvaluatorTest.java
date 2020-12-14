@@ -274,4 +274,36 @@ public class ExprEvaluatorTest extends TestCase {
     IExpr evaluate = evaluator.evaluate("2+X");
     assertEquals(evaluate.toString(), "4");
   }
+
+  public void testSmallValue() {
+    // github #208
+    ExprEvaluator exprEvaluator = new ExprEvaluator();
+    assertEquals(
+        exprEvaluator.eval("N( 1/(1602176620898*10^(-31)) ,100)").toString(),
+        "6.241509125501484852088071665173164020252959820255548406024372975427711002340001391293975286331422182*10^18");
+    assertEquals(
+        exprEvaluator.eval("1/(N(0.0000000000000000001602176620898, 100))").toString(),
+        "6.241509125501484852088071665173*10^18");
+
+    assertEquals(
+        exprEvaluator.eval("N[1/(N(0.0000000000000000001602176620898, 100)), 100]").toString(),
+        "6.241509125501484852088071665173*10^18");
+  }
+
+  public void testSmallValueEvalEnginge() {
+    // github #208
+    ExprEvaluator exprEvaluator = new ExprEvaluator();
+    EvalEngine evalEngine = exprEvaluator.getEvalEngine();
+    evalEngine.setNumericMode(true, 100, -1);
+    assertEquals(
+        evalEngine.evaluate("N( 1/(1602176620898*10^(-31)) ,100)").toString(),
+        "6.24150912550148485208807166517316402025295982025554840602437297542771100234000139129397528633142218*10^18");
+    assertEquals(
+        evalEngine.evaluate("1/(N(0.0000000000000000001602176620898, 100))").toString(),
+        "6.241509125501484852088071665173164020252959820255548406024372975427711002340001391293975286331422182*10^18");
+
+    assertEquals(
+        evalEngine.evaluate("N[1/(N(0.0000000000000000001602176620898, 100)), 100]").toString(),
+        "6.241509125501484852088071665173164020252959820255548406024372975427711002340001391293975286331422182*10^18");
+  }
 }

@@ -2463,6 +2463,7 @@ public final class Arithmetic {
       if (arg1.isInexactNumber()) {
         return arg1;
       }
+
       final boolean oldNumericMode = engine.isNumericMode();
       final long oldPrecision = engine.getNumericPrecision();
       final int oldSignificantFigures = engine.getSignificantFigures();
@@ -3539,6 +3540,12 @@ public final class Arithmetic {
           IOFunctions.printMessage(F.Power, "indet", F.List(F.Power(F.C0, F.C0)), EvalEngine.get());
           return F.Indeterminate;
         }
+      }
+      if (exponent.isMinusOne()) {
+        return base.inverse();
+      }
+      if (exponent.isNumIntValue()) {
+        return base.pow(exponent);
       }
       if (exponent.sign() < 0) {
         ApcomplexNum b = base.apcomplexNumValue(base.precision());
