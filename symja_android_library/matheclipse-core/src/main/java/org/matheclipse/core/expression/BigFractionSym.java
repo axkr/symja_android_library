@@ -57,12 +57,13 @@ public class BigFractionSym extends AbstractFractionSym {
    */
   BigFractionSym(BigInteger nom, BigInteger denom) {
     BigInteger temp = nom;
-    if (Config.MAX_BIT_LENGTH < temp.bitLength()) {
-      BigIntegerLimitExceeded.throwIt(temp.bitLength());
+    int bitLength = temp.bitLength();
+    if (Config.MAX_BIT_LENGTH < bitLength) {
+      BigIntegerLimitExceeded.throwIt(bitLength);
     }
     temp = denom;
-    if (Config.MAX_BIT_LENGTH < temp.bitLength()) {
-      BigIntegerLimitExceeded.throwIt(temp.bitLength());
+    if (Config.MAX_BIT_LENGTH < bitLength) {
+      BigIntegerLimitExceeded.throwIt(bitLength);
     }
     fFraction = new BigFraction(nom, denom);
   }
@@ -80,7 +81,14 @@ public class BigFractionSym extends AbstractFractionSym {
    */
   @Override
   public IFraction add(IFraction other) {
-    if (other.isZero()) return this;
+    if (other.isZero()) {
+      return this;
+    }
+
+    if (other instanceof BigFractionSym) {
+      BigFraction res = fFraction.add(((BigFractionSym) other).toBigFraction());
+      return valueOf(res);
+    }
 
     BigInteger tdenom = toBigDenominator();
     BigInteger odenom = other.toBigDenominator();

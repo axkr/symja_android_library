@@ -9,22 +9,21 @@ import org.hipparchus.analysis.differentiation.DSFactory;
 import org.hipparchus.analysis.differentiation.FiniteDifferencesDifferentiator;
 import org.hipparchus.analysis.differentiation.UnivariateDifferentiableFunction;
 import org.hipparchus.complex.Complex;
-import org.hipparchus.exception.LocalizedCoreFormats;
-import org.hipparchus.exception.MathIllegalArgumentException;
 import org.hipparchus.special.Gamma;
-import org.hipparchus.util.CombinatoricsUtils;
 import org.matheclipse.core.basic.Config;
 import org.matheclipse.core.builtin.Arithmetic;
 import org.matheclipse.core.builtin.ConstantDefinitions;
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.exception.ArgumentTypeException;
 import org.matheclipse.core.expression.F;
+import org.matheclipse.core.expression.NumberUtil;
 import org.matheclipse.core.generic.UnaryNumerical;
 import org.matheclipse.core.interfaces.INumber;
 import org.matheclipse.core.interfaces.ISymbol;
 
+import com.google.common.math.DoubleMath;
+
 import de.lab4inf.math.Function;
-import de.lab4inf.math.functions.IncompleteBeta;
 import de.lab4inf.math.gof.Visitor;
 import de.lab4inf.math.util.ContinuedFraction;
 
@@ -158,11 +157,12 @@ public class GammaJS {
     if (n < 0.0) {
       throw new ArgumentTypeException("Factorial: n<0.0");
     }
-    double result = 1.0;
-    for (int i = 2; i <= n; i++) {
-      result *= i;
-    }
-    return result;
+    return DoubleMath.factorial(NumberUtil.toInt(n));
+    //    double result = 1.0;
+    //    for (int i = 2; i <= n; i++) {
+    //      result *= i;
+    //    }
+    //    return result;
   }
 
   public static Complex beta(Complex x, Complex y) {

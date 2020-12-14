@@ -6076,10 +6076,9 @@ public class LowercaseTestCase extends AbstractTestCase {
   }
 
   public void testCyclotomic() {
-    //    check(
-    //        "Cyclotomic(10007,-9223372036854775808/9223372036854775807)", //
-    //        "918250311005358176390006343336822827639729834135611094824501/\n"
-    //            + "1606938044258990275541962092341162602522202993782792835301376");
+    //        check(
+    //            "Cyclotomic(10009,-9223372036854775808/9223372036854775807)", //
+    //            "");
     check(
         "Cyclotomic(101,-3/4)", //
         "918250311005358176390006343336822827639729834135611094824501/\n"
@@ -21112,6 +21111,7 @@ public class LowercaseTestCase extends AbstractTestCase {
   }
 
   public void testN() {
+
     // github #207
     check(
         "N(((2)/(3))*(4-3*Sqrt(2)), 100)", //
@@ -24789,6 +24789,9 @@ public class LowercaseTestCase extends AbstractTestCase {
   public void testPolyGamma() {
     // http://fungrim.org/entry/ea2482/
     check(
+        "PolyGamma(2147483647,3.141592653589793)", //
+        "PolyGamma(2.14748*10^9,3.14159)");
+    check(
         "PolyGamma(3, 1)", //
         "Pi^4/15");
     check(
@@ -24853,6 +24856,10 @@ public class LowercaseTestCase extends AbstractTestCase {
   }
 
   public void testPolyLog() {
+    check(
+        "PolyLog(-2147483648,2.718281828459045)", //
+        "PolyLog(-2.14748*10^9,2.71828)");
+
     check(
         "PolyLog(0.2 + I, 0.5 - I)", //
         "-0.0898526+I*(-0.595865)");

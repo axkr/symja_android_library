@@ -63,7 +63,18 @@ public abstract class AbstractFractionSym implements IFraction {
   }
 
   public static IFraction valueOf(BigFraction fraction) {
-    return valueOf(fraction.getNumerator(), fraction.getDenominator());
+    BigInteger num = fraction.getNumerator();
+    BigInteger den = fraction.getDenominator();
+    if (BigInteger.ZERO.equals(den)) {
+      // Infinite expression `1` encountered.
+      String str =
+          IOFunctions.getMessage("infy", F.List(F.Rational(F.ZZ(num), F.C0)), EvalEngine.get());
+      throw new ArgumentTypeException(str);
+    }
+    if (den.bitLength() <= 31 && num.bitLength() <= 31) {
+      return valueOf(num.intValue(), den.intValue());
+    }
+    return new BigFractionSym(fraction); 
   }
 
   public static IFraction valueOf(BigInteger num) {
@@ -86,23 +97,10 @@ public abstract class AbstractFractionSym implements IFraction {
           IOFunctions.getMessage("infy", F.List(F.Rational(F.ZZ(num), F.C0)), EvalEngine.get());
       throw new ArgumentTypeException(str);
     }
-    int cp = den.signum();
-    if (cp < 0) {
-      num = num.negate();
-      den = den.negate();
-    }
-    if (!BigInteger.ONE.equals(den)) {
-      BigInteger norm = gcd(num, den).abs();
-      if (!norm.equals(BigInteger.ONE)) {
-        num = num.divide(norm);
-        den = den.divide(norm);
-      }
-    }
     if (den.bitLength() <= 31 && num.bitLength() <= 31) {
       return valueOf(num.intValue(), den.intValue());
-    } else {
-      return new BigFractionSym(num, den);
     }
+    return new BigFractionSym(num, den);
   }
 
   public static IFraction valueOf(IInteger numerator) {

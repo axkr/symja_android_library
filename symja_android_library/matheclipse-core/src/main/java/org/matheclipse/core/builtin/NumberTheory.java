@@ -44,7 +44,6 @@ import org.matheclipse.core.eval.interfaces.AbstractCoreFunctionEvaluator;
 import org.matheclipse.core.eval.interfaces.AbstractEvaluator;
 import org.matheclipse.core.eval.interfaces.AbstractFunctionEvaluator;
 import org.matheclipse.core.eval.interfaces.AbstractTrigArg1;
-import org.matheclipse.core.eval.interfaces.IFunctionEvaluator;
 import org.matheclipse.core.eval.util.AbstractAssumptions;
 import org.matheclipse.core.eval.util.OptionArgs;
 import org.matheclipse.core.expression.AbstractFractionSym;
@@ -5163,10 +5162,19 @@ public final class NumberTheory {
     IFraction[] bernoulli = new IFraction[n + 1];
     bernoulli[0] = AbstractFractionSym.ONE;
     bernoulli[1] = AbstractFractionSym.valueOf(-1L, 2L);
+
+    int iterationLimit = EvalEngine.get().getIterationLimit();
+    if (iterationLimit > 0 && iterationLimit < Integer.MAX_VALUE / 2) {
+      iterationLimit *= 2;
+    }
+    int iterationCounter = 0;
     for (int k = 2; k <= n; k++) {
       bernoulli[k] = AbstractFractionSym.ZERO;
       for (int i = 0; i < k; i++) {
         if (!bernoulli[i].isZero()) {
+          if (iterationLimit > 0 && iterationLimit <= iterationCounter++) {
+            IterationLimitExceeded.throwIt(iterationCounter, F.BernoulliB(F.ZZ(n)));
+          }
           IFraction bin = AbstractFractionSym.valueOf(BigIntegerMath.binomial(k + 1, k + 1 - i));
           bernoulli[k] = bernoulli[k].sub(bin.mul(bernoulli[i]));
         }
