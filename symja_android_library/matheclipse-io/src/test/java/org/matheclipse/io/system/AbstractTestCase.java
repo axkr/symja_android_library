@@ -103,7 +103,7 @@ public abstract class AbstractTestCase extends TestCase {
   }
 
   public void checkRegex(String evalString, String regex) {
-	  checkRegex(fScriptEngine, evalString, regex);
+    checkRegex(fScriptEngine, evalString, regex);
   }
 
   public void checkRegex(ScriptEngine scriptEngine, String evalString, String regex) {

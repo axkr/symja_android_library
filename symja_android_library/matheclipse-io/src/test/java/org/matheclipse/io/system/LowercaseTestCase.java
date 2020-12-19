@@ -17384,10 +17384,19 @@ public class LowercaseTestCase extends AbstractTestCase {
 
     check(
         "JSForm(Clip(x))", //
-        "((x<-1) ? -1 : ((x>1) ? 1 : ( x ) ))");
+        "\n"
+        + " (function() {\n"
+        + "if (x<-1) { return -1;}\n"
+        + "if (x>1) { return 1;}\n"
+        + " return x;})()\n");
     check(
         "JSForm(Clip(x, {-2, 4}))", //
-        "((x<-2) ? -2 : ((x>4) ? 4 : ( x ) ))");
+        "\n"
+        + " (function() {\n"
+        + "if (x<-2) { return -2;}\n"
+        + "if (x>4) { return 4;}\n"
+        + " return x;})()\n"
+        + "");
 
     check(
         "JSForm(E^3-Cos(Pi^2/x))", //
@@ -17395,7 +17404,12 @@ public class LowercaseTestCase extends AbstractTestCase {
 
     check(
         "Piecewise({{x, 0 < x < 1}, {x^3, 1 < x < 2}}) // JSForm", //
-        "((0<x && x<1) ? x : ((1<x && x<2) ? Math.pow(x,3) : ( 0 ) ))");
+        "\n"
+        + " (function() {\n"
+        + "if (0<x && x<1) { return x;}\n"
+        + "if (1<x && x<2) { return Math.pow(x,3);}\n"
+        + " return 0;})()\n"
+        + "");
     check(
         "JSForm(4*EllipticE(x)+KleinInvariantJ(t)^3, \"Mathcell\")", //
         "add(mul(4,ellipticE(x)),pow(kleinJ(t),3))");
@@ -17407,7 +17421,13 @@ public class LowercaseTestCase extends AbstractTestCase {
         "((Math.PI/2.0)-Math.atan(x))");
     check(
         "JSForm( Piecewise({{x^2, x < 0}, {x, x >= 0&&x<1},{Cos(x-1), x >= 1}}) )", //
-        "((x<0) ? Math.pow(x,2) : ((x>=0&&x<1) ? x : ((x>=1) ? Math.cos(1-x) : ( 0 ) ) ))");
+        "\n"
+        + " (function() {\n"
+        + "if (x<0) { return Math.pow(x,2);}\n"
+        + "if (x>=0&&x<1) { return x;}\n"
+        + "if (x>=1) { return Math.cos(1-x);}\n"
+        + " return 0;})()\n"
+        + "");
     check(
         "JSForm(ConditionalExpression(Log(1- q), 0 <=q<=1))", //
         "((0<=q && q<=1) ? (Math.log(1-q)) : ( Number.NaN ))");
