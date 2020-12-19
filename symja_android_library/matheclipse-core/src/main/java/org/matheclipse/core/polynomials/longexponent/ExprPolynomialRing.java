@@ -13,6 +13,7 @@ import java.util.Random;
 import java.util.Set;
 import java.util.concurrent.ThreadLocalRandom;
 
+import org.matheclipse.core.eval.exception.JASConversionException;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.generic.Predicates;
 import org.matheclipse.core.interfaces.IAST;
@@ -174,7 +175,7 @@ public class ExprPolynomialRing implements RingFactory<ExprPolynomial> {
       ExprPolynomialComparator pc = null;
       try {
         pc = (ExprPolynomialComparator) o;
-      } catch (ClassCastException ignored) {
+      } catch (JASConversionException ignored) {
         return false;
       }
       if (pc == null) {
@@ -391,7 +392,7 @@ public class ExprPolynomialRing implements RingFactory<ExprPolynomial> {
    * @return
    */
   public ExprPolynomial create(final IExpr exprPoly)
-      throws ArithmeticException, ClassCastException {
+      throws ArithmeticException, JASConversionException {
     return create(exprPoly, false, true, false);
   }
 
@@ -412,7 +413,7 @@ public class ExprPolynomialRing implements RingFactory<ExprPolynomial> {
       boolean coefficient,
       boolean checkNegativeExponents,
       boolean coefficientListMode)
-      throws ArithmeticException, ClassCastException {
+      throws ArithmeticException, JASConversionException {
     int ix = ExpVectorLong.indexVar(exprPoly, getVars());
     if (ix >= 0) {
       ExpVectorLong e = new ExpVectorLong(vars.argSize(), ix, 1L);
@@ -421,7 +422,7 @@ public class ExprPolynomialRing implements RingFactory<ExprPolynomial> {
     if (exprPoly instanceof IAST) {
       final IAST ast = (IAST) exprPoly;
       if (ast.isDirectedInfinity()) {
-        throw new ClassCastException(exprPoly.toString());
+        throw new JASConversionException( );
       }
       ExprPolynomial result = getZero();
       ExprPolynomial p = getZero();
@@ -472,7 +473,7 @@ public class ExprPolynomialRing implements RingFactory<ExprPolynomial> {
       }
     } else if (exprPoly instanceof ISymbol) {
       if (exprPoly.isIndeterminate()) {
-        throw new ClassCastException(exprPoly.toString());
+        throw new JASConversionException();
       }
       if (coefficient) {
         return new ExprPolynomial(this, exprPoly);
@@ -481,7 +482,7 @@ public class ExprPolynomialRing implements RingFactory<ExprPolynomial> {
         if (exprPoly.isNumericFunction(true)) {
           return new ExprPolynomial(this, exprPoly);
         }
-        throw new ClassCastException(exprPoly.toString());
+        throw new JASConversionException();
       } else {
         return new ExprPolynomial(this, exprPoly);
       }
@@ -491,7 +492,7 @@ public class ExprPolynomialRing implements RingFactory<ExprPolynomial> {
     if (exprPoly.isFree(Predicates.in(vars), true)) {
       return new ExprPolynomial(this, exprPoly);
     }
-    throw new ClassCastException(exprPoly.toString());
+    throw new JASConversionException();
   }
 
   /**
@@ -648,7 +649,7 @@ public class ExprPolynomialRing implements RingFactory<ExprPolynomial> {
    * @return <code>true</code> if the given expression is a polynomial
    */
   public boolean isPolynomial(final IExpr expression)
-      throws ArithmeticException, ClassCastException {
+      throws ArithmeticException, JASConversionException {
     return isPolynomial(expression, false);
   }
 
@@ -661,7 +662,7 @@ public class ExprPolynomialRing implements RingFactory<ExprPolynomial> {
    * @return <code>true</code> if the given expression is a polynomial
    */
   public boolean isPolynomial(final IExpr expression, boolean coefficient)
-      throws ArithmeticException, ClassCastException {
+      throws ArithmeticException, JASConversionException {
     for (int i = 1; i < vars.size(); i++) {
       IExpr variable = vars.get(i);
 

@@ -80,6 +80,7 @@ import edu.jas.arith.ModLongRing;
 import edu.jas.poly.Complex;
 import edu.jas.poly.ComplexRing;
 import edu.jas.poly.GenPolynomial;
+import edu.jas.poly.Monomial;
 import edu.jas.poly.TermOrderByName;
 import edu.jas.structure.RingElem;
 import edu.jas.ufd.FactorAbstract;
@@ -2100,6 +2101,12 @@ public class Algebra {
         try {
           GenPolynomial<edu.jas.arith.BigInteger> poly =
               (GenPolynomial<edu.jas.arith.BigInteger>) objects[2];
+
+          IExpr temp = heuristicXP2XPOne(poly, expr, eVar, engine);
+          if (temp.isPresent()) {
+            return temp;
+          }
+
           FactorAbstract<edu.jas.arith.BigInteger> factorAbstract =
               FactorFactory.getImplementation(edu.jas.arith.BigInteger.ONE);
           if (factorSquareFree) {
@@ -2145,6 +2152,64 @@ public class Algebra {
         }
         // System.out.println("Factor: " + expr.toString() + " ==> " + result.toString());
         return engine.evaluate(result);
+      }
+      return F.NIL;
+    }
+
+    /**
+     * Polynomials of the form <code>x^(2*p) + x^p + 1</code> have exactly two factors for all
+     * primes <code>p != 3</code>. One is <code>x^2 + x + 1</code>, and its cofactor is a polynomial
+     * whose coefficients are all <code>1, 0, or −1</code>.
+     *
+     * @param poly
+     * @param expr
+     * @param eVar
+     * @param engine
+     * @return
+     */
+    private static IExpr heuristicXP2XPOne(
+        GenPolynomial<edu.jas.arith.BigInteger> poly,
+        IAST expr,
+        VariablesSet eVar,
+        EvalEngine engine) {
+      if (poly.length() == 3 && poly.ring.tord == TermOrderByName.INVLEX && poly.ring.nvar == 1) {
+        edu.jas.arith.BigInteger a = edu.jas.arith.BigInteger.ZERO;
+        edu.jas.arith.BigInteger b = edu.jas.arith.BigInteger.ZERO;
+        edu.jas.arith.BigInteger c = edu.jas.arith.BigInteger.ZERO;
+        edu.jas.arith.BigInteger one = edu.jas.arith.BigInteger.ONE;
+        long expA = 0;
+        long p = 0;
+        long expC = 0;
+        int i = 0;
+        for (Monomial<edu.jas.arith.BigInteger> monomial : poly) {
+          edu.jas.arith.BigInteger coeff = monomial.coefficient();
+          long lExp = monomial.exponent().getVal(0);
+          i++;
+          if (i == 1) {
+            a = coeff;
+            expA = lExp;
+          } else if (i == 2) {
+            b = coeff;
+            p = lExp;
+          } else if (i == 3) {
+            c = coeff;
+            expC = lExp;
+          }
+        }
+        if (a.equals(one) && b.equals(one) && c.equals(one)) {
+          if (expC == 0L
+              && (p != 3L)
+              && (expA == p * 2)
+              && java.math.BigInteger.valueOf(p).isProbablePrime(32)) {
+            // polynomials of the form x^(2*p) + x^p + 1 have exactly two factors for
+            // all primes p != 3. One is x^2 + x + 1, and its cofactor is a polynomial whose
+            // coefficients are all 1, 0, or −1.
+            IExpr x = eVar.getArrayList().get(0);
+            IExpr p1 = F.Plus(F.Power(x, F.C2), x, F.C1);
+            IExpr p2 = engine.evaluate(F.PolynomialQuotient(expr, p1, x));
+            return F.Times(p1, p2);
+          }
+        }
       }
       return F.NIL;
     }
@@ -2455,7 +2520,7 @@ public class Algebra {
         // return result;
         // }
         // }
-        // } catch (ClassCastException e2) {
+        // } catch (JASConversionException e2) {
         // if (Config.SHOW_STACKTRACE) {
         // e2.printStackTrace();
         // }
@@ -2865,7 +2930,6 @@ public class Algebra {
           // TODO https://github.com/kredel/java-algebra-system/issues/15
           // return jas.rationalPoly2Expr(poly.monic(), true);
           return jas.integerPoly2Expr(poly.monic());
-        } catch (ClassCastException cce) {
         } catch (JASConversionException e) {
           try {
             if (eVar.size() == 0) {
@@ -3097,13 +3161,7 @@ public class Algebra {
           if (evaled) {
             return jas.integerPoly2Expr(poly.monic());
           }
-
-        } catch (java.lang.ClassCastException cce) {
-          if (FEConfig.SHOW_STACKTRACE) {
-            cce.printStackTrace();
-          }
-          return F.NIL;
-        } catch (JASConversionException e) {
+        } catch (ClassCastException | JASConversionException e) {
           if (FEConfig.SHOW_STACKTRACE) {
             e.printStackTrace();
           }

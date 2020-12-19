@@ -1,5 +1,7 @@
 package org.matheclipse.core.convert;
 
+import static org.matheclipse.core.expression.F.C0;
+
 import java.math.BigInteger;
 import java.util.ArrayList;
 import java.util.Iterator;
@@ -21,6 +23,7 @@ import org.matheclipse.core.interfaces.INumber;
 import org.matheclipse.core.interfaces.IRational;
 import org.matheclipse.core.interfaces.ISignedNumber;
 import org.matheclipse.core.interfaces.ISymbol;
+import org.matheclipse.core.polynomials.longexponent.ExprMonomial;
 import org.matheclipse.parser.client.FEConfig;
 
 import edu.jas.arith.BigRational;
@@ -210,14 +213,14 @@ public class JASConvert<C extends RingElem<C>> {
   }
 
   public IAST algebraicNumber2Expr(final AlgebraicNumber<BigRational> coeff)
-      throws ArithmeticException, ClassCastException {
+      throws ArithmeticException {
     GenPolynomial<BigRational> val = coeff.val;
     return rationalPoly2Expr(val, false); // , variable);
   }
 
   /**
    * Convert a complex number into a jas polynomial. If the conversion isn't possible this method
-   * throws a <code>ClassCastException</code>.
+   * throws a <code>JASConversionException</code>.
    *
    * @param complexValue the complex value containing a rational real and imaginary part
    * @return a jas polynomial
@@ -239,13 +242,11 @@ public class JASConvert<C extends RingElem<C>> {
     } else {
       // "ComplexRing expected"
       throw new JASConversionException();
-      // throw new ClassCastException(complexValue.toString());
-      // return new GenPolynomial(fPolyFactory, r);
     }
   }
 
   public IExpr complexIntegerPoly2Expr(final GenPolynomial<Complex<edu.jas.arith.BigInteger>> poly)
-      throws ArithmeticException, ClassCastException {
+      throws ArithmeticException, JASConversionException {
     if (poly.length() == 0) {
       return F.C0;
     }
@@ -266,10 +267,10 @@ public class JASConvert<C extends RingElem<C>> {
    * @param poly
    * @return
    * @throws ArithmeticException
-   * @throws ClassCastException
+   * @throws JASConversionException
    */
   public IExpr complexPoly2Expr(final GenPolynomial<Complex<BigRational>> poly)
-      throws ArithmeticException, ClassCastException {
+      throws ArithmeticException, JASConversionException {
     if (poly.length() == 0) {
       return F.C0;
     }
@@ -311,7 +312,7 @@ public class JASConvert<C extends RingElem<C>> {
    * @throws JASConversionException
    */
   private GenPolynomial<C> expr2Poly(final IExpr exprPoly, boolean numeric2Rational)
-      throws ArithmeticException, ClassCastException {
+      throws ArithmeticException, JASConversionException {
     if (exprPoly instanceof IAST) {
       final IAST ast = (IAST) exprPoly;
       if (ast.isSlot()) {
@@ -383,7 +384,7 @@ public class JASConvert<C extends RingElem<C>> {
     } else if (exprPoly instanceof IFraction) {
       return fraction2Poly((IFraction) exprPoly);
     } else if (exprPoly instanceof IComplex) {
-      // may throw ClassCastException
+      // may throw JASConversionException
       return complex2Poly((IComplex) exprPoly);
     } else if (exprPoly instanceof INum && numeric2Rational) {
       IFraction frac = F.fraction(((INum) exprPoly).getRealPart());
@@ -396,7 +397,6 @@ public class JASConvert<C extends RingElem<C>> {
       }
     }
     throw new JASConversionException();
-    // throw new ClassCastException(exprPoly.toString());
   }
 
   private boolean expVectorToExpr(ExpVector exp, IASTAppendable monomTimes) {
@@ -482,10 +482,10 @@ public class JASConvert<C extends RingElem<C>> {
    * @param poly
    * @return
    * @throws ArithmeticException
-   * @throws ClassCastException
+   * @throws JASConversionException
    */
   public IExpr integerPoly2Expr(final GenPolynomial<edu.jas.arith.BigInteger> poly)
-      throws ArithmeticException, ClassCastException {
+      throws ArithmeticException, JASConversionException {
     if (poly.length() == 0) {
       return F.C0;
     }
@@ -657,15 +657,15 @@ public class JASConvert<C extends RingElem<C>> {
    * @param exprPoly
    * @return
    * @throws ArithmeticException
-   * @throws ClassCastException
+   * @throws JASConversionException
    */
   private GenPolynomial<C> numericExpr2Poly(final IExpr exprPoly)
-      throws ArithmeticException, ClassCastException {
+      throws ArithmeticException, JASConversionException {
     return expr2Poly(exprPoly, true);
   }
 
   public IAST polyAlgebraicNumber2Expr(final GenPolynomial<AlgebraicNumber<BigRational>> poly)
-      throws ArithmeticException, ClassCastException {
+      throws ArithmeticException, JASConversionException {
     if (poly.length() == 0) {
       return F.Plus(F.C0);
     }
@@ -731,10 +731,10 @@ public class JASConvert<C extends RingElem<C>> {
    * @param factorTerms
    * @return
    * @throws ArithmeticException
-   * @throws ClassCastException
+   * @throws JASConversionException
    */
   public IAST rationalPoly2Expr(final GenPolynomial<BigRational> poly, boolean factorTerms)
-      throws ArithmeticException, ClassCastException {
+      throws ArithmeticException, JASConversionException {
     if (poly.length() == 0) {
       return F.Plus(F.C0);
     }
