@@ -10,10 +10,10 @@ See:
 
 ### Examples
 
-Example: [Tutorial — Differential Equations](https://socialinnovationsimulation.com/2013/07/19/tutorial-differential-equations-2/)
+Example taken from [Tutorial — Differential Equations](https://socialinnovationsimulation.com/2013/07/19/tutorial-differential-equations-2/)
 
 ```
->> model=NDSolve({x'(t) == 10*(y(t) - x(t)), y'(t) == x(t)*(28 - z(t)) - y(t), z'(t) == x(t)*y(t) - 8/3*z(t), x(0)== 0, y(0) == 1, z(0) == 0}, {x, y, z}, {t, 0, 20})
+>> model=NDSolve({x'(t) == 10*(y(t) - x(t)), y'(t) == x(t)*(28 - z(t)) - y(t), z'(t) == x(t)*y(t) - 8/3*z(t), x(0)== 0, y(0) == 1, z(0) == 0}, {x, y, z}, {t, 0, 20});
 
 {{x->InterpolatingFunction[Piecewise({{InterpolatingPolynomial({........
 ```
@@ -21,7 +21,7 @@ Example: [Tutorial — Differential Equations](https://socialinnovationsimulatio
 Plot the interpolating function and the sine function.
 
 ```
->> Plot({Evaluate(y(x) /.model),Sin(x)}, {x, 0, 30})
+>> Plot({Evaluate(z(t) /.model)}, {t, 0, 20})
 ```
 
 ### Related terms
