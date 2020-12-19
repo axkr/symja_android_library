@@ -92,9 +92,9 @@ public class BuiltInSymbol extends Symbol implements IBuiltInSymbol {
     fEvaluator = DUMMY_EVALUATOR;
     fOrdinal = ordinal;
     if (symbolName.charAt(0) != '$') {
-      fAttributes = ISymbol.PROTECTED;
+      fAttributes = Config.BUILTIN_PROTECTED;
     } else if (FEConfig.PARSER_USE_LOWERCASE_SYMBOLS) {
-      fAttributes = ISymbol.PROTECTED;
+      fAttributes = Config.BUILTIN_PROTECTED;
     }
   }
 
@@ -358,7 +358,7 @@ public class BuiltInSymbol extends Symbol implements IBuiltInSymbol {
   /** {@inheritDoc} */
   @Override
   public final void setAttributes(final int attributes) {
-    super.setAttributes(attributes | ISymbol.PROTECTED);
+    super.setAttributes(attributes | Config.BUILTIN_PROTECTED);
   }
 
   /** {@inheritDoc} */

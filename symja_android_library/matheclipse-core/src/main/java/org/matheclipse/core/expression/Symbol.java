@@ -14,6 +14,7 @@ import java.util.function.Function;
 import org.hipparchus.complex.Complex;
 import org.matheclipse.core.basic.Config;
 import org.matheclipse.core.builtin.AttributeFunctions;
+import org.matheclipse.core.builtin.IOFunctions;
 import org.matheclipse.core.convert.AST2Expr;
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.exception.ArgumentTypeException;
@@ -1004,11 +1005,13 @@ public class Symbol implements ISymbol, Serializable {
         return result;
       }
     }
-    engine.printMessage(
-        functionSymbol.toString()
-            + ": "
-            + toString()
-            + " is not a variable with a value, so its value cannot be changed.");
+    // `1` is not a variable with a value, so its value cannot be changed.
+    IOFunctions.printMessage(functionSymbol, "rvalue", F.List(this), engine);
+    //    engine.printMessage(
+    //        functionSymbol.toString()
+    //            + ": "
+    //            + toString()
+    //            + " is not a variable with a value, so its value cannot be changed.");
     return null;
   }
 
