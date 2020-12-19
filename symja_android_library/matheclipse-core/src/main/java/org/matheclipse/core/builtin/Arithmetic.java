@@ -432,6 +432,15 @@ public final class Arithmetic {
       return F.Plus;
     }
 
+    private IExpr assignPart(IExpr part, IExpr value, EvalEngine engine) {
+      IExpr oldResult = engine.evaluate(part);
+      IASTMutable operator = getAST(value);
+      operator.set(1, oldResult);
+      IExpr newResult = engine.evaluate(operator);
+      engine.evaluate(F.Set(part, newResult));
+      return newResult;
+    }
+
     @Override
     public IExpr evaluate(final IAST ast, EvalEngine engine) {
       IExpr leftHandSide = ast.arg1();
@@ -447,6 +456,14 @@ public final class Arithmetic {
             IExpr rhs = engine.evaluate(F.binaryAST2(getArithmeticSymbol(), temp, ast.arg2()));
             return ((ISetEvaluator) eval).evaluateSet(leftHandSide, rhs, S.Set, engine);
           }
+        }
+        if (leftHandSide.isASTSizeGE(S.Part, 3) && leftHandSide.first().isSymbol()) {
+          ISymbol sym = (ISymbol) leftHandSide.first();
+          if (sym.hasAssignedSymbolValue()) {
+            return assignPart(leftHandSide, ast.arg2(), engine);
+          }
+          // `1` is not a variable with a value, so its value cannot be changed.
+          return IOFunctions.printMessage(ast.topHead(), "rvalue", F.List(sym), engine);
         }
         if (leftHandSide.isSymbol()) {
           ISymbol sym = (ISymbol) leftHandSide;
@@ -1263,13 +1280,27 @@ public final class Arithmetic {
 
     @Override
     public IExpr evaluate(final IAST ast, EvalEngine engine) {
-      IExpr symbol = ast.arg1();
+      IExpr arg1 = ast.arg1();
       try {
-        if (symbol.isSymbol() && ((ISymbol) symbol).hasAssignedSymbolValue()) {
-          IExpr[] results =
-              ((ISymbol) symbol).reassignSymbolValue(getAST(), getFunctionSymbol(), engine);
-          if (results != null) {
-            return getResult(results[0], results[1]);
+        if (arg1.isASTSizeGE(S.Part, 3) && arg1.first().isSymbol()) {
+          ISymbol sym = (ISymbol) arg1.first();
+          if (sym.hasAssignedSymbolValue()) {
+            return assignPart(arg1, F.CN1, engine);
+          }
+          // `1` is not a variable with a value, so its value cannot be changed.
+          return IOFunctions.printMessage(ast.topHead(), "rvalue", F.List(sym), engine);
+        }
+        if (arg1.isSymbol()) {
+          ISymbol sym = (ISymbol) arg1;
+          if (sym.hasAssignedSymbolValue()) {
+            IExpr[] results =
+                ((ISymbol) arg1).reassignSymbolValue(getAST(), getFunctionSymbol(), engine);
+            if (results != null) {
+              return getResult(results[0], results[1]);
+            }
+          } else {
+            // `1` is not a variable with a value, so its value cannot be changed.
+            return IOFunctions.printMessage(ast.topHead(), "rvalue", F.List(sym), engine);
           }
         }
       } catch (ValidateException ve) {
@@ -1279,6 +1310,16 @@ public final class Arithmetic {
         return engine.printMessage(ast.topHead(), ve);
       }
       return F.NIL;
+    }
+
+    private IExpr assignPart(IExpr part, IExpr value, EvalEngine engine) {
+      IExpr oldResult = engine.evaluate(part);
+      IASTMutable operator = getAST();
+      operator.set(1, oldResult);
+      IExpr newResult = engine.evaluate(operator);
+      engine.evaluate(F.Set(part, newResult));
+      //      return oldResult;
+      return getResult(oldResult, newResult);
     }
 
     public int[] expectedArgSize(IAST ast) {
