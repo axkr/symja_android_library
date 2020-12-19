@@ -1,5 +1,7 @@
 package org.matheclipse.core.mathcell;
 
+import org.matheclipse.io.IOInit;
+
 public class DatasetExample extends BasePlotExample {
 
   @Override
@@ -20,6 +22,7 @@ public class DatasetExample extends BasePlotExample {
   }
 
   public static void main(String[] args) {
+    IOInit.init();
     DatasetExample p = new DatasetExample();
     p.generateHTML();
   }
