@@ -474,6 +474,8 @@ public class ExprEvaluatorTests extends TestCase {
             SparseArrayExpr.newDenseList(F.List(F.C0, F.C1, F.C0, F.C2), F.C0), //
             SparseArrayExpr.newDenseList(F.List(F.List(F.C0, F.C0), F.List(F.C0, F.C0)), F.C0), //
             SparseArrayExpr.newDenseList(F.List(F.List(F.C1, F.C0), F.List(F.C0, F.C1)), F.C0), //
+            F.Function(F.EvenQ(F.Slot1)), //
+            F.Function(F.Expand(F.Power(F.Plus(F.C2, F.Slot1), F.C3))), //
             F.Graph(F.List(F.Rule(F.C1, F.C2), F.Rule(F.C2, F.C3), F.Rule(F.C3, F.C1))), //
             F.Graph(F.List()), //
             F.List(F.List(F.C0)), //
@@ -510,6 +512,10 @@ public class ExprEvaluatorTests extends TestCase {
             F.List(F.CN3D2), //
             F.List(F.C3D2), //
             F.List(F.C3D4), //
+            F.Part(F.x, F.C1), //
+            F.Part(F.x, F.C2), //
+            F.Part(F.x, F.ZZ(Integer.MAX_VALUE)), //
+            F.Part(F.x, F.CN1, F.C1, F.C1), //
             F.C1DSqrt5, //
             F.Divide(F.Plus(F.C1, F.Sqrt(5)), F.C2), // GoldenRatio
             F.Divide(F.C2, F.Plus(F.C1, F.Sqrt(5))), // 1/GoldenRatio
