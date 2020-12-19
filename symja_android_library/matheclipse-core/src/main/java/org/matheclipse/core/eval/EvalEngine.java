@@ -599,25 +599,31 @@ public class EvalEngine implements Serializable {
    *     result0[0]</code>. <code>result0[0]</code> should be <code>F.NIL</code> if no evaluation
    *     occured.
    * @param ast the original <code>ast</code> for whixh the arguments should be evaluated
+   * @param evaledArg the i-th evaluated argument of <code>ast</code>, may be <code>F.NIL</code>
    * @param arg the i-th argument of <code>ast</code>
    * @param i <code>arg</code> is the i-th argument of <code>ast</code>
    * @param isNumericFunction if <code>true</code> the <code>NumericFunction</code> attribute is set
    *     for the <code>ast</code>'s head
    */
   public void evalArg(
-      IASTMutable[] result0, final IAST ast, IExpr arg, int i, boolean isNumericFunction) {
-    IExpr temp = evalLoop(arg);
-    if (temp.isPresent()) {
+      final IASTMutable[] result0,
+      final IAST ast,
+      final IExpr evaledArg,
+      final IExpr arg,
+      final int i,
+      final boolean isNumericFunction) {
+    // IExpr temp = evalLoop(arg);
+    if (evaledArg.isPresent()) {
       if (!result0[0].isPresent()) {
         result0[0] = ast.copy();
-        if (isNumericFunction && temp.isNumericArgument()) {
+        if (isNumericFunction && evaledArg.isNumericArgument()) {
           result0[0].addEvalFlags(
               (ast.getEvalFlags() & IAST.IS_MATRIX_OR_VECTOR) | IAST.CONTAINS_NUMERIC_ARG);
         } else {
           result0[0].addEvalFlags(ast.getEvalFlags() & IAST.IS_MATRIX_OR_VECTOR);
         }
       }
-      result0[0].set(i, temp);
+      result0[0].set(i, evaledArg);
     } else {
       if (isNumericFunction && arg.isNumericArgument()) {
         ast.addEvalFlags(ast.getEvalFlags() | IAST.CONTAINS_NUMERIC_ARG);
@@ -655,7 +661,8 @@ public class EvalEngine implements Serializable {
         try {
           if (!x.isAST(S.Unevaluated)) {
             selectNumericMode(attr, ISymbol.NHOLDFIRST, localNumericMode);
-            evalArg(rlist, ast, x, 1, isNumericFunction);
+            IExpr temp = evalLoop(x);
+            evalArg(rlist, ast, temp, x, 1, isNumericFunction);
             if (astSize == 2 && rlist[0].isPresent()) {
               return rlist[0];
             }
@@ -670,7 +677,8 @@ public class EvalEngine implements Serializable {
         try {
           if (x.isAST(S.Evaluate)) {
             selectNumericMode(attr, ISymbol.NHOLDFIRST, localNumericMode);
-            evalArg(rlist, ast, x, 1, isNumericFunction);
+            IExpr temp = evalLoop(x);
+            evalArg(rlist, ast, temp, x, 1, isNumericFunction);
             if (astSize == 2 && rlist[0].isPresent()) {
               return rlist[0];
             }
@@ -693,7 +701,8 @@ public class EvalEngine implements Serializable {
                 astSize,
                 (arg, i) -> {
                   if (!arg.isUnevaluated()) {
-                    evalArg(rlist, ast, arg, i, isNumericFunction);
+                    IExpr temp = evalLoop(arg);
+                    evalArg(rlist, ast, temp, arg, i, isNumericFunction);
                   }
                 });
           } finally {
@@ -711,7 +720,8 @@ public class EvalEngine implements Serializable {
                 astSize,
                 (arg, i) -> {
                   if (arg.isAST(F.Evaluate)) {
-                    evalArg(rlist, ast, arg, i, isNumericFunction);
+                    IExpr temp = evalLoop(arg);
+                    evalArg(rlist, ast, temp, arg, i, isNumericFunction);
                   }
                 });
           } finally {
@@ -983,13 +993,12 @@ public class EvalEngine implements Serializable {
         }
       }
 
-      // ONEIDENTITY is checked in the evalASTArg1() method!
-
       IASTMutable resultList = evalArgs(tempAST, attr);
       if (resultList.isPresent()) {
         return resultList;
       }
 
+      // ONEIDENTITY is checked in the evalASTArg1() method!
       if (ISymbol.hasFlatAttribute(attr)) {
         // associative symbol
         IASTAppendable flattened;
@@ -1339,7 +1348,7 @@ public class EvalEngine implements Serializable {
    * @return the evaluated expression or <code>F.NIL</code> if evaluation isn't possible
    * @see EvalEngine#evalWithoutNumericReset(IExpr)
    */
-  private final IExpr evalLoop(final IExpr expr) {
+  public final IExpr evalLoop(final IExpr expr) {
     if ((fRecursionLimit > 0) && (fRecursionCounter > fRecursionLimit)) {
       if (Config.DEBUG) {
         System.out.println(expr.toString());
