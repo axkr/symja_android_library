@@ -2043,6 +2043,7 @@ public final class Programming {
         if (ast.isEvalFlagOn(IAST.BUILT_IN_EVALED)) {
           return F.NIL;
         }
+        //        System.out.println(ast.toString() );
         IASTMutable evaledAST = F.NIL;
         IExpr arg1 = engine.evaluateNull(ast.arg1());
         if (arg1.isPresent()) {
@@ -3100,15 +3101,14 @@ public final class Programming {
 
     @Override
     public IExpr evaluate(final IAST ast, EvalEngine engine) {
-
       // use EvalEngine's iterationLimit only for evaluation control
 
       // While(test, body)
-      IExpr test = ast.arg1();
-      IExpr body = ast.isAST2() ? ast.arg2() : F.Null;
-      while (engine.evaluate(test).isTrue()) {
+      final IExpr test = ast.arg1();
+      final IExpr body = ast.isAST2() ? ast.arg2() : F.NIL;
+      while (engine.evalTrue(test)) {
         try {
-          if (ast.isAST2()) {
+          if (body.isPresent()) {
             engine.evaluate(body);
           }
           // if (iterationLimit >= 0 && iterationLimit <= ++iterationCounter) {
@@ -3831,7 +3831,7 @@ public final class Programming {
     } else if (arg2.isReal()) {
       final int indx = Validate.checkIntType(part, partPosition, Integer.MIN_VALUE);
       IExpr ires = null;
-      ires = assignPartValue(assignedAST, indx, rhs.getAST(rhsPos++));
+      ires = assignPartValue(assignedAST, indx, rhs);
       if (partPositionPlus1 < part.size()) {
         if (ires.isASTOrAssociation()) {
           return assignPart(ires, part, partPositionPlus1, rhs, rhsPos++, engine);
