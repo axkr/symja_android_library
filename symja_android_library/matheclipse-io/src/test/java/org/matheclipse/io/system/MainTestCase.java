@@ -1235,31 +1235,48 @@ public class MainTestCase extends AbstractTestCase {
   }
 
   public void testSystem076() {
-    check("D(2*x^2 + 1,x) ", "4*x");
+    check(
+        "D(2*x^2 + 1,x) ", //
+        "4*x");
   }
 
   public void testSystem077() {
-    check("D(Sin(x)*Cos(x),x)", "Cos(x)^2-Sin(x)^2");
+    check(
+        "D(Sin(x)*Cos(x),x)", //
+        "Cos(x)^2-Sin(x)^2");
   }
 
   public void testSystem078() {
-    check("D(Sin(x) + Cos(y), {x, y})", "D(Cos(y)+Sin(x),{x,y})");
-    check("D(Sin(x)^Cos(x),x)", "(Cos(x)*Cot(x)-Log(Sin(x))*Sin(x))*Sin(x)^Cos(x)");
-    check("D(Cos(x)^10,{x,3})", "280*Cos(x)^9*Sin(x)-720*Cos(x)^7*Sin(x)^3");
     check(
-        "D(Cos(x*y)/(x+y),x,y)",
+        "D(Sin(x)^Cos(x),x)", //
+        "(Cos(x)*Cot(x)-Log(Sin(x))*Sin(x))*Sin(x)^Cos(x)");
+    check(
+        "D(Cos(x)^10,{x,3})", //
+        "280*Cos(x)^9*Sin(x)-720*Cos(x)^7*Sin(x)^3");
+    check(
+        "D(Cos(x*y)/(x+y),x,y)", //
         "(2*Cos(x*y))/(x+y)^3+(-x*y*Cos(x*y))/(x+y)+(x*Sin(x*y))/(x+y)^2+(y*Sin(x*y))/(x+y)^\n"
             + "2-Sin(x*y)/(x+y)");
-    check("D(x^2*Sin(y), x, y)", "2*x*Cos(y)");
-    check("D(x^2*Sin(y), y, x)", "2*x*Cos(y)");
-    check("D(x^2*Sin(y), {{x, y}})", "{2*x*Sin(y),x^2*Cos(y)}");
     check(
-        "D({Sin(y), Sin(x) + Cos(y)}, {{x, y}}, {{x,y}})",
+        "D(x^2*Sin(y), x, y)", //
+        "2*x*Cos(y)");
+    check(
+        "D(x^2*Sin(y), y, x)", //
+        "2*x*Cos(y)");
+    check(
+        "D(x^2*Sin(y), {{x, y}})", //
+        "{2*x*Sin(y),x^2*Cos(y)}");
+    check(
+        "D({Sin(y), Sin(x) + Cos(y)}, {{x, y}}, {{x,y}})", //
         "{{{0,0},{0,-Sin(y)}},{{-Sin(x),0},{0,-Cos(y)}}}");
-    check("D(Sin(y),{{x,y}},{{x,y}})", "{{0,0},{0,-Sin(y)}}");
-    check("D(Sin(y),{{x,y},2})", "{{0,0},{0,-Sin(y)}}");
     check(
-        "D({Sin(y), Sin(x) + Cos(y)}, {{x, y}, 2})",
+        "D(Sin(y),{{x,y}},{{x,y}})", //
+        "{{0,0},{0,-Sin(y)}}");
+    check(
+        "D(Sin(y),{{x,y},2})", //
+        "{{0,0},{0,-Sin(y)}}");
+    check(
+        "D({Sin(y), Sin(x) + Cos(y)}, {{x, y}, 2})", //
         "{{{0,0},{0,-Sin(y)}},{{-Sin(x),0},{0,-Cos(y)}}}");
   }
 
