@@ -1677,7 +1677,8 @@ public abstract class AbstractAST implements IASTMutable {
         size(),
         (x, i) -> {
           if (x.isAST(F.Evaluate)) {
-            engine.evalArg(rlist, this, x, i, false);
+            IExpr temp = engine.evalLoop(x);
+            engine.evalArg(rlist, this, temp, x, i, false);
           }
         });
     return rlist[0];
