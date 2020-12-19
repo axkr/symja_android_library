@@ -819,4 +819,7 @@ public class Config {
   /** A trie builder for mapping strings to IPatternSequence. */
   public static final TrieBuilder<String, IPatternSequence, ArrayList<IPatternSequence>>
       TRIE_STRING2PATTERNSEQUENCE_BUILDER = TrieBuilder.create();
+
+  /** Global switch to make all symbols unprotected if set to {@link ISymbol#NOATTRIBUTE} */
+  public static int BUILTIN_PROTECTED = ISymbol.PROTECTED;
 }
