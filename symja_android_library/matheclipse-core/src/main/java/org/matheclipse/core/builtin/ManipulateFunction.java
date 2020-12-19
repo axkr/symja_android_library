@@ -1204,7 +1204,7 @@ public class ManipulateFunction {
         function.append("(");
         toJS.convert(function, plotSymbolX);
         function.append(") ");
-        unaryJSFunction(toJS, function, listOfFunctions, i);
+        unaryJSFunction(toJS, function, plotSymbolX, listOfFunctions, i);
 
         IAST variables = VariablesSet.getVariables(listOfFunctions.get(i));
         if (variables.size() <= 2) {
@@ -1295,7 +1295,7 @@ public class ManipulateFunction {
             function.append("(");
             toJS.convert(function, plotSymbolX);
             function.append(") ");
-            unaryJSFunction(toJS, function, listOfFunctions, j);
+            unaryJSFunction(toJS, function, plotSymbolX, listOfFunctions, j);
           }
 
           IAST variables1 = VariablesSet.getVariables(listOfFunctions.get(1));
@@ -1402,7 +1402,7 @@ public class ManipulateFunction {
         function.append("(");
         toJS.convert(function, plotSymbolX);
         function.append(") ");
-        unaryJSFunction(toJS, function, listOfFunctions, i);
+        unaryJSFunction(toJS, function, plotSymbolX, listOfFunctions, i);
 
         IAST variables = VariablesSet.getVariables(listOfFunctions.get(i));
         if (variables.size() <= 2) {
@@ -2431,10 +2431,17 @@ public class ManipulateFunction {
   }
 
   private static void unaryJSFunction(
-      JavaScriptFormFactory toJS, StringBuilder function, IAST listOfFunctions, int i) {
-    function.append("{ try { return ");
+      JavaScriptFormFactory toJS,
+      StringBuilder function,
+      ISymbol plotSymbolX,
+      IAST listOfFunctions,
+      int i) {
+    toJS.setVariables(plotSymbolX);
+    //    function.append("{ try { return ");
+    function.append("{  return ");
     toJS.convert(function, listOfFunctions.get(i));
-    function.append(";} catch(e) { return Number.NaN;} }\n");
+    //    function.append(";} catch(e) { return Number.NaN;} }\n");
+    function.append(";}\n");
   }
 
   public static void unaryPlotParameters(

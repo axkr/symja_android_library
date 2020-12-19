@@ -48,11 +48,13 @@ public class JavaScriptFormFactory extends DoubleFormFactory {
    * need to do inline operators with the JavaScript ternary operator. If <code>false</code> the
    * converter will use <code>if(...){...}</code> statements.
    */
-  public boolean INLINE_PIECEWISE = true;
+  public boolean INLINE_PIECEWISE = false;
 
   private final int javascriptFlavor;
 
   private List<String> sliderNames;
+
+  private List<String> variableNames;
 
   private static final Map<ISymbol, String> FUNCTIONS_STR_MATHCELL = new HashMap<ISymbol, String>();
   private static final Map<ISymbol, String> FUNCTIONS_STR_PURE_JS = new HashMap<ISymbol, String>();
@@ -256,11 +258,17 @@ public class JavaScriptFormFactory extends DoubleFormFactory {
       int javascriptFlavor) {
     super(relaxedSyntax, reversed, exponentFigures, significantFigures);
     this.sliderNames = new ArrayList<String>();
+    this.variableNames = new ArrayList<String>();
     this.javascriptFlavor = javascriptFlavor;
   }
 
   public void appendSlider(String sliderName) {
     sliderNames.add(sliderName);
+  }
+
+  public void setVariables(ISymbol sliderName) {
+    variableNames.clear();
+    variableNames.add(sliderName.toString());
   }
 
   /**
@@ -671,23 +679,26 @@ public class JavaScriptFormFactory extends DoubleFormFactory {
       return true;
     } else {
       // use if... statements
+      piecewiseBuffer.append("\n (function(");
+      appendVariables(piecewiseBuffer);
+      piecewiseBuffer.append(") {");
       final int size = list.size();
       for (int i = 1; i < size; i++) {
         IExpr arg = list.get(i);
         if (arg.isList2()) {
           IAST row = (IAST) arg;
-          if (i == 1) {
-            piecewiseBuffer.append("if (");
-            convertInternal(piecewiseBuffer, row.second());
-            piecewiseBuffer.append(") {");
-          } else {
-            piecewiseBuffer.append(" else if (");
-            convertInternal(piecewiseBuffer, row.second());
-            piecewiseBuffer.append(") {");
-          }
+          //          if (i == 1) {
+          //            piecewiseBuffer.append("if (");
+          //            convertInternal(piecewiseBuffer, row.second());
+          //            piecewiseBuffer.append(") {\n");
+          //          } else {
+          piecewiseBuffer.append("\nif (");
+          convertInternal(piecewiseBuffer, row.second());
+          piecewiseBuffer.append(") {");
+          //          }
           piecewiseBuffer.append(" return ");
           convertInternal(piecewiseBuffer, row.first());
-          piecewiseBuffer.append("}");
+          piecewiseBuffer.append(";}");
         } else {
           if (i == size - 1) {
             last = arg;
@@ -696,11 +707,22 @@ public class JavaScriptFormFactory extends DoubleFormFactory {
           }
         }
       }
-      piecewiseBuffer.append(" else { return ");
+      piecewiseBuffer.append("\n return ");
       convertInternal(piecewiseBuffer, last);
-      piecewiseBuffer.append("}");
+      piecewiseBuffer.append(";})(");
+      appendVariables(piecewiseBuffer);
+      piecewiseBuffer.append(")\n");
       buffer.append(piecewiseBuffer);
       return true;
+    }
+  }
+
+  private void appendVariables(StringBuilder buf) {
+    for (int i = 0; i < variableNames.size(); i++) {
+      buf.append(variableNames.get(i));
+      if (i < variableNames.size() - 1) {
+        buf.append(",");
+      }
     }
   }
 
