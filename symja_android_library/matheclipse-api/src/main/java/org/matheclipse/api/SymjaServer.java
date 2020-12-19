@@ -2,6 +2,8 @@ package org.matheclipse.api;
 
 import static io.undertow.Handlers.resource;
 
+import java.awt.Desktop;
+import java.net.URI;
 import java.util.Deque;
 import java.util.Map;
 
@@ -24,7 +26,10 @@ import io.undertow.util.Headers;
 import io.undertow.util.HttpString;
 
 public class SymjaServer {
+
   static int PORT = 8080;
+
+  static boolean TEST = false;
 
   private static final class APIHandler implements HttpHandler {
     @Override
@@ -68,53 +73,62 @@ public class SymjaServer {
     } catch (RuntimeException rex) {
       return;
     }
-    ToggleFeature.COMPILE = false;
-    Config.FUZZY_PARSER = true;
-    Config.UNPROTECT_ALLOWED = false;
-    Config.USE_MANIPULATE_JS = true;
-    Config.JAS_NO_THREADS = false;
-    // Config.THREAD_FACTORY = com.google.appengine.api.ThreadManager.currentRequestThreadFactory();
-    Config.MATHML_TRIG_LOWERCASE = false;
-    Config.MAX_AST_SIZE = 10000;
-    Config.MAX_OUTPUT_SIZE = 10000;
-    Config.MAX_BIT_LENGTH = 200000;
-    Config.MAX_POLYNOMIAL_DEGREE = 100;
-    Config.FILESYSTEM_ENABLED = false;
-    Config.MAX_INPUT_LEAVES = 100L;
-    Config.MAX_MATRIX_DIMENSION_SIZE = 100;
-    EvalEngine.get().setPackageMode(true);
-    F.initSymbols(null, null, false); // new SymbolObserver(), false);
-    FuzzyParserFactory.initialize();
 
-    final APIHandler apiHandler = new APIHandler();
+    try {
+      ToggleFeature.COMPILE = false;
+      Config.FUZZY_PARSER = true;
+      Config.UNPROTECT_ALLOWED = false;
+      Config.USE_MANIPULATE_JS = true;
+      Config.JAS_NO_THREADS = false;
+      // Config.THREAD_FACTORY =
+      // com.google.appengine.api.ThreadManager.currentRequestThreadFactory();
+      Config.MATHML_TRIG_LOWERCASE = false;
+      Config.MAX_AST_SIZE = 10000;
+      Config.MAX_OUTPUT_SIZE = 10000;
+      Config.MAX_BIT_LENGTH = 200000;
+      Config.MAX_POLYNOMIAL_DEGREE = 100;
+      Config.FILESYSTEM_ENABLED = false;
+      Config.MAX_INPUT_LEAVES = 100L;
+      Config.MAX_MATRIX_DIMENSION_SIZE = 100;
+      EvalEngine.get().setPackageMode(true);
+      F.initSymbols(null, null, false); // new SymbolObserver(), false);
+      FuzzyParserFactory.initialize();
 
-    PathHandler path =
-        new PathHandler()
-            .addPrefixPath(
-                "/",
-                resource(
-                        new ClassPathResourceManager(
-                            SymjaServer.class.getClassLoader(), SymjaServer.class.getPackage()))
-                    .addWelcomeFiles("index.html"))
-            .addExactPath("/v1/api", apiHandler);
+      final APIHandler apiHandler = new APIHandler();
 
-    Undertow server =
-        Undertow.builder()
-            . //
-            addHttpListener(PORT, "localhost")
-            . //
-            setHandler(path)
-            . //
-            build();
-    server.start();
+      PathHandler path =
+          new PathHandler()
+              .addPrefixPath(
+                  "/",
+                  resource(
+                          new ClassPathResourceManager(
+                              SymjaServer.class.getClassLoader(), SymjaServer.class.getPackage()))
+                      .addWelcomeFiles("index.html"))
+              .addExactPath("/v1/api", apiHandler);
 
-    System.out.println("\n>>> JSON API server started. <<<");
-    System.out.println("Waiting for API calls at http://localhost:" + PORT + "/v1/api");
-    System.out.println("Example client call:");
-    System.out.println(
-        "http://localhost:"
-            + PORT
-            + "/v1/api?i=D(Sin(x)%2Cx)&f=latex&f=plaintext&f=sinput&appid=DEMO");
+      Undertow server =
+          Undertow.builder().addHttpListener(PORT, "localhost").setHandler(path).build();
+      server.start();
+
+      System.out.println("\n>>> JSON API server started. <<<");
+      System.out.println("Waiting for API calls at http://localhost:" + PORT + "/v1/api");
+      System.out.println("Example client call:");
+      System.out.println(
+          "http://localhost:"
+              + PORT
+              + "/v1/api?i=D(Sin(x)%2Cx)&f=latex&f=plaintext&f=sinput&appid=DEMO");
+
+      URI uri = new URI("http://localhost:" + PORT + "/index.html");
+
+      System.out.println();
+      System.out.println("To test the JSON API open page: " + uri.toString() + " in your browser.");
+      if (TEST && Desktop.isDesktopSupported()) {
+        Desktop.getDesktop().browse(uri);
+      }
+
+    } catch (Exception ex) {
+      ex.printStackTrace();
+    }
   }
 
   protected static int setArgs(final String serverClass, final String args[]) {
@@ -130,6 +144,8 @@ public class SymjaServer {
         String portStr = args[i + 1];
         i++;
         PORT = Integer.valueOf(portStr);
+      } else if (arg.equals("-test") || arg.equals("-t")) {
+        TEST = true;
       } else if (arg.equals("-help") || arg.equals("-h")) {
         printUsage(serverClass);
         return -1;
@@ -161,6 +177,7 @@ public class SymjaServer {
     msg.append("Program arguments: " + lineSeparator);
     msg.append("  -h or -help print usage messages" + lineSeparator);
     msg.append("  -p or -port set the port (default port is 8080)" + lineSeparator);
+    msg.append("  -t or -test open JSON API test page in browser " + lineSeparator);
     msg.append("****+****+****+****+****+****+****+****+****+****+****+****+");
 
     System.out.println(msg.toString());
