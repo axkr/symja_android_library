@@ -577,18 +577,30 @@ public interface DRules {
           // D(Sec(x_),{x_,2}):=Sec(x)^3+Sec(x)*Tan(x)^2
           ISetDelayed(
               D(Sec(x_), List(x_, C2)), Plus(Power(Sec(x), C3), Times(Sec(x), Sqr(Tan(x))))),
-          // D(x_^a_,{x_,n_Integer}):=Pochhammer(a-n+1,n)*x^(a-n)/;n>=0&&FreeQ(a,x)
+          // D(x_^a_,{x_,n_}):=If(IntegerQ(n),Pochhammer(a-n+1,n)*x^(a-n),FactorialPower(a,n)*x^(a-n))/;((IntegerQ(n)&&n>=0)||FreeQ(n,_?NumberQ))&&FreeQ(a,x)
           ISetDelayed(
-              D(Power(x_, a_), List(x_, $p(n, Integer))),
+              D(Power(x_, a_), List(x_, n_)),
               Condition(
-                  Times(Pochhammer(Plus(a, Negate(n), C1), n), Power(x, Subtract(a, n))),
-                  And(GreaterEqual(n, C0), FreeQ(a, x)))),
-          // D(a_^x_,{x_,n_Integer}):=a^x*Log(x)^n/;n>=0&&FreeQ(a,x)
+                  If(
+                      IntegerQ(n),
+                      Times(Pochhammer(Plus(a, Negate(n), C1), n), Power(x, Subtract(a, n))),
+                      Times(FactorialPower(a, n), Power(x, Subtract(a, n)))),
+                  And(
+                      Or(
+                          And(IntegerQ(n), GreaterEqual(n, C0)),
+                          FreeQ(n, PatternTest($b(), NumberQ))),
+                      FreeQ(a, x)))),
+          // D(a_^x_,{x_,n_Integer}):=a^x*Log(a)^n/;((IntegerQ(n)&&n>=0)||FreeQ(n,_?NumberQ))&&FreeQ(a,x)
           ISetDelayed(
               D(Power(a_, x_), List(x_, $p(n, Integer))),
               Condition(
-                  Times(Power(a, x), Power(Log(x), n)), And(GreaterEqual(n, C0), FreeQ(a, x)))),
-          // D(ArcCos(x_),{x_,n_Integer}):=KroneckerDelta(n)*ArcCos(x)-1/((-1)^(1-n)*(1-x^2)^(-1/2+n))*Sum((Pochhammer(1-n,k)*Pochhammer(1/2,k)*2^(1+2*k-n)*x^(1+2*k-n)*(-1+x^2)^(-1-k+n))/(2*k-n+1)!,{k,0,-1+n})/;n>=0
+                  Times(Power(a, x), Power(Log(a), n)),
+                  And(
+                      Or(
+                          And(IntegerQ(n), GreaterEqual(n, C0)),
+                          FreeQ(n, PatternTest($b(), NumberQ))),
+                      FreeQ(a, x)))),
+          // D(ArcCos(x_),{x_,n_Integer}):=KroneckerDelta(n)*ArcCos(x)-1/((-1)^(1-n)*(1-x^2)^(-1/2+n))*Sum((Pochhammer(1-n,k)*Pochhammer(1/2,k)*2^(1+2*k-n)*x^(1+2*k-n)*(-1+x^2)^(-1-k+n))/(2*k-n+1)!,{k,0,-1+n})/;(IntegerQ(n)&&n>=0)||FreeQ(n,_?NumberQ)
           ISetDelayed(
               D(ArcCos(x_), List(x_, $p(n, Integer))),
               Condition(
@@ -607,8 +619,8 @@ public interface DRules {
                                   Power(x, Plus(C1, Times(C2, k), Negate(n))),
                                   Power(Plus(CN1, Sqr(x)), Plus(CN1, Negate(k), n))),
                               List(k, C0, Plus(CN1, n))))),
-                  GreaterEqual(n, C0))),
-          // D(ArcCot(x_),{x_,n_Integer}):=KroneckerDelta(n)*ArcCot(x)-Sum(((-1)^k*1/((-1-k+n)!/(2*x)^(1+2*k-n))*k!*Pochhammer(2*k-n+2,-2+2*(-k+n)))/(1+x^2)^(1+k),{k,0,-1+n})/;n>=0
+                  Or(And(IntegerQ(n), GreaterEqual(n, C0)), FreeQ(n, PatternTest($b(), NumberQ))))),
+          // D(ArcCot(x_),{x_,n_Integer}):=KroneckerDelta(n)*ArcCot(x)-Sum(((-1)^k*1/((-1-k+n)!/(2*x)^(1+2*k-n))*k!*Pochhammer(2*k-n+2,-2+2*(-k+n)))/(1+x^2)^(1+k),{k,0,-1+n})/;(IntegerQ(n)&&n>=0)||FreeQ(n,_?NumberQ)
           ISetDelayed(
               D(ArcCot(x_), List(x_, $p(n, Integer))),
               Condition(
@@ -628,8 +640,8 @@ public interface DRules {
                                   Plus(CN2, Times(C2, Plus(Negate(k), n)))),
                               Power(Plus(C1, Sqr(x)), Subtract(CN1, k))),
                           List(k, C0, Plus(CN1, n)))),
-                  GreaterEqual(n, C0))),
-          // D(ArcSin(x_),{x_,n_Integer}):=KroneckerDelta(n)*ArcSin(x)+1/((-1)^(1-n)*(1-x^2)^(-1/2+n))*Sum((2^(1+2*k-n)*x^(1+2*k-n)*Pochhammer(1/2,k)*Pochhammer(1-n,k))/((-1+x^2)^(1+k-n)*(2*k-n+1)!),{k,0,-1+n})/;n>=0
+                  Or(And(IntegerQ(n), GreaterEqual(n, C0)), FreeQ(n, PatternTest($b(), NumberQ))))),
+          // D(ArcSin(x_),{x_,n_Integer}):=KroneckerDelta(n)*ArcSin(x)+1/((-1)^(1-n)*(1-x^2)^(-1/2+n))*Sum((2^(1+2*k-n)*x^(1+2*k-n)*Pochhammer(1/2,k)*Pochhammer(1-n,k))/((-1+x^2)^(1+k-n)*(2*k-n+1)!),{k,0,-1+n})/;(IntegerQ(n)&&n>=0)||FreeQ(n,_?NumberQ)
           ISetDelayed(
               D(ArcSin(x_), List(x_, $p(n, Integer))),
               Condition(
@@ -647,8 +659,8 @@ public interface DRules {
                                   Pochhammer(C1D2, k),
                                   Pochhammer(Subtract(C1, n), k)),
                               List(k, C0, Plus(CN1, n))))),
-                  GreaterEqual(n, C0))),
-          // D(ArcTan(x_),{x_,n_Integer}):=KroneckerDelta(n)*ArcTan(x)+Sum(((-1)^k*1/((-1-k+n)!/(2*x)^(1+2*k-n))*k!*Pochhammer(2*k-n+2,-2+2*(-k+n)))/(1+x^2)^(1+k),{k,0,-1+n})/;n>=0
+                  Or(And(IntegerQ(n), GreaterEqual(n, C0)), FreeQ(n, PatternTest($b(), NumberQ))))),
+          // D(ArcTan(x_),{x_,n_Integer}):=KroneckerDelta(n)*ArcTan(x)+Sum(((-1)^k*1/((-1-k+n)!/(2*x)^(1+2*k-n))*k!*Pochhammer(2*k-n+2,-2+2*(-k+n)))/(1+x^2)^(1+k),{k,0,-1+n})/;(IntegerQ(n)&&n>=0)||FreeQ(n,_?NumberQ)
           ISetDelayed(
               D(ArcTan(x_), List(x_, $p(n, Integer))),
               Condition(
@@ -668,12 +680,14 @@ public interface DRules {
                                   Plus(CN2, Times(C2, Plus(Negate(k), n)))),
                               Power(Plus(C1, Sqr(x)), Subtract(CN1, k))),
                           List(k, C0, Plus(CN1, n)))),
-                  GreaterEqual(n, C0))),
-          // D(Cos(x_),{x_,n_Integer}):=Cos(x+1/2*n*Pi)/;n>=0
+                  Or(And(IntegerQ(n), GreaterEqual(n, C0)), FreeQ(n, PatternTest($b(), NumberQ))))),
+          // D(Cos(x_),{x_,n_Integer}):=Cos(x+1/2*n*Pi)/;(IntegerQ(n)&&n>=0)||FreeQ(n,_?NumberQ)
           ISetDelayed(
               D(Cos(x_), List(x_, $p(n, Integer))),
-              Condition(Cos(Plus(x, Times(C1D2, n, Pi))), GreaterEqual(n, C0))),
-          // D(Cot(x_),{x_,n_Integer}):=-Csc(x)^2*KroneckerDelta(-1+n)+Cot(x)*KroneckerDelta(n)-n*Sum((((-1)^j*Binomial(-1+n,k))/(k+1)*Binomial(2*k,j)*Sin(1/2*n*Pi+2*(-j+k)*x))/(Sin(x)^(2+2*k)*2^(2*k-n)*(-j+k)^(1-n)),{k,0,-1+n},{j,0,-1+k})/;n>=0
+              Condition(
+                  Cos(Plus(x, Times(C1D2, n, Pi))),
+                  Or(And(IntegerQ(n), GreaterEqual(n, C0)), FreeQ(n, PatternTest($b(), NumberQ))))),
+          // D(Cot(x_),{x_,n_Integer}):=-Csc(x)^2*KroneckerDelta(-1+n)+Cot(x)*KroneckerDelta(n)-n*Sum((((-1)^j*Binomial(-1+n,k))/(k+1)*Binomial(2*k,j)*Sin(1/2*n*Pi+2*(-j+k)*x))/(Sin(x)^(2+2*k)*2^(2*k-n)*(-j+k)^(1-n)),{k,0,-1+n},{j,0,-1+k})/;(IntegerQ(n)&&n>=0)||FreeQ(n,_?NumberQ)
           ISetDelayed(
               D(Cot(x_), List(x_, $p(n, Integer))),
               Condition(
@@ -695,12 +709,14 @@ public interface DRules {
                                   Sin(Plus(Times(C1D2, n, Pi), Times(C2, Plus(Negate(j), k), x)))),
                               List(k, C0, Plus(CN1, n)),
                               List(j, C0, Plus(CN1, k))))),
-                  GreaterEqual(n, C0))),
-          // D(Sin(x_),{x_,n_Integer}):=Sin(x+1/2*n*Pi)/;n>=0
+                  Or(And(IntegerQ(n), GreaterEqual(n, C0)), FreeQ(n, PatternTest($b(), NumberQ))))),
+          // D(Sin(x_),{x_,n_}):=Sin(x+1/2*n*Pi)/;(IntegerQ(n)&&n>=0)||FreeQ(n,_?NumberQ)
           ISetDelayed(
-              D(Sin(x_), List(x_, $p(n, Integer))),
-              Condition(Sin(Plus(x, Times(C1D2, n, Pi))), GreaterEqual(n, C0))),
-          // D(Tan(x_),{x_,n_Integer}):=Tan(x)*KroneckerDelta(n)+Sec(x)^2*KroneckerDelta(-1+n)+n*Sum((((-1)^k*Binomial(-1+n,k))/(k+1)*Binomial(2*k,j)*Sin(1/2*n*Pi+2*(-j+k)*x))/(Cos(x)^(2+2*k)*2^(2*k-n)*(-j+k)^(1-n)),{k,0,-1+n},{j,0,-1+k})/;n>=0
+              D(Sin(x_), List(x_, n_)),
+              Condition(
+                  Sin(Plus(x, Times(C1D2, n, Pi))),
+                  Or(And(IntegerQ(n), GreaterEqual(n, C0)), FreeQ(n, PatternTest($b(), NumberQ))))),
+          // D(Tan(x_),{x_,n_Integer}):=Tan(x)*KroneckerDelta(n)+Sec(x)^2*KroneckerDelta(-1+n)+n*Sum((((-1)^k*Binomial(-1+n,k))/(k+1)*Binomial(2*k,j)*Sin(1/2*n*Pi+2*(-j+k)*x))/(Cos(x)^(2+2*k)*2^(2*k-n)*(-j+k)^(1-n)),{k,0,-1+n},{j,0,-1+k})/;(IntegerQ(n)&&n>=0)||FreeQ(n,_?NumberQ)
           ISetDelayed(
               D(Tan(x_), List(x_, $p(n, Integer))),
               Condition(
@@ -721,15 +737,19 @@ public interface DRules {
                                   Sin(Plus(Times(C1D2, n, Pi), Times(C2, Plus(Negate(j), k), x)))),
                               List(k, C0, Plus(CN1, n)),
                               List(j, C0, Plus(CN1, k))))),
-                  GreaterEqual(n, C0))),
-          // D(Log(x_),{x_,n_Integer}):=(-1+n)!/((-1)^(1-n)*x^n)/;n>=0
+                  Or(And(IntegerQ(n), GreaterEqual(n, C0)), FreeQ(n, PatternTest($b(), NumberQ))))),
+          // D(Log(x_),{x_,n_Integer}):=(-1+n)!/((-1)^(1-n)*x^n)/;(IntegerQ(n)&&n>=0)||FreeQ(n,_?NumberQ)
           ISetDelayed(
               D(Log(x_), List(x_, $p(n, Integer))),
               Condition(
                   Times(Power(CN1, Plus(CN1, n)), Power(Power(x, n), CN1), Factorial(Plus(CN1, n))),
-                  GreaterEqual(n, C0))),
-          // D(PolyGamma(0,x_),{x_,n_}):=PolyGamma(n,x)
-          ISetDelayed(D(PolyGamma(C0, x_), List(x_, n_)), PolyGamma(n, x)),
+                  Or(And(IntegerQ(n), GreaterEqual(n, C0)), FreeQ(n, PatternTest($b(), NumberQ))))),
+          // D(PolyGamma(0,x_),{x_,n_}):=PolyGamma(n,x)/;(IntegerQ(n)&&n>=0)||FreeQ(n,_?NumberQ)
+          ISetDelayed(
+              D(PolyGamma(C0, x_), List(x_, n_)),
+              Condition(
+                  PolyGamma(n, x),
+                  Or(And(IntegerQ(n), GreaterEqual(n, C0)), FreeQ(n, PatternTest($b(), NumberQ))))),
           // D(ArcTan(f_,g_),x_?NotListQ):=With({d=(-g*D(f,x)+f*D(g,x))/(f^2+g^2)},If(PossibleZeroQ(d),0,d))
           ISetDelayed(
               D(ArcTan(f_, g_), PatternTest(x_, NotListQ)),

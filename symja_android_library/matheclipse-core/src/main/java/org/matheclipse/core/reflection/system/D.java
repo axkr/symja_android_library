@@ -293,23 +293,50 @@ public class D extends AbstractFunctionEvaluator implements DRules {
         } else if (xList.isAST1() && xList.arg1().isList()) {
           IAST subList = (IAST) xList.arg1();
           return subList.mapLeft(F.ListAlloc(), (a, b) -> engine.evaluate(F.D(a, b)), fx);
-        } else if (xList.isAST2() && xList.arg2().isInteger()) {
+        } else if (xList.isAST2()) {
           if (ast.isEvalFlagOn(IAST.IS_DERIVATIVE_EVALED)) {
             return F.NIL;
           }
-          int n = Validate.checkNonNegativeIntType(xList, 2);
+          if (xList.arg1().isList()) {
+            x = F.List(xList.arg1());
+          } else {
+            x = xList.arg1();
+          }
+          IExpr arg2 = xList.arg2();
+          int n = arg2.toIntDefault();
           if (n >= 0) {
-            if (xList.arg1().isList()) {
-              x = F.List(xList.arg1());
-            } else {
-              x = xList.arg1();
-            }
             IExpr temp = fx;
             for (int i = 0; i < n; i++) {
               temp = F.D.of(engine, temp, x);
             }
             return temp;
           }
+          if (arg2.isFree(num -> num.isNumber(), false)) {
+            if (fx instanceof ASTSeriesData) {
+              return F.NIL;
+            }
+            if (fx.isFree(x, true)) {
+              // Piecewise({{fx, arg2 == 0}}, 0)
+              return F.Piecewise(F.List(F.List(fx, F.Equal(arg2, F.C0))), F.C0);
+            }
+            if (fx.equals(x)) {
+              // Piecewise({{fx, arg2 == 0}, {1, arg2 == 1}}, 0)
+              return F.Piecewise(
+                  F.List(F.List(fx, F.Equal(arg2, F.C0)), F.List(F.C1, F.Equal(arg2, F.C1))), F.C0);
+            }
+            if (fx.isAST()) {
+              final IAST function = (IAST) fx;
+              // final IExpr header = function.head();
+              if (function.isPlus()) {
+                // D(a_+b_+c_,x_) -> D(a,x)+D(b,x)+D(c,x)
+                return function.mapThread(F.D(F.Slot1, xList), 1);
+              }
+            }
+            return F.NIL;
+          }
+          // Multiple derivative specifier `1` does not have the form {variable, n} where n is a
+          // symbolic expression or a non-negative integer.
+          return IOFunctions.printMessage(ast.topHead(), "dvar", F.List(xList), engine);
         }
         return F.NIL;
 
@@ -348,17 +375,17 @@ public class D extends AbstractFunctionEvaluator implements DRules {
       }
 
       if (fx.isAST()) {
-        final IAST listArg1 = (IAST) fx;
-        final IExpr header = listArg1.head();
-        if (listArg1.isPlus()) {
-          // D[a_+b_+c_,x_] -> D[a,x]+D[b,x]+D[c,x]
-          return listArg1.mapThread(F.D(F.Slot1, x), 1);
-        } else if (listArg1.isTimes()) {
-          return listArg1.map(F.PlusAlloc(16), new BinaryBindIth1st(listArg1, F.D(F.Null, x)));
-        } else if (listArg1.isPower()) {
+        final IAST function = (IAST) fx;
+        final IExpr header = function.head();
+        if (function.isPlus()) {
+          // D(a_+b_+c_,x_) -> D(a,x)+D(b,x)+D(c,x)
+          return function.mapThread(F.D(F.Slot1, x), 1);
+        } else if (function.isTimes()) {
+          return function.map(F.PlusAlloc(16), new BinaryBindIth1st(function, F.D(F.Null, x)));
+        } else if (function.isPower()) {
           // f ^ g
-          final IExpr f = listArg1.base();
-          final IExpr g = listArg1.exponent();
+          final IExpr f = function.base();
+          final IExpr g = function.exponent();
           if (g.isFree(x)) {
             // g*D(f,y)*f^(g-1)
             return F.Times(g, F.D(f, x), F.Power(f, g.dec()));
@@ -377,12 +404,12 @@ public class D extends AbstractFunctionEvaluator implements DRules {
           resultList.append(
               F.Plus(F.Times(g, F.D(f, x), F.Power(f, F.CN1)), F.Times(F.Log(f), F.D(g, x))));
           return resultList;
-        } else if ((header == F.Log) && (listArg1.isAST2())) {
-          if (listArg1.isFreeAt(1, x)) {
+        } else if ((header == F.Log) && (function.isAST2())) {
+          if (function.isFreeAt(1, x)) {
             // D[Log[i_FreeQ(x), x_], z_]:= (x*Log[a])^(-1)*D[x,z];
             return F.Times(
-                F.Power(F.Times(listArg1.arg2(), F.Log(listArg1.arg1())), F.CN1),
-                F.D(listArg1.arg2(), x));
+                F.Power(F.Times(function.arg2(), F.Log(function.arg1())), F.CN1),
+                F.D(function.arg2(), x));
           }
           // } else if (header == F.LaplaceTransform && (listArg1.size()
           // == 4)) {
@@ -403,15 +430,15 @@ public class D extends AbstractFunctionEvaluator implements DRules {
           // // D(LaplaceTransform(c,t,s), t) -> 0
           // return F.C0;
           // }
-        } else if (listArg1.isAST1() && ast.isEvalFlagOff(IAST.IS_DERIVATIVE_EVALED)) {
-          IAST[] derivStruct = listArg1.isDerivativeAST1();
+        } else if (function.isAST1() && ast.isEvalFlagOff(IAST.IS_DERIVATIVE_EVALED)) {
+          IAST[] derivStruct = function.isDerivativeAST1();
           if (derivStruct != null && derivStruct[2] != null) {
             IAST headAST = derivStruct[1];
             IAST a1Head = derivStruct[0];
             if (a1Head.isAST1() && a1Head.arg1().isInteger()) {
               try {
                 int n = ((IInteger) a1Head.arg1()).toInt();
-                IExpr arg1 = listArg1.arg1();
+                IExpr arg1 = function.arg1();
                 if (n > 0) {
                   IAST fDerivParam = Derivative.createDerivative(n + 1, headAST.arg1(), arg1);
                   if (x.equals(arg1)) {
@@ -425,9 +452,9 @@ public class D extends AbstractFunctionEvaluator implements DRules {
             }
             return F.NIL;
           }
-          return getDerivativeArg1(x, listArg1.arg1(), header, engine);
-        } else if (listArg1.isAST() && ast.isEvalFlagOff(IAST.IS_DERIVATIVE_EVALED)) {
-          return getDerivativeArgN(x, listArg1, header);
+          return getDerivativeArg1(x, function.arg1(), header, engine);
+        } else if (function.isAST() && ast.isEvalFlagOff(IAST.IS_DERIVATIVE_EVALED)) {
+          return getDerivativeArgN(x, function, header);
         }
       }
     } catch (final ValidateException ve) {

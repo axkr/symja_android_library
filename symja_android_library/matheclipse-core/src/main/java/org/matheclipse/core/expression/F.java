@@ -3423,6 +3423,10 @@ public class F extends S {
     return new AST1(Factorial2, a0);
   }
 
+  public static IAST FactorialPower(final IExpr a0, final IExpr a1) {
+    return new AST2(FactorialPower, a0, a1);
+  }
+
   public static IAST FactorInteger(final IExpr a0) {
     return new AST1(FactorInteger, a0);
   }
