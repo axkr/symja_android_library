@@ -220,7 +220,7 @@ public abstract class AbstractTestCase extends TestCase {
 
         EvalEngine.set(engine);
         engine.init();
-        engine.setRecursionLimit(1024);
+        engine.setRecursionLimit(512);
         engine.setIterationLimit(500);
         engine.setOutListDisabled(false, (short) 10);
       }
