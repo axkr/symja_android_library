@@ -499,6 +499,8 @@ public class IOFunctions {
     "Input value `1` lies outside the range of data in the interpolating function. Extrapolation will be used.",
     "drop",
     "Cannot drop positions `1` through `2` in `3`.", //
+    "dvar",
+    "Multiple derivative specifier `1` does not have the form {variable, n} where n is a symbolic expression or a non-negative integer.", //
     "empt",
     "Argument `1` should be a non-empty list.", //
     "eqf",
@@ -611,10 +613,16 @@ public class IOFunctions {
     "unexpected NIL expression encountered.", //
     "nocatch",
     "Uncaught `1` returned to top level.", //
+    "nofirst",
+    "`1` has zero length and no first element.", //
     "noneg",
     "Argument `1` should be a real non-negative number.", //
     "nonegs",
     "Surd is not defined for even roots of negative values.", //
+    "nolast",
+    "`1` has zero length and no last element.", //
+    "nomost",
+    "Cannot take Most of expression `1` with length zero.", //
     "noopen",
     "Cannot open `1`.", //
     "nonopt",
