@@ -132,7 +132,9 @@ public class ConstantTest extends AbstractTestCase {
     super.setUp();
     Config.SHORTEN_STRING_LENGTH = 1024;
     Config.MAX_AST_SIZE = 1000000;
-    EvalEngine.get().setIterationLimit(50000);
+    EvalEngine engine = EvalEngine.get();
+    engine.setIterationLimit(50000);
+    engine.setRecursionLimit(256);
   }
 
   @Override
