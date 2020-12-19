@@ -33,7 +33,6 @@ import org.matheclipse.core.eval.exception.ValidateException;
 import org.matheclipse.core.eval.interfaces.AbstractCoreFunctionEvaluator;
 import org.matheclipse.core.eval.interfaces.AbstractEvaluator;
 import org.matheclipse.core.eval.interfaces.AbstractFunctionEvaluator;
-import org.matheclipse.core.eval.interfaces.IFunctionEvaluator;
 import org.matheclipse.core.eval.util.ISequence;
 import org.matheclipse.core.eval.util.Iterator;
 import org.matheclipse.core.eval.util.LevelSpec;
@@ -52,6 +51,7 @@ import org.matheclipse.core.interfaces.IASTAppendable;
 import org.matheclipse.core.interfaces.IASTDataset;
 import org.matheclipse.core.interfaces.IASTMutable;
 import org.matheclipse.core.interfaces.IAssociation;
+import org.matheclipse.core.interfaces.IBuiltInSymbol;
 import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.interfaces.IInteger;
 import org.matheclipse.core.interfaces.IIterator;
@@ -570,13 +570,6 @@ public final class ListFunctions {
 
     @Override
     public IExpr evaluate(IAST ast, EvalEngine engine) {
-      //      if (ast.isAST1()) {
-      //        ast = F.operatorForm1Append(ast);
-      //        if (!ast.isPresent()) {
-      //          return F.NIL;
-      //        }
-      //      }
-
       IExpr arg1 = engine.evaluate(ast.arg1());
       IAST arg1AST = Validate.checkASTOrAssociationType(ast, arg1, 1, engine);
       if (!arg1AST.isPresent()) {
@@ -681,11 +674,17 @@ public final class ListFunctions {
 
     @Override
     public IExpr evaluate(final IAST ast, EvalEngine engine) {
+      IExpr arg1 = ast.arg1();
+      if (arg1.isASTSizeGE(S.Part, 3) && arg1.first().isSymbol()) {
+        ISymbol sym = (ISymbol) arg1.first();
+        return assignPartTo(sym, (IAST) arg1, S.Append, ast, engine);
+      }
+
       IExpr sym = Validate.checkSymbolType(ast, 1, engine);
       if (sym.isPresent()) {
         IExpr arg2 = engine.evaluate(ast.arg2());
         Function<IExpr, IExpr> function = new AppendToFunction(arg2);
-        IExpr[] results = ((ISymbol) sym).reassignSymbolValue(function, S.AppendTo, engine);
+        IExpr[] results = ((ISymbol) sym).reassignSymbolValue(function, ast.topHead(), engine);
         if (results != null) {
           return results[1];
         }
@@ -1696,7 +1695,7 @@ public final class ListFunctions {
    * 5
    * </pre>
    */
-  private static final class Count extends AbstractCoreFunctionEvaluator {
+  private static final class Count extends AbstractFunctionEvaluator {
     private static class CountFunctor implements Function<IExpr, IExpr> {
       protected final IPatternMatcher matcher;
       protected int counter;
@@ -1722,7 +1721,7 @@ public final class ListFunctions {
 
     @Override
     public IExpr evaluate(final IAST ast, EvalEngine engine) {
-      final IExpr arg1 = engine.evaluate(ast.arg1());
+      final IExpr arg1 = ast.arg1();
       try {
         final VisitorLevelSpecification level;
         CountFunctor mf = new CountFunctor(engine.evalPatternMatcher(ast.arg2()));
@@ -1730,7 +1729,7 @@ public final class ListFunctions {
           final IExpr arg3 = engine.evaluate(ast.arg3());
           level = new VisitorLevelSpecification(mf, arg3, false, engine);
         } else {
-          level = new VisitorLevelSpecification(mf, 1);
+          level = new VisitorLevelSpecification(mf, 1, false);
         }
         arg1.accept(level);
         return F.ZZ(mf.getCounter());
@@ -2627,10 +2626,13 @@ public final class ListFunctions {
     public IExpr evaluate(final IAST ast, EvalEngine engine) {
       IExpr arg1 = ast.arg1();
       if (arg1.isASTOrAssociation()) {
-        final IAST sublist = (IAST) arg1;
-
-        if (sublist.size() > 1) {
-          return sublist.arg1();
+        final IAST list = (IAST) arg1;
+        if (list.size() > 1) {
+          return list.arg1();
+        }
+        if (ast.isAST1()) {
+          // `1` has zero length and no last element.
+          return IOFunctions.printMessage(ast.topHead(), "nofirst", F.List(list), engine);
         }
       }
       if (ast.isAST2()) {
@@ -3405,6 +3407,10 @@ public final class ListFunctions {
         if (list.size() > 1) {
           return list.last();
         }
+        if (ast.isAST1()) {
+          // `1` has zero length and no last element.
+          return IOFunctions.printMessage(ast.topHead(), "nolast", F.List(list), engine);
+        }
       }
       if (ast.isAST2()) {
         return ast.arg2();
@@ -3729,8 +3735,12 @@ public final class ListFunctions {
     @Override
     public IExpr evaluate(final IAST ast, EvalEngine engine) {
       IExpr arg1 = ast.arg1();
-      if (arg1.isASTOrAssociation() && ((IAST) arg1).size() > 1) {
-        return ((IAST) arg1).splice(((IAST) arg1).argSize());
+      if (arg1.isASTOrAssociation()) {
+        if (((IAST) arg1).size() > 1) {
+          return ((IAST) arg1).splice(((IAST) arg1).argSize());
+        }
+        // `1` has zero length and no last element.
+        return IOFunctions.printMessage(ast.topHead(), "nomost", F.List(arg1), engine);
       }
       // Nonatomic expression expected at position `1` in `2`.
       return IOFunctions.printMessage(ast.topHead(), "normal", F.List(F.C1, ast), engine);
@@ -4691,13 +4701,6 @@ public final class ListFunctions {
 
     @Override
     public IExpr evaluate(IAST ast, EvalEngine engine) {
-      //      if (ast.isAST1()) {
-      //        ast = F.operatorForm1Append(ast);
-      //        if (!ast.isPresent()) {
-      //          return F.NIL;
-      //        }
-      //      }
-
       IExpr arg1 = engine.evaluate(ast.arg1());
       IAST arg1AST = Validate.checkASTOrAssociationType(ast, arg1, 1, engine);
       if (!arg1AST.isPresent()) {
@@ -4826,6 +4829,12 @@ public final class ListFunctions {
 
     @Override
     public IExpr evaluate(final IAST ast, EvalEngine engine) {
+      IExpr arg1 = ast.arg1();
+      if (arg1.isASTSizeGE(S.Part, 3) && arg1.first().isSymbol()) {
+        ISymbol sym = (ISymbol) arg1.first();
+        return assignPartTo(sym, (IAST) arg1, S.Prepend, ast, engine);
+      }
+
       IExpr sym = Validate.checkSymbolType(ast, 1, engine);
       if (sym.isPresent()) {
         IExpr arg2 = engine.evaluate(ast.arg2());
@@ -7307,6 +7316,28 @@ public final class ListFunctions {
           });
     }
     return resultCollection;
+  }
+
+  /**
+   * Assign the evaluated modified part to symbol.
+   *
+   * @param symbol
+   * @param part the <code>Part(symbol,...)</code> expression
+   * @param header <code>Append</code> or <code>Prepend</code>
+   * @param ast
+   * @param engine
+   * @return
+   */
+  private static IExpr assignPartTo(
+      ISymbol symbol, IAST part, IBuiltInSymbol header, final IAST ast, EvalEngine engine) {
+    if (symbol.hasAssignedSymbolValue()) {
+      IExpr arg2 = engine.evaluate(ast.arg2());
+      IExpr partAppend = engine.evaluate(F.binaryAST2(header, part, arg2));
+      engine.evaluate(F.Set(part, partAppend));
+      return partAppend;
+    }
+    // `1` is not a variable with a value, so its value cannot be changed.
+    return IOFunctions.printMessage(ast.topHead(), "rvalue", F.List(symbol), engine);
   }
 
   /**
