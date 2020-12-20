@@ -18,6 +18,14 @@ public class AssociationTest extends AbstractTestCase {
 
   public void testAssociateTo() {
     check(
+        "aa=42", //
+        "42");
+    // AssociateTo: aa is not a variable with a value, so its value cannot be changed.
+    check(
+        "AssociateTo(aa , c->17)", //
+        "AssociateTo(aa,c->17)");
+
+    check(
         "assoc = <|\"A\" -> <|\"a\" -> 1, \"b\" -> 2, \"c\" -> 3|>|>", //
         "<|A-><|a->1,b->2,c->3|>|>");
     check(

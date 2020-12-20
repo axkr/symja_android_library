@@ -140,7 +140,9 @@ public class AssociationFunctions {
             return IOFunctions.printMessage(S.AssociateTo, "invdt", F.List(), EvalEngine.get());
           }
         }
-        return F.NIL;
+        // The argument `1` is not a valid Association.
+        return IOFunctions.printMessage(
+            S.AssociateTo, "invak", F.List(symbolValue), EvalEngine.get());
       }
     }
 
@@ -185,7 +187,8 @@ public class AssociationFunctions {
             return symbol.assignedValue();
           }
           // The argument `1` is not a valid Association.
-          return IOFunctions.printMessage(ast.topHead(), "invak", F.List(oldValue), EvalEngine.get());
+          return IOFunctions.printMessage(
+              ast.topHead(), "invak", F.List(oldValue), EvalEngine.get());
         }
         // The argument is not a rule or a list of rules.
         return IOFunctions.printMessage(ast.topHead(), "invdt", F.List(), EvalEngine.get());
