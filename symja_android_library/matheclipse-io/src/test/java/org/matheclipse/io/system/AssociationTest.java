@@ -46,6 +46,16 @@ public class AssociationTest extends AbstractTestCase {
     check(
         "AppendTo(assoc, assoc2)", //
         "<|a->1,b->2,c->3|>");
+
+    check(
+        "a = {Association({a -> 1, b -> 2}), Association({c -> 3, d -> 4})}", //
+        "{<|a->1,b->2|>,<|c->3,d->4|>}");
+    check(
+        "AssociateTo(a[[2]], c->17)", //
+        "{<|a->1,b->2|>,<|c->17,d->4|>}");
+    check(
+        "a", //
+        "{<|a->1,b->2|>,<|c->17,d->4|>}");
   }
 
   public void testAssociation() {

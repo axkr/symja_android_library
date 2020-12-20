@@ -555,8 +555,10 @@ public class IOFunctions {
     "Positive machine-sized integer expected at position `2` in `1`.", //
     "intrange",
     "Integer expected in range `1` to `2`.", //
-    "invdt",
+    "invak",
     "The argument is not a rule or a list of rules.", //
+    "invdt",
+    "The argument `1` is not a valid Association.", //
     "invrl",
     "The argument `1` is not a valid Association or a list of rules.", //
     "iterb",

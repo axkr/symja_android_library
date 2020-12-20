@@ -146,16 +146,52 @@ public class AssociationFunctions {
 
     @Override
     public IExpr evaluate(final IAST ast, EvalEngine engine) {
-      IExpr sym = Validate.checkSymbolType(ast, 1, engine);
-      if (sym.isPresent()) {
-        IExpr arg2 = engine.evaluate(ast.arg2());
-        Function<IExpr, IExpr> function = new AssociateToFunction(arg2);
-        IExpr[] results = ((ISymbol) sym).reassignSymbolValue(function, S.AssociateTo, engine);
-        if (results != null) {
-          return results[1];
+      IExpr leftHandSide = ast.arg1();
+      try {
+        if (leftHandSide.isSymbol()) {
+          ISymbol sym = (ISymbol) leftHandSide;
+          IExpr arg2 = engine.evaluate(ast.arg2());
+          Function<IExpr, IExpr> function = new AssociateToFunction(arg2);
+          IExpr[] results = ((ISymbol) sym).reassignSymbolValue(function, S.AssociateTo, engine);
+          if (results != null) {
+            return results[1];
+          }
+          return F.NIL;
         }
+        if (leftHandSide.isASTSizeGE(S.Part, 3) && leftHandSide.first().isSymbol()) {
+          ISymbol sym = (ISymbol) leftHandSide.first();
+          return assignPartTo(sym, (IAST) leftHandSide, ast, engine);
+        }
+      } catch (ValidateException ve) {
+        if (FEConfig.SHOW_STACKTRACE) {
+          ve.printStackTrace();
+        }
+        return engine.printMessage(ast.topHead(), ve);
       }
-      return F.NIL;
+      // `1` is not a variable with a value, so its value cannot be changed.
+      return IOFunctions.printMessage(ast.topHead(), "rvalue", F.List(leftHandSide), engine);
+    }
+
+    private static IExpr assignPartTo(
+        ISymbol symbol, IAST part, final IAST ast, EvalEngine engine) {
+      if (symbol.hasAssignedSymbolValue()) {
+        IExpr value = ast.arg2();
+        if (value.isRuleAST() || value.isListOfRules() || value.isAssociation()) {
+          IExpr oldValue = engine.evaluate(part);
+          if (oldValue.isAssociation()) {
+            IAssociation newResult = ((IAssociation) oldValue).copy();
+            newResult.appendRules((IAST) value);
+            engine.evaluate(F.Set(part, newResult));
+            return symbol.assignedValue();
+          }
+          // The argument `1` is not a valid Association.
+          return IOFunctions.printMessage(ast.topHead(), "invak", F.List(oldValue), EvalEngine.get());
+        }
+        // The argument is not a rule or a list of rules.
+        return IOFunctions.printMessage(ast.topHead(), "invdt", F.List(), EvalEngine.get());
+      }
+      // `1` is not a variable with a value, so its value cannot be changed.
+      return IOFunctions.printMessage(ast.topHead(), "rvalue", F.List(symbol), engine);
     }
 
     @Override

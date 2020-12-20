@@ -433,9 +433,9 @@ public final class Arithmetic {
     }
 
     private IExpr assignPart(IExpr part, IExpr value, EvalEngine engine) {
-      IExpr oldResult = engine.evaluate(part);
+      IExpr oldValue = engine.evaluate(part);
       IASTMutable operator = getAST(value);
-      operator.set(1, oldResult);
+      operator.set(1, oldValue);
       IExpr newResult = engine.evaluate(operator);
       engine.evaluate(F.Set(part, newResult));
       return newResult;
