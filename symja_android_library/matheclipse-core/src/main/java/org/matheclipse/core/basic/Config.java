@@ -27,14 +27,19 @@ import com.google.common.cache.CacheBuilder;
 public class Config {
 
   public static final String SYMJA = //
-      "" //
-          + "     _______.____    ____ .___  ___.        __       ___      \n"
+      "     _______.____    ____ .___  ___.        __       ___      \n"
           + "    /       |\\   \\  /   / |   \\/   |       |  |     /   \\     \n"
           + "   |   (----` \\   \\/   /  |  \\  /  |       |  |    /  ^  \\    \n"
           + "    \\   \\      \\_    _/   |  |\\/|  | .--.  |  |   /  /_\\  \\   \n"
           + ".----)   |       |  |     |  |  |  | |  `--'  |  /  _____  \\  \n"
           + "|_______/        |__|     |__|  |__|  \\______/  /__/     \\__\\ \n"
           + "                                                              \n";
+
+  public static final String COPYRIGHT = //
+      "\nCopyright (C) 2009 - 2020 - the Symja team.\n"
+          + "This program comes with ABSOLUTELY NO WARRANTY.\n"
+          + "Distributed under the GNU Public License.\n"
+          + "See the file license.txt\n\n";
 
   /**
    * A global expression cache which compares keys with <code>==</code> object identity instead of

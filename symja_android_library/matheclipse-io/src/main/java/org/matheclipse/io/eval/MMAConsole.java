@@ -231,6 +231,7 @@ public class MMAConsole {
     final String lineSeparator = System.getProperty("line.separator");
     final StringBuilder msg = new StringBuilder();
     msg.append(Config.SYMJA);
+    msg.append(Config.COPYRIGHT);
     msg.append(
         "Symja Console Wiki: "
             + "https://github.com/axkr/symja_android_library/wiki/Console-apps"

@@ -133,6 +133,7 @@ public class ServletServer {
     final String lineSeparator = System.getProperty("line.separator");
     final StringBuilder msg = new StringBuilder();
     msg.append(Config.SYMJA);
+    msg.append(Config.COPYRIGHT);
     msg.append(
         "Symja Browser Wiki: "
             + "https://github.com/axkr/symja_android_library/wiki/Browser-apps"
