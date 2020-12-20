@@ -4617,12 +4617,6 @@ public final class NumberTheory {
   private static class StirlingS1 extends AbstractFunctionEvaluator {
 
     private static IExpr stirlingS1(IInteger n, IInteger m) {
-      if (n.isZero() && m.isZero()) {
-        return F.C1;
-      }
-      if (n.isZero() && m.isPositive()) {
-        return C0;
-      }
       IInteger nSubtract1 = n.subtract(F.C1);
       if (n.isPositive() && m.isOne()) {
         return Times(Power(F.CN1, nSubtract1), F.Factorial(nSubtract1));
@@ -4644,11 +4638,11 @@ public final class NumberTheory {
       int counter = nSubtractm.toIntDefault(Integer.MIN_VALUE);
       if (counter > Integer.MIN_VALUE) {
         counter++;
-        IInteger k;
+        IInteger value;
         IASTAppendable temp = F.PlusAlloc(counter >= 0 ? counter : 0);
         long leafCount = 0;
         for (int i = 0; i < counter; i++) {
-          k = F.ZZ(i);
+          value = F.ZZ(i);
           if ((i & 1) == 1) { // isOdd(i) ?
             factorPlusMinus1 = F.CN1;
           } else {
@@ -4657,9 +4651,9 @@ public final class NumberTheory {
           temp.append(
               Times(
                   factorPlusMinus1,
-                  F.Binomial(Plus(k, nSubtract1), Plus(k, nSubtractm)),
-                  F.Binomial(nTimes2Subtractm, F.Subtract(nSubtractm, k)),
-                  F.StirlingS2(Plus(k, nSubtractm), k)));
+                  F.Binomial(Plus(value, nSubtract1), Plus(value, nSubtractm)),
+                  F.Binomial(nTimes2Subtractm, F.Subtract(nSubtractm, value)),
+                  F.StirlingS2(Plus(value, nSubtractm), value)));
           leafCount += temp.leafCount();
           if (leafCount > Config.MAX_AST_SIZE) {
             ASTElementLimitExceeded.throwIt(leafCount);
@@ -4675,13 +4669,23 @@ public final class NumberTheory {
     /** {@inheritDoc} */
     @Override
     public IExpr evaluate(final IAST ast, EvalEngine engine) {
-      IExpr nArg1 = ast.arg1();
-      IExpr mArg2 = ast.arg2();
-      if (nArg1.isNegative() || mArg2.isNegative()) {
+      IExpr n = ast.arg1();
+      IExpr m = ast.arg2();
+      if (n.isNegativeResult() || m.isNegativeResult()) {
         return F.NIL;
       }
-      if (nArg1.isInteger() && mArg2.isInteger()) {
-        return stirlingS1((IInteger) nArg1, (IInteger) mArg2);
+      if (n.isZero() && m.isZero()) {
+        return F.C1;
+      }
+      if (n.isZero() && m.isPositiveResult()) {
+        return C0;
+      }
+
+      if (n.equals(m)) {
+        return F.C1;
+      }
+      if (n.isInteger() && m.isInteger()) {
+        return stirlingS1((IInteger) n, (IInteger) m);
       }
 
       return F.NIL;
@@ -4733,14 +4737,13 @@ public final class NumberTheory {
       try {
         IExpr nArg1 = ast.arg1();
         IExpr kArg2 = ast.arg2();
-        if (nArg1.isNegative() || kArg2.isNegative()) {
+        if (nArg1.isNegativeResult() || kArg2.isNegativeResult()) {
           return F.NIL;
         }
         if (nArg1.isZero() && kArg2.isZero()) {
           return F.C1;
         }
         if (nArg1.isInteger() && kArg2.isInteger()) {
-          int n = Validate.checkNonNegativeIntType(ast, 1);
           IInteger ki = (IInteger) kArg2;
           if (ki.greaterThan(nArg1).isTrue()) {
             return C0;
@@ -4759,7 +4762,8 @@ public final class NumberTheory {
             // {n,2}==2^(n-1)-1
             return Subtract(Power(C2, Subtract(nArg1, C1)), C1);
           }
-
+          
+          int n = Validate.checkNonNegativeIntType(ast, 1);
           int k = ki.toIntDefault(0);
           if (k != 0) {
             return stirlingS2(n, ki, k);
@@ -4987,6 +4991,10 @@ public final class NumberTheory {
 
   public static IInteger factorial(final IInteger x) {
     return x.factorial();
+  }
+
+  public static boolean check(IExpr n, IExpr k, IExpr delta, EvalEngine engine) {
+    return engine.evalTrue(F.Equal(n, k.plus(delta)));
   }
 
   public static IInteger factorial(int ni) {
