@@ -12,13 +12,12 @@ import org.matheclipse.core.convert.Convert;
 import org.matheclipse.core.eval.EvalAttributes;
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.EvalHistory;
+import org.matheclipse.core.eval.exception.ArgumentTypeException;
 import org.matheclipse.core.eval.exception.ReturnException;
 import org.matheclipse.core.eval.exception.Validate;
 import org.matheclipse.core.eval.exception.ValidateException;
 import org.matheclipse.core.eval.interfaces.AbstractCoreFunctionEvaluator;
 import org.matheclipse.core.eval.interfaces.AbstractFunctionEvaluator;
-import org.matheclipse.core.eval.interfaces.IFunctionEvaluator;
-import org.matheclipse.core.eval.interfaces.ISymbolEvaluator;
 import org.matheclipse.core.eval.util.Lambda;
 import org.matheclipse.core.eval.util.OpenFixedSizeMap;
 import org.matheclipse.core.eval.util.OptionArgs;
@@ -1009,31 +1008,49 @@ public class StructureFunctions {
   private static class MapAt extends AbstractFunctionEvaluator {
 
     @Override
-    public IExpr evaluate(final IAST ast, EvalEngine engine) {
-      if (ast.size() == 4) {
+    public IExpr evaluate(IAST ast, EvalEngine engine) {
+      if (ast.isAST1()) {
+        if (ast.head().isAST2() && ast.isAST1()) {
+          IAST headAST = (IAST) ast.head();
+          ast = F.ternaryAST3(headAST.topHead(), headAST.arg1(), ast.arg1(), headAST.arg2());
+        } else {
+          return F.NIL;
+        }
+      }
+
+      if (ast.isAST3()) {
         final IExpr arg2 = ast.arg2();
-        if (arg2.isAST()) {
+        if (arg2.isASTOrAssociation()) {
           try {
-            final IAST list = (IAST) arg2;
-            final IExpr arg3 = ast.arg3();
-            if (arg3.isInteger()) {
-              final IExpr arg1 = ast.arg1();
-              int index = 0;
-              int n = arg3.toIntDefault(Integer.MIN_VALUE);
-              if (n == Integer.MIN_VALUE) {
-                return engine.printMessage("MapAt: Part(" + arg3.toString() + ") is not availabe");
-              }
-              if (n < 0) {
-                index = list.size() + n;
-              } else {
-                index = n;
-              }
-              if (index < 0 || index >= list.size()) {
-                engine.printMessage("MapAt: Part(" + arg3.toString() + ") is not availabe");
-                return F.NIL;
-              }
-              return ((IAST) arg2).setAtCopy(index, F.unaryAST1(arg1, list.get(index)));
+            final IExpr arg1 = ast.arg1();
+            IExpr arg3 = ast.arg3();
+            if (arg3.isInteger() || arg3.isString() || arg3.isAST(S.Key, 2) || arg3.equals(S.All)) {
+              arg3 = F.List(arg3);
             }
+            if (arg3.isListOfLists()) {
+              IAST listOfLists = ((IAST) arg3);
+              IAST result = ((IAST) arg2);
+              for (int i = 1; i < listOfLists.size(); i++) {
+                IExpr temp =
+                    recursiveMapAt(
+                        x -> F.unaryAST1(arg1, x), result, (IAST) listOfLists.getAST(i), 1);
+                if (temp.isPresent()) {
+                  if (temp.isAST()) {
+                    result = (IAST) temp;
+                  }
+                }
+              }
+              return result;
+
+            } else if (arg3.isList()) {
+              IExpr temp = recursiveMapAt(x -> F.unaryAST1(arg1, x), ((IAST) arg2), (IAST) arg3, 1);
+              if (temp.isPresent()) {
+                return temp;
+              }
+              return arg2;
+            }
+          } catch (final ValidateException ve) {
+            return engine.printMessage(ve.getMessage(ast.topHead()));
           } catch (RuntimeException ae) {
             if (FEConfig.SHOW_STACKTRACE) {
               ae.printStackTrace();
@@ -1042,6 +1059,102 @@ public class StructureFunctions {
         }
       }
       return F.NIL;
+    }
+
+    private static IExpr recursiveMapAt(
+        java.util.function.Function<IExpr, IExpr> f, IAST result, IAST positions, int index) {
+      IExpr pos = positions.get(index);
+      if (pos.equals(S.All)) {
+        IASTMutable subResult;
+        if (index == positions.size() - 1) {
+          subResult = result.copy();
+          for (int i = 1; i < result.size(); i++) {
+            IExpr temp = f.apply(result.get(i));
+            if (temp.isPresent()) {
+              subResult.set(i, temp);
+            }
+          }
+        } else {
+          subResult = result.copy();
+          for (int i = 1; i < result.size(); i++) {
+            IExpr temp = recursiveMapAt(f, subResult.getAST(i), positions, index + 1);
+            if (temp.isPresent()) {
+              subResult.set(i, temp);
+            }
+          }
+        }
+        return subResult;
+      }
+      if (pos.isString() || pos.isAST(S.Key, 2)) {
+        if (result.isAssociation()) {
+          IExpr key = pos.isString() ? pos : pos.first();
+          IAST rule = ((IAssociation) result).getRule(key);
+          if (rule.isPresent()) {
+            if (index == positions.size() - 1) {
+              IExpr temp = f.apply(rule.second());
+              if (temp.isPresent()) {
+                rule = rule.setAtCopy(2, temp);
+                IASTAppendable association = result.copyAppendable();
+                association.appendRule(rule);
+                return association;
+              }
+
+            } else {
+              IExpr arg = rule.second();
+              if (arg.isASTOrAssociation()) {
+                IExpr temp = recursiveMapAt(f, ((IAST) arg), positions, index + 1);
+                if (temp.isPresent()) {
+                  rule = rule.setAtCopy(2, temp);
+                  IASTAppendable association = result.copyAppendable();
+                  association.appendRule(rule);
+                  return association;
+                }
+              }
+            }
+          }
+          // Part `1` of `2` does not exist.
+          throw new ArgumentTypeException(
+              IOFunctions.getMessage("partw", F.List(F.List(pos), result)));
+        }
+      }
+
+      int p = pos.toIntDefault();
+      if (p == Integer.MIN_VALUE) {
+        // Part `1` of `2` does not exist.
+        throw new ArgumentTypeException(
+            IOFunctions.getMessage("partw", F.List(F.List(pos), result)));
+      }
+      if (p < 0) {
+        p = result.size() + p;
+      }
+
+      if (p >= 0 && p < result.size()) {
+        if (index == positions.size() - 1) {
+          IExpr temp = f.apply(result.get(p));
+          if (temp.isPresent()) {
+            if (result.isAssociation()) {
+              IExpr rule = ((IAST) result.getRule(p)).setAtCopy(2, temp);
+              return result.setAtCopy(p, rule);
+            }
+            return result.setAtCopy(p, temp);
+          }
+        } else {
+
+          IExpr arg = result.get(p);
+          if (arg.isASTOrAssociation()) {
+            IExpr temp = recursiveMapAt(f, ((IAST) arg), positions, index + 1);
+            if (temp.isPresent()) {
+              return result.setAtCopy(p, temp);
+            }
+          }
+        }
+      }
+      // Part `1` of `2` does not exist.
+      throw new ArgumentTypeException(IOFunctions.getMessage("partw", F.List(F.List(pos), result)));
+    }
+
+    public int[] expectedArgSize(IAST ast) {
+      return ARGS_1_3_0;
     }
   }
 
@@ -1108,15 +1221,15 @@ public class StructureFunctions {
         if (arg2.isAST()) {
           return level.visitAST(((IAST) arg2), new int[0]).orElse(arg2);
         }
+        return arg2;
       } catch (final RuntimeException rex) {
         // ArgumentTypeException from IndexedLevel level specification checks
         return engine.printMessage("MapIndexed: " + rex.getMessage());
       }
-      return F.NIL;
     }
 
     public int[] expectedArgSize(IAST ast) {
-      return ARGS_2_3;
+      return ARGS_2_3_2;
     }
   }
 
