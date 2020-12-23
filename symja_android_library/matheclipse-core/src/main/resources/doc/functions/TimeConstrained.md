@@ -1,0 +1,29 @@
+## TimeConstrained
+
+```
+TimeConstrained(expression, seconds)
+```
+
+> stop evaluation of `expression` if time measurement of the evaluation exceeds `seconds` and return `$Aborted`.
+ 
+```
+TimeConstrained(expression, seconds, default)
+```
+
+> return `default` instead of `$Aborted` if the evaluation exceeds `seconds`.
+
+### Examples
+
+```    
+>> TimeConstrained(Pause(5), 2)
+$Aborted
+
+>> TimeConstrained(Pause(1); "Hello World", 10)
+Hello World
+
+>> TimeConstrained(Pause(5), 2, "test")
+test
+```
+
+### Related terms 
+[Pause](Pause.md), [Timing](Timing.md)
