@@ -13,6 +13,8 @@ import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.parser.ExprParser;
 import org.matheclipse.core.patternmatching.PatternMatcher;
 import org.matheclipse.parser.client.FEConfig;
+import org.matheclipse.parser.client.Parser;
+import org.matheclipse.parser.client.ast.ASTNode;
 
 /** */
 public class MMAFormTestCase extends AbstractTestCase {
@@ -46,5 +48,12 @@ public class MMAFormTestCase extends AbstractTestCase {
   public void testWLForm005() {
     IAST function = F.Solve(F.Equal(F.Denominator(F.x), F.C0), F.x);
     assertEquals(function.toMMA(), "Solve[Denominator[x]==0,x]");
+  }
+
+  public void testWLForm006() {
+    EvalEngine engine = new EvalEngine("", 256, 256, System.out, System.err, true);
+    ExprParser parser = new ExprParser(engine, true);
+    IExpr expr = parser.parse("a+i*b^2+k*c^3+d");
+    assertEquals(expr.toMMA(), "a+i*b^2+k*c^3+d");
   }
 }
