@@ -17,6 +17,7 @@ import org.hipparchus.exception.MathIllegalArgumentException;
 import org.hipparchus.exception.MathRuntimeException;
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.exception.Validate;
+import org.matheclipse.core.eval.exception.ValidateException;
 import org.matheclipse.core.eval.interfaces.AbstractFunctionEvaluator;
 import org.matheclipse.core.eval.interfaces.IFunctionEvaluator;
 import org.matheclipse.core.eval.util.Assumptions;
@@ -208,6 +209,8 @@ public class FindRoot extends AbstractFunctionEvaluator {
                     list.arg1(),
                     Num.valueOf(
                         findRoot(method, maxIterations, list, min, max, function, engine))));
+          } catch (ValidateException ve) {
+              return engine.printMessage(ast.topHead(), ve);
           } catch (MathIllegalArgumentException miae) {
             if (FEConfig.SHOW_STACKTRACE) {
               miae.printStackTrace();

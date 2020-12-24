@@ -2043,51 +2043,55 @@ public final class Programming {
         if (ast.isEvalFlagOn(IAST.BUILT_IN_EVALED)) {
           return F.NIL;
         }
-        //        System.out.println(ast.toString() );
-        IASTMutable evaledAST = F.NIL;
-        IExpr arg1 = engine.evaluateNull(ast.arg1());
-        if (arg1.isPresent()) {
-          evaledAST = ast.setAtCopy(1, arg1);
-          if (!arg1.isASTOrAssociation()) {
-            if (arg1.isSparseArray()) {
-              return sparseEvaluate(evaledAST, (ISparseArray) arg1, engine).orElse(evaledAST);
+        try {
+          //        System.out.println(ast.toString() );
+          IASTMutable evaledAST = F.NIL;
+          IExpr arg1 = engine.evaluateNull(ast.arg1());
+          if (arg1.isPresent()) {
+            evaledAST = ast.setAtCopy(1, arg1);
+            if (!arg1.isASTOrAssociation()) {
+              if (arg1.isSparseArray()) {
+                return sparseEvaluate(evaledAST, (ISparseArray) arg1, engine).orElse(evaledAST);
+              }
+              // Part specification `1` is longer than depth of object.
+              IOFunctions.printMessage(F.Part, "partd", F.List(evaledAST), engine);
+              // return the evaluated result:
+              return evaledAST;
             }
-            // Part specification `1` is longer than depth of object.
-            IOFunctions.printMessage(F.Part, "partd", F.List(evaledAST), engine);
-            // return the evaluated result:
-            return evaledAST;
-          }
-        } else {
-          arg1 = ast.arg1();
-          if (!arg1.isASTOrAssociation()) {
-            if (arg1.isSparseArray()) {
-              return sparseEvaluate(ast, (ISparseArray) arg1, engine);
-            }
-            // Part specification `1` is longer than depth of object.
-            return IOFunctions.printMessage(F.Part, "partd", F.List(ast), engine);
-          }
-        }
-        IAST arg1AST = (IAST) arg1;
-
-        IExpr temp;
-
-        int astSize = ast.size();
-        for (int i = 2; i < astSize; i++) {
-          temp = engine.evaluateNull(ast.get(i));
-          if (temp.isPresent()) {
-            if (evaledAST.isPresent()) {
-              evaledAST.set(i, temp);
-            } else {
-              evaledAST = ast.setAtCopy(i, temp);
-              evaledAST.addEvalFlags(ast.getEvalFlags() & IAST.IS_MATRIX_OR_VECTOR);
+          } else {
+            arg1 = ast.arg1();
+            if (!arg1.isASTOrAssociation()) {
+              if (arg1.isSparseArray()) {
+                return sparseEvaluate(ast, (ISparseArray) arg1, engine);
+              }
+              // Part specification `1` is longer than depth of object.
+              return IOFunctions.printMessage(F.Part, "partd", F.List(ast), engine);
             }
           }
-        }
+          IAST arg1AST = (IAST) arg1;
 
-        if (evaledAST.isPresent()) {
-          return part(arg1AST, evaledAST, 2, engine);
+          IExpr temp;
+
+          int astSize = ast.size();
+          for (int i = 2; i < astSize; i++) {
+            temp = engine.evaluateNull(ast.get(i));
+            if (temp.isPresent()) {
+              if (evaledAST.isPresent()) {
+                evaledAST.set(i, temp);
+              } else {
+                evaledAST = ast.setAtCopy(i, temp);
+                evaledAST.addEvalFlags(ast.getEvalFlags() & IAST.IS_MATRIX_OR_VECTOR);
+              }
+            }
+          }
+
+          if (evaledAST.isPresent()) {
+            return part(arg1AST, evaledAST, 2, engine);
+          }
+          return part(arg1AST, ast, 2, engine);
+        } catch (ValidateException ve) {
+          return engine.printMessage(ast.topHead(), ve);
         }
-        return part(arg1AST, ast, 2, engine);
       }
       return F.NIL;
     }

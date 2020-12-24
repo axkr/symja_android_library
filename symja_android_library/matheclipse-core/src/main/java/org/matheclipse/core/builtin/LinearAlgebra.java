@@ -3468,37 +3468,41 @@ public final class LinearAlgebra {
     public IExpr evaluate(final IAST ast, EvalEngine engine) {
       int dim1 = ast.arg1().isVector();
       int dim2 = ast.arg2().isVector();
-      if (ast.size() == 4) {
-        IExpr head = ast.arg3();
+      try {
+        if (ast.size() == 4) {
+          IExpr head = ast.arg3();
+          if (dim1 >= 0 && dim1 == dim2) {
+            if (dim1 == 0) {
+              return F.CEmptyList;
+            }
+            if (head.equals(F.Dot)) {
+              FieldVector<IExpr> u = Convert.list2Vector(ast.arg1());
+              FieldVector<IExpr> v = Convert.list2Vector(ast.arg2());
+              if (u != null && v != null) {
+                return Convert.vector2List(u.projection(v));
+              }
+            }
+          }
+          IExpr u = ast.arg1();
+          IExpr v = ast.arg2();
+          return v.times(dotProduct(head, u, v, engine).divide(dotProduct(head, v, v, engine)));
+        }
         if (dim1 >= 0 && dim1 == dim2) {
           if (dim1 == 0) {
             return F.CEmptyList;
           }
-          if (head.equals(F.Dot)) {
-            FieldVector<IExpr> u = Convert.list2Vector(ast.arg1());
-            FieldVector<IExpr> v = Convert.list2Vector(ast.arg2());
-            if (u != null && v != null) {
-              return Convert.vector2List(u.projection(v));
-            }
+          FieldVector<IExpr> u = Convert.list2Vector(ast.arg1());
+          FieldVector<IExpr> v = Convert.list2Vector(ast.arg2());
+          FieldVector<IExpr> vConjugate = v.copy();
+          for (int i = 0; i < dim2; i++) {
+            vConjugate.setEntry(i, vConjugate.getEntry(i).conjugate());
           }
-        }
-        IExpr u = ast.arg1();
-        IExpr v = ast.arg2();
-        return v.times(dotProduct(head, u, v, engine).divide(dotProduct(head, v, v, engine)));
-      }
-      if (dim1 >= 0 && dim1 == dim2) {
-        if (dim1 == 0) {
-          return F.CEmptyList;
-        }
-        FieldVector<IExpr> u = Convert.list2Vector(ast.arg1());
-        FieldVector<IExpr> v = Convert.list2Vector(ast.arg2());
-        FieldVector<IExpr> vConjugate = v.copy();
-        for (int i = 0; i < dim2; i++) {
-          vConjugate.setEntry(i, vConjugate.getEntry(i).conjugate());
-        }
 
-        return Convert.vector2List(
-            v.mapMultiply(u.dotProduct(vConjugate).divide(v.dotProduct(vConjugate))));
+          return Convert.vector2List(
+              v.mapMultiply(u.dotProduct(vConjugate).divide(v.dotProduct(vConjugate))));
+        }
+      } catch (ValidateException ve) {
+        return engine.printMessage(ast.topHead(), ve);
       }
       return F.NIL;
     }
