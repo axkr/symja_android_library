@@ -45,24 +45,30 @@ public class Num implements INum {
    * @return a {@code Double} instance representing {@code d}.
    */
   public static Num valueOf(final double d) {
-    int i = (int) d;
-    if (i >= (-1) && i <= 1) {
-      switch (i) {
-        case -1:
-          if (d == (-1.0d)) {
-            return F.CND1;
+    if (d >= (-1.1) && d <= 1.1) {
+      try {
+        int i = DoubleMath.roundToInt(d, RoundingMode.UNNECESSARY); 
+        if (i >= (-1) && i <= 1) {
+          switch (i) {
+            case -1:
+              if (d == (-1.0d)) {
+                return F.CND1;
+              }
+              break;
+            case 0:
+              if (d == 0.0d || d == -0.0d) {
+                return F.CD0;
+              }
+              break;
+            case 1:
+              if (d == 1.0d) {
+                return F.CD1;
+              }
+              break;
           }
-          break;
-        case 0:
-          if (d == 0.0d || d == -0.0d) {
-            return F.CD0;
-          }
-          break;
-        case 1:
-          if (d == 1.0d) {
-            return F.CD1;
-          }
-          break;
+        }
+      } catch (ArithmeticException ae) {
+        //
       }
     }
     return new Num(d);

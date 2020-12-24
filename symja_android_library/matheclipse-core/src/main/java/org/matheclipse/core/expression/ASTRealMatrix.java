@@ -493,9 +493,10 @@ public class ASTRealMatrix extends AbstractAST implements Externalizable, Random
    */
   @Override
   public IExpr[] toArray() {
-    IExpr[] result = new IExpr[matrix.getRowDimension() + 1];
+    final int rowDimension = matrix.getRowDimension();
+    IExpr[] result = new IExpr[rowDimension + 1];
     result[0] = S.List;
-    for (int i = 0; i < result.length; i++) {
+    for (int i = 0; i < rowDimension; i++) {
       result[i + 1] = new ASTRealVector(matrix.getRowVector(i), false);
     }
     return result;

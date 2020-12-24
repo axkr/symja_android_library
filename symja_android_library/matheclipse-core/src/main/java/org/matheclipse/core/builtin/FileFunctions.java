@@ -272,10 +272,14 @@ public class FileFunctions {
       return F.Null;
     }
 
-    private static IExpr getFile(File file, IAST ast, EvalEngine engine) {
+    private static IExpr getFile(File file, IAST ast, String arg1Str, EvalEngine engine) {
       boolean packageMode = engine.isPackageMode();
+      String input = engine.get$Input();
+      String inputFileName = engine.get$InputFileName();
       try {
         engine.setPackageMode(true);
+        engine.set$Input(arg1Str);
+        engine.set$InputFileName(file.getAbsolutePath());
         String str = Files.asCharSource(file, Charset.defaultCharset()).read();
         return Get.loadPackage(engine, str);
       } catch (IOException e) {
@@ -286,13 +290,19 @@ public class FileFunctions {
         return IOFunctions.printMessage(ast.topHead(), "noopen", F.List(ast.arg1()), engine);
       } finally {
         engine.setPackageMode(packageMode);
+        engine.set$Input(input);
+        engine.set$InputFileName(inputFileName);
       }
     }
 
-    private static IExpr getURL(URL url, IAST ast, EvalEngine engine) {
+    private static IExpr getURL(URL url, IAST ast, String arg1Str, EvalEngine engine) {
       boolean packageMode = engine.isPackageMode();
+      String input = engine.get$Input();
+      String inputFileName = engine.get$InputFileName();
       try {
         engine.setPackageMode(true);
+        engine.set$Input(arg1Str);
+        engine.set$InputFileName(url.getPath());
         String str = Resources.toString(url, StandardCharsets.UTF_8);
         return loadPackage(engine, str);
       } catch (IOException e) {
@@ -303,41 +313,45 @@ public class FileFunctions {
         return IOFunctions.printMessage(ast.topHead(), "noopen", F.List(ast.arg1()), engine);
       } finally {
         engine.setPackageMode(packageMode);
+        engine.set$Input(input);
+        engine.set$InputFileName(inputFileName);
       }
     }
 
     @Override
     public IExpr evaluate(final IAST ast, EvalEngine engine) {
       if (Config.isFileSystemEnabled(engine)) {
+        try {
+          if (!(ast.arg1() instanceof IStringX)) {
+            return IOFunctions.printMessage(ast.topHead(), "string", F.List(), engine);
+          }
+          String arg1Str = ((IStringX) ast.arg1()).toString();
+          if (arg1Str.startsWith("https://")
+              || //
+              arg1Str.startsWith("http://")) {
+            URL url;
 
-        if (!(ast.arg1() instanceof IStringX)) {
-          return IOFunctions.printMessage(ast.topHead(), "string", F.List(), engine);
-        }
-        String arg1Str = ((IStringX) ast.arg1()).toString();
-        if (arg1Str.startsWith("https://")
-            || //
-            arg1Str.startsWith("http://")) {
-          URL url;
-          try {
             url = new URL(arg1Str);
-            return getURL(url, ast, engine);
-          } catch (MalformedURLException mue) {
-            if (FEConfig.SHOW_STACKTRACE) {
-              mue.printStackTrace();
-            }
-            return engine.printMessage(ast.topHead() + ": " + mue.getMessage());
+            return getURL(url, ast, arg1Str, engine);
           }
-        }
-        File file = new File(arg1Str);
-        if (file.exists()) {
-          return getFile(file, ast, engine);
-        } else {
-          file = FileSystems.getDefault().getPath(arg1Str).toAbsolutePath().toFile();
+          File file = new File(arg1Str);
           if (file.exists()) {
-            return getFile(file, ast, engine);
+            return getFile(file, ast, arg1Str, engine);
+          } else {
+            file = FileSystems.getDefault().getPath(arg1Str).toAbsolutePath().toFile();
+            if (file.exists()) {
+              return getFile(file, ast, arg1Str, engine);
+            }
           }
+          Validate.checkContextName(ast, 1);
+        } catch (ValidateException ve) {
+          return engine.printMessage(ast.topHead(), ve);
+        } catch (MalformedURLException mue) {
+          if (FEConfig.SHOW_STACKTRACE) {
+            mue.printStackTrace();
+          }
+          return engine.printMessage(ast.topHead() + ": " + mue.getMessage());
         }
-        String contextName = Validate.checkContextName(ast, 1);
         // Cannot open `1`.
         return IOFunctions.printMessage(ast.topHead(), "noopen", F.List(ast.arg1()), engine);
       }
@@ -353,11 +367,15 @@ public class FileFunctions {
   private static final class Needs extends Get {
     @Override
     public IExpr evaluate(final IAST ast, EvalEngine engine) {
-      String contextName = Validate.checkContextName(ast, 1);
-      if (!ContextPath.PACKAGES.contains(contextName)) {
-        return super.evaluate(ast, engine);
+      try {
+        String contextName = Validate.checkContextName(ast, 1);
+        if (!ContextPath.PACKAGES.contains(contextName)) {
+          return super.evaluate(ast, engine);
+        }
+        return F.Null;
+      } catch (ValidateException ve) {
+        return engine.printMessage(ast.topHead(), ve);
       }
-      return F.Null;
     }
 
     @Override
@@ -432,9 +450,7 @@ public class FileFunctions {
           return IOFunctions.printMessage(ast.topHead(), "string", F.List(), engine);
         }
         String arg1 = ((IStringX) ast.arg1()).toString();
-        if (arg1.startsWith("https://")
-            || //
-            arg1.startsWith("http://")) {
+        if (arg1.startsWith("https://") || arg1.startsWith("http://")) {
           URL url;
           try {
             url = new URL(arg1);
@@ -511,7 +527,6 @@ public class FileFunctions {
     public IExpr evaluate(final IAST ast, EvalEngine engine) {
       if (Config.isFileSystemEnabled(engine)) {
 
-        final int argSize = ast.argSize();
         if (!(ast.arg1().isString())) {
           // String expected at position `1` in `2`.
           return IOFunctions.printMessage(ast.topHead(), "string", F.List(F.C1, ast), engine);

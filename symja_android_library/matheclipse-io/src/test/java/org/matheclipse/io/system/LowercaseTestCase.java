@@ -2602,6 +2602,11 @@ public class LowercaseTestCase extends AbstractTestCase {
   }
 
   public void testBinCounts() {
+
+    check(
+        "BinCounts({{1,0}, {0,1}},-Infinity)", //
+        "BinCounts({{1,0},{0,1}},-Infinity)");
+
     check(
         "BinCounts({1,2,3,4,5},{1,7,2})", //
         "{2,2,1}");
@@ -6929,6 +6934,9 @@ public class LowercaseTestCase extends AbstractTestCase {
   }
 
   public void testDerivative() {
+    check(
+        "Derivative(2147483647)[x[[-1,1,1]]]", //
+        "Derivative(2147483647)[x[[-1,1,1]]]");
     check(
         "Derivative(n)[Sin]", //
         "Sin(1/2*n*Pi+#1)&");
@@ -17385,18 +17393,18 @@ public class LowercaseTestCase extends AbstractTestCase {
     check(
         "JSForm(Clip(x))", //
         "\n"
-        + " (function() {\n"
-        + "if (x<-1) { return -1;}\n"
-        + "if (x>1) { return 1;}\n"
-        + " return x;})()\n");
+            + " (function() {\n"
+            + "if (x<-1) { return -1;}\n"
+            + "if (x>1) { return 1;}\n"
+            + " return x;})()\n");
     check(
         "JSForm(Clip(x, {-2, 4}))", //
         "\n"
-        + " (function() {\n"
-        + "if (x<-2) { return -2;}\n"
-        + "if (x>4) { return 4;}\n"
-        + " return x;})()\n"
-        + "");
+            + " (function() {\n"
+            + "if (x<-2) { return -2;}\n"
+            + "if (x>4) { return 4;}\n"
+            + " return x;})()\n"
+            + "");
 
     check(
         "JSForm(E^3-Cos(Pi^2/x))", //
@@ -17405,11 +17413,11 @@ public class LowercaseTestCase extends AbstractTestCase {
     check(
         "Piecewise({{x, 0 < x < 1}, {x^3, 1 < x < 2}}) // JSForm", //
         "\n"
-        + " (function() {\n"
-        + "if (0<x && x<1) { return x;}\n"
-        + "if (1<x && x<2) { return Math.pow(x,3);}\n"
-        + " return 0;})()\n"
-        + "");
+            + " (function() {\n"
+            + "if (0<x && x<1) { return x;}\n"
+            + "if (1<x && x<2) { return Math.pow(x,3);}\n"
+            + " return 0;})()\n"
+            + "");
     check(
         "JSForm(4*EllipticE(x)+KleinInvariantJ(t)^3, \"Mathcell\")", //
         "add(mul(4,ellipticE(x)),pow(kleinJ(t),3))");
@@ -17422,12 +17430,12 @@ public class LowercaseTestCase extends AbstractTestCase {
     check(
         "JSForm( Piecewise({{x^2, x < 0}, {x, x >= 0&&x<1},{Cos(x-1), x >= 1}}) )", //
         "\n"
-        + " (function() {\n"
-        + "if (x<0) { return Math.pow(x,2);}\n"
-        + "if (x>=0&&x<1) { return x;}\n"
-        + "if (x>=1) { return Math.cos(1-x);}\n"
-        + " return 0;})()\n"
-        + "");
+            + " (function() {\n"
+            + "if (x<0) { return Math.pow(x,2);}\n"
+            + "if (x>=0&&x<1) { return x;}\n"
+            + "if (x>=1) { return Math.cos(1-x);}\n"
+            + " return 0;})()\n"
+            + "");
     check(
         "JSForm(ConditionalExpression(Log(1- q), 0 <=q<=1))", //
         "((0<=q && q<=1) ? (Math.log(1-q)) : ( Number.NaN ))");
@@ -19835,6 +19843,33 @@ public class LowercaseTestCase extends AbstractTestCase {
 
   public void testMapAt() {
     check(
+        "MapAt(f, {{a, b, c}, {d, e}}, {All, 2})", //
+        "{{a,f(b),c},{d,f(e)}}");
+    check(
+        "MapAt(f, <|\"a\" -> 1, \"b\" -> 2, \"c\" -> 3, \"d\" -> 4, \"e\" -> 5|>, Key(\"b\"))", //
+        "<|a->1,b->f(2),c->3,d->4,e->5|>");
+    check(
+        "MapAt(f, <|\"a\" -> 1, \"b\" -> 2, \"c\" -> 3, \"d\" -> 4, \"e\" -> 5|>, \"b\")", //
+        "<|a->1,b->f(2),c->3,d->4,e->5|>");
+    check(
+        "MapAt(f, <|\"a\" -> 1, \"b\" -> 2, \"c\" -> 3, \"d\" -> 4, \"e\" -> 5|>, 3)", //
+        "<|a->1,b->2,c->f(3),d->4,e->5|>");
+    check(
+        "MapAt(f, <|\"a\" -> 1, \"b\" -> 2, \"c\" -> 3, \"d\" -> 4, \"e\" -> 5|>, -3)", //
+        "<|a->1,b->2,c->f(3),d->4,e->5|>");
+    check(
+        "MapAt(f, {{a, b, c}, {d, e}}, {2, 1})", //
+        "{{a,b,c},{f(d),e}}");
+    check(
+        "MapAt(f, {a, b, c, d}, {{1}, {4}})", //
+        "{f(a),b,c,f(d)}");
+    check(
+        "MapAt(f,3)[x]", //
+        "MapAt(f,3)[x]");
+    check(
+        "MapAt(f,3)[{a, b, c, d}]", //
+        "{a,b,f(c),d}");
+    check(
         "MapAt(f, a+b+c+d, 2)", //
         "a+c+d+f(b)");
     check(
@@ -19856,11 +19891,17 @@ public class LowercaseTestCase extends AbstractTestCase {
         "MapAt(f, {a, b, c, d}, -6)", //
         "MapAt(f,{a,b,c,d},-6)");
     check(
+        "MapAt(f, {a, b, c, d, e}, -6)", //
+        "f(List)[a,b,c,d,e]");
+    check(
         "MapAt(f, {a, b, c, d}, 2)", //
         "{a,f(b),c,d}");
   }
 
   public void testMapIndexed() {
+    check(
+        "MapIndexed(f)[x]", //
+        "x");
     check(
         "MapIndexed(f, {{{{a, b}}}}, -3)", //
         "{f({f({{a,b}},{1,1})},{1})}");
@@ -37401,6 +37442,10 @@ public class LowercaseTestCase extends AbstractTestCase {
     check(
         "Clear(a);With({t = a}, With({u = b}, t + u))", //
         "a+b");
+
+    check(
+        "With({x = a}, (1 + x^2) &)", //
+        "1+a^2&");
   }
 
   public void testXor() {

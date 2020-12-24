@@ -162,139 +162,143 @@ public class Sum extends ListFunctions.Table implements SumRules {
       return ((IAST) arg1).mapThread(ast, 1);
     }
     if (ast.size() > 2) {
-      IAST list;
-      if (ast.last().isList()) {
-        list = (IAST) ast.last();
-      } else {
-        list = F.List(ast.last());
-      }
-      if (list.isAST1()) {
-        // indefinite sum case
-        IExpr variable = list.arg1();
-        if (ast.arg1().isFree(variable) && variable.isVariable()) {
-          return indefiniteSum(ast, variable);
-        }
-      }
-
-      VariablesSet variablesSet = determineIteratorExprVariables(ast);
-      IAST varList = variablesSet.getVarList();
-      IIterator<IExpr> iterator = null;
-      IExpr argN = ast.last();
-      // try {
-      IExpr temp = evaluateTableThrow(ast, Plus(), Plus(), engine);
-      if (temp.isPresent()) {
-        return temp;
-      }
-
-      if (argN.isList()) {
-
-        argN = evalBlockWithoutReap(argN, varList);
-        if (argN.isList()) {
-          iterator = Iterator.create((IAST) argN, ast.argSize(), engine);
+      try {
+        IAST list;
+        if (ast.last().isList()) {
+          list = (IAST) ast.last();
         } else {
-          if (argN.isReal()) {
-            iterator = Iterator.create(F.List(argN), ast.argSize(), engine);
+          list = F.List(ast.last());
+        }
+        if (list.isAST1()) {
+          // indefinite sum case
+          IExpr variable = list.arg1();
+          if (ast.arg1().isFree(variable) && variable.isVariable()) {
+            return indefiniteSum(ast, variable);
+          }
+        }
+
+        VariablesSet variablesSet = determineIteratorExprVariables(ast);
+        IAST varList = variablesSet.getVarList();
+        IIterator<IExpr> iterator = null;
+        IExpr argN = ast.last();
+        // try {
+        IExpr temp = evaluateTableThrow(ast, Plus(), Plus(), engine);
+        if (temp.isPresent()) {
+          return temp;
+        }
+
+        if (argN.isList()) {
+
+          argN = evalBlockWithoutReap(argN, varList);
+          if (argN.isList()) {
+            iterator = Iterator.create((IAST) argN, ast.argSize(), engine);
           } else {
-            // Non-list iterator `1` at position `2` does not evaluate to a real numeric value.
-            return IOFunctions.printMessage(
-                ast.topHead(), "nliter", F.List(argN, F.ZZ(ast.size() - 1)), engine);
-          }
-        }
-
-        // if (iterator.isSetIterator() || iterator.isNumericFunction()) {
-        // IAST resultList = Plus();
-        // temp = evaluateLast(ast.arg1(), iterator, resultList, C0);
-        // if (temp.isPresent() && !temp.equals(resultList)) {
-        // if (ast.isAST2()) {
-        // return temp;
-        // } else {
-        // IAST result = ast.clone();
-        // result.remove(ast.argSize());
-        // result.set(1, temp);
-        // return result;
-        // }
-        // }
-        // }
-
-      }
-      // } catch (final ValidateException ve) {
-      // if (FEConfig.SHOW_STACKTRACE) {
-      // ve.printStackTrace();
-      // }
-      // // see level specification
-      // return engine.printMessage(ve.getMessage(ast.topHead()));
-      // }
-
-      // arg1 = evalBlockExpandWithoutReap(ast.arg1(), varList);
-      if (arg1.isTimes()) {
-        if (variablesSet.size() > 0) {
-          temp = collectConstantFactors(ast, (IAST) arg1, variablesSet);
-          if (temp.isPresent()) {
-            return temp;
-          }
-        }
-      }
-
-      if (iterator != null) {
-        if (arg1.isZero()) {
-          // Sum(0, {k, n, m})
-          return F.C0;
-        }
-        if (iterator.isValidVariable() && iterator.getUpperLimit().isInfinity()) {
-          if (arg1.isPositiveResult() && arg1.isIntegerResult()) {
-            // Sum(n, {k, a, Infinity}) ;n is positive integer
-            return F.CInfinity;
-          }
-          if (arg1.isNegativeResult() && arg1.isIntegerResult()) {
-            // Sum(n, {k, a, Infinity}) ;n is negative integer
-            return F.CNInfinity;
-          }
-        }
-
-        if (iterator.isValidVariable() && iterator.isNumericFunction()) {
-          IAST resultList = Plus();
-          temp = evaluateLast(ast.arg1(), iterator, resultList, F.C0);
-          if (!temp.isPresent() || temp.equals(resultList)) {
-            return F.NIL;
-          }
-          if (ast.isAST2()) {
-            return temp;
-          } else {
-            IASTAppendable result = ast.removeAtClone(ast.argSize());
-            result.set(1, temp);
-            return result;
-          }
-        }
-
-        if (iterator.isValidVariable() && !iterator.isNumericFunction()) {
-          if (iterator.getStep().isOne()) {
-            if (iterator.getUpperLimit().isDirectedInfinity()) {
-              temp = definiteSumInfinity(arg1, iterator, (IAST) argN, engine);
+            if (argN.isReal()) {
+              iterator = Iterator.create(F.List(argN), ast.argSize(), engine);
             } else {
-              temp = definiteSum(arg1, iterator, (IAST) argN, engine);
+              // Non-list iterator `1` at position `2` does not evaluate to a real numeric value.
+              return IOFunctions.printMessage(
+                  ast.topHead(), "nliter", F.List(argN, F.ZZ(ast.size() - 1)), engine);
             }
+          }
+
+          // if (iterator.isSetIterator() || iterator.isNumericFunction()) {
+          // IAST resultList = Plus();
+          // temp = evaluateLast(ast.arg1(), iterator, resultList, C0);
+          // if (temp.isPresent() && !temp.equals(resultList)) {
+          // if (ast.isAST2()) {
+          // return temp;
+          // } else {
+          // IAST result = ast.clone();
+          // result.remove(ast.argSize());
+          // result.set(1, temp);
+          // return result;
+          // }
+          // }
+          // }
+
+        }
+        // } catch (final ValidateException ve) {
+        // if (FEConfig.SHOW_STACKTRACE) {
+        // ve.printStackTrace();
+        // }
+        // // see level specification
+        // return engine.printMessage(ve.getMessage(ast.topHead()));
+        // }
+
+        // arg1 = evalBlockExpandWithoutReap(ast.arg1(), varList);
+        if (arg1.isTimes()) {
+          if (variablesSet.size() > 0) {
+            temp = collectConstantFactors(ast, (IAST) arg1, variablesSet);
             if (temp.isPresent()) {
-              if (ast.isAST2()) {
-                return temp;
+              return temp;
+            }
+          }
+        }
+
+        if (iterator != null) {
+          if (arg1.isZero()) {
+            // Sum(0, {k, n, m})
+            return F.C0;
+          }
+          if (iterator.isValidVariable() && iterator.getUpperLimit().isInfinity()) {
+            if (arg1.isPositiveResult() && arg1.isIntegerResult()) {
+              // Sum(n, {k, a, Infinity}) ;n is positive integer
+              return F.CInfinity;
+            }
+            if (arg1.isNegativeResult() && arg1.isIntegerResult()) {
+              // Sum(n, {k, a, Infinity}) ;n is negative integer
+              return F.CNInfinity;
+            }
+          }
+
+          if (iterator.isValidVariable() && iterator.isNumericFunction()) {
+            IAST resultList = Plus();
+            temp = evaluateLast(ast.arg1(), iterator, resultList, F.C0);
+            if (!temp.isPresent() || temp.equals(resultList)) {
+              return F.NIL;
+            }
+            if (ast.isAST2()) {
+              return temp;
+            } else {
+              IASTAppendable result = ast.removeAtClone(ast.argSize());
+              result.set(1, temp);
+              return result;
+            }
+          }
+
+          if (iterator.isValidVariable() && !iterator.isNumericFunction()) {
+            if (iterator.getStep().isOne()) {
+              if (iterator.getUpperLimit().isDirectedInfinity()) {
+                temp = definiteSumInfinity(arg1, iterator, (IAST) argN, engine);
+              } else {
+                temp = definiteSum(arg1, iterator, (IAST) argN, engine);
               }
+              if (temp.isPresent()) {
+                if (ast.isAST2()) {
+                  return temp;
+                }
+                IASTAppendable result = ast.removeAtClone(ast.argSize());
+                result.set(1, temp);
+                return result;
+              }
+            }
+          }
+
+        } else if (argN.isSymbol()) {
+          temp = indefiniteSum(arg1, (ISymbol) argN);
+          if (temp.isPresent()) {
+            if (ast.isAST2()) {
+              return temp;
+            } else {
               IASTAppendable result = ast.removeAtClone(ast.argSize());
               result.set(1, temp);
               return result;
             }
           }
         }
-
-      } else if (argN.isSymbol()) {
-        temp = indefiniteSum(arg1, (ISymbol) argN);
-        if (temp.isPresent()) {
-          if (ast.isAST2()) {
-            return temp;
-          } else {
-            IASTAppendable result = ast.removeAtClone(ast.argSize());
-            result.set(1, temp);
-            return result;
-          }
-        }
+      } catch (ValidateException ve) {
+        return engine.printMessage(ast.topHead(), ve);
       }
     }
     return F.NIL;

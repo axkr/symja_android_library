@@ -633,7 +633,7 @@ public class Convert {
   /**
    * Converts a FieldVector to the sparse array or list expression representation.
    *
-   * @param matrix
+   * @param vector
    * @return <code>F.NIL</code> if no conversion was possible
    */
   public static IExpr vector2Expr(final FieldVector<IExpr> vector) {

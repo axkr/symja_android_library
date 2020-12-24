@@ -107,6 +107,6 @@ public class NumberColumnFormatter {
   }
 
   private boolean isMissingValue(double value) {
-    return value != value;
+    return Double.isNaN(value);
   }
 }

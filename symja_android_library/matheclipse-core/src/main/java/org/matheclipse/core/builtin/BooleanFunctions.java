@@ -1053,15 +1053,19 @@ public final class BooleanFunctions {
 
     @Override
     public IExpr evaluate(final IAST ast, EvalEngine engine) {
-      IAST variables;
-      if (ast.isAST2()) {
-        variables = ast.arg2().orNewList();
-      } else {
-        variables = BooleanVariables.booleanVariables(ast.arg1());
-      }
+      try {
+        IAST variables;
+        if (ast.isAST2()) {
+          variables = ast.arg2().orNewList();
+        } else {
+          variables = BooleanVariables.booleanVariables(ast.arg1());
+        }
 
-      BooleanTableParameter btp = new BooleanTableParameter(variables, engine);
-      return btp.booleanTable(ast.arg1(), 1);
+        BooleanTableParameter btp = new BooleanTableParameter(variables, engine);
+        return btp.booleanTable(ast.arg1(), 1);
+      } catch (ValidateException ve) {
+        return engine.printMessage(ast.topHead(), ve);
+      }
     }
 
     public int[] expectedArgSize(IAST ast) {

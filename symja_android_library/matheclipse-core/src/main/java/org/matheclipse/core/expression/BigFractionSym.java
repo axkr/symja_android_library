@@ -56,12 +56,11 @@ public class BigFractionSym extends AbstractFractionSym {
    * @param denom Denominator
    */
   BigFractionSym(BigInteger nom, BigInteger denom) {
-    BigInteger temp = nom;
-    int bitLength = temp.bitLength();
+    int bitLength = nom.bitLength();
     if (Config.MAX_BIT_LENGTH < bitLength) {
       BigIntegerLimitExceeded.throwIt(bitLength);
-    }
-    temp = denom;
+    } 
+    bitLength = denom.bitLength();
     if (Config.MAX_BIT_LENGTH < bitLength) {
       BigIntegerLimitExceeded.throwIt(bitLength);
     }

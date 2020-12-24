@@ -384,7 +384,7 @@ public class AttributeFunctions {
     /**
      * Add the attribute to the symbols existing attributes bit-set.
      *
-     * @param sym
+     * @param expr
      * @param attributes
      * @param engine
      * @return {@link F#NIL} if <code>expr</code> is not a symbol

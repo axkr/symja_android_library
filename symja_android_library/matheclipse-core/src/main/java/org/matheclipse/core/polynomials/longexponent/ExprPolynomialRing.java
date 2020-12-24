@@ -172,16 +172,11 @@ public class ExprPolynomialRing implements RingFactory<ExprPolynomial> {
      */
     @Override
     public boolean equals(Object o) {
-      ExprPolynomialComparator pc = null;
-      try {
-        pc = (ExprPolynomialComparator) o;
-      } catch (JASConversionException ignored) {
-        return false;
+      if (o instanceof ExprPolynomialComparator) {
+        ExprPolynomialComparator pc = (ExprPolynomialComparator) o;
+        return tord.equals(pc.tord);
       }
-      if (pc == null) {
-        return false;
-      }
-      return tord.equals(pc.tord);
+      return false;
     }
 
     /**
@@ -422,7 +417,7 @@ public class ExprPolynomialRing implements RingFactory<ExprPolynomial> {
     if (exprPoly instanceof IAST) {
       final IAST ast = (IAST) exprPoly;
       if (ast.isDirectedInfinity()) {
-        throw new JASConversionException( );
+        throw new JASConversionException();
       }
       ExprPolynomial result = getZero();
       ExprPolynomial p = getZero();

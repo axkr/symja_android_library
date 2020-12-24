@@ -1071,7 +1071,7 @@ public interface IAST extends IExpr, Iterable<IExpr> {
    * plusAST.map(Functors.replace1st(F.D(null, dAST.arg2())));
    * </pre>
    *
-   * @param functor a unary function
+   * @param function a unary function
    * @return
    */
   public IAST map(final Function<IExpr, IExpr> function);

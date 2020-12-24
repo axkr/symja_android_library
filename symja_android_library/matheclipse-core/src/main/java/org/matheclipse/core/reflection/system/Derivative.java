@@ -3,12 +3,11 @@ package org.matheclipse.core.reflection.system;
 import java.util.HashMap;
 import java.util.Map;
 
-import javax.print.attribute.standard.PrinterMessageFromOperator;
-
 import org.matheclipse.core.builtin.IOFunctions;
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.interfaces.AbstractFunctionEvaluator;
 import org.matheclipse.core.expression.F;
+import org.matheclipse.core.expression.S;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IASTAppendable;
 import org.matheclipse.core.interfaces.IExpr;
@@ -234,6 +233,15 @@ public class Derivative extends AbstractFunctionEvaluator implements DerivativeR
     if (n.isOne()) {
       dExpr = F.D(newFunction, symbol);
     } else {
+      int ni = n.toIntDefault();
+      if (ni > 0) {
+        int iterationLimit = engine.getIterationLimit();
+        if (iterationLimit > 0 && iterationLimit < ni) {
+          // Iteration limit of `1` exceeded.
+          return IOFunctions.printMessage(
+              S.Derivative, "itlim", F.List(F.ZZ(iterationLimit)), engine);
+        }
+      }
       dExpr = F.D(newFunction, F.List(symbol, n));
     }
     dExpr.setEvalFlags(IAST.IS_DERIVATIVE_EVALED);

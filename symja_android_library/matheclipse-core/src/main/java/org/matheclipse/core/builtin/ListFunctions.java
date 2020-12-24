@@ -2141,17 +2141,22 @@ public final class ListFunctions {
         return F.NIL;
       }
       if (ast.isAST1()) {
-        IExpr arg1 = engine.evaluate(ast.arg1());
+        // print no message if args have wrong type
+        try {
+          IExpr arg1 = engine.evaluate(ast.arg1());
 
-        if (arg1.isListOfRules(false)) {
-          return DispatchExpr.newInstance((IAST) arg1);
-        } else if (arg1.isRuleAST()) {
-          return DispatchExpr.newInstance(F.List(arg1));
-        } else if (arg1.isAssociation()) {
-          return DispatchExpr.newInstance((IAssociation) arg1);
-        } else {
-          throw new ArgumentTypeException(
-              "rule expressions (x->y) expected instead of " + arg1.toString());
+          if (arg1.isListOfRules(false)) {
+            return DispatchExpr.newInstance((IAST) arg1);
+          } else if (arg1.isRuleAST()) {
+            return DispatchExpr.newInstance(F.List(arg1));
+          } else if (arg1.isAssociation()) {
+            return DispatchExpr.newInstance((IAssociation) arg1);
+            //          } else {
+            //            throw new ArgumentTypeException(
+            //                "rule expressions (x->y) expected instead of " + arg1.toString());
+          }
+        } catch (ValidateException ve) {
+          //          return engine.printMessage(ast.topHead(), ve);
         }
       }
       return F.NIL;
@@ -5173,26 +5178,24 @@ public final class ListFunctions {
 
     @Override
     public IExpr evaluate(IAST ast, EvalEngine engine) {
-      //      if (ast.isAST1()) {
-      //        ast = F.operatorForm1Append(ast);
-      //        if (!ast.isPresent()) {
-      //          return F.NIL;
-      //        }
-      //      }
-      if (ast.size() < 3 || ast.size() > 4) {
-        return F.NIL;
-      }
-      IExpr arg1 = ast.arg1();
-      IExpr rules = engine.evaluate(ast.arg2());
-      if (rules.isListOfLists()) {
-        return ((IAST) rules).mapThread(ast, 2);
-      }
+      try {
+        if (ast.size() < 3 || ast.size() > 4) {
+          return F.NIL;
+        }
+        IExpr arg1 = ast.arg1();
+        IExpr rules = engine.evaluate(ast.arg2());
+        if (rules.isListOfLists()) {
+          return ((IAST) rules).mapThread(ast, 2);
+        }
 
-      if (ast.isAST3()) {
-        // arg3 should contain a "level specification":
-        return replaceExprWithLevelSpecification(ast, arg1, rules, ast.arg3(), engine);
+        if (ast.isAST3()) {
+          // arg3 should contain a "level specification":
+          return replaceExprWithLevelSpecification(ast, arg1, rules, ast.arg3(), engine);
+        }
+        return replaceExpr(ast, arg1, rules, engine);
+      } catch (ValidateException ve) {
+        return engine.printMessage(ast.topHead(), ve);
       }
-      return replaceExpr(ast, arg1, rules, engine);
     }
 
     public int[] expectedArgSize(IAST ast) {
@@ -5249,21 +5252,19 @@ public final class ListFunctions {
 
     @Override
     public IExpr evaluate(IAST ast, EvalEngine engine) {
-      //      if (ast.isAST1()) {
-      //        ast = F.operatorForm1Append(ast);
-      //        if (!ast.isPresent()) {
-      //          return F.NIL;
-      //        }
-      //      }
+
       if (ast.size() == 3) {
         IExpr arg1 = ast.arg1();
         IExpr arg2 = ast.arg2();
         if (arg2.isListOfLists()) {
           return ((IAST) arg2).mapThread(ast, 2);
         }
-
-        VisitorReplaceAll visitor = VisitorReplaceAll.createVisitor(arg1, arg2, ast);
-        return arg1.replaceAll(visitor).orElse(arg1);
+        try {
+          VisitorReplaceAll visitor = VisitorReplaceAll.createVisitor(arg1, arg2, ast);
+          return arg1.replaceAll(visitor).orElse(arg1);
+        } catch (ValidateException ve) {
+          return engine.printMessage(ast.topHead(), ve);
+        }
       }
       return F.NIL;
     }
@@ -5349,12 +5350,6 @@ public final class ListFunctions {
       if (!ToggleFeature.REPLACE_LIST) {
         return F.NIL;
       }
-      //      if (ast.isAST1()) {
-      //        ast = F.operatorForm1Append(ast);
-      //        if (!ast.isPresent()) {
-      //          return F.NIL;
-      //        }
-      //      }
 
       if (ast.size() == 2 && ast.head().isAST(F.ReplaceList, 2)) {
         return F.ReplaceList(ast.first(), ast.head().first());
@@ -5372,6 +5367,8 @@ public final class ListFunctions {
           }
           IASTAppendable result = F.ListAlloc();
           return replaceExpr(ast, arg1, rules, result, maxNumberOfResults, engine);
+        } catch (ValidateException ve) {
+          return engine.printMessage(ast.topHead(), ve);
         } catch (ArithmeticException ae) {
           return engine.printMessage("ReplaceList: " + ae.getMessage());
         }
@@ -5465,43 +5462,40 @@ public final class ListFunctions {
 
     @Override
     public IExpr evaluate(IAST ast, EvalEngine engine) {
-      //      if (ast.isAST1()) {
-      //        ast = F.operatorForm1Append(ast);
-      //        if (!ast.isPresent()) {
-      //          return F.NIL;
-      //        }
-      //      }
-
-      if (ast.isAST3()) {
-        IExpr result = ast.arg1();
-        if (ast.arg3().isList()) {
-          for (IExpr subList : (IAST) ast.arg3()) {
-            IExpr expr = result.replacePart(F.Rule(subList, ast.arg2()));
-            if (expr.isPresent()) {
-              result = expr;
+      try {
+        if (ast.isAST3()) {
+          IExpr result = ast.arg1();
+          if (ast.arg3().isList()) {
+            for (IExpr subList : (IAST) ast.arg3()) {
+              IExpr expr = result.replacePart(F.Rule(subList, ast.arg2()));
+              if (expr.isPresent()) {
+                result = expr;
+              }
+            }
+            return result;
+          }
+          return result.replacePart(F.Rule(ast.arg3(), ast.arg2())).orElse(result);
+        }
+        if (ast.arg2().isList()) {
+          IExpr result = ast.arg1();
+          for (IExpr subList : (IAST) ast.arg2()) {
+            if (subList.isRuleAST()) {
+              IExpr expr = result.replacePart((IAST) subList);
+              if (expr.isPresent()) {
+                result = expr;
+              }
             }
           }
           return result;
         }
-        return result.replacePart(F.Rule(ast.arg3(), ast.arg2())).orElse(result);
-      }
-      if (ast.arg2().isList()) {
         IExpr result = ast.arg1();
-        for (IExpr subList : (IAST) ast.arg2()) {
-          if (subList.isRuleAST()) {
-            IExpr expr = result.replacePart((IAST) subList);
-            if (expr.isPresent()) {
-              result = expr;
-            }
-          }
+        if (ast.arg2().isRuleAST()) {
+          return ast.arg1().replacePart((IAST) ast.arg2()).orElse(ast.arg1());
         }
         return result;
+      } catch (ValidateException ve) {
+        return engine.printMessage(ast.topHead(), ve);
       }
-      IExpr result = ast.arg1();
-      if (ast.arg2().isRuleAST()) {
-        return ast.arg1().replacePart((IAST) ast.arg2()).orElse(ast.arg1());
-      }
-      return result;
     }
 
     @Override
@@ -5569,21 +5563,17 @@ public final class ListFunctions {
 
     @Override
     public IExpr evaluate(IAST ast, EvalEngine engine) {
-      //      if (ast.isAST1()) {
-      //        ast = F.operatorForm1Append(ast);
-      //        if (!ast.isPresent()) {
-      //          return F.NIL;
-      //        }
-      //      }
-
       IExpr arg1 = ast.arg1();
       IExpr arg2 = ast.arg2();
       if (arg2.isListOfLists()) {
         return ((IAST) arg2).mapThread(ast, 2);
       }
-
-      VisitorReplaceAll visitor = VisitorReplaceAll.createVisitor(arg1, arg2, ast);
-      return arg1.replaceRepeated(visitor);
+      try {
+        VisitorReplaceAll visitor = VisitorReplaceAll.createVisitor(arg1, arg2, ast);
+        return arg1.replaceRepeated(visitor);
+      } catch (ValidateException ve) {
+        return engine.printMessage(ast.topHead(), ve);
+      }
     }
 
     @Override
@@ -6364,7 +6354,7 @@ public final class ListFunctions {
 
     @Override
     public IExpr evaluate(final IAST ast, EvalEngine engine) {
-      return evaluateTable(ast, List(), List(), engine);
+      return evaluateTable(ast, F.CEmptyList, F.CEmptyList, engine);
     }
 
     @Override
@@ -6406,6 +6396,8 @@ public final class ListFunctions {
                   iterList, resultList, new TableFunction(engine, ast.arg1()), defaultValue);
           return generator.table();
         }
+      } catch (ValidateException ve) {
+        return engine.printMessage(ast.topHead(), ve);
       } catch (final ArrayIndexOutOfBoundsException e) {
         if (FEConfig.SHOW_STACKTRACE) {
           e.printStackTrace();

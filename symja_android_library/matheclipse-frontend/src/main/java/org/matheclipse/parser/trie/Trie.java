@@ -626,7 +626,7 @@ public class Trie<S, T> implements Map<S, T>, Serializable {
       }
 
       // Potentially PARTIAL match
-      if (max != nodeLength && matches == max) {
+      if (max != nodeLength) {
         return (match != TrieMatch.PARTIAL ? null : node);
       }
 

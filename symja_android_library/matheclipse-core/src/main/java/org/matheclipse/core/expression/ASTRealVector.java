@@ -475,9 +475,10 @@ public class ASTRealVector extends AbstractAST implements Externalizable, Random
    */
   @Override
   public IExpr[] toArray() {
-    IExpr[] result = new IExpr[vector.getDimension() + 1];
+    final int dimension = vector.getDimension();
+    IExpr[] result = new IExpr[dimension + 1];
     result[0] = S.List;
-    for (int i = 0; i < result.length; i++) {
+    for (int i = 0; i < dimension; i++) {
       result[i + 1] = F.num(vector.getEntry(i));
     }
     return result;

@@ -269,7 +269,7 @@ public interface IASTAppendable extends IASTMutable {
   /**
    * Adds the specified rule at the end of this association.
    *
-   * @param rule the rule to add at the end of this association
+   * @param expr the rule to add at the end of this association
    * @return always true
    */
   default void appendRule(IExpr expr) {

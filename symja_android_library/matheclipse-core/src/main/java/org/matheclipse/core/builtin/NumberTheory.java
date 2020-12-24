@@ -2679,19 +2679,23 @@ public final class NumberTheory {
       if (ast.arg1().isList()) {
         IAST list = (IAST) ast.arg1();
         if (list.size() > 1) {
-          int size = list.argSize();
-          if (list.forAll(x -> x.isReal())) {
+          try {
+            int size = list.argSize();
+            if (list.forAll(x -> x.isReal())) {
+              IExpr result = list.get(size--);
+              for (int i = size; i >= 1; i--) {
+                result = list.get(i).plus(result.power(-1));
+              }
+              return result;
+            }
             IExpr result = list.get(size--);
             for (int i = size; i >= 1; i--) {
-              result = list.get(i).plus(result.power(-1));
+              result = F.Plus(list.get(i), F.Power(result, F.CN1));
             }
             return result;
+          } catch (ValidateException ve) {
+            return engine.printMessage(ast.topHead(), ve);
           }
-          IExpr result = list.get(size--);
-          for (int i = size; i >= 1; i--) {
-            result = F.Plus(list.get(i), F.Power(result, F.CN1));
-          }
-          return result;
         }
       }
       return F.NIL;
@@ -4762,7 +4766,7 @@ public final class NumberTheory {
             // {n,2}==2^(n-1)-1
             return Subtract(Power(C2, Subtract(nArg1, C1)), C1);
           }
-          
+
           int n = Validate.checkNonNegativeIntType(ast, 1);
           int k = ki.toIntDefault(0);
           if (k != 0) {
