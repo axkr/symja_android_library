@@ -1,6 +1,7 @@
 package org.matheclipse.io.system;
 
 import org.matheclipse.core.expression.F;
+import org.matheclipse.core.expression.S;
 import org.matheclipse.core.interfaces.IExpr;
 
 /** Test JShell examples */
@@ -10,6 +11,13 @@ public class JShellExampleTestCase extends AbstractTestCase {
   }
 
   public void test001() {
+	    IExpr x = S.FactorInteger.ofObject(Integer.valueOf(42));
+	    assertEquals(
+	        x.toString(),
+	        "{{2,1},{3,1},{7,1}}");
+	  }
+  
+  public void test002() {
     String str = F.usage("Im");
     assertEquals(
         str,

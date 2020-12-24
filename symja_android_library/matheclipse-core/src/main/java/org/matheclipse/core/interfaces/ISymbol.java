@@ -4,6 +4,8 @@ import java.io.IOException;
 import java.util.function.DoubleFunction;
 import java.util.function.Function;
 
+import org.matheclipse.core.convert.Convert;
+import org.matheclipse.core.convert.Object2Expr;
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.expression.Context;
 import org.matheclipse.core.expression.F;
@@ -520,6 +522,13 @@ public interface ISymbol extends IExpr {
     return of(array);
   }
 
+  /**
+   * Evaluate this symbol for the arguments as function <code>symbol(arg1, arg2, .... ,argN)</code>,
+   * The <code>args</code> are converted from Java double to IExpr values.
+   *
+   * @param args
+   * @return
+   */
   default double ofN(double... args) {
     IExpr[] array = new IExpr[args.length];
     for (int i = 0; i < array.length; i++) {
@@ -528,6 +537,30 @@ public interface ISymbol extends IExpr {
     return of(array).evalDouble();
   }
 
+  /**
+   * Evaluate this symbol for the arguments as function <code>symbol(arg1, arg2, .... ,argN)</code>,
+   * The <code>args</code> are converted from Java <code>String</code> to <code>IStringX</code>
+   * values.
+   *
+   * @param args the string arguments of the function
+   * @return
+   */
+  default IExpr of(String... args) {
+    IExpr[] array = new IExpr[args.length];
+    for (int i = 0; i < array.length; i++) {
+      array[i] = F.stringx(args[i]);
+    }
+    return of(array);
+  }
+
+  /**
+   * Evaluate this symbol for the arguments as function <code>symbol(arg1, arg2, .... ,argN)</code>,
+   * The <code>args</code> are converted from Java boolean to {@link S#True} or {@link S#False}
+   * values.
+   *
+   * @param args
+   * @return
+   */
   default IExpr of(boolean... args) {
     IExpr[] array = new IExpr[args.length];
     for (int i = 0; i < array.length; i++) {
@@ -564,6 +597,22 @@ public interface ISymbol extends IExpr {
    * @return if the result isn't a boolean value return <code>false</code>.
    */
   public boolean ofQ(IExpr... args);
+
+  /**
+   * Evaluate this symbol for the arguments as function <code>symbol(arg1, arg2, .... ,argN)</code>,
+   * The objects are converted from Java form to IExpr for according to method {@link
+   * Object2Expr#convert(Object)}.
+   *
+   * @param args the objects which should be used as arguments
+   * @return
+   */
+  default IExpr ofObject(Object... args) {
+    IExpr[] array = new IExpr[args.length];
+    for (int i = 0; i < array.length; i++) {
+      array[i] = Object2Expr.convert(args[i]);
+    }
+    return of(array);
+  }
 
   /**
    * Get the ordinal number of this built-in symbol in the enumeration of built-in symbols. If this
