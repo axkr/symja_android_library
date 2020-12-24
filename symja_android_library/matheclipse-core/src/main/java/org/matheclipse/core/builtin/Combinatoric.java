@@ -1759,9 +1759,9 @@ public final class Combinatoric {
         IAST temp = F.List();
         tuplesOfLists(list, 1, result, temp, ast, engine);
         return result;
-      } else if (ast.isAST2() && arg1.isAST() && ast.arg2().isInteger()) {
-        IExpr arg2 = ast.arg2();
-        int k = ((IInteger) arg2).toIntDefault(Integer.MIN_VALUE);
+        
+      } else if (ast.isAST2() && arg1.isAST() ) {
+        int k = ast.arg2().toIntDefault();
         if (k >= 0) {
           IASTAppendable result = F.ListAlloc(16);
           IAST temp = F.ast(arg1.head());

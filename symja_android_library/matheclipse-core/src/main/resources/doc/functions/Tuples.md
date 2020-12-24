@@ -28,3 +28,17 @@ See
 >> Thread(Tuples({0, 1}, 2) -> {a, b, c, d}) 
 {{0,0}->a,{0,1}->b,{1,0}->c,{1,1}->d}
 ```
+
+The head of list need not be `List`:
+
+```
+>> Tuples(f(a, b, c), 2) 
+{f(a,a),f(a,b),f(a,c),f(b,a),f(b,b),f(b,c),f(c,a),f(c,b),f(c,c)}
+```
+
+However, when specifying multiple expressions, `List` is always used:
+
+```
+>> Tuples({f(a, b), g(x, y)})
+{{a,x},{a,y},{b,x},{b,y}}
+```
