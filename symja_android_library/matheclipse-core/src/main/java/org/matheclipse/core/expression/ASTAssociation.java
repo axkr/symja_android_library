@@ -7,12 +7,14 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
+import java.util.Locale;
 import java.util.function.Consumer;
 import java.util.function.Function;
 import java.util.function.ObjIntConsumer;
 import java.util.function.Predicate;
 import java.util.function.Supplier;
 
+import org.matheclipse.core.convert.AST2Expr;
 import org.matheclipse.core.eval.EvalAttributes;
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.exception.ArgumentTypeException;
@@ -23,6 +25,7 @@ import org.matheclipse.core.interfaces.IAssociation;
 import org.matheclipse.core.interfaces.IBuiltInSymbol;
 import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.visit.IVisitor;
+import org.matheclipse.parser.client.FEConfig;
 
 import it.unimi.dsi.fastutil.objects.Object2IntMap;
 import it.unimi.dsi.fastutil.objects.Object2IntOpenHashMap;
@@ -199,23 +202,6 @@ public class ASTAssociation extends AST implements IAssociation {
   public IExpr arg5() {
     return get(5);
   }
-
-  /**
-   * Get the index of the left-hand-side of a rule. If the returned value is<code>0</code> no value
-   * was found.
-   *
-   * @param expr
-   * @return if <code>0</code> no value was found
-   */
-  // private int getIndex(IExpr expr) {
-  // return keyToIndexMap.getInt(expr);
-  // }
-
-  //  @Override
-  //  public IAST clone() {
-  //	  throw new UnsupportedOperationException();
-  ////    return copy();
-  //  }
 
   @Override
   public ASTAssociation copy() {
@@ -528,6 +514,66 @@ public class ASTAssociation extends AST implements IAssociation {
 
   @Override
   public boolean isAST() {
+    return false;
+  }
+
+  /** {@inheritDoc} */
+  @Override
+  public boolean isAST(final IExpr header) {
+    return false;
+  }
+
+  /** {@inheritDoc} */
+  @Override
+  public boolean isAST(final IExpr header, final int length) {
+    return false;
+  }
+
+  /** {@inheritDoc} */
+  @Override
+  public boolean isAST(IExpr header, int length, IExpr... args) {
+    return false;
+  }
+
+  /** {@inheritDoc} */
+  @Override
+  public final boolean isAST(IExpr head, int minLength, int maxLength) {
+    return false;
+  }
+
+  /** {@inheritDoc} */
+  @Override
+  public final boolean isAST(final String symbol) {
+    return false;
+  }
+
+  /** {@inheritDoc} */
+  @Override
+  public final boolean isAST(final String symbol, final int length) {
+    return false;
+  }
+
+  /** {@inheritDoc} */
+  @Override
+  public boolean isAST0() {
+    return false;
+  }
+
+  /** {@inheritDoc} */
+  @Override
+  public boolean isAST1() {
+    return false;
+  }
+
+  /** {@inheritDoc} */
+  @Override
+  public boolean isAST2() {
+    return false;
+  }
+
+  /** {@inheritDoc} */
+  @Override
+  public boolean isAST3() {
     return false;
   }
 
