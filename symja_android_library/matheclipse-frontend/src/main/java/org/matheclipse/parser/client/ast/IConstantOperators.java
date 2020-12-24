@@ -17,6 +17,8 @@ package org.matheclipse.parser.client.ast;
 
 /** Default header operator strings */
 public interface IConstantOperators {
+	
+  /** Symbol for representing option All */
   public static final String All = "All";
 
   public static final String Inequality = "Inequality";

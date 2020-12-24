@@ -951,4 +951,17 @@ public class ParserTestCase extends TestCase {
       assertEquals("", e.getMessage());
     }
   }
+  
+  public void testParser61() {
+	    try {
+	      Parser p = new Parser();
+	      ASTNode obj = p.parse("a+i*b^2+k*c^3+d");
+	      assertEquals(
+	          obj.toString(), //
+	          "Plus(a, Times(i, Power(b, 2)), Times(k, Power(c, 3)), d)");
+	    } catch (Exception e) {
+	      e.printStackTrace();
+	      assertEquals("", e.getMessage());
+	    }
+	  }
 }

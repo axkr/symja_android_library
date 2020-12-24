@@ -37444,7 +37444,7 @@ public class LowercaseTestCase extends AbstractTestCase {
         "a+b");
 
     check(
-        "With({x = a}, (1 + x^2) &)", //
+        "With({tt = a}, (1 + tt^2) &)", //
         "1+a^2&");
   }
 
