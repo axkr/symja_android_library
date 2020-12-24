@@ -209,6 +209,10 @@ public class EvalEngine implements Serializable {
 
   transient ContextPath fContextPath;
 
+  transient String f$Input = "";
+
+  transient String f$InputFileName = "";
+
   /** The precision for numeric operations. */
   protected long fNumericPrecision;
 
@@ -511,6 +515,8 @@ public class EvalEngine implements Serializable {
     engine.fTogetherMode = fTogetherMode;
     engine.fTraceMode = fTraceMode;
     engine.fTraceStack = fTraceStack;
+    engine.f$Input = f$Input;
+    engine.f$InputFileName = f$InputFileName;
     fCopiedEngine = engine;
     return engine;
   }
@@ -2121,6 +2127,22 @@ public class EvalEngine implements Serializable {
     return fContextPath.currentContext();
   }
 
+  public String get$Input() {
+    return f$Input;
+  }
+
+  public String get$InputFileName() {
+    return f$InputFileName;
+  }
+
+  public void set$Input(String input) {
+    f$Input = input;
+  }
+
+  public void set$InputFileName(String inputFileName) {
+    f$InputFileName = inputFileName;
+  }
+
   public ContextPath getContextPath() {
     return fContextPath;
   }
@@ -2292,6 +2314,8 @@ public class EvalEngine implements Serializable {
     fMessageShortcut = null;
     fContextPathStack = new ArrayDeque<ContextPath>();
     fContextPath = ContextPath.initialContext();
+    f$Input = "";
+    f$InputFileName = "";
     fOptionsStack = new OptionsStack();
     rememberASTCache = null;
   }
