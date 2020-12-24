@@ -61,7 +61,6 @@ public final class FunctionDefinitions {
       PolarPlot.setEvaluator(new org.matheclipse.core.reflection.system.PolarPlot());
       Product.setEvaluator(new org.matheclipse.core.reflection.system.Product());
       Ramp.setEvaluator(new org.matheclipse.core.reflection.system.Ramp());
-      RSolve.setEvaluator(new org.matheclipse.core.reflection.system.RSolve());
       Solve.setEvaluator(new org.matheclipse.core.reflection.system.Solve());
       Sum.setEvaluator(new org.matheclipse.core.reflection.system.Sum());
       Taylor.setEvaluator(new org.matheclipse.core.reflection.system.Taylor());
