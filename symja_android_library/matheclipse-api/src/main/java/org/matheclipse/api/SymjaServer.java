@@ -103,7 +103,7 @@ public class SymjaServer {
                   resource(
                           new ClassPathResourceManager(
                               SymjaServer.class.getClassLoader(), SymjaServer.class.getPackage()))
-                      .addWelcomeFiles("index.html"))
+                      .addWelcomeFiles("indexapi.html"))
               .addExactPath("/v1/api", apiHandler);
 
       Undertow server =
@@ -118,7 +118,7 @@ public class SymjaServer {
               + PORT
               + "/v1/api?i=D(Sin(x)%2Cx)&f=latex&f=plaintext&f=sinput&appid=DEMO");
 
-      URI uri = new URI("http://localhost:" + PORT + "/index.html");
+      URI uri = new URI("http://localhost:" + PORT + "/indexapi.html");
 
       System.out.println();
       System.out.println("To test the JSON API open page: " + uri.toString() + " in your browser.");
