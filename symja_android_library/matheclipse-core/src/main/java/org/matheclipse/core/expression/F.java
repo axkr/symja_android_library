@@ -6037,7 +6037,7 @@ public class F extends S {
    * @param head
    * @return
    */
-  public static final IStringX usage(final ISymbol head) {
+  public static final String usage(final ISymbol head) {
     return usage(head.toString());
   }
 
@@ -6047,10 +6047,10 @@ public class F extends S {
    * @param symbolName
    * @return
    */
-  public static final IStringX usage(final String symbolName) {
+  public static final String usage(final String symbolName) {
     StringBuilder buf = new StringBuilder();
     Documentation.usageDocumentation(buf, symbolName);
-    return F.stringx(buf.toString());
+    return buf.toString();
   }
 
   /**

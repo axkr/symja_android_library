@@ -71,6 +71,7 @@ public class CompleteTestSuite extends TestCase {
     suite.addTestSuite(CompilerFunctionsTest.class);
     suite.addTestSuite(SolveTest.class);
     suite.addTestSuite(MMAFormTestCase.class);
+    suite.addTestSuite(JShellExampleTestCase.class);
     // suite.addTestSuite(ArchUnitTests.class);
 
     return suite;

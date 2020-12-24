@@ -964,7 +964,7 @@ public class IOFunctions {
           identifierStr = str;
         }
         if (exact) {
-          if (name.equals(identifierStr)) {
+          if (name.equals(identifierStr.toLowerCase())) {
             list.append(F.$s(identifierStr));
           }
         } else {
