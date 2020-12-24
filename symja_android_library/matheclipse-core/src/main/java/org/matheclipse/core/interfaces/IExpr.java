@@ -2038,7 +2038,7 @@ public interface IExpr
   }
 
   /**
-   * Test if this expression is a list of lists
+   * Test if this expression is a list of lists and contains at least 1 element.
    *
    * @return
    * @see #isList()
@@ -2085,6 +2085,18 @@ public interface IExpr
   }
 
   default boolean isListOfRulesOrAssociation(boolean ignoreEmptyList) {
+    return false;
+  }
+
+  /**
+   * Test if this expression is a list of strings and contains at least 1 element.
+   *
+   * @return
+   * @see #isList()
+   * @see #isMatrix(boolean)
+   * @see #isVector()
+   */
+  default boolean isListOfStrings() {
     return false;
   }
 
@@ -4332,7 +4344,7 @@ public interface IExpr
    * @return
    */
   default String toMMA() {
-    return  WolframFormFactory.get().toString(this);
+    return WolframFormFactory.get().toString(this);
   }
 
   @Override

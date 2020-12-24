@@ -1667,7 +1667,7 @@ public abstract class AbstractAST implements IASTMutable {
    * Evaluate arguments with the head <code>F.Evaluate</code>, i.e. <code>
    * f(a, ... , Evaluate(x), ...)</code>
    *
-   * @param ast
+   * @param engine the evaluation engine
    * @return
    */
   public IExpr evalEvaluate(EvalEngine engine) {
@@ -2849,14 +2849,14 @@ public abstract class AbstractAST implements IASTMutable {
 
   /** {@inheritDoc} */
   @Override
-  public final boolean isAST(IExpr head, int minLength, int maxLength) {
+  public boolean isAST(IExpr head, int minLength, int maxLength) {
     int size = size();
     return head().equals(head) && minLength <= size && maxLength >= size;
   }
 
   /** {@inheritDoc} */
   @Override
-  public final boolean isAST(final String symbol) {
+  public boolean isAST(final String symbol) {
     if (FEConfig.PARSER_USE_LOWERCASE_SYMBOLS) {
       String name = symbol;
       if (name.length() > 0) {
@@ -2873,7 +2873,7 @@ public abstract class AbstractAST implements IASTMutable {
 
   /** {@inheritDoc} */
   @Override
-  public final boolean isAST(final String symbol, final int length) {
+  public boolean isAST(final String symbol, final int length) {
     if (FEConfig.PARSER_USE_LOWERCASE_SYMBOLS) {
       String name = symbol;
       if (name.length() > 0) {
@@ -3434,6 +3434,20 @@ public abstract class AbstractAST implements IASTMutable {
             continue;
           }
           // the row is no list
+          return false;
+        }
+      }
+      return true;
+    }
+    return false;
+  }
+
+  /** {@inheritDoc} */
+  @Override
+  public boolean isListOfStrings() {
+    if (isList() && size() > 1) {
+      for (int i = 1; i < size(); i++) {
+        if (!get(i).isString()) {
           return false;
         }
       }

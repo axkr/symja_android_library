@@ -80,7 +80,7 @@ public class SparseArrayExpr extends DataExpr<Trie<int[], IExpr>>
     /**
      * Copy constructor.
      *
-     * @param other Instance to copy.
+     * @param array Instance to copy.
      * @param copyArray Whether to copy or reference the input array.
      */
     public SparseExprMatrix(SparseArrayExpr array, boolean copyArray) {
@@ -161,12 +161,12 @@ public class SparseArrayExpr extends DataExpr<Trie<int[], IExpr>>
      *
      * @param row row location of entry to be fetched
      * @param column column location of entry to be fetched
-     * @return matrix entry in row,column
+     * @return matrix entry in [row,column] position
      * @throws MathIllegalArgumentException if the row or column index is not valid.
      */
     @Override
-    public IExpr getEntry(int arg0, int arg1) throws MathIllegalArgumentException {
-      IExpr value = array.fData.get(new int[] {arg0 + 1, arg1 + 1});
+    public IExpr getEntry(int row, int column) throws MathIllegalArgumentException {
+      IExpr value = array.fData.get(new int[] {row + 1, column + 1});
       return value == null ? array.defaultValue : value;
     }
 
@@ -235,10 +235,10 @@ public class SparseArrayExpr extends DataExpr<Trie<int[], IExpr>>
     /**
      * Returns the result of multiplying this by the vector {@code v}.
      *
-     * @param v the vector to operate on
-     * @return {@code this * v}
+     * @param fv the vector to operate on
+     * @return {@code this * fv}
      * @throws MathIllegalArgumentException if the number of columns of {@code this} matrix is not
-     *     equal to the size of the vector {@code v}.
+     *     equal to the size of the vector {@code fv}.
      */
     @Override
     public SparseExprVector operate(final FieldVector<IExpr> fv)
@@ -335,8 +335,8 @@ public class SparseArrayExpr extends DataExpr<Trie<int[], IExpr>>
     /**
      * Build a resized vector, for use with append.
      *
-     * @param v Original vector
-     * @param resize Amount to add.
+     * @param array original vector
+     * @param resize amount to add.
      */
     protected SparseExprVector(SparseArrayExpr array, int resize) {
       this.array = new SparseArrayExpr(array.fData, array.fDimension, array.defaultValue, true);
@@ -746,8 +746,8 @@ public class SparseArrayExpr extends DataExpr<Trie<int[], IExpr>>
     /**
      * Compute the outer product.
      *
-     * @param v vector with which outer product should be computed
-     * @return the matrix outer product between instance and v
+     * @param fv vector with which outer product should be computed
+     * @return the matrix outer product between instance and fv
      */
     @Override
     public SparseExprMatrix outerProduct(FieldVector<IExpr> fv) {
@@ -776,10 +776,10 @@ public class SparseArrayExpr extends DataExpr<Trie<int[], IExpr>>
     /**
      * Find the orthogonal projection of this vector onto another vector.
      *
-     * @param v vector onto which {@code this} must be projected
-     * @return projection of {@code this} onto {@code v}
-     * @throws MathIllegalArgumentException if {@code v} is not the same size as {@code this}
-     * @throws MathRuntimeException if {@code v} is the null vector.
+     * @param fv field vector onto which {@code this} must be projected
+     * @return projection of {@code this} onto {@code fv}
+     * @throws MathIllegalArgumentException if {@code fv} is not the same size as {@code this}
+     * @throws MathRuntimeException if {@code fv} is the null vector.
      */
     @Override
     public SparseExprVector projection(FieldVector<IExpr> fv)
@@ -842,11 +842,11 @@ public class SparseArrayExpr extends DataExpr<Trie<int[], IExpr>>
     }
 
     /**
-     * Compute {@code this} minus {@code v}.
+     * Compute {@code this} minus {@code fv}.
      *
-     * @param v vector to be subtracted
-     * @return {@code this - v}
-     * @throws MathIllegalArgumentException if {@code v} is not the same size as {@code this}
+     * @param fv vector to be subtracted
+     * @return {@code this - fv}
+     * @throws MathIllegalArgumentException if {@code fv} is not the same size as {@code this}
      */
     @Override
     public SparseExprVector subtract(FieldVector<IExpr> fv) throws MathIllegalArgumentException {
@@ -1926,7 +1926,7 @@ public class SparseArrayExpr extends DataExpr<Trie<int[], IExpr>>
     fData = Config.TRIE_INT2EXPR_BUILDER.build();
     IExpr[] defValue = new IExpr[] {defaultValue};
     int[] determinedDimension =
-        createTrie(arrayRulesList, fData, null, -1, defValue, EvalEngine.get());
+        createTrie(arrayRulesList, fData, fDimension, -1, defValue, EvalEngine.get());
     if (determinedDimension == null) {
       throw new java.io.InvalidClassException("no valid Trie creation");
     }
