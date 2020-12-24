@@ -4695,7 +4695,7 @@ public class F extends S {
   /**
    * Create an immutable list <code>{ }</code> by converting the expressions into IExpr type.
    *
-   * @param a
+   * @param objects the objects which should be converted, before adding them to the list
    * @return
    * @see {@link #ListAlloc(final IExpr...)} to create an appendable list
    */

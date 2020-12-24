@@ -62,6 +62,12 @@ public class S {
   public static final IBuiltInSymbol $HomeDirectory =
       F.initFinalSymbol("$HomeDirectory", ID.$HomeDirectory);
 
+  public static final IBuiltInSymbol $Input =
+      F.initFinalSymbol("$Input", ID.$Input);
+
+  public static final IBuiltInSymbol $InputFileName =
+      F.initFinalSymbol("$InputFileName", ID.$InputFileName);
+
   public static final IBuiltInSymbol $IterationLimit =
       F.initFinalSymbol("$IterationLimit", ID.$IterationLimit);
 
@@ -1433,6 +1439,10 @@ public class S {
    * `list-of-rules`or `list-of-symbols`.
    */
   public static final IBuiltInSymbol FilterRules = F.initFinalSymbol("FilterRules", ID.FilterRules);
+
+  public static final IBuiltInSymbol FileNameJoin = F.initFinalSymbol("FileNameJoin", ID.FileNameJoin);
+
+  public static final IBuiltInSymbol FileNameTake = F.initFinalSymbol("FileNameTake", ID.FileNameTake);
 
   /**
    * FindClusters(list-of-data-points, k) - Clustering algorithm based on David Arthur and Sergei
@@ -3594,6 +3604,10 @@ public class S {
 
   /** RowReduce(matrix) - returns the reduced row-echelon form of `matrix`. */
   public static final IBuiltInSymbol RowReduce = F.initFinalSymbol("RowReduce", ID.RowReduce);
+
+  public static final IBuiltInSymbol RSolve = F.initFinalSymbol("RSolve", ID.RSolve);
+
+  public static final IBuiltInSymbol RSolveValue = F.initFinalSymbol("RSolveValue", ID.RSolveValue);
 
   /** Rule(x, y) - represents a rule replacing `x` with `y`. */
   public static final IBuiltInSymbol Rule = F.initFinalSymbol("Rule", ID.Rule);
