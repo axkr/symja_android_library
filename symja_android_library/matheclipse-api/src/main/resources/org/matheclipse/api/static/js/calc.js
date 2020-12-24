@@ -1,7 +1,6 @@
 function setupExamples() { 
     $('.example-group div.contents').each(function() {
-        var contents = $(this);
-        var header = $(this).siblings('h3');    
+        var contents = $(this);   
         contents.hide();  
     });
 
@@ -73,8 +72,8 @@ $("#calc").submit(
 			  });
 		    }
 		  }
-		  output += ' </div>';
-		  document.getElementById("root").innerHTML = output;
+		  output += ' </div>'; 
+		  $('#root').html(output);
         }
 	  );
   }
