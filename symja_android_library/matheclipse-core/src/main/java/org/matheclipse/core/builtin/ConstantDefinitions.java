@@ -79,6 +79,8 @@ public class ConstantDefinitions {
       S.$CreationDate.setEvaluator(new $CreationDate());
       S.$HistoryLength.setEvaluator(new $HistoryLength());
       S.$HomeDirectory.setEvaluator(new $HomeDirectory());
+      S.$Input.setEvaluator(new $Input());
+      S.$InputFileName.setEvaluator(new $InputFileName());
       S.$IterationLimit.setEvaluator(new $IterationLimit());
       S.$Line.setEvaluator(new $Line());
       S.$MachineEpsilon.setEvaluator(new $MachineEpsilon());
@@ -222,6 +224,22 @@ public class ConstantDefinitions {
         return F.CEmptyString;
       }
       return F.stringx(userHome);
+    }
+  }
+
+  private static class $Input extends AbstractSymbolEvaluator {
+
+    @Override
+    public IExpr evaluate(final ISymbol symbol, EvalEngine engine) {
+      return F.stringx(EvalEngine.get().get$Input());
+    }
+  }
+
+  private static class $InputFileName extends AbstractSymbolEvaluator {
+
+    @Override
+    public IExpr evaluate(final ISymbol symbol, EvalEngine engine) {
+      return F.stringx(EvalEngine.get().get$InputFileName());
     }
   }
 
