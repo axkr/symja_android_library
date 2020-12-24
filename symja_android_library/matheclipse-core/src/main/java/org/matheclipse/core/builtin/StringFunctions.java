@@ -1,5 +1,6 @@
 package org.matheclipse.core.builtin;
 
+import java.io.File;
 import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
 import java.util.Arrays;
@@ -18,7 +19,6 @@ import org.matheclipse.core.eval.exception.Validate;
 import org.matheclipse.core.eval.exception.ValidateException;
 import org.matheclipse.core.eval.interfaces.AbstractCoreFunctionEvaluator;
 import org.matheclipse.core.eval.interfaces.AbstractFunctionEvaluator;
-import org.matheclipse.core.eval.interfaces.IFunctionEvaluator;
 import org.matheclipse.core.eval.util.OptionArgs;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.expression.ID;
@@ -60,6 +60,9 @@ public final class StringFunctions {
       S.Characters.setEvaluator(new Characters());
       S.CharacterRange.setEvaluator(new CharacterRange());
       S.EditDistance.setEvaluator(new EditDistance());
+
+      S.FileNameJoin.setEvaluator(new FileNameJoin());
+      S.FileNameTake.setEvaluator(new FileNameTake());
       S.FromCharacterCode.setEvaluator(new FromCharacterCode());
       S.HammingDistance.setEvaluator(new HammingDistance());
       S.LetterQ.setEvaluator(new LetterQ());
@@ -290,6 +293,95 @@ public final class StringFunctions {
     @Override
     public int[] expectedArgSize(IAST ast) {
       return ARGS_2_2;
+    }
+  }
+
+  private static class FileNameJoin extends AbstractFunctionEvaluator {
+
+    @Override
+    public IExpr evaluate(final IAST ast, EvalEngine engine) {
+      int from = 1;
+      int to = 1;
+      IExpr arg1 = ast.arg1();
+      try {
+        if (arg1.isListOfStrings()) {
+          IAST list = ((IAST) arg1);
+          if (list.isAST1()) {
+            return list.get(1);
+          }
+          String separator = File.separator;
+          StringBuilder buf = new StringBuilder();
+          for (int i = 1; i < list.size(); i++) {
+            buf.append(list.get(i).toString());
+            if (i < list.size() - 1) {
+              buf.append(separator);
+            }
+          }
+          return F.stringx(buf.toString());
+        }
+
+      } catch (IndexOutOfBoundsException iob) {
+        // from substring
+        // Cannot take positions `1` through `2` in `3`.
+        return IOFunctions.printMessage(
+            ast.topHead(), "take", F.List(F.ZZ(from), F.ZZ(to), arg1), engine);
+      } catch (final ValidateException ve) {
+        // int number validation
+        return engine.printMessage(ve.getMessage(ast.topHead()));
+      }
+      return F.NIL;
+    }
+
+    @Override
+    public int[] expectedArgSize(IAST ast) {
+      return ARGS_1_2;
+    }
+  }
+
+  private static class FileNameTake extends AbstractFunctionEvaluator {
+
+    @Override
+    public IExpr evaluate(final IAST ast, EvalEngine engine) {
+      int from = 1;
+      int to = 1;
+      IExpr arg1 = ast.arg1();
+      try {
+        if (arg1.isString()) {
+          String fileName = ((IStringX) arg1).toString();
+          String separator = "/";
+          if (ast.isAST1()) {
+            // first try Java dependent
+            int index = fileName.lastIndexOf(separator);
+            if (index >= 0) {
+              return F.stringx(fileName.substring(index + separator.length()));
+            }
+            separator = File.separator;
+            if (separator != null) {
+              //   try operator system dependent
+              index = fileName.lastIndexOf(separator);
+              if (index >= 0) {
+                return F.stringx(fileName.substring(index + separator.length()));
+              }
+            }
+            return arg1;
+          }
+        }
+
+      } catch (IndexOutOfBoundsException iob) {
+        // from substring
+        // Cannot take positions `1` through `2` in `3`.
+        return IOFunctions.printMessage(
+            ast.topHead(), "take", F.List(F.ZZ(from), F.ZZ(to), arg1), engine);
+      } catch (final ValidateException ve) {
+        // int number validation
+        return engine.printMessage(ve.getMessage(ast.topHead()));
+      }
+      return F.NIL;
+    }
+
+    @Override
+    public int[] expectedArgSize(IAST ast) {
+      return ARGS_1_2;
     }
   }
 
@@ -2760,8 +2852,7 @@ public final class StringFunctions {
   /**
    * Get the character range of <code>CharacterRange(from, to)</code>
    *
-   * @param ast <code>CharacterRange(a,b)</code>
-   * @param engine
+   * @param characterRangeAST the character range <code>CharacterRange(a,b)</code>
    * @return <code>from</code> at offset 0 and <code>to</code> at offset 1. <code>null</code> if the
    *     character range cannot be generated
    */

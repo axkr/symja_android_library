@@ -31,6 +31,24 @@ public class StringFunctionsTest extends AbstractTestCase {
         "2");
   }
 
+  public void testFileNameJoin() {
+    String s = System.getProperty("os.name");
+    if (s.contains("Windows")) {
+      check(
+          "FileNameJoin({\"a\",\"b\",\"c\"})", //
+          "a\\b\\c");
+    }
+  }
+
+  public void testFileNameTake() {
+    String s = System.getProperty("os.name");
+    if (s.contains("Windows")) {
+      check(
+          "FileNameTake(\"/a/b/c.txt\")", //
+          "c.txt");
+    }
+  }
+
   public void testHammingDistance() {
     check(
         "HammingDistance(\"time\", \"dime\")", //
