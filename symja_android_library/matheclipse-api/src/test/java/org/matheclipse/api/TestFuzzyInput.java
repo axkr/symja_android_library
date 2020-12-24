@@ -63,6 +63,15 @@ public class TestFuzzyInput {
   }
 
   @Test
+  public void testList002() {
+    IExpr expr = Pods.parseInput("plot(sin(x),(x,-10,10))", EvalEngine.get());
+    assertEquals("Plot(Sin(x),{x,-10,10})", expr.toString());
+
+    expr = Pods.parseInput("plot(sin(x),{x,-10,10})", EvalEngine.get());
+    assertEquals("Plot(Sin(x),{x,-10,10})", expr.toString());
+  }
+
+  @Test
   public void testMatrix001() {
     IExpr expr = Pods.parseInput("1, 17 + 4*I\n17 - 4*I, 10", EvalEngine.get());
     assertEquals("{{1,17+4*I},{17+(-4)*I,10}}", expr.toString());

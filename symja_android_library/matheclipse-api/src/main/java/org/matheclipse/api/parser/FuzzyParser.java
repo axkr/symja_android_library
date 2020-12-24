@@ -444,6 +444,14 @@ public class FuzzyParser extends Scanner {
           temp = parseExpression();
 
           if (fToken != TT_PRECEDENCE_CLOSE) {
+            if (fToken == TT_COMMA) {
+              // in "fuzzy" mode assume this is a list
+              try {
+                return parseArguments(getList(temp, TT_PRECEDENCE_CLOSE));
+              } finally {
+                fRecursionDepth--;
+              }
+            }
             throwSyntaxError("\')\' expected.");
           }
         } finally {
@@ -466,14 +474,14 @@ public class FuzzyParser extends Scanner {
       case TT_LIST_OPEN:
         fRecursionDepth++;
         try {
-          return parseArguments(getList(TT_LIST_CLOSE));
+          return parseArguments(getList(F.NIL, TT_LIST_CLOSE));
         } finally {
           fRecursionDepth--;
         }
       case TT_ARGUMENTS_OPEN:
         fRecursionDepth++;
         try {
-          return parseArguments(getList(TT_ARGUMENTS_CLOSE));
+          return parseArguments(getList(F.NIL, TT_ARGUMENTS_CLOSE));
         } finally {
           fRecursionDepth--;
         }
@@ -889,16 +897,18 @@ public class FuzzyParser extends Scanner {
   }
 
   /** Get a list {...} */
-  private IExpr getList(int endToken) throws SyntaxError {
+  private IExpr getList(IExpr first, int endToken) throws SyntaxError {
     fRecursionDepth++;
-    IASTAppendable function = null;
+    IASTAppendable function = F.ListAlloc(16);
+    if (first.isPresent()) {
+      function.append(first);
+    }
     try {
       getNextToken();
       if (fToken == endToken) {
         getNextToken();
         return F.CEmptyList;
       }
-      function = F.ListAlloc(16);
       getArguments(function);
     } finally {
       fRecursionDepth--;
