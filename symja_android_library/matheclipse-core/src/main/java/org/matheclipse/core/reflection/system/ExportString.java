@@ -4,16 +4,19 @@ import java.io.IOException;
 import java.io.StringWriter;
 import java.io.UnsupportedEncodingException;
 import java.io.Writer;
+import java.util.LinkedHashMap;
+import java.util.Map;
+import java.util.function.Function;
 
 import org.jgrapht.Graph;
 import org.jgrapht.graph.DefaultEdge;
-import org.jgrapht.io.CSVExporter;
-import org.jgrapht.io.ComponentNameProvider;
-import org.jgrapht.io.DOTExporter;
-import org.jgrapht.io.ExportException;
-import org.jgrapht.io.GraphExporter;
-import org.jgrapht.io.GraphMLExporter;
-import org.jgrapht.io.IntegerComponentNameProvider;
+import org.jgrapht.nio.Attribute;
+import org.jgrapht.nio.DefaultAttribute;
+import org.jgrapht.nio.ExportException;
+import org.jgrapht.nio.GraphExporter;
+import org.jgrapht.nio.csv.CSVExporter;
+import org.jgrapht.nio.dot.DOTExporter;
+import org.jgrapht.nio.graphml.GraphMLExporter;
 import org.matheclipse.core.basic.Config;
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.interfaces.AbstractEvaluator;
@@ -103,18 +106,23 @@ public class ExportString extends AbstractEvaluator {
     return F.NIL;
   }
 
-  private static final ComponentNameProvider<IExpr> nameProvider = v -> String.valueOf(v);
+  private static final Function<IExpr, String> nameProvider = v -> String.valueOf(v);
 
   void graphExport(Graph<IExpr, DefaultEdge> g, Writer writer, Extension format)
       throws ExportException, UnsupportedEncodingException {
     switch (format) {
       case DOT:
         DOTExporter<IExpr, DefaultEdge> dotExporter =
-            new DOTExporter<>(new IntegerComponentNameProvider<>(), null, null, null, null);
-        dotExporter.putGraphAttribute("overlap", "false");
-        dotExporter.putGraphAttribute("splines", "true");
+            new DOTExporter<>();//new IntegerComponentNameProvider<>(), null, null, null, null);
+//        dotExporter.putGraphAttribute("overlap", "false");
+//        dotExporter.putGraphAttribute("splines", "true");
 
-        dotExporter.exportGraph(g, writer);
+        dotExporter.setGraphAttributeProvider(() -> {
+            Map<String, Attribute> map = new LinkedHashMap<>();
+            map.put("overlap", DefaultAttribute.createAttribute("false"));
+            map.put("splines", DefaultAttribute.createAttribute("true"));
+            return map;
+        }); 
         return;
       case GRAPHML:
         GraphExporter<IExpr, DefaultEdge> graphMLExporter = new GraphMLExporter<>();
@@ -125,7 +133,7 @@ public class ExportString extends AbstractEvaluator {
 
     // DEFAULT: return CSV file
     CSVExporter<IExpr, DefaultEdge> exporter =
-        new CSVExporter<IExpr, DefaultEdge>(nameProvider, org.jgrapht.io.CSVFormat.EDGE_LIST, ';');
+        new CSVExporter<IExpr, DefaultEdge>(nameProvider, org.jgrapht.nio.csv.CSVFormat.EDGE_LIST, ';');
     exporter.exportGraph(g, writer);
   }
 
