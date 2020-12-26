@@ -21,54 +21,53 @@ import de.tilman_neumann.jml.modular.ModularPower;
 
 /**
  * Computation of the Legendre symbol using Eulers formula.
+ *
  * @author Tilman Neumann
  */
 public class LegendreSymbol {
-	
-	private ModularPower mpe = new ModularPower();
-	
-	/**
-	 * Computes the Legendre symbol L(a|p) via Eulers formula.
-	 * p is BigInteger and must be an odd prime.
-	 * 
-	 * Very slow; if possible use the Jacobi symbol.
-	 * 
-	 * @param a
-	 * @param p
-	 * @return Legendre symbol L(a|p)
-	 */
-	public int EulerFormula(BigInteger a, BigInteger p) {
-		BigInteger modPow = a.modPow(p.subtract(I_1).shiftRight(1), p);
-		return (modPow.compareTo(I_1)>0) ? modPow.subtract(p).intValue() : modPow.intValue();
-	}
 
-	/**
-	 * Computes the Legendre symbol L(a|p) via Eulers formula.
-	 * p is int and must be an odd prime.
-	 * 
-	 * Eulers formula with int p is quite fast, but the Jacobi symbol may be faster.
-	 * 
-	 * @param a
-	 * @param p
-	 * @return Legendre symbol L(a|p)
-	 */
-	public int EulerFormula(BigInteger a, int p) {
-		int modPow = mpe.modPow(a, (p-1)>>1, p);
-		return (modPow>1) ? modPow-p : modPow;
-	}
+  private ModularPower mpe = new ModularPower();
 
-	/**
-	 * Computes the Legendre symbol L(a|p) via Eulers formula for a, p int.
-	 * p must be an odd prime.
-	 * 
-	 * Eulers formula with int p is quite fast, but the Jacobi symbol may be faster.
-	 *
-	 * @param a
-	 * @param p
-	 * @return Legendre symbol L(a|p)
-	 */
-	public int EulerFormula(int a, int p) {
-		int modPow = mpe.modPow(a, (p-1)>>1, p);
-		return (modPow>1) ? modPow-p : modPow;
-	}
+  /**
+   * Computes the Legendre symbol L(a|p) via Eulers formula. p is BigInteger and must be an odd
+   * prime.
+   *
+   * <p>Very slow; if possible use the Jacobi symbol.
+   *
+   * @param a
+   * @param p
+   * @return Legendre symbol L(a|p)
+   */
+  public int EulerFormula(BigInteger a, BigInteger p) {
+    BigInteger modPow = a.modPow(p.subtract(I_1).shiftRight(1), p);
+    return (modPow.compareTo(I_1) > 0) ? modPow.subtract(p).intValue() : modPow.intValue();
+  }
+
+  /**
+   * Computes the Legendre symbol L(a|p) via Eulers formula. p is int and must be an odd prime.
+   *
+   * <p>Eulers formula with int p is quite fast, but the Jacobi symbol may be faster.
+   *
+   * @param a
+   * @param p
+   * @return Legendre symbol L(a|p)
+   */
+  public int EulerFormula(BigInteger a, int p) {
+    int modPow = mpe.modPow(a, (p - 1) >> 1, p);
+    return (modPow > 1) ? modPow - p : modPow;
+  }
+
+  /**
+   * Computes the Legendre symbol L(a|p) via Eulers formula for a, p int. p must be an odd prime.
+   *
+   * <p>Eulers formula with int p is quite fast, but the Jacobi symbol may be faster.
+   *
+   * @param a
+   * @param p
+   * @return Legendre symbol L(a|p)
+   */
+  public int EulerFormula(int a, int p) {
+    int modPow = mpe.modPow(a, (p - 1) >> 1, p);
+    return (modPow > 1) ? modPow - p : modPow;
+  }
 }

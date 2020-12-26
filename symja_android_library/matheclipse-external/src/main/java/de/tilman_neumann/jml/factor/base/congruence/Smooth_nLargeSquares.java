@@ -21,44 +21,46 @@ import de.tilman_neumann.util.SortedMultiset;
 
 /**
  * A smooth congruence having an arbitrary number of large factors.
- * 
+ *
  * @author Tilman Neumann
  */
 public class Smooth_nLargeSquares extends Smooth_Simple {
 
-	private long[] bigFactors;
-	private byte[] bigFactorExponents;
-	
-	/**
-	 * Full constructor.
-	 * @param A
-	 * @param smallFactors small factors of Q
-	 * @param bigFactors large factors of Q
-	 */
-	public Smooth_nLargeSquares(BigInteger A, SortedIntegerArray smallFactors, SortedLongArray bigFactors) {
-		super(A, smallFactors);
-		// copy big factors of Q
-		this.bigFactors = bigFactors.copyFactors();
-		this.bigFactorExponents = bigFactors.copyExponents();
-	}
+  private long[] bigFactors;
+  private byte[] bigFactorExponents;
 
-	@Override
-	public SortedMultiset<Long> getAllQFactors() {
-		// get small factors of Q
-		SortedMultiset<Long> allFactors = super.getSmallQFactors();
-		// add large factors
-		for (int i=0; i<bigFactors.length; i++) {
-			allFactors.add(bigFactors[i], bigFactorExponents[i]);
-		}
-		return allFactors;
-	}
+  /**
+   * Full constructor.
+   *
+   * @param A
+   * @param smallFactors small factors of Q
+   * @param bigFactors large factors of Q
+   */
+  public Smooth_nLargeSquares(
+      BigInteger A, SortedIntegerArray smallFactors, SortedLongArray bigFactors) {
+    super(A, smallFactors);
+    // copy big factors of Q
+    this.bigFactors = bigFactors.copyFactors();
+    this.bigFactorExponents = bigFactors.copyExponents();
+  }
 
-	@Override
-	public int getNumberOfLargeQFactors() {
-		int count = 0;
-		for (int i=0; i<bigFactorExponents.length; i++) {
-			count += bigFactorExponents[i];
-		}
-		return count;
-	}
+  @Override
+  public SortedMultiset<Long> getAllQFactors() {
+    // get small factors of Q
+    SortedMultiset<Long> allFactors = super.getSmallQFactors();
+    // add large factors
+    for (int i = 0; i < bigFactors.length; i++) {
+      allFactors.add(bigFactors[i], bigFactorExponents[i]);
+    }
+    return allFactors;
+  }
+
+  @Override
+  public int getNumberOfLargeQFactors() {
+    int count = 0;
+    for (int i = 0; i < bigFactorExponents.length; i++) {
+      count += bigFactorExponents[i];
+    }
+    return count;
+  }
 }

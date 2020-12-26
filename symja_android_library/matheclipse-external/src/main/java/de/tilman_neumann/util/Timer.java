@@ -15,38 +15,31 @@ package de.tilman_neumann.util;
 
 /**
  * A simple time recorder.
+ *
  * @author Tilman Neumann
  */
 public class Timer {
-	private long start, t;
-	
-	/**
-	 * Full constructor, starts timer.
-	 */
-	public Timer() {
-		start();
-	}
+  private long start, t;
 
-	/**
-	 * Restart timer.
-	 */
-	public void start() {
-		start = t = System.currentTimeMillis();
-	}
-	
-	/**
-	 * @return time difference from last check to this check in milliseconds
-	 */
-	public long capture() {
-		long last = t;
-		t = System.currentTimeMillis();
-		return t-last;
-	}
-	
-	/**
-	 * @return the total run time in milliseconds since this timer was created or restarted
-	 */
-	public long totalRuntime() {
-		return System.currentTimeMillis() - start;
-	}
+  /** Full constructor, starts timer. */
+  public Timer() {
+    start();
+  }
+
+  /** Restart timer. */
+  public void start() {
+    start = t = System.currentTimeMillis();
+  }
+
+  /** @return time difference from last check to this check in milliseconds */
+  public long capture() {
+    long last = t;
+    t = System.currentTimeMillis();
+    return t - last;
+  }
+
+  /** @return the total run time in milliseconds since this timer was created or restarted */
+  public long totalRuntime() {
+    return System.currentTimeMillis() - start;
+  }
 }

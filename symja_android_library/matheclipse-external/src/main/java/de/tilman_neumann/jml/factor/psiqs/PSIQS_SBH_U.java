@@ -25,44 +25,92 @@ import de.tilman_neumann.jml.factor.siqs.sieve.SieveParams;
 
 /**
  * Multi-threaded SIQS using the single block hybrid sieve.
- * 
+ *
  * @author Tilman Neumann
  */
 public class PSIQS_SBH_U extends PSIQSBase {
-	private int blockSize;
+  private int blockSize;
 
-	/**
-	 * Standard constructor.
-	 * @param Cmult multiplier for prime base size
-	 * @param Mmult multiplier for sieve array size
-	 * @param wantedQCount hypercube dimension (null for automatic selection)
-	 * @param maxQRestExponent A Q with unfactored rest QRest is considered smooth if QRest <= N^maxQRestExponent.
-	 *                         Good values are 0.16..0.19; null means that it is determined automatically.
-	 * @param blockSize wanted sieve block size in byte
-	 * @param numberOfThreads
-	 * @param powerFinder algorithm to add powers to the primes used for sieving
-	 * @param matrixSolver solver for smooth congruences matrix
-	 * @param useLegacyFactoring if true then factor() uses findSingleFactor(), otherwise searchFactors()
-	 * @param searchSmallFactors if true then search for small factors before SIQS or PSIQS is run
-	 */
-	public PSIQS_SBH_U(float Cmult, float Mmult, Integer wantedQCount, Float maxQRestExponent, int blockSize,
-					   int numberOfThreads, PowerFinder powerFinder, MatrixSolver matrixSolver, boolean useLegacyFactoring, boolean searchSmallFactors) {
-		
-		super(Cmult, Mmult, maxQRestExponent, numberOfThreads, null, powerFinder, matrixSolver, new AParamGenerator01(wantedQCount), useLegacyFactoring, searchSmallFactors);
-		this.blockSize = blockSize;
-	}
+  /**
+   * Standard constructor.
+   *
+   * @param Cmult multiplier for prime base size
+   * @param Mmult multiplier for sieve array size
+   * @param wantedQCount hypercube dimension (null for automatic selection)
+   * @param maxQRestExponent A Q with unfactored rest QRest is considered smooth if QRest <=
+   *     N^maxQRestExponent. Good values are 0.16..0.19; null means that it is determined
+   *     automatically.
+   * @param blockSize wanted sieve block size in byte
+   * @param numberOfThreads
+   * @param powerFinder algorithm to add powers to the primes used for sieving
+   * @param matrixSolver solver for smooth congruences matrix
+   * @param useLegacyFactoring if true then factor() uses findSingleFactor(), otherwise
+   *     searchFactors()
+   * @param searchSmallFactors if true then search for small factors before SIQS or PSIQS is run
+   */
+  public PSIQS_SBH_U(
+      float Cmult,
+      float Mmult,
+      Integer wantedQCount,
+      Float maxQRestExponent,
+      int blockSize,
+      int numberOfThreads,
+      PowerFinder powerFinder,
+      MatrixSolver matrixSolver,
+      boolean useLegacyFactoring,
+      boolean searchSmallFactors) {
 
-	@Override
-	public String getName() {
-		String maxQRestExponentStr = "maxQRestExponent=" + String.format("%.3f", maxQRestExponent);
-		String modeStr = "mode = " + (useLegacyFactoring ? "legacy" : "advanced");
-		return "PSIQS_SBH_U(Cmult=" + Cmult + ", Mmult=" + Mmult + ", qCount=" + apg.getQCount() + ", " + maxQRestExponentStr + ", blockSize=" + blockSize + ", " + powerFinder.getName() + ", " + matrixSolver.getName() + ", " + numberOfThreads + " threads, " + modeStr + ")";
-	}
+    super(
+        Cmult,
+        Mmult,
+        maxQRestExponent,
+        numberOfThreads,
+        null,
+        powerFinder,
+        matrixSolver,
+        new AParamGenerator01(wantedQCount),
+        useLegacyFactoring,
+        searchSmallFactors);
+    this.blockSize = blockSize;
+  }
 
-	protected PSIQSThreadBase createThread(
-			int k, BigInteger N, BigInteger kN, int d, SieveParams sieveParams, BaseArrays baseArrays,
-			AParamGenerator apg, CongruenceCollectorParallel cc, int threadIndex) {
-		
-		return new PSIQSThread_SBH_U(k, N, kN, d, sieveParams, baseArrays, blockSize, apg, cc, threadIndex);
-	}
+  @Override
+  public String getName() {
+    String maxQRestExponentStr = "maxQRestExponent=" + String.format("%.3f", maxQRestExponent);
+    String modeStr = "mode = " + (useLegacyFactoring ? "legacy" : "advanced");
+    return "PSIQS_SBH_U(Cmult="
+        + Cmult
+        + ", Mmult="
+        + Mmult
+        + ", qCount="
+        + apg.getQCount()
+        + ", "
+        + maxQRestExponentStr
+        + ", blockSize="
+        + blockSize
+        + ", "
+        + powerFinder.getName()
+        + ", "
+        + matrixSolver.getName()
+        + ", "
+        + numberOfThreads
+        + " threads, "
+        + modeStr
+        + ")";
+  }
+
+  protected PSIQSThreadBase createThread(
+      int k,
+      BigInteger N,
+      BigInteger kN,
+      int d,
+      SieveParams sieveParams,
+      BaseArrays baseArrays,
+      AParamGenerator apg,
+      CongruenceCollectorParallel cc,
+      int threadIndex) {
+
+    return new PSIQSThread_SBH_U(
+        k, N, kN, d, sieveParams, baseArrays, blockSize, apg, cc, threadIndex);
+  }
 }

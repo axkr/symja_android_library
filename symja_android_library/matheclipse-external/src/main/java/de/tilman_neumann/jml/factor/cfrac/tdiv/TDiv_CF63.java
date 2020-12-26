@@ -20,37 +20,42 @@ import de.tilman_neumann.jml.factor.base.congruence.AQPair;
 
 /**
  * Interface for auxiliary factor algorithms to find smooth decompositions of Q's.
+ *
  * @author Tilman Neumann
  */
 public interface TDiv_CF63 {
-	
-	/**
-	 * @return the name of this algorithm
-	 */
-	public String getName();
 
-	/**
-	 * Initialize for a new N.
-	 * @param N
-	 * @param maxQRest
-	 */
-	public void initialize(BigInteger N, double maxQRest);
+  /** @return the name of this algorithm */
+  public String getName();
 
-	/**
-	 * Initialize this factorizer for a new k; in particular set the prime base to be used for trial division.
-	 * @param kN
-	 * @param primeBaseSize the true prime base size (the arrays are preallocated with a bigger length)
-	 * @param primesArray prime base in ints
-	 * @throws FactorException 
-	 */
-	public void initialize(BigInteger kN, int primeBaseSize, int[] primesArray) throws FactorException;
-	
-	/**
-	 * Check if Q is smooth (factors completely over the prime base) or "sufficiently smooth" (factors almost over the prime base).
-	 *
-	 * @param A
-	 * @param Q
-	 * @return an AQ-pair if Q is at least "sufficiently smooth", null else
-	 */
-	public AQPair test(BigInteger A, long Q);
+  /**
+   * Initialize for a new N.
+   *
+   * @param N
+   * @param maxQRest
+   */
+  public void initialize(BigInteger N, double maxQRest);
+
+  /**
+   * Initialize this factorizer for a new k; in particular set the prime base to be used for trial
+   * division.
+   *
+   * @param kN
+   * @param primeBaseSize the true prime base size (the arrays are preallocated with a bigger
+   *     length)
+   * @param primesArray prime base in ints
+   * @throws FactorException
+   */
+  public void initialize(BigInteger kN, int primeBaseSize, int[] primesArray)
+      throws FactorException;
+
+  /**
+   * Check if Q is smooth (factors completely over the prime base) or "sufficiently smooth" (factors
+   * almost over the prime base).
+   *
+   * @param A
+   * @param Q
+   * @return an AQ-pair if Q is at least "sufficiently smooth", null else
+   */
+  public AQPair test(BigInteger A, long Q);
 }

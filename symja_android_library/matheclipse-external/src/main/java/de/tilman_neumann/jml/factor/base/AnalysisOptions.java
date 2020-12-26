@@ -15,30 +15,32 @@ package de.tilman_neumann.jml.factor.base;
 
 /**
  * Factoring analysis settings.
- * 
- * Code "guarded" with a static final boolean = false will be removed by the compiler.
- * Thus if turned off, analysis code does not decrement performance.
- * 
- * Note as well that we would never want to do analysis/profiling in nested algorithms like the internalQS called
- * by trial division to factor large Q rests, but it does not hurt either.
- * 
+ *
+ * <p>Code "guarded" with a static final boolean = false will be removed by the compiler. Thus if
+ * turned off, analysis code does not decrement performance.
+ *
+ * <p>Note as well that we would never want to do analysis/profiling in nested algorithms like the
+ * internalQS called by trial division to factor large Q rests, but it does not hurt either.
+ *
  * @author Tilman Neumann
  */
 public interface AnalysisOptions {
-	/**
-	 * Basic analysis includes number of polynomials, number of smooth and partial relations
-	 * (also by large factor counts), trials division results, solver runs and tested null-vectors,
-	 * and sub-phase timings.
-	 */
-	static final boolean ANALYZE = false;
+  /**
+   * Basic analysis includes number of polynomials, number of smooth and partial relations (also by
+   * large factor counts), trials division results, solver runs and tested null-vectors, and
+   * sub-phase timings.
+   */
+  static final boolean ANALYZE = false;
 
-	/**
-	 * A switch to additionally turn on analysis of the size of large factors that yield smooth relations.
-	 */
-	static final boolean ANALYZE_LARGE_FACTOR_SIZES = false;
-	
-	/**
-	 * A switch to additionally turn on analysis of the number of Q-values with positive and negative sign.
-	 */
-	static final boolean ANALYZE_Q_SIGNS = false;
+  /**
+   * A switch to additionally turn on analysis of the size of large factors that yield smooth
+   * relations.
+   */
+  static final boolean ANALYZE_LARGE_FACTOR_SIZES = false;
+
+  /**
+   * A switch to additionally turn on analysis of the number of Q-values with positive and negative
+   * sign.
+   */
+  static final boolean ANALYZE_Q_SIGNS = false;
 }

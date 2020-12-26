@@ -28,172 +28,189 @@ import de.tilman_neumann.jml.factor.TestsetGenerator;
 import de.tilman_neumann.jml.factor.TestNumberNature;
 
 /**
- * Analyze the frequency with which different arithmetic progressions (k = start + step*m) find a factor.
- * 
+ * Analyze the frequency with which different arithmetic progressions (k = start + step*m) find a
+ * factor.
+ *
  * @author Tilman Neumann
  */
 public class Lehman_AnalyzeKProgressions2 {
-	private static final Logger LOG = Logger.getLogger(Lehman_AnalyzeKProgressions2.class);
+  private static final Logger LOG = Logger.getLogger(Lehman_AnalyzeKProgressions2.class);
 
-	private static class Progression {
-		// parameters
-		public int start;
-		public int step;
-		// results
-		public int testCount;
-		public int factoredN;
-		
-		public Progression(int start, int step) {
-			this.start = start;
-			this.step = step;
-			this.testCount = 0;
-			this.factoredN = 0;
-		}
-		
-		@Override
-		public String toString() {
-			return step + "*m + " + start;
-		}
-	}
-	
-	/** Use congruences a==kN mod 2^s if true, congruences a==(k+N) mod 2^s if false */
-	private static final boolean USE_kN_CONGRUENCES = true;
-	
-	private static final int BITS = 35;
-	
-	/** number of test numbers */
-	private static final int N_COUNT = 100000;
+  private static class Progression {
+    // parameters
+    public int start;
+    public int step;
+    // results
+    public int testCount;
+    public int factoredN;
 
-	/** This is a constant that is below 1 for rounding up double values to long. */
-	private static final double ROUND_UP_DOUBLE = 0.9999999665;
+    public Progression(int start, int step) {
+      this.start = start;
+      this.step = step;
+      this.testCount = 0;
+      this.factoredN = 0;
+    }
 
-	private long N, fourN;
-	private double sqrt4N;
-	private final Gcd63 gcdEngine = new Gcd63();
-	
-	public void findSingleFactor(long N, Progression progression) {
-		final int cbrt = (int) Math.cbrt(N);
-		this.N = N;
-		fourN = N<<2;
-		sqrt4N = Math.sqrt(fourN);
-		
-		final int kLimit = cbrt;
-		final double sixthRootTerm = 0.25 * Math.pow(N, 1/6.0); // double precision is required for stability
-		for (int k=progression.start; k <= kLimit; k += progression.step) {
-//			progression.testCount++; // XXX
-			final long fourkN = k * fourN;
-			double sqrtK = Math.sqrt(k);
-			final double sqrt4kN = sqrt4N * sqrtK;
-			// only use long values
-			final long aStart = (long) (sqrt4kN + ROUND_UP_DOUBLE); // much faster than ceil()
-			long aLimit = (long) (sqrt4kN + sixthRootTerm / sqrtK);
-			long aStep;
-			if (USE_kN_CONGRUENCES) {
-				long kN = k*N;
-				if ((k & 1) == 0) {
-					// k even -> make sure aLimit is odd
-					if (testSmallK(aStart, aLimit | 1, 2, fourkN, progression)>1) return;
-				} else {
-					final long kNp1 = kN + 1;
-					if ((kNp1 & 3) == 0) {
-						aLimit += (kNp1 - aLimit) & 7;
-						if (testSmallK(aStart, aLimit, 8, fourkN, progression)>1) return;
-					} else if ((kNp1 & 7) == 6) {
-						final long adjust1 = (kNp1 - aLimit) & 31;
-						if (testSmallK(aStart, aLimit+adjust1, 32, fourkN, progression)>1) return;
-						final long adjust2 = (-kNp1 - aLimit) & 31;
-						if (testSmallK(aStart, aLimit+adjust2, 32, fourkN, progression)>1) return;
-					} else { // (kN+1) == 2 (mod 8)
-						final long adjust1 = (kNp1 - aLimit) & 15;
-						if (testSmallK(aStart, aLimit+adjust1, 16, fourkN, progression)>1) return;
-						final long adjust2 = (-kNp1 - aLimit) & 15;
-						if (testSmallK(aStart, aLimit+adjust2, 16, fourkN, progression)>1) return;
-					}
-				}
-			} else {
-				// use a==(k+N) congruences
-				if ((k & 1) == 0) {
-					// k even -> make sure aLimit is odd
-					aLimit |= 1L;
-					aStep = 2;
-				} else {
-					final long kPlusN = k + N;
-					if ((kPlusN & 3) == 0) {
-						aLimit += ((kPlusN - aLimit) & 7);
-						aStep = 8;
-					} else {
-						final long adjust1 = (kPlusN - aLimit) & 15;
-						final long adjust2 = (-kPlusN - aLimit) & 15;
-						aLimit += adjust1<adjust2 ? adjust1 : adjust2;
-						aStep = 4; // XXX true step widths may be bigger, like 4, 28, 4, 28, ... But computations are too costly.
-					}
-				}
-				
-				if (testSmallK(aStart, aLimit, aStep, fourkN, progression)>1) return;
-			}
-		}
+    @Override
+    public String toString() {
+      return step + "*m + " + start;
+    }
+  }
 
-		return; // fail
-	}
-	
-	private long testSmallK(long aStart, long aLimit, long aStep, long fourkN, Progression progression) {
-		for (long a=aLimit; a >= aStart; a-=aStep) {
-			progression.testCount++;
-			final long test = a*a - fourkN;
-			// Here test<0 is possible because of double to long cast errors in the 'a'-computation.
-			// But then b = Math.sqrt(test) gives 0 (sic!) => 0*0 != test => no errors.
-			final long b = (long) Math.sqrt(test);
-			if (b*b == test) {
-				long gcd = gcdEngine.gcd(a+b, N);
-				if (gcd>1 && gcd<N) {
-					progression.factoredN++;
-					return gcdEngine.gcd(a+b, N);
-				}
-			}
-		}
-		return 1;
-	}
+  /** Use congruences a==kN mod 2^s if true, congruences a==(k+N) mod 2^s if false */
+  private static final boolean USE_kN_CONGRUENCES = true;
 
-	private void test() {
-		LOG.info("Test N having " + BITS + " bit");
-		BigInteger[] testNumbers = TestsetGenerator.generate(N_COUNT, BITS, TestNumberNature.MODERATE_SEMIPRIMES);
-		List<Progression> initialProgressions = new ArrayList<Progression>();
-		for (int j=1; j<1000; j++) {
-			initialProgressions.add(new Progression(j, 2*j)); // odd k
-			initialProgressions.add(new Progression(2*j, 2*j)); // even k
-		}
+  private static final int BITS = 35;
 
-		for (Progression progression : initialProgressions) {
-			LOG.info("Test initial progression " + progression);
-			for (BigInteger N : testNumbers) {
-				this.findSingleFactor(N.longValue(), progression);
-			}
-		}
-		
-		TreeMap<Double, List<Progression>> successRate2Progressions = new TreeMap<Double, List<Progression>>(Collections.reverseOrder());
-		for (Progression progression : initialProgressions) {
-			double avgSuccessCount = progression.factoredN / (double) progression.testCount;
-			List<Progression> progressionsList = successRate2Progressions.get(avgSuccessCount);
-			if (progressionsList == null) progressionsList = new ArrayList<Progression>();
-			progressionsList.add(progression);
-			successRate2Progressions.put(avgSuccessCount, progressionsList);
-		}
+  /** number of test numbers */
+  private static final int N_COUNT = 100000;
 
-		int j=0;
-		for (Map.Entry<Double, List<Progression>> entry : successRate2Progressions.entrySet()) {
-			double successRate = entry.getKey();
-			List<Progression> progressions = entry.getValue();
-			for (Progression progression : progressions) {
-				LOG.info("    #" + j + ": Progression (" + progression + ") factored " + progression.factoredN + " test numbers with " + progression.testCount + " tests -> successRate = " + successRate);
-				j++;
-			}
-		}
-	}
-	
-	public static void main(String[] args) {
-    	ConfigUtil.initProject();
-		// test N with BITS bits
-    	Lehman_AnalyzeKProgressions2 testEngine = new Lehman_AnalyzeKProgressions2();
-		testEngine.test();
-	}
+  /** This is a constant that is below 1 for rounding up double values to long. */
+  private static final double ROUND_UP_DOUBLE = 0.9999999665;
+
+  private long N, fourN;
+  private double sqrt4N;
+  private final Gcd63 gcdEngine = new Gcd63();
+
+  public void findSingleFactor(long N, Progression progression) {
+    final int cbrt = (int) Math.cbrt(N);
+    this.N = N;
+    fourN = N << 2;
+    sqrt4N = Math.sqrt(fourN);
+
+    final int kLimit = cbrt;
+    final double sixthRootTerm =
+        0.25 * Math.pow(N, 1 / 6.0); // double precision is required for stability
+    for (int k = progression.start; k <= kLimit; k += progression.step) {
+      //			progression.testCount++; // XXX
+      final long fourkN = k * fourN;
+      double sqrtK = Math.sqrt(k);
+      final double sqrt4kN = sqrt4N * sqrtK;
+      // only use long values
+      final long aStart = (long) (sqrt4kN + ROUND_UP_DOUBLE); // much faster than ceil()
+      long aLimit = (long) (sqrt4kN + sixthRootTerm / sqrtK);
+      long aStep;
+      if (USE_kN_CONGRUENCES) {
+        long kN = k * N;
+        if ((k & 1) == 0) {
+          // k even -> make sure aLimit is odd
+          if (testSmallK(aStart, aLimit | 1, 2, fourkN, progression) > 1) return;
+        } else {
+          final long kNp1 = kN + 1;
+          if ((kNp1 & 3) == 0) {
+            aLimit += (kNp1 - aLimit) & 7;
+            if (testSmallK(aStart, aLimit, 8, fourkN, progression) > 1) return;
+          } else if ((kNp1 & 7) == 6) {
+            final long adjust1 = (kNp1 - aLimit) & 31;
+            if (testSmallK(aStart, aLimit + adjust1, 32, fourkN, progression) > 1) return;
+            final long adjust2 = (-kNp1 - aLimit) & 31;
+            if (testSmallK(aStart, aLimit + adjust2, 32, fourkN, progression) > 1) return;
+          } else { // (kN+1) == 2 (mod 8)
+            final long adjust1 = (kNp1 - aLimit) & 15;
+            if (testSmallK(aStart, aLimit + adjust1, 16, fourkN, progression) > 1) return;
+            final long adjust2 = (-kNp1 - aLimit) & 15;
+            if (testSmallK(aStart, aLimit + adjust2, 16, fourkN, progression) > 1) return;
+          }
+        }
+      } else {
+        // use a==(k+N) congruences
+        if ((k & 1) == 0) {
+          // k even -> make sure aLimit is odd
+          aLimit |= 1L;
+          aStep = 2;
+        } else {
+          final long kPlusN = k + N;
+          if ((kPlusN & 3) == 0) {
+            aLimit += ((kPlusN - aLimit) & 7);
+            aStep = 8;
+          } else {
+            final long adjust1 = (kPlusN - aLimit) & 15;
+            final long adjust2 = (-kPlusN - aLimit) & 15;
+            aLimit += adjust1 < adjust2 ? adjust1 : adjust2;
+            aStep =
+                4; // XXX true step widths may be bigger, like 4, 28, 4, 28, ... But computations
+                   // are too costly.
+          }
+        }
+
+        if (testSmallK(aStart, aLimit, aStep, fourkN, progression) > 1) return;
+      }
+    }
+
+    return; // fail
+  }
+
+  private long testSmallK(
+      long aStart, long aLimit, long aStep, long fourkN, Progression progression) {
+    for (long a = aLimit; a >= aStart; a -= aStep) {
+      progression.testCount++;
+      final long test = a * a - fourkN;
+      // Here test<0 is possible because of double to long cast errors in the 'a'-computation.
+      // But then b = Math.sqrt(test) gives 0 (sic!) => 0*0 != test => no errors.
+      final long b = (long) Math.sqrt(test);
+      if (b * b == test) {
+        long gcd = gcdEngine.gcd(a + b, N);
+        if (gcd > 1 && gcd < N) {
+          progression.factoredN++;
+          return gcdEngine.gcd(a + b, N);
+        }
+      }
+    }
+    return 1;
+  }
+
+  private void test() {
+    LOG.info("Test N having " + BITS + " bit");
+    BigInteger[] testNumbers =
+        TestsetGenerator.generate(N_COUNT, BITS, TestNumberNature.MODERATE_SEMIPRIMES);
+    List<Progression> initialProgressions = new ArrayList<Progression>();
+    for (int j = 1; j < 1000; j++) {
+      initialProgressions.add(new Progression(j, 2 * j)); // odd k
+      initialProgressions.add(new Progression(2 * j, 2 * j)); // even k
+    }
+
+    for (Progression progression : initialProgressions) {
+      LOG.info("Test initial progression " + progression);
+      for (BigInteger N : testNumbers) {
+        this.findSingleFactor(N.longValue(), progression);
+      }
+    }
+
+    TreeMap<Double, List<Progression>> successRate2Progressions =
+        new TreeMap<Double, List<Progression>>(Collections.reverseOrder());
+    for (Progression progression : initialProgressions) {
+      double avgSuccessCount = progression.factoredN / (double) progression.testCount;
+      List<Progression> progressionsList = successRate2Progressions.get(avgSuccessCount);
+      if (progressionsList == null) progressionsList = new ArrayList<Progression>();
+      progressionsList.add(progression);
+      successRate2Progressions.put(avgSuccessCount, progressionsList);
+    }
+
+    int j = 0;
+    for (Map.Entry<Double, List<Progression>> entry : successRate2Progressions.entrySet()) {
+      double successRate = entry.getKey();
+      List<Progression> progressions = entry.getValue();
+      for (Progression progression : progressions) {
+        LOG.info(
+            "    #"
+                + j
+                + ": Progression ("
+                + progression
+                + ") factored "
+                + progression.factoredN
+                + " test numbers with "
+                + progression.testCount
+                + " tests -> successRate = "
+                + successRate);
+        j++;
+      }
+    }
+  }
+
+  public static void main(String[] args) {
+    ConfigUtil.initProject();
+    // test N with BITS bits
+    Lehman_AnalyzeKProgressions2 testEngine = new Lehman_AnalyzeKProgressions2();
+    testEngine.test();
+  }
 }

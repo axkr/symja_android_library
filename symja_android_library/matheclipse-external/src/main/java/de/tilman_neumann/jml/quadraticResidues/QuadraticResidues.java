@@ -19,42 +19,42 @@ import org.apache.log4j.Logger;
 
 /**
  * Methods to generate quadratic residues or test for quadratic residuosity for general moduli m.
- * 
+ *
  * @author Tilman Neumann
  */
 public class QuadraticResidues {
 
-	@SuppressWarnings("unused")
-	private static final Logger LOG = Logger.getLogger(QuadraticResidues.class);
+  @SuppressWarnings("unused")
+  private static final Logger LOG = Logger.getLogger(QuadraticResidues.class);
 
-	@SuppressWarnings("unused")
-	private static final boolean DEBUG = false;
+  @SuppressWarnings("unused")
+  private static final boolean DEBUG = false;
 
-    /**
-     * Return all quadratic residues modulo m, computed by brute force.
-     * 
-     * @param m
-     * @return set of quadratic residues modulo m, sorted bottom up.
-     */
-    public static TreeSet<Long> getQuadraticResidues(long m) {
-    	TreeSet<Long> quadraticResidues = new TreeSet<Long>();
-    	for (long k=0; k<=m/2; k++) {
-    		quadraticResidues.add(k*k % m);
-    	}
-    	return quadraticResidues;
+  /**
+   * Return all quadratic residues modulo m, computed by brute force.
+   *
+   * @param m
+   * @return set of quadratic residues modulo m, sorted bottom up.
+   */
+  public static TreeSet<Long> getQuadraticResidues(long m) {
+    TreeSet<Long> quadraticResidues = new TreeSet<Long>();
+    for (long k = 0; k <= m / 2; k++) {
+      quadraticResidues.add(k * k % m);
     }
-    
-    /**
-     * Get the quadratic residues of even "k" modulo m, computed by brute force.
-     * 
-     * @param m
-     * @return square residues generated from even k^2 modulo m
-     */
-    public static TreeSet<Long> getEvenQuadraticResidues(long m) {
-    	TreeSet<Long> quadraticResidues = new TreeSet<Long>();
-    	for (long k=0; k<=m/2; k+=2) {
-    		quadraticResidues.add(k*k % m);
-    	}
-    	return quadraticResidues;
+    return quadraticResidues;
+  }
+
+  /**
+   * Get the quadratic residues of even "k" modulo m, computed by brute force.
+   *
+   * @param m
+   * @return square residues generated from even k^2 modulo m
+   */
+  public static TreeSet<Long> getEvenQuadraticResidues(long m) {
+    TreeSet<Long> quadraticResidues = new TreeSet<Long>();
+    for (long k = 0; k <= m / 2; k += 2) {
+      quadraticResidues.add(k * k % m);
     }
+    return quadraticResidues;
+  }
 }

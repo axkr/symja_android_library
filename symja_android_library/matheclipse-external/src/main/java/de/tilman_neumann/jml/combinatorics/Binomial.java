@@ -25,87 +25,87 @@ import static de.tilman_neumann.jml.base.BigIntConstants.*;
 
 /**
  * Implementation of the binomial coefficient.
+ *
  * @author Tilman Neumann
  */
 public class Binomial {
-	private static final Logger LOG = Logger.getLogger(Binomial.class);
-	
-    /**
-     * Returns the binomial coefficient C(n, k). Works for negative n,k, too.
-	 * 
-     * @param n
-     * @param k
-     * @return binomial coefficient C(n, k)
-     */
-    public static final BigInteger binomial(int n, int k) {
-    	if (k==0 || n==k) return I_1; // holds for negative n, k, too
+  private static final Logger LOG = Logger.getLogger(Binomial.class);
 
-    	if (n>=0) {
-    		if (k<0 || k>n) return I_0;
-    		
-    		// standard case C(n, k) with n>k>0
-    		return core(n, k);
-    	}
+  /**
+   * Returns the binomial coefficient C(n, k). Works for negative n,k, too.
+   *
+   * @param n
+   * @param k
+   * @return binomial coefficient C(n, k)
+   */
+  public static final BigInteger binomial(int n, int k) {
+    if (k == 0 || n == k) return I_1; // holds for negative n, k, too
 
-    	// now treat n<0
-    	if (k>0) {
-    		BigInteger C = core(k-n-1, k);
-    		if ((k&1)==1) C = C.negate();
-    		return C;
-    	}
-    	
-    	// n, k < 0
-    	if (k>n) return I_0;
-		BigInteger C = core(-k-1, -n-1);
-		if ((Math.abs(n-k)&1)==1) C = C.negate();
-		return C;
+    if (n >= 0) {
+      if (k < 0 || k > n) return I_0;
 
+      // standard case C(n, k) with n>k>0
+      return core(n, k);
     }
-    
-    /**
-     * Computes the binomial coefficient C(n, k) for n >= k >= 0.
-     * Applies "early fraction reduction".
-     * 
-	 * Adapted from http://www.jonelo.de by Johann Nepomuk Loefflmann (jonelo@jonelo.de),
-	 * published under GNU General Public License.
-	 * 
-     * @param n
-     * @param k
-     * @return binomial coefficient C(n, k)
-     */
-    private static final BigInteger core(int n, int k) {
-    	// C(n, k) == C(n, n-k); the smaller choice of k means less iterations in the loop below 
-    	if (k<<1 > n) k = n-k;
-    	
-        // initialize with 1. factor in numerator
-        BigInteger num = BigInteger.valueOf(n-k+1);
-        BigInteger den = I_1;
 
-        BigInteger result = I_1;
-        for (int i=0; i<k; i++) {
-            result = result.multiply(num).divide(den);
-            num=num.add(I_1);
-            den=den.add(I_1);
-        }
-        return result;
+    // now treat n<0
+    if (k > 0) {
+      BigInteger C = core(k - n - 1, k);
+      if ((k & 1) == 1) C = C.negate();
+      return C;
     }
-    
-    /**
-     * Test
-     * @param args ignored
-     */
-    public static void main(String[] args) {
-    	ConfigUtil.initProject();
-    	
-    	int max = 10;
-    	BigIntGrid grid = new BigIntGrid("n", -max, "k", -max); // works for negative k, too
-    	for (int n=-max; n<=max; n++) {
-    		ArrayList<BigInteger> row = new ArrayList<>();
-        	for (int k=-max; k<=max; k++) {
-        		row.add(binomial(n,k));
-        	}
-        	grid.add(row);
-    	}
-    	LOG.info("binomial coefficients:\n" + grid);
+
+    // n, k < 0
+    if (k > n) return I_0;
+    BigInteger C = core(-k - 1, -n - 1);
+    if ((Math.abs(n - k) & 1) == 1) C = C.negate();
+    return C;
+  }
+
+  /**
+   * Computes the binomial coefficient C(n, k) for n >= k >= 0. Applies "early fraction reduction".
+   *
+   * <p>Adapted from http://www.jonelo.de by Johann Nepomuk Loefflmann (jonelo@jonelo.de), published
+   * under GNU General Public License.
+   *
+   * @param n
+   * @param k
+   * @return binomial coefficient C(n, k)
+   */
+  private static final BigInteger core(int n, int k) {
+    // C(n, k) == C(n, n-k); the smaller choice of k means less iterations in the loop below
+    if (k << 1 > n) k = n - k;
+
+    // initialize with 1. factor in numerator
+    BigInteger num = BigInteger.valueOf(n - k + 1);
+    BigInteger den = I_1;
+
+    BigInteger result = I_1;
+    for (int i = 0; i < k; i++) {
+      result = result.multiply(num).divide(den);
+      num = num.add(I_1);
+      den = den.add(I_1);
     }
+    return result;
+  }
+
+  /**
+   * Test
+   *
+   * @param args ignored
+   */
+  public static void main(String[] args) {
+    ConfigUtil.initProject();
+
+    int max = 10;
+    BigIntGrid grid = new BigIntGrid("n", -max, "k", -max); // works for negative k, too
+    for (int n = -max; n <= max; n++) {
+      ArrayList<BigInteger> row = new ArrayList<>();
+      for (int k = -max; k <= max; k++) {
+        row.add(binomial(n, k));
+      }
+      grid.add(row);
+    }
+    LOG.info("binomial coefficients:\n" + grid);
+  }
 }

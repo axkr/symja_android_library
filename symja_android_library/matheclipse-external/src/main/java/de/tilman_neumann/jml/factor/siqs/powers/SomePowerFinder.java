@@ -13,8 +13,6 @@
  */
 package de.tilman_neumann.jml.factor.siqs.powers;
 
-import static org.junit.Assert.assertEquals;
-
 import java.math.BigInteger;
 import java.util.Iterator;
 import java.util.TreeSet;
@@ -26,109 +24,128 @@ import de.tilman_neumann.jml.factor.siqs.sieve.SieveParams;
 
 /**
  * Base class for PowerFinders that do indeed find some powers.
+ *
  * @author Tilman Neumann
  */
-abstract public class SomePowerFinder implements PowerFinder {
-	private static final Logger LOG = Logger.getLogger(SomePowerFinder.class);
-	private static final boolean DEBUG = false;
+public abstract class SomePowerFinder implements PowerFinder {
+  private static final Logger LOG = Logger.getLogger(SomePowerFinder.class);
+  private static final boolean DEBUG = false;
 
-	@Override
-	public BaseArrays addPowers(BigInteger kN, int[] primes, int[] tArray, byte[] logPArray, double[] reciprocals, long[] pinvs, int primeBaseSize, SieveParams sieveParams) {
-		TreeSet<PowerEntry> powers = findPowers(kN, primes, tArray, primeBaseSize, sieveParams);
-		return mergePrimesAndPowers(primes, tArray, logPArray, reciprocals, pinvs, primeBaseSize, powers);
-	}
+  @Override
+  public BaseArrays addPowers(
+      BigInteger kN,
+      int[] primes,
+      int[] tArray,
+      byte[] logPArray,
+      double[] reciprocals,
+      long[] pinvs,
+      int primeBaseSize,
+      SieveParams sieveParams) {
+    TreeSet<PowerEntry> powers = findPowers(kN, primes, tArray, primeBaseSize, sieveParams);
+    return mergePrimesAndPowers(
+        primes, tArray, logPArray, reciprocals, pinvs, primeBaseSize, powers);
+  }
 
-	/**
-	 * Find some powers > pMin.
-	 * 
-	 * @param kN
-	 * @param primes
-	 * @param tArray
-	 * @param primeBaseSize
-	 * @param sieveParams basic sieve parameters
-	 * @return powers sorted bottom-up by p
-	 */
-	abstract TreeSet<PowerEntry> findPowers(BigInteger kN, int[] primes, int[] tArray, int primeBaseSize, SieveParams sieveParams);
+  /**
+   * Find some powers > pMin.
+   *
+   * @param kN
+   * @param primes
+   * @param tArray
+   * @param primeBaseSize
+   * @param sieveParams basic sieve parameters
+   * @return powers sorted bottom-up by p
+   */
+  abstract TreeSet<PowerEntry> findPowers(
+      BigInteger kN, int[] primes, int[] tArray, int primeBaseSize, SieveParams sieveParams);
 
-	/**
-	 * Merge primes and powers.
-	 * @param primesArray
-	 * @param tArray
-	 * @param logPArray
-	 * @param primeBaseSize
-	 * @param powerEntries
-	 * @return
-	 */
-	private BaseArrays mergePrimesAndPowers(int[] primesArray, int[] tArray, byte[] logPArray, double[] pinvArrayD, long[] pinvArrayL, int primeBaseSize, TreeSet<PowerEntry> powerEntries) {
-		int powerCount = powerEntries.size();
-		BaseArrays baseArrays = new BaseArrays(primeBaseSize + powerCount);
-		int[] mergedPrimes = baseArrays.primes;
-		int[] mergedExponents = baseArrays.exponents;
-		int[] mergedPowers = baseArrays.pArray;
-		int[] mergedTArray = baseArrays.tArray;
-		byte[] mergedlogPArray = baseArrays.logPArray;
-		double[] mergedPinvArrayD = baseArrays.pinvArrayD;
-		long[] mergedPinvArrayL = baseArrays.pinvArrayL;
+  /**
+   * Merge primes and powers.
+   *
+   * @param primesArray
+   * @param tArray
+   * @param logPArray
+   * @param primeBaseSize
+   * @param powerEntries
+   * @return
+   */
+  private BaseArrays mergePrimesAndPowers(
+      int[] primesArray,
+      int[] tArray,
+      byte[] logPArray,
+      double[] pinvArrayD,
+      long[] pinvArrayL,
+      int primeBaseSize,
+      TreeSet<PowerEntry> powerEntries) {
+    int powerCount = powerEntries.size();
+    BaseArrays baseArrays = new BaseArrays(primeBaseSize + powerCount);
+    int[] mergedPrimes = baseArrays.primes;
+    int[] mergedExponents = baseArrays.exponents;
+    int[] mergedPowers = baseArrays.pArray;
+    int[] mergedTArray = baseArrays.tArray;
+    byte[] mergedlogPArray = baseArrays.logPArray;
+    double[] mergedPinvArrayD = baseArrays.pinvArrayD;
+    long[] mergedPinvArrayL = baseArrays.pinvArrayL;
 
-		int mergedIndex = 0;
-		int pIndex = 0;
-		int p = primesArray[0];
-		Iterator<PowerEntry> powerIter = powerEntries.iterator();
-		if (powerIter.hasNext()) {
-			PowerEntry powerEntry = powerIter.next();
-			while (true) {
-				if (p < powerEntry.power) {
-					// add p
-					mergedPrimes[mergedIndex] = primesArray[pIndex];
-					mergedExponents[mergedIndex] = 1;
-					mergedPowers[mergedIndex] = primesArray[pIndex];
-					mergedTArray[mergedIndex] = tArray[pIndex];
-					mergedlogPArray[mergedIndex] = logPArray[pIndex];
-					mergedPinvArrayD[mergedIndex] = pinvArrayD[pIndex];
-					mergedPinvArrayL[mergedIndex] = pinvArrayL[pIndex];
-					mergedIndex++;
-					// get next p
-					pIndex++;
-					if (pIndex < primeBaseSize) {
-						p = primesArray[pIndex];
-					} else {
-						// there are no powers > pMax -> we are done
-						break;
-					}
-				} else {
-					// add power
-					mergedPrimes[mergedIndex] = powerEntry.p;
-					mergedExponents[mergedIndex] = powerEntry.exponent;
-					mergedPowers[mergedIndex] = powerEntry.power;
-					mergedTArray[mergedIndex] = powerEntry.t;
-					mergedlogPArray[mergedIndex] = powerEntry.logPower;
-					mergedPinvArrayD[mergedIndex] = powerEntry.pinvD;
-					mergedPinvArrayL[mergedIndex] = powerEntry.pinvL;
-					mergedIndex++;
-					// get next power
-					if (powerIter.hasNext()) {
-						powerEntry = powerIter.next();
-					} else {
-						// exit; the last primes are added below
-						break;
-					}
-				}
-			}
-		}
-		// add last primes
-		for (; pIndex<primeBaseSize; pIndex++, mergedIndex++) {
-			mergedPrimes[mergedIndex] = primesArray[pIndex];
-			mergedExponents[mergedIndex] = 1;
-			mergedPowers[mergedIndex] = primesArray[pIndex];
-			mergedTArray[mergedIndex] = tArray[pIndex];
-			mergedlogPArray[mergedIndex] = logPArray[pIndex];
-			mergedPinvArrayD[mergedIndex] = pinvArrayD[pIndex];
-			mergedPinvArrayL[mergedIndex] = pinvArrayL[pIndex];
-		}
-		if (DEBUG) {
-			LOG.debug("#primes = " + primeBaseSize + ", #powers = " + powerCount);
-			assertEquals(primeBaseSize + powerCount, mergedIndex);
-		}
-		return baseArrays;
-	}
+    int mergedIndex = 0;
+    int pIndex = 0;
+    int p = primesArray[0];
+    Iterator<PowerEntry> powerIter = powerEntries.iterator();
+    if (powerIter.hasNext()) {
+      PowerEntry powerEntry = powerIter.next();
+      while (true) {
+        if (p < powerEntry.power) {
+          // add p
+          mergedPrimes[mergedIndex] = primesArray[pIndex];
+          mergedExponents[mergedIndex] = 1;
+          mergedPowers[mergedIndex] = primesArray[pIndex];
+          mergedTArray[mergedIndex] = tArray[pIndex];
+          mergedlogPArray[mergedIndex] = logPArray[pIndex];
+          mergedPinvArrayD[mergedIndex] = pinvArrayD[pIndex];
+          mergedPinvArrayL[mergedIndex] = pinvArrayL[pIndex];
+          mergedIndex++;
+          // get next p
+          pIndex++;
+          if (pIndex < primeBaseSize) {
+            p = primesArray[pIndex];
+          } else {
+            // there are no powers > pMax -> we are done
+            break;
+          }
+        } else {
+          // add power
+          mergedPrimes[mergedIndex] = powerEntry.p;
+          mergedExponents[mergedIndex] = powerEntry.exponent;
+          mergedPowers[mergedIndex] = powerEntry.power;
+          mergedTArray[mergedIndex] = powerEntry.t;
+          mergedlogPArray[mergedIndex] = powerEntry.logPower;
+          mergedPinvArrayD[mergedIndex] = powerEntry.pinvD;
+          mergedPinvArrayL[mergedIndex] = powerEntry.pinvL;
+          mergedIndex++;
+          // get next power
+          if (powerIter.hasNext()) {
+            powerEntry = powerIter.next();
+          } else {
+            // exit; the last primes are added below
+            break;
+          }
+        }
+      }
+    }
+    // add last primes
+    for (; pIndex < primeBaseSize; pIndex++, mergedIndex++) {
+      mergedPrimes[mergedIndex] = primesArray[pIndex];
+      mergedExponents[mergedIndex] = 1;
+      mergedPowers[mergedIndex] = primesArray[pIndex];
+      mergedTArray[mergedIndex] = tArray[pIndex];
+      mergedlogPArray[mergedIndex] = logPArray[pIndex];
+      mergedPinvArrayD[mergedIndex] = pinvArrayD[pIndex];
+      mergedPinvArrayL[mergedIndex] = pinvArrayL[pIndex];
+    }
+    //		if (DEBUG) {
+    //			LOG.debug("#primes = " + primeBaseSize + ", #powers = " + powerCount);
+    //			assertEquals(primeBaseSize + powerCount, mergedIndex);
+    //		}
+    return baseArrays;
+  }
 }

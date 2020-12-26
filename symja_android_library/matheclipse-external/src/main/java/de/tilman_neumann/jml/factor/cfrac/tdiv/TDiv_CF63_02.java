@@ -13,8 +13,6 @@
  */
 package de.tilman_neumann.jml.factor.cfrac.tdiv;
 
-import static org.junit.Assert.assertTrue;
-
 import java.math.BigInteger;
 
 import org.apache.log4j.Logger;
@@ -32,154 +30,160 @@ import de.tilman_neumann.jml.primes.probable.PrPTest;
 
 /**
  * Auxiliary factor algorithm to find smooth decompositions of Q's.
- * 
- * Version 02:
- * Uses trial division first, complete factorization if Q is considered sufficiently smooth.
- * 
+ *
+ * <p>Version 02: Uses trial division first, complete factorization if Q is considered sufficiently
+ * smooth.
+ *
  * @author Tilman Neumann
  */
 public class TDiv_CF63_02 implements TDiv_CF63 {
-	private static final Logger LOG = Logger.getLogger(TDiv_CF63_02.class);
-	private static final boolean DEBUG = false;
+  private static final Logger LOG = Logger.getLogger(TDiv_CF63_02.class);
+  private static final boolean DEBUG = false;
 
-	private int primeBaseSize;
-	private int[] primesArray;
-	private int pMax;
-	private long pMaxSquare;
+  private int primeBaseSize;
+  private int[] primesArray;
+  private int pMax;
+  private long pMaxSquare;
 
-	/** Q is sufficiently smooth if the unfactored Q_rest is smaller than this bound depending on N */
-	private double maxQRest;
+  /** Q is sufficiently smooth if the unfactored Q_rest is smaller than this bound depending on N */
+  private double maxQRest;
 
-	private TDiv31Inverse tDiv31 = new TDiv31Inverse();
-	private Hart_TDiv_Race hart = new Hart_TDiv_Race();
-	private PollardRhoBrentMontgomeryR64Mul63 pollardRhoR64Mul63 = new PollardRhoBrentMontgomeryR64Mul63();
-	private PollardRhoBrentMontgomery64 pollardRho64 = new PollardRhoBrentMontgomery64();
-	
-	private PrPTest prpTest = new PrPTest();
+  private TDiv31Inverse tDiv31 = new TDiv31Inverse();
+  private Hart_TDiv_Race hart = new Hart_TDiv_Race();
+  private PollardRhoBrentMontgomeryR64Mul63 pollardRhoR64Mul63 =
+      new PollardRhoBrentMontgomeryR64Mul63();
+  private PollardRhoBrentMontgomery64 pollardRho64 = new PollardRhoBrentMontgomery64();
 
-	// result: two arrays that are reused, their content is _copied_ to AQ-pairs
-	private SortedIntegerArray smallFactors = new SortedIntegerArray();
-	private SortedLongArray bigFactors = new SortedLongArray();
-	private AQPairFactory aqPairFactory = new AQPairFactory();
+  private PrPTest prpTest = new PrPTest();
 
-	@Override
-	public String getName() {
-		return "TDiv63-02";
-	}
+  // result: two arrays that are reused, their content is _copied_ to AQ-pairs
+  private SortedIntegerArray smallFactors = new SortedIntegerArray();
+  private SortedLongArray bigFactors = new SortedLongArray();
+  private AQPairFactory aqPairFactory = new AQPairFactory();
 
-	public void initialize(BigInteger N, double maxQRest) {
-		this.maxQRest = maxQRest;
-	}
+  @Override
+  public String getName() {
+    return "TDiv63-02";
+  }
 
-	public void initialize(BigInteger kN, int primeBaseSize, int[] primesArray) {
-		this.primeBaseSize = primeBaseSize;
-		this.primesArray = primesArray;
-		this.pMax = primesArray[primeBaseSize-1];
-		this.pMaxSquare = pMax * (long) pMax;
-	}
+  public void initialize(BigInteger N, double maxQRest) {
+    this.maxQRest = maxQRest;
+  }
 
-	public AQPair test(BigInteger A, long Q) {
-		smallFactors.reset();
-		bigFactors.reset();
-		
-		// sign
-		long Q_rest = Q;
-		if (Q < 0) {
-			smallFactors.add(-1);
-			Q_rest = -Q;
-		}
-		// Remove multiples of 2
-		int lsb = Long.numberOfTrailingZeros(Q_rest);
-		if (lsb > 0) {
-			smallFactors.add(2, (short)lsb);
-			Q_rest = Q_rest>>lsb;
-		}
+  public void initialize(BigInteger kN, int primeBaseSize, int[] primesArray) {
+    this.primeBaseSize = primeBaseSize;
+    this.primesArray = primesArray;
+    this.pMax = primesArray[primeBaseSize - 1];
+    this.pMaxSquare = pMax * (long) pMax;
+  }
 
-		// Trial division chain:
-		// -> first do it in long, then in int.
-		// -> (small or probabilistic) prime tests during trial division just slow it down.
-		// -> running indices bottom-up is faster because small dividends are more likely to reduce the size of Q_rest.
-		int trialDivIndex = 1; // p[0]=2 has already been tested
-		int Q_rest_bits = 64 - Long.numberOfLeadingZeros(Q_rest);
-		if (Q_rest_bits>31) {
-			// do trial division in long
-			while (trialDivIndex < primeBaseSize) {
-				int p = primesArray[trialDivIndex];
-				if (Q_rest % p == 0) {
-					// no remainder -> exact division -> small factor
-					smallFactors.add(p);
-					Q_rest /= p;
-					// After division by a prime base element (typically < 20 bit), Q_rest is 12..61 bits.
-					Q_rest_bits = 64 - Long.numberOfLeadingZeros(Q_rest);
-					if (Q_rest_bits<32) break; // continue with int
-					// trialDivIndex must remain as it is to find the same p more than once
-				} else {
-					trialDivIndex++;
-				}
-			} // end while (trialDivIndex < primeBaseSize)
-		}
-		if (DEBUG) assertTrue(Q_rest>1);
-		if (Q_rest_bits<32) {
-			int Q_rest_int = (int) Q_rest;
-			while (trialDivIndex < primeBaseSize) {
-				// continue trial division in int
-				int p = primesArray[trialDivIndex];
-				while (Q_rest_int % p == 0) { // in the last loop, a while pays out!
-					// no remainder -> exact division -> small factor
-					smallFactors.add(p);
-					Q_rest_int /= p;
-				}
-				trialDivIndex++;
-			} // end while (trialDivIndex < primeBaseSize)
-			if (Q_rest_int==1) return new Smooth_Perfect(A, smallFactors);
-			Q_rest = (long) Q_rest_int; // keep Q_rest up-to-date
-		}
+  public AQPair test(BigInteger A, long Q) {
+    smallFactors.reset();
+    bigFactors.reset();
 
-		// trial division was not sufficient to factor Q completely.
-		// the remaining Q is either a prime > pMax, or a composite > pMax^2.
-		if (Q_rest > maxQRest) return null; // Q is not sufficiently smooth
-		 
-		// now we consider Q as sufficiently smooth. then we want to know all prime factors, as long as we do not find one that is too big to be useful.
-		//LOG.debug("before factor_recurrent()");
-		boolean isSmooth = factor_recurrent(Q_rest);
-		if (DEBUG) if (bigFactors.size()>2) LOG.debug("Found " + bigFactors.size() + " distinct big factors: " + bigFactors);
-		return isSmooth ? aqPairFactory.create(A, smallFactors, bigFactors) : null;
-	}
+    // sign
+    long Q_rest = Q;
+    if (Q < 0) {
+      smallFactors.add(-1);
+      Q_rest = -Q;
+    }
+    // Remove multiples of 2
+    int lsb = Long.numberOfTrailingZeros(Q_rest);
+    if (lsb > 0) {
+      smallFactors.add(2, (short) lsb);
+      Q_rest = Q_rest >> lsb;
+    }
 
-	private boolean factor_recurrent(long Q_rest) {
-		if (Q_rest < pMaxSquare) {
-			// we divided Q_rest by all primes <= pMax and the rest is < pMax^2 -> it must be prime
-			if (DEBUG) assertTrue(prpTest.isProbablePrime(Q_rest));
-			if (bitLength(Q_rest) > 31) return false;
-			bigFactors.add((int)Q_rest);
-			return true;
-		}
-		// here we can not do without isProbablePrime(), because calling findSingleFactor() may not return when called with a prime argument
-		if (prpTest.isProbablePrime(Q_rest)) {
-			// Q_rest is (probable) prime -> end of recurrence
-			if (bitLength(Q_rest) > 31) return false;
-			bigFactors.add((int)Q_rest);
-			return true;
-		} // else: Q_rest is surely not prime
+    // Trial division chain:
+    // -> first do it in long, then in int.
+    // -> (small or probabilistic) prime tests during trial division just slow it down.
+    // -> running indices bottom-up is faster because small dividends are more likely to reduce the
+    // size of Q_rest.
+    int trialDivIndex = 1; // p[0]=2 has already been tested
+    int Q_rest_bits = 64 - Long.numberOfLeadingZeros(Q_rest);
+    if (Q_rest_bits > 31) {
+      // do trial division in long
+      while (trialDivIndex < primeBaseSize) {
+        int p = primesArray[trialDivIndex];
+        if (Q_rest % p == 0) {
+          // no remainder -> exact division -> small factor
+          smallFactors.add(p);
+          Q_rest /= p;
+          // After division by a prime base element (typically < 20 bit), Q_rest is 12..61 bits.
+          Q_rest_bits = 64 - Long.numberOfLeadingZeros(Q_rest);
+          if (Q_rest_bits < 32) break; // continue with int
+          // trialDivIndex must remain as it is to find the same p more than once
+        } else {
+          trialDivIndex++;
+        }
+      } // end while (trialDivIndex < primeBaseSize)
+    }
+    //		if (DEBUG) assertTrue(Q_rest>1);
+    if (Q_rest_bits < 32) {
+      int Q_rest_int = (int) Q_rest;
+      while (trialDivIndex < primeBaseSize) {
+        // continue trial division in int
+        int p = primesArray[trialDivIndex];
+        while (Q_rest_int % p == 0) { // in the last loop, a while pays out!
+          // no remainder -> exact division -> small factor
+          smallFactors.add(p);
+          Q_rest_int /= p;
+        }
+        trialDivIndex++;
+      } // end while (trialDivIndex < primeBaseSize)
+      if (Q_rest_int == 1) return new Smooth_Perfect(A, smallFactors);
+      Q_rest = (long) Q_rest_int; // keep Q_rest up-to-date
+    }
 
-		// Find a factor of Q_rest, where Q_rest is pMax < Q_rest <= maxQRest, composite and odd.
-		long factor1;
-		int Q_rest_bits = bitLength(Q_rest);
-		if (Q_rest_bits < 25) {
-			factor1 = tDiv31.findSingleFactor((int) Q_rest);
-		} else if (Q_rest_bits < 50) {
-			factor1 = hart.findSingleFactor(Q_rest);
-		} else if (Q_rest_bits < 57) {
-			factor1 = pollardRhoR64Mul63.findSingleFactor(Q_rest);
-		} else { // max Q_rest_bits is 63, pollardRho64 works only until 62 bit, but that should be ok
-			factor1 = pollardRho64.findSingleFactor(Q_rest);
-		}
-		// Recurrence: Is it possible to further decompose the parts?
-		// Here we can not exclude factors > 31 bit because they may have 2 prime factors themselves.
-		return factor_recurrent(factor1) && factor_recurrent(Q_rest / factor1);
-	}
-	
-	private int bitLength(long n) {
-		return 64 - Long.numberOfLeadingZeros(n);
-	}
+    // trial division was not sufficient to factor Q completely.
+    // the remaining Q is either a prime > pMax, or a composite > pMax^2.
+    if (Q_rest > maxQRest) return null; // Q is not sufficiently smooth
+
+    // now we consider Q as sufficiently smooth. then we want to know all prime factors, as long as
+    // we do not find one that is too big to be useful.
+    // LOG.debug("before factor_recurrent()");
+    boolean isSmooth = factor_recurrent(Q_rest);
+    if (DEBUG)
+      if (bigFactors.size() > 2)
+        LOG.debug("Found " + bigFactors.size() + " distinct big factors: " + bigFactors);
+    return isSmooth ? aqPairFactory.create(A, smallFactors, bigFactors) : null;
+  }
+
+  private boolean factor_recurrent(long Q_rest) {
+    if (Q_rest < pMaxSquare) {
+      // we divided Q_rest by all primes <= pMax and the rest is < pMax^2 -> it must be prime
+      //			if (DEBUG) assertTrue(prpTest.isProbablePrime(Q_rest));
+      if (bitLength(Q_rest) > 31) return false;
+      bigFactors.add((int) Q_rest);
+      return true;
+    }
+    // here we can not do without isProbablePrime(), because calling findSingleFactor() may not
+    // return when called with a prime argument
+    if (prpTest.isProbablePrime(Q_rest)) {
+      // Q_rest is (probable) prime -> end of recurrence
+      if (bitLength(Q_rest) > 31) return false;
+      bigFactors.add((int) Q_rest);
+      return true;
+    } // else: Q_rest is surely not prime
+
+    // Find a factor of Q_rest, where Q_rest is pMax < Q_rest <= maxQRest, composite and odd.
+    long factor1;
+    int Q_rest_bits = bitLength(Q_rest);
+    if (Q_rest_bits < 25) {
+      factor1 = tDiv31.findSingleFactor((int) Q_rest);
+    } else if (Q_rest_bits < 50) {
+      factor1 = hart.findSingleFactor(Q_rest);
+    } else if (Q_rest_bits < 57) {
+      factor1 = pollardRhoR64Mul63.findSingleFactor(Q_rest);
+    } else { // max Q_rest_bits is 63, pollardRho64 works only until 62 bit, but that should be ok
+      factor1 = pollardRho64.findSingleFactor(Q_rest);
+    }
+    // Recurrence: Is it possible to further decompose the parts?
+    // Here we can not exclude factors > 31 bit because they may have 2 prime factors themselves.
+    return factor_recurrent(factor1) && factor_recurrent(Q_rest / factor1);
+  }
+
+  private int bitLength(long n) {
+    return 64 - Long.numberOfLeadingZeros(n);
+  }
 }

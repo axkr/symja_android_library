@@ -13,9 +13,7 @@
  */
 package de.tilman_neumann.jml.primes.exact;
 
-/**
- * Segmented sieve callback interface.
- */
+/** Segmented sieve callback interface. */
 public interface SieveCallback {
-	void processPrime(long prime);
+  void processPrime(long prime);
 }

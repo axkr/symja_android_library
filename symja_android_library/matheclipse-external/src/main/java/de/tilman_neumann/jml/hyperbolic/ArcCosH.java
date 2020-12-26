@@ -24,35 +24,38 @@ import static de.tilman_neumann.jml.base.BigDecimalConstants.*;
 
 /**
  * Inverse hyperbolic cosinus function.
+ *
  * @author Tilman Neumann
  */
 public class ArcCosH {
 
-	/**
-	 * The absolute value of acosh(x) implemented by ln() formula.
-	 * @param x real argument >= 1
-	 * @param scale wanted accuracy in after-comma digits
-	 * @return positive value acosh(x), the negation is the second solution
-	 */
-	public static BigDecimal acoshAbs(BigDecimal x, Scale scale) {
-		if (x.compareTo(F_1)<0) throw new ArithmeticException("acosh(x) requires x>=1 but x=" + x);
-		BigDecimal xSquare_minus1 = Pow.pow(x, 2, scale).subtract(F_1);
-		BigDecimal sqrtTerm = SqrtReal.sqrt(xSquare_minus1, scale);
-		BigDecimal angle = /* +- */ Ln.ln(x.add(sqrtTerm), scale).abs();
-		return angle;
-	}
-	
-	/**
-	 * Computes the "++" branch of acosh(x) = + ln(x + sqrt(x^2-1)).
-	 * @param x real argument >= 1
-	 * @param scale
-	 * @return "++" branch of acosh(x)
-	 */
-	public static BigDecimal acosh1(BigDecimal x, Scale scale) {
-		if (x.compareTo(F_1)<0) throw new ArithmeticException("acosh(x) requires x>=1 but x=" + x);
-		BigDecimal xSquare_minus1 = Pow.pow(x, 2, scale).subtract(F_1);
-		BigDecimal sqrtTerm = SqrtReal.sqrt(xSquare_minus1, scale);
-		BigDecimal angle = Ln.ln(x.add(sqrtTerm), scale);
-		return angle;
-	}
+  /**
+   * The absolute value of acosh(x) implemented by ln() formula.
+   *
+   * @param x real argument >= 1
+   * @param scale wanted accuracy in after-comma digits
+   * @return positive value acosh(x), the negation is the second solution
+   */
+  public static BigDecimal acoshAbs(BigDecimal x, Scale scale) {
+    if (x.compareTo(F_1) < 0) throw new ArithmeticException("acosh(x) requires x>=1 but x=" + x);
+    BigDecimal xSquare_minus1 = Pow.pow(x, 2, scale).subtract(F_1);
+    BigDecimal sqrtTerm = SqrtReal.sqrt(xSquare_minus1, scale);
+    BigDecimal angle = /* +- */ Ln.ln(x.add(sqrtTerm), scale).abs();
+    return angle;
+  }
+
+  /**
+   * Computes the "++" branch of acosh(x) = + ln(x + sqrt(x^2-1)).
+   *
+   * @param x real argument >= 1
+   * @param scale
+   * @return "++" branch of acosh(x)
+   */
+  public static BigDecimal acosh1(BigDecimal x, Scale scale) {
+    if (x.compareTo(F_1) < 0) throw new ArithmeticException("acosh(x) requires x>=1 but x=" + x);
+    BigDecimal xSquare_minus1 = Pow.pow(x, 2, scale).subtract(F_1);
+    BigDecimal sqrtTerm = SqrtReal.sqrt(xSquare_minus1, scale);
+    BigDecimal angle = Ln.ln(x.add(sqrtTerm), scale);
+    return angle;
+  }
 }

@@ -19,30 +19,30 @@ import de.tilman_neumann.jml.combinatorics.Factorial;
 
 /**
  * Multinomial coefficient implementations.
- * 
+ *
  * @author Tilman Neumann
  */
 public class Multinomial {
 
-	/**
-	 * Multinomial coefficient.
-	 * 
-	 * @param N Category counts.
-	 * @return (N1+...+Nk) choose (N1, ..., Nk)
-	 */
-	public static BigInteger multinomial(int N[]) {
-		// get dimension
-		int k = N.length;
-	
-		// get total count
-		int Nall = 0;
-		for (int i = 0; i<k; i++) Nall += N[i];
-	
-		// calculate the multinomial
-		BigInteger ret = Factorial.factorial(Nall);
-		for (int i=0; i<k; i++) ret = ret.divide(Factorial.factorial(N[i]));
-	
-		// return the result
-		return ret;
-	}
+  /**
+   * Multinomial coefficient.
+   *
+   * @param N Category counts.
+   * @return (N1+...+Nk) choose (N1, ..., Nk)
+   */
+  public static BigInteger multinomial(int N[]) {
+    // get dimension
+    int k = N.length;
+
+    // get total count
+    int Nall = 0;
+    for (int i = 0; i < k; i++) Nall += N[i];
+
+    // calculate the multinomial
+    BigInteger ret = Factorial.factorial(Nall);
+    for (int i = 0; i < k; i++) ret = ret.divide(Factorial.factorial(N[i]));
+
+    // return the result
+    return ret;
+  }
 }
