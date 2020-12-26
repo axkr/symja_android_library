@@ -731,7 +731,7 @@ public class EllipticCurveMethod extends FactorAlgorithm {
       }
       /* do the first line of Table 4 whose condition qualifies */
       if (4 * d <= 5 * e && ((d + e) % 3) == 0) {
-          /* condition 1 */
+        /* condition 1 */
         r = (2 * d - e) / 3;
         e = (2 * e - d) / 3;
         d = r;
@@ -745,12 +745,12 @@ public class EllipticCurveMethod extends FactorAlgorithm {
         zA = zT2;
         zT2 = t; /* swap A and T2 */
       } else if (4 * d <= 5 * e && (d - e) % 6 == 0) {
-          /* condition 2 */
+        /* condition 2 */
         d = (d - e) / 2;
         add3(xB, zB, xA, zA, xB, zB, xC, zC); /* B = f(A,B,C) */
         duplicate(xA, zA, xA, zA, AA); /* A = 2*A */
       } else if (d <= (4 * e)) {
-          /* condition 3 */
+        /* condition 3 */
         d -= e;
         add3(xT, zT, xB, zB, xA, zA, xC, zC); /* T = f(B,A,C) */
         t = xB;
@@ -762,17 +762,17 @@ public class EllipticCurveMethod extends FactorAlgorithm {
         zT = zC;
         zC = t; /* circular permutation (B,T,C) */
       } else if ((d + e) % 2 == 0) {
-          /* condition 4 */
+        /* condition 4 */
         d = (d - e) / 2;
         add3(xB, zB, xB, zB, xA, zA, xC, zC); /* B = f(B,A,C) */
         duplicate(xA, zA, xA, zA, AA); /* A = 2*A */
       } else if (d % 2 == 0) {
-          /* condition 5 */
+        /* condition 5 */
         d /= 2;
         add3(xC, zC, xC, zC, xA, zA, xB, zB); /* C = f(C,A,B) */
         duplicate(xA, zA, xA, zA, AA); /* A = 2*A */
       } else if (d % 3 == 0) {
-          /* condition 6 */
+        /* condition 6 */
         d = d / 3 - e;
         duplicate(xT, zT, xA, zA, AA); /* T1 = 2*A */
         add3(xT2, zT2, xA, zA, xB, zB, xC, zC); /* T2 = f(A,B,C) */
@@ -787,14 +787,14 @@ public class EllipticCurveMethod extends FactorAlgorithm {
         zB = zT;
         zT = t; /* circular permutation (C,B,T) */
       } else if ((d + e) % 3 == 0) {
-          /* condition 7 */
+        /* condition 7 */
         d = (d - 2 * e) / 3;
         add3(xT, zT, xA, zA, xB, zB, xC, zC); /* T1 = f(A,B,C) */
         add3(xB, zB, xT, zT, xA, zA, xB, zB); /* B = f(T1,A,B) */
         duplicate(xT, zT, xA, zA, AA);
         add3(xA, zA, xA, zA, xT, zT, xA, zA); /* A = 3*A */
       } else if ((d - e) % 3 == 0) {
-          /* condition 8 */
+        /* condition 8 */
         d = (d - e) / 3;
         add3(xT, zT, xA, zA, xB, zB, xC, zC); /* T1 = f(A,B,C) */
         add3(xC, zC, xC, zC, xA, zA, xB, zB); /* C = f(A,C,B) */
@@ -807,7 +807,7 @@ public class EllipticCurveMethod extends FactorAlgorithm {
         duplicate(xT, zT, xA, zA, AA);
         add3(xA, zA, xA, zA, xT, zT, xA, zA); /* A = 3*A */
       } else if (e % 2 == 0) {
-          /* condition 9 */
+        /* condition 9 */
         e /= 2;
         add3(xC, zC, xC, zC, xB, zB, xA, zA); /* C = f(C,B,A) */
         duplicate(xB, zB, xB, zB, AA); /* B = 2*B */
@@ -834,41 +834,41 @@ public class EllipticCurveMethod extends FactorAlgorithm {
         e = r;
       }
       if (4 * d <= 5 * e && ((d + e) % 3) == 0) {
-          /* condition 1 */
+        /* condition 1 */
         r = (2 * d - e) / 3;
         e = (2 * e - d) / 3;
         d = r;
         c += 3 * ADD; /* 3 additions */
       } else if (4 * d <= 5 * e && (d - e) % 6 == 0) {
-          /* condition 2 */
+        /* condition 2 */
         d = (d - e) / 2;
         c += ADD + DUP; /* one addition, one duplicate */
       } else if (d <= (4 * e)) {
-          /* condition 3 */
+        /* condition 3 */
         d -= e;
         c += ADD; /* one addition */
       } else if ((d + e) % 2 == 0) {
-          /* condition 4 */
+        /* condition 4 */
         d = (d - e) / 2;
         c += ADD + DUP; /* one addition, one duplicate */
       } else if (d % 2 == 0) {
-          /* condition 5 */
+        /* condition 5 */
         d /= 2;
         c += ADD + DUP; /* one addition, one duplicate */
       } else if (d % 3 == 0) {
-          /* condition 6 */
+        /* condition 6 */
         d = d / 3 - e;
         c += 3 * ADD + DUP; /* three additions, one duplicate */
       } else if ((d + e) % 3 == 0) {
-          /* condition 7 */
+        /* condition 7 */
         d = (d - 2 * e) / 3;
         c += 3 * ADD + DUP; /* three additions, one duplicate */
       } else if ((d - e) % 3 == 0) {
-          /* condition 8 */
+        /* condition 8 */
         d = (d - e) / 3;
         c += 3 * ADD + DUP; /* three additions, one duplicate */
       } else if (e % 2 == 0) {
-          /* condition 9 */
+        /* condition 9 */
         e /= 2;
         c += ADD + DUP; /* one addition, one duplicate */
       }

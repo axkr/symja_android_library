@@ -106,12 +106,12 @@ public class CollatzSequenceTest {
     LOG.info(
         "record lengths   = "
             + recordLengths); // A217934 = (0,) 1, 6, 11, 96, 132, 171, 220, 267, 269, 282, 287,
-                              // 298, 365, 401, 468, 476, 486, 502, 613
+    // 298, 365, 401, 468, 476, 486, 502, 613
     LOG.info(
         "N(record lengths)= "
             + recordLengthsN); // A060412 = (1,) 2, 3, 7, 27, 703, 10087, 35655, 270271, 362343,
-                               // 381727, 626331, 1027431, 1126015, 8088063, 13421671, 20638335,
-                               // 26716671, 56924955, 63728127
+    // 381727, 626331, 1027431, 1126015, 8088063, 13421671, 20638335,
+    // 26716671, 56924955, 63728127
 
     analyzeNStartSequences(length2NStartList);
     analyzeProgressions(progressionToMaxLength);
@@ -186,11 +186,11 @@ public class CollatzSequenceTest {
     LOG.info(
         "record lengths   = "
             + recordLengths); // not on OEIS: 0, 1, 6, 10, 95, 132, 219, 262, 269, 271, 297, 305,
-                              // 343, 357, 400, 468, 485
+    // 343, 357, 400, 468, 485
     LOG.info(
         "N(record lengths)= "
             + recordLengthsN); // not on OEIS: 1, 2, 3, 7, 27, 703, 35655, 270271, 362343, 401151,
-                               // 1027431, 1327743, 1394431, 6206655, 8088063, 13421671, 26716671
+    // 1027431, 1327743, 1394431, 6206655, 8088063, 13421671, 26716671
 
     analyzeNStartSequences(length2NStartList);
     analyzeProgressions(progressionToMaxLength);

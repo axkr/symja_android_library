@@ -291,7 +291,7 @@ public class AParamGenerator01 implements AParamGenerator {
       int[] disjunctQCountCounts =
           new int
               [qCount]; // entry 0: #aParams with 1 disjunct q, entry 1: #aParams with 2 disjunct q,
-                        // ...
+      // ...
       for (int[] oldQArray : aParamHistory.values()) {
         int sharedQCount = getSharedQCount(oldQArray, qArray);
         int disjunctQCount = qCount - sharedQCount;

@@ -476,9 +476,8 @@ public class SSOZJ {
   public static void main(String[] args) {
     // if (args==null)
     Scanner userInput = new Scanner(System.in);
-    userInput.useDelimiter(
-        "[,\\s+]"); // see
-                    // https://stackoverflow.com/questions/11463327/is-this-a-memory-leak-or-a-false-positive
+    userInput.useDelimiter("[,\\s+]"); // see
+    // https://stackoverflow.com/questions/11463327/is-this-a-memory-leak-or-a-false-positive
     System.out.println("Please enter an range of integer (comma or space separated): ");
     // Only BigDecimal understand scientific notation
     BigInteger stop = userInput.nextBigDecimal().toBigIntegerExact();

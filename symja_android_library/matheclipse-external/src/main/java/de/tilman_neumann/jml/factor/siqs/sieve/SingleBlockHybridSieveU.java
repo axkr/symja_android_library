@@ -245,7 +245,7 @@ public class SingleBlockHybridSieveU implements Sieve {
     for (int b = 0;
         b < blockCount;
         b++) { // bottom-up order is required because in each block, the data for the next block is
-               // adjusted
+      // adjusted
       // positive x: initialize block
       final int blockOffset = b * effectiveBlockSize;
       UNSAFE.copyMemory(sieveArrayAddress + blockOffset, sieveBlockAddress, effectiveBlockSize);
@@ -342,7 +342,7 @@ public class SingleBlockHybridSieveU implements Sieve {
     for (int b = 0;
         b < blockCount;
         b++) { // bottom-up order is required because in each block, the data for the next block is
-               // adjusted
+      // adjusted
       // negative x: initialize block
       final int blockOffset = b * effectiveBlockSize;
       UNSAFE.copyMemory(sieveArrayAddress + blockOffset, sieveBlockAddress, effectiveBlockSize);

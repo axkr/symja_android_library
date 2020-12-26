@@ -158,7 +158,7 @@ public class SingleBlockSieve implements Sieve {
     for (int b = 0;
         b < blockCount;
         b++) { // bottom-up order is required because in each block, the data for the next block is
-               // adjusted
+      // adjusted
       // positive x: initialize block
       System.arraycopy(initializedBlock, 0, sieveBlock, 0, effectiveBlockSize);
       if (ANALYZE) initDuration += timer.capture();

@@ -502,92 +502,7 @@ public class SIQS extends FactorAlgorithm {
       BigInteger factor = fe.getFactor();
       if (ANALYZE) {
         solverDuration += timer.capture();
-        // get all reports
-        PolyReport polyReport = polyGenerator.getReport();
-        SieveReport sieveReport = sieve.getReport();
-        TDivReport tdivReport = auxFactorizer.getReport();
-        CongruenceCollectorReport ccReport = congruenceCollector.getReport();
-        // solverReport is not urgently needed
-
-        long initPolyDuration = polyReport.getTotalDuration(1);
-        long sieveDuration = sieveReport.getTotalDuration(1);
-        long tdivDuration = tdivReport.getTotalDuration(1);
-
-        // report results
-        LOG.info(getName() + ":");
-        LOG.info(
-            "Found factor "
-                + factor
-                + " ("
-                + factor.bitLength()
-                + " bits) of N="
-                + N
-                + " ("
-                + N.bitLength()
-                + " bits) in "
-                + TimeUtil.timeStr(timer.totalRuntime()));
-        int pMaxBits = 32 - Integer.numberOfLeadingZeros(pMax);
-        LOG.info(
-            "    multiplier k = "
-                + k
-                + ", kN%8 = "
-                + kN.mod(I_8)
-                + ", primeBaseSize = "
-                + primeBaseSize
-                + ", pMax = "
-                + pMax
-                + " ("
-                + pMaxBits
-                + " bits), sieveArraySize = "
-                + adjustedSieveArraySize);
-        LOG.info("    polyGenerator: " + polyReport.getOperationDetails());
-        LOG.info("    tDiv: " + tdivReport.getOperationDetails());
-        if (ANALYZE_LARGE_FACTOR_SIZES) {
-          String qRestSizes = tdivReport.getQRestSizes();
-          if (qRestSizes != null) {
-            LOG.info("        " + qRestSizes);
-          }
-        }
-        LOG.info("    cc: " + ccReport.getOperationDetails());
-        if (ANALYZE_LARGE_FACTOR_SIZES) {
-          LOG.info("        " + ccReport.getPartialBigFactorSizes());
-          LOG.info("        " + ccReport.getSmoothBigFactorSizes());
-          LOG.info("        " + ccReport.getSmoothBigFactorPercentiles());
-          LOG.info("        " + ccReport.getNonIntFactorPercentages());
-        }
-        if (ANALYZE_Q_SIGNS) {
-          LOG.info("        " + ccReport.getPartialQSignCounts());
-          LOG.info("        " + ccReport.getSmoothQSignCounts());
-        }
-        LOG.info(
-            "    #solverRuns = "
-                + solverRunCount
-                + ", #tested null vectors = "
-                + matrixSolver.getTestedNullVectorCount());
-        LOG.info(
-            "    Approximate phase timings: tdiv="
-                + initialTdivDuration
-                + "ms, ecm="
-                + ecmDuration
-                + "ms, powerTest="
-                + powerTestDuration
-                + "ms, initN="
-                + initNDuration
-                + "ms, initPoly="
-                + initPolyDuration
-                + "ms, sieve="
-                + sieveDuration
-                + "ms, tdiv="
-                + tdivDuration
-                + "ms, cc="
-                + ccDuration
-                + "ms, solver="
-                + solverDuration
-                + "ms");
-        LOG.info("    -> initPoly sub-timings: " + polyReport.getPhaseTimings(1));
-        LOG.info("    -> sieve sub-timings: " + sieveReport.getPhaseTimings(1));
-        LOG.info("    -> tdiv sub-timings: " + tdivReport.getPhaseTimings(1));
-        // CC and solver have no sub-timings yet
+        logResults(N, k, kN, factor, primeBaseSize, pMax, adjustedSieveArraySize);
       }
       if (TEST_SIEVE) {
         float perfectSmoothPercentage =
@@ -607,7 +522,7 @@ public class SIQS extends FactorAlgorithm {
       // release memory after a factorization; this improves the accuracy of timings when several
       // algorithms are tested in parallel
       this.cleanUp();
-      // return factor
+      // done
       return factor;
     }
   }
@@ -618,15 +533,6 @@ public class SIQS extends FactorAlgorithm {
       logPArray[i] = (byte) ((float) Math.log(primesArray[i]) * lnPMultiplier + 0.5F);
     }
     return logPArray;
-  }
-
-  public void cleanUp() {
-    apg.cleanUp();
-    polyGenerator.cleanUp();
-    sieve.cleanUp();
-    auxFactorizer.cleanUp();
-    congruenceCollector.cleanUp();
-    matrixSolver.cleanUp();
   }
 
   private void testSieve(List<AQPair> foundAQPairs, int sieveArraySize) {
@@ -645,6 +551,111 @@ public class SIQS extends FactorAlgorithm {
       if (aqPair instanceof Smooth) allPerfectSmoothCount++;
     }
     allAQPairsCount += allAQPairs.size();
+  }
+
+  private void logResults(
+      BigInteger N,
+      int k,
+      BigInteger kN,
+      BigInteger factor,
+      int primeBaseSize,
+      int pMax,
+      int adjustedSieveArraySize) {
+    // get all reports
+    PolyReport polyReport = polyGenerator.getReport();
+    SieveReport sieveReport = sieve.getReport();
+    TDivReport tdivReport = auxFactorizer.getReport();
+    CongruenceCollectorReport ccReport = congruenceCollector.getReport();
+    // solverReport is not urgently needed
+
+    long initPolyDuration = polyReport.getTotalDuration(1);
+    long sieveDuration = sieveReport.getTotalDuration(1);
+    long tdivDuration = tdivReport.getTotalDuration(1);
+
+    // report results
+    LOG.info(getName() + ":");
+    LOG.info(
+        "Found factor "
+            + factor
+            + " ("
+            + factor.bitLength()
+            + " bits) of N="
+            + N
+            + " ("
+            + N.bitLength()
+            + " bits) in "
+            + TimeUtil.timeStr(timer.totalRuntime()));
+    int pMaxBits = 32 - Integer.numberOfLeadingZeros(pMax);
+    LOG.info(
+        "    multiplier k = "
+            + k
+            + ", kN%8 = "
+            + kN.mod(I_8)
+            + ", primeBaseSize = "
+            + primeBaseSize
+            + ", pMax = "
+            + pMax
+            + " ("
+            + pMaxBits
+            + " bits), sieveArraySize = "
+            + adjustedSieveArraySize);
+    LOG.info("    polyGenerator: " + polyReport.getOperationDetails());
+    LOG.info("    tDiv: " + tdivReport.getOperationDetails());
+    if (ANALYZE_LARGE_FACTOR_SIZES) {
+      String qRestSizes = tdivReport.getQRestSizes();
+      if (qRestSizes != null) {
+        LOG.info("        " + qRestSizes);
+      }
+    }
+    LOG.info("    cc: " + ccReport.getOperationDetails());
+    if (ANALYZE_LARGE_FACTOR_SIZES) {
+      LOG.info("        " + ccReport.getPartialBigFactorSizes());
+      LOG.info("        " + ccReport.getSmoothBigFactorSizes());
+      LOG.info("        " + ccReport.getSmoothBigFactorPercentiles());
+      LOG.info("        " + ccReport.getNonIntFactorPercentages());
+    }
+    if (ANALYZE_Q_SIGNS) {
+      LOG.info("        " + ccReport.getPartialQSignCounts());
+      LOG.info("        " + ccReport.getSmoothQSignCounts());
+    }
+    LOG.info(
+        "    #solverRuns = "
+            + solverRunCount
+            + ", #tested null vectors = "
+            + matrixSolver.getTestedNullVectorCount());
+    LOG.info(
+        "    Approximate phase timings: tdiv="
+            + initialTdivDuration
+            + "ms, ecm="
+            + ecmDuration
+            + "ms, powerTest="
+            + powerTestDuration
+            + "ms, initN="
+            + initNDuration
+            + "ms, initPoly="
+            + initPolyDuration
+            + "ms, sieve="
+            + sieveDuration
+            + "ms, tdiv="
+            + tdivDuration
+            + "ms, cc="
+            + ccDuration
+            + "ms, solver="
+            + solverDuration
+            + "ms");
+    LOG.info("    -> initPoly sub-timings: " + polyReport.getPhaseTimings(1));
+    LOG.info("    -> sieve sub-timings: " + sieveReport.getPhaseTimings(1));
+    LOG.info("    -> tdiv sub-timings: " + tdivReport.getPhaseTimings(1));
+    // CC and solver have no sub-timings yet
+  }
+
+  public void cleanUp() {
+    apg.cleanUp();
+    polyGenerator.cleanUp();
+    sieve.cleanUp();
+    auxFactorizer.cleanUp();
+    congruenceCollector.cleanUp();
+    matrixSolver.cleanUp();
   }
 
   // Standalone test

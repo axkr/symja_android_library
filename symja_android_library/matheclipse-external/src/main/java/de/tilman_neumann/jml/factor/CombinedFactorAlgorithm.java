@@ -41,7 +41,7 @@ import de.tilman_neumann.jml.factor.siqs.sieve.Sieve03g;
 import de.tilman_neumann.jml.factor.siqs.sieve.Sieve03gU;
 import de.tilman_neumann.jml.factor.siqs.tdiv.TDiv_QS_1Large_UBI;
 import de.tilman_neumann.jml.factor.siqs.tdiv.TDiv_QS_2Large_UBI;
-import de.tilman_neumann.jml.factor.tdiv.TDiv31Inverse;
+import de.tilman_neumann.jml.factor.tdiv.TDiv31Barrett;
 import de.tilman_neumann.util.ConfigUtil;
 import de.tilman_neumann.util.SortedMultiset;
 import de.tilman_neumann.util.TimeUtil;
@@ -55,7 +55,7 @@ public class CombinedFactorAlgorithm extends FactorAlgorithm {
   @SuppressWarnings("unused")
   private static final Logger LOG = Logger.getLogger(CombinedFactorAlgorithm.class);
 
-  private TDiv31Inverse tDiv31 = new TDiv31Inverse();
+  private TDiv31Barrett tDiv31 = new TDiv31Barrett();
   private Hart_TDiv_Race hart = new Hart_TDiv_Race();
   private PollardRhoBrentMontgomeryR64Mul63 pollardRhoR64Mul63 =
       new PollardRhoBrentMontgomeryR64Mul63();
