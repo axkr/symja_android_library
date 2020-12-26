@@ -27,6 +27,7 @@ import com.google.common.math.LongMath;
 
 import de.tilman_neumann.jml.factor.CombinedFactorAlgorithm;
 import de.tilman_neumann.util.SortedMultiset;
+import de.tilman_neumann.util.SortedMultiset_BottomUp;
 import it.unimi.dsi.fastutil.ints.Int2IntMap;
 
 /**
@@ -36,7 +37,7 @@ import it.unimi.dsi.fastutil.ints.Int2IntMap;
  */
 public class Primality {
 
-  private static class PrimePowerTreedMap extends TreeMap<BigInteger, Integer> {
+  private static class PrimePowerTreedMap extends SortedMultiset_BottomUp<BigInteger> {
     private static final long serialVersionUID = 7802239809732541730L;
 
     @Override
@@ -50,7 +51,7 @@ public class Primality {
     }
   }
 
-  private static class SquareFreeTreedMap extends TreeMap<BigInteger, Integer> {
+  private static class SquareFreeTreedMap extends SortedMultiset_BottomUp<BigInteger> {
     private static final long serialVersionUID = -7769218967264615452L;
 
     @Override
@@ -753,7 +754,7 @@ public class Primality {
    * @param n
    * @param map of all BigInteger primes and their associated exponents
    */
-  public static void factorInteger(final BigInteger n, SortedMap<BigInteger, Integer> map) {
+  public static void factorInteger(final BigInteger n, SortedMultiset<BigInteger> map) {
     Map<Integer, Integer> tMap = new TreeMap<Integer, Integer>();
     BigInteger N = countPrimes1021(n, tMap);
     if (tMap.size() > 0) {
@@ -769,11 +770,7 @@ public class Primality {
       } else {
         factorizer = new CombinedFactorAlgorithm(1, null, false, false, true);
       }
-      SortedMultiset<BigInteger> set = factorizer.factor(N);
-
-      for (Map.Entry<BigInteger, Integer> entry : set.entrySet()) {
-        map.put(entry.getKey(), entry.getValue());
-      }
+      factorizer.factor(N, map);
     }
     return;
   }
@@ -786,17 +783,14 @@ public class Primality {
    * @return map of all BigInteger primes and their associated exponents
    */
   public static SortedMap<BigInteger, Integer> factorInteger(final BigInteger n) {
-    SortedMap<BigInteger, Integer> map = new TreeMap<BigInteger, Integer>();
-    factorInteger(n, map);
-    return map;
-    //    CombinedFactorAlgorithm factorizer;
-    //    if (Config.JAVA_UNSAFE) {
-    //      final int cores = Runtime.getRuntime().availableProcessors();
-    //      factorizer = new CombinedFactorAlgorithm(cores / 2 + 1, null, true, false, true);
-    //    } else {
-    //      factorizer = new CombinedFactorAlgorithm(1, null, false, false, true);
-    //    }
-    //    return factorizer.factor(n);
+    CombinedFactorAlgorithm factorizer;
+    if (Config.JAVA_UNSAFE) {
+      final int cores = Runtime.getRuntime().availableProcessors();
+      factorizer = new CombinedFactorAlgorithm(cores / 2 + 1, null, true, false, true);
+    } else {
+      factorizer = new CombinedFactorAlgorithm(1, null, false, false, true);
+    }
+    return factorizer.factor(n);
   }
 
   public static BigInteger rho(final BigInteger val) {
@@ -1061,7 +1055,7 @@ public class Primality {
     if (value.equals(BigInteger.ONE)) {
       return 1;
     }
-    SortedMap<BigInteger, Integer> map = new SquareFreeTreedMap();
+    SortedMultiset<BigInteger> map = new SquareFreeTreedMap();
     try {
       factorInteger(value, map);
       // value is square-free
@@ -1147,7 +1141,7 @@ public class Primality {
       return false;
     }
     try {
-      SortedMap<BigInteger, Integer> map = new PrimePowerTreedMap();
+      PrimePowerTreedMap map = new PrimePowerTreedMap();
       factorInteger(value, map);
       if (map.size() == 1) {
         for (Map.Entry<BigInteger, Integer> entry : map.entrySet()) {
@@ -1200,9 +1194,8 @@ public class Primality {
     if (val.compareTo(BigInteger.ZERO) < 0) {
       val = val.negate();
     }
-    SortedMap<BigInteger, Integer> map = new SquareFreeTreedMap();
     try {
-      factorInteger(val, map);
+      factorInteger(val, new SquareFreeTreedMap());
       return true;
     } catch (ReturnException re) {
     }
