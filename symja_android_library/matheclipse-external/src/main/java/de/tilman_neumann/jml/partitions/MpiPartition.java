@@ -19,50 +19,56 @@ import de.tilman_neumann.util.SortedMultiset_TopDown;
 
 /**
  * A partition of a multipartite integer.
- *
  * @author Tilman Neumann
  */
 public class MpiPartition extends SortedMultiset_TopDown<Mpi> {
 
-  private static final long serialVersionUID = -3956646078614268223L;
+	private static final long serialVersionUID = -3956646078614268223L;
 
-  public MpiPartition() {
-    super();
-  }
+	public MpiPartition() {
+		super();
+	}
+	
+	public MpiPartition(Mpi[] elements) {
+		super(elements);
+	}
+	
+	// TODO: Implement sum() of parts
+	
+	// TODO: Implement getNumberOfRealizations()
 
-  public MpiPartition(Mpi[] elements) {
-    super(elements);
-  }
-
-  // TODO: Implement sum() of parts
-
-  // TODO: Implement getNumberOfRealizations()
-
-  /**
-   * Returns a sum-like representation of this partitions, with parts separated by "+" and the
-   * multiplicity indicated by "*". Biggest parts are shown first.
-   *
-   * <p>Some example partitions of the multipartite number [3, 2, 1]: [3, 2, 1], [3, 2, 0] + [0, 0,
-   * 1], [3, 1, 1] + [0, 1, 0], [3, 1, 0] + [0, 1, 1], [3, 1, 0] + [0, 1, 0] + [0, 0, 1], [3, 0, 1]
-   * + [0, 2, 0], [3, 0, 1] + 2*[0, 1, 0], ...
-   */
-  public String toString() {
-    if (this.size() > 0) {
-      // Implementation note: Is faster with String than with StringBuffer!
-      String factorStr = "";
-      for (Map.Entry<Mpi, Integer> entry : this.entrySet()) {
-        Integer multiplicity = entry.getValue();
-        if (multiplicity.intValue() > 1) {
-          factorStr += multiplicity + "*";
-        }
-        factorStr += entry.getKey();
-        factorStr += " + ";
-      }
-      // remove the last " + "
-      return factorStr.substring(0, factorStr.length() - 3);
-    }
-
-    // no elements
-    return "0";
-  }
+	/**
+	 * Returns a sum-like representation of this partitions,
+	 * with parts separated by "+" and the multiplicity indicated by "*".
+	 * Biggest parts are shown first.
+	 * 
+	 * Some example partitions of the multipartite number [3, 2, 1]: 
+	 * [3, 2, 1], 
+	 * [3, 2, 0] + [0, 0, 1], 
+	 * [3, 1, 1] + [0, 1, 0], 
+	 * [3, 1, 0] + [0, 1, 1], 
+	 * [3, 1, 0] + [0, 1, 0] + [0, 0, 1], 
+	 * [3, 0, 1] + [0, 2, 0], 
+	 * [3, 0, 1] + 2*[0, 1, 0],
+	 * ...
+	 */
+	public String toString() {
+		if (this.size()>0) {
+			// Implementation note: Is faster with String than with StringBuffer!
+			String factorStr = "";
+			for (Map.Entry<Mpi, Integer> entry : this.entrySet()) {
+				Integer multiplicity = entry.getValue();
+				if (multiplicity.intValue() > 1) {
+					factorStr += multiplicity + "*";
+				}
+				factorStr += entry.getKey();
+				factorStr += " + ";
+			}
+			// remove the last " + "
+			return factorStr.substring(0, factorStr.length()-3);
+		}
+		
+		// no elements
+		return "0";
+	}
 }

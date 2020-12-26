@@ -27,116 +27,102 @@ import de.tilman_neumann.jml.factor.TestNumberNature;
 
 /**
  * Analyze the moduli of a-values that help the Lehman algorithm to find factors.
- *
- * <p>Congruences a == kN (mod 2^s) are slightly more discriminative than Lehman's original
- * congruences a == (k+N) (mod 2^s), s = 1, 2, 3, ...
- *
+ * 
+ * Congruences a == kN (mod 2^s) are slightly more discriminative
+ * than Lehman's original congruences a == (k+N) (mod 2^s), s = 1, 2, 3, ...
+ * 
+ * Version 1 shows that all successful (a0, adjust) pairs represent the same "a".
+ * 
  * @author Tilman Neumann
  */
 public class Lehman_AnalyzeCongruences {
-  private static final Logger LOG = Logger.getLogger(Lehman_AnalyzeCongruences.class);
+	private static final Logger LOG = Logger.getLogger(Lehman_AnalyzeCongruences.class);
+	
+	/** Use congruences a==kN mod 2^s if true, congruences a==(k+N) mod 2^s if false */
+	private static final boolean USE_kN_CONGRUENCES = true;
 
-  /** Use congruences a==kN mod 2^s if true, congruences a==(k+N) mod 2^s if false */
-  private static final boolean USE_kN_CONGRUENCES = true;
+	/** number of test numbers */
+	private static final int N_COUNT = 100000;
+	/** the bit size of N to start with */
+	private static final int START_BITS = 30;
+	/** the increment in bit size from test set to test set */
+	private static final int INCR_BITS = 1;
+	/** maximum number of bits to test (no maximum if null) */
+	private static final Integer MAX_BITS = 63;
 
-  /** number of test numbers */
-  private static final int N_COUNT = 100000;
-  /** the bit size of N to start with */
-  private static final int START_BITS = 30;
-  /** the increment in bit size from test set to test set */
-  private static final int INCR_BITS = 1;
-  /** maximum number of bits to test (no maximum if null) */
-  private static final Integer MAX_BITS = 63;
+	private static final int KMOD = 6;
+	private static final int KNMOD = 8;
 
-  private static final int KMOD = 6;
-  private static final int KNMOD = 32;
-  private static final int AMOD = 32;
+	private final Gcd63 gcdEngine = new Gcd63();
+	
+	// dimensions: k%KMOD, kN%KNMOD, a%KNMOD, adjust%KNMOD
+	private int[][][][] counts;
+	
+	public long findSingleFactor(long N) {
+		int cbrt = (int) Math.ceil(Math.cbrt(N));
+		double sixthRoot = Math.pow(N, 1/6.0); // double precision is required for stability
+		for (int k=1; k <= cbrt; k++) {
+			long fourKN = k*N<<2;
+			double fourSqrtK = Math.sqrt(k<<4);
+			long sqrt4kN = (long) Math.ceil(Math.sqrt(fourKN));
+			long limit = (long) (sqrt4kN + sixthRoot / fourSqrtK);
+			for (long a0 = sqrt4kN; a0 <= limit; a0++) {
+				for (int adjust=0; adjust<KNMOD; adjust++) {
+					long a = a0 + adjust;
+					final long test = a*a - fourKN;
+					final long b = (long) Math.sqrt(test);
+					if (b*b == test) {
+						long gcd = gcdEngine.gcd(a+b, N);
+						if (gcd>1 && gcd<N) {
+							long kNTerm = USE_kN_CONGRUENCES ? k*N : k+N;
+							counts[k%KMOD][(int)(kNTerm%KNMOD)][(int)(a0%KNMOD)][adjust]++;
+							return gcd; // removes the blur at even k!
+						}
+					}
+				}
+			}
+	    }
+		
+		return 0; // Fail
+	}
+	
+	private void testRange(int bits) {
+		counts = new int[KMOD][KNMOD][KNMOD][KNMOD];
+		
+		BigInteger N_min = I_1.shiftLeft(bits-1);
+		BigInteger[] testNumbers = TestsetGenerator.generate(N_COUNT, bits, TestNumberNature.MODERATE_SEMIPRIMES);
+		LOG.info("Test N with " + bits + " bits, i.e. N >= " + N_min);
+		
+		for (BigInteger N : testNumbers) {
+			//if (N.mod(I_6).equals(I_1)) // makes no difference
+			this.findSingleFactor(N.longValue());
+		}
+		
+		String kNStr = USE_kN_CONGRUENCES ? "kN" : "k+N";
+		for (int k=0; k<KMOD; k++) {
+			for (int kN=0; kN<KNMOD; kN++) {
+				int[][] a0_adjust_counts = counts[k][kN];
+				// a0_adjust_counts[][] contains the counts of (a0, adjust) pairs that led to successful factorizations.
+				// An antidiagonal of that table means that a0 + adjust is fixed, i.e. each antidiagonal identifies a
+				// particular a == (a0 + adjust) % KNMOD !
+				for (int a0=0; a0<KNMOD; a0++) {
+					LOG.info("Successful adjusts for k%" + KMOD + "=" + k + ", (" + kNStr + ")%" + KNMOD + "=" + kN + ", a0%" + KNMOD + "=" + a0 + ": " + Arrays.toString(a0_adjust_counts[a0]));
+				}
+				LOG.info("");
+			}
+		}
+		LOG.info("");
+	}
 
-  private final Gcd63 gcdEngine = new Gcd63();
-
-  // dimensions: k%KMOD, kN%KNMOD, a%AMOD, adjust%AMOD
-  private int[][][][] counts;
-
-  public long findSingleFactor(long N) {
-    int cbrt = (int) Math.ceil(Math.cbrt(N));
-    double sixthRoot = Math.pow(N, 1 / 6.0); // double precision is required for stability
-    for (int k = 1; k <= cbrt; k++) {
-      long fourKN = k * N << 2;
-      double fourSqrtK = Math.sqrt(k << 4);
-      long sqrt4kN = (long) Math.ceil(Math.sqrt(fourKN));
-      long limit = (long) (sqrt4kN + sixthRoot / fourSqrtK);
-      for (long a0 = sqrt4kN; a0 <= limit; a0++) {
-        for (int adjust = 0; adjust < AMOD; adjust++) {
-          long a = a0 + adjust;
-          final long test = a * a - fourKN;
-          final long b = (long) Math.sqrt(test);
-          if (b * b == test) {
-            long gcd = gcdEngine.gcd(a + b, N);
-            if (gcd > 1 && gcd < N) {
-              if (USE_kN_CONGRUENCES) {
-                counts[k % KMOD][(int) ((k * N) % KNMOD)][(int) (a0 % AMOD)][adjust]++;
-              } else {
-                counts[k % KMOD][(int) ((k + N) % KNMOD)][(int) (a0 % AMOD)][adjust]++;
-              }
-              return gcd; // removes the blur at even k!
-            }
-          }
-        }
-      }
-    }
-
-    return 0; // Fail
-  }
-
-  private void testRange(int bits) {
-    counts = new int[KMOD][KNMOD][AMOD][AMOD];
-
-    BigInteger N_min = I_1.shiftLeft(bits - 1);
-    BigInteger[] testNumbers =
-        TestsetGenerator.generate(N_COUNT, bits, TestNumberNature.MODERATE_SEMIPRIMES);
-    LOG.info("Test N with " + bits + " bits, i.e. N >= " + N_min);
-
-    for (BigInteger N : testNumbers) {
-      if (N.mod(I_6).equals(I_1)) this.findSingleFactor(N.longValue());
-    }
-
-    String kNStr = USE_kN_CONGRUENCES ? "kN" : "k+N";
-    for (int k = 0; k < KMOD; k++) {
-      for (int Nk = 0; Nk < KNMOD; Nk++) {
-        for (int a = 0; a < AMOD; a++) {
-          LOG.info(
-              "Successful adjusts for k%"
-                  + KMOD
-                  + "="
-                  + k
-                  + ", ("
-                  + kNStr
-                  + ")%"
-                  + KNMOD
-                  + "="
-                  + Nk
-                  + ", a%"
-                  + AMOD
-                  + "="
-                  + a
-                  + ": "
-                  + Arrays.toString(counts[k][Nk][a]));
-        }
-        LOG.info("");
-      }
-    }
-    LOG.info("");
-  }
-
-  public static void main(String[] args) {
-    ConfigUtil.initProject();
-    int bits = START_BITS;
-    while (true) {
-      // test N with the given number of bits, i.e. 2^(bits-1) <= N <= (2^bits)-1
-      Lehman_AnalyzeCongruences testEngine = new Lehman_AnalyzeCongruences();
-      testEngine.testRange(bits);
-      bits += INCR_BITS;
-      if (MAX_BITS != null && bits > MAX_BITS) break;
-    }
-  }
+	public static void main(String[] args) {
+    	ConfigUtil.initProject();
+		int bits = START_BITS;
+		while (true) {
+			// test N with the given number of bits, i.e. 2^(bits-1) <= N <= (2^bits)-1
+	    	Lehman_AnalyzeCongruences testEngine = new Lehman_AnalyzeCongruences();
+			testEngine.testRange(bits);
+			bits += INCR_BITS;
+			if (MAX_BITS!=null && bits > MAX_BITS) break;
+		}
+	}
 }

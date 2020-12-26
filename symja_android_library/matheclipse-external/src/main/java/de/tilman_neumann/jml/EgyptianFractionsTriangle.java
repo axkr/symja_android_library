@@ -25,56 +25,49 @@ import de.tilman_neumann.util.ConfigUtil;
 import de.tilman_neumann.util.TimeUtil;
 
 /**
- * Computes the number of terms/steps the Greedy algorithm requires to find a sum of simple
- * quotients for any k/n; 0<k<=n.
- *
+ * Computes the number of terms/steps the Greedy algorithm requires
+ * to find a sum of simple quotients for any k/n; 0<k<=n.
  * @author Tilman Neumann
  */
 // TODO: Compute number of terms
 public class EgyptianFractionsTriangle extends BigIntTriangle {
-  private static final Logger LOG = Logger.getLogger(EgyptianFractionsTriangle.class);
+	private static final Logger LOG = Logger.getLogger(EgyptianFractionsTriangle.class);
 
-  public EgyptianFractionsTriangle(int n) {
-    super(n, I_0);
-    for (int m = 1; m <= n; m++) {
-      for (int k = 1; k <= m; k++) {
-        this.set(m, k, BigInteger.valueOf(greedyCount(m, k)));
-      }
-    }
-  }
-
-  private int greedyCount(int n, int k) {
-    // LOG.debug("compute greedyCount("+n+","+k+")");
-    int count = 0;
-    BigRational rest = new BigRational(BigInteger.valueOf(k), BigInteger.valueOf(n));
-    int rez = 1;
-    while (!rest.equals(I_0)) {
-      BigRational test = new BigRational(I_1, BigInteger.valueOf(rez));
-      // LOG.debug("test=" + test + ", rest = " + rest);
-      if (test.compareTo(rest) <= 0) {
-        rest = rest.subtract(test);
-        // LOG.debug("new rest = " + rest);
-        count++;
-      }
-      rez++;
-    }
-    return count;
-  }
-
-  public static void main(String[] args) {
-    ConfigUtil.initProject();
-
-    int n = 30; // 28 is easy (8s), 29 is harder (2:26), 30 again easy (2:25), 31 is very heavy
-
-    long start = System.currentTimeMillis();
-    EgyptianFractionsTriangle t = new EgyptianFractionsTriangle(n);
-    long end = System.currentTimeMillis();
-    LOG.info(
-        "greedy count triangle "
-            + n
-            + " computed in "
-            + TimeUtil.timeDiffStr(start, end)
-            + ":\n"
-            + t.toString());
-  }
+	public EgyptianFractionsTriangle(int n) {
+		super(n, I_0);
+		for (int m=1; m<=n; m++) {
+			for (int k=1; k<=m; k++) {
+				this.set(m, k, BigInteger.valueOf(greedyCount(m,k)));
+			}
+		}
+	}
+	
+	private int greedyCount(int n, int k) {
+		//LOG.debug("compute greedyCount("+n+","+k+")");
+		int count = 0;
+		BigRational rest = new BigRational(BigInteger.valueOf(k), BigInteger.valueOf(n));
+		int rez = 1;
+		while (!rest.getNumerator().equals(I_0)) {
+			BigRational test = new BigRational(I_1, BigInteger.valueOf(rez));
+			//LOG.debug("test=" + test + ", rest = " + rest);
+			if (test.compareTo(rest) <= 0) {
+				rest = rest.subtract(test);
+				//LOG.debug("new rest = " + rest);
+				count++;
+			}
+			rez++;
+		}
+		return count;
+	}
+	
+	public static void main(String[] args) {
+    	ConfigUtil.initProject();
+    	
+    	int n = 30; // 28 is easy (8s), 29 is harder (2:26), 30 again easy (2:25), 31 is very heavy
+    	
+    	long start = System.currentTimeMillis();
+		EgyptianFractionsTriangle t = new EgyptianFractionsTriangle(n);
+    	long end = System.currentTimeMillis();
+		LOG.info("greedy count triangle " + n + " computed in " + TimeUtil.timeDiffStr(start, end) + ":\n" + t.toString());
+	}
 }

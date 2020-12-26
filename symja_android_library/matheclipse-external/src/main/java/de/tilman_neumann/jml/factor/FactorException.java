@@ -17,25 +17,26 @@ import java.math.BigInteger;
 
 /**
  * An exception indicating that a factor was found.
- *
+ * 
  * @author Tilman Neumann
  */
 public class FactorException extends Exception {
-  private static final long serialVersionUID = -6623862851940555652L;
-
-  private BigInteger factor = null;
-
-  /**
-   * Complete constructor.
-   *
-   * @param factor
-   */
-  public FactorException(BigInteger factor) {
-    this.factor = factor;
-  }
-
-  /** @return factor */
-  public BigInteger getFactor() {
-    return this.factor;
-  }
+	private static final long serialVersionUID = -6623862851940555652L;
+	
+	private BigInteger factor = null;
+	
+	/**
+	 * Complete constructor.
+	 * @param factor
+	 */
+	public FactorException(BigInteger factor) {
+		this.factor = factor;
+	}
+	
+	/**
+	 * @return factor
+	 */
+	public BigInteger getFactor() {
+		return this.factor;
+	}
 }

@@ -15,15 +15,13 @@ package de.tilman_neumann.jml.factor.siqs.sieve;
 
 public class BlockSieveUtil {
 
-  public static int computeBestBlockCount(int totalSize, int blockSize) {
-    int lower = totalSize / blockSize;
-    if (lower == 0) return 1; // we need at least one outer block
-
-    int upper = lower + 1;
-    int lowerError = Math.abs(blockSize - totalSize / lower);
-    int upperError = Math.abs(blockSize - totalSize / upper);
-    return (lowerError < upperError)
-        ? lower
-        : upper; // take the k with the smaller block size error
-  }
+	public static int computeBestBlockCount(int totalSize, int blockSize) {
+		int lower = totalSize/blockSize;
+		if (lower == 0) return 1; // we need at least one outer block
+		
+		int upper = lower + 1;
+		int lowerError = Math.abs(blockSize - totalSize/lower);
+		int upperError = Math.abs(blockSize - totalSize/upper);
+		return (lowerError < upperError) ? lower : upper; // take the k with the smaller block size error
+	}
 }

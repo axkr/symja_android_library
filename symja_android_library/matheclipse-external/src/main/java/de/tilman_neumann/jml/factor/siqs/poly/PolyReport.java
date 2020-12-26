@@ -17,86 +17,60 @@ import static de.tilman_neumann.jml.factor.base.AnalysisOptions.*;
 
 /**
  * Reports about a polynomial generator.
- *
  * @author Tilman Neumann
  */
 public class PolyReport {
-  private int aParamCount;
-  private int bParamCount;
-
-  private long aDuration;
-  private long firstBDuration;
-  private long filterPBDuration;
-  private long firstXArrayDuration;
-  private long nextBDuration;
-  private long nextXArrayDuration;
-
-  public PolyReport(
-      int aParamCount,
-      int bParamCount,
-      long aDuration,
-      long firstBDuration,
-      long filterPBDuration,
-      long firstXArrayDuration,
-      long nextBDuration,
-      long nextXArrayDuration) {
-    if (ANALYZE) {
-      this.aParamCount = aParamCount;
-      this.bParamCount = bParamCount;
-      this.aDuration = aDuration;
-      this.firstBDuration = firstBDuration;
-      this.filterPBDuration = filterPBDuration;
-      this.firstXArrayDuration = firstXArrayDuration;
-      this.nextBDuration = nextBDuration;
-      this.nextXArrayDuration = nextXArrayDuration;
-    }
-  }
-
-  /**
-   * Add two reports.
-   *
-   * @param other another report added to this
-   */
-  public void add(PolyReport other) {
-    if (ANALYZE) {
-      this.aParamCount += other.aParamCount;
-      this.bParamCount += other.bParamCount;
-      this.aDuration += other.aDuration;
-      this.firstBDuration += other.firstBDuration;
-      this.filterPBDuration += other.filterPBDuration;
-      this.firstXArrayDuration += other.firstXArrayDuration;
-      this.nextBDuration += other.nextBDuration;
-      this.nextXArrayDuration += other.nextXArrayDuration;
-    }
-  }
-
-  public String getOperationDetails() {
-    return "#a-parameters = " + aParamCount + ", #processed polynomials = " + bParamCount;
-  }
-
-  public long getTotalDuration(int numberOfThreads) {
-    return (aDuration
-            + firstBDuration
-            + filterPBDuration
-            + firstXArrayDuration
-            + nextBDuration
-            + nextXArrayDuration)
-        / numberOfThreads;
-  }
-
-  public String getPhaseTimings(int numberOfThreads) {
-    return "a-param="
-        + aDuration / numberOfThreads
-        + "ms, first b-param="
-        + firstBDuration / numberOfThreads
-        + "ms, filter prime base="
-        + filterPBDuration / numberOfThreads
-        + "ms, first x-arrays="
-        + firstXArrayDuration / numberOfThreads
-        + "ms, next b-params="
-        + nextBDuration / numberOfThreads
-        + "ms, next x-arrays="
-        + nextXArrayDuration / numberOfThreads
-        + "ms";
-  }
+	private int aParamCount;
+	private int bParamCount;
+	
+	private long aDuration;
+	private long firstBDuration;
+	private long filterPBDuration;
+	private long firstXArrayDuration;
+	private long nextBDuration;
+	private long nextXArrayDuration;
+	
+	public PolyReport(int aParamCount, int bParamCount, long aDuration, long firstBDuration, long filterPBDuration, long firstXArrayDuration, long nextBDuration, long nextXArrayDuration) {
+		if (ANALYZE) {
+			this.aParamCount = aParamCount;
+			this.bParamCount = bParamCount;
+			this.aDuration = aDuration;
+			this.firstBDuration = firstBDuration;
+			this.filterPBDuration = filterPBDuration;
+			this.firstXArrayDuration = firstXArrayDuration;
+			this.nextBDuration = nextBDuration;
+			this.nextXArrayDuration = nextXArrayDuration;
+		}
+	}
+	
+	/**
+	 * Add two reports.
+	 * @param other another report added to this
+	 */
+	public void add(PolyReport other) {
+		if (ANALYZE) {
+			this.aParamCount += other.aParamCount;
+			this.bParamCount += other.bParamCount;
+			this.aDuration += other.aDuration;
+			this.firstBDuration += other.firstBDuration;
+			this.filterPBDuration += other.filterPBDuration;
+			this.firstXArrayDuration += other.firstXArrayDuration;
+			this.nextBDuration += other.nextBDuration;
+			this.nextXArrayDuration += other.nextXArrayDuration;
+		}
+	}
+	
+	public String getOperationDetails() {
+		return "#a-parameters = " + aParamCount + ", #processed polynomials = " + bParamCount;
+	}
+	
+	public long getTotalDuration(int numberOfThreads) {
+		return (aDuration + firstBDuration + filterPBDuration + firstXArrayDuration + nextBDuration + nextXArrayDuration)/numberOfThreads;
+	}
+	
+	public String getPhaseTimings(int numberOfThreads) {
+		return "a-param=" + aDuration/numberOfThreads + "ms, first b-param=" + firstBDuration/numberOfThreads
+				+ "ms, filter prime base=" + filterPBDuration/numberOfThreads + "ms, first x-arrays=" + firstXArrayDuration/numberOfThreads 
+				+ "ms, next b-params=" + nextBDuration/numberOfThreads + "ms, next x-arrays=" + nextXArrayDuration/numberOfThreads + "ms";
+	}
 }

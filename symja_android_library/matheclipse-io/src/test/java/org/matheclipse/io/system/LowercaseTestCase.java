@@ -10854,9 +10854,9 @@ public class LowercaseTestCase extends AbstractTestCase {
     check(
         "Times @@ (Power @@@ FactorInteger(10, GaussianIntegers->True))", //
         "10");
-    // 147 seconds on notebook
+    // 113 seconds (vs. 147 seconds in the old version) on notebook
     // check("FactorInteger(10^79+5923)", "");
-    // 32 seconds on notebook
+    // 18 seconds (vs. 32seconds in the old version)
     // check("FactorInteger(10^71-1)", "");
     if (Config.EXPENSIVE_JUNIT_TESTS) {
       System.out.println();
@@ -21553,7 +21553,6 @@ public class LowercaseTestCase extends AbstractTestCase {
     check(
         "Select(Range(2,200), MultiplicativeOrder(10, # )== # - 1 &)", //
         "{7,17,19,23,29,47,59,61,97,109,113,131,149,167,179,181,193}");
-
     check(
         "MultiplicativeOrder(-1,0)", //
         "MultiplicativeOrder(-1,0)");
@@ -21566,7 +21565,6 @@ public class LowercaseTestCase extends AbstractTestCase {
     check(
         "MultiplicativeOrder(-5, 7)", //
         "3");
-
     check(
         "Select(Range(43), MultiplicativeOrder(#, 43) == EulerPhi(43) &)", //
         "{3,5,12,18,19,20,26,28,29,30,33,34}");

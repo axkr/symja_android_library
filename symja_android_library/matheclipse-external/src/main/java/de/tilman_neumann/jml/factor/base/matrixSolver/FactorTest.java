@@ -19,21 +19,23 @@ import de.tilman_neumann.jml.factor.FactorException;
 import de.tilman_neumann.jml.factor.base.congruence.AQPair;
 
 /**
- * Interface for final factor tests when a square congruence A^2 == Q (mod kN) has been found. The
- * congruence may be improper though...
- *
+ * Interface for final factor tests when a square congruence A^2 == Q (mod kN) has been found.
+ * The congruence may be improper though...
+ * 
  * @author Tilman Neumann
  */
 public interface FactorTest {
 
-  /** @return the algorithm name */
-  String getName();
+	/** 
+	 * @return the algorithm name 
+	 */
+	String getName();
 
-  /**
-   * Test if a square congruence A^2 == Q (mod kN) gives a factor of N.
-   *
-   * @param aqPairs
-   * @throws FactorException
-   */
-  void testForFactor(Set<AQPair> aqPairs) throws FactorException;
+	/**
+	 * Test if a square congruence A^2 == Q (mod kN) gives a factor of N.
+	 *
+	 * @param aqPairs
+	 * @throws FactorException
+	 */
+	void testForFactor(Set<AQPair> aqPairs) throws FactorException;
 }

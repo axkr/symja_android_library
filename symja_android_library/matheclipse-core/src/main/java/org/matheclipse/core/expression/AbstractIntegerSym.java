@@ -562,8 +562,8 @@ public abstract class AbstractIntegerSym implements IInteger, Externalizable {
     }
     b = valueOf(rest);
 
-    SortedMap<BigInteger, Integer> bigMap = new TreeMap<BigInteger, Integer>();
-    Primality.factorInteger(rest, bigMap);
+    //    SortedMap<BigInteger, Integer> bigMap = new TreeMap<BigInteger, Integer>();
+    SortedMap<BigInteger, Integer> bigMap = Primality.factorInteger(rest);
 
     for (Map.Entry<BigInteger, Integer> entry : bigMap.entrySet()) {
       BigInteger key = entry.getKey();

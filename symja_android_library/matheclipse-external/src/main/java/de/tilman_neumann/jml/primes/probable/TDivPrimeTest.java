@@ -19,59 +19,55 @@ import de.tilman_neumann.jml.primes.exact.AutoExpandingPrimesArray;
 
 /**
  * A deterministic prime test for N < 32 bit using fast trial division.
- *
+ * 
  * @author Tilman Neumann
  */
 public class TDivPrimeTest {
-  @SuppressWarnings("unused")
-  private static final Logger LOG = Logger.getLogger(TDivPrimeTest.class);
+	@SuppressWarnings("unused")
+	private static final Logger LOG = Logger.getLogger(TDivPrimeTest.class);
 
-  private static final int NUM_PRIMES_FOR_31_BIT_TDIV = 4793;
+	private static final int NUM_PRIMES_FOR_31_BIT_TDIV = 4793;
 
-  // TODO "static" leads to NPE in constructor ???
-  private AutoExpandingPrimesArray SMALL_PRIMES = AutoExpandingPrimesArray.get();
+	// TODO "static" leads to NPE in constructor ???
+	private AutoExpandingPrimesArray SMALL_PRIMES = AutoExpandingPrimesArray.get();
 
-  private int[] primes;
-  private long[] pinv;
+	private int[] primes;
+	private long[] pinv;
+	
+	private static TDivPrimeTest instance = new TDivPrimeTest();
+	public static TDivPrimeTest getInstance() { return instance; } //Singleton
 
-  private static TDivPrimeTest instance = new TDivPrimeTest();
-
-  public static TDivPrimeTest getInstance() {
-    return instance;
-  } // Singleton
-
-  private TDivPrimeTest() {
-    primes = new int[NUM_PRIMES_FOR_31_BIT_TDIV];
-    pinv = new long[NUM_PRIMES_FOR_31_BIT_TDIV];
-    for (int i = 0; i < NUM_PRIMES_FOR_31_BIT_TDIV; i++) {
-      int p = SMALL_PRIMES.getPrime(i);
-      primes[i] = p;
-      pinv[i] = (1L << 32) / p;
-    }
-  }
-
-  public boolean isPrime(int N) {
-    if (N == 1) return false;
-    if ((N & 1) == 0) return N == 2;
-
-    // if N is odd and composite then the loop runs maximally up to prime = floor(sqrt(N)); unroll
-    // the loop.
-    int i = 1;
-    int unrolledLimit = NUM_PRIMES_FOR_31_BIT_TDIV - 8;
-    for (; i < unrolledLimit; i++) {
-      if ((1 + (int) ((N * pinv[i]) >> 32)) * primes[i] == N) return primes[i] == N;
-      if ((1 + (int) ((N * pinv[++i]) >> 32)) * primes[i] == N) return primes[i] == N;
-      if ((1 + (int) ((N * pinv[++i]) >> 32)) * primes[i] == N) return primes[i] == N;
-      if ((1 + (int) ((N * pinv[++i]) >> 32)) * primes[i] == N) return primes[i] == N;
-      if ((1 + (int) ((N * pinv[++i]) >> 32)) * primes[i] == N) return primes[i] == N;
-      if ((1 + (int) ((N * pinv[++i]) >> 32)) * primes[i] == N) return primes[i] == N;
-      if ((1 + (int) ((N * pinv[++i]) >> 32)) * primes[i] == N) return primes[i] == N;
-      if ((1 + (int) ((N * pinv[++i]) >> 32)) * primes[i] == N) return primes[i] == N;
-    }
-    for (; i < NUM_PRIMES_FOR_31_BIT_TDIV; i++) {
-      if ((1 + (int) ((N * pinv[i]) >> 32)) * primes[i] == N) return primes[i] == N;
-    }
-    // N is prime
-    return true;
-  }
+	private TDivPrimeTest() {
+		primes = new int[NUM_PRIMES_FOR_31_BIT_TDIV];
+		pinv = new long[NUM_PRIMES_FOR_31_BIT_TDIV];
+		for (int i=0; i<NUM_PRIMES_FOR_31_BIT_TDIV; i++) {
+			int p = SMALL_PRIMES.getPrime(i);
+			primes[i] = p;
+			pinv[i] = (1L<<32)/p;
+		}
+	}
+	
+	public boolean isPrime(int N) {
+		if (N==1) return false;
+		if ((N&1)==0) return N==2;
+		
+		// if N is odd and composite then the loop runs maximally up to prime = floor(sqrt(N)); unroll the loop.
+		int i=1;
+		int unrolledLimit = NUM_PRIMES_FOR_31_BIT_TDIV-8;
+		for ( ; i<unrolledLimit; i++) {
+			if ((1 + (int) ((N*pinv[i])>>32)) * primes[i] == N) return primes[i]==N;
+			if ((1 + (int) ((N*pinv[++i])>>32)) * primes[i] == N) return primes[i]==N;
+			if ((1 + (int) ((N*pinv[++i])>>32)) * primes[i] == N) return primes[i]==N;
+			if ((1 + (int) ((N*pinv[++i])>>32)) * primes[i] == N) return primes[i]==N;
+			if ((1 + (int) ((N*pinv[++i])>>32)) * primes[i] == N) return primes[i]==N;
+			if ((1 + (int) ((N*pinv[++i])>>32)) * primes[i] == N) return primes[i]==N;
+			if ((1 + (int) ((N*pinv[++i])>>32)) * primes[i] == N) return primes[i]==N;
+			if ((1 + (int) ((N*pinv[++i])>>32)) * primes[i] == N) return primes[i]==N;
+		}
+		for ( ; i<NUM_PRIMES_FOR_31_BIT_TDIV; i++) {
+			if ((1 + (int) ((N*pinv[i])>>32)) * primes[i] == N) return primes[i]==N;
+		}
+		// N is prime
+		return true;
+	}
 }

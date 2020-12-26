@@ -23,122 +23,102 @@ import de.tilman_neumann.util.ConfigUtil;
 import de.tilman_neumann.util.TimeUtil;
 
 import static de.tilman_neumann.jml.base.BigIntConstants.*;
+import static org.junit.Assert.*;
 
 /**
  * Iterator for superior highly composite numbers 2,6,12,... (A002201).
- *
  * @author Tilman Neumann
  */
 public class SHCNIterator {
-  private static final Logger LOG = Logger.getLogger(SHCNIterator.class);
-  private static final boolean DEBUG = false;
+	private static final Logger LOG = Logger.getLogger(SHCNIterator.class);
+	private static final boolean DEBUG = false;
+	
+	private SHCNEntry last = null;
+	private TreeMap<Integer, SHCNEntry> exponentSum_2_shcnEntries = new TreeMap<Integer, SHCNEntry>();
+	
+	/**
+	 * @return next SHCN
+	 */
+	public SHCNEntry next() {
+		if (last == null) {
+			// SHCN(1) = 2
+			last = SHCNEntry.computeSHCN(1);
+			assertEquals(I_2, last.getSHCN());
+			return last;
+		}
+		
+		// now we have a last entry, and we want to find an x such that the new exponent sum is lastExponentSum+1
+		int lastExponentSum = last.getExponentSum();
+		int wantedExponentSum = lastExponentSum+1;
+		SHCNEntry precomputedEntry = exponentSum_2_shcnEntries.remove(wantedExponentSum);
+		if (precomputedEntry!=null) {
+			// we had the entry already precomputed!
+			last = precomputedEntry;
+			return precomputedEntry;
+		}
+		
+		// we need to compute the entry
+		double lastX = last.getX();
+		double minX = lastX;
+		double maxX;
+		if (exponentSum_2_shcnEntries.isEmpty()) {
+			// maxX = lastX+1 worked, but this should be slightly better
+			maxX = (wantedExponentSum==2 || wantedExponentSum==4) ? lastX+1.25 : lastX+0.5;
+		} else {
+			// take the x from the smallest precomputed (and too big) entry as maxX
+			maxX = exponentSum_2_shcnEntries.firstEntry().getValue().getX();
+		}
+		
+		double currentX = (minX+maxX)/2;
+		SHCNEntry current;
+		while(true) {
+			current = SHCNEntry.computeSHCN(currentX);
+			int currentExponentSum = current.getExponentSum();
+			int cmp = currentExponentSum - wantedExponentSum;
+			if (cmp==0) break;
+			if (cmp < 0) {
+				// currentX was too small
+				if (DEBUG) LOG.debug("    minX=" + minX + ", maxX=" + maxX + ", too small currentX=" + currentX + ", currentExponentSum = " + currentExponentSum);
+				minX = currentX;
+				currentX = (currentX + maxX) / 2;
+			} else {
+				// currentX was too big
+				if (DEBUG) LOG.debug("    minX=" + minX + ", maxX=" + maxX + ", too big currentX=" + currentX + ", currentExponentSum = " + currentExponentSum);
+				maxX = currentX;
+				currentX = (minX + currentX) / 2;
+				// store the entry for later!
+				exponentSum_2_shcnEntries.put(currentExponentSum, current);
+			}
+		}
 
-  private SHCNEntry last = null;
-  private TreeMap<Integer, SHCNEntry> exponentSum_2_shcnEntries = new TreeMap<Integer, SHCNEntry>();
+		// return found SHCN
+		last = current;
+		return current;
+	}
 
-  /** @return next SHCN */
-  public SHCNEntry next() {
-    if (last == null) {
-      // SHCN(1) = 2
-      last = SHCNEntry.computeSHCN(1);
-      //			assertEquals(I_2, last.getSHCN());
-      return last;
-    }
+	/**
+	 * Test.
+	 * @param args ignored
+	 */
+	public static void main(String[] args) {
+    	ConfigUtil.initProject();
+		long startTimeMillis = System.currentTimeMillis();
+		SHCNIterator shcnIter = new SHCNIterator();
+		Double lastX = null;
+		for (int n=1; n<=1000; n++) {
+			SHCNEntry entry = shcnIter.next();
+			assertEquals(n, entry.getExponentSum());
+			double x = entry.getX();
+			Double xDiff = lastX!=null ? x-lastX : null;
+			BigInteger shcn = entry.getSHCN();
+			int digits = Magnitude.of(shcn);
+			LOG.info("n=" + n + ": x=" + x + ", xDiff=" + xDiff + ", " + digits + " digits SHCN = " + entry.getSHCN());
+			lastX = x;
+		}
+		LOG.info(shcnIter.exponentSum_2_shcnEntries.size() + " remaining precomputed SHCNs with exponentSums " + shcnIter.exponentSum_2_shcnEntries.keySet());
 
-    // now we have a last entry, and we want to find an x such that the new exponent sum is
-    // lastExponentSum+1
-    int lastExponentSum = last.getExponentSum();
-    int wantedExponentSum = lastExponentSum + 1;
-    SHCNEntry precomputedEntry = exponentSum_2_shcnEntries.remove(wantedExponentSum);
-    if (precomputedEntry != null) {
-      // we had the entry already precomputed!
-      last = precomputedEntry;
-      return precomputedEntry;
-    }
-
-    // we need to compute the entry
-    double lastX = last.getX();
-    double minX = lastX;
-    double maxX;
-    if (exponentSum_2_shcnEntries.isEmpty()) {
-      // maxX = lastX+1 worked, but this should be slightly better
-      maxX = (wantedExponentSum == 2 || wantedExponentSum == 4) ? lastX + 1.25 : lastX + 0.5;
-    } else {
-      // take the x from the smallest precomputed (and too big) entry as maxX
-      maxX = exponentSum_2_shcnEntries.firstEntry().getValue().getX();
-    }
-
-    double currentX = (minX + maxX) / 2;
-    SHCNEntry current;
-    while (true) {
-      current = SHCNEntry.computeSHCN(currentX);
-      int currentExponentSum = current.getExponentSum();
-      int cmp = currentExponentSum - wantedExponentSum;
-      if (cmp == 0) break;
-      if (cmp < 0) {
-        // currentX was too small
-        if (DEBUG)
-          LOG.debug(
-              "    minX="
-                  + minX
-                  + ", maxX="
-                  + maxX
-                  + ", too small currentX="
-                  + currentX
-                  + ", currentExponentSum = "
-                  + currentExponentSum);
-        minX = currentX;
-        currentX = (currentX + maxX) / 2;
-      } else {
-        // currentX was too big
-        if (DEBUG)
-          LOG.debug(
-              "    minX="
-                  + minX
-                  + ", maxX="
-                  + maxX
-                  + ", too big currentX="
-                  + currentX
-                  + ", currentExponentSum = "
-                  + currentExponentSum);
-        maxX = currentX;
-        currentX = (minX + currentX) / 2;
-        // store the entry for later!
-        exponentSum_2_shcnEntries.put(currentExponentSum, current);
-      }
-    }
-
-    // return found SHCN
-    last = current;
-    return current;
-  }
-
-  /**
-   * Test.
-   *
-   * @param args ignored
-   */
-  //	public static void main(String[] args) {
-  //    	ConfigUtil.initProject();
-  //		long startTimeMillis = System.currentTimeMillis();
-  //		SHCNIterator shcnIter = new SHCNIterator();
-  //		Double lastX = null;
-  //		for (int n=1; n<=1000; n++) {
-  //			SHCNEntry entry = shcnIter.next();
-  //			assertEquals(n, entry.getExponentSum());
-  //			double x = entry.getX();
-  //			Double xDiff = lastX!=null ? x-lastX : null;
-  //			BigInteger shcn = entry.getSHCN();
-  //			int digits = Magnitude.of(shcn);
-  //			LOG.info("n=" + n + ": x=" + x + ", xDiff=" + xDiff + ", " + digits + " digits SHCN = " +
-  // entry.getSHCN());
-  //			lastX = x;
-  //		}
-  //		LOG.info(shcnIter.exponentSum_2_shcnEntries.size() + " remaining precomputed SHCNs with
-  // exponentSums " + shcnIter.exponentSum_2_shcnEntries.keySet());
-  //
-  //		long endTimeMillis = System.currentTimeMillis();
-  //		String durationStr = TimeUtil.timeDiffStr(startTimeMillis, endTimeMillis);
-  //		LOG.info("Computation took " + durationStr);
-  //	}
+		long endTimeMillis = System.currentTimeMillis();
+		String durationStr = TimeUtil.timeDiffStr(startTimeMillis, endTimeMillis);
+		LOG.info("Computation took " + durationStr);
+	}
 }

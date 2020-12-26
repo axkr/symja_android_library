@@ -20,42 +20,41 @@ import de.tilman_neumann.util.SortedMultiset;
 
 /**
  * A partial congruence having 1 large factor.
- *
+ * 
  * @author Tilman Neumann
  */
 public class Partial_1Large extends Partial {
 
-  private long bigFactor; // needs 8 byte instead of 56 byte for a Long[1]
+	private long bigFactor; // needs 8 byte instead of 56 byte for a Long[1]
+	
+	/**
+	 * Full constructor.
+	 * @param A
+	 * @param smallFactors small factors of Q
+	 * @param bigFactor the single large factor of Q
+	 */
+	public Partial_1Large(BigInteger A, SortedIntegerArray smallFactors, long bigFactor) {
+		super(A, smallFactors);
+		// only 1 large factor
+		this.bigFactor = bigFactor;
+	}
 
-  /**
-   * Full constructor.
-   *
-   * @param A
-   * @param smallFactors small factors of Q
-   * @param bigFactor the single large factor of Q
-   */
-  public Partial_1Large(BigInteger A, SortedIntegerArray smallFactors, long bigFactor) {
-    super(A, smallFactors);
-    // only 1 large factor
-    this.bigFactor = bigFactor;
-  }
+	@Override
+	public SortedMultiset<Long> getAllQFactors() {
+		// get small factors of Q
+		SortedMultiset<Long> allFactors = super.getSmallQFactors();
+		// add single large factor
+		allFactors.add(bigFactor);
+		return allFactors;
+	}
 
-  @Override
-  public SortedMultiset<Long> getAllQFactors() {
-    // get small factors of Q
-    SortedMultiset<Long> allFactors = super.getSmallQFactors();
-    // add single large factor
-    allFactors.add(bigFactor);
-    return allFactors;
-  }
+	@Override
+	public Long[] getLargeFactorsWithOddExponent() {
+		return new Long[] {bigFactor};
+	}
 
-  @Override
-  public Long[] getLargeFactorsWithOddExponent() {
-    return new Long[] {bigFactor};
-  }
-
-  @Override
-  public int getNumberOfLargeQFactors() {
-    return 1;
-  }
+	@Override
+	public int getNumberOfLargeQFactors() {
+		return 1;
+	}
 }

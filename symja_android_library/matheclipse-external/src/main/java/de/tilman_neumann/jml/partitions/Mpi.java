@@ -15,74 +15,74 @@ package de.tilman_neumann.jml.partitions;
 
 /**
  * A multipartite number like [1,3,4,2,0,1].
- *
  * @author Tilman Neumann
  */
 public interface Mpi extends Comparable<Mpi>, Iterable<Integer> {
 
-  /** @return dimension of the multipartite number, it's "partiteness" */
-  int getDim();
+	/**
+	 * @return dimension of the multipartite number, it's "partiteness"
+	 */
+	int getDim();
+	
+	/**
+	 * @return total number of entries = the sum of the elements of this multipartite number
+	 */
+	int getCardinality();
 
-  /** @return total number of entries = the sum of the elements of this multipartite number */
-  int getCardinality();
+	/**
+	 * Returns the entry of the given index, with 0<=index<dim.
+	 * @param index
+	 * @return entry at index 'index'
+	 */
+	int getElem(int index);
+	
+	/**
+	 * Sets the entry of the given index, with 0<=index<dim.
+	 * @param index
+	 * @param value
+	 */
+	void setElem(int index, int value);
 
-  /**
-   * Returns the entry of the given index, with 0<=index<dim.
-   *
-   * @param index
-   * @return
-   */
-  int getElem(int index);
+	/**
+	 * @return the index of the first non-zero entry
+	 */
+	int firstNonZeroPartIndex();
 
-  /**
-   * Sets the entry of the given index, with 0<=index<dim.
-   *
-   * @param index
-   * @param value
-   * @return
-   */
-  void setElem(int index, int value);
+	/**
+	 * Returns the pair [lower, upper] of consecutive subvalues of this (according to the 
+	 * ordering relation) such that lower + other <= this and upper + other >= this.
+	 * @param other
+	 * @return the lower and upper bound of this - other
+	 */
+	Mpi[] subtract(Mpi other);
 
-  /** @return the index of the first non-zero entry */
-  int firstNonZeroPartIndex();
+	/**
+	 * Like subtract() but when we know that other fits piece-wise into this. That means faster ;)
+	 * @param other a multipartite integer that has no element greater than the corresponding element of this
+	 * @return this - other
+	 */
+	Mpi complement(Mpi other);
 
-  /**
-   * Returns the pair [lower, upper] of consecutive subvalues of this (according to the ordering
-   * relation) such that lower + other <= this and upper + other >= this.
-   *
-   * @param other
-   * @return
-   */
-  Mpi[] subtract(Mpi other);
+	/**
+	 * Computes a kind of division by 2 of this. The result is a pair of [lower, upper] values
+	 * with lower + upper = this (element-wise addition) and lower<=upper.
+	 * @return [lower, upper]
+	 */
+	Mpi[] div2();
 
-  /**
-   * Like subtract() but when we know that other fits piece-wise into this. That means faster ;)
-   *
-   * @param other
-   * @return
-   */
-  Mpi complement(Mpi other);
-
-  /**
-   * Computes a kind of division by 2 of this. The result is a pair of [lower, upper] values with
-   * lower + upper = this (element-wise addition) and lower<=upper.
-   *
-   * @return [lower, upper]
-   */
-  Mpi[] div2();
-
-  /**
-   * Special operation computing the biggest allowed subvalue of this that is not greater than
-   * lastPart and not greater than this-firstPart.
-   *
-   * @return
-   */
-  Mpi maxNextPart(Mpi firstPart, Mpi lastPart);
-
-  /**
-   * Compare this with another multipartite integer. The first element that differs decides, i.e.
-   * [2,0,0] is bigger than [1,2,3].
-   */
-  @Override
-  int compareTo(Mpi other);
+	/**
+	 * Special operation computing the biggest allowed subvalue of this
+	 * that is not greater than lastPart and not greater than this-firstPart.
+	 * @param firstPart
+	 * @param lastPart
+	 * @return min(lastPart, lower(this - firstPart))
+	 */
+	Mpi maxNextPart(Mpi firstPart, Mpi lastPart);
+	
+	/**
+	 * Compare this with another multipartite integer.
+	 * The first element that differs decides, i.e. [2,0,0] is bigger than [1,2,3].
+	 */
+	@Override
+	int compareTo(Mpi other);
 }

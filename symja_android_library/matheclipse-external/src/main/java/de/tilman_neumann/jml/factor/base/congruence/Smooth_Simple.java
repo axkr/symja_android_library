@@ -21,43 +21,42 @@ import de.tilman_neumann.jml.factor.base.SortedIntegerArray;
 
 /**
  * A smooth congruence from a single AQ-pair.
- *
  * @author Tilman Neumann
  */
-public abstract class Smooth_Simple extends AQPair implements Smooth {
+abstract public class Smooth_Simple extends AQPair implements Smooth {
 
-  private Integer[] oddExpElements;
+	private Integer[] oddExpElements;
 
-  public Smooth_Simple(BigInteger A, SortedIntegerArray smallFactors) {
-    super(A, smallFactors);
-    // determine small factors with odd exponents: first we need a set to eliminate duplicates.
-    Set<Integer> result = new HashSet<Integer>();
-    for (int i = 0; i < this.smallFactors.length; i++) {
-      if ((smallFactorExponents[i] & 1) == 1) result.add(this.smallFactors[i]);
-    }
-    // convert to array
-    this.oddExpElements = result.toArray(new Integer[result.size()]);
-  }
+	public Smooth_Simple(BigInteger A, SortedIntegerArray smallFactors) {
+		super(A, smallFactors);
+		// determine small factors with odd exponents: first we need a set to eliminate duplicates.
+		Set<Integer> result = new HashSet<Integer>();
+		for (int i=0; i<this.smallFactors.length; i++) {
+			if ((smallFactorExponents[i]&1)==1) result.add(this.smallFactors[i]);
+		}
+		// convert to array
+		this.oddExpElements = result.toArray(new Integer[result.size()]);
+	}
 
-  @Override
-  public Set<AQPair> getAQPairs() {
-    Set<AQPair> set = new HashSet<>();
-    set.add(this);
-    return set;
-  }
+	@Override
+	public Set<AQPair> getAQPairs() {
+		Set<AQPair> set = new HashSet<>();
+		set.add(this);
+		return set;
+	}
 
-  @Override
-  public void addMyAQPairsViaXor(Set<AQPair> targetSet) {
-    if (!targetSet.remove(this)) targetSet.add(this);
-  }
+	@Override
+	public void addMyAQPairsViaXor(Set<AQPair> targetSet) {
+		if (!targetSet.remove(this)) targetSet.add(this);
+	}
 
-  @Override
-  public Integer[] getMatrixElements() {
-    return oddExpElements;
-  }
+	@Override
+	public Integer[] getMatrixElements() {
+		return oddExpElements;
+	}
 
-  @Override
-  public boolean isExactSquare() {
-    return oddExpElements.length == 0;
-  }
+	@Override
+	public boolean isExactSquare() {
+		return oddExpElements.length==0;
+	}
 }

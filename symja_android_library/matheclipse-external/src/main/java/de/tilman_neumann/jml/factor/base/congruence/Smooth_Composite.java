@@ -23,91 +23,87 @@ import de.tilman_neumann.util.SortedMultiset_BottomUp;
 
 /**
  * A smooth congruence composed from several partials.
- *
  * @author Tilman Neumann
  */
 public class Smooth_Composite implements Smooth {
-  private Integer[] oddExpElements;
-  private AQPair[] aqPairs;
-  /** congruences never change; therefore we must compute the hashCode only once. */
-  private int hashCode;
+	private Integer[] oddExpElements;
+	private AQPair[] aqPairs;
+	/** congruences never change; therefore we must compute the hashCode only once. */
+	private int hashCode;
 
-  /**
-   * Constructor from several AQ-pairs.
-   *
-   * @param aqPairs
-   */
-  public Smooth_Composite(Set<AQPair> aqPairs) {
-    this.aqPairs = new AQPair[aqPairs.size()];
-    HashSet<Integer> smallFactorsWithOddExp = new HashSet<Integer>();
-    int aqPairCount = 0;
-    for (AQPair aqPair : aqPairs) {
-      this.aqPairs[aqPairCount++] = aqPair;
-      for (int i = 0; i < aqPair.smallFactors.length; i++) {
-        if ((aqPair.smallFactorExponents[i] & 1) == 1) {
-          // add via xor
-          Integer oddExpSmallFactor = aqPair.smallFactors[i];
-          if (!smallFactorsWithOddExp.remove(oddExpSmallFactor))
-            smallFactorsWithOddExp.add(oddExpSmallFactor);
-        }
-      }
-    }
-    this.oddExpElements =
-        smallFactorsWithOddExp.toArray(new Integer[smallFactorsWithOddExp.size()]);
+	/**
+	 * Constructor from several AQ-pairs.
+	 * @param aqPairs
+	 */
+	public Smooth_Composite(Set<AQPair> aqPairs) {
+		this.aqPairs = new AQPair[aqPairs.size()];
+		HashSet<Integer> smallFactorsWithOddExp = new HashSet<Integer>();
+		int aqPairCount = 0;
+		for (AQPair aqPair : aqPairs) {
+			this.aqPairs[aqPairCount++] = aqPair;
+			for (int i=0; i<aqPair.smallFactors.length; i++) {
+				if ((aqPair.smallFactorExponents[i]&1)==1) {
+					// add via xor
+					Integer oddExpSmallFactor = aqPair.smallFactors[i];
+					if (!smallFactorsWithOddExp.remove(oddExpSmallFactor)) smallFactorsWithOddExp.add(oddExpSmallFactor);
+				}
+			}
+		}
+		this.oddExpElements = smallFactorsWithOddExp.toArray(new Integer[smallFactorsWithOddExp.size()]);
+		
+		this.hashCode = aqPairs.hashCode();
+	}
 
-    this.hashCode = aqPairs.hashCode();
-  }
+	@Override
+	public Set<AQPair> getAQPairs() {
+		Set<AQPair> set = new HashSet<>();
+		for (AQPair aqPair : aqPairs) {
+			set.add(aqPair);
+		}
+		return set;
+	}
 
-  @Override
-  public Set<AQPair> getAQPairs() {
-    Set<AQPair> set = new HashSet<>();
-    for (AQPair aqPair : aqPairs) {
-      set.add(aqPair);
-    }
-    return set;
-  }
+	@Override
+	public void addMyAQPairsViaXor(Set<AQPair> targetSet) {
+		for (AQPair aqPair : aqPairs) {
+			if (!targetSet.remove(aqPair)) targetSet.add(aqPair);
+		}
+	}
 
-  @Override
-  public void addMyAQPairsViaXor(Set<AQPair> targetSet) {
-    for (AQPair aqPair : aqPairs) {
-      if (!targetSet.remove(aqPair)) targetSet.add(aqPair);
-    }
-  }
+	@Override
+	public Integer[] getMatrixElements() {
+		return oddExpElements;
+	}
 
-  @Override
-  public Integer[] getMatrixElements() {
-    return oddExpElements;
-  }
+	@Override
+	public boolean isExactSquare() {
+		return oddExpElements.length==0;
+	}
 
-  @Override
-  public boolean isExactSquare() {
-    return oddExpElements.length == 0;
-  }
+	@Override
+	public int hashCode() {
+		// only used in equals()
+		//LOG.debug("hashCode()", new Throwable());
+		return hashCode;
+	}
+	
+	@Override
+	public boolean equals(Object o) {
+		if (o==null || !(o instanceof Smooth_Composite)) return false;
+		Smooth_Composite other = (Smooth_Composite) o;
+		// equal objects must have the same hashCode
+		if (hashCode != other.hashCode) return false;
+		return Arrays.equals(this.aqPairs, other.aqPairs);
+	}
 
-  @Override
-  public int hashCode() {
-    // only used in equals()
-    // LOG.debug("hashCode()", new Throwable());
-    return hashCode;
-  }
-
-  @Override
-  public boolean equals(Object o) {
-    if (o == null || !(o instanceof Smooth_Composite)) return false;
-    Smooth_Composite other = (Smooth_Composite) o;
-    // equal objects must have the same hashCode
-    if (hashCode != other.hashCode) return false;
-    return Arrays.equals(this.aqPairs, other.aqPairs);
-  }
-
-  @Override
-  public String toString() {
-    SortedMultiset<BigInteger> allA = new SortedMultiset_BottomUp<BigInteger>();
-    SortedMultiset<Long> allQ = new SortedMultiset_BottomUp<Long>();
-    for (AQPair aqPair : aqPairs) {
-      allA.add(aqPair.getA());
-      allQ.addAll(aqPair.getAllQFactors());
-    }
-    return "A = {" + allA.toString("*", "^") + "}, Q = {" + allQ.toString("*", "^") + "}";
-  }
+	@Override
+	public String toString() {
+		SortedMultiset<BigInteger> allA = new SortedMultiset_BottomUp<BigInteger>();
+		SortedMultiset<Long> allQ = new SortedMultiset_BottomUp<Long>();
+		for (AQPair aqPair : aqPairs) {
+			allA.add(aqPair.getA());
+			allQ.addAll(aqPair.getAllQFactors());
+		}
+		return "A = {" + allA.toString("*", "^") + "}, Q = {" + allQ.toString("*", "^") + "}";
+	}
 }

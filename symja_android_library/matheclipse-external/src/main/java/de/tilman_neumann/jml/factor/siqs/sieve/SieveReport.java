@@ -14,38 +14,31 @@
 package de.tilman_neumann.jml.factor.siqs.sieve;
 
 public class SieveReport {
-  private long initDuration;
-  private long sieveDuration;
-  private long collectDuration;
+	private long initDuration;
+	private long sieveDuration;
+	private long collectDuration;
 
-  public SieveReport(long initDuration, long sieveDuration, long collectDuration) {
-    this.initDuration = initDuration;
-    this.sieveDuration = sieveDuration;
-    this.collectDuration = collectDuration;
-  }
+	public SieveReport(long initDuration, long sieveDuration, long collectDuration) {
+		this.initDuration = initDuration;
+		this.sieveDuration = sieveDuration;
+		this.collectDuration = collectDuration;
+	}
+	
+	/**
+	 * Add two reports.
+	 * @param other another report added to this
+	 */
+	public void add(SieveReport other) {
+		this.initDuration += other.initDuration;
+		this.sieveDuration += other.sieveDuration;
+		this.collectDuration += other.collectDuration;
+	}
+	
+	public long getTotalDuration(int numberOfThreads) {
+		return (initDuration + sieveDuration + collectDuration)/numberOfThreads;
+	}
 
-  /**
-   * Add two reports.
-   *
-   * @param other another report added to this
-   */
-  public void add(SieveReport other) {
-    this.initDuration += other.initDuration;
-    this.sieveDuration += other.sieveDuration;
-    this.collectDuration += other.collectDuration;
-  }
-
-  public long getTotalDuration(int numberOfThreads) {
-    return (initDuration + sieveDuration + collectDuration) / numberOfThreads;
-  }
-
-  public String getPhaseTimings(int numberOfThreads) {
-    return "init="
-        + initDuration / numberOfThreads
-        + "ms, sieve="
-        + sieveDuration / numberOfThreads
-        + "ms, collect="
-        + collectDuration / numberOfThreads
-        + "ms";
-  }
+	public String getPhaseTimings(int numberOfThreads) {
+		return "init=" + initDuration/numberOfThreads + "ms, sieve=" + sieveDuration/numberOfThreads + "ms, collect=" + collectDuration/numberOfThreads + "ms";
+	}
 }

@@ -13,39 +13,41 @@
  */
 package de.tilman_neumann.jml.factor.siqs.powers;
 
-/** Auxiliary class that allows to get the powers sorted bottom-up by the power value. */
+/**
+ * Auxiliary class that allows to get the powers sorted bottom-up by the power value.
+ */
 public class PowerEntry implements Comparable<PowerEntry> {
-  public int p;
-  public int exponent;
-  public int power;
-  public int t;
-  public byte logPower;
-  public double pinvD;
-  public long pinvL;
-
-  public PowerEntry(int p, int exponent, int power, int t, byte logPower) {
-    this.p = p;
-    this.exponent = exponent;
-    this.power = power;
-    this.t = t;
-    this.logPower = logPower;
-    this.pinvD = 1.0 / power;
-    this.pinvL = (1L << 32) / power;
-  }
-
-  @Override
-  public boolean equals(Object o) {
-    if (o == null || !(o instanceof PowerEntry)) return false;
-    return power == ((PowerEntry) o).power;
-  }
-
-  @Override
-  public int hashCode() {
-    return power;
-  }
-
-  @Override
-  public int compareTo(PowerEntry other) {
-    return power - other.power;
-  }
+	public int p;
+	public int exponent;
+	public int power;
+	public int t;
+	public byte logPower;
+	public double pinvD;
+	public long pinvL;
+	
+	public PowerEntry(int p, int exponent, int power, int t, byte logPower) {
+		this.p = p;
+		this.exponent = exponent;
+		this.power = power;
+		this.t = t;
+		this.logPower = logPower;
+		this.pinvD = 1.0 / power;
+		this.pinvL = (1L<<32) / power;
+	}
+	
+	@Override
+	public boolean equals(Object o) {
+		if (o==null || !(o instanceof PowerEntry)) return false;
+		return power == ((PowerEntry)o).power;
+	}
+	
+	@Override
+	public int hashCode() {
+		return power;
+	}
+	
+	@Override
+	public int compareTo(PowerEntry other) {
+		return power - other.power;
+	}
 }

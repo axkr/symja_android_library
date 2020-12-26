@@ -24,23 +24,22 @@ import static de.tilman_neumann.jml.base.BigDecimalConstants.*;
 
 /**
  * Inverse hyperbolic sinus function.
- *
  * @author Tilman Neumann
  */
 public class ArcSinH {
 
-  /**
-   * y = asinh(x) implemented by ln() formula, for all real x.
-   *
-   * @param x real argument
-   * @param scale wanted accuracy in after-comma digits
-   * @return y = asinh(x), y elemOf (-inf, +inf).
-   */
-  public static BigDecimal asinh(BigDecimal x, Scale scale) {
-    if (x.equals(F_0)) return F_0;
-    BigDecimal xSquare_plus1 = Pow.pow(x, 2, scale).add(F_1);
-    BigDecimal sqrtTerm = SqrtReal.sqrt(xSquare_plus1, scale);
-    BigDecimal angle = Ln.ln(x.add(sqrtTerm), scale);
-    return angle;
-  }
+	/**
+	 * y = asinh(x) implemented by ln() formula, for all real x.
+	 * 
+	 * @param x real argument
+	 * @param scale wanted accuracy in after-comma digits
+	 * @return y = asinh(x), y elemOf (-inf, +inf).
+	 */
+	public static BigDecimal asinh(BigDecimal x, Scale scale) {
+		if (x.equals(F_0)) return F_0;
+		BigDecimal xSquare_plus1 = Pow.pow(x, 2, scale).add(F_1);
+		BigDecimal sqrtTerm = SqrtReal.sqrt(xSquare_plus1, scale);
+		BigDecimal angle = Ln.ln(x.add(sqrtTerm), scale);
+		return angle;
+	}
 }

@@ -22,68 +22,64 @@ import de.tilman_neumann.jml.modular.ModularSqrt;
 import de.tilman_neumann.jml.modular.ModularSqrt31;
 
 import static de.tilman_neumann.jml.base.BigIntConstants.*;
+import static org.junit.Assert.*;
 
 /**
  * Engine to compute the smallest modular sqrts for all elements of the prime base.
- *
  * @author Tilman Neumann
  */
 public class ModularSqrtsEngine {
-  private static final Logger LOG = Logger.getLogger(ModularSqrtsEngine.class);
-  private static final boolean DEBUG = false;
+	private static final Logger LOG = Logger.getLogger(ModularSqrtsEngine.class);
+	private static final boolean DEBUG = false;
+	
+	private ModularSqrt31 modularSqrtEngine = new ModularSqrt31();
 
-  private ModularSqrt31 modularSqrtEngine = new ModularSqrt31();
-
-  /**
-   * For all primes p in the prime base, find the modular sqrt's of kN (mod p), i.e. the t such that
-   * t^2 == kN (mod p).
-   *
-   * <p>Since t^2 == kN (mod p) equals t^2 == (kN%p) (mod p), we can compute Tonelli-Shanks in
-   * all-integer arguments. For SIQS this is no big improvement though, because Tonelli-Shanks is
-   * not time-critical anyway.
-   *
-   * @param primesArray
-   * @param primeBaseSize
-   * @param kN
-   * @return the array of modular sqrt's t with t^2 == kN (mod p) for all p of the prime base
-   */
-  public int[] computeTArray(int[] primesArray, int primeBaseSize, BigInteger kN) {
-    UnsignedBigInt kN_UBI = new UnsignedBigInt(kN);
-    int[] tArray = new int[primeBaseSize]; // zero-initialized
-    // special treatment for p[0]=2 (always contained in prime base)
-    tArray[0] = kN.intValue() & 1; // kN % 2
-    // odd primes
-    for (int i = primeBaseSize - 1; i > 0; i--) {
-      // Tonelli_Shanks requires Legendre(kN|p)==1, 0 is not ok. But this is easy to "heal":
-      // Since p is prime, Legendre(kN|p)==0 means that kN is a multiple of p.
-      // Thus t^2 == kN == 0 (mod p) and the modular sqrt t is 0, too.
-      int p = primesArray[i];
-      int kN_mod_p = kN_UBI.mod(p);
-      if (kN_mod_p > 0) {
-        tArray[i] = modularSqrtEngine.modularSqrt(kN_mod_p, p);
-      }
-      // else:
-      // * We do not need to set tArray[i] = 0, because the array has already been initialized with
-      // zeros.
-      // * Testing for p|N does not help TDiv's internal QS, because the Q's have been stripped of
-      // prime base elements before it is called.
-    }
-    //		if (DEBUG) {
-    //			assertEquals(kN.mod(I_2), BigInteger.valueOf(tArray[0]).pow(2).mod(I_2));
-    //			ModularSqrt modularSqrtEngine_big = new ModularSqrt();
-    //			for (int i = primeBaseSize-1; i>0; i--) {
-    //				int p = primesArray[i];
-    //				BigInteger pBig = BigInteger.valueOf(p);
-    //				BigInteger kN_mod_p = kN.mod(pBig);
-    //				if (kN_mod_p.compareTo(I_0) > 0) {
-    //					assertEquals(modularSqrtEngine_big.modularSqrt(kN, p), tArray[i]);
-    //					assertEquals(modularSqrtEngine_big.modularSqrt(kN_mod_p, p), tArray[i]);
-    //				} else {
-    //					assertEquals(0, tArray[i]);
-    //				}
-    //				LOG.debug("kN=" + kN + ", p=" + p + ", kN%p = " + kN_mod_p + " -> t=" + tArray[i]);
-    //			}
-    //		}
-    return tArray;
-  }
+	/**
+	 * For all primes p in the prime base, find the modular sqrt's of kN (mod p), i.e. the t such that t^2 == kN (mod p).
+	 *
+	 * Since t^2 == kN (mod p) equals t^2 == (kN%p) (mod p), we can compute Tonelli-Shanks in all-integer arguments.
+	 * For SIQS this is no big improvement though, because Tonelli-Shanks is not time-critical anyway.
+	 * 
+	 * @param primesArray
+	 * @param primeBaseSize
+	 * @param kN
+	 * @return the array of modular sqrt's t with t^2 == kN (mod p) for all p of the prime base
+	 */
+	public int[] computeTArray(int[] primesArray, int primeBaseSize, BigInteger kN) {
+		UnsignedBigInt kN_UBI = new UnsignedBigInt(kN);
+		int[] tArray = new int[primeBaseSize]; // zero-initialized
+		// special treatment for p[0]=2 (always contained in prime base)
+		tArray[0] = kN.intValue() & 1; // kN % 2
+		// odd primes
+		for (int i = primeBaseSize-1; i>0; i--) {
+			// Tonelli_Shanks requires Legendre(kN|p)==1, 0 is not ok. But this is easy to "heal":
+			// Since p is prime, Legendre(kN|p)==0 means that kN is a multiple of p.
+			// Thus t^2 == kN == 0 (mod p) and the modular sqrt t is 0, too.
+			int p = primesArray[i];
+			int kN_mod_p = kN_UBI.mod(p);
+			if (kN_mod_p > 0) {
+				tArray[i] = modularSqrtEngine.modularSqrt(kN_mod_p, p);
+			}
+			// else: 
+			// * We do not need to set tArray[i] = 0, because the array has already been initialized with zeros.
+			// * Testing for p|N does not help TDiv's internal QS, because the Q's have been stripped of prime base elements before it is called.
+		}
+		if (DEBUG) {
+			assertEquals(kN.mod(I_2), BigInteger.valueOf(tArray[0]).pow(2).mod(I_2));
+			ModularSqrt modularSqrtEngine_big = new ModularSqrt();
+			for (int i = primeBaseSize-1; i>0; i--) {
+				int p = primesArray[i];
+				BigInteger pBig = BigInteger.valueOf(p);
+				BigInteger kN_mod_p = kN.mod(pBig);
+				if (kN_mod_p.compareTo(I_0) > 0) {
+					assertEquals(modularSqrtEngine_big.modularSqrt(kN, p), tArray[i]);
+					assertEquals(modularSqrtEngine_big.modularSqrt(kN_mod_p, p), tArray[i]);
+				} else {
+					assertEquals(0, tArray[i]);
+				}
+				LOG.debug("kN=" + kN + ", p=" + p + ", kN%p = " + kN_mod_p + " -> t=" + tArray[i]);
+			}
+		}
+		return tArray;
+	}
 }

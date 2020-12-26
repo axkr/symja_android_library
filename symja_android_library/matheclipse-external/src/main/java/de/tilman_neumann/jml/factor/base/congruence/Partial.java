@@ -18,23 +18,24 @@ import java.math.BigInteger;
 import de.tilman_neumann.jml.factor.base.SortedIntegerArray;
 
 /**
- * Base class for partial congruences. The matrix elements of a partial congruence are the large
- * factors appearing with odd exponent.
- *
+ * Base class for partial congruences.
+ * The matrix elements of a partial congruence are the large factors appearing with odd exponent.
+ * 
  * @author Tilman Neumann
  */
-public abstract class Partial extends AQPair {
+abstract public class Partial extends AQPair {
 
-  /**
-   * Full constructor.
-   *
-   * @param A
-   * @param smallFactors small factors of Q
-   */
-  public Partial(BigInteger A, SortedIntegerArray smallFactors) {
-    super(A, smallFactors);
-  }
-
-  /** @return the large factors appearing with odd exponent. */
-  public abstract Long[] getLargeFactorsWithOddExponent();
+	/**
+	 * Full constructor.
+	 * @param A
+	 * @param smallFactors small factors of Q
+	 */
+	public Partial(BigInteger A, SortedIntegerArray smallFactors) {
+		super(A, smallFactors);
+	}
+	
+	/**
+	 * @return the large factors appearing with odd exponent.
+	 */
+	abstract public Long[] getLargeFactorsWithOddExponent();
 }

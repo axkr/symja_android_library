@@ -16,16 +16,22 @@ package de.tilman_neumann.jml.partitions;
 import java.io.Serializable;
 
 /**
- * A generator for a sequence of objects of type <T>. Generators differ from Iterators in that they
- * do not have a backing Collection. Consequently, there is no need for a remove() method.
- *
+ * A generator for a sequence of objects of type <T>.
+ * Generators differ from Iterators in that they do not have a backing Collection. 
+ * Consequently, there is no need for a remove() method.
+ * 
  * @author Tilman Neumann
+ * 
  * @param <T> type of objects to create
  */
 public interface Generator<T> extends Serializable {
-  /** @return true if there is another object to generate */
-  boolean hasNext();
-
-  /** @return next object */
-  T next();
+	/**
+	 * @return true if there is another object to generate
+	 */
+	boolean hasNext();
+	
+	/**
+	 * @return next object
+	 */
+	T next();
 }
