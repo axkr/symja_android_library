@@ -4,6 +4,7 @@ import static org.junit.Assert.assertEquals;
 
 import org.matheclipse.core.eval.EvalHistory;
 import org.matheclipse.core.expression.F;
+import org.matheclipse.parser.client.FEConfig;
 
 import junit.framework.TestCase;
 
@@ -14,6 +15,7 @@ public class LastCalculationsHistoryTest extends TestCase {
   }
 
   public void testSystem001() {
+    FEConfig.PARSER_USE_LOWERCASE_SYMBOLS = false;
     EvalHistory history = new EvalHistory((short) 3);
 
     assertEquals(history.getOut(-1).toString(), "NIL");

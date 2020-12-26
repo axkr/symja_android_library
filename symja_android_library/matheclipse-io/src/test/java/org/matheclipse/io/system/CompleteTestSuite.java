@@ -24,6 +24,7 @@ public class CompleteTestSuite extends TestCase {
   public static Test suite() {
     TestSuite suite = new TestSuite();
 
+//    suite.addTestSuite(LastCalculationsHistoryTest.class);
     suite.addTestSuite(NumberTheoryTestCase.class);
     suite.addTestSuite(ASCIIPrintTest.class);
     suite.addTestSuite(SVGGraphicsTestCase.class);
@@ -40,7 +41,6 @@ public class CompleteTestSuite extends TestCase {
     suite.addTestSuite(BasicTeXTestCase.class);
     suite.addTestSuite(TeXConverterTestCase.class);
 
-    suite.addTestSuite(LastCalculationsHistoryTest.class);
     suite.addTestSuite(ExpandTestCase.class);
 
     suite.addTestSuite(OpenFixedSizeMapTest.class);
