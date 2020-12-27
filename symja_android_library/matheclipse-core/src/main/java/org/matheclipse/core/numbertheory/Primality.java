@@ -13,6 +13,7 @@ import java.util.TreeSet;
 import org.matheclipse.core.basic.Config;
 import org.matheclipse.core.combinatoric.KSubsets;
 import org.matheclipse.core.combinatoric.KSubsets.KSubsetsList;
+import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.exception.ReturnException;
 import org.matheclipse.core.eval.util.OpenIntToIExprHashMap;
 import org.matheclipse.core.expression.AbstractIntegerSym;
@@ -25,8 +26,6 @@ import com.google.common.math.BigIntegerMath;
 import com.google.common.math.LongMath;
 
 import de.tilman_neumann.jml.factor.CombinedFactorAlgorithm;
-import de.tilman_neumann.jml.factor.tdiv.TDiv;
-import de.tilman_neumann.jml.primes.probable.PrPTest;
 import de.tilman_neumann.util.SortedMultiset;
 import de.tilman_neumann.util.SortedMultiset_BottomUp;
 import it.unimi.dsi.fastutil.ints.Int2IntMap;
@@ -42,8 +41,18 @@ public class Primality {
     private static final long serialVersionUID = 7802239809732541730L;
 
     @Override
-    public Integer put(BigInteger key, Integer value) {
-      Integer result = super.put(key, value);
+    public int add(BigInteger entry) {
+      int result = super.add(entry);
+      if (size() > 1) {
+        // not a prime power:
+        throw ReturnException.RETURN_FALSE;
+      }
+      return result;
+    }
+
+    @Override
+    public int add(BigInteger entry, int mult) {
+      int result = super.add(entry, mult);
       if (size() > 1) {
         // not a prime power:
         throw ReturnException.RETURN_FALSE;
@@ -56,13 +65,19 @@ public class Primality {
     private static final long serialVersionUID = -7769218967264615452L;
 
     @Override
-    public Integer put(BigInteger key, Integer value) {
-      Integer result = super.put(key, value);
-      if (value > 1) {
+    public int add(BigInteger entry) {
+      int result = super.add(entry);
+      if (result + 1 > 1) {
         // not a square free number:
         throw ReturnException.RETURN_FALSE;
       }
-      if (result != null && result > 1) {
+      return result;
+    }
+
+    @Override
+    public int add(BigInteger entry, int mult) {
+      int result = super.add(entry, mult);
+      if (result + mult > 1) {
         // not a square free number:
         throw ReturnException.RETURN_FALSE;
       }
@@ -361,6 +376,24 @@ public class Primality {
   private static final int[][] offsetPrimes = {
     null, null, {0, 2}, {2, 2}, {4, 2}, {6, 5}, {11, 7}, {18, 13}, {31, 23}, {54, 43}, {97, 75}
   };
+
+  private static final transient ThreadLocal<CombinedFactorAlgorithm> instance =
+      new ThreadLocal<CombinedFactorAlgorithm>() {
+
+        @Override
+        public CombinedFactorAlgorithm initialValue() {
+          if (Config.JAVA_UNSAFE) {
+            final int cores = Runtime.getRuntime().availableProcessors();
+            return new CombinedFactorAlgorithm(cores / 2 + 1, null, true, false, true);
+          } else {
+            return new CombinedFactorAlgorithm(1, null, false, false, true);
+          }
+        }
+      };
+
+  public static CombinedFactorAlgorithm getFactorizer() {
+    return instance.get();
+  }
 
   static { // To initialize the dual table of BigInteger primes
     for (int i = 0; i < primes.length; i++) {
@@ -764,23 +797,15 @@ public class Primality {
   public static void factorInteger(BigInteger n, SortedMultiset<BigInteger> map) {
 
     // Do trial division by all primes < 131072.
-    TDiv tdiv = new TDiv();
-    n = tdiv.findSmallFactors(n, 131072, map);
-    if (n.equals(BigInteger.ONE)) {
-      return;
-    }
+    //    TDiv tdiv = new TDiv();
+    //    n = tdiv.findSmallFactors(n, 131072, map);
+    //    if (n.equals(BigInteger.ONE)) {
+    //      return;
+    //    }
 
-    // N is composite -> do ECM
-    if (n.compareTo(BigInteger.ONE) > 0) {
-      CombinedFactorAlgorithm factorizer;
-      if (Config.JAVA_UNSAFE) {
-        final int cores = Runtime.getRuntime().availableProcessors();
-        factorizer = new CombinedFactorAlgorithm(cores / 2 + 1, null, true, false, true);
-      } else {
-        factorizer = new CombinedFactorAlgorithm(1, null, false, false, true);
-      }
-      factorizer.factor(n, map);
-    }
+    //    if (n.compareTo(BigInteger.ONE) > 0) {
+    getFactorizer().factor(n, map);
+    //    }
     return;
   }
 
@@ -793,22 +818,16 @@ public class Primality {
    */
   public static SortedMap<BigInteger, Integer> factorInteger(BigInteger n) {
     SortedMultiset<BigInteger> map = new SortedMultiset_BottomUp<>();
-    TDiv tdiv = new TDiv();
-    n = tdiv.findSmallFactors(n, 131072, map);
-    if (n.equals(BigInteger.ONE)) {
-      return map;
-    }
+    // Do trial division by all primes < 131072.
+    //    TDiv tdiv = new TDiv();
+    //    n = tdiv.findSmallFactors(n, 131072, map);
+    //    if (n.equals(BigInteger.ONE)) {
+    //      return map;
+    //    }
 
-    if (n.compareTo(BigInteger.ONE) > 0) {
-      CombinedFactorAlgorithm factorizer;
-      if (Config.JAVA_UNSAFE) {
-        final int cores = Runtime.getRuntime().availableProcessors();
-        factorizer = new CombinedFactorAlgorithm(cores / 2 + 1, null, true, false, true);
-      } else {
-        factorizer = new CombinedFactorAlgorithm(1, null, false, false, true);
-      }
-      factorizer.factor(n, map);
-    }
+    //    if (n.compareTo(BigInteger.ONE) > 0) {
+    getFactorizer().factor(n, map);
+    //    }
     return map;
   }
 
@@ -1110,7 +1129,6 @@ public class Primality {
     if (!k.gcd(n).equals(BigInteger.ONE)) {
       return null;
     }
-    //    SortedMap<BigInteger, Integer> map = new TreeMap<BigInteger, Integer>();
     SortedMap<BigInteger, Integer> map = Primality.factorInteger(n);
     BigInteger res = BigInteger.ONE;
     for (Map.Entry<BigInteger, Integer> entry : map.entrySet()) {
@@ -1213,8 +1231,14 @@ public class Primality {
     if (val.compareTo(BigInteger.ZERO) < 0) {
       val = val.negate();
     }
+    SquareFreeTreedMap map = new SquareFreeTreedMap();
     try {
-      factorInteger(val, new SquareFreeTreedMap());
+      factorInteger(val, map);
+      for (Map.Entry<BigInteger, Integer> entry : map.entrySet()) {
+        if (entry.getValue() > 1) {
+          return false;
+        }
+      }
       return true;
     } catch (ReturnException re) {
     }
