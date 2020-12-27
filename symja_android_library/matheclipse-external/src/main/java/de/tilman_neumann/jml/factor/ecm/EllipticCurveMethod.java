@@ -298,8 +298,6 @@ public class EllipticCurveMethod extends FactorAlgorithm {
     montgomery.mul(MontgomeryMultR2, MontgomeryMultR2, MontgomeryMultAfterInv);
     AddBigNbrModN(MontgomeryMultR1, MontgomeryMultR1, MontgomeryMultR2);
 
-    // Modular curve loop: It seems to be faster not to repeat previously tested curves for new
-    // factors
     int maxCurvesForN = maxCurves;
     if (maxCurvesForN == 0) { // automatic computation requested
       int NBits = N.bitLength();
@@ -316,186 +314,202 @@ public class EllipticCurveMethod extends FactorAlgorithm {
       maxCurvesForN = NBits > 130 ? (int) Math.pow((NBits - 130) / 15, 1.61) : 0;
       if (DEBUG) LOG.debug("ECM: NBits = " + NBits + ", maxCurvesForN = " + maxCurvesForN);
     }
+
+    // Modular curve loop: It seems to be faster not to repeat previously tested curves for new
+    // factors
     int EC = 0; // current number of curves
-    do {
-      new_curve:
-      do {
-        EC++;
-        if (maxCurvesForN > 0 && EC >= maxCurvesForN) {
-          return I_1; // stop ECM
+    while (true) {
+      EC++;
+      if (maxCurvesForN > 0 && EC >= maxCurvesForN) {
+        return I_1; // stop ECM
+      }
+
+      long L1, L2, LS;
+      if (EC < 26) {
+        L1 = 2000; // Number of primes less than 2.000
+        L2 = 200000;
+        LS = 45;
+      } else if (EC < 326) {
+        L1 = 50000; // Number of primes less than 50.000
+        L2 = 5000000;
+        LS = 224;
+      } else if (EC < 2000) {
+        L1 = 1000000; // Number of primes less than 1.000.000
+        L2 = 100000000;
+        LS = 1001;
+      } else {
+        L1 = 11000000; // Number of primes less than 11.000.000
+        L2 = 1100000000;
+        LS = 3316;
+      }
+
+      LongToBigNbr(2 * (EC + 1), Aux1);
+      LongToBigNbr(3 * (EC + 1) * (EC + 1) - 1, Aux2);
+      ModInvBigNbr(Aux2, TestNbr, Aux2);
+      MultBigNbrModN(Aux1, Aux2, Aux3, dN);
+      MultBigNbrModN(Aux3, MontgomeryMultR1, A0, dN);
+      montgomery.mul(A0, A0, A02);
+      montgomery.mul(A02, A0, A03);
+      SubtractBigNbrModN(A03, A0, Aux1);
+      MultBigNbrByLongModN(A02, 9, Aux2, dN);
+      SubtractBigNbrModN(Aux2, MontgomeryMultR1, Aux2);
+      montgomery.mul(Aux1, Aux2, Aux3);
+      if (BigNbrIsZero(Aux3)) {
+        continue;
+      }
+      MultBigNbrByLongModN(A0, 4, Z, dN);
+      MultBigNbrByLongModN(A02, 6, Aux1, dN);
+      SubtractBigNbrModN(MontgomeryMultR1, Aux1, Aux1);
+      montgomery.mul(A02, A02, Aux2);
+      MultBigNbrByLongModN(Aux2, 3, Aux2, dN);
+      SubtractBigNbrModN(Aux1, Aux2, Aux1);
+      MultBigNbrByLongModN(A03, 4, Aux2, dN);
+      ModInvBigNbr(Aux2, TestNbr, Aux2);
+      montgomery.mul(Aux2, MontgomeryMultAfterInv, Aux3);
+      montgomery.mul(Aux1, Aux3, A0);
+      AddBigNbrModN(A0, MontgomeryMultR2, Aux1);
+      LongToBigNbr(4, Aux2);
+      ModInvBigNbr(Aux2, TestNbr, Aux3);
+      MultBigNbrModN(Aux3, MontgomeryMultR1, Aux2, dN);
+      montgomery.mul(Aux1, Aux2, AA); // the only write access to AA
+      MultBigNbrByLongModN(A02, 3, Aux1, dN);
+      AddBigNbrModN(Aux1, MontgomeryMultR1, X);
+
+      /** *********** */
+      /* First step */
+      /** *********** */
+      System.arraycopy(X, 0, Xaux, 0, NumberLength);
+      System.arraycopy(Z, 0, Zaux, 0, NumberLength);
+      System.arraycopy(MontgomeryMultR1, 0, GcdAccumulated, 0, NumberLength);
+      for (int Pass = 0; Pass < 2; Pass++) {
+        /* For powers of 2 */
+        for (int I = 1; I <= L1; I <<= 1) {
+          duplicate(X, Z, X, Z, AA);
+        }
+        for (int I = 3; I <= L1; I *= 3) {
+          duplicate(W1, W2, X, Z, AA);
+          add3(X, Z, X, Z, W1, W2, X, Z);
         }
 
-        long L1, L2, LS;
-        if (EC < 26) {
-          L1 = 2000; // Number of primes less than 2.000
-          L2 = 200000;
-          LS = 45;
-        } else if (EC < 326) {
-          L1 = 50000; // Number of primes less than 50.000
-          L2 = 5000000;
-          LS = 224;
-        } else if (EC < 2000) {
-          L1 = 1000000; // Number of primes less than 1.000.000
-          L2 = 100000000;
-          LS = 1001;
+        if (Pass == 0) {
+          montgomery.mul(GcdAccumulated, Z, Aux1);
+          System.arraycopy(Aux1, 0, GcdAccumulated, 0, NumberLength);
         } else {
-          L1 = 11000000; // Number of primes less than 11.000.000
-          L2 = 1100000000;
-          LS = 3316;
+          GcdBigNbr(Z, TestNbr, GD);
+          if (!BigNbrAreEqual(GD, BigNbr1) && !BigNbrAreEqual(GD, TestNbr)) {
+            return BigIntToBigNbr(GD); // found factor, exit
+          }
         }
 
-        LongToBigNbr(2 * (EC + 1), Aux1);
-        LongToBigNbr(3 * (EC + 1) * (EC + 1) - 1, Aux2);
-        ModInvBigNbr(Aux2, TestNbr, Aux2);
-        MultBigNbrModN(Aux1, Aux2, Aux3, dN);
-        MultBigNbrModN(Aux3, MontgomeryMultR1, A0, dN);
-        montgomery.mul(A0, A0, A02);
-        montgomery.mul(A02, A0, A03);
-        SubtractBigNbrModN(A03, A0, Aux1);
-        MultBigNbrByLongModN(A02, 9, Aux2, dN);
-        SubtractBigNbrModN(Aux2, MontgomeryMultR1, Aux2);
-        montgomery.mul(Aux1, Aux2, Aux3);
-        if (BigNbrIsZero(Aux3)) {
-          continue;
-        }
-        MultBigNbrByLongModN(A0, 4, Z, dN);
-        MultBigNbrByLongModN(A02, 6, Aux1, dN);
-        SubtractBigNbrModN(MontgomeryMultR1, Aux1, Aux1);
-        montgomery.mul(A02, A02, Aux2);
-        MultBigNbrByLongModN(Aux2, 3, Aux2, dN);
-        SubtractBigNbrModN(Aux1, Aux2, Aux1);
-        MultBigNbrByLongModN(A03, 4, Aux2, dN);
-        ModInvBigNbr(Aux2, TestNbr, Aux2);
-        montgomery.mul(Aux2, MontgomeryMultAfterInv, Aux3);
-        montgomery.mul(Aux1, Aux3, A0);
-        AddBigNbrModN(A0, MontgomeryMultR2, Aux1);
-        LongToBigNbr(4, Aux2);
-        ModInvBigNbr(Aux2, TestNbr, Aux3);
-        MultBigNbrModN(Aux3, MontgomeryMultR1, Aux2, dN);
-        montgomery.mul(Aux1, Aux2, AA); // the only write access to AA
-        MultBigNbrByLongModN(A02, 3, Aux1, dN);
-        AddBigNbrModN(Aux1, MontgomeryMultR1, X);
-
-        /** *********** */
-        /* First step */
-        /** *********** */
-        System.arraycopy(X, 0, Xaux, 0, NumberLength);
-        System.arraycopy(Z, 0, Zaux, 0, NumberLength);
-        System.arraycopy(MontgomeryMultR1, 0, GcdAccumulated, 0, NumberLength);
-        for (int Pass = 0; Pass < 2; Pass++) {
-          /* For powers of 2 */
-          for (int I = 1; I <= L1; I <<= 1) {
-            duplicate(X, Z, X, Z, AA);
+        /* for powers of odd primes */
+        long P;
+        int indexM = 1;
+        do {
+          P = SmallPrime[indexM++];
+          for (long IP = P; IP <= L1; IP *= P) {
+            prac((int) P, X, Z, W1, W2, W3, W4, AA);
           }
-          for (int I = 3; I <= L1; I *= 3) {
-            duplicate(W1, W2, X, Z, AA);
-            add3(X, Z, X, Z, W1, W2, X, Z);
-          }
-
           if (Pass == 0) {
             montgomery.mul(GcdAccumulated, Z, Aux1);
             System.arraycopy(Aux1, 0, GcdAccumulated, 0, NumberLength);
           } else {
             GcdBigNbr(Z, TestNbr, GD);
-            if (BigNbrAreEqual(GD, BigNbr1) == false) {
-              break new_curve; // found factor, exit
+            if (!BigNbrAreEqual(GD, BigNbr1) && !BigNbrAreEqual(GD, TestNbr)) {
+              return BigIntToBigNbr(GD); // found factor, exit
             }
           }
+        } while (P <= LS);
+        P += 2;
 
-          /* for powers of odd primes */
-          long P;
-          int indexM = 1;
-          do {
-            P = SmallPrime[indexM++];
-            for (long IP = P; IP <= L1; IP *= P) {
-              prac((int) P, X, Z, W1, W2, W3, W4, AA);
-            }
+        /* Initialize sieve2310[n]: 1 if gcd(P+2n,2310) > 1, 0 otherwise */
+        int u = (int) P;
+        for (int i = 0; i < 2310; i++) {
+          sieve2310[i] =
+              (u % 3 == 0 || u % 5 == 0 || u % 7 == 0 || u % 11 == 0 ? (byte) 1 : (byte) 0);
+          u += 2;
+        }
+        do {
+          /* Generate sieve */
+          GenerateSieve((int) P, sieve, sieve2310, SmallPrime);
+
+          /* Walk through sieve */
+          for (int i = 0; i < 23100; i++) {
+            if (sieve[i] != 0) continue; /* Do not process composites */
+            if (P + 2 * i > L1) break;
+            prac((int) (P + 2 * i), X, Z, W1, W2, W3, W4, AA);
             if (Pass == 0) {
               montgomery.mul(GcdAccumulated, Z, Aux1);
               System.arraycopy(Aux1, 0, GcdAccumulated, 0, NumberLength);
             } else {
               GcdBigNbr(Z, TestNbr, GD);
-              if (BigNbrAreEqual(GD, BigNbr1) == false) {
-                break new_curve; // found factor, exit
+              if (!BigNbrAreEqual(GD, BigNbr1) && !BigNbrAreEqual(GD, TestNbr)) {
+                return BigIntToBigNbr(GD); // found factor, exit
               }
             }
-          } while (P <= LS);
-          P += 2;
-
-          /* Initialize sieve2310[n]: 1 if gcd(P+2n,2310) > 1, 0 otherwise */
-          int u = (int) P;
-          for (int i = 0; i < 2310; i++) {
-            sieve2310[i] =
-                (u % 3 == 0 || u % 5 == 0 || u % 7 == 0 || u % 11 == 0 ? (byte) 1 : (byte) 0);
-            u += 2;
           }
-          do {
-            /* Generate sieve */
-            GenerateSieve((int) P, sieve, sieve2310, SmallPrime);
-
-            /* Walk through sieve */
-            for (int i = 0; i < 23100; i++) {
-              if (sieve[i] != 0) continue; /* Do not process composites */
-              if (P + 2 * i > L1) break;
-              prac((int) (P + 2 * i), X, Z, W1, W2, W3, W4, AA);
-              if (Pass == 0) {
-                montgomery.mul(GcdAccumulated, Z, Aux1);
-                System.arraycopy(Aux1, 0, GcdAccumulated, 0, NumberLength);
-              } else {
-                GcdBigNbr(Z, TestNbr, GD);
-                if (BigNbrAreEqual(GD, BigNbr1) == false) {
-                  break new_curve; // found factor, exit
-                }
-              }
-            }
-            P += 46200;
-          } while (P < L1);
-          if (Pass == 0) {
-            if (BigNbrIsZero(GcdAccumulated)) { // If GcdAccumulated is...
-              System.arraycopy(Xaux, 0, X, 0, NumberLength);
-              System.arraycopy(Zaux, 0, Z, 0, NumberLength);
-              continue; // ... a multiple of TestNbr, continue.
-            }
-            GcdBigNbr(GcdAccumulated, TestNbr, GD);
-            if (BigNbrAreEqual(GD, BigNbr1) == false) {
-              break new_curve; // found factor, exit
-            }
-            break;
+          P += 46200;
+        } while (P < L1);
+        if (Pass == 0) {
+          if (BigNbrIsZero(GcdAccumulated)) { // If GcdAccumulated is...
+            System.arraycopy(Xaux, 0, X, 0, NumberLength);
+            System.arraycopy(Zaux, 0, Z, 0, NumberLength);
+            continue; // ... a multiple of TestNbr, continue.
           }
-        } /* end for Pass */
-
-        /** *************************************************** */
-        /* Second step (using improved standard continuation) */
-        /** *************************************************** */
-        int j = 0;
-        for (int u = 1; u < 2310; u += 2) {
-          if (u % 3 == 0 || u % 5 == 0 || u % 7 == 0 || u % 11 == 0) {
-            sieve2310[u / 2] = (byte) 1;
-          } else {
-            sieve2310[(sieveidx[j++] = u / 2)] = (byte) 0;
+          GcdBigNbr(GcdAccumulated, TestNbr, GD);
+          if (!BigNbrAreEqual(GD, BigNbr1) && !BigNbrAreEqual(GD, TestNbr)) {
+            return BigIntToBigNbr(GD); // found factor, exit
           }
+          break;
         }
-        System.arraycopy(sieve2310, 0, sieve2310, 1155, 1155);
-        System.arraycopy(X, 0, Xaux, 0, NumberLength);
-        System.arraycopy(Z, 0, Zaux, 0, NumberLength); // (X:Z) -> Q (output from step 1)
+      } /* end for Pass */
 
-        for (int Pass = 0; Pass < 2; Pass++) {
-          int J = 0;
-          System.arraycopy(MontgomeryMultR1, 0, GcdAccumulated, 0, NumberLength);
-          System.arraycopy(X, 0, UX, 0, NumberLength);
-          System.arraycopy(Z, 0, UZ, 0, NumberLength); // (UX:UZ) -> Q
-          ModInvBigNbr(Z, TestNbr, Aux2);
-          montgomery.mul(Aux2, MontgomeryMultAfterInv, Aux1);
-          montgomery.mul(Aux1, X, root[0]); // root[0] <- X/Z (Q)
-          AddBigNbrModN(X, Z, Aux1);
-          montgomery.mul(Aux1, Aux1, W1);
-          SubtractBigNbrModN(X, Z, Aux1);
-          montgomery.mul(Aux1, Aux1, W2);
-          montgomery.mul(W1, W2, TX);
-          SubtractBigNbrModN(W1, W2, Aux1);
-          montgomery.mul(Aux1, AA, Aux2);
-          AddBigNbrModN(Aux2, W2, Aux3);
-          montgomery.mul(Aux1, Aux3, TZ); // (TX:TZ) -> 2Q
+      /** *************************************************** */
+      /* Second step (using improved standard continuation) */
+      /** *************************************************** */
+      int j = 0;
+      for (int u = 1; u < 2310; u += 2) {
+        if (u % 3 == 0 || u % 5 == 0 || u % 7 == 0 || u % 11 == 0) {
+          sieve2310[u / 2] = (byte) 1;
+        } else {
+          sieve2310[(sieveidx[j++] = u / 2)] = (byte) 0;
+        }
+      }
+      System.arraycopy(sieve2310, 0, sieve2310, 1155, 1155);
+      System.arraycopy(X, 0, Xaux, 0, NumberLength);
+      System.arraycopy(Z, 0, Zaux, 0, NumberLength); // (X:Z) -> Q (output from step 1)
+
+      for (int Pass = 0; Pass < 2; Pass++) {
+        int J = 0;
+        System.arraycopy(MontgomeryMultR1, 0, GcdAccumulated, 0, NumberLength);
+        System.arraycopy(X, 0, UX, 0, NumberLength);
+        System.arraycopy(Z, 0, UZ, 0, NumberLength); // (UX:UZ) -> Q
+        ModInvBigNbr(Z, TestNbr, Aux2);
+        montgomery.mul(Aux2, MontgomeryMultAfterInv, Aux1);
+        montgomery.mul(Aux1, X, root[0]); // root[0] <- X/Z (Q)
+        AddBigNbrModN(X, Z, Aux1);
+        montgomery.mul(Aux1, Aux1, W1);
+        SubtractBigNbrModN(X, Z, Aux1);
+        montgomery.mul(Aux1, Aux1, W2);
+        montgomery.mul(W1, W2, TX);
+        SubtractBigNbrModN(W1, W2, Aux1);
+        montgomery.mul(Aux1, AA, Aux2);
+        AddBigNbrModN(Aux2, W2, Aux3);
+        montgomery.mul(Aux1, Aux3, TZ); // (TX:TZ) -> 2Q
+        SubtractBigNbrModN(X, Z, Aux1);
+        AddBigNbrModN(TX, TZ, Aux2);
+        montgomery.mul(Aux1, Aux2, W1);
+        AddBigNbrModN(X, Z, Aux1);
+        SubtractBigNbrModN(TX, TZ, Aux2);
+        montgomery.mul(Aux1, Aux2, W2);
+        AddBigNbrModN(W1, W2, Aux1);
+        montgomery.mul(Aux1, Aux1, Aux2);
+        montgomery.mul(Aux2, UZ, X);
+        SubtractBigNbrModN(W1, W2, Aux1);
+        montgomery.mul(Aux1, Aux1, Aux2);
+        montgomery.mul(Aux2, UX, Z); // (X:Z) -> 3Q
+        for (int I = 5; I < 2310; I += 2) {
+          System.arraycopy(X, 0, WX, 0, NumberLength);
+          System.arraycopy(Z, 0, WZ, 0, NumberLength);
           SubtractBigNbrModN(X, Z, Aux1);
           AddBigNbrModN(TX, TZ, Aux2);
           montgomery.mul(Aux1, Aux2, W1);
@@ -507,8 +521,98 @@ public class EllipticCurveMethod extends FactorAlgorithm {
           montgomery.mul(Aux2, UZ, X);
           SubtractBigNbrModN(W1, W2, Aux1);
           montgomery.mul(Aux1, Aux1, Aux2);
-          montgomery.mul(Aux2, UX, Z); // (X:Z) -> 3Q
-          for (int I = 5; I < 2310; I += 2) {
+          montgomery.mul(Aux2, UX, Z); // (X:Z) -> 5Q, 7Q, ...
+          if (Pass == 0) {
+            montgomery.mul(GcdAccumulated, Aux1, Aux2);
+            System.arraycopy(Aux2, 0, GcdAccumulated, 0, NumberLength);
+          } else {
+            GcdBigNbr(Aux1, TestNbr, GD);
+            if (!BigNbrAreEqual(GD, BigNbr1) && !BigNbrAreEqual(GD, TestNbr)) {
+              return BigIntToBigNbr(GD); // found factor, exit
+            }
+          }
+          if (I == 1155) {
+            System.arraycopy(X, 0, DX, 0, NumberLength);
+            System.arraycopy(Z, 0, DZ, 0, NumberLength); // (DX:DZ) -> 1155Q
+          }
+          if (I % 3 != 0 && I % 5 != 0 && I % 7 != 0 && I % 11 != 0) {
+            J++;
+            ModInvBigNbr(Z, TestNbr, Aux2);
+            montgomery.mul(Aux2, MontgomeryMultAfterInv, Aux1);
+            montgomery.mul(Aux1, X, root[J]); // root[J] <- X/Z
+          }
+          System.arraycopy(WX, 0, UX, 0, NumberLength);
+          System.arraycopy(WZ, 0, UZ, 0, NumberLength); // (UX:UZ) <- Previous (X:Z)
+        } /* end for I */
+        AddBigNbrModN(DX, DZ, Aux1);
+        montgomery.mul(Aux1, Aux1, W1);
+        SubtractBigNbrModN(DX, DZ, Aux1);
+        montgomery.mul(Aux1, Aux1, W2);
+        montgomery.mul(W1, W2, X);
+        SubtractBigNbrModN(W1, W2, Aux1);
+        montgomery.mul(Aux1, AA, Aux2);
+        AddBigNbrModN(Aux2, W2, Aux3);
+        montgomery.mul(Aux1, Aux3, Z);
+        System.arraycopy(X, 0, UX, 0, NumberLength);
+        System.arraycopy(Z, 0, UZ, 0, NumberLength); // (UX:UZ) -> 2310Q
+        AddBigNbrModN(X, Z, Aux1);
+        montgomery.mul(Aux1, Aux1, W1);
+        SubtractBigNbrModN(X, Z, Aux1);
+        montgomery.mul(Aux1, Aux1, W2);
+        montgomery.mul(W1, W2, TX);
+        SubtractBigNbrModN(W1, W2, Aux1);
+        montgomery.mul(Aux1, AA, Aux2);
+        AddBigNbrModN(Aux2, W2, Aux3);
+        montgomery.mul(Aux1, Aux3, TZ); // (TX:TZ) -> 2*2310Q
+        SubtractBigNbrModN(X, Z, Aux1);
+        AddBigNbrModN(TX, TZ, Aux2);
+        montgomery.mul(Aux1, Aux2, W1);
+        AddBigNbrModN(X, Z, Aux1);
+        SubtractBigNbrModN(TX, TZ, Aux2);
+        montgomery.mul(Aux1, Aux2, W2);
+        AddBigNbrModN(W1, W2, Aux1);
+        montgomery.mul(Aux1, Aux1, Aux2);
+        montgomery.mul(Aux2, UZ, X);
+        SubtractBigNbrModN(W1, W2, Aux1);
+        montgomery.mul(Aux1, Aux1, Aux2);
+        montgomery.mul(Aux2, UX, Z); // (X:Z) -> 3*2310Q
+        int Qaux = (int) (L1 / 4620);
+        int maxIndexM = (int) (L2 / 4620);
+        for (int indexM = 0; indexM <= maxIndexM; indexM++) {
+          if (indexM >= Qaux) { // If inside step 2 range...
+            if (indexM == 0) {
+              ModInvBigNbr(UZ, TestNbr, Aux2);
+              montgomery.mul(Aux2, MontgomeryMultAfterInv, Aux3);
+              montgomery.mul(UX, Aux3, Aux1); // Aux1 <- X/Z (2310Q)
+            } else {
+              ModInvBigNbr(Z, TestNbr, Aux2);
+              montgomery.mul(Aux2, MontgomeryMultAfterInv, Aux3);
+              montgomery.mul(X, Aux3, Aux1); // Aux1 <- X/Z (3,5,* 2310Q)
+            }
+
+            /* Generate sieve */
+            if (indexM % 10 == 0 || indexM == Qaux) {
+              GenerateSieve(indexM / 10 * 46200 + 1, sieve, sieve2310, SmallPrime);
+            }
+            /* Walk through sieve */
+            J = 1155 + (indexM % 10) * 2310;
+            for (int i = 0; i < 480; i++) {
+              j = sieveidx[i]; // 0 < J < 1155
+              if (sieve[J + j] != 0 && sieve[J - 1 - j] != 0) {
+                continue; // Do not process if both are composite numbers.
+              }
+              SubtractBigNbrModN(Aux1, root[i], M);
+              montgomery.mul(GcdAccumulated, M, Aux2);
+              System.arraycopy(Aux2, 0, GcdAccumulated, 0, NumberLength);
+            }
+            if (Pass != 0) {
+              GcdBigNbr(GcdAccumulated, TestNbr, GD);
+              if (!BigNbrAreEqual(GD, BigNbr1) && !BigNbrAreEqual(GD, TestNbr)) {
+                return BigIntToBigNbr(GD); // found factor, exit
+              }
+            }
+          }
+          if (indexM != 0) { // Update (X:Z)
             System.arraycopy(X, 0, WX, 0, NumberLength);
             System.arraycopy(Z, 0, WZ, 0, NumberLength);
             SubtractBigNbrModN(X, Z, Aux1);
@@ -522,137 +626,28 @@ public class EllipticCurveMethod extends FactorAlgorithm {
             montgomery.mul(Aux2, UZ, X);
             SubtractBigNbrModN(W1, W2, Aux1);
             montgomery.mul(Aux1, Aux1, Aux2);
-            montgomery.mul(Aux2, UX, Z); // (X:Z) -> 5Q, 7Q, ...
-            if (Pass == 0) {
-              montgomery.mul(GcdAccumulated, Aux1, Aux2);
-              System.arraycopy(Aux2, 0, GcdAccumulated, 0, NumberLength);
-            } else {
-              GcdBigNbr(Aux1, TestNbr, GD);
-              if (BigNbrAreEqual(GD, BigNbr1) == false) {
-                break new_curve; // found factor, exit
-              }
-            }
-            if (I == 1155) {
-              System.arraycopy(X, 0, DX, 0, NumberLength);
-              System.arraycopy(Z, 0, DZ, 0, NumberLength); // (DX:DZ) -> 1155Q
-            }
-            if (I % 3 != 0 && I % 5 != 0 && I % 7 != 0 && I % 11 != 0) {
-              J++;
-              ModInvBigNbr(Z, TestNbr, Aux2);
-              montgomery.mul(Aux2, MontgomeryMultAfterInv, Aux1);
-              montgomery.mul(Aux1, X, root[J]); // root[J] <- X/Z
-            }
+            montgomery.mul(Aux2, UX, Z);
             System.arraycopy(WX, 0, UX, 0, NumberLength);
-            System.arraycopy(WZ, 0, UZ, 0, NumberLength); // (UX:UZ) <- Previous (X:Z)
-          } /* end for I */
-          AddBigNbrModN(DX, DZ, Aux1);
-          montgomery.mul(Aux1, Aux1, W1);
-          SubtractBigNbrModN(DX, DZ, Aux1);
-          montgomery.mul(Aux1, Aux1, W2);
-          montgomery.mul(W1, W2, X);
-          SubtractBigNbrModN(W1, W2, Aux1);
-          montgomery.mul(Aux1, AA, Aux2);
-          AddBigNbrModN(Aux2, W2, Aux3);
-          montgomery.mul(Aux1, Aux3, Z);
-          System.arraycopy(X, 0, UX, 0, NumberLength);
-          System.arraycopy(Z, 0, UZ, 0, NumberLength); // (UX:UZ) -> 2310Q
-          AddBigNbrModN(X, Z, Aux1);
-          montgomery.mul(Aux1, Aux1, W1);
-          SubtractBigNbrModN(X, Z, Aux1);
-          montgomery.mul(Aux1, Aux1, W2);
-          montgomery.mul(W1, W2, TX);
-          SubtractBigNbrModN(W1, W2, Aux1);
-          montgomery.mul(Aux1, AA, Aux2);
-          AddBigNbrModN(Aux2, W2, Aux3);
-          montgomery.mul(Aux1, Aux3, TZ); // (TX:TZ) -> 2*2310Q
-          SubtractBigNbrModN(X, Z, Aux1);
-          AddBigNbrModN(TX, TZ, Aux2);
-          montgomery.mul(Aux1, Aux2, W1);
-          AddBigNbrModN(X, Z, Aux1);
-          SubtractBigNbrModN(TX, TZ, Aux2);
-          montgomery.mul(Aux1, Aux2, W2);
-          AddBigNbrModN(W1, W2, Aux1);
-          montgomery.mul(Aux1, Aux1, Aux2);
-          montgomery.mul(Aux2, UZ, X);
-          SubtractBigNbrModN(W1, W2, Aux1);
-          montgomery.mul(Aux1, Aux1, Aux2);
-          montgomery.mul(Aux2, UX, Z); // (X:Z) -> 3*2310Q
-          int Qaux = (int) (L1 / 4620);
-          int maxIndexM = (int) (L2 / 4620);
-          for (int indexM = 0; indexM <= maxIndexM; indexM++) {
-            if (indexM >= Qaux) { // If inside step 2 range...
-              if (indexM == 0) {
-                ModInvBigNbr(UZ, TestNbr, Aux2);
-                montgomery.mul(Aux2, MontgomeryMultAfterInv, Aux3);
-                montgomery.mul(UX, Aux3, Aux1); // Aux1 <- X/Z (2310Q)
-              } else {
-                ModInvBigNbr(Z, TestNbr, Aux2);
-                montgomery.mul(Aux2, MontgomeryMultAfterInv, Aux3);
-                montgomery.mul(X, Aux3, Aux1); // Aux1 <- X/Z (3,5,* 2310Q)
-              }
-
-              /* Generate sieve */
-              if (indexM % 10 == 0 || indexM == Qaux) {
-                GenerateSieve(indexM / 10 * 46200 + 1, sieve, sieve2310, SmallPrime);
-              }
-              /* Walk through sieve */
-              J = 1155 + (indexM % 10) * 2310;
-              for (int i = 0; i < 480; i++) {
-                j = sieveidx[i]; // 0 < J < 1155
-                if (sieve[J + j] != 0 && sieve[J - 1 - j] != 0) {
-                  continue; // Do not process if both are composite numbers.
-                }
-                SubtractBigNbrModN(Aux1, root[i], M);
-                montgomery.mul(GcdAccumulated, M, Aux2);
-                System.arraycopy(Aux2, 0, GcdAccumulated, 0, NumberLength);
-              }
-              if (Pass != 0) {
-                GcdBigNbr(GcdAccumulated, TestNbr, GD);
-                if (BigNbrAreEqual(GD, BigNbr1) == false) {
-                  break new_curve; // found factor, exit
-                }
-              }
-            }
-            if (indexM != 0) { // Update (X:Z)
-              System.arraycopy(X, 0, WX, 0, NumberLength);
-              System.arraycopy(Z, 0, WZ, 0, NumberLength);
-              SubtractBigNbrModN(X, Z, Aux1);
-              AddBigNbrModN(TX, TZ, Aux2);
-              montgomery.mul(Aux1, Aux2, W1);
-              AddBigNbrModN(X, Z, Aux1);
-              SubtractBigNbrModN(TX, TZ, Aux2);
-              montgomery.mul(Aux1, Aux2, W2);
-              AddBigNbrModN(W1, W2, Aux1);
-              montgomery.mul(Aux1, Aux1, Aux2);
-              montgomery.mul(Aux2, UZ, X);
-              SubtractBigNbrModN(W1, W2, Aux1);
-              montgomery.mul(Aux1, Aux1, Aux2);
-              montgomery.mul(Aux2, UX, Z);
-              System.arraycopy(WX, 0, UX, 0, NumberLength);
-              System.arraycopy(WZ, 0, UZ, 0, NumberLength);
-            }
-          } // end for Q
-          if (Pass == 0) {
-            if (BigNbrIsZero(GcdAccumulated)) { // If GcdAccumulated is...
-              System.arraycopy(Xaux, 0, X, 0, NumberLength);
-              System.arraycopy(Zaux, 0, Z, 0, NumberLength);
-              continue; // ... a multiple of TestNbr, continue.
-            }
-            GcdBigNbr(GcdAccumulated, TestNbr, GD);
-            if (BigNbrAreEqual(GD, TestNbr) == true) {
-              break;
-            }
-            if (BigNbrAreEqual(GD, BigNbr1) == false) {
-              break new_curve; // found factor, exit
-            }
-            break;
+            System.arraycopy(WZ, 0, UZ, 0, NumberLength);
           }
-        } /* end for Pass */
-      } while (true); /* end curve calculation */
-    } while (BigNbrAreEqual(GD, TestNbr)); // while gcd == N; indeed this happens now and then
-
-    if (DEBUG) LOG.info("ECM did " + EC + " curves");
-    return BigIntToBigNbr(GD);
+        } // end for Q
+        if (Pass == 0) {
+          if (BigNbrIsZero(GcdAccumulated)) { // If GcdAccumulated is...
+            System.arraycopy(Xaux, 0, X, 0, NumberLength);
+            System.arraycopy(Zaux, 0, Z, 0, NumberLength);
+            continue; // ... a multiple of TestNbr, continue.
+          }
+          GcdBigNbr(GcdAccumulated, TestNbr, GD);
+          if (BigNbrAreEqual(GD, TestNbr)) {
+            break; // XXX this breaks out off pass 0 and starts a new curve, does that make sense?
+          }
+          if (!BigNbrAreEqual(GD, BigNbr1)) {
+            return BigIntToBigNbr(GD); // found factor, exit
+          }
+          break;
+        }
+      } /* end for Pass */
+    } /* end curve calculation */
   }
 
   private static void GenerateSieve(int initial, byte[] sieve, byte[] sieve2310, int[] SmallPrime) {

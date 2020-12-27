@@ -118,7 +118,10 @@ public class CongruenceCollectorReport {
         nonIntPartialBigFactorCount += count;
       }
     }
-    float partialPercentage = (nonIntPartialBigFactorCount * 100.0F) / totalPartialBigFactorCount;
+    float partialPercentage =
+        totalPartialBigFactorCount == 0
+            ? 0
+            : (nonIntPartialBigFactorCount * 100.0F) / totalPartialBigFactorCount;
 
     int totalSmoothBigFactorCount = 0;
     int nonIntSmoothBigFactorCount = 0;
@@ -130,7 +133,10 @@ public class CongruenceCollectorReport {
         nonIntSmoothBigFactorCount += count;
       }
     }
-    float smoothPercentage = (nonIntSmoothBigFactorCount * 100.0F) / totalSmoothBigFactorCount;
+    float smoothPercentage =
+        totalSmoothBigFactorCount == 0
+            ? 0
+            : (nonIntSmoothBigFactorCount * 100.0F) / totalSmoothBigFactorCount;
     return String.format("%.2f", smoothPercentage)
         + "% of smooths' big factors and "
         + String.format("%.2f", partialPercentage)

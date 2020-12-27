@@ -389,7 +389,7 @@ public class SIQS extends FactorAlgorithm {
         primesArray,
         tArray,
         adjustedSieveArraySize); // must be done before polyGenerator initialization where qCount is
-                                 // required
+    // required
     FactorTest factorTest = new FactorTest01(N);
     congruenceCollector.initialize(N, factorTest);
     matrixSolver.initialize(N, factorTest);

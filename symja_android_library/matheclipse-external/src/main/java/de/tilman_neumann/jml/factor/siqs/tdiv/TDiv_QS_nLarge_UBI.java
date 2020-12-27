@@ -35,8 +35,6 @@ import de.tilman_neumann.jml.factor.pollardRho.PollardRhoBrentMontgomeryR64Mul63
 import de.tilman_neumann.jml.factor.siqs.SIQS_Small;
 import de.tilman_neumann.jml.factor.siqs.data.SolutionArrays;
 import de.tilman_neumann.jml.factor.siqs.poly.SIQSPolyGenerator;
-import de.tilman_neumann.jml.factor.siqs.powers.PowerOfSmallPrimesFinder;
-import de.tilman_neumann.jml.factor.siqs.sieve.Sieve03g;
 import de.tilman_neumann.jml.primes.probable.PrPTest;
 import de.tilman_neumann.util.Multiset;
 import de.tilman_neumann.util.SortedMultiset;
@@ -101,10 +99,7 @@ public class TDiv_QS_nLarge_UBI implements TDiv_QS {
           0.37F,
           null,
           0.16F,
-          new PowerOfSmallPrimesFinder(),
           new SIQSPolyGenerator(),
-          new Sieve03g(),
-          new TDiv_QS_1Large_UBI(),
           10,
           true,
           false); // XXX set useLegacyFactoring to false

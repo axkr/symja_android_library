@@ -198,7 +198,7 @@ public abstract class PSIQSBase extends FactorAlgorithm {
           ecm.searchFactors(
               args,
               result); // TODO a parallel ECM implementation with numberOfThreads threads would be
-                       // nice here
+      // nice here
       if (ANALYZE) ecmDuration += timer.capture();
       if (factorFound) {
         return true;
@@ -345,7 +345,7 @@ public abstract class PSIQSBase extends FactorAlgorithm {
         primesArray,
         tArray,
         adjustedSieveArraySize); // must be done before polyGenerator initialization where qCount is
-                                 // required
+    // required
     FactorTest factorTest = new FactorTest01(N);
     matrixSolver.initialize(N, factorTest);
     congruenceCollector.initialize(N, primeBaseSize, matrixSolver, factorTest);
