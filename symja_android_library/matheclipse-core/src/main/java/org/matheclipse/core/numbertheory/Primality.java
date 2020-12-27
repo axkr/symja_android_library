@@ -8,7 +8,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.SortedMap;
-import java.util.TreeMap;
 import java.util.TreeSet;
 
 import org.matheclipse.core.basic.Config;
@@ -26,6 +25,8 @@ import com.google.common.math.BigIntegerMath;
 import com.google.common.math.LongMath;
 
 import de.tilman_neumann.jml.factor.CombinedFactorAlgorithm;
+import de.tilman_neumann.jml.factor.tdiv.TDiv;
+import de.tilman_neumann.jml.primes.probable.PrPTest;
 import de.tilman_neumann.util.SortedMultiset;
 import de.tilman_neumann.util.SortedMultiset_BottomUp;
 import it.unimi.dsi.fastutil.ints.Int2IntMap;
@@ -747,6 +748,12 @@ public class Primality {
     return result;
   }
 
+  private static void addToMap(BigInteger N, int exp, SortedMap<BigInteger, Integer> map) {
+    Integer oldExp = map.get(N);
+    // old entry is replaced if oldExp!=null
+    map.put(N, (oldExp == null) ? exp : oldExp + exp);
+  }
+
   /**
    * Decomposes the argument <code>n</code> into prime factors. The result is stored in the <code>
    * map</code> .
@@ -754,14 +761,16 @@ public class Primality {
    * @param n
    * @param map of all BigInteger primes and their associated exponents
    */
-  public static void factorInteger(final BigInteger n, SortedMultiset<BigInteger> map) {
-    Map<Integer, Integer> tMap = new TreeMap<Integer, Integer>();
-    BigInteger N = countPrimes1021(n, tMap);
-    if (tMap.size() > 0) {
-      for (Map.Entry<Integer, Integer> entry : tMap.entrySet()) {
-        map.put(BigInteger.valueOf(entry.getKey()), entry.getValue());
-      }
+  public static void factorInteger(BigInteger n, SortedMultiset<BigInteger> map) {
+
+    // Do trial division by all primes < 131072.
+    TDiv tdiv = new TDiv();
+    n = tdiv.findSmallFactors(n, 131072, map);
+    if (n.equals(BigInteger.ONE)) {
+      return;
     }
+
+    // N is composite -> do ECM
     if (n.compareTo(BigInteger.ONE) > 0) {
       CombinedFactorAlgorithm factorizer;
       if (Config.JAVA_UNSAFE) {
@@ -770,7 +779,7 @@ public class Primality {
       } else {
         factorizer = new CombinedFactorAlgorithm(1, null, false, false, true);
       }
-      factorizer.factor(N, map);
+      factorizer.factor(n, map);
     }
     return;
   }
@@ -782,15 +791,25 @@ public class Primality {
    * @param n
    * @return map of all BigInteger primes and their associated exponents
    */
-  public static SortedMap<BigInteger, Integer> factorInteger(final BigInteger n) {
-    CombinedFactorAlgorithm factorizer;
-    if (Config.JAVA_UNSAFE) {
-      final int cores = Runtime.getRuntime().availableProcessors();
-      factorizer = new CombinedFactorAlgorithm(cores / 2 + 1, null, true, false, true);
-    } else {
-      factorizer = new CombinedFactorAlgorithm(1, null, false, false, true);
+  public static SortedMap<BigInteger, Integer> factorInteger(BigInteger n) {
+    SortedMultiset<BigInteger> map = new SortedMultiset_BottomUp<>();
+    TDiv tdiv = new TDiv();
+    n = tdiv.findSmallFactors(n, 131072, map);
+    if (n.equals(BigInteger.ONE)) {
+      return map;
     }
-    return factorizer.factor(n);
+
+    if (n.compareTo(BigInteger.ONE) > 0) {
+      CombinedFactorAlgorithm factorizer;
+      if (Config.JAVA_UNSAFE) {
+        final int cores = Runtime.getRuntime().availableProcessors();
+        factorizer = new CombinedFactorAlgorithm(cores / 2 + 1, null, true, false, true);
+      } else {
+        factorizer = new CombinedFactorAlgorithm(1, null, false, false, true);
+      }
+      factorizer.factor(n, map);
+    }
+    return map;
   }
 
   public static BigInteger rho(final BigInteger val) {
