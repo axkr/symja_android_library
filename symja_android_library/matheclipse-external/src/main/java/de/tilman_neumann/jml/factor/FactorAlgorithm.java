@@ -229,7 +229,7 @@ public abstract class FactorAlgorithm {
                     + compositeFactor);
             factorResult.primeFactors.add(compositeFactor, exp); // emergency response ;-)
           } // else: found factors have been added to factorResult.untestedFactors with the given
-            // exponent
+          // exponent
 
           smallestPossibleFactor =
               Math.max(smallestPossibleFactor, factorResult.smallestPossibleFactorRemaining);

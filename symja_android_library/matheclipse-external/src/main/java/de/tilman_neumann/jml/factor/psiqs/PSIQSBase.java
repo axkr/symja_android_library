@@ -87,7 +87,7 @@ public abstract class PSIQSBase extends FactorAlgorithm {
   protected MatrixSolver matrixSolver;
 
   protected PowerFinder powerFinder;
-  private EllipticCurveMethod ecm = new EllipticCurveMethod();
+  private EllipticCurveMethod ecm = new EllipticCurveMethod(0);
 
   private BPSWTest bpsw = new BPSWTest();
 

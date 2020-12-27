@@ -104,7 +104,7 @@ public class CombinedFactorAlgorithm extends FactorAlgorithm {
         permitUnsafeUsage,
         true,
         true); // TODO switch useLegacyFactoring to false when the advanced approach has proven to
-               // be prolific
+    // be prolific
   }
 
   /**

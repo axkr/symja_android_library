@@ -32,7 +32,6 @@ import de.tilman_neumann.jml.factor.tdiv.TDiv31Inverse;
 import de.tilman_neumann.jml.primes.probable.PrPTest;
 
 import static de.tilman_neumann.jml.base.BigIntConstants.*;
-// import static org.junit.Assert.*;
 
 /**
  * Auxiliary factor algorithm to find smooth decompositions of Q's.

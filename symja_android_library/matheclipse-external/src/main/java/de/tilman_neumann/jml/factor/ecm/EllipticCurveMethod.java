@@ -93,13 +93,12 @@ public class EllipticCurveMethod extends FactorAlgorithm {
 
   /** Length of multiple precision numbers. */
   int NumberLength;
-  // XXX Running operations to the full NumberLength ignoring the true argument sizes might be a
-  // waste of performance.
-  // Or maybe not, if all arguments in this special algorithm have nearly the size of the N to
-  // factor... -> Check that.
 
-  /** Elliptic Curve number */
-  private int EC;
+  /**
+   * the maximum number of curves to run. -1 means no limit, 0 automatic computation of the
+   * parameter, positive values are applied directly
+   */
+  int maxCurves;
 
   private int[] fieldTX, fieldTZ, fieldUX, fieldUZ;
   private int[] fieldAux1, fieldAux2, fieldAux3, fieldAux4;
@@ -117,21 +116,19 @@ public class EllipticCurveMethod extends FactorAlgorithm {
     }
   }
 
-  @Override
-  public String getName() {
-    return "ECM";
+  /**
+   * Full constructor.
+   *
+   * @param maxCurves the maximum number of curves to run. -1 means no limit, 0 automatic
+   *     computation of the parameter, positive values are applied directly.
+   */
+  public EllipticCurveMethod(int maxCurves) {
+    this.maxCurves = maxCurves;
   }
 
-  /**
-   * {@inheritDoc}
-   *
-   * <p>Note that the curve limit of this method for finding a single factor is the same as that of
-   * factor() and factorize() for finding all prime factors of N.
-   */
   @Override
-  public BigInteger findSingleFactor(BigInteger N) {
-    EC = 1;
-    return fnECM(N);
+  public String getName() {
+    return "ECM(maxCurves = " + maxCurves + ")";
   }
 
   /**
@@ -146,7 +143,6 @@ public class EllipticCurveMethod extends FactorAlgorithm {
   public boolean searchFactors(FactorArguments args, FactorResult result) {
     // set up new N
     BigInteger N = args.N;
-    EC = 1;
 
     // Do trial division by all primes < 131072.
     SortedMultiset<BigInteger> tdivFactors = new SortedMultiset_BottomUp<BigInteger>();
@@ -195,7 +191,7 @@ public class EllipticCurveMethod extends FactorAlgorithm {
       }
 
       // ECM
-      final BigInteger NN = fnECM(N);
+      final BigInteger NN = findSingleFactor(N);
       if (NN.equals(I_1)) {
         // N is composite but could not be factored by ECM
         addToMap(N, exp, failedComposites);
@@ -232,7 +228,14 @@ public class EllipticCurveMethod extends FactorAlgorithm {
     map.put(N, (oldExp == null) ? exp : oldExp + exp);
   }
 
-  private BigInteger fnECM(BigInteger N) {
+  /**
+   * {@inheritDoc}
+   *
+   * <p>Note that the curve limit of this method for finding a single factor is the same as that of
+   * factor() and factorize() for finding all prime factors of N.
+   */
+  @Override
+  public BigInteger findSingleFactor(BigInteger N) {
     int[] A0 = new int[NLen];
     int[] A02 = new int[NLen];
     int[] A03 = new int[NLen];
@@ -297,29 +300,28 @@ public class EllipticCurveMethod extends FactorAlgorithm {
 
     // Modular curve loop: It seems to be faster not to repeat previously tested curves for new
     // factors
-    Integer maxCurves = null;
-    EC--;
+    int maxCurvesForN = maxCurves;
+    if (maxCurvesForN == 0) { // automatic computation requested
+      int NBits = N.bitLength();
+      // Dario Alpern's choice of (decimal digits -> maxCurves) was:
+      // 30->5, 35->8, 40->15, 45->25, 50->27, 55->32, 60->43, 65->70, 70->150, 75->300, 80->350,
+      // 85->600, 90->1500
+      // For N > 90 decimal digits the number of curves to run was unlimited, so his SIQS would
+      // never be called.
+      // The following estimate was adjusted for PSIQS with 6 threads. It is rather cautious because
+      // hitting hard semi-primes
+      // shall not let ECM waste more time than SIQS or PSIQS would need. Nonetheless, these few
+      // curves speed up factoring random composites a lot.
+      // TODO scale by number of PSIQS threads !
+      maxCurvesForN = NBits > 130 ? (int) Math.pow((NBits - 130) / 15, 1.61) : 0;
+      if (DEBUG) LOG.debug("ECM: NBits = " + NBits + ", maxCurvesForN = " + maxCurvesForN);
+    }
+    int EC = 0; // current number of curves
     do {
       new_curve:
       do {
         EC++;
-        if (maxCurves == null) {
-          int NBits = N.bitLength();
-          // Dario Alpern's choice of (decimal digits -> maxCurves) was:
-          // 30->5, 35->8, 40->15, 45->25, 50->27, 55->32, 60->43, 65->70, 70->150, 75->300,
-          // 80->350, 85->600, 90->1500
-          // For N > 90 decimal digits the number of curves to run was unlimited, so his SIQS would
-          // never be called.
-          // The following estimate was adjusted for PSIQS with 6 threads. It is rather cautious
-          // because hitting hard semi-primes
-          // shall not let ECM waste more time than SIQS or PSIQS would need. Nonetheless, these few
-          // curves speed up factoring random composites a lot.
-          // TODO scale by number of PSIQS threads !
-          // TODO allow to run forever, which might be interesting if ECM is called standalone.
-          maxCurves = NBits > 130 ? (int) Math.pow((NBits - 130) / 15, 1.61) : 0;
-          if (DEBUG) LOG.debug("ECM: NBits = " + NBits + ", maxCurves = " + maxCurves);
-        }
-        if (EC >= maxCurves) {
+        if (maxCurvesForN > 0 && EC >= maxCurvesForN) {
           return I_1; // stop ECM
         }
 
@@ -731,7 +733,7 @@ public class EllipticCurveMethod extends FactorAlgorithm {
       }
       /* do the first line of Table 4 whose condition qualifies */
       if (4 * d <= 5 * e && ((d + e) % 3) == 0) {
-        /* condition 1 */
+          /* condition 1 */
         r = (2 * d - e) / 3;
         e = (2 * e - d) / 3;
         d = r;
@@ -745,12 +747,12 @@ public class EllipticCurveMethod extends FactorAlgorithm {
         zA = zT2;
         zT2 = t; /* swap A and T2 */
       } else if (4 * d <= 5 * e && (d - e) % 6 == 0) {
-        /* condition 2 */
+          /* condition 2 */
         d = (d - e) / 2;
         add3(xB, zB, xA, zA, xB, zB, xC, zC); /* B = f(A,B,C) */
         duplicate(xA, zA, xA, zA, AA); /* A = 2*A */
       } else if (d <= (4 * e)) {
-        /* condition 3 */
+          /* condition 3 */
         d -= e;
         add3(xT, zT, xB, zB, xA, zA, xC, zC); /* T = f(B,A,C) */
         t = xB;
@@ -762,17 +764,17 @@ public class EllipticCurveMethod extends FactorAlgorithm {
         zT = zC;
         zC = t; /* circular permutation (B,T,C) */
       } else if ((d + e) % 2 == 0) {
-        /* condition 4 */
+          /* condition 4 */
         d = (d - e) / 2;
         add3(xB, zB, xB, zB, xA, zA, xC, zC); /* B = f(B,A,C) */
         duplicate(xA, zA, xA, zA, AA); /* A = 2*A */
       } else if (d % 2 == 0) {
-        /* condition 5 */
+          /* condition 5 */
         d /= 2;
         add3(xC, zC, xC, zC, xA, zA, xB, zB); /* C = f(C,A,B) */
         duplicate(xA, zA, xA, zA, AA); /* A = 2*A */
       } else if (d % 3 == 0) {
-        /* condition 6 */
+          /* condition 6 */
         d = d / 3 - e;
         duplicate(xT, zT, xA, zA, AA); /* T1 = 2*A */
         add3(xT2, zT2, xA, zA, xB, zB, xC, zC); /* T2 = f(A,B,C) */
@@ -787,14 +789,14 @@ public class EllipticCurveMethod extends FactorAlgorithm {
         zB = zT;
         zT = t; /* circular permutation (C,B,T) */
       } else if ((d + e) % 3 == 0) {
-        /* condition 7 */
+          /* condition 7 */
         d = (d - 2 * e) / 3;
         add3(xT, zT, xA, zA, xB, zB, xC, zC); /* T1 = f(A,B,C) */
         add3(xB, zB, xT, zT, xA, zA, xB, zB); /* B = f(T1,A,B) */
         duplicate(xT, zT, xA, zA, AA);
         add3(xA, zA, xA, zA, xT, zT, xA, zA); /* A = 3*A */
       } else if ((d - e) % 3 == 0) {
-        /* condition 8 */
+          /* condition 8 */
         d = (d - e) / 3;
         add3(xT, zT, xA, zA, xB, zB, xC, zC); /* T1 = f(A,B,C) */
         add3(xC, zC, xC, zC, xA, zA, xB, zB); /* C = f(A,C,B) */
@@ -807,7 +809,7 @@ public class EllipticCurveMethod extends FactorAlgorithm {
         duplicate(xT, zT, xA, zA, AA);
         add3(xA, zA, xA, zA, xT, zT, xA, zA); /* A = 3*A */
       } else if (e % 2 == 0) {
-        /* condition 9 */
+          /* condition 9 */
         e /= 2;
         add3(xC, zC, xC, zC, xB, zB, xA, zA); /* C = f(C,B,A) */
         duplicate(xB, zB, xB, zB, AA); /* B = 2*B */
@@ -834,41 +836,41 @@ public class EllipticCurveMethod extends FactorAlgorithm {
         e = r;
       }
       if (4 * d <= 5 * e && ((d + e) % 3) == 0) {
-        /* condition 1 */
+          /* condition 1 */
         r = (2 * d - e) / 3;
         e = (2 * e - d) / 3;
         d = r;
         c += 3 * ADD; /* 3 additions */
       } else if (4 * d <= 5 * e && (d - e) % 6 == 0) {
-        /* condition 2 */
+          /* condition 2 */
         d = (d - e) / 2;
         c += ADD + DUP; /* one addition, one duplicate */
       } else if (d <= (4 * e)) {
-        /* condition 3 */
+          /* condition 3 */
         d -= e;
         c += ADD; /* one addition */
       } else if ((d + e) % 2 == 0) {
-        /* condition 4 */
+          /* condition 4 */
         d = (d - e) / 2;
         c += ADD + DUP; /* one addition, one duplicate */
       } else if (d % 2 == 0) {
-        /* condition 5 */
+          /* condition 5 */
         d /= 2;
         c += ADD + DUP; /* one addition, one duplicate */
       } else if (d % 3 == 0) {
-        /* condition 6 */
+          /* condition 6 */
         d = d / 3 - e;
         c += 3 * ADD + DUP; /* three additions, one duplicate */
       } else if ((d + e) % 3 == 0) {
-        /* condition 7 */
+          /* condition 7 */
         d = (d - 2 * e) / 3;
         c += 3 * ADD + DUP; /* three additions, one duplicate */
       } else if ((d - e) % 3 == 0) {
-        /* condition 8 */
+          /* condition 8 */
         d = (d - e) / 3;
         c += 3 * ADD + DUP; /* three additions, one duplicate */
       } else if (e % 2 == 0) {
-        /* condition 9 */
+          /* condition 9 */
         e /= 2;
         c += ADD + DUP; /* one addition, one duplicate */
       }
@@ -1806,7 +1808,7 @@ public class EllipticCurveMethod extends FactorAlgorithm {
           // 42543889372264778301966140913837516662044603
         };
 
-    EllipticCurveMethod ecm = new EllipticCurveMethod();
+    EllipticCurveMethod ecm = new EllipticCurveMethod(-1);
 
     long t0, t1;
     t0 = System.currentTimeMillis();

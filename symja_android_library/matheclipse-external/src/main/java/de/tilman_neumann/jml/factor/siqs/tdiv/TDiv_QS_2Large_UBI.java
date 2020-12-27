@@ -30,11 +30,10 @@ import de.tilman_neumann.jml.factor.base.congruence.Partial_1Large;
 import de.tilman_neumann.jml.factor.base.congruence.Partial_2Large;
 import de.tilman_neumann.jml.factor.base.congruence.Smooth_1LargeSquare;
 import de.tilman_neumann.jml.factor.base.congruence.Smooth_Perfect;
-import de.tilman_neumann.jml.factor.base.matrixSolver.MatrixSolver01_Gauss;
 import de.tilman_neumann.jml.factor.hart.Hart_TDiv_Race;
 import de.tilman_neumann.jml.factor.pollardRho.PollardRhoBrentMontgomery64;
 import de.tilman_neumann.jml.factor.pollardRho.PollardRhoBrentMontgomeryR64Mul63;
-import de.tilman_neumann.jml.factor.siqs.SIQS;
+import de.tilman_neumann.jml.factor.siqs.SIQS_Small;
 import de.tilman_neumann.jml.factor.siqs.data.SolutionArrays;
 import de.tilman_neumann.jml.factor.siqs.poly.SIQSPolyGenerator;
 import de.tilman_neumann.jml.factor.siqs.powers.PowerOfSmallPrimesFinder;
@@ -99,8 +98,8 @@ public class TDiv_QS_2Large_UBI implements TDiv_QS {
   private PollardRhoBrentMontgomery64 pollardRho64 = new PollardRhoBrentMontgomery64();
   // Nested SIQS is required only for approximately N>310 bit.
   // XXX For safety reasons we do not use Sieve03gU yet for the internal quadratic sieve
-  private SIQS qsInternal =
-      new SIQS(
+  private SIQS_Small qsInternal =
+      new SIQS_Small(
           0.32F,
           0.37F,
           null,
@@ -110,7 +109,6 @@ public class TDiv_QS_2Large_UBI implements TDiv_QS {
           new Sieve03g(),
           new TDiv_QS_1Large_UBI(),
           10,
-          new MatrixSolver01_Gauss(),
           true,
           false); // XXX set useLegacyFactoring to false
 
@@ -320,7 +318,7 @@ public class TDiv_QS_2Large_UBI implements TDiv_QS {
     if (ANALYZE) primeTestDuration += timer.capture();
     if (restIsPrime) {
       // Check that the simple prime test using pMaxSquare is correct
-      //			if (DEBUG) assertTrue(prpTest.isProbablePrime(Q_rest));<>
+      //			if (DEBUG) assertTrue(prpTest.isProbablePrime(Q_rest));
       return (Q_rest.bitLength() > 31)
           ? null
           : new Partial_1Large(A, smallFactors, Q_rest.longValue());
