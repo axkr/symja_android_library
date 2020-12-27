@@ -382,7 +382,7 @@ public class Primality {
 
         @Override
         public CombinedFactorAlgorithm initialValue() {
-          if (Config.JAVA_UNSAFE) {
+          if (Config.JAVA_UNSAFE && !Config.JAS_NO_THREADS) {
             final int cores = Runtime.getRuntime().availableProcessors();
             return new CombinedFactorAlgorithm(cores / 2 + 1, null, true, false, true);
           } else {
