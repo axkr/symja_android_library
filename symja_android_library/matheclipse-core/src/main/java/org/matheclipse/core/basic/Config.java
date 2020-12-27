@@ -223,7 +223,7 @@ public class Config {
   public static boolean JAS_NO_THREADS = false;
 
   /** Use of <code>java.misc.Unsafe</code> is allowed if <code>true</code>. */
-  public static boolean JAVA_UNSAFE = true;
+  public static boolean JAVA_UNSAFE = false;
 
   /**
    * Flag for thread usage in TimeConstrained function.
