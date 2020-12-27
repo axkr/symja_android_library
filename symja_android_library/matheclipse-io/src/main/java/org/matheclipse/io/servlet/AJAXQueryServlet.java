@@ -562,38 +562,23 @@ public class AJAXQueryServlet extends HttpServlet {
                         html,
                         "`2`", //
                         "  var options = {\n"
-                            + //
-                            "		  edges: {\n"
-                            + //
-                            "              smooth: {\n"
-                            + //
-                            "                  type: 'cubicBezier',\n"
-                            + //
-                            "                  forceDirection:  'vertical',\n"
-                            + //
-                            "                  roundness: 0.4\n"
-                            + //
-                            "              }\n"
-                            + //
-                            "          },\n"
-                            + //
-                            "          layout: {\n"
-                            + //
-                            "              hierarchical: {\n"
-                            + //
-                            "                  direction: \"UD\"\n"
-                            + //
-                            "              }\n"
-                            + //
-                            "          },\n"
-                            + //
-                            "          nodes: {\n"
+                            + "		  edges: {\n"
+                            + "              smooth: {\n"
+                            + "                  type: 'cubicBezier',\n"
+                            + "                  forceDirection:  'vertical',\n"
+                            + "                  roundness: 0.4\n"
+                            + "              }\n"
+                            + "          },\n"
+                            + "          layout: {\n"
+                            + "              hierarchical: {\n"
+                            + "                  direction: \"UD\"\n"
+                            + "              }\n"
+                            + "          },\n"
+                            + "          nodes: {\n"
                             + "            shape: 'box'\n"
                             + "          },\n"
-                            + //
-                            "          physics:false\n"
-                            + //
-                            "      }; " //
+                            + "          physics:false\n"
+                            + "      }; " //
                         );
                 html = StringEscapeUtils.escapeHtml4(html);
                 return JSONBuilder.createJSONJavaScript(
