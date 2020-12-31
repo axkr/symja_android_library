@@ -49,6 +49,7 @@ import org.matheclipse.core.builtin.FunctionDefinitions;
 import org.matheclipse.core.builtin.GeodesyFunctions;
 import org.matheclipse.core.builtin.GraphDataFunctions;
 import org.matheclipse.core.builtin.GraphFunctions;
+import org.matheclipse.core.builtin.GraphicsFunctions;
 import org.matheclipse.core.builtin.HypergeometricFunctions;
 import org.matheclipse.core.builtin.IOFunctions;
 import org.matheclipse.core.builtin.ImageFunctions;
@@ -89,6 +90,7 @@ import org.matheclipse.core.eval.interfaces.AbstractCoreFunctionEvaluator;
 import org.matheclipse.core.eval.interfaces.ICoreFunctionEvaluator;
 import org.matheclipse.core.eval.util.IAssumptions;
 import org.matheclipse.core.eval.util.Lambda;
+import org.matheclipse.core.eval.util.LevelSpecification;
 import org.matheclipse.core.expression.data.GraphExpr;
 import org.matheclipse.core.expression.data.SparseArrayExpr;
 import org.matheclipse.core.form.Documentation;
@@ -119,6 +121,7 @@ import org.matheclipse.core.parser.ExprParserFactory;
 import org.matheclipse.core.patternmatching.IPatternMap.PatternMap;
 import org.matheclipse.core.patternmatching.IPatternMatcher;
 import org.matheclipse.core.tensor.QuantityParser;
+import org.matheclipse.core.visit.VisitorLevelSpecification;
 import org.matheclipse.parser.client.FEConfig;
 import org.matheclipse.parser.client.SyntaxError;
 import org.matheclipse.parser.trie.TrieMatch;
@@ -402,7 +405,10 @@ public class F extends S {
   /** Represents <code>List(1)</code> */
   public static IAST CListC1;
 
-  /** Represents <code>List(-1)</code> */
+  /**
+   * Represents <code>List(-1)</code>. Can be used to specify the &quot;leaf&quot; {@link
+   * VisitorLevelSpecification} of an expression.
+   */
   public static IAST CListCN1;
 
   /** Represents <code>List(1,1)</code> */
@@ -515,13 +521,13 @@ public class F extends S {
   /** Represents <code>1/Sqrt(10)</code> */
   public static IAST C1DSqrt10;
 
-  /** Represents <code>#1</code> */
+  /** Represents <code>#1</code>, the first argument of a pure function. */
   public static IAST Slot1;
 
-  /** Represents <code>#2</code> */
+  /** Represents <code>#2</code>, the second argument of a pure function. */
   public static IAST Slot2;
 
-  /** Represents <code>#3</code> */
+  /** Represents <code>#3</code>, the third argument of a pure function. */
   public static IAST Slot3;
 
   /** Constant integer &quot;-1&quot; */
@@ -1019,6 +1025,7 @@ public class F extends S {
       SparseArrayFunctions.initialize();
       UnitTestingFunctions.initialize();
       NumericArrayFunctions.initialize();
+      GraphicsFunctions.initialize();
 
       ComputationalGeometryFunctions.initialize();
 
@@ -4762,7 +4769,7 @@ public class F extends S {
    * @param a
    * @return
    */
-  public static IAST single(final IExpr a) {
+  public static IAST list(final IExpr a) {
     return new B1.List(a);
   }
 
@@ -4773,7 +4780,7 @@ public class F extends S {
    * @param a1
    * @return
    */
-  public static IAST pair(final IExpr a0, final IExpr a1) {
+  public static IAST list(final IExpr a0, final IExpr a1) {
     return new B2.List(a0, a1);
   }
 
@@ -4785,7 +4792,7 @@ public class F extends S {
    * @param a2
    * @return
    */
-  public static IAST triple(final IExpr a0, final IExpr a1, final IExpr a2) {
+  public static IAST list(final IExpr a0, final IExpr a1, final IExpr a2) {
     return new AST3(List, a0, a1, a2);
   }
 

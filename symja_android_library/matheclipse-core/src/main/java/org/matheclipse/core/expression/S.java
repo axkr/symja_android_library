@@ -62,8 +62,7 @@ public class S {
   public static final IBuiltInSymbol $HomeDirectory =
       F.initFinalSymbol("$HomeDirectory", ID.$HomeDirectory);
 
-  public static final IBuiltInSymbol $Input =
-      F.initFinalSymbol("$Input", ID.$Input);
+  public static final IBuiltInSymbol $Input = F.initFinalSymbol("$Input", ID.$Input);
 
   public static final IBuiltInSymbol $InputFileName =
       F.initFinalSymbol("$InputFileName", ID.$InputFileName);
@@ -411,6 +410,9 @@ public class S {
   public static final IBuiltInSymbol BernoulliDistribution =
       F.initFinalSymbol("BernoulliDistribution", ID.BernoulliDistribution);
 
+  public static final IBuiltInSymbol BernsteinBasis =
+      F.initFinalSymbol("BernsteinBasis", ID.BernsteinBasis);
+
   /** BesselI(n, z) - modified Bessel function of the first kind. */
   public static final IBuiltInSymbol BesselI = F.initFinalSymbol("BesselI", ID.BesselI);
 
@@ -437,6 +439,9 @@ public class S {
 
   public static final IBuiltInSymbol BetaRegularized =
       F.initFinalSymbol("BetaRegularized", ID.BetaRegularized);
+
+  public static final IBuiltInSymbol BezierFunction =
+      F.initFinalSymbol("BezierFunction", ID.BezierFunction);
 
   /**
    * BinCounts(list, width-of-bin) - count the number of elements, if `list`, is divided into
@@ -1440,9 +1445,11 @@ public class S {
    */
   public static final IBuiltInSymbol FilterRules = F.initFinalSymbol("FilterRules", ID.FilterRules);
 
-  public static final IBuiltInSymbol FileNameJoin = F.initFinalSymbol("FileNameJoin", ID.FileNameJoin);
+  public static final IBuiltInSymbol FileNameJoin =
+      F.initFinalSymbol("FileNameJoin", ID.FileNameJoin);
 
-  public static final IBuiltInSymbol FileNameTake = F.initFinalSymbol("FileNameTake", ID.FileNameTake);
+  public static final IBuiltInSymbol FileNameTake =
+      F.initFinalSymbol("FileNameTake", ID.FileNameTake);
 
   /**
    * FindClusters(list-of-data-points, k) - Clustering algorithm based on David Arthur and Sergei
