@@ -6,7 +6,7 @@ import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.script.engine.MathScriptEngine;
 
-/** Tests for string functions */
+/** Tests for compiler functions */
 public class CompilerFunctionsTest extends AbstractTestCase {
 
   public CompilerFunctionsTest(String name) {

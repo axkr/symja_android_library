@@ -1169,7 +1169,7 @@ public class OutputFormFactory {
                 IExpr normal = list.arg1().normal(false);
                 if (normal.isList()) { // && normal.isMatrix() != null) {
                   ArrayList<Integer> dims =
-                      LinearAlgebra.dimensions((IAST) normal, S.List, Integer.MAX_VALUE);
+                      LinearAlgebra.dimensions((IAST) normal, S.List);
                   convertList(buf, (IAST) normal, dims.size() >= 2);
                   return;
                 }

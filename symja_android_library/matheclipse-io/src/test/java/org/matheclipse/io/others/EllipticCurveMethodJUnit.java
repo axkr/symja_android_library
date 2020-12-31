@@ -1,4 +1,4 @@
-package org.matheclipse.io.system;
+package org.matheclipse.io.others;
 
 import java.math.BigInteger;
 import java.util.SortedMap;
@@ -11,7 +11,7 @@ import de.tilman_neumann.util.SortedMultiset;
 import de.tilman_neumann.util.SortedMultiset_BottomUp;
 import junit.framework.TestCase;
 
-public class EllipticCurveMethodTest extends TestCase {
+public class EllipticCurveMethodJUnit extends TestCase {
 
   public void testECM() {
     BigInteger big = new BigInteger("8438503049348381100385800049534923490020044110031");

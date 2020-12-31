@@ -1,13 +1,10 @@
-package org.matheclipse.io.system;
+package org.matheclipse.io.others;
 
-import org.matheclipse.core.eval.EvalEngine;
-import org.matheclipse.core.expression.F;
-import org.matheclipse.core.form.output.ASCIIPrettyPrinter3;
-import org.matheclipse.core.interfaces.IExpr;
+import org.matheclipse.io.system.AbstractTestCase;
 
-public class ApfloatTest extends AbstractTestCase {
+public class ApfloatJUnit extends AbstractTestCase {
 
-  public ApfloatTest() {
+  public ApfloatJUnit() {
     super("ApfloatTest");
   }
 

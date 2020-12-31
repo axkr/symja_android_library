@@ -84,6 +84,7 @@ public abstract class AbstractTestCase extends TestCase {
         return;
       }
       // scriptEngine.put("STEPWISE",Boolean.TRUE);
+//        System.out.println(getName() + " - " + evalString);
       String evaledResult = (String) scriptEngine.eval(evalString);
 
       if (resultLength > 0 && evaledResult.length() > resultLength) {

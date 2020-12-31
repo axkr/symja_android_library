@@ -1364,7 +1364,7 @@ public class StructureFunctions {
 
         IAST tensor = (IAST) ast.arg2();
         ArrayList<Integer> dims =
-            LinearAlgebra.dimensions(tensor, tensor.head(), Integer.MAX_VALUE);
+            LinearAlgebra.dimensions(tensor, tensor.head());
         if (dims.size() > level) {
           if (level == 0) {
             return tensor.apply(ast.arg1());

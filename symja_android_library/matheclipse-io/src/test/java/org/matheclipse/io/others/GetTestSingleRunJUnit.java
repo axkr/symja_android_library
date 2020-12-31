@@ -1,4 +1,4 @@
-package org.matheclipse.io.system;
+package org.matheclipse.io.others;
 
 import java.util.List;
 
@@ -14,7 +14,7 @@ import org.matheclipse.parser.client.ast.ASTNode;
 
 import junit.framework.TestCase;
 
-public class GetTestSingleRun extends TestCase {
+public class GetTestSingleRunJUnit extends TestCase {
 
   private static final String VECTOR_ANALYSIS =
       "(* ::Package:: *)\n"

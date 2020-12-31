@@ -308,8 +308,8 @@ public interface ISignedNumber extends INumber {
   @Override
   default IAST toPolarCoordinates() {
     if (isNegative()) {
-      return F.pair(this.negate(), S.Pi);
+      return F.list(this.negate(), S.Pi);
     }
-    return F.pair(this, F.C0);
+    return F.list(this, F.C0);
   }
 }

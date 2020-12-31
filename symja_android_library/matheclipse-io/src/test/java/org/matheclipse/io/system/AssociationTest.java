@@ -6,10 +6,6 @@ import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.script.engine.MathScriptEngine;
 
-/**
- * Tests for the Java port of the <a href="http://www.apmaths.uwo.ca/~arich/">Rubi - rule-based
- * integrator</a>.
- */
 public class AssociationTest extends AbstractTestCase {
 
   public AssociationTest(String name) {

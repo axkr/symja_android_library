@@ -92,4 +92,5 @@ public class Precedence {
   public static final int UPSET = 40;
   public static final int UPSETDELAYED = 40;
   public static final int WEDGE = 440;
+  public static final int TENSORPRODUCT = 495;
 }

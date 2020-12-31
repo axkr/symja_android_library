@@ -575,7 +575,7 @@ public final class LinearAlgebra {
         IExpr header = list.head();
         //        ArrayList<Integer> dims = new ArrayList<Integer>();
         //        arrayDepthRecursive(list, header, dims);
-        ArrayList<Integer> dims = LinearAlgebra.dimensions(list, header, Integer.MAX_VALUE);
+        ArrayList<Integer> dims = LinearAlgebra.dimensions(list, header);
         return F.ZZ(dims.size());
       }
       if (arg1.isSparseArray()) {
@@ -1735,12 +1735,12 @@ public final class LinearAlgebra {
           if (dim == 2) {
             IExpr r = list.arg1();
             IExpr theta = list.arg2();
-            return F.pair(F.Times(r, F.Cos(theta)), F.Times(r, F.Sin(theta)));
+            return F.list(F.Times(r, F.Cos(theta)), F.Times(r, F.Sin(theta)));
           } else if (dim == 3) {
             IExpr r = list.arg1();
             IExpr theta = list.arg2();
             IExpr phi = list.arg3();
-            return F.triple(
+            return F.list(
                 F.Times(r, F.Cos(theta)),
                 F.Times(r, F.Cos(phi), F.Sin(theta)),
                 F.Times(r, F.Sin(theta), F.Sin(phi)));
@@ -1750,12 +1750,12 @@ public final class LinearAlgebra {
           if (dim == 2) {
             IExpr r = vector.getEntry(0);
             IExpr theta = vector.getEntry(1);
-            return F.pair(F.Times(r, F.Cos(theta)), F.Times(r, F.Sin(theta)));
+            return F.list(F.Times(r, F.Cos(theta)), F.Times(r, F.Sin(theta)));
           } else if (dim == 3) {
             IExpr r = vector.getEntry(0);
             IExpr theta = vector.getEntry(1);
             IExpr phi = vector.getEntry(2);
-            return F.triple(
+            return F.list(
                 F.Times(r, F.Cos(theta)),
                 F.Times(r, F.Cos(phi), F.Sin(theta)),
                 F.Times(r, F.Sin(theta), F.Sin(phi)));
@@ -3970,26 +3970,26 @@ public final class LinearAlgebra {
           if (dim == 2) {
             IExpr x = list.arg1();
             IExpr y = list.arg2();
-            return F.pair(F.Sqrt(F.Plus(F.Sqr(x), F.Sqr(y))), F.ArcTan(x, y));
+            return F.list(F.Sqrt(F.Plus(F.Sqr(x), F.Sqr(y))), F.ArcTan(x, y));
           } else if (dim == 3) {
             IExpr x = list.arg1();
             IExpr y = list.arg2();
             IExpr z = list.arg3();
             IAST sqrtExpr = F.Sqrt(F.Plus(F.Sqr(x), F.Sqr(y), F.Sqr(z)));
-            return F.triple(sqrtExpr, F.ArcCos(F.Divide(x, sqrtExpr)), F.ArcTan(y, z));
+            return F.list(sqrtExpr, F.ArcCos(F.Divide(x, sqrtExpr)), F.ArcTan(y, z));
           }
         } else {
           FieldVector<IExpr> vector = Convert.list2Vector(arg1);
           if (dim == 2) {
             IExpr x = vector.getEntry(0);
             IExpr y = vector.getEntry(1);
-            return F.pair(F.Sqrt(F.Plus(F.Sqr(x), F.Sqr(y))), F.ArcTan(x, y));
+            return F.list(F.Sqrt(F.Plus(F.Sqr(x), F.Sqr(y))), F.ArcTan(x, y));
           } else if (dim == 3) {
             IExpr x = vector.getEntry(0);
             IExpr y = vector.getEntry(1);
             IExpr z = vector.getEntry(2);
             IAST sqrtExpr = F.Sqrt(F.Plus(F.Sqr(x), F.Sqr(y), F.Sqr(z)));
-            return F.triple(sqrtExpr, F.ArcCos(F.Divide(x, sqrtExpr)), F.ArcTan(y, z));
+            return F.list(sqrtExpr, F.ArcCos(F.Divide(x, sqrtExpr)), F.ArcTan(y, z));
           }
         }
       } else if (arg1.isList()) {
@@ -4648,6 +4648,10 @@ public final class LinearAlgebra {
 
   public static ArrayList<Integer> dimensions(IAST ast) {
     return dimensionsRecursive(ast, ast.head(), Integer.MAX_VALUE, new ArrayList<Integer>());
+  }
+
+  public static ArrayList<Integer> dimensions(IAST ast, IExpr header) {
+    return dimensions(ast, header, Integer.MAX_VALUE);
   }
 
   public static ArrayList<Integer> dimensions(IAST ast, IExpr header, int maxLevel) {

@@ -1,4 +1,4 @@
-package org.matheclipse.io.system;
+package org.matheclipse.io.others;
 
 import java.util.SortedMap;
 
@@ -18,9 +18,9 @@ import edu.jas.ufd.GCDFactory;
 import edu.jas.ufd.GreatestCommonDivisor;
 import junit.framework.TestCase;
 
-public class JAS extends TestCase {
+public class JASJUnit extends TestCase {
 
-  public JAS(String name) {
+  public JASJUnit(String name) {
     super(name);
   }
 

@@ -1,4 +1,4 @@
-package org.matheclipse.io.system;
+package org.matheclipse.io.others;
 
 /*
  *  Geodesy by Mike Gavaghan
@@ -27,7 +27,7 @@ import org.gavaghan.geodesy.GeodeticMeasurement;
 import org.gavaghan.geodesy.GlobalCoordinates;
 import org.gavaghan.geodesy.GlobalPosition;
 
-public class GeodesyTests {
+public class GeodesyJUnit {
   /**
    * Calculate the destination if we start at: Lincoln Memorial in Washington, D.C --> 38.8892N,
    * 77.04978W and travel at 51.7679 degrees for 6179.016136 kilometers
