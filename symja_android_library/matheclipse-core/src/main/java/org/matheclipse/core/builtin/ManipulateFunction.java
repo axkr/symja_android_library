@@ -2437,9 +2437,9 @@ public class ManipulateFunction {
       IAST listOfFunctions,
       int i) {
     toJS.setVariables(plotSymbolX);
-    function.append("{ try { return ");
+    function.append("{ try { return [");
     toJS.convert(function, listOfFunctions.get(i));
-    function.append(";} catch(e) { return Number.NaN;} }\n");
+    function.append("];} catch(e) { return Number.NaN;} }\n");
   }
 
   public static void unaryPlotParameters(
