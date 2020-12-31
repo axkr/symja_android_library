@@ -338,6 +338,7 @@ public class Console {
         if (i + 1 >= args.length) {
           final String msg = "You must specify an additional command when using the -code argument";
           stdout.println(msg);
+          stdout.flush();
           throw ReturnException.RETURN_FALSE;
         }
         String outputExpression = interpreter(args[i + 1].trim());
@@ -349,6 +350,7 @@ public class Console {
         if (i + 1 >= args.length) {
           final String msg = "You must specify a function when using the -function argument";
           stdout.println(msg);
+          stdout.flush();
           throw ReturnException.RETURN_FALSE;
         }
 
@@ -371,6 +373,7 @@ public class Console {
             String outputExpression = interpreter(inputExpression.toString());
             if (outputExpression.length() > 0) {
               stdout.print(outputExpression);
+              stdout.flush();
             }
             throw ReturnException.RETURN_TRUE;
           }
@@ -378,6 +381,7 @@ public class Console {
         } catch (final ArrayIndexOutOfBoundsException aioobe) {
           final String msg = "You must specify a function when " + "using the -function argument";
           stdout.println(msg);
+          stdout.flush();
           throw ReturnException.RETURN_FALSE;
         }
       } else if (arg.equals("-help") || arg.equals("-h")) {
@@ -389,6 +393,7 @@ public class Console {
         if (i + 1 >= args.length) {
           final String msg = "You must specify a file when using the -file argument";
           stdout.println(msg);
+          stdout.flush();
           throw ReturnException.RETURN_FALSE;
         }
 
@@ -400,6 +405,7 @@ public class Console {
         if (i + 1 >= args.length) {
           final String msg = "You must specify a file when using the -d argument";
           stdout.println(msg);
+          stdout.flush();
           throw ReturnException.RETURN_FALSE;
         }
         fDefaultSystemRulesFilename = args[i + 1];
