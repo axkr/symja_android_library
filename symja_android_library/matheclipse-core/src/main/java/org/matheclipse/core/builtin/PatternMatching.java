@@ -54,6 +54,8 @@ public final class PatternMatching {
   private static class Initializer {
 
     private static void init() {
+      S.Default.setEvaluator(new Default());
+      S.Evaluate.setEvaluator(new Evaluate());
       S.FilterRules.setEvaluator(new FilterRules());
       S.Hold.setEvaluator(new Hold());
       S.HoldComplete.setEvaluator(new HoldComplete());
@@ -82,9 +84,7 @@ public final class PatternMatching {
         S.Clear.setEvaluator(new Clear());
         S.ClearAll.setEvaluator(new ClearAll());
         S.Context.setEvaluator(new Context());
-        S.Default.setEvaluator(new Default());
         S.Definition.setEvaluator(new Definition());
-        S.Evaluate.setEvaluator(new Evaluate());
         S.OptionsPattern.setEvaluator(OptionsPattern.CONST);
         S.OwnValues.setEvaluator(new OwnValues());
         S.Repeated.setEvaluator(Repeated.CONST);
