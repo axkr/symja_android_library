@@ -1025,6 +1025,8 @@ public final class NumberTheory {
           }
         }
 
+        // TODO implement more functions from
+        // https://github.com/sympy/sympy/blob/master/sympy/ntheory/continued_fraction.py
         if (ast.isAST1() && arg1.isSqrt() && arg1.base().isInteger() && arg1.base().isPositive()) {
           // Sqrt( d ) with d positive integer number
           return sqrtContinuedFraction((IInteger) arg1.base());
