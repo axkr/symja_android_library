@@ -99,6 +99,8 @@ public class EllipticCurveMethod extends FactorAlgorithm {
    * parameter, positive values are applied directly
    */
   int maxCurves;
+  /** Elliptic curve counter */
+  int EC;
 
   private int[] fieldTX, fieldTZ, fieldUX, fieldUZ;
   private int[] fieldAux1, fieldAux2, fieldAux3, fieldAux4;
@@ -132,8 +134,8 @@ public class EllipticCurveMethod extends FactorAlgorithm {
   }
 
   /**
-   * Find small factors of some N. Returns found factors in <code>primeFactors</code> and eventually
-   * some unfactored composites as return value.
+   * Find small factors of some N. Returns found factors in <code>result.primeFactors</code> and
+   * eventually some unfactored composites in <code>result.compositeFactors</code>.
    *
    * @param args
    * @param result the result of the factoring attempt. Should be initialized only once by the
@@ -141,8 +143,11 @@ public class EllipticCurveMethod extends FactorAlgorithm {
    * @return true if ECM found some factors
    */
   public boolean searchFactors(FactorArguments args, FactorResult result) {
-    // set up new N
+    // Set up new N.
     BigInteger N = args.N;
+    // The elliptic curve counter should not be reset to 0 in fnECM() so that curves do not get
+    // tested twice, no matter how many factors N has.
+    EC = 0;
 
     // Do trial division by all primes < 131072.
     SortedMultiset<BigInteger> tdivFactors = new SortedMultiset_BottomUp<BigInteger>();
@@ -191,7 +196,7 @@ public class EllipticCurveMethod extends FactorAlgorithm {
       }
 
       // ECM
-      final BigInteger NN = findSingleFactor(N);
+      final BigInteger NN = fnECM(N);
       if (NN.equals(I_1)) {
         // N is composite but could not be factored by ECM
         addToMap(N, exp, failedComposites);
@@ -228,14 +233,13 @@ public class EllipticCurveMethod extends FactorAlgorithm {
     map.put(N, (oldExp == null) ? exp : oldExp + exp);
   }
 
-  /**
-   * {@inheritDoc}
-   *
-   * <p>Note that the curve limit of this method for finding a single factor is the same as that of
-   * factor() and factorize() for finding all prime factors of N.
-   */
   @Override
   public BigInteger findSingleFactor(BigInteger N) {
+    EC = 0;
+    return fnECM(N);
+  }
+
+  private BigInteger fnECM(BigInteger N) {
     int[] A0 = new int[NLen];
     int[] A02 = new int[NLen];
     int[] A03 = new int[NLen];
@@ -306,23 +310,20 @@ public class EllipticCurveMethod extends FactorAlgorithm {
       // 85->600, 90->1500
       // For N > 90 decimal digits the number of curves to run was unlimited, so his SIQS would
       // never be called.
-      // The following estimate was adjusted for PSIQS with 6 threads. It is rather cautious because
-      // hitting hard semi-primes
+      // The following re-estimate seems to work quite fine for any number of PSIQS threads. It is
+      // rather cautious because hitting hard semi-primes
       // shall not let ECM waste more time than SIQS or PSIQS would need. Nonetheless, these few
       // curves speed up factoring random composites a lot.
-      // TODO scale by number of PSIQS threads !
       maxCurvesForN = NBits > 130 ? (int) Math.pow((NBits - 130) / 15, 1.61) : 0;
       if (DEBUG) LOG.debug("ECM: NBits = " + NBits + ", maxCurvesForN = " + maxCurvesForN);
     }
 
-    // Modular curve loop: It seems to be faster not to repeat previously tested curves for new
-    // factors
-    int EC = 0; // current number of curves
+    // Modular curve loop:
     while (true) {
-      EC++;
-      if (maxCurvesForN > 0 && EC >= maxCurvesForN) {
+      if (maxCurvesForN >= 0 && EC >= maxCurvesForN) {
         return I_1; // stop ECM
       }
+      EC++;
 
       long L1, L2, LS;
       if (EC < 26) {
@@ -638,10 +639,7 @@ public class EllipticCurveMethod extends FactorAlgorithm {
             continue; // ... a multiple of TestNbr, continue.
           }
           GcdBigNbr(GcdAccumulated, TestNbr, GD);
-          if (BigNbrAreEqual(GD, TestNbr)) {
-            break; // XXX this breaks out off pass 0 and starts a new curve, does that make sense?
-          }
-          if (!BigNbrAreEqual(GD, BigNbr1)) {
+          if (!BigNbrAreEqual(GD, BigNbr1) && !BigNbrAreEqual(GD, TestNbr)) {
             return BigIntToBigNbr(GD); // found factor, exit
           }
           break;
@@ -1745,9 +1743,11 @@ public class EllipticCurveMethod extends FactorAlgorithm {
     // Old implementation for positive numbers
     int NL = NumberLength * 4;
     byte[] NBytes = new byte[NL];
-    for (int i = 0;
-        i < NumberLength /*trueNumberLength*/;
-        i++) { // XXX trueNumberLength works as well ?
+
+    // Originally the following loop ran up to NumberLength (say 10). But it works as well with
+    // trueNumberLength (say 1),
+    // because (big-endian) leading zero-bytes are ignored by the BigInteger constructor.
+    for (int i = 0; i < /*NumberLength*/ trueNumberLength; i++) {
       final long digit = nbr[i];
       NBytes[NL - 1 - 4 * i] = (byte) (digit & 0xFF);
       NBytes[NL - 2 - 4 * i] = (byte) ((digit >> 8) & 0xFF);
@@ -1801,6 +1801,11 @@ public class EllipticCurveMethod extends FactorAlgorithm {
           // BigInteger("1794577685365897117833870712928656282041295031283603412289229185967719140138841093599")
           // = 42181796536350966453737572957846241893933 *
           // 42543889372264778301966140913837516662044603
+
+          new BigInteger(
+              "856483652537814883803418179972154563054077"), // = {42665052615296697659=1,
+                                                             // 20074595014814065252903=1} in 7s,
+                                                             // 572ms.
         };
 
     EllipticCurveMethod ecm = new EllipticCurveMethod(-1);

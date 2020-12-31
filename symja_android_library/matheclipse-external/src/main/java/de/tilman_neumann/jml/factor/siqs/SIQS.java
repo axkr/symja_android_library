@@ -52,6 +52,7 @@ import de.tilman_neumann.jml.factor.siqs.sieve.SieveReport;
 import de.tilman_neumann.jml.factor.siqs.tdiv.TDivReport;
 import de.tilman_neumann.jml.factor.siqs.tdiv.TDiv_QS;
 import de.tilman_neumann.jml.factor.siqs.tdiv.TDiv_QS_nLarge_UBI;
+import de.tilman_neumann.jml.factor.tdiv.TDiv;
 import de.tilman_neumann.jml.powers.PurePowerTest;
 import de.tilman_neumann.jml.primes.probable.BPSWTest;
 import de.tilman_neumann.util.ConfigUtil;
@@ -81,6 +82,7 @@ public class SIQS extends FactorAlgorithm {
   private AParamGenerator apg;
   private SIQSPolyGenerator polyGenerator;
   private PowerFinder powerFinder;
+  private TDiv tdiv = new TDiv();
   private EllipticCurveMethod ecm = new EllipticCurveMethod(0);
 
   // sieve
@@ -214,21 +216,22 @@ public class SIQS extends FactorAlgorithm {
         actualTdivLimit = (int) Math.min(1 << 20, Math.pow(2, e)); // upper bound 2^20
       }
 
-      // LOG.debug("1: N = " + N + ", actualTdivLimit = " + actualTdivLimit + ", result.primeFactors
-      // = " + result.primeFactors);
-      N = tdiv.findSmallOddFactors(N, actualTdivLimit, result.primeFactors);
-      // LOG.debug("2: N = " + N + ", actualTdivLimit = " + actualTdivLimit + ", result.primeFactors
-      // = " + result.primeFactors);
-      // TODO update smallestPossibleFactor; this requires to change the signature of
-      // tdiv.findSmallOddFactors()
-      // TODO should we always return if a factor was found so that in CombinedFactorAlgorithm we
-      // can schedule to the right sub-algorithm depending on size?
+      // LOG.debug("1: N = " + N + ", actualTdivLimit = " + actualTdivLimit + ", result = " +
+      // result);
+      tdiv.findSmallOddFactors(args, actualTdivLimit, result);
+      // LOG.debug("2: N = " + N + ", actualTdivLimit = " + actualTdivLimit + ", result = " +
+      // result);
       if (ANALYZE) initialTdivDuration += timer.capture();
 
-      if (N.equals(I_1)) {
+      if (result.untestedFactors.isEmpty()) {
         // N was "easy"
         return true;
       }
+      // Otherwise we have to continue
+      N = result.untestedFactors.firstKey();
+      int exp = result.untestedFactors.removeAll(N);
+      //			if (DEBUG) assertEquals(1, exp); // looks safe, otherwise we'ld have to consider exp
+      // below
 
       if (bpsw.isProbablePrime(N)) { // TODO exploit tdiv done so far
         result.primeFactors.add(N);
@@ -238,8 +241,8 @@ public class SIQS extends FactorAlgorithm {
       // ECM
       args.N = N;
       args.NBits = N.bitLength();
-      // args.exp remains unchanged
-      // TODO args.smallestPossibleFactor
+      args.exp = exp;
+      args.smallestPossibleFactor = result.smallestPossibleFactorRemaining;
 
       boolean factorFound = ecm.searchFactors(args, result);
       if (ANALYZE) ecmDuration += timer.capture();
@@ -389,7 +392,7 @@ public class SIQS extends FactorAlgorithm {
         primesArray,
         tArray,
         adjustedSieveArraySize); // must be done before polyGenerator initialization where qCount is
-    // required
+                                 // required
     FactorTest factorTest = new FactorTest01(N);
     congruenceCollector.initialize(N, factorTest);
     matrixSolver.initialize(N, factorTest);
@@ -683,7 +686,7 @@ public class SIQS extends FactorAlgorithm {
             new NoPowerFinder(),
             new SIQSPolyGenerator(),
             new Sieve03gU(),
-            new TDiv_QS_nLarge_UBI(),
+            new TDiv_QS_nLarge_UBI(true),
             10,
             new MatrixSolver02_BlockLanczos(),
             false,

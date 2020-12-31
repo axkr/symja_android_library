@@ -54,6 +54,7 @@ import de.tilman_neumann.jml.factor.siqs.sieve.SieveReport;
 import de.tilman_neumann.jml.factor.siqs.tdiv.TDivReport;
 import de.tilman_neumann.jml.factor.siqs.tdiv.TDiv_QS;
 import de.tilman_neumann.jml.factor.siqs.tdiv.TDiv_QS_1Large_UBI;
+import de.tilman_neumann.jml.factor.tdiv.TDiv;
 import de.tilman_neumann.jml.powers.PurePowerTest;
 import de.tilman_neumann.jml.primes.probable.BPSWTest;
 import de.tilman_neumann.util.ConfigUtil;
@@ -74,7 +75,13 @@ public class SIQS_Small extends FactorAlgorithm {
   private static final Logger LOG = Logger.getLogger(SIQS_Small.class);
   private static final boolean DEBUG = false;
   private static final boolean ANALYZE =
-      true; // SIQS_Small needs it's own ANALYZE flag when run inside Tdiv_QS
+      false; // SIQS_Small needs it's own ANALYZE flag when run inside Tdiv_QS
+
+  /**
+   * if true then SIQS_Small uses a sieve exploiting sun.misc.Unsafe features. This may be ~10%
+   * faster.
+   */
+  private boolean useUnsafe;
 
   /** if true then search for small factors before PSIQS is run */
   private boolean searchSmallFactors = true;
@@ -88,6 +95,7 @@ public class SIQS_Small extends FactorAlgorithm {
   private AParamGenerator apg;
   private SIQSPolyGenerator polyGenerator;
   private PowerFinder powerFinder;
+  private TDiv tdiv = new TDiv();
   private EllipticCurveMethod ecm = new EllipticCurveMethod(0);
 
   // sieve
@@ -130,6 +138,8 @@ public class SIQS_Small extends FactorAlgorithm {
    * @param polyGenerator
    * @param extraCongruences the number of surplus congruences we collect to have a greater chance
    *     that the equation system solves.
+   * @param permitUnsafeUsage if true then SIQS_Small uses a sieve exploiting sun.misc.Unsafe
+   *     features. This may be ~10% faster.
    * @param useLegacyFactoring if true then factor() uses findSingleFactor(), otherwise
    *     searchFactors()
    * @param searchSmallFactors if true then search for small factors before PSIQS is run
@@ -141,6 +151,7 @@ public class SIQS_Small extends FactorAlgorithm {
       Float maxQRestExponent,
       SIQSPolyGenerator polyGenerator,
       int extraCongruences,
+      boolean permitUnsafeUsage,
       boolean useLegacyFactoring,
       boolean searchSmallFactors) {
 
@@ -151,8 +162,8 @@ public class SIQS_Small extends FactorAlgorithm {
     this.maxQRestExponent0 = maxQRestExponent;
     this.powerFinder = new PowerOfSmallPrimesFinder();
     this.polyGenerator = polyGenerator;
-    this.sieve =
-        new Sieve03g(); // XXX new Sieve03gU() is faster but seems to cause problems in cleanup()
+    this.useUnsafe = permitUnsafeUsage;
+    this.sieve = permitUnsafeUsage ? new Sieve03gU() : new Sieve03g();
     this.congruenceCollector = new CongruenceCollector();
     this.auxFactorizer =
         new TDiv_QS_1Large_UBI(); // using 1-partials or not makes hardly a difference for small N
@@ -184,6 +195,8 @@ public class SIQS_Small extends FactorAlgorithm {
         + auxFactorizer.getName()
         + ", "
         + matrixSolver.getName()
+        + ", useUnsafe = "
+        + useUnsafe
         + ", "
         + modeStr
         + ")";
@@ -210,21 +223,22 @@ public class SIQS_Small extends FactorAlgorithm {
         actualTdivLimit = (int) Math.min(1 << 20, Math.pow(2, e)); // upper bound 2^20
       }
 
-      // LOG.debug("1: N = " + N + ", actualTdivLimit = " + actualTdivLimit + ", result.primeFactors
-      // = " + result.primeFactors);
-      N = tdiv.findSmallOddFactors(N, actualTdivLimit, result.primeFactors);
-      // LOG.debug("2: N = " + N + ", actualTdivLimit = " + actualTdivLimit + ", result.primeFactors
-      // = " + result.primeFactors);
-      // TODO update smallestPossibleFactor; this requires to change the signature of
-      // tdiv.findSmallOddFactors()
-      // TODO should we always return if a factor was found so that in CombinedFactorAlgorithm we
-      // can schedule to the right sub-algorithm depending on size?
+      // LOG.debug("1: N = " + N + ", actualTdivLimit = " + actualTdivLimit + ", result = " +
+      // result);
+      tdiv.findSmallOddFactors(args, actualTdivLimit, result);
+      // LOG.debug("2: N = " + N + ", actualTdivLimit = " + actualTdivLimit + ", result = " +
+      // result);
       if (ANALYZE) initialTdivDuration += timer.capture();
 
-      if (N.equals(I_1)) {
+      if (result.untestedFactors.isEmpty()) {
         // N was "easy"
         return true;
       }
+      // Otherwise we have to continue
+      N = result.untestedFactors.firstKey();
+      int exp = result.untestedFactors.removeAll(N);
+      //			if (DEBUG) assertEquals(1, exp); // looks safe, otherwise we'ld have to consider exp
+      // below
 
       if (bpsw.isProbablePrime(N)) { // TODO exploit tdiv done so far
         result.primeFactors.add(N);
@@ -234,8 +248,8 @@ public class SIQS_Small extends FactorAlgorithm {
       // ECM
       args.N = N;
       args.NBits = N.bitLength();
-      // args.exp remains unchanged
-      // TODO args.smallestPossibleFactor
+      args.exp = exp;
+      args.smallestPossibleFactor = result.smallestPossibleFactorRemaining;
 
       boolean factorFound = ecm.searchFactors(args, result);
       if (ANALYZE) ecmDuration += timer.capture();
@@ -493,9 +507,8 @@ public class SIQS_Small extends FactorAlgorithm {
         logResults(N, k, kN, factor, primeBaseSize, pMax, adjustedSieveArraySize);
       }
 
-      // release memory after a factorization; this improves the accuracy of timings when several
-      // algorithms are tested in parallel
-      this.cleanUp();
+      // release native memory after each Q-rest factorization
+      this.sieve.cleanUp();
       // done
       return factor;
     }
@@ -557,6 +570,12 @@ public class SIQS_Small extends FactorAlgorithm {
             + adjustedSieveArraySize);
     LOG.info("    polyGenerator: " + polyReport.getOperationDetails());
     LOG.info("    tDiv: " + tdivReport.getOperationDetails());
+    if (ANALYZE_LARGE_FACTOR_SIZES) {
+      String qRestSizes = tdivReport.getQRestSizes();
+      if (qRestSizes != null) {
+        LOG.info("        " + qRestSizes);
+      }
+    }
     LOG.info("    cc: " + ccReport.getOperationDetails());
     if (ANALYZE_LARGE_FACTOR_SIZES) {
       LOG.info("        " + ccReport.getPartialBigFactorSizes());
@@ -599,10 +618,12 @@ public class SIQS_Small extends FactorAlgorithm {
     // CC and solver have no sub-timings yet
   }
 
+  /** Clean up after a factorization of N. */
   public void cleanUp() {
     apg.cleanUp();
     polyGenerator.cleanUp();
-    sieve.cleanUp(); // XXX problems here with Sieve03gU ?
+    // the sieve is not cleaned here but after each Q-rest factorization, just in case it is using
+    // native memory
     auxFactorizer.cleanUp();
     congruenceCollector.cleanUp();
     matrixSolver.cleanUp();
@@ -625,7 +646,7 @@ public class SIQS_Small extends FactorAlgorithm {
   public static void main(String[] args) {
     ConfigUtil.initProject();
     SIQS_Small qs =
-        new SIQS_Small(0.32F, 0.37F, null, null, new SIQSPolyGenerator(), 10, false, true);
+        new SIQS_Small(0.32F, 0.37F, null, null, new SIQSPolyGenerator(), 10, true, false, true);
     Timer timer = new Timer();
     while (true) {
       try {

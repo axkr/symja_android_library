@@ -154,7 +154,7 @@ public class CombinedFactorAlgorithm extends FactorAlgorithm {
               new NoPowerFinder(),
               new SIQSPolyGenerator(),
               sieve,
-              new TDiv_QS_2Large_UBI(),
+              new TDiv_QS_2Large_UBI(permitUnsafeUsage),
               10,
               new MatrixSolver02_BlockLanczos(),
               useLegacyFactoring,
