@@ -7,8 +7,10 @@ import org.matheclipse.core.expression.WL;
 import org.matheclipse.core.interfaces.IExpr;
 
 /**
- * Tests for the Java port of the <a href="http://www.apmaths.uwo.ca/~arich/">Rubi - rule-based
- * integrator</a>.
+ * Unit tests for handling the WXF serialization format.
+ *
+ * <p>See: <a href="https://reference.wolfram.com/language/tutorial/WXFFormatDescription.html">WXF
+ * Format Description</a>
  */
 public class WXFTestCase extends AbstractTestCase {
   public WXFTestCase(String name) {
@@ -51,6 +53,11 @@ public class WXFTestCase extends AbstractTestCase {
   }
 
   public void testBinarySerialize() {
+    check(
+        "BinarySerialize(<|a->b,1:>2|>) // Normal", //
+        "{56,58,65,2,45,115,8,71,108,111,98,97,108,96,97,115,8,71,108,111,98,97,108,96,98,\n"
+            + "58,67,1,67,2}");
+
     check(
         "BinarySerialize(Quantity(12, \"Hours\")) // Normal", //
         "{56,58,102,2,115,8,81,117,97,110,116,105,116,121,67,12,83,5,72,111,117,114,115}");
@@ -196,6 +203,10 @@ public class WXFTestCase extends AbstractTestCase {
   }
 
   public void testBinaryDeserialize() {
+    check(
+        "BinaryDeserialize(ByteArray({56,58,65,2,45,115,8,71,108,111,98,97,108,96,97,115,8,71,108,111,98,97,108,96,98,58,67,1,67,2}))", //
+        "<|a->b,1:>2|>");
+
     // N[Pi, 30]
     // 3.14159265358979323846264338328
     // character representation: 3.1415926535897932384626433832795028841971693993751058151208`30.
