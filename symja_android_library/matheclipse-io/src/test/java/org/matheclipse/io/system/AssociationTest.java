@@ -310,14 +310,21 @@ public class AssociationTest extends AbstractTestCase {
 
   public void testKey() {
     check(
-        "<|a -> b, c -> d|>[[Key(a)]]", //
+        "<|1 -> a, 3 -> b|>[[Key(3)]]", //
         "b");
+    check(
+        "<|a -> b, c -> d|>[Key(a)]", //
+        "Missing(KeyAbsent,Key(a))");
     check(
         "Key(z)[<|a -> b, c -> d|>]", //
         "Missing(KeyAbsent,z)");
     check(
         "Key(a)[<|a -> b, c -> d|>]", //
         "b");
+
+    check(
+        "<|\"a\" -> b, \"c\" -> d|>[[\"c\"]]", //
+        "d");
   }
 
   public void testKeys01() {
