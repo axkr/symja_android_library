@@ -35,7 +35,6 @@
 	<classpathentry kind="lib" path="lib/failureaccess-1.0.1.jar"/>
 	<classpathentry kind="lib" path="lib/compiler-1.0.jar"/>
 	<classpathentry kind="lib" path="lib/geodesy-1.1.3.jar"/>
-	<classpathentry kind="lib" path="lib/commons-text-1.6.jar"/>
 	<classpathentry kind="lib" path="lib/slf4j-simple-1.7.25.jar"/>
 	<classpathentry kind="lib" path="lib/apfloat-1.10.0-SNAPSHOT.jar"/>
 	<classpathentry kind="lib" path="lib/pebble-3.1.2.jar"/>
@@ -87,7 +86,6 @@
 	<classpathentry kind="lib" path="lib/hipparchus-stat-1.8.jar"/>
 	<classpathentry kind="lib" path="lib/hipparchus-fitting-1.8.jar"/>
 	<classpathentry kind="lib" path="lib/guava-30.1-jre.jar"/>
-	<classpathentry kind="lib" path="lib/jgrapht-core-1.5.0.jar"/>
-	<classpathentry kind="lib" path="lib/jgrapht-io-1.5.0.jar"/>
+	<classpathentry kind="lib" path="lib/commons-text-1.8.jar"/>
 	<classpathentry kind="output" path="bin/classes"/>
 </classpath>
