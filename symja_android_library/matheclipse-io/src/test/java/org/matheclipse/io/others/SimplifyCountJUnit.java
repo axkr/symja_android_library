@@ -1,9 +1,12 @@
-package org.matheclipse.io.system;
+package org.matheclipse.io.others;
+
+import static org.junit.Assert.assertEquals;
 
 import org.matheclipse.core.expression.F;
+import org.matheclipse.io.system.AbstractTestCase;
 
-public class SimplifyCountTest extends AbstractTestCase {
-  public SimplifyCountTest(String name) {
+public class SimplifyCountJUnit extends AbstractTestCase {
+  public SimplifyCountJUnit(String name) {
     super(name);
   }
 

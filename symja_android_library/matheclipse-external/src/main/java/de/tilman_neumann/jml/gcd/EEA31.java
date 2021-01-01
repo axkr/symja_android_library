@@ -13,8 +13,8 @@
  */
 package de.tilman_neumann.jml.gcd;
 
-// import java.math.BigInteger;
-// import org.apache.log4j.Logger;
+import java.math.BigInteger;
+import org.apache.log4j.Logger;
 
 /**
  * Extended Euclidean algorithm, mostly used to compute the modular inverse of x (mod y). Extends
@@ -26,20 +26,25 @@ package de.tilman_neumann.jml.gcd;
  * @author Tilman Neumann
  */
 public class EEA31 {
-  // private static final Logger LOG = Logger.getLogger(EEA31.class);
+  private static final Logger LOG = Logger.getLogger(EEA31.class);
+  private static final boolean DEBUG = false;
 
   public static class Result {
-    /** if g==1 and y>0 then a = (1/x) mod y */
-    public int a;
-    /** if g==1 and y>0 then a = (1/y) mod x */
-    public int b;
     /** gcd */
     public int g;
+    /** if g==1 then a = (1/x) mod y */
+    public int a;
+    /** if g==1 then b = (1/y) mod x */
+    public int b;
 
     public Result(int g, int a, int b) {
+      this.g = g;
       this.a = a;
       this.b = b;
-      this.g = g;
+    }
+
+    public String toString() {
+      return "{" + g + ", " + a + ", " + b + "}";
     }
   }
 
@@ -48,7 +53,7 @@ public class EEA31 {
    *
    * @param x
    * @param y
-   * @return
+   * @return {gcd, a, b}
    */
   public Result computeAll(int x, int y) {
     // initialize
@@ -77,15 +82,17 @@ public class EEA31 {
       parity = -parity;
     }
 
-    //		LOG.debug("correctResult = " + BigInteger.valueOf(x).modInverse(BigInteger.valueOf(y)));
-    //		LOG.debug("a = " + a);
-    //		LOG.debug("y-a = " + (y-a));
-    //		LOG.debug("y+a = " + (y+a));
-    //		LOG.debug("parity = " + parity);
-    //		LOG.debug("sign of x = " + Integer.signum(x));
+    if (DEBUG) {
+      LOG.debug("correctResult = " + BigInteger.valueOf(x).modInverse(BigInteger.valueOf(y)));
+      LOG.debug("a = " + a);
+      LOG.debug("y-a = " + (y - a));
+      LOG.debug("y+a = " + (y + a));
+      LOG.debug("parity = " + parity);
+      LOG.debug("sign of x = " + Integer.signum(x));
+    }
 
     if (Integer.signum(x) == parity) {
-      a = (parity == 1) ? y + a : y - a; // TODO: What about b?
+      a = (parity == 1) ? y + a : y - a; // XXX It seems that b does not depend on parity?
     }
     return new Result(g, a, b);
   }
@@ -95,7 +102,7 @@ public class EEA31 {
    *
    * @param x
    * @param y
-   * @return
+   * @return {gcd, a, b=-1 (undefined)}
    */
   public Result computeHalf(int x, int y) {
     // initialize
@@ -165,7 +172,7 @@ public class EEA31 {
    *
    * @param a
    * @param modulus
-   * @return
+   * @return (1/a) mod modulus
    */
   public int modularInverse /*_v2*/(int a, int modulus) {
     int ps, ps1, ps2, parity, dividend, divisor, rem, q, sign, aPos;

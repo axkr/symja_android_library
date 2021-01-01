@@ -106,19 +106,19 @@ public class UnsignedBigInt {
       }
     }
 
-    if (DEBUG) {
-      //			try {
-      //				// compare with slower but safer implementation
-      //				int[] intArrayFromNShifts = safeConversion(N);
-      //				for (int i=0; i<intLength; i++) {
-      //					assertEquals(intArrayFromNShifts[i], intArray[i]);
-      //				}
-      //			} catch (AssertionError ae) {
-      //				LOG.debug("N              = " + N.toString(2));
-      //				LOG.debug("UnsignedBigInt = " + this.toBinaryString());
-      //				throw ae;
-      //			}
-    }
+    //		if (DEBUG) {
+    //			try {
+    //				// compare with slower but safer implementation
+    //				int[] intArrayFromNShifts = safeConversion(N);
+    //				for (int i=0; i<intLength; i++) {
+    //					assertEquals(intArrayFromNShifts[i], intArray[i]);
+    //				}
+    //			} catch (AssertionError ae) {
+    //				LOG.debug("N              = " + N.toString(2));
+    //				LOG.debug("UnsignedBigInt = " + this.toBinaryString());
+    //				throw ae;
+    //			}
+    //		}
   }
 
   private int[] safeConversion(BigInteger N) {
@@ -160,16 +160,23 @@ public class UnsignedBigInt {
     return intLength;
   }
 
+  public int bitLength() {
+    return intLength == 0
+        ? 0
+        : (intLength << 5) - Integer.numberOfLeadingZeros(intArray[intLength - 1]);
+  }
+
   /**
    * Divide this by the given <code>divisor</code>, store the quotient in <code>quotient</code> and
    * return the remainder. The caller must make sure that {@link #set(BigInteger)} has been invoked
    * before.
    *
    * @param divisor
-   * @param quotient output!
+   * @param quotient output
    * @return remainder
    */
-  public int divideAndRemainder(final int divisor, UnsignedBigInt quotient) {
+  @Deprecated // v2 is significantly faster
+  public int divideAndRemainder_v1(final int divisor, UnsignedBigInt quotient) {
     // A special treatment of intLength==1 is asymptotically bad
     long rem = 0;
     long divisor_long = divisor & 0xFFFFFFFFL;
@@ -183,10 +190,10 @@ public class UnsignedBigInt {
       quot = currentDividend / divisor_long;
       // rem = currentDividend % divisor_long is faster than currentDividend - quot*divisor_long
       rem = currentDividend % divisor_long;
-      // if (DEBUG) {
-      //	assertTrue(currentDividend >= 0);
-      //	assertTrue(quot <= 0xFFFFFFFFL);
-      // }
+      //            if (DEBUG) {
+      //            	assertTrue(currentDividend >= 0);
+      //            	assertTrue(quot <= 0xFFFFFFFFL);
+      //            }
       quotient.intArray[i] = (int) (quot & 0xFFFFFFFFL);
       if (quot > 0) {
         quotient.intLength = i + 1;
@@ -201,10 +208,10 @@ public class UnsignedBigInt {
       quot = currentDividend / divisor_long;
       // rem = currentDividend % divisor_long is faster than currentDividend - quot*divisor_long
       rem = currentDividend % divisor_long;
-      // if (DEBUG) {
-      //	assertTrue(currentDividend >= 0);
-      //	assertTrue(quot <= 0xFFFFFFFFL);
-      // }
+      //            if (DEBUG) {
+      //            	assertTrue(currentDividend >= 0);
+      //            	assertTrue(quot <= 0xFFFFFFFFL);
+      //            }
       quotient.intArray[i] = (int) (quot & 0xFFFFFFFFL);
     }
 
@@ -212,48 +219,39 @@ public class UnsignedBigInt {
   }
 
   /**
-   * Mutable divide and remainder computation. After the operation, this will be the quotient, and
-   * the remainder is returned.
+   * Divide this by the given <code>divisor</code>, store the quotient in <code>quotient</code> and
+   * return the remainder. The caller must make sure that {@link #set(BigInteger)} has been invoked
+   * before.
    *
    * @param divisor
-   * @return remainder of this / divisor
+   * @param quotient output
+   * @return remainder
    */
-  public int divideAndRemainder(final int divisor) {
+  public int divideAndRemainder /*_v2*/(final int divisor, UnsignedBigInt quotient) {
     // A special treatment of intLength==1 is asymptotically bad
-    long rem = 0;
-    long divisor_long = divisor & 0xFFFFFFFFL;
-    long currentDividend, quot;
 
-    // loop that determines intLength by the way
-    int i = intLength - 1;
-    for (; i >= 0; i--) {
-      currentDividend = (rem << 32) | (intArray[i] & 0xFFFFFFFFL);
-      quot = currentDividend / divisor_long;
-      // rem = currentDividend % divisor_long is faster than currentDividend - quot*divisor_long
-      rem = currentDividend % divisor_long;
-      // if (DEBUG) {
-      //	assertTrue(currentDividend >= 0);
-      //	assertTrue(quot <= 0xFFFFFFFFL);
-      // }
-      intArray[i] = (int) (quot & 0xFFFFFFFFL);
-      if (quot > 0) {
-        intLength = i + 1;
-        i--; // loop decrement will not be carried out after break
-        break; // go to loop without intLength-test
-      }
+    long divisor_long = divisor & 0xFFFFFFFFL;
+    long rem = intArray[intLength - 1] & 0xFFFFFFFFL;
+    if (rem < divisor_long) {
+      quotient.intArray[intLength - 1] = 0;
+      quotient.intLength = intLength - 1;
+    } else {
+      quotient.intArray[intLength - 1] = (int) (rem / divisor_long);
+      rem = (rem - (quotient.intArray[intLength - 1] * divisor_long)) & 0xFFFFFFFFL;
+      quotient.intLength = intLength;
     }
 
-    // loop without intLength-test
-    for (; i >= 0; i--) {
+    long currentDividend, quot;
+    for (int i = intLength - 2; i >= 0; i--) {
       currentDividend = (rem << 32) | (intArray[i] & 0xFFFFFFFFL);
       quot = currentDividend / divisor_long;
       // rem = currentDividend % divisor_long is faster than currentDividend - quot*divisor_long
       rem = currentDividend % divisor_long;
-      // if (DEBUG) {
-      //	assertTrue(currentDividend >= 0);
-      //	assertTrue(quot <= 0xFFFFFFFFL);
-      // }
-      intArray[i] = (int) (quot & 0xFFFFFFFFL);
+      //            if (DEBUG) {
+      //            	assertTrue(currentDividend >= 0);
+      //            	assertTrue(quot <= 0xFFFFFFFFL);
+      //            }
+      quotient.intArray[i] = (int) (quot & 0xFFFFFFFFL);
     }
 
     return (int) rem;
@@ -262,6 +260,10 @@ public class UnsignedBigInt {
   /**
    * Compute the remainder of this modulo divisor. The caller must make sure that {@link
    * #set(BigInteger)} has been invoked before.
+   *
+   * <p>This simple implementation seems to be amazingly fast, like 100 times faster than
+   * BigInteger.mod(d), where BigInteger d = BigInteger.valueOf(divisor) has been created before the
+   * performance test loop. Here, Barrett reduction has no chance to shine...
    *
    * @param divisor
    * @return remainder
@@ -273,7 +275,6 @@ public class UnsignedBigInt {
     long currentDividend;
     for (int i = intLength - 1; i >= 0; i--) {
       currentDividend = (rem << 32) | (intArray[i] & 0xFFFFFFFFL);
-      // rem = currentDividend % divisor_long is faster than currentDividend - quot*divisor_long
       rem = currentDividend % divisor_long;
     }
     return (int) rem;
@@ -288,6 +289,28 @@ public class UnsignedBigInt {
       if (intArray[i] != other.intArray[i]) return false;
     }
     return true;
+  }
+
+  @Override
+  public int hashCode() {
+    if (intArray == null || intLength == 0) {
+      return 0;
+    }
+    int result = 1;
+    for (int i = intLength - 1; i >= 0; i--) {
+      result = 31 * result + intArray[i];
+    }
+    return result;
+  }
+
+  public int intValue() {
+    return intLength == 0 ? 0 : intArray[0];
+  }
+
+  public long longValue() {
+    if (intLength == 0) return 0;
+    if (intLength == 1) return intArray[0] & 0xFFFFFFFFL;
+    return ((intArray[1] & 0xFFFFFFFFL) << 32) | (intArray[0] & 0xFFFFFFFFL);
   }
 
   public BigInteger toBigInteger() {
@@ -309,12 +332,11 @@ public class UnsignedBigInt {
     BigInteger N = new BigInteger(bytes);
 
     if (DEBUG) {
-      //			// compare with slower but safer implementation
-      //			BigInteger NfromShifts = BigInteger.valueOf(intArray[intLength-1] & 0xFFFFFFFFL);
-      //			for (int i=intLength-2; i>=0; i--) {
-      //				NfromShifts = NfromShifts.shiftLeft(32).add(BigInteger.valueOf(intArray[i] &
-      // 0xFFFFFFFFL));
-      //			}
+      // compare with slower but safer implementation
+      BigInteger NfromShifts = BigInteger.valueOf(intArray[intLength - 1] & 0xFFFFFFFFL);
+      for (int i = intLength - 2; i >= 0; i--) {
+        NfromShifts = NfromShifts.shiftLeft(32).add(BigInteger.valueOf(intArray[i] & 0xFFFFFFFFL));
+      }
       //			assertEquals(NfromShifts, N);
     }
     return N;

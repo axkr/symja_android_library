@@ -87,7 +87,7 @@ public class HarmonicNumbers {
    */
   public static BigDecimal harmonic_upperBound(BigInteger n, Scale scale) {
     BigDecimal result = EulerConstant.gamma(scale);
-    result.setScale(scale.digits(), RoundingMode.CEILING);
+    result = result.setScale(scale.digits(), RoundingMode.CEILING);
     result = result.add(Ln.ln(new BigDecimal(n), scale));
     BigInteger den = n.shiftLeft(1); // 2n
     result = result.add(F_1.divide(new BigDecimal(den), scale.digits(), RoundingMode.HALF_EVEN));
@@ -112,7 +112,7 @@ public class HarmonicNumbers {
   // https://en.wikipedia.org/wiki/Harmonic_number#Calculation
   public static BigDecimal harmonic_lowerBound(BigInteger n, Scale scale) {
     BigDecimal result = EulerConstant.gamma(scale);
-    result.setScale(scale.digits(), RoundingMode.FLOOR);
+    result = result.setScale(scale.digits(), RoundingMode.FLOOR);
     result = result.add(Ln.ln(new BigDecimal(n), scale));
     BigInteger den = n.shiftLeft(1); // 2n
     result = result.add(F_1.divide(new BigDecimal(den), scale.digits(), RoundingMode.HALF_EVEN));
@@ -181,7 +181,7 @@ public class HarmonicNumbers {
    *
    * @param n
    * @param r
-   * @return
+   * @return H_{n,r}
    */
   public static BigRational harmonicPower(int n, int r) {
     if (n < 1) throw new IllegalArgumentException("argument n must be positive, but is " + n);
@@ -263,10 +263,13 @@ public class HarmonicNumbers {
     int nMax = 10;
     int rMax = 10;
     LOG.info("nMax = " + nMax + ", rMax = " + rMax);
-    // computeAndPrintHyperharmonic_recurrent(nMax, rMax);
+    computeAndPrintHyperharmonic_recurrent(nMax, rMax);
+    LOG.info("");
     computeAndPrintHyperharmonic_closedForm(nMax, rMax);
-    // result: both forms are equal!
+    LOG.info("");
+    // result: both forms are equal
+
     computeAndPrintHarmonicPowers(nMax, rMax);
-    // different, but very interesting !!!
+    // different, but very interesting !
   }
 }

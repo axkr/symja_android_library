@@ -39,8 +39,6 @@ public class SortedMultiset_BottomUp<T extends Comparable<T>> extends TreeMap<T,
   @SuppressWarnings("unused")
   private static final Logger LOG = Logger.getLogger(SortedMultiset_BottomUp.class);
 
-  private int totalCount = 0;
-
   /**
    * Constructor for an empty multiset, sorted smallest elements first. This sort order is
    * particularly adequate for the parts of multiplicative partitions (prime factorizations).
@@ -86,7 +84,6 @@ public class SortedMultiset_BottomUp<T extends Comparable<T>> extends TreeMap<T,
     int oldMult = (myMult != null) ? myMult.intValue() : 0;
     int newMult = oldMult + 1;
     super.put(entry, Integer.valueOf(newMult));
-    totalCount++;
     return oldMult;
   }
 
@@ -97,7 +94,6 @@ public class SortedMultiset_BottomUp<T extends Comparable<T>> extends TreeMap<T,
     if (mult > 0) {
       int newMult = oldMult + mult;
       super.put(entry, Integer.valueOf(newMult));
-      totalCount += mult;
     }
     return oldMult;
   }
@@ -128,12 +124,13 @@ public class SortedMultiset_BottomUp<T extends Comparable<T>> extends TreeMap<T,
         if (imult > 1) {
           // the cast works if we only put T-type keys into the map
           // which should be guaranteed in the add-methods
-          this.put((T) key, Integer.valueOf(imult - 1));
+          @SuppressWarnings("unchecked")
+          T castedKey = (T) key;
+          this.put(castedKey, Integer.valueOf(imult - 1));
         } else {
           // delete entry from internal map
           super.remove(key);
         }
-        this.totalCount--;
       }
     }
     return mult;
@@ -144,7 +141,6 @@ public class SortedMultiset_BottomUp<T extends Comparable<T>> extends TreeMap<T,
     int oldMult = (myMult != null) ? myMult.intValue() : 0;
     if (oldMult > 0) {
       int newMult = Math.max(0, oldMult - mult);
-      totalCount += (newMult - oldMult);
       if (newMult > 0) {
         super.put(key, Integer.valueOf(newMult));
         return oldMult;
@@ -162,7 +158,6 @@ public class SortedMultiset_BottomUp<T extends Comparable<T>> extends TreeMap<T,
       if (imult > 0) {
         // delete entry from internal map
         super.remove(key);
-        this.totalCount -= imult;
       }
       return imult;
     }
@@ -189,12 +184,12 @@ public class SortedMultiset_BottomUp<T extends Comparable<T>> extends TreeMap<T,
     return resultset;
   }
 
-  public int keyCount() {
-    return this.size();
-  }
-
   public int totalCount() {
-    return this.totalCount;
+    int sum = 0;
+    for (Integer mult : this.values()) {
+      sum += mult;
+    }
+    return sum;
   }
 
   public T getSmallestElement() {
@@ -206,7 +201,7 @@ public class SortedMultiset_BottomUp<T extends Comparable<T>> extends TreeMap<T,
   }
 
   public List<T> toList() {
-    List<T> flatList = new ArrayList<T>(totalCount);
+    List<T> flatList = new ArrayList<T>(totalCount());
     for (Map.Entry<T, Integer> entry : this.entrySet()) {
       T value = entry.getKey();
       int multiplicity = entry.getValue().intValue();
@@ -270,7 +265,7 @@ public class SortedMultiset_BottomUp<T extends Comparable<T>> extends TreeMap<T,
     if (o != null && o instanceof SortedMultiset) {
       @SuppressWarnings("unchecked")
       SortedMultiset<T> other = (SortedMultiset<T>) o;
-      if (this.totalCount != other.totalCount()) return false;
+      if (this.size() != other.size()) return false;
       Iterator<Map.Entry<T, Integer>> myEntryIter = this.getTopDownIterator();
       Iterator<Map.Entry<T, Integer>> otherEntryIter = other.getTopDownIterator();
       while (myEntryIter.hasNext()) {

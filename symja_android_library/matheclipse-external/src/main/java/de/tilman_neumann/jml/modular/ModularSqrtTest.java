@@ -45,7 +45,7 @@ public class ModularSqrtTest {
   /**
    * Create positive n having Jacobi(n|p) == 1 for all p in pArray.
    *
-   * @param pArray
+   * @param pList
    * @return
    */
   private static int[] createNArray(int[] pList) {
@@ -65,23 +65,23 @@ public class ModularSqrtTest {
     return nArray;
   }
 
-  private static void testCorrectness(int NCOUNT) {
-    ModularSqrt31 mse31 = new ModularSqrt31();
-
-    LOG.info("Test correctness of " + NCOUNT + " p with p%8==5");
-    int[] pArray = createPArray(5, NCOUNT);
-    int[] nArray = createNArray(pArray);
-    for (int i = 0; i < NCOUNT; i++) {
-      int a = nArray[i];
-      int p = pArray[i];
-      int tonelli = mse31.Tonelli_Shanks(a, p);
-      //			assertEquals((tonelli * (long)tonelli) % p, a%p);
-
-      int case5Mod8 = mse31.case5Mod8(a, p);
-      //			assertEquals((case5Mod8 * (long)case5Mod8) % p, a%p);
-      //			assertTrue(tonelli == case5Mod8); // both returned the smaller sqrt
-    }
-  }
+  //	private static void testCorrectness(int NCOUNT) {
+  //		ModularSqrt31 mse31 = new ModularSqrt31();
+  //
+  //		LOG.info("Test correctness of " + NCOUNT + " p with p%8==5");
+  //		int[] pArray = createPArray(5, NCOUNT);
+  //		int[] nArray = createNArray(pArray);
+  //		for (int i=0; i<NCOUNT; i++) {
+  //			int a = nArray[i];
+  //			int p = pArray[i];
+  //			int tonelli = mse31.Tonelli_Shanks(a, p);
+  //			assertEquals((tonelli * (long)tonelli) % p, a%p);
+  //
+  //			int case5Mod8 = mse31.case5Mod8(a, p);
+  //			assertEquals((case5Mod8 * (long)case5Mod8) % p, a%p);
+  //			assertTrue(tonelli == case5Mod8); // both returned the smaller sqrt
+  //		}
+  //	}
 
   private static void testPerformance(int NCOUNT) {
     long t;
@@ -155,9 +155,9 @@ public class ModularSqrtTest {
    *
    * @param args ignored
    */
-  public static void main(String[] args) {
-    ConfigUtil.initProject();
-    testCorrectness(100000);
-    testPerformance(100000);
-  }
+  //	public static void main(String[] args) {
+  //		ConfigUtil.initProject();
+  //		testCorrectness(100000);
+  //		testPerformance(100000);
+  //	}
 }

@@ -16,10 +16,10 @@ package de.tilman_neumann.jml.factor;
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.math.BigInteger;
-import java.security.SecureRandom;
 
 import org.apache.log4j.Logger;
 
+import de.tilman_neumann.jml.base.Rng;
 import de.tilman_neumann.jml.primes.probable.BPSWTest;
 import de.tilman_neumann.util.ConfigUtil;
 
@@ -37,7 +37,7 @@ public class TestsetGenerator {
   private static final boolean DUMP_DATA_TO_FILE = false;
 
   private static final BPSWTest bpsw = new BPSWTest();
-  private static final SecureRandom RNG = new SecureRandom();
+  private static final Rng RNG = new Rng();
 
   /**
    * Generate N_count random numbers of the given size and nature.
@@ -94,7 +94,7 @@ public class TestsetGenerator {
               // Generate random N with 2 prime factors > cbrt(N). This implementation achieves a
               // high degree
               // of randomness while still being reasonably fast for large bit sizes.
-              int n1bits = uniformRandomInteger(minBits, maxBits);
+              int n1bits = RNG.nextInt(minBits, maxBits);
               BigInteger n1 = new BigInteger(n1bits, RNG);
               n1 = bpsw.nextProbablePrime(n1);
               if (n1.bitLength() < minBits) continue;
@@ -146,20 +146,6 @@ public class TestsetGenerator {
       if (writer != null) writer.close();
     }
     return NArray;
-  }
-
-  /**
-   * Creates a random integer from the uniform distribution U[minValue, maxValue-1]. Works also for
-   * negative arguments; the only requirement is maxValue>minValue.
-   *
-   * @param minValue
-   * @param maxValue
-   * @return
-   */
-  private static int uniformRandomInteger(int minValue, int maxValue) {
-    int normedMaxValue = Math.max(1, maxValue - minValue);
-    return RNG.nextInt() % (normedMaxValue + 1) + minValue;
-    // the above has more entropy than RNG.nextInt(normedMaxValue) + minValue
   }
 
   /**

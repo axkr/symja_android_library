@@ -118,7 +118,7 @@ public class TDiv_CF63_02 implements TDiv_CF63 {
         }
       } // end while (trialDivIndex < primeBaseSize)
     }
-    if (DEBUG) assert (Q_rest > 1);
+    //		if (DEBUG) assertTrue(Q_rest>1);
     if (Q_rest_bits < 32) {
       int Q_rest_int = (int) Q_rest;
       while (trialDivIndex < primeBaseSize) {
@@ -152,7 +152,7 @@ public class TDiv_CF63_02 implements TDiv_CF63 {
   private boolean factor_recurrent(long Q_rest) {
     if (Q_rest < pMaxSquare) {
       // we divided Q_rest by all primes <= pMax and the rest is < pMax^2 -> it must be prime
-      if (DEBUG) assert (prpTest.isProbablePrime(Q_rest));
+      //			if (DEBUG) assertTrue(prpTest.isProbablePrime(Q_rest));
       if (bitLength(Q_rest) > 31) return false;
       bigFactors.add((int) Q_rest);
       return true;

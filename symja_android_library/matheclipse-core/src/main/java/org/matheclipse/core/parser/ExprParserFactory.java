@@ -277,7 +277,8 @@ public class ExprParserFactory implements IParserFactory {
     "DirectedEdge",
     "UndirectedEdge",
     "CenterDot",
-    "CircleDot"
+    "CircleDot",
+    "TensorProduct"
   };
 
   static final String[] OPERATOR_STRINGS = {
@@ -348,7 +349,8 @@ public class ExprParserFactory implements IParserFactory {
     "\uF3D5", // DirectedEdge
     "\uF3D4", // UndirectedEdge
     "\u00B7", // CenterDot
-    "\u2299" // CircleDot
+    "\u2299", // CircleDot
+    "\u2297" // TensorProduct
   };
   private static Operator[] OPERATORS;
 
@@ -490,7 +492,9 @@ public class ExprParserFactory implements IParserFactory {
             new InfixExprOperator(
                 "\u00B7", "CenterDot", Precedence.CENTERDOT, InfixExprOperator.NONE), //
             new InfixExprOperator(
-                "\u2299", "CircleDot", Precedence.CIRCLEDOT, InfixExprOperator.NONE) //
+                "\u2299", "CircleDot", Precedence.CIRCLEDOT, InfixExprOperator.NONE), //
+            new InfixExprOperator(
+            		"\u2297", "TensorProduct", Precedence.TENSORPRODUCT, InfixExprOperator.NONE)
           };
       StringBuilder buf = new StringBuilder(BASIC_OPERATOR_CHARACTERS);
 

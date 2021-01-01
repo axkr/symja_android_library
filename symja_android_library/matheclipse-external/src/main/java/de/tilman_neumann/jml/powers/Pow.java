@@ -36,27 +36,28 @@ public class Pow {
    *
    * @param x Basis
    * @param n Exponent
+   * @param prec output precision in leading decimal digits
    * @return x^n
    */
-  public static BigDecimal pow(BigDecimal x, BigInteger n, Precision wantedDecPrec) {
-    // LOG.debug(x + "^" + n + " [prec=" + wantedDecPrec + "]...");
+  public static BigDecimal pow(BigDecimal x, BigInteger n, Precision prec) {
+    // LOG.debug(x + "^" + n + " [prec=" + prec + "]...");
     if (n.compareTo(I_0) >= 0) {
       if (n.compareTo(I_MAX_EXPONENT) > 0) {
         // split exponent in permitted factors:
         BigInteger[] nDivMaxInt = n.divideAndRemainder(I_MAX_EXPONENT);
-        BigDecimal xPowMaxInt = pow(x, I_MAX_EXPONENT.intValue(), wantedDecPrec); // x^MAX_EXPONENT
+        BigDecimal xPowMaxInt = pow(x, I_MAX_EXPONENT.intValue(), prec); // x^MAX_EXPONENT
         // The following recursion allows arbitrary big exponents, because
         // (x^maxInt)^(floor(n/maxInt)) == x^((floor(n/maxInt)*maxInt)
-        BigDecimal ret = pow(xPowMaxInt, nDivMaxInt[0], wantedDecPrec);
-        return ret.multiply(pow(x, nDivMaxInt[1].intValue(), wantedDecPrec));
+        BigDecimal ret = pow(xPowMaxInt, nDivMaxInt[0], prec);
+        return ret.multiply(pow(x, nDivMaxInt[1].intValue(), prec));
       }
 
       int nInt = n.intValue();
       // LOG.debug("nInt = " + nInt);
-      return pow(x, nInt, wantedDecPrec);
+      return pow(x, nInt, prec);
     }
 
-    return F_1.divide(pow(x, n.negate(), wantedDecPrec));
+    return F_1.divide(pow(x, n.negate(), prec));
   }
 
   public static BigDecimal pow(BigDecimal x, int n, Scale resultScale) {
@@ -97,17 +98,18 @@ public class Pow {
    *
    * @param x
    * @param n
+   * @param prec output precision in leading decimal digits
    * @return x^n
    */
-  static BigDecimal pow /*Java*/(BigDecimal x, int n, Precision decPrec) {
+  static BigDecimal pow /*Java*/(BigDecimal x, int n, Precision prec) {
     // avoid rounding errors
-    int innerDecPrec = decPrec.digits() + 4;
+    int innerPrec = prec.digits() + 4;
     //		// avoid ArithmeticException (see comment in class PowTest):
-    //		if (innerDecPrec==1 && n>9) innerDecPrec = 2;
+    //		if (innerPrec==1 && n>9) innerPrec = 2;
     // compute result at inner precision
-    BigDecimal result = x.pow(n, new MathContext(innerDecPrec, RoundingMode.HALF_EVEN));
+    BigDecimal result = x.pow(n, new MathContext(innerPrec, RoundingMode.HALF_EVEN));
     // round to originally wanted output precision
-    return decPrec.applyTo(result);
+    return prec.applyTo(result);
   }
 
   public static BigDecimal powJavaTrunc(BigDecimal x, int n, Precision resultPrecision) {

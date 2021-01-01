@@ -17,10 +17,10 @@ import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.math.BigInteger;
-import java.security.SecureRandom;
 
 import org.apache.log4j.Logger;
 
+import de.tilman_neumann.jml.base.Rng;
 import de.tilman_neumann.jml.base.Uint128;
 import de.tilman_neumann.jml.factor.FactorAlgorithm;
 import de.tilman_neumann.jml.gcd.Gcd63;
@@ -48,7 +48,7 @@ public class PollardRhoBrentMontgomeryR64Mul63 extends FactorAlgorithm {
   private static final Logger LOG = Logger.getLogger(PollardRhoBrentMontgomeryR64Mul63.class);
   private static final boolean DEBUG = false;
 
-  private static final SecureRandom RNG = new SecureRandom();
+  private static final Rng RNG = new Rng();
 
   // The reducer R is 2^64, but the only constant still required is the half of it.
   private static final long R_HALF = 1L << 63;
@@ -86,7 +86,7 @@ public class PollardRhoBrentMontgomeryR64Mul63 extends FactorAlgorithm {
 
     do {
       // start with random y from [0, N)
-      long y = Math.abs(RNG.nextLong()) % N;
+      long y = RNG.nextLong(N);
 
       int r = 1;
       long q = 1;

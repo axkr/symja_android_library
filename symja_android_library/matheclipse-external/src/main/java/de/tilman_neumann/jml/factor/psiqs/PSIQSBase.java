@@ -21,12 +21,15 @@ import java.math.BigInteger;
 import org.apache.log4j.Logger;
 
 import de.tilman_neumann.jml.factor.FactorAlgorithm;
+import de.tilman_neumann.jml.factor.base.FactorArguments;
+import de.tilman_neumann.jml.factor.base.FactorResult;
 import de.tilman_neumann.jml.factor.base.PrimeBaseGenerator;
 import de.tilman_neumann.jml.factor.base.congruence.CongruenceCollectorParallel;
 import de.tilman_neumann.jml.factor.base.congruence.CongruenceCollectorReport;
 import de.tilman_neumann.jml.factor.base.matrixSolver.FactorTest;
 import de.tilman_neumann.jml.factor.base.matrixSolver.FactorTest01;
 import de.tilman_neumann.jml.factor.base.matrixSolver.MatrixSolver;
+import de.tilman_neumann.jml.factor.ecm.EllipticCurveMethod;
 import de.tilman_neumann.jml.factor.siqs.KnuthSchroeppel;
 import de.tilman_neumann.jml.factor.siqs.ModularSqrtsEngine;
 import de.tilman_neumann.jml.factor.siqs.data.BaseArrays;
@@ -36,7 +39,9 @@ import de.tilman_neumann.jml.factor.siqs.powers.PowerFinder;
 import de.tilman_neumann.jml.factor.siqs.sieve.SieveParams;
 import de.tilman_neumann.jml.factor.siqs.sieve.SieveReport;
 import de.tilman_neumann.jml.factor.siqs.tdiv.TDivReport;
+import de.tilman_neumann.jml.factor.tdiv.TDiv;
 import de.tilman_neumann.jml.powers.PurePowerTest;
+import de.tilman_neumann.jml.primes.probable.BPSWTest;
 import de.tilman_neumann.util.TimeUtil;
 import de.tilman_neumann.util.Timer;
 
@@ -48,6 +53,9 @@ import de.tilman_neumann.util.Timer;
 public abstract class PSIQSBase extends FactorAlgorithm {
   private static final Logger LOG = Logger.getLogger(PSIQSBase.class);
   private static final boolean DEBUG = false;
+
+  /** if true then search for small factors before PSIQS is run */
+  private boolean searchSmallFactors = true;
 
   protected int numberOfThreads;
   private Integer d0;
@@ -80,10 +88,18 @@ public abstract class PSIQSBase extends FactorAlgorithm {
   protected MatrixSolver matrixSolver;
 
   protected PowerFinder powerFinder;
+  private TDiv tdiv = new TDiv();
+  private EllipticCurveMethod ecm = new EllipticCurveMethod(0);
+
+  private BPSWTest bpsw = new BPSWTest();
 
   // statistics
   private Timer timer = new Timer();
-  private long powerTestDuration, initNDuration, createThreadDuration;
+  private long initialTdivDuration,
+      ecmDuration,
+      powerTestDuration,
+      initNDuration,
+      createThreadDuration;
 
   /**
    * Standard constructor.
@@ -99,6 +115,9 @@ public abstract class PSIQSBase extends FactorAlgorithm {
    * @param powerFinder algorithm to add powers to the primes used for sieving
    * @param matrixSolver solver for smooth congruences matrix
    * @param apg a-parameter generator
+   * @param useLegacyFactoring if true then factor() uses findSingleFactor(), otherwise
+   *     searchFactors()
+   * @param searchSmallFactors if true then search for small factors before PSIQS is run
    */
   public PSIQSBase(
       float Cmult,
@@ -108,7 +127,11 @@ public abstract class PSIQSBase extends FactorAlgorithm {
       Integer d,
       PowerFinder powerFinder,
       MatrixSolver matrixSolver,
-      AParamGenerator apg) {
+      AParamGenerator apg,
+      boolean useLegacyFactoring,
+      boolean searchSmallFactors) {
+
+    super(null, useLegacyFactoring);
 
     this.Cmult = Cmult;
     this.Mmult = Mmult;
@@ -120,18 +143,106 @@ public abstract class PSIQSBase extends FactorAlgorithm {
     this.matrixSolver = matrixSolver;
     this.apg = apg;
     this.multiplierFinder = new KnuthSchroeppel();
+    this.searchSmallFactors = searchSmallFactors;
   }
 
   public abstract String getName();
+
+  @Override
+  public boolean searchFactors(FactorArguments args, FactorResult result) {
+    if (ANALYZE) {
+      timer.start(); // start timer
+      initialTdivDuration =
+          ecmDuration = powerTestDuration = initNDuration = createThreadDuration = 0;
+    }
+
+    BigInteger N = args.N;
+    if (searchSmallFactors) {
+      int actualTdivLimit;
+      if (tdivLimit != null) {
+        // use "dictated" limit
+        actualTdivLimit = tdivLimit.intValue();
+      } else {
+        // Adjust tdivLimit=2^e by experimental results.
+        // XXX This estimate should take into account the number of threads.
+        final double e = 10 + (args.NBits - 45) * 0.07407407407; // constant 0.07.. = 10/135
+        actualTdivLimit = (int) Math.min(1 << 20, Math.pow(2, e)); // upper bound 2^20
+      }
+
+      if (DEBUG)
+        LOG.debug("1: N = " + N + ", actualTdivLimit = " + actualTdivLimit + ", result: " + result);
+      tdiv.findSmallOddFactors(args, actualTdivLimit, result);
+      if (DEBUG)
+        LOG.debug("2: N = " + N + ", actualTdivLimit = " + actualTdivLimit + ", result: " + result);
+      if (ANALYZE) initialTdivDuration += timer.capture();
+
+      if (result.untestedFactors.isEmpty()) {
+        // N was "easy"
+        return true;
+      }
+      // Otherwise we have to continue
+      N = result.untestedFactors.firstKey();
+      int exp = result.untestedFactors.removeAll(N);
+      //			if (DEBUG) assertEquals(1, exp); // looks save, otherwise we'ld have to consider exp
+      // below
+
+      if (bpsw.isProbablePrime(N)) { // TODO exploit tdiv done so far
+        result.primeFactors.add(N);
+        return true;
+      }
+
+      // ECM
+      args.N = N;
+      args.NBits = N.bitLength();
+      args.exp = exp;
+      args.smallestPossibleFactor = result.smallestPossibleFactorRemaining;
+      if (DEBUG) LOG.debug("ecm started: result = " + result);
+      boolean factorFound =
+          ecm.searchFactors(
+              args,
+              result); // TODO a parallel ECM implementation with numberOfThreads threads would be
+                       // nice here
+      if (DEBUG) LOG.debug("ecm finished: result = " + result);
+      if (ANALYZE) ecmDuration += timer.capture();
+      if (factorFound) {
+        return true;
+      } else {
+        // N could not be resolved by ECM and has been added to compositeFactors again...
+        result.compositeFactors.remove(N);
+      }
+    }
+
+    // the quadratic sieve does not work for pure powers
+    PurePowerTest.Result purePower = powerTest.test(N);
+    if (purePower != null) {
+      // N is indeed a pure power. In contrast to findSingleFactor() we can also add the exponent,
+      // so following steps get faster
+      result.untestedFactors.add(purePower.base, purePower.exponent);
+      return true;
+    } // else: no pure power, run quadratic sieve
+    if (ANALYZE) powerTestDuration += timer.capture();
+
+    // run quadratic sieve
+    BigInteger factor1 = findSingleFactorInternal(N);
+    if (factor1.compareTo(I_1) > 0 && factor1.compareTo(N) < 0) {
+      // We found a factor, but here we cannot know if it is prime or composite
+      result.untestedFactors.add(factor1, args.exp);
+      result.untestedFactors.add(N.divide(factor1), args.exp);
+      return true;
+    }
+
+    return false; // nothing found
+  }
 
   /**
    * Test the current N.
    *
    * @return factor, or null if no factor was found.
    */
+  @Override
   public BigInteger findSingleFactor(BigInteger N) {
     if (ANALYZE) {
-      timer.start();
+      timer.start(); // start timer
       powerTestDuration = initNDuration = createThreadDuration = 0;
     }
 
@@ -143,6 +254,16 @@ public abstract class PSIQSBase extends FactorAlgorithm {
     } // else: no pure power, run quadratic sieve
     if (ANALYZE) powerTestDuration += timer.capture();
 
+    // run quadratic sieve
+    return findSingleFactorInternal(N);
+  }
+
+  /**
+   * Runs the quadratic sieve.
+   *
+   * @return factor, or null if no factor was found.
+   */
+  private BigInteger findSingleFactorInternal(BigInteger N) {
     // Compute prime base size:
     // http://www.mersenneforum.org/showthread.php?s=3087aa210d8d7f1852c690a45f22d2e5&t=11116&page=2:
     // "A rough estimate of the largest prime in the factor base is exp(0.5 * sqrt(ln(N) *
@@ -228,7 +349,7 @@ public abstract class PSIQSBase extends FactorAlgorithm {
         primesArray,
         tArray,
         adjustedSieveArraySize); // must be done before polyGenerator initialization where qCount is
-    // required
+                                 // required
     FactorTest factorTest = new FactorTest01(N);
     matrixSolver.initialize(N, factorTest);
     congruenceCollector.initialize(N, primeBaseSize, matrixSolver, factorTest);
@@ -278,88 +399,16 @@ public abstract class PSIQSBase extends FactorAlgorithm {
     BigInteger factor = congruenceCollector.factor;
 
     if (ANALYZE) {
-      // assemble reports from all threads
-      PolyReport polyReport = threadArray[0].getPolyReport();
-      SieveReport sieveReport = threadArray[0].getSieveReport();
-      TDivReport tdivReport = threadArray[0].getTDivReport();
-      for (int threadIndex = 1; threadIndex < numberOfThreads; threadIndex++) {
-        polyReport.add(threadArray[threadIndex].getPolyReport());
-        sieveReport.add(threadArray[threadIndex].getSieveReport());
-        tdivReport.add(threadArray[threadIndex].getTDivReport());
-      }
-      CongruenceCollectorReport ccReport = congruenceCollector.getReport();
-      // a detailed solverReport is not needed yet
-
-      long initPolyDuration = polyReport.getTotalDuration(numberOfThreads);
-      long sieveDuration = sieveReport.getTotalDuration(numberOfThreads);
-      long tdivDuration = tdivReport.getTotalDuration(numberOfThreads);
-
-      // report results
-      LOG.info(getName() + ":");
-      LOG.info(
-          "Found factor "
-              + factor
-              + " ("
-              + factor.bitLength()
-              + " bits) of N="
-              + N
-              + " in "
-              + TimeUtil.timeStr(timer.totalRuntime()));
-      int pMaxBits = 32 - Integer.numberOfLeadingZeros(pMax);
-      LOG.info(
-          "    multiplier k = "
-              + k
-              + ", kN%8 = "
-              + kN.mod(I_8)
-              + ", primeBaseSize = "
-              + primeBaseSize
-              + ", pMax = "
-              + pMax
-              + " ("
-              + pMaxBits
-              + " bits), sieveArraySize = "
-              + adjustedSieveArraySize);
-      LOG.info("    polyGenerator: " + polyReport.getOperationDetails());
-      LOG.info("    tDiv: " + tdivReport.getOperationDetails());
-      if (ANALYZE_LARGE_FACTOR_SIZES) LOG.info("        " + tdivReport.getQRestSizes());
-      LOG.info("    cc: " + ccReport.getOperationDetails());
-      if (ANALYZE_LARGE_FACTOR_SIZES) {
-        LOG.info("        " + ccReport.getPartialBigFactorSizes());
-        LOG.info("        " + ccReport.getSmoothBigFactorSizes());
-        LOG.info("        " + ccReport.getSmoothBigFactorPercentiles());
-        LOG.info("        " + ccReport.getNonIntFactorPercentages());
-      }
-      if (ANALYZE_Q_SIGNS) {
-        LOG.info("        " + ccReport.getPartialQSignCounts());
-        LOG.info("        " + ccReport.getSmoothQSignCounts());
-      }
-      LOG.info(
-          "    #solverRuns = "
-              + congruenceCollector.getSolverRunCount()
-              + ", #tested null vectors = "
-              + matrixSolver.getTestedNullVectorCount());
-      LOG.info(
-          "    Approximate phase timings: powerTest="
-              + powerTestDuration
-              + "ms, initN="
-              + initNDuration
-              + "ms, createThreads="
-              + createThreadDuration
-              + "ms, initPoly="
-              + initPolyDuration
-              + "ms, sieve="
-              + sieveDuration
-              + "ms, tdiv="
-              + tdivDuration
-              + "ms, cc="
-              + congruenceCollector.getCollectDuration()
-              + "ms, solver="
-              + congruenceCollector.getSolverDuration()
-              + "ms");
-      LOG.info("    -> initPoly sub-timings: " + polyReport.getPhaseTimings(numberOfThreads));
-      LOG.info("    -> sieve sub-timings: " + sieveReport.getPhaseTimings(numberOfThreads));
-      LOG.info("    -> tdiv sub-timings: " + tdivReport.getPhaseTimings(numberOfThreads));
-      // CC and solver have no sub-timings yet
+      logResults(
+          N,
+          k,
+          kN,
+          factor,
+          primeBaseSize,
+          pMax,
+          adjustedSieveArraySize,
+          threadArray,
+          numberOfThreads);
     }
 
     // kill all threads & release memory
@@ -424,5 +473,105 @@ public abstract class PSIQSBase extends FactorAlgorithm {
       }
     }
     if (DEBUG) LOG.debug("thread " + t.getName() + " has been killed.");
+  }
+
+  private void logResults(
+      BigInteger N,
+      int k,
+      BigInteger kN,
+      BigInteger factor,
+      int primeBaseSize,
+      int pMax,
+      int adjustedSieveArraySize,
+      PSIQSThreadBase[] threadArray,
+      int numberOfThreads) {
+    // assemble reports from all threads
+    PolyReport polyReport = threadArray[0].getPolyReport();
+    SieveReport sieveReport = threadArray[0].getSieveReport();
+    TDivReport tdivReport = threadArray[0].getTDivReport();
+    for (int threadIndex = 1; threadIndex < numberOfThreads; threadIndex++) {
+      polyReport.add(threadArray[threadIndex].getPolyReport());
+      sieveReport.add(threadArray[threadIndex].getSieveReport());
+      tdivReport.add(threadArray[threadIndex].getTDivReport());
+    }
+    CongruenceCollectorReport ccReport = congruenceCollector.getReport();
+    // a detailed solverReport is not needed yet
+
+    long initPolyDuration = polyReport.getTotalDuration(numberOfThreads);
+    long sieveDuration = sieveReport.getTotalDuration(numberOfThreads);
+    long tdivDuration = tdivReport.getTotalDuration(numberOfThreads);
+
+    // report results
+    LOG.info(getName() + ":");
+    LOG.info(
+        "Found factor "
+            + factor
+            + " ("
+            + factor.bitLength()
+            + " bits) of N="
+            + N
+            + " ("
+            + N.bitLength()
+            + " bits) in "
+            + TimeUtil.timeStr(timer.totalRuntime()));
+    int pMaxBits = 32 - Integer.numberOfLeadingZeros(pMax);
+    LOG.info(
+        "    multiplier k = "
+            + k
+            + ", kN%8 = "
+            + kN.mod(I_8)
+            + ", primeBaseSize = "
+            + primeBaseSize
+            + ", pMax = "
+            + pMax
+            + " ("
+            + pMaxBits
+            + " bits), sieveArraySize = "
+            + adjustedSieveArraySize);
+    LOG.info("    polyGenerator: " + polyReport.getOperationDetails());
+    LOG.info("    tDiv: " + tdivReport.getOperationDetails());
+    if (ANALYZE_LARGE_FACTOR_SIZES) LOG.info("        " + tdivReport.getQRestSizes());
+    LOG.info("    cc: " + ccReport.getOperationDetails());
+    if (ANALYZE_LARGE_FACTOR_SIZES) {
+      LOG.info("        " + ccReport.getPartialBigFactorSizes());
+      LOG.info("        " + ccReport.getSmoothBigFactorSizes());
+      LOG.info("        " + ccReport.getSmoothBigFactorPercentiles());
+      LOG.info("        " + ccReport.getNonIntFactorPercentages());
+    }
+    if (ANALYZE_Q_SIGNS) {
+      LOG.info("        " + ccReport.getPartialQSignCounts());
+      LOG.info("        " + ccReport.getSmoothQSignCounts());
+    }
+    LOG.info(
+        "    #solverRuns = "
+            + congruenceCollector.getSolverRunCount()
+            + ", #tested null vectors = "
+            + matrixSolver.getTestedNullVectorCount());
+    LOG.info(
+        "    Approximate phase timings: tdiv="
+            + initialTdivDuration
+            + "ms, ecm="
+            + ecmDuration
+            + "ms, powerTest="
+            + powerTestDuration
+            + "ms, initN="
+            + initNDuration
+            + "ms, createThreads="
+            + createThreadDuration
+            + "ms, initPoly="
+            + initPolyDuration
+            + "ms, sieve="
+            + sieveDuration
+            + "ms, tdiv="
+            + tdivDuration
+            + "ms, cc="
+            + congruenceCollector.getCollectDuration()
+            + "ms, solver="
+            + congruenceCollector.getSolverDuration()
+            + "ms");
+    LOG.info("    -> initPoly sub-timings: " + polyReport.getPhaseTimings(numberOfThreads));
+    LOG.info("    -> sieve sub-timings: " + sieveReport.getPhaseTimings(numberOfThreads));
+    LOG.info("    -> tdiv sub-timings: " + tdivReport.getPhaseTimings(numberOfThreads));
+    // CC and solver have no sub-timings yet
   }
 }

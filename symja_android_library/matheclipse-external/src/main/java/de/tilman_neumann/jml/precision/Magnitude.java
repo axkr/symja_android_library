@@ -56,9 +56,8 @@ public class Magnitude {
    * Gives the absolute size of n in decimal digits. Fast for an exact implementation.
    *
    * @param n
-   * @return
+   * @return magnitude of n in decimal digits
    */
-  // TODO: Check how BigDecimal.precision() is computed (OpenJDK sources or using jad)
   public static int of /*digits_fromBigDecimal*/(BigInteger n) {
     return n.compareTo(I_0) != 0 ? new BigDecimal(n).precision() : 0;
   }
@@ -67,7 +66,7 @@ public class Magnitude {
    * Gives the absolute size of n in decimal digits. Fast for an exact implementation.
    *
    * @param n
-   * @return
+   * @return magnitude of n in decimal digits
    */
   static int digits_fromBigDecimal2(BigInteger n) {
     // faster BigInteger.ZERO check?
@@ -76,9 +75,9 @@ public class Magnitude {
 
   // around factor 10 slower than BigDecimal-based versions
   static int digits_toString(BigInteger n) {
-    // BigInteger.toString() allows for String concatenation with +
-    // thus it should be fine for this purpose, too.
-    // however, toString() seems to be more expensive then creating a new BigDecimal...
+    // BigInteger.toString() allows for String concatenation with "+"; thus it should be fine for
+    // this purpose, too.
+    // however, toString() seems to be more expensive than creating a new BigDecimal...
     return n.compareTo(I_0) != 0 ? n.abs().toString().length() : 0;
   }
 
@@ -131,13 +130,14 @@ public class Magnitude {
   }
 
   /**
-   * Gives the absolute size of n in bits: 0 for 0, 1 for +-1, 2 for +-2, 2 for +-3, 3 for +-4, ...
+   * Gives the size of absolute |n| in bits: 0 for 0, 1 for +-1, 2 for +-2, 2 for +-3, 3 for +-4,
+   * ...
    *
    * @param n
-   * @return
+   * @return number of bits of |n|
    */
   public static int bitsOf(BigInteger n) {
-    // "some" negative numbers have one bit less than their abs() values, thus abs()
+    // numbers of the form n = -2^k have one bit less than their abs() values, thus abs()
     // is the easiest way to treat negative numbers like their positive counterparts
     return n.abs().bitLength(); // gives 0 for ZERO, too
   }

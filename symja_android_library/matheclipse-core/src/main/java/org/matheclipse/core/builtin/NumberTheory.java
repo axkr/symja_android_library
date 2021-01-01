@@ -1025,6 +1025,8 @@ public final class NumberTheory {
           }
         }
 
+        // TODO implement more functions from
+        // https://github.com/sympy/sympy/blob/master/sympy/ntheory/continued_fraction.py
         if (ast.isAST1() && arg1.isSqrt() && arg1.base().isInteger() && arg1.base().isPositive()) {
           // Sqrt( d ) with d positive integer number
           return sqrtContinuedFraction((IInteger) arg1.base());
@@ -4127,8 +4129,9 @@ public final class NumberTheory {
         if (arg1.isNegative()) {
           arg1 = arg1.negate();
         }
-        SortedMap<BigInteger, Integer> map = new TreeMap<BigInteger, Integer>();
-        Primality.factorInteger(((IInteger) arg1).toBigNumerator(), map);
+        //        SortedMap<BigInteger, Integer> map = new TreeMap<BigInteger, Integer>();
+        SortedMap<BigInteger, Integer> map =
+            Primality.factorInteger(((IInteger) arg1).toBigNumerator());
         BigInteger sum = BigInteger.ZERO;
         for (Map.Entry<BigInteger, Integer> entry : map.entrySet()) {
           sum = sum.add(BigInteger.valueOf(entry.getValue()));

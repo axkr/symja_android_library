@@ -120,7 +120,7 @@ public class CongruenceCollector {
     Partial partial = (Partial) aqPair;
     Long[] oddExpBigFactors = partial.getLargeFactorsWithOddExponent();
     int oddExpBigFactorsCount = oddExpBigFactors.length;
-    if (DEBUG) assert (oddExpBigFactorsCount > 0);
+    //		if (DEBUG) assertTrue(oddExpBigFactorsCount > 0);
 
     // Check if the partial helps to assemble a smooth congruence:
     // First collect all partials that are somehow related to the new partial via big factors:

@@ -30,7 +30,12 @@ import org.matheclipse.core.interfaces.ISymbol;
 import org.matheclipse.core.tensor.qty.IQuantity;
 import org.matheclipse.parser.client.FEConfig;
 
-/** Methods for handling the WXF serialization format. */
+/**
+ * Methods for handling the WXF serialization format.
+ *
+ * <p>See: <a href="https://reference.wolfram.com/language/tutorial/WXFFormatDescription.html">WXF
+ * Format Description</a>
+ */
 public class WL {
 
   /** The list of all array value type tokens. */
@@ -167,6 +172,20 @@ public class WL {
             }
           }
           return ast;
+        case WXF_CONSTANTS.Association:
+          length = parseLength();
+          ASTAssociation assoc = new ASTAssociation(length);
+          for (int i = 0; i < length; i++) {
+        	  value = array[position++];
+        	  IExpr ruleHead=S.Rule;
+        	  if (value==WXF_CONSTANTS.RuleDelayed) {
+        		  ruleHead=S.RuleDelayed;
+        	  } 
+        	  IExpr arg1=read();
+        	  IExpr arg2=read();
+        	  assoc.appendRule(F.binaryAST2(ruleHead, arg1, arg2));
+          } 
+          return assoc;
         case WXF_CONSTANTS.String:
           length = parseLength(); // (int) array[position++];
           StringBuilder str = new StringBuilder();
@@ -419,6 +438,21 @@ public class WL {
           for (int j = 0; j < matrix.getColumnDimension(); j++) {
             writeDouble(matrix.getEntry(i, j));
           }
+        }
+        return;
+      } else if (ast instanceof ASTAssociation) {
+        // <|a->b, c:>d,...|>
+        stream.write(WL.WXF_CONSTANTS.Association);
+        stream.write(varintBytes(ast.argSize()));
+        for (int i = 1; i < ast.size(); i++) {
+          IAST rule = (IAST) ast.getRule(i);
+          if (rule.isRuleDelayed()) {
+            stream.write(WL.WXF_CONSTANTS.RuleDelayed);
+          } else {
+            stream.write(WL.WXF_CONSTANTS.Rule);
+          }
+          write(rule.arg1());
+          write(rule.arg2());
         }
         return;
       }

@@ -162,7 +162,7 @@ public class MpiPartitionGenerator implements Generator<Mpi[]> {
    * Counts the number of partitions of the given multipartite integer.
    *
    * @param q
-   * @return
+   * @return number of partitions of q
    */
   public static long numberOfPartitionsOf(Mpi q) {
     MpiPartitionGenerator partGen = new MpiPartitionGenerator(q);
@@ -180,7 +180,7 @@ public class MpiPartitionGenerator implements Generator<Mpi[]> {
    * Computes the number of essentially different prime factorizations of n.
    *
    * @param n
-   * @return
+   * @return number of essentially different prime factorizations of n
    */
   public static long numberOfFactorizationsOf(BigInteger n) {
     PrimePowers mpiFromFactors = PrimePowers_DefaultImpl.valueOf(n);

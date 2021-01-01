@@ -6546,37 +6546,62 @@ public final class Arithmetic {
    * @return
    */
   public static IAST piecewiseExpand(final IAST function, IBuiltInSymbol domain) {
-    if (function.isAST(F.Abs, 2) && (domain.equals(F.Reals) || function.arg1().isRealResult())) {
+    if (function.isAST(S.Abs, 2) && (domain.equals(F.Reals) || function.arg1().isRealResult())) {
       IExpr x = function.arg1();
       return F.Piecewise(F.List(F.List(F.Negate(x), F.Less(x, F.C0)), x));
     }
-    if (function.isAST(F.Clip, 2)) {
+    if (function.isAST(S.BernsteinBasis, 4)) {
+      IExpr d = function.arg1();
+      IExpr n = function.arg2();
+      IExpr x = function.arg3();
+      return F.Piecewise(
+          F.List(
+              F.List(
+                  F.C1,
+                  F.Or(
+                      F.And(F.Equal(d, F.C0), F.Equal(n, F.C0)),
+                      F.And(F.GreaterEqual(d, F.C0), F.Equal(n, F.C0), F.Equal(x, F.C0)),
+                      F.And(
+                          F.Greater(d, F.C0), F.Equal(x, F.C1), F.Equal(F.Subtract(d, n), F.C0)))),
+              F.List(
+                  F.Times(
+                      F.Power(F.Subtract(F.C1, x), F.Subtract(d, n)),
+                      F.Power(x, n),
+                      F.Binomial(d, n)),
+                  F.And(
+                      F.Greater(d, F.C0),
+                      F.GreaterEqual(n, F.C0),
+                      F.GreaterEqual(F.Subtract(d, n), F.C0),
+                      F.Less(F.C0, x, F.C1)))),
+          F.C0);
+    }
+    if (function.isAST(S.Clip, 2)) {
       IExpr x = function.arg1();
       return F.Piecewise(
           F.List(F.List(F.CN1, F.Less(x, F.CN1)), F.List(F.C1, F.Greater(x, F.C1))), x);
     }
-    if (function.isAST(F.Clip, 3) && function.second().isAST(F.List, 3)) {
+    if (function.isAST(S.Clip, 3) && function.second().isList2()) {
       IExpr x = function.arg1();
       IExpr low = function.second().first();
       IExpr high = function.second().second();
       return F.Piecewise(F.List(F.List(low, F.Less(x, low)), F.List(high, F.Greater(x, high))), x);
     }
-    if (function.isAST(F.If, 3)) {
+    if (function.isAST(S.If, 3)) {
       IExpr a1 = function.arg1();
       IExpr a2 = function.arg2();
       return F.Piecewise(F.List(F.List(a2, a1), F.C0));
     }
-    if (function.isAST(F.If, 4)) {
+    if (function.isAST(S.If, 4)) {
       IExpr a1 = function.arg1();
       IExpr a2 = function.arg2();
       IExpr a3 = function.arg3();
       return F.Piecewise(F.List(F.List(a2, a1), a3));
     }
-    if (function.isAST(F.Ramp, 2)) {
+    if (function.isAST(S.Ramp, 2)) {
       IExpr x = function.arg1();
       return F.Piecewise(F.List(F.List(x, F.GreaterEqual(x, F.C0)), F.C0));
     }
-    if (function.isAST(F.UnitStep) && function.size() > 1) {
+    if (function.isAST(S.UnitStep) && function.size() > 1) {
       // Piecewise[{{1, x >= 0 && y >= 0 && z >= 0}}, 0]
       final int size = function.size();
       IASTAppendable andAST = F.ast(F.And, size, false);

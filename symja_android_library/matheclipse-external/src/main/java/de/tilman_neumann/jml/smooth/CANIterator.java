@@ -120,28 +120,39 @@ public class CANIterator {
    *
    * @param args ignored
    */
-  //	public static void main(String[] args) {
-  //    	ConfigUtil.initProject();
-  //		long startTimeMillis = System.currentTimeMillis();
-  //
-  //		CANIterator canIter = new CANIterator();
-  //		Double lastEpsilon = null;
-  //		for (int n=1; n<=1000; n++) {
-  //			CANEntry entry = canIter.next();
-  //			assertEquals(n, entry.getExponentSum());
-  //			double epsilon = entry.getEpsilon();
-  //			Double epsilonQuot = lastEpsilon!=null ? lastEpsilon/epsilon : null;
-  //			BigInteger can = entry.getCAN();
-  //			int digits = Magnitude.of(can);
-  //			LOG.info("n=" + n + ": epsilon=" + epsilon + ", epsilonQuot=" + epsilonQuot + ", " + digits +
-  // " digits CAN = " + entry.getCAN());
-  //			lastEpsilon = epsilon;
-  //		}
-  //		LOG.info(canIter.exponentSum_2_canEntries.size() + " remaining precomputed CANs with
-  // exponentSums " + canIter.exponentSum_2_canEntries.keySet());
-  //
-  //		long endTimeMillis = System.currentTimeMillis();
-  //		String durationStr = TimeUtil.timeDiffStr(startTimeMillis, endTimeMillis);
-  //		LOG.info("Computation took " + durationStr);
-  //	}
+  public static void main(String[] args) {
+    ConfigUtil.initProject();
+    long startTimeMillis = System.currentTimeMillis();
+
+    CANIterator canIter = new CANIterator();
+    Double lastEpsilon = null;
+    for (int n = 1; n <= 1000; n++) {
+      CANEntry entry = canIter.next();
+      //			assertEquals(n, entry.getExponentSum());
+      double epsilon = entry.getEpsilon();
+      Double epsilonQuot = lastEpsilon != null ? lastEpsilon / epsilon : null;
+      BigInteger can = entry.getCAN();
+      int digits = Magnitude.of(can);
+      LOG.info(
+          "n="
+              + n
+              + ": epsilon="
+              + epsilon
+              + ", epsilonQuot="
+              + epsilonQuot
+              + ", "
+              + digits
+              + " digits CAN = "
+              + entry.getCAN());
+      lastEpsilon = epsilon;
+    }
+    LOG.info(
+        canIter.exponentSum_2_canEntries.size()
+            + " remaining precomputed CANs with exponentSums "
+            + canIter.exponentSum_2_canEntries.keySet());
+
+    long endTimeMillis = System.currentTimeMillis();
+    String durationStr = TimeUtil.timeDiffStr(startTimeMillis, endTimeMillis);
+    LOG.info("Computation took " + durationStr);
+  }
 }

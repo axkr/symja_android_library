@@ -539,8 +539,8 @@ public class BlockLanczos implements Serializable {
     for (; row >= 0; row--) {
       rowMatrixB = matrixB[row];
       for (index = rowMatrixB.length - 1; index >= 0; index--) {
-        // congruenceColumn is the index of a prime occuring in the congruence with odd exponent (an
-        // equation system column/variable)
+        // congruenceColumn is the index of a prime occurring in the congruence with odd exponent
+        // (an equation system column/variable)
         congruenceColumn = rowMatrixB[index];
         matrixVEntry = matrixV[row];
         // In the following line we would get an ArrayIndexOutOfBoundsException if the equation

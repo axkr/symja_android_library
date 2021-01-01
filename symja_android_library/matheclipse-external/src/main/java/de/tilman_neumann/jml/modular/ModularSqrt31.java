@@ -36,7 +36,7 @@ public class ModularSqrt31 {
    *
    * @param n a positive integer having Jacobi(n|p) = 1
    * @param p odd prime
-   * @return the modular sqrt t
+   * @return (the smaller) sqrt of n (mod p)
    */
   public int modularSqrt(int n, int p) {
     //		if (DEBUG) {
@@ -77,7 +77,7 @@ public class ModularSqrt31 {
    *
    * @param n a positive integer having Jacobi(n|p) = 1
    * @param p odd prime
-   * @return the modular sqrt t
+   * @return (the smaller) sqrt of n (mod p)
    */
   int Tonelli_Shanks(int n, int p) { // not private because used in tests
     // factor out powers of 2 from p-1, defining Q and S as p-1 = Q*2^S with Q odd.
@@ -139,7 +139,7 @@ public class ModularSqrt31 {
    *
    * @param n a positive integer having Jacobi(n|p) = 1
    * @param p
-   * @return sqrt of n modulo p
+   * @return (the smaller) sqrt of n (mod p)
    */
   int Lagrange(int n, int p) { // not private because used in tests
     int t = mpe.modPow(n, (p + 1) >> 2, p);
@@ -156,7 +156,7 @@ public class ModularSqrt31 {
    *
    * @param n a positive integer having Jacobi(n|p) = 1
    * @param p
-   * @return
+   * @return (the smaller) sqrt of n (mod p)
    */
   int case5Mod8(int n, int p) { // not private because used in tests
     int k = p >> 3; // for p == 5 (mod 8) we need k = (p-5)/8 = p>>3
@@ -187,7 +187,7 @@ public class ModularSqrt31 {
    *
    * @param n a positive integer having Jacobi(n|p) = 1
    * @param p
-   * @return
+   * @return (the smaller) sqrt of n (mod p)
    */
   int bruteForce(int n, int p) { // not private because used in tests
     // boolean foundT = false;

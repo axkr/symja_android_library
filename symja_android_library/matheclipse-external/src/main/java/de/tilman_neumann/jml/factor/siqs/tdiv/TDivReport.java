@@ -99,7 +99,11 @@ public class TDivReport {
   }
 
   public String getQRestSizes() {
-    if (qRestSizes == null || qRestSizes.size() == 0) return null;
-    return "Q_rest sizes in bits: " + qRestSizes;
+    // the first statement can get optimized away...
+    if (ANALYZE_LARGE_FACTOR_SIZES)
+      return (qRestSizes != null && qRestSizes.size() > 0)
+          ? "Q_rest sizes in bits: " + qRestSizes
+          : null;
+    return null;
   }
 }

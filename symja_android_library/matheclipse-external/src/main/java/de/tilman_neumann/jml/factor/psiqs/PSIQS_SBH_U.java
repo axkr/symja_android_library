@@ -44,6 +44,9 @@ public class PSIQS_SBH_U extends PSIQSBase {
    * @param numberOfThreads
    * @param powerFinder algorithm to add powers to the primes used for sieving
    * @param matrixSolver solver for smooth congruences matrix
+   * @param useLegacyFactoring if true then factor() uses findSingleFactor(), otherwise
+   *     searchFactors()
+   * @param searchSmallFactors if true then search for small factors before SIQS or PSIQS is run
    */
   public PSIQS_SBH_U(
       float Cmult,
@@ -53,7 +56,9 @@ public class PSIQS_SBH_U extends PSIQSBase {
       int blockSize,
       int numberOfThreads,
       PowerFinder powerFinder,
-      MatrixSolver matrixSolver) {
+      MatrixSolver matrixSolver,
+      boolean useLegacyFactoring,
+      boolean searchSmallFactors) {
 
     super(
         Cmult,
@@ -63,13 +68,16 @@ public class PSIQS_SBH_U extends PSIQSBase {
         null,
         powerFinder,
         matrixSolver,
-        new AParamGenerator01(wantedQCount));
+        new AParamGenerator01(wantedQCount),
+        useLegacyFactoring,
+        searchSmallFactors);
     this.blockSize = blockSize;
   }
 
   @Override
   public String getName() {
     String maxQRestExponentStr = "maxQRestExponent=" + String.format("%.3f", maxQRestExponent);
+    String modeStr = "mode = " + (useLegacyFactoring ? "legacy" : "advanced");
     return "PSIQS_SBH_U(Cmult="
         + Cmult
         + ", Mmult="
@@ -86,7 +94,9 @@ public class PSIQS_SBH_U extends PSIQSBase {
         + matrixSolver.getName()
         + ", "
         + numberOfThreads
-        + " threads)";
+        + " threads, "
+        + modeStr
+        + ")";
   }
 
   protected PSIQSThreadBase createThread(

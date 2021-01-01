@@ -42,6 +42,9 @@ public class BaseFilter_qk implements BaseFilter {
       int k) {
     int[] mergedPrimes = baseArrays.primes;
     int[] mergedExponents = baseArrays.exponents;
+    int[] mergedPowers = baseArrays.pArray;
+    int[] mergedTArray = baseArrays.tArray;
+    byte[] mergedlogPArray = baseArrays.logPArray;
     double[] mergedPinvArrayD = baseArrays.pinvArrayD;
     long[] mergedPinvArrayL = baseArrays.pinvArrayL;
 
@@ -72,9 +75,9 @@ public class BaseFilter_qk implements BaseFilter {
         int length = i - lastqIndex - 1;
         System.arraycopy(mergedPrimes, srcPos, filteredPrimes, destPos, length);
         System.arraycopy(mergedExponents, srcPos, filteredExponents, destPos, length);
-        System.arraycopy(baseArrays.pArray, srcPos, filteredPowers, destPos, length);
-        System.arraycopy(baseArrays.tArray, srcPos, filteredTArray, destPos, length);
-        System.arraycopy(baseArrays.logPArray, srcPos, filteredLogPArray, destPos, length);
+        System.arraycopy(mergedPowers, srcPos, filteredPowers, destPos, length);
+        System.arraycopy(mergedTArray, srcPos, filteredTArray, destPos, length);
+        System.arraycopy(mergedlogPArray, srcPos, filteredLogPArray, destPos, length);
         System.arraycopy(mergedPinvArrayD, srcPos, filteredPinvArrayD, destPos, length);
         System.arraycopy(mergedPinvArrayL, srcPos, filteredPinvArrayL, destPos, length);
         lastqIndex = i;
@@ -91,9 +94,9 @@ public class BaseFilter_qk implements BaseFilter {
       int length = mergedBaseSize - lastqIndex - 1;
       System.arraycopy(mergedPrimes, srcPos, filteredPrimes, destPos, length);
       System.arraycopy(mergedExponents, srcPos, filteredExponents, destPos, length);
-      System.arraycopy(baseArrays.pArray, srcPos, filteredPowers, destPos, length);
-      System.arraycopy(baseArrays.tArray, srcPos, filteredTArray, destPos, length);
-      System.arraycopy(baseArrays.logPArray, srcPos, filteredLogPArray, destPos, length);
+      System.arraycopy(mergedPowers, srcPos, filteredPowers, destPos, length);
+      System.arraycopy(mergedTArray, srcPos, filteredTArray, destPos, length);
+      System.arraycopy(mergedlogPArray, srcPos, filteredLogPArray, destPos, length);
       System.arraycopy(mergedPinvArrayD, srcPos, filteredPinvArrayD, destPos, length);
       System.arraycopy(mergedPinvArrayL, srcPos, filteredPinvArrayL, destPos, length);
     }
@@ -101,7 +104,7 @@ public class BaseFilter_qk implements BaseFilter {
       // qArray[] entries must be sorted bottom up
       LOG.debug("qArray = " + Arrays.toString(qArray));
       LOG.debug("mergedPrimes = " + Arrays.toString(mergedPrimes));
-      LOG.debug("mergedPowers = " + Arrays.toString(baseArrays.pArray));
+      LOG.debug("mergedPowers = " + Arrays.toString(mergedPowers));
       LOG.debug("filteredPrimes = " + Arrays.toString(filteredPrimes));
     }
 

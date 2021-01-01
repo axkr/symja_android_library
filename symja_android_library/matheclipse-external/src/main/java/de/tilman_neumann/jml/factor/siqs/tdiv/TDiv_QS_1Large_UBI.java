@@ -33,8 +33,11 @@ import de.tilman_neumann.util.SortedMultiset;
 import de.tilman_neumann.util.Timer;
 
 /**
- * A trial division engine where partials can only have 1 large factor. Division is carried out
- * using UnsignedBigInt; this way less intermediate objects are created.
+ * A trial division engine where partials can only have 1 large factor.
+ *
+ * <p>Division is carried out in two stages: Stage 1 identifies prime factors of Q, applying
+ * long-valued Barrett reduction Stage 2 does the actual division using UnsignedBigInt; this way
+ * less intermediate objects are created.
  *
  * @author Tilman Neumann
  */
@@ -230,10 +233,9 @@ public class TDiv_QS_1Large_UBI implements TDiv_QS {
     Q_rest_UBI.set(Q_rest);
     for (int pass2Index = 0; pass2Index < pass2Count; pass2Index++) {
       int p = pass2Powers[pass2Index];
-      while (true) {
-        int rem = Q_rest_UBI.divideAndRemainder(p, quotient_UBI);
-        if (rem > 0) break;
-        // remainder == 0 -> the division was exact. assign quotient to Q_rest and add p to factors
+      int rem;
+      while ((rem = Q_rest_UBI.divideAndRemainder(p, quotient_UBI)) == 0) {
+        // the division was exact. assign quotient to Q_rest and add p to factors
         UnsignedBigInt tmp = Q_rest_UBI;
         Q_rest_UBI = quotient_UBI;
         quotient_UBI = tmp;

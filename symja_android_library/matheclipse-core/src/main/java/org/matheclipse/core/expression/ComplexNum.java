@@ -745,7 +745,7 @@ public class ComplexNum implements IComplexNum {
 
   @Override
   public IAST toPolarCoordinates() {
-    return F.pair(abs(), complexArg());
+    return F.list(abs(), complexArg());
   }
 
   @Override

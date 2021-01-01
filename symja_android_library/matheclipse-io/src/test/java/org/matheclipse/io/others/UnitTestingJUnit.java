@@ -1,17 +1,14 @@
-package org.matheclipse.io.system;
+package org.matheclipse.io.others;
 
 import org.matheclipse.core.basic.Config;
-import org.matheclipse.core.basic.ToggleFeature;
-import org.matheclipse.core.eval.EvalEngine;
-import org.matheclipse.core.expression.F;
-import org.matheclipse.script.engine.MathScriptEngine;
+import org.matheclipse.io.system.AbstractTestCase;
 
 /**
  * Tests for the Java port of the <a href="http://www.apmaths.uwo.ca/~arich/">Rubi - rule-based
  * integrator</a>.
  */
-public class UnitTestingTest extends AbstractTestCase {
-  public UnitTestingTest(String name) {
+public class UnitTestingJUnit extends AbstractTestCase {
+  public UnitTestingJUnit(String name) {
     super(name);
   }
 

@@ -30,7 +30,7 @@ public interface Mpi extends Comparable<Mpi>, Iterable<Integer> {
    * Returns the entry of the given index, with 0<=index<dim.
    *
    * @param index
-   * @return
+   * @return entry at index 'index'
    */
   int getElem(int index);
 
@@ -39,7 +39,6 @@ public interface Mpi extends Comparable<Mpi>, Iterable<Integer> {
    *
    * @param index
    * @param value
-   * @return
    */
   void setElem(int index, int value);
 
@@ -51,15 +50,16 @@ public interface Mpi extends Comparable<Mpi>, Iterable<Integer> {
    * relation) such that lower + other <= this and upper + other >= this.
    *
    * @param other
-   * @return
+   * @return the lower and upper bound of this - other
    */
   Mpi[] subtract(Mpi other);
 
   /**
    * Like subtract() but when we know that other fits piece-wise into this. That means faster ;)
    *
-   * @param other
-   * @return
+   * @param other a multipartite integer that has no element greater than the corresponding element
+   *     of this
+   * @return this - other
    */
   Mpi complement(Mpi other);
 
@@ -75,7 +75,9 @@ public interface Mpi extends Comparable<Mpi>, Iterable<Integer> {
    * Special operation computing the biggest allowed subvalue of this that is not greater than
    * lastPart and not greater than this-firstPart.
    *
-   * @return
+   * @param firstPart
+   * @param lastPart
+   * @return min(lastPart, lower(this - firstPart))
    */
   Mpi maxNextPart(Mpi firstPart, Mpi lastPart);
 

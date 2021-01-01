@@ -82,7 +82,6 @@ public class CFrac extends FactorAlgorithm {
   private int primeBaseSize;
   private PrimeBaseGenerator primeBaseBuilder = new PrimeBaseGenerator();
   private int[] primesArray;
-  private BigInteger[] primesArray_big;
   /**
    * The union of all reduced prime bases -- this is the number of variables in the equation system
    */
@@ -182,7 +181,6 @@ public class CFrac extends FactorAlgorithm {
         25 + (int) (Math.exp(Math.pow(lnN, lnNPow) * Math.pow(lnlnN, 1 - lnNPow) * C));
     if (DEBUG) LOG.debug("N = " + N + ": primeBaseSize = " + primeBaseSize);
     this.primesArray = new int[primeBaseSize];
-    this.primesArray_big = new BigInteger[primeBaseSize];
 
     // compute the biggest unfactored rest where some Q is still considered "sufficiently smooth".
     double maxQRest = Math.pow(N_dbl, maxQRestExponent);
@@ -214,7 +212,7 @@ public class CFrac extends FactorAlgorithm {
       if (floor_sqrt_kN.equals(iSqrt[1])) return N.gcd(floor_sqrt_kN);
 
       // Create the reduced prime base for kN:
-      primeBaseBuilder.computeReducedPrimeBase(kN, primeBaseSize, primesArray, primesArray_big);
+      primeBaseBuilder.computeReducedPrimeBase(kN, primeBaseSize, primesArray);
       // add new reduced prime base to the combined prime base
       for (int i = 0; i < primeBaseSize; i++) combinedPrimesSet.add(primesArray[i]);
       // we want: #equations = #variables + some extra congruences
@@ -222,8 +220,7 @@ public class CFrac extends FactorAlgorithm {
 
       try {
         // initialize the Q-factorizer with new prime base
-        this.auxFactorizer.initialize(
-            kN, primeBaseSize, primesArray, primesArray_big); // may throw FactorException
+        this.auxFactorizer.initialize(kN, primeBaseSize, primesArray); // may throw FactorException
         // search square Q_i
         test();
       } catch (FactorException fe) {
@@ -346,7 +343,7 @@ public class CFrac extends FactorAlgorithm {
    * @param Q_ip1
    */
   private void verifyCongruence(long i, BigInteger A_i, BigInteger Q_ip1) {
-    assert (Q_ip1.signum() >= 0);
+    //		assertTrue(Q_ip1.signum()>=0);
     // verify congruence A^2 == Q (mod N)
     BigInteger Q_test = i % 2 == 1 ? Q_ip1 : Q_ip1.negate().mod(N);
     BigInteger div[] = A_i.pow(2).subtract(Q_test).divideAndRemainder(N);
@@ -410,7 +407,8 @@ public class CFrac extends FactorAlgorithm {
       try {
         LOG.info("Please insert the number to factor:");
         BufferedReader in = new BufferedReader(new InputStreamReader(System.in));
-        String input = in.readLine().trim();
+        String line = in.readLine();
+        String input = line != null ? line.trim() : "";
         // LOG.debug("input = >" + input + "<");
         BigInteger N = new BigInteger(input);
         LOG.info("Factoring " + N + " ...");

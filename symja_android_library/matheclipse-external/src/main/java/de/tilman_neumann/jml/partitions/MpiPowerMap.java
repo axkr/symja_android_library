@@ -121,7 +121,7 @@ public class MpiPowerMap extends HashMap<Mpi, TreeMap<Mpi, Mpi>> {
    *
    * @param x
    * @param biggestElem
-   * @return
+   * @return subvalues of x not bigger than biggestElem
    */
   public SortedMap<Mpi, Mpi> getSubvaluesLessOrEqual(Mpi x, Mpi biggestElem) {
     if (logAccesses) {

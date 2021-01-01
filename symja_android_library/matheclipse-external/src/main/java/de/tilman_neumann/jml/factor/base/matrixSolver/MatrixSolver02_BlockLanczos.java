@@ -55,7 +55,7 @@ public class MatrixSolver02_BlockLanczos extends MatrixSolver {
       for (Integer oddExpFactor : oddExpFactors) {
         // columnIndex should not be bigger than the number of congruences
         int columnIndex = factors_2_columnIndices.get(oddExpFactor);
-        if (DEBUG) assert (columnIndex <= matrixBlength);
+        //				if (DEBUG) assertTrue(columnIndex <= matrixBlength);
         matrixRow[j++] = columnIndex;
       }
       matrixB[i++] = matrixRow;

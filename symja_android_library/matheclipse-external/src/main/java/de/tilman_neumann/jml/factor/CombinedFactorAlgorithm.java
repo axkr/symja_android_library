@@ -23,6 +23,8 @@ import java.util.StringTokenizer;
 
 import org.apache.log4j.Logger;
 
+import de.tilman_neumann.jml.factor.base.FactorArguments;
+import de.tilman_neumann.jml.factor.base.FactorResult;
 import de.tilman_neumann.jml.factor.base.matrixSolver.MatrixSolver01_Gauss;
 import de.tilman_neumann.jml.factor.base.matrixSolver.MatrixSolver02_BlockLanczos;
 import de.tilman_neumann.jml.factor.hart.Hart_TDiv_Race;
@@ -39,7 +41,7 @@ import de.tilman_neumann.jml.factor.siqs.sieve.Sieve03g;
 import de.tilman_neumann.jml.factor.siqs.sieve.Sieve03gU;
 import de.tilman_neumann.jml.factor.siqs.tdiv.TDiv_QS_1Large_UBI;
 import de.tilman_neumann.jml.factor.siqs.tdiv.TDiv_QS_2Large_UBI;
-import de.tilman_neumann.jml.factor.tdiv.TDiv31Inverse;
+import de.tilman_neumann.jml.factor.tdiv.TDiv31Barrett;
 import de.tilman_neumann.util.ConfigUtil;
 import de.tilman_neumann.util.SortedMultiset;
 import de.tilman_neumann.util.TimeUtil;
@@ -53,25 +55,14 @@ public class CombinedFactorAlgorithm extends FactorAlgorithm {
   @SuppressWarnings("unused")
   private static final Logger LOG = Logger.getLogger(CombinedFactorAlgorithm.class);
 
-  private TDiv31Inverse tDiv31 = new TDiv31Inverse();
+  private TDiv31Barrett tDiv31 = new TDiv31Barrett();
   private Hart_TDiv_Race hart = new Hart_TDiv_Race();
   private PollardRhoBrentMontgomeryR64Mul63 pollardRhoR64Mul63 =
       new PollardRhoBrentMontgomeryR64Mul63();
   private PollardRhoBrentMontgomery64 pollardRho64 = new PollardRhoBrentMontgomery64();
 
   // SIQS tuned for small N
-  private SIQS siqs_smallArgs =
-      new SIQS(
-          0.32F,
-          0.37F,
-          null,
-          0.16F,
-          new PowerOfSmallPrimesFinder(),
-          new SIQSPolyGenerator(),
-          new Sieve03gU(),
-          new TDiv_QS_1Large_UBI(),
-          10,
-          new MatrixSolver01_Gauss());
+  private SIQS siqs_smallArgs;
 
   // The SIQS chosen for big arguments depends on constructor parameters
   private FactorAlgorithm siqs_bigArgs;
@@ -97,7 +88,7 @@ public class CombinedFactorAlgorithm extends FactorAlgorithm {
   }
 
   /**
-   * Full constructor.
+   * Simplified constructor.
    *
    * @param numberOfThreads the number of parallel threads for PSIQS
    * @param tdivLimit limit of primes p for trial division; if null then the value is determined by
@@ -107,7 +98,49 @@ public class CombinedFactorAlgorithm extends FactorAlgorithm {
    */
   public CombinedFactorAlgorithm(
       int numberOfThreads, Integer tdivLimit, boolean permitUnsafeUsage) {
-    super(tdivLimit);
+    this(
+        numberOfThreads,
+        tdivLimit,
+        permitUnsafeUsage,
+        true,
+        true); // TODO switch useLegacyFactoring to false when the advanced approach has proven to
+    // be prolific
+  }
+
+  /**
+   * Full constructor.
+   *
+   * @param numberOfThreads the number of parallel threads for PSIQS
+   * @param tdivLimit limit of primes p for trial division; if null then the value is determined by
+   *     best experimental results
+   * @param permitUnsafeUsage if true then PSIQS_U using sun.misc.Unsafe features is used. This may
+   *     be ~10% faster.
+   * @param useLegacyFactoring if true then factor() uses findSingleFactor(), otherwise
+   *     searchFactors()
+   * @param searchSmallFactors if true then search for small factors before SIQS or PSIQS is run
+   */
+  public CombinedFactorAlgorithm(
+      int numberOfThreads,
+      Integer tdivLimit,
+      boolean permitUnsafeUsage,
+      boolean useLegacyFactoring,
+      boolean searchSmallFactors) {
+    super(tdivLimit, useLegacyFactoring);
+
+    siqs_smallArgs =
+        new SIQS(
+            0.32F,
+            0.37F,
+            null,
+            0.16F,
+            new PowerOfSmallPrimesFinder(),
+            new SIQSPolyGenerator(),
+            new Sieve03gU(),
+            new TDiv_QS_1Large_UBI(),
+            10,
+            new MatrixSolver01_Gauss(),
+            useLegacyFactoring,
+            searchSmallFactors);
 
     if (numberOfThreads == 1) {
       // Avoid multi-thread overhead if the requested number of threads is 1
@@ -121,9 +154,11 @@ public class CombinedFactorAlgorithm extends FactorAlgorithm {
               new NoPowerFinder(),
               new SIQSPolyGenerator(),
               sieve,
-              new TDiv_QS_2Large_UBI(),
+              new TDiv_QS_2Large_UBI(permitUnsafeUsage),
               10,
-              new MatrixSolver02_BlockLanczos());
+              new MatrixSolver02_BlockLanczos(),
+              useLegacyFactoring,
+              searchSmallFactors);
     } else {
       if (permitUnsafeUsage) {
         siqs_bigArgs =
@@ -134,7 +169,9 @@ public class CombinedFactorAlgorithm extends FactorAlgorithm {
                 null,
                 numberOfThreads,
                 new NoPowerFinder(),
-                new MatrixSolver02_BlockLanczos());
+                new MatrixSolver02_BlockLanczos(),
+                useLegacyFactoring,
+                searchSmallFactors);
       } else {
         siqs_bigArgs =
             new PSIQS(
@@ -144,16 +181,19 @@ public class CombinedFactorAlgorithm extends FactorAlgorithm {
                 null,
                 numberOfThreads,
                 new NoPowerFinder(),
-                new MatrixSolver02_BlockLanczos());
+                new MatrixSolver02_BlockLanczos(),
+                useLegacyFactoring,
+                searchSmallFactors);
       }
     }
 
-    // XXX: Other options that perform well: PowerOfSmallPrimesFinder, SingleBlockHybridSieve(U).
+    // Other options that perform well: PowerOfSmallPrimesFinder, SingleBlockHybridSieve(U).
   }
 
   @Override
   public String getName() {
-    return "combi(" + (tdivLimit != null ? tdivLimit : "auto") + ")";
+    String modeStr = "mode = " + (useLegacyFactoring ? "legacy" : "advanced");
+    return "combi(" + (tdivLimit != null ? tdivLimit : "auto") + ", " + modeStr + ")";
   }
 
   @Override
@@ -165,6 +205,24 @@ public class CombinedFactorAlgorithm extends FactorAlgorithm {
     if (NBits < 63) return pollardRho64.findSingleFactor(N);
     if (NBits < 97) return siqs_smallArgs.findSingleFactor(N);
     return siqs_bigArgs.findSingleFactor(N);
+  }
+
+  @Override
+  public boolean searchFactors(FactorArguments args, FactorResult result) {
+    int NBits = args.NBits;
+    if (NBits < 32) {
+      // Find all remaining factors; these are known to be prime factors.
+      // The bound here is higher than in findSingleFactor() because here we find all factors in a
+      // single tdiv run.
+      int factorCountBefore = result.primeFactors.totalCount();
+      tDiv31.factor(args.N, args.exp, result.primeFactors);
+      return result.primeFactors.totalCount() != factorCountBefore;
+    }
+    if (NBits < 50) return hart.searchFactors(args, result);
+    if (NBits < 57) return pollardRhoR64Mul63.searchFactors(args, result);
+    if (NBits < 63) return pollardRho64.searchFactors(args, result);
+    if (NBits < 97) return siqs_smallArgs.searchFactors(args, result);
+    return siqs_bigArgs.searchFactors(args, result);
   }
 
   /**
@@ -289,7 +347,8 @@ public class CombinedFactorAlgorithm extends FactorAlgorithm {
     }
     // run
     long t0 = System.currentTimeMillis();
-    CombinedFactorAlgorithm factorizer = new CombinedFactorAlgorithm(numberOfThreads);
+    CombinedFactorAlgorithm factorizer =
+        new CombinedFactorAlgorithm(numberOfThreads, null, true, false, true);
     SortedMultiset<BigInteger> result = factorizer.factor(N);
     long duration = System.currentTimeMillis() - t0;
     String durationStr = TimeUtil.timeStr(duration);

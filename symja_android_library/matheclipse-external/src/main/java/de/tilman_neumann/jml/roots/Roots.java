@@ -31,7 +31,7 @@ import static de.tilman_neumann.jml.base.BigIntConstants.*;
  * double computations. For very small <code>ld(N)/i</code> a linear algorithm is applied.</br></br>
  *
  * <p>The Heron-style algorithm realizes the iteration formula x(k+1) = 1/n * ( (n-1) * x(k) +
- * N/(x(k)^(n-1)) ), see {@link https://en.wikipedia.org/wiki/Nth_root_algorithm}.</br></br>
+ * N/(x(k)^(n-1)) ), see {@link "https://en.wikipedia.org/wiki/Nth_root_algorithm"}.</br></br>
  *
  * <p>Thanks to Graeme Willoughby to point my nose to that algorithm.
  *
@@ -176,7 +176,7 @@ public class Roots {
    * out.</br></br>
    *
    * <p>This implementation differs from version 1 as follows:</br> 4. Following {@link
-   * https://en.wikipedia.org/wiki/Nth_root_algorithm} we do <code>
+   * "https://en.wikipedia.org/wiki/Nth_root_algorithm"} we do <code>
    * delta(k) = 1/n * [N/x(k)^(n-1) - x(k)]; x(k+1) = x(k)+delta(k)</code>.</br> 5. The above allows
    * for a simpler convergence check.</br> 6. The final step exploits that the guess after the main
    * loop does not differ from the correct result by more than 1.

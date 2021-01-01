@@ -466,6 +466,7 @@ public class Divisors {
    * Find the biggest divisor of n <= sqrt(n) given the prime factorization of n.
    *
    * @param n
+   * @param factors the factors of n as a map from primes to exponents
    * @return biggest divisor of n <= sqrt(n); 1 if n=1 or n prime
    */
   public static BigInteger getBiggestDivisorBelowSqrtN(
@@ -490,26 +491,29 @@ public class Divisors {
    */
   private static void testSumOfDivisorsForFactorials() {
     for (int n = 0; ; n++) {
-      // old version
       BigInteger fac = Factorial.factorial(n);
       BigInteger sigma;
+      long t0, t1;
 
-      //			long t0 = System.currentTimeMillis();
+      // old version
+      //			t0 = System.currentTimeMillis();
       //			sigma = sumOfDivisors_v1(fac);
-      long t1 = System.currentTimeMillis();
+      //			t1 = System.currentTimeMillis();
       //			LOG.info("sumOfDivisors_v1(" + n + "!) = " + sigma + " computed in " + (t1-t0) + "ms");
 
       // second version is much faster
+      //			t0 = System.currentTimeMillis();
       //			sigma = sumOfDivisors/*_v2*/(fac);
-      long t2 = System.currentTimeMillis();
-      //			LOG.info("sumOfDivisors_v2(" + n + "!) = " + sigma + " computed in " + (t2-t1) + "ms");
+      //			t1 = System.currentTimeMillis();
+      //			LOG.info("sumOfDivisors_v2(" + n + "!) = " + sigma + " computed in " + (t1-t0) + "ms");
 
-      // third version gives A062569 at hight speed
+      // third version gives A062569 at high speed
+      t0 = System.currentTimeMillis();
       TreeMap<BigInteger, Integer> factors = new TreeMap<>();
       tdiv.findSmallFactors(fac, 65536, factors); // ignore return value because fac is very smooth
       sigma = sumOfDivisors(factors);
-      long t3 = System.currentTimeMillis();
-      LOG.info("sumOfDivisors_v3(" + n + "!) = " + sigma + " computed in " + (t3 - t2) + "ms");
+      t1 = System.currentTimeMillis();
+      LOG.info("sumOfDivisors_v3(" + n + "!) = " + sigma + " computed in " + (t1 - t0) + "ms");
     }
   }
 
@@ -623,16 +627,14 @@ public class Divisors {
       }
       t0 = System.currentTimeMillis();
       for (BigInteger nBig : testSet) {
-        int divisor = getBiggestDivisorBelowSqrtN_small(nBig.intValue());
-        // LOG.info("getBiggestDivisorBelowSqrtN_small(" + n + ") = " + divisor);
+        getBiggestDivisorBelowSqrtN_small(nBig.intValue());
       }
       t1 = System.currentTimeMillis();
       LOG.info("getBiggestDivisorBelowSqrtN_small(" + bits + "bit) took " + (t1 - t0) + "ms");
 
       t0 = System.currentTimeMillis();
       for (BigInteger nBig : testSet) {
-        BigInteger divisor = getBiggestDivisorBelowSqrtN_big(nBig);
-        // LOG.info("getBiggestDivisorBelowSqrtN_big(" + n + ") = " + divisor);
+        getBiggestDivisorBelowSqrtN_big(nBig);
       }
       t1 = System.currentTimeMillis();
       LOG.info("getBiggestDivisorBelowSqrtN_big(" + bits + "bit) took " + (t1 - t0) + "ms");

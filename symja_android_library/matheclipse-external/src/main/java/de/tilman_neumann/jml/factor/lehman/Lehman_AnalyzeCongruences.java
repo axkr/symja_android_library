@@ -31,6 +31,8 @@ import de.tilman_neumann.jml.factor.TestNumberNature;
  * <p>Congruences a == kN (mod 2^s) are slightly more discriminative than Lehman's original
  * congruences a == (k+N) (mod 2^s), s = 1, 2, 3, ...
  *
+ * <p>Version 1 shows that all successful (a0, adjust) pairs represent the same "a".
+ *
  * @author Tilman Neumann
  */
 public class Lehman_AnalyzeCongruences {
@@ -49,12 +51,11 @@ public class Lehman_AnalyzeCongruences {
   private static final Integer MAX_BITS = 63;
 
   private static final int KMOD = 6;
-  private static final int KNMOD = 32;
-  private static final int AMOD = 32;
+  private static final int KNMOD = 8;
 
   private final Gcd63 gcdEngine = new Gcd63();
 
-  // dimensions: k%KMOD, kN%KNMOD, a%AMOD, adjust%AMOD
+  // dimensions: k%KMOD, kN%KNMOD, a%KNMOD, adjust%KNMOD
   private int[][][][] counts;
 
   public long findSingleFactor(long N) {
@@ -66,18 +67,15 @@ public class Lehman_AnalyzeCongruences {
       long sqrt4kN = (long) Math.ceil(Math.sqrt(fourKN));
       long limit = (long) (sqrt4kN + sixthRoot / fourSqrtK);
       for (long a0 = sqrt4kN; a0 <= limit; a0++) {
-        for (int adjust = 0; adjust < AMOD; adjust++) {
+        for (int adjust = 0; adjust < KNMOD; adjust++) {
           long a = a0 + adjust;
           final long test = a * a - fourKN;
           final long b = (long) Math.sqrt(test);
           if (b * b == test) {
             long gcd = gcdEngine.gcd(a + b, N);
             if (gcd > 1 && gcd < N) {
-              if (USE_kN_CONGRUENCES) {
-                counts[k % KMOD][(int) ((k * N) % KNMOD)][(int) (a0 % AMOD)][adjust]++;
-              } else {
-                counts[k % KMOD][(int) ((k + N) % KNMOD)][(int) (a0 % AMOD)][adjust]++;
-              }
+              long kNTerm = USE_kN_CONGRUENCES ? k * N : k + N;
+              counts[k % KMOD][(int) (kNTerm % KNMOD)][(int) (a0 % KNMOD)][adjust]++;
               return gcd; // removes the blur at even k!
             }
           }
@@ -89,7 +87,7 @@ public class Lehman_AnalyzeCongruences {
   }
 
   private void testRange(int bits) {
-    counts = new int[KMOD][KNMOD][AMOD][AMOD];
+    counts = new int[KMOD][KNMOD][KNMOD][KNMOD];
 
     BigInteger N_min = I_1.shiftLeft(bits - 1);
     BigInteger[] testNumbers =
@@ -97,13 +95,20 @@ public class Lehman_AnalyzeCongruences {
     LOG.info("Test N with " + bits + " bits, i.e. N >= " + N_min);
 
     for (BigInteger N : testNumbers) {
-      if (N.mod(I_6).equals(I_1)) this.findSingleFactor(N.longValue());
+      // if (N.mod(I_6).equals(I_1)) // makes no difference
+      this.findSingleFactor(N.longValue());
     }
 
     String kNStr = USE_kN_CONGRUENCES ? "kN" : "k+N";
     for (int k = 0; k < KMOD; k++) {
-      for (int Nk = 0; Nk < KNMOD; Nk++) {
-        for (int a = 0; a < AMOD; a++) {
+      for (int kN = 0; kN < KNMOD; kN++) {
+        int[][] a0_adjust_counts = counts[k][kN];
+        // a0_adjust_counts[][] contains the counts of (a0, adjust) pairs that led to successful
+        // factorizations.
+        // An antidiagonal of that table means that a0 + adjust is fixed, i.e. each antidiagonal
+        // identifies a
+        // particular a == (a0 + adjust) % KNMOD !
+        for (int a0 = 0; a0 < KNMOD; a0++) {
           LOG.info(
               "Successful adjusts for k%"
                   + KMOD
@@ -114,13 +119,13 @@ public class Lehman_AnalyzeCongruences {
                   + ")%"
                   + KNMOD
                   + "="
-                  + Nk
-                  + ", a%"
-                  + AMOD
+                  + kN
+                  + ", a0%"
+                  + KNMOD
                   + "="
-                  + a
+                  + a0
                   + ": "
-                  + Arrays.toString(counts[k][Nk][a]));
+                  + Arrays.toString(a0_adjust_counts[a0]));
         }
         LOG.info("");
       }

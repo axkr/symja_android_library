@@ -246,7 +246,8 @@ public class ASTNodeFactory implements INodeParserFactory {
     "Element",
     "Intersection",
     "NotEqual",
-    "Wedge"
+    "Wedge",
+    "TensorProduct"
   };
 
   static final String[] OPERATOR_STRINGS = {
@@ -319,7 +320,8 @@ public class ASTNodeFactory implements INodeParserFactory {
     "\u2208", // Element
     "\u22C2", // Intersection
     "\u2260", // NotEqual,
-    "\u22C0" // Wedge
+    "\u22C0", // Wedge
+    "\u2297" // TensorProduct
   };
 
   public static final ApplyOperator APPLY_HEAD_OPERATOR =
@@ -449,7 +451,9 @@ public class ASTNodeFactory implements INodeParserFactory {
             new InfixOperator(
                 "\u22C2", "Intersection", Precedence.INTERSECTION, InfixOperator.NONE), //
             new InfixOperator("\u2260", "Unequal", Precedence.UNEQUAL, InfixOperator.NONE), //
-            new InfixOperator("\u22C0", "Wedge", Precedence.WEDGE, InfixOperator.NONE) //
+            new InfixOperator("\u22C0", "Wedge", Precedence.WEDGE, InfixOperator.NONE), //
+            new InfixOperator(
+                "\u2297", "TensorProduct", Precedence.TENSORPRODUCT, InfixOperator.NONE)
           };
       StringBuilder buf = new StringBuilder(BASIC_OPERATOR_CHARACTERS);
 

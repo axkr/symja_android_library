@@ -30,15 +30,12 @@ import de.tilman_neumann.jml.factor.base.congruence.Partial_1Large;
 import de.tilman_neumann.jml.factor.base.congruence.Partial_2Large;
 import de.tilman_neumann.jml.factor.base.congruence.Smooth_1LargeSquare;
 import de.tilman_neumann.jml.factor.base.congruence.Smooth_Perfect;
-import de.tilman_neumann.jml.factor.base.matrixSolver.MatrixSolver01_Gauss;
 import de.tilman_neumann.jml.factor.hart.Hart_TDiv_Race;
 import de.tilman_neumann.jml.factor.pollardRho.PollardRhoBrentMontgomery64;
 import de.tilman_neumann.jml.factor.pollardRho.PollardRhoBrentMontgomeryR64Mul63;
-import de.tilman_neumann.jml.factor.siqs.SIQS;
+import de.tilman_neumann.jml.factor.siqs.SIQS_Small;
 import de.tilman_neumann.jml.factor.siqs.data.SolutionArrays;
 import de.tilman_neumann.jml.factor.siqs.poly.SIQSPolyGenerator;
-import de.tilman_neumann.jml.factor.siqs.powers.PowerOfSmallPrimesFinder;
-import de.tilman_neumann.jml.factor.siqs.sieve.Sieve03g;
 import de.tilman_neumann.jml.primes.probable.PrPTest;
 import de.tilman_neumann.util.Multiset;
 import de.tilman_neumann.util.SortedMultiset;
@@ -50,7 +47,9 @@ import de.tilman_neumann.util.Timer;
  * adequate for the quadratic sieve, because we would hardly get 3 large factors for inputs < 400
  * bit.
  *
- * <p>Division is carried out using UnsignedBigInt; this way less intermediate objects are created.
+ * <p>Division is carried out in two stages: Stage 1 identifies prime factors of Q; here an
+ * experimental double-valued Barrett reduction is used to do that Stage 2 does the actual division
+ * using UnsignedBigInt; this way less intermediate objects are created.
  *
  * <p>Faster than 1Large for approximately N>=220 bit.
  *
@@ -98,19 +97,7 @@ public class TDiv_QS_2Large_UBI_BarrettD implements TDiv_QS {
       new PollardRhoBrentMontgomeryR64Mul63();
   private PollardRhoBrentMontgomery64 pollardRho64 = new PollardRhoBrentMontgomery64();
   // Nested SIQS is required only for approximately N>310 bit.
-  // XXX For safety reasons we do not use Sieve03gU yet for the internal quadratic sieve
-  private SIQS qsInternal =
-      new SIQS(
-          0.32F,
-          0.37F,
-          null,
-          0.16F,
-          new PowerOfSmallPrimesFinder(),
-          new SIQSPolyGenerator(),
-          new Sieve03g(),
-          new TDiv_QS_1Large_UBI(),
-          10,
-          new MatrixSolver01_Gauss());
+  private SIQS_Small qsInternal;
 
   // smallest solutions of Q(x) == A(x)^2 (mod p)
   private int[] x1Array, x2Array;
@@ -123,6 +110,26 @@ public class TDiv_QS_2Large_UBI_BarrettD implements TDiv_QS {
   private long testCount, sufficientSmoothCount;
   private long aqDuration, pass1Duration, pass2Duration, primeTestDuration, factorDuration;
   private Multiset<Integer> qRestSizes;
+
+  /**
+   * Full constructor.
+   *
+   * @param permitUnsafeUsage if true then SIQS_Small (which is used for N > 310 bit to factor
+   *     Q-rests) uses a sieve exploiting sun.misc.Unsafe features.
+   */
+  public TDiv_QS_2Large_UBI_BarrettD(boolean permitUnsafeUsage) {
+    qsInternal =
+        new SIQS_Small(
+            0.305F,
+            0.37F,
+            null,
+            0.16F,
+            new SIQSPolyGenerator(),
+            10,
+            permitUnsafeUsage,
+            true,
+            false);
+  }
 
   @Override
   public String getName() {
@@ -279,10 +286,9 @@ public class TDiv_QS_2Large_UBI_BarrettD implements TDiv_QS {
     Q_rest_UBI.set(Q_rest);
     for (int pass2Index = 0; pass2Index < pass2Count; pass2Index++) {
       int p = pass2Powers[pass2Index];
-      while (true) {
-        int rem = Q_rest_UBI.divideAndRemainder(p, quotient_UBI);
-        if (rem > 0) break;
-        // remainder == 0 -> the division was exact. assign quotient to Q_rest and add p to factors
+      int rem;
+      while ((rem = Q_rest_UBI.divideAndRemainder(p, quotient_UBI)) == 0) {
+        // the division was exact. assign quotient to Q_rest and add p to factors
         UnsignedBigInt tmp = Q_rest_UBI;
         Q_rest_UBI = quotient_UBI;
         quotient_UBI = tmp;

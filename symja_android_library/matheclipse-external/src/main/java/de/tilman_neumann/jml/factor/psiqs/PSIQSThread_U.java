@@ -64,7 +64,7 @@ public class PSIQSThread_U extends PSIQSThreadBase {
         apg,
         new SIQSPolyGenerator(),
         new Sieve03gU(),
-        new TDiv_QS_2Large_UBI(),
+        new TDiv_QS_2Large_UBI(true),
         cc,
         threadIndex);
   }

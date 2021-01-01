@@ -32,7 +32,7 @@ public class Gcd31 {
    *
    * @param m
    * @param n
-   * @return
+   * @return gcd(m, n)
    */
   // much slower than binary gcd !
   public int gcd_euclid_withDivision(int m, int n) {
@@ -111,7 +111,7 @@ public class Gcd31 {
    *
    * @param a
    * @param b
-   * @return
+   * @return gcd(a, b)
    */
   public int gcd /*_binary2*/(int a, int b) {
     a = Math.abs(a);
@@ -143,7 +143,7 @@ public class Gcd31 {
    * GCD of all arguments.
    *
    * @param arguments
-   * @return
+   * @return gcd of all arguments
    */
   public Integer gcd(Collection<Integer> arguments) {
     if (arguments == null || arguments.size() == 0) {

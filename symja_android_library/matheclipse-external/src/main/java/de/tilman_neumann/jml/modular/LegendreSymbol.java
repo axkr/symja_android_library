@@ -32,11 +32,11 @@ public class LegendreSymbol {
    * Computes the Legendre symbol L(a|p) via Eulers formula. p is BigInteger and must be an odd
    * prime.
    *
-   * <p>Very slow; if possible use the Jacobi symbol!
+   * <p>Very slow; if possible use the Jacobi symbol.
    *
    * @param a
    * @param p
-   * @return
+   * @return Legendre symbol L(a|p)
    */
   public int EulerFormula(BigInteger a, BigInteger p) {
     BigInteger modPow = a.modPow(p.subtract(I_1).shiftRight(1), p);
@@ -46,11 +46,11 @@ public class LegendreSymbol {
   /**
    * Computes the Legendre symbol L(a|p) via Eulers formula. p is int and must be an odd prime.
    *
-   * <p>Eulers formula with int p is very fast!
+   * <p>Eulers formula with int p is quite fast, but the Jacobi symbol may be faster.
    *
    * @param a
    * @param p
-   * @return
+   * @return Legendre symbol L(a|p)
    */
   public int EulerFormula(BigInteger a, int p) {
     int modPow = mpe.modPow(a, (p - 1) >> 1, p);
@@ -60,11 +60,11 @@ public class LegendreSymbol {
   /**
    * Computes the Legendre symbol L(a|p) via Eulers formula for a, p int. p must be an odd prime.
    *
-   * <p>Eulers formula with int p is very fast!
+   * <p>Eulers formula with int p is quite fast, but the Jacobi symbol may be faster.
    *
    * @param a
    * @param p
-   * @return
+   * @return Legendre symbol L(a|p)
    */
   public int EulerFormula(int a, int p) {
     int modPow = mpe.modPow(a, (p - 1) >> 1, p);

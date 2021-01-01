@@ -15,10 +15,6 @@ import org.matheclipse.parser.client.FEConfig;
 
 import junit.framework.TestCase;
 
-/**
- * Tests for the Java port of the <a href="http://www.apmaths.uwo.ca/~arich/">Rubi - rule-based
- * integrator</a>.
- */
 public class AssumptionTestCase extends TestCase {
   @Override
   protected void tearDown() throws Exception {

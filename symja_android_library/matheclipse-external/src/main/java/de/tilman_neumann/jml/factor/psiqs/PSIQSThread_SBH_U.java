@@ -66,7 +66,7 @@ public class PSIQSThread_SBH_U extends PSIQSThreadBase {
         apg,
         new SIQSPolyGenerator(),
         new SingleBlockHybridSieveU(blockSize),
-        new TDiv_QS_2Large_UBI(),
+        new TDiv_QS_2Large_UBI(true),
         cc,
         threadIndex);
   }

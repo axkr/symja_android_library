@@ -101,11 +101,6 @@ public class FallingFactorial {
     return result;
   }
 
-  /**
-   * Test
-   *
-   * @param args ignored
-   */
   private static void testSmall() {
     int max = 10;
     BigIntGrid grid =

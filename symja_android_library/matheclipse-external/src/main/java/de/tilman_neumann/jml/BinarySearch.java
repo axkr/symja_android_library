@@ -55,10 +55,10 @@ public class BinarySearch {
         right = median;
       }
     } while (left != right);
-    if (DEBUG) {
-      if (left > 0) assert (array[left - 1] <= x);
-      assert (x < array[left]);
-    }
+    //		if (DEBUG) {
+    //			if (left>0)	assertTrue(array[left-1] <= x);
+    //			assertTrue(x < array[left]);
+    //		}
     return left;
   }
 

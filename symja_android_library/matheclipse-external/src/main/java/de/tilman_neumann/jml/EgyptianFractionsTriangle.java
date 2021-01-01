@@ -48,7 +48,7 @@ public class EgyptianFractionsTriangle extends BigIntTriangle {
     int count = 0;
     BigRational rest = new BigRational(BigInteger.valueOf(k), BigInteger.valueOf(n));
     int rez = 1;
-    while (!rest.equals(I_0)) {
+    while (!rest.getNumerator().equals(I_0)) {
       BigRational test = new BigRational(I_1, BigInteger.valueOf(rez));
       // LOG.debug("test=" + test + ", rest = " + rest);
       if (test.compareTo(rest) <= 0) {

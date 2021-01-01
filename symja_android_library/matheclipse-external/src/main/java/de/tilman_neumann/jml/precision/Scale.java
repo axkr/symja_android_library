@@ -120,6 +120,11 @@ public class Scale implements Comparable<Scale> {
   }
 
   @Override
+  public int hashCode() {
+    return digits;
+  }
+
+  @Override
   public int compareTo(Scale other) {
     return this.digits - other.digits;
   }

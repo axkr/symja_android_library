@@ -41,7 +41,7 @@ public class ModularSqrt_BB {
    *
    * @param n a positive integer having Jacobi(n|p) = 1
    * @param p odd prime
-   * @return the modular sqrt t
+   * @return (the smaller) sqrt of n (mod p)
    */
   public BigInteger modularSqrt(BigInteger n, BigInteger p) {
     //		if (DEBUG) {
@@ -79,7 +79,7 @@ public class ModularSqrt_BB {
    *
    * @param n a positive integer having Jacobi(n|p) = 1
    * @param p odd prime
-   * @return the modular sqrt t
+   * @return (the smaller) sqrt of n (mod p)
    */
   private BigInteger Tonelli_Shanks(BigInteger n, BigInteger p) {
     // factor out powers of 2 from p-1, defining Q and S as p-1 = Q*2^S with Q odd.
@@ -143,7 +143,7 @@ public class ModularSqrt_BB {
    *
    * @param n a positive integer having Jacobi(n|p) = 1
    * @param p
-   * @return sqrt of a modulo p
+   * @return (the smaller) sqrt of n (mod p)
    */
   private BigInteger Lagrange(BigInteger n, BigInteger p) {
     BigInteger k = p.add(I_1).shiftRight(2);
@@ -159,7 +159,7 @@ public class ModularSqrt_BB {
    *
    * @param n a positive integer having Jacobi(n|p) = 1
    * @param p
-   * @return
+   * @return (the smaller) sqrt of n (mod p)
    */
   private BigInteger case5Mod8(BigInteger n, BigInteger p) {
     BigInteger k = p.shiftRight(3); // for p == 5 (mod 8) we need k = (p-5)/8 = p>>3
@@ -182,7 +182,7 @@ public class ModularSqrt_BB {
    * @param n a positive integer having Jacobi(n|p) = 1
    * @param p an odd prime with p==3 (mod 4)
    * @param pSquare p^2
-   * @return
+   * @return (the smaller) sqrt of n (mod p^2)
    */
   public BigInteger modularSqrtModSquare_v01(BigInteger n, BigInteger p, BigInteger pSquare) {
     // Compute one of the two solutions
@@ -197,14 +197,14 @@ public class ModularSqrt_BB {
    *
    * <p>This is the second proposition in [Pomerance 1985], but not fully out-formulated there. This
    * implementation was accomplished following [Silverman 1987: The Multiple Polynomial Quadratic
-   * Sieve], p. 332].
+   * Sieve, p. 332].
    *
    * <p>Works only for p==3 (mod 4).
    *
    * @param n a positive integer having Jacobi(n|p) = 1
    * @param p an odd prime with p==3 (mod 4)
    * @param pSquare p^2
-   * @return
+   * @return (the smaller) sqrt of n (mod p^2)
    */
   public BigInteger modularSqrtModSquare_v02(BigInteger n, BigInteger p, BigInteger pSquare) {
     BigInteger b1 = n.modPow(p.add(I_1).shiftRight(2), p);

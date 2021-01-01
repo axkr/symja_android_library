@@ -24,7 +24,6 @@ package de.tilman_neumann.jml.factor.siqs.data;
 public class SolutionArrays extends BaseArrays {
   public int[] x1Array;
   public int[] x2Array;
-  public int[][] Bainv2Array;
 
   /**
    * Full constructor, allocates all arrays.
@@ -36,10 +35,5 @@ public class SolutionArrays extends BaseArrays {
     super(solutionsCount);
     x1Array = new int[solutionsCount];
     x2Array = new int[solutionsCount];
-    // Bainv2: full initialization.
-    // The sub-arrays are in reverse order compared to [Contini], which almost doubles the speed of
-    // nextXArrays().
-    // The maximum v value is qCount-1 -> allocation with qCount-1 is sufficient.
-    Bainv2Array = new int[qCount - 1][solutionsCount];
   }
 }

@@ -70,7 +70,12 @@ public class Precision implements Comparable<Precision> {
         Math.min(DOUBLE_PRECISION, Magnitude.of(x) - Magnitude.ZERO_DOUBLE_MAGNITUDE));
   }
 
-  /** The precision of a BigDecimal, with 0 for zero values. */
+  /**
+   * The precision of a BigDecimal, with 0 for zero values.
+   *
+   * @param x the given BigDecimal
+   * @return the precision of x
+   */
   public static Precision of(BigDecimal x) {
     return Precision.valueOf(x.signum() != 0 ? x.precision() : 0);
   }
@@ -119,6 +124,11 @@ public class Precision implements Comparable<Precision> {
   public boolean equals(Object o) {
     if (o == null || !(o instanceof Precision)) return false;
     return this.digits == ((Precision) o).digits;
+  }
+
+  @Override
+  public int hashCode() {
+    return digits;
   }
 
   @Override

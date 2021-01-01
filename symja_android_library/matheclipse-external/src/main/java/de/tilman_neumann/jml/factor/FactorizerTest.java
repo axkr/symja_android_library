@@ -58,11 +58,11 @@ public class FactorizerTest {
 
   // algorithm options
   /** number of test numbers */
-  private static final int N_COUNT = 1;
+  private static final int N_COUNT = 100000;
   /** the bit size of N to start with */
-  private static final int START_BITS = 100;
+  private static final int START_BITS = 20;
   /** the increment in bit size from test set to test set */
-  private static final int INCR_BITS = 10;
+  private static final int INCR_BITS = 1;
   /** maximum number of bits to test (no maximum if null) */
   private static final Integer MAX_BITS = null;
   /**
@@ -70,9 +70,9 @@ public class FactorizerTest {
    */
   private static final int REPEATS = 1;
   /** Nature of test numbers */
-  private static final TestNumberNature TEST_NUMBER_NATURE = TestNumberNature.MODERATE_SEMIPRIMES;
+  private static final TestNumberNature TEST_NUMBER_NATURE = TestNumberNature.RANDOM_COMPOSITES;
   /** Test mode */
-  private static final TestMode TEST_MODE = TestMode.FIRST_FACTOR;
+  private static final TestMode TEST_MODE = TestMode.PRIME_FACTORIZATION;
 
   private BPSWTest bpsw = new BPSWTest();
 
@@ -84,10 +84,10 @@ public class FactorizerTest {
         new FactorAlgorithm[] {
 
           // Trial division
-          // new TDiv31(),
-          //			new TDiv31Inverse(),
-          //			new TDiv31Barrett(), // Fastest algorithm for N <= 26 bit
-          //			new TDiv63Inverse(1<<21),
+          new TDiv31(),
+          new TDiv31Inverse(),
+          new TDiv31Barrett(), // Fastest algorithm for N <= 26 bit
+          new TDiv63Inverse(1 << 21),
 
           // Hart's one line factorizer
           // new Hart_Simple(),
@@ -134,9 +134,11 @@ public class FactorizerTest {
           // * TDiv_CF01 is good for N < 80 bits; for N > 90 bit we need TDiv_CF02
           // * ksAdjust: Must be <=3 for N=20bit, <=6 for N=30 bit etc. // TODO this implies some
           // optimization potential
-          // new CFrac(true, 5, 1.5F, 0.152F, 0.253F, new TDiv_CF01(), 10, new
+          //			new CFrac(true, 5, 1.5F, 0.152F, 0.253F, new TDiv_CF01(), 10, new
           // MatrixSolver01_Gauss(), 5),
-          // new CFrac(true, 5, 1.5F, 0.152F, 0.253F, new TDiv_CF02(), 10, new
+          //			new CFrac(true, 5, 1.5F, 0.152F, 0.253F, new TDiv_CF02(), 10, new
+          // MatrixSolver01_Gauss(), 5),
+          //			new CFrac(true, 5, 1.5F, 0.152F, 0.253F, new TDiv_CF03(), 10, new
           // MatrixSolver01_Gauss(), 5),
           //			new CFrac63(true, 5, 1.5F, 0.152F, 0.25F, new TDiv_CF63_01(), 10, new
           // MatrixSolver01_Gauss(), 3),
@@ -154,61 +156,69 @@ public class FactorizerTest {
           // * best for 230, 240 bit: Sieve03gU + smallPowers + TDivnL + BL
           // * best for >= 250 bit: (Sieve03gU or SingleBlockHybridSieve) + (noPowers or
           // smallPowers) + (TDiv2L or TDivnL) + BL
-          // new SIQS(0.32F, 0.37F, null, null, new NoPowerFinder(), new SIQSPolyGenerator(), new
-          // SimpleSieve(), new TDiv_QS_1Large(), 10, new MatrixSolver01_Gauss()),
-          // new SIQS(0.32F, 0.37F, null, null, new NoPowerFinder(), new SIQSPolyGenerator(), new
-          // Sieve03g(), new TDiv_QS_1Large_UBI(), 10, new MatrixSolver01_Gauss()),
-          // new SIQS(0.32F, 0.37F, null, null, new NoPowerFinder(), new SIQSPolyGenerator(), new
-          // Sieve03gU(), new TDiv_QS_1Large_UBI(), 10, new MatrixSolver01_Gauss()),
-
-          // new SIQS(0.32F, 0.37F, null, null, new NoPowerFinder(), new SIQSPolyGenerator(), new
-          // Sieve03g(), new TDiv_QS_1Large_UBI(), 10, new MatrixSolver02_BlockLanczos()),
-          // new SIQS(0.32F, 0.37F, null, null, new NoPowerFinder(), new SIQSPolyGenerator(), new
-          // Sieve03g(), new TDiv_QS_2Large_UBI(), 10, new MatrixSolver02_BlockLanczos()),
-          // new SIQS(0.32F, 0.37F, null, null, new NoPowerFinder(), new SIQSPolyGenerator(), new
-          // Sieve03g(), new TDiv_QS_nLarge(), 10, new MatrixSolver02_BlockLanczos()),
-          // new SIQS(0.32F, 0.37F, null, null, new NoPowerFinder(), new SIQSPolyGenerator(), new
-          // Sieve03g(), new TDiv_QS_nLarge_UBI(), 10, new MatrixSolver02_BlockLanczos()),
           //			new SIQS(0.32F, 0.37F, null, null, new NoPowerFinder(), new SIQSPolyGenerator(), new
-          // Sieve03gU(), new TDiv_QS_2Large_UBI(), 10, new MatrixSolver02_BlockLanczos()),
+          // SimpleSieve(), new TDiv_QS_1Large(), 10, new MatrixSolver01_Gauss(), false, true),
+          //			new SIQS(0.32F, 0.37F, null, null, new NoPowerFinder(), new SIQSPolyGenerator(), new
+          // Sieve03g(), new TDiv_QS_1Large_UBI(), 10, new MatrixSolver01_Gauss(), false, true),
+          //			new SIQS(0.32F, 0.37F, null, null, new NoPowerFinder(), new SIQSPolyGenerator(), new
+          // Sieve03gU(), new TDiv_QS_1Large_UBI(), 10, new MatrixSolver01_Gauss(), false, true),
+
+          //			new SIQS(0.32F, 0.37F, null, null, new NoPowerFinder(), new SIQSPolyGenerator(), new
+          // Sieve03g(), new TDiv_QS_1Large_UBI(), 10, new MatrixSolver02_BlockLanczos(), false,
+          // true),
+          //			new SIQS(0.32F, 0.37F, null, null, new NoPowerFinder(), new SIQSPolyGenerator(), new
+          // Sieve03g(), new TDiv_QS_2Large_UBI(), 10, new MatrixSolver02_BlockLanczos(), false,
+          // true),
+          //			new SIQS(0.32F, 0.37F, null, null, new NoPowerFinder(), new SIQSPolyGenerator(), new
+          // Sieve03g(), new TDiv_QS_nLarge(), 10, new MatrixSolver02_BlockLanczos(), false, true),
+          //			new SIQS(0.32F, 0.37F, null, null, new NoPowerFinder(), new SIQSPolyGenerator(), new
+          // Sieve03g(), new TDiv_QS_nLarge_UBI(), 10, new MatrixSolver02_BlockLanczos(), false,
+          // true),
+          //		new SIQS(0.32F, 0.37F, null, null, new NoPowerFinder(), new SIQSPolyGenerator(), new
+          // Sieve03gU(), new TDiv_QS_2Large_UBI(), 10, new MatrixSolver02_BlockLanczos(), false,
+          // true),
+          //		new SIQS(0.32F, 0.37F, null, null, new NoPowerFinder(), new SIQSPolyGenerator(), new
+          // Sieve03gU(), new TDiv_QS_2Large_UBI(), 10, new MatrixSolver02_BlockLanczos(), true,
+          // true),
 
           // sieving with prime powers: best sieve for small N!
           //			new SIQS(0.32F, 0.37F, null, null, new PowerOfSmallPrimesFinder(), new
           // SIQSPolyGenerator(), new Sieve03gU(), new TDiv_QS_1Large_UBI(), 10, new
-          // MatrixSolver01_Gauss()),
+          // MatrixSolver01_Gauss(), false, true),
           //			new SIQS(0.32F, 0.37F, null, null, new PowerOfSmallPrimesFinder(), new
           // SIQSPolyGenerator(), new Sieve03gU(), new TDiv_QS_nLarge_UBI(), 10, new
-          // MatrixSolver02_BlockLanczos()),
+          // MatrixSolver02_BlockLanczos(), false, true),
           //			new SIQS(0.32F, 0.37F, null, null, new AllPowerFinder(), new SIQSPolyGenerator(), new
-          // Sieve03gU(), new TDiv_QS_nLarge_UBI(), 10, new MatrixSolver02_BlockLanczos()),
+          // Sieve03gU(), new TDiv_QS_nLarge_UBI(), 10, new MatrixSolver02_BlockLanczos(), false,
+          // true),
 
           // segmented sieve: slower; best block size is about 32k
-          // new SIQS(0.32F, 0.385F, null, null, new NoPowerFinder(), new SIQSPolyGenerator(), new
+          //			new SIQS(0.32F, 0.385F, null, null, new NoPowerFinder(), new SIQSPolyGenerator(), new
           // SingleBlockSieve(32768), new TDiv_QS_nLarge_UBI(), 10, new
-          // MatrixSolver02_BlockLanczos()),
-          // new SIQS(0.32F, 0.385F, null, null, new NoPowerFinder(), new SIQSPolyGenerator(), new
+          // MatrixSolver02_BlockLanczos(), false, true),
+          //			new SIQS(0.32F, 0.385F, null, null, new NoPowerFinder(), new SIQSPolyGenerator(), new
           // SingleBlockSieveU(32768), new TDiv_QS_nLarge_UBI(), 10, new
-          // MatrixSolver02_BlockLanczos()),
-          // new SIQS(0.32F, 0.41F, null, null, new NoPowerFinder(), new SIQSPolyGenerator(), new
+          // MatrixSolver02_BlockLanczos(), false, true),
+          //			new SIQS(0.32F, 0.41F, null, null, new NoPowerFinder(), new SIQSPolyGenerator(), new
           // DoubleBlockSieve(32768, 131072), new TDiv_QS_nLarge_UBI(), 10, new
-          // MatrixSolver02_BlockLanczos()),
+          // MatrixSolver02_BlockLanczos(), false, true),
 
           // hybrid sieves:
           // * single block hybrid is (almost?) level with Sieve03g
           // * best block size is about 32k (my processor has 16kB L1 cache, 128kB L2-cache per
           // thread)
-          // new SIQS(0.32F, 0.37F, null, null, new NoPowerFinder(), new SIQSPolyGenerator(), new
+          //			new SIQS(0.32F, 0.37F, null, null, new NoPowerFinder(), new SIQSPolyGenerator(), new
           // SingleBlockHybridSieve(32768), new TDiv_QS_nLarge_UBI(), 10, new
-          // MatrixSolver02_BlockLanczos()),
+          // MatrixSolver02_BlockLanczos(), false, true),
           //			new SIQS(0.32F, 0.37F, null, null, new NoPowerFinder(), new SIQSPolyGenerator(), new
           // SingleBlockHybridSieveU(32768), new TDiv_QS_nLarge_UBI(), 10, new
-          // MatrixSolver02_BlockLanczos()),
-          // new SIQS(0.32F, 0.37F, null, null, new NoPowerFinder(), new SIQSPolyGenerator(), new
+          // MatrixSolver02_BlockLanczos(), false, true),
+          //			new SIQS(0.32F, 0.37F, null, null, new NoPowerFinder(), new SIQSPolyGenerator(), new
           // DoubleBlockHybridSieve(32768, 131072), new TDiv_QS_nLarge_UBI(), 10, new
-          // MatrixSolver02_BlockLanczos()),
-          // new SIQS(0.32F, 0.37F, null, null, new NoPowerFinder(), new SIQSPolyGenerator(), new
+          // MatrixSolver02_BlockLanczos(), false, true),
+          //			new SIQS(0.32F, 0.37F, null, null, new NoPowerFinder(), new SIQSPolyGenerator(), new
           // DoubleBlockHybridSieveU(32768, 131072), new TDiv_QS_nLarge_UBI(), 10, new
-          // MatrixSolver02_BlockLanczos()),
+          // MatrixSolver02_BlockLanczos(), false, true),
 
           // Multi-threaded SIQS:
           // * 4/6 threads takes over at N around 100 bit (more exact estimates: 4 threads best for
@@ -216,32 +226,22 @@ public class FactorizerTest {
           // * we need 0.14 < maxQRestExponent < 0.2; everything else is prohibitive; use null for
           // dynamic determination
           // * BlockLanczos is better than Gauss solver for N > 200 bit
-          // new PSIQS(0.32F, 0.37F, null, null, 6, new NoPowerFinder(), new
-          // MatrixSolver02_BlockLanczos()),
-          new PSIQS_U(
-              0.32F, 0.37F, null, null, 6, new NoPowerFinder(), new MatrixSolver02_BlockLanczos()),
-          new PSIQS_U(
-              0.32F,
-              0.37F,
-              null,
-              null,
-              6,
-              new PowerOfSmallPrimesFinder(),
-              new MatrixSolver02_BlockLanczos()),
-          new PSIQS_U(
-              0.32F, 0.37F, null, null, 6, new AllPowerFinder(), new MatrixSolver02_BlockLanczos()),
-          new PSIQS_SBH_U(
-              0.32F,
-              0.37F,
-              null,
-              null,
-              32768,
-              6,
-              new PowerOfSmallPrimesFinder(),
-              new MatrixSolver02_BlockLanczos()), // best for large N
+          //			new PSIQS(0.32F, 0.37F, null, null, 6, new NoPowerFinder(), new
+          // MatrixSolver02_BlockLanczos(), false, true),
+          //		new PSIQS_U(0.32F, 0.37F, null, null, 6, new NoPowerFinder(), new
+          // MatrixSolver02_BlockLanczos(), false, true),
+          //		new PSIQS_U(0.32F, 0.37F, null, null, 6, new NoPowerFinder(), new
+          // MatrixSolver02_BlockLanczos(), true, true),
+          //			new PSIQS_U(0.32F, 0.37F, null, null, 6, new PowerOfSmallPrimesFinder(), new
+          // MatrixSolver02_BlockLanczos(), false, true),
+          //			new PSIQS_U(0.32F, 0.37F, null, null, 6, new AllPowerFinder(), new
+          // MatrixSolver02_BlockLanczos(), false, true),
+          //			new PSIQS_SBH_U(0.32F, 0.37F, null, null, 32768, 6, new PowerOfSmallPrimesFinder(),
+          // new MatrixSolver02_BlockLanczos(), false, true), // best for large N
 
           // Combination of best algorithms for all factor argument sizes
-          //			new CombinedFactorAlgorithm(6, 1<<16, true),
+          new CombinedFactorAlgorithm(6, 1 << 16, true, false, true),
+          new CombinedFactorAlgorithm(6, 1 << 16, true, true, true),
         };
   }
 
@@ -260,28 +260,10 @@ public class FactorizerTest {
     } else {
       // TEST_MODE==TestMode.PRIME_FACTORIZATION
       correctFactorSets = new SortedMultiset_BottomUp[N_COUNT];
-      for (int j = 0; j < N_COUNT; j++) {
-        BigInteger N = testNumbers[j];
-        // get factors from verification factorizer and test them for absolute correctness
-        SortedMultiset<BigInteger> correctFactors = FactorAlgorithm.DEFAULT.factor(N);
-        for (BigInteger factor : correctFactors.keySet()) {
-          if (!bpsw.isProbablePrime(factor)) {
-            LOG.error(
-                "The verification factor algorithm failed to factor N="
-                    + N
-                    + " = "
-                    + correctFactors
-                    + " correctly! Factor "
-                    + factor
-                    + " is not prime.");
-          }
-        }
-        correctFactorSets[j] = correctFactors;
-      }
       factorSetArray = new SortedMultiset_BottomUp[N_COUNT];
     }
 
-    LOG.info("Test N with " + bits + " bits, i.e. N >= " + N_min);
+    LOG.info("Test N with " + bits + " bits, e.g. N = " + testNumbers[0]);
 
     // take REPEATS timings for each algorithm to be quite sure that one timing is not falsified by
     // garbage collection
@@ -317,7 +299,9 @@ public class FactorizerTest {
               long startTimeMillis = System.currentTimeMillis();
               for (int j = 0; j < N_COUNT; j++) {
                 try {
-                  factors[j] = algorithm.findSingleFactor(testNumbers[j]);
+                  factors[j] =
+                      algorithm.findSingleFactor(
+                          testNumbers[j]); // TODO use searchFactors() here, too ?
                 } catch (ArithmeticException e) {
                   LOG.error(
                       "FactorAlgorithm "
@@ -380,11 +364,15 @@ public class FactorizerTest {
               duration = endTimeMillis - startTimeMillis; // duration in ms
               // LOG.debug("algorithm " + algName + " finished test set with " + bits + " bits");
 
-              // compare results of current algorithm with verification factorizer
+              // test correctness
               for (int j = 0; j < N_COUNT; j++) {
                 BigInteger N = testNumbers[j];
-                SortedMultiset<BigInteger> correctFactors = correctFactorSets[j];
                 SortedMultiset<BigInteger> factorSet = factorSetArray[j];
+                SortedMultiset<BigInteger> correctFactors = correctFactorSets[j];
+                if (correctFactors == null) {
+                  correctFactors = correctFactorSets[j] = testAndGetCorrectFactors(N, factorSet);
+                }
+
                 if (!correctFactors.equals(factorSet)) {
                   if (DEBUG)
                     LOG.error(
@@ -436,6 +424,32 @@ public class FactorizerTest {
       }
       rank += j;
     }
+  }
+
+  private SortedMultiset<BigInteger> testAndGetCorrectFactors(
+      BigInteger N, SortedMultiset<BigInteger> factorSet) {
+    if (factorSet != null) {
+      // analyzing the found factors will usually be faster than doing another factorization with a
+      // safe algorithm
+      BigInteger product = I_1;
+      for (BigInteger factor : factorSet.keySet()) {
+        if (!bpsw.isProbablePrime(factor)) {
+          // not finding the prime factorization is an error -> make sure that N != product.
+          break;
+        }
+        int exp = factorSet.get(factor);
+        BigInteger pow = factor.pow(exp);
+        product = product.multiply(pow);
+      }
+      if (N.equals(product)) {
+        return factorSet;
+      }
+    }
+
+    // Something went wrong above, so now we factor N with a safe algorithm. Strategies with a
+    // better performance certainly exist.
+    return FactorAlgorithm.DEFAULT.factor(
+        N); // XXX do we want the control algorithm to log details if ANALYZE==true?
   }
 
   /**

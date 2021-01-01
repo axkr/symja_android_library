@@ -858,7 +858,7 @@ public class ComplexSym implements IComplex {
 
   @Override
   public IAST toPolarCoordinates() {
-    return F.pair(abs(), complexArg());
+    return F.list(abs(), complexArg());
   }
 
   @Override

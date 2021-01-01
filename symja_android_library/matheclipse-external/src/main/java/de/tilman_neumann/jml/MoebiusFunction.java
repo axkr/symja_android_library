@@ -59,7 +59,7 @@ public class MoebiusFunction {
     SortedMultiset<BigInteger> factors = FactorAlgorithm.DEFAULT.factor(n);
     // LOG.debug("factors of " + n + " = " + factors);
 
-    if (factors == null || factors.keyCount() == 0) {
+    if (factors == null || factors.size() == 0) {
       // n is prime
       return -1;
     }

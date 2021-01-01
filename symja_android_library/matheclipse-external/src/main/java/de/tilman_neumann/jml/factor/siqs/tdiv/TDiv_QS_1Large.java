@@ -32,8 +32,10 @@ import de.tilman_neumann.util.SortedMultiset;
 import de.tilman_neumann.util.Timer;
 
 /**
- * A trial division engine where partials can only have 1 large factor. Uses standard BigIntegers
- * division.
+ * A trial division engine where partials can only have 1 large factor.
+ *
+ * <p>Division is carried out in two stages: Stage 1 identifies prime factors of Q, applying
+ * long-valued Barrett reduction Stage 2 does the actual division using BigInteger
  *
  * @author Tilman Neumann
  */
@@ -222,8 +224,7 @@ public class TDiv_QS_1Large implements TDiv_QS {
     // Pass 2: Reduce Q by the pass2Primes and collect small factors
     BigInteger div[];
     for (int pass2Index = 0; pass2Index < pass2Count; pass2Index++) {
-      int p = pass2Powers[pass2Index];
-      BigInteger pBig = BigInteger.valueOf(p);
+      BigInteger pBig = BigInteger.valueOf(pass2Powers[pass2Index]);
       while (true) {
         div = Q_rest.divideAndRemainder(pBig);
         if (div[1].compareTo(I_0) > 0) break;

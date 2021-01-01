@@ -85,22 +85,22 @@ public class ConfigUtil {
     NUMBER_OF_PROCESSORS = Runtime.getRuntime().availableProcessors();
     if (verbose) System.out.println("number of processors = " + NUMBER_OF_PROCESSORS);
 
-    String confFileStr = CONF_ROOT + FILE_SEPARATOR + "log4jconf.xml";
-    File confFile = new File(confFileStr);
-    if (confFile.exists()) {
-      // initialize XML-style Log4j-configuration
-      DOMConfigurator.configure(CONF_ROOT + FILE_SEPARATOR + "log4jconf.xml");
-      if (verbose) LOG.info("log4j configuration loaded.");
-      if (verbose) LOG.info("project initialization finished.\n");
-      alreadyInitialized = true;
-      //		} else {
-      //			// emergency initialization that logs into console
-      //			PatternLayout layout = new PatternLayout();
-      //			ConsoleAppender appender = new ConsoleAppender(layout);
-      //			appender.setThreshold(Level.DEBUG); // TODO: Set to ERROR before creating jar file, to
-      // DEBUG before creating src distribution
-      //			BasicConfigurator.configure(appender);
-      alreadyInitialized = true;
-    }
+    //		String confFileStr = CONF_ROOT + FILE_SEPARATOR + "log4jconf.xml";
+    //		File confFile = new File(confFileStr);
+    //		if (confFile.exists()) {
+    //			// initialize XML-style Log4j-configuration
+    //	    	DOMConfigurator.configure(CONF_ROOT + FILE_SEPARATOR + "log4jconf.xml");
+    //	    	if (verbose) LOG.info("log4j configuration loaded.");
+    //	    	if (verbose) LOG.info("project initialization finished.\n");
+    //	    	alreadyInitialized = true;
+    //		} else {
+    //			// emergency initialization that logs into console
+    //			PatternLayout layout = new PatternLayout();
+    //			ConsoleAppender appender = new ConsoleAppender(layout);
+    //			appender.setThreshold(Level.DEBUG); // TODO: Set to ERROR before creating jar file, to
+    // DEBUG before creating src distribution
+    //			BasicConfigurator.configure(appender);
+    //	    	alreadyInitialized = true;
+    //		}
   }
 }

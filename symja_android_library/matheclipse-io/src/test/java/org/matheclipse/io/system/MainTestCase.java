@@ -3609,6 +3609,12 @@ public class MainTestCase extends AbstractTestCase {
     check(
         "FromContinuedFraction({1,2,3})", //
         "10/7");
+    check(
+        "FromContinuedFraction({3, 7, 15, 1, 292, 1, 1, 1, 2, 1})", //
+        "1146408/364913");
+    check(
+        "FromContinuedFraction(Range(5))", //
+        "225/157");
   }
 
   public void testSystem408() {

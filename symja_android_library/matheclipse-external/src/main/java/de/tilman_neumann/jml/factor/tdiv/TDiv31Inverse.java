@@ -18,10 +18,10 @@ import java.math.BigInteger;
 import de.tilman_neumann.jml.factor.FactorAlgorithm;
 import de.tilman_neumann.jml.primes.exact.AutoExpandingPrimesArray;
 import de.tilman_neumann.util.SortedMultiset;
-import de.tilman_neumann.util.SortedMultiset_BottomUp;
 
 /**
- * Trial division factor algorithm replacing division by multiplications.
+ * Trial division factor algorithm using double-valued Barrett reduction, thus replacing division by
+ * multiplications.
  *
  * <p>Instead of dividing N by consecutive primes, we store the reciprocals of those primes, too,
  * and multiply N by those reciprocals. Only if such a result is near to an integer we need to do a
@@ -29,8 +29,6 @@ import de.tilman_neumann.util.SortedMultiset_BottomUp;
  *
  * <p>This variant abstains from testing N%primes[i] when the discriminator test indicates a neat
  * division, and unrolls the loop in findSingleFactor().
- *
- * <p>Another bit faster than TDiv31Inverse_NoDoubleCheck.
  *
  * @authors Thilo Harich + Tilman Neumann
  */
@@ -62,22 +60,27 @@ public class TDiv31Inverse extends FactorAlgorithm {
   }
 
   @Override
-  public SortedMultiset<BigInteger> factor(BigInteger Nbig) {
-    SortedMultiset<BigInteger> primeFactors = new SortedMultiset_BottomUp<>();
+  public void factor(BigInteger Nbig, SortedMultiset<BigInteger> primeFactors) {
+    factor(Nbig, 1, primeFactors);
+  }
+
+  /**
+   * Find all factor of NBig, which must have less than 32 bit.
+   *
+   * @param Nbig
+   * @param Nexp the exponent which with found factors are added to primeFactors
+   * @param primeFactors
+   */
+  public void factor(BigInteger Nbig, int Nexp, SortedMultiset<BigInteger> primeFactors) {
     int N = Nbig.intValue();
 
     int q;
     for (int i = 0; ; i++) {
-      final double r = reciprocals[i];
       final int p = primes[i];
-      int exp = 0;
-      while ((q = (int) (N * r + DISCRIMINATOR)) * p == N) {
-        exp++;
+      while ((q = (int) (N * reciprocals[i] + DISCRIMINATOR)) * p == N) {
+        primeFactors.add(BigInteger.valueOf(p), Nexp);
         N = q; // avoiding a division here by storing q benefits the int version but not the long
         // version
-      }
-      if (exp > 0) {
-        primeFactors.add(BigInteger.valueOf(p), exp);
       }
       if (p * (long) p > N) {
         break;
@@ -85,11 +88,9 @@ public class TDiv31Inverse extends FactorAlgorithm {
     }
 
     if (N > 1) {
-      // either N is prime, or we could not find all factors with p<=pLimit -> add the rest to the
-      // result
-      primeFactors.add(BigInteger.valueOf(N));
+      // either N is prime, or we could not find all factors -> add the rest to the result
+      primeFactors.add(BigInteger.valueOf(N), Nexp);
     }
-    return primeFactors;
   }
 
   @Override

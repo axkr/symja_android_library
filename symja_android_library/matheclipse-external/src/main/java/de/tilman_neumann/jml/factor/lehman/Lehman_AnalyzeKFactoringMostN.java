@@ -160,6 +160,7 @@ public class Lehman_AnalyzeKFactoringMostN {
           bestNSet = NSet;
         }
       }
+      int bestNSetSize = bestNSet != null ? bestNSet.size() : 0;
       LOG.info(
           "k_"
               + i
@@ -168,7 +169,7 @@ public class Lehman_AnalyzeKFactoringMostN {
               + " = "
               + tdiv.factor(BigInteger.valueOf(bestK))
               + " factors "
-              + bestNSet.size()
+              + bestNSetSize
               + " of the remaining "
               + ncount
               + " N");

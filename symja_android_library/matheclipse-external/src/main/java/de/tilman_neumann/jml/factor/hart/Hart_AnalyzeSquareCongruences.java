@@ -19,7 +19,6 @@ import java.util.Arrays;
 
 import org.apache.log4j.Logger;
 
-import de.tilman_neumann.jml.factor.FactorAlgorithm;
 import de.tilman_neumann.util.ConfigUtil;
 
 /**
@@ -27,7 +26,7 @@ import de.tilman_neumann.util.ConfigUtil;
  *
  * @author Tilman Neumann
  */
-public class Hart_AnalyzeSquareCongruences extends FactorAlgorithm {
+public class Hart_AnalyzeSquareCongruences {
   private static final Logger LOG = Logger.getLogger(Hart_AnalyzeSquareCongruences.class);
 
   /**
@@ -70,12 +69,10 @@ public class Hart_AnalyzeSquareCongruences extends FactorAlgorithm {
     }
   }
 
-  @Override
   public String getName() {
     return "Hart_AnalyzeSquareCongruences(" + doTDivFirst + ")";
   }
 
-  @Override
   public BigInteger findSingleFactor(BigInteger N) {
     return BigInteger.valueOf(findSingleFactor(N.longValue()));
   }

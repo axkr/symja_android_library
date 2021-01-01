@@ -63,7 +63,7 @@ public class PurePowerTest {
    * Test if N is a pure power.</br></br>
    *
    * <p>The algorithm is based on {@link
-   * https://en.wikipedia.org/wiki/Rational_sieve#Limitations_of_the_algorithm}, with several
+   * "https://en.wikipedia.org/wiki/Rational_sieve#Limitations_of_the_algorithm"}, with several
    * improvements pointed out by to Graeme Willoughby:</br>
    *
    * <p>1. Write an even number as N=(2^m)k (k odd). Then its p.th power (2^m)k)^p = (2^mp)k^p has
@@ -254,32 +254,32 @@ public class PurePowerTest {
     return null; // no pure power
   }
 
-  private static void testCorrectness(int nCount) {
-    PurePowerTest powTest = new PurePowerTest();
-
-    // create test set for performance test
-    SecureRandom rng = new SecureRandom();
-    for (int bits = 10; bits <= 50; bits += 5) {
-      LOG.info("Test correctness with " + nCount + " " + bits + "-bit numbers");
-      ArrayList<BigInteger> testSet = new ArrayList<BigInteger>();
-      for (int i = 0; i < nCount; i++) {
-        testSet.add(new BigInteger(bits, rng));
-      }
-
-      // test correctness:
-      // pure powers are not unique, e.g. 3^9 == 27^3, thus we can only check if the final result is
-      // correct
-      for (BigInteger testNum : testSet) {
-        Result r1 = powTest.test_v01(testNum);
-        //	   			if (r1!=null) assertEquals(testNum, r1.base.pow(r1.exponent));
-
-        Result r2 = powTest.test /*_v02*/(testNum);
-        //		   		assertEquals(r1==null, r2==null);
-        //	   			if (r2!=null) assertEquals(testNum, r2.base.pow(r2.exponent));
-      }
-    }
-    LOG.info("");
-  }
+  //	private static void testCorrectness(int nCount) {
+  //	   	PurePowerTest powTest = new PurePowerTest();
+  //
+  //	   	// create test set for performance test
+  //	   	SecureRandom rng = new SecureRandom();
+  //	   	for (int bits=10; bits<=50; bits+=5) {
+  //	   		LOG.info("Test correctness with " + nCount + " " + bits + "-bit numbers");
+  //		   	ArrayList<BigInteger> testSet = new ArrayList<BigInteger>();
+  //		   	for (int i=0; i<nCount; i++) {
+  //		   		testSet.add(new BigInteger(bits, rng));
+  //		   	}
+  //
+  //		   	// test correctness:
+  //		   	// pure powers are not unique, e.g. 3^9 == 27^3, thus we can only check if the final
+  // result is correct
+  //		   	for (BigInteger testNum : testSet) {
+  //		   		Result r1 = powTest.test_v01(testNum);
+  //	   			if (r1!=null) assertEquals(testNum, r1.base.pow(r1.exponent));
+  //
+  //		   		Result r2 = powTest.test/*_v02*/(testNum);
+  //		   		assertEquals(r1==null, r2==null);
+  //	   			if (r2!=null) assertEquals(testNum, r2.base.pow(r2.exponent));
+  //		   	}
+  //	   	}
+  //	   	LOG.info("");
+  //	}
 
   private static void testPerformance(int nCount) {
     PurePowerTest powTest = new PurePowerTest();
@@ -317,7 +317,8 @@ public class PurePowerTest {
       try {
         LOG.info("Insert test argument N:");
         BufferedReader in = new BufferedReader(new InputStreamReader(System.in));
-        String input = in.readLine().trim();
+        String line = in.readLine();
+        String input = line != null ? line.trim() : "";
         // LOG.debug("input = >" + input + "<");
         BigInteger N = new BigInteger(input);
         Result purePower = powTest.test(N);
@@ -338,10 +339,10 @@ public class PurePowerTest {
    *
    * @param args ignored
    */
-  public static void main(String[] args) {
-    ConfigUtil.initProject();
-    testCorrectness(100000);
-    testPerformance(1000000);
-    testInputs();
-  }
+  //	public static void main(String[] args) {
+  //	   	ConfigUtil.initProject();
+  //	   	testCorrectness(100000);
+  //	   	testPerformance(1000000);
+  //	   	testInputs();
+  //	}
 }

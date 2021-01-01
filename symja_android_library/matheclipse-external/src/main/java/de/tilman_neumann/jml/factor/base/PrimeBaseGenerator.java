@@ -20,8 +20,6 @@ import org.apache.log4j.Logger;
 import de.tilman_neumann.jml.modular.JacobiSymbol;
 import de.tilman_neumann.jml.primes.exact.AutoExpandingPrimesArray;
 
-import static de.tilman_neumann.jml.base.BigIntConstants.*;
-
 /**
  * Prime base generator. Creates prime bases consisting of the 2 and odd primes with
  * Legendre(kN|p)>=0, i.e. such that kN is not a non-residue (mod p). Instead of the Legendre
@@ -44,33 +42,20 @@ public class PrimeBaseGenerator {
    * @param primesArray is filled with the primes p satisfying Jacobi(kN|p)>=0
    */
   public void computeReducedPrimeBase(BigInteger kN, int primeBaseSize, int[] primesArray) {
-    computeReducedPrimeBase(kN, primeBaseSize, primesArray, null);
-  }
-
-  /**
-   * Compute a reduced prime base containing the 2 and odd primes p with Jacobi(kN|p)>=0
-   *
-   * @param kN has to be a quadratic residue modulo all p
-   * @param primeBaseSize the wanted number of primes
-   * @param primesArray is filled with the primes p satisfying Jacobi(kN|p)>=0
-   * @param primesArray_big if not null then this array is filled with the p in BigInteger
-   */
-  public void computeReducedPrimeBase(
-      BigInteger kN, int primeBaseSize, int[] primesArray, BigInteger[] primesArray_big) {
     // the 2 is always added
     primesArray[0] = 2;
-    if (primesArray_big != null) primesArray_big[0] = I_2;
+
     // odd primes
     int count = 1;
     for (int i = 1; ; i++) {
       int p = rawPrimesArray.getPrime(i);
       int jacobi = jacobiEngine.jacobiSymbol(kN, p);
-      if (DEBUG) {
-        // ensure correctness of prime generator
-        assert (BigInteger.valueOf(p).isProbablePrime(20));
-        // ensure that Jacobi symbol values are in the expected range -1 ... +1
-        if (jacobi < -1 || jacobi > 1) LOG.warn("kN=" + kN + ", p=" + p + " -> jacobi=" + jacobi);
-      }
+      //			if (DEBUG) {
+      //				// ensure correctness of prime generator
+      //				assertTrue(BigInteger.valueOf(p).isProbablePrime(20));
+      //				// ensure that Jacobi symbol values are in the expected range -1 ... +1
+      //				if (jacobi<-1 || jacobi>1) LOG.warn("kN=" + kN + ", p=" + p + " -> jacobi=" + jacobi);
+      //			}
       // Q(x) = A(x)^2 - kN can only be divisible by p with Legendre(kN|p) >= 0.
       // It is important to add p with Legendre(kN|p) == 0, too! Otherwise we would not find such p
       // during trial division.
@@ -81,7 +66,6 @@ public class PrimeBaseGenerator {
         // kN is a quadratic residue mod p (or not coprime)
         primesArray[count] = p;
         // if not null, then fill primesArray_big, too
-        if (primesArray_big != null) primesArray_big[count] = BigInteger.valueOf(p);
         if (++count == primeBaseSize) break;
       }
     }

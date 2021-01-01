@@ -504,7 +504,7 @@ public class Uint128 {
                 + " but result = "
                 + prod128Big);
       }
-      //			assertEquals(correctProd, prod128Big);
+      //      assertEquals(correctProd, prod128Big);
 
       prod128 = mul64 /*_v2*/(a_lo, b_lo);
       prod128Big = prod128.toBigInteger();
@@ -519,7 +519,7 @@ public class Uint128 {
                 + " but result = "
                 + prod128Big);
       }
-      //			assertEquals(correctProd, prod128Big);
+      //      assertEquals(correctProd, prod128Big);
     }
   }
 

@@ -438,8 +438,7 @@ public class TensorFunctions {
       IExpr arg1 = ast.arg1().normal(false);
       if (arg1.isAST()) {
         IAST tensor = (IAST) arg1;
-        ArrayList<Integer> dims =
-            LinearAlgebra.dimensions(tensor, tensor.head(), Integer.MAX_VALUE);
+        ArrayList<Integer> dims = LinearAlgebra.dimensions(tensor, tensor.head());
         if (dims.size() > 0) {
           if (dims.size() == 2 && dims.get(0).equals(dims.get(1))) {
             // square matrix
@@ -538,31 +537,74 @@ public class TensorFunctions {
     public void setUp(final ISymbol newSymbol) {}
   }
 
-  private static class TensorProduct extends AbstractNonOrderlessArgMultiple {
-
-    public IExpr evaluateAST1(final IAST ast, EvalEngine engine) {
-      return ast.arg1();
-    }
+  private static class TensorProduct extends AbstractEvaluator {
 
     @Override
-    public IExpr e2ObjArg(IAST ast, final IExpr arg1, final IExpr arg2) {
-      if (arg1.isList() && arg2.isList()) {
-        // TODO
-        // IAST tensor1 = (IAST) o0;
-        // IAST tensor2 = (IAST) o0;
-        // return tensor1.mapList(tensor2::times, 1);
+    public IExpr evaluate(final IAST ast, EvalEngine engine) {
+      int argSize = ast.argSize();
+      if (argSize == 0) {
+        return F.C0;
+      } else if (argSize == 1) {
+        return ast.arg1();
       }
+      if (ast.arg1().isList() && ast.arg2().isList()) {
+        IAST tensor1 = (IAST) ast.arg1();
+        ArrayList<Integer> dim1 = LinearAlgebra.dimensions(tensor1, S.List);
+        if (dim1.size() > 0) {
+          for (int i = 2; i < ast.size(); i++) {
+            IAST tensor2 = (IAST) ast.get(i);
+            ArrayList<Integer> dim2 = LinearAlgebra.dimensions(tensor2, S.List);
+            if (dim2.size() > 0) {
+              IExpr temp = tensorProduct(tensor1, tensor2, dim1.size(), engine);
+              if (temp.isPresent()) {
+                if (temp.isList()) {
+                  tensor1 = (IAST) temp;
+                  dim1 = LinearAlgebra.dimensions(tensor1, S.List);
+                  if (dim1.size() > 0) {
+                    if (i < argSize) {
+                      if (ast.get(i + 1).isList()) {
+                        continue;
+                      }
+                    } else {
+                      return tensor1;
+                    }
+                  }
+                }
+                IASTAppendable result = F.ast(S.TensorProduct);
+                result.append(temp);
+                result.appendAll(ast, i + 1, ast.size());
+                return result;
+              }
+            }
+            if (i == 2) {
+              return F.NIL;
+            }
 
+            IASTAppendable result = F.ast(S.TensorProduct);
+            result.append(tensor1);
+            result.appendAll(ast, i, ast.size());
+            return result;
+          }
+          return tensor1;
+        }
+      }
       return F.NIL;
     }
 
-    private IExpr numericalDot(final IExpr o0, final IExpr o1) throws MathIllegalArgumentException {
-      return F.NIL;
-    }
-
-    @Override
-    public IExpr numericEval(final IAST ast, EvalEngine engine) {
-      return evaluate(ast, engine);
+    /**
+     * Evaluate expression: <code>Map((#1 * tensor2)&, tensor1, {tensor1Depth}) </code>, to get the
+     * tensor product.
+     *
+     * @param tensor1 the first tensor
+     * @param tensor2 the second tensor
+     * @param tensor1Depth depth of the first tensor
+     * @param engine
+     * @return
+     */
+    private static IExpr tensorProduct(
+        final IAST tensor1, final IAST tensor2, int tensor1Depth, EvalEngine engine) {
+      return engine.evaluate(
+          F.Map(F.Function(F.Times(F.Slot1, tensor2)), tensor1, F.List(tensor1Depth)));
     }
 
     @Override
@@ -577,8 +619,7 @@ public class TensorFunctions {
     public IExpr evaluate(final IAST ast, EvalEngine engine) {
       if (ast.arg1().isList()) {
         IAST list = (IAST) ast.arg1();
-        List<Integer> intList =
-            LinearAlgebra.dimensions((IAST) ast.arg1(), list.head(), Integer.MAX_VALUE);
+        List<Integer> intList = LinearAlgebra.dimensions((IAST) ast.arg1(), list.head());
         return F.ZZ(intList.size());
       }
       return F.NIL;

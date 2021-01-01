@@ -125,7 +125,7 @@ public class SHCNIterator {
   //		Double lastX = null;
   //		for (int n=1; n<=1000; n++) {
   //			SHCNEntry entry = shcnIter.next();
-  //			assertEquals(n, entry.getExponentSum());
+  // 			assertEquals(n, entry.getExponentSum());
   //			double x = entry.getX();
   //			Double xDiff = lastX!=null ? x-lastX : null;
   //			BigInteger shcn = entry.getSHCN();

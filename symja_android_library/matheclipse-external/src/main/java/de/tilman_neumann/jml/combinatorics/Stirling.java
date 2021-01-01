@@ -94,7 +94,7 @@ public class Stirling {
    * second kind. This is faster than the recurrence, but slower than the g.f. approach.
    *
    * @param n the first argument to the Stirling function.
-   * @param m the second argument to the Stirling function.
+   * @param k the second argument to the Stirling function.
    * @return s(n,k)
    * @see <a
    *     href="http://en.wikipedia.org/wiki/Stirling_number">http://en.wikipedia.org/wiki/Stirling_number</a>

@@ -44,11 +44,9 @@ public interface TDiv_CF {
    * @param primeBaseSize the true prime base size (the arrays are preallocated with a bigger
    *     length)
    * @param primesArray prime base in ints
-   * @param primesArray_big prime base in BigIntegers
    * @throws FactorException
    */
-  public void initialize(
-      BigInteger kN, int primeBaseSize, int[] primesArray, BigInteger[] primesArray_big)
+  public void initialize(BigInteger kN, int primeBaseSize, int[] primesArray)
       throws FactorException;
 
   /**

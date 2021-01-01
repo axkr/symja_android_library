@@ -31,21 +31,21 @@ public class EEA63 {
   private static final boolean DEBUG = false;
 
   public static class Result {
-    /** if g==1 and y>0 then a = (1/x) mod y */
-    public long a;
-    /** if g==1 and y>0 then a = (1/y) mod x */
-    public long b;
     /** gcd */
     public long g;
+    /** if g==1 then a = (1/x) mod y */
+    public long a;
+    /** if g==1 then b = (1/y) mod x */
+    public long b;
 
     public Result(long g, long a, long b) {
+      this.g = g;
       this.a = a;
       this.b = b;
-      this.g = g;
     }
 
     public String toString() {
-      return "{" + a + ", " + b + ", " + g + "}";
+      return "{" + g + ", " + a + ", " + b + "}";
     }
   }
 
@@ -54,7 +54,7 @@ public class EEA63 {
    *
    * @param x
    * @param y
-   * @return {a, b, gcd}
+   * @return {gcd, a, b}
    */
   public Result computeAll(long x, long y) {
     // initialize
@@ -93,7 +93,7 @@ public class EEA63 {
     }
 
     if (Long.signum(x) == parity) {
-      a = (parity == 1) ? y + a : y - a; // TODO: What about b?
+      a = (parity == 1) ? y + a : y - a; // XXX It seems that b does not depend on parity?
     }
     return new Result(g, a, b);
   }
@@ -103,7 +103,7 @@ public class EEA63 {
    *
    * @param x
    * @param y
-   * @return {a, gcd}
+   * @return {gcd, a, b=-1 (undefined)}
    */
   public Result computeHalf(long x, long y) {
     // initialize

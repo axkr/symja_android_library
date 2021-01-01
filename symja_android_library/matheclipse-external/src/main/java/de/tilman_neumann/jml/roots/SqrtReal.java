@@ -124,7 +124,11 @@ public class SqrtReal {
     throw new IllegalArgumentException("x = " + x + ", but sqrt(x) is defined for x>=0 only!");
   }
 
-  /** Test */
+  /**
+   * Test.
+   *
+   * @param argv command line arguments
+   */
   public static void main(String[] argv) {
     ConfigUtil.initProject();
 

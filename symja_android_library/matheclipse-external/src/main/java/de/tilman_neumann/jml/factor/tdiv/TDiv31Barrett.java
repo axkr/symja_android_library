@@ -20,12 +20,12 @@ import org.apache.log4j.Logger;
 import de.tilman_neumann.jml.factor.FactorAlgorithm;
 import de.tilman_neumann.jml.primes.exact.AutoExpandingPrimesArray;
 import de.tilman_neumann.util.SortedMultiset;
-import de.tilman_neumann.util.SortedMultiset_BottomUp;
 
 import static de.tilman_neumann.jml.base.BigIntConstants.I_2;
 
 /**
- * Trial division using Barrett reduction, see https://en.wikipedia.org/wiki/Barrett_reduction.
+ * Trial division using long-valued Barrett reduction, see
+ * https://en.wikipedia.org/wiki/Barrett_reduction.
  *
  * <p>Significantly faster than TDiv31Inverse.
  *
@@ -57,30 +57,35 @@ public class TDiv31Barrett extends FactorAlgorithm {
   }
 
   @Override
-  public SortedMultiset<BigInteger> factor(BigInteger Nbig) {
-    SortedMultiset<BigInteger> primeFactors = new SortedMultiset_BottomUp<>();
+  public void factor(BigInteger Nbig, SortedMultiset<BigInteger> primeFactors) {
+    factor(Nbig, 1, primeFactors);
+  }
+
+  /**
+   * Find all factor of NBig, which must have less than 32 bit.
+   *
+   * @param Nbig
+   * @param Nexp the exponent which with found factors are added to primeFactors
+   * @param primeFactors
+   */
+  public void factor(BigInteger Nbig, int Nexp, SortedMultiset<BigInteger> primeFactors) {
     int N = Nbig.intValue();
 
     // Powers of 2 can be removed very fast.
     // This is required also because the Barrett division does not work with p=2.
     int lsb = Integer.numberOfTrailingZeros(N);
     if (lsb > 0) {
-      primeFactors.add(I_2, lsb);
+      primeFactors.add(I_2, lsb * Nexp);
       N >>= lsb;
     }
 
     // Test odd primes
     int q;
     for (int i = 1; ; i++) {
-      final long r = pinv[i];
       final int p = primes[i];
-      int exp = 0;
-      while ((q = (1 + (int) ((N * r) >> 32))) * p == N) {
-        exp++;
+      while ((q = (1 + (int) ((N * pinv[i]) >> 32))) * p == N) {
+        primeFactors.add(BigInteger.valueOf(p), Nexp);
         N = q;
-      }
-      if (exp > 0) {
-        primeFactors.add(BigInteger.valueOf(p), exp);
       }
       if (p * (long) p > N) {
         break;
@@ -88,11 +93,9 @@ public class TDiv31Barrett extends FactorAlgorithm {
     }
 
     if (N > 1) {
-      // either N is prime, or we could not find all factors with p<=pLimit -> add the rest to the
-      // result
-      primeFactors.add(BigInteger.valueOf(N));
+      // either N is prime, or we could not find all factors -> add the rest to the result
+      primeFactors.add(BigInteger.valueOf(N), Nexp);
     }
-    return primeFactors;
   }
 
   @Override

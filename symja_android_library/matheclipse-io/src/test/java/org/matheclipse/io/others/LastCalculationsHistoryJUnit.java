@@ -1,19 +1,21 @@
-package org.matheclipse.io.system;
+package org.matheclipse.io.others;
 
 import static org.junit.Assert.assertEquals;
 
 import org.matheclipse.core.eval.EvalHistory;
 import org.matheclipse.core.expression.F;
+import org.matheclipse.parser.client.FEConfig;
 
 import junit.framework.TestCase;
 
-public class LastCalculationsHistoryTest extends TestCase {
+public class LastCalculationsHistoryJUnit extends TestCase {
 
-  public LastCalculationsHistoryTest(String name) {
+  public LastCalculationsHistoryJUnit(String name) {
     super(name);
   }
 
   public void testSystem001() {
+    FEConfig.PARSER_USE_LOWERCASE_SYMBOLS = false;
     EvalHistory history = new EvalHistory((short) 3);
 
     assertEquals(history.getOut(-1).toString(), "NIL");
@@ -22,7 +24,7 @@ public class LastCalculationsHistoryTest extends TestCase {
     history.addInOut(F.ZZ(2), F.ZZ(2));
     history.addInOut(F.ZZ(3), F.ZZ(3));
 
-    assertEquals(history.definitionOut().toString(), "{Out(1)=1,Out(2)=2,Out(3)=3}");
+    assertEquals(history.definitionOut().toString(), "{Set(Out(1),1),Set(Out(2),2),Set(Out(3),3)}");
     assertEquals(history.getIn(0).toString(), "NIL");
     assertEquals(history.getIn(-1).toString(), "3");
     assertEquals(history.getIn(3).toString(), "3");
@@ -31,7 +33,7 @@ public class LastCalculationsHistoryTest extends TestCase {
 
     history.addInOut(F.ZZ(4), F.ZZ(4));
 
-    assertEquals(history.definitionOut().toString(), "{Out(2)=2,Out(3)=3,Out(4)=4}");
+    assertEquals(history.definitionOut().toString(), "{Set(Out(2),2),Set(Out(3),3),Set(Out(4),4)}");
     assertEquals(history.getIn(0).toString(), "NIL");
     assertEquals(history.getIn(-1).toString(), "4");
     assertEquals(history.getIn(3).toString(), "3");

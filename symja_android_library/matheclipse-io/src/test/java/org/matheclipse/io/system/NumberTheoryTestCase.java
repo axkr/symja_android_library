@@ -13,20 +13,20 @@ import junit.framework.TestCase;
 public class NumberTheoryTestCase extends TestCase {
 
   public void testFactorInteger() {
-    SortedMap<BigInteger, Integer> map = new TreeMap<BigInteger, Integer>();
-    Primality.factorInteger(BigInteger.valueOf(990), map);
+    //    SortedMap<BigInteger, Integer> map = new TreeMap<BigInteger, Integer>();
+    SortedMap<BigInteger, Integer> map = Primality.factorInteger(BigInteger.valueOf(990));
     assertEquals(map.toString(), "{2=1, 3=2, 5=1, 11=1}");
 
     map.clear();
-    Primality.factorInteger(new BigInteger("341550071728321"), map);
+    map = Primality.factorInteger(new BigInteger("341550071728321"));
     assertEquals(map.toString(), "{10670053=1, 32010157=1}");
 
     map.clear();
-    Primality.factorInteger(BigInteger.valueOf(2010), map);
+    map = Primality.factorInteger(BigInteger.valueOf(2010));
     assertEquals(map.toString(), "{2=1, 3=1, 5=1, 67=1}");
 
     map.clear();
-    Primality.factorInteger(BigInteger.valueOf(24), map);
+    map = Primality.factorInteger(BigInteger.valueOf(24));
     assertEquals(map.toString(), "{2=3, 3=1}");
   }
 

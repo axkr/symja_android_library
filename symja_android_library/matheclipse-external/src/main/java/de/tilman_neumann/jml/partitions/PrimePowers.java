@@ -22,10 +22,10 @@ import java.math.BigInteger;
  */
 public interface PrimePowers extends Mpi {
   /**
-   * Return the prime base of index i.
+   * Return the prime at the given index.
    *
    * @param index
-   * @return
+   * @return prime
    */
   BigInteger getPrime(int index);
 }

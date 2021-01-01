@@ -37,7 +37,7 @@ import de.tilman_neumann.util.Timer;
  *
  * @author Tilman Neumann
  */
-public class SIQSPolyGenerator implements PolyGenerator {
+public class SIQSPolyGenerator {
   private static final Logger LOG = Logger.getLogger(SIQSPolyGenerator.class);
   private static final boolean DEBUG = false;
 
@@ -82,6 +82,7 @@ public class SIQSPolyGenerator implements PolyGenerator {
   // solution arrays
   private int filteredBaseSize;
   private SolutionArrays solutionArrays;
+  private int[][] Bainv2Array;
 
   private EEA31 eea = new EEA31();
   private BaseFilter baseFilter;
@@ -103,12 +104,25 @@ public class SIQSPolyGenerator implements PolyGenerator {
     this.baseFilter = new BaseFilter_q1();
   }
 
-  @Override
+  /** @return the name of this polynomial generator */
   public String getName() {
     return "SIQSPoly(" + baseFilter.getName() + ")";
   }
 
-  @Override
+  /**
+   * Initialize the polynomial generator for a new N. Inside this method we require
+   * aParamGenerator.qCount -> aParamGenerator must have been initialized before.
+   *
+   * @param k multiplier
+   * @param N
+   * @param kN
+   * @param d the d-parameter of quadratic polynomials Q(x) = (d*a*x + b)^2 - kN
+   * @param sieveParams basic sieve parameters for a new N
+   * @param baseArrays primes, power arrays after adding powers
+   * @param aParamGenerator generator for a-parameters
+   * @param sieveEngine
+   * @param tDivEngine
+   */
   public void initializeForN(
       int k,
       BigInteger N,
@@ -146,7 +160,13 @@ public class SIQSPolyGenerator implements PolyGenerator {
 
     // Allocate filtered base and solution arrays: The true size may be smaller if powers are
     // filtered out, too.
-    solutionArrays = new SolutionArrays(mergedBaseSize - qCount, qCount);
+    int solutionsCount = mergedBaseSize - qCount;
+    solutionArrays = new SolutionArrays(solutionsCount, qCount);
+    // Bainv2: full initialization.
+    // The sub-arrays are in reverse order compared to [Contini], which almost doubles the speed of
+    // nextXArrays().
+    // The maximum v value is qCount-1 -> allocation with qCount-1 is sufficient.
+    Bainv2Array = new int[qCount - 1][solutionsCount];
 
     // statistics
     if (ANALYZE) {
@@ -157,7 +177,7 @@ public class SIQSPolyGenerator implements PolyGenerator {
     }
   }
 
-  @Override
+  /** Compute a new polynomial. */
   public void nextPolynomial() {
     if (bIndex == maxBIndex) {
       // Incrementing bIndex would exceed the maximum value -> we need a new a-parameter.
@@ -182,11 +202,16 @@ public class SIQSPolyGenerator implements PolyGenerator {
         LOG.debug("(b^2-kN)/a [" + bIndex + "] = " + b.multiply(b).subtract(kN).divide(a));
       }
       if (ANALYZE) firstBDuration += timer.capture();
+
       // filter prime base
       BaseFilter.Result filterResult =
           baseFilter.filter(solutionArrays, baseArrays, mergedBaseSize, qArray, qCount, k);
       filteredBaseSize = filterResult.filteredBaseSize;
+      //			if (DEBUG) assertTrue(filteredBaseSize <= mergedBaseSize-qCount);
+      // The above is an equality if we do not sieve with powers.
+      // If we do sieve with powers then powers of q's may be removed, leading to the inequality.
       if (ANALYZE) filterPBDuration += timer.capture();
+
       // compute ainvp[], Bainv2[][] and solution x-arrays for a and first b
       computeFirstXArrays();
       // pass data to sub-engines
@@ -241,7 +266,7 @@ public class SIQSPolyGenerator implements PolyGenerator {
       // thread for each new a-parameter.
       // Note that fix prime divisors depend only on a and k -> they do not change at a new
       // b-parameter.
-      computeNextXArrays(v, bParameterNeedsAddition);
+      computeNextXArrays(Bainv2Array[v - 1], bParameterNeedsAddition);
       if (ANALYZE) nextXArrayDuration += timer.capture();
     }
   }
@@ -335,7 +360,6 @@ public class SIQSPolyGenerator implements PolyGenerator {
 
     final int[] pArray = solutionArrays.pArray;
     final int[] tArray = solutionArrays.tArray;
-    final int[][] Bainv2Array = solutionArrays.Bainv2Array;
     final int[] x1Array = solutionArrays.x1Array;
     final int[] x2Array = solutionArrays.x2Array;
     final long[] ainvpArray = new long[filteredBaseSize];
@@ -394,15 +418,15 @@ public class SIQSPolyGenerator implements PolyGenerator {
       //				}
       //				// x1,x2 were chosen such that p divides Q
       //				int x1 = x1Array[pIndex];
+      //				assertTrue(x1>=0 && x1<p);
       //				if (t==0) assertEquals(x1, (int) ((ainvp * (p - bModP)) % p));
       //
       //				BigInteger Q1 = da.multiply(BigInteger.valueOf(x1)).add(b).pow(2).subtract(kN);
       //				assertEquals(I_0, Q1.mod(p_big));
       //				int x2 = x2Array[pIndex];
+      //				assertTrue(x2>=0 && x2<p);
       //				BigInteger Q2 = da.multiply(BigInteger.valueOf(x2)).add(b).pow(2).subtract(kN);
       //				assertEquals(I_0, Q2.mod(p_big));
-      //				if (x1<0 || x2<0) LOG.debug("p=" + p + ", ainvp=" + ainvp + ": x1 = " + x1 + ", x2 = " +
-      // x2);
       //			}
     } // end_for (primes)
 
@@ -435,15 +459,15 @@ public class SIQSPolyGenerator implements PolyGenerator {
   /**
    * Update the entries of the solution arrays for the next b-parameter.
    *
-   * @param v gray code, with v in [1, ..., qCount-1]
+   * @param Bainv2Row Bainv2Array[v-1] with gray code v in [1, ..., qCount-1]
    * @param xArraysNeedSubtraction true if ceil(bIndex/2^v) is even, (-1)^ceil(bIndex/2^v) == +1
    */
-  private void computeNextXArrays(int v, boolean xArraysNeedSubtraction) { // performance-critical !
+  private void computeNextXArrays(
+      int[] Bainv2Row, boolean xArraysNeedSubtraction) { // performance-critical !
     // update solution arrays:
     // Note that trial division needs the solutions for all primes p,
     // even if the sieve leaves out the smallest p[i] with i < pMinIndex.
     int[] filteredPowers = solutionArrays.pArray;
-    int[] Bainv2Row = solutionArrays.Bainv2Array[v - 1];
     int[] x1Array = solutionArrays.x1Array;
     int[] x2Array = solutionArrays.x2Array;
     // WARNING: The correct case distinction depending on the sign of (-1)^ceil(bIndex/2^v)
@@ -487,7 +511,7 @@ public class SIQSPolyGenerator implements PolyGenerator {
     //		}
   }
 
-  @Override
+  /** @return description of the durations of the individual sub-phases */
   public PolyReport getReport() {
     return new PolyReport(
         aParamCount,
@@ -500,7 +524,7 @@ public class SIQSPolyGenerator implements PolyGenerator {
         nextXArrayDuration);
   }
 
-  @Override
+  /** Release memory after a factorization. */
   public void cleanUp() {
     baseArrays = null;
     solutionArrays = null;

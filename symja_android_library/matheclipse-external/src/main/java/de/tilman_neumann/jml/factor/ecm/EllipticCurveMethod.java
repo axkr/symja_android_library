@@ -21,13 +21,13 @@
 package de.tilman_neumann.jml.factor.ecm;
 
 import java.math.BigInteger;
-import java.util.Map.Entry;
 import java.util.SortedMap;
-import java.util.TreeMap;
 
 import org.apache.log4j.Logger;
 
 import de.tilman_neumann.jml.factor.FactorAlgorithm;
+import de.tilman_neumann.jml.factor.base.FactorArguments;
+import de.tilman_neumann.jml.factor.base.FactorResult;
 import de.tilman_neumann.jml.factor.tdiv.TDiv;
 import de.tilman_neumann.jml.powers.PurePowerTest;
 import de.tilman_neumann.jml.primes.exact.AutoExpandingPrimesArray;
@@ -47,6 +47,8 @@ import static de.tilman_neumann.jml.base.BigIntConstants.*;
 public class EllipticCurveMethod extends FactorAlgorithm {
   private static final Logger LOG = Logger.getLogger(EllipticCurveMethod.class);
 
+  private static final boolean DEBUG = false;
+
   static final int NLen = 1200;
   private static final long DosALa32 = 1L << 32;
   private static final long DosALa31 = 1L << 31;
@@ -58,9 +60,6 @@ public class EllipticCurveMethod extends FactorAlgorithm {
 
   /** 1 as "BigNbr" */
   private static final int BigNbr1[] = new int[NLen];
-
-  /** maximum number of elliptic curves tested for 30, 35, ..., 85, 90 digits */
-  private static final int limits[] = {5, 8, 15, 25, 27, 32, 43, 70, 150, 300, 350, 600, 1500};
 
   /** Primes < 5000 */
   private static final int SmallPrime[] = new int[670]; // p_669 = 4999;
@@ -94,11 +93,14 @@ public class EllipticCurveMethod extends FactorAlgorithm {
 
   /** Length of multiple precision numbers. */
   int NumberLength;
-  // TODO Running operations to the full NumberLength ignoring the true argument sizes is a waste of
-  // performance.
 
-  /** Elliptic Curve number */
-  private int EC;
+  /**
+   * the maximum number of curves to run. -1 means no limit, 0 automatic computation of the
+   * parameter, positive values are applied directly
+   */
+  int maxCurves;
+  /** Elliptic curve counter */
+  int EC;
 
   private int[] fieldTX, fieldTZ, fieldUX, fieldUZ;
   private int[] fieldAux1, fieldAux2, fieldAux3, fieldAux4;
@@ -116,87 +118,100 @@ public class EllipticCurveMethod extends FactorAlgorithm {
     }
   }
 
+  /**
+   * Full constructor.
+   *
+   * @param maxCurves the maximum number of curves to run. -1 means no limit, 0 automatic
+   *     computation of the parameter, positive values are applied directly.
+   */
+  public EllipticCurveMethod(int maxCurves) {
+    this.maxCurves = maxCurves;
+  }
+
   @Override
   public String getName() {
-    return "ECM";
+    return "ECM(maxCurves = " + maxCurves + ")";
   }
 
   /**
-   * {@inheritDoc}
+   * Find small factors of some N. Returns found factors in <code>result.primeFactors</code> and
+   * eventually some unfactored composites in <code>result.compositeFactors</code>.
    *
-   * <p>Note that the curve limit of this method for finding a single factor is the same as that of
-   * factor() and factorize() for finding all prime factors of N.
+   * @param args
+   * @param result the result of the factoring attempt. Should be initialized only once by the
+   *     caller to reduce overhead.
+   * @return true if ECM found some factors
    */
-  @Override
-  public BigInteger findSingleFactor(BigInteger N) {
-    EC = 1;
-    return fnECM(N);
-  }
-
-  @Override
-  public SortedMultiset<BigInteger> factor(BigInteger N) {
-    SortedMultiset<BigInteger> allFactors = new SortedMultiset_BottomUp<BigInteger>();
-    SortedMultiset<BigInteger> compositeFactors = factorize(N, allFactors);
-    allFactors.addAll(compositeFactors);
-    return allFactors;
-  }
-
-  /**
-   * Find small factors of some N. Returns found factors in <code>primeFactors</code> and eventually
-   * some unfactored composites as return value.
-   *
-   * @param N the number to factor
-   * @param primeFactors the found prime factors.
-   * @return unfactored composites left after stopping ECM, empty map if N has been factored
-   *     completely
-   */
-  public SortedMultiset<BigInteger> factorize(
-      BigInteger N, SortedMap<BigInteger, Integer> primeFactors) {
-    // set up new N
-    EC = 1;
+  public boolean searchFactors(FactorArguments args, FactorResult result) {
+    // Set up new N.
+    BigInteger N = args.N;
+    // The elliptic curve counter should not be reset to 0 in fnECM() so that curves do not get
+    // tested twice, no matter how many factors N has.
+    EC = 0;
 
     // Do trial division by all primes < 131072.
-    SortedMultiset<BigInteger> unresolvedComposites = new SortedMultiset_BottomUp<>();
-    N = tdiv.findSmallFactors(N, 131072, primeFactors); // TODO do outside ECM?
+    SortedMultiset<BigInteger> tdivFactors = new SortedMultiset_BottomUp<BigInteger>();
+    // Adding the factors found by trial division must take into account the multiplicity of N
+    N =
+        tdiv.findSmallFactors(
+            N,
+            131072,
+            tdivFactors); // TODO take into account the amount of trial division done before
+    for (BigInteger tdivFactor : tdivFactors.keySet()) {
+      int tdivFactorExp = tdivFactors.get(tdivFactor);
+      result.primeFactors.add(tdivFactor, tdivFactorExp * args.exp);
+    }
+
     if (N.equals(I_1)) {
-      return unresolvedComposites;
+      return true;
     }
 
     // There are factors greater than 131071, and they may be prime or composite.
     if (isProbablePrime(N)) {
-      addToMap(N, 1, primeFactors);
-      return unresolvedComposites;
+      addToMap(N, args.exp, result.primeFactors);
+      return true;
     }
 
     // N is composite -> do ECM
-    TreeMap<BigInteger, Integer> compositesToTest = new TreeMap<BigInteger, Integer>();
-    compositesToTest.put(N, 1);
+    boolean factorFound = false;
+    SortedMultiset<BigInteger> compositesToTest = result.compositeFactors;
+    compositesToTest.add(N, args.exp); // we know that N is composite
+
+    // here we store all composites ECM failed to factor
+    SortedMultiset<BigInteger> failedComposites = new SortedMultiset_BottomUp<BigInteger>();
+
     while (!compositesToTest.isEmpty()) {
       // get next composite to test
-      Entry<BigInteger, Integer> compositeEntry = compositesToTest.pollLastEntry();
-      N = compositeEntry.getKey();
-      int exp = compositeEntry.getValue();
+      N = compositesToTest.firstKey();
+      int exp = compositesToTest.removeAll(N);
 
       // pure power?
       PurePowerTest.Result r = powerTest.test(N);
       if (r != null) {
         // N is a pure power!
-        addToMapDependingOnPrimeTest(r.base, exp * r.exponent, primeFactors, compositesToTest);
+        addToMapDependingOnPrimeTest(
+            r.base, exp * r.exponent, result.primeFactors, compositesToTest);
+        factorFound = true;
         continue; // test next composite
       }
 
       // ECM
       final BigInteger NN = fnECM(N);
       if (NN.equals(I_1)) {
-        // N is composite but could not be resolved
-        addToMap(N, exp, unresolvedComposites);
+        // N is composite but could not be factored by ECM
+        addToMap(N, exp, failedComposites);
         continue;
       }
       // NN is a factor of N
-      addToMapDependingOnPrimeTest(NN, exp, primeFactors, compositesToTest);
-      addToMapDependingOnPrimeTest(N.divide(NN), exp, primeFactors, compositesToTest);
+      addToMapDependingOnPrimeTest(NN, exp, result.primeFactors, compositesToTest);
+      addToMapDependingOnPrimeTest(N.divide(NN), exp, result.primeFactors, compositesToTest);
+      factorFound = true;
     }
-    return unresolvedComposites;
+
+    // Before we finish, add all composites that could not be factored to result.compositeFactors.
+    // We want the product of result factors to match N, no matter what happened.
+    compositesToTest.addAll(failedComposites);
+    return factorFound;
   }
 
   private boolean isProbablePrime(BigInteger N) {
@@ -218,9 +233,13 @@ public class EllipticCurveMethod extends FactorAlgorithm {
     map.put(N, (oldExp == null) ? exp : oldExp + exp);
   }
 
+  @Override
+  public BigInteger findSingleFactor(BigInteger N) {
+    EC = 0;
+    return fnECM(N);
+  }
+
   private BigInteger fnECM(BigInteger N) {
-    int I, J, Pass, Qaux;
-    long L1, L2, LS, P;
     int[] A0 = new int[NLen];
     int[] A02 = new int[NLen];
     int[] A03 = new int[NLen];
@@ -229,14 +248,10 @@ public class EllipticCurveMethod extends FactorAlgorithm {
     int[] DZ = new int[NLen]; // zero-init required
     int[] GD = new int[NLen]; // zero-init required
     int[] M = new int[NLen]; // zero-init required
-    int[] TX = new int[NLen];
-    fieldTX = TX;
-    int[] TZ = new int[NLen];
-    fieldTZ = TZ;
-    int[] UX = new int[NLen];
-    fieldUX = UX;
-    int[] UZ = new int[NLen];
-    fieldUZ = UZ;
+    int[] TX = fieldTX = new int[NLen];
+    int[] TZ = fieldTZ = new int[NLen];
+    int[] UX = fieldUX = new int[NLen];
+    int[] UZ = fieldUZ = new int[NLen];
     int[] W1 = new int[NLen];
     int[] W2 = new int[NLen];
     int[] W3 = new int[NLen]; // zero-init required
@@ -245,14 +260,10 @@ public class EllipticCurveMethod extends FactorAlgorithm {
     int[] WZ = new int[NLen];
     int[] X = new int[NLen];
     int[] Z = new int[NLen];
-    int[] Aux1 = new int[NLen];
-    fieldAux1 = Aux1;
-    int[] Aux2 = new int[NLen];
-    fieldAux2 = Aux2;
-    int[] Aux3 = new int[NLen];
-    fieldAux3 = Aux3;
-    int[] Aux4 = new int[NLen];
-    fieldAux4 = Aux4;
+    int[] Aux1 = fieldAux1 = new int[NLen];
+    int[] Aux2 = fieldAux2 = new int[NLen];
+    int[] Aux3 = fieldAux3 = new int[NLen];
+    fieldAux4 = new int[NLen];
     int[] Xaux = new int[NLen];
     int[] Zaux = new int[NLen];
     int[][] root = new int[480][NLen];
@@ -291,197 +302,215 @@ public class EllipticCurveMethod extends FactorAlgorithm {
     montgomery.mul(MontgomeryMultR2, MontgomeryMultR2, MontgomeryMultAfterInv);
     AddBigNbrModN(MontgomeryMultR1, MontgomeryMultR1, MontgomeryMultR2);
 
-    // Modular curve loop: It seems to be faster not to repeat previously tested curves for new
-    // factors
-    EC--;
-    do {
-      new_curve:
-      do {
-        EC++;
-        int digitsOfN = N.toString().length(); // Get number of digits.
-        if (digitsOfN > 30 && digitsOfN <= 90) { // If between 30 and 90 digits...
-          int limit = limits[((int) digitsOfN - 31) / 5];
-          if (EC >= limit) {
-            EC += 1;
-            return I_1; // stop ECM
-          }
-        }
-        L1 = 2000;
+    int maxCurvesForN = maxCurves;
+    if (maxCurvesForN == 0) { // automatic computation requested
+      int NBits = N.bitLength();
+      // Dario Alpern's choice of (decimal digits -> maxCurves) was:
+      // 30->5, 35->8, 40->15, 45->25, 50->27, 55->32, 60->43, 65->70, 70->150, 75->300, 80->350,
+      // 85->600, 90->1500
+      // For N > 90 decimal digits the number of curves to run was unlimited, so his SIQS would
+      // never be called.
+      // The following re-estimate seems to work quite fine for any number of PSIQS threads. It is
+      // rather cautious because hitting hard semi-primes
+      // shall not let ECM waste more time than SIQS or PSIQS would need. Nonetheless, these few
+      // curves speed up factoring random composites a lot.
+      maxCurvesForN = NBits > 130 ? (int) Math.pow((NBits - 130) / 15, 1.61) : 0;
+      if (DEBUG) LOG.debug("ECM: NBits = " + NBits + ", maxCurvesForN = " + maxCurvesForN);
+    }
+
+    // Modular curve loop:
+    while (true) {
+      if (maxCurvesForN >= 0 && EC >= maxCurvesForN) {
+        return I_1; // stop ECM
+      }
+      EC++;
+
+      long L1, L2, LS;
+      if (EC < 26) {
+        L1 = 2000; // Number of primes less than 2.000
         L2 = 200000;
         LS = 45;
-        /* Number of primes less than 2000 */
-        if (EC > 25) {
-          if (EC < 326) {
-            L1 = 50000;
-            L2 = 5000000;
-            LS = 224;
-            /* Number of primes less than 50000 */
-          } else if (EC < 2000) {
-            L1 = 1000000;
-            L2 = 100000000;
-            LS = 1001;
-            /* Number of primes less than 1000000 */
-          } else {
-            L1 = 11000000;
-            L2 = 1100000000;
-            LS = 3316;
-            /* Number of primes less than 11000000 */
+      } else if (EC < 326) {
+        L1 = 50000; // Number of primes less than 50.000
+        L2 = 5000000;
+        LS = 224;
+      } else if (EC < 2000) {
+        L1 = 1000000; // Number of primes less than 1.000.000
+        L2 = 100000000;
+        LS = 1001;
+      } else {
+        L1 = 11000000; // Number of primes less than 11.000.000
+        L2 = 1100000000;
+        LS = 3316;
+      }
+
+      LongToBigNbr(2 * (EC + 1), Aux1);
+      LongToBigNbr(3 * (EC + 1) * (EC + 1) - 1, Aux2);
+      ModInvBigNbr(Aux2, TestNbr, Aux2);
+      MultBigNbrModN(Aux1, Aux2, Aux3, dN);
+      MultBigNbrModN(Aux3, MontgomeryMultR1, A0, dN);
+      montgomery.mul(A0, A0, A02);
+      montgomery.mul(A02, A0, A03);
+      SubtractBigNbrModN(A03, A0, Aux1);
+      MultBigNbrByLongModN(A02, 9, Aux2, dN);
+      SubtractBigNbrModN(Aux2, MontgomeryMultR1, Aux2);
+      montgomery.mul(Aux1, Aux2, Aux3);
+      if (BigNbrIsZero(Aux3)) {
+        continue;
+      }
+      MultBigNbrByLongModN(A0, 4, Z, dN);
+      MultBigNbrByLongModN(A02, 6, Aux1, dN);
+      SubtractBigNbrModN(MontgomeryMultR1, Aux1, Aux1);
+      montgomery.mul(A02, A02, Aux2);
+      MultBigNbrByLongModN(Aux2, 3, Aux2, dN);
+      SubtractBigNbrModN(Aux1, Aux2, Aux1);
+      MultBigNbrByLongModN(A03, 4, Aux2, dN);
+      ModInvBigNbr(Aux2, TestNbr, Aux2);
+      montgomery.mul(Aux2, MontgomeryMultAfterInv, Aux3);
+      montgomery.mul(Aux1, Aux3, A0);
+      AddBigNbrModN(A0, MontgomeryMultR2, Aux1);
+      LongToBigNbr(4, Aux2);
+      ModInvBigNbr(Aux2, TestNbr, Aux3);
+      MultBigNbrModN(Aux3, MontgomeryMultR1, Aux2, dN);
+      montgomery.mul(Aux1, Aux2, AA); // the only write access to AA
+      MultBigNbrByLongModN(A02, 3, Aux1, dN);
+      AddBigNbrModN(Aux1, MontgomeryMultR1, X);
+
+      /** *********** */
+      /* First step */
+      /** *********** */
+      System.arraycopy(X, 0, Xaux, 0, NumberLength);
+      System.arraycopy(Z, 0, Zaux, 0, NumberLength);
+      System.arraycopy(MontgomeryMultR1, 0, GcdAccumulated, 0, NumberLength);
+      for (int Pass = 0; Pass < 2; Pass++) {
+        /* For powers of 2 */
+        for (int I = 1; I <= L1; I <<= 1) {
+          duplicate(X, Z, X, Z, AA);
+        }
+        for (int I = 3; I <= L1; I *= 3) {
+          duplicate(W1, W2, X, Z, AA);
+          add3(X, Z, X, Z, W1, W2, X, Z);
+        }
+
+        if (Pass == 0) {
+          montgomery.mul(GcdAccumulated, Z, Aux1);
+          System.arraycopy(Aux1, 0, GcdAccumulated, 0, NumberLength);
+        } else {
+          GcdBigNbr(Z, TestNbr, GD);
+          if (!BigNbrAreEqual(GD, BigNbr1) && !BigNbrAreEqual(GD, TestNbr)) {
+            return BigIntToBigNbr(GD); // found factor, exit
           }
         }
 
-        // System.out.println(primalityString + EC + "\n" + UpperLine + "\n" + LowerLine);
-
-        LongToBigNbr(2 * (EC + 1), Aux1);
-        LongToBigNbr(3 * (EC + 1) * (EC + 1) - 1, Aux2);
-        ModInvBigNbr(Aux2, TestNbr, Aux2);
-        MultBigNbrModN(Aux1, Aux2, Aux3, dN);
-        MultBigNbrModN(Aux3, MontgomeryMultR1, A0, dN);
-        montgomery.mul(A0, A0, A02);
-        montgomery.mul(A02, A0, A03);
-        SubtractBigNbrModN(A03, A0, Aux1);
-        MultBigNbrByLongModN(A02, 9, Aux2, dN);
-        SubtractBigNbrModN(Aux2, MontgomeryMultR1, Aux2);
-        montgomery.mul(Aux1, Aux2, Aux3);
-        if (BigNbrIsZero(Aux3)) {
-          continue;
-        }
-        MultBigNbrByLongModN(A0, 4, Z, dN);
-        MultBigNbrByLongModN(A02, 6, Aux1, dN);
-        SubtractBigNbrModN(MontgomeryMultR1, Aux1, Aux1);
-        montgomery.mul(A02, A02, Aux2);
-        MultBigNbrByLongModN(Aux2, 3, Aux2, dN);
-        SubtractBigNbrModN(Aux1, Aux2, Aux1);
-        MultBigNbrByLongModN(A03, 4, Aux2, dN);
-        ModInvBigNbr(Aux2, TestNbr, Aux2);
-        montgomery.mul(Aux2, MontgomeryMultAfterInv, Aux3);
-        montgomery.mul(Aux1, Aux3, A0);
-        AddBigNbrModN(A0, MontgomeryMultR2, Aux1);
-        LongToBigNbr(4, Aux2);
-        ModInvBigNbr(Aux2, TestNbr, Aux3);
-        MultBigNbrModN(Aux3, MontgomeryMultR1, Aux2, dN);
-        montgomery.mul(Aux1, Aux2, AA); // the only write access to AA
-        MultBigNbrByLongModN(A02, 3, Aux1, dN);
-        AddBigNbrModN(Aux1, MontgomeryMultR1, X);
-
-        /** *********** */
-        /* First step */
-        /** *********** */
-        System.arraycopy(X, 0, Xaux, 0, NumberLength);
-        System.arraycopy(Z, 0, Zaux, 0, NumberLength);
-        System.arraycopy(MontgomeryMultR1, 0, GcdAccumulated, 0, NumberLength);
-        for (Pass = 0; Pass < 2; Pass++) {
-          /* For powers of 2 */
-          for (I = 1; I <= L1; I <<= 1) {
-            duplicate(X, Z, X, Z, AA);
+        /* for powers of odd primes */
+        long P;
+        int indexM = 1;
+        do {
+          P = SmallPrime[indexM++];
+          for (long IP = P; IP <= L1; IP *= P) {
+            prac((int) P, X, Z, W1, W2, W3, W4, AA);
           }
-          for (I = 3; I <= L1; I *= 3) {
-            duplicate(W1, W2, X, Z, AA);
-            add3(X, Z, X, Z, W1, W2, X, Z);
-          }
-
           if (Pass == 0) {
             montgomery.mul(GcdAccumulated, Z, Aux1);
             System.arraycopy(Aux1, 0, GcdAccumulated, 0, NumberLength);
           } else {
             GcdBigNbr(Z, TestNbr, GD);
-            if (BigNbrAreEqual(GD, BigNbr1) == false) {
-              break new_curve; // found factor, exit
+            if (!BigNbrAreEqual(GD, BigNbr1) && !BigNbrAreEqual(GD, TestNbr)) {
+              return BigIntToBigNbr(GD); // found factor, exit
             }
           }
+        } while (P <= LS);
+        P += 2;
 
-          /* for powers of odd primes */
-          int indexM = 1;
-          do {
-            P = SmallPrime[indexM++];
-            for (long IP = P; IP <= L1; IP *= P) {
-              prac((int) P, X, Z, W1, W2, W3, W4, AA);
-            }
+        /* Initialize sieve2310[n]: 1 if gcd(P+2n,2310) > 1, 0 otherwise */
+        int u = (int) P;
+        for (int i = 0; i < 2310; i++) {
+          sieve2310[i] =
+              (u % 3 == 0 || u % 5 == 0 || u % 7 == 0 || u % 11 == 0 ? (byte) 1 : (byte) 0);
+          u += 2;
+        }
+        do {
+          /* Generate sieve */
+          GenerateSieve((int) P, sieve, sieve2310, SmallPrime);
+
+          /* Walk through sieve */
+          for (int i = 0; i < 23100; i++) {
+            if (sieve[i] != 0) continue; /* Do not process composites */
+            if (P + 2 * i > L1) break;
+            prac((int) (P + 2 * i), X, Z, W1, W2, W3, W4, AA);
             if (Pass == 0) {
               montgomery.mul(GcdAccumulated, Z, Aux1);
               System.arraycopy(Aux1, 0, GcdAccumulated, 0, NumberLength);
             } else {
               GcdBigNbr(Z, TestNbr, GD);
-              if (BigNbrAreEqual(GD, BigNbr1) == false) {
-                break new_curve; // found factor, exit
+              if (!BigNbrAreEqual(GD, BigNbr1) && !BigNbrAreEqual(GD, TestNbr)) {
+                return BigIntToBigNbr(GD); // found factor, exit
               }
             }
-          } while (P <= LS);
-          P += 2;
-
-          /* Initialize sieve2310[n]: 1 if gcd(P+2n,2310) > 1, 0 otherwise */
-          int u = (int) P;
-          for (int i = 0; i < 2310; i++) {
-            sieve2310[i] =
-                (u % 3 == 0 || u % 5 == 0 || u % 7 == 0 || u % 11 == 0 ? (byte) 1 : (byte) 0);
-            u += 2;
           }
-          do {
-            /* Generate sieve */
-            GenerateSieve((int) P, sieve, sieve2310, SmallPrime);
-
-            /* Walk through sieve */
-            for (int i = 0; i < 23100; i++) {
-              if (sieve[i] != 0) continue; /* Do not process composites */
-              if (P + 2 * i > L1) break;
-              prac((int) (P + 2 * i), X, Z, W1, W2, W3, W4, AA);
-              if (Pass == 0) {
-                montgomery.mul(GcdAccumulated, Z, Aux1);
-                System.arraycopy(Aux1, 0, GcdAccumulated, 0, NumberLength);
-              } else {
-                GcdBigNbr(Z, TestNbr, GD);
-                if (BigNbrAreEqual(GD, BigNbr1) == false) {
-                  break new_curve; // found factor, exit
-                }
-              }
-            }
-            P += 46200;
-          } while (P < L1);
-          if (Pass == 0) {
-            if (BigNbrIsZero(GcdAccumulated)) { // If GcdAccumulated is...
-              System.arraycopy(Xaux, 0, X, 0, NumberLength);
-              System.arraycopy(Zaux, 0, Z, 0, NumberLength);
-              continue; // ... a multiple of TestNbr, continue.
-            }
-            GcdBigNbr(GcdAccumulated, TestNbr, GD);
-            if (BigNbrAreEqual(GD, BigNbr1) == false) {
-              break new_curve; // found factor, exit
-            }
-            break;
+          P += 46200;
+        } while (P < L1);
+        if (Pass == 0) {
+          if (BigNbrIsZero(GcdAccumulated)) { // If GcdAccumulated is...
+            System.arraycopy(Xaux, 0, X, 0, NumberLength);
+            System.arraycopy(Zaux, 0, Z, 0, NumberLength);
+            continue; // ... a multiple of TestNbr, continue.
           }
-        } /* end for Pass */
-
-        /** *************************************************** */
-        /* Second step (using improved standard continuation) */
-        /** *************************************************** */
-        int j = 0;
-        for (int u = 1; u < 2310; u += 2) {
-          if (u % 3 == 0 || u % 5 == 0 || u % 7 == 0 || u % 11 == 0) {
-            sieve2310[u / 2] = (byte) 1;
-          } else {
-            sieve2310[(sieveidx[j++] = u / 2)] = (byte) 0;
+          GcdBigNbr(GcdAccumulated, TestNbr, GD);
+          if (!BigNbrAreEqual(GD, BigNbr1) && !BigNbrAreEqual(GD, TestNbr)) {
+            return BigIntToBigNbr(GD); // found factor, exit
           }
+          break;
         }
-        System.arraycopy(sieve2310, 0, sieve2310, 1155, 1155);
-        System.arraycopy(X, 0, Xaux, 0, NumberLength);
-        System.arraycopy(Z, 0, Zaux, 0, NumberLength); // (X:Z) -> Q (output from step 1)
+      } /* end for Pass */
 
-        for (Pass = 0; Pass < 2; Pass++) {
-          System.arraycopy(MontgomeryMultR1, 0, GcdAccumulated, 0, NumberLength);
-          System.arraycopy(X, 0, UX, 0, NumberLength);
-          System.arraycopy(Z, 0, UZ, 0, NumberLength); // (UX:UZ) -> Q
-          ModInvBigNbr(Z, TestNbr, Aux2);
-          montgomery.mul(Aux2, MontgomeryMultAfterInv, Aux1);
-          montgomery.mul(Aux1, X, root[0]); // root[0] <- X/Z (Q)
-          J = 0;
-          AddBigNbrModN(X, Z, Aux1);
-          montgomery.mul(Aux1, Aux1, W1);
-          SubtractBigNbrModN(X, Z, Aux1);
-          montgomery.mul(Aux1, Aux1, W2);
-          montgomery.mul(W1, W2, TX);
-          SubtractBigNbrModN(W1, W2, Aux1);
-          montgomery.mul(Aux1, AA, Aux2);
-          AddBigNbrModN(Aux2, W2, Aux3);
-          montgomery.mul(Aux1, Aux3, TZ); // (TX:TZ) -> 2Q
+      /** *************************************************** */
+      /* Second step (using improved standard continuation) */
+      /** *************************************************** */
+      int j = 0;
+      for (int u = 1; u < 2310; u += 2) {
+        if (u % 3 == 0 || u % 5 == 0 || u % 7 == 0 || u % 11 == 0) {
+          sieve2310[u / 2] = (byte) 1;
+        } else {
+          sieve2310[(sieveidx[j++] = u / 2)] = (byte) 0;
+        }
+      }
+      System.arraycopy(sieve2310, 0, sieve2310, 1155, 1155);
+      System.arraycopy(X, 0, Xaux, 0, NumberLength);
+      System.arraycopy(Z, 0, Zaux, 0, NumberLength); // (X:Z) -> Q (output from step 1)
+
+      for (int Pass = 0; Pass < 2; Pass++) {
+        int J = 0;
+        System.arraycopy(MontgomeryMultR1, 0, GcdAccumulated, 0, NumberLength);
+        System.arraycopy(X, 0, UX, 0, NumberLength);
+        System.arraycopy(Z, 0, UZ, 0, NumberLength); // (UX:UZ) -> Q
+        ModInvBigNbr(Z, TestNbr, Aux2);
+        montgomery.mul(Aux2, MontgomeryMultAfterInv, Aux1);
+        montgomery.mul(Aux1, X, root[0]); // root[0] <- X/Z (Q)
+        AddBigNbrModN(X, Z, Aux1);
+        montgomery.mul(Aux1, Aux1, W1);
+        SubtractBigNbrModN(X, Z, Aux1);
+        montgomery.mul(Aux1, Aux1, W2);
+        montgomery.mul(W1, W2, TX);
+        SubtractBigNbrModN(W1, W2, Aux1);
+        montgomery.mul(Aux1, AA, Aux2);
+        AddBigNbrModN(Aux2, W2, Aux3);
+        montgomery.mul(Aux1, Aux3, TZ); // (TX:TZ) -> 2Q
+        SubtractBigNbrModN(X, Z, Aux1);
+        AddBigNbrModN(TX, TZ, Aux2);
+        montgomery.mul(Aux1, Aux2, W1);
+        AddBigNbrModN(X, Z, Aux1);
+        SubtractBigNbrModN(TX, TZ, Aux2);
+        montgomery.mul(Aux1, Aux2, W2);
+        AddBigNbrModN(W1, W2, Aux1);
+        montgomery.mul(Aux1, Aux1, Aux2);
+        montgomery.mul(Aux2, UZ, X);
+        SubtractBigNbrModN(W1, W2, Aux1);
+        montgomery.mul(Aux1, Aux1, Aux2);
+        montgomery.mul(Aux2, UX, Z); // (X:Z) -> 3Q
+        for (int I = 5; I < 2310; I += 2) {
+          System.arraycopy(X, 0, WX, 0, NumberLength);
+          System.arraycopy(Z, 0, WZ, 0, NumberLength);
           SubtractBigNbrModN(X, Z, Aux1);
           AddBigNbrModN(TX, TZ, Aux2);
           montgomery.mul(Aux1, Aux2, W1);
@@ -493,8 +522,98 @@ public class EllipticCurveMethod extends FactorAlgorithm {
           montgomery.mul(Aux2, UZ, X);
           SubtractBigNbrModN(W1, W2, Aux1);
           montgomery.mul(Aux1, Aux1, Aux2);
-          montgomery.mul(Aux2, UX, Z); // (X:Z) -> 3Q
-          for (I = 5; I < 2310; I += 2) {
+          montgomery.mul(Aux2, UX, Z); // (X:Z) -> 5Q, 7Q, ...
+          if (Pass == 0) {
+            montgomery.mul(GcdAccumulated, Aux1, Aux2);
+            System.arraycopy(Aux2, 0, GcdAccumulated, 0, NumberLength);
+          } else {
+            GcdBigNbr(Aux1, TestNbr, GD);
+            if (!BigNbrAreEqual(GD, BigNbr1) && !BigNbrAreEqual(GD, TestNbr)) {
+              return BigIntToBigNbr(GD); // found factor, exit
+            }
+          }
+          if (I == 1155) {
+            System.arraycopy(X, 0, DX, 0, NumberLength);
+            System.arraycopy(Z, 0, DZ, 0, NumberLength); // (DX:DZ) -> 1155Q
+          }
+          if (I % 3 != 0 && I % 5 != 0 && I % 7 != 0 && I % 11 != 0) {
+            J++;
+            ModInvBigNbr(Z, TestNbr, Aux2);
+            montgomery.mul(Aux2, MontgomeryMultAfterInv, Aux1);
+            montgomery.mul(Aux1, X, root[J]); // root[J] <- X/Z
+          }
+          System.arraycopy(WX, 0, UX, 0, NumberLength);
+          System.arraycopy(WZ, 0, UZ, 0, NumberLength); // (UX:UZ) <- Previous (X:Z)
+        } /* end for I */
+        AddBigNbrModN(DX, DZ, Aux1);
+        montgomery.mul(Aux1, Aux1, W1);
+        SubtractBigNbrModN(DX, DZ, Aux1);
+        montgomery.mul(Aux1, Aux1, W2);
+        montgomery.mul(W1, W2, X);
+        SubtractBigNbrModN(W1, W2, Aux1);
+        montgomery.mul(Aux1, AA, Aux2);
+        AddBigNbrModN(Aux2, W2, Aux3);
+        montgomery.mul(Aux1, Aux3, Z);
+        System.arraycopy(X, 0, UX, 0, NumberLength);
+        System.arraycopy(Z, 0, UZ, 0, NumberLength); // (UX:UZ) -> 2310Q
+        AddBigNbrModN(X, Z, Aux1);
+        montgomery.mul(Aux1, Aux1, W1);
+        SubtractBigNbrModN(X, Z, Aux1);
+        montgomery.mul(Aux1, Aux1, W2);
+        montgomery.mul(W1, W2, TX);
+        SubtractBigNbrModN(W1, W2, Aux1);
+        montgomery.mul(Aux1, AA, Aux2);
+        AddBigNbrModN(Aux2, W2, Aux3);
+        montgomery.mul(Aux1, Aux3, TZ); // (TX:TZ) -> 2*2310Q
+        SubtractBigNbrModN(X, Z, Aux1);
+        AddBigNbrModN(TX, TZ, Aux2);
+        montgomery.mul(Aux1, Aux2, W1);
+        AddBigNbrModN(X, Z, Aux1);
+        SubtractBigNbrModN(TX, TZ, Aux2);
+        montgomery.mul(Aux1, Aux2, W2);
+        AddBigNbrModN(W1, W2, Aux1);
+        montgomery.mul(Aux1, Aux1, Aux2);
+        montgomery.mul(Aux2, UZ, X);
+        SubtractBigNbrModN(W1, W2, Aux1);
+        montgomery.mul(Aux1, Aux1, Aux2);
+        montgomery.mul(Aux2, UX, Z); // (X:Z) -> 3*2310Q
+        int Qaux = (int) (L1 / 4620);
+        int maxIndexM = (int) (L2 / 4620);
+        for (int indexM = 0; indexM <= maxIndexM; indexM++) {
+          if (indexM >= Qaux) { // If inside step 2 range...
+            if (indexM == 0) {
+              ModInvBigNbr(UZ, TestNbr, Aux2);
+              montgomery.mul(Aux2, MontgomeryMultAfterInv, Aux3);
+              montgomery.mul(UX, Aux3, Aux1); // Aux1 <- X/Z (2310Q)
+            } else {
+              ModInvBigNbr(Z, TestNbr, Aux2);
+              montgomery.mul(Aux2, MontgomeryMultAfterInv, Aux3);
+              montgomery.mul(X, Aux3, Aux1); // Aux1 <- X/Z (3,5,* 2310Q)
+            }
+
+            /* Generate sieve */
+            if (indexM % 10 == 0 || indexM == Qaux) {
+              GenerateSieve(indexM / 10 * 46200 + 1, sieve, sieve2310, SmallPrime);
+            }
+            /* Walk through sieve */
+            J = 1155 + (indexM % 10) * 2310;
+            for (int i = 0; i < 480; i++) {
+              j = sieveidx[i]; // 0 < J < 1155
+              if (sieve[J + j] != 0 && sieve[J - 1 - j] != 0) {
+                continue; // Do not process if both are composite numbers.
+              }
+              SubtractBigNbrModN(Aux1, root[i], M);
+              montgomery.mul(GcdAccumulated, M, Aux2);
+              System.arraycopy(Aux2, 0, GcdAccumulated, 0, NumberLength);
+            }
+            if (Pass != 0) {
+              GcdBigNbr(GcdAccumulated, TestNbr, GD);
+              if (!BigNbrAreEqual(GD, BigNbr1) && !BigNbrAreEqual(GD, TestNbr)) {
+                return BigIntToBigNbr(GD); // found factor, exit
+              }
+            }
+          }
+          if (indexM != 0) { // Update (X:Z)
             System.arraycopy(X, 0, WX, 0, NumberLength);
             System.arraycopy(Z, 0, WZ, 0, NumberLength);
             SubtractBigNbrModN(X, Z, Aux1);
@@ -508,138 +627,25 @@ public class EllipticCurveMethod extends FactorAlgorithm {
             montgomery.mul(Aux2, UZ, X);
             SubtractBigNbrModN(W1, W2, Aux1);
             montgomery.mul(Aux1, Aux1, Aux2);
-            montgomery.mul(Aux2, UX, Z); // (X:Z) -> 5Q, 7Q, ...
-            if (Pass == 0) {
-              montgomery.mul(GcdAccumulated, Aux1, Aux2);
-              System.arraycopy(Aux2, 0, GcdAccumulated, 0, NumberLength);
-            } else {
-              GcdBigNbr(Aux1, TestNbr, GD);
-              if (BigNbrAreEqual(GD, BigNbr1) == false) {
-                break new_curve; // found factor, exit
-              }
-            }
-            if (I == 1155) {
-              System.arraycopy(X, 0, DX, 0, NumberLength);
-              System.arraycopy(Z, 0, DZ, 0, NumberLength); // (DX:DZ) -> 1155Q
-            }
-            if (I % 3 != 0 && I % 5 != 0 && I % 7 != 0 && I % 11 != 0) {
-              J++;
-              ModInvBigNbr(Z, TestNbr, Aux2);
-              montgomery.mul(Aux2, MontgomeryMultAfterInv, Aux1);
-              montgomery.mul(Aux1, X, root[J]); // root[J] <- X/Z
-            }
+            montgomery.mul(Aux2, UX, Z);
             System.arraycopy(WX, 0, UX, 0, NumberLength);
-            System.arraycopy(WZ, 0, UZ, 0, NumberLength); // (UX:UZ) <- Previous (X:Z)
-          } /* end for I */
-          AddBigNbrModN(DX, DZ, Aux1);
-          montgomery.mul(Aux1, Aux1, W1);
-          SubtractBigNbrModN(DX, DZ, Aux1);
-          montgomery.mul(Aux1, Aux1, W2);
-          montgomery.mul(W1, W2, X);
-          SubtractBigNbrModN(W1, W2, Aux1);
-          montgomery.mul(Aux1, AA, Aux2);
-          AddBigNbrModN(Aux2, W2, Aux3);
-          montgomery.mul(Aux1, Aux3, Z);
-          System.arraycopy(X, 0, UX, 0, NumberLength);
-          System.arraycopy(Z, 0, UZ, 0, NumberLength); // (UX:UZ) -> 2310Q
-          AddBigNbrModN(X, Z, Aux1);
-          montgomery.mul(Aux1, Aux1, W1);
-          SubtractBigNbrModN(X, Z, Aux1);
-          montgomery.mul(Aux1, Aux1, W2);
-          montgomery.mul(W1, W2, TX);
-          SubtractBigNbrModN(W1, W2, Aux1);
-          montgomery.mul(Aux1, AA, Aux2);
-          AddBigNbrModN(Aux2, W2, Aux3);
-          montgomery.mul(Aux1, Aux3, TZ); // (TX:TZ) -> 2*2310Q
-          SubtractBigNbrModN(X, Z, Aux1);
-          AddBigNbrModN(TX, TZ, Aux2);
-          montgomery.mul(Aux1, Aux2, W1);
-          AddBigNbrModN(X, Z, Aux1);
-          SubtractBigNbrModN(TX, TZ, Aux2);
-          montgomery.mul(Aux1, Aux2, W2);
-          AddBigNbrModN(W1, W2, Aux1);
-          montgomery.mul(Aux1, Aux1, Aux2);
-          montgomery.mul(Aux2, UZ, X);
-          SubtractBigNbrModN(W1, W2, Aux1);
-          montgomery.mul(Aux1, Aux1, Aux2);
-          montgomery.mul(Aux2, UX, Z); // (X:Z) -> 3*2310Q
-          Qaux = (int) (L1 / 4620);
-          int maxIndexM = (int) (L2 / 4620);
-          for (int indexM = 0; indexM <= maxIndexM; indexM++) {
-            if (indexM >= Qaux) { // If inside step 2 range...
-              if (indexM == 0) {
-                ModInvBigNbr(UZ, TestNbr, Aux2);
-                montgomery.mul(Aux2, MontgomeryMultAfterInv, Aux3);
-                montgomery.mul(UX, Aux3, Aux1); // Aux1 <- X/Z (2310Q)
-              } else {
-                ModInvBigNbr(Z, TestNbr, Aux2);
-                montgomery.mul(Aux2, MontgomeryMultAfterInv, Aux3);
-                montgomery.mul(X, Aux3, Aux1); // Aux1 <- X/Z (3,5,* 2310Q)
-              }
-
-              /* Generate sieve */
-              if (indexM % 10 == 0 || indexM == Qaux) {
-                GenerateSieve(indexM / 10 * 46200 + 1, sieve, sieve2310, SmallPrime);
-              }
-              /* Walk through sieve */
-              J = 1155 + (indexM % 10) * 2310;
-              for (int i = 0; i < 480; i++) {
-                j = sieveidx[i]; // 0 < J < 1155
-                if (sieve[J + j] != 0 && sieve[J - 1 - j] != 0) {
-                  continue; // Do not process if both are composite numbers.
-                }
-                SubtractBigNbrModN(Aux1, root[i], M);
-                montgomery.mul(GcdAccumulated, M, Aux2);
-                System.arraycopy(Aux2, 0, GcdAccumulated, 0, NumberLength);
-              }
-              if (Pass != 0) {
-                GcdBigNbr(GcdAccumulated, TestNbr, GD);
-                if (BigNbrAreEqual(GD, BigNbr1) == false) {
-                  break new_curve; // found factor, exit
-                }
-              }
-            }
-            if (indexM != 0) { // Update (X:Z)
-              System.arraycopy(X, 0, WX, 0, NumberLength);
-              System.arraycopy(Z, 0, WZ, 0, NumberLength);
-              SubtractBigNbrModN(X, Z, Aux1);
-              AddBigNbrModN(TX, TZ, Aux2);
-              montgomery.mul(Aux1, Aux2, W1);
-              AddBigNbrModN(X, Z, Aux1);
-              SubtractBigNbrModN(TX, TZ, Aux2);
-              montgomery.mul(Aux1, Aux2, W2);
-              AddBigNbrModN(W1, W2, Aux1);
-              montgomery.mul(Aux1, Aux1, Aux2);
-              montgomery.mul(Aux2, UZ, X);
-              SubtractBigNbrModN(W1, W2, Aux1);
-              montgomery.mul(Aux1, Aux1, Aux2);
-              montgomery.mul(Aux2, UX, Z);
-              System.arraycopy(WX, 0, UX, 0, NumberLength);
-              System.arraycopy(WZ, 0, UZ, 0, NumberLength);
-            }
-          } // end for Q
-          if (Pass == 0) {
-            if (BigNbrIsZero(GcdAccumulated)) { // If GcdAccumulated is...
-              System.arraycopy(Xaux, 0, X, 0, NumberLength);
-              System.arraycopy(Zaux, 0, Z, 0, NumberLength);
-              continue; // ... a multiple of TestNbr, continue.
-            }
-            GcdBigNbr(GcdAccumulated, TestNbr, GD);
-            if (BigNbrAreEqual(GD, TestNbr) == true) {
-              break;
-            }
-            if (BigNbrAreEqual(GD, BigNbr1) == false) {
-              break new_curve; // found factor, exit
-            }
-            break;
+            System.arraycopy(WZ, 0, UZ, 0, NumberLength);
           }
-        } /* end for Pass */
-      } while (true); /* end curve calculation */
-      assert !(BigNbrAreEqual(GD, TestNbr));
-    } while (BigNbrAreEqual(GD, TestNbr) == true);
-    // System.out.println("");
-    // StepECM = 0; /* do not show pass number on screen */
-    return BigIntToBigNbr(GD);
+        } // end for Q
+        if (Pass == 0) {
+          if (BigNbrIsZero(GcdAccumulated)) { // If GcdAccumulated is...
+            System.arraycopy(Xaux, 0, X, 0, NumberLength);
+            System.arraycopy(Zaux, 0, Z, 0, NumberLength);
+            continue; // ... a multiple of TestNbr, continue.
+          }
+          GcdBigNbr(GcdAccumulated, TestNbr, GD);
+          if (!BigNbrAreEqual(GD, BigNbr1) && !BigNbrAreEqual(GD, TestNbr)) {
+            return BigIntToBigNbr(GD); // found factor, exit
+          }
+          break;
+        }
+      } /* end for Pass */
+    } /* end curve calculation */
   }
 
   private static void GenerateSieve(int initial, byte[] sieve, byte[] sieve2310, int[] SmallPrime) {
@@ -720,7 +726,7 @@ public class EllipticCurveMethod extends FactorAlgorithm {
       }
       /* do the first line of Table 4 whose condition qualifies */
       if (4 * d <= 5 * e && ((d + e) % 3) == 0) {
-        /* condition 1 */
+          /* condition 1 */
         r = (2 * d - e) / 3;
         e = (2 * e - d) / 3;
         d = r;
@@ -734,12 +740,12 @@ public class EllipticCurveMethod extends FactorAlgorithm {
         zA = zT2;
         zT2 = t; /* swap A and T2 */
       } else if (4 * d <= 5 * e && (d - e) % 6 == 0) {
-        /* condition 2 */
+          /* condition 2 */
         d = (d - e) / 2;
         add3(xB, zB, xA, zA, xB, zB, xC, zC); /* B = f(A,B,C) */
         duplicate(xA, zA, xA, zA, AA); /* A = 2*A */
       } else if (d <= (4 * e)) {
-        /* condition 3 */
+          /* condition 3 */
         d -= e;
         add3(xT, zT, xB, zB, xA, zA, xC, zC); /* T = f(B,A,C) */
         t = xB;
@@ -751,17 +757,17 @@ public class EllipticCurveMethod extends FactorAlgorithm {
         zT = zC;
         zC = t; /* circular permutation (B,T,C) */
       } else if ((d + e) % 2 == 0) {
-        /* condition 4 */
+          /* condition 4 */
         d = (d - e) / 2;
         add3(xB, zB, xB, zB, xA, zA, xC, zC); /* B = f(B,A,C) */
         duplicate(xA, zA, xA, zA, AA); /* A = 2*A */
       } else if (d % 2 == 0) {
-        /* condition 5 */
+          /* condition 5 */
         d /= 2;
         add3(xC, zC, xC, zC, xA, zA, xB, zB); /* C = f(C,A,B) */
         duplicate(xA, zA, xA, zA, AA); /* A = 2*A */
       } else if (d % 3 == 0) {
-        /* condition 6 */
+          /* condition 6 */
         d = d / 3 - e;
         duplicate(xT, zT, xA, zA, AA); /* T1 = 2*A */
         add3(xT2, zT2, xA, zA, xB, zB, xC, zC); /* T2 = f(A,B,C) */
@@ -776,14 +782,14 @@ public class EllipticCurveMethod extends FactorAlgorithm {
         zB = zT;
         zT = t; /* circular permutation (C,B,T) */
       } else if ((d + e) % 3 == 0) {
-        /* condition 7 */
+          /* condition 7 */
         d = (d - 2 * e) / 3;
         add3(xT, zT, xA, zA, xB, zB, xC, zC); /* T1 = f(A,B,C) */
         add3(xB, zB, xT, zT, xA, zA, xB, zB); /* B = f(T1,A,B) */
         duplicate(xT, zT, xA, zA, AA);
         add3(xA, zA, xA, zA, xT, zT, xA, zA); /* A = 3*A */
       } else if ((d - e) % 3 == 0) {
-        /* condition 8 */
+          /* condition 8 */
         d = (d - e) / 3;
         add3(xT, zT, xA, zA, xB, zB, xC, zC); /* T1 = f(A,B,C) */
         add3(xC, zC, xC, zC, xA, zA, xB, zB); /* C = f(A,C,B) */
@@ -796,7 +802,7 @@ public class EllipticCurveMethod extends FactorAlgorithm {
         duplicate(xT, zT, xA, zA, AA);
         add3(xA, zA, xA, zA, xT, zT, xA, zA); /* A = 3*A */
       } else if (e % 2 == 0) {
-        /* condition 9 */
+          /* condition 9 */
         e /= 2;
         add3(xC, zC, xC, zC, xB, zB, xA, zA); /* C = f(C,B,A) */
         duplicate(xB, zB, xB, zB, AA); /* B = 2*B */
@@ -823,41 +829,41 @@ public class EllipticCurveMethod extends FactorAlgorithm {
         e = r;
       }
       if (4 * d <= 5 * e && ((d + e) % 3) == 0) {
-        /* condition 1 */
+          /* condition 1 */
         r = (2 * d - e) / 3;
         e = (2 * e - d) / 3;
         d = r;
         c += 3 * ADD; /* 3 additions */
       } else if (4 * d <= 5 * e && (d - e) % 6 == 0) {
-        /* condition 2 */
+          /* condition 2 */
         d = (d - e) / 2;
         c += ADD + DUP; /* one addition, one duplicate */
       } else if (d <= (4 * e)) {
-        /* condition 3 */
+          /* condition 3 */
         d -= e;
         c += ADD; /* one addition */
       } else if ((d + e) % 2 == 0) {
-        /* condition 4 */
+          /* condition 4 */
         d = (d - e) / 2;
         c += ADD + DUP; /* one addition, one duplicate */
       } else if (d % 2 == 0) {
-        /* condition 5 */
+          /* condition 5 */
         d /= 2;
         c += ADD + DUP; /* one addition, one duplicate */
       } else if (d % 3 == 0) {
-        /* condition 6 */
+          /* condition 6 */
         d = d / 3 - e;
         c += 3 * ADD + DUP; /* three additions, one duplicate */
       } else if ((d + e) % 3 == 0) {
-        /* condition 7 */
+          /* condition 7 */
         d = (d - 2 * e) / 3;
         c += 3 * ADD + DUP; /* three additions, one duplicate */
       } else if ((d - e) % 3 == 0) {
-        /* condition 8 */
+          /* condition 8 */
         d = (d - e) / 3;
         c += 3 * ADD + DUP; /* three additions, one duplicate */
       } else if (e % 2 == 0) {
-        /* condition 9 */
+          /* condition 9 */
         e /= 2;
         c += ADD + DUP; /* one addition, one duplicate */
       }
@@ -1737,9 +1743,11 @@ public class EllipticCurveMethod extends FactorAlgorithm {
     // Old implementation for positive numbers
     int NL = NumberLength * 4;
     byte[] NBytes = new byte[NL];
-    for (int i = 0;
-        i < NumberLength /*trueNumberLength*/;
-        i++) { // XXX trueNumberLength works as well ?
+
+    // Originally the following loop ran up to NumberLength (say 10). But it works as well with
+    // trueNumberLength (say 1),
+    // because (big-endian) leading zero-bytes are ignored by the BigInteger constructor.
+    for (int i = 0; i < /*NumberLength*/ trueNumberLength; i++) {
       final long digit = nbr[i];
       NBytes[NL - 1 - 4 * i] = (byte) (digit & 0xFF);
       NBytes[NL - 2 - 4 * i] = (byte) ((digit >> 8) & 0xFF);
@@ -1793,19 +1801,33 @@ public class EllipticCurveMethod extends FactorAlgorithm {
           // BigInteger("1794577685365897117833870712928656282041295031283603412289229185967719140138841093599")
           // = 42181796536350966453737572957846241893933 *
           // 42543889372264778301966140913837516662044603
+
+          new BigInteger(
+              "856483652537814883803418179972154563054077"), // = {42665052615296697659=1,
+                                                             // 20074595014814065252903=1} in 7s,
+                                                             // 572ms.
         };
 
-    EllipticCurveMethod ecm = new EllipticCurveMethod();
+    EllipticCurveMethod ecm = new EllipticCurveMethod(-1);
 
     long t0, t1;
     t0 = System.currentTimeMillis();
     for (BigInteger N : testNums) {
-      SortedMap<BigInteger, Integer> primeFactors = new TreeMap<>();
-      SortedMap<BigInteger, Integer> unfactoredComposites = ecm.factorize(N, primeFactors);
-      if (!unfactoredComposites.isEmpty()) {
-        LOG.debug("N = " + N + " = " + primeFactors + " * " + unfactoredComposites);
+      SortedMultiset<BigInteger> primeFactors = new SortedMultiset_BottomUp<BigInteger>();
+      long smallestPossibleFactor = 3;
+      FactorResult factorResult =
+          new FactorResult(
+              primeFactors,
+              new SortedMultiset_BottomUp<BigInteger>(),
+              new SortedMultiset_BottomUp<BigInteger>(),
+              smallestPossibleFactor);
+      FactorArguments factorArgs = new FactorArguments(N, 1, smallestPossibleFactor);
+      boolean foundFactor = ecm.searchFactors(factorArgs, factorResult);
+      if (foundFactor) {
+        LOG.debug(
+            "N = " + N + ": " + factorResult.primeFactors + " * " + factorResult.compositeFactors);
       } else {
-        LOG.debug("N = " + N + " = " + primeFactors);
+        LOG.debug("ECM did not find any factor for N = " + N);
       }
     }
     t1 = System.currentTimeMillis();

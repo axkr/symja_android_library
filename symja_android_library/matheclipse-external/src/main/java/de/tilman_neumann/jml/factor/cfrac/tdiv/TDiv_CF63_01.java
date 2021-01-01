@@ -98,7 +98,7 @@ public class TDiv_CF63_01 implements TDiv_CF63 {
         }
       } // end while (trialDivIndex < primeBaseSize)
     }
-    if (DEBUG) assert (Q_rest > 1);
+    //		if (DEBUG) assertTrue(Q_rest>1);
     if (Q_rest_bits < 32) {
       int Q_rest_int = (int) Q_rest;
       while (trialDivIndex < primeBaseSize) {

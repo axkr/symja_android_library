@@ -6,10 +6,6 @@ import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.script.engine.MathScriptEngine;
 
-/**
- * Tests for the Java port of the <a href="http://www.apmaths.uwo.ca/~arich/">Rubi - rule-based
- * integrator</a>.
- */
 public class AssociationTest extends AbstractTestCase {
 
   public AssociationTest(String name) {
@@ -314,14 +310,21 @@ public class AssociationTest extends AbstractTestCase {
 
   public void testKey() {
     check(
-        "<|a -> b, c -> d|>[[Key(a)]]", //
+        "<|1 -> a, 3 -> b|>[[Key(3)]]", //
         "b");
+    check(
+        "<|a -> b, c -> d|>[Key(a)]", //
+        "Missing(KeyAbsent,Key(a))");
     check(
         "Key(z)[<|a -> b, c -> d|>]", //
         "Missing(KeyAbsent,z)");
     check(
         "Key(a)[<|a -> b, c -> d|>]", //
         "b");
+
+    check(
+        "<|\"a\" -> b, \"c\" -> d|>[[\"c\"]]", //
+        "d");
   }
 
   public void testKeys01() {

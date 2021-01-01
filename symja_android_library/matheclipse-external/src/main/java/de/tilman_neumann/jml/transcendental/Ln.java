@@ -83,13 +83,21 @@ public class Ln {
     BigDecimal xpow = r;
 
     int i = 1;
+    BigInteger den = I_3;
     BigDecimal sElement;
     do {
       xpow = elemPrec.applyTo(xpow.multiply(square));
-      sElement = BigDecimalMath.divide(xpow, BigDecimal.valueOf(2 * i + 1), elemPrec);
+      sElement =
+          BigDecimalMath.divide(
+              xpow,
+              new BigDecimal(den),
+              elemPrec); // new BigDecimal(den) is safer than BigDecimal(2*i+1) regarding overflows
       r = r.add(sElement);
-      // LOG.debug("ln(" + x + ", " + i + ") = " + r);
-      i++;
+      den = den.add(I_2);
+      if (DEBUG) {
+        LOG.debug("ln(" + x + ", " + i + ") = " + r);
+        i++;
+      }
 
       // Stopping criterion: We will stop here if the last series
       // element is absolute smaller than the allowed rest error.

@@ -5314,6 +5314,17 @@ public class LowercaseTestCase extends AbstractTestCase {
     // position 2 in
     // ContinuedFraction(Pi,-20).
 
+    // TODO
+    check(
+        "ContinuedFraction((1 + 2*Sqrt(3))/5)", //
+        "ContinuedFraction(1/5*(1+2*Sqrt(3)))");
+    check(
+        "ContinuedFraction(Sqrt(70))", //
+        "{8,{2,1,2,1,2,16}}");
+    check(
+        "ContinuedFraction(Pi, 10)", //
+        "{3,7,15,1,292,1,1,1,2,1}");
+
     check(
         "ContinuedFraction(Sqrt(-1))", //
         "ContinuedFraction(I)");
@@ -9373,6 +9384,9 @@ public class LowercaseTestCase extends AbstractTestCase {
 
   public void testEvaluate() {
     check(
+        "Evaluate(1+1)", //
+        "2");
+    check(
         "{f(2+2, 1+1, -1+2), f(Evaluate(2+2),Evaluate(1+1),-1+2,Evaluate(-1+2))}", //
         "{f(4,2,1),f(4,2,1,1)}");
     check(
@@ -10854,12 +10868,16 @@ public class LowercaseTestCase extends AbstractTestCase {
     check(
         "Times @@ (Power @@@ FactorInteger(10, GaussianIntegers->True))", //
         "10");
-    // 147 seconds on notebook
+    // 113 seconds (vs. 147 seconds in the old version) on notebook
     // check("FactorInteger(10^79+5923)", "");
-    // 32 seconds on notebook
+    // 18 seconds (vs. 32seconds in the old version)
     // check("FactorInteger(10^71-1)", "");
     if (Config.EXPENSIVE_JUNIT_TESTS) {
       System.out.println();
+      check(
+          "FactorInteger(856483652537814883803418179972154563054077)", //
+          "{{42665052615296697659,1},{20074595014814065252903,1}}");
+      System.out.print('.');
       check(
           "FactorInteger(1593332576170570774181606244493046197050984933692181475920784855223341)", //
           "{{17,1},{1210508704285703,1},{2568160569265616473,1},{\n"
@@ -17391,7 +17409,7 @@ public class LowercaseTestCase extends AbstractTestCase {
             + "board.suspendUpdate();\n"
             + "var a = board.create('slider',[[-0.0630088815692249,2.2600000000000002],[6.346194188748811,2.2600000000000002],[0,0,10]],{name:'a'});\n"
             + "\n"
-            + "function $f1(x) { try { return mul(cos(add(1,mul(a.Value(),x))),sin(x));} catch(e) { return Number.NaN;} }\n"
+            + "function $f1(x) { try { return [mul(cos(add(1,mul(a.Value(),x))),sin(x))];} catch(e) { return Number.NaN;} }\n"
             + "board.create('functiongraph',[$f1, 0, (6.283185307179586)],{strokecolor:'#5e81b5'});\n"
             + "\n"
             + "\n"
@@ -19667,6 +19685,7 @@ public class LowercaseTestCase extends AbstractTestCase {
   }
 
   public void testMap() {
+
     check(
         "s=SparseArray({1 -> 1, 2 -> 2, 100 -> 100})", //
         "SparseArray(Number of elements: 3 Dimensions: {100} Default value: 0)");
@@ -19772,6 +19791,13 @@ public class LowercaseTestCase extends AbstractTestCase {
     check(
         "Map(Print, {a, b, c})", //
         "{Null,Null,Null}");
+
+    check(
+        "Map(x, {a, {{b, c}, d, {e, {f, g}}}}, {-1})", //
+        "{x(a),{{x(b),x(c)},x(d),{x(e),{x(f),x(g)}}}}");
+    check(
+        "Map(x, {a, {{b, c}, d, {e, {f, g}}}}, {-2})", //
+        "{a,{x({b,c}),d,{e,x({f,g})}}}");
   }
 
   public void testMapAt() {
@@ -21486,7 +21512,6 @@ public class LowercaseTestCase extends AbstractTestCase {
     check(
         "Select(Range(2,200), MultiplicativeOrder(10, # )== # - 1 &)", //
         "{7,17,19,23,29,47,59,61,97,109,113,131,149,167,179,181,193}");
-
     check(
         "MultiplicativeOrder(-1,0)", //
         "MultiplicativeOrder(-1,0)");
@@ -21499,7 +21524,6 @@ public class LowercaseTestCase extends AbstractTestCase {
     check(
         "MultiplicativeOrder(-5, 7)", //
         "3");
-
     check(
         "Select(Range(43), MultiplicativeOrder(#, 43) == EulerPhi(43) &)", //
         "{3,5,12,18,19,20,26,28,29,30,33,34}");
@@ -34735,49 +34759,6 @@ public class LowercaseTestCase extends AbstractTestCase {
     check(
         "(-0^2+1)^(-1/2)", //
         "1");
-  }
-
-  public void testTensorDimensions() {
-    check(
-        "A=Array(a, {2, 3, 4});TensorDimensions(A)", //
-        "{2,3,4}");
-    check(
-        "TensorDimensions({{1,2},{3,4},{a,b}})", //
-        "{3,2}");
-  }
-
-  // public void testTensorProduct() {
-  // check("TensorProduct({2, 3}, {{a, b}, {c, d}}, {x, y})", "2");
-  // }
-
-  public void testTensorRank() {
-    check(
-        "A=Array(a, {2, 3, 4});TensorRank(A)", //
-        "3");
-    check(
-        "TensorRank({{1,2},{3,4}})", //
-        "2");
-  }
-
-  public void testTensorSymmetry() {
-    check(
-        "TensorSymmetry({{a,b,c,d}, {b,e,f,g}, {c,f,h,i},{d,g,i,j}})", //
-        "Symmetric({1,2})");
-    check(
-        "TensorSymmetry({{0, a, b}, {-a, 0, c}, {-b, -c, 0}})", //
-        "AntiSymmetric({1,2})");
-    check(
-        "TensorSymmetry({{a}})", //
-        "Symmetric({1,2})");
-    check(
-        "TensorSymmetry({{0}})", //
-        "ZeroSymmetric({})");
-    check(
-        "TensorSymmetry({{0,0}, {0,0}})", //
-        "ZeroSymmetric({})");
-    check(
-        "TensorSymmetry({{a,b}, {b,c}})", //
-        "Symmetric({1,2})");
   }
 
   public void testTeXForm() {

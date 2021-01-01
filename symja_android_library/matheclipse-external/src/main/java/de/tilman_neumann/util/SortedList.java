@@ -53,7 +53,11 @@ public class SortedList<T> extends ArrayList<T> {
     this.sortOrder = sortOrder;
   }
 
-  /** Copy constructor. */
+  /**
+   * Copy constructor.
+   *
+   * @param original the SortedList to copy
+   */
   public SortedList(SortedList<T> original) {
     super(original);
     this.explicitComparator = original.explicitComparator;
@@ -81,6 +85,7 @@ public class SortedList<T> extends ArrayList<T> {
    * Comparator or Comparable interface.
    *
    * @param externalObjs Collection of new objects
+   * @return true if this SortedList has been modified
    */
   public boolean quickInsort(Collection<? extends T> externalObjs) {
     boolean modified = false;
@@ -100,6 +105,7 @@ public class SortedList<T> extends ArrayList<T> {
    * Sorts a single new object into this.
    *
    * @param externalObj new object
+   * @return true if this SortedList has been modified
    */
   public boolean quickInsort(T externalObj) {
     if (externalObj != null) {
@@ -114,6 +120,7 @@ public class SortedList<T> extends ArrayList<T> {
    * @param externalObj new object
    * @param minIdx smallest index of subrange
    * @param maxIdx biggest index of subrange
+   * @return true if this SortedList has been modified
    */
   private boolean quickInsort(T externalObj, int minIdx, int maxIdx) {
     // LOG.debug("minIdx = " + minIdx + ", maxIdx = " + maxIdx);
@@ -146,7 +153,6 @@ public class SortedList<T> extends ArrayList<T> {
    * @return <0 / 0 / >0 if internal object shall be before / no matter where / behind the external
    *     object.
    */
-  @SuppressWarnings("unchecked")
   private int compare(T internalObj, T externalObj) {
     if ((internalObj != null) && (externalObj != null)) {
       // two non-null objects must be compared:
@@ -155,6 +161,7 @@ public class SortedList<T> extends ArrayList<T> {
         idxCmp = this.explicitComparator.compare(internalObj, externalObj);
       } else if (internalObj instanceof Comparable) {
         //  objects must be Comparable
+        @SuppressWarnings("unchecked")
         final Comparable<T> implicitComparator = (Comparable<T>) internalObj;
         idxCmp = implicitComparator.compareTo(externalObj);
       } else {

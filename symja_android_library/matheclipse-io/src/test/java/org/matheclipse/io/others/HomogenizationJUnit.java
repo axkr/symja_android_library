@@ -1,4 +1,4 @@
-package org.matheclipse.io.system;
+package org.matheclipse.io.others;
 
 import java.util.Map;
 
@@ -16,9 +16,10 @@ import org.matheclipse.core.interfaces.IBuiltInSymbol;
 import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.interfaces.ISymbol;
 import org.matheclipse.core.polynomials.PolynomialHomogenizationNew;
+import org.matheclipse.io.system.AbstractTestCase;
 
-public class HomogenizationTest extends AbstractTestCase {
-  public HomogenizationTest() {
+public class HomogenizationJUnit extends AbstractTestCase {
+  public HomogenizationJUnit() {
     super("HomogenizationTest");
   }
 

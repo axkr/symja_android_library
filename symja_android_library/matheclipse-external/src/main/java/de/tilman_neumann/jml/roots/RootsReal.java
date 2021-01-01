@@ -32,7 +32,7 @@ import static de.tilman_neumann.jml.base.BigDecimalConstants.F_0;
  * <p>The current state-of-the-art is a Heron-style algorithm with a good initial guess derived from
  * double computations. The Heron-style algorithm realizes the iteration formula x(k+1) = 1/n * (
  * (n-1) * x(k) + N/(x(k)^(n-1)) ), see {@link
- * https://en.wikipedia.org/wiki/Nth_root_algorithm}.</br></br>
+ * "https://en.wikipedia.org/wiki/Nth_root_algorithm"}.</br></br>
  *
  * @author Tilman Neumann
  */
@@ -108,6 +108,7 @@ public class RootsReal {
    * Compute the i.th root with initial guess.
    *
    * @param x argument
+   * @param i degree of the root
    * @param guess initial guess of i.th root(x)
    * @param resultScale desired precision in after-comma digits
    * @return i.th root(x) with error < 0.5*10^-resultScale, i.e. resultScale decimal digits are
@@ -147,13 +148,17 @@ public class RootsReal {
     throw new IllegalArgumentException("x = " + x + ", but i.th root(x) is defined for x>=0 only!");
   }
 
-  /** Test */
+  /**
+   * Test.
+   *
+   * @param argv command line arguments
+   */
   public static void main(String[] argv) {
     ConfigUtil.initProject();
 
     if (argv.length != 2) {
       // wrong number of arguments !
-      LOG.error("Input <argument> <scale in decimal digits> !!");
+      LOG.error("Usage: RootsReal <argument> <scale in decimal digits> !!");
       return;
     }
 

@@ -32,7 +32,7 @@ public class Gcd63 {
    *
    * @param m
    * @param n
-   * @return
+   * @return gcd(m, n)
    */
   // much slower than binary gcd !
   public long gcd_euclid_withDivision(long m, long n) {
@@ -111,7 +111,7 @@ public class Gcd63 {
    *
    * @param a
    * @param b
-   * @return
+   * @return gcd(a, b)
    */
   public long gcd /*_binary2*/(long a, long b) {
     a = Math.abs(a);
@@ -143,7 +143,7 @@ public class Gcd63 {
    * GCD of all arguments.
    *
    * @param arguments
-   * @return
+   * @return gcd of all arguments
    */
   public Long gcd(Collection<Long> arguments) {
     if (arguments == null || arguments.size() == 0) {

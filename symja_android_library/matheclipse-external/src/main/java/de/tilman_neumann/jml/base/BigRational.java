@@ -228,18 +228,16 @@ public class BigRational extends Number implements Comparable<BigRational> {
     return this.compareTo(new BigRational(other));
   }
 
-  /** equals() must be consistent with compareTo()... */
+  @Override
   public boolean equals(Object o) {
-    if (o == null) return false;
-    if (o instanceof BigRational) {
-      BigRational other = (BigRational) o;
-      return (this.num.multiply(other.den).equals(other.num.multiply(this.den)));
-    }
-    if (o instanceof BigInteger) {
-      BigInteger other = (BigInteger) o;
-      return (this.num.equals(other.multiply(this.den)));
-    }
-    return false;
+    if (o == null || !(o instanceof BigRational)) return false;
+    BigRational other = (BigRational) o;
+    return (this.num.multiply(other.den).equals(other.num.multiply(this.den)));
+  }
+
+  public boolean equals(BigInteger other) {
+    if (other == null) return false;
+    return (this.num.equals(other.multiply(this.den)));
   }
 
   @Override

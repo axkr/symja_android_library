@@ -121,7 +121,7 @@ public class BigIntConverter {
     ConfigUtil.initProject();
     test(2);
     test(3);
-    test(3.1415);
+    test(Math.PI);
     test(5.99);
     test(6.0001);
     test(-6.0001);

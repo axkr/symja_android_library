@@ -4,7 +4,13 @@
 ContinuedFraction(number)
 ```
  
-> get the continued fraction representation of `number`.
+> the complete continued fraction representation for a rational or quadradic irrational `number`. 
+
+```
+ContinuedFraction(number, n)
+```
+ 
+> generate the first `n` terms in the continued fraction representation of `number`. 
 
 See:  
 * [Wikipedia - Continued fraction](https://en.wikipedia.org/wiki/Continued_fraction)
