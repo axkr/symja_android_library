@@ -21,6 +21,7 @@ public final class FunctionDefinitions {
       EasterSunday.setEvaluator(new org.matheclipse.core.reflection.system.EasterSunday());
       ElementData.setEvaluator(new org.matheclipse.core.data.ElementData());
       Eliminate.setEvaluator(new org.matheclipse.core.reflection.system.Eliminate());
+      ExportString.setEvaluator(new org.matheclipse.core.reflection.system.ExportString());
       ExpToTrig.setEvaluator(new org.matheclipse.core.reflection.system.ExpToTrig());
       FindInstance.setEvaluator(new org.matheclipse.core.reflection.system.FindInstance());
       FindRoot.setEvaluator(new org.matheclipse.core.reflection.system.FindRoot());
@@ -71,7 +72,6 @@ public final class FunctionDefinitions {
       if (!Config.FUZZY_PARSER) {
         CreateDirectory.setEvaluator(new org.matheclipse.core.reflection.system.CreateDirectory());
         Export.setEvaluator(new org.matheclipse.core.reflection.system.Export());
-        ExportString.setEvaluator(new org.matheclipse.core.reflection.system.ExportString());
         OptimizeExpression.setEvaluator(
             new org.matheclipse.core.reflection.system.OptimizeExpression());
         Share.setEvaluator(new org.matheclipse.core.reflection.system.Share());

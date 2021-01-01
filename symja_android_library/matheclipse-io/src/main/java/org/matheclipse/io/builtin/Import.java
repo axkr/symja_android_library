@@ -40,6 +40,7 @@ import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.interfaces.IStringX;
 import org.matheclipse.core.io.Extension;
 import org.matheclipse.io.tensor.io.ImageFormat;
+import org.matheclipse.parser.client.FEConfig;
 import org.matheclipse.parser.client.Parser;
 import org.matheclipse.parser.client.SyntaxError;
 import org.matheclipse.parser.client.ast.ASTNode;
@@ -111,6 +112,9 @@ public class Import extends AbstractEvaluator {
       } catch (SyntaxError se) {
         return engine.printMessage("Import: file " + fileName + " syntax error!");
       } catch (Exception ex) {
+        if (FEConfig.SHOW_STACKTRACE) {
+          ex.printStackTrace();
+        }
         return engine.printMessage("Import: file " + fileName + " - " + ex.getMessage());
       } finally {
         if (reader != null) {
@@ -144,43 +148,14 @@ public class Import extends AbstractEvaluator {
     return ast2Expr.convert(node);
   }
 
-  private GraphMLImporter<IExpr, ExprEdge> createGraphImporter(
-      Graph<IExpr, ExprEdge> g,
-      Map<String, Map<String, Attribute>> vertexAttributes,
-      Map<ExprEdge, Map<String, Attribute>> edgeAttributes,
-      EvalEngine engine) {
-    GraphMLImporter graphMLImporter = new GraphMLImporter<IExpr, ExprEdge>();
-    return graphMLImporter;
-    //    return createGraphImporter(
-    //        g,
-    //        (label, attributes) -> {
-    //          vertexAttributes.put(label, attributes);
-    //          return engine.parse(label);
-    //        },
-    //        (from, to, label, attributes) -> {
-    //          ExprEdge e = g.getEdgeSupplier().get();
-    //          edgeAttributes.put(e, attributes);
-    //          return e;
-    //        }
-    //        );
-  }
-
-  private GraphMLImporter<IExpr, ExprEdge> createGraphImporter(
-      Function<String, ExprEdge> vertexFactory) { // , EdgeProvider<IExpr, ExprEdge> ep) {
-    GraphMLImporter graphMLImporter = new GraphMLImporter<IExpr, ExprEdge>(); // vp, ep);
-    graphMLImporter.setVertexFactory(vertexFactory);
-    return graphMLImporter;
-  }
-
   private IExpr graphImport(Reader reader, Extension format, EvalEngine engine)
       throws ImportException {
     Graph<IExpr, ExprEdge> result;
     switch (format) {
       case DOT:
         DOTImporter<IExpr, ExprEdge> dotImporter = new DOTImporter<IExpr, ExprEdge>();
-        //                (label, attributes) -> engine.parse(label),
-        //                (from, to, label, attributes) -> new ExprEdge());
-        result = new DefaultDirectedGraph<IExpr, ExprEdge>(ExprEdge.class); 
+        dotImporter.setVertexFactory(label -> engine.parse(label));
+        result = new DefaultDirectedGraph<IExpr, ExprEdge>(ExprEdge.class);
         dotImporter.importGraph(result, reader);
         return GraphExpr.newInstance(result);
       case GRAPHML:
@@ -188,9 +163,9 @@ public class Import extends AbstractEvaluator {
         Map<String, Map<String, Attribute>> vertexAttributes = new HashMap<>();
         Map<ExprEdge, Map<String, Attribute>> edgeAttributes =
             new HashMap<ExprEdge, Map<String, Attribute>>();
-        GraphMLImporter<IExpr, ExprEdge> graphmlImporter =
-            createGraphImporter(result, vertexAttributes, edgeAttributes, engine);
-        graphmlImporter.importGraph(result, reader);
+        GraphMLImporter<IExpr, ExprEdge> graphMLImporter = new GraphMLImporter<IExpr, ExprEdge>();
+        graphMLImporter.setVertexFactory(label -> engine.parse(label));
+        graphMLImporter.importGraph(result, reader);
         return GraphExpr.newInstance(result);
       default:
     }
