@@ -120,15 +120,7 @@ public class TDiv_QS_2Large_UBI_BarrettD implements TDiv_QS {
   public TDiv_QS_2Large_UBI_BarrettD(boolean permitUnsafeUsage) {
     qsInternal =
         new SIQS_Small(
-            0.305F,
-            0.37F,
-            null,
-            0.16F,
-            new SIQSPolyGenerator(),
-            10,
-            permitUnsafeUsage,
-            true,
-            false);
+            0.305F, 0.37F, null, 0.16F, new SIQSPolyGenerator(), 10, permitUnsafeUsage, true);
   }
 
   @Override

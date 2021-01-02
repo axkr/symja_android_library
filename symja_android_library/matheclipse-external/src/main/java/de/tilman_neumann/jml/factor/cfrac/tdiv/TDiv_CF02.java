@@ -193,9 +193,9 @@ public class TDiv_CF02 implements TDiv_CF {
     // we do not find one that is too big to be useful.
     // LOG.debug("before factor_recurrent()");
     boolean isSmooth = factor_recurrent(Q_rest);
-    //    if (DEBUG)
-    //      if (bigFactors.size() > 2)
-    //        LOG.debug("Found " + bigFactors.size() + " distinct big factors: " + bigFactors);
+    if (DEBUG)
+      if (bigFactors.size() > 2)
+        LOG.debug("Found " + bigFactors.size() + " distinct big factors: " + bigFactors);
     return isSmooth ? aqPairFactory.create(A, smallFactors, bigFactors) : null;
   }
 

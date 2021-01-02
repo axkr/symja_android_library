@@ -125,7 +125,7 @@ public class Lehman_AnalyzeKStructure {
             aLimit += adjust1 < adjust2 ? adjust1 : adjust2;
             aStep =
                 4; // stepping over both adjusts with step width 16 would be more exact but is not
-            // faster
+                   // faster
           }
         }
       }

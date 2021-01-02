@@ -37,20 +37,22 @@ public class TDiv63 extends FactorAlgorithm {
   }
 
   /**
-   * Set the upper limit of primes to be tested in the next findSingleFactor() run.
+   * Set the upper limit of primes to be tested.
    *
    * @param pLimit
+   * @return this
    */
-  public void setTestLimit(int pLimit) {
+  public TDiv63 setTestLimit(int pLimit) {
     this.pLimit = pLimit;
+    return this;
   }
 
   @Override
   public void factor(BigInteger Nbig, SortedMultiset<BigInteger> primeFactors) {
     long N = Nbig.longValue();
 
-    for (int i = 0; ; i++) {
-      int p = SMALL_PRIMES.getPrime(i);
+    int i = 1, p;
+    while ((p = SMALL_PRIMES.getPrime(i++)) <= pLimit) { // upper bound avoids positive int overflow
       if (N % p == 0) {
         int exp = 0;
         do {

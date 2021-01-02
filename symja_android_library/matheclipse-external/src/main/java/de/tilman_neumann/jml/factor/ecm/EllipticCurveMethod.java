@@ -50,6 +50,7 @@ public class EllipticCurveMethod extends FactorAlgorithm {
   private static final boolean DEBUG = false;
 
   static final int NLen = 1200;
+
   private static final long DosALa32 = 1L << 32;
   private static final long DosALa31 = 1L << 31;
   private static final long DosALa62 = 1L << 62;
@@ -66,27 +67,12 @@ public class EllipticCurveMethod extends FactorAlgorithm {
 
   private static final PrPTest prp = new PrPTest();
   private static final PurePowerTest powerTest = new PurePowerTest();
-  private static final TDiv tdiv = new TDiv();
-  private MontgomeryMult montgomery;
+  private static final TDiv tdiv = new TDiv().setTestLimit(131072);
 
   private static final double v[] = {
     1.61803398875, 1.72360679775, 1.618347119656, 1.617914406529, 1.612429949509,
     1.632839806089, 1.620181980807, 1.580178728295, 1.617214616534, 1.38196601125
   };
-
-  private final long biTmp[] = new long[NLen];
-
-  // Used inside GCD calculations in multiple precision numbers
-  private final int CalcAuxGcdU[] = new int[NLen];
-  private final int CalcAuxGcdV[] = new int[NLen];
-  private final int CalcAuxGcdT[] = new int[NLen];
-  private final int GcdAccumulated[] = new int[NLen];
-  final int CalcBigNbr[] = new int[NLen];
-
-  private final long[] CalcAuxModInvA = new long[NLen];
-  private final long[] CalcAuxModInvB = new long[NLen];
-  private final long[] CalcAuxModInvMu = new long[NLen];
-  private final long[] CalcAuxModInvGamma = new long[NLen];
 
   /** input N as a BigNbr */
   private final int TestNbr[] = new int[NLen];
@@ -98,12 +84,59 @@ public class EllipticCurveMethod extends FactorAlgorithm {
    * the maximum number of curves to run. -1 means no limit, 0 automatic computation of the
    * parameter, positive values are applied directly
    */
-  int maxCurves;
-  /** Elliptic curve counter */
-  int EC;
+  private int maxCurves;
 
-  private int[] fieldTX, fieldTZ, fieldUX, fieldUZ;
-  private int[] fieldAux1, fieldAux2, fieldAux3, fieldAux4;
+  /** Elliptic curve counter */
+  private int EC;
+
+  private MontgomeryMult montgomery;
+
+  // big numbers used in gcd calculation
+  private final int[] CalcAuxGcdU = new int[NLen];
+  private final int[] CalcAuxGcdV = new int[NLen];
+  private final int[] CalcAuxGcdT = new int[NLen];
+  private final int[] GcdAccumulated = new int[NLen];
+
+  // arrays used in modInverse calculation
+  private final long[] B = new long[NLen];
+  private final long[] CalcAuxModInvA = new long[NLen];
+  private final long[] CalcAuxModInvB = new long[NLen];
+  private final long[] CalcAuxModInvMu = new long[NLen];
+  private final long[] CalcAuxModInvGamma = new long[NLen];
+
+  // other arrays with unique usage
+  private final int[] A0 = new int[NLen];
+  private final int[] A02 = new int[NLen];
+  private final int[] A03 = new int[NLen];
+  private final int[] AA = new int[NLen];
+  private final int[] DX = new int[NLen];
+  private final int[] DZ = new int[NLen];
+  private final int[] GD = new int[NLen];
+  private final int[] M = new int[NLen];
+  private final int[] W1 = new int[NLen];
+  private final int[] W2 = new int[NLen];
+  private final int[] W3 = new int[NLen];
+  private final int[] W4 = new int[NLen];
+  private final int[] WX = new int[NLen];
+  private final int[] WZ = new int[NLen];
+  private final int[] X = new int[NLen];
+  private final int[] Z = new int[NLen];
+  private final int[] Xaux = new int[NLen];
+  private final int[] Zaux = new int[NLen];
+  private final int[][] root = new int[480][NLen];
+  private final byte[] sieve = new byte[23100];
+  private final byte[] sieve2310 = new byte[2310];
+  private final int[] sieveidx = new int[480];
+
+  // other arrays with multiple usage
+  private final int[] fieldTX = new int[NLen];
+  private final int[] fieldTZ = new int[NLen];
+  private final int[] fieldUX = new int[NLen];
+  private final int[] fieldUZ = new int[NLen];
+  private final int[] fieldAux1 = new int[NLen];
+  private final int[] fieldAux2 = new int[NLen];
+  private final int[] fieldAux3 = new int[NLen];
+  private final int[] fieldAux4 = new int[NLen];
 
   static {
     BigNbr1[0] = 1;
@@ -140,40 +173,34 @@ public class EllipticCurveMethod extends FactorAlgorithm {
    * @param args
    * @param result the result of the factoring attempt. Should be initialized only once by the
    *     caller to reduce overhead.
-   * @return true if ECM found some factors
    */
-  public boolean searchFactors(FactorArguments args, FactorResult result) {
-    // Set up new N.
-    BigInteger N = args.N;
+  public void searchFactors(FactorArguments args, FactorResult result) {
     // The elliptic curve counter should not be reset to 0 in fnECM() so that curves do not get
     // tested twice, no matter how many factors N has.
     EC = 0;
 
-    // Do trial division by all primes < 131072.
-    SortedMultiset<BigInteger> tdivFactors = new SortedMultiset_BottomUp<BigInteger>();
-    // Adding the factors found by trial division must take into account the multiplicity of N
-    N =
-        tdiv.findSmallFactors(
-            N,
-            131072,
-            tdivFactors); // TODO take into account the amount of trial division done before
-    for (BigInteger tdivFactor : tdivFactors.keySet()) {
-      int tdivFactorExp = tdivFactors.get(tdivFactor);
-      result.primeFactors.add(tdivFactor, tdivFactorExp * args.exp);
-    }
+    // Do trial division by all primes < 131072. Found factors are added to result.primeFactors, the
+    // rest to result.untestedFactors.
+    tdiv.searchFactors(args, result);
+    if (result.untestedFactors.isEmpty()) return;
+    // Otherwise untestedFactors should contain exactly one integer > 131072^2, the unfactored rest
+    //    if (DEBUG) {
+    //      assertEquals(1, result.untestedFactors.size());
+    //      assertTrue(result.untestedFactors.firstKey().compareTo(BigInteger.valueOf(131072L ^ 2))
+    // > 0);
+    //    }
 
-    if (N.equals(I_1)) {
-      return true;
-    }
+    // Retrieve the unfactored rest to continue. The exponent of N can not have changed.
+    BigInteger N = result.untestedFactors.firstKey();
+    int Nexp = result.untestedFactors.removeAll(N);
+    //    if (DEBUG) assertEquals(args.exp, Nexp);
 
-    // There are factors greater than 131071, and they may be prime or composite.
     if (isProbablePrime(N)) {
       addToMap(N, args.exp, result.primeFactors);
-      return true;
+      return;
     }
 
     // N is composite -> do ECM
-    boolean factorFound = false;
     SortedMultiset<BigInteger> compositesToTest = result.compositeFactors;
     compositesToTest.add(N, args.exp); // we know that N is composite
 
@@ -191,12 +218,12 @@ public class EllipticCurveMethod extends FactorAlgorithm {
         // N is a pure power!
         addToMapDependingOnPrimeTest(
             r.base, exp * r.exponent, result.primeFactors, compositesToTest);
-        factorFound = true;
         continue; // test next composite
       }
 
       // ECM
-      final BigInteger NN = fnECM(N);
+      int maxCurvesForN = maxCurves != 0 ? maxCurves : computeMaxCurvesForN(N);
+      final BigInteger NN = fnECM(N, maxCurvesForN);
       if (NN.equals(I_1)) {
         // N is composite but could not be factored by ECM
         addToMap(N, exp, failedComposites);
@@ -205,13 +232,11 @@ public class EllipticCurveMethod extends FactorAlgorithm {
       // NN is a factor of N
       addToMapDependingOnPrimeTest(NN, exp, result.primeFactors, compositesToTest);
       addToMapDependingOnPrimeTest(N.divide(NN), exp, result.primeFactors, compositesToTest);
-      factorFound = true;
     }
 
     // Before we finish, add all composites that could not be factored to result.compositeFactors.
     // We want the product of result factors to match N, no matter what happened.
     compositesToTest.addAll(failedComposites);
-    return factorFound;
   }
 
   private boolean isProbablePrime(BigInteger N) {
@@ -236,40 +261,34 @@ public class EllipticCurveMethod extends FactorAlgorithm {
   @Override
   public BigInteger findSingleFactor(BigInteger N) {
     EC = 0;
-    return fnECM(N);
+    int maxCurvesForN = maxCurves != 0 ? maxCurves : computeMaxCurvesForN(N);
+    return fnECM(N, maxCurvesForN);
   }
 
-  private BigInteger fnECM(BigInteger N) {
-    int[] A0 = new int[NLen];
-    int[] A02 = new int[NLen];
-    int[] A03 = new int[NLen];
-    int[] AA = new int[NLen];
-    int[] DX = new int[NLen]; // zero-init required
-    int[] DZ = new int[NLen]; // zero-init required
-    int[] GD = new int[NLen]; // zero-init required
-    int[] M = new int[NLen]; // zero-init required
-    int[] TX = fieldTX = new int[NLen];
-    int[] TZ = fieldTZ = new int[NLen];
-    int[] UX = fieldUX = new int[NLen];
-    int[] UZ = fieldUZ = new int[NLen];
-    int[] W1 = new int[NLen];
-    int[] W2 = new int[NLen];
-    int[] W3 = new int[NLen]; // zero-init required
-    int[] W4 = new int[NLen]; // zero-init required
-    int[] WX = new int[NLen];
-    int[] WZ = new int[NLen];
-    int[] X = new int[NLen];
-    int[] Z = new int[NLen];
-    int[] Aux1 = fieldAux1 = new int[NLen];
-    int[] Aux2 = fieldAux2 = new int[NLen];
-    int[] Aux3 = fieldAux3 = new int[NLen];
-    fieldAux4 = new int[NLen];
-    int[] Xaux = new int[NLen];
-    int[] Zaux = new int[NLen];
-    int[][] root = new int[480][NLen];
-    byte[] sieve = new byte[23100];
-    byte[] sieve2310 = new byte[2310];
-    int[] sieveidx = new int[480];
+  public static int computeMaxCurvesForN(BigInteger N) {
+    int NBits = N.bitLength();
+    // Dario Alpern's choice of (decimal digits -> maxCurves) was:
+    // 30->5, 35->8, 40->15, 45->25, 50->27, 55->32, 60->43, 65->70, 70->150, 75->300, 80->350,
+    // 85->600, 90->1500
+    // For N > 90 decimal digits the number of curves to run was unlimited, so his SIQS would never
+    // be called.
+    // The following re-estimate seems to work quite fine for any number of PSIQS threads. It is
+    // rather cautious because hitting hard semi-primes
+    // shall not let ECM waste more time than SIQS or PSIQS would need. Nonetheless, these few
+    // curves speed up factoring random composites a lot.
+    int maxCurvesForN = NBits > 130 ? (int) Math.pow((NBits - 130) / 15, 1.61) : 0;
+    if (DEBUG) LOG.debug("ECM: NBits = " + NBits + ", maxCurvesForN = " + maxCurvesForN);
+    return maxCurvesForN;
+  }
+
+  private BigInteger fnECM(BigInteger N, int maxCurvesForN) {
+    int[] TX = fieldTX;
+    int[] TZ = fieldTZ;
+    int[] UX = fieldUX;
+    int[] UZ = fieldUZ;
+    int[] Aux1 = fieldAux1;
+    int[] Aux2 = fieldAux2;
+    int[] Aux3 = fieldAux3;
 
     // Compute NumberLength, the number of ints in which all computations are carried out
     this.NumberLength = computeNumberLength(N.toByteArray().length * 8);
@@ -301,22 +320,6 @@ public class EllipticCurveMethod extends FactorAlgorithm {
     MultBigNbrModN(MontgomeryMultR1, MontgomeryMultR1, MontgomeryMultR2, dN);
     montgomery.mul(MontgomeryMultR2, MontgomeryMultR2, MontgomeryMultAfterInv);
     AddBigNbrModN(MontgomeryMultR1, MontgomeryMultR1, MontgomeryMultR2);
-
-    int maxCurvesForN = maxCurves;
-    if (maxCurvesForN == 0) { // automatic computation requested
-      int NBits = N.bitLength();
-      // Dario Alpern's choice of (decimal digits -> maxCurves) was:
-      // 30->5, 35->8, 40->15, 45->25, 50->27, 55->32, 60->43, 65->70, 70->150, 75->300, 80->350,
-      // 85->600, 90->1500
-      // For N > 90 decimal digits the number of curves to run was unlimited, so his SIQS would
-      // never be called.
-      // The following re-estimate seems to work quite fine for any number of PSIQS threads. It is
-      // rather cautious because hitting hard semi-primes
-      // shall not let ECM waste more time than SIQS or PSIQS would need. Nonetheless, these few
-      // curves speed up factoring random composites a lot.
-      maxCurvesForN = NBits > 130 ? (int) Math.pow((NBits - 130) / 15, 1.61) : 0;
-      if (DEBUG) LOG.debug("ECM: NBits = " + NBits + ", maxCurvesForN = " + maxCurvesForN);
-    }
 
     // Modular curve loop:
     while (true) {
@@ -726,7 +729,7 @@ public class EllipticCurveMethod extends FactorAlgorithm {
       }
       /* do the first line of Table 4 whose condition qualifies */
       if (4 * d <= 5 * e && ((d + e) % 3) == 0) {
-          /* condition 1 */
+        /* condition 1 */
         r = (2 * d - e) / 3;
         e = (2 * e - d) / 3;
         d = r;
@@ -740,12 +743,12 @@ public class EllipticCurveMethod extends FactorAlgorithm {
         zA = zT2;
         zT2 = t; /* swap A and T2 */
       } else if (4 * d <= 5 * e && (d - e) % 6 == 0) {
-          /* condition 2 */
+        /* condition 2 */
         d = (d - e) / 2;
         add3(xB, zB, xA, zA, xB, zB, xC, zC); /* B = f(A,B,C) */
         duplicate(xA, zA, xA, zA, AA); /* A = 2*A */
       } else if (d <= (4 * e)) {
-          /* condition 3 */
+        /* condition 3 */
         d -= e;
         add3(xT, zT, xB, zB, xA, zA, xC, zC); /* T = f(B,A,C) */
         t = xB;
@@ -757,17 +760,17 @@ public class EllipticCurveMethod extends FactorAlgorithm {
         zT = zC;
         zC = t; /* circular permutation (B,T,C) */
       } else if ((d + e) % 2 == 0) {
-          /* condition 4 */
+        /* condition 4 */
         d = (d - e) / 2;
         add3(xB, zB, xB, zB, xA, zA, xC, zC); /* B = f(B,A,C) */
         duplicate(xA, zA, xA, zA, AA); /* A = 2*A */
       } else if (d % 2 == 0) {
-          /* condition 5 */
+        /* condition 5 */
         d /= 2;
         add3(xC, zC, xC, zC, xA, zA, xB, zB); /* C = f(C,A,B) */
         duplicate(xA, zA, xA, zA, AA); /* A = 2*A */
       } else if (d % 3 == 0) {
-          /* condition 6 */
+        /* condition 6 */
         d = d / 3 - e;
         duplicate(xT, zT, xA, zA, AA); /* T1 = 2*A */
         add3(xT2, zT2, xA, zA, xB, zB, xC, zC); /* T2 = f(A,B,C) */
@@ -782,14 +785,14 @@ public class EllipticCurveMethod extends FactorAlgorithm {
         zB = zT;
         zT = t; /* circular permutation (C,B,T) */
       } else if ((d + e) % 3 == 0) {
-          /* condition 7 */
+        /* condition 7 */
         d = (d - 2 * e) / 3;
         add3(xT, zT, xA, zA, xB, zB, xC, zC); /* T1 = f(A,B,C) */
         add3(xB, zB, xT, zT, xA, zA, xB, zB); /* B = f(T1,A,B) */
         duplicate(xT, zT, xA, zA, AA);
         add3(xA, zA, xA, zA, xT, zT, xA, zA); /* A = 3*A */
       } else if ((d - e) % 3 == 0) {
-          /* condition 8 */
+        /* condition 8 */
         d = (d - e) / 3;
         add3(xT, zT, xA, zA, xB, zB, xC, zC); /* T1 = f(A,B,C) */
         add3(xC, zC, xC, zC, xA, zA, xB, zB); /* C = f(A,C,B) */
@@ -802,7 +805,7 @@ public class EllipticCurveMethod extends FactorAlgorithm {
         duplicate(xT, zT, xA, zA, AA);
         add3(xA, zA, xA, zA, xT, zT, xA, zA); /* A = 3*A */
       } else if (e % 2 == 0) {
-          /* condition 9 */
+        /* condition 9 */
         e /= 2;
         add3(xC, zC, xC, zC, xB, zB, xA, zA); /* C = f(C,B,A) */
         duplicate(xB, zB, xB, zB, AA); /* B = 2*B */
@@ -829,41 +832,41 @@ public class EllipticCurveMethod extends FactorAlgorithm {
         e = r;
       }
       if (4 * d <= 5 * e && ((d + e) % 3) == 0) {
-          /* condition 1 */
+        /* condition 1 */
         r = (2 * d - e) / 3;
         e = (2 * e - d) / 3;
         d = r;
         c += 3 * ADD; /* 3 additions */
       } else if (4 * d <= 5 * e && (d - e) % 6 == 0) {
-          /* condition 2 */
+        /* condition 2 */
         d = (d - e) / 2;
         c += ADD + DUP; /* one addition, one duplicate */
       } else if (d <= (4 * e)) {
-          /* condition 3 */
+        /* condition 3 */
         d -= e;
         c += ADD; /* one addition */
       } else if ((d + e) % 2 == 0) {
-          /* condition 4 */
+        /* condition 4 */
         d = (d - e) / 2;
         c += ADD + DUP; /* one addition, one duplicate */
       } else if (d % 2 == 0) {
-          /* condition 5 */
+        /* condition 5 */
         d /= 2;
         c += ADD + DUP; /* one addition, one duplicate */
       } else if (d % 3 == 0) {
-          /* condition 6 */
+        /* condition 6 */
         d = d / 3 - e;
         c += 3 * ADD + DUP; /* three additions, one duplicate */
       } else if ((d + e) % 3 == 0) {
-          /* condition 7 */
+        /* condition 7 */
         d = (d - 2 * e) / 3;
         c += 3 * ADD + DUP; /* three additions, one duplicate */
       } else if ((d - e) % 3 == 0) {
-          /* condition 8 */
+        /* condition 8 */
         d = (d - e) / 3;
         c += 3 * ADD + DUP; /* three additions, one duplicate */
       } else if (e % 2 == 0) {
-          /* condition 9 */
+        /* condition 9 */
         e /= 2;
         c += ADD + DUP; /* one addition, one duplicate */
       }
@@ -1360,11 +1363,6 @@ public class EllipticCurveMethod extends FactorAlgorithm {
     int Yaah, Yabh, Ybah, Ybbh;
     int Ymb0h, Ygb0h;
     long Pr1, Pr2, Pr3, Pr4, Pr5, Pr6, Pr7;
-    long[] B = this.biTmp;
-    long[] CalcAuxModInvA = this.CalcAuxModInvA;
-    long[] CalcAuxModInvB = this.CalcAuxModInvB;
-    long[] CalcAuxModInvMu = this.CalcAuxModInvMu;
-    long[] CalcAuxModInvGamma = this.CalcAuxModInvGamma;
 
     Convert31To32Bits(a, CalcAuxModInvA);
     Convert31To32Bits(b, CalcAuxModInvB);
@@ -1804,8 +1802,8 @@ public class EllipticCurveMethod extends FactorAlgorithm {
 
           new BigInteger(
               "856483652537814883803418179972154563054077"), // = {42665052615296697659=1,
-                                                             // 20074595014814065252903=1} in 7s,
-                                                             // 572ms.
+          // 20074595014814065252903=1} in 7s,
+          // 572ms.
         };
 
     EllipticCurveMethod ecm = new EllipticCurveMethod(-1);
@@ -1822,13 +1820,9 @@ public class EllipticCurveMethod extends FactorAlgorithm {
               new SortedMultiset_BottomUp<BigInteger>(),
               smallestPossibleFactor);
       FactorArguments factorArgs = new FactorArguments(N, 1, smallestPossibleFactor);
-      boolean foundFactor = ecm.searchFactors(factorArgs, factorResult);
-      if (foundFactor) {
-        LOG.debug(
-            "N = " + N + ": " + factorResult.primeFactors + " * " + factorResult.compositeFactors);
-      } else {
-        LOG.debug("ECM did not find any factor for N = " + N);
-      }
+      ecm.searchFactors(factorArgs, factorResult);
+      LOG.debug(
+          "N = " + N + ": " + factorResult.primeFactors + " * " + factorResult.compositeFactors);
     }
     t1 = System.currentTimeMillis();
     LOG.info("Test suite took " + (t1 - t0) + "ms");

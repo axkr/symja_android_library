@@ -72,7 +72,7 @@ public class FactorTest01 implements FactorTest {
     for (long factor : totalQ_factors.keySet()) {
       if (factor == -1)
         continue; // sqrt(Q-product) can be positive or negative, but we want the positive solution
-      // -> skip sign
+                  // -> skip sign
       int exp = totalQ_factors.get(factor);
       if ((exp & 1) == 1) {
         // non-square "solution" -> early exit

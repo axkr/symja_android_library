@@ -13,6 +13,7 @@
  */
 package de.tilman_neumann.jml.factor;
 
+import static de.tilman_neumann.jml.factor.base.AnalysisOptions.*;
 import static de.tilman_neumann.jml.base.BigIntConstants.*;
 
 import java.io.BufferedReader;
@@ -27,6 +28,7 @@ import de.tilman_neumann.jml.factor.base.FactorArguments;
 import de.tilman_neumann.jml.factor.base.FactorResult;
 import de.tilman_neumann.jml.factor.base.matrixSolver.MatrixSolver01_Gauss;
 import de.tilman_neumann.jml.factor.base.matrixSolver.MatrixSolver02_BlockLanczos;
+import de.tilman_neumann.jml.factor.ecm.EllipticCurveMethod;
 import de.tilman_neumann.jml.factor.hart.Hart_TDiv_Race;
 import de.tilman_neumann.jml.factor.pollardRho.PollardRhoBrentMontgomery64;
 import de.tilman_neumann.jml.factor.pollardRho.PollardRhoBrentMontgomeryR64Mul63;
@@ -41,7 +43,9 @@ import de.tilman_neumann.jml.factor.siqs.sieve.Sieve03g;
 import de.tilman_neumann.jml.factor.siqs.sieve.Sieve03gU;
 import de.tilman_neumann.jml.factor.siqs.tdiv.TDiv_QS_1Large_UBI;
 import de.tilman_neumann.jml.factor.siqs.tdiv.TDiv_QS_2Large_UBI;
+import de.tilman_neumann.jml.factor.tdiv.TDiv;
 import de.tilman_neumann.jml.factor.tdiv.TDiv31Barrett;
+import de.tilman_neumann.jml.primes.probable.BPSWTest;
 import de.tilman_neumann.util.ConfigUtil;
 import de.tilman_neumann.util.SortedMultiset;
 import de.tilman_neumann.util.TimeUtil;
@@ -52,20 +56,30 @@ import de.tilman_neumann.util.TimeUtil;
  * @author Tilman Neumann
  */
 public class CombinedFactorAlgorithm extends FactorAlgorithm {
-  @SuppressWarnings("unused")
   private static final Logger LOG = Logger.getLogger(CombinedFactorAlgorithm.class);
+  private static final boolean DEBUG = false;
+
+  /** if true then search for small factors before PSIQS is run */
+  private boolean searchSmallFactors = true;
 
   private TDiv31Barrett tDiv31 = new TDiv31Barrett();
   private Hart_TDiv_Race hart = new Hart_TDiv_Race();
   private PollardRhoBrentMontgomeryR64Mul63 pollardRhoR64Mul63 =
       new PollardRhoBrentMontgomeryR64Mul63();
   private PollardRhoBrentMontgomery64 pollardRho64 = new PollardRhoBrentMontgomery64();
+  private TDiv tdiv = new TDiv();
+  private EllipticCurveMethod ecm = new EllipticCurveMethod(0);
 
   // SIQS tuned for small N
   private SIQS siqs_smallArgs;
 
   // The SIQS chosen for big arguments depends on constructor parameters
   private FactorAlgorithm siqs_bigArgs;
+
+  private BPSWTest bpsw = new BPSWTest();
+
+  // profiling
+  private long t0;
 
   /**
    * Simple constructor, computing the amount of trial division automatically and using PSIQS with
@@ -104,7 +118,7 @@ public class CombinedFactorAlgorithm extends FactorAlgorithm {
         permitUnsafeUsage,
         true,
         true); // TODO switch useLegacyFactoring to false when the advanced approach has proven to
-    // be prolific
+               // be prolific
   }
 
   /**
@@ -126,6 +140,7 @@ public class CombinedFactorAlgorithm extends FactorAlgorithm {
       boolean useLegacyFactoring,
       boolean searchSmallFactors) {
     super(tdivLimit, useLegacyFactoring);
+    this.searchSmallFactors = searchSmallFactors;
 
     siqs_smallArgs =
         new SIQS(
@@ -139,8 +154,7 @@ public class CombinedFactorAlgorithm extends FactorAlgorithm {
             new TDiv_QS_1Large_UBI(),
             10,
             new MatrixSolver01_Gauss(),
-            useLegacyFactoring,
-            searchSmallFactors);
+            useLegacyFactoring);
 
     if (numberOfThreads == 1) {
       // Avoid multi-thread overhead if the requested number of threads is 1
@@ -157,8 +171,7 @@ public class CombinedFactorAlgorithm extends FactorAlgorithm {
               new TDiv_QS_2Large_UBI(permitUnsafeUsage),
               10,
               new MatrixSolver02_BlockLanczos(),
-              useLegacyFactoring,
-              searchSmallFactors);
+              useLegacyFactoring);
     } else {
       if (permitUnsafeUsage) {
         siqs_bigArgs =
@@ -170,8 +183,7 @@ public class CombinedFactorAlgorithm extends FactorAlgorithm {
                 numberOfThreads,
                 new NoPowerFinder(),
                 new MatrixSolver02_BlockLanczos(),
-                useLegacyFactoring,
-                searchSmallFactors);
+                useLegacyFactoring);
       } else {
         siqs_bigArgs =
             new PSIQS(
@@ -182,8 +194,7 @@ public class CombinedFactorAlgorithm extends FactorAlgorithm {
                 numberOfThreads,
                 new NoPowerFinder(),
                 new MatrixSolver02_BlockLanczos(),
-                useLegacyFactoring,
-                searchSmallFactors);
+                useLegacyFactoring);
       }
     }
 
@@ -193,7 +204,13 @@ public class CombinedFactorAlgorithm extends FactorAlgorithm {
   @Override
   public String getName() {
     String modeStr = "mode = " + (useLegacyFactoring ? "legacy" : "advanced");
-    return "combi(" + (tdivLimit != null ? tdivLimit : "auto") + ", " + modeStr + ")";
+    return "combi("
+        + (tdivLimit != null ? tdivLimit : "auto")
+        + ", "
+        + modeStr
+        + ", searchSmallFactors = "
+        + searchSmallFactors
+        + ")";
   }
 
   @Override
@@ -203,31 +220,143 @@ public class CombinedFactorAlgorithm extends FactorAlgorithm {
     if (NBits < 50) return hart.findSingleFactor(N);
     if (NBits < 57) return pollardRhoR64Mul63.findSingleFactor(N);
     if (NBits < 63) return pollardRho64.findSingleFactor(N);
-    if (NBits < 97) return siqs_smallArgs.findSingleFactor(N);
+    if (NBits <= 150) return siqs_smallArgs.findSingleFactor(N);
     return siqs_bigArgs.findSingleFactor(N);
   }
 
   @Override
-  public boolean searchFactors(FactorArguments args, FactorResult result) {
+  public void searchFactors(FactorArguments args, FactorResult result) {
     int NBits = args.NBits;
     if (NBits < 32) {
       // Find all remaining factors; these are known to be prime factors.
-      // The bound here is higher than in findSingleFactor() because here we find all factors in a
-      // single tdiv run.
-      int factorCountBefore = result.primeFactors.totalCount();
+      // The bit bound here is higher than in findSingleFactor() because here we find all factors in
+      // a single tdiv run.
       tDiv31.factor(args.N, args.exp, result.primeFactors);
-      return result.primeFactors.totalCount() != factorCountBefore;
+    } else if (NBits < 50) hart.searchFactors(args, result);
+    else if (NBits < 57) pollardRhoR64Mul63.searchFactors(args, result);
+    else if (NBits < 63) pollardRho64.searchFactors(args, result);
+    else {
+      if (searchSmallFactors) {
+        int actualTdivLimit;
+        if (tdivLimit != null) {
+          // use "dictated" limit
+          actualTdivLimit = tdivLimit.intValue();
+        } else {
+          // Adjust tdivLimit=2^e by experimental results.
+          final double e = 10 + (args.NBits - 45) * 0.07407407407; // constant 0.07.. = 10/135
+          actualTdivLimit = (int) Math.min(1 << 20, Math.pow(2, e)); // upper bound 2^20
+        }
+        if (actualTdivLimit > result.smallestPossibleFactorRemaining) {
+          // there is still tdiv/EM work to do...
+          BigInteger N0 = args.N;
+
+          if (DEBUG) LOG.debug("result before TDiv: " + result);
+          if (ANALYZE) t0 = System.currentTimeMillis();
+          tdiv.setTestLimit(actualTdivLimit).searchFactors(args, result);
+          if (ANALYZE)
+            LOG.debug(
+                "TDiv up to "
+                    + actualTdivLimit
+                    + " took "
+                    + (System.currentTimeMillis() - t0)
+                    + "ms");
+          if (DEBUG) LOG.debug("result after TDiv:  " + result);
+
+          if (result.untestedFactors.isEmpty()) return; // N was "easy"
+
+          // Otherwise we continue
+          BigInteger N = result.untestedFactors.firstKey();
+          int exp = result.untestedFactors.removeAll(N);
+          //					if (DEBUG) assertEquals(1, exp); // looks safe, otherwise we'ld have to consider
+          // exp below
+
+          if (bpsw.isProbablePrime(N)) { // TODO exploit tdiv done so far
+            result.primeFactors.add(N);
+            return;
+          }
+
+          // update factor arguments for ECM or SIQS
+          args.N = N;
+          args.NBits = N.bitLength();
+          args.exp = exp;
+          args.smallestPossibleFactor = result.smallestPossibleFactorRemaining;
+
+          // Check if ECM makes sense for a number of the size of N
+          int maxCurvesForN = EllipticCurveMethod.computeMaxCurvesForN(N);
+          if (maxCurvesForN == 0) {
+            // ECM would create too much overhead for N, SIQS is faster
+            result.compositeFactors.add(N, args.exp);
+          } else {
+            if (DEBUG) LOG.debug("result before ECM: " + result);
+            if (ANALYZE) t0 = System.currentTimeMillis();
+            ecm.searchFactors(
+                args,
+                result); // TODO a parallel ECM implementation with numberOfThreads threads would be
+                         // nice here
+            if (ANALYZE) LOG.debug("ECM took " + (System.currentTimeMillis() - t0) + "ms");
+            if (DEBUG) LOG.debug("result after ECM:  " + result);
+          }
+
+          if (!result.compositeFactors.containsKey(N0)) {
+            // either tdiv or ECM found some factors -> return immediately
+            return;
+          }
+          // Neither tdiv nor ECM found a factor. N0 has been added to compositeFactors again ->
+          // remove it and continue with SIQS
+          result.compositeFactors.removeAll(N);
+        }
+      }
+
+      // SIQS / PSIQS: The crossover point seems to be at ~150 bit now, independently the number of
+      // threads.
+      // Strangely, my previous adjustment had the crossover point at 97 bit. Probably at that time
+      // I wrongly compared
+      // PSIQS(1 thread) with PSIQS(2 threads), but PSIQS(1 thread) also has a thread creation
+      // penalty that SIQS does not have.
+      if (NBits <= 150) siqs_smallArgs.searchFactors(args, result);
+      else siqs_bigArgs.searchFactors(args, result);
     }
-    if (NBits < 50) return hart.searchFactors(args, result);
-    if (NBits < 57) return pollardRhoR64Mul63.searchFactors(args, result);
-    if (NBits < 63) return pollardRho64.searchFactors(args, result);
-    if (NBits < 97) return siqs_smallArgs.searchFactors(args, result);
-    return siqs_bigArgs.searchFactors(args, result);
   }
 
   /**
    * Run with command-line arguments or console input (if no command-line arguments are given).
    * Usage for executable jar file: java -jar <jar_file> [[-t <numberOfThreads>] <numberToFactor>]
+   *
+   * <p>Some test numbers:
+   *
+   * <p>15841065490425479923 (64 bit) = 2604221509 * 6082841047 in 211ms. (done by PSIQS)
+   *
+   * <p>11111111111111111111111111 (84 bit) = {11=1, 53=1, 79=1, 859=1, 265371653=1, 1058313049=1}
+   * in 185ms. (tdiv + PSIQS)
+   *
+   * <p>5679148659138759837165981543 (93 bit) = {3=3, 466932157=1, 450469808245315337=1} in 194ms.
+   * (tdiv + PSIQS)
+   *
+   * <p>874186654300294020965320730991996026550891341278308 (170 bits) = {2=2, 3=1, 471997=1,
+   * 654743=1, 2855761=1, 79833227=1, 982552477=1, 1052328969055591=1} in 685ms (tdiv + ECM + PSIQS)
+   *
+   * <p>11111111111111111111111111155555555555111111111111111 (173 bit) = {67=1, 157=1,
+   * 1056289676880987842105819104055096069503860738769=1} in 21ms. (only tdiv needed)
+   *
+   * <p>1388091470446411094380555803943760956023126025054082930201628998364642 (230 bit) = {2=1,
+   * 3=1, 1907=1, 1948073=1, 1239974331653=1, 50222487570895420624194712095309533522213376829=1} in
+   * 304ms. (tdiv + ECM + PSIQS)
+   *
+   * <p>10^71-1 = 99999999999999999999999999999999999999999999999999999999999999999999999 (236 bits)
+   * = {3=2, 241573142393627673576957439049=1, 45994811347886846310221728895223034301839=1} in 14s,
+   * 471ms. (tdiv + PSIQS)
+   *
+   * <p>10^79+5923 =
+   * 10000000000000000000000000000000000000000000000000000000000000000000000000005923 (263 bit) =
+   * {1333322076518899001350381760807974795003=1, 7500063320115780212377802894180923803641=1} in 1m,
+   * 35s, 243ms. (PSIQS)
+   *
+   * <p>2900608971182010301486951469292513060638582965350239259380273225053930627446289431038392125
+   * (301 bit) = 33333 * 33335 * 33337 * 33339 * 33341 * 33343 * 33345 * 33347 * 33349 * 33351 *
+   * 33353 * 33355 * 33357 * 33359 * 33361 * 33363 * 33367 * 33369 * 33369 * 33371 = {3=11, 5=3,
+   * 7=6, 11=2, 13=2, 17=2, 19=1, 37=1, 41=1, 53=1, 59=1, 61=1, 73=1, 113=1, 151=1, 227=2, 271=1,
+   * 337=1, 433=1, 457=1, 547=1, 953=1, 11113=1, 11117=1, 11119=1, 33343=1, 33347=1, 33349=1,
+   * 33353=1, 33359=1} in 10ms. (only tdiv)
    *
    * @param args [-t <numberOfThreads>] <numberToFactor>
    */

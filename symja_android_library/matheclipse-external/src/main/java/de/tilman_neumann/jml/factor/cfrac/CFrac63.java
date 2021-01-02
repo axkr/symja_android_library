@@ -193,8 +193,9 @@ public class CFrac63 extends FactorAlgorithm {
       floor_sqrt_kN =
           (long)
               Math.sqrt(
-                  kN.doubleValue()); // faster than BigInteger sqrt; but the type conversion may
-      // give ceil(sqrt(kN)) for some N >= 54 bit
+                  kN
+                      .doubleValue()); // faster than BigInteger sqrt; but the type conversion may
+                                       // give ceil(sqrt(kN)) for some N >= 54 bit
       BigInteger sqrt_kN_big = BigInteger.valueOf(floor_sqrt_kN);
       long diff = kN.subtract(sqrt_kN_big.multiply(sqrt_kN_big)).longValue();
       if (diff == 0) return N.gcd(sqrt_kN_big);

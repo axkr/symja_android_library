@@ -71,7 +71,7 @@ public class BParamTest {
       B2Array[l] =
           Bl.shiftLeft(
               1); // store 2 * B_l in B2[0]...B2[s-1] (the last one is only required to compute b
-      // below)
+                  // below)
       // WARNING: In contrast to the description in [Contini p.10, 2nd paragraph],
       // WARNING: b must not be computed (mod a) !
       b = b.add(Bl);
@@ -96,34 +96,34 @@ public class BParamTest {
     bIndex++;
   }
 
-  //	public static void main(String[] args) {
-  //    	ConfigUtil.initProject();
-  //		BParamTest test = new BParamTest();
-  //
-  //		// compute and log modular sqrt's
-  //		test.computeTArray();
-  //		for (int i=0; i<test.qCount; i++) {
-  //			LOG.info("t[" + i + "] = " + test.tArray[i]);
-  //		}
-  //
-  //		// compute first b and test B-values reported by [Contini p. 10]
-  //		int[] correct_B_values = new int[] {154, 110, 70};
-  //		test.computeFirstBParameter();
-  //		for (int i=0; i<test.qCount; i++) {
-  //			int B = test.B2Array[i].intValue()/2;
-  //			LOG.info("B[" + i + "] = " + B);
-  //			assertEquals(correct_B_values[i], B);
-  //		}
-  //
-  //		// compute and test next b-values
-  //		int[] correct_b_values = new int[] {334, 26, -194, 114};
-  //		test.bIndex = 1;
-  //		LOG.info("b[0] = " + test.b);
-  //		assertEquals(correct_b_values[0], test.b.intValue());
-  //		for (int i=1; i<4; i++) {
-  //			test.computeNextBParameter();
-  //			LOG.info("b[" + i + "] = " + test.b);
-  //			assertEquals(correct_b_values[i], test.b.intValue());
-  //		}
-  //	}
+  public static void main(String[] args) {
+    ConfigUtil.initProject();
+    BParamTest test = new BParamTest();
+
+    // compute and log modular sqrt's
+    test.computeTArray();
+    for (int i = 0; i < test.qCount; i++) {
+      LOG.info("t[" + i + "] = " + test.tArray[i]);
+    }
+
+    // compute first b and test B-values reported by [Contini p. 10]
+    int[] correct_B_values = new int[] {154, 110, 70};
+    test.computeFirstBParameter();
+    for (int i = 0; i < test.qCount; i++) {
+      int B = test.B2Array[i].intValue() / 2;
+      LOG.info("B[" + i + "] = " + B);
+      //			assertEquals(correct_B_values[i], B);
+    }
+
+    // compute and test next b-values
+    int[] correct_b_values = new int[] {334, 26, -194, 114};
+    test.bIndex = 1;
+    LOG.info("b[0] = " + test.b);
+    //		assertEquals(correct_b_values[0], test.b.intValue());
+    for (int i = 1; i < 4; i++) {
+      test.computeNextBParameter();
+      LOG.info("b[" + i + "] = " + test.b);
+      //			assertEquals(correct_b_values[i], test.b.intValue());
+    }
+  }
 }

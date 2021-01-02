@@ -44,7 +44,6 @@ public class PSIQS extends PSIQSBase {
    * @param matrixSolver solver for smooth congruences matrix
    * @param useLegacyFactoring if true then factor() uses findSingleFactor(), otherwise
    *     searchFactors()
-   * @param searchSmallFactors if true then search for small factors before SIQS or PSIQS is run
    */
   public PSIQS(
       float Cmult,
@@ -54,8 +53,7 @@ public class PSIQS extends PSIQSBase {
       int numberOfThreads,
       PowerFinder powerFinder,
       MatrixSolver matrixSolver,
-      boolean useLegacyFactoring,
-      boolean searchSmallFactors) {
+      boolean useLegacyFactoring) {
 
     super(
         Cmult,
@@ -66,8 +64,7 @@ public class PSIQS extends PSIQSBase {
         powerFinder,
         matrixSolver,
         new AParamGenerator01(wantedQCount),
-        useLegacyFactoring,
-        searchSmallFactors);
+        useLegacyFactoring);
   }
 
   @Override

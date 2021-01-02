@@ -2410,7 +2410,6 @@ public final class NumberTheory {
   private static class FactorInteger extends AbstractEvaluator {
 
     @Override
-    // public IExpr evaluateArg1(final IExpr arg1) {
     public IExpr evaluate(final IAST ast, EvalEngine engine) {
       if (ast.size() >= 2 && ast.size() <= 3) {
         IExpr arg1 = ast.arg1();

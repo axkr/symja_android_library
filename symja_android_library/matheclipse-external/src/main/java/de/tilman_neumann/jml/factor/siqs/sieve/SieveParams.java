@@ -82,8 +82,9 @@ public class SieveParams {
     }
     initializer = computeInitializerValue(primeBase, pMinIndex, minLogPSum, lnLogBase);
     lnPMultiplier =
-        1.0F / lnLogBase; // normalizer to be used as a multiplier for p_i values (faster than a
-    // divisor)
+        1.0F
+            / lnLogBase; // normalizer to be used as a multiplier for p_i values (faster than a
+                         // divisor)
   }
 
   /**

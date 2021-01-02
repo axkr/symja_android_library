@@ -129,7 +129,7 @@ public class Lehman_AnalyzeKProgressions2 {
             aLimit += adjust1 < adjust2 ? adjust1 : adjust2;
             aStep =
                 4; // XXX true step widths may be bigger, like 4, 28, 4, 28, ... But computations
-            // are too costly.
+                   // are too costly.
           }
         }
 

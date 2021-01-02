@@ -117,15 +117,7 @@ public class TDiv_QS_nLarge_UBI implements TDiv_QS {
   public TDiv_QS_nLarge_UBI(boolean permitUnsafeUsage) {
     qsInternal =
         new SIQS_Small(
-            0.305F,
-            0.37F,
-            null,
-            0.16F,
-            new SIQSPolyGenerator(),
-            10,
-            permitUnsafeUsage,
-            true,
-            false);
+            0.305F, 0.37F, null, 0.16F, new SIQSPolyGenerator(), 10, permitUnsafeUsage, true);
   }
 
   @Override
@@ -290,12 +282,12 @@ public class TDiv_QS_nLarge_UBI implements TDiv_QS {
         Q_rest_UBI = quotient_UBI;
         quotient_UBI = tmp;
         smallFactors.add(pass2Primes[pass2Index], (short) pass2Exponents[pass2Index]);
-        //				if (DEBUG) {
-        //					BigInteger pBig = BigInteger.valueOf(p);
-        //					BigInteger[] div = Q_rest.divideAndRemainder(pBig);
-        //					assertEquals(div[1].intValue(), rem);
-        //					Q_rest = div[0];
-        //				}
+        if (DEBUG) {
+          BigInteger pBig = BigInteger.valueOf(p);
+          BigInteger[] div = Q_rest.divideAndRemainder(pBig);
+          //					assertEquals(div[1].intValue(), rem);
+          Q_rest = div[0];
+        }
       }
     }
     if (ANALYZE) pass2Duration += timer.capture();

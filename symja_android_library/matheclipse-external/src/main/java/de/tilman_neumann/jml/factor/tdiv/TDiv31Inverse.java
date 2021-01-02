@@ -79,8 +79,9 @@ public class TDiv31Inverse extends FactorAlgorithm {
       final int p = primes[i];
       while ((q = (int) (N * reciprocals[i] + DISCRIMINATOR)) * p == N) {
         primeFactors.add(BigInteger.valueOf(p), Nexp);
-        N = q; // avoiding a division here by storing q benefits the int version but not the long
-        // version
+        N =
+            q; // avoiding a division here by storing q benefits the int version but not the long
+               // version
       }
       if (p * (long) p > N) {
         break;

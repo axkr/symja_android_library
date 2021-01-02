@@ -76,13 +76,14 @@ public class TDiv63Inverse extends FactorAlgorithm {
   }
 
   /**
-   * Set the upper limit of primes to be tested in the next findSingleFactor() run. pLimit must be
-   * smaller than the factorLimit parameter passed to the constructor.
+   * Set the upper limit of primes to be tested.
    *
-   * @param pLimit
+   * @param pLimit the limit; must be smaller than the factorLimit parameter passed to the
+   *     constructor
+   * @return this
    * @throws IllegalStateException if pLimit > factorLimit
    */
-  public void setTestLimit(int pLimit) {
+  public TDiv63Inverse setTestLimit(int pLimit) {
     if (pLimit > factorLimit) {
       throw new IllegalStateException(
           "Requested pLimit="
@@ -92,6 +93,7 @@ public class TDiv63Inverse extends FactorAlgorithm {
               + " passed to the constructor!");
     }
     this.pLimit = pLimit;
+    return this;
   }
 
   @Override

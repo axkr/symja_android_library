@@ -37,7 +37,6 @@ import de.tilman_neumann.jml.factor.base.matrixSolver.FactorTest;
 import de.tilman_neumann.jml.factor.base.matrixSolver.FactorTest01;
 import de.tilman_neumann.jml.factor.base.matrixSolver.MatrixSolver;
 import de.tilman_neumann.jml.factor.base.matrixSolver.MatrixSolver02_BlockLanczos;
-import de.tilman_neumann.jml.factor.ecm.EllipticCurveMethod;
 import de.tilman_neumann.jml.factor.siqs.data.BaseArrays;
 import de.tilman_neumann.jml.factor.siqs.poly.AParamGenerator;
 import de.tilman_neumann.jml.factor.siqs.poly.AParamGenerator01;
@@ -52,9 +51,7 @@ import de.tilman_neumann.jml.factor.siqs.sieve.SieveReport;
 import de.tilman_neumann.jml.factor.siqs.tdiv.TDivReport;
 import de.tilman_neumann.jml.factor.siqs.tdiv.TDiv_QS;
 import de.tilman_neumann.jml.factor.siqs.tdiv.TDiv_QS_nLarge_UBI;
-import de.tilman_neumann.jml.factor.tdiv.TDiv;
 import de.tilman_neumann.jml.powers.PurePowerTest;
-import de.tilman_neumann.jml.primes.probable.BPSWTest;
 import de.tilman_neumann.util.ConfigUtil;
 import de.tilman_neumann.util.SortedMultiset;
 import de.tilman_neumann.util.TimeUtil;
@@ -70,9 +67,6 @@ public class SIQS extends FactorAlgorithm {
   private static final boolean DEBUG = false;
   private static final boolean TEST_SIEVE = false;
 
-  /** if true then search for small factors before PSIQS is run */
-  private boolean searchSmallFactors = true;
-
   private PurePowerTest powerTest = new PurePowerTest();
   private KnuthSchroeppel multiplierFinder =
       new KnuthSchroeppel(); // used to compute the multiplier k
@@ -82,8 +76,6 @@ public class SIQS extends FactorAlgorithm {
   private AParamGenerator apg;
   private SIQSPolyGenerator polyGenerator;
   private PowerFinder powerFinder;
-  private TDiv tdiv = new TDiv();
-  private EllipticCurveMethod ecm = new EllipticCurveMethod(0);
 
   // sieve
   private float Mmult;
@@ -101,8 +93,6 @@ public class SIQS extends FactorAlgorithm {
   /** The solver used for smooth congruence equation systems. */
   private MatrixSolver matrixSolver;
 
-  private BPSWTest bpsw = new BPSWTest();
-
   private int foundPerfectSmoothCount;
   private int allPerfectSmoothCount;
   private int foundAQPairsCount;
@@ -110,12 +100,7 @@ public class SIQS extends FactorAlgorithm {
 
   // statistics
   private Timer timer = new Timer();
-  private long initialTdivDuration,
-      ecmDuration,
-      powerTestDuration,
-      initNDuration,
-      ccDuration,
-      solverDuration;
+  private long powerTestDuration, initNDuration, ccDuration, solverDuration;
   private int solverRunCount;
 
   /**
@@ -136,7 +121,6 @@ public class SIQS extends FactorAlgorithm {
    * @param matrixSolver matrix solver for the smooth congruence equation system
    * @param useLegacyFactoring if true then factor() uses findSingleFactor(), otherwise
    *     searchFactors()
-   * @param searchSmallFactors if true then search for small factors before PSIQS is run
    */
   public SIQS(
       float Cmult,
@@ -149,8 +133,7 @@ public class SIQS extends FactorAlgorithm {
       TDiv_QS auxFactorizer,
       int extraCongruences,
       MatrixSolver matrixSolver,
-      boolean useLegacyFactoring,
-      boolean searchSmallFactors) {
+      boolean useLegacyFactoring) {
 
     super(null, useLegacyFactoring);
 
@@ -165,7 +148,6 @@ public class SIQS extends FactorAlgorithm {
     this.extraCongruences = extraCongruences;
     this.matrixSolver = matrixSolver;
     apg = new AParamGenerator01(wantedQCount);
-    this.searchSmallFactors = searchSmallFactors;
   }
 
   @Override
@@ -196,63 +178,14 @@ public class SIQS extends FactorAlgorithm {
   }
 
   @Override
-  public boolean searchFactors(FactorArguments args, FactorResult result) {
+  public void searchFactors(FactorArguments args, FactorResult result) {
     if (ANALYZE) {
       timer.start(); // start timer
-      initialTdivDuration =
-          ecmDuration = powerTestDuration = initNDuration = ccDuration = solverDuration = 0;
+      powerTestDuration = initNDuration = ccDuration = solverDuration = 0;
       solverRunCount = 0;
     }
 
     BigInteger N = args.N;
-    if (searchSmallFactors) {
-      int actualTdivLimit;
-      if (tdivLimit != null) {
-        // use "dictated" limit
-        actualTdivLimit = tdivLimit.intValue();
-      } else {
-        // Adjust tdivLimit=2^e by experimental results.
-        final double e = 10 + (args.NBits - 45) * 0.07407407407; // constant 0.07.. = 10/135
-        actualTdivLimit = (int) Math.min(1 << 20, Math.pow(2, e)); // upper bound 2^20
-      }
-
-      // LOG.debug("1: N = " + N + ", actualTdivLimit = " + actualTdivLimit + ", result = " +
-      // result);
-      tdiv.findSmallOddFactors(args, actualTdivLimit, result);
-      // LOG.debug("2: N = " + N + ", actualTdivLimit = " + actualTdivLimit + ", result = " +
-      // result);
-      if (ANALYZE) initialTdivDuration += timer.capture();
-
-      if (result.untestedFactors.isEmpty()) {
-        // N was "easy"
-        return true;
-      }
-      // Otherwise we have to continue
-      N = result.untestedFactors.firstKey();
-      int exp = result.untestedFactors.removeAll(N);
-      //			if (DEBUG) assertEquals(1, exp); // looks safe, otherwise we'ld have to consider exp
-      // below
-
-      if (bpsw.isProbablePrime(N)) { // TODO exploit tdiv done so far
-        result.primeFactors.add(N);
-        return true;
-      }
-
-      // ECM
-      args.N = N;
-      args.NBits = N.bitLength();
-      args.exp = exp;
-      args.smallestPossibleFactor = result.smallestPossibleFactorRemaining;
-
-      boolean factorFound = ecm.searchFactors(args, result);
-      if (ANALYZE) ecmDuration += timer.capture();
-      if (factorFound) {
-        return true;
-      } else {
-        // N could not be resolved by ECM and has been added to compositeFactors again...
-        result.compositeFactors.remove(N);
-      }
-    }
 
     // the quadratic sieve does not work for pure powers
     PurePowerTest.Result purePower = powerTest.test(N);
@@ -260,7 +193,7 @@ public class SIQS extends FactorAlgorithm {
       // N is indeed a pure power. In contrast to findSingleFactor() we can also add the exponent,
       // so following steps get faster
       result.untestedFactors.add(purePower.base, purePower.exponent);
-      return true;
+      return;
     } // else: no pure power, run quadratic sieve
     if (ANALYZE) powerTestDuration += timer.capture();
 
@@ -270,10 +203,10 @@ public class SIQS extends FactorAlgorithm {
       // We found a factor, but here we cannot know if it is prime or composite
       result.untestedFactors.add(factor1, args.exp);
       result.untestedFactors.add(N.divide(factor1), args.exp);
-      return true;
+      return;
     }
 
-    return false; // nothing found
+    // nothing found
   }
 
   /**
@@ -627,11 +560,7 @@ public class SIQS extends FactorAlgorithm {
             + ", #tested null vectors = "
             + matrixSolver.getTestedNullVectorCount());
     LOG.info(
-        "    Approximate phase timings: tdiv="
-            + initialTdivDuration
-            + "ms, ecm="
-            + ecmDuration
-            + "ms, powerTest="
+        "    Approximate phase timings: powerTest="
             + powerTestDuration
             + "ms, initN="
             + initNDuration
@@ -689,8 +618,7 @@ public class SIQS extends FactorAlgorithm {
             new TDiv_QS_nLarge_UBI(true),
             10,
             new MatrixSolver02_BlockLanczos(),
-            false,
-            true);
+            false);
     Timer timer = new Timer();
     while (true) {
       try {
