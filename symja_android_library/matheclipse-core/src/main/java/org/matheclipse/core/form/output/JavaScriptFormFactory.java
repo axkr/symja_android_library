@@ -157,6 +157,7 @@ public class JavaScriptFormFactory extends DoubleFormFactory {
     FUNCTIONS_STR_MATHCELL.put(S.ChebyshevT, "chebyshevT");
     FUNCTIONS_STR_MATHCELL.put(S.ChebyshevU, "chebyshevU");
     FUNCTIONS_STR_MATHCELL.put(S.LegendreP, "legendreP");
+    
     // FUNCTIONS_STR_MATHCELL.put(S.SpheriacelHarmonic, "sphericalHarmonic");
 
     FUNCTIONS_STR_MATHCELL.put(S.Sin, "sin");
@@ -193,12 +194,15 @@ public class JavaScriptFormFactory extends DoubleFormFactory {
     // FUNCTIONS_STR_MATHCELL.put(S.DirichletEta, "dirichletEta");
     FUNCTIONS_STR_MATHCELL.put(S.BernoulliB, "bernoulli");
 
-    FUNCTIONS_STR_MATHCELL.put(S.Ceiling, "Math.ceil");
-    FUNCTIONS_STR_MATHCELL.put(S.Floor, "Math.floor");
+    FUNCTIONS_STR_MATHCELL.put(S.Ceiling, "ceiling");
+    FUNCTIONS_STR_MATHCELL.put(S.Floor, "floor");
+    FUNCTIONS_STR_MATHCELL.put(S.KroneckerDelta, "kronecker");
+    FUNCTIONS_STR_MATHCELL.put(S.Round, "round");
+    
     FUNCTIONS_STR_MATHCELL.put(S.IntegerPart, "Math.trunc");
     FUNCTIONS_STR_MATHCELL.put(S.Max, "Math.max");
     FUNCTIONS_STR_MATHCELL.put(S.Min, "Math.min");
-    FUNCTIONS_STR_MATHCELL.put(S.Round, "Math.round");
+    
     FUNCTIONS_STR_MATHCELL.put(S.Sign, "Math.sign");
 
     //
