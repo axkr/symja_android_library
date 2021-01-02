@@ -15,7 +15,6 @@ import org.matheclipse.core.patternmatching.IPatternMatcher;
 public class VisitorReplacePart extends AbstractVisitor {
 
   final IExpr fReplaceExpr;
-
   ArrayList<int[]> fPositionList;
 
   ArrayList<IPatternMatcher> fPatternList;
@@ -27,6 +26,7 @@ public class VisitorReplacePart extends AbstractVisitor {
     IExpr fromPositions = rule.arg1();
     this.fReplaceExpr = rule.arg2();
     try {
+      // try extracting an integer list of expressions
       if (fromPositions.isList()) {
         IAST list = (IAST) fromPositions;
         if (list.isListOfLists()) {
@@ -64,6 +64,7 @@ public class VisitorReplacePart extends AbstractVisitor {
         fPositionList.add(fPositions);
       }
     } catch (ReturnException rex) {
+      // use pattern-matching
       fPositionList = null;
       engine = EvalEngine.get();
       if (fromPositions.isList()) {
@@ -81,8 +82,8 @@ public class VisitorReplacePart extends AbstractVisitor {
 
   private IExpr visitPositionIndex(IAST ast, final int index) {
     int[] fPositions;
-    IASTMutable result = ast.copyAppendable();
-    boolean matched = false;
+    IASTMutable result = F.NIL;
+
     for (int i = 0; i < fPositionList.size(); i++) {
       fPositions = fPositionList.get(i);
       if (index >= fPositions.length) {
@@ -98,53 +99,57 @@ public class VisitorReplacePart extends AbstractVisitor {
       }
 
       if (index == fPositions.length - 1) {
-        matched = true;
+        if (!result.isPresent()) {
+          result = ast.copyAppendable();
+        }
         if (position == 0 && result.isAssociation()) {
           result = result.copyAST();
         }
         result.setValue(position, fReplaceExpr);
       } else {
-        IExpr arg = result.get(position);
+        IExpr arg = ast.get(position);
         if (arg.isASTOrAssociation()) {
           IExpr temp = visitPositionIndex((IAST) arg, index + 1);
           if (temp.isPresent()) {
-            matched = true;
+            if (!result.isPresent()) {
+              result = ast.copyAppendable();
+            }
+            if (position == 0 && result.isAssociation()) {
+              result = result.copyAST();
+            }
             result.setValue(position, temp);
           }
         }
       }
     }
 
-    return matched ? result : F.NIL;
+    return result;
   }
 
   private IExpr visitPatternIndex(IAST ast) {
 
-    IASTAppendable result = ast.copyAppendable();
-    boolean matched = false;
+    IASTAppendable result = F.NIL;
 
     for (int i = 1; i < ast.size(); i++) {
-
       for (int j = 0; j < fPatternList.size(); j++) {
         IPatternMatcher matcher = fPatternList.get(j);
         IExpr temp = matcher.eval(F.ZZ(i), engine);
         if (temp.isPresent()) {
-          matched = true;
+          if (!result.isPresent()) {
+            result = ast.copyAppendable();
+          }
           result.setValue(i, temp);
           break;
         }
       }
     }
 
-    return matched ? result : F.NIL;
+    return result;
   }
 
   private IExpr visitPatternIndexList(IAST ast, IASTAppendable matchedPos, final int index) {
-    if (index > matchedPos.size() - 1) {
-      return F.NIL;
-    }
-    IASTAppendable result = ast.copyAppendable();
-    boolean matched = false;
+    IASTAppendable result = F.NIL;
+
     for (int i = 1; i < ast.size(); i++) {
       try {
         matchedPos.append(F.ZZ(i));
@@ -152,14 +157,18 @@ public class VisitorReplacePart extends AbstractVisitor {
           IPatternMatcher matcher = fPatternList.get(j);
           IExpr temp = matcher.eval(matchedPos, engine);
           if (temp.isPresent()) {
-            matched = true;
+            if (!result.isPresent()) {
+              result = ast.copyAppendable();
+            }
             result.setValue(i, temp);
             break;
           } else {
             if (ast.get(i).isASTOrAssociation()) {
               temp = visitPatternIndexList((IAST) ast.get(i), matchedPos, index + 1);
               if (temp.isPresent()) {
-                matched = true;
+                if (!result.isPresent()) {
+                  result = ast.copyAppendable();
+                }
                 result.setValue(i, temp);
               }
             }
@@ -170,7 +179,7 @@ public class VisitorReplacePart extends AbstractVisitor {
       }
     }
 
-    return matched ? result : F.NIL;
+    return result;
   }
 
   @Override
