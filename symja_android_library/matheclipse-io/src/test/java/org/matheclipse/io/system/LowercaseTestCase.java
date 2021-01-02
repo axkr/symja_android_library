@@ -15061,7 +15061,6 @@ public class LowercaseTestCase extends AbstractTestCase {
         "True");
   }
 
-
   public void testIncrement() {
     check(
         "a = 2", //
@@ -29308,8 +29307,35 @@ public class LowercaseTestCase extends AbstractTestCase {
 
   public void testReplacePart() {
     // TODO github #135
-    // check("ReplacePart({{1, 2}, {3,4}}, {x_, x_} -> -1)", //
-    // "");
+
+    check(
+        "ReplacePart(<|\"x\" -> 1, \"y\" -> 2|>, {0} -> f)", //
+        "f(1,2)");
+    check(
+        "ReplacePart({<|\"x\" -> 1, \"y\" -> 2|>}, {1, 1} -> g)", //
+        "{<|x->g,y->2|>}");
+    check(
+        "ReplacePart({{a, b, c}, {d, e}, {f}}, i__ -> s(i))", //
+        "{s(1),s(2),s(3)}");
+    check(
+        "ReplacePart({{0, 0, 0}, {0, 0, 0}, {0, 0, 0}}, {___, 2, ___} -> x)", //
+        "{{0,x,0},x,{0,x,0}}");
+    check(
+        "ReplacePart({{0, 0, 0}, {0, 0, 0}, {0, 0, 0}}, {i_, i_} -> f(i))", //
+        "{{f(1),0,0},{0,f(2),0},{0,0,f(3)}}");
+    check(
+        "ReplacePart({a, b, c, d, e, f, g}, _?EvenQ -> xxx)", //
+        "{a,xxx,c,xxx,e,xxx,g}");
+    check(
+        "ReplacePart({a, b, c, d, e, f, g}, Except(1 | 3 | 5) -> xxx)", //
+        "{a,xxx,c,xxx,e,xxx,xxx}");
+    check(
+        "ReplacePart({a, b, c, d, e, f, g}, (1 | 3 | 5) -> xxx)", //
+        "{xxx,b,xxx,d,xxx,f,g}");
+    check(
+        "ReplacePart({{1, 2}, {3,4}}, {x_, x_} -> -1)", //
+        "{{-1,2},{3,-1}}");
+
     check(
         "ReplacePart({a, b, c}, 1 -> t)", //
         "{t,b,c}");

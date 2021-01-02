@@ -58,6 +58,7 @@ import org.matheclipse.core.parser.ExprParserFactory;
 import org.matheclipse.core.patternmatching.IPatternMap;
 import org.matheclipse.core.patternmatching.IPatternMatcher;
 import org.matheclipse.core.patternmatching.PatternMatcher;
+import org.matheclipse.core.patternmatching.PatternMatcherAndEvaluator;
 import org.matheclipse.core.patternmatching.RulesData;
 import org.matheclipse.core.visit.ModuleReplaceAll;
 import org.matheclipse.parser.client.FEConfig;
@@ -1599,15 +1600,25 @@ public class EvalEngine implements Serializable {
   }
 
   /**
-   * Store the current numeric mode and evaluate the expression <code>expr</code>. After evaluation
-   * reset the numeric mode to the value stored before the evaluation starts. If evaluation is not
-   * possible return the input object.
+   * Create a pattern matcher
    *
-   * @param patternExpression the object which should be evaluated
+   * @param patternExpression the object which should be transformed into a pattern matcher
    * @return an <code>IPatterMatcher</code> created from the given expression.
    */
   public final IPatternMatcher evalPatternMatcher(final IExpr patternExpression) {
     return new PatternMatcher(evalPattern(patternExpression));
+  }
+
+  /**
+   * Create a pattern matcher and evaluator.
+   *
+   * @param patternExpression
+   * @param rightHandside
+   * @return
+   */
+  public final IPatternMatcher evalPatternMatcher(
+      final IExpr patternExpression, final IExpr rightHandside) {
+    return new PatternMatcherAndEvaluator(evalPattern(patternExpression), rightHandside);
   }
 
   /**

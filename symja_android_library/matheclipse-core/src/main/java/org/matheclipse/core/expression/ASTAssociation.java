@@ -837,6 +837,18 @@ public class ASTAssociation extends AST implements IAssociation {
   }
 
   @Override
+  public IExpr setValue(final int location, final IExpr value) {
+    if (location > 0) {
+      final IAST oldRule = getRule(location);
+      keyToIndexMap.removeInt(oldRule.first());
+      keyToIndexMap.put(oldRule.first(), location);
+      return super.set(location, oldRule.setAtCopy(2, value));
+    }
+    // set header
+    return super.set(0, value);
+  }
+
+  @Override
   public IAssociation sort() {
     return sort(null);
   }
