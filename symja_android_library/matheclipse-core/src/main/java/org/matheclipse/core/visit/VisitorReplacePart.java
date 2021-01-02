@@ -14,6 +14,7 @@ import org.matheclipse.core.patternmatching.IPatternMatcher;
 /** Visitor for the <code>ReplacePart()</code> function */
 public class VisitorReplacePart extends AbstractVisitor {
 
+  final int offset;
   final IExpr fReplaceExpr;
   ArrayList<int[]> fPositionList;
 
@@ -21,8 +22,15 @@ public class VisitorReplacePart extends AbstractVisitor {
   int fPatternListSize;
   EvalEngine engine;
 
-  public VisitorReplacePart(IAST rule) {
+  /**
+   * Create a new visitor which replaces parts of an expression.
+   *
+   * @param rule a rule or list-of-rules
+   * @param heads if <code>true</code> also replace the heads of expressions
+   */
+  public VisitorReplacePart(IAST rule, boolean heads) {
     super();
+    offset = heads ? 0 : 1;
     IExpr fromPositions = rule.arg1();
     this.fReplaceExpr = rule.arg2();
     try {
@@ -130,7 +138,7 @@ public class VisitorReplacePart extends AbstractVisitor {
 
     IASTAppendable result = F.NIL;
 
-    for (int i = 1; i < ast.size(); i++) {
+    for (int i = offset; i < ast.size(); i++) {
       for (int j = 0; j < fPatternList.size(); j++) {
         IPatternMatcher matcher = fPatternList.get(j);
         IExpr temp = matcher.eval(F.ZZ(i), engine);
@@ -150,7 +158,7 @@ public class VisitorReplacePart extends AbstractVisitor {
   private IExpr visitPatternIndexList(IAST ast, IASTAppendable matchedPos, final int index) {
     IASTAppendable result = F.NIL;
 
-    for (int i = 1; i < ast.size(); i++) {
+    for (int i = offset; i < ast.size(); i++) {
       try {
         matchedPos.append(F.ZZ(i));
         for (int j = 0; j < fPatternList.size(); j++) {

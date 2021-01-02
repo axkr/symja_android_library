@@ -5463,24 +5463,35 @@ public final class ListFunctions {
     @Override
     public IExpr evaluate(IAST ast, EvalEngine engine) {
       try {
-        if (ast.isAST3()) {
-          IExpr result = ast.arg1();
-          if (ast.arg3().isList()) {
-            for (IExpr subList : (IAST) ast.arg3()) {
-              IExpr expr = result.replacePart(F.Rule(subList, ast.arg2()));
-              if (expr.isPresent()) {
-                result = expr;
+        boolean heads = false;
+        if (ast.size() > 3) {
+          final OptionArgs options = new OptionArgs(ast.topHead(), ast, 3, engine);
+          IExpr option = options.getOption(S.Heads);
+
+          if (option.isTrue()) {
+            heads = true;
+          } else if (option.isFalse()) {
+            heads = false;
+          } else   {
+            IExpr result = ast.arg1();
+            if (ast.arg3().isList()) {
+              for (IExpr subList : (IAST) ast.arg3()) {
+                IExpr expr = result.replacePart(F.Rule(subList, ast.arg2()), heads);
+                if (expr.isPresent()) {
+                  result = expr;
+                }
               }
+              return result;
             }
-            return result;
+            return result.replacePart(F.Rule(ast.arg3(), ast.arg2()), heads).orElse(result);
           }
-          return result.replacePart(F.Rule(ast.arg3(), ast.arg2())).orElse(result);
         }
+
         if (ast.arg2().isList()) {
           IExpr result = ast.arg1();
           for (IExpr subList : (IAST) ast.arg2()) {
             if (subList.isRuleAST()) {
-              IExpr expr = result.replacePart((IAST) subList);
+              IExpr expr = result.replacePart((IAST) subList, heads);
               if (expr.isPresent()) {
                 result = expr;
               }
@@ -5490,7 +5501,7 @@ public final class ListFunctions {
         }
         IExpr result = ast.arg1();
         if (ast.arg2().isRuleAST()) {
-          return ast.arg1().replacePart((IAST) ast.arg2()).orElse(ast.arg1());
+          return ast.arg1().replacePart((IAST) ast.arg2(), heads).orElse(ast.arg1());
         }
         return result;
       } catch (ValidateException ve) {
@@ -5500,7 +5511,7 @@ public final class ListFunctions {
 
     @Override
     public int[] expectedArgSize(IAST ast) {
-      return ARGS_2_3_1;
+      return ARGS_2_4_1;
     }
 
     @Override

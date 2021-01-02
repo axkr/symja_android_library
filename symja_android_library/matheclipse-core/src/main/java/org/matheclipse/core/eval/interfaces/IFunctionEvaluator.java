@@ -134,6 +134,12 @@ public interface IFunctionEvaluator extends IEvaluator {
 
   /**
    * The function is allowed to have 2 or 4 arguments and the head must be the built-in symbol name
+   * of the function or can call <code>operatorForm1</code>.
+   */
+  int[] ARGS_2_4_1 = new int[] {2, 4, 1};
+
+  /**
+   * The function is allowed to have 2 or 4 arguments and the head must be the built-in symbol name
    * of the function or can be an <code>operatorForm2</code>.
    */
   int[] ARGS_2_4_2 = new int[] {2, 4, 2};
