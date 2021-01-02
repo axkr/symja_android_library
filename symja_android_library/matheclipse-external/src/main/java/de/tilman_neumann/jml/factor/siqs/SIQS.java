@@ -119,8 +119,6 @@ public class SIQS extends FactorAlgorithm {
    * @param extraCongruences the number of surplus congruences we collect to have a greater chance
    *     that the equation system solves.
    * @param matrixSolver matrix solver for the smooth congruence equation system
-   * @param useLegacyFactoring if true then factor() uses findSingleFactor(), otherwise
-   *     searchFactors()
    */
   public SIQS(
       float Cmult,
@@ -132,10 +130,9 @@ public class SIQS extends FactorAlgorithm {
       Sieve sieve,
       TDiv_QS auxFactorizer,
       int extraCongruences,
-      MatrixSolver matrixSolver,
-      boolean useLegacyFactoring) {
+      MatrixSolver matrixSolver) {
 
-    super(null, useLegacyFactoring);
+    super(null);
 
     this.Cmult = Cmult;
     this.Mmult = Mmult;
@@ -153,7 +150,6 @@ public class SIQS extends FactorAlgorithm {
   @Override
   public String getName() {
     String maxQRestExponentStr = "maxQRestExponent=" + String.format("%.3f", maxQRestExponent);
-    String modeStr = "mode = " + (useLegacyFactoring ? "legacy" : "advanced");
     return "SIQS(Cmult="
         + Cmult
         + ", Mmult="
@@ -172,8 +168,6 @@ public class SIQS extends FactorAlgorithm {
         + auxFactorizer.getName()
         + ", "
         + matrixSolver.getName()
-        + ", "
-        + modeStr
         + ")";
   }
 
@@ -325,7 +319,7 @@ public class SIQS extends FactorAlgorithm {
         primesArray,
         tArray,
         adjustedSieveArraySize); // must be done before polyGenerator initialization where qCount is
-                                 // required
+    // required
     FactorTest factorTest = new FactorTest01(N);
     congruenceCollector.initialize(N, factorTest);
     matrixSolver.initialize(N, factorTest);
@@ -617,8 +611,7 @@ public class SIQS extends FactorAlgorithm {
             new Sieve03gU(),
             new TDiv_QS_nLarge_UBI(true),
             10,
-            new MatrixSolver02_BlockLanczos(),
-            false);
+            new MatrixSolver02_BlockLanczos());
     Timer timer = new Timer();
     while (true) {
       try {

@@ -20,6 +20,8 @@
  */
 package de.tilman_neumann.jml.factor.ecm;
 
+import org.apache.log4j.Logger;
+
 /**
  * Montgomery multiplication, extracted from Dario Alpern's Ecm program.
  *
@@ -27,9 +29,11 @@ package de.tilman_neumann.jml.factor.ecm;
  */
 public class MontgomeryMult {
 
-  private int[] TestNbr;
-  private int NumberLength;
-  private int MontgomeryMultN;
+  private static final Logger LOG = Logger.getLogger(MontgomeryMult.class);
+
+  private final int[] TestNbr;
+  private final int NumberLength;
+  private final int MontgomeryMultN;
 
   public MontgomeryMult(int[] TestNbr, int NumberLength) {
     this.TestNbr = TestNbr;
@@ -63,6 +67,14 @@ public class MontgomeryMult {
     Nbr2_0 = Nbr2[0];
     Nbr2_1 = Nbr2[1];
     switch (NumberLength) {
+      case 0:
+      case 1:
+        // NumberLength<2 can only happen if ECM was invoked without running trial division up to
+        // 2^33 before
+        LOG.error(
+            "Montgomery multiplication was called for a number with NumberLength = " + NumberLength,
+            new Throwable());
+
       case 2:
         Prod0 = Prod1 = 0;
         i = 0;

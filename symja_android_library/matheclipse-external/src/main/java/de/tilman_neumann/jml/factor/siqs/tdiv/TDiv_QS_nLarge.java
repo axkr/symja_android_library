@@ -107,8 +107,7 @@ public class TDiv_QS_nLarge implements TDiv_QS {
    */
   public TDiv_QS_nLarge(boolean permitUnsafeUsage) {
     qsInternal =
-        new SIQS_Small(
-            0.305F, 0.37F, null, 0.16F, new SIQSPolyGenerator(), 10, permitUnsafeUsage, true);
+        new SIQS_Small(0.305F, 0.37F, null, 0.16F, new SIQSPolyGenerator(), 10, permitUnsafeUsage);
   }
 
   @Override

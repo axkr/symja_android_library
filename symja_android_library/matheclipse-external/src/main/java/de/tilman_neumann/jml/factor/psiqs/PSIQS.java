@@ -42,8 +42,6 @@ public class PSIQS extends PSIQSBase {
    * @param numberOfThreads
    * @param powerFinder algorithm to add powers to the primes used for sieving
    * @param matrixSolver solver for smooth congruences matrix
-   * @param useLegacyFactoring if true then factor() uses findSingleFactor(), otherwise
-   *     searchFactors()
    */
   public PSIQS(
       float Cmult,
@@ -52,8 +50,7 @@ public class PSIQS extends PSIQSBase {
       Float maxQRestExponent,
       int numberOfThreads,
       PowerFinder powerFinder,
-      MatrixSolver matrixSolver,
-      boolean useLegacyFactoring) {
+      MatrixSolver matrixSolver) {
 
     super(
         Cmult,
@@ -63,14 +60,12 @@ public class PSIQS extends PSIQSBase {
         null,
         powerFinder,
         matrixSolver,
-        new AParamGenerator01(wantedQCount),
-        useLegacyFactoring);
+        new AParamGenerator01(wantedQCount));
   }
 
   @Override
   public String getName() {
     String maxQRestExponentStr = "maxQRestExponent=" + String.format("%.3f", maxQRestExponent);
-    String modeStr = "mode = " + (useLegacyFactoring ? "legacy" : "advanced");
     return "PSIQS(Cmult="
         + Cmult
         + ", Mmult="
@@ -85,9 +80,7 @@ public class PSIQS extends PSIQSBase {
         + matrixSolver.getName()
         + ", "
         + numberOfThreads
-        + " threads, "
-        + modeStr
-        + ")";
+        + " threads)";
   }
 
   @Override

@@ -200,9 +200,8 @@ public class Lehman_CustomKOrder extends FactorAlgorithm {
           aStep = 8;
           aLimit += ((kPlusN - aLimit) & 7);
         } else {
-          aStep =
-              4; // stepping over both adjusts with step width 16 would be more exact but is not
-                 // faster
+          aStep = 4; // stepping over both adjusts with step width 16 would be more exact but is not
+          // faster
           final long adjust1 = (kPlusN - aLimit) & 15;
           final long adjust2 = (-kPlusN - aLimit) & 15;
           aLimit += adjust1 < adjust2 ? adjust1 : adjust2;

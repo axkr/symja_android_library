@@ -13,23 +13,14 @@ public class FactorArguments {
   public int exp;
 
   /**
-   * the smallest factor that could occur, e.g. because smaller factors have been excluded by trial
-   * division
-   */
-  public long smallestPossibleFactor;
-
-  /**
    * Full constructor.
    *
    * @param N the number to factor
    * @param exp the exponent of N
-   * @param smallestPossibleFactor the smallest factor that could occur this parameter may be
-   *     ignored by algorithms where it does not make sense
    */
-  public FactorArguments(BigInteger N, int exp, long smallestPossibleFactor) {
+  public FactorArguments(BigInteger N, int exp) {
     this.N = N;
     this.NBits = N.bitLength();
     this.exp = exp;
-    this.smallestPossibleFactor = smallestPossibleFactor;
   }
 }

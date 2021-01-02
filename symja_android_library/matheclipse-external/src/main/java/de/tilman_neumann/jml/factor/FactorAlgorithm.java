@@ -16,13 +16,11 @@ package de.tilman_neumann.jml.factor;
 import static de.tilman_neumann.jml.base.BigIntConstants.*;
 
 import java.math.BigInteger;
-import java.util.ArrayList;
 
 import org.apache.log4j.Logger;
 
 import de.tilman_neumann.jml.factor.base.FactorArguments;
 import de.tilman_neumann.jml.factor.base.FactorResult;
-import de.tilman_neumann.jml.factor.tdiv.TDivOld;
 import de.tilman_neumann.jml.primes.probable.BPSWTest;
 import de.tilman_neumann.util.SortedMultiset;
 import de.tilman_neumann.util.SortedMultiset_BottomUp;
@@ -47,9 +45,6 @@ public abstract class FactorAlgorithm {
   /** the number of primes needed to factor any int <= 2^31 - 1 using trial division */
   protected static final int NUM_PRIMES_FOR_31_BIT_TDIV = 4793;
 
-  /** if true then factor() uses findSingleFactor(), otherwise searchFactors() */
-  protected boolean useLegacyFactoring = true;
-
   private BPSWTest bpsw = new BPSWTest();
 
   protected Integer tdivLimit;
@@ -60,11 +55,6 @@ public abstract class FactorAlgorithm {
 
   public FactorAlgorithm(Integer tdivLimit) {
     this.tdivLimit = tdivLimit;
-  }
-
-  public FactorAlgorithm(Integer tdivLimit, boolean useLegacyFactoring) {
-    this.tdivLimit = tdivLimit;
-    this.useLegacyFactoring = useLegacyFactoring;
   }
 
   /** @return The name of the algorithm, possibly including important parameters. */
@@ -117,116 +107,55 @@ public abstract class FactorAlgorithm {
     }
 
     // N contains larger factors...
-    if (useLegacyFactoring) {
-      int Nbits = N.bitLength();
-      if (Nbits > 62) {
-        // "Small" algorithms like trial division, Lehman or Pollard-Rho are very good themselves
-        // at finding small factors, but for larger N we do some trial division.
-        // This will help "big" algorithms to factor smooth numbers much faster.
-        int actualTdivLimit;
-        if (tdivLimit != null) {
-          // use "dictated" limit
-          actualTdivLimit = tdivLimit.intValue();
-        } else {
-          // adjust tdivLimit=2^e by experimental results
-          final double e = 10 + (Nbits - 45) * 0.07407407407; // constant 0.07.. = 10/135
-          actualTdivLimit = (int) Math.min(1 << 20, Math.pow(2, e)); // upper bound 2^20
-        }
-
-        TDivOld tdiv = new TDivOld().setTestLimit(actualTdivLimit);
-        N = tdiv.findSmallOddFactors(N, actualTdivLimit, primeFactors);
-
-        if (N.equals(I_1)) {
-          // N was "easy"
-          return;
-        }
-      }
-
-      ArrayList<BigInteger> untestedFactors =
-          new ArrayList<BigInteger>(); // faster than SortedMultiset
-      untestedFactors.add(N);
+    FactorArguments args = new FactorArguments(N, 1);
+    FactorResult factorResult =
+        new FactorResult(
+            primeFactors,
+            new SortedMultiset_BottomUp<BigInteger>(),
+            new SortedMultiset_BottomUp<BigInteger>(),
+            3);
+    SortedMultiset<BigInteger> untestedFactors =
+        factorResult.untestedFactors; // ArrayList would be faster
+    untestedFactors.add(N);
+    while (true) {
+      if (DEBUG) LOG.debug("1: factorResult: " + factorResult);
+      // resolve untested factors
       while (untestedFactors.size() > 0) {
-        N = untestedFactors.remove(untestedFactors.size() - 1);
-        if (bpsw.isProbablePrime(N)) { // TODO exploit tdiv done so far
-          // N is probable prime. In exceptional cases this prediction may be wrong and N composite
-          // -> then we would falsely predict N to be prime. BPSW is known to be exact for N <= 64
-          // bit.
-          // LOG.debug(N + " is probable prime.");
-          primeFactors.add(N);
-          continue;
-        }
-        BigInteger factor1 = findSingleFactor(N);
-        if (factor1.compareTo(I_1) > 0 && factor1.compareTo(N) < 0) {
-          // found factor
-          untestedFactors.add(factor1);
-          untestedFactors.add(N.divide(factor1));
+        BigInteger untestedFactor = untestedFactors.firstKey();
+        int exp = untestedFactors.removeAll(untestedFactor);
+        if (bpsw.isProbablePrime(untestedFactor)) {
+          // The untestedFactor is probable prime. In exceptional cases this prediction may be wrong
+          // and untestedFactor composite
+          // -> then we would falsely predict untestedFactor to be prime. BPSW is known to be exact
+          // for arguments <= 64 bit.
+          // LOG.debug(untestedFactor + " is probable prime.");
+          factorResult.primeFactors.add(untestedFactor, exp);
         } else {
-          // findSingleFactor() failed to find a factor of the composite N
-          if (DEBUG)
-            LOG.error(
-                "Factor algorithm " + getName() + " failed to find a factor of composite " + N);
-          primeFactors.add(N);
+          factorResult.compositeFactors.add(untestedFactor, exp);
         }
       }
-      // LOG.debug(this.factorAlg + ": => all factors = " + primeFactors);
-      return;
-    } else {
-      // use searchFactors()
-      long smallestPossibleFactor = 3;
-      FactorArguments args = new FactorArguments(N, 1, smallestPossibleFactor);
-      FactorResult factorResult =
-          new FactorResult(
-              primeFactors,
-              new SortedMultiset_BottomUp<BigInteger>(),
-              new SortedMultiset_BottomUp<BigInteger>(),
-              smallestPossibleFactor);
-      SortedMultiset<BigInteger> untestedFactors =
-          factorResult.untestedFactors; // ArrayList would be faster
-      untestedFactors.add(N);
+      // now untestedFactors is empty
+      if (DEBUG) LOG.debug("2: factorResult: " + factorResult);
+
+      // factor composite factors; iteration needs to be fail-safe against element addition and
+      // removal
       while (true) {
-        if (DEBUG) LOG.debug("1: factorResult: " + factorResult);
-        // resolve untested factors
-        while (untestedFactors.size() > 0) {
-          BigInteger untestedFactor = untestedFactors.firstKey();
-          int exp = untestedFactors.removeAll(untestedFactor);
-          if (bpsw.isProbablePrime(untestedFactor)) {
-            // The untestedFactor is probable prime. In exceptional cases this prediction may be
-            // wrong and untestedFactor composite
-            // -> then we would falsely predict untestedFactor to be prime. BPSW is known to be
-            // exact for arguments <= 64 bit.
-            // LOG.debug(untestedFactor + " is probable prime.");
-            factorResult.primeFactors.add(untestedFactor, exp);
-          } else {
-            factorResult.compositeFactors.add(untestedFactor, exp);
+        if (factorResult.compositeFactors.isEmpty()) {
+          if (factorResult.untestedFactors.isEmpty()) {
+            // all factors are prime factors now
+            return;
           }
+          // else there are still untested factors
+          break;
         }
-        // now untestedFactors is empty
-        if (DEBUG) LOG.debug("2: factorResult: " + factorResult);
 
-        // factor composite factors; iteration needs to be fail-safe against element addition and
-        // removal
-        while (true) {
-          if (factorResult.compositeFactors.isEmpty()) {
-            if (factorResult.untestedFactors.isEmpty()) {
-              // all factors are prime factors now
-              return;
-            }
-            // else there are still untested factors
-            break;
-          }
-
-          BigInteger compositeFactor = factorResult.compositeFactors.firstKey();
-          int exp = factorResult.compositeFactors.removeAll(compositeFactor);
-          args.N = compositeFactor;
-          args.NBits = compositeFactor.bitLength();
-          args.exp = exp;
-          args.smallestPossibleFactor = smallestPossibleFactor;
-          searchFactors(args, factorResult);
-          if (DEBUG) LOG.debug("3: factorResult: " + factorResult);
-
-          smallestPossibleFactor =
-              Math.max(smallestPossibleFactor, factorResult.smallestPossibleFactorRemaining);
-        }
+        BigInteger compositeFactor = factorResult.compositeFactors.firstKey();
+        int exp = factorResult.compositeFactors.removeAll(compositeFactor);
+        args.N = compositeFactor;
+        args.NBits = compositeFactor.bitLength();
+        args.exp = exp;
+        searchFactors(args, factorResult);
+        if (DEBUG) LOG.debug("3: factorResult: " + factorResult);
       }
     }
   }

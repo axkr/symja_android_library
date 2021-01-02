@@ -296,7 +296,7 @@ public class SIQSPolyGenerator {
       B2Array[l] =
           Bl.shiftLeft(
               1); // store 2 * B_l in B2[0]...B2[s-1] (the last one is only required to compute b
-                  // below)
+      // below)
       B2Array_UBI[l] = new UnsignedBigInt(B2Array[l]);
       // WARNING: In contrast to the description in [Contini p.10, 2nd paragraph],
       // WARNING: b must not be computed (mod a) !
