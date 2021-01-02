@@ -7,15 +7,15 @@ Try the Android or iOS apps:
 
 <a href="https://play.google.com/store/apps/details?id=com.duy.calculator.free">
 	<img src="en_badge_web_generic.png" alt="Google Play" width="200"></a>
-<a href="https://itunes.apple.com/us/app/ncalc-scientific-calculator/id1449106995">
-	<img src="http://www.lawprose.org/wordpress/wp-content/uploads/App-Store-Badge.png" alt="App Store" width="200"></a>
+<a href="https://itunes.apple.com/us/app/ncalc-scientific-calculator/id1449106995">App Store</a>
 
-or help testing the latest [Android BETA version](https://github.com/axkr/symja_android_library/wiki/BETA-tests) or the web demo at [matheclipse.org](http://matheclipse.org/). **Tip**: You can use the [Genymobile/scrcpy](https://github.com/Genymobile/scrcpy) tool for faster testing your Symja script inputs on your android device with BETA version installed.
+or help testing the latest [Android BETA version](https://github.com/axkr/symja_android_library/wiki/BETA-tests) or the web demo at [matheclipse.org](http://matheclipse.org/).
 
 Read the [Symja Manual](symja_android_library/doc/index.md) for the description of the Symja language or [browse the available functions](symja_android_library/doc/functions/). We encourage everyone to participate in our [Wiki](https://github.com/axkr/symja_android_library/wiki).
 
 [![Gitpod ready-to-code](https://img.shields.io/badge/Gitpod-ready--to--code-blue?logo=gitpod)](https://gitpod.io/#https://github.com/axkr/symja_android_library) [![Join the chat at https://gitter.im/symja_android_library/Lobby](https://badges.gitter.im/symja_android_library/Lobby.svg)](https://gitter.im/symja_android_library/Lobby?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge) [![LGTM Alerts](https://img.shields.io/lgtm/alerts/bitbucket/axelclk/symja_android_library)](https://lgtm.com/projects/b/axelclk/symja_android_library) [![unstable](http://badges.github.io/stability-badges/dist/unstable.svg)](http://github.com/badges/stability-badges)
 
+- [Installation](#installation)
 - [Features](#features)
 - [Applications](#applications)
 - [Examples](#examples)
@@ -24,6 +24,10 @@ Read the [Symja Manual](symja_android_library/doc/index.md) for the description 
 - [Github GIT](#github-git)
 - [Contact](#contact)
 - [License](#license)
+
+### Installation
+
+The different kinds of installations are described in the [Wiki Installation](https://github.com/axkr/symja_android_library/wiki/Installation).
 
 ### Features
 
@@ -34,7 +38,8 @@ Features of the Symja language:
 * unified connectivity and interoperability through [Symja functions](https://github.com/axkr/symja_android_library/blob/master/symja_android_library/doc/functions) for open source libraries like [Hipparchus](https://github.com/Hipparchus-Math/hipparchus), [Tablesaw](https://github.com/jtablesaw/tablesaw), [JGraphT](https://github.com/jgrapht/jgrapht), [LogicNG](https://github.com/logic-ng/LogicNG), [JAS Java Algebra System](https://github.com/kredel/java-algebra-system), [apfloat](https://github.com/mtommila/apfloat)...
 * a general purpose [Term Rewriting System and Pattern Matching engine](symja_android_library/doc/07-functions-and-patterns.md)
 * use human readable math expression strings or the internal abstract syntax tree (AST) representation to code in Java. See the [Unit test examples](symja_android_library/matheclipse-io/src/test/java/org/matheclipse/io/system/LowercaseTestCase.java)
-* two [REPLs](https://en.wikipedia.org/wiki/Read%E2%80%93eval%E2%80%93print_loop) are available in the library. A [Console.java](https://github.com/axkr/symja_android_library/blob/master/symja_android_library/matheclipse-io/src/main/java/org/matheclipse/io/eval/Console.java) for standard math input and a [MMAConsole.java](https://github.com/axkr/symja_android_library/blob/master/symja_android_library/matheclipse-io/src/main/java/org/matheclipse/io/eval/MMAConsole.java) for "Mathematica like syntax" input.
+* two [Java servlet](https://en.wikipedia.org/wiki/Jakarta_Servlet) based notebook interfaces are available in the library. A [Symja server](https://github.com/axkr/symja_android_library/wiki/Symja-browser-usage) for traditional math input and a [MMA server](https://github.com/axkr/symja_android_library/wiki/MMA-browser-usage) for "Mathematica like syntax" input.
+* two [REPLs](https://en.wikipedia.org/wiki/Read%E2%80%93eval%E2%80%93print_loop) are available in the library. A [Console](https://github.com/axkr/symja_android_library/wiki/Console-usage) for standard math input and a [MMAConsole](https://github.com/axkr/symja_android_library/wiki/MMA-console-usage) for "Mathematica like syntax" input.
 * Symja can also be used interactively in the [Java jshell](https://github.com/axkr/symja_android_library/wiki/JShell-usage)
 * the [Rubi symbolic integration rules](https://github.com/axkr/symja_android_library/wiki/Porting-Rubi-Integration-rules-to-Symja) are used to implement the [Integrate](https://github.com/axkr/symja_android_library/blob/master/symja_android_library/doc/functions/Integrate.md) function, they can be systematically applied to determine the antiderivative of a wide variety of mathematical expressions. 
 
@@ -173,57 +178,9 @@ public class Example {
 }
 ```
 
-
 ### Maven Usage
 
-Using Maven, add the following to your `pom.xml`
-
-```xml
-<dependencies>
-  <dependency>
-    <groupId>org.matheclipse</groupId>
-      <artifactId>matheclipse-core</artifactId>
-	  <version>1.0.0-SNAPSHOT</version>
-    </dependency>
-</dependencies>
-
-<repositories> 
-  <repository>
-    <id>snapshots-repo</id>
-    <url>https://oss.sonatype.org/content/repositories/snapshots</url>
-    <releases>
-      <enabled>false</enabled>
-    </releases>
-    <snapshots>
-      <enabled>true</enabled>
-    </snapshots>
-  </repository>
-</repositories>
-```
-
-and run
-
-```
-mvn clean install
-```
-
-With the following command you can run the Symja console from the command line
-
-```
-mvn exec:java -pl matheclipse-io
-```
- 
-With the following command you can run a symja console with a Mathematica-compatible syntax and functions
-
-```
-mvn exec:java@mma -pl matheclipse-io 
-```
-
-With the following command you can build a fat jar (of the core library) which contains all needed classes
-
-```
-mvn assembly:single -pl matheclipse-core
-```
+How to use Maven is described in the [Maven wiki page](https://github.com/axkr/symja_android_library/wiki/Maven-usage).
 
 ### Getting started
 
