@@ -46,7 +46,6 @@
 	<classpathentry kind="lib" path="lib/jsoup-1.12.1.jar"/>
 	<classpathentry kind="lib" path="lib/poi-ooxml-4.1.1.jar"/>
 	<classpathentry kind="lib" path="lib/poi-ooxml-schemas-4.1.1.jar"/>
-	<classpathentry kind="lib" path="lib/jheaps-0.11.jar"/>
 	<classpathentry kind="lib" path="lib/commons-csv-1.4.jar"/>
 	<classpathentry kind="lib" path="lib/undertow-core-2.1.0.Final.jar"/>
 	<classpathentry kind="lib" path="lib/xnio-api-3.8.0.Final.jar"/>
@@ -87,5 +86,6 @@
 	<classpathentry kind="lib" path="lib/hipparchus-fitting-1.8.jar"/>
 	<classpathentry kind="lib" path="lib/guava-30.1-jre.jar"/>
 	<classpathentry kind="lib" path="lib/commons-text-1.8.jar"/>
+	<classpathentry kind="lib" path="lib/jheaps-0.13.jar"/>
 	<classpathentry kind="output" path="bin/classes"/>
 </classpath>
