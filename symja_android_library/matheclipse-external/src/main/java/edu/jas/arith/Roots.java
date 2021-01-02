@@ -228,7 +228,7 @@ public class Roots {
     BigDecimal eps = new BigDecimal("0.1");
     int p = Math.max(mc.getPrecision(), java.math.MathContext.DECIMAL64.getPrecision());
     // java.math.MathContext.UNLIMITED.getPrecision() == 0
-    eps = eps.power((p * 2) / 3);
+    eps = eps.power((p / 3) * 2);
     // newton iteration
     BigDecimal Ap = A;
     BigDecimal N = new BigDecimal(n, mc);

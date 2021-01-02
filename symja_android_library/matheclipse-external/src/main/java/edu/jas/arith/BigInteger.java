@@ -91,6 +91,15 @@ public final class BigInteger
   }
 
   /**
+   * Get the value as long.
+   *
+   * @return val as long if val fits in long.
+   */
+  public long longValueExact() {
+    return val.longValueExact();
+  }
+
+  /**
    * Get the corresponding element factory.
    *
    * @return factory for this Element.

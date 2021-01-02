@@ -50,8 +50,7 @@ public class OrderedModuleList<C extends RingElem<C>> extends ModuleList<C> {
     if (ml == null) {
       return false;
     }
-    // compare sorted lists
-    // done already in super.equals()
+    // compare sorted lists, done already in super.equals()
     return true;
   }
 

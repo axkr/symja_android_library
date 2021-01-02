@@ -126,6 +126,16 @@ public class QLRSolvablePolynomial<
   }
 
   /**
+   * Hash code for this polynomial.
+   *
+   * @see java.lang.Object#hashCode()
+   */
+  @Override
+  public int hashCode() {
+    return super.hashCode();
+  }
+
+  /**
    * QLRSolvablePolynomial multiplication.
    *
    * @param Bp QLRSolvablePolynomial.

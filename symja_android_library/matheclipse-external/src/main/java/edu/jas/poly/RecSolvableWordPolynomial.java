@@ -136,6 +136,16 @@ public class RecSolvableWordPolynomial<C extends RingElem<C>>
   }
 
   /**
+   * Hash code for this polynomial.
+   *
+   * @see java.lang.Object#hashCode()
+   */
+  @Override
+  public int hashCode() {
+    return super.hashCode();
+  }
+
+  /**
    * RecSolvableWordPolynomial multiplication.
    *
    * @param Bp RecSolvableWordPolynomial.
@@ -273,7 +283,7 @@ public class RecSolvableWordPolynomial<C extends RingElem<C>>
                 ring.valueOf(
                     Cps.leadingBaseCoefficient(),
                     g); // new RecSolvableWordPolynomial<C>(ring, Cps.leadingBaseCoefficient(), g);
-            // // symmetric!
+                        // // symmetric!
           } else {
             Ds = Cps.shift(f); // symmetric
           }

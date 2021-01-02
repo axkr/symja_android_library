@@ -1758,14 +1758,14 @@ public class PolyUtil {
    * @return 2**b.
    */
   public static BigInteger factorBound(ExpVector e) {
-    int n = 0;
+    long n = 0;
     java.math.BigInteger p = java.math.BigInteger.ONE;
     java.math.BigInteger v;
     if (e == null || e.isZERO()) {
       return BigInteger.ONE;
     }
     for (int i = 0; i < e.length(); i++) {
-      if (e.getVal(i) > 0) {
+      if (e.getVal(i) > 0L) {
         n += (2 * e.getVal(i) - 1);
         v = new java.math.BigInteger("" + (e.getVal(i) - 1));
         p = p.multiply(v);
@@ -1774,7 +1774,13 @@ public class PolyUtil {
     n += (p.bitCount() + 1); // log2(p)
     n /= 2;
     v = new java.math.BigInteger("" + 2);
-    v = v.shiftLeft(n);
+    while (n >= 16) {
+      n -= 16;
+      v = v.shiftLeft(16);
+    }
+    if (n > 0) {
+      v = v.shiftLeft((int) n); // n < 16
+    }
     BigInteger N = new BigInteger(v);
     return N;
   }

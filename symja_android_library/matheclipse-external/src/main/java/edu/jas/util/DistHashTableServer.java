@@ -276,7 +276,6 @@ class DHTBroadcaster<K> extends Thread /*implements Runnable*/ {
    *
    * @param s SocketChannel to use.
    * @param bc list of broadcasters.
-   * @param le DHTCounter.
    * @param sm SortedMap with key value pairs.
    */
   public DHTBroadcaster(

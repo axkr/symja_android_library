@@ -129,7 +129,8 @@ class CartesianTwoProductInfiniteIterator<E> implements Iterator<List<E>> {
   /**
    * CartesianProduct iterator constructor.
    *
-   * @param comps components of the Cartesian product.
+   * @param comps0 first components of the Cartesian product.
+   * @param comps1 second components of the Cartesian product.
    */
   public CartesianTwoProductInfiniteIterator(Iterable<E> comps0, Iterable<E> comps1) {
     if (comps0 == null || comps1 == null) {
@@ -252,7 +253,8 @@ class CartesianTwoProductInfiniteIteratorList<E> implements Iterator<List<E>> {
   /**
    * CartesianProduct iterator constructor.
    *
-   * @param comps components of the Cartesian product.
+   * @param comps0 first components of the Cartesian product.
+   * @param comps1 second components of the Cartesian product.
    */
   public CartesianTwoProductInfiniteIteratorList(
       Iterable<List<E>> comps0, Iterable<List<E>> comps1) {

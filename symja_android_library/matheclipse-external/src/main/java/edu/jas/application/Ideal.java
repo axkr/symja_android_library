@@ -1923,7 +1923,7 @@ public class Ideal<C extends GcdRingElem<C>> implements Comparable<Ideal<C>>, Se
           logger.info("afac = " + afac.toScript());
           aiter = afac.iterator();
           AlgebraicNumber<C> an = aiter.next();
-          for (int kk = 0; kk < afac.characteristic().intValue(); kk++) {
+          for (int kk = 0; kk < afac.characteristic().intValueExact(); kk++) {
             an = aiter.next();
           }
           // System.out.println("an,iter = " + an);

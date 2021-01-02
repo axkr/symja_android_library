@@ -287,6 +287,7 @@ public class Rectangle<C extends RingElem<C> & Rational> implements Serializable
     try {
       a = (Rectangle<C>) b;
     } catch (ClassCastException e) {
+      return false;
     }
     for (int i = 0; i < 4; i++) {
       if (!corners[i].equals(a.corners[i])) {

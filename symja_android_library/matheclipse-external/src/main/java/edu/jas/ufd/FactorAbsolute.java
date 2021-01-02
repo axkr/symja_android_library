@@ -608,7 +608,7 @@ public abstract class FactorAbsolute<C extends GcdRingElem<C>> extends FactorAbs
     // find field extension K(alpha)
     GenPolynomial<C> up = P;
     RingFactory<C> cf = pfac.coFac;
-    long cr = cf.characteristic().longValue(); // char might be larger
+    long cr = cf.characteristic().longValueExact(); // char might be larger
     if (cr == 0L) {
       cr = Long.MAX_VALUE;
     }

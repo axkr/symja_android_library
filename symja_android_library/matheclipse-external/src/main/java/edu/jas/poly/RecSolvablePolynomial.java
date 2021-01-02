@@ -136,6 +136,16 @@ public class RecSolvablePolynomial<C extends RingElem<C>>
   }
 
   /**
+   * Hash code for this polynomial.
+   *
+   * @see java.lang.Object#hashCode()
+   */
+  @Override
+  public int hashCode() {
+    return super.hashCode();
+  }
+
+  /**
    * RecSolvablePolynomial multiplication.
    *
    * @param Bp RecSolvablePolynomial.

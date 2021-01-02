@@ -224,7 +224,7 @@ public abstract class SquarefreeFieldCharP<C extends GcdRingElem<C>> extends Squ
         init = false;
       }
       if (V.isConstant()) {
-        mp = pfac.characteristic().longValue(); // assert != 0
+        mp = pfac.characteristic().longValueExact(); // assert != 0
         // T0 = PolyUtil.<C> baseModRoot(T,mp);
         T0 = baseRootCharacteristic(T);
         logger.info("char root: T0 = " + T0 + ", T = " + T);
@@ -395,7 +395,7 @@ public abstract class SquarefreeFieldCharP<C extends GcdRingElem<C>> extends Squ
         init = false;
       }
       if (V.isConstant()) {
-        mp = pfac.characteristic().longValue(); // assert != 0
+        mp = pfac.characteristic().longValueExact(); // assert != 0
         // T0 = PolyUtil.<C> recursiveModRoot(T,mp);
         T0 = recursiveUnivariateRootCharacteristic(T);
         logger.info("char root: T0r = " + T0 + ", Tr = " + T);
@@ -604,7 +604,7 @@ public abstract class SquarefreeFieldCharP<C extends GcdRingElem<C>> extends Squ
       return true;
     }
     GenPolynomial<C> t = P.ring.getONE();
-    long p = P.ring.characteristic().longValue();
+    long p = P.ring.characteristic().longValueExact();
     for (Map.Entry<GenPolynomial<C>, Long> me : F.entrySet()) {
       GenPolynomial<C> f = me.getKey();
       Long E = me.getValue();
@@ -649,7 +649,7 @@ public abstract class SquarefreeFieldCharP<C extends GcdRingElem<C>> extends Squ
       return true;
     }
     GenPolynomial<GenPolynomial<C>> t = P.ring.getONE();
-    long p = P.ring.characteristic().longValue();
+    long p = P.ring.characteristic().longValueExact();
     for (Map.Entry<GenPolynomial<GenPolynomial<C>>, Long> me : F.entrySet()) {
       GenPolynomial<GenPolynomial<C>> f = me.getKey();
       Long E = me.getValue();
@@ -693,7 +693,7 @@ public abstract class SquarefreeFieldCharP<C extends GcdRingElem<C>> extends Squ
     if (P.isZERO() && r.isZERO()) {
       return true;
     }
-    long p = P.ring.characteristic().longValue();
+    long p = P.ring.characteristic().longValueExact();
     GenPolynomial<GenPolynomial<C>> t = r.power(p);
 
     boolean f = P.equals(t) || P.equals(t.negate());

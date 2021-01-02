@@ -82,7 +82,7 @@ public final class ModIntRing implements ModularRingFactory<ModInt>, Iterable<Mo
    * @param m java.math.BigInteger.
    */
   public ModIntRing(java.math.BigInteger m) {
-    this(m.intValue());
+    this(m.intValueExact());
     if (MAX_INT.compareTo(m) < 0) { // m > max
       // System.out.println("modul to large for int " + m + ",max=" + MAX_INT);
       throw new IllegalArgumentException("modul to large for int " + m + ", max=" + MAX_INT);
@@ -96,7 +96,7 @@ public final class ModIntRing implements ModularRingFactory<ModInt>, Iterable<Mo
    * @param isField indicator if m is prime.
    */
   public ModIntRing(java.math.BigInteger m, boolean isField) {
-    this(m.intValue(), isField);
+    this(m.intValueExact(), isField);
     if (MAX_INT.compareTo(m) < 0) { // m > max
       // System.out.println("modul to large for int " + m + ",max=" + MAX_INT);
       throw new IllegalArgumentException("modul to large for int " + m + ", max=" + MAX_INT);

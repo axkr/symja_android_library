@@ -78,6 +78,16 @@ public class MultiplicativeSetSquarefree<C extends GcdRingElem<C>> extends Multi
   }
 
   /**
+   * Hash code for this multiplicative set.
+   *
+   * @see java.lang.Object#hashCode()
+   */
+  @Override
+  public int hashCode() {
+    return super.hashCode();
+  }
+
+  /**
    * Add polynomial to mset.
    *
    * @param cc polynomial to be added to mset.

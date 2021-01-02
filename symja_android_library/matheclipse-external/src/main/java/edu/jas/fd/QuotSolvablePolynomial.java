@@ -130,6 +130,16 @@ public class QuotSolvablePolynomial<C extends GcdRingElem<C>>
   }
 
   /**
+   * Hash code for this polynomial.
+   *
+   * @see java.lang.Object#hashCode()
+   */
+  @Override
+  public int hashCode() {
+    return super.hashCode();
+  }
+
+  /**
    * QuotSolvablePolynomial multiplication.
    *
    * @param Bp QuotSolvablePolynomial.

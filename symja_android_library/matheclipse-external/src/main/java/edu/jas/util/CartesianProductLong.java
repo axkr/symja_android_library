@@ -69,7 +69,7 @@ class CartesianProductLongIterator implements Iterator<List<Long>> {
    * CartesianProduct iterator constructor.
    *
    * @param comps components of the Cartesian product.
-   * @param un an upper bound for the total degree of the elements.
+   * @param ub an upper bound for the total degree of the elements.
    */
   public CartesianProductLongIterator(List<LongIterable> comps, long ub) {
     if (comps == null) {

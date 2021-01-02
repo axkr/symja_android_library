@@ -325,7 +325,7 @@ public class TermOrderByName {
   /**
    * Construct weight for split term order.
    *
-   * @param to1 first term order indicator
+   * @param to first term order indicator
    * @param to2 second term order indicator
    * @param n exponent vector size
    * @param s slpit index

@@ -43,4 +43,14 @@ public class OptimizedPolynomialList<C extends RingElem<C>> extends PolynomialLi
     }
     return super.equals(B);
   }
+
+  /**
+   * Hash code for this polynomial list.
+   *
+   * @see java.lang.Object#hashCode()
+   */
+  @Override
+  public int hashCode() {
+    return super.hashCode();
+  }
 }

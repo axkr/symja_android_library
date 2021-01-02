@@ -105,6 +105,7 @@ public class ExecutableChannels {
     } finally {
       try {
         in.close();
+        isr.close();
       } catch (IOException ignore) {
       }
     }

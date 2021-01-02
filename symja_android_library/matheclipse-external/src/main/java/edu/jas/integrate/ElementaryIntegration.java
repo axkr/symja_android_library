@@ -184,8 +184,8 @@ public class ElementaryIntegration<C extends GcdRingElem<C>> {
       // System.out.println("V:" + v.toString());
       GenPolynomial<C> Ak = Ai.get(i++);
       // System.out.println("Ak:  " + Ak.toString());
-      int k = sfactors.get(v).intValue(); // assert low power
-      for (int j = k - 1; j >= 1; j--) {
+      long k = sfactors.get(v); // assert low power
+      for (long j = k - 1; j >= 1; j--) {
         // System.out.println("Step(" + k + "," + j + ")");
         GenPolynomial<C> DV_dx = PolyUtil.<C>baseDeriviative(v);
         GenPolynomial<C> Aik = Ak.divide(fac.fromInteger(-j));

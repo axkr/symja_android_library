@@ -26,8 +26,6 @@ import edu.jas.structure.NotInvertibleException;
 import edu.jas.structure.Power;
 import edu.jas.structure.RingFactory;
 
-// import edu.jas.application.Ideal;
-
 /**
  * Greatest common divisor algorithms with subresultant polynomial remainder sequence and univariate
  * Hensel lifting.
@@ -394,7 +392,7 @@ public class GreatestCommonDivisorHensel<MOD extends GcdRingElem<MOD> & Modular>
       }
       ModularRingFactory<MOD> cofac = null;
       int pi = 0;
-      while (pi < pn && primeIter.hasNext()) {
+      while (pi++ < pn && primeIter.hasNext()) {
         p = primeIter.next();
         // p = new java.math.BigInteger("19");
         logger.info("prime = " + p);
@@ -440,7 +438,7 @@ public class GreatestCommonDivisorHensel<MOD extends GcdRingElem<MOD> & Modular>
         long degr = re.degree(ckfac.nvar - 2);
         ckfac = ckfac.contract(1);
         long vi = 1L; // (long)(dfac.nvar-j); // 1L; 0 not so good for small p
-        if (p.longValue() > 1000L) {
+        if (p.longValueExact() > 1000L) {
           // vi = (long)j+1L;
           vi = 0L;
         }

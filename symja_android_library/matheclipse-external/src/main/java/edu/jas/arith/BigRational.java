@@ -1285,7 +1285,7 @@ class BigRationalIterator implements Iterator<BigRational> {
   /**
    * BigRational iterator constructor.
    *
-   * @param nn, true for indicator for a non-negative iterator, fall for an all iterator
+   * @param nn indicator for a non-negative iterator, if true, false for an all iterator
    */
   public BigRationalIterator(boolean nn) {
     nonNegative = nn;
@@ -1387,7 +1387,7 @@ class BigRationalUniqueIterator implements Iterator<BigRational> {
   /**
    * BigRational iterator constructor.
    *
-   * @param nn, true for indicator for a non-negative iterator, fall for an all iterator
+   * @param rit backing rational iterator of non unique elements
    */
   public BigRationalUniqueIterator(Iterator<BigRational> rit) {
     ratit = rit;

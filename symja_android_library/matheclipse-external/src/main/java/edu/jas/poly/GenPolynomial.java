@@ -549,10 +549,11 @@ public class GenPolynomial<C extends RingElem<C>>
   @Override
   public int hashCode() {
     int h = hash;
-    if (h < 0) {
-      h = (ring.hashCode() << 27);
-      h += val.hashCode();
+    if (h == -1) {
+      // not in sync with equals(): h = (ring.hashCode() << 27);
+      h = val.hashCode();
       hash = h;
+      // System.out.println("GenPolynomial.hashCode: " + h);
     }
     return h;
   }

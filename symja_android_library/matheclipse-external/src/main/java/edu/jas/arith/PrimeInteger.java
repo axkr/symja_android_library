@@ -77,7 +77,7 @@ public final class PrimeInteger {
     k = K;
 
     /* init */
-    long h = 2 * (k - 1);
+    long h = 2L * ((long) k - 1L);
     long m2 = m + h; // mp
     BitSet p = new BitSet(k);
     p.set(0, k);
@@ -319,7 +319,7 @@ public final class PrimeInteger {
         return false;
       }
       int e = m.getValue();
-      long pe = java.math.BigInteger.valueOf(p).pow(e).longValue();
+      long pe = java.math.BigInteger.valueOf(p).pow(e).longValueExact();
       f *= pe;
     }
     return n == f;
@@ -337,7 +337,7 @@ public final class PrimeInteger {
     for (Map.Entry<Long, Integer> m : F.entrySet()) {
       long p = m.getKey();
       int e = m.getValue();
-      long pe = java.math.BigInteger.valueOf(p).pow(e).longValue();
+      long pe = java.math.BigInteger.valueOf(p).pow(e).longValueExact();
       f *= pe;
     }
     return n == f;
@@ -902,6 +902,7 @@ public final class PrimeInteger {
         return F;
       }
     }
+    // n <= beta
     long s = n.longValue();
     SortedMap<Long, Integer> ff = factors(s); // useless 2nd smallPrimeDiv search
     for (Map.Entry<Long, Integer> m : ff.entrySet()) {

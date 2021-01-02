@@ -541,7 +541,7 @@ public class GenMatrixRing<C extends RingElem<C>> implements AlgebraFactory<GenM
           e = s.substring(0, i);
           s = s.substring(i);
           vec = vmod.parse(e);
-          v = (ArrayList<C>) vec.val;
+          v = new ArrayList<C>(vec.val);
           mat.add(v);
           i = s.indexOf(",");
           if (i >= 0) {

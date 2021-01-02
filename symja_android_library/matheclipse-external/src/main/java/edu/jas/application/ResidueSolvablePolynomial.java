@@ -140,6 +140,16 @@ public class ResidueSolvablePolynomial<C extends GcdRingElem<C>>
   }
 
   /**
+   * Hash code for this polynomial.
+   *
+   * @see java.lang.Object#hashCode()
+   */
+  @Override
+  public int hashCode() {
+    return super.hashCode();
+  }
+
+  /**
    * ResidueSolvablePolynomial multiplication.
    *
    * @param Bp ResidueSolvablePolynomial.

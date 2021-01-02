@@ -90,10 +90,16 @@ public class OrderedCPairlist<C extends GcdRingElem<C>> implements Serializable 
    *
    * @param m number of module variables.
    * @param r polynomial factory.
+   * @param P list of color polynomials.
+   * @param pl critical pair list.
+   * @param red reduction matrix.
+   * @param cred color polynomial reduction engine.
+   * @param pc put count.
+   * @param rc remove count.
    */
   private OrderedCPairlist(
       int m,
-      GenPolynomialRing<GenPolynomial<C>> ring,
+      GenPolynomialRing<GenPolynomial<C>> r,
       List<ColorPolynomial<C>> P,
       SortedMap<ExpVector, LinkedList<CPair<C>>> pl,
       List<BitSet> red,
@@ -101,7 +107,7 @@ public class OrderedCPairlist<C extends GcdRingElem<C>> implements Serializable 
       int pc,
       int rc) {
     moduleVars = m;
-    this.ring = ring;
+    this.ring = r;
     this.P = P;
     pairlist = pl;
     this.red = red;

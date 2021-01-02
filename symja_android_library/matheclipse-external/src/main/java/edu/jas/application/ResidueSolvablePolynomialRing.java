@@ -364,7 +364,7 @@ public class ResidueSolvablePolynomialRing<C extends GcdRingElem<C>>
           p = Xk.multiply(Xj).multiply(Xi);
           q = Xk.multiply(Xj.multiply(Xi));
           if (!p.equals(q)) {
-            if (true || debug) {
+            if (logger.isInfoEnabled()) {
               logger.info("Xk = " + Xk + ", Xj = " + Xj + ", Xi = " + Xi);
               logger.info("p = ( Xk * Xj ) * Xi = " + p);
               logger.info("q = Xk * ( Xj * Xi ) = " + q);

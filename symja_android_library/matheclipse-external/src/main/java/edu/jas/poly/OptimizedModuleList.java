@@ -43,4 +43,14 @@ public class OptimizedModuleList<C extends RingElem<C>> extends ModuleList<C> {
     }
     return super.equals(B);
   }
+
+  /**
+   * Hash code for this module list.
+   *
+   * @see java.lang.Object#hashCode()
+   */
+  @Override
+  public int hashCode() {
+    return super.hashCode();
+  }
 }

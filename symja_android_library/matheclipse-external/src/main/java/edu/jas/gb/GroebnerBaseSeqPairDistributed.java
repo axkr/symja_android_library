@@ -817,10 +817,10 @@ class ReducerClientSeqPair<C extends RingElem<C>> implements Runnable {
           // logger.info("pix = " + pix + ", pjx = " +pjx);
         }
 
-        if (logger.isDebugEnabled()) {
-          logger.info("pi = " + pi.leadingExpVector() + ", pj = " + pj.leadingExpVector());
-        }
         if (pi != null && pj != null) {
+          if (logger.isDebugEnabled()) {
+            logger.info("pi = " + pi.leadingExpVector() + ", pj = " + pj.leadingExpVector());
+          }
           S = red.SPolynomial(pi, pj);
           // System.out.println("S   = " + S);
           if (S.isZERO()) {

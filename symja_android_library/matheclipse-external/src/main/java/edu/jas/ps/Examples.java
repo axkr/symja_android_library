@@ -26,24 +26,22 @@ import edu.jas.structure.UnaryFunctor;
 public class Examples {
 
   public static void main(String[] args) {
-    //    	example7();
-    exampleTest();
-    //        example2();
-    //        example4();
-    //        example6();
-    //        example8();
-    //        example9();
-    //        example10();
-    //        example11();
-    //        example1();
-    //        example3();
-    //        example5();
-    //        example7();
-    //        if ( args.length > 0 ) {
-    //            example12();
-    //        }
-    //        example13();
-    //        example14();
+    example2();
+    example4();
+    example6();
+    example8();
+    example9();
+    example10();
+    example11();
+    example1();
+    example3();
+    example5();
+    example7();
+    if (args.length > 0) {
+      example12();
+    }
+    example13();
+    example14();
   }
 
   static UnivPowerSeries<BigInteger> integersFrom(final int start) {
@@ -337,8 +335,6 @@ public class Examples {
               }
             });
     System.out.println("sin = " + sin);
-    sin = sin.power(2);
-    System.out.println("sin = " + sin);
     UnivPowerSeries<BigRational> sin1 =
         pfac.fixPoint(
             new UnivPowerSeriesMap<BigRational>() {
@@ -509,21 +505,5 @@ public class Examples {
 
     GenPolynomial<UnivPowerSeries<BigRational>> r = q.gcd(s);
     System.out.println("r = " + r);
-  }
-
-  public static void exampleTest() {
-    BigRational cfac = new BigRational();
-    UnivPowerSeriesRing<BigRational> pfac = new UnivPowerSeriesRing<BigRational>(cfac, 50, "x");
-    System.out.println("pfac = " + pfac);
-    System.out.println("pfac = " + pfac.toScript());
-
-    GenPolynomialRing<BigRational> pr = pfac.polyRing();
-    GenPolynomial<BigRational> p = pr.parse("x + x^2 + 2 x^3 + x^4 - x^5");
-    GenPolynomial<BigRational> q = pr.parse("1 + 4 x^3 - x^6");
-
-    UnivPowerSeries<BigRational> p1 = pfac.fromPolynomial(p);
-    UnivPowerSeries<BigRational> q1 = pfac.fromPolynomial(q);
-    UnivPowerSeries<BigRational> r1 = p1.divide(q1);
-    System.out.println("q = " + r1);
   }
 }
