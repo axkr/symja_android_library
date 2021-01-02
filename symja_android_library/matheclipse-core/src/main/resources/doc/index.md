@@ -1,13 +1,6 @@
 ## Installation
 
-For the Symja console app download the latest release from 
-* [github.com/axkr/symja_android_library/releases](https://github.com/axkr/symja_android_library/releases)
-
-unzip the download in a separate folder and modify the symja.bat file to use your Java 8 installation path to run the console:
-
-```
-"C:\Program Files\Java\jdk1.8.0_25\bin\java" -classpath "lib/*" org.matheclipse.io.eval.Console 
-```
+The different kinds of installations are described in the [Github Wiki Installation](https://github.com/axkr/symja_android_library/wiki/Installation) page.
 
 ## Tutorial
 
