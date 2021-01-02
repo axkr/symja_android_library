@@ -9,12 +9,13 @@ import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IASTAppendable;
 import org.matheclipse.core.interfaces.IASTMutable;
 import org.matheclipse.core.interfaces.IExpr;
+import org.matheclipse.core.interfaces.IExpr.COMPARE_TERNARY;
 import org.matheclipse.core.patternmatching.IPatternMatcher;
 
 /** Visitor for the <code>ReplacePart()</code> function */
 public class VisitorReplacePart extends AbstractVisitor {
 
-  final int offset;
+  int offset;
   final IExpr fReplaceExpr;
   ArrayList<int[]> fPositionList;
 
@@ -26,15 +27,16 @@ public class VisitorReplacePart extends AbstractVisitor {
    * Create a new visitor which replaces parts of an expression.
    *
    * @param rule a rule or list-of-rules
-   * @param heads if <code>true</code> also replace the heads of expressions
+   * @param heads if <code>TRUE</code> also replace the heads of expressions
    */
-  public VisitorReplacePart(IAST rule, boolean heads) {
+  public VisitorReplacePart(IAST rule, IExpr.COMPARE_TERNARY heads) {
     super();
-    offset = heads ? 0 : 1;
+
     IExpr fromPositions = rule.arg1();
     this.fReplaceExpr = rule.arg2();
     try {
       // try extracting an integer list of expressions
+      offset = heads == COMPARE_TERNARY.FALSE ? 1 : 0;
       if (fromPositions.isList()) {
         IAST list = (IAST) fromPositions;
         if (list.isListOfLists()) {
@@ -73,6 +75,7 @@ public class VisitorReplacePart extends AbstractVisitor {
       }
     } catch (ReturnException rex) {
       // use pattern-matching
+      offset = heads == IExpr.COMPARE_TERNARY.TRUE ? 0 : 1;
       fPositionList = null;
       engine = EvalEngine.get();
       if (fromPositions.isList()) {
@@ -102,7 +105,7 @@ public class VisitorReplacePart extends AbstractVisitor {
       if (position < 0) {
         position = ast.size() + position;
       }
-      if (position >= ast.size() || position < 0) {
+      if (position >= ast.size() || position < offset) {
         continue;
       }
 

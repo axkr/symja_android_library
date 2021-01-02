@@ -29306,7 +29306,19 @@ public class LowercaseTestCase extends AbstractTestCase {
   }
 
   public void testReplacePart() {
-    // TODO github #135
+    // github #135
+    check(
+        "ReplacePart(f(x, y), 0 -> g, Heads -> False)", //
+        "f(x,y)");
+    check(
+        "ReplacePart(f(x, y), 0 -> g )", //
+        "g(x,y)");
+    check(
+        "ReplacePart(f(x, y), _ -> g)", //
+        "f(g,g)");
+    check(
+        "ReplacePart(f(x, y), _ -> g, Heads -> True)", //
+        "g(g,g)");
 
     check(
         "ReplacePart(<|\"x\" -> 1, \"y\" -> 2|>, {0} -> f)", //

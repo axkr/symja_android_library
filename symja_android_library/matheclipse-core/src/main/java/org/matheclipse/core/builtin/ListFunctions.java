@@ -53,6 +53,7 @@ import org.matheclipse.core.interfaces.IASTMutable;
 import org.matheclipse.core.interfaces.IAssociation;
 import org.matheclipse.core.interfaces.IBuiltInSymbol;
 import org.matheclipse.core.interfaces.IExpr;
+import org.matheclipse.core.interfaces.IExpr.COMPARE_TERNARY;
 import org.matheclipse.core.interfaces.IInteger;
 import org.matheclipse.core.interfaces.IIterator;
 import org.matheclipse.core.interfaces.INumber;
@@ -5463,16 +5464,16 @@ public final class ListFunctions {
     @Override
     public IExpr evaluate(IAST ast, EvalEngine engine) {
       try {
-        boolean heads = false;
+        COMPARE_TERNARY heads = COMPARE_TERNARY.UNDECIDABLE;
         if (ast.size() > 3) {
           final OptionArgs options = new OptionArgs(ast.topHead(), ast, 3, engine);
           IExpr option = options.getOption(S.Heads);
 
           if (option.isTrue()) {
-            heads = true;
+            heads = COMPARE_TERNARY.TRUE;
           } else if (option.isFalse()) {
-            heads = false;
-          } else   {
+            heads = COMPARE_TERNARY.FALSE;
+          } else {
             IExpr result = ast.arg1();
             if (ast.arg3().isList()) {
               for (IExpr subList : (IAST) ast.arg3()) {

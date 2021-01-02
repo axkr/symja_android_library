@@ -3992,10 +3992,10 @@ public interface IExpr
    *
    * @param astRules rules of the form <code>position-&gt;y</code> or <code>
    *     {position1-&gt;b, position2-&gt;d}</code>
-   * @param heads if <code>true</code> also replace the heads of expressions
+   * @param heads if <code>TRUE</code> also replace the heads of expressions
    * @return <code>F.NIL</code> if no substitution of a subexpression was possible.
    */
-  default IExpr replacePart(final IAST astRules, boolean heads) {
+  default IExpr replacePart(final IAST astRules, IExpr.COMPARE_TERNARY heads) {
     return this.accept(new VisitorReplacePart(astRules, heads));
   }
 
