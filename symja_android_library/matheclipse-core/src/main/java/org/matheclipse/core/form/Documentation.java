@@ -174,7 +174,7 @@ public class Documentation {
     return "doc/" + docName + ".md";
   }
 
-  public static boolean extraxtDocumentation(Appendable out, String symbolName) {
+  public static int extraxtJavadoc(Appendable out, String symbolName) {
     // read markdown file
     String fileName = buildFunctionFilename(symbolName);
 
@@ -195,7 +195,7 @@ public class Documentation {
             continue;
           }
           if (line.startsWith("### ")) {
-            return false;
+            return 0;
           }
 
           if (line.startsWith("> ")) {
@@ -206,16 +206,25 @@ public class Documentation {
               out.append(" - ");
             }
             out.append(line.substring(2));
-            out.append("*/");
-            return true;
+            out.append("\n         * ");
+            out.append(
+                "| See: <a href=\"https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/"
+                    + symbolName
+                    + ".md\">"
+                    + symbolName
+                    + "</a>");
+            out.append(" */");
+            return 1;
           }
         }
         f.close();
         is.close();
+        return 0;
       }
+
     } catch (IOException e) {
       e.printStackTrace();
     }
-    return false;
+    return -1;
   }
 }

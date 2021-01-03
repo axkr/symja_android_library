@@ -1,49 +1,17 @@
 package org.matheclipse.core.preprocessor;
 
+import java.io.PrintStream;
 import java.util.ArrayList;
 import java.util.Collections;
 
 import org.matheclipse.core.convert.AST2Expr;
 import org.matheclipse.core.form.Documentation;
 
+/**
+ * The built-in symbols in class {@link org.matheclipse.core.expression.S} are generated with this
+ * tools class.
+ */
 public class BuiltinGenerator {
-
-  static final String HEADER =
-      "package org.matheclipse.core.expression;\n"
-          + "\n"
-          + "import org.matheclipse.core.interfaces.IBuiltInSymbol;\n"
-          + "\n"
-          + "public enum BuiltIns {";
-
-  static final String FOOTER =
-      "\n"
-          + "	private final String name;\n"
-          + "	private final int symbolID;\n"
-          + "	private final static IBuiltInSymbol[] builtInSymbols = new IBuiltInSymbol[values().length];\n"
-          + "\n"
-          + "	public static IBuiltInSymbol valueOf(BuiltIns sEnum) {\n"
-          + "		IBuiltInSymbol symbol = F.initFinalSymbol(sEnum);\n"
-          + "		builtInSymbols[sEnum.symbolID] = symbol;\n"
-          + "		return symbol;\n"
-          + "	}\n"
-          + "\n"
-          + "	BuiltIns(String name, int symbolID) {\n"
-          + "		this.name = name;\n"
-          + "		this.symbolID = symbolID;\n"
-          + "	}\n"
-          + "\n"
-          + "	public static IBuiltInSymbol symbol(int id) {\n"
-          + "		return builtInSymbols[id];\n"
-          + "	}\n"
-          + "\n"
-          + "	public final int id() {\n"
-          + "		return symbolID;\n"
-          + "	}\n"
-          + "\n"
-          + "	public final String str() {\n"
-          + "		return name;\n"
-          + "	}\n"
-          + "}";
 
   private static final boolean GENERATE_JAVADOC = true;
 
@@ -62,17 +30,31 @@ public class BuiltinGenerator {
       list.add(AST2Expr.DOLLAR_STRINGS[i]);
     }
     Collections.sort(list);
-
+    PrintStream out = System.out;
     // public final static IBuiltInSymbol XXXXX = BuiltIns.valueOf(BuiltIns.XXXXX);
     for (String sym : list) {
       // System.out.println(" public final static IBuiltInSymbol " + sym.name()
       // + " = BuiltIns.valueOf(BuiltIns." + sym.name() + ");");
       if (GENERATE_JAVADOC) {
         StringBuilder buf = new StringBuilder();
-        Documentation.extraxtDocumentation(buf, sym);
-        System.out.println(buf.toString());
+        int status = Documentation.extraxtJavadoc(buf, sym);
+        if (status == 1) {
+          out.println(buf.toString());
+        } else if (status == 0) {
+          out.println();
+          out.print("\n        /**");
+          out.print(
+              "| See: <a href=\"https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/"
+                  + sym
+                  + ".md\">"
+                  + sym
+                  + "</a>");
+          out.print(" */\n");
+        } else {
+          out.println();
+        }
       }
-      System.out.println(
+      out.println(
           "        public final static IBuiltInSymbol "
               + sym
               + " = F.initFinalSymbol(\""
