@@ -347,24 +347,14 @@ public class EllipticCurveMethod extends FactorAlgorithm {
       }
       EC++;
 
-      long L1, L2, LS;
-      if (EC < 26) {
-        L1 = 2000; // Number of primes less than 2.000
-        L2 = 200000;
-        LS = 45;
-      } else if (EC < 326) {
-        L1 = 50000; // Number of primes less than 50.000
-        L2 = 5000000;
-        LS = 224;
-      } else if (EC < 2000) {
-        L1 = 1000000; // Number of primes less than 1.000.000
-        L2 = 100000000;
-        LS = 1001;
-      } else {
-        L1 = 11000000; // Number of primes less than 11.000.000
-        L2 = 1100000000;
-        LS = 3316;
-      }
+      long L1; // step 1 prime bound
+      if (EC < 26) L1 = 2000;
+      else if (EC < 326) L1 = 50000;
+      else if (EC < 2000) L1 = 1000000;
+      else L1 = 11000000;
+
+      long L2 = 100 * L1; // step 2 prime bound
+      long LS = (long) Math.ceil(Math.sqrt(L1));
 
       LongToBigNbr(2 * (EC + 1), Aux1);
       LongToBigNbr(3 * (EC + 1) * (EC + 1) - 1, Aux2);
