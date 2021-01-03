@@ -577,12 +577,11 @@ public class WL {
     }
 
     private void writeBinaryString(IExpr arg1) throws IOException {
-      ByteArrayExpr s = (ByteArrayExpr) arg1;
-      byte[] str = s.toData();
-      int size = str.length;
+      byte[] bArray = ((ByteArrayExpr) arg1).toData();
+      int size = bArray.length;
       stream.write(WL.WXF_CONSTANTS.BinaryString);
       stream.write(varintBytes(size));
-      stream.writeBytes(str);
+      stream.write(bArray, 0, size);
     }
 
     private void writeSymbol(IExpr arg1) throws IOException {
