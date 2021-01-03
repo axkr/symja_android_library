@@ -13,6 +13,7 @@ import org.hipparchus.linear.RealMatrix;
 import org.hipparchus.linear.RealVector;
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.interfaces.IFunctionEvaluator;
+import org.matheclipse.core.expression.data.ByteArrayExpr;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IASTAppendable;
 import org.matheclipse.core.interfaces.IASTMutable;
@@ -176,23 +177,29 @@ public class WL {
           length = parseLength();
           ASTAssociation assoc = new ASTAssociation(length);
           for (int i = 0; i < length; i++) {
-        	  value = array[position++];
-        	  IExpr ruleHead=S.Rule;
-        	  if (value==WXF_CONSTANTS.RuleDelayed) {
-        		  ruleHead=S.RuleDelayed;
-        	  } 
-        	  IExpr arg1=read();
-        	  IExpr arg2=read();
-        	  assoc.appendRule(F.binaryAST2(ruleHead, arg1, arg2));
-          } 
+            value = array[position++];
+            IExpr ruleHead = S.Rule;
+            if (value == WXF_CONSTANTS.RuleDelayed) {
+              ruleHead = S.RuleDelayed;
+            }
+            IExpr arg1 = read();
+            IExpr arg2 = read();
+            assoc.appendRule(F.binaryAST2(ruleHead, arg1, arg2));
+          }
           return assoc;
         case WXF_CONSTANTS.String:
-          length = parseLength(); // (int) array[position++];
+          length = parseLength();
           StringBuilder str = new StringBuilder();
           for (int i = 0; i < length; i++) {
             str.append((char) array[position++]);
           }
           return F.stringx(str);
+        case WXF_CONSTANTS.BinaryString:
+          length = parseLength();
+          byte[] bArray = new byte[length];
+          System.arraycopy(array, position, bArray, 0, length);
+          position += length;
+          return ByteArrayExpr.newInstance(bArray);
       }
       return F.NIL;
     }
@@ -335,6 +342,9 @@ public class WL {
           return;
         case IExpr.STRINGID:
           writeString(arg1);
+          return;
+        case IExpr.BYTEARRAYID:
+          writeBinaryString(arg1);
           return;
         case IExpr.BLANKID:
           IPattern blank = (IPattern) arg1;
@@ -564,6 +574,15 @@ public class WL {
       for (int i = 0; i < size; i++) {
         stream.write(str[i]);
       }
+    }
+
+    private void writeBinaryString(IExpr arg1) throws IOException {
+      ByteArrayExpr s = (ByteArrayExpr) arg1;
+      byte[] str = s.toData();
+      int size = str.length;
+      stream.write(WL.WXF_CONSTANTS.BinaryString);
+      stream.write(varintBytes(size));
+      stream.writeBytes(str);
     }
 
     private void writeSymbol(IExpr arg1) throws IOException {

@@ -367,6 +367,17 @@ public class WXFTestCase extends AbstractTestCase {
         "f(g,2)");
   }
 
+  public void testByteArrayData() {
+    // serialize {0,42,192}
+    check(
+        "bytes = Normal(BinarySerialize(ByteArray({0, 42, 192})))", //
+        "{56,58,66,3,0,42,192}");
+    // deserialize {0,42,192} back
+    check(
+        "BinaryDeserialize(ByteArray({56,58,66,3,0,42,192})) // Normal", //
+        "{0,42,192}");
+  }
+
   public void testByteArray() {
     check(
         " ByteArray({1,2,3})", //
