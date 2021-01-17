@@ -6,7 +6,7 @@ import static org.matheclipse.core.integrate.rubi.UtilityFunctionCtors.*;
 
 import org.matheclipse.core.interfaces.IAST;
 /** 
- * UtilityFunctions rules from the <a href="http://www.apmaths.uwo.ca/~arich/">Rubi -
+ * UtilityFunctions rules from the <a href="https://rulebasedintegration.org/">Rubi -
  * rule-based integrator</a>.
  *  
  */
@@ -44,8 +44,8 @@ ISetDelayed(685,IntTerm(u_,x_Symbol),
     Dist(FreeFactors(u,x),Integrate(NonfreeFactors(u,x),x),x)),
 ISetDelayed(686,RuleName($p("name")),
     CompoundExpression(AppendTo($s("§$rulenamelist"),$s("name")),Null)),
-ISetDelayed(687,FixIntRules(),
-    CompoundExpression(Set($($s("§downvalues"),Integrate),FixIntRules($($s("§downvalues"),Integrate))),Null)),
+//ISetDelayed(687,FixIntRules(),
+//    CompoundExpression(Set(DownValues(Integrate),FixIntRules(DownValues(Integrate))),Null)),
 ISetDelayed(688,FixIntRules($p("rulelist")),
     Block(List(Integrate,$rubi("Subst"),$rubi("Simp"),$rubi("Dist")),CompoundExpression(SetAttributes(List($rubi("Simp"),$rubi("Dist"),Integrate,$rubi("Subst")),HoldAll),Map(Function(FixIntRule(Slot1,Part(Slot1,C1,C1,C2,C1))),$s("rulelist")))))
   );

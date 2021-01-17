@@ -7,7 +7,7 @@ import static org.matheclipse.core.integrate.rubi.UtilityFunctions.*;
 import org.matheclipse.core.interfaces.IAST;
 
 /** 
- * IndefiniteIntegrationRules from the <a href="http://www.apmaths.uwo.ca/~arich/">Rubi -
+ * IndefiniteIntegrationRules from the <a href="https://rulebasedintegration.org/">Rubi -
  * rule-based integrator</a>.
  *  
  */
