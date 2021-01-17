@@ -14,6 +14,8 @@ Solve(equations, vars, domain)
 
 ### Examples
 
+It's important to use the `==` operator to define the equations. If you have unintentionally assigned a value to the variables `x, y` with the the `=` operator you have to call `Clear(x,y)` to clear the definitions for these variables.
+
 ```
 >> Solve({x^2==4,x+y^2==6}, {x,y})
 {{x->2,y->2},{x->2,y->-2},{x->-2,y->2*2^(1/2)},{x->-2,y->(-2)*2^(1/2)}}
