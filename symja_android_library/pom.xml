@@ -45,7 +45,7 @@
 		<maven.compiler.target>1.8</maven.compiler.target>
 		<hipparchus.version>1.8</hipparchus.version>
 		<timestamp>${maven.build.timestamp}</timestamp>
-		<maven.build.timestamp.format>yyyyMMddHHmmss</maven.build.timestamp.format>
+		<maven.build.timestamp.format>yyyyMMddHHmmss</maven.build.timestamp.format> 
 	</properties>
 
 	<modules>
@@ -109,7 +109,8 @@
 					<artifactId>maven-javadoc-plugin</artifactId>
 					<version>2.10.3</version>
 					<configuration>
-						<additionalparam>-Xdoclint:none</additionalparam>
+						<additionalparam>-Xdoclint:none</additionalparam> 
+                        <failOnError>false</failOnError> 
 					</configuration>
 					<executions>
 						<execution>
@@ -169,13 +170,7 @@
 						</container>
 					</configuration>
 				</plugin>
--->
-
-				<plugin>
-					<groupId>io.spring.javaformat</groupId>
-					<artifactId>spring-javaformat-maven-plugin</artifactId>
-					<version>0.0.6</version>
-				</plugin>
+--> 
 			</plugins>
 		</pluginManagement>
 	</build>
