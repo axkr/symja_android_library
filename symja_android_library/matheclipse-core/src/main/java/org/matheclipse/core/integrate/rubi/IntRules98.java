@@ -11,7 +11,7 @@ import org.matheclipse.core.interfaces.IAST;
  * rule-based integrator</a>.
  *  
  */
-public class IntRules98 { 
+class IntRules98 { 
   public static IAST RULES = List( 
 IIntegrate(1961,Integrate(Times(Power(u_,r_DEFAULT),Power(Times(e_DEFAULT,Plus(a_DEFAULT,Times(b_DEFAULT,Power(x_,n_DEFAULT))),Power(Plus(c_,Times(d_DEFAULT,Power(x_,n_DEFAULT))),CN1)),p_)),x_Symbol),
     Condition(With(List(Set(q,Denominator(p))),Dist(Times(q,e,Subtract(Times(b,c),Times(a,d)),Power(n,CN1)),Subst(Integrate(SimplifyIntegrand(Times(Power(x,Subtract(Times(q,Plus(p,C1)),C1)),Power(Plus(Times(CN1,a,e),Times(c,Power(x,q))),Subtract(Power(n,CN1),C1)),Power(ReplaceAll(u,Rule(x,Times(Power(Plus(Times(CN1,a,e),Times(c,Power(x,q))),Power(n,CN1)),Power(Power(Subtract(Times(b,e),Times(d,Power(x,q))),Power(n,CN1)),CN1)))),r),Power(Power(Subtract(Times(b,e),Times(d,Power(x,q))),Plus(Power(n,CN1),C1)),CN1)),x),x),x,Power(Times(e,Plus(a,Times(b,Power(x,n))),Power(Plus(c,Times(d,Power(x,n))),CN1)),Power(q,CN1))),x)),And(FreeQ(List(a,b,c,d,e),x),PolynomialQ(u,x),FractionQ(p),IntegerQ(Power(n,CN1)),IntegerQ(r)))),

@@ -10,7 +10,7 @@ import org.matheclipse.core.interfaces.IAST;
  * rule-based integrator</a>.
  *  
  */
-public class UtilityFunctions5 { 
+class UtilityFunctions5 { 
   public static IAST RULES = List( 
 ISetDelayed(42,PolyQ(u_,x_Symbol,n_),
     If(PolynomialQ(u,x),And(EqQ(Exponent(u,x),n),NeQ(Coefficient(u,x,n),C0)),With(List(Set(v,Together(u))),And(PolynomialQ(v,x),EqQ(Exponent(v,x),n),NeQ(Coefficient(v,x,n),C0))))),

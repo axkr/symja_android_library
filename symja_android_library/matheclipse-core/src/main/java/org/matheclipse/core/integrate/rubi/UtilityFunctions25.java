@@ -10,7 +10,7 @@ import org.matheclipse.core.interfaces.IAST;
  * rule-based integrator</a>.
  *  
  */
-public class UtilityFunctions25 { 
+class UtilityFunctions25 { 
   public static IAST RULES = List( 
 ISetDelayed(436,SquareRootOfQuadraticSubst(u_,$p("vv"),$p("xx"),x_Symbol),
     If(Or(AtomQ(u),FreeQ(u,x)),If(SameQ(u,x),$s("xx"),u),If(And(PowerQ(u),FreeQ(Part(u,C2),x)),If(And(FractionQ(Part(u,C2)),Equal(Denominator(Part(u,C2)),C2),PolynomialQ(Part(u,C1),x),Equal(Exponent(Part(u,C1),x),C2)),Power($s("vv"),Numerator(Part(u,C2))),Power(SquareRootOfQuadraticSubst(Part(u,C1),$s("vv"),$s("xx"),x),Part(u,C2))),Map(Function(SquareRootOfQuadraticSubst(Slot1,$s("vv"),$s("xx"),x)),u)))),

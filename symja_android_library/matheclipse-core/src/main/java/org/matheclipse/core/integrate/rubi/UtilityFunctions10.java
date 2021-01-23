@@ -10,7 +10,7 @@ import org.matheclipse.core.interfaces.IAST;
  * rule-based integrator</a>.
  *  
  */
-public class UtilityFunctions10 { 
+class UtilityFunctions10 { 
   public static IAST RULES = List( 
 ISetDelayed(142,RationalFunctionFactors(u_,x_Symbol),
     If(ProductQ(u),Map(Function(If(RationalFunctionQ(Slot1,x),Slot1,C1)),u),If(RationalFunctionQ(u,x),u,C1))),

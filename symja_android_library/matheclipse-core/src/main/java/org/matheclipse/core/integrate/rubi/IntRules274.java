@@ -11,7 +11,7 @@ import org.matheclipse.core.interfaces.IAST;
  * rule-based integrator</a>.
  *  
  */
-public class IntRules274 { 
+class IntRules274 { 
   public static IAST RULES = List( 
 IIntegrate(5481,Integrate(Times(Power(Cosh(Plus(d_DEFAULT,Times(e_DEFAULT,x_))),n_),Power(F_,Times(c_DEFAULT,Plus(a_DEFAULT,Times(b_DEFAULT,x_))))),x_Symbol),
     Condition(Plus(Simp(Times(b,c,Log(FSymbol),Power(FSymbol,Times(c,Plus(a,Times(b,x)))),Power(Cosh(Plus(d,Times(e,x))),Plus(n,C2)),Power(Times(Sqr(e),Plus(n,C1),Plus(n,C2)),CN1)),x),Dist(Times(Subtract(Times(Sqr(e),Sqr(Plus(n,C2))),Times(Sqr(b),Sqr(c),Sqr(Log(FSymbol)))),Power(Times(Sqr(e),Plus(n,C1),Plus(n,C2)),CN1)),Integrate(Times(Power(FSymbol,Times(c,Plus(a,Times(b,x)))),Power(Cosh(Plus(d,Times(e,x))),Plus(n,C2))),x),x),Negate(Simp(Times(Power(FSymbol,Times(c,Plus(a,Times(b,x)))),Sinh(Plus(d,Times(e,x))),Power(Cosh(Plus(d,Times(e,x))),Plus(n,C1)),Power(Times(e,Plus(n,C1)),CN1)),x))),And(FreeQ(List(FSymbol,a,b,c,d,e),x),NeQ(Subtract(Times(Sqr(e),Sqr(Plus(n,C2))),Times(Sqr(b),Sqr(c),Sqr(Log(FSymbol)))),C0),LtQ(n,CN1),NeQ(n,CN2)))),

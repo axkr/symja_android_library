@@ -11,7 +11,7 @@ import org.matheclipse.core.interfaces.IAST;
  * rule-based integrator</a>.
  *  
  */
-public class IntRules87 { 
+class IntRules87 { 
   public static IAST RULES = List( 
 IIntegrate(1741,Integrate(Times($p("§px"),Power(Plus(d_,Times(e_DEFAULT,x_)),CN1),Power(Plus(a_,Times(b_DEFAULT,Sqr(x_)),Times(c_DEFAULT,Power(x_,C4))),CN1D2)),x_Symbol),
     Condition(With(List(Set(ASymbol,Coeff($s("§px"),x,C0)),Set(BSymbol,Coeff($s("§px"),x,C1)),Set(CSymbol,Coeff($s("§px"),x,C2)),Set(D,Coeff($s("§px"),x,C3))),Plus(Integrate(Times(x,Plus(Times(BSymbol,d),Times(CN1,ASymbol,e),Times(Subtract(Times(d,D),Times(CSymbol,e)),Sqr(x))),Power(Times(Subtract(Sqr(d),Times(Sqr(e),Sqr(x))),Sqrt(Plus(a,Times(b,Sqr(x)),Times(c,Power(x,C4))))),CN1)),x),Integrate(Times(Subtract(Plus(Times(ASymbol,d),Times(Subtract(Times(CSymbol,d),Times(BSymbol,e)),Sqr(x))),Times(D,e,Power(x,C4))),Power(Times(Subtract(Sqr(d),Times(Sqr(e),Sqr(x))),Sqrt(Plus(a,Times(b,Sqr(x)),Times(c,Power(x,C4))))),CN1)),x))),And(FreeQ(List(a,b,c,d,e),x),PolyQ($s("§px"),x),LeQ(Expon($s("§px"),x),C3),NeQ(Plus(Times(c,Power(d,C4)),Times(b,Sqr(d),Sqr(e)),Times(a,Power(e,C4))),C0)))),

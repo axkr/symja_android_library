@@ -10,7 +10,7 @@ import org.matheclipse.core.interfaces.IAST;
  * rule-based integrator</a>.
  *  
  */
-public class UtilityFunctions7 { 
+class UtilityFunctions7 { 
   public static IAST RULES = List( 
 ISetDelayed(82,GeneralizedTrinomialParts(Times(u_,Power(x_,m_DEFAULT)),x_Symbol),
     Condition(With(List(Set($s("lst"),GeneralizedTrinomialParts(u,x))),Condition(List(Part($s("lst"),C1),Part($s("lst"),C2),Part($s("lst"),C3),Plus(m,Part($s("lst"),C4)),Plus(m,Part($s("lst"),C5))),And(ListQ($s("lst")),NeQ(Plus(m,Part($s("lst"),C4)),C0),NeQ(Plus(m,Part($s("lst"),C5)),C0)))),FreeQ(m,x))),

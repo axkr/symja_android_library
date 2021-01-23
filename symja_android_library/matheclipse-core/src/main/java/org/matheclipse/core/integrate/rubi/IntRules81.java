@@ -11,7 +11,7 @@ import org.matheclipse.core.interfaces.IAST;
  * rule-based integrator</a>.
  *  
  */
-public class IntRules81 { 
+class IntRules81 { 
   public static IAST RULES = List( 
 IIntegrate(1621,Integrate(Times($p("§px"),Power(Plus(a_DEFAULT,Times(b_DEFAULT,x_)),m_),Power(Plus(c_DEFAULT,Times(d_DEFAULT,x_)),n_DEFAULT)),x_Symbol),
     Condition(With(List(Set($s("§qx"),PolynomialQuotient($s("§px"),Plus(a,Times(b,x)),x)),Set($s("R"),PolynomialRemainder($s("§px"),Plus(a,Times(b,x)),x))),Plus(Simp(Times($s("R"),Power(Plus(a,Times(b,x)),Plus(m,C1)),Power(Plus(c,Times(d,x)),Plus(n,C1)),Power(Times(Plus(m,C1),Subtract(Times(b,c),Times(a,d))),CN1)),x),Dist(Power(Times(Plus(m,C1),Subtract(Times(b,c),Times(a,d))),CN1),Integrate(Times(Power(Plus(a,Times(b,x)),Plus(m,C1)),Power(Plus(c,Times(d,x)),n),ExpandToSum(Subtract(Times(Plus(m,C1),Subtract(Times(b,c),Times(a,d)),$s("§qx")),Times(d,$s("R"),Plus(m,n,C2))),x)),x),x))),And(FreeQ(List(a,b,c,d,n),x),PolyQ($s("§px"),x),ILtQ(m,CN1),GtQ(Expon($s("§px"),x),C2)))),

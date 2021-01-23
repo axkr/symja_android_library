@@ -11,7 +11,7 @@ import org.matheclipse.core.interfaces.IAST;
  * rule-based integrator</a>.
  *  
  */
-public class IntRules284 { 
+class IntRules284 { 
   public static IAST RULES = List( 
 IIntegrate(5681,Integrate(Times(Power(Plus(a_DEFAULT,Times(ArcCosh(Times(c_DEFAULT,x_)),b_DEFAULT)),n_DEFAULT),Power(Plus(d_,Times(e_DEFAULT,Sqr(x_))),p_DEFAULT)),x_Symbol),
     Condition(Plus(Simp(Times(x,Power(Plus(d,Times(e,Sqr(x))),p),Power(Plus(a,Times(b,ArcCosh(Times(c,x)))),n),Power(Plus(Times(C2,p),C1),CN1)),x),Negate(Dist(Times(b,c,n,Power(Negate(d),p),Power(Plus(Times(C2,p),C1),CN1)),Integrate(Times(x,Power(Plus(CN1,Times(c,x)),Subtract(p,C1D2)),Power(Plus(C1,Times(c,x)),Subtract(p,C1D2)),Power(Plus(a,Times(b,ArcCosh(Times(c,x)))),Subtract(n,C1))),x),x)),Dist(Times(C2,d,p,Power(Plus(Times(C2,p),C1),CN1)),Integrate(Times(Power(Plus(d,Times(e,Sqr(x))),Subtract(p,C1)),Power(Plus(a,Times(b,ArcCosh(Times(c,x)))),n)),x),x)),And(FreeQ(List(a,b,c,d,e),x),EqQ(Plus(Times(Sqr(c),d),e),C0),GtQ(n,C0),GtQ(p,C0),IntegerQ(p)))),

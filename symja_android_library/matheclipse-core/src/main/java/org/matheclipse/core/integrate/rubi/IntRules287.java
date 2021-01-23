@@ -11,7 +11,7 @@ import org.matheclipse.core.interfaces.IAST;
  * rule-based integrator</a>.
  *  
  */
-public class IntRules287 { 
+class IntRules287 { 
   public static IAST RULES = List( 
 IIntegrate(5741,Integrate(Times(Power(Plus(a_DEFAULT,Times(ArcCosh(Times(c_DEFAULT,x_)),b_DEFAULT)),n_DEFAULT),Power(Times(f_DEFAULT,x_),m_),Power(Plus(d_,Times(e_DEFAULT,Sqr(x_))),p_DEFAULT)),x_Symbol),
     Condition(Plus(Simp(Times(Power(Times(f,x),Plus(m,C1)),Power(Plus(d,Times(e,Sqr(x))),p),Power(Plus(a,Times(b,ArcCosh(Times(c,x)))),n),Power(Times(f,Plus(m,Times(C2,p),C1)),CN1)),x),Dist(Times(C2,d,p,Power(Plus(m,Times(C2,p),C1),CN1)),Integrate(Times(Power(Times(f,x),m),Power(Plus(d,Times(e,Sqr(x))),Subtract(p,C1)),Power(Plus(a,Times(b,ArcCosh(Times(c,x)))),n)),x),x),Negate(Dist(Times(b,c,n,Power(Negate(d),p),Power(Times(f,Plus(m,Times(C2,p),C1)),CN1)),Integrate(Times(Power(Times(f,x),Plus(m,C1)),Power(Plus(C1,Times(c,x)),Subtract(p,C1D2)),Power(Plus(CN1,Times(c,x)),Subtract(p,C1D2)),Power(Plus(a,Times(b,ArcCosh(Times(c,x)))),Subtract(n,C1))),x),x))),And(FreeQ(List(a,b,c,d,e,f,m),x),EqQ(Plus(Times(Sqr(c),d),e),C0),GtQ(n,C0),GtQ(p,C0),Not(LtQ(m,CN1)),IntegerQ(p),Or(RationalQ(m),EqQ(n,C1))))),

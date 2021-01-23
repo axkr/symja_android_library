@@ -11,7 +11,7 @@ import org.matheclipse.core.interfaces.IAST;
  * rule-based integrator</a>.
  *  
  */
-public class IntRules55 { 
+class IntRules55 { 
   public static IAST RULES = List( 
 IIntegrate(1101,Integrate(Power(Plus(a_,Times(b_DEFAULT,Sqr(x_)),Times(c_DEFAULT,Power(x_,C4))),CN1D2),x_Symbol),
     Condition(With(List(Set(q,Rt(Subtract(Sqr(b),Times(C4,a,c)),C2))),Condition(Simp(Times(Sqrt(Plus(C1,Times(Plus(b,q),Sqr(x),Power(Times(C2,a),CN1)))),Sqrt(Plus(C1,Times(Subtract(b,q),Sqr(x),Power(Times(C2,a),CN1)))),EllipticF(ArcSin(Times(Rt(Times(CN1,Plus(b,q),Power(Times(C2,a),CN1)),C2),x)),Times(Subtract(b,q),Power(Plus(b,q),CN1))),Power(Times(Rt(Times(CN1,Plus(b,q),Power(Times(C2,a),CN1)),C2),Sqrt(Plus(a,Times(b,Sqr(x)),Times(c,Power(x,C4))))),CN1)),x),And(NegQ(Times(Plus(b,q),Power(a,CN1))),Not(And(NegQ(Times(Subtract(b,q),Power(a,CN1))),SimplerSqrtQ(Times(CN1,Subtract(b,q),Power(Times(C2,a),CN1)),Times(CN1,Plus(b,q),Power(Times(C2,a),CN1)))))))),And(FreeQ(List(a,b,c),x),GtQ(Subtract(Sqr(b),Times(C4,a,c)),C0)))),

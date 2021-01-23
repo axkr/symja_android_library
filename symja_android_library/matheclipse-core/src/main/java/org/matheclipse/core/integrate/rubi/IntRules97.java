@@ -11,7 +11,7 @@ import org.matheclipse.core.interfaces.IAST;
  * rule-based integrator</a>.
  *  
  */
-public class IntRules97 { 
+class IntRules97 { 
   public static IAST RULES = List( 
 IIntegrate(1941,Integrate(Times(Power(x_,m_DEFAULT),Power(Plus(Times(c_DEFAULT,Power(x_,j_DEFAULT)),Times(b_DEFAULT,Power(x_,n_DEFAULT)),Times(a_DEFAULT,Power(x_,q_DEFAULT))),p_DEFAULT),Plus(A_,Times(B_DEFAULT,Power(x_,r_DEFAULT)))),x_Symbol),
     Condition(Plus(Simp(Times(Power(x,Plus(m,C1)),Plus(Times(ASymbol,Plus(m,Times(p,q),Times(Subtract(n,q),Plus(Times(C2,p),C1)),C1)),Times(BSymbol,Plus(m,Times(p,q),C1),Power(x,Subtract(n,q)))),Power(Plus(Times(a,Power(x,q)),Times(b,Power(x,n)),Times(c,Power(x,Subtract(Times(C2,n),q)))),p),Power(Times(Plus(m,Times(p,q),C1),Plus(m,Times(p,q),Times(Subtract(n,q),Plus(Times(C2,p),C1)),C1)),CN1)),x),Dist(Times(Subtract(n,q),p,Power(Times(Plus(m,Times(p,q),C1),Plus(m,Times(p,q),Times(Subtract(n,q),Plus(Times(C2,p),C1)),C1)),CN1)),Integrate(Times(Power(x,Plus(n,m)),Simp(Plus(Times(C2,a,BSymbol,Plus(m,Times(p,q),C1)),Times(CN1,ASymbol,b,Plus(m,Times(p,q),Times(Subtract(n,q),Plus(Times(C2,p),C1)),C1)),Times(Subtract(Times(b,BSymbol,Plus(m,Times(p,q),C1)),Times(C2,ASymbol,c,Plus(m,Times(p,q),Times(Subtract(n,q),Plus(Times(C2,p),C1)),C1))),Power(x,Subtract(n,q)))),x),Power(Plus(Times(a,Power(x,q)),Times(b,Power(x,n)),Times(c,Power(x,Subtract(Times(C2,n),q)))),Subtract(p,C1))),x),x)),And(FreeQ(List(a,b,c,ASymbol,BSymbol),x),EqQ(r,Subtract(n,q)),EqQ(j,Subtract(Times(C2,n),q)),Not(IntegerQ(p)),NeQ(Subtract(Sqr(b),Times(C4,a,c)),C0),IGtQ(n,C0),GtQ(p,C0),RationalQ(m,q),LeQ(Plus(m,Times(p,q)),Negate(Subtract(n,q))),NeQ(Plus(m,Times(p,q),C1),C0),NeQ(Plus(m,Times(p,q),Times(Subtract(n,q),Plus(Times(C2,p),C1)),C1),C0)))),

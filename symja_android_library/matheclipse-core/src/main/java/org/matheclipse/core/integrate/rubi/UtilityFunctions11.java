@@ -10,7 +10,7 @@ import org.matheclipse.core.interfaces.IAST;
  * rule-based integrator</a>.
  *  
  */
-public class UtilityFunctions11 { 
+class UtilityFunctions11 { 
   public static IAST RULES = List( 
 ISetDelayed(162,SubstForFractionalPowerOfQuotientOfLinears(u_,x_Symbol),
     Module(List(Set($s("lst"),FractionalPowerOfQuotientOfLinears(u,C1,False,x))),If(Or(AtomQ($s("lst")),AtomQ(Part($s("lst"),C2))),False,With(List(Set(n,Part($s("lst"),C1)),Set($s("tmp"),Part($s("lst"),C2))),CompoundExpression(Set($s("lst"),QuotientOfLinearsParts($s("tmp"),x)),With(List(Set(a,Part($s("lst"),C1)),Set(b,Part($s("lst"),C2)),Set(c,Part($s("lst"),C3)),Set(d,Part($s("lst"),C4))),If(EqQ(d,C0),False,CompoundExpression(Set($s("lst"),Simplify(Times(Power(x,Subtract(n,C1)),SubstForFractionalPower(u,$s("tmp"),n,Times(Plus(Negate(a),Times(c,Power(x,n))),Power(Subtract(b,Times(d,Power(x,n))),CN1)),x),Power(Subtract(b,Times(d,Power(x,n))),CN2)))),List(NonfreeFactors($s("lst"),x),n,$s("tmp"),Times(FreeFactors($s("lst"),x),Subtract(Times(b,c),Times(a,d)))))))))))),

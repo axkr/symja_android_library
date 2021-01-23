@@ -11,7 +11,7 @@ import org.matheclipse.core.interfaces.IAST;
  * rule-based integrator</a>.
  *  
  */
-public class IntRules161 { 
+class IntRules161 { 
   public static IAST RULES = List( 
 IIntegrate(3221,Integrate(Times(Power(Times(d_DEFAULT,$($s("§sin"),Plus(e_DEFAULT,Times(f_DEFAULT,x_)))),m_DEFAULT),Power(Plus(a_,Times(b_DEFAULT,Power(Times(c_DEFAULT,$($s("§sin"),Plus(e_DEFAULT,Times(f_DEFAULT,x_)))),n_))),p_DEFAULT)),x_Symbol),
     Condition(Integrate(ExpandTrig(Times(Power(Times(d,$($s("§sin"),Plus(e,Times(f,x)))),m),Power(Plus(a,Times(b,Power(Times(c,$($s("§sin"),Plus(e,Times(f,x)))),n))),p)),x),x),And(FreeQ(List(a,b,c,d,e,f,m,n),x),IGtQ(p,C0)))),

@@ -10,7 +10,7 @@ import org.matheclipse.core.interfaces.IAST;
  * rule-based integrator</a>.
  *  
  */
-public class UtilityFunctions12 { 
+class UtilityFunctions12 { 
   public static IAST RULES = List( 
 ISetDelayed(182,NormalizeIntegrandFactor(u_,x_Symbol),
     Module(List($s("bas"),$s("deg"),$s("§min")),If(And(PowerQ(u),FreeQ(Part(u,C2),x)),CompoundExpression(Set($s("bas"),NormalizeIntegrandFactorBase(Part(u,C1),x)),Set($s("deg"),Part(u,C2)),If(And(IntegerQ($s("deg")),SumQ($s("bas")),EveryQ(Function(MonomialQ(Slot1,x)),$s("bas"))),CompoundExpression(Set($s("§min"),MinimumMonomialExponent($s("bas"),x)),Times(Power(x,Times($s("§min"),$s("deg"))),Power(Map(Function(Simplify(Times(Slot1,Power(Power(x,$s("§min")),CN1)))),$s("bas")),$s("deg")))),Power($s("bas"),$s("deg")))),If(And(PowerQ(u),FreeQ(Part(u,C1),x)),Power(Part(u,C1),NormalizeIntegrandFactorBase(Part(u,C2),x)),CompoundExpression(Set($s("bas"),NormalizeIntegrandFactorBase(u,x)),If(And(SumQ($s("bas")),EveryQ(Function(MonomialQ(Slot1,x)),$s("bas"))),CompoundExpression(Set($s("§min"),MinimumMonomialExponent($s("bas"),x)),Times(Power(x,$s("§min")),Map(Function(Times(Slot1,Power(Power(x,$s("§min")),CN1))),$s("bas")))),$s("bas"))))))),

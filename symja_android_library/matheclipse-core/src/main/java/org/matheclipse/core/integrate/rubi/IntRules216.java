@@ -11,7 +11,7 @@ import org.matheclipse.core.interfaces.IAST;
  * rule-based integrator</a>.
  *  
  */
-public class IntRules216 { 
+class IntRules216 { 
   public static IAST RULES = List( 
 IIntegrate(4321,Integrate(Times(Power(Times($($s("§cos"),Plus(a_DEFAULT,Times(b_DEFAULT,x_))),f_DEFAULT),n_),Power(Times(e_DEFAULT,$($s("§sin"),Plus(a_DEFAULT,Times(b_DEFAULT,x_)))),m_),Power(Times(g_DEFAULT,$($s("§sin"),Plus(c_DEFAULT,Times(d_DEFAULT,x_)))),p_)),x_Symbol),
     Condition(Plus(Negate(Simp(Times(e,Power(Times(e,Sin(Plus(a,Times(b,x)))),Subtract(m,C1)),Power(Times(f,Cos(Plus(a,Times(b,x)))),Plus(n,C1)),Power(Times(g,Sin(Plus(c,Times(d,x)))),p),Power(Times(b,f,Plus(n,p,C1)),CN1)),x)),Dist(Times(Sqr(e),Subtract(Plus(m,p),C1),Power(Times(Sqr(f),Plus(n,p,C1)),CN1)),Integrate(Times(Power(Times(e,Sin(Plus(a,Times(b,x)))),Subtract(m,C2)),Power(Times(f,Cos(Plus(a,Times(b,x)))),Plus(n,C2)),Power(Times(g,Sin(Plus(c,Times(d,x)))),p)),x),x)),And(FreeQ(List(a,b,c,d,e,f,g,p),x),EqQ(Subtract(Times(b,c),Times(a,d)),C0),EqQ(Times(d,Power(b,CN1)),C2),Not(IntegerQ(p)),GtQ(m,C1),LtQ(n,CN1),NeQ(Plus(n,p,C1),C0),IntegersQ(Times(C2,m),Times(C2,n),Times(C2,p))))),

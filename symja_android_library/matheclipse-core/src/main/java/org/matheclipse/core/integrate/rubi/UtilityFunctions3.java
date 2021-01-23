@@ -10,7 +10,7 @@ import org.matheclipse.core.interfaces.IAST;
  * rule-based integrator</a>.
  *  
  */
-public class UtilityFunctions3 { 
+class UtilityFunctions3 { 
   public static IAST RULES = List( 
 ISetDelayed(18,InverseTrigQ(u_),
     MemberQ($s("§$inversetrigfunctions"),If(AtomQ(u),u,Head(u)))),

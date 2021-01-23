@@ -10,7 +10,7 @@ import org.matheclipse.core.interfaces.IAST;
  * rule-based integrator</a>.
  *  
  */
-public class UtilityFunctions9 { 
+class UtilityFunctions9 { 
   public static IAST RULES = List( 
 ISetDelayed(122,MinimumMonomialExponent(u_,x_Symbol),
     Module(List(Set(n,MonomialExponent(First(u),x))),CompoundExpression(Scan(Function(If(PosQ(Subtract(n,MonomialExponent(Slot1,x))),Set(n,MonomialExponent(Slot1,x)))),u),n))),

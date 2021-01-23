@@ -10,7 +10,7 @@ import org.matheclipse.core.interfaces.IAST;
  * rule-based integrator</a>.
  *  
  */
-public class UtilityFunctions1 { 
+class UtilityFunctions1 { 
   public static IAST RULES = List( 
 ISetDelayed(7,FractionOrNegativeQ($ps("u")),
     SameQ(Scan(Function(If(Or(FractionQ(Slot1),And(IntegerQ(Slot1),Less(Slot1,C0))),Null,Return(False))),List(u)),Null)),

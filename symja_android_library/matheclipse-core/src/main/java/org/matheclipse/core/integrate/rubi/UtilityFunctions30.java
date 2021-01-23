@@ -10,7 +10,7 @@ import org.matheclipse.core.interfaces.IAST;
  * rule-based integrator</a>.
  *  
  */
-public class UtilityFunctions30 { 
+class UtilityFunctions30 { 
   public static IAST RULES = List( 
 ISetDelayed(532,FixInertTrigFunction(Times(Power($($s("§tan"),v_),m_DEFAULT),Power(Times($($s("§cos"),w_),c_DEFAULT),n_DEFAULT)),x_),
     Condition(Times(Power($($s("§cot"),v),Negate(m)),Power(Times(c,$($s("§cos"),w)),n)),And(FreeQ(List(c,n),x),IntegerQ(m)))),

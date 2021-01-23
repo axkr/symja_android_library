@@ -10,7 +10,7 @@ import org.matheclipse.core.interfaces.IAST;
  * rule-based integrator</a>.
  *  
  */
-public class UtilityFunctions8 { 
+class UtilityFunctions8 { 
   public static IAST RULES = List( 
 ISetDelayed(102,Coeff($p("expr"),$p("form")),
     Coefficient(Together($s("expr")),$s("form"))),

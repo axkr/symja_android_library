@@ -11,7 +11,7 @@ import org.matheclipse.core.interfaces.IAST;
  * rule-based integrator</a>.
  *  
  */
-public class IntRules226 { 
+class IntRules226 { 
   public static IAST RULES = List( 
 IIntegrate(4521,Integrate(Times(Cos(Plus(c_DEFAULT,Times(d_DEFAULT,x_))),Power(Plus(e_DEFAULT,Times(f_DEFAULT,x_)),m_DEFAULT),Power(Plus(a_,Times(b_DEFAULT,Sin(Plus(c_DEFAULT,Times(d_DEFAULT,x_))))),CN1)),x_Symbol),
     Condition(Plus(Negate(Simp(Times(CI,Power(Plus(e,Times(f,x)),Plus(m,C1)),Power(Times(b,f,Plus(m,C1)),CN1)),x)),Dist(CI,Integrate(Times(Power(Plus(e,Times(f,x)),m),Exp(Times(CI,Plus(c,Times(d,x)))),Power(Plus(Times(CI,a),Negate(Rt(Plus(Negate(Sqr(a)),Sqr(b)),C2)),Times(b,Exp(Times(CI,Plus(c,Times(d,x)))))),CN1)),x),x),Dist(CI,Integrate(Times(Power(Plus(e,Times(f,x)),m),Exp(Times(CI,Plus(c,Times(d,x)))),Power(Plus(Times(CI,a),Rt(Plus(Negate(Sqr(a)),Sqr(b)),C2),Times(b,Exp(Times(CI,Plus(c,Times(d,x)))))),CN1)),x),x)),And(FreeQ(List(a,b,c,d,e,f),x),IGtQ(m,C0),NegQ(Subtract(Sqr(a),Sqr(b)))))),

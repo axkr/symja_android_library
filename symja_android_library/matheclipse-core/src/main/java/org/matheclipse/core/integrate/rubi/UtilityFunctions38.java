@@ -10,7 +10,7 @@ import org.matheclipse.core.interfaces.IAST;
  * rule-based integrator</a>.
  *  
  */
-public class UtilityFunctions38 { 
+class UtilityFunctions38 { 
   public static IAST RULES = List( 
 ISetDelayed(689,FixIntRule($p("§rule")),
     If(AtomQ(Part($s("§rule"),C1,C1,CN1)),FixIntRule($s("§rule"),Part($s("§rule"),C1,C1,CN1)),If(And(SameQ(Head(Part($s("§rule"),C1,C1,CN1)),Pattern),AtomQ(Part($s("§rule"),C1,C1,CN1,C1))),FixIntRule($s("§rule"),Part($s("§rule"),C1,C1,CN1,C1)),Print($str("Invalid integration rule: "),Part($s("§rule"),C1,C1,CN1))))),

@@ -11,7 +11,7 @@ import org.matheclipse.core.interfaces.IAST;
  * rule-based integrator</a>.
  *  
  */
-public class IntRules94 { 
+class IntRules94 { 
   public static IAST RULES = List( 
 IIntegrate(1881,Integrate(Times(Plus(c_,Times(d_DEFAULT,Power(x_,C4))),Power(Plus(a_,Times(b_DEFAULT,Power(x_,C6))),CN1D2)),x_Symbol),
     Condition(With(List(Set(r,$($s("§numer"),Rt(Times(b,Power(a,CN1)),C3))),Set(s,$($s("§denom"),Rt(Times(b,Power(a,CN1)),C3)))),Subtract(Simp(Times(Plus(C1,CSqrt3),d,Power(s,C3),x,Sqrt(Plus(a,Times(b,Power(x,C6)))),Power(Times(C2,a,Sqr(r),Plus(s,Times(Plus(C1,CSqrt3),r,Sqr(x)))),CN1)),x),Simp(Times(Power(C3,C1D4),d,s,x,Plus(s,Times(r,Sqr(x))),Sqrt(Times(Plus(Sqr(s),Times(CN1,r,s,Sqr(x)),Times(Sqr(r),Power(x,C4))),Power(Plus(s,Times(Plus(C1,CSqrt3),r,Sqr(x))),CN2))),EllipticE(ArcCos(Times(Plus(s,Times(Subtract(C1,CSqrt3),r,Sqr(x))),Power(Plus(s,Times(Plus(C1,CSqrt3),r,Sqr(x))),CN1))),Times(C1D4,Plus(C2,CSqrt3))),Power(Times(C2,Sqr(r),Sqrt(Times(r,Sqr(x),Plus(s,Times(r,Sqr(x))),Power(Plus(s,Times(Plus(C1,CSqrt3),r,Sqr(x))),CN2))),Sqrt(Plus(a,Times(b,Power(x,C6))))),CN1)),x))),And(FreeQ(List(a,b,c,d),x),EqQ(Subtract(Times(C2,Sqr(Rt(Times(b,Power(a,CN1)),C3)),c),Times(Subtract(C1,CSqrt3),d)),C0)))),

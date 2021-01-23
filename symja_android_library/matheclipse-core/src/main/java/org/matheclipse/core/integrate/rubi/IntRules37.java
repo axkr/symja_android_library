@@ -11,7 +11,7 @@ import org.matheclipse.core.interfaces.IAST;
  * rule-based integrator</a>.
  *  
  */
-public class IntRules37 { 
+class IntRules37 { 
   public static IAST RULES = List( 
 IIntegrate(741,Integrate(Times(Power(Plus(d_,Times(e_DEFAULT,x_)),m_),Power(Plus(a_,Times(c_DEFAULT,Sqr(x_))),p_)),x_Symbol),
     Condition(Plus(Negate(Simp(Times(Power(Plus(d,Times(e,x)),Plus(m,C1)),Plus(Times(a,e),Times(c,d,x)),Power(Plus(a,Times(c,Sqr(x))),Plus(p,C1)),Power(Times(C2,a,Plus(p,C1),Plus(Times(c,Sqr(d)),Times(a,Sqr(e)))),CN1)),x)),Dist(Power(Times(C2,a,Plus(p,C1),Plus(Times(c,Sqr(d)),Times(a,Sqr(e)))),CN1),Integrate(Times(Power(Plus(d,Times(e,x)),m),Simp(Plus(Times(c,Sqr(d),Plus(Times(C2,p),C3)),Times(a,Sqr(e),Plus(m,Times(C2,p),C3)),Times(c,e,d,Plus(m,Times(C2,p),C4),x)),x),Power(Plus(a,Times(c,Sqr(x))),Plus(p,C1))),x),x)),And(FreeQ(List(a,c,d,e,m),x),NeQ(Plus(Times(c,Sqr(d)),Times(a,Sqr(e))),C0),LtQ(p,CN1),IntQuadraticQ(a,C0,c,d,e,m,p,x)))),

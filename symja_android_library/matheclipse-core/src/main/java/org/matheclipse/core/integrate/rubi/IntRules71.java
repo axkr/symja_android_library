@@ -11,7 +11,7 @@ import org.matheclipse.core.interfaces.IAST;
  * rule-based integrator</a>.
  *  
  */
-public class IntRules71 { 
+class IntRules71 { 
   public static IAST RULES = List( 
 IIntegrate(1421,Integrate(Times(Plus(d_,Times(e_DEFAULT,Power(x_,n_))),Power(Plus(a_,Times(b_DEFAULT,Power(x_,n_)),Times(c_DEFAULT,Power(x_,$p("n2")))),CN1)),x_Symbol),
     Condition(With(List(Set(q,Rt(Subtract(Times(CN2,d,Power(e,CN1)),Times(b,Power(c,CN1))),C2))),Plus(Dist(Times(e,Power(Times(C2,c,q),CN1)),Integrate(Times(Subtract(q,Times(C2,Power(x,Times(C1D2,n)))),Power(Simp(Subtract(Plus(Times(d,Power(e,CN1)),Times(q,Power(x,Times(C1D2,n)))),Power(x,n)),x),CN1)),x),x),Dist(Times(e,Power(Times(C2,c,q),CN1)),Integrate(Times(Plus(q,Times(C2,Power(x,Times(C1D2,n)))),Power(Simp(Subtract(Subtract(Times(d,Power(e,CN1)),Times(q,Power(x,Times(C1D2,n)))),Power(x,n)),x),CN1)),x),x))),And(FreeQ(List(a,b,c,d,e),x),EqQ($s("n2"),Times(C2,n)),NeQ(Subtract(Sqr(b),Times(C4,a,c)),C0),EqQ(Subtract(Times(c,Sqr(d)),Times(a,Sqr(e))),C0),IGtQ(Times(C1D2,n),C0),Not(GtQ(Subtract(Sqr(b),Times(C4,a,c)),C0))))),

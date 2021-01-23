@@ -10,7 +10,7 @@ import org.matheclipse.core.interfaces.IAST;
  * rule-based integrator</a>.
  *  
  */
-public class UtilityFunctions17 { 
+class UtilityFunctions17 { 
   public static IAST RULES = List( 
 ISetDelayed(280,UnifyNegativeBaseFactors(Times(u_DEFAULT,Power(Negate(v_),m_),Power(v_,n_DEFAULT))),
     Condition(UnifyNegativeBaseFactors(Times(Power(CN1,n),u,Power(Negate(v),Plus(m,n)))),IntegerQ(n))),

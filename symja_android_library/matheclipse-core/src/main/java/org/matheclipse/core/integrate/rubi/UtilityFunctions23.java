@@ -10,7 +10,7 @@ import org.matheclipse.core.interfaces.IAST;
  * rule-based integrator</a>.
  *  
  */
-public class UtilityFunctions23 { 
+class UtilityFunctions23 { 
   public static IAST RULES = List( 
 ISetDelayed(396,FunctionOfHyperbolic(u_,v_,x_),
     If(AtomQ(u),If(SameQ(u,x),False,v),If(And(HyperbolicQ(u),LinearQ(Part(u,C1),x)),If(SameQ(v,Null),Part(u,C1),With(List(Set(a,Coefficient(v,x,C0)),Set(b,Coefficient(v,x,C1)),Set(c,Coefficient(Part(u,C1),x,C0)),Set(d,Coefficient(Part(u,C1),x,C1))),If(And(EqQ(Subtract(Times(a,d),Times(b,c)),C0),RationalQ(Times(b,Power(d,CN1)))),Plus(Times(a,Power(Numerator(Times(b,Power(d,CN1))),CN1)),Times(b,x,Power(Numerator(Times(b,Power(d,CN1))),CN1))),False))),If(CalculusQ(u),False,Module(List(Set(w,v)),Catch(CompoundExpression(Scan(Function(If(FalseQ(Set(w,FunctionOfHyperbolic(Slot1,w,x))),Throw(False))),u),w))))))),
