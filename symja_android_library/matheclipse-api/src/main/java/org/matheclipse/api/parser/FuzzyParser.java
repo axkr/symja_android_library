@@ -124,7 +124,6 @@ public class FuzzyParser extends Scanner {
   /**
    * @param engine
    * @param factory
-   * @param relaxedSyntax if <code>true</code>, use '('...')' as brackets for arguments
    * @throws SyntaxError
    */
   public FuzzyParser(final EvalEngine engine, IParserFactory factory) {
@@ -148,9 +147,9 @@ public class FuzzyParser extends Scanner {
       // ID.Blank is lowest integer >ID in switch statement
       switch (headID) {
         case ID.Exp:
-          if (ast.isAST(F.Exp, 2)) {
+          if (ast.isAST(S.Exp, 2)) {
             // rewrite from input: Exp(x) => E^x
-            return F.Power(F.E, ast.getUnevaluated(1));
+            return F.Power(S.E, ast.getUnevaluated(1));
           }
           break;
 
@@ -165,7 +164,7 @@ public class FuzzyParser extends Scanner {
           // break;
 
         case ID.Sqrt:
-          if (ast.isAST(F.Sqrt, 2)) {
+          if (ast.isAST(S.Sqrt, 2)) {
             // rewrite from input: Sqrt(x) => Power(x, 1/2)
             return F.Power(ast.getUnevaluated(1), F.C1D2);
           }
@@ -315,15 +314,15 @@ public class FuzzyParser extends Scanner {
     String lowercaseStr = nodeStr.toLowerCase(Locale.ENGLISH);
     if (lowercaseStr.equals("alternatives")) {
       // special - convert on input
-      return F.Or;
+      return S.Or;
     }
     if (lowercaseStr.equals("function")) {
       // special - convert on input
-      return F.And;
+      return S.And;
     }
     if (lowercaseStr.equals("set") || lowercaseStr.equals("setdelayed")) {
       // special - convert on input
-      return F.Equal;
+      return S.Equal;
     }
     if (nodeStr.length() == 1) {
       if (nodeStr.equals("I")) {
@@ -493,7 +492,7 @@ public class FuzzyParser extends Scanner {
         IStringX str = getString();
         return parseArguments(str);
       case TT_PERCENT:
-        final IASTAppendable out = F.ast(F.Out);
+        final IASTAppendable out = F.ast(S.Out);
         int countPercent = 1;
         getNextToken();
         if (fToken == TT_DIGIT) {
@@ -519,17 +518,17 @@ public class FuzzyParser extends Scanner {
           } else if (slotNumber == 2) {
             return parseArguments(F.Slot2);
           }
-          final IASTAppendable slot = F.ast(F.Slot);
+          final IASTAppendable slot = F.ast(S.Slot);
           slot.append(F.ZZ(slotNumber));
           return parseArguments(slot);
         } else if (fToken == TT_IDENTIFIER) {
           String[] identifierContext = getIdentifier();
-          final IASTAppendable slot = F.ast(F.Slot);
+          final IASTAppendable slot = F.ast(S.Slot);
           slot.append(F.stringx(identifierContext[0]));
           getNextToken();
           return parseArguments(slot);
         } else if (fToken == TT_STRING) {
-          final IASTAppendable slot = F.ast(F.Slot);
+          final IASTAppendable slot = F.ast(S.Slot);
           slot.append(getString());
           return parseArguments(slot);
         }
@@ -537,7 +536,7 @@ public class FuzzyParser extends Scanner {
 
       case TT_SLOTSEQUENCE:
         getNextToken();
-        final IASTAppendable slotSequencce = F.ast(F.SlotSequence);
+        final IASTAppendable slotSequencce = F.ast(S.SlotSequence);
         if (fToken == TT_DIGIT) {
           slotSequencce.append(getNumber(false));
         } else {
@@ -545,7 +544,7 @@ public class FuzzyParser extends Scanner {
         }
         return parseArguments(slotSequencce);
       case TT_ASSOCIATION_OPEN:
-        final IASTAppendable function = F.ast(F.List);
+        final IASTAppendable function = F.ast(S.List);
         fRecursionDepth++;
         try {
           getNextToken();
@@ -562,10 +561,10 @@ public class FuzzyParser extends Scanner {
             throwSyntaxError("\'|>\' expected.");
           }
           try {
-            temp = F.assoc(function); // F.unaryAST1(F.Association, function);
+            temp = F.assoc(function);
           } catch (RuntimeException rex) {
             // fallback if no rules were parsed
-            function.set(0, F.Association);
+            function.set(0, S.Association);
             temp = function;
           }
           getNextToken();
@@ -973,14 +972,17 @@ public class FuzzyParser extends Scanner {
     return temp;
   }
 
+  @Override
   protected boolean isOperatorCharacters() {
     return fFactory.isOperatorChar(fCurrentChar);
   }
 
+  @Override
   protected boolean isOperatorCharacters(char ch) {
     return fFactory.isOperatorChar(ch);
   }
 
+  @Override
   protected final List<Operator> getOperator() {
     char lastChar;
     final int startPosition = fCurrentPosition - 1;
@@ -1227,11 +1229,11 @@ public class FuzzyParser extends Scanner {
 
   protected IExpr parseExpression() {
     if (fToken == TT_SPAN) {
-      IASTAppendable span = F.ast(F.Span);
+      IASTAppendable span = F.ast(S.Span);
       span.append(F.C1);
       getNextToken();
       if (fToken == TT_SPAN) {
-        span.append(F.All);
+        span.append(S.All);
         getNextToken();
         if (fToken == TT_COMMA
             || fToken == TT_PARTCLOSE
@@ -1243,7 +1245,7 @@ public class FuzzyParser extends Scanner {
           || fToken == TT_PARTCLOSE
           || fToken == TT_ARGUMENTS_CLOSE
           || fToken == TT_PRECEDENCE_CLOSE) {
-        span.append(F.All);
+        span.append(S.All);
         return span;
       }
       span.append(parseExpression(parsePrimary(0), 0));
@@ -1252,11 +1254,11 @@ public class FuzzyParser extends Scanner {
     IExpr temp = parseExpression(parsePrimary(0), 0);
 
     if (fToken == TT_SPAN) {
-      IASTAppendable span = F.ast(F.Span);
+      IASTAppendable span = F.ast(S.Span);
       span.append(temp);
       getNextToken();
       if (fToken == TT_SPAN) {
-        span.append(F.All);
+        span.append(S.All);
         getNextToken();
         if (fToken == TT_COMMA
             || fToken == TT_PARTCLOSE
@@ -1268,7 +1270,7 @@ public class FuzzyParser extends Scanner {
           || fToken == TT_PARTCLOSE
           || fToken == TT_ARGUMENTS_CLOSE
           || fToken == TT_PRECEDENCE_CLOSE) {
-        span.append(F.All);
+        span.append(S.All);
         return span;
       }
       span.append(parseExpression(parsePrimary(0), 0));
@@ -1329,7 +1331,7 @@ public class FuzzyParser extends Scanner {
             } else {
               rhs = parseLookaheadOperator(oper.getPrecedence());
             }
-            lhs = F.$(F.Times, lhs, rhs);
+            lhs = F.$(S.Times, lhs, rhs);
             ((IAST) lhs).addEvalFlags(IAST.TIMES_PARSED_IMPLICIT);
             continue;
           }
@@ -1451,7 +1453,7 @@ public class FuzzyParser extends Scanner {
   private IExpr parseInequality(final IAST ast, final FuzzyInfixExprOperator infixOperator) {
     // rewrite to Inequality
     IBuiltInSymbol head = (IBuiltInSymbol) ast.head();
-    IASTAppendable result = F.ast(F.Inequality, ast.size() + 2, false);
+    IASTAppendable result = F.ast(S.Inequality, ast.size() + 2, false);
     ast.forEach(
         x -> {
           result.append(x);

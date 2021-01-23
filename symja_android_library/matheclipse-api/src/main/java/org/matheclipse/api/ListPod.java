@@ -7,6 +7,7 @@ import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.expression.ASTRealMatrix;
 import org.matheclipse.core.expression.ASTRealVector;
 import org.matheclipse.core.expression.F;
+import org.matheclipse.core.expression.S;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IExpr;
 
@@ -20,10 +21,12 @@ public class ListPod implements IPod {
     this.list = list;
   }
 
+  @Override
   public short podType() {
     return LIST_DATA;
   }
 
+  @Override
   public String keyWord() {
     return "list";
   }
@@ -55,6 +58,7 @@ public class ListPod implements IPod {
     return numpods;
   }
 
+  @Override
   public int addJSON(ArrayNode podsArray, int formats, EvalEngine engine) {
 
     int numpods = 0;
@@ -169,7 +173,7 @@ public class ListPod implements IPod {
               ASTRealMatrix m = new ASTRealMatrix(matrix, false);
               IExpr plot2D = F.ListPlot(m);
               IExpr podOut = engine.evaluate(plot2D);
-              if (podOut.isAST(F.JSFormData, 3)) {
+              if (podOut.isAST(S.JSFormData, 3)) {
                 int form = Pods.internFormat(Pods.SYMJA, podOut.second().toString());
                 Pods.addPod(
                     podsArray,
@@ -211,7 +215,7 @@ public class ListPod implements IPod {
         if (vector.length > 2) {
           IExpr plot2D = F.ListPlot(v);
           IExpr podOut = engine.evaluate(plot2D);
-          if (podOut.isAST(F.JSFormData, 3)) {
+          if (podOut.isAST(S.JSFormData, 3)) {
             int form = Pods.internFormat(Pods.SYMJA, podOut.second().toString());
             Pods.addPod(
                 podsArray,
@@ -237,7 +241,7 @@ public class ListPod implements IPod {
 
         IExpr histogram = F.Histogram(list);
         podOut = engine.evaluate(histogram);
-        if (podOut.isAST(F.JSFormData, 3)) {
+        if (podOut.isAST(S.JSFormData, 3)) {
           int form = Pods.internFormat(Pods.SYMJA, podOut.second().toString());
           Pods.addPod(
               podsArray,

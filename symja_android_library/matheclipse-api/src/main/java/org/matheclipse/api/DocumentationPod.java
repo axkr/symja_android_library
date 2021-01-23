@@ -1,12 +1,9 @@
 package org.matheclipse.api;
 
-import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
-import java.util.function.Supplier;
-
 import org.commonmark.Extension;
 import org.commonmark.ext.gfm.tables.TablesExtension;
 import org.commonmark.node.Node;
@@ -15,14 +12,12 @@ import org.commonmark.renderer.html.HtmlRenderer;
 import org.matheclipse.core.builtin.StringFunctions;
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.expression.F;
+import org.matheclipse.core.expression.S;
 import org.matheclipse.core.form.Documentation;
 import org.matheclipse.core.interfaces.IAST;
-import org.matheclipse.core.interfaces.IASTMutable;
 import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.interfaces.ISymbol;
 import org.matheclipse.core.reflection.system.rules.PodDefaultsRules;
-import org.matheclipse.parser.trie.Trie;
-
 import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.google.common.base.Suppliers;
@@ -37,9 +32,9 @@ public class DocumentationPod implements IPod, PodDefaultsRules {
           HashMap<IExpr, IAST> defaultParameters = new HashMap<IExpr, IAST>();
           for (int i = 1; i < RULES.size(); i++) {
             IExpr arg = RULES.get(i);
-            if (arg.isAST(F.SetDelayed, 3)) {
+            if (arg.isAST(S.SetDelayed, 3)) {
               defaultParameters.put(arg.first(), (IAST) arg.second());
-            } else if (arg.isAST(F.Set, 3)) {
+            } else if (arg.isAST(S.Set, 3)) {
               defaultParameters.put(arg.first(), (IAST) arg.second());
             }
           }
@@ -62,14 +57,17 @@ public class DocumentationPod implements IPod, PodDefaultsRules {
     this.parameters = getMap().get(symbol);
   }
 
+  @Override
   public short podType() {
     return DOCUMENTATION;
   }
 
+  @Override
   public String keyWord() {
     return symbol.toString();
   }
 
+  @Override
   public int addJSON(ArrayNode podsArray, int formats, EvalEngine engine) {
     StringBuilder buf = new StringBuilder();
     if (Documentation.getMarkdown(buf, keyWord())) {
@@ -82,8 +80,8 @@ public class DocumentationPod implements IPod, PodDefaultsRules {
       DocumentationPod pod, ArrayNode podsArray, StringBuilder buf, int formats) {
     int numpods = 0;
     if (pod.parameters != null) {
-      IAST plotFunction = F.unaryAST1(pod.symbol, F.Times(F.a, F.x));
-      if (pod.parameters.arg5() == F.Complexes) {
+      IAST plotFunction = F.unaryAST1(pod.symbol, F.Times(S.a, S.x));
+      if (pod.parameters.arg5() == S.Complexes) {
         // print real and imaginary part separately
         plotFunction = F.List(F.Re(plotFunction), F.Im(plotFunction));
       }
@@ -91,14 +89,14 @@ public class DocumentationPod implements IPod, PodDefaultsRules {
           F.Manipulate(
               F.Plot(
                   plotFunction, //
-                  F.List(F.x, pod.parameters.arg1(), pod.parameters.arg2()), //
+                  F.List(S.x, pod.parameters.arg1(), pod.parameters.arg2()), //
                   F.Rule(
-                      F.PlotRange, //
+                      S.PlotRange, //
                       F.List(pod.parameters.arg3(), pod.parameters.arg4()))), //
-              F.List(F.a, F.C1, F.C10));
+              F.List(S.a, F.C1, F.C10));
       EvalEngine engine = EvalEngine.get();
       IExpr podOut = engine.evaluate(plot2D);
-      if (podOut.isAST(F.JSFormData, 3)) {
+      if (podOut.isAST(S.JSFormData, 3)) {
         int form = Pods.internFormat(Pods.SYMJA, podOut.second().toString());
         Pods.addPod(
             podsArray,

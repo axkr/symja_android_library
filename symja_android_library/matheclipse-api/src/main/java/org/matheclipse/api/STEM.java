@@ -8,7 +8,6 @@ import org.matheclipse.core.interfaces.IBuiltInSymbol;
 import org.matheclipse.parser.trie.Trie;
 import org.matheclipse.parser.trie.TrieBuilder;
 import org.matheclipse.parser.trie.TrieMatch;
-import org.matheclipse.parser.trie.Tries;
 
 public class STEM {
 

@@ -48,7 +48,6 @@ import org.matheclipse.core.interfaces.ISymbol;
 import org.matheclipse.core.parser.ExprParser;
 import org.matheclipse.parser.client.FEConfig;
 import org.matheclipse.parser.client.SyntaxError;
-import org.matheclipse.parser.client.operator.Operator;
 import org.matheclipse.parser.trie.Trie;
 import org.matheclipse.parser.trie.TrieBuilder;
 import org.matheclipse.parser.trie.TrieMatch;
@@ -129,16 +128,16 @@ public class Pods {
             soundexElementData(list[i].arg3().toString(), keyWord);
           }
           for (int i = 0; i < ID.Zeta; i++) {
-            ISymbol sym = F.symbol(i);
+            ISymbol sym = S.symbol(i);
             soundexHelp(sym.toString().toLowerCase(), sym);
           }
           // for (Map.Entry<String, String> entry : map.entrySet()) {
           // soundexHelp(entry.getKey(), entry.getKey());
           // }
           // appendSoundex();
-          soundexHelp("cosine", F.Cos);
-          soundexHelp("sine", F.Sin);
-          soundexHelp("integral", F.Integrate);
+          soundexHelp("cosine", S.Cos);
+          soundexHelp("sine", S.Sin);
+          soundexHelp("integral", S.Integrate);
 
           return SOUNDEX_MAP;
         }
@@ -148,274 +147,147 @@ public class Pods {
 
   static final String JSXGRAPH_IFRAME = //
       "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n"
-          + //
-          "\n"
-          + //
-          "<!DOCTYPE html PUBLIC\n"
-          + //
-          "  \"-//W3C//DTD XHTML 1.1 plus MathML 2.0 plus SVG 1.1//EN\"\n"
-          + //
-          "  \"http://www.w3.org/2002/04/xhtml-math-svg/xhtml-math-svg.dtd\">\n"
-          + //
-          "\n"
-          + //
-          "<html xmlns=\"http://www.w3.org/1999/xhtml\" style=\"width: 100%; height: 100%; margin: 0; padding: 0\">\n"
-          + //
-          "<head>\n"
-          + //
-          "<meta charset=\"utf-8\">\n"
-          + //
-          "<title>JSXGraph</title>\n"
-          + //
-          "\n"
-          + //
-          "<body style=\"width: 100%; height: 100%; margin: 0; padding: 0\">\n"
-          + //
-          "\n"
-          + //
-          "<link rel=\"stylesheet\" type=\"text/css\" href=\"https://cdnjs.cloudflare.com/ajax/libs/jsxgraph/1.1.0/jsxgraph.min.css\" />\n"
-          + //
-          "<script src=\"https://cdn.jsdelivr.net/gh/paulmasson/math@1.4.3/build/math.js\"></script>\n"
+          + "\n"
+          + "<!DOCTYPE html PUBLIC\n"
+          + "  \"-//W3C//DTD XHTML 1.1 plus MathML 2.0 plus SVG 1.1//EN\"\n"
+          + "  \"http://www.w3.org/2002/04/xhtml-math-svg/xhtml-math-svg.dtd\">\n"
+          + "\n"
+          + "<html xmlns=\"http://www.w3.org/1999/xhtml\" style=\"width: 100%; height: 100%; margin: 0; padding: 0\">\n"
+          + "<head>\n"
+          + "<meta charset=\"utf-8\">\n"
+          + "<title>JSXGraph</title>\n"
+          + "\n"
+          + "<body style=\"width: 100%; height: 100%; margin: 0; padding: 0\">\n"
+          + "\n"
+          + "<link rel=\"stylesheet\" type=\"text/css\" href=\"https://cdnjs.cloudflare.com/ajax/libs/jsxgraph/1.1.0/jsxgraph.min.css\" />\n"
+          + "<script src=\"https://cdn.jsdelivr.net/gh/paulmasson/math@1.4.4/build/math.js\"></script>\n"
           + "<script src=\"https://cdnjs.cloudflare.com/ajax/libs/jsxgraph/1.1.0/jsxgraphcore.min.js\"\n"
-          + //
-          "        type=\"text/javascript\"></script>\n"
-          + //
-          "<script src=\"https://cdnjs.cloudflare.com/ajax/libs/jsxgraph/1.1.0/geonext.min.js\"\n"
-          + //
-          "        type=\"text/javascript\"></script>\n"
-          + //
-          "\n"
-          + //
-          "<div id=\"jxgbox\" class=\"jxgbox\" style=\"display: flex; width:99%; height:99%; margin: 0; flex-direction: column; overflow: hidden\">\n"
-          + //
-          "<script>\n"
-          + //
-          "`1`\n"
-          + //
-          "</script>\n"
-          + //
-          "</div>\n"
-          + //
-          "\n"
-          + //
-          "</body>\n"
-          + //
-          "</html>"; //
+          + "        type=\"text/javascript\"></script>\n"
+          + "<script src=\"https://cdnjs.cloudflare.com/ajax/libs/jsxgraph/1.1.0/geonext.min.js\"\n"
+          + "        type=\"text/javascript\"></script>\n"
+          + "\n"
+          + "<div id=\"jxgbox\" class=\"jxgbox\" style=\"display: flex; width:99%; height:99%; margin: 0; flex-direction: column; overflow: hidden\">\n"
+          + "<script>\n"
+          + "`1`\n"
+          + "</script>\n"
+          + "</div>\n"
+          + "\n"
+          + "</body>\n"
+          + "</html>";
 
   protected static final String MATHCELL_IFRAME = //
       // "<html style=\"width: 100%; height: 100%; margin: 0; padding: 0\">\n"
       "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n"
-          + //
-          "\n"
-          + //
-          "<!DOCTYPE html PUBLIC\n"
-          + //
-          "  \"-//W3C//DTD XHTML 1.1 plus MathML 2.0 plus SVG 1.1//EN\"\n"
-          + //
-          "  \"http://www.w3.org/2002/04/xhtml-math-svg/xhtml-math-svg.dtd\">\n"
-          + //
-          "\n"
-          + //
-          "<html xmlns=\"http://www.w3.org/1999/xhtml\" style=\"width: 100%; height: 100%; margin: 0; padding: 0\">\n"
-          + //
-          "<head>\n"
-          + //
-          "<meta charset=\"utf-8\">\n"
-          + //
-          "<title>MathCell</title>\n"
-          + //
-          "</head>\n"
-          + //
-          "\n"
-          + //
-          "<body style=\"width: 100%; height: 100%; margin: 0; padding: 0\">\n"
-          + //
-          "\n"
-          + //
-          "<script src=\"https://cdn.jsdelivr.net/gh/paulmasson/math@1.4.3/build/math.js\"></script>\n"
-          + //
-          "<script src=\"https://cdn.jsdelivr.net/gh/paulmasson/mathcell@1.9.0/build/mathcell.js\"></script>\n"
-          + //
-          "<script src=\"https://cdn.jsdelivr.net/gh/mathjax/MathJax@2.7.5/MathJax.js?config=TeX-AMS_HTML\"></script>"
-          + //
-          "\n"
-          + //
-          "<div class=\"mathcell\" style=\"display: flex; width: 100%; height: 100%; margin: 0;  padding: .25in .5in .5in .5in; flex-direction: column; overflow: hidden\">\n"
-          + //
-          "<script>\n"
-          + //
-          "\n"
-          + //
-          "var parent = document.currentScript.parentNode;\n"
-          + //
-          "\n"
-          + //
-          "var id = generateId();\n"
-          + //
-          "parent.id = id;\n"
-          + //
-          "\n"
-          + //
-          "`1`\n"
-          + //
-          "\n"
-          + //
-          "parent.update( id );\n"
-          + //
-          "\n"
-          + //
-          "</script>\n"
-          + //
-          "</div>\n"
-          + //
-          "\n"
-          + //
-          "</body>\n"
-          + //
-          "</html>"; //
+          + "\n"
+          + "<!DOCTYPE html PUBLIC\n"
+          + "  \"-//W3C//DTD XHTML 1.1 plus MathML 2.0 plus SVG 1.1//EN\"\n"
+          + "  \"http://www.w3.org/2002/04/xhtml-math-svg/xhtml-math-svg.dtd\">\n"
+          + "\n"
+          + "<html xmlns=\"http://www.w3.org/1999/xhtml\" style=\"width: 100%; height: 100%; margin: 0; padding: 0\">\n"
+          + "<head>\n"
+          + "<meta charset=\"utf-8\">\n"
+          + "<title>MathCell</title>\n"
+          + "</head>\n"
+          + "\n"
+          + "<body style=\"width: 100%; height: 100%; margin: 0; padding: 0\">\n"
+          + "\n"
+          + "<script src=\"https://cdn.jsdelivr.net/gh/paulmasson/math@1.4.4/build/math.js\"></script>\n"
+          + "<script src=\"https://cdn.jsdelivr.net/gh/paulmasson/mathcell@1.9.0/build/mathcell.js\"></script>\n"
+          + "<script src=\"https://cdn.jsdelivr.net/gh/mathjax/MathJax@2.7.5/MathJax.js?config=TeX-AMS_HTML\"></script>"
+          + "\n"
+          + "<div class=\"mathcell\" style=\"display: flex; width: 100%; height: 100%; margin: 0;  padding: .25in .5in .5in .5in; flex-direction: column; overflow: hidden\">\n"
+          + "<script>\n"
+          + "\n"
+          + "var parent = document.currentScript.parentNode;\n"
+          + "\n"
+          + "var id = generateId();\n"
+          + "parent.id = id;\n"
+          + "\n"
+          + "`1`\n"
+          + "\n"
+          + "parent.update( id );\n"
+          + "\n"
+          + "</script>\n"
+          + "</div>\n"
+          + "\n"
+          + "</body>\n"
+          + "</html>";
 
   protected static final String PLOTLY_IFRAME = //
       "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n"
-          + //
-          "\n"
-          + //
-          "<!DOCTYPE html PUBLIC\n"
-          + //
-          "  \"-//W3C//DTD XHTML 1.1 plus MathML 2.0 plus SVG 1.1//EN\"\n"
-          + //
-          "  \"http://www.w3.org/2002/04/xhtml-math-svg/xhtml-math-svg.dtd\">\n"
-          + //
-          "\n"
-          + //
-          "<html xmlns=\"http://www.w3.org/1999/xhtml\" style=\"width: 100%; height: 100%; margin: 0; padding: 0\">\n"
-          + //
-          "<head>\n"
-          + //
-          "<meta charset=\"utf-8\">\n"
-          + //
-          "<title>Plotly</title>\n"
-          + //
-          "\n"
-          + //
-          "   <script src=\"https://cdn.plot.ly/plotly-latest.min.js\"></script>\n"
-          + //
-          "</head>\n"
-          + //
-          "<body>\n"
-          + //
-          "<div id='plotly' ></div>\n"
-          + //
-          "`1`\n"
-          + //
-          "</body>\n"
-          + //
-          "</html>"; //
+          + "\n"
+          + "<!DOCTYPE html PUBLIC\n"
+          + "  \"-//W3C//DTD XHTML 1.1 plus MathML 2.0 plus SVG 1.1//EN\"\n"
+          + "  \"http://www.w3.org/2002/04/xhtml-math-svg/xhtml-math-svg.dtd\">\n"
+          + "\n"
+          + "<html xmlns=\"http://www.w3.org/1999/xhtml\" style=\"width: 100%; height: 100%; margin: 0; padding: 0\">\n"
+          + "<head>\n"
+          + "<meta charset=\"utf-8\">\n"
+          + "<title>Plotly</title>\n"
+          + "\n"
+          + "   <script src=\"https://cdn.plot.ly/plotly-latest.min.js\"></script>\n"
+          + "</head>\n"
+          + "<body>\n"
+          + "<div id='plotly' ></div>\n"
+          + "`1`\n"
+          + "</body>\n"
+          + "</html>"; //
 
   protected static final String VISJS_IFRAME = //
       "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n"
-          + //
-          "\n"
-          + //
-          "<!DOCTYPE html PUBLIC\n"
-          + //
-          "  \"-//W3C//DTD XHTML 1.1 plus MathML 2.0 plus SVG 1.1//EN\"\n"
-          + //
-          "  \"http://www.w3.org/2002/04/xhtml-math-svg/xhtml-math-svg.dtd\">\n"
-          + //
-          "\n"
-          + //
-          "<html xmlns=\"http://www.w3.org/1999/xhtml\" style=\"width: 100%; height: 100%; margin: 0; padding: 0\">\n"
-          + //
-          "<head>\n"
-          + //
-          "<meta charset=\"utf-8\">\n"
-          + //
-          "<title>VIS-NetWork</title>\n"
-          + //
-          "\n"
-          + //
-          "  <script type=\"text/javascript\" src=\"https://cdn.jsdelivr.net/npm/vis-network@6.0.0/dist/vis-network.min.js\"></script>\n"
-          + //
-          "</head>\n"
-          + //
-          "<body>\n"
-          + //
-          "\n"
-          + //
-          "<div id=\"vis\" style=\"width: 600px; height: 400px; margin: 0;  padding: .25in .5in .5in .5in; flex-direction: column; overflow: hidden\">\n"
-          + //
-          "<script type=\"text/javascript\">\n"
-          + //
-          "`1`\n"
-          + //
-          "  var container = document.getElementById('vis');\n"
-          + //
-          "  var data = {\n"
-          + //
-          "    nodes: nodes,\n"
-          + //
-          "    edges: edges\n"
-          + //
-          "  };\n"
-          + //
-          "`2`\n"
-          + //
-          "  var network = new vis.Network(container, data, options);\n"
-          + //
-          "</script>\n"
-          + //
-          "</div>\n"
-          + //
-          "</body>\n"
-          + //
-          "</html>"; //
+          + "\n"
+          + "<!DOCTYPE html PUBLIC\n"
+          + "  \"-//W3C//DTD XHTML 1.1 plus MathML 2.0 plus SVG 1.1//EN\"\n"
+          + "  \"http://www.w3.org/2002/04/xhtml-math-svg/xhtml-math-svg.dtd\">\n"
+          + "\n"
+          + "<html xmlns=\"http://www.w3.org/1999/xhtml\" style=\"width: 100%; height: 100%; margin: 0; padding: 0\">\n"
+          + "<head>\n"
+          + "<meta charset=\"utf-8\">\n"
+          + "<title>VIS-NetWork</title>\n"
+          + "\n"
+          + "  <script type=\"text/javascript\" src=\"https://cdn.jsdelivr.net/npm/vis-network@6.0.0/dist/vis-network.min.js\"></script>\n"
+          + "</head>\n"
+          + "<body>\n"
+          + "\n"
+          + "<div id=\"vis\" style=\"width: 600px; height: 400px; margin: 0;  padding: .25in .5in .5in .5in; flex-direction: column; overflow: hidden\">\n"
+          + "<script type=\"text/javascript\">\n"
+          + "`1`\n"
+          + "  var container = document.getElementById('vis');\n"
+          + "  var data = {\n"
+          + "    nodes: nodes,\n"
+          + "    edges: edges\n"
+          + "  };\n"
+          + "`2`\n"
+          + "  var network = new vis.Network(container, data, options);\n"
+          + "</script>\n"
+          + "</div>\n"
+          + "</body>\n"
+          + "</html>";
 
   protected static final String HIGHLIGHT_IFRAME = //
       "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n"
-          + //
-          "\n"
-          + //
-          "<!DOCTYPE html PUBLIC\n"
-          + //
-          "  \"-//W3C//DTD XHTML 1.1 plus MathML 2.0 plus SVG 1.1//EN\"\n"
-          + //
-          "  \"http://www.w3.org/2002/04/xhtml-math-svg/xhtml-math-svg.dtd\">\n"
-          + //
-          "\n"
-          + //
-          "<html xmlns=\"http://www.w3.org/1999/xhtml\" style=\"width: 100%; height: 100%; margin: 0; padding: 0\">\n"
-          + //
-          "<head>\n"
-          + //
-          "<meta charset=\"utf-8\">\n"
-          + //
-          "<title>Highlight</title>\n"
-          + //
-          "\n"
-          + //
-          "<link rel=\"stylesheet\" type=\"text/css\" href=\"https://cdnjs.cloudflare.com/ajax/libs/highlight.js/10.1.1/styles/default.min.css\" />\n"
-          + //
-          "  <script type=\"text/javascript\" src=\"https://cdnjs.cloudflare.com/ajax/libs/highlight.js/10.1.1/highlight.min.js\"></script>\n"
-          + //
-          "<script>hljs.initHighlightingOnLoad();</script></head>\n"
-          + //
-          "<body style=\"width: 100%; height: 100%; margin: 0; padding: 0\">\n"
-          + //
-          "\n"
-          + //
-          "<div id=\"highlight\" style=\"width: 600px; height: 800px; margin: 0;  padding: .25in .5in .5in .5in; flex-direction: column; overflow: hidden\">\n"
-          + //
-          "<pre><code class=\"javascript\">\n"
-          + //
-          "`1`\n"
-          + //
-          "</code></pre>\n"
-          + //
-          "</div>\n"
-          + //
-          "</body>\n"
-          + //
-          "</html>"; //
+          + "\n"
+          + "<!DOCTYPE html PUBLIC\n"
+          + "  \"-//W3C//DTD XHTML 1.1 plus MathML 2.0 plus SVG 1.1//EN\"\n"
+          + "  \"http://www.w3.org/2002/04/xhtml-math-svg/xhtml-math-svg.dtd\">\n"
+          + "\n"
+          + "<html xmlns=\"http://www.w3.org/1999/xhtml\" style=\"width: 100%; height: 100%; margin: 0; padding: 0\">\n"
+          + "<head>\n"
+          + "<meta charset=\"utf-8\">\n"
+          + "<title>Highlight</title>\n"
+          + "\n"
+          + "<link rel=\"stylesheet\" type=\"text/css\" href=\"https://cdnjs.cloudflare.com/ajax/libs/highlight.js/10.1.1/styles/default.min.css\" />\n"
+          + "  <script type=\"text/javascript\" src=\"https://cdnjs.cloudflare.com/ajax/libs/highlight.js/10.1.1/highlight.min.js\"></script>\n"
+          + "<script>hljs.initHighlightingOnLoad();</script></head>\n"
+          + "<body style=\"width: 100%; height: 100%; margin: 0; padding: 0\">\n"
+          + "\n"
+          + "<div id=\"highlight\" style=\"width: 600px; height: 800px; margin: 0;  padding: .25in .5in .5in .5in; flex-direction: column; overflow: hidden\">\n"
+          + "<pre><code class=\"javascript\">\n"
+          + "`1`\n"
+          + "</code></pre>\n"
+          + "</div>\n"
+          + "</body>\n"
+          + "</html>"; //
 
   // public static void main(String[] args) {
   // System.out.println(HIGHLIGHT_IFRAME);
@@ -849,40 +721,23 @@ public class Pods {
                   html,
                   "`2`", //
                   "  var options = {\n"
-                      + //
-                      "		  edges: {\n"
-                      + //
-                      "              smooth: {\n"
-                      + //
-                      "                  type: 'cubicBezier',\n"
-                      + //
-                      "                  forceDirection:  'vertical',\n"
-                      + //
-                      "                  roundness: 0.4\n"
-                      + //
-                      "              }\n"
-                      + //
-                      "          },\n"
-                      + //
-                      "          layout: {\n"
-                      + //
-                      "              hierarchical: {\n"
-                      + //
-                      "                  direction: \"UD\"\n"
-                      + //
-                      "              }\n"
-                      + //
-                      "          },\n"
-                      + //
-                      "          nodes: {\n"
-                      + //
-                      "            shape: 'box'\n"
-                      + //
-                      "          },\n"
-                      + //
-                      "          physics:false\n"
-                      + //
-                      "      }; " //
+                      + "		  edges: {\n"
+                      + "              smooth: {\n"
+                      + "                  type: 'cubicBezier',\n"
+                      + "                  forceDirection:  'vertical',\n"
+                      + "                  roundness: 0.4\n"
+                      + "              }\n"
+                      + "          },\n"
+                      + "          layout: {\n"
+                      + "              hierarchical: {\n"
+                      + "                  direction: \"UD\"\n"
+                      + "              }\n"
+                      + "          },\n"
+                      + "          nodes: {\n"
+                      + "            shape: 'box'\n"
+                      + "          },\n"
+                      + "          physics:false\n"
+                      + "      }; " //
                   );
           html = StringEscapeUtils.escapeHtml4(html);
           html =
@@ -1047,7 +902,7 @@ public class Pods {
         IExpr numExpr = F.NIL;
         IExpr evaledNumExpr = F.NIL;
         if (outExpr.isNumericFunction(true)) {
-          numExpr = inExpr.isAST(F.N) ? inExpr : F.N(inExpr);
+          numExpr = inExpr.isAST(S.N) ? inExpr : F.N(inExpr);
           evaledNumExpr = engine.evaluate(F.N(outExpr));
         }
         if (outExpr.isNumber()
@@ -1134,7 +989,7 @@ public class Pods {
             return messageJSON;
           }
         } else {
-          if (outExpr.isAST(F.Plot, 2) && outExpr.first().isList()) {
+          if (outExpr.isAST(S.Plot, 2) && outExpr.first().isList()) {
             outExpr = outExpr.first();
           }
           if (outExpr.isList()) {
@@ -1200,7 +1055,7 @@ public class Pods {
                   resultStatistics(queryresult, error, numpods, podsArray);
                   return messageJSON;
                 } else if (outExpr.isString()) {
-                  podOut = (IStringX) outExpr;
+                  podOut = outExpr;
                   addSymjaPod(podsArray, inExpr, podOut, "String form", "String", formats, engine);
                   numpods++;
                 }
@@ -1234,7 +1089,7 @@ public class Pods {
               }
             }
           } else {
-            if (inExpr.isAST(F.D, 2, 3)) {
+            if (inExpr.isAST(S.D, 2, 3)) {
               if (inExpr.isAST1()) {
                 VariablesSet varSet = new VariablesSet(inExpr.first());
                 IAST variables = varSet.getVarList();
@@ -1250,7 +1105,7 @@ public class Pods {
               if (!outExpr.isFreeAST(x -> x.isTrigFunction())) {
                 inExpr = F.TrigToExp(outExpr);
                 podOut = engine.evaluate(inExpr);
-                if (!F.PossibleZeroQ.ofQ(engine, F.Subtract(podOut, outExpr))) {
+                if (!S.PossibleZeroQ.ofQ(engine, F.Subtract(podOut, outExpr))) {
                   addSymjaPod(
                       podsArray,
                       inExpr,
@@ -1264,7 +1119,7 @@ public class Pods {
               }
               resultStatistics(queryresult, error, numpods, podsArray);
               return messageJSON;
-            } else if (inExpr.isAST(F.Integrate, 2, 3)) {
+            } else if (inExpr.isAST(S.Integrate, 2, 3)) {
               if (inExpr.isAST1()) {
                 VariablesSet varSet = new VariablesSet(inExpr.first());
                 IAST variables = varSet.getVarList();
@@ -1280,7 +1135,7 @@ public class Pods {
               if (!outExpr.isFreeAST(x -> x.isTrigFunction())) {
                 inExpr = F.TrigToExp(outExpr);
                 podOut = engine.evaluate(inExpr);
-                if (!F.PossibleZeroQ.ofQ(engine, F.Subtract(podOut, outExpr))) {
+                if (!S.PossibleZeroQ.ofQ(engine, F.Subtract(podOut, outExpr))) {
                   addSymjaPod(
                       podsArray,
                       inExpr,
@@ -1294,7 +1149,7 @@ public class Pods {
               }
               resultStatistics(queryresult, error, numpods, podsArray);
               return messageJSON;
-            } else if (inExpr.isAST(F.Solve, 2, 4)) {
+            } else if (inExpr.isAST(S.Solve, 2, 4)) {
               if (inExpr.isAST1()) {
                 VariablesSet varSet = new VariablesSet(inExpr.first());
                 IAST variables = varSet.getVarList();
@@ -1310,7 +1165,7 @@ public class Pods {
               if (!outExpr.isFreeAST(x -> x.isTrigFunction())) {
                 inExpr = F.TrigToExp(outExpr);
                 podOut = engine.evaluate(inExpr);
-                if (!F.PossibleZeroQ.ofQ(engine, F.Subtract(podOut, outExpr))) {
+                if (!S.PossibleZeroQ.ofQ(engine, F.Subtract(podOut, outExpr))) {
                   addSymjaPod(
                       podsArray,
                       inExpr,
@@ -1328,7 +1183,7 @@ public class Pods {
               IExpr expr = inExpr;
               // outExpr = engine.evaluate(expr);
 
-              if (outExpr.isAST(F.JSFormData, 3)) {
+              if (outExpr.isAST(S.JSFormData, 3)) {
                 podOut = outExpr;
                 int form = internFormat(SYMJA, podOut.second().toString());
                 addPod(
@@ -1375,7 +1230,7 @@ public class Pods {
                 if (outExpr.isBooleanFormula()) {
                   numpods += booleanPods(podsArray, outExpr, variables, formats, engine);
                 }
-                if (outExpr.isAST(F.Equal, 3)) {
+                if (outExpr.isAST(S.Equal, 3)) {
                   IExpr arg1 = outExpr.first();
                   IExpr arg2 = outExpr.second();
                   if (arg1.isNumericFunction(varSet)
@@ -1386,7 +1241,7 @@ public class Pods {
                           F.Plot(
                               F.List(arg1, arg2), F.List(variables.arg1(), F.num(-20), F.num(20)));
                       podOut = engine.evaluate(plot2D);
-                      if (podOut.isAST(F.JSFormData, 3)) {
+                      if (podOut.isAST(S.JSFormData, 3)) {
                         int form = internFormat(SYMJA, podOut.second().toString());
                         addPod(
                             podsArray,
@@ -1416,7 +1271,7 @@ public class Pods {
                           engine);
                       numpods++;
                     }
-                    inExpr = F.Solve(F.binaryAST2(F.Equal, arg1, arg2), variables);
+                    inExpr = F.Solve(F.binaryAST2(S.Equal, arg1, arg2), variables);
                     podOut = engine.evaluate(inExpr);
                     addSymjaPod(podsArray, inExpr, podOut, "Solution", "Reduce", formats, engine);
                     numpods++;
@@ -1436,7 +1291,7 @@ public class Pods {
                   if (variables.argSize() == 1) {
                     IExpr plot2D = F.Plot(outExpr, F.List(variables.arg1(), F.num(-7), F.num(7)));
                     podOut = engine.evaluate(plot2D);
-                    if (podOut.isAST(F.JSFormData, 3)) {
+                    if (podOut.isAST(S.JSFormData, 3)) {
                       int form = internFormat(SYMJA, podOut.second().toString());
                       addPod(
                           podsArray,
@@ -1457,7 +1312,7 @@ public class Pods {
                             F.List(variables.arg1(), F.num(-3.5), F.num(3.5)),
                             F.List(variables.arg2(), F.num(-3.5), F.num(3.5)));
                     podOut = engine.evaluate(plot3D);
-                    if (podOut.isAST(F.JSFormData, 3)) {
+                    if (podOut.isAST(S.JSFormData, 3)) {
                       int form = internFormat(SYMJA, podOut.second().toString());
                       addPod(
                           podsArray,
@@ -1476,7 +1331,7 @@ public class Pods {
                 if (!outExpr.isFreeAST(x -> x.isTrigFunction())) {
                   inExpr = F.TrigToExp(outExpr);
                   podOut = engine.evaluate(inExpr);
-                  if (!F.PossibleZeroQ.ofQ(engine, F.Subtract(podOut, outExpr))) {
+                  if (!S.PossibleZeroQ.ofQ(engine, F.Subtract(podOut, outExpr))) {
                     addSymjaPod(
                         podsArray,
                         inExpr,
@@ -1499,11 +1354,11 @@ public class Pods {
                     IExpr x = variables.first();
                     inExpr = F.Minimize(outExpr, x);
                     podOut = engine.evaluate(inExpr);
-                    if (podOut.isAST(F.List, 3)
+                    if (podOut.isAST(S.List, 3)
                         && //
                         podOut.first().isNumber()
                         && //
-                        podOut.second().isAST(F.List, 2)) {
+                        podOut.second().isAST(S.List, 2)) {
                       IExpr rule = podOut.second().first();
                       if (rule.isRule()) {
                         StringBuilder buf = new StringBuilder();
@@ -1530,11 +1385,11 @@ public class Pods {
 
                     inExpr = F.Maximize(outExpr, x);
                     podOut = engine.evaluate(inExpr);
-                    if (podOut.isAST(F.List, 3)
+                    if (podOut.isAST(S.List, 3)
                         && //
                         podOut.first().isNumber()
                         && //
-                        podOut.second().isAST(F.List, 2)) {
+                        podOut.second().isAST(S.List, 2)) {
                       IExpr rule = podOut.second().first();
                       if (rule.isRule()) {
                         StringBuilder buf = new StringBuilder();
@@ -1783,7 +1638,7 @@ public class Pods {
     inExpr = F.BaseForm(outExpr, F.C2);
     podOut = engine.evaluate(inExpr);
     StringBuilder plainText = new StringBuilder();
-    if (podOut.isAST(F.Subscript, 3)) {
+    if (podOut.isAST(S.Subscript, 3)) {
       plainText.append(podOut.first().toString());
       plainText.append("_");
       plainText.append(podOut.second().toString());
@@ -1843,7 +1698,7 @@ public class Pods {
       }
     }
 
-    IAST range = (IAST) F.Range.of(F.C2, F.C9);
+    IAST range = (IAST) S.Range.of(F.C2, F.C9);
     inExpr = F.Mod(n, range);
     podOut = engine.evaluate(inExpr);
     // StringBuilder tableForm = new StringBuilder();
@@ -2081,7 +1936,7 @@ public class Pods {
       inExpr = texConverter.toExpression(inputStr);
     }
 
-    if (inExpr == F.$Aborted) {
+    if (inExpr == S.$Aborted) {
       return F.NIL;
     }
     if (inExpr.isList() && inExpr.size() == 2) {
@@ -2094,7 +1949,7 @@ public class Pods {
         inExpr.argSize() <= 4) {
       if (((IAST) inExpr).isEvalFlagOn(IAST.TIMES_PARSED_IMPLICIT)) {
         inExpr = flattenTimes((IAST) inExpr).orElse(inExpr);
-        IAST rest = ((IAST) inExpr).setAtClone(0, F.List);
+        IAST rest = ((IAST) inExpr).setAtClone(0, S.List);
         IASTAppendable specialFunction = F.NIL;
         String stemForm = getStemForm(rest.arg1().toString().toLowerCase());
         IExpr head = rest.head();
@@ -2118,7 +1973,7 @@ public class Pods {
         if (specialFunction.isPresent()) {
 
           if (head != null) {
-            if (head == F.UnitConvert) {
+            if (head == S.UnitConvert) {
               IExpr temp = unitConvert(engine, rest.rest());
               if (temp.isPresent()) {
                 return temp;
@@ -2189,12 +2044,12 @@ public class Pods {
     if ((htmlFormats & PLAIN) == PLAIN) {
       htmlFormats ^= PLAIN;
     }
-    IExpr mean = F.Mean.ofNIL(engine, inExpr);
+    IExpr mean = S.Mean.ofNIL(engine, inExpr);
     if (mean.isPresent()) {
       // IExpr mode = F.Mode.of(engine, inExpr);
-      IExpr standardDeviation = F.StandardDeviation.of(engine, inExpr);
-      IExpr variance = F.Variance.of(engine, inExpr);
-      IExpr skewness = F.Skewness.of(engine, inExpr);
+      IExpr standardDeviation = S.StandardDeviation.of(engine, inExpr);
+      IExpr variance = S.Variance.of(engine, inExpr);
+      IExpr skewness = S.Skewness.of(engine, inExpr);
       IExpr podOut =
           F.List( //
               F.Mean(inExpr), //
@@ -2248,7 +2103,7 @@ public class Pods {
           engine);
       numpods++;
 
-      inExpr = F.PDF(outExpr, F.x);
+      inExpr = F.PDF(outExpr, S.x);
       podOut = engine.evaluate(inExpr);
       addSymjaPod(
           podsArray,
@@ -2260,7 +2115,7 @@ public class Pods {
           engine);
       numpods++;
 
-      inExpr = F.CDF(outExpr, F.x);
+      inExpr = F.CDF(outExpr, S.x);
       podOut = engine.evaluate(inExpr);
       addSymjaPod(
           podsArray,
