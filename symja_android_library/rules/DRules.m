@@ -1,4 +1,5 @@
 {
+  D(Integrate(f_, x_),x_?NotListQ):=f,
   D(Abs(f_),x_?NotListQ):=D(f,x)*x/Abs(x) /; Element(x, Reals),
   D(AiryAi(f_),x_?NotListQ):=D(f,x)*AiryAiPrime(f),
   D(AiryAiPrime(f_),x_?NotListQ):=D(f,x)*AiryAi(f)*f,
