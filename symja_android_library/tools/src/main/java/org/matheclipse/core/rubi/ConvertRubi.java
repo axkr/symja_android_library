@@ -5,7 +5,6 @@ import java.io.BufferedWriter;
 import java.io.File;
 import java.io.FileReader;
 import java.io.FileWriter;
-import java.io.IOException;
 import java.util.List;
 import java.util.Map;
 
@@ -14,7 +13,7 @@ import org.matheclipse.core.convert.AST2Expr;
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.expression.Context;
 import org.matheclipse.core.expression.F;
-import org.matheclipse.core.expression.WL;
+import org.matheclipse.core.expression.S;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IASTAppendable;
 import org.matheclipse.core.interfaces.IASTMutable;
@@ -25,7 +24,7 @@ import org.matheclipse.parser.client.Parser;
 import org.matheclipse.parser.client.ast.ASTNode;
 
 /**
- * Convert the Rubi files from <a href="http://www.apmaths.uwo.ca/~arich/">Rubi - Indefinite
+ * Convert the Rubi files from <a href="https://rulebasedintegration.org/">Rubi - Indefinite
  * Integration Reduction Rules</a>
  */
 public class ConvertRubi {
@@ -40,11 +39,11 @@ public class ConvertRubi {
           + "import org.matheclipse.core.interfaces.IAST;\n"
           + "\n"
           + "/** \n"
-          + " * IndefiniteIntegrationRules from the <a href=\"http://www.apmaths.uwo.ca/~arich/\">Rubi -\n"
+          + " * IndefiniteIntegrationRules from the <a href=\"https://rulebasedintegration.org/\">Rubi -\n"
           + " * rule-based integrator</a>.\n"
           + " *  \n"
           + " */\n"
-          + "public class IntRules";
+          + "class IntRules";
 
   private static final String FOOTER = "}\n";
   private static int NUMBER_OF_RULES_PER_FILE = 20;
@@ -95,32 +94,32 @@ public class ConvertRubi {
       // convert ASTNode to an IExpr node
 
       IExpr expr = new AST2Expr().convert(node);
-      if (expr.isAST(F.CompoundExpression, 3)) {
+      if (expr.isAST(S.CompoundExpression, 3)) {
         IAST compoundExpressionAST = (IAST) expr;
         for (int i = 1; i < compoundExpressionAST.size(); i++) {
           expr = compoundExpressionAST.get(i);
-          if (expr.isAST(F.SetDelayed, 3)) {
+          if (expr.isAST(S.SetDelayed, 3)) {
             IAST ast = (IAST) expr;
             appendSetDelayedToBuffer(ast, buffer, last, listOfRules);
-          } else if (expr.isAST(F.If, 4)) {
+          } else if (expr.isAST(S.If, 4)) {
             IAST ast = (IAST) expr;
             if (ast.get(1).toString().equals("§showsteps")) {
               expr = ast.get(3);
-              if (expr.isAST(F.SetDelayed, 3)) {
+              if (expr.isAST(S.SetDelayed, 3)) {
                 ast = (IAST) expr;
                 appendSetDelayedToBuffer(ast, buffer, last, listOfRules);
               }
             }
           }
         }
-      } else if (expr.isAST(F.SetDelayed, 3)) {
+      } else if (expr.isAST(S.SetDelayed, 3)) {
         IAST ast = (IAST) expr;
         appendSetDelayedToBuffer(ast, buffer, last, listOfRules);
-      } else if (expr.isAST(F.If, 4)) {
+      } else if (expr.isAST(S.If, 4)) {
         IAST ast = (IAST) expr;
         if (ast.get(1).toString().equals("§showsteps")) {
           expr = ast.get(3);
-          if (expr.isAST(F.SetDelayed, 3)) {
+          if (expr.isAST(S.SetDelayed, 3)) {
             ast = (IAST) expr;
             appendSetDelayedToBuffer(ast, buffer, last, listOfRules);
           }
@@ -178,7 +177,7 @@ public class ConvertRubi {
 
       if (leftHandSide.topHead().toString().equalsIgnoreCase("int")) {
         if (temp.size() == 3) {
-          ((IASTMutable) temp).set(0, F.Integrate);
+          ((IASTMutable) temp).set(0, S.Integrate);
         }
         buffer.append("IIntegrate(" + GLOBAL_COUNTER + ",");
       } else {
@@ -201,7 +200,7 @@ public class ConvertRubi {
     // System.out.println(rightHandSide.toString());
     // }
     ISymbol s = F.symbol("Int");
-    IExpr temp = ast.arg2().replaceAll(F.Rule(s, F.Integrate)); // F.$s("AbortRubi")));
+    IExpr temp = ast.arg2().replaceAll(F.Rule(s, S.Integrate)); // F.$s("AbortRubi")));
     if (temp.isPresent()) {
       rightHandSide = temp;
     }
@@ -762,6 +761,7 @@ public class ConvertRubi {
     Config.RUBI_CONVERT_SYMBOLS = true;
     EvalEngine engine = new EvalEngine(false);
     engine.getContextPath().add(org.matheclipse.core.expression.Context.RUBI);
+    //    engine.beginPackage(org.matheclipse.core.expression.Context.RUBI_STR);
     EvalEngine.set(engine);
     addPredefinedSymbols();
     // use same order as in Rubi.m
@@ -770,6 +770,7 @@ public class ConvertRubi {
     };
     IASTAppendable listOfRules = F.ListAlloc(10000);
     int fcnt = 0;
+
     for (int i = 0; i < fileNames.length; i++) {
 
       System.out.println(">>>>>>>>>>>>>>>>>>>>>>>>>");
@@ -820,17 +821,20 @@ public class ConvertRubi {
       System.out.println(entry.getKey() + "  >>>  " + entry.getValue());
     }
 
-    File file = new File("./Rubi/RubiRules4.16.0_FullLHS.ser");
-    byte[] byteArray = WL.serialize(listOfRules);
-    try {
-      com.google.common.io.Files.write(byteArray, file);
-
-      byteArray = com.google.common.io.Files.toByteArray(file);
-      IExpr result = WL.deserialize(byteArray);
-      System.out.println(result.toString());
-    } catch (IOException e) {
-      // TODO Auto-generated catch block
-      e.printStackTrace();
-    }
+    //    File file = new File("./Rubi/IntegrateRules.bin");
+    //
+    //    byte[] byteArray = WL.serializeInternal(listOfRules);
+    //    try {
+    //
+    //      System.out.println("Creating binary file:" + file.toString());
+    //      com.google.common.io.Files.write(byteArray, file);
+    //
+    //      byteArray = com.google.common.io.Files.toByteArray(file);
+    //      IExpr result = WL.deserializeInternal(byteArray);
+    //      //      System.out.println(result.toString());
+    //    } catch (IOException e) {
+    //      // TODO Auto-generated catch block
+    //      e.printStackTrace();
+    //    }
   }
 }

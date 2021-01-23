@@ -14,8 +14,8 @@ import java.util.TreeSet;
 import org.matheclipse.core.basic.Config;
 import org.matheclipse.core.convert.AST2Expr;
 import org.matheclipse.core.eval.EvalEngine;
-import org.matheclipse.core.expression.Context;
 import org.matheclipse.core.expression.F;
+import org.matheclipse.core.expression.S;
 import org.matheclipse.core.expression.WL;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IASTAppendable;
@@ -26,7 +26,7 @@ import org.matheclipse.parser.client.Parser;
 import org.matheclipse.parser.client.ast.ASTNode;
 
 /**
- * Convert the Rubi UtilityFunctions from <a href="http://www.apmaths.uwo.ca/~arich/">Rubi -
+ * Convert the Rubi UtilityFunctions from <a href="https://rulebasedintegration.org/">Rubi -
  * Indefinite Integration Reduction Rules</a>
  */
 public class ConvertRubiUtilityFunctions {
@@ -39,11 +39,11 @@ public class ConvertRubiUtilityFunctions {
           + "\n"
           + "import org.matheclipse.core.interfaces.IAST;\n"
           + "/** \n"
-          + " * UtilityFunctions rules from the <a href=\"http://www.apmaths.uwo.ca/~arich/\">Rubi -\n"
+          + " * UtilityFunctions rules from the <a href=\"https://rulebasedintegration.org/\">Rubi -\n"
           + " * rule-based integrator</a>.\n"
           + " *  \n"
           + " */\n"
-          + "public class UtilityFunctions";
+          + "class UtilityFunctions";
 
   private static final String FOOTER = "}\n";
 
@@ -96,7 +96,7 @@ public class ConvertRubiUtilityFunctions {
       // convert ASTNode to an IExpr node
       IExpr expr = new AST2Expr(false, EvalEngine.get()).convert(node);
 
-      if (expr.isAST(F.CompoundExpression)) {
+      if (expr.isAST(S.CompoundExpression)) {
         IAST ast = (IAST) expr;
         ast.forEach(x -> convertExpr(x, buffer, last, functionSet, listOfRules));
       } else {
@@ -119,15 +119,15 @@ public class ConvertRubiUtilityFunctions {
     // ISymbol module = F.$s("Module");
     // if (expr.isFree(module, true)) {
 
-    if (expr.isAST(F.SetDelayed, 3)) {
+    if (expr.isAST(S.SetDelayed, 3)) {
       IAST ast = (IAST) expr;
       addToFunctionSet(ast, functionSet);
       ConvertRubi.appendSetDelayedToBuffer(ast, buffer, last, listOfRules);
-    } else if (expr.isAST(F.If, 4)) {
+    } else if (expr.isAST(S.If, 4)) {
       IAST ast = (IAST) expr;
       if (ast.get(1).toString().equals("§showsteps")) {
         expr = ast.get(3);
-        if (expr.isAST(F.SetDelayed, 3)) {
+        if (expr.isAST(S.SetDelayed, 3)) {
           ast = (IAST) expr;
           addToFunctionSet(ast, functionSet);
           ConvertRubi.appendSetDelayedToBuffer(ast, buffer, last, listOfRules);
