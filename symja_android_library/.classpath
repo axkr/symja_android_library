@@ -1,12 +1,9 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<classpath>
+<classpath> 
 	<classpathentry kind="src" path="matheclipse-api/src/main/java"/>
 	<classpathentry kind="src" path="matheclipse-api/src/main/resources"/>
 	<classpathentry kind="src" path="matheclipse-api/src/test/java"/>
-	<classpathentry kind="src" path="matheclipse-api/src/test/resources"/>
-	<classpathentry kind="src" path="matheclipse-core/src/test/java"/>
 	<classpathentry kind="src" path="matheclipse-core/src/main/java"/>
-	<classpathentry kind="src" path="matheclipse-core/src/test/resources"/>
 	<classpathentry kind="src" path="matheclipse-core/src/main/resources"/>
 	<classpathentry kind="src" path="matheclipse-io/src/test/resources"/>
 	<classpathentry kind="src" path="matheclipse-io/src/main/java"/>
@@ -16,7 +13,7 @@
 	<classpathentry kind="src" path="matheclipse-external/src/main/resources"/>
 	<classpathentry kind="src" path="matheclipse-frontend/src/main/java"/>
 	<classpathentry kind="src" path="matheclipse-frontend/src/test/java"/>
-	<classpathentry kind="src" path="matheclipse-beakerx/src/main/java"/>
+	<classpathentry kind="src" path="matheclipse-beakerx/src/main/java"/> 
 	<classpathentry kind="src" path="matheclipse-beakerx/src/test/resources"/>
 	<classpathentry kind="src" path="tools/src/main/java"/>
 	<classpathentry kind="con" path="org.eclipse.jdt.junit.JUNIT_CONTAINER/4"/>
@@ -87,5 +84,5 @@
 	<classpathentry kind="lib" path="lib/guava-30.1-jre.jar"/>
 	<classpathentry kind="lib" path="lib/commons-text-1.8.jar"/>
 	<classpathentry kind="lib" path="lib/jheaps-0.13.jar"/>
-	<classpathentry kind="output" path="bin/classes"/>
+	<classpathentry kind="output" path="bin/classes"/> 
 </classpath>
