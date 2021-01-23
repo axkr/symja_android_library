@@ -22,7 +22,7 @@ All the data is in the Symja *data* folder.
 Here we read a `csv` file of tornado data. The `SemanticImport` function infers the column types by sampling the data and returns a `Dataset` variable named `ds`.
 
 ```
->> ds = SemanticImport("./data/whiskey.csv")
+>> ds = SemanticImport("https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/data/whiskey.csv")
 ```
 
 **Note:** that the file is addressed relative to the current working directory. You may have to change it for your code. 
