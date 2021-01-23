@@ -3,16 +3,15 @@ package org.matheclipse.core.preprocessor;
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileReader;
-import java.io.IOException;
 import java.io.PrintWriter;
 
 import org.matheclipse.core.eval.EvalEngine;
-import org.matheclipse.core.eval.exception.ArgumentTypeException;
-import org.matheclipse.core.eval.util.ArraySet;
 import org.matheclipse.core.expression.F;
+import org.matheclipse.core.expression.S;
+import org.matheclipse.core.expression.WL;
 import org.matheclipse.core.interfaces.IAST;
+import org.matheclipse.core.interfaces.IASTAppendable;
 import org.matheclipse.core.interfaces.IExpr;
-import org.matheclipse.core.interfaces.ISymbol;
 import org.matheclipse.core.parser.ExprParser;
 import org.matheclipse.core.patternmatching.RulesData;
 import org.matheclipse.parser.client.FEConfig;
@@ -109,6 +108,19 @@ public class RulePreprocessor {
     }
   }
 
+  public static byte[] convertListSerialized(
+      IExpr expr, StringBuilder buffer, final PrintWriter out, EvalEngine engine) {
+    try {
+      return convertSerialized(expr, out);
+    } catch (UnsupportedOperationException uoe) {
+      System.out.println(uoe.getMessage());
+      System.out.println(expr.toString());
+    } catch (Exception e) {
+      e.printStackTrace();
+    }
+    return null;
+  }
+
   public static void convert(
       IExpr expr,
       String rulePostfix,
@@ -144,12 +156,12 @@ public class RulePreprocessor {
         for (int i = 1; i < list.size(); i++) {
           last = i == (list.argSize());
           expr = list.get(i);
-          if (expr.isAST(F.SetDelayed, 3)) {
+          if (expr.isAST(S.SetDelayed, 3)) {
             IAST ast = (IAST) expr;
             if (!RulesData.isComplicatedPatternRule(ast.arg1())) {
               simpleRuleCounter++;
             }
-          } else if (expr.isAST(F.Set, 3)) {
+          } else if (expr.isAST(S.Set, 3)) {
             equalsRuleCounter++;
           }
         }
@@ -168,17 +180,17 @@ public class RulePreprocessor {
       for (int i = 1; i < list.size(); i++) {
         last = i == (list.argSize());
         expr = list.get(i);
-        if (expr.isAST(F.SetDelayed, 3)) {
+        if (expr.isAST(S.SetDelayed, 3)) {
           IAST ast = (IAST) expr;
           buffer.append("    // " + ast.toString().replaceAll("\\n", "") + "\n");
           buffer.append("    ISetDelayed(");
           appendSetDelayedToBuffer(ast, buffer, false, last);
-        } else if (expr.isAST(F.Set, 3)) {
+        } else if (expr.isAST(S.Set, 3)) {
           IAST ast = (IAST) expr;
           buffer.append("    // " + ast.toString().replaceAll("\\n", "") + "\n");
           buffer.append("    ISet(");
           appendSetDelayedToBuffer(ast, buffer, true, last);
-        } else if (expr.isAST(F.Rule, 3)) {
+        } else if (expr.isAST(S.Rule, 3)) {
           IAST ast = (IAST) expr;
           buffer.append("    // " + ast.toString().replaceAll("\\n", "") + "\n");
           buffer.append("    Rule(");
@@ -186,15 +198,15 @@ public class RulePreprocessor {
         }
       }
     } else {
-      if (expr.isAST(F.SetDelayed, 3)) {
+      if (expr.isAST(S.SetDelayed, 3)) {
         IAST ast = (IAST) expr;
         buffer.append("    ISetDelayed(");
         appendSetDelayedToBuffer(ast, buffer, false, true);
-      } else if (expr.isAST(F.Set, 3)) {
+      } else if (expr.isAST(S.Set, 3)) {
         IAST ast = (IAST) expr;
         buffer.append("    ISet(");
         appendSetDelayedToBuffer(ast, buffer, true, true);
-      } else if (expr.isAST(F.Rule, 3)) {
+      } else if (expr.isAST(S.Rule, 3)) {
         IAST ast = (IAST) expr;
         buffer.append("    Rule(");
         appendSetDelayedToBuffer(ast, buffer, true, true);
@@ -220,12 +232,12 @@ public class RulePreprocessor {
         for (int i = 1; i < list.size(); i++) {
           last = i == (list.argSize());
           expr = list.get(i);
-          if (expr.isAST(F.SetDelayed, 3)) {
+          if (expr.isAST(S.SetDelayed, 3)) {
             IAST ast = (IAST) expr;
             if (!RulesData.isComplicatedPatternRule(ast.arg1())) {
               simpleRuleCounter++;
             }
-          } else if (expr.isAST(F.Set, 3)) {
+          } else if (expr.isAST(S.Set, 3)) {
             equalsRuleCounter++;
           }
         }
@@ -244,12 +256,12 @@ public class RulePreprocessor {
       for (int i = 1; i < list.size(); i++) {
         last = i == (list.argSize());
         expr = list.get(i);
-        if (expr.isAST(F.SetDelayed, 3)) {
+        if (expr.isAST(S.SetDelayed, 3)) {
           IAST ast = (IAST) expr;
           buffer.append("    // " + ast.toString().replaceAll("\\n", "") + "\n");
           buffer.append("    SetDelayed(");
           appendSetDelayedToBuffer(ast, buffer, false, last);
-        } else if (expr.isAST(F.Set, 3)) {
+        } else if (expr.isAST(S.Set, 3)) {
           IAST ast = (IAST) expr;
           buffer.append("    // " + ast.toString().replaceAll("\\n", "") + "\n");
           buffer.append("    Set(");
@@ -281,6 +293,24 @@ public class RulePreprocessor {
     out.println(LIST1);
     out.print(buffer.toString());
     out.print(FOOTER0);
+  }
+
+  private static byte[] convertSerialized(IExpr expr, final PrintWriter out) {
+    if (expr.isAST()) {
+      IAST list = (IAST) expr;
+      IASTAppendable list2 = F.ListAlloc(list.size());
+      for (int i = 1; i < list.size(); i++) {
+        expr = list.get(i);
+        if (expr.isAST(S.SetDelayed, 3)) {
+          list2.append(expr);
+        } else if (expr.isAST(S.Set, 3)) {
+          list2.append(expr);
+        }
+      }
+      return WL.serializeInternal(list2);
+    }
+    out.print("Error in serializeing " + expr.toString());
+    return null;
   }
 
   public static IExpr parseFileToList(File file, EvalEngine engine) {
@@ -377,6 +407,59 @@ public class RulePreprocessor {
     }
   }
 
+  public static void generateFunctionSerialized(
+      final File sourceLocation, File targetLocation, boolean ignoreTimestamp) {
+    if (sourceLocation.exists()) {
+      // Get the list of the files contained in the package
+      final String[] files = sourceLocation.list();
+      if (files != null) {
+        StringBuilder buffer;
+        EvalEngine engine = new EvalEngine(true);
+        for (int i = 0; i < files.length; i++) {
+          File sourceFile = new File(sourceLocation, files[i]);
+          // we are only interested in .m files
+          if (files[i].endsWith(".m")) {
+            IExpr expr = parseFileToList(sourceFile, engine);
+
+            if (expr == null) {
+              System.err.println();
+              System.err.println("Abort after not parsed expression.");
+              return;
+            } else {
+              buffer = new StringBuilder(100000);
+              PrintWriter out;
+              try {
+                String className = files[i].substring(0, files[i].length() - 2);
+                String symbolName = className.substring(0, className.length() - 5);
+                File targetFile = new File(targetLocation, className + ".bin");
+                if (targetFile.exists()) {
+                  if (!ignoreTimestamp
+                      && (sourceFile.lastModified() <= targetFile.lastModified())) {
+                    // only copy if timestamp is newer than
+                    // existing ones
+                    continue;
+                  }
+                }
+                System.out.println(className);
+                if (className.equals("FunctionExpandRules")) {
+                  // || className.equals("PodDefaultsRules")) {
+                  out = new PrintWriter(targetFile.getCanonicalPath());
+                  byte[] binaryData = convertListSerialized(expr, buffer, out, engine);
+                  com.google.common.io.Files.write(binaryData, targetFile);
+                }
+              } catch (Exception e) {
+                System.err.println();
+                System.err.println("Abort after exception.");
+                e.printStackTrace();
+                return;
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+
   public static void main(final String[] args) {
     FEConfig.EXPLICIT_TIMES_OPERATOR = true;
 
@@ -385,11 +468,21 @@ public class RulePreprocessor {
     // TEST_LHS_FOR_VARIABLES = true;
 
     F.initSymbols();
+
+    System.out.println("Generate Java source files from rule definitions");
+
     // C:\\Users\\dev\\git\\symja_android_library
     File sourceLocation = new File("..\\symja_android_library\\rules");
-    File targetLocation =
+    File javaTargetLocation =
         new File(
             "..\\symja_android_library\\matheclipse-core\\src\\main\\java\\org\\matheclipse\\core\\reflection\\system\\rules");
-    generateFunctionStrings(sourceLocation, targetLocation, true);
+    generateFunctionStrings(sourceLocation, javaTargetLocation, true);
+
+    //
+    //    System.out.println("Generate binary serialized files in internal format from rule
+    // definitions");
+    //    File binTargetLocation =
+    //        new File("..\\symja_android_library\\matheclipse-core\\src\\main\\resources\\rules");
+    //    generateFunctionSerialized(sourceLocation, binTargetLocation, true);
   }
 }

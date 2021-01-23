@@ -50,6 +50,8 @@ public class MarkdownToHTML {
                 HtmlRenderer renderer = HtmlRenderer.builder().extensions(EXTENSIONS).build();
                 html = renderer.render(document);
                 if (javadoc) {
+                  html = html.replace("<blockquote>", "");
+                  html = html.replace("</blockquote>", "");
                   String[] lines = html.split("\\n");
                   System.out.println("/**");
                   for (int j = 0; j < lines.length; j++) {
