@@ -19,7 +19,6 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.SortedMap;
-import java.util.TreeMap;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutionException;
 
@@ -242,7 +241,7 @@ public final class NumberTheory {
         int n = arg1.toIntDefault(Integer.MIN_VALUE);
         if (n < 0) {
           if (arg1.isNumber()) {
-            return IOFunctions.printMessage(F.BellB, "intnm", F.List(ast, F.C1), engine);
+            return IOFunctions.printMessage(S.BellB, "intnm", F.List(ast, F.C1), engine);
           }
         }
         if (ast.isAST2()) {
@@ -457,7 +456,7 @@ public final class NumberTheory {
           }
           int ki = k.toIntDefault(Integer.MIN_VALUE);
           if (ki >= 1 && ki <= 5) {
-            return F.Infinity;
+            return S.Infinity;
           }
         } else if (n.isNegativeInfinity()) {
           if (k.isNegative()) {
@@ -725,7 +724,7 @@ public final class NumberTheory {
         // list only
         // containing positive integers.
         String message =
-            IOFunctions.getMessage("pilist", F.List(F.ChineseRemainder), EvalEngine.get());
+            IOFunctions.getMessage("pilist", F.List(S.ChineseRemainder), EvalEngine.get());
         throw new ArgumentTypeException(message);
       }
       long modulus = primes[0];
@@ -735,7 +734,7 @@ public final class NumberTheory {
           // list only
           // containing positive integers.
           String message =
-              IOFunctions.getMessage("pilist", F.List(F.ChineseRemainder), EvalEngine.get());
+              IOFunctions.getMessage("pilist", F.List(S.ChineseRemainder), EvalEngine.get());
           throw new ArgumentTypeException(message);
         }
         modulus = multiplyExact(primes[i], modulus);
@@ -772,7 +771,7 @@ public final class NumberTheory {
         // list only
         // containing positive integers.
         String message =
-            IOFunctions.getMessage("pilist", F.List(F.ChineseRemainder), EvalEngine.get());
+            IOFunctions.getMessage("pilist", F.List(S.ChineseRemainder), EvalEngine.get());
         throw new ArgumentTypeException(message);
       }
       BigInteger m = primes[0];
@@ -782,7 +781,7 @@ public final class NumberTheory {
           // list only
           // containing positive integers.
           String message =
-              IOFunctions.getMessage("pilist", F.List(F.ChineseRemainder), EvalEngine.get());
+              IOFunctions.getMessage("pilist", F.List(S.ChineseRemainder), EvalEngine.get());
           throw new ArgumentTypeException(message);
         }
         m = primes[i].multiply(m);
@@ -898,7 +897,7 @@ public final class NumberTheory {
         if (list.size() > 1) {
           int size = list.argSize();
           IASTAppendable resultList = F.ListAlloc(list.size());
-          IASTMutable plus = F.binary(F.Plus, F.C0, list.arg1());
+          IASTMutable plus = F.binary(S.Plus, F.C0, list.arg1());
           IASTMutable result = plus;
           for (int i = 2; i <= size; i++) {
             IExpr temp;
@@ -908,7 +907,7 @@ public final class NumberTheory {
               temp = engine.evaluate(result);
             }
             resultList.append(temp);
-            IASTMutable plusAST = F.binary(F.Plus, F.C0, list.get(i));
+            IASTMutable plusAST = F.binary(S.Plus, F.C0, list.get(i));
             plus.set(1, F.Power(plusAST, F.CN1));
             plus = plusAST;
           }
@@ -1018,7 +1017,7 @@ public final class NumberTheory {
             if (maxIterations < 0) {
               // Positive integer (less equal 2147483647) expected at position `2` in `1`.
               return IOFunctions.printMessage(
-                  F.ContinuedFraction, "intpm", F.List(ast, F.C2), engine);
+                  S.ContinuedFraction, "intpm", F.List(ast, F.C2), engine);
             }
           } else {
             return F.NIL;
@@ -1161,7 +1160,7 @@ public final class NumberTheory {
         for (int i = 1; i < size - 1; i++) {
           expr = ast.get(i);
           for (int j = i + 1; j < size; j++) {
-            if (!F.GCD.of(engine, expr, ast.get(j)).isOne()) {
+            if (!S.GCD.of(engine, expr, ast.get(j)).isOne()) {
               return S.False;
             }
           }
@@ -1254,7 +1253,7 @@ public final class NumberTheory {
           IExpr negated = AbstractFunctionEvaluator.getNormalizedNegativeExpression(expr);
           if (negated.isPresent()) {
             if (!result.isPresent()) {
-              result = F.ast(F.DiracDelta);
+              result = F.ast(S.DiracDelta);
             }
             result.append(negated);
           } else {
@@ -2064,17 +2063,17 @@ public final class NumberTheory {
       }
       if (arg1.isFraction()) {
         if (arg1.equals(F.C1D2)) {
-          return F.Times(F.C1D2, F.Sqrt(F.Pi));
+          return F.Times(F.C1D2, F.Sqrt(S.Pi));
         }
         if (arg1.equals(F.CN1D2)) {
-          return F.Sqrt(F.Pi);
+          return F.Sqrt(S.Pi);
         }
       }
       if (arg1.isInfinity()) {
         return F.CInfinity;
       }
       if (arg1.isNegativeInfinity()) {
-        return F.Indeterminate;
+        return S.Indeterminate;
       }
       return F.NIL;
     }
@@ -2096,7 +2095,7 @@ public final class NumberTheory {
           if (((IInteger) x).isLT((IInteger) n)) {
             return F.C0;
           }
-          if (((IInteger) x).equals((IInteger) n)) {
+          if (((IInteger) x).equals(n)) {
             if (x.isZero()) {
               return F.C1;
             }
@@ -2350,7 +2349,7 @@ public final class NumberTheory {
         return F.CInfinity;
       }
       if (arg1.isNegativeInfinity()) {
-        return F.Indeterminate;
+        return S.Indeterminate;
       }
       return F.NIL;
     }
@@ -2421,7 +2420,7 @@ public final class NumberTheory {
         }
         if (ast.size() == 3) {
           final OptionArgs options = new OptionArgs(ast.topHead(), ast, 2, engine);
-          IExpr option = options.getOption(F.GaussianIntegers);
+          IExpr option = options.getOption(S.GaussianIntegers);
           if (option.isTrue()) {
             BigInteger re = BigInteger.ONE;
             if (arg1.isInteger()) {
@@ -2519,16 +2518,16 @@ public final class NumberTheory {
                       F.CN1,
                       F.Power(F.C2, n),
                       F.Power(F.Power(F.Plus(x, F.Sqrt(F.Plus(F.C4, F.Sqr(x)))), n), F.CN1),
-                      F.Cos(F.Times(n, F.Pi))))); // $$;
+                      F.Cos(F.Times(n, S.Pi))))); // $$;
         }
         return
         // [$ ( GoldenRatio^n - Cos(Pi*n) * GoldenRatio^(-n) ) / Sqrt(5) $]
         F.Times(
             F.C1DSqrt5,
             F.Plus(
-                F.Power(F.GoldenRatio, n),
+                F.Power(S.GoldenRatio, n),
                 F.Times(
-                    F.CN1, F.Power(F.GoldenRatio, F.Negate(n)), F.Cos(F.Times(F.Pi, n))))); // $$;
+                    F.CN1, F.Power(S.GoldenRatio, F.Negate(n)), F.Cos(F.Times(S.Pi, n))))); // $$;
       }
       return F.NIL;
     }
@@ -2568,7 +2567,7 @@ public final class NumberTheory {
         } else {
           fibonacci = F.Times(x, fibonacci);
         }
-        fibonacci = F.Expand.of(engine, F.Plus(fibonacci, previousFibonacci));
+        fibonacci = S.Expand.of(engine, F.Plus(fibonacci, previousFibonacci));
         previousFibonacci = temp;
       }
       if (iArg < 0 && ((iArg & 0x00000001) == 0x00000000)) {
@@ -2952,7 +2951,7 @@ public final class NumberTheory {
         return F.C1;
       }
       if (arg1.isInteger() && arg1.isPositive()) {
-        IExpr expr = F.FactorInteger.of(engine, arg1);
+        IExpr expr = S.FactorInteger.of(engine, arg1);
         if (expr.isList()) {
           IAST list = (IAST) expr;
           int result = 1;
@@ -3030,13 +3029,13 @@ public final class NumberTheory {
                               F.Times(F.C1D2, x), F.Sqrt(F.Plus(F.C1, F.Times(F.C1D4, F.Sqr(x))))),
                           n),
                       F.CN1),
-                  F.Cos(F.Times(n, F.Pi)))); // $$;
+                  F.Cos(F.Times(n, S.Pi)))); // $$;
         }
         return
         // [$ GoldenRatio^n + Cos(Pi*n) * GoldenRatio^(-n) $]
         F.Plus(
-            F.Power(F.GoldenRatio, n),
-            F.Times(F.Cos(F.Times(F.Pi, n)), F.Power(F.GoldenRatio, F.Negate(n)))); // $$;
+            F.Power(S.GoldenRatio, n),
+            F.Times(F.Cos(F.Times(S.Pi, n)), F.Power(S.GoldenRatio, F.Negate(n)))); // $$;
       }
       return F.NIL;
     }
@@ -3080,7 +3079,7 @@ public final class NumberTheory {
         } else {
           lucalsL = F.Times(x, lucalsL);
         }
-        lucalsL = F.Expand.of(engine, F.Plus(lucalsL, previousLucasL));
+        lucalsL = S.Expand.of(engine, F.Plus(lucalsL, previousLucasL));
         previousLucasL = temp;
       }
       if (iArg < 0 && ((iArg & 0x00000001) == 0x00000001)) {
@@ -3134,7 +3133,7 @@ public final class NumberTheory {
         if (arg1.isZero() || arg1.isOne() || arg1.isNegative()) {
           return F.C0;
         }
-        IExpr expr = F.FactorInteger.of(engine, arg1);
+        IExpr expr = S.FactorInteger.of(engine, arg1);
         if (expr.isList()) {
           IAST list = (IAST) expr;
           if (list.size() == 2) {
@@ -3412,7 +3411,7 @@ public final class NumberTheory {
         // recurrence: Multinomial(n1, n2, n3,..., ni, k) =>
         // Multinomial(n1+n2+n3+...+ni, k) * Multinomial(n1, n2, n3,..., ni)
         IAST reducedMultinomial = ast.removeFromEnd(argSize);
-        IAST reducedPlus = reducedMultinomial.apply(F.Plus);
+        IAST reducedPlus = reducedMultinomial.apply(S.Plus);
         return F.Times(
             F.Multinomial(reducedPlus, ast.get(argSize)), multinomial(reducedMultinomial));
       }
@@ -3538,19 +3537,19 @@ public final class NumberTheory {
         BigInteger primeBase = ((IInteger) ast.arg1()).toBigNumerator();
         if (primeBase.compareTo(BigInteger.ZERO) < 0) {
           // Non-negative integer expected.
-          return IOFunctions.printMessage(F.NextPrime, "intnn", F.List(), engine);
+          return IOFunctions.printMessage(S.NextPrime, "intnn", F.List(), engine);
         }
         return F.ZZ(primeBase.nextProbablePrime());
       } else if (ast.isAST2() && ast.arg1().isInteger() && ast.arg2().isInteger()) {
         BigInteger primeBase = ((IInteger) ast.arg1()).toBigNumerator();
         if (primeBase.compareTo(BigInteger.ZERO) < 0) {
           // Non-negative integer expected.
-          return IOFunctions.printMessage(F.NextPrime, "intnn", F.List(), engine);
+          return IOFunctions.printMessage(S.NextPrime, "intnn", F.List(), engine);
         }
         final int n = ast.arg2().toIntDefault(Integer.MIN_VALUE);
         if (n < 0) {
           // Positive integer (less equal 2147483647) expected at position `2` in `1`.
-          return IOFunctions.printMessage(F.NextPrime, "intpm", F.List(ast, F.C2), engine);
+          return IOFunctions.printMessage(S.NextPrime, "intpm", F.List(ast, F.C2), engine);
         }
 
         int iterationLimit = EvalEngine.get().getIterationLimit();
@@ -3624,7 +3623,7 @@ public final class NumberTheory {
        */
       private BigInteger sumPartitionsP(int n, int capacity) {
         int iterationLimit = EvalEngine.get().getIterationLimit();
-        long maxIterations = (long) capacity;
+        long maxIterations = capacity;
         if (iterationLimit >= 0 && iterationLimit <= maxIterations) {
           IterationLimitExceeded.throwIt(capacity, F.PartitionsP(F.ZZ(n)));
         }
@@ -4445,6 +4444,7 @@ public final class NumberTheory {
       return F.NIL;
     }
 
+    @Override
     public int[] expectedArgSize(IAST ast) {
       return ARGS_1_2;
     }
@@ -4539,7 +4539,7 @@ public final class NumberTheory {
         final IAST lst, IExpr expr, List<IExpr> varList, final EvalEngine engine)
         throws JASConversionException {
       final OptionArgs options = new OptionArgs(lst.topHead(), lst, 2, engine);
-      IExpr option = options.getOption(F.Modulus);
+      IExpr option = options.getOption(S.Modulus);
       if (option.isReal()) {
 
         // found "Modulus" option => use ModIntegerRing
@@ -4905,29 +4905,33 @@ public final class NumberTheory {
 
     @Override
     public IExpr evaluate(final IAST ast, EvalEngine engine) {
-      int size = ast.size();
-      if (size == 2) {
-        IExpr arg1 = ast.arg1();
-        if (arg1.isNumber()) {
-          return arg1.isZero() ? F.C0 : F.C1;
-        }
-        if (F.PossibleZeroQ.ofQ(engine, arg1)) {
-          return F.C0;
-        }
-        IExpr temp = arg1.evalNumber();
-        if (temp == null) {
-          temp = arg1;
-        }
-        if (temp.isNumber()) {
-          return temp.isZero() ? F.C0 : F.C1;
-        }
+      // TODO implement 2. arg
+      IExpr arg1 = ast.arg1();
+      if (arg1.isNumber()) {
+        return arg1.isZero() ? F.C0 : F.C1;
       }
+      if (S.PossibleZeroQ.ofQ(engine, arg1)) {
+        return F.C0;
+      }
+      IExpr temp = arg1.evalNumber();
+      if (temp == null) {
+        temp = arg1;
+      }
+      if (temp.isNumber()) {
+        return temp.isZero() ? F.C0 : F.C1;
+      }
+
       return F.NIL;
     }
 
     @Override
+    public int[] expectedArgSize(IAST ast) {
+      return ARGS_1_1;
+    }
+
+    @Override
     public void setUp(ISymbol newSymbol) {
-      newSymbol.setAttributes(ISymbol.HOLDALL | ISymbol.LISTABLE | ISymbol.NUMERICFUNCTION);
+      newSymbol.setAttributes(ISymbol.LISTABLE);
     }
   }
 
