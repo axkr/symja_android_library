@@ -16,3 +16,7 @@ See:
 {{19.75982, -7.64298},
  {-7.64298, 4.70718}}
 ```
+
+### Github
+
+* [Implementation of RiccatiSolve](https://github.com/axkr/symja_android_library/blob/master/symja_android_library/matheclipse-core/src/main/java/org/matheclipse/core/builtin/LinearAlgebra.java#L3679) 

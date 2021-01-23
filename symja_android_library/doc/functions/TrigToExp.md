@@ -15,3 +15,7 @@ See
 >> TrigToExp(Cos(x))
 1/2*E^(I*x)+1/2*E^(-I*x)
 ```
+
+### Github
+
+* [Implementation of TrigToExp](https://github.com/axkr/symja_android_library/blob/master/symja_android_library/matheclipse-core/src/main/java/org/matheclipse/core/reflection/system/TrigToExp.java#L35) 

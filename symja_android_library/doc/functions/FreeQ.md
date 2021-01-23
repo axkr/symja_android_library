@@ -22,3 +22,7 @@ False
 >> FreeQ(x_+y_+z_)(a+b)
 True
 ```
+
+### Github
+
+* [Implementation of FreeQ](https://github.com/axkr/symja_android_library/blob/master/symja_android_library/matheclipse-core/src/main/java/org/matheclipse/core/builtin/PredicateQ.java#L436) 

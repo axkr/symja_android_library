@@ -21,3 +21,7 @@ See
 >> PolynomialGCD(x^2 + 7*x + 6, x^2-5*x-6) 
 1+x
 ```
+
+### Github
+
+* [Implementation of PolynomialGCD](https://github.com/axkr/symja_android_library/blob/master/symja_android_library/matheclipse-core/src/main/java/org/matheclipse/core/builtin/Algebra.java#L2865) 

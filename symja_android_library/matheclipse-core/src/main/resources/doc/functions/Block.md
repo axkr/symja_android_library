@@ -22,3 +22,7 @@ The [A005132 Recaman's sequence](http://oeis.org/A005132) integer sequence
 
 ### Related terms 
 [Module](Module.md), [With](With.md) 
+
+### Github
+
+* [Implementation of Block](https://github.com/axkr/symja_android_library/blob/master/symja_android_library/matheclipse-core/src/main/java/org/matheclipse/core/builtin/Programming.java#L242) 

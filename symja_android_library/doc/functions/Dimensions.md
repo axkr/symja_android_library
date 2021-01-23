@@ -41,3 +41,7 @@ The expression can have any head:
 >> Dimensions({{}})
 {1, 0}
 ```
+
+### Github
+
+* [Implementation of Dimensions](https://github.com/axkr/symja_android_library/blob/master/symja_android_library/matheclipse-core/src/main/java/org/matheclipse/core/builtin/LinearAlgebra.java#L1128) 

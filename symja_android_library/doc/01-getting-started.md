@@ -31,7 +31,7 @@ But function `f(x)` notation isn't interpreted as `f*(x)`
 >> f(x)
 ```
 
-Powers expressions like ${3}^{4}$ can be entered using ^:
+Powers expressions like ${3}^{4}$ can be entered using `^`:
 
 ```
 >> 3 ^ 4

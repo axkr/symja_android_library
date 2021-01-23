@@ -17,3 +17,7 @@ See
 >> BesselI(1, 3.6)
 6.79271
 ```
+
+### Github
+
+* [Implementation of BesselI](https://github.com/axkr/symja_android_library/blob/master/symja_android_library/matheclipse-core/src/main/java/org/matheclipse/core/builtin/BesselFunctions.java#L502) 

@@ -17,3 +17,7 @@ See
 >> ComplexPlot3D(Gamma(z), {z, -4.9-4.9*I,4.9+4.9*I}, PlotRange->{0,8.0})
 
 ```
+
+### Github
+
+* [Implementation of ComplexPlot3D](https://github.com/axkr/symja_android_library/blob/master/symja_android_library/matheclipse-core/src/main/java/org/matheclipse/core/builtin/ManipulateFunction.java#L1932) 

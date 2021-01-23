@@ -33,3 +33,7 @@ SparseArray(Number of elements: 4 Dimensions: {3,3} Default value: 0)
 
 ### Related terms  
 [MatrixForm](MatrixForm.md), [Normal](Normal.md)
+
+### Github
+
+* [Implementation of SparseArray](https://github.com/axkr/symja_android_library/blob/master/symja_android_library/matheclipse-core/src/main/java/org/matheclipse/core/builtin/SparseArrayFunctions.java#L157) 

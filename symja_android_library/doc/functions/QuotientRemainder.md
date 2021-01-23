@@ -32,3 +32,7 @@ QuotientRemainder(13, 0)
 >> QuotientRemainder(19, -4)
 {-5,-1}
 ```
+
+### Github
+
+* [Implementation of QuotientRemainder](https://github.com/axkr/symja_android_library/blob/master/symja_android_library/matheclipse-core/src/main/java/org/matheclipse/core/builtin/IntegerFunctions.java#L1341) 

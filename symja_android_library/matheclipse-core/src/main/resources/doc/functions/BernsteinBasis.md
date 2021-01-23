@@ -16,3 +16,7 @@ See:
 >> BernsteinBasis(3,2,0.3) 
 0.189
 ```
+
+### Github
+
+* [Implementation of BernsteinBasis](https://github.com/axkr/symja_android_library/blob/master/symja_android_library/matheclipse-core/src/main/java/org/matheclipse/core/builtin/GraphicsFunctions.java#L24) 

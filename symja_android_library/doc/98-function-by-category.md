@@ -91,6 +91,8 @@
 
 ## Graph theory
 
+* [BetweennessCentrality](functions/BetweennessCentrality.md)
+* [ClosenessCentrality](functions/ClosenessCentrality.md)
 * [GraphCenter](functions/GraphCenter.md)
 * [GraphDiameter](functions/GraphDiameter.md)
 * [GraphPeriphery](functions/GraphPeriphery.md)

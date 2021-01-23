@@ -22,7 +22,7 @@ All the data is in the Symja *data* folder.
 Here we read a `csv` file of tornado data. The `SemanticImport` function infers the column types by sampling the data and returns a `Dataset` variable named `ds`.
 
 ```
->> ds = SemanticImport("./data/tornadoes_1950-2014.csv")
+>> ds = SemanticImport("./data/whiskey.csv")
 ```
 
 **Note:** that the file is addressed relative to the current working directory. You may have to change it for your code. 
@@ -30,10 +30,7 @@ Here we read a `csv` file of tornado data. The `SemanticImport` function infers 
 If you would like to create smaller datasets you can use the `SemanticImportString` function, which creates a `Dataset` from a String representation:
 
 ```
->> ds = SemanticImportString("Products,Sales,Market_Share\n
-a,5500,3\n
-b,12200,4\n
-c,60000,33")
+>> ds = SemanticImportString("Products,Sales,Market_Share\na,5500,3\nb,12200,4\nc,60000,33")
 ```
 
 ### Viewing table metadata
@@ -65,7 +62,7 @@ You can then produce a string representation for display. For convenience, calli
 You can also perform other table operations on it. For example, the code below removes all columns whose type isn’t DOUBLE:
             
 ```
->> ts(Select(#"Column Type" == "DOUBLE" &))
+>> ts(Select(#"Column Type" == "STRING" &))
 ```
 
 Of course, that also returned a `Dataset`. We’ll cover selecting rows in more detail later.
@@ -78,10 +75,10 @@ The `Span` operator `;;` returns a new table containing the first 3 rows.
 >> ds(1;;3)
 ```
 
-This will create a new table containing all rows but only the `State` column
+This will create a new table containing all rows but only the `Distillery` column
 
 ```
->> ds(All, "State")
+>> ds(All, "Distillery")
 ```
 
 This will create a new table containing all rows but only the columns 3 to 5
@@ -90,10 +87,10 @@ This will create a new table containing all rows but only the columns 3 to 5
 >> ds(All,3;;5)
 ```
 
-This will create a new table containing rows `1` to `10` but only the columns `State`, `Length` and `Width`
-
+This will create a new table containing rows `1` to `10` but only the columns `Distillery`, `Latitude` and `Longitude`
+ 	
 ```
->> ds(1;;10,{"State", "Length", "Width"})
+>> ds(1;;10,{"Distillery", "Latitude", "Longitude"})
 ```
 
 The `Normal` function converts a table into a list of Symja associations `<|"column-name1"->value1, ... |>`.
@@ -125,17 +122,17 @@ Descriptive statistics are calculated using the `Summary` function:
 ```
 
 ### Filtering
-
+ 
 You can write your own `Select` function to filter rows.
 
 ```
->> ds(Select(Slot("Width") > 300 && Slot("Length") > 10 &))
+>> ds(Select(Slot("Latitude") > 30000 && Slot("Longitude") > 80000 &))
 ```
 
 The next example returns a `Dataset` containing only the columns named in the parameter list, rather than all the columns in the original.
 
 ```
->> ds(All, {"State", "Date"})
+>> ds(All, {"Distillery", "Postcode"})
 ```
 
 ### Totals and sub-totals
@@ -145,9 +142,9 @@ Column metrics can be calculated using methods like Total, Mean, Max, etc.
 You can apply those methods to a table, calculating results on one column, grouped by the values in another.
 
 ```
->> ds(Total, "Injuries")
+>> ds(Total, "Sweetness")
 
->> ds(Mean, "Injuries")
+>> ds(Mean, "Smoky")
 ```
 
 ### Saving your data
@@ -155,7 +152,7 @@ You can apply those methods to a table, calculating results on one column, group
 To save a table, you can write it as a CSV file:
 
 ```
->> Export("tornado_first_3_rows.csv", ds(1;;3)) 
+>> Export("whiskey_first_3_rows.csv", ds(1;;3)) 
 ```
 
 If you would like to create a `String` representation you can use the function `ExportString`

@@ -41,3 +41,7 @@ See
 1852482996*x^25+1203322288*x^27+635745396*x^29+273438880*x^31+95548245*x^33+ 
 26978328*x^35+6096454*x^37+1086008*x^39+148995*x^41+15180*x^43+1081*x^45+48*x^47+x^49
 ```
+
+### Github
+
+* [Implementation of Fibonacci](https://github.com/axkr/symja_android_library/blob/master/symja_android_library/matheclipse-core/src/main/java/org/matheclipse/core/builtin/NumberTheory.java#L2480) 

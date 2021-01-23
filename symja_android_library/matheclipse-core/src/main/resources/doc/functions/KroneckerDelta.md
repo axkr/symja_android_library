@@ -18,3 +18,7 @@ See
 >> KroneckerDelta(42, 42.0, 42)
 1
 ```
+
+### Github
+
+* [Implementation of KroneckerDelta](https://github.com/axkr/symja_android_library/blob/master/symja_android_library/matheclipse-core/src/main/java/org/matheclipse/core/builtin/NumberTheory.java#L2785) 

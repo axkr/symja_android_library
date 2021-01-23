@@ -34,3 +34,7 @@ See:
 >> Factor(x^4-1, GaussianIntegers->True)
 (x-1)*(x+1)*(x-I)*(x+I)
 ```
+
+### Github
+
+* [Implementation of Factor](https://github.com/axkr/symja_android_library/blob/master/symja_android_library/matheclipse-core/src/main/java/org/matheclipse/core/builtin/Algebra.java#L1947) 

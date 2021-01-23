@@ -59,3 +59,7 @@ Negative part numbers count from the end:
 
 ### Related terms 
 [Replace](Replace.md), [ReplaceAll](ReplaceAll.md), [ReplaceList](ReplaceList.md), [ReplaceRepeated](ReplaceRepeated.md)
+
+### Github
+
+* [Implementation of ReplacePart](https://github.com/axkr/symja_android_library/blob/master/symja_android_library/matheclipse-core/src/main/java/org/matheclipse/core/builtin/ListFunctions.java#L5464) 

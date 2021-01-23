@@ -44,3 +44,7 @@ DirectedInfinity((1+I)/Sqrt(2))+DirectedInfinity((2+I)/Sqrt(5))
 >>DirectedInfinity(Sqrt(3))
 Infinity
 ```
+
+### Github
+
+* [Implementation of DirectedInfinity](https://github.com/axkr/symja_android_library/blob/master/symja_android_library/matheclipse-core/src/main/java/org/matheclipse/core/builtin/Arithmetic.java#L1494) 

@@ -33,3 +33,10 @@ See
 >> Permutations({a, b, c}, {2})  
 {{a,b},{a,c},{b,a},{b,c},{c,a},{c,b}}
 ```
+
+### Related terms 
+[Cycles](Cycles.md), [FindPermutation](FindPermutation.md), [PermutationCycles](PermutationCycles.md), [PermutationCyclesQ](PermutationCyclesQ.md), [PermutationList](PermutationList.md), [PermutationListQ](PermutationListQ.md), [PermutationReplace](PermutationReplace.md)
+
+### Github
+
+* [Implementation of Permutations](https://github.com/axkr/symja_android_library/blob/master/symja_android_library/matheclipse-core/src/main/java/org/matheclipse/core/builtin/Combinatoric.java#L1987) 

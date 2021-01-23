@@ -58,3 +58,7 @@ Non-negative integer expected at position `3` in `Operate(p, f, -1)`.
 >> Operate(p, f, -1)
 Operate(p, f, -1)
 ```
+
+### Github
+
+* [Implementation of Operate](https://github.com/axkr/symja_android_library/blob/master/symja_android_library/matheclipse-core/src/main/java/org/matheclipse/core/builtin/StructureFunctions.java#L1463) 

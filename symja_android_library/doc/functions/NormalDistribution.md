@@ -63,3 +63,7 @@ The [random variates](https://en.wikipedia.org/wiki/Normal_distribution#Generati
 
 ### Related terms 
 [CDF](CDF.md), [Mean](Mean.md), [Median](Median.md), [PDF](PDF.md), [Quantile](Quantile.md), [StandardDeviation](StandardDeviation.md), [Variance](Variance.md) 
+
+### Github
+
+* [Implementation of NormalDistribution](https://github.com/axkr/symja_android_library/blob/master/symja_android_library/matheclipse-core/src/main/java/org/matheclipse/core/builtin/StatisticsFunctions.java#L4835) 

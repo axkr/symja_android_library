@@ -35,3 +35,7 @@ See:
 ### Related terms 
 [InverseCDF](InverseCDF.md), [PDF](PDF.md)  
 
+
+### Github
+
+* [Implementation of CDF](https://github.com/axkr/symja_android_library/blob/master/symja_android_library/matheclipse-core/src/main/java/org/matheclipse/core/builtin/StatisticsFunctions.java#L446) 

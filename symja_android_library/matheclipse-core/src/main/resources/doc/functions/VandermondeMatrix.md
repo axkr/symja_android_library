@@ -17,3 +17,7 @@ See
  {1,b,b^2},
  {1,c,c^2}}
 ```
+
+### Github
+
+* [Implementation of VandermondeMatrix](https://github.com/axkr/symja_android_library/blob/master/symja_android_library/matheclipse-core/src/main/java/org/matheclipse/core/builtin/LinearAlgebra.java#L4424) 

@@ -30,3 +30,7 @@ Piecewise({{-x,x<0},x})
 
 ### Related terms 
 [Abs](Abs.md), [Clip](Clip.md), [If](If.md), [Piecewise](Piecewise.md), [Ramp](Ramp.md), [UnitStep](UnitStep.md)  
+
+### Github
+
+* [Implementation of PiecewiseExpand](https://github.com/axkr/symja_android_library/blob/master/symja_android_library/matheclipse-core/src/main/java/org/matheclipse/core/builtin/Arithmetic.java#L2737) 

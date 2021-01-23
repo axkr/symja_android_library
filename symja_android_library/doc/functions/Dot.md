@@ -10,6 +10,7 @@ Dot(x, y) or x . y
 
 See:    
 * [Wikipedia - Matrix multiplication](https://en.wikipedia.org/wiki/Matrix_multiplication)
+* [Youtube - Matrix multiplication as composition | Essence of linear algebra, chapter 4](https://youtu.be/XkY2DOUCWMU)
 
 ### Examples
 
@@ -39,3 +40,7 @@ a.b
 
 ### Related terms 
 [Flat](Flat.md), [MatrixPower](MatrixPower.md), [Orderless](Orderless.md), [Times](Times.md) 
+
+### Github
+
+* [Implementation of Dot](https://github.com/axkr/symja_android_library/blob/master/symja_android_library/matheclipse-core/src/main/java/org/matheclipse/core/builtin/LinearAlgebra.java#L1235) 

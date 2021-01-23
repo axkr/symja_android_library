@@ -21,3 +21,7 @@ See
 >> Log10(E ^ 3)    
 3/Log(10)   
 ```
+
+### Github
+
+* [Implementation of Log10](https://github.com/axkr/symja_android_library/blob/master/symja_android_library/matheclipse-core/src/main/java/org/matheclipse/core/builtin/ExpTrigsFunctions.java#L2262) 

@@ -18,3 +18,7 @@ See:
 >> GroebnerBasis({x*y-2*y, 2*y^2-x^2}, {x, y})
 {-2*y+y^3,-2*y+x*y,x^2-2*y^2}
 ```
+
+### Github
+
+* [Implementation of GroebnerBasis](https://github.com/axkr/symja_android_library/blob/master/symja_android_library/matheclipse-core/src/main/java/org/matheclipse/core/builtin/PolynomialFunctions.java#L1792) 

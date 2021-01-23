@@ -27,3 +27,7 @@ The [A053614 Numbers that are not the sum of distinct triangular numbers. ](http
 
 ### Related terms
 [ComposeSeries](ComposeSeries.md), [InverseSeries](InverseSeries.md), [SeriesCoefficient](SeriesCoefficient.md), [SeriesData](SeriesData.md)
+
+### Github
+
+* [Implementation of Series](https://github.com/axkr/symja_android_library/blob/master/symja_android_library/matheclipse-core/src/main/java/org/matheclipse/core/builtin/SeriesFunctions.java#L1061) 

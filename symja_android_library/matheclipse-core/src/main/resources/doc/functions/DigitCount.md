@@ -34,3 +34,7 @@ OEIS integer sequence [A098949](https://oeis.org/A098949):
 924,926,928,929,940,942,944,946,948,949,960,962,964,966,968,969,980,982,984,986,
 988,989,990,992,994,996,998,999}
 ```
+
+### Github
+
+* [Implementation of DigitCount](https://github.com/axkr/symja_android_library/blob/master/symja_android_library/matheclipse-core/src/main/java/org/matheclipse/core/builtin/IntegerFunctions.java#L271) 

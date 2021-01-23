@@ -15,3 +15,7 @@ See:
 >> ArgMin(x*10+x^2, x)
 -5
 ```
+
+### Github
+
+* [Implementation of ArgMin](https://github.com/axkr/symja_android_library/blob/master/symja_android_library/matheclipse-core/src/main/java/org/matheclipse/core/builtin/MinMaxFunctions.java#L132) 

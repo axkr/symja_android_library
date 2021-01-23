@@ -30,3 +30,7 @@ KolmogorovSmirnovTest(data, distribution, "TestData")
 {0.0930213,0.744855}
 ```
 
+
+### Github
+
+* [Implementation of KolmogorovSmirnovTest](https://github.com/axkr/symja_android_library/blob/master/symja_android_library/matheclipse-core/src/main/java/org/matheclipse/core/builtin/StatisticsFunctions.java#L3868) 

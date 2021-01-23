@@ -18,3 +18,7 @@ See:
 >> DivisorSigma(1,12)
 28
 ```
+
+### Github
+
+* [Implementation of DivisorSigma](https://github.com/axkr/symja_android_library/blob/master/symja_android_library/matheclipse-core/src/main/java/org/matheclipse/core/builtin/NumberTheory.java#L1567) 

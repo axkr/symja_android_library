@@ -28,3 +28,7 @@ See
 1.2984575814159773+I*0.6349639147847361
 ```
  
+
+### Github
+
+* [Implementation of Sin](https://github.com/axkr/symja_android_library/blob/master/symja_android_library/matheclipse-core/src/main/java/org/matheclipse/core/builtin/ExpTrigsFunctions.java#L2577) 

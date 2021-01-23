@@ -45,3 +45,7 @@ But it does not touch other expressions:
 >> Sin(1 / (x ^ 2 - y ^ 2)) // Apart
 Sin(1/(x^2-y^2))
 ```
+
+### Github
+
+* [Implementation of Apart](https://github.com/axkr/symja_android_library/blob/master/symja_android_library/matheclipse-core/src/main/java/org/matheclipse/core/builtin/Algebra.java#L376) 

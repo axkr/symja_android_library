@@ -12,3 +12,7 @@ AbsoluteTiming(x)
 >> AbsoluteTiming(x = 1; Pause(x); x + 3)[[1]] > 1
 True
 ```
+
+### Github
+
+* [Implementation of AbsoluteTiming](https://github.com/axkr/symja_android_library/blob/master/symja_android_library/matheclipse-core/src/main/java/org/matheclipse/core/builtin/Programming.java#L158) 

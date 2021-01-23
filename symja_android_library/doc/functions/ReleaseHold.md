@@ -24,3 +24,7 @@ y
 
 ### Related terms 
 [Hold](Hold.md), [HoldComplete](HoldComplete.md), [HoldForm](HoldForm.md), [HoldPattern](HoldPattern.md)
+
+### Github
+
+* [Implementation of ReleaseHold](https://github.com/axkr/symja_android_library/blob/master/symja_android_library/matheclipse-core/src/main/java/org/matheclipse/core/builtin/PatternMatching.java#L1504) 

@@ -8,7 +8,8 @@ Det(matrix)
 
 See:
 * [Wikipedia: Determinant](https://en.wikipedia.org/wiki/Determinant)
-
+* [Youtube - The determinant | Essence of linear algebra, chapter 6](https://youtu.be/Ip3X9LOh2dk)
+* [Youtube - Cramer's rule, explained geometrically | Essence of linear algebra, chapter 12](https://youtu.be/jBsC34PxzoM)
 
 ### Examples
 
@@ -23,3 +24,7 @@ Symbolic determinant:
 >> Det({{a, b, c}, {d, e, f}, {g, h, i}})
 -c*e*g+b*f*g+c*d*h-a*f*h-b*d*i+a*e*i 
 ```
+
+### Github
+
+* [Implementation of Det](https://github.com/axkr/symja_android_library/blob/master/symja_android_library/matheclipse-core/src/main/java/org/matheclipse/core/builtin/LinearAlgebra.java#L933) 

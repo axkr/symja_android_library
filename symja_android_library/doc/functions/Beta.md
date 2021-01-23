@@ -23,3 +23,7 @@ See
 >> Beta(2.3, 3.2)
 0.0540298
 ```
+
+### Github
+
+* [Implementation of Beta](https://github.com/axkr/symja_android_library/blob/master/symja_android_library/matheclipse-core/src/main/java/org/matheclipse/core/builtin/SpecialFunctions.java#L109) 

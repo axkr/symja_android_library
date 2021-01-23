@@ -28,3 +28,7 @@ GCD(10, y)
 
 ### Related terms 
 [LCM](LCM.md)
+
+### Github
+
+* [Implementation of GCD](https://github.com/axkr/symja_android_library/blob/master/symja_android_library/matheclipse-core/src/main/java/org/matheclipse/core/builtin/Arithmetic.java#L1847) 

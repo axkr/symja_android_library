@@ -21,3 +21,7 @@ See:
   {0,-2,2},
   {0,0,-50}},{1,2,3}}
 ```
+
+### Github
+
+* [Implementation of LUDecomposition](https://github.com/axkr/symja_android_library/blob/master/symja_android_library/matheclipse-core/src/main/java/org/matheclipse/core/builtin/LinearAlgebra.java#L2717) 

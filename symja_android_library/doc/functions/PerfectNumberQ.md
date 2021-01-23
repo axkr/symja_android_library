@@ -17,3 +17,7 @@ See
 >> Select(Range(1000), PerfectNumberQ)
 {6,28,496}
 ```
+
+### Github
+
+* [Implementation of PerfectNumberQ](https://github.com/axkr/symja_android_library/blob/master/symja_android_library/matheclipse-core/src/main/java/org/matheclipse/core/builtin/NumberTheory.java#L3921) 

@@ -24,3 +24,7 @@ RotateLeft(list, n)
 >> RotateLeft(x(a, b, c), 2)
 x(c,a,b)
 ```
+
+### Github
+
+* [Implementation of RotateLeft](https://github.com/axkr/symja_android_library/blob/master/symja_android_library/matheclipse-core/src/main/java/org/matheclipse/core/builtin/ListFunctions.java#L5826) 

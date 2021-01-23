@@ -22,3 +22,7 @@ Csc(1)
 1.1883951057781212
 ```
   
+
+### Github
+
+* [Implementation of Csc](https://github.com/axkr/symja_android_library/blob/master/symja_android_library/matheclipse-core/src/main/java/org/matheclipse/core/builtin/ExpTrigsFunctions.java#L1507) 

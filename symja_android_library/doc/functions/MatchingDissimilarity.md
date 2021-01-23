@@ -12,3 +12,7 @@ MatchingDissimilarity(u, v)
 >> MatchingDissimilarity({1, 0, 1, 1, 0, 1, 1}, {0, 1, 1, 0, 0, 0, 1})
 4/7
 ```
+
+### Github
+
+* [Implementation of MatchingDissimilarity](https://github.com/axkr/symja_android_library/blob/master/symja_android_library/matheclipse-core/src/main/java/org/matheclipse/core/builtin/Combinatoric.java#L1350) 

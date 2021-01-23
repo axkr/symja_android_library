@@ -17,3 +17,7 @@ FoldList[f, x, {a, b}]
 32589158477190044730,1922760350154212639070,117288381359406970983270,
 7858321551080267055879090,557940830126698960967415390}
 ```
+
+### Github
+
+* [Implementation of FoldList](https://github.com/axkr/symja_android_library/blob/master/symja_android_library/matheclipse-core/src/main/java/org/matheclipse/core/builtin/ListFunctions.java#L2719) 

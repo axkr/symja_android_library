@@ -14,6 +14,8 @@ MatrixQ(m, f)
 
 See
 * [Wikipedia - Matrix (mathematics)](https://en.wikipedia.org/wiki/Matrix_(mathematics))
+* [Youtube - Linear transformations and matrices | Essence of linear algebra, chapter 3](https://youtu.be/kYB8IZa5AuE)
+* [Youtube - Matrix multiplication as composition | Essence of linear algebra, chapter 4](https://youtu.be/XkY2DOUCWMU)
 
 ### Examples
 
@@ -21,3 +23,7 @@ See
 >> MatrixQ({{1, 3}, {4.0, 3/2}}, NumberQ)
 True
 ```
+
+### Github
+
+* [Implementation of MatrixQ](https://github.com/axkr/symja_android_library/blob/master/symja_android_library/matheclipse-core/src/main/java/org/matheclipse/core/builtin/PredicateQ.java#L646) 

@@ -19,3 +19,7 @@ Continue()
 ### Related terms 
 [Break](Break.md), [Do](Do.md), [For](For.md), [While](While.md) 
 
+
+### Github
+
+* [Implementation of Continue](https://github.com/axkr/symja_android_library/blob/master/symja_android_library/matheclipse-core/src/main/java/org/matheclipse/core/builtin/Programming.java#L498) 

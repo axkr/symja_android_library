@@ -17,3 +17,7 @@ See
 {{3/Sqrt(10),1/Sqrt(10)},{-Sqrt(5/2)/5,3/5*Sqrt(5/2)}}
 ```
  
+
+### Github
+
+* [Implementation of Orthogonalize](https://github.com/axkr/symja_android_library/blob/master/symja_android_library/matheclipse-core/src/main/java/org/matheclipse/core/builtin/LinearAlgebra.java#L3380) 

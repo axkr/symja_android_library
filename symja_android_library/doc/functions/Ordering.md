@@ -37,3 +37,7 @@ See
 >> Ordering({1,3,4,2,5,9,6}, All, Greater)
 {6,7,5,3,2,4,1}
 ```
+
+### Github
+
+* [Implementation of Ordering](https://github.com/axkr/symja_android_library/blob/master/symja_android_library/matheclipse-core/src/main/java/org/matheclipse/core/builtin/TensorFunctions.java#L330) 

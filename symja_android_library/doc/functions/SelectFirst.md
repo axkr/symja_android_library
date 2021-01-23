@@ -33,3 +33,7 @@ Missing(NotFound)
 {4,12,17,25,33,38,46,51,59,67,72,80,88,93,101,106,114,122,127,135,140,148,156,
 161,169,177,182,190,195,203,211,216,224,232,237,245,250,258,266,271,279,284,292,
 300,
+
+### Github
+
+* [Implementation of SelectFirst](https://github.com/axkr/symja_android_library/blob/master/symja_android_library/matheclipse-core/src/main/java/org/matheclipse/core/builtin/ListFunctions.java#L6021) 

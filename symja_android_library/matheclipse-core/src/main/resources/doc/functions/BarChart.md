@@ -11,3 +11,7 @@ BarChart(list-of-values, options)
 ```
 >> BarChart({1, -2, 3}, BarOrigin->Bottom)
 ```
+
+### Github
+
+* [Implementation of BarChart](https://github.com/axkr/symja_android_library/blob/master/symja_android_library/matheclipse-core/src/main/java/org/matheclipse/core/builtin/ManipulateFunction.java#L1917) 

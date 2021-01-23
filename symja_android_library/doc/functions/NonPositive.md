@@ -12,3 +12,7 @@ NonPositive(x)
 >> {Negative(0), NonPositive(0)}
 {False,True}
 ```
+
+### Github
+
+* [Implementation of NonPositive](https://github.com/axkr/symja_android_library/blob/master/symja_android_library/matheclipse-core/src/main/java/org/matheclipse/core/builtin/BooleanFunctions.java#L3154) 

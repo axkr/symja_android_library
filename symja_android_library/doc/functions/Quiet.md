@@ -14,3 +14,7 @@ No error is printed for the division by `0`
 >> Quiet(1/0) 
 ComplexInfinity
 ```
+
+### Github
+
+* [Implementation of Quiet](https://github.com/axkr/symja_android_library/blob/master/symja_android_library/matheclipse-core/src/main/java/org/matheclipse/core/builtin/Programming.java#L2240) 

@@ -12,3 +12,7 @@ ToExpression("string", form)
 >> ToExpression("1 + 2 - x \\times 4 \\div 5", TeXForm)
 3-4/5*x
 ```
+
+### Github
+
+* [Implementation of ToExpression](https://github.com/axkr/symja_android_library/blob/master/symja_android_library/matheclipse-core/src/main/java/org/matheclipse/core/builtin/StringFunctions.java#L2302) 

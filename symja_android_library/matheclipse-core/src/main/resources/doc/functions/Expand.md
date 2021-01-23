@@ -56,3 +56,7 @@ Sqrt(y^2)/(2*x+2*y)
 >> 2(3+2x)^2/(5+x^2+3x)^3 // Expand  
 18/(5+3*x+x^2)^3+(24*x)/(5+3*x+x^2)^3+(8*x^2)/(5+3*x+x^2)^3 
 ```
+
+### Github
+
+* [Implementation of Expand](https://github.com/axkr/symja_android_library/blob/master/symja_android_library/matheclipse-core/src/main/java/org/matheclipse/core/builtin/Algebra.java#L1379) 

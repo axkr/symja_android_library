@@ -17,3 +17,7 @@ See
  {0.00687492,0.408375}}
 ```
  
+
+### Github
+
+* [Implementation of MatrixExp](https://github.com/axkr/symja_android_library/blob/master/symja_android_library/matheclipse-core/src/main/java/org/matheclipse/core/builtin/LinearAlgebra.java#L2766) 

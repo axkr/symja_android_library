@@ -16,3 +16,7 @@ See
 >> MedianFilter({2,3,80,6}, 1) 
 {5/2,3,6,43}
 ```
+
+### Github
+
+* [Implementation of MedianFilter](https://github.com/axkr/symja_android_library/blob/master/symja_android_library/matheclipse-core/src/main/java/org/matheclipse/core/builtin/ImageFunctions.java#L88) 

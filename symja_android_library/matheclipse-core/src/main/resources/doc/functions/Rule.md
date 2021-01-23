@@ -24,3 +24,7 @@ Rule called with 3 arguments; 2 arguments are expected.
 >> a /. Rule(1, 2, 3) -> t 
 a
 ```
+
+### Github
+
+* [Implementation of Rule](https://github.com/axkr/symja_android_library/blob/master/symja_android_library/matheclipse-core/src/main/java/org/matheclipse/core/builtin/PatternMatching.java#L1683) 

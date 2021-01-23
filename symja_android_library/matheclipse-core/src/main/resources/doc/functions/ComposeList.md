@@ -13,3 +13,7 @@ ComposeList(list-of-symbols, variable)
 {x,f(x),g(f(x)),h(g(f(x)))}
 
 ```
+
+### Github
+
+* [Implementation of ComposeList](https://github.com/axkr/symja_android_library/blob/master/symja_android_library/matheclipse-core/src/main/java/org/matheclipse/core/builtin/ListFunctions.java#L1536) 

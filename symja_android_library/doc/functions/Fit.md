@@ -18,3 +18,7 @@ x^2.0
 
 ### Related terms 
 [FindFit](FindFit.md), [FittedModel](FittedModel.md), [LinearModelFit](LinearModelFit.md) 
+
+### Github
+
+* [Implementation of Fit](https://github.com/axkr/symja_android_library/blob/master/symja_android_library/matheclipse-core/src/main/java/org/matheclipse/core/builtin/CurveFitterFunctions.java#L307) 

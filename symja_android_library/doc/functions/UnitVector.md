@@ -21,3 +21,7 @@ See:
 >> UnitVector(4,3)
 {0,0,1,0}
 ```
+
+### Github
+
+* [Implementation of UnitVector](https://github.com/axkr/symja_android_library/blob/master/symja_android_library/matheclipse-core/src/main/java/org/matheclipse/core/builtin/LinearAlgebra.java#L4314) 

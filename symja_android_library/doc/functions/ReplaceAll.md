@@ -35,3 +35,7 @@ a^2+b^2
 ### Related terms 
 [Dispatch](Dispatch.md), [Replace](Replace.md), [ReplaceList](ReplaceList.md), [ReplacePart](ReplacePart.md), [ReplaceRepeated](ReplaceRepeated.md)
 
+
+### Github
+
+* [Implementation of ReplaceAll](https://github.com/axkr/symja_android_library/blob/master/symja_android_library/matheclipse-core/src/main/java/org/matheclipse/core/builtin/ListFunctions.java#L5256) 

@@ -12,3 +12,7 @@ JaccardDissimilarity(u, v)
 >> JaccardDissimilarity({1, 0, 1, 1, 0, 1, 1}, {0, 1, 1, 0, 0, 0, 1})
 2/3
 ```
+
+### Github
+
+* [Implementation of JaccardDissimilarity](https://github.com/axkr/symja_android_library/blob/master/symja_android_library/matheclipse-core/src/main/java/org/matheclipse/core/builtin/Combinatoric.java#L966) 

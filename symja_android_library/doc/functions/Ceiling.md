@@ -48,3 +48,7 @@ For complex `expr`, take the ceiling of real and imaginary parts.
 
 ### Related terms 
 [IntegerPart](IntegerPart.md), [Floor](Floor.md), [FractionalPart](FractionalPart.md), [Round](Round.md)
+
+### Github
+
+* [Implementation of Ceiling](https://github.com/axkr/symja_android_library/blob/master/symja_android_library/matheclipse-core/src/main/java/org/matheclipse/core/builtin/IntegerFunctions.java#L177) 

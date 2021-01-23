@@ -46,3 +46,7 @@ The [A050250 Number of nonzero palindromes less than 10^n](https://oeis.org/A050
 >> LinearRecurrence({1, 10, -10}, {9, 18, 108}, 30) 
 {9,18,108,198,1098,1998,10998,19998,109998,199998,1099998,1999998,10999998,19999998,109999998,199999998,1099999998,1999999998,10999999998,19999999998,109999999998,199999999998,1099999999998,1999999999998,10999999999998,19999999999998,109999999999998,199999999999998,1099999999999998,1999999999999998}
 ```
+
+### Github
+
+* [Implementation of LinearRecurrence](https://github.com/axkr/symja_android_library/blob/master/symja_android_library/matheclipse-core/src/main/java/org/matheclipse/core/builtin/NumberTheory.java#L2836) 

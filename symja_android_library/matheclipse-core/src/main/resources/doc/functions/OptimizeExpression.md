@@ -29,3 +29,7 @@ Create the original expression:
 
 ### Related terms 
 [Compile](Compile.md), [CompilePrint](CompilePrint.md), [Share](Share.md)
+
+### Github
+
+* [Implementation of OptimizeExpression](https://github.com/axkr/symja_android_library/blob/master/symja_android_library/matheclipse-core/src/main/java/org/matheclipse/core/reflection/system/OptimizeExpression.java#L49) 

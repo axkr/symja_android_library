@@ -21,3 +21,7 @@ See
 >> PolynomialLCM(x^2 + 7*x + 6, x^2-5*x-6) 
 -36-36*x+x^2+x^3
 ```
+
+### Github
+
+* [Implementation of PolynomialLCM](https://github.com/axkr/symja_android_library/blob/master/symja_android_library/matheclipse-core/src/main/java/org/matheclipse/core/builtin/Algebra.java#L3044) 

@@ -19,3 +19,7 @@ See
 
 ### Related terms 
 [E](E.md), [Pi](Pi.md) 
+
+### Github
+
+* [Implementation of EulerGamma](https://github.com/axkr/symja_android_library/blob/master/symja_android_library/matheclipse-core/src/main/java/org/matheclipse/core/builtin/ConstantDefinitions.java#L647) 

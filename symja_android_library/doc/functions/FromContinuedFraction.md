@@ -28,3 +28,7 @@ See
  
 ### Related terms 
 [ContinuedFraction](ContinuedFraction.md)
+
+### Github
+
+* [Implementation of FromContinuedFraction](https://github.com/axkr/symja_android_library/blob/master/symja_android_library/matheclipse-core/src/main/java/org/matheclipse/core/builtin/NumberTheory.java#L2669) 

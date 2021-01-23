@@ -22,3 +22,7 @@ See:
 >> ChineseRemainder({-2,-17}, {284407855036305,47})
 9669867071234368
 ```
+
+### Github
+
+* [Implementation of ChineseRemainder](https://github.com/axkr/symja_android_library/blob/master/symja_android_library/matheclipse-core/src/main/java/org/matheclipse/core/builtin/NumberTheory.java#L665) 

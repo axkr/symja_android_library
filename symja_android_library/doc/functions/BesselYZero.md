@@ -16,3 +16,7 @@ See
 >> BesselYZero(1.3, 3) 
 9.031260842335175
 ```
+
+### Github
+
+* [Implementation of BesselYZero](https://github.com/axkr/symja_android_library/blob/master/symja_android_library/matheclipse-core/src/main/java/org/matheclipse/core/builtin/BesselFunctions.java#L783) 

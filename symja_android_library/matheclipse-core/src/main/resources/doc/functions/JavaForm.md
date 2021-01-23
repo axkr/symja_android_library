@@ -56,3 +56,7 @@ Generate output for `java.lang.Math` `double` or `float` expressions:
 Math.pow(Math.E,3)-Math.cos(Math.pow(Math.PI,2)/x)
 ```
 
+
+### Github
+
+* [Implementation of JavaForm](https://github.com/axkr/symja_android_library/blob/master/symja_android_library/matheclipse-core/src/main/java/org/matheclipse/core/builtin/OutputFunctions.java#L556) 

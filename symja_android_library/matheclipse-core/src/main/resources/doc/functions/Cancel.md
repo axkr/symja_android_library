@@ -22,3 +22,7 @@ Cancel(expr)
 >> Cancel(f(x) / x + x * f(x) / x ^ 2)
 (2*f(x))/x
 ```
+
+### Github
+
+* [Implementation of Cancel](https://github.com/axkr/symja_android_library/blob/master/symja_android_library/matheclipse-core/src/main/java/org/matheclipse/core/builtin/Algebra.java#L532) 

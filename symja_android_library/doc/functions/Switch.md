@@ -42,3 +42,7 @@ Switch called with 2 arguments. Switch must be called with an odd number of argu
 
 Switch(b, b)
 ```
+
+### Github
+
+* [Implementation of Switch](https://github.com/axkr/symja_android_library/blob/master/symja_android_library/matheclipse-core/src/main/java/org/matheclipse/core/builtin/Programming.java#L2621) 

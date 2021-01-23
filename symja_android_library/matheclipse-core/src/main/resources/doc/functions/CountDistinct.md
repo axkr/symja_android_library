@@ -14,3 +14,7 @@ CountDistinct(list)
 >> CountDistinct({{a, a}, {a, a, a}, a, a}) 
 3
 ```
+
+### Github
+
+* [Implementation of CountDistinct](https://github.com/axkr/symja_android_library/blob/master/symja_android_library/matheclipse-core/src/main/java/org/matheclipse/core/builtin/ListFunctions.java#L1775) 

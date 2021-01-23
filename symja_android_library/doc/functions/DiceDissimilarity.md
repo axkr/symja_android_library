@@ -11,3 +11,7 @@ DiceDissimilarity(u, v)
 >> DiceDissimilarity({1, 0, 1, 1, 0, 1, 1}, {0, 1, 1, 0, 0, 0, 1})
 1/2
 ```
+
+### Github
+
+* [Implementation of DiceDissimilarity](https://github.com/axkr/symja_android_library/blob/master/symja_android_library/matheclipse-core/src/main/java/org/matheclipse/core/builtin/Combinatoric.java#L432) 

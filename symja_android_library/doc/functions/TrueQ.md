@@ -21,3 +21,7 @@ False
 >> TrueQ(a)
 False
 ```
+
+### Github
+
+* [Implementation of TrueQ](https://github.com/axkr/symja_android_library/blob/master/symja_android_library/matheclipse-core/src/main/java/org/matheclipse/core/builtin/BooleanFunctions.java#L4018) 

@@ -41,3 +41,7 @@ Log(a)+Log((b*c)^d^e*f)
 
 ### Related terms 
 [Dispatch](Dispatch.md), [Replace](Replace.md), [ReplaceAll](ReplaceAll.md), [ReplaceList](ReplaceList.md), [ReplacePart](ReplacePart.md)
+
+### Github
+
+* [Implementation of ReplaceRepeated](https://github.com/axkr/symja_android_library/blob/master/symja_android_library/matheclipse-core/src/main/java/org/matheclipse/core/builtin/ListFunctions.java#L5576) 

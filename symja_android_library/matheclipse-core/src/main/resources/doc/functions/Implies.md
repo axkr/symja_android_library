@@ -27,3 +27,7 @@ If an expression does not evaluate to `True` or `False`, `Implies` returns a res
 >> Implies(a, Implies(b, Implies(True, c)))
 Implies(a,Implies(b,c))
 ```
+
+### Github
+
+* [Implementation of Implies](https://github.com/axkr/symja_android_library/blob/master/symja_android_library/matheclipse-core/src/main/java/org/matheclipse/core/builtin/BooleanFunctions.java#L2093) 

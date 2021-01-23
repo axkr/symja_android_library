@@ -27,3 +27,7 @@ Through(p(f, g))
 >> Through(f()[x])
 f()
 ```
+
+### Github
+
+* [Implementation of Through](https://github.com/axkr/symja_android_library/blob/master/symja_android_library/matheclipse-core/src/main/java/org/matheclipse/core/builtin/StructureFunctions.java#L2112) 

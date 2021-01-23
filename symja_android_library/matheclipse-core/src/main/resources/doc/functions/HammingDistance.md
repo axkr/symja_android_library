@@ -8,7 +8,8 @@ HammingDistance(a, b)
 
 See:
 * [Wikipedia - Hamming distance](https://en.wikipedia.org/wiki/Hamming_distance)
- 
+* [Youtube - Hamming codes and error correction](https://youtu.be/X8jsijhllIA)
+* [Youtube - Hamming codes part 2, the elegance of it all](https://youtu.be/b3NxrZOu_CE)
 
 ### Examples
 
@@ -25,3 +26,7 @@ The `IgnoreCase` option makes `EditDistance` ignore the case of letters:
 1
 ```
  
+
+### Github
+
+* [Implementation of HammingDistance](https://github.com/axkr/symja_android_library/blob/master/symja_android_library/matheclipse-core/src/main/java/org/matheclipse/core/builtin/StringFunctions.java#L483) 

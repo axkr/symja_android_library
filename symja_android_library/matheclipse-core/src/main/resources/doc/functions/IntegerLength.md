@@ -58,3 +58,7 @@ IntegerLength(3, -2)
 >> IntegerLength /@ (10 ^ Range(100) - 1) == Range(1, 100)
 True
 ```
+
+### Github
+
+* [Implementation of IntegerLength](https://github.com/axkr/symja_android_library/blob/master/symja_android_library/matheclipse-core/src/main/java/org/matheclipse/core/builtin/IntegerFunctions.java#L875) 

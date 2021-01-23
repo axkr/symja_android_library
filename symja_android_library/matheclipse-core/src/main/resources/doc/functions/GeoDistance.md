@@ -26,3 +26,7 @@ Calculate the distance between Oslo and Berlin in kilometers:
 >> UnitConvert(GeoDistance({59.914, 10.752}, {52.523, 13.412}), "km") 
 839.1600759072911[km]
 ```
+
+### Github
+
+* [Implementation of GeoDistance](https://github.com/axkr/symja_android_library/blob/master/symja_android_library/matheclipse-core/src/main/java/org/matheclipse/core/builtin/GeodesyFunctions.java#L29) 

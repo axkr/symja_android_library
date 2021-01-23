@@ -24,3 +24,7 @@ RotateRight(list, n)
 >> RotateRight(x(a, b, c), 2)
 x(b,c,a)
 ```
+
+### Github
+
+* [Implementation of RotateRight](https://github.com/axkr/symja_android_library/blob/master/symja_android_library/matheclipse-core/src/main/java/org/matheclipse/core/builtin/ListFunctions.java#L5901) 

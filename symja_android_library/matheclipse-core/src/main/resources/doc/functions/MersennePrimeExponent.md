@@ -17,3 +17,7 @@ See
 >> Table(MersennePrimeExponent(i), {i,20})
 {2,3,5,7,13,17,19,31,61,89,107,127,521,607,1279,2203,2281,3217,4253,4423}
 ```
+
+### Github
+
+* [Implementation of MersennePrimeExponent](https://github.com/axkr/symja_android_library/blob/master/symja_android_library/matheclipse-core/src/main/java/org/matheclipse/core/builtin/NumberTheory.java#L3190) 

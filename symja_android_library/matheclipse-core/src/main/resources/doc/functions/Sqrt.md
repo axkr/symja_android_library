@@ -38,3 +38,7 @@ True
 >> N(Sqrt(2), 50)
 1.41421356237309504880168872420969807856967187537694 
 ```
+
+### Github
+
+* [Implementation of Sqrt](https://github.com/axkr/symja_android_library/blob/master/symja_android_library/matheclipse-core/src/main/java/org/matheclipse/core/builtin/Arithmetic.java#L4996) 

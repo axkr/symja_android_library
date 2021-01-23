@@ -14,3 +14,7 @@ See
 >> InverseErfc /@ {0, 1, 2}
 {Infinity,0,-Infinity}
 ```
+
+### Github
+
+* [Implementation of InverseErfc](https://github.com/axkr/symja_android_library/blob/master/symja_android_library/matheclipse-core/src/main/java/org/matheclipse/core/builtin/SpecialFunctions.java#L966) 

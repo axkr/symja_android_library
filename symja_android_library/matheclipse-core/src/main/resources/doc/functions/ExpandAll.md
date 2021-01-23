@@ -26,3 +26,7 @@ a^2+Sin(x+x*y)^2+2*a*Sin(x+x*y)
 >> ExpandAll(((1 + x)(1 + y))[x])
 (1+x+y+x*y)[x]
 ```
+
+### Github
+
+* [Implementation of ExpandAll](https://github.com/axkr/symja_android_library/blob/master/symja_android_library/matheclipse-core/src/main/java/org/matheclipse/core/builtin/Algebra.java#L1887) 

@@ -34,3 +34,7 @@ Total(list, {n})
 >> Total({{1, 2, 3}, {4, 5, 6}, {7, 8 ,9}}, {2})
 {6,15,24}
 ```
+
+### Github
+
+* [Implementation of Total](https://github.com/axkr/symja_android_library/blob/master/symja_android_library/matheclipse-core/src/main/java/org/matheclipse/core/builtin/ListFunctions.java#L7107) 

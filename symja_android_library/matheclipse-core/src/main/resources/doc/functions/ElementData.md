@@ -60,3 +60,7 @@ All the known properties:
 "ShearModulus","SpecificHeat","StandardName","ThermalConductivity","VanDerWaalsRadius","VaporizationHeat","VickersHardness",
 "YoungModulus"}
 ```
+
+### Github
+
+* [Implementation of ElementData](https://github.com/axkr/symja_android_library/blob/master/symja_android_library/matheclipse-core/src/main/java/org/matheclipse/core/data/ElementData.java#L89) 

@@ -15,3 +15,7 @@ See:
 >> MatrixMinimalPolynomial({{1, -1, -1}, {1, -2, 1}, {0, 1, -3}}, x)
 -1+x+4*x^2+x^3
 ```
+
+### Github
+
+* [Implementation of MatrixMinimalPolynomial](https://github.com/axkr/symja_android_library/blob/master/symja_android_library/matheclipse-core/src/main/java/org/matheclipse/core/builtin/LinearAlgebra.java#L2811) 

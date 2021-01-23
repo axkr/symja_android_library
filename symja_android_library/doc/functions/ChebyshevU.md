@@ -16,3 +16,7 @@ See:
 >> ChebyshevU(8, x)    
 1-40*x^2+240*x^4-448*x^6+256*x^8  
 ```
+
+### Github
+
+* [Implementation of ChebyshevU](https://github.com/axkr/symja_android_library/blob/master/symja_android_library/matheclipse-core/src/main/java/org/matheclipse/core/builtin/PolynomialFunctions.java#L1591) 

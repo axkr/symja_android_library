@@ -24,3 +24,7 @@ AssociateTo(assoc, list-of-rules)
 
 ### Related terms
 [Association](Association.md),  [AssociationQ](AssociationQ.md), [AssociationMap](AssociationMap.md), [AssociationThread](AssociationThread.md), [Counts](Counts.md), [Lookup](Lookup.md), [KeyExistsQ](KeyExistsQ.md), [Keys](Keys.md), [KeySort](KeySort.md), [Values](Values.md)
+
+### Github
+
+* [Implementation of AssociateTo](https://github.com/axkr/symja_android_library/blob/master/symja_android_library/matheclipse-core/src/main/java/org/matheclipse/core/builtin/AssociationFunctions.java#L105) 

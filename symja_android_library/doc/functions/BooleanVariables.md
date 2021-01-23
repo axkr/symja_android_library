@@ -12,3 +12,7 @@ BooleanVariables(logical-expr)
 >> BooleanVariables(Xor(p,q,r))
 {p,q,r}
 ```
+
+### Github
+
+* [Implementation of BooleanVariables](https://github.com/axkr/symja_android_library/blob/master/symja_android_library/matheclipse-core/src/main/java/org/matheclipse/core/builtin/BooleanFunctions.java#L1099) 

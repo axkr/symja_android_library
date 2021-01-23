@@ -19,3 +19,7 @@ See
 >> Expectation(2*x+3,Distributed(x,{a,b,c,d})) 
 1/4*(12+2*a+2*b+2*c+2*d) 
 ```
+
+### Github
+
+* [Implementation of Expectation](https://github.com/axkr/symja_android_library/blob/master/symja_android_library/matheclipse-core/src/main/java/org/matheclipse/core/builtin/StatisticsFunctions.java#L3560) 

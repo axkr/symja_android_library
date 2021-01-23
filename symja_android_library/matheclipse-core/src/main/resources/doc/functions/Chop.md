@@ -12,3 +12,7 @@ Chop(numerical-expr)
 >> Chop(0.00000000001)
 0
 ```
+
+### Github
+
+* [Implementation of Chop](https://github.com/axkr/symja_android_library/blob/master/symja_android_library/matheclipse-core/src/main/java/org/matheclipse/core/builtin/Arithmetic.java#L680) 

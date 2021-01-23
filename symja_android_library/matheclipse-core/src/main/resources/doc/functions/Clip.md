@@ -60,3 +60,7 @@ Piecewise({{-1,x<-1},{1,x>1}},x)
 
 ### Related terms 
 [Piecewise](Piecewise.md), [PiecewiseExpand](PiecewiseExpand.md) 
+
+### Github
+
+* [Implementation of Clip](https://github.com/axkr/symja_android_library/blob/master/symja_android_library/matheclipse-core/src/main/java/org/matheclipse/core/builtin/Arithmetic.java#L792) 

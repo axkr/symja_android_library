@@ -12,3 +12,7 @@ Fold[f, x, {a, b}]
 >> Fold(test, t1, {a, b, c, d})
 test(test(test(test(t1,a),b),c),d)
 ```
+
+### Github
+
+* [Implementation of Fold](https://github.com/axkr/symja_android_library/blob/master/symja_android_library/matheclipse-core/src/main/java/org/matheclipse/core/builtin/ListFunctions.java#L2674) 

@@ -37,3 +37,7 @@ Sqrt(13297)/2
 Sqrt((-1+E)*E)
 ```
 
+
+### Github
+
+* [Implementation of StandardDeviation](https://github.com/axkr/symja_android_library/blob/master/symja_android_library/matheclipse-core/src/main/java/org/matheclipse/core/builtin/StatisticsFunctions.java#L5877) 

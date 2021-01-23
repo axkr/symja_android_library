@@ -24,3 +24,7 @@ See
  {h,i,0,0}  
  {l,m,n,0}}
 ```
+
+### Github
+
+* [Implementation of LowerTriangularize](https://github.com/axkr/symja_android_library/blob/master/symja_android_library/matheclipse-core/src/main/java/org/matheclipse/core/builtin/LinearAlgebra.java#L2648) 

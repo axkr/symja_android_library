@@ -23,3 +23,7 @@ Sqrt(Pi)
 >> Gamma(2.2)
 1.1018024908797128
 ```
+
+### Github
+
+* [Implementation of Gamma](https://github.com/axkr/symja_android_library/blob/master/symja_android_library/matheclipse-core/src/main/java/org/matheclipse/core/builtin/Arithmetic.java#L1641) 

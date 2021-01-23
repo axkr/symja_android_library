@@ -26,3 +26,7 @@ Man is distinguished, not only by his reason, but by this singular passion from 
 
 ### Related terms 
 [BaseDecode](BaseDecode.md), [BaseEncode](BaseEncode.md), [ByteArrayToString](ByteArrayToString.md), [StringCases](StringCases.md), [StringContainsQ](StringContainsQ.md), [StringCount](StringCount.md), [StringExpression](StringExpression.md), [StringFreeQ](StringFreeQ.md), [StringInsert](StringInsert.md), [StringJoin](StringJoin.md), [StringLength](StringLength.md), [StringMatchQ](StringMatchQ.md), [StringPart](StringPart.md), [StringPosition](StringPosition.md), [StringQ](StringQ.md), [StringReplace](StringReplace.md), [StringRiffle](StringRiffle.md), [StringSplit](StringSplit.md), [StringTake](StringTake.md),  [StringTrim](StringTrim.md)
+
+### Github
+
+* [Implementation of StringToByteArray](https://github.com/axkr/symja_android_library/blob/master/symja_android_library/matheclipse-core/src/main/java/org/matheclipse/core/builtin/StringFunctions.java#L2087) 

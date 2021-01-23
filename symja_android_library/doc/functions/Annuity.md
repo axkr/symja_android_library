@@ -28,3 +28,7 @@ See:
 
 ### Related terms 
 [AnnuityDue](AnnuityDue.md), [EffectiveInterest](EffectiveInterest.md), [TimeValue](TimeValue.md)
+
+### Github
+
+* [Implementation of Annuity](https://github.com/axkr/symja_android_library/blob/master/symja_android_library/matheclipse-core/src/main/java/org/matheclipse/core/builtin/FinancialFunctions.java#L30) 

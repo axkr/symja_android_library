@@ -8,6 +8,7 @@ NullSpace(matrix)
 
 See:     
 * [Wikipedia - Kernel (linear algebra)](http://en.wikipedia.org/wiki/Kernel_%28linear_algebra%29)
+* [Youtube - Inverse matrices, column space and null space | Essence of linear algebra, chapter 7](https://youtu.be/uQhTuRlWMxw)
 
 ### Examples
 
@@ -36,3 +37,7 @@ Argument {1, {2}} at position 1 is not a non-empty rectangular matrix.
 >> NullSpace({1, {2}})    
 NullSpace({1, {2}})   
 ```
+
+### Github
+
+* [Implementation of NullSpace](https://github.com/axkr/symja_android_library/blob/master/symja_android_library/matheclipse-core/src/main/java/org/matheclipse/core/builtin/LinearAlgebra.java#L3330) 

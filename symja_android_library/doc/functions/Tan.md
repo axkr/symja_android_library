@@ -26,3 +26,7 @@ ComplexInfinity
 >> Tan(0.5 Pi)    
 1.633123935319537E16
 ```
+
+### Github
+
+* [Implementation of Tan](https://github.com/axkr/symja_android_library/blob/master/symja_android_library/matheclipse-core/src/main/java/org/matheclipse/core/builtin/ExpTrigsFunctions.java#L2982) 

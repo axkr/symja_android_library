@@ -15,3 +15,7 @@ See
 >> Resultant((x-y)^2-2 , y^3-5, y)
 17-60*x+12*x^2-10*x^3-6*x^4+x^6
 ```
+
+### Github
+
+* [Implementation of Resultant](https://github.com/axkr/symja_android_library/blob/master/symja_android_library/matheclipse-core/src/main/java/org/matheclipse/core/builtin/PolynomialFunctions.java#L929) 

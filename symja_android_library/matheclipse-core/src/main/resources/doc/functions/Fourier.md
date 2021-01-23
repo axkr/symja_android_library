@@ -29,3 +29,7 @@ Fourier({1,2,0,0,7})
 ### Related terms
 
 [InverseFourier](InverseFourier.md) 
+
+### Github
+
+* [Implementation of Fourier](https://github.com/axkr/symja_android_library/blob/master/symja_android_library/matheclipse-core/src/main/java/org/matheclipse/core/reflection/system/Fourier.java#L15) 

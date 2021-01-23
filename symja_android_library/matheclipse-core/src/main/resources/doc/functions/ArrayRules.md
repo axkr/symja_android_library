@@ -24,3 +24,7 @@ ArrayRules(nested-lists)
 
 ### Related terms
 [SparseArray](SparseArray.md)
+
+### Github
+
+* [Implementation of ArrayRules](https://github.com/axkr/symja_android_library/blob/master/symja_android_library/matheclipse-core/src/main/java/org/matheclipse/core/builtin/SparseArrayFunctions.java#L69) 

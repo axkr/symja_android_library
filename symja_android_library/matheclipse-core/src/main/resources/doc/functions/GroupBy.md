@@ -24,3 +24,7 @@ A hierachical `GroupBy`
 >> hg(expr, func) 
 {a->{b->c->{func(d),func(f)},func(c)},b->{func(c),func(d)}}
 ```
+
+### Github
+
+* [Implementation of GroupBy](https://github.com/axkr/symja_android_library/blob/master/symja_android_library/matheclipse-core/src/main/java/org/matheclipse/core/builtin/ListFunctions.java#L2956) 

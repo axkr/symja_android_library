@@ -13,3 +13,7 @@ Surd(expr, n)
 2.51984
 ```
  
+
+### Github
+
+* [Implementation of Surd](https://github.com/axkr/symja_android_library/blob/master/symja_android_library/matheclipse-core/src/main/java/org/matheclipse/core/builtin/Arithmetic.java#L5039) 

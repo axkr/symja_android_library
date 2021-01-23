@@ -21,3 +21,7 @@ See
 >> PolynomialExtendedGCD(x^8 + x^4 + x^3 + x + 1, x^6 + x^4 + x + 1, x, Modulus->2)
 {1,{1+x^2+x^3+x^4+x^5,x+x^3+x^6+x^7}}
 ```
+
+### Github
+
+* [Implementation of PolynomialExtendedGCD](https://github.com/axkr/symja_android_library/blob/master/symja_android_library/matheclipse-core/src/main/java/org/matheclipse/core/builtin/Algebra.java#L2715) 

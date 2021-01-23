@@ -21,3 +21,7 @@ f(3,4,5,1,2)
 >> RandomSample(f(1,2,3,4,5),3)
 f(3,4,1)
 ```
+
+### Github
+
+* [Implementation of RandomSample](https://github.com/axkr/symja_android_library/blob/master/symja_android_library/matheclipse-core/src/main/java/org/matheclipse/core/builtin/RandomFunctions.java#L637) 

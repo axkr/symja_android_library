@@ -27,3 +27,7 @@ GatherBy(list, {f, g,...})
 >> GatherBy({{1, 2}, {2, 1}, {3, 5}, {5, 1}, {2, 2, 2}}, {Total, Length})
 {{{{1,2},{2,1}}},{{{3,5}}},{{{5,1}},{{2,2,2}}}} 
 ```
+
+### Github
+
+* [Implementation of GatherBy](https://github.com/axkr/symja_android_library/blob/master/symja_android_library/matheclipse-core/src/main/java/org/matheclipse/core/builtin/ListFunctions.java#L2900) 

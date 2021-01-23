@@ -16,3 +16,7 @@ Riffle(list1, list2)
 >> Riffle({a, b, c}, {x, y, z})
 {a,x,b,y,c,z}
 ```
+
+### Github
+
+* [Implementation of Riffle](https://github.com/axkr/symja_android_library/blob/master/symja_android_library/matheclipse-core/src/main/java/org/matheclipse/core/builtin/ListFunctions.java#L5727) 

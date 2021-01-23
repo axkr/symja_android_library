@@ -11,3 +11,7 @@ See:
 * [Wikipedia - Bessel function - Relation to hypergeometric series](https://en.wikipedia.org/wiki/Generalized_hypergeometric_function)https://en.wikipedia.org/wiki/Bessel_function#Relation_to_hypergeometric_series)
 * [Fungrim - Confluent hypergeometric functions](http://fungrim.org/topic/Confluent_hypergeometric_functions/)
 
+
+### Github
+
+* [Implementation of Hypergeometric0F1](https://github.com/axkr/symja_android_library/blob/master/symja_android_library/matheclipse-core/src/main/java/org/matheclipse/core/builtin/HypergeometricFunctions.java#L706) 

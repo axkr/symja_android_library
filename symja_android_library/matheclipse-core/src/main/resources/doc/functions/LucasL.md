@@ -31,3 +31,7 @@ See
 140512125*x^34+37469900*x^36+8021650*x^38+1357510*x^40+177375*x^42+17250*x^44+ 
 1175*x^46+50*x^48+x^50
 ```
+
+### Github
+
+* [Implementation of LucasL](https://github.com/axkr/symja_android_library/blob/master/symja_android_library/matheclipse-core/src/main/java/org/matheclipse/core/builtin/NumberTheory.java#L2993) 

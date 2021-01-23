@@ -12,3 +12,7 @@ HeavisideTheta(expr1, expr2, ... exprN)
 >> HeavisideTheta[42]
 1
 ```
+
+### Github
+
+* [Implementation of HeavisideTheta](https://github.com/axkr/symja_android_library/blob/master/symja_android_library/matheclipse-core/src/main/java/org/matheclipse/core/reflection/system/HeavisideTheta.java#L15) 

@@ -21,3 +21,7 @@ I*1.5707963267948966
 >> ArcCosh(1.4)
 0.867014726490565
 ```  
+
+### Github
+
+* [Implementation of ArcCosh](https://github.com/axkr/symja_android_library/blob/master/symja_android_library/matheclipse-core/src/main/java/org/matheclipse/core/builtin/ExpTrigsFunctions.java#L285) 

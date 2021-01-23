@@ -74,3 +74,7 @@ Use the option `Heads -> True` to include heads:
 >> Level(f(g(h))[x], {-2, -1}, Heads -> True)
 {f,g,h,g(h),x,f(g(h))[x]} 
 ```
+
+### Github
+
+* [Implementation of Level](https://github.com/axkr/symja_android_library/blob/master/symja_android_library/matheclipse-core/src/main/java/org/matheclipse/core/builtin/ListFunctions.java#L3603) 

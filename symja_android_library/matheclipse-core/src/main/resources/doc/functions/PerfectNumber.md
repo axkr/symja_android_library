@@ -17,3 +17,7 @@ See
 >> Table(PerfectNumber(i), {i,5})
 {6,28,496,8128,33550336}
 ```
+
+### Github
+
+* [Implementation of PerfectNumber](https://github.com/axkr/symja_android_library/blob/master/symja_android_library/matheclipse-core/src/main/java/org/matheclipse/core/builtin/NumberTheory.java#L3892) 

@@ -26,3 +26,7 @@ Man is distinguished, not only by his reason, but by this singular passion from 
 
 ### Related terms 
 [BaseEncode](BaseEncode.md), [ByteArrayToString](ByteArrayToString.md), [StringToByteArray](StringToByteArray.md)
+
+### Github
+
+* [Implementation of BaseDecode](https://github.com/axkr/symja_android_library/blob/master/symja_android_library/matheclipse-core/src/main/java/org/matheclipse/core/builtin/StringFunctions.java#L110) 

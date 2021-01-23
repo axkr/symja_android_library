@@ -23,3 +23,7 @@ b
 >> Extract({{a, b}, {c, d}}, {{1}, {2, 2}})
 {{a,b},d}
 ```
+
+### Github
+
+* [Implementation of Extract](https://github.com/axkr/symja_android_library/blob/master/symja_android_library/matheclipse-core/src/main/java/org/matheclipse/core/builtin/ListFunctions.java#L2488) 

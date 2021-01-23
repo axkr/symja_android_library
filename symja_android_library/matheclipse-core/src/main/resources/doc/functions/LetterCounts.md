@@ -17,3 +17,7 @@ See
 "k"->1,"l"->1,"m"->1,"n"->1,"o"->4,"p"->1,"q"->1,"r"->2,"s"->1,"t"->1,"u"->2,"v"->1,"w"->1,"x"->1,"y"->1,"z"->1|>
 ```
 
+
+### Github
+
+* [Implementation of LetterCounts](https://github.com/axkr/symja_android_library/blob/master/symja_android_library/matheclipse-core/src/main/java/org/matheclipse/core/builtin/AssociationFunctions.java#L874) 

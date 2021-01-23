@@ -21,3 +21,7 @@ See
 >> Projection({5, I, 7}, {1, 1, 1})
 {4+I*1/3,4+I*1/3,4+I*1/3}
 ```
+
+### Github
+
+* [Implementation of Projection](https://github.com/axkr/symja_android_library/blob/master/symja_android_library/matheclipse-core/src/main/java/org/matheclipse/core/builtin/LinearAlgebra.java#L3460) 

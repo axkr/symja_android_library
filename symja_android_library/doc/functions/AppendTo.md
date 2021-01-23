@@ -41,3 +41,7 @@ a is not a variable with a value, so its value cannot be changed.
 >> AppendTo(a, b)    
 AppendTo(a, b)  
 ``` 
+
+### Github
+
+* [Implementation of AppendTo](https://github.com/axkr/symja_android_library/blob/master/symja_android_library/matheclipse-core/src/main/java/org/matheclipse/core/builtin/ListFunctions.java#L649) 

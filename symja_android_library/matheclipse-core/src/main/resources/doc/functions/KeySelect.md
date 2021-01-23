@@ -21,3 +21,7 @@ KeySelect({key1->value1, ...}, head)
 <|alpha->2,x->4|>
 ```
 
+
+### Github
+
+* [Implementation of KeySelect](https://github.com/axkr/symja_android_library/blob/master/symja_android_library/matheclipse-core/src/main/java/org/matheclipse/core/builtin/AssociationFunctions.java#L731) 

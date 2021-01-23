@@ -19,3 +19,7 @@ SplitBy(list, f)
 >> SplitBy(Tuples({1, 2}, 3), First)
 {{{1,1,1},{1,1,2},{1,2,1},{1,2,2}},{{2,1,1},{2,1,2},{2,2,1},{2,2,2}}} 
 ```
+
+### Github
+
+* [Implementation of SplitBy](https://github.com/axkr/symja_android_library/blob/master/symja_android_library/matheclipse-core/src/main/java/org/matheclipse/core/builtin/ListFunctions.java#L6190) 

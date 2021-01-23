@@ -15,3 +15,7 @@ See
 >> Kurtosis({1.1, 1.2, 1.4, 2.1, 2.4})
 1.42098
 ```
+
+### Github
+
+* [Implementation of Kurtosis](https://github.com/axkr/symja_android_library/blob/master/symja_android_library/matheclipse-core/src/main/java/org/matheclipse/core/builtin/StatisticsFunctions.java#L3978) 

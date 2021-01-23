@@ -28,3 +28,7 @@ c+(a-b)*x+(a+b)*x^2
 >> Collect(x^2 + y*x^2 + x*y + y + a*y, {x, y})
 (1+a)*y+x*y+x^2*(1+y)
 ```
+
+### Github
+
+* [Implementation of Collect](https://github.com/axkr/symja_android_library/blob/master/symja_android_library/matheclipse-core/src/main/java/org/matheclipse/core/builtin/Algebra.java#L877) 

@@ -22,3 +22,7 @@ E
 >> Exp(x) //FullForm   
 "Power(E, x)"  
 ```
+
+### Github
+
+* [Implementation of Exp](https://github.com/axkr/symja_android_library/blob/master/symja_android_library/matheclipse-core/src/main/java/org/matheclipse/core/builtin/ExpTrigsFunctions.java#L2046) 

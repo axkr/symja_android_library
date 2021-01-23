@@ -69,3 +69,7 @@ All other coefficients under `coeff[[6]]` are zero which agrees with the result 
 ### Related terms
 
 [CoefficientList](CoefficientList.md), [Exponent](Exponent.md)    
+
+### Github
+
+* [Implementation of Coefficient](https://github.com/axkr/symja_android_library/blob/master/symja_android_library/matheclipse-core/src/main/java/org/matheclipse/core/builtin/PolynomialFunctions.java#L149) 

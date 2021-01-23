@@ -16,3 +16,7 @@ See
 >> StirlingS1(9, 6)
 -4536
 ```
+
+### Github
+
+* [Implementation of StirlingS1](https://github.com/axkr/symja_android_library/blob/master/symja_android_library/matheclipse-core/src/main/java/org/matheclipse/core/builtin/NumberTheory.java#L4623) 

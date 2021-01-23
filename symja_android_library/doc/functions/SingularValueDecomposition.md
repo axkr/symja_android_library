@@ -44,3 +44,7 @@ Argument {1, {2}} at position 1 is not a non-empty rectangular matrix.
 >> SingularValueDecomposition({1, {2}})
 SingularValueDecomposition({1, {2}})
 ```
+
+### Github
+
+* [Implementation of SingularValueDecomposition](https://github.com/axkr/symja_android_library/blob/master/symja_android_library/matheclipse-core/src/main/java/org/matheclipse/core/builtin/LinearAlgebra.java#L3858) 

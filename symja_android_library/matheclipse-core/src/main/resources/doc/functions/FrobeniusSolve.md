@@ -27,3 +27,7 @@ Solve the diophantine equation `2*x + 3*y + 4*z == 29`:
 
 ### Related terms 
 [FrobeniusNumber](FrobeniusNumber.md), [IntegerPartitions](IntegerPartitions.md) 
+
+### Github
+
+* [Implementation of FrobeniusSolve](https://github.com/axkr/symja_android_library/blob/master/symja_android_library/matheclipse-core/src/main/java/org/matheclipse/core/reflection/system/FrobeniusSolve.java#L54) 

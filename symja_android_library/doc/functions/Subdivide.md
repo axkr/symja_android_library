@@ -33,3 +33,7 @@ Subdivide(from, to, n)
 >> Subdivide({10,5}, {5,15}, 4)
 {{10,5},{35/4,15/2},{15/2,10},{25/4,25/2},{5,15}}
 ```
+
+### Github
+
+* [Implementation of Subdivide](https://github.com/axkr/symja_android_library/blob/master/symja_android_library/matheclipse-core/src/main/java/org/matheclipse/core/builtin/ListFunctions.java#L6248) 

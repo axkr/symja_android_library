@@ -33,3 +33,7 @@ minus einhundertdreiundzwanzigtausendsieben
 >> IntegerName(123007,"Spanish") 
 ciento veintitrés mil siete
 ```
+
+### Github
+
+* [Implementation of IntegerName](https://github.com/axkr/symja_android_library/blob/master/symja_android_library/matheclipse-core/src/main/java/org/matheclipse/core/builtin/OutputFunctions.java#L374) 

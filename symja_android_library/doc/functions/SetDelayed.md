@@ -11,7 +11,7 @@ expr := value
 
 ### Examples
 
-`SetDelayed` is like `Set`, except it has attribute `HoldAll`, thus it does not evaluate the right-hand side immediately, but evaluates it whene needed.
+`SetDelayed` is like `Set`, except it has attribute `HoldAll`, thus it does not evaluate the right-hand side immediately, but evaluates it when needed.
 
 ```
 >> Attributes(SetDelayed)    
@@ -45,3 +45,7 @@ p(3)
 >> f(-3)    
 f(-3)    
 ```
+
+### Github
+
+* [Implementation of SetDelayed](https://github.com/axkr/symja_android_library/blob/master/symja_android_library/matheclipse-core/src/main/java/org/matheclipse/core/builtin/PatternMatching.java#L1976) 

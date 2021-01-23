@@ -19,3 +19,7 @@ If an expression does not evaluate to `True` or `False`, `And` returns a result 
 >> a && b && True && c
 a && b && c
 ```
+
+### Github
+
+* [Implementation of And](https://github.com/axkr/symja_android_library/blob/master/symja_android_library/matheclipse-core/src/main/java/org/matheclipse/core/builtin/BooleanFunctions.java#L566) 

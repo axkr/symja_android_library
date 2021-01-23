@@ -24,3 +24,7 @@ Convert from degrees to radians
 >> QuantityMagnitude(Quantity(360, "deg"), "rad")
 2*Pi
 ```
+
+### Github
+
+* [Implementation of QuantityMagnitude](https://github.com/axkr/symja_android_library/blob/master/symja_android_library/matheclipse-core/src/main/java/org/matheclipse/core/builtin/QuantityFunctions.java#L314) 

@@ -19,3 +19,7 @@ See:
 0.025
 ```
 
+
+### Github
+
+* [Implementation of Covariance](https://github.com/axkr/symja_android_library/blob/master/symja_android_library/matheclipse-core/src/main/java/org/matheclipse/core/builtin/StatisticsFunctions.java#L3094) 

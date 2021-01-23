@@ -15,3 +15,7 @@ See:
 >> CartesianProduct({1,2},{3,4})
 {{1,3},{1,4},{2,3},{2,4}}
 ```
+
+### Github
+
+* [Implementation of CartesianProduct](https://github.com/axkr/symja_android_library/blob/master/symja_android_library/matheclipse-core/src/main/java/org/matheclipse/core/builtin/Combinatoric.java#L93) 

@@ -18,3 +18,7 @@ See:
 -1.150818666457047+I*0.8694047522371576 
 ```
   
+
+### Github
+
+* [Implementation of Haversine](https://github.com/axkr/symja_android_library/blob/master/symja_android_library/matheclipse-core/src/main/java/org/matheclipse/core/builtin/ExpTrigsFunctions.java#L2063) 

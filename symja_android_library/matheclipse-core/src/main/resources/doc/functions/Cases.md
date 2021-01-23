@@ -44,3 +44,7 @@ Cases(list, pattern, ls)
 
 ### Related terms 
 [Pick](Pick.md), [Select](Select.md)
+
+### Github
+
+* [Implementation of Cases](https://github.com/axkr/symja_android_library/blob/master/symja_android_library/matheclipse-core/src/main/java/org/matheclipse/core/builtin/ListFunctions.java#L1059) 

@@ -25,3 +25,7 @@ The order of the items inside the sub lists is the same as in the original list.
 >> Gather({1/3, 2/6, 1/9})
 {{1/3,1/3},{1/9}}
 ```
+
+### Github
+
+* [Implementation of Gather](https://github.com/axkr/symja_android_library/blob/master/symja_android_library/matheclipse-core/src/main/java/org/matheclipse/core/builtin/ListFunctions.java#L2815) 

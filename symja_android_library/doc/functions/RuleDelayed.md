@@ -18,3 +18,7 @@ x :> y
 >> Cases({1, f(2), f(3, 3, 3), 4, f(5, 5)}, f(x__) -> Plus(x))
 {2,3,3,3,5,5}
 ```
+
+### Github
+
+* [Implementation of RuleDelayed](https://github.com/axkr/symja_android_library/blob/master/symja_android_library/matheclipse-core/src/main/java/org/matheclipse/core/builtin/PatternMatching.java#L1730) 

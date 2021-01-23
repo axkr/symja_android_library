@@ -40,3 +40,7 @@ With `JSForm` you can display the generated JavaScript form of the `Manipulate` 
 
 ### Related terms 
 [Manipulate](Manipulate.md) 
+
+### Github
+
+* [Implementation of JSForm](https://github.com/axkr/symja_android_library/blob/master/symja_android_library/matheclipse-core/src/main/java/org/matheclipse/core/builtin/OutputFunctions.java#L603) 

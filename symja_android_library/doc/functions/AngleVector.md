@@ -34,3 +34,7 @@ AngleVector({x, y}, {r, phi})
 {1+Cos(a),10+Sin(a)}
 ```
  
+
+### Github
+
+* [Implementation of AngleVector](https://github.com/axkr/symja_android_library/blob/master/symja_android_library/matheclipse-core/src/main/java/org/matheclipse/core/builtin/ExpTrigsFunctions.java#L143) 

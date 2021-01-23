@@ -55,3 +55,7 @@ Object a at position `{2, 1}` in `MapThread(f, {a, b}, 1)` has only `0` of requi
 >> MapThread(f, {a, b}, 1)    
 MapThread(f, {a, b}, 1)    
 ```
+
+### Github
+
+* [Implementation of MapThread](https://github.com/axkr/symja_android_library/blob/master/symja_android_library/matheclipse-core/src/main/java/org/matheclipse/core/builtin/StructureFunctions.java#L1211) 

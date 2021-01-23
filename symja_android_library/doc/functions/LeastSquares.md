@@ -13,3 +13,7 @@ LeastSquares(matrix, right)
 {-1577780898195/827587904419-I*11087326045520/827587904419,35583840059240/5793115330933+I*275839049310660/5793115330933,-3352155369084/827587904419-I*2832105547140/827587904419}
 ```
  
+
+### Github
+
+* [Implementation of LeastSquares](https://github.com/axkr/symja_android_library/blob/master/symja_android_library/matheclipse-core/src/main/java/org/matheclipse/core/builtin/LinearAlgebra.java#L2246) 

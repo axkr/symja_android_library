@@ -43,3 +43,7 @@ x(a,b,c,0,0)
 161,169,177,182,190,195,203,211,216,224,232,237,245,250,258,266,271,279,284,292,
 300,305,313,321,326,334,339,347,355,360,368,373}
 ```
+
+### Github
+
+* [Implementation of PadRight](https://github.com/axkr/symja_android_library/blob/master/symja_android_library/matheclipse-core/src/main/java/org/matheclipse/core/builtin/ListFunctions.java#L4137) 

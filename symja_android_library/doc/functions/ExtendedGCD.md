@@ -37,3 +37,7 @@ Compute the greatest common divisor and check the result:
 2
 ```
 
+
+### Github
+
+* [Implementation of ExtendedGCD](https://github.com/axkr/symja_android_library/blob/master/symja_android_library/matheclipse-core/src/main/java/org/matheclipse/core/builtin/NumberTheory.java#L1851) 

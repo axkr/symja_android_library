@@ -16,3 +16,7 @@ BooleanTable(logical-expr, variables)
 >> BooleanTable(Xor(p, q, r), {p, q, r})
 {True,False,False,True,False,True,True,False}
 ```
+
+### Github
+
+* [Implementation of BooleanTable](https://github.com/axkr/symja_android_library/blob/master/symja_android_library/matheclipse-core/src/main/java/org/matheclipse/core/builtin/BooleanFunctions.java#L1002) 
