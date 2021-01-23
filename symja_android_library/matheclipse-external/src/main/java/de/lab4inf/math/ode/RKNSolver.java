@@ -77,11 +77,11 @@ public class RKNSolver extends AbstractOdeSolver implements SecondOrderOdeSolver
    * @param y0 double the value y(x0).
    * @param dy0 double the value y'(x0).
    * @param h double the increment in x
-   * @param dy reference to the differential equation
+   * @param function <code>f(x,y,y'')</code> function
    * @return double the approximate solution y1 and dy1 at point x1=x0+h
    */
   private double[] nextStepRKN(
-      final double x0, final double y0, final double dy0, final double h, final Function fct) {
+      final double x0, final double y0, final double dy0, final double h, final Function function) {
     double h2 = h / 2, hq = h * h;
     double y, dy;
     double k1, k2, k3, k4;
@@ -90,19 +90,19 @@ public class RKNSolver extends AbstractOdeSolver implements SecondOrderOdeSolver
     double x1 = x0, x2 = x0 + h2, x3 = x0 + h2, x4 = x0 + h;
     y1 = y0;
     dy1 = dy0;
-    k1 = fct.f(x1, y1, dy1);
+    k1 = function.f(x1, y1, dy1);
 
     y2 = y0 + h2 * dy0 + hq * k1 / 8;
     dy2 = dy0 + h2 * k1;
-    k2 = fct.f(x2, y2, dy2);
+    k2 = function.f(x2, y2, dy2);
 
     y3 = y2;
     dy3 = dy0 + h2 * k2;
-    k3 = fct.f(x3, y3, dy3);
+    k3 = function.f(x3, y3, dy3);
 
     y4 = y0 + h * dy0 + hq * k3 / 2;
     dy4 = dy0 + h * k3;
-    k4 = fct.f(x4, y4, dy4);
+    k4 = function.f(x4, y4, dy4);
 
     y = y0 + h * dy0 + hq * (k1 + k2 + k3) / 6;
     dy = dy0 + h * (k1 + 2 * k2 + 2 * k3 + k4) / 6;

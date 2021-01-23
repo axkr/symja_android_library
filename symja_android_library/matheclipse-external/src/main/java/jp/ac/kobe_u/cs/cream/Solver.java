@@ -149,21 +149,6 @@ public abstract class Solver implements Runnable {
     clearBest();
   }
 
-  /**
-   * Sets the monitor.
-   *
-   * @param monitor monitor
-   */
-  //	public void setMonitor(Monitor monitor) {
-  //		this.monitor = monitor;
-  //		monitor.add(this);
-  //	}
-
-  /** Gets the monitor. */
-  //	public Monitor getMonitor() {
-  //		return monitor;
-  //	}
-
   /** Resets the ID counter to be 0. */
   public static void resetIDCounter() {
     idCounter = 0;

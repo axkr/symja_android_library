@@ -2444,46 +2444,6 @@ public final class LinearAlgebra extends L4MObject {
   }
 
   /**
-   * Swap element k with element j of vector v.
-   *
-   * @param v vector with elements to exchange
-   * @param j first index
-   * @param k second index
-   */
-  // public static void swap(final double[] v, final int j, final int k) {
-  // double t = v[k];
-  // v[k] = v[j];
-  // v[j] = t;
-  // }
-
-  /**
-   * Swap element k with element j of vector v.
-   *
-   * @param v vector with elements to exchange
-   * @param j first index
-   * @param k second index
-   */
-  // public static void swap(final long[] v, final int j, final int k) {
-  // long t = v[k];
-  // v[k] = v[j];
-  // v[j] = t;
-  // }
-
-  /**
-   * Swap element k with element j of vector v.
-   *
-   * @param v vector with elements to exchange
-   * @param j first index
-   * @param k second index
-   */
-  // public static void swap(final int[] v, final int j, final int k) {
-  // int t = v[k];
-  // v[k] = v[j];
-  // v[j] = t;
-  // }
-  //
-
-  /**
    * Create the strike matrix, that is a copy of x without row i and column j.
    *
    * @param x double[][] the matrix to copy
