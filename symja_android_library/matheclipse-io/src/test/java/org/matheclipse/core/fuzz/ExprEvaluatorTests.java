@@ -18,6 +18,7 @@ import org.matheclipse.core.eval.interfaces.IFunctionEvaluator;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.expression.S;
 import org.matheclipse.core.expression.data.ByteArrayExpr;
+import org.matheclipse.core.expression.data.NumericArrayExpr;
 import org.matheclipse.core.expression.data.SparseArrayExpr;
 import org.matheclipse.core.form.output.OutputFormFactory;
 import org.matheclipse.core.interfaces.IAST;
@@ -105,11 +106,14 @@ public class ExprEvaluatorTests extends TestCase {
     ByteArrayExpr b0a = ByteArrayExpr.newInstance(b0Array);
     F.x.setAttributes(ISymbol.PROTECTED);
     F.y.setAttributes(ISymbol.PROTECTED);
-
+    double[] doubleArr = new double[] {1.0, -1.0, 0.0, 2.0, 100.0, 200.0};
+    int[] dims = new int[] {2, 3};
+    NumericArrayExpr nae = new NumericArrayExpr(doubleArr, dims, NumericArrayExpr.Real64);
     IAST seedList =
         F.List( //
             ba, //
             b0a, //
+            nae, //
             // F.NIL, //
             F.complex(-0.5, 0.5), //
             F.complex(0.0, 0.5), //
@@ -992,5 +996,29 @@ public class ExprEvaluatorTests extends TestCase {
         }
       }
     }
+  }
+
+  public void testTogether() {
+    // Together(1+SparseArray(Number of elements: 0 Dimensions: {2,2} Default value: 0))
+    IExpr sa = SparseArrayExpr.newDenseList(F.List(F.List(F.C1, F.C0), F.List(F.C0, F.C1)), F.C0);
+    checkEvaluator(F.Together(F.Plus(F.C1, sa)), //
+    		"1+SparseArray(Number of elements: 2 Dimensions: {2,2} Default value: 0)"
+    		);
+  }
+
+  void checkEvaluator(IAST ast, String expected) {
+    EvalEngine engine = EvalEngine.get();
+    try {
+      IFunctionEvaluator evaluator =
+          (IFunctionEvaluator) ((IBuiltInSymbol) ast.topHead()).getEvaluator();
+      if (evaluator instanceof IFunctionEvaluator) {
+        IExpr result = evaluator.evaluate(ast, engine);
+        assertEquals(expected, result.toString());
+        return;
+      }
+    } catch (RuntimeException rex) {
+      rex.printStackTrace();
+    }
+    fail();
   }
 }
