@@ -20,7 +20,6 @@ import org.matheclipse.core.eval.exception.Validate;
 import org.matheclipse.core.eval.exception.ValidateException;
 import org.matheclipse.core.eval.interfaces.AbstractCoreFunctionEvaluator;
 import org.matheclipse.core.eval.interfaces.AbstractFunctionEvaluator;
-import org.matheclipse.core.eval.interfaces.IFunctionEvaluator;
 import org.matheclipse.core.eval.interfaces.ISetEvaluator;
 import org.matheclipse.core.eval.interfaces.ISetValueEvaluator;
 import org.matheclipse.core.eval.util.Lambda;
@@ -104,7 +103,7 @@ public final class PatternMatching {
 
     @Override
     public IExpr evaluate(final IAST ast, EvalEngine engine) {
-      if (ast.head().equals(F.Blank)) {
+      if (ast.head().equals(S.Blank)) {
         if (ast.isAST0()) {
           return F.$b();
         }
@@ -131,7 +130,7 @@ public final class PatternMatching {
 
     @Override
     public IExpr evaluate(final IAST ast, EvalEngine engine) {
-      if (ast.head().equals(F.BlankSequence)) {
+      if (ast.head().equals(S.BlankSequence)) {
         if (ast.isAST0()) {
           return F.$ps((ISymbol) null);
         }
@@ -158,7 +157,7 @@ public final class PatternMatching {
 
     @Override
     public IExpr evaluate(final IAST ast, EvalEngine engine) {
-      if (ast.head().equals(F.BlankNullSequence)) {
+      if (ast.head().equals(S.BlankNullSequence)) {
         if (ast.isAST0()) {
           return F.$ps((ISymbol) null, true);
         }
@@ -219,11 +218,11 @@ public final class PatternMatching {
         if (!expr.isSymbol() || ((ISymbol) expr).isProtected()) {
           // Symbol `1` is Protected.
           IOFunctions.printMessage(ast.topHead(), "wrsym", F.List(expr), engine);
-          return F.Null;
+          return S.Null;
         }
       }
       Lambda.forEach(ast, x -> x.isSymbol(), x -> ((ISymbol) x).clear(engine));
-      return F.Null;
+      return S.Null;
     }
 
     @Override
@@ -254,12 +253,12 @@ public final class PatternMatching {
         if (!expr.isSymbol() || ((ISymbol) expr).isProtected()) {
           // Symbol `1` is Protected.
           IOFunctions.printMessage(ast.topHead(), "wrsym", F.List(expr), engine);
-          return F.Null;
+          return S.Null;
         }
       }
 
       Lambda.forEach(ast, x -> x.isSymbol(), x -> ((ISymbol) x).clearAll(engine));
-      return F.Null;
+      return S.Null;
     }
 
     @Override
@@ -415,7 +414,7 @@ public final class PatternMatching {
         ISymbol symbol = (ISymbol) leftHandSide.first();
         if (symbol.isProtected()) {
           IOFunctions.printMessage(
-              F.Default, "write", F.List(symbol, leftHandSide), EvalEngine.get());
+              S.Default, "write", F.List(symbol, leftHandSide), EvalEngine.get());
           throw new FailedException();
         }
         if (leftHandSide.size() == 2 && leftHandSide.first().isSymbol()) {
@@ -503,7 +502,7 @@ public final class PatternMatching {
           }
         }
       }
-      return F.Null;
+      return S.Null;
     }
 
     @Override
@@ -623,7 +622,7 @@ public final class PatternMatching {
         return engine.evaluate(ast.arg1());
       }
       IASTMutable sequence = ast.copy();
-      sequence.set(0, F.Identity);
+      sequence.set(0, S.Identity);
       return engine.evaluate(sequence);
     }
 
@@ -931,7 +930,7 @@ public final class PatternMatching {
           boolean longForm = true;
           if (ast.size() == 3) {
             final OptionArgs options = new OptionArgs(ast.topHead(), ast, 2, engine);
-            if (options.isFalse(F.LongForm)) {
+            if (options.isFalse(S.LongForm)) {
               longForm = false;
             }
           }
@@ -980,7 +979,7 @@ public final class PatternMatching {
               }
             }
           }
-          return F.Null;
+          return S.Null;
         } catch (RuntimeException rex) {
           //
           if (FEConfig.SHOW_STACKTRACE) {
@@ -1025,6 +1024,7 @@ public final class PatternMatching {
       return F.NIL;
     }
 
+    @Override
     public IExpr evaluateSet(
         final IExpr leftHandSide,
         IExpr rightHandSide,
@@ -1045,7 +1045,7 @@ public final class PatternMatching {
           if (builtinSymbol.equals(S.Set)) {
             return message;
           }
-          return F.Null;
+          return S.Null;
         }
       }
       return F.NIL;
@@ -1098,7 +1098,7 @@ public final class PatternMatching {
 
     @Override
     public IExpr evaluate(final IAST ast, EvalEngine engine) {
-      if (ast.head().equals(F.Optional)) {
+      if (ast.head().equals(S.Optional)) {
         // convert only special forms of _. or x_.
         if (ast.size() == 2) {
           IExpr arg1 = engine.evaluate(ast.arg1());
@@ -1158,6 +1158,7 @@ public final class PatternMatching {
       return F.NIL;
     }
 
+    @Override
     public IExpr evaluateSet(
         final IExpr leftHandSide,
         IExpr rightHandSide,
@@ -1178,7 +1179,7 @@ public final class PatternMatching {
           if (builtinSymbol.equals(S.Set)) {
             return rightHandSide;
           }
-          return F.Null;
+          return S.Null;
         }
       }
       return F.NIL;
@@ -1198,7 +1199,7 @@ public final class PatternMatching {
   public static class OptionValue extends AbstractCoreFunctionEvaluator {
     @Override
     public IExpr evaluate(final IAST ast, EvalEngine engine) {
-      if (ast.head().equals(F.OptionValue)) {
+      if (ast.head().equals(S.OptionValue)) {
         IASTAppendable optionsPattern = null;
         IExpr arg1 = engine.evaluate(ast.arg1());
         IExpr rhsRuleValue = F.NIL;
@@ -1449,16 +1450,16 @@ public final class PatternMatching {
             if (arg2.isAST()) {
 
               if (arg2.size() == 1) {
-                if (arg2.isAST(F.Blank)) {
+                if (arg2.isAST(S.Blank)) {
                   return F.$p(symbol);
                 }
-                if (arg2.isAST(F.BlankSequence)) {
+                if (arg2.isAST(S.BlankSequence)) {
                   return F.$ps(symbol, null, false, false);
                 }
-                if (arg2.isAST(F.BlankNullSequence)) {
+                if (arg2.isAST(S.BlankNullSequence)) {
                   return F.$ps(symbol, null, false, true);
                 }
-                if (arg2.isAST(F.OptionsPattern)) {
+                if (arg2.isAST(S.OptionsPattern)) {
                   return F.$OptionsPattern(symbol);
                 }
               } else if (arg2.size() == 2) {
@@ -1466,16 +1467,16 @@ public final class PatternMatching {
                 if (first.isAST()) {
                   first = engine.evalHoldPattern((IAST) first);
                 }
-                if (arg2.isAST(F.Blank)) {
+                if (arg2.isAST(S.Blank)) {
                   return F.$p(symbol, first);
                 }
-                if (arg2.isAST(F.BlankSequence)) {
+                if (arg2.isAST(S.BlankSequence)) {
                   return F.$ps(symbol, first, false, false);
                 }
-                if (arg2.isAST(F.BlankNullSequence)) {
+                if (arg2.isAST(S.BlankNullSequence)) {
                   return F.$ps(symbol, first, false, true);
                 }
-                if (arg2.isAST(F.OptionsPattern)) {
+                if (arg2.isAST(S.OptionsPattern)) {
                   return F.$OptionsPattern(symbol, first);
                 }
               }
@@ -1981,7 +1982,7 @@ public final class PatternMatching {
       final IExpr leftHandSide = ast.arg1();
       IExpr head = engine.evaluate(leftHandSide.head());
       if (head.isAssociation()) {
-        head = F.Association;
+        head = S.Association;
       }
       try {
         final IExpr rightHandSide = ast.arg2();
@@ -2003,16 +2004,16 @@ public final class PatternMatching {
           IEvaluator eval = symbol.getEvaluator();
           if (eval instanceof ISetValueEvaluator) {
             ((ISetValueEvaluator) eval).evaluateSet(rightHandSide, true, engine);
-            return F.Null;
+            return S.Null;
           }
         }
         createPatternMatcher(leftHandSide, rightHandSide, engine.isPackageMode(), engine);
 
-        return F.Null;
+        return S.Null;
       } catch (RuleCreationError rce) {
         // Cannot unset object `1`.
         IOFunctions.printMessage(ast.topHead(), "usraw", F.List(leftHandSide), engine);
-        return F.$Failed;
+        return S.$Failed;
       }
     }
 
@@ -2042,7 +2043,7 @@ public final class PatternMatching {
       final ISymbol lhsSymbol = determineRuleTag(leftHandSide);
       if (lhsSymbol.isProtected()) {
         // Symbol `1` is Protected.
-        IOFunctions.printMessage(F.Set, "wrsym", F.List(lhsSymbol), EvalEngine.get());
+        IOFunctions.printMessage(S.Set, "wrsym", F.List(lhsSymbol), EvalEngine.get());
         return rightHandSide;
       }
       lhsSymbol.putDownRule(IPatternMatcher.SET, false, leftHandSide, rightHandSide, packageMode);
@@ -2052,7 +2053,7 @@ public final class PatternMatching {
       final ISymbol lhsSymbol = (ISymbol) leftHandSide;
       if (lhsSymbol.isProtected()) {
         // Symbol `1` is Protected.
-        IOFunctions.printMessage(F.Set, "wrsym", F.List(lhsSymbol), EvalEngine.get());
+        IOFunctions.printMessage(S.Set, "wrsym", F.List(lhsSymbol), EvalEngine.get());
         return rightHandSide;
       }
       lhsSymbol.assignValue(rightHandSide, false);
@@ -2112,7 +2113,7 @@ public final class PatternMatching {
       // final ISymbol lhsSymbol = ((IAST) leftHandSide).topHead();
       if (lhsSymbol.isProtected()) {
         // Symbol `1` is Protected.
-        IOFunctions.printMessage(F.SetDelayed, "wrsym", F.List(lhsSymbol), EvalEngine.get());
+        IOFunctions.printMessage(S.SetDelayed, "wrsym", F.List(lhsSymbol), EvalEngine.get());
         throw new FailedException();
       }
       lhsSymbol.putDownRule(
@@ -2123,7 +2124,7 @@ public final class PatternMatching {
       final ISymbol lhsSymbol = (ISymbol) leftHandSide;
       if (lhsSymbol.isProtected()) {
         // Symbol `1` is Protected.
-        IOFunctions.printMessage(F.SetDelayed, "wrsym", F.List(lhsSymbol), EvalEngine.get());
+        IOFunctions.printMessage(S.SetDelayed, "wrsym", F.List(lhsSymbol), EvalEngine.get());
         throw new FailedException();
       }
       ((ISymbol) leftHandSide).assignValue(rightHandSide, true);
@@ -2166,7 +2167,7 @@ public final class PatternMatching {
         }
         if (symbol.isProtected()) {
           IOFunctions.printMessage(
-              F.SetDelayed, "write", F.List(symbol, leftHandSide), EvalEngine.get());
+              S.SetDelayed, "write", F.List(symbol, leftHandSide), EvalEngine.get());
           throw new FailedException();
         }
 
@@ -2245,7 +2246,7 @@ public final class PatternMatching {
         try {
           createPatternMatcher(symbol, leftHandSide, rightHandSide, false, engine);
 
-          return F.Null;
+          return S.Null;
         } catch (final ValidateException ve) {
           return engine.printMessage(ve.getMessage(ast.topHead()));
         }
@@ -2445,11 +2446,11 @@ public final class PatternMatching {
         }
 
         removePatternMatcher(leftHandSide, engine.isPackageMode(), engine);
-        return F.Null;
+        return S.Null;
       } catch (RuleCreationError rce) {
         // Cannot unset object `1`.
         IOFunctions.printMessage(ast.topHead(), "usraw", F.List(leftHandSide), engine);
-        return F.$Failed;
+        return S.$Failed;
       }
     }
 
@@ -2586,7 +2587,7 @@ public final class PatternMatching {
       try {
         createPatternMatcher(leftHandSide, rightHandSide, false, engine);
 
-        return F.Null;
+        return S.Null;
       } catch (final ValidateException ve) {
         return engine.printMessage(ve.getMessage(ast.topHead()));
       }
@@ -2697,7 +2698,7 @@ public final class PatternMatching {
             == IAST.NO_FLAG) {
       if (leftHandSide.isHoldPatternOrLiteral()) {
         flags[0] =
-            leftHandSide.isAST(F.HoldPattern, 2)
+            leftHandSide.isAST(S.HoldPattern, 2)
                 ? IPatternMatcher.HOLDPATTERN
                 : IPatternMatcher.LITERAL;
         return leftHandSide.first();
@@ -2720,7 +2721,7 @@ public final class PatternMatching {
           String name = ((ISymbol) x.first()).getSymbolName();
           optionsPattern.append(F.binaryAST2(x.topHead(), name, x.second()));
         } else {
-          optionsPattern.append((IAST) x);
+          optionsPattern.append(x);
         }
       }
     }

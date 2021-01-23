@@ -7,6 +7,7 @@ import org.hipparchus.optim.linear.LinearObjectiveFunction;
 import org.hipparchus.optim.linear.Relationship;
 import org.matheclipse.core.eval.exception.ArgumentTypeException;
 import org.matheclipse.core.expression.F;
+import org.matheclipse.core.expression.S;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.interfaces.ISignedNumber;
@@ -46,7 +47,7 @@ public class Expr2LP {
         }
         return new LinearConstraint(coefficients, Relationship.EQ, -1 * num.doubleValue());
       }
-      if (ast.isAST(F.GreaterEqual, 3)) {
+      if (ast.isAST(S.GreaterEqual, 3)) {
         IExpr expr = F.eval(F.Subtract(ast.arg1(), ast.arg2()));
         ISignedNumber num = expr2ObjectiveFunction(expr, coefficients);
         if (num == null) {
@@ -54,7 +55,7 @@ public class Expr2LP {
         }
         return new LinearConstraint(coefficients, Relationship.GEQ, -1 * num.doubleValue());
       }
-      if (ast.isAST(F.LessEqual, 3)) {
+      if (ast.isAST(S.LessEqual, 3)) {
         IExpr expr = F.eval(F.Subtract(ast.arg1(), ast.arg2()));
         ISignedNumber num = expr2ObjectiveFunction(expr, coefficients);
         if (num == null) {

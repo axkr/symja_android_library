@@ -9,7 +9,6 @@ import org.matheclipse.core.basic.ToggleFeature;
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.exception.RecursionLimitExceeded;
 import org.matheclipse.core.eval.interfaces.AbstractFunctionEvaluator;
-import org.matheclipse.core.eval.interfaces.IFunctionEvaluator;
 import org.matheclipse.core.eval.util.OptionArgs;
 import org.matheclipse.core.expression.ASTSeriesData;
 import org.matheclipse.core.expression.F;
@@ -389,56 +388,6 @@ public class SeriesFunctions {
      * @param numeratorPoly
      * @param denominatorPoly
      * @param symbol the variable for which to approach to the limit
-     * @param limit the limit value which the variable should approach to
-     * @param rule
-     * @return
-     */
-    // private static IExpr limitsInfinityOfRationalFunctions(GenPolynomial<IExpr>
-    // numeratorPoly,
-    // GenPolynomial<IExpr> denominatorPoly, ISymbol symbol, IExpr limit, IAST rule)
-    // {
-    // long numDegree = numeratorPoly.degree();
-    // long denomDegree = denominatorPoly.degree();
-    // if (numDegree > denomDegree) {
-    // // If the numerator has the highest term, then the fraction is
-    // // called "top-heavy". If, when you divide the numerator
-    // // by the denominator the resulting exponent on the variable is
-    // // even, then the limit (at both \infty and -\infty) is
-    // // \infty. If it is odd, then the limit at \infty is \infty, and the
-    // // limit at -\infty is -\infty.
-    // long oddDegree = (numDegree + denomDegree) % 2;
-    // if (oddDegree == 1) {
-    // return F.Limit(F.Times(
-    // F.Divide(numeratorPoly.leadingBaseCoefficient(),
-    // denominatorPoly.leadingBaseCoefficient()),
-    // limit), rule);
-    // } else {
-    // return F.Limit(F.Times(
-    // F.Divide(numeratorPoly.leadingBaseCoefficient(),
-    // denominatorPoly.leadingBaseCoefficient()),
-    // F.CInfinity), rule);
-    // }
-    // } else if (numDegree < denomDegree) {
-    // // If the denominator has the highest term, then the fraction is
-    // // called "bottom-heavy" and the limit (at both \infty
-    // // and -\infty) is zero.
-    // return F.C0;
-    // }
-    // // If the exponent of the highest term in the numerator matches the
-    // // exponent of the highest term in the denominator,
-    // // the limit (at both \infty and -\infty) is the ratio of the
-    // // coefficients of the highest terms.
-    // return F.Divide(numeratorPoly.leadingBaseCoefficient(),
-    // denominatorPoly.leadingBaseCoefficient());
-    // }
-
-    /**
-     * See: <a href="http://en.wikibooks.org/wiki/Calculus/Infinite_Limits">Limits at Infinity of
-     * Rational Functions</a>
-     *
-     * @param numeratorPoly
-     * @param denominatorPoly
-     * @param symbol the variable for which to approach to the limit
      * @param data the limit expression which the variable should approach to
      * @param rule
      * @return
@@ -644,7 +593,7 @@ public class SeriesFunctions {
         if (base.isTimes()) {
           IAST isFreeResult =
               ((IAST) base)
-                  .partitionTimes(x -> x.isFree(data.variable(), true), F.C1, F.C1, F.List);
+                  .partitionTimes(x -> x.isFree(data.variable(), true), F.C1, F.C1, S.List);
           if (!isFreeResult.arg2().isOne()) {
             return F.Times(
                 F.Power(isFreeResult.arg1(), exponent),
@@ -670,7 +619,7 @@ public class SeriesFunctions {
                   return F.CInfinity;
                 }
                 if (data.direction() == Direction.TWO_SIDED) {
-                  return F.Indeterminate;
+                  return S.Indeterminate;
                 } else if (data.direction() == Direction.FROM_BELOW) {
                   return F.CNInfinity;
                 } else if (data.direction() == Direction.FROM_ABOVE) {
@@ -678,7 +627,7 @@ public class SeriesFunctions {
                 }
               } else if (exponent.isFraction()) {
                 if (data.direction() == Direction.TWO_SIDED) {
-                  return F.Indeterminate;
+                  return S.Indeterminate;
                 } else if (data.direction() == Direction.FROM_ABOVE) {
                   return F.CInfinity;
                 }
@@ -711,7 +660,7 @@ public class SeriesFunctions {
               return F.C0;
             }
             return F.NIL;
-          } else if (temp.equals(F.Indeterminate) || temp.isAST(F.Limit)) {
+          } else if (temp.equals(S.Indeterminate) || temp.isAST(S.Limit)) {
             return F.NIL;
           }
           if (n.isPositive()) {
@@ -755,7 +704,7 @@ public class SeriesFunctions {
     private static IExpr timesLimit(final IAST timesAST, LimitData data) {
       EvalEngine engine = EvalEngine.get();
       IAST isFreeResult =
-          timesAST.partitionTimes(x -> x.isFree(data.variable(), true), F.C1, F.C1, F.List);
+          timesAST.partitionTimes(x -> x.isFree(data.variable(), true), F.C1, F.C1, S.List);
       if (!isFreeResult.arg1().isOne()) {
         return F.Times(isFreeResult.arg1(), data.limit(isFreeResult.arg2()));
       }
@@ -845,7 +794,7 @@ public class SeriesFunctions {
         return F.Times(firstArg.exponent(), data.limit(arg1));
       } else if (firstArg.isTimes()) {
         IAST isFreeResult =
-            firstArg.partitionTimes(x -> x.isFree(data.variable(), true), F.C1, F.C1, F.List);
+            firstArg.partitionTimes(x -> x.isFree(data.variable(), true), F.C1, F.C1, S.List);
         if (!isFreeResult.arg1().isOne()) {
           IAST arg1 = logAST.setAtCopy(1, isFreeResult.arg1());
           IAST arg2 = logAST.setAtCopy(1, isFreeResult.arg2());
@@ -883,7 +832,7 @@ public class SeriesFunctions {
         Direction direction = Direction.TWO_SIDED; // no direction as default
         if (ast.isAST3()) {
           final OptionArgs options = new OptionArgs(ast.topHead(), ast, 2, engine);
-          IExpr option = options.getOption(F.Direction);
+          IExpr option = options.getOption(S.Direction);
           if (option.isPresent()) {
             if (option.isOne()) {
               direction = Direction.FROM_BELOW;
@@ -891,7 +840,7 @@ public class SeriesFunctions {
               direction = Direction.FROM_ABOVE;
             } else if (option.equals(S.Automatic)
                 || //
-                option.equals(F.Reals)) {
+                option.equals(S.Reals)) {
               direction = Direction.TWO_SIDED;
             } else {
               return engine.printMessage(
@@ -902,7 +851,7 @@ public class SeriesFunctions {
                 ast.topHead() + ": direction option expected at position 2!");
           }
           if (direction == Direction.TWO_SIDED) {
-            IExpr temp = F.Limit.evalDownRule(engine, F.Limit(arg1, arg2));
+            IExpr temp = S.Limit.evalDownRule(engine, F.Limit(arg1, arg2));
             if (temp.isPresent()) {
               return temp;
             }
@@ -1152,7 +1101,7 @@ public class SeriesFunctions {
         IASTAppendable rest = F.PlusAlloc(4);
         return polynomialSeries(function, x, x0, n, coefficientMap, rest);
       } else if (function.isPower()) {
-        ASTSeriesData temp = powerSeriesData((IAST) function, x, x0, n, engine);
+        ASTSeriesData temp = powerSeriesData(function, x, x0, n, engine);
         if (temp != null) {
           return temp;
         }
@@ -1173,7 +1122,7 @@ public class SeriesFunctions {
       ISymbol power = F.Dummy("$$$n");
       int denominator = 1;
       IExpr temp = engine.evaluate(F.SeriesCoefficient(function, F.List(x, x0, power)));
-      if (temp.isFree(F.SeriesCoefficient)) {
+      if (temp.isFree(S.SeriesCoefficient)) {
         int end = n;
         if (n < 0) {
           end = 0;
@@ -1189,13 +1138,13 @@ public class SeriesFunctions {
           end = 0;
         }
         temp = engine.evaluate(F.SeriesCoefficient(function, F.List(x, x0, F.C0)));
-        if (temp.isFree(F.SeriesCoefficient) && !temp.isIndeterminate()) {
+        if (temp.isFree(S.SeriesCoefficient) && !temp.isIndeterminate()) {
           boolean evaled = true;
           ASTSeriesData ps = new ASTSeriesData(x, x0, end + 1, end + denominator, denominator);
           ps.setCoeff(0, temp);
           for (int i = 1; i <= end; i++) {
             temp = engine.evaluate(F.SeriesCoefficient(function, F.List(x, x0, F.ZZ(i))));
-            if (temp.isFree(F.SeriesCoefficient)) {
+            if (temp.isFree(S.SeriesCoefficient)) {
               ps.setCoeff(i, temp);
             } else {
               evaled = false;
@@ -1213,15 +1162,15 @@ public class SeriesFunctions {
         IExpr functionPart = engine.evalQuiet(F.ReplaceAll(derivedFunction, F.Rule(x, x0)));
         if (functionPart.isIndeterminate()) {
           functionPart = engine.evalQuiet(F.Limit(derivedFunction, F.Rule(x, x0)));
-          if (!functionPart.isFree(F.Limit) || functionPart.isIndeterminate()) {
+          if (!functionPart.isFree(S.Limit) || functionPart.isIndeterminate()) {
             return null;
           }
         }
         IExpr coefficient =
-            F.Times.of(engine, F.Power(NumberTheory.factorial(i), F.CN1), functionPart);
+            S.Times.of(engine, F.Power(NumberTheory.factorial(i), F.CN1), functionPart);
 
         ps.setCoeff(i, coefficient);
-        derivedFunction = F.D.of(engine, derivedFunction, x);
+        derivedFunction = S.D.of(engine, derivedFunction, x);
       }
       return ps;
     }
@@ -1474,7 +1423,7 @@ public class SeriesFunctions {
             if (order > n) {
               return series.coefficient(n);
             } else {
-              return F.Indeterminate;
+              return S.Indeterminate;
             }
           }
           return F.NIL;
@@ -1607,7 +1556,7 @@ public class SeriesFunctions {
       if (degree == 0) {
         return F.ReplaceAll(function, F.Rule(x, x0));
       }
-      IExpr derivedFunction = F.D.of(engine, function, F.List(x, n));
+      IExpr derivedFunction = S.D.of(engine, function, F.List(x, n));
       return F.Times(F.Power(F.Factorial(n), F.CN1), F.ReplaceAll(derivedFunction, F.Rule(x, x0)));
     }
 
@@ -1635,7 +1584,7 @@ public class SeriesFunctions {
         IASTAppendable coefficientPlus = F.PlusAlloc(2);
         if (coefficientMap.size() > 0) {
           IExpr defaultValue = F.C0;
-          IASTAppendable piecewiseAST = F.ast(F.Piecewise);
+          IASTAppendable piecewiseAST = F.ast(S.Piecewise);
           IASTAppendable rules = F.ListAlloc(2);
           IASTAppendable plus = F.PlusAlloc(coefficientMap.size());
           IAST comparator = F.GreaterEqual(n, F.C0);
@@ -1694,7 +1643,7 @@ public class SeriesFunctions {
             rules.append(
                 F.List(engine.evaluate(F.Times(F.Power(x0, n.negate()), plus)), comparator));
           }
-          if (comparator.isAST(F.Greater)) {
+          if (comparator.isAST(S.Greater)) {
             plus = F.PlusAlloc(coefficientMap.size());
             for (Map.Entry<IExpr, IExpr> entry : coefficientMap.entrySet()) {
               IExpr exp = entry.getKey();
@@ -1763,7 +1712,7 @@ public class SeriesFunctions {
       int denominator = 1;
       if (ast.size() == 6 || ast.size() == 7) {
         if (ast.arg1().isNumber()) {
-          return F.Indeterminate;
+          return S.Indeterminate;
         }
         IExpr x = ast.arg1();
         IExpr x0 = ast.arg2();

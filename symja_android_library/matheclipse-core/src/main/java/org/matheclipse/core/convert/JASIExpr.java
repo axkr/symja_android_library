@@ -10,6 +10,7 @@ import org.matheclipse.core.eval.exception.JASConversionException;
 import org.matheclipse.core.eval.util.OptionArgs;
 import org.matheclipse.core.expression.ASTSeriesData;
 import org.matheclipse.core.expression.F;
+import org.matheclipse.core.expression.S;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IASTAppendable;
 import org.matheclipse.core.interfaces.IExpr;
@@ -418,7 +419,7 @@ public class JASIExpr {
    */
   public static TermOrder monomialOrder(OptionArgs optionArgs, final TermOrder defaultTermOrder) {
     TermOrder termOrder = defaultTermOrder;
-    IExpr option = optionArgs.getOption(F.MonomialOrder);
+    IExpr option = optionArgs.getOption(S.MonomialOrder);
     if (option.isSymbol()) {
       // String orderStr = option.toString();
       termOrder = monomialOrder((ISymbol) option, termOrder);
@@ -435,17 +436,17 @@ public class JASIExpr {
    */
   public static TermOrder monomialOrder(ISymbol orderOption, TermOrder defaultTermOrder) {
     TermOrder termOrder = defaultTermOrder;
-    if (orderOption == F.Lexicographic) {
+    if (orderOption == S.Lexicographic) {
       termOrder = TermOrderByName.Lexicographic;
-    } else if (orderOption == F.NegativeLexicographic) {
+    } else if (orderOption == S.NegativeLexicographic) {
       termOrder = TermOrderByName.NegativeLexicographic;
-    } else if (orderOption == F.DegreeLexicographic) {
+    } else if (orderOption == S.DegreeLexicographic) {
       termOrder = TermOrderByName.DegreeLexicographic;
-    } else if (orderOption == F.DegreeReverseLexicographic) {
+    } else if (orderOption == S.DegreeReverseLexicographic) {
       termOrder = TermOrderByName.DegreeReverseLexicographic;
-    } else if (orderOption == F.NegativeDegreeLexicographic) {
+    } else if (orderOption == S.NegativeDegreeLexicographic) {
       termOrder = TermOrderByName.NegativeDegreeLexicographic;
-    } else if (orderOption == F.NegativeDegreeReverseLexicographic) {
+    } else if (orderOption == S.NegativeDegreeReverseLexicographic) {
       termOrder = TermOrderByName.NegativeDegreeReverseLexicographic;
     }
     return termOrder;

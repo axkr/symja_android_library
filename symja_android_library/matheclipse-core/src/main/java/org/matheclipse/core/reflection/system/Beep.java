@@ -25,6 +25,7 @@ public class Beep extends AbstractEvaluator {
     return S.Null;
   }
 
+  @Override
   public int[] expectedArgSize(IAST ast) {
     return IFunctionEvaluator.ARGS_0_0;
   }

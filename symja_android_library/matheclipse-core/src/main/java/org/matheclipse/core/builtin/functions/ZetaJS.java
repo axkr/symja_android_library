@@ -22,7 +22,7 @@ public class ZetaJS {
     int counter = 0;
     for (double i = a; i <= b; i++) {
       if (counter++ > iterationLimit && iterationLimit > 0) {
-        IterationLimitExceeded.throwIt(counter, F.Sum);
+        IterationLimitExceeded.throwIt(counter, S.Sum);
       }
       s = s.add(f.apply(new Complex(i)));
     }
@@ -50,7 +50,7 @@ public class ZetaJS {
     int counter = 0;
     for (double i = a; i <= b; i++) {
       if (counter++ > iterationLimit && iterationLimit > 0) {
-        IterationLimitExceeded.throwIt(counter, F.Sum);
+        IterationLimitExceeded.throwIt(counter, S.Sum);
       }
       s = s.add(f.apply(i));
     }
@@ -63,7 +63,7 @@ public class ZetaJS {
     int counter = 0;
     for (double i = a; i <= b; i++) {
       if (counter++ > iterationLimit && iterationLimit > 0) {
-        IterationLimitExceeded.throwIt(counter, F.Sum);
+        IterationLimitExceeded.throwIt(counter, S.Sum);
       }
       s += f.applyAsDouble(i);
     }
@@ -74,7 +74,7 @@ public class ZetaJS {
       java.util.function.IntToDoubleFunction f, int a, int b, int iterationLimit) {
     double s = 0;
     if ((b - a) > iterationLimit && iterationLimit > 0) {
-      IterationLimitExceeded.throwIt((b - a), F.Sum);
+      IterationLimitExceeded.throwIt((b - a), S.Sum);
     }
     for (int i = a; i <= b; i++) {
       s += f.applyAsDouble(i);
@@ -235,7 +235,7 @@ public class ZetaJS {
     while (Math.abs(p.getReal()) > Config.SPECIAL_FUNCTIONS_TOLERANCE
         || Math.abs(p.getImaginary()) > Config.SPECIAL_FUNCTIONS_TOLERANCE) {
       if (i++ > iterationLimit && iterationLimit > 0) {
-        IterationLimitExceeded.throwIt(i, F.HurwitzZeta);
+        IterationLimitExceeded.throwIt(i, org.matheclipse.core.expression.S.HurwitzZeta);
       }
       if (i > MAX_VALUE_HALF) {
         throw new ArgumentTypeException("Hurwitz zeta: i > MAX_VALUE_HALF");
@@ -284,7 +284,7 @@ public class ZetaJS {
 
       while (Math.abs(t) > Config.SPECIAL_FUNCTIONS_TOLERANCE) {
         if (i++ > iterationLimit && iterationLimit > 0) {
-          IterationLimitExceeded.throwIt(i, F.HurwitzZeta);
+          IterationLimitExceeded.throwIt(i, S.HurwitzZeta);
         }
         t = Math.cos(Math.PI * xValue / 2.0 - 2.0 * i * Math.PI * a) / Math.pow(i, xValue);
         s += t;
@@ -306,7 +306,7 @@ public class ZetaJS {
     // converges rather quickly
     while (Math.abs(p) > Config.SPECIAL_FUNCTIONS_TOLERANCE) {
       if (i++ > iterationLimit && iterationLimit > 0) {
-        IterationLimitExceeded.throwIt(i, F.HurwitzZeta);
+        IterationLimitExceeded.throwIt(i, org.matheclipse.core.expression.S.HurwitzZeta);
       }
       if (Double.isNaN(t)) {
         throw new ArgumentTypeException("Hurwitz zeta: t == NaN");

@@ -1,10 +1,10 @@
 package org.matheclipse.core.reflection.system;
 
 import org.matheclipse.core.eval.EvalEngine;
-import org.matheclipse.core.eval.exception.Validate;
 import org.matheclipse.core.eval.interfaces.AbstractFunctionEvaluator;
 import org.matheclipse.core.eval.interfaces.IFunctionEvaluator;
 import org.matheclipse.core.expression.F;
+import org.matheclipse.core.expression.S;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IASTAppendable;
 import org.matheclipse.core.interfaces.IExpr;
@@ -124,9 +124,10 @@ public class Outer extends AbstractFunctionEvaluator {
       }
     }
     OuterAlgorithm algorithm = new OuterAlgorithm(ast, head);
-    return algorithm.outer(3, ast.arg2(), F.ast(F.List, ast.argSize(), false));
+    return algorithm.outer(3, ast.arg2(), F.ast(S.List, ast.argSize(), false));
   }
 
+  @Override
   public int[] expectedArgSize(IAST ast) {
     return IFunctionEvaluator.ARGS_3_INFINITY;
   }

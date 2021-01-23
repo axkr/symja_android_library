@@ -30,7 +30,7 @@ package org.matheclipse.core.frobenius;
 
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.exception.IterationLimitExceeded;
-import org.matheclipse.core.expression.F;
+import org.matheclipse.core.expression.S;
 import org.matheclipse.core.interfaces.IInteger;
 
 /**
@@ -64,7 +64,7 @@ final class TotalSolutionProvider implements OutputPortUnsafe<IInteger[]> {
     while (true) {
       boolean r;
       if (counter++ > iterationLimit && iterationLimit > 0) {
-        IterationLimitExceeded.throwIt(counter, F.FrobeniusSolve);
+        IterationLimitExceeded.throwIt(counter, S.FrobeniusSolve);
       }
       while ((r = !(providers[i--].tick())) && i >= 0) {
         //

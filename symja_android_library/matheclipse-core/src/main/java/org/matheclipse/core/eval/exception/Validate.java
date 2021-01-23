@@ -584,20 +584,21 @@ public final class Validate {
    * @return a list of symbols defined at <code>ast.get(position)</code> or <code>F.NIL</code>
    *     otherwise.
    */
-  public static IAST checkIsVariableOrVariableList(IAST ast, int position, EvalEngine engine) {
+  public static IAST checkIsVariableOrVariableList(
+      IAST ast, int position, ISymbol head, EvalEngine engine) {
     IAST vars = null;
     IExpr temp = null;
     if (ast.get(position).isList()) {
       vars = (IAST) ast.get(position);
       for (int i = 1; i < vars.size(); i++) {
-        temp = Validate.checkIsVariable(vars, i, engine);
+        temp = Validate.checkIsVariable(vars, i, head, engine);
         if (!temp.isPresent()) {
           return F.NIL;
         }
       }
       return vars;
     } else {
-      temp = Validate.checkIsVariable(ast, position, engine);
+      temp = Validate.checkIsVariable(ast, position, head, engine);
       if (!temp.isPresent()) {
         return F.NIL;
       }
@@ -630,12 +631,26 @@ public final class Validate {
    * @return <code>F.NIL</code> if the argument is not a variable
    */
   public static IExpr checkIsVariable(IAST ast, int position, EvalEngine engine) {
+    return checkIsVariable(ast, position, ast.topHead(), engine);
+  }
+
+  /**
+   * Check if the argument at the given position is a variable, i.e. a symbol which doesnt't have
+   * the <code>Constant</code> attribute set.
+   *
+   * @param ast
+   * @param position
+   * @param head
+   * @param engine
+   * @return
+   */
+  public static IExpr checkIsVariable(IAST ast, int position, ISymbol head, EvalEngine engine) {
     IExpr arg = ast.get(position);
     if (arg.isSymbol() && arg.isVariable()) {
       return arg;
     }
     // `1` is not a valid variable.
-    return IOFunctions.printMessage(ast.topHead(), "ivar", F.List(arg), engine);
+    return IOFunctions.printMessage(head, "ivar", F.List(arg), engine);
   }
 
   /**
@@ -755,17 +770,17 @@ public final class Validate {
             subtract.isTimes() ? subtract : F.evalExpandAll(subtract), //
             F.C0
           };
-      return F.function(F.Equal, arr);
+      return F.function(S.Equal, arr);
     }
     if (eq.isAST2()) {
       IAST equal = (IAST) eq;
       IExpr head = equal.head();
-      if (head.equals(F.Equal)
-          || head.equals(F.Unequal)
-          || head.equals(F.Greater)
-          || head.equals(F.GreaterEqual)
-          || head.equals(F.Less)
-          || head.equals(F.LessEqual)) {
+      if (head.equals(S.Equal)
+          || head.equals(S.Unequal)
+          || head.equals(S.Greater)
+          || head.equals(S.GreaterEqual)
+          || head.equals(S.Less)
+          || head.equals(S.LessEqual)) {
         final IExpr[] arr =
             new IExpr[] {
               F.expandAll(equal.arg1(), true, true), F.expandAll(equal.arg2(), true, true)
@@ -788,7 +803,7 @@ public final class Validate {
    * @param expr the expression which should be an equation
    */
   private static void checkEquation(IExpr expr, IASTAppendable termsEqualNumberList) {
-    if (expr.isASTSizeGE(F.Equal, 3)) {
+    if (expr.isASTSizeGE(S.Equal, 3)) {
       IAST equal = (IAST) expr;
       IExpr last = equal.last();
       for (int i = 1; i < equal.size() - 1; i++) {
@@ -856,6 +871,7 @@ public final class Validate {
    * @return {@link F#NIL} if <code>expr</code> cannot be converted into a symbol
    * @deprecated use {@link #checkIdentifierHoldPattern(IExpr, IAST, EvalEngine)})
    */
+  @Deprecated
   public static IExpr checkIdentifier(final IExpr expr, IAST ast, EvalEngine engine) {
     ISymbol sym = null;
     if (expr.isString()) {

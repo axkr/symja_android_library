@@ -19,7 +19,6 @@ import org.matheclipse.core.interfaces.IASTAppendable;
 import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.interfaces.IStringX;
 import org.matheclipse.core.interfaces.ISymbol;
-import org.matheclipse.core.patternmatching.IPatternMap.PatternMap;
 import org.matheclipse.core.visit.AbstractVisitor;
 import org.matheclipse.parser.client.FEConfig;
 import org.matheclipse.parser.trie.TrieMatch;
@@ -480,7 +479,7 @@ public final class RulesData implements Serializable {
                 if (isShowSteps(pmEvaluator)) {
                   IExpr rhs = pmEvaluator.getRHS();
                   if (!rhs.isPresent()) {
-                    rhs = F.Null;
+                    rhs = S.Null;
                   }
                   System.out.println(
                       "\nCOMPLEX: " + pmEvaluator.getLHS().toString() + " := " + rhs.toString());
@@ -510,12 +509,12 @@ public final class RulesData implements Serializable {
     if (head.isSymbol() && ((ISymbol) head).isContext(Context.RUBI)) {
       return true;
     }
-    return head.equals(F.Integrate);
+    return head.equals(S.Integrate);
   }
 
   private boolean isShowPriority(IPatternMatcher pmEvaluator) {
     IExpr head = pmEvaluator.getLHS().head();
-    return head.equals(F.Integrate);
+    return head.equals(S.Integrate);
   }
 
   public IExpr evalUpRule(final IExpr expression, EvalEngine engine) {
@@ -640,7 +639,7 @@ public final class RulesData implements Serializable {
     if (!isComplicatedPatternRule(leftHandSide) && !leftHandSide.isCondition()) {
       patternHash = ((IAST) leftHandSide).patternHashCode();
     }
-    if (leftHandSide.isAST(F.Integrate)) {
+    if (leftHandSide.isAST(S.Integrate)) {
 
       pmEvaluator =
           new PatternMatcherAndEvaluator(
@@ -666,7 +665,7 @@ public final class RulesData implements Serializable {
       }
     }
 
-    if (PatternMap.DEFAULT_RULE_PRIORITY != priority) {
+    if (IPatternMap.DEFAULT_RULE_PRIORITY != priority) {
       pmEvaluator.setLHSPriority(priority);
     }
 

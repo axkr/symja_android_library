@@ -1,7 +1,5 @@
 package org.matheclipse.core.interfaces;
 
-import org.hipparchus.distribution.RealDistribution;
-
 /**
  * Interface for continuous distribution.
  *

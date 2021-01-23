@@ -20,7 +20,6 @@ import org.matheclipse.core.eval.exception.ThrowException;
 import org.matheclipse.core.eval.exception.ValidateException;
 import org.matheclipse.core.eval.interfaces.AbstractFunctionEvaluator;
 import org.matheclipse.core.eval.interfaces.AbstractTrigArg1;
-import org.matheclipse.core.eval.interfaces.IFunctionEvaluator;
 import org.matheclipse.core.eval.interfaces.INumeric;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.expression.S;
@@ -107,13 +106,13 @@ public class HypergeometricFunctions {
         return F.C0;
       }
       if (z.isNegativeInfinity()) {
-        return F.Times(F.CI, F.Pi);
+        return F.Times(F.CI, S.Pi);
       }
       if (z.isDirectedInfinity(F.CI) || z.isDirectedInfinity(F.CNI)) {
         return F.CInfinity;
       }
       if (z.isComplexInfinity()) {
-        return F.Indeterminate;
+        return S.Indeterminate;
       }
       if (engine.isDoubleMode()) {
         try {
@@ -153,6 +152,7 @@ public class HypergeometricFunctions {
       return F.NIL;
     }
 
+    @Override
     public int[] expectedArgSize(IAST ast) {
       return ARGS_1_1;
     }
@@ -213,7 +213,7 @@ public class HypergeometricFunctions {
         return F.Times(F.CNPiHalf, F.CI);
       }
       if (z.isComplexInfinity()) {
-        return F.Indeterminate;
+        return S.Indeterminate;
       }
       if (engine.isDoubleMode()) {
         try {
@@ -256,6 +256,7 @@ public class HypergeometricFunctions {
       super.setUp(newSymbol);
     }
 
+    @Override
     public int[] expectedArgSize(IAST ast) {
       return ARGS_1_1;
     }
@@ -269,7 +270,7 @@ public class HypergeometricFunctions {
       IExpr z = ast.arg2();
       if (n.isZero()) {
         // 1/(E^z*z)
-        return F.Power(F.Times(z, F.Power(F.E, z)), -1);
+        return F.Power(F.Times(z, F.Power(S.E, z)), -1);
       }
       if (z.isZero()) {
         IExpr nRe = n.re();
@@ -314,6 +315,7 @@ public class HypergeometricFunctions {
       return F.NIL;
     }
 
+    @Override
     public int[] expectedArgSize(IAST ast) {
       return ARGS_2_2;
     }
@@ -363,6 +365,7 @@ public class HypergeometricFunctions {
     // return F.complexNum(GammaJS.expIntegralEi(c));
     // }
 
+    @Override
     public IExpr evaluate(IAST ast, EvalEngine engine) {
       IExpr z = ast.arg1();
       if (z.isZero()) {
@@ -375,13 +378,13 @@ public class HypergeometricFunctions {
         return F.C0;
       }
       if (z.isDirectedInfinity(F.CI)) {
-        return F.Times(F.CI, F.Pi);
+        return F.Times(F.CI, S.Pi);
       }
       if (z.isDirectedInfinity(F.CNI)) {
-        return F.Times(F.CNI, F.Pi);
+        return F.Times(F.CNI, S.Pi);
       }
       if (z.isComplexInfinity()) {
-        return F.Indeterminate;
+        return S.Indeterminate;
       }
       if (engine.isDoubleMode()) {
         try {
@@ -418,6 +421,7 @@ public class HypergeometricFunctions {
       return F.NIL;
     }
 
+    @Override
     public int[] expectedArgSize(IAST ast) {
       return ARGS_1_1;
     }
@@ -474,7 +478,7 @@ public class HypergeometricFunctions {
         return F.Divide(F.CNI, F.C2);
       }
       if (arg1.equals(F.CComplexInfinity)) {
-        return F.Indeterminate;
+        return S.Indeterminate;
       }
       IExpr negExpr = AbstractFunctionEvaluator.getNormalizedNegativeExpression(arg1);
       if (negExpr.isPresent()) {
@@ -488,6 +492,7 @@ public class HypergeometricFunctions {
       return F.NIL;
     }
 
+    @Override
     public int[] expectedArgSize(IAST ast) {
       return ARGS_1_1;
     }
@@ -544,7 +549,7 @@ public class HypergeometricFunctions {
         return F.Divide(F.CI, F.C2);
       }
       if (arg1.equals(F.CComplexInfinity)) {
-        return F.Indeterminate;
+        return S.Indeterminate;
       }
       IExpr negExpr = AbstractFunctionEvaluator.getNormalizedNegativeExpression(arg1);
       if (negExpr.isPresent()) {
@@ -558,6 +563,7 @@ public class HypergeometricFunctions {
       return F.NIL;
     }
 
+    @Override
     public int[] expectedArgSize(IAST ast) {
       return ARGS_1_1;
     }
@@ -596,7 +602,7 @@ public class HypergeometricFunctions {
                   F.C1D2,
                   F.Power(F.Plus(F.CN1, F.Sqr(z)), -1),
                   F.Plus(
-                      F.Times(F.Plus(F.CN2, F.Negate(F.n)), F.ChebyshevU(n, z)),
+                      F.Times(F.Plus(F.CN2, F.Negate(S.n)), F.ChebyshevU(n, z)),
                       F.Times(F.Plus(F.C1, n), z, F.ChebyshevU(F.Plus(F.C1, n), z))));
           }
         }
@@ -656,7 +662,7 @@ public class HypergeometricFunctions {
       if (zInt > Integer.MIN_VALUE) {
         if (zInt == 0) {
           // 2 * (1/v) * Cos(1/2*Pi*v)
-          return F.Times(F.C2, F.pow(n, F.CN1), F.Cos(F.Times(C1D2, F.Pi, n)));
+          return F.Times(F.C2, F.pow(n, F.CN1), F.Cos(F.Times(C1D2, S.Pi, n)));
         }
         if (zInt == 1) {
           // 2 / v
@@ -664,7 +670,7 @@ public class HypergeometricFunctions {
         }
         if (zInt == -1) {
           // (2/v)*Cos(Pi*v)
-          return F.Times(F.C2, F.pow(n, F.CN1), F.Cos(F.Times(F.Pi, n)));
+          return F.Times(F.C2, F.pow(n, F.CN1), F.Cos(F.Times(S.Pi, n)));
         }
       }
 
@@ -745,6 +751,7 @@ public class HypergeometricFunctions {
       return F.NIL;
     }
 
+    @Override
     public int[] expectedArgSize(IAST ast) {
       return ARGS_2_2;
     }
@@ -768,7 +775,7 @@ public class HypergeometricFunctions {
       IExpr z = ast.arg3();
       if (b.isZero()) {
         if (z.isZero()) {
-          return F.Indeterminate;
+          return S.Indeterminate;
         }
         return F.CComplexInfinity;
       }
@@ -791,7 +798,7 @@ public class HypergeometricFunctions {
         IExpr bPlus1 = engine.evaluate(b.plus(F.C1));
         if (a.equals(bPlus1)) {
           // (E^z * (-1 + a + z)) / (-1 + a)
-          return F.Times(F.Power(F.E, z), F.Divide(F.Plus(F.CN1, a, z), F.Plus(a, F.CN1)));
+          return F.Times(F.Power(S.E, z), F.Divide(F.Plus(F.CN1, a, z), F.Plus(a, F.CN1)));
         }
         if (engine.isDoubleMode()) {
 
@@ -817,13 +824,13 @@ public class HypergeometricFunctions {
         }
         if (a.equals(b)) {
           // E^z
-          return F.Power(F.E, z);
+          return F.Power(S.E, z);
         }
         if (a.isOne()) {
           // (-1 + b)*E^z*z^(1 - b)*(Gamma(-1 + b) - Gamma(-1 + b, z))
           return F.Times(
               F.Plus(F.CN1, b),
-              F.Power(F.E, z),
+              F.Power(S.E, z),
               F.Power(z, F.Plus(F.C1, F.Negate(b))),
               F.Plus(F.Gamma(F.Plus(F.CN1, b)), F.Negate(F.Gamma(F.Plus(F.CN1, b), z))));
         }
@@ -842,11 +849,11 @@ public class HypergeometricFunctions {
                   F.C1,
                   F.Times(
                       F.Plus(F.C2, F.Negate(b)),
-                      F.Power(F.E, z),
+                      F.Power(S.E, z),
                       F.Power(z, F.Plus(F.C1, F.Negate(b))),
                       F.Plus(F.Gamma(F.Plus(F.CN1, b)), F.Negate(F.Gamma(F.Plus(F.CN1, b), z)))),
                   F.Times(
-                      F.Power(F.E, z),
+                      F.Power(S.E, z),
                       F.Power(z, F.Plus(F.C2, F.Negate(b))),
                       F.Plus(F.Gamma(F.Plus(F.CN1, b)), F.Negate(F.Gamma(F.Plus(F.CN1, b), z))))));
         }
@@ -868,6 +875,7 @@ public class HypergeometricFunctions {
       return F.NIL;
     }
 
+    @Override
     public int[] expectedArgSize(IAST ast) {
       return ARGS_3_3;
     }
@@ -1014,6 +1022,7 @@ public class HypergeometricFunctions {
       return F.NIL;
     }
 
+    @Override
     public int[] expectedArgSize(IAST ast) {
       return ARGS_4_4;
     }
@@ -1072,6 +1081,7 @@ public class HypergeometricFunctions {
       return F.NIL;
     }
 
+    @Override
     public int[] expectedArgSize(IAST ast) {
       return ARGS_3_3;
     }
@@ -1173,6 +1183,7 @@ public class HypergeometricFunctions {
       return F.NIL;
     }
 
+    @Override
     public int[] expectedArgSize(IAST ast) {
       return ARGS_3_3;
     }
@@ -1227,6 +1238,7 @@ public class HypergeometricFunctions {
     // return F.complexNum(GammaJS.logIntegral(c));
     // }
 
+    @Override
     public IExpr evaluate(IAST ast, EvalEngine engine) {
       IExpr arg1 = ast.arg1();
       if (arg1.isZero()) {
@@ -1282,6 +1294,7 @@ public class HypergeometricFunctions {
       return F.NIL;
     }
 
+    @Override
     public int[] expectedArgSize(IAST ast) {
       return ARGS_1_1;
     }
@@ -1341,7 +1354,7 @@ public class HypergeometricFunctions {
         return z;
       }
       if (z.isComplexInfinity()) {
-        return F.Indeterminate;
+        return S.Indeterminate;
       }
       if (engine.isDoubleMode()) {
         try {
@@ -1384,7 +1397,7 @@ public class HypergeometricFunctions {
       }
       if (z.isTimes() && z.first().isComplex() && z.first().re().isZero()) {
         // I * SinhIntegral(-I*arg1)
-        return F.Times(F.I, F.SinhIntegral(F.Times(F.CNI, z)));
+        return F.Times(S.I, F.SinhIntegral(F.Times(F.CNI, z)));
       }
       IExpr imPart = AbstractFunctionEvaluator.getPureImaginaryPart(z);
       if (imPart.isPresent()) {
@@ -1393,6 +1406,7 @@ public class HypergeometricFunctions {
       return F.NIL;
     }
 
+    @Override
     public int[] expectedArgSize(IAST ast) {
       return ARGS_1_1;
     }
@@ -1422,7 +1436,7 @@ public class HypergeometricFunctions {
         return F.Times(F.CI, F.CPiHalf);
       }
       if (z.isComplexInfinity()) {
-        return F.Indeterminate;
+        return S.Indeterminate;
       }
       if (engine.isDoubleMode()) {
         try {
@@ -1458,7 +1472,7 @@ public class HypergeometricFunctions {
       }
       if (z.isTimes() && z.first().isComplex() && z.first().re().isZero()) {
         // I * SinIntegral(-I*arg1)
-        return F.Times(F.I, F.SinIntegral(F.Times(F.CNI, z)));
+        return F.Times(S.I, F.SinIntegral(F.Times(F.CNI, z)));
       }
       IExpr negExpr = AbstractFunctionEvaluator.getNormalizedNegativeExpression(z);
       if (negExpr.isPresent()) {
@@ -1471,6 +1485,7 @@ public class HypergeometricFunctions {
       return F.NIL;
     }
 
+    @Override
     public int[] expectedArgSize(IAST ast) {
       return ARGS_1_1;
     }
@@ -1534,6 +1549,7 @@ public class HypergeometricFunctions {
       return F.NIL;
     }
 
+    @Override
     public int[] expectedArgSize(IAST ast) {
       return ARGS_3_3;
     }
@@ -1596,6 +1612,7 @@ public class HypergeometricFunctions {
       return F.NIL;
     }
 
+    @Override
     public int[] expectedArgSize(IAST ast) {
       return ARGS_3_3;
     }

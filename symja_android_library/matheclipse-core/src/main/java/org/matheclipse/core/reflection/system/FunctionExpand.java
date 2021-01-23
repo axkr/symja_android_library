@@ -6,22 +6,22 @@ import static org.matheclipse.core.expression.F.Binomial;
 import static org.matheclipse.core.expression.F.ChebyshevT;
 import static org.matheclipse.core.expression.F.ChebyshevU;
 import static org.matheclipse.core.expression.F.Factorial;
-import static org.matheclipse.core.expression.F.a;
 import static org.matheclipse.core.expression.F.a_;
-import static org.matheclipse.core.expression.F.b;
 import static org.matheclipse.core.expression.F.b_;
-import static org.matheclipse.core.expression.F.c;
-import static org.matheclipse.core.expression.F.k;
-import static org.matheclipse.core.expression.F.m;
 import static org.matheclipse.core.expression.F.m_;
-import static org.matheclipse.core.expression.F.n;
 import static org.matheclipse.core.expression.F.n_;
-import static org.matheclipse.core.expression.F.x;
 import static org.matheclipse.core.expression.F.x_;
-import static org.matheclipse.core.expression.F.y;
 import static org.matheclipse.core.expression.F.y_;
-import static org.matheclipse.core.expression.F.z;
 import static org.matheclipse.core.expression.F.z_;
+import static org.matheclipse.core.expression.S.a;
+import static org.matheclipse.core.expression.S.b;
+import static org.matheclipse.core.expression.S.c;
+import static org.matheclipse.core.expression.S.k;
+import static org.matheclipse.core.expression.S.m;
+import static org.matheclipse.core.expression.S.n;
+import static org.matheclipse.core.expression.S.x;
+import static org.matheclipse.core.expression.S.y;
+import static org.matheclipse.core.expression.S.z;
 
 import java.util.function.Supplier;
 
@@ -33,6 +33,7 @@ import org.matheclipse.core.eval.interfaces.IFunctionEvaluator;
 import org.matheclipse.core.eval.util.IAssumptions;
 import org.matheclipse.core.eval.util.OptionArgs;
 import org.matheclipse.core.expression.F;
+import org.matheclipse.core.expression.S;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.interfaces.IRational;
@@ -128,9 +129,9 @@ public class FunctionExpand extends AbstractEvaluator implements FunctionExpandR
                   F.And(F.IntegerQ(a), F.Positive(a)),
                   F.Times(
                       F.Power(
-                          F.Times(F.Product(F.Subtract(b, c), F.List(c, F.C0, a)), F.Pi), F.CN1),
+                          F.Times(F.Product(F.Subtract(b, c), F.List(c, F.C0, a)), S.Pi), F.CN1),
                       F.Factorial(a),
-                      F.Sin(F.Times(b, F.Pi))),
+                      F.Sin(F.Times(b, S.Pi))),
                   F.Times(
                       F.Gamma(F.Plus(F.C1, a)),
                       F.Power(
@@ -144,7 +145,7 @@ public class FunctionExpand extends AbstractEvaluator implements FunctionExpandR
           F.Times(
               F.Power(F.C2, F.Times(F.C2, n)),
               F.Gamma(F.Plus(F.C1D2, n)),
-              F.Power(F.Times(F.Sqrt(F.Pi), F.Gamma(F.Plus(F.C2, n))), F.CN1))); // $$);
+              F.Power(F.Times(F.Sqrt(S.Pi), F.Gamma(F.Plus(F.C2, n))), F.CN1))); // $$);
       // ChebyshevT
       MATCHER.caseOf(
           ChebyshevT(n_, x_), //
@@ -223,44 +224,44 @@ public class FunctionExpand extends AbstractEvaluator implements FunctionExpandR
       MATCHER.caseOf(
           F.PolyGamma(F.CN2, F.C1), //
           // [$ (1/2)*(Log(2)+Log(Pi)) $]
-          F.Times(F.C1D2, F.Plus(F.Log(F.C2), F.Log(F.Pi)))); // $$);
+          F.Times(F.C1D2, F.Plus(F.Log(F.C2), F.Log(S.Pi)))); // $$);
       MATCHER.caseOf(
           F.PolyGamma(F.CN3, F.C1), //
           // [$ Log(Glaisher) + (1/4)*(Log(2) + Log(Pi)) $]
-          F.Plus(F.Log(F.Glaisher), F.Times(F.C1D4, F.Plus(F.Log(F.C2), F.Log(F.Pi))))); // $$);
+          F.Plus(F.Log(S.Glaisher), F.Times(F.C1D4, F.Plus(F.Log(F.C2), F.Log(S.Pi))))); // $$);
 
       MATCHER.caseOf(
-          F.Degree, //
+          S.Degree, //
           // [$ Pi/180 $]
-          F.Times(F.QQ(1L, 180L), F.Pi)); // $$);
+          F.Times(F.QQ(1L, 180L), S.Pi)); // $$);
       MATCHER.caseOf(
-          F.GoldenAngle, //
+          S.GoldenAngle, //
           // [$ (3-Sqrt(5))*Pi $]
-          F.Times(F.Subtract(F.C3, F.CSqrt5), F.Pi)); // $$);
+          F.Times(F.Subtract(F.C3, F.CSqrt5), S.Pi)); // $$);
       MATCHER.caseOf(
-          F.GoldenRatio, //
+          S.GoldenRatio, //
           // [$ 1/2*(1+Sqrt(5)) $]
           F.Times(F.C1D2, F.Plus(F.C1, F.CSqrt5))); // $$);
 
       // Power
       MATCHER.caseOf(
-          F.Power(F.E, F.ArcSinh(x_)), //
+          F.Power(S.E, F.ArcSinh(x_)), //
           // [$ (x+Sqrt(1+x^2)) $]
           F.Plus(x, F.Sqrt(F.Plus(F.C1, F.Sqr(x))))); // $$);
       MATCHER.caseOf(
-          F.Power(F.E, F.ArcCosh(x_)), //
+          F.Power(S.E, F.ArcCosh(x_)), //
           // [$ (x+Sqrt(x-1)*Sqrt(x+1)) $]
           F.Plus(x, F.Times(F.Sqrt(F.Plus(F.CN1, x)), F.Sqrt(F.Plus(x, F.C1))))); // $$);
       MATCHER.caseOf(
-          F.Power(F.E, F.ArcTanh(x_)), //
+          F.Power(S.E, F.ArcTanh(x_)), //
           // [$ ((x+1)/Sqrt(1-x^2)) $]
           F.Times(F.Plus(x, F.C1), F.Power(F.Subtract(F.C1, F.Sqr(x)), F.CN1D2))); // $$);
       MATCHER.caseOf(
-          F.Power(F.E, F.ArcCsch(x_)), //
+          F.Power(S.E, F.ArcCsch(x_)), //
           // [$ (1/x+Sqrt(1+1/x^2)) $]
           F.Plus(F.Power(x, F.CN1), F.Sqrt(F.Plus(F.C1, F.Power(x, F.CN2))))); // $$);
       MATCHER.caseOf(
-          F.Power(F.E, F.ArcSech(x_)), //
+          F.Power(S.E, F.ArcSech(x_)), //
           // [$ (1/x+Sqrt(1/x-1)*Sqrt(1/x+1)) $]
           F.Plus(
               F.Power(x, F.CN1),
@@ -268,7 +269,7 @@ public class FunctionExpand extends AbstractEvaluator implements FunctionExpandR
                   F.Sqrt(F.Plus(F.CN1, F.Power(x, F.CN1))),
                   F.Sqrt(F.Plus(F.Power(x, F.CN1), F.C1))))); // $$);
       MATCHER.caseOf(
-          F.Power(F.E, F.ArcCoth(x_)), //
+          F.Power(S.E, F.ArcCoth(x_)), //
           // [$ (1/Sqrt((x-1)/(x+1))) $]
           F.Power(F.Times(F.Power(F.Plus(x, F.C1), F.CN1), F.Plus(F.CN1, x)), F.CN1D2)); // $$);
 
@@ -295,24 +296,27 @@ public class FunctionExpand extends AbstractEvaluator implements FunctionExpandR
           // $]
           F.Times(y, F.Log(x))); // $$);
 
-      MATCHER.caseOf(F.BartlettWindow.of(x_), WindowFunctions.bartlettWindow(x));
-      MATCHER.caseOf(F.BlackmanHarrisWindow.of(x_), WindowFunctions.blackmanHarrisWindow(x));
-      MATCHER.caseOf(F.BlackmanNuttallWindow.of(x_), WindowFunctions.blackmanNuttallWindow(x));
-      MATCHER.caseOf(F.BlackmanWindow.of(x_), WindowFunctions.blackmanWindow(x));
-      MATCHER.caseOf(F.DirichletWindow.of(x_), WindowFunctions.dirichletWindow(x));
-      MATCHER.caseOf(F.HannWindow.of(x_), WindowFunctions.hannWindow(x));
-      MATCHER.caseOf(F.FlatTopWindow.of(x_), WindowFunctions.flatTopWindow(x));
-      MATCHER.caseOf(F.GaussianWindow.of(x_), WindowFunctions.gaussianWindow(x));
-      MATCHER.caseOf(F.HammingWindow.of(x_), WindowFunctions.hammingWindow(x));
-      MATCHER.caseOf(F.NuttallWindow.of(x_), WindowFunctions.nuttallWindow(x));
-      MATCHER.caseOf(F.ParzenWindow.of(x_), WindowFunctions.parzenWindow(x));
-      MATCHER.caseOf(F.TukeyWindow.of(x_), WindowFunctions.tukeyWindow(x));
+      MATCHER.caseOf(S.BartlettWindow.of(x_), WindowFunctions.bartlettWindow(x));
+      MATCHER.caseOf(S.BlackmanHarrisWindow.of(x_), WindowFunctions.blackmanHarrisWindow(x));
+      MATCHER.caseOf(S.BlackmanNuttallWindow.of(x_), WindowFunctions.blackmanNuttallWindow(x));
+      MATCHER.caseOf(S.BlackmanWindow.of(x_), WindowFunctions.blackmanWindow(x));
+      MATCHER.caseOf(S.DirichletWindow.of(x_), WindowFunctions.dirichletWindow(x));
+      MATCHER.caseOf(S.HannWindow.of(x_), WindowFunctions.hannWindow(x));
+      MATCHER.caseOf(S.FlatTopWindow.of(x_), WindowFunctions.flatTopWindow(x));
+      MATCHER.caseOf(S.GaussianWindow.of(x_), WindowFunctions.gaussianWindow(x));
+      MATCHER.caseOf(S.HammingWindow.of(x_), WindowFunctions.hammingWindow(x));
+      MATCHER.caseOf(S.NuttallWindow.of(x_), WindowFunctions.nuttallWindow(x));
+      MATCHER.caseOf(S.ParzenWindow.of(x_), WindowFunctions.parzenWindow(x));
+      MATCHER.caseOf(S.TukeyWindow.of(x_), WindowFunctions.tukeyWindow(x));
 
-      for (int i = 1; i < RULES.size(); i++) {
-        IExpr arg = RULES.get(i);
-        if (arg.isAST(F.SetDelayed, 3)) {
+      //      IAST list = (IAST) WL.deserializeResource("/rules/FunctionExpandRules.bin", true);
+      IAST list = RULES;
+
+      for (int i = 1; i < list.size(); i++) {
+        IExpr arg = list.get(i);
+        if (arg.isAST(S.SetDelayed, 3)) {
           MATCHER.caseOf(arg.first(), arg.second());
-        } else if (arg.isAST(F.Set, 3)) {
+        } else if (arg.isAST(S.Set, 3)) {
           MATCHER.caseOf(arg.first(), arg.second());
         }
       }
@@ -323,7 +327,7 @@ public class FunctionExpand extends AbstractEvaluator implements FunctionExpandR
   public FunctionExpand() {}
 
   private static IExpr beforeRules(IAST ast) {
-    if (ast.isSqrt() && ast.base().isAST(F.Plus, 3)) {
+    if (ast.isSqrt() && ast.base().isAST(S.Plus, 3)) {
       IAST plus = (IAST) ast.base();
       final IExpr arg1 = plus.arg1();
       final IExpr arg2 = plus.arg2();
@@ -414,7 +418,7 @@ public class FunctionExpand extends AbstractEvaluator implements FunctionExpandR
         assumptionExpr = arg2;
       }
       final OptionArgs options = new OptionArgs(ast.topHead(), ast, 2, engine);
-      assumptionExpr = options.getOption(F.Assumptions).orElse(assumptionExpr);
+      assumptionExpr = options.getOption(S.Assumptions).orElse(assumptionExpr);
     }
     if (assumptionExpr.isPresent()) {
       if (assumptionExpr.isAST()) {
@@ -437,11 +441,13 @@ public class FunctionExpand extends AbstractEvaluator implements FunctionExpandR
         }
       }
     }
+    // don't call PowerExpand
     IExpr temp = getMatcher().replaceAll(arg1, FunctionExpand::beforeRules).orElse(arg1);
     F.REMEMBER_AST_CACHE.put(ast, temp);
     return temp;
   }
 
+  @Override
   public int[] expectedArgSize(IAST ast) {
     return IFunctionEvaluator.ARGS_1_2;
   }

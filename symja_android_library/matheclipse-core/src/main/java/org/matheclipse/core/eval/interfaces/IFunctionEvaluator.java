@@ -227,7 +227,8 @@ public interface IFunctionEvaluator extends IEvaluator {
   /**
    * At index 0 return the &quot;from&quot;, at index 1 return the &quot;to&quot; number of
    * arguments, which are expected by this function. If the returned <code>int</code> array has
-   * length 3, the function allows headers unequal to the built-in function name.
+   * length 3, the function allows headers unequal to the built-in function name (i.e. the function
+   * can be in &quot;operator form&quot;).
    *
    * @param ast the abstract syntax tree (AST) those arguments should be checked
    * @return <code>null</code> if no range for the number of arguments is specified.

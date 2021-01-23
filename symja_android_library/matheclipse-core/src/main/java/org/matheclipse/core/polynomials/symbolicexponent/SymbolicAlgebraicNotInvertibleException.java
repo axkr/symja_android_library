@@ -105,10 +105,10 @@ public class SymbolicAlgebraicNotInvertibleException extends NotInvertibleExcept
    */
   @Override
   public String toString() {
-    String s = super.toString();
+    StringBuilder s = new StringBuilder(super.toString());
     if (f != null || f1 != null || f2 != null) {
-      s += ", f = " + f + ", f1 = " + f1 + ", f2 = " + f2;
+      s.append(", f = ").append(f).append(", f1 = ").append(f1).append(", f2 = ").append(f2);
     }
-    return s;
+    return s.toString();
   }
 }

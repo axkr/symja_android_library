@@ -24,6 +24,7 @@ import org.matheclipse.core.expression.ASTRealVector;
 // import org.matheclipse.commons.math.linear.FieldMatrix;
 // import org.matheclipse.commons.math.linear.FieldVector;
 import org.matheclipse.core.expression.F;
+import org.matheclipse.core.expression.S;
 import org.matheclipse.core.expression.data.SparseArrayExpr;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IASTAppendable;
@@ -148,7 +149,7 @@ public class Convert {
     final IExpr[][] elements = new IExpr[rowSize][colSize + 1];
     for (int i = 1; i < rowSize + 1; i++) {
       currInRow = (IAST) listMatrix.get(i);
-      if (currInRow.head() != F.List || colSize != currInRow.argSize()) {
+      if (currInRow.head() != S.List || colSize != currInRow.argSize()) {
         return null;
       }
       for (int j = 1; j < colSize + 1; j++) {
@@ -207,7 +208,7 @@ public class Convert {
       return ((ASTRealMatrix) listMatrix).getRealMatrix();
     }
     final Object header = listMatrix.head();
-    if (header != F.List) {
+    if (header != S.List) {
       return null;
     }
 
@@ -241,7 +242,7 @@ public class Convert {
       return ((ASTRealVector) listVector).getRealVector();
     }
     final Object header = listVector.head();
-    if (header != F.List) {
+    if (header != S.List) {
       return null;
     }
 
@@ -288,7 +289,7 @@ public class Convert {
       return null;
     }
     final Object header = vector.head();
-    if (header != F.List) {
+    if (header != S.List) {
       return null;
     }
 
@@ -718,7 +719,7 @@ public class Convert {
   }
 
   public static RGBColor toAWTColorDefault(IExpr rgbColorAST, RGBColor defaultColor) {
-    if (rgbColorAST.isAST(F.RGBColor, 4, 5)) {
+    if (rgbColorAST.isAST(S.RGBColor, 4, 5)) {
       IAST rgbColor = (IAST) rgbColorAST;
       float r = (float) rgbColor.arg1().evalDouble();
       float g = (float) rgbColor.arg2().evalDouble();

@@ -128,6 +128,7 @@ public interface INumber extends IExpr {
    * @return real part
    * @deprecated use {@link #imDoubleValue()}
    */
+  @Deprecated
   default double getImaginary() {
     return imDoubleValue();
   }
@@ -138,6 +139,7 @@ public interface INumber extends IExpr {
    * @return real part
    * @deprecated use {@link #reDoubleValue()}
    */
+  @Deprecated
   default double getReal() {
     return reDoubleValue();
   }

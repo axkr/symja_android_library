@@ -1,9 +1,6 @@
 package org.matheclipse.core.patternmatching;
 
-import org.matheclipse.core.basic.Config;
 import org.matheclipse.core.eval.EvalEngine;
-import org.matheclipse.core.eval.exception.ConditionException;
-import org.matheclipse.core.eval.exception.ReturnException;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IASTAppendable;
@@ -22,6 +19,7 @@ public class PatternMatcherList extends PatternMatcherAndEvaluator {
     fReplaceList = F.ListAlloc();
   }
 
+  @Override
   protected IExpr replaceSubExpressionOrderlessFlat(
       final IAST lhsPatternAST, final IAST lhsEvalAST, final IExpr rhsExpr, EvalEngine engine) {
     return F.NIL;

@@ -18,6 +18,7 @@ import org.matheclipse.core.eval.interfaces.IFunctionEvaluator;
 import org.matheclipse.core.eval.util.OptionArgs;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.expression.Num;
+import org.matheclipse.core.expression.S;
 import org.matheclipse.core.generic.UnaryNumerical;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IExpr;
@@ -148,11 +149,11 @@ public class NIntegrate extends AbstractFunctionEvaluator {
     int precisionGoal = 16; // automatic scale value
     if (ast.size() >= 4) {
       final OptionArgs options = new OptionArgs(ast.topHead(), ast, 3, engine);
-      IExpr option = options.getOption(F.Method);
+      IExpr option = options.getOption(S.Method);
       if (option.isSymbol()) {
         method = option.toString();
       }
-      option = options.getOption(F.MaxPoints);
+      option = options.getOption(S.MaxPoints);
       if (option.isReal()) {
         maxPoints = ((ISignedNumber) option).toIntDefault(-1);
         if (maxPoints <= 0) {
@@ -161,7 +162,7 @@ public class NIntegrate extends AbstractFunctionEvaluator {
           maxPoints = DEFAULT_MAX_POINTS;
         }
       }
-      option = options.getOption(F.MaxIterations);
+      option = options.getOption(S.MaxIterations);
       if (option.isReal()) {
         maxIterations = ((ISignedNumber) option).toIntDefault(-1);
         if (maxIterations <= 0) {
@@ -172,7 +173,7 @@ public class NIntegrate extends AbstractFunctionEvaluator {
           maxIterations = DEFAULT_MAX_ITERATIONS;
         }
       }
-      option = options.getOption(F.PrecisionGoal);
+      option = options.getOption(S.PrecisionGoal);
       if (option.isReal()) {
         precisionGoal = ((ISignedNumber) option).toIntDefault(-1);
         if (precisionGoal <= 0) {
@@ -223,6 +224,7 @@ public class NIntegrate extends AbstractFunctionEvaluator {
     return F.NIL;
   }
 
+  @Override
   public int[] expectedArgSize(IAST ast) {
     return IFunctionEvaluator.ARGS_2_INFINITY;
   }

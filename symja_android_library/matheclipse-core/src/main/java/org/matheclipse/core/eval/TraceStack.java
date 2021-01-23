@@ -25,7 +25,7 @@ public final class TraceStack extends AbstractEvalStepListener {
   }
 
   public void pushList() {
-    fTraceList = fList.copyAppendable();
+    fTraceList = fList.copyAppendable(7);
     fStack.push(fTraceList);
   }
 

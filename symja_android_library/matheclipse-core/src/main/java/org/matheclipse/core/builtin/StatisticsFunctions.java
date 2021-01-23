@@ -14,11 +14,9 @@ import org.hipparchus.distribution.RealDistribution;
 import org.hipparchus.exception.MathRuntimeException;
 import org.hipparchus.linear.FieldMatrix;
 import org.hipparchus.linear.RealMatrix;
-import org.hipparchus.linear.RealVector;
 import org.hipparchus.random.RandomDataGenerator;
 import org.hipparchus.stat.StatUtils;
 import org.hipparchus.stat.correlation.PearsonsCorrelation;
-import org.hipparchus.stat.descriptive.StatisticalSummary;
 import org.hipparchus.util.FastMath;
 import org.hipparchus.util.MathUtils;
 import org.matheclipse.core.basic.Config;
@@ -33,7 +31,6 @@ import org.matheclipse.core.eval.interfaces.AbstractEvaluator;
 import org.matheclipse.core.eval.interfaces.AbstractFunctionEvaluator;
 import org.matheclipse.core.eval.interfaces.AbstractMatrix1Expr;
 import org.matheclipse.core.eval.interfaces.AbstractTrigArg1;
-import org.matheclipse.core.eval.interfaces.IFunctionEvaluator;
 import org.matheclipse.core.expression.ASTRealMatrix;
 import org.matheclipse.core.expression.ASTRealVector;
 import org.matheclipse.core.expression.ApcomplexNum;
@@ -73,7 +70,7 @@ public class StatisticsFunctions {
     private static void init() {
       S.AbsoluteCorrelation.setEvaluator(new AbsoluteCorrelation());
       S.ArithmeticGeometricMean.setEvaluator(new ArithmeticGeometricMean());
-      F.CDF.setEvaluator(new CDF());
+      S.CDF.setEvaluator(new CDF());
       S.PDF.setEvaluator(new PDF());
       S.BernoulliDistribution.setEvaluator(new BernoulliDistribution());
       S.BetaDistribution.setEvaluator(new BetaDistribution());
@@ -132,7 +129,7 @@ public class StatisticsFunctions {
   }
 
   /** Capability to produce random variate. */
-  interface IRandomVariate {
+  /*package*/ interface IRandomVariate {
     /**
      * @param distribution the distribution
      * @param size the size of the sample
@@ -142,7 +139,7 @@ public class StatisticsFunctions {
   }
 
   /** Functionality for a discrete probability distribution */
-  interface IExpectationDiscreteDistribution extends IDiscreteDistribution {
+  private interface IExpectationDiscreteDistribution extends IDiscreteDistribution {
     /** @return lowest value a random variable from this distribution may attain */
     IExpr lowerBound(IAST dist);
 
@@ -162,7 +159,7 @@ public class StatisticsFunctions {
    * <p>The function is used in {@link Expectation} to provide the variance of a given {@link
    * IDistribution}.
    */
-  public interface IStatistics {
+  private interface IStatistics {
     /** @return mean of distribution */
     IExpr mean(IAST dist);
 
@@ -184,7 +181,7 @@ public class StatisticsFunctions {
    *
    * <p>ICDF extends the capabilities of {@link IPDF}
    */
-  public interface ICDF {
+  private interface ICDF {
     static final IExpr CDF_NUMERIC_THRESHOLD = F.num(1e-14);
 
     public IExpr cdf(IAST dist, IExpr x, EvalEngine engine);
@@ -255,7 +252,7 @@ public class StatisticsFunctions {
   }
 
   /** probability density function */
-  interface IPDF {
+  private interface IPDF {
     /**
      * For {@link IExpectationDiscreteDistribution}, the function returns the P(X == x), i.e.
      * probability of random variable X == x
@@ -364,6 +361,7 @@ public class StatisticsFunctions {
       // return F.num(a1);
     }
 
+    @Override
     public IExpr e2ObjArg(IAST ast, final IExpr a, final IExpr b) {
       if (a.isZero() || a.equals(b)) {
         return a;
@@ -951,8 +949,8 @@ public class StatisticsFunctions {
       } else {
         dx = Integer.MIN_VALUE;
         dxNum = F.num(arg2.evalDouble());
-        IExpr dXMax = F.Max.of(engine, vector);
-        xMax = F.Floor.of(engine, F.Divide(F.Plus(dXMax, arg2), arg2)).toIntDefault();
+        IExpr dXMax = S.Max.of(engine, vector);
+        xMax = S.Floor.of(engine, F.Divide(F.Plus(dXMax, arg2), arg2)).toIntDefault();
         if (xMax < 0) {
           return F.NIL;
         }
@@ -972,7 +970,7 @@ public class StatisticsFunctions {
               index--;
             }
           } else {
-            index = F.Floor.of(engine, (((ISignedNumber) temp).divide(dxNum))).toIntDefault();
+            index = S.Floor.of(engine, (((ISignedNumber) temp).divide(dxNum))).toIntDefault();
           }
           if (index == Integer.MIN_VALUE) {
             return F.NIL;
@@ -1597,7 +1595,7 @@ public class StatisticsFunctions {
         // [$ Piecewise({{m/(-2 + m), m > 2}}, Indeterminate) $]
         F.Piecewise(
             F.List(F.List(F.Times(F.Power(F.Plus(F.CN2, m), F.CN1), m), F.Greater(m, F.C2))),
-            F.Indeterminate); // $$;
+            S.Indeterminate); // $$;
       }
       return F.NIL;
     }
@@ -1756,7 +1754,7 @@ public class StatisticsFunctions {
                         F.Plus(F.CN2, m, n),
                         F.Power(F.Times(F.Plus(F.CN4, m), F.Sqr(F.Plus(F.CN2, m)), n), F.CN1)),
                     F.Greater(m, F.C4))),
-            F.Indeterminate); // $$;
+            S.Indeterminate); // $$;
       }
       return F.NIL;
     }
@@ -1782,7 +1780,7 @@ public class StatisticsFunctions {
                             F.Times(F.Plus(F.CN6, m), F.Sqrt(n), F.Sqrt(F.Plus(F.CN2, m, n))),
                             F.CN1)),
                     F.Greater(m, F.C6))),
-            F.Indeterminate); // $$;
+            S.Indeterminate); // $$;
       }
       return F.NIL;
     }
@@ -1990,7 +1988,7 @@ public class StatisticsFunctions {
           double reference = random.nextDouble();
           double uniform = reference >= NEXTDOWNONE ? NEXTDOWNONE : Math.nextUp(reference);
           uniform = -Math.log(uniform);
-          return m.times(F.Power.of(F.num(uniform), n.reciprocal().negate()));
+          return m.times(S.Power.of(F.num(uniform), n.reciprocal().negate()));
         }
       }
       return F.NIL;
@@ -2037,7 +2035,7 @@ public class StatisticsFunctions {
                             F.Greater(F.Slot1, F.C0))),
                     F.C0)); // $$;
         return callFunction(function, k);
-      } else if (dist.isAST(F.GammaDistribution, 5)) {
+      } else if (dist.isAST(S.GammaDistribution, 5)) {
         //
         IExpr a = dist.arg1();
         IExpr b = dist.arg2();
@@ -2095,7 +2093,7 @@ public class StatisticsFunctions {
                         F.oo),
                     F.LessEqual(F.C0, F.Slot1, F.C1))); // $$;
         return callFunction(function, k);
-      } else if (dist.isAST(F.GammaDistribution, 5)) {
+      } else if (dist.isAST(S.GammaDistribution, 5)) {
         //
         IExpr a = dist.arg1();
         IExpr b = dist.arg2();
@@ -2239,7 +2237,7 @@ public class StatisticsFunctions {
                             F.Greater(F.Slot1, F.C0))),
                     F.C0)); // $$;
         return callFunction(function, k);
-      } else if (dist.isAST(F.GammaDistribution, 5)) {
+      } else if (dist.isAST(S.GammaDistribution, 5)) {
         //
         IExpr a = dist.arg1();
         IExpr b = dist.arg2();
@@ -2303,7 +2301,7 @@ public class StatisticsFunctions {
           }
           return F.num(StatUtils.geometricMean(arg1DoubleArray));
         }
-        return F.Power(list.apply(F.Times), F.fraction(1, arg1.argSize()));
+        return F.Power(list.apply(S.Times), F.fraction(1, arg1.argSize()));
       }
       return F.NIL;
     }
@@ -2545,15 +2543,15 @@ public class StatisticsFunctions {
             F.Exp(n),
             F.Power(F.Times(F.C6, F.Sqr(m)), F.CN1),
             F.Plus(
-                F.Times(F.CN6, F.Sqr(F.EulerGamma)),
-                F.Negate(F.Sqr(F.Pi)),
+                F.Times(F.CN6, F.Sqr(S.EulerGamma)),
+                F.Negate(F.Sqr(S.Pi)),
                 F.Times(F.C6, F.Exp(n), F.Sqr(F.ExpIntegralEi(F.Negate(n)))),
                 F.Times(
                     F.ZZ(12L),
                     n,
                     F.HypergeometricPFQ(
                         F.List(F.C1, F.C1, F.C1), F.List(F.C2, F.C2, F.C2), F.Negate(n))),
-                F.Times(F.ZZ(-12L), F.EulerGamma, F.Log(n)),
+                F.Times(F.ZZ(-12L), S.EulerGamma, F.Log(n)),
                 F.Times(F.CN6, F.Sqr(F.Log(n))))); // $$;
       }
       return F.NIL;
@@ -2631,13 +2629,13 @@ public class StatisticsFunctions {
     public IExpr mean(IAST dist) {
       if (dist.isAST0()) {
         // -EulerGamma
-        return F.EulerGamma.negate();
+        return S.EulerGamma.negate();
       }
       if (dist.isAST2()) {
         IExpr n = dist.arg1();
         IExpr m = dist.arg2();
         // -EulerGamma*m + n
-        return F.Plus(F.Times(F.CN1, F.EulerGamma, m), n);
+        return F.Plus(F.Times(F.CN1, S.EulerGamma, m), n);
       }
       return F.NIL;
     }
@@ -2762,7 +2760,7 @@ public class StatisticsFunctions {
       if (dist.isAST2()) {
         IExpr m = dist.arg2();
         // (m^2*Pi^2)/6
-        return F.Times(F.QQ(1, 6), F.Sqr(m), F.Sqr(F.Pi));
+        return F.Times(F.QQ(1, 6), F.Sqr(m), F.Sqr(S.Pi));
       }
       return F.NIL;
     }
@@ -2772,7 +2770,7 @@ public class StatisticsFunctions {
       if (dist.isAST2()) {
         return
         // [$ -((12*Sqrt(6)*Zeta(3))/Pi^3) $]
-        F.Times(F.CN1, F.ZZ(12L), F.CSqrt6, F.Power(F.Pi, F.CN3), F.Zeta(F.C3)); // $$;
+        F.Times(F.CN1, F.ZZ(12L), F.CSqrt6, F.Power(S.Pi, F.CN3), F.Zeta(F.C3)); // $$;
       }
       return F.NIL;
     }
@@ -2817,7 +2815,7 @@ public class StatisticsFunctions {
           return list.mapMatrixColumns(dim, x -> F.HarmonicMean(x));
         }
 
-        IASTMutable result = list.apply(F.Plus);
+        IASTMutable result = list.apply(S.Plus);
         result.map(result, x -> F.Divide(F.C1, x));
         return F.Times(F.ZZ(list.argSize()), F.Power(result, F.CN1));
       }
@@ -3108,7 +3106,7 @@ public class StatisticsFunctions {
         }
       } catch (final MathRuntimeException mre) {
         // org.hipparchus.exception.MathIllegalArgumentException: inconsistent dimensions: 0 != 3
-        return engine.printMessage(F.Covariance, mre);
+        return engine.printMessage(S.Covariance, mre);
       } catch (final ValidateException ve) {
         return engine.printMessage(ast.topHead(), ve);
       } catch (final IndexOutOfBoundsException e) {
@@ -3152,7 +3150,7 @@ public class StatisticsFunctions {
             F.Subtract(arg1.arg1(), arg1.arg2()),
             F.Subtract(F.Conjugate(arg2.arg1()), F.Conjugate(arg2.arg2())));
       }
-      IAST num1 = arg1.apply(F.Plus);
+      IAST num1 = arg1.apply(S.Plus);
       IExpr factor = F.ZZ(-1 * (arg1.size() - 2));
       IASTAppendable v1 = F.PlusAlloc(arg1.size());
       v1.appendArgs(
@@ -3162,7 +3160,7 @@ public class StatisticsFunctions {
                   F.CN1,
                   num1.setAtCopy(i, F.Times(factor, arg1.get(i))),
                   F.Conjugate(arg2.get(i))));
-      return F.Divide(v1, F.ZZ(((long) arg1.argSize()) * (((long) arg1.size()) - 2L)));
+      return F.Divide(v1, F.ZZ((arg1.argSize()) * ((arg1.size()) - 2L)));
     }
 
     @Override
@@ -3609,7 +3607,7 @@ public class StatisticsFunctions {
             // }
             // return F.QQ(sum, data.argSize());
           }
-          if (ast.arg2().isAST(F.Distributed, 3)) {
+          if (ast.arg2().isAST(S.Distributed, 3)) {
             IExpr x = ast.arg2().first();
             IExpr distribution = ast.arg2().second();
             if (distribution.isList()) {
@@ -3623,8 +3621,8 @@ public class StatisticsFunctions {
               }
               return sum.divide(F.ZZ(data.argSize()));
             } else if (distribution.isContinuousDistribution()) {
-              IExpr pdf = F.PDF.of(engine, distribution, x);
-              if (pdf.isFree(F.Piecewise)) {
+              IExpr pdf = S.PDF.of(engine, distribution, x);
+              if (pdf.isFree(S.Piecewise)) {
                 // TODO improve integration for piecewise functions
                 return F.Integrate(F.Times(ast.arg1(), pdf), F.List(x, F.CNInfinity, F.CInfinity));
               }
@@ -4037,7 +4035,7 @@ public class StatisticsFunctions {
         IExpr m = dist.arg1();
         IExpr s = dist.arg2();
         // (m,s) -> E^(m+s^2/2)
-        return F.Power(F.E, F.Plus(m, F.Times(F.C1D2, F.Sqr(s))));
+        return F.Power(S.E, F.Plus(m, F.Times(F.C1D2, F.Sqr(s))));
       }
       return F.NIL;
     }
@@ -4046,7 +4044,7 @@ public class StatisticsFunctions {
     public IExpr median(IAST dist) {
       if (dist.isAST2()) {
         // (m,s) -> E^(m+s^2/2)
-        return F.Power(F.E, dist.arg1());
+        return F.Power(S.E, dist.arg1());
       }
       return F.NIL;
     }
@@ -4179,8 +4177,8 @@ public class StatisticsFunctions {
         IExpr s = dist.arg2();
         // E^(2*m+s^2)*(-1+E^(s^2))
         return F.Times(
-            F.Plus(F.CN1, F.Power(F.E, F.Sqr(s))),
-            F.Power(F.E, F.Plus(F.Times(F.C2, m), F.Sqr(s))));
+            F.Plus(F.CN1, F.Power(S.E, F.Sqr(s))),
+            F.Power(S.E, F.Plus(F.Times(F.C2, m), F.Sqr(s))));
       }
       return F.NIL;
     }
@@ -4296,7 +4294,7 @@ public class StatisticsFunctions {
         }
         if (arg1.isList()) {
           final IAST list = (IAST) arg1;
-          return F.Times(list.apply(F.Plus), F.Power(F.ZZ(list.argSize()), F.CN1));
+          return F.Times(list.apply(S.Plus), F.Power(F.ZZ(list.argSize()), F.CN1));
         }
 
         if (arg1.isDistribution()) {
@@ -4336,7 +4334,7 @@ public class StatisticsFunctions {
           IAST vector = (IAST) arg1;
           int size = vector.size();
           IASTAppendable sum = F.PlusAlloc(size);
-          final IExpr mean = F.Mean.of(engine, F.Negate(vector));
+          final IExpr mean = S.Mean.of(engine, F.Negate(vector));
           vector.forEach(x -> sum.append(F.Abs(F.Plus(x, mean))));
           return F.Times(F.Power(F.ZZ(size - 1), -1), sum);
         }
@@ -4475,7 +4473,7 @@ public class StatisticsFunctions {
         }
         return F.num(StatUtils.percentile(values, 50));
       }
-      if (arg1.isAST(F.WeightedData, 3) && arg1.first().isList() && arg1.second().isList()) {
+      if (arg1.isAST(S.WeightedData, 3) && arg1.first().isList() && arg1.second().isList()) {
         return median((IAST) arg1, engine);
       }
       int[] dim = arg1.isMatrix();
@@ -4527,7 +4525,7 @@ public class StatisticsFunctions {
         data = res[0];
         weights = res[1];
 
-        IExpr denominator = engine.evaluate(weights.apply(F.Plus));
+        IExpr denominator = engine.evaluate(weights.apply(S.Plus));
         IASTAppendable result = F.PlusAlloc(size);
         for (int i = 1; i < size; i++) {
           IASTAppendable rhs = F.PlusAlloc(size);
@@ -4537,7 +4535,7 @@ public class StatisticsFunctions {
           IExpr lhs = rhs.splice(rhs.argSize());
           // Boole( Inequality(lhs < 1/2 <= rhs) );
           IExpr boole =
-              engine.evaluate(F.Boole(F.Inequality(lhs, F.Less, F.C1D2, F.LessEqual, rhs)));
+              engine.evaluate(F.Boole(F.Inequality(lhs, S.Less, F.C1D2, S.LessEqual, rhs)));
           if (boole.isOne()) {
             result.append(data.get(i));
           } else if (!boole.isZero()) {
@@ -4843,6 +4841,7 @@ public class StatisticsFunctions {
       return F.NIL;
     }
 
+    @Override
     public RealDistribution dist() {
       return new org.hipparchus.distribution.continuous.NormalDistribution(0, 1);
     }
@@ -5083,7 +5082,7 @@ public class StatisticsFunctions {
               }
               return F.QQ(sum, data.argSize());
             }
-          } else if (ast.arg2().isAST(F.Distributed, 3)) {
+          } else if (ast.arg2().isAST(S.Distributed, 3)) {
             IExpr predicate = ast.arg1();
             IExpr x = ast.arg2().first();
             IExpr distribution = ast.arg2().second();
@@ -5101,7 +5100,7 @@ public class StatisticsFunctions {
               IDiscreteDistribution dist = getDiscreteDistribution(distribution);
               int[] interval = dist.range(distribution, predicate, x);
               if (interval != null) {
-                IExpr pdf = F.PDF.of(engine, distribution, x);
+                IExpr pdf = S.PDF.of(engine, distribution, x);
                 // for discrete distributions take the sum:
                 IASTAppendable sum = F.PlusAlloc(10);
                 for (int i = interval[0]; i <= interval[1]; i++) {
@@ -5341,6 +5340,7 @@ public class StatisticsFunctions {
       return F.NIL;
     }
 
+    @Override
     public int getSupportUpperBound(IExpr discreteDistribution) {
       // probabilities are zero beyond that point
       return 1950;
@@ -5467,7 +5467,7 @@ public class StatisticsFunctions {
                           ast.topHead(), "nquan", F.List(qi, F.C0, F.C1), engine);
                     }
                     // x = a + (length + b) * q
-                    IExpr x = q.isZero() ? a : F.Plus.of(engine, a, F.Times(F.Plus(length, b), q));
+                    IExpr x = q.isZero() ? a : S.Plus.of(engine, a, F.Times(F.Plus(length, b), q));
                     if (x.isNumIntValue()) {
                       int index = x.toIntDefault(Integer.MIN_VALUE);
                       if (index != Integer.MIN_VALUE) {
@@ -5494,7 +5494,7 @@ public class StatisticsFunctions {
                         IExpr factor =
                             d.isZero() || xi.isZero()
                                 ? c
-                                : F.Plus.of(engine, c, F.Times(d, xi.fractionalPart()));
+                                : S.Plus.of(engine, c, F.Times(d, xi.fractionalPart()));
                         // s[[Floor(x)]]+(s[[Ceiling(x)]]-s[[Floor(x)]]) * (c + d *
                         // FractionalPart(x))
                         return F.Plus(
@@ -5711,17 +5711,17 @@ public class StatisticsFunctions {
     public IExpr evaluate(final IAST ast, EvalEngine engine) {
       IExpr x = ast.arg1();
       if (ast.size() == 2 && x.isList()) {
-        IExpr min = F.Min.of(engine, x);
-        IExpr max = F.Max.of(engine, x);
+        IExpr min = S.Min.of(engine, x);
+        IExpr max = S.Max.of(engine, x);
         return rescale(x, min, max, engine);
       }
       if (ast.size() >= 3) {
-        if (ast.arg2().isAST(F.List, 3)) {
+        if (ast.arg2().isAST(S.List, 3)) {
           IAST list1 = (IAST) ast.arg2();
           IExpr min = list1.first();
           IExpr max = list1.second();
           if (ast.size() == 4) {
-            if (ast.arg3().isAST(F.List, 3)) {
+            if (ast.arg3().isAST(S.List, 3)) {
               IAST list2 = (IAST) ast.arg3();
               IExpr ymin = list2.first();
               IExpr ymax = list2.second();
@@ -5923,7 +5923,7 @@ public class StatisticsFunctions {
         return temp.ifPresent(x -> F.Transpose(x));
       }
 
-      IExpr sd = F.StandardDeviation.of(engine, arg1);
+      IExpr sd = S.StandardDeviation.of(engine, arg1);
       if (!sd.isZero()) {
         return engine.evaluate(F.Divide(F.Subtract(arg1, F.Mean(arg1)), sd));
       }
@@ -5949,12 +5949,12 @@ public class StatisticsFunctions {
     public IExpr mean(IAST dist) {
       if (dist.isAST1()) {
         // (v) -> Piecewise({{0, v > 1}}, Indeterminate)
-        return F.Piecewise(F.List(F.List(F.C0, F.Greater(dist.arg1(), F.C1))), F.Indeterminate);
+        return F.Piecewise(F.List(F.List(F.C0, F.Greater(dist.arg1(), F.C1))), S.Indeterminate);
       }
       if (dist.isAST3()) {
         // (m,s,v) -> Piecewise({{m, v > 1}}, Indeterminate)
         return F.Piecewise(
-            F.List(F.List(dist.arg1(), F.Greater(dist.arg3(), F.C1))), F.Indeterminate);
+            F.List(F.List(dist.arg1(), F.Greater(dist.arg3(), F.C1))), S.Indeterminate);
       }
       return F.NIL;
     }
@@ -6111,7 +6111,7 @@ public class StatisticsFunctions {
       if (dist.isAST1()) {
         IExpr n = dist.arg1();
         return F.Piecewise(
-            F.List(F.List(F.Divide(n, F.Plus(F.CN2, n)), F.Greater(n, F.C2))), F.Indeterminate);
+            F.List(F.List(F.Divide(n, F.Plus(F.CN2, n)), F.Greater(n, F.C2))), S.Indeterminate);
       }
       return F.NIL;
     }
@@ -6121,7 +6121,7 @@ public class StatisticsFunctions {
       if (dist.isAST1()) {
         IExpr n = dist.arg1();
         // Piecewise({{0, n > 3}}, Indeterminate)
-        return F.Piecewise(F.List(F.List(F.C0, F.Greater(n, F.C3))), F.Indeterminate);
+        return F.Piecewise(F.List(F.List(F.C0, F.Greater(n, F.C3))), S.Indeterminate);
       }
       return F.NIL;
     }

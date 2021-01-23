@@ -95,6 +95,24 @@ public interface IQuantity extends IExpr, Comparable<IExpr> {
 
   public IQuantity ofUnit(IExpr scalar);
 
+  /**
+   * Add this quantity with a scalar.
+   *
+   * @param scalar
+   * @param nilIfUnevaluated if <code>true</code>, return {@link F#NIL} if unevaluated
+   * @return
+   */
+  public IExpr plus(final IExpr scalar, boolean nilIfUnevaluated);
+
+  /**
+   * Multiply this quantity with a scalar.
+   *
+   * @param scalar
+   * @param nilIfUnevaluated if <code>true</code>, return {@link F#NIL} if unevaluated
+   * @return
+   */
+  public IExpr times(IExpr scalar, boolean nilIfUnevaluated);
+
   /** @return unit of quantity without value */
   IUnit unit();
 

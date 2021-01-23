@@ -22,7 +22,7 @@ import org.matheclipse.core.interfaces.IExpr;
 public interface UnitSystem extends UnaryOperator<IExpr> {
   /** @return international system of units, metric system */
   static UnitSystem SI() {
-    return BuiltIn.SI.unitSystem;
+    return BuiltIn.unitSystem;
   }
 
   /** @return unmodifiable view on map that defines the unit system */

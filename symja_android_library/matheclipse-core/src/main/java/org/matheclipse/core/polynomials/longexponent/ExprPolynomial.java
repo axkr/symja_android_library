@@ -8,8 +8,8 @@ import java.util.TreeMap;
 import java.util.function.Function;
 
 import org.matheclipse.core.basic.Config;
-import org.matheclipse.core.eval.exception.Validate;
 import org.matheclipse.core.expression.F;
+import org.matheclipse.core.expression.S;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IASTAppendable;
 import org.matheclipse.core.interfaces.IASTMutable;
@@ -1020,7 +1020,6 @@ public class ExprPolynomial implements RingElem<ExprPolynomial>, Iterable<ExprMo
         nv.put(e, y);
       }
     }
-    return;
   }
 
   /**
@@ -1045,7 +1044,6 @@ public class ExprPolynomial implements RingElem<ExprPolynomial>, Iterable<ExprMo
     } else {
       nv.put(e, a);
     }
-    return;
   }
 
   /**
@@ -2324,7 +2322,7 @@ public class ExprPolynomial implements RingElem<ExprPolynomial>, Iterable<ExprMo
           exp = entry.getKey().getVal(0);
           exprs[(int) exp] = entry.getValue();
         }
-        return F.function(F.List, exprs);
+        return F.function(S.List, exprs);
       } else {
         long lastDegree = 0L;
         IASTAppendable result = F.ListAlloc(val.size());
@@ -2347,7 +2345,7 @@ public class ExprPolynomial implements RingElem<ExprPolynomial>, Iterable<ExprMo
       for (int j = 0; j < argsSize; j++) {
         arr[j] = (int) degree(j) + 1;
       }
-      IASTMutable constantArray = F.C0.constantArray(F.List, 0, arr);
+      IASTMutable constantArray = F.C0.constantArray(S.List, 0, arr);
       for (ExpVectorLong expArray : val.keySet()) {
         int[] positions = new int[argsSize];
         for (int i = 0; i < expArray.length(); i++) {

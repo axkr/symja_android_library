@@ -21,7 +21,6 @@ import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IASTAppendable;
 import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.interfaces.IInteger;
-import org.matheclipse.core.interfaces.IRational;
 
 public final class GaussianInteger {
 
@@ -223,12 +222,7 @@ public final class GaussianInteger {
     IInteger remainderImaginary =
         fImaginary.subtract(re.multiply(divisionImaginary)).subtract(im.multiply(divisionReal));
 
-    return new IInteger[] {
-      (IInteger) divisionReal,
-      (IInteger) divisionImaginary,
-      (IInteger) remainderReal,
-      (IInteger) remainderImaginary
-    };
+    return new IInteger[] {divisionReal, divisionImaginary, remainderReal, remainderImaginary};
   }
 
   /**

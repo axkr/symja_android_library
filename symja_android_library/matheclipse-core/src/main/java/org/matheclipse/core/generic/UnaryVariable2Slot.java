@@ -8,6 +8,7 @@ import java.util.function.Function;
 
 import org.matheclipse.core.basic.Config;
 import org.matheclipse.core.expression.F;
+import org.matheclipse.core.expression.S;
 import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.interfaces.ISymbol;
 
@@ -36,7 +37,7 @@ public class UnaryVariable2Slot implements Function<IExpr, IExpr> {
         if (((ISymbol) firstArg).hasOrderlessAttribute()) {
           return F.NIL;
         }
-        if (firstArg.equals(F.Print)) {
+        if (firstArg.equals(S.Print)) {
           // Print function has "side-effects"
           return F.NIL;
         }

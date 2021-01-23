@@ -32,6 +32,7 @@ public class AbstractNonOrderlessArgMultiple extends AbstractArg2 {
     return F.NIL;
   }
 
+  @Override
   public int[] expectedArgSize(IAST ast) {
     return null;
   }

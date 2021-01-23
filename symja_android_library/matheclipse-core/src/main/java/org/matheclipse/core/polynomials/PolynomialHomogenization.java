@@ -6,6 +6,7 @@ import java.util.Map;
 
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.expression.F;
+import org.matheclipse.core.expression.S;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IASTAppendable;
 import org.matheclipse.core.interfaces.IASTMutable;
@@ -200,8 +201,8 @@ public class PolynomialHomogenization {
           // ex: 4^(2*x+3)
           IAST plusAST = (IAST) exp;
           if (plusAST.first().isInteger()) {
-            determineLCM(F.Power.of(base, plusAST.first()));
-            determineLCM(F.Power.of(base, plusAST.rest().oneIdentity0()));
+            determineLCM(S.Power.of(base, plusAST.first()));
+            determineLCM(S.Power.of(base, plusAST.rest().oneIdentity0()));
             return;
           }
         }
@@ -225,7 +226,7 @@ public class PolynomialHomogenization {
         replaceExpressionLCM(ast, F.C1);
         return;
       } else if (exponent > 0) {
-        IASTMutable restExponent = ((IAST) timesExponent).setAtCopy(1, F.CI);
+        IASTMutable restExponent = timesExponent.setAtCopy(1, F.CI);
         replaceExpressionLCM(base.power(restExponent), F.C1);
         return;
       }
@@ -288,7 +289,7 @@ public class PolynomialHomogenization {
           // ex: 4^(2*x+3)
           IAST plusAST = (IAST) exp;
           if (plusAST.first().isInteger()) {
-            IExpr coefficient = F.Power.of(base, plusAST.first());
+            IExpr coefficient = S.Power.of(base, plusAST.first());
             return F.Times(
                 replaceForwardRecursive(coefficient),
                 replaceForwardRecursive(F.Power(base, plusAST.rest().oneIdentity0())));
@@ -335,7 +336,7 @@ public class PolynomialHomogenization {
         if (!lcm.isOne()) {
           IASTAppendable ast = getSymbol2IntegerAST().get(newSymbol);
           if (ast == null) {
-            IASTAppendable list = F.ast(F.LCM);
+            IASTAppendable list = F.ast(S.LCM);
             list.append(lcm);
             getSymbol2IntegerAST().put(newSymbol, list);
           } else {
@@ -349,7 +350,7 @@ public class PolynomialHomogenization {
       substitutedExpr.put(exprPoly, newSymbol);
 
       if (!lcm.isOne()) {
-        IASTAppendable list = F.ast(F.LCM);
+        IASTAppendable list = F.ast(S.LCM);
         list.append(lcm);
         getSymbol2IntegerAST().put(newSymbol, list);
       }

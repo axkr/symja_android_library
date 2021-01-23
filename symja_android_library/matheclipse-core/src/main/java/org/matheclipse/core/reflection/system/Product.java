@@ -7,18 +7,16 @@ import static org.matheclipse.core.expression.F.Times;
 
 import org.matheclipse.core.builtin.ListFunctions;
 import org.matheclipse.core.eval.EvalEngine;
-import org.matheclipse.core.eval.exception.ArgumentTypeException;
 import org.matheclipse.core.eval.exception.RecursionLimitExceeded;
-import org.matheclipse.core.eval.exception.Validate;
 import org.matheclipse.core.eval.exception.ValidateException;
 import org.matheclipse.core.eval.interfaces.IFunctionEvaluator;
 import org.matheclipse.core.eval.util.Iterator;
 import org.matheclipse.core.expression.F;
+import org.matheclipse.core.expression.S;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IASTAppendable;
 import org.matheclipse.core.interfaces.IASTMutable;
 import org.matheclipse.core.interfaces.IExpr;
-import org.matheclipse.core.interfaces.IInteger;
 import org.matheclipse.core.interfaces.IIterator;
 import org.matheclipse.core.interfaces.ISymbol;
 import org.matheclipse.core.reflection.system.rules.ProductRules;
@@ -148,7 +146,7 @@ public class Product extends ListFunctions.Table implements ProductRules {
       if (FEConfig.SHOW_STACKTRACE) {
         ve.printStackTrace();
       }
-      return EvalEngine.get().printMessage(ve.getMessage(F.Product));
+      return EvalEngine.get().printMessage(ve.getMessage(S.Product));
     }
     // arg1 = evalBlockExpandWithoutReap(arg1,
     // determineIteratorVariables(ast));
@@ -263,7 +261,7 @@ public class Product extends ListFunctions.Table implements ProductRules {
         if (FEConfig.SHOW_STACKTRACE) {
           ve.printStackTrace();
         }
-        return EvalEngine.get().printMessage(ve.getMessage(F.Product));
+        return EvalEngine.get().printMessage(ve.getMessage(S.Product));
       } catch (RecursionLimitExceeded rle) {
         return engine.printMessage("Product: Recursionlimit exceeded");
       }
@@ -298,6 +296,7 @@ public class Product extends ListFunctions.Table implements ProductRules {
     return newSum;
   }
 
+  @Override
   public int[] expectedArgSize(IAST ast) {
     return IFunctionEvaluator.ARGS_2_INFINITY;
   }

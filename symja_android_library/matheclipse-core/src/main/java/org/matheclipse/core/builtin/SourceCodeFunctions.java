@@ -2,7 +2,6 @@ package org.matheclipse.core.builtin;
 
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.interfaces.AbstractEvaluator;
-import org.matheclipse.core.eval.interfaces.IFunctionEvaluator;
 import org.matheclipse.core.expression.BuiltInSymbol;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.expression.ID;

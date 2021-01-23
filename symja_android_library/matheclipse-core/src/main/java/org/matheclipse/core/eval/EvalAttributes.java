@@ -4,10 +4,8 @@ import java.util.Arrays;
 import java.util.Comparator;
 
 import org.matheclipse.core.basic.Config;
-import org.matheclipse.core.builtin.Programming;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.expression.S;
-import org.matheclipse.core.expression.data.SparseArrayExpr;
 import org.matheclipse.core.generic.Comparators;
 import org.matheclipse.core.generic.Predicates;
 import org.matheclipse.core.interfaces.IAST;
@@ -71,7 +69,7 @@ public class EvalAttributes {
   public static IExpr simpleEval(IASTMutable result) {
     IASTMutable temp = result;
     if (temp.isFlatAST()) {
-      IASTMutable t = EvalAttributes.flatten((IAST) temp);
+      IASTMutable t = EvalAttributes.flatten(temp);
       if (t.isPresent()) {
         temp = t;
       }
@@ -354,7 +352,7 @@ public class EvalAttributes {
    * @return <code>true</code> if the sort algorithm was used; <code>false</code> otherwise
    */
   public static final boolean sortLess(IASTMutable ast) {
-    return sort(ast, new Predicates.IsBinaryFalse(F.Less));
+    return sort(ast, new Predicates.IsBinaryFalse(S.Less));
   }
 
   /**
@@ -373,7 +371,7 @@ public class EvalAttributes {
         case 4:
           return sort3Args(ast, false);
         default:
-          if (sort(ast, Comparators.ExprComparator.CONS)) {
+          if (sort(ast, Comparators.CANONICAL_COMPARATOR)) {
             if (FEConfig.SHOW_STACKTRACE) {
               checkCachedHashcode(ast);
             }
@@ -404,7 +402,7 @@ public class EvalAttributes {
         case 4:
           return sort3Args(ast, true);
         default:
-          if (sort(ast, Comparators.ExprComparator.CONS)) {
+          if (sort(ast, Comparators.CANONICAL_COMPARATOR)) {
             ast.addEvalFlags(IAST.IS_SORTED);
             if (FEConfig.SHOW_STACKTRACE) {
               checkCachedHashcode(ast);

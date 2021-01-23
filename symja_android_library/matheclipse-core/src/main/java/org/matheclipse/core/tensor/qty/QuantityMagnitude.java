@@ -13,7 +13,7 @@ public class QuantityMagnitude {
 
   /** @return instance of QuantityMagnitude that uses the built-in SI convention */
   public static QuantityMagnitude SI() {
-    return BuiltIn.SI.quantityMagnitude;
+    return BuiltIn.quantityMagnitude;
   }
 
   /**

@@ -2,7 +2,6 @@ package org.matheclipse.core.builtin;
 
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.interfaces.AbstractEvaluator;
-import org.matheclipse.core.eval.interfaces.IFunctionEvaluator;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.expression.S;
 import org.matheclipse.core.interfaces.IAST;
@@ -73,18 +72,21 @@ public class ImageFunctions {
   }
 
   private static class MaxFilter extends MinFilter {
+    @Override
     protected IExpr filterHead() {
       return S.Max;
     }
   }
 
   private static class MeanFilter extends MinFilter {
+    @Override
     protected IExpr filterHead() {
       return S.Mean;
     }
   }
 
   private static class MedianFilter extends MinFilter {
+    @Override
     protected IExpr filterHead() {
       return S.Median;
     }

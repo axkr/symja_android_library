@@ -4,6 +4,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 import org.matheclipse.core.expression.F;
+import org.matheclipse.core.expression.S;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IBuiltInSymbol;
 import org.matheclipse.core.interfaces.IDistribution;
@@ -203,15 +204,15 @@ public class Assumptions extends AbstractAssumptions {
   private static boolean addElement(IAST element, Assumptions assumptions) {
     if (element.arg2().isSymbol()) {
       ISymbol domain = (ISymbol) element.arg2();
-      if (domain.equals(F.Algebraics)
-          || domain.equals(F.Booleans)
-          || domain.equals(F.Complexes)
-          || domain.equals(F.Integers)
-          || domain.equals(F.Primes)
-          || domain.equals(F.Rationals)
-          || domain.equals(F.Reals)) {
+      if (domain.equals(S.Algebraics)
+          || domain.equals(S.Booleans)
+          || domain.equals(S.Complexes)
+          || domain.equals(S.Integers)
+          || domain.equals(S.Primes)
+          || domain.equals(S.Rationals)
+          || domain.equals(S.Reals)) {
         IExpr arg1 = element.arg1();
-        if (arg1.isAST(F.Alternatives)) {
+        if (arg1.isAST(S.Alternatives)) {
           ((IAST) arg1).forEach(x -> assumptions.elementsMap.put(x, domain));
         } else {
           assumptions.elementsMap.put(arg1, domain);
@@ -265,7 +266,7 @@ public class Assumptions extends AbstractAssumptions {
         IEvaluator evaluator = ((IBuiltInSymbol) head).getEvaluator();
         if (evaluator instanceof IDistribution) {
           IExpr arg1 = element.arg1();
-          if (arg1.isAST(F.Alternatives)) {
+          if (arg1.isAST(S.Alternatives)) {
             ((IAST) arg1).forEach(x -> assumptions.distributionsMap.put(x, dist));
           } else {
             assumptions.distributionsMap.put(arg1, dist);
@@ -528,27 +529,27 @@ public class Assumptions extends AbstractAssumptions {
     for (int i = 1; i < ast.size(); i++) {
       if (ast.get(i).isAST()) {
         IAST temp = (IAST) ast.get(i);
-        if (temp.isAST(F.Element, 3)) {
+        if (temp.isAST(S.Element, 3)) {
           if (!addElement(temp, assumptions)) {
             return null;
           }
-        } else if (temp.isAST(F.Greater, 3, 4)) {
+        } else if (temp.isAST(S.Greater, 3, 4)) {
           if (!addGreater(temp, assumptions)) {
             return null;
           }
-        } else if (temp.isAST(F.GreaterEqual, 3, 4)) {
+        } else if (temp.isAST(S.GreaterEqual, 3, 4)) {
           if (!addGreaterEqual(temp, assumptions)) {
             return null;
           }
-        } else if (temp.isAST(F.Less, 3, 4)) {
+        } else if (temp.isAST(S.Less, 3, 4)) {
           if (!addLess(temp, assumptions)) {
             return null;
           }
-        } else if (temp.isAST(F.LessEqual, 3, 4)) {
+        } else if (temp.isAST(S.LessEqual, 3, 4)) {
           if (!addLessEqual(temp, assumptions)) {
             return null;
           }
-        } else if (temp.isAST(F.Equal, 3)) {
+        } else if (temp.isAST(S.Equal, 3)) {
           if (!addLess(temp, assumptions)) {
             return null;
           }
@@ -585,33 +586,33 @@ public class Assumptions extends AbstractAssumptions {
    */
   @Override
   public IAssumptions addAssumption(IAST ast) {
-    if (ast.isAST(F.Element, 3)) {
+    if (ast.isAST(S.Element, 3)) {
       if (addElement(ast, this)) {
         return this;
       }
-    } else if (ast.isAST(F.Greater, 3, 4)) {
+    } else if (ast.isAST(S.Greater, 3, 4)) {
       if (addGreater(ast, this)) {
         return this;
       }
-    } else if (ast.isAST(F.GreaterEqual, 3, 4)) {
+    } else if (ast.isAST(S.GreaterEqual, 3, 4)) {
       if (addGreaterEqual(ast, this)) {
         return this;
       }
-    } else if (ast.isAST(F.Less, 3, 4)) {
+    } else if (ast.isAST(S.Less, 3, 4)) {
       if (addLess(ast, this)) {
         return this;
       }
-    } else if (ast.isAST(F.LessEqual, 3, 4)) {
+    } else if (ast.isAST(S.LessEqual, 3, 4)) {
       if (addLessEqual(ast, this)) {
         return this;
       }
-    } else if (ast.isAST(F.Equal, 3)) {
+    } else if (ast.isAST(S.Equal, 3)) {
       if (addEqual(ast, this)) {
         return this;
       }
-    } else if (ast.isAnd() || ast.isSameHeadSizeGE(F.List, 2)) {
+    } else if (ast.isAnd() || ast.isSameHeadSizeGE(S.List, 2)) {
       return addList(ast, this);
-    } else if (ast.isAST(F.Distributed, 3)) {
+    } else if (ast.isAST(S.Distributed, 3)) {
       if (addDistribution(ast, this)) {
         return this;
       }
@@ -636,17 +637,17 @@ public class Assumptions extends AbstractAssumptions {
 
   @Override
   public boolean isAlgebraic(IExpr expr) {
-    return isDomain(expr, F.Algebraics);
+    return isDomain(expr, S.Algebraics);
   }
 
   @Override
   public boolean isBoolean(IExpr expr) {
-    return isDomain(expr, F.Booleans);
+    return isDomain(expr, S.Booleans);
   }
 
   @Override
   public boolean isComplex(IExpr expr) {
-    return isDomain(expr, F.Complexes);
+    return isDomain(expr, S.Complexes);
   }
 
   private final boolean isDomain(IExpr expr, ISymbol domain) {
@@ -713,7 +714,7 @@ public class Assumptions extends AbstractAssumptions {
 
   @Override
   public boolean isInteger(IExpr expr) {
-    return isDomain(expr, F.Integers);
+    return isDomain(expr, S.Integers);
   }
 
   @Override
@@ -790,12 +791,12 @@ public class Assumptions extends AbstractAssumptions {
 
   @Override
   public boolean isPrime(IExpr expr) {
-    return isDomain(expr, F.Primes);
+    return isDomain(expr, S.Primes);
   }
 
   @Override
   public boolean isRational(IExpr expr) {
-    return isDomain(expr, F.Rationals);
+    return isDomain(expr, S.Rationals);
   }
 
   @Override
@@ -804,6 +805,6 @@ public class Assumptions extends AbstractAssumptions {
     if (gla != null && gla.isLessOrGreaterRelation()) {
       return true;
     }
-    return isDomain(expr, F.Reals);
+    return isDomain(expr, S.Reals);
   }
 }

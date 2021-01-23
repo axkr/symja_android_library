@@ -1,6 +1,5 @@
 package org.matheclipse.core.visit;
 
-import java.util.function.Function;
 import java.util.function.Predicate;
 
 import org.matheclipse.core.builtin.IOFunctions;
@@ -8,8 +7,8 @@ import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.exception.ArgumentTypeException;
 import org.matheclipse.core.eval.exception.Validate;
 import org.matheclipse.core.expression.F;
+import org.matheclipse.core.expression.S;
 import org.matheclipse.core.interfaces.IAST;
-import org.matheclipse.core.interfaces.IASTMutable;
 import org.matheclipse.core.interfaces.IComplex;
 import org.matheclipse.core.interfaces.IComplexNum;
 import org.matheclipse.core.interfaces.IExpr;
@@ -73,11 +72,11 @@ public class VisitorBooleanLevelSpecification extends AbstractVisitorBoolean {
 
       if (value.isNegative()) {
         fFromDepth = Integer.MIN_VALUE;
-        fToDepth = Validate.checkIntType(F.MemberQ, value, Integer.MIN_VALUE, engine);
+        fToDepth = Validate.checkIntType(S.MemberQ, value, Integer.MIN_VALUE, engine);
         fFromLevel = 1;
         fToLevel = Integer.MAX_VALUE;
       } else {
-        fToLevel = Validate.checkIntType(F.MemberQ, value, Integer.MIN_VALUE, engine);
+        fToLevel = Validate.checkIntType(S.MemberQ, value, Integer.MIN_VALUE, engine);
         fFromLevel = 1;
         fFromDepth = Integer.MIN_VALUE;
         fToDepth = -1;
@@ -91,7 +90,7 @@ public class VisitorBooleanLevelSpecification extends AbstractVisitorBoolean {
         if (lst.arg1() instanceof IInteger) {
           final IInteger i = (IInteger) lst.arg1();
 
-          final int level = Validate.checkIntType(F.MemberQ, i, Integer.MIN_VALUE, engine);
+          final int level = Validate.checkIntType(S.MemberQ, i, Integer.MIN_VALUE, engine);
           if (i.isNegative()) {
             fFromDepth = level;
             fToDepth = level;
@@ -111,28 +110,28 @@ public class VisitorBooleanLevelSpecification extends AbstractVisitorBoolean {
             final IInteger i0 = (IInteger) lst.arg1();
             final IInteger i1 = (IInteger) lst.arg2();
             if (i0.isNegative() && i1.isNegative()) {
-              fFromDepth = Validate.checkIntType(F.MemberQ, i0, Integer.MIN_VALUE, engine);
-              fToDepth = Validate.checkIntType(F.MemberQ, i1, Integer.MIN_VALUE, engine);
+              fFromDepth = Validate.checkIntType(S.MemberQ, i0, Integer.MIN_VALUE, engine);
+              fToDepth = Validate.checkIntType(S.MemberQ, i1, Integer.MIN_VALUE, engine);
               fFromLevel = 0;
               fToLevel = Integer.MAX_VALUE;
             } else if (i0.isNegative()) {
               // all subexpressions at levels i0 or above with a depth of -i1 or less.
-              fFromDepth = Validate.checkIntType(F.MemberQ, i0, Integer.MIN_VALUE, engine);
+              fFromDepth = Validate.checkIntType(S.MemberQ, i0, Integer.MIN_VALUE, engine);
               fToDepth = -1;
               fFromLevel = 0;
-              fToLevel = Validate.checkIntType(F.MemberQ, i1, Integer.MIN_VALUE, engine);
+              fToLevel = Validate.checkIntType(S.MemberQ, i1, Integer.MIN_VALUE, engine);
             } else if (i1.isNegative()) {
               // all subexpressions at any level greater equal i0 that have a depth of -i1 or
               // greater.
               fFromDepth = Integer.MIN_VALUE;
-              fToDepth = Validate.checkIntType(F.MemberQ, i1, Integer.MIN_VALUE, engine);
-              fFromLevel = Validate.checkIntType(F.MemberQ, i0, Integer.MIN_VALUE, engine);
+              fToDepth = Validate.checkIntType(S.MemberQ, i1, Integer.MIN_VALUE, engine);
+              fFromLevel = Validate.checkIntType(S.MemberQ, i0, Integer.MIN_VALUE, engine);
               fToLevel = Integer.MAX_VALUE;
             } else {
               fFromDepth = Integer.MIN_VALUE;
               fToDepth = -1;
-              fFromLevel = Validate.checkIntType(F.MemberQ, i0, Integer.MIN_VALUE, engine);
-              fToLevel = Validate.checkIntType(F.MemberQ, i1, Integer.MIN_VALUE, engine);
+              fFromLevel = Validate.checkIntType(S.MemberQ, i0, Integer.MIN_VALUE, engine);
+              fToLevel = Validate.checkIntType(S.MemberQ, i1, Integer.MIN_VALUE, engine);
             }
             return;
           } else if ((lst.arg1() instanceof IInteger) && (lst.arg2().isInfinity())) {
@@ -145,7 +144,7 @@ public class VisitorBooleanLevelSpecification extends AbstractVisitorBoolean {
             } else {
               fFromDepth = Integer.MIN_VALUE;
               fToDepth = -1;
-              fFromLevel = Validate.checkIntType(F.MemberQ, i0, Integer.MIN_VALUE, engine);
+              fFromLevel = Validate.checkIntType(S.MemberQ, i0, Integer.MIN_VALUE, engine);
               fToLevel = Integer.MAX_VALUE;
             }
             return;
@@ -160,7 +159,7 @@ public class VisitorBooleanLevelSpecification extends AbstractVisitorBoolean {
         }
       }
     }
-    if (levelExpr.isInfinity() || levelExpr.equals(F.All)) {
+    if (levelExpr.isInfinity() || levelExpr.equals(S.All)) {
       // level specification Infinity and -1 are equivalent
       fToLevel = Integer.MAX_VALUE;
       fFromLevel = 1;

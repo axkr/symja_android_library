@@ -42,6 +42,7 @@ public class WindowFunctions {
       this.function = f;
     }
 
+    @Override
     public IExpr evaluateArg1(final IExpr arg1, EvalEngine engine) {
       if (arg1.isRealResult()) {
         return function.apply(arg1);
@@ -82,9 +83,9 @@ public class WindowFunctions {
                     F.QQ(1L, 100000L),
                     F.Plus(
                         F.ZZ(35875L),
-                        F.Times(F.ZZ(48829L), F.Cos(F.Times(F.C2, F.Pi, x))),
-                        F.Times(F.ZZ(14128L), F.Cos(F.Times(F.C4, F.Pi, x))),
-                        F.Times(F.ZZ(1168L), F.Cos(F.Times(F.C6, F.Pi, x))))),
+                        F.Times(F.ZZ(48829L), F.Cos(F.Times(F.C2, S.Pi, x))),
+                        F.Times(F.ZZ(14128L), F.Cos(F.Times(F.C4, S.Pi, x))),
+                        F.Times(F.ZZ(1168L), F.Cos(F.Times(F.C6, S.Pi, x))))),
                 F.LessEqual(F.CN1D2, x, F.C1D2))),
         F.C0); // $$;
   }
@@ -102,9 +103,9 @@ public class WindowFunctions {
                 F.Times(
                     F.QQ(1L, 10000000L),
                     F.Plus(
-                        F.Times(F.ZZ(4891775L), F.Cos(F.Times(F.C2, F.Pi, x))),
-                        F.Times(F.ZZ(1365995L), F.Cos(F.Times(F.C4, F.Pi, x))),
-                        F.Times(F.ZZ(106411L), F.Cos(F.Times(F.C6, F.Pi, x))),
+                        F.Times(F.ZZ(4891775L), F.Cos(F.Times(F.C2, S.Pi, x))),
+                        F.Times(F.ZZ(1365995L), F.Cos(F.Times(F.C4, S.Pi, x))),
+                        F.Times(F.ZZ(106411L), F.Cos(F.Times(F.C6, S.Pi, x))),
                         F.ZZ(3635819L))),
                 F.LessEqual(F.CN1D2, x, F.C1D2))),
         F.C0); // $$;
@@ -120,8 +121,8 @@ public class WindowFunctions {
                     F.QQ(1L, 50L),
                     F.Plus(
                         F.ZZ(21L),
-                        F.Times(F.ZZ(25L), F.Cos(F.Times(F.C2, F.Pi, x))),
-                        F.Times(F.C4, F.Cos(F.Times(F.C4, F.Pi, x))))),
+                        F.Times(F.ZZ(25L), F.Cos(F.Times(F.C2, S.Pi, x))),
+                        F.Times(F.C4, F.Cos(F.Times(F.C4, S.Pi, x))))),
                 F.LessEqual(F.CN1D2, x, F.C1D2))),
         F.C0); // $$;
   }
@@ -144,10 +145,10 @@ public class WindowFunctions {
                     F.QQ(1L, 1000000000L),
                     F.Plus(
                         F.ZZ(215578947L),
-                        F.Times(F.ZZ(416631580L), F.Cos(F.Times(F.C2, F.Pi, x))),
-                        F.Times(F.ZZ(277263158L), F.Cos(F.Times(F.C4, F.Pi, x))),
-                        F.Times(F.ZZ(83578947L), F.Cos(F.Times(F.C6, F.Pi, x))),
-                        F.Times(F.ZZ(6947368L), F.Cos(F.Times(F.C8, F.Pi, x))))),
+                        F.Times(F.ZZ(416631580L), F.Cos(F.Times(F.C2, S.Pi, x))),
+                        F.Times(F.ZZ(277263158L), F.Cos(F.Times(F.C4, S.Pi, x))),
+                        F.Times(F.ZZ(83578947L), F.Cos(F.Times(F.C6, S.Pi, x))),
+                        F.Times(F.ZZ(6947368L), F.Cos(F.Times(F.C8, S.Pi, x))))),
                 F.LessEqual(F.CN1D2, x, F.C1D2))),
         F.C0); // $$;
   }
@@ -169,7 +170,7 @@ public class WindowFunctions {
     F.Piecewise(
         F.List(
             F.List(
-                F.Plus(F.QQ(25L, 46L), F.Times(F.QQ(21L, 46L), F.Cos(F.Times(F.C2, F.Pi, x)))),
+                F.Plus(F.QQ(25L, 46L), F.Times(F.QQ(21L, 46L), F.Cos(F.Times(F.C2, S.Pi, x)))),
                 F.LessEqual(F.CN1D2, x, F.C1D2))),
         F.C0); // $$;
   }
@@ -180,7 +181,7 @@ public class WindowFunctions {
     F.Piecewise(
         F.List(
             F.List(
-                F.Plus(F.C1D2, F.Times(F.C1D2, F.Cos(F.Times(F.C2, F.Pi, x)))),
+                F.Plus(F.C1D2, F.Times(F.C1D2, F.Cos(F.Times(F.C2, S.Pi, x)))),
                 F.LessEqual(F.CN1D2, x, F.C1D2))),
         F.C0); // $$;
   }
@@ -197,9 +198,9 @@ public class WindowFunctions {
                     F.QQ(1L, 250000L),
                     F.Plus(
                         F.ZZ(88942L),
-                        F.Times(F.ZZ(121849L), F.Cos(F.Times(F.C2, F.Pi, x))),
-                        F.Times(F.ZZ(36058L), F.Cos(F.Times(F.C4, F.Pi, x))),
-                        F.Times(F.ZZ(3151L), F.Cos(F.Times(F.C6, F.Pi, x))))),
+                        F.Times(F.ZZ(121849L), F.Cos(F.Times(F.C2, S.Pi, x))),
+                        F.Times(F.ZZ(36058L), F.Cos(F.Times(F.C4, S.Pi, x))),
+                        F.Times(F.ZZ(3151L), F.Cos(F.Times(F.C6, S.Pi, x))))),
                 F.LessEqual(F.CN1D2, x, F.C1D2))),
         F.C0); // $$;
   }
@@ -241,12 +242,12 @@ public class WindowFunctions {
                     F.LessEqual(F.Plus(F.CN1D3, F.Times(F.CN2, x)), F.C0),
                     F.LessEqual(F.Plus(F.CN1D3, F.Times(F.C2, x)), F.C0))),
             F.List(
-                F.Times(F.C1D2, F.Plus(F.C1, F.Cos(F.Times(F.C3, F.Pi, F.Plus(F.QQ(1L, 6L), x))))),
+                F.Times(F.C1D2, F.Plus(F.C1, F.Cos(F.Times(F.C3, S.Pi, F.Plus(F.QQ(1L, 6L), x))))),
                 F.And(
                     F.GreaterEqual(x, F.CN1D2),
                     F.Greater(F.Plus(F.CN1D3, F.Times(F.CN2, x)), F.C0))),
             F.List(
-                F.Times(F.C1D2, F.Plus(F.C1, F.Cos(F.Times(F.C3, F.Pi, F.Plus(F.QQ(-1L, 6L), x))))),
+                F.Times(F.C1D2, F.Plus(F.C1, F.Cos(F.Times(F.C3, S.Pi, F.Plus(F.QQ(-1L, 6L), x))))),
                 F.And(F.Greater(F.Plus(F.CN1D3, F.Times(F.C2, x)), F.C0), F.LessEqual(x, F.C1D2)))),
         F.C0); // $$;
   }

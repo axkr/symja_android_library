@@ -157,7 +157,7 @@ public class Derivative extends AbstractFunctionEvaluator implements DerivativeR
               ast.topHead(), "dvar", F.List(F.List(F.Slot1, head)), engine);
         }
       }
-      if (ast.head().isAST(F.Derivative, 2)) {
+      if (ast.head().isAST(S.Derivative, 2)) {
         // Derivative(n)
         IAST head = (IAST) ast.head();
         if (head.arg1().isInteger()) {
@@ -180,7 +180,7 @@ public class Derivative extends AbstractFunctionEvaluator implements DerivativeR
         }
         return F.NIL;
       }
-      if (ast.head().isAST(F.Derivative, 3)) {
+      if (ast.head().isAST(S.Derivative, 3)) {
         // Derivative(n, m)
         IAST head = (IAST) ast.head();
         if (head.arg1().isInteger() && head.arg2().isInteger()) {
@@ -246,7 +246,7 @@ public class Derivative extends AbstractFunctionEvaluator implements DerivativeR
     }
     dExpr.setEvalFlags(IAST.IS_DERIVATIVE_EVALED);
 
-    IExpr dResult = engine.evalRules(F.D, dExpr);
+    IExpr dResult = engine.evalRules(S.D, dExpr);
 
     if (dResult.isPresent()) {
       dResult = engine.evaluate(dResult);
@@ -261,7 +261,7 @@ public class Derivative extends AbstractFunctionEvaluator implements DerivativeR
         for (int i = 0; i < length; i++) {
           dExpr = F.D(newFunction, symbol);
           dExpr.setEvalFlags(IAST.IS_DERIVATIVE_EVALED);
-          dResult = engine.evalRules(F.D, dExpr);
+          dResult = engine.evalRules(S.D, dExpr);
           if (!dResult.isPresent()) {
             return F.NIL;
           } else {
@@ -295,7 +295,7 @@ public class Derivative extends AbstractFunctionEvaluator implements DerivativeR
                 exponent,
                 createDerivative(
                     n - 1,
-                    F.unaryAST1(F.Function, engine.evaluate(F.Power(F.Slot1, exponent.dec())))));
+                    F.unaryAST1(S.Function, engine.evaluate(F.Power(F.Slot1, exponent.dec())))));
           }
         }
       }
@@ -316,7 +316,7 @@ public class Derivative extends AbstractFunctionEvaluator implements DerivativeR
     IAST listKey = F.List(symbol, F.ZZ(n), F.ZZ(m));
     IExpr result = DERIVATIVE_N_M_MAP.get(listKey);
     if (result != null) {
-      return F.unaryAST1(F.Function, engine.evaluate(result));
+      return F.unaryAST1(S.Function, engine.evaluate(result));
     }
     return F.NIL;
   }

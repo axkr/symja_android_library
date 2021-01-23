@@ -1,8 +1,5 @@
 package org.matheclipse.core.eval.exception;
 
-import org.matheclipse.core.builtin.StringFunctions;
-import org.matheclipse.core.interfaces.IExpr;
-
 /** Exception which will be thrown, if the Config.MAX_AST_SIZE limit was exceeded. */
 public class BigIntegerLimitExceeded extends LimitException {
 

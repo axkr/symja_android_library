@@ -146,6 +146,7 @@ public class IOFunctions {
       return result;
     }
 
+    @Override
     public int[] expectedArgSize(IAST ast) {
       return ARGS_1_3;
     }
@@ -249,6 +250,7 @@ public class IOFunctions {
       return result;
     }
 
+    @Override
     public int[] expectedArgSize(IAST ast) {
       return ARGS_0_2_0;
     }
@@ -343,6 +345,7 @@ public class IOFunctions {
       return F.NIL;
     }
 
+    @Override
     public int[] expectedArgSize(IAST ast) {
       return ARGS_1_1;
     }
@@ -360,6 +363,7 @@ public class IOFunctions {
       return F.stringx(shorten(ast.arg1()));
     }
 
+    @Override
     public int[] expectedArgSize(IAST ast) {
       return ARGS_1_1;
     }
@@ -406,6 +410,7 @@ public class IOFunctions {
       return getNamesByPattern(pattern, engine);
     }
 
+    @Override
     public int[] expectedArgSize(IAST ast) {
       return ARGS_0_2;
     }
@@ -432,10 +437,10 @@ public class IOFunctions {
           });
       if (!convert[0]) {
         stream.println("ERROR-IN-OUTPUTFORM");
-        return F.Null;
+        return S.Null;
       }
       stream.println(buf.toString());
-      return F.Null;
+      return S.Null;
     }
 
     protected static void printExpression(
@@ -553,8 +558,12 @@ public class IOFunctions {
     "Machine-sized integer expected at position `2` in `1`.", //
     "intpm",
     "Positive machine-sized integer expected at position `2` in `1`.", //
+    "intpoint",
+    "`1` is expected to contain a list of lists of integers.", //
     "intrange",
     "Integer expected in range `1` to `2`.", //
+    "inv",
+    "The argument `2`  in  `1`  is not valid. 0 or 2 arguments expected.", //
     "invak",
     "The argument is not a rule or a list of rules.", //
     "invdt",
@@ -595,6 +604,8 @@ public class IOFunctions {
     "List of Java long numbers expected in `1`.", //
     "locked",
     "Symbol `1` is locked.", //
+    "lowlen",
+    "Required length `1` is smaller than maximum `2` of support of `3`.", //
     "lvlist",
     "Local variable specification `1` is not a List.", //
     "lvws",
@@ -645,6 +656,8 @@ public class IOFunctions {
     "A character unicode, which should be a non-negative integer less than 1114112, is expected at position `2` in `1`.", //
     "noprime",
     "There are no primes in the specified interval.", //
+    "norel",
+    "Expressions `1` and `2` cannot be related by a permutation.", //
     "noval",
     "Symbol `1` in part assignment does not have an immediate value.", //
     "nsmet",
@@ -667,6 +680,10 @@ public class IOFunctions {
     "Part specification `1` is longer than depth of object.", //
     "partw",
     "Part `1` of `2` does not exist.", //
+    "perm",
+    "`1` is not a valid permutation.", //
+    "permlist",
+    "Invalid permutation list `1`.", //
     "pilist",
     "The arguments to `1` must be two lists of integers of identical length, with the second list only containing positive integers.", //
     "plld",
@@ -679,6 +696,8 @@ public class IOFunctions {
     "`1` is not a polynomial.", //
     "polynomial",
     "Polynomial expected at position `1` in `2`.", //
+    "pospoint",
+    "`1` contains integers that are not positive.", //
     "posr",
     "The left hand side of `2` in `1` doesn't match an int-array of depth `3`.", //
     "pkspec1",
@@ -695,6 +714,8 @@ public class IOFunctions {
     "Recursion depth of `1` exceeded during evaluation of `2`.", //
     "rectt",
     "Rectangular array expected at position `1` in `2`.", //
+    "reppoint",
+    "`1` contains repeated integers.", //
     "reps",
     "(`1`) is neither a list of replacement nor a valid dispatch table and cannot be used for replacing.", //
     "rvalue",
@@ -762,7 +783,7 @@ public class IOFunctions {
     if (temp.isPresent()) {
       message = temp.toString();
     } else {
-      temp = F.General.evalMessage(messageShortcut);
+      temp = S.General.evalMessage(messageShortcut);
       if (temp.isPresent()) {
         message = temp.toString();
       }
@@ -809,8 +830,15 @@ public class IOFunctions {
    * Format a message according to the shortcut from the <code>MESSAGES</code> array and print it to
    * the error stream with the <code>engine.printMessage()</code>method.
    *
+   * <p>Usage pattern:
+   *
+   * <pre>
+   *    // corresponding long text of "&lt;message-shortcut&gt;" stored in the MESSAGES array
+   *    printMessage(S.&lt;builtin-symbol&gt;, "&lt;message-shortcut&gt;", F.List(&lt;param1&gt;, &lt;param2&gt;, ...), engine);
+   * </pre>
+   *
    * @param symbol
-   * @param messageShortcut the message shortcut defined in the <code>MESSAGES</code> array
+   * @param messageShortcut the message shortcut defined in the {@link #MESSAGES} array
    * @param listOfArgs a list of arguments which should be inserted into the message shortcuts
    *     placeholder
    * @param engine
@@ -823,7 +851,7 @@ public class IOFunctions {
     if (temp.isPresent()) {
       message = temp.toString();
     } else {
-      temp = F.General.evalMessage(messageShortcut);
+      temp = S.General.evalMessage(messageShortcut);
       if (temp.isPresent()) {
         message = temp.toString();
       }
@@ -848,7 +876,7 @@ public class IOFunctions {
 
   public static String getMessage(
       String messageShortcut, final IAST listOfArgs, EvalEngine engine) {
-    IExpr temp = F.General.evalMessage(messageShortcut);
+    IExpr temp = S.General.evalMessage(messageShortcut);
     String message = null;
     if (temp.isPresent()) {
       message = temp.toString();
@@ -906,6 +934,19 @@ public class IOFunctions {
    */
   public static String shorten(IExpr expr, int maximuLength) {
     String str = expr.toString();
+    return shorten(str, maximuLength);
+  }
+
+  /**
+   * Shorten the output string to a maximum length of <code>
+   * maximuLength</code> characters. Print <<SHORT>> as substitute of the middle of the expression
+   * if necessary.
+   *
+   * @param str
+   * @param maximuLength
+   * @return
+   */
+  public static String shorten(String str, int maximuLength) {
     if (str.length() > maximuLength) {
       StringBuilder buf = new StringBuilder(maximuLength);
       int halfLength = (maximuLength / 2) - 14;
@@ -919,7 +960,7 @@ public class IOFunctions {
 
   public static IAST getNamesByPattern(java.util.regex.Pattern pattern, EvalEngine engine) {
     ContextPath cp = engine.getContextPath();
-    IASTAppendable list = F.ListAlloc();
+    IASTAppendable list = F.ListAlloc(31);
     for (Context context : cp) {
       for (Map.Entry<String, ISymbol> entry : context.entrySet()) {
         String fullName = context.getContextName() + entry.getKey();

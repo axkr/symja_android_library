@@ -11,12 +11,6 @@ import static org.matheclipse.core.expression.F.Power;
 import static org.matheclipse.core.expression.F.Sin;
 import static org.matheclipse.core.expression.F.Sinh;
 import static org.matheclipse.core.expression.F.Times;
-import static org.matheclipse.core.expression.S.Abs;
-import static org.matheclipse.core.expression.S.Cos;
-import static org.matheclipse.core.expression.S.Cot;
-import static org.matheclipse.core.expression.S.Csc;
-import static org.matheclipse.core.expression.S.Sec;
-
 import java.util.List;
 
 import org.matheclipse.core.builtin.StructureFunctions;
@@ -79,7 +73,7 @@ public class ComplexExpand extends AbstractEvaluator {
       if (ast.isTimes()) {
         IExpr expanded = F.evalExpand(ast);
         if (expanded.isPlus()) {
-          return F.ComplexExpand.of(fEngine, expanded);
+          return S.ComplexExpand.of(fEngine, expanded);
         }
       }
       if (ast.isPower() //
@@ -93,7 +87,7 @@ public class ComplexExpand extends AbstractEvaluator {
           IExpr inner = exponent.times(F.Arg(base));
           // coeff*Cos(inner) + I*coeff*Sin(inner);
           IExpr temp =
-              F.Expand.of(
+              S.Expand.of(
                   fEngine,
                   F.Plus(F.Times(coeff, F.Cos(inner)), F.Times(F.CI, coeff, F.Sin(inner))));
           return temp;
@@ -109,8 +103,8 @@ public class ComplexExpand extends AbstractEvaluator {
       if (result.isPresent()) {
         x = result;
       }
-      IExpr reX = F.Re.of(fEngine, x);
-      IExpr imX = F.Im.of(fEngine, x);
+      IExpr reX = S.Re.of(fEngine, x);
+      IExpr imX = S.Im.of(fEngine, x);
       if (head.equals(S.Abs)) {
         // Sqrt(reX^2 + imX^2)
         return F.Sqrt(Plus(Power(reX, C2), Power(imX, C2)));
@@ -212,7 +206,7 @@ public class ComplexExpand extends AbstractEvaluator {
         if (arg2.isPresent()) {
           boolean hasMatched = false;
           for (int j = 1; j < arg2.size(); j++) {
-            if (F.MatchQ.ofQ(variable, arg2.get(j))) {
+            if (S.MatchQ.ofQ(variable, arg2.get(j))) {
               hasMatched = true;
               break;
             }
@@ -221,7 +215,7 @@ public class ComplexExpand extends AbstractEvaluator {
             continue;
           }
         }
-        assumptionExpr.append(F.Element(variable, F.Reals));
+        assumptionExpr.append(F.Element(variable, S.Reals));
       }
       IAssumptions assumptions;
       if (oldAssumptions == null) {
@@ -242,6 +236,7 @@ public class ComplexExpand extends AbstractEvaluator {
     }
   }
 
+  @Override
   public int[] expectedArgSize(IAST ast) {
     return IFunctionEvaluator.ARGS_1_2;
   }

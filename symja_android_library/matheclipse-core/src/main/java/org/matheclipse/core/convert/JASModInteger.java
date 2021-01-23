@@ -5,7 +5,6 @@ import java.util.ArrayList;
 import java.util.List;
 
 import org.matheclipse.core.eval.exception.JASConversionException;
-import org.matheclipse.core.eval.exception.Validate;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IASTAppendable;

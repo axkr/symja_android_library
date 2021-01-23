@@ -2,8 +2,8 @@ package org.matheclipse.core.patternmatching;
 
 import org.matheclipse.core.combinatoric.AbstractListStepVisitor;
 import org.matheclipse.core.combinatoric.NumberPartitionsIterator;
-import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.expression.F;
+import org.matheclipse.core.expression.S;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IASTAppendable;
 import org.matheclipse.core.interfaces.IExpr;
@@ -85,7 +85,7 @@ public class FlatStepVisitor extends AbstractListStepVisitor<IExpr> {
         } else {
           ISymbol head = fSymbol;
           if (lhsPatternExpr.isPatternSequence(false)) {
-            head = F.Sequence;
+            head = S.Sequence;
           }
           partitionElement = F.ast(head, n, false);
           for (int i = 0; i < n; i++) {

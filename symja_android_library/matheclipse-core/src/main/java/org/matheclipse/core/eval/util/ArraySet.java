@@ -25,6 +25,7 @@ public class ArraySet<T> extends AbstractSet<T> implements Iterable<T> {
     this.array = null;
   }
 
+  @Override
   public final boolean add(T key) {
     if (array == null) {
       array = new Object[capacity];
@@ -58,6 +59,7 @@ public class ArraySet<T> extends AbstractSet<T> implements Iterable<T> {
     return array == null ? null : (T) array[position];
   }
 
+  @Override
   public final int size() {
     return size;
   }

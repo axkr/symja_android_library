@@ -16,7 +16,6 @@ import org.hipparchus.util.FastMath;
 import org.hipparchus.util.MathArrays;
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.interfaces.AbstractEvaluator;
-import org.matheclipse.core.eval.interfaces.IFunctionEvaluator;
 import org.matheclipse.core.eval.util.OptionArgs;
 import org.matheclipse.core.expression.ASTRealVector;
 import org.matheclipse.core.expression.F;
@@ -93,6 +92,7 @@ public class ClusteringFunctions {
       return 1.0;
     }
 
+    @Override
     protected IExpr vectorDistance(IExpr arg1, IExpr arg2, EvalEngine engine) {
       // don't call numeric case here!
       return distance(arg1, arg2);

@@ -18,7 +18,6 @@ import org.matheclipse.core.convert.VariablesSet;
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.TeXUtilities;
 import org.matheclipse.core.eval.interfaces.AbstractEvaluator;
-import org.matheclipse.core.eval.interfaces.IFunctionEvaluator;
 import org.matheclipse.core.eval.util.OptionArgs;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.expression.ID;
@@ -108,16 +107,16 @@ public class ManipulateFunction {
 
     private static void init() {
       if (Config.USE_MANIPULATE_JS) {
-        F.BarChart.setEvaluator(new BarChart());
-        F.BoxWhiskerChart.setEvaluator(new BoxWhiskerChart());
-        F.ComplexPlot3D.setEvaluator(new ComplexPlot3D());
-        F.ContourPlot.setEvaluator(new ContourPlot());
-        F.DensityPlot.setEvaluator(new DensityPlot());
-        F.DensityHistogram.setEvaluator(new DensityHistogram());
-        F.Histogram.setEvaluator(new Histogram());
-        F.PieChart.setEvaluator(new PieChart());
-        F.Manipulate.setEvaluator(new Manipulate());
-        F.MatrixPlot.setEvaluator(new MatrixPlot());
+        S.BarChart.setEvaluator(new BarChart());
+        S.BoxWhiskerChart.setEvaluator(new BoxWhiskerChart());
+        S.ComplexPlot3D.setEvaluator(new ComplexPlot3D());
+        S.ContourPlot.setEvaluator(new ContourPlot());
+        S.DensityPlot.setEvaluator(new DensityPlot());
+        S.DensityHistogram.setEvaluator(new DensityHistogram());
+        S.Histogram.setEvaluator(new Histogram());
+        S.PieChart.setEvaluator(new PieChart());
+        S.Manipulate.setEvaluator(new Manipulate());
+        S.MatrixPlot.setEvaluator(new MatrixPlot());
       }
     }
   }
@@ -152,7 +151,7 @@ public class ManipulateFunction {
           if (dimension[1] == 2) {
             StringBuilder function = new StringBuilder();
 
-            if (manipulateAST.arg1().isAST(F.ListLinePlot)) {
+            if (manipulateAST.arg1().isAST(S.ListLinePlot)) {
               function.append("var data = [ listPlot( [\n");
               for (int i = 1; i < pointList.size(); i++) {
                 IAST rowList = (IAST) pointList.get(i);
@@ -237,7 +236,7 @@ public class ManipulateFunction {
           return F.NIL;
         } else {
           StringBuilder function = new StringBuilder();
-          if (manipulateAST.arg1().isAST(F.ListLinePlot)) {
+          if (manipulateAST.arg1().isAST(S.ListLinePlot)) {
             function.append("var data = [ listPlot( [\n");
             for (int i = 1; i < pointList.size(); i++) {
               function.append("[ ");
@@ -317,7 +316,7 @@ public class ManipulateFunction {
         } else { // if (plotID == ID.ComplexPlot3D) {
           options = new OptionArgs(plot.topHead(), plot, 3, engine);
         }
-        IExpr colorFunction = options.getOption(F.ColorFunction);
+        IExpr colorFunction = options.getOption(S.ColorFunction);
         if (colorFunction == S.Automatic) {
         } else if (colorFunction.isString()) {
           String newColorMap = colorFunction.toString();
@@ -338,26 +337,26 @@ public class ManipulateFunction {
           } else {
             // `2` is not a known entity, class, or tag for `1`.
             IOFunctions.printMessage(
-                F.ColorData, "notent", F.List(F.ColorData, colorFunction), engine);
+                S.ColorData, "notent", F.List(S.ColorData, colorFunction), engine);
           }
         } else if (colorFunction.isPresent()) {
           // `2` is not a known entity, class, or tag for `1`.
           IOFunctions.printMessage(
-              F.ColorData, "notent", F.List(F.ColorData, colorFunction), engine);
+              S.ColorData, "notent", F.List(S.ColorData, colorFunction), engine);
         }
       } else {
         options = new OptionArgs(plot.topHead(), plot, 3, engine);
       }
-      IExpr plotRange = options.getOption(F.PlotRange);
+      IExpr plotRange = options.getOption(S.PlotRange);
       IAST optionPlotRange = F.NIL;
       if (plotRange.isPresent()) {
-        if (plotRange.isAST(F.List, 3)) {
-          optionPlotRange = F.List(F.Full, F.List(plotRange.first(), plotRange.second()));
+        if (plotRange.isAST(S.List, 3)) {
+          optionPlotRange = F.List(S.Full, F.List(plotRange.first(), plotRange.second()));
         } else if (plotRange.isReal()) {
           if (plotID == ID.Plot) {
-            optionPlotRange = F.List(F.Full, F.List(plotRange.negate(), plotRange));
+            optionPlotRange = F.List(S.Full, F.List(plotRange.negate(), plotRange));
           } else if (plotID == ID.ListPlot || plotID == ID.ListLinePlot) {
-            optionPlotRange = F.List(F.Full, F.List(F.C0, plotRange));
+            optionPlotRange = F.List(S.Full, F.List(F.C0, plotRange));
           } else if (plotID == ID.PolarPlot) {
             optionPlotRange =
                 F.List(
@@ -387,7 +386,7 @@ public class ManipulateFunction {
       if (plotFunction.isList()) {
         listOfFunctions = (IAST) plotFunction;
       } else {
-        listOfFunctions = F.unaryAST1(F.List, plotFunction);
+        listOfFunctions = F.unaryAST1(S.List, plotFunction);
       }
       if (plotID == ID.Plot3D
           || //
@@ -411,7 +410,7 @@ public class ManipulateFunction {
           toJS.convert(function, listOfFunctions.get(i));
           function.append(" ]; }\n");
         }
-      } else if (manipulateAST.arg1().isAST(F.ComplexPlot3D)) {
+      } else if (manipulateAST.arg1().isAST(S.ComplexPlot3D)) {
         if (plotRangeY.isPresent()) {
           return F.NIL;
         }
@@ -453,7 +452,7 @@ public class ManipulateFunction {
           return F.NIL;
         }
         plot3D(listOfFunctions, plotRangeX, plotRangeY, graphicControl, colorMap, toJS);
-      } else if (manipulateAST.arg1().isAST(F.ComplexPlot3D)) {
+      } else if (manipulateAST.arg1().isAST(S.ComplexPlot3D)) {
         if (plotRangeY.isPresent()) {
           return F.NIL;
         }
@@ -492,11 +491,11 @@ public class ManipulateFunction {
         graphicControl.append("var config = { type: 'svg' ");
         if (optionPlotRange.isPresent()) {
           IExpr option = optionPlotRange.arg2();
-          if (option.isAST(F.List, 3)) {
+          if (option.isAST(S.List, 3)) {
             plotRangeY = F.List(option.first(), option.second());
           }
         }
-        if (optionPlotRange.isPresent() && optionPlotRange.second().isAST(F.List, 3)) {
+        if (optionPlotRange.isPresent() && optionPlotRange.second().isAST(S.List, 3)) {
           IAST list = (IAST) optionPlotRange.second();
           // var config = { type: 'svg', yMin: -5, yMax: 5 };
           graphicControl.append(", yMin: ");
@@ -570,7 +569,6 @@ public class ManipulateFunction {
         if (i < listOfFunctions.size() - 1) {
           graphicControl.append(",");
         }
-        ;
       }
       graphicControl.append("];\n");
     }
@@ -614,7 +612,7 @@ public class ManipulateFunction {
         graphicControl.append("' } );\n");
       }
       graphicControl.append("\n  var config = { type: 'threejs'");
-      if (optionPlotRange.isPresent() && optionPlotRange.second().isAST(F.List, 3)) {
+      if (optionPlotRange.isPresent() && optionPlotRange.second().isAST(S.List, 3)) {
         IAST list = (IAST) optionPlotRange.second();
         // var config = { type: 'svg', yMin: -5, yMax: 5 };
         graphicControl.append(", zMin: ");
@@ -927,7 +925,7 @@ public class ManipulateFunction {
               // false, true);
             }
           }
-          IAST listOfLists = (IAST) pointList;
+          IAST listOfLists = pointList;
           for (int i = 1; i < listOfLists.size(); i++) {
             pointList = (IAST) listOfLists.get(i);
             dimension = pointList.isMatrix(false);
@@ -1056,14 +1054,14 @@ public class ManipulateFunction {
       double plotRangeYMin = Double.MAX_VALUE;
       double plotRangeXMax = Double.MIN_VALUE;
       double plotRangeXMin = Double.MAX_VALUE;
-      if (plotRangeX.isAST(F.List, 4)) {
+      if (plotRangeX.isAST(S.List, 4)) {
         try {
           plotRangeXMin = engine.evalDouble(plotRangeX.arg2());
           plotRangeXMax = engine.evalDouble(plotRangeX.arg3());
         } catch (RuntimeException rex) {
         }
       }
-      IExpr option = options.getOption(F.PlotStyle);
+      IExpr option = options.getOption(S.PlotStyle);
       IAST plotStyle = F.NIL;
       if (option.isPresent()) {
         if (!option.isList()) {
@@ -1074,14 +1072,14 @@ public class ManipulateFunction {
           plotStyle = (IAST) option;
         }
       }
-      IExpr plotRangeY = options.getOption(F.PlotRange);
+      IExpr plotRangeY = options.getOption(S.PlotRange);
       // IAST optionPlotRange = F.NIL;
       if (plotRangeY.isPresent()) {
-        if (plotRangeY.isAST(F.List, 3)) {
+        if (plotRangeY.isAST(S.List, 3)) {
           try {
-            if (plotRangeY.first().isAST(F.List, 3)
+            if (plotRangeY.first().isAST(S.List, 3)
                 && //
-                plotRangeY.second().isAST(F.List, 3)) {
+                plotRangeY.second().isAST(S.List, 3)) {
               IAST list = (IAST) plotRangeY.first();
               plotRangeXMin = engine.evalDouble(list.first());
               plotRangeXMax = engine.evalDouble(list.second());
@@ -1216,7 +1214,7 @@ public class ManipulateFunction {
         } else {
           ISymbol sym = F.Dummy("$z" + i);
           IExpr functionRange =
-              F.FunctionRange.of(engine, listOfFunctions.get(i), plotSymbolX, sym);
+              S.FunctionRange.of(engine, listOfFunctions.get(i), plotSymbolX, sym);
           yBoundingBoxFunctionRange(engine, boundingbox, functionRange);
         }
       }
@@ -1315,9 +1313,9 @@ public class ManipulateFunction {
           } else {
             ISymbol sym = F.Dummy("$z" + i);
             IExpr functionRange =
-                F.FunctionRange.of(engine, listOfFunctions.get(1), plotSymbolX, sym);
+                S.FunctionRange.of(engine, listOfFunctions.get(1), plotSymbolX, sym);
             xBoundingBoxFunctionRange(engine, boundingbox, functionRange);
-            functionRange = F.FunctionRange.of(engine, listOfFunctions.get(2), plotSymbolX, sym);
+            functionRange = S.FunctionRange.of(engine, listOfFunctions.get(2), plotSymbolX, sym);
             yBoundingBoxFunctionRange(engine, boundingbox, functionRange);
           }
 
@@ -1414,7 +1412,7 @@ public class ManipulateFunction {
         } else {
           ISymbol sym = F.Dummy("$z" + i);
           IExpr functionRange =
-              F.FunctionRange.of(engine, listOfFunctions.get(i), plotSymbolX, sym);
+              S.FunctionRange.of(engine, listOfFunctions.get(i), plotSymbolX, sym);
           yBoundingBoxFunctionRange(engine, boundingbox, functionRange);
         }
       }
@@ -1682,7 +1680,6 @@ public class ManipulateFunction {
           if (sliderParameters.size() < 4) {
             return false;
           }
-          ;
           sliderSymbol = sliderParameters.arg1().toString();
           toJS.appendSlider(sliderSymbol);
         } else {
@@ -1741,7 +1738,7 @@ public class ManipulateFunction {
           for (int i = 2; i < ast.size(); i++) {
             if (ast.get(i).isList()) {
               if (!ManipulateFunction.JSXGraph.singleSlider(
-                  (IAST) ast.getAST(i), slider, xPos1Slider, xPos2Slider, yPosSlider, toJS)) {
+                  ast.getAST(i), slider, xPos1Slider, xPos2Slider, yPosSlider, toJS)) {
                 return null;
               }
               yPosSlider -= yDelta;
@@ -1776,17 +1773,17 @@ public class ManipulateFunction {
       //				arg1 = arg1.normal(false);
       //			}
 
-      if (plot.isAST(F.DensityHistogram)) {
+      if (plot.isAST(S.DensityHistogram)) {
         return densityHistogram(arg1);
-      } else if (plot.isAST(F.Histogram)) {
+      } else if (plot.isAST(S.Histogram)) {
         return histogram(arg1);
-      } else if (plot.isAST(F.BarChart)) {
+      } else if (plot.isAST(S.BarChart)) {
         return barChart(arg1, plot, engine);
-      } else if (plot.isAST(F.BoxWhiskerChart)) {
+      } else if (plot.isAST(S.BoxWhiskerChart)) {
         return boxWhiskerChart(arg1);
-      } else if (plot.isAST(F.PieChart)) {
+      } else if (plot.isAST(S.PieChart)) {
         return pieChart(arg1);
-      } else if (plot.isAST(F.MatrixPlot)) {
+      } else if (plot.isAST(S.MatrixPlot)) {
         return matrixPlot(arg1);
       }
       return F.NIL;
@@ -1848,11 +1845,11 @@ public class ManipulateFunction {
       double[] vector = arg.toDoubleVector();
       if (vector != null && vector.length > 0) {
         Orientation orientation = Orientation.VERTICAL;
-        OptionArgs options = new OptionArgs(F.BarChart, plot, 2, engine);
-        IExpr orientExpr = options.getOption(F.BarOrigin);
-        if (orientExpr == F.Bottom) {
+        OptionArgs options = new OptionArgs(S.BarChart, plot, 2, engine);
+        IExpr orientExpr = options.getOption(S.BarOrigin);
+        if (orientExpr == S.Bottom) {
           orientation = Orientation.VERTICAL;
-        } else if (orientExpr == F.Left) {
+        } else if (orientExpr == S.Left) {
           orientation = Orientation.HORIZONTAL;
         }
         String[] strs = new String[vector.length];
@@ -1988,7 +1985,7 @@ public class ManipulateFunction {
 
   private static IExpr redirectToManipulate(final IAST ast, EvalEngine engine) {
     if (Config.USE_MANIPULATE_JS) {
-      IExpr temp = F.Manipulate.of(engine, ast);
+      IExpr temp = S.Manipulate.of(engine, ast);
       if (temp.headID() == ID.JSFormData) {
         return temp;
       }
@@ -2054,27 +2051,27 @@ public class ManipulateFunction {
         // F.List(F.ComplexPlot3D, F.stringx("Symja")), engine);
         // }
 
-        if (arg1.isAST(F.BarChart)
+        if (arg1.isAST(S.BarChart)
             || //
-            arg1.isAST(F.BoxWhiskerChart)
+            arg1.isAST(S.BoxWhiskerChart)
             || //
-            arg1.isAST(F.DensityHistogram)
+            arg1.isAST(S.DensityHistogram)
             || //
-            arg1.isAST(F.Histogram)
+            arg1.isAST(S.Histogram)
             || //
-            arg1.isAST(F.MatrixPlot)
+            arg1.isAST(S.MatrixPlot)
             || //
-            arg1.isAST(F.PieChart)) {
+            arg1.isAST(S.PieChart)) {
           return Plotly.plot((IAST) arg1, manipulateAST, engine);
         }
 
-        if (arg1.isAST(F.Plot3D)
+        if (arg1.isAST(S.Plot3D)
             || //
-            arg1.isAST(F.ComplexPlot3D)
+            arg1.isAST(S.ComplexPlot3D)
             || //
-            arg1.isAST(F.ContourPlot)
+            arg1.isAST(S.ContourPlot)
             || //
-            arg1.isAST(F.DensityPlot)) {
+            arg1.isAST(S.DensityPlot)) {
           IAST plot = (IAST) arg1;
           if (plot.size() >= 3 && plot.arg2().isList()) {
             IAST plotRangeX = (IAST) plot.arg2();
@@ -2087,7 +2084,7 @@ public class ManipulateFunction {
               return Mathcell.sliderWithPlot(plot, plotRangeX, plotRangeY, manipulateAST, engine);
             }
           }
-        } else if (arg1.isAST(F.ListPlot3D)) {
+        } else if (arg1.isAST(S.ListPlot3D)) {
           return Mathcell.plot((IAST) arg1, manipulateAST, engine);
         } else if (manipulateAST.isAST2() && manipulateAST.arg2().isList()) {
           IExpr formula = arg1;
@@ -2103,7 +2100,7 @@ public class ManipulateFunction {
         if (FEConfig.SHOW_STACKTRACE) {
           rex.printStackTrace();
         }
-        return IOFunctions.printMessage(F.Manipulate, rex, engine);
+        return IOFunctions.printMessage(S.Manipulate, rex, engine);
       }
       return F.NIL;
     }
@@ -2212,7 +2209,7 @@ public class ManipulateFunction {
       EvalEngine engine) {
     // plot a list of 2D points
     final RGBColor color = plotStyleColor(colour[0]++, F.NIL);
-    if (ast.arg1().isAST(F.ListLinePlot) && pointList.size() > 2) {
+    if (ast.arg1().isAST(S.ListLinePlot) && pointList.size() > 2) {
       // IAST lastPoint = (IAST) pointList.arg1();
       IAST lastPoint = F.NIL;
       boolean isConnected = false;
@@ -2331,7 +2328,7 @@ public class ManipulateFunction {
     // boundingbox = new double[] { 0.0, Double.MIN_VALUE, pointList.size(), Double.MAX_VALUE };
     xBoundingBox(engine, boundingbox, F.C0);
     xBoundingBox(engine, boundingbox, F.ZZ(pointList.size()));
-    if (ast.arg1().isAST(F.ListLinePlot)) {
+    if (ast.arg1().isAST(S.ListLinePlot)) {
       IExpr lastPoint = F.NIL;
       int lastPosition = -1;
       boolean isConnected = false;
@@ -2417,11 +2414,11 @@ public class ManipulateFunction {
   }
 
   private static boolean isNonReal(IExpr lastPoint) {
-    return lastPoint == F.Indeterminate
+    return lastPoint == S.Indeterminate
         || //
-        lastPoint == F.None
+        lastPoint == S.None
         || //
-        lastPoint.isAST(F.Missing);
+        lastPoint.isAST(S.Missing);
   }
 
   private static boolean isNonReal(IExpr lastPointX, IExpr lastPointY) {
@@ -2604,7 +2601,7 @@ public class ManipulateFunction {
   private static RGBColor plotStyleColor(int functionNumber, IAST plotStyle) {
     if (plotStyle.isList() && plotStyle.size() > functionNumber) {
       IExpr temp = plotStyle.get(functionNumber);
-      if (temp.isASTSizeGE(F.Directive, 2)) {
+      if (temp.isASTSizeGE(S.Directive, 2)) {
         IAST directive = (IAST) temp;
         for (int j = 1; j < directive.size(); j++) {
           temp = directive.get(j);
@@ -2648,6 +2645,7 @@ public class ManipulateFunction {
    * @return
    * @deprecated use Plotly methods
    */
+  @Deprecated
   private static IExpr sequenceBarChart(
       final IAST ast, IAST pointList, JavaScriptFormFactory toJS, EvalEngine engine) {
     double[] boundingbox;
@@ -2655,7 +2653,7 @@ public class ManipulateFunction {
     StringBuilder function = new StringBuilder();
     boundingbox = new double[] {0.0, 0.0, pointList.size() - 0.5, 0.0};
 
-    if (ast.arg1().isAST(F.Histogram)) {
+    if (ast.arg1().isAST(S.Histogram)) {
       function.append("var dataArr = [");
       double[] dData = pointList.toDoubleVector();
       if (dData == null) {
@@ -2684,7 +2682,7 @@ public class ManipulateFunction {
         }
       }
       function.append("];\n");
-    } else if (ast.arg1().isAST(F.BarChart)) {
+    } else if (ast.arg1().isAST(S.BarChart)) {
       function.append("var dataArr = [");
       boundingbox = new double[] {0.0, 0.0, pointList.size() - 0.5, 0.0};
       for (int i = 1; i < pointList.size(); i++) {
@@ -2702,7 +2700,7 @@ public class ManipulateFunction {
     }
 
     function.append("board.create('chart', dataArr,");
-    if (ast.arg1().isAST(F.Histogram)) {
+    if (ast.arg1().isAST(S.Histogram)) {
       function.append(" {chartStyle:'bar',width:1.0,labels:dataArr} );\n");
       return JSXGraph.boundingBox(ast, boundingbox, function.toString(), toJS, true, true);
     }
@@ -2765,18 +2763,18 @@ public class ManipulateFunction {
     if (functionRange.isPresent()) {
       IExpr l = F.NIL;
       IExpr u = F.NIL;
-      if ((functionRange.isAST(F.LessEqual, 4) || functionRange.isAST(F.Less, 4)) //
+      if ((functionRange.isAST(S.LessEqual, 4) || functionRange.isAST(S.Less, 4)) //
           && functionRange.second().isSymbol()) {
         l = functionRange.first();
         u = functionRange.last();
-      } else if ((functionRange.isAST(F.GreaterEqual, 4) || functionRange.isAST(F.Greater, 4)) //
+      } else if ((functionRange.isAST(S.GreaterEqual, 4) || functionRange.isAST(S.Greater, 4)) //
           && functionRange.second().isSymbol()) {
         u = functionRange.first();
         l = functionRange.last();
-      } else if ((functionRange.isAST(F.LessEqual, 3) || functionRange.isAST(F.Less, 4)) //
+      } else if ((functionRange.isAST(S.LessEqual, 3) || functionRange.isAST(S.Less, 4)) //
           && functionRange.first().isSymbol()) {
         u = functionRange.second();
-      } else if ((functionRange.isAST(F.GreaterEqual, 3) || functionRange.isAST(F.Greater, 4)) //
+      } else if ((functionRange.isAST(S.GreaterEqual, 3) || functionRange.isAST(S.Greater, 4)) //
           && functionRange.first().isSymbol()) {
         l = functionRange.second();
       }
@@ -2813,18 +2811,18 @@ public class ManipulateFunction {
     if (functionRange.isPresent()) {
       IExpr l = F.NIL;
       IExpr u = F.NIL;
-      if ((functionRange.isAST(F.LessEqual, 4) || functionRange.isAST(F.Less, 4)) //
+      if ((functionRange.isAST(S.LessEqual, 4) || functionRange.isAST(S.Less, 4)) //
           && functionRange.second().isSymbol()) {
         l = functionRange.first();
         u = functionRange.last();
-      } else if ((functionRange.isAST(F.GreaterEqual, 4) || functionRange.isAST(F.Greater, 4)) //
+      } else if ((functionRange.isAST(S.GreaterEqual, 4) || functionRange.isAST(S.Greater, 4)) //
           && functionRange.second().isSymbol()) {
         u = functionRange.first();
         l = functionRange.last();
-      } else if ((functionRange.isAST(F.LessEqual, 3) || functionRange.isAST(F.Less, 4)) //
+      } else if ((functionRange.isAST(S.LessEqual, 3) || functionRange.isAST(S.Less, 4)) //
           && functionRange.first().isSymbol()) {
         u = functionRange.second();
-      } else if ((functionRange.isAST(F.GreaterEqual, 3) || functionRange.isAST(F.Greater, 4)) //
+      } else if ((functionRange.isAST(S.GreaterEqual, 3) || functionRange.isAST(S.Greater, 4)) //
           && functionRange.first().isSymbol()) {
         l = functionRange.second();
       }

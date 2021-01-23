@@ -7,10 +7,10 @@ import java.util.HashSet;
 import org.matheclipse.core.builtin.Algebra;
 import org.matheclipse.core.builtin.PolynomialFunctions;
 import org.matheclipse.core.eval.EvalEngine;
-import org.matheclipse.core.eval.exception.Validate;
 import org.matheclipse.core.eval.interfaces.AbstractFunctionEvaluator;
 import org.matheclipse.core.eval.interfaces.IFunctionEvaluator;
 import org.matheclipse.core.expression.F;
+import org.matheclipse.core.expression.S;
 import org.matheclipse.core.generic.Predicates;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IASTAppendable;
@@ -356,7 +356,7 @@ public class NSolve extends AbstractFunctionEvaluator {
           if (expr.isNumber()) {
             throw new NoSolution(NoSolution.WRONG_SOLUTION);
           }
-          if (!F.PossibleZeroQ.ofQ(engine, expr)) {
+          if (!S.PossibleZeroQ.ofQ(engine, expr)) {
             throw new NoSolution(NoSolution.NO_SOLUTION_FOUND);
           }
         }
@@ -446,7 +446,7 @@ public class NSolve extends AbstractFunctionEvaluator {
       IExpr temp = PolynomialFunctions.rootsOfVariable(expr, denom, F.List(sym), true, engine);
       if (temp.isPresent()) {
         IASTAppendable resultList = F.ListAlloc();
-        if (temp.isSameHeadSizeGE(F.List, 2)) {
+        if (temp.isSameHeadSizeGE(S.List, 2)) {
           IAST rootsList = (IAST) temp;
           for (IExpr root : rootsList) {
             IAST rule = F.Rule(sym, root);
@@ -509,6 +509,7 @@ public class NSolve extends AbstractFunctionEvaluator {
     //		}
   }
 
+  @Override
   public int[] expectedArgSize(IAST ast) {
     return IFunctionEvaluator.ARGS_2_3;
   }

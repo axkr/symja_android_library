@@ -2,11 +2,10 @@ package org.matheclipse.core.reflection.system;
 
 import org.matheclipse.core.builtin.StructureFunctions;
 import org.matheclipse.core.eval.EvalEngine;
-import org.matheclipse.core.eval.exception.Validate;
 import org.matheclipse.core.eval.interfaces.AbstractEvaluator;
-import org.matheclipse.core.eval.interfaces.AbstractFunctionEvaluator;
 import org.matheclipse.core.eval.interfaces.IFunctionEvaluator;
 import org.matheclipse.core.expression.F;
+import org.matheclipse.core.expression.S;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IASTAppendable;
 import org.matheclipse.core.interfaces.IExpr;
@@ -47,12 +46,12 @@ public class ExpToTrig extends AbstractEvaluator {
               if (x.isPower()) {
                 IExpr exponent = F.NIL;
                 IExpr base = x.base();
-                if (base.equals(F.E)) {
+                if (base.equals(S.E)) {
                   exponent = x.exponent();
                   // return F.Plus(F.Cosh(exponent), F.Sinh(exponent));
                 } else if (base.isNumber()) {
                   // base^exponent => E ^(exponent*Log(base))
-                  exponent = F.Expand.of(engine, F.Times(x.exponent(), F.Log(base)));
+                  exponent = S.Expand.of(engine, F.Times(x.exponent(), F.Log(base)));
                   // System.out.println(exponent);
                 }
                 if (exponent.isPresent()) {

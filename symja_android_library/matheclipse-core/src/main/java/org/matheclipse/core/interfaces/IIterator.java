@@ -4,6 +4,7 @@ import java.util.Iterator;
 
 import org.matheclipse.core.eval.exception.NoEvalException;
 import org.matheclipse.core.expression.F;
+import org.matheclipse.core.expression.S;
 
 /** Interface for an iterator with additional tearDown() method, to run the iterator again */
 public interface IIterator<E> extends Iterator<E> {
@@ -108,11 +109,11 @@ public interface IIterator<E> extends Iterator<E> {
       IExpr step = getStep();
       if (step != null) {
         if (step.isNonNegativeResult()) {
-          if (F.Negative.ofQ(F.Subtract(getUpperLimit(), getLowerLimit()))) {
+          if (S.Negative.ofQ(F.Subtract(getUpperLimit(), getLowerLimit()))) {
             return true;
           }
         } else if (step.isNegativeResult()) {
-          if (F.Negative.ofQ(F.Subtract(getLowerLimit(), getUpperLimit()))) {
+          if (S.Negative.ofQ(F.Subtract(getLowerLimit(), getUpperLimit()))) {
             return true;
           }
         }

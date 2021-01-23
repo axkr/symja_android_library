@@ -8,10 +8,9 @@ import java.util.NavigableMap;
 import java.util.TreeMap;
 import java.util.stream.Collectors;
 
-import org.matheclipse.core.expression.F;
+import org.matheclipse.core.expression.S;
 import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.interfaces.ISignedNumber;
-import org.matheclipse.parser.client.math.MathException;
 
 /* package */ class UnitImpl implements IUnit, Serializable {
   private final NavigableMap<String, IExpr> navigableMap;
@@ -42,7 +41,7 @@ import org.matheclipse.parser.client.math.MathException;
       IExpr value = entry.getValue();
       if (map.containsKey(key)) {
         // TODO this may not always use the defined UnitHelper.EvalEngine
-        IExpr sum = F.Plus.of(UnitHelper.ENGINE, map.get(key), value);
+        IExpr sum = S.Plus.of(UnitHelper.ENGINE, map.get(key), value);
         if (sum.isZero()) map.remove(key); // exponents cancel out
         else map.put(key, sum); // exponent is updated
       } else map.put(key, value); // unit is introduced
@@ -56,7 +55,7 @@ import org.matheclipse.parser.client.math.MathException;
       NavigableMap<String, IExpr> map = new TreeMap<>();
       for (Entry<String, IExpr> entry : navigableMap.entrySet()) {
         // TODO this may not always use the defined UnitHelper.EvalEngine
-        IExpr value = F.Times.of(UnitHelper.ENGINE, entry.getValue(), factor);
+        IExpr value = S.Times.of(UnitHelper.ENGINE, entry.getValue(), factor);
         if (!value.isZero()) map.put(entry.getKey(), value);
       }
       return new UnitImpl(map);

@@ -2,7 +2,6 @@ package org.matheclipse.core.builtin;
 
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.interfaces.AbstractFunctionEvaluator;
-import org.matheclipse.core.eval.interfaces.IFunctionEvaluator;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.expression.S;
 import org.matheclipse.core.interfaces.IAST;
@@ -81,6 +80,7 @@ public class VectorAnalysisFunctions {
       return F.NIL;
     }
 
+    @Override
     public int[] expectedArgSize(IAST ast) {
       return ARGS_2_2;
     }
@@ -127,6 +127,7 @@ public class VectorAnalysisFunctions {
       return F.NIL;
     }
 
+    @Override
     public int[] expectedArgSize(IAST ast) {
       return ARGS_2_2;
     }
@@ -147,6 +148,7 @@ public class VectorAnalysisFunctions {
       return F.NIL;
     }
 
+    @Override
     public int[] expectedArgSize(IAST ast) {
       return ARGS_2_2;
     }
@@ -164,7 +166,7 @@ public class VectorAnalysisFunctions {
             F.List(F.Cos(theta), F.Negate(F.Sin(theta))),
             F.List(F.Sin(theta), F.Cos(theta))); // $$;
       }
-      if (ast.isAST2() && ast.arg2().isAST(F.List, 4)) {
+      if (ast.isAST2() && ast.arg2().isAST(S.List, 4)) {
         // TODO generalize for all rotations
         // see https://github.com/corywalker/expreduce/blob/master/expreduce/resources/trig.m
         IExpr theta = ast.arg1();

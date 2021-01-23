@@ -11,9 +11,9 @@ import org.matheclipse.core.interfaces.ISymbol;
  * Abstract interface for built-in Symja functions. The <code>numericEval()</code> method delegates
  * to the <code>evaluate()</code>
  */
-public abstract class AbstractCorePredicateEvaluator extends AbstractCoreFunctionEvaluator {
+public abstract class AbstractPredicateEvaluator extends AbstractFunctionEvaluator {
 
-  public AbstractCorePredicateEvaluator() {}
+  public AbstractPredicateEvaluator() {}
 
   /**
    * Evaluate the function for 1 argument, with possible options.
@@ -32,7 +32,7 @@ public abstract class AbstractCorePredicateEvaluator extends AbstractCoreFunctio
   @Override
   public IExpr evaluate(final IAST ast, final EvalEngine engine) {
     // if (ast.size() >= 2) {
-    IExpr arg1 = engine.evaluate(ast.arg1());
+    IExpr arg1 = ast.arg1();
     if (arg1.isList() || arg1.isAssociation()) {
       // thread over list?
       if ((ast.topHead().getAttributes() & ISymbol.LISTABLE) == ISymbol.LISTABLE) {

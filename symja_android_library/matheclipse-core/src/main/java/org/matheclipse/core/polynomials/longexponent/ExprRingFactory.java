@@ -6,6 +6,7 @@ import java.util.List;
 import java.util.Random;
 
 import org.matheclipse.core.expression.F;
+import org.matheclipse.core.expression.S;
 import org.matheclipse.core.interfaces.IExpr;
 
 import edu.jas.structure.RingFactory;
@@ -90,7 +91,7 @@ public class ExprRingFactory implements RingFactory<IExpr> {
 
   @Override
   public IExpr parse(String s) {
-    return F.Null;
+    return S.Null;
   }
 
   @Override

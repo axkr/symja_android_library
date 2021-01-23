@@ -7,7 +7,6 @@ import org.matheclipse.core.convert.Object2Expr;
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.exception.ValidateException;
 import org.matheclipse.core.eval.interfaces.AbstractFunctionEvaluator;
-import org.matheclipse.core.eval.interfaces.IFunctionEvaluator;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.expression.S;
 import org.matheclipse.core.interfaces.IAST;
@@ -146,18 +145,18 @@ public class EllipticIntegrals {
         // (Pi^2 + 2 Gamma(3/4)^4)/(4*Sqrt(Pi)*Gamma(3/4)^2)
         return F.Times(
             F.C1D4,
-            F.Power(F.Pi, F.CN1D2),
+            F.Power(S.Pi, F.CN1D2),
             F.Power(F.Gamma(F.QQ(3L, 4L)), -2),
-            F.Plus(F.Sqr(F.Pi), F.Times(F.C2, F.Power(F.Gamma(F.QQ(3L, 4L)), 4))));
+            F.Plus(F.Sqr(S.Pi), F.Times(F.C2, F.Power(F.Gamma(F.QQ(3L, 4L)), 4))));
       }
       if (z.isMinusOne()) {
         // (Pi^2+2*Gamma(3/4)^4)/(2*Sqrt(2)*Sqrt(Pi)*Gamma(3/4)^2)
         return F.Times(
             F.C1D2,
             F.C1DSqrt2,
-            F.Power(F.Pi, F.CN1D2),
+            F.Power(S.Pi, F.CN1D2),
             F.Power(F.Gamma(F.QQ(3L, 4L)), -2),
-            F.Plus(F.Sqr(F.Pi), F.Times(F.C2, F.Power(F.Gamma(F.QQ(3L, 4L)), 4))));
+            F.Plus(F.Sqr(S.Pi), F.Times(F.C2, F.Power(F.Gamma(F.QQ(3L, 4L)), 4))));
       }
 
       if (engine.isDoubleMode()) {
@@ -244,7 +243,7 @@ public class EllipticIntegrals {
         // EllipticF(Pi/2, m) = EllipticK(m)
         return F.EllipticK(m);
       }
-      if (z.isTimes() && z.second().equals(F.Pi) && z.first().isRational()) {
+      if (z.isTimes() && z.second().equals(S.Pi) && z.first().isRational()) {
         IRational k = ((IRational) z.first()).multiply(F.C2).normalize();
         if (k.isInteger()) {
           // EllipticF(k*Pi/2, m) = k*EllipticK(m) /; IntegerQ(k)
@@ -254,11 +253,11 @@ public class EllipticIntegrals {
       if (m.isOne()) {
         // Abs(Re(z)) <= Pi/2
         IExpr temp = engine.evaluate(F.Abs(F.Re(z)));
-        if (F.LessEqual.ofQ(engine, temp, F.CPiHalf)) {
+        if (S.LessEqual.ofQ(engine, temp, F.CPiHalf)) {
           // Log(Sec(z) + Tan(z))
           return F.Log(F.Plus(F.Sec(z), F.Tan(z)));
         }
-        if (F.Greater.ofQ(engine, temp, F.CPiHalf)) {
+        if (S.Greater.ofQ(engine, temp, F.CPiHalf)) {
           return F.CComplexInfinity;
         }
       }
@@ -295,7 +294,7 @@ public class EllipticIntegrals {
       }
 
       // test EllipticF(zz+k*Pi,m)
-      IAST parts = AbstractFunctionEvaluator.getPeriodicParts(z, F.Pi);
+      IAST parts = AbstractFunctionEvaluator.getPeriodicParts(z, S.Pi);
       if (parts.isPresent()) {
         IExpr k = parts.arg2();
         if (k.isInteger()) {
@@ -307,6 +306,7 @@ public class EllipticIntegrals {
       return F.NIL;
     }
 
+    @Override
     public int[] expectedArgSize(IAST ast) {
       return ARGS_2_2;
     }
@@ -365,11 +365,11 @@ public class EllipticIntegrals {
       }
       if (m.isMinusOne()) {
         // Gamma(1/4)^2/(4*Sqrt(2*Pi))
-        return F.Times(F.C1D4, F.C1DSqrt2, F.Power(F.Pi, F.CN1D2), F.Sqr(F.Gamma(F.C1D4)));
+        return F.Times(F.C1D4, F.C1DSqrt2, F.Power(S.Pi, F.CN1D2), F.Sqr(F.Gamma(F.C1D4)));
       }
       if (m.isNumEqualRational(F.C1D2)) {
         // (8 Pi^(3/2))/Gamma(-(1/4))^2
-        return F.Times(F.C8, F.Power(F.Pi, F.QQ(3L, 2L)), F.Power(F.Gamma(F.CN1D4), -2));
+        return F.Times(F.C8, F.Power(S.Pi, F.QQ(3L, 2L)), F.Power(F.Gamma(F.CN1D4), -2));
       }
 
       if (engine.isDoubleMode()) {
@@ -397,12 +397,13 @@ public class EllipticIntegrals {
         // EllipticK(m_) := Pi/(2*ArithmeticGeometricMean(1,Sqrt(1-m)))
         return F.Times(
             F.C1D2,
-            F.Pi,
+            S.Pi,
             F.Power(F.ArithmeticGeometricMean(F.C1, F.Sqrt(F.Plus(F.C1, F.Negate(m)))), -1));
       }
       return F.NIL;
     }
 
+    @Override
     public int[] expectedArgSize(IAST ast) {
       return ARGS_1_1;
     }
@@ -510,7 +511,7 @@ public class EllipticIntegrals {
       }
       if (m.isZero()) {
         // Pi/(2*Sqrt(1-n))
-        return F.Times(F.C1D2, F.Power(F.Plus(F.C1, F.Negate(n)), F.CN1D2), F.Pi);
+        return F.Times(F.C1D2, F.Power(F.Plus(F.C1, F.Negate(n)), F.CN1D2), S.Pi);
       }
       if (m.isOne()) {
         // -(Infinity/Sign(n-1))
@@ -710,7 +711,7 @@ public class EllipticIntegrals {
         return z;
       }
       if (m.isOne()) {
-        return F.Plus(F.CNPiHalf, F.Times(2, F.ArcTan(F.Power(F.E, z))));
+        return F.Plus(F.CNPiHalf, F.Times(2, F.ArcTan(F.Power(S.E, z))));
       }
       if (z.isZero()) {
         return F.C0;
@@ -927,13 +928,13 @@ public class EllipticIntegrals {
     @Override
     public IExpr evaluate(IAST ast, EvalEngine engine) {
       IExpr t = ast.arg1();
-      IExpr im = F.Im.of(engine, t);
+      IExpr im = S.Im.of(engine, t);
 
       if (im.isZero()) {
         return F.NIL;
       }
       if (im.isOne()) {
-        IExpr re = F.Re.of(engine, t);
+        IExpr re = S.Re.of(engine, t);
         if (re.isInteger()) {
           // KleinInvariantJ(re+I) = 1 and re is Integer
           return F.C1;
@@ -971,6 +972,7 @@ public class EllipticIntegrals {
       return F.NIL;
     }
 
+    @Override
     public int[] expectedArgSize(IAST ast) {
       return ARGS_1_1;
     }

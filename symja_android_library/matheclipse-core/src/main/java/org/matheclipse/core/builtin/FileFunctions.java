@@ -20,7 +20,6 @@ import org.matheclipse.core.eval.exception.Validate;
 import org.matheclipse.core.eval.exception.ValidateException;
 import org.matheclipse.core.eval.interfaces.AbstractCoreFunctionEvaluator;
 import org.matheclipse.core.eval.interfaces.AbstractFunctionEvaluator;
-import org.matheclipse.core.eval.interfaces.IFunctionEvaluator;
 import org.matheclipse.core.expression.ContextPath;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.expression.S;
@@ -115,7 +114,7 @@ public class FileFunctions {
               }
             }
           }
-          return F.Null;
+          return S.Null;
 
         } catch (ValidateException ve) {
           return engine.printMessage(ve.getMessage(ast.topHead()));
@@ -217,7 +216,7 @@ public class FileFunctions {
     @Override
     public IExpr evaluate(final IAST ast, EvalEngine engine) {
       engine.endPackage();
-      return F.Null;
+      return S.Null;
     }
 
     @Override
@@ -243,7 +242,7 @@ public class FileFunctions {
       } catch (final Exception e) {
         e.printStackTrace();
       }
-      return F.Null;
+      return S.Null;
     }
 
     /**
@@ -269,7 +268,7 @@ public class FileFunctions {
           e.printStackTrace();
         }
       }
-      return F.Null;
+      return S.Null;
     }
 
     private static IExpr getFile(File file, IAST ast, String arg1Str, EvalEngine engine) {
@@ -326,12 +325,8 @@ public class FileFunctions {
             return IOFunctions.printMessage(ast.topHead(), "string", F.List(), engine);
           }
           String arg1Str = ((IStringX) ast.arg1()).toString();
-          if (arg1Str.startsWith("https://")
-              || //
-              arg1Str.startsWith("http://")) {
-            URL url;
-
-            url = new URL(arg1Str);
+          if (arg1Str.startsWith("https://") || arg1Str.startsWith("http://")) {
+            URL url = new URL(arg1Str);
             return getURL(url, ast, arg1Str, engine);
           }
           File file = new File(arg1Str);
@@ -372,7 +367,7 @@ public class FileFunctions {
         if (!ContextPath.PACKAGES.contains(contextName)) {
           return super.evaluate(ast, engine);
         }
-        return F.Null;
+        return S.Null;
       } catch (ValidateException ve) {
         return engine.printMessage(ast.topHead(), ve);
       }
@@ -397,7 +392,7 @@ public class FileFunctions {
 
         final int argSize = ast.argSize();
         if (!(ast.last() instanceof IStringX)) {
-          return IOFunctions.printMessage(F.Put, "string", F.List(), engine);
+          return IOFunctions.printMessage(S.Put, "string", F.List(), engine);
         }
         IStringX fileName = (IStringX) ast.last();
         FileWriter writer = null;
@@ -429,7 +424,7 @@ public class FileFunctions {
             }
           }
         }
-        return F.Null;
+        return S.Null;
       }
       return F.NIL;
     }
@@ -475,7 +470,7 @@ public class FileFunctions {
             }
             engine.printMessage("ReadString exception: " + e.getMessage());
           }
-          return F.Null;
+          return S.Null;
         }
       }
       return F.NIL;
@@ -554,7 +549,7 @@ public class FileFunctions {
             }
           }
         }
-        return F.Null;
+        return S.Null;
       }
       return F.NIL;
     }

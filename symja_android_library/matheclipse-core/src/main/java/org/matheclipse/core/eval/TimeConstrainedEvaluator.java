@@ -4,6 +4,7 @@ import java.io.Writer;
 
 import org.matheclipse.core.basic.Config;
 import org.matheclipse.core.expression.F;
+import org.matheclipse.core.expression.S;
 import org.matheclipse.core.form.output.OutputFormFactory;
 import org.matheclipse.core.interfaces.IExpr;
 
@@ -122,7 +123,7 @@ public class TimeConstrainedEvaluator extends EvalUtilities implements Runnable 
         writer.write('\n');
       }
 
-      if (fEvaluationResult.isPresent() && !fEvaluationResult.equals(F.Null)) {
+      if (fEvaluationResult.isPresent() && !fEvaluationResult.equals(S.Null)) {
         if (!OutputFormFactory.get(fRelaxedSyntax).convert(writer, fEvaluationResult)) {
           // TODO define error message?
         }

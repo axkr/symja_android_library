@@ -3,6 +3,7 @@ package org.matheclipse.core.eval.util;
 import org.matheclipse.core.builtin.NumberTheory;
 import org.matheclipse.core.eval.EvalAttributes;
 import org.matheclipse.core.expression.F;
+import org.matheclipse.core.expression.S;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IASTAppendable;
 import org.matheclipse.core.interfaces.IASTMutable;
@@ -51,13 +52,13 @@ public class SolveUtils {
       }
       i++;
     }
-    EvalAttributes.sort((IASTMutable) result[0]);
-    EvalAttributes.sort((IASTMutable) result[1]);
+    EvalAttributes.sort(result[0]);
+    EvalAttributes.sort(result[1]);
     if (result[0].isEmpty() && result[1].isEmpty()) {
       if (solution.isPresent()) {
         result[2] = solution;
       } else {
-        result[2] = F.unary(F.List, F.List());
+        result[2] = F.unary(S.List, F.List());
       }
       return result;
     }

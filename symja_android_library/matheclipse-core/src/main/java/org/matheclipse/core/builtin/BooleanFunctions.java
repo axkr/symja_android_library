@@ -8,7 +8,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.SortedSet;
 import java.util.function.Function;
-
 import org.logicng.datastructures.Assignment;
 import org.logicng.datastructures.Tristate;
 import org.logicng.formulas.CFalse;
@@ -43,7 +42,6 @@ import org.matheclipse.core.expression.IntervalSym;
 import org.matheclipse.core.expression.S;
 import org.matheclipse.core.expression.StringX;
 import org.matheclipse.core.generic.Comparators;
-import org.matheclipse.core.generic.Comparators.ExprComparator;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IASTAppendable;
 import org.matheclipse.core.interfaces.IASTMutable;
@@ -209,7 +207,7 @@ public final class BooleanFunctions {
         for (Formula f : a) {
           result[i++] = booleanFunction2Expr(f);
         }
-        Arrays.sort(result, ExprComparator.CONS);
+        Arrays.sort(result, Comparators.CANONICAL_COMPARATOR);
         return F.And(result);
       } else if (formula instanceof org.logicng.formulas.Or) {
         org.logicng.formulas.Or a = (org.logicng.formulas.Or) formula;
@@ -218,7 +216,7 @@ public final class BooleanFunctions {
         for (Formula f : a) {
           result[i++] = booleanFunction2Expr(f);
         }
-        Arrays.sort(result, ExprComparator.CONS);
+        Arrays.sort(result, Comparators.CANONICAL_COMPARATOR);
         return F.Or(result);
       } else if (formula instanceof org.logicng.formulas.Not) {
         org.logicng.formulas.Not a = (org.logicng.formulas.Not) formula;
@@ -294,7 +292,7 @@ public final class BooleanFunctions {
               }
               break;
             case ID.Nand:
-              if (ast.isSameHeadSizeGE(F.Nand, 3)) {
+              if (ast.isSameHeadSizeGE(S.Nand, 3)) {
                 final Formula[] result = new Formula[ast.argSize()];
                 ast.forEach(
                     (x, i) -> {
@@ -307,7 +305,7 @@ public final class BooleanFunctions {
               }
               break;
             case ID.Nor:
-              if (ast.isSameHeadSizeGE(F.Nor, 3)) {
+              if (ast.isSameHeadSizeGE(S.Nor, 3)) {
                 Formula[] result = new Formula[ast.argSize()];
                 ast.forEach(
                     (x, i) -> {
@@ -320,12 +318,12 @@ public final class BooleanFunctions {
               }
               break;
             case ID.Equivalent:
-              if (ast.isSameHeadSizeGE(F.Equivalent, 3)) {
+              if (ast.isSameHeadSizeGE(S.Equivalent, 3)) {
                 return convertEquivalent(ast);
               }
               break;
             case ID.Xor:
-              if (ast.isSameHeadSizeGE(F.Xor, 3)) {
+              if (ast.isSameHeadSizeGE(S.Xor, 3)) {
                 IAST dnf = xorToDNF(ast);
                 if (dnf.isOr()) {
                   return convertOr(dnf);
@@ -337,7 +335,7 @@ public final class BooleanFunctions {
               }
               break;
             case ID.Implies:
-              if (ast.isAST(F.Implies, 3)) {
+              if (ast.isAST(S.Implies, 3)) {
                 return factory.implication(
                     expr2BooleanFunction(ast.arg1()), expr2BooleanFunction(ast.arg2()));
               }
@@ -433,7 +431,7 @@ public final class BooleanFunctions {
      * @return
      */
     public IAST literals2BooleanList(final SortedSet<Literal> literals, Map<String, Integer> map) {
-      IASTAppendable list = F.ast(F.List, map.size(), true);
+      IASTAppendable list = F.ast(S.List, map.size(), true);
 
       // initialize all list elements with Null
       for (int i = 0; i < map.size(); i++) {
@@ -454,7 +452,7 @@ public final class BooleanFunctions {
     }
 
     public IAST literals2VariableList(final SortedSet<Literal> literals, Map<String, Integer> map) {
-      IASTAppendable list = F.ast(F.List, map.size(), true);
+      IASTAppendable list = F.ast(S.List, map.size(), true);
 
       // initialize all list elements with Null
       for (int i = 0; i < map.size(); i++) {
@@ -493,6 +491,7 @@ public final class BooleanFunctions {
       return F.NIL;
     }
 
+    @Override
     public int[] expectedArgSize(IAST ast) {
       return ARGS_2_2_1;
     }
@@ -748,6 +747,7 @@ public final class BooleanFunctions {
       return F.NIL;
     }
 
+    @Override
     public int[] expectedArgSize(IAST ast) {
       return ARGS_2_2_1;
     }
@@ -910,6 +910,7 @@ public final class BooleanFunctions {
       }
     }
 
+    @Override
     public int[] expectedArgSize(IAST ast) {
       return ARGS_1_2;
     }
@@ -968,6 +969,7 @@ public final class BooleanFunctions {
       return ast.arg1();
     }
 
+    @Override
     public int[] expectedArgSize(IAST ast) {
       return ARGS_1_2;
     }
@@ -1068,6 +1070,7 @@ public final class BooleanFunctions {
       }
     }
 
+    @Override
     public int[] expectedArgSize(IAST ast) {
       return ARGS_1_2;
     }
@@ -1101,6 +1104,7 @@ public final class BooleanFunctions {
       return booleanVariables(ast.arg1());
     }
 
+    @Override
     public int[] expectedArgSize(IAST ast) {
       return ARGS_1_1;
     }
@@ -1199,7 +1203,7 @@ public final class BooleanFunctions {
    * {True, True, True}
    * </pre>
    */
-  public static class Equal extends AbstractFunctionEvaluator
+  private static class Equal extends AbstractFunctionEvaluator
       implements ITernaryComparator, IComparatorFunction {
 
     /**
@@ -1341,46 +1345,7 @@ public final class BooleanFunctions {
     /** {@inheritDoc} */
     @Override
     public IExpr.COMPARE_TERNARY compareTernary(final IExpr o0, final IExpr o1) {
-      if (o0.isSame(o1)) {
-        return IExpr.COMPARE_TERNARY.TRUE;
-      }
-
-      if (o0.isTrue()) {
-        if (o1.isTrue()) {
-          return IExpr.COMPARE_TERNARY.TRUE;
-        } else if (o1.isFalse()) {
-          return IExpr.COMPARE_TERNARY.FALSE;
-        }
-      } else if (o0.isFalse()) {
-        if (o1.isTrue()) {
-          return IExpr.COMPARE_TERNARY.FALSE;
-        } else if (o1.isFalse()) {
-          return IExpr.COMPARE_TERNARY.TRUE;
-        }
-      }
-      if (o0.isConstantAttribute() && o1.isConstantAttribute()) {
-        return IExpr.COMPARE_TERNARY.FALSE;
-      }
-
-      if ((o0 instanceof StringX) && (o1 instanceof StringX)) {
-        return IExpr.COMPARE_TERNARY.FALSE;
-      }
-      IExpr difference = F.eval(F.Subtract(o0, o1));
-      if (difference.isNumber()) {
-        if (difference.isZero()) {
-          return IExpr.COMPARE_TERNARY.TRUE;
-        }
-        return IExpr.COMPARE_TERNARY.FALSE;
-      }
-      if (difference.isConstantAttribute()) {
-        return IExpr.COMPARE_TERNARY.FALSE;
-      }
-
-      if (o0.isNumber() && o1.isNumber()) {
-        return IExpr.COMPARE_TERNARY.FALSE;
-      }
-
-      return IExpr.COMPARE_TERNARY.UNDECIDABLE;
+      return compareEqual(o0, o1);
     }
 
     @Override
@@ -1485,7 +1450,7 @@ public final class BooleanFunctions {
           return S.True;
         }
         if (boole.isPresent()) {
-          result = result.apply(F.And);
+          result = result.apply(S.And);
           if (boole.isTrue()) {
             return result;
           } else {
@@ -1544,6 +1509,7 @@ public final class BooleanFunctions {
       return F.NIL;
     }
 
+    @Override
     public int[] expectedArgSize(IAST ast) {
       return ARGS_2_3;
     }
@@ -1595,6 +1561,7 @@ public final class BooleanFunctions {
       return F.NIL;
     }
 
+    @Override
     public int[] expectedArgSize(IAST ast) {
       return ARGS_2_3;
     }
@@ -1876,6 +1843,7 @@ public final class BooleanFunctions {
       return prepareCompare(o0, o1, EvalEngine.get());
     }
 
+    @Override
     public int[] expectedArgSize(IAST ast) {
       return ARGS_0_INFINITY;
     }
@@ -1895,7 +1863,7 @@ public final class BooleanFunctions {
      *     found
      */
     protected IExpr simplifyCompare(IExpr a1, IExpr a2) {
-      return simplifyCompare(a1, a2, F.Greater, F.Less, true);
+      return simplifyCompare(a1, a2, S.Greater, S.Less, true);
     }
 
     /**
@@ -1963,7 +1931,7 @@ public final class BooleanFunctions {
           return setTrue ? S.True : S.False;
         }
         if (lhsAST.isTimes()) {
-          IAST result = lhsAST.partitionTimes(x -> x.isNumericFunction(true), F.C0, F.C1, F.List);
+          IAST result = lhsAST.partitionTimes(x -> x.isNumericFunction(true), F.C0, F.C1, S.List);
           if (!result.arg1().isZero()) {
             if (result.arg1().hasComplexNumber() || result.arg2().hasComplexNumber()) {
               return IOFunctions.printMessage(
@@ -1977,7 +1945,7 @@ public final class BooleanFunctions {
                 result.arg2(), rhs, useOppositeHeader, originalHead, oppositeHead);
           }
         } else if (lhsAST.isPlus()) {
-          IAST result = lhsAST.partitionPlus(x -> x.isNumericFunction(true), F.C0, F.C0, F.List);
+          IAST result = lhsAST.partitionPlus(x -> x.isNumericFunction(true), F.C0, F.C0, S.List);
           if (!result.arg1().isZero()) {
             if (result.arg1().hasComplexNumber() || result.arg2().hasComplexNumber()) {
               return IOFunctions.printMessage(
@@ -2070,7 +2038,7 @@ public final class BooleanFunctions {
       if (a1.isNegativeInfinity() && a2.isNegativeInfinity()) {
         return S.True;
       }
-      return simplifyCompare(a1, a2, F.GreaterEqual, F.LessEqual, true);
+      return simplifyCompare(a1, a2, S.GreaterEqual, S.LessEqual, true);
     }
 
     /** {@inheritDoc} */
@@ -2162,6 +2130,7 @@ public final class BooleanFunctions {
       return F.NIL;
     }
 
+    @Override
     public int[] expectedArgSize(IAST ast) {
       return ARGS_2_2;
     }
@@ -2179,13 +2148,13 @@ public final class BooleanFunctions {
 
     private int getCompSign(IExpr e) {
       if (e.isSymbol()) {
-        if (e.equals(F.Less) || e.equals(F.LessEqual)) {
+        if (e.equals(S.Less) || e.equals(S.LessEqual)) {
           return -1;
         }
-        if (e.equals(F.Equal)) {
+        if (e.equals(S.Equal)) {
           return 0;
         }
-        if (e.equals(F.Greater) || e.equals(F.GreaterEqual)) {
+        if (e.equals(S.Greater) || e.equals(S.GreaterEqual)) {
           return 1;
         }
       }
@@ -2225,8 +2194,8 @@ public final class BooleanFunctions {
               return F.NIL;
             }
             if (thisSign == -firstSign) {
-              IASTAppendable firstIneq = F.ast(F.Inequality);
-              IASTAppendable secondIneq = F.ast(F.Inequality);
+              IASTAppendable firstIneq = F.ast(S.Inequality);
+              IASTAppendable secondIneq = F.ast(S.Inequality);
               for (int j = 1; j < ast.size(); j++) {
                 if (j < i) {
                   firstIneq.append(ast.get(j));
@@ -2239,7 +2208,7 @@ public final class BooleanFunctions {
             }
           }
         }
-        IASTAppendable res = F.ast(F.Inequality);
+        IASTAppendable res = F.ast(S.Inequality);
         IExpr lastOp = F.NIL;
         for (int i = 0; i < (ast.size() - 1) / 2; i++) {
           IExpr lhs = ast.get(2 * i + 1);
@@ -2368,7 +2337,7 @@ public final class BooleanFunctions {
       if (a1.isNegativeInfinity() && a2.isNegativeInfinity()) {
         return S.False;
       }
-      return simplifyCompare(a1, a2, F.Less, F.Greater, false);
+      return simplifyCompare(a1, a2, S.Less, S.Greater, false);
     }
 
     /** {@inheritDoc} */
@@ -2454,7 +2423,7 @@ public final class BooleanFunctions {
       if (a1.isNegativeInfinity() && a2.isNegativeInfinity()) {
         return S.True;
       }
-      return simplifyCompare(a1, a2, F.LessEqual, F.GreaterEqual, false);
+      return simplifyCompare(a1, a2, S.LessEqual, S.GreaterEqual, false);
     }
 
     /** {@inheritDoc} */
@@ -2494,13 +2463,13 @@ public final class BooleanFunctions {
         if (x.isAST()) {
           IAST formula = (IAST) x;
           if (x.isNot() && x.first().isOr()) {
-            IASTMutable result = ((IAST) x.first()).apply(F.And);
+            IASTMutable result = ((IAST) x.first()).apply(S.And);
             for (int i = 1; i < result.size(); i++) {
               result.set(i, F.Not(result.get(i)));
             }
             return engine.evaluate(result);
           }
-          if (formula.isSameHeadSizeGE(F.Xor, 3)) {
+          if (formula.isSameHeadSizeGE(S.Xor, 3)) {
             return xorToDNF(formula);
           }
           try {
@@ -2512,6 +2481,7 @@ public final class BooleanFunctions {
       };
     }
 
+    @Override
     public int[] expectedArgSize(IAST ast) {
       return ARGS_1_1;
     }
@@ -2581,11 +2551,13 @@ public final class BooleanFunctions {
         return IntervalSym.max((IAST) ast.arg1());
       }
 
-      IASTAppendable result = F.ast(F.Max, ast.size(), false);
-      boolean evaled = flattenList(ast, result);
-      return maximum((IAST) result, evaled);
+      int allocSize = F.allocLevel1(ast, x -> x.isList());
+      IASTAppendable result = F.ast(S.Max, allocSize, false);
+      boolean evaled = flattenListRecursive(ast, result);
+      return maximum(result, evaled);
     }
 
+    @Override
     public int[] expectedArgSize(IAST ast) {
       return null;
     }
@@ -2715,16 +2687,18 @@ public final class BooleanFunctions {
       if (ast.arg1().isInterval()) {
         return IntervalSym.min((IAST) ast.arg1());
       }
-      IASTAppendable result = F.ast(F.Min, ast.size(), false);
-      boolean evaled = flattenList(ast, result);
-      return minimum((IAST) result, evaled);
+      int allocSize = F.allocLevel1(ast, x -> x.isList());
+      IASTAppendable result = F.ast(S.Min, allocSize, false);
+      boolean evaled = flattenListRecursive(ast, result);
+      return minimum(result, evaled);
     }
 
+    @Override
     public int[] expectedArgSize(IAST ast) {
       return null;
     }
 
-    protected boolean flattenList(IAST ast, IASTAppendable result) {
+    protected boolean flattenListRecursive(IAST ast, IASTAppendable result) {
       boolean evaled = false;
       for (int i = 1; i < ast.size(); i++) {
         final IExpr arg = ast.get(i);
@@ -2732,12 +2706,12 @@ public final class BooleanFunctions {
         if (dim >= 0) {
           IExpr normal = arg.normal(false);
           if (normal.isList()) {
-            flattenList((IAST) normal, result);
+            flattenListRecursive((IAST) normal, result);
             evaled = true;
             continue;
           }
         } else if (arg.isList()) {
-          flattenList((IAST) arg, result);
+          flattenListRecursive((IAST) arg, result);
           evaled = true;
           continue;
         }
@@ -2837,7 +2811,7 @@ public final class BooleanFunctions {
             }
           } else if (arg2.isNumericFunction(true)) {
             return F.List(F.Subtract(F.Min(arg1), arg2), F.Plus(F.Max(arg1), arg2));
-          } else if (arg2.isAST(F.Scaled, 2)
+          } else if (arg2.isAST(S.Scaled, 2)
               && //
               arg2.first().isNumericFunction(true)) {
             IExpr delta =
@@ -2850,6 +2824,7 @@ public final class BooleanFunctions {
       return F.NIL;
     }
 
+    @Override
     public int[] expectedArgSize(IAST ast) {
       return ARGS_1_2;
     }
@@ -2987,6 +2962,7 @@ public final class BooleanFunctions {
       return F.NIL;
     }
 
+    @Override
     public int[] expectedArgSize(IAST ast) {
       return ARGS_1_1;
     }
@@ -3061,6 +3037,7 @@ public final class BooleanFunctions {
       return F.NIL;
     }
 
+    @Override
     public int[] expectedArgSize(IAST ast) {
       return ARGS_2_2_1;
     }
@@ -3076,7 +3053,7 @@ public final class BooleanFunctions {
      * @return
      */
     public IExpr noneTrue(IAST list, IExpr head, EvalEngine engine) {
-      IASTAppendable logicalNor = F.ast(F.Nor);
+      IASTAppendable logicalNor = F.ast(S.Nor);
       if (list.exists(x -> noneTrueArgument(x, head, logicalNor, engine))) {
         return S.False;
       }
@@ -3143,6 +3120,7 @@ public final class BooleanFunctions {
       return F.NIL;
     }
 
+    @Override
     public int[] expectedArgSize(IAST ast) {
       return ARGS_1_1;
     }
@@ -3192,6 +3170,7 @@ public final class BooleanFunctions {
       return F.NIL;
     }
 
+    @Override
     public int[] expectedArgSize(IAST ast) {
       return ARGS_1_1;
     }
@@ -3323,17 +3302,17 @@ public final class BooleanFunctions {
               case ID.ForAll:
                 return F.Exists(temp.first(), F.Not(temp.second()));
               case ID.Equal:
-                return temp.apply(F.Unequal);
+                return temp.apply(S.Unequal);
               case ID.Unequal:
-                return temp.apply(F.Equal);
+                return temp.apply(S.Equal);
               case ID.Greater:
-                return temp.apply(F.LessEqual);
+                return temp.apply(S.LessEqual);
               case ID.GreaterEqual:
-                return temp.apply(F.Less);
+                return temp.apply(S.Less);
               case ID.Less:
-                return temp.apply(F.GreaterEqual);
+                return temp.apply(S.GreaterEqual);
               case ID.LessEqual:
-                return temp.apply(F.Greater);
+                return temp.apply(S.Greater);
               default:
                 break;
             }
@@ -3529,6 +3508,7 @@ public final class BooleanFunctions {
       return F.NIL;
     }
 
+    @Override
     public int[] expectedArgSize(IAST ast) {
       return ARGS_1_1;
     }
@@ -3631,7 +3611,7 @@ public final class BooleanFunctions {
           if (ast.size() > 3) {
             final OptionArgs options = new OptionArgs(ast.topHead(), ast, 3, engine);
             // "BDD" (binary decision diagram), "SAT", "TREE" ?
-            IExpr optionMethod = options.getOption(F.Method);
+            IExpr optionMethod = options.getOption(S.Method);
             if (optionMethod.isString()) {
               method = optionMethod.toString();
             }
@@ -3647,6 +3627,7 @@ public final class BooleanFunctions {
       }
     }
 
+    @Override
     public int[] expectedArgSize(IAST ast) {
       return ARGS_1_3;
     }
@@ -3717,13 +3698,13 @@ public final class BooleanFunctions {
         String method = "SAT";
         int maxChoices = 1;
         if (ast.size() > 2) {
-          if (ast.arg2().equals(F.All)) {
+          if (ast.arg2().equals(S.All)) {
             maxChoices = Integer.MAX_VALUE;
             userDefinedVariables = variablesInFormula;
           } else {
             userDefinedVariables = ast.arg2().orNewList();
           }
-          IExpr complement = F.Complement.of(engine, userDefinedVariables, variablesInFormula);
+          IExpr complement = S.Complement.of(engine, userDefinedVariables, variablesInFormula);
           if (complement.size() > 1 && complement.isList()) {
             IASTAppendable or = F.Or();
             or.append(arg1);
@@ -3734,7 +3715,7 @@ public final class BooleanFunctions {
           if (ast.size() > 3) {
             final OptionArgs options = new OptionArgs(ast.topHead(), ast, 3, engine);
             // "BDD" (binary decision diagram), "SAT", "TREE" ?
-            IExpr optionMethod = options.getOption(F.Method);
+            IExpr optionMethod = options.getOption(S.Method);
             if (optionMethod.isString()) {
               method = optionMethod.toString();
             }
@@ -3742,7 +3723,7 @@ public final class BooleanFunctions {
 
           IExpr argN = ast.last();
           if (!argN.isRule()) {
-            if (argN.equals(F.All)) {
+            if (argN.equals(S.All)) {
               maxChoices = Integer.MAX_VALUE;
             } else if (argN.isNumber()) {
               maxChoices = Validate.checkPositiveIntType(ast, ast.argSize());
@@ -3758,6 +3739,7 @@ public final class BooleanFunctions {
       }
     }
 
+    @Override
     public int[] expectedArgSize(IAST ast) {
       return ARGS_1_3;
     }
@@ -3803,7 +3785,7 @@ public final class BooleanFunctions {
           if (ast.size() > 3) {
             final OptionArgs options = new OptionArgs(ast.topHead(), ast, 3, engine);
             // "BDD" (binary decision diagram), "SAT", "TREE" ?
-            IExpr optionMethod = options.getOption(F.Method);
+            IExpr optionMethod = options.getOption(S.Method);
             if (optionMethod.isString()) {
               method = optionMethod.toString();
             }
@@ -3825,6 +3807,7 @@ public final class BooleanFunctions {
       }
     }
 
+    @Override
     public int[] expectedArgSize(IAST ast) {
       return ARGS_1_3;
     }
@@ -3944,6 +3927,7 @@ public final class BooleanFunctions {
       }
     }
 
+    @Override
     public int[] expectedArgSize(IAST ast) {
       return ARGS_1_2;
     }
@@ -4267,7 +4251,7 @@ public final class BooleanFunctions {
       IExpr temp;
       IExpr result = ast.arg1();
       int size = ast.size();
-      IASTAppendable xor = F.ast(F.Xor, size - 1, false);
+      IASTAppendable xor = F.ast(S.Xor, size - 1, false);
       boolean evaled = false;
       for (int i = 2; i < size; i++) {
         temp = ast.get(i);
@@ -4277,7 +4261,7 @@ public final class BooleanFunctions {
           } else if (result.isFalse()) {
             result = S.True;
           } else {
-            result = F.Not.of(engine, result);
+            result = S.Not.of(engine, result);
           }
           evaled = true;
         } else if (temp.isFalse()) {
@@ -4293,7 +4277,7 @@ public final class BooleanFunctions {
             evaled = true;
           } else {
             if (result.isTrue()) {
-              result = F.Not.of(engine, temp);
+              result = S.Not.of(engine, temp);
               evaled = true;
             } else if (result.isFalse()) {
               result = temp;
@@ -4343,7 +4327,7 @@ public final class BooleanFunctions {
       return S.True;
     }
 
-    return Equal.simplifyCompare(F.Equal, a1, a2);
+    return Equal.simplifyCompare(S.Equal, a1, a2);
   }
 
   /**
@@ -4447,7 +4431,7 @@ public final class BooleanFunctions {
       return S.False;
     }
 
-    return Unequal.simplifyCompare(F.Unequal, arg1, arg2);
+    return Equal.simplifyCompare(S.Unequal, arg1, arg2);
   }
 
   /**
@@ -4497,7 +4481,7 @@ public final class BooleanFunctions {
           lf.literals2BooleanList(assignments.get(i).literals(), map) //
           );
     }
-    EvalAttributes.sort(list, Comparators.ExprReverseComparator.CONS);
+    EvalAttributes.sort(list, Comparators.REVERSE_CANONICAL_COMPARATOR);
     return list;
   }
 
@@ -4527,7 +4511,7 @@ public final class BooleanFunctions {
           lf.literals2VariableList(assignments.get(i).literals(), map) //
           );
     }
-    EvalAttributes.sort(list, Comparators.ExprReverseComparator.CONS);
+    EvalAttributes.sort(list, Comparators.REVERSE_CANONICAL_COMPARATOR);
     return list;
   }
 
@@ -4549,7 +4533,7 @@ public final class BooleanFunctions {
         return new BDDCNFTransformation(); // new CNFFactorization( );
       }
       // `1` currently not supported in `2`.
-      IOFunctions.printMessage(ast.topHead(), "unsupported", F.List(lastArg, F.Method), engine);
+      IOFunctions.printMessage(ast.topHead(), "unsupported", F.List(lastArg, S.Method), engine);
       return null;
     }
     return new DNFFactorization();
@@ -4600,7 +4584,7 @@ public final class BooleanFunctions {
             singleBit <<= 1;
           }
           if ((count & 1) == 1) {
-            IASTMutable andAST = F.ast(F.And, size, true);
+            IASTMutable andAST = F.ast(S.And, size, true);
             singleBit = 0b1;
             int startPos = 1;
             int startNotPos = count + 1;
@@ -4627,6 +4611,49 @@ public final class BooleanFunctions {
 
   public static void initialize() {
     Initializer.init();
+  }
+
+  public static IExpr.COMPARE_TERNARY compareEqual(final IExpr o0, final IExpr o1) {
+    if (o0.isSame(o1)) {
+      return IExpr.COMPARE_TERNARY.TRUE;
+    }
+
+    if (o0.isTrue()) {
+      if (o1.isTrue()) {
+        return IExpr.COMPARE_TERNARY.TRUE;
+      } else if (o1.isFalse()) {
+        return IExpr.COMPARE_TERNARY.FALSE;
+      }
+    } else if (o0.isFalse()) {
+      if (o1.isTrue()) {
+        return IExpr.COMPARE_TERNARY.FALSE;
+      } else if (o1.isFalse()) {
+        return IExpr.COMPARE_TERNARY.TRUE;
+      }
+    }
+    if (o0.isConstantAttribute() && o1.isConstantAttribute()) {
+      return IExpr.COMPARE_TERNARY.FALSE;
+    }
+
+    if ((o0 instanceof StringX) && (o1 instanceof StringX)) {
+      return IExpr.COMPARE_TERNARY.FALSE;
+    }
+    IExpr difference = F.eval(F.Subtract(o0, o1));
+    if (difference.isNumber()) {
+      if (difference.isZero()) {
+        return IExpr.COMPARE_TERNARY.TRUE;
+      }
+      return IExpr.COMPARE_TERNARY.FALSE;
+    }
+    if (difference.isConstantAttribute()) {
+      return IExpr.COMPARE_TERNARY.FALSE;
+    }
+
+    if (o0.isNumber() && o1.isNumber()) {
+      return IExpr.COMPARE_TERNARY.FALSE;
+    }
+
+    return IExpr.COMPARE_TERNARY.UNDECIDABLE;
   }
 
   private BooleanFunctions() {}

@@ -13,6 +13,7 @@ import org.matheclipse.core.eval.exception.AbortException;
 import org.matheclipse.core.eval.util.Lambda;
 import org.matheclipse.core.expression.BuiltInDummy;
 import org.matheclipse.core.expression.F;
+import org.matheclipse.core.expression.S;
 import org.matheclipse.core.interfaces.IASTAppendable;
 import org.matheclipse.core.interfaces.IASTMutable;
 import org.matheclipse.core.interfaces.IExpr;
@@ -22,7 +23,6 @@ import org.matheclipse.parser.client.operator.Operator;
 import org.matheclipse.parser.client.operator.Precedence;
 import org.matheclipse.parser.trie.TrieBuilder;
 import org.matheclipse.parser.trie.TrieMatch;
-import org.matheclipse.parser.trie.Tries;
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
@@ -140,21 +140,21 @@ public class TeXParser {
     private static void init() {
       UNICODE_OPERATOR_MAP =
           Config.TRIE_STRING2EXPR_BUILDER.withMatch(TrieMatch.EXACT).build(); // Tries.forStrings();
-      UNICODE_OPERATOR_MAP.put("\u2218", F.Degree);
-      UNICODE_OPERATOR_MAP.put("\u00B0", F.Degree);
-      UNICODE_OPERATOR_MAP.put("\u222b", F.Integrate);
-      UNICODE_OPERATOR_MAP.put("\u2211", F.Sum);
-      UNICODE_OPERATOR_MAP.put("\u220f", F.Product);
-      UNICODE_OPERATOR_MAP.put("\u03c0", F.Pi);
+      UNICODE_OPERATOR_MAP.put("\u2218", S.Degree);
+      UNICODE_OPERATOR_MAP.put("\u00B0", S.Degree);
+      UNICODE_OPERATOR_MAP.put("\u222b", S.Integrate);
+      UNICODE_OPERATOR_MAP.put("\u2211", S.Sum);
+      UNICODE_OPERATOR_MAP.put("\u220f", S.Product);
+      UNICODE_OPERATOR_MAP.put("\u03c0", S.Pi);
       UNICODE_OPERATOR_MAP.put("\u221e", F.CInfinity);
       UNICODE_OPERATOR_MAP.put("\u2148", F.CI); // double-struck italic letter i
       UNICODE_OPERATOR_MAP.put("\u2149", F.CI); // double-struck italic letter j
-      UNICODE_OPERATOR_MAP.put("\u2107", F.E); // euler's constant
+      UNICODE_OPERATOR_MAP.put("\u2107", S.E); // euler's constant
 
       FUNCTION_HEADER_MAP =
           Config.TRIE_STRING2EXPR_BUILDER.withMatch(TrieMatch.EXACT).build(); // Tries.forStrings();
-      FUNCTION_HEADER_MAP.put("ln", F.Log);
-      FUNCTION_HEADER_MAP.put("lim", F.Limit);
+      FUNCTION_HEADER_MAP.put("ln", S.Log);
+      FUNCTION_HEADER_MAP.put("lim", S.Limit);
 
       TrieBuilder<String, BinaryOperator, ArrayList<BinaryOperator>> binaryBuilder =
           TrieBuilder.create();
@@ -273,7 +273,7 @@ public class TeXParser {
             } else if (isNumericFunction
                 || (lhs.isBuiltInSymbol() && !(lhs instanceof BuiltInDummy))
                 || lhs.isFunction()) {
-              if (lhs.equals(F.Integrate)) {
+              if (lhs.equals(S.Integrate)) {
                 ISymbol test = F.Dummy("test");
                 return integrate(list, position, test, test);
               }
@@ -435,7 +435,7 @@ public class TeXParser {
         IExpr frac = mfrac(nd.getChildNodes());
         if (frac.isTimes() && frac.first().isSymbol()) {
           ISymbol d = (ISymbol) frac.first();
-          String dStr = ((ISymbol) d).getSymbolName();
+          String dStr = d.getSymbolName();
           if (dStr.startsWith("d")) {
             // dx/x
             dxStart = dxPosition1[0];
@@ -457,11 +457,11 @@ public class TeXParser {
       position[0] = dxEnd;
       arg1 = F.subs(arg1, dummySymbol, x);
       symbolOrList = F.subs(symbolOrList, dummySymbol, x);
-      return F.binaryAST2(F.Integrate, arg1, symbolOrList);
+      return F.binaryAST2(S.Integrate, arg1, symbolOrList);
     } else if (dxStart == position[0]) {
       position[0] = dxEnd;
       symbolOrList = F.subs(symbolOrList, dummySymbol, x);
-      return F.binaryAST2(F.Integrate, dxValue, symbolOrList);
+      return F.binaryAST2(S.Integrate, dxValue, symbolOrList);
     }
     throw new AbortException();
   }
@@ -505,17 +505,17 @@ public class TeXParser {
         if (value != null) {
           if (value.getTextContent().equals("double-struck")) {
             if (text.equals("B")) {
-              return F.Booleans;
+              return S.Booleans;
             } else if (text.equals("C")) {
-              return F.Complexes;
+              return S.Complexes;
             } else if (text.equals("P")) {
-              return F.Primes;
+              return S.Primes;
             } else if (text.equals("Q")) {
-              return F.Rationals;
+              return S.Rationals;
             } else if (text.equals("Z")) {
-              return F.Integers;
+              return S.Integers;
             } else if (text.equals("R")) {
-              return F.Reals;
+              return S.Reals;
             }
           }
         }
@@ -615,7 +615,7 @@ public class TeXParser {
         }
         if (parentList != null) {
           while (position[0] < parentList.getLength()) {
-            if (head.equals(F.Integrate)) {
+            if (head.equals(S.Integrate)) {
               return integrate(parentList, position, dummySymbol, arg2);
             } else {
               IExpr arg1 = convert(parentList, position, null, Integer.MAX_VALUE);
@@ -632,7 +632,7 @@ public class TeXParser {
       IExpr a2 = toExpr(node);
       node = list.item(2);
       IExpr a3 = toExpr(node);
-      return F.ternaryAST3(F.Subsuperscript, a1, a2, a3);
+      return F.ternaryAST3(S.Subsuperscript, a1, a2, a3);
     }
     throw new AbortException();
   }
@@ -644,11 +644,11 @@ public class TeXParser {
 
       IExpr a1 = toExpr(arg1);
       IExpr a2 = toExpr(arg2);
-      if (a1.equals(F.Limit)) {
+      if (a1.equals(S.Limit)) {
         // Limit(#,a2)&
         return F.Function(F.Limit(F.Slot1, a2));
       }
-      return F.binaryAST2(F.Subscript, a1, a2);
+      return F.binaryAST2(S.Subscript, a1, a2);
     }
     throw new AbortException();
   }
@@ -724,7 +724,7 @@ public class TeXParser {
         // typically Sin^(-1) -> ArcSin or similar...
         return value;
       }
-    } else if (a2.equals(F.Degree)) {
+    } else if (a2.equals(S.Degree)) {
       // case \sin 30 ^ { \circ } ==> Sin(30*Degree)
       return F.Times(a1, a2);
     }
@@ -793,7 +793,7 @@ public class TeXParser {
         e.printStackTrace();
       }
     }
-    return F.$Aborted;
+    return S.$Aborted;
   }
 
   private IExpr toHeadExpr(Node node, NodeList parentList, int[] position, int precedence) {

@@ -26,7 +26,7 @@ public interface ISignedNumber extends INumber {
   @Override
   default IExpr complexArg() {
     if (sign() < 0) {
-      return F.Pi;
+      return S.Pi;
     }
     return F.C0;
   }
@@ -52,8 +52,10 @@ public interface ISignedNumber extends INumber {
    */
   public double doubleValue();
 
+  @Override
   public IInteger ceilFraction() throws ArithmeticException;
 
+  @Override
   public IInteger floorFraction() throws ArithmeticException;
 
   /**
@@ -61,6 +63,7 @@ public interface ISignedNumber extends INumber {
    *
    * @return
    */
+  @Override
   public ISignedNumber fractionalPart();
 
   /**
@@ -71,6 +74,7 @@ public interface ISignedNumber extends INumber {
    *
    * @return
    */
+  @Override
   public IInteger integerPart();
 
   /** {@inheritDoc} */
@@ -98,6 +102,7 @@ public interface ISignedNumber extends INumber {
    * @return
    * @deprecated use #isGT()
    */
+  @Deprecated
   default boolean isGreaterThan(ISignedNumber that) {
     return isGT(that);
   }
@@ -123,6 +128,7 @@ public interface ISignedNumber extends INumber {
    * @return
    * @deprecated use #isLT()
    */
+  @Deprecated
   default boolean isLessThan(ISignedNumber that) {
     return isLT(that);
   }
@@ -135,10 +141,12 @@ public interface ISignedNumber extends INumber {
   @Override
   public boolean isNegative();
 
+  @Override
   default boolean isNegativeResult() {
     return isNegative();
   }
 
+  @Override
   default boolean isNonNegativeResult() {
     return !isNegative();
   }
@@ -151,6 +159,7 @@ public interface ISignedNumber extends INumber {
   @Override
   public boolean isPositive();
 
+  @Override
   default boolean isPositiveResult() {
     return isPositive();
   }
@@ -196,6 +205,7 @@ public interface ISignedNumber extends INumber {
    *
    * @return the closest integer to the argument.
    */
+  @Override
   public IInteger round();
 
   /**
@@ -290,6 +300,7 @@ public interface ISignedNumber extends INumber {
    */
   public long toLong() throws ArithmeticException;
 
+  @Override
   public default IExpr unitStep() {
     return isNegative() ? F.C0 : F.C1;
   }

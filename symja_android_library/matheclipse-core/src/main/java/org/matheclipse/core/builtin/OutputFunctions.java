@@ -18,7 +18,6 @@ import org.matheclipse.core.eval.TeXUtilities;
 import org.matheclipse.core.eval.exception.Validate;
 import org.matheclipse.core.eval.interfaces.AbstractCoreFunctionEvaluator;
 import org.matheclipse.core.eval.interfaces.AbstractFunctionEvaluator;
-import org.matheclipse.core.eval.interfaces.IFunctionEvaluator;
 import org.matheclipse.core.eval.util.OptionArgs;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.expression.S;
@@ -328,7 +327,7 @@ public final class OutputFunctions {
         VariablesSet eVar;
         IAST variables;
         if (ast.isAST2()) {
-          variables = Validate.checkIsVariableOrVariableList(ast, 2, engine);
+          variables = Validate.checkIsVariableOrVariableList(ast, 2, ast.topHead(), engine);
         } else {
           eVar = new VariablesSet(ast.arg1());
           variables = eVar.getVarList();
@@ -428,9 +427,9 @@ public final class OutputFunctions {
                 arg2.isString("Tongan")
                 || //
                 arg2.isString("Turkish")) {
-              language = (IStringX) arg2;
+              language = arg2;
             } else {
-              qual = (IStringX) arg2;
+              qual = arg2;
             }
           }
 
@@ -565,17 +564,17 @@ public final class OutputFunctions {
         boolean usePrefix = false;
         if (ast.isAST2()) {
           IExpr arg2 = engine.evaluate(ast.arg2());
-          if (arg2 == F.Float) {
+          if (arg2 == S.Float) {
             floatJava = true;
-          } else if (arg2 == F.Strict) {
+          } else if (arg2 == S.Strict) {
             strictJava = true;
-          } else if (arg2 == F.Prefix) {
+          } else if (arg2 == S.Prefix) {
             usePrefix = true;
           } else {
             final OptionArgs options = new OptionArgs(ast.topHead(), arg2, engine);
-            floatJava = options.isTrue(F.Float);
-            strictJava = options.isTrue(F.Strict);
-            usePrefix = options.isTrue(F.Prefix);
+            floatJava = options.isTrue(S.Float);
+            strictJava = options.isTrue(S.Strict);
+            usePrefix = options.isTrue(S.Prefix);
           }
         }
         if (floatJava) {
@@ -611,7 +610,7 @@ public final class OutputFunctions {
           javascriptFlavor = JavaScriptFormFactory.USE_MATHCELL;
         }
         IExpr arg1 = engine.evaluate(ast.arg1());
-        if (arg1.isAST(F.JSFormData, 3)) {
+        if (arg1.isAST(S.JSFormData, 3)) {
           String manipulateStr = ((IAST) arg1).arg1().toString();
           return F.$str(manipulateStr, IStringX.APPLICATION_JAVASCRIPT);
         }

@@ -4,6 +4,7 @@ import java.util.IdentityHashMap;
 
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.expression.F;
+import org.matheclipse.core.expression.S;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IASTMutable;
 import org.matheclipse.core.interfaces.IExpr;
@@ -77,7 +78,7 @@ public class ModuleReplaceAll extends VisitorExpr {
 
   @Override
   public IExpr visit(IASTMutable ast) {
-    if (ast.isSameHeadSizeGE(F.Function, 2)) {
+    if (ast.isSameHeadSizeGE(S.Function, 2)) {
       return visitNestedScope(ast, true);
     } else if (ast.isWith()) {
       return visitNestedScope(ast, false).orElse(ast);
@@ -141,7 +142,7 @@ public class ModuleReplaceAll extends VisitorExpr {
         ISymbol symbol = (ISymbol) temp;
         variables = putSingleVariable(symbol, variables, varAppend, isFunction);
       } else {
-        if (temp.isAST(F.Set, 3)) {
+        if (temp.isAST(S.Set, 3)) {
           // lhs = rhs
           final IAST setFun = (IAST) temp;
           if (setFun.arg1().isSymbol()) {

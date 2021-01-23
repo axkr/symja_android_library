@@ -113,16 +113,17 @@ public class ExportString extends AbstractEvaluator {
     switch (format) {
       case DOT:
         DOTExporter<IExpr, DefaultEdge> dotExporter =
-            new DOTExporter<>();//new IntegerComponentNameProvider<>(), null, null, null, null);
-//        dotExporter.putGraphAttribute("overlap", "false");
-//        dotExporter.putGraphAttribute("splines", "true");
+            new DOTExporter<>(); // new IntegerComponentNameProvider<>(), null, null, null, null);
+        //        dotExporter.putGraphAttribute("overlap", "false");
+        //        dotExporter.putGraphAttribute("splines", "true");
 
-        dotExporter.setGraphAttributeProvider(() -> {
-            Map<String, Attribute> map = new LinkedHashMap<>();
-            map.put("overlap", DefaultAttribute.createAttribute("false"));
-            map.put("splines", DefaultAttribute.createAttribute("true"));
-            return map;
-        }); 
+        dotExporter.setGraphAttributeProvider(
+            () -> {
+              Map<String, Attribute> map = new LinkedHashMap<>();
+              map.put("overlap", DefaultAttribute.createAttribute("false"));
+              map.put("splines", DefaultAttribute.createAttribute("true"));
+              return map;
+            });
         return;
       case GRAPHML:
         GraphExporter<IExpr, DefaultEdge> graphMLExporter = new GraphMLExporter<>();
@@ -133,10 +134,12 @@ public class ExportString extends AbstractEvaluator {
 
     // DEFAULT: return CSV file
     CSVExporter<IExpr, DefaultEdge> exporter =
-        new CSVExporter<IExpr, DefaultEdge>(nameProvider, org.jgrapht.nio.csv.CSVFormat.EDGE_LIST, ';');
+        new CSVExporter<IExpr, DefaultEdge>(
+            nameProvider, org.jgrapht.nio.csv.CSVFormat.EDGE_LIST, ';');
     exporter.exportGraph(g, writer);
   }
 
+  @Override
   public int[] expectedArgSize(IAST ast) {
     return IFunctionEvaluator.ARGS_2_2;
   }

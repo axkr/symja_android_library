@@ -47,8 +47,8 @@ public interface IASTMutable extends IAST {
    * This operation does not change the size of the {@code IAST}. If <code>this</code> is an
    * association, the value replaces the second argument of the rule at that place
    *
-   * @param i the index at which to put the specified object.
-   * @param object the object to insert.
+   * @param location the index at which to put the specified object.
+   * @param value the object to insert.
    * @return the previous element at the index.
    * @throws UnsupportedOperationException if replacing elements in this {@code IAST} is not
    *     supported.

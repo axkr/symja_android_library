@@ -4,7 +4,6 @@ import org.apfloat.Apcomplex;
 import org.apfloat.Apfloat;
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.exception.LimitException;
-import org.matheclipse.core.eval.exception.Validate;
 import org.matheclipse.core.eval.exception.ValidateException;
 import org.matheclipse.core.expression.ApcomplexNum;
 import org.matheclipse.core.expression.ApfloatNum;
@@ -127,23 +126,21 @@ public abstract class AbstractArg12 extends AbstractFunctionEvaluator {
           if (arg2.isNumber()) {
             result =
                 e2ApcomplexArg(
-                    (ApcomplexNum) arg1,
-                    ((INumber) arg2).apcomplexNumValue(((ApcomplexNum) arg1).precision()));
+                    (ApcomplexNum) arg1, arg2.apcomplexNumValue(((ApcomplexNum) arg1).precision()));
           }
         } else if (arg2 instanceof ApcomplexNum) {
           if (arg1.isNumber()) {
             result =
                 e2ApcomplexArg(
-                    ((INumber) arg1).apcomplexNumValue(((ApcomplexNum) arg2).precision()),
-                    (ApcomplexNum) arg2);
+                    arg1.apcomplexNumValue(((ApcomplexNum) arg2).precision()), (ApcomplexNum) arg2);
           }
         } else if (arg1 instanceof ComplexNum) {
           if (arg2.isNumber()) {
-            result = e2DblComArg((ComplexNum) arg1, ((INumber) arg2).complexNumValue());
+            result = e2DblComArg((ComplexNum) arg1, arg2.complexNumValue());
           }
         } else if (arg2 instanceof ComplexNum) {
           if (arg1.isNumber()) {
-            result = e2DblComArg(((INumber) arg1).complexNumValue(), (ComplexNum) arg2);
+            result = e2DblComArg(arg1.complexNumValue(), (ComplexNum) arg2);
           }
         }
 

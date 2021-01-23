@@ -5,6 +5,7 @@ import java.util.Iterator;
 import java.util.TreeMap;
 
 import org.matheclipse.core.expression.F;
+import org.matheclipse.core.expression.S;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IASTAppendable;
 import org.matheclipse.core.interfaces.IExpr;
@@ -109,9 +110,9 @@ public class HornerScheme {
   private IExpr getCoefficient(ISignedNumber key) {
     IAST value = map.get(key);
     IExpr coefficient;
-    if (value.isAST(F.Plus, 2)) {
+    if (value.isAST(S.Plus, 2)) {
       coefficient = value.arg1();
-      if (coefficient.isAST(F.Times, 2)) {
+      if (coefficient.isAST(S.Times, 2)) {
         coefficient = coefficient.first();
       }
     } else {
@@ -126,19 +127,19 @@ public class HornerScheme {
       if (term.isTimes()) {
         for (int i = 1; i < term.size(); i++) {
           if (sym.equals(term.get(i))) {
-            IAST temp = F.ast(term, F.Times, false, i, i + 1);
+            IAST temp = F.ast(term, S.Times, false, i, i + 1);
             addToMap(F.C1, temp);
             return;
-          } else if (term.get(i).isAST(F.Power, 3)) {
+          } else if (term.get(i).isAST(S.Power, 3)) {
             IAST pow = (IAST) term.get(i);
             if (pow.arg1().equals(sym) && pow.arg2() instanceof ISignedNumber) {
-              IAST temp = F.ast(term, F.Times, false, i, i + 1);
+              IAST temp = F.ast(term, S.Times, false, i, i + 1);
               addToMap((ISignedNumber) pow.arg2(), temp);
               return;
             }
           }
         }
-      } else if (term.isAST(F.Power, 3)) {
+      } else if (term.isAST(S.Power, 3)) {
         if (term.arg1().equals(sym) && term.arg2() instanceof ISignedNumber) {
           addToMap((ISignedNumber) term.arg2(), F.C1);
           return;
@@ -157,19 +158,19 @@ public class HornerScheme {
       if (term.isTimes()) {
         for (int i = 1; i < term.size(); i++) {
           if (sym.equals(term.get(i))) {
-            IAST temp = F.ast(term, F.Times, false, i, i + 1);
+            IAST temp = F.ast(term, S.Times, false, i, i + 1);
             addToMap(F.CD1, temp);
             return;
-          } else if (term.get(i).isAST(F.Power, 3)) {
+          } else if (term.get(i).isAST(S.Power, 3)) {
             IAST pow = (IAST) term.get(i);
             if (pow.arg1().equals(sym) && pow.arg2().isReal()) {
-              IAST temp = F.ast(term, F.Times, false, i, i + 1);
+              IAST temp = F.ast(term, S.Times, false, i, i + 1);
               addToMap((ISignedNumber) pow.arg2(), temp);
               return;
             }
           }
         }
-      } else if (term.isAST(F.Power, 3)) {
+      } else if (term.isAST(S.Power, 3)) {
         if (term.arg1().equals(sym) && term.arg2().isReal()) {
           addToMap((ISignedNumber) term.arg2(), F.CD1);
           return;

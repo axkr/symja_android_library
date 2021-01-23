@@ -76,21 +76,6 @@ public abstract class AbstractMathMLFormFactory {
   }
 
   /**
-   * Returns the reflection package name which is used in #getReflectionNamespace()
-   *
-   * @return
-   */
-  // abstract public String getReflectionNamespace();
-
-  /**
-   * Determine the converter of the heads symbol string
-   *
-   * @param headString
-   * @return
-   */
-  // abstract public IConverter reflection(String headString);
-
-  /**
    * convert a double nummber
    *
    * @param buf

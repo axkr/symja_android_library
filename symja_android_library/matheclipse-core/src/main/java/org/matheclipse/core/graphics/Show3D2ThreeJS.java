@@ -2,7 +2,7 @@ package org.matheclipse.core.graphics;
 
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.util.OptionArgs;
-import org.matheclipse.core.expression.F;
+import org.matheclipse.core.expression.S;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.interfaces.ISignedNumber;
@@ -53,9 +53,9 @@ public class Show3D2ThreeJS {
         // if (numericAST.get(i).isASTSizeGE(F.Line, 2)) {
         // lineToSVG(numericAST.getAST(i), buf, dim);
         // } else
-        if (numericAST.get(i).isSameHeadSizeGE(F.Polygon, 2)) {
+        if (numericAST.get(i).isSameHeadSizeGE(S.Polygon, 2)) {
           elements("polygon", numericAST.getAST(i), builder, dim);
-        } else if (numericAST.get(i).isSameHeadSizeGE(F.Point, 2)) {
+        } else if (numericAST.get(i).isSameHeadSizeGE(S.Point, 2)) {
           elements("point", numericAST.getAST(i), builder, dim);
         }
       }
@@ -81,7 +81,7 @@ public class Show3D2ThreeJS {
    * @param viewpoints
    */
   static void optionViewPoint(final OptionArgs options, double[] viewpoints) {
-    IExpr option = options.getOption(F.ViewPoint);
+    IExpr option = options.getOption(S.ViewPoint);
     if (option.isPresent()) {
       if (option.isSymbol()) {
         String viewpoint = option.toString().toLowerCase();

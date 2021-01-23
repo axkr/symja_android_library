@@ -101,6 +101,8 @@ public interface FunctionExpandRules {
                       Power(Factorial(Plus(CN1, n)), CN1),
                       PolyGamma(Plus(CN1, n), a)),
                   Greater(n, C1))),
+          // HypergeometricPFQ({1/2},{1,1},z_):=BesselI(0,Sqrt(z))^2
+          SetDelayed(HypergeometricPFQ(List(C1D2), List(C1, C1), z_), Sqr(BesselI(C0, Sqrt(z)))),
           // Hypergeometric2F1(a_,b_,b_+n_Integer,z_):=Sum((z^k*Pochhammer(n,k)*Pochhammer(-a+b+n,k))/(Pochhammer(b+n,k)*k!),{k,0,-n})/(1-z)^(a-n)/;n<0
           SetDelayed(
               Hypergeometric2F1(a_, b_, Plus(b_, $p(n, Integer)), z_),

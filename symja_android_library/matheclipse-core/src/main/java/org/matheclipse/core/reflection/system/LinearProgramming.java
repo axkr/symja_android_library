@@ -13,8 +13,6 @@ import org.hipparchus.optim.linear.PivotSelectionRule;
 import org.hipparchus.optim.linear.Relationship;
 import org.hipparchus.optim.linear.SimplexSolver;
 import org.hipparchus.optim.nonlinear.scalar.GoalType;
-import org.matheclipse.core.basic.Config;
-import org.matheclipse.core.convert.Expr2Object;
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.interfaces.AbstractFunctionEvaluator;
 import org.matheclipse.core.eval.interfaces.IFunctionEvaluator;

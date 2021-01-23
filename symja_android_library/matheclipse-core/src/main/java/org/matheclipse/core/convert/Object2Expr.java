@@ -59,7 +59,7 @@ public class Object2Expr {
    */
   public static IExpr convert(Object obj) {
     if (obj == null) {
-      return F.Null;
+      return S.Null;
     }
     if (obj instanceof IExpr) {
       return (IExpr) obj;
@@ -82,7 +82,7 @@ public class Object2Expr {
       return F.complexNum(cmp.getReal(), cmp.getImaginary());
     }
     if (obj instanceof int[]) {
-      return F.ast(F.List, (int[]) obj);
+      return F.ast(S.List, (int[]) obj);
     }
     if (obj instanceof double[]) {
       return new ASTRealVector((double[]) obj, true);
@@ -101,7 +101,7 @@ public class Object2Expr {
       // return list;
     }
     if (obj instanceof org.hipparchus.complex.Complex[]) {
-      return F.ast(F.List, (org.hipparchus.complex.Complex[]) obj);
+      return F.ast(S.List, (org.hipparchus.complex.Complex[]) obj);
     }
     if (obj instanceof Object[]) {
       final Object[] array = (Object[]) obj;
@@ -168,7 +168,7 @@ public class Object2Expr {
     if (n instanceof AtomicLong) {
       return F.ZZ(((AtomicLong) n).longValue());
     }
-    return F.num(((Number) n).doubleValue());
+    return F.num(n.doubleValue());
   }
 
   public static IExpr convertList(java.util.Collection<?> lst) {
@@ -176,7 +176,7 @@ public class Object2Expr {
       return List();
     } else {
       int size = lst.size();
-      IASTAppendable list = F.ast(F.List, size, false);
+      IASTAppendable list = F.ast(S.List, size, false);
       for (Object element : lst) {
         list.append(convert(element));
       }
@@ -185,6 +185,6 @@ public class Object2Expr {
   }
 
   public static IAST convertComplex(boolean evalComplex, org.hipparchus.complex.Complex[] array) {
-    return F.ast(F.List, evalComplex, array);
+    return F.ast(S.List, evalComplex, array);
   }
 }

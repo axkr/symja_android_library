@@ -15,6 +15,7 @@ import org.matheclipse.core.eval.exception.ArgumentTypeException;
 import org.matheclipse.core.eval.exception.IterationLimitExceeded;
 import org.matheclipse.core.eval.exception.ThrowException;
 import org.matheclipse.core.expression.F;
+import org.matheclipse.core.expression.S;
 
 /**
  * Ported from JavaScript file <a
@@ -144,7 +145,7 @@ public class HypergeometricJS {
       s += p;
       a++;
       if (i++ > iterationLimit && iterationLimit > 0) {
-        IterationLimitExceeded.throwIt(i, F.Hypergeometric0F1);
+        IterationLimitExceeded.throwIt(i, S.Hypergeometric0F1);
       }
     }
 
@@ -199,7 +200,7 @@ public class HypergeometricJS {
       s = s.add(p);
       a = a.add(1);
       if (i++ > iterationLimit && iterationLimit > 0) {
-        IterationLimitExceeded.throwIt(i, F.Hypergeometric0F1);
+        IterationLimitExceeded.throwIt(i, S.Hypergeometric0F1);
       }
     }
 
@@ -256,7 +257,7 @@ public class HypergeometricJS {
       a = a.add(1.0);
       b = b.add(1.0);
       if (i++ > iterationLimit && iterationLimit > 0) {
-        IterationLimitExceeded.throwIt(i, F.Hypergeometric1F1);
+        IterationLimitExceeded.throwIt(i, S.Hypergeometric1F1);
       }
     }
 
@@ -294,7 +295,7 @@ public class HypergeometricJS {
       a++;
       b++;
       if (i++ > iterationLimit && iterationLimit > 0) {
-        IterationLimitExceeded.throwIt(i, F.Hypergeometric1F1);
+        IterationLimitExceeded.throwIt(i, S.Hypergeometric1F1);
       }
     }
 
@@ -550,7 +551,7 @@ public class HypergeometricJS {
       b = b.add(1);
       c = c.add(1);
       if (i++ > iterationLimit && iterationLimit > 0) {
-        IterationLimitExceeded.throwIt(i, F.Hypergeometric2F1);
+        IterationLimitExceeded.throwIt(i, S.Hypergeometric2F1);
       }
     }
 
@@ -619,7 +620,7 @@ public class HypergeometricJS {
       b++;
       c++;
       if (i++ > iterationLimit && iterationLimit > 0) {
-        IterationLimitExceeded.throwIt(i, F.Hypergeometric2F1);
+        IterationLimitExceeded.throwIt(i, S.Hypergeometric2F1);
       }
     }
 

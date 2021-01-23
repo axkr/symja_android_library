@@ -8,6 +8,7 @@ import java.util.List;
 
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.expression.F;
+import org.matheclipse.core.expression.S;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.interfaces.ISymbol;
@@ -83,22 +84,22 @@ public class PatternMatcherEquals extends IPatternMatcher implements Externaliza
    */
   public ISymbol getSetSymbol() {
     if (isFlagOn(SET_DELAYED)) {
-      return F.SetDelayed;
+      return S.SetDelayed;
     }
     if (isFlagOn(SET)) {
-      return F.Set;
+      return S.Set;
     }
     if (isFlagOn(UPSET_DELAYED)) {
-      return F.UpSetDelayed;
+      return S.UpSetDelayed;
     }
     if (isFlagOn(UPSET)) {
-      return F.UpSet;
+      return S.UpSet;
     }
     if (isFlagOn(TAGSET_DELAYED)) {
-      return F.TagSetDelayed;
+      return S.TagSetDelayed;
     }
     if (isFlagOn(TAGSET)) {
-      return F.TagSet;
+      return S.TagSet;
     }
     return null;
   }

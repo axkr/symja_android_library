@@ -149,7 +149,6 @@ public class JavaScriptFormFactory extends DoubleFormFactory {
     FUNCTIONS_STR_MATHCELL.put(S.Re, "re");
 
     FUNCTIONS_STR_MATHCELL.put(S.ProductLog, "lambertW");
-    FUNCTIONS_STR_MATHCELL.put(S.Chop, "chop");
     FUNCTIONS_STR_MATHCELL.put(S.KroneckerDelta, "kronecker");
 
     FUNCTIONS_STR_MATHCELL.put(S.HermiteH, "hermite");
@@ -157,7 +156,7 @@ public class JavaScriptFormFactory extends DoubleFormFactory {
     FUNCTIONS_STR_MATHCELL.put(S.ChebyshevT, "chebyshevT");
     FUNCTIONS_STR_MATHCELL.put(S.ChebyshevU, "chebyshevU");
     FUNCTIONS_STR_MATHCELL.put(S.LegendreP, "legendreP");
-    
+
     // FUNCTIONS_STR_MATHCELL.put(S.SpheriacelHarmonic, "sphericalHarmonic");
 
     FUNCTIONS_STR_MATHCELL.put(S.Sin, "sin");
@@ -198,12 +197,12 @@ public class JavaScriptFormFactory extends DoubleFormFactory {
     FUNCTIONS_STR_MATHCELL.put(S.Floor, "floor");
     FUNCTIONS_STR_MATHCELL.put(S.KroneckerDelta, "kronecker");
     FUNCTIONS_STR_MATHCELL.put(S.Round, "round");
-    
-    FUNCTIONS_STR_MATHCELL.put(S.IntegerPart, "Math.trunc");
+
+    FUNCTIONS_STR_MATHCELL.put(S.IntegerPart, "integerPart");
+    FUNCTIONS_STR_MATHCELL.put(S.FractionalPart, "fractionalPart");
+    FUNCTIONS_STR_MATHCELL.put(S.Sign, "sign");
     FUNCTIONS_STR_MATHCELL.put(S.Max, "Math.max");
     FUNCTIONS_STR_MATHCELL.put(S.Min, "Math.min");
-    
-    FUNCTIONS_STR_MATHCELL.put(S.Sign, "Math.sign");
 
     //
     // pure JavaScript mappings
@@ -328,6 +327,7 @@ public class JavaScriptFormFactory extends DoubleFormFactory {
         relaxedSyntax, plusReversed, exponentFigures, significantFigures);
   }
 
+  @Override
   public String functionHead(ISymbol symbol) {
     if (javascriptFlavor == USE_MATHCELL) {
       return FUNCTIONS_STR_MATHCELL.get(symbol);
@@ -335,10 +335,11 @@ public class JavaScriptFormFactory extends DoubleFormFactory {
     return FUNCTIONS_STR_PURE_JS.get(symbol);
   }
 
+  @Override
   public void convertSymbol(final StringBuilder buf, final ISymbol symbol) {
 
     if (symbol.isBuiltInSymbol()) {
-      String str = functionHead((ISymbol) symbol);
+      String str = functionHead(symbol);
       if (str != null) {
         buf.append(str);
         return;
@@ -366,6 +367,7 @@ public class JavaScriptFormFactory extends DoubleFormFactory {
     return get(false);
   }
 
+  @Override
   public void convertAST(final StringBuilder buf, final IAST function) {
     if (function.isNumericFunction(true)) {
       try {
@@ -383,7 +385,7 @@ public class JavaScriptFormFactory extends DoubleFormFactory {
         if (function.isASTSizeGE(S.Round, 3)) {
           throw new ArgumentTypeException("Cannot convert to JavaScript: " + function.toString());
         }
-        if (function.isAST(F.ArcTan, 3)) {
+        if (function.isAST(S.ArcTan, 3)) {
           buf.append("Math.atan2");
         } else {
           buf.append(str);
@@ -504,7 +506,7 @@ public class JavaScriptFormFactory extends DoubleFormFactory {
       } else if (function.isNegativeInfinity()) {
         buf.append("Number.NEGATIVE_INFINITY");
         return;
-      } else if (function.head() == F.Piecewise && function.size() > 1) {
+      } else if (function.head() == S.Piecewise && function.size() > 1) {
         int[] dim = function.isPiecewise();
         if (dim != null && convertPiecewise(dim, function, buf)) {
           return;
@@ -588,7 +590,6 @@ public class JavaScriptFormFactory extends DoubleFormFactory {
     }
     buf.append("Math.pow");
     convertArgs(buf, powerAST.head(), powerAST);
-    return;
   }
 
   /**
@@ -614,7 +615,6 @@ public class JavaScriptFormFactory extends DoubleFormFactory {
     }
     buf.append("pow");
     convertArgs(buf, powerAST.head(), powerAST);
-    return;
   }
 
   private void convertConditionalExpression(final IAST function, final StringBuilder buf) {
@@ -730,6 +730,7 @@ public class JavaScriptFormFactory extends DoubleFormFactory {
     }
   }
 
+  @Override
   protected boolean convertOperator(
       final Operator operator,
       final IAST list,
@@ -747,6 +748,7 @@ public class JavaScriptFormFactory extends DoubleFormFactory {
     return true;
   }
 
+  @Override
   public Operator getOperator(ISymbol head) {
     if (javascriptFlavor == USE_MATHCELL) {
       if (head.isSymbolID(
@@ -766,6 +768,7 @@ public class JavaScriptFormFactory extends DoubleFormFactory {
     return super.getOperator(head);
   }
 
+  @Override
   public void convertComplex(
       final StringBuilder buf, final IComplex c, final int precedence, boolean caller) {
     buf.append("complex(");
@@ -775,6 +778,7 @@ public class JavaScriptFormFactory extends DoubleFormFactory {
     buf.append(")");
   }
 
+  @Override
   public void convertDoubleComplex(
       final StringBuilder buf, final IComplexNum dc, final int precedence, boolean caller) {
     buf.append("complex(");

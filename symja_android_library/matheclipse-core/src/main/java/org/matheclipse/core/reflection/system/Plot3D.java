@@ -36,7 +36,7 @@ public class Plot3D extends AbstractEvaluator {
   @Override
   public IExpr evaluate(final IAST ast, EvalEngine engine) {
     if (Config.USE_MANIPULATE_JS) {
-      IExpr temp = F.Manipulate.of(engine, ast);
+      IExpr temp = S.Manipulate.of(engine, ast);
       if (temp.headID() == ID.JSFormData) {
         return temp;
       }
@@ -98,8 +98,8 @@ public class Plot3D extends AbstractEvaluator {
           // for (int i = 0; i < optionsArray.length; i++) {
           // options.add(Rule(optionsArray[i], allOptions.get(i)));
           // }
-          options.append(Rule(F.PlotRange, S.Automatic));
-          options.append(Rule(F.MeshRange, List(List(xMin, xMax), List(yMin, yMax))));
+          options.append(Rule(S.PlotRange, S.Automatic));
+          options.append(Rule(S.MeshRange, List(List(xMin, xMax), List(yMin, yMax))));
 
           graphics.appendAll(options, 1, options.size());
           return Show(graphics);

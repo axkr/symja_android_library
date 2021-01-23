@@ -114,7 +114,7 @@ public class DoubleToMMA {
   public static void doubleToMMA(
       StringBuilder buf, double value, int exponent, int significantFigures) {
     try {
-      doubleToMMA((Appendable) buf, value, exponent, significantFigures, false);
+      doubleToMMA(buf, value, exponent, significantFigures, false);
     } catch (IOException ioex) {
       ioex.printStackTrace();
     }

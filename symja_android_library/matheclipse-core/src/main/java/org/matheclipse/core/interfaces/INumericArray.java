@@ -1,13 +1,5 @@
 package org.matheclipse.core.interfaces;
 
-import java.util.function.BiFunction;
-import java.util.function.Function;
-
-import org.hipparchus.linear.FieldMatrix;
-import org.hipparchus.linear.FieldVector;
-import org.matheclipse.core.expression.data.SparseArrayExpr;
-import org.matheclipse.parser.trie.Trie;
-
 public interface INumericArray extends IDataExpr<Object> {
 
   /**
@@ -18,17 +10,32 @@ public interface INumericArray extends IDataExpr<Object> {
   public int[] getDimension();
 
   /**
+   * Get the name of the type of the numeric array.
+   *
+   * @return
+   */
+  public String getStringType();
+
+  /**
    * Get the type of the numeric array.
    *
    * @return
    */
-  public String getType();
+  public byte getType();
 
+  /**
+   * Get the value at the current position as an {@link IExpr} object
+   *
+   * @param position
+   * @return
+   */
   public IExpr get(int position);
 
   /** Returns <code>true</code> for a numeric array object */
+  @Override
   public boolean isNumericArray();
 
+  @Override
   public IASTMutable normal(boolean nilIfUnevaluated);
 
   public IASTMutable normal(int[] dims);

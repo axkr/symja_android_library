@@ -6,7 +6,6 @@ import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.interfaces.ISymbol;
-import org.matheclipse.core.patternmatching.IPatternMap.PatternMap;
 import org.matheclipse.core.patternmatching.PatternMatcher.StackMatcher;
 
 /**
@@ -27,6 +26,7 @@ public class FlatOrderlessStepVisitor extends FlatStepVisitor implements IStepVi
    * @param patternMap
    * @deprecated used only for JUnit tests
    */
+  @Deprecated
   public FlatOrderlessStepVisitor(
       final ISymbol sym,
       IAST lhsPatternAST,

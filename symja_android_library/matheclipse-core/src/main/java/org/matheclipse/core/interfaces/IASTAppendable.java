@@ -86,8 +86,7 @@ public interface IASTAppendable extends IASTMutable {
    */
   public static Collector<IExpr, ?, IASTAppendable> toAST(
       final IExpr head, final int initialCapacity) {
-    final Supplier<IASTAppendable> supplier =
-        () -> (IASTAppendable) F.ast(head, initialCapacity, false);
+    final Supplier<IASTAppendable> supplier = () -> F.ast(head, initialCapacity, false);
     return new CollectorImpl<IExpr, IASTAppendable, IASTAppendable>(
         supplier,
         IASTAppendable::append,
@@ -115,7 +114,7 @@ public interface IASTAppendable extends IASTMutable {
    */
   public static Collector<IExpr, ?, IASTAppendable> toAST(final IASTAppendable appendable) {
     return new CollectorImpl<IExpr, IASTAppendable, IASTAppendable>(
-        () -> (IASTAppendable) appendable.copyAppendable(),
+        () -> appendable.copyAppendable(),
         IASTAppendable::append,
         (r1, r2) -> {
           r1.append(r2);

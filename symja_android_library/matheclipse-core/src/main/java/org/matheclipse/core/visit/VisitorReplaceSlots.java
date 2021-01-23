@@ -1,7 +1,9 @@
 package org.matheclipse.core.visit;
 
+import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.expression.IntegerSym;
+import org.matheclipse.core.expression.S;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IASTAppendable;
 import org.matheclipse.core.interfaces.IASTDataset;
@@ -34,11 +36,15 @@ public class VisitorReplaceSlots extends VisitorExpr {
   }
 
   private IExpr getSlot(IStringX str) {
-    if (astSlots.arg1().isDataset()) {
-      return ((IASTDataset) astSlots.arg1()).getValue(str);
+    IExpr arg1 = astSlots.arg1();
+    if (arg1.isDataset()) {
+      return ((IASTDataset) arg1).getValue(str);
     }
-    if (astSlots.arg1().isAssociation()) {
-      return ((IAssociation) astSlots.arg1()).getValue(str);
+    if (arg1.isAST(S.Association)) {
+      arg1 = EvalEngine.get().evaluate(arg1);
+    }
+    if (arg1.isAssociation()) {
+      return ((IAssociation) arg1).getValue(str);
     }
     return F.NIL;
   }
@@ -46,7 +52,7 @@ public class VisitorReplaceSlots extends VisitorExpr {
   private IExpr getSlotSequence(IntegerSym ii) {
     int i = ii.toIntDefault(Integer.MIN_VALUE);
     if (i >= 0 && i <= astSlots.size()) {
-      IASTAppendable result = F.ast(F.Sequence, astSlots.size(), false);
+      IASTAppendable result = F.ast(S.Sequence, astSlots.size(), false);
       for (int j = i; j < astSlots.size(); j++) {
         result.append(astSlots.get(j));
       }
@@ -96,7 +102,7 @@ public class VisitorReplaceSlots extends VisitorExpr {
           IAST slotSequence = (IAST) arg;
           if (slotSequence.arg1().isInteger()) {
             // something may be evaluated - return a new IAST:
-            result = ast.copyAppendable();
+            result = ast.copyAppendable(astSlots.argSize());
             j = getSlotSequence(result, i, (IntegerSym) slotSequence.arg1());
             i++;
           }

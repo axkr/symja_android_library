@@ -1,10 +1,10 @@
 package org.matheclipse.core.reflection.system;
 
 import org.matheclipse.core.eval.EvalEngine;
-import org.matheclipse.core.eval.exception.Validate;
 import org.matheclipse.core.eval.interfaces.AbstractFunctionEvaluator;
 import org.matheclipse.core.eval.interfaces.IFunctionEvaluator;
 import org.matheclipse.core.expression.F;
+import org.matheclipse.core.expression.S;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IASTAppendable;
 import org.matheclipse.core.interfaces.IExpr;
@@ -41,13 +41,13 @@ public class InverseFunction extends AbstractFunctionEvaluator {
       IExpr f = arg1.first();
       if (f.isAST()) {
         ISymbol dummy = F.Dummy(engine);
-        IAST[] arr = Eliminate.eliminateSlot(F.Equal((IAST) f, dummy), F.Slot1, engine);
+        IAST[] arr = Eliminate.eliminateSlot(F.Equal(f, dummy), F.Slot1, engine);
         if (arr != null) {
           return F.Function(F.subst(arr[1].second(), F.Rule(dummy, F.Slot1)));
         }
       }
     } else if (arg1.isBuiltInSymbol()) {
-      if (arg1.equals(F.Abs)) {
+      if (arg1.equals(S.Abs)) {
         engine.printMessage("InverseFunction: using of inverse functions may omit some values.");
       }
       IExpr temp = getUnaryInverseFunction((ISymbol) arg1);

@@ -11,7 +11,6 @@ import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.exception.ValidateException;
 import org.matheclipse.core.eval.interfaces.AbstractCoreFunctionEvaluator;
 import org.matheclipse.core.eval.interfaces.AbstractCorePredicateEvaluator;
-import org.matheclipse.core.eval.interfaces.IFunctionEvaluator;
 import org.matheclipse.core.eval.util.OptionArgs;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.expression.S;
@@ -28,6 +27,7 @@ import org.matheclipse.core.patternmatching.IPatternMatcher;
 import org.matheclipse.core.patternmatching.PatternMatcher;
 import org.matheclipse.core.visit.IVisitorBoolean;
 import org.matheclipse.core.visit.VisitorBooleanLevelSpecification;
+import org.matheclipse.parser.client.FEConfig;
 
 public class PredicateQ {
 
@@ -287,6 +287,7 @@ public class PredicateQ {
       return S.False;
     }
 
+    @Override
     public int[] expectedArgSize(IAST ast) {
       return ARGS_1_3;
     }
@@ -502,6 +503,7 @@ public class PredicateQ {
       return F.NIL;
     }
 
+    @Override
     public int[] expectedArgSize(IAST ast) {
       return ARGS_1_2_1;
     }
@@ -604,6 +606,7 @@ public class PredicateQ {
       return S.False;
     }
 
+    @Override
     public int[] expectedArgSize(IAST ast) {
       return ARGS_2_2_1;
     }
@@ -694,6 +697,7 @@ public class PredicateQ {
       return S.False;
     }
 
+    @Override
     public int[] expectedArgSize(IAST ast) {
       return ARGS_1_2;
     }
@@ -784,6 +788,7 @@ public class PredicateQ {
       return new PatternMatcher(pattern);
     }
 
+    @Override
     public int[] expectedArgSize(IAST ast) {
       return ARGS_1_INFINITY_1;
     }
@@ -945,6 +950,7 @@ public class PredicateQ {
       return S.True;
     }
 
+    @Override
     public int[] expectedArgSize(IAST ast) {
       return ARGS_1_1;
     }
@@ -984,35 +990,45 @@ public class PredicateQ {
         return expr.isZero();
       }
       if (expr.isAST()) {
-        IExpr temp =
-            ((IAST) expr)
-                .replace( //
-                    x -> x.isNumericFunction(true), //
-                    x -> x.evalNumber());
-        if (temp != null) {
-          temp = engine.evaluate(temp);
-          if (temp.isZero()) {
-            return true;
-          }
-        }
-
-        if (expr.isPlus()) {
-          IExpr[] commonFactors = InternalFindCommonFactorPlus.findCommonFactors((IAST) expr, true);
-          if (commonFactors != null) {
-            temp = F.Simplify.of(engine, F.Times(commonFactors[0], commonFactors[1]));
-            if (temp.isNumber()) {
-              return temp.isZero();
+        try {
+          IExpr temp =
+              ((IAST) expr)
+                  .replace( //
+                      x -> x.isNumericFunction(true), //
+                      x -> {
+                        IExpr t = x.evalNumber();
+                        return t != null ? t : F.NIL;
+                      });
+          if (temp != null) {
+            temp = engine.evaluate(temp);
+            if (temp.isZero()) {
+              return true;
             }
-            temp = temp.evalNumber();
-            if (temp != null) {
-              if (temp.isZero()) {
-                return true;
+          }
+
+          if (expr.isPlus()) {
+            IExpr[] commonFactors =
+                InternalFindCommonFactorPlus.findCommonFactors((IAST) expr, true);
+            if (commonFactors != null) {
+              temp = S.Simplify.of(engine, F.Times(commonFactors[0], commonFactors[1]));
+              if (temp.isNumber()) {
+                return temp.isZero();
+              }
+              temp = temp.evalNumber();
+              if (temp != null) {
+                if (temp.isZero()) {
+                  return true;
+                }
               }
             }
           }
-        }
 
-        return isZeroTogether(expr, engine);
+          return isZeroTogether(expr, engine);
+        } catch (ValidateException ve) {
+          if (FEConfig.SHOW_STACKTRACE) {
+            ve.printStackTrace();
+          }
+        }
       }
       return false;
     }
@@ -1117,7 +1133,7 @@ public class PredicateQ {
      */
     @Override
     public boolean evalArg1Boole(final IExpr arg1, EvalEngine engine, OptionArgs options) {
-      IExpr option = options.getOption(F.GaussianIntegers);
+      IExpr option = options.getOption(S.GaussianIntegers);
       if (!option.isTrue()) {
         return evalArg1Boole(arg1, engine);
       }
@@ -1213,6 +1229,7 @@ public class PredicateQ {
       return S.False;
     }
 
+    @Override
     public int[] expectedArgSize(IAST ast) {
       return ARGS_1_1;
     }
@@ -1257,6 +1274,7 @@ public class PredicateQ {
       return S.True;
     }
 
+    @Override
     public int[] expectedArgSize(IAST ast) {
       return ARGS_1_1;
     }
@@ -1291,7 +1309,7 @@ public class PredicateQ {
         }
         return false;
       }
-      return F.Equal.ofQ(engine, expr1, expr2);
+      return S.Equal.ofQ(engine, expr1, expr2);
     }
 
     @Override
@@ -1334,6 +1352,7 @@ public class PredicateQ {
       return S.False;
     }
 
+    @Override
     public int[] expectedArgSize(IAST ast) {
       return ARGS_1_2;
     }
@@ -1407,6 +1426,7 @@ public class PredicateQ {
       return F.bool(ast.arg1().isValue());
     }
 
+    @Override
     public int[] expectedArgSize(IAST ast) {
       return ARGS_1_1;
     }
@@ -1498,6 +1518,7 @@ public class PredicateQ {
       return S.False;
     }
 
+    @Override
     public int[] expectedArgSize(IAST ast) {
       return ARGS_1_2;
     }
@@ -1518,7 +1539,7 @@ public class PredicateQ {
         return expr.isZero();
       }
       if (expr.isPlusTimesPower()) {
-        expr = F.Together.of(engine, expr);
+        expr = S.Together.of(engine, expr);
         if (expr.isNumber()) {
           return expr.isZero();
         }

@@ -26,6 +26,7 @@ import com.google.common.cache.CacheBuilder;
 /** General configuration settings. */
 public class Config {
 
+  /** Symja ASCII Art String */
   public static final String SYMJA = //
       "     _______.____    ____ .___  ___.        __       ___      \n"
           + "    /       |\\   \\  /   / |   \\/   |       |  |     /   \\     \n"
@@ -35,6 +36,7 @@ public class Config {
           + "|_______/        |__|     |__|  |__|  \\______/  /__/     \\__\\ \n"
           + "                                                              \n";
 
+  /** Copyright message */
   public static final String COPYRIGHT = //
       "\nCopyright (C) 2009 - 2021 - the Symja team.\n"
           + "This program comes with ABSOLUTELY NO WARRANTY.\n"
@@ -246,7 +248,7 @@ public class Config {
    *
    * @deprecated use {@link FEConfig#MACHINE_PRECISION}
    */
-  public static final long MACHINE_PRECISION = FEConfig.MACHINE_PRECISION;
+  @Deprecated public static final long MACHINE_PRECISION = FEConfig.MACHINE_PRECISION;
 
   /** The maximum precision which could be requested from a user for numerical calculations. */
   public static long MAX_PRECISION_APFLOAT = Short.MAX_VALUE;
@@ -617,158 +619,94 @@ public class Config {
    */
   public static final String MATHCELL_PAGE = //
       "<html>\n"
-          + //
-          "<head>\n"
-          + //
-          "<meta charset=\"utf-8\">\n"
-          + //
-          "<title>MathCell</title>\n"
-          + //
-          "<link rel=\"stylesheet\" type=\"text/css\" href=\"style.css\">\n"
-          + //
-          "</head>\n"
-          + //
-          "\n"
-          + //
-          "<body>\n"
-          + //
-          "<script src=\"https://cdn.jsdelivr.net/gh/paulmasson/math@1.4.3/build/math.js\"></script>"
-          + //
-          "\n"
-          + //
-          "\n"
-          + //
-          "<script src=\"https://cdn.jsdelivr.net/gh/paulmasson/mathcell@1.9.0/build/mathcell.js\"></script>\n"
-          + //
-          "<script src=\"https://cdn.jsdelivr.net/gh/mathjax/MathJax@2.7.5/MathJax.js?config=TeX-AMS_HTML\"></script>"
-          + //
-          "\n"
-          + //
-          "<div class=\"mathcell\" style=\"width: 100%; height: 100%; padding: .25in .5in .5in .5in;\">\n"
-          + //
-          "<script>\n"
-          + //
-          "\n"
-          + //
-          "var parent = document.currentScript.parentNode;\n"
-          + //
-          "\n"
-          + //
-          "var id = generateId();\n"
-          + //
-          "parent.id = id;\n"
-          + //
-          "\n"
-          + //
-          "`1`\n"
-          + //
-          "\n"
-          + //
-          "parent.update( id );\n"
-          + //
-          "\n"
-          + //
-          "</script>\n"
-          + //
-          "</div>\n"
-          + //
-          "\n"
-          + //
-          "</body>\n"
-          + //
-          "</html>"; //
+          + "<head>\n"
+          + "<meta charset=\"utf-8\">\n"
+          + "<title>MathCell</title>\n"
+          + "<link rel=\"stylesheet\" type=\"text/css\" href=\"style.css\">\n"
+          + "</head>\n"
+          + "\n"
+          + "<body>\n"
+          + "<script src=\"https://cdn.jsdelivr.net/gh/paulmasson/math@1.4.4/build/math.js\"></script>"
+          + "\n"
+          + "\n"
+          + "<script src=\"https://cdn.jsdelivr.net/gh/paulmasson/mathcell@1.9.0/build/mathcell.js\"></script>\n"
+          + "<script src=\"https://cdn.jsdelivr.net/gh/mathjax/MathJax@2.7.5/MathJax.js?config=TeX-AMS_HTML\"></script>"
+          + "\n"
+          + "<div class=\"mathcell\" style=\"width: 100%; height: 100%; padding: .25in .5in .5in .5in;\">\n"
+          + "<script>\n"
+          + "\n"
+          + "var parent = document.currentScript.parentNode;\n"
+          + "\n"
+          + "var id = generateId();\n"
+          + "parent.id = id;\n"
+          + "\n"
+          + "`1`\n"
+          + "\n"
+          + "parent.update( id );\n"
+          + "\n"
+          + "</script>\n"
+          + "</div>\n"
+          + "\n"
+          + "</body>\n"
+          + "</html>"; //
 
   /** HTML template for JSXGraph */
   public static final String JSXGRAPH_PAGE = //
       "<html>\n"
-          + //
-          "<head>\n"
-          + //
-          "<meta charset=\"utf-8\">\n"
-          + //
-          "<title>JSXGraph</title>\n"
-          + //
-          "</head>\n"
-          + //
-          "\n"
-          + //
-          "<body>\n"
-          + //
-          "\n"
-          + //
-          "<link rel=\"stylesheet\" type=\"text/css\" href=\"https://cdnjs.cloudflare.com/ajax/libs/jsxgraph/1.1.0/jsxgraph.min.css\" />\n"
-          + //
-          "<script src=\"https://cdn.jsdelivr.net/gh/paulmasson/math@1.4.3/build/math.js\"></script>\n"
-          + "<script src=\"https://cdnjs.cloudflare.com/ajax/libs/jsxgraph/1.1.0/jsxgraphcore.min.js\"\n"
-          + //
-          "        type='text/javascript'></script>\n"
-          + //
-          "<script src=\"https://cdnjs.cloudflare.com/ajax/libs/jsxgraph/1.1.0/geonext.min.js\"\n"
-          + //
-          "        type='text/javascript'></script>\n"
-          + //
-          "\n"
-          + //
-          "<div id=\"jxgbox\" class=\"jxgbox\" style=\"display: flex; width:99%; height:99%; margin: 0; flex-direction: column; overflow: hidden\">\n"
-          + //
-          "<script>\n"
-          + //
-          // "var board = JXG.JSXGraph.initBoard('jxgbox', {axis:true});\n" + //
+          + "<head>\n"
+          + "<meta charset=\"utf-8\">\n"
+          + "<title>JSXGraph</title>\n"
+          + "</head>\n"
+          + "\n"
+          + "<body>\n"
+          + "\n"
+          + "<link rel=\"stylesheet\" type=\"text/css\" href=\"https://cdnjs.cloudflare.com/ajax/libs/jsxgraph/1.2.1/jsxgraph.min.css\" />\n"
+          + "<script src=\"https://cdn.jsdelivr.net/gh/paulmasson/math@1.4.4/build/math.js\"></script>\n"
+          + "<script src=\"https://cdnjs.cloudflare.com/ajax/libs/jsxgraph/1.2.1/jsxgraphcore.min.js\"\n"
+          + "        type='text/javascript'></script>\n"
+          + "<script src=\"https://cdnjs.cloudflare.com/ajax/libs/jsxgraph/1.2.1/geonext.min.js\"\n"
+          + "        type='text/javascript'></script>\n"
+          + "\n"
+          + "<div id=\"jxgbox\" class=\"jxgbox\" style=\"display: flex; width:99%; height:99%; margin: 0; flex-direction: column; overflow: hidden\">\n"
+          + "<script>\n"
+          +
+          // "var board = JXG.JSXGraph.initBoard('jxgbox', {axis:true});\n" +
           // ,boundingbox:[-7.0,5.0,4.0,-3.0]
-          // "board.suspendUpdate();\n" + //
+          // "board.suspendUpdate();\n" +
           "`1`\n"
-          + //
-          // "board.unsuspendUpdate();\n" + //
+          +
+          // "board.unsuspendUpdate();\n" +
           "</script>\n"
-          + //
-          "</div>\n"
-          + //
-          "\n"
-          + //
-          "</body>\n"
-          + //
-          "</html>"; //
+          + "</div>\n"
+          + "\n"
+          + "</body>\n"
+          + "</html>"; //
 
   /** HTML template for Plotly */
   public static final String PLOTLY_PAGE = //
       "<html>\n"
-          + //
-          "<head>\n"
-          + //
-          "<meta charset=\"utf-8\">\n"
-          + //
-          "<title>Plotly</title>\n"
-          + //
-          "    <script src=\"https://cdn.plot.ly/plotly-latest.min.js\"></script>\r\n"
+          + "<head>\n"
+          + "<meta charset=\"utf-8\">\n"
+          + "<title>Plotly</title>\n"
+          + "    <script src=\"https://cdn.plot.ly/plotly-latest.min.js\"></script>\r\n"
           + "</head>\r\n"
           + "<body>\n"
-          + //
-          "    <div id='plotly' ></div>"
-          + //
-          "`1`\n"
-          + //
-          "</body>\n"
-          + //
-          "</html>"; //
+          + "    <div id='plotly' ></div>"
+          + "`1`\n"
+          + "</body>\n"
+          + "</html>"; //
 
   /** HTML template */
   public static final String HTML_PAGE = //
       "<html>\n"
-          + //
-          "<head>\n"
-          + //
-          "<meta charset=\"utf-8\">\n"
-          + //
-          "<title>HTML</title>\n"
-          + //
-          "</head>\n"
+          + "<head>\n"
+          + "<meta charset=\"utf-8\">\n"
+          + "<title>HTML</title>\n"
+          + "</head>\n"
           + "<body>\n"
-          + //
-          "`1`\n"
-          + //
-          "</body>\n"
-          + //
-          "</html>"; //
+          + "`1`\n"
+          + "</body>\n"
+          + "</html>"; //
 
   public static final double DEFAULT_CHOP_DELTA = 1.0e-10;
 

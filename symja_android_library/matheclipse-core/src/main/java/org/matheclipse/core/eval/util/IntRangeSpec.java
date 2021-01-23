@@ -1,6 +1,6 @@
 package org.matheclipse.core.eval.util;
 
-import org.matheclipse.core.expression.F;
+import org.matheclipse.core.expression.S;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IExpr;
 
@@ -82,7 +82,7 @@ public class IntRangeSpec {
   public static IntRangeSpec createNonNegative(IExpr specification) {
     int min = 0;
     int max = Integer.MAX_VALUE;
-    if (specification.equals(F.All) || specification.isInfinity()) {
+    if (specification.equals(S.All) || specification.isInfinity()) {
       // all from 0 to Integer.MAX_VALUE
     } else if (specification.isInteger()) {
       // k - at most k elements
@@ -90,14 +90,14 @@ public class IntRangeSpec {
       if (max < 0) {
         return null;
       }
-    } else if (specification.isAST(F.List, 2)) {
+    } else if (specification.isAST(S.List, 2)) {
       // {k} - exactly k
       min = specification.first().toIntDefault(-1);
       if (min < 0) {
         return null;
       }
       max = min;
-    } else if (specification.isAST(F.List, 3)) {
+    } else if (specification.isAST(S.List, 3)) {
       // {min, max}
       min = specification.first().toIntDefault(-1);
       if (min < 0) {

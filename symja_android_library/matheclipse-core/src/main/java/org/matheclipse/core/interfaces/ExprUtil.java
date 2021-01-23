@@ -1,6 +1,7 @@
 package org.matheclipse.core.interfaces;
 
 import org.matheclipse.core.expression.F;
+import org.matheclipse.core.expression.S;
 import org.matheclipse.core.interfaces.IExpr.COMPARE_TERNARY;
 
 public class ExprUtil {
@@ -18,10 +19,10 @@ public class ExprUtil {
 
   public static IExpr convertToExpr(COMPARE_TERNARY temp) {
     if (temp == COMPARE_TERNARY.TRUE) {
-      return F.True;
+      return S.True;
     }
     if (temp == COMPARE_TERNARY.FALSE) {
-      return F.False;
+      return S.False;
     }
     return F.NIL;
   }

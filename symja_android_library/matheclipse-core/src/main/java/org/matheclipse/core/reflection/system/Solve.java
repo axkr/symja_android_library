@@ -719,7 +719,7 @@ public class Solve extends AbstractFunctionEvaluator {
           if (expr.isNumber() || expr.isInfinity() || expr.isNegativeInfinity()) {
             throw new NoSolution(NoSolution.WRONG_SOLUTION);
           }
-          if (!F.PossibleZeroQ.ofQ(engine, expr)) {
+          if (!S.PossibleZeroQ.ofQ(engine, expr)) {
             throw new NoSolution(NoSolution.NO_SOLUTION_FOUND);
           }
         }
@@ -882,7 +882,7 @@ public class Solve extends AbstractFunctionEvaluator {
                 numerator, denominator, F.List(sym), numerator.isNumericMode(), engine);
       }
       if (temp.isPresent()) {
-        if (temp.isSameHeadSizeGE(F.List, 2)) {
+        if (temp.isSameHeadSizeGE(S.List, 2)) {
           IAST rootsList = (IAST) temp;
           IASTAppendable resultList = F.ListAlloc(rootsList.size());
           for (IExpr root : rootsList) {
@@ -922,7 +922,7 @@ public class Solve extends AbstractFunctionEvaluator {
     } else {
       numerator = expr;
     }
-    return F.binaryAST2(F.List, numerator, denominator);
+    return F.binaryAST2(S.List, numerator, denominator);
   }
 
   @Override
@@ -930,6 +930,7 @@ public class Solve extends AbstractFunctionEvaluator {
     return of(ast, false, engine);
   }
 
+  @Override
   public int[] expectedArgSize(IAST ast) {
     return IFunctionEvaluator.ARGS_2_3;
   }
@@ -946,14 +947,15 @@ public class Solve extends AbstractFunctionEvaluator {
       if (ast.arg1().isEmptyList()) {
         return F.List(F.CEmptyList);
       }
-      IAST userDefinedVariables = Validate.checkIsVariableOrVariableList(ast, 2, engine);
+      IAST userDefinedVariables =
+          Validate.checkIsVariableOrVariableList(ast, 2, ast.topHead(), engine);
       if (userDefinedVariables.isPresent()) {
         IAST equationVariables = VariablesSet.getVariables(ast.arg1());
         if (userDefinedVariables.isEmpty()) {
           userDefinedVariables = equationVariables;
         }
 
-        ISymbol domain = F.Complexes;
+        ISymbol domain = S.Complexes;
         if (ast.isAST3()) {
           if (!ast.arg3().isSymbol()) {
             return engine.printMessage(
@@ -962,11 +964,11 @@ public class Solve extends AbstractFunctionEvaluator {
                     + ast.arg3().toString());
           }
           domain = (ISymbol) ast.arg3();
-          if (domain.equals(F.Booleans)) {
+          if (domain.equals(S.Booleans)) {
             return BooleanFunctions.solveInstances(
                 ast.arg1(), userDefinedVariables, Integer.MAX_VALUE);
           }
-          if (domain.equals(F.Integers)) {
+          if (domain.equals(S.Integers)) {
             if (!userDefinedVariables.isEmpty()) {
               IAST equationsAndInequations = Validate.checkEquationsAndInequations(ast, 1);
               try {
@@ -993,7 +995,7 @@ public class Solve extends AbstractFunctionEvaluator {
             }
             return F.NIL;
           }
-          if (!domain.equals(F.Reals) && !domain.equals(F.Complexes)) {
+          if (!domain.equals(S.Reals) && !domain.equals(S.Complexes)) {
             return engine.printMessage(
                 ast.topHead()
                     + ": domain definition expected at position 3 instead of "
@@ -1027,7 +1029,7 @@ public class Solve extends AbstractFunctionEvaluator {
       if (FEConfig.SHOW_STACKTRACE) {
         ve.printStackTrace();
       }
-      return engine.printMessage(F.Solve, ve);
+      return engine.printMessage(S.Solve, ve);
     } catch (RuntimeException rex) {
       if (FEConfig.SHOW_STACKTRACE) {
         rex.printStackTrace();
@@ -1045,7 +1047,7 @@ public class Solve extends AbstractFunctionEvaluator {
    * @return
    */
   private static IExpr checkDomain(IExpr expr, ISymbol domain) {
-    if (expr.isList() && domain.equals(F.Reals)) {
+    if (expr.isList() && domain.equals(S.Reals)) {
       if (expr.isListOfLists()) {
         IASTAppendable result = F.ListAlloc(expr.size());
         IASTAppendable appendable;
@@ -1115,7 +1117,7 @@ public class Solve extends AbstractFunctionEvaluator {
       if (!res.isPresent()) {
         if (numericFlag) {
           // find numerically find start value 0
-          res = F.FindRoot.of(engine, termsEqualZeroList.arg1(), F.List(firstVariable, F.C0));
+          res = S.FindRoot.of(engine, termsEqualZeroList.arg1(), F.List(firstVariable, F.C0));
         }
       }
       if (!res.isList() || !res.isFree(t -> t.isIndeterminate() || t.isDirectedInfinity(), true)) {
@@ -1148,7 +1150,7 @@ public class Solve extends AbstractFunctionEvaluator {
               IAST listOfRules = (IAST) subResult.getAt(i);
               replaced = oneVariableRule.second().replaceAll(listOfRules);
               if (replaced.isPresent()) {
-                replaced = F.Simplify.of(engine, replaced);
+                replaced = S.Simplify.of(engine, replaced);
                 appendable = listOfRules.copyAppendable();
                 appendable.append(F.Rule(firstVariable, replaced));
                 result.append(appendable);
@@ -1240,7 +1242,7 @@ public class Solve extends AbstractFunctionEvaluator {
     for (int i = 1; i < termsEqualZeroList.size(); i++) {
       IExpr equationTerm = termsEqualZeroList.get(i);
       if (equationTerm.isPlus()) {
-        IExpr eq = F.Equal.of(equationTerm, F.C0);
+        IExpr eq = S.Equal.of(equationTerm, F.C0);
         if (eq.isEqual()) {
           IExpr arg1 = eq.first();
           if (arg1.isPlus2()) {
@@ -1248,9 +1250,9 @@ public class Solve extends AbstractFunctionEvaluator {
               // Sqrt() + Sqrt() == constant
               termsEqualZeroList.set(
                   i,
-                  F.Subtract.of(
-                      F.Expand.of(F.Sqr(arg1.second())),
-                      F.Expand.of(F.Sqr(F.Subtract(eq.second(), arg1.first())))));
+                  S.Subtract.of(
+                      S.Expand.of(F.Sqr(arg1.second())),
+                      S.Expand.of(F.Sqr(F.Subtract(eq.second(), arg1.first())))));
             }
           }
         }
@@ -1372,7 +1374,7 @@ public class Solve extends AbstractFunctionEvaluator {
         } else {
           if (termEQZero.isAST()) {
             // try factoring
-            termEQZero = F.Factor.of(engine, termEQZero);
+            termEQZero = S.Factor.of(engine, termEQZero);
 
             if (termEQZero.isTimes()) {
               solveTimesAST(
@@ -1432,7 +1434,7 @@ public class Solve extends AbstractFunctionEvaluator {
             } else {
               if (replaceAll.isPlusTimesPower()
                   && //
-                  F.PossibleZeroQ.ofQ(engine, replaceAll)) {
+                  S.PossibleZeroQ.ofQ(engine, replaceAll)) {
                 subSolutionSet.add(solution);
               }
             }
@@ -1446,7 +1448,7 @@ public class Solve extends AbstractFunctionEvaluator {
               if (numericFlag) {
                 // find numerically with start value 0
                 res =
-                    F.FindRoot.ofNIL(
+                    S.FindRoot.ofNIL(
                         engine, clonedEqualZeroList.arg1(), F.List(firstVariable, F.C0));
               }
             }
@@ -1458,7 +1460,6 @@ public class Solve extends AbstractFunctionEvaluator {
             for (int k = 1; k < subResult.size(); k++) {
               subSolutionSet.add(solveNumeric(subResult.get(i), numericFlag, engine));
             }
-            continue;
           }
         }
       }

@@ -9,6 +9,7 @@ import java.util.function.Function;
  *
  * @deprecated
  */
+@Deprecated
 public abstract class BinaryFunctorImpl<T> implements BiFunction<T, T, T> {
   /**
    * Executes the function and returns the result.

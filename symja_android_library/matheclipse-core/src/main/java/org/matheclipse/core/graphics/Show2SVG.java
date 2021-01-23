@@ -8,7 +8,7 @@ import org.matheclipse.core.basic.Config;
 import org.matheclipse.core.convert.RGBColor;
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.util.OptionArgs;
-import org.matheclipse.core.expression.F;
+import org.matheclipse.core.expression.S;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.interfaces.ISignedNumber;
@@ -22,11 +22,11 @@ public class Show2SVG {
     for (int i = 1; i < ast.size(); i++) {
       if (ast.get(i).isSymbol()) {
         //
-      } else if (ast.get(i).isSameHeadSizeGE(F.Line, 2)) {
+      } else if (ast.get(i).isSameHeadSizeGE(S.Line, 2)) {
         lineDimension(ast.getAST(i), dim);
-      } else if (ast.get(i).isSameHeadSizeGE(F.Point, 2)) {
+      } else if (ast.get(i).isSameHeadSizeGE(S.Point, 2)) {
         pointDimension(ast.getAST(i), dim);
-      } else if (ast.get(i).isSameHeadSizeGE(F.Rectangle, 1)) {
+      } else if (ast.get(i).isSameHeadSizeGE(S.Rectangle, 1)) {
         rectangleDimension(ast.getAST(i), dim);
       }
     }
@@ -34,13 +34,13 @@ public class Show2SVG {
 
   private static void elementToSVG(IAST ast, StringBuilder buf, Dimensions2D dim) {
     for (int i = 1; i < ast.size(); i++) {
-      if (ast.get(i).isAST(F.RGBColor, 4)) {
+      if (ast.get(i).isAST(S.RGBColor, 4)) {
         dim.setColorRGB((IAST) ast.get(i));
-      } else if (ast.get(i).isSameHeadSizeGE(F.Line, 2)) {
+      } else if (ast.get(i).isSameHeadSizeGE(S.Line, 2)) {
         lineToSVG(ast.getAST(i), buf, dim);
-      } else if (ast.get(i).isSameHeadSizeGE(F.Point, 2)) {
+      } else if (ast.get(i).isSameHeadSizeGE(S.Point, 2)) {
         pointToSVG(ast.getAST(i), buf, dim);
-      } else if (ast.get(i).isSameHeadSizeGE(F.Rectangle, 2)) {
+      } else if (ast.get(i).isSameHeadSizeGE(S.Rectangle, 2)) {
         rectangleToSVG(ast.getAST(i), buf, dim);
       }
     }
@@ -54,12 +54,12 @@ public class Show2SVG {
     dim.color = RGBColor.BLUE;
     if (numericAST.size() > 2) {
       final OptionArgs options = new OptionArgs(numericAST.topHead(), numericAST, 2, engine);
-      IExpr option = options.getOption(F.PlotRange);
+      IExpr option = options.getOption(S.PlotRange);
       if (option.isListOfLists() && option.size() == 3) {
         IAST list = (IAST) option;
         dim.setPlotRange(list.getAST(1), list.getAST(2));
       }
-      option = options.getOption(F.Axes);
+      option = options.getOption(S.Axes);
       if (option.isTrue()) {
         dim.setAxes(true);
       }
@@ -216,12 +216,12 @@ public class Show2SVG {
       if (arg1.isListOfLists()) {
         IAST list = (IAST) arg1;
         for (int i = 1; i < list.size(); i++) {
-          if (list.get(i).isAST(F.List, 3)) {
+          if (list.get(i).isAST(S.List, 3)) {
             IAST point = (IAST) list.get(i);
             singlePointDimensions(point, dim);
           }
         }
-      } else if (arg1.isAST(F.List, 3)) {
+      } else if (arg1.isAST(S.List, 3)) {
         IAST point = (IAST) ast.arg1();
 
         singlePointDimensions(point, dim);
@@ -247,12 +247,12 @@ public class Show2SVG {
       if (arg1.isListOfLists()) {
         IAST list = (IAST) arg1;
         for (int i = 1; i < list.size(); i++) {
-          if (list.get(i).isAST(F.List, 3)) {
+          if (list.get(i).isAST(S.List, 3)) {
             IAST point = (IAST) list.get(i);
             singlePointToSVG(point, buf, dim);
           }
         }
-      } else if (arg1.isAST(F.List, 3)) {
+      } else if (arg1.isAST(S.List, 3)) {
         IAST point = (IAST) arg1;
         singlePointToSVG(point, buf, dim);
       }
@@ -292,7 +292,7 @@ public class Show2SVG {
 
   private static void rectangleDimension(IAST ast, Dimensions2D dim) {
     if (ast.size() == 2) {
-      if (ast.arg1().isAST(F.List, 3)) {
+      if (ast.arg1().isAST(S.List, 3)) {
         IAST list1 = (IAST) ast.arg1();
 
         double x1 = ((ISignedNumber) list1.arg1()).doubleValue();
@@ -302,7 +302,7 @@ public class Show2SVG {
 
         dim.minMax(x1, x2, y1, y2);
       }
-    } else if (ast.size() == 3 && ast.arg1().isAST(F.List, 3) && ast.arg2().isAST(F.List, 3)) {
+    } else if (ast.size() == 3 && ast.arg1().isAST(S.List, 3) && ast.arg2().isAST(S.List, 3)) {
       IAST list1 = (IAST) ast.arg1();
       IAST list2 = (IAST) ast.arg2();
 
@@ -324,7 +324,7 @@ public class Show2SVG {
       double yMin = dim.yMin;
       double yMax = dim.yMax;
       if (ast.size() == 2) {
-        if (ast.arg1().isAST(F.List, 3)) {
+        if (ast.arg1().isAST(S.List, 3)) {
           IAST list1 = (IAST) ast.arg1();
           buf.append("<rect ");
           double xAxisScalingFactor = width / (xMax - xMin);
@@ -344,7 +344,7 @@ public class Show2SVG {
           buf.append("\" height=\"");
           buf.append(FORMATTER.format(h * yAxisScalingFactor));
         }
-      } else if (ast.size() == 3 && ast.arg1().isAST(F.List, 3) && ast.arg2().isAST(F.List, 3)) {
+      } else if (ast.size() == 3 && ast.arg1().isAST(S.List, 3) && ast.arg2().isAST(S.List, 3)) {
         IAST list1 = (IAST) ast.arg1();
         IAST list2 = (IAST) ast.arg2();
         buf.append("<rect ");
@@ -380,9 +380,9 @@ public class Show2SVG {
   }
 
   public static void toSVG(IAST ast, StringBuilder buf) {
-    if (ast.size() > 1 && ast.arg1().isSameHeadSizeGE(F.Graphics, 2)) {
+    if (ast.size() > 1 && ast.arg1().isSameHeadSizeGE(S.Graphics, 2)) {
       graphicsToSVG(ast.getAST(1), buf);
-    } else if (ast.size() > 1 && ast.arg1().isSameHeadSizeGE(F.Graphics3D, 2)) {
+    } else if (ast.size() > 1 && ast.arg1().isSameHeadSizeGE(S.Graphics3D, 2)) {
       Show3D2ThreeJS.graphics3dToSVG(ast.getAST(1), buf);
     }
   }

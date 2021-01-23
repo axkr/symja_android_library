@@ -6,7 +6,6 @@ import org.gavaghan.geodesy.GeodeticMeasurement;
 import org.gavaghan.geodesy.GlobalPosition;
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.interfaces.AbstractEvaluator;
-import org.matheclipse.core.eval.interfaces.IFunctionEvaluator;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.expression.S;
 import org.matheclipse.core.expression.data.GeoPositionExpr;
@@ -44,7 +43,7 @@ public class GeodesyFunctions {
         return F.UnitConvert(
             F.Quantity(F.num(gm.getPointToPointDistance()), F.stringx("m")), F.stringx("mi"));
       }
-      if (ast.arg1().isAST(F.List, 3) && ast.arg2().isAST(F.List, 3)) {
+      if (ast.arg1().isAST(S.List, 3) && ast.arg2().isAST(S.List, 3)) {
         GeodeticCalculator geoCalc = new GeodeticCalculator();
         Ellipsoid reference = Ellipsoid.WGS84;
 

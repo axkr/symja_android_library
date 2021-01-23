@@ -13,10 +13,12 @@ import org.matheclipse.core.interfaces.ISymbol;
 
 public abstract class AbstractAssumptions implements IAssumptions {
 
+  @Override
   public IAssumptions addAssumption(IAST ast) {
     return null;
   }
 
+  @Override
   public IAST distribution(IExpr expr) {
     return F.NIL;
   }
@@ -38,13 +40,13 @@ public abstract class AbstractAssumptions implements IAssumptions {
       return S.False;
     }
     if (expr.isSymbol()) {
-      if (expr.equals(F.Degree)) {
+      if (expr.equals(S.Degree)) {
         return S.False;
       }
-      if (expr.equals(F.Pi)) {
+      if (expr.equals(S.Pi)) {
         return S.False;
       }
-      if (expr.equals(F.E)) {
+      if (expr.equals(S.E)) {
         return S.False;
       }
 
@@ -79,7 +81,7 @@ public abstract class AbstractAssumptions implements IAssumptions {
    * @return
    */
   public static ISymbol assumeArray(final IExpr expr) {
-    if (expr.isAST(F.Arrays, 4)) {
+    if (expr.isAST(S.Arrays, 4)) {
       return S.True;
     }
     return null;
@@ -402,8 +404,8 @@ public abstract class AbstractAssumptions implements IAssumptions {
     if (expr.isDirectedInfinity()) {
       return S.False;
     }
-    if (expr == F.Undefined) {
-      return F.Undefined;
+    if (expr == S.Undefined) {
+      return S.Undefined;
     }
     IAssumptions assumptions = EvalEngine.get().getAssumptions();
     if (assumptions != null) {
@@ -434,7 +436,7 @@ public abstract class AbstractAssumptions implements IAssumptions {
       int size = ast.size();
       if (size == 2) {
         IExpr arg1 = ast.arg1();
-        if (symbol.equals(F.Log) && assumePositive(arg1) && assumeLessThan(arg1, F.C1)) {
+        if (symbol.equals(S.Log) && assumePositive(arg1) && assumeLessThan(arg1, F.C1)) {
           return true;
         }
       }
@@ -490,10 +492,10 @@ public abstract class AbstractAssumptions implements IAssumptions {
       int size = ast.size();
       if (size == 2) {
         IExpr arg1 = ast.arg1();
-        if (symbol.equals(F.Abs)) {
+        if (symbol.equals(S.Abs)) {
           return true;
         }
-        if (symbol.equals(F.Log) && assumeGreaterEqual(arg1, F.C1)) {
+        if (symbol.equals(S.Log) && assumeGreaterEqual(arg1, F.C1)) {
           return true;
         }
       }
@@ -555,10 +557,10 @@ public abstract class AbstractAssumptions implements IAssumptions {
       int size = ast.size();
       if (size == 2) {
         IExpr arg1 = ast.arg1();
-        if (symbol.equals(F.Abs) && (assumeNegative(arg1) || assumePositive(arg1))) {
+        if (symbol.equals(S.Abs) && (assumeNegative(arg1) || assumePositive(arg1))) {
           return true;
         }
-        if (symbol.equals(F.Log) && assumeGreaterThan(arg1, F.C1)) {
+        if (symbol.equals(S.Log) && assumeGreaterThan(arg1, F.C1)) {
           return true;
         }
       }

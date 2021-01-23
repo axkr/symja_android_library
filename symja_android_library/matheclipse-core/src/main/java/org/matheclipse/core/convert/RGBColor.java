@@ -18,7 +18,6 @@ package org.matheclipse.core.convert;
  */
 
 import java.io.Serializable;
-import java.util.Arrays;
 
 /**
  * The RGBColor class defines colors in the default sRGB color space or in the specified ColorSpace.
@@ -219,14 +218,11 @@ public class RGBColor implements Serializable {
     return getClass().getName()
         + "[r="
         + getRed()
-        + //$NON-NLS-1$
-        ",g="
+        + ",g="
         + getGreen()
-        + //$NON-NLS-1$
-        ",b="
+        + ",b="
         + getBlue()
-        + //$NON-NLS-1$
-        "]"; //$NON-NLS-1$
+        + "]"; //$NON-NLS-1$
   }
   /**
    * Compares the specified Object to the RGBColor.

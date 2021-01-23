@@ -1,6 +1,5 @@
 package org.matheclipse.core.interfaces;
 
-import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.expression.F;
 
 /** A numeric (double) number. */
@@ -18,6 +17,7 @@ public interface INum extends ISignedNumber {
 
   public INum add(INum val);
 
+  @Override
   public IInteger ceilFraction();
 
   public INum multiply(INum val);

@@ -38,7 +38,7 @@ public class Plot extends AbstractEvaluator {
   @Override
   public IExpr evaluate(final IAST ast, EvalEngine engine) {
     if (Config.USE_MANIPULATE_JS) {
-      IExpr temp = F.Manipulate.of(engine, ast);
+      IExpr temp = S.Manipulate.of(engine, ast);
       if (temp.headID() == ID.JSFormData) {
         return temp;
       }
@@ -104,18 +104,18 @@ public class Plot extends AbstractEvaluator {
           IAST plotRange;
           if (dim.isValidRange()) {
             plotRange =
-                Rule(F.PlotRange, F.List(F.List(dim.xMin, dim.xMax), F.List(dim.yMin, dim.yMax)));
+                Rule(S.PlotRange, F.List(F.List(dim.xMin, dim.xMax), F.List(dim.yMin, dim.yMax)));
           } else {
-            plotRange = Rule(F.PlotRange, S.Automatic);
+            plotRange = Rule(S.PlotRange, S.Automatic);
           }
           final IExpr options[] = {
             plotRange,
-            Rule(F.AxesStyle, S.Automatic),
-            Rule(F.AxesOrigin, List(F.C0, F.C0)),
-            Rule(F.Axes, S.True),
-            Rule(F.Background, F.White)
+            Rule(S.AxesStyle, S.Automatic),
+            Rule(S.AxesOrigin, List(F.C0, F.C0)),
+            Rule(S.Axes, S.True),
+            Rule(S.Background, S.White)
           };
-          graphics.appendAll(F.function(F.List, options), 1, options.length);
+          graphics.appendAll(F.function(S.List, options), 1, options.length);
           return Show(graphics);
         }
       } catch (RuntimeException rex) {

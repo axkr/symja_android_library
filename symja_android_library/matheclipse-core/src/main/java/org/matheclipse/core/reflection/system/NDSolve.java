@@ -4,7 +4,6 @@ import org.hipparchus.ode.AbstractIntegrator;
 import org.hipparchus.ode.ODEState;
 import org.hipparchus.ode.ODEStateAndDerivative;
 import org.hipparchus.ode.OrdinaryDifferentialEquation;
-import org.hipparchus.ode.nonstiff.ClassicalRungeKuttaIntegrator;
 import org.hipparchus.ode.nonstiff.DormandPrince853Integrator;
 import org.matheclipse.core.basic.ToggleFeature;
 import org.matheclipse.core.eval.EvalEngine;
@@ -17,7 +16,6 @@ import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IASTAppendable;
 import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.interfaces.INum;
-import org.matheclipse.core.interfaces.ISignedNumber;
 import org.matheclipse.core.interfaces.ISymbol;
 import org.matheclipse.parser.client.FEConfig;
 
@@ -83,7 +81,8 @@ public class NDSolve extends AbstractFunctionEvaluator {
         return F.NIL;
       }
       try {
-        final IAST listOfVariables = Validate.checkIsVariableOrVariableList(ast, 2, engine);
+        final IAST listOfVariables =
+            Validate.checkIsVariableOrVariableList(ast, 2, ast.topHead(), engine);
         if (!listOfVariables.isPresent()) {
           return F.NIL;
         }

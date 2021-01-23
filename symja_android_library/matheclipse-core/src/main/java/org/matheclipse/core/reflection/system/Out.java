@@ -1,15 +1,10 @@
 package org.matheclipse.core.reflection.system;
 
-import java.io.StringWriter;
-
-import org.matheclipse.core.builtin.AttributeFunctions;
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.EvalHistory;
 import org.matheclipse.core.eval.interfaces.AbstractCoreFunctionEvaluator;
 import org.matheclipse.core.eval.interfaces.IFunctionEvaluator;
 import org.matheclipse.core.expression.F;
-import org.matheclipse.core.expression.S;
-import org.matheclipse.core.form.output.OutputFormFactory;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.interfaces.ISymbol;
@@ -41,6 +36,7 @@ public class Out extends AbstractCoreFunctionEvaluator {
     return F.NIL;
   }
 
+  @Override
   public int[] expectedArgSize(IAST ast) {
     return IFunctionEvaluator.ARGS_0_1;
   }

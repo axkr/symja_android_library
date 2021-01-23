@@ -15,6 +15,7 @@ import java.util.Set;
 import java.util.concurrent.ThreadLocalRandom;
 
 import org.matheclipse.core.expression.F;
+import org.matheclipse.core.expression.S;
 import org.matheclipse.core.generic.Predicates;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IASTAppendable;
@@ -161,6 +162,7 @@ public class SymbolicPolynomialRing implements RingFactory<SymbolicPolynomial> {
      *
      * @return an iterator.
      */
+    @Override
     public Iterator<IExpr> iterator() {
       return new IExprIterator(nonNegative, upperBound);
     }
@@ -220,6 +222,7 @@ public class SymbolicPolynomialRing implements RingFactory<SymbolicPolynomial> {
        *
        * @return true if the iteration has more Longs, else false.
        */
+      @Override
       public synchronized boolean hasNext() {
         return !empty;
       }
@@ -229,6 +232,7 @@ public class SymbolicPolynomialRing implements RingFactory<SymbolicPolynomial> {
        *
        * @return next Long.
        */
+      @Override
       public synchronized IExpr next() {
         if (empty) {
           throw new NoSuchElementException("invalid call of next()");
@@ -242,13 +246,14 @@ public class SymbolicPolynomialRing implements RingFactory<SymbolicPolynomial> {
           current = current.negate();
           current = current.inc();
         }
-        if (F.Greater.ofQ(current, upperBound)) {
+        if (S.Greater.ofQ(current, upperBound)) {
           empty = true;
         }
         return res;
       }
 
       /** Remove a tuple if allowed. */
+      @Override
       public void remove() {
         throw new UnsupportedOperationException("cannnot remove elements");
       }

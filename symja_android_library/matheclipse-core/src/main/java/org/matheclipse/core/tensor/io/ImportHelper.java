@@ -6,11 +6,6 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.util.Properties;
 import java.util.stream.Stream;
-import java.util.zip.GZIPInputStream;
-
-import javax.imageio.ImageIO;
-
-import org.matheclipse.core.interfaces.IAST;
 
 /** functionality used in {@link Import} and {@link ResourceData} */
 /* package */ enum ImportHelper {

@@ -17,9 +17,12 @@ import org.jgrapht.Graphs;
 import org.jgrapht.alg.cycle.HierholzerEulerianCycle;
 import org.jgrapht.alg.interfaces.EulerianCycleAlgorithm;
 import org.jgrapht.alg.interfaces.HamiltonianCycleAlgorithm;
+import org.jgrapht.alg.interfaces.PlanarityTestingAlgorithm;
 import org.jgrapht.alg.interfaces.ShortestPathAlgorithm.SingleSourcePaths;
 import org.jgrapht.alg.interfaces.SpanningTreeAlgorithm;
 import org.jgrapht.alg.interfaces.VertexCoverAlgorithm;
+import org.jgrapht.alg.interfaces.VertexScoringAlgorithm;
+import org.jgrapht.alg.planar.BoyerMyrvoldPlanarityInspector;
 import org.jgrapht.alg.shortestpath.DijkstraShortestPath;
 import org.jgrapht.alg.shortestpath.GraphMeasurer;
 import org.jgrapht.alg.spanning.BoruvkaMinimumSpanningTree;
@@ -30,10 +33,10 @@ import org.jgrapht.graph.DefaultDirectedGraph;
 import org.jgrapht.graph.DefaultDirectedWeightedGraph;
 import org.jgrapht.graph.DefaultUndirectedGraph;
 import org.jgrapht.graph.DefaultUndirectedWeightedGraph;
+import org.matheclipse.core.basic.Config;
 import org.matheclipse.core.convert.Object2Expr;
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.interfaces.AbstractEvaluator;
-import org.matheclipse.core.eval.interfaces.IFunctionEvaluator;
 import org.matheclipse.core.eval.util.OptionArgs;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.expression.S;
@@ -41,6 +44,7 @@ import org.matheclipse.core.expression.data.ExprEdge;
 import org.matheclipse.core.expression.data.ExprWeightedEdge;
 import org.matheclipse.core.expression.data.GeoPositionExpr;
 import org.matheclipse.core.expression.data.GraphExpr;
+import org.matheclipse.core.expression.data.SparseArrayExpr;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IASTAppendable;
 import org.matheclipse.core.interfaces.IExpr;
@@ -48,6 +52,7 @@ import org.matheclipse.core.interfaces.IInteger;
 import org.matheclipse.core.interfaces.INum;
 import org.matheclipse.core.interfaces.ISymbol;
 import org.matheclipse.parser.client.FEConfig;
+import org.matheclipse.parser.trie.Trie;
 
 /** Functions for graph theory algorithms. */
 public class GraphFunctions {
@@ -59,11 +64,15 @@ public class GraphFunctions {
   private static class Initializer {
 
     private static void init() {
+
+      S.BetweennessCentrality.setEvaluator(new BetweennessCentrality());
+      S.ClosenessCentrality.setEvaluator(new ClosenessCentrality());
       S.Graph.setEvaluator(new GraphCTor());
       S.GraphCenter.setEvaluator(new GraphCenter());
       S.GraphDiameter.setEvaluator(new GraphDiameter());
       S.GraphPeriphery.setEvaluator(new GraphPeriphery());
       S.GraphRadius.setEvaluator(new GraphRadius());
+      S.GraphUnion.setEvaluator(new GraphUnion());
       S.AdjacencyMatrix.setEvaluator(new AdjacencyMatrix());
       S.EdgeList.setEvaluator(new EdgeList());
       S.EdgeQ.setEvaluator(new EdgeQ());
@@ -76,6 +85,8 @@ public class GraphFunctions {
       S.FindSpanningTree.setEvaluator(new FindSpanningTree());
       S.GraphQ.setEvaluator(new GraphQ());
       S.HamiltonianGraphQ.setEvaluator(new HamiltonianGraphQ());
+      S.LineGraph.setEvaluator(new LineGraph());
+      S.PlanarGraphQ.setEvaluator(new PlanarGraphQ());
       S.VertexEccentricity.setEvaluator(new VertexEccentricity());
       S.VertexList.setEvaluator(new VertexList());
       S.VertexQ.setEvaluator(new VertexQ());
@@ -153,7 +164,7 @@ public class GraphFunctions {
                 return gex;
               }
             } else {
-              GraphExpr g = createGraph(F.NIL, (IAST) ast.arg1());
+              GraphExpr<ExprEdge> g = createGraph(F.NIL, (IAST) ast.arg1());
               if (g != null) {
                 return g;
               }
@@ -167,7 +178,7 @@ public class GraphFunctions {
               }
             } else {
               if (ast.arg2().isList()) {
-                GraphExpr g = createGraph((IAST) ast.arg1(), (IAST) ast.arg2());
+                GraphExpr<ExprEdge> g = createGraph((IAST) ast.arg1(), (IAST) ast.arg2());
                 if (g != null) {
                   return g;
                 }
@@ -187,7 +198,7 @@ public class GraphFunctions {
     public void setUp(final ISymbol newSymbol) {
       setOptions(
           newSymbol, //
-          F.List(F.Rule(F.EdgeWeight, S.Automatic)));
+          F.List(F.Rule(S.EdgeWeight, S.Automatic)));
     }
 
     @Override
@@ -471,6 +482,40 @@ public class GraphFunctions {
     @Override
     public int[] expectedArgSize(IAST ast) {
       return ARGS_1_1;
+    }
+  }
+
+  private static class GraphUnion extends AbstractEvaluator {
+
+    @Override
+    public IExpr evaluate(final IAST ast, EvalEngine engine) {
+      //      try {
+      //        GraphExpr<ExprEdge> gex1 = createGraph(ast.arg1());
+      //        if (gex1 == null) {
+      //          return F.NIL;
+      //        }
+      //        Graph<IExpr, ExprEdge> g1 = gex1.toData();
+      //        GraphExpr<ExprEdge> gex2 = createGraph(ast.arg2());
+      //        if (gex2 == null) {
+      //          return F.NIL;
+      //        }
+      //        Graph<IExpr, ExprEdge> g2 = gex2.toData();
+      //        if (g1 == g2) {
+      //          return gex1;
+      //        }
+      //        AsGraphUnion<IExpr, ExprEdge> gu = new AsGraphUnion<IExpr, ExprEdge>(g1, g2);
+      //        return GraphExpr.newInstance(gu);
+      //      } catch (RuntimeException rex) {
+      //        if (FEConfig.SHOW_STACKTRACE) {
+      //          rex.printStackTrace();
+      //        }
+      //      }
+      return F.NIL;
+    }
+
+    @Override
+    public int[] expectedArgSize(IAST ast) {
+      return ARGS_2_INFINITY;
     }
   }
 
@@ -861,6 +906,63 @@ public class GraphFunctions {
     }
   }
 
+  private static class ClosenessCentrality extends AbstractEvaluator {
+
+    protected Map<IExpr, Double> getScores(Graph<IExpr, ExprEdge> g) {
+      final VertexScoringAlgorithm<IExpr, Double> bc =
+          new org.jgrapht.alg.scoring.ClosenessCentrality<IExpr, ExprEdge>(g);
+
+      Map<IExpr, Double> scores = bc.getScores();
+      return scores;
+    }
+
+    @Override
+    public IExpr evaluate(final IAST ast, EvalEngine engine) {
+      try {
+        GraphExpr<ExprEdge> gex = createGraph(ast.arg1());
+        if (gex == null) {
+          return F.NIL;
+        }
+        Graph<IExpr, ExprEdge> g = gex.toData();
+
+        Map<IExpr, Double> scores = getScores(g);
+        //        System.out.println(scores);
+        IASTAppendable list = F.ListAlloc(scores.size());
+        Set<IExpr> vertexSet = g.vertexSet();
+        for (IExpr expr : vertexSet) {
+          Double value = scores.get(expr);
+          if (value == null) {
+            return F.NIL;
+          }
+          list.append(F.num(value));
+        }
+        return list;
+      } catch (RuntimeException rex) {
+        if (FEConfig.SHOW_STACKTRACE) {
+          rex.printStackTrace();
+        }
+      }
+      return F.NIL;
+    }
+
+    @Override
+    public int[] expectedArgSize(IAST ast) {
+      return ARGS_1_1;
+    }
+  }
+
+  private static class BetweennessCentrality extends ClosenessCentrality {
+
+    @Override
+    protected Map<IExpr, Double> getScores(Graph<IExpr, ExprEdge> g) {
+      final VertexScoringAlgorithm<IExpr, Double> bc =
+          new org.jgrapht.alg.scoring.BetweennessCentrality<IExpr, ExprEdge>(g);
+
+      Map<IExpr, Double> scores = bc.getScores();
+      return scores;
+    }
+  }
+
   /**
    *
    *
@@ -1232,6 +1334,68 @@ public class GraphFunctions {
     }
   }
 
+  private static class LineGraph extends AbstractEvaluator {
+
+    @Override
+    public IExpr evaluate(final IAST ast, EvalEngine engine) {
+      // TODO
+      //      try {
+      //        GraphExpr<ExprEdge> gex1 = createGraph(ast.arg1());
+      //        if (gex1 == null) {
+      //          return F.NIL;
+      //        }
+      //        Graph<IExpr, ExprEdge> g1 = gex1.toData();
+      //        LineGraphConverter<IExpr, ExprEdge, ExprEdge> lgc =
+      //            new LineGraphConverter<IExpr, ExprEdge, ExprEdge>(g1);
+      //        Graph<ExprEdge, ExprEdge> target = new SimpleGraph<>(ExprEdge.class);
+      //        lgc.convertToLineGraph(target);
+      //        System.out.println(target.toString());
+      //        //	              return GraphExpr.newInstance(target);
+      //      } catch (RuntimeException rex) {
+      //        if (FEConfig.SHOW_STACKTRACE) {
+      //          rex.printStackTrace();
+      //        }
+      //      }
+      return F.NIL;
+    }
+
+    @Override
+    public int[] expectedArgSize(IAST ast) {
+      return ARGS_1_1;
+    }
+  }
+
+  private static class PlanarGraphQ extends AbstractEvaluator {
+
+    @Override
+    public IExpr evaluate(final IAST ast, EvalEngine engine) {
+      try {
+        if (ast.isAST1()) {
+          GraphExpr<ExprEdge> gex = createGraph(ast.arg1());
+          if (gex == null) {
+            return S.False;
+          }
+
+          Graph<IExpr, ExprEdge> g = gex.toData();
+
+          PlanarityTestingAlgorithm<IExpr, ExprEdge> inspector =
+              new BoyerMyrvoldPlanarityInspector<IExpr, ExprEdge>(g);
+          return F.bool(inspector.isPlanar());
+        }
+      } catch (RuntimeException rex) {
+        if (FEConfig.SHOW_STACKTRACE) {
+          rex.printStackTrace();
+        }
+      }
+      return S.False;
+    }
+
+    @Override
+    public int[] expectedArgSize(IAST ast) {
+      return ARGS_1_1;
+    }
+  }
+
   /**
    *
    *
@@ -1421,7 +1585,7 @@ public class GraphFunctions {
    * @return
    */
   private static GraphExpr<ExprEdge> createGraph(final IExpr arg1) {
-    if (arg1.head().equals(F.Graph) && arg1 instanceof GraphExpr) {
+    if (arg1.head().equals(S.Graph) && arg1 instanceof GraphExpr) {
       return (GraphExpr<ExprEdge>) arg1;
     }
     Graph<IExpr, ExprEdge> g;
@@ -1497,7 +1661,7 @@ public class GraphFunctions {
     return null;
   }
 
-  private static GraphExpr createGraph(final IAST vertices, final IAST edges) {
+  private static GraphExpr<ExprEdge> createGraph(final IAST vertices, final IAST edges) {
 
     Graph<IExpr, ExprEdge> g;
     GraphType t = edges.isListOfEdges();
@@ -1571,13 +1735,13 @@ public class GraphFunctions {
     if (edgeData[1] == null) {
       return F.Graph(vertexes, edgeData[0]);
     }
-    return F.Graph(vertexes, edgeData[0], F.List(F.Rule(F.EdgeWeight, edgeData[1])));
+    return F.Graph(vertexes, edgeData[0], F.List(F.Rule(S.EdgeWeight, edgeData[1])));
   }
 
   public static IExpr weightedGraphToIExpr(AbstractBaseGraph<IExpr, ExprWeightedEdge> g) {
     IASTAppendable vertexes = vertexToIExpr(g);
     IASTAppendable[] res = weightedEdgesToIExpr(g);
-    IExpr graph = F.Graph(vertexes, res[0], F.List(F.Rule(F.EdgeWeight, res[1])));
+    IExpr graph = F.Graph(vertexes, res[0], F.List(F.Rule(S.EdgeWeight, res[1])));
     return graph;
   }
 
@@ -1648,15 +1812,27 @@ public class GraphFunctions {
     return new IASTAppendable[] {edges, weights};
   }
 
-  public static IAST graphToAdjacencyMatrix(Graph<IExpr, ExprEdge> g) {
+  public static IExpr graphToAdjacencyMatrix(Graph<IExpr, ExprEdge> g) {
     Set<IExpr> vertexSet = g.vertexSet();
     int size = vertexSet.size();
-    IExpr[] array = new IExpr[size];
-    int indx = 0;
+    Map<IExpr, Integer> map = new HashMap<IExpr, Integer>();
+    int indx = 1;
     for (IExpr expr : vertexSet) {
-      array[indx++] = expr;
+      map.put(expr, indx++);
     }
-    return F.matrix((i, j) -> g.containsEdge(array[i], array[j]) ? F.C1 : F.C0, size, size);
+
+    final Trie<int[], IExpr> trie = Config.TRIE_INT2EXPR_BUILDER.build();
+    for (ExprEdge edge : g.edgeSet()) {
+      IExpr lhs = edge.lhs();
+      IExpr rhs = edge.rhs();
+      int from = map.get(lhs);
+      int to = map.get(rhs);
+      trie.put(new int[] {from, to}, F.C1);
+      if (g.containsEdge(rhs, lhs)) {
+        trie.put(new int[] {to, from}, F.C1);
+      }
+    }
+    return new SparseArrayExpr(trie, new int[] {size, size}, F.C0, false);
   }
 
   /**
@@ -1667,7 +1843,7 @@ public class GraphFunctions {
    */
   public static String graphToJSForm(GraphExpr graphExpr) {
 
-    GraphExpr<ExprEdge> gex = (GraphExpr<ExprEdge>) graphExpr;
+    GraphExpr<ExprEdge> gex = graphExpr;
     AbstractBaseGraph<IExpr, ?> g = (AbstractBaseGraph<IExpr, ?>) gex.toData();
     Map<IExpr, Integer> map = new HashMap<IExpr, Integer>();
     StringBuilder buf = new StringBuilder();

@@ -435,7 +435,7 @@ public abstract class DoubleFormFactory {
     } else if (symbol == S.True) {
       buf.append("true");
       return;
-    } else if (symbol == F.Indeterminate) {
+    } else if (symbol == S.Indeterminate) {
       buf.append("Double.NaN");
       return;
     }
@@ -760,7 +760,7 @@ public abstract class DoubleFormFactory {
         return;
       }
     }
-    convertInfixOperator(F.Power, buf, list, oper, precedence);
+    convertInfixOperator(S.Power, buf, list, oper, precedence);
   }
 
   public void convertInfixOperator(
@@ -821,12 +821,12 @@ public abstract class DoubleFormFactory {
     }
     if (list.size() > 3
         && //
-        (head.equals(F.Equal)
-            || head.equals(F.Unequal)
-            || head.equals(F.Greater)
-            || head.equals(F.GreaterEqual)
-            || head.equals(F.Less)
-            || head.equals(F.LessEqual))) {
+        (head.equals(S.Equal)
+            || head.equals(S.Unequal)
+            || head.equals(S.Greater)
+            || head.equals(S.GreaterEqual)
+            || head.equals(S.Less)
+            || head.equals(S.LessEqual))) {
       convertInternal(buf, list.arg1(), oper.getPrecedence(), false);
       for (int i = 2; i < list.size(); i++) {
         append(buf, oper.getOperatorString());
@@ -912,7 +912,6 @@ public abstract class DoubleFormFactory {
     }
     if (o instanceof IComplex) {
       convertComplex(buf, (IComplex) o, precedence, caller);
-      return;
     }
   }
 
@@ -1101,20 +1100,20 @@ public abstract class DoubleFormFactory {
     }
     if ((operator instanceof InfixOperator) && (list.size() > 2)) {
       InfixOperator infixOperator = (InfixOperator) operator;
-      if (head.equals(F.Plus)) {
+      if (head.equals(S.Plus)) {
         if (fPlusReversed) {
           convertPlusOperatorReversed(buf, list, infixOperator, precedence);
         } else {
           convertPlusOperator(buf, list, infixOperator, precedence);
         }
         return true;
-      } else if (head.equals(F.Times)) {
+      } else if (head.equals(S.Times)) {
         convertTimesFraction(buf, list, infixOperator, precedence, NO_PLUS_CALL);
         return true;
       } else if (list.isPower()) {
         convertPowerOperator(buf, list, infixOperator, precedence);
         return true;
-      } else if (list.isAST(F.Apply)) {
+      } else if (list.isAST(S.Apply)) {
         if (list.size() == 3) {
           convertInfixOperator(head, buf, list, ASTNodeFactory.APPLY_OPERATOR, precedence);
           return true;
@@ -1139,17 +1138,17 @@ public abstract class DoubleFormFactory {
 
   public Operator getOperator(ISymbol head) {
     // Operator operator = null;
-    if (head == F.Plus
-        || head == F.Times
-        || head == F.Equal
-        || head == F.Unequal
-        || head == F.Less
-        || head == F.LessEqual
-        || head == F.Greater
-        || head == F.GreaterEqual
-        || head == F.And
-        || head == F.Or
-        || head == F.Not) {
+    if (head == S.Plus
+        || head == S.Times
+        || head == S.Equal
+        || head == S.Unequal
+        || head == S.Less
+        || head == S.LessEqual
+        || head == S.Greater
+        || head == S.GreaterEqual
+        || head == S.And
+        || head == S.Or
+        || head == S.Not) {
       return OutputFormFactory.getOperator(head);
       // String str = head.toString();
       // operator = ASTNodeFactory.MMA_STYLE_FACTORY.get(str);
@@ -1430,7 +1429,7 @@ public abstract class DoubleFormFactory {
       String str = functionHead((ISymbol) head);
       if (str != null) {
         buf.append(str);
-        if (function.isAST(F.ArcTan, 3)) {
+        if (function.isAST(S.ArcTan, 3)) {
           buf.append("2");
         }
         convertArgs(buf, head, function);

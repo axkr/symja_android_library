@@ -28,6 +28,7 @@ public interface IComplex extends IBigNumber {
   @Override
   public IRational im();
 
+  @Override
   public IComplex inverse();
 
   public IComplex multiply(IComplex val);

@@ -7,8 +7,8 @@ import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.interfaces.AbstractFunctionEvaluator;
 import org.matheclipse.core.eval.interfaces.IFunctionEvaluator;
 import org.matheclipse.core.expression.F;
+import org.matheclipse.core.expression.S;
 import org.matheclipse.core.interfaces.IAST;
-import org.matheclipse.core.interfaces.IComplexNum;
 import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.interfaces.ISymbol;
 
@@ -23,7 +23,7 @@ public class Fourier extends AbstractFunctionEvaluator {
       if (expr.isVector() >= 0) {
         final int n = ((IAST) expr).argSize();
         if (n == 0 || 0 != (n & (n - 1))) {
-          return IOFunctions.printMessage(F.Fourier, "vpow2", F.List(expr), engine);
+          return IOFunctions.printMessage(S.Fourier, "vpow2", F.List(expr), engine);
         }
         IAST result = fourier((IAST) expr, 1);
         if (result.isPresent()) {
@@ -34,7 +34,7 @@ public class Fourier extends AbstractFunctionEvaluator {
       //
     }
     // Argument `1` is not a non-empty list or rectangular array of numeric quantities.
-    return IOFunctions.printMessage(F.Fourier, "fftl", F.List(expr), engine);
+    return IOFunctions.printMessage(S.Fourier, "fftl", F.List(expr), engine);
   }
 
   /**
@@ -102,6 +102,7 @@ public class Fourier extends AbstractFunctionEvaluator {
     return F.Divide(Convert.toVector(array), F.Sqrt(n));
   }
 
+  @Override
   public int[] expectedArgSize(IAST ast) {
     return IFunctionEvaluator.ARGS_1_1;
   }

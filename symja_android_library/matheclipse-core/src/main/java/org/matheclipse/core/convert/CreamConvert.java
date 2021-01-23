@@ -7,6 +7,7 @@ import java.util.TreeMap;
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.exception.ArgumentTypeException;
 import org.matheclipse.core.expression.F;
+import org.matheclipse.core.expression.S;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IASTAppendable;
 import org.matheclipse.core.interfaces.IExpr;
@@ -49,15 +50,15 @@ public class CreamConvert {
           rhs = integerVariable(net, temp.arg2());
           if (temp.isEqual()) {
             lhs.equals(rhs);
-          } else if (temp.isAST(F.Unequal, 3)) {
+          } else if (temp.isAST(S.Unequal, 3)) {
             lhs.notEquals(rhs);
-          } else if (temp.isAST(F.Greater, 3)) {
+          } else if (temp.isAST(S.Greater, 3)) {
             lhs.gt(rhs);
-          } else if (temp.isAST(F.GreaterEqual, 3)) {
+          } else if (temp.isAST(S.GreaterEqual, 3)) {
             lhs.ge(rhs);
-          } else if (temp.isAST(F.LessEqual, 3)) {
+          } else if (temp.isAST(S.LessEqual, 3)) {
             lhs.le(rhs);
-          } else if (temp.isAST(F.Less, 3)) {
+          } else if (temp.isAST(S.Less, 3)) {
             lhs.lt(rhs);
           } else {
             return null;
@@ -108,13 +109,13 @@ public class CreamConvert {
             return result;
           }
         }
-      } else if (ast.isSameHeadSizeGE(F.Max, 3)) {
+      } else if (ast.isSameHeadSizeGE(S.Max, 3)) {
         IntVariable result = integerVariable(net, ast.arg1());
         for (int i = 2; i < ast.size(); i++) {
           result = result.max(integerVariable(net, ast.get(i)));
         }
         return result;
-      } else if (ast.isSameHeadSizeGE(F.Min, 3)) {
+      } else if (ast.isSameHeadSizeGE(S.Min, 3)) {
         IntVariable result = integerVariable(net, ast.arg1());
         for (int i = 2; i < ast.size(); i++) {
           result = result.min(integerVariable(net, ast.get(i)));
@@ -122,7 +123,7 @@ public class CreamConvert {
         return result;
       } else if (ast.isAbs()) {
         return integerVariable(net, ast.arg1()).abs();
-      } else if (ast.isAST(F.Sign, 2)) {
+      } else if (ast.isAST(S.Sign, 2)) {
         return integerVariable(net, ast.arg1()).sign();
       }
     }
@@ -159,13 +160,13 @@ public class CreamConvert {
           public void solved(Solver solver, Solution solution) {
             if (solution != null) {
               IExpr listOfZZVariables = F.NIL;
-              IExpr complement = F.Complement.of(engine, userDefinedVariables, equationVariables);
+              IExpr complement = S.Complement.of(engine, userDefinedVariables, equationVariables);
               if (complement.size() > 1 && complement.isList()) {
                 listOfZZVariables =
-                    F.Apply.of(
+                    S.Apply.of(
                         engine,
-                        F.And,
-                        ((IAST) complement).mapThread(F.Element(F.Slot1, F.Integers), 1));
+                        S.And,
+                        ((IAST) complement).mapThread(F.Element(F.Slot1, S.Integers), 1));
               }
 
               Set<Entry<ISymbol, IntVariable>> set = map.entrySet();

@@ -85,7 +85,7 @@ public class AssumptionFunctions {
       if (arg2.isSymbol()) {
         final ISymbol domain = (ISymbol) arg2;
         final IExpr arg1 = engine.evaluate(ast.arg1());
-        if (arg1.isAST(F.Alternatives)) {
+        if (arg1.isAST(S.Alternatives)) {
           return ((IAST) arg1).findFirst(x -> assumeDomain(x, domain));
         } else {
           return assumeDomain(arg1, domain);
@@ -94,6 +94,7 @@ public class AssumptionFunctions {
       return F.NIL;
     }
 
+    @Override
     public int[] expectedArgSize(IAST ast) {
       return ARGS_2_2;
     }
@@ -171,19 +172,20 @@ public class AssumptionFunctions {
       final IExpr arg2 = engine.evaluate(ast.arg2());
       if (arg2.isSymbol()) {
         final IExpr arg1 = engine.evaluate(ast.arg1());
-        if (arg1.isAST(F.Alternatives)) {
+        if (arg1.isAST(S.Alternatives)) {
           IAST alternatives = (IAST) arg1;
           IASTAppendable andList = F.And();
           for (int i = 1; i < alternatives.size(); i++) {
-            andList.append(F.Not(F.Element(alternatives.get(i), (ISymbol) arg2)));
+            andList.append(F.Not(F.Element(alternatives.get(i), arg2)));
           }
           return andList;
         }
-        return F.Not(F.Element(arg1, (ISymbol) arg2));
+        return F.Not(F.Element(arg1, arg2));
       }
       return F.NIL;
     }
 
+    @Override
     public int[] expectedArgSize(IAST ast) {
       return ARGS_2_2;
     }
@@ -244,7 +246,7 @@ public class AssumptionFunctions {
   public static IAssumptions determineAssumptions(
       final ISymbol symbol, final IExpr arg2, EvalEngine engine) {
     final OptionArgs options = new OptionArgs(symbol, arg2, engine);
-    IExpr option = options.getOption(F.Assumptions);
+    IExpr option = options.getOption(S.Assumptions);
     if (option.isPresent()) {
       return Assumptions.getInstance(option);
     } else {

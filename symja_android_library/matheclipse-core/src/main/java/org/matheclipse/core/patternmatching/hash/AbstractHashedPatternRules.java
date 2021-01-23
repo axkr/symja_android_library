@@ -18,8 +18,8 @@ public abstract class AbstractHashedPatternRules {
    * @param lhsPattern1 first left-hand-side pattern
    * @param lhsPattern2 second left-hand-side pattern
    * @param defaultHashCode if <code>false</code> use a <code>HashValueVisitor()</code> to determine
-   *     the tw0 hash values for the lhs... arguments. if <code>true</code> use the default <code>
-   *     Object.hashCode()</code> method.
+   *     the two hash values for the <code>lhs...</code> arguments. if <code>true</code> use the
+   *     default <code> Object.hashCode()</code> method.
    */
   public AbstractHashedPatternRules(IExpr lhsPattern1, IExpr lhsPattern2, boolean defaultHashCode) {
     fLHSPattern1 = lhsPattern1;

@@ -80,6 +80,7 @@ public class AttributeFunctions {
       return F.NIL;
     }
 
+    @Override
     public IExpr evaluateSet(
         final IExpr leftHandSide,
         IExpr rightHandSide,
@@ -181,7 +182,7 @@ public class AttributeFunctions {
         }
       }
       if (sym.isProtected()) {
-        IOFunctions.printMessage(F.ClearAttributes, "write", F.List(sym), EvalEngine.get());
+        IOFunctions.printMessage(S.ClearAttributes, "write", F.List(sym), EvalEngine.get());
         throw new FailedException();
       }
       if (attributes.isSymbol()) {
@@ -423,7 +424,7 @@ public class AttributeFunctions {
      */
     private static void addAttributes(final ISymbol sym, ISymbol attribute) {
       if (sym.isProtected()) {
-        IOFunctions.printMessage(F.SetAttributes, "write", F.List(sym), EvalEngine.get());
+        IOFunctions.printMessage(S.SetAttributes, "write", F.List(sym), EvalEngine.get());
         throw new FailedException();
       }
       int functionID = attribute.ordinal();
@@ -509,8 +510,9 @@ public class AttributeFunctions {
    * @return
    */
   public static IAST attributesList(ISymbol symbol) {
-    IASTAppendable result = F.ListAlloc(4);
+
     int attributes = symbol.getAttributes();
+    IASTAppendable result = F.ListAlloc(Integer.bitCount(attributes));
 
     if ((attributes & ISymbol.CONSTANT) != ISymbol.NOATTRIBUTE) {
       result.append(S.Constant);

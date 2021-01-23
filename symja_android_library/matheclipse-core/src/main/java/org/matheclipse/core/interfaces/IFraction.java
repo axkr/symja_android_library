@@ -6,6 +6,7 @@ import java.math.BigInteger;
 /** interface for "fractional" numbers */
 public interface IFraction extends IRational {
 
+  @Override
   public void checkBitLength();
 
   /** {@inheritDoc} */
@@ -20,6 +21,7 @@ public interface IFraction extends IRational {
    *
    * @return
    */
+  @Override
   public IFraction fractionalPart();
 
   public IFraction add(IFraction parm1);
@@ -84,6 +86,7 @@ public interface IFraction extends IRational {
    *
    * @return
    */
+  @Override
   public BigFraction toBigFraction();
 
   /**

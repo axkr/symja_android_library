@@ -31,7 +31,6 @@ import org.matheclipse.core.eval.exception.RecursionLimitExceeded;
 import org.matheclipse.core.eval.exception.Validate;
 import org.matheclipse.core.eval.interfaces.AbstractCoreFunctionEvaluator;
 import org.matheclipse.core.eval.interfaces.AbstractFunctionEvaluator;
-import org.matheclipse.core.eval.interfaces.IFunctionEvaluator;
 import org.matheclipse.core.eval.util.OptionArgs;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.expression.S;
@@ -79,13 +78,10 @@ import edu.jas.poly.OptimizedPolynomialList;
 import edu.jas.poly.OrderedPolynomialList;
 import edu.jas.poly.TermOrder;
 import edu.jas.poly.TermOrderByName;
-import edu.jas.root.AlgebraicRoots;
 import edu.jas.root.ComplexRootsAbstract;
 import edu.jas.root.ComplexRootsSturm;
-import edu.jas.root.DecimalRoots;
 import edu.jas.root.InvalidBoundaryException;
 import edu.jas.root.Rectangle;
-import edu.jas.root.RootFactory;
 import edu.jas.ufd.GCDFactory;
 import edu.jas.ufd.GreatestCommonDivisor;
 import edu.jas.ufd.GreatestCommonDivisorAbstract;
@@ -285,7 +281,7 @@ public class PolynomialFunctions {
         varList = eVar.getArrayList();
         symbolList = eVar.getVarList();
       } else {
-        symbolList = Validate.checkIsVariableOrVariableList(ast, 2, engine);
+        symbolList = Validate.checkIsVariableOrVariableList(ast, 2, ast.topHead(), engine);
         if (!symbolList.isPresent()) {
           return F.NIL;
         }
@@ -762,7 +758,7 @@ public class PolynomialFunctions {
         return ((IAST) form).mapThread(ast, 2);
       }
 
-      IExpr sym = F.Max;
+      IExpr sym = S.Max;
       if (ast.isAST3()) {
         final IExpr arg3 = engine.evaluate(ast.arg3());
         // if (arg3.isSymbol()) {
@@ -792,7 +788,7 @@ public class PolynomialFunctions {
         // final IPatternMatcher matcher = new PatternMatcherEvalEngine(form, engine);
         final IPatternMatcher matcher = engine.evalPatternMatcher(form);
         if (arg1.isPower()) {
-          IExpr pEx = powerExponent((IAST) arg1, form, matcher, engine);
+          IExpr pEx = powerExponent(arg1, form, matcher, engine);
           collector.add(pEx);
         } else if (arg1.isPlus()) {
           for (int i = 1; i < arg1.size(); i++) {
@@ -975,14 +971,14 @@ public class PolynomialFunctions {
     }
 
     private IExpr resultant(IExpr a, IExpr b, ISymbol x, EvalEngine engine) {
-      IExpr aExp = F.Exponent.ofNIL(engine, a, x);
-      IExpr bExp = F.Exponent.ofNIL(engine, b, x);
+      IExpr aExp = S.Exponent.ofNIL(engine, a, x);
+      IExpr bExp = S.Exponent.ofNIL(engine, b, x);
       if (aExp.isPresent() && bExp.isPresent()) {
         if (b.isFree(x)) {
           return F.Power(b, aExp);
         }
         IExpr abExp = aExp.times(bExp);
-        if (F.Less.ofQ(engine, aExp, bExp)) {
+        if (S.Less.ofQ(engine, aExp, bExp)) {
           IExpr resultant = resultant(b, a, x, engine);
           if (!resultant.isPresent()) {
             return F.NIL;
@@ -990,11 +986,11 @@ public class PolynomialFunctions {
           return F.Times(F.Power(F.CN1, abExp), resultant);
         }
 
-        IExpr r = F.PolynomialRemainder.ofNIL(engine, a, b, x);
+        IExpr r = S.PolynomialRemainder.ofNIL(engine, a, b, x);
         if (r.isPresent()) {
           IExpr rExp = r;
           if (!r.isZero()) {
-            rExp = F.Exponent.ofNIL(engine, r, x);
+            rExp = S.Exponent.ofNIL(engine, r, x);
             if (!rExp.isPresent()) {
               return F.NIL;
             }
@@ -1190,7 +1186,7 @@ public class PolynomialFunctions {
         }
         variables = eVar.getVarList();
       } else {
-        variables = Validate.checkIsVariableOrVariableList(ast, 2, engine);
+        variables = Validate.checkIsVariableOrVariableList(ast, 2, ast.topHead(), engine);
         if (!variables.isPresent()) {
           return F.NIL;
         }
@@ -1477,7 +1473,7 @@ public class PolynomialFunctions {
       IExpr variable = variables.arg1();
       IAST list = roots(arg1, false, variables, engine);
       if (list.isPresent()) {
-        IASTAppendable or = F.ast(F.Or, list.size(), false);
+        IASTAppendable or = F.ast(S.Or, list.size(), false);
         for (int i = 1; i < list.size(); i++) {
           or.append(F.Equal(variable, list.get(i)));
         }
@@ -1547,7 +1543,7 @@ public class PolynomialFunctions {
       }
       if (z.isZero()) {
         // Cos(Pi*n*(1/2))
-        return F.Cos(F.Times(F.C1D2, F.Pi, n));
+        return F.Cos(F.Times(F.C1D2, S.Pi, n));
       }
 
       return F.NIL;
@@ -1648,7 +1644,7 @@ public class PolynomialFunctions {
       }
       if (z.isZero()) {
         // Cos((Pi*n)/2)
-        return F.Cos(F.Times(F.C1D2, n, F.Pi));
+        return F.Cos(F.Times(F.C1D2, n, S.Pi));
       }
       if (z.isOne()) {
         return F.Plus(F.C1, n);
@@ -1712,7 +1708,7 @@ public class PolynomialFunctions {
               return row.arg1();
             } else if (dim[1] >= 2) {
               IAST row = (IAST) matrixArg1.arg1();
-              return row.apply(F.Times);
+              return row.apply(S.Times);
             }
           }
         }
@@ -2012,7 +2008,7 @@ public class PolynomialFunctions {
         int recursionCounter = engine.incRecursionCounter();
         int recursionLimit = engine.getRecursionLimit();
         if (recursionCounter > recursionLimit) {
-          RecursionLimitExceeded.throwIt(recursionCounter, F.LaguerreL);
+          RecursionLimitExceeded.throwIt(recursionCounter, S.LaguerreL);
         }
 
         // Recurrence relation for LaguerreL polynomials
@@ -2201,7 +2197,7 @@ public class PolynomialFunctions {
         varList = eVar.getArrayList();
         symbolList = eVar.getVarList();
       } else {
-        symbolList = Validate.checkIsVariableOrVariableList(ast, 2, engine);
+        symbolList = Validate.checkIsVariableOrVariableList(ast, 2, ast.topHead(), engine);
         if (!symbolList.isPresent()) {
           return F.NIL;
         }
@@ -2216,7 +2212,7 @@ public class PolynomialFunctions {
           termOrder = JASIExpr.monomialOrder((ISymbol) ast.arg3(), termOrder);
         } else {
           final OptionArgs options = new OptionArgs(ast.topHead(), ast, 2, engine);
-          IExpr option = options.getOption(F.Modulus);
+          IExpr option = options.getOption(S.Modulus);
           if (option.isPresent()) {
             try {
               if (option.isInteger()) {
@@ -2246,6 +2242,7 @@ public class PolynomialFunctions {
       return F.List(expr);
     }
 
+    @Override
     public int[] expectedArgSize(IAST ast) {
       return ARGS_1_4;
     }
@@ -2381,7 +2378,7 @@ public class PolynomialFunctions {
       }
     }
     if (listOfVariables.argSize() > 0) {
-      return F.Nest(F.List, expr, listOfVariables.argSize());
+      return F.Nest(S.List, expr, listOfVariables.argSize());
     }
     return F.NIL;
   }
@@ -2445,10 +2442,10 @@ public class PolynomialFunctions {
       expr = Algebra.together((IAST) expr, engine);
 
       // split expr into numerator and denominator
-      denom = F.Denominator.of(engine, expr);
+      denom = S.Denominator.of(engine, expr);
       if (!denom.isOne()) {
         // search roots for the numerator expression
-        expr = F.Numerator.of(engine, expr);
+        expr = S.Numerator.of(engine, expr);
       }
     }
     return rootsOfVariable(expr, denom, variables, numericSolutions, engine);
@@ -2872,7 +2869,7 @@ public class PolynomialFunctions {
       }
       // }
       IASTAppendable newResult = F.ListAlloc(8);
-      IAST factorRational = Algebra.factorRational(polyRat, jas, F.List);
+      IAST factorRational = Algebra.factorRational(polyRat, jas, S.List);
       for (int i = 1; i < factorRational.size(); i++) {
         temp = F.evalExpand(factorRational.get(i));
         IAST quarticResultList = QuarticSolver.solve(temp, variables.arg1());
@@ -2888,7 +2885,7 @@ public class PolynomialFunctions {
           }
         } else {
           polyRat = jas.expr2JAS(temp, numericSolutions);
-          IAST factorComplex = Algebra.factorRational(polyRat, jas, F.List);
+          IAST factorComplex = Algebra.factorRational(polyRat, jas, S.List);
           for (int k = 1; k < factorComplex.size(); k++) {
             temp = F.evalExpand(factorComplex.get(k));
             quarticResultList = QuarticSolver.solve(temp, variables.arg1());

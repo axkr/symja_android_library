@@ -32,8 +32,6 @@ import org.matheclipse.parser.client.operator.Operator;
 import org.matheclipse.parser.client.operator.Precedence;
 import org.matheclipse.parser.trie.Trie;
 import org.matheclipse.parser.trie.TrieMatch;
-import org.matheclipse.parser.trie.Tries;
-
 import com.google.common.base.CharMatcher;
 
 public class ExprParserFactory implements IParserFactory {
@@ -41,6 +39,7 @@ public class ExprParserFactory implements IParserFactory {
   public static CharMatcher OPERATOR_MATCHER = null;
 
   /** The set of characters, which could form an operator */
+  @Override
   public boolean isOperatorChar(char ch) {
     return OPERATOR_MATCHER.matches(ch);
   }
@@ -50,6 +49,7 @@ public class ExprParserFactory implements IParserFactory {
       super(oper, functionName, precedence);
     }
 
+    @Override
     public IExpr createFunction(final IParserFactory factory, final IExpr argument) {
       if (fOperatorString.equals("?")) {
         return F.Information(argument, F.Rule(S.LongForm, S.False));
@@ -92,13 +92,13 @@ public class ExprParserFactory implements IParserFactory {
       if (rhs.isAST()) {
         IAST r = (IAST) rhs;
 
-        if (r.isAST(F.Set, 3)) {
+        if (r.isAST(S.Set, 3)) {
           return F.TagSet(lhs, r.arg1(), r.arg2());
-        } else if (r.isAST(F.SetDelayed, 3)) {
+        } else if (r.isAST(S.SetDelayed, 3)) {
           return F.TagSetDelayed(lhs, r.arg1(), r.arg2());
         }
       }
-      return F.binaryAST2(F.TagSet, lhs, rhs);
+      return F.binaryAST2(S.TagSet, lhs, rhs);
     }
   }
 
@@ -115,10 +115,10 @@ public class ExprParserFactory implements IParserFactory {
       if (rhs.isInteger() && !rhs.isZero()) {
         if (lhs.isInteger()) {
           if (!parser.isHoldOrHoldFormOrDefer()) {
-            return (IASTMutable) F.Rational((IInteger) lhs, (IInteger) rhs);
+            return (IASTMutable) F.Rational(lhs, rhs);
           }
         }
-        return (IASTMutable) F.Times(F.fraction(F.C1, (IInteger) rhs), lhs);
+        return F.Times(F.fraction(F.C1, (IInteger) rhs), lhs);
       }
 
       if (lhs.equals(F.C1)) {
@@ -494,7 +494,7 @@ public class ExprParserFactory implements IParserFactory {
             new InfixExprOperator(
                 "\u2299", "CircleDot", Precedence.CIRCLEDOT, InfixExprOperator.NONE), //
             new InfixExprOperator(
-            		"\u2297", "TensorProduct", Precedence.TENSORPRODUCT, InfixExprOperator.NONE)
+                "\u2297", "TensorProduct", Precedence.TENSORPRODUCT, InfixExprOperator.NONE)
           };
       StringBuilder buf = new StringBuilder(BASIC_OPERATOR_CHARACTERS);
 

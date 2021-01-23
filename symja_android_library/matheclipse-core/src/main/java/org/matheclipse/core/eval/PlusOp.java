@@ -13,6 +13,7 @@ import org.matheclipse.core.expression.ASTSeriesData;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.expression.ID;
 import org.matheclipse.core.expression.IntervalSym;
+import org.matheclipse.core.expression.S;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IASTAppendable;
 import org.matheclipse.core.interfaces.IExpr;
@@ -77,7 +78,7 @@ public final class PlusOp {
         map.remove(key);
         return true;
       }
-    } else if (temp.head().equals(F.Plus)) {
+    } else if (temp.head().equals(S.Plus)) {
       if (!(temp instanceof IASTAppendable)) {
         temp = ((IAST) temp).copyAppendable();
       }
@@ -136,7 +137,7 @@ public final class PlusOp {
   private IExpr negativeInfinityPlus(final IExpr o1) {
     if (o1.isInfinity()) {
       EvalEngine.get().printMessage("Indeterminate expression Infinity-Infinity");
-      return F.Indeterminate;
+      return S.Indeterminate;
     } else if (o1.isNegativeInfinity()) {
       return F.CNInfinity;
     }
@@ -157,14 +158,14 @@ public final class PlusOp {
     // return plusUntilPosition(plusAST, plusAST.size());
     // }
     if (arg.isIndeterminate()) {
-      return F.Indeterminate;
+      return S.Indeterminate;
     }
 
     try {
       if (numberValue.isPresent() && numberValue.isDirectedInfinity()) {
         if (numberValue.isComplexInfinity()) {
           if (arg.isDirectedInfinity()) {
-            return F.Indeterminate;
+            return S.Indeterminate;
           }
           numberValue = F.CComplexInfinity;
           evaled = true;
@@ -175,7 +176,7 @@ public final class PlusOp {
             return F.NIL;
           }
           if (arg.isDirectedInfinity()) {
-            return F.Indeterminate;
+            return S.Indeterminate;
           }
           if (arg.isRealResult()) {
             evaled = true;
@@ -189,8 +190,8 @@ public final class PlusOp {
           if (arg.isDirectedInfinity()) {
             // Indeterminate expression `1` encountered.
             IOFunctions.printMessage(
-                F.Infinity, "indet", F.List(F.Plus(numberValue, arg)), EvalEngine.get());
-            return F.Indeterminate;
+                S.Infinity, "indet", F.List(F.Plus(numberValue, arg)), EvalEngine.get());
+            return S.Indeterminate;
           }
           if (arg.isRealResult()) {
             evaled = true;
@@ -217,8 +218,8 @@ public final class PlusOp {
           if (arg.isNegativeInfinity()) {
             // Indeterminate expression `1` encountered.
             IOFunctions.printMessage(
-                F.Infinity, "indet", F.List(F.Plus(numberValue, arg)), EvalEngine.get());
-            return F.Indeterminate;
+                S.Infinity, "indet", F.List(F.Plus(numberValue, arg)), EvalEngine.get());
+            return S.Indeterminate;
           }
           numberValue = F.CInfinity;
           evaled = true;
@@ -227,7 +228,7 @@ public final class PlusOp {
         if (numberValue.isNegativeInfinity()) {
           numberValue = negativeInfinityPlus(arg);
           if (numberValue.isIndeterminate()) {
-            return F.Indeterminate;
+            return S.Indeterminate;
           }
           evaled = true;
           return F.NIL;
@@ -240,7 +241,7 @@ public final class PlusOp {
           return F.NIL;
         }
         IQuantity q = (IQuantity) arg;
-        numberValue = q.plus(numberValue);
+        numberValue = q.plus(numberValue, true);
         if (numberValue.isPresent()) {
           evaled = true;
         }
@@ -277,8 +278,8 @@ public final class PlusOp {
                   if (numberValue.isNegativeInfinity()) {
                     // Indeterminate expression `1` encountered.
                     IOFunctions.printMessage(
-                        F.Infinity, "indet", F.List(F.Plus(arg, numberValue)), EvalEngine.get());
-                    return F.Indeterminate;
+                        S.Infinity, "indet", F.List(F.Plus(arg, numberValue)), EvalEngine.get());
+                    return S.Indeterminate;
                   }
                   numberValue = F.CInfinity;
                   evaled = true;
@@ -286,7 +287,7 @@ public final class PlusOp {
                 } else if (arg.isNegativeInfinity()) {
                   numberValue = negativeInfinityPlus(numberValue);
                   if (numberValue.isIndeterminate()) {
-                    return F.Indeterminate;
+                    return S.Indeterminate;
                   }
                   evaled = true;
                   return F.NIL;
@@ -294,8 +295,8 @@ public final class PlusOp {
                   if (numberValue.isDirectedInfinity()) {
                     // Indeterminate expression `1` encountered.
                     IOFunctions.printMessage(
-                        F.Infinity, "indet", F.List(F.Plus(arg, numberValue)), EvalEngine.get());
-                    return F.Indeterminate;
+                        S.Infinity, "indet", F.List(F.Plus(arg, numberValue)), EvalEngine.get());
+                    return S.Indeterminate;
                   }
                   numberValue = F.CComplexInfinity;
                   evaled = true;

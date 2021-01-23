@@ -4,6 +4,7 @@ import org.matheclipse.core.builtin.IOFunctions;
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.exception.ArgumentTypeException;
 import org.matheclipse.core.expression.F;
+import org.matheclipse.core.expression.S;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IInteger;
 
@@ -51,9 +52,9 @@ public class Sequence extends ListSizeSequence {
         } else {
           sequ = new Sequence(1, num);
         }
-      } else if (ast.get(i).equals(F.All)) {
+      } else if (ast.get(i).equals(S.All)) {
         sequ = new Sequence(1, Integer.MAX_VALUE);
-      } else if (ast.get(i).equals(F.None)) {
+      } else if (ast.get(i).equals(S.None)) {
         sequ = new Sequence(1, 0);
       }
       sequArray[j++] = sequ;

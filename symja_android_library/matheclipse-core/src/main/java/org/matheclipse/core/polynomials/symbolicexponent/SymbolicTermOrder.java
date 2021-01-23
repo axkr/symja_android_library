@@ -11,6 +11,7 @@ import java.util.List;
 
 import org.matheclipse.core.basic.Config;
 import org.matheclipse.core.expression.F;
+import org.matheclipse.core.expression.S;
 import org.matheclipse.core.interfaces.IExpr;
 
 import edu.jas.kern.Scripting;
@@ -1776,7 +1777,7 @@ public final class SymbolicTermOrder implements Serializable {
         IExpr max = F.C0;
         // long min = Long.MAX_VALUE;
         for (int j = 0; j < wi.length; j++) {
-          if (F.Greater.ofQ(wi[j], max)) {
+          if (S.Greater.ofQ(wi[j], max)) {
             max = wi[j];
           }
           // if ( wi[j] < min ) min = wi[j];
@@ -1821,7 +1822,7 @@ public final class SymbolicTermOrder implements Serializable {
         IExpr[] wi = weight[i];
         IExpr min = F.CInfinity;
         for (int j = 0; j < wi.length; j++) {
-          if (F.Less.ofQ(wi[j], min)) {
+          if (S.Less.ofQ(wi[j], min)) {
             min = wi[j];
           }
         }

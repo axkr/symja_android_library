@@ -13,7 +13,6 @@ import java.util.TreeSet;
 import org.matheclipse.core.basic.Config;
 import org.matheclipse.core.combinatoric.KSubsets;
 import org.matheclipse.core.combinatoric.KSubsets.KSubsetsList;
-import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.exception.ReturnException;
 import org.matheclipse.core.eval.util.OpenIntToIExprHashMap;
 import org.matheclipse.core.expression.AbstractIntegerSym;
@@ -382,7 +381,7 @@ public class Primality {
 
         @Override
         public CombinedFactorAlgorithm initialValue() {
-          if (Config.JAVA_UNSAFE && !Config.JAS_NO_THREADS) {
+          if (Config.JAVA_UNSAFE) {
             final int cores = Runtime.getRuntime().availableProcessors();
             return new CombinedFactorAlgorithm(cores / 2 + 1, null, true);
           } else {
@@ -805,8 +804,6 @@ public class Primality {
 
     //    if (n.compareTo(BigInteger.ONE) > 0) {
     getFactorizer().factor(n, map);
-    //    }
-    return;
   }
 
   /**
@@ -989,7 +986,7 @@ public class Primality {
         // create the product of all integers in the k-subset
         BigInteger factor = BigInteger.ONE;
         for (int j = 0; j < subset.size(); j++) {
-          factor = factor.multiply((BigInteger) subset.get(j));
+          factor = factor.multiply(subset.get(j));
         }
         // add this divisor to the set collection
         set.add(factor);

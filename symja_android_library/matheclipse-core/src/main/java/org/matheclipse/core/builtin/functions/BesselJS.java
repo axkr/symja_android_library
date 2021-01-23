@@ -10,6 +10,7 @@ import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.exception.ArgumentTypeException;
 import org.matheclipse.core.eval.exception.RecursionLimitExceeded;
 import org.matheclipse.core.expression.F;
+import org.matheclipse.core.expression.S;
 import org.matheclipse.core.generic.UnaryNumerical;
 import org.matheclipse.core.interfaces.ISymbol;
 
@@ -291,7 +292,7 @@ public class BesselJS {
       if (recursionLimit > 0) {
         int counter = engine.incRecursionCounter();
         if (counter > recursionLimit) {
-          RecursionLimitExceeded.throwIt(counter, F.BesselK);
+          RecursionLimitExceeded.throwIt(counter, S.BesselK);
         }
       }
       if (n.isMathematicalInteger()) {

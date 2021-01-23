@@ -1,7 +1,5 @@
 package org.matheclipse.core.eval.exception;
 
-import org.matheclipse.core.basic.Config;
-
 /**
  * Base exception for exceptions, which are used to implement &quot;control flow&quot; functions
  * like for example <code>Break()</code> (BreakException) and <code>Continue()</code>

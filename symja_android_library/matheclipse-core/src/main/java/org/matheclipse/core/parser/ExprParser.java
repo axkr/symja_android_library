@@ -47,7 +47,6 @@ import org.matheclipse.parser.client.FEConfig;
 import org.matheclipse.parser.client.Scanner;
 import org.matheclipse.parser.client.SyntaxError;
 import org.matheclipse.parser.client.ast.IParserFactory;
-import org.matheclipse.parser.client.math.MathException;
 import org.matheclipse.parser.client.operator.InfixOperator;
 import org.matheclipse.parser.client.operator.Operator;
 
@@ -198,7 +197,7 @@ public class ExprParser extends Scanner {
         case ID.Exp:
           if (ast.isAST1()) {
             // rewrite from input: Exp(x) => E^x
-            return F.Power(F.E, ast.getUnevaluated(1));
+            return F.Power(S.E, ast.getUnevaluated(1));
           }
           break;
 
@@ -477,7 +476,7 @@ public class ExprParser extends Scanner {
         IStringX str = getString();
         return parseArguments(str);
       case TT_PERCENT:
-        final IASTAppendable out = F.ast(F.Out);
+        final IASTAppendable out = F.ast(S.Out);
         int countPercent = 1;
         getNextToken();
         if (fToken == TT_DIGIT) {
@@ -503,17 +502,17 @@ public class ExprParser extends Scanner {
           } else if (slotNumber == 2) {
             return parseArguments(F.Slot2);
           }
-          final IASTAppendable slot = F.ast(F.Slot);
+          final IASTAppendable slot = F.ast(S.Slot);
           slot.append(F.ZZ(slotNumber));
           return parseArguments(slot);
         } else if (fToken == TT_IDENTIFIER) {
           String[] identifierContext = getIdentifier();
-          final IASTAppendable slot = F.ast(F.Slot);
+          final IASTAppendable slot = F.ast(S.Slot);
           slot.append(F.stringx(identifierContext[0]));
           getNextToken();
           return parseArguments(slot);
         } else if (fToken == TT_STRING) {
-          final IASTAppendable slot = F.ast(F.Slot);
+          final IASTAppendable slot = F.ast(S.Slot);
           slot.append(getString());
           return parseArguments(slot);
         }
@@ -521,7 +520,7 @@ public class ExprParser extends Scanner {
 
       case TT_SLOTSEQUENCE:
         getNextToken();
-        final IASTAppendable slotSequencce = F.ast(F.SlotSequence);
+        final IASTAppendable slotSequencce = F.ast(S.SlotSequence);
         if (fToken == TT_DIGIT) {
           slotSequencce.append(getNumber(false));
         } else {
@@ -529,7 +528,7 @@ public class ExprParser extends Scanner {
         }
         return parseArguments(slotSequencce);
       case TT_ASSOCIATION_OPEN:
-        final IASTAppendable function = F.ast(F.List);
+        final IASTAppendable function = F.ListAlloc(31);
         fRecursionDepth++;
         try {
           getNextToken();
@@ -547,13 +546,13 @@ public class ExprParser extends Scanner {
               throwSyntaxError("\'|>\' expected.");
             }
           }
-          try {
-            temp = F.assoc(function);
-          } catch (MathException mex) {
-            // fallback if no rules were parsed
-            function.set(0, F.Association);
-            temp = function;
-          }
+          //          try {
+          //            temp = F.assoc(function);
+          //          } catch (MathException mex) {
+          //            // fallback if no rules were parsed
+          function.set(0, S.Association);
+          temp = function;
+          //          }
           getNextToken();
           if (fToken == TT_PRECEDENCE_OPEN) {
             if (!fExplicitTimes) {
@@ -911,7 +910,7 @@ public class ExprParser extends Scanner {
         getNextToken();
         return F.CEmptyList;
       }
-      function = F.ListAlloc(16);
+      function = F.ListAlloc(31);
       getArguments(function);
     } finally {
       fRecursionDepth--;
@@ -982,14 +981,17 @@ public class ExprParser extends Scanner {
     return temp;
   }
 
+  @Override
   protected boolean isOperatorCharacters() {
     return fFactory.isOperatorChar(fCurrentChar);
   }
 
+  @Override
   protected boolean isOperatorCharacters(char ch) {
     return fFactory.isOperatorChar(ch);
   }
 
+  @Override
   protected final List<Operator> getOperator() {
     char lastChar = fCurrentChar;
     final int startPosition = fCurrentPosition - 1;
@@ -1239,11 +1241,11 @@ public class ExprParser extends Scanner {
 
   protected IExpr parseExpression() {
     if (fToken == TT_SPAN) {
-      IASTAppendable span = F.ast(F.Span);
+      IASTAppendable span = F.ast(S.Span);
       span.append(F.C1);
       getNextToken();
       if (fToken == TT_SPAN) {
-        span.append(F.All);
+        span.append(S.All);
         getNextToken();
         if (fToken == TT_COMMA
             || fToken == TT_PARTCLOSE
@@ -1255,14 +1257,14 @@ public class ExprParser extends Scanner {
           || fToken == TT_PARTCLOSE
           || fToken == TT_ARGUMENTS_CLOSE
           || fToken == TT_PRECEDENCE_CLOSE) {
-        span.append(F.All);
+        span.append(S.All);
         return span;
       } else if (fToken == TT_OPERATOR) {
         InfixExprOperator infixOperator = determineBinaryOperator();
         if (infixOperator != null
             && //
             infixOperator.getOperatorString().equals(";")) {
-          span.append(F.All);
+          span.append(S.All);
           getNextToken();
           IExpr compoundExpressionNull = parseCompoundExpressionNull(infixOperator, span);
           if (compoundExpressionNull != null) {
@@ -1280,11 +1282,11 @@ public class ExprParser extends Scanner {
     IExpr temp = parseExpression(parsePrimary(0), 0);
 
     if (fToken == TT_SPAN) {
-      IASTAppendable span = F.ast(F.Span);
+      IASTAppendable span = F.ast(S.Span);
       span.append(temp);
       getNextToken();
       if (fToken == TT_SPAN) {
-        span.append(F.All);
+        span.append(S.All);
         getNextToken();
         if (fToken == TT_COMMA
             || fToken == TT_PARTCLOSE
@@ -1298,14 +1300,14 @@ public class ExprParser extends Scanner {
           || fToken == TT_PARTCLOSE
           || fToken == TT_ARGUMENTS_CLOSE
           || fToken == TT_PRECEDENCE_CLOSE) {
-        span.append(F.All);
+        span.append(S.All);
         return span;
       } else if (fToken == TT_OPERATOR) {
         InfixExprOperator infixOperator = determineBinaryOperator();
         if (infixOperator != null
             && //
             infixOperator.getOperatorString().equals(";")) {
-          span.append(F.All);
+          span.append(S.All);
           getNextToken();
           IExpr compoundExpressionNull = parseCompoundExpressionNull(infixOperator, span);
           if (compoundExpressionNull != null) {
@@ -1371,7 +1373,7 @@ public class ExprParser extends Scanner {
           oper = fFactory.get("Times");
           if (FEConfig.DOMINANT_IMPLICIT_TIMES || oper.getPrecedence() >= min_precedence) {
             rhs = parseLookaheadOperator(oper.getPrecedence());
-            lhs = F.$(F.Times, lhs, rhs);
+            lhs = F.$(S.Times, lhs, rhs);
             ((IAST) lhs).addEvalFlags(IAST.TIMES_PARSED_IMPLICIT);
             continue;
           }
@@ -1493,7 +1495,7 @@ public class ExprParser extends Scanner {
   private IExpr parseInequality(final IAST ast, final InfixExprOperator infixOperator) {
     // rewrite to Inequality
     IBuiltInSymbol head = (IBuiltInSymbol) ast.head();
-    IASTAppendable result = F.ast(F.Inequality, ast.size() + 2, false);
+    IASTAppendable result = F.ast(S.Inequality, ast.size() + 8, false);
     ast.forEach(
         x -> {
           result.append(x);

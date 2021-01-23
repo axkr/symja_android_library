@@ -6,6 +6,7 @@ import org.matheclipse.core.eval.exception.Validate;
 import org.matheclipse.core.eval.interfaces.AbstractFunctionEvaluator;
 import org.matheclipse.core.eval.interfaces.IFunctionEvaluator;
 import org.matheclipse.core.expression.F;
+import org.matheclipse.core.expression.S;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IASTAppendable;
 import org.matheclipse.core.interfaces.IExpr;
@@ -125,7 +126,7 @@ public class DSolve extends AbstractFunctionEvaluator {
       EvalEngine engine) {
     IAST listOfVariables = F.List(uFunction1Arg);
     if (listOfEquations.size() == 2) {
-      IExpr C_1 = F.unaryAST1(F.C, F.C1); // constant C(1)
+      IExpr C_1 = F.unaryAST1(S.C, F.C1); // constant C(1)
       IExpr equation = listOfEquations.arg1();
       IExpr temp = solveSingleODE(equation, xVar, listOfVariables, C_1, engine);
       if (!temp.isPresent()) {
@@ -134,8 +135,8 @@ public class DSolve extends AbstractFunctionEvaluator {
       if (temp.isPresent()) {
         if (boundaryCondition != null) {
           IExpr res = F.subst(temp, F.List(F.Rule(xVar, boundaryCondition[0])));
-          IExpr C1 = F.Roots.of(engine, F.Equal(res, boundaryCondition[1]), C_1);
-          if (C1.isAST(F.Equal, 3, C_1)) {
+          IExpr C1 = S.Roots.of(engine, F.Equal(res, boundaryCondition[1]), C_1);
+          if (C1.isAST(S.Equal, 3, C_1)) {
             res = F.subst(temp, F.List(F.Rule(C_1, C1.second())));
             temp = res;
           }
@@ -300,11 +301,11 @@ public class DSolve extends AbstractFunctionEvaluator {
   }
 
   private static IExpr[] odeTransform(EvalEngine engine, IExpr w, IExpr x, IExpr y) {
-    IExpr v = F.Together.of(engine, w);
-    IExpr numerator = F.Numerator.of(engine, v);
-    IExpr dyx = F.D.of(engine, y, x);
-    IExpr m = F.Coefficient.of(engine, numerator, dyx, F.C0);
-    IExpr n = F.Coefficient.of(engine, numerator, dyx, F.C1);
+    IExpr v = S.Together.of(engine, w);
+    IExpr numerator = S.Numerator.of(engine, v);
+    IExpr dyx = S.D.of(engine, y, x);
+    IExpr m = S.Coefficient.of(engine, numerator, dyx, F.C0);
+    IExpr n = S.Coefficient.of(engine, numerator, dyx, F.C1);
     return new IExpr[] {m, n};
   }
 
@@ -332,9 +333,9 @@ public class DSolve extends AbstractFunctionEvaluator {
         gyExpr = engine.evaluate(gy);
       }
       if (fxExpr.isPresent() && gyExpr.isPresent()) {
-        gyExpr = F.Integrate.of(engine, F.Divide(F.C1, gyExpr), y);
-        fxExpr = F.Plus.of(engine, F.Integrate(F.Times(F.CN1, fxExpr), x), C_1);
-        IExpr yEquation = F.Subtract.of(engine, gyExpr, fxExpr);
+        gyExpr = S.Integrate.of(engine, F.Divide(F.C1, gyExpr), y);
+        fxExpr = S.Plus.of(engine, F.Integrate(F.Times(F.CN1, fxExpr), x), C_1);
+        IExpr yEquation = S.Subtract.of(engine, gyExpr, fxExpr);
         IExpr result = Eliminate.extractVariable(yEquation, y, engine);
         if (result.isPresent()) {
           return engine.evaluate(result);
@@ -360,7 +361,7 @@ public class DSolve extends AbstractFunctionEvaluator {
       return F.NIL;
     }
     if (m.isZero()) {
-      return F.Equal(y, F.CSymbol);
+      return F.Equal(y, S.CSymbol);
     }
     IExpr my = engine.evaluate(F.D(m, y));
     IExpr nx = engine.evaluate(F.D(n, x));
@@ -388,7 +389,7 @@ public class DSolve extends AbstractFunctionEvaluator {
       IExpr g = engine.evaluate(F.Integrate(F.Times(u, m), x));
       IExpr hp = engine.evaluate(F.Subtract(F.Times(u, n), F.D(g, y)));
       IExpr h = engine.evaluate(F.Integrate(hp, y));
-      return F.Equal(engine.evaluate(F.Plus(g, h)), F.CSymbol);
+      return F.Equal(engine.evaluate(F.Plus(g, h)), S.CSymbol);
     }
 
     return F.NIL;

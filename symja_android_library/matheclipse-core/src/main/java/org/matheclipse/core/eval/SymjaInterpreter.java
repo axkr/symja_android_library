@@ -6,6 +6,7 @@ import java.io.PrintStream;
 import org.matheclipse.core.eval.exception.SymjaMathException;
 import org.matheclipse.core.eval.exception.Validate;
 import org.matheclipse.core.expression.F;
+import org.matheclipse.core.expression.S;
 import org.matheclipse.core.form.output.OutputFormFactory;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IExpr;
@@ -74,7 +75,7 @@ public class SymjaInterpreter extends EvalUtilities {
     try {
       result = evaluate(expr);
       if (result.isPresent()) {
-        if (result.equals(F.Null)) {
+        if (result.equals(S.Null)) {
           return buf.toString();
         }
         if (OutputFormFactory.get(engine.isRelaxedSyntax()).convert(buf, result)) {
@@ -85,7 +86,7 @@ public class SymjaInterpreter extends EvalUtilities {
     } catch (SymjaMathException sma) {
       Throwable me = sma.getCause();
       Validate.printException(buf, me);
-      if (expr.equals(F.Null)) {
+      if (expr.equals(S.Null)) {
         return buf.toString();
       }
       if (OutputFormFactory.get(engine.isRelaxedSyntax()).convert(buf, expr)) {
@@ -145,7 +146,7 @@ public class SymjaInterpreter extends EvalUtilities {
       if (expr.isPresent()) {
         result = evaluate(expr);
         if (result.isPresent()) {
-          if (result.equals(F.Null)) {
+          if (result.equals(S.Null)) {
             return buf.toString();
           }
           if (OutputFormFactory.get(engine.isRelaxedSyntax()).convert(buf, result)) {

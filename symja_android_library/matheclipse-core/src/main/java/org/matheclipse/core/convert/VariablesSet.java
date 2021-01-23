@@ -11,6 +11,7 @@ import java.util.function.Predicate;
 
 import org.matheclipse.core.expression.ASTSeriesData;
 import org.matheclipse.core.expression.F;
+import org.matheclipse.core.expression.S;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IASTAppendable;
 import org.matheclipse.core.interfaces.IExpr;
@@ -28,7 +29,7 @@ public class VariablesSet {
    *
    * @see IExpr#isVariable()
    */
-  public static class AlgebraVariablesVisitor extends VisitorCollectionBoolean<IExpr> {
+  static class AlgebraVariablesVisitor extends VisitorCollectionBoolean<IExpr> {
     public AlgebraVariablesVisitor(Collection<IExpr> collection) {
       super(collection);
     }
@@ -77,7 +78,7 @@ public class VariablesSet {
    *
    * @see IExpr#isVariable()
    */
-  public static class BooleanVariablesVisitor extends VisitorCollectionBoolean<IExpr> {
+  static class BooleanVariablesVisitor extends VisitorCollectionBoolean<IExpr> {
 
     public BooleanVariablesVisitor(Collection<IExpr> collection) {
       super(collection);
@@ -86,7 +87,7 @@ public class VariablesSet {
     @Override
     public boolean visit(IAST ast) {
       ISymbol[] logicEquationHeads = {
-        F.And, F.Or, F.Not, F.Xor, F.Nand, F.Nor, F.Implies, F.Equivalent, F.Equal, F.Unequal
+        S.And, S.Or, S.Not, S.Xor, S.Nand, S.Nor, S.Implies, S.Equivalent, S.Equal, S.Unequal
       };
       for (int i = 0; i < logicEquationHeads.length; i++) {
         if (ast.isAST(logicEquationHeads[i])) {
@@ -114,7 +115,7 @@ public class VariablesSet {
    *
    * @see IExpr#isVariable()
    */
-  public class IsMemberVisitor extends AbstractVisitorBoolean {
+  class IsMemberVisitor extends AbstractVisitorBoolean {
     public IsMemberVisitor() {
       super();
     }
@@ -138,7 +139,7 @@ public class VariablesSet {
    *
    * @see IExpr#isVariable()
    */
-  public static class VariablesVisitor extends VisitorCollectionBoolean<IExpr> {
+  static class VariablesVisitor extends VisitorCollectionBoolean<IExpr> {
     public VariablesVisitor(Collection<IExpr> collection) {
       super(collection);
     }

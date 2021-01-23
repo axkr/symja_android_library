@@ -7,13 +7,12 @@ import java.util.function.Predicate;
 
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.exception.ArgumentTypeException;
-import org.matheclipse.core.eval.exception.Validate;
 import org.matheclipse.core.eval.exception.ValidateException;
 import org.matheclipse.core.eval.interfaces.AbstractCoreFunctionEvaluator;
 import org.matheclipse.core.eval.interfaces.AbstractEvaluator;
 import org.matheclipse.core.eval.interfaces.ICoreFunctionEvaluator;
-import org.matheclipse.core.eval.interfaces.IFunctionEvaluator;
 import org.matheclipse.core.eval.interfaces.ISetEvaluator;
+import org.matheclipse.core.eval.util.MutableInt;
 import org.matheclipse.core.expression.ASTAssociation;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.expression.S;
@@ -30,22 +29,6 @@ import org.matheclipse.core.interfaces.ISymbol;
 import org.matheclipse.parser.client.FEConfig;
 
 public class AssociationFunctions {
-  private static final class MutableInt {
-    int value;
-
-    public MutableInt(int value) {
-      this.value = value;
-    }
-
-    public MutableInt increment() {
-      value++;
-      return this;
-    }
-
-    public int value() {
-      return value;
-    }
-  }
 
   /**
    * See <a href="https://pangin.pro/posts/computation-in-static-initializer">Beware of computation
@@ -154,7 +137,7 @@ public class AssociationFunctions {
           ISymbol sym = (ISymbol) leftHandSide;
           IExpr arg2 = engine.evaluate(ast.arg2());
           Function<IExpr, IExpr> function = new AssociateToFunction(arg2);
-          IExpr[] results = ((ISymbol) sym).reassignSymbolValue(function, S.AssociateTo, engine);
+          IExpr[] results = sym.reassignSymbolValue(function, S.AssociateTo, engine);
           if (results != null) {
             return results[1];
           }
@@ -265,19 +248,34 @@ public class AssociationFunctions {
       if (ast.isAssociation()) {
         return F.NIL;
       }
+      if (ast.head() != S.Association) {
+        return F.NIL;
+      }
       if (ast.isAST0()) {
         return F.assoc(F.List());
       } else if (ast.size() > 1) {
+        IASTMutable assocList = F.NIL;
+        boolean evaled = false;
         try {
-
-          // IExpr arg1 = engine.evaluate(ast.arg1());
-          IAssociation assoc = F.assoc(F.CEmptyList);
+          assocList = ast.copy();
           for (int i = 1; i < ast.size(); i++) {
-            if (ast.get(i).isASTOrAssociation()) {
-              assoc.appendRules((IAST) ast.get(i));
+            IExpr arg = ast.get(i);
+            if (!arg.isAssociation()) {
+              arg = engine.evaluateNull(arg);
+              if (arg.isPresent()) {
+                evaled = true;
+                assocList.set(i, arg);
+              }
+            }
+          }
+
+          IAssociation assoc = F.assoc(assocList.size());
+          for (int i = 1; i < assocList.size(); i++) {
+            IExpr arg = assocList.get(i);
+            if (arg.isASTOrAssociation()) {
+              assoc.appendRules((IAST) arg);
             } else {
-              throw new ArgumentTypeException(
-                  "rule expression expected instead of " + ast.get(i).toString());
+              return evaled ? assocList : F.NIL;
             }
           }
           return assoc;
@@ -287,6 +285,7 @@ public class AssociationFunctions {
           }
           // print no message
         }
+        return evaled ? assocList : F.NIL;
       }
       return F.NIL;
     }
@@ -296,6 +295,7 @@ public class AssociationFunctions {
       newSymbol.setAttributes(ISymbol.HOLDALLCOMPLETE);
     }
 
+    @Override
     public IExpr evaluateSet(
         final IExpr leftHandSide,
         IExpr rightHandSide,
@@ -387,16 +387,10 @@ public class AssociationFunctions {
 
     @Override
     public IExpr evaluate(IAST ast, EvalEngine engine) {
-      //      if (ast.isAST1()) {
-      //        ast = F.operatorForm2Prepend(ast);
-      //        if (!ast.isPresent()) {
-      //          return F.NIL;
-      //        }
-      //      }
       IExpr arg1 = ast.arg1();
       if (ast.isAST2()) {
         IExpr arg2 = ast.arg2();
-        return associationMap(F.Rule, arg1, arg2, engine);
+        return associationMap(S.Rule, arg1, arg2, engine);
       }
       return F.NIL;
     }
@@ -413,7 +407,7 @@ public class AssociationFunctions {
       }
       if (arg2.isAssociation()) {
         IAssociation list2 = (IAssociation) arg2;
-        IASTAppendable result = F.ast(F.Association, list2.size(), false);
+        IASTAppendable result = F.ast(S.Association, list2.size(), false);
         for (int i = 1; i < list2.size(); i++) {
           IExpr function = engine.evaluate(F.unaryAST1(arg1, list2.getRule(i)));
           result.appendRule(function);
@@ -482,7 +476,7 @@ public class AssociationFunctions {
       IExpr arg1 = ast.arg1();
       if (ast.isAST2()) {
         IExpr arg2 = ast.arg2();
-        return associationThread(F.Rule, arg1, arg2);
+        return associationThread(S.Rule, arg1, arg2);
       }
       if (arg1.isRuleAST()) {
         IAST rule = (IAST) arg1;
@@ -548,13 +542,9 @@ public class AssociationFunctions {
       if (arg1.isList()) {
         IAST list = (IAST) arg1;
         try {
-          HashMap<IExpr, MutableInt> map = new HashMap<IExpr, MutableInt>();
-          for (int i = 1; i < list.size(); i++) {
-            IExpr key = list.get(i);
-            map.compute(key, (k, v) -> (v == null) ? new MutableInt(1) : v.increment());
-          }
-          IAssociation assoc = new ASTAssociation(map.size(), false);
-          for (Map.Entry<IExpr, AssociationFunctions.MutableInt> elem : map.entrySet()) {
+          Map<IExpr, MutableInt> histogram = MutableInt.createHistogram(list);
+          IAssociation assoc = new ASTAssociation(histogram.size(), false);
+          for (Map.Entry<IExpr, MutableInt> elem : histogram.entrySet()) {
             assoc.appendRule(F.Rule(elem.getKey(), F.ZZ(elem.getValue().value())));
           }
           return assoc;
@@ -575,12 +565,6 @@ public class AssociationFunctions {
 
     @Override
     public IExpr evaluate(IAST ast, EvalEngine engine) {
-      //      if (ast.isAST1()) {
-      //        ast = F.operatorForm2Prepend(ast);
-      //        if (!ast.isPresent()) {
-      //          return F.NIL;
-      //        }
-      //      }
       if (ast.isAST2()) {
         IExpr arg1 = ast.arg1();
         IExpr arg2 = ast.arg2();
@@ -680,7 +664,7 @@ public class AssociationFunctions {
       } else if (arg1.isList()) {
         if (arg1.isListOfRules(true)) {
           IAST listOfRules = (IAST) arg1;
-          IASTAppendable list = F.ast(F.List, listOfRules.argSize(), false);
+          IASTAppendable list = F.ast(S.List, listOfRules.argSize(), false);
           for (int i = 1; i < listOfRules.size(); i++) {
             IExpr rule = listOfRules.get(i);
             if (rule.isRuleAST()) {
@@ -748,12 +732,6 @@ public class AssociationFunctions {
 
     @Override
     public IExpr evaluate(IAST ast, EvalEngine engine) {
-      //      if (ast.isAST1()) {
-      //        ast = F.operatorForm1Append(ast);
-      //        if (!ast.isPresent()) {
-      //          return F.NIL;
-      //        }
-      //      }
       int size = ast.size();
       if (size == 3) {
         try {
@@ -791,7 +769,7 @@ public class AssociationFunctions {
         }
       }
       return result;
-    };
+    }
 
     @Override
     public int[] expectedArgSize(IAST ast) {
@@ -908,7 +886,7 @@ public class AssociationFunctions {
                 (k, v) -> (v == null) ? new MutableInt(1) : v.increment());
           }
           IAssociation assoc = new ASTAssociation(map.size(), false);
-          for (Map.Entry<Character, AssociationFunctions.MutableInt> elem : map.entrySet()) {
+          for (Map.Entry<Character, MutableInt> elem : map.entrySet()) {
             assoc.appendRule(F.Rule(F.$str(elem.getKey()), F.ZZ(elem.getValue().value())));
           }
           return assoc;
@@ -976,12 +954,6 @@ public class AssociationFunctions {
 
     @Override
     public IExpr evaluate(IAST ast, EvalEngine engine) {
-      //      if (ast.isAST1()) {
-      //        ast = F.operatorForm1Append(ast);
-      //        if (!ast.isPresent()) {
-      //          return F.NIL;
-      //        }
-      //      }
       IExpr arg1 = engine.evaluate(ast.arg1());
       if (arg1.isList()) {
         if (ast.size() > 2) {
@@ -1108,12 +1080,6 @@ public class AssociationFunctions {
 
     @Override
     public IExpr evaluate(IAST ast, EvalEngine engine) {
-      //      if (ast.isAST1()) {
-      //        ast = F.operatorForm1Append(ast);
-      //        if (!ast.isPresent()) {
-      //          return F.NIL;
-      //        }
-      //      }
       try {
         if (ast.arg1().isListOfRulesOrAssociation(true) || ast.arg1().isListOfLists()) {
           final IAST arg1 = (IAST) ast.arg1();
@@ -1224,7 +1190,7 @@ public class AssociationFunctions {
       } else if (arg1.isList()) {
         if (arg1.isListOfRules(true)) {
           IAST listOfRules = (IAST) arg1;
-          IASTAppendable list = F.ast(F.List, listOfRules.argSize(), false);
+          IASTAppendable list = F.ast(S.List, listOfRules.argSize(), false);
           for (int i = 1; i < listOfRules.size(); i++) {
             IExpr rule = listOfRules.get(i);
             if (rule.isRuleAST()) {

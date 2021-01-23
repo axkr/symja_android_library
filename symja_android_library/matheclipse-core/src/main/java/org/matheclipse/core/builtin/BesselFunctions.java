@@ -6,7 +6,6 @@ import org.matheclipse.core.builtin.functions.BesselJS;
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.exception.ValidateException;
 import org.matheclipse.core.eval.interfaces.AbstractFunctionEvaluator;
-import org.matheclipse.core.eval.interfaces.IFunctionEvaluator;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.expression.S;
 import org.matheclipse.core.interfaces.IAST;
@@ -273,11 +272,11 @@ public class BesselFunctions {
       ISymbol j = F.Dummy("j");
       return F.Times(
           F.CSqrt2,
-          F.Power(F.Pi, F.CN1D2),
+          F.Power(S.Pi, F.CN1D2),
           F.Power(z, F.CN1D2),
           F.Plus(
               F.Times(
-                  F.Cos(F.Plus(F.Times(F.C1D2, F.Plus(F.CN1D2, n), F.Pi), F.Negate(z))),
+                  F.Cos(F.Plus(F.Times(F.C1D2, F.Plus(F.CN1D2, n), S.Pi), F.Negate(z))),
                   F.Sum(
                       F.Times(
                           F.Power(F.CN1, j),
@@ -294,7 +293,7 @@ public class BesselFunctions {
                           F.Floor(F.Times(F.C1D4, F.Plus(F.CN3, F.Times(F.C2, F.Abs(n)))))))),
               F.Times(
                   F.CN1,
-                  F.Sin(F.Plus(F.Times(F.C1D2, F.Plus(F.CN1D2, n), F.Pi), F.Negate(z))),
+                  F.Sin(F.Plus(F.Times(F.C1D2, F.Plus(F.CN1D2, n), S.Pi), F.Negate(z))),
                   F.Sum(
                       F.Times(
                           F.Power(F.CN1, j),
@@ -333,7 +332,7 @@ public class BesselFunctions {
           // Re(arg1) < 0 && !a.isInteger()
           return F.CComplexInfinity;
         } else if (a.isZero() && !n.isZero()) {
-          return F.Indeterminate;
+          return S.Indeterminate;
         }
       }
       if (n.isReal()) {
@@ -524,10 +523,10 @@ public class BesselFunctions {
           return F.C0;
         }
         if (re.isNegativeResult() && n.isNumber() && !n.isInteger()) {
-          return F.ComplexInfinity;
+          return S.ComplexInfinity;
         }
         if (re.isZero() && n.isNumber() && !n.isZero()) {
-          return F.Indeterminate;
+          return S.Indeterminate;
         }
       }
       if (n.isNumber()
@@ -625,10 +624,10 @@ public class BesselFunctions {
         }
         IExpr re = n.re();
         if (re.isZero() && n.isNumber() && !n.isZero()) {
-          return F.Indeterminate;
+          return S.Indeterminate;
         }
         if (re.isNumber() && !re.isZero()) {
-          return F.ComplexInfinity;
+          return S.ComplexInfinity;
         }
       }
       if (n.isNumber()
@@ -724,12 +723,12 @@ public class BesselFunctions {
         if (n.isZero()) {
           return F.CNInfinity;
         }
-        IExpr re = F.Re.of(engine, n);
+        IExpr re = S.Re.of(engine, n);
         if (re.isZero() && n.isNumber() && !n.isZero()) {
-          return F.Indeterminate;
+          return S.Indeterminate;
         }
         if (re.isNumber() && !re.isZero()) {
-          return F.ComplexInfinity;
+          return S.ComplexInfinity;
         }
       }
       if (n.isNumber()

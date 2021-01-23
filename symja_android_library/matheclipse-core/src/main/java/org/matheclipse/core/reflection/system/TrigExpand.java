@@ -14,10 +14,10 @@ import java.util.function.Function;
 
 import org.matheclipse.core.builtin.StructureFunctions;
 import org.matheclipse.core.eval.EvalEngine;
-import org.matheclipse.core.eval.exception.Validate;
 import org.matheclipse.core.eval.interfaces.AbstractEvaluator;
 import org.matheclipse.core.eval.interfaces.IFunctionEvaluator;
 import org.matheclipse.core.expression.F;
+import org.matheclipse.core.expression.S;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IASTAppendable;
 import org.matheclipse.core.interfaces.IExpr;
@@ -77,25 +77,25 @@ public class TrigExpand extends AbstractEvaluator {
         return expandSinPlus(plusAST, 1);
       } else if (ast.isCos()) {
         return expandCosPlus(plusAST, 1);
-      } else if (ast.isAST(F.Cot, 2)) {
+      } else if (ast.isAST(S.Cot, 2)) {
         // Cos(x) / Sin(x)
         return F.Divide(expandCosPlus(plusAST, 1), expandSinPlus(plusAST, 1));
       } else if (ast.isTan()) {
         // Sin(x) / Cos(x)
         return F.Divide(expandSinPlus(plusAST, 1), expandCosPlus(plusAST, 1));
-      } else if (ast.isAST(F.Csc, 2)) {
+      } else if (ast.isAST(S.Csc, 2)) {
         // 1 / Sin(x)
         return F.Divide(F.C1, expandSinPlus(plusAST, 1));
-      } else if (ast.isAST(F.Sec, 2)) {
+      } else if (ast.isAST(S.Sec, 2)) {
         // 1 / Cos(x)
         return F.Divide(F.C1, expandCosPlus(plusAST, 1));
-      } else if (ast.isAST(F.Sech, 2)) {
+      } else if (ast.isAST(S.Sech, 2)) {
         return expandSechPlus(plusAST, 1);
       } else if (ast.isSinh()) {
         return expandSinhPlus(plusAST, 1);
       } else if (ast.isCosh()) {
         return expandCoshPlus(plusAST, 1);
-      } else if (ast.isAST(F.Csch, 2)) {
+      } else if (ast.isAST(S.Csch, 2)) {
         return expandCschPlus(plusAST, 1);
       } else if (ast.isTanh()) {
         return expandTanhPlus(plusAST, 1);
@@ -120,27 +120,27 @@ public class TrigExpand extends AbstractEvaluator {
               return expandSinTimes(n, theta);
             } else if (ast.isCos()) {
               return expandCosTimes(n, theta);
-            } else if (ast.isAST(F.Cot, 2)) {
+            } else if (ast.isAST(S.Cot, 2)) {
               // Cos(x) / Sin(x)
               return F.Divide(expandCosTimes(n, theta), expandSinTimes(n, theta));
             } else if (ast.isTan()) {
               // Sin(x) / Cos(x)
               return F.Divide(expandSinTimes(n, theta), expandCosTimes(n, theta));
-            } else if (ast.isAST(F.Csc, 2)) {
+            } else if (ast.isAST(S.Csc, 2)) {
               // 1 / Sin(x)
               return F.Divide(F.C1, expandSinTimes(n, theta));
-            } else if (ast.isAST(F.Sec, 2)) {
+            } else if (ast.isAST(S.Sec, 2)) {
               // 1 / Cos(x)
               return F.Divide(F.C1, expandCosTimes(n, theta));
             } else if (ast.isSinh()) {
               int nInt = n.toInt();
               // return expandSinhPlus(F.constantArray(F.Plus, theta, nInt), 1);
-              return expandSinhPlus(theta.constantArray(F.Plus, 0, nInt), 1);
+              return expandSinhPlus(theta.constantArray(S.Plus, 0, nInt), 1);
             } else if (ast.isCosh()) {
               int nInt = n.toInt();
               // return expandCoshPlus(F.constantArray(F.Plus, theta, nInt), 1);
-              return expandCoshPlus(theta.constantArray(F.Plus, 0, nInt), 1);
-            } else if (ast.isAST(F.Csch, 2)) {
+              return expandCoshPlus(theta.constantArray(S.Plus, 0, nInt), 1);
+            } else if (ast.isAST(S.Csch, 2)) {
               // Csch(theta)/ChebyshevU(n - 1, Cosh(theta))
               return F.TrigExpand(
                   F.Times(
@@ -152,9 +152,9 @@ public class TrigExpand extends AbstractEvaluator {
               // F.Plus(F.CN1, n)),
               // F.Product(F.Csch(F.Plus(theta, F.Times(F.CI, F.k, F.Power(n, -1), F.Pi))),
               // F.List(F.k, F.C0, F.Plus(F.CN1, n))));
-            } else if (ast.isAST(F.Sech, 2)) {
+            } else if (ast.isAST(S.Sech, 2)) {
               int nInt = n.toInt();
-              return expandSechPlus(theta.constantArray(F.Plus, 0, nInt), 1);
+              return expandSechPlus(theta.constantArray(S.Plus, 0, nInt), 1);
             }
           } catch (ArithmeticException ae) {
 

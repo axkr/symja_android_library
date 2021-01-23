@@ -7,7 +7,6 @@ import java.util.function.Predicate;
 
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.expression.F;
-import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IExpr;
 
 /** Interface for the pattern matcher */
@@ -84,6 +83,7 @@ public abstract class IPatternMatcher
     fLhsPatternExpr = lhsPatternExpr;
   }
 
+  @Override
   public Object clone() throws CloneNotSupportedException {
     IPatternMatcher v = (IPatternMatcher) super.clone();
     v.fLhsPatternExpr = fLhsPatternExpr;

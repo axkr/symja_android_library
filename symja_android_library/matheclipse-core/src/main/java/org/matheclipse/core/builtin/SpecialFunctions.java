@@ -47,7 +47,6 @@ import org.matheclipse.core.eval.interfaces.AbstractArg1;
 import org.matheclipse.core.eval.interfaces.AbstractArg12;
 import org.matheclipse.core.eval.interfaces.AbstractFunctionEvaluator;
 import org.matheclipse.core.eval.interfaces.AbstractTrigArg1;
-import org.matheclipse.core.eval.interfaces.IFunctionEvaluator;
 import org.matheclipse.core.eval.interfaces.INumeric;
 import org.matheclipse.core.expression.ApcomplexNum;
 import org.matheclipse.core.expression.ApfloatNum;
@@ -263,7 +262,7 @@ public class SpecialFunctions {
         IExpr n = ast.arg3();
         if (a.isZero() || (a.isInteger() && a.isNegative())) {
           if (n.isZero() || (n.isInteger() && n.isNegative())) {
-            return F.Indeterminate;
+            return S.Indeterminate;
           }
           return F.C1;
         }
@@ -483,7 +482,7 @@ public class SpecialFunctions {
         return F.CN1;
       }
       if (arg1.isComplexInfinity()) {
-        return F.Indeterminate;
+        return S.Indeterminate;
       }
       if (arg1.isDirectedInfinity(F.CI) || arg1.isDirectedInfinity(F.CNI)) {
         return arg1;
@@ -509,6 +508,7 @@ public class SpecialFunctions {
       super.setUp(newSymbol);
     }
 
+    @Override
     public int[] expectedArgSize(IAST ast) {
       return ARGS_1_2;
     }
@@ -558,7 +558,7 @@ public class SpecialFunctions {
           return F.C2;
         }
         if (arg1.isComplexInfinity()) {
-          return F.Indeterminate;
+          return S.Indeterminate;
         }
         if (arg1.isDirectedInfinity(F.CI) || arg1.isDirectedInfinity(F.CNI)) {
           return arg1.negate();
@@ -610,11 +610,11 @@ public class SpecialFunctions {
         return F.CNI;
       }
       if (z.isComplexInfinity()) {
-        return F.Indeterminate;
+        return S.Indeterminate;
       }
       if (z.isTimes() && z.first().isComplex() && z.first().re().isZero()) {
         // I * Erf(-I*z)
-        return F.Times(F.I, F.Erf(F.Times(F.CNI, z)));
+        return F.Times(S.I, F.Erf(F.Times(F.CNI, z)));
       }
       IExpr negExpr = AbstractFunctionEvaluator.getNormalizedNegativeExpression(z);
       if (negExpr.isPresent()) {
@@ -649,10 +649,10 @@ public class SpecialFunctions {
         return gammaRegularized2(a, z1, ast, engine);
       } catch (MathIllegalArgumentException miae) {
         return IOFunctions.printMessage(
-            F.GammaRegularized, "argillegal", F.List(F.stringx(miae.getMessage()), ast), engine);
+            S.GammaRegularized, "argillegal", F.List(F.stringx(miae.getMessage()), ast), engine);
       } catch (RuntimeException rex) {
         return IOFunctions.printMessage(
-            F.GammaRegularized, "argillegal", F.List(F.stringx(rex.getMessage()), ast), engine);
+            S.GammaRegularized, "argillegal", F.List(F.stringx(rex.getMessage()), ast), engine);
       }
     }
 
@@ -664,7 +664,7 @@ public class SpecialFunctions {
         return F.Erfc(F.Sqrt(z1));
       } else if (a.isOne()) {
         // E^(-z)
-        return F.Power(F.E, F.Negate(z1));
+        return F.Power(S.E, F.Negate(z1));
       } else if (a.isInteger() && a.isNegative()) {
         return F.C0;
       }
@@ -707,7 +707,7 @@ public class SpecialFunctions {
         }
       } else if (z1.isMinusOne()) {
         // (E/Gamma[a])*Subfactorial(a - 1)
-        return F.Times(F.E, F.Power(F.Gamma(a), -1), F.Subfactorial(F.Plus(F.CN1, a)));
+        return F.Times(S.E, F.Power(F.Gamma(a), -1), F.Subfactorial(F.Plus(F.CN1, a)));
       }
       return F.NIL;
     }
@@ -754,7 +754,7 @@ public class SpecialFunctions {
 
       if (a.isOne()) {
         // E^(-arg2)-E^(-arg3)
-        return F.Subtract(F.Power(F.E, F.Negate(z1)), F.Power(F.E, F.Negate(z2)));
+        return F.Subtract(F.Power(S.E, F.Negate(z1)), F.Power(S.E, F.Negate(z2)));
       }
       if (a.isInteger() && a.isNegative()) {
         return F.C0;
@@ -830,7 +830,7 @@ public class SpecialFunctions {
         if (a.isNumEqualRational(F.C3D4)) {
           if (a.isNumEqualRational(F.C3D4)) {
             // http://fungrim.org/entry/951f86/
-            return F.Plus(F.Times(F.CN8, F.Catalan), F.Sqr(Pi));
+            return F.Plus(F.Times(F.CN8, S.Catalan), F.Sqr(Pi));
           }
         }
         if (s.isInteger() && a.isInteger() && a.isPositive()) {
@@ -1058,13 +1058,13 @@ public class SpecialFunctions {
         }
       } catch (MathIllegalArgumentException miae) {
         return IOFunctions.printMessage(
-            F.InverseBetaRegularized,
+            S.InverseBetaRegularized,
             "argillegal",
             F.List(F.stringx(miae.getMessage()), ast),
             engine);
       } catch (RuntimeException rex) {
         return IOFunctions.printMessage(
-            F.InverseBetaRegularized,
+            S.InverseBetaRegularized,
             "argillegal",
             F.List(F.stringx(rex.getMessage()), ast),
             engine);
@@ -1101,7 +1101,7 @@ public class SpecialFunctions {
         IExpr z = ast.arg2();
         if (a.isPositiveResult()) {
           if (z.isZero()) {
-            return F.Infinity;
+            return S.Infinity;
           } else if (z.isOne()) {
             return F.C0;
           }
@@ -1181,7 +1181,7 @@ public class SpecialFunctions {
           F.Log(
               F.Times(
                   F.Power(F.C2, F.Subtract(F.C1, n)),
-                  F.Sqrt(F.Pi),
+                  F.Sqrt(S.Pi),
                   F.Power(F.Gamma(F.Times(F.C1D2, F.Plus(n, F.C1))), F.CN1),
                   F.Gamma(n))); // $$;
         }
@@ -1522,7 +1522,7 @@ public class SpecialFunctions {
         if (temp.isReal()) {
           ISignedNumber num = (ISignedNumber) temp;
           if (num.isOne()) {
-            return F.Indeterminate;
+            return S.Indeterminate;
           } else if (num.isGT(F.C1)) {
             return F.Zeta(arg1);
           } else {
@@ -1650,7 +1650,7 @@ public class SpecialFunctions {
 
     @Override
     public IExpr e1ApfloatArg(Apfloat arg1) {
-      if (arg1.equals(Apfloat.ZERO)) {
+      if (arg1.equals(Apcomplex.ZERO)) {
         return F.C0;
       }
       try {
@@ -1675,6 +1675,7 @@ public class SpecialFunctions {
       super.setUp(newSymbol);
     }
 
+    @Override
     public IExpr e1ObjArg(final IExpr o) {
       if (o.isZero()) {
         return F.C0;
@@ -1696,7 +1697,7 @@ public class SpecialFunctions {
         if (ki == Integer.MIN_VALUE) {
           // Machine-sized integer expected at position `2` in `1`.
           return IOFunctions.printMessage(
-              F.ProductLog, "intm", F.List(F.ProductLog(k, z), F.C1), EvalEngine.get());
+              S.ProductLog, "intm", F.List(F.ProductLog(k, z), F.C1), EvalEngine.get());
         }
         // ProductLog(0,z_) := ProductLog(z)
         if (ki == 0) {
@@ -1708,10 +1709,10 @@ public class SpecialFunctions {
         if (ki == (-1)) {
           if (z.equals(F.CNPiHalf)) {
             // ProductLog(-1, -(Pi/2)) := -((I*Pi)/2)
-            return F.Times(F.CC(0L, 1L, -1L, 2L), F.Pi);
+            return F.Times(F.CC(0L, 1L, -1L, 2L), S.Pi);
           }
           // ProductLog(-1, -(1/E)) := -1
-          if (z.equals(F.Negate(F.Power(F.E, -1)))) {
+          if (z.equals(F.Negate(F.Power(S.E, -1)))) {
             return F.CN1;
           }
         }
@@ -1808,7 +1809,7 @@ public class SpecialFunctions {
           IExpr re = arg1.re();
           if (re.isMinusOne()) {
             // StruveH(n_,0):=Indeterminate/;Re(n)==(-1)
-            return F.Indeterminate;
+            return S.Indeterminate;
           }
           IExpr temp = re.greaterThan(F.CN1);
           if (temp.isTrue()) {
@@ -1890,7 +1891,7 @@ public class SpecialFunctions {
           IExpr re = arg1.re();
           if (re.isMinusOne()) {
             // StruveL(n_,0):=Indeterminate/;Re(n)==(-1)
-            return F.Indeterminate;
+            return S.Indeterminate;
           }
           IExpr temp = re.greaterThan(F.CN1);
           if (temp.isTrue()) {

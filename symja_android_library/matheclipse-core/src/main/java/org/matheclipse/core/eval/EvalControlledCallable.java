@@ -33,7 +33,7 @@ public class EvalControlledCallable implements Callable<IExpr> {
     final StringWriter buf = new StringWriter();
     try {
       //      fEngine.reset();<>
-      IExpr preRead = F.$PreRead.assignedValue();
+      IExpr preRead = S.$PreRead.assignedValue();
       IExpr temp;
       try {
         if (preRead != null && preRead.isPresent()) {
@@ -66,7 +66,7 @@ public class EvalControlledCallable implements Callable<IExpr> {
       }
       return temp;
     } catch (org.matheclipse.core.eval.exception.TimeoutException e) {
-      return F.$Aborted;
+      return S.$Aborted;
     } catch (final SyntaxError se) {
       String msg = se.getMessage();
       System.err.println(msg);
@@ -100,7 +100,7 @@ public class EvalControlledCallable implements Callable<IExpr> {
       System.err.println(buf.toString());
       System.err.flush();
     }
-    return F.$Aborted;
+    return S.$Aborted;
   }
 
   public void cancel() {

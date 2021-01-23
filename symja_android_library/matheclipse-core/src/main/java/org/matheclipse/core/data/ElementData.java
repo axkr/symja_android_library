@@ -1,16 +1,13 @@
 package org.matheclipse.core.data;
 
-import static org.matheclipse.core.expression.F.Missing;
 import static org.matheclipse.core.expression.F.NIL;
-import static org.matheclipse.core.expression.F.NotAvailable;
-
 import java.util.HashMap;
 
 import org.matheclipse.core.eval.EvalEngine;
-import org.matheclipse.core.eval.exception.Validate;
 import org.matheclipse.core.eval.interfaces.AbstractFunctionEvaluator;
 import org.matheclipse.core.eval.interfaces.IFunctionEvaluator;
 import org.matheclipse.core.expression.F;
+import org.matheclipse.core.expression.S;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IASTAppendable;
 import org.matheclipse.core.interfaces.IExpr;
@@ -273,31 +270,31 @@ public class ElementData extends AbstractFunctionEvaluator {
       if (propertyList.size() > 33) {
         return propertyList.get(33);
       }
-      return F.Missing(F.NotAvailable);
+      return F.Missing(S.NotAvailable);
     }
     if (propertyStr.equals("ShearModulus")) {
       if (propertyList.size() > 34) {
         return propertyList.get(34);
       }
-      return F.Missing(F.NotAvailable);
+      return F.Missing(S.NotAvailable);
     }
     if (propertyStr.equals("ElectronConfiguration")) {
       if (propertyList.size() > 35) {
         return propertyList.get(35);
       }
-      return F.Missing(F.NotAvailable);
+      return F.Missing(S.NotAvailable);
     }
     if (propertyStr.equals("ElectronConfigurationString")) {
       if (propertyList.size() > 36) {
         return propertyList.get(36);
       }
-      return F.Missing(F.NotAvailable);
+      return F.Missing(S.NotAvailable);
     }
     if (propertyStr.equals("ElectronShellConfiguration")) {
       if (propertyList.size() > 37) {
         return propertyList.get(37);
       }
-      return F.Missing(F.NotAvailable);
+      return F.Missing(S.NotAvailable);
     }
     return NIL;
   }

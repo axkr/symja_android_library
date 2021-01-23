@@ -4,8 +4,6 @@ import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.function.Supplier;
 
-import org.matheclipse.core.expression.F;
-
 public interface IAssociation extends IASTAppendable {
 
   /**
@@ -30,7 +28,7 @@ public interface IAssociation extends IASTAppendable {
 
   /** Copy this association as empty association */
   @Override
-  public IASTAppendable copyHead(final int intialCapacity); 
+  public IASTAppendable copyHead(final int intialCapacity);
 
   /**
    * Return the key which points to the <code>position</code>.

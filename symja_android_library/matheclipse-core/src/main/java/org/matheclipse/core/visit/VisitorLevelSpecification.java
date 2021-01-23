@@ -8,6 +8,7 @@ import org.matheclipse.core.eval.exception.ArgumentTypeException;
 import org.matheclipse.core.eval.exception.SymjaMathException;
 import org.matheclipse.core.eval.exception.Validate;
 import org.matheclipse.core.expression.F;
+import org.matheclipse.core.expression.S;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IASTMutable;
 import org.matheclipse.core.interfaces.IAssociation;
@@ -161,7 +162,7 @@ public class VisitorLevelSpecification extends AbstractVisitor {
         }
       }
     }
-    if (levelExpr.isInfinity() || levelExpr.equals(F.All)) {
+    if (levelExpr.isInfinity() || levelExpr.equals(S.All)) {
       // level specification Infinity and -1 are equivalent
       fToLevel = Integer.MAX_VALUE;
       fFromLevel = 1;

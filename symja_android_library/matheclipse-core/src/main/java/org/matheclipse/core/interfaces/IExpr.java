@@ -111,6 +111,8 @@ public interface IExpr
    * A three-state &quot;boolean&quot; value. If a comparison can not be evaluated to <code>S.True
    * </code> (&quot;state&quot; <code>TRUE</code>) or <code>S.False</code> (&quot;state&quot; <code>
    * FALSE</code>) it can get the &quot;state&quot; <code>UNDECIDABLE</code>.
+   *
+   * <p>See: <a href"https://en.wikipedia.org/wiki/Three-valued_logic">Three-valued logic</a>
    */
   public static enum COMPARE_TERNARY {
     TRUE,
@@ -312,6 +314,7 @@ public interface IExpr
    * @return
    * @deprecated use {@link F#And(IExpr, IExpr)}
    */
+  @Deprecated
   default IExpr and(final IExpr that) {
     return F.And(this, that);
   }
@@ -548,7 +551,7 @@ public interface IExpr
    * @return <code>S.True, S.False or F.NIL</code
    */
   public default IExpr equalTo(IExpr that) {
-    COMPARE_TERNARY temp = BooleanFunctions.CONST_EQUAL.compareTernary(this, that);
+    COMPARE_TERNARY temp = BooleanFunctions.compareEqual(this, that);
     return convertToExpr(temp);
   }
 
@@ -657,7 +660,7 @@ public interface IExpr
    * this object isn't an <code>AST</code>.
    *
    * @return the second argument of the function represented by this <code>AST</code> or <code>F.NIL
-   *     </code> if this object isn't an AST.
+   *     </code>.
    */
   default IExpr first() {
     return F.NIL;
@@ -1934,7 +1937,7 @@ public interface IExpr
   }
 
   /**
-   * Test if this expression is a integer number
+   * Test if this expression is a integer number (i.e. instance of type <code>IInteger</code>):
    *
    * @return
    */
@@ -2038,7 +2041,8 @@ public interface IExpr
   }
 
   /**
-   * Test if this expression is a list of lists and contains at least 1 element.
+   * Test if this expression is a list of lists <code>{{...},{...},...}</code> and contains at least
+   * 1 sublist. The sublists are allowed to be empty lists.
    *
    * @return
    * @see #isList()
@@ -2050,7 +2054,7 @@ public interface IExpr
   }
 
   /**
-   * Test if this expression is a list of matrices
+   * Test if this expression is a list of matrices and contains at least 1 matrix.
    *
    * @return
    */
@@ -2429,6 +2433,7 @@ public interface IExpr
    * @return
    * @deprecated use {@link #isInexactNumber()}
    */
+  @Deprecated
   default boolean isNumeric() {
     return isInexactNumber();
   }
@@ -3357,6 +3362,7 @@ public interface IExpr
    *
    * @return
    */
+  @Override
   default boolean isZero() {
     return false;
   }
@@ -3379,7 +3385,7 @@ public interface IExpr
    * </code> if this object isn't an <code>AST</code>or has <code>0</code> arguments (i.e. only a
    * header element)
    *
-   * @return the last argument of the function represented by this <code>AST</code>.
+   * @return the last argument of the function represented by this <code>AST</code> or {@link F#NIL}
    * @see IExpr#head()
    */
   default IExpr last() {
@@ -3672,7 +3678,7 @@ public interface IExpr
    * @see NILPointer#optional(IExpr)
    */
   default IExpr optional() {
-    short id = F.GLOBAL_IDS_MAP.getShort(this);
+    short id = S.GLOBAL_IDS_MAP.getShort(this);
     if (id >= 0) {
       return new ExprID(id);
     }
@@ -3686,6 +3692,7 @@ public interface IExpr
    * @return
    * @deprecated use {@link F#Or(IExpr, IExpr)}
    */
+  @Deprecated
   default IExpr or(final IExpr that) {
     return F.Or(this, that);
   }
@@ -3916,7 +3923,7 @@ public interface IExpr
    * @return real part
    */
   public default IExpr re() {
-    return F.Re.of(this);
+    return S.Re.of(this);
   }
 
   @Override
@@ -4370,8 +4377,14 @@ public interface IExpr
    * @return <code>S.True, S.False or F.NIL</code
    */
   public default IExpr unequalTo(IExpr that) {
-    COMPARE_TERNARY temp = BooleanFunctions.CONST_EQUAL.compareTernary(this, that);
-    return convertToExpr(temp);
+    COMPARE_TERNARY temp = BooleanFunctions.compareEqual(this, that);
+    if (temp == COMPARE_TERNARY.TRUE) {
+      return S.False;
+    }
+    if (temp == COMPARE_TERNARY.FALSE) {
+      return S.True;
+    }
+    return F.NIL;
   }
 
   /**
@@ -4391,7 +4404,7 @@ public interface IExpr
   }
 
   /**
-   * If this is a <code>Interval[{lower, upper}]</code> expression return the <code>upper</code>
+   * If this is a <code>Interval({lower, upper})</code> expression return the <code>upper</code>
    * value. If this is a <code>ISignedNumber</code> expression return <code>this</code>.
    *
    * @return <code>F.NIL</code> if this expression is no interval and no signed number.

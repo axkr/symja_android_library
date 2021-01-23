@@ -3,8 +3,6 @@ package org.matheclipse.core.tensor.io;
 import java.io.InputStream;
 import java.util.Properties;
 
-import org.matheclipse.core.interfaces.IAST;
-
 /**
  * access to resource data in jar files, for instance, the content included in the tensor library.
  *

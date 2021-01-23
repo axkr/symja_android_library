@@ -15,6 +15,7 @@ import static org.matheclipse.core.expression.F.Times;
 
 import org.matheclipse.core.convert.JASConvert;
 import org.matheclipse.core.expression.F;
+import org.matheclipse.core.expression.S;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IASTAppendable;
 import org.matheclipse.core.interfaces.IExpr;
@@ -52,7 +53,7 @@ public class PartialFractionIntegrateGenerator implements IPartialFractionGenera
   @Override
   public IExpr getResult() {
     IExpr temp = result.oneIdentity0();
-    if (temp.head().equals(F.Integrate)) {
+    if (temp.head().equals(S.Integrate)) {
       return F.NIL;
     }
     return temp;

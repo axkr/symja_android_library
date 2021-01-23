@@ -28,7 +28,7 @@ public class ListPlot extends AbstractEvaluator {
   @Override
   public IExpr evaluate(final IAST ast, EvalEngine engine) {
     if (Config.USE_MANIPULATE_JS) {
-      IExpr temp = F.Manipulate.of(engine, ast);
+      IExpr temp = S.Manipulate.of(engine, ast);
       if (temp.headID() == ID.JSFormData) {
         return temp;
       }
@@ -49,7 +49,7 @@ public class ListPlot extends AbstractEvaluator {
           if (allPoints != null && allPoints.length > 0) {
             xMaxD = 1.0;
             xMaxD = allPoints.length;
-            points = F.ast(F.List, allPoints.length, false);
+            points = F.ast(S.List, allPoints.length, false);
 
             for (int i = 0; i < allPoints.length; i++) {
               if (allPoints[i] > yMaxD) {
@@ -57,7 +57,7 @@ public class ListPlot extends AbstractEvaluator {
               } else if (allPoints[i] < yMinD) {
                 yMinD = allPoints[i];
               }
-              points.append(F.List(F.num((double) i), F.num(allPoints[i])));
+              points.append(F.List(F.num(i), F.num(allPoints[i])));
             }
           }
         } else {
@@ -67,7 +67,7 @@ public class ListPlot extends AbstractEvaluator {
             double[][] allPoints = ast.arg1().toDoubleMatrix();
             if (allPoints != null && allPoints.length > 0) {
               xMaxD = allPoints.length;
-              points = F.ast(F.List, allPoints.length, false);
+              points = F.ast(S.List, allPoints.length, false);
 
               for (int i = 0; i < allPoints.length; i++) {
                 for (int j = 0; j < allPoints[i].length; j++) {
@@ -82,7 +82,7 @@ public class ListPlot extends AbstractEvaluator {
                     yMinD = allPoints[i][1];
                   }
                 }
-                points.append(F.List(F.num((double) allPoints[i][0]), F.num(allPoints[i][1])));
+                points.append(F.List(F.num(allPoints[i][0]), F.num(allPoints[i][1])));
               }
             }
           }
@@ -94,18 +94,18 @@ public class ListPlot extends AbstractEvaluator {
           IAST plotRange;
           if (dim.isValidRange()) {
             plotRange =
-                Rule(F.PlotRange, F.List(F.List(dim.xMin, dim.xMax), F.List(dim.yMin, dim.yMax)));
+                Rule(S.PlotRange, F.List(F.List(dim.xMin, dim.xMax), F.List(dim.yMin, dim.yMax)));
           } else {
-            plotRange = Rule(F.PlotRange, S.Automatic);
+            plotRange = Rule(S.PlotRange, S.Automatic);
           }
           final IExpr options[] = {
             plotRange,
-            Rule(F.AxesStyle, S.Automatic),
-            Rule(F.AxesOrigin, List(F.C0, F.C0)),
-            Rule(F.Axes, S.True),
-            Rule(F.Background, F.White)
+            Rule(S.AxesStyle, S.Automatic),
+            Rule(S.AxesOrigin, List(F.C0, F.C0)),
+            Rule(S.Axes, S.True),
+            Rule(S.Background, S.White)
           };
-          graphics.appendAll(F.function(F.List, options), 1, options.length);
+          graphics.appendAll(F.function(S.List, options), 1, options.length);
           return Show(graphics);
         }
 

@@ -3,6 +3,7 @@ package org.matheclipse.core.patternmatching.hash;
 import org.matheclipse.core.builtin.ExpTrigsFunctions;
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.expression.F;
+import org.matheclipse.core.expression.S;
 import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.interfaces.IInteger;
 
@@ -12,7 +13,7 @@ import org.matheclipse.core.interfaces.IInteger;
  */
 public class HashedPatternRulesLog extends HashedPatternRules {
   public HashedPatternRulesLog(IExpr lhsPattern1, IExpr lhsPattern2) {
-    super(lhsPattern1, lhsPattern2, F.Null, null, true);
+    super(lhsPattern1, lhsPattern2, S.Null, null, true);
   }
 
   // private HashedPatternRulesLog(IExpr lhsPattern1, IExpr lhsPattern2, IExpr rhsResult, IExpr

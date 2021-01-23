@@ -6,9 +6,7 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 
 import org.matheclipse.core.builtin.IOFunctions;
-import org.matheclipse.core.builtin.PatternMatching;
 import org.matheclipse.core.builtin.SourceCodeFunctions;
-import org.matheclipse.core.eval.exception.Validate;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IBuiltInSymbol;
@@ -30,7 +28,7 @@ public class Documentation {
     ISymbol symbol = F.symbol(builinFunctionName);
     String url = null;
     if (symbol instanceof IBuiltInSymbol) {
-      url = SourceCodeFunctions.functionURL((IBuiltInSymbol) symbol);
+      url = SourceCodeFunctions.functionURL(symbol);
     }
     // read markdown file
     String fileName = buildFunctionFilename(builinFunctionName);
@@ -121,7 +119,7 @@ public class Documentation {
     ISymbol symbol = F.symbol(symbolName);
     String url = null;
     if (symbol instanceof IBuiltInSymbol) {
-      url = SourceCodeFunctions.functionURL((IBuiltInSymbol) symbol);
+      url = SourceCodeFunctions.functionURL(symbol);
     }
     // read markdown file
     String fileName = buildFunctionFilename(symbolName);

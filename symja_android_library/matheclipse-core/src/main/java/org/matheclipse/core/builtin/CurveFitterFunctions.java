@@ -13,7 +13,6 @@ import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.exception.ASTElementLimitExceeded;
 import org.matheclipse.core.eval.interfaces.AbstractEvaluator;
 import org.matheclipse.core.eval.interfaces.AbstractFunctionEvaluator;
-import org.matheclipse.core.eval.interfaces.IFunctionEvaluator;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.expression.S;
 import org.matheclipse.core.interfaces.IAST;
@@ -196,6 +195,7 @@ public class CurveFitterFunctions {
       return numericEval(ast, engine);
     }
 
+    @Override
     public int[] expectedArgSize(IAST ast) {
       return ARGS_4_4;
     }
@@ -214,7 +214,7 @@ public class CurveFitterFunctions {
         if (temp.isSymbol()) {
           initialGuess[i - 1] = 1.0;
           newListOfSymbols.append(temp);
-        } else if (temp.isAST(F.List, 3) && temp.first().isSymbol()) {
+        } else if (temp.isAST(S.List, 3) && temp.first().isSymbol()) {
           ISignedNumber signedNumber = temp.second().evalReal();
           if (signedNumber != null) {
             initialGuess[i - 1] = signedNumber.doubleValue();
@@ -255,7 +255,7 @@ public class CurveFitterFunctions {
         listOfSymbols = initialGuess(listOfSymbols, initialGuess);
         if (listOfSymbols.isPresent()) {
           try {
-            IExpr gradientList = F.Grad.of(engine, function, listOfSymbols);
+            IExpr gradientList = S.Grad.of(engine, function, listOfSymbols);
             if (gradientList.isList()) {
               AbstractCurveFitter fitter =
                   SimpleCurveFitter.create(
@@ -331,6 +331,7 @@ public class CurveFitterFunctions {
       return F.NIL;
     }
 
+    @Override
     public int[] expectedArgSize(IAST ast) {
       return ARGS_3_3;
     }

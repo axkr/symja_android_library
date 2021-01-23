@@ -3,7 +3,6 @@ package org.matheclipse.core.builtin;
 import org.matheclipse.core.basic.ToggleFeature;
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.interfaces.AbstractEvaluator;
-import org.matheclipse.core.eval.interfaces.IFunctionEvaluator;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.expression.S;
 import org.matheclipse.core.interfaces.IAST;
@@ -120,7 +119,7 @@ public class FinancialFunctions {
       IExpr a = ast.arg1();
       IExpr b = ast.arg2();
       IExpr c = ast.arg3();
-      if (a.isAST(F.Annuity, 3, 4)) {
+      if (a.isAST(S.Annuity, 3, 4)) {
         // https://en.wikipedia.org/wiki/Annuity
         IAST annuity = (IAST) a;
         try {
@@ -165,7 +164,7 @@ public class FinancialFunctions {
         }
         return F.NIL;
       }
-      if (a.isAST(F.AnnuityDue, 3, 4)) {
+      if (a.isAST(S.AnnuityDue, 3, 4)) {
         // https://en.wikipedia.org/wiki/Annuity
         IAST annuity = (IAST) a;
         try {
@@ -215,6 +214,7 @@ public class FinancialFunctions {
       return F.NIL;
     }
 
+    @Override
     public int[] expectedArgSize(IAST ast) {
       return ARGS_3_3;
     }

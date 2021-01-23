@@ -20,6 +20,7 @@ import org.matheclipse.core.expression.F;
 import org.matheclipse.core.expression.ID;
 import org.matheclipse.core.expression.IntervalSym;
 import org.matheclipse.core.expression.Num;
+import org.matheclipse.core.expression.S;
 import org.matheclipse.core.form.ApfloatToMMA;
 import org.matheclipse.core.form.DoubleToMMA;
 import org.matheclipse.core.interfaces.IAST;
@@ -202,7 +203,7 @@ public class TeXFormFactory {
       if (f.isAST2()) {
         IExpr arg2 = f.arg2();
         int n = 1;
-        if (arg2.isAST(F.List, 3) && arg2.second().isInteger()) {
+        if (arg2.isAST(S.List, 3) && arg2.second().isInteger()) {
           n = arg2.second().toIntDefault();
           if (n <= 0) {
             return false;
@@ -946,7 +947,7 @@ public class TeXFormFactory {
             return true;
           }
         } catch (final ValidateException ve) {
-          EvalEngine.get().printMessage(ve.getMessage(F.Sum));
+          EvalEngine.get().printMessage(ve.getMessage(S.Sum));
         }
         return false;
       } else if (f.get(i).isSymbol()) {
@@ -1361,7 +1362,7 @@ public class TeXFormFactory {
       final IAST f = ((IAST) o);
       IExpr h = f.head();
       if (h.isSymbol()) {
-        final AbstractConverter converter = operTab.get(((ISymbol) h));
+        final AbstractConverter converter = operTab.get((h));
         if (converter != null) {
           converter.setFactory(this);
           if (converter.convert(buf, f, precedence)) {
@@ -1467,7 +1468,7 @@ public class TeXFormFactory {
             }
             break;
           case ID.Interval:
-            if (list.size() > 1 && list.first().isASTSizeGE(F.List, 2)) {
+            if (list.size() > 1 && list.first().isASTSizeGE(S.List, 2)) {
               IAST interval = IntervalSym.normalize(list);
               buf.append("Interval(");
               for (int i = 1; i < interval.size(); i++) {
@@ -1766,8 +1767,7 @@ public class TeXFormFactory {
     if (fSignificantFigures > 0) {
       try {
         StringBuilder buf = new StringBuilder();
-        DoubleToMMA.doubleToMMA(
-            (Appendable) buf, dValue, fExponentFigures, fSignificantFigures, true);
+        DoubleToMMA.doubleToMMA(buf, dValue, fExponentFigures, fSignificantFigures, true);
         return buf.toString();
       } catch (IOException ioex) {
         ioex.printStackTrace();
@@ -1874,7 +1874,7 @@ public class TeXFormFactory {
     }
     String headStr = sym.getSymbolName();
     if (headStr.length() == 1) {
-      String c = Characters.unicodeName(headStr);
+      String c = Characters.unicodeName(headStr.charAt(0));
       if (c != null) {
         final Object convertedSymbol = CONSTANT_SYMBOLS.get(c);
         if (convertedSymbol != null) {
@@ -1919,136 +1919,135 @@ public class TeXFormFactory {
       return;
     }
     buf.append(convertedSymbol.toString());
-    return;
   }
 
   public void init() {
     plusPrec = ASTNodeFactory.RELAXED_STYLE_FACTORY.get("Plus").getPrecedence();
     // timesPrec =
     // ASTNodeFactory.MMA_STYLE_FACTORY.get("Times").getPrecedence();
-    operTab.put(F.Abs, new UnaryFunction("|", "|"));
-    operTab.put(F.Binomial, new Binomial());
-    operTab.put(F.Ceiling, new UnaryFunction(" \\left \\lceil ", " \\right \\rceil "));
-    operTab.put(F.Conjugate, new Conjugate());
-    operTab.put(F.Complex, new Complex());
+    operTab.put(S.Abs, new UnaryFunction("|", "|"));
+    operTab.put(S.Binomial, new Binomial());
+    operTab.put(S.Ceiling, new UnaryFunction(" \\left \\lceil ", " \\right \\rceil "));
+    operTab.put(S.Conjugate, new Conjugate());
+    operTab.put(S.Complex, new Complex());
     operTab.put(
-        F.CompoundExpression,
+        S.CompoundExpression,
         new AbstractOperator(
             ASTNodeFactory.MMA_STYLE_FACTORY.get("CompoundExpression").getPrecedence(), ", "));
-    operTab.put(F.D, new D());
-    operTab.put(F.Defer, new HoldForm());
-    operTab.put(F.DirectedInfinity, new DirectedInfinity());
-    operTab.put(F.Floor, new UnaryFunction(" \\left \\lfloor ", " \\right \\rfloor "));
-    operTab.put(F.Function, new UnaryFunction("", "\\&"));
-    operTab.put(F.HarmonicNumber, new HarmonicNumber());
-    operTab.put(F.HoldForm, new HoldForm());
-    operTab.put(F.HurwitzZeta, new Zeta());
-    operTab.put(F.Integrate, new Integrate());
-    operTab.put(F.Limit, new Limit());
-    operTab.put(F.List, new List());
-    operTab.put(F.$RealMatrix, new List());
-    operTab.put(F.$RealVector, new List());
-    operTab.put(F.MatrixForm, new MatrixForm());
-    operTab.put(F.TableForm, new TableForm());
-    operTab.put(F.Part, new Part());
-    operTab.put(F.Plus, new Plus());
-    operTab.put(F.Power, new Power());
-    operTab.put(F.Product, new Product());
-    operTab.put(F.Rational, new Rational());
-    operTab.put(F.Slot, new UnaryFunction("\\text{$\\#$", "}"));
-    operTab.put(F.SlotSequence, new UnaryFunction("\\text{$\\#\\#$", "}"));
-    operTab.put(F.Sqrt, new UnaryFunction("\\sqrt{", "}"));
-    operTab.put(F.Subscript, new Subscript());
-    operTab.put(F.Subsuperscript, new Subsuperscript());
-    operTab.put(F.Sum, new Sum());
-    operTab.put(F.Superscript, new Superscript());
-    operTab.put(F.Times, new Times());
-    operTab.put(F.Zeta, new Zeta());
+    operTab.put(S.D, new D());
+    operTab.put(S.Defer, new HoldForm());
+    operTab.put(S.DirectedInfinity, new DirectedInfinity());
+    operTab.put(S.Floor, new UnaryFunction(" \\left \\lfloor ", " \\right \\rfloor "));
+    operTab.put(S.Function, new UnaryFunction("", "\\&"));
+    operTab.put(S.HarmonicNumber, new HarmonicNumber());
+    operTab.put(S.HoldForm, new HoldForm());
+    operTab.put(S.HurwitzZeta, new Zeta());
+    operTab.put(S.Integrate, new Integrate());
+    operTab.put(S.Limit, new Limit());
+    operTab.put(S.List, new List());
+    operTab.put(S.$RealMatrix, new List());
+    operTab.put(S.$RealVector, new List());
+    operTab.put(S.MatrixForm, new MatrixForm());
+    operTab.put(S.TableForm, new TableForm());
+    operTab.put(S.Part, new Part());
+    operTab.put(S.Plus, new Plus());
+    operTab.put(S.Power, new Power());
+    operTab.put(S.Product, new Product());
+    operTab.put(S.Rational, new Rational());
+    operTab.put(S.Slot, new UnaryFunction("\\text{$\\#$", "}"));
+    operTab.put(S.SlotSequence, new UnaryFunction("\\text{$\\#\\#$", "}"));
+    operTab.put(S.Sqrt, new UnaryFunction("\\sqrt{", "}"));
+    operTab.put(S.Subscript, new Subscript());
+    operTab.put(S.Subsuperscript, new Subsuperscript());
+    operTab.put(S.Sum, new Sum());
+    operTab.put(S.Superscript, new Superscript());
+    operTab.put(S.Times, new Times());
+    operTab.put(S.Zeta, new Zeta());
 
-    operTab.put(F.Condition, new AbstractOperator(this, Precedence.CONDITION, "\\text{/;}"));
-    operTab.put(F.Unset, new PostOperator(this, Precedence.UNSET, "\\text{=.}"));
-    operTab.put(F.UpSetDelayed, new AbstractOperator(this, Precedence.UPSETDELAYED, "\\text{^:=}"));
-    operTab.put(F.UpSet, new AbstractOperator(this, Precedence.UPSET, "\\text{^=}"));
+    operTab.put(S.Condition, new AbstractOperator(this, Precedence.CONDITION, "\\text{/;}"));
+    operTab.put(S.Unset, new PostOperator(this, Precedence.UNSET, "\\text{=.}"));
+    operTab.put(S.UpSetDelayed, new AbstractOperator(this, Precedence.UPSETDELAYED, "\\text{^:=}"));
+    operTab.put(S.UpSet, new AbstractOperator(this, Precedence.UPSET, "\\text{^=}"));
     operTab.put(
-        F.NonCommutativeMultiply,
+        S.NonCommutativeMultiply,
         new AbstractOperator(this, Precedence.NONCOMMUTATIVEMULTIPLY, "\\text{**}"));
-    operTab.put(F.PreDecrement, new PreOperator(this, Precedence.PREDECREMENT, "\\text{--}"));
+    operTab.put(S.PreDecrement, new PreOperator(this, Precedence.PREDECREMENT, "\\text{--}"));
     operTab.put(
-        F.ReplaceRepeated, new AbstractOperator(this, Precedence.REPLACEREPEATED, "\\text{//.}"));
-    operTab.put(F.MapAll, new AbstractOperator(this, Precedence.MAPALL, "\\text{//@}"));
-    operTab.put(F.AddTo, new AbstractOperator(this, Precedence.ADDTO, "\\text{+=}"));
-    operTab.put(F.Greater, new AbstractOperator(this, Precedence.GREATER, " > "));
-    operTab.put(F.GreaterEqual, new AbstractOperator(this, Precedence.GREATEREQUAL, "\\geq "));
-    operTab.put(F.SubtractFrom, new AbstractOperator(this, Precedence.SUBTRACTFROM, "\\text{-=}"));
-    operTab.put(F.Subtract, new AbstractOperator(this, Precedence.SUBTRACT, " - "));
+        S.ReplaceRepeated, new AbstractOperator(this, Precedence.REPLACEREPEATED, "\\text{//.}"));
+    operTab.put(S.MapAll, new AbstractOperator(this, Precedence.MAPALL, "\\text{//@}"));
+    operTab.put(S.AddTo, new AbstractOperator(this, Precedence.ADDTO, "\\text{+=}"));
+    operTab.put(S.Greater, new AbstractOperator(this, Precedence.GREATER, " > "));
+    operTab.put(S.GreaterEqual, new AbstractOperator(this, Precedence.GREATEREQUAL, "\\geq "));
+    operTab.put(S.SubtractFrom, new AbstractOperator(this, Precedence.SUBTRACTFROM, "\\text{-=}"));
+    operTab.put(S.Subtract, new AbstractOperator(this, Precedence.SUBTRACT, " - "));
     operTab.put(
-        F.CompoundExpression, new AbstractOperator(this, Precedence.COMPOUNDEXPRESSION, ";"));
-    operTab.put(F.DivideBy, new AbstractOperator(this, Precedence.DIVIDEBY, "\\text{/=}"));
-    operTab.put(F.StringJoin, new AbstractOperator(this, Precedence.STRINGJOIN, "\\text{<>}"));
-    operTab.put(F.UnsameQ, new AbstractOperator(this, Precedence.UNSAMEQ, "\\text{=!=}"));
-    operTab.put(F.Decrement, new PostOperator(this, Precedence.DECREMENT, "\\text{--}"));
-    operTab.put(F.LessEqual, new AbstractOperator(this, Precedence.LESSEQUAL, "\\leq "));
-    operTab.put(F.Colon, new AbstractOperator(this, Precedence.COLON, "\\text{:}"));
-    operTab.put(F.Increment, new PostOperator(this, Precedence.INCREMENT, "\\text{++}"));
-    operTab.put(F.Alternatives, new AbstractOperator(this, Precedence.ALTERNATIVES, "\\text{|}"));
-    operTab.put(F.Equal, new AbstractOperator(this, Precedence.EQUAL, " == "));
-    operTab.put(F.DirectedEdge, new AbstractOperator(this, Precedence.DIRECTEDEDGE, "\\to "));
-    operTab.put(F.Divide, new AbstractOperator(this, Precedence.DIVIDE, "\\text{/}"));
-    operTab.put(F.Apply, new AbstractOperator(this, Precedence.APPLY, "\\text{@@}"));
-    operTab.put(F.Set, new AbstractOperator(this, Precedence.SET, " = "));
+        S.CompoundExpression, new AbstractOperator(this, Precedence.COMPOUNDEXPRESSION, ";"));
+    operTab.put(S.DivideBy, new AbstractOperator(this, Precedence.DIVIDEBY, "\\text{/=}"));
+    operTab.put(S.StringJoin, new AbstractOperator(this, Precedence.STRINGJOIN, "\\text{<>}"));
+    operTab.put(S.UnsameQ, new AbstractOperator(this, Precedence.UNSAMEQ, "\\text{=!=}"));
+    operTab.put(S.Decrement, new PostOperator(this, Precedence.DECREMENT, "\\text{--}"));
+    operTab.put(S.LessEqual, new AbstractOperator(this, Precedence.LESSEQUAL, "\\leq "));
+    operTab.put(S.Colon, new AbstractOperator(this, Precedence.COLON, "\\text{:}"));
+    operTab.put(S.Increment, new PostOperator(this, Precedence.INCREMENT, "\\text{++}"));
+    operTab.put(S.Alternatives, new AbstractOperator(this, Precedence.ALTERNATIVES, "\\text{|}"));
+    operTab.put(S.Equal, new AbstractOperator(this, Precedence.EQUAL, " == "));
+    operTab.put(S.DirectedEdge, new AbstractOperator(this, Precedence.DIRECTEDEDGE, "\\to "));
+    operTab.put(S.Divide, new AbstractOperator(this, Precedence.DIVIDE, "\\text{/}"));
+    operTab.put(S.Apply, new AbstractOperator(this, Precedence.APPLY, "\\text{@@}"));
+    operTab.put(S.Set, new AbstractOperator(this, Precedence.SET, " = "));
     // operTab.put(F.Minus,
     // new PreOperator(this, ASTNodeFactory.MMA_STYLE_FACTORY.get("Minus").getPrecedence(),
     // "\\text{-}"));
-    operTab.put(F.Map, new AbstractOperator(this, Precedence.MAP, "\\text{/@}"));
-    operTab.put(F.SameQ, new AbstractOperator(this, Precedence.SAMEQ, "\\text{===}"));
-    operTab.put(F.Less, new AbstractOperator(this, Precedence.LESS, " < "));
-    operTab.put(F.PreIncrement, new PreOperator(this, Precedence.PREINCREMENT, "\\text{++}"));
-    operTab.put(F.Unequal, new AbstractOperator(this, Precedence.UNEQUAL, "\\neq "));
-    operTab.put(F.Or, new AbstractOperator(this, Precedence.OR, " \\lor "));
+    operTab.put(S.Map, new AbstractOperator(this, Precedence.MAP, "\\text{/@}"));
+    operTab.put(S.SameQ, new AbstractOperator(this, Precedence.SAMEQ, "\\text{===}"));
+    operTab.put(S.Less, new AbstractOperator(this, Precedence.LESS, " < "));
+    operTab.put(S.PreIncrement, new PreOperator(this, Precedence.PREINCREMENT, "\\text{++}"));
+    operTab.put(S.Unequal, new AbstractOperator(this, Precedence.UNEQUAL, "\\neq "));
+    operTab.put(S.Or, new AbstractOperator(this, Precedence.OR, " \\lor "));
     // operTab.put(F.PrePlus,
     // new PreOperator(this, ASTNodeFactory.MMA_STYLE_FACTORY.get("PrePlus").getPrecedence(),
     // "\\text{+}"));
-    operTab.put(F.TimesBy, new AbstractOperator(this, Precedence.TIMESBY, "\\text{*=}"));
-    operTab.put(F.And, new AbstractOperator(this, Precedence.AND, " \\land "));
-    operTab.put(F.Not, new PreOperator(this, Precedence.NOT, "\\neg "));
-    operTab.put(F.Factorial, new PostOperator(this, Precedence.FACTORIAL, " ! "));
-    operTab.put(F.Factorial2, new PostOperator(this, Precedence.FACTORIAL2, " !! "));
+    operTab.put(S.TimesBy, new AbstractOperator(this, Precedence.TIMESBY, "\\text{*=}"));
+    operTab.put(S.And, new AbstractOperator(this, Precedence.AND, " \\land "));
+    operTab.put(S.Not, new PreOperator(this, Precedence.NOT, "\\neg "));
+    operTab.put(S.Factorial, new PostOperator(this, Precedence.FACTORIAL, " ! "));
+    operTab.put(S.Factorial2, new PostOperator(this, Precedence.FACTORIAL2, " !! "));
 
-    operTab.put(F.ReplaceAll, new AbstractOperator(this, Precedence.REPLACEALL, "\\text{/.}\\,"));
+    operTab.put(S.ReplaceAll, new AbstractOperator(this, Precedence.REPLACEALL, "\\text{/.}\\,"));
     operTab.put(
-        F.ReplaceRepeated,
+        S.ReplaceRepeated,
         new AbstractOperator(this, Precedence.REPLACEREPEATED, "\\text{//.}\\,"));
-    operTab.put(F.Rule, new AbstractOperator(this, Precedence.RULE, "\\to "));
-    operTab.put(F.RuleDelayed, new AbstractOperator(this, Precedence.RULEDELAYED, ":\\to "));
-    operTab.put(F.Set, new AbstractOperator(this, Precedence.SET, " = "));
-    operTab.put(F.SetDelayed, new AbstractOperator(this, Precedence.SETDELAYED, "\\text{:=}\\,"));
+    operTab.put(S.Rule, new AbstractOperator(this, Precedence.RULE, "\\to "));
+    operTab.put(S.RuleDelayed, new AbstractOperator(this, Precedence.RULEDELAYED, ":\\to "));
+    operTab.put(S.Set, new AbstractOperator(this, Precedence.SET, " = "));
+    operTab.put(S.SetDelayed, new AbstractOperator(this, Precedence.SETDELAYED, "\\text{:=}\\,"));
     operTab.put(
-        F.UndirectedEdge,
+        S.UndirectedEdge,
         new AbstractOperator(this, Precedence.UNDIRECTEDEDGE, "\\leftrightarrow "));
     operTab.put(
-        F.TwoWayRule, new AbstractOperator(this, Precedence.TWOWAYRULE, "\\leftrightarrow "));
-    operTab.put(F.CenterDot, new AbstractOperator(this, Precedence.CENTERDOT, "\\cdot "));
-    operTab.put(F.CircleDot, new AbstractOperator(this, Precedence.CIRCLEDOT, "\\odot "));
+        S.TwoWayRule, new AbstractOperator(this, Precedence.TWOWAYRULE, "\\leftrightarrow "));
+    operTab.put(S.CenterDot, new AbstractOperator(this, Precedence.CENTERDOT, "\\cdot "));
+    operTab.put(S.CircleDot, new AbstractOperator(this, Precedence.CIRCLEDOT, "\\odot "));
 
-    operTab.put(F.Sin, new TeXFunction(this, "sin "));
-    operTab.put(F.Cos, new TeXFunction(this, "cos "));
-    operTab.put(F.Tan, new TeXFunction(this, "tan "));
-    operTab.put(F.Cot, new TeXFunction(this, "cot "));
-    operTab.put(F.Sinh, new TeXFunction(this, "sinh "));
-    operTab.put(F.Cosh, new TeXFunction(this, "cosh "));
-    operTab.put(F.Tanh, new TeXFunction(this, "tanh "));
-    operTab.put(F.Coth, new TeXFunction(this, "coth "));
-    operTab.put(F.Csc, new TeXFunction(this, "csc "));
-    operTab.put(F.Sec, new TeXFunction(this, "sec "));
-    operTab.put(F.ArcSin, new TeXFunction(this, "arcsin "));
-    operTab.put(F.ArcCos, new TeXFunction(this, "arccos "));
-    operTab.put(F.ArcTan, new TeXFunction(this, "arctan "));
-    operTab.put(F.ArcCot, new TeXFunction(this, "arccot "));
-    operTab.put(F.ArcSinh, new TeXFunction(this, "arcsinh "));
-    operTab.put(F.ArcCosh, new TeXFunction(this, "arccosh "));
-    operTab.put(F.ArcTanh, new TeXFunction(this, "arctanh "));
-    operTab.put(F.ArcCoth, new TeXFunction(this, "arccoth "));
-    operTab.put(F.Log, new TeXFunction(this, "log "));
+    operTab.put(S.Sin, new TeXFunction(this, "sin "));
+    operTab.put(S.Cos, new TeXFunction(this, "cos "));
+    operTab.put(S.Tan, new TeXFunction(this, "tan "));
+    operTab.put(S.Cot, new TeXFunction(this, "cot "));
+    operTab.put(S.Sinh, new TeXFunction(this, "sinh "));
+    operTab.put(S.Cosh, new TeXFunction(this, "cosh "));
+    operTab.put(S.Tanh, new TeXFunction(this, "tanh "));
+    operTab.put(S.Coth, new TeXFunction(this, "coth "));
+    operTab.put(S.Csc, new TeXFunction(this, "csc "));
+    operTab.put(S.Sec, new TeXFunction(this, "sec "));
+    operTab.put(S.ArcSin, new TeXFunction(this, "arcsin "));
+    operTab.put(S.ArcCos, new TeXFunction(this, "arccos "));
+    operTab.put(S.ArcTan, new TeXFunction(this, "arctan "));
+    operTab.put(S.ArcCot, new TeXFunction(this, "arccot "));
+    operTab.put(S.ArcSinh, new TeXFunction(this, "arcsinh "));
+    operTab.put(S.ArcCosh, new TeXFunction(this, "arccosh "));
+    operTab.put(S.ArcTanh, new TeXFunction(this, "arctanh "));
+    operTab.put(S.ArcCoth, new TeXFunction(this, "arccoth "));
+    operTab.put(S.Log, new TeXFunction(this, "log "));
 
     CONSTANT_SYMBOLS.put("Alpha", "\\alpha");
     CONSTANT_SYMBOLS.put("Beta", "\\beta");
@@ -2102,14 +2101,14 @@ public class TeXFormFactory {
     CONSTANT_SYMBOLS.put("psi", AST2Expr.TRUE_STRING);
     CONSTANT_SYMBOLS.put("zeta", AST2Expr.TRUE_STRING);
 
-    CONSTANT_EXPRS.put(F.Catalan, "C");
-    CONSTANT_EXPRS.put(F.Degree, "{}^{\\circ}");
-    CONSTANT_EXPRS.put(F.E, "e");
-    CONSTANT_EXPRS.put(F.Glaisher, "A");
-    CONSTANT_EXPRS.put(F.GoldenRatio, "\\phi");
-    CONSTANT_EXPRS.put(F.EulerGamma, "\\gamma");
-    CONSTANT_EXPRS.put(F.Khinchin, "K");
-    CONSTANT_EXPRS.put(F.Pi, "\\pi");
+    CONSTANT_EXPRS.put(S.Catalan, "C");
+    CONSTANT_EXPRS.put(S.Degree, "{}^{\\circ}");
+    CONSTANT_EXPRS.put(S.E, "e");
+    CONSTANT_EXPRS.put(S.Glaisher, "A");
+    CONSTANT_EXPRS.put(S.GoldenRatio, "\\phi");
+    CONSTANT_EXPRS.put(S.EulerGamma, "\\gamma");
+    CONSTANT_EXPRS.put(S.Khinchin, "K");
+    CONSTANT_EXPRS.put(S.Pi, "\\pi");
     CONSTANT_EXPRS.put(F.CInfinity, "\\infty");
     CONSTANT_EXPRS.put(F.CNInfinity, "-\\infty");
   }

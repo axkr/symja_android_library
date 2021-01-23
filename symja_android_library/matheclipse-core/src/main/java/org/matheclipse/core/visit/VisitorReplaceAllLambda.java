@@ -6,6 +6,7 @@ import java.util.function.Predicate;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IASTMutable;
+import org.matheclipse.core.interfaces.IAssociation;
 import org.matheclipse.core.interfaces.IComplex;
 import org.matheclipse.core.interfaces.IComplexNum;
 import org.matheclipse.core.interfaces.IExpr;
@@ -27,10 +28,24 @@ public class VisitorReplaceAllLambda extends VisitorExpr {
   final Function<IExpr, IExpr> fFunction;
   final int fOffset;
 
+  /**
+   * Constructor for a replace all visitor where the given <code>function.apply()
+   * </code> method returns a non <code>F.NIL</code> value. The visitors <code>visit()</code>
+   * methods return <code>
+   * F.NIL</code> if no substitution occurred.
+   *
+   * @param predicate
+   * @param function
+   */
   public VisitorReplaceAllLambda(Predicate<IExpr> predicate, Function<IExpr, IExpr> function) {
     this(predicate, function, 0);
   }
 
+  /**
+   * @param predicate
+   * @param function
+   * @param offset
+   */
   public VisitorReplaceAllLambda(
       Predicate<IExpr> predicate, Function<IExpr, IExpr> function, int offset) {
     super();
@@ -100,6 +115,37 @@ public class VisitorReplaceAllLambda extends VisitorExpr {
   @Override
   public IExpr visit(IStringX element) {
     return visistAtom(element);
+  }
+
+  /** @return <code>F.NIL</code>, if no evaluation is possible */
+  @Override
+  public IExpr visit(IAssociation assoc) {
+    IExpr replacement = fFunction.apply(assoc);
+    if (replacement.isPresent()) {
+      return replacement;
+    }
+    int i = fOffset;
+    int size = assoc.size();
+    while (i < size) {
+      IExpr temp = assoc.getValue(i).accept(this);
+      if (temp.isPresent()) {
+        // something was evaluated - return a new IAST:
+        IASTMutable result = assoc.setAtCopy(i, assoc.getRule(i).setAtCopy(2, temp));
+        i++;
+        assoc.forEach(
+            i,
+            size,
+            (x, j) -> {
+              IExpr t = x.accept(this);
+              if (t.isPresent()) {
+                result.set(j, assoc.getRule(j).setAtCopy(2, t));
+              }
+            });
+        return result;
+      }
+      i++;
+    }
+    return F.NIL;
   }
 
   @Override

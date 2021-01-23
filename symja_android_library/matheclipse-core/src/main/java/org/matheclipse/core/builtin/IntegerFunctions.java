@@ -18,7 +18,6 @@ import org.matheclipse.core.eval.exception.ValidateException;
 import org.matheclipse.core.eval.interfaces.AbstractCoreFunctionEvaluator;
 import org.matheclipse.core.eval.interfaces.AbstractEvaluator;
 import org.matheclipse.core.eval.interfaces.AbstractFunctionEvaluator;
-import org.matheclipse.core.eval.interfaces.IFunctionEvaluator;
 import org.matheclipse.core.eval.interfaces.INumeric;
 import org.matheclipse.core.expression.ComplexNum;
 import org.matheclipse.core.expression.ComplexSym;
@@ -112,6 +111,7 @@ public class IntegerFunctions {
       return F.NIL;
     }
 
+    @Override
     public int[] expectedArgSize(IAST ast) {
       return ARGS_1_1;
     }
@@ -288,7 +288,7 @@ public class IntegerFunctions {
 
         Object2IntOpenHashMap<IExpr> map = new Object2IntOpenHashMap<IExpr>();
         for (int i = 1; i < list.size(); i++) {
-          map.addTo((IExpr) list.get(i), 1);
+          map.addTo(list.get(i), 1);
         }
         if (ast.isAST3()) {
           int index = ast.arg3().toIntDefault();
@@ -317,11 +317,12 @@ public class IntegerFunctions {
             return F.NIL;
           }
         }
-        return F.ast(arr, F.List);
+        return F.ast(arr, S.List);
       }
       return F.NIL;
     }
 
+    @Override
     public int[] expectedArgSize(IAST ast) {
       return ARGS_1_3;
     }
@@ -635,7 +636,7 @@ public class IntegerFunctions {
         return Negate(Ceiling(negExpr));
       }
       if (arg1.isInterval()) {
-        return IntervalSym.mapSymbol(F.Floor, (IAST) arg1);
+        return IntervalSym.mapSymbol(S.Floor, (IAST) arg1);
       }
       return F.NIL;
     }
@@ -729,6 +730,7 @@ public class IntegerFunctions {
       return F.NIL;
     }
 
+    @Override
     public int[] expectedArgSize(IAST ast) {
       return ARGS_1_1;
     }
@@ -951,7 +953,7 @@ public class IntegerFunctions {
             || arg1.isNegativeInfinity()
             || arg1.isDirectedInfinity(F.CI)
             || arg1.isDirectedInfinity(F.CNI)
-            || arg1.isAST(F.IntegerPart, 2)) {
+            || arg1.isAST(S.IntegerPart, 2)) {
           return arg1;
         }
         IExpr negExpr = AbstractFunctionEvaluator.getNormalizedNegativeExpression(arg1);
@@ -959,7 +961,7 @@ public class IntegerFunctions {
           return Negate(IntegerPart(negExpr));
         }
         if (arg1.isInterval()) {
-          return IntervalSym.mapSymbol(F.IntegerPart, (IAST) arg1);
+          return IntervalSym.mapSymbol(S.IntegerPart, (IAST) arg1);
         }
 
         ISignedNumber signedNumber = arg1.evalReal();
@@ -980,6 +982,7 @@ public class IntegerFunctions {
       return F.NIL;
     }
 
+    @Override
     public int[] expectedArgSize(IAST ast) {
       return ARGS_1_1;
     }
@@ -1027,13 +1030,14 @@ public class IntegerFunctions {
      * See: <a href="http://en.wikipedia.org/wiki/Modular_arithmetic">Wikipedia - Modular
      * arithmetic</a>
      */
+    @Override
     public IExpr evaluate(final IAST ast, EvalEngine engine) {
       IExpr m = ast.arg1();
       IExpr n = ast.arg2();
       if (n.isZero()) {
         // Indeterminate expression `1` encountered.
         IOFunctions.printMessage(ast.topHead(), "indet", F.List(ast), engine);
-        return F.Indeterminate;
+        return S.Indeterminate;
       }
       if (ast.isAST3()) {
         // 3 args
@@ -1052,8 +1056,8 @@ public class IntegerFunctions {
               || d.isComplexNumeric()) {
             // https://mathematica.stackexchange.com/a/114373/21734
             IExpr subExpr = engine.evaluate(F.Divide(F.Subtract(m, d), n));
-            IExpr re = F.Round.of(subExpr.re());
-            IExpr im = F.Round.of(subExpr.im());
+            IExpr re = S.Round.of(subExpr.re());
+            IExpr im = S.Round.of(subExpr.im());
             return F.Plus(m, F.Times(F.CN1, n, re), F.Times(F.CI, im));
           }
         }
@@ -1074,9 +1078,9 @@ public class IntegerFunctions {
         return F.Subtract(m, F.Times(n, F.Floor(((ISignedNumber) m).divideBy((ISignedNumber) n))));
       }
 
-      IExpr div = F.Divide.of(engine, m, n);
+      IExpr div = S.Divide.of(engine, m, n);
       if (div.isIndeterminate()) {
-        return F.Indeterminate;
+        return S.Indeterminate;
       }
       if (div.isNumber()
           || div.isNumericFunction(true)
@@ -1088,6 +1092,7 @@ public class IntegerFunctions {
       return F.NIL;
     }
 
+    @Override
     public int[] expectedArgSize(IAST ast) {
       return ARGS_2_3;
     }
@@ -1155,6 +1160,7 @@ public class IntegerFunctions {
       }
     }
 
+    @Override
     public int[] expectedArgSize(IAST ast) {
       return ARGS_3_3;
     }
@@ -1204,6 +1210,7 @@ public class IntegerFunctions {
    */
   private static class Quotient extends AbstractCoreFunctionEvaluator {
 
+    @Override
     public IExpr evaluate(final IAST ast, EvalEngine engine) {
       IExpr z = engine.evaluate(ast.arg1());
       IExpr n = engine.evaluate(ast.arg2());
@@ -1283,6 +1290,7 @@ public class IntegerFunctions {
       return F.NIL;
     }
 
+    @Override
     public int[] expectedArgSize(IAST ast) {
       return ARGS_2_3;
     }
@@ -1344,7 +1352,7 @@ public class IntegerFunctions {
           if (i1.isZero()) {
             return EvalEngine.get().printMessage("QuotientRemainder: division by zero");
           }
-          IASTMutable list = F.ListAlloc(F.Null, F.Null);
+          IASTMutable list = F.ListAlloc(S.Null, S.Null);
 
           list.set(1, i0.quotient(i1));
           if (i1.isNegative()) {
@@ -1396,7 +1404,7 @@ public class IntegerFunctions {
               return F.List(F.complexNum(qr[0]).floorFraction(), F.complexNum(qr[1]));
             } else {
               IInteger quotient = F.num(zDouble / nDouble).floorFraction();
-              IExpr remainder = F.Plus.of(engine, arg1, F.Negate(F.Times(quotient, arg2)));
+              IExpr remainder = S.Plus.of(engine, arg1, F.Negate(F.Times(quotient, arg2)));
               return F.List(quotient, remainder);
             }
           } catch (ValidateException ve) {
@@ -1509,7 +1517,7 @@ public class IntegerFunctions {
           ISignedNumber multiple = arg2.evalReal();
           if (multiple != null) {
             if (multiple.isZero()) {
-              return F.Indeterminate;
+              return S.Indeterminate;
             }
             ISignedNumber signedNumber = arg1.evalReal();
             if (signedNumber != null) {
@@ -1563,7 +1571,7 @@ public class IntegerFunctions {
           return Negate(Round(negExpr));
         }
         if (arg1.isInterval()) {
-          return IntervalSym.mapSymbol(F.Round, (IAST) arg1);
+          return IntervalSym.mapSymbol(S.Round, (IAST) arg1);
         }
       } catch (ArithmeticException ae) {
         // ISignedNumber#round() may throw ArithmeticException
@@ -1571,6 +1579,7 @@ public class IntegerFunctions {
       return res;
     }
 
+    @Override
     public int[] expectedArgSize(IAST ast) {
       return ARGS_1_2;
     }
@@ -1683,8 +1692,7 @@ public class IntegerFunctions {
 
     @Override
     public void setUp(ISymbol newSymbol) {
-      newSymbol.setAttributes(
-          ISymbol.HOLDALL | ISymbol.ORDERLESS | ISymbol.LISTABLE | ISymbol.NUMERICFUNCTION);
+      newSymbol.setAttributes(ISymbol.ORDERLESS | ISymbol.LISTABLE | ISymbol.NUMERICFUNCTION);
     }
   }
 }

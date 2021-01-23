@@ -1,13 +1,12 @@
 package org.matheclipse.core.interfaces;
 
 import java.math.BigInteger;
-import java.util.SortedMap;
-
 import org.matheclipse.core.expression.F;
 
 /** An expression representing a big integer number */
 public interface IInteger extends IRational {
 
+  @Override
   public void checkBitLength();
 
   /** Certainty for the isProbablePrime() method */
@@ -41,8 +40,10 @@ public interface IInteger extends IRational {
    */
   public IInteger charmichaelLambda();
 
+  @Override
   public IInteger dec();
 
+  @Override
   public IInteger inc();
 
   /**

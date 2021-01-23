@@ -94,6 +94,7 @@ public class Lambda {
    * @return
    * @deprecated use IAST#existsLeft()
    */
+  @Deprecated
   public static IExpr existsLeft(
       IAST ast, BiPredicate<IExpr, IExpr> stopPredicate, IExpr stopExpr, IExpr resultExpr) {
     int size = ast.size();
@@ -116,6 +117,7 @@ public class Lambda {
    * @return
    * @deprecated use IAST#exists()
    */
+  @Deprecated
   public static boolean exists(IAST ast, Predicate<IExpr> stopPredicate, int offset) {
     int size = ast.size();
     for (int i = offset; i < size; i++) {
@@ -137,6 +139,7 @@ public class Lambda {
    * @return
    * @deprecated use IAST#forAll()
    */
+  @Deprecated
   public static boolean forAll(IAST ast, Predicate<IExpr> stopPredicate, int offset) {
     int size = ast.size();
     for (int i = offset; i < size; i++) {

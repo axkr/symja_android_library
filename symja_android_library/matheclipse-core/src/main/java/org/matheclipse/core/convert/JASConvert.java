@@ -1,7 +1,5 @@
 package org.matheclipse.core.convert;
 
-import static org.matheclipse.core.expression.F.C0;
-
 import java.math.BigInteger;
 import java.util.ArrayList;
 import java.util.Iterator;
@@ -11,6 +9,7 @@ import java.util.SortedMap;
 
 import org.matheclipse.core.eval.exception.JASConversionException;
 import org.matheclipse.core.expression.F;
+import org.matheclipse.core.expression.S;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IASTAppendable;
 import org.matheclipse.core.interfaces.IComplex;
@@ -23,7 +22,6 @@ import org.matheclipse.core.interfaces.INumber;
 import org.matheclipse.core.interfaces.IRational;
 import org.matheclipse.core.interfaces.ISignedNumber;
 import org.matheclipse.core.interfaces.ISymbol;
-import org.matheclipse.core.polynomials.longexponent.ExprMonomial;
 import org.matheclipse.parser.client.FEConfig;
 
 import edu.jas.arith.BigRational;
@@ -572,7 +570,7 @@ public class JASConvert<C extends RingElem<C>> {
         IASTAppendable times = F.TimesAlloc(2);
 
         if (p.degree(0) < ar.modul.degree(0) && ar.modul.degree(0) > 2) {
-          IASTAppendable rootOf = F.ast(F.RootOf);
+          IASTAppendable rootOf = F.ast(S.RootOf);
           rootOf.append(rationalPoly2Expr(ar.modul, false));
           times.append(rootOf);
 

@@ -1,7 +1,6 @@
 package org.matheclipse.core.reflection.system;
 
 import org.hipparchus.analysis.UnivariateFunction;
-import org.hipparchus.analysis.differentiation.DerivativeStructure;
 import org.hipparchus.analysis.differentiation.UnivariateDifferentiableFunction;
 import org.hipparchus.analysis.solvers.BaseAbstractUnivariateSolver;
 import org.hipparchus.analysis.solvers.BisectionSolver;
@@ -16,7 +15,6 @@ import org.hipparchus.analysis.solvers.SecantSolver;
 import org.hipparchus.exception.MathIllegalArgumentException;
 import org.hipparchus.exception.MathRuntimeException;
 import org.matheclipse.core.eval.EvalEngine;
-import org.matheclipse.core.eval.exception.Validate;
 import org.matheclipse.core.eval.exception.ValidateException;
 import org.matheclipse.core.eval.interfaces.AbstractFunctionEvaluator;
 import org.matheclipse.core.eval.interfaces.IFunctionEvaluator;
@@ -25,6 +23,7 @@ import org.matheclipse.core.eval.util.IAssumptions;
 import org.matheclipse.core.eval.util.OptionArgs;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.expression.Num;
+import org.matheclipse.core.expression.S;
 import org.matheclipse.core.generic.UnaryNumerical;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IExpr;
@@ -175,11 +174,11 @@ public class FindRoot extends AbstractFunctionEvaluator {
     int maxIterations = 100;
     if (ast.size() >= 4) {
       final OptionArgs options = new OptionArgs(ast.topHead(), ast, 3, engine);
-      IExpr optionMaxIterations = options.getOption(F.MaxIterations);
+      IExpr optionMaxIterations = options.getOption(S.MaxIterations);
       if (optionMaxIterations.isReal()) {
         maxIterations = ((ISignedNumber) optionMaxIterations).toInt();
       }
-      IExpr optionMethod = options.getOption(F.Method);
+      IExpr optionMethod = options.getOption(S.Method);
       if (optionMethod.isSymbol()) {
         method = optionMethod.toString();
       } else {
@@ -210,7 +209,7 @@ public class FindRoot extends AbstractFunctionEvaluator {
                     Num.valueOf(
                         findRoot(method, maxIterations, list, min, max, function, engine))));
           } catch (ValidateException ve) {
-              return engine.printMessage(ast.topHead(), ve);
+            return engine.printMessage(ast.topHead(), ve);
           } catch (MathIllegalArgumentException miae) {
             if (FEConfig.SHOW_STACKTRACE) {
               miae.printStackTrace();
@@ -229,6 +228,7 @@ public class FindRoot extends AbstractFunctionEvaluator {
     return F.NIL;
   }
 
+  @Override
   public int[] expectedArgSize(IAST ast) {
     return IFunctionEvaluator.ARGS_2_INFINITY;
   }
@@ -244,7 +244,7 @@ public class FindRoot extends AbstractFunctionEvaluator {
     ISymbol xVar = (ISymbol) list.arg1();
     IAssumptions oldAssumptions = engine.getAssumptions();
     try {
-      IAssumptions assum = Assumptions.getInstance(F.Element(xVar, F.Reals));
+      IAssumptions assum = Assumptions.getInstance(F.Element(xVar, S.Reals));
       engine.setAssumptions(assum);
       function = engine.evaluate(function);
       UnivariateDifferentiableFunction f = new UnaryNumerical(function, xVar, engine, true);

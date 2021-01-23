@@ -2,7 +2,6 @@ package org.matheclipse.core.interfaces;
 
 import org.matheclipse.core.eval.util.Assumptions;
 import org.matheclipse.core.eval.util.IAssumptions;
-import org.matheclipse.core.expression.F;
 
 public interface IDiscreteDistribution extends IDistribution {
   /**

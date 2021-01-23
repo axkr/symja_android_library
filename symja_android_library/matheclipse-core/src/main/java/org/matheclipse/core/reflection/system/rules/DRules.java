@@ -18,11 +18,13 @@ public interface DRules {
    *   <li>index 0 - number of equal rules in <code>RULES</code>
    * </ul>
    */
-  public static final int[] SIZES = {0, 128};
+  public static final int[] SIZES = {0, 129};
 
   public static final IAST RULES =
       List(
           IInit(D, SIZES),
+          // D(Integrate(f_,x_),x_?NotListQ):=f
+          ISetDelayed(D(Integrate(f_, x_), PatternTest(x_, NotListQ)), f),
           // D(Abs(f_),x_?NotListQ):=D(f,x)*x/Abs(x)/;x∈Reals
           ISetDelayed(
               D(Abs(f_), PatternTest(x_, NotListQ)),

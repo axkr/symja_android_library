@@ -26,7 +26,6 @@ import org.matheclipse.core.eval.exception.LimitException;
 import org.matheclipse.core.eval.exception.RecursionLimitExceeded;
 import org.matheclipse.core.eval.exception.SymjaMathException;
 import org.matheclipse.core.eval.exception.TimeoutException;
-import org.matheclipse.core.eval.interfaces.ICoreFunctionEvaluator;
 import org.matheclipse.core.eval.interfaces.IFunctionEvaluator;
 import org.matheclipse.core.eval.util.IAssumptions;
 import org.matheclipse.core.expression.ASTRealMatrix;
@@ -164,6 +163,12 @@ public class EvalEngine implements Serializable {
   transient volatile boolean fStopRequested;
 
   transient int fRecursionCounter;
+
+  /**
+   * The time in milliseconds the current <code>TimeConstrained</code> operation should stop. <code>
+   * -1</code> is set for Infinity
+   */
+  transient long fTimeConstrainedMillis = -1;
 
   transient long fSeconds;
   /**
@@ -420,7 +425,7 @@ public class EvalEngine implements Serializable {
     if (outExpr != null && outExpr.isPresent()) {
       fAnswer = outExpr;
     } else {
-      fAnswer = F.Null;
+      fAnswer = S.Null;
     }
     ISymbol ans = F.symbol("$ans", Context.GLOBAL_CONTEXT_NAME, null, this);
     ans.putDownRule(IPatternMatcher.SET, true, ans, fAnswer, false);
@@ -726,7 +731,7 @@ public class EvalEngine implements Serializable {
                 2,
                 astSize,
                 (arg, i) -> {
-                  if (arg.isAST(F.Evaluate)) {
+                  if (arg.isAST(S.Evaluate)) {
                     IExpr temp = evalLoop(arg);
                     evalArg(rlist, ast, temp, arg, i, isNumericFunction);
                   }
@@ -811,7 +816,7 @@ public class EvalEngine implements Serializable {
 
         if (arg1.isList()) {
           // thread over the list
-          return EvalAttributes.threadList(ast, F.List, ast.head(), ((IAST) arg1).argSize());
+          return EvalAttributes.threadList(ast, S.List, ast.head(), ((IAST) arg1).argSize());
         } else if (arg1.isAssociation()) {
           // thread over the association
           return ((IAssociation) arg1).mapThread(ast, 1);
@@ -828,7 +833,7 @@ public class EvalEngine implements Serializable {
 
     if ((ISymbol.NUMERICFUNCTION & attr) == ISymbol.NUMERICFUNCTION) {
       if (ast.arg1().isIndeterminate()) {
-        return F.Indeterminate;
+        return S.Indeterminate;
       }
     }
 
@@ -851,10 +856,10 @@ public class EvalEngine implements Serializable {
         // check for Set or SetDelayed necessary, because of dynamic
         // evaluation then initializing rules for predefined symbols
         // (i.e. Sin, Cos,...)
-        if (!(symbol.equals(F.Set)
-            || symbol.equals(F.SetDelayed)
-            || symbol.equals(F.UpSet)
-            || symbol.equals(F.UpSetDelayed))) {
+        if (!(symbol.equals(S.Set)
+            || symbol.equals(S.SetDelayed)
+            || symbol.equals(S.UpSet)
+            || symbol.equals(S.UpSetDelayed))) {
           return F.NIL;
         }
       } else {
@@ -865,7 +870,7 @@ public class EvalEngine implements Serializable {
     }
 
     if (((ISymbol.DELAYED_RULE_EVALUATION & attr) == ISymbol.NOATTRIBUTE)
-        && !symbol.equals(F.Integrate)) {
+        && !symbol.equals(S.Integrate)) {
       IExpr result;
       if ((result = symbol.evalDownRule(this, ast)).isPresent()) {
         return result;
@@ -1036,7 +1041,7 @@ public class EvalEngine implements Serializable {
       if ((ISymbol.NUMERICFUNCTION & attr) == ISymbol.NUMERICFUNCTION) {
         if (!((ISymbol.HOLDALL & attr) == ISymbol.HOLDALL)) {
           if (tempAST.exists(x -> x.isIndeterminate())) {
-            return F.Indeterminate;
+            return S.Indeterminate;
           }
           IExpr temp = tempAST.extractConditionalExpression(false);
           if (temp.isPresent()) {
@@ -1080,7 +1085,7 @@ public class EvalEngine implements Serializable {
               variableSymbol.assignValue(blockVariables[i], false);
               variableSymbol.setRulesData(blockVariablesRulesData[i]);
             }
-          } else if (localVariablesList.get(i).isAST(F.Set, 3)) {
+          } else if (localVariablesList.get(i).isAST(S.Set, 3)) {
             final IAST setFun = (IAST) localVariablesList.get(i);
             if (setFun.arg1().isVariable()) {
               variableSymbol = symbolList[i];
@@ -1356,6 +1361,13 @@ public class EvalEngine implements Serializable {
    * @see EvalEngine#evalWithoutNumericReset(IExpr)
    */
   public final IExpr evalLoop(final IExpr expr) {
+    if (expr == null || !expr.isPresent()) {
+      if (Config.FUZZ_TESTING) {
+        throw new NullPointerException();
+      }
+      printMessage("Evaluation aborted in EvalEngine#evalLoop() because of undefined expression!");
+      throw AbortException.ABORTED;
+    }
     if ((fRecursionLimit > 0) && (fRecursionCounter > fRecursionLimit)) {
       if (Config.DEBUG) {
         System.out.println(expr.toString());
@@ -1726,11 +1738,11 @@ public class EvalEngine implements Serializable {
           } else {
             resultList = ast.setAtCopy(i, PowerOp.power(arg1, F.C1D2));
           }
-        } else if (expr.isAST(F.Exp, 2)) {
+        } else if (expr.isAST(S.Exp, 2)) {
           if (resultList.isPresent()) {
-            resultList.set(i, PowerOp.power(F.E, arg1));
+            resultList.set(i, PowerOp.power(S.E, arg1));
           } else {
-            resultList = ast.setAtCopy(i, PowerOp.power(F.E, arg1));
+            resultList = ast.setAtCopy(i, PowerOp.power(S.E, arg1));
           }
         }
       }
@@ -2096,7 +2108,7 @@ public class EvalEngine implements Serializable {
             }
             seqResult[0].appendArgs(seq);
             return;
-          } else if (x.equals(F.Nothing)) {
+          } else if (x.equals(S.Nothing)) {
             if ((ISymbol.HOLDALL & attr) == ISymbol.NOATTRIBUTE) {
               if (!seqResult[0].isPresent()) {
                 seqResult[0] = F.ast(ast.head(), ast.size() - 1, false);
@@ -2243,6 +2255,27 @@ public class EvalEngine implements Serializable {
     return fRecursionLimit;
   }
 
+  /**
+   * The remaining time in seconds for function <code>TimeRemaining</code>.
+   *
+   * @return <code>-1.0</code> for Infinity. The remaining time in seconds otherwise.
+   */
+  public double getRemainingSeconds() {
+    long timeConstrained = fTimeConstrainedMillis;
+    if (timeConstrained < 0) {
+      return -1.0;
+    }
+    long timeRemaining = (timeConstrained - System.currentTimeMillis());
+    if (timeRemaining < 0) {
+      timeRemaining = 0;
+    }
+    return (timeRemaining) / 1000.0;
+  }
+
+  public long getTimeConstrainedMillis() {
+    return fTimeConstrainedMillis;
+  }
+
   public long getSeconds() {
     return fSeconds;
   }
@@ -2366,6 +2399,7 @@ public class EvalEngine implements Serializable {
    * @return
    * @deprecated use {@link #isArbitraryMode()}
    */
+  @Deprecated
   public final boolean isApfloatMode() {
     return isArbitraryMode();
   }
@@ -2746,6 +2780,16 @@ public class EvalEngine implements Serializable {
     this.fRelaxedSyntax = fRelaxedSyntax;
   }
 
+  /**
+   * Set the time in milliseconds then the current TimeConstrained operation should stop. <code>-1
+   * </code> is set for Infinity
+   *
+   * @param timeConstrainedMillis
+   */
+  public void setTimeConstrainedMillis(final long timeConstrainedMillis) {
+    fTimeConstrainedMillis = timeConstrainedMillis;
+  }
+
   public void setSeconds(long fSeconds) {
     this.fSeconds = fSeconds;
   }
@@ -2839,7 +2883,7 @@ public class EvalEngine implements Serializable {
             } else {
               if (listLength[0] != ((IAST) x).argSize()) {
                 // Objects of unequal length in `1` cannot be combined.
-                IOFunctions.printMessage(F.Thread, "tdlen", F.List(ast), EvalEngine.get());
+                IOFunctions.printMessage(S.Thread, "tdlen", F.List(ast), EvalEngine.get());
                 // ast.addEvalFlags(IAST.IS_LISTABLE_THREADED);
                 return true;
               }
@@ -2854,7 +2898,7 @@ public class EvalEngine implements Serializable {
             } else {
               if (listLength[0] != sp.getDimension()[0]) {
                 // Objects of unequal length in `1` cannot be combined.
-                IOFunctions.printMessage(F.Thread, "tdlen", F.List(ast), EvalEngine.get());
+                IOFunctions.printMessage(S.Thread, "tdlen", F.List(ast), EvalEngine.get());
                 // ast.addEvalFlags(IAST.IS_LISTABLE_THREADED);
                 return true;
               }

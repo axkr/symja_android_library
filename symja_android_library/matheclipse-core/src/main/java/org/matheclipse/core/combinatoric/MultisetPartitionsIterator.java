@@ -51,14 +51,14 @@ public class MultisetPartitionsIterator {
   public boolean execute() {
     while (rosen.hasNext()) {
       currentRosen = rosen.next();
-      if (recursiveMultisetCombination(multiset, 0)) {
+      if (multisetCombinationRecursive(multiset, 0)) {
         return false;
       }
     }
     return true;
   }
 
-  private boolean recursiveMultisetCombination(int[] multiset, int i) {
+  private boolean multisetCombinationRecursive(int[] multiset, int i) {
     if (i < currentRosen.length) {
       final MultisetCombinationIterator iter =
           new MultisetCombinationIterator(multiset, currentRosen[i]);
@@ -66,7 +66,7 @@ public class MultisetPartitionsIterator {
         final int[] currentSubset = iter.next();
         result[i] = currentSubset;
         int[] wc = ArrayUtils.deleteSubset(multiset, currentSubset);
-        if (recursiveMultisetCombination(wc, i + 1)) {
+        if (multisetCombinationRecursive(wc, i + 1)) {
           return true;
         }
       }

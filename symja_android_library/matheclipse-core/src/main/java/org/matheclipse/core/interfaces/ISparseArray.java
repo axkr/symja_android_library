@@ -1,11 +1,9 @@
 package org.matheclipse.core.interfaces;
 
-import java.util.function.BiFunction;
 import java.util.function.Function;
 
 import org.hipparchus.linear.FieldMatrix;
 import org.hipparchus.linear.FieldVector;
-import org.matheclipse.core.expression.data.SparseArrayExpr;
 import org.matheclipse.parser.trie.Trie;
 
 public interface ISparseArray extends IDataExpr<Trie<int[], IExpr>> {
@@ -51,6 +49,7 @@ public interface ISparseArray extends IDataExpr<Trie<int[], IExpr>> {
   public IAST arrayRules();
 
   /** Returns <code>true</code> for a sparse array object */
+  @Override
   public boolean isSparseArray();
 
   /**
@@ -92,6 +91,7 @@ public interface ISparseArray extends IDataExpr<Trie<int[], IExpr>> {
    */
   public FieldMatrix<IExpr> toFieldMatrix(boolean arrayCopy);
 
+  @Override
   public IASTMutable normal(boolean nilIfUnevaluated);
 
   public IASTMutable normal(int[] dims);

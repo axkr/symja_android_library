@@ -8,6 +8,7 @@ import java.util.Properties;
 import java.util.stream.Collectors;
 
 import org.matheclipse.core.expression.F;
+import org.matheclipse.core.expression.S;
 import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.interfaces.IStringX;
 import org.matheclipse.parser.client.math.MathException;
@@ -77,9 +78,9 @@ public class SimpleUnitSystem implements UnitSystem {
                 ? IQuantity.of(F.C1, format(entry)) //
                 : lookup.isQuantity() //
                     ? ((IQuantity) lookup).power(entryValue) //
-                    : F.Power.of(lookup, entryValue);
+                    : S.Power.of(lookup, entryValue);
         if (temp.isQuantity()) {
-          v1 = temp.times(value);
+          v1 = ((IQuantity) temp).times(value, true);
         } else {
           v1 = value.times(temp);
         }

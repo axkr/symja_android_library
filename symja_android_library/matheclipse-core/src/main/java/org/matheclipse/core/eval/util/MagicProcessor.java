@@ -3,7 +3,7 @@ package org.matheclipse.core.eval.util;
 import org.apache.logging.log4j.Logger;
 import org.apache.logging.log4j.LogManager;
 import org.matheclipse.core.eval.MathUtils;
-import org.matheclipse.core.expression.F;
+import org.matheclipse.core.expression.S;
 import org.matheclipse.core.expression.Symbol;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IExpr;
@@ -52,7 +52,7 @@ public class MagicProcessor {
       String processEq = inputQuestionIsPossiblyASystemOfEquation(outPut);
       if (processEq != null) {
         // Args will be handled in wrtArgumentMising
-        outPut = ((ISymbol) F.Solve).toString() + "(" + processEq + ")";
+        outPut = ((ISymbol) S.Solve).toString() + "(" + processEq + ")";
       }
 
       /*
@@ -67,16 +67,16 @@ public class MagicProcessor {
     if (ques == null) return outPut;
     Log.debug("ques = " + ques.toString());
 
-    if (wrtArgumentMising(ques, F.Solve)) {
+    if (wrtArgumentMising(ques, S.Solve)) {
       IExpr equations = getArg1(ques);
       String vars = solve_get_arg_if_missing(equations);
       if (vars != null && err == null) {
-        outPut = ((Symbol) F.Solve).toString() + "(" + equations.toString() + "," + vars + ")";
+        outPut = ((Symbol) S.Solve).toString() + "(" + equations.toString() + "," + vars + ")";
         Log.debug(" Result after eq processing " + outPut);
       }
     }
 
-    if (wrtArgumentMising(ques, F.D)) {
+    if (wrtArgumentMising(ques, S.D)) {
       IExpr fn = getArg1(ques);
       // Extract variables from equations
       org.matheclipse.core.convert.VariablesSet eVar =
@@ -84,9 +84,9 @@ public class MagicProcessor {
       String var = null;
       if (eVar.isSize(1)) var = getVarString(eVar, false);
       else var = getVarString(eVar, true);
-      outPut = ((Symbol) F.D).toString() + "(" + fn.toString() + "," + var + ")";
+      outPut = ((Symbol) S.D).toString() + "(" + fn.toString() + "," + var + ")";
     }
-    if (wrtArgumentMising(ques, F.Integrate)) {
+    if (wrtArgumentMising(ques, S.Integrate)) {
       IExpr fn = getArg1(ques);
       // Extract variables from equations
       org.matheclipse.core.convert.VariablesSet eVar =
@@ -94,7 +94,7 @@ public class MagicProcessor {
       String var = null;
       if (eVar.isSize(1)) var = getVarString(eVar, false);
       else var = getVarString(eVar, true);
-      outPut = ((Symbol) F.Integrate).toString() + "(" + fn.toString() + "," + var + ")";
+      outPut = ((Symbol) S.Integrate).toString() + "(" + fn.toString() + "," + var + ")";
     }
 
     Log.debug("Processed q = " + outPut);
@@ -157,8 +157,8 @@ public class MagicProcessor {
 
   public String getVarString(org.matheclipse.core.convert.VariablesSet eVar, boolean onlyXorY) {
     if (onlyXorY) {
-      if (eVar.contains(F.x)) return F.x.toString();
-      else if (eVar.contains(F.y)) return F.y.toString();
+      if (eVar.contains(S.x)) return S.x.toString();
+      else if (eVar.contains(S.y)) return S.y.toString();
       else return null;
     }
     IAST varList = eVar.getVarList();

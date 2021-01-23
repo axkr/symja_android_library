@@ -1,6 +1,5 @@
 package org.matheclipse.core.builtin.functions;
 
-import org.gavaghan.geodesy.GeodeticMeasurement;
 import org.hipparchus.complex.Complex;
 import org.hipparchus.util.FastMath;
 import org.matheclipse.core.basic.Config;

@@ -64,7 +64,7 @@ import org.matheclipse.core.expression.ASTRealVector;
 import org.matheclipse.core.expression.ExprField;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.expression.S;
-import org.matheclipse.core.generic.Comparators.ExprReverseComparator;
+import org.matheclipse.core.generic.Comparators;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IASTAppendable;
 import org.matheclipse.core.interfaces.IASTMutable;
@@ -874,7 +874,7 @@ public final class LinearAlgebra {
               Function(
                   Prepend(
                       MapThread(
-                          Function(List(F.g, F.y, F.r), ReplaceAll(F.g, Rule(F.y, F.r))),
+                          Function(List(S.g, S.y, S.r), ReplaceAll(S.g, Rule(S.y, S.r))),
                           List(f, x, Most(Slot1))),
                       C1)),
               m);
@@ -932,8 +932,9 @@ public final class LinearAlgebra {
    */
   private static class Det extends AbstractMatrix1Expr {
 
+    @Override
     public int[] checkMatrixDimensions(IExpr arg1) {
-      return Convert.checkNonEmptySquareMatrix(F.Det, arg1);
+      return Convert.checkNonEmptySquareMatrix(S.Det, arg1);
     }
 
     @Override
@@ -1142,27 +1143,34 @@ public final class LinearAlgebra {
         maximumLevel = ast.arg2().toIntDefault(Integer.MIN_VALUE);
         if (maximumLevel < 0) {
           // Positive integer (less equal 2147483647) expected at position `2` in `1`.
-          return IOFunctions.printMessage(F.Dimensions, "intpm", F.List(ast, F.C2), engine);
+          return IOFunctions.printMessage(S.Dimensions, "intpm", F.List(ast, F.C2), engine);
         }
       }
-      if (ast.arg1().isAST()) {
+      IExpr arg1 = ast.arg1();
+      if (arg1.isAST()) {
         if (maximumLevel > 0) {
           return getDimensions(ast, maximumLevel);
         }
-      } else if (ast.arg1().isSparseArray()) {
+      } else if (arg1.isSparseArray()) {
         if (maximumLevel > 0) {
-          ISparseArray array = (ISparseArray) ast.arg1();
-          int[] dims = array.getDimension();
-          if (dims.length > maximumLevel) {
-            int[] dest = new int[maximumLevel];
-            System.arraycopy(dims, 0, dest, 0, maximumLevel);
-            return F.ast(F.List, dest);
-          }
-          return F.ast(F.List, dims);
+          return getDimensions(((ISparseArray) arg1).getDimension(), maximumLevel);
+        }
+      } else if (arg1.isNumericArray()) {
+        if (maximumLevel > 0) {
+          return getDimensions(((INumericArray) arg1).getDimension(), maximumLevel);
         }
       }
 
       return F.CEmptyList;
+    }
+
+    private IExpr getDimensions(int[] dims, int maximumLevel) {
+      if (dims.length > maximumLevel) {
+        int[] dest = new int[maximumLevel];
+        System.arraycopy(dims, 0, dest, 0, maximumLevel);
+        return F.ast(S.List, dest);
+      }
+      return F.ast(S.List, dims);
     }
 
     @Override
@@ -1433,8 +1441,9 @@ public final class LinearAlgebra {
    */
   private static class Eigenvalues extends AbstractMatrix1Expr {
 
+    @Override
     public int[] checkMatrixDimensions(IExpr arg1) {
-      return Convert.checkNonEmptySquareMatrix(F.Eigenvalues, arg1);
+      return Convert.checkNonEmptySquareMatrix(S.Eigenvalues, arg1);
     }
 
     @Override
@@ -1516,11 +1525,7 @@ public final class LinearAlgebra {
   }
 
   /**
-   *
-   *
-   * <pre>
-   * Eigenvectors(matrix)
-   * </pre>
+   * Eigenvectors(matrix) </pre>
    *
    * <blockquote>
    *
@@ -1543,8 +1548,9 @@ public final class LinearAlgebra {
    */
   private static class Eigenvectors extends AbstractMatrix1Expr {
 
+    @Override
     public int[] checkMatrixDimensions(IExpr arg1) {
-      return Convert.checkNonEmptySquareMatrix(F.Eigenvectors, arg1);
+      return Convert.checkNonEmptySquareMatrix(S.Eigenvectors, arg1);
     }
 
     @Override
@@ -1634,6 +1640,7 @@ public final class LinearAlgebra {
 
     @Override
     public IAST realMatrixEval(RealMatrix matrix) {
+      // TODO
       //      ComplexEigenDecomposition ced = new ComplexEigenDecomposition(matrix);
       //      int size = matrix.getColumnDimension();
       //      IASTAppendable list = F.ListAlloc(size);
@@ -1675,11 +1682,11 @@ public final class LinearAlgebra {
         final int m = ast.arg1().toIntDefault(Integer.MIN_VALUE);
         if (m <= 0) {
           // Positive integer (less equal 2147483647) expected at position `2` in `1`.
-          return IOFunctions.printMessage(F.FourierMatrix, "intpm", F.List(ast, F.C1), engine);
+          return IOFunctions.printMessage(S.FourierMatrix, "intpm", F.List(ast, F.C1), engine);
         }
         IAST scalar = F.Sqrt(F.QQ(1, m));
         return F.matrix(
-            (i, j) -> unit(F.QQ(2L * ((long) i) * ((long) j), m).times(F.Pi)).times(scalar), m, m);
+            (i, j) -> unit(F.QQ(2L * ((long) i) * ((long) j), m).times(S.Pi)).times(scalar), m, m);
       }
       return F.NIL;
     }
@@ -1813,19 +1820,19 @@ public final class LinearAlgebra {
         rowSize = ast.arg1().toIntDefault(Integer.MIN_VALUE);
         if (rowSize < 0) {
           // Positive integer (less equal 2147483647) expected at position `2` in `1`.
-          return IOFunctions.printMessage(F.HilbertMatrix, "intpm", F.List(ast, F.C1), engine);
+          return IOFunctions.printMessage(S.HilbertMatrix, "intpm", F.List(ast, F.C1), engine);
         }
         columnSize = rowSize;
       } else if (ast.isAST2() && ast.arg1().isInteger() && ast.arg2().isInteger()) {
         rowSize = ast.arg1().toIntDefault(Integer.MIN_VALUE);
         if (rowSize < 0) {
           // Positive integer (less equal 2147483647) expected at position `2` in `1`.
-          return IOFunctions.printMessage(F.HilbertMatrix, "intpm", F.List(ast, F.C1), engine);
+          return IOFunctions.printMessage(S.HilbertMatrix, "intpm", F.List(ast, F.C1), engine);
         }
         columnSize = ast.arg2().toIntDefault(Integer.MIN_VALUE);
         if (columnSize < 0) {
           // Positive integer (less equal 2147483647) expected at position `2` in `1`.
-          return IOFunctions.printMessage(F.HilbertMatrix, "intpm", F.List(ast, F.C2), engine);
+          return IOFunctions.printMessage(S.HilbertMatrix, "intpm", F.List(ast, F.C2), engine);
         }
       } else {
         return F.NIL;
@@ -1867,7 +1874,7 @@ public final class LinearAlgebra {
         int m = ast.arg1().toIntDefault(Integer.MIN_VALUE);
         if (m < 0) {
           // Positive integer (less equal 2147483647) expected at position `2` in `1`.
-          return IOFunctions.printMessage(F.IdentityMatrix, "intpm", F.List(ast, F.C1), engine);
+          return IOFunctions.printMessage(S.IdentityMatrix, "intpm", F.List(ast, F.C1), engine);
         }
         return F.matrix((i, j) -> i.equals(j) ? F.C1 : F.C0, m, m);
       }
@@ -2023,7 +2030,7 @@ public final class LinearAlgebra {
         IAST list2 = (IAST) ast.arg3().normal(false);
         IExpr g;
         if (ast.isAST3()) {
-          g = F.Plus;
+          g = S.Plus;
         } else {
           g = ast.arg4();
         }
@@ -2109,8 +2116,9 @@ public final class LinearAlgebra {
    */
   private static final class Inverse extends AbstractMatrix1Matrix {
 
+    @Override
     public int[] checkMatrixDimensions(IExpr arg1) {
-      return Convert.checkNonEmptySquareMatrix(F.Inverse, arg1);
+      return Convert.checkNonEmptySquareMatrix(S.Inverse, arg1);
     }
 
     public static FieldMatrix<IExpr> inverseMatrix(FieldMatrix<IExpr> matrix) {
@@ -2119,7 +2127,7 @@ public final class LinearAlgebra {
       if (!solver.isNonSingular()) {
         // Matrix `1` is singular.
         IOFunctions.printMessage(
-            F.Inverse, "sing", F.List(Convert.matrix2List(matrix, false)), EvalEngine.get());
+            S.Inverse, "sing", F.List(Convert.matrix2List(matrix, false)), EvalEngine.get());
         return null;
       }
       return solver.getInverse();
@@ -2138,7 +2146,7 @@ public final class LinearAlgebra {
       if (!solver.isNonSingular()) {
         // Matrix `1` is singular.
         IOFunctions.printMessage(
-            F.Inverse, "sing", F.List(Convert.matrix2List(matrix, false)), EvalEngine.get());
+            S.Inverse, "sing", F.List(Convert.matrix2List(matrix, false)), EvalEngine.get());
         return null;
       }
       return solver.getInverse();
@@ -2272,7 +2280,7 @@ public final class LinearAlgebra {
             }
           }
           try {
-            IAST matrixTransposed = (IAST) F.ConjugateTranspose.of(engine, matrix);
+            IAST matrixTransposed = (IAST) S.ConjugateTranspose.of(engine, matrix);
             return F.Expand(
                 F.LinearSolve(
                     F.ConjugateTranspose(F.Dot(matrixTransposed, matrix)),
@@ -2825,10 +2833,10 @@ public final class LinearAlgebra {
         }
         while (qu.isEmpty()) {
           ((IASTAppendable) mnm).append(engine.evaluate(F.Flatten(F.MatrixPower(matrix, F.ZZ(n)))));
-          qu = (IAST) F.NullSpace.of(engine, F.Transpose(mnm));
+          qu = (IAST) S.NullSpace.of(engine, F.Transpose(mnm));
           n++;
         }
-        return F.Dot.of(
+        return S.Dot.of(
             engine, qu.arg1(), F.Table(F.Power(variable, i), F.List(i, F.C0, F.ZZ(--n))));
       }
 
@@ -3249,7 +3257,7 @@ public final class LinearAlgebra {
 
     @Override
     public IExpr evaluate(final IAST ast, EvalEngine engine) {
-      IExpr normFunction = F.Norm;
+      IExpr normFunction = S.Norm;
       if (ast.isAST2()) {
         normFunction = ast.arg2();
       }
@@ -3339,7 +3347,7 @@ public final class LinearAlgebra {
 
             IASTMutable list2 = Convert.matrix2List(nullspace);
             // rows in descending orders
-            EvalAttributes.sort(list2, ExprReverseComparator.CONS);
+            EvalAttributes.sort(list2, Comparators.REVERSE_CANONICAL_COMPARATOR);
             return list2;
           }
         }
@@ -3475,7 +3483,7 @@ public final class LinearAlgebra {
             if (dim1 == 0) {
               return F.CEmptyList;
             }
-            if (head.equals(F.Dot)) {
+            if (head.equals(S.Dot)) {
               FieldVector<IExpr> u = Convert.list2Vector(ast.arg1());
               FieldVector<IExpr> v = Convert.list2Vector(ast.arg2());
               if (u != null && v != null) {
@@ -3563,8 +3571,9 @@ public final class LinearAlgebra {
   private static final class PseudoInverse extends AbstractMatrix1Matrix {
     protected static final PseudoInverse CONST = new PseudoInverse();
 
+    @Override
     public int[] checkMatrixDimensions(IExpr arg1) {
-      return Convert.checkNonEmptyRectangularMatrix(F.PseudoInverse, arg1);
+      return Convert.checkNonEmptyRectangularMatrix(S.PseudoInverse, arg1);
     }
 
     @Override
@@ -3614,8 +3623,9 @@ public final class LinearAlgebra {
    */
   private static class QRDecomposition extends AbstractMatrix1Expr {
 
+    @Override
     public int[] checkMatrixDimensions(IExpr arg1) {
-      return Convert.checkNonEmptyRectangularMatrix(F.QRDecomposition, arg1);
+      return Convert.checkNonEmptyRectangularMatrix(S.QRDecomposition, arg1);
     }
 
     @Override
@@ -3910,7 +3920,7 @@ public final class LinearAlgebra {
         int m = ast.arg1().toIntDefault(Integer.MIN_VALUE);
         if (m < 0) {
           // Positive integer (less equal 2147483647) expected at position `2` in `1`.
-          return IOFunctions.printMessage(F.ToeplitzMatrix, "intpm", F.List(ast, F.C1), engine);
+          return IOFunctions.printMessage(S.ToeplitzMatrix, "intpm", F.List(ast, F.C1), engine);
         }
         int[] count = new int[1];
         count[0] = 1;
@@ -4048,7 +4058,7 @@ public final class LinearAlgebra {
     public IExpr evaluate(final IAST ast, EvalEngine engine) {
       // TODO generalize for tensors
       IExpr arg1 = ast.arg1();
-      IExpr header = F.Plus;
+      IExpr header = S.Plus;
       if (ast.size() > 2) {
         header = ast.arg2();
       }
@@ -4159,8 +4169,8 @@ public final class LinearAlgebra {
         this.positions = new int[dimensions.length];
       }
 
-      private IAST recursiveTranspose() {
-        return recursiveTranspose(0, null);
+      private IAST transposeRecursive() {
+        return transposeRecursive(0, null);
       }
 
       /**
@@ -4169,7 +4179,7 @@ public final class LinearAlgebra {
        * @param resultList the parent list or <code>null</code> if the root-list should be created.
        * @return
        */
-      private IAST recursiveTranspose(int permutationIndex, IASTAppendable resultList) {
+      private IAST transposeRecursive(int permutationIndex, IASTAppendable resultList) {
         if (permutationIndex >= permutation.length) {
           if (resultList != null) {
             resultList.append(tensor.getPart(positions));
@@ -4182,7 +4192,7 @@ public final class LinearAlgebra {
           }
           for (int i = 0; i < size; i++) {
             positions[permutation[permutationIndex] - 1] = i + 1;
-            recursiveTranspose(permutationIndex + 1, list);
+            transposeRecursive(permutationIndex + 1, list);
           }
           return list;
         }
@@ -4200,7 +4210,7 @@ public final class LinearAlgebra {
           if (permutation == null) {
             return F.NIL;
           }
-          return new TransposePermute(tensor, dims, permutation).recursiveTranspose();
+          return new TransposePermute(tensor, dims, permutation).transposeRecursive();
         }
         return F.NIL;
       }
@@ -4241,8 +4251,8 @@ public final class LinearAlgebra {
      * @return
      */
     private IAST transpose(final IAST matrix, int rows, int cols) {
-      final IASTAppendable transposedMatrix = F.ast(F.List, cols, true);
-      transposedMatrix.setArgs(cols + 1, i -> F.ast(F.List, rows, true));
+      final IASTAppendable transposedMatrix = F.ast(S.List, cols, true);
+      transposedMatrix.setArgs(cols + 1, i -> F.ast(S.List, rows, true));
       // for (int i = 1; i <= cols; i++) {
       // transposedMatrix.set(i, F.ast(F.List, rows, true));
       // }
@@ -4332,7 +4342,7 @@ public final class LinearAlgebra {
         int k = ast.arg1().toIntDefault(Integer.MIN_VALUE);
         if (k < 0) {
           // Positive integer (less equal 2147483647) expected at position `2` in `1`.
-          return IOFunctions.printMessage(F.UnitVector, "intpm", F.List(ast, F.C1), engine);
+          return IOFunctions.printMessage(S.UnitVector, "intpm", F.List(ast, F.C1), engine);
         }
         if (k == 1) {
           return F.List(F.C1, F.C0);
@@ -4433,7 +4443,7 @@ public final class LinearAlgebra {
         final IndexTableGenerator generator =
             new IndexTableGenerator(
                 indexArray,
-                F.List, //
+                S.List, //
                 indx -> Power(lst.get(indx[0] + 1), F.ZZ(indx[1])));
         final IAST matrix = (IAST) generator.table();
         // because the rows can contain sub lists the IAST.IS_MATRIX flag cannot be set directly.
@@ -4637,7 +4647,7 @@ public final class LinearAlgebra {
     indexArray[0] = dimension;
     indexArray[1] = dimension;
     final IndexTableGenerator generator =
-        new IndexTableGenerator(indexArray, F.List, new IndexFunctionDiagonal(valueArray));
+        new IndexTableGenerator(indexArray, S.List, new IndexFunctionDiagonal(valueArray));
     final IAST matrix = (IAST) generator.table();
     // because the rows can contain sub lists the IAST.IS_MATRIX flag cannot be set directly.
     // isMatrix() must be
@@ -4761,7 +4771,7 @@ public final class LinearAlgebra {
       }
     }
     IASTAppendable list = F.ListAlloc(rows < cols - 1 ? cols - 1 : rows);
-    list.appendArgs(0, rows, j -> F.Together.of(engine, rowReduced.getEntry(j, cols - 1)));
+    list.appendArgs(0, rows, j -> S.Together.of(engine, rowReduced.getEntry(j, cols - 1)));
     if (rows < cols - 1) {
       list.appendArgs(rows, cols - 1, i -> F.C0);
     }
@@ -4830,7 +4840,7 @@ public final class LinearAlgebra {
                   F.Times(rowReduced.getEntry(j - 1, i).negate(), listOfVariables.get(i + 1)));
             }
           }
-          rule = F.Rule(listOfVariables.get(j), F.Together.of(engine, plus.oneIdentity0()));
+          rule = F.Rule(listOfVariables.get(j), S.Together.of(engine, plus.oneIdentity0()));
           list.append(rule);
         }
       }

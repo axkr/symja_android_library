@@ -1,6 +1,5 @@
 package org.matheclipse.core.generic;
 
-import java.util.Deque;
 import java.util.function.Function;
 
 import org.hipparchus.analysis.UnivariateFunction;
@@ -76,6 +75,7 @@ public class UnaryNumerical implements Function<IExpr, IExpr>, UnivariateDiffere
     return result;
   }
 
+  @Override
   public DerivativeStructure value(final DerivativeStructure x) {
     // x.getPartialDerivative(1)==1.0 in the case:
     // fFirstDerivative.value(x.getValue() * x.getPartialDerivative(1)

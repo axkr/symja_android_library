@@ -1,16 +1,10 @@
 package org.matheclipse.core.builtin;
 
-import org.gavaghan.geodesy.Ellipsoid;
-import org.gavaghan.geodesy.GeodeticCalculator;
-import org.gavaghan.geodesy.GeodeticMeasurement;
-import org.gavaghan.geodesy.GlobalPosition;
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.interfaces.AbstractEvaluator;
-import org.matheclipse.core.eval.interfaces.IFunctionEvaluator;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.expression.IntervalSym;
 import org.matheclipse.core.expression.S;
-import org.matheclipse.core.expression.data.GeoPositionExpr;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IASTAppendable;
 import org.matheclipse.core.interfaces.IExpr;
@@ -159,9 +153,9 @@ public class IntervalFunctions {
                   IAST list2 = (IAST) interval2.get(j);
                   IExpr min2 = list2.arg1();
                   IExpr max2 = list2.arg2();
-                  if (F.LessEqual.ofQ(engine, min1, min2)
+                  if (S.LessEqual.ofQ(engine, min1, min2)
                       && //
-                      F.GreaterEqual.ofQ(engine, max1, max2)) {
+                      S.GreaterEqual.ofQ(engine, max1, max2)) {
                     copyInterval2.remove(j);
                     if (copyInterval2.size() <= 1) {
                       return S.True;
@@ -185,9 +179,9 @@ public class IntervalFunctions {
             IAST list1 = (IAST) interval1.get(i);
             IExpr min1 = list1.arg1();
             IExpr max1 = list1.arg2();
-            if (F.LessEqual.ofQ(engine, min1, arg2)
+            if (S.LessEqual.ofQ(engine, min1, arg2)
                 && //
-                F.GreaterEqual.ofQ(engine, max1, arg2)) {
+                S.GreaterEqual.ofQ(engine, max1, arg2)) {
               return S.True;
             }
           }
@@ -196,6 +190,7 @@ public class IntervalFunctions {
       return S.False;
     }
 
+    @Override
     public int[] expectedArgSize(IAST ast) {
       return ARGS_2_2;
     }
@@ -286,16 +281,16 @@ public class IntervalFunctions {
           IAST list2 = (IAST) interval2.get(j);
           IExpr min2 = list2.arg1();
           IExpr max2 = list2.arg2();
-          if (F.Less.ofQ(engine, max1, min2)
+          if (S.Less.ofQ(engine, max1, min2)
               || //
-              F.Less.ofQ(engine, max2, min1)) {
+              S.Less.ofQ(engine, max2, min1)) {
             continue;
           }
 
-          if (F.LessEqual.ofQ(engine, min1, min2)) {
+          if (S.LessEqual.ofQ(engine, min1, min2)) {
             min1 = min2;
           }
-          if (F.GreaterEqual.ofQ(engine, max1, max2)) {
+          if (S.GreaterEqual.ofQ(engine, max1, max2)) {
             max1 = max2;
           }
           result.append(F.List(min1, max1));
@@ -304,6 +299,7 @@ public class IntervalFunctions {
       return result;
     }
 
+    @Override
     public int[] expectedArgSize(IAST ast) {
       return ARGS_1_INFINITY;
     }
@@ -384,6 +380,7 @@ public class IntervalFunctions {
       return normalized.orElse(result);
     }
 
+    @Override
     public int[] expectedArgSize(IAST ast) {
       return ARGS_1_INFINITY;
     }

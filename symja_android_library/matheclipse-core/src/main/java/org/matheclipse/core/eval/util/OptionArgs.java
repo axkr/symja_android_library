@@ -3,6 +3,7 @@ package org.matheclipse.core.eval.util;
 import static org.matheclipse.core.expression.F.Options;
 import static org.matheclipse.core.expression.F.ReplaceAll;
 
+import org.matheclipse.core.builtin.IOFunctions;
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.expression.S;
@@ -78,7 +79,15 @@ public class OptionArgs {
 
     if (currentOptionsList != null && startIndex < currentOptionsList.size()) {
       int size = currentOptionsList.size();
-      this.fCurrentOptionsList = F.ListAlloc(size);
+      int allocSize = size;
+      for (int i = startIndex; i < size; i++) {
+        IExpr arg = currentOptionsList.get(i);
+        if (arg.isListOfRules(false)) {
+          IAST listOfRules = (IAST) arg;
+          allocSize += listOfRules.argSize();
+        }
+      }
+      this.fCurrentOptionsList = F.ListAlloc(F.allocMin16(allocSize));
       for (int i = startIndex; i < size; i++) {
         IExpr arg = currentOptionsList.get(i);
         arg = evaluate ? engine.evaluate(arg) : arg;
@@ -94,10 +103,31 @@ public class OptionArgs {
     }
   }
 
+  /**
+   * Return <code>true</code> if the &quot;invalid Options position&quot; is &gt; <code>-1</code>
+   *
+   * @return
+   */
   public boolean isInvalidPosition() {
-    return fInvalidPosition >= 0;
+    return fInvalidPosition > -1;
   }
 
+  /**
+   * If the &quot;invalid Options position&quot; is &gt; <code>greaterThanPositon</code> return
+   * <code>true</code>.
+   *
+   * @param greaterThanPositon
+   * @return
+   */
+  public boolean isInvalidPosition(int greaterThanPositon) {
+    return fInvalidPosition > greaterThanPositon;
+  }
+
+  /**
+   * Get the value of the &quot;invalid Options position&quot;
+   *
+   * @return <code>-1</code> if there is no &quot;invalid Options position&quot;
+   */
   public int getInvalidPosition() {
     return fInvalidPosition;
   }
@@ -270,5 +300,27 @@ public class OptionArgs {
       return (IAST) fEngine.evaluate(ReplaceAll(options, fDefaultOptionsList));
     }
     return options;
+  }
+
+  /**
+   * Print message &quot;nonopt&quot; and return {@link F#NIL}.
+   *
+   * <p><code>
+   * Options expected (instead of `1`) beyond position `2` in `3`. An option must be a rule or a list of rules.
+   * </code>
+   *
+   * @param ast
+   * @param optionPosition
+   * @param engine
+   * @return
+   */
+  public IAST printNonopt(IAST ast, int optionPosition, EvalEngine engine) {
+    // Options expected (instead of `1`) beyond position `2` in `3`. An option must be a rule or
+    // a list of rules.
+    return IOFunctions.printMessage(
+        ast.topHead(),
+        "nonopt",
+        F.List(ast.get(fInvalidPosition), F.ZZ(optionPosition), ast),
+        engine);
   }
 }

@@ -274,7 +274,7 @@ public class PatternMatcherAndEvaluator extends PatternMatcher implements Extern
       if (matchExpr(fLhsPatternExpr, leftHandSide, engine, new StackMatcher(engine))) {
 
         if (RulesData.showSteps) {
-          if (fLhsPatternExpr.head().equals(F.Integrate)) {
+          if (fLhsPatternExpr.head().equals(S.Integrate)) {
             IExpr rhs = fRightHandSide.orElse(S.Null);
             System.out.println(
                 "\nCOMPLEX: " + fLhsPatternExpr.toString() + " := " + rhs.toString());
@@ -365,22 +365,22 @@ public class PatternMatcherAndEvaluator extends PatternMatcher implements Extern
    */
   public ISymbol getSetSymbol() {
     if (isFlagOn(SET_DELAYED)) {
-      return F.SetDelayed;
+      return S.SetDelayed;
     }
     if (isFlagOn(SET)) {
-      return F.Set;
+      return S.Set;
     }
     if (isFlagOn(UPSET_DELAYED)) {
-      return F.UpSetDelayed;
+      return S.UpSetDelayed;
     }
     if (isFlagOn(UPSET)) {
-      return F.UpSet;
+      return S.UpSet;
     }
     if (isFlagOn(TAGSET_DELAYED)) {
-      return F.TagSetDelayed;
+      return S.TagSetDelayed;
     }
     if (isFlagOn(TAGSET)) {
-      return F.TagSet;
+      return S.TagSet;
     }
     return null;
   }

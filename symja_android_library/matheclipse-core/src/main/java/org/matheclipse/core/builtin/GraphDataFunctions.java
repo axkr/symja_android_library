@@ -8,10 +8,12 @@ import java.util.function.Supplier;
 
 import org.jgrapht.Graph;
 import org.jgrapht.generate.GeneralizedPetersenGraphGenerator;
+import org.jgrapht.generate.StarGraphGenerator;
 import org.jgrapht.graph.builder.GraphTypeBuilder;
+import org.matheclipse.core.basic.Config;
 import org.matheclipse.core.eval.EvalEngine;
+import org.matheclipse.core.eval.exception.ASTElementLimitExceeded;
 import org.matheclipse.core.eval.interfaces.AbstractEvaluator;
-import org.matheclipse.core.eval.interfaces.IFunctionEvaluator;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.expression.S;
 import org.matheclipse.core.expression.data.ExprEdge;
@@ -24,7 +26,6 @@ import org.matheclipse.core.interfaces.ISymbol;
 import org.matheclipse.parser.client.FEConfig;
 import org.matheclipse.parser.trie.TrieBuilder;
 import org.matheclipse.parser.trie.TrieMatch;
-import org.matheclipse.parser.trie.Tries;
 
 /** Functions for graph theory algorithms. */
 public class GraphDataFunctions {
@@ -40,9 +41,11 @@ public class GraphDataFunctions {
   private static class Initializer {
 
     private static void init() {
-      GRAPH_MAP.put("PetersenGraph", () -> petersenGraph());
+      //      GRAPH_MAP.put("PetersenGraph", () -> petersenGraph());
       GRAPH_MAP.put("PappusGraph", () -> pappusGraph());
       S.GraphData.setEvaluator(new GraphData());
+      S.PetersenGraph.setEvaluator(new PetersenGraph());
+      S.StarGraph.setEvaluator(new StarGraph());
     }
   }
 
@@ -90,7 +93,113 @@ public class GraphDataFunctions {
     public void setUp(final ISymbol newSymbol) {
       setOptions(
           newSymbol, //
-          F.List(F.Rule(F.EdgeWeight, S.Automatic)));
+          F.List(F.Rule(S.EdgeWeight, S.Automatic)));
+    }
+
+    @Override
+    public int[] expectedArgSize(IAST ast) {
+      return ARGS_1_1;
+    }
+  }
+
+  private static class PetersenGraph extends AbstractEvaluator {
+
+    @Override
+    public IExpr evaluate(final IAST ast, EvalEngine engine) {
+      if (ast.isAST1()) {
+        // The argument `2`  in  `1`  is not valid. 0 or 2 arguments expected.
+        return IOFunctions.printMessage(ast.topHead(), "inv", F.List(ast, ast.arg1()), engine);
+      }
+      if (ast.isAST0()) {
+        Graph<IExpr, ExprEdge> target =
+            GraphTypeBuilder //
+                .undirected()
+                .allowingMultipleEdges(false)
+                .allowingSelfLoops(false) //
+                .vertexSupplier(new IntegerSupplier(1))
+                .edgeClass(ExprEdge.class) //
+                .buildGraph();
+        GeneralizedPetersenGraphGenerator<IExpr, ExprEdge> gpgg =
+            new GeneralizedPetersenGraphGenerator<>(5, 2);
+        gpgg.generateGraph(target);
+        return GraphExpr.newInstance(target);
+      }
+      if (ast.isAST2()) {
+        int order = ast.arg1().toIntDefault();
+        if (order <= 0) {
+          // Positive machine-sized integer expected at position `2` in `1`
+          return IOFunctions.printMessage(ast.topHead(), "intpm", F.List(ast, F.C1), engine);
+        }
+        if (order > Config.MAX_AST_SIZE / 2) {
+          ASTElementLimitExceeded.throwIt(order);
+        }
+        int k = ast.arg2().toIntDefault();
+        if (k <= 0 || k > order) {
+          // Positive machine-sized integer expected at position `2` in `1`
+          return IOFunctions.printMessage(ast.topHead(), "intpm", F.List(ast, F.C2), engine);
+        }
+        try {
+          Graph<IExpr, ExprEdge> target =
+              GraphTypeBuilder //
+                  .undirected()
+                  .allowingMultipleEdges(false)
+                  .allowingSelfLoops(false) //
+                  .vertexSupplier(new IntegerSupplier(1))
+                  .edgeClass(ExprEdge.class) //
+                  .buildGraph();
+          GeneralizedPetersenGraphGenerator<IExpr, ExprEdge> gpgg =
+              new GeneralizedPetersenGraphGenerator<>(order, k);
+          gpgg.generateGraph(target);
+          return GraphExpr.newInstance(target);
+        } catch (RuntimeException rex) {
+          if (FEConfig.SHOW_STACKTRACE) {
+            rex.printStackTrace();
+          }
+        }
+      }
+      return F.NIL;
+    }
+
+    @Override
+    public int[] expectedArgSize(IAST ast) {
+      return ARGS_0_2;
+    }
+  }
+
+  private static class StarGraph extends AbstractEvaluator {
+
+    @Override
+    public IExpr evaluate(final IAST ast, EvalEngine engine) {
+
+      int order = ast.arg1().toIntDefault();
+      if (order <= 0) {
+        // Positive machine-sized integer expected at position `2` in `1`
+        return IOFunctions.printMessage(ast.topHead(), "intpm", F.List(ast, F.C1), engine);
+      }
+      if (order > Config.MAX_AST_SIZE) {
+        ASTElementLimitExceeded.throwIt(order);
+      }
+
+      try {
+        StarGraphGenerator<IExpr, ExprEdge> gen = new StarGraphGenerator<IExpr, ExprEdge>(order);
+        Graph<IExpr, ExprEdge> target =
+            GraphTypeBuilder //
+                .undirected()
+                .allowingMultipleEdges(false)
+                .allowingSelfLoops(false) //
+                .vertexSupplier(new IntegerSupplier(1))
+                .edgeClass(ExprEdge.class) //
+                .buildGraph();
+        //	        Graph<IExpr, ExprEdge> target = new DefaultUndirectedGraph<IExpr,
+        // ExprEdge>(ExprEdge.class);
+        gen.generateGraph(target);
+        return GraphExpr.newInstance(target);
+      } catch (RuntimeException rex) {
+        if (FEConfig.SHOW_STACKTRACE) {
+          rex.printStackTrace();
+        }
+      }
+      return F.NIL;
     }
 
     @Override
@@ -150,21 +259,6 @@ public class GraphDataFunctions {
     for (int[] edge : edges) {
       addEdge(vertexMap, g, edge[0], edge[1]);
     }
-    return g;
-  }
-
-  private static Graph<IExpr, ExprEdge> petersenGraph() {
-    Graph<IExpr, ExprEdge> g =
-        GraphTypeBuilder //
-            .undirected()
-            .allowingMultipleEdges(false)
-            .allowingSelfLoops(false) //
-            .vertexSupplier(new IntegerSupplier(1))
-            .edgeClass(ExprEdge.class) //
-            .buildGraph();
-    GeneralizedPetersenGraphGenerator<IExpr, ExprEdge> gpgg =
-        new GeneralizedPetersenGraphGenerator<>(5, 2);
-    gpgg.generateGraph(g);
     return g;
   }
 

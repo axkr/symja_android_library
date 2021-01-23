@@ -4,9 +4,9 @@ import java.io.IOException;
 import java.util.function.DoubleFunction;
 import java.util.function.Function;
 
-import org.matheclipse.core.convert.Convert;
 import org.matheclipse.core.convert.Object2Expr;
 import org.matheclipse.core.eval.EvalEngine;
+import org.matheclipse.core.eval.exception.ArgumentTypeException;
 import org.matheclipse.core.expression.Context;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.expression.ID;
@@ -431,6 +431,7 @@ public interface ISymbol extends IExpr {
    * @param symbolName
    * @return
    */
+  @Override
   public boolean isString(String symbolName);
 
   /**
@@ -491,7 +492,8 @@ public interface ISymbol extends IExpr {
    *
    * @param engine the current evaluation engine
    * @param args the arguments for which this function symbol should be evaluated
-   * @return
+   * @return the evaluated expression; if no evaluation was possible return the created input
+   *     expression.
    */
   public IExpr of(EvalEngine engine, IExpr... args);
 
@@ -502,7 +504,8 @@ public interface ISymbol extends IExpr {
    * @param engine the current evaluation engine
    * @param arg the main argument
    * @param parts the arguments for which this function symbol should be evaluated
-   * @return
+   * @return the evaluated expression; if no evaluation was possible return the created input
+   *     expression.
    */
   public IExpr of1(EvalEngine engine, IExpr arg, IExpr... parts);
 
@@ -510,10 +513,22 @@ public interface ISymbol extends IExpr {
    * Evaluate this symbol for the arguments as function <code>symbol(arg1, arg2, .... ,argN)</code>.
    *
    * @param args the arguments for which this function symbol should be evaluated
-   * @return
+   * @return the evaluated expression; if no evaluation was possible return the created input
+   *     expression.
    */
-  public IExpr of(IExpr... args);
+  default IExpr of(IExpr... args) {
+    return of(EvalEngine.get(), args);
+  }
 
+  /**
+   * Evaluate this symbol for the arguments as function <code>
+   * symbol(F.ZZ(arg1), F.ZZ(arg2), .... ,F.ZZ(argN))</code> by converting the args to {@link
+   * IInteger} objects.
+   *
+   * @param args
+   * @return the evaluated expression; if no evaluation was possible return the created input
+   *     expression.
+   */
   default IExpr of(int... args) {
     IExpr[] array = new IExpr[args.length];
     for (int i = 0; i < array.length; i++) {
@@ -524,12 +539,12 @@ public interface ISymbol extends IExpr {
 
   /**
    * Evaluate this symbol for the arguments as function <code>symbol(arg1, arg2, .... ,argN)</code>,
-   * The <code>args</code> are converted from Java double to IExpr values.
+   * The <code>args</code> are converted from Java double to {@link INum} values.
    *
    * @param args
    * @return
    */
-  default double ofN(double... args) {
+  default double ofN(double... args) throws ArgumentTypeException {
     IExpr[] array = new IExpr[args.length];
     for (int i = 0; i < array.length; i++) {
       array[i] = F.num(args[i]);

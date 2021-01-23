@@ -37,7 +37,6 @@ import org.matheclipse.core.interfaces.IInteger;
 import org.matheclipse.core.interfaces.ISparseArray;
 import org.matheclipse.core.interfaces.ISymbol;
 import org.matheclipse.core.patternmatching.IPatternMap;
-import org.matheclipse.core.patternmatching.IPatternMap.PatternMap;
 import org.matheclipse.core.patternmatching.PatternMatcherAndEvaluator;
 import org.matheclipse.core.visit.AbstractVisitorLong;
 import org.matheclipse.core.visit.IndexedLevel;
@@ -189,17 +188,9 @@ public class StructureFunctions {
 
     @Override
     public IExpr evaluate(IAST ast, EvalEngine engine) {
-      //      if (ast.isAST1()) {
-      //        ast = F.operatorForm2Prepend(ast);
-      //        if (!ast.isPresent()) {
-      //          return F.NIL;
-      //        }
-      //      }
       IASTAppendable evaledAST = ast.copyAppendable();
-      evaledAST.setArgs(evaledAST.size(), i -> engine.evaluate(evaledAST.get(i)));
-      // for (int i = 1; i < evaledAST.size(); i++) {
-      // evaledAST.set(i, engine.evaluate(evaledAST.get(i)));
-      // }
+      evaledAST.setArgs(evaledAST.size(), (int i) -> engine.evaluate(evaledAST.get(i)));
+
       int lastIndex = evaledAST.argSize();
       boolean heads = false;
       final OptionArgs options = new OptionArgs(evaledAST.topHead(), evaledAST, lastIndex, engine);
@@ -222,6 +213,7 @@ public class StructureFunctions {
       return evalApply(arg1, arg2, evaledAST, lastIndex, heads, engine);
     }
 
+    @Override
     public int[] expectedArgSize(IAST ast) {
       return ARGS_1_4_2;
     }
@@ -269,6 +261,7 @@ public class StructureFunctions {
       return F.NIL;
     }
 
+    @Override
     public int[] expectedArgSize(IAST ast) {
       return ARGS_1_1;
     }
@@ -328,6 +321,7 @@ public class StructureFunctions {
       return F.ZZ(arg1.depth());
     }
 
+    @Override
     public int[] expectedArgSize(IAST ast) {
       return ARGS_1_1;
     }
@@ -521,6 +515,7 @@ public class StructureFunctions {
       return F.NIL;
     }
 
+    @Override
     public int[] expectedArgSize(IAST ast) {
       return ARGS_1_3;
     }
@@ -593,6 +588,7 @@ public class StructureFunctions {
       return F.NIL;
     }
 
+    @Override
     public int[] expectedArgSize(IAST ast) {
       return ARGS_2_2_1;
     }
@@ -738,6 +734,7 @@ public class StructureFunctions {
       return engine.evaluate(ast.arg1()).head();
     }
 
+    @Override
     public int[] expectedArgSize(IAST ast) {
       return ARGS_1_2;
     }
@@ -747,7 +744,7 @@ public class StructureFunctions {
   public static class LeafCount extends AbstractCoreFunctionEvaluator {
 
     /** Calculate the number of leaves in an AST */
-    public static class LeafCountVisitor extends AbstractVisitorLong {
+    private static class LeafCountVisitor extends AbstractVisitorLong {
       int fHeadOffset;
 
       public LeafCountVisitor() {
@@ -783,102 +780,12 @@ public class StructureFunctions {
       }
     }
 
-    /** Calculate the number of leaves in an AST */
-    // public static class SimplifyLeafCountVisitor extends AbstractVisitorLong {
-    // int fHeadOffset;
-    //
-    // public SimplifyLeafCountVisitor() {
-    // this(1);
-    // }
-    //
-    // public SimplifyLeafCountVisitor(int hOffset) {
-    // fHeadOffset = hOffset;
-    // }
-    //
-    // @Override
-    // public long visit(IAST list) {
-    // long sum = 0;
-    // for (int i = fHeadOffset; i < list.size(); i++) {
-    // sum += list.get(i).accept(this);
-    // }
-    // return sum;
-    // }
-    //
-    // @Override
-    // public long visit(IComplex element) {
-    // return element.leafCountSimplify();
-    // }
-    //
-    // @Override
-    // public long visit(IComplexNum element) {
-    // return 3;
-    // }
-    //
-    // @Override
-    // public long visit(IFraction element) {
-    // return element.leafCountSimplify();
-    // }
-    //
-    // @Override
-    // public long visit(IInteger element) {
-    // return element.leafCountSimplify();
-    // }
-    // }
-
-    public static class SimplifyLeafCountPatternMapVisitor extends AbstractVisitorLong {
-
-      int fHeadOffset;
-
-      IPatternMap fPatternMap;
-
-      public SimplifyLeafCountPatternMapVisitor(IPatternMap patternMap, int hOffset) {
-        fHeadOffset = hOffset;
-        fPatternMap = patternMap;
-      }
-
-      @Override
-      public long visit(IAST list) {
-        long sum = 0L;
-        // if (list.isAnd()) {
-        // sum = 1L;
-        // }
-        for (int i = fHeadOffset; i < list.size(); i++) {
-          sum += list.get(i).accept(this);
-        }
-        return sum;
-      }
-
-      @Override
-      public long visit(IComplex element) {
-        return element.leafCountSimplify();
-      }
-
-      @Override
-      public long visit(IComplexNum element) {
-        return 3;
-      }
-
-      @Override
-      public long visit(IFraction element) {
-        return element.leafCountSimplify();
-      }
-
-      @Override
-      public long visit(IInteger element) {
-        return element.leafCountSimplify();
-      }
-
-      @Override
-      public long visit(ISymbol element) {
-        return element.leafCountSimplify();
-      }
-    }
-
     @Override
     public IExpr evaluate(final IAST ast, EvalEngine engine) {
       return F.ZZ(engine.evaluate(ast.arg1()).leafCount());
     }
 
+    @Override
     public int[] expectedArgSize(IAST ast) {
       return ARGS_1_1;
     }
@@ -940,22 +847,16 @@ public class StructureFunctions {
   private static class Map extends AbstractFunctionEvaluator {
     @Override
     public IExpr evaluate(IAST ast, EvalEngine engine) {
-      //      if (ast.isAST1()) {
-      //        ast = F.operatorForm2Prepend(ast);
-      //        if (!ast.isPresent()) {
-      //          return F.NIL;
-      //        }
-      //      }
-
       int lastIndex = ast.argSize();
       boolean heads = false;
       final OptionArgs options = new OptionArgs(ast.topHead(), ast, lastIndex, engine);
+      if (options.isInvalidPosition(3)) {
+        return options.printNonopt(ast, 3, engine);
+      }
       IExpr option = options.getOption(S.Heads);
       if (option.isPresent()) {
         lastIndex--;
-        if (option.isTrue()) {
-          heads = true;
-        }
+        heads = option.isTrue();
       }
 
       try {
@@ -983,6 +884,7 @@ public class StructureFunctions {
       }
     }
 
+    @Override
     public int[] expectedArgSize(IAST ast) {
       return ARGS_2_4_2;
     }
@@ -1000,6 +902,7 @@ public class StructureFunctions {
       return result.isPresent() ? result : ast.arg2();
     }
 
+    @Override
     public int[] expectedArgSize(IAST ast) {
       return ARGS_2_2;
     }
@@ -1032,8 +935,7 @@ public class StructureFunctions {
               IAST result = ((IAST) arg2);
               for (int i = 1; i < listOfLists.size(); i++) {
                 IExpr temp =
-                    recursiveMapAt(
-                        x -> F.unaryAST1(arg1, x), result, (IAST) listOfLists.getAST(i), 1);
+                    mapAtRecursive(x -> F.unaryAST1(arg1, x), result, listOfLists.getAST(i), 1);
                 if (temp.isPresent()) {
                   if (temp.isAST()) {
                     result = (IAST) temp;
@@ -1043,7 +945,7 @@ public class StructureFunctions {
               return result;
 
             } else if (arg3.isList()) {
-              IExpr temp = recursiveMapAt(x -> F.unaryAST1(arg1, x), ((IAST) arg2), (IAST) arg3, 1);
+              IExpr temp = mapAtRecursive(x -> F.unaryAST1(arg1, x), ((IAST) arg2), (IAST) arg3, 1);
               if (temp.isPresent()) {
                 return temp;
               }
@@ -1061,7 +963,7 @@ public class StructureFunctions {
       return F.NIL;
     }
 
-    private static IExpr recursiveMapAt(
+    private static IExpr mapAtRecursive(
         java.util.function.Function<IExpr, IExpr> f, IAST result, IAST positions, int index) {
       IExpr pos = positions.get(index);
       if (pos.equals(S.All)) {
@@ -1077,7 +979,7 @@ public class StructureFunctions {
         } else {
           subResult = result.copy();
           for (int i = 1; i < result.size(); i++) {
-            IExpr temp = recursiveMapAt(f, subResult.getAST(i), positions, index + 1);
+            IExpr temp = mapAtRecursive(f, subResult.getAST(i), positions, index + 1);
             if (temp.isPresent()) {
               subResult.set(i, temp);
             }
@@ -1102,7 +1004,7 @@ public class StructureFunctions {
             } else {
               IExpr arg = rule.second();
               if (arg.isASTOrAssociation()) {
-                IExpr temp = recursiveMapAt(f, ((IAST) arg), positions, index + 1);
+                IExpr temp = mapAtRecursive(f, ((IAST) arg), positions, index + 1);
                 if (temp.isPresent()) {
                   rule = rule.setAtCopy(2, temp);
                   IASTAppendable association = result.copyAppendable();
@@ -1142,7 +1044,7 @@ public class StructureFunctions {
 
           IExpr arg = result.get(p);
           if (arg.isASTOrAssociation()) {
-            IExpr temp = recursiveMapAt(f, ((IAST) arg), positions, index + 1);
+            IExpr temp = mapAtRecursive(f, ((IAST) arg), positions, index + 1);
             if (temp.isPresent()) {
               return result.setAtCopy(p, temp);
             }
@@ -1153,6 +1055,7 @@ public class StructureFunctions {
       throw new ArgumentTypeException(IOFunctions.getMessage("partw", F.List(F.List(pos), result)));
     }
 
+    @Override
     public int[] expectedArgSize(IAST ast) {
       return ARGS_1_3_0;
     }
@@ -1228,6 +1131,7 @@ public class StructureFunctions {
       }
     }
 
+    @Override
     public int[] expectedArgSize(IAST ast) {
       return ARGS_2_3_2;
     }
@@ -1317,7 +1221,7 @@ public class StructureFunctions {
         this.level = level;
       }
 
-      private IAST recursiveMapThread(int recursionLevel, IAST lst, IASTAppendable resultList) {
+      private IAST mapThreadRecursive(int recursionLevel, IAST lst, IASTAppendable resultList) {
         if (recursionLevel >= level) {
           return lst;
         }
@@ -1332,7 +1236,7 @@ public class StructureFunctions {
           list = EvalAttributes.threadList(lst, S.List, S.List, size);
           IASTAppendable result = F.ListAlloc(size);
           final int level = recursionLevel + 1;
-          list.forEach(x -> recursiveMapThread(level, (IAST) x, result));
+          list.forEach(x -> mapThreadRecursive(level, (IAST) x, result));
           // for (int i = 1; i < list.size(); i++) {
           // recursiveMapThread(recursionLevel + 1, (IAST) list.get(i), result);
           // }
@@ -1363,8 +1267,7 @@ public class StructureFunctions {
         }
 
         IAST tensor = (IAST) ast.arg2();
-        ArrayList<Integer> dims =
-            LinearAlgebra.dimensions(tensor, tensor.head());
+        ArrayList<Integer> dims = LinearAlgebra.dimensions(tensor, tensor.head());
         if (dims.size() > level) {
           if (level == 0) {
             return tensor.apply(ast.arg1());
@@ -1372,7 +1275,7 @@ public class StructureFunctions {
           // if (level == 1) {
           // return EvalAttributes.threadList(tensor, S.List, ast.arg1(), dims.get(level));
           // }
-          return new MapThreadLevel(ast.arg1(), level).recursiveMapThread(0, tensor, null);
+          return new MapThreadLevel(ast.arg1(), level).mapThreadRecursive(0, tensor, null);
         }
         if (tensor.isEmptyList()) {
           return tensor;
@@ -1382,6 +1285,7 @@ public class StructureFunctions {
       return F.NIL;
     }
 
+    @Override
     public int[] expectedArgSize(IAST ast) {
       return ARGS_2_3_2;
     }
@@ -1433,6 +1337,7 @@ public class StructureFunctions {
       return F.C0;
     }
 
+    @Override
     public int[] expectedArgSize(IAST ast) {
       return ARGS_2_2;
     }
@@ -1472,6 +1377,7 @@ public class StructureFunctions {
       return F.NIL;
     }
 
+    @Override
     public int[] expectedArgSize(IAST ast) {
       return ARGS_1_1;
     }
@@ -1609,6 +1515,7 @@ public class StructureFunctions {
       return result;
     }
 
+    @Override
     public int[] expectedArgSize(IAST ast) {
       return ARGS_2_3;
     }
@@ -1628,10 +1535,10 @@ public class StructureFunctions {
         // IPatternMap patternMap1 = pmEvaluator1.getPatternMap();
         // IPatternMap patternMap2 = pmEvaluator2.getPatternMap();
 
-        int[] priority1 = new int[] {PatternMap.DEFAULT_RULE_PRIORITY};
+        int[] priority1 = new int[] {IPatternMap.DEFAULT_RULE_PRIORITY};
         IPatternMap.determinePatterns(arg1, priority1, null);
         // patternMap1.determinePatterns(arg1, priority1);
-        int[] priority2 = new int[] {PatternMap.DEFAULT_RULE_PRIORITY};
+        int[] priority2 = new int[] {IPatternMap.DEFAULT_RULE_PRIORITY};
         IPatternMap.determinePatterns(arg2, priority2, null);
         // patternMap2.determinePatterns(arg2, priority2);
         if (pmEvaluator1.isRuleWithoutPatterns()) {
@@ -1690,6 +1597,7 @@ public class StructureFunctions {
       return S.Null;
     }
 
+    @Override
     public int[] expectedArgSize(IAST ast) {
       return ARGS_0_1;
     }
@@ -1786,7 +1694,7 @@ public class StructureFunctions {
               ((IAST) arg2).forEach(x -> engine.evaluate(F.unaryAST1(arg1, x)), heads ? 0 : 1);
             }
           }
-          return F.Null;
+          return S.Null;
         } catch (final ValidateException ve) {
           // see level specification
           return engine.printMessage(ve.getMessage(ast.topHead()));
@@ -1798,6 +1706,7 @@ public class StructureFunctions {
       return F.NIL;
     }
 
+    @Override
     public int[] expectedArgSize(IAST ast) {
       return ARGS_1_4_2;
     }
@@ -1873,6 +1782,7 @@ public class StructureFunctions {
       return F.NIL;
     }
 
+    @Override
     public int[] expectedArgSize(IAST ast) {
       return ARGS_1_2;
     }
@@ -1968,6 +1878,7 @@ public class StructureFunctions {
       return F.NIL;
     }
 
+    @Override
     public int[] expectedArgSize(IAST ast) {
       return ARGS_1_2_1;
     }
@@ -2012,6 +1923,7 @@ public class StructureFunctions {
       return F.NIL;
     }
 
+    @Override
     public int[] expectedArgSize(IAST ast) {
       return ARGS_1_1;
     }
@@ -2049,6 +1961,7 @@ public class StructureFunctions {
       return F.NIL;
     }
 
+    @Override
     public int[] expectedArgSize(IAST ast) {
       return ARGS_1_1;
     }
@@ -2121,6 +2034,7 @@ public class StructureFunctions {
       return F.NIL;
     }
 
+    @Override
     public int[] expectedArgSize(IAST ast) {
       return ARGS_1_2;
     }
@@ -2222,6 +2136,7 @@ public class StructureFunctions {
       return ast.arg1();
     }
 
+    @Override
     public int[] expectedArgSize(IAST ast) {
       return ARGS_1_2;
     }
@@ -2297,6 +2212,10 @@ public class StructureFunctions {
       }
     }
     return F.NIL;
+  }
+
+  public static AbstractVisitorLong leafCountVisitor() {
+    return new LeafCount.LeafCountVisitor(0);
   }
 
   public static void initialize() {

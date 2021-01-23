@@ -26,7 +26,7 @@ import org.matheclipse.core.expression.F;
 import org.matheclipse.core.expression.ID;
 import org.matheclipse.core.expression.IntervalSym;
 import org.matheclipse.core.expression.Num;
-import org.matheclipse.core.expression.data.SparseArrayExpr;
+import org.matheclipse.core.expression.S;
 import org.matheclipse.core.form.ApfloatToMMA;
 import org.matheclipse.core.form.DoubleToMMA;
 import org.matheclipse.core.form.output.OutputFormFactory;
@@ -52,7 +52,6 @@ import org.matheclipse.parser.client.operator.Precedence;
 import org.matheclipse.parser.client.operator.PrefixOperator;
 import org.matheclipse.parser.trie.TrieBuilder;
 import org.matheclipse.parser.trie.TrieMatch;
-import org.matheclipse.parser.trie.Tries;
 
 /** Generates MathML presentation output */
 public class MathMLFormFactory extends AbstractMathMLFormFactory {
@@ -130,7 +129,7 @@ public class MathMLFormFactory extends AbstractMathMLFormFactory {
      */
     @Override
     public boolean convert(final StringBuilder buf, final IAST f, final int precedence) {
-      if (f.isAST1() && f.head().equals(F.C) && f.arg1().isInteger()) {
+      if (f.isAST1() && f.head().equals(S.C) && f.arg1().isInteger()) {
         fFactory.tagStart(buf, "msub");
         buf.append("<mi>c</mi>");
         fFactory.convertInternal(buf, f.arg1(), Integer.MIN_VALUE, false);
@@ -599,7 +598,7 @@ public class MathMLFormFactory extends AbstractMathMLFormFactory {
       int size = f.argSize();
       for (int i = size; i > 0; i--) {
         expr = f.get(i);
-        if ((i < size) && expr.isAST(F.Times)) {
+        if ((i < size) && expr.isAST(S.Times)) {
           timesConverter.convertTimesFraction(
               buf, (IAST) expr, fPrecedence, MathMLFormFactory.PLUS_CALL);
         } else {
@@ -1163,6 +1162,7 @@ public class MathMLFormFactory extends AbstractMathMLFormFactory {
     return false;
   }
 
+  @Override
   void convertInternal(
       final StringBuilder buf, final IExpr o, final int precedence, boolean isASTHead) {
     String str = CONSTANT_EXPRS.get(o);
@@ -1451,21 +1451,21 @@ public class MathMLFormFactory extends AbstractMathMLFormFactory {
         case ID.DirectedInfinity:
           if (list.isDirectedInfinity()) { // head.equals(F.DirectedInfinity))
             if (list.isAST0()) {
-              convertSymbol(buf, F.ComplexInfinity);
+              convertSymbol(buf, S.ComplexInfinity);
               return;
             }
             if (list.isAST1()) {
               if (list.arg1().isOne()) {
-                convertSymbol(buf, F.Infinity);
+                convertSymbol(buf, S.Infinity);
                 return;
               } else if (list.arg1().isMinusOne()) {
-                convertInternal(buf, F.Times(F.CN1, F.Infinity), precedence, false);
+                convertInternal(buf, F.Times(F.CN1, S.Infinity), precedence, false);
                 return;
               } else if (list.arg1().isImaginaryUnit()) {
-                convertInternal(buf, F.Times(F.CI, F.Infinity), precedence, false);
+                convertInternal(buf, F.Times(F.CI, S.Infinity), precedence, false);
                 return;
               } else if (list.arg1().isNegativeImaginaryUnit()) {
-                convertInternal(buf, F.Times(F.CNI, F.Infinity), precedence, false);
+                convertInternal(buf, F.Times(F.CNI, S.Infinity), precedence, false);
                 return;
               }
             }
@@ -1713,12 +1713,12 @@ public class MathMLFormFactory extends AbstractMathMLFormFactory {
     tagEnd(buf, "mrow");
   }
 
+  @Override
   protected String convertDoubleToFormattedString(double dValue) {
     if (fSignificantFigures > 0) {
       try {
         StringBuilder buf = new StringBuilder();
-        DoubleToMMA.doubleToMMA(
-            (Appendable) buf, dValue, fExponentFigures, fSignificantFigures, false);
+        DoubleToMMA.doubleToMMA(buf, dValue, fExponentFigures, fSignificantFigures, false);
         return buf.toString();
       } catch (IOException ioex) {
         ioex.printStackTrace();
@@ -2000,7 +2000,7 @@ public class MathMLFormFactory extends AbstractMathMLFormFactory {
   }
 
   public boolean convertInterval(final StringBuilder buf, final IAST f) {
-    if (f.size() > 1 && f.first().isASTSizeGE(F.List, 2)) {
+    if (f.size() > 1 && f.first().isASTSizeGE(S.List, 2)) {
       IAST interval = IntervalSym.normalize(f);
 
       tagStart(buf, "mrow");
@@ -2112,7 +2112,7 @@ public class MathMLFormFactory extends AbstractMathMLFormFactory {
       // convertPowerOperator(buf, list, infixOperator, precedence);
       // return true;
       // } else
-      if (list.isAST(F.Apply)) {
+      if (list.isAST(S.Apply)) {
         if (list.size() == 3) {
           convertInfixOperator(buf, list, ASTNodeFactory.APPLY_OPERATOR, precedence);
           return true;
@@ -2285,7 +2285,7 @@ public class MathMLFormFactory extends AbstractMathMLFormFactory {
       if (pow.isOne()) {
         plusArg = coefficient;
       } else {
-        plusArg = F.binaryAST2(F.Times, coefficient, pow);
+        plusArg = F.binaryAST2(S.Times, coefficient, pow);
       }
     }
     if (!plusArg.isZero()) {
@@ -2372,36 +2372,34 @@ public class MathMLFormFactory extends AbstractMathMLFormFactory {
       tagStart(buf, "mi");
       buf.append(sym.getSymbolName());
       tagEnd(buf, "mi");
-      return;
     } else {
       tagStart(buf, "mi");
       buf.append(context.toString() + sym.getSymbolName());
       tagEnd(buf, "mi");
-      return;
     }
   }
 
   public void init() {
     if (Config.MATHML_TRIG_LOWERCASE) {
-      CONVERTERS.put(F.Sin, new MMLFunction(this, "sin"));
-      CONVERTERS.put(F.Cos, new MMLFunction(this, "cos"));
-      CONVERTERS.put(F.Csc, new MMLFunction(this, "csc"));
-      CONVERTERS.put(F.Tan, new MMLFunction(this, "tan"));
-      CONVERTERS.put(F.Sec, new MMLFunction(this, "sec"));
-      CONVERTERS.put(F.Cot, new MMLFunction(this, "cot"));
-      CONVERTERS.put(F.ArcSin, new MMLFunction(this, "arcsin"));
-      CONVERTERS.put(F.ArcCos, new MMLFunction(this, "arccos"));
-      CONVERTERS.put(F.ArcCsc, new MMLFunction(this, "arccsc"));
-      CONVERTERS.put(F.ArcSec, new MMLFunction(this, "arcsec"));
-      CONVERTERS.put(F.ArcTan, new MMLFunction(this, "arctan"));
-      CONVERTERS.put(F.ArcCot, new MMLFunction(this, "arccot"));
-      CONVERTERS.put(F.ArcSinh, new MMLFunction(this, "arcsinh"));
-      CONVERTERS.put(F.ArcCosh, new MMLFunction(this, "arccosh"));
-      CONVERTERS.put(F.ArcCsch, new MMLFunction(this, "arccsch"));
-      CONVERTERS.put(F.ArcCoth, new MMLFunction(this, "arccoth"));
-      CONVERTERS.put(F.ArcSech, new MMLFunction(this, "arcsech"));
-      CONVERTERS.put(F.ArcTanh, new MMLFunction(this, "arctanh"));
-      CONVERTERS.put(F.Log, new MMLFunction(this, "log"));
+      CONVERTERS.put(S.Sin, new MMLFunction(this, "sin"));
+      CONVERTERS.put(S.Cos, new MMLFunction(this, "cos"));
+      CONVERTERS.put(S.Csc, new MMLFunction(this, "csc"));
+      CONVERTERS.put(S.Tan, new MMLFunction(this, "tan"));
+      CONVERTERS.put(S.Sec, new MMLFunction(this, "sec"));
+      CONVERTERS.put(S.Cot, new MMLFunction(this, "cot"));
+      CONVERTERS.put(S.ArcSin, new MMLFunction(this, "arcsin"));
+      CONVERTERS.put(S.ArcCos, new MMLFunction(this, "arccos"));
+      CONVERTERS.put(S.ArcCsc, new MMLFunction(this, "arccsc"));
+      CONVERTERS.put(S.ArcSec, new MMLFunction(this, "arcsec"));
+      CONVERTERS.put(S.ArcTan, new MMLFunction(this, "arctan"));
+      CONVERTERS.put(S.ArcCot, new MMLFunction(this, "arccot"));
+      CONVERTERS.put(S.ArcSinh, new MMLFunction(this, "arcsinh"));
+      CONVERTERS.put(S.ArcCosh, new MMLFunction(this, "arccosh"));
+      CONVERTERS.put(S.ArcCsch, new MMLFunction(this, "arccsch"));
+      CONVERTERS.put(S.ArcCoth, new MMLFunction(this, "arccoth"));
+      CONVERTERS.put(S.ArcSech, new MMLFunction(this, "arcsech"));
+      CONVERTERS.put(S.ArcTanh, new MMLFunction(this, "arctanh"));
+      CONVERTERS.put(S.Log, new MMLFunction(this, "log"));
     }
 
     // operTab.put("Sum", new MMLSum(this));
@@ -2477,64 +2475,64 @@ public class MathMLFormFactory extends AbstractMathMLFormFactory {
     ENTITY_TABLE.put("&PartialD;", "&#x2202;");
     ENTITY_TABLE.put("&Product;", "&#x220F;");
 
-    CONSTANT_EXPRS.put(F.GoldenRatio, "<mi>&#x03C7;</mi>"); // phi
-    CONSTANT_EXPRS.put(F.Pi, "<mi>&#x03C0;</mi>");
+    CONSTANT_EXPRS.put(S.GoldenRatio, "<mi>&#x03C7;</mi>"); // phi
+    CONSTANT_EXPRS.put(S.Pi, "<mi>&#x03C0;</mi>");
     CONSTANT_EXPRS.put(F.CInfinity, "<mi>&#x221E;</mi>"); // &infin;
     // mrow is important in mfrac element!
     CONSTANT_EXPRS.put(F.CNInfinity, "<mrow><mo>-</mo><mi>&#x221E;</mi></mrow>");
-    CONSTANT_EXPRS.put(F.Catalan, "<mi>C</mi>");
-    CONSTANT_EXPRS.put(F.Degree, "<mi>&#x00b0;</mi>");
-    CONSTANT_EXPRS.put(F.Glaisher, "<mi>A</mi>");
-    CONSTANT_EXPRS.put(F.EulerGamma, "<mi>&#x03B3;</mi>");
-    CONSTANT_EXPRS.put(F.Khinchin, "<mi>K</mi>");
+    CONSTANT_EXPRS.put(S.Catalan, "<mi>C</mi>");
+    CONSTANT_EXPRS.put(S.Degree, "<mi>&#x00b0;</mi>");
+    CONSTANT_EXPRS.put(S.Glaisher, "<mi>A</mi>");
+    CONSTANT_EXPRS.put(S.EulerGamma, "<mi>&#x03B3;</mi>");
+    CONSTANT_EXPRS.put(S.Khinchin, "<mi>K</mi>");
 
-    CONSTANT_EXPRS.put(F.Complexes, "<mi>&#8450;</mi>");
-    CONSTANT_EXPRS.put(F.Integers, "<mi>&#8484;</mi>");
-    CONSTANT_EXPRS.put(F.Rationals, "<mi>&#8474;</mi>");
-    CONSTANT_EXPRS.put(F.Reals, "<mi>&#8477;</mi>");
+    CONSTANT_EXPRS.put(S.Complexes, "<mi>&#8450;</mi>");
+    CONSTANT_EXPRS.put(S.Integers, "<mi>&#8484;</mi>");
+    CONSTANT_EXPRS.put(S.Rationals, "<mi>&#8474;</mi>");
+    CONSTANT_EXPRS.put(S.Reals, "<mi>&#8477;</mi>");
 
-    CONVERTERS.put(F.Abs, new Abs());
-    CONVERTERS.put(F.And, new MMLOperator(Precedence.AND, "&#x2227;"));
-    CONVERTERS.put(F.Binomial, new Binomial());
-    CONVERTERS.put(F.C, new C());
-    CONVERTERS.put(F.Ceiling, new Ceiling());
-    CONVERTERS.put(F.CompoundExpression, new MMLOperator(Precedence.COMPOUNDEXPRESSION, ";"));
-    CONVERTERS.put(F.D, new D());
-    CONVERTERS.put(F.DirectedEdge, new MMLOperator(Precedence.DIRECTEDEDGE, "-&gt;"));
-    CONVERTERS.put(F.Dot, new MMLOperator(Precedence.DOT, "."));
-    CONVERTERS.put(F.Element, new Element());
-    CONVERTERS.put(F.Equal, new MMLOperator(Precedence.EQUAL, "=="));
-    CONVERTERS.put(F.Factorial, new MMLPostfix("!", Precedence.FACTORIAL));
-    CONVERTERS.put(F.Factorial2, new MMLPostfix("!!", Precedence.FACTORIAL2));
-    CONVERTERS.put(F.Floor, new Floor());
-    CONVERTERS.put(F.Function, new Function());
-    CONVERTERS.put(F.Greater, new MMLOperator(Precedence.GREATER, "&gt;"));
-    CONVERTERS.put(F.GreaterEqual, new MMLOperator(Precedence.GREATEREQUAL, "&#x2265;"));
-    CONVERTERS.put(F.Integrate, new Integrate());
-    CONVERTERS.put(F.Less, new MMLOperator(Precedence.LESS, "&lt;"));
-    CONVERTERS.put(F.LessEqual, new MMLOperator(Precedence.LESSEQUAL, "&#x2264;"));
-    CONVERTERS.put(F.MatrixForm, new MatrixForm(false));
-    CONVERTERS.put(F.TableForm, new MatrixForm(true));
-    CONVERTERS.put(F.Not, new Not());
-    CONVERTERS.put(F.Or, new MMLOperator(Precedence.OR, "&#x2228;"));
-    CONVERTERS.put(F.Plus, new Plus());
-    CONVERTERS.put(F.Power, new Power());
-    CONVERTERS.put(F.Product, new Product());
-    CONVERTERS.put(F.Rational, new Rational());
-    CONVERTERS.put(F.Rule, new MMLOperator(Precedence.RULE, "-&gt;"));
-    CONVERTERS.put(F.RuleDelayed, new MMLOperator(Precedence.RULEDELAYED, "&#x29F4;"));
-    CONVERTERS.put(F.Set, new MMLOperator(Precedence.SET, "="));
-    CONVERTERS.put(F.SetDelayed, new MMLOperator(Precedence.SETDELAYED, ":="));
-    CONVERTERS.put(F.Sqrt, new Sqrt());
-    CONVERTERS.put(F.Subscript, new Subscript());
-    CONVERTERS.put(F.Superscript, new Superscript());
-    CONVERTERS.put(F.Sum, new Sum());
-    CONVERTERS.put(F.Surd, new Surd());
-    CONVERTERS.put(F.Times, new Times());
-    CONVERTERS.put(F.TwoWayRule, new MMLOperator(Precedence.TWOWAYRULE, "&lt;-&gt;"));
-    CONVERTERS.put(F.UndirectedEdge, new MMLOperator(Precedence.UNDIRECTEDEDGE, "&lt;-&gt;"));
-    CONVERTERS.put(F.Unequal, new MMLOperator(Precedence.UNEQUAL, "!="));
-    CONVERTERS.put(F.CenterDot, new MMLOperator(Precedence.CENTERDOT, "&#183;"));
-    CONVERTERS.put(F.CircleDot, new MMLOperator(Precedence.CIRCLEDOT, "&#8857;"));
+    CONVERTERS.put(S.Abs, new Abs());
+    CONVERTERS.put(S.And, new MMLOperator(Precedence.AND, "&#x2227;"));
+    CONVERTERS.put(S.Binomial, new Binomial());
+    CONVERTERS.put(S.C, new C());
+    CONVERTERS.put(S.Ceiling, new Ceiling());
+    CONVERTERS.put(S.CompoundExpression, new MMLOperator(Precedence.COMPOUNDEXPRESSION, ";"));
+    CONVERTERS.put(S.D, new D());
+    CONVERTERS.put(S.DirectedEdge, new MMLOperator(Precedence.DIRECTEDEDGE, "-&gt;"));
+    CONVERTERS.put(S.Dot, new MMLOperator(Precedence.DOT, "."));
+    CONVERTERS.put(S.Element, new Element());
+    CONVERTERS.put(S.Equal, new MMLOperator(Precedence.EQUAL, "=="));
+    CONVERTERS.put(S.Factorial, new MMLPostfix("!", Precedence.FACTORIAL));
+    CONVERTERS.put(S.Factorial2, new MMLPostfix("!!", Precedence.FACTORIAL2));
+    CONVERTERS.put(S.Floor, new Floor());
+    CONVERTERS.put(S.Function, new Function());
+    CONVERTERS.put(S.Greater, new MMLOperator(Precedence.GREATER, "&gt;"));
+    CONVERTERS.put(S.GreaterEqual, new MMLOperator(Precedence.GREATEREQUAL, "&#x2265;"));
+    CONVERTERS.put(S.Integrate, new Integrate());
+    CONVERTERS.put(S.Less, new MMLOperator(Precedence.LESS, "&lt;"));
+    CONVERTERS.put(S.LessEqual, new MMLOperator(Precedence.LESSEQUAL, "&#x2264;"));
+    CONVERTERS.put(S.MatrixForm, new MatrixForm(false));
+    CONVERTERS.put(S.TableForm, new MatrixForm(true));
+    CONVERTERS.put(S.Not, new Not());
+    CONVERTERS.put(S.Or, new MMLOperator(Precedence.OR, "&#x2228;"));
+    CONVERTERS.put(S.Plus, new Plus());
+    CONVERTERS.put(S.Power, new Power());
+    CONVERTERS.put(S.Product, new Product());
+    CONVERTERS.put(S.Rational, new Rational());
+    CONVERTERS.put(S.Rule, new MMLOperator(Precedence.RULE, "-&gt;"));
+    CONVERTERS.put(S.RuleDelayed, new MMLOperator(Precedence.RULEDELAYED, "&#x29F4;"));
+    CONVERTERS.put(S.Set, new MMLOperator(Precedence.SET, "="));
+    CONVERTERS.put(S.SetDelayed, new MMLOperator(Precedence.SETDELAYED, ":="));
+    CONVERTERS.put(S.Sqrt, new Sqrt());
+    CONVERTERS.put(S.Subscript, new Subscript());
+    CONVERTERS.put(S.Superscript, new Superscript());
+    CONVERTERS.put(S.Sum, new Sum());
+    CONVERTERS.put(S.Surd, new Surd());
+    CONVERTERS.put(S.Times, new Times());
+    CONVERTERS.put(S.TwoWayRule, new MMLOperator(Precedence.TWOWAYRULE, "&lt;-&gt;"));
+    CONVERTERS.put(S.UndirectedEdge, new MMLOperator(Precedence.UNDIRECTEDEDGE, "&lt;-&gt;"));
+    CONVERTERS.put(S.Unequal, new MMLOperator(Precedence.UNEQUAL, "!="));
+    CONVERTERS.put(S.CenterDot, new MMLOperator(Precedence.CENTERDOT, "&#183;"));
+    CONVERTERS.put(S.CircleDot, new MMLOperator(Precedence.CIRCLEDOT, "&#8857;"));
   }
 }

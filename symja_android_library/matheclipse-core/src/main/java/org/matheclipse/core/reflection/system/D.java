@@ -2,7 +2,6 @@ package org.matheclipse.core.reflection.system;
 
 import org.matheclipse.core.builtin.IOFunctions;
 import org.matheclipse.core.eval.EvalEngine;
-import org.matheclipse.core.eval.exception.Validate;
 import org.matheclipse.core.eval.exception.ValidateException;
 import org.matheclipse.core.eval.interfaces.AbstractFunctionEvaluator;
 import org.matheclipse.core.expression.ASTSeriesData;
@@ -233,7 +232,7 @@ public class D extends AbstractFunctionEvaluator implements DRules {
    */
   private static IAST createDerivative(final int pos, final IExpr header, final IAST args) {
     final int size = args.size();
-    IASTAppendable derivativeHead1 = F.ast(F.Derivative, size, false);
+    IASTAppendable derivativeHead1 = F.ast(S.Derivative, size, false);
     for (int i = 1; i < size; i++) {
       derivativeHead1.append(i == pos ? F.C1 : F.C0);
     }
@@ -268,7 +267,7 @@ public class D extends AbstractFunctionEvaluator implements DRules {
     try {
       final IExpr fx = ast.arg1();
       if (fx.isIndeterminate()) {
-        return F.Indeterminate;
+        return S.Indeterminate;
       }
       if (ast.size() > 3) {
         // reduce arguments by folding D[fxy, x, y] to D[ D[fxy, x], y] ...
@@ -307,7 +306,7 @@ public class D extends AbstractFunctionEvaluator implements DRules {
           if (n >= 0) {
             IExpr temp = fx;
             for (int i = 0; i < n; i++) {
-              temp = F.D.of(engine, temp, x);
+              temp = S.D.of(engine, temp, x);
             }
             return temp;
           }
@@ -381,7 +380,7 @@ public class D extends AbstractFunctionEvaluator implements DRules {
           // D(a_+b_+c_,x_) -> D(a,x)+D(b,x)+D(c,x)
           return function.mapThread(F.D(F.Slot1, x), 1);
         } else if (function.isTimes()) {
-          return function.map(F.PlusAlloc(16), new BinaryBindIth1st(function, F.D(F.Null, x)));
+          return function.map(F.PlusAlloc(16), new BinaryBindIth1st(function, F.D(S.Null, x)));
         } else if (function.isPower()) {
           // f ^ g
           final IExpr f = function.base();
@@ -404,7 +403,7 @@ public class D extends AbstractFunctionEvaluator implements DRules {
           resultList.append(
               F.Plus(F.Times(g, F.D(f, x), F.Power(f, F.CN1)), F.Times(F.Log(f), F.D(g, x))));
           return resultList;
-        } else if ((header == F.Log) && (function.isAST2())) {
+        } else if ((header == S.Log) && (function.isAST2())) {
           if (function.isFreeAt(1, x)) {
             // D[Log[i_FreeQ(x), x_], z_]:= (x*Log[a])^(-1)*D[x,z];
             return F.Times(
@@ -472,19 +471,19 @@ public class D extends AbstractFunctionEvaluator implements DRules {
     if (list.size() > 1) {
       IASTAppendable pwResult = F.ListAlloc(list.size());
       for (int i = 1; i < list.size(); i++) {
-        IASTMutable diff = ((IAST) ast).copy();
+        IASTMutable diff = ast.copy();
         diff.set(1, list.get(i).first());
         pwResult.append(F.List(diff, list.get(i).second()));
       }
       if (piecewiseFunction.size() > 2) {
-        IASTMutable diff = ((IAST) ast).copy();
+        IASTMutable diff = ast.copy();
         diff.set(1, piecewiseFunction.arg2());
         pwResult.append(F.List(engine.evaluate(diff), S.True));
       }
-      IASTMutable piecewise = ((IAST) piecewiseFunction).copy();
+      IASTMutable piecewise = piecewiseFunction.copy();
       piecewise.set(1, pwResult);
       if (piecewise.size() > 2) {
-        piecewise.set(2, F.Indeterminate);
+        piecewise.set(2, S.Indeterminate);
       }
       return piecewise;
     }

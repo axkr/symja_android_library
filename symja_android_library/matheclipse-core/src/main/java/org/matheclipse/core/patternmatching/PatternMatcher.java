@@ -268,6 +268,7 @@ public class PatternMatcher extends IPatternMatcher implements Externalizable {
    */
   protected transient IPatternMap fPatternMap;
 
+  @Override
   public IPatternMap getPatternMap() {
     return fPatternMap;
   }
@@ -620,7 +621,7 @@ public class PatternMatcher extends IPatternMatcher implements Externalizable {
           return true;
         }
         final int lastPosition = lhsPatternAST.argSize();
-        if (lastPosition == 1 && lhsPatternAST.get(lastPosition).isAST(F.PatternTest, 3)) {
+        if (lastPosition == 1 && lhsPatternAST.get(lastPosition).isAST(S.PatternTest, 3)) {
           if (lhsPatternAST.size() <= lhsEvalSize) {
             IAST patternTest = (IAST) lhsPatternAST.get(lastPosition);
             if (patternTest.arg1().isPatternSequence(false)) {
@@ -743,7 +744,7 @@ public class PatternMatcher extends IPatternMatcher implements Externalizable {
     }
     while (lhsEvalIndex <= lhsEvalSize) {
       try {
-        IASTAppendable seq = F.Sequence();
+        IASTAppendable seq = F.ast(S.Sequence, lhsEvalIndex - startPosition, false);
         seq.appendAll(lhsEvalAST, startPosition, lhsEvalIndex);
 
         if (patternSequence.matchPatternSequence(seq, fPatternMap, lhsPatternAST.topHead())) {
@@ -963,12 +964,12 @@ public class PatternMatcher extends IPatternMatcher implements Externalizable {
   }
 
   /**
-   * Test first if <code>functionID</code> is a special pattern-matching construct (i.e. <code>
-   * HoldPattern, Literal, Condition, Alternatives, Except, Complex, Rational, Optional, PatternTest
+   * Test first if <code>functionID = lhsPatternAST.headID()</code> is a special pattern-matching
+   * construct (i.e. <code>
+   * Association, HoldPattern, Literal, Condition, Alternatives, Except, Complex, Rational, Optional, PatternTest, Verbatim
    * </code>). If <code>true</code> evaluate the special pattern-matching construct otherwise
    * continue with <code>lhsPatternAST</code> pattern matching.
    *
-   * @param functionID an ID of a BuiltIn function header
    * @param lhsPatternAST left-hand-side pattern AST
    * @param lhsEvalExpr left-hand-side expression which should be matched by the pattern expression
    * @param engine the evaluation engine
@@ -986,7 +987,7 @@ public class PatternMatcher extends IPatternMatcher implements Externalizable {
             final IExpr[] patternValues = fPatternMap.copyPattern();
             try {
               if (lhsEvalExpr.isAssociation()) {
-                IAST lhsPatternAssociation = (IAST) lhsPatternAST;
+                IAST lhsPatternAssociation = lhsPatternAST;
                 // TODO set/determine pattern matching flags?
                 IASTMutable lhsPatternList = (IASTMutable) lhsPatternAssociation.normal(false);
                 lhsPatternList.set(0, S.Association);
@@ -1076,7 +1077,7 @@ public class PatternMatcher extends IPatternMatcher implements Externalizable {
           }
           break;
         case ID.Complex:
-          if (lhsPatternAST.isAST(F.Complex, 3)) {
+          if (lhsPatternAST.isAST(S.Complex, 3)) {
             final IExpr[] patternValues = fPatternMap.copyPattern();
             try {
               if (lhsEvalExpr.isNumber()) {
@@ -1096,7 +1097,7 @@ public class PatternMatcher extends IPatternMatcher implements Externalizable {
           }
           break;
         case ID.Rational:
-          if (lhsPatternAST.isAST(F.Rational, 3)) {
+          if (lhsPatternAST.isAST(S.Rational, 3)) {
             final IExpr[] patternValues = fPatternMap.copyPattern();
             try {
               if (lhsEvalExpr.isRational()) {

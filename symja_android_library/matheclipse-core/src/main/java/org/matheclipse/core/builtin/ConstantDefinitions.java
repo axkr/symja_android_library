@@ -9,6 +9,7 @@ import java.nio.file.Paths;
 import java.time.LocalDateTime;
 import java.util.Calendar;
 
+import org.apfloat.Apcomplex;
 import org.apfloat.Apfloat;
 import org.apfloat.ApfloatMath;
 import org.apfloat.Apint;
@@ -23,7 +24,6 @@ import org.matheclipse.core.expression.ContextPath;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.expression.S;
 import org.matheclipse.core.expression.data.DateObjectExpr;
-import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IASTAppendable;
 import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.interfaces.IInteger;
@@ -183,6 +183,7 @@ public class ConstantDefinitions {
       return F.ZZ(historyLength);
     }
 
+    @Override
     public IExpr evaluateSet(IExpr rightHandSide, boolean setDelayed, final EvalEngine engine) {
       int iValue = rightHandSide.toIntDefault();
       short historyLength;
@@ -194,7 +195,7 @@ public class ConstantDefinitions {
           return IOFunctions.printMessage(
               S.$HistoryLength,
               "intpm",
-              F.List(F.C2, F.Set(F.$HistoryLength, rightHandSide)),
+              F.List(F.C2, F.Set(S.$HistoryLength, rightHandSide)),
               engine);
         }
       } else if (iValue < Short.MAX_VALUE) {
@@ -258,6 +259,7 @@ public class ConstantDefinitions {
       return F.ZZ(iterationLimit);
     }
 
+    @Override
     public IExpr evaluateSet(IExpr rightHandSide, boolean setDelayed, final EvalEngine engine) {
       if (rightHandSide.isInfinity()) {
         S.$IterationLimit.assignValue(F.CN1, false);
@@ -287,6 +289,7 @@ public class ConstantDefinitions {
       return F.ZZ(line);
     }
 
+    @Override
     public IExpr evaluateSet(IExpr rightHandSide, boolean setDelayed, final EvalEngine engine) {
       int line = rightHandSide.toIntDefault();
       IInteger value = F.ZZ(line);
@@ -365,6 +368,7 @@ public class ConstantDefinitions {
       return F.ZZ(recursionLimit);
     }
 
+    @Override
     public IExpr evaluateSet(IExpr rightHandSide, boolean setDelayed, final EvalEngine engine) {
       if (rightHandSide.isInfinity()) {
         S.$RecursionLimit.assignValue(F.CN1, false);
@@ -563,7 +567,7 @@ public class ConstantDefinitions {
     /** Constant Degree converted to Pi/180 */
     @Override
     public IExpr evaluate(final ISymbol symbol, EvalEngine engine) {
-      return Times(F.Pi, Power(F.ZZ(180), F.CN1));
+      return Times(S.Pi, Power(F.ZZ(180), F.CN1));
     }
 
     @Override
@@ -777,8 +781,8 @@ public class ConstantDefinitions {
     public IExpr apfloatEval(ISymbol symbol, EvalEngine engine) {
       // (1/2)*(1+Sqrt(5))
       Apfloat five = new Apfloat(5, engine.getNumericPrecision());
-      Apfloat half = new Aprational(Apint.ONE, new Apint(2));
-      return F.num(ApfloatMath.sqrt(five).add(Apfloat.ONE).multiply(half));
+      Apfloat half = new Aprational(Apcomplex.ONE, new Apint(2));
+      return F.num(ApfloatMath.sqrt(five).add(Apcomplex.ONE).multiply(half));
     }
 
     @Override

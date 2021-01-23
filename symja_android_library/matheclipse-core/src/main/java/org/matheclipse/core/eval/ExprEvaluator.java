@@ -355,7 +355,7 @@ public class ExprEvaluator {
     EvalEngine engine = engineRef[0];
     EvalEngine.set(engine);
     //  engine.reset()  must be done before parsing step
-    IExpr preRead = F.$PreRead.assignedValue();
+    IExpr preRead = S.$PreRead.assignedValue();
     IExpr temp;
     try {
       if (preRead != null && preRead.isPresent()) {
@@ -495,7 +495,7 @@ public class ExprEvaluator {
             TimeLimiter timeLimiter = SimpleTimeLimiter.create(executor);
             return timeLimiter.callWithTimeout(work, timeoutDuration, timeUnit);
           } catch (org.matheclipse.core.eval.exception.TimeoutException e) {
-            return F.$Aborted;
+            return S.$Aborted;
           } catch (java.util.concurrent.TimeoutException e) {
             if (FEConfig.SHOW_STACKTRACE) {
               e.printStackTrace();
@@ -504,18 +504,18 @@ public class ExprEvaluator {
             // if (t instanceof RuntimeException) {
             // throw (RuntimeException) t;
             // }
-            return F.$Aborted;
+            return S.$Aborted;
           } catch (com.google.common.util.concurrent.UncheckedTimeoutException e) {
             // Throwable t = e.getCause();
             // if (t instanceof RuntimeException) {
             // throw (RuntimeException) t;
             // }
-            return F.$Aborted;
+            return S.$Aborted;
           } catch (Exception e) {
             if (FEConfig.SHOW_STACKTRACE) {
               e.printStackTrace();
             }
-            return F.Null;
+            return S.Null;
           } finally {
             work.cancel();
             executor.shutdown(); // Disable new tasks from being submitted

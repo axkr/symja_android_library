@@ -8,16 +8,7 @@ import org.matheclipse.core.expression.F;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IASTAppendable;
 import org.matheclipse.core.interfaces.IASTMutable;
-import org.matheclipse.core.interfaces.IComplex;
-import org.matheclipse.core.interfaces.IComplexNum;
 import org.matheclipse.core.interfaces.IExpr;
-import org.matheclipse.core.interfaces.IFraction;
-import org.matheclipse.core.interfaces.IInteger;
-import org.matheclipse.core.interfaces.INum;
-import org.matheclipse.core.interfaces.IPattern;
-import org.matheclipse.core.interfaces.IPatternSequence;
-import org.matheclipse.core.interfaces.IStringX;
-import org.matheclipse.core.interfaces.ISymbol;
 
 /**
  * A level specification visitor for levels in abstract syntax trees (AST), which removes elements

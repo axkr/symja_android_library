@@ -1,17 +1,14 @@
 package org.matheclipse.core.eval.exception;
 
-import org.matheclipse.core.builtin.StringFunctions;
-import org.matheclipse.core.interfaces.IExpr;
-
 /** Exception which will be thrown, if the Config.MAX_AST_SIZE limit was exceeded. */
 public class ASTElementLimitExceeded extends LimitException {
 
   private static final long serialVersionUID = 8925451277545397036L;
 
-  long fLimit;
+  long fRequestedCapacity;
 
-  public ASTElementLimitExceeded(final long limit) {
-    fLimit = limit;
+  public ASTElementLimitExceeded(final long requestedCapacity) {
+    fRequestedCapacity = requestedCapacity;
   }
 
   /**
@@ -21,20 +18,28 @@ public class ASTElementLimitExceeded extends LimitException {
    * @param columnDimension
    */
   public ASTElementLimitExceeded(final int rowDimension, final int columnDimension) {
-    fLimit = (long) rowDimension * (long) columnDimension;
+    fRequestedCapacity = (long) rowDimension * (long) columnDimension;
   }
 
   @Override
   public String getMessage() {
-    return "Maximum AST dimension " + fLimit + " exceeded";
+    return "Maximum AST dimension " + fRequestedCapacity + " exceeded";
   }
 
-  public static void throwIt(final long limit) {
-    // HeapContext.enter();
-    // try {
-    throw new ASTElementLimitExceeded(limit); // .copy());
-    // } finally {
-    // HeapContext.exit();
-    // }
+  /**
+   * Throws exception which will be thrown, if the Config.MAX_AST_SIZE limit was exceeded.
+   *
+   * <p>Usage:
+   *
+   * <pre>
+   * if (Config.MAX_AST_SIZE < requestedCapacity) {
+   *     ASTElementLimitExceeded.throwIt(requestedCapacity);
+   * }
+   * </pre>
+   *
+   * @param requestedCapacity
+   */
+  public static void throwIt(final long requestedCapacity) {
+    throw new ASTElementLimitExceeded(requestedCapacity);
   }
 }

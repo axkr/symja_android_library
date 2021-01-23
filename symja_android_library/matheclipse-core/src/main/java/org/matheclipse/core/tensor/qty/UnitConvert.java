@@ -9,7 +9,7 @@ import org.matheclipse.core.interfaces.IExpr;
 public class UnitConvert {
   /** @return instance of UnitConvert that uses the built-in SI convention */
   public static UnitConvert SI() {
-    return BuiltIn.SI.unitConvert;
+    return BuiltIn.unitConvert;
   }
   // ---
 

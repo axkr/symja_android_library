@@ -1026,7 +1026,6 @@ public class OutputFormFactory {
     }
     if (o instanceof IComplex) {
       convertComplex(buf, (IComplex) o, precedence, caller);
-      return;
     }
   }
 
@@ -1168,8 +1167,7 @@ public class OutputFormFactory {
                 // see also MatrixForm in MathML or TeX format for "graphical representation".
                 IExpr normal = list.arg1().normal(false);
                 if (normal.isList()) { // && normal.isMatrix() != null) {
-                  ArrayList<Integer> dims =
-                      LinearAlgebra.dimensions((IAST) normal, S.List);
+                  ArrayList<Integer> dims = LinearAlgebra.dimensions((IAST) normal, S.List);
                   convertList(buf, (IAST) normal, dims.size() >= 2);
                   return;
                 }
@@ -1299,7 +1297,6 @@ public class OutputFormFactory {
       convert(buf, association.getRule(i), Integer.MIN_VALUE, false);
     }
     append(buf, "|>");
-    return;
   }
 
   private boolean convertInequality(
@@ -1368,20 +1365,20 @@ public class OutputFormFactory {
     }
     if ((operator instanceof InfixOperator) && (list.size() > 2)) {
       InfixOperator infixOperator = (InfixOperator) operator;
-      if (head.equals(F.Plus)) {
+      if (head.equals(S.Plus)) {
         if (fPlusReversed) {
           convertPlusOperatorReversed(buf, list, infixOperator, precedence);
         } else {
           convertPlusOperator(buf, list, infixOperator, precedence);
         }
         return true;
-      } else if (head.equals(F.Times)) {
+      } else if (head.equals(S.Times)) {
         convertTimesFraction(buf, list, infixOperator, precedence, NO_PLUS_CALL);
         return true;
       } else if (list.isPower()) {
         convertPowerOperator(buf, list, infixOperator, precedence);
         return true;
-      } else if (list.isAST(F.Apply)) {
+      } else if (list.isAST(S.Apply)) {
         if (list.size() == 3) {
           convertInfixOperator(buf, list, ASTNodeFactory.APPLY_OPERATOR, precedence);
           return true;

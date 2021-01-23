@@ -26,6 +26,7 @@ import org.matheclipse.core.eval.EvalAttributes;
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.interfaces.AbstractFunctionEvaluator;
 import org.matheclipse.core.expression.F;
+import org.matheclipse.core.expression.S;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IASTAppendable;
 import org.matheclipse.core.interfaces.IASTMutable;
@@ -674,18 +675,18 @@ public class QuarticSolver {
       } else {
         if (b.isZero()) {
           // a*x^2 + c == 0
-          IExpr rhs = F.Divide.of(F.Negate(c), a);
+          IExpr rhs = S.Divide.of(F.Negate(c), a);
           IExpr negExpr = AbstractFunctionEvaluator.getNormalizedNegativeExpression(rhs);
           if (negExpr.isPresent()) {
-            IExpr numerator = surdSqrt(F.Numerator.of(negExpr));
-            IExpr denominator = surdSqrt(F.Denominator.of(negExpr));
+            IExpr numerator = surdSqrt(S.Numerator.of(negExpr));
+            IExpr denominator = surdSqrt(S.Denominator.of(negExpr));
             result.append(Times.of(F.CNI, F.Divide(numerator, denominator)));
             result.append(Times.of(F.CI, F.Divide(numerator, denominator)));
           } else {
-            IExpr numerator = surdSqrt(F.Numerator.of(rhs));
-            IExpr denominator = surdSqrt(F.Denominator.of(rhs));
+            IExpr numerator = surdSqrt(S.Numerator.of(rhs));
+            IExpr denominator = surdSqrt(S.Denominator.of(rhs));
             result.append(Times.of(F.CN1, F.Divide(numerator, denominator)));
-            result.append(F.Divide.of(numerator, denominator));
+            result.append(S.Divide.of(numerator, denominator));
           }
         } else {
           IExpr discriminant = F.evalExpand(Plus(F.Sqr(b), a.times(c).times(F.C4).negate()));

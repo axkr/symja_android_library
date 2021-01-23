@@ -83,22 +83,22 @@ public class InterpolatingPolynomial extends AbstractEvaluator {
         switch (dir) {
           case INCREASING:
             if (strict) {
-              if (((ISignedNumber) val[index]).isLE((ISignedNumber) previous)) {
+              if (((ISignedNumber) val[index]).isLE(previous)) {
                 break ITEM;
               }
             } else {
-              if (((ISignedNumber) val[index]).isLT((ISignedNumber) previous)) {
+              if (((ISignedNumber) val[index]).isLT(previous)) {
                 break ITEM;
               }
             }
             break;
           case DECREASING:
             if (strict) {
-              if (((ISignedNumber) val[index]).isGE((ISignedNumber) previous)) {
+              if (((ISignedNumber) val[index]).isGE(previous)) {
                 break ITEM;
               }
             } else {
-              if (((ISignedNumber) val[index]).isGT((ISignedNumber) previous)) {
+              if (((ISignedNumber) val[index]).isGT(previous)) {
                 break ITEM;
               }
             }

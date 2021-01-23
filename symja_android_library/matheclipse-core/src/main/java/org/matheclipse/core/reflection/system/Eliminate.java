@@ -425,8 +425,8 @@ public class Eliminate extends AbstractFunctionEvaluator {
               IExpr temp =
                   // [$ ConditionalExpression(2*I*Pi*c1 + Log(exprwovar), Element(c1, Integers)) $]
                   F.ConditionalExpression(
-                      F.Plus(F.Times(F.C2, F.CI, F.Pi, c1), F.Log(exprwovar)),
-                      F.Element(c1, F.Integers)); // $$;
+                      F.Plus(F.Times(F.C2, F.CI, S.Pi, c1), F.Log(exprwovar)),
+                      F.Element(c1, S.Integers)); // $$;
               return extractVariable(exponent, temp, predicate, x, engine);
             }
             // a ^ f(x)
@@ -466,9 +466,9 @@ public class Eliminate extends AbstractFunctionEvaluator {
         F.Condition(
             F.Exp(
                 F.Times(
-                    F.Power(F.Plus(F.m, F.Negate(F.n)), -1),
-                    F.Plus(F.Times(F.CNI, F.Pi), F.Log(F.a), F.Negate(F.Log(F.b))))),
-            F.And(F.FreeQ(F.a, x), F.FreeQ(F.b, x), F.FreeQ(F.n, x), F.FreeQ(F.m, x))));
+                    F.Power(F.Plus(S.m, F.Negate(S.n)), -1),
+                    F.Plus(F.Times(F.CNI, S.Pi), F.Log(S.a), F.Negate(F.Log(S.b))))),
+            F.And(F.FreeQ(S.a, x), F.FreeQ(S.b, x), F.FreeQ(S.n, x), F.FreeQ(S.m, x))));
     return matcher;
   }
 
@@ -521,7 +521,7 @@ public class Eliminate extends AbstractFunctionEvaluator {
       if (!termsEqualZeroList.isPresent()) {
         return F.NIL;
       }
-      IAST vars = Validate.checkIsVariableOrVariableList(ast, 2, engine);
+      IAST vars = Validate.checkIsVariableOrVariableList(ast, 2, ast.topHead(), engine);
       if (!vars.isPresent()) {
         return F.NIL;
       }
@@ -558,7 +558,7 @@ public class Eliminate extends AbstractFunctionEvaluator {
       if (result.equals(F.CEmptyList)) {
         return S.True;
       }
-      return result.apply(F.And);
+      return result.apply(S.And);
     }
     return result;
   }

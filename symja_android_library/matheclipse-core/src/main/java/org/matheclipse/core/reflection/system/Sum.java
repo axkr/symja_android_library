@@ -15,22 +15,18 @@ import static org.matheclipse.core.expression.F.Sum;
 import static org.matheclipse.core.expression.F.Times;
 import static org.matheclipse.core.expression.F.k;
 
-import java.util.ArrayList;
 import java.util.function.Predicate;
 
 import org.matheclipse.core.builtin.IOFunctions;
 import org.matheclipse.core.builtin.ListFunctions;
-import org.matheclipse.core.builtin.ListFunctions.TableGenerator;
 import org.matheclipse.core.convert.VariablesSet;
 import org.matheclipse.core.eval.EvalEngine;
-import org.matheclipse.core.eval.exception.ArgumentTypeException;
 import org.matheclipse.core.eval.exception.RecursionLimitExceeded;
-import org.matheclipse.core.eval.exception.Validate;
 import org.matheclipse.core.eval.exception.ValidateException;
-import org.matheclipse.core.eval.interfaces.IArrayFunction;
 import org.matheclipse.core.eval.interfaces.IFunctionEvaluator;
 import org.matheclipse.core.eval.util.Iterator;
 import org.matheclipse.core.expression.F;
+import org.matheclipse.core.expression.S;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IASTAppendable;
 import org.matheclipse.core.interfaces.IASTMutable;
@@ -39,7 +35,6 @@ import org.matheclipse.core.interfaces.IInteger;
 import org.matheclipse.core.interfaces.IIterator;
 import org.matheclipse.core.interfaces.ISymbol;
 import org.matheclipse.core.reflection.system.rules.SumRules;
-import org.matheclipse.parser.client.FEConfig;
 
 /**
  *
@@ -323,6 +318,7 @@ public class Sum extends ListFunctions.Table implements SumRules {
     return newSum;
   }
 
+  @Override
   public int[] expectedArgSize(IAST ast) {
     return IFunctionEvaluator.ARGS_2_INFINITY;
   }
@@ -360,7 +356,7 @@ public class Sum extends ListFunctions.Table implements SumRules {
       if (from.isZero()) {
         return F.Times(Plus(to, C1), expr);
       }
-      if (!F.Greater.ofQ(engine, C1, from) && !F.Greater.ofQ(engine, from, to)) {
+      if (!S.Greater.ofQ(engine, C1, from) && !S.Greater.ofQ(engine, from, to)) {
         return F.Times(Plus(C1, F.Negate(from), to), expr);
       }
     } else {
@@ -380,7 +376,7 @@ public class Sum extends ListFunctions.Table implements SumRules {
                 });
         if (filterCollector.size() > 1) {
           IExpr temp = engine.evalQuiet(F.Sum(restCollector.oneIdentity1(), list));
-          if (temp.isFreeAST(F.Sum)) {
+          if (temp.isFreeAST(S.Sum)) {
             filterCollector.append(temp);
             return filterCollector;
           }
@@ -456,7 +452,7 @@ public class Sum extends ListFunctions.Table implements SumRules {
     }
     if (from.isPositive()) {
       IExpr temp1 = engine.evalQuiet(F.Sum(expr, F.List(var, C0, from.minus(F.C1))));
-      if (!temp1.isComplexInfinity() && temp1.isFreeAST(F.Sum)) {
+      if (!temp1.isComplexInfinity() && temp1.isFreeAST(S.Sum)) {
         IExpr temp2 = engine.evalQuietNull(F.Sum(expr, F.List(var, C0, to)));
         if (temp2.isPresent() && !temp2.isComplexInfinity()) {
           return F.Subtract(temp2, temp1);
@@ -487,10 +483,10 @@ public class Sum extends ListFunctions.Table implements SumRules {
     if (from.isInteger() && !from.isOne()) {
       IExpr subSum = engine.evaluateNull(F.Sum(expr, F.List(var, C1, to)));
       if (subSum.isPresent()) {
-        if (F.Less.ofQ(engine, from, C1)) {
+        if (S.Less.ofQ(engine, from, C1)) {
           return F.Plus(F.Sum(expr, F.List(var, from, C0)), subSum);
         }
-        if (F.Greater.ofQ(engine, from, C1)) {
+        if (S.Greater.ofQ(engine, from, C1)) {
           return F.Subtract(subSum, F.Sum(expr, F.List(var, C1, from.minus(F.C1))));
         }
       }

@@ -8,16 +8,13 @@ import java.util.TreeMap;
 import java.util.function.Function;
 
 import org.matheclipse.core.basic.Config;
-import org.matheclipse.core.eval.exception.Validate;
 import org.matheclipse.core.expression.F;
+import org.matheclipse.core.expression.S;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IASTAppendable;
-import org.matheclipse.core.interfaces.IASTMutable;
 import org.matheclipse.core.interfaces.IExpr;
 
 import edu.jas.kern.PrettyPrint;
-import edu.jas.poly.ExpVector;
-import edu.jas.poly.Monomial;
 import edu.jas.structure.NotInvertibleException;
 import edu.jas.structure.RingElem;
 
@@ -746,7 +743,7 @@ public class SymbolicPolynomial
     IExpr deg = F.C0;
     for (ExpVectorSymbolic e : val.keySet()) {
       IExpr d = e.getVal(j);
-      if (F.Greater.ofQ(d, deg)) {
+      if (S.Greater.ofQ(d, deg)) {
         deg = d;
       }
     }
@@ -765,7 +762,7 @@ public class SymbolicPolynomial
     IExpr deg = F.C0;
     for (ExpVectorSymbolic e : val.keySet()) {
       IExpr d = e.maxDeg();
-      if (F.Greater.ofQ(d, deg)) {
+      if (S.Greater.ofQ(d, deg)) {
         deg = d;
       }
     }
@@ -784,7 +781,7 @@ public class SymbolicPolynomial
     IExpr deg = F.C0;
     for (ExpVectorSymbolic e : val.keySet()) {
       IExpr d = e.totalDeg();
-      if (F.Greater.ofQ(d, deg)) {
+      if (S.Greater.ofQ(d, deg)) {
         deg = d;
       }
     }
@@ -807,7 +804,7 @@ public class SymbolicPolynomial
     IExpr deg = F.C0;
     for (ExpVectorSymbolic e : val.keySet()) {
       IExpr d = e.weightDeg(w);
-      if (F.Greater.ofQ(d, deg)) {
+      if (S.Greater.ofQ(d, deg)) {
         deg = d;
       }
     }
@@ -834,7 +831,7 @@ public class SymbolicPolynomial
     for (Map.Entry<ExpVectorSymbolic, IExpr> m : val.entrySet()) {
       ExpVectorSymbolic e = m.getKey();
       IExpr d = e.weightDeg(w);
-      if (F.GreaterEqual.ofQ(d, maxw)) {
+      if (S.GreaterEqual.ofQ(d, maxw)) {
         wp.val.put(e, m.getValue());
       }
     }
@@ -1023,7 +1020,6 @@ public class SymbolicPolynomial
         nv.put(e, y);
       }
     }
-    return;
   }
 
   /**
@@ -1048,7 +1044,6 @@ public class SymbolicPolynomial
     } else {
       nv.put(e, a);
     }
-    return;
   }
 
   /**
@@ -1388,7 +1383,7 @@ public class SymbolicPolynomial
     for (Map.Entry<ExpVectorSymbolic, IExpr> m : val.entrySet()) {
       IExpr[] k = m.getKey().getVal();
       for (int i = 0; i < k.length; i++) {
-        if (k[i].isNegativeResult() && F.Less.ofQ(k[i], result[i])) {
+        if (k[i].isNegativeResult() && S.Less.ofQ(k[i], result[i])) {
           result[i] = k[i];
           negativeExponents = true;
         }
@@ -2142,7 +2137,7 @@ public class SymbolicPolynomial
     for (Map.Entry<ExpVectorSymbolic, IExpr> y : A.entrySet()) {
       ExpVectorSymbolic e = y.getKey();
       IExpr a = y.getValue();
-      IExpr d = F.Subtract.of(deg, e.totalDeg());
+      IExpr d = S.Subtract.of(deg, e.totalDeg());
       ExpVectorSymbolic f = e.extend(1, 0, d);
       C.put(f, a);
     }

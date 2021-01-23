@@ -1,6 +1,7 @@
 package org.matheclipse.core.builtin;
 
 import java.io.File;
+import java.io.StringReader;
 import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
 import java.util.Arrays;
@@ -42,6 +43,9 @@ import org.matheclipse.parser.client.FEConfig;
 
 import com.google.common.base.CharMatcher;
 import com.ibm.icu.text.Transliterator;
+import com.univocity.parsers.csv.CsvFormat;
+import com.univocity.parsers.csv.CsvParser;
+import com.univocity.parsers.csv.CsvParserSettings;
 
 public final class StringFunctions {
   private static final Map<String, String> LANGUAGE_MAP = new HashMap<String, String>();
@@ -75,6 +79,7 @@ public final class StringFunctions {
       S.StringDrop.setEvaluator(new StringDrop());
       S.StringExpression.setEvaluator(new StringExpression());
       S.StringFreeQ.setEvaluator(new StringFreeQ());
+      S.StringFormat.setEvaluator(new StringFormat());
       S.StringInsert.setEvaluator(new StringInsert());
       S.StringJoin.setEvaluator(new StringJoin());
       S.StringLength.setEvaluator(new StringLength());
@@ -257,7 +262,7 @@ public final class StringFunctions {
             return IOFunctions.printMessage(
                 ast.topHead(), "argtype", F.List(ast.arg1(), ast.arg2(), ast.topHead()), engine);
           }
-          int size = to - from;
+          int size = to - from + 1;
           if (size <= 0) {
             return F.CEmptyList;
           }
@@ -278,7 +283,7 @@ public final class StringFunctions {
         }
         char from = str1.charAt(0);
         char to = str2.charAt(0);
-        int size = ((int) to) - ((int) from);
+        int size = (to) - (from) + 1;
         if (size <= 0) {
           return F.CEmptyList;
         }
@@ -1082,6 +1087,46 @@ public final class StringFunctions {
     }
   }
 
+  private static class StringFormat extends AbstractFunctionEvaluator {
+
+    @Override
+    public IExpr evaluate(IAST ast, EvalEngine engine) {
+
+      IExpr arg1 = ast.arg1();
+      if (arg1.isString()) {
+        String input = arg1.toString();
+        CsvParserSettings settings = new CsvParserSettings();
+        settings.detectFormatAutomatically();
+        CsvParser parser = new CsvParser(settings);
+        parser.beginParsing(new StringReader(input));
+        CsvFormat format = parser.getDetectedFormat();
+        parser.stopParsing();
+
+        char delimiter = format.getDelimiter();
+        switch (delimiter) {
+          case ',':
+            return F.stringx("CSV");
+          case '\t':
+            return F.stringx("TSV");
+          case ' ':
+            int index = input.indexOf('\n');
+            if (index >= 0) {
+              return F.stringx("Table");
+            }
+            return F.stringx("Text");
+        }
+        return F.stringx(delimiter);
+      }
+
+      return F.NIL;
+    }
+
+    @Override
+    public int[] expectedArgSize(IAST ast) {
+      return ARGS_1_1;
+    }
+  }
+
   private static class StringFreeQ extends AbstractCoreFunctionEvaluator {
 
     @Override
@@ -1719,7 +1764,7 @@ public final class StringFunctions {
         IExpr arg2 = ast.arg2();
         if (arg2.isString()) {
           sep1 = arg2.toString();
-        } else if (arg2.isAST(F.List, 4)) {
+        } else if (arg2.isAST(S.List, 4)) {
           IAST list = (IAST) arg2;
           left = list.arg1().toString();
           sep1 = list.arg2().toString();
@@ -2259,23 +2304,23 @@ public final class StringFunctions {
     public IExpr evaluate(final IAST ast, EvalEngine engine) {
       IExpr arg1 = ast.arg1();
       if (arg1.isString()) {
-        ISymbol form = F.InputForm;
+        ISymbol form = S.InputForm;
         if (ast.size() == 3) {
           IExpr arg2 = ast.arg2();
-          if (arg2.equals(F.InputForm)) {
-            form = F.InputForm;
-          } else if (arg2.equals(F.TeXForm)) {
-            form = F.TeXForm;
+          if (arg2.equals(S.InputForm)) {
+            form = S.InputForm;
+          } else if (arg2.equals(S.TeXForm)) {
+            form = S.TeXForm;
           } else {
             return F.NIL;
           }
         }
         try {
-          if (form.equals(F.InputForm)) {
+          if (form.equals(S.InputForm)) {
             ExprParser parser = new ExprParser(engine);
             IExpr temp = parser.parse(arg1.toString());
             return temp;
-          } else if (form.equals(F.TeXForm)) {
+          } else if (form.equals(S.TeXForm)) {
             TeXParser texParser = new TeXParser(engine);
             return texParser.toExpression(arg1.toString());
           }
@@ -2283,7 +2328,7 @@ public final class StringFunctions {
           if (FEConfig.SHOW_STACKTRACE) {
             rex.printStackTrace();
           }
-          return F.$Aborted;
+          return S.$Aborted;
         }
       }
       return F.NIL;
@@ -2569,6 +2614,7 @@ public final class StringFunctions {
       return true;
     }
 
+    @Override
     public int[] expectedArgSize(IAST ast) {
       return ARGS_1_1;
     }

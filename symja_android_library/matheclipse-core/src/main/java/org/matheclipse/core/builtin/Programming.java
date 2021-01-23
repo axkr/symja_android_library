@@ -34,7 +34,6 @@ import org.matheclipse.core.eval.exception.Validate;
 import org.matheclipse.core.eval.exception.ValidateException;
 import org.matheclipse.core.eval.interfaces.AbstractCoreFunctionEvaluator;
 import org.matheclipse.core.eval.interfaces.AbstractFunctionEvaluator;
-import org.matheclipse.core.eval.interfaces.IFunctionEvaluator;
 import org.matheclipse.core.eval.interfaces.ISetEvaluator;
 import org.matheclipse.core.eval.util.Iterator;
 import org.matheclipse.core.expression.F;
@@ -102,6 +101,7 @@ public final class Programming {
       S.StackBegin.setEvaluator(new StackBegin());
       S.Switch.setEvaluator(new Switch());
       S.TimeConstrained.setEvaluator(new TimeConstrained());
+      S.TimeRemaining.setEvaluator(new TimeRemaining());
       S.Timing.setEvaluator(new Timing());
       S.Throw.setEvaluator(new Throw());
       S.Unevaluated.setEvaluator(new Unevaluated());
@@ -146,6 +146,7 @@ public final class Programming {
       throw AbortException.ABORTED;
     }
 
+    @Override
     public int[] expectedArgSize(IAST ast) {
       return ARGS_0_0;
     }
@@ -167,6 +168,7 @@ public final class Programming {
       return F.NIL;
     }
 
+    @Override
     public int[] expectedArgSize(IAST ast) {
       return ARGS_1_1;
     }
@@ -206,6 +208,7 @@ public final class Programming {
       throw BreakException.CONST;
     }
 
+    @Override
     public int[] expectedArgSize(IAST ast) {
       return ARGS_0_0;
     }
@@ -246,6 +249,7 @@ public final class Programming {
       return F.NIL;
     }
 
+    @Override
     public int[] expectedArgSize(IAST ast) {
       return ARGS_2_2;
     }
@@ -290,6 +294,7 @@ public final class Programming {
       }
     }
 
+    @Override
     public int[] expectedArgSize(IAST ast) {
       return ARGS_1_3;
     }
@@ -350,6 +355,7 @@ public final class Programming {
       }
     }
 
+    @Override
     public int[] expectedArgSize(IAST ast) {
       return ARGS_2_2;
     }
@@ -454,6 +460,7 @@ public final class Programming {
       return F.NIL;
     }
 
+    @Override
     public int[] expectedArgSize(IAST ast) {
       return ARGS_2_2;
     }
@@ -498,6 +505,7 @@ public final class Programming {
       // return F.Hold(ast);
     }
 
+    @Override
     public int[] expectedArgSize(IAST ast) {
       return ARGS_0_1;
     }
@@ -751,6 +759,7 @@ public final class Programming {
       return F.NIL;
     }
 
+    @Override
     public int[] expectedArgSize(IAST ast) {
       return ARGS_2_INFINITY;
     }
@@ -859,6 +868,7 @@ public final class Programming {
       }
     }
 
+    @Override
     public int[] expectedArgSize(IAST ast) {
       return ARGS_2_3;
     }
@@ -989,6 +999,7 @@ public final class Programming {
       }
     }
 
+    @Override
     public int[] expectedArgSize(IAST ast) {
       return ARGS_2_3;
     }
@@ -1061,7 +1072,7 @@ public final class Programming {
       engine.evaluate(ast.arg1()); // start
       IExpr test = ast.arg2();
       IExpr incr = ast.arg3();
-      IExpr body = F.Null;
+      IExpr body = S.Null;
       if (ast.size() == 5) {
         body = ast.arg4();
       }
@@ -1070,19 +1081,19 @@ public final class Programming {
         try {
           if (!engine.evaluate(test).isTrue()) {
             exit = true;
-            return F.Null;
+            return S.Null;
           }
           if (ast.size() == 5) {
             engine.evaluate(body);
           }
-          if (iterationLimit >= 0 && iterationLimit <= ++iterationCounter) {
+          if (iterationLimit > 0 && iterationLimit <= ++iterationCounter) {
             IterationLimitExceeded.throwIt(iterationCounter, ast);
           }
         } catch (final BreakException e) {
           exit = true;
-          return F.Null;
+          return S.Null;
         } catch (final ContinueException e) {
-          if (iterationLimit >= 0 && iterationLimit <= ++iterationCounter) {
+          if (iterationLimit > 0 && iterationLimit <= ++iterationCounter) {
             IterationLimitExceeded.throwIt(iterationCounter, ast);
           }
           continue;
@@ -1096,6 +1107,7 @@ public final class Programming {
       }
     }
 
+    @Override
     public int[] expectedArgSize(IAST ast) {
       return ARGS_3_4;
     }
@@ -1180,7 +1192,7 @@ public final class Programming {
           return ast.arg3();
         }
 
-        return F.Null;
+        return S.Null;
       }
 
       if (temp.equals(S.True)) {
@@ -1194,6 +1206,7 @@ public final class Programming {
       return F.NIL;
     }
 
+    @Override
     public int[] expectedArgSize(IAST ast) {
       return ARGS_2_4;
     }
@@ -1235,6 +1248,7 @@ public final class Programming {
       throw new AbortException();
     }
 
+    @Override
     public int[] expectedArgSize(IAST ast) {
       return ARGS_0_0;
     }
@@ -1290,6 +1304,7 @@ public final class Programming {
       return F.NIL;
     }
 
+    @Override
     public IExpr evaluateSet(
         final IExpr leftHandSide,
         IExpr rightHandSide,
@@ -1334,6 +1349,7 @@ public final class Programming {
       return F.NIL;
     }
 
+    @Override
     public int[] expectedArgSize(IAST ast) {
       return ARGS_2_2;
     }
@@ -1377,7 +1393,7 @@ public final class Programming {
         int n = arg3.toIntDefault(Integer.MIN_VALUE);
         if (n < 0) {
           // Positive integer (less equal 2147483647) expected at position `2` in `1`.
-          return IOFunctions.printMessage(F.Nest, "intpm", F.List(ast, F.C3), engine);
+          return IOFunctions.printMessage(S.Nest, "intpm", F.List(ast, F.C3), engine);
         }
         int iterationLimit = engine.getIterationLimit();
         if (iterationLimit >= 0 && iterationLimit <= n) {
@@ -1388,6 +1404,7 @@ public final class Programming {
       return F.NIL;
     }
 
+    @Override
     public int[] expectedArgSize(IAST ast) {
       return ARGS_3_3;
     }
@@ -1440,7 +1457,7 @@ public final class Programming {
         int n = arg3.toIntDefault(Integer.MIN_VALUE);
         if (n < 0) {
           // Positive integer (less equal 2147483647) expected at position `2` in `1`.
-          return IOFunctions.printMessage(F.Nest, "intpm", F.List(ast, F.C3), engine);
+          return IOFunctions.printMessage(S.Nest, "intpm", F.List(ast, F.C3), engine);
         }
         int iterationLimit = engine.getIterationLimit();
         if (iterationLimit >= 0 && iterationLimit <= n) {
@@ -1448,7 +1465,7 @@ public final class Programming {
         }
         IExpr arg1 = engine.evaluate(ast.arg1());
         IExpr arg2 = engine.evaluate(ast.arg2());
-        return nestList(arg2, n, x -> F.unaryAST1(arg1, x), F.List, engine);
+        return nestList(arg2, n, x -> F.unaryAST1(arg1, x), S.List, engine);
       }
       return F.NIL;
     }
@@ -1470,6 +1487,7 @@ public final class Programming {
       return resultList;
     }
 
+    @Override
     public int[] expectedArgSize(IAST ast) {
       return ARGS_3_3;
     }
@@ -1532,6 +1550,7 @@ public final class Programming {
           ast.arg2(), engine.evaluate(ast.arg3()), x -> F.unaryAST1(ast.arg1(), x), engine);
     }
 
+    @Override
     public int[] expectedArgSize(IAST ast) {
       return ARGS_3_3;
     }
@@ -1597,11 +1616,12 @@ public final class Programming {
           ast.arg2(),
           engine.evaluate(ast.arg3()),
           x -> F.unaryAST1(arg1, x),
-          F.ListAlloc(),
+          F.ListAlloc(15),
           engine);
       // Functors.append(F.ast(ast.arg1())), List(), engine);
     }
 
+    @Override
     public int[] expectedArgSize(IAST ast) {
       return ARGS_3_3;
     }
@@ -1698,7 +1718,7 @@ public final class Programming {
     public IExpr evaluate(final IAST ast, EvalEngine engine) {
       if (ast.isAST0()) {
         engine.setOnOffMode(false, null, false);
-        return F.Null;
+        return S.Null;
       }
 
       if (ast.isAST1()) {
@@ -2054,7 +2074,7 @@ public final class Programming {
                 return sparseEvaluate(evaledAST, (ISparseArray) arg1, engine).orElse(evaledAST);
               }
               // Part specification `1` is longer than depth of object.
-              IOFunctions.printMessage(F.Part, "partd", F.List(evaledAST), engine);
+              IOFunctions.printMessage(S.Part, "partd", F.List(evaledAST), engine);
               // return the evaluated result:
               return evaledAST;
             }
@@ -2065,7 +2085,7 @@ public final class Programming {
                 return sparseEvaluate(ast, (ISparseArray) arg1, engine);
               }
               // Part specification `1` is longer than depth of object.
-              return IOFunctions.printMessage(F.Part, "partd", F.List(ast), engine);
+              return IOFunctions.printMessage(S.Part, "partd", F.List(ast), engine);
             }
           }
           IAST arg1AST = (IAST) arg1;
@@ -2125,6 +2145,7 @@ public final class Programming {
       return F.NIL;
     }
 
+    @Override
     public IExpr evaluateSet(
         final IExpr leftHandSide,
         IExpr rightHandSide,
@@ -2195,6 +2216,7 @@ public final class Programming {
       return F.NIL;
     }
 
+    @Override
     public int[] expectedArgSize(IAST ast) {
       return ARGS_1_1;
     }
@@ -2228,6 +2250,7 @@ public final class Programming {
       }
     }
 
+    @Override
     public int[] expectedArgSize(IAST ast) {
       return ARGS_1_1;
     }
@@ -2393,6 +2416,7 @@ public final class Programming {
       throw new ReturnException();
     }
 
+    @Override
     public int[] expectedArgSize(IAST ast) {
       return ARGS_0_1;
     }
@@ -2429,7 +2453,7 @@ public final class Programming {
       if (reapList != null) {
         if (ast.isAST1()) {
           IExpr arg1 = engine.evaluate(ast.arg1());
-          appendReapList(arg1, F.None, reapList);
+          appendReapList(arg1, S.None, reapList);
           return arg1;
         } else if (ast.isAST2()) {
           IExpr arg1 = engine.evaluate(ast.arg1());
@@ -2482,7 +2506,7 @@ public final class Programming {
         IExpr arg1 = ast.arg1();
         if (arg1.isBlank()) {
           while (iter.hasNext()) {
-            IExpr expr = (IExpr) iter.next();
+            IExpr expr = iter.next();
             if (expr != ast) {
               result.append(F.HoldForm(expr));
             }
@@ -2490,7 +2514,7 @@ public final class Programming {
         } else {
           IPatternMatcher matcher = engine.evalPatternMatcher(arg1);
           while (iter.hasNext()) {
-            IExpr expr = (IExpr) iter.next();
+            IExpr expr = iter.next();
             if (expr != ast
                 && //
                 matcher.test(expr, engine)) {
@@ -2500,7 +2524,7 @@ public final class Programming {
         }
       } else {
         while (iter.hasNext()) {
-          IExpr expr = (IExpr) iter.next();
+          IExpr expr = iter.next();
           if (expr != ast) {
             result.append(F.HoldForm(expr.head()));
           }
@@ -2509,6 +2533,7 @@ public final class Programming {
       return result;
     }
 
+    @Override
     public int[] expectedArgSize(IAST ast) {
       return ARGS_0_1;
     }
@@ -2532,6 +2557,7 @@ public final class Programming {
       }
     }
 
+    @Override
     public int[] expectedArgSize(IAST ast) {
       return ARGS_1_1;
     }
@@ -2623,6 +2649,7 @@ public final class Programming {
     static class EvalControlledCallable implements Callable<IExpr> {
       private final EvalEngine fEngine;
       private IExpr fExpr;
+      private long fSeconds;
 
       /**
        * Copy the current threads engine state into a new <code>EvalEngine</code> and do the
@@ -2638,12 +2665,14 @@ public final class Programming {
       public IExpr call() throws Exception {
         EvalEngine.set(fEngine);
         try {
+          long timeConstrainedMillis = System.currentTimeMillis() + fSeconds * 1000L;
+          fEngine.setTimeConstrainedMillis(timeConstrainedMillis);
           return fEngine.evaluate(fExpr);
         } catch (final SyntaxError se) {
           String msg = se.getMessage();
           fEngine.printMessage(msg);
         } catch (org.matheclipse.core.eval.exception.TimeoutException e) {
-          return F.$Aborted;
+          return S.$Aborted;
         } catch (final RecursionLimitExceeded re) {
           throw re;
         } catch (final ASTElementLimitExceeded re) {
@@ -2660,22 +2689,25 @@ public final class Programming {
         } catch (final StackOverflowError e) {
           fEngine.printMessage("TimeConstrained: " + e.getMessage());
         } finally {
+          fEngine.setTimeConstrainedMillis(-1);
           EvalEngine.remove();
         }
-        return F.$Aborted;
+        return S.$Aborted;
       }
 
       public void cancel() {
         fEngine.stopRequest();
       }
 
-      public void setExpr(IExpr fExpr) {
+      public void setExpr(IExpr fExpr, long seconds) {
         this.fExpr = fExpr;
+        this.fSeconds = seconds;
       }
     }
 
     @Override
     public IExpr evaluate(final IAST ast, EvalEngine engine) {
+      // TODO engine.getTimeConstrainedMillis(); doesn't work here???
       long s = engine.getSeconds();
       if (s > 0 || Config.TIMECONSTRAINED_NO_THREAD) {
         // no new thread should be spawned
@@ -2704,28 +2736,29 @@ public final class Programming {
       TimeLimiter timeLimiter =
           SimpleTimeLimiter.create(executor); // Executors.newSingleThreadExecutor());
       EvalControlledCallable work = new EvalControlledCallable(engine);
-      work.setExpr(ast.arg1());
+
       try {
         seconds = seconds > 1 ? seconds - 1 : seconds;
+        work.setExpr(ast.arg1(), seconds);
         return timeLimiter.callWithTimeout(work, seconds, TimeUnit.SECONDS);
       } catch (org.matheclipse.core.eval.exception.TimeoutException e) {
         // System.out.println("TIMED_OUT "+ast.arg1());
         if (ast.isAST3()) {
           return ast.arg3();
         }
-        return F.$Aborted;
+        return S.$Aborted;
       } catch (java.util.concurrent.TimeoutException e) {
         // System.out.println("TimeoutException "+ast.arg1());
         if (ast.isAST3()) {
           return ast.arg3();
         }
-        return F.$Aborted;
+        return S.$Aborted;
       } catch (com.google.common.util.concurrent.UncheckedTimeoutException e) {
         // System.out.println("UncheckedTimeoutException "+ast.arg1());
         if (ast.isAST3()) {
           return ast.arg3();
         }
-        return F.$Aborted;
+        return S.$Aborted;
       } catch (RuntimeException rex) {
         // System.out.println("RuntimeException "+ast.arg1());
         // Appengine example: com.google.apphosting.api.DeadlineExceededException
@@ -2736,7 +2769,7 @@ public final class Programming {
         if (Config.DEBUG) {
           rex.printStackTrace();
         }
-        return F.Null;
+        return S.Null;
       } catch (Exception e) {
         if (ast.isAST3()) {
           // e.printStackTrace();
@@ -2745,7 +2778,7 @@ public final class Programming {
         if (Config.DEBUG) {
           e.printStackTrace();
         }
-        return F.Null;
+        return S.Null;
       } finally {
         work.cancel();
         executor.shutdown(); // Disable new tasks from being submitted
@@ -2765,12 +2798,35 @@ public final class Programming {
       }
     }
 
+    @Override
     public int[] expectedArgSize(IAST ast) {
       return ARGS_2_3;
     }
 
     @Override
     public void setUp(ISymbol newSymbol) {
+      newSymbol.setAttributes(ISymbol.HOLDALL);
+    }
+  }
+
+  private static final class TimeRemaining extends AbstractCoreFunctionEvaluator {
+
+    @Override
+    public IExpr evaluate(final IAST ast, EvalEngine engine) {
+      double timeRemaining = engine.getRemainingSeconds();
+      if (timeRemaining < 0.0) {
+        return F.CInfinity;
+      }
+      return F.num(timeRemaining);
+    }
+
+    @Override
+    public int[] expectedArgSize(IAST ast) {
+      return ARGS_0_0;
+    }
+
+    @Override
+    public void setUp(final ISymbol newSymbol) {
       newSymbol.setAttributes(ISymbol.HOLDALL);
     }
   }
@@ -2786,7 +2842,7 @@ public final class Programming {
         final long begin = bean.getCurrentThreadCpuTime();
         final IExpr result = engine.evaluate(ast.arg1());
         final long end = bean.getCurrentThreadCpuTime();
-        double value = ((double) (end - begin)) / 1000000000.0;
+        double value = (end - begin) / 1000000000.0;
         //        System.out.println(begin);
         //        System.out.println(end);
         return List(F.num(value), F.HoldForm(result));
@@ -2795,6 +2851,7 @@ public final class Programming {
       return super.evaluate(ast, engine);
     }
 
+    @Override
     public int[] expectedArgSize(IAST ast) {
       return ARGS_1_1;
     }
@@ -2827,6 +2884,7 @@ public final class Programming {
       return F.NIL;
     }
 
+    @Override
     public int[] expectedArgSize(IAST ast) {
       return ARGS_1_2;
     }
@@ -2880,6 +2938,7 @@ public final class Programming {
       return F.NIL;
     }
 
+    @Override
     public int[] expectedArgSize(IAST ast) {
       return ARGS_1_2;
     }
@@ -2894,10 +2953,10 @@ public final class Programming {
 
     @Override
     public IExpr evaluate(final IAST ast, EvalEngine engine) {
-      if (ast.head() == F.TraceForm) {
+      if (ast.head() == S.TraceForm) {
         try {
           IASTMutable trace = ast.copy();
-          trace.set(0, F.Trace);
+          trace.set(0, S.Trace);
           final IExpr temp = engine.evaluate(trace);
           StringBuilder jsControl = new StringBuilder();
 
@@ -2919,14 +2978,14 @@ public final class Programming {
         jsControl.append("<ul>");
         for (int i = 1; i < list.size(); i++) {
           IExpr arg = list.get(i);
-          if (arg.isAST(F.HoldForm, 2)) {
+          if (arg.isAST(S.HoldForm, 2)) {
             jsControl.append("<li>\n");
             String html = StringEscapeUtils.escapeHtml4(arg.first().toString());
             jsControl.append(html);
             jsControl.append("</li>\n");
           } else if (arg.isList()) {
             IExpr last = arg.last();
-            if (last.isAST(F.HoldForm, 2)) {
+            if (last.isAST(S.HoldForm, 2)) {
               jsControl.append("<li>\n");
               l = last.first();
               String html = StringEscapeUtils.escapeHtml4(l.toString());
@@ -2958,6 +3017,7 @@ public final class Programming {
       return F.NIL;
     }
 
+    @Override
     public int[] expectedArgSize(IAST ast) {
       return ARGS_1_2;
     }
@@ -2975,6 +3035,7 @@ public final class Programming {
       return ast.arg1();
     }
 
+    @Override
     public int[] expectedArgSize(IAST ast) {
       return ARGS_1_1;
     }
@@ -3055,7 +3116,7 @@ public final class Programming {
         }
         return F.ast(ast, ast.head(), true, i, ast.size());
       }
-      return F.Null;
+      return S.Null;
     }
 
     @Override
@@ -3119,7 +3180,7 @@ public final class Programming {
           // IterationLimitExceeded.throwIt(iterationCounter, ast);
           // }
         } catch (final BreakException e) {
-          return F.Null;
+          return S.Null;
         } catch (final ContinueException e) {
           continue;
         } catch (final ReturnException e) {
@@ -3127,9 +3188,10 @@ public final class Programming {
         }
       }
 
-      return F.Null;
+      return S.Null;
     }
 
+    @Override
     public int[] expectedArgSize(IAST ast) {
       return ARGS_1_2;
     }
@@ -3167,6 +3229,7 @@ public final class Programming {
       return F.NIL;
     }
 
+    @Override
     public int[] expectedArgSize(IAST ast) {
       return ARGS_2_2;
     }
@@ -3189,7 +3252,7 @@ public final class Programming {
       IAST variablesList, final java.util.Map<ISymbol, IExpr> variablesMap, EvalEngine engine) {
     ISymbol oldSymbol;
     for (int i = 1; i < variablesList.size(); i++) {
-      if (variablesList.get(i).isAST(F.Set, 3)) {
+      if (variablesList.get(i).isAST(S.Set, 3)) {
         final IAST setFun = (IAST) variablesList.get(i);
         if (setFun.arg1().isSymbol()) {
           oldSymbol = (ISymbol) setFun.arg1();
@@ -3203,13 +3266,13 @@ public final class Programming {
           // assignments to
           // symbols are allowed.
           IOFunctions.printMessage(
-              F.With, "lvset", F.List(variablesList, variablesList.get(i), setFun.arg1()), engine);
+              S.With, "lvset", F.List(variablesList, variablesList.get(i), setFun.arg1()), engine);
           return false;
         }
       } else {
         // Variable `1` in local variable specification `2` requires assigning a value
         IOFunctions.printMessage(
-            F.With, "lvws", F.List(variablesList.get(i), variablesList), engine);
+            S.With, "lvws", F.List(variablesList.get(i), variablesList), engine);
         return false;
       }
     }
@@ -3238,7 +3301,7 @@ public final class Programming {
         newSymbol = F.Dummy(oldSymbol.toString() + varAppend);
         variablesMap.put(oldSymbol, newSymbol);
       } else {
-        if (variablesList.get(i).isAST(F.Set, 3)) {
+        if (variablesList.get(i).isAST(S.Set, 3)) {
           final IAST setFun = (IAST) variablesList.get(i);
           if (setFun.arg1().isSymbol()) {
             oldSymbol = (ISymbol) setFun.arg1();
@@ -3291,7 +3354,7 @@ public final class Programming {
         symbolList[i] = variableSymbol;
         assignedValues[i] = variableSymbol.assignedValue();
         assignedRules[i] = variableSymbol.getRulesData();
-      } else if (variablesList.get(i).isAST(F.Set, 3)) {
+      } else if (variablesList.get(i).isAST(S.Set, 3)) {
         final IAST setFun = (IAST) variablesList.get(i);
         if (setFun.arg1().isSymbol()) {
           variableSymbol = (ISymbol) setFun.arg1();
@@ -3314,7 +3377,7 @@ public final class Programming {
         variableSymbol.assignValue(null, false);
         variableSymbol.setRulesData(null);
       } else {
-        if (variablesList.get(i).isAST(F.Set, 3)) {
+        if (variablesList.get(i).isAST(S.Set, 3)) {
           final IAST setFun = (IAST) variablesList.get(i);
           if (setFun.arg1().isSymbol()) {
             variableSymbol = symbolList[i];
@@ -3390,7 +3453,7 @@ public final class Programming {
     }
     if ((position < 0) || (position >= ast.size())) {
       // Part `1` of `2` does not exist.
-      return IOFunctions.printMessage(F.Part, "partw", F.List(F.ZZ(pos), ast), engine);
+      return IOFunctions.printMessage(S.Part, "partw", F.List(F.ZZ(pos), ast), engine);
     }
     return ast.get(position);
   }
@@ -3411,7 +3474,7 @@ public final class Programming {
     }
     if ((position < 0) || (position >= ast.size())) {
       // Part `1` of `2` does not exist.
-      return IOFunctions.printMessage(F.Part, "partw", F.List(F.ZZ(pos), ast), engine);
+      return IOFunctions.printMessage(S.Part, "partw", F.List(F.ZZ(pos), ast), engine);
     }
     return ast.getRule(position);
   }
@@ -3448,13 +3511,13 @@ public final class Programming {
       int last = span[1];
       int step = span[2];
       return spanPart(ast, pos, arg1, arg2, start, last, step, p1, engine);
-    } else if (arg2.equals(F.All)) {
+    } else if (arg2.equals(S.All)) {
       return spanPart(ast, pos, arg1, arg2, 1, arg1.size() - 1, 1, p1, engine);
     } else if (arg2.isReal()) {
       final int indx = ast.get(pos).toIntDefault(Integer.MIN_VALUE);
       if (indx == Integer.MIN_VALUE) {
         // Part `1` of `2` does not exist.
-        return IOFunctions.printMessage(F.Part, "partw", F.List(ast.get(pos), arg1), engine);
+        return IOFunctions.printMessage(S.Part, "partw", F.List(ast.get(pos), arg1), engine);
       }
       IExpr result = getIndex(arg1, indx, engine);
       if (result.isPresent()) {
@@ -3463,7 +3526,7 @@ public final class Programming {
             return part((IAST) result, ast, p1, engine);
           } else {
             // Part specification `1` is longer than depth of object.
-            return IOFunctions.printMessage(F.Part, "partd", F.List(result), engine);
+            return IOFunctions.printMessage(S.Part, "partd", F.List(result), engine);
           }
         }
         return result;
@@ -3482,7 +3545,7 @@ public final class Programming {
             final int indx = listArg.toIntDefault(Integer.MIN_VALUE);
             if (indx == Integer.MIN_VALUE) {
               // Part `1` of `2` does not exist.
-              return IOFunctions.printMessage(F.Part, "partw", F.List(listArg, arg1), engine);
+              return IOFunctions.printMessage(S.Part, "partw", F.List(listArg, arg1), engine);
             }
             IExpr ires = getIndexRule(arg1, indx, engine);
             if (ires.isPresent()) {
@@ -3497,7 +3560,7 @@ public final class Programming {
                   }
                 } else {
                   // Part specification `1` is longer than depth of object.
-                  return IOFunctions.printMessage(F.Part, "partd", F.List(ires), engine);
+                  return IOFunctions.printMessage(S.Part, "partd", F.List(ires), engine);
                 }
               } else {
                 result.appendRule(ires);
@@ -3505,7 +3568,7 @@ public final class Programming {
             } else {
               return F.NIL;
             }
-          } else if (listArg.isAST(F.Key, 2)) {
+          } else if (listArg.isAST(S.Key, 2)) {
             result.appendRule(assoc.getRule(listArg.first()));
           } else if (listArg.isString()) {
             result.appendRule(assoc.getRule(listArg));
@@ -3515,7 +3578,7 @@ public final class Programming {
       }
 
       IExpr result = F.NIL;
-      if (arg2.isAST(F.Key, 2)) {
+      if (arg2.isAST(S.Key, 2)) {
         result = assoc.getValue(arg2.first());
       } else if (arg2.isString()) {
         result = assoc.getValue(arg2);
@@ -3527,7 +3590,7 @@ public final class Programming {
             return part((IAST) result, ast, p1, engine);
           } else {
             // Part specification `1` is longer than depth of object.
-            return IOFunctions.printMessage(F.Part, "partd", F.List(result), engine);
+            return IOFunctions.printMessage(S.Part, "partd", F.List(result), engine);
           }
         }
         return result;
@@ -3543,7 +3606,7 @@ public final class Programming {
           final int indx = listArg.toIntDefault(Integer.MIN_VALUE);
           if (indx == Integer.MIN_VALUE) {
             // Part `1` of `2` does not exist.
-            return IOFunctions.printMessage(F.Part, "partw", F.List(listArg, arg1), engine);
+            return IOFunctions.printMessage(S.Part, "partw", F.List(listArg, arg1), engine);
           }
           IExpr ires = getIndex(arg1, indx, engine);
           if (ires.isPresent()) {
@@ -3558,7 +3621,7 @@ public final class Programming {
                 }
               } else {
                 // Part specification `1` is longer than depth of object.
-                return IOFunctions.printMessage(F.Part, "partd", F.List(ires), engine);
+                return IOFunctions.printMessage(S.Part, "partd", F.List(ires), engine);
               }
             } else {
               result.append(ires);
@@ -3572,7 +3635,7 @@ public final class Programming {
     }
 
     // The expression `1` cannot be used as a part specification.
-    return IOFunctions.printMessage(F.Part, "pkspec1", F.List(arg2), engine);
+    return IOFunctions.printMessage(S.Part, "pkspec1", F.List(arg2), engine);
   }
 
   public static IExpr sparsePart(
@@ -3595,7 +3658,7 @@ public final class Programming {
     }
 
     // The expression `1` cannot be used as a part specification.
-    return IOFunctions.printMessage(F.Part, "pkspec1", F.List(ast), engine);
+    return IOFunctions.printMessage(S.Part, "pkspec1", F.List(ast), engine);
   }
 
   private static IExpr spanPart(
@@ -3608,9 +3671,10 @@ public final class Programming {
       int step,
       int p1,
       EvalEngine engine) {
-    IASTAppendable result = arg1.copyHead();
+
     final int size = arg1.size();
     if (step < 0 && start >= last) {
+      IASTAppendable result = arg1.copyHead((last - start) / step + 2);
       for (int i = start; i >= last; i += step) {
         if (p1 >= ast.size()) {
           IExpr temp = getIndexRule(arg1, i, engine);
@@ -3624,7 +3688,7 @@ public final class Programming {
           if (i >= size) {
             // Cannot take positions `1` through `2` in `3`.
             return IOFunctions.printMessage(
-                F.Part, "take", F.List(F.ZZ(start), F.ZZ(last), arg1), engine);
+                S.Part, "take", F.List(F.ZZ(start), F.ZZ(last), arg1), engine);
           }
           IExpr temp = part((IAST) arg1.get(i), ast, p1, engine);
           if (temp.isPresent()) {
@@ -3633,9 +3697,11 @@ public final class Programming {
           }
         }
         // Part specification `1` is longer than depth of object.
-        return IOFunctions.printMessage(F.Part, "partd", F.List(arg1.get(i)), engine);
+        return IOFunctions.printMessage(S.Part, "partd", F.List(arg1.get(i)), engine);
       }
+      return result;
     } else if (step > 0 && (last != 1 || start <= last)) {
+      IASTAppendable result = arg1.copyHead((last - start) / step + 2);
       for (int i = start; i <= last; i += step) {
         if (p1 >= ast.size()) {
           IExpr temp = getIndexRule(arg1, i, engine);
@@ -3649,7 +3715,7 @@ public final class Programming {
           if (i >= size) {
             // Cannot take positions `1` through `2` in `3`.
             return IOFunctions.printMessage(
-                F.Part, "take", F.List(F.ZZ(start), F.ZZ(last), arg1), engine);
+                S.Part, "take", F.List(F.ZZ(start), F.ZZ(last), arg1), engine);
           }
 
           if (arg1.isAssociation()) {
@@ -3671,13 +3737,12 @@ public final class Programming {
           }
         }
         // Part specification `1` is longer than depth of object.
-        return IOFunctions.printMessage(F.Part, "partd", F.List(arg1.get(i)), engine);
+        return IOFunctions.printMessage(S.Part, "partd", F.List(arg1.get(i)), engine);
       }
-    } else {
-      // The expression `1` cannot be used as a part specification.
-      return IOFunctions.printMessage(F.Part, "pkspec1", F.List(arg2), engine);
+      return result;
     }
-    return result;
+    // The expression `1` cannot be used as a part specification.
+    return IOFunctions.printMessage(S.Part, "pkspec1", F.List(arg2), engine);
   }
 
   private static IExpr assignPart(
@@ -3688,7 +3753,7 @@ public final class Programming {
     }
     if (!assignedExpr.isASTOrAssociation()) {
       // Part specification `1` is longer than depth of object.
-      return IOFunctions.printMessage(F.Part, "partd", F.List(part), engine);
+      return IOFunctions.printMessage(S.Part, "partd", F.List(part), engine);
     }
     IAST assignedAST = (IAST) assignedExpr;
     final IExpr arg2 = engine.evaluate(part.get(partPosition));
@@ -3717,7 +3782,7 @@ public final class Programming {
         }
       } else {
         // Part `1` of `2` does not exist.
-        return IOFunctions.printMessage(F.Part, "partw", F.List(F.ZZ(partPosition), arg2), engine);
+        return IOFunctions.printMessage(S.Part, "partw", F.List(F.ZZ(partPosition), arg2), engine);
       }
       return result;
     } else if (arg2.isReal()) {
@@ -3727,7 +3792,7 @@ public final class Programming {
       }
       if ((indx < 0) || (indx >= assignedAST.size())) {
         // Part `1` of `2` does not exist.
-        return IOFunctions.printMessage(F.Part, "partw", F.List(F.ZZ(indx), assignedAST), engine);
+        return IOFunctions.printMessage(S.Part, "partw", F.List(F.ZZ(indx), assignedAST), engine);
       }
       IASTAppendable result = F.NIL;
       IExpr temp = assignPart(assignedAST.get(indx), part, partPositionPlus1, value, engine);
@@ -3760,7 +3825,7 @@ public final class Programming {
             } else {
               // Part `1` of `2` does not exist.
               return IOFunctions.printMessage(
-                  F.Part, "partw", F.List(F.ZZ(partPosition), assignedAST), engine);
+                  S.Part, "partw", F.List(F.ZZ(partPosition), assignedAST), engine);
             }
           } else {
             result.append(ires);
@@ -3770,7 +3835,7 @@ public final class Programming {
       return result;
     }
     // Part `1` of `2` does not exist.
-    return IOFunctions.printMessage(F.Part, "partw", F.List(arg2, assignedAST), engine);
+    return IOFunctions.printMessage(S.Part, "partw", F.List(arg2, assignedAST), engine);
   }
 
   private static IExpr assignPart(
@@ -3829,7 +3894,7 @@ public final class Programming {
         }
       } else {
         // Part `1` of `2` does not exist.
-        return IOFunctions.printMessage(F.Part, "partw", F.List(arg2, assignedAST), engine);
+        return IOFunctions.printMessage(S.Part, "partw", F.List(arg2, assignedAST), engine);
       }
       return result;
     } else if (arg2.isReal()) {
@@ -3842,7 +3907,7 @@ public final class Programming {
         } else {
           // Part `1` of `2` does not exist.
           return IOFunctions.printMessage(
-              F.Part, "partw", F.List(F.ZZ(partPosition), assignedAST), engine);
+              S.Part, "partw", F.List(F.ZZ(partPosition), assignedAST), engine);
         }
       }
       return ires;
@@ -3868,7 +3933,7 @@ public final class Programming {
             } else {
               // Part `1` of `2` does not exist.
               return IOFunctions.printMessage(
-                  F.Part, "partw", F.List(F.ZZ(partPosition), assignedAST), engine);
+                  S.Part, "partw", F.List(F.ZZ(partPosition), assignedAST), engine);
             }
           } else {
             result.append(ires);
@@ -3878,7 +3943,7 @@ public final class Programming {
       return result;
     }
     // Part `1` of `2` does not exist.
-    return IOFunctions.printMessage(F.Part, "partw", F.List(arg2, assignedAST), engine);
+    return IOFunctions.printMessage(S.Part, "partw", F.List(arg2, assignedAST), engine);
   }
 
   /**

@@ -1,12 +1,12 @@
 package org.matheclipse.core.polynomials.symbolicexponent;
 
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.List;
 
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.expression.F;
+import org.matheclipse.core.expression.S;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IASTAppendable;
 import org.matheclipse.core.interfaces.IExpr;
@@ -59,49 +59,6 @@ public final class ExpVectorSymbolic {
     }
     val = Arrays.copyOf(v, v.length); // > Java-5
   }
-
-  /**
-   * Constructor for ExpVectorLong. Converts a String representation to an ExpVectorLong. Accepted
-   * format = (1,2,3,4,5,6,7).
-   *
-   * @param s String representation.
-   */
-  // public ExpVectorExpr(String s) throws NumberFormatException {
-  // super();
-  // // first format = (1,2,3,4,5,6,7)
-  // List<Long> exps = new ArrayList<Long>();
-  // s = s.trim();
-  // int b = s.indexOf('(');
-  // int e = s.indexOf(')', b + 1);
-  // String teil;
-  // int k;
-  // long a;
-  // if (b >= 0 && e >= 0) {
-  // b++;
-  // while ((k = s.indexOf(',', b)) >= 0) {
-  // teil = s.substring(b, k);
-  // a = Long.parseLong(teil);
-  // exps.add(Long.valueOf(a));
-  // b = k + 1;
-  // }
-  // if (b <= e) {
-  // teil = s.substring(b, e);
-  // a = Long.parseLong(teil);
-  // exps.add(Long.valueOf(a));
-  // }
-  // int length = exps.size();
-  // val = new long[length];
-  // for (int j = 0; j < length; j++) {
-  // val[j] = exps.get(j).longValue();
-  // }
-  // } else {
-  // // not implemented
-  // val = null;
-  // // length = -1;
-  // // Vector names = new Vector();
-  // // vars = s;
-  // }
-  // }
 
   /**
    * Clone this.
@@ -618,7 +575,7 @@ public final class ExpVectorSymbolic {
     ExpVectorSymbolic result = valueOf(u.length);
     IExpr[] w = result.val;
     for (int i = 0; i < u.length; i++) {
-      w[i] = F.Plus.of(u[i], v[i]);
+      w[i] = S.Plus.of(u[i], v[i]);
     }
     return result;
   }
@@ -635,7 +592,7 @@ public final class ExpVectorSymbolic {
     ExpVectorSymbolic result = valueOf(u.length);
     IExpr[] w = result.val;
     for (int i = 0; i < u.length; i++) {
-      w[i] = F.Plus.of(u[i], v[i].negate());
+      w[i] = S.Plus.of(u[i], v[i].negate());
     }
     return result;
   }
@@ -700,7 +657,7 @@ public final class ExpVectorSymbolic {
     IExpr[] u = val;
     IExpr t = F.C0;
     for (int i = 0; i < u.length; i++) {
-      if (F.Greater.ofQ(u[i], t)) {
+      if (S.Greater.ofQ(u[i], t)) {
         t = u[i];
       }
     }
@@ -742,7 +699,7 @@ public final class ExpVectorSymbolic {
     ExpVectorSymbolic result = valueOf(u.length);
     IExpr[] w = result.val;
     for (int i = 0; i < u.length; i++) {
-      if (F.GreaterEqual.ofQ(u[i], v[i])) {
+      if (S.GreaterEqual.ofQ(u[i], v[i])) {
         w[i] = u[i];
       } else {
         w[i] = v[i];
@@ -763,7 +720,7 @@ public final class ExpVectorSymbolic {
     ExpVectorSymbolic result = valueOf(u.length);
     IExpr[] w = result.val;
     for (int i = 0; i < u.length; i++) {
-      if (F.LessEqual.ofQ(u[i], v[i])) {
+      if (S.LessEqual.ofQ(u[i], v[i])) {
         w[i] = u[i];
       } else {
         w[i] = v[i];
@@ -810,7 +767,7 @@ public final class ExpVectorSymbolic {
     IExpr[] v = V.val;
     boolean t = true;
     for (int i = 0; i < u.length; i++) {
-      if (F.Less.ofQ(u[i], v[i])) {
+      if (S.Less.ofQ(u[i], v[i])) {
         return false;
       }
     }
@@ -984,10 +941,10 @@ public final class ExpVectorSymbolic {
     IExpr[] v = V.val;
     int t = 0;
     for (int i = 0; i < u.length; i++) {
-      if (F.Greater.ofQ(u[i], v[i])) {
+      if (S.Greater.ofQ(u[i], v[i])) {
         return 1;
       }
-      if (F.Less.ofQ(u[i], v[i])) {
+      if (S.Less.ofQ(u[i], v[i])) {
         return -1;
       }
     }
@@ -1008,10 +965,10 @@ public final class ExpVectorSymbolic {
     IExpr[] v = V.val;
     int t = 0;
     for (int i = begin; i < end; i++) {
-      if (F.Greater.ofQ(u[i], v[i])) {
+      if (S.Greater.ofQ(u[i], v[i])) {
         return 1;
       }
-      if (F.Less.ofQ(u[i], v[i])) {
+      if (S.Less.ofQ(u[i], v[i])) {
         return -1;
       }
     }
@@ -1031,11 +988,11 @@ public final class ExpVectorSymbolic {
     int t = 0;
     int i;
     for (i = 0; i < u.length; i++) {
-      if (F.Greater.ofQ(u[i], v[i])) {
+      if (S.Greater.ofQ(u[i], v[i])) {
         t = 1;
         break;
       }
-      if (F.Less.ofQ(u[i], v[i])) {
+      if (S.Less.ofQ(u[i], v[i])) {
         t = -1;
         break;
       }
@@ -1051,10 +1008,10 @@ public final class ExpVectorSymbolic {
     }
     IExpr upEvaled = EvalEngine.get().evaluate(up);
     IExpr vpEvaled = EvalEngine.get().evaluate(vp);
-    if (F.Greater.ofQ(upEvaled, vpEvaled)) {
+    if (S.Greater.ofQ(upEvaled, vpEvaled)) {
       t = 1;
     } else {
-      if (F.Less.ofQ(upEvaled, vpEvaled)) {
+      if (S.Less.ofQ(upEvaled, vpEvaled)) {
         t = -1;
       }
     }
@@ -1076,11 +1033,11 @@ public final class ExpVectorSymbolic {
     int t = 0;
     int i;
     for (i = begin; i < end; i++) {
-      if (F.Greater.ofQ(u[i], v[i])) {
+      if (S.Greater.ofQ(u[i], v[i])) {
         t = 1;
         break;
       }
-      if (F.Less.ofQ(u[i], v[i])) {
+      if (S.Less.ofQ(u[i], v[i])) {
         t = -1;
         break;
       }
@@ -1097,10 +1054,10 @@ public final class ExpVectorSymbolic {
     IExpr upEvaled = EvalEngine.get().evaluate(up);
     IExpr vpEvaled = EvalEngine.get().evaluate(vp);
 
-    if (F.Greater.ofQ(upEvaled, vpEvaled)) {
+    if (S.Greater.ofQ(upEvaled, vpEvaled)) {
       t = 1;
     } else {
-      if (F.Less.ofQ(upEvaled, vpEvaled)) {
+      if (S.Less.ofQ(upEvaled, vpEvaled)) {
         t = -1;
       }
     }
@@ -1118,10 +1075,10 @@ public final class ExpVectorSymbolic {
     IExpr[] v = V.val;
     int t = 0;
     for (int i = u.length - 1; i >= 0; i--) {
-      if (F.Greater.ofQ(u[i], v[i])) {
+      if (S.Greater.ofQ(u[i], v[i])) {
         return 1;
       }
-      if (F.Less.ofQ(u[i], v[i])) {
+      if (S.Less.ofQ(u[i], v[i])) {
         return -1;
       }
     }
@@ -1142,10 +1099,10 @@ public final class ExpVectorSymbolic {
     IExpr[] v = V.val;
     int t = 0;
     for (int i = end - 1; i >= begin; i--) {
-      if (F.Greater.ofQ(u[i], v[i])) {
+      if (S.Greater.ofQ(u[i], v[i])) {
         return 1;
       }
-      if (F.Less.ofQ(u[i], v[i])) {
+      if (S.Less.ofQ(u[i], v[i])) {
         return -1;
       }
     }
@@ -1165,11 +1122,11 @@ public final class ExpVectorSymbolic {
     int t = 0;
     int i;
     for (i = u.length - 1; i >= 0; i--) {
-      if (F.Greater.ofQ(u[i], v[i])) {
+      if (S.Greater.ofQ(u[i], v[i])) {
         t = 1;
         break;
       }
-      if (F.Less.ofQ(u[i], v[i])) {
+      if (S.Less.ofQ(u[i], v[i])) {
         t = -1;
         break;
       }
@@ -1187,10 +1144,10 @@ public final class ExpVectorSymbolic {
     IExpr upEvaled = EvalEngine.get().evaluate(up);
     IExpr vpEvaled = EvalEngine.get().evaluate(vp);
 
-    if (F.Greater.ofQ(upEvaled, vpEvaled)) {
+    if (S.Greater.ofQ(upEvaled, vpEvaled)) {
       t = 1;
     } else {
-      if (F.Less.ofQ(upEvaled, vpEvaled)) {
+      if (S.Less.ofQ(upEvaled, vpEvaled)) {
         t = -1;
       }
     }
@@ -1212,11 +1169,11 @@ public final class ExpVectorSymbolic {
     int t = 0;
     int i;
     for (i = end - 1; i >= begin; i--) {
-      if (F.Greater.ofQ(u[i], v[i])) {
+      if (S.Greater.ofQ(u[i], v[i])) {
         t = 1;
         break;
       }
-      if (F.Less.ofQ(u[i], v[i])) {
+      if (S.Less.ofQ(u[i], v[i])) {
         t = -1;
         break;
       }
@@ -1233,10 +1190,10 @@ public final class ExpVectorSymbolic {
     IExpr upEvaled = EvalEngine.get().evaluate(up);
     IExpr vpEvaled = EvalEngine.get().evaluate(vp);
 
-    if (F.Greater.ofQ(upEvaled, vpEvaled)) {
+    if (S.Greater.ofQ(upEvaled, vpEvaled)) {
       t = 1;
     } else {
-      if (F.Less.ofQ(upEvaled, vpEvaled)) {
+      if (S.Less.ofQ(upEvaled, vpEvaled)) {
         t = -1;
       }
     }
@@ -1256,11 +1213,11 @@ public final class ExpVectorSymbolic {
     int t = 0;
     int i;
     for (i = 0; i < u.length; i++) {
-      if (F.Less.ofQ(u[i], v[i])) {
+      if (S.Less.ofQ(u[i], v[i])) {
         t = 1;
         break;
       }
-      if (F.Greater.ofQ(u[i], v[i])) {
+      if (S.Greater.ofQ(u[i], v[i])) {
         t = -1;
         break;
       }
@@ -1278,10 +1235,10 @@ public final class ExpVectorSymbolic {
     IExpr upEvaled = EvalEngine.get().evaluate(up);
     IExpr vpEvaled = EvalEngine.get().evaluate(vp);
 
-    if (F.Greater.ofQ(upEvaled, vpEvaled)) {
+    if (S.Greater.ofQ(upEvaled, vpEvaled)) {
       t = 1;
     } else {
-      if (F.Less.ofQ(upEvaled, vpEvaled)) {
+      if (S.Less.ofQ(upEvaled, vpEvaled)) {
         t = -1;
       }
     }
@@ -1300,11 +1257,11 @@ public final class ExpVectorSymbolic {
     int t = 0;
     int i;
     for (i = u.length - 1; i >= 0; i--) {
-      if (F.Less.ofQ(u[i], v[i])) {
+      if (S.Less.ofQ(u[i], v[i])) {
         t = 1;
         break;
       }
-      if (F.Greater.ofQ(u[i], v[i])) {
+      if (S.Greater.ofQ(u[i], v[i])) {
         t = -1;
         break;
       }
@@ -1321,10 +1278,10 @@ public final class ExpVectorSymbolic {
     }
     IExpr upEvaled = EvalEngine.get().evaluate(up);
     IExpr vpEvaled = EvalEngine.get().evaluate(vp);
-    if (F.Greater.ofQ(upEvaled, vpEvaled)) {
+    if (S.Greater.ofQ(upEvaled, vpEvaled)) {
       t = 1;
     } else {
-      if (F.Less.ofQ(upEvaled, vpEvaled)) {
+      if (S.Less.ofQ(upEvaled, vpEvaled)) {
         t = -1;
       }
     }
@@ -1344,11 +1301,11 @@ public final class ExpVectorSymbolic {
     int t = 0;
     int i;
     for (i = 0; i < u.length; i++) {
-      if (F.Greater.ofQ(u[i], v[i])) {
+      if (S.Greater.ofQ(u[i], v[i])) {
         t = 1;
         break;
       }
-      if (F.Less.ofQ(u[i], v[i])) {
+      if (S.Less.ofQ(u[i], v[i])) {
         t = -1;
         break;
       }
@@ -1367,10 +1324,10 @@ public final class ExpVectorSymbolic {
       }
       IExpr upEvaled = EvalEngine.get().evaluate(up);
       IExpr vpEvaled = EvalEngine.get().evaluate(vp);
-      if (F.Greater.ofQ(upEvaled, vpEvaled)) {
+      if (S.Greater.ofQ(upEvaled, vpEvaled)) {
         return 1;
       }
-      if (F.Less.ofQ(upEvaled, vpEvaled)) {
+      if (S.Less.ofQ(upEvaled, vpEvaled)) {
         return -1;
       }
     }
@@ -1393,11 +1350,11 @@ public final class ExpVectorSymbolic {
     int t = 0;
     int i;
     for (i = begin; i < end; i++) {
-      if (F.Greater.ofQ(u[i], v[i])) {
+      if (S.Greater.ofQ(u[i], v[i])) {
         t = 1;
         break;
       }
-      if (F.Less.ofQ(u[i], v[i])) {
+      if (S.Less.ofQ(u[i], v[i])) {
         t = -1;
         break;
       }
@@ -1416,10 +1373,10 @@ public final class ExpVectorSymbolic {
       }
       IExpr upEvaled = EvalEngine.get().evaluate(up);
       IExpr vpEvaled = EvalEngine.get().evaluate(vp);
-      if (F.Greater.ofQ(upEvaled, vpEvaled)) {
+      if (S.Greater.ofQ(upEvaled, vpEvaled)) {
         return 1;
       }
-      if (F.Less.ofQ(upEvaled, vpEvaled)) {
+      if (S.Less.ofQ(upEvaled, vpEvaled)) {
         return -1;
       }
     }

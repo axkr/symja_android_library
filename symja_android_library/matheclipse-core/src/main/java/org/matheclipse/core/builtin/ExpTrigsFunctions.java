@@ -46,7 +46,6 @@ import org.matheclipse.core.eval.interfaces.AbstractArg12;
 import org.matheclipse.core.eval.interfaces.AbstractEvaluator;
 import org.matheclipse.core.eval.interfaces.AbstractFunctionEvaluator;
 import org.matheclipse.core.eval.interfaces.AbstractTrigArg1;
-import org.matheclipse.core.eval.interfaces.IFunctionEvaluator;
 import org.matheclipse.core.eval.interfaces.INumeric;
 import org.matheclipse.core.eval.interfaces.IRewrite;
 import org.matheclipse.core.eval.util.AbstractAssumptions;
@@ -167,7 +166,7 @@ public class ExpTrigsFunctions {
         return F.NIL;
       }
 
-      if (arg1.isAST(F.List, 3)) {
+      if (arg1.isAST(S.List, 3)) {
         // AngleVector({r_, phi_}) := {r * Cos(phi), r * Sin(phi)}
         IExpr r = ((IAST) arg1).arg1();
         phi = ((IAST) arg1).arg2();
@@ -265,6 +264,7 @@ public class ExpTrigsFunctions {
       super.setUp(newSymbol);
     }
 
+    @Override
     public IExpr rewriteLog(IExpr arg1, EvalEngine engine) {
       return
       // [$ Pi/2 + I*Log(I*arg1 + Sqrt(1 - arg1^2)) $]
@@ -344,6 +344,7 @@ public class ExpTrigsFunctions {
       super.setUp(newSymbol);
     }
 
+    @Override
     public IExpr rewriteLog(IExpr arg1, EvalEngine engine) {
       return
       // [$ Log(arg1 + Sqrt(-1 + arg1)*Sqrt(1 + arg1)) $]
@@ -386,7 +387,7 @@ public class ExpTrigsFunctions {
 
     @Override
     public IExpr e1ApfloatArg(Apfloat arg1) {
-      if (arg1.equals(Apfloat.ZERO)) {
+      if (arg1.equals(Apcomplex.ZERO)) {
         // Pi / 2
         return F.num(ApfloatMath.pi(arg1.precision()).divide(new Apfloat(2)));
       }
@@ -425,7 +426,7 @@ public class ExpTrigsFunctions {
       if (imPart.isPresent()) {
         return F.Times(F.CNI, F.ArcCoth(imPart));
       }
-      if (arg1.isAST(F.Cot, 2) && arg1.first().isPositive()) {
+      if (arg1.isAST(S.Cot, 2) && arg1.first().isPositive()) {
         // ArcCot(Cot(z))
         return arcTanArcCotInverse(arg1);
       }
@@ -447,6 +448,7 @@ public class ExpTrigsFunctions {
       super.setUp(newSymbol);
     }
 
+    @Override
     public IExpr rewriteLog(IExpr arg1, EvalEngine engine) {
       return
       // [$ (1/2)*I*Log(1 - I/arg1) - (1/2)*I*Log(1 + I/arg1) $]
@@ -489,10 +491,10 @@ public class ExpTrigsFunctions {
 
     @Override
     public IExpr e1ApfloatArg(Apfloat arg1) {
-      if (arg1.equals(Apfloat.ZERO)) {
+      if (arg1.equals(Apcomplex.ZERO)) {
         // I*Pi / 2
         return F.complexNum(
-            new Apcomplex(Apfloat.ZERO, ApfloatMath.pi(arg1.precision())).divide(new Apfloat(2)));
+            new Apcomplex(Apcomplex.ZERO, ApfloatMath.pi(arg1.precision())).divide(new Apfloat(2)));
       }
       return F.num(ApfloatMath.atanh(ApfloatMath.inverseRoot(arg1, 1)));
     }
@@ -550,6 +552,7 @@ public class ExpTrigsFunctions {
       super.setUp(newSymbol);
     }
 
+    @Override
     public IExpr rewriteLog(IExpr arg1, EvalEngine engine) {
       return
       // [$ (-(1/2))*Log(1 - 1/arg1) + (1/2)*Log(1 + 1/arg1) $]
@@ -610,6 +613,7 @@ public class ExpTrigsFunctions {
       super.setUp(newSymbol);
     }
 
+    @Override
     public IExpr rewriteLog(IExpr arg1, EvalEngine engine) {
       return
       // [$ (-I)*Log(Sqrt(1 - 1/arg1^2) + I/arg1) $]
@@ -664,6 +668,7 @@ public class ExpTrigsFunctions {
       super.setUp(newSymbol);
     }
 
+    @Override
     public IExpr rewriteLog(IExpr arg1, EvalEngine engine) {
       return
       // [$ Log(Sqrt(1 + 1/arg1^2) + 1/arg1) $]
@@ -688,7 +693,7 @@ public class ExpTrigsFunctions {
     public IExpr e1DblArg(final double d) {
       // log(1+Sqrt(1-d^2) / d)
       if (F.isZero(d)) {
-        return F.Indeterminate;
+        return S.Indeterminate;
       }
       return F.num(Math.log((1 + Math.sqrt(1 - d * d)) / d));
     }
@@ -704,6 +709,7 @@ public class ExpTrigsFunctions {
       super.setUp(newSymbol);
     }
 
+    @Override
     public IExpr rewriteLog(IExpr arg1, EvalEngine engine) {
       return
       // [$ Log(Sqrt(-1 + 1/arg1)*Sqrt(1 + 1/arg1) + 1/arg1) $]
@@ -749,6 +755,7 @@ public class ExpTrigsFunctions {
       super.setUp(newSymbol);
     }
 
+    @Override
     public IExpr rewriteLog(IExpr arg1, EvalEngine engine) {
       return
       // [$ Pi/2 + I*Log(Sqrt(1 - 1/arg1^2) + I/arg1) $]
@@ -849,6 +856,7 @@ public class ExpTrigsFunctions {
       super.setUp(newSymbol);
     }
 
+    @Override
     public IExpr rewriteLog(IExpr arg1, EvalEngine engine) {
       return
       // [$ -I*Log(I*arg1+Sqrt(1-arg1^2)) $]
@@ -926,6 +934,7 @@ public class ExpTrigsFunctions {
       super.setUp(newSymbol);
     }
 
+    @Override
     public IExpr rewriteLog(IExpr arg1, EvalEngine engine) {
       return
       // [$ Log(arg1 + Sqrt(1 + arg1^2)) $]
@@ -976,7 +985,7 @@ public class ExpTrigsFunctions {
     public IExpr e2ObjArg(final IExpr x, final IExpr y) {
       if (x.isZero() && y.isRealResult()) {
         if (y.isZero()) {
-          return F.Indeterminate;
+          return S.Indeterminate;
         }
         if (y.isPositiveResult()) {
           return F.CPiHalf;
@@ -987,13 +996,13 @@ public class ExpTrigsFunctions {
         return F.NIL;
       }
       if (y.isZero() && x.isNumericFunction(true) && !x.isZero()) {
-        return F.Times(F.Subtract(F.C1, x.unitStep()), F.Pi);
+        return F.Times(F.Subtract(F.C1, x.unitStep()), S.Pi);
       }
       IExpr yUnitStep = y.unitStep();
       if (x.isNumericFunction(true) && yUnitStep.isInteger()) {
         if (x.re().isNegative()) {
           return F.Plus(
-              F.ArcTan(F.Divide(y, x)), F.Times(F.Subtract(F.Times(F.C2, yUnitStep), F.C1), F.Pi));
+              F.ArcTan(F.Divide(y, x)), F.Times(F.Subtract(F.Times(F.C2, yUnitStep), F.C1), S.Pi));
         }
         IExpr argX = x.complexArg();
         // -Pi/2 < Arg(x) <= Pi/2
@@ -1006,7 +1015,7 @@ public class ExpTrigsFunctions {
         return F.C0;
       }
       if (x.isNegativeInfinity()) {
-        return F.Times(F.Subtract(F.Times(F.C2, F.UnitStep(F.Re(y))), F.C1), F.Pi);
+        return F.Times(F.Subtract(F.Times(F.C2, F.UnitStep(F.Re(y))), F.C1), S.Pi);
       }
       return F.NIL;
     }
@@ -1023,7 +1032,7 @@ public class ExpTrigsFunctions {
       }
       ComplexNum z = (ComplexNum) val;
       if (z.isNaN()) {
-        return F.Indeterminate;
+        return S.Indeterminate;
       }
 
       IComplexNum temp = ComplexNum.I.add(z).divide(ComplexNum.I.subtract(z));
@@ -1064,6 +1073,7 @@ public class ExpTrigsFunctions {
       super.setUp(newSymbol);
     }
 
+    @Override
     public IExpr rewriteLog(IExpr arg1, EvalEngine engine) {
       return
       // [$ (1/2)*I*Log(1 - I*arg1) - (1/2)*I*Log(1 + I*arg1) $]
@@ -1072,6 +1082,7 @@ public class ExpTrigsFunctions {
           F.Times(F.CN1D2, F.CI, F.Log(F.Plus(F.C1, F.Times(F.CI, arg1))))); // $$;
     }
 
+    @Override
     public IExpr rewriteLog(IExpr arg1, IExpr arg2, EvalEngine engine) {
       return
       // [$ (-I)*Log((arg1 + I*arg2)/Sqrt(arg1^2 + arg2^2)) $]
@@ -1163,6 +1174,7 @@ public class ExpTrigsFunctions {
       super.setUp(newSymbol);
     }
 
+    @Override
     public IExpr rewriteLog(IExpr arg1, EvalEngine engine) {
       return
       // [$ (-(1/2))*Log(1 - arg1) + (1/2)*Log(1 + arg1) $]
@@ -1185,9 +1197,9 @@ public class ExpTrigsFunctions {
         if (i > 0) {
           // Pi/i - Pi/2
           final IExpr start =
-              engine.evaluate(F.Plus(F.Times(F.QQ(1, i), F.Pi), F.Times(F.CN1D2, F.Pi)));
+              engine.evaluate(F.Plus(F.Times(F.QQ(1, i), S.Pi), F.Times(F.CN1D2, S.Pi)));
           // (2/i)*Pi
-          final IExpr angle = engine.evaluate(F.Times(F.QQ(2, i), F.Pi));
+          final IExpr angle = engine.evaluate(F.Times(F.QQ(2, i), S.Pi));
 
           IASTAppendable result = F.ListAlloc(i);
           for (int j = 0; j < i; j++) {
@@ -1201,6 +1213,7 @@ public class ExpTrigsFunctions {
       return F.NIL;
     }
 
+    @Override
     public int[] expectedArgSize(IAST ast) {
       return ARGS_1_1;
     }
@@ -1263,28 +1276,28 @@ public class ExpTrigsFunctions {
             IRational t = (IRational) k;
             if (t.isLT(F.C0) || F.C2.isLE(t)) {
               // Cos(arg1-2*Pi*Floor(1/2*t))
-              return F.Cos(F.Plus(arg1, F.Times(F.CN2, F.Pi, F.Floor(F.Times(F.C1D2, t)))));
+              return F.Cos(F.Plus(arg1, F.Times(F.CN2, S.Pi, F.Floor(F.Times(F.C1D2, t)))));
             } else if (t.isLT(F.C1D2)) { // t < 1/2
-              IExpr temp = engine.evaluate(arg1.subtract(t.times(F.Pi)));
+              IExpr temp = engine.evaluate(arg1.subtract(t.times(S.Pi)));
               IExpr negExpr = AbstractFunctionEvaluator.getNormalizedNegativeExpression(temp);
               if (negExpr.isPresent()) {
                 // Sin(1/2*Pi - arg1)
-                return F.Sin(F.Subtract(F.Times(F.C1D2, F.Pi), arg1));
+                return F.Sin(F.Subtract(F.Times(F.C1D2, S.Pi), arg1));
               }
               return F.NIL;
             } else if (t.isLT(F.C1)) { // t < 1
               // -Sin(arg1-1/2*Pi)
-              return F.Negate(F.Sin(F.Plus(arg1, F.Times(F.CN1D2, F.Pi))));
+              return F.Negate(F.Sin(F.Plus(arg1, F.Times(F.CN1D2, S.Pi))));
             } else if (t.isLT(F.C3D2)) { // t < 3/2
               // -Cos(arg1-Pi)
-              return F.Negate(F.Cos(F.Subtract(arg1, F.Pi)));
+              return F.Negate(F.Cos(F.Subtract(arg1, S.Pi)));
             } else {
               // Sin(arg1-3/2*Pi)
-              return F.Sin(F.Plus(arg1, F.Times(F.CN3D2, F.Pi)));
+              return F.Sin(F.Plus(arg1, F.Times(F.CN3D2, S.Pi)));
             }
           } else if (k.isIntegerResult()) {
             // (-1)^k * Cos( arg1 - k*Pi )
-            return F.Times(F.Power(F.CN1, k), F.Cos(F.Subtract(arg1, F.Times(k, F.Pi))));
+            return F.Times(F.Power(F.CN1, k), F.Cos(F.Subtract(arg1, F.Times(k, S.Pi))));
           }
         }
       }
@@ -1309,16 +1322,16 @@ public class ExpTrigsFunctions {
             return F.NIL;
           } else if (t.isLT(F.C1)) { // t < 1
             // -Cos((1-t)*Pi)
-            return F.Negate(F.Cos(F.Times(F.Subtract(F.C1, t), F.Pi)));
+            return F.Negate(F.Cos(F.Times(F.Subtract(F.C1, t), S.Pi)));
           } else if (t.isLT(F.C3D2)) { // t < 3/2
             // -Cos((t-1)*Pi)
-            return F.Negate(F.Cos(F.Times(F.Subtract(t, F.C1), F.Pi)));
+            return F.Negate(F.Cos(F.Times(F.Subtract(t, F.C1), S.Pi)));
           } else if (t.isLT(F.C2)) { // t < 2
             // Cos((2-t)*Pi)
-            return F.Cos(F.Times(F.Subtract(F.C2, t), F.Pi));
+            return F.Cos(F.Times(F.Subtract(F.C2, t), S.Pi));
           }
           // Cos((t-2*Quotient(IntegerPart(t),2))*Pi)
-          return F.Cos(F.Times(F.Pi, F.Plus(t, ExpTrigsFunctions.integerPartFolded2(t))));
+          return F.Cos(F.Times(S.Pi, F.Plus(t, ExpTrigsFunctions.integerPartFolded2(t))));
         }
 
         IExpr t = AbstractFunctionEvaluator.peelOfTimes(timesAST, Pi);
@@ -1365,6 +1378,7 @@ public class ExpTrigsFunctions {
       super.setUp(newSymbol);
     }
 
+    @Override
     public IExpr rewriteExp(IExpr arg1, EvalEngine engine) {
       // if (arg1.isTrigFunction() || arg1.isHyperbolicFunction()) {
       // arg1 = arg1.rewrite(ID.Exp);
@@ -1442,15 +1456,15 @@ public class ExpTrigsFunctions {
             if (t.isLT(F.C0)) {
               // Coth(arg1-I*Pi*IntegerPart(t) + I*Pi )
               return F.Coth(
-                  F.Plus(arg1, F.Times(F.CNI, F.Pi, t.integerPart()), F.Times(F.CI, F.Pi)));
+                  F.Plus(arg1, F.Times(F.CNI, S.Pi, t.integerPart()), F.Times(F.CI, S.Pi)));
             } else if (t.isLT(F.C1D2)) { // t < 1/2
               return F.NIL;
             } else if (t.isLT(F.C1)) { // t < 1
               // Tanh(arg1-1/2*I*Pi)
-              return F.Tanh(F.Plus(arg1, F.Times(F.CN1D2, F.CI, F.Pi)));
+              return F.Tanh(F.Plus(arg1, F.Times(F.CN1D2, F.CI, S.Pi)));
             }
             // Coth( arg1 - I*Pi*IntegerPart(t) )
-            return F.Coth(F.Plus(arg1, F.Times(F.CNI, F.Pi, t.integerPart())));
+            return F.Coth(F.Plus(arg1, F.Times(F.CNI, S.Pi, t.integerPart())));
           } else if (k.isIntegerResult()) {
             // Coth( arg1 - list.arg2() )
             return F.Coth(F.Subtract(arg1, list.arg2()));
@@ -1474,6 +1488,7 @@ public class ExpTrigsFunctions {
       super.setUp(newSymbol);
     }
 
+    @Override
     public IExpr rewriteExp(IExpr arg, EvalEngine engine) {
       IAST negexp = F.Exp(F.Times(F.CN1, arg));
       IAST posexp = F.Exp(arg);
@@ -1542,7 +1557,7 @@ public class ExpTrigsFunctions {
               return F.NIL;
             } else if (t.isLT(F.C1)) { // t < 1
               // Sec(arg1-1/2*Pi)
-              return F.Sec(F.Plus(arg1, F.Times(F.CN1D2, F.Pi)));
+              return F.Sec(F.Plus(arg1, F.Times(F.CN1D2, S.Pi)));
             } else if (t.isLT(F.C2)) { // t < 2
               // -Csc(arg1-Pi)
               return F.Negate(F.Csc(F.Plus(arg1, F.CNPi)));
@@ -1551,7 +1566,7 @@ public class ExpTrigsFunctions {
             return F.Csc(F.Plus(arg1, F.Times(F.CN2Pi, F.IntegerPart(F.Times(F.C1D2, t)))));
           } else if (k.isIntegerResult()) {
             // (-1)^k * Csc( arg1 - k*Pi )
-            return F.Times(F.Power(F.CN1, k), F.Csc(F.Subtract(arg1, F.Times(k, F.Pi))));
+            return F.Times(F.Power(F.CN1, k), F.Csc(F.Subtract(arg1, F.Times(k, S.Pi))));
           }
         }
       }
@@ -1574,13 +1589,13 @@ public class ExpTrigsFunctions {
             return F.NIL;
           } else if (t.isLT(F.C1)) { // t < 1
             // Csc((1-t)*Pi)
-            return F.Csc(F.Times(F.Subtract(F.C1, t), F.Pi));
+            return F.Csc(F.Times(F.Subtract(F.C1, t), S.Pi));
           } else if (t.isLT(F.C2)) { // t < 2
             // -Csc((2-t)*Pi)
-            return F.Negate(F.Csc(F.Times(F.Subtract(F.C2, t), F.Pi)));
+            return F.Negate(F.Csc(F.Times(F.Subtract(F.C2, t), S.Pi)));
           }
           // Csc((t-2*Quotient(IntegerPart(t),2))*Pi)
-          return F.Csc(F.Times(F.Pi, F.Plus(t, ExpTrigsFunctions.integerPartFolded2(t))));
+          return F.Csc(F.Times(S.Pi, F.Plus(t, ExpTrigsFunctions.integerPartFolded2(t))));
         }
 
         IExpr t = AbstractFunctionEvaluator.peelOfTimes(timesAST, Pi);
@@ -1631,6 +1646,7 @@ public class ExpTrigsFunctions {
       super.setUp(newSymbol);
     }
 
+    @Override
     public IExpr rewriteExp(IExpr arg1, EvalEngine engine) {
       return
       // [$ -((2*I)/(E^((-I)*arg1) - E^(I*arg1))) $]
@@ -1705,20 +1721,20 @@ public class ExpTrigsFunctions {
               return F.Cosh(
                   F.Plus(
                       arg1,
-                      F.Times(F.CN2, F.CI, F.Pi, F.IntegerPart(F.Times(F.C1D2, t))),
-                      F.Times(F.C2, F.CI, F.Pi)));
+                      F.Times(F.CN2, F.CI, S.Pi, F.IntegerPart(F.Times(F.C1D2, t))),
+                      F.Times(F.C2, F.CI, S.Pi)));
             } else if (t.isLT(F.C1D2)) { // t < 1/2
               return F.NIL;
             } else if (t.isLT(F.C1)) { // t < 1
               // I * Sinh(arg1-1/2*I*Pi)
-              return F.Times(F.CI, F.Sinh(F.Plus(arg1, F.Times(F.CN1D2, F.CI, F.Pi))));
+              return F.Times(F.CI, F.Sinh(F.Plus(arg1, F.Times(F.CN1D2, F.CI, S.Pi))));
             } else if (t.isLT(F.C2)) { // t < 2
               // -Cosh(arg1 - I*Pi)
-              return F.Negate(F.Cosh(F.Subtract(arg1, F.Times(F.CI, F.Pi))));
+              return F.Negate(F.Cosh(F.Subtract(arg1, F.Times(F.CI, S.Pi))));
             }
             // Cosh(arg1-2*I*Pi*IntegerPart(1/2*t) )
             return F.Cosh(
-                F.Plus(arg1, F.Times(F.CN2, F.CI, F.Pi, F.IntegerPart(F.Times(F.C1D2, t)))));
+                F.Plus(arg1, F.Times(F.CN2, F.CI, S.Pi, F.IntegerPart(F.Times(F.C1D2, t)))));
           } else if (k.isIntegerResult()) {
             // (-1)^k * Cosh( arg1 - list.arg2() )
             return F.Times(F.Power(F.CN1, k), F.Cosh(F.Subtract(arg1, list.arg2())));
@@ -1747,6 +1763,7 @@ public class ExpTrigsFunctions {
       super.setUp(newSymbol);
     }
 
+    @Override
     public IExpr rewriteExp(IExpr arg1, EvalEngine engine) {
       return
       // [$ 1/(E^arg1*2) + E^arg1/2 $]
@@ -1780,7 +1797,7 @@ public class ExpTrigsFunctions {
     @Override
     public IExpr e1ApfloatArg(Apfloat arg1) {
       Apfloat denominator = ApfloatMath.sin(arg1);
-      if (denominator.equals(Apfloat.ZERO)) {
+      if (denominator.equals(Apcomplex.ZERO)) {
         return F.CComplexInfinity;
       }
       return F.num(ApfloatMath.cos(arg1).divide(denominator));
@@ -1823,19 +1840,19 @@ public class ExpTrigsFunctions {
             IRational t = (IRational) k;
             if (t.isLT(F.C0)) { // t < 0
               // Cot(arg1 + Pi - Pi*IntegerPart(t))
-              return F.Cot(F.Plus(arg1, F.Pi, F.Times(F.CN1, F.Pi, t.integerPart())));
+              return F.Cot(F.Plus(arg1, S.Pi, F.Times(F.CN1, S.Pi, t.integerPart())));
             } else if (t.isLT(F.C1D2)) { // t < 1/2
               return F.NIL;
             } else if (t.isLT(F.C1)) { // t < 1
               // -Tan(arg1-1/2*Pi)
-              return F.Negate(F.Tan(F.Plus(arg1, F.Times(F.CN1D2, F.Pi))));
+              return F.Negate(F.Tan(F.Plus(arg1, F.Times(F.CN1D2, S.Pi))));
             } else {
               // Cot(arg1 - Pi*IntegerPart(t))
-              return F.Cot(F.Plus(arg1, F.Times(F.CN1, F.Pi, t.integerPart())));
+              return F.Cot(F.Plus(arg1, F.Times(F.CN1, S.Pi, t.integerPart())));
             }
           } else if (k.isIntegerResult()) {
             // Cot( arg1 - k*Pi )
-            return F.Cot(F.Subtract(arg1, F.Times(k, F.Pi)));
+            return F.Cot(F.Subtract(arg1, F.Times(k, S.Pi)));
           }
         }
       }
@@ -1858,13 +1875,13 @@ public class ExpTrigsFunctions {
             return F.NIL;
           } else if (t.isLT(F.C1)) { // t < 1
             // -Cot((1-t)*Pi)
-            return F.Negate(F.Cot(F.Times(F.Subtract(F.C1, t), F.Pi)));
+            return F.Negate(F.Cot(F.Times(F.Subtract(F.C1, t), S.Pi)));
           } else if (t.isLT(F.C2)) { // t < 2
             // Cot((t-1)*Pi)
-            return F.Cot(F.Times(F.Subtract(t, F.C1), F.Pi));
+            return F.Cot(F.Times(F.Subtract(t, F.C1), S.Pi));
           }
           // Cot((t-2*Quotient(IntegerPart(t),2))*Pi)
-          return F.Cot(F.Times(F.Pi, F.Plus(t, ExpTrigsFunctions.integerPartFolded2(t))));
+          return F.Cot(F.Times(S.Pi, F.Plus(t, ExpTrigsFunctions.integerPartFolded2(t))));
         }
         IExpr t = AbstractFunctionEvaluator.peelOfTimes(timesAST, Pi);
         if (t.isPresent() && t.im().isZero()) {
@@ -1902,6 +1919,7 @@ public class ExpTrigsFunctions {
       super.setUp(newSymbol);
     }
 
+    @Override
     public IExpr rewriteExp(IExpr arg1, EvalEngine engine) {
       return
       // [$ -((I*(E^((-I)*arg1) + E^(I*arg1)))/(E^((-I)*arg1) - E^(I*arg1))) $]
@@ -1980,20 +1998,20 @@ public class ExpTrigsFunctions {
               return F.Csch(
                   F.Plus(
                       arg1,
-                      F.Times(F.CN2, F.CI, F.Pi, F.IntegerPart(F.Times(F.C1D2, t))),
-                      F.Times(F.C2, F.CI, F.Pi)));
+                      F.Times(F.CN2, F.CI, S.Pi, F.IntegerPart(F.Times(F.C1D2, t))),
+                      F.Times(F.C2, F.CI, S.Pi)));
             } else if (t.isLT(F.C1D2)) { // t < 1/2
               return F.NIL;
             } else if (t.isLT(F.C1)) { // t < 1
               // -I * Sech(arg1-1/2*I*Pi)
-              return F.Times(F.CNI, F.Sech(F.Plus(arg1, F.Times(F.CN1D2, F.CI, F.Pi))));
+              return F.Times(F.CNI, F.Sech(F.Plus(arg1, F.Times(F.CN1D2, F.CI, S.Pi))));
             } else if (t.isLT(F.C2)) { // t < 2
               // -Csch(arg1 - I*Pi)
-              return F.Negate(F.Csch(F.Subtract(arg1, F.Times(F.CI, F.Pi))));
+              return F.Negate(F.Csch(F.Subtract(arg1, F.Times(F.CI, S.Pi))));
             }
             // Csch(arg1-2*I*Pi*IntegerPart(1/2*t) )
             return F.Csch(
-                F.Plus(arg1, F.Times(F.CN2, F.CI, F.Pi, F.IntegerPart(F.Times(F.C1D2, t)))));
+                F.Plus(arg1, F.Times(F.CN2, F.CI, S.Pi, F.IntegerPart(F.Times(F.C1D2, t)))));
           } else if (k.isIntegerResult()) {
             // (-1)^k * Csch( arg1 - list.arg2() )
             return F.Times(F.Power(F.CN1, k), F.Csch(F.Subtract(arg1, list.arg2())));
@@ -2017,6 +2035,7 @@ public class ExpTrigsFunctions {
       super.setUp(newSymbol);
     }
 
+    @Override
     public IExpr rewriteExp(IExpr arg1, EvalEngine engine) {
       return
       // [$ 2/(-E^(-arg1) + E^arg1) $]
@@ -2029,7 +2048,7 @@ public class ExpTrigsFunctions {
 
     @Override
     public IExpr e1ObjArg(final IExpr o) {
-      return Power(F.E, o);
+      return Power(S.E, o);
     }
 
     @Override
@@ -2054,6 +2073,7 @@ public class ExpTrigsFunctions {
       return F.NIL;
     }
 
+    @Override
     public int[] expectedArgSize(IAST ast) {
       return ARGS_1_1;
     }
@@ -2075,6 +2095,7 @@ public class ExpTrigsFunctions {
       return F.NIL;
     }
 
+    @Override
     public int[] expectedArgSize(IAST ast) {
       return ARGS_1_1;
     }
@@ -2108,6 +2129,7 @@ public class ExpTrigsFunctions {
       return Num.valueOf(Math.log(arg1.getRealPart()));
     }
 
+    @Override
     public IExpr e1FraArg(final IFraction f) {
       if (f.isPositive() && f.isLT(F.C1)) {
         return F.Negate(F.Log(f.inverse()));
@@ -2179,7 +2201,7 @@ public class ExpTrigsFunctions {
         }
       }
       if (arg1.isNegativeResult()) {
-        return F.Plus(F.Log(F.Negate(arg1)), F.Times(CI, F.Pi));
+        return F.Plus(F.Log(F.Negate(arg1)), F.Times(CI, S.Pi));
       }
       if (arg1.isInterval()) {
         return IntervalSym.log((IAST) arg1);
@@ -2191,7 +2213,7 @@ public class ExpTrigsFunctions {
     public IExpr e2ObjArg(IExpr o0, IExpr o1) {
       if (o0.isZero()) {
         if (o1.isZero()) {
-          return F.Indeterminate;
+          return S.Indeterminate;
         }
         return F.C0;
       }
@@ -2215,7 +2237,7 @@ public class ExpTrigsFunctions {
           return F.C1D2;
         }
         // 1 / (1 + Exp(-arg1))
-        return F.Power(F.Plus(F.C1, F.Power(F.E, F.Times(F.CN1, arg1))), F.CN1);
+        return F.Power(F.Plus(F.C1, F.Power(S.E, F.Times(F.CN1, arg1))), F.CN1);
       }
       if (arg1.isInfinity()) {
         return F.C1;
@@ -2226,6 +2248,7 @@ public class ExpTrigsFunctions {
       return F.NIL;
     }
 
+    @Override
     public int[] expectedArgSize(IAST ast) {
       return ARGS_1_1;
     }
@@ -2338,7 +2361,7 @@ public class ExpTrigsFunctions {
               return F.NIL;
             } else if (t.isLT(F.C1)) { // t < 1
               // -Csc(arg1-1/2*Pi)
-              return F.Negate(F.Csc(F.Plus(arg1, F.Times(F.CN1D2, F.Pi))));
+              return F.Negate(F.Csc(F.Plus(arg1, F.Times(F.CN1D2, S.Pi))));
             } else if (t.isLT(F.C2)) { // t < 2
               // -Sec(arg1-Pi)
               return F.Negate(F.Sec(F.Plus(arg1, F.CNPi)));
@@ -2347,7 +2370,7 @@ public class ExpTrigsFunctions {
             return F.Sec(F.Plus(arg1, F.Times(F.CN2Pi, F.IntegerPart(F.Times(F.C1D2, t)))));
           } else if (k.isIntegerResult()) {
             // (-1)^k * Sec( arg1 - k*Pi )
-            return F.Times(F.Power(F.CN1, k), F.Sec(F.Subtract(arg1, F.Times(k, F.Pi))));
+            return F.Times(F.Power(F.CN1, k), F.Sec(F.Subtract(arg1, F.Times(k, S.Pi))));
           }
         }
       }
@@ -2370,13 +2393,13 @@ public class ExpTrigsFunctions {
             return F.NIL;
           } else if (t.isLT(F.C1)) { // t < 1
             // -Sec((1-t)*Pi)
-            return F.Negate(F.Sec(F.Times(F.Subtract(F.C1, t), F.Pi)));
+            return F.Negate(F.Sec(F.Times(F.Subtract(F.C1, t), S.Pi)));
           } else if (t.isLT(F.C2)) { // t < 2
             // Sec((2-t)*Pi)
-            return F.Sec(F.Times(F.Subtract(F.C2, t), F.Pi));
+            return F.Sec(F.Times(F.Subtract(F.C2, t), S.Pi));
           }
           // Sec((t-2*Quotient(IntegerPart(t),2))*Pi)
-          return F.Sec(F.Times(F.Pi, F.Plus(t, ExpTrigsFunctions.integerPartFolded2(t))));
+          return F.Sec(F.Times(S.Pi, F.Plus(t, ExpTrigsFunctions.integerPartFolded2(t))));
         }
 
         IExpr t = AbstractFunctionEvaluator.peelOfTimes(timesAST, Pi);
@@ -2424,6 +2447,7 @@ public class ExpTrigsFunctions {
       super.setUp(newSymbol);
     }
 
+    @Override
     public IExpr rewriteExp(IExpr arg1, EvalEngine engine) {
       return
       // [$ 2/(E^((-I)*arg1) + E^(I*arg1)) $]
@@ -2499,20 +2523,20 @@ public class ExpTrigsFunctions {
               return F.Sech(
                   F.Plus(
                       arg1,
-                      F.Times(F.CN2, F.CI, F.Pi, F.IntegerPart(F.Times(F.C1D2, t))),
-                      F.Times(F.C2, F.CI, F.Pi)));
+                      F.Times(F.CN2, F.CI, S.Pi, F.IntegerPart(F.Times(F.C1D2, t))),
+                      F.Times(F.C2, F.CI, S.Pi)));
             } else if (t.isLT(F.C1D2)) { // t < 1/2
               return F.NIL;
             } else if (t.isLT(F.C1)) { // t < 1
               // -I * Csch(arg1-1/2*I*Pi)
-              return F.Times(F.CNI, F.Csch(F.Plus(arg1, F.Times(F.CN1D2, F.CI, F.Pi))));
+              return F.Times(F.CNI, F.Csch(F.Plus(arg1, F.Times(F.CN1D2, F.CI, S.Pi))));
             } else if (t.isLT(F.C2)) { // t < 2
               // -Sech(arg1 - I*Pi)
-              return F.Negate(F.Sech(F.Subtract(arg1, F.Times(F.CI, F.Pi))));
+              return F.Negate(F.Sech(F.Subtract(arg1, F.Times(F.CI, S.Pi))));
             }
             // Sech(arg1-2*I*Pi*IntegerPart(1/2*t) )
             return F.Sech(
-                F.Plus(arg1, F.Times(F.CN2, F.CI, F.Pi, F.IntegerPart(F.Times(F.C1D2, t)))));
+                F.Plus(arg1, F.Times(F.CN2, F.CI, S.Pi, F.IntegerPart(F.Times(F.C1D2, t)))));
           } else if (k.isIntegerResult()) {
             // (-1)^k * Sech( arg1 - list.arg2() )
             return F.Times(F.Power(F.CN1, k), F.Sech(F.Subtract(arg1, list.arg2())));
@@ -2536,6 +2560,7 @@ public class ExpTrigsFunctions {
       super.setUp(newSymbol);
     }
 
+    @Override
     public IExpr rewriteExp(IExpr arg1, EvalEngine engine) {
       return
       // [$ 2/(E^(-arg1) + E^arg1) $]
@@ -2596,29 +2621,29 @@ public class ExpTrigsFunctions {
             IRational t = (IRational) k;
             if (t.isLT(F.C0) || F.C2.isLE(t)) {
               // Sin(arg1-2*Pi*Floor(1/2*t))
-              return F.Sin(F.Plus(arg1, F.Times(F.CN2, F.Pi, F.Floor(F.Times(F.C1D2, t)))));
+              return F.Sin(F.Plus(arg1, F.Times(F.CN2, S.Pi, F.Floor(F.Times(F.C1D2, t)))));
             } else if (t.isLT(F.C1D2)) { // t < 1/2
               // (arg1-t*Pi)
-              IExpr temp = engine.evaluate(arg1.subtract(t.times(F.Pi)));
+              IExpr temp = engine.evaluate(arg1.subtract(t.times(S.Pi)));
               IExpr negExpr = AbstractFunctionEvaluator.getNormalizedNegativeExpression(temp);
               if (negExpr.isPresent()) {
                 // Cos(1/2*Pi - arg1)
-                return F.Cos(F.Subtract(F.Times(F.C1D2, F.Pi), arg1));
+                return F.Cos(F.Subtract(F.Times(F.C1D2, S.Pi), arg1));
               }
 
             } else if (t.isLT(F.C1)) { // t < 1
               // Cos(arg1-1/2*Pi)
-              return F.Cos(F.Plus(arg1, F.Times(F.CN1D2, F.Pi)));
+              return F.Cos(F.Plus(arg1, F.Times(F.CN1D2, S.Pi)));
             } else if (t.isLT(F.C3D2)) { // t < 3/2
               // -Sin(arg1-Pi)
-              return F.Negate(F.Sin(F.Subtract(arg1, F.Pi)));
+              return F.Negate(F.Sin(F.Subtract(arg1, S.Pi)));
             } else { // t < 2
               // -Cos(arg1-3/2*Pi)
-              return F.Negate(F.Cos(F.Plus(arg1, F.Times(F.CN3D2, F.Pi))));
+              return F.Negate(F.Cos(F.Plus(arg1, F.Times(F.CN3D2, S.Pi))));
             }
           } else if (k.isIntegerResult()) {
             // (-1)^k * Sin( arg1 - k*Pi )
-            return F.Times(F.Power(F.CN1, k), F.Sin(F.Subtract(arg1, F.Times(k, F.Pi))));
+            return F.Times(F.Power(F.CN1, k), F.Sin(F.Subtract(arg1, F.Times(k, S.Pi))));
           }
         }
       }
@@ -2643,16 +2668,16 @@ public class ExpTrigsFunctions {
             return F.NIL;
           } else if (t.isLT(F.C1)) { // t < 1
             // Sin((1-t)*Pi)
-            return F.Sin(F.Times(F.Subtract(F.C1, t), F.Pi));
+            return F.Sin(F.Times(F.Subtract(F.C1, t), S.Pi));
           } else if (t.isLT(F.C3D2)) { // t < 3/2
             // -Sin((t-1)*Pi)
-            return F.Negate(F.Sin(F.Times(F.Subtract(t, F.C1), F.Pi)));
+            return F.Negate(F.Sin(F.Times(F.Subtract(t, F.C1), S.Pi)));
           } else if (t.isLT(F.C2)) { // t < 2
             // -Sin((2-t)*Pi)
-            return F.Negate(F.Sin(F.Times(F.Subtract(F.C2, t), F.Pi)));
+            return F.Negate(F.Sin(F.Times(F.Subtract(F.C2, t), S.Pi)));
           }
           // Sin((t-2*Quotient(IntegerPart(t),2))*Pi)
-          return F.Sin(F.Times(F.Pi, F.Plus(t, ExpTrigsFunctions.integerPartFolded2(t))));
+          return F.Sin(F.Times(S.Pi, F.Plus(t, ExpTrigsFunctions.integerPartFolded2(t))));
         }
 
         IExpr t = AbstractFunctionEvaluator.peelOfTimes(timesAST, Pi);
@@ -2701,6 +2726,7 @@ public class ExpTrigsFunctions {
       super.setUp(newSymbol);
     }
 
+    @Override
     public IExpr rewriteExp(IExpr arg1, EvalEngine engine) {
       // if (arg1.isTrigFunction() || arg1.isHyperbolicFunction()) {
       // arg1 = arg1.rewrite(ID.Exp);
@@ -2739,8 +2765,8 @@ public class ExpTrigsFunctions {
 
     @Override
     public IExpr e1ApfloatArg(Apfloat arg1) {
-      if (arg1.equals(Apfloat.ZERO)) {
-        return F.num(Apfloat.ONE);
+      if (arg1.equals(Apcomplex.ZERO)) {
+        return F.num(Apcomplex.ONE);
       }
       return F.num(ApfloatMath.sin(arg1).divide(arg1));
     }
@@ -2783,7 +2809,7 @@ public class ExpTrigsFunctions {
       if (negExpr.isPresent()) {
         return Sinc(negExpr);
       }
-      IExpr sin = F.Sin.ofNIL(engine, arg1);
+      IExpr sin = S.Sin.ofNIL(engine, arg1);
       if (sin.isPresent() && !sin.isSin()) {
         return sin.divide(arg1);
       }
@@ -2883,20 +2909,20 @@ public class ExpTrigsFunctions {
               return F.Sinh(
                   F.Plus(
                       arg1,
-                      F.Times(F.CN2, F.CI, F.Pi, F.IntegerPart(F.Times(F.C1D2, t))),
-                      F.Times(F.C2, F.CI, F.Pi)));
+                      F.Times(F.CN2, F.CI, S.Pi, F.IntegerPart(F.Times(F.C1D2, t))),
+                      F.Times(F.C2, F.CI, S.Pi)));
             } else if (t.isLT(F.C1D2)) { // t < 1/2
               return F.NIL;
             } else if (t.isLT(F.C1)) { // t < 1
               // I * Cosh(arg1-1/2*I*Pi)
-              return F.Times(F.CI, F.Cosh(F.Plus(arg1, F.Times(F.CN1D2, F.CI, F.Pi))));
+              return F.Times(F.CI, F.Cosh(F.Plus(arg1, F.Times(F.CN1D2, F.CI, S.Pi))));
             } else if (t.isLT(F.C2)) { // t < 2
               // -Sinh(arg1 - I*Pi)
-              return F.Negate(F.Sinh(F.Subtract(arg1, F.Times(F.CI, F.Pi))));
+              return F.Negate(F.Sinh(F.Subtract(arg1, F.Times(F.CI, S.Pi))));
             }
             // Sinh(arg1-2*I*Pi*IntegerPart(1/2*t) )
             return F.Sinh(
-                F.Plus(arg1, F.Times(F.CN2, F.CI, F.Pi, F.IntegerPart(F.Times(F.C1D2, t)))));
+                F.Plus(arg1, F.Times(F.CN2, F.CI, S.Pi, F.IntegerPart(F.Times(F.C1D2, t)))));
           } else if (k.isIntegerResult()) {
             // (-1)^k * Sinh( arg1 - list.arg2() )
             return F.Times(F.Power(F.CN1, k), F.Sinh(F.Subtract(arg1, list.arg2())));
@@ -2937,6 +2963,7 @@ public class ExpTrigsFunctions {
       super.setUp(newSymbol);
     }
 
+    @Override
     public IExpr rewriteExp(IExpr arg1, EvalEngine engine) {
       return
       // [$ -(1/(E^arg1*2)) + E^arg1/2 $]
@@ -2999,18 +3026,18 @@ public class ExpTrigsFunctions {
             IRational t = (IRational) k;
             if (t.isLT(F.C0)) { // t < 0
               // Tan(arg1 + Pi - Pi*IntegerPart(t))
-              return F.Tan(F.Plus(arg1, F.Pi, F.Times(F.CNPi, t.integerPart())));
+              return F.Tan(F.Plus(arg1, S.Pi, F.Times(F.CNPi, t.integerPart())));
             } else if (t.isLT(F.C1D2)) { // t < 1/2
               return F.NIL;
             } else if (t.isLT(F.C1)) { // t < 1
               // -Cot(arg1-1/2*Pi)
-              return F.Negate(F.Cot(F.Plus(arg1, F.Times(F.CN1D2, F.Pi))));
+              return F.Negate(F.Cot(F.Plus(arg1, F.Times(F.CN1D2, S.Pi))));
             }
             // Tan(arg1 - Pi*IntegerPart(t))
             return F.Tan(F.Plus(arg1, F.Times(F.CNPi, t.integerPart())));
           } else if (k.isIntegerResult()) {
             // Tan( arg1 - k*Pi )
-            return F.Tan(F.Subtract(arg1, F.Times(k, F.Pi)));
+            return F.Tan(F.Subtract(arg1, F.Times(k, S.Pi)));
           }
         }
       }
@@ -3035,13 +3062,13 @@ public class ExpTrigsFunctions {
             return F.CComplexInfinity;
           } else if (t.isLT(F.C1)) { // t < 1
             // -Tan((1-t)*Pi)
-            return F.Negate(F.Tan(F.Times(F.Subtract(F.C1, t), F.Pi)));
+            return F.Negate(F.Tan(F.Times(F.Subtract(F.C1, t), S.Pi)));
           } else if (t.isLT(F.C2)) { // t < 2
             // Tan((t-1)*Pi)
-            return F.Tan(F.Times(F.Subtract(t, F.C1), F.Pi));
+            return F.Tan(F.Times(F.Subtract(t, F.C1), S.Pi));
           }
           // Tan((t-2*Quotient(IntegerPart(t),2))*Pi)
-          return F.Tan(F.Times(F.Pi, F.Plus(t, ExpTrigsFunctions.integerPartFolded2(t))));
+          return F.Tan(F.Times(S.Pi, F.Plus(t, ExpTrigsFunctions.integerPartFolded2(t))));
         }
         IExpr t = AbstractFunctionEvaluator.peelOfTimes(timesAST, Pi);
         if (t.isPresent() && t.im().isZero()) {
@@ -3079,6 +3106,7 @@ public class ExpTrigsFunctions {
       super.setUp(newSymbol);
     }
 
+    @Override
     public IExpr rewriteExp(IExpr arg1, EvalEngine engine) {
       // if (arg1.isTrigFunction() || arg1.isHyperbolicFunction()) {
       // arg1 = arg1.rewrite(ID.Exp);
@@ -3157,15 +3185,15 @@ public class ExpTrigsFunctions {
             if (t.isLT(F.C0)) {
               // Tanh(arg1-I*Pi*IntegerPart(t) + I*Pi )
               return F.Tanh(
-                  F.Plus(arg1, F.Times(F.CNI, F.Pi, t.integerPart()), F.Times(F.CI, F.Pi)));
+                  F.Plus(arg1, F.Times(F.CNI, S.Pi, t.integerPart()), F.Times(F.CI, S.Pi)));
             } else if (t.isLT(F.C1D2)) { // t < 1/2
               return F.NIL;
             } else if (t.isLT(F.C1)) { // t < 1
               // Coth(arg1-1/2*I*Pi)
-              return F.Coth(F.Plus(arg1, F.Times(F.CN1D2, F.CI, F.Pi)));
+              return F.Coth(F.Plus(arg1, F.Times(F.CN1D2, F.CI, S.Pi)));
             }
             // Tanh( arg1 - I*Pi*IntegerPart(t) )
-            return F.Tanh(F.Plus(arg1, F.Times(F.CNI, F.Pi, t.integerPart())));
+            return F.Tanh(F.Plus(arg1, F.Times(F.CNI, S.Pi, t.integerPart())));
           } else if (k.isIntegerResult()) {
             // Tanh( arg1 - list.arg2() )
             return F.Tanh(F.Subtract(arg1, list.arg2()));
@@ -3189,6 +3217,7 @@ public class ExpTrigsFunctions {
       super.setUp(newSymbol);
     }
 
+    @Override
     public IExpr rewriteExp(IExpr arg1, EvalEngine engine) {
       return
       // [$ -(1/(E^arg1*(E^(-arg1) + E^arg1))) + E^arg1/(E^(-arg1) + E^arg1) $]
@@ -3208,36 +3237,36 @@ public class ExpTrigsFunctions {
   private static IExpr arcTanArcCotInverse(final IExpr arg1) {
     IExpr z = arg1.first();
     IExpr zRe = z.re();
-    IExpr k = F.Quotient.of(F.Subtract(zRe, F.CPiHalf), F.Pi).inc();
+    IExpr k = S.Quotient.of(F.Subtract(zRe, F.CPiHalf), S.Pi).inc();
     if (k.isInteger()) {
       // -Pi/2 + k*Pi
-      IExpr min = F.Times.of(F.Plus(F.CN1D2, k), Pi);
+      IExpr min = S.Times.of(F.Plus(F.CN1D2, k), Pi);
       // Pi/2 + k*Pi
-      IExpr max = F.Times.of(F.Plus(F.C1D2, k), Pi);
+      IExpr max = S.Times.of(F.Plus(F.C1D2, k), Pi);
       // z - k*Pi
-      IAST result = F.Subtract(z, F.Times(k, F.Pi));
+      IAST result = F.Subtract(z, F.Times(k, S.Pi));
       // (-(Pi/2) + k*Pi < Re(z) < Pi/2 + k*Pi
-      if (F.Less.ofQ(min, zRe) && F.Greater.ofQ(max, zRe)) {
+      if (S.Less.ofQ(min, zRe) && S.Greater.ofQ(max, zRe)) {
         // z - k*Pi
         return result;
       }
 
       IExpr zIm = z.im();
       // (Re(z) == -(Pi/2) + k*Pi && Im(z) < 0)
-      if (zIm.isNegativeResult() && F.Equal.ofQ(zRe, min)) {
+      if (zIm.isNegativeResult() && S.Equal.ofQ(zRe, min)) {
         // z - k*Pi
         return result;
       }
 
       if (arg1.isTan()) { // Tan(z)
         // (Re(z) == Pi/2 + k*Pi && Im(z) > 0)
-        if (zIm.isPositiveResult() && F.Equal.ofQ(zRe, max)) {
+        if (zIm.isPositiveResult() && S.Equal.ofQ(zRe, max)) {
           // z - k*Pi
           return result;
         }
       } else { // Cot(z)
         // (Re(z) == Pi/2 + k*Pi && Im(z) >= 0)
-        if (zIm.isNonNegativeResult() && F.Equal.ofQ(zRe, max)) {
+        if (zIm.isNonNegativeResult() && S.Equal.ofQ(zRe, max)) {
           // z - k*Pi
           return result;
         }
@@ -3266,29 +3295,29 @@ public class ExpTrigsFunctions {
   private static IExpr arcSinSin(final IExpr arg1) {
     IExpr z = arg1.first();
     IExpr zRe = z.re();
-    IExpr k = F.Quotient.of(F.Subtract(zRe, F.CPiHalf), F.Pi).inc();
+    IExpr k = S.Quotient.of(F.Subtract(zRe, F.CPiHalf), S.Pi).inc();
     if (k.isInteger()) {
       // -Pi/2 + k*Pi
-      IExpr min = F.Times.of(F.Plus(F.CN1D2, k), Pi);
+      IExpr min = S.Times.of(F.Plus(F.CN1D2, k), Pi);
       // Pi/2 + k*Pi
-      IExpr max = F.Times.of(F.Plus(F.C1D2, k), Pi);
+      IExpr max = S.Times.of(F.Plus(F.C1D2, k), Pi);
       // (-1)^k * (z - Pi*k)
-      IAST result = F.Times(F.Power(F.CN1, k), F.Subtract(z, F.Times(k, F.Pi)));
+      IAST result = F.Times(F.Power(F.CN1, k), F.Subtract(z, F.Times(k, S.Pi)));
       // (-(Pi/2) + k*Pi < Re(z) < Pi/2 + k*Pi
-      if (F.Less.ofQ(min, zRe) && F.Greater.ofQ(max, zRe)) {
+      if (S.Less.ofQ(min, zRe) && S.Greater.ofQ(max, zRe)) {
         // (-1)^k * (z - Pi*k)
         return result;
       }
 
       IExpr zIm = z.im();
       // (Re(z) == -(Pi/2) + k*Pi && Im(z) < 0)
-      if (zIm.isNonNegativeResult() && F.Equal.ofQ(zRe, min)) {
+      if (zIm.isNonNegativeResult() && S.Equal.ofQ(zRe, min)) {
         // (-1)^k * (z - Pi*k)
         return result;
       }
 
       // (Re(z) == Pi/2 + k*Pi && Im(z) > 0)
-      if ((zIm.isNegativeResult() || zIm.isZero()) && F.Equal.ofQ(zRe, max)) {
+      if ((zIm.isNegativeResult() || zIm.isZero()) && S.Equal.ofQ(zRe, max)) {
         // (-1)^k * (z - Pi*k)
         return result;
       }
@@ -3305,31 +3334,31 @@ public class ExpTrigsFunctions {
   private static IExpr arcCosCos(final IExpr arg1) {
     IExpr z = arg1.first();
     IExpr zRe = z.re();
-    IExpr k = F.Quotient.of(F.Subtract(zRe, F.Pi), F.Pi).inc();
+    IExpr k = S.Quotient.of(F.Subtract(zRe, S.Pi), S.Pi).inc();
     if (k.isInteger()) {
       // k*Pi
-      IExpr min = F.Times.of(k, Pi);
+      IExpr min = S.Times.of(k, Pi);
       // (k+1)*Pi
-      IExpr max = F.Times.of(k.inc(), Pi);
+      IExpr max = S.Times.of(k.inc(), Pi);
       // (-1)^k * (z - Pi*k - Pi/2) + Pi/2
       IAST result =
           F.Plus(
-              F.Times(F.Power(F.CN1, k), F.Plus(z, F.Times(F.CN1, k, F.Pi), F.CNPiHalf)),
+              F.Times(F.Power(F.CN1, k), F.Plus(z, F.Times(F.CN1, k, S.Pi), F.CNPiHalf)),
               F.CPiHalf);
 
       // (k*Pi < Re(z) < (k + 1)*Pi
-      if (F.Less.ofQ(min, zRe) && F.Greater.ofQ(max, zRe)) {
+      if (S.Less.ofQ(min, zRe) && S.Greater.ofQ(max, zRe)) {
         return result;
       }
 
       IExpr zIm = z.im();
       // (Re(z) == k*Pi && Im(z) >= 0)
-      if (zIm.isNonNegativeResult() && F.Equal.ofQ(zRe, min)) {
+      if (zIm.isNonNegativeResult() && S.Equal.ofQ(zRe, min)) {
         return result;
       }
 
       // (Re(z) == (k + 1)*Pi && Im(z) <= 0)
-      if ((zIm.isNegativeResult() || zIm.isZero()) && F.Equal.ofQ(zRe, max)) {
+      if ((zIm.isNegativeResult() || zIm.isZero()) && S.Equal.ofQ(zRe, max)) {
         return result;
       }
     }

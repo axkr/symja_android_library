@@ -9,8 +9,8 @@ import java.util.Locale;
 
 import org.matheclipse.core.basic.Config;
 import org.matheclipse.core.eval.EvalEngine;
-import org.matheclipse.core.expression.AST2;
 import org.matheclipse.core.expression.F;
+import org.matheclipse.core.expression.S;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IASTAppendable;
 import org.matheclipse.core.interfaces.IASTMutable;
@@ -273,7 +273,7 @@ public abstract class AbstractFunctionEvaluator extends AbstractEvaluator {
     // IExpr[] result = new IExpr[2];
     // result[0] = F.C0;
     // result[1] = F.C1;
-    IASTMutable result = F.binaryAST2(F.List, F.C0, F.C1);
+    IASTMutable result = F.binaryAST2(S.List, F.C0, F.C1);
     if (expr.equals(period)) {
       return result;
     }
@@ -315,22 +315,22 @@ public abstract class AbstractFunctionEvaluator extends AbstractEvaluator {
     IRational k = null;
     for (int i = 1; i < plusAST.size(); i++) {
       IExpr temp = plusAST.get(i);
-      if (temp.equals(F.Pi)) {
+      if (temp.equals(S.Pi)) {
         k = F.C1;
         break;
       }
       if (temp.isTimes2()) {
-        if (temp.first().isRational() && temp.second().equals(F.Pi)) {
+        if (temp.first().isRational() && temp.second().equals(S.Pi)) {
           k = (IRational) temp.first();
           break;
         }
       }
     }
     if (k != null) {
-      IASTMutable result = F.binaryAST2(F.List, plusAST, F.C0);
-      IExpr m1 = F.Times(k.mod(F.C1D2), F.Pi);
-      IExpr m2 = F.Subtract.of(engine, F.Times(k, F.Pi), m1);
-      result.set(1, F.Subtract.of(plusAST, m2));
+      IASTMutable result = F.binaryAST2(S.List, plusAST, F.C0);
+      IExpr m1 = F.Times(k.mod(F.C1D2), S.Pi);
+      IExpr m2 = S.Subtract.of(engine, F.Times(k, S.Pi), m1);
+      result.set(1, S.Subtract.of(plusAST, m2));
       result.set(2, m2);
       return result;
     }
@@ -349,12 +349,12 @@ public abstract class AbstractFunctionEvaluator extends AbstractEvaluator {
     IExpr k = null;
     for (int i = 1; i < plusAST.size(); i++) {
       IExpr temp = plusAST.get(i);
-      if (temp.equals(F.Pi)) {
+      if (temp.equals(S.Pi)) {
         k = F.C1;
         return k;
       }
       if (temp.isTimes()) {
-        IExpr peeled = peelOfTimes((IAST) temp, F.Pi);
+        IExpr peeled = peelOfTimes((IAST) temp, S.Pi);
         if (peeled.isPresent()) {
           if (peeled.isRational() || peeled.isIntegerResult()) {
             // k = temp.first();
@@ -379,9 +379,9 @@ public abstract class AbstractFunctionEvaluator extends AbstractEvaluator {
     for (int i = 1; i < plusAST.size(); i++) {
       final IExpr arg = plusAST.get(i);
       if (arg.isTimes()) {
-        IExpr peeled = peelOfTimes((IAST) arg, F.Pi);
+        IExpr peeled = peelOfTimes((IAST) arg, S.Pi);
         if (peeled.isPresent()) {
-          IExpr x = F.Times.of(F.CNI, peeled);
+          IExpr x = S.Times.of(F.CNI, peeled);
           if (x.isRational() || x.isIntegerResult()) {
             return F.List(x, arg);
           }
@@ -589,26 +589,26 @@ public abstract class AbstractFunctionEvaluator extends AbstractEvaluator {
   }
 
   public static IExpr imaginaryPart(final IExpr expr, boolean unequalsZero) {
-    IExpr imPart = F.Im.of(expr);
+    IExpr imPart = S.Im.of(expr);
     if (unequalsZero) {
       if (imPart.isZero()) {
         return F.NIL;
       }
     }
-    if (imPart.isNumber() || imPart.isFree(F.Im)) {
+    if (imPart.isNumber() || imPart.isFree(S.Im)) {
       return imPart;
     }
     return F.NIL;
   }
 
   public static IExpr realPart(final IExpr expr, boolean unequalsZero) {
-    IExpr rePart = F.Re.of(expr);
+    IExpr rePart = S.Re.of(expr);
     if (unequalsZero) {
       if (rePart.isZero()) {
         return F.NIL;
       }
     }
-    if (rePart.isNumber() || rePart.isFree(F.Re)) {
+    if (rePart.isNumber() || rePart.isFree(S.Re)) {
       return rePart;
     }
     return F.NIL;

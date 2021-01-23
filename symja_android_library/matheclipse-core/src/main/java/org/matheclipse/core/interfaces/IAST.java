@@ -15,10 +15,8 @@ import java.util.function.Predicate;
 import java.util.stream.Stream;
 
 import org.matheclipse.core.eval.EvalEngine;
-import org.matheclipse.core.eval.exception.MemoryLimitExceeded;
 import org.matheclipse.core.eval.exception.RecursionLimitExceeded;
 import org.matheclipse.core.expression.F;
-import org.matheclipse.core.expression.S;
 import org.matheclipse.core.generic.ObjIntPredicate;
 import org.matheclipse.core.visit.IVisitor;
 
@@ -129,6 +127,10 @@ public interface IAST extends IExpr, Iterable<IExpr> {
    */
   public static final int CONTAINS_NUMERIC_ARG = 0x00010000;
 
+  /**
+   * Is set, if the built-in function associated with this object was evaluated and no further
+   * evaluation is needed.
+   */
   public static final int BUILT_IN_EVALED = 0x00040000;
 
   public static final int SEQUENCE_FLATTENED = 0x00080000;
@@ -153,6 +155,7 @@ public interface IAST extends IExpr, Iterable<IExpr> {
    *
    * @param i
    */
+  @Override
   public IAST addEvalFlags(int i);
 
   /**
@@ -521,6 +524,7 @@ public interface IAST extends IExpr, Iterable<IExpr> {
   }
 
   /** @deprecated use {@link #slice(int, int)} instead */
+  @Deprecated
   default IASTAppendable extract(int fromIndex, int toIndex) {
     return slice(fromIndex, toIndex);
   }
@@ -654,6 +658,9 @@ public interface IAST extends IExpr, Iterable<IExpr> {
   /** {@inheritDoc} */
   @Override
   default IExpr first() {
+    if (this instanceof IAST && size() < 2) {
+      return F.NIL;
+    }
     return arg1();
   }
 
@@ -990,6 +997,7 @@ public interface IAST extends IExpr, Iterable<IExpr> {
    * @return
    * @see IAST#NO_FLAG
    */
+  @Override
   public boolean isEvalFlagOff(int flags);
 
   /**
@@ -999,6 +1007,7 @@ public interface IAST extends IExpr, Iterable<IExpr> {
    * @return
    * @see IAST#NO_FLAG
    */
+  @Override
   public boolean isEvalFlagOn(int flags);
 
   /**
@@ -1053,10 +1062,6 @@ public interface IAST extends IExpr, Iterable<IExpr> {
    */
   @Override
   public Iterator<IExpr> iterator();
-
-  /** {@inheritDoc} */
-  @Override
-  public IExpr last();
 
   public int lastIndexOf(IExpr object);
 
@@ -1170,6 +1175,7 @@ public interface IAST extends IExpr, Iterable<IExpr> {
    * @param f a unary function
    * @return
    */
+  @Override
   public IExpr mapMatrixColumns(int[] dim, Function<IExpr, IExpr> f);
 
   /**
@@ -1186,9 +1192,11 @@ public interface IAST extends IExpr, Iterable<IExpr> {
   /**
    * Maps the elements of this IAST with the unary functor <code>
    * Functors.replaceArg(replacement, position)</code>, there <code>replacement</code> is an IAST at
-   * which the argument at the given position will be replaced by the currently mapped element. <br>
-   * <br>
-   * Example for mapping with <code>Functors#replaceArg()</code>, where the argument at the given
+   * which the argument at the given position will be replaced by the currently mapped element. This
+   * can be used to create an effect as if &quot;the <code>position</code>-th argument of an IAST
+   * object would be <code>Listable</code>&quot;.
+   *
+   * <p>Example for mapping with <code>Functors#replaceArg()</code>, where the argument at the given
    * position will be replaced by the current argument of this AST:
    *
    * <pre>
@@ -1395,32 +1403,32 @@ public interface IAST extends IExpr, Iterable<IExpr> {
   }
 
   /**
-   * Append the elements in reversed order to the given <code>list</code>
+   * Append the elements in reversed order to the <code>resultList</code>
    *
-   * @param list
-   * @return
+   * @param resultList
+   * @return the <code>resultList</code>
    */
-  public IASTAppendable reverse(IASTAppendable list);
+  public IASTAppendable reverse(IASTAppendable resultList);
 
   /**
-   * Rotate the elements to the left by n places and append the resulting elements to the <code>list
-   * </code>
+   * Rotate the elements to the left by n places and append the resulting elements to the <code>
+   * resultList</code>
    *
-   * @param list
+   * @param resultList
    * @param n
-   * @return the given list
+   * @return the <code>resultList</code>
    */
-  public IAST rotateLeft(IASTAppendable list, final int n);
+  public IAST rotateLeft(IASTAppendable resultList, final int n);
 
   /**
    * Rotate the elements to the right by n places and append the resulting elements to the <code>
-   * list</code>
+   * resultList</code>
    *
-   * @param list
+   * @param resultList
    * @param n
-   * @return the given list
+   * @return the <code>resultList</code>
    */
-  public IAST rotateRight(IASTAppendable list, final int n);
+  public IAST rotateRight(IASTAppendable resultList, final int n);
 
   /** {@inheritDoc} */
   @Override

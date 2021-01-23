@@ -16,10 +16,7 @@ import static org.matheclipse.core.expression.F.Times;
 import static org.matheclipse.core.expression.S.Assumptions;
 import static org.matheclipse.core.expression.S.E;
 import static org.matheclipse.core.expression.S.I;
-import static org.matheclipse.core.expression.S.Log;
 import static org.matheclipse.core.expression.S.Pi;
-import static org.matheclipse.core.expression.S.Power;
-
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Iterator;
@@ -28,10 +25,9 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.SortedMap;
 import java.util.function.BiPredicate;
-import java.util.function.Predicate;
 
 import org.matheclipse.core.basic.Config;
-import org.matheclipse.core.builtin.Combinatoric.Permutations;
+import org.matheclipse.core.builtin.Combinatoric.KPermutationsIterable;
 import org.matheclipse.core.convert.JASConvert;
 import org.matheclipse.core.convert.JASIExpr;
 import org.matheclipse.core.convert.JASModInteger;
@@ -44,7 +40,6 @@ import org.matheclipse.core.eval.exception.LimitException;
 import org.matheclipse.core.eval.exception.Validate;
 import org.matheclipse.core.eval.interfaces.AbstractCoreFunctionEvaluator;
 import org.matheclipse.core.eval.interfaces.AbstractFunctionEvaluator;
-import org.matheclipse.core.eval.interfaces.IFunctionEvaluator;
 import org.matheclipse.core.eval.util.OptionArgs;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.expression.S;
@@ -458,7 +453,7 @@ public class Algebra {
 
       IAST variableList = null;
       if (ast.isAST2()) {
-        variableList = Validate.checkIsVariableOrVariableList(ast, 2, engine);
+        variableList = Validate.checkIsVariableOrVariableList(ast, 2, ast.topHead(), engine);
         if (!variableList.isPresent()) {
           return F.NIL;
         }
@@ -488,6 +483,7 @@ public class Algebra {
       return F.evalExpandAll(arg1, engine);
     }
 
+    @Override
     public int[] expectedArgSize(IAST ast) {
       return ARGS_1_2;
     }
@@ -535,16 +531,8 @@ public class Algebra {
    */
   private static class Cancel extends AbstractFunctionEvaluator {
 
-    /**
-     * This predicate identifies polynomial expressions. It requires that the given expression is
-     * already expanded for <code>Plus,Power and Times</code> operations.
-     */
-    private static final class PolynomialPredicate implements Predicate<IExpr> {
-
-      @Override
-      public boolean test(IExpr expr) {
-        return expr.isPolynomial(F.List());
-      }
+    public static boolean isPolynomial(IExpr expr) {
+      return expr.isPolynomial(F.CEmptyList);
     }
 
     /**
@@ -559,19 +547,7 @@ public class Algebra {
         IASTAppendable numeratorPlus, IInteger denominatorInt, IInteger gcd) {
       boolean[] error = new boolean[] {false};
       numeratorPlus.forEach(
-          (x, i) -> {
-            if (!error[0]) {
-              if (x.isInteger()) {
-                numeratorPlus.set(i, ((IInteger) x).div(gcd));
-              } else if (x.isTimes() && x.first().isInteger()) {
-                IASTMutable times = ((IAST) x).copy();
-                times.set(1, ((IInteger) times.arg1()).div(gcd));
-                numeratorPlus.set(i, times);
-              } else {
-                error[0] = true;
-              }
-            }
-          });
+          (IExpr x, int i) -> calculateNumeratorGCD(x, i, numeratorPlus, gcd, error));
       if (error[0]) {
         return null;
       }
@@ -580,6 +556,21 @@ public class Algebra {
       result[1] = numeratorPlus;
       result[2] = denominatorInt.div(gcd);
       return result;
+    }
+
+    private static void calculateNumeratorGCD(
+        IExpr arg, int position, IASTAppendable numeratorPlus, IInteger gcd, boolean[] error) {
+      if (!error[0]) {
+        if (arg.isInteger()) {
+          numeratorPlus.set(position, ((IInteger) arg).div(gcd));
+        } else if (arg.isTimes() && arg.first().isInteger()) {
+          IASTMutable times = ((IAST) arg).copy();
+          times.set(1, ((IInteger) times.arg1()).div(gcd));
+          numeratorPlus.set(position, times);
+        } else {
+          error[0] = true;
+        }
+      }
     }
 
     /**
@@ -593,35 +584,9 @@ public class Algebra {
      */
     private static IExpr[] cancelPlusIntegerGCD(IAST numeratorPlus, IInteger denominatorInt) {
       IASTAppendable plus = numeratorPlus.copyAppendable();
-      IASTAppendable gcd = F.ast(F.GCD, plus.size() + 1, false);
+      IASTAppendable gcd = F.ast(S.GCD, plus.size() + 1, false);
       gcd.append(denominatorInt);
-      boolean evaled =
-          !plus.exists(
-              x -> {
-                if (x.isInteger()) {
-                  gcd.append(x);
-                } else {
-                  if (x.isTimes() && x.first().isInteger()) {
-                    gcd.append(x.first());
-                  } else {
-                    return true;
-                  }
-                }
-                return false;
-              });
-      // for (int i = 1; i < plus.size(); i++) {
-      // IExpr temp = plus.get(i);
-      // if (temp.isInteger()) {
-      // gcd.append(temp);
-      // } else {
-      // if (temp.isTimes() && temp.first().isInteger()) {
-      // gcd.append(temp.first());
-      // } else {
-      // evaled = false;
-      // break;
-      // }
-      // }
-      // }
+      boolean evaled = !plus.exists((IExpr x) -> plusExtractGCD(x, gcd));
       if (evaled) {
         // GCD() has attribute Orderless, so the arguments will
         // be sorted by evaluation!
@@ -634,6 +599,19 @@ public class Algebra {
       return null;
     }
 
+    private static boolean plusExtractGCD(IExpr argument, IASTAppendable gcd) {
+      if (argument.isInteger()) {
+        gcd.append(argument);
+      } else {
+        if (argument.isTimes() && argument.first().isInteger()) {
+          gcd.append(argument.first());
+        } else {
+          return true;
+        }
+      }
+      return false;
+    }
+
     /**
      * @param powerTimesAST an <code>Times[...] or Power[...]</code> AST, where common factors
      *     should be canceled out.
@@ -643,10 +621,8 @@ public class Algebra {
     public static IExpr togetherPowerTimes(IExpr powerTimesAST) throws JASConversionException {
       IExpr[] parts = fractionalParts(powerTimesAST, false);
       if (parts != null && parts[0].isPlus() && parts[1].isPlus()) {
-        IAST numParts =
-            ((IAST) parts[0]).partitionPlus(new PolynomialPredicate(), F.C0, F.C1, F.List);
-        IAST denParts =
-            ((IAST) parts[1]).partitionPlus(new PolynomialPredicate(), F.C0, F.C1, F.List);
+        IAST numParts = ((IAST) parts[0]).partitionPlus(x -> isPolynomial(x), F.C0, F.C1, S.List);
+        IAST denParts = ((IAST) parts[1]).partitionPlus(x -> isPolynomial(x), F.C0, F.C1, S.List);
         if (denParts.isPresent() && !denParts.arg1().isOne()) {
           IExpr[] result = cancelGCD(numParts.arg1(), denParts.arg1());
           if (result != null) {
@@ -670,7 +646,7 @@ public class Algebra {
         IExpr p10 = parts[1];
         IExpr p11 = F.C1;
         if (p00.isPlus()) {
-          IAST numParts = ((IAST) p00).partitionPlus(new PolynomialPredicate(), F.C0, F.C1, F.List);
+          IAST numParts = ((IAST) p00).partitionPlus(x -> isPolynomial(x), F.C0, F.C1, S.List);
           if (numParts.isPresent() && !numParts.arg1().isOne()) {
             p00 = numParts.arg1();
             p01 = numParts.arg2();
@@ -678,7 +654,7 @@ public class Algebra {
         }
 
         if (p10.isPlus()) {
-          IAST denParts = ((IAST) p10).partitionPlus(new PolynomialPredicate(), F.C0, F.C1, F.List);
+          IAST denParts = ((IAST) p10).partitionPlus(x -> isPolynomial(x), F.C0, F.C1, S.List);
           if (denParts.isPresent() && !denParts.arg1().isOne()) {
             p10 = denParts.arg1();
             p11 = denParts.arg2();
@@ -769,6 +745,7 @@ public class Algebra {
       return arg1;
     }
 
+    @Override
     public int[] expectedArgSize(IAST ast) {
       return ARGS_1_1;
     }
@@ -992,7 +969,7 @@ public class Algebra {
         }
 
         if (head != null) {
-          IASTMutable simplifyAST = (IASTMutable) F.unaryAST1(head, null);
+          IASTMutable simplifyAST = F.unaryAST1(head, null);
           IExpr coefficient;
           rest.forEach(
               (arg, i) -> {
@@ -1068,7 +1045,6 @@ public class Algebra {
         return;
       }
       rest.append(expr);
-      return;
     }
 
     public boolean collectToMapPlus(
@@ -1152,43 +1128,31 @@ public class Algebra {
    * </code>
    * </pre>
    */
-  private static class Denominator extends AbstractCoreFunctionEvaluator {
+  private static class Denominator extends AbstractFunctionEvaluator {
 
     @Override
     public IExpr evaluate(final IAST ast, EvalEngine engine) {
-      boolean numericMode = engine.isNumericMode();
-      try {
-        engine.setNumericMode(false);
-        boolean trig = false;
-        if (ast.isAST2()) {
-          final OptionArgs options = new OptionArgs(ast.topHead(), ast, 2, engine, true);
-          if (options.isInvalidPosition()) {
-            return IOFunctions.printMessage(
-                ast.topHead(),
-                "nonopt",
-                F.List(ast.arg2(), F.ZZ(options.getInvalidPosition() - 1), ast),
-                engine);
-          }
-          IExpr option = options.getOption(F.Trig);
-          if (option.isTrue()) {
-            trig = true;
-          }
+      boolean trig = false;
+      if (ast.isAST2()) {
+        final OptionArgs options = new OptionArgs(ast.topHead(), ast, 2, engine);
+        if (options.isInvalidPosition(1)) {
+          return options.printNonopt(ast, 1, engine);
         }
-
-        IExpr expr = engine.evaluate(ast.arg1());
-        if (expr.isRational()) {
-          return ((IRational) expr).denominator();
-        }
-        IExpr[] parts = fractionalParts(expr, trig);
-        if (parts == null) {
-          return F.C1;
-        }
-        return parts[1];
-      } finally {
-        engine.setNumericMode(numericMode);
+        trig = options.isTrue(S.Trig);
       }
+
+      IExpr expr = ast.arg1();
+      if (expr.isRational()) {
+        return ((IRational) expr).denominator();
+      }
+      IExpr[] parts = fractionalParts(expr, trig);
+      if (parts == null) {
+        return F.C1;
+      }
+      return parts[1];
     }
 
+    @Override
     public int[] expectedArgSize(IAST ast) {
       return ARGS_1_2;
     }
@@ -1258,72 +1222,92 @@ public class Algebra {
    * a*x+a*y+a*z+b*x+b*y+B*z
    * </pre>
    */
-  private static final class Distribute extends AbstractCoreFunctionEvaluator {
+  private static final class Distribute extends AbstractFunctionEvaluator {
+
+    private static class DistributeAlgorithm {
+      final IASTAppendable resultCollector;
+      final IExpr head;
+      final IAST arg1;
+      boolean evaled;
+
+      DistributeAlgorithm(IASTAppendable resultCollector, IExpr head, IAST arg1) {
+        this.resultCollector = resultCollector;
+        this.head = head;
+        this.arg1 = arg1;
+        this.evaled = false;
+      }
+
+      public boolean distribute(final IAST ast) {
+        IASTAppendable stepResult;
+        final int stepSize = arg1.size();
+        if (ast.size() >= 6) {
+          stepResult = F.ast(ast.arg5(), stepSize, false);
+        } else {
+          stepResult = F.ast(arg1.head(), stepSize, false);
+        }
+        distributePositionRecursive(stepResult, 1);
+        return evaled;
+      }
+
+      public void distributePositionRecursive(IASTAppendable stepResult, int position) {
+        if (arg1.size() == position) {
+          resultCollector.append(stepResult);
+          return;
+        }
+        if (arg1.size() < position) {
+          return;
+        }
+        if (arg1.get(position).isAST(head)) {
+          IAST temp = (IAST) arg1.get(position);
+          temp.forEach((IExpr x) -> distributeStep(x, stepResult, position));
+          evaled = true;
+        } else {
+          IASTAppendable res2 = stepResult;
+          res2.append(arg1.get(position));
+          distributePositionRecursive(res2, position + 1);
+        }
+      }
+
+      private void distributeStep(IExpr x, IAST stepResult, int position) {
+        IASTAppendable res2 = stepResult.copyAppendable();
+        res2.append(x);
+        distributePositionRecursive(res2, position + 1);
+      }
+    }
 
     @Override
     public IExpr evaluate(final IAST ast, EvalEngine engine) {
-      IAST temp = engine.evalArgs(ast, ISymbol.NOATTRIBUTE).orElse(ast);
-      IExpr arg1 = temp.arg1();
-      IExpr head = F.Plus;
-      if (temp.size() >= 3) {
-        head = temp.arg2();
+      IExpr arg1 = ast.arg1();
+      IExpr head = S.Plus;
+      if (ast.size() >= 3) {
+        head = ast.arg2();
       }
-      if (temp.isAST3()) {
-        if (!arg1.head().equals(temp.arg3())) {
+      if (ast.isAST3()) {
+        if (!arg1.head().equals(ast.arg3())) {
           return arg1;
         }
       }
 
-      if (arg1.isAST()) {
+      if (arg1.isAST() && ast.argSize() > 0) {
         IAST list = (IAST) arg1;
         IASTAppendable resultCollector;
-        if (temp.size() >= 5) {
-          resultCollector = F.ast(temp.arg4());
+        final int resultSize = ast.argSize() > 127 ? ast.argSize() : 127;
+        if (ast.size() >= 5) {
+          resultCollector = F.ast(ast.arg4(), resultSize, false);
         } else {
-          resultCollector = F.ast(head);
+          resultCollector = F.ast(head, resultSize, false);
         }
-        IASTAppendable stepResult;
-        if (temp.size() >= 6) {
-          stepResult = F.ast(temp.arg5());
-        } else {
-          stepResult = F.ast(arg1.head());
+        DistributeAlgorithm algorithm = new DistributeAlgorithm(resultCollector, head, list);
+        if (algorithm.distribute(ast)) {
+          return resultCollector;
         }
-        distributePosition(resultCollector, stepResult, head, list, 1);
-        return resultCollector;
       }
       return arg1;
     }
 
+    @Override
     public int[] expectedArgSize(IAST ast) {
       return ARGS_1_5;
-    }
-
-    private void distributePosition(
-        IASTAppendable resultCollector,
-        IASTAppendable stepResult,
-        IExpr head,
-        IAST arg1,
-        int position) {
-      if (arg1.size() == position) {
-        resultCollector.append(stepResult);
-        return;
-      }
-      if (arg1.size() < position) {
-        return;
-      }
-      if (arg1.get(position).isAST(head)) {
-        IAST temp = (IAST) arg1.get(position);
-        temp.forEach(
-            x -> {
-              IASTAppendable res2 = stepResult.copyAppendable();
-              res2.append(x);
-              distributePosition(resultCollector, res2, head, arg1, position + 1);
-            });
-      } else {
-        IASTAppendable res2 = stepResult;
-        res2.append(arg1.get(position));
-        distributePosition(resultCollector, res2, head, arg1, position + 1);
-      }
     }
   }
 
@@ -1619,7 +1603,7 @@ public class Algebra {
         if (numberOfTerms > Config.MAX_AST_SIZE) {
           throw new ASTElementLimitExceeded(numberOfTerms);
         }
-        final IASTAppendable expandedResult = F.ast(F.Plus, (int) numberOfTerms, false);
+        final IASTAppendable expandedResult = F.ast(S.Plus, (int) numberOfTerms, false);
         Expand.NumberPartititon part = new Expand.NumberPartititon(plusAST, n, expandedResult);
         part.partition();
         return flattenOneIdentity(expandedResult, F.C0);
@@ -1702,7 +1686,7 @@ public class Algebra {
         if (numberOfTerms > Config.MAX_AST_SIZE) {
           throw new ASTElementLimitExceeded(numberOfTerms);
         }
-        final IASTAppendable result = F.ast(F.Plus, (int) numberOfTerms, false);
+        final IASTAppendable result = F.ast(S.Plus, (int) numberOfTerms, false);
         plusAST0.forEach(
             x -> {
               plusAST1.forEach(
@@ -1723,7 +1707,7 @@ public class Algebra {
        * @return
        */
       private IExpr expandExprTimesPlus(final IExpr expr1, final IAST plusAST) {
-        final IASTAppendable result = F.ast(F.Plus, plusAST.argSize(), false);
+        final IASTAppendable result = F.ast(S.Plus, plusAST.argSize(), false);
         plusAST.forEach(
             x -> {
               // evaluate to flatten out Times() exprs
@@ -1767,12 +1751,11 @@ public class Algebra {
       }
 
       private void addFactor(int[] j) {
-        final Permutations.KPermutationsIterable perm =
-            new Permutations.KPermutationsIterable(j, m, m);
+        final KPermutationsIterable perm = new KPermutationsIterable(j, m, m);
         IInteger multinomial = NumberTheory.multinomial(j, n);
         IExpr temp;
         for (int[] indices : perm) {
-          final IASTAppendable timesAST = F.TimesAlloc(m + 2);
+          final IASTAppendable timesAST = F.TimesAlloc(m + 8);
           if (!multinomial.isOne()) {
             timesAST.append(multinomial);
           }
@@ -1855,6 +1838,7 @@ public class Algebra {
       return ast.arg1();
     }
 
+    @Override
     public int[] expectedArgSize(IAST ast) {
       return ARGS_1_2;
     }
@@ -1915,6 +1899,7 @@ public class Algebra {
       return arg1;
     }
 
+    @Override
     public int[] expectedArgSize(IAST ast) {
       return ARGS_1_2;
     }
@@ -1965,7 +1950,7 @@ public class Algebra {
     public void setUp(final ISymbol newSymbol) {
       setOptions(
           newSymbol, //
-          F.List(F.Rule(F.GaussianIntegers, S.False), F.Rule(F.Modulus, F.C0)));
+          F.List(F.Rule(S.GaussianIntegers, S.False), F.Rule(S.Modulus, F.C0)));
     }
 
     @Override
@@ -1984,7 +1969,7 @@ public class Algebra {
 
       IExpr expr = ast.arg1();
       if (ast.isAST1() && !ast.arg1().isTimes() && !ast.arg1().isPower()) {
-        expr = F.Together.of(engine, expr);
+        expr = S.Together.of(engine, expr);
         if (expr.isAST()) {
           IExpr[] parts = Algebra.getNumeratorDenominator((IAST) expr, engine);
           if (!parts[1].isOne()) {
@@ -2022,6 +2007,7 @@ public class Algebra {
       return expr;
     }
 
+    @Override
     public int[] expectedArgSize(IAST ast) {
       return ARGS_1_2;
     }
@@ -2222,13 +2208,13 @@ public class Algebra {
           new PolynomialHomogenization(eVar.getVarList(), engine);
       IExpr subsPolynomial = substitutions.replaceForward(expr);
       if (substitutions.size() == 0) {
-        return factorComplex(expr, eVar.getArrayList(), F.Times, gaussianIntegers, engine);
+        return factorComplex(expr, eVar.getArrayList(), S.Times, gaussianIntegers, engine);
       }
       // System.out.println(subsPolynomial.toString());
       if (subsPolynomial.isAST()) {
         eVar.addAll(substitutions.substitutedVariablesSet());
         IExpr factorization =
-            factorComplex(subsPolynomial, eVar.getArrayList(), F.Times, gaussianIntegers, engine);
+            factorComplex(subsPolynomial, eVar.getArrayList(), S.Times, gaussianIntegers, engine);
         // IExpr factorization = factor((IAST) subsPolynomial, eVar, factorSquareFree);
         if (factorization.isPresent()) {
           return substitutions.replaceBackward(factorization);
@@ -2255,21 +2241,21 @@ public class Algebra {
         final EvalEngine engine)
         throws JASConversionException {
       final OptionArgs options = new OptionArgs(ast.topHead(), ast, 2, engine);
-      IExpr option = options.getOption(F.Modulus);
+      IExpr option = options.getOption(S.Modulus);
       if (option.isInteger() && !option.isZero()) {
         return factorModulus(expr, varList, factorSquareFree, option);
       }
       if (!factorSquareFree) {
-        option = options.getOption(F.Extension);
+        option = options.getOption(S.Extension);
         if (option.isImaginaryUnit()) {
           // Exptension->I is like gaussian integers
-          return factorComplex(expr, varList, F.Times, false, true, engine);
+          return factorComplex(expr, varList, S.Times, false, true, engine);
         }
 
-        option = options.getOption(F.GaussianIntegers);
+        option = options.getOption(S.GaussianIntegers);
         if (option.isPresent()) {
           if (option.isTrue()) {
-            return factorComplex(expr, varList, F.Times, false, true, engine);
+            return factorComplex(expr, varList, S.Times, false, true, engine);
           }
         }
       }
@@ -2327,6 +2313,7 @@ public class Algebra {
       return F.NIL;
     }
 
+    @Override
     public int[] expectedArgSize(IAST ast) {
       return ARGS_1_2;
     }
@@ -2374,6 +2361,7 @@ public class Algebra {
       return F.NIL;
     }
 
+    @Override
     public int[] expectedArgSize(IAST ast) {
       return ARGS_1_1;
     }
@@ -2534,6 +2522,7 @@ public class Algebra {
       return ast.arg1();
     }
 
+    @Override
     public int[] expectedArgSize(IAST ast) {
       return ARGS_1_2;
     }
@@ -2612,43 +2601,31 @@ public class Algebra {
    * </code>
    * </pre>
    */
-  private static class Numerator extends AbstractCoreFunctionEvaluator {
+  private static class Numerator extends AbstractFunctionEvaluator {
 
     @Override
     public IExpr evaluate(final IAST ast, EvalEngine engine) {
-      boolean numericMode = engine.isNumericMode();
-      try {
-        engine.setNumericMode(false);
-        boolean trig = false;
-        if (ast.isAST2()) {
-          final OptionArgs options = new OptionArgs(ast.topHead(), ast, 2, engine, true);
-          if (options.isInvalidPosition()) {
-            return IOFunctions.printMessage(
-                F.Numerator,
-                "nonopt",
-                F.List(ast.arg2(), F.ZZ(options.getInvalidPosition() - 1), ast),
-                engine);
-          }
-          IExpr option = options.getOption(F.Trig);
-          if (option.isTrue()) {
-            trig = true;
-          }
+      boolean trig = false;
+      if (ast.isAST2()) {
+        final OptionArgs options = new OptionArgs(ast.topHead(), ast, 2, engine);
+        if (options.isInvalidPosition(1)) {
+          return options.printNonopt(ast, 1, engine);
         }
-
-        IExpr arg = engine.evaluate(ast.arg1());
-        if (arg.isRational()) {
-          return ((IRational) arg).numerator();
-        }
-        IExpr[] parts = fractionalParts(arg, trig);
-        if (parts == null) {
-          return arg;
-        }
-        return parts[0];
-      } finally {
-        engine.setNumericMode(numericMode);
+        trig = options.isTrue(S.Trig);
       }
+
+      IExpr arg = ast.arg1();
+      if (arg.isRational()) {
+        return ((IRational) arg).numerator();
+      }
+      IExpr[] parts = fractionalParts(arg, trig);
+      if (parts == null) {
+        return arg;
+      }
+      return parts[0];
     }
 
+    @Override
     public int[] expectedArgSize(IAST ast) {
       return ARGS_1_2;
     }
@@ -2658,7 +2635,7 @@ public class Algebra {
       newSymbol.setAttributes(ISymbol.LISTABLE);
       setOptions(
           newSymbol, //
-          F.List(F.Rule(F.Trig, S.False)));
+          F.List(F.Rule(S.Trig, S.False)));
     }
 
     /**
@@ -2759,7 +2736,7 @@ public class Algebra {
         // List<IExpr> varList = r;
         List<IExpr> varList = variables.copyTo();
         final OptionArgs options = new OptionArgs(ast.topHead(), ast, 4, engine);
-        IExpr option = options.getOption(F.Modulus);
+        IExpr option = options.getOption(S.Modulus);
         if (option.isInteger() && !option.isZero()) {
           try {
             // found "Modulus" option => use ModIntegerRing
@@ -2826,8 +2803,8 @@ public class Algebra {
             IASTAppendable list = F.ListAlloc(2);
             list.append(result[0].getExpr());
             IASTAppendable subList = F.ListAlloc(2);
-            subList.append(F.Together.of(engine, result[1].getExpr()));
-            subList.append(F.Together.of(engine, result[2].getExpr()));
+            subList.append(S.Together.of(engine, result[1].getExpr()));
+            subList.append(S.Together.of(engine, result[2].getExpr()));
             list.append(subList);
             return list;
           }
@@ -2842,6 +2819,7 @@ public class Algebra {
       return F.NIL;
     }
 
+    @Override
     public int[] expectedArgSize(IAST ast) {
       return ARGS_3_4;
     }
@@ -2851,7 +2829,7 @@ public class Algebra {
       newSymbol.setAttributes(ISymbol.HOLDALL);
       setOptions(
           newSymbol, //
-          F.List(F.Rule(F.Modulus, F.C0)));
+          F.List(F.Rule(S.Modulus, F.C0)));
     }
   }
 
@@ -2971,7 +2949,7 @@ public class Algebra {
             }
           }
         }
-        IAST list = ast.setAtCopy(0, F.List);
+        IAST list = ast.setAtCopy(0, S.List);
         IExpr[] result = InternalFindCommonFactorPlus.findCommonFactors(list, false);
         if (result != null) {
           return result[0];
@@ -2984,7 +2962,7 @@ public class Algebra {
     private IExpr gcdWithOption(
         final IAST ast, IExpr expr, VariablesSet eVar, final EvalEngine engine) {
       final OptionArgs options = new OptionArgs(ast.topHead(), ast, ast.argSize(), engine);
-      IExpr option = options.getOption(F.Modulus);
+      IExpr option = options.getOption(S.Modulus);
       if (option.isInteger() && !option.isZero()) {
         return modulusGCD(ast, expr, eVar, option);
       }
@@ -3030,7 +3008,7 @@ public class Algebra {
       // newSymbol.setAttributes(ISymbol.HOLDALL);
       setOptions(
           newSymbol, //
-          F.List(F.Rule(F.Modulus, F.C0)));
+          F.List(F.Rule(S.Modulus, F.C0)));
     }
   }
 
@@ -3087,7 +3065,7 @@ public class Algebra {
         IExpr expr = F.evalExpandAll(ast.arg1(), engine);
         if (ast.size() > 3) {
           final OptionArgs options = new OptionArgs(ast.topHead(), ast, ast.argSize(), engine);
-          IExpr option = options.getOption(F.Modulus);
+          IExpr option = options.getOption(S.Modulus);
           if (option.isInteger() && !option.isZero()) {
             try {
               // found "Modulus" option => use ModIntegerRing
@@ -3165,13 +3143,13 @@ public class Algebra {
           if (FEConfig.SHOW_STACKTRACE) {
             e.printStackTrace();
           }
-          IAST list = ast.setAtCopy(0, F.List);
+          IAST list = ast.setAtCopy(0, S.List);
           IExpr[] result = InternalFindCommonFactorPlus.findCommonFactors(list, true);
           if (result != null) {
-            return F.Times(result[0], ((IAST) result[1]).setAtCopy(0, F.Times));
+            return F.Times(result[0], ((IAST) result[1]).setAtCopy(0, S.Times));
           }
         }
-        return ast.setAtCopy(0, F.Times);
+        return ast.setAtCopy(0, S.Times);
       }
       return F.NIL;
     }
@@ -3181,7 +3159,7 @@ public class Algebra {
       // newSymbol.setAttributes(ISymbol.HOLDALL);
       setOptions(
           newSymbol, //
-          F.List(F.Rule(F.Modulus, F.C0)));
+          F.List(F.Rule(S.Modulus, F.C0)));
     }
   }
 
@@ -3319,7 +3297,7 @@ public class Algebra {
           }
           if (ast.size() == 5) {
             final OptionArgs options = new OptionArgs(ast.topHead(), ast, 4, engine);
-            IExpr option = options.getOption(F.Modulus);
+            IExpr option = options.getOption(S.Modulus);
             if (option.isInteger() && !option.isZero()) {
               IExpr[] result = quotientRemainderModInteger(arg1, arg2, variable, option);
               if (result == null) {
@@ -3345,7 +3323,7 @@ public class Algebra {
     public void setUp(final ISymbol newSymbol) {
       setOptions(
           newSymbol, //
-          F.List(F.Rule(F.Modulus, F.C0)));
+          F.List(F.Rule(S.Modulus, F.C0)));
     }
   }
 
@@ -3454,7 +3432,7 @@ public class Algebra {
         IExpr result = F.NIL;
         if (ast.size() == 5) {
           final OptionArgs options = new OptionArgs(ast.topHead(), ast, 4, engine);
-          IExpr option = options.getOption(F.Modulus);
+          IExpr option = options.getOption(S.Modulus);
           if (option.isInteger() && !option.isZero()) {
             IExpr[] quotientRemainderModInteger =
                 quotientRemainderModInteger(arg1, arg2, variable, option);
@@ -3479,6 +3457,7 @@ public class Algebra {
       }
     }
 
+    @Override
     public int[] expectedArgSize(IAST ast) {
       return ARGS_3_4;
     }
@@ -3508,7 +3487,7 @@ public class Algebra {
     public void setUp(final ISymbol newSymbol) {
       setOptions(
           newSymbol, //
-          F.List(F.Rule(F.Modulus, F.C0)));
+          F.List(F.Rule(S.Modulus, F.C0)));
     }
   }
 
@@ -3570,7 +3549,7 @@ public class Algebra {
       try {
         if (ast.size() == 5) {
           final OptionArgs options = new OptionArgs(ast.topHead(), ast, 4, engine);
-          IExpr option = options.getOption(F.Modulus);
+          IExpr option = options.getOption(S.Modulus);
           if (option.isInteger() && !option.isZero()) {
             IExpr[] result = quotientRemainderModInteger(arg1, arg2, variable, option);
             if (result == null) {
@@ -3593,6 +3572,7 @@ public class Algebra {
       }
     }
 
+    @Override
     public int[] expectedArgSize(IAST ast) {
       return ARGS_3_4;
     }
@@ -3601,7 +3581,7 @@ public class Algebra {
     public void setUp(final ISymbol newSymbol) {
       setOptions(
           newSymbol, //
-          F.List(F.Rule(F.Modulus, F.C0)));
+          F.List(F.Rule(S.Modulus, F.C0)));
     }
   }
 
@@ -3675,7 +3655,7 @@ public class Algebra {
           if (arg1.isTimes()) {
             IAST timesAST = (IAST) arg1;
             // Log[x_ * y_ * z_] :> Log(x)+Log(y)+Log(z)
-            IAST logResult = timesAST.setAtCopy(0, F.Plus);
+            IAST logResult = timesAST.setAtCopy(0, S.Plus);
             logResult = logResult.mapThread(F.Log(F.Slot1), 1);
             return powerExpand(logResult, assumptions);
           }
@@ -3778,6 +3758,7 @@ public class Algebra {
       return ast.arg1();
     }
 
+    @Override
     public int[] expectedArgSize(IAST ast) {
       return ARGS_1_2;
     }
@@ -3864,7 +3845,7 @@ public class Algebra {
           Times(F.CN1D3, c, Power(d, -1)),
           Times(
               F.CN1D3,
-              Power(F.E, Times(F.CC(0L, 1L, -2L, 3L), Plus(F.CN1, k), F.Pi)),
+              Power(S.E, Times(F.CC(0L, 1L, -2L, 3L), Plus(F.CN1, k), S.Pi)),
               Power(p, -1),
               r,
               Power(C2, F.C1D3),
@@ -3872,7 +3853,7 @@ public class Algebra {
           Times(
               F.C1D3,
               Power(C2, F.CN1D3),
-              Power(F.E, Times(F.CC(0L, 1L, 2L, 3L), Plus(F.CN1, k), F.Pi)),
+              Power(S.E, Times(F.CC(0L, 1L, 2L, 3L), Plus(F.CN1, k), S.Pi)),
               Power(d, -1),
               p));
     }
@@ -3987,7 +3968,7 @@ public class Algebra {
       // return listArg1.mapThread(F.D(F.Null, x), 1);
       @Override
       public IExpr visit(IASTMutable ast) {
-        if (!ast.isAST(F.Root)) {
+        if (!ast.isAST(S.Root)) {
           // IAST copied = replacement.setAtCopy(1, null);
           return ast.mapThread(replacement, 1);
         }
@@ -4160,24 +4141,26 @@ public class Algebra {
         IExpr e = p;
         // ((reduceConstantTerm /@ (List @@ e)) // Transpose)[[1]]
         IExpr cTerms =
-            F.Transpose.of(
+            S.Transpose.of(
                     engine,
-                    F.Map(F.Function(F.unaryAST1(reduceConstantTerm, F.Slot1)), F.Apply(F.List, e)))
+                    F.Map(F.Function(F.unaryAST1(reduceConstantTerm, F.Slot1)), F.Apply(S.List, e)))
                 .first();
-        // GCD @@ cTerms
-        IExpr c = F.Apply.of(engine, F.GCD, cTerms);
-        if (cTerms.last().isNegative()) {
-          c = c.negate();
-        }
-        IExpr gcd;
-        if (!c.isFree(x -> x.isInexactNumber(), false)) {
-          gcd = engine.evaluate(F.Rationalize(c));
-          gcd = engine.evalN(gcd);
-        } else {
-          gcd = engine.evaluate(c);
-        }
-        if (gcd.isFree(F.GCD)) {
-          return F.Times(gcd, F.Distribute.of(engine, F.Divide(e, gcd)));
+        if (cTerms.isPresent()) {
+          // GCD @@ cTerms
+          IExpr c = S.Apply.of(engine, S.GCD, cTerms);
+          if (cTerms.last().isNegative()) {
+            c = c.negate();
+          }
+          IExpr gcd;
+          if (!c.isFree(x -> x.isInexactNumber(), false)) {
+            gcd = engine.evaluate(F.Rationalize(c));
+            gcd = engine.evalN(gcd);
+          } else {
+            gcd = engine.evaluate(c);
+          }
+          if (gcd.isFree(S.GCD)) {
+            return F.Times(gcd, S.Distribute.of(engine, F.Divide(e, gcd)));
+          }
         }
       }
 
@@ -4243,73 +4226,15 @@ public class Algebra {
       if (plusAST.size() <= 2) {
         return F.NIL;
       }
-      IASTAppendable numerator = F.ast(F.Plus, plusAST.size(), false);
-      IASTAppendable denominator = F.ast(F.Times, plusAST.size(), false);
+      IASTAppendable numerator = F.ast(S.Plus, plusAST.size(), false);
+      IASTAppendable denominator = F.ast(S.Times, plusAST.size(), false);
       boolean[] evaled = new boolean[1];
-      plusAST.forEach(
-          (x, i) -> {
-            // IExpr[] fractionalParts = fractionalPartsRational(x);
-            // if (fractionalParts != null) {
-            // numerator.append(i, fractionalParts[0]);
-            // IExpr temp = fractionalParts[1];
-            // if (!temp.isOne()) {
-            // evaled[0] = true;
-            // }
-            // denominator.append(i, temp);
-            // } else {
-            // numerator.append(i, x);
-            // denominator.append(i, F.C1);
-            // }
-            if (x.isFraction()) {
-              numerator.append(i, ((IFraction) x).numerator());
-              denominator.append(i, ((IFraction) x).denominator());
-            } else if (x.isComplex()) {
-              IRational re = ((IComplex) x).getRealPart();
-              IRational im = ((IComplex) x).getImaginaryPart();
-              if (re.isFraction() || im.isFraction()) {
-                numerator.append(
-                    i,
-                    re.numerator()
-                        .times(im.denominator())
-                        .add(im.numerator().times(re.denominator()).times(F.CI)));
-                denominator.append(i, re.denominator().times(im.denominator()));
-              } else {
-                numerator.append(i, x);
-                denominator.append(i, F.C1);
-              }
-            } else {
-              IExpr[] fractionalParts = fractionalParts(x, false);
-              if (fractionalParts != null) {
-                numerator.append(i, fractionalParts[0]);
-                IExpr temp = fractionalParts[1];
-                if (!temp.isOne()) {
-                  evaled[0] = true;
-                }
-                denominator.append(i, temp);
-              } else {
-                numerator.append(i, x);
-                denominator.append(i, F.C1);
-              }
-            }
-          });
+      plusAST.forEach((IExpr x, int i) -> togetherPlusArg(x, i, numerator, denominator, evaled));
       if (!evaled[0]) {
         return F.NIL;
       }
       numerator.forEach(
-          (x, i) -> {
-            IASTAppendable ni = F.TimesAlloc(plusAST.argSize());
-            ni.append(x);
-            for (int j = 1; j < plusAST.size(); j++) {
-              if (i == j) {
-                continue;
-              }
-              IExpr temp = denominator.get(j);
-              if (!temp.isOne()) {
-                ni.append(temp);
-              }
-            }
-            numerator.set(i, ni.oneIdentity1());
-          });
+          (IExpr x, int i) -> togetherPlusNumeratorArg(x, i, numerator, denominator, plusAST));
       int i = 1;
       while (denominator.size() > i) {
         if (denominator.get(i).isOne()) {
@@ -4352,6 +4277,61 @@ public class Algebra {
         return F.Times(exprNumerator, F.Power(denom, F.CN1));
       }
       return exprNumerator;
+    }
+
+    private static void togetherPlusNumeratorArg(
+        IExpr xarg,
+        int position,
+        IASTAppendable numerator,
+        IASTAppendable denominator,
+        IAST plusAST) {
+      IASTAppendable ni = F.TimesAlloc(plusAST.argSize());
+      ni.append(xarg);
+      for (int j = 1; j < plusAST.size(); j++) {
+        if (position == j) {
+          continue;
+        }
+        IExpr temp = denominator.get(j);
+        if (!temp.isOne()) {
+          ni.append(temp);
+        }
+      }
+      numerator.set(position, ni.oneIdentity1());
+    }
+
+    private static void togetherPlusArg(
+        IExpr x, int i, IASTAppendable numerator, IASTAppendable denominator, boolean[] evaled) {
+      if (x.isFraction()) {
+        numerator.append(i, ((IFraction) x).numerator());
+        denominator.append(i, ((IFraction) x).denominator());
+      } else if (x.isComplex()) {
+        IRational re = ((IComplex) x).getRealPart();
+        IRational im = ((IComplex) x).getImaginaryPart();
+        if (re.isFraction() || im.isFraction()) {
+          numerator.append(
+              i,
+              re.numerator()
+                  .times(im.denominator())
+                  .add(im.numerator().times(re.denominator()).times(F.CI)));
+          denominator.append(i, re.denominator().times(im.denominator()));
+        } else {
+          numerator.append(i, x);
+          denominator.append(i, F.C1);
+        }
+      } else {
+        IExpr[] fractionalParts = fractionalParts(x, false);
+        if (fractionalParts != null) {
+          numerator.append(i, fractionalParts[0]);
+          IExpr temp = fractionalParts[1];
+          if (!temp.isOne()) {
+            evaled[0] = true;
+          }
+          denominator.append(i, temp);
+        } else {
+          numerator.append(i, x);
+          denominator.append(i, F.C1);
+        }
+      }
     }
 
     private static IExpr togetherPlusTimesPower(final IAST ast, EvalEngine engine) {
@@ -4420,11 +4400,12 @@ public class Algebra {
         return list;
       }
       if (arg1.isAST()) {
-        return togetherExpr((IAST) arg1, engine);
+        return togetherExpr(arg1, engine);
       }
       return arg1;
     }
 
+    @Override
     public int[] expectedArgSize(IAST ast) {
       return ARGS_1_1;
     }
@@ -4515,6 +4496,7 @@ public class Algebra {
       return VariablesSet.getAlgebraicVariables(ast.arg1());
     }
 
+    @Override
     public int[] expectedArgSize(IAST ast) {
       return ARGS_1_1;
     }
@@ -4524,7 +4506,7 @@ public class Algebra {
   }
 
   private static boolean appendPlus(IASTAppendable ast, IExpr expr) {
-    if (ast.head().equals(F.Plus) && expr.head().equals(F.Plus)) {
+    if (ast.head().equals(S.Plus) && expr.head().equals(S.Plus)) {
       return ast.appendArgs((IAST) expr);
     }
     return ast.append(expr);
@@ -5206,7 +5188,7 @@ public class Algebra {
     if (temp.isPresent()) {
       return temp;
     }
-    temp = F.Factor.of(parts[1]);
+    temp = S.Factor.of(parts[1]);
     if (temp.isTimes()) {
       return partialFractionDecomposition(parts[0], temp, variable, 0, engine);
     }
@@ -5242,21 +5224,21 @@ public class Algebra {
   public static IExpr partialFractionDecomposition(
       IExpr numerator, IExpr denominatorTimes, IExpr variable, int count, EvalEngine engine) {
     if (!denominatorTimes.isTimes()) {
-      return F.Times.of(engine, numerator, F.Power(denominatorTimes, -1));
+      return S.Times.of(engine, numerator, F.Power(denominatorTimes, -1));
     }
 
     // denominator is Times() here:
     IExpr first = denominatorTimes.first();
     IExpr rest = denominatorTimes.rest().oneIdentity1();
     if (first.isFree(variable)) {
-      return F.Times.of(
+      return S.Times.of(
           engine,
           F.Power(first, -1),
           partialFractionDecomposition(numerator, rest, variable, count + 1, engine));
     } else {
-      IExpr v1 = F.Expand.of(engine, first);
-      IExpr v2 = F.Expand.of(engine, rest);
-      IExpr peGCD = F.PolynomialExtendedGCD.of(engine, v1, v2, variable);
+      IExpr v1 = S.Expand.of(engine, first);
+      IExpr v2 = S.Expand.of(engine, rest);
+      IExpr peGCD = S.PolynomialExtendedGCD.of(engine, v1, v2, variable);
       if (peGCD.isList() && peGCD.second().isList()) {
         IAST s = (IAST) peGCD.second();
         IExpr A = s.arg1();
@@ -5269,12 +5251,12 @@ public class Algebra {
         // partialFractionDecomposition(u2, rest, variable, count + 1, engine));
 
         IExpr u1 =
-            F.PolynomialRemainder.ofNIL(engine, F.Expand(F.Times(B, numerator)), v1, variable);
+            S.PolynomialRemainder.ofNIL(engine, F.Expand(F.Times(B, numerator)), v1, variable);
         if (u1.isPresent()) {
           IExpr u2 =
-              F.PolynomialRemainder.ofNIL(engine, F.Expand(F.Times(A, numerator)), v2, variable);
+              S.PolynomialRemainder.ofNIL(engine, F.Expand(F.Times(A, numerator)), v2, variable);
           if (u2.isPresent()) {
-            return F.Plus.of(
+            return S.Plus.of(
                 engine,
                 F.Times(u1, F.Power(first, -1)),
                 partialFractionDecomposition(u2, rest, variable, count + 1, engine));
@@ -5283,13 +5265,13 @@ public class Algebra {
         if (count == 0) {
           return F.NIL;
         }
-        return F.Times.of(engine, numerator, F.Power(denominatorTimes, -1));
+        return S.Times.of(engine, numerator, F.Power(denominatorTimes, -1));
       }
     }
     if (count == 0) {
       return F.NIL;
     }
-    return F.Times.of(engine, numerator, F.Power(denominatorTimes, -1));
+    return S.Times.of(engine, numerator, F.Power(denominatorTimes, -1));
   }
 
   /**

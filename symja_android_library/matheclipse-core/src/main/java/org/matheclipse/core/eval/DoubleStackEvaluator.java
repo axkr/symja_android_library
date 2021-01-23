@@ -43,7 +43,7 @@ public class DoubleStackEvaluator {
   public static double evalAST(double[] stack, final int top, final IAST ast) {
     if (ast.head().isBuiltInSymbol()) {
       final IBuiltInSymbol symbol = (IBuiltInSymbol) ast.head();
-      final IEvaluator module = ((IBuiltInSymbol) symbol).getEvaluator();
+      final IEvaluator module = symbol.getEvaluator();
       if (module instanceof INumeric) {
         int newTop = top;
         // fast evaluation path

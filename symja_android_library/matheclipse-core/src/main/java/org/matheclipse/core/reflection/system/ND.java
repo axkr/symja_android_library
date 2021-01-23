@@ -111,6 +111,7 @@ public class ND extends AbstractFunctionEvaluator {
     return F.NIL;
   }
 
+  @Override
   public int[] expectedArgSize(IAST ast) {
     return IFunctionEvaluator.ARGS_3_3;
   }

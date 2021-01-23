@@ -6,6 +6,7 @@ import org.matheclipse.core.eval.exception.Validate;
 import org.matheclipse.core.eval.exception.ValidateException;
 import org.matheclipse.core.eval.interfaces.IFunctionEvaluator;
 import org.matheclipse.core.expression.F;
+import org.matheclipse.core.expression.S;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IASTMutable;
 import org.matheclipse.core.interfaces.IExpr;
@@ -48,7 +49,7 @@ public class FindInstance extends Solve {
    */
   @Override
   public IExpr evaluate(final IAST ast, EvalEngine engine) {
-    IAST vars = Validate.checkIsVariableOrVariableList(ast, 2, engine);
+    IAST vars = Validate.checkIsVariableOrVariableList(ast, 2, ast.topHead(), engine);
     if (!vars.isPresent()) {
       return F.NIL;
     }
@@ -78,7 +79,7 @@ public class FindInstance extends Solve {
         }
       }
       if (ast.isAST3()) {
-        if (ast.arg3().equals(F.Booleans) || formula) {
+        if (ast.arg3().equals(S.Booleans) || formula) {
           return BooleanFunctions.solveInstances(ast.arg1(), vars, maxChoices);
         }
         return engine.printMessage(
@@ -101,6 +102,7 @@ public class FindInstance extends Solve {
     return F.NIL;
   }
 
+  @Override
   public int[] expectedArgSize(IAST ast) {
     return IFunctionEvaluator.ARGS_2_3;
   }

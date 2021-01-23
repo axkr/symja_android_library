@@ -3,12 +3,7 @@ package org.matheclipse.core.eval;
 import java.io.Writer;
 import java.util.function.Predicate;
 
-import org.matheclipse.core.builtin.IOFunctions;
-import org.matheclipse.core.eval.exception.IterationLimitExceeded;
-import org.matheclipse.core.eval.exception.RecursionLimitExceeded;
-import org.matheclipse.core.eval.exception.ThrowException;
 import org.matheclipse.core.expression.F;
-import org.matheclipse.core.expression.S;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.parser.ExprParser;
@@ -153,7 +148,7 @@ public class EvalUtilities extends MathMLUtilities {
       }
     }
     return F.NIL;
-  };
+  }
 
   /**
    * Evaluate the <code>parsedExpression</code> and return the resulting expression.
