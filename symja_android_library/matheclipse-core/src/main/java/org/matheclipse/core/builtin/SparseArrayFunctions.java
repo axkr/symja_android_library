@@ -4,9 +4,7 @@ import java.util.Arrays;
 
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.exception.Validate;
-import org.matheclipse.core.eval.interfaces.AbstractCoreFunctionEvaluator;
 import org.matheclipse.core.eval.interfaces.AbstractFunctionEvaluator;
-import org.matheclipse.core.eval.interfaces.IFunctionEvaluator;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.expression.S;
 import org.matheclipse.core.expression.data.SparseArrayExpr;
@@ -195,8 +193,7 @@ public class SparseArrayFunctions {
                     && //
                     columnIndicesDimension != null) {
                   int[] rowPointers =
-                      Validate.checkListOfInts(
-                          ast, (IAST) second.arg1(), 0, Integer.MAX_VALUE, engine);
+                      Validate.checkListOfInts(ast, second.arg1(), 0, Integer.MAX_VALUE, engine);
                   IAST columnIndices = (IAST) second.arg2();
                   IAST nonZeroValues = (IAST) list.arg3();
                   ISparseArray result =
@@ -242,14 +239,14 @@ public class SparseArrayFunctions {
             return sparseArray;
           }
           if (defaultValue.isPresent()) {
-            IAST list = (IAST) sparseArray.normal(false);
+            IAST list = sparseArray.normal(false);
             if (list.isPresent()) {
               result = SparseArrayExpr.newDenseList(list, defaultValue);
             }
           }
         }
         if (dimension != null) {
-          IAST list = (IAST) sparseArray.normal(dimension);
+          IAST list = sparseArray.normal(dimension);
           if (list.isPresent()) {
             result = SparseArrayExpr.newDenseList(list, defaultValue);
           }

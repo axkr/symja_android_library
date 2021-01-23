@@ -5,12 +5,9 @@ import java.util.Arrays;
 import java.util.Comparator;
 import java.util.List;
 
-import org.hipparchus.exception.MathIllegalArgumentException;
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.exception.Validate;
 import org.matheclipse.core.eval.interfaces.AbstractEvaluator;
-import org.matheclipse.core.eval.interfaces.AbstractNonOrderlessArgMultiple;
-import org.matheclipse.core.eval.interfaces.IFunctionEvaluator;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.expression.S;
 import org.matheclipse.core.generic.Predicates;
@@ -255,8 +252,8 @@ public class TensorFunctions {
     }
 
     public static IExpr listCorrelate(IAST kernel, int kernelSize, IAST tensor, int tensorSize) {
-      ISymbol fFunction = F.Plus;
-      ISymbol gFunction = F.Times;
+      ISymbol fFunction = S.Plus;
+      ISymbol gFunction = S.Times;
       int diff = tensorSize - kernelSize;
       IASTAppendable resultList = F.ListAlloc(tensorSize - 1);
       final int[] fi = new int[1];
@@ -389,7 +386,7 @@ public class TensorFunctions {
         int n = indexes.length;
         if (ast.size() >= 3) {
           IExpr arg2 = ast.arg2();
-          if (arg2.equals(F.All)) {
+          if (arg2.equals(S.All)) {
           } else if (arg2.isReal()) {
             ISignedNumber sn = (ISignedNumber) arg2;
             n = sn.toIntDefault(Integer.MIN_VALUE);
@@ -423,6 +420,7 @@ public class TensorFunctions {
       return F.NIL;
     }
 
+    @Override
     public int[] expectedArgSize(IAST ast) {
       return ARGS_1_1;
     }
@@ -625,6 +623,7 @@ public class TensorFunctions {
       return F.NIL;
     }
 
+    @Override
     public int[] expectedArgSize(IAST ast) {
       return ARGS_1_1;
     }
