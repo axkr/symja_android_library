@@ -21,6 +21,10 @@ public class FunctionsTestCase extends AbstractTestCase {
     // "");
 
     if (s.contains("Windows")) {
+      //      check(
+      //          "dset =
+      // SemanticImport(\"https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/data/whiskey.csv\")", //
+      //          "");
       check(
           "dset = Dataset({\n"
               + //
