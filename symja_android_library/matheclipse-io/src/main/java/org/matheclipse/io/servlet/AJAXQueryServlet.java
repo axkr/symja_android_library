@@ -28,10 +28,10 @@ import org.matheclipse.core.eval.exception.AbortException;
 import org.matheclipse.core.eval.exception.FailedException;
 import org.matheclipse.core.eval.util.WriterOutputStream;
 import org.matheclipse.core.expression.F;
+import org.matheclipse.core.expression.S;
 import org.matheclipse.core.expression.data.GraphExpr;
 import org.matheclipse.core.form.Documentation;
 import org.matheclipse.core.form.output.OutputFormFactory;
-import org.matheclipse.core.graphics.Show2SVG;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.interfaces.IStringX;
@@ -43,268 +43,145 @@ import org.matheclipse.parser.client.FEConfig;
 import org.matheclipse.parser.client.SyntaxError;
 import org.matheclipse.parser.client.math.MathException;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.databind.node.ArrayNode;
-import com.fasterxml.jackson.databind.node.ObjectNode;
-
 public class AJAXQueryServlet extends HttpServlet {
 
   static final Map<String, EvalEngine> ENGINES = new HashMap<String, EvalEngine>();
 
   static final String JSXGRAPH_IFRAME = //
       "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n"
-          + //
-          "\n"
-          + //
-          "<!DOCTYPE html PUBLIC\n"
-          + //
-          "  \"-//W3C//DTD XHTML 1.1 plus MathML 2.0 plus SVG 1.1//EN\"\n"
-          + //
-          "  \"http://www.w3.org/2002/04/xhtml-math-svg/xhtml-math-svg.dtd\">\n"
-          + //
-          "\n"
-          + //
-          "<html xmlns=\"http://www.w3.org/1999/xhtml\" style=\"width: 100%; height: 100%; margin: 0; padding: 0\">\n"
-          + //
-          "<head>\n"
-          + //
-          "<meta charset=\"utf-8\">\n"
-          + //
-          "<title>JSXGraph</title>\n"
-          + //
-          "\n"
-          + //
-          "<body style=\"width: 100%; height: 100%; margin: 0; padding: 0\">\n"
-          + //
-          "\n"
-          + //
-          "<link rel=\"stylesheet\" type=\"text/css\" href=\"https://cdnjs.cloudflare.com/ajax/libs/jsxgraph/1.1.0/jsxgraph.min.css\" />\n"
-          + //
-          "<script src=\"https://cdn.jsdelivr.net/gh/paulmasson/math@1.4.3/build/math.js\"></script>\n"
-          + "<script src=\"https://cdnjs.cloudflare.com/ajax/libs/jsxgraph/1.1.0/jsxgraphcore.min.js\"\n"
-          + //
-          "        type=\"text/javascript\"></script>\n"
-          + //
-          "<script src=\"https://cdnjs.cloudflare.com/ajax/libs/jsxgraph/1.1.0/geonext.min.js\"\n"
-          + //
-          "        type=\"text/javascript\"></script>\n"
-          + //
-          "\n"
-          + //
-          "<div id=\"jxgbox\" class=\"jxgbox\" style=\"display: flex; width:99%; height:99%; margin: 0; flex-direction: column; overflow: hidden\">\n"
-          + //
-          "<script>\n"
-          + //
-          "`1`\n"
-          + //
-          "</script>\n"
-          + //
-          "</div>\n"
-          + //
-          "\n"
-          + //
-          "</body>\n"
-          + //
-          "</html>"; //
+          + "\n"
+          + "<!DOCTYPE html PUBLIC\n"
+          + "  \"-//W3C//DTD XHTML 1.1 plus MathML 2.0 plus SVG 1.1//EN\"\n"
+          + "  \"http://www.w3.org/2002/04/xhtml-math-svg/xhtml-math-svg.dtd\">\n"
+          + "\n"
+          + "<html xmlns=\"http://www.w3.org/1999/xhtml\" style=\"width: 100%; height: 100%; margin: 0; padding: 0\">\n"
+          + "<head>\n"
+          + "<meta charset=\"utf-8\">\n"
+          + "<title>JSXGraph</title>\n"
+          + "\n"
+          + "<body style=\"width: 100%; height: 100%; margin: 0; padding: 0\">\n"
+          + "\n"
+          + "<link rel=\"stylesheet\" type=\"text/css\" href=\"https://cdnjs.cloudflare.com/ajax/libs/jsxgraph/1.2.1/jsxgraph.min.css\" />\n"
+          + "<script src=\"https://cdn.jsdelivr.net/gh/paulmasson/math@1.4.4/build/math.js\"></script>\n"
+          + "<script src=\"https://cdnjs.cloudflare.com/ajax/libs/jsxgraph/1.2.1/jsxgraphcore.min.js\"\n"
+          + "        type=\"text/javascript\"></script>\n"
+          + "<script src=\"https://cdnjs.cloudflare.com/ajax/libs/jsxgraph/1.2.1/geonext.min.js\"\n"
+          + "        type=\"text/javascript\"></script>\n"
+          + "\n"
+          + "<div id=\"jxgbox\" class=\"jxgbox\" style=\"display: flex; width:99%; height:99%; margin: 0; flex-direction: column; overflow: hidden\">\n"
+          + "<script>\n"
+          + "`1`\n"
+          + "</script>\n"
+          + "</div>\n"
+          + "\n"
+          + "</body>\n"
+          + "</html>"; //
 
   protected static final String MATHCELL_IFRAME = //
       // "<html style=\"width: 100%; height: 100%; margin: 0; padding: 0\">\n"
       "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n"
-          + //
-          "\n"
-          + //
-          "<!DOCTYPE html PUBLIC\n"
-          + //
-          "  \"-//W3C//DTD XHTML 1.1 plus MathML 2.0 plus SVG 1.1//EN\"\n"
-          + //
-          "  \"http://www.w3.org/2002/04/xhtml-math-svg/xhtml-math-svg.dtd\">\n"
-          + //
-          "\n"
-          + //
-          "<html xmlns=\"http://www.w3.org/1999/xhtml\" style=\"width: 100%; height: 100%; margin: 0; padding: 0\">\n"
-          + //
-          "<head>\n"
-          + //
-          "<meta charset=\"utf-8\">\n"
-          + //
-          "<title>MathCell</title>\n"
-          + //
-          "</head>\n"
-          + //
-          "\n"
-          + //
-          "<body style=\"width: 100%; height: 100%; margin: 0; padding: 0\">\n"
-          + //
-          "\n"
-          + //
-          "<script src=\"https://cdn.jsdelivr.net/gh/paulmasson/math@1.4.3/build/math.js\"></script>\n"
-          + //
-          "<script src=\"https://cdn.jsdelivr.net/gh/paulmasson/mathcell@1.9.0/build/mathcell.js\"></script>\n"
-          + //
-          "<script src=\"https://cdn.jsdelivr.net/gh/mathjax/MathJax@2.7.5/MathJax.js?config=TeX-AMS_HTML\"></script>"
-          + //
-          "\n"
-          + //
-          "<div class=\"mathcell\" style=\"display: flex; width: 100%; height: 100%; margin: 0;  padding: .25in .5in .5in .5in; flex-direction: column; overflow: hidden\">\n"
-          + //
-          "<script>\n"
-          + //
-          "\n"
-          + //
-          "var parent = document.currentScript.parentNode;\n"
-          + //
-          "\n"
-          + //
-          "var id = generateId();\n"
-          + //
-          "parent.id = id;\n"
-          + //
-          "\n"
-          + //
-          "`1`\n"
-          + //
-          "\n"
-          + //
-          "parent.update( id );\n"
-          + //
-          "\n"
-          + //
-          "</script>\n"
-          + //
-          "</div>\n"
-          + //
-          "\n"
-          + //
-          "</body>\n"
-          + //
-          "</html>"; //
+          + "\n"
+          + "<!DOCTYPE html PUBLIC\n"
+          + "  \"-//W3C//DTD XHTML 1.1 plus MathML 2.0 plus SVG 1.1//EN\"\n"
+          + "  \"http://www.w3.org/2002/04/xhtml-math-svg/xhtml-math-svg.dtd\">\n"
+          + "\n"
+          + "<html xmlns=\"http://www.w3.org/1999/xhtml\" style=\"width: 100%; height: 100%; margin: 0; padding: 0\">\n"
+          + "<head>\n"
+          + "<meta charset=\"utf-8\">\n"
+          + "<title>MathCell</title>\n"
+          + "</head>\n"
+          + "\n"
+          + "<body style=\"width: 100%; height: 100%; margin: 0; padding: 0\">\n"
+          + "\n"
+          + "<script src=\"https://cdn.jsdelivr.net/gh/paulmasson/math@1.4.4/build/math.js\"></script>\n"
+          + "<script src=\"https://cdn.jsdelivr.net/gh/paulmasson/mathcell@1.9.0/build/mathcell.js\"></script>\n"
+          + "<script src=\"https://cdn.jsdelivr.net/gh/mathjax/MathJax@2.7.5/MathJax.js?config=TeX-AMS_HTML\"></script>"
+          + "\n"
+          + "<div class=\"mathcell\" style=\"display: flex; width: 100%; height: 100%; margin: 0;  padding: .25in .5in .5in .5in; flex-direction: column; overflow: hidden\">\n"
+          + "<script>\n"
+          + "\n"
+          + "var parent = document.currentScript.parentNode;\n"
+          + "\n"
+          + "var id = generateId();\n"
+          + "parent.id = id;\n"
+          + "\n"
+          + "`1`\n"
+          + "\n"
+          + "parent.update( id );\n"
+          + "\n"
+          + "</script>\n"
+          + "</div>\n"
+          + "\n"
+          + "</body>\n"
+          + "</html>"; //
 
   protected static final String VISJS_IFRAME = //
       "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n"
-          + //
-          "\n"
-          + //
-          "<!DOCTYPE html PUBLIC\n"
-          + //
-          "  \"-//W3C//DTD XHTML 1.1 plus MathML 2.0 plus SVG 1.1//EN\"\n"
-          + //
-          "  \"http://www.w3.org/2002/04/xhtml-math-svg/xhtml-math-svg.dtd\">\n"
-          + //
-          "\n"
-          + //
-          "<html xmlns=\"http://www.w3.org/1999/xhtml\" style=\"width: 100%; height: 100%; margin: 0; padding: 0\">\n"
-          + //
-          "<head>\n"
-          + //
-          "<meta charset=\"utf-8\">\n"
-          + //
-          "<title>VIS-NetWork</title>\n"
-          + //
-          "\n"
-          + //
-          "  <script type=\"text/javascript\" src=\"https://cdn.jsdelivr.net/npm/vis-network@6.0.0/dist/vis-network.min.js\"></script>\n"
-          + //
-          "</head>\n"
-          + //
-          "<body>\n"
-          + //
-          "\n"
-          + //
-          "<div id=\"vis\" style=\"width: 600px; height: 400px; margin: 0;  padding: .25in .5in .5in .5in; flex-direction: column; overflow: hidden\">\n"
-          + //
-          "<script type=\"text/javascript\">\n"
-          + //
-          "`1`\n"
-          + //
-          "  var container = document.getElementById('vis');\n"
-          + //
-          "  var data = {\n"
-          + //
-          "    nodes: nodes,\n"
-          + //
-          "    edges: edges\n"
-          + //
-          "  };\n"
-          + //
-          "`2`\n"
-          + //
-          "  var network = new vis.Network(container, data, options);\n"
-          + //
-          "</script>\n"
-          + //
-          "</div>\n"
-          + //
-          "</body>\n"
-          + //
-          "</html>"; //
+          + "\n"
+          + "<!DOCTYPE html PUBLIC\n"
+          + "  \"-//W3C//DTD XHTML 1.1 plus MathML 2.0 plus SVG 1.1//EN\"\n"
+          + "  \"http://www.w3.org/2002/04/xhtml-math-svg/xhtml-math-svg.dtd\">\n"
+          + "\n"
+          + "<html xmlns=\"http://www.w3.org/1999/xhtml\" style=\"width: 100%; height: 100%; margin: 0; padding: 0\">\n"
+          + "<head>\n"
+          + "<meta charset=\"utf-8\">\n"
+          + "<title>VIS-NetWork</title>\n"
+          + "\n"
+          + "  <script type=\"text/javascript\" src=\"https://cdn.jsdelivr.net/npm/vis-network@6.0.0/dist/vis-network.min.js\"></script>\n"
+          + "</head>\n"
+          + "<body>\n"
+          + "\n"
+          + "<div id=\"vis\" style=\"width: 600px; height: 400px; margin: 0;  padding: .25in .5in .5in .5in; flex-direction: column; overflow: hidden\">\n"
+          + "<script type=\"text/javascript\">\n"
+          + "`1`\n"
+          + "  var container = document.getElementById('vis');\n"
+          + "  var data = {\n"
+          + "    nodes: nodes,\n"
+          + "    edges: edges\n"
+          + "  };\n"
+          + "`2`\n"
+          + "  var network = new vis.Network(container, data, options);\n"
+          + "</script>\n"
+          + "</div>\n"
+          + "</body>\n"
+          + "</html>"; //
 
   protected static final String PLOTLY_IFRAME = //
       "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n"
-          + //
-          "\n"
-          + //
-          "<!DOCTYPE html PUBLIC\n"
-          + //
-          "  \"-//W3C//DTD XHTML 1.1 plus MathML 2.0 plus SVG 1.1//EN\"\n"
-          + //
-          "  \"http://www.w3.org/2002/04/xhtml-math-svg/xhtml-math-svg.dtd\">\n"
-          + //
-          "\n"
-          + //
-          "<html xmlns=\"http://www.w3.org/1999/xhtml\" style=\"width: 100%; height: 100%; margin: 0; padding: 0\">\n"
-          + //
-          "<head>\n"
-          + //
-          "<meta charset=\"utf-8\">\n"
-          + //
-          "<title>Plotly</title>\n"
-          + //
-          "\n"
-          + //
-          "   <script src=\"https://cdn.plot.ly/plotly-latest.min.js\"></script>\n"
-          + //
-          "</head>\n"
-          + //
-          "<body>\n"
-          + //
-          "<div id='plotly' ></div>\n"
-          + //
-          "`1`\n"
-          + //
-          "</body>\n"
-          + //
-          "</html>"; //
+          + "\n"
+          + "<!DOCTYPE html PUBLIC\n"
+          + "  \"-//W3C//DTD XHTML 1.1 plus MathML 2.0 plus SVG 1.1//EN\"\n"
+          + "  \"http://www.w3.org/2002/04/xhtml-math-svg/xhtml-math-svg.dtd\">\n"
+          + "\n"
+          + "<html xmlns=\"http://www.w3.org/1999/xhtml\" style=\"width: 100%; height: 100%; margin: 0; padding: 0\">\n"
+          + "<head>\n"
+          + "<meta charset=\"utf-8\">\n"
+          + "<title>Plotly</title>\n"
+          + "\n"
+          + "   <script src=\"https://cdn.plot.ly/plotly-latest.min.js\"></script>\n"
+          + "</head>\n"
+          + "<body>\n"
+          + "<div id='plotly' ></div>\n"
+          + "`1`\n"
+          + "</body>\n"
+          + "</html>"; //
 
   protected static final String HTML_IFRAME = //
       "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n"
-          + //
-          "\n"
-          + //
-          "<!DOCTYPE html PUBLIC\n"
-          + //
-          "  \"-//W3C//DTD XHTML 1.1 plus MathML 2.0 plus SVG 1.1//EN\"\n"
-          + //
-          "  \"http://www.w3.org/2002/04/xhtml-math-svg/xhtml-math-svg.dtd\">\n"
-          + //
-          "\n"
-          + //
-          "<html xmlns=\"http://www.w3.org/1999/xhtml\" style=\"width: 100%; height: 100%; margin: 0; padding: 0\">\n"
-          + //
-          "<head>\n"
-          + //
-          "<meta charset=\"utf-8\">\n"
-          + //
-          "<title>HTML</title>\n"
-          + //
-          "</head>\n"
-          + //
-          "<body>\n"
-          + //
-          "`1`\n"
-          + //
-          "</body>\n"
-          + //
-          "</html>"; //
+          + "\n"
+          + "<!DOCTYPE html PUBLIC\n"
+          + "  \"-//W3C//DTD XHTML 1.1 plus MathML 2.0 plus SVG 1.1//EN\"\n"
+          + "  \"http://www.w3.org/2002/04/xhtml-math-svg/xhtml-math-svg.dtd\">\n"
+          + "\n"
+          + "<html xmlns=\"http://www.w3.org/1999/xhtml\" style=\"width: 100%; height: 100%; margin: 0; padding: 0\">\n"
+          + "<head>\n"
+          + "<meta charset=\"utf-8\">\n"
+          + "<title>HTML</title>\n"
+          + "</head>\n"
+          + "<body>\n"
+          + "`1`\n"
+          + "</body>\n"
+          + "</html>";
 
   // public final static Cache<String, String[]> INPUT_CACHE =
   // CacheBuilder.newBuilder().maximumSize(500).build();
@@ -325,11 +202,13 @@ public class AJAXQueryServlet extends HttpServlet {
 
   public static volatile boolean INITIALIZED = false;
 
+  @Override
   public void doGet(HttpServletRequest req, HttpServletResponse res)
       throws ServletException, IOException {
     doPost(req, res);
   }
 
+  @Override
   protected void doPost(HttpServletRequest req, HttpServletResponse res)
       throws ServletException, IOException {
     res.setContentType("text/html; charset=UTF-8");
@@ -468,10 +347,10 @@ public class AJAXQueryServlet extends HttpServlet {
         IExpr outExpr;
         outExpr = evalTopLevel(engine, outBuffer, inExpr);
         if (outExpr != null) {
-          if (outExpr.isAST(F.Graphics) || outExpr.isAST(F.Graphics3D)) {
+          if (outExpr.isAST(S.Graphics) || outExpr.isAST(S.Graphics3D)) {
             outExpr = F.Show(outExpr);
           }
-          if (outExpr.isASTSizeGE(F.Show, 2)) {
+          if (outExpr.isASTSizeGE(S.Show, 2)) {
             IAST show = (IAST) outExpr;
             return JSONBuilder.createJSONShow(engine, show);
           } else if (outExpr instanceof GraphExpr) {
@@ -505,7 +384,7 @@ public class AJAXQueryServlet extends HttpServlet {
               //                      + "\" style=\"display: block; width: 100%; height: 100%;
               // border: none;\"></iframe>");
             }
-          } else if (outExpr.isAST(F.JSFormData, 3)) {
+          } else if (outExpr.isAST(S.JSFormData, 3)) {
             IAST jsFormData = (IAST) outExpr;
             if (jsFormData.arg2().toString().equals("mathcell")) {
               try {
@@ -611,9 +490,9 @@ public class AJAXQueryServlet extends HttpServlet {
         return JSONBuilder.createJSONError("Input string parsed to null");
       }
     } catch (AbortException se) {
-      return JSONBuilder.createJSONResult(engine, F.$Aborted, outWriter, errorWriter);
+      return JSONBuilder.createJSONResult(engine, S.$Aborted, outWriter, errorWriter);
     } catch (FailedException se) {
-      return JSONBuilder.createJSONResult(engine, F.$Failed, outWriter, errorWriter);
+      return JSONBuilder.createJSONResult(engine, S.$Failed, outWriter, errorWriter);
     } catch (SyntaxError se) {
       return JSONBuilder.createJSONSyntaxError(se.getMessage());
     } catch (MathException se) {
@@ -643,7 +522,7 @@ public class AJAXQueryServlet extends HttpServlet {
     EvalEngine[] engineRef = new EvalEngine[] {engine};
     result = ExprEvaluator.evalTopLevel(parsedExpression, engineRef);
     engine = engineRef[0];
-    if ((result != null) && !result.equals(F.Null)) {
+    if ((result != null) && !result.equals(S.Null)) {
       OutputFormFactory.get(engine.isRelaxedSyntax()).convert(buf, result);
     }
     return result;
@@ -845,8 +724,9 @@ public class AJAXQueryServlet extends HttpServlet {
     ToggleFeature.COMPILE = false;
     Config.UNPROTECT_ALLOWED = false;
     Config.USE_MANIPULATE_JS = true;
-    // disable threads for JAS on appengine
-    Config.JAS_NO_THREADS = true;
+    // disable threads for JAS only on google appengine
+    Config.JAS_NO_THREADS = false;
+    Config.JAVA_UNSAFE = true;
     //		Config.THREAD_FACTORY =
     // com.google.appengine.api.ThreadManager.currentRequestThreadFactory();
     Config.MATHML_TRIG_LOWERCASE = false;
@@ -865,8 +745,8 @@ public class AJAXQueryServlet extends HttpServlet {
     engine.setRecursionLimit(256);
     engine.setIterationLimit(500);
 
-    F.Plot.setEvaluator(org.matheclipse.core.reflection.system.Plot.CONST);
-    F.Plot3D.setEvaluator(org.matheclipse.core.reflection.system.Plot3D.CONST);
+    S.Plot.setEvaluator(org.matheclipse.core.reflection.system.Plot.CONST);
+    S.Plot3D.setEvaluator(org.matheclipse.core.reflection.system.Plot3D.CONST);
     // F.Show.setEvaluator(org.matheclipse.core.builtin.graphics.Show.CONST);
     // Config.JAS_NO_THREADS = true;
     //    AJAXQueryServlet.log.info(servlet + "initialized");

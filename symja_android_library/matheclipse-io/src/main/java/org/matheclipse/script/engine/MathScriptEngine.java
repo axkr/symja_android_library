@@ -18,6 +18,7 @@ import org.matheclipse.core.eval.EvalUtilities;
 import org.matheclipse.core.eval.exception.AbortException;
 import org.matheclipse.core.eval.exception.FailedException;
 import org.matheclipse.core.expression.F;
+import org.matheclipse.core.expression.S;
 import org.matheclipse.core.form.output.OutputFormFactory;
 import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.parser.client.FEConfig;
@@ -135,7 +136,7 @@ public class MathScriptEngine extends AbstractScriptEngine {
         e.printStackTrace();
       }
       try {
-        return printResult(F.$Aborted, relaxedSyntax);
+        return printResult(S.$Aborted, relaxedSyntax);
       } catch (IOException e1) {
         if (showStackTrace) {
           e.printStackTrace();
@@ -147,7 +148,7 @@ public class MathScriptEngine extends AbstractScriptEngine {
         e.printStackTrace();
       }
       try {
-        return printResult(F.$Failed, relaxedSyntax);
+        return printResult(S.$Failed, relaxedSyntax);
       } catch (IOException e1) {
         if (Config.DEBUG) {
           e.printStackTrace();
@@ -203,7 +204,7 @@ public class MathScriptEngine extends AbstractScriptEngine {
   }
 
   private String printResult(IExpr result, boolean relaxedSyntax) throws IOException {
-    if (result.equals(F.Null)) {
+    if (result.equals(S.Null)) {
       return "";
     }
     final StringWriter buf = new StringWriter();

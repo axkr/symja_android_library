@@ -32,7 +32,6 @@ import org.commonmark.renderer.html.HtmlNodeRendererContext;
 import org.commonmark.renderer.html.HtmlNodeRendererFactory;
 import org.commonmark.renderer.html.HtmlRenderer;
 import org.commonmark.renderer.html.HtmlWriter;
-import org.matheclipse.core.builtin.SourceCodeFunctions;
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.expression.Context;
 import org.matheclipse.core.expression.F;
@@ -309,11 +308,13 @@ public class AJAXDocServlet extends HttpServlet {
   /** */
   private static final long serialVersionUID = -7389567393700726482L;
 
+  @Override
   public void doGet(HttpServletRequest req, HttpServletResponse res)
       throws ServletException, IOException {
     doPost(req, res);
   }
 
+  @Override
   protected void doPost(HttpServletRequest req, HttpServletResponse res)
       throws ServletException, IOException {
     res.setContentType("text/html; charset=UTF-8");
@@ -339,15 +340,22 @@ public class AJAXDocServlet extends HttpServlet {
         String html = generateHTMLString(markdownBuf.toString());
         StringBuilder htmlBuf = new StringBuilder(1024);
         htmlBuf.append("<div id=\"docContent\">\n");
+        htmlBuf.append("<div id=\"mjax\">\n");
         htmlBuf.append(html);
         htmlBuf.append("\n</div>");
+        // see https://docs.mathjax.org/en/v2.7-latest/advanced/typeset.html -
+        // Modifying Math on the  Page
+        //        htmlBuf.append(
+        //            "<script
+        // type=\"text/javascript\">MathJax.Hub.Queue(['Typeset',MathJax.Hub,'mjax']); </script>");
+        //        htmlBuf.append("\n</div>");
+
         out.println(createJSONDocString(htmlBuf.toString()));
       } else {
         out.println(
             createJSONDocString(
                 "<p>Insert a keyword and append a '*' to search for keywords. Example: <b>Int*</b>.</p>"));
       }
-      return;
     } catch (Exception e) {
       // ...
     }
@@ -365,6 +373,7 @@ public class AJAXDocServlet extends HttpServlet {
         HtmlRenderer.builder()
             .nodeRendererFactory(
                 new HtmlNodeRendererFactory() {
+                  @Override
                   public NodeRenderer create(HtmlNodeRendererContext context) {
                     return new DocNodeRenderer(context);
                   }
@@ -400,16 +409,16 @@ public class AJAXDocServlet extends HttpServlet {
         String identifier = F.symbolNameNormalized(functionName);
         ISymbol symbol = Context.SYSTEM.get(identifier);
         if (symbol != null) {
-          String functionURL = SourceCodeFunctions.functionURL(symbol);
-          if (functionURL != null) {
-
-            out.append("\n\n### Github");
-            out.append("\n\n* [Implementation of ");
-            out.append(functionName);
-            out.append("](");
-            out.append(functionURL);
-            out.append(") ");
-          }
+          //          String functionURL = SourceCodeFunctions.functionURL(symbol);
+          //          if (functionURL != null) {
+          //
+          //            out.append("\n\n### Github");
+          //            out.append("\n\n* [Implementation of ");
+          //            out.append(functionName);
+          //            out.append("](");
+          //            out.append(functionURL);
+          //            out.append(") ");
+          //          }
           out.append("\n\n [&larr; Function reference](99-function-reference.md) ");
         } else {
           if (!docName.equals("index")) {

@@ -48,16 +48,16 @@ public class MathScriptEngineFactory implements javax.script.ScriptEngineFactory
 
   @Override
   public String getMethodCallSyntax(String obj, String m, String... args) {
-    String callSyntax = obj;
-    callSyntax += "." + m + "(";
+    StringBuilder callSyntax = new StringBuilder(obj);
+    callSyntax.append(".").append(m).append("(");
     for (int i = 0; i < args.length; i++) {
-      callSyntax += args[i];
+      callSyntax.append(args[i]);
       if (i < args.length - 2) {
-        callSyntax += ", ";
+        callSyntax.append(", ");
       }
     }
-    callSyntax += ")";
-    return callSyntax;
+    callSyntax.append(")");
+    return callSyntax.toString();
   }
 
   @Override

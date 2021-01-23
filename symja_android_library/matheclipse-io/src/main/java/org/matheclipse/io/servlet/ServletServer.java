@@ -9,12 +9,8 @@ import java.awt.Desktop;
 import java.net.URI;
 
 import javax.servlet.Servlet;
-import javax.servlet.ServletException;
-
 import org.matheclipse.core.basic.Config;
 import org.matheclipse.core.eval.exception.ReturnException;
-import org.matheclipse.core.expression.F;
-
 import io.undertow.Handlers;
 import io.undertow.Undertow;
 import io.undertow.server.HttpHandler;

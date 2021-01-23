@@ -8,8 +8,6 @@ import java.io.InputStream;
 import java.nio.ByteBuffer;
 import java.util.List;
 import java.util.stream.IntStream;
-import java.util.zip.GZIPInputStream;
-
 import javax.imageio.ImageIO;
 
 import org.matheclipse.core.builtin.LinearAlgebra;
@@ -30,23 +28,7 @@ import org.matheclipse.core.io.Extension;
  * <p><code>tensor.get(y, x)</code> refers to the same pixel as <code>BufferedImage::getRGB(x, y)
  * </code>
  */
-public enum ImageFormat {
-  ;
-
-  /**
-   * @param filename
-   * @param inputStream
-   * @return
-   * @throws IOException
-   */
-  //	static IAST of(Filename filename, InputStream inputStream) throws IOException {
-  //		Extension extension = filename.extension();
-  //		if (extension.equals(Extension.GZ))
-  //			try (GZIPInputStream gzipInputStream = new GZIPInputStream(inputStream)) {
-  //				return of(filename.truncate().extension(), gzipInputStream);
-  //			}
-  //		return of(extension, inputStream);
-  //	}
+public class ImageFormat {
 
   private static IAST of(Extension extension, InputStream inputStream) throws IOException {
     switch (extension) {

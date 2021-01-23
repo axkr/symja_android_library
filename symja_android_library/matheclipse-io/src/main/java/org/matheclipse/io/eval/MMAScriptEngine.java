@@ -1,9 +1,6 @@
 package org.matheclipse.io.eval;
 
 import javax.script.ScriptEngine;
-import javax.script.ScriptEngineManager;
-import javax.script.ScriptException;
-
 import org.matheclipse.io.IOInit;
 import org.matheclipse.parser.client.FEConfig;
 import org.matheclipse.script.engine.MathScriptEngineFactory;

@@ -3,7 +3,6 @@ package org.matheclipse.io.builtin;
 import org.matheclipse.core.basic.Config;
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.interfaces.AbstractEvaluator;
-import org.matheclipse.core.eval.interfaces.IFunctionEvaluator;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.expression.S;
 import org.matheclipse.core.interfaces.IAST;
@@ -63,12 +62,12 @@ public class DatasetFunctions {
             arg2 = ast.arg2();
           }
 
-          if (!arg1.equals(F.All)) {
+          if (!arg1.equals(S.All)) {
             if (arg1.isBuiltInSymbol()
                 || //
-                arg1.isAST(F.TakeLargest, 2)
+                arg1.isAST(S.TakeLargest, 2)
                 || //
-                arg1.isAST(F.TakeLargestBy, 3)) {
+                arg1.isAST(S.TakeLargestBy, 3)) {
               IExpr expr = dataSet.select(S.All, arg2);
               if (expr.isDataset()) {
                 return F.unaryAST1(arg1, ((IASTDataset) expr).normal(false));
@@ -102,6 +101,7 @@ public class DatasetFunctions {
       return F.NIL;
     }
 
+    @Override
     public int[] expectedArgSize(IAST ast) {
       return ARGS_1_INFINITY_0;
     }

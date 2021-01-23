@@ -131,6 +131,7 @@ public class ASTDataset extends AbstractAST
     fTable = table;
   }
 
+  @Override
   public void csv(Writer writer) throws IOException {
     fTable.write().csv(writer);
   }
@@ -238,6 +239,7 @@ public class ASTDataset extends AbstractAST
    * @param key
    * @return
    */
+  @Override
   public IExpr getValue(IExpr key) {
     return getValue(key, () -> F.Missing(F.stringx("KeyAbsent"), key));
   }
@@ -250,6 +252,7 @@ public class ASTDataset extends AbstractAST
    * @param defaultValue
    * @return
    */
+  @Override
   public IExpr getValue(IExpr key, Supplier<IExpr> defaultValue) {
     final String keyName = key.toString();
     if (fTable.rowCount() == 1) {
@@ -276,6 +279,7 @@ public class ASTDataset extends AbstractAST
     return newTablesawTable(table);
   }
 
+  @Override
   public IExpr groupBy(List<String> group) {
     String[] strings = new String[group.size()];
     for (int i = 0; i < strings.length; i++) {
@@ -292,7 +296,7 @@ public class ASTDataset extends AbstractAST
 
   @Override
   public ISymbol head() {
-    return F.Dataset;
+    return S.Dataset;
   }
 
   @Override
@@ -300,6 +304,7 @@ public class ASTDataset extends AbstractAST
     return DATASETID;
   }
 
+  @Override
   public IASTAppendable columnNames() {
     final List<String> names = fTable.columnNames();
     IASTAppendable list = F.ListAlloc(names.size());
@@ -309,6 +314,7 @@ public class ASTDataset extends AbstractAST
     return list;
   }
 
+  @Override
   public IASTAppendable normal(boolean nilIfUnevaluated) {
     Cache<IAST, IAST> cache = CacheBuilder.newBuilder().maximumSize(500).build();
     final List<String> names = fTable.columnNames();
@@ -438,6 +444,7 @@ public class ASTDataset extends AbstractAST
     return expr;
   }
 
+  @Override
   public IExpr select(IAST ast) {
 
     IExpr row = ast.arg1();
@@ -488,6 +495,7 @@ public class ASTDataset extends AbstractAST
     return F.NIL;
   }
 
+  @Override
   public IExpr select(IExpr row, IExpr column) {
     Table table = fTable;
 
@@ -501,7 +509,7 @@ public class ASTDataset extends AbstractAST
         strList[i] = columnNames.get(i + columnStart);
       }
       table = table.select(strList);
-    } else if (column.equals(F.All)) {
+    } else if (column.equals(S.All)) {
     } else if (column.isString()) {
       table = table.select(column.toString());
     } else if (column.isList()) {
@@ -534,7 +542,7 @@ public class ASTDataset extends AbstractAST
       int rowEnd = span[1];
       table = table.inRange(rowStart, rowEnd);
       return newTablesawTable(table);
-    } else if (row.equals(F.All)) {
+    } else if (row.equals(S.All)) {
       return newTablesawTable(table);
     } else if (row.isList()) {
       IAST list = (IAST) row;
@@ -630,10 +638,12 @@ public class ASTDataset extends AbstractAST
     return fTable.rowCount() + 1;
   }
 
+  @Override
   public ASTDataset structure() {
     return newTablesawTable(fTable.structure());
   }
 
+  @Override
   public ASTDataset summary() {
     return newTablesawTable(fTable.summary());
   }
@@ -700,6 +710,7 @@ public class ASTDataset extends AbstractAST
     objectOutput.writeUTF(str);
   }
 
+  @Override
   public String datasetToJSForm() throws IOException {
     OutputStream baos = new ByteArrayOutputStream();
     fTable.write().usingOptions(HtmlWriteOptions.builder(baos).escapeText(true).build());

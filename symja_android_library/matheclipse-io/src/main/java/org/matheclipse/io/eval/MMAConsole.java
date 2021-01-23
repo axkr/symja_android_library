@@ -12,6 +12,7 @@ import java.util.Locale;
 import java.util.concurrent.TimeUnit;
 
 import org.matheclipse.core.basic.Config;
+import org.matheclipse.core.builtin.IOFunctions;
 import org.matheclipse.core.eval.EvalControlledCallable;
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.ExprEvaluator;
@@ -20,6 +21,7 @@ import org.matheclipse.core.eval.exception.FailedException;
 import org.matheclipse.core.eval.exception.ReturnException;
 import org.matheclipse.core.eval.exception.Validate;
 import org.matheclipse.core.expression.F;
+import org.matheclipse.core.expression.S;
 import org.matheclipse.core.form.Documentation;
 import org.matheclipse.core.form.output.ASCIIPrettyPrinter3;
 import org.matheclipse.core.form.output.OutputFormFactory;
@@ -91,6 +93,7 @@ public class MMAConsole {
     Locale.setDefault(Locale.US);
     // distinguish between lower- and uppercase identifiers
     FEConfig.PARSER_USE_LOWERCASE_SYMBOLS = false;
+    Config.JAVA_UNSAFE = true;
     Config.SHORTEN_STRING_LENGTH = 1024;
     Config.USE_VISJS = true;
     Config.FILESYSTEM_ENABLED = true;
@@ -217,10 +220,12 @@ public class MMAConsole {
     }
   }
 
-  private String resultPrinter(String trimmedInput) {
-    String outputExpression = interpreter(trimmedInput);
+  private String resultPrinter(String inputExpression) {
+    String outputExpression = interpreter(inputExpression);
     if (outputExpression.length() > 0) {
-      stdout.println("Out[" + COUNTER + "]= " + outputExpression);
+      stdout.print("Out[" + COUNTER + "]= ");
+      stdout.flush();
+      stdout.println(IOFunctions.shorten(outputExpression, 1000));
       stdout.flush();
     }
     return outputExpression;
@@ -467,7 +472,7 @@ public class MMAConsole {
       }
     } catch (final AbortException re) {
       try {
-        return printResult(F.$Aborted);
+        return printResult(S.$Aborted);
       } catch (IOException e) {
         Validate.printException(buf, e);
         stderr.println(buf.toString());
@@ -476,7 +481,7 @@ public class MMAConsole {
       }
     } catch (final FailedException re) {
       try {
-        return printResult(F.$Failed);
+        return printResult(S.$Failed);
       } catch (IOException e) {
         Validate.printException(buf, e);
         stderr.println(buf.toString());
@@ -533,7 +538,7 @@ public class MMAConsole {
     EvalEngine engine = fEvaluator.getEvalEngine();
     EvalEngine.setReset(engine);
     try {
-      if (result.equals(F.Null)) {
+      if (result.equals(S.Null)) {
         return "";
       }
       switch (fUsedForm) {
@@ -565,7 +570,7 @@ public class MMAConsole {
         default:
           if (Desktop.isDesktopSupported()) {
             IExpr outExpr = result;
-            if (result.isAST(F.Graphics)) { // || result.isAST(F.Graphics3D)) {
+            if (result.isAST(S.Graphics)) { // || result.isAST(F.Graphics3D)) {
               outExpr = F.Show(outExpr);
             }
             String html = F.show(outExpr);

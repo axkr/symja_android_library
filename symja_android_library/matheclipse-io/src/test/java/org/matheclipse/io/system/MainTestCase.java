@@ -199,8 +199,8 @@ public class MainTestCase extends AbstractTestCase {
         "Aש썐");
     check(
         "string = \"\\.41\\:05E9\\:C350\\|01F602\"", //
-        "Aש썐\\|01F602");
-  }
+        "Aש썐😂");
+  } 
 
   public void testOut() {
     check("1+1", "2");

@@ -3,9 +3,7 @@ package org.matheclipse.io.builtin;
 import java.io.IOException;
 import java.lang.reflect.InvocationTargetException;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.Map;
-import java.util.Set;
 import java.util.function.Function;
 
 import org.matheclipse.core.basic.ToggleFeature;
@@ -264,6 +262,7 @@ public class CompilerFunctions {
       }
     }
 
+    @Override
     public int[] expectedArgSize(IAST ast) {
       return IFunctionEvaluator.ARGS_2_3;
     }
@@ -298,6 +297,7 @@ public class CompilerFunctions {
       }
     }
 
+    @Override
     public int[] expectedArgSize(IAST ast) {
       return IFunctionEvaluator.ARGS_2_3;
     }
@@ -376,7 +376,7 @@ public class CompilerFunctions {
       return result;
     } else {
       IExpr arg = ast.arg1();
-      IASTMutable vars = F.unaryAST1(F.List, arg);
+      IASTMutable vars = F.unaryAST1(S.List, arg);
       IASTAppendable types = F.ListAlloc(2);
 
       if (!checkVariable(ast, engine, arg, vars, types, 1)) {

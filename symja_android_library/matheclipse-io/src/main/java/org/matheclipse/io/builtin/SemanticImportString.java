@@ -91,6 +91,7 @@ public class SemanticImportString extends AbstractEvaluator {
     return delimiter;
   }
 
+  @Override
   public int[] expectedArgSize(IAST ast) {
     return IFunctionEvaluator.ARGS_1_2;
   }

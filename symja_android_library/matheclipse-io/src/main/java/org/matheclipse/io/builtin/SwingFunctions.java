@@ -131,6 +131,7 @@ public class SwingFunctions {
       return inputString(ast, engine);
     }
 
+    @Override
     public int[] expectedArgSize(IAST ast) {
       return IFunctionEvaluator.ARGS_0_1;
     }
@@ -177,6 +178,7 @@ public class SwingFunctions {
       return F.NIL;
     }
 
+    @Override
     public int[] expectedArgSize(IAST ast) {
       return IFunctionEvaluator.ARGS_1_2;
     }
@@ -196,6 +198,7 @@ public class SwingFunctions {
       return F.NIL;
     }
 
+    @Override
     public int[] expectedArgSize(IAST ast) {
       return IFunctionEvaluator.ARGS_0_1;
     }
@@ -482,7 +485,7 @@ public class SwingFunctions {
           // System.out.println(F.eval(dynamic).toString());
         }
       }
-    };
+    }
 
     private static void createInputField(
         JDialog dialog,
@@ -522,6 +525,7 @@ public class SwingFunctions {
       // });
     }
 
+    @Override
     public int[] expectedArgSize(IAST ast) {
       return IFunctionEvaluator.ARGS_1_2;
     }
@@ -551,6 +555,7 @@ public class SwingFunctions {
       throw new DialogReturnException();
     }
 
+    @Override
     public int[] expectedArgSize(IAST ast) {
       return IFunctionEvaluator.ARGS_0_1;
     }
@@ -569,7 +574,7 @@ public class SwingFunctions {
     if (temp.isPresent()) {
       message = temp.toString();
     } else {
-      temp = F.General.evalMessage(messageShortcut);
+      temp = S.General.evalMessage(messageShortcut);
       if (temp.isPresent()) {
         message = temp.toString();
       }
@@ -617,7 +622,7 @@ public class SwingFunctions {
     if (temp.isPresent()) {
       message = temp.toString();
     } else {
-      temp = F.General.evalMessage(messageShortcut);
+      temp = S.General.evalMessage(messageShortcut);
       if (temp.isPresent()) {
         message = temp.toString();
       }
@@ -642,7 +647,7 @@ public class SwingFunctions {
 
   public static String getMessage(
       String messageShortcut, final IAST listOfArgs, EvalEngine engine) {
-    IExpr temp = F.General.evalMessage(messageShortcut);
+    IExpr temp = S.General.evalMessage(messageShortcut);
     String message = null;
     if (temp.isPresent()) {
       message = temp.toString();
