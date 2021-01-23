@@ -446,6 +446,7 @@ public abstract class HMArrayList extends AbstractAST
   }
 
   /** {@inheritDoc} */
+  @Override
   public IASTAppendable appendArgs(final int start, final int end, IntFunction<IExpr> function) {
     if (start >= end) {
       return this;
@@ -543,6 +544,7 @@ public abstract class HMArrayList extends AbstractAST
   }
 
   /** {@inheritDoc} */
+  @Override
   public final int argSize() {
     return lastIndex - firstIndex - 1;
   }
@@ -797,9 +799,9 @@ public abstract class HMArrayList extends AbstractAST
       firstIndex = 0;
       lastIndex = newLast;
     } else {
-      // if (Config.FUZZ_TESTING) {
-      // throw new NullPointerException();
-      // }
+      //      if (Config.FUZZ_TESTING) {
+      //        throw new NullPointerException();
+      //      }
       int increment = size / 2;
       if (required > increment) {
         increment = required;
@@ -1030,6 +1032,7 @@ public abstract class HMArrayList extends AbstractAST
    * @param end the index one after the end of the range to remove.
    * @throws IndexOutOfBoundsException when {@code start < 0, start > end} or {@code end > size()}
    */
+  @Override
   public void removeRange(int start, int end) {
     hashValue = 0;
     if (start >= 0 && start <= end && end <= (lastIndex - firstIndex)) {

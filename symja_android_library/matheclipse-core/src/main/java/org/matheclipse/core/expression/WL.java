@@ -3,6 +3,7 @@ package org.matheclipse.core.expression;
 import java.io.ByteArrayOutputStream;
 import java.io.Closeable;
 import java.io.IOException;
+import java.io.InputStream;
 import java.math.BigInteger;
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
@@ -11,9 +12,13 @@ import java.util.Locale;
 import org.apfloat.Apfloat;
 import org.hipparchus.linear.RealMatrix;
 import org.hipparchus.linear.RealVector;
+import org.matheclipse.core.basic.Config;
 import org.matheclipse.core.eval.EvalEngine;
+import org.matheclipse.core.eval.exception.AbortException;
 import org.matheclipse.core.eval.interfaces.IFunctionEvaluator;
 import org.matheclipse.core.expression.data.ByteArrayExpr;
+import org.matheclipse.core.expression.data.NumericArrayExpr;
+import org.matheclipse.core.expression.data.SparseArrayExpr;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IASTAppendable;
 import org.matheclipse.core.interfaces.IASTMutable;
@@ -31,6 +36,8 @@ import org.matheclipse.core.interfaces.ISymbol;
 import org.matheclipse.core.tensor.qty.IQuantity;
 import org.matheclipse.parser.client.FEConfig;
 
+import com.google.common.io.ByteStreams;
+
 /**
  * Methods for handling the WXF serialization format.
  *
@@ -39,20 +46,33 @@ import org.matheclipse.parser.client.FEConfig;
  */
 public class WL {
 
-  /** The list of all array value type tokens. */
-  static class ARRAY_TYPES {
-    static final byte Integer8 = (byte) (0x00);
-    static final byte Integer16 = (byte) (0x01);
-    static final byte Integer32 = (byte) (0x02);
-    static final byte Integer64 = (byte) (0x03);
-    static final byte UnsignedInteger8 = (byte) (0x10);
-    static final byte UnsignedInteger16 = (byte) (0x11);
-    static final byte UnsignedInteger32 = (byte) (0x12);
-    static final byte UnsignedInteger64 = (byte) (0x13);
-    static final byte Real32 = (byte) (0x22);
-    static final byte Real64 = (byte) (0x23);
-    static final byte ComplexReal32 = (byte) (0x33);
-    static final byte ComplexReal64 = (byte) (0x34);
+  /** The list of all the WXF tokens. */
+  private static class WXF_CONSTANTS {
+    static final byte Function = 'f';
+    static final byte Symbol = 's';
+    static final byte String = 'S';
+    static final byte BinaryString = 'B';
+    static final byte Integer8 = 'C';
+    static final byte Integer16 = 'j';
+    static final byte Integer32 = 'i';
+    static final byte Integer64 = 'L';
+    static final byte Real64 = 'r';
+    static final byte BigInteger = 'I';
+    static final byte BigReal = 'R';
+    static final byte PackedArray = (byte) 0xC1;
+    static final byte RawArray = (byte) 0xC2;
+    static final byte Association = 'A';
+    static final byte Rule = '-';
+    static final byte RuleDelayed = ':';
+
+    /**
+     * Internal proprietary format token for serializing predefined &quot;constant&quot; Symja
+     * expressions like built-in symbols, pattern objects, constant numbers, ...
+     *
+     * <p>Use only with methods {@link WL#serializeInternal(IExpr)} or {@link
+     * WL#deserializeInternal(byte[])}
+     */
+    static final byte InternalExprID = (byte) 0xD1;
   }
 
   /** The list of all array value type tokens. */
@@ -71,7 +91,7 @@ public class WL {
     static final byte ComplexReal64 = 16;
   }
 
-  public static class ReadObject {
+  private static class ReadObject {
     byte[] array;
     int position;
 
@@ -84,14 +104,32 @@ public class WL {
       this.position = position;
     }
 
-    private int parseLength() {
+    protected int parseLength() {
       int[] result = parseVarint(array, position);
       position = result[1];
       return result[0];
     }
 
+    /**
+     * Read an object from the input stream.
+     *
+     * @return {@link F#NIL} if the byte array is <code>null</code> or not valid.
+     */
     public IExpr read() {
       byte exprType = array[position++];
+      try {
+        return internalRead(exprType);
+      } catch (AbortException ae) {
+        //
+      }
+      return F.NIL;
+    }
+
+    /**
+     * @param exprType
+     * @return
+     */
+    protected IExpr internalRead(byte exprType) throws AbortException {
       byte value;
       int length;
       switch (exprType) {
@@ -110,6 +148,12 @@ public class WL {
           int iValue = b32.getInt();
           position += 4;
           return F.ZZ(iValue);
+        case WXF_CONSTANTS.Integer64:
+          ByteBuffer b64 = ByteBuffer.wrap(array, position, 8);
+          b64.order(ByteOrder.LITTLE_ENDIAN);
+          long lValue = b64.getLong();
+          position += 8;
+          return F.ZZ(lValue);
         case WXF_CONSTANTS.BigInteger:
           length = parseLength();
           StringBuilder bigIntegerString = new StringBuilder();
@@ -144,6 +188,8 @@ public class WL {
           return F.num(real64);
         case WXF_CONSTANTS.PackedArray:
           return readPackedArray();
+        case WXF_CONSTANTS.RawArray:
+          return readNumericArray();
         case WXF_CONSTANTS.Symbol:
           return readSymbol();
         case WXF_CONSTANTS.Function:
@@ -155,13 +201,13 @@ public class WL {
           }
           // System.out.println(ast.toString());
           IExpr head = ast.head();
-          if (head == F.Complex
+          if (head == S.Complex
               || //
-              head == F.Rational
+              head == S.Rational
               || //
-              head == F.Pattern
+              head == S.Pattern
               || //
-              head == F.Optional) {
+              head == S.Optional) {
             // head == F.Blank || //
             // head == F.BlankSequence || //
             // head == F.BlankNullSequence) {
@@ -201,57 +247,225 @@ public class WL {
           position += length;
           return ByteArrayExpr.newInstance(bArray);
       }
-      return F.NIL;
+      throw AbortException.ABORTED;
     }
 
-    private IExpr readPackedArray() {
+    private IExpr readPackedArray() throws AbortException {
       byte arrayType = array[position++];
       switch (arrayType) {
-        case ARRAY_TYPES.Real64:
-          int rank = parseLength();
-          int[] dimensions = new int[rank];
-          for (int i = 0; i < rank; i++) {
-            dimensions[i] = parseLength();
-          }
-          if (rank == 1) {
-            double[] vector = new double[dimensions[0]];
-            for (int i = 0; i < vector.length; i++) {
-              double d = parseDouble();
-              vector[i] = d;
+        case NumericArrayExpr.Integer8:
+          {
+            int rank = parseLength();
+            int[] dimensions = new int[rank];
+            for (int i = 0; i < rank; i++) {
+              dimensions[i] = parseLength();
             }
-            return new ASTRealVector(vector, false);
-          } else if (rank == 2) {
-            double[][] matrix = new double[dimensions[0]][dimensions[1]];
-            for (int i = 0; i < dimensions[0]; i++) {
-              for (int j = 0; j < dimensions[1]; j++) {
-                double d = parseDouble();
-                matrix[i][j] = d;
+            if (rank == 1) {
+              IASTAppendable list = F.ListAlloc(dimensions[0]);
+              for (int i = 0; i < dimensions[0]; i++) {
+                int value = parseInteger8();
+                list.append(F.ZZ(value));
               }
+              return list;
+            } else if (rank == 2) {
+              IASTAppendable m = F.ListAlloc(dimensions[0]);
+              for (int i = 0; i < dimensions[0]; i++) {
+                IASTAppendable row = F.ListAlloc(dimensions[1]);
+                for (int j = 0; j < dimensions[1]; j++) {
+                  row.append(F.ZZ(parseInteger8()));
+                }
+                m.append(row);
+              }
+
+              return m;
             }
-            return new ASTRealMatrix(matrix, false);
+          }
+          break;
+        case NumericArrayExpr.Real64:
+          {
+            int rank = parseLength();
+            int[] dimensions = new int[rank];
+            for (int i = 0; i < rank; i++) {
+              dimensions[i] = parseLength();
+            }
+            if (rank == 1) {
+              double[] vector = new double[dimensions[0]];
+              for (int i = 0; i < vector.length; i++) {
+                double d = parseDouble();
+                vector[i] = d;
+              }
+              return new ASTRealVector(vector, false);
+            } else if (rank == 2) {
+              double[][] matrix = new double[dimensions[0]][dimensions[1]];
+              for (int i = 0; i < dimensions[0]; i++) {
+                for (int j = 0; j < dimensions[1]; j++) {
+                  double d = parseDouble();
+                  matrix[i][j] = d;
+                }
+              }
+              return new ASTRealMatrix(matrix, false);
+            }
           }
           break;
       }
-      return F.NIL;
+      throw AbortException.ABORTED;
+    }
+
+    private IExpr readNumericArray() throws AbortException {
+      byte arrayType = array[position++];
+      int rank = parseLength();
+      int[] dimensions = new int[rank];
+      int size = 1;
+      for (int i = 0; i < rank; i++) {
+        dimensions[i] = parseLength();
+        size *= dimensions[i];
+      }
+
+      switch (arrayType) {
+        case NumericArrayExpr.Integer8:
+        case NumericArrayExpr.UnsignedInteger8:
+          {
+            byte[] byteArr = new byte[size];
+            System.arraycopy(array, position, byteArr, 0, size);
+            position += size;
+            return NumericArrayExpr.newInstance(byteArr, dimensions, arrayType);
+          }
+        case NumericArrayExpr.Integer16:
+        case NumericArrayExpr.UnsignedInteger16:
+          {
+            short[] shortArr = new short[size];
+            for (int i = 0; i < size; i++) {
+              shortArr[i] = parseInteger16();
+            }
+            return NumericArrayExpr.newInstance(shortArr, dimensions, arrayType);
+          }
+        case NumericArrayExpr.Integer32:
+        case NumericArrayExpr.UnsignedInteger32:
+          {
+            int[] intArr = new int[size];
+            for (int i = 0; i < size; i++) {
+              intArr[i] = parseInteger32();
+            }
+            return NumericArrayExpr.newInstance(intArr, dimensions, arrayType);
+          }
+        case NumericArrayExpr.Integer64:
+        case NumericArrayExpr.UnsignedInteger64:
+          {
+            long[] longArr = new long[size];
+            for (int i = 0; i < size; i++) {
+              longArr[i] = parseInteger64();
+            }
+            return NumericArrayExpr.newInstance(longArr, dimensions, arrayType);
+          }
+        case NumericArrayExpr.Real32:
+          {
+            float[] floatArr = new float[size];
+            for (int i = 0; i < size; i++) {
+              floatArr[i] = parseFloat();
+            }
+            return NumericArrayExpr.newInstance(floatArr, dimensions, arrayType);
+          }
+        case NumericArrayExpr.Real64:
+          {
+            double[] doubleArr = new double[size];
+            for (int i = 0; i < size; i++) {
+              doubleArr[i] = parseDouble();
+            }
+            return NumericArrayExpr.newInstance(doubleArr, dimensions, arrayType);
+          }
+        case NumericArrayExpr.ComplexReal32:
+          {
+            int doubledSize = size * 2;
+            float[] floatArr = new float[doubledSize];
+            int i = 0;
+            while (i < doubledSize) {
+              floatArr[i++] = parseFloat();
+              floatArr[i++] = parseFloat();
+            }
+            return NumericArrayExpr.newInstance(floatArr, dimensions, arrayType);
+          }
+        case NumericArrayExpr.ComplexReal64:
+          {
+            int doubledSize = size * 2;
+            double[] doubleArr = new double[doubledSize];
+            int i = 0;
+            while (i < doubledSize) {
+              doubleArr[i++] = parseDouble();
+              doubleArr[i++] = parseDouble();
+            }
+            return NumericArrayExpr.newInstance(doubleArr, dimensions, arrayType);
+          }
+      }
+      throw AbortException.ABORTED;
+    }
+
+    private int parseInteger8() {
+      byte b = array[position++];
+      return b;
+    }
+
+    private short parseInteger16() {
+      int bits = 0;
+      position += 2;
+      int pos2 = position - 1;
+      bits = ((array[pos2--] & 0xFF) << 8) | (array[pos2--] & 0xFF);
+      return (short) (bits);
+    }
+
+    private int parseInteger32() {
+      int bits = 0;
+      position += 4;
+      int pos2 = position - 1;
+      bits = (bits | (array[pos2--] & 0xFF)) << 8;
+      bits = (bits | (array[pos2--] & 0xFF)) << 8;
+      bits = (bits | (array[pos2--] & 0xFF)) << 8;
+      bits = (bits | (array[pos2--] & 0xFF));
+      return bits;
+    }
+
+    private long parseInteger64() {
+      long bits = 0;
+      position += 8;
+      int pos2 = position - 1;
+      bits = (bits | (array[pos2--] & 0xFF)) << 8;
+      bits = (bits | (array[pos2--] & 0xFF)) << 8;
+      bits = (bits | (array[pos2--] & 0xFF)) << 8;
+      bits = (bits | (array[pos2--] & 0xFF)) << 8;
+      bits = (bits | (array[pos2--] & 0xFF)) << 8;
+      bits = (bits | (array[pos2--] & 0xFF)) << 8;
+      bits = (bits | (array[pos2--] & 0xFF)) << 8;
+      bits = (bits | (array[pos2--] & 0xFF));
+      return bits;
+    }
+
+    private float parseFloat() {
+      int bits = 0;
+      position += 4;
+      int pos2 = position - 1;
+      bits = (bits | (array[pos2--] & 0xFF)) << 8;
+      bits = (bits | (array[pos2--] & 0xFF)) << 8;
+      bits = (bits | (array[pos2--] & 0xFF)) << 8;
+      bits = (bits | (array[pos2--] & 0xFF));
+      return Float.intBitsToFloat(bits);
     }
 
     private double parseDouble() {
-      long l = 0;
+      long bits = 0;
       position += 8;
       int pos2 = position - 1;
-      l = (l | (array[pos2--] & 0xFF)) << 8;
-      l = (l | (array[pos2--] & 0xFF)) << 8;
-      l = (l | (array[pos2--] & 0xFF)) << 8;
-      l = (l | (array[pos2--] & 0xFF)) << 8;
-      l = (l | (array[pos2--] & 0xFF)) << 8;
-      l = (l | (array[pos2--] & 0xFF)) << 8;
-      l = (l | (array[pos2--] & 0xFF)) << 8;
-      l = (l | (array[pos2--] & 0xFF));
-      return Double.longBitsToDouble(l);
+      bits = (bits | (array[pos2--] & 0xFF)) << 8;
+      bits = (bits | (array[pos2--] & 0xFF)) << 8;
+      bits = (bits | (array[pos2--] & 0xFF)) << 8;
+      bits = (bits | (array[pos2--] & 0xFF)) << 8;
+      bits = (bits | (array[pos2--] & 0xFF)) << 8;
+      bits = (bits | (array[pos2--] & 0xFF)) << 8;
+      bits = (bits | (array[pos2--] & 0xFF)) << 8;
+      bits = (bits | (array[pos2--] & 0xFF));
+      return Double.longBitsToDouble(bits);
     }
 
     private IExpr readSymbol() {
-      int length = parseLength(); // (int) array[position++];
+      int length = parseLength();
       StringBuilder symbol = new StringBuilder();
       int contextStart = position;
       int contextEnd = contextStart;
@@ -276,12 +490,19 @@ public class WL {
           lcSymbolName = lcSymbolName.toLowerCase(Locale.ENGLISH);
         }
       }
-      if (contextEnd == contextStart || contextName.equals("System`")) {
+      if (contextEnd == contextStart || contextName.equals(Context.SYSTEM_CONTEXT_NAME)) {
         // use System Context
         ISymbol sym = Context.SYSTEM.get(lcSymbolName);
         if (sym != null) {
           return sym;
         }
+      } else if (contextName.equals(Context.RUBI_STR)) {
+        // use Rubi Context
+        return F.$rubi(lcSymbolName);
+        //        ISymbol sym = Context.SYSTEM.get(lcSymbolName);
+        //        if (sym != null) {
+        //          return sym;
+        //        }
       }
       ContextPath contextPath = engine.getContextPath();
       Context context = contextPath.getContext(contextName);
@@ -289,7 +510,25 @@ public class WL {
     }
   }
 
-  public static class WriteObject implements Closeable {
+  private static class ReadInternalObject extends ReadObject {
+    public ReadInternalObject(byte[] array) {
+      super(array);
+    }
+
+    public ReadInternalObject(byte[] array, int position) {
+      super(array, position);
+    }
+
+    @Override
+    protected IExpr internalRead(byte exprType) {
+      if (exprType == WXF_CONSTANTS.InternalExprID) {
+        return S.exprID((short) parseLength());
+      }
+      return super.internalRead(exprType);
+    }
+  }
+
+  private static class WriteObject implements Closeable {
     ByteArrayOutputStream stream;
 
     public WriteObject() {
@@ -322,23 +561,23 @@ public class WL {
           writeSymbol(arg1);
           return;
         case IExpr.COMPLEXID:
-          writeAST2(F.Complex, ((IComplex) arg1).re(), ((IComplex) arg1).im());
+          writeAST2(S.Complex, ((IComplex) arg1).re(), ((IComplex) arg1).im());
           return;
         case IExpr.INTEGERID:
           writeInteger(arg1);
           return;
         case IExpr.FRACTIONID:
-          writeAST2(F.Rational, ((IRational) arg1).numerator(), ((IRational) arg1).denominator());
+          writeAST2(S.Rational, ((IRational) arg1).numerator(), ((IRational) arg1).denominator());
           return;
         case IExpr.DOUBLEID:
           // if (arg1 instanceof ApfloatNum) {
           //
           // }
-          stream.write(WL.WXF_CONSTANTS.Real64);
+          stream.write(WXF_CONSTANTS.Real64);
           writeDouble(((INum) arg1).doubleValue());
           return;
         case IExpr.DOUBLECOMPLEXID:
-          writeAST2(F.Complex, ((IComplexNum) arg1).re(), ((IComplexNum) arg1).im());
+          writeAST2(S.Complex, ((IComplexNum) arg1).re(), ((IComplexNum) arg1).im());
           return;
         case IExpr.STRINGID:
           writeString(arg1);
@@ -356,11 +595,11 @@ public class WL {
           // } else
           if (blank.isPatternDefault()) {
             blank = F.$b();
-            writeAST1(F.Optional, blank);
+            writeAST1(S.Optional, blank);
           } else if (blankCondition != null) {
-            writeAST1(F.Blank, blankCondition);
+            writeAST1(S.Blank, blankCondition);
           } else {
-            writeAST0(F.Blank);
+            writeAST0(S.Blank);
           }
           return;
         case IExpr.PATTERNID:
@@ -371,30 +610,30 @@ public class WL {
             if (symbol == null) {
               if (pat.isNullSequence()) {
                 if (condition != null) {
-                  writeAST1(F.BlankNullSequence, condition);
+                  writeAST1(S.BlankNullSequence, condition);
                 } else {
-                  writeAST0(F.BlankNullSequence);
+                  writeAST0(S.BlankNullSequence);
                 }
               } else {
                 if (condition != null) {
-                  writeAST1(F.BlankSequence, condition);
+                  writeAST1(S.BlankSequence, condition);
                 } else {
-                  writeAST0(F.BlankSequence);
+                  writeAST0(S.BlankSequence);
                 }
               }
             } else {
               if (pat.isNullSequence()) {
                 if (condition != null) {
                   writeAST2(
-                      F.Pattern, pat.getSymbol(), F.unaryAST1(F.BlankNullSequence, condition));
+                      S.Pattern, pat.getSymbol(), F.unaryAST1(S.BlankNullSequence, condition));
                 } else {
-                  writeAST2(F.Pattern, pat.getSymbol(), F.headAST0(F.BlankNullSequence));
+                  writeAST2(S.Pattern, pat.getSymbol(), F.headAST0(S.BlankNullSequence));
                 }
               } else {
                 if (condition != null) {
-                  writeAST2(F.Pattern, pat.getSymbol(), F.unaryAST1(F.BlankSequence, condition));
+                  writeAST2(S.Pattern, pat.getSymbol(), F.unaryAST1(S.BlankSequence, condition));
                 } else {
-                  writeAST2(F.Pattern, pat.getSymbol(), F.headAST0(F.BlankSequence));
+                  writeAST2(S.Pattern, pat.getSymbol(), F.headAST0(S.BlankSequence));
                 }
               }
             }
@@ -408,11 +647,11 @@ public class WL {
             // } else
             if (pat.isPatternDefault()) {
               pat = F.$p(pat.getSymbol());
-              writeAST1(F.Optional, pat);
+              writeAST1(S.Optional, pat);
             } else if (condition != null) {
-              writeAST2(F.Pattern, pat.getSymbol(), F.unaryAST1(F.Blank, condition));
+              writeAST2(S.Pattern, pat.getSymbol(), F.unaryAST1(S.Blank, condition));
             } else {
-              writeAST2(F.Pattern, pat.getSymbol(), F.headAST0(F.Blank));
+              writeAST2(S.Pattern, pat.getSymbol(), F.headAST0(S.Blank));
             }
           }
           return;
@@ -422,6 +661,11 @@ public class WL {
         case IExpr.SERIESID:
           writeSeriesData(arg1);
           return;
+        case IExpr.SPARSEARRAYID:
+          writeSparseArray((SparseArrayExpr) arg1);
+          return;
+        case IExpr.NUMERICARRAYID:
+          writeNumericArray((NumericArrayExpr) arg1);
       }
     }
 
@@ -429,8 +673,8 @@ public class WL {
       IAST ast = (IAST) arg1;
       if (ast instanceof ASTRealVector) {
         RealVector vector = ((ASTRealVector) ast).getRealVector();
-        stream.write(WL.WXF_CONSTANTS.PackedArray);
-        stream.write(ARRAY_TYPES.Real64);
+        stream.write(WXF_CONSTANTS.PackedArray);
+        stream.write(NumericArrayExpr.Real64);
         stream.write(0x01);
         stream.write(varintBytes(vector.getDimension()));
         for (int i = 0; i < vector.getDimension(); i++) {
@@ -439,8 +683,8 @@ public class WL {
         return;
       } else if (ast instanceof ASTRealMatrix) {
         RealMatrix matrix = ((ASTRealMatrix) ast).getRealMatrix();
-        stream.write(WL.WXF_CONSTANTS.PackedArray);
-        stream.write(ARRAY_TYPES.Real64);
+        stream.write(WXF_CONSTANTS.PackedArray);
+        stream.write(NumericArrayExpr.Real64);
         stream.write(0x02);
         stream.write(varintBytes(matrix.getRowDimension()));
         stream.write(varintBytes(matrix.getColumnDimension()));
@@ -452,31 +696,167 @@ public class WL {
         return;
       } else if (ast instanceof ASTAssociation) {
         // <|a->b, c:>d,...|>
-        stream.write(WL.WXF_CONSTANTS.Association);
+        stream.write(WXF_CONSTANTS.Association);
         stream.write(varintBytes(ast.argSize()));
         for (int i = 1; i < ast.size(); i++) {
           IAST rule = (IAST) ast.getRule(i);
           if (rule.isRuleDelayed()) {
-            stream.write(WL.WXF_CONSTANTS.RuleDelayed);
+            stream.write(WXF_CONSTANTS.RuleDelayed);
           } else {
-            stream.write(WL.WXF_CONSTANTS.Rule);
+            stream.write(WXF_CONSTANTS.Rule);
           }
           write(rule.arg1());
           write(rule.arg2());
         }
         return;
       }
-      stream.write(WL.WXF_CONSTANTS.Function);
+      stream.write(WXF_CONSTANTS.Function);
       stream.write(varintBytes(ast.argSize()));
       for (int i = 0; i < ast.size(); i++) {
         write(ast.get(i));
       }
     }
 
+    private void writePackedArray(IAST list) throws IOException {
+      NumericArrayExpr numericArray =
+          NumericArrayExpr.newListByType(list, NumericArrayExpr.UNDEFINED, S.Integers);
+      if (numericArray != null) {
+        stream.write(WXF_CONSTANTS.PackedArray);
+        byte arrayType = numericArray.getType();
+        stream.write(arrayType);
+        writeNumericArrayData(arrayType, numericArray);
+      } else {
+        write(list);
+      }
+    }
+
+    private void writeSparseArray(SparseArrayExpr sparseArray) throws IOException {
+      IAST fullForm = sparseArray.fullForm();
+      System.out.println(fullForm.toString());
+
+      if (fullForm.size() == 5) {
+        stream.write(WXF_CONSTANTS.Function);
+        stream.write(varintBytes(fullForm.argSize()));
+        write(fullForm.head());
+        write(fullForm.arg1());
+        writePackedArray((IAST) fullForm.arg2());
+        // sparse array default value:
+        write(fullForm.arg3());
+        // sparse array structure:
+        IAST list = (IAST) fullForm.arg4();
+        stream.write(WXF_CONSTANTS.Function);
+        stream.write(varintBytes(list.argSize()));
+        write(S.List);
+        write(list.arg1());
+
+        IAST list2 = (IAST) list.arg2();
+        stream.write(WXF_CONSTANTS.Function);
+        stream.write(varintBytes(list2.argSize()));
+        write(S.List);
+        writePackedArray((IAST) list2.arg1());
+        writePackedArray((IAST) list2.arg2());
+
+        writePackedArray((IAST) list.arg3());
+      } else {
+        write(fullForm);
+      }
+    }
+
+    private void writeNumericArray(NumericArrayExpr numericArray) throws IOException {
+      byte arrayType = numericArray.getType();
+      byte[] buf = new byte[] {WXF_CONSTANTS.RawArray, arrayType};
+      stream.write(buf);
+      writeNumericArrayData(arrayType, numericArray);
+    }
+
+    private void writeNumericArrayData(byte arrayType, NumericArrayExpr numericArray)
+        throws IOException {
+      int[] dimensions = numericArray.getDimension();
+      int rank = dimensions.length;
+      stream.write(varintBytes(rank));
+      int size = 1;
+      for (int i = 0; i < rank; i++) {
+        stream.write(dimensions[i]);
+        size *= dimensions[i];
+      }
+
+      switch (arrayType) {
+        case NumericArrayExpr.Integer8:
+        case NumericArrayExpr.UnsignedInteger8:
+          {
+            byte[] byteArr = (byte[]) numericArray.toData();
+            stream.write(byteArr, 0, size);
+            return;
+          }
+        case NumericArrayExpr.Integer16:
+        case NumericArrayExpr.UnsignedInteger16:
+          {
+            short[] shortArr = (short[]) numericArray.toData();
+            for (int i = 0; i < shortArr.length; i++) {
+              writeInteger16(shortArr[i]);
+            }
+            return;
+          }
+        case NumericArrayExpr.Integer32:
+        case NumericArrayExpr.UnsignedInteger32:
+          {
+            int[] intArr = (int[]) numericArray.toData();
+            for (int i = 0; i < intArr.length; i++) {
+              writeInteger32(intArr[i]);
+            }
+            return;
+          }
+        case NumericArrayExpr.Integer64:
+        case NumericArrayExpr.UnsignedInteger64:
+          {
+            long[] longArr = (long[]) numericArray.toData();
+            for (int i = 0; i < longArr.length; i++) {
+              writeInteger64(longArr[i]);
+            }
+            return;
+          }
+        case NumericArrayExpr.Real32:
+          {
+            float[] floatArr = (float[]) numericArray.toData();
+            for (int i = 0; i < floatArr.length; i++) {
+              writeFloat(floatArr[i]);
+            }
+            return;
+          }
+        case NumericArrayExpr.Real64:
+          {
+            double[] doubleArr = (double[]) numericArray.toData();
+            for (int i = 0; i < doubleArr.length; i++) {
+              writeDouble(doubleArr[i]);
+            }
+            return;
+          }
+        case NumericArrayExpr.ComplexReal32:
+          {
+            float[] floatArr = (float[]) numericArray.toData();
+            int doubledSize = floatArr.length;
+            int i = 0;
+            while (i < doubledSize) {
+              writeFloat(floatArr[i++]);
+            }
+            return;
+          }
+        case NumericArrayExpr.ComplexReal64:
+          {
+            double[] doubleArr = (double[]) numericArray.toData();
+            int doubledSize = doubleArr.length;
+            int i = 0;
+            while (i < doubledSize) {
+              writeDouble(doubleArr[i++]);
+            }
+          }
+      }
+    }
+
     private void writeQuantity(IExpr arg1) throws IOException {
       IQuantity quantity = (IQuantity) arg1;
       // simulate AST Quantity(..., ...)
-      stream.write(WL.WXF_CONSTANTS.Function);
+      stream.write(WXF_CONSTANTS.Function);
       stream.write(varintBytes(2));
       write(quantity.head());
       write(quantity.value());
@@ -485,7 +865,7 @@ public class WL {
 
     private void writeSeriesData(IExpr arg1) throws IOException {
       ASTSeriesData ast = (ASTSeriesData) arg1;
-      stream.write(WL.WXF_CONSTANTS.Function);
+      stream.write(WXF_CONSTANTS.Function);
       stream.write(varintBytes(ast.argSize()));
       for (int i = 0; i < ast.size(); i++) {
         write(ast.get(i));
@@ -493,83 +873,110 @@ public class WL {
     }
 
     private void writeAST0(IExpr head) throws IOException {
-      stream.write(WL.WXF_CONSTANTS.Function);
+      stream.write(WXF_CONSTANTS.Function);
       stream.write(0);
       write(head);
     }
 
     private void writeAST1(IExpr head, IExpr arg1) throws IOException {
-      stream.write(WL.WXF_CONSTANTS.Function);
+      stream.write(WXF_CONSTANTS.Function);
       stream.write(1);
       write(head);
       write(arg1);
     }
 
     private void writeAST2(IExpr head, IExpr arg1, IExpr arg2) throws IOException {
-      stream.write(WL.WXF_CONSTANTS.Function);
+      stream.write(WXF_CONSTANTS.Function);
       stream.write(2);
       write(head);
       write(arg1);
       write(arg2);
     }
 
-    private void writeDouble(double d) {
-      long l = Double.doubleToRawLongBits(d);
-      stream.write((byte) (l & 0x00000000000000ff));
-      stream.write((byte) (l >> 8 & 0x00000000000000ff));
-      stream.write((byte) (l >> 16 & 0x00000000000000ff));
-      stream.write((byte) (l >> 24 & 0x00000000000000ff));
-      stream.write((byte) (l >> 32 & 0x00000000000000ff));
-      stream.write((byte) (l >> 40 & 0x00000000000000ff));
-      stream.write((byte) (l >> 48 & 0x00000000000000ff));
-      stream.write((byte) (l >> 56 & 0x00000000000000ff));
+    private void writeFloat(float f) {
+      int bits = Float.floatToIntBits(f);
+      stream.write((byte) (bits & 0x000000ff));
+      stream.write((byte) ((bits >> 8) & 0x000000ff));
+      stream.write((byte) ((bits >> 16) & 0x000000ff));
+      stream.write((byte) ((bits >> 24) & 0x000000ff));
     }
 
-    // private void writePackedDouble(double d) {
-    // long l = Double.doubleToRawLongBits(d);
-    // stream.write((byte) (l & 0x00000000000000ff));
-    // stream.write((byte) (l >> 8 & 0x00000000000000ff));
-    // stream.write((byte) (l >> 16 & 0x00000000000000ff));
-    // stream.write((byte) (l >> 24 & 0x00000000000000ff));
-    // stream.write((byte) (l >> 32 & 0x00000000000000ff));
-    // stream.write((byte) (l >> 40 & 0x00000000000000ff));
-    // stream.write((byte) (l >> 48 & 0x00000000000000ff));
-    // stream.write((byte) (l >> 56 & 0x00000000000000ff));
-    // }
+    private void writeDouble(double d) {
+      long bits = Double.doubleToRawLongBits(d);
+      stream.write((byte) (bits & 0x00000000000000ff));
+      stream.write((byte) ((bits >> 8) & 0x00000000000000ff));
+      stream.write((byte) ((bits >> 16) & 0x00000000000000ff));
+      stream.write((byte) ((bits >> 24) & 0x00000000000000ff));
+      stream.write((byte) ((bits >> 32) & 0x00000000000000ff));
+      stream.write((byte) ((bits >> 40) & 0x00000000000000ff));
+      stream.write((byte) ((bits >> 48) & 0x00000000000000ff));
+      stream.write((byte) ((bits >> 56) & 0x00000000000000ff));
+    }
 
     private void writeInteger(IExpr arg1) throws IOException {
       IInteger s = (IInteger) arg1;
       if (s instanceof IntegerSym) {
-        int i = ((IntegerSym) s).intValue();
-        if (Byte.MIN_VALUE <= i && i <= Byte.MAX_VALUE) {
-          stream.write(WL.WXF_CONSTANTS.Integer8);
-          stream.write((byte) i);
-        } else if (Short.MIN_VALUE <= i && i <= Short.MAX_VALUE) {
-          stream.write(WL.WXF_CONSTANTS.Integer16);
-          stream.write((byte) (i & 0xFF));
-          stream.write((byte) ((i >> 8) & 0xFF));
-        } else if (Integer.MIN_VALUE <= i && i <= Integer.MAX_VALUE) {
-          stream.write(WL.WXF_CONSTANTS.Integer32);
-          stream.write((byte) (i & 0xFF));
-          stream.write((byte) ((i >> 8) & 0xFF));
-          stream.write((byte) ((i >> 16) & 0xFF));
-          stream.write((byte) ((i >> 24) & 0xFF));
+        int bits = ((IntegerSym) s).intValue();
+        if (Byte.MIN_VALUE <= bits && bits <= Byte.MAX_VALUE) {
+          stream.write(WXF_CONSTANTS.Integer8);
+          stream.write((byte) bits);
+        } else if (Short.MIN_VALUE <= bits && bits <= Short.MAX_VALUE) {
+          stream.write(WXF_CONSTANTS.Integer16);
+          writeInteger16((short) bits);
+        } else if (Integer.MIN_VALUE <= bits && bits <= Integer.MAX_VALUE) {
+          stream.write(WXF_CONSTANTS.Integer32);
+          writeInteger32(bits);
         }
       } else if (s instanceof BigIntegerSym) {
-        String big = ((BigIntegerSym) s).toBigNumerator().toString();
-        stream.write(WL.WXF_CONSTANTS.BigInteger);
-        stream.write(varintBytes(big.length()));
-        for (int i = 0; i < big.length(); i++) {
-          stream.write(big.charAt(i));
+        try {
+          long bits = ((BigIntegerSym) s).toLong();
+          stream.write(WXF_CONSTANTS.Integer64);
+          writeInteger64(bits);
+        } catch (ArithmeticException ae) {
+          String big = ((BigIntegerSym) s).toBigNumerator().toString();
+          stream.write(WXF_CONSTANTS.BigInteger);
+          stream.write(varintBytes(big.length()));
+          for (int i = 0; i < big.length(); i++) {
+            stream.write(big.charAt(i));
+          }
         }
       }
+    }
+
+    private void writeInteger8(byte bits) {
+      stream.write(bits);
+    }
+
+    private void writeInteger16(short bits) {
+      stream.write((byte) (bits & 0xFF));
+      stream.write((byte) ((bits >> 8) & 0xFF));
+    }
+
+    private void writeInteger32(int bits) {
+
+      stream.write((byte) (bits & 0xFF));
+      stream.write((byte) ((bits >> 8) & 0xFF));
+      stream.write((byte) ((bits >> 16) & 0xFF));
+      stream.write((byte) ((bits >> 24) & 0xFF));
+    }
+
+    private void writeInteger64(long bits) {
+
+      stream.write((byte) (bits & 0xFF));
+      stream.write((byte) ((bits >> 8) & 0x00000000000000ff));
+      stream.write((byte) ((bits >> 16) & 0x00000000000000ff));
+      stream.write((byte) ((bits >> 24) & 0x00000000000000ff));
+      stream.write((byte) ((bits >> 32) & 0x00000000000000ff));
+      stream.write((byte) ((bits >> 40) & 0x00000000000000ff));
+      stream.write((byte) ((bits >> 48) & 0x00000000000000ff));
+      stream.write((byte) ((bits >> 56) & 0x00000000000000ff));
     }
 
     private void writeString(IExpr arg1) throws IOException {
       IStringX s = (IStringX) arg1;
       char[] str = s.toString().toCharArray();
       int size = str.length;
-      stream.write(WL.WXF_CONSTANTS.String);
+      stream.write(WXF_CONSTANTS.String);
       stream.write(varintBytes(size));
       for (int i = 0; i < size; i++) {
         stream.write(str[i]);
@@ -579,7 +986,7 @@ public class WL {
     private void writeBinaryString(IExpr arg1) throws IOException {
       byte[] bArray = ((ByteArrayExpr) arg1).toData();
       int size = bArray.length;
-      stream.write(WL.WXF_CONSTANTS.BinaryString);
+      stream.write(WXF_CONSTANTS.BinaryString);
       stream.write(varintBytes(size));
       stream.write(bArray, 0, size);
     }
@@ -594,7 +1001,7 @@ public class WL {
         str = (context.getContextName() + s.getSymbolName()).toCharArray();
       }
       int size = str.length;
-      stream.write(WL.WXF_CONSTANTS.Symbol);
+      stream.write(WXF_CONSTANTS.Symbol);
       stream.write(varintBytes(size));
       for (int i = 0; i < size; i++) {
         stream.write(str[i]);
@@ -602,31 +1009,80 @@ public class WL {
     }
   }
 
-  /** The list of all the WXF tokens. */
-  public static class WXF_CONSTANTS {
-    public static final byte Function = 'f';
-    public static final byte Symbol = 's';
-    public static final byte String = 'S';
-    static final byte BinaryString = 'B';
-    public static final byte Integer8 = 'C';
-    public static final byte Integer16 = 'j';
-    public static final byte Integer32 = 'i';
-    static final byte Integer64 = 'L';
-    public static final byte Real64 = 'r';
-    public static final byte BigInteger = 'I';
-    static final byte BigReal = 'R';
-    static final byte PackedArray = (byte) 0xC1;
-    static final byte RawArray = (byte) 0xC2;
-    static final byte Association = 'A';
-    static final byte Rule = '-';
-    static final byte RuleDelayed = ':';
+  private static class WriteInternalObject extends WriteObject {
+
+    public WriteInternalObject() {
+      super();
+    }
+
+    public WriteInternalObject(ByteArrayOutputStream stream) {
+      super(stream);
+    }
+
+    @Override
+    public void write(IExpr arg1) throws IOException {
+      short exprID = S.GLOBAL_IDS_MAP.getShort(arg1);
+      if (exprID >= 0) {
+        stream.write(WXF_CONSTANTS.InternalExprID);
+        stream.write(varintBytes(exprID));
+        return;
+      }
+      super.write(arg1);
+    }
   }
 
+  /**
+   * Deserialize the byte array to an {@link IExpr} expression.
+   *
+   * @param bArray
+   * @return {@link F#NIL} if the byte array is <code>null</code> or not valid.
+   */
   public static IExpr deserialize(byte[] bArray) {
-    // byte[] bArray = WL.toByteArray((IAST) arg1);
-    WL.ReadObject ro = new WL.ReadObject(bArray);
-    IExpr result = ro.read();
-    return result;
+    if (bArray == null || bArray.length < 3) {
+      return F.NIL;
+    }
+    ReadObject ro = new ReadObject(bArray);
+    return ro.read();
+  }
+
+  /**
+   * Deserialize the byte array to an {@link IExpr} expression from internal version dependent
+   * format. The format will change on every change in the built-in symbols table.
+   *
+   * <p><b>Warning:</b>: Don't use for &quot;outside communication&quot;.
+   *
+   * @param bArray
+   * @return {@link F#NIL} if the byte array is <code>null</code> or not valid.
+   */
+  public static IExpr deserializeInternal(byte[] bArray) {
+    if (bArray == null || bArray.length < 3) {
+      return F.NIL;
+    }
+    ReadInternalObject ro = new ReadInternalObject(bArray);
+    return ro.read();
+  }
+
+  /**
+   * Finds a resource with a given name and if present, deserializes the binary encoded WXF resource
+   * to an {@link IExpr} expression.
+   *
+   * @param resourceName the name of an {@link InputStream}
+   * @param internal if <code>true</code> deserialize from internal format
+   * @return {@link F#NIL} if the resource cannot be found or the derialization failed.
+   */
+  public static IExpr deserializeResource(String resourceName, boolean internal) {
+    try {
+      InputStream resourceAsStream = new Config().getClass().getResourceAsStream(resourceName);
+      if (resourceAsStream == null) {
+        return F.NIL;
+      } else {
+        byte[] byteArray = ByteStreams.toByteArray(resourceAsStream);
+        return deserializeInternal(byteArray);
+      }
+    } catch (IOException ex) {
+      ex.printStackTrace();
+    }
+    return F.NIL;
   }
 
   /**
@@ -664,12 +1120,43 @@ public class WL {
   }
 
   /**
+   * Serialize the {@link IExpr} into a byte array in WXF format
+   *
    * @param expr
    * @return <code>null</code> if the expression couldn't be serialized
    */
   public static byte[] serialize(IExpr expr) {
     if (expr.isPresent()) {
-      WL.WriteObject wo = new WL.WriteObject();
+      WriteObject wo = new WriteObject();
+      try {
+        wo.write(expr);
+        return wo.toByteArray();
+      } catch (IOException e) {
+        if (FEConfig.SHOW_STACKTRACE) {
+          e.printStackTrace();
+        }
+      } finally {
+        try {
+          wo.close();
+        } catch (IOException e) {
+        }
+      }
+    }
+    return null;
+  }
+
+  /**
+   * Serialize the {@link IExpr} into a byte array in internal version dependent format. The format
+   * will change on every change in the built-in symbols table.
+   *
+   * <p><b>Warning:</b>: Don't use for &quot;outside communication&quot;.
+   *
+   * @param expr
+   * @return <code>null</code> if the expression couldn't be serialized
+   */
+  public static byte[] serializeInternal(IExpr expr) {
+    if (expr.isPresent()) {
+      WriteInternalObject wo = new WriteInternalObject();
       try {
         wo.write(expr);
         return wo.toByteArray();

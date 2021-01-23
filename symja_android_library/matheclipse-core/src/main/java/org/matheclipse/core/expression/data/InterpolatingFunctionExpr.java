@@ -141,6 +141,7 @@ public class InterpolatingFunctionExpr<T> extends DataExpr<T> {
     return new InterpolatingFunctionExpr(fData, min, max);
   }
 
+  @Override
   public IAST normal(boolean nilIfUnevaluated) {
     Object model = toData();
     if (model instanceof SimpleRegression) {

@@ -119,6 +119,7 @@ public class AST2 extends AST1 {
     return new AST(arg0, arg1, arg2);
   }
 
+  @Override
   public IASTAppendable copyAppendable(int additionalCapacity) {
     IASTAppendable result = F.ast(arg0, additionalCapacity + 2, false);
     result.append(arg1);
@@ -412,13 +413,13 @@ public class AST2 extends AST1 {
   /** {@inheritDoc} */
   @Override
   public final boolean isPlus() {
-    return arg0 == F.Plus;
+    return arg0 == S.Plus;
   }
 
   /** {@inheritDoc} */
   @Override
   public boolean isPower() {
-    return arg0 == F.Power;
+    return arg0 == S.Power;
   }
 
   /** {@inheritDoc} */
@@ -442,7 +443,7 @@ public class AST2 extends AST1 {
   /** {@inheritDoc} */
   @Override
   public final boolean isTimes() {
-    return arg0 == F.Times;
+    return arg0 == S.Times;
   }
 
   /** {@inheritDoc} */

@@ -3,7 +3,6 @@ package org.matheclipse.core.expression;
 import java.util.Collection;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 import java.util.function.Function;
 
 import org.hipparchus.util.Pair;
@@ -390,7 +389,7 @@ public class PatternSequence implements IPatternSequence {
 
   @Override
   public ISymbol head() {
-    return F.Pattern;
+    return S.Pattern;
   }
 
   @Override
@@ -454,6 +453,7 @@ public class PatternSequence implements IPatternSequence {
     return fDefault;
   }
 
+  @Override
   public boolean isNullSequence() {
     return fZeroArgsAllowed;
   }

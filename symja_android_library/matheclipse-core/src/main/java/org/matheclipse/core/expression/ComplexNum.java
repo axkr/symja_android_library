@@ -4,7 +4,6 @@ import static org.matheclipse.core.expression.F.num;
 
 import java.math.BigDecimal;
 import java.math.RoundingMode;
-import java.util.Set;
 import java.util.function.Function;
 
 import org.apfloat.Apcomplex;
@@ -356,6 +355,7 @@ public class ComplexNum implements IComplexNum {
     return FEConfig.MACHINE_PRECISION;
   }
 
+  @Override
   public IComplexNum divide(final IComplexNum that) {
     if (that instanceof ApcomplexNum) {
       return ApcomplexNum.valueOf(fComplex, ((ApcomplexNum) that).precision())
@@ -397,7 +397,7 @@ public class ComplexNum implements IComplexNum {
       return F.CComplexInfinity;
     }
     if (fComplex.isNaN()) {
-      return F.Indeterminate;
+      return S.Indeterminate;
     }
     if (engine.isNumericMode() && engine.isArbitraryMode()) {
       return ApcomplexNum.valueOf(getRealPart(), getImaginaryPart(), engine.getNumericPrecision());
@@ -489,6 +489,7 @@ public class ComplexNum implements IComplexNum {
     return F.num(getRealPart());
   }
 
+  @Override
   public IExpr sqrt() {
     return valueOf(fComplex.sqrt());
   }
@@ -521,7 +522,7 @@ public class ComplexNum implements IComplexNum {
 
   @Override
   public ISymbol head() {
-    return F.Complex;
+    return S.Complex;
   }
 
   @Override
@@ -678,12 +679,12 @@ public class ComplexNum implements IComplexNum {
     if (Complex.equals(fComplex, Complex.ZERO, Config.DOUBLE_EPSILON)) {
       ISignedNumber sn = val.re();
       if (sn.isNegative()) {
-        IOFunctions.printMessage(F.Power, "infy", F.List(F.Power(F.C0, sn)), EvalEngine.get());
+        IOFunctions.printMessage(S.Power, "infy", F.List(F.Power(F.C0, sn)), EvalEngine.get());
         // EvalEngine.get().printMessage("Infinite expression 0^(negative number)");
         return INF;
       }
       if (sn.isZero()) {
-        IOFunctions.printMessage(F.Power, "indet", F.List(F.Power(F.C0, F.C0)), EvalEngine.get());
+        IOFunctions.printMessage(S.Power, "indet", F.List(F.Power(F.C0, F.C0)), EvalEngine.get());
         // EvalEngine.get().printMessage("Infinite expression 0^0.");
         return NaN;
       }
@@ -710,6 +711,7 @@ public class ComplexNum implements IComplexNum {
    * @return {@code this - subtrahend}.
    * @throws NullArgumentException if {@code subtrahend} is {@code null}.
    */
+  @Override
   public IComplexNum subtract(final IComplexNum subtrahend) {
     if (subtrahend instanceof ApcomplexNum) {
       return ApcomplexNum.valueOf(fComplex, ((ApcomplexNum) subtrahend).precision())

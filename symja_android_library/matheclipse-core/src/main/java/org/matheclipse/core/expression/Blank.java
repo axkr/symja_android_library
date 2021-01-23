@@ -4,7 +4,6 @@ import java.io.ObjectStreamException;
 import java.util.Collection;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 import java.util.function.Function;
 
 import org.hipparchus.util.Pair;
@@ -249,7 +248,7 @@ public class Blank implements IPattern {
 
   @Override
   public ISymbol head() {
-    return F.Blank;
+    return S.Blank;
   }
 
   @Override

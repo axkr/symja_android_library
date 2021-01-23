@@ -17,7 +17,6 @@ import org.matheclipse.core.basic.Config;
 import org.matheclipse.core.convert.Convert;
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.exception.ASTElementLimitExceeded;
-import org.matheclipse.core.eval.exception.ArgumentTypeException;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IASTAppendable;
 import org.matheclipse.core.interfaces.IASTMutable;
@@ -185,6 +184,7 @@ public class ASTRealMatrix extends AbstractAST implements Externalizable, Random
   }
 
   /** {@inheritDoc} */
+  @Override
   public int argSize() {
     return matrix.getRowDimension();
   }
@@ -343,7 +343,7 @@ public class ASTRealMatrix extends AbstractAST implements Externalizable, Random
 
   @Override
   public final IExpr head() {
-    return F.$RealMatrix;
+    return S.$RealMatrix;
   }
 
   /** {@inheritDoc} */
@@ -406,26 +406,26 @@ public class ASTRealMatrix extends AbstractAST implements Externalizable, Random
   /** {@inheritDoc} */
   @Override
   public boolean isSameHead(ISymbol head) {
-    return F.$RealMatrix == head;
+    return S.$RealMatrix == head;
   }
 
   /** {@inheritDoc} */
   @Override
   public boolean isSameHead(ISymbol head, int length) {
-    return F.$RealMatrix == head && matrix.getRowDimension() == length - 1;
+    return S.$RealMatrix == head && matrix.getRowDimension() == length - 1;
   }
 
   /** {@inheritDoc} */
   @Override
   public boolean isSameHead(ISymbol head, int minLength, int maxLength) {
     int size = matrix.getRowDimension() + 1;
-    return F.$RealMatrix.equals(head) && minLength <= size && maxLength >= size;
+    return S.$RealMatrix.equals(head) && minLength <= size && maxLength >= size;
   }
 
   /** {@inheritDoc} */
   @Override
   public boolean isSameHeadSizeGE(ISymbol head, int length) {
-    return F.$RealMatrix == head && length <= matrix.getRowDimension() + 1;
+    return S.$RealMatrix == head && length <= matrix.getRowDimension() + 1;
   }
 
   /** {@inheritDoc} */

@@ -3,7 +3,6 @@ package org.matheclipse.core.expression;
 import java.io.ObjectStreamException;
 import java.math.BigDecimal;
 import java.math.BigInteger;
-import java.util.Set;
 import java.util.function.Function;
 
 import org.hipparchus.fraction.BigFraction;
@@ -360,6 +359,7 @@ public class FractionSym extends AbstractFractionSym {
    * @param other the second rational argument.
    * @return the gcd of this and other.
    */
+  @Override
   public IFraction gcd(IFraction other) {
     if (isZero()) {
       return other;

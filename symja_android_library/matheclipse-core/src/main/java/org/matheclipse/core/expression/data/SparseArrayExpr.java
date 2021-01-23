@@ -31,12 +31,12 @@ import org.matheclipse.core.expression.DataExpr;
 import org.matheclipse.core.expression.ExprField;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.expression.S;
+import org.matheclipse.core.generic.Tensors;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IASTAppendable;
 import org.matheclipse.core.interfaces.IASTMutable;
 import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.interfaces.ISparseArray;
-import org.matheclipse.core.interfaces.ISymbol;
 import org.matheclipse.core.patternmatching.IPatternMap;
 import org.matheclipse.core.patternmatching.PatternMatcherAndEvaluator;
 import org.matheclipse.parser.client.FEConfig;
@@ -904,7 +904,9 @@ public class SparseArrayExpr extends DataExpr<Trie<int[], IExpr>>
     if (depth < 0) {
       return F.NIL;
     }
-    IASTAppendable result = F.ListAlloc();
+    // default value rule is additionally appended at the end!
+    IASTAppendable result =
+        F.ListAlloc(F.allocMin32(F.allocLevel1(nestedListsOfValues, x -> x.isList()) + 2));
     IASTMutable positions = F.constantArray(F.C1, depth);
     if (SparseArrayExpr.arrayRulesRecursive(
         nestedListsOfValues, depth + 1, depth, positions, defaultValue, result)) {
@@ -1349,7 +1351,7 @@ public class SparseArrayExpr extends DataExpr<Trie<int[], IExpr>>
     IPatternMap patternMap = matcher.getPatternMap();
     IExpr[] patternValuesArray = patternMap.copyPattern();
 
-    recursivePatternPositions(
+    patternPositionsRecursive(
         trie,
         dimension,
         engine,
@@ -1363,7 +1365,7 @@ public class SparseArrayExpr extends DataExpr<Trie<int[], IExpr>>
     return true;
   }
 
-  private static void recursivePatternPositions(
+  private static void patternPositionsRecursive(
       final Trie<int[], IExpr> value,
       int[] dimension,
       EvalEngine engine,
@@ -1386,7 +1388,7 @@ public class SparseArrayExpr extends DataExpr<Trie<int[], IExpr>>
       for (int i = 1; i <= dimension[pointer]; i++) {
         positionsKey[pointer] = i;
         positionList.set(pointer + 1, F.ZZ(i));
-        recursivePatternPositions(
+        patternPositionsRecursive(
             value,
             dimension,
             engine,
@@ -1437,7 +1439,7 @@ public class SparseArrayExpr extends DataExpr<Trie<int[], IExpr>>
    * @param defaultValue default value for positions not specified in the trie
    * @param deepCopy if <code>true</code> create a deep copy.
    */
-  protected SparseArrayExpr(
+  public SparseArrayExpr(
       final Trie<int[], IExpr> trie, int[] dimension, IExpr defaultValue, boolean deepCopy) {
     super(S.SparseArray, trie);
     if (deepCopy) {
@@ -1547,6 +1549,12 @@ public class SparseArrayExpr extends DataExpr<Trie<int[], IExpr>>
     return F.NIL;
   }
 
+  /** {@inheritDoc} */
+  @Override
+  public IExpr first() {
+    return get(1);
+  }
+
   @Override
   public ISparseArray flatten() {
     if (fDimension.length <= 1) {
@@ -1582,6 +1590,11 @@ public class SparseArrayExpr extends DataExpr<Trie<int[], IExpr>>
    */
   @Override
   public String fullFormString() {
+    IASTAppendable result = fullForm();
+    return result.fullFormString();
+  }
+
+  public IASTAppendable fullForm() {
     IAST dimensionList = F.ast(S.List, fDimension);
     IASTAppendable result = F.ast(S.SparseArray, 6, false);
     result.append(S.Automatic);
@@ -1633,7 +1646,7 @@ public class SparseArrayExpr extends DataExpr<Trie<int[], IExpr>>
     }
     rowPointers.append(F.ZZ(columnIndex));
     list1.append(nonZeroValues);
-    return result.fullFormString();
+    return result;
   }
 
   @Override
@@ -1652,11 +1665,7 @@ public class SparseArrayExpr extends DataExpr<Trie<int[], IExpr>>
       count++;
     }
     if (count == 0 && partSize == dims.length) {
-      IExpr temp = fData.get(partIndex);
-      if (temp == null) {
-        return defaultValue;
-      }
-      return temp;
+      return getIndex(partIndex);
     }
     int[] newDimension = new int[count];
     count = 0;
@@ -1729,11 +1738,7 @@ public class SparseArrayExpr extends DataExpr<Trie<int[], IExpr>>
         count++;
       }
       if (count == 0 && partSize == dims.length) {
-        IExpr temp = fData.get(partIndex);
-        if (temp == null) {
-          return defaultValue;
-        }
-        return temp;
+        return getIndex(partIndex);
       }
       int[] newDimension = new int[count];
       count = 0;
@@ -1778,11 +1783,6 @@ public class SparseArrayExpr extends DataExpr<Trie<int[], IExpr>>
   }
 
   @Override
-  public ISymbol head() {
-    return S.SparseArray;
-  }
-
-  @Override
   public int hierarchy() {
     return SPARSEARRAYID;
   }
@@ -1817,6 +1817,12 @@ public class SparseArrayExpr extends DataExpr<Trie<int[], IExpr>>
     result.fDimension[0] += thatArray.fDimension[0];
     // result.normalCache = null;
     return result;
+  }
+
+  /** {@inheritDoc} */
+  @Override
+  public IExpr last() {
+    return get(fDimension[0]);
   }
 
   /** {@inheritDoc} */
@@ -1863,55 +1869,46 @@ public class SparseArrayExpr extends DataExpr<Trie<int[], IExpr>>
 
   @Override
   public IASTMutable normal(boolean nilIfUnevaluated) {
-    if (fDimension.length > 0) {
-      return normalAppendable(S.List, fDimension);
-      // if (normalCache != null) {
-      // return normalCache;
-      // }
-      // IASTAppendable list = normalAppendable(S.List, dimension);
-      // normalCache = list;
-      // return normalCache;
+    return normal(fDimension);
+    //    if (fDimension.length > 0) {
+    //      IASTMutable result = Tensors.build(index -> getIndex(index), fDimension);
+    //      if (fDimension.length == 2) {
+    //        result.addEvalFlags(IAST.IS_VECTOR);
+    //      } else if (fDimension.length == 2) {
+    //        result.addEvalFlags(IAST.IS_MATRIX);
+    //      }
+    //      return result;
+    //    }
+    //    return F.headAST0(S.List);
+  }
+
+  @Override
+  public IASTMutable normal(int[] dimension) {
+    if (dimension.length > 0) {
+      IASTMutable result = Tensors.build(index -> getIndex(index), dimension);
+      if (fDimension.length == 1) {
+        result.addEvalFlags(IAST.IS_VECTOR);
+      } else if (fDimension.length == 2) {
+        result.addEvalFlags(IAST.IS_MATRIX);
+      }
+      return result;
     }
     return F.headAST0(S.List);
   }
 
-  @Override
-  public IASTMutable normal(int[] dims) {
-    return normalAppendable(S.List, dims);
-  }
-
-  private void normalRecursive(
-      Trie<int[], IExpr> map, IASTMutable list, int[] dims, int position, int[] index) {
-    int size = dims[position];
-    if (dims.length - 1 == position) {
-      for (int i = 1; i <= size; i++) {
-        index[position] = i;
-        IExpr expr = map.get(index);
-        if (expr == null) {
-          list.set(i, defaultValue);
-        } else {
-          list.set(i, expr);
-        }
-      }
-      return;
+  /**
+   * Determine the value for the given <code>index</code>. Return the default value if no element is
+   * stored in the internal map.
+   *
+   * @param index
+   * @return
+   */
+  public IExpr getIndex(int[] index) {
+    IExpr expr = fData.get(index);
+    if (expr == null) {
+      return defaultValue;
     }
-    int size2 = dims[position + 1];
-    for (int i = 1; i <= size; i++) {
-      index[position] = i;
-      IASTAppendable currentList = F.ast(S.List, size2, true);
-      list.set(i, currentList);
-      normalRecursive(map, currentList, dims, position + 1, index);
-    }
-  }
-
-  private IASTAppendable normalAppendable(IExpr head, int[] dims) {
-    IASTAppendable list = F.ast(head, dims[0], true);
-    int[] index = new int[dims.length];
-    for (int i = 0; i < index.length; i++) {
-      index[i] = 1;
-    }
-    normalRecursive(fData, list, dims, 0, index);
-    return list;
+    return expr;
   }
 
   @Override

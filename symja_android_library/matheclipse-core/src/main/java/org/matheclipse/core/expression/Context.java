@@ -12,7 +12,6 @@ import org.matheclipse.core.basic.Config;
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.interfaces.ISymbol;
 import org.matheclipse.parser.trie.TrieMatch;
-import org.matheclipse.parser.trie.Tries;
 
 public class Context implements Serializable {
 

@@ -91,7 +91,7 @@ public class ApfloatNum implements INum {
   @Override
   public boolean isNumEqualInteger(IInteger ii) throws ArithmeticException {
     return fApfloat.truncate().equals(new Apint(ii.toBigNumerator()))
-        && fApfloat.frac().equals(Apfloat.ZERO);
+        && fApfloat.frac().equals(Apcomplex.ZERO);
   }
 
   /** {@inheritDoc} */
@@ -106,7 +106,7 @@ public class ApfloatNum implements INum {
   /** {@inheritDoc} */
   @Override
   public boolean isNumIntValue() {
-    return fApfloat.frac().equals(Apfloat.ZERO);
+    return fApfloat.frac().equals(Apcomplex.ZERO);
   }
 
   /** {@inheritDoc} */
@@ -372,7 +372,7 @@ public class ApfloatNum implements INum {
   /** {@inheritDoc} */
   @Override
   public boolean isE() {
-    return fApfloat.equals(ApfloatMath.exp(Apfloat.ONE));
+    return fApfloat.equals(ApfloatMath.exp(Apcomplex.ONE));
   }
 
   /** {@inheritDoc} */
@@ -384,7 +384,7 @@ public class ApfloatNum implements INum {
   /** {@inheritDoc} */
   @Override
   public boolean isOne() {
-    return fApfloat.equals(Apfloat.ONE);
+    return fApfloat.equals(Apcomplex.ONE);
   }
 
   /** {@inheritDoc} */
@@ -461,6 +461,7 @@ public class ApfloatNum implements INum {
   }
 
   /** {@inheritDoc} */
+  @Override
   public IInteger integerPart() {
     return isNegative() ? ceilFraction() : floorFraction();
   }
@@ -506,7 +507,7 @@ public class ApfloatNum implements INum {
 
   @Override
   public ISymbol head() {
-    return F.Real;
+    return S.Real;
   }
 
   /** {@inheritDoc} */

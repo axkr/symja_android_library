@@ -218,7 +218,7 @@ public class ComplexSym implements IComplex {
 
   @Override
   public INumber ceilFraction() {
-    return valueOf((IRational) fReal.ceilFraction(), (IRational) fImaginary.ceilFraction());
+    return valueOf(fReal.ceilFraction(), fImaginary.ceilFraction());
   }
 
   /** {@inheritDoc} */
@@ -348,7 +348,7 @@ public class ComplexSym implements IComplex {
 
   @Override
   public INumber floorFraction() {
-    return valueOf((IRational) fReal.floorFraction(), (IRational) fImaginary.floorFraction());
+    return valueOf(fReal.floorFraction(), fImaginary.floorFraction());
   }
 
   @Override
@@ -454,7 +454,7 @@ public class ComplexSym implements IComplex {
 
   @Override
   public ISymbol head() {
-    return F.Complex;
+    return S.Complex;
   }
 
   @Override
@@ -595,6 +595,7 @@ public class ComplexSym implements IComplex {
    * @param c2
    * @return the quotient and remainder as an array <code>[quotient, remainder]</code>
    */
+  @Override
   public IComplex[] quotientRemainder(final IComplex c2) {
     final IRational re = c2.re();
     final IRational im = c2.im();
@@ -773,6 +774,7 @@ public class ComplexSym implements IComplex {
     return r;
   }
 
+  @Override
   public void checkBitLength() {
     if (Integer.MAX_VALUE > Config.MAX_BIT_LENGTH) {
       long bitLength = fReal.toBigNumerator().bitLength() + fReal.toBigDenominator().bitLength();
@@ -816,9 +818,10 @@ public class ComplexSym implements IComplex {
 
   @Override
   public INumber round() {
-    return valueOf((IRational) fReal.round(), (IRational) fImaginary.round());
+    return valueOf(fReal.round(), fImaginary.round());
   }
 
+  @Override
   public IComplex sqrtCC() {
     // https://math.stackexchange.com/a/44414
     // this == c + d*I

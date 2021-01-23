@@ -505,7 +505,7 @@ public class ApcomplexNum implements IComplexNum {
 
   @Override
   public ISymbol head() {
-    return F.Complex;
+    return S.Complex;
   }
 
   public Apcomplex getComplex() {
@@ -566,6 +566,7 @@ public class ApcomplexNum implements IComplexNum {
         F.ZZ(ApfloatMath.floor(re).toBigInteger()), F.ZZ(ApfloatMath.floor(im).toBigInteger()));
   }
 
+  @Override
   public IExpr sqrt() {
     return valueOf(ApcomplexMath.sqrt(fApcomplex));
   }

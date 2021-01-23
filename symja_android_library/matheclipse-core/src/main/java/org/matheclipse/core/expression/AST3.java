@@ -122,6 +122,7 @@ public final class AST3 extends AST2 {
     return new AST(arg0, arg1, arg2, arg3);
   }
 
+  @Override
   public IASTAppendable copyAppendable(int additionalCapacity) {
     IASTAppendable result = F.ast(arg0, additionalCapacity + 3, false);
     result.append(arg1);

@@ -5,7 +5,6 @@ import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
 import java.text.Collator;
 import java.util.Locale;
-import java.util.Set;
 import java.util.function.Function;
 
 import org.matheclipse.core.interfaces.IExpr;
@@ -323,6 +322,7 @@ public class StringX implements IStringX {
     fString.getChars(srcBegin, srcEnd, dst, dstBegin);
   }
 
+  @Override
   public short getMimeType() {
     return fMimeType;
   }
@@ -334,7 +334,7 @@ public class StringX implements IStringX {
 
   @Override
   public ISymbol head() {
-    return F.String;
+    return S.String;
   }
 
   @Override
@@ -346,6 +346,7 @@ public class StringX implements IStringX {
    * @param ch
    * @return
    */
+  @Override
   public int indexOf(final int ch) {
     return fString.indexOf(ch);
   }
@@ -355,6 +356,7 @@ public class StringX implements IStringX {
    * @param fromIndex
    * @return
    */
+  @Override
   public int indexOf(final int ch, final int fromIndex) {
     return fString.indexOf(ch, fromIndex);
   }
@@ -363,6 +365,7 @@ public class StringX implements IStringX {
    * @param str
    * @return
    */
+  @Override
   public int indexOf(final String str) {
     return fString.indexOf(str);
   }
@@ -372,6 +375,7 @@ public class StringX implements IStringX {
    * @param fromIndex
    * @return
    */
+  @Override
   public int indexOf(final String str, final int fromIndex) {
     return fString.indexOf(str, fromIndex);
   }
@@ -414,6 +418,7 @@ public class StringX implements IStringX {
    * @param ch
    * @return
    */
+  @Override
   public int lastIndexOf(final int ch) {
     return fString.lastIndexOf(ch);
   }
@@ -423,6 +428,7 @@ public class StringX implements IStringX {
    * @param fromIndex
    * @return
    */
+  @Override
   public int lastIndexOf(final int ch, final int fromIndex) {
     return fString.lastIndexOf(ch, fromIndex);
   }
@@ -431,6 +437,7 @@ public class StringX implements IStringX {
    * @param str
    * @return
    */
+  @Override
   public int lastIndexOf(final String str) {
     return fString.lastIndexOf(str);
   }
@@ -440,6 +447,7 @@ public class StringX implements IStringX {
    * @param fromIndex
    * @return
    */
+  @Override
   public int lastIndexOf(final String str, final int fromIndex) {
     return fString.lastIndexOf(str, fromIndex);
   }
@@ -518,6 +526,7 @@ public class StringX implements IStringX {
    * @param endIndex
    * @return
    */
+  @Override
   public String substring(final int beginIndex, final int endIndex) {
     return fString.substring(beginIndex, endIndex);
   }

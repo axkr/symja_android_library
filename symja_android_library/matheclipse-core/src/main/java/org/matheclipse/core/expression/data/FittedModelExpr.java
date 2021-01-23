@@ -56,6 +56,7 @@ public class FittedModelExpr extends DataExpr<UpdatingMultipleLinearRegression> 
     return new FittedModelExpr(fData);
   }
 
+  @Override
   public IAST normal(boolean nilIfUnevaluated) {
     UpdatingMultipleLinearRegression model = toData();
     if (model instanceof SimpleRegression) {

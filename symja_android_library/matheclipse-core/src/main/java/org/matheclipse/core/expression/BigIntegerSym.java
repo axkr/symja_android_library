@@ -6,7 +6,6 @@ import java.io.ObjectOutput;
 import java.io.ObjectStreamException;
 import java.math.BigInteger;
 import java.math.RoundingMode;
-import java.util.Set;
 import java.util.function.Function;
 
 import org.hipparchus.fraction.BigFraction;
@@ -103,7 +102,7 @@ public class BigIntegerSym extends AbstractIntegerSym {
 
   public BigIntegerSym(byte[] bytes) {
     if (Config.MAX_BIT_LENGTH < bytes.length * 8) {
-      BigIntegerLimitExceeded.throwIt(((long) bytes.length) * 8L);
+      BigIntegerLimitExceeded.throwIt((bytes.length) * 8L);
     }
     fBigIntValue = new BigInteger(bytes);
   }
@@ -766,6 +765,7 @@ public class BigIntegerSym extends AbstractIntegerSym {
    * @return <code>k<code> such as <code>k^2 <= this < (k + 1)^2</code>. If this integer is negative or it's
    *         impossible to find a square root return <code>F.Sqrt(this)</code>.
    */
+  @Override
   public IExpr sqrt() {
     try {
       return valueOf(BigIntegerMath.sqrt(fBigIntValue, RoundingMode.UNNECESSARY));

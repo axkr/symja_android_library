@@ -18,6 +18,7 @@ import org.matheclipse.core.interfaces.ISignedNumber;
 import org.matheclipse.core.interfaces.ISymbol;
 
 public class IntervalSym {
+
   private static final Comparator<IExpr> INTERVAL_COMPARATOR =
       new Comparator<IExpr>() {
         @Override
@@ -26,9 +27,9 @@ public class IntervalSym {
             if (o1.second().equals(o2.second())) {
               return 0;
             }
-            return (F.Greater.ofQ(o1.second(), o2.second())) ? 1 : -1;
+            return (S.Greater.ofQ(o1.second(), o2.second())) ? 1 : -1;
           }
-          return (F.Greater.ofQ(o1.first(), o2.first())) ? 1 : -1;
+          return (S.Greater.ofQ(o1.first(), o2.first())) ? 1 : -1;
         }
       };
 
@@ -38,7 +39,17 @@ public class IntervalSym {
    */
   @FunctionalInterface
   public interface IExprProcessor {
-    boolean process(IExpr min, IExpr max, IASTAppendable result, int index);
+    /**
+     * Append the transformed interval part <code>[min, max]</code> to the result.
+     *
+     * @param min minimum limit of a single interval part
+     * @param max maximum limit of a single interval part
+     * @param result the resulting list of interval parts
+     * @param index
+     * @return <code>true</code> if a new interval could be appended to result; <code>false</code>
+     *     otherwise.
+     */
+    boolean apply(IExpr min, IExpr max, IASTAppendable result, int index);
   }
 
   private static boolean isNormalized(final IAST interval) {
@@ -217,7 +228,7 @@ public class IntervalSym {
   public static IExpr max(final IAST ast) {
     IAST interval = normalize(ast);
     if (interval.isPresent()) {
-      IASTAppendable result = F.ast(F.Max, interval.size(), false);
+      IASTAppendable result = F.ast(S.Max, interval.size(), false);
       // EvalEngine engine = EvalEngine.get();
       for (int i = 1; i < interval.size(); i++) {
         IAST list = (IAST) interval.get(i);
@@ -250,7 +261,7 @@ public class IntervalSym {
   public static IExpr min(final IAST ast) {
     IAST interval = normalize(ast);
     if (interval.isPresent()) {
-      IASTAppendable result = F.ast(F.Min, interval.size(), false);
+      IASTAppendable result = F.ast(S.Min, interval.size(), false);
       for (int i = 1; i < interval.size(); i++) {
         IAST list = (IAST) interval.get(i);
         result.append(list.arg1());
@@ -281,26 +292,14 @@ public class IntervalSym {
   }
 
   /**
-   * Special case of mutableProcessorConditions when exlusive = true;
+   * Replaces the most common code. Determines the result depending on the fulfillment of
+   * conditions.
    *
    * @param ast
-   * @param processors
-   * @return
-   */
-  private static IAST mutableProcessorConditions(final IAST ast, IExprProcessor... processors) {
-    return mutableProcessorConditions(ast, true, processors);
-  }
-
-  /**
-   * Replaces the most common code. Determines the result depending on the fulfillment of conditions
-   *
-   * @param ast
-   * @param exclusive, true or false
-   * @param processors, conditions to be met
+   * @param processors conditions to be met
    * @return IAST result, append value or F.NIL;
    */
-  private static IAST mutableProcessorConditions(
-      final IAST ast, boolean exclusive, IExprProcessor... processors) {
+  private static IAST mutableProcessorConditions(final IAST ast, IExprProcessor... processors) {
     if (processors != null && processors.length > 0) {
       IAST interval = normalize(ast);
       if (interval.isPresent()) {
@@ -313,8 +312,8 @@ public class IntervalSym {
 
             boolean processed = false;
             for (IExprProcessor processor : processors) {
-              processed = processor.process(min, max, result, i);
-              if (processed && exclusive) {
+              processed = processor.apply(min, max, result, i);
+              if (processed) {
                 break;
               }
             }
@@ -637,7 +636,7 @@ public class IntervalSym {
             // slope from 1st derivative
             double dMin = engine.evalDouble(F.Sin(min).negate());
             double dMax = engine.evalDouble(F.Sin(max).negate());
-            if (engine.evalTrue(F.LessEqual(difference, F.Pi))) {
+            if (engine.evalTrue(F.LessEqual(difference, S.Pi))) {
               if (dMin >= 0) {
                 if (dMax >= 0) {
                   result.append(index, F.List(F.Cos(min), F.Cos(max)));
@@ -677,7 +676,7 @@ public class IntervalSym {
         ast,
         (min, max, result, index) -> {
           IAST difference = F.Subtract(max, min);
-          if (engine.evalTrue(F.GreaterEqual(difference, F.Pi))) {
+          if (engine.evalTrue(F.GreaterEqual(difference, S.Pi))) {
             result.append(F.List(F.CNInfinity, F.CInfinity));
           } else {
             double dMin = engine.evalDouble(F.Cot(min));
@@ -755,8 +754,8 @@ public class IntervalSym {
         ast,
         (min, max, result, index) -> {
           if (min.isNonNegativeResult() && max.isNonNegativeResult()) {
-            min = F.Log.of(engine, min);
-            max = F.Log.of(engine, max);
+            min = S.Log.of(engine, min);
+            max = S.Log.of(engine, max);
             result.append(index, F.List(min, max));
             return true;
           }
@@ -785,7 +784,7 @@ public class IntervalSym {
             // slope from 1st derivative
             double dMin = engine.evalDouble(F.Cos(min));
             double dMax = engine.evalDouble(F.Cos(max));
-            if (engine.evalTrue(F.LessEqual(difference, F.Pi))) {
+            if (engine.evalTrue(F.LessEqual(difference, S.Pi))) {
               if (dMin >= 0) {
                 if (dMax >= 0) {
                   result.append(index, F.List(F.Sin(min), F.Sin(max)));
@@ -825,7 +824,7 @@ public class IntervalSym {
         ast,
         (min, max, result, index) -> {
           IAST difference = F.Subtract(max, min);
-          if (engine.evalTrue(F.GreaterEqual(difference, F.Pi))) {
+          if (engine.evalTrue(F.GreaterEqual(difference, S.Pi))) {
             result.append(F.List(F.CNInfinity, F.CInfinity));
           } else {
             double dMin = engine.evalDouble(F.Tan(min));
@@ -1095,7 +1094,7 @@ public class IntervalSym {
         IAST list = (IAST) interval.get(i);
         if (base.isZero()) {
           if (list.arg1().isNegativeResult() || list.arg2().isNegativeResult()) {
-            return F.Indeterminate;
+            return S.Indeterminate;
           }
         }
         result.append(F.List(base.power(list.arg1()), base.power(list.arg2())));

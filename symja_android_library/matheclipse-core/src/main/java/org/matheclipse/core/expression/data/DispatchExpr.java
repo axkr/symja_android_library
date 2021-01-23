@@ -81,6 +81,7 @@ public class DispatchExpr extends DataExpr<VisitorReplaceAll> implements Externa
     return DISPATCHID;
   }
 
+  @Override
   public IAST normal(boolean nilIfUnevaluated) {
     return listOfRules;
   }

@@ -187,6 +187,7 @@ public class AST0 extends AbstractAST implements Externalizable, RandomAccess {
     return new AST(arg0);
   }
 
+  @Override
   public IASTAppendable copyAppendable(int additionalCapacity) {
     return F.ast(arg0, additionalCapacity, false);
   }
@@ -291,6 +292,12 @@ public class AST0 extends AbstractAST implements Externalizable, RandomAccess {
   /** {@inheritDoc} */
   @Override
   public IExpr findFirst(Function<IExpr, IExpr> function) {
+    return F.NIL;
+  }
+
+  /** {@inheritDoc} */
+  @Override
+  public IExpr first() {
     return F.NIL;
   }
 
@@ -412,7 +419,7 @@ public class AST0 extends AbstractAST implements Externalizable, RandomAccess {
       size = attributeFlags;
       int exprIDSize = objectInput.readByte();
       for (int i = 0; i < exprIDSize; i++) {
-        set(i, F.exprID(objectInput.readShort())); // F.GLOBAL_IDS[objectInput.readShort()]);
+        set(i, S.exprID(objectInput.readShort())); // F.GLOBAL_IDS[objectInput.readShort()]);
       }
       for (int i = exprIDSize; i < size; i++) {
         set(i, (IExpr) objectInput.readObject());
@@ -491,7 +498,7 @@ public class AST0 extends AbstractAST implements Externalizable, RandomAccess {
     int size = size();
     byte attributeFlags = (byte) 0;
 
-    short exprID = F.GLOBAL_IDS_MAP.getShort(head());
+    short exprID = S.GLOBAL_IDS_MAP.getShort(head());
     if (exprID >= 0) {
       // short exprID = temp.getExprID();
       if (exprID <= Short.MAX_VALUE) {
@@ -499,7 +506,7 @@ public class AST0 extends AbstractAST implements Externalizable, RandomAccess {
         short[] exprIDArray = new short[size];
         exprIDArray[0] = exprID;
         for (int i = 1; i < size; i++) {
-          exprID = F.GLOBAL_IDS_MAP.getShort(get(i));
+          exprID = S.GLOBAL_IDS_MAP.getShort(get(i));
           if (exprID < 0) {
             break;
           }

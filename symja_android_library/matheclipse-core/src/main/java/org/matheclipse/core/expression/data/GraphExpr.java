@@ -1,8 +1,10 @@
 package org.matheclipse.core.expression.data;
 
 import org.jgrapht.Graph;
+import org.jgrapht.graph.AbstractBaseGraph;
 import org.jgrapht.graph.DefaultDirectedWeightedGraph;
 import org.jgrapht.graph.DefaultUndirectedWeightedGraph;
+import org.matheclipse.core.builtin.GraphFunctions;
 import org.matheclipse.core.expression.DataExpr;
 import org.matheclipse.core.expression.S;
 import org.matheclipse.core.interfaces.IExpr;
@@ -60,5 +62,19 @@ public class GraphExpr<T> extends DataExpr<Graph<IExpr, T>> {
   public boolean isWeightedGraph() {
     return fData instanceof DefaultDirectedWeightedGraph
         || fData instanceof DefaultUndirectedWeightedGraph;
+  }
+
+  @Override
+  public String toString() {
+    if (fData instanceof AbstractBaseGraph) {
+      AbstractBaseGraph<IExpr, ?> g = (AbstractBaseGraph<IExpr, ?>) fData;
+      if (g.getType().isWeighted()) {
+        return GraphFunctions.weightedGraphToIExpr((AbstractBaseGraph<IExpr, ExprWeightedEdge>) g)
+            .toString();
+      }
+      return GraphFunctions.graphToIExpr((AbstractBaseGraph<IExpr, ExprEdge>) g).toString();
+    }
+
+    return fHead + "[" + fData.toString() + "]";
   }
 }

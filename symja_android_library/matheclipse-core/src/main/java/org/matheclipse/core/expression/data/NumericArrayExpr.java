@@ -1,83 +1,216 @@
 package org.matheclipse.core.expression.data;
 
+import static com.google.common.base.Preconditions.checkArgument;
+
 import java.io.Externalizable;
 import java.io.IOException;
 import java.io.ObjectInput;
 import java.io.ObjectOutput;
+import java.math.BigInteger;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
 
+import org.hipparchus.complex.Complex;
 import org.matheclipse.core.basic.Config;
 import org.matheclipse.core.builtin.LinearAlgebra;
+import org.matheclipse.core.eval.exception.ArgumentTypeException;
 import org.matheclipse.core.expression.DataExpr;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.expression.S;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IASTAppendable;
 import org.matheclipse.core.interfaces.IASTMutable;
+import org.matheclipse.core.interfaces.IBuiltInSymbol;
 import org.matheclipse.core.interfaces.IExpr;
+import org.matheclipse.core.interfaces.IInteger;
 import org.matheclipse.core.interfaces.INumericArray;
 import org.matheclipse.core.interfaces.ISignedNumber;
 import org.matheclipse.parser.trie.Trie;
-import org.matheclipse.parser.trie.TrieNode;
-import org.matheclipse.parser.trie.Tries;
+
+import com.google.common.primitives.UnsignedBytes;
+import com.google.common.primitives.UnsignedInts;
+import com.google.common.primitives.UnsignedLong;
 
 public class NumericArrayExpr extends DataExpr<Object> implements INumericArray, Externalizable {
 
-  private static final Map<String, Integer> TYPE_MAP = new HashMap<String, Integer>();
+  static class RangeException extends Exception {
+    RangeException(String message) {
+      super(message);
+    }
+  }
 
-  private static final Map<Integer, String> TYPE_STRING_MAP = new HashMap<Integer, String>();
+  static class TypeException extends Exception {
+    TypeException(String message) {
+      super(message);
+    }
+  }
 
-  private static final int UNDEFINED_TYPE = -1;
+  /** The UNDEFINED value type token. */
+  public static final byte UNDEFINED = (byte) (0xFF);
 
-  /** Byte type */
-  private static final int INTEGER8_TYPE = 1;
+  /**
+   * See <a
+   * href="https://reference.wolfram.com/language/tutorial/WXFFormatDescription.html">WXFFormatDescription
+   * - Section NUmeric Arrays</a>
+   */
+  public static final byte Integer8 = (byte) (0x00);
+  /**
+   * See <a
+   * href="https://reference.wolfram.com/language/tutorial/WXFFormatDescription.html">WXFFormatDescription
+   * - Section NUmeric Arrays</a>
+   */
+  public static final byte Integer16 = (byte) (0x01);
 
-  /** Short type */
-  private static final int INTEGER16_TYPE = 2;
+  /**
+   * See <a
+   * href="https://reference.wolfram.com/language/tutorial/WXFFormatDescription.html">WXFFormatDescription
+   * - Section NUmeric Arrays</a>
+   */
+  public static final byte Integer32 = (byte) (0x02);
+  /**
+   * See <a
+   * href="https://reference.wolfram.com/language/tutorial/WXFFormatDescription.html">WXFFormatDescription
+   * - Section NUmeric Arrays</a>
+   */
+  public static final byte Integer64 = (byte) (0x03);
 
-  /** Integer type */
-  private static final int INTEGER32_TYPE = 3;
+  /**
+   * See <a
+   * href="https://reference.wolfram.com/language/tutorial/WXFFormatDescription.html">WXFFormatDescription
+   * - Section NUmeric Arrays</a>
+   */
+  public static final byte UnsignedInteger8 = (byte) (0x10);
 
-  /** Long type */
-  private static final int INTEGER64_TYPE = 4;
+  /**
+   * See <a
+   * href="https://reference.wolfram.com/language/tutorial/WXFFormatDescription.html">WXFFormatDescription
+   * - Section NUmeric Arrays</a>
+   */
+  public static final byte UnsignedInteger16 = (byte) (0x11);
 
-  /** Float type */
-  private static final int FLOAT_TYPE = 5;
+  /**
+   * See <a
+   * href="https://reference.wolfram.com/language/tutorial/WXFFormatDescription.html">WXFFormatDescription
+   * - Section NUmeric Arrays</a>
+   */
+  public static final byte UnsignedInteger32 = (byte) (0x12);
 
-  /** Double type */
-  private static final int DOUBLE_TYPE = 6;
+  /**
+   * See <a
+   * href="https://reference.wolfram.com/language/tutorial/WXFFormatDescription.html">WXFFormatDescription
+   * - Section NUmeric Arrays</a>
+   */
+  public static final byte UnsignedInteger64 = (byte) (0x13);
 
-  /** Float double type for real and imaginary part of a complex number */
-  private static final int COMPLEX_FLOAT_TYPE = 7;
+  /**
+   * See <a
+   * href="https://reference.wolfram.com/language/tutorial/WXFFormatDescription.html">WXFFormatDescription
+   * - Section NUmeric Arrays</a>
+   */
+  public static final byte Real32 = (byte) (0x22);
 
-  /** Complex double type for real and imaginary part of a complex number */
-  private static final int COMPLEX_DOUBLE_TYPE = 8;
+  /**
+   * See <a
+   * href="https://reference.wolfram.com/language/tutorial/WXFFormatDescription.html">WXFFormatDescription
+   * - Section NUmeric Arrays</a>
+   */
+  public static final byte Real64 = (byte) (0x23);
+
+  /**
+   * See <a
+   * href="https://reference.wolfram.com/language/tutorial/WXFFormatDescription.html">WXFFormatDescription
+   * - Section NUmeric Arrays</a>
+   */
+  public static final byte ComplexReal32 = (byte) (0x33);
+
+  /**
+   * See <a
+   * href="https://reference.wolfram.com/language/tutorial/WXFFormatDescription.html">WXFFormatDescription
+   * - Section NUmeric Arrays</a>
+   */
+  public static final byte ComplexReal64 = (byte) (0x34);
+
+  private static final Map<String, Byte> TYPE_MAP = new HashMap<String, Byte>();
+
+  private static final Map<Byte, String> TYPE_STRING_MAP = new HashMap<Byte, String>();
 
   static {
-    TYPE_MAP.put("Integer8", INTEGER8_TYPE);
-    TYPE_MAP.put("Integer16", INTEGER16_TYPE);
-    TYPE_MAP.put("Integer32", INTEGER32_TYPE);
-    TYPE_MAP.put("Integer64", INTEGER64_TYPE);
-    TYPE_MAP.put("Real32", FLOAT_TYPE);
-    TYPE_MAP.put("Real64", DOUBLE_TYPE);
-    TYPE_MAP.put("ComplexReal32", COMPLEX_FLOAT_TYPE);
-    TYPE_MAP.put("ComplexReal64", COMPLEX_DOUBLE_TYPE);
+    TYPE_MAP.put("Integer8", Integer8);
+    TYPE_MAP.put("Integer16", Integer16);
+    TYPE_MAP.put("Integer32", Integer32);
+    TYPE_MAP.put("Integer64", Integer64);
+    TYPE_MAP.put("UnsignedInteger8", UnsignedInteger8);
+    TYPE_MAP.put("UnsignedInteger16", UnsignedInteger16);
+    TYPE_MAP.put("UnsignedInteger32", UnsignedInteger32);
+    TYPE_MAP.put("UnsignedInteger64", UnsignedInteger64);
+    TYPE_MAP.put("Real32", Real32);
+    TYPE_MAP.put("Real64", Real64);
+    TYPE_MAP.put("ComplexReal32", ComplexReal32);
+    TYPE_MAP.put("ComplexReal64", ComplexReal64);
 
-    TYPE_STRING_MAP.put(INTEGER8_TYPE, "Integer8");
-    TYPE_STRING_MAP.put(INTEGER16_TYPE, "Integer16");
-    TYPE_STRING_MAP.put(INTEGER32_TYPE, "Integer32");
-    TYPE_STRING_MAP.put(INTEGER64_TYPE, "Integer64");
-    TYPE_STRING_MAP.put(FLOAT_TYPE, "Real32");
-    TYPE_STRING_MAP.put(DOUBLE_TYPE, "Real64");
-    TYPE_STRING_MAP.put(COMPLEX_FLOAT_TYPE, "ComplexReal32");
-    TYPE_STRING_MAP.put(COMPLEX_DOUBLE_TYPE, "ComplexReal64");
+    TYPE_STRING_MAP.put(Integer8, "Integer8");
+    TYPE_STRING_MAP.put(Integer16, "Integer16");
+    TYPE_STRING_MAP.put(Integer32, "Integer32");
+    TYPE_STRING_MAP.put(Integer64, "Integer64");
+    TYPE_STRING_MAP.put(UnsignedInteger8, "UnsignedInteger8");
+    TYPE_STRING_MAP.put(UnsignedInteger16, "UnsignedInteger16");
+    TYPE_STRING_MAP.put(UnsignedInteger32, "UnsignedInteger32");
+    TYPE_STRING_MAP.put(UnsignedInteger64, "UnsignedInteger64");
+    TYPE_STRING_MAP.put(Real32, "Real32");
+    TYPE_STRING_MAP.put(Real64, "Real64");
+    TYPE_STRING_MAP.put(ComplexReal32, "ComplexReal32");
+    TYPE_STRING_MAP.put(ComplexReal64, "ComplexReal64");
+  }
+
+  private static boolean arrayComplexFloatRecursive(
+      IAST nestedListsOfValues, int level, float[] floatArr, int[] index)
+      throws RangeException, TypeException {
+    level--;
+    for (int i = 1; i < nestedListsOfValues.size(); i++) {
+      IExpr arg = nestedListsOfValues.get(i);
+      if (level == 0) {
+        if (arg.isList()) {
+          return false;
+        }
+        Complex value = arg.evalComplex();
+        floatArr[index[0]++] = (float) value.getReal();
+        floatArr[index[0]++] = (float) value.getImaginary();
+      } else {
+        if (!arg.isList() || !arrayComplexFloatRecursive((IAST) arg, level, floatArr, index)) {
+          return false;
+        }
+      }
+    }
+    return true;
+  }
+
+  private static boolean arrayComplexDoubleRecursive(
+      IAST nestedListsOfValues, int level, double[] doubleArr, int[] index)
+      throws RangeException, TypeException {
+    level--;
+    for (int i = 1; i < nestedListsOfValues.size(); i++) {
+      IExpr arg = nestedListsOfValues.get(i);
+      if (level == 0) {
+        if (arg.isList()) {
+          return false;
+        }
+        Complex value = arg.evalComplex();
+        doubleArr[index[0]++] = value.getReal();
+        doubleArr[index[0]++] = value.getImaginary();
+      } else {
+        if (!arg.isList() || !arrayDoubleRecursive((IAST) arg, level, doubleArr, index)) {
+          return false;
+        }
+      }
+    }
+    return true;
   }
 
   private static boolean arrayDoubleRecursive(
-      IAST nestedListsOfValues, int level, double[] doubleArr, int[] index) {
+      IAST nestedListsOfValues, int level, double[] doubleArr, int[] index)
+      throws RangeException, TypeException {
     level--;
     for (int i = 1; i < nestedListsOfValues.size(); i++) {
       IExpr arg = nestedListsOfValues.get(i);
@@ -96,7 +229,8 @@ public class NumericArrayExpr extends DataExpr<Object> implements INumericArray,
   }
 
   private static boolean arrayFloatRecursive(
-      IAST nestedListsOfValues, int level, float[] floatArr, int[] index) {
+      IAST nestedListsOfValues, int level, float[] floatArr, int[] index)
+      throws RangeException, TypeException {
     level--;
     for (int i = 1; i < nestedListsOfValues.size(); i++) {
       IExpr arg = nestedListsOfValues.get(i);
@@ -114,14 +248,63 @@ public class NumericArrayExpr extends DataExpr<Object> implements INumericArray,
     return true;
   }
 
-  private static boolean arrayIntRecursive(
-      IAST nestedListsOfValues, int level, int[] intArr, int[] index) {
+  private static boolean arrayByteRecursive(
+      IAST nestedListsOfValues, int level, byte[] byteArr, int[] index)
+      throws RangeException, TypeException {
     level--;
     for (int i = 1; i < nestedListsOfValues.size(); i++) {
       IExpr arg = nestedListsOfValues.get(i);
       if (level == 0) {
-        if (!arg.isReal()) {
+        if (!arg.isInteger()) {
+          throw new TypeException("Not a valid Integers type");
+        }
+        int value = ((ISignedNumber) arg).toInt();
+        if (value < (Byte.MIN_VALUE) || value > Byte.MAX_VALUE) {
+          throw new RangeException("Value " + value + " out of Integer8 range");
+        }
+        byteArr[index[0]++] = (byte) value;
+      } else {
+        if (!arg.isList() || !arrayByteRecursive((IAST) arg, level, byteArr, index)) {
           return false;
+        }
+      }
+    }
+    return true;
+  }
+
+  private static boolean arrayShortRecursive(
+      IAST nestedListsOfValues, int level, short[] shortArr, int[] index)
+      throws RangeException, TypeException {
+    level--;
+    for (int i = 1; i < nestedListsOfValues.size(); i++) {
+      IExpr arg = nestedListsOfValues.get(i);
+      if (level == 0) {
+        if (!arg.isInteger()) {
+          throw new TypeException("Not a valid Integers type");
+        }
+        int value = ((ISignedNumber) arg).toInt();
+        if (value < (Short.MIN_VALUE) || value > Short.MAX_VALUE) {
+          throw new RangeException("Value " + value + " out of Integer16 range");
+        }
+        shortArr[index[0]++] = (short) value;
+      } else {
+        if (!arg.isList() || !arrayShortRecursive((IAST) arg, level, shortArr, index)) {
+          return false;
+        }
+      }
+    }
+    return true;
+  }
+
+  private static boolean arrayIntRecursive(
+      IAST nestedListsOfValues, int level, int[] intArr, int[] index)
+      throws RangeException, TypeException {
+    level--;
+    for (int i = 1; i < nestedListsOfValues.size(); i++) {
+      IExpr arg = nestedListsOfValues.get(i);
+      if (level == 0) {
+        if (!arg.isInteger()) {
+          throw new TypeException("Not a valid Integers type");
         }
         intArr[index[0]++] = ((ISignedNumber) arg).toInt();
       } else {
@@ -134,13 +317,14 @@ public class NumericArrayExpr extends DataExpr<Object> implements INumericArray,
   }
 
   private static boolean arrayLongRecursive(
-      IAST nestedListsOfValues, int level, long[] longArr, int[] index) {
+      IAST nestedListsOfValues, int level, long[] longArr, int[] index)
+      throws RangeException, TypeException {
     level--;
     for (int i = 1; i < nestedListsOfValues.size(); i++) {
       IExpr arg = nestedListsOfValues.get(i);
       if (level == 0) {
-        if (!arg.isReal()) {
-          return false;
+        if (!arg.isInteger()) {
+          throw new TypeException("Not a valid Integers type");
         }
         longArr[index[0]++] = ((ISignedNumber) arg).toLong();
       } else {
@@ -152,23 +336,234 @@ public class NumericArrayExpr extends DataExpr<Object> implements INumericArray,
     return true;
   }
 
+  private static boolean arrayUnsignedByteRecursive(
+      IAST nestedListsOfValues, int level, byte[] byteArr, int[] index)
+      throws RangeException, TypeException {
+    level--;
+    for (int i = 1; i < nestedListsOfValues.size(); i++) {
+      IExpr arg = nestedListsOfValues.get(i);
+      if (level == 0) {
+        if (!arg.isInteger()) {
+          throw new TypeException("Not a valid Integers type");
+        }
+        long value = ((ISignedNumber) arg).toLong();
+        byteArr[index[0]++] = UnsignedBytes.checkedCast(value);
+      } else {
+        if (!arg.isList() || !arrayUnsignedByteRecursive((IAST) arg, level, byteArr, index)) {
+          return false;
+        }
+      }
+    }
+    return true;
+  }
+
   /**
-   * @param key
-   * @return
+   * Returns the {@code short} value that, when treated as unsigned, is equal to {@code value}, if
+   * possible.
+   *
+   * @param value a value between 0 and 2<sup>16</sup>-1 inclusive
+   * @return the {@code short} value that, when treated as unsigned, equals {@code value}
+   * @throws IllegalArgumentException if {@code value} is negative or greater than or equal to
+   *     2<sup>16</sup>
+   * @since 21.0
    */
-  public static int getType(String key) {
-    Integer result = TYPE_MAP.get(key);
+  private static short checkedCastUnsignedShort(int value) {
+    checkArgument((value >> Short.SIZE) == 0, "out of range: %s", value);
+    return (short) value;
+  }
+
+  private static boolean arrayUnsignedShortRecursive(
+      IAST nestedListsOfValues, int level, short[] shortArr, int[] index)
+      throws RangeException, TypeException {
+    level--;
+    for (int i = 1; i < nestedListsOfValues.size(); i++) {
+      IExpr arg = nestedListsOfValues.get(i);
+      if (level == 0) {
+        if (!arg.isInteger()) {
+          throw new TypeException("Not a valid Integers type");
+        }
+        int value = ((ISignedNumber) arg).toInt();
+        shortArr[index[0]++] = checkedCastUnsignedShort(value);
+      } else {
+        if (!arg.isList() || !arrayUnsignedShortRecursive((IAST) arg, level, shortArr, index)) {
+          return false;
+        }
+      }
+    }
+    return true;
+  }
+
+  private static boolean arrayUnsignedIntRecursive(
+      IAST nestedListsOfValues, int level, int[] intArr, int[] index)
+      throws RangeException, TypeException {
+    level--;
+    for (int i = 1; i < nestedListsOfValues.size(); i++) {
+      IExpr arg = nestedListsOfValues.get(i);
+      if (level == 0) {
+        if (!arg.isInteger()) {
+          throw new TypeException("Not a valid Integers type");
+        }
+        long value = ((ISignedNumber) arg).toLong();
+        intArr[index[0]++] = UnsignedInts.checkedCast(value);
+      } else {
+        if (!arg.isList() || !arrayUnsignedIntRecursive((IAST) arg, level, intArr, index)) {
+          return false;
+        }
+      }
+    }
+    return true;
+  }
+
+  private static boolean arrayUnsignedLongRecursive(
+      IAST nestedListsOfValues, int level, long[] longArr, int[] index)
+      throws RangeException, TypeException {
+    level--;
+    for (int i = 1; i < nestedListsOfValues.size(); i++) {
+      IExpr arg = nestedListsOfValues.get(i);
+      if (level == 0) {
+        if (!arg.isInteger()) {
+          throw new TypeException("Not a valid Integers type");
+        }
+        BigInteger value = ((IInteger) arg).toBigNumerator();
+        UnsignedLong uint64 = UnsignedLong.valueOf(value);
+        longArr[index[0]++] = uint64.longValue();
+      } else {
+        if (!arg.isList() || !arrayUnsignedLongRecursive((IAST) arg, level, longArr, index)) {
+          return false;
+        }
+      }
+    }
+    return true;
+  }
+  /**
+   * Return the type of this expression as byte value defined as:
+   *
+   * <ul>
+   *   <li>{@link NumericArrayExpr#UnsignedInteger8},
+   *   <li>{@link NumericArrayExpr#UnsignedInteger16},
+   *   <li>{@link NumericArrayExpr#UnsignedInteger32},
+   *   <li>{@link NumericArrayExpr#UnsignedInteger64},
+   *   <li>{@link NumericArrayExpr#Integer8},
+   *   <li>{@link NumericArrayExpr#Integer16},
+   *   <li>{@link NumericArrayExpr#Integer32},
+   *   <li>{@link NumericArrayExpr#Integer64},
+   *   <li>{@link NumericArrayExpr#Real32},
+   *   <li>{@link NumericArrayExpr#Real64},
+   *   <li>{@link NumericArrayExpr#ComplexReal32},
+   *   <li>{@link NumericArrayExpr#ComplexReal64}
+   * </ul>
+   *
+   * @param typeAsString
+   * @return {@link NumericArrayExpr#UNDEFINED} if the type name isn't defined
+   */
+  public static byte toType(String typeAsString) {
+    Byte result = TYPE_MAP.get(typeAsString);
     if (result != null) {
       return result;
     }
-    return UNDEFINED_TYPE;
+    return UNDEFINED;
   }
 
-  public static NumericArrayExpr newInstance(final Object value, int[] dimension, int type) {
+  public static NumericArrayExpr newInstance(final Object value, int[] dimension, byte type) {
     return new NumericArrayExpr(value, dimension, type);
   }
 
-  public static NumericArrayExpr newList(final IAST list, int type) {
+  /**
+   * Create an appropriate <code>NumericArrayExpr</code> from the list. if <code>type==UNDEFINED
+   * </code> search for the suitable type. The search range can de restricted by the <code>symbol
+   * </code> parameter.
+   *
+   * @param list
+   * @param type if {@link #UNDEFINED} search for suitable type
+   * @param symbol one of {@link S#All}, {@link S#Integers}, {@link S#Reals}, {@link S#Complexes}
+   * @return <code>null</code> if list cannot be converted into a numeric array
+   */
+  public static NumericArrayExpr newListByType(final IAST list, byte type, IBuiltInSymbol symbol) {
+    if (type == UNDEFINED) {
+      if (symbol == S.Integers || symbol == S.All) {
+        try {
+          NumericArrayExpr result = newList(list, Integer8);
+          if (result != null) {
+            return result;
+          }
+        } catch (ArithmeticException | IllegalArgumentException | RangeException rex) {
+          try {
+            NumericArrayExpr result = newList(list, Integer16);
+            if (result != null) {
+              return result;
+            }
+          } catch (ArithmeticException | IllegalArgumentException | RangeException rex2) {
+            try {
+              NumericArrayExpr result = newList(list, Integer32);
+              if (result != null) {
+                return result;
+              }
+            } catch (ArithmeticException | IllegalArgumentException | RangeException rex3) {
+              try {
+                NumericArrayExpr result = newList(list, Integer64);
+                if (result != null) {
+                  return result;
+                }
+              } catch (ArithmeticException | IllegalArgumentException | RangeException rex4) {
+              } catch (ArgumentTypeException | TypeException tex) {
+              }
+            } catch (ArgumentTypeException | TypeException tex) {
+            }
+          } catch (ArgumentTypeException | TypeException tex) {
+          }
+        } catch (ArgumentTypeException | TypeException tex) {
+        }
+      }
+
+      if (symbol == S.Reals || symbol == S.All) {
+        try {
+          NumericArrayExpr result = newList(list, Real32);
+          if (result != null) {
+            return result;
+          }
+        } catch (ArithmeticException | IllegalArgumentException | RangeException rex) {
+          try {
+            NumericArrayExpr result = newList(list, Real64);
+            if (result != null) {
+              return result;
+            }
+          } catch (ArithmeticException | IllegalArgumentException | RangeException rex2) {
+          } catch (ArgumentTypeException | TypeException tex) {
+          }
+        } catch (ArgumentTypeException | TypeException tex) {
+        }
+      }
+      if (symbol == S.Complexes || symbol == S.All) {
+        try {
+          NumericArrayExpr result = newList(list, ComplexReal32);
+          if (result != null) {
+            return result;
+          }
+        } catch (ArithmeticException | IllegalArgumentException | RangeException rex) {
+          try {
+            NumericArrayExpr result = newList(list, ComplexReal64);
+            if (result != null) {
+              return result;
+            }
+          } catch (ArithmeticException | RangeException rex2) {
+          } catch (ArgumentTypeException | TypeException tex) {
+          }
+        } catch (ArgumentTypeException | TypeException tex) {
+        }
+      }
+      return null;
+    }
+
+    try {
+      return newList(list, type);
+    } catch (RangeException rex) {
+    } catch (TypeException tex) {
+    }
+    return null;
+  }
+
+  private static NumericArrayExpr newList(final IAST list, byte type)
+      throws RangeException, TypeException {
     int[] dimension = null;
     ArrayList<Integer> dims = LinearAlgebra.dimensions(list);
     if (dims != null && dims.size() > 0) {
@@ -182,28 +577,82 @@ public class NumericArrayExpr extends DataExpr<Object> implements INumericArray,
       try {
         int[] index = new int[1];
         switch (type) {
-          case INTEGER32_TYPE:
+          case Integer8:
+            byte[] byteArr = new byte[size];
+            if (arrayByteRecursive(list, dimension.length, byteArr, index)) {
+              return new NumericArrayExpr(byteArr, dimension, type);
+            }
+            break;
+          case Integer16:
+            short[] shortArr = new short[size];
+            if (arrayShortRecursive(list, dimension.length, shortArr, index)) {
+              return new NumericArrayExpr(shortArr, dimension, type);
+            }
+            break;
+          case Integer32:
             int[] intArr = new int[size];
             if (arrayIntRecursive(list, dimension.length, intArr, index)) {
               return new NumericArrayExpr(intArr, dimension, type);
             }
             break;
-          case INTEGER64_TYPE:
+          case Integer64:
             long[] longArr = new long[size];
             if (arrayLongRecursive(list, dimension.length, longArr, index)) {
               return new NumericArrayExpr(longArr, dimension, type);
             }
             break;
-          case FLOAT_TYPE:
+          case UnsignedInteger8:
+            byte[] unsignedByteArr = new byte[size];
+            if (arrayUnsignedByteRecursive(list, dimension.length, unsignedByteArr, index)) {
+              return new NumericArrayExpr(unsignedByteArr, dimension, type);
+            }
+            break;
+          case UnsignedInteger16:
+            short[] unsignedShortArr = new short[size];
+            if (arrayUnsignedShortRecursive(list, dimension.length, unsignedShortArr, index)) {
+              return new NumericArrayExpr(unsignedShortArr, dimension, type);
+            }
+            break;
+          case UnsignedInteger32:
+            int[] unsignedIntArr = new int[size];
+            if (arrayUnsignedIntRecursive(list, dimension.length, unsignedIntArr, index)) {
+              return new NumericArrayExpr(unsignedIntArr, dimension, type);
+            }
+            break;
+          case UnsignedInteger64:
+            long[] unsignedLongArr = new long[size];
+            if (arrayUnsignedLongRecursive(list, dimension.length, unsignedLongArr, index)) {
+              return new NumericArrayExpr(unsignedLongArr, dimension, type);
+            }
+            break;
+          case Real32:
             float[] floatArr = new float[size];
             if (arrayFloatRecursive(list, dimension.length, floatArr, index)) {
               return new NumericArrayExpr(floatArr, dimension, type);
             }
             break;
-          case DOUBLE_TYPE:
-            double[] doubleArr = new double[size];
-            if (arrayDoubleRecursive(list, dimension.length, doubleArr, index)) {
-              return new NumericArrayExpr(doubleArr, dimension, type);
+          case Real64:
+            {
+              double[] doubleArr = new double[size];
+              if (arrayDoubleRecursive(list, dimension.length, doubleArr, index)) {
+                return new NumericArrayExpr(doubleArr, dimension, type);
+              }
+            }
+            break;
+          case ComplexReal32:
+            {
+              float[] complexFloatArr = new float[size * 2];
+              if (arrayComplexFloatRecursive(list, dimension.length, complexFloatArr, index)) {
+                return new NumericArrayExpr(complexFloatArr, dimension, type);
+              }
+            }
+            break;
+          case ComplexReal64:
+            {
+              double[] complexDoubleArr = new double[size * 2];
+              if (arrayComplexDoubleRecursive(list, dimension.length, complexDoubleArr, index)) {
+                return new NumericArrayExpr(complexDoubleArr, dimension, type);
+              }
             }
             break;
         }
@@ -212,23 +661,6 @@ public class NumericArrayExpr extends DataExpr<Object> implements INumericArray,
       }
     }
     return null;
-  }
-
-  private static void normalRecursive(
-      double[] doubleArray, IASTMutable list, int[] dimension, int position, int[] index) {
-    int size = dimension[position];
-    if (dimension.length - 1 == position) {
-      for (int i = 1; i <= size; i++) {
-        list.set(i, F.num(doubleArray[index[0]++]));
-      }
-      return;
-    }
-    int size2 = dimension[position + 1];
-    for (int i = 1; i <= size; i++) {
-      IASTAppendable currentList = F.ast(S.List, size2, true);
-      list.set(i, currentList);
-      normalRecursive(doubleArray, currentList, dimension, position + 1, index);
-    }
   }
 
   private static void normalRecursive(
@@ -249,11 +681,11 @@ public class NumericArrayExpr extends DataExpr<Object> implements INumericArray,
   }
 
   private static void normalRecursive(
-      int[] intArray, IASTMutable list, int[] dimension, int position, int[] index) {
+      double[] doubleArray, IASTMutable list, int[] dimension, int position, int[] index) {
     int size = dimension[position];
     if (dimension.length - 1 == position) {
       for (int i = 1; i <= size; i++) {
-        list.set(i, F.ZZ(intArray[index[0]++]));
+        list.set(i, F.num(doubleArray[index[0]++]));
       }
       return;
     }
@@ -261,16 +693,59 @@ public class NumericArrayExpr extends DataExpr<Object> implements INumericArray,
     for (int i = 1; i <= size; i++) {
       IASTAppendable currentList = F.ast(S.List, size2, true);
       list.set(i, currentList);
-      normalRecursive(intArray, currentList, dimension, position + 1, index);
+      normalRecursive(doubleArray, currentList, dimension, position + 1, index);
+    }
+  }
+
+  private static void normalRecursiveComplex(
+      float[] floatArray, IASTMutable list, int[] dimension, int position, int[] index) {
+    int size = dimension[position];
+    if (dimension.length - 1 == position) {
+      for (int i = 1; i <= size; i++) {
+        list.set(i, F.complexNum(floatArray[index[0]++], floatArray[index[0]++]));
+      }
+      return;
+    }
+    int size2 = dimension[position + 1];
+    for (int i = 1; i <= size; i++) {
+      IASTAppendable currentList = F.ast(S.List, size2, true);
+      list.set(i, currentList);
+      normalRecursiveComplex(floatArray, currentList, dimension, position + 1, index);
+    }
+  }
+
+  private static void normalRecursiveComplex(
+      double[] doubleArray, IASTMutable list, int[] dimension, int position, int[] index) {
+    int size = dimension[position];
+    if (dimension.length - 1 == position) {
+      for (int i = 1; i <= size; i++) {
+        list.set(i, F.complexNum(doubleArray[index[0]++], doubleArray[index[0]++]));
+      }
+      return;
+    }
+    int size2 = dimension[position + 1];
+    for (int i = 1; i <= size; i++) {
+      IASTAppendable currentList = F.ast(S.List, size2, true);
+      list.set(i, currentList);
+      normalRecursiveComplex(doubleArray, currentList, dimension, position + 1, index);
     }
   }
 
   private static void normalRecursive(
-      long[] longArray, IASTMutable list, int[] dimension, int position, int[] index) {
+      byte[] byteArray,
+      boolean unsigned,
+      IASTMutable list,
+      int[] dimension,
+      int position,
+      int[] index) {
     int size = dimension[position];
     if (dimension.length - 1 == position) {
       for (int i = 1; i <= size; i++) {
-        list.set(i, F.ZZ(longArray[index[0]++]));
+        IInteger intValue =
+            unsigned
+                ? F.ZZ(Byte.toUnsignedInt(byteArray[index[0]++]))
+                : F.ZZ(byteArray[index[0]++]);
+        list.set(i, intValue);
       }
       return;
     }
@@ -278,21 +753,99 @@ public class NumericArrayExpr extends DataExpr<Object> implements INumericArray,
     for (int i = 1; i <= size; i++) {
       IASTAppendable currentList = F.ast(S.List, size2, true);
       list.set(i, currentList);
-      normalRecursive(longArray, currentList, dimension, position + 1, index);
+      normalRecursive(byteArray, unsigned, currentList, dimension, position + 1, index);
+    }
+  }
+
+  private static void normalRecursive(
+      short[] shortArray,
+      boolean unsigned,
+      IASTMutable list,
+      int[] dimension,
+      int position,
+      int[] index) {
+    int size = dimension[position];
+    if (dimension.length - 1 == position) {
+      for (int i = 1; i <= size; i++) {
+        IInteger intValue =
+            unsigned
+                ? F.ZZ(Short.toUnsignedInt(shortArray[index[0]++]))
+                : F.ZZ(shortArray[index[0]++]);
+        list.set(i, intValue);
+      }
+      return;
+    }
+    int size2 = dimension[position + 1];
+    for (int i = 1; i <= size; i++) {
+      IASTAppendable currentList = F.ast(S.List, size2, true);
+      list.set(i, currentList);
+      normalRecursive(shortArray, unsigned, currentList, dimension, position + 1, index);
+    }
+  }
+
+  private static void normalRecursive(
+      int[] intArray,
+      boolean unsigned,
+      IASTMutable list,
+      int[] dimension,
+      int position,
+      int[] index) {
+    int size = dimension[position];
+    if (dimension.length - 1 == position) {
+      for (int i = 1; i <= size; i++) {
+        long value =
+            unsigned
+                ? Integer.toUnsignedLong(intArray[index[0]++]) //
+                : intArray[index[0]++];
+        list.set(i, F.ZZ(value));
+      }
+      return;
+    }
+    int size2 = dimension[position + 1];
+    for (int i = 1; i <= size; i++) {
+      IASTAppendable currentList = F.ast(S.List, size2, true);
+      list.set(i, currentList);
+      normalRecursive(intArray, unsigned, currentList, dimension, position + 1, index);
+    }
+  }
+
+  private static void normalRecursive(
+      long[] longArray,
+      boolean unsigned,
+      IASTMutable list,
+      int[] dimension,
+      int position,
+      int[] index) {
+    int size = dimension[position];
+    if (dimension.length - 1 == position) {
+      for (int i = 1; i <= size; i++) {
+        IInteger intValue =
+            unsigned
+                ? F.ZZ(UnsignedLong.fromLongBits(longArray[index[0]++]).bigIntegerValue())
+                : F.ZZ(longArray[index[0]++]);
+        list.set(i, intValue);
+      }
+      return;
+    }
+    int size2 = dimension[position + 1];
+    for (int i = 1; i <= size; i++) {
+      IASTAppendable currentList = F.ast(S.List, size2, true);
+      list.set(i, currentList);
+      normalRecursive(longArray, unsigned, currentList, dimension, position + 1, index);
     }
   }
 
   /** The dimension of the numeric array. */
   int[] fDimension;
 
-  int fType;
+  byte fType;
 
   public NumericArrayExpr() {
     super(S.NumericArray, null);
-    fType = UNDEFINED_TYPE;
+    fType = UNDEFINED;
   }
 
-  protected NumericArrayExpr(final Object array, int[] dimension, int type) {
+  public NumericArrayExpr(final Object array, int[] dimension, byte type) {
     super(S.NumericArray, array);
     fDimension = dimension;
     fType = type;
@@ -312,13 +865,21 @@ public class NumericArrayExpr extends DataExpr<Object> implements INumericArray,
       NumericArrayExpr numericArray = (NumericArrayExpr) obj;
       if (fType == numericArray.fType) {
         switch (fType) {
-          case INTEGER32_TYPE:
+          case Integer8:
+            return Arrays.equals((byte[]) fData, (byte[]) numericArray.fData);
+          case Integer16:
+            return Arrays.equals((short[]) fData, (short[]) numericArray.fData);
+          case Integer32:
             return Arrays.equals((int[]) fData, (int[]) numericArray.fData);
-          case INTEGER64_TYPE:
+          case Integer64:
             return Arrays.equals((long[]) fData, (long[]) numericArray.fData);
-          case FLOAT_TYPE:
+          case Real32:
             return Arrays.equals((float[]) fData, (float[]) numericArray.fData);
-          case DOUBLE_TYPE:
+          case Real64:
+            return Arrays.equals((double[]) fData, (double[]) numericArray.fData);
+          case ComplexReal32:
+            return Arrays.equals((float[]) fData, (float[]) numericArray.fData);
+          case ComplexReal64:
             return Arrays.equals((double[]) fData, (double[]) numericArray.fData);
         }
       }
@@ -372,8 +933,32 @@ public class NumericArrayExpr extends DataExpr<Object> implements INumericArray,
     return F.NIL;
   }
 
-  public String getType() {
+  @Override
+  public String getStringType() {
     return TYPE_STRING_MAP.get(fType);
+  }
+
+  /**
+   * Return the type of this expression as byte value defined as:
+   *
+   * <ul>
+   *   <li>{@link NumericArrayExpr#UnsignedInteger8},
+   *   <li>{@link NumericArrayExpr#UnsignedInteger16},
+   *   <li>{@link NumericArrayExpr#UnsignedInteger32},
+   *   <li>{@link NumericArrayExpr#UnsignedInteger64},
+   *   <li>{@link NumericArrayExpr#Integer8},
+   *   <li>{@link NumericArrayExpr#Integer16},
+   *   <li>{@link NumericArrayExpr#Integer32},
+   *   <li>{@link NumericArrayExpr#Integer64},
+   *   <li>{@link NumericArrayExpr#Real32},
+   *   <li>{@link NumericArrayExpr#Real64},
+   *   <li>{@link NumericArrayExpr#ComplexReal32},
+   *   <li>{@link NumericArrayExpr#ComplexReal64}
+   * </ul>
+   */
+  @Override
+  public byte getType() {
+    return fType;
   }
 
   @Override
@@ -399,6 +984,7 @@ public class NumericArrayExpr extends DataExpr<Object> implements INumericArray,
     return F.headAST0(S.List);
   }
 
+  @Override
   public IASTMutable normal(int[] dims) {
     return normalAppendable(S.List, dims);
   }
@@ -407,17 +993,41 @@ public class NumericArrayExpr extends DataExpr<Object> implements INumericArray,
     IASTAppendable list = F.ast(head, dims[0], true);
     int[] index = new int[1];
     switch (fType) {
-      case INTEGER32_TYPE:
-        normalRecursive((int[]) fData, list, dims, 0, index);
+      case Integer8:
+        normalRecursive((byte[]) fData, false, list, dims, 0, index);
         break;
-      case INTEGER64_TYPE:
-        normalRecursive((long[]) fData, list, dims, 0, index);
+      case Integer16:
+        normalRecursive((short[]) fData, false, list, dims, 0, index);
         break;
-      case FLOAT_TYPE:
+      case Integer32:
+        normalRecursive((int[]) fData, false, list, dims, 0, index);
+        break;
+      case Integer64:
+        normalRecursive((long[]) fData, false, list, dims, 0, index);
+        break;
+      case UnsignedInteger8:
+        normalRecursive((byte[]) fData, true, list, dims, 0, index);
+        break;
+      case UnsignedInteger16:
+        normalRecursive((short[]) fData, true, list, dims, 0, index);
+        break;
+      case UnsignedInteger32:
+        normalRecursive((int[]) fData, true, list, dims, 0, index);
+        break;
+      case UnsignedInteger64:
+        normalRecursive((long[]) fData, true, list, dims, 0, index);
+        break;
+      case Real32:
         normalRecursive((float[]) fData, list, dims, 0, index);
         break;
-      case DOUBLE_TYPE:
+      case Real64:
         normalRecursive((double[]) fData, list, dims, 0, index);
+        break;
+      case ComplexReal32:
+        normalRecursiveComplex((float[]) fData, list, dims, 0, index);
+        break;
+      case ComplexReal64:
+        normalRecursiveComplex((double[]) fData, list, dims, 0, index);
         break;
     }
 
@@ -426,7 +1036,7 @@ public class NumericArrayExpr extends DataExpr<Object> implements INumericArray,
 
   @Override
   public void readExternal(ObjectInput in) throws IOException, ClassNotFoundException {
-    int type = in.readInt();
+    byte type = in.readByte();
     fType = type;
     fDimension = (int[]) in.readObject();
     fData = in.readObject();
@@ -444,12 +1054,23 @@ public class NumericArrayExpr extends DataExpr<Object> implements INumericArray,
 
   @Override
   public String toString() {
-    return fHead + "[" + fData.toString() + "]";
+    StringBuilder buf = new StringBuilder();
+    buf.append("NumericArray(Type: ");
+    buf.append(TYPE_STRING_MAP.get(fType));
+    buf.append(" Dimensions: {");
+    for (int i = 0; i < fDimension.length; i++) {
+      buf.append(fDimension[i]);
+      if (i < fDimension.length - 1) {
+        buf.append(",");
+      }
+    }
+    buf.append("})");
+    return buf.toString();
   }
 
   @Override
   public void writeExternal(ObjectOutput output) throws IOException {
-    output.writeInt(fType);
+    output.writeByte(fType);
     output.writeObject(fDimension);
     output.writeObject(fData);
   }

@@ -8,7 +8,6 @@ import java.text.Collator;
 import java.util.Collection;
 import java.util.Locale;
 import java.util.Map;
-import java.util.Set;
 import java.util.function.Function;
 import java.util.function.Predicate;
 
@@ -794,12 +793,6 @@ public class BuiltInDummy implements IBuiltInSymbol, Serializable {
   public IExpr of(EvalEngine engine, IExpr... args) {
     IAST ast = F.ast(args, this);
     return engine.evaluate(ast);
-  }
-
-  /** {@inheritDoc} */
-  @Override
-  public IExpr of(IExpr... args) {
-    return of(EvalEngine.get(), args);
   }
 
   /** {@inheritDoc} */

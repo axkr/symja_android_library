@@ -6,7 +6,6 @@ import java.io.ObjectOutput;
 import java.io.ObjectStreamException;
 import java.math.BigInteger;
 import java.math.RoundingMode;
-import java.util.Set;
 import java.util.function.Function;
 
 import org.hipparchus.exception.MathRuntimeException;
@@ -832,6 +831,7 @@ public class IntegerSym extends AbstractIntegerSym {
    * @return <code>k<code> such as <code>k^2 <= this < (k + 1)^2</code>. If this integer is negative or it's
    *         impossible to find a square root return <code>F.Sqrt(this)</code>.
    */
+  @Override
   public IExpr sqrt() {
     try {
       return valueOf(IntMath.sqrt(fIntValue, RoundingMode.UNNECESSARY));
@@ -920,7 +920,6 @@ public class IntegerSym extends AbstractIntegerSym {
     }
     objectOutput.writeByte(4);
     objectOutput.writeInt(fIntValue);
-    return;
   }
 
   private Object writeReplace() throws ObjectStreamException {

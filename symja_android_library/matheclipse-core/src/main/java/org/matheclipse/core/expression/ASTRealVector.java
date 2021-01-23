@@ -169,6 +169,7 @@ public class ASTRealVector extends AbstractAST implements Externalizable, Random
   }
 
   /** {@inheritDoc} */
+  @Override
   public int argSize() {
     return vector.getDimension();
   }
@@ -281,7 +282,7 @@ public class ASTRealVector extends AbstractAST implements Externalizable, Random
   /** {@inheritDoc} */
   @Override
   public final String fullFormString() {
-    return fullFormString(F.List);
+    return fullFormString(S.List);
   }
 
   /** {@inheritDoc} */
@@ -330,7 +331,7 @@ public class ASTRealVector extends AbstractAST implements Externalizable, Random
 
   @Override
   public final IExpr head() {
-    return F.$RealVector;
+    return S.$RealVector;
   }
 
   /** {@inheritDoc} */
@@ -376,26 +377,26 @@ public class ASTRealVector extends AbstractAST implements Externalizable, Random
   /** {@inheritDoc} */
   @Override
   public boolean isSameHead(ISymbol head) {
-    return F.$RealVector == head;
+    return S.$RealVector == head;
   }
 
   /** {@inheritDoc} */
   @Override
   public boolean isSameHead(ISymbol head, int length) {
-    return F.$RealVector.equals(head) && vector.getDimension() == length - 1;
+    return S.$RealVector.equals(head) && vector.getDimension() == length - 1;
   }
 
   /** {@inheritDoc} */
   @Override
   public boolean isSameHead(ISymbol head, int minLength, int maxLength) {
     int size = vector.getDimension() + 1;
-    return F.$RealVector.equals(head) && minLength <= size && maxLength >= size;
+    return S.$RealVector.equals(head) && minLength <= size && maxLength >= size;
   }
 
   /** {@inheritDoc} */
   @Override
   public boolean isSameHeadSizeGE(ISymbol head, int length) {
-    return F.$RealVector == head && length <= vector.getDimension() + 1;
+    return S.$RealVector == head && length <= vector.getDimension() + 1;
   }
 
   /** {@inheritDoc} */

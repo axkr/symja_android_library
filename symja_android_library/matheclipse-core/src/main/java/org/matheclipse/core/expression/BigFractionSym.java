@@ -2,7 +2,6 @@ package org.matheclipse.core.expression;
 
 import java.math.BigDecimal;
 import java.math.BigInteger;
-import java.util.Set;
 import java.util.function.Function;
 
 import org.hipparchus.fraction.BigFraction;
@@ -59,7 +58,7 @@ public class BigFractionSym extends AbstractFractionSym {
     int bitLength = nom.bitLength();
     if (Config.MAX_BIT_LENGTH < bitLength) {
       BigIntegerLimitExceeded.throwIt(bitLength);
-    } 
+    }
     bitLength = denom.bitLength();
     if (Config.MAX_BIT_LENGTH < bitLength) {
       BigIntegerLimitExceeded.throwIt(bitLength);
@@ -351,6 +350,7 @@ public class BigFractionSym extends AbstractFractionSym {
    * @param other the second rational argument.
    * @return the gcd of this and other.
    */
+  @Override
   public IFraction gcd(IFraction other) {
     if (other.isZero()) {
       return this;

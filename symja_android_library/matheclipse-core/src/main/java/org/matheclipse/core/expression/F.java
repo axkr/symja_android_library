@@ -90,7 +90,6 @@ import org.matheclipse.core.eval.interfaces.AbstractCoreFunctionEvaluator;
 import org.matheclipse.core.eval.interfaces.ICoreFunctionEvaluator;
 import org.matheclipse.core.eval.util.IAssumptions;
 import org.matheclipse.core.eval.util.Lambda;
-import org.matheclipse.core.eval.util.LevelSpecification;
 import org.matheclipse.core.expression.data.GraphExpr;
 import org.matheclipse.core.expression.data.SparseArrayExpr;
 import org.matheclipse.core.form.Documentation;
@@ -118,7 +117,7 @@ import org.matheclipse.core.interfaces.IStringX;
 import org.matheclipse.core.interfaces.ISymbol;
 import org.matheclipse.core.parser.ExprParser;
 import org.matheclipse.core.parser.ExprParserFactory;
-import org.matheclipse.core.patternmatching.IPatternMap.PatternMap;
+import org.matheclipse.core.patternmatching.IPatternMap;
 import org.matheclipse.core.patternmatching.IPatternMatcher;
 import org.matheclipse.core.tensor.QuantityParser;
 import org.matheclipse.core.visit.VisitorLevelSpecification;
@@ -1029,7 +1028,7 @@ public class F extends S {
 
       ComputationalGeometryFunctions.initialize();
 
-      F.Integrate.setEvaluator(org.matheclipse.core.reflection.system.Integrate.CONST);
+      S.Integrate.setEvaluator(org.matheclipse.core.reflection.system.Integrate.CONST);
       COUNT_DOWN_LATCH.countDown();
       // long stop = System.currentTimeMillis();
       // System.out.println("Milliseconds: " + (stop - start));
@@ -1057,19 +1056,19 @@ public class F extends S {
 
   private static void createDenominatorFunctionMap() {
     DENOMINATOR_NUMERATOR_SYMBOLS = new ISymbol[6];
-    DENOMINATOR_NUMERATOR_SYMBOLS[0] = F.Sin;
-    DENOMINATOR_NUMERATOR_SYMBOLS[1] = F.Cos;
-    DENOMINATOR_NUMERATOR_SYMBOLS[2] = F.Tan;
-    DENOMINATOR_NUMERATOR_SYMBOLS[3] = F.Csc;
-    DENOMINATOR_NUMERATOR_SYMBOLS[4] = F.Sec;
-    DENOMINATOR_NUMERATOR_SYMBOLS[5] = F.Cot;
+    DENOMINATOR_NUMERATOR_SYMBOLS[0] = S.Sin;
+    DENOMINATOR_NUMERATOR_SYMBOLS[1] = S.Cos;
+    DENOMINATOR_NUMERATOR_SYMBOLS[2] = S.Tan;
+    DENOMINATOR_NUMERATOR_SYMBOLS[3] = S.Csc;
+    DENOMINATOR_NUMERATOR_SYMBOLS[4] = S.Sec;
+    DENOMINATOR_NUMERATOR_SYMBOLS[5] = S.Cot;
     DENOMINATOR_TRIG_TRUE_EXPRS = new IExpr[6];
     DENOMINATOR_TRIG_TRUE_EXPRS[0] = F.C1;
     DENOMINATOR_TRIG_TRUE_EXPRS[1] = F.C1;
-    DENOMINATOR_TRIG_TRUE_EXPRS[2] = F.Cos;
-    DENOMINATOR_TRIG_TRUE_EXPRS[3] = F.Sin;
-    DENOMINATOR_TRIG_TRUE_EXPRS[4] = F.Cos;
-    DENOMINATOR_TRIG_TRUE_EXPRS[5] = F.Sin;
+    DENOMINATOR_TRIG_TRUE_EXPRS[2] = S.Cos;
+    DENOMINATOR_TRIG_TRUE_EXPRS[3] = S.Sin;
+    DENOMINATOR_TRIG_TRUE_EXPRS[4] = S.Cos;
+    DENOMINATOR_TRIG_TRUE_EXPRS[5] = S.Sin;
   }
 
   private static void createInverseFunctionMap() {
@@ -1664,7 +1663,7 @@ public class F extends S {
   }
 
   public static IAST And(final IExpr a0, final IExpr a1, final IExpr a3) {
-    return new AST3(F.And, a0, a1, a3);
+    return new AST3(S.And, a0, a1, a3);
   }
 
   public static IAST AngleVector(final IExpr a0) {
@@ -1852,7 +1851,7 @@ public class F extends S {
    * @return <code>Arrays(dimensions, Complexes, {})</code>.
    */
   public static IAST Arrays(final IAST dimension) {
-    return Arrays(dimension, F.Complexes, F.List());
+    return Arrays(dimension, S.Complexes, F.List());
   }
 
   /**
@@ -1963,7 +1962,7 @@ public class F extends S {
    * @return
    */
   public static IASTAppendable constantArray(final IExpr value, final int copies) {
-    return value.constantArray(F.List, 0, copies);
+    return value.constantArray(S.List, 0, copies);
   }
 
   /**
@@ -2049,7 +2048,7 @@ public class F extends S {
   }
 
   public static IAST BaseForm(final IExpr a0, final IExpr a1) {
-    return new AST2(F.BaseForm, a0, a1);
+    return new AST2(S.BaseForm, a0, a1);
   }
 
   /**
@@ -2059,7 +2058,7 @@ public class F extends S {
    * @return
    */
   public static IAST BellB(final IExpr a0) {
-    return new AST1(F.BellB, a0);
+    return new AST1(S.BellB, a0);
   }
 
   /**
@@ -2070,23 +2069,23 @@ public class F extends S {
    * @return
    */
   public static IAST BellB(final IExpr a0, final IExpr a1) {
-    return new AST2(F.BellB, a0, a1);
+    return new AST2(S.BellB, a0, a1);
   }
 
   public static IAST BellY(final IExpr a0, final IExpr a1, final IExpr a2) {
-    return new AST3(F.BellY, a0, a1, a2);
+    return new AST3(S.BellY, a0, a1, a2);
   }
 
   public static IAST BernoulliB(final IExpr a0) {
-    return new AST1(F.BernoulliB, a0);
+    return new AST1(S.BernoulliB, a0);
   }
 
   public static IAST BernoulliB(final IExpr a0, final IExpr a1) {
-    return new AST2(F.BernoulliB, a0, a1);
+    return new AST2(S.BernoulliB, a0, a1);
   }
 
   public static IAST BernoulliDistribution(final IExpr a0) {
-    return new AST1(F.BernoulliDistribution, a0);
+    return new AST1(S.BernoulliDistribution, a0);
   }
 
   /**
@@ -2125,11 +2124,11 @@ public class F extends S {
   }
 
   public static IAST Binomial(final IExpr a0, final IExpr a1) {
-    return new AST2(F.Binomial, a0, a1);
+    return new AST2(S.Binomial, a0, a1);
   }
 
   public static IAST Binomial(final int a0, final int a1) {
-    return new AST2(F.Binomial, F.ZZ(a0), F.ZZ(a1));
+    return new AST2(S.Binomial, F.ZZ(a0), F.ZZ(a1));
   }
 
   public static IAST BlankSequence() {
@@ -2778,6 +2777,10 @@ public class F extends S {
 
   public static IAST Csch(final IExpr a0) {
     return new AST1(Csch, a0);
+  }
+
+  public static IAST Cycles(final IExpr a0) {
+    return new AST1(Cycles, a0);
   }
 
   public static IAST D() {
@@ -3975,6 +3978,7 @@ public class F extends S {
    * @return
    * @deprecated use ZZ()
    */
+  @Deprecated
   public static IInteger integer(final BigInteger integerValue) {
     return AbstractIntegerSym.valueOf(integerValue);
   }
@@ -3986,6 +3990,7 @@ public class F extends S {
    * @return
    * @deprecated use ZZ()
    */
+  @Deprecated
   public static IInteger integer(final long integerValue) {
     return AbstractIntegerSym.valueOf(integerValue);
   }
@@ -3998,6 +4003,7 @@ public class F extends S {
    * @return Object
    * @deprecated use ZZ()
    */
+  @Deprecated
   public static IInteger integer(final String integerString, final int radix) {
     return AbstractIntegerSym.valueOf(integerString, radix);
   }
@@ -4239,7 +4245,7 @@ public class F extends S {
     if (lhs.isAST()) {
       ((IAST) lhs).setEvalFlags(((IAST) lhs).getEvalFlags() | IAST.IS_FLATTENED_OR_SORTED_MASK);
     }
-    PatternMatching.setDelayedDownRule(PatternMap.DEFAULT_RULE_PRIORITY, lhs, rhs, true);
+    PatternMatching.setDelayedDownRule(IPatternMap.DEFAULT_RULE_PRIORITY, lhs, rhs, true);
     return F.NIL;
   }
 
@@ -4252,7 +4258,7 @@ public class F extends S {
   }
 
   public static IExpr IIntegrate(int priority, final IAST lhs, final IExpr rhs) {
-    ((IAST) lhs).setEvalFlags(((IAST) lhs).getEvalFlags() | IAST.IS_FLATTENED_OR_SORTED_MASK);
+    lhs.setEvalFlags(lhs.getEvalFlags() | IAST.IS_FLATTENED_OR_SORTED_MASK);
     org.matheclipse.core.reflection.system.Integrate.INTEGRATE_RULES_DATA.putDownRule(
         IPatternMatcher.SET_DELAYED, false, lhs, rhs, priority);
     return F.NIL;
@@ -4611,6 +4617,135 @@ public class F extends S {
   }
 
   /**
+   * Calulate the allocation size for a new {@link IAST} object. If <code>predicate#test()</code>
+   * returns <code>true</code> add the arguments {@link IAST#argSize()} to the <code>ast.argSize()
+   * </code>
+   *
+   * @param ast
+   * @param predicate
+   * @return
+   */
+  public static int allocLevel1(final IAST ast, Predicate<IExpr> predicate) {
+    int allocSize = ast.argSize();
+    for (int i = 1; i < ast.size(); i++) {
+      final IExpr arg = ast.get(i);
+      if (predicate.test(arg)) {
+        allocSize += arg.argSize();
+      }
+    }
+    return allocSize;
+  }
+  /**
+   * Determine the minimum of the <code>ast</code> {@link IAST#argSize()} and integer number 7
+   *
+   * @param ast
+   * @return
+   */
+  public static int allocMin8(IAST ast) {
+    return ast.argSize() < 7 ? ast.argSize() : 7;
+  }
+
+  /**
+   * Determine the minimum of the <code>size</code> and integer number 7
+   *
+   * @param size
+   * @return
+   */
+  public static int allocMin8(int size) {
+    return size < 7 ? size : 7;
+  }
+
+  /**
+   * Determine the minimum of the <code>ast</code> {@link IAST#argSize()} and integer number 15
+   *
+   * @param ast
+   * @return
+   */
+  public static int allocMin16(IAST ast) {
+    return ast.argSize() < 15 ? ast.argSize() : 15;
+  }
+
+  /**
+   * Determine the minimum of the <code>size</code> and integer number 15
+   *
+   * @param size
+   * @return
+   */
+  public static int allocMin16(int size) {
+    return size < 15 ? size : 15;
+  }
+
+  /**
+   * Determine the minimum of the <code>ast</code> {@link IAST#argSize()} and integer number 31,
+   *
+   * @param ast
+   * @return
+   */
+  public static int allocMin32(IAST ast) {
+    return ast.argSize() < 31 ? ast.argSize() : 31;
+  }
+
+  /**
+   * Determine the minimum of the <code>size</code> and integer number 31
+   *
+   * @param size
+   * @return
+   */
+  public static int allocMin32(int size) {
+    return size < 31 ? size : 31;
+  }
+
+  /**
+   * Determine the minimum of the <code>ast</code> {@link IAST#argSize()} and integer number 63,
+   *
+   * @param ast
+   * @return
+   */
+  public static int allocMin64(IAST ast) {
+    return ast.argSize() < 63 ? ast.argSize() : 63;
+  }
+
+  /**
+   * Determine the maximum of the <code>ast</code> {@link IAST#argSize()} and integer number 7,
+   *
+   * @param ast
+   * @return
+   */
+  public static int allocMax8(IAST ast) {
+    return ast.argSize() > 7 ? ast.argSize() : 7;
+  }
+
+  /**
+   * Determine the maximum of the <code>ast</code> {@link IAST#argSize()} and integer number 15,
+   *
+   * @param ast
+   * @return
+   */
+  public static int allocMax16(IAST ast) {
+    return ast.argSize() > 15 ? ast.argSize() : 15;
+  }
+
+  /**
+   * Determine the maximum of the <code>ast</code> {@link IAST#argSize()} and integer number 31,
+   *
+   * @param ast
+   * @return
+   */
+  public static int allocMax32(IAST ast) {
+    return ast.argSize() > 31 ? ast.argSize() : 31;
+  }
+
+  /**
+   * Determine the maximum of the <code>ast</code> {@link IAST#argSize()} and integer number 63,
+   *
+   * @param ast
+   * @return
+   */
+  public static int allocMax64(IAST ast) {
+    return ast.argSize() > 63 ? ast.argSize() : 63;
+  }
+
+  /**
    * Create an appendable list <code>{ }</code>.
    *
    * @return
@@ -4855,6 +4990,7 @@ public class F extends S {
    * @return
    * @deprecated use HoldPattern
    */
+  @Deprecated
   public static IAST Literal(final IExpr a0) {
     return new AST1(Literal, a0);
   }
@@ -5429,7 +5565,7 @@ public class F extends S {
   }
 
   public static IAST Or(final IExpr a0, final IExpr a1, final IExpr a2) {
-    return new AST3(F.Or, a0, a1, a2);
+    return new AST3(S.Or, a0, a1, a2);
   }
 
   public static IAST Or(final IExpr... a) {
@@ -5440,6 +5576,10 @@ public class F extends S {
     return new AST2(Order, a0, a1);
   }
 
+  public static IAST Ordering(final IExpr a) {
+    return new AST1(Ordering, a);
+  }
+
   public static IAST OrderedQ(final IExpr a) {
     return new AST1(OrderedQ, a);
   }
@@ -5448,22 +5588,42 @@ public class F extends S {
     return new AST1(Out, a0);
   }
 
+  /**
+   * See: <a
+   * href="https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/Part.md">Part</a>
+   */
   public static IASTAppendable Part() {
     return ast(Part);
   }
 
+  /**
+   * See: <a
+   * href="https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/Part.md">Part</a>
+   */
   public static IAST Part(final IExpr a0, final IExpr a1) {
     return new B2.Part(a0, a1);
   }
 
+  /**
+   * See: <a
+   * href="https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/Part.md">Part</a>
+   */
   public static IAST Part(final IExpr a0, final IExpr a1, final IExpr a2) {
     return new AST3(Part, a0, a1, a2);
   }
 
+  /**
+   * See: <a
+   * href="https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/Part.md">Part</a>
+   */
   public static IASTAppendable Part(final IExpr... a) {
     return Part(0, a);
   }
 
+  /**
+   * See: <a
+   * href="https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/Part.md">Part</a>
+   */
   public static IASTAppendable Part(final int extraSize, final IExpr... a) {
     IASTAppendable part = F.ast(Part, a.length + extraSize + 1, false);
     for (int i = 0; i < a.length; i++) {
@@ -5488,24 +5648,44 @@ public class F extends S {
     return new AST2(PatternTest, a0, a1);
   }
 
+  /**
+   * See: <a
+   * href="https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/PDF.md">PDF</a>
+   */
   public static IAST PDF(final IExpr a0) {
     return new AST1(PDF, a0);
   }
 
+  /**
+   * See: <a
+   * href="https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/PDF.md">PDF</a>
+   */
   public static IAST PDF(final IExpr a0, final IExpr a1) {
     return new AST2(PDF, a0, a1);
   }
 
+  /**
+   * See: <a
+   * href="https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/Piecewise.md">Piecewise</a>
+   */
   public static IAST Piecewise(final IExpr a0) {
     return new AST1(Piecewise, a0);
   }
 
-  public static IAST PiecewiseExpand(final IExpr a0) {
-    return new AST1(PiecewiseExpand, a0);
-  }
-
+  /**
+   * See: <a
+   * href="https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/Piecewise.md">Piecewise</a>
+   */
   public static IAST Piecewise(final IExpr a0, final IExpr a1) {
     return new AST2(Piecewise, a0, a1);
+  }
+
+  /**
+   * See: <a
+   * href="https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/PiecewiseExpand.md">PiecewiseExpand</a>
+   */
+  public static IAST PiecewiseExpand(final IExpr a0) {
+    return new AST1(PiecewiseExpand, a0);
   }
 
   public static IAST Plot(final IExpr a0, final IExpr a1) {
@@ -5537,16 +5717,16 @@ public class F extends S {
   }
 
   /**
-   * Create a Plus() function.
-   *
-   * @return
+   * See: <a
+   * href="https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/Plus.md">Plus</a>
    */
   public static IASTAppendable Plus() {
     return ast(Plus);
   }
 
   /**
-   * Create a Plus() function with allocated space for size elements.
+   * See: <a
+   * href="https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/Plus.md">Plus</a>
    *
    * @param size
    * @return
@@ -5555,25 +5735,45 @@ public class F extends S {
     return ast(Plus, size, false);
   }
 
+  /**
+   * See: <a
+   * href="https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/Plus.md">Plus</a>
+   */
   public static IASTAppendable Plus(final IExpr a0) {
     return unary(Plus, a0);
   }
 
+  /**
+   * See: <a
+   * href="https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/Plus.md">Plus</a>
+   */
   public static IAST Plus(final IExpr... a) {
     return function(Plus, a);
   }
 
+  /**
+   * See: <a
+   * href="https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/Plus.md">Plus</a>
+   */
   public static IAST Plus(final IExpr a1, final IExpr a2) {
     if (a1 != null && a2 != null) {
-      return binaryASTOrderless(IExpr::isPlus, F.Plus, a1, a2);
+      return binaryASTOrderless(IExpr::isPlus, S.Plus, a1, a2);
     }
     return new B2.Plus(a1, a2);
   }
 
+  /**
+   * See: <a
+   * href="https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/Plus.md">Plus</a>
+   */
   public static IAST Plus(final IExpr a0, final IExpr a1, final IExpr a2) {
     return new AST3(Plus, a0, a1, a2);
   }
 
+  /**
+   * See: <a
+   * href="https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/Plus.md">Plus</a>
+   */
   public static IAST Plus(final long num, final IExpr... a) {
     IASTAppendable ast = ast(Plus, a.length + 1, false);
     ast.append(ZZ(num));
@@ -5740,7 +5940,7 @@ public class F extends S {
    * @return
    */
   public static IAST product(final Function<IExpr, IExpr> function, final int from, final int to) {
-    return intIterator(F.Times, function, from, to, 1);
+    return intIterator(S.Times, function, from, to, 1);
   }
 
   public static IAST ProductLog(final IExpr a0) {
@@ -6309,7 +6509,7 @@ public class F extends S {
   }
 
   public static IAST Simplify(final IExpr a0) {
-    return new AST1(F.Simplify, a0);
+    return new AST1(S.Simplify, a0);
   }
 
   public static IAST Sin(final IExpr a0) {
@@ -6602,7 +6802,7 @@ public class F extends S {
   }
 
   public static IAST Sum(final IExpr a0, final IExpr a1, final IExpr a2, final IExpr a3) {
-    return quaternary(F.Sum, a0, a1, a2, a3);
+    return quaternary(S.Sum, a0, a1, a2, a3);
   }
 
   public static IRational sumRational(
@@ -6619,11 +6819,11 @@ public class F extends S {
    * @return
    */
   public static IAST sum(final Function<IExpr, IExpr> function, final int iMin, final int iMax) {
-    return intIterator(F.Plus, function, iMin, iMax, 1);
+    return intIterator(S.Plus, function, iMin, iMax, 1);
   }
 
   public static IAST intSum(final IntFunction<IExpr> function, final int iMin, final int iMax) {
-    return intIterator(F.Plus, function, iMin, iMax, 1);
+    return intIterator(S.Plus, function, iMin, iMax, 1);
   }
 
   /**
@@ -6637,7 +6837,7 @@ public class F extends S {
    */
   public static IAST sum(
       final Function<IExpr, IExpr> function, final int iMin, final int iMax, final int iStep) {
-    return intIterator(F.Plus, function, iMin, iMax, iStep);
+    return intIterator(S.Plus, function, iMin, iMax, iStep);
   }
 
   public static IAST Superscript(final IExpr a0, final IExpr a1) {
@@ -6772,8 +6972,8 @@ public class F extends S {
   }
 
   /**
-   * Create a Times() function. See <a href=
-   * "https://github.com/axkr/symja_android_library/blob/master/symja_android_library/doc/functions/Times.md">Times</a>.
+   * See: <a
+   * href="https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/Times.md">Times</a>
    *
    * @return
    */
@@ -6782,8 +6982,8 @@ public class F extends S {
   }
 
   /**
-   * Create a Times() function with allocated space for size elements. See <a href=
-   * "https://github.com/axkr/symja_android_library/blob/master/symja_android_library/doc/functions/Times.md">Times</a>.
+   * Create a Times() function with allocated space for size elements. See: <a
+   * href="https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/Times.md">Times</a>
    *
    * @param size
    * @return
@@ -6793,35 +6993,35 @@ public class F extends S {
   }
 
   /**
-   * See <a href=
-   * "https://github.com/axkr/symja_android_library/blob/master/symja_android_library/doc/functions/Times.md">Times</a>
+   * See: <a
+   * href="https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/Times.md">Times</a>
    */
   public static IASTAppendable Times(final IExpr a0) {
     return unary(Times, a0);
   }
 
   /**
-   * See <a href=
-   * "https://github.com/axkr/symja_android_library/blob/master/symja_android_library/doc/functions/Times.md">Times</a>
+   * See: <a
+   * href="https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/Times.md">Times</a>
    */
   public static IAST Times(final IExpr... a) {
     return function(Times, a);
   }
 
   /**
-   * See <a href=
-   * "https://github.com/axkr/symja_android_library/blob/master/symja_android_library/doc/functions/Times.md">Times</a>
+   * See: <a
+   * href="https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/Times.md">Times</a>
    */
   public static IASTMutable Times(final IExpr a1, final IExpr a2) {
     if (a1 != null && a2 != null) {
-      return binaryASTOrderless(IExpr::isTimes, F.Times, a1, a2);
+      return binaryASTOrderless(IExpr::isTimes, S.Times, a1, a2);
     }
     return new B2.Times(a1, a2);
   }
 
   /**
-   * See <a href=
-   * "https://github.com/axkr/symja_android_library/blob/master/symja_android_library/doc/functions/Times.md">Times</a>
+   * See: <a
+   * href="https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/Times.md">Times</a>
    */
   public static IASTMutable Times(final IExpr a0, final IExpr a1, final IExpr a2) {
     return new AST3(Times, a0, a1, a2);
@@ -6856,8 +7056,8 @@ public class F extends S {
   }
 
   /**
-   * See <a href=
-   * "https://github.com/axkr/symja_android_library/blob/master/symja_android_library/doc/functions/Times.md">Times</a>
+   * See: <a
+   * href="https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/Times.md">Times</a>
    */
   public static IAST Times(final long num, final IExpr... a) {
     IASTAppendable ast = ast(Times, a.length + 1, false);

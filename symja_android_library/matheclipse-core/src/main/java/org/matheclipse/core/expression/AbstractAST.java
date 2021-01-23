@@ -30,7 +30,7 @@ import org.jgrapht.graph.DefaultGraphType;
 import org.jgrapht.graph.DefaultGraphType.Builder;
 import org.matheclipse.core.basic.Config;
 import org.matheclipse.core.builtin.BooleanFunctions;
-import org.matheclipse.core.builtin.StructureFunctions.LeafCount;
+import org.matheclipse.core.builtin.StructureFunctions;
 import org.matheclipse.core.convert.AST2Expr;
 import org.matheclipse.core.convert.VariablesSet;
 import org.matheclipse.core.eval.EvalEngine;
@@ -43,7 +43,6 @@ import org.matheclipse.core.eval.interfaces.ICoreFunctionEvaluator;
 import org.matheclipse.core.eval.interfaces.IRewrite;
 import org.matheclipse.core.eval.util.AbstractAssumptions;
 import org.matheclipse.core.form.output.OutputFormFactory;
-import org.matheclipse.core.form.output.WolframFormFactory;
 import org.matheclipse.core.generic.ObjIntPredicate;
 import org.matheclipse.core.generic.Predicates;
 import org.matheclipse.core.generic.UnaryVariable2Slot;
@@ -305,6 +304,7 @@ public abstract class AbstractAST implements IASTMutable {
     }
 
     /** {@inheritDoc} */
+    @Override
     public int argSize() {
       return -1;
     }
@@ -561,10 +561,12 @@ public abstract class AbstractAST implements IASTMutable {
       return false;
     }
 
+    @Override
     public final boolean isInterval() {
       return false;
     }
 
+    @Override
     public final boolean isInterval1() {
       return false;
     }
@@ -923,6 +925,7 @@ public abstract class AbstractAST implements IASTMutable {
       return null;
     }
 
+    @Override
     public IExpr getValue(int position) {
       ArgumentTypeException.throwNIL();
       return null;
@@ -1337,6 +1340,7 @@ public abstract class AbstractAST implements IASTMutable {
    * @param predicate the binary predicate
    * @return
    */
+  @Override
   public boolean compareAdjacent(BiPredicate<IExpr, IExpr> predicate) {
     if (size() < 2) {
       return false;
@@ -1409,8 +1413,8 @@ public abstract class AbstractAST implements IASTMutable {
                 // O-3
                 return compareToASTDecreasing(this, rhs);
               }
-            } else if (!rhsExpr.isSameHeadSizeGE(F.Plus, 1)
-                && !rhsExpr.isSameHeadSizeGE(F.Times, 1)) {
+            } else if (!rhsExpr.isSameHeadSizeGE(S.Plus, 1)
+                && !rhsExpr.isSameHeadSizeGE(S.Times, 1)) {
               // O-10
               return compareToASTDecreasingArg1(this, rhsExpr, F.C0);
             }
@@ -1434,8 +1438,8 @@ public abstract class AbstractAST implements IASTMutable {
               }
               // O-9
               return compareToASTIncreasingArg1(this, rhsExpr, F.C1);
-            } else if (!rhsExpr.isSameHeadSizeGE(F.Times, 1)
-                && !rhsExpr.isSameHeadSizeGE(F.Plus, 1)) {
+            } else if (!rhsExpr.isSameHeadSizeGE(S.Times, 1)
+                && !rhsExpr.isSameHeadSizeGE(S.Plus, 1)) {
               // O-9
               return compareToASTIncreasingArg1(this, rhsExpr, F.C1);
             }
@@ -1545,7 +1549,7 @@ public abstract class AbstractAST implements IASTMutable {
   @Override
   public long determinePrecision() {
     long precision = -1;
-    if (isAST(F.N, 3)) {
+    if (isAST(S.N, 3)) {
       long determinedPrecision = arg1().determinePrecision();
       if (determinedPrecision > 0) {
         return determinedPrecision;
@@ -1676,7 +1680,7 @@ public abstract class AbstractAST implements IASTMutable {
         1,
         size(),
         (x, i) -> {
-          if (x.isAST(F.Evaluate)) {
+          if (x.isAST(S.Evaluate)) {
             IExpr temp = engine.evalLoop(x);
             engine.evalArg(rlist, this, temp, x, i, false);
           }
@@ -1838,6 +1842,7 @@ public abstract class AbstractAST implements IASTMutable {
     return filterAST;
   }
 
+  @Override
   public IAST select(Predicate<? super IExpr> predicate) {
     int[] items = new int[size()];
     int length = 0;
@@ -1850,8 +1855,9 @@ public abstract class AbstractAST implements IASTMutable {
       return this;
     }
     return getItems(items, length);
-  };
+  }
 
+  @Override
   public IAST select(Predicate<? super IExpr> predicate, int maxMatches) {
     maxMatches = size() > maxMatches ? maxMatches : size();
     int[] items = new int[maxMatches];
@@ -1868,7 +1874,7 @@ public abstract class AbstractAST implements IASTMutable {
       return this;
     }
     return getItems(items, length);
-  };
+  }
 
   /** {@inheritDoc} */
   @Override
@@ -1936,6 +1942,7 @@ public abstract class AbstractAST implements IASTMutable {
    * @param startValue
    * @return the accumulated elements
    */
+  @Override
   public IExpr foldLeft(
       final BiFunction<IExpr, IExpr, ? extends IExpr> function, IExpr startValue, int start) {
     final IExpr[] value = {startValue};
@@ -1952,6 +1959,7 @@ public abstract class AbstractAST implements IASTMutable {
    * @param startValue
    * @return the accumulated elements
    */
+  @Override
   public IExpr foldRight(
       final BiFunction<IExpr, IExpr, ? extends IExpr> function, IExpr startValue, int start) {
     IExpr value = startValue;
@@ -2025,7 +2033,7 @@ public abstract class AbstractAST implements IASTMutable {
     StringBuilder text = new StringBuilder();
     if (head == null) {
       text.append("<null-head>");
-      head = F.Null;
+      head = S.Null;
     } else {
       text.append(head.fullFormString());
     }
@@ -2155,7 +2163,7 @@ public abstract class AbstractAST implements IASTMutable {
   /** {@inheritDoc} */
   @Override
   public IExpr getOptionalValue() {
-    if (isAST(F.Optional, 3)) {
+    if (isAST(S.Optional, 3)) {
       return arg2();
     }
     return null; // fOptionalValue;
@@ -2221,6 +2229,7 @@ public abstract class AbstractAST implements IASTMutable {
     return exists(x -> x.has(predicate, heads), heads ? 0 : 1);
   }
 
+  @Override
   public final boolean hasTrigonometricFunction() {
     return has(
         x -> {
@@ -2228,51 +2237,51 @@ public abstract class AbstractAST implements IASTMutable {
             final IExpr head = x.head();
             if (head.isBuiltInSymbol()) {
               return //
-              (head == F.ArcCos)
+              (head == S.ArcCos)
                   || //
-                  (head == F.ArcCsc)
+                  (head == S.ArcCsc)
                   || //
-                  (head == F.ArcCot)
+                  (head == S.ArcCot)
                   || //
-                  (head == F.ArcSec)
+                  (head == S.ArcSec)
                   || //
-                  (head == F.ArcSin)
+                  (head == S.ArcSin)
                   || //
-                  (head == F.ArcTan)
+                  (head == S.ArcTan)
                   || //
-                  (head == F.Cos)
+                  (head == S.Cos)
                   || //
-                  (head == F.Csc)
+                  (head == S.Csc)
                   || //
-                  (head == F.Cot)
+                  (head == S.Cot)
                   || //
-                  (head == F.Sec)
+                  (head == S.Sec)
                   || //
-                  (head == F.Sin)
+                  (head == S.Sin)
                   || //
-                  (head == F.Sinc)
+                  (head == S.Sinc)
                   || //
-                  (head == F.Tan)
+                  (head == S.Tan)
                   || //
-                  (head == F.Cosh)
+                  (head == S.Cosh)
                   || //
-                  (head == F.Csch)
+                  (head == S.Csch)
                   || //
-                  (head == F.Coth)
+                  (head == S.Coth)
                   || //
-                  (head == F.Sech)
+                  (head == S.Sech)
                   || //
-                  (head == F.Sinh)
+                  (head == S.Sinh)
                   || //
-                  (head == F.Tanh)
+                  (head == S.Tanh)
                   || //
-                  (head == F.Haversine)
+                  (head == S.Haversine)
                   || //
-                  (head == F.InverseHaversine);
+                  (head == S.InverseHaversine);
             }
           }
           if (x.isAST2()) {
-            return x.head() == F.ArcTan;
+            return x.head() == S.ArcTan;
           }
           return false;
         },
@@ -2356,12 +2365,12 @@ public abstract class AbstractAST implements IASTMutable {
     final String sep = ",";
     final IExpr temp = head();
     String prefix = usePrefix ? "F." : "";
-    if (temp.equals(F.HoldForm) && size() == 2) {
+    if (temp.equals(S.HoldForm) && size() == 2) {
       return arg1()
           .internalJavaString(
               symbolsAsFactoryMethod, depth, useOperators, usePrefix, noSymbolPrefix, variables);
     }
-    if (temp.equals(F.Hold) && size() == 2) {
+    if (temp.equals(S.Hold) && size() == 2) {
       return arg1()
           .internalJavaString(
               symbolsAsFactoryMethod, depth, useOperators, usePrefix, noSymbolPrefix, variables);
@@ -2381,12 +2390,12 @@ public abstract class AbstractAST implements IASTMutable {
     if (this.equals(F.Slot2)) {
       return prefix + "Slot2";
     }
-    if (temp.equals(F.Inequality) && size() >= 4) {
+    if (temp.equals(S.Inequality) && size() >= 4) {
       return BooleanFunctions.inequality2And(this)
           .internalJavaString(
               symbolsAsFactoryMethod, depth, useOperators, usePrefix, noSymbolPrefix, variables);
     }
-    if (temp.equals(F.Rational) && size() == 3) {
+    if (temp.equals(S.Rational) && size() == 3) {
       if (arg1().isInteger() && arg2().isInteger()) {
         return F.QQ((IInteger) arg1(), (IInteger) arg2())
             .internalJavaString(
@@ -2410,7 +2419,7 @@ public abstract class AbstractAST implements IASTMutable {
           return prefix + "CN1D4";
         }
       }
-      if (equalsAt(1, F.E)) {
+      if (equalsAt(1, S.E)) {
         return prefix
             + "Exp("
             + arg2()
@@ -2535,7 +2544,7 @@ public abstract class AbstractAST implements IASTMutable {
       return text.toString();
     }
 
-    if (isAST(F.Times, 3)) {
+    if (isAST(S.Times, 3)) {
       if (equals(F.CNPi)) {
         return prefix + "CNPi";
       } else if (equals(F.CN2Pi)) {
@@ -2570,8 +2579,8 @@ public abstract class AbstractAST implements IASTMutable {
                     variables)
             + ")";
       }
-    } else if (isAST(F.Plus, 3)) {
-      if (arg2().isAST(F.Times, 3) && arg2().first().isMinusOne()) {
+    } else if (isAST(S.Plus, 3)) {
+      if (arg2().isAST(S.Times, 3) && arg2().first().isMinusOne()) {
         return prefix
             + "Subtract("
             + arg1()
@@ -2755,7 +2764,7 @@ public abstract class AbstractAST implements IASTMutable {
   /** {@inheritDoc} */
   @Override
   public boolean isAbs() {
-    return isSameHead(F.Abs, 2);
+    return isSameHead(S.Abs, 2);
   }
 
   /** {@inheritDoc} */
@@ -2770,49 +2779,49 @@ public abstract class AbstractAST implements IASTMutable {
   /** {@inheritDoc} */
   @Override
   public final boolean isAlternatives() {
-    return isSameHeadSizeGE(F.Alternatives, 1);
+    return isSameHeadSizeGE(S.Alternatives, 1);
   }
 
   /** {@inheritDoc} */
   @Override
   public final boolean isAnd() {
-    return isSameHeadSizeGE(F.And, 3);
+    return isSameHeadSizeGE(S.And, 3);
   }
 
   /** {@inheritDoc} */
   @Override
   public final boolean isArcCos() {
-    return isSameHead(F.ArcCos, 2);
+    return isSameHead(S.ArcCos, 2);
   }
 
   /** {@inheritDoc} */
   @Override
   public final boolean isArcCosh() {
-    return isSameHead(F.ArcCosh, 2);
+    return isSameHead(S.ArcCosh, 2);
   }
 
   /** {@inheritDoc} */
   @Override
   public final boolean isArcSin() {
-    return isSameHead(F.ArcSin, 2);
+    return isSameHead(S.ArcSin, 2);
   }
 
   /** {@inheritDoc} */
   @Override
   public final boolean isArcSinh() {
-    return isSameHead(F.ArcSinh, 2);
+    return isSameHead(S.ArcSinh, 2);
   }
 
   /** {@inheritDoc} */
   @Override
   public final boolean isArcTan() {
-    return isSameHead(F.ArcTan, 2);
+    return isSameHead(S.ArcTan, 2);
   }
 
   /** {@inheritDoc} */
   @Override
   public final boolean isArcTanh() {
-    return isSameHead(F.ArcTanh, 2);
+    return isSameHead(S.ArcTanh, 2);
   }
 
   /** {@inheritDoc} */
@@ -2922,43 +2931,43 @@ public abstract class AbstractAST implements IASTMutable {
   /** {@inheritDoc} */
   @Override
   public final boolean isComplexInfinity() {
-    return isSameHead(F.DirectedInfinity, 1);
+    return isSameHead(S.DirectedInfinity, 1);
   }
 
   /** {@inheritDoc} */
   @Override
   public boolean isCondition() {
-    return head() == F.Condition && size() == 3;
+    return head() == S.Condition && size() == 3;
   }
 
   /** {@inheritDoc} */
   @Override
   public boolean isConditionalExpression() {
-    return head() == F.ConditionalExpression && size() == 3;
+    return head() == S.ConditionalExpression && size() == 3;
   }
 
   /** {@inheritDoc} */
   @Override
   public final boolean isConjugate() {
-    return isSameHead(F.Conjugate, 2);
+    return isSameHead(S.Conjugate, 2);
   }
 
   /** {@inheritDoc} */
   @Override
   public final boolean isCos() {
-    return isSameHead(F.Cos, 2);
+    return isSameHead(S.Cos, 2);
   }
 
   /** {@inheritDoc} */
   @Override
   public final boolean isCosh() {
-    return isSameHead(F.Cosh, 2);
+    return isSameHead(S.Cosh, 2);
   }
 
   /** {@inheritDoc} */
   @Override
   public final boolean isDefer() {
-    return isSameHead(F.Defer, 2);
+    return isSameHead(S.Defer, 2);
   }
 
   /** {@inheritDoc} */
@@ -2966,14 +2975,14 @@ public abstract class AbstractAST implements IASTMutable {
   public final IAST[] isDerivative() {
     if (head().isAST()) {
       IAST headAST = (IAST) head();
-      if (headAST.isSameHeadSizeGE(F.Derivative, 2)) {
+      if (headAST.isSameHeadSizeGE(S.Derivative, 2)) {
         IAST[] result = new IAST[3];
         result[0] = headAST;
         result[1] = this;
         return result;
       }
 
-      if (headAST.head().isSameHeadSizeGE(F.Derivative, 2)) {
+      if (headAST.head().isSameHeadSizeGE(S.Derivative, 2)) {
         if (this.size() != ((IAST) headAST.head()).size()) {
           return null;
         }
@@ -2992,14 +3001,14 @@ public abstract class AbstractAST implements IASTMutable {
   public final IAST[] isDerivativeAST1() {
     if (head().isAST()) {
       IAST headAST = (IAST) head();
-      if (headAST.isAST(F.Derivative, 2)) {
+      if (headAST.isAST(S.Derivative, 2)) {
         IAST[] result = new IAST[3];
         result[0] = headAST;
         result[1] = this;
         return result;
       }
 
-      if (headAST.head().isAST(F.Derivative, 2)) {
+      if (headAST.head().isAST(S.Derivative, 2)) {
         if (this.size() != ((IAST) headAST.head()).size()) {
           return null;
         }
@@ -3016,15 +3025,16 @@ public abstract class AbstractAST implements IASTMutable {
   /** {@inheritDoc} */
   @Override
   public final boolean isDirectedInfinity() {
-    return isSameHead(F.DirectedInfinity, 1, 2);
+    return isSameHead(S.DirectedInfinity, 1, 2);
   }
 
   /** {@inheritDoc} */
   @Override
   public final boolean isDirectedInfinity(IExpr x) {
-    return isSameHead(F.DirectedInfinity, 2) && arg1().equals(x);
+    return isSameHead(S.DirectedInfinity, 2) && arg1().equals(x);
   }
 
+  @Override
   public boolean isContinuousDistribution() {
     if (head().isBuiltInSymbol()) {
       IEvaluator evaluator = ((IBuiltInSymbol) head()).getEvaluator();
@@ -3033,6 +3043,7 @@ public abstract class AbstractAST implements IASTMutable {
     return false;
   }
 
+  @Override
   public boolean isDiscreteDistribution() {
     if (head().isBuiltInSymbol()) {
       IEvaluator evaluator = ((IBuiltInSymbol) head()).getEvaluator();
@@ -3041,6 +3052,7 @@ public abstract class AbstractAST implements IASTMutable {
     return false;
   }
 
+  @Override
   public boolean isDistribution() {
     if (head().isBuiltInSymbol()) {
       IEvaluator evaluator = ((IBuiltInSymbol) head()).getEvaluator();
@@ -3057,7 +3069,7 @@ public abstract class AbstractAST implements IASTMutable {
   /** {@inheritDoc} */
   @Override
   public final boolean isEqual() {
-    return isSameHead(F.Equal, 3);
+    return isSameHead(S.Equal, 3);
   }
 
   /** {@inheritDoc} */
@@ -3190,7 +3202,7 @@ public abstract class AbstractAST implements IASTMutable {
   /** {@inheritDoc} */
   @Override
   public final boolean isFunction() {
-    return size() >= 2 && head().equals(F.Function);
+    return size() >= 2 && head().equals(S.Function);
   }
 
   /** {@inheritDoc} */
@@ -3208,7 +3220,7 @@ public abstract class AbstractAST implements IASTMutable {
   /** {@inheritDoc} */
   @Override
   public final boolean isHoldPatternOrLiteral() {
-    return isSameHead(F.HoldPattern, 2) || isSameHead(F.Literal, 2);
+    return isSameHead(S.HoldPattern, 2) || isSameHead(S.Literal, 2);
   }
 
   /** {@inheritDoc} */
@@ -3247,7 +3259,7 @@ public abstract class AbstractAST implements IASTMutable {
   @Override
   public boolean isIntegerResult() {
     ISymbol symbol = topHead();
-    if (symbol.equals(F.Floor) || symbol.equals(F.Ceiling) || symbol.equals(F.IntegerPart)) {
+    if (symbol.equals(S.Floor) || symbol.equals(S.Ceiling) || symbol.equals(S.IntegerPart)) {
       return true;
     }
     if (isPower() && exponent().isInteger() && base().isPositive()) {
@@ -3256,7 +3268,7 @@ public abstract class AbstractAST implements IASTMutable {
       }
       return false;
     }
-    if (isPlus() || isTimes() || symbol.equals(F.Binomial) || symbol.equals(F.Factorial)) {
+    if (isPlus() || isTimes() || symbol.equals(S.Binomial) || symbol.equals(S.Factorial)) {
       // TODO add more integer functions
       // check if all arguments are &quot;integer functions&quot;
       for (int i = 1; i < size(); i++) {
@@ -3273,7 +3285,7 @@ public abstract class AbstractAST implements IASTMutable {
   /** {@inheritDoc} */
   @Override
   public boolean isInterval() {
-    if (isSameHeadSizeGE(F.Interval, 2)) {
+    if (isSameHeadSizeGE(S.Interval, 2)) {
       for (int i = 1; i < size(); i++) {
         if (!(get(i).isVector() == 2)) {
           return false;
@@ -3287,7 +3299,7 @@ public abstract class AbstractAST implements IASTMutable {
   /** {@inheritDoc} */
   @Override
   public boolean isInterval1() {
-    return isSameHead(F.Interval, 2) && arg1().isAST(F.List, 3);
+    return isSameHead(S.Interval, 2) && arg1().isAST(S.List, 3);
   }
 
   /** {@inheritDoc} */
@@ -3305,7 +3317,7 @@ public abstract class AbstractAST implements IASTMutable {
   /** {@inheritDoc} */
   @Override
   public boolean isList() {
-    return isSameHeadSizeGE(F.List, 1);
+    return isSameHeadSizeGE(S.List, 1);
   }
 
   /** {@inheritDoc} */
@@ -3356,16 +3368,16 @@ public abstract class AbstractAST implements IASTMutable {
   /** {@inheritDoc} */
   @Override
   public GraphType isListOfEdges() {
-    if (head().equals(F.List)) {
+    if (head().equals(S.List)) {
       boolean directed = true;
       for (int i = 1; i < size(); i++) {
         IExpr temp = get(i);
         if (temp.isAST2() && temp.head().isBuiltInSymbol()) {
           IBuiltInSymbol symbol = (IBuiltInSymbol) temp.head();
-          if (symbol == F.DirectedEdge || symbol == F.Rule) {
+          if (symbol == S.DirectedEdge || symbol == S.Rule) {
             continue;
           }
-          if (!(symbol == F.UndirectedEdge || symbol == F.TwoWayRule)) {
+          if (!(symbol == S.UndirectedEdge || symbol == S.TwoWayRule)) {
             // the row is no list of edges
             return null;
           }
@@ -3389,10 +3401,10 @@ public abstract class AbstractAST implements IASTMutable {
   public boolean isEdge() {
     if (isAST2() && head().isBuiltInSymbol()) {
       IBuiltInSymbol symbol = (IBuiltInSymbol) head();
-      return (symbol == F.DirectedEdge
-          || symbol == F.UndirectedEdge
-          || symbol == F.Rule
-          || symbol == F.TwoWayRule);
+      return (symbol == S.DirectedEdge
+          || symbol == S.UndirectedEdge
+          || symbol == S.Rule
+          || symbol == S.TwoWayRule);
     }
     return false;
   }
@@ -3400,7 +3412,7 @@ public abstract class AbstractAST implements IASTMutable {
   /** {@inheritDoc} */
   @Override
   public boolean isListOfRules(boolean ignoreEmptyList) {
-    if (head().equals(F.List)) {
+    if (head().equals(S.List)) {
       for (int i = 1; i < size(); i++) {
         if (!get(i).isRuleAST()) {
           if (ignoreEmptyList && get(i).isEmptyList()) {
@@ -3421,7 +3433,7 @@ public abstract class AbstractAST implements IASTMutable {
     if (isAssociation()) {
       return true;
     }
-    if (head().equals(F.List)) {
+    if (head().equals(S.List)) {
       for (int i = 1; i < size(); i++) {
         if (!get(i).isRuleAST()) {
           if (get(i).isAssociation()) {
@@ -3459,7 +3471,7 @@ public abstract class AbstractAST implements IASTMutable {
   /** {@inheritDoc} */
   @Override
   public final boolean isLog() {
-    return isSameHead(F.Log, 2);
+    return isSameHead(S.Log, 2);
   }
 
   /** {@inheritDoc} */
@@ -3486,7 +3498,7 @@ public abstract class AbstractAST implements IASTMutable {
               return null;
             }
             IAST rowList = (IAST) get(i);
-            if (dim[1] != ((IAST) rowList).argSize()) {
+            if (dim[1] != rowList.argSize()) {
               // this row has another dimension
               return null;
             }
@@ -3545,6 +3557,7 @@ public abstract class AbstractAST implements IASTMutable {
     return null;
   }
 
+  @Override
   public boolean isMember(IExpr pattern, boolean heads, IVisitorBoolean visitor) {
     if (visitor != null) {
       return IASTMutable.super.isMember(pattern, heads, visitor);
@@ -3561,14 +3574,14 @@ public abstract class AbstractAST implements IASTMutable {
   /** {@inheritDoc} */
   @Override
   public final boolean isModule() {
-    return head() == F.Module && size() == 3;
+    return head() == S.Module && size() == 3;
   }
 
   /** {@inheritDoc} */
   @Override
   public final boolean isModuleOrWithCondition() {
     return size() == 3
-        && (head().equals(F.With) || head().equals(F.Module))
+        && (head().equals(S.With) || head().equals(S.Module))
         && (get(2).isCondition() || get(2).isModuleOrWithCondition());
   }
 
@@ -3618,7 +3631,7 @@ public abstract class AbstractAST implements IASTMutable {
   /** {@inheritDoc} */
   @Override
   public final boolean isNot() {
-    return size() == 2 && head().equals(F.Not);
+    return size() == 2 && head().equals(S.Not);
   }
 
   /** {@inheritDoc} */
@@ -3632,7 +3645,7 @@ public abstract class AbstractAST implements IASTMutable {
                   (x.isList() && ((IAST) x).forAll(y -> y.isNumericFunction(true))));
     }
     // TODO optimize this expression:
-    return isAST(F.Interval)
+    return isAST(S.Interval)
         && forAll(
             x ->
                 x.isNumericArgument()
@@ -3695,13 +3708,13 @@ public abstract class AbstractAST implements IASTMutable {
   /** {@inheritDoc} */
   @Override
   public final boolean isOptional() {
-    return isAST(F.Optional, 2, 3);
+    return isAST(S.Optional, 2, 3);
   }
 
   /** {@inheritDoc} */
   @Override
   public final boolean isOr() {
-    return isSameHeadSizeGE(F.Or, 3);
+    return isSameHeadSizeGE(S.Or, 3);
   }
 
   /** {@inheritDoc} */
@@ -3725,13 +3738,13 @@ public abstract class AbstractAST implements IASTMutable {
   /** {@inheritDoc} */
   @Override
   public final boolean isPatternTest() {
-    return isAST(F.PatternTest, 3);
+    return isAST(S.PatternTest, 3);
   }
 
   /** {@inheritDoc} */
   @Override
   public int[] isPiecewise() {
-    if (isSameHead(F.Piecewise, 2, 3) && arg1().isList()) {
+    if (isSameHead(S.Piecewise, 2, 3) && arg1().isList()) {
       int[] result = arg1().isMatrix(false);
       if (result != null && (result[0] <= 0 || result[1] != 2)) {
         return null;
@@ -3765,10 +3778,10 @@ public abstract class AbstractAST implements IASTMutable {
     final IExpr h = head();
     if (h instanceof IBuiltInSymbol) {
       if (4 <= size()) {
-        return h == F.Plus || h == F.Times;
+        return h == S.Plus || h == S.Times;
       }
       if (3 == size()) {
-        return h == F.Plus || h == F.Times || h == F.Power;
+        return h == S.Plus || h == S.Times || h == S.Power;
       }
     }
     return false;
@@ -3850,20 +3863,20 @@ public abstract class AbstractAST implements IASTMutable {
   /** {@inheritDoc} */
   @Override
   public boolean isPower() {
-    return isSameHead(F.Power, 3);
+    return isSameHead(S.Power, 3);
   }
 
   /** {@inheritDoc} */
   @Override
   public final boolean isPureFunction() {
-    return size() == 2 && head().equals(F.Function);
+    return size() == 2 && head().equals(S.Function);
   }
 
   /** {@inheritDoc} */
   @Override
   public final boolean isRationalResult() {
     ISymbol symbol = topHead();
-    if (symbol.equals(F.Floor) || symbol.equals(F.Ceiling) || symbol.equals(F.IntegerPart)) {
+    if (symbol.equals(S.Floor) || symbol.equals(S.Ceiling) || symbol.equals(S.IntegerPart)) {
       return true;
     }
     if (isPower() && arg2().isInteger() && arg2().isPositive()) {
@@ -3872,7 +3885,7 @@ public abstract class AbstractAST implements IASTMutable {
       }
       return false;
     }
-    if (isPlus() || isTimes() || symbol.equals(F.Binomial) || symbol.equals(F.Factorial)) {
+    if (isPlus() || isTimes() || symbol.equals(S.Binomial) || symbol.equals(S.Factorial)) {
       // TODO add more functions
       // check if all arguments are &quot;rational functions&quot;
       for (int i = 1; i < size(); i++) {
@@ -3948,7 +3961,7 @@ public abstract class AbstractAST implements IASTMutable {
   @Override
   public boolean isRealResult() {
     IExpr head = head();
-    if (size() == 2 && F.Cos.equals(head) && F.Sin.equals(head)) {
+    if (size() == 2 && S.Cos.equals(head) && S.Sin.equals(head)) {
       // TODO add more functions
       return arg1().isRealResult();
     }
@@ -4009,19 +4022,19 @@ public abstract class AbstractAST implements IASTMutable {
   /** {@inheritDoc} */
   @Override
   public boolean isRule() {
-    return head().equals(F.Rule) && size() == 3;
+    return head().equals(S.Rule) && size() == 3;
   }
 
   /** {@inheritDoc} */
   @Override
   public boolean isRuleAST() {
-    return (head().equals(F.Rule) || head().equals(F.RuleDelayed)) && size() == 3;
+    return (head().equals(S.Rule) || head().equals(S.RuleDelayed)) && size() == 3;
   }
 
   /** {@inheritDoc} */
   @Override
   public boolean isRuleDelayed() {
-    return head().equals(F.RuleDelayed) && size() == 3;
+    return head().equals(S.RuleDelayed) && size() == 3;
   }
 
   /** {@inheritDoc} */
@@ -4095,7 +4108,7 @@ public abstract class AbstractAST implements IASTMutable {
   /** {@inheritDoc} */
   @Override
   public final boolean isSlot() {
-    return isSameHead(F.Slot, 2)
+    return isSameHead(S.Slot, 2)
         && //
         (arg1().isInteger() || arg1().isString());
   }
@@ -4103,21 +4116,21 @@ public abstract class AbstractAST implements IASTMutable {
   /** {@inheritDoc} */
   @Override
   public final boolean isSlotSequence() {
-    return isSameHead(F.SlotSequence, 2) && arg1().isInteger();
+    return isSameHead(S.SlotSequence, 2) && arg1().isInteger();
   }
 
   /** {@inheritDoc} */
   @Override
   public final int[] isSpan(int size) {
     int[] result = null;
-    if (isSameHead(F.Span, 3, 4)) {
+    if (isSameHead(S.Span, 3, 4)) {
       int step = 1;
       if (isAST3()) {
         step = Validate.checkIntType(this, 3, Integer.MIN_VALUE);
       }
       int index1 = Validate.checkIntType(this, 1, Integer.MIN_VALUE);
       int index2;
-      if (arg2().equals(F.All)) {
+      if (arg2().equals(S.All)) {
         index2 = size - 1;
         if (step < 0) {
           int tempIndx = index1;
@@ -4148,19 +4161,19 @@ public abstract class AbstractAST implements IASTMutable {
   /** {@inheritDoc} */
   @Override
   public final boolean isSubscript() {
-    return isSameHead(F.Subscript, 3) && arg1().isVariable();
+    return isSameHead(S.Subscript, 3) && arg1().isVariable();
   }
 
   /** {@inheritDoc} */
   @Override
   public final boolean isTan() {
-    return isSameHead(F.Tan, 2);
+    return isSameHead(S.Tan, 2);
   }
 
   /** {@inheritDoc} */
   @Override
   public final boolean isTanh() {
-    return isSameHead(F.Tanh, 2);
+    return isSameHead(S.Tanh, 2);
   }
 
   /** {@inheritDoc} */
@@ -4355,7 +4368,7 @@ public abstract class AbstractAST implements IASTMutable {
   /** {@inheritDoc} */
   @Override
   public final boolean isWith() {
-    return head() == F.With && size() == 3;
+    return head() == S.With && size() == 3;
   }
 
   /**
@@ -4377,6 +4390,9 @@ public abstract class AbstractAST implements IASTMutable {
   /** {@inheritDoc} */
   @Override
   public IExpr last() {
+    if (this instanceof IAST && size() < 2) {
+      return F.NIL;
+    }
     return get(argSize());
   }
 
@@ -4394,7 +4410,7 @@ public abstract class AbstractAST implements IASTMutable {
   /** {@inheritDoc} */
   @Override
   public final long leafCount() {
-    return accept(new LeafCount.LeafCountVisitor(0));
+    return accept(StructureFunctions.leafCountVisitor());
   }
 
   /**
@@ -4589,7 +4605,7 @@ public abstract class AbstractAST implements IASTMutable {
         i++;
       }
     }
-    return (IAST) result.orElse(this);
+    return result.orElse(this);
   }
 
   /** {@inheritDoc} */
@@ -4610,6 +4626,7 @@ public abstract class AbstractAST implements IASTMutable {
    * @param function
    * @return
    */
+  @Override
   public IASTAppendable map(IASTAppendable astResult, IUnaryIndexFunction<IExpr, IExpr> function) {
     for (int i = 1; i < size(); i++) {
       astResult.append(function.apply(i, get(i)));
@@ -4645,6 +4662,7 @@ public abstract class AbstractAST implements IASTMutable {
    * @param leftArg left argument of the binary functions <code>apply()</code> method.
    * @return
    */
+  @Override
   public IAST mapLeft(
       IASTAppendable list, BiFunction<IExpr, IExpr, IExpr> binaryFunction, IExpr leftArg) {
     for (int i = 1; i < size(); i++) {
@@ -4677,6 +4695,7 @@ public abstract class AbstractAST implements IASTMutable {
    * @param rightArg right argument of the binary functions <code>apply()</code> method.
    * @return the given list
    */
+  @Override
   public Collection<IExpr> mapRight(
       Collection<IExpr> list, BiFunction<IExpr, IExpr, IExpr> binaryFunction, IExpr rightArg) {
     for (int i = 1; i < size(); i++) {
@@ -4796,6 +4815,7 @@ public abstract class AbstractAST implements IASTMutable {
     // return F.eval(F.Times(F.CN1, this));
   }
 
+  @Override
   public IAST orElse(final IAST other) {
     return this;
   }
@@ -4847,13 +4867,13 @@ public abstract class AbstractAST implements IASTMutable {
   @Override
   public final IAST partitionPlus(
       Predicate<? super IExpr> predicate, IExpr initYes, IExpr initNo, ISymbol action) {
-    return partition(F.Plus, predicate, initYes, initNo, F.Plus, F.List);
+    return partition(S.Plus, predicate, initYes, initNo, S.Plus, S.List);
   }
 
   @Override
   public final IAST partitionTimes(
       Predicate<? super IExpr> predicate, IExpr initYes, IExpr initNo, ISymbol action) {
-    return partition(F.Times, predicate, initYes, initNo, F.Times, F.List);
+    return partition(S.Times, predicate, initYes, initNo, S.Times, S.List);
   }
 
   /** Calculate a special hash value to find a matching rule in a hash table */
@@ -5000,16 +5020,18 @@ public abstract class AbstractAST implements IASTMutable {
   /**
    * Append the elements in reversed order to the given <code>list</code>
    *
-   * @param list
+   * @param resultList
    * @return
    */
-  public IASTAppendable reverse(IASTAppendable list) {
+  @Override
+  public IASTAppendable reverse(IASTAppendable resultList) {
     for (int i = argSize(); i >= 1; i--) {
-      list.append(get(i));
+      resultList.append(get(i));
     }
-    return list;
+    return resultList;
   }
 
+  @Override
   public IExpr rewrite(int functionID) {
     int headID = headID();
     if (headID > 0) {
@@ -5025,42 +5047,44 @@ public abstract class AbstractAST implements IASTMutable {
    * Rotate the ranges elements to the left by n places and append the resulting elements to the
    * <code>list</code>
    *
-   * @param list
+   * @param resultList
    * @param n
    * @return the given list
    */
-  public IAST rotateLeft(IASTAppendable list, final int n) {
+  @Override
+  public IAST rotateLeft(IASTAppendable resultList, final int n) {
     int size = size();
     int n1 = n + 1;
     for (int i = n1; i < size; i++) {
-      list.append(get(i));
+      resultList.append(get(i));
     }
     if (n <= size) {
       for (int i = 1; i < n1; i++) {
-        list.append(get(i));
+        resultList.append(get(i));
       }
     }
-    return list;
+    return resultList;
   }
 
   /**
    * Rotate the ranges elements to the right by n places and append the resulting elements to the
    * <code>list</code>
    *
-   * @param list
+   * @param resultList
    * @param n
    * @return the given list
    */
-  public IAST rotateRight(IASTAppendable list, final int n) {
+  @Override
+  public IAST rotateRight(IASTAppendable resultList, final int n) {
     if (n <= size()) {
       for (int i = size() - n; i < size(); i++) {
-        list.append(get(i));
+        resultList.append(get(i));
       }
       for (int i = 1; i < size() - n; i++) {
-        list.append(get(i));
+        resultList.append(get(i));
       }
     }
-    return list;
+    return resultList;
   }
 
   /** {@inheritDoc} */
@@ -5332,7 +5356,7 @@ public abstract class AbstractAST implements IASTMutable {
         buf.append('}');
         return buf.toString();
 
-      } else if (isAST(F.Slot, 2) && (arg1().isReal())) {
+      } else if (isAST(S.Slot, 2) && (arg1().isReal())) {
 
         final int slot = ((ISignedNumber) arg1()).toIntDefault();
         if (slot <= 0) {

@@ -51,26 +51,31 @@ public class WXFFunctions {
         // try {
         IExpr arg1 = engine.evaluate(ast.arg1());
         if (arg1.isList()) {
+          if (arg1.isEmptyList()) {
+            return F.CEmptyList;
+          }
           byte[] bArray = WL.toByteArray((IAST) arg1);
           if (bArray == null) {
             // The argument at position `1` in `2` should be a vector of unsigned byte values or a
-            // Base64
-            // encoded string.
+            // Base64 encoded string.
             String message = IOFunctions.getMessage("lend", F.List(F.C1, ast));
             throw new ArgumentTypeStopException(message);
           }
           return ByteArrayExpr.newInstance(bArray);
         } else if (arg1.isString()) {
+          String str = arg1.toString();
+          if (str.isEmpty()) {
+            return F.CEmptyList;
+          }
           try {
-            byte[] bArray = Base64.getDecoder().decode(arg1.toString());
+            byte[] bArray = Base64.getDecoder().decode(str);
             return ByteArrayExpr.newInstance(bArray);
           } catch (IllegalArgumentException iae) {
             //
           }
         }
         // The argument at position `1` in `2` should be a vector of unsigned byte values or a
-        // Base64 encoded
-        // string.
+        // Base64 encoded string.
         String message = IOFunctions.getMessage("lend", F.List(F.C1, ast));
         throw new ArgumentTypeStopException(message);
       }

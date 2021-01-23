@@ -36,7 +36,6 @@ import org.matheclipse.parser.client.ast.SymbolNode;
 import org.matheclipse.parser.client.eval.DoubleNode;
 import org.matheclipse.parser.trie.SuggestTree;
 import org.matheclipse.parser.trie.TrieMatch;
-import org.matheclipse.parser.trie.Tries;
 
 /**
  * Converts a parsed <code>org.matheclipse.parser.client.ast.ASTNode</code> expression into an IExpr
@@ -89,6 +88,7 @@ public class AST2Expr {
     "AxesStyle",
     "Background",
     "BarOrigin",
+    "BetweennessCentrality",
     "Black",
     "Blue",
     "Booleans",
@@ -106,8 +106,12 @@ public class AST2Expr {
     "DegreeLexicographic",
     "DegreeReverseLexicographic",
     "DigitCharacter",
+    "DisrectedEdges",
     "Disputed",
     "DistanceFunction",
+    "EdgeLabels",
+    "EdgeShapeFunction",
+    "EdgeStyle",
     "EliminationOrder",
     "EndOfLine",
     "EndOfString",
@@ -214,6 +218,10 @@ public class AST2Expr {
     "True",
     "Unknown",
     "Variable",
+    "VertexLabels",
+    "VertexShapeFunction",
+    "VertexSize",
+    "VertexStyle",
     "ViewPoint",
     "White",
     "Whitespace",
@@ -367,6 +375,7 @@ public class AST2Expr {
     "ClearAll",
     "ClearAttributes",
     "Clip",
+    "ClosenessCentrality",
     "CMYColor",
     "Coefficient",
     "CoefficientList",
@@ -425,6 +434,7 @@ public class AST2Expr {
     "CubeRoot",
     "Curl",
     "Cyclotomic",
+    "Cycles",
     "Dataset",
     "DateObject",
     "DateValue",
@@ -557,6 +567,7 @@ public class AST2Expr {
     "FindIndependentVertexSet",
     "FindHamiltonianCycle",
     "FindInstance",
+    "FindPermutation",
     "FindRoot",
     "FindShortestPath",
     "FindShortestTour",
@@ -619,6 +630,7 @@ public class AST2Expr {
     "GraphPeriphery",
     "GraphQ",
     "GraphRadius",
+    "GraphUnion",
     "GrayLevel",
     "Greater",
     "GreaterEqual",
@@ -736,6 +748,7 @@ public class AST2Expr {
     "Kurtosis",
     "Last",
     "LCM",
+    "Labeled",
     "LeafCount",
     "LaguerreL",
     "LaplaceTransform",
@@ -755,6 +768,7 @@ public class AST2Expr {
     "LinearProgramming",
     "LinearRecurrence",
     "LinearSolve",
+    "LineGraph",
     "LiouvilleLambda",
     "List",
     "ListContourPlot",
@@ -907,11 +921,20 @@ public class AST2Expr {
     "Pattern",
     "PatternTest",
     "PDF",
+    "PermutationCycles",
+    "PermutationCyclesQ",
+    "PermutationList",
+    "PermutationListQ",
+    "PermutationReplace",
     "Permutations",
+    "Permute",
+    "PetersenGraph",
     "Pick",
     "PieChart",
     "Piecewise",
     "PiecewiseExpand",
+    "PlanarGraph",
+    "PlanarGraphQ",
     "Plot",
     "PlotRange",
     "PlotStyle",
@@ -1083,6 +1106,7 @@ public class AST2Expr {
     "StandardDeviation",
     "StandardForm",
     "Standardize",
+    "StarGraph",
     "StieltjesGamma",
     "StirlingS1",
     "StirlingS2",
@@ -1091,6 +1115,7 @@ public class AST2Expr {
     "StringContainsQ",
     "StringDrop",
     "StringExpression",
+    "StringFormat",
     "StringFreeQ",
     "StringInsert",
     "StringJoin",
@@ -1158,6 +1183,7 @@ public class AST2Expr {
     "Through",
     "Throw",
     "TimeConstrained",
+    "TimeRemaining",
     "Times",
     "TimesBy",
     "TimeObject",
@@ -1436,29 +1462,25 @@ public class AST2Expr {
       IASTMutable ast;
       switch (size) {
         case 1:
-          ast = (IASTMutable) F.headAST0(convertNode(functionNode.get(0)));
+          ast = F.headAST0(convertNode(functionNode.get(0)));
           break;
         case 2:
-          ast =
-              (IASTMutable)
-                  F.unaryAST1(convertNode(functionNode.get(0)), convertNode(functionNode.get(1)));
+          ast = F.unaryAST1(convertNode(functionNode.get(0)), convertNode(functionNode.get(1)));
           break;
         case 3:
           ast =
-              (IASTMutable)
-                  F.binaryAST2(
-                      convertNode(functionNode.get(0)),
-                      convertNode(functionNode.get(1)),
-                      convertNode(functionNode.get(2)));
+              F.binaryAST2(
+                  convertNode(functionNode.get(0)),
+                  convertNode(functionNode.get(1)),
+                  convertNode(functionNode.get(2)));
           break;
         case 4:
           ast =
-              (IASTMutable)
-                  F.ternaryAST3(
-                      convertNode(functionNode.get(0)),
-                      convertNode(functionNode.get(1)),
-                      convertNode(functionNode.get(2)),
-                      convertNode(functionNode.get(3)));
+              F.ternaryAST3(
+                  convertNode(functionNode.get(0)),
+                  convertNode(functionNode.get(1)),
+                  convertNode(functionNode.get(2)),
+                  convertNode(functionNode.get(3)));
           break;
         default:
           IASTAppendable appendableAST =

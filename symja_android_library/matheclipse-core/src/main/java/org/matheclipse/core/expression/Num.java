@@ -2,7 +2,6 @@ package org.matheclipse.core.expression;
 
 import java.math.BigDecimal;
 import java.math.RoundingMode;
-import java.util.Set;
 import java.util.function.Function;
 
 import org.apfloat.Apcomplex;
@@ -47,7 +46,7 @@ public class Num implements INum {
   public static Num valueOf(final double d) {
     if (d >= (-1.1) && d <= 1.1) {
       try {
-        int i = DoubleMath.roundToInt(d, RoundingMode.UNNECESSARY); 
+        int i = DoubleMath.roundToInt(d, RoundingMode.UNNECESSARY);
         if (i >= (-1) && i <= 1) {
           switch (i) {
             case -1:
@@ -288,7 +287,7 @@ public class Num implements INum {
       return F.CNInfinity;
     }
     if (Double.isNaN(fDouble)) {
-      return F.Indeterminate;
+      return S.Indeterminate;
     }
     if (engine.isNumericMode() && engine.isArbitraryMode()) {
       return ApfloatNum.valueOf(fDouble, engine.getNumericPrecision());
@@ -296,6 +295,7 @@ public class Num implements INum {
     return F.NIL;
   }
 
+  @Override
   public INumber evaluatePrecision(EvalEngine engine) {
     return this;
   }
@@ -327,6 +327,7 @@ public class Num implements INum {
   }
 
   /** {@inheritDoc} */
+  @Override
   public IInteger integerPart() {
     return isNegative() ? ceilFraction() : floorFraction();
   }
@@ -384,7 +385,7 @@ public class Num implements INum {
 
   @Override
   public ISymbol head() {
-    return F.Real;
+    return S.Real;
   }
 
   @Override

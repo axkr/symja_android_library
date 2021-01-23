@@ -2,16 +2,13 @@ package org.matheclipse.core.expression;
 
 import java.io.IOException;
 import java.io.ObjectStreamException;
-import java.util.function.BiFunction;
 import java.util.function.DoubleFunction;
-import java.util.function.Function;
 import java.util.function.Predicate;
 
 import org.matheclipse.core.basic.Config;
 import org.matheclipse.core.eval.EvalEngine;
-import org.matheclipse.core.eval.exception.ArgumentTypeException;
-import org.matheclipse.core.eval.exception.RuleCreationError;
 import org.matheclipse.core.eval.interfaces.AbstractCorePredicateEvaluator;
+import org.matheclipse.core.eval.interfaces.AbstractPredicateEvaluator;
 import org.matheclipse.core.eval.interfaces.ICoreFunctionEvaluator;
 import org.matheclipse.core.eval.interfaces.IFunctionEvaluator;
 import org.matheclipse.core.eval.interfaces.ISignedNumberConstant;
@@ -28,7 +25,7 @@ import org.matheclipse.parser.client.FEConfig;
 
 /** Implements Symbols for function, constant and variable names */
 public class BuiltInSymbol extends Symbol implements IBuiltInSymbol {
-  private static final class PredicateEvaluator extends AbstractCorePredicateEvaluator
+  private static final class PredicateEvaluator extends AbstractPredicateEvaluator
       implements IPredicate {
     Predicate<IExpr> predicate;
 
@@ -39,14 +36,15 @@ public class BuiltInSymbol extends Symbol implements IBuiltInSymbol {
     /** {@inheritDoc} */
     @Override
     public IExpr evaluate(final IAST ast, EvalEngine engine) {
-      return predicate.test(engine.evaluate(ast.arg1())) ? S.True : S.False;
+      return predicate.test(ast.arg1()) ? S.True : S.False;
     }
 
     @Override
     public boolean evalArg1Boole(IExpr arg1, EvalEngine engine) {
-      return predicate.test(engine.evaluate(arg1));
+      return predicate.test(arg1);
     }
 
+    @Override
     public int[] expectedArgSize(IAST ast) {
       return IFunctionEvaluator.ARGS_1_1;
     }
@@ -212,6 +210,7 @@ public class BuiltInSymbol extends Symbol implements IBuiltInSymbol {
     return fOrdinal;
   }
 
+  @Override
   protected String internalJavaStringAsFactoryMethod() {
     if (Config.RUBI_CONVERT_SYMBOLS) {
       if (fOrdinal >= 1) {
@@ -251,13 +250,13 @@ public class BuiltInSymbol extends Symbol implements IBuiltInSymbol {
   /** {@inheritDoc} */
   @Override
   public final boolean isHoldOrHoldFormOrDefer() {
-    return this.equals(F.Defer) || this.equals(F.Hold) || this.equals(F.HoldForm);
+    return this.equals(S.Defer) || this.equals(S.Hold) || this.equals(S.HoldForm);
   }
 
   /** {@inheritDoc} */
   @Override
   public final boolean isE() {
-    return this == F.E;
+    return this == S.E;
   }
 
   /** {@inheritDoc} */
@@ -269,13 +268,13 @@ public class BuiltInSymbol extends Symbol implements IBuiltInSymbol {
   /** {@inheritDoc} */
   @Override
   public final boolean isIndeterminate() {
-    return this == F.Indeterminate;
+    return this == S.Indeterminate;
   }
 
   /** {@inheritDoc} */
   @Override
   public final boolean isPi() {
-    return this == F.Pi;
+    return this == S.Pi;
   }
 
   @Override
@@ -301,6 +300,7 @@ public class BuiltInSymbol extends Symbol implements IBuiltInSymbol {
   }
 
   /** {@inheritDoc} */
+  @Override
   public final boolean isSymbolID(int... ids) {
     for (int i = 0; i < ids.length; i++) {
       if (fOrdinal == ids[i]) {
@@ -379,8 +379,9 @@ public class BuiltInSymbol extends Symbol implements IBuiltInSymbol {
     fOrdinal = stream.readInt();
   }
 
+  @Override
   public Object readResolve() throws ObjectStreamException {
-    return F.symbol(fOrdinal);
+    return S.symbol(fOrdinal);
   }
 
   private void writeObject(java.io.ObjectOutputStream stream) throws java.io.IOException {

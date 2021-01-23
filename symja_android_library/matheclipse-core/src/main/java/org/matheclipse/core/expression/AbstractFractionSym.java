@@ -4,8 +4,6 @@ import java.math.BigInteger;
 
 import org.apfloat.Apcomplex;
 import org.apfloat.Apfloat;
-import org.hipparchus.exception.LocalizedCoreFormats;
-import org.hipparchus.exception.MathIllegalArgumentException;
 import org.hipparchus.exception.MathIllegalStateException;
 import org.hipparchus.fraction.BigFraction;
 import org.hipparchus.util.ArithmeticUtils;
@@ -74,7 +72,7 @@ public abstract class AbstractFractionSym implements IFraction {
     if (den.bitLength() <= 31 && num.bitLength() <= 31) {
       return valueOf(num.intValue(), den.intValue());
     }
-    return new BigFractionSym(fraction); 
+    return new BigFractionSym(fraction);
   }
 
   public static IFraction valueOf(BigInteger num) {
@@ -292,6 +290,7 @@ public abstract class AbstractFractionSym implements IFraction {
   @Override
   public abstract IInteger ceilFraction();
 
+  @Override
   public int compareTo(final IExpr expr) {
     if (expr.isNumber()) {
       int c = this.compareTo(((INumber) expr).re());
@@ -409,6 +408,7 @@ public abstract class AbstractFractionSym implements IFraction {
   }
 
   /** {@inheritDoc} */
+  @Override
   public IInteger integerPart() {
     return isNegative() ? ceilFraction() : floorFraction();
   }
@@ -464,7 +464,7 @@ public abstract class AbstractFractionSym implements IFraction {
 
   @Override
   public ISymbol head() {
-    return F.Rational;
+    return S.Rational;
   }
 
   @Override
@@ -640,6 +640,7 @@ public abstract class AbstractFractionSym implements IFraction {
     return result;
   }
 
+  @Override
   public void checkBitLength() {
     if (Integer.MAX_VALUE > Config.MAX_BIT_LENGTH) {
       final long bitLength = toBigNumerator().bitLength() + toBigDenominator().bitLength();

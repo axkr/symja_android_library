@@ -18,6 +18,7 @@ public class WolframFormFactory extends OutputFormFactory {
     this.fQuotes = true;
   }
 
+  @Override
   public void convertSymbol(final Appendable buf, final ISymbol symbol) throws IOException {
     Context context = symbol.getContext();
     if (context == Context.DUMMY) {

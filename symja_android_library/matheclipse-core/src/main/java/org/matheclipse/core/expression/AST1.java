@@ -117,6 +117,7 @@ public class AST1 extends AST0 {
     return new AST(arg0, arg1);
   }
 
+  @Override
   public IASTAppendable copyAppendable(int additionalCapacity) {
     IASTAppendable result = F.ast(arg0, additionalCapacity + 1, false);
     result.append(arg1);
@@ -292,6 +293,12 @@ public class AST1 extends AST0 {
   @Override
   public IExpr findFirst(Function<IExpr, IExpr> function) {
     return function.apply(arg1);
+  }
+
+  /** {@inheritDoc} */
+  @Override
+  public IExpr first() {
+    return arg1();
   }
 
   @Override

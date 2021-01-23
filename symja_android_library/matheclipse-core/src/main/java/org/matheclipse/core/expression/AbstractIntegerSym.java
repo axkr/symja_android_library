@@ -8,7 +8,6 @@ import java.util.Set;
 import java.util.SortedMap;
 import java.util.SortedSet;
 import java.util.Stack;
-import java.util.TreeMap;
 import java.util.TreeSet;
 
 import org.apfloat.Apcomplex;
@@ -83,8 +82,7 @@ public abstract class AbstractIntegerSym implements IInteger, Externalizable {
   /**
    * Bottom-up divisors construction algorithm. Slightly faster than top-down.
    *
-   * @param factors
-   * @return the set of divisors of the number thats prime factorization is given
+   * @return the set of divisors of the number thats prime factorization is calculated
    */
   private SortedSet<IInteger> divisorsSet() {
     IAST factors = factorInteger();
@@ -373,6 +371,7 @@ public abstract class AbstractIntegerSym implements IInteger, Externalizable {
     return AbstractIntegerSym.valueOf(Primality.charmichaelLambda(toBigNumerator()));
   }
 
+  @Override
   public int compareTo(final IExpr expr) {
     if (expr.isNumber()) {
       int c = this.compareTo(((INumber) expr).re());
@@ -542,7 +541,11 @@ public abstract class AbstractIntegerSym implements IInteger, Externalizable {
     Int2IntMap map = new Int2IntRBTreeMap();
     // SortedMap<Integer, Integer> map = new TreeMap<Integer, Integer>();
     BigInteger rest = Primality.countPrimes32749(big, map);
-    IASTAppendable result = F.ListAlloc(map.size() + 10);
+    int allocSize = 1;
+    for (Int2IntMap.Entry entry : map.int2IntEntrySet()) {
+      allocSize += entry.getIntValue();
+    }
+    IASTAppendable result = F.ListAlloc(allocSize);
     if (sign() < 0) {
       result.append(F.CN1);
     }
@@ -671,11 +674,11 @@ public abstract class AbstractIntegerSym implements IInteger, Externalizable {
 
   private IAST factorizeLong(long longValue) {
     Map<Long, Integer> map = PrimeInteger.factors(longValue);
-    int resultSize = sign() < 0 ? 1 : 0;
+    int allocSize = sign() < 0 ? 1 : 0;
     for (Map.Entry<Long, Integer> entry : map.entrySet()) {
-      resultSize += entry.getValue();
+      allocSize += entry.getValue();
     }
-    IASTAppendable result = F.ListAlloc(resultSize);
+    IASTAppendable result = F.ListAlloc(allocSize);
     if (sign() < 0) {
       result.append(F.CN1);
     }
@@ -696,6 +699,7 @@ public abstract class AbstractIntegerSym implements IInteger, Externalizable {
   }
 
   /** {@inheritDoc} */
+  @Override
   public IInteger integerPart() {
     return this;
   }
@@ -774,7 +778,7 @@ public abstract class AbstractIntegerSym implements IInteger, Externalizable {
 
   @Override
   public ISymbol head() {
-    return F.Integer;
+    return S.Integer;
   }
 
   @Override
@@ -1021,6 +1025,7 @@ public abstract class AbstractIntegerSym implements IInteger, Externalizable {
     return r;
   }
 
+  @Override
   public void checkBitLength() {
     final long bitLength = bitLength();
     if (bitLength > Config.MAX_BIT_LENGTH) {

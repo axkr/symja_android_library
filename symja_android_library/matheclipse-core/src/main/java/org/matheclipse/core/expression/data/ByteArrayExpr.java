@@ -6,14 +6,11 @@ import java.io.ObjectInput;
 import java.io.ObjectOutput;
 import java.util.Arrays;
 
-import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.expression.DataExpr;
 import org.matheclipse.core.expression.S;
 import org.matheclipse.core.expression.WL;
 import org.matheclipse.core.interfaces.IAST;
-import org.matheclipse.core.interfaces.IASTMutable;
 import org.matheclipse.core.interfaces.IExpr;
-import org.matheclipse.parser.trie.Tries;
 
 public class ByteArrayExpr extends DataExpr<byte[]> implements Externalizable {
 
@@ -74,9 +71,15 @@ public class ByteArrayExpr extends DataExpr<byte[]> implements Externalizable {
     return new ByteArrayExpr(fData);
   }
 
+  @Override
   public IAST normal(boolean nilIfUnevaluated) {
     byte[] bArray = toData();
     return WL.toList(bArray);
+  }
+
+  @Override
+  public String toString() {
+    return fHead.toString() + "[" + fData.length + " Bytes]";
   }
 
   @Override

@@ -59,26 +59,32 @@ public class AST extends HMArrayList implements Externalizable {
       this.fFirstIndex = firstIndex;
     }
 
+    @Override
     public IExpr arg1() {
       return fDelegate.get(fFirstIndex);
     }
 
+    @Override
     public IExpr arg2() {
       return fDelegate.get(fFirstIndex + 1);
     }
 
+    @Override
     public IExpr arg3() {
       return fDelegate.get(fFirstIndex + 2);
     }
 
+    @Override
     public IExpr arg4() {
       return fDelegate.get(fFirstIndex + 3);
     }
 
+    @Override
     public IExpr arg5() {
       return fDelegate.get(fFirstIndex + 4);
     }
 
+    @Override
     public Set<IExpr> asSet() {
       return fDelegate.asSet();
     }
@@ -87,10 +93,12 @@ public class AST extends HMArrayList implements Externalizable {
       return new ASTProxy(fDelegate, fFirstIndex);
     }
 
+    @Override
     public IASTAppendable copyAppendable() {
       return fDelegate.copyFrom(fFirstIndex);
     }
 
+    @Override
     public IASTAppendable copyAppendable(int additionalCapacity) {
       return copyAppendable();
     }
@@ -100,10 +108,12 @@ public class AST extends HMArrayList implements Externalizable {
       return fDelegate.copyFrom(fFirstIndex);
     }
 
+    @Override
     public IExpr head() {
       return fDelegate.head();
     }
 
+    @Override
     public IExpr get(int location) {
       if (location == 0) {
         return fDelegate.head();
@@ -121,10 +131,12 @@ public class AST extends HMArrayList implements Externalizable {
       return result;
     }
 
+    @Override
     public int size() {
       return fDelegate.size() - fFirstIndex + 1;
     }
 
+    @Override
     public IExpr[] toArray() {
       throw new UnsupportedOperationException("ASTProxy#toArray()");
     }
@@ -276,7 +288,7 @@ public class AST extends HMArrayList implements Externalizable {
     IExpr[] eArr = new IExpr[matrix.length + 1];
     eArr[0] = symbol;
     for (int i = 1; i <= matrix.length; i++) {
-      eArr[i] = newInstance(F.List, matrix[i - 1]);
+      eArr[i] = newInstance(S.List, matrix[i - 1]);
     }
     return new AST(eArr);
   }
@@ -481,6 +493,7 @@ public class AST extends HMArrayList implements Externalizable {
     }
   }
 
+  @Override
   public IAST removeFromEnd(int fromPosition) {
     if (0 < fromPosition && fromPosition <= size()) {
       if (fromPosition == size()) {
@@ -499,6 +512,7 @@ public class AST extends HMArrayList implements Externalizable {
     }
   }
 
+  @Override
   public IAST removeFromStart(int firstPosition) {
     if (firstPosition == 1) {
       return this;
@@ -539,7 +553,7 @@ public class AST extends HMArrayList implements Externalizable {
       init(array);
       int exprIDSize = objectInput.readByte();
       for (int i = 0; i < exprIDSize; i++) {
-        this.array[i] = F.exprID(objectInput.readShort()); // F.GLOBAL_IDS[objectInput.readShort()];
+        this.array[i] = S.exprID(objectInput.readShort()); // F.GLOBAL_IDS[objectInput.readShort()];
       }
       for (int i = exprIDSize; i < size; i++) {
         this.array[i] = (IExpr) objectInput.readObject();
@@ -562,14 +576,14 @@ public class AST extends HMArrayList implements Externalizable {
     int size = size();
     byte attributeFlags = (byte) 0;
     if (size > 0 && size < 128) {
-      short exprID = F.GLOBAL_IDS_MAP.getShort(head());
+      short exprID = S.GLOBAL_IDS_MAP.getShort(head());
       if (exprID >= 0) {
         if (exprID <= Short.MAX_VALUE) {
           int exprIDSize = 1;
           short[] exprIDArray = new short[size];
           exprIDArray[0] = exprID;
           for (int i = 1; i < size; i++) {
-            exprID = F.GLOBAL_IDS_MAP.getShort(get(i));
+            exprID = S.GLOBAL_IDS_MAP.getShort(get(i));
             if (exprID < 0) {
               break;
             }

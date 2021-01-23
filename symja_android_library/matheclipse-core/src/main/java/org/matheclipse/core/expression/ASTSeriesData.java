@@ -5,8 +5,6 @@ import java.io.IOException;
 import java.io.ObjectInput;
 import java.io.ObjectOutput;
 import java.io.ObjectStreamException;
-import java.util.Set;
-
 import org.hipparchus.util.ArithmeticUtils;
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.util.OpenIntToIExprHashMap;
@@ -481,7 +479,7 @@ public class ASTSeriesData extends AbstractAST implements Externalizable {
 
   @Override
   public IExpr head() {
-    return F.SeriesData;
+    return S.SeriesData;
   }
 
   /** {@inheritDoc} */
@@ -612,7 +610,7 @@ public class ASTSeriesData extends AbstractAST implements Externalizable {
           IExpr a3 = coefficient(3);
           ps.setCoeff(
               3,
-              F.Times.of(
+              S.Times.of(
                   engine,
                   F.Power(a1, -5), //
                   F.Subtract(F.Times(F.C2, F.Sqr(a2)), F.Times(a1, a3))));
@@ -621,7 +619,7 @@ public class ASTSeriesData extends AbstractAST implements Externalizable {
             IExpr a4 = coefficient(4);
             ps.setCoeff(
                 4,
-                F.Times.of(
+                S.Times.of(
                     engine,
                     F.Power(a1, -7), //
                     F.Plus(
@@ -633,7 +631,7 @@ public class ASTSeriesData extends AbstractAST implements Externalizable {
               IExpr a5 = coefficient(5);
               ps.setCoeff(
                   5,
-                  F.Times.of(
+                  S.Times.of(
                       engine,
                       F.Power(a1, -9), //
                       F.Plus(
@@ -648,7 +646,7 @@ public class ASTSeriesData extends AbstractAST implements Externalizable {
                 IExpr a6 = coefficient(6);
                 ps.setCoeff(
                     6,
-                    F.Times.of(
+                    S.Times.of(
                         engine,
                         F.Power(a1, -11), //
                         F.Plus(
@@ -666,7 +664,7 @@ public class ASTSeriesData extends AbstractAST implements Externalizable {
                   // a1*(4*a4^2 - a1*a7))) / a1^13
                   ps.setCoeff(
                       7,
-                      F.Times.of(
+                      S.Times.of(
                           engine,
                           F.Power(a1, -13),
                           F.Plus(
@@ -703,7 +701,7 @@ public class ASTSeriesData extends AbstractAST implements Externalizable {
                     IExpr a8 = coefficient(8);
                     ps.setCoeff(
                         8,
-                        F.Times.of(
+                        S.Times.of(
                             engine,
                             F.Power(a1, -15),
                             F.Plus(
@@ -752,7 +750,7 @@ public class ASTSeriesData extends AbstractAST implements Externalizable {
                       IExpr a9 = coefficient(9);
                       ps.setCoeff(
                           9,
-                          F.Times.of(
+                          S.Times.of(
                               engine,
                               F.Power(a1, -17),
                               F.Plus(
@@ -904,6 +902,7 @@ public class ASTSeriesData extends AbstractAST implements Externalizable {
    *
    * @return the standard expression generated from this series <code>Plus(....)</code>.
    */
+  @Override
   public IASTMutable normal(boolean nilIfUnevaluated) {
     IExpr x = getX();
     IExpr x0 = getX0();

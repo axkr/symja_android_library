@@ -1,11 +1,5 @@
 package org.matheclipse.core.expression;
 
-import java.io.ObjectStreamException;
-import java.util.List;
-
-import org.hipparchus.util.Pair;
-import org.matheclipse.core.basic.Config;
-import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.interfaces.IPattern;
 import org.matheclipse.core.interfaces.IPatternObject;
@@ -150,7 +144,7 @@ public class PatternNested extends Pattern {
 
   @Override
   public ISymbol head() {
-    return F.Pattern;
+    return S.Pattern;
   }
 
   @Override

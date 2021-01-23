@@ -25,7 +25,12 @@ public class S {
   /** package private */
   static IExpr[] COMMON_IDS = null;
 
-  /** Global map of predefined constant expressions. */
+  /**
+   * Global map of predefined constant expressions. The predefined expressions corresponding to the
+   * <code>id</code> from the internal table of built-in symbols {@link #BUILT_IN_SYMBOLS} or from
+   * the internal table of predefined constant expressions {@link #COMMON_IDS} mapped to the
+   * corresponding expressions.
+   */
   public static final Object2ShortOpenHashMap<IExpr> GLOBAL_IDS_MAP =
       new Object2ShortOpenHashMap<IExpr>(EXPRID_MAX_BUILTIN_LENGTH + 1000);
 
@@ -177,7 +182,8 @@ public class S {
   public static final IBuiltInSymbol AddTo = F.initFinalSymbol("AddTo", ID.AddTo);
 
   /**
-   * AdjacencyMatrix(graph) - convert the `graph` into a adjacency matrix. | See: <a
+   * AdjacencyMatrix(graph) - convert the `graph` into a adjacency matrix in sparse array format. |
+   * See: <a
    * href="https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/AdjacencyMatrix.md">AdjacencyMatrix</a>
    */
   public static final IBuiltInSymbol AdjacencyMatrix =
@@ -651,6 +657,14 @@ public class S {
   public static final IBuiltInSymbol BetaRegularized =
       F.initFinalSymbol("BetaRegularized", ID.BetaRegularized);
 
+  /**
+   * BetweennessCentrality(graph) - Computes the betweenness centrality of each vertex of a `graph`.
+   * | See: <a
+   * href="https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/BetweennessCentrality.md">BetweennessCentrality</a>
+   */
+  public static final IBuiltInSymbol BetweennessCentrality =
+      F.initFinalSymbol("BetweennessCentrality", ID.BetweennessCentrality);
+
   public static final IBuiltInSymbol BezierFunction =
       F.initFinalSymbol("BezierFunction", ID.BezierFunction);
 
@@ -1035,6 +1049,14 @@ public class S {
   public static final IBuiltInSymbol Clip = F.initFinalSymbol("Clip", ID.Clip);
 
   /**
+   * ClosenessCentrality(graph) - Computes the closeness centrality of each vertex of a `graph`. |
+   * See: <a
+   * href="https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/ClosenessCentrality.md">ClosenessCentrality</a>
+   */
+  public static final IBuiltInSymbol ClosenessCentrality =
+      F.initFinalSymbol("ClosenessCentrality", ID.ClosenessCentrality);
+
+  /**
    * Coefficient(polynomial, variable, exponent) - get the coefficient of `variable^exponent` in
    * `polynomial`. | See: <a
    * href="https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/Coefficient.md">Coefficient</a>
@@ -1401,6 +1423,12 @@ public class S {
   public static final IBuiltInSymbol Cyan = F.initFinalSymbol("Cyan", ID.Cyan);
 
   /**
+   * Cycles(a, b) - expression for defining canonical cycles of a permutation. | See: <a
+   * href="https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/Cycles.md">Cycles</a>
+   */
+  public static final IBuiltInSymbol Cycles = F.initFinalSymbol("Cycles", ID.Cycles);
+
+  /**
    * Cyclotomic(n, x) - returns the Cyclotomic polynomial `C_n(x)`. | See: <a
    * href="https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/Cyclotomic.md">Cyclotomic</a>
    */
@@ -1659,6 +1687,9 @@ public class S {
 
   public static final IBuiltInSymbol Disputed = F.initFinalSymbol("Disputed", ID.Disputed);
 
+  public static final IBuiltInSymbol DisrectedEdges =
+      F.initFinalSymbol("DisrectedEdges", ID.DisrectedEdges);
+
   public static final IBuiltInSymbol DistanceFunction =
       F.initFinalSymbol("DistanceFunction", ID.DistanceFunction);
 
@@ -1770,6 +1801,8 @@ public class S {
 
   public static final IBuiltInSymbol EdgeCount = F.initFinalSymbol("EdgeCount", ID.EdgeCount);
 
+  public static final IBuiltInSymbol EdgeLabels = F.initFinalSymbol("EdgeLabels", ID.EdgeLabels);
+
   /**
    * EdgeList(graph) - convert the `graph` into a list of edges. | See: <a
    * href="https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/EdgeList.md">EdgeList</a>
@@ -1781,6 +1814,11 @@ public class S {
    * href="https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/EdgeQ.md">EdgeQ</a>
    */
   public static final IBuiltInSymbol EdgeQ = F.initFinalSymbol("EdgeQ", ID.EdgeQ);
+
+  public static final IBuiltInSymbol EdgeShapeFunction =
+      F.initFinalSymbol("EdgeShapeFunction", ID.EdgeShapeFunction);
+
+  public static final IBuiltInSymbol EdgeStyle = F.initFinalSymbol("EdgeStyle", ID.EdgeStyle);
 
   public static final IBuiltInSymbol EdgeWeight = F.initFinalSymbol("EdgeWeight", ID.EdgeWeight);
 
@@ -2210,6 +2248,14 @@ public class S {
       F.initFinalSymbol("FindInstance", ID.FindInstance);
 
   /**
+   * FindPermutation(list1, list2) - create a `Cycles({{...},{...}, ...})` permutation expression,
+   * for two lists whose arguments are the same but may be differently arranged. | See: <a
+   * href="https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/FindPermutation.md">FindPermutation</a>
+   */
+  public static final IBuiltInSymbol FindPermutation =
+      F.initFinalSymbol("FindPermutation", ID.FindPermutation);
+
+  /**
    * FindRoot(f, {x, xmin, xmax}) - searches for a numerical root of `f` for the variable `x`, in
    * the range `xmin` to `xmax`. | See: <a
    * href="https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/FindRoot.md">FindRoot</a>
@@ -2612,6 +2658,8 @@ public class S {
    * href="https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/GraphRadius.md">GraphRadius</a>
    */
   public static final IBuiltInSymbol GraphRadius = F.initFinalSymbol("GraphRadius", ID.GraphRadius);
+
+  public static final IBuiltInSymbol GraphUnion = F.initFinalSymbol("GraphUnion", ID.GraphUnion);
 
   public static final IBuiltInSymbol Graphics = F.initFinalSymbol("Graphics", ID.Graphics);
 
@@ -3367,6 +3415,8 @@ public class S {
   public static final IBuiltInSymbol LUDecomposition =
       F.initFinalSymbol("LUDecomposition", ID.LUDecomposition);
 
+  public static final IBuiltInSymbol Labeled = F.initFinalSymbol("Labeled", ID.Labeled);
+
   /**
    * LaguerreL(n, x) - returns the Laguerre polynomial `L_n(x)`. | See: <a
    * href="https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/LaguerreL.md">LaguerreL</a>
@@ -3499,6 +3549,8 @@ public class S {
   public static final IBuiltInSymbol Limit = F.initFinalSymbol("Limit", ID.Limit);
 
   public static final IBuiltInSymbol Line = F.initFinalSymbol("Line", ID.Line);
+
+  public static final IBuiltInSymbol LineGraph = F.initFinalSymbol("LineGraph", ID.LineGraph);
 
   /**
    * LinearModelFit(list-of-data-points, expr, symbol) - In statistics, linear regression is a
@@ -4348,6 +4400,11 @@ public class S {
   public static final IBuiltInSymbol OptimizeExpression =
       F.initFinalSymbol("OptimizeExpression", ID.OptimizeExpression);
 
+  /**
+   * OptionValue(name) - gives the value of the option `name` as specified in a call to a function
+   * with `OptionsPattern`. | See: <a
+   * href="https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/OptionValue.md">OptionValue</a>
+   */
   public static final IBuiltInSymbol OptionValue = F.initFinalSymbol("OptionValue", ID.OptionValue);
 
   /**
@@ -4358,7 +4415,8 @@ public class S {
   public static final IBuiltInSymbol Optional = F.initFinalSymbol("Optional", ID.Optional);
 
   /**
-   * Options(symbol) - define option rules for a `symbol`. | See: <a
+   * Options(symbol) - gives a list of optional arguments to `symbol` and their default values. |
+   * See: <a
    * href="https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/Options.md">Options</a>
    */
   public static final IBuiltInSymbol Options = F.initFinalSymbol("Options", ID.Options);
@@ -4536,11 +4594,66 @@ public class S {
       F.initFinalSymbol("PerfectNumberQ", ID.PerfectNumberQ);
 
   /**
+   * PermutationCycles(permutation-list) - generate a `Cycles({{...},{...}, ...})` expression from
+   * the `permutation-list`. | See: <a
+   * href="https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/PermutationCycles.md">PermutationCycles</a>
+   */
+  public static final IBuiltInSymbol PermutationCycles =
+      F.initFinalSymbol("PermutationCycles", ID.PermutationCycles);
+
+  /**
+   * PermutationCyclesQ(cycles-expression) - if `cycles-expression` is a valid `Cycles({{...},{...},
+   * ...})` expression return `True`. | See: <a
+   * href="https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/PermutationCyclesQ.md">PermutationCyclesQ</a>
+   */
+  public static final IBuiltInSymbol PermutationCyclesQ =
+      F.initFinalSymbol("PermutationCyclesQ", ID.PermutationCyclesQ);
+
+  /**
+   * PermutationList(Cycles({{...},{...}, ...})) - get the permutation list representation from the
+   * `Cycles({{...},{...}, ...})` expression. | See: <a
+   * href="https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/PermutationList.md">PermutationList</a>
+   */
+  public static final IBuiltInSymbol PermutationList =
+      F.initFinalSymbol("PermutationList", ID.PermutationList);
+
+  /**
+   * PermutationListQ(permutation-list) - if `permutation-list` is a valid permutation list return
+   * `True`. | See: <a
+   * href="https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/PermutationListQ.md">PermutationListQ</a>
+   */
+  public static final IBuiltInSymbol PermutationListQ =
+      F.initFinalSymbol("PermutationListQ", ID.PermutationListQ);
+
+  /**
+   * PermutationReplace(list-or-integer, Cycles({{...},{...}, ...})) - replace the arguments of the
+   * first expression with the corresponding element from the `Cycles({{...},{...}, ...})`
+   * expression. | See: <a
+   * href="https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/PermutationReplace.md">PermutationReplace</a>
+   */
+  public static final IBuiltInSymbol PermutationReplace =
+      F.initFinalSymbol("PermutationReplace", ID.PermutationReplace);
+
+  /**
    * Permutations(list) - gives all possible orderings of the items in `list`. | See: <a
    * href="https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/Permutations.md">Permutations</a>
    */
   public static final IBuiltInSymbol Permutations =
       F.initFinalSymbol("Permutations", ID.Permutations);
+
+  /**
+   * Permute(list, Cycles({permutation-cycles})) - permutes the `list` from the cycles in
+   * `permutation-cycles`. | See: <a
+   * href="https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/Permute.md">Permute</a>
+   */
+  public static final IBuiltInSymbol Permute = F.initFinalSymbol("Permute", ID.Permute);
+
+  /**
+   * PetersenGraph() - create a `PetersenGraph(5, 2)` graph. | See: <a
+   * href="https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/PetersenGraph.md">PetersenGraph</a>
+   */
+  public static final IBuiltInSymbol PetersenGraph =
+      F.initFinalSymbol("PetersenGraph", ID.PetersenGraph);
 
   /**
    * Pi - is the constant `Pi`. | See: <a
@@ -4577,6 +4690,11 @@ public class S {
       F.initFinalSymbol("PiecewiseExpand", ID.PiecewiseExpand);
 
   public static final IBuiltInSymbol Pink = F.initFinalSymbol("Pink", ID.Pink);
+
+  public static final IBuiltInSymbol PlanarGraph = F.initFinalSymbol("PlanarGraph", ID.PlanarGraph);
+
+  public static final IBuiltInSymbol PlanarGraphQ =
+      F.initFinalSymbol("PlanarGraphQ", ID.PlanarGraphQ);
 
   /**
    * Plot(function, {x, xMin, xMax}, PlotRange->{yMin,yMax}) - generate a JavaScript control for the
@@ -4706,8 +4824,8 @@ public class S {
   public static final IBuiltInSymbol Positive = F.initFinalSymbol("Positive", ID.Positive);
 
   /**
-   * PossibleZeroQ(expr) - maps a (possible) zero `expr` to `True` and returns `False` otherwise. |
-   * See: <a
+   * PossibleZeroQ(expr) - returns `True` if basic symbolic and numerical methods suggest that
+   * `expr` has value zero, and `False` otherwise. | See: <a
    * href="https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/PossibleZeroQ.md">PossibleZeroQ</a>
    */
   public static final IBuiltInSymbol PossibleZeroQ =
@@ -5629,6 +5747,13 @@ public class S {
   public static final IBuiltInSymbol Standardize = F.initFinalSymbol("Standardize", ID.Standardize);
 
   /**
+   * StarGraph(order) - create a new star graph with `order` number of total vertices including the
+   * center vertex. | See: <a
+   * href="https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/StarGraph.md">StarGraph</a>
+   */
+  public static final IBuiltInSymbol StarGraph = F.initFinalSymbol("StarGraph", ID.StarGraph);
+
+  /**
    * StartOfLine - begine a new stack and evaluate `èxpr`. Use `Stack(_)` as a subexpression in
    * `expr` to return the stack elements. | See: <a
    * href="https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/StartOfLine.md">StartOfLine</a>
@@ -5699,6 +5824,9 @@ public class S {
    */
   public static final IBuiltInSymbol StringExpression =
       F.initFinalSymbol("StringExpression", ID.StringExpression);
+
+  public static final IBuiltInSymbol StringFormat =
+      F.initFinalSymbol("StringFormat", ID.StringFormat);
 
   /**
    * StringFreeQ("string", patt) - returns `True` if no substring in `string` matches the string
@@ -6076,6 +6204,9 @@ public class S {
 
   public static final IBuiltInSymbol TimeObject = F.initFinalSymbol("TimeObject", ID.TimeObject);
 
+  public static final IBuiltInSymbol TimeRemaining =
+      F.initFinalSymbol("TimeRemaining", ID.TimeRemaining);
+
   /**
    * TimeValue(p, i, n) - returns a time value calculation. | See: <a
    * href="https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/TimeValue.md">TimeValue</a>
@@ -6431,6 +6562,9 @@ public class S {
   public static final IBuiltInSymbol VertexEccentricity =
       F.initFinalSymbol("VertexEccentricity", ID.VertexEccentricity);
 
+  public static final IBuiltInSymbol VertexLabels =
+      F.initFinalSymbol("VertexLabels", ID.VertexLabels);
+
   /**
    * VertexList(graph) - convert the `graph` into a list of vertices. | See: <a
    * href="https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/VertexList.md">VertexList</a>
@@ -6442,6 +6576,13 @@ public class S {
    * href="https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/VertexQ.md">VertexQ</a>
    */
   public static final IBuiltInSymbol VertexQ = F.initFinalSymbol("VertexQ", ID.VertexQ);
+
+  public static final IBuiltInSymbol VertexShapeFunction =
+      F.initFinalSymbol("VertexShapeFunction", ID.VertexShapeFunction);
+
+  public static final IBuiltInSymbol VertexSize = F.initFinalSymbol("VertexSize", ID.VertexSize);
+
+  public static final IBuiltInSymbol VertexStyle = F.initFinalSymbol("VertexStyle", ID.VertexStyle);
 
   public static final IBuiltInSymbol ViewPoint = F.initFinalSymbol("ViewPoint", ID.ViewPoint);
 
@@ -6669,6 +6810,14 @@ public class S {
     return temp;
   }
 
+  /**
+   * Return the predefined expression corresponding to the <code>id</code> from the internal table
+   * of built-in symbols {@link #BUILT_IN_SYMBOLS} or from the internal table of predefined constant
+   * expressions {@link #COMMON_IDS}.
+   *
+   * @param id
+   * @return
+   */
   public static IExpr exprID(short id) {
     if (id >= EXPRID_MAX_BUILTIN_LENGTH) {
       return COMMON_IDS[id - EXPRID_MAX_BUILTIN_LENGTH];

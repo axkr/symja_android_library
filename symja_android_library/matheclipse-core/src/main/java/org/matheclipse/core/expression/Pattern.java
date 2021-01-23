@@ -2,7 +2,6 @@ package org.matheclipse.core.expression;
 
 import java.io.ObjectStreamException;
 import java.util.List;
-import java.util.Set;
 import java.util.function.Function;
 
 import org.hipparchus.util.Pair;
@@ -242,7 +241,7 @@ public class Pattern extends Blank {
 
   @Override
   public ISymbol head() {
-    return F.Pattern;
+    return S.Pattern;
   }
 
   @Override
@@ -276,7 +275,7 @@ public class Pattern extends Blank {
         if (!fDefault) {
           if (fHeadTest == null) {
             return prefix + symbolStr + "_";
-          } else if (fHeadTest == F.Symbol) {
+          } else if (fHeadTest == S.Symbol) {
             return prefix + symbolStr + "_Symbol";
           }
         } else {
@@ -309,9 +308,9 @@ public class Pattern extends Blank {
       buffer.append("\"" + symbolStr + "\"");
     }
     if (fHeadTest != null) {
-      if (fHeadTest == F.Integer) {
+      if (fHeadTest == S.Integer) {
         buffer.append(", Integer");
-      } else if (fHeadTest == F.Symbol) {
+      } else if (fHeadTest == S.Symbol) {
         buffer.append(", Symbol");
       } else {
         buffer.append(

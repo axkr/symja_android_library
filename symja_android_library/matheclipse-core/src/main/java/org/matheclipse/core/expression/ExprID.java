@@ -109,6 +109,6 @@ public class ExprID implements IExpr {
    * @throws ObjectStreamException
    */
   public Object readResolve() throws ObjectStreamException {
-    return F.exprID(fExprID); // F.GLOBAL_IDS[fExprID];
+    return S.exprID(fExprID); // F.GLOBAL_IDS[fExprID];
   }
 }

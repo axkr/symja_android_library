@@ -23,7 +23,7 @@ import org.matheclipse.core.interfaces.ISymbol;
 public abstract class B2 extends AbstractAST implements Externalizable, RandomAccess {
   private static final int SIZE = 3;
 
-  public static final class List extends B2 {
+  static final class List extends B2 {
     public List() {
       super();
     }
@@ -34,15 +34,16 @@ public abstract class B2 extends AbstractAST implements Externalizable, RandomAc
 
     @Override
     public final IBuiltInSymbol head() {
-      return F.List;
+      return S.List;
     }
 
+    @Override
     public IASTMutable copy() {
       return new List(arg1, arg2);
     }
   }
 
-  public static final class And extends B2 {
+  static final class And extends B2 {
     public And() {
       super();
     }
@@ -53,9 +54,10 @@ public abstract class B2 extends AbstractAST implements Externalizable, RandomAc
 
     @Override
     public final IBuiltInSymbol head() {
-      return F.And;
+      return S.And;
     }
 
+    @Override
     public IASTMutable copy() {
       return new And(arg1, arg2);
     }
@@ -67,7 +69,7 @@ public abstract class B2 extends AbstractAST implements Externalizable, RandomAc
     }
   }
 
-  public static final class Condition extends B2 {
+  static final class Condition extends B2 {
     public Condition() {
       super();
     }
@@ -78,15 +80,16 @@ public abstract class B2 extends AbstractAST implements Externalizable, RandomAc
 
     @Override
     public final IBuiltInSymbol head() {
-      return F.Condition;
+      return S.Condition;
     }
 
+    @Override
     public IASTMutable copy() {
       return new Condition(arg1, arg2);
     }
   }
 
-  public static final class DirectedEdge extends B2 {
+  static final class DirectedEdge extends B2 {
     public DirectedEdge() {
       super();
     }
@@ -97,15 +100,16 @@ public abstract class B2 extends AbstractAST implements Externalizable, RandomAc
 
     @Override
     public final IBuiltInSymbol head() {
-      return F.DirectedEdge;
+      return S.DirectedEdge;
     }
 
+    @Override
     public IASTMutable copy() {
       return new DirectedEdge(arg1, arg2);
     }
   }
 
-  public static final class Equal extends B2 {
+  static final class Equal extends B2 {
     public Equal() {
       super();
     }
@@ -116,15 +120,16 @@ public abstract class B2 extends AbstractAST implements Externalizable, RandomAc
 
     @Override
     public final IBuiltInSymbol head() {
-      return F.Equal;
+      return S.Equal;
     }
 
+    @Override
     public IASTMutable copy() {
       return new Equal(arg1, arg2);
     }
   }
 
-  public static final class FreeQ extends B2 {
+  static final class FreeQ extends B2 {
     public FreeQ() {
       super();
     }
@@ -135,15 +140,16 @@ public abstract class B2 extends AbstractAST implements Externalizable, RandomAc
 
     @Override
     public final IBuiltInSymbol head() {
-      return F.FreeQ;
+      return S.FreeQ;
     }
 
+    @Override
     public IASTMutable copy() {
       return new FreeQ(arg1, arg2);
     }
   }
 
-  public static final class Greater extends B2 {
+  static final class Greater extends B2 {
     public Greater() {
       super();
     }
@@ -154,15 +160,16 @@ public abstract class B2 extends AbstractAST implements Externalizable, RandomAc
 
     @Override
     public final IBuiltInSymbol head() {
-      return F.Greater;
+      return S.Greater;
     }
 
+    @Override
     public IASTMutable copy() {
       return new Greater(arg1, arg2);
     }
   }
 
-  public static final class GreaterEqual extends B2 {
+  static final class GreaterEqual extends B2 {
     public GreaterEqual() {
       super();
     }
@@ -173,15 +180,16 @@ public abstract class B2 extends AbstractAST implements Externalizable, RandomAc
 
     @Override
     public final IBuiltInSymbol head() {
-      return F.GreaterEqual;
+      return S.GreaterEqual;
     }
 
+    @Override
     public IASTMutable copy() {
       return new GreaterEqual(arg1, arg2);
     }
   }
 
-  public static final class If extends B2 {
+  static final class If extends B2 {
     public If() {
       super();
     }
@@ -192,15 +200,16 @@ public abstract class B2 extends AbstractAST implements Externalizable, RandomAc
 
     @Override
     public final IBuiltInSymbol head() {
-      return F.If;
+      return S.If;
     }
 
+    @Override
     public IASTMutable copy() {
       return new If(arg1, arg2);
     }
   }
 
-  public static final class Integrate extends B2 {
+  static final class Integrate extends B2 {
     public Integrate() {
       super();
     }
@@ -211,15 +220,16 @@ public abstract class B2 extends AbstractAST implements Externalizable, RandomAc
 
     @Override
     public final IBuiltInSymbol head() {
-      return F.Integrate;
+      return S.Integrate;
     }
 
+    @Override
     public IASTMutable copy() {
       return new Integrate(arg1, arg2);
     }
   }
 
-  public static final class Less extends B2 {
+  static final class Less extends B2 {
     public Less() {
       super();
     }
@@ -230,15 +240,16 @@ public abstract class B2 extends AbstractAST implements Externalizable, RandomAc
 
     @Override
     public final IBuiltInSymbol head() {
-      return F.Less;
+      return S.Less;
     }
 
+    @Override
     public IASTMutable copy() {
       return new Less(arg1, arg2);
     }
   }
 
-  public static final class LessEqual extends B2 {
+  static final class LessEqual extends B2 {
     public LessEqual() {
       super();
     }
@@ -249,15 +260,16 @@ public abstract class B2 extends AbstractAST implements Externalizable, RandomAc
 
     @Override
     public final IBuiltInSymbol head() {
-      return F.LessEqual;
+      return S.LessEqual;
     }
 
+    @Override
     public IASTMutable copy() {
       return new LessEqual(arg1, arg2);
     }
   }
 
-  public static final class MemberQ extends B2 {
+  static final class MemberQ extends B2 {
     public MemberQ() {
       super();
     }
@@ -268,15 +280,16 @@ public abstract class B2 extends AbstractAST implements Externalizable, RandomAc
 
     @Override
     public final IBuiltInSymbol head() {
-      return F.MemberQ;
+      return S.MemberQ;
     }
 
+    @Override
     public IASTMutable copy() {
       return new MemberQ(arg1, arg2);
     }
   }
 
-  public static final class Or extends B2 {
+  static final class Or extends B2 {
     public Or() {
       super();
     }
@@ -287,9 +300,10 @@ public abstract class B2 extends AbstractAST implements Externalizable, RandomAc
 
     @Override
     public final IBuiltInSymbol head() {
-      return F.Or;
+      return S.Or;
     }
 
+    @Override
     public IASTMutable copy() {
       return new Or(arg1, arg2);
     }
@@ -301,7 +315,7 @@ public abstract class B2 extends AbstractAST implements Externalizable, RandomAc
     }
   }
 
-  public static final class Part extends B2 {
+  static final class Part extends B2 {
     public Part() {
       super();
     }
@@ -312,15 +326,16 @@ public abstract class B2 extends AbstractAST implements Externalizable, RandomAc
 
     @Override
     public final IBuiltInSymbol head() {
-      return F.Part;
+      return S.Part;
     }
 
+    @Override
     public IASTMutable copy() {
       return new Part(arg1, arg2);
     }
   }
 
-  public static final class Plus extends B2 {
+  static final class Plus extends B2 {
     public Plus() {
       super();
     }
@@ -331,21 +346,25 @@ public abstract class B2 extends AbstractAST implements Externalizable, RandomAc
 
     @Override
     public final IBuiltInSymbol head() {
-      return F.Plus;
+      return S.Plus;
     }
 
+    @Override
     public IASTMutable copy() {
       return new Plus(arg1, arg2);
     }
 
+    @Override
     public boolean isPlus() {
       return true;
     }
 
+    @Override
     public boolean isPower() {
       return false;
     }
 
+    @Override
     public boolean isTimes() {
       return false;
     }
@@ -357,7 +376,7 @@ public abstract class B2 extends AbstractAST implements Externalizable, RandomAc
     }
   }
 
-  public static final class PolynomialQ extends B2 {
+  static final class PolynomialQ extends B2 {
     public PolynomialQ() {
       super();
     }
@@ -368,15 +387,16 @@ public abstract class B2 extends AbstractAST implements Externalizable, RandomAc
 
     @Override
     public final IBuiltInSymbol head() {
-      return F.PolynomialQ;
+      return S.PolynomialQ;
     }
 
+    @Override
     public IASTMutable copy() {
       return new PolynomialQ(arg1, arg2);
     }
   }
 
-  public static final class Power extends B2 {
+  static final class Power extends B2 {
     public Power() {
       super();
     }
@@ -397,27 +417,31 @@ public abstract class B2 extends AbstractAST implements Externalizable, RandomAc
 
     @Override
     public final IBuiltInSymbol head() {
-      return F.Power;
+      return S.Power;
     }
 
+    @Override
     public IASTMutable copy() {
       return new Power(arg1, arg2);
     }
 
+    @Override
     public boolean isPlus() {
       return false;
     }
 
+    @Override
     public boolean isPower() {
       return true;
     }
 
+    @Override
     public boolean isTimes() {
       return false;
     }
   }
 
-  public static final class B2Set extends B2 {
+  static final class B2Set extends B2 {
     public B2Set() {
       super();
     }
@@ -428,15 +452,16 @@ public abstract class B2 extends AbstractAST implements Externalizable, RandomAc
 
     @Override
     public final IBuiltInSymbol head() {
-      return F.Set;
+      return S.Set;
     }
 
+    @Override
     public IASTMutable copy() {
       return new B2Set(arg1, arg2);
     }
   }
 
-  public static final class Rule extends B2 {
+  static final class Rule extends B2 {
     public Rule() {
       super();
     }
@@ -447,15 +472,16 @@ public abstract class B2 extends AbstractAST implements Externalizable, RandomAc
 
     @Override
     public final IBuiltInSymbol head() {
-      return F.Rule;
+      return S.Rule;
     }
 
+    @Override
     public IASTMutable copy() {
       return new Rule(arg1, arg2);
     }
   }
 
-  public static final class RuleDelayed extends B2 {
+  static final class RuleDelayed extends B2 {
     public RuleDelayed() {
       super();
     }
@@ -466,15 +492,16 @@ public abstract class B2 extends AbstractAST implements Externalizable, RandomAc
 
     @Override
     public final IBuiltInSymbol head() {
-      return F.RuleDelayed;
+      return S.RuleDelayed;
     }
 
+    @Override
     public IASTMutable copy() {
       return new RuleDelayed(arg1, arg2);
     }
   }
 
-  public static final class SameQ extends B2 {
+  static final class SameQ extends B2 {
     public SameQ() {
       super();
     }
@@ -485,15 +512,16 @@ public abstract class B2 extends AbstractAST implements Externalizable, RandomAc
 
     @Override
     public final IBuiltInSymbol head() {
-      return F.SameQ;
+      return S.SameQ;
     }
 
+    @Override
     public IASTMutable copy() {
       return new SameQ(arg1, arg2);
     }
   }
 
-  public static final class Times extends B2 {
+  static final class Times extends B2 {
     public Times() {
       super();
     }
@@ -504,21 +532,25 @@ public abstract class B2 extends AbstractAST implements Externalizable, RandomAc
 
     @Override
     public final IBuiltInSymbol head() {
-      return F.Times;
+      return S.Times;
     }
 
+    @Override
     public IASTMutable copy() {
       return new Times(arg1, arg2);
     }
 
+    @Override
     public boolean isPlus() {
       return false;
     }
 
+    @Override
     public boolean isPower() {
       return false;
     }
 
+    @Override
     public boolean isTimes() {
       return true;
     }
@@ -530,7 +562,7 @@ public abstract class B2 extends AbstractAST implements Externalizable, RandomAc
     }
   }
 
-  public static final class UndirectedEdge extends B2 {
+  static final class UndirectedEdge extends B2 {
     public UndirectedEdge() {
       super();
     }
@@ -541,15 +573,16 @@ public abstract class B2 extends AbstractAST implements Externalizable, RandomAc
 
     @Override
     public final IBuiltInSymbol head() {
-      return F.UndirectedEdge;
+      return S.UndirectedEdge;
     }
 
+    @Override
     public IASTMutable copy() {
       return new UndirectedEdge(arg1, arg2);
     }
   }
 
-  public static final class With extends B2 {
+  static final class With extends B2 {
     public With() {
       super();
     }
@@ -560,9 +593,10 @@ public abstract class B2 extends AbstractAST implements Externalizable, RandomAc
 
     @Override
     public final IBuiltInSymbol head() {
-      return F.With;
+      return S.With;
     }
 
+    @Override
     public IASTMutable copy() {
       return new With(arg1, arg2);
     }
@@ -684,6 +718,7 @@ public abstract class B2 extends AbstractAST implements Externalizable, RandomAc
    * @return a shallow copy of this {@code ArrayList}
    * @see java.lang.Cloneable
    */
+  @Override
   public IAST clone() {
     return copy();
   }
@@ -695,6 +730,7 @@ public abstract class B2 extends AbstractAST implements Externalizable, RandomAc
   }
 
   /** {@inheritDoc} */
+  @Override
   public abstract IASTMutable copy();
 
   @Override
@@ -1002,13 +1038,13 @@ public abstract class B2 extends AbstractAST implements Externalizable, RandomAc
   /** {@inheritDoc} */
   @Override
   public boolean isPlus() {
-    return head() == F.Plus;
+    return head() == S.Plus;
   }
 
   /** {@inheritDoc} */
   @Override
   public boolean isPower() {
-    return head() == F.Power;
+    return head() == S.Power;
   }
 
   /** {@inheritDoc} */
@@ -1032,7 +1068,7 @@ public abstract class B2 extends AbstractAST implements Externalizable, RandomAc
   /** {@inheritDoc} */
   @Override
   public boolean isTimes() {
-    return head() == F.Times;
+    return head() == S.Times;
   }
 
   /** {@inheritDoc} */
@@ -1086,6 +1122,7 @@ public abstract class B2 extends AbstractAST implements Externalizable, RandomAc
         "Index: " + Integer.valueOf(fromPosition) + ", Size: " + size());
   }
 
+  @Override
   public IASTMutable setAtCopy(int i, IExpr expr) {
     if (i == 0) {
       IASTMutable ast = new AST2(head(), arg1(), arg2());

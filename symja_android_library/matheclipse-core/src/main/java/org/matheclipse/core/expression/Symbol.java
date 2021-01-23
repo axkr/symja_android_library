@@ -8,7 +8,6 @@ import java.util.Collection;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
-import java.util.Set;
 import java.util.function.Function;
 
 import org.hipparchus.complex.Complex;
@@ -805,12 +804,6 @@ public class Symbol implements ISymbol, Serializable {
   public IExpr of(EvalEngine engine, IExpr... args) {
     IAST ast = F.function(this, args);
     return engine.evaluate(ast);
-  }
-
-  /** {@inheritDoc} */
-  @Override
-  public final IExpr of(IExpr... args) {
-    return of(EvalEngine.get(), args);
   }
 
   /** {@inheritDoc} */

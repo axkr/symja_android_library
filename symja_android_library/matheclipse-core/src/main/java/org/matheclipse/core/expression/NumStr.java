@@ -85,6 +85,7 @@ public final class NumStr extends Num {
     return super.evaluate(engine);
   }
 
+  @Override
   public INumber evaluatePrecision(EvalEngine engine) {
     if (engine.isArbitraryMode()) {
       long precision =
@@ -161,6 +162,7 @@ public final class NumStr extends Num {
     return fFloatStr;
   }
 
+  @Override
   public long precision() {
     return fPrecision;
   }
