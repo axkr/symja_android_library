@@ -2,21 +2,25 @@ package org.matheclipse.io.builtin;
 
 import java.io.File;
 import java.io.IOException;
+import java.net.MalformedURLException;
+import java.net.URL;
 
 import org.matheclipse.core.basic.Config;
 import org.matheclipse.core.eval.EvalEngine;
+import org.matheclipse.core.eval.exception.ValidateException;
 import org.matheclipse.core.eval.interfaces.AbstractEvaluator;
 import org.matheclipse.core.eval.interfaces.IFunctionEvaluator;
 import org.matheclipse.core.expression.F;
+import org.matheclipse.core.expression.S;
 // import org.matheclipse.core.expression.data.DataSetExpr;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.interfaces.IStringX;
 import org.matheclipse.core.io.Extension;
 import org.matheclipse.io.expression.ASTDataset;
+import org.matheclipse.parser.client.FEConfig;
 
 import tech.tablesaw.api.Table;
-import tech.tablesaw.io.csv.CsvReadOptions;
 
 /** Import semantic data into a DataSet */
 public class SemanticImport extends AbstractEvaluator {
@@ -33,27 +37,75 @@ public class SemanticImport extends AbstractEvaluator {
       IStringX arg1 = (IStringX) ast.arg1();
       Extension format = Extension.importFilename(arg1.toString());
       String fileName = arg1.toString();
+
+      if (fileName.startsWith("https://") || fileName.startsWith("http://")) {
+        return readURL(fileName, format, engine);
+      }
+
       if (format.equals(Extension.CSV) || format.equals(Extension.TSV)) {
-        try {
-          File file = new File(arg1.toString());
-          if (file.exists()) {
-            Table table = Table.read().csv(file);
-            // System.out.println(table.printAll());
-            // System.out.println(table.structure().printAll());
-            return ASTDataset.newTablesawTable(table);
-          }
-          return engine.printMessage("SemanticImport: file " + fileName + " does not exist!");
-        } catch (IOException ioe) {
-          return engine.printMessage("SemanticImport: file " + fileName + " not found!");
-        } catch (RuntimeException rex) {
-          return engine.printMessage("SemanticImport: file " + fileName + " - " + rex.getMessage());
-        } finally {
-        }
+        return readFile(fileName, engine);
       }
     }
     return F.NIL;
   }
 
+  private static IExpr readFile(String fileName, EvalEngine engine) {
+    try {
+      File file = new File(fileName);
+      if (file.exists()) {
+        Table table = Table.read().csv(file);
+        // System.out.println(table.printAll());
+        // System.out.println(table.structure().printAll());
+        return ASTDataset.newTablesawTable(table);
+      }
+      return engine.printMessage("SemanticImport: file " + fileName + " does not exist!");
+    } catch (IOException ioe) {
+      return engine.printMessage("SemanticImport: file " + fileName + " not found!");
+    } catch (RuntimeException rex) {
+      return engine.printMessage("SemanticImport: file " + fileName + " - " + rex.getMessage());
+    } finally {
+    }
+  }
+
+  /**
+   * Read CSV or TSV data from a URL.
+   *
+   * <p>Example <code>urlName</code>:
+   *
+   * <pre>
+   * https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/data/whiskey.csv\
+   * </pre>
+   *
+   * @param urlName
+   * @param format CSV or TSV format
+   * @param ast
+   * @param engine
+   * @return
+   */
+  private static IExpr readURL(String urlName, Extension format, EvalEngine engine) {
+    try {
+      URL url = new URL(urlName);
+      if (format.equals(Extension.CSV) || format.equals(Extension.TSV)) {
+        Table table = Table.read().csv(url);
+        return ASTDataset.newTablesawTable(table);
+      }
+    } catch (ValidateException ve) {
+      return engine.printMessage(S.SemanticImport, ve);
+    } catch (MalformedURLException mue) {
+      if (FEConfig.SHOW_STACKTRACE) {
+        mue.printStackTrace();
+      }
+      return engine.printMessage(S.SemanticImport + ": " + mue.getMessage());
+    } catch (IOException ioe) {
+      return engine.printMessage("SemanticImport: URL " + urlName + " not found!");
+    } catch (RuntimeException rex) {
+      return engine.printMessage("SemanticImport: URL " + urlName + " - " + rex.getMessage());
+    } finally {
+    }
+    return F.NIL;
+  }
+
+  @Override
   public int[] expectedArgSize(IAST ast) {
     return IFunctionEvaluator.ARGS_1_2;
   }
