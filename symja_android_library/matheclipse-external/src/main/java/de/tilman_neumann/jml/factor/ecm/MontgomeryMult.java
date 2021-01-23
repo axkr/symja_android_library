@@ -31,8 +31,15 @@ public class MontgomeryMult {
 
   private static final Logger LOG = Logger.getLogger(MontgomeryMult.class);
 
+  /** the modulus N */
   private final int[] TestNbr;
+
+  /** the length of N in 31-bit words */
   private final int NumberLength;
+
+  /**
+   * (-1/N[0]) mod R, where the reducer R = 2^31 and N[0] is the least significant 31-bit word of N
+   */
   private final int MontgomeryMultN;
 
   public MontgomeryMult(int[] TestNbr, int NumberLength) {
@@ -40,11 +47,11 @@ public class MontgomeryMult {
     this.NumberLength = NumberLength;
 
     int N, x;
-    x = N = (int) TestNbr[0]; // 2 least significant bits of inverse correct.
-    x = x * (2 - N * x); // 4 least significant bits of inverse correct.
-    x = x * (2 - N * x); // 8 least significant bits of inverse correct.
-    x = x * (2 - N * x); // 16 least significant bits of inverse correct.
-    x = x * (2 - N * x); // 32 least significant bits of inverse correct.
+    x = N = (int) TestNbr[0]; // now x*N==1 mod 2^2
+    x = x * (2 - N * x); // now x*N==1 mod 2^4
+    x = x * (2 - N * x); // now x*N==1 mod 2^8
+    x = x * (2 - N * x); // now x*N==1 mod 2^16
+    x = x * (2 - N * x); // now x*N==1 mod 2^32
     MontgomeryMultN = (-x) & 0x7FFFFFFF;
   }
 

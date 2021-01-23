@@ -41,8 +41,10 @@ import static de.tilman_neumann.jml.base.BigIntConstants.*;
 /**
  * Use Elliptic Curve Method to find the prime number factors of a given BigInteger.
  *
- * <p>See <a href="https://en.wikipedia.org/wiki/Lenstra_elliptic_curve_factorization">Wikipedia:
- * Lenstra elliptic curve factorization </a>
+ * @see [Le] <a href="https://en.wikipedia.org/wiki/Lenstra_elliptic_curve_factorization">Wikipedia:
+ *     Lenstra elliptic curve factorization </a>
+ * @see [CP] Richard Crandall, Carl Pomerance: "Prime Numbers: A Computational Perspective", Second
+ *     Edition, chapter 7.4
  */
 public class EllipticCurveMethod extends FactorAlgorithm {
   private static final Logger LOG = Logger.getLogger(EllipticCurveMethod.class);
@@ -56,8 +58,6 @@ public class EllipticCurveMethod extends FactorAlgorithm {
   private static final long DosALa62 = 1L << 62;
   private static final double dDosALa31 = DosALa31;
   private static final double dDosALa62 = dDosALa31 * dDosALa31;
-  private static final int ADD = 6; // number of multiplications in an addition
-  private static final int DUP = 5; // number of multiplications in a duplicate
 
   /** 1 as "BigNbr" */
   private static final int BigNbr1[] = new int[NLen];
@@ -65,14 +65,17 @@ public class EllipticCurveMethod extends FactorAlgorithm {
   /** Primes < 5000 */
   private static final int SmallPrime[] = new int[670]; // p_669 = 4999;
 
-  private static final PrPTest prp = new PrPTest();
-  private static final PurePowerTest powerTest = new PurePowerTest();
-  private static final TDiv tdiv = new TDiv().setTestLimit(131072);
-
   private static final double v[] = {
     1.61803398875, 1.72360679775, 1.618347119656, 1.617914406529, 1.612429949509,
     1.632839806089, 1.620181980807, 1.580178728295, 1.617214616534, 1.38196601125
   };
+
+  private static final int ADD = 6; // number of multiplications in an addition
+  private static final int DUP = 5; // number of multiplications in a duplicate
+
+  private static final PrPTest prp = new PrPTest();
+  private static final PurePowerTest powerTest = new PurePowerTest();
+  private static final TDiv tdiv = new TDiv().setTestLimit(131072);
 
   /** input N as a BigNbr */
   private final int TestNbr[] = new int[NLen];
@@ -108,7 +111,7 @@ public class EllipticCurveMethod extends FactorAlgorithm {
   private final int[] A0 = new int[NLen];
   private final int[] A02 = new int[NLen];
   private final int[] A03 = new int[NLen];
-  private final int[] AA = new int[NLen];
+  private final int[] bZi = new int[NLen];
   private final int[] DX = new int[NLen];
   private final int[] DZ = new int[NLen];
   private final int[] GD = new int[NLen];
@@ -196,10 +199,10 @@ public class EllipticCurveMethod extends FactorAlgorithm {
     if (result.untestedFactors.isEmpty()) return;
     // Otherwise untestedFactors should contain exactly one prime > 131072, or one composite >
     // 131072^2, the unfactored rest
-    //		if (DEBUG) {
-    //			assertEquals(1, result.untestedFactors.size());
-    //			assertTrue(result.untestedFactors.firstKey().compareTo(BigInteger.valueOf(131072)) > 0);
-    //		}
+    //    if (DEBUG) {
+    //      assertEquals(1, result.untestedFactors.size());
+    //      assertTrue(result.untestedFactors.firstKey().compareTo(BigInteger.valueOf(131072)) > 0);
+    //    }
 
     // Retrieve the unfactored rest to continue. The exponent of N can not have changed.
     BigInteger N = result.untestedFactors.firstKey();
@@ -341,13 +344,14 @@ public class EllipticCurveMethod extends FactorAlgorithm {
     AddBigNbrModN(MontgomeryMultR1, MontgomeryMultR1, MontgomeryMultR2);
 
     // Modular curve loop:
-    while (true) {
-      if (maxCurvesForN >= 0 && EC >= maxCurvesForN) {
-        return I_1; // stop ECM
-      }
+    while (maxCurvesForN == -1
+        || EC < maxCurvesForN) { // maxCurvesForN==-1 means "run until a factor is found"
       EC++;
 
       long L1; // step 1 prime bound
+      // The original estimate are the standard values for searching 15, 25, 35, 45-digit factors,
+      // see e.g.
+      // https://www.rieselprime.de/ziki/Elliptic_curve_method#Choosing_the_best_parameters_for_ECM
       if (EC < 26) L1 = 2000;
       else if (EC < 326) L1 = 50000;
       else if (EC < 2000) L1 = 1000000;
@@ -356,6 +360,11 @@ public class EllipticCurveMethod extends FactorAlgorithm {
       long L2 = 100 * L1; // step 2 prime bound
       long LS = (long) Math.ceil(Math.sqrt(L1));
 
+      // [Le] Pick a random elliptic curve over Z_N, with equation of the form y^2 = x^3 + ax + b
+      // (mod N) together with a
+      // non-trivial point P(x0, y0) on it. This can be done by first picking random x0, y0, a ∈
+      // Z_N, and then setting
+      // b = y0^2 − x0^3 − a*x0 (mod N) to assure the point is on the curve.
       LongToBigNbr(2 * (EC + 1), Aux1);
       LongToBigNbr(3 * (EC + 1) * (EC + 1) - 1, Aux2);
       ModInvBigNbr(Aux2, TestNbr, Aux2);
@@ -371,6 +380,11 @@ public class EllipticCurveMethod extends FactorAlgorithm {
         continue;
       }
       MultBigNbrByLongModN(A0, 4, Z, dN);
+      MultBigNbrByLongModN(A02, 3, Aux1, dN);
+      AddBigNbrModN(Aux1, MontgomeryMultR1, X);
+      // now we have determined the point P(X, Z)
+
+      // compute Zimmermann's a,b parameters // XXX are these the curve parameters ?
       MultBigNbrByLongModN(A02, 6, Aux1, dN);
       SubtractBigNbrModN(MontgomeryMultR1, Aux1, Aux1);
       montgomery.mul(A02, A02, Aux2);
@@ -379,14 +393,12 @@ public class EllipticCurveMethod extends FactorAlgorithm {
       MultBigNbrByLongModN(A03, 4, Aux2, dN);
       ModInvBigNbr(Aux2, TestNbr, Aux2);
       montgomery.mul(Aux2, MontgomeryMultAfterInv, Aux3);
-      montgomery.mul(Aux1, Aux3, A0);
+      montgomery.mul(Aux1, Aux3, A0); // Zimmermann's a
       AddBigNbrModN(A0, MontgomeryMultR2, Aux1);
       LongToBigNbr(4, Aux2);
       ModInvBigNbr(Aux2, TestNbr, Aux3);
       MultBigNbrModN(Aux3, MontgomeryMultR1, Aux2, dN);
-      montgomery.mul(Aux1, Aux2, AA); // the only write access to AA
-      MultBigNbrByLongModN(A02, 3, Aux1, dN);
-      AddBigNbrModN(Aux1, MontgomeryMultR1, X);
+      montgomery.mul(Aux1, Aux2, bZi); // Zimmermann's b = (a+2)/4 mod N (fixed from now on)
 
       /** *********** */
       /* First step */
@@ -397,10 +409,10 @@ public class EllipticCurveMethod extends FactorAlgorithm {
       for (int Pass = 0; Pass < 2; Pass++) {
         /* For powers of 2 */
         for (int I = 1; I <= L1; I <<= 1) {
-          duplicate(X, Z, X, Z, AA);
+          duplicate(X, Z, X, Z, bZi);
         }
         for (int I = 3; I <= L1; I *= 3) {
-          duplicate(W1, W2, X, Z, AA);
+          duplicate(W1, W2, X, Z, bZi);
           add3(X, Z, X, Z, W1, W2, X, Z);
         }
 
@@ -420,7 +432,7 @@ public class EllipticCurveMethod extends FactorAlgorithm {
         do {
           P = SmallPrime[indexM++];
           for (long IP = P; IP <= L1; IP *= P) {
-            prac((int) P, X, Z, W1, W2, W3, W4, AA);
+            prac((int) P, X, Z, W1, W2, W3, W4, bZi);
           }
           if (Pass == 0) {
             montgomery.mul(GcdAccumulated, Z, Aux1);
@@ -449,7 +461,7 @@ public class EllipticCurveMethod extends FactorAlgorithm {
           for (int i = 0; i < 23100; i++) {
             if (sieve[i] != 0) continue; /* Do not process composites */
             if (P + 2 * i > L1) break;
-            prac((int) (P + 2 * i), X, Z, W1, W2, W3, W4, AA);
+            prac((int) (P + 2 * i), X, Z, W1, W2, W3, W4, bZi);
             if (Pass == 0) {
               montgomery.mul(GcdAccumulated, Z, Aux1);
               System.arraycopy(Aux1, 0, GcdAccumulated, 0, NumberLength);
@@ -505,7 +517,7 @@ public class EllipticCurveMethod extends FactorAlgorithm {
         montgomery.mul(Aux1, Aux1, W2);
         montgomery.mul(W1, W2, TX);
         SubtractBigNbrModN(W1, W2, Aux1);
-        montgomery.mul(Aux1, AA, Aux2);
+        montgomery.mul(Aux1, bZi, Aux2);
         AddBigNbrModN(Aux2, W2, Aux3);
         montgomery.mul(Aux1, Aux3, TZ); // (TX:TZ) -> 2Q
         SubtractBigNbrModN(X, Z, Aux1);
@@ -563,7 +575,7 @@ public class EllipticCurveMethod extends FactorAlgorithm {
         montgomery.mul(Aux1, Aux1, W2);
         montgomery.mul(W1, W2, X);
         SubtractBigNbrModN(W1, W2, Aux1);
-        montgomery.mul(Aux1, AA, Aux2);
+        montgomery.mul(Aux1, bZi, Aux2);
         AddBigNbrModN(Aux2, W2, Aux3);
         montgomery.mul(Aux1, Aux3, Z);
         System.arraycopy(X, 0, UX, 0, NumberLength);
@@ -574,7 +586,7 @@ public class EllipticCurveMethod extends FactorAlgorithm {
         montgomery.mul(Aux1, Aux1, W2);
         montgomery.mul(W1, W2, TX);
         SubtractBigNbrModN(W1, W2, Aux1);
-        montgomery.mul(Aux1, AA, Aux2);
+        montgomery.mul(Aux1, bZi, Aux2);
         AddBigNbrModN(Aux2, W2, Aux3);
         montgomery.mul(Aux1, Aux3, TZ); // (TX:TZ) -> 2*2310Q
         SubtractBigNbrModN(X, Z, Aux1);
@@ -658,6 +670,8 @@ public class EllipticCurveMethod extends FactorAlgorithm {
         }
       } /* end for Pass */
     } /* end curve calculation */
+
+    return I_1; // no factor found
   }
 
   private static void GenerateSieve(int initial, byte[] sieve, byte[] sieve2310, int[] SmallPrime) {
@@ -686,18 +700,25 @@ public class EllipticCurveMethod extends FactorAlgorithm {
     } while (Q < 5000);
   }
 
+  // Start of code "borrowed" from Paul Zimmermann's ECM4C
+
   /**
    * Computes nP from P=(x:z) and puts the result in (x:z). Assumes n>2.
    *
-   * @param n
+   * <p>Uses the following global variables: - N = TestNbr: number to factor<br>
+   * - bZi Zimmermann's b = (a+2)/4 mod N<br>
+   * - xB, zB, xC, zC, xT, zT, xT2, zT2: auxiliary variables
+   *
+   * @param n the scalar to multiply P with.
    * @param x
    * @param z
    * @param xT
    * @param zT
    * @param xT2
    * @param zT2
+   * @param bZi Zimmermann's b = (a+2)/4 mod N
    */
-  private void prac(int n, int[] x, int[] z, int[] xT, int[] zT, int[] xT2, int[] zT2, int[] AA) {
+  private void prac(int n, int[] x, int[] z, int[] xT, int[] zT, int[] xT2, int[] zT2, int[] bZi) {
     int d, e, r, i;
     int[] t;
     int[] xA = x, zA = z;
@@ -723,7 +744,7 @@ public class EllipticCurveMethod extends FactorAlgorithm {
     System.arraycopy(zA, 0, zB, 0, NumberLength);
     System.arraycopy(xA, 0, xC, 0, NumberLength); // C = A
     System.arraycopy(zA, 0, zC, 0, NumberLength);
-    duplicate(xA, zA, xA, zA, AA); /* A=2*A */
+    duplicate(xA, zA, xA, zA, bZi); /* A=2*A */
     while (d != e) {
       if (d < e) {
         r = d;
@@ -755,7 +776,7 @@ public class EllipticCurveMethod extends FactorAlgorithm {
         /* condition 2 */
         d = (d - e) / 2;
         add3(xB, zB, xA, zA, xB, zB, xC, zC); /* B = f(A,B,C) */
-        duplicate(xA, zA, xA, zA, AA); /* A = 2*A */
+        duplicate(xA, zA, xA, zA, bZi); /* A = 2*A */
       } else if (d <= (4 * e)) {
         /* condition 3 */
         d -= e;
@@ -772,16 +793,16 @@ public class EllipticCurveMethod extends FactorAlgorithm {
         /* condition 4 */
         d = (d - e) / 2;
         add3(xB, zB, xB, zB, xA, zA, xC, zC); /* B = f(B,A,C) */
-        duplicate(xA, zA, xA, zA, AA); /* A = 2*A */
+        duplicate(xA, zA, xA, zA, bZi); /* A = 2*A */
       } else if (d % 2 == 0) {
         /* condition 5 */
         d /= 2;
         add3(xC, zC, xC, zC, xA, zA, xB, zB); /* C = f(C,A,B) */
-        duplicate(xA, zA, xA, zA, AA); /* A = 2*A */
+        duplicate(xA, zA, xA, zA, bZi); /* A = 2*A */
       } else if (d % 3 == 0) {
         /* condition 6 */
         d = d / 3 - e;
-        duplicate(xT, zT, xA, zA, AA); /* T1 = 2*A */
+        duplicate(xT, zT, xA, zA, bZi); /* T1 = 2*A */
         add3(xT2, zT2, xA, zA, xB, zB, xC, zC); /* T2 = f(A,B,C) */
         add3(xA, zA, xT, zT, xA, zA, xA, zA); /* A = f(T1,A,A) */
         add3(xT, zT, xT, zT, xT2, zT2, xC, zC); /* T1 = f(T1,T2,C) */
@@ -798,7 +819,7 @@ public class EllipticCurveMethod extends FactorAlgorithm {
         d = (d - 2 * e) / 3;
         add3(xT, zT, xA, zA, xB, zB, xC, zC); /* T1 = f(A,B,C) */
         add3(xB, zB, xT, zT, xA, zA, xB, zB); /* B = f(T1,A,B) */
-        duplicate(xT, zT, xA, zA, AA);
+        duplicate(xT, zT, xA, zA, bZi);
         add3(xA, zA, xA, zA, xT, zT, xA, zA); /* A = 3*A */
       } else if ((d - e) % 3 == 0) {
         /* condition 8 */
@@ -811,19 +832,25 @@ public class EllipticCurveMethod extends FactorAlgorithm {
         t = zB;
         zB = zT;
         zT = t; /* swap B and T */
-        duplicate(xT, zT, xA, zA, AA);
+        duplicate(xT, zT, xA, zA, bZi);
         add3(xA, zA, xA, zA, xT, zT, xA, zA); /* A = 3*A */
       } else if (e % 2 == 0) {
         /* condition 9 */
         e /= 2;
         add3(xC, zC, xC, zC, xB, zB, xA, zA); /* C = f(C,B,A) */
-        duplicate(xB, zB, xB, zB, AA); /* B = 2*B */
+        duplicate(xB, zB, xB, zB, bZi); /* B = 2*B */
       }
     }
     add3(x, z, xA, zA, xB, zB, xC, zC);
   }
 
-  /** returns the number of modular multiplications */
+  /**
+   * Returns the number of modular multiplications in the computation of nP.
+   *
+   * @param n the scalar to multiply a point with
+   * @param v weight
+   * @return number of modular multiplications
+   */
   private static int lucas_cost(int n, double v) {
     int c, d, e, r;
 
@@ -884,11 +911,22 @@ public class EllipticCurveMethod extends FactorAlgorithm {
   }
 
   /**
-   * computes 2P=(x2:z2) from P=(x1:z1), with 5 mul, 4 add/sub, 5 mod. Uses the following global
-   * variables: - n : number to factor - b : (a+2)/4 mod n - u, v, w : auxiliary variables Modifies:
-   * x2, z2, u, v, w
+   * Computes 2P=(x2:z2) from P=(x1:z1), with 5 mul, 4 add/sub, 5 mod.<br>
+   * <br>
+   * Uses the following global variables:<br>
+   * - N = TestNbr: number to factor<br>
+   * - bZi Zimmermann's b = (a+2)/4 mod N<br>
+   * - u, v, w : auxiliary variables<br>
+   * <br>
+   * Modifies: x2, z2, u, v, w
+   *
+   * @param x2
+   * @param z2
+   * @param x1
+   * @param z1
+   * @param bZi Zimmermann's b = (a+2)/4 mod N
    */
-  private void duplicate(int[] x2, int[] z2, int[] x1, int[] z1, int[] AA) {
+  private void duplicate(int[] x2, int[] z2, int[] x1, int[] z1, int[] bZi) {
     int[] u = fieldUZ;
     int[] v = fieldTX;
     int[] w = fieldTZ;
@@ -898,16 +936,21 @@ public class EllipticCurveMethod extends FactorAlgorithm {
     montgomery.mul(w, w, v); // v = (x1-z1)^2
     montgomery.mul(u, v, x2); // x2 = u*v = (x1^2 - z1^2)^2
     SubtractBigNbrModN(u, v, w); // w = u-v = 4*x1*z1
-    montgomery.mul(AA, w, u);
+    montgomery.mul(bZi, w, u);
     AddBigNbrModN(u, v, u); // u = (v+b*w)
     montgomery.mul(w, u, z2); // z2 = (w*u)
   }
 
   /**
    * Adds Q=(x2:z2) and R=(x1:z1) and puts the result in (x3:z3), using 5/6 mul, 6 add/sub and 6
-   * mod. One assumes that Q-R=P or R-Q=P where P=(x:z). Uses the following global variables: - n :
-   * number to factor - x, z : coordinates of P - u, v, w : auxiliary variables Modifies: x3, z3, u,
-   * v, w. (x3,z3) may be identical to (x2,z2) and to (x,z)
+   * mod. One assumes that Q-R=P or R-Q=P where P=(x:z).<br>
+   * <br>
+   * Uses the following global variables:<br>
+   * - N = TestNbr: number to factor<br>
+   * - x, z : coordinates of P<br>
+   * - t, u, v, w : auxiliary variables<br>
+   * <br>
+   * Modifies: x3, z3, t, u, v, w. (x3,z3) may be identical to (x2,z2) and to (x,z).
    *
    * @param x3
    * @param z3
@@ -944,6 +987,8 @@ public class EllipticCurveMethod extends FactorAlgorithm {
       montgomery.mul(x, v, z3); // z3 = 4*x*(x2*z1-x1*z2)^2
     }
   }
+
+  // End of code "borrowed" from Paul Zimmermann's ECM4C
 
   /**
    * Convert a long <code>Nbr</code> into a BigNbr <code>Out</code> represented by 31-bit integers.
@@ -1344,15 +1389,13 @@ public class EllipticCurveMethod extends FactorAlgorithm {
   }
 
   /**
-   * Find the multiplicative inverse (1/a) modulo b and return the result in inv.
-   *
-   * <p>This implementation returns dummy values for a-values that are not invertible modulo b. This
-   * is good for the performance of the ECM implementation because the latter works with accumulated
-   * gcd's and then it doesn't matter if a few of the single gcd-values are wrong.
+   * Find the multiplicative inverse (1/a) modulo b and return the result in inv. If called for some
+   * a that is not invertible modulo b, this implementation will return a non-trivial factor of b
+   * ([CP], page 336).
    *
    * @param a
    * @param b
-   * @param inv the result
+   * @param inv the inverse or a non-trivial factor of b
    */
   void ModInvBigNbr(int[] a, int[] b, int[] inv) {
     int i;
