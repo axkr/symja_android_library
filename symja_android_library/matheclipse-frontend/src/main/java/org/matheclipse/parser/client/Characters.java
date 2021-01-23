@@ -3,7 +3,6 @@ package org.matheclipse.parser.client;
 import java.util.Map;
 
 import org.matheclipse.parser.trie.TrieMatch;
-import org.matheclipse.parser.trie.Tries;
 
 public class Characters {
   public static Map<String, String> NamedCharactersMap =
@@ -1964,7 +1963,8 @@ public class Characters {
     "TaurusSign",
     "\u2649",
     "TensorProduct",
-    "\u2297", // "\uF3DA" - replaced according to https://en.wikipedia.org/wiki/List_of_mathematical_symbols_by_subject
+    "\u2297", // "\uF3DA" - replaced according to
+    // https://en.wikipedia.org/wiki/List_of_mathematical_symbols_by_subject
     "TensorWedge",
     "\uF3DB",
     "Therefore",
@@ -2148,17 +2148,18 @@ public class Characters {
   /**
    * Return the name for a given unicode character.
    *
-   * @param unicode a string of length 1.
+   * @param unicode a character
    * @return <code>null</code> if no corresponding name was found
    */
-  public static String unicodeName(String unicode) {
+  public static String unicodeName(char unicode) {
+    String str = String.valueOf(unicode);
     if (ReversedNamedCharactersMap.size() == 0) {
       // create unicode to name map
       for (int i = 0; i < NamedCharacters.length; i += 2) {
         ReversedNamedCharactersMap.put(NamedCharacters[i + 1], NamedCharacters[i]);
       }
     }
-    return ReversedNamedCharactersMap.get(unicode);
+    return ReversedNamedCharactersMap.get(str);
   }
 
   /**
@@ -2211,37 +2212,30 @@ public class Characters {
               }
             }
           } else if (str.charAt(currentPosition) == '.') {
-            final int numberOfUnicodeDigits = 2;
-            final int startPosition = ++currentPosition;
-            if (startPosition + numberOfUnicodeDigits >= strLength) {
-              break;
-            }
-            final String number =
-                str.substring(startPosition, startPosition + numberOfUnicodeDigits);
             try {
-              int intValue = Integer.parseInt(number, 16);
+              final int numberOfUnicodeDigits = 2;
               buf = new StringBuilder(str.length());
-              buf.append(str.substring(0, startPosition - 2));
-              buf.append((char) intValue);
-              currentPosition += numberOfUnicodeDigits;
-              break;
+              buf.append(str.substring(0, ++currentPosition - 2));
+              currentPosition = codePointToUTF16(str, currentPosition, numberOfUnicodeDigits, buf);
             } catch (final NumberFormatException e) {
             }
+            break;
           } else if (str.charAt(currentPosition) == ':') {
-            final int numberOfUnicodeDigits = 4;
-            final int startPosition = ++currentPosition;
-            if (startPosition + numberOfUnicodeDigits >= strLength) {
-              break;
-            }
-            final String number =
-                str.substring(startPosition, startPosition + numberOfUnicodeDigits);
-
             try {
-              int intValue = Integer.parseInt(number, 16);
+              final int numberOfUnicodeDigits = 4;
               buf = new StringBuilder(str.length());
-              buf.append(str.substring(0, startPosition - 2));
-              buf.append((char) intValue);
-              currentPosition += numberOfUnicodeDigits;
+              buf.append(str.substring(0, ++currentPosition - 2));
+              currentPosition = codePointToUTF16(str, currentPosition, numberOfUnicodeDigits, buf);
+
+            } catch (final NumberFormatException e) {
+            }
+            break;
+          } else if (str.charAt(currentPosition) == '|') {
+            try {
+              final int numberOfUnicodeDigits = 6;
+              buf = new StringBuilder(str.length());
+              buf.append(str.substring(0, ++currentPosition - 2));
+              currentPosition = codePointToUTF16(str, currentPosition, numberOfUnicodeDigits, buf);
               break;
             } catch (final NumberFormatException e) {
             }
@@ -2292,45 +2286,68 @@ public class Characters {
               buf.append(subString);
             }
           } else if (str.charAt(currentPosition) == '.') {
-            final int numberOfUnicodeDigits = 2;
-            final int startPosition = ++currentPosition;
-            if (startPosition + numberOfUnicodeDigits >= strLength) {
-              break;
-            }
-            final String number =
-                str.substring(startPosition, startPosition + numberOfUnicodeDigits);
             try {
-              int intValue = Integer.parseInt(number, 16);
-              buf.append((char) intValue);
-              currentPosition += numberOfUnicodeDigits;
-              continue; // while (currentPosition < strLength)
+              final int numberOfUnicodeDigits = 2;
+              currentPosition =
+                  codePointToUTF16(str, ++currentPosition, numberOfUnicodeDigits, buf);
+              continue;
             } catch (final NumberFormatException e) {
             }
           } else if (str.charAt(currentPosition) == ':') {
-            final int numberOfUnicodeDigits = 4;
-            final int startPosition = ++currentPosition;
-            if (startPosition + numberOfUnicodeDigits >= strLength) {
-              break;
-            }
-            final String number =
-                str.substring(startPosition, startPosition + numberOfUnicodeDigits);
-
             try {
-              int intValue = Integer.parseInt(number, 16);
-              buf.append((char) intValue);
-              currentPosition += numberOfUnicodeDigits;
-              continue; // while (currentPosition < strLength)
+              final int numberOfUnicodeDigits = 4;
+              currentPosition =
+                  codePointToUTF16(str, ++currentPosition, numberOfUnicodeDigits, buf);
+              continue;
+            } catch (final NumberFormatException e) {
+            }
+          } else if (str.charAt(currentPosition) == '|') {
+            try {
+              final int numberOfUnicodeDigits = 6;
+              currentPosition =
+                  codePointToUTF16(str, ++currentPosition, numberOfUnicodeDigits, buf);
+              continue;
             } catch (final NumberFormatException e) {
             }
           } else {
-            // escape next character
+            // escape character
             buf.append(currentChar);
-            //            currentPosition++;
           }
+        } else {
+          buf.append(currentChar);
         }
+      } else {
+        buf.append(currentChar);
       }
-      buf.append(currentChar);
     }
     return buf.toString();
+  }
+
+  /**
+   * Append the specified character (Unicode code point with the string length of <code>
+   * numberOfUnicodeDigits</code> starting at <code>startPosition</code>) to its UTF-16
+   * representation stored in a char array and append this array to the <code>buffer</code>. If the
+   * specified code point is a BMP (Basic Multilingual Plane or Plane 0) value, the resulting char
+   * array has the same value as codePoint. If the specified codepoint is a supplementary code
+   * point, the resulting char array has the corresponding surrogate pair.
+   *
+   * @param str the input string
+   * @param startPosition
+   * @param numberOfUnicodeDigits
+   * @param buffer the output string buffer
+   * @return
+   * @throws NumberFormatException
+   */
+  private static int codePointToUTF16(
+      String str, int startPosition, final int numberOfUnicodeDigits, StringBuilder buffer)
+      throws NumberFormatException {
+    if (startPosition + numberOfUnicodeDigits >= str.length()) {
+      throw new NumberFormatException("Number length must be exactly: " + numberOfUnicodeDigits);
+    }
+    final String number = str.substring(startPosition, startPosition + numberOfUnicodeDigits);
+    // parseInt() may also throw NumberFormatException
+    int codePoint = Integer.parseInt(number, 16);
+    buffer.append(Character.toChars(codePoint));
+    return startPosition + numberOfUnicodeDigits;
   }
 }
