@@ -1,10 +1,7 @@
 package org.matheclipse.io.system;
 
 import org.matheclipse.core.basic.Config;
-import org.matheclipse.core.basic.ToggleFeature;
 import org.matheclipse.core.eval.EvalEngine;
-import org.matheclipse.core.expression.F;
-import org.matheclipse.script.engine.MathScriptEngine;
 
 /** Tests for string functions */
 public class StringFunctionsTest extends AbstractTestCase {
@@ -91,6 +88,21 @@ public class StringFunctionsTest extends AbstractTestCase {
     check(
         "\"a\" ~~ \"b\" ~~ \"c\" // FullForm ", //
         "\"abc\"");
+  }
+
+  public void testStringFormat() {
+    check(
+        "StringFormat(\"abcd 1234\")", //
+        "Text");
+    check(
+        "StringFormat(\"1 2 3\\n 5 6 7\\n 8 9 0\\n\")", //
+        "Table");
+    check(
+        "StringFormat(\"1,2\\n 3,4\\n 5,6\\n\")", //
+        "CSV");
+    check(
+        "StringFormat(\"1\\t2\\n 3\\t4\\n 5\\t6\\n\")", //
+        "TSV");
   }
 
   public void testStringFreeQ() {

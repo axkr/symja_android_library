@@ -69,7 +69,8 @@ public class SparseArrayTest extends AbstractTestCase {
         "SparseArray(Number of elements: 4 Dimensions: {2,2} Default value: 0)");
     check(
         "s // Normal", //
-        "{{a*u+b*w,a*v+b*x},{c*u+d*w,c*v+d*x}}");
+        "{{a*u+b*w,a*v+b*x},\n" //
+        + " {c*u+d*w,c*v+d*x}}");
 
     check(
         "{1,2,3.0}.SparseArray({4,5.0,6}) ", //
@@ -85,7 +86,9 @@ public class SparseArrayTest extends AbstractTestCase {
         "SparseArray(Number of elements: 3 Dimensions: {3,1} Default value: 0)");
     check(
         "s // Normal", //
-        "{{3},{7},{11}}");
+        "{{3},\n" //
+        + " {7},\n"
+        + " {11}}");
     check(
         "s=SparseArray({{1, 2}, {3.0, 4}, {5, 6}}).SparseArray({1,1})", //
         "SparseArray(Number of elements: 3 Dimensions: {3} Default value: 0)");
@@ -100,7 +103,9 @@ public class SparseArrayTest extends AbstractTestCase {
         "SparseArray(Number of elements: 3 Dimensions: {3,1} Default value: 0)");
     check(
         "s // Normal", //
-        "{{3},{7},{11}}");
+        "{{3},\n"
+        + " {7},\n"
+        + " {11}}");
   }
 
   public void testFlatten() {
@@ -182,7 +187,9 @@ public class SparseArrayTest extends AbstractTestCase {
         "5.47723");
     check(
         "Normal(s)", //
-        "{{1,0,4},{0,2,0},{0,0,3}}");
+        "{{1,0,4},\n" //
+        + " {0,2,0},\n"
+        + " {0,0,3}}");
   }
 
   public void testNormVector() {
@@ -383,14 +390,16 @@ public class SparseArrayTest extends AbstractTestCase {
             + "0}");
     check(
         "r[[2,All]] // Normal", //
-        "{{0,1,0},{0,1,2}}");
+        "{{0,1,0},\n"//
+        + " {0,1,2}}");
     // index 3 does not exist
     check(
         "r[[All,3]] // Normal", //
         "{{{0,0,3},{1,1,5}},{{0,1,0},{0,1,2}}}[[All,3]]");
     check(
         "r[[All,1]] // Normal", //
-        "{{0,0,3},{0,1,0}}");
+        "{{0,0,3},\n"//
+        + " {0,1,0}}");
     check(
         "r[[All,All]] // Normal", //
         "{{{0,0,3},{1,1,5}},{{0,1,0},{0,1,2}}}");
@@ -417,7 +426,10 @@ public class SparseArrayTest extends AbstractTestCase {
         "{0,2,0,0,0}");
     check(
         "Normal(s)", //
-        "{{1,0,0,4,0},{0,2,0,0,0},{0,0,0,0,2},{0,0,3,0,0}}");
+        "{{1,0,0,4,0},\n"//
+        + " {0,2,0,0,0},\n"
+        + " {0,0,0,0,2},\n"
+        + " {0,0,3,0,0}}");
     check(
         "Normal(SparseArray({{1, 1} -> 1, {1, 1} -> 2}))", //
         "{{1}}");
@@ -429,7 +441,11 @@ public class SparseArrayTest extends AbstractTestCase {
         "SparseArray(Number of elements: 1 Dimensions: {5,5} Default value: 0)");
     check(
         "Normal(s)", //
-        "{{0,0,0,0,0},{0,0,0,0,0},{0,0,1,0,0},{0,0,0,0,0},{0,0,0,0,0}}");
+        "{{0,0,0,0,0},\n"//
+        + " {0,0,0,0,0},\n"
+        + " {0,0,1,0,0},\n"
+        + " {0,0,0,0,0},\n"
+        + " {0,0,0,0,0}}");
     check(
         "Normal(SparseArray(10 -> 1, 19))", //
         "{0,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0}");
@@ -438,7 +454,9 @@ public class SparseArrayTest extends AbstractTestCase {
         "SparseArray(Number of elements: 4 Dimensions: {3,3} Default value: 0)");
     check(
         "Normal(s)", //
-        "{{1,0,4},{0,2,0},{0,0,3}}");
+        "{{1,0,4},\n" //
+        + " {0,2,0},\n"
+        + " {0,0,3}}");
   }
 
   public void testSparseArrayPattern() {
@@ -469,7 +487,8 @@ public class SparseArrayTest extends AbstractTestCase {
         "SparseArray(Number of elements: 8 Dimensions: {2,4} Default value: 0)");
     check(
         "s // Normal", //
-        "{{11,1,19,2},{11,1,19,2}}");
+        "{{11,1,19,2},\n"//
+        + " {11,1,19,2}}");
   }
 
   /** The JUnit setup method */

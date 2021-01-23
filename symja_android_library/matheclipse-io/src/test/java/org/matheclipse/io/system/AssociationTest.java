@@ -64,6 +64,12 @@ public class AssociationTest extends AbstractTestCase {
 
   public void testAssociation() {
     check(
+        " <|{}|>", //
+        "<||>");
+    check(
+        "PossibleZeroQ(RegularExpression(<|a->0,b:>1|>))", //
+        "False");
+    check(
         "pinfo = <|\"firstName\" -> \"John\", \"lastName\" -> \"Doe\"|>", //
         "<|firstName->John,lastName->Doe|>");
     check(
@@ -448,6 +454,9 @@ public class AssociationTest extends AbstractTestCase {
 
   public void testGroupBy() {
 
+    check(
+        "GroupBy({7},{})", //
+        "{7}");
     check(
         "assoc=<|key1->2, key2->4, key3->4, key4->2, key5->7, key6->4|>", //
         "<|key1->2,key2->4,key3->4,key4->2,key5->7,key6->4|>");

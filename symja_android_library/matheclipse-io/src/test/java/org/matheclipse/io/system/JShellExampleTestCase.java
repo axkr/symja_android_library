@@ -11,16 +11,16 @@ public class JShellExampleTestCase extends AbstractTestCase {
   }
 
   public void test001() {
-	    IExpr x = S.FactorInteger.ofObject(Integer.valueOf(42));
-	    assertEquals(
-	        x.toString(),
-	        "{{2,1},{3,1},{7,1}}");
-	  }
-  
+    IExpr x = S.FactorInteger.ofObject(Integer.valueOf(42));
+    assertEquals(
+        x.toString(), //
+        "{{2,1},{3,1},{7,1}}");
+  }
+
   public void test002() {
     String str = F.usage("Im");
     assertEquals(
-        str,
+        str, //
         "## Im\n"
             + "\n"
             + "Im(z)\n"
@@ -40,6 +40,10 @@ public class JShellExampleTestCase extends AbstractTestCase {
             + "\n"
             + "### Related terms \n"
             + "[Complex](Complex.md), [Re](Re.md)\n"
+            + "\n"
+            + "### Github\n"
+            + "\n"
+            + "* [Implementation of Im](https://github.com/axkr/symja_android_library/blob/master/symja_android_library/matheclipse-core/src/main/java/org/matheclipse/core/builtin/Arithmetic.java#L2153) \n"
             + "");
   }
 }

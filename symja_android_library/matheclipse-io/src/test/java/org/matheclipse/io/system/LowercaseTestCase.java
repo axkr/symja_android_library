@@ -66,6 +66,23 @@ public class LowercaseTestCase extends AbstractTestCase {
   }
 
   public void testAbs() {
+    // Integer.MIN_VALUE
+    check(
+        "Abs(-2147483648)", //
+        "2147483648");
+    // Long.MIN_VALUE
+    check(
+        "Abs(-9223372036854775808)", //
+        "9223372036854775808");
+    // Integer.MIN_VALUE
+    check(
+        "Abs(11/-2147483648 )", //
+        "11/2147483648");
+    // Long.MIN_VALUE
+    check(
+        "Abs(-9223372036854775808/11)", //
+        "9223372036854775808/11");
+
     check(
         "Abs(x*Sign(x))", //
         "Abs(x*Sign(x))");
@@ -237,32 +254,6 @@ public class LowercaseTestCase extends AbstractTestCase {
     check(
         "index", //
         "{1,2,3+y,4,5,6,7,8,9}");
-  }
-
-  public void testAdjacencyMatrix() {
-    check(
-        "AdjacencyMatrix(Graph({1 -> 2, 2 -> 3, 1 -> 3, 4 -> 2}))", //
-        "{{0,1,1,0},\n"
-            + //
-            " {0,0,1,0},\n"
-            + //
-            " {0,0,0,0},\n"
-            + //
-            " {0,1,0,0}}");
-    check(
-        "AdjacencyMatrix(Graph({1 \\[UndirectedEdge] 2, 2 \\[UndirectedEdge] 3, 3 \\[UndirectedEdge] 1}))", //
-        "{{0,1,1},\n"
-            + //
-            " {1,0,1},\n"
-            + //
-            " {1,1,0}}");
-    check(
-        "AdjacencyMatrix(Graph({1 \\[DirectedEdge] 2, 2 \\[DirectedEdge] 3, 3 \\[DirectedEdge] 1}))", //
-        "{{0,1,0},\n"
-            + //
-            " {0,0,1},\n"
-            + //
-            " {1,0,0}}");
   }
 
   public void testAllTrue() {
@@ -1661,6 +1652,12 @@ public class LowercaseTestCase extends AbstractTestCase {
   }
 
   public void testAtomQ() {
+    check(
+        "AtomQ(<|\"a\"->1|> // Unevaluated)", //
+        "False");
+    check(
+        "AtomQ(<|\"a\"->1|>)", //
+        "True");
     check(
         "AtomQ(Sin(Pi))", //
         "True");
@@ -3157,6 +3154,9 @@ public class LowercaseTestCase extends AbstractTestCase {
 
   public void testByteArray() {
     check(
+        "ByteArray({})", //
+        "{}");
+    check(
         "ba=ByteArray(\"AQIDBAUGBwg=\")", //
         "ByteArray[8 Bytes]");
     check(
@@ -3701,6 +3701,9 @@ public class LowercaseTestCase extends AbstractTestCase {
   }
 
   public void testCharacterRange() {
+    check(
+        "CharacterRange(50, 50)", //
+        "{2}");
     check(
         "CharacterRange(\" \", \"~\")", //
         "{ ,!,\",#,$,%,&,',(,),*,+,,,-,.,/,0,1,2,3,4,5,6,7,8,9,:,;,<,=,>,?,@,A,B,C,D,E,F,G,H,I,J,K,L,M,N,O,P,Q,R,S,T,U,V,W,X,Y,Z,[,\\,],^,_,`,a,b,c,d,e,f,g,h,i,j,k,l,m,n,o,p,q,r,s,t,u,v,w,x,y,z,{,|,},~}");
@@ -5000,7 +5003,7 @@ public class LowercaseTestCase extends AbstractTestCase {
         "SparseArray(Number of elements: 9 Dimensions: {3,3} Default value: 0)");
     check(
         "ConjugateTranspose(SparseArray({{1,2+I,3},{4,5-I,6},{7,8,9}})) // Normal", //
-        "{{1,4,7},{2-I,5+I,8},{3,6,9}}");
+        "{{1,4,7},\n" + " {2-I,5+I,8},\n" + " {3,6,9}}");
     check(
         "ConjugateTranspose({{1,2+I,3},{4,5-I,6},{7,8,9}})", //
         "{{1,4,7},\n"
@@ -7771,6 +7774,13 @@ public class LowercaseTestCase extends AbstractTestCase {
   }
 
   public void testDistribute() {
+    //    check(
+    //        "Distribute(x^10 - 1)", //
+    //        "-1+x^10");
+    check(
+        "Distribute(Factor(x^10 - 1))", //
+        "-1+x^10");
+
     check(
         "Distribute((a + b).(x + y + z))", //
         "a.x+a.y+a.z+b.x+b.y+b.z");
@@ -8394,27 +8404,6 @@ public class LowercaseTestCase extends AbstractTestCase {
         "expr");
   }
 
-  public void testEdgeList() {
-    check(
-        "EdgeList(Graph({1 -> 2, 2 -> 3, 1 -> 3, 4 -> 2}))", //
-        "{1->2,2->3,1->3,4->2}");
-    check(
-        "EdgeList(Graph({1 \\[UndirectedEdge] 2, 2 \\[UndirectedEdge] 3, 3 \\[UndirectedEdge] 1}))", //
-        "{1<->2,2<->3,3<->1}");
-    check(
-        "EdgeList(Graph({1 \\[DirectedEdge] 2, 2 \\[DirectedEdge] 3, 3 \\[DirectedEdge] 1}))", //
-        "{1->2,2->3,3->1}");
-  }
-
-  public void testEdgeQ() {
-    check(
-        "EdgeQ(Graph({1 -> 2, 2 -> 3, 1 -> 3, 4 -> 2}),2 -> 3)", //
-        "True");
-    check(
-        "EdgeQ(Graph({1 -> 2, 2 -> 3, 1 -> 3, 4 -> 2}),2 -> 4)", //
-        "False");
-  }
-
   public void testEffectiveInterest() {
     if (ToggleFeature.FINANCE) {
       // TODO
@@ -8464,6 +8453,11 @@ public class LowercaseTestCase extends AbstractTestCase {
     // "x==0||x==15/2-3/2*Sqrt(33)||x==15/2+3/2*Sqrt(33)");
     // check("EigenValues(m)",//
     // "{15/2+3/2*Sqrt(33),15/2-3/2*Sqrt(33),0}");
+
+    // Eigenvalues
+    check(
+        "Eigenvalues({{-8, 12, 4}, {12, -20, 0}, {4, 0, -2}})", //
+        "{2.24386,-4.6517,-27.59215}");
     check(
         "Eigenvalues(SparseArray({{1.0, 2, 3}, {4, 5, 6}, {7, 8, 9}}))", //
         "{16.11684,-1.11684,-9.29650*10^-16}");
@@ -8668,6 +8662,11 @@ public class LowercaseTestCase extends AbstractTestCase {
   }
 
   public void testEliminate() {
+    // print: Eliminate: y>2 is not a well-formed equation.
+    check(
+        "Eliminate({x==y,y>2},{x})", //
+        "Eliminate({x==y,y>2},{x})");
+
     // TODO
     // check("Eliminate({a0*x^p+a1*x^q==0},x)", //
     // "(-a1)*x^q == a0*x^p");
@@ -11809,123 +11808,6 @@ public class LowercaseTestCase extends AbstractTestCase {
         "{x->0.0}");
   }
 
-  public void testEulerianGraphQ() {
-    check(
-        "EulerianGraphQ({1 -> 2, 2 -> 3, 3 -> 1, 1 -> 3, 3 -> 4, 4 -> 1 })", //
-        "True");
-    check(
-        "EulerianGraphQ({1 -> 2, 2 -> 3, 3 -> 1, 1 -> 3, 3 -> 4, 4 -> 1, 4 -> 7})", //
-        "False");
-  }
-
-  public void testFindEulerianCycle() {
-    check(
-        "FindEulerianCycle(Graph({1 -> 2, 2 -> 3, 3 -> 4, 4 -> 1}))", //
-        "{4->1,1->2,2->3,3->4}");
-    check(
-        "FindEulerianCycle({1 -> 2, 2 -> 3, 3 -> 1, 1 -> 3, 3 -> 4, 4 -> 1 })", //
-        "{4->1,1->3,3->1,1->2,2->3,3->4}");
-    check(
-        "FindEulerianCycle({1 -> 2, 2 -> 3, 3 -> 1, 1 -> 3, 3 -> 4, 4 -> 1, 4 -> 7})", //
-        "{}");
-  }
-
-  public void testFindHamiltonianCycle() {
-    check(
-        "FindHamiltonianCycle( {1 -> 2, 2 -> 3, 3 -> 4, 4 -> 1} )", //
-        "{1->2,2->3,3->4,4->1}");
-    check(
-        "FindHamiltonianCycle({1 -> 2, 2 -> 3, 3 -> 1, 1 -> 3, 3 -> 4, 4 -> 1 })", //
-        "{1->2,2->3,3->4,4->1}");
-    check(
-        "FindHamiltonianCycle({1 -> 2, 2 -> 3, 3 -> 1, 1 -> 3, 3 -> 4, 4 -> 1, 4 -> 7})", //
-        "{}");
-  }
-
-  public void testFindVertexCover() {
-    // example from wikipedia: https://en.wikipedia.org/wiki/Vertex_cover
-    check(
-        "FindVertexCover({1<->2,1<->3,2<->3,3<->4,3<->5,3<->6})", //
-        "{3,1}");
-
-    check(
-        "FindVertexCover({UndirectedEdge(2,1), UndirectedEdge(1,3), UndirectedEdge(3,6), UndirectedEdge(6,1)," //
-            + " UndirectedEdge(4,6), UndirectedEdge(1,5), UndirectedEdge(5,4) })", //
-        "{1,6,4}");
-    check(
-        "FindVertexCover({UndirectedEdge(1,2), UndirectedEdge(2,3), UndirectedEdge(3,4), UndirectedEdge(3,6)," //
-            + " UndirectedEdge(3,7), UndirectedEdge(6,4), UndirectedEdge(4,7), UndirectedEdge(4,5), UndirectedEdge(5,1)})", //
-        "{3,4,1}");
-
-    // print: Graph must be undirected
-    // TODO implement for directed graphs
-    check(
-        "FindVertexCover({DirectedEdge(2,1), DirectedEdge(1,3), DirectedEdge(3,6), DirectedEdge(6,1)," //
-            + " DirectedEdge(4,6), DirectedEdge(1,5), DirectedEdge(5,4) })", //
-        "FindVertexCover({2->1,1->3,3->6,6->1,4->6,1->5,5->4})");
-  }
-
-  public void testFindShortestPath() {
-    check(
-        "FindShortestPath(Graph({1 -> 2, 2 -> 4, 1 -> 3,  3 -> 2, 3 -> 4},{EdgeWeight->{3.0,1.0,1.0,1.0,3.0}}),1,4)", //
-        "{1,3,2,4}");
-
-    check(
-        "FindShortestPath({1 -> 2, 2 -> 3, 3 -> 1,  3 -> 4, 4 -> 5, 3 -> 5},1,4)", //
-        "{1,2,3,4}");
-  }
-
-  public void testFindShortestTour() {
-    check(
-        "FindShortestTour({{1,2},{2,3},{3,1}})", //
-        "{Sqrt(2)+2*Sqrt(5),{1,3,2,1}}");
-
-    check(
-        "FindShortestTour({GeoPosition({41, 20}), GeoPosition({5, 20}), GeoPosition({49, 32}), " //
-            + "GeoPosition({53, 28}), GeoPosition({47, 29})})", //
-        "{6852.02461316151[mi],{1,2,5,3,4,1}}");
-    check(
-        "FindShortestTour({{1, 1}, {1, 2}, {1, 3}, {1, 4}, {1, 5}, {2, 1}, {2, 3}, {2, 5}, {3, 1}, {3, 2}," //
-            + " {3, 4}, {3, 5}, {4, 1}, {4, 3}, {4, 5}, {5, 1}, {5, 2}, {5, 3}, {5, 4}})", //
-        "{14+5*Sqrt(2),{1,6,9,13,16,17,18,19,14,10,7,11,15,12,8,5,4,3,2,1}}");
-  }
-
-  public void testFindSpanningTree() {
-    // example from Wikipedia https://en.wikipedia.org/wiki/Minimum_spanning_tree
-
-    check(
-        "FindSpanningTree(Graph({a,b,c,d,e,f},{a<->b,a<->d,b<->c,b<->d,b<->e,c<->e,c<->f,d<->e,e<->f}," //
-            + "{EdgeWeight->{1.0,3.0,6.0,5.0,1.0,5.0,2.0,1.0,4.0}}))", //
-        "Graph({a,b,d,e,c,f},{a->b,d->e,c->f,b->e,e->f},{EdgeWeight->{1.0,1.0,2.0,1.0,4.0}})");
-
-    check(
-        "g=Graph({1,2,3,4,5,6,7,8},\n"
-            + "{UndirectedEdge(1,2),UndirectedEdge(1,3),UndirectedEdge(1,4),UndirectedEdge(3,4),UndirectedEdge(2,6),\n"
-            + "UndirectedEdge(3,6),UndirectedEdge(5,3),UndirectedEdge(5,4),UndirectedEdge(5,6),UndirectedEdge(5,7),\n"
-            + "UndirectedEdge(5,8),UndirectedEdge(6,7),UndirectedEdge(7,8),UndirectedEdge(4,8)});", //
-        "");
-
-    check(
-        "FindSpanningTree(g)", //
-        "Graph({1,2,3,4,6,5,7,8},{1->2,1->3,1->4,2->6,5->3,5->7,5->8})");
-  }
-
-  public void testHamiltonianGraphQ() {
-    check(
-        "HamiltonianGraphQ(Graph({1,2,3},{1<->2,2<->3,3<->1}))", //
-        "True");
-    check(
-        "HamiltonianGraphQ(Graph({1,2,3},{1<->2,2<->3,3<->1},{EdgeWeight->{2.0,3.0,4.0}}))", //
-        "True");
-
-    check(
-        "HamiltonianGraphQ({1 -> 2, 2 -> 3, 3 -> 1, 1 -> 3, 3 -> 4, 4 -> 1 })", //
-        "True");
-    check(
-        "HamiltonianGraphQ({1 -> 2, 2 -> 3, 3 -> 1, 1 -> 3, 3 -> 4, 4 -> 1, 4 -> 7})", //
-        "False");
-  }
-
   public void testHankelH1() {
     check(
         "HankelH1(1317624576693539401,I*1/2)", //
@@ -11962,123 +11844,10 @@ public class LowercaseTestCase extends AbstractTestCase {
         "-0.1272388528903588+I*0.026410835310926584");
   }
 
-  public void testGraph() {
-    check(
-        "Graph({1,2,3},{1<->2,2<->3,3<->1},{EdgeWeight->{2.0,3.0,4.0}})", //
-        "Graph({1,2,3},{1<->2,2<->3,3<->1},{EdgeWeight->{2.0,3.0,4.0}})");
-    check(
-        "Graph({1 \\[UndirectedEdge] 2, 2 \\[UndirectedEdge] 3, 3 \\[UndirectedEdge] 1}, {EdgeWeight -> {2, 3, 4}})", //
-        "Graph({1,2,3},{1<->2,2<->3,3<->1},{EdgeWeight->{2.0,3.0,4.0}})");
-
-    check(
-        "Graph({1 \\[UndirectedEdge] 2, 2 \\[UndirectedEdge] 3, 3 \\[UndirectedEdge] 1})", //
-        "Graph({1,2,3},{1<->2,2<->3,3<->1})");
-    check(
-        "Graph({1,2,3},{1<->2,2<->3,3<->1})", //
-        "Graph({1,2,3},{1<->2,2<->3,3<->1})");
-
-    check(
-        "Graph({1 \\[DirectedEdge] 2, 2 \\[DirectedEdge] 3, 3 \\[DirectedEdge] 1})", //
-        "Graph({1,2,3},{1->2,2->3,3->1})");
-    check(
-        "Graph({1 -> 2, 2 -> 3, 3 -> 1, 1 -> 3, 3 -> 4, 4 -> 1})", //
-        "Graph({1,2,3,4},{1->2,2->3,3->1,1->3,3->4,4->1})");
-
-    check(
-        "Graph({1,2,3,4,5,6,7,8},\n"
-            + "{UndirectedEdge(1,2),UndirectedEdge(1,3),UndirectedEdge(1,4),UndirectedEdge(3,4),UndirectedEdge(2,6),\n"
-            + "UndirectedEdge(3,6),UndirectedEdge(5,3),UndirectedEdge(5,4),UndirectedEdge(5,6),UndirectedEdge(5,7),\n"
-            + "UndirectedEdge(5,8),UndirectedEdge(6,7),UndirectedEdge(7,8),UndirectedEdge(4,8)})", //
-        "Graph({1,2,3,4,5,6,7,8},{1<->2,1<->3,1<->4,3<->4,2<->6,3<->6,5<->3,5<->4,5<->6,5<->7,5<->8,6<->7,7<->8,4<->8})");
-  }
-
-  public void testGraphData() {
-    check(
-        "GraphData(\"PappusGraph\")", //
-        "Graph({1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18}," //
-            + "{1<->2,1<->3,1<->4,2<->5,2<->6,5<->7,5<->8,7<->9,7<->\n"
-            + //
-            "10,9<->3,9<->11,3<->12,4<->13,4<->14,6<->15,6<->16,8<->13,8<->17,10<->16,10<->18,11<->17,11<->14,12<->15,12<->18,15<->17,13<->18,16<->\n"
-            + "14})");
-    check(
-        "GraphData(\"PetersenGraph\")", //
-        "Graph({1,2,3,4,5,6,7,8,9,10},{1<->3,1<->2,2<->6,3<->5,3<->4,4<->8,5<->7,5<->6,6<->10,7<->9,7<->8,8<->2,9<->1,9<->10,10<->4})");
-  }
-
-  public void testGraphCenter() {
-    check(
-        "GraphCenter(Graph({DirectedEdge(1, 2), DirectedEdge(2, 3), DirectedEdge(3, 1),  DirectedEdge(3, 4), DirectedEdge(4, 5), DirectedEdge(5, 3)}))", //
-        "{3}");
-
-    check(
-        "GraphCenter(Graph({UndirectedEdge(1, 2), UndirectedEdge(1, 3), UndirectedEdge(1, 4),  UndirectedEdge(2, 3), UndirectedEdge(3, 4)}, "
-            + //
-            "{EdgeWeight->{1.6,2.0,1.4,1.9,0.62}}))", //
-        "{1,3}");
-    check(
-        "GraphCenter({UndirectedEdge(1, 2), UndirectedEdge(1, 3), UndirectedEdge(1, 4),  UndirectedEdge(2, 3), UndirectedEdge(3, 4)})", //
-        "{1,3}");
-  }
-
-  public void testGraphDiameter() {
-    check(
-        "GraphDiameter(Graph({DirectedEdge(1, 2), DirectedEdge(2, 3), DirectedEdge(3, 1),  DirectedEdge(3, 4), DirectedEdge(4, 5), DirectedEdge(5, 3)}))", //
-        "4");
-
-    check(
-        "GraphDiameter(Graph({UndirectedEdge(1, 2), UndirectedEdge(1, 3), UndirectedEdge(1, 4),  UndirectedEdge(2, 3), UndirectedEdge(3, 4)}, "
-            + //
-            "{EdgeWeight->{1.6,2.0,1.4,1.9,0.62}}))", //
-        "2.52");
-    check(
-        "GraphDiameter({UndirectedEdge(1, 2), UndirectedEdge(1, 3), UndirectedEdge(1, 4),  UndirectedEdge(2, 3), UndirectedEdge(3, 4)})", //
-        "2");
-  }
-
-  public void testGraphRadius() {
-    check(
-        "GraphRadius(Graph({DirectedEdge(1, 2), DirectedEdge(2, 3), DirectedEdge(3, 1),  DirectedEdge(3, 4), DirectedEdge(4, 5), DirectedEdge(5, 3)}))", //
-        "2");
-
-    check(
-        "GraphRadius(Graph({UndirectedEdge(1, 2), UndirectedEdge(1, 3), UndirectedEdge(1, 4),  UndirectedEdge(2, 3), UndirectedEdge(3, 4)}, "
-            + //
-            "{EdgeWeight->{1.6,2.0,1.4,1.9,0.62}}))", //
-        "2.0");
-    check(
-        "GraphRadius({UndirectedEdge(1, 2), UndirectedEdge(1, 3), UndirectedEdge(1, 4),  UndirectedEdge(2, 3), UndirectedEdge(3, 4)})", //
-        "1");
-  }
-
-  public void testGraphPeriphery() {
-    check(
-        "GraphPeriphery(Graph({DirectedEdge(1, 2), DirectedEdge(2, 3), DirectedEdge(3, 1),  DirectedEdge(3, 4), DirectedEdge(4, 5), DirectedEdge(5, 3)}))", //
-        "{1,4}");
-
-    check(
-        "GraphPeriphery(Graph({UndirectedEdge(1, 2), UndirectedEdge(1, 3), UndirectedEdge(1, 4),  UndirectedEdge(2, 3), UndirectedEdge(3, 4)}, "
-            + //
-            "{EdgeWeight->{1.6,2.0,1.4,1.9,0.62}}))", //
-        "{2,4}");
-    check(
-        "GraphPeriphery({UndirectedEdge(1, 2), UndirectedEdge(1, 3), UndirectedEdge(1, 4),  UndirectedEdge(2, 3), UndirectedEdge(3, 4)})", //
-        "{2,4}");
-
-    check(
-        "GraphPeriphery({UndirectedEdge(1, 2), UndirectedEdge(2, 3), UndirectedEdge(3, 1), UndirectedEdge(3, 4), UndirectedEdge(3, 4), UndirectedEdge(4, 5), UndirectedEdge(5, 3)})", //
-        "{1,2,4,5}");
-  }
-
-  public void testGraphQ() {
-    check(
-        "GraphQ(Graph({1 -> 2, 2 -> 3, 1 -> 3, 4 -> 2}) )", //
-        "True");
-    check(
-        "GraphQ( Sin(x) )", //
-        "False");
-  }
-
   public void testFirst() {
+    check(
+        "First(<||>)", //
+        "First(<||>)");
     check(
         "First(<|1 :> a, 2 -> b, 3 :> c|>)", //
         "a");
@@ -17988,6 +17757,15 @@ public class LowercaseTestCase extends AbstractTestCase {
 
   public void testLast() {
     check(
+        "Last(SparseArray({1,2,3,4})) // Normal ", //
+        "4");
+    check(
+        "Last(SparseArray({{1,2},{3,4}})) // Normal ", //
+        "{3,4}");
+    check(
+        "Last(<||>)", //
+        "Last(<||>)");
+    check(
         "Last({})", //
         "Last({})");
     check(
@@ -19685,6 +19463,12 @@ public class LowercaseTestCase extends AbstractTestCase {
 
   public void testMap() {
 
+    // Map: Options expected (instead of y_) beyond position Map(1/Sqrt(5),{},I,y_) in `3`. An
+    // option must be a rule or a list of rules.
+    check(
+        "Map(1/Sqrt(5),ByteArray[{}],I,y_)", //
+        "Map(1/Sqrt(5),{},I,y_)");
+
     check(
         "s=SparseArray({1 -> 1, 2 -> 2, 100 -> 100})", //
         "SparseArray(Number of elements: 3 Dimensions: {100} Default value: 0)");
@@ -19698,9 +19482,6 @@ public class LowercaseTestCase extends AbstractTestCase {
         "t[[2]]", //
         "f(2)");
 
-    check(
-        "Map(1/Sqrt(5),ByteArray[{}],I,y_)", //
-        "ByteArray[0 Bytes]");
     check(
         "Map(#2,1/Sqrt(5),2,Heads->True)", //
         "#2[Power][#2[5],#2[-1/2]]");
@@ -21439,6 +21220,11 @@ public class LowercaseTestCase extends AbstractTestCase {
   }
 
   public void testMost() {
+    // TODO
+    check(
+        "Most(SparseArray({{1,2},{3,4}}))", //
+        "Most(SparseArray(Number of elements: 4 Dimensions: {2,2} Default value: 0))");
+
     check(
         "Most(<|1 :> a, 2 -> b, 3 :> c|>)", //
         "<|1:>a,2->b|>");
@@ -23074,296 +22860,6 @@ public class LowercaseTestCase extends AbstractTestCase {
         "1/6*(3+3*a^2+Sqrt(5+6*a+5*a^2)+a*(4+Sqrt(5+6*a+5*a^2)))");
   }
 
-  public void testOptions() {
-    // TODO define options for Plot and other built-ins
-    // check("Options(Plot)", //
-    // "");
-    check(
-        "Options(f) = {a -> 1, b -> 2};", //
-        "");
-    check(
-        "Options(f)", //
-        "{a->1,b->2}");
-    check(
-        "f(x_, OptionsPattern()) := {x, OptionValue(a)}", //
-        "");
-    check(
-        "f(7, a -> uuu)", //
-        "{7,uuu}");
-    check(
-        "Options(Plus)", //
-        "{}");
-    check(
-        "Options(Factor)", //
-        "{GaussianIntegers->False,Modulus->0}");
-  }
-
-  public void testOptional() {
-    check(
-        "f(a)/.f(a,b_.)->{a,b}", //
-        "f(a)");
-    check(
-        "f(a,b)/.f(a,b_.)->{a,b}", //
-        "{a,b}");
-    check(
-        "f(a)/.f(a,b_:c)->{a,b}", //
-        "{a,c}");
-    check(
-        "f(a,b)/.f(a,b_:c)->{a,b}", //
-        "{a,b}");
-
-    check(
-        "f(x,y)/.f(a__,b_.)->{{a},{b}}", //
-        "{{x},{y}}");
-    check(
-        "f(x,y)/.f(a___,b_.)->{{a},{b}}", //
-        "{{x},{y}}");
-    check(
-        "f(x,y)/.f(a__,b_:c)->{{a},{b}}", //
-        "{{x},{y}}");
-    check(
-        "f(x,y)/.f(a___,b_:c)->{{a},{b}}", //
-        "{{x},{y}}");
-
-    check(
-        "f(x,y)/.f(a___,b_:c,d_:e)->{{a},{b},{d}}", //
-        "{{},{x},{y}}");
-    check(
-        "f(x)/.f(a_,b_:y,c_:z)->{{a},{b},{c}}", //
-        "{{x},{y},{z}}");
-    check(
-        "f( )/.f(a_,b_:y,c_:z)->{{a},{b},{c}}", //
-        "f()");
-    check(
-        "f(x,i,j)/.f(a_,b_:y,c_:z)->{{a},{b},{c}}", //
-        "{{x},{i},{j}}");
-    check(
-        "a /.f(a,c_.)->{{c}}", //
-        "a");
-
-    check(
-        "a /. a + c_.->{{c}}", //
-        "{{0}}");
-
-    check(
-        "MatchQ(a,f(a,c_.))", //
-        "False");
-    check(
-        "MatchQ(a,a+c_.)", //
-        "True");
-
-    check(
-        "a/.a+c_.+d_.->{{c},{d}}", //
-        "{{0},{0}}");
-    check(
-        "Cos(x)/.(_+c_.+d_.)->{{c},{d}}", //
-        "{{0},{0}}");
-
-    check(
-        "5*a/.Optional(c1_?NumberQ)*a_->{{c1},{a}}", //
-        "{{5},{a}}");
-    check(
-        "a/.Optional(c1_?NumberQ)*a_->{{c1},{a}}", //
-        "{{1},{a}}");
-
-    check(
-        "MatchQ(f(a,b),f(c1__?NumberQ))", //
-        "False");
-    check(
-        "MatchQ(f(1,2),f(c1__?NumberQ))", //
-        "True");
-    check(
-        "MatchQ(f(1,2),f(Optional(c1__?NumberQ)))", //
-        "False");
-    check(
-        "MatchQ(f(1),f(Optional(c1__?NumberQ)))", //
-        "True");
-
-    check(
-        "ReplaceList({a,b,c},{a_:5,b__}->{{a},{b}})", //
-        "{{{a},{b,c}},{{5},{a,b,c}}}");
-    // TODO add missing combinations
-    check(
-        "ReplaceList({a,b,c},{a_:5,b_:6,c___}->{{a},{b},{c}})", //
-        "{{{a},{b},{c}},{{5},{6},{a,b,c}}}");
-
-    check(
-        "MatchQ(-x,p_.)", //
-        "True");
-    check(
-        "MatchQ(-x*a,p_.*a)", //
-        "True");
-    check(
-        "MatchQ(__, Optional(1)*a_)", //
-        "True");
-    check(
-        "MatchQ(x^x, x^Optional(exp_))", //
-        "True");
-
-    check("f(a) /. f(x_, y_:3) -> {x, y}", "{a,3}");
-
-    check("f(x_, Optional(y_,1)) := {x, y}", "");
-    check("f(1, 2)", "{1,2}");
-    check("f(a)", "{a,1}");
-
-    check("g(x_, y_:1) := {x, y}", "");
-    check("g(1, 2)", "{1,2}");
-    check("g(a)", "{a,1}");
-
-    // check("Default(h)=0", "0");
-    // check("h(a) /. h(x_, y_.) -> {x, y}", "");
-
-  }
-
-  public void testOptionValue() {
-    // TODO
-    check(
-        "OptionValue({foo`a -> 1}, bar`a)", //
-        "1");
-    //
-    check(
-        "Options(tt) = {\"aa\" -> a1, \"bb\" -> b1}", //
-        "{aa->a1,bb->b1}");
-    check(
-        "tt(x_, opts : OptionsPattern()) := {x, opts}", //
-        "");
-    check(
-        "tt(test, \"aa\"->r1)", //
-        "{test,aa->r1}");
-    check(
-        "tt(test,  aa ->r1)", //
-        "{test,aa->r1}");
-    check(
-        "tt(test, \"aa\"->r1, \"a2\"->r2 )", //
-        "{test,aa->r1,a2->r2}");
-    check(
-        "ClearAll(tt)", //
-        "");
-    check(
-        "Options(tt) = {\"aa\" -> a1, \"bb\" -> b1}", //
-        "{aa->a1,bb->b1}");
-    check(
-        "tt(x_,  OptionsPattern()) := {x, OptionValue(aa)}", //
-        "");
-    check(
-        "tt(test,  \"aa\" ->r1)", //
-        "{test,r1}");
-    check(
-        "tt(test,  aa ->r1)", //
-        "{test,r1}");
-    check(
-        "tt(test)", //
-        "{test,a1}");
-
-    check(
-        "Options(f) = {a -> 1}; "
-            + //
-            "Options(g) = {a -> 2};"
-            + //
-            "f(g(OptionsPattern()), OptionsPattern()) := "
-            + //
-            "{OptionValue(a), OptionValue(f,a), OptionValue(g,a)}", //
-        "");
-
-    check(
-        "f(g(a->10),a->11)", //
-        "{11,11,10}");
-    check(
-        "f(g( ),a->11)", //
-        "{11,11,2}");
-    check(
-        "f(g())", //
-        "{1,1,2}");
-
-    check(
-        "Options(f) = {a -> a0, b -> b0}", //
-        "{a->a0,b->b0}");
-    check(
-        "f(x_, OptionsPattern()) := {x, OptionValue(a)}", //
-        "");
-    check(
-        "f(7, a -> test)", //
-        "{7,test}");
-    check(
-        "f(7)", //
-        "{7,a0}");
-
-    check(
-        "Options(f) = {a -> x, b -> y}", //
-        "{a->x,b->y}");
-    check(
-        "OptionValue(f, {b -> 5}, {a, b})", //
-        "{x,5}");
-    check(
-        "{a, b} /. {b -> 5} /. Options(f)", //
-        "{x,5}");
-    check(
-        "OptionValue(f, {a -> 7, b -> a}, {a, b})", //
-        "{7,a}");
-    check(
-        "{a, b} /. {a -> 7, b -> a} /. Options(f)", //
-        "{7,x}");
-
-    check(
-        "OptionValue({a -> 1}, {a, b})", //
-        "{1,b}");
-    check(
-        "OptionValue({opt -> 1}, opt)", //
-        "1");
-    check(
-        "OptionValue({\"opt\" -> 1}, \"opt\")", //
-        "1");
-    check(
-        "OptionValue({opt -> 1}, \"opt\")", //
-        "1");
-    check(
-        "OptionValue({\"opt\" -> 1}, opt)", //
-        "1");
-
-    check(
-        "ClearAll(f,g)", //
-        "");
-    check(
-        "Options(f) = {a -> 1}; "
-            + //
-            "Options(g) = {a -> 2};"
-            + //
-            "f(g(OptionsPattern())) := "
-            + //
-            "{OptionValue(a), OptionValue(f,a), OptionValue(g,a)}", //
-        "");
-    check(
-        "f(g())", //
-        "{OptionValue(a),1,2}");
-  }
-
-  public void testOptionsPattern() {
-    check(
-        "Options(f)={a->a0, b->b0};", //
-        "");
-    check(
-        "f(x_,OptionsPattern()):={x, OptionValue(a)}", //
-        "");
-    check(
-        "f(11, a->iam)", //
-        "{11,iam}");
-    check(
-        "f(22)", //
-        "{22,a0}");
-    check(
-        "f(x_,OptionsPattern({a -> a0, b -> b0})):={x, OptionValue(a)}", //
-        "");
-    check(
-        "f(11)", //
-        "{11,a0}");
-    check(
-        "opts:OptionsPattern() // FullForm", //
-        "Pattern[opts,OptionsPattern[]]");
-    check(
-        "OptionsPattern() // FullForm", //
-        "OptionsPattern[]");
-  }
-
   public void testOr() {
     check(
         "Or(z, z)", //
@@ -23840,10 +23336,12 @@ public class LowercaseTestCase extends AbstractTestCase {
   public void testPadRight() {
     check(
         "PadRight(Slot(<|s1-><|a->0,b:>1|>,s2:><|a->0,b:>1|>|>),{1},{1,2,3,a}+1)", //
-        "Slot(<|s1-><|a->0,b:>1|>,s2:><|a->0,b:>1|>|>)");
+        "Slot(Association(s1->Association(a->0,b:>1),s2:>Association(a->0,b:>1)))");
     check(
         "PadRight(Slot(<|s1-><|a->0,b:>1|>,s2:><|a->0,b:>1|>|>),{1,11,1},{1,2,3,a}+1)", //
-        "PadRight(Slot(<|s1-><|a->0,b:>1|>,s2:><|a->0,b:>1|>|>),{1,11,1},{2,3,4,1+a})");
+        "Slot(Association(Rule(s1),RuleDelayed(s2),Slot({2,3,4,1+a}),Slot({2,3,4,1+a}),Slot({\n"
+            + "2,3,4,1+a}),Slot({2,3,4,1+a}),Slot({2,3,4,1+a}),Slot({2,3,4,1+a}),Slot({2,3,4,1+a}),Slot({\n"
+            + "2,3,4,1+a}),Slot({2,3,4,1+a})))");
     check(
         "With({r = Map(Fibonacci, Range(2, 14))}, "
             + //
@@ -27704,9 +27202,9 @@ public class LowercaseTestCase extends AbstractTestCase {
   public void testQuantity() {
     if (ToggleFeature.QUANTITY) {
 
-      check(
-          "Quantity(8, \"Meters\")*(1+y_)", //
-          "8[Meters]*(1+y_)");
+      //      check(
+      //          "Quantity(8, \"Meters\")*(1+y_)", //
+      //          "8[Meters]*(1+y_)");
 
       // TODO return unevaluated and print "compat" message that types are incompatible
       check(
@@ -28106,6 +27604,9 @@ public class LowercaseTestCase extends AbstractTestCase {
   }
 
   public void testRandom() {
+    //        check(
+    //            "RandomReal({0, 1}, {4, 2, 3})", //
+    //            "");
 
     check(
         "RandomInteger({0,2147483647})", //
@@ -29025,6 +28526,9 @@ public class LowercaseTestCase extends AbstractTestCase {
     //        "1/.2", //
     //        "5.0");
 
+    check(
+        "<|a -> b|> /. b :> x", //
+        "<|a->x|>");
     check(
         "<|a -> 1|> /. <|a -> x_|> :> x", //
         "1");
@@ -32097,8 +31601,14 @@ public class LowercaseTestCase extends AbstractTestCase {
         "1");
   }
 
-  public void testSolve() {
+  public void testSolveInequality() {
+    // TODO github #210
+    //    check(
+    //        "Solve({x==y,y>2},x)", //
+    //        "{{x->ConditionalExpression(y,y>2)}} ");
+  }
 
+  public void testSolve() {
     check(
         "Solve(Log(2,x)+4*Log(x,2)-5==0,x)", //
         "{{x->2},{x->16}}");
@@ -33090,14 +32600,16 @@ public class LowercaseTestCase extends AbstractTestCase {
             + "0}");
     check(
         "r[[2,All]] // Normal", //
-        "{{0,1,0},{0,1,2}}");
+        "{{0,1,0},\n" //
+            + " {0,1,2}}");
     // index 3 does not exist
     check(
         "r[[All,3]] // Normal", //
         "{{{0,0,3},{1,1,5}},{{0,1,0},{0,1,2}}}[[All,3]]");
     check(
         "r[[All,1]] // Normal", //
-        "{{0,0,3},{0,1,0}}");
+        "{{0,0,3},\n" //
+            + " {0,1,0}}");
     check(
         "r[[All,All]] // Normal", //
         "{{{0,0,3},{1,1,5}},{{0,1,0},{0,1,2}}}");
@@ -33124,7 +32636,10 @@ public class LowercaseTestCase extends AbstractTestCase {
         "{0,2,0,0,0}");
     check(
         "Normal(s)", //
-        "{{1,0,0,4,0},{0,2,0,0,0},{0,0,0,0,2},{0,0,3,0,0}}");
+        "{{1,0,0,4,0},\n" //
+            + " {0,2,0,0,0},\n"
+            + " {0,0,0,0,2},\n"
+            + " {0,0,3,0,0}}");
     check(
         "Normal(SparseArray({{1, 1} -> 1, {1, 1} -> 2}))", //
         "{{1}}");
@@ -33136,7 +32651,11 @@ public class LowercaseTestCase extends AbstractTestCase {
         "SparseArray(Number of elements: 1 Dimensions: {5,5} Default value: 0)");
     check(
         "Normal(s)", //
-        "{{0,0,0,0,0},{0,0,0,0,0},{0,0,1,0,0},{0,0,0,0,0},{0,0,0,0,0}}");
+        "{{0,0,0,0,0},\n" //
+            + " {0,0,0,0,0},\n"
+            + " {0,0,1,0,0},\n"
+            + " {0,0,0,0,0},\n"
+            + " {0,0,0,0,0}}");
     check(
         "Normal(SparseArray(10 -> 1, 19))", //
         "{0,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0}");
@@ -33145,7 +32664,9 @@ public class LowercaseTestCase extends AbstractTestCase {
         "SparseArray(Number of elements: 4 Dimensions: {3,3} Default value: 0)");
     check(
         "Normal(s)", //
-        "{{1,0,4},{0,2,0},{0,0,3}}");
+        "{{1,0,4},\n" //
+            + " {0,2,0},\n"
+            + " {0,0,3}}");
   }
 
   public void testStandardize() {
@@ -33415,6 +32936,13 @@ public class LowercaseTestCase extends AbstractTestCase {
   }
 
   public void testSubdivide() {
+
+    // print: $IterationLimit: Iteration limit of 500 exceeded.
+	  // TODO
+//    check(
+//        "Subdivide(3/4,Quantity(1.2,\"m\"),11)", //
+//        "{3/4+0[m],0,0,0,0,0,0,0,0,0,0,1.2[m]}");
+
     check(
         "Subdivide(N(E,21),E^(Pi*I*1/3),4)", //
         "{2.71828182845904523536," //
@@ -33422,9 +32950,6 @@ public class LowercaseTestCase extends AbstractTestCase {
             + "1.60914091422952261768+I*0.433012701892219323381," //
             + "1.05457045711476130884+I*0.649519052838328985072," //
             + "0.5+I*0.866025403784438646763}");
-    check(
-        "Subdivide(3/4,Quantity(1.2,\"m\"),11)", //
-        "Subdivide(3/4,1.2[m],11)");
     check(
         "Subdivide(10,  4)", //
         "{0,5/2,5,15/2,10}");
@@ -35008,6 +34533,9 @@ public class LowercaseTestCase extends AbstractTestCase {
     check(
         "TimeConstrained(Do(i^2, {i, 10000000}), 1)", //
         "$Aborted");
+    check(
+        "TimeConstrained(Pause(1); t=TimeRemaining(); Print(t);t>1&&Head(t)==Real, 10)", //
+        "True");
     // }
   }
 
@@ -35413,6 +34941,9 @@ public class LowercaseTestCase extends AbstractTestCase {
   }
 
   public void testTogether() {
+    check(
+        "Together(Sqrt(2)+SparseArray({{0,1},{1,0}}))", //
+        "SparseArray(Number of elements: 4 Dimensions: {2,2} Default value: 0)");
 
     check(
         "Together(1+(b*x)/a)", //
@@ -36009,7 +35540,9 @@ public class LowercaseTestCase extends AbstractTestCase {
   public void testTranspose() {
     check(
         "Transpose(SparseArray({{1, 2, 3}, {4, 5, 6}})) // Normal", //
-        "{{1,4},{2,5},{3,6}}");
+        "{{1,4},\n" //
+            + " {2,5},\n"
+            + " {3,6}}");
     check(
         "Transpose(SparseArray({{1, 2, 3}, {4, 5, 6}}))", //
         "SparseArray(Number of elements: 6 Dimensions: {3,2} Default value: 0)");
