@@ -1,7 +1,5 @@
 package org.matheclipse.parser.client.math;
 
-import org.matheclipse.parser.client.FEConfig;
-
 public class MathException extends RuntimeException {
 
   /** */

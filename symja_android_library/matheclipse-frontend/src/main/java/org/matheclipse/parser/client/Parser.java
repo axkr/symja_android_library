@@ -624,10 +624,12 @@ public class Parser extends Scanner {
     return null;
   }
 
+  @Override
   protected boolean isOperatorCharacters() {
     return fFactory.isOperatorChar(fCurrentChar);
   }
 
+  @Override
   protected boolean isOperatorCharacters(char ch) {
     return fFactory.isOperatorChar(ch);
   }
@@ -637,6 +639,7 @@ public class Parser extends Scanner {
    *
    * @return
    */
+  @Override
   protected final List<Operator> getOperator() {
     char lastChar;
     final int startPosition = fCurrentPosition - 1;

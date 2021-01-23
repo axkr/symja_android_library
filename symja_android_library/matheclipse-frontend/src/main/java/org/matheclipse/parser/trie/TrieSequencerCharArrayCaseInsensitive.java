@@ -55,6 +55,7 @@ public class TrieSequencerCharArrayCaseInsensitive extends TrieSequencerCharArra
    *
    * @return {@link #INSTANCE}
    */
+  @Override
   protected Object readResolve() {
     return INSTANCE;
   }

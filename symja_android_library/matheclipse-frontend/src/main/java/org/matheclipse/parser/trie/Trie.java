@@ -136,6 +136,7 @@ public class Trie<S, T> implements Map<S, T>, Serializable {
    * @param value The value to place in the Trie.
    * @return The previous value in the Trie with the same sequence if one existed, otherwise null.
    */
+  @Override
   public T put(S query, T value) {
     return this.put(query, (previousValue) -> value, null);
   }
@@ -264,6 +265,7 @@ public class Trie<S, T> implements Map<S, T>, Serializable {
    *     found. The default value of a Trie is by default null.
    * @see #get(Object, TrieMatch)
    */
+  @Override
   public T get(Object sequence) {
     return get((S) sequence, defaultMatch);
   }
@@ -310,6 +312,7 @@ public class Trie<S, T> implements Map<S, T>, Serializable {
    * @param sequence The sequence to remove.
    * @return The value of the removed sequence, or null if no sequence was removed.
    */
+  @Override
   public T remove(Object sequence) {
     return removeAfter(root, (S) sequence);
   }
@@ -342,6 +345,7 @@ public class Trie<S, T> implements Map<S, T>, Serializable {
    *
    * @return The number of sequences-value pairs in this Trie.
    */
+  @Override
   public int size() {
     return root.getSize();
   }
@@ -351,6 +355,7 @@ public class Trie<S, T> implements Map<S, T>, Serializable {
    *
    * @return 0 if the Trie doesn't have any sequences-value pairs, otherwise false.
    */
+  @Override
   public boolean isEmpty() {
     return (root.getSize() == 0);
   }
@@ -882,6 +887,7 @@ public class Trie<S, T> implements Map<S, T>, Serializable {
       return false;
     }
 
+    @Override
     public boolean hasNext() {
       return (current != null);
     }
@@ -892,6 +898,7 @@ public class Trie<S, T> implements Map<S, T>, Serializable {
       return previous;
     }
 
+    @Override
     public void remove() {
       previous.remove(sequencer);
     }

@@ -4,8 +4,6 @@ import junit.framework.TestCase;
 
 import java.util.List;
 
-import javax.xml.stream.events.Characters;
-
 import org.matheclipse.parser.client.FEConfig;
 import org.matheclipse.parser.client.Parser;
 import org.matheclipse.parser.client.ast.ASTNode;
@@ -959,6 +957,50 @@ public class ParserTestCase extends TestCase {
       assertEquals(
           obj.toString(), //
           "Plus(a, Times(i, Power(b, 2)), Times(k, Power(c, 3)), d)");
+    } catch (Exception e) {
+      e.printStackTrace();
+      assertEquals("", e.getMessage());
+    }
+  }
+
+  public void testParser62() {
+    try {
+      Parser p = new Parser();
+      ASTNode obj = p.parse("\\[Theta] = 4");
+      assertEquals(
+          obj.toString(), //
+          "Set(θ, 4)");
+    } catch (Exception e) {
+      e.printStackTrace();
+      assertEquals("", e.getMessage());
+    }
+  }
+
+  public void testParser63() {
+    try {
+      Parser p = new Parser();
+      ASTNode obj = p.parse("\\[DifferentialD] = 4");
+      fail();
+    } catch (Exception e) {
+      String s = System.getProperty("os.name");
+      if (s.contains("Windows")) {
+        e.printStackTrace();
+        assertEquals(
+            e.getMessage(),
+            "Syntax error in line: 1 - unexpected (named unicode) character: '\\[DifferentialD]'\n"
+                + " = 4\n"
+                + "^");
+      }
+    }
+  }
+
+  public void testParser64() {
+    try {
+      Parser p = new Parser();
+      ASTNode obj = p.parse("test = \" \\[Theta] is using {\\\"1\\\", \\\"2\\\"} instead.\"");
+      assertEquals(
+          obj.toString(), //
+          "Set(test,  θ is using {\"1\", \"2\"} instead.)");
     } catch (Exception e) {
       e.printStackTrace();
       assertEquals("", e.getMessage());

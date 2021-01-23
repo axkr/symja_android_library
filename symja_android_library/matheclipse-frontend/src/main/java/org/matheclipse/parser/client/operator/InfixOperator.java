@@ -16,7 +16,6 @@
 package org.matheclipse.parser.client.operator;
 
 import org.matheclipse.parser.client.ast.ASTNode;
-import org.matheclipse.parser.client.ast.FunctionNode;
 import org.matheclipse.parser.client.ast.INodeParserFactory;
 
 public class InfixOperator extends Operator {

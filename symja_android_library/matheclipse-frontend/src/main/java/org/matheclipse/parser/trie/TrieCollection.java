@@ -76,6 +76,7 @@ public class TrieCollection<S, T, C extends Collection<T>> extends Trie<S, C> {
    *
    * @return The reference to a new TrieCollection.
    */
+  @Override
   public TrieCollection<S, T, C> newEmptyClone() {
     TrieCollection<S, T, C> t = new TrieCollection<S, T, C>(sequencer, supplier, defaultCollection);
     t.defaultMatch = defaultMatch;
@@ -83,6 +84,7 @@ public class TrieCollection<S, T, C extends Collection<T>> extends Trie<S, C> {
   }
 
   /** */
+  @Override
   public C getDefaultValue() {
     return defaultCollection ? supplier.get() : super.getDefaultValue();
   }

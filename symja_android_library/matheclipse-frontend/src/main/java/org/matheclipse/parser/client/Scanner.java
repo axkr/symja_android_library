@@ -863,6 +863,10 @@ public abstract class Scanner {
               fToken = TT_IDENTIFIER;
               return;
             }
+            String str = Characters.unicodeName(fCurrentChar);
+            if (str != null) {
+              throwSyntaxError("unexpected (named unicode) character: '\\[" + str + "]'");
+            }
             throwSyntaxError("unexpected character: '" + fCurrentChar + "'");
             // }
         }
@@ -1470,6 +1474,7 @@ public abstract class Scanner {
   }
 
   /** Shows the current line for debugging purposes. */
+  @Override
   public String toString() {
     if (fInputString == null
         || //

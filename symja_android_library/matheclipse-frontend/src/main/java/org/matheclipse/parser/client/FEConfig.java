@@ -20,6 +20,7 @@ public class FEConfig {
    * variable &quot;i&quot; is different from the imaginary unit &quot;I&quot;)
    */
   public static boolean PARSER_USE_LOWERCASE_SYMBOLS = true;
+
   /**
    * If <code>true</code> the parser doesn't allow "square brackets" instead of "parentheses" for
    * enclosing function arguments in relaxed mode. The syntax <code>f[x, y, ...]</code> isn't

@@ -38,6 +38,7 @@ public class ASTNodeFactory implements INodeParserFactory {
   /** The matcher for characters, which could form an operator */
   public static String OPERATOR_CHARACTERS = null;
 
+  @Override
   public boolean isOperatorChar(char ch) {
     return OPERATOR_CHARACTERS != null && OPERATOR_CHARACTERS.indexOf(ch) >= 0;
   }
