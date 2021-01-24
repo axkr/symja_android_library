@@ -1,29 +1,12 @@
-# Submit a pull request
+Thanks for contributing.
 
-Replace any "X" with your information. Please check the boxes below to confirm
-that your pull request meets the requirements:
+- [ ] Tick to sign-off your agreement to the [Developer Certificate of Origin (DCO) 1.1](https://developercertificate.org)
 
-- [ ] This pull request isn't a duplicate of an [existing one][1]
-- [ ] Commit messages are detailed 
-- [ ] Documentation has been updated to reflect changes
-- [ ] Tests have been added / updated to reflect changes
+## Description
 
----
+What was changed
 
-### What changes does this pull request make?
+## Testing
 
-X
+Did you add a unit test?
 
-### What is the current behavior?
-
-X
-
-### Does this pull request introduce any breaking changes?
-
-X
-
-### Other information:
-
-X
-
-[1]: https://github.com/axkr/symja_android_library/pulls
