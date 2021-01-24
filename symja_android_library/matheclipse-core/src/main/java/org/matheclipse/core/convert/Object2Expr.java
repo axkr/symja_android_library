@@ -77,6 +77,10 @@ public class Object2Expr {
     if (obj instanceof java.util.Collection) {
       return convertList((java.util.Collection<?>) obj);
     }
+    if (obj instanceof org.hipparchus.fraction.Fraction) {
+      org.hipparchus.fraction.Fraction frac = (org.hipparchus.fraction.Fraction) obj;
+      return F.fraction(frac.getNumerator(), frac.getDenominator());
+    }
     if (obj instanceof org.hipparchus.complex.Complex) {
       org.hipparchus.complex.Complex cmp = (org.hipparchus.complex.Complex) obj;
       return F.complexNum(cmp.getReal(), cmp.getImaginary());
@@ -90,15 +94,6 @@ public class Object2Expr {
     }
     if (obj instanceof double[][]) {
       return new ASTRealMatrix((double[][]) obj, true);
-      // final IASTAppendable list = F.ListAlloc(dd.length);
-      // for (int i = 0; i < dd.length; i++) {
-      // final IASTAppendable row = F.ListAlloc(dd[i].length);
-      // for (int j = 0; j < dd[i].length; j++) {
-      // row.append(F.num(dd[i][j]));
-      // }
-      // list.append(row);
-      // }
-      // return list;
     }
     if (obj instanceof org.hipparchus.complex.Complex[]) {
       return F.ast(S.List, (org.hipparchus.complex.Complex[]) obj);
