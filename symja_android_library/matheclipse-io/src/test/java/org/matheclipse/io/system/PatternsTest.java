@@ -67,21 +67,21 @@ public class PatternsTest extends AbstractTestCase {
 
   public void testDocOptions() {
     // TODO doc/Options
-//    check(
-//        "Options(f) = {n -> 2}", //
-//        "{n->2}");
-//    check(
-//        "Options(f)", //
-//        "{n->2}");
-//    check(
-//        "f(x_, OptionsPattern(f)) := x ^ OptionValue(n)", //
-//        "");
-//    check(
-//        "f(x)", //
-//        "x^2");
-//    check(
-//        "f(x, n -> 3)", //
-//        "x^3");
+    check(
+        "Options(f) = {n -> 2}", //
+        "{n->2}");
+    check(
+        "Options(f)", //
+        "{n->2}");
+    check(
+        "f(x_, OptionsPattern(f)) := x ^ OptionValue(n)", //
+        "");
+    check(
+        "f(x)", //
+        "x^2");
+    check(
+        "f(x, n -> 3)", //
+        "x^3");
   }
 
   public void testOptions() {
@@ -226,22 +226,22 @@ public class PatternsTest extends AbstractTestCase {
   }
 
   public void testDocOptionValue() {
-	    // TODO doc/OptionValue
-//	    check(
-//	        "f(a->3) /. f(OptionsPattern({})) -> {OptionValue(a)}", //
-//	        "{3}");
-//	    check(
-//	        "f(a->3) /. f(OptionsPattern({})) -> {OptionValue(b)}", //
-//	        "{b}");
-//	    check(
-//	        "f(a->3) /. f(OptionsPattern({})) -> {OptionValue(a+b)}", //
-//	        "{a+b}");
-//	    check(
-//	        "f(a->5) /. f(OptionsPattern({})) -> {OptionValue(Symbol(\"a\"))}", //
-//	        "{5}");
+    // TODO doc/OptionValue
+    check(
+        "f(a->3) /. f(OptionsPattern({})) -> {OptionValue(a)}", //
+        "{3}");
+    check(
+        "f(a->3) /. f(OptionsPattern({})) -> {OptionValue(b)}", //
+        "{b}");
+    check(
+        "f(a->3) /. f(OptionsPattern({})) -> {OptionValue(a+b)}", //
+        "{a+b}");
+    check(
+        "f(a->5) /. f(OptionsPattern({})) -> {OptionValue(Symbol(\"a\"))}", //
+        "{5}");
   }
-  
-  public void testOptionValue() { 
+
+  public void testOptionValue() {
     // TODO
     check(
         "OptionValue({foo`a -> 1}, bar`a)", //

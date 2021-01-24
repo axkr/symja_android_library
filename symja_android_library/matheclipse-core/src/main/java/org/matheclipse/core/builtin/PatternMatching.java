@@ -1199,147 +1199,11 @@ public final class PatternMatching {
   public static class OptionValue extends AbstractCoreFunctionEvaluator {
     @Override
     public IExpr evaluate(final IAST ast, EvalEngine engine) {
+
       if (ast.head().equals(S.OptionValue)) {
-        IASTAppendable optionsPattern = null;
-        IExpr arg1 = engine.evaluate(ast.arg1());
-        IExpr rhsRuleValue = F.NIL;
-        IAST optionsList = null;
-        if (ast.size() > 2 && arg1.isSymbol()) {
-          optionsList = optionsList((ISymbol) arg1, true);
-        }
-        IExpr optionValue;
-
-        if (ast.isAST3()) {
-          IExpr arg2 = ast.arg2();
-          IExpr arg3 = ast.arg3();
-          if (arg3.isList()) {
-            return ((IAST) arg3).mapThread(ast, 3);
-          }
-          optionsPattern = F.ListAlloc(10);
-          extractRules(arg2, optionsPattern);
-          extractRules(optionsList, optionsPattern);
-          optionValue = arg3;
-          if (arg3.isSymbol()) {
-            optionValue = F.$str(((ISymbol) arg3).getSymbolName());
-          }
-          if (optionsPattern != null) {
-            rhsRuleValue = rhsRuleValue(optionValue, optionsPattern);
-            if (rhsRuleValue.isPresent()) {
-              return rhsRuleValue;
-            }
-            IOFunctions.printMessage(
-                ast.topHead(), "optnf", F.List(optionsPattern, optionValue), engine);
-            return optionValue;
-          }
-          return F.NIL;
-        } else if (ast.isAST2()) {
-          IExpr arg2 = ast.arg2();
-          if (arg2.isList()) {
-            return ((IAST) arg2).mapThread(ast, 2);
-          }
-          optionValue = arg2;
-          if (arg2.isSymbol()) {
-            optionValue = F.$str(((ISymbol) arg2).getSymbolName());
-          }
-          if (arg1.isSymbol()) {
-            Iterator<IdentityHashMap<ISymbol, IASTAppendable>> iter = engine.optionsStackIterator();
-            while (iter.hasNext()) {
-              IdentityHashMap<ISymbol, IASTAppendable> map = iter.next();
-              if (map != null) {
-                optionsPattern = map.get(arg1);
-                if (optionsPattern != null) {
-                  rhsRuleValue = rhsRuleValue(optionValue, optionsPattern);
-                  if (rhsRuleValue.isPresent()) {
-                    return rhsRuleValue;
-                  }
-                }
-              }
-            }
-          } else {
-            if (arg1.isAST()) {
-              optionsList = (IAST) arg1;
-            }
-          }
-          if (optionsPattern == null) {
-            optionsPattern = F.ListAlloc(10);
-          }
-          extractRules(optionsList, optionsPattern);
-          if (optionsPattern != null) {
-            rhsRuleValue = rhsRuleValue(optionValue, optionsPattern);
-            if (rhsRuleValue.isPresent()) {
-              return rhsRuleValue;
-            }
-            IOFunctions.printMessage(
-                ast.topHead(), "optnf", F.List(optionsPattern, optionValue), engine);
-            return optionValue;
-          }
-          return F.NIL;
-        } else { // ast.isAST1()
-          optionValue = arg1;
-          if (arg1.isSymbol()) {
-            optionValue = F.$str(((ISymbol) arg1).getSymbolName());
-          }
-
-          Iterator<IdentityHashMap<ISymbol, IASTAppendable>> iter = engine.optionsStackIterator();
-          while (iter.hasNext()) {
-            IdentityHashMap<ISymbol, IASTAppendable> map = iter.next();
-            if (map != null) {
-              optionsPattern = map.get(S.LHS_HEAD);
-              if (optionsPattern != null) {
-                ISymbol lhsHead = optionsPattern.topHead();
-                optionsPattern = map.get(lhsHead);
-                rhsRuleValue = rhsRuleValue(optionValue, optionsPattern);
-                if (rhsRuleValue.isPresent()) {
-                  return rhsRuleValue;
-                }
-              }
-            }
-          }
-        }
-
-        if (optionsPattern != null) {
-          // for (int i = 1; i < optionsPattern.size(); i++) {
-          // IAST rule = (IAST) optionsPattern.get(i);
-          // if (rule.arg1().equals(optionValue)) {
-          // return rule.arg2();
-          // }
-          // }
-          // String optionString = optionValue.toString();
-          // for (int i = 1; i < optionsPattern.size(); i++) {
-          // IAST rule = (IAST) optionsPattern.get(i);
-          // if ((rule.arg1().isString() || rule.arg1().isSymbol()) && //
-          // rule.arg1().toString().equals(optionString)) {
-          // return rule.arg2();
-          // }
-          // }
-          IOFunctions.printMessage(
-              ast.topHead(), "optnf", F.List(optionsPattern, optionValue), engine);
-          return optionValue;
-        }
+        return optionValueReplace(ast, false, engine);
       }
-      return F.NIL;
-    }
 
-    private IExpr rhsRuleValue(IExpr optionValue, IASTAppendable optionsPattern) {
-      if (optionValue.isSymbol()) {
-        optionValue = F.$str(((ISymbol) optionValue).getSymbolName());
-      }
-      if (optionsPattern != null) {
-        for (int i = 1; i < optionsPattern.size(); i++) {
-          IAST rule = (IAST) optionsPattern.get(i);
-          if (rule.arg1().equals(optionValue)) {
-            return rule.arg2();
-          }
-        }
-        // String optionString = optionValue.toString();
-        // for (int i = 1; i < optionsPattern.size(); i++) {
-        // IAST rule = (IAST) optionsPattern.get(i);
-        // if ((rule.arg1().isString() || rule.arg1().isSymbol()) && //
-        // rule.arg1().toString().equals(optionString)) {
-        // return rule.arg2();
-        // }
-        // }
-      }
       return F.NIL;
     }
 
@@ -2754,6 +2618,149 @@ public final class PatternMatching {
       }
     }
     return F.CEmptyList;
+  }
+
+  /**
+   * Determine the current <code>OptionValue(...)</code> currently associated with an expreesion.
+   *
+   * @param ast
+   * @param quiet if <code>true</code> print no message if an option value cannot be found
+   * @param engine
+   * @return {@link F#NIL} if an option value cannot be found; otherwise get the optional value
+   */
+  public static IExpr optionValueReplace(final IAST ast, boolean quiet, EvalEngine engine) {
+    IASTAppendable optionsPattern = null;
+    IExpr arg1 = engine.evaluate(ast.arg1());
+    IExpr rhsRuleValue = F.NIL;
+    IAST optionsList = null;
+    if (ast.size() > 2 && arg1.isSymbol()) {
+      optionsList = optionsList((ISymbol) arg1, true);
+    }
+    IExpr optionValue;
+    if (ast.isAST3()) {
+      IExpr arg2 = ast.arg2();
+      IExpr arg3 = ast.arg3();
+      if (arg3.isList()) {
+        return ((IAST) arg3).mapThread(ast, 3);
+      }
+      optionsPattern = F.ListAlloc(10);
+      extractRules(arg2, optionsPattern);
+      extractRules(optionsList, optionsPattern);
+      optionValue = arg3;
+      if (arg3.isSymbol()) {
+        optionValue = F.$str(((ISymbol) arg3).getSymbolName());
+      }
+      if (optionsPattern != null) {
+        rhsRuleValue = optionsRHSRuleValue(optionValue, optionsPattern);
+        if (rhsRuleValue.isPresent()) {
+          return rhsRuleValue;
+        }
+        if (!quiet) {
+          // Option name `2` not found in defaults for `1`
+          IOFunctions.printMessage(
+              ast.topHead(), "optnf", F.List(optionsPattern, optionValue), engine);
+        }
+        return optionValue;
+      }
+      return F.NIL;
+    } else if (ast.isAST2()) {
+      IExpr arg2 = ast.arg2();
+      if (arg2.isList()) {
+        return ((IAST) arg2).mapThread(ast, 2);
+      }
+      optionValue = arg2;
+      if (arg2.isSymbol()) {
+        optionValue = F.$str(((ISymbol) arg2).getSymbolName());
+      }
+      if (arg1.isSymbol()) {
+        Iterator<IdentityHashMap<ISymbol, IASTAppendable>> iter = engine.optionsStackIterator();
+        while (iter.hasNext()) {
+          IdentityHashMap<ISymbol, IASTAppendable> map = iter.next();
+          if (map != null) {
+            optionsPattern = map.get(arg1);
+            if (optionsPattern != null) {
+              rhsRuleValue = optionsRHSRuleValue(optionValue, optionsPattern);
+              if (rhsRuleValue.isPresent()) {
+                return rhsRuleValue;
+              }
+            }
+          }
+        }
+      } else {
+        if (arg1.isAST()) {
+          optionsList = (IAST) arg1;
+        }
+      }
+      if (optionsPattern == null) {
+        optionsPattern = F.ListAlloc(10);
+      }
+      extractRules(optionsList, optionsPattern);
+      if (optionsPattern != null) {
+        rhsRuleValue = optionsRHSRuleValue(optionValue, optionsPattern);
+        if (rhsRuleValue.isPresent()) {
+          return rhsRuleValue;
+        }
+        if (!quiet) {
+          // Option name `2` not found in defaults for `1`
+          IOFunctions.printMessage(
+              ast.topHead(), "optnf", F.List(optionsPattern, optionValue), engine);
+        }
+        return optionValue;
+      }
+      return F.NIL;
+    } else { // ast.isAST1()
+      optionValue = arg1;
+      if (arg1.isSymbol()) {
+        optionValue = F.$str(((ISymbol) arg1).getSymbolName());
+      }
+
+      Iterator<IdentityHashMap<ISymbol, IASTAppendable>> iter = engine.optionsStackIterator();
+      while (iter.hasNext()) {
+        IdentityHashMap<ISymbol, IASTAppendable> map = iter.next();
+        if (map != null) {
+          optionsPattern = map.get(S.LHS_HEAD);
+          if (optionsPattern != null) {
+
+            ISymbol lhsHead = optionsPattern.topHead();
+            optionsPattern = map.get(lhsHead);
+            rhsRuleValue = optionsRHSRuleValue(optionValue, optionsPattern);
+            if (rhsRuleValue.isPresent()) {
+              return rhsRuleValue;
+            }
+          }
+        }
+      }
+      //          return arg1;
+    }
+    if (optionsPattern != null) {
+      if (!quiet) {
+        // Option name `2` not found in defaults for `1`
+        IOFunctions.printMessage(
+            ast.topHead(), "optnf", F.List(optionsPattern, optionValue), engine);
+      }
+      return optionValue;
+    }
+    return F.NIL;
+  }
+
+  /**
+   * Get the right-hand-side of an options rule by comparing the <code>lhsOptionValue</code> with
+   * the left-hand-side of the rules in <code>optionsPattern</code> for equality.
+   *
+   * @param lhsOptionValue
+   * @param optionsPattern list of options rules
+   * @return the right-hand-side expression or {@link F#NIL} if no matching rule was found
+   */
+  private static IExpr optionsRHSRuleValue(IExpr lhsOptionValue, IASTAppendable optionsPattern) {
+    if (optionsPattern != null) {
+      for (int i = 1; i < optionsPattern.size(); i++) {
+        IAST rule = (IAST) optionsPattern.get(i);
+        if (rule.arg1().equals(lhsOptionValue)) {
+          return rule.arg2();
+        }
+      }
+    }
+    return F.NIL;
   }
 
   public static IExpr messageName(ISymbol symbol, IExpr expr) {

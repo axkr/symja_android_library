@@ -127,6 +127,7 @@ import org.matheclipse.parser.trie.TrieMatch;
 
 import com.google.common.cache.Cache;
 import com.google.common.cache.CacheBuilder;
+import com.sun.org.apache.bcel.internal.classfile.Code;
 
 import edu.jas.kern.ComputerThreads;
 import edu.jas.kern.PreemptStatus;
@@ -1430,19 +1431,19 @@ public class F extends S {
   }
 
   /**
-   * Converts and evaluates arbitrary expressiona to a Symja type.
+   * Converts and evaluates arbitrary expressions to a Symja type.
    *
    * <pre>
    * Java Object       -&gt; Symja object
    * -------------------------------------
-   * null object          F.Null symbol
+   * null object          {@link S#Null} symbol
    * IExpr                IExpr type
-   * Boolean              True or False symbol
+   * Boolean              {@link S#True} or {@link S#False} symbol
    * BigInteger           Integer value
    * BigDecimal           <code>Num</code> with doubleValue() value
    * Double               <code>Num</code> with doubleValue() value
    * Float                <code>Num</code> with doubleValue() value
-   * Integer              Symja Integer with longValue() value
+   * Integer              Symja Integer with intValue() value
    * Long                 Symja Integer with longValue() value
    * Number               Symja <code>Num</code> with doubleValue() value
    * java.util.Collection list of elements
@@ -1452,14 +1453,48 @@ public class F extends S {
    * double[]             a vector ASTRealVector of <code>double</code> values
    * double[][]           a matrix ASTRealMatrix of <code>double</code> values
    * Complex[]            a list of <code>ComplexNum</code> values
-   * boolean[]            a list of True or False symbols
+   * boolean[]            a list of {@link S#True} or {@link S#False} symbols
    *
    * </pre>
+   *
+   * @param object
+   * @return the <code>object</code> converted to a {@link IExpr}}
    */
   public static IExpr symjify(final Object object) {
     return symjify(object, true);
   }
 
+  /**
+   * Converts and evaluates arbitrary expressions to a Symja type.
+   *
+   * <pre>
+   * Java Object       -&gt; Symja object
+   * -------------------------------------
+   * null object          {@link S#Null} symbol
+   * IExpr                IExpr type
+   * Boolean              {@link S#True} or {@link S#False} symbol
+   * BigInteger           Integer value
+   * BigDecimal           <code>Num</code> with doubleValue() value
+   * Double               <code>Num</code> with doubleValue() value
+   * Float                <code>Num</code> with doubleValue() value
+   * Integer              Symja Integer with intValue() value
+   * Long                 Symja Integer with longValue() value
+   * Number               Symja <code>Num</code> with doubleValue() value
+   * java.util.Collection list of elements
+   *                      1..nth element of the list give the elements of the List()
+   * Object[]             a list of converted objects
+   * int[]                a list of <code>IntegerSym</code> integer values
+   * double[]             a vector ASTRealVector of <code>double</code> values
+   * double[][]           a matrix ASTRealMatrix of <code>double</code> values
+   * Complex[]            a list of <code>ComplexNum</code> values
+   * boolean[]            a list of {@link S#True} or {@link S#False} symbols
+   *
+   * </pre>
+   *
+   * @param object
+   * @param evaluate if <code>true</code> evaluate the parsed string
+   * @return the <code>object</code> converted to a {@link IExpr}}
+   */
   public static IExpr symjify(final Object object, boolean evaluate) {
     IExpr temp = Object2Expr.convert(object);
     return evaluate ? eval(temp) : temp;
@@ -1469,7 +1504,7 @@ public class F extends S {
    * Parses and evaluates a Java string to a Symja expression. May throw an SyntaxError exception,
    * if the string couldn't be parsed.
    *
-   * @param str the epression which should be parsed
+   * @param str the expression which should be parsed
    * @return
    * @throws SyntaxError
    */
@@ -1478,11 +1513,11 @@ public class F extends S {
   }
 
   /**
-   * Parses a Java string to a Symja expression. May throw an SyntaxError exception, if the string
+   * Parses a Java string to a Symja expression. May throw a SyntaxError exception, if the string
    * couldn't be parsed.
    *
-   * @param str the epression which should be parsed
-   * @param evaluate if true evaluate the parsed string
+   * @param str the expression which should be parsed
+   * @param evaluate if <code>true</code> evaluate the parsed string
    * @return
    * @throws SyntaxError
    */
@@ -1493,15 +1528,29 @@ public class F extends S {
     return evaluate ? engine.evaluate(temp) : temp;
   }
 
-  public static IExpr symjify(final long value) {
+  /**
+   * @param value
+   * @return {@link IInteger} integer value
+   */
+  public static IInteger symjify(final long value) {
     return F.ZZ(value);
   }
 
-  public static IExpr symjify(final double value) {
+  /**
+   * @param value
+   * @return {@link INum} double wrapper
+   */
+  public static INum symjify(final double value) {
     return F.num(value);
   }
 
-  public static IExpr symjify(final boolean value) {
+  /**
+   * Return {@link S#True} or {@link S#False} symbol
+   *
+   * @param value
+   * @return {@link S#True} or {@link S#False} symbol
+   */
+  public static IBuiltInSymbol symjify(final boolean value) {
     return value ? S.True : S.False;
   }
 
@@ -5554,6 +5603,14 @@ public class F extends S {
 
   public static IAST Options(final IExpr a0) {
     return new AST1(Options, a0);
+  }
+
+  public static IAST OptionValue(final IExpr a0, final IExpr a1) {
+    return new AST2(OptionValue, a0, a1);
+  }
+
+  public static IAST OptionValue(final IExpr a0) {
+    return new AST1(OptionValue, a0);
   }
 
   public static IASTAppendable Or() {

@@ -286,24 +286,24 @@ public class PatternMatcherAndEvaluator extends PatternMatcher implements Extern
           return fReturnResult;
         }
 
-        IExpr result = patternMap.substituteSymbols(fRightHandSide, F.CEmptySequence);
-        if (evaluate) {
-          engine.pushOptionsStack();
-          try {
-            engine.setOptionsPattern(fLhsPatternExpr.topHead(), patternMap);
+        engine.pushOptionsStack();
+        try {
+          engine.setOptionsPattern(fLhsPatternExpr.topHead(), patternMap);
+          IExpr result = patternMap.substituteSymbols(fRightHandSide, F.CEmptySequence);
+          if (evaluate) {
             return engine.evaluate(result);
-          } catch (final ConditionException e) {
-            if (FEConfig.SHOW_STACKTRACE) {
-              logConditionFalse(leftHandSide, fLhsPatternExpr, fRightHandSide);
-            }
-            return F.NIL;
-          } catch (final ReturnException e) {
-            return e.getValue();
-          } finally {
-            engine.popOptionsStack();
+          } else {
+            return result;
           }
-        } else {
-          return result;
+        } catch (final ConditionException e) {
+          if (FEConfig.SHOW_STACKTRACE) {
+            logConditionFalse(leftHandSide, fLhsPatternExpr, fRightHandSide);
+          }
+          return F.NIL;
+        } catch (final ReturnException e) {
+          return e.getValue();
+        } finally {
+          engine.popOptionsStack();
         }
       }
     }

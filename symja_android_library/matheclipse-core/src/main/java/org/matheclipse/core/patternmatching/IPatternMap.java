@@ -1,17 +1,21 @@
 package org.matheclipse.core.patternmatching;
 
+import static org.matheclipse.core.patternmatching.IPatternMap.addOptionsPattern;
+
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
 import org.hipparchus.util.Pair;
+import org.matheclipse.core.builtin.PatternMatching;
 import org.matheclipse.core.eval.EvalAttributes;
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.expression.OptionsPattern;
 import org.matheclipse.core.expression.Pattern;
 import org.matheclipse.core.expression.PatternNested;
+import org.matheclipse.core.expression.S;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IASTMutable;
 import org.matheclipse.core.interfaces.IExpr;
@@ -355,6 +359,7 @@ public interface IPatternMap {
 
     @Override
     public IExpr substituteSymbols(final IExpr rhsExpr, final IExpr nilOrEmptySequence) {
+      final EvalEngine engine = EvalEngine.get();
       return rhsExpr
           .replaceAll(
               (IExpr input) -> {
@@ -363,6 +368,8 @@ public interface IPatternMap {
                   if ((ISymbol) input == fSymbol1) {
                     return fValue1 != null ? fValue1 : nilOrEmptySequence;
                   }
+                } else if (input.isAST(S.OptionValue, 2, 4)) {
+                  return PatternMatching.optionValueReplace((IAST) input, true, engine);
                 }
                 return F.NIL;
               })
@@ -646,6 +653,7 @@ public interface IPatternMap {
 
     @Override
     public IExpr substituteSymbols(final IExpr rhsExpr, final IExpr nilOrEmptySequence) {
+      final EvalEngine engine = EvalEngine.get();
       return rhsExpr
           .replaceAll(
               (IExpr input) -> {
@@ -657,6 +665,8 @@ public interface IPatternMap {
                   if ((ISymbol) input == fSymbol2) {
                     return fValue2 != null ? fValue2 : nilOrEmptySequence;
                   }
+                } else if (input.isAST(S.OptionValue, 2, 4)) {
+                  return PatternMatching.optionValueReplace((IAST) input, true, engine);
                 }
                 return F.NIL;
               })
@@ -1006,6 +1016,7 @@ public interface IPatternMap {
 
     @Override
     public IExpr substituteSymbols(final IExpr rhsExpr, final IExpr nilOrEmptySequence) {
+      final EvalEngine engine = EvalEngine.get();
       return rhsExpr
           .replaceAll(
               (IExpr input) -> {
@@ -1020,6 +1031,8 @@ public interface IPatternMap {
                   if ((ISymbol) input == fSymbol3) {
                     return fValue3 != null ? fValue3 : nilOrEmptySequence;
                   }
+                } else if (input.isAST(S.OptionValue, 2, 4)) {
+                  return PatternMatching.optionValueReplace((IAST) input, true, engine);
                 }
                 return F.NIL;
               })
@@ -1449,6 +1462,7 @@ public interface IPatternMap {
      */
     @Override
     public IExpr substituteSymbols(final IExpr rhsExpr, final IExpr nilOrEmptySequence) {
+      final EvalEngine engine = EvalEngine.get();
       if (fSymbolsOrPatternValues != null) {
         return rhsExpr
             .replaceAll(
@@ -1464,6 +1478,14 @@ public interface IPatternMap {
                             : nilOrEmptySequence;
                       }
                     }
+                  } else if (input.isAST(S.OptionValue, 2, 4)) {
+                    final int length = fSymbolsOrPattern.length;
+                    //                    for (int i = length - 1; i >= 0; i--) {
+                    // reverse iterating on fSymbolsOrPattern
+                    //                      if (fSymbolsOrPattern[i].isOptionsPattern()) {
+                    return PatternMatching.optionValueReplace((IAST) input, true, engine);
+                    //                      }
+                    //                    }
                   }
                   return F.NIL;
                 })
@@ -1924,7 +1946,8 @@ public interface IPatternMap {
 
   /**
    * Substitute all symbols in the given expression with the current value of the corresponding
-   * internal pattern values arrays
+   * internal pattern values arrays and substitute all <code>OptionValue(...)</code> expressions with
+   * the corresponding option value from the current pattern-matching process.
    *
    * @param rhsExpr right-hand-side expression, substitute all symbols from the pattern-matching
    *     values

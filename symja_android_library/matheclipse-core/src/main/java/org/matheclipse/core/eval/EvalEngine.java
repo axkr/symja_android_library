@@ -446,7 +446,14 @@ public class EvalEngine implements Serializable {
       list = F.ListAlloc(10);
       optionsPattern.put(op.getOptionsPatternHead(), list);
     }
-
+    if (rule != null && rule.isRuleAST()) {
+      if (rule.first().isSymbol()) {
+        list.append(
+            F.binaryAST2(rule.topHead(), ((ISymbol) rule.first()).getSymbolName(), rule.second()));
+      } else {
+        list.append(rule);
+      }
+    }
     IExpr defaultOptions = op.getDefaultOptions();
     if (defaultOptions.isPresent()) {
       IAST optionsList = null;
@@ -460,16 +467,6 @@ public class EvalEngine implements Serializable {
       } else if (defaultOptions.isRuleAST()) {
         PatternMatching.extractRules(defaultOptions, list);
         // list.append(defaultOptions);
-      }
-    } else {
-      if (rule != null && rule.isRuleAST()) {
-        if (rule.first().isSymbol()) {
-          list.append(
-              F.binaryAST2(
-                  rule.topHead(), ((ISymbol) rule.first()).getSymbolName(), rule.second()));
-        } else {
-          list.append(rule);
-        }
       }
     }
   }

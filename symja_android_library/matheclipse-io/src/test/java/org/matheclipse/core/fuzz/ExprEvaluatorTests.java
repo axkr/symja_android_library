@@ -557,7 +557,12 @@ public class ExprEvaluatorTests extends TestCase {
             F.stringx("\r\n"), //
             F.stringx("\n   "), //
             F.stringx("\uffff"), //
-            F.Subtract(F.C1, F.C1));
+            F.Subtract(F.C1, F.C1), //
+            F.$OptionsPattern(null), //
+            F.OptionValue(F.a), //
+            F.OptionValue(F.b), //
+            F.OptionValue(F.x), //
+            F.OptionValue(F.y));
     ThreadLocalRandom random = ThreadLocalRandom.current();
     String[] functionStrs = AST2Expr.FUNCTION_STRINGS;
     int[] counter = new int[] {0};
@@ -1001,9 +1006,9 @@ public class ExprEvaluatorTests extends TestCase {
   public void testTogether() {
     // Together(1+SparseArray(Number of elements: 0 Dimensions: {2,2} Default value: 0))
     IExpr sa = SparseArrayExpr.newDenseList(F.List(F.List(F.C1, F.C0), F.List(F.C0, F.C1)), F.C0);
-    checkEvaluator(F.Together(F.Plus(F.C1, sa)), //
-    		"1+SparseArray(Number of elements: 2 Dimensions: {2,2} Default value: 0)"
-    		);
+    checkEvaluator(
+        F.Together(F.Plus(F.C1, sa)), //
+        "1+SparseArray(Number of elements: 2 Dimensions: {2,2} Default value: 0)");
   }
 
   void checkEvaluator(IAST ast, String expected) {
