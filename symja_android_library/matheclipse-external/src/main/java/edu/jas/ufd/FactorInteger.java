@@ -686,22 +686,62 @@ public class FactorInteger<MOD extends GcdRingElem<MOD> & Modular>
    */
   @Override
   public List<GenPolynomial<BigInteger>> factorsSquarefree(GenPolynomial<BigInteger> P) {
+    GenPolynomialRing<BigInteger> pfac = P.ring;
+    if (pfac.nvar <= 1) {
+      return baseFactorsSquarefree(P);
+    }
+    List<GenPolynomial<BigInteger>> factors;
+    factors = factorsSquarefreeOptions(P, false, false);
+    if (factors != null) {
+      return factors;
+    }
+    factors = factorsSquarefreeOptions(P, false, true);
+    if (factors != null) {
+      return factors;
+    }
+    factors = factorsSquarefreeOptions(P, true, false);
+    if (factors != null) {
+      return factors;
+    }
+    factors = factorsSquarefreeOptions(P, true, true);
+    if (factors != null) {
+      return factors;
+    }
+    logger.warn(
+        "factorsSquarefreeHensel not applicable or failed, reverting to Kronecker for: " + P);
+    factors = super.factorsSquarefree(P);
+    return factors;
+  }
+
+  /**
+   * GenPolynomial factorization of a multivariate squarefree polynomial, using Hensel lifting if
+   * possible.
+   *
+   * @param P squarefree and primitive! (respectively monic) multivariate GenPolynomial over the
+   *     integers.
+   * @param opti true, if polynomial variables should be optimized, else false.
+   * @param ilex true, if INVLEX term order should be forced, else false.
+   * @return [p_1,...,p_k] with P = prod_{i=1,...,r} p_i.
+   */
+  public List<GenPolynomial<BigInteger>> factorsSquarefreeOptions(
+      GenPolynomial<BigInteger> P, boolean opti, boolean tlex) {
     GenPolynomial<BigInteger> Pp = P;
     GenPolynomialRing<BigInteger> pfac = Pp.ring;
     if (pfac.nvar <= 1) {
       return baseFactorsSquarefree(Pp);
     }
-    boolean noINVLEX = true;
-    if (pfac.tord.equals(TermOrderByName.INVLEX)) {
-      noINVLEX = false;
-    } else {
-      pfac = new GenPolynomialRing<BigInteger>(pfac, TermOrderByName.INVLEX);
-      Pp = pfac.copy(Pp);
-      logger.warn("invlexed polynomial: " + Pp + ", from ring " + P.ring);
+    if (tlex) {
+      if (!pfac.tord.equals(TermOrderByName.INVLEX)) {
+        pfac = new GenPolynomialRing<BigInteger>(pfac, TermOrderByName.INVLEX);
+        Pp = pfac.copy(Pp);
+        logger.warn("invlexed polynomial: " + Pp + ", from ring " + P.ring);
+      } else {
+        tlex = false;
+      }
     }
     OptimizedPolynomialList<BigInteger> opt = null;
     List<Integer> iperm = null;
-    final boolean USE_OPT = true;
+    final boolean USE_OPT = opti;
     if (USE_OPT) {
       List<GenPolynomial<BigInteger>> topt = new ArrayList<GenPolynomial<BigInteger>>(1);
       topt.add(Pp);
@@ -747,15 +787,13 @@ public class FactorInteger<MOD extends GcdRingElem<MOD> & Modular>
       }
     }
     if (facs == null) {
-      logger.warn(
-          "factorsSquarefreeHensel not applicable or failed, reverting to Kronecker for: " + Pp);
-      facs = super.factorsSquarefree(Pp);
+      return facs;
     }
     if (USE_OPT && iperm != null) {
       facs = TermOrderOptimization.<BigInteger>permutation(iperm, pfac, facs);
       logger.warn("de-optimized polynomials: " + facs);
     }
-    if (noINVLEX) {
+    if (tlex) {
       facs = P.ring.copy(facs);
       logger.warn("de-invlexed polynomials: " + facs);
     }
@@ -1295,7 +1333,7 @@ public class FactorInteger<MOD extends GcdRingElem<MOD> & Modular>
         primeIter = primes.iterator();
       }
       int pi = 0;
-      while (pi < pn && primeIter.hasNext()) {
+      while (pi++ < pn && primeIter.hasNext()) {
         p = primeIter.next();
         logger.info("prime = " + p);
         // initialize coefficient factory and map normalization factor and polynomials
