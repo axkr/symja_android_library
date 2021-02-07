@@ -1,10 +1,10 @@
 ## Identity
 
 ```
-Identity(expr)
+Identity(x)
 ```
 
-> returns `expr`.
+> is the identity function, which returns `x` unchanged. 
 
 See
 * [Wikipedia - Identity function](https://en.wikipedia.org/wiki/Identity_function)
