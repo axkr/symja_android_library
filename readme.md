@@ -233,15 +233,20 @@ If you have any questions about using or developing for this project, send me an
 
 * the complete Symja system is published under the GNU GENERAL PUBLIC LICENSE Version 3.
 
-If you would like to use parts of the system here are some of the associated licenses:
+If you would like to use parts of the system here are some of the associated **Java** licenses:
 
-* the [JAS Java Algebra System](http://krum.rz.uni-mannheim.de/jas/) is published under the (LESSER) GNU GENERAL PUBLIC LICENSE license. The Java bytecode is dual licenced also under the Apache 2.0 license to allow usage in Android projects.  
 * the [apfloat project](https://github.com/mtommila/apfloat) is published under the (LESSER) GNU GENERAL PUBLIC LICENSE license. 
-* the [LogicNG project](https://github.com/logic-ng/LogicNG) is published under the Apache software license
 * the [Hipparchus Mathematics Library](https://www.hipparchus.org/) is published under the Apache software license
+* the [JAS Java Algebra System](http://krum.rz.uni-mannheim.de/jas/) is published under the (LESSER) GNU GENERAL PUBLIC LICENSE license. The Java bytecode is dual licenced also under the Apache 2.0 license to allow usage in Android projects.  
 * the [JGraphT Library](https://jgrapht.org/)  is published under the Eclipse Public License (EPL) or (LESSER) GNU GENERAL PUBLIC LICENSE license. 
+* the [LogicNG project](https://github.com/logic-ng/LogicNG) is published under the Apache software license
 * the [Tablesaw](https://github.com/jtablesaw/tablesaw) is published under the Apache software license
 * the Symja parser libraries (org.matheclipse.parser* packages) are published under the APACHE LICENSE Version 2.0.
+
+Here are some of the associated **JavaScript** licenses:
+* the [Paul Masson's Math project](https://github.com/paulmasson/math) is published under the MIT license. 
+* the [Paul Masson's MathCell project](https://github.com/paulmasson/mathcell) is published under the MIT license. 
+* the [JSXGraph project](https://github.com/jsxgraph/jsxgraph) is published under the GNU LGPL or MIT license.  
 
 [1]: mailto:axelclk@gmail.com
 [2]: http://www.vogella.com/tutorials/EclipseGit/article.html
