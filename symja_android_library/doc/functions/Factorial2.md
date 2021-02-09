@@ -6,7 +6,7 @@ Factorial2(n)
 n!!
 ```
 
-> returns the double factorial number of the integer `n`.
+> returns the double factorial number of the integer `n` as `n*(n-2)*(n-4)...`.
  
 See
 * [Wikipedia - Double Factorial](https://en.wikipedia.org/wiki/Factorial#Double_factorial)
@@ -16,6 +16,12 @@ See
 ```
 >> Factorial2(3)
 3
+
+>> Factorial2(9)
+945
+
+>> Factorial2(10)
+3840
 ```
 
 ### Github
