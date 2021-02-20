@@ -305,12 +305,9 @@ public class ManipulateFunction {
       final OptionArgs options;
       String colorMap = "hot";
       if (plotID == ID.Plot3D
-          || //
-          plotID == ID.ComplexPlot3D
-          || //
-          plotID == ID.ContourPlot
-          || //
-          plotID == ID.DensityPlot) {
+          || plotID == ID.ComplexPlot3D
+          || plotID == ID.ContourPlot
+          || plotID == ID.DensityPlot) {
         if (plotID == ID.Plot3D) {
           options = new OptionArgs(plot.topHead(), plot, 4, engine);
         } else { // if (plotID == ID.ComplexPlot3D) {
@@ -388,11 +385,7 @@ public class ManipulateFunction {
       } else {
         listOfFunctions = F.unaryAST1(S.List, plotFunction);
       }
-      if (plotID == ID.Plot3D
-          || //
-          plotID == ID.ContourPlot
-          || //
-          plotID == ID.DensityPlot) {
+      if (plotID == ID.Plot3D || plotID == ID.ContourPlot || plotID == ID.DensityPlot) {
         if (!plotRangeY.isPresent()) {
           return F.NIL;
         }
@@ -417,12 +410,12 @@ public class ManipulateFunction {
         for (int i = 1; i < listOfFunctions.size(); i++) {
           function.append("function z" + i + "(");
           toJS.convert(function, plotSymbolX);
-          function.append(") { return  ");
+          function.append(") { try { return  ");
           // toJS.convert(function, plotSymbolX);
           // function.append(", ");
           // toJS.convert(function, plotSymbolY);
           toJS.convert(function, listOfFunctions.get(i));
-          function.append("; }\n");
+          function.append(";}catch(e){return complex(Number.NaN);} }\n");
         }
       } else {
         for (int i = 1; i < listOfFunctions.size(); i++) {
@@ -430,9 +423,9 @@ public class ManipulateFunction {
           function.append(i);
           function.append("(");
           toJS.convert(function, plotSymbolX);
-          function.append(") { return ");
+          function.append(") { try { return ");
           toJS.convert(function, listOfFunctions.get(i));
-          function.append("; }\n");
+          function.append(";}catch(e){return complex(Number.NaN);} }\n");
         }
       }
       js = js.replace("`3`", function.toString());
@@ -440,9 +433,7 @@ public class ManipulateFunction {
       // plot( x => (Math.sin(x*(1+a*x))), [0, 2*Math.PI], { } )
       StringBuilder graphicControl = new StringBuilder();
 
-      if (plotID == ID.ContourPlot
-          || //
-          plotID == ID.DensityPlot) {
+      if (plotID == ID.ContourPlot || plotID == ID.DensityPlot) {
         if (!plotRangeY.isPresent()) {
           return F.NIL;
         }
@@ -1037,12 +1028,9 @@ public class ManipulateFunction {
 
       final OptionArgs options;
       if (plotID == ID.Plot3D
-          || //
-          plotID == ID.ComplexPlot3D
-          || //
-          plotID == ID.ContourPlot
-          || //
-          plotID == ID.DensityPlot) {
+          || plotID == ID.ComplexPlot3D
+          || plotID == ID.ContourPlot
+          || plotID == ID.DensityPlot) {
         options = new OptionArgs(plot.topHead(), plot, 4, engine);
         // } else if (plotID == ID.Plot) {
         // options = new OptionArgs(plot.topHead(), plot, 3, engine);
@@ -1136,13 +1124,9 @@ public class ManipulateFunction {
       // } catch (RuntimeException rex) {
       // }
       // }
-      if ((plotID == ID.ParametricPlot
-              || //
-              plotID == ID.PolarPlot)
-          && //
-          plotRangeYMax != Double.MIN_VALUE
-          && //
-          plotRangeYMin != Double.MAX_VALUE) {
+      if ((plotID == ID.ParametricPlot || plotID == ID.PolarPlot)
+          && plotRangeYMax != Double.MIN_VALUE
+          && plotRangeYMin != Double.MAX_VALUE) {
         try {
           plotRangeXMin = plotRangeYMin;
           plotRangeXMax = plotRangeYMax;

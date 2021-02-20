@@ -203,6 +203,9 @@ public class JavaScriptFormFactory extends DoubleFormFactory {
     FUNCTIONS_STR_MATHCELL.put(S.Sign, "sign");
     FUNCTIONS_STR_MATHCELL.put(S.Max, "Math.max");
     FUNCTIONS_STR_MATHCELL.put(S.Min, "Math.min");
+    FUNCTIONS_STR_MATHCELL.put(S.Surd, "surd");
+    FUNCTIONS_STR_MATHCELL.put(S.Root, "root");
+
 
     //
     // pure JavaScript mappings
@@ -450,9 +453,6 @@ public class JavaScriptFormFactory extends DoubleFormFactory {
       } else if (function.isPower()) {
         convertPowerMathcell(buf, function);
         return;
-      } else if (function.head() == S.Surd && function.size() == 3) {
-        convertPowerMathcell(buf, function);
-        return;
       } else if (function.isInfinity()) {
         buf.append("Number.POSITIVE_INFINITY");
         return;
@@ -495,9 +495,6 @@ public class JavaScriptFormFactory extends DoubleFormFactory {
       }
     } else {
       if (function.isPower()) {
-        convertPower(buf, function);
-        return;
-      } else if (function.head() == S.Surd && function.size() == 3) {
         convertPower(buf, function);
         return;
       } else if (function.isInfinity()) {

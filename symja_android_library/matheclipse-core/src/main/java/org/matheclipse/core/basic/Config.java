@@ -99,6 +99,9 @@ public class Config {
   /** Maximum degree of a polynomial generating function */
   public static int MAX_POLYNOMIAL_DEGREE = Integer.MAX_VALUE;
 
+  /** Maximum number of loop runs in some Symja functions */
+  public static long MAX_LOOP_COUNT = Long.MAX_VALUE;
+  
   static {
     EXPR_CACHE =
         CacheBuilder.newBuilder().maximumSize(MAX_EXPR_CACHE_SIZE).weakKeys().weakValues().build();
@@ -629,7 +632,7 @@ public class Config {
           + "<script src=\"https://cdn.jsdelivr.net/gh/paulmasson/math@1.4.4/build/math.js\"></script>"
           + "\n"
           + "\n"
-          + "<script src=\"https://cdn.jsdelivr.net/gh/paulmasson/mathcell@1.9.0/build/mathcell.js\"></script>\n"
+          + "<script src=\"https://cdn.jsdelivr.net/gh/paulmasson/mathcell@1.9.1/build/mathcell.js\"></script>\n"
           + "<script src=\"https://cdn.jsdelivr.net/gh/mathjax/MathJax@2.7.5/MathJax.js?config=TeX-AMS_HTML\"></script>"
           + "\n"
           + "<div class=\"mathcell\" style=\"width: 100%; height: 100%; padding: .25in .5in .5in .5in;\">\n"
