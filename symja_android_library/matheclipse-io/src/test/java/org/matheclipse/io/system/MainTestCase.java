@@ -200,7 +200,7 @@ public class MainTestCase extends AbstractTestCase {
     check(
         "string = \"\\.41\\:05E9\\:C350\\|01F602\"", //
         "Aש썐😂");
-  } 
+  }
 
   public void testOut() {
     check("1+1", "2");
@@ -1518,35 +1518,70 @@ public class MainTestCase extends AbstractTestCase {
 
   public void testSystem107() {
     check(
-        "MatrixPower({{a,2},{3,4}},3)",
-        "{{24+12*a+a^3,44+8*a+2*a^2},\n" + " {66+12*a+3*a^2,112+6*a}}");
+        "MatrixPower({{a,2},{3,4}},3)", //
+        "{{24+12*a+a^3,44+8*a+2*a^2},\n" //
+            + " {66+12*a+3*a^2,112+6*a}}");
   }
 
   public void testSystem108() {
-    check("10!", "3628800");
+    check(
+        "10!", //
+        "3628800");
   }
 
   public void testSystem109() {
-    check("10!!", "3840");
-    check("11!!", "10395");
-    check("-10!!", "-3840");
-    check("-11!!", "-10395");
-    check("-12!!", "-46080");
-    check("-13!!", "-135135");
+    check(
+        "10!!", //
+        "3840");
+    check(
+        "11!!", //
+        "10395");
+    check(
+        "-10!!", //
+        "-3840");
+    check(
+        "-11!!", //
+        "-10395");
+    check(
+        "-12!!", //
+        "-46080");
+    check(
+        "-13!!", //
+        "-135135");
   }
 
   public void testSystem110() {
-    check("(n!)*x(3)", "n!*x(3)");
-    check("Factorial2(x)", "x!!");
-    check("Gamma(1/2)", "Sqrt(Pi)");
-    check("Gamma(3/2)", "Sqrt(Pi)/2");
-    check("Gamma(5/2)", "3/4*Sqrt(Pi)");
-    check("Gamma(7/2)", "15/8*Sqrt(Pi)");
-    check("Table(Gamma(x),{x,10})", "{1,1,2,6,24,120,720,5040,40320,362880}");
-    check("Table(Gamma(x),{x,10.0})", "{1.0,1.0,2.0,6.0,24.0,120.0,720.0,5040.0,40320.0,362880.0}");
+    check(
+        "(n!)*x(3)", //
+        "n!*x(3)");
+    check(
+        "Factorial2(x)", //
+        "x!!");
+    check(
+        "Gamma(1/2)", //
+        "Sqrt(Pi)");
+    check(
+        "Gamma(3/2)", //
+        "Sqrt(Pi)/2");
+    check(
+        "Gamma(5/2)", //
+        "3/4*Sqrt(Pi)");
+    check(
+        "Gamma(7/2)", //
+        "15/8*Sqrt(Pi)");
+    check(
+        "Table(Gamma(x),{x,10})", //
+        "{1,1,2,6,24,120,720,5040,40320,362880}");
+    check(
+        "Table(Gamma(x),{x,10.0})", //
+        "{1.0,1.0,2.0,6.0,24.0,120.0,720.0,5040.0,40320.0,362880.0}");
 
-    check("Factorial2(0)", "1");
-    check("Factorial2(-1)", "1");
+    check(
+        "Factorial2(0)", //
+        "1");
+    check(
+        "Factorial2(-1)", //
+        "1");
   }
 
   public void testSystem111() {
