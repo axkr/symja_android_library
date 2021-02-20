@@ -13,6 +13,7 @@ import org.matheclipse.core.interfaces.IASTAppendable;
 import org.matheclipse.core.interfaces.IASTMutable;
 import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.interfaces.IInteger;
+import org.matheclipse.core.interfaces.IRational;
 import org.matheclipse.core.interfaces.ISymbol;
 import org.matheclipse.core.reflection.system.rules.DRules;
 
@@ -306,7 +307,10 @@ public class D extends AbstractFunctionEvaluator implements DRules {
           if (n >= 0) {
             IExpr temp = fx;
             for (int i = 0; i < n; i++) {
-              temp = S.D.of(engine, temp, x);
+              temp = S.D.ofNIL(engine, temp, x);
+              if (!temp.isPresent()) {
+                return F.NIL;
+              }
             }
             return temp;
           }
@@ -333,37 +337,44 @@ public class D extends AbstractFunctionEvaluator implements DRules {
             }
             return F.NIL;
           }
+          if (!x.isVariable()) {
+            // `1` is not a valid variable.
+            return IOFunctions.printMessage(ast.topHead(), "ivar", F.List(x), engine);
+          }
+          if (arg2.isAST()) {
+            return F.NIL;
+          }
           // Multiple derivative specifier `1` does not have the form {variable, n} where n is a
           // symbolic expression or a non-negative integer.
           return IOFunctions.printMessage(ast.topHead(), "dvar", F.List(xList), engine);
         }
         return F.NIL;
-
-      } else {
-        if (!x.isVariable()) {
-          // `1` is not a valid variable.
-          return IOFunctions.printMessage(ast.topHead(), "ivar", F.List(x), engine);
-        }
-        int[] dim = fx.isPiecewise();
-        if (dim != null) {
-          return dPiecewise(dim, (IAST) fx, ast, engine);
-        }
-
-        if (fx instanceof ASTSeriesData) {
-          ASTSeriesData series = ((ASTSeriesData) fx);
-          if (series.getX().equals(x)) {
-            final IExpr temp = ((ASTSeriesData) fx).derive(x);
-            if (temp != null) {
-              return temp;
-            }
-            return F.NIL;
-          }
-          return F.C0;
-        }
-        if (fx.isFree(x, true)) {
-          return F.C0;
-        }
       }
+
+      if (!x.isVariable()) {
+        // `1` is not a valid variable.
+        return IOFunctions.printMessage(ast.topHead(), "ivar", F.List(x), engine);
+      }
+      int[] dim = fx.isPiecewise();
+      if (dim != null) {
+        return dPiecewise(dim, (IAST) fx, ast, engine);
+      }
+
+      if (fx instanceof ASTSeriesData) {
+        ASTSeriesData series = ((ASTSeriesData) fx);
+        if (series.getX().equals(x)) {
+          final IExpr temp = ((ASTSeriesData) fx).derive(x);
+          if (temp != null) {
+            return temp;
+          }
+          return F.NIL;
+        }
+        return F.C0;
+      }
+      if (fx.isFree(x, true)) {
+        return F.C0;
+      }
+
       if (fx.isNumber()) {
         // D[x_?NumberQ,y_] -> 0
         return F.C0;
@@ -403,6 +414,25 @@ public class D extends AbstractFunctionEvaluator implements DRules {
           resultList.append(
               F.Plus(F.Times(g, F.D(f, x), F.Power(f, F.CN1)), F.Times(F.Log(f), F.D(g, x))));
           return resultList;
+        } else if (function.isAST(S.Surd, 3)) {
+          // Surd[f,g]
+          final IExpr f = function.base();
+
+          if (function.exponent().isInteger()) {
+            final IInteger g = (IInteger) function.exponent();
+            if (g.isMinusOne()) {
+              return F.Times(F.CN1, F.D(f, x), F.Power(f, F.CN2));
+            }
+            final IRational gInverse = g.inverse();
+            if (g.isNegative()) {
+              if (g.isEven()) {
+                return F.Times(gInverse, F.D(f, x), F.Power(F.Surd(f, g.negate()), g.dec()));
+              }
+              return F.Times(
+                  gInverse, F.D(f, x), F.Power(f, F.CN1), F.Power(F.Surd(f, g.negate()), F.CN1));
+            }
+            return F.Times(gInverse, F.D(f, x), F.Power(F.Surd(f, g), g.dec().negate()));
+          }
         } else if ((header == S.Log) && (function.isAST2())) {
           if (function.isFreeAt(1, x)) {
             // D[Log[i_FreeQ(x), x_], z_]:= (x*Log[a])^(-1)*D[x,z];
