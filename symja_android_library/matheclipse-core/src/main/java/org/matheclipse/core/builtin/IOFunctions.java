@@ -630,6 +630,8 @@ public class IOFunctions {
     "Uncaught `1` returned to top level.", //
     "nofirst",
     "`1` has zero length and no first element.", //
+    "nofwd",
+    "No enclosing For, While or Do found for `1`.", //
     "noneg",
     "Argument `1` should be a real non-negative number.", //
     "nonegs",
@@ -696,12 +698,16 @@ public class IOFunctions {
     "`1` is not a polynomial.", //
     "polynomial",
     "Polynomial expected at position `1` in `2`.", //
+    "posdim",
+    "The dimension parameter `1` is expected to be a positive integer or a list of positive integers.", //
     "pospoint",
     "`1` contains integers that are not positive.", //
     "posr",
     "The left hand side of `2` in `1` doesn't match an int-array of depth `3`.", //
     "pkspec1",
     "The expression `1` cannot be used as a part specification.", //
+    "preal",
+    "The parameter `1` should be real-valued.", //
     "precsm",
     "Requested precision `1` is smaller than `2`.", //
     "precgt",
@@ -718,6 +724,8 @@ public class IOFunctions {
     "`1` contains repeated integers.", //
     "reps",
     "(`1`) is neither a list of replacement nor a valid dispatch table and cannot be used for replacing.", //
+    "root",
+    "Unable to determine the appropriate root for the periodic continued fraction.", //
     "rvalue",
     "`1` is not a variable with a value, so its value cannot be changed.", //
     "rubiendless",
@@ -742,6 +750,8 @@ public class IOFunctions {
     "`1` is not string, InputStream[], or OutputStream[]", //
     "string",
     "String expected at position `1` in `2`.", //
+    "strse",
+    "String or list of strings expected at position `1` in `2`.", //
     "sym",
     "Argument `1` at position `2` is expected to be a symbol.", //
     "tdlen",
@@ -861,8 +871,10 @@ public class IOFunctions {
       engine.setMessageShortcut(messageShortcut);
       engine.printMessage(symbol.toString() + ": " + message);
     } else {
-      for (int i = 1; i < listOfArgs.size(); i++) {
-        message = StringUtils.replace(message, "`" + (i) + "`", shorten(listOfArgs.get(i)));
+      if (listOfArgs != null) {
+        for (int i = 1; i < listOfArgs.size(); i++) {
+          message = StringUtils.replace(message, "`" + (i) + "`", shorten(listOfArgs.get(i)));
+        }
       }
       engine.setMessageShortcut(messageShortcut);
       engine.printMessage(symbol.toString() + ": " + message);
