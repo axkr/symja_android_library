@@ -391,8 +391,11 @@ public final class RulesData implements Serializable {
   }
 
   /**
+   * Try matching the <code>expr</code> expression with this pattern-matching rules and if matched, return an
+   * evaluated right-hand-side expression, otherwise return {@link F#NIL}.
+   *
    * @param expr
-   * @return <code>F.NIL</code> if no evaluation was possible
+   * @return {@link F#NIL} if no evaluation was possible
    */
   public IExpr evalDownRule(final IExpr expr, EvalEngine engine) {
     if (Config.SHOW_PATTERN_EVAL_STEPS) {
