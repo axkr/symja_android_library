@@ -17,7 +17,6 @@
 package org.matheclipse.core.polynomials;
 
 import org.hipparchus.fraction.BigFraction;
-import org.hipparchus.util.FastMath;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -223,7 +222,7 @@ public class PolynomialsUtils {
     // do allocation at start to test limits
     IASTAppendable result = F.PlusAlloc(degree + 1);
 
-    final int maxDegree = (int) FastMath.floor(FastMath.sqrt(2.0 * coefficients.size())) - 1;
+    final int maxDegree = (int) Math.floor(Math.sqrt(2.0 * coefficients.size())) - 1;
     synchronized (PolynomialsUtils.class) {
       if (degree > maxDegree) {
         computeUpToDegree(degree, maxDegree, generator, coefficients);
