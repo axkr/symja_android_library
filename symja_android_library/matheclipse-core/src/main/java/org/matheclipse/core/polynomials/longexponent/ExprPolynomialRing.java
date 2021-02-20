@@ -18,6 +18,7 @@ import org.matheclipse.core.expression.F;
 import org.matheclipse.core.generic.Predicates;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IASTAppendable;
+import org.matheclipse.core.interfaces.IDataExpr;
 import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.interfaces.ISymbol;
 // import
@@ -484,7 +485,7 @@ public class ExprPolynomialRing implements RingFactory<ExprPolynomial> {
     } else if (exprPoly.isNumber()) {
       return new ExprPolynomial(this, exprPoly);
     }
-    if (exprPoly.isFree(Predicates.in(vars), true)) {
+    if (exprPoly.isFree(Predicates.in(vars), true) && !(exprPoly instanceof IDataExpr)) {
       return new ExprPolynomial(this, exprPoly);
     }
     throw new JASConversionException();
