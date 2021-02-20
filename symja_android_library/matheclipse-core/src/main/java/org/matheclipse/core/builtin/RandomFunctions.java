@@ -5,7 +5,6 @@ import java.util.concurrent.ThreadLocalRandom;
 
 import org.hipparchus.complex.Complex;
 import org.hipparchus.random.RandomDataGenerator;
-import org.hipparchus.util.FastMath;
 import org.hipparchus.util.MathArrays;
 import org.matheclipse.core.basic.Config;
 import org.matheclipse.core.builtin.StatisticsFunctions.IRandomVariate;
@@ -401,25 +400,60 @@ public final class RandomFunctions {
 
     @Override
     public IExpr evaluate(final IAST ast, EvalEngine engine) {
-      if (ast.arg1().isInteger()) {
+      IExpr arg1 = ast.arg1();
+      boolean parametersChecked = false;
+      BigInteger TWO = BigInteger.valueOf(2L);
+      BigInteger lowerLimit = TWO;
+      BigInteger upperLimit = BigInteger.ONE;
+      if (arg1.isInteger()) {
+        upperLimit = ((IInteger) arg1).toBigNumerator();
+        if (upperLimit.compareTo(TWO) < 0) {
+          // Positive integer expected.
+          return IOFunctions.printMessage(ast.topHead(), "intp", F.List(), engine);
+        }
+        if (upperLimit.compareTo(TWO) < 0) {
+          // There are no primes in the specified interval.
+          return IOFunctions.printMessage(ast.topHead(), "noprime", F.List(), engine);
+        }
+        parametersChecked = true;
+      } else if (arg1.isList2() && arg1.first().isInteger() && arg1.second().isInteger()) {
+        lowerLimit = ((IInteger) arg1.first()).toBigNumerator();
+        upperLimit = ((IInteger) arg1.second()).toBigNumerator();
+        if (lowerLimit.compareTo(TWO) < 0) {
+          // Positive integer expected.
+          return IOFunctions.printMessage(ast.topHead(), "intp", F.List(), engine);
+        }
+        if (upperLimit.compareTo(TWO) < 0) {
+          // Positive integer expected.
+          return IOFunctions.printMessage(ast.topHead(), "intp", F.List(), engine);
+        }
+        if (upperLimit.compareTo(lowerLimit) < 0) {
+          // There are no primes in the specified interval.
+          return IOFunctions.printMessage(ast.topHead(), "noprime", F.List(), engine);
+        }
+        if (!lowerLimit.isProbablePrime(32)
+            && upperLimit.compareTo(lowerLimit.nextProbablePrime()) < 0) {
+          // There are no primes in the specified interval.
+          return IOFunctions.printMessage(ast.topHead(), "noprime", F.List(), engine);
+        }
+        parametersChecked = true;
+      } else {
+        // Positive integer expected.
+        IOFunctions.printMessage(ast.topHead(), "intp", F.List(), engine);
+        return null;
+      }
+      if (parametersChecked) {
         try {
-          // RandomPrime(100) gives a prime integer between 2 and 100
-          BigInteger upperLimit = ((IInteger) ast.arg1()).toBigNumerator();
-          if (upperLimit.compareTo(BigInteger.ZERO) < 0) {
-            // Positive integer expected.
-            return IOFunctions.printMessage(ast.topHead(), "intp", F.List(), engine);
+          if (ast.isAST2()) {
+            int[] dimension = Validate.checkDimension(ast, ast.arg2(), engine);
+            if (dimension == null) {
+              return F.NIL;
+            }
+            final BigInteger lowLimit = lowerLimit;
+            final BigInteger highLimit = upperLimit;
+            return Tensors.build(() -> randomPrime(lowLimit, highLimit, ast, engine), dimension);
           }
-          if (upperLimit.compareTo(BigInteger.valueOf(2)) < 0) {
-            // There are no primes in the specified interval.
-            return IOFunctions.printMessage(ast.topHead(), "noprime", F.List(), engine);
-          }
-          final int nlen = upperLimit.bitLength();
-          ThreadLocalRandom tlr = ThreadLocalRandom.current();
-          BigInteger randomNumber;
-          do {
-            randomNumber = new BigInteger(nlen, 32, tlr);
-          } while (randomNumber.compareTo(upperLimit) > 0);
-          return F.ZZ(randomNumber);
+          return randomPrime(lowerLimit, upperLimit, ast, engine);
         } catch (ValidateException ve) {
           return engine.printMessage(ast.topHead(), ve);
         } catch (RuntimeException rex) {
@@ -430,13 +464,37 @@ public final class RandomFunctions {
           return IOFunctions.printMessage(ast.topHead(), "noprime", F.List(), engine);
         }
       }
-
       return F.NIL;
+    }
+
+    private static IExpr randomPrime(
+        BigInteger lowerLimit, BigInteger upperLimit, final IAST ast, EvalEngine engine) {
+
+      if (lowerLimit.isProbablePrime(32)
+          && upperLimit.compareTo(lowerLimit.nextProbablePrime()) < 0) {
+        return F.ZZ(lowerLimit);
+      }
+
+      final int llen = lowerLimit.bitLength();
+      final int ulen = upperLimit.bitLength();
+      ThreadLocalRandom tlr = ThreadLocalRandom.current();
+      BigInteger randomNumber;
+      long counter = 0;
+      do {
+        int blen = tlr.nextInt(llen, ulen + 1);
+        randomNumber = new BigInteger(blen, 32, tlr);
+        if (counter++ > 100000) {
+          randomNumber = lowerLimit.nextProbablePrime();
+          break;
+        }
+
+      } while (randomNumber.compareTo(upperLimit) > 0 || randomNumber.compareTo(lowerLimit) < 0);
+      return F.ZZ(randomNumber);
     }
 
     @Override
     public int[] expectedArgSize(IAST ast) {
-      return ARGS_1_1;
+      return ARGS_1_2;
     }
   }
 
@@ -522,7 +580,7 @@ public final class RandomFunctions {
         double max = engine.evalDouble(arg1);
         if (max < 0) {
           isNegative = true;
-          max = FastMath.abs(max);
+          max = Math.abs(max);
         }
         if (F.isZero(max)) {
           return F.CD0;
@@ -582,7 +640,7 @@ public final class RandomFunctions {
         double max = engine.evalDouble(arg1);
         if (max < 0) {
           isNegative = true;
-          max = FastMath.abs(max);
+          max = Math.abs(max);
         }
         ThreadLocalRandom tlr = ThreadLocalRandom.current();
         for (int i = 0; i < array.length; i++) {
