@@ -558,6 +558,10 @@ public class ExprEvaluatorTests extends TestCase {
             F.stringx("\n   "), //
             F.stringx("\uffff"), //
             F.Subtract(F.C1, F.C1), //
+            F.Rule(S.Modulus, F.C2), //
+            F.Rule(S.Modulus, F.C10), //
+            F.Rule(S.Heads, S.True), //
+            F.Rule(S.Heads, S.False), //
             F.$OptionsPattern(null), //
             F.OptionValue(F.a), //
             F.OptionValue(F.b), //
@@ -1001,6 +1005,16 @@ public class ExprEvaluatorTests extends TestCase {
         }
       }
     }
+  }
+
+  public void testLucasL() {
+    // LucasL(19,{x,{1,2,3,a},-1/2})
+    IAST expr = F.LucasL(F.ZZ(19), F.List(F.x, F.List(F.C1, F.C2, F.C3, F.a), F.CN1D2));
+    checkEvaluator(
+        expr, //
+        "{19*x+285*x^3+1254*x^5+2508*x^7+2717*x^9+1729*x^11+665*x^13+152*x^15+19*x^17+x^\n"
+        + "19,{9349,18738638,7222746567,19*a+285*a^3+1254*a^5+2508*a^7+2717*a^9+1729*a^11+\n"
+        + "665*a^13+152*a^15+19*a^17+a^19},-57746701/524288}");
   }
 
   public void testTogether() {

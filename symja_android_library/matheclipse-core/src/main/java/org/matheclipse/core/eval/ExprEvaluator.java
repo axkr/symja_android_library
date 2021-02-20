@@ -9,8 +9,11 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
 
 import org.matheclipse.core.builtin.IOFunctions;
+import org.matheclipse.core.eval.exception.BreakException;
+import org.matheclipse.core.eval.exception.ContinueException;
 import org.matheclipse.core.eval.exception.IterationLimitExceeded;
 import org.matheclipse.core.eval.exception.RecursionLimitExceeded;
+import org.matheclipse.core.eval.exception.ReturnException;
 import org.matheclipse.core.eval.exception.SymjaMathException;
 import org.matheclipse.core.eval.exception.ThrowException;
 import org.matheclipse.core.expression.F;
@@ -363,7 +366,23 @@ public class ExprEvaluator {
       } else {
         temp = engine.evaluate(expr);
       }
-    } catch (final ThrowException e) {
+    } catch (ReturnException rex) {
+      if (FEConfig.SHOW_STACKTRACE) {
+        rex.printStackTrace();
+      }
+      return rex.getValue();
+    } catch (BreakException | ContinueException conex) {
+      if (FEConfig.SHOW_STACKTRACE) {
+        conex.printStackTrace();
+      }
+      IAST ast = F.Continue();
+      if (conex instanceof BreakException) {
+        ast = F.Break();
+      }
+      // No enclosing For, While or Do found for `1`.
+      IOFunctions.printMessage(S.Continue, "nofwd", F.List(ast), engine);
+      temp = F.Hold(ast);
+    } catch (ThrowException e) {
       if (FEConfig.SHOW_STACKTRACE) {
         e.printStackTrace();
       }
@@ -371,7 +390,7 @@ public class ExprEvaluator {
       IAST ast = F.Throw(e.getValue());
       IOFunctions.printMessage(S.Throw, "nocatch", F.List(ast), engine);
       temp = F.Hold(ast);
-    } catch (final IterationLimitExceeded e) {
+    } catch (IterationLimitExceeded e) {
       if (FEConfig.SHOW_STACKTRACE) {
         e.printStackTrace();
       }
@@ -383,7 +402,7 @@ public class ExprEvaluator {
           F.List(iterationLimit < 0 ? F.CInfinity : F.ZZ(iterationLimit), expr),
           engine);
       temp = F.Hold(expr);
-    } catch (final RecursionLimitExceeded e) {
+    } catch (RecursionLimitExceeded e) {
       if (FEConfig.SHOW_STACKTRACE) {
         e.printStackTrace();
       }
