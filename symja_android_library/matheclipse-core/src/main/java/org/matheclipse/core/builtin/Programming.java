@@ -1076,34 +1076,28 @@ public final class Programming {
       if (ast.size() == 5) {
         body = ast.arg4();
       }
-      boolean exit = false;
       while (true) {
         try {
-          if (!engine.evaluate(test).isTrue()) {
-            exit = true;
+          if (!engine.evalTrue(test)) {
             return S.Null;
           }
           if (ast.size() == 5) {
             engine.evaluate(body);
           }
-          if (iterationLimit > 0 && iterationLimit <= ++iterationCounter) {
-            IterationLimitExceeded.throwIt(iterationCounter, ast);
-          }
         } catch (final BreakException e) {
-          exit = true;
           return S.Null;
         } catch (final ContinueException e) {
           if (iterationLimit > 0 && iterationLimit <= ++iterationCounter) {
             IterationLimitExceeded.throwIt(iterationCounter, ast);
           }
-          continue;
         } catch (final ReturnException e) {
           return e.getValue();
         } finally {
-          if (!exit) {
-            engine.evaluate(incr);
-          }
         }
+        if (iterationLimit > 0 && iterationLimit <= ++iterationCounter) {
+          IterationLimitExceeded.throwIt(iterationCounter, ast);
+        }
+        engine.evaluate(incr);
       }
     }
 
@@ -1399,7 +1393,7 @@ public final class Programming {
         if (iterationLimit >= 0 && iterationLimit <= n) {
           IterationLimitExceeded.throwIt(n, ast);
         }
-        return nest(ast.arg2(), n, x -> F.unaryAST1(ast.arg1(), x), engine);
+        return ast.arg2().nest(ast.arg1(), n);
       }
       return F.NIL;
     }
@@ -1407,15 +1401,6 @@ public final class Programming {
     @Override
     public int[] expectedArgSize(IAST ast) {
       return ARGS_3_3;
-    }
-
-    public static IExpr nest(
-        final IExpr expr, final int n, final Function<IExpr, IExpr> fn, EvalEngine engine) {
-      IExpr temp = expr;
-      for (int i = 0; i < n; i++) {
-        temp = engine.evaluate(fn.apply(temp));
-      }
-      return temp;
     }
 
     @Override
@@ -1480,7 +1465,6 @@ public final class Programming {
       IExpr temp = expr;
       resultList.append(temp);
       for (int i = 0; i < n; i++) {
-        // temp = engine.evaluate(fn.apply(temp));
         temp = fn.apply(temp);
         resultList.append(temp);
       }
@@ -3166,19 +3150,18 @@ public final class Programming {
 
     @Override
     public IExpr evaluate(final IAST ast, EvalEngine engine) {
-      // use EvalEngine's iterationLimit only for evaluation control
-
       // While(test, body)
       final IExpr test = ast.arg1();
       final IExpr body = ast.isAST2() ? ast.arg2() : F.NIL;
+      long iterationCounter = 0;
       while (engine.evalTrue(test)) {
         try {
           if (body.isPresent()) {
             engine.evaluate(body);
           }
-          // if (iterationLimit >= 0 && iterationLimit <= ++iterationCounter) {
-          // IterationLimitExceeded.throwIt(iterationCounter, ast);
-          // }
+          if (Config.MAX_LOOP_COUNT <= ++iterationCounter) {
+            IterationLimitExceeded.throwIt(iterationCounter, ast);
+          }
         } catch (final BreakException e) {
           return S.Null;
         } catch (final ContinueException e) {
@@ -3261,6 +3244,22 @@ public final class Programming {
           VariablesSet set = new VariablesSet(temp);
           set.putAllSymbols(variablesMap);
           variablesMap.put(oldSymbol, temp);
+        } else {
+          // Local variable specification `1` contains `2`, which is an assignment to `3`; only
+          // assignments to
+          // symbols are allowed.
+          IOFunctions.printMessage(
+              S.With, "lvset", F.List(variablesList, variablesList.get(i), setFun.arg1()), engine);
+          return false;
+        }
+      } else if (variablesList.get(i).isAST(S.SetDelayed, 3)) {
+        final IAST setFun = (IAST) variablesList.get(i);
+        if (setFun.arg1().isSymbol()) {
+          oldSymbol = (ISymbol) setFun.arg1();
+          IExpr rightHandSide = setFun.arg2(); 
+          VariablesSet set = new VariablesSet(rightHandSide);
+          set.putAllSymbols(variablesMap);
+          variablesMap.put(oldSymbol, rightHandSide);
         } else {
           // Local variable specification `1` contains `2`, which is an assignment to `3`; only
           // assignments to
