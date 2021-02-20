@@ -1,3 +1,4 @@
+
 /*
  * $Id$
  */
@@ -12,64 +13,72 @@ import edu.jas.structure.RingElem;
 
 import edu.jas.poly.ExpVector;
 
+
 /**
- * WordMonomial class. Represents pairs of words and coefficients. Adaptor for Map.Entry.
- *
+ * WordMonomial class. 
+ * Represents pairs of words and coefficients.
+ * Adaptor for Map.Entry.
  * @author Heinz Kredel
  */
-public final class WordMonomial<C extends RingElem<C>> {
 
-  /** Word of monomial. */
-  public final Word e;
+public final class WordMonomial<C extends RingElem<C> > {
 
-  /** Coefficient of monomial. */
-  public final C c;
+    /** 
+     * Word of monomial.
+     */
+    public final Word e;
 
-  /**
-   * Constructor of word monomial.
-   *
-   * @param me a MapEntry.
-   */
-  public WordMonomial(Map.Entry<Word, C> me) {
-    this(me.getKey(), me.getValue());
-  }
 
-  /**
-   * Constructor of word monomial.
-   *
-   * @param e word.
-   * @param c coefficient.
-   */
-  public WordMonomial(Word e, C c) {
-    this.e = e;
-    this.c = c;
-  }
+    /** 
+     * Coefficient of monomial.
+     */
+    public final C c;
 
-  /**
-   * Getter for word.
-   *
-   * @return word.
-   */
-  public Word word() {
-    return e;
-  }
 
-  /**
-   * Getter for coefficient.
-   *
-   * @return coefficient.
-   */
-  public C coefficient() {
-    return c;
-  }
+    /** 
+     * Constructor of word monomial.
+     * @param me a MapEntry.
+     */
+    public WordMonomial(Map.Entry<Word,C> me){
+        this( me.getKey(), me.getValue() );
+    }
 
-  /**
-   * String representation of Monomial.
-   *
-   * @see java.lang.Object#toString()
-   */
-  @Override
-  public String toString() {
-    return c.toString() + " " + e.toString();
-  }
+
+    /** 
+     * Constructor of word monomial.
+     * @param e word.
+     * @param c coefficient.
+     */
+    public WordMonomial(Word e, C c) {
+        this.e = e;
+        this.c = c;
+    }
+
+
+    /** 
+     * Getter for word.
+     * @return word.
+     */
+    public Word word() {
+        return e;
+    }
+
+
+    /** 
+     * Getter for coefficient.
+     * @return coefficient.
+     */
+    public C coefficient() {
+        return c;
+    }
+
+    /**
+     * String representation of Monomial.
+     * @see java.lang.Object#toString()
+     */
+    @Override
+    public String toString() {
+        return c.toString() + " " + e.toString();
+    }
+
 }

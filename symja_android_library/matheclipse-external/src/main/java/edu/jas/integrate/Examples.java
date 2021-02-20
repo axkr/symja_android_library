@@ -4,6 +4,7 @@
 
 package edu.jas.integrate;
 
+
 import java.util.List;
 
 import edu.jas.arith.BigRational;
@@ -14,241 +15,252 @@ import edu.jas.poly.TermOrder;
 import edu.jas.ufd.Quotient;
 import edu.jas.ufd.QuotientRing;
 
+
 /**
  * Examples related to elementary integration.
- *
+ * 
  * @author Axel Kramer
  * @author Heinz Kredel
  */
+
 public class Examples {
 
-  /**
-   * Main program.
-   *
-   * @param args
-   */
-  public static void main(String[] args) {
-    example1();
-    example2();
-    example3();
-  }
 
-  /** Example rationals. */
-  public static void example1() {
+    /**
+     * Main program.
+     * 
+     * @param args
+     */
+    public static void main(String[] args) {
+        example1();
+        example2();
+        example3();
+    }
 
-    BigRational br = new BigRational(0);
-    String[] vars = new String[] {"x"};
-    GenPolynomialRing<BigRational> fac;
-    fac =
-        new GenPolynomialRing<BigRational>(br, vars.length, new TermOrder(TermOrder.INVLEX), vars);
 
-    ElementaryIntegration<BigRational> eIntegrator = new ElementaryIntegration<BigRational>(br);
+    /**
+     * Example rationals.
+     */
+    public static void example1() {
 
-    GenPolynomial<BigRational> a = fac.parse("x^7 - 24 x^4 - 4 x^2 + 8 x - 8");
-    System.out.println("A: " + a.toString());
-    GenPolynomial<BigRational> d = fac.parse("x^8 + 6 x^6 + 12 x^4 + 8 x^2");
-    System.out.println("D: " + d.toString());
-    GenPolynomial<BigRational> gcd = a.gcd(d);
-    System.out.println("GCD: " + gcd.toString());
-    List<GenPolynomial<BigRational>>[] ret = eIntegrator.integrateHermite(a, d);
-    System.out.println("Result: " + ret[0] + " , " + ret[1]);
+        BigRational br = new BigRational(0);
+        String[] vars = new String[] { "x" };
+        GenPolynomialRing<BigRational> fac;
+        fac = new GenPolynomialRing<BigRational>(br, vars.length, new TermOrder(TermOrder.INVLEX), vars);
 
-    System.out.println("-----");
+        ElementaryIntegration<BigRational> eIntegrator = new ElementaryIntegration<BigRational>(br);
 
-    a = fac.parse("10 x^2 - 63 x + 29");
-    System.out.println("A: " + a.toString());
-    d = fac.parse("x^3 - 11 x^2 + 40 x -48");
-    System.out.println("D: " + d.toString());
-    gcd = a.gcd(d);
-    System.out.println("GCD: " + gcd.toString());
-    ret = eIntegrator.integrateHermite(a, d);
-    System.out.println("Result: " + ret[0] + " , " + ret[1]);
+        GenPolynomial<BigRational> a = fac.parse("x^7 - 24 x^4 - 4 x^2 + 8 x - 8");
+        System.out.println("A: " + a.toString());
+        GenPolynomial<BigRational> d = fac.parse("x^8 + 6 x^6 + 12 x^4 + 8 x^2");
+        System.out.println("D: " + d.toString());
+        GenPolynomial<BigRational> gcd = a.gcd(d);
+        System.out.println("GCD: " + gcd.toString());
+        List<GenPolynomial<BigRational>>[] ret = eIntegrator.integrateHermite(a, d);
+        System.out.println("Result: " + ret[0] + " , " + ret[1]);
 
-    System.out.println("-----");
+        System.out.println("-----");
 
-    a = fac.parse("x+3");
-    System.out.println("A: " + a.toString());
-    d = fac.parse("x^2 - 3 x - 40");
-    System.out.println("D: " + d.toString());
-    gcd = a.gcd(d);
-    System.out.println("GCD: " + gcd.toString());
-    ret = eIntegrator.integrateHermite(a, d);
-    System.out.println("Result: " + ret[0] + " , " + ret[1]);
+        a = fac.parse("10 x^2 - 63 x + 29");
+        System.out.println("A: " + a.toString());
+        d = fac.parse("x^3 - 11 x^2 + 40 x -48");
+        System.out.println("D: " + d.toString());
+        gcd = a.gcd(d);
+        System.out.println("GCD: " + gcd.toString());
+        ret = eIntegrator.integrateHermite(a, d);
+        System.out.println("Result: " + ret[0] + " , " + ret[1]);
 
-    System.out.println("-----");
+        System.out.println("-----");
 
-    a = fac.parse("10 x^2+12 x + 20");
-    System.out.println("A: " + a.toString());
-    d = fac.parse("x^3 - 8");
-    System.out.println("D: " + d.toString());
-    gcd = a.gcd(d);
-    System.out.println("GCD: " + gcd.toString());
-    ret = eIntegrator.integrateHermite(a, d);
-    System.out.println("Result: " + ret[0] + " , " + ret[1]);
+        a = fac.parse("x+3");
+        System.out.println("A: " + a.toString());
+        d = fac.parse("x^2 - 3 x - 40");
+        System.out.println("D: " + d.toString());
+        gcd = a.gcd(d);
+        System.out.println("GCD: " + gcd.toString());
+        ret = eIntegrator.integrateHermite(a, d);
+        System.out.println("Result: " + ret[0] + " , " + ret[1]);
 
-    System.out.println("------------------------------------------------------\n");
-    ComputerThreads.terminate();
-  }
+        System.out.println("-----");
 
-  /** Example rational plus logarithm. */
-  public static void example2() {
+        a = fac.parse("10 x^2+12 x + 20");
+        System.out.println("A: " + a.toString());
+        d = fac.parse("x^3 - 8");
+        System.out.println("D: " + d.toString());
+        gcd = a.gcd(d);
+        System.out.println("GCD: " + gcd.toString());
+        ret = eIntegrator.integrateHermite(a, d);
+        System.out.println("Result: " + ret[0] + " , " + ret[1]);
 
-    BigRational br = new BigRational(0);
-    String[] vars = new String[] {"x"};
-    GenPolynomialRing<BigRational> fac;
-    fac =
-        new GenPolynomialRing<BigRational>(br, vars.length, new TermOrder(TermOrder.INVLEX), vars);
+        System.out.println("------------------------------------------------------\n");
+        ComputerThreads.terminate();
+    }
 
-    ElementaryIntegration<BigRational> eIntegrator = new ElementaryIntegration<BigRational>(br);
 
-    GenPolynomial<BigRational> a = fac.parse("x^7 - 24 x^4 - 4 x^2 + 8 x - 8");
-    System.out.println("A: " + a.toString());
-    GenPolynomial<BigRational> d = fac.parse("x^8 + 6 x^6 + 12 x^4 + 8 x^2");
-    System.out.println("D: " + d.toString());
-    GenPolynomial<BigRational> gcd = a.gcd(d);
-    System.out.println("GCD: " + gcd.toString());
-    Integral<BigRational> ret = eIntegrator.integrate(a, d);
-    System.out.println("Result: " + ret);
+    /**
+     * Example rational plus logarithm.
+     */
+    public static void example2() {
 
-    System.out.println("-----");
+        BigRational br = new BigRational(0);
+        String[] vars = new String[] { "x" };
+        GenPolynomialRing<BigRational> fac;
+        fac = new GenPolynomialRing<BigRational>(br, vars.length, new TermOrder(TermOrder.INVLEX), vars);
 
-    a = fac.parse("10 x^2 - 63 x + 29");
-    System.out.println("A: " + a.toString());
-    d = fac.parse("x^3 - 11 x^2 + 40 x -48");
-    System.out.println("D: " + d.toString());
-    gcd = a.gcd(d);
-    System.out.println("GCD: " + gcd.toString());
-    ret = eIntegrator.integrate(a, d);
-    System.out.println("Result: " + ret);
+        ElementaryIntegration<BigRational> eIntegrator = new ElementaryIntegration<BigRational>(br);
 
-    System.out.println("-----");
+        GenPolynomial<BigRational> a = fac.parse("x^7 - 24 x^4 - 4 x^2 + 8 x - 8");
+        System.out.println("A: " + a.toString());
+        GenPolynomial<BigRational> d = fac.parse("x^8 + 6 x^6 + 12 x^4 + 8 x^2");
+        System.out.println("D: " + d.toString());
+        GenPolynomial<BigRational> gcd = a.gcd(d);
+        System.out.println("GCD: " + gcd.toString());
+        Integral<BigRational> ret = eIntegrator.integrate(a, d);
+        System.out.println("Result: " + ret);
 
-    a = fac.parse("x+3");
-    System.out.println("A: " + a.toString());
-    d = fac.parse("x^2 - 3 x - 40");
-    System.out.println("D: " + d.toString());
-    gcd = a.gcd(d);
-    System.out.println("GCD: " + gcd.toString());
-    ret = eIntegrator.integrate(a, d);
-    System.out.println("Result: " + ret);
+        System.out.println("-----");
 
-    System.out.println("-----");
+        a = fac.parse("10 x^2 - 63 x + 29");
+        System.out.println("A: " + a.toString());
+        d = fac.parse("x^3 - 11 x^2 + 40 x -48");
+        System.out.println("D: " + d.toString());
+        gcd = a.gcd(d);
+        System.out.println("GCD: " + gcd.toString());
+        ret = eIntegrator.integrate(a, d);
+        System.out.println("Result: " + ret);
 
-    a = fac.parse("10 x^2+12 x + 20");
-    System.out.println("A: " + a.toString());
-    d = fac.parse("x^3 - 8");
-    System.out.println("D: " + d.toString());
-    gcd = a.gcd(d);
-    System.out.println("GCD: " + gcd.toString());
-    ret = eIntegrator.integrate(a, d);
-    System.out.println("Result: " + ret);
+        System.out.println("-----");
 
-    System.out.println("-----");
+        a = fac.parse("x+3");
+        System.out.println("A: " + a.toString());
+        d = fac.parse("x^2 - 3 x - 40");
+        System.out.println("D: " + d.toString());
+        gcd = a.gcd(d);
+        System.out.println("GCD: " + gcd.toString());
+        ret = eIntegrator.integrate(a, d);
+        System.out.println("Result: " + ret);
 
-    a = fac.parse("1");
-    System.out.println("A: " + a.toString());
-    d = fac.parse("(x**5 + x - 7)");
-    System.out.println("D: " + d.toString());
-    gcd = a.gcd(d);
-    System.out.println("GCD: " + gcd.toString());
-    ret = eIntegrator.integrate(a, d);
-    System.out.println("Result: " + ret);
+        System.out.println("-----");
 
-    System.out.println("-----");
+        a = fac.parse("10 x^2+12 x + 20");
+        System.out.println("A: " + a.toString());
+        d = fac.parse("x^3 - 8");
+        System.out.println("D: " + d.toString());
+        gcd = a.gcd(d);
+        System.out.println("GCD: " + gcd.toString());
+        ret = eIntegrator.integrate(a, d);
+        System.out.println("Result: " + ret);
 
-    a = fac.parse("1");
-    d = fac.parse("(x**5 + x - 7)");
-    a = a.sum(d);
-    System.out.println("A: " + a.toString());
-    System.out.println("D: " + d.toString());
-    gcd = a.gcd(d);
-    System.out.println("GCD: " + gcd.toString());
-    ret = eIntegrator.integrate(a, d);
-    System.out.println("Result: " + ret);
+        System.out.println("-----");
 
-    System.out.println("-----");
-    ComputerThreads.terminate();
-  }
+        a = fac.parse("1");
+        System.out.println("A: " + a.toString());
+        d = fac.parse("(x**5 + x - 7)");
+        System.out.println("D: " + d.toString());
+        gcd = a.gcd(d);
+        System.out.println("GCD: " + gcd.toString());
+        ret = eIntegrator.integrate(a, d);
+        System.out.println("Result: " + ret);
 
-  /** Example quotients with rational plus logarithm. */
-  public static void example3() {
+        System.out.println("-----");
 
-    BigRational br = new BigRational(0);
-    String[] vars = new String[] {"x"};
-    GenPolynomialRing<BigRational> fac;
-    fac =
-        new GenPolynomialRing<BigRational>(br, vars.length, new TermOrder(TermOrder.INVLEX), vars);
+        a = fac.parse("1");
+        d = fac.parse("(x**5 + x - 7)");
+        a = a.sum(d);
+        System.out.println("A: " + a.toString());
+        System.out.println("D: " + d.toString());
+        gcd = a.gcd(d);
+        System.out.println("GCD: " + gcd.toString());
+        ret = eIntegrator.integrate(a, d);
+        System.out.println("Result: " + ret);
 
-    QuotientRing<BigRational> qfac = new QuotientRing<BigRational>(fac);
+        System.out.println("-----");
+        ComputerThreads.terminate();
+    }
 
-    ElementaryIntegration<BigRational> eIntegrator = new ElementaryIntegration<BigRational>(br);
 
-    GenPolynomial<BigRational> a = fac.parse("x^7 - 24 x^4 - 4 x^2 + 8 x - 8");
-    GenPolynomial<BigRational> d = fac.parse("x^8 + 6 x^6 + 12 x^4 + 8 x^2");
-    Quotient<BigRational> q = new Quotient<BigRational>(qfac, a, d);
-    System.out.println("q =  " + q);
-    QuotIntegral<BigRational> ret = eIntegrator.integrate(q);
-    System.out.println("Result: " + ret);
+    /**
+     * Example quotients with rational plus logarithm.
+     */
+    public static void example3() {
 
-    System.out.println("-----");
+        BigRational br = new BigRational(0);
+        String[] vars = new String[] { "x" };
+        GenPolynomialRing<BigRational> fac;
+        fac = new GenPolynomialRing<BigRational>(br, vars.length, new TermOrder(TermOrder.INVLEX), vars);
 
-    a = fac.parse("10 x^2 - 63 x + 29");
-    d = fac.parse("x^3 - 11 x^2 + 40 x -48");
-    q = new Quotient<BigRational>(qfac, a, d);
-    System.out.println("q =  " + q);
-    ret = eIntegrator.integrate(q);
-    System.out.println("Result: " + ret);
+        QuotientRing<BigRational> qfac = new QuotientRing<BigRational>(fac);
 
-    System.out.println("-----");
+        ElementaryIntegration<BigRational> eIntegrator = new ElementaryIntegration<BigRational>(br);
 
-    a = fac.parse("x+3");
-    d = fac.parse("x^2 - 3 x - 40");
-    q = new Quotient<BigRational>(qfac, a, d);
-    System.out.println("q =  " + q);
-    ret = eIntegrator.integrate(q);
-    System.out.println("Result: " + ret);
+        GenPolynomial<BigRational> a = fac.parse("x^7 - 24 x^4 - 4 x^2 + 8 x - 8");
+        GenPolynomial<BigRational> d = fac.parse("x^8 + 6 x^6 + 12 x^4 + 8 x^2");
+        Quotient<BigRational> q = new Quotient<BigRational>(qfac, a, d);
+        System.out.println("q =  " + q);
+        QuotIntegral<BigRational> ret = eIntegrator.integrate(q);
+        System.out.println("Result: " + ret);
 
-    System.out.println("-----");
+        System.out.println("-----");
 
-    a = fac.parse("10 x^2+12 x + 20");
-    d = fac.parse("x^3 - 8");
-    q = new Quotient<BigRational>(qfac, a, d);
-    System.out.println("q =  " + q);
-    ret = eIntegrator.integrate(q);
-    System.out.println("Result: " + ret);
+        a = fac.parse("10 x^2 - 63 x + 29");
+        d = fac.parse("x^3 - 11 x^2 + 40 x -48");
+        q = new Quotient<BigRational>(qfac, a, d);
+        System.out.println("q =  " + q);
+        ret = eIntegrator.integrate(q);
+        System.out.println("Result: " + ret);
 
-    System.out.println("-----");
+        System.out.println("-----");
 
-    a = fac.parse("1");
-    d = fac.parse("(x**5 + x - 7)");
-    q = new Quotient<BigRational>(qfac, a, d);
-    System.out.println("q =  " + q);
-    ret = eIntegrator.integrate(q);
-    System.out.println("Result: " + ret);
+        a = fac.parse("x+3");
+        d = fac.parse("x^2 - 3 x - 40");
+        q = new Quotient<BigRational>(qfac, a, d);
+        System.out.println("q =  " + q);
+        ret = eIntegrator.integrate(q);
+        System.out.println("Result: " + ret);
 
-    System.out.println("-----");
+        System.out.println("-----");
 
-    a = fac.parse("1");
-    d = fac.parse("(x**5 + x - 7)");
-    a = a.sum(d);
-    q = new Quotient<BigRational>(qfac, a, d);
-    System.out.println("q =  " + q);
-    ret = eIntegrator.integrate(q);
-    System.out.println("Result: " + ret);
+        a = fac.parse("10 x^2+12 x + 20");
+        d = fac.parse("x^3 - 8");
+        q = new Quotient<BigRational>(qfac, a, d);
+        System.out.println("q =  " + q);
+        ret = eIntegrator.integrate(q);
+        System.out.println("Result: " + ret);
 
-    System.out.println("-----");
+        System.out.println("-----");
 
-    Quotient<BigRational> qi = qfac.random(7);
-    // qi = qi.sum( qfac.random(5) );
-    q = eIntegrator.deriviative(qi);
-    System.out.println("qi =  " + qi);
-    System.out.println("q  =  " + q);
-    ret = eIntegrator.integrate(q);
-    System.out.println("Result: " + ret);
-    boolean t = eIntegrator.isIntegral(ret);
-    System.out.println("isIntegral = " + t);
+        a = fac.parse("1");
+        d = fac.parse("(x**5 + x - 7)");
+        q = new Quotient<BigRational>(qfac, a, d);
+        System.out.println("q =  " + q);
+        ret = eIntegrator.integrate(q);
+        System.out.println("Result: " + ret);
 
-    System.out.println("-----");
-    ComputerThreads.terminate();
-  }
+        System.out.println("-----");
+
+        a = fac.parse("1");
+        d = fac.parse("(x**5 + x - 7)");
+        a = a.sum(d);
+        q = new Quotient<BigRational>(qfac, a, d);
+        System.out.println("q =  " + q);
+        ret = eIntegrator.integrate(q);
+        System.out.println("Result: " + ret);
+
+        System.out.println("-----");
+
+        Quotient<BigRational> qi = qfac.random(7);
+        //qi = qi.sum( qfac.random(5) );
+        q = eIntegrator.deriviative(qi);
+        System.out.println("qi =  " + qi);
+        System.out.println("q  =  " + q);
+        ret = eIntegrator.integrate(q);
+        System.out.println("Result: " + ret);
+        boolean t = eIntegrator.isIntegral(ret);
+        System.out.println("isIntegral = " + t);
+
+        System.out.println("-----");
+        ComputerThreads.terminate();
+    }
+
+
 }

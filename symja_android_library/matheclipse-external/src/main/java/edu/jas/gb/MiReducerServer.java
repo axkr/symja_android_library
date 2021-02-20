@@ -8,98 +8,121 @@ import java.util.List;
 import java.util.concurrent.Semaphore;
 
 import org.apache.logging.log4j.Logger;
-import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.LogManager; 
 
 import edu.jas.poly.GenPolynomial;
 import edu.jas.structure.RingElem;
 
-/** Distributed server reducing worker threads for minimal GB Not jet distributed but threaded. */
+/**
+ * Distributed server reducing worker threads for minimal GB Not jet distributed
+ * but threaded.
+ */
+
 class MiReducerServer<C extends RingElem<C>> implements Runnable {
 
-  private final List<GenPolynomial<C>> G;
 
-  private GenPolynomial<C> H;
+    private final List<GenPolynomial<C>> G;
 
-  private final Semaphore done = new Semaphore(0);
 
-  private final Reduction<C> red;
+    private GenPolynomial<C> H;
 
-  private static final Logger logger = LogManager.getLogger(MiReducerServer.class);
 
-  MiReducerServer(List<GenPolynomial<C>> G, GenPolynomial<C> p) {
-    this.G = G;
-    H = p;
-    red = new ReductionPar<C>();
-  }
+    private final Semaphore done = new Semaphore(0);
 
-  /**
-   * getNF. Blocks until the normal form is computed.
-   *
-   * @return the computed normal form.
-   */
-  public GenPolynomial<C> getNF() {
-    try {
-      done.acquire(); // done.P();
-    } catch (InterruptedException e) {
+
+    private final Reduction<C> red;
+
+
+    private static final Logger logger = LogManager.getLogger(MiReducerServer.class);
+
+
+    MiReducerServer(List<GenPolynomial<C>> G, GenPolynomial<C> p) {
+        this.G = G;
+        H = p;
+        red = new ReductionPar<C>();
     }
-    return H;
-  }
 
-  public void run() {
-    if (logger.isDebugEnabled()) {
-      logger.debug("ht(H) = " + H.leadingExpVector());
+
+    /**
+     * getNF. Blocks until the normal form is computed.
+     * @return the computed normal form.
+     */
+    public GenPolynomial<C> getNF() {
+        try {
+            done.acquire(); //done.P();
+        } catch (InterruptedException e) {
+        }
+        return H;
     }
-    H = red.normalform(G, H); // mod
-    done.release(); // done.V();
-    if (logger.isDebugEnabled()) {
-      logger.debug("ht(H) = " + H.leadingExpVector());
+
+
+    public void run() {
+        if (logger.isDebugEnabled()) {
+            logger.debug("ht(H) = " + H.leadingExpVector());
+        }
+        H = red.normalform(G, H); //mod
+        done.release(); //done.V();
+        if (logger.isDebugEnabled()) {
+            logger.debug("ht(H) = " + H.leadingExpVector());
+        }
+        // H = H.monic();
     }
-    // H = H.monic();
-  }
 }
 
-/** Distributed clients reducing worker threads for minimal GB. <b>Note:</b> Not jet used. */
+
+/**
+ * Distributed clients reducing worker threads for minimal GB. <b>Note:</b> Not
+ * jet used.
+ */
+
 class MiReducerClient<C extends RingElem<C>> implements Runnable {
 
-  private final List<GenPolynomial<C>> G;
 
-  private GenPolynomial<C> H;
+    private final List<GenPolynomial<C>> G;
 
-  private final Reduction<C> red;
 
-  private final Semaphore done = new Semaphore(0);
+    private GenPolynomial<C> H;
 
-  private static final Logger logger = LogManager.getLogger(MiReducerClient.class);
 
-  MiReducerClient(List<GenPolynomial<C>> G, GenPolynomial<C> p) {
-    this.G = G;
-    H = p;
-    red = new ReductionPar<C>();
-  }
+    private final Reduction<C> red;
 
-  /**
-   * getNF. Blocks until the normal form is computed.
-   *
-   * @return the computed normal form.
-   */
-  public GenPolynomial<C> getNF() {
-    try {
-      done.acquire(); // done.P();
-    } catch (InterruptedException u) {
-      Thread.currentThread().interrupt();
+
+    private final Semaphore done = new Semaphore(0);
+
+
+    private static final Logger logger = LogManager.getLogger(MiReducerClient.class);
+
+
+    MiReducerClient(List<GenPolynomial<C>> G, GenPolynomial<C> p) {
+        this.G = G;
+        H = p;
+        red = new ReductionPar<C>();
     }
-    return H;
-  }
 
-  public void run() {
-    if (logger.isDebugEnabled()) {
-      logger.debug("ht(S) = " + H.leadingExpVector());
+
+    /**
+     * getNF. Blocks until the normal form is computed.
+     * @return the computed normal form.
+     */
+    public GenPolynomial<C> getNF() {
+        try {
+            done.acquire(); //done.P();
+        } catch (InterruptedException u) {
+            Thread.currentThread().interrupt();
+        }
+        return H;
     }
-    H = red.normalform(G, H); // mod
-    done.release(); // done.V();
-    if (logger.isDebugEnabled()) {
-      logger.debug("ht(H) = " + H.leadingExpVector());
+
+
+    public void run() {
+        if (logger.isDebugEnabled()) {
+            logger.debug("ht(S) = " + H.leadingExpVector());
+        }
+        H = red.normalform(G, H); //mod
+        done.release(); //done.V();
+        if (logger.isDebugEnabled()) {
+            logger.debug("ht(H) = " + H.leadingExpVector());
+        }
+        // H = H.monic();
     }
-    // H = H.monic();
-  }
 }

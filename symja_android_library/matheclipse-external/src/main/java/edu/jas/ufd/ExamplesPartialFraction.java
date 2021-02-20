@@ -4,165 +4,191 @@
 
 package edu.jas.ufd;
 
+
 import edu.jas.arith.BigRational;
 import edu.jas.kern.ComputerThreads;
 import edu.jas.poly.GenPolynomial;
 import edu.jas.poly.GenPolynomialRing;
 import edu.jas.poly.TermOrder;
 
+
 /**
  * Examples related to partial fraction decomposition.
- *
+ * 
  * @author Heinz Kredel
  */
+
 public class ExamplesPartialFraction {
 
-  /**
-   * Main program.
-   *
-   * @param args
-   */
-  public static void main(String[] args) {
-    example11();
-    example12();
-    example13();
-    example14();
-    example15();
-    example16();
-    example17();
-    ComputerThreads.terminate();
-  }
 
-  /** example11. */
-  public static void example11() {
-    System.out.println("\n\nexample 11");
+    /**
+     * Main program.
+     * 
+     * @param args
+     */
+    public static void main(String[] args) {
+        example11();
+        example12();
+        example13();
+        example14();
+        example15();
+        example16();
+        example17();
+        ComputerThreads.terminate();
+    }
 
-    TermOrder to = new TermOrder(TermOrder.INVLEX);
-    BigRational cfac = new BigRational(1);
-    String[] vars = new String[] {"x"};
-    GenPolynomialRing<BigRational> pfac = new GenPolynomialRing<BigRational>(cfac, 1, to, vars);
 
-    // 1 / ( x^2 - 2 )
-    GenPolynomial<BigRational> D = pfac.parse("x^2 - 2");
-    GenPolynomial<BigRational> N = pfac.getONE();
+    /**
+     * example11.
+     */
+    public static void example11() {
+        System.out.println("\n\nexample 11");
 
-    FactorRational engine = (FactorRational) FactorFactory.getImplementation(cfac);
+        TermOrder to = new TermOrder(TermOrder.INVLEX);
+        BigRational cfac = new BigRational(1);
+        String[] vars = new String[] { "x" };
+        GenPolynomialRing<BigRational> pfac = new GenPolynomialRing<BigRational>(cfac, 1, to, vars);
 
-    PartialFraction<BigRational> F = engine.baseAlgebraicPartialFraction(N, D);
-    System.out.println("\npartial fraction " + F);
-  }
+        // 1 / ( x^2 - 2 )
+        GenPolynomial<BigRational> D = pfac.parse("x^2 - 2");
+        GenPolynomial<BigRational> N = pfac.getONE();
 
-  /** example12. */
-  public static void example12() {
-    System.out.println("\n\nexample 12");
+        FactorRational engine = (FactorRational) FactorFactory.getImplementation(cfac);
 
-    TermOrder to = new TermOrder(TermOrder.INVLEX);
-    BigRational cfac = new BigRational(1);
-    String[] vars = new String[] {"x"};
-    GenPolynomialRing<BigRational> pfac = new GenPolynomialRing<BigRational>(cfac, 1, to, vars);
+        PartialFraction<BigRational> F = engine.baseAlgebraicPartialFraction(N, D);
+        System.out.println("\npartial fraction " + F);
+    }
 
-    // 1 / ( x^3 + x )
-    GenPolynomial<BigRational> D = pfac.parse("x^3 + x");
-    GenPolynomial<BigRational> N = pfac.getONE();
 
-    FactorRational engine = (FactorRational) FactorFactory.getImplementation(cfac);
+    /**
+     * example12.
+     */
+    public static void example12() {
+        System.out.println("\n\nexample 12");
 
-    PartialFraction<BigRational> F = engine.baseAlgebraicPartialFraction(N, D);
-    System.out.println("\npartial fraction " + F);
-  }
+        TermOrder to = new TermOrder(TermOrder.INVLEX);
+        BigRational cfac = new BigRational(1);
+        String[] vars = new String[] { "x" };
+        GenPolynomialRing<BigRational> pfac = new GenPolynomialRing<BigRational>(cfac, 1, to, vars);
 
-  /** example13. */
-  public static void example13() {
-    System.out.println("\n\nexample 13");
+        // 1 / ( x^3 + x )
+        GenPolynomial<BigRational> D = pfac.parse("x^3 + x");
+        GenPolynomial<BigRational> N = pfac.getONE();
 
-    TermOrder to = new TermOrder(TermOrder.INVLEX);
-    BigRational cfac = new BigRational(1);
-    String[] vars = new String[] {"x"};
-    GenPolynomialRing<BigRational> pfac = new GenPolynomialRing<BigRational>(cfac, 1, to, vars);
+        FactorRational engine = (FactorRational) FactorFactory.getImplementation(cfac);
 
-    // 1 / ( x^6 - 5 x^4 + 5 x^2 + 4 )
-    GenPolynomial<BigRational> D = pfac.parse("x^6 - 5 x^4 + 5 x^2 + 4");
-    GenPolynomial<BigRational> N = pfac.getONE();
+        PartialFraction<BigRational> F = engine.baseAlgebraicPartialFraction(N, D);
+        System.out.println("\npartial fraction " + F);
+    }
 
-    FactorRational engine = (FactorRational) FactorFactory.getImplementation(cfac);
 
-    PartialFraction<BigRational> F = engine.baseAlgebraicPartialFraction(N, D);
-    System.out.println("\npartial fraction " + F);
-  }
+    /**
+     * example13.
+     */
+    public static void example13() {
+        System.out.println("\n\nexample 13");
 
-  /** example14. */
-  public static void example14() {
-    System.out.println("\n\nexample 14");
+        TermOrder to = new TermOrder(TermOrder.INVLEX);
+        BigRational cfac = new BigRational(1);
+        String[] vars = new String[] { "x" };
+        GenPolynomialRing<BigRational> pfac = new GenPolynomialRing<BigRational>(cfac, 1, to, vars);
 
-    TermOrder to = new TermOrder(TermOrder.INVLEX);
-    BigRational cfac = new BigRational(1);
-    String[] vars = new String[] {"x"};
-    GenPolynomialRing<BigRational> pfac = new GenPolynomialRing<BigRational>(cfac, 1, to, vars);
+        // 1 / ( x^6 - 5 x^4 + 5 x^2 + 4 )
+        GenPolynomial<BigRational> D = pfac.parse("x^6 - 5 x^4 + 5 x^2 + 4");
+        GenPolynomial<BigRational> N = pfac.getONE();
 
-    // 1 / ( x^4 + 4 )
-    GenPolynomial<BigRational> D = pfac.parse("x^4 + 4");
-    GenPolynomial<BigRational> N = pfac.getONE();
+        FactorRational engine = (FactorRational) FactorFactory.getImplementation(cfac);
 
-    FactorRational engine = (FactorRational) FactorFactory.getImplementation(cfac);
+        PartialFraction<BigRational> F = engine.baseAlgebraicPartialFraction(N, D);
+        System.out.println("\npartial fraction " + F);
+    }
 
-    PartialFraction<BigRational> F = engine.baseAlgebraicPartialFraction(N, D);
-    System.out.println("\npartial fraction " + F);
-  }
 
-  /** example15. */
-  public static void example15() {
-    System.out.println("\n\nexample 15");
+    /**
+     * example14.
+     */
+    public static void example14() {
+        System.out.println("\n\nexample 14");
 
-    TermOrder to = new TermOrder(TermOrder.INVLEX);
-    BigRational cfac = new BigRational(1);
-    String[] vars = new String[] {"x"};
-    GenPolynomialRing<BigRational> pfac = new GenPolynomialRing<BigRational>(cfac, 1, to, vars);
+        TermOrder to = new TermOrder(TermOrder.INVLEX);
+        BigRational cfac = new BigRational(1);
+        String[] vars = new String[] { "x" };
+        GenPolynomialRing<BigRational> pfac = new GenPolynomialRing<BigRational>(cfac, 1, to, vars);
 
-    // 1 / ( x^3 - 2 )
-    GenPolynomial<BigRational> D = pfac.parse("x^3 - 2");
-    GenPolynomial<BigRational> N = pfac.getONE();
+        // 1 / ( x^4 + 4 )
+        GenPolynomial<BigRational> D = pfac.parse("x^4 + 4");
+        GenPolynomial<BigRational> N = pfac.getONE();
 
-    FactorRational engine = (FactorRational) FactorFactory.getImplementation(cfac);
+        FactorRational engine = (FactorRational) FactorFactory.getImplementation(cfac);
 
-    PartialFraction<BigRational> F = engine.baseAlgebraicPartialFraction(N, D);
-    System.out.println("\npartial fraction " + F);
-  }
+        PartialFraction<BigRational> F = engine.baseAlgebraicPartialFraction(N, D);
+        System.out.println("\npartial fraction " + F);
+    }
 
-  /** example16. */
-  public static void example16() {
-    System.out.println("\n\nexample 16");
 
-    TermOrder to = new TermOrder(TermOrder.INVLEX);
-    BigRational cfac = new BigRational(1);
-    String[] vars = new String[] {"x"};
-    GenPolynomialRing<BigRational> pfac = new GenPolynomialRing<BigRational>(cfac, 1, to, vars);
+    /**
+     * example15.
+     */
+    public static void example15() {
+        System.out.println("\n\nexample 15");
 
-    // 1 / ( x - 1 ) ( x - 2 ) ( x - 3 )
-    GenPolynomial<BigRational> D = pfac.parse("( x - 1 ) * ( x - 2 ) * ( x - 3 )");
-    GenPolynomial<BigRational> N = pfac.getONE();
+        TermOrder to = new TermOrder(TermOrder.INVLEX);
+        BigRational cfac = new BigRational(1);
+        String[] vars = new String[] { "x" };
+        GenPolynomialRing<BigRational> pfac = new GenPolynomialRing<BigRational>(cfac, 1, to, vars);
 
-    FactorRational engine = (FactorRational) FactorFactory.getImplementation(cfac);
+        // 1 / ( x^3 - 2 )
+        GenPolynomial<BigRational> D = pfac.parse("x^3 - 2");
+        GenPolynomial<BigRational> N = pfac.getONE();
 
-    PartialFraction<BigRational> F = engine.baseAlgebraicPartialFraction(N, D);
-    System.out.println("\npartial fraction " + F);
-  }
+        FactorRational engine = (FactorRational) FactorFactory.getImplementation(cfac);
 
-  /** example17. Absolute factorization of example15. */
-  public static void example17() {
-    System.out.println("\n\nexample 17");
+        PartialFraction<BigRational> F = engine.baseAlgebraicPartialFraction(N, D);
+        System.out.println("\npartial fraction " + F);
+    }
 
-    TermOrder to = new TermOrder(TermOrder.INVLEX);
-    BigRational cfac = new BigRational(1);
-    String[] vars = new String[] {"x"};
-    GenPolynomialRing<BigRational> pfac = new GenPolynomialRing<BigRational>(cfac, 1, to, vars);
 
-    // 1 / ( x^3 - 2 )
-    GenPolynomial<BigRational> D = pfac.parse("x^3 - 2");
-    GenPolynomial<BigRational> N = pfac.getONE();
+    /**
+     * example16.
+     */
+    public static void example16() {
+        System.out.println("\n\nexample 16");
 
-    FactorRational engine = (FactorRational) FactorFactory.getImplementation(cfac);
+        TermOrder to = new TermOrder(TermOrder.INVLEX);
+        BigRational cfac = new BigRational(1);
+        String[] vars = new String[] { "x" };
+        GenPolynomialRing<BigRational> pfac = new GenPolynomialRing<BigRational>(cfac, 1, to, vars);
 
-    PartialFraction<BigRational> F = engine.baseAlgebraicPartialFractionIrreducibleAbsolute(N, D);
-    System.out.println("\npartial fraction " + F);
-  }
+        // 1 / ( x - 1 ) ( x - 2 ) ( x - 3 ) 
+        GenPolynomial<BigRational> D = pfac.parse("( x - 1 ) * ( x - 2 ) * ( x - 3 )");
+        GenPolynomial<BigRational> N = pfac.getONE();
+
+        FactorRational engine = (FactorRational) FactorFactory.getImplementation(cfac);
+
+        PartialFraction<BigRational> F = engine.baseAlgebraicPartialFraction(N, D);
+        System.out.println("\npartial fraction " + F);
+    }
+
+
+    /**
+     * example17. Absolute factorization of example15.
+     */
+    public static void example17() {
+        System.out.println("\n\nexample 17");
+
+        TermOrder to = new TermOrder(TermOrder.INVLEX);
+        BigRational cfac = new BigRational(1);
+        String[] vars = new String[] { "x" };
+        GenPolynomialRing<BigRational> pfac = new GenPolynomialRing<BigRational>(cfac, 1, to, vars);
+
+        // 1 / ( x^3 - 2 )
+        GenPolynomial<BigRational> D = pfac.parse("x^3 - 2");
+        GenPolynomial<BigRational> N = pfac.getONE();
+
+        FactorRational engine = (FactorRational) FactorFactory.getImplementation(cfac);
+
+        PartialFraction<BigRational> F = engine.baseAlgebraicPartialFractionIrreducibleAbsolute(N, D);
+        System.out.println("\npartial fraction " + F);
+    }
+
 }
