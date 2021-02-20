@@ -1,6 +1,7 @@
 package org.matheclipse.core.builtin;
 
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.Map;
 import java.util.function.Function;
 
@@ -212,7 +213,8 @@ public class SeriesFunctions {
       IExpr expression = expr;
       final IExpr limitValue = data.limitValue();
 
-      IExpr result = EvalEngine.get().evalQuiet(expression);
+      EvalEngine engine = EvalEngine.get();
+      IExpr result = engine.evalQuiet(expression);
       if (result.isNumericFunction(true)) {
         return result;
       }
@@ -233,19 +235,21 @@ public class SeriesFunctions {
         if (temp.isPresent()) {
           return temp;
         }
-      } else if ((limitValue.isInfinity()
-              || //
-              limitValue.isNegativeInfinity())
-          && //
-          expression.isAST()
-          && //
-          expression.size() > 1) {
-        if (limitValue.isInfinity()
-            || //
-            limitValue.isNegativeInfinity()) {
+      } else if ((limitValue.isInfinity() || limitValue.isNegativeInfinity())
+          && expression.isAST()
+          && expression.size() > 1) {
+        if (limitValue.isInfinity() || limitValue.isNegativeInfinity()) {
           IExpr temp = evalReplaceAll(expression, data);
           if (temp.isNumericFunction(true)) {
             return temp;
+          }
+          if (expression.isNumericFunction(data.variable())
+              && expression.size() > 1
+              && !expression.isPlusTimesPower()) {
+            temp = limitNumericFunctionArgs((IAST) expression, data, engine);
+            if (temp.isPresent()) {
+              return temp;
+            }
           }
         }
         IExpr temp = limitInfinityZero((IAST) expression, data, (IAST) limitValue);
@@ -275,6 +279,39 @@ public class SeriesFunctions {
         }
       }
 
+      return F.NIL;
+    }
+
+    /**
+     * Evaluate the limits of the arguments of the <code>function</code> and evaluate the <code>
+     * function</code> with these new arguments if available.
+     *
+     * @param function
+     * @param data the data for the limit
+     * @param engine
+     * @return {@link F#NIL} if evaluation wasn't successful
+     */
+    private static IExpr limitNumericFunctionArgs(
+        IAST function, LimitData data, EvalEngine engine) {
+      IASTMutable functionLimitArgs = F.NIL;
+      for (int i = 1; i < function.size(); i++) {
+        IExpr arg = function.get(i);
+        if (!arg.isFree(data.variable())) {
+          IExpr temp = evalLimitQuiet(arg, data);
+          if (temp.isPresent() && temp.isFree(data.variable()) && temp.isNumericFunction(true)) {
+            if (!functionLimitArgs.isPresent()) {
+              functionLimitArgs = function.copy();
+            }
+            functionLimitArgs.set(i, temp);
+          }
+        }
+      }
+      if (functionLimitArgs.isPresent()) {
+        IExpr temp = engine.evaluate(functionLimitArgs);
+        if (!temp.isIndeterminate() && !temp.isComplexInfinity()) {
+          return temp;
+        }
+      }
       return F.NIL;
     }
 
