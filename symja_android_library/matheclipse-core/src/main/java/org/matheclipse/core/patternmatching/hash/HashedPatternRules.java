@@ -2,7 +2,9 @@ package org.matheclipse.core.patternmatching.hash;
 
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.expression.F;
+import org.matheclipse.core.expression.S;
 import org.matheclipse.core.interfaces.IExpr;
+import org.matheclipse.core.interfaces.ISymbol;
 import org.matheclipse.core.patternmatching.IPatternMatcher;
 import org.matheclipse.core.patternmatching.RulesData;
 
@@ -20,33 +22,29 @@ public class HashedPatternRules extends AbstractHashedPatternRules {
 
   final IExpr fRHS;
 
-  /**
-   * @param lhsPattern1 first left-hand-side pattern
-   * @param lhsPattern2 second left-hand-side pattern
-   * @param rhsResult the right-hand-side result
-   * @param defaultHashCode
-   */
-  // public HashedPatternRules(IExpr lhsPattern1, IExpr lhsPattern2, IExpr
-  // rhsResult, boolean defaultHashCode) {
-  // this(lhsPattern1, lhsPattern2, rhsResult, null, defaultHashCode);
-  // }
+  final boolean fLHS2Negate;
 
   /**
+   * Define a combined pattern rule from the two left-hand-sides.
+   *
    * @param lhsPattern1 first left-hand-side pattern
    * @param lhsPattern2 second left-hand-side pattern
    * @param rhsResult the right-hand-side result
+   * @param lhs2Negate if <code>true</code> this rule needs a negative integer factor to be true
    * @param condition a condition test
-   * @param defaultHashCode TODO
+   * @param defaultHashCode use the default hash code of {@link IExpr}
    */
   public HashedPatternRules(
       IExpr lhsPattern1,
       IExpr lhsPattern2,
       IExpr rhsResult,
+      boolean lhs2Negate,
       IExpr condition,
       boolean defaultHashCode) {
     super(lhsPattern1, lhsPattern2, defaultHashCode);
     fCondition = condition;
     fRHS = rhsResult;
+    fLHS2Negate = lhs2Negate;
   }
 
   @Override
@@ -116,11 +114,19 @@ public class HashedPatternRules extends AbstractHashedPatternRules {
     return fRulesData;
   }
 
+  /** {@inheritDoc} */
   @Override
-  public IExpr evalDownRule(IExpr e1, IExpr num1, IExpr e2, IExpr num2, EvalEngine engine) {
-    return getRulesData().evalDownRule(F.List(e1, e2), engine);
+  public IExpr evalDownRule(IExpr arg1, IExpr num1, IExpr arg2, IExpr num2, EvalEngine engine) {
+    return getRulesData().evalDownRule(F.List(arg1, arg2), engine);
   }
 
+  /** {@inheritDoc} */
+  @Override
+  public boolean isLHS2Negate() {
+    return fLHS2Negate;
+  }
+
+  /** {@inheritDoc} */
   @Override
   public String toString() {
     return "[" + fLHSPattern1 + "," + fLHSPattern2 + "] => [" + fRHS + " /; " + fCondition + "]";

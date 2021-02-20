@@ -58,45 +58,75 @@ public class HashedOrderlessMatcherPlus extends HashedOrderlessMatcher {
       EvalEngine engine) {
     IExpr temp;
     IExpr arg1 = orderlessAST.get(i + 1);
-    ISignedNumber num1 = F.C1;
+    ISignedNumber intFactor1 = F.C1;
     if (arg1.isTimes2() && arg1.first().isInteger()) {
-      num1 = (ISignedNumber) ((IAST) arg1).arg1();
+      intFactor1 = (ISignedNumber) ((IAST) arg1).arg1();
       arg1 = ((IAST) arg1).arg2();
     }
     IExpr arg2 = orderlessAST.get(j + 1);
-    ISignedNumber num2 = F.C1;
+    ISignedNumber intFactor2 = F.C1;
     if (arg2.isTimes2() && arg2.first().isInteger()) {
-      num2 = (ISignedNumber) arg2.first();
+      intFactor2 = (ISignedNumber) arg2.first();
       arg2 = arg2.second();
     }
     if ((temp = hashRule.evalDownRule(arg1, null, arg2, null, engine)).isPresent()) {
       hashValues[i] = 0;
       hashValues[j] = 0;
-      if (num1.equals(num2)) {
-        result.append(F.Times(num2, temp));
-        return true;
-      }
+
       IInteger plusMinusOne = F.C1;
-      if (num1.isNegative() && num2.isNegative()) {
-        num1 = num1.negate();
-        num2 = num2.negate();
-        plusMinusOne = F.CN1;
-      }
-      if (num1.isPositive() && num2.isPositive()) {
-        ISignedNumber diff = num1.subtractFrom(num2);
-        if (diff.isPositive()) {
-          // num1 > num2
-          result.append(F.Times(plusMinusOne, F.Plus(F.Times(diff, arg1), F.Times(num2, temp))));
-          return true;
-        } else {
-          // num1 < num2
-          diff = diff.negate();
-          result.append(F.Times(plusMinusOne, F.Plus(F.Times(diff, arg2), F.Times(num1, temp))));
+
+      if (hashRule.isLHS2Negate()) {
+        ISignedNumber intFactor2Negated = intFactor2.negate();
+        if (intFactor1.equals(intFactor2Negated)) {
+          result.append(F.Times(intFactor1, temp));
           return true;
         }
+        if (intFactor1.isNegative() && intFactor2.isPositive()) {
+          intFactor1 = intFactor1.negate();
+          intFactor2 = intFactor2Negated;
+          plusMinusOne = F.CN1;
+        }
+        if (intFactor1.isPositive() && intFactor2.isNegative()) {
+          intFactor2 = intFactor2.negate();
+          ISignedNumber diff = intFactor1.subtractFrom(intFactor2);
+          if (diff.isPositive()) {
+            // num1 > num2
+            result.append(
+                F.Times(plusMinusOne, F.Plus(F.Times(diff, arg1), F.Times(intFactor2, temp))));
+            return true;
+          } else {
+            // num1 < num2
+            result.append(
+                F.Times(plusMinusOne, F.Plus(F.Times(diff, arg2), F.Times(intFactor1, temp))));
+            return true;
+          }
+        }
+      } else {
+        if (intFactor1.equals(intFactor2)) {
+          result.append(F.Times(intFactor1, temp));
+          return true;
+        }
+        if (intFactor1.isNegative() && intFactor2.isNegative()) {
+          intFactor1 = intFactor1.negate();
+          intFactor2 = intFactor2.negate();
+          plusMinusOne = F.CN1;
+        }
+        if (intFactor1.isPositive() && intFactor2.isPositive()) {
+          ISignedNumber diff = intFactor1.subtractFrom(intFactor2);
+          if (diff.isPositive()) {
+            // num1 > num2
+            result.append(
+                F.Times(plusMinusOne, F.Plus(F.Times(diff, arg1), F.Times(intFactor2, temp))));
+            return true;
+          } else {
+            // num1 < num2
+            diff = diff.negate();
+            result.append(
+                F.Times(plusMinusOne, F.Plus(F.Times(diff, arg2), F.Times(intFactor1, temp))));
+            return true;
+          }
+        }
       }
-      // result.append(temp);
-      // return true;
     }
     return false;
   }

@@ -54,7 +54,8 @@ public class HashedOrderlessMatcher {
    */
   public void defineHashRule(
       final IExpr lhs1, final IExpr lhs2, final IExpr rhs, final IExpr condition) {
-    AbstractHashedPatternRules hashRule = new HashedPatternRules(lhs1, lhs2, rhs, condition, true);
+    AbstractHashedPatternRules hashRule =
+        new HashedPatternRules(lhs1, lhs2, rhs, false, condition, true);
     fHashRuleMap.put(hashRule.hashCode(), hashRule);
   }
 
@@ -74,14 +75,50 @@ public class HashedOrderlessMatcher {
    * Define the rule for the <code>Orderless</code> operator <b>OP</b>. <code>
    * OP[lhs1, lhs2, ....] := OP[rhs, ...] /; condition</code>
    *
-   * @param lhs1
-   * @param lhs2
-   * @param rhs
-   * @param condition
+   * @param lhs1 first left-hand-side pattern
+   * @param lhs2 second left-hand-side pattern
+   * @param rhs the right-hand-side result
+   * @param lhsNegate if <code>true</code> this rule needs a negative integer factor to be true
+   */
+  public void definePatternHashRule(
+      final IExpr lhs1, final IExpr lhs2, final IExpr rhs, final boolean lhsNegate) {
+    definePatternHashRule(lhs1, lhs2, rhs, lhsNegate, null);
+  }
+
+  /**
+   * Define the rule for the <code>Orderless</code> operator <b>OP</b>. <code>
+   * OP[lhs1, lhs2, ....] := OP[rhs, ...] /; condition</code>
+   *
+   * @param lhs1 first left-hand-side pattern
+   * @param lhs2 second left-hand-side pattern
+   * @param rhs the right-hand-side result
+   * @param condition if <code>!= null</code> do a condition test for the matched 2 left-hand-sides
    */
   public void definePatternHashRule(
       final IExpr lhs1, final IExpr lhs2, final IExpr rhs, final IExpr condition) {
-    AbstractHashedPatternRules hashRule = new HashedPatternRules(lhs1, lhs2, rhs, condition, false);
+    AbstractHashedPatternRules hashRule =
+        new HashedPatternRules(lhs1, lhs2, rhs, false, condition, false);
+    fPatternHashRuleMap.put(hashRule.hashCode(), hashRule);
+  }
+
+  /**
+   * Define the rule for the <code>Orderless</code> operator <b>OP</b>. <code>
+   * OP[lhs1, lhs2, ....] := OP[rhs, ...] /; condition</code>
+   *
+   * @param lhs1 first left-hand-side pattern
+   * @param lhs2 second left-hand-side pattern
+   * @param rhs the right-hand-side result
+   * @param lhsNegate if <code>true</code> this rule needs a negative integer factor to be true
+   * @param condition if <code>!= null</code> do a condition test for the matched 2 left-hand-sides
+   */
+  public void definePatternHashRule(
+      final IExpr lhs1,
+      final IExpr lhs2,
+      final IExpr rhs,
+      final boolean lhsNegate,
+      final IExpr condition) {
+    AbstractHashedPatternRules hashRule =
+        new HashedPatternRules(lhs1, lhs2, rhs, lhsNegate, condition, false);
     fPatternHashRuleMap.put(hashRule.hashCode(), hashRule);
   }
 

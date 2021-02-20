@@ -54,7 +54,7 @@ public class HashedPatternRulesTimesPower extends HashedPatternRulesTimes {
   }
 
   @Override
-  public IExpr evalDownRule(IExpr e1, IExpr num1, IExpr e2, IExpr num2, EvalEngine engine) {
-    return getRulesData().evalDownRule(F.List(e1, e2), engine);
+  public IExpr evalDownRule(IExpr arg1, IExpr num1, IExpr arg2, IExpr num2, EvalEngine engine) {
+    return getRulesData().evalDownRule(F.List(arg1, arg2), engine);
   }
 }
