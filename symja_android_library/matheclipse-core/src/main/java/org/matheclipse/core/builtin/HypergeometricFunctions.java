@@ -15,7 +15,9 @@ import org.hipparchus.complex.Complex;
 import org.matheclipse.core.basic.Config;
 import org.matheclipse.core.builtin.functions.GammaJS;
 import org.matheclipse.core.builtin.functions.HypergeometricJS;
+import org.matheclipse.core.eval.EvalAttributes;
 import org.matheclipse.core.eval.EvalEngine;
+import org.matheclipse.core.eval.exception.ResultException;
 import org.matheclipse.core.eval.exception.ThrowException;
 import org.matheclipse.core.eval.exception.ValidateException;
 import org.matheclipse.core.eval.interfaces.AbstractFunctionEvaluator;
@@ -45,6 +47,7 @@ public class HypergeometricFunctions {
   private static class Initializer {
 
     private static void init() {
+      S.AppellF1.setEvaluator(new AppellF1());
       S.CosIntegral.setEvaluator(new CosIntegral());
       S.CoshIntegral.setEvaluator(new CoshIntegral());
       S.ExpIntegralE.setEvaluator(new ExpIntegralE());
@@ -62,6 +65,80 @@ public class HypergeometricFunctions {
       S.SinhIntegral.setEvaluator(new SinhIntegral());
       S.WhittakerM.setEvaluator(new WhittakerM());
       S.WhittakerW.setEvaluator(new WhittakerW());
+    }
+  }
+
+  private static class AppellF1 extends AbstractFunctionEvaluator {
+
+    @Override
+    public IExpr evaluate(IAST ast, EvalEngine engine) {
+      IExpr a = ast.arg1();
+      IExpr b1 = ast.arg2();
+      IExpr b2 = ast.arg3();
+      IExpr c = ast.arg4();
+      IExpr z1 = ast.arg5();
+      IExpr z2 = ast.get(6);
+      if (b1.compareTo(b2) > 0) {
+        // permutation symmetry
+        return F.AppellF1(a, b2, b1, c, z1, z2);
+      }
+      if (z1.isZero() && z2.isZero()) {
+        return F.C1;
+      }
+      if (z1.isZero()) {
+          return F.Hypergeometric2F1(a, b2, c, z2);
+        }
+      if (z2.isZero()) {
+        return F.Hypergeometric2F1(a, b1, c, z1);
+      }
+      if (z2.isOne()) {
+        return F.Times(
+            F.Hypergeometric2F1(a, b1, F.Subtract(c, b2), z1), F.Hypergeometric2F1(a, b2, c, F.C1));
+      }
+
+      if (z1.subtract(z2).isPossibleZero(true)) {
+        // Hypergeometric2F1(a, b1 + b2, c, z1)
+        return F.Hypergeometric2F1(a, F.Plus(b1, b2), c, z1);
+      }
+      if (b1.subtract(b2).isPossibleZero(true) && z1.plus(z2).isPossibleZero(true)) {
+        // HypergeometricPFQ({1/2+a/2,a/2,b1},{1/2+c/2,c/2},z1^2)
+        return F.HypergeometricPFQ(
+            F.List(F.Plus(F.C1D2, F.Divide(a, F.C2)), F.Divide(a, F.C2), b1), //
+            F.List(F.Plus(F.C1D2, F.Divide(c, F.C2)), F.Divide(c, F.C2)),
+            F.Sqr(z1));
+      }
+      if (b1.plus(b2).subtract(c).isPossibleZero(true)) {
+        // Hypergeometric2F1(a, b1, b1 + b2, (z1 - z2)/(1 - z2)) / (1 - z2)^a
+        return F.Times( //
+            F.Hypergeometric2F1(
+                a, //
+                b1,
+                F.Plus(b1, b2),
+                F.Divide(F.Subtract(z1, z2), F.Subtract(F.C1, z2))),
+            F.Power(F.Subtract(F.C1, z2), a));
+      }
+      //      if (engine.isDoubleMode()) {
+      //        try {
+      //        } catch (ThrowException te) {
+      //          if (FEConfig.SHOW_STACKTRACE) {
+      //            te.printStackTrace();
+      //          }
+      //          return te.getValue();
+      //        } catch (ValidateException ve) {
+      //          if (FEConfig.SHOW_STACKTRACE) {
+      //            ve.printStackTrace();
+      //          }
+      //        } catch (RuntimeException rex) {
+      //          // rex.printStackTrace();
+      //          return engine.printMessage(ast.topHead(), rex);
+      //        }
+      //      }
+      return F.NIL;
+    }
+
+    @Override
+    public int[] expectedArgSize(IAST ast) {
+      return ARGS_6_6;
     }
   }
 
@@ -903,10 +980,8 @@ public class HypergeometricFunctions {
         return F.C1;
       }
       if (a.compareTo(b) > 0) {
-        IASTMutable newAST = ast.copy();
-        newAST.set(1, b);
-        newAST.set(2, a);
-        return newAST;
+        // permutation symmetry
+        return F.Hypergeometric2F1(b, a, c, z);
       }
       if (c.isInteger() && c.isNegative()) {
         if (a.isNumber() && b.isNumber()) {
@@ -1006,7 +1081,7 @@ public class HypergeometricFunctions {
         // return engine.printMessage(ast.topHead() + ": " + rex.getMessage());
         // }
         // }
-      } catch (ThrowException te) {
+      } catch (ResultException te) {
         if (FEConfig.SHOW_STACKTRACE) {
           te.printStackTrace();
         }
@@ -1044,6 +1119,26 @@ public class HypergeometricFunctions {
       if (c.isList()) {
         // thread elementwise over list in arg3
         return ((IAST) c).mapThread(ast.setAtCopy(3, F.Slot1), 3);
+      }
+      if (a.isVector() > 0) {
+        IAST aVector = (IAST) a;
+        if (!aVector.isEvalFlagOn(IAST.IS_SORTED)) {
+          IASTMutable aResult = aVector.copy();
+          if (EvalAttributes.sortWithFlags(aResult)) {
+            return F.HypergeometricPFQ(aResult, b, c);
+          }
+          aVector.addEvalFlags(IAST.IS_SORTED);
+        }
+      }
+      if (b.isVector() > 0) {
+        IAST bVector = (IAST) b;
+        if (!bVector.isEvalFlagOn(IAST.IS_SORTED)) {
+          IASTMutable bResult = bVector.copy();
+          if (EvalAttributes.sortWithFlags(bResult)) {
+            return F.HypergeometricPFQ(a, bResult, c);
+          }
+          bVector.addEvalFlags(IAST.IS_SORTED);
+        }
       }
 
       if (engine.isDoubleMode() && a.isVector() > 0 && b.isVector() > 0) {
