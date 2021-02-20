@@ -17,7 +17,6 @@ import org.hipparchus.linear.RealMatrix;
 import org.hipparchus.random.RandomDataGenerator;
 import org.hipparchus.stat.StatUtils;
 import org.hipparchus.stat.correlation.PearsonsCorrelation;
-import org.hipparchus.util.FastMath;
 import org.hipparchus.util.MathUtils;
 import org.matheclipse.core.basic.Config;
 import org.matheclipse.core.convert.Convert;
@@ -2665,7 +2664,7 @@ public class StatisticsFunctions {
             (n.isNumericArgument() || m.isNumericArgument() || k.isNumericArgument())) {
           try {
             final double z = (k.evalDouble() - n.evalDouble()) / m.evalDouble();
-            return F.num(1.0 - FastMath.exp(-FastMath.exp(z)));
+            return F.num(1.0 - Math.exp(-Math.exp(z)));
             // return F.num(1.0-new
             // org.hipparchus.distribution.continuous.GumbelDistribution(n.evalDouble(),
             // m.evalDouble()) //
@@ -2705,7 +2704,7 @@ public class StatisticsFunctions {
             } else if (F.isEqual(p, 1.0)) {
               return F.CInfinity;
             }
-            return F.num(n.evalDouble() + m.evalDouble() * FastMath.log(-FastMath.log(1.0 - p)));
+            return F.num(n.evalDouble() + m.evalDouble() * Math.log(-Math.log(1.0 - p)));
             // return F.num(new
             // org.hipparchus.distribution.continuous.GumbelDistribution(n.evalDouble(),
             // m.evalDouble()) //
@@ -3698,7 +3697,7 @@ public class StatisticsFunctions {
             if (x <= 0.0) {
               return F.CD0;
             }
-            return F.num(1.0 - FastMath.exp(-x * n.evalDouble()));
+            return F.num(1.0 - Math.exp(-x * n.evalDouble()));
 
             // return F.num(new
             // org.hipparchus.distribution.continuous.ExponentialDistribution(n.evalDouble()) //
@@ -3733,7 +3732,7 @@ public class StatisticsFunctions {
             if (F.isEqual(x, 1.0)) {
               return F.CInfinity;
             }
-            return F.num(-FastMath.log(1.0 - x) / n.evalDouble());
+            return F.num(-Math.log(1.0 - x) / n.evalDouble());
             // return F.num(new
             // org.hipparchus.distribution.continuous.ExponentialDistribution(n.evalDouble()) //
             // .inverseCumulativeProbability(k.evalDouble()));
