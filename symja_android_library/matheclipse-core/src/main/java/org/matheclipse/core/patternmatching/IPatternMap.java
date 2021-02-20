@@ -1946,8 +1946,8 @@ public interface IPatternMap {
 
   /**
    * Substitute all symbols in the given expression with the current value of the corresponding
-   * internal pattern values arrays and substitute all <code>OptionValue(...)</code> expressions with
-   * the corresponding option value from the current pattern-matching process.
+   * internal pattern values arrays and substitute all <code>OptionValue(...)</code> expressions
+   * with the corresponding option value from the current pattern-matching process.
    *
    * @param rhsExpr right-hand-side expression, substitute all symbols from the pattern-matching
    *     values
@@ -1964,9 +1964,7 @@ public interface IPatternMap {
    * @param engine
    */
   public static void addOptionsPattern(OptionsPattern op, IExpr x, EvalEngine engine) {
-    if (x.size() > 1
-        && //
-        (x.isSequence() || x.isList())) {
+    if (x.size() > 1 && (x.isSequence() || x.isList())) {
       IAST list = (IAST) x;
       for (int i = 1; i < list.size(); i++) {
         // also for nested lists

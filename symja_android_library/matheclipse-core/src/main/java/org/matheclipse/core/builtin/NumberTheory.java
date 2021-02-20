@@ -16,6 +16,8 @@ import static org.matheclipse.core.expression.F.Times;
 import java.math.BigInteger;
 import java.math.RoundingMode;
 import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.SortedMap;
@@ -913,6 +915,8 @@ public final class NumberTheory {
           }
           resultList.append(engine.evaluate(F.Together(result)));
           return resultList;
+        } else if (list.size() == 1) {
+          return F.CListC0;
         }
       }
       return F.NIL;
@@ -976,99 +980,180 @@ public final class NumberTheory {
   private static final class ContinuedFraction extends AbstractEvaluator {
 
     /**
-     * Return the continued fraction of <code>Sqrt( d )</code>.
+     * Find the periodic continued fraction expansion of a quadratic irrational of the form <code>
+     * (p + s*Sqrt(d)) / q</code>
      *
-     * @param d a positive integer number
-     * @return
+     * <p>Compute the continued fraction expansion of a rational or a quadratic irrational number,
+     * i.e. <code>(p + s*Sqrt(d)) / q</code>, where `p`, `q != 0` and `d != 0` are integers. Returns
+     * the continued fraction representation (canonical form) as a list of integers, optionally
+     * ending (for quadratic irrationals) with list of integers representing the repeating
+     * (periodic) digits.
+     *
+     * @param p
+     * @param q
+     * @param d
+     * @param s
+     * @param negate
+     * @param maxIterations
+     * @param engine
+     * @return {@link F#NIL} if the evaluation into integers wasn't possible
      */
-    private IExpr sqrtContinuedFraction(IInteger d) {
-      IInteger p = F.C0;
-      IInteger q = F.C1;
-      IInteger a = F.ZZ(BigIntegerMath.sqrt(d.toBigNumerator(), RoundingMode.FLOOR));
-      IInteger last = a;
-      IASTAppendable result = F.ListAlloc(10);
+    private IAST continuedFractionPeriodic(
+        IInteger p,
+        IInteger q,
+        IInteger d,
+        IInteger s,
+        boolean negate,
+        int maxIterations,
+        EvalEngine engine) {
+      // https://github.com/sympy/sympy/blob/07a6388bc237a2c43e65dc3cf932373e4d06d91b/sympy/ntheory/continued_fraction.py#L71
+      IExpr sd = F.Sqrt(d);
+      if (q.isNegative()) {
+        p = p.negate();
+        q = q.negate();
+        s = s.negate();
+      }
 
+      IExpr n = S.Times.of(engine, Plus(p, F.Times(s, sd)));
+      if (n.isNegativeResult()) {
+        IAST resultList =
+            continuedFractionPeriodic(p.negate(), q, d, s.negate(), true, maxIterations, engine);
+        if (resultList.isList()) {
+          return resultList;
+        }
+        return F.NIL;
+      }
+
+      d = d.multiply(s.multiply(s));
+      sd = F.Times(s, sd);
+      if (!d.subtract(p.multiply(p)).mod(q).isZero()) {
+        d = d.multiply(q.multiply(q));
+        sd = S.Times.of(engine, sd, q);
+        p = p.multiply(q);
+        q = q.multiply(q);
+      }
+
+      IASTAppendable integerTerms = F.ListAlloc();
+      Map<IAST, Integer> pqPeriodic2Index = new HashMap<IAST, Integer>();
+      IAST key = F.list(p, q);
       do {
-        p = last.multiply(q).subtract(p);
-        q = d.subtract(p.pow(2L)).quotient(q);
-        if (q.isZero()) {
+        pqPeriodic2Index.put(key, integerTerms.size() - 1);
+        IExpr quotient = S.Quotient.of(engine, F.Plus(p, sd), q);
+        if (!quotient.isInteger()) {
           return F.NIL;
         }
-        last = p.add(a).quotient(q);
-        result.append(last);
-      } while (!q.isOne());
 
-      return F.List(a, result);
+        IInteger x = (IInteger) quotient;
+        integerTerms.append(x);
+        p = x.multiply(q).subtract(p);
+        q = d.subtract(p.multiply(p)).quotient(q);
+        key = F.list(p, q);
+      } while (!pqPeriodic2Index.containsKey(key));
+
+      int i = pqPeriodic2Index.get(key);
+
+      IAST tempList = integerTerms;
+      if (negate) {
+        tempList = tempList.map(x -> x.negate());
+      }
+
+      if (maxIterations < Integer.MAX_VALUE && maxIterations > 0) {
+        IASTAppendable resultList = F.ListAlloc(maxIterations);
+        for (int j = 1; j < i + 1; j++) {
+          resultList.append(tempList.get(j));
+          if (--maxIterations == 0) {
+            return resultList;
+          }
+        }
+        IAST periodic = tempList.copyFrom(i + 1);
+        while (true) {
+          for (int j = 1; j < periodic.size(); j++) {
+            resultList.append(periodic.get(j));
+            if (--maxIterations == 0) {
+              return resultList;
+            }
+          }
+        }
+      }
+      IASTAppendable resultList = F.ListAlloc(i + 1);
+      resultList.appendAll(tempList, 1, i + 1);
+      resultList.append(tempList.copyFrom(i + 1));
+      return resultList;
     }
 
     @Override
     public IExpr evaluate(final IAST ast, EvalEngine engine) {
-      if (ast.size() >= 2 && ast.size() <= 3) {
-        IExpr arg1 = ast.arg1();
-        if (arg1.isComplex() || arg1.isComplexNumeric()) {
-          // The value `1` is not a real number.
-          return IOFunctions.printMessage(ast.topHead(), "realx", F.List(arg1), engine);
-        }
+      IExpr arg1 = ast.arg1();
+      if (arg1.isComplex() || arg1.isComplexNumeric()) {
+        // The value `1` is not a real number.
+        return IOFunctions.printMessage(S.ContinuedFraction, "realx", F.List(arg1), engine);
+      }
 
-        int maxIterations = Integer.MAX_VALUE;
-        if (ast.isAST2()) {
-          if (ast.arg2().isInteger()) {
-            maxIterations = ast.arg2().toIntDefault(Integer.MIN_VALUE);
-            if (maxIterations < 0) {
-              // Positive integer (less equal 2147483647) expected at position `2` in `1`.
-              return IOFunctions.printMessage(
-                  S.ContinuedFraction, "intpm", F.List(ast, F.C2), engine);
-            }
-          } else {
-            return F.NIL;
+      int maxIterations = Integer.MAX_VALUE;
+      if (ast.isAST2()) {
+        if (ast.arg2().isNumber()) {
+          maxIterations = ast.arg2().toIntDefault(Integer.MIN_VALUE);
+          if (maxIterations <= 0) {
+            // Positive integer (less equal 2147483647) expected at position `2` in `1`.
+            return IOFunctions.printMessage(
+                S.ContinuedFraction, "intpm", F.List(ast, F.C2), engine);
           }
-        }
-
-        // TODO implement more functions from
-        // https://github.com/sympy/sympy/blob/master/sympy/ntheory/continued_fraction.py
-        if (ast.isAST1() && arg1.isSqrt() && arg1.base().isInteger() && arg1.base().isPositive()) {
-          // Sqrt( d ) with d positive integer number
-          return sqrtContinuedFraction((IInteger) arg1.base());
-        }
-        if (arg1 instanceof INum) {
-          // arg1 = F.fraction(((INum) arg1).getRealPart());
-          return realToContinuedFraction(((INum) arg1), maxIterations, engine);
-        } else if (arg1.isAST() || arg1.isSymbol() && arg1.isNumericFunction(true)) {
-          IExpr num = engine.evalN(arg1);
-          if (num instanceof INum) {
-            return realToContinuedFraction(((INum) num), maxIterations, engine);
-          }
-        }
-
-        if (arg1.isRational()) {
-          IRational rat = (IRational) arg1;
-
-          IASTAppendable continuedFractionList;
-          if (rat.denominator().isOne()) {
-            continuedFractionList = F.ListAlloc(1);
-            continuedFractionList.append(rat.numerator());
-          } else if (rat.numerator().isOne()) {
-            continuedFractionList = F.ListAlloc(2);
-            continuedFractionList.append(F.C0);
-            continuedFractionList.append(rat.denominator());
-          } else {
-            IFraction temp = F.fraction(rat.numerator(), rat.denominator());
-            IInteger quotient;
-            IInteger remainder;
-            continuedFractionList = F.ListAlloc(10);
-            while (temp.denominator().compareInt(1) > 0 && (0 < maxIterations--)) {
-              quotient = temp.numerator().div(temp.denominator());
-              remainder = temp.numerator().mod(temp.denominator());
-              continuedFractionList.append(quotient);
-              temp = F.fraction(temp.denominator(), remainder);
-              if (temp.denominator().isOne()) {
-                continuedFractionList.append(temp.numerator());
-              }
-            }
-          }
-          return continuedFractionList;
+        } else {
+          return F.NIL;
         }
       }
+
+      IAST list4 = quadraticIrrational(ast.arg1());
+      if (list4.isPresent()) {
+        return continuedFractionPeriodic(
+            (IInteger) list4.arg1(),
+            (IInteger) list4.arg2(),
+            (IInteger) list4.arg3(),
+            (IInteger) list4.arg4(),
+            false,
+            maxIterations,
+            engine);
+      }
+
+      if (arg1 instanceof INum) {
+        // arg1 = F.fraction(((INum) arg1).getRealPart());
+        return realToContinuedFraction(((INum) arg1), maxIterations, engine);
+      } else if (arg1.isAST() || arg1.isSymbol() && arg1.isNumericFunction(true)) {
+        IExpr num = engine.evalN(arg1);
+        if (num instanceof INum) {
+          return realToContinuedFraction(((INum) num), maxIterations, engine);
+        }
+      }
+
+      if (arg1.isRational()) {
+        IRational rat = (IRational) arg1;
+
+        IASTAppendable continuedFractionList;
+        if (rat.denominator().isOne()) {
+          continuedFractionList = F.ListAlloc(1);
+          continuedFractionList.append(rat.numerator());
+        } else if (rat.numerator().isOne()) {
+          continuedFractionList = F.ListAlloc(2);
+          continuedFractionList.append(F.C0);
+          continuedFractionList.append(rat.denominator());
+        } else {
+          IFraction temp = F.fraction(rat.numerator(), rat.denominator());
+          IInteger quotient;
+          IInteger remainder;
+          continuedFractionList = F.ListAlloc(10);
+          while (temp.denominator().compareInt(1) > 0 && (0 < maxIterations--)) {
+            quotient = temp.numerator().div(temp.denominator());
+            remainder = temp.numerator().mod(temp.denominator());
+            continuedFractionList.append(quotient);
+            temp = F.fraction(temp.denominator(), remainder);
+            if (temp.denominator().isOne()) {
+              continuedFractionList.append(temp.numerator());
+            }
+          }
+        }
+        return continuedFractionList;
+      }
+
       return F.NIL;
     }
 
@@ -1101,6 +1186,11 @@ public final class NumberTheory {
         tNow = tNext;
       }
       return continuedFractionList;
+    }
+
+    @Override
+    public int[] expectedArgSize(IAST ast) {
+      return ARGS_1_2;
     }
 
     @Override
@@ -1173,33 +1263,6 @@ public final class NumberTheory {
     @Override
     public void setUp(final ISymbol newSymbol) {
       newSymbol.setAttributes(ISymbol.LISTABLE);
-    }
-  }
-
-  private static class CubeRoot extends AbstractFunctionEvaluator {
-
-    @Override
-    public IExpr evaluate(final IAST ast, EvalEngine engine) {
-      IExpr n = ast.arg1();
-      if (n.isNumericFunction(true)) {
-        if (!n.isComplex() && !n.isComplexNumeric()) {
-          if (n.isPositiveResult()) {
-            return F.Power(n, F.C1D3);
-          }
-          return F.Times(F.CN1, F.Power(F.Negate(n), F.C1D3));
-        }
-      }
-      return F.Power(n, F.C1D3);
-    }
-
-    @Override
-    public int[] expectedArgSize(IAST ast) {
-      return ARGS_1_1;
-    }
-
-    @Override
-    public void setUp(final ISymbol newSymbol) {
-      newSymbol.setAttributes(ISymbol.LISTABLE | ISymbol.NUMERICFUNCTION);
     }
   }
 
@@ -2075,6 +2138,16 @@ public final class NumberTheory {
       if (arg1.isNegativeInfinity()) {
         return S.Indeterminate;
       }
+      if (arg1.isDirectedInfinity()) {
+        if (arg1.isComplexInfinity()) {
+          return S.Indeterminate;
+        }
+        if (arg1.isAST1()) {
+          if (arg1.first().equals(F.CI) || arg1.first().equals(F.CNI)) {
+            return F.C0;
+          }
+        }
+      }
       return F.NIL;
     }
 
@@ -2679,26 +2752,103 @@ public final class NumberTheory {
       if (ast.arg1().isList()) {
         IAST list = (IAST) ast.arg1();
         if (list.size() > 1) {
-          try {
-            int size = list.argSize();
-            if (list.forAll(x -> x.isReal())) {
-              IExpr result = list.get(size--);
-              for (int i = size; i >= 1; i--) {
-                result = list.get(i).plus(result.power(-1));
+          IExpr period = list.last();
+          if (period.isNonEmptyList()) {
+            if (!((IAST) period).forAll(x -> x.isInteger())) {
+              // Unable to determine the appropriate root for the periodic continued fraction.
+              return IOFunctions.printMessage(
+                  S.FromContinuedFraction, "root", F.CEmptyList, engine);
+            }
+            boolean nonNegative = ((IAST) period).forAll(x -> x.isNonNegativeResult());
+
+            ISymbol y = F.Dummy(engine);
+            IASTAppendable periodicPart = ((IAST) period).copyAppendable(1);
+            periodicPart.append(y);
+
+            IExpr periodReduced = continuedFractionReduce(periodicPart, engine);
+            if (periodReduced.isPresent()) {
+              IExpr[] solutions = F.solve(F.Equal(F.Subtract(periodReduced, y), F.C0), y);
+              if (solutions.length > 0) {
+                IExpr solution = nonNegative ? solutions[solutions.length - 1] : solutions[0];
+                ISymbol x = F.Dummy(engine);
+                IASTMutable nonPeriodicPart = list.setAtCopy(list.argSize(), x);
+                IExpr nonPeriodReduced = continuedFractionReduce(nonPeriodicPart, engine);
+                if (nonPeriodReduced.isPresent()) {
+                  return radSimplify(
+                      F.subst(nonPeriodReduced, arg -> arg.equals(x) ? solution : F.NIL), engine);
+                }
               }
-              return result;
             }
-            IExpr result = list.get(size--);
-            for (int i = size; i >= 1; i--) {
-              result = F.Plus(list.get(i), F.Power(result, F.CN1));
-            }
-            return result;
-          } catch (ValidateException ve) {
-            return engine.printMessage(ast.topHead(), ve);
+            // Unable to determine the appropriate root for the periodic continued fraction.
+            return IOFunctions.printMessage(S.FromContinuedFraction, "root", F.CEmptyList, engine);
           }
+
+          return continuedFractionReduce(list, engine);
         }
       }
       return F.NIL;
+    }
+
+    /**
+     * Rationalize the denominator of the <code>expr</code> by removing square roots. This method
+     * handles only very simple cases.
+     *
+     * <p><b>Note:</b> the expression returned from <code>radSimplify</code> must be used with
+     * caution since if the denominator contains symbols, it will be possible to make substitutions
+     * that violate the assumptions of the simplification process: that for a denominator matching
+     * <code>a + b*sqrt(c), a != +/-b*sqrt(c)</code>.
+     *
+     * @param expr the expression which denominator should be rationalized
+     * @param engine
+     * @return
+     */
+    private static IExpr radSimplify(IExpr expr, EvalEngine engine) {
+      expr = S.Together.of(engine, expr);
+      IExpr numerator = S.Numerator.of(engine, expr);
+      IExpr denominator = S.Expand.of(engine, F.Denominator(expr));
+      if (!denominator.isFree(x -> x.isSqrt(), false)) {
+        if (denominator.isPlus2()) {
+          IASTMutable plus = ((IAST) denominator).setAtCopy(2, denominator.second().negate());
+          IExpr squared = S.Expand.of(plus.times(denominator));
+          IExpr newNumerator = S.Expand.of(plus.times(numerator));
+          expr = F.Times(newNumerator, F.Power(squared, F.CN1));
+        } else if (denominator.isTimes() || denominator.isSqrt()) {
+          IAST timesAST = ((IAST) denominator);
+          IExpr squared = timesAST.times(timesAST);
+          expr = F.Times(numerator, timesAST, F.Power(squared, F.CN1));
+        }
+      }
+      return S.Simplify.of(engine, expr);
+    }
+
+    /**
+     * Reduce a continued fraction to a rational or quadratic irrational.
+     *
+     * <p>Compute the rational or quadratic irrational number from its terminating or periodic
+     * continued fraction expansion.
+     *
+     * @param continuedFractionList the list of integers
+     * @param engine
+     * @return
+     */
+    private static IExpr continuedFractionReduce(IAST continuedFractionList, EvalEngine engine) {
+      try {
+        int size = continuedFractionList.argSize();
+        if (continuedFractionList.forAll(x -> x.isReal())) {
+          IExpr result = continuedFractionList.get(size--);
+          for (int i = size; i >= 1; i--) {
+            result = continuedFractionList.get(i).plus(result.power(-1));
+          }
+          return result;
+        }
+        IExpr result = continuedFractionList.get(size--);
+        for (int i = size; i >= 1; i--) {
+          result = F.Plus(continuedFractionList.get(i), F.Power(result, F.CN1));
+        }
+        return result;
+      } catch (ValidateException ve) {
+        return engine.printMessage(S.FromContinuedFraction, ve);
+      }
     }
 
     @Override
@@ -4302,6 +4452,24 @@ public final class NumberTheory {
     }
   }
 
+  private static class QuadraticIrrationalQ extends AbstractFunctionEvaluator {
+
+    @Override
+    public IExpr evaluate(final IAST ast, EvalEngine engine) {
+      IAST result = quadraticIrrational(ast.arg1());
+      return F.bool(result.isPresent());
+    }
+
+    @Override
+    public int[] expectedArgSize(IAST ast) {
+      return ARGS_1_1;
+    }
+
+    @Override
+    public void setUp(final ISymbol newSymbol) {
+      newSymbol.setAttributes(ISymbol.LISTABLE);
+    }
+  }
   /**
    *
    *
@@ -4327,59 +4495,59 @@ public final class NumberTheory {
    */
   private static final class Rationalize extends AbstractFunctionEvaluator {
 
-    private static class RationalizeVisitor extends VisitorExpr {
-      double epsilon;
-
-      public RationalizeVisitor(double epsilon) {
-        super();
-        this.epsilon = epsilon;
-      }
-
-      @Override
-      public IExpr visit(IASTMutable ast) {
-        if (ast.isNumericFunction(true)) {
-          ISignedNumber signedNumber = ast.evalReal();
-          if (signedNumber != null) {
-            return getRational(signedNumber);
-          }
-        }
-        return super.visitAST(ast);
-      }
-
-      @Override
-      public IExpr visit(IComplex element) {
-        return element;
-      }
-
-      @Override
-      public IExpr visit(IComplexNum element) {
-        return F.complex(element.getRealPart(), element.getImaginaryPart(), epsilon);
-      }
-
-      @Override
-      public IExpr visit(INum element) {
-        return F.fraction(element.getRealPart(), epsilon);
-      }
-
-      /** @return <code>F.NIL</code>, if no evaluation is possible */
-      @Override
-      public IExpr visit(ISymbol element) {
-        if (element.isNumericFunction(true)) {
-          ISignedNumber signedNumber = element.evalReal();
-          if (signedNumber != null) {
-            return getRational(signedNumber);
-          }
-        }
-        return F.NIL;
-      }
-
-      private IRational getRational(ISignedNumber signedNumber) {
-        if (signedNumber.isRational()) {
-          return (IRational) signedNumber;
-        }
-        return F.fraction(signedNumber.doubleValue(), epsilon);
-      }
-    }
+    //    private static class RationalizeVisitor extends VisitorExpr {
+    //      double epsilon;
+    //
+    //      public RationalizeVisitor(double epsilon) {
+    //        super();
+    //        this.epsilon = epsilon;
+    //      }
+    //
+    //      @Override
+    //      public IExpr visit(IASTMutable ast) {
+    //        if (ast.isNumericFunction(true)) {
+    //          ISignedNumber signedNumber = ast.evalReal();
+    //          if (signedNumber != null) {
+    //            return getRational(signedNumber);
+    //          }
+    //        }
+    //        return super.visitAST(ast);
+    //      }
+    //
+    //      @Override
+    //      public IExpr visit(IComplex element) {
+    //        return element;
+    //      }
+    //
+    //      @Override
+    //      public IExpr visit(IComplexNum element) {
+    //        return F.complex(element.getRealPart(), element.getImaginaryPart(), epsilon);
+    //      }
+    //
+    //      @Override
+    //      public IExpr visit(INum element) {
+    //        return F.fraction(element.getRealPart(), epsilon);
+    //      }
+    //
+    //      /** @return <code>F.NIL</code>, if no evaluation is possible */
+    //      @Override
+    //      public IExpr visit(ISymbol element) {
+    //        if (element.isNumericFunction(true)) {
+    //          ISignedNumber signedNumber = element.evalReal();
+    //          if (signedNumber != null) {
+    //            return getRational(signedNumber);
+    //          }
+    //        }
+    //        return F.NIL;
+    //      }
+    //
+    //      private IRational getRational(ISignedNumber signedNumber) {
+    //        if (signedNumber.isRational()) {
+    //          return (IRational) signedNumber;
+    //        }
+    //        return F.fraction(signedNumber.doubleValue(), epsilon);
+    //      }
+    //    }
 
     static class RationalizeNumericsVisitor extends VisitorExpr {
       double epsilon;
@@ -4393,11 +4561,6 @@ public final class NumberTheory {
       public IExpr visit(IASTMutable ast) {
         return super.visitAST(ast);
       }
-
-      // @Override
-      // public IExpr visit(IComplex element) {
-      // return element;
-      // }
 
       @Override
       public IExpr visit(IComplexNum element) {
@@ -4951,7 +5114,6 @@ public final class NumberTheory {
       S.Convergents.setEvaluator(new Convergents());
       S.ContinuedFraction.setEvaluator(new ContinuedFraction());
       S.CoprimeQ.setEvaluator(new CoprimeQ());
-      S.CubeRoot.setEvaluator(new CubeRoot());
       S.DiracDelta.setEvaluator(new DiracDelta());
       S.DiscreteDelta.setEvaluator(new DiscreteDelta());
       S.Divisible.setEvaluator(new Divisible());
@@ -4990,6 +5152,7 @@ public final class NumberTheory {
       S.PrimePowerQ.setEvaluator(new PrimePowerQ());
       S.PrimitiveRoot.setEvaluator(new PrimitiveRoot());
       S.PrimitiveRootList.setEvaluator(new PrimitiveRootList());
+      S.QuadraticIrrationalQ.setEvaluator(new QuadraticIrrationalQ());
       S.Rationalize.setEvaluator(new Rationalize());
       S.SquareFreeQ.setEvaluator(new SquareFreeQ());
       S.StirlingS1.setEvaluator(new StirlingS1());
@@ -5345,7 +5508,7 @@ public final class NumberTheory {
   }
 
   /**
-   * The first 49 perfect numbers.
+   * The first 8 perfect numbers fitting into a Java long
    *
    * <p>See <a href=
    * "https://en.wikipedia.org/wiki/List_of_perfect_numbers">List_of_perfect_numbers</a>
@@ -5389,5 +5552,70 @@ public final class NumberTheory {
     Rationalize.RationalizeNumericsVisitor rationalizeVisitor =
         new Rationalize.RationalizeNumericsVisitor(epsilon);
     return arg1.accept(rationalizeVisitor);
+  }
+
+  /**
+   * Return a list <code>{p,q,d,s}</code>, with <code>p,q,d,s</code> integers, if the expression is
+   * of the form <code>(p + s * Sqrt(d)) / q</code>.
+   *
+   * @param expr
+   * @return {@link F#NIL} if <code>expr</code> is not quadratic irrational.
+   */
+  public static IAST quadraticIrrational(final IExpr expr) {
+    if (expr.isAST()) {
+      IASTMutable resultList = F.List(0, 1, 0, 1);
+      if (expr.isSqrt() && expr.first().isInteger() && expr.first().isNonNegativeResult()) {
+        resultList.set(3, expr.first());
+        return resultList;
+      }
+      if (expr.isPlus2()) {
+        return quadraticIrrationalPlus((IAST) expr, resultList);
+      } else if (expr.isTimes2() && expr.first().isInteger() && expr.second().isSqrt()) {
+        resultList.set(4, expr.first());
+        IAST sqrt = (IAST) expr.second();
+        if (sqrt.arg1().isInteger() && sqrt.arg1().isPositive()) {
+          resultList.set(3, sqrt.first());
+          return resultList;
+        }
+      } else if (expr.isTimes2() && expr.first().isFraction()) {
+        IFraction frac = (IFraction) expr.first();
+        if (frac.numerator().isOne() || frac.numerator().isMinusOne()) {
+          if (frac.numerator().isOne()) {
+            resultList.set(2, frac.denominator());
+          } else {
+            resultList.set(2, frac.denominator().negate());
+          }
+
+          IExpr arg2 = expr.second();
+          if (arg2.isSqrt() && arg2.first().isInteger() && arg2.first().isPositive()) {
+            resultList.set(3, arg2.first());
+            return resultList;
+          }
+          if (arg2.isPlus2()) {
+            return quadraticIrrationalPlus((IAST) arg2, resultList);
+          }
+        }
+      }
+    }
+    return F.NIL;
+  }
+
+  private static IAST quadraticIrrationalPlus(IAST plusAST, IASTMutable resultList) {
+    if (plusAST.arg1().isInteger()) {
+      resultList.set(1, plusAST.arg1());
+      IExpr arg2 = plusAST.arg2();
+      if (arg2.isSqrt() && arg2.first().isInteger()) {
+        resultList.set(3, arg2.first());
+        return resultList;
+      } else if (arg2.isTimes2() && arg2.first().isInteger() && arg2.second().isSqrt()) {
+        resultList.set(4, arg2.first());
+        IAST sqrt = (IAST) arg2.second();
+        if (sqrt.arg1().isInteger() && sqrt.arg1().isPositive()) {
+          resultList.set(3, sqrt.first());
+          return resultList;
+        }
+      }
+    }
+    return F.NIL;
   }
 }

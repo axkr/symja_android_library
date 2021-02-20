@@ -6,6 +6,7 @@ import java.util.List;
 import java.util.function.Predicate;
 
 import org.matheclipse.core.eval.EvalEngine;
+import org.matheclipse.core.eval.exception.ThrowException;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.interfaces.IExpr;
 
@@ -207,7 +208,7 @@ public abstract class IPatternMatcher
    *     expression.
    */
   @Override
-  public abstract boolean test(IExpr expr);
+  public abstract boolean test(IExpr expr) throws ThrowException ;
 
   /**
    * Start pattern matching. Initialize all patterns before matching.
@@ -217,7 +218,7 @@ public abstract class IPatternMatcher
    * @return <code>true</code> if the <code>expr</code> matches the pattern-matchings left-hand-side
    *     expression.
    */
-  public abstract boolean test(IExpr expr, EvalEngine engine);
+  public abstract boolean test(IExpr expr, EvalEngine engine) throws ThrowException ;
 
   /**
    * Start pattern matching. Initialize only <code>Blank...()</code> patterns (without assigned
@@ -230,5 +231,14 @@ public abstract class IPatternMatcher
    */
   public boolean testBlank(IExpr expr, EvalEngine engine) {
     return test(expr, engine);
+  }
+
+  /**
+   * If <code>true</code> throw a {@link ThrowException} with the matching result as it's value.
+   *
+   * @param throwIfMatched
+   */
+  public void throwExceptionArgIfMatched(boolean throwIfMatched) {
+    //
   }
 }
