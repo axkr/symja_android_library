@@ -188,6 +188,9 @@ public class StructureFunctions {
 
     @Override
     public IExpr evaluate(IAST ast, EvalEngine engine) {
+      if (ast.argSize() < 2 || ast.argSize() > 4) {
+        return IOFunctions.printArgMessage(ast, ARGS_2_4, engine);
+      }
       IASTAppendable evaledAST = ast.copyAppendable();
       evaledAST.setArgs(evaledAST.size(), (int i) -> engine.evaluate(evaledAST.get(i)));
 
@@ -201,10 +204,11 @@ public class StructureFunctions {
           heads = true;
         }
       } else {
-        if (ast.size() < 3 || ast.size() > 4) {
-          return F.NIL;
+        if (ast.argSize() == 4) {
+          return IOFunctions.printArgMessage(ast, ARGS_2_3, engine);
         }
       }
+
       IExpr arg1 = evaledAST.arg1();
       IExpr arg2 = evaledAST.arg2();
       if (arg1.isQuantity() || arg2.isQuantity()) {
