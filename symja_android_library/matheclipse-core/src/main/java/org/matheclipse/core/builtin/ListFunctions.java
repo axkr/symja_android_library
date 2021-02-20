@@ -27,7 +27,9 @@ import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.exception.ASTElementLimitExceeded;
 import org.matheclipse.core.eval.exception.AbortException;
 import org.matheclipse.core.eval.exception.ArgumentTypeException;
+import org.matheclipse.core.eval.exception.ResultException;
 import org.matheclipse.core.eval.exception.NoEvalException;
+import org.matheclipse.core.eval.exception.ThrowException;
 import org.matheclipse.core.eval.exception.Validate;
 import org.matheclipse.core.eval.exception.ValidateException;
 import org.matheclipse.core.eval.interfaces.AbstractCoreFunctionEvaluator;
@@ -167,11 +169,13 @@ public final class ListFunctions {
       S.Entropy.setEvaluator(new Entropy());
       S.Extract.setEvaluator(new Extract());
       S.First.setEvaluator(new First());
-      S.GroupBy.setEvaluator(new GroupBy());
+      S.FirstCase.setEvaluator(new FirstCase());
+      S.FirstPosition.setEvaluator(new FirstPosition());
       S.Fold.setEvaluator(new Fold());
       S.FoldList.setEvaluator(new FoldList());
       S.Gather.setEvaluator(new Gather());
       S.GatherBy.setEvaluator(new GatherBy());
+      S.GroupBy.setEvaluator(new GroupBy());
       S.Insert.setEvaluator(new Insert());
       S.Intersection.setEvaluator(new Intersection());
       S.Join.setEvaluator(new Join());
@@ -213,14 +217,34 @@ public final class ListFunctions {
     }
   }
 
-  private static interface IPositionConverter<T> {
+  //  private static interface IPositionConverter<T> {
+  //    /**
+  //     * Convert the integer position number >= 0 into an object
+  //     *
+  //     * @param position which should be converted to an object
+  //     * @return
+  //     */
+  //    T toObject(int position);
+  //
+  //    /**
+  //     * Convert the object into an integer number >= 0
+  //     *
+  //     * @param position the object which should be converted
+  //     * @return -1 if the conversion is not possible
+  //     */
+  //    int toInt(T position);
+  //  }
+
+  private static class PositionConverter {
     /**
      * Convert the integer position number >= 0 into an object
      *
      * @param position which should be converted to an object
      * @return
      */
-    T toObject(int position);
+    public IExpr toObject(final int position) {
+      return F.ZZ(position);
+    }
 
     /**
      * Convert the object into an integer number >= 0
@@ -228,7 +252,13 @@ public final class ListFunctions {
      * @param position the object which should be converted
      * @return -1 if the conversion is not possible
      */
-    int toInt(T position);
+    public int toInt(final IExpr position) {
+      int val = position.toIntDefault();
+      if (val < 0) {
+        return -1;
+      }
+      return val;
+    }
   }
 
   public static class MultipleConstArrayFunction implements IVariablesFunction {
@@ -1130,12 +1160,6 @@ public final class ListFunctions {
 
     @Override
     public IExpr evaluate(IAST ast, EvalEngine engine) {
-      //      if (ast.isAST1()) {
-      //        ast = F.operatorForm1Append(ast);
-      //        if (!ast.isPresent()) {
-      //          return F.NIL;
-      //        }
-      //      }
 
       try {
         if (ast.size() >= 3 && ast.size() <= 5) {
@@ -2528,6 +2552,9 @@ public final class ListFunctions {
             }
             return result;
           }
+          if (arg2.isEmptyList()) {
+        	  return F.CEmptyList;
+          }
           return extract(list, arg2);
         }
       }
@@ -2646,6 +2673,286 @@ public final class ListFunctions {
     @Override
     public int[] expectedArgSize(IAST ast) {
       return ARGS_1_2;
+    }
+
+    @Override
+    public void setUp(final ISymbol newSymbol) {
+      newSymbol.setAttributes(ISymbol.HOLDREST);
+    }
+  }
+
+  private static final class FirstCase extends AbstractFunctionEvaluator {
+
+    private static class FirstCasePatternMatcherFunctor implements Function<IExpr, IExpr> {
+      protected final IPatternMatcher matcher;
+
+      /** @param matcher the pattern-matcher */
+      public FirstCasePatternMatcherFunctor(final IPatternMatcher matcher) {
+        this.matcher = matcher;
+      }
+
+      @Override
+      public IExpr apply(final IExpr arg) throws AbortException {
+        if (matcher.test(arg)) {
+          throw new ResultException(arg);
+        }
+        return F.NIL;
+      }
+    }
+
+    private static class FirstCaseRulesFunctor implements Function<IExpr, IExpr> {
+      protected final Function<IExpr, IExpr> function;
+
+      /** @param function the function which should determine the results */
+      public FirstCaseRulesFunctor(final Function<IExpr, IExpr> function) {
+        this.function = function;
+      }
+
+      @Override
+      public IExpr apply(final IExpr arg) throws AbortException {
+        IExpr temp = function.apply(arg);
+        if (temp.isPresent()) {
+          throw new ResultException(temp);
+        }
+        return F.NIL;
+      }
+    }
+
+    @Override
+    public IExpr evaluate(IAST ast, EvalEngine engine) {
+
+      try {
+        IExpr defaultValue = F.CMissingNotFound;
+        if (ast.size() >= 3 && ast.size() <= 5) {
+          boolean heads = false;
+          final IExpr arg1 = ast.arg1();
+          if (arg1.isASTOrAssociation()) {
+            final IExpr arg2 = engine.evalPattern(ast.arg2());
+            if (ast.isAST3() || ast.argSize() == 4) {
+              IExpr arg3 = ast.arg3();
+              final OptionArgs options = new OptionArgs(ast.topHead(), ast, 3, engine);
+              IExpr option = options.getOption(S.Heads);
+              if (option.isPresent()) {
+                if (option.isTrue()) {
+                  heads = true;
+                }
+              }
+              defaultValue = arg3;
+              IExpr levelValue = F.CListC1;
+              if (ast.argSize() == 4) {
+                levelValue = engine.evaluate(ast.arg4());
+              }
+
+              if (arg2.isRuleAST()) {
+                Function<IExpr, IExpr> function = Functors.rules((IAST) arg2, engine);
+                FirstCaseRulesFunctor fcrf = new FirstCaseRulesFunctor(function);
+                VisitorLevelSpecification level =
+                    new VisitorLevelSpecification(fcrf, levelValue, heads, engine);
+                arg1.accept(level);
+              } else {
+                final IPatternMatcher matcher = engine.evalPatternMatcher(arg2);
+                matcher.throwExceptionArgIfMatched(true);
+                FirstCasePatternMatcherFunctor cpmf = new FirstCasePatternMatcherFunctor(matcher);
+                VisitorLevelSpecification level =
+                    new VisitorLevelSpecification(cpmf, levelValue, heads, engine);
+                arg1.accept(level);
+              }
+              return defaultValue;
+            } else {
+              return firstCase((IAST) arg1, arg2, defaultValue, engine);
+            }
+          }
+          return defaultValue;
+        }
+      } catch (ResultException frex) {
+        // we get the result with this exception
+        return frex.getValue();
+      } catch (final ValidateException ve) {
+        // see level specification and int number validation
+        return engine.printMessage(ast.topHead(), ve);
+      } catch (final RuntimeException rex) {
+        if (FEConfig.SHOW_STACKTRACE) {
+          rex.printStackTrace();
+        }
+      }
+      return F.NIL;
+    }
+
+    @Override
+    public int[] expectedArgSize(IAST ast) {
+      return ARGS_1_4_1;
+    }
+
+    private static IExpr firstCase(
+        final IAST list, final IExpr pattern, IExpr defaultValue, EvalEngine engine) {
+      if (pattern.isRuleAST()) {
+        Function<IExpr, IExpr> function = Functors.rules((IAST) pattern, engine);
+        IExpr[] result = new IExpr[] {F.NIL};
+        int index = list.indexOf(x -> ruleEval(x, function, result));
+        if (index > 0 && result[0].isPresent()) {
+          return result[0];
+        }
+        return defaultValue;
+      }
+      final IPatternMatcher matcher = engine.evalPatternMatcher(pattern);
+      int index = list.indexOf(matcher);
+      if (index > 0) {
+        return list.get(index);
+      }
+      return defaultValue;
+    }
+
+    private static boolean ruleEval(IExpr x, Function<IExpr, IExpr> function, IExpr[] result) {
+      result[0] = function.apply(x);
+      return result[0].isPresent();
+    }
+
+    @Override
+    public void setUp(final ISymbol newSymbol) {
+      newSymbol.setAttributes(ISymbol.HOLDREST);
+    }
+  }
+
+  private static final class FirstPosition extends AbstractFunctionEvaluator {
+
+    private static class RecursionData {
+      final LevelSpec level;
+      final Predicate<? super IExpr> matcher;
+      final PositionConverter positionConverter;
+      int headOffset;
+
+      private RecursionData(
+          final LevelSpec level,
+          final Predicate<? super IExpr> matcher,
+          final PositionConverter positionConverter,
+          int headOffset) {
+        this.level = level;
+        this.matcher = matcher;
+        this.positionConverter = positionConverter;
+        this.headOffset = headOffset;
+      }
+
+      /**
+       * Throw an exception with the result of the first positions where the matching expression
+       * appears in <code>list</code>. The <code>positionConverter</code> converts the <code>int
+       * </code> position into a result object.
+       *
+       * @param ast
+       * @return
+       */
+      private void positionRecursive(final IAST ast, IAST prototypeList) {
+        int minDepth = 0;
+        level.incCurrentLevel();
+        IASTAppendable clone = null;
+        final int size = ast.size();
+        for (int i = headOffset; i < size; i++) {
+          if (ast.get(i).isASTOrAssociation()) {
+            clone = prototypeList.copyAppendable(1);
+            if (ast.isAssociation()) {
+              clone.append(((IAssociation) ast).getKey(i));
+            } else {
+              clone.append(positionConverter.toObject(i));
+            }
+            positionRecursive((IAST) ast.get(i), clone);
+            if (level.getCurrentDepth() < minDepth) {
+              minDepth = level.getCurrentDepth();
+            }
+          }
+          if (matcher.test(ast.get(i))) {
+            if (level.isInRange()) {
+              clone = prototypeList.copyAppendable(1);
+              if (ast.isAssociation() && i > 0) {
+                clone.append(((IAssociation) ast).getKey(i));
+              } else {
+                clone.append(positionConverter.toObject(i));
+              }
+              throw new ResultException(clone);
+            }
+          }
+        }
+        level.setCurrentDepth(--minDepth);
+        level.decCurrentLevel();
+      }
+    }
+
+    /**
+     * @param ast
+     * @param pattern
+     * @param level
+     * @param engine
+     */
+    private static void position(
+        final IAST ast, final IExpr pattern, final LevelSpec level, EvalEngine engine) {
+      final IPatternMatcher matcher = engine.evalPatternMatcher(pattern);
+      final PositionConverter positionConverter = new PositionConverter();
+
+      final IAST cloneList = F.CEmptyList;
+      int headOffset = 1;
+      if (level.isIncludeHeads()) {
+        headOffset = 0;
+      }
+      RecursionData recursionData =
+          new RecursionData(level, matcher, positionConverter, headOffset);
+      recursionData.positionRecursive(ast, cloneList);
+    }
+
+    @Override
+    public IExpr evaluate(IAST ast, EvalEngine engine) {
+      if (ast.size() < 3) {
+        return F.NIL;
+      }
+
+      final IExpr arg1 = ast.arg1();
+      IExpr defaultValue = F.CMissingNotFound;
+      try {
+        if (arg1.isASTOrAssociation()) {
+          final IExpr arg2 = engine.evalPattern(ast.arg2());
+          if (ast.isAST2()) {
+            final LevelSpec level = new LevelSpec(0, Integer.MAX_VALUE);
+            position((IAST) arg1, arg2, level, engine);
+            return defaultValue;
+          }
+          if (ast.size() >= 4) {
+            final OptionArgs options = new OptionArgs(ast.topHead(), ast, 3, engine);
+            IExpr option = options.getOption(S.Heads);
+            if (option.isPresent()) {
+              if (option.isTrue()) {
+                final LevelSpec level = new LevelSpec(0, Integer.MAX_VALUE, true);
+                position((IAST) arg1, arg2, level, engine);
+                return defaultValue;
+              }
+              if (option.isFalse()) {
+                final LevelSpec level = new LevelSpec(0, Integer.MAX_VALUE, false);
+                position((IAST) arg1, arg2, level, engine);
+                return defaultValue;
+              }
+              return F.NIL;
+            }
+
+            defaultValue = ast.arg3();
+            if (ast.size() >= 5) {
+              IExpr arg4 = engine.evaluate(ast.arg4());
+              final LevelSpec level = new LevelSpecification(arg4, true);
+              position((IAST) arg1, arg2, level, engine);
+              return defaultValue;
+            }
+            final LevelSpec level = new LevelSpec(0, Integer.MAX_VALUE);
+            position((IAST) arg1, arg2, level, engine);
+            return defaultValue;
+          }
+        }
+      } catch (final ResultException frex) {
+        return frex.getValue();
+      } catch (final ValidateException ve) {
+        // see level specification
+        return engine.printMessage(ve.getMessage(ast.topHead()));
+      }
+      return F.NIL;
+    }
+
+    @Override
+    public int[] expectedArgSize(IAST ast) {
+      return ARGS_1_5_1;
     }
 
     @Override
@@ -4476,94 +4783,87 @@ public final class ListFunctions {
    * {{2}}
    * </pre>
    */
-  private static final class Position extends AbstractCoreFunctionEvaluator {
+  private static final class Position extends AbstractFunctionEvaluator {
 
-    private static class PositionConverter implements IPositionConverter<IExpr> {
-      @Override
-      public IExpr toObject(final int i) {
-        return F.ZZ(i);
+    private static class RecursionData {
+      final IASTAppendable resultCollection;
+      final int maxResults;
+      final LevelSpec level;
+      final Predicate<? super IExpr> matcher;
+      final PositionConverter positionConverter;
+      final int headOffset;
+
+      /**
+       * @param resultCollection
+       * @param maxResults the maximum number of results which should be returned in <code>
+       *     resultCollection</code>
+       * @param level
+       * @param matcher
+       * @param positionConverter
+       * @param headOffset
+       */
+      private RecursionData(
+          final IASTAppendable resultCollection,
+          int maxResults,
+          final LevelSpec level,
+          final Predicate<? super IExpr> matcher,
+          final PositionConverter positionConverter,
+          int headOffset) {
+        this.resultCollection = resultCollection;
+        this.maxResults = maxResults;
+        this.level = level;
+        this.matcher = matcher;
+        this.positionConverter = positionConverter;
+        this.headOffset = headOffset;
       }
-
-      @Override
-      public int toInt(final IExpr position) {
-        int val = position.toIntDefault();
-        if (val < 0) {
-          return -1;
-        }
-        return val;
-      }
-    }
-
-    /**
-     * Add the positions to the <code>resultCollection</code> where the matching expressions appear
-     * in <code>list</code>. The <code>positionConverter</code> converts the <code>int</code>
-     * position into an object for the <code>resultCollection</code>.
-     *
-     * @param ast
-     * @param prototypeList
-     * @param resultCollection
-     * @param maxResults the maximum number of results which should be returned in <code>
-     *     resultCollection</code>
-     * @param level
-     * @param matcher
-     * @param positionConverter
-     * @param headOffset
-     * @return
-     */
-    private static IAST positionRecursive(
-        final IAST ast,
-        final IAST prototypeList,
-        final IASTAppendable resultCollection,
-        int maxResults,
-        final LevelSpec level,
-        final Predicate<? super IExpr> matcher,
-        final IPositionConverter<? extends IExpr> positionConverter,
-        int headOffset) {
-      int minDepth = 0;
-      level.incCurrentLevel();
-      IASTAppendable clone = null;
-      final int size = ast.size();
-      for (int i = headOffset; i < size; i++) {
-        if (ast.get(i).isASTOrAssociation()) {
-          // clone = (INestedList<IExpr>) prototypeList.clone();
-          clone = prototypeList.copyAppendable(1);
-          if (ast.isAssociation()) {
-            clone.append(((IAssociation) ast).getKey(i));
-          } else {
-            clone.append(positionConverter.toObject(i));
-          }
-          positionRecursive(
-              (IAST) ast.get(i),
-              clone,
-              resultCollection,
-              Integer.MAX_VALUE,
-              level,
-              matcher,
-              positionConverter,
-              headOffset);
-          if (level.getCurrentDepth() < minDepth) {
-            minDepth = level.getCurrentDepth();
-          }
-        }
-        if (matcher.test(ast.get(i))) {
-          if (level.isInRange()) {
+      /**
+       * Add the positions to the <code>resultCollection</code> where the matching expressions
+       * appear in <code>list</code>. The <code>positionConverter</code> converts the <code>int
+       * </code> position into an object for the <code>resultCollection</code>.
+       *
+       * @param ast
+       * @param prototypeList
+       * @return
+       */
+      private IAST positionRecursive(final IAST ast, final IAST prototypeList) {
+        int minDepth = 0;
+        level.incCurrentLevel();
+        IASTAppendable clone = null;
+        final int size = ast.size();
+        for (int i = headOffset; i < size; i++) {
+          if (ast.get(i).isASTOrAssociation()) {
+            // clone = (INestedList<IExpr>) prototypeList.clone();
             clone = prototypeList.copyAppendable(1);
-            if (ast.isAssociation() && i > 0) {
+            if (ast.isAssociation()) {
               clone.append(((IAssociation) ast).getKey(i));
             } else {
               clone.append(positionConverter.toObject(i));
             }
-            if (maxResults >= resultCollection.size()) {
-              resultCollection.append(clone);
-            } else {
-              break;
+            positionRecursive((IAST) ast.get(i), clone);
+            if (level.getCurrentDepth() < minDepth) {
+              minDepth = level.getCurrentDepth();
+            }
+          }
+          if (matcher.test(ast.get(i))) {
+            if (level.isInRange()) {
+              clone = prototypeList.copyAppendable(1);
+              if (ast.isAssociation() && i > 0) {
+                clone.append(((IAssociation) ast).getKey(i));
+              } else {
+                clone.append(positionConverter.toObject(i));
+              }
+              if (maxResults >= resultCollection.size()) {
+                resultCollection.append(clone);
+              } else {
+                break;
+              }
             }
           }
         }
+        level.setCurrentDepth(--minDepth);
+        level.decCurrentLevel();
+        return resultCollection;
       }
-      level.setCurrentDepth(--minDepth);
-      level.decCurrentLevel();
-      return resultCollection;
     }
 
     /**
@@ -4590,33 +4890,28 @@ public final class ListFunctions {
       if (level.isIncludeHeads()) {
         headOffset = 0;
       }
-      positionRecursive(
-          ast, cloneList, resultList, maxResults, level, matcher, positionConverter, headOffset);
+      RecursionData recursionData =
+          new RecursionData(resultList, maxResults, level, matcher, positionConverter, headOffset);
+      recursionData.positionRecursive(ast, cloneList);
       return resultList;
     }
 
     @Override
     public IExpr evaluate(IAST ast, EvalEngine engine) {
-      //      if (ast.isAST1()) {
-      //        ast = F.operatorForm1Append(ast);
-      //        if (!ast.isPresent()) {
-      //          return F.NIL;
-      //        }
-      //      }
       if (ast.size() < 3) {
         return F.NIL;
       }
 
       int maxResults = Integer.MAX_VALUE;
       if (ast.size() >= 5) {
-        maxResults = ast.arg4().toIntDefault(Integer.MIN_VALUE);
+        maxResults = engine.evaluate(ast.arg4()).toIntDefault();
         if (maxResults < 0) {
           engine.printMessage(
               "Position: non-negative integer for maximum number of objects expected.");
           return F.NIL;
         }
       }
-      final IExpr arg1 = engine.evaluate(ast.arg1());
+      final IExpr arg1 = ast.arg1();
       if (arg1.isASTOrAssociation()) {
         final IExpr arg2 = engine.evalPattern(ast.arg2());
         if (ast.isAST2()) {
@@ -4657,7 +4952,7 @@ public final class ListFunctions {
 
     @Override
     public void setUp(final ISymbol newSymbol) {
-      newSymbol.setAttributes(ISymbol.NHOLDALL);
+      newSymbol.setAttributes(ISymbol.HOLDREST);
     }
   }
 
@@ -6022,30 +6317,21 @@ public final class ListFunctions {
 
     @Override
     public IExpr evaluate(IAST ast, EvalEngine engine) {
-      //      if (ast.isAST1()) {
-      //        ast = F.operatorForm1Append(ast);
-      //        if (!ast.isPresent()) {
-      //          return F.NIL;
-      //        }
-      //      }
       try {
-        int size = ast.size();
-        if (ast.arg1().isASTOrAssociation()) {
-          IAST list = (IAST) ast.arg1();
-          IExpr predicateHead = ast.arg2();
-          if (size == 3) {
+        int argSize = ast.argSize();
+        if (argSize > 1) {
+          if (ast.arg1().isASTOrAssociation()) {
+            IAST list = (IAST) ast.arg1();
+            IExpr predicateHead = ast.arg2();
+            IExpr defaultValue = F.CMissingNotFound;
+            if (argSize == 3) {
+              defaultValue = ast.arg3();
+            }
             int index = list.indexOf(x -> engine.evalTrue(F.unaryAST1(predicateHead, x)));
             if (index > 0) {
               return list.get(index);
             }
-            return F.Missing("NotFound");
-          } else if ((size == 4)) {
-            int index = list.indexOf(x -> engine.evalTrue(F.unaryAST1(predicateHead, x)));
-            if (index > 0) {
-              return list.get(index);
-            }
-            // return default value
-            return ast.arg3();
+            return defaultValue;
           }
         }
       } catch (final ValidateException ve) {
@@ -6060,7 +6346,9 @@ public final class ListFunctions {
     }
 
     @Override
-    public void setUp(final ISymbol newSymbol) {}
+    public void setUp(final ISymbol newSymbol) {
+      newSymbol.setAttributes(ISymbol.HOLDREST);
+    }
   }
 
   /**
