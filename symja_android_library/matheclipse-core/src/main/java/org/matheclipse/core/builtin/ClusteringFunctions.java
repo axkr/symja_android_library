@@ -11,8 +11,7 @@ import org.hipparchus.clustering.KMeansPlusPlusClusterer;
 import org.hipparchus.clustering.MultiKMeansPlusPlusClusterer;
 import org.hipparchus.clustering.distance.DistanceMeasure;
 import org.hipparchus.exception.MathIllegalArgumentException;
-import org.hipparchus.exception.MathRuntimeException;
-import org.hipparchus.util.FastMath;
+import org.hipparchus.exception.MathRuntimeException; 
 import org.hipparchus.util.MathArrays;
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.interfaces.AbstractEvaluator;
@@ -128,7 +127,7 @@ public class ClusteringFunctions {
         throws MathIllegalArgumentException {
       double sum = 0;
       for (int i = 0; i < p1.length; i++) {
-        sum += FastMath.abs(p1[i] + p2[i]);
+        sum += Math.abs(p1[i] + p2[i]);
       }
       return sum;
     }
@@ -523,7 +522,7 @@ public class ClusteringFunctions {
     public double compute(double[] p1, double[] p2) throws MathIllegalArgumentException {
       double sum = 0;
       for (int i = 0; i < p1.length; i++) {
-        final double absValue = FastMath.abs(p1[i] - p2[i]);
+        final double absValue = Math.abs(p1[i] - p2[i]);
         sum += (absValue * absValue);
       }
       return sum;
