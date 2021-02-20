@@ -2065,7 +2065,7 @@ public class ExpTrigsFunctions {
     @Override
     public IExpr evaluate(final IAST ast, EvalEngine engine) {
       final IExpr arg1 = ast.arg1();
-      if (arg1.isNumber() || arg1.isNumericFunction(true)) {
+      if (arg1.isNumericFunction(true)) {
         // 1/2 * (1-Cos(x))
         return F.Times(F.C1D2, F.Subtract(F.C1, F.Cos(arg1)));
         // return F.Power(F.Sin(F.C1D2.times(ast.arg1())), F.C2);
@@ -2089,7 +2089,7 @@ public class ExpTrigsFunctions {
     @Override
     public IExpr evaluate(final IAST ast, EvalEngine engine) {
       final IExpr arg1 = ast.arg1();
-      if (arg1.isNumber() || arg1.isNumericFunction(true)) {
+      if (arg1.isNumericFunction(true)) {
         return F.Times(F.C2, F.ArcSin(F.Sqrt(arg1)));
       }
       return F.NIL;
@@ -2232,18 +2232,21 @@ public class ExpTrigsFunctions {
     @Override
     public IExpr evaluate(final IAST ast, EvalEngine engine) {
       IExpr arg1 = ast.arg1();
-      if (arg1.isNumber()) {
-        if (arg1.isZero()) {
-          return F.C1D2;
-        }
-        // 1 / (1 + Exp(-arg1))
-        return F.Power(F.Plus(F.C1, F.Power(S.E, F.Times(F.CN1, arg1))), F.CN1);
-      }
       if (arg1.isInfinity()) {
         return F.C1;
       }
       if (arg1.isNegativeInfinity()) {
         return F.C0;
+      }
+      if (arg1.isNumericFunction(true)) {
+        if (arg1.isZero()) {
+          return F.C1D2;
+        }
+        if (arg1.equals(F.Times(F.CI, F.Pi))) {
+        	return F.NIL;
+        }
+        // 1 / (1 + Exp(-arg1))
+        return F.Power(F.Plus(F.C1, F.Power(S.E, F.Times(F.CN1, arg1))), F.CN1);
       }
       return F.NIL;
     }
