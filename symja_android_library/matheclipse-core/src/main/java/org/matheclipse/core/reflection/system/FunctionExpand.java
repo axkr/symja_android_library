@@ -36,6 +36,8 @@ import org.matheclipse.core.expression.F;
 import org.matheclipse.core.expression.S;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IExpr;
+import org.matheclipse.core.interfaces.IFraction;
+import org.matheclipse.core.interfaces.IInteger;
 import org.matheclipse.core.interfaces.IRational;
 import org.matheclipse.core.interfaces.ISymbol;
 import org.matheclipse.core.patternmatching.Matcher;
@@ -334,6 +336,52 @@ public class FunctionExpand extends AbstractEvaluator implements FunctionExpandR
       if (arg1.isRational()) {
         return sqrtDenest((IRational) arg1, arg2);
       }
+    } else if ((ast.isCos() || ast.isSin()) && ast.first().isTimes2()) {
+      IAST times = (IAST) ast.first();
+      return cosSinTrivial(times, ast);
+    }
+    return F.NIL;
+  }
+
+  /**
+   * See: <a
+   * href="https://en.wikipedia.org/wiki/Trigonometric_constants_expressed_in_real_radicals#The_trivial_values">Trigonometric_constants_expressed_in_real_radicals#The_trivial_values</a>
+   *
+   * @param timesAST
+   * @param ast
+   */
+  public static IAST cosSinTrivial(IAST timesAST, IAST ast) {
+    if (timesAST.second().isPi() && timesAST.first().isFraction()) {
+      IFraction fraction = (IFraction) timesAST.first();
+      if (fraction.numerator().isOne()) {
+        IAST factors = fraction.denominator().factorInteger();
+        if (factors.size() == 2) {
+          IInteger base = (IInteger) factors.arg1().first();
+          if (base.equalsInt(2)) {
+            int exponent = factors.arg1().second().toIntDefault();
+            if (exponent > 3) {
+              if (ast.isCos()) {
+                return F.Times(
+                    F.C1D2,
+                    F.Sqrt(F.C2)
+                        .nest(
+                            F.Function(F.Sqrt(F.Plus(F.C2, F.Slot1))), //
+                            exponent - 2));
+              } else if (ast.isSin()) {
+                return F.Times(
+                    F.C1D2,
+                    F.Sqrt(
+                        F.Subtract(
+                            F.C2,
+                            F.Sqrt(F.C2)
+                                .nest(
+                                    F.Function(F.Sqrt(F.Plus(F.C2, F.Slot1))), //
+                                    exponent - 3))));
+              }
+            }
+          }
+        }
+      }
     }
     return F.NIL;
   }
@@ -367,9 +415,10 @@ public class FunctionExpand extends AbstractEvaluator implements FunctionExpandR
    */
   private static IExpr sqrtDenest(IRational arg1, IExpr arg2) {
     if (arg1.isNegative()) {
-      return sqrtDenest(arg1.negate(), arg2.negate())
-          . //
-          mapExpr(x -> F.Times(F.CI, x));
+      return sqrtDenest(
+              arg1.negate(), //
+              arg2.negate())
+          .mapExpr(x -> F.Times(F.CI, x));
     } else {
       final EvalEngine engine = EvalEngine.get();
       boolean arg2IsNegative = false;
