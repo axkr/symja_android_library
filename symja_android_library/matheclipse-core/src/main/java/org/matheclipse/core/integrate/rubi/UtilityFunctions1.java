@@ -23,6 +23,5 @@ ISetDelayed(10,SqrtNumberQ(u_),
 ISetDelayed(11,SqrtNumberSumQ(u_),
     Or(And(SumQ(u),SqrtNumberQ(First(u)),SqrtNumberQ(Rest(u))),And(ProductQ(u),SqrtNumberQ(First(u)),SqrtNumberSumQ(Rest(u))))),
 ISetDelayed(12,IndependentQ(u_,x_),
-    FreeQ(u,x))
-  );
+    FreeQ(u,x)));
 }

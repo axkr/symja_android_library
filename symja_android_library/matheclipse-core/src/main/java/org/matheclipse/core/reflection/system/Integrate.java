@@ -111,13 +111,63 @@ public class Integrate extends AbstractFunctionEvaluator {
         }
         // F.Integrate.setEvaluator(CONST);
         engine.setPackageMode(false);
+
+        F.ISet(F.$s("§simplifyflag"), S.False);
+
+        F.ISet(F.$s("§$timelimit"), F.ZZ(Config.INTEGRATE_RUBI_TIMELIMIT));
+        F.ISet(F.$s("§$showsteps"), S.False);
+        UtilityFunctionCtors.ReapList.setAttributes(ISymbol.HOLDFIRST);
+        F.ISet(F.$s("§$trigfunctions"), F.List(S.Sin, S.Cos, S.Tan, S.Cot, S.Sec, S.Csc));
+        F.ISet(
+            F.$s("§$hyperbolicfunctions"), F.List(S.Sinh, S.Cosh, S.Tanh, S.Coth, S.Sech, S.Csch));
+        F.ISet(
+            F.$s("§$inversetrigfunctions"),
+            F.List(S.ArcSin, S.ArcCos, S.ArcTan, S.ArcCot, S.ArcSec, S.ArcCsc));
+        F.ISet(
+            F.$s("§$inversehyperbolicfunctions"),
+            F.List(S.ArcSinh, S.ArcCosh, S.ArcTanh, S.ArcCoth, S.ArcSech, S.ArcCsch));
+        F.ISet(
+            F.$s("§$calculusfunctions"),
+            F.List(
+                S.D,
+                S.Sum,
+                S.Product,
+                S.Integrate,
+                F.$rubi("Unintegrable"),
+                F.$rubi("CannotIntegrate"),
+                F.$rubi("Dif"),
+                F.$rubi("Subst")));
+        F.ISet(
+            F.$s("§$stopfunctions"),
+            F.List(
+                S.Hold,
+                S.HoldForm,
+                S.Defer,
+                S.Pattern,
+                S.If,
+                S.Integrate,
+                UtilityFunctionCtors.Unintegrable,
+                F.$rubi("CannotIntegrate")));
+        F.ISet(F.$s("§$heldfunctions"), F.List(S.Hold, S.HoldForm, S.Defer, S.Pattern));
+
+        F.ISet(
+            UtilityFunctionCtors.IntegerPowerQ, //
+            F.Function(
+                F.And(F.SameQ(F.Head(F.Slot1), S.Power), F.IntegerQ(F.Part(F.Slot1, F.C2)))));
+
+        F.ISet(
+            UtilityFunctionCtors.FractionalPowerQ, //
+            F.Function(
+                F.And(
+                    F.SameQ(F.Head(F.Slot1), S.Power),
+                    F.SameQ(F.Head(F.Part(F.Slot1, F.C2)), S.Rational))));
         // long stop = System.currentTimeMillis();
         // System.out.println("Milliseconds: " + (stop - start));
         COUNT_DOWN_LATCH.countDown();
       }
     }
 
-    private static synchronized void getRuleASTStatic() {
+    private static void getRuleASTStatic() {
       INTEGRATE_RULES_DATA = S.Integrate.createRulesData(new int[] {0, 7000});
       //      IAST list = (IAST) WL.deserializeResource("/rules/IntegrateRules.bin", true);
       //      for (int i = 1; i < list.size(); i++) {
@@ -472,51 +522,74 @@ public class Integrate extends AbstractFunctionEvaluator {
   }
 
   /**
-   * Given a <code>function</code> of a real variable <code>x</code> and an interval <code>[a, b]
-   * </code> of the real line, calculate the definite integral <code>F(b)-F(a)</code>. <a
-   * href="https://en.wikipedia.org/wiki/Integral">Wikipedia - Integral</a>
+   * Given a <code>function</code> of a real variable <code>x</code> and an interval <code>
+   * [lower, upper]
+   * </code> of the real line, calculate the definite integral <code>F(upper)-F(lower)</code>.
+   *
+   * <p>See: <a href="https://en.wikipedia.org/wiki/Integral">Wikipedia - Integral</a>
    *
    * @param function a function of <code>x</code>
-   * @param xValueList a list of the form <code>{x,a,b}</code> with <code>3</code> arguments
+   * @param xValueList a list of the form <code>{x, lower, upper}</code> with <code>3</code>
+   *     arguments
    * @param engine the evaluation engine
    * @return
    */
   private static IExpr definiteIntegral(IExpr function, IAST xValueList, EvalEngine engine) {
+    // see Rubi rule for definite integrals
     IExpr x = xValueList.arg1();
-    IExpr a = xValueList.arg2();
-    IExpr b = xValueList.arg3();
-    IExpr Fb = engine.evaluate(F.Limit(function, F.Rule(x, b)));
-    IExpr Fa = engine.evaluate(F.Limit(function, F.Rule(x, a)));
-    if (!Fb.isFree(S.DirectedInfinity, true) || !Fb.isFree(S.Indeterminate, true)) {
-      return engine.printMessage("Not integrable: " + function + " for limit " + x + " -> " + b);
+    IExpr lower = xValueList.arg2();
+    IExpr upper = xValueList.arg3();
+    IExpr diff = engine.evaluate(F.Subtract(upper, lower));
+    if (S.PossibleZeroQ.ofQ(engine, diff)) {
+      return F.C0;
     }
-    if (!Fa.isFree(S.DirectedInfinity, true) || !Fa.isFree(S.Indeterminate, true)) {
-      return engine.printMessage("Not integrable: " + function + " for limit " + x + " -> " + a);
+
+    IExpr lowerDirection, upperDirection;
+    if (diff.isNegativeResult()) {
+      lowerDirection = F.Rule(F.Direction, F.C1);
+      upperDirection = F.Rule(F.Direction, F.CN1);
+    } else {
+      lowerDirection = F.Rule(F.Direction, F.CN1);
+      upperDirection = F.Rule(F.Direction, F.C1);
     }
-    if (a.isNegativeResult() && b.isPositiveResult()) {
-      // 0 is a value inside he given interval
-      IExpr FZeroAbove =
-          engine.evaluate(F.Limit(function, F.Rule(x, F.C0), F.Rule(S.Direction, F.CN1)));
-      if (!FZeroAbove.isFree(S.DirectedInfinity, true)
-          || !FZeroAbove.isFree(S.Indeterminate, true)) {
-        return engine.printMessage("Not integrable: " + function + " for limit " + x + " -> 0");
-      }
-      IExpr FZeroBelow =
-          engine.evaluate(F.Limit(function, F.Rule(x, F.C0), F.Rule(S.Direction, F.C1)));
-      if (!FZeroBelow.isFree(S.DirectedInfinity, true)
-          || !FZeroBelow.isFree(S.Indeterminate, true)) {
-        return engine.printMessage("Not integrable: " + function + " for limit " + x + " -> 0");
-      }
-      return F.Plus(F.Subtract(Fb, FZeroAbove), F.Subtract(FZeroBelow, Fa));
+    IExpr lowerLimit = F.Limit.of(engine, function, F.Rule(x, lower), lowerDirection);
+    if (!lowerLimit.isFree(S.DirectedInfinity, true) || !lowerLimit.isFree(S.Indeterminate, true)) {
+      return engine.printMessage(
+          "Not integrable: " + function + " for limit " + x + " -> " + lower);
     }
-    if (Fb.isAST() && Fa.isAST()) {
-      IExpr bDenominator = S.Denominator.of(engine, Fb);
-      IExpr aDenominator = S.Denominator.of(engine, Fa);
+    IExpr upperLimit = F.Limit.of(engine, function, F.Rule(x, upper), upperDirection);
+    if (!upperLimit.isFree(S.DirectedInfinity, true) || !upperLimit.isFree(S.Indeterminate, true)) {
+      return engine.printMessage(
+          "Not integrable: " + function + " for limit " + x + " -> " + upper);
+    }
+
+    //    if (lower.isNegativeResult() && upper.isPositiveResult()) {
+    //      // 0 is a value inside the given interval
+    //      IExpr FZeroAbove =
+    //          engine.evaluate(F.Limit(function, F.Rule(x, F.C0), F.Rule(S.Direction, F.CN1)));
+    //      if (!FZeroAbove.isFree(S.DirectedInfinity, true)
+    //          || !FZeroAbove.isFree(S.Indeterminate, true)) {
+    //        return engine.printMessage("Not integrable: " + function + " for limit " + x + " ->
+    // 0");
+    //      }
+    //      IExpr FZeroBelow =
+    //          engine.evaluate(F.Limit(function, F.Rule(x, F.C0), F.Rule(S.Direction, F.C1)));
+    //      if (!FZeroBelow.isFree(S.DirectedInfinity, true)
+    //          || !FZeroBelow.isFree(S.Indeterminate, true)) {
+    //        return engine.printMessage("Not integrable: " + function + " for limit " + x + " ->
+    // 0");
+    //      }
+    //      return F.Plus(F.Subtract(upperLimit, FZeroAbove), F.Subtract(FZeroBelow, lowerLimit));
+    //    }
+
+    if (upperLimit.isAST() && lowerLimit.isAST()) {
+      IExpr bDenominator = S.Denominator.of(engine, upperLimit);
+      IExpr aDenominator = S.Denominator.of(engine, lowerLimit);
       if (bDenominator.equals(aDenominator)) {
-        return F.Divide(F.Subtract(F.Numerator(Fb), F.Numerator(Fa)), bDenominator);
+        return F.Divide(F.Subtract(F.Numerator(upperLimit), F.Numerator(lowerLimit)), bDenominator);
       }
     }
-    return F.Subtract(Fb, Fa);
+    return F.Subtract(upperLimit, lowerLimit);
   }
 
   private static IExpr callRestIntegrate(IAST arg1, final IExpr x, final EvalEngine engine) {
@@ -793,53 +866,5 @@ public class Integrate extends AbstractFunctionEvaluator {
     } else {
       // see #evaluate() method
     }
-
-    F.ISet(F.$s("§simplifyflag"), S.False);
-
-    F.ISet(F.$s("§$timelimit"), F.ZZ(Config.INTEGRATE_RUBI_TIMELIMIT));
-    F.ISet(F.$s("§$showsteps"), S.False);
-    UtilityFunctionCtors.ReapList.setAttributes(ISymbol.HOLDFIRST);
-    F.ISet(F.$s("§$trigfunctions"), F.List(S.Sin, S.Cos, S.Tan, S.Cot, S.Sec, S.Csc));
-    F.ISet(F.$s("§$hyperbolicfunctions"), F.List(S.Sinh, S.Cosh, S.Tanh, S.Coth, S.Sech, S.Csch));
-    F.ISet(
-        F.$s("§$inversetrigfunctions"),
-        F.List(S.ArcSin, S.ArcCos, S.ArcTan, S.ArcCot, S.ArcSec, S.ArcCsc));
-    F.ISet(
-        F.$s("§$inversehyperbolicfunctions"),
-        F.List(S.ArcSinh, S.ArcCosh, S.ArcTanh, S.ArcCoth, S.ArcSech, S.ArcCsch));
-    F.ISet(
-        F.$s("§$calculusfunctions"),
-        F.List(
-            S.D,
-            S.Sum,
-            S.Product,
-            S.Integrate,
-            F.$rubi("Unintegrable"),
-            F.$rubi("CannotIntegrate"),
-            F.$rubi("Dif"),
-            F.$rubi("Subst")));
-    F.ISet(
-        F.$s("§$stopfunctions"),
-        F.List(
-            S.Hold,
-            S.HoldForm,
-            S.Defer,
-            S.Pattern,
-            S.If,
-            S.Integrate,
-            UtilityFunctionCtors.Unintegrable,
-            F.$rubi("CannotIntegrate")));
-    F.ISet(F.$s("§$heldfunctions"), F.List(S.Hold, S.HoldForm, S.Defer, S.Pattern));
-
-    F.ISet(
-        UtilityFunctionCtors.IntegerPowerQ, //
-        F.Function(F.And(F.SameQ(F.Head(F.Slot1), S.Power), F.IntegerQ(F.Part(F.Slot1, F.C2)))));
-
-    F.ISet(
-        UtilityFunctionCtors.FractionalPowerQ, //
-        F.Function(
-            F.And(
-                F.SameQ(F.Head(F.Slot1), S.Power),
-                F.SameQ(F.Head(F.Part(F.Slot1, F.C2)), S.Rational))));
   }
 }
