@@ -241,9 +241,14 @@ public final class PlusOp {
           return F.NIL;
         }
         IQuantity q = (IQuantity) arg;
-        numberValue = q.plus(numberValue, true);
-        if (numberValue.isPresent()) {
+        IExpr temp = q.plus(numberValue, true);
+        if (temp.isPresent()) {
           evaled = true;
+          numberValue = temp;
+        } else {
+          if (addMerge(q, F.C1)) {
+            evaled = true;
+          }
         }
         return F.NIL;
         // }
@@ -332,6 +337,10 @@ public final class PlusOp {
                 if (temp.isPresent()) {
                   numberValue = temp;
                   evaled = true;
+                } else {
+                  if (addMerge(arg, F.C1)) {
+                    evaled = true;
+                  }
                 }
                 return F.NIL;
               }
