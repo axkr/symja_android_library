@@ -144,6 +144,16 @@ public interface INumber extends IExpr {
     return reDoubleValue();
   }
 
+  @Override
+  default boolean isNumber() {
+    return true;
+  }
+
+  @Override
+  default boolean isNumericFunction(boolean allowList) {
+    return true;
+  }
+
   /**
    * Returns the imaginary part of a complex number
    *

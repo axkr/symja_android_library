@@ -325,7 +325,14 @@ public interface ISymbol extends IExpr {
   boolean hasFlatAttribute();
 
   /**
-   * Does the attributes flag set contains the <code>ISymbol.Flat</code> bit set?
+   * Does this symbols attribute set contains the {@link ISymbol#HOLDALLCOMPLETE} attribute?
+   *
+   * @return
+   */
+  boolean hasHoldAllCompleteAttribute();
+
+  /**
+   * Does the attributes flag set contains the {@link ISymbol#FLAT} bit set?
    *
    * @return <code>true</code> if this attribute set contains the <code>ISymbol.Flat</code>
    *     attribute.
@@ -335,14 +342,13 @@ public interface ISymbol extends IExpr {
   }
 
   /**
-   * Does the attributes flag set contains the <code>ISymbol.Flat</code> and <code>ISymbol.Orderless
-   * </code> bits set?
+   * Does the attributes flag set contains the {@link ISymbol#HOLDALLCOMPLETE} bit set?
    *
-   * @return <code>true</code> if this attribute set contains the <code>ISymbol.Flat</code> and
-   *     <code>ISymbol.Orderless</code> attribute.
+   * @param attributes
+   * @return
    */
-  public static boolean hasOrderlessAttributeFlat(int attributes) {
-    return (attributes & FLATORDERLESS) == FLATORDERLESS;
+  public static boolean hasHoldAllCompleteAttribute(int attributes) {
+    return (attributes & HOLDALLCOMPLETE) == HOLDALLCOMPLETE;
   }
 
   /**
@@ -353,6 +359,17 @@ public interface ISymbol extends IExpr {
    */
   public static boolean hasOrderlessAttribute(int attributes) {
     return (attributes & ORDERLESS) == ORDERLESS;
+  }
+
+  /**
+   * Does the attributes flag set contains the <code>ISymbol.Flat</code> and <code>ISymbol.Orderless
+   * </code> bits set?
+   *
+   * @return <code>true</code> if this attribute set contains the <code>ISymbol.Flat</code> and
+   *     <code>ISymbol.Orderless</code> attribute.
+   */
+  public static boolean hasOrderlessFlatAttribute(int attributes) {
+    return (attributes & FLATORDERLESS) == FLATORDERLESS;
   }
 
   /**
@@ -416,6 +433,10 @@ public interface ISymbol extends IExpr {
    * @return
    */
   public boolean isLocked(boolean packageMode);
+
+  default boolean isNumericFunction(boolean allowList) {
+    return isConstantAttribute();
+  }
 
   default boolean isNumericFunctionAttribute() {
     return ((getAttributes() & NUMERICFUNCTION) == NUMERICFUNCTION);

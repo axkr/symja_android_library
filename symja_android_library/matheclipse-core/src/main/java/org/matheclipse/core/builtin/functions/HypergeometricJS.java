@@ -13,7 +13,7 @@ import org.matheclipse.core.builtin.Arithmetic;
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.exception.ArgumentTypeException;
 import org.matheclipse.core.eval.exception.IterationLimitExceeded;
-import org.matheclipse.core.eval.exception.ThrowException;
+import org.matheclipse.core.eval.exception.ResultException;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.expression.S;
 
@@ -536,7 +536,7 @@ public class HypergeometricJS {
     }
 
     if (c.isMathematicalInteger() && c.getReal() <= 0) {
-      throw new ThrowException(F.CComplexInfinity);
+      throw new ResultException(F.CComplexInfinity);
       // throw new ArgumentTypeException("hypergeometric function pole");
     }
     Complex s = Complex.ONE;
@@ -566,7 +566,7 @@ public class HypergeometricJS {
   public static double hypergeometric2F1(double a, double b, double c, double x, double tolerance) {
 
     if (F.isNumIntValue(c) && c <= 0) {
-      throw new ThrowException(F.CComplexInfinity);
+      throw new ResultException(F.CComplexInfinity);
       // throw new ArgumentTypeException("hypergeometric function pole");
     }
 
@@ -599,7 +599,7 @@ public class HypergeometricJS {
       if (c - a - b > 0) {
         return Gamma.gamma(c) * Gamma.gamma(c - a - b) / Gamma.gamma(c - a) / Gamma.gamma(c - b);
       } else {
-        throw new ThrowException(F.CComplexInfinity);
+        throw new ResultException(F.CComplexInfinity);
         // throw new ArithmeticException("Divergent Gauss hypergeometric function");
       }
     }

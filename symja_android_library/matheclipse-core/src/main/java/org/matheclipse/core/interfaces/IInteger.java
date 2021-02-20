@@ -343,6 +343,15 @@ public interface IInteger extends IRational {
 
   public IInteger shiftRight(final int n);
 
+  /**
+   * Returns an array of two IIntegers containing the integer square root {@code s} of {@code this}
+   * and its remainder {@code this - s*s}, respectively.
+   *
+   * @return an array of two IIntegers with the integer square root at offset 0 and the remainder at
+   *     offset 1 or <code>null</code> if <code>this</code> is negative.
+   */
+  public IInteger[] sqrtAndRemainder();
+
   public IInteger subtract(IInteger value);
 
   /**

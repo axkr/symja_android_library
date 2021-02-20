@@ -1,18 +1,40 @@
 package org.matheclipse.core.patternmatching.hash;
 
 import org.matheclipse.core.eval.EvalEngine;
+import org.matheclipse.core.expression.F;
+import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IExpr;
+import org.matheclipse.core.interfaces.ISymbol;
 import org.matheclipse.core.patternmatching.RulesData;
 import org.matheclipse.core.visit.HashValueVisitor;
 
 public abstract class AbstractHashedPatternRules {
 
-  protected int hash1;
-  protected int hash2;
-  protected int hashSum;
-  protected RulesData fRulesData = null;
+  /**
+   * The first left-hand-side pattern which must match a single term in an {@link IAST} expression
+   * with attribute {@link ISymbol#ORDERLESS}.
+   */
   protected final IExpr fLHSPattern1;
+  /**
+   * The second left-hand-side pattern which must match a single term in an {@link IAST} expression
+   * with attribute {@link ISymbol#ORDERLESS}.
+   */
   protected final IExpr fLHSPattern2;
+
+  /** The corresponding hashcode for the first left-hand-side pattern. */
+  protected int hash1;
+
+  /** The corresponding hashcode for the second left-hand-side pattern. */
+  protected int hash2;
+
+  /** the combined hashcode from hash1 and hash2 */
+  protected int hashSum;
+
+  /**
+   * The pattern matching rules associated with a symbol. Contains DownValues and UpValues rules for
+   * pattern matching.
+   */
+  protected RulesData fRulesData = null;
 
   /**
    * @param lhsPattern1 first left-hand-side pattern
@@ -125,12 +147,26 @@ public abstract class AbstractHashedPatternRules {
   }
 
   /**
-   * @param e1
+   * If the second left-hand-side expression must have a negative integer number return <code>
+   * true</code>.
+   *
+   * @return <code>true</code> if the second left-hand-side must have a negative integer number
+   */
+  public boolean isLHS2Negate() {
+    return false;
+  }
+
+  /**
+   * Try matching the <code>arg1, arg2</code> expressions as <code>F.List(arg1, arg2)</code> with this
+   * pattern-matching rules and if matched, return an evaluated right-hand-side expression,
+   * otherwise return {@link F#NIL}.
+   *
+   * @param arg1
    * @param num1
-   * @param e2
+   * @param arg2
    * @param num2
    * @param engine
-   * @return
+   * @return {@link F#NIL} if no match was found
    */
-  public abstract IExpr evalDownRule(IExpr e1, IExpr num1, IExpr e2, IExpr num2, EvalEngine engine);
+  public abstract IExpr evalDownRule(IExpr arg1, IExpr num1, IExpr arg2, IExpr num2, EvalEngine engine);
 }

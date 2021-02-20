@@ -746,7 +746,7 @@ public abstract class HMArrayList extends AbstractAST
 
   /** {@inheritDoc} */
   @Override
-  public final int indexOf(Predicate<? super IExpr> predicate, int fromIndex) {
+  public int indexOf(Predicate<? super IExpr> predicate, int fromIndex) {
     int index = fromIndex;
     int start = firstIndex + index;
     for (int i = start; i < lastIndex; i++) {

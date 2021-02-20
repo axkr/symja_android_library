@@ -161,6 +161,31 @@ public class BuiltInSymbol extends Symbol implements IBuiltInSymbol {
 
   /** {@inheritDoc} */
   @Override
+  public IExpr.COMPARE_TERNARY equalTernary(IExpr arg2, EvalEngine engine) {
+    if (isIndeterminate() || arg2.isIndeterminate()) {
+      return IExpr.COMPARE_TERNARY.UNDECIDABLE;
+    }
+    if (this == arg2) {
+      return IExpr.COMPARE_TERNARY.TRUE;
+    }
+
+    if (isTrue()) {
+      if (arg2.isFalse()) {
+        return IExpr.COMPARE_TERNARY.FALSE;
+      }
+    } else if (isFalse()) {
+      if (arg2.isTrue()) {
+        return IExpr.COMPARE_TERNARY.FALSE;
+      }
+    }
+    if (isConstantAttribute() && arg2.isConstantAttribute()) {
+      return IExpr.COMPARE_TERNARY.FALSE;
+    }
+    return super.equalTernary(arg2, engine);
+  }
+
+  /** {@inheritDoc} */
+  @Override
   public IExpr evaluate(EvalEngine engine) {
     // final IEvaluator module = getEvaluator();
     if (fEvaluator instanceof ISymbolEvaluator) {

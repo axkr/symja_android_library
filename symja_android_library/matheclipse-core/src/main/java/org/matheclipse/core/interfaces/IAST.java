@@ -1190,7 +1190,8 @@ public interface IAST extends IExpr, Iterable<IExpr> {
       Collection<IExpr> list, BiFunction<IExpr, IExpr, IExpr> binaryFunction, IExpr rightArg);
 
   /**
-   * Maps the elements of this IAST with the unary functor <code>
+   * Maps the elements of this {@link IAST} on the first level of arguments with the unary functor
+   * <code>
    * Functors.replaceArg(replacement, position)</code>, there <code>replacement</code> is an IAST at
    * which the argument at the given position will be replaced by the currently mapped element. This
    * can be used to create an effect as if &quot;the <code>position</code>-th argument of an IAST
@@ -1200,12 +1201,13 @@ public interface IAST extends IExpr, Iterable<IExpr> {
    * position will be replaced by the current argument of this AST:
    *
    * <pre>
-   * plusAST.mapThread(F.D(null, F.x), 1);
+   * plusAST.mapThread(F.D(F.Slot1, F.x), 1);
    * </pre>
    *
    * @param replacement an IAST there the argument at the given position is replaced by the
-   *     currently mapped argument of this IAST.
-   * @param position
+   *     currently mapped argument of this {@link IAST}.
+   * @param position the position in <code>replacement</code> which should be replaced by the
+   *     corresponding argument of this {@link IAST}
    * @return
    * @see IAST#map(Function, int)
    */
@@ -1214,7 +1216,8 @@ public interface IAST extends IExpr, Iterable<IExpr> {
   public IASTMutable mapThreadEvaled(EvalEngine engine, final IAST replacement, int position);
 
   /**
-   * Maps the elements of this IAST with the unary <code>function)</code>. <br>
+   * Maps the elements of this IAST on the first level of arguments with the unary <code>function)
+   * </code>. <br>
    *
    * @param function an IAST there the argument at the given position is replaced by the currently
    *     mapped argument of this IAST.

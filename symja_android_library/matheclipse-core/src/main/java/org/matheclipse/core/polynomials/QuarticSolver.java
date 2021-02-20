@@ -144,19 +144,22 @@ public class QuarticSolver {
    * @return
    */
   public static IASTAppendable quarticSolve(IExpr a, IExpr b, IExpr c, IExpr d, IExpr e) {
-    if (a.isZero()) {
+    if (a.isPossibleZero(true)) {
       return cubicSolve(b, c, d, e, null);
     } else {
-      if (e.isZero()) {
+      if (e.isPossibleZero(true)) {
         return cubicSolve(a, b, c, d, C0);
       }
-      if (b.isZero() && d.isZero()) {
+      if (b.isPossibleZero(true) && d.isPossibleZero(true)) {
         return biQuadraticSolve(a, c, e, null);
       }
-      if (a.equals(e) && b.equals(d)) {
-        return quasiSymmetricQuarticSolve(a, b, c);
+      IExpr temp = a.subtract(e);
+      if (temp.isPossibleZero(true)) {
+        temp = b.subtract(d);
+        if (temp.isPossibleZero(true)) {
+          return quasiSymmetricQuarticSolve(a, b, c);
+        }
       }
-
       // -3*b^2/(8*a^2) + c/a
       IExpr alpha =
           F.eval(
@@ -178,7 +181,7 @@ public class QuarticSolver {
                   Times(Power(b, C2), c, Power(Times(ZZ(16L), Power(a, C3)), CN1)),
                   Times(CN1, b, d, Power(Times(C4, Power(a, C2)), CN1)),
                   Times(e, Power(a, CN1))));
-      if (beta.isZero()) {
+      if (beta.isPossibleZero(false)) {
         // -1/4 * b/a
         return biQuadraticSolve(C1, alpha, gamma, Times(CN1D4, b, Power(a, CN1)));
       }
@@ -501,10 +504,10 @@ public class QuarticSolver {
    */
   public static IASTAppendable cubicSolve(
       IExpr a, IExpr b, IExpr c, IExpr d, IExpr additionalSulution) {
-    if (a.isZero()) {
+    if (a.isPossibleZero(true)) {
       return quadraticSolve(b, c, d, additionalSulution, null);
     } else {
-      if (d.isZero()) {
+      if (d.isPossibleZero(true)) {
         return quadraticSolve(a, b, c, additionalSulution, C0);
       }
       IASTAppendable result = F.ListAlloc(4);
@@ -535,8 +538,8 @@ public class QuarticSolver {
       IExpr delta3 = F.eval(Power(argDelta3, C1D3));
 
       // IExpr C = F.eval(Times(ZZ(-27L), a.power(C2), discriminant));
-      if (discriminant.isZero()) {
-        if (delta0.isZero()) {
+      if (discriminant.isPossibleZero(true)) {
+        if (delta0.isPossibleZero(true)) {
           // the three roots are equal
           // (-b)/(3*a)
           result.append(Times(CN1, b, Power(Times(C3, a), CN1)));
@@ -666,14 +669,14 @@ public class QuarticSolver {
     if (solution2 != null) {
       result.append(solution2);
     }
-    if (!a.isZero()) {
-      if (c.isZero()) {
+    if (!a.isPossibleZero(true)) {
+      if (c.isPossibleZero(true)) {
         result.append(F.C0);
         if (!b.isZero()) {
           result.append(F.Times(F.CN1, b, Power(a, -1L)));
         }
       } else {
-        if (b.isZero()) {
+        if (b.isPossibleZero(true)) {
           // a*x^2 + c == 0
           IExpr rhs = S.Divide.of(F.Negate(c), a);
           IExpr negExpr = AbstractFunctionEvaluator.getNormalizedNegativeExpression(rhs);
@@ -697,7 +700,7 @@ public class QuarticSolver {
         return result;
       }
     } else {
-      if (!b.isZero()) {
+      if (!b.isPossibleZero(true)) {
         result.append(Times(CN1, c, Power(b, -1L)));
       }
     }

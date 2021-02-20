@@ -2,6 +2,7 @@ package org.matheclipse.core.expression;
 
 import java.io.Externalizable;
 import java.math.BigInteger;
+import java.math.RoundingMode;
 import java.util.ArrayList;
 import java.util.Map;
 import java.util.Set;
@@ -34,6 +35,8 @@ import org.matheclipse.core.visit.IVisitor;
 import org.matheclipse.core.visit.IVisitorBoolean;
 import org.matheclipse.core.visit.IVisitorInt;
 import org.matheclipse.core.visit.IVisitorLong;
+
+import com.google.common.math.BigIntegerMath;
 
 import edu.jas.arith.PrimeInteger;
 import it.unimi.dsi.fastutil.ints.Int2IntMap;
@@ -630,6 +633,18 @@ public abstract class AbstractIntegerSym implements IInteger, Externalizable {
         result.append(F.Power(F.Power(valueOf(key), valueOf(value)), F.QQ(1, denominator)));
       }
     }
+    if (denominator == 2
+        && numerator == 1
+        && rest.compareTo(BigInteger.valueOf(Short.MAX_VALUE - 20)) > 0) {
+      // exponent 1/2 ==> special case - try to get exact square root of rest
+      IInteger[] sr = F.ZZ(rest).sqrtAndRemainder();
+      if (sr != null && sr[1].isZero()) {
+        result.append(sr[0]);
+        rest = BigInteger.ONE;
+        evaled = true;
+      }
+    }
+
     if (evaled) {
       if (!rest.equals(BigInteger.ONE)) {
         result.append(F.Power(valueOf(rest), F.QQ(1, denominator)));
@@ -774,6 +789,18 @@ public abstract class AbstractIntegerSym implements IInteger, Externalizable {
     }
     IInteger ii = this.divideBy((IRational) multiple).round();
     return ii.multiply((IRational) multiple);
+  }
+
+  /** {@inheritDoc} */
+  @Override
+  public IInteger[] sqrtAndRemainder() {
+    if (sign() > 0) {
+      BigInteger bignum = toBigNumerator();
+      BigInteger s = BigIntegerMath.sqrt(bignum, RoundingMode.FLOOR);
+      BigInteger r = bignum.subtract(s.multiply(s));
+      return new IInteger[] {valueOf(s), valueOf(r)};
+    }
+    return null;
   }
 
   @Override

@@ -503,7 +503,12 @@ public class Symbol implements ISymbol, Serializable {
   public final boolean hasFlatAttribute() {
     return ISymbol.hasFlatAttribute(fAttributes);
   }
-
+  
+  @Override
+  public final boolean hasHoldAllCompleteAttribute() {
+    return ISymbol.hasHoldAllCompleteAttribute(fAttributes);
+  }
+   
   /** {@inheritDoc} */
   @Override
   public int hashCode() {
@@ -522,7 +527,7 @@ public class Symbol implements ISymbol, Serializable {
 
   @Override
   public final boolean hasOrderlessFlatAttribute() {
-    return ISymbol.hasOrderlessAttributeFlat(fAttributes);
+    return ISymbol.hasOrderlessFlatAttribute(fAttributes);
   }
 
   /** {@inheritDoc} */

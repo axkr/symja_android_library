@@ -58,6 +58,12 @@ public interface IFunctionEvaluator extends IEvaluator {
 
   int[] ARGS_1_5 = new int[] {1, 5};
 
+  /**
+   * The function is allowed to have 1 or 5 arguments and the head must be the built-in symbol name
+   * of the function or can be an <code>operatorForm1</code>.
+   */
+  int[] ARGS_1_5_1 = new int[] {1, 5, 1};
+
   int[] ARGS_2_2 = new int[] {2, 2};
 
   /**
@@ -151,6 +157,8 @@ public interface IFunctionEvaluator extends IEvaluator {
   int[] ARGS_4_4 = new int[] {4, 4};
 
   int[] ARGS_5_5 = new int[] {5, 5};
+  
+  int[] ARGS_6_6 = new int[] {6, 6};
 
   int[] ARGS_0_INFINITY = new int[] {0, Integer.MAX_VALUE};
 

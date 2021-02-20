@@ -222,7 +222,7 @@ public interface ISignedNumber extends INumber {
    * Returns the signum function of this number (i.e., -1, 0 or 1 as the value of this number is
    * negative, zero or positive).
    *
-   * @return -1 if this is a negative number;<br>
+   * @return 1 if this is a positive number;<br>
    *     0 if this is a zero;<br>
    *     -1 if this is a negative number;
    */

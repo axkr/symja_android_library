@@ -30,6 +30,7 @@ import org.jgrapht.graph.DefaultGraphType;
 import org.jgrapht.graph.DefaultGraphType.Builder;
 import org.matheclipse.core.basic.Config;
 import org.matheclipse.core.builtin.BooleanFunctions;
+import org.matheclipse.core.builtin.PredicateQ;
 import org.matheclipse.core.builtin.StructureFunctions;
 import org.matheclipse.core.convert.AST2Expr;
 import org.matheclipse.core.convert.VariablesSet;
@@ -663,6 +664,12 @@ public abstract class AbstractAST implements IASTMutable {
 
     /** {@inheritDoc} */
     @Override
+    public final boolean isNumericFunction(IExpr expr) {
+      return false;
+    }
+
+    /** {@inheritDoc} */
+    @Override
     public final boolean isNumericMode() {
       return false;
     }
@@ -687,6 +694,12 @@ public abstract class AbstractAST implements IASTMutable {
 
     @Override
     public boolean isPlusTimesPower() {
+      return false;
+    }
+
+    /** {@inheritDoc} */
+    @Override
+    public boolean isPossibleZero(boolean fastTest) {
       return false;
     }
 
@@ -1633,6 +1646,57 @@ public abstract class AbstractAST implements IASTMutable {
     return true;
   }
 
+  public IExpr.COMPARE_TERNARY equalTernary(IExpr that, EvalEngine engine) {
+    if (that.isIndeterminate()) {
+      return IExpr.COMPARE_TERNARY.UNDECIDABLE;
+    }
+    if (this == that) {
+      return IExpr.COMPARE_TERNARY.TRUE;
+    }
+
+    if (that.isAST()) {
+      IAST list2 = (IAST) that;
+      if (isList() && list2.isList()) {
+        int size1 = size();
+        if (size1 != list2.size()) {
+          return IExpr.COMPARE_TERNARY.FALSE;
+        }
+        IExpr.COMPARE_TERNARY b = IExpr.COMPARE_TERNARY.TRUE;
+        for (int i = 1; i < size1; i++) {
+          b = get(i).equalTernary(list2.get(i), engine);
+          if (b == IExpr.COMPARE_TERNARY.FALSE) {
+
+            return IExpr.COMPARE_TERNARY.FALSE;
+          }
+          if (b != IExpr.COMPARE_TERNARY.TRUE) {
+            return IExpr.COMPARE_TERNARY.UNDECIDABLE;
+          }
+        }
+        return IExpr.COMPARE_TERNARY.TRUE;
+      } else {
+        int size1 = size();
+        if (size1 == list2.size() //
+            && size1 > 0
+            && head().equals(list2.head())) {
+          boolean unequal = false;
+          IExpr.COMPARE_TERNARY b = IExpr.COMPARE_TERNARY.TRUE;
+          for (int i = 1; i < size1; i++) {
+            b = get(i).equalTernary(list2.get(i), engine);
+            if (b != IExpr.COMPARE_TERNARY.TRUE) {
+              unequal = true;
+              break;
+            }
+          }
+          if (!unequal) {
+            return IExpr.COMPARE_TERNARY.TRUE;
+          }
+        }
+      }
+    }
+
+    return IASTMutable.super.equalTernary(that, engine);
+  }
+
   /** {@inheritDoc} */
   @Override
   public final Complex evalComplex() {
@@ -1676,15 +1740,17 @@ public abstract class AbstractAST implements IASTMutable {
    */
   public IExpr evalEvaluate(EvalEngine engine) {
     IASTMutable[] rlist = new IASTMutable[] {F.NIL};
-    forEach(
-        1,
-        size(),
-        (x, i) -> {
-          if (x.isAST(S.Evaluate)) {
-            IExpr temp = engine.evalLoop(x);
-            engine.evalArg(rlist, this, temp, x, i, false);
-          }
-        });
+    if (!isHoldAllCompleteAST()) {
+      forEach(
+          1,
+          size(),
+          (x, i) -> {
+            if (x.isAST(S.Evaluate)) {
+              IExpr temp = engine.evalLoop(x);
+              engine.evalArg(rlist, this, temp, x, i, false);
+            }
+          });
+    }
     return rlist[0];
   }
 
@@ -3225,6 +3291,12 @@ public abstract class AbstractAST implements IASTMutable {
 
   /** {@inheritDoc} */
   @Override
+  public final boolean isHoldAllCompleteAST() {
+    return topHead().hasHoldAllCompleteAttribute();
+  }
+
+  /** {@inheritDoc} */
+  @Override
   public final boolean isInfinity() {
     return this.equals(F.CInfinity);
   }
@@ -3670,6 +3742,16 @@ public abstract class AbstractAST implements IASTMutable {
     if (head().isSymbol() && ((ISymbol) head()).isNumericFunctionAttribute() || isList()) {
       // check if all arguments are &quot;numeric&quot;
       return forAll(x -> x.isNumericFunction(varSet));
+    }
+    return false;
+  }
+
+  /** {@inheritDoc} */
+  @Override
+  public boolean isNumericFunction(IExpr expr) {
+    if (head().isSymbol() && ((ISymbol) head()).isNumericFunctionAttribute() || isList()) {
+      // check if all arguments are &quot;numeric&quot;
+      return forAll(x -> x.isNumericFunction(expr));
     }
     return false;
   }
@@ -4371,6 +4453,12 @@ public abstract class AbstractAST implements IASTMutable {
     return head() == S.With && size() == 3;
   }
 
+  /** {@inheritDoc} */
+  @Override
+  public boolean isPossibleZero(boolean fastTest) {
+    return PredicateQ.isPossibleZeroQ(this, fastTest, EvalEngine.get());
+  }
+
   /**
    * Returns an iterator over the elements in this <code>IAST</code> starting with offset <b>1</b>.
    *
@@ -4882,7 +4970,7 @@ public abstract class AbstractAST implements IASTMutable {
     if (size() > 1) {
       final int attr = topHead().getAttributes() & ISymbol.FLATORDERLESS;
       if (attr != ISymbol.NOATTRIBUTE) {
-        if (ISymbol.hasOrderlessAttributeFlat(attr)) {
+        if (ISymbol.hasOrderlessFlatAttribute(attr)) {
           return 17 * head().hashCode();
         } else if (ISymbol.hasFlatAttribute(attr)) {
           if (arg1() instanceof IAST) {

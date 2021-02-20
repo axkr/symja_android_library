@@ -683,18 +683,20 @@ public class EvalEngine implements Serializable {
         }
       } else {
         // the HoldFirst attribute is set here
-        try {
-          if (x.isAST(S.Evaluate)) {
-            selectNumericMode(attr, ISymbol.NHOLDFIRST, localNumericMode);
-            IExpr temp = evalLoop(x);
-            evalArg(rlist, ast, temp, x, 1, isNumericFunction);
-            if (astSize == 2 && rlist[0].isPresent()) {
-              return rlist[0];
+        if (!ast.isHoldAllCompleteAST()) {
+          try {
+            if (x.isAST(S.Evaluate)) {
+              selectNumericMode(attr, ISymbol.NHOLDFIRST, localNumericMode);
+              IExpr temp = evalLoop(x);
+              evalArg(rlist, ast, temp, x, 1, isNumericFunction);
+              if (astSize == 2 && rlist[0].isPresent()) {
+                return rlist[0];
+              }
             }
-          }
-        } finally {
-          if ((ISymbol.NHOLDFIRST & attr) == ISymbol.NHOLDFIRST) {
-            fNumericMode = numericMode;
+          } finally {
+            if ((ISymbol.NHOLDFIRST & attr) == ISymbol.NHOLDFIRST) {
+              fNumericMode = numericMode;
+            }
           }
         }
       }
@@ -721,21 +723,23 @@ public class EvalEngine implements Serializable {
           }
         } else {
           // the HoldRest attribute is set here
-          numericMode = fNumericMode;
-          try {
-            selectNumericMode(attr, ISymbol.NHOLDREST, localNumericMode);
-            ast.forEach(
-                2,
-                astSize,
-                (arg, i) -> {
-                  if (arg.isAST(S.Evaluate)) {
-                    IExpr temp = evalLoop(arg);
-                    evalArg(rlist, ast, temp, arg, i, isNumericFunction);
-                  }
-                });
-          } finally {
-            if ((ISymbol.NHOLDREST & attr) == ISymbol.NHOLDREST) {
-              fNumericMode = numericMode;
+          if (!ast.isHoldAllCompleteAST()) {
+            numericMode = fNumericMode;
+            try {
+              selectNumericMode(attr, ISymbol.NHOLDREST, localNumericMode);
+              ast.forEach(
+                  2,
+                  astSize,
+                  (arg, i) -> {
+                    if (arg.isAST(S.Evaluate)) {
+                      IExpr temp = evalLoop(arg);
+                      evalArg(rlist, ast, temp, arg, i, isNumericFunction);
+                    }
+                  });
+            } finally {
+              if ((ISymbol.NHOLDREST & attr) == ISymbol.NHOLDREST) {
+                fNumericMode = numericMode;
+              }
             }
           }
         }

@@ -550,9 +550,61 @@ public interface IExpr
    * @param that
    * @return <code>S.True, S.False or F.NIL</code
    */
-  public default IExpr equalTo(IExpr that) {
-    COMPARE_TERNARY temp = BooleanFunctions.compareEqual(this, that);
+  default IExpr equalTo(IExpr that) {
+    COMPARE_TERNARY temp = this.equalTernary(that, EvalEngine.get());
     return convertToExpr(temp);
+  }
+
+  default IExpr.COMPARE_TERNARY equalTernary(IExpr that, EvalEngine engine) {
+    if (isIndeterminate() || that.isIndeterminate()) {
+      return IExpr.COMPARE_TERNARY.UNDECIDABLE;
+    }
+    if (this == that) {
+      return IExpr.COMPARE_TERNARY.TRUE;
+    }
+
+    IExpr arg1 = this;
+    IExpr arg2 = that;
+    if (!arg1.isReal() && arg1.isNumericFunction(true)) {
+      arg1 = engine.evalN(arg1);
+    }
+    if (!arg2.isReal() && arg2.isNumericFunction(true)) {
+      arg2 = engine.evalN(arg2);
+    }
+    if (arg2.isInexactNumber() && arg1.isExactNumber()) {
+      arg1 = engine.evalN(arg1);
+    }
+    if (arg1.isInexactNumber() && arg2.isExactNumber()) {
+      arg2 = engine.evalN(arg2);
+    }
+
+    if (isSame(that)) {
+      return IExpr.COMPARE_TERNARY.TRUE;
+    } else {
+      if (isConstantAttribute() && that.isConstantAttribute()) {
+        return IExpr.COMPARE_TERNARY.FALSE;
+      }
+      if (isString() && that.isString()) {
+        return IExpr.COMPARE_TERNARY.FALSE;
+      }
+    }
+
+    IExpr difference = engine.evaluate(F.Subtract(arg1, arg2));
+    if (difference.isNumber()) {
+      if (difference.isZero()) {
+        return IExpr.COMPARE_TERNARY.TRUE;
+      }
+      return IExpr.COMPARE_TERNARY.FALSE;
+    }
+    if (difference.isConstantAttribute()) {
+      return IExpr.COMPARE_TERNARY.FALSE;
+    }
+
+    if (arg1.isNumber() && arg2.isNumber()) {
+      return IExpr.COMPARE_TERNARY.FALSE;
+    }
+
+    return IExpr.COMPARE_TERNARY.UNDECIDABLE;
   }
 
   /**
@@ -1868,6 +1920,16 @@ public interface IExpr
   }
 
   /**
+   * Test if this expression is an AST list, which contains a <b>header element</b> with attribute
+   * {@link ISymbol#HOLDALLCOMPLETE} at index position <code>0</code>.
+   *
+   * @return
+   */
+  default boolean isHoldAllCompleteAST() {
+    return false;
+  }
+
+  /**
    * Test if this expression is th symbol <code>Hold</code> or <code>HoldForm</code>
    *
    * @return
@@ -2397,7 +2459,7 @@ public interface IExpr
    * @return
    */
   default boolean isNumber() {
-    return this instanceof INumber;
+    return false;
   }
 
   /**
@@ -2491,7 +2553,7 @@ public interface IExpr
    * @see #isRealResult()
    */
   default boolean isNumericFunction(boolean allowList) {
-    return isNumber() || isConstantAttribute();
+    return false;
   }
 
   /**
@@ -2504,6 +2566,18 @@ public interface IExpr
    */
   default boolean isNumericFunction(VariablesSet varSet) {
     return isNumericFunction(true) || varSet.contains(this);
+  }
+
+  /**
+   * Test if this expression is a numeric function (i.e. a number, a symbolic constant or a function
+   * (with attribute NumericFunction) where all arguments are also &quot;numeric functions&quot;)
+   * under the assumption, that the <code>variable</code> is also numeric.
+   *
+   * @param variable
+   * @return
+   */
+  default boolean isNumericFunction(IExpr variable) {
+    return isNumericFunction(true) || variable.equals(this);
   }
 
   /**
@@ -3368,6 +3442,16 @@ public interface IExpr
   }
 
   /**
+   * Test if this expression equals <code>0</code> in symbolic or numeric mode.
+   *
+   * @param fastTest check only numerical; no <code>Simplify</code> tests.
+   * @return
+   */
+  default boolean isPossibleZero(boolean fastTest) {
+    return isZero();
+  }
+
+  /**
    * {@inheritDoc}
    *
    * <p>Calls <code>PossibleZeroQ()</code>
@@ -3638,6 +3722,33 @@ public interface IExpr
    */
   default IExpr negative() {
     return opposite();
+  }
+
+  /**
+   * Nest <code>this</code> expression with <code>head</code> applied <code>n</code> times to <code>
+   * this</code>.
+   *
+   * <pre>
+   *   this.nest(h, 4)
+   * </pre>
+   *
+   * gives
+   *
+   * <pre>
+   *   h(h(h(h(this))))
+   * </pre>
+   *
+   * @param head the head which should be applied to this n times
+   * @param n a value > 0, otherwise <code>this</code> will be returned as default value
+   * @return
+   */
+  default IExpr nest(final IExpr head, final int n) {
+    IExpr temp = this;
+    final Function<IExpr, IExpr> function = x -> F.unaryAST1(head, x);
+    for (int i = 0; i < n; i++) {
+      temp = function.apply(temp);
+    }
+    return temp;
   }
 
   /**
@@ -4377,7 +4488,7 @@ public interface IExpr
    * @return <code>S.True, S.False or F.NIL</code
    */
   public default IExpr unequalTo(IExpr that) {
-    COMPARE_TERNARY temp = BooleanFunctions.compareEqual(this, that);
+    COMPARE_TERNARY temp = this.equalTernary(that, EvalEngine.get());
     if (temp == COMPARE_TERNARY.TRUE) {
       return S.False;
     }

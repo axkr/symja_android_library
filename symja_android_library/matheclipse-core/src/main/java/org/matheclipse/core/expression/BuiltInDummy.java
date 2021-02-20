@@ -496,7 +496,12 @@ public class BuiltInDummy implements IBuiltInSymbol, Serializable {
 
   @Override
   public boolean hasFlatAttribute() {
-    return (fAttributes & FLAT) == FLAT;
+    return ISymbol.hasFlatAttribute(fAttributes);
+  }
+
+  @Override
+  public final boolean hasHoldAllCompleteAttribute() {
+    return ISymbol.hasHoldAllCompleteAttribute(fAttributes);
   }
 
   /** {@inheritDoc} */
