@@ -215,6 +215,16 @@ public final class Validate {
     return null;
   }
 
+  /**
+   * @param ast
+   * @param arg
+   * @param position
+   * @param stringLength
+   * @param minValue
+   * @param maxValue
+   * @param engine
+   * @return <code>null</code> if the conversion isn't possible
+   */
   public static int[][] checkListOfSequenceSpec(
       IAST ast,
       IExpr arg,
@@ -283,6 +293,49 @@ public final class Validate {
     return null;
   }
 
+  /**
+   * Get a dimension parameter. <code>arg</code> is expected to be a positive integer or a
+   * list of positive integers.
+   *
+   * @param ast
+   * @param arg
+   * @param engine
+   * @return <code>null</code> if the conversion isn't possible
+   */
+  public static int[] checkDimension(IAST ast, IExpr arg, EvalEngine engine) {
+    if (arg.isInteger()) {
+      int n = arg.toIntDefault();
+      if (n > 0) {
+        return new int[] {n};
+      }
+    } else if (arg.isList()) {
+      IAST list = (IAST) arg;
+      if (list.argSize() > 0) {
+        int[] result = new int[list.argSize()];
+        int intValue = 0;
+        try {
+          IExpr expr;
+          for (int i = 1; i < list.size(); i++) {
+            intValue = list.get(i).toIntDefault();
+            if (intValue <= 0) {
+              // The dimension parameter `1` is expected to be a positive integer or a list of
+              // positive integers
+              IOFunctions.printMessage(ast.topHead(), "posdim", F.List(arg), engine);
+              return null;
+            }
+            result[i - 1] = intValue;
+          }
+          return result;
+        } catch (RuntimeException rex) {
+          //
+        }
+      }
+    }
+    // The dimension parameter `1` is expected to be a positive integer or a list of positive
+    // integers
+    IOFunctions.printMessage(ast.topHead(), "posdim", F.List(arg), engine);
+    return null;
+  }
   /**
    * Check the argument, if it's a Java {@code int} value in the range [ {@code startValue},
    * Integer.MAX_VALUE]
