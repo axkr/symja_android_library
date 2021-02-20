@@ -18,6 +18,7 @@ import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IASTAppendable;
 import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.interfaces.IInteger;
+import org.matheclipse.core.interfaces.INumber;
 import org.matheclipse.core.interfaces.IPredicate;
 import org.matheclipse.core.interfaces.ISparseArray;
 import org.matheclipse.core.interfaces.IStringX;
@@ -990,45 +991,7 @@ public class PredicateQ {
         return expr.isZero();
       }
       if (expr.isAST()) {
-        try {
-          IExpr temp =
-              ((IAST) expr)
-                  .replace( //
-                      x -> x.isNumericFunction(true), //
-                      x -> {
-                        IExpr t = x.evalNumber();
-                        return t != null ? t : F.NIL;
-                      });
-          if (temp != null) {
-            temp = engine.evaluate(temp);
-            if (temp.isZero()) {
-              return true;
-            }
-          }
-
-          if (expr.isPlus()) {
-            IExpr[] commonFactors =
-                InternalFindCommonFactorPlus.findCommonFactors((IAST) expr, true);
-            if (commonFactors != null) {
-              temp = S.Simplify.of(engine, F.Times(commonFactors[0], commonFactors[1]));
-              if (temp.isNumber()) {
-                return temp.isZero();
-              }
-              temp = temp.evalNumber();
-              if (temp != null) {
-                if (temp.isZero()) {
-                  return true;
-                }
-              }
-            }
-          }
-
-          return isZeroTogether(expr, engine);
-        } catch (ValidateException ve) {
-          if (FEConfig.SHOW_STACKTRACE) {
-            ve.printStackTrace();
-          }
-        }
+        return isPossibleZeroQ((IAST) expr, false, engine);
       }
       return false;
     }
@@ -1543,6 +1506,52 @@ public class PredicateQ {
         if (expr.isNumber()) {
           return expr.isZero();
         }
+      }
+    }
+    return false;
+  }
+
+  public static boolean isPossibleZeroQ(IAST ast, boolean fastTest, EvalEngine engine) {
+    try {
+      if (fastTest) {
+        INumber temp = ast.isNumericFunction(true) ? ast.evalNumber() : null;
+        return (temp != null && temp.isZero());
+      }
+
+      IExpr temp =
+          ast.replace( //
+              x -> x.isNumericFunction(true), //
+              x -> {
+                IExpr t = x.evalNumber();
+                return t != null ? t : F.NIL;
+              });
+      if (temp.isPresent()) {
+        temp = engine.evaluate(temp);
+        if (temp.isZero()) {
+          return true;
+        }
+      }
+
+      if (ast.isPlus()) {
+        IExpr[] commonFactors = InternalFindCommonFactorPlus.findCommonFactors((IAST) ast, true);
+        if (commonFactors != null) {
+          temp = S.Simplify.of(engine, F.Times(commonFactors[0], commonFactors[1]));
+          if (temp.isNumber()) {
+            return temp.isZero();
+          }
+          temp = temp.evalNumber();
+          if (temp != null) {
+            if (temp.isZero()) {
+              return true;
+            }
+          }
+        }
+      }
+
+      return isZeroTogether(ast, engine);
+    } catch (ValidateException ve) {
+      if (FEConfig.SHOW_STACKTRACE) {
+        ve.printStackTrace();
       }
     }
     return false;
