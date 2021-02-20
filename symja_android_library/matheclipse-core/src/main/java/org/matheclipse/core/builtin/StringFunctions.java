@@ -1359,7 +1359,11 @@ public final class StringFunctions {
           if (arg1.isList()) {
             list = (IAST) arg1;
           } else {
-            return arg1.isString() ? arg1 : F.NIL;
+            if (arg1.isString()) {
+              return arg1;
+            }
+            // String expected at position `1` in `2`.
+            return IOFunctions.printMessage(ast.topHead(), "string", F.List(F.C1, ast), engine);
           }
         }
         StringBuilder buf = new StringBuilder();
@@ -1367,7 +1371,8 @@ public final class StringFunctions {
           if (list.get(i).isString()) {
             buf.append(list.get(i).toString());
           } else {
-            return F.NIL;
+            // String expected at position `1` in `2`.
+            return IOFunctions.printMessage(ast.topHead(), "string", F.List(F.ZZ(i), ast), engine);
           }
         }
         return F.$str(buf.toString());
@@ -1887,7 +1892,11 @@ public final class StringFunctions {
     public IExpr evaluate(final IAST ast, EvalEngine engine) {
       IExpr arg1 = engine.evaluate(ast.arg1());
       if (!arg1.isString()) {
-        return F.NIL;
+        if (arg1.isListOfStrings()) {
+          return ((IAST) arg1).mapThread(ast, 1);
+        }
+        // String or list of strings expected at position `1` in `2`.
+        return IOFunctions.printMessage(ast.topHead(), "strse", F.List(F.C1, ast), engine);
       }
       String str1 = ((IStringX) arg1).toString().trim();
       if (ast.isAST1()) {

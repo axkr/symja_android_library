@@ -285,6 +285,8 @@ public class StringFunctionsTest extends AbstractTestCase {
     check(
         "\"Hello\" <> \" \" <> \"world!\"", //
         "Hello world!");
+
+    // message  String expected at position `1` in `2`.
     check(
         "\"Debian\" <> 6", //
         "Debian<>6");
@@ -410,6 +412,15 @@ public class StringFunctionsTest extends AbstractTestCase {
   }
 
   public void testStringSplit() {
+    check(
+        "StringSplit({\"test,fdfd\", \"fhjagsjdg\"},\",\") // InputForm", //
+        "{{\"test\",\"fdfd\"},{\"fhjagsjdg\"}}");
+    check(
+        "StringSplit(test, \",\")", //
+        "StringSplit(test,,)");
+    check(
+        "StringSplit(\"a, ,c,d,\", \",\") // InputForm", //
+        "{\"a\",\" \",\"c\",\"d\"}");
     check(
         "StringSplit(\"abc\\ndef\\nhij\",StartOfLine)", //
         "{abc,def,hij}");
