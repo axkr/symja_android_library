@@ -1082,8 +1082,7 @@ public class IntegerFunctions {
       if (div.isIndeterminate()) {
         return S.Indeterminate;
       }
-      if (div.isNumber()
-          || div.isNumericFunction(true)
+      if (div.isNumericFunction(true) //
           || div.isDirectedInfinity()
           || div.isComplexInfinity()) {
         return F.Subtract(m, F.Times(n, F.Floor(div)));
