@@ -141,8 +141,8 @@ public class SimplifyFunctions {
               F.Cosh(x_), //
               F.Sinh(x_), //
               F.Exp(x), //
-              null, //
-              true));
+              false, //
+              null, true));
     }
 
     private static class SimplifiedResult {
@@ -269,7 +269,7 @@ public class SimplifyFunctions {
         }
         // try ExpandAll, Together, Apart, Factor to reduce the expression
         // long minCounter = fComplexityFunction.apply(expr);
-        SimplifiedResult sResult = new SimplifiedResult(F.NIL, fComplexityFunction.apply(expr));
+        SimplifiedResult sResult = new SimplifiedResult(expr, fComplexityFunction.apply(expr));
         IExpr temp;
         // long count;
         long expandAllCounter = 0;
@@ -279,7 +279,7 @@ public class SimplifyFunctions {
             sResult.checkLessEqual(temp, fComplexityFunction.apply(temp));
           }
         } else if (expr.isPlus()) {
-          temp = Algebra.FactorTerms.factorTermsPlus((IAST) expr, EvalEngine.get());
+          temp = Algebra.factorTermsPlus((IAST) expr, EvalEngine.get());
           if (temp.isPresent()) {
             sResult.checkLessEqual(temp, fComplexityFunction.apply(temp));
           }
@@ -1109,7 +1109,15 @@ public class SimplifyFunctions {
 
       private void functionExpand(
           IExpr expr, SimplifiedResult sResult) { // long minCounter, IExpr result) {
-        if (fFullSimplify) {
+        if (expr.isBooleanFunction()) {
+          try {
+            expr = F.eval(F.BooleanMinimize(expr));
+            sResult.checkLess(expr, fComplexityFunction.apply(expr));
+            return;
+          } catch (RuntimeException rex) {
+            //
+          }
+        } else if (fFullSimplify) {
           try {
             expr = F.eval(F.FunctionExpand(expr));
             sResult.checkLess(expr, fComplexityFunction.apply(expr));
@@ -1117,9 +1125,8 @@ public class SimplifyFunctions {
             //
           }
         } else {
-          if (expr.isLog()
-              || //
-              (expr.isPower() && expr.first().isAbs())) {
+          if (expr.isLog() //
+              || (expr.isPower() && expr.first().isAbs())) {
             try {
               expr = F.eval(F.FunctionExpand(expr));
               sResult.checkLessEqual(expr, fComplexityFunction.apply(expr));
