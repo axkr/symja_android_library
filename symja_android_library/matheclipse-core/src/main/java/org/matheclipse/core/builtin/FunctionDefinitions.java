@@ -17,6 +17,7 @@ public final class FunctionDefinitions {
       ComplexExpand.setEvaluator(new org.matheclipse.core.reflection.system.ComplexExpand());
       D.setEvaluator(new org.matheclipse.core.reflection.system.D());
       Derivative.setEvaluator(new org.matheclipse.core.reflection.system.Derivative());
+      DifferenceDelta.setEvaluator(new org.matheclipse.core.reflection.system.DifferenceDelta());
       DSolve.setEvaluator(new org.matheclipse.core.reflection.system.DSolve());
       EasterSunday.setEvaluator(new org.matheclipse.core.reflection.system.EasterSunday());
       ElementData.setEvaluator(new org.matheclipse.core.data.ElementData());
