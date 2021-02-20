@@ -1599,6 +1599,13 @@ public class S {
   public static final IBuiltInSymbol DiceDissimilarity =
       F.initFinalSymbol("DiceDissimilarity", ID.DiceDissimilarity);
 
+  /**
+   * DifferenceDelta(f(x), h) - generates a forward difference `f(x+1) - f(x)` | See: <a
+   * href="https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/DifferenceDelta.md">DifferenceDelta</a>
+   */
+  public static final IBuiltInSymbol DifferenceDelta =
+      F.initFinalSymbol("DifferenceDelta", ID.DifferenceDelta);
+
   public static final IBuiltInSymbol Differences = F.initFinalSymbol("Differences", ID.Differences);
 
   /**
@@ -2164,7 +2171,8 @@ public class S {
   public static final IBuiltInSymbol Factorial = F.initFinalSymbol("Factorial", ID.Factorial);
 
   /**
-   * Factorial2(n) - returns the double factorial number of the integer `n`. | See: <a
+   * Factorial2(n) - returns the double factorial number of the integer `n` as `n*(n-2)*(n-4)...`. |
+   * See: <a
    * href="https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/Factorial2.md">Factorial2</a>
    */
   public static final IBuiltInSymbol Factorial2 = F.initFinalSymbol("Factorial2", ID.Factorial2);
@@ -2298,6 +2306,21 @@ public class S {
    * href="https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/First.md">First</a>
    */
   public static final IBuiltInSymbol First = F.initFinalSymbol("First", ID.First);
+
+  /**
+   * FirstCase({arg1, arg2, ...}, pattern-matcher) - returns the first of the elements `argi` for
+   * which `pattern-matcher` is matching. | See: <a
+   * href="https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/FirstCase.md">FirstCase</a>
+   */
+  public static final IBuiltInSymbol FirstCase = F.initFinalSymbol("FirstCase", ID.FirstCase);
+
+  /**
+   * FirstPosition(expression, pattern-matcher) - returns the first subexpression of `expression`
+   * for which `pattern-matcher` is matching. | See: <a
+   * href="https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/FirstPosition.md">FirstPosition</a>
+   */
+  public static final IBuiltInSymbol FirstPosition =
+      F.initFinalSymbol("FirstPosition", ID.FirstPosition);
 
   /**
    * Fit(list-of-data-points, degree, variable) - solve a least squares problem using the
@@ -2489,6 +2512,10 @@ public class S {
   public static final IBuiltInSymbol FullSimplify =
       F.initFinalSymbol("FullSimplify", ID.FullSimplify);
 
+  /**
+   * Function(body) - represents a pure function with parameters `#1`, `#2`.... | See: <a
+   * href="https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/Function.md">Function</a>
+   */
   public static final IBuiltInSymbol Function = F.initFinalSymbol("Function", ID.Function);
 
   /**
@@ -2921,7 +2948,7 @@ public class S {
   public static final IBuiltInSymbol I = F.initFinalSymbol("I", ID.I);
 
   /**
-   * Identity(expr) - returns `expr`. | See: <a
+   * Identity(x) - is the identity function, which returns `x` unchanged. | See: <a
    * href="https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/Identity.md">Identity</a>
    */
   public static final IBuiltInSymbol Identity = F.initFinalSymbol("Identity", ID.Identity);
@@ -4993,6 +5020,14 @@ public class S {
       F.initFinalSymbol("QRDecomposition", ID.QRDecomposition);
 
   /**
+   * QuadraticIrrationalQ(expr) - returns `True`, if the `expr` is of the form `(p + s * Sqrt(d)) /
+   * q` for integers `p,q,d,s`. | See: <a
+   * href="https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/QuadraticIrrationalQ.md">QuadraticIrrationalQ</a>
+   */
+  public static final IBuiltInSymbol QuadraticIrrationalQ =
+      F.initFinalSymbol("QuadraticIrrationalQ", ID.QuadraticIrrationalQ);
+
+  /**
    * Quantile(list, q) - returns the `q`-Quantile of `list`. | See: <a
    * href="https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/Quantile.md">Quantile</a>
    */
@@ -5081,7 +5116,8 @@ public class S {
       F.initFinalSymbol("RandomInteger", ID.RandomInteger);
 
   /**
-   * RandomPrime(n) - create a random prime integer number between `2` and `n`. | See: <a
+   * RandomPrime({imin, imax}) - create a random prime integer number between `imin` and `imax`
+   * inclusive. | See: <a
    * href="https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/RandomPrime.md">RandomPrime</a>
    */
   public static final IBuiltInSymbol RandomPrime = F.initFinalSymbol("RandomPrime", ID.RandomPrime);
@@ -6691,6 +6727,8 @@ public class S {
 
   public static final IBuiltInSymbol ZeroSymmetric =
       F.initFinalSymbol("ZeroSymmetric", ID.ZeroSymmetric);
+
+  public static final IBuiltInSymbol ZeroTest = F.initFinalSymbol("ZeroTest", ID.ZeroTest);
 
   /**
    * Zeta(z) - returns the Riemann zeta function of `z`. | See: <a

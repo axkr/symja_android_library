@@ -127,13 +127,13 @@ import org.matheclipse.parser.trie.TrieMatch;
 
 import com.google.common.cache.Cache;
 import com.google.common.cache.CacheBuilder;
-import com.sun.org.apache.bcel.internal.classfile.Code;
 
 import edu.jas.kern.ComputerThreads;
 import edu.jas.kern.PreemptStatus;
 
 /** Factory for creating Symja predefined function expression objects (interface {@link IAST}). */
 public class F extends S {
+
   /**
    * In computing, memoization or memoisation is an optimization technique used primarily to speed
    * up computer programs by storing the results of expensive function calls and returning the
@@ -399,6 +399,9 @@ public class F extends S {
 
   public static Function<IExpr, String> CNullFunction = x -> null;
 
+  /** Represents <code>Missing("NotFound")</code> */
+  public static IAST CMissingNotFound;
+
   /** Represents <code>List(0)</code> */
   public static IAST CListC0;
 
@@ -601,6 +604,7 @@ public class F extends S {
       CEmptyList = headAST0(S.List);
       CEmptyString = $str("");
       CEmptySet = new HashSet<IExpr>();
+      CMissingNotFound = Missing("NotFound");
       CListC0 = new B1.List(C0);
       CListC1 = new B1.List(C1);
       CListC2 = new B1.List(C2);
@@ -818,136 +822,7 @@ public class F extends S {
             B_DEFAULT,
             C_DEFAULT,
             F_DEFAULT,
-            G_DEFAULT,
-            // start symbol strings
-            // Algebraics, Booleans, ComplexInfinity, Catalan, Complexes, Degree, EulerGamma, False,
-            // Flat,
-            // Glaisher, GoldenRatio, HoldAll, HoldFirst, HoldForm, HoldRest, Indeterminate,
-            // Infinity, Integer,
-            // Integers, Khinchin, Listable, Modulus, Null, NumericFunction, OneIdentity, Orderless,
-            // Pi, Primes,
-            // Rationals, Real, Reals, Slot, SlotSequence, String, F.Symbol, True,
-            // // start function strings
-            // Abs, AddTo, And, Alternatives, Apart, AppellF1, Append, AppendTo, Apply, ArcCos,
-            // ArcCosh, ArcCot,
-            // ArcCoth, ArcCsc, ArcCsch, ArcSec, ArcSech, ArcSin, ArcSinh, ArcTan, ArcTanh, Arg,
-            // Array,
-            // // ArrayDepth,
-            // ArrayQ, Assumptions, AtomQ, Attributes,
-            // // BernoulliB,
-            // Binomial, Blank, Block, Boole,
-            // // BooleanConvert,
-            // BooleanMinimize, Break, Cancel, CartesianProduct, Cases, CatalanNumber, Catch,
-            // Ceiling,
-            // CharacteristicPolynomial,
-            // // ChebyshevT,
-            // ChessboardDistance, Chop, Clear, ClearAll, Coefficient, CoefficientList, Collect,
-            // Complement,
-            // Complex,
-            // // ComplexExpand,
-            // ComplexInfinity, ComposeList, CompoundExpression, Condition, Conjugate,
-            // ConjugateTranspose,
-            // ConstantArray, Continue, ContinuedFraction, CoprimeQ, Cos, Cosh, CosIntegral,
-            // CoshIntegral, Cot,
-            // Coth, Count, Cross, Csc, Csch, Curl, Decrement, Default, Defer, Definition, Delete,
-            // DeleteCases,
-            // // DeleteDuplicates,
-            // Denominator, Depth, Derivative, Det, DiagonalMatrix, DigitQ, Dimensions,
-            // DirectedInfinity,
-            // Discriminant, Distribute, Div, DivideBy, Divisible,
-            // // Divisors,
-            // Do, Dot, Drop, Eigenvalues, Eigenvectors, Element,
-            // // Eliminate,
-            // EllipticE, EllipticF, EllipticPi, Equal, Equivalent, Erf, Erfc, Erfi,
-            // EuclideanDistance,
-            // // EulerE,
-            // EulerPhi, EvenQ, Exp, Expand, ExpandAll, ExpIntegralE, ExpIntegralEi, Exponent,
-            // ExtendedGCD,
-            // Extract, Factor, Factorial, Factorial2, FactorInteger, FactorSquareFree,
-            // FactorSquareFreeList,
-            // FactorTerms, Flatten, Fibonacci, FindRoot, First, Fit, FixedPoint, Floor, Fold,
-            // FoldList, For,
-            // FractionalPart, FreeQ, FresnelC, FresnelS, FrobeniusSolve, FromCharacterCode,
-            // FromContinuedFraction,
-            // FullForm, FullSimplify, Function, Gamma, GCD, GeometricMean, Graphics, Graphics3D,
-            // Graphics3D,
-            // Greater, GreaterEqual, GroebnerBasis, HarmonicNumber, Head,
-            // // HermiteH,
-            // HilbertMatrix, Hold, HoldForm, Horner,
-            // // HornerForm,
-            // HurwitzZeta, HypergeometricPFQ, Hypergeometric2F1, Identity, IdentityMatrix, If, Im,
-            // Implies,
-            // Increment, Inner, Insert, IntegerPart, IntegerPartitions, IntegerQ, Integrate,
-            // // InterpolatingFunction, InterpolatingPolynomial,
-            // Intersection, Inverse, InverseErf, InverseFunction, JacobiMatrix, JacobiSymbol,
-            // JavaForm, Join,
-            // KOrderlessPartitions, KPartitions, LaplaceTransform, Last, LCM, LeafCount,
-            // // LaguerreL, LegendreP,
-            // Length, Less, LessEqual, LetterQ, Level, Limit, Line, LinearProgramming, LinearSolve,
-            // List,
-            // ListQ,
-            // Log,
-            // // Log2, Log10,
-            // LogGamma,
-            // // LogicalExpand,
-            // LogIntegral, LowerCaseQ, LUDecomposition, ManhattanDistance, Map, MapAll, MapThread,
-            // MatchQ,
-            // MathMLForm,
-            // // MatrixForm,
-            // MatrixPower, MatrixQ,
-            // // MatrixRank,
-            // Max, Mean, Median, MemberQ, Min, Mod, Module, MoebiusMu,
-            // // MonomialList,
-            // Most, Multinomial, Nand, Negative, Nest, NestList, NestWhile, NestWhileList,
-            // NextPrime,
-            // NFourierTransform, NIntegrate,
-            // // NMaximize, NMinimize,
-            // NonCommutativeMultiply, NonNegative, Nor, Norm, Not, NRoots, NSolve,
-            // // NullSpace,
-            // NumberQ, Numerator, NumericQ, OddQ, Options, Or, Order, OrderedQ, Out, Outer,
-            // PadLeft, PadRight,
-            // // ParametricPlot,
-            // Part, Partition, Pattern, Permutations, Piecewise, Plot, Plot3D, Plus,
-            // // Pochhammer,
-            // PolyGamma, PolyLog, PolynomialExtendedGCD, PolynomialGCD, PolynomialLCM, PolynomialQ,
-            // PolynomialQuotient, PolynomialQuotientRemainder, PolynomialRemainder, Position,
-            // Positive,
-            // PossibleZeroQ, Power, PowerExpand, PowerMod, PreDecrement, PreIncrement, Prepend,
-            // PrependTo,
-            // // Prime,
-            // PrimeQ, PrimitiveRootList, Print, Product, ProductLog, Quiet, Quotient,
-            // RandomInteger,
-            // RandomReal,
-            // // RandomSample,
-            // Range, Rational, Rationalize, Re, Reap, Refine, ReplaceAll, ReplacePart,
-            // ReplaceRepeated, Rest,
-            // Resultant, Return, Reverse, Riffle, RootIntervals, RootOf, Roots, Surd, RotateLeft,
-            // RotateRight,
-            // Round,
-            // // RowReduce,
-            // Rule, RuleDelayed, SameQ, Scan, Sec, Sech, Select, Sequence, Set, SetAttributes,
-            // SetDelayed,
-            // Show,
-            // Sign, SignCmp, Simplify, Sin, Sinc, SingularValueDecomposition, Sinh, SinIntegral,
-            // SinhIntegral,
-            // Solve, Sort, Sow, Sqrt, SquaredEuclideanDistance, SquareFreeQ, StirlingS2,
-            // StringDrop,
-            // StringJoin,
-            // StringLength, StringTake, Subfactorial, Subscript, Subsuperscript, Subsets,
-            // SubtractFrom, Sum,
-            // Superscript, Switch, SyntaxLength, SyntaxQ, Table, Take, Tan, Tanh, Taylor, TeXForm,
-            // Thread,
-            // Through, Throw, TimeConstrained, Times, TimesBy, Timing, ToCharacterCode, Together,
-            // ToString,
-            // Total,
-            // ToUnicode, Tr, Trace, Transpose, TrigExpand, TrigReduce, TrigToExp, TrueQ,
-            // // Tuples,
-            // Unequal, Unevaluated, Union, Unique, UnitStep,
-            // // UnitVector,
-            // UnsameQ, UpperCaseQ, UpSet, UpSetDelayed, ValueQ, VandermondeMatrix, Variables,
-            // VectorQ, Which,
-            // While, Xor,
-            // // Zeta
+            G_DEFAULT
           };
       short exprID = EXPRID_MAX_BUILTIN_LENGTH;
       GLOBAL_IDS_MAP.defaultReturnValue((short) -1);
@@ -1031,6 +906,7 @@ public class F extends S {
 
       S.Integrate.setEvaluator(org.matheclipse.core.reflection.system.Integrate.CONST);
       COUNT_DOWN_LATCH.countDown();
+
       // long stop = System.currentTimeMillis();
       // System.out.println("Milliseconds: " + (stop - start));
     } catch (Throwable th) {
@@ -1437,22 +1313,22 @@ public class F extends S {
    * Java Object       -&gt; Symja object
    * -------------------------------------
    * null object          {@link S#Null} symbol
-   * IExpr                IExpr type
+   * IExpr                {@link IExpr} type
    * Boolean              {@link S#True} or {@link S#False} symbol
-   * BigInteger           Integer value
-   * BigDecimal           <code>Num</code> with doubleValue() value
-   * Double               <code>Num</code> with doubleValue() value
-   * Float                <code>Num</code> with doubleValue() value
-   * Integer              Symja Integer with intValue() value
-   * Long                 Symja Integer with longValue() value
-   * Number               Symja <code>Num</code> with doubleValue() value
+   * BigInteger           {@link IInteger} value
+   * BigDecimal           {@link INum} with {@link Apfloat#Apfloat(java.math.BigDecimal)} value
+   * Double               {@link INum}  with doubleValue() value
+   * Float                {@link INum}  with doubleValue() value
+   * Integer              {@link IInteger} with intValue() value
+   * Long                 {@link IInteger} with longValue() value
+   * Number               {@link INum} with doubleValue() value
    * java.util.Collection list of elements
    *                      1..nth element of the list give the elements of the List()
    * Object[]             a list of converted objects
-   * int[]                a list of <code>IntegerSym</code> integer values
+   * int[]                a list of {@link IInteger} integer values
    * double[]             a vector ASTRealVector of <code>double</code> values
    * double[][]           a matrix ASTRealMatrix of <code>double</code> values
-   * Complex[]            a list of <code>ComplexNum</code> values
+   * Complex[]            a list of {@link IComplexNum} values
    * boolean[]            a list of {@link S#True} or {@link S#False} symbols
    *
    * </pre>
@@ -1471,22 +1347,22 @@ public class F extends S {
    * Java Object       -&gt; Symja object
    * -------------------------------------
    * null object          {@link S#Null} symbol
-   * IExpr                IExpr type
+   * IExpr                {@link IExpr} type
    * Boolean              {@link S#True} or {@link S#False} symbol
-   * BigInteger           Integer value
-   * BigDecimal           <code>Num</code> with doubleValue() value
-   * Double               <code>Num</code> with doubleValue() value
-   * Float                <code>Num</code> with doubleValue() value
-   * Integer              Symja Integer with intValue() value
-   * Long                 Symja Integer with longValue() value
-   * Number               Symja <code>Num</code> with doubleValue() value
+   * BigInteger           {@link IInteger} value
+   * BigDecimal           {@link INum} with {@link Apfloat#Apfloat(java.math.BigDecimal)} value
+   * Double               {@link INum}  with doubleValue() value
+   * Float                {@link INum}  with doubleValue() value
+   * Integer              {@link IInteger} with intValue() value
+   * Long                 {@link IInteger} with longValue() value
+   * Number               {@link INum} with doubleValue() value
    * java.util.Collection list of elements
    *                      1..nth element of the list give the elements of the List()
    * Object[]             a list of converted objects
-   * int[]                a list of <code>IntegerSym</code> integer values
+   * int[]                a list of {@link IInteger} integer values
    * double[]             a vector ASTRealVector of <code>double</code> values
    * double[][]           a matrix ASTRealMatrix of <code>double</code> values
-   * Complex[]            a list of <code>ComplexNum</code> values
+   * Complex[]            a list of {@link IComplexNum} values
    * boolean[]            a list of {@link S#True} or {@link S#False} symbols
    *
    * </pre>
@@ -1731,8 +1607,15 @@ public class F extends S {
     return new AST2(Apart, a0, a1);
   }
 
-  public static IAST AppellF1(final IExpr... a) {
-    return function(AppellF1, a);
+  public static IAST AppellF1(
+      final IExpr a,
+      final IExpr b1,
+      final IExpr b2,
+      final IExpr c,
+      final IExpr z1,
+      final IExpr z2) {
+    IExpr[] arr = new IExpr[] {a, b1, b2, c, z1, z2};
+    return new AST(AppellF1, arr);
   }
 
   public static IAST Append(final IExpr a0, final IExpr a1) {
@@ -2241,6 +2124,10 @@ public class F extends S {
     return new AST1(BooleanQ, a);
   }
 
+  public static IAST BooleanMinimize(final IExpr a) {
+    return new AST1(BooleanMinimize, a);
+  }
+
   public static IAST BooleanTable(final IExpr a0, final IExpr a1) {
     return new AST2(BooleanTable, a0, a1);
   }
@@ -2739,7 +2626,7 @@ public class F extends S {
    * @param a
    * @return
    */
-  public static IAST function(IExpr head, final IExpr... a) {
+  public static IASTMutable function(IExpr head, final IExpr... a) {
     final int size = a.length;
     switch (size) {
       case 1:
@@ -3423,7 +3310,8 @@ public class F extends S {
     if (a.isAST()) {
       EvalEngine engine = EvalEngine.get();
       IAST ast = engine.evalFlatOrderlessAttributesRecursive((IAST) a).orElse((IAST) a);
-      return Algebra.expandAll(ast, null, expandNegativePowers, distributePlus, engine).orElse(ast);
+      return Algebra.expandAll(ast, null, expandNegativePowers, distributePlus, false, engine)
+          .orElse(ast);
     }
     return a;
   }
@@ -4988,7 +4876,7 @@ public class F extends S {
     return List(a);
   }
 
-  public static IAST List(final int... numbers) {
+  public static IASTMutable List(final int... numbers) {
     IInteger a[] = new IInteger[numbers.length];
     for (int i = 0; i < numbers.length; i++) {
       a[i] = ZZ(numbers[i]);
@@ -6318,10 +6206,12 @@ public class F extends S {
   }
 
   /**
-   * Create a unique dummy symbol which is retrieved from the evaluation engines DUMMY context.
+   * Create a unique dummy symbol which is retrieved from the evaluation engines DUMMY context. A
+   * &quot;Dummy&quot; symbol is not known in string parsing.
    *
    * @param symbolName the name of the symbol
    * @return the symbol object from the context path
+   * @see #symbol(String)
    */
   public static ISymbol Dummy(final String symbolName) {
     String name = symbolName;
@@ -6337,7 +6227,7 @@ public class F extends S {
 
   /**
    * Create a unique dummy symbol with prefix "$", which is retrieved from the evaluation engines
-   * DUMMY context.
+   * DUMMY context. A &quot;Dummy&quot; symbol is not known in string parsing.
    *
    * @param engine the evaluation engine
    * @return the symbol object from the context path
@@ -6606,8 +6496,51 @@ public class F extends S {
     return new AST1(SlotSequence, ZZ(i));
   }
 
+  /**
+   * See <a href=
+   * "https://github.com/axkr/symja_android_library/blob/master/symja_android_library/doc/functions/Solve.md">Solve</a>
+   */
   public static IAST Solve(final IExpr a0, final IExpr a1) {
     return new AST2(Solve, a0, a1);
+  }
+
+  /**
+   * Solve an equation for a single variable.
+   *
+   * <p>Solve <code>100-x==0</code> for variable <code>x</code>
+   *
+   * <pre>
+   *   ISymbol x = F.Dummy(engine);
+   *   IExpr[] solutions = F.solve(F.Equal(F.Subtract(F.ZZ(100), x), F.C0), x);
+   * </pre>
+   *
+   * See <a href=
+   * "https://github.com/axkr/symja_android_library/blob/master/symja_android_library/doc/functions/Solve.md">Solve</a>
+   *
+   * @param equations one single equation or a list of equations.
+   * @param variable
+   * @return
+   */
+  public static IExpr[] solve(final IAST equations, final ISymbol variable) {
+    IExpr solve = S.Solve.of(equations, variable);
+    if (!solve.isListOfLists()) {
+      return new IExpr[0];
+    }
+    IExpr[] result = new IExpr[solve.size() - 1];
+    int j = 0;
+    for (int i = 1; i < solve.size(); i++) {
+      IAST listRule = (IAST) solve.getAt(i);
+      if (listRule.first().isRule()) {
+        IAST rule = (IAST) listRule.first();
+        result[j++] = rule.second();
+      }
+    }
+    if (j < solve.size() - 1) {
+      IExpr[] newResult = new IExpr[j];
+      System.arraycopy(result, 0, newResult, 0, j);
+      return newResult;
+    }
+    return result;
   }
 
   public static IAST Sort(final IExpr a0, final IExpr a1) {

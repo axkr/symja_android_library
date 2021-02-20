@@ -227,7 +227,8 @@ public class AST2Expr {
     "Whitespace",
     "WhitespaceCharacter",
     "WordCharacter",
-    "Yellow"
+    "Yellow",
+    "ZeroTest"
   };
 
   public static final String[] FUNCTION_STRINGS = {
@@ -460,6 +461,7 @@ public class AST2Expr {
     "DialogNotebook",
     "DialogReturn",
     "DiceDissimilarity",
+    "DifferenceDelta",
     "Differences",
     "DigitCount",
     "DigitQ",
@@ -574,6 +576,8 @@ public class AST2Expr {
     "FindSpanningTree",
     "FindVertexCover",
     "First",
+    "FirstCase",
+    "FirstPosition",
     "Fit",
     "FittedModel",
     "FiveNum",
@@ -984,6 +988,7 @@ public class AST2Expr {
     "PseudoInverse",
     "Put",
     "QRDecomposition",
+    "QuadraticIrrationalQ",
     "Quantile",
     "Quantity",
     "QuantityDistribution",
