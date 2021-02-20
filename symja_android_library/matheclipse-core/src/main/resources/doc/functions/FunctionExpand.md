@@ -8,6 +8,7 @@ FunctionExpand(expression)
 
 See
 * [Wikipedia - Nested radical](https://en.wikipedia.org/wiki/Nested_radical) 
+* [Wikipedia - Trigonometric constants expressed in real radicals](https://en.wikipedia.org/wiki/Trigonometric_constants_expressed_in_real_radicals)
 
 ### Examples
 
@@ -21,4 +22,4 @@ Sqrt(2)+Sqrt(3)
 
 ### Github
 
-* [Implementation of FunctionExpand](https://github.com/axkr/symja_android_library/blob/master/symja_android_library/matheclipse-core/src/main/java/org/matheclipse/core/reflection/system/FunctionExpand.java#L67) 
+* [Implementation of FunctionExpand](https://github.com/axkr/symja_android_library/blob/master/symja_android_library/matheclipse-core/src/main/java/org/matheclipse/core/reflection/system/FunctionExpand.java#L69) 

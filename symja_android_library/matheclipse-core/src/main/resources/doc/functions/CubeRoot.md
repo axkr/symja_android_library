@@ -3,6 +3,7 @@
 ```
 CubeRoot(n)
 ```
+
 > finds the real-valued cube root of the given `n`.
 
 ### Examples
@@ -27,6 +28,9 @@ b^(1/3)
 -0.793701
 ```
 
+### Related terms
+[Surd](Surd.md)
+
 ### Github
 
-* [Implementation of CubeRoot](https://github.com/axkr/symja_android_library/blob/master/symja_android_library/matheclipse-core/src/main/java/org/matheclipse/core/builtin/NumberTheory.java#L1179) 
+* [Implementation of CubeRoot](https://github.com/axkr/symja_android_library/blob/master/symja_android_library/matheclipse-core/src/main/java/org/matheclipse/core/builtin/Arithmetic.java#L1249) 

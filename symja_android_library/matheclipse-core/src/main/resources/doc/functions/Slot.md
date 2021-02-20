@@ -35,9 +35,7 @@ Recursive pure functions can be written using `#0`:
 ``` 
 >> If(#1<=1, 1, #1 #0(#1-1))& [10]
 3628800
-```
 
-```
 >> # // InputForm
 #1
      

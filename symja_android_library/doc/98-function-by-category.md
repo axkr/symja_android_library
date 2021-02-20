@@ -1,6 +1,7 @@
 - [Combinatorial](#combinatorial)
 - [Comparison](#comparison)
 - [Control flow statements](#control-flow-statements)
+- [Diophantine Equations](#diophantine-equations)
 - [Formatting output](#formatting-output)
 - [Graph theory](#graph-theory)
 - [Linear algebra](#linear-algebra)
@@ -80,6 +81,17 @@
 * [Which](functions/Which.md)
 * [While](functions/While.md)
 
+## Diophantine Equations
+
+* [ChineseRemainder](functions/ChineseRemainder.md)
+* [FrobeniusNumber](functions/FrobeniusNumber.md)
+* [FrobeniusSolve](functions/FrobeniusSolve.md)
+* [IntegerPartitions](functions/IntegerPartitions.md)
+* [MultiplicativeOrder](functions/MultiplicativeOrder.md)
+* [PartitionsP](functions/PartitionsP.md)
+* [PartitionsQ](functions/PartitionsQ.md)
+* [PowerMod](functions/PowerMod.md)
+
 ## Formatting output
 
 * [HornerForm](functions/HornerForm.md)
@@ -131,7 +143,6 @@
 * [Eigenvalues](functions/Eigenvalues.md)
 * [Eigenvectors](functions/Eigenvectors.md) 
 * [EuclideanDistance](functions/EuclideanDistance.md)
-* [FrobeniusSolve](functions/FrobeniusSolve.md)
 * [HilbertMatrix](functions/HilbertMatrix.md)
 * [IdentityMatrix](functions/IdentityMatrix.md)
 * [Inner](functions/Inner.md)
@@ -187,9 +198,11 @@
 ## Number theory
 
 * [CoprimeQ](functions/CoprimeQ.md)
+* [ContinuedFraction](functions/ContinuedFraction.md)
 * [Divisors](functions/Divisors.md)
 * [EvenQ](functions/EvenQ.md)
 * [FactorInteger](functions/FactorInteger.md)
+* [FromContinuedFraction](functions/FromContinuedFraction.md)
 * [GCD](functions/GCD.md)
 * [IntegerExponent](functions/IntegerExponent.md)
 * [JacobiSymbol](functions/JacobiSymbol.md)
@@ -199,11 +212,8 @@
 * [Mod](functions/Mod.md)
 * [NextPrime](functions/NextPrime.md)
 * [OddQ](functions/OddQ.md)
-* [PartitionsP](functions/PartitionsP.md)
-* [PartitionsQ](functions/PartitionsQ.md)
 * [PerfectNumber](functions/PerfectNumber.md)
 * [PerfectNumberQ](functions/PerfectNumberQ.md)
-* [PowerMod](functions/PowerMod.md)
 * [Prime](functions/Prime.md)
 * [PrimePi](functions/PrimePi.md)
 * [PrimePowerQ](functions/PrimePowerQ.md)

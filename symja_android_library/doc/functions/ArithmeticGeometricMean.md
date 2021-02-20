@@ -5,7 +5,6 @@ ArithmeticGeometricMean({a, b, c,...})
 ```
 
 > returns the arithmetic geometric mean of `{a, b, c,...}`. 
-   
 
 See:
 * [Wikipedia - Arithmetic-geometric mean)](https://en.wikipedia.org/wiki/Arithmetic%E2%80%93geometric_mean)
@@ -23,4 +22,4 @@ See:
 
 ### Github
 
-* [Implementation of ArithmeticGeometricMean](https://github.com/axkr/symja_android_library/blob/master/symja_android_library/matheclipse-core/src/main/java/org/matheclipse/core/builtin/StatisticsFunctions.java#L319) 
+* [Implementation of ArithmeticGeometricMean](https://github.com/axkr/symja_android_library/blob/master/symja_android_library/matheclipse-core/src/main/java/org/matheclipse/core/builtin/StatisticsFunctions.java#L318) 

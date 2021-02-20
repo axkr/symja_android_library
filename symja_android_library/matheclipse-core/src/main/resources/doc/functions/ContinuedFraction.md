@@ -35,12 +35,12 @@ For square roots of non-negative integer arguments `ContinuedFraction` determine
 {3,{1,1,1,1,6}}
 
 >> ContinuedFraction(Sqrt(919))
-{30,3,5,1,2,1,2,1,1,1,2,3,1,19,2,3,1,1,4,9,1,7,1,3,6,2,11,1,1,1,29,1,1,1,11,2,6,3,1,7,1,9,4,1,1,3,2,19,1,3,2,1,1,1,2,1,2,1,5,3,60}}
+{30,{3,5,1,2,1,2,1,1,1,2,3,1,19,2,3,1,1,4,9,1,7,1,3,6,2,11,1,1,1,29,1,1,1,11,2,6,3,1,7,1,9,4,1,1,3,2,19,1,3,2,1,1,1,2,1,2,1,5,3,60}}
 ```
 
 ### Related terms 
-[FromContinuedFraction](FromContinuedFraction.md)
+[FromContinuedFraction](FromContinuedFraction.md), [QuadraticIrrationalQ](QuadraticIrrationalQ.md)
 
 ### Github
 
-* [Implementation of ContinuedFraction](https://github.com/axkr/symja_android_library/blob/master/symja_android_library/matheclipse-core/src/main/java/org/matheclipse/core/builtin/NumberTheory.java#L976) 
+* [Implementation of ContinuedFraction](https://github.com/axkr/symja_android_library/blob/master/symja_android_library/matheclipse-core/src/main/java/org/matheclipse/core/builtin/NumberTheory.java#L980) 
