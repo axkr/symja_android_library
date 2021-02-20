@@ -19,7 +19,10 @@ import org.matheclipse.core.expression.data.DateObjectExpr;
 import org.matheclipse.core.expression.data.TimeObjectExpr;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IASTAppendable;
+import org.matheclipse.core.interfaces.IComplexNum;
 import org.matheclipse.core.interfaces.IExpr;
+import org.matheclipse.core.interfaces.IInteger;
+import org.matheclipse.core.interfaces.INum;
 import org.matheclipse.core.parser.ExprParser;
 
 import com.google.common.util.concurrent.AtomicDouble;
@@ -33,27 +36,24 @@ public class Object2Expr {
    * <pre>
    * Java Object       -&gt; Symja object
    * -------------------------------------
-   * null object          F.Null symbol
-   * IExpr                IExpr type
-   * Boolean              True or False symbol
-   * BigInteger           Symja Integer value
-   * BigDecimal           Symja <code>Num</code> with doubleValue() value
-   * Double               Symja <code>Num</code> with doubleValue() value
-   * Float                Symja <code>Num</code> with doubleValue() value
-   * Integer              Symja Integer with longValue() value
-   * Long                 Symja Integer with longValue() value
-   * Number               Symja <code>Num</code> with doubleValue() value
-   * LocalDateTime        Symja DateObjectExpr
-   * LocalTime            Symja TimeObjectExpr
-   * String               Parse the string as Symja expression
+   * null object          {@link S#Null} symbol
+   * IExpr                {@link IExpr} type
+   * Boolean              {@link S#True} or {@link S#False} symbol
+   * BigInteger           {@link IInteger} value
+   * BigDecimal           {@link INum} with {@link Apfloat#Apfloat(java.math.BigDecimal)} value
+   * Double               {@link INum}  with doubleValue() value
+   * Float                {@link INum}  with doubleValue() value
+   * Integer              {@link IInteger} with intValue() value
+   * Long                 {@link IInteger} with longValue() value
+   * Number               {@link INum} with doubleValue() value
    * java.util.Collection list of elements
    *                      1..nth element of the list give the elements of the List()
    * Object[]             a list of converted objects
-   * int[]                a list of <code>IntegerSym</code> integer values
+   * int[]                a list of {@link IInteger} integer values
    * double[]             a vector ASTRealVector of <code>double</code> values
    * double[][]           a matrix ASTRealMatrix of <code>double</code> values
-   * Complex[]            a list of <code>ComplexNum</code> values
-   * boolean[]            a list of True or False symbols
+   * Complex[]            a list of {@link IComplexNum} values
+   * boolean[]            a list of {@link S#True} or {@link S#False} symbols
    *
    * </pre>
    */
@@ -135,6 +135,22 @@ public class Object2Expr {
     return convert(obj);
   }
 
+  /**
+   * Converts the following Java objects into an IExpr expression
+   *
+   * <pre>
+   * Java Object       -&gt; Symja object
+   * -------------------------------------
+   * BigInteger           {@link IInteger} value
+   * BigDecimal           {@link INum} with {@link Apfloat#Apfloat(java.math.BigDecimal)} value
+   * Double               {@link INum}  with doubleValue() value
+   * Float                {@link INum}  with doubleValue() value
+   * Integer              {@link IInteger} with intValue() value
+   * Long                 {@link IInteger} with longValue() value
+   * Number               {@link INum} with doubleValue() value
+   *
+   * </pre>
+   */
   private static IExpr convert(Number n) {
     if (n instanceof Integer) {
       return F.ZZ(((Integer) n).longValue());
@@ -146,10 +162,10 @@ public class Object2Expr {
       return F.ZZ(((Long) n).longValue());
     }
     if (n instanceof BigInteger) {
-      return F.integer((BigInteger) n);
+      return F.ZZ((BigInteger) n);
     }
     if (n instanceof BigDecimal) {
-      return F.num(new Apfloat(((BigDecimal) n).doubleValue()));
+      return F.num(new Apfloat((BigDecimal) n));
     }
     if (n instanceof Float) {
       return F.num(((Float) n).doubleValue());
