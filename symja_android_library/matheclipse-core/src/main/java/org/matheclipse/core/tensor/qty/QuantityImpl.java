@@ -23,7 +23,9 @@ public class QuantityImpl extends DataExpr<IUnit> implements IQuantity, External
    * @return
    */
   /* package */ static IExpr of(IExpr value, IUnit unit) {
-    return IUnit.ONE.equals(unit) ? value : new QuantityImpl(value, unit);
+    return IUnit.ONE.equals(unit)
+        ? value
+        : new QuantityImpl(value, unit);
   }
 
   private IExpr arg1;
@@ -113,6 +115,9 @@ public class QuantityImpl extends DataExpr<IUnit> implements IQuantity, External
   /** {@inheritDoc} */
   @Override
   public IExpr evaluate(EvalEngine engine) {
+    if (arg1.isIndeterminate()) {
+      return arg1;
+    }
     if (engine.isDoubleMode()
         && //
         !arg1.isInexactNumber()) {
