@@ -500,7 +500,7 @@ public class Solve extends AbstractFunctionEvaluator {
               IAST power = (IAST) function.arg2();
               IExpr temp =
                   rewritePowerFractions(
-                      plusAST, i, (INumber) function.arg1(), power.base(), power.exponent());
+                      plusAST, i, function.arg1(), power.base(), power.exponent());
               if (temp.isPresent()) {
                 return fEngine.evaluate(temp);
               }
@@ -541,7 +541,7 @@ public class Solve extends AbstractFunctionEvaluator {
      * @return
      */
     private IExpr rewritePowerFractions(
-        IAST plusAST, int i, INumber num, IExpr base, IExpr exponent) {
+        IAST plusAST, int i, IExpr num, IExpr base, IExpr exponent) {
       if (exponent.isFraction() || (exponent.isReal() && !exponent.isNumIntValue())) {
         ISignedNumber arg2 = (ISignedNumber) exponent;
         if (arg2.isPositive()) {
@@ -559,15 +559,90 @@ public class Solve extends AbstractFunctionEvaluator {
               F.Subtract(
                   base, F.Expand(F.Power(F.Times(num.inverse(), F.Negate(plus)), arg2.inverse()))));
         }
-      } else if (base.isSymbol()
-          && //
-          base.equals(exponent)) {
+      } else if (base.isSymbol() && base.equals(exponent)) {
         // rewrite num * x^x as ProductLog() (Lambert W function)
         IExpr plus = plusAST.splice(i).oneIdentity0().negate().divide(num);
         // Log(arg1)/ProductLog(Log(arg1))
         IAST inverseFunction =
             F.Plus(base, F.Times(F.Log(plus).negate(), F.Power(F.ProductLog(F.Log(plus)), F.CN1)));
         return fEngine.evaluate(inverseFunction);
+      }
+      if (fListOfVariables.size() == 2) {
+        IExpr variable = fListOfVariables.arg1();
+        return rewritePower2ProductLog(plusAST, i, num, base, exponent, variable);
+      }
+      return F.NIL;
+    }
+
+    /**
+     * Rewrite <code>base^variable + a*variable + b</code> as <code>
+     * variable +  ((b)*Log(x) + a * ProductLog(-(Log(x)/(x^(b/a)*a))) ) / (a*Log(x))
+     * </code>. ProductLog is the Lambert W function.
+     *
+     * <p>See: <a
+     * href="https://en.wikipedia.org/wiki/Lambert_W_function#Solving_equations">Wikipedia - Lambert
+     * W function - Solving equations</a>
+     *
+     * @param plusAST a <code>Plus(...)</code> expression
+     * @param i the index in <code>plusAST</code> where the argument equals F<code>base ^ exponent
+     *     </code>
+     * @param num a factor for <code>factor*base^variable</code>
+     * @param base must be free of <code>variable</code>
+     * @param exponent must be equal to <code>variable</code>
+     * @param variable the variable for which <code>plusAST</code> should be solved
+     * @return {@link F#NIL} if no solution was found
+     */
+    private IExpr rewritePower2ProductLog(
+        IAST plusAST, int i, IExpr num, IExpr base, IExpr exponent, IExpr variable) {
+      if (variable.equals(exponent) && base.isFree(variable)) {
+        IExpr restOfPlus = plusAST.splice(i).oneIdentity0();
+        IExpr a = F.NIL;
+        IExpr b = F.C0;
+        if (restOfPlus.isPlus()) {
+          int indx = restOfPlus.indexOf(x -> !x.isFree(variable));
+          if (indx > 0) {
+            IExpr restOfPlus2 = ((IAST) restOfPlus).splice(indx).oneIdentity1();
+            if (restOfPlus2.isFree(variable)) {
+              a = determineFactor(((IAST) restOfPlus).get(i), variable);
+              b = restOfPlus2;
+            }
+          }
+        } else {
+          a = determineFactor(restOfPlus, variable);
+        }
+        if (a.isPresent()) {
+          // variable +  ((b)*Log(x) + a * ProductLog(-(Log(x)/(x^(b/a)*a))) )/(a*Log(x))
+          IAST inverseFunction =
+              F.Plus(
+                  variable,
+                  F.Times(
+                      F.Plus(
+                          F.Times(b, F.Log(base)),
+                          F.Times(
+                              a,
+                              F.ProductLog(
+                                  F.Times(
+                                      num,
+                                      F.Log(base),
+                                      F.Power(F.Times(a, F.Power(base, F.Divide(b, a))), F.CN1))))),
+                      F.Power(F.Times(a, F.Log(base)), F.CN1)));
+          return fEngine.evaluate(inverseFunction);
+        }
+      }
+      return F.NIL;
+    }
+
+    private static IExpr determineFactor(IExpr restOfPlus, IExpr variable) {
+      if (restOfPlus.equals(variable)) {
+        return F.C1;
+      } else if (restOfPlus.isTimes()) {
+        int indx = restOfPlus.indexOf(variable);
+        if (indx > 0) {
+          IExpr restOfTimes = ((IAST) restOfPlus).splice(indx).oneIdentity1();
+          if (restOfTimes.isFree(variable)) {
+            return restOfTimes;
+          }
+        }
       }
       return F.NIL;
     }
@@ -1024,12 +1099,13 @@ public class Solve extends AbstractFunctionEvaluator {
       if (FEConfig.SHOW_STACKTRACE) {
         le.printStackTrace();
       }
-      throw le;
+      return IOFunctions.printMessage(S.Solve, le, engine);
     } catch (ValidateException ve) {
       if (FEConfig.SHOW_STACKTRACE) {
         ve.printStackTrace();
       }
-      return engine.printMessage(S.Solve, ve);
+      return IOFunctions.printMessage(S.Solve, ve, engine);
+      //      return engine.printMessage(S.Solve, ve);
     } catch (RuntimeException rex) {
       if (FEConfig.SHOW_STACKTRACE) {
         rex.printStackTrace();
