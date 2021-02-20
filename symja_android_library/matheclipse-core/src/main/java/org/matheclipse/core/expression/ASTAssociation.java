@@ -497,6 +497,21 @@ public class ASTAssociation extends AST implements IAssociation {
     }
   }
 
+
+  /** {@inheritDoc} */
+  @Override
+  public final int indexOf(Predicate<? super IExpr> predicate, int fromIndex) {
+    int index = fromIndex;
+    int start = firstIndex + index;
+    for (int i = start; i < lastIndex; i++) {
+      if (predicate.test(get(i))) {
+        return index;
+      }
+      index++;
+    }
+    return -1;
+  }
+  
   /**
    * Test if this AST is an association <code>&lt;|a-&gt;b, c-&gt;d|&gt;</code>(i.e. type <code>
    * AssociationAST</code>)
