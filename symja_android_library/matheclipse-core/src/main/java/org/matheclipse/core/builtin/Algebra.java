@@ -1383,13 +1383,21 @@ public class Algebra {
       boolean expandNegativePowers;
 
       boolean distributePlus;
+
+      boolean factorTerms;
+
       /** Pattern which may be <code>null</code> */
       IExpr pattern;
 
-      public Expander(IExpr pattern, boolean expandNegativePowers, boolean distributePlus) {
+      public Expander(
+          IExpr pattern,
+          boolean expandNegativePowers,
+          boolean distributePlus,
+          boolean factorTerms) {
         this.pattern = pattern;
         this.expandNegativePowers = expandNegativePowers;
         this.distributePlus = distributePlus;
+        this.factorTerms = factorTerms;
       }
 
       /**
@@ -1495,7 +1503,7 @@ public class Algebra {
       }
 
       private IExpr addExpanded(IExpr expr) {
-        if (expandNegativePowers && !distributePlus && expr.isAST()) {
+        if (expandNegativePowers && !distributePlus && !factorTerms && expr.isAST()) {
           ((IAST) expr).addEvalFlags(IAST.IS_EXPANDED);
         }
         return expr;
@@ -1581,8 +1589,8 @@ public class Algebra {
        * Expand a polynomial power with the multinomial theorem. See <a href=
        * "http://en.wikipedia.org/wiki/Multinomial_theorem">Wikipedia - Multinomial theorem</a>
        *
-       * @param plusAST
-       * @param n <code>n &ge; 0</code>
+       * @param plusAST the base of the power
+       * @param n <code>n &ge; 0</code> the exponent of the power
        * @return
        */
       private IExpr expandPower(final IAST plusAST, final int n) {
@@ -1599,15 +1607,14 @@ public class Algebra {
         }
 
         int k = plusAST.argSize();
-        long numberOfTerms = LongMath.binomial(n + k - 1, n);
-        if (numberOfTerms > Config.MAX_AST_SIZE) {
+        long numberOfTerms = LongMath.binomial(n + k - 1, k - 1);
+        if (numberOfTerms >= Integer.MAX_VALUE || numberOfTerms > Config.MAX_AST_SIZE) {
           throw new ASTElementLimitExceeded(numberOfTerms);
         }
         final IASTAppendable expandedResult = F.ast(S.Plus, (int) numberOfTerms, false);
         Expand.NumberPartititon part = new Expand.NumberPartititon(plusAST, n, expandedResult);
         part.partition();
-        return flattenOneIdentity(expandedResult, F.C0);
-        // return PlusOp.plus(expandedResult);
+        return flattenOneIdentity(expandedResult, F.C0); 
       }
 
       private IExpr expandTimes(final IAST timesAST) {
@@ -1656,7 +1663,7 @@ public class Algebra {
         return result;
       }
 
-      private IExpr expandTimesBinary(final IExpr arg1, final IExpr arg2) {
+      private IExpr expandTimesBinary(final IExpr arg1, IExpr arg2) {
         if (arg1.isPlus()) {
           if (!arg2.isPlus()) {
             return expandExprTimesPlus(arg2, (IAST) arg1);
@@ -1666,6 +1673,12 @@ public class Algebra {
           return expandPlusTimesPlus((IAST) arg1, ast1);
         }
         if (arg2.isPlus()) {
+          if (factorTerms && arg1.isExactNumber()) {
+            IExpr temp = S.FactorTerms.ofNIL(EvalEngine.get(), arg2);
+            if (temp.isPresent()) {
+              return F.Times(arg1, temp);
+            }
+          }
           return expandExprTimesPlus(arg1, (IAST) arg2);
         }
         if (arg1.equals(arg2)) {
@@ -1894,7 +1907,7 @@ public class Algebra {
         patt = ast.arg2();
       }
       if (arg1.isAST()) {
-        return expandAll((IAST) arg1, patt, true, true, engine).orElse(arg1);
+        return expandAll((IAST) arg1, patt, true, true, false, engine).orElse(arg1);
       }
       return arg1;
     }
@@ -2525,48 +2538,6 @@ public class Algebra {
     @Override
     public int[] expectedArgSize(IAST ast) {
       return ARGS_1_2;
-    }
-
-    /**
-     * Factor out a rational number which may be a factor in every sub-expression of <code>plus
-     * </code>.
-     *
-     * @param plus
-     * @param engine
-     * @return <code>F.NIL</code> if the factor couldn't be found
-     */
-    static IExpr factorTermsPlus(IAST plus, EvalEngine engine) {
-      IExpr temp;
-      IRational gcd1 = null;
-      if (plus.arg1().isRational()) {
-        gcd1 = (IRational) plus.arg1();
-      } else if (plus.arg1().isTimes() && plus.arg1().first().isRational()) {
-        gcd1 = (IRational) plus.arg1().first();
-      }
-      if (gcd1 == null) {
-        return F.NIL;
-      }
-      for (int i = 2; i < plus.size(); i++) {
-        IRational gcd2 = null;
-        if (plus.get(i).isRational()) {
-          gcd2 = (IRational) plus.get(i);
-        } else if (plus.get(i).isTimes() && plus.get(i).first().isRational()) {
-          gcd2 = (IRational) plus.get(i).first();
-        }
-        if (gcd2 == null) {
-          return F.NIL;
-        }
-        temp = engine.evaluate(F.GCD(gcd1, gcd2));
-        if (temp.isRational() && !temp.isOne()) {
-          gcd1 = (IRational) temp;
-        } else {
-          return F.NIL;
-        }
-      }
-      if (gcd1.isMinusOne()) {
-        return F.NIL;
-      }
-      return engine.evaluate(F.Times(gcd1, F.Expand(F.Times(gcd1.inverse(), plus))));
     }
 
     @Override
@@ -4199,7 +4170,7 @@ public class Algebra {
      */
     private static IExpr togetherNull(IAST ast, EvalEngine engine) {
       boolean evaled = false;
-      IExpr temp = expandAll(ast, null, true, false, engine);
+      IExpr temp = expandAll(ast, null, true, false, true, engine);
       if (!temp.isPresent()) {
         temp = ast;
       } else {
@@ -4642,7 +4613,6 @@ public class Algebra {
     }
     return null;
   }
-
   /**
    * Expand the given <code>ast</code> expression.
    *
@@ -4658,7 +4628,29 @@ public class Algebra {
       boolean expandNegativePowers,
       boolean distributePlus,
       boolean evalParts) {
-    Expand.Expander expander = new Expand.Expander(patt, expandNegativePowers, distributePlus);
+
+    return expand(ast, patt, expandNegativePowers, distributePlus, evalParts, false);
+  }
+
+  /**
+   * Expand the given <code>ast</code> expression.
+   *
+   * @param ast
+   * @param patt
+   * @param evalParts evaluate the determined numerator and denominator parts
+   * @param distributePlus
+   * @param factorTerms
+   * @return <code>F.NIL</code> if the expression couldn't be expanded.
+   */
+  public static IExpr expand(
+      final IAST ast,
+      IExpr patt,
+      boolean expandNegativePowers,
+      boolean distributePlus,
+      boolean evalParts,
+      boolean factorTerms) {
+    Expand.Expander expander =
+        new Expand.Expander(patt, expandNegativePowers, distributePlus, factorTerms);
     return expander.expandAST(ast, evalParts);
   }
 
@@ -4676,6 +4668,7 @@ public class Algebra {
       IExpr patt,
       boolean expandNegativePowers,
       boolean distributePlus,
+      boolean factorTerms,
       EvalEngine engine) {
     if (patt != null && ast.isFree(patt, true)) {
       return F.NIL;
@@ -4701,14 +4694,17 @@ public class Algebra {
     int localASTSize = localAST.size();
     IExpr head = localAST.head();
     if (head.isAST()) {
-      temp = expandAll((IAST) head, patt, expandNegativePowers, distributePlus, engine);
+      temp =
+          expandAll((IAST) head, patt, expandNegativePowers, distributePlus, factorTerms, engine);
       temp.ifPresent(x -> result[0] = F.ast(x, localASTSize, false));
     }
     final IAST localASTFinal = localAST;
     localAST.forEach(
         (x, i) -> {
           if (x.isAST()) {
-            IExpr t = expandAll((IAST) x, patt, expandNegativePowers, distributePlus, engine);
+            IExpr t =
+                expandAll(
+                    (IAST) x, patt, expandNegativePowers, distributePlus, factorTerms, engine);
             if (t.isPresent()) {
               if (!result[0].isPresent()) {
                 int size = localASTSize;
@@ -4726,7 +4722,7 @@ public class Algebra {
         });
 
     if (!result[0].isPresent()) {
-      temp = expand(localAST, patt, expandNegativePowers, distributePlus, true);
+      temp = expand(localAST, patt, expandNegativePowers, distributePlus, true, factorTerms);
       if (temp.isPresent()) {
         ExpandAll.setAllExpanded(temp, expandNegativePowers, distributePlus);
         return temp;
@@ -4739,7 +4735,7 @@ public class Algebra {
       ExpandAll.setAllExpanded(ast, expandNegativePowers, distributePlus);
       return F.NIL;
     }
-    temp = expand(result[0], patt, expandNegativePowers, distributePlus, true);
+    temp = expand(result[0], patt, expandNegativePowers, distributePlus, true, factorTerms);
     if (temp.isPresent()) {
       return ExpandAll.setAllExpanded(temp, expandNegativePowers, distributePlus);
     }
@@ -4918,6 +4914,48 @@ public class Algebra {
       }
     }
     return result;
+  }
+
+  /**
+   * Factor out a rational number which may be a factor in every sub-expression of <code>plus
+   * </code>.
+   *
+   * @param plusAST
+   * @param engine
+   * @return <code>F.NIL</code> if the factor couldn't be found
+   */
+  /* package private */ static IExpr factorTermsPlus(IAST plusAST, EvalEngine engine) {
+    IExpr temp;
+    IRational gcd1 = null;
+    if (plusAST.arg1().isRational()) {
+      gcd1 = (IRational) plusAST.arg1();
+    } else if (plusAST.arg1().isTimes() && plusAST.arg1().first().isRational()) {
+      gcd1 = (IRational) plusAST.arg1().first();
+    }
+    if (gcd1 == null) {
+      return F.NIL;
+    }
+    for (int i = 2; i < plusAST.size(); i++) {
+      IRational gcd2 = null;
+      if (plusAST.get(i).isRational()) {
+        gcd2 = (IRational) plusAST.get(i);
+      } else if (plusAST.get(i).isTimes() && plusAST.get(i).first().isRational()) {
+        gcd2 = (IRational) plusAST.get(i).first();
+      }
+      if (gcd2 == null) {
+        return F.NIL;
+      }
+      temp = engine.evaluate(F.GCD(gcd1, gcd2));
+      if (temp.isRational() && !temp.isOne()) {
+        gcd1 = (IRational) temp;
+      } else {
+        return F.NIL;
+      }
+    }
+    if (gcd1.isMinusOne()) {
+      return F.NIL;
+    }
+    return engine.evaluate(F.Times(gcd1, F.Expand(F.Times(gcd1.inverse(), plusAST))));
   }
 
   /**
