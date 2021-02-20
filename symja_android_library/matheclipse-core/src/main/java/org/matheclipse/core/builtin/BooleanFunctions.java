@@ -56,6 +56,7 @@ import org.matheclipse.core.interfaces.ISignedNumber;
 import org.matheclipse.core.interfaces.IStringX;
 import org.matheclipse.core.interfaces.ISymbol;
 import org.matheclipse.core.interfaces.ITernaryComparator;
+import org.matheclipse.core.polynomials.symbolicexponent.SymbolicAlgebraicNotInvertibleException;
 import org.matheclipse.core.tensor.qty.IQuantity;
 
 public final class BooleanFunctions {
@@ -153,8 +154,8 @@ public final class BooleanFunctions {
 
     final FormulaFactory factory;
 
-    Map<ISymbol, Variable> symbol2variableMap = new HashMap<ISymbol, Variable>();
-    Map<Variable, ISymbol> variable2symbolMap = new HashMap<Variable, ISymbol>();
+    Map<IExpr, Variable> symbol2variableMap = new HashMap<IExpr, Variable>();
+    Map<Variable, IExpr> variable2symbolMap = new HashMap<Variable, IExpr>();
 
     public LogicFormula() {
       this(new FormulaFactory());
@@ -199,6 +200,13 @@ public final class BooleanFunctions {
       throw new ArgumentTypeException(str);
     }
 
+    /**
+     * Convert the {@link Formula} back to a {@link IExpr}.
+     *
+     * @param formula
+     * @return
+     * @see #expr2BooleanFunction(IExpr, boolean)
+     */
     public IExpr booleanFunction2Expr(final Formula formula) {
       if (formula instanceof org.logicng.formulas.And) {
         org.logicng.formulas.And a = (org.logicng.formulas.And) formula;
@@ -242,8 +250,8 @@ public final class BooleanFunctions {
       throw new ArgumentTypeException(str);
     }
 
-    private ISymbol mapToSymbol(Variable v) {
-      ISymbol s = variable2symbolMap.get(v);
+    private IExpr mapToSymbol(Variable v) {
+      IExpr s = variable2symbolMap.get(v);
       if (s != null) {
         return s;
       }
@@ -255,19 +263,19 @@ public final class BooleanFunctions {
       return s;
     }
 
-    private Formula convertEquivalent(IAST ast) {
+    private Formula convertEquivalent(IAST ast, boolean substituteExpressions) {
       Formula[] result1 = new Formula[ast.argSize()];
       Formula[] result2 = new Formula[ast.argSize()];
       for (int i = 1; i < ast.size(); i++) {
-        result1[i - 1] = factory.not(expr2BooleanFunction(ast.get(i)));
+        result1[i - 1] = factory.not(expr2BooleanFunction(ast.get(i), substituteExpressions));
         result2[i - 1] = factory.not(result1[i - 1]);
       }
       return factory.or(factory.and(result1), factory.and(result2));
     }
 
-    // private Formula convertXor(IAST ast) {
-    // Formula arg1 = expr2BooleanFunction(ast.arg1());
-    // Formula arg2 = expr2BooleanFunction(ast.arg2());if(ast.size()>3)
+    // private Formula convertXor(IAST ast, boolean substituteExpressions) {
+    // Formula arg1 = expr2BooleanFunction(ast.arg1(), substituteExpressions);
+    // Formula arg2 = expr2BooleanFunction(ast.arg2(), substituteExpressions);if(ast.size()>3)
     // {
     // IASTAppendable clone = ast.copyAppendable();
     // clone.remove(1);
@@ -275,7 +283,20 @@ public final class BooleanFunctions {
     // }return factory.or(factory.and(arg1,factory.not(arg2)),factory.and(factory.not(arg1),arg2));
     // }
 
-    public Formula expr2BooleanFunction(final IExpr logicExpr) throws ArgumentTypeException {
+    /**
+     * Convert the {@link IExpr} to a LogicNG {@link Formula}.
+     *
+     * @param logicExpr the expression which should be converted
+     * @param substituteExpressions if <code>false</code> substitute only symbols with a virtual new
+     *     {@link FormulaFactory#variable(String)} variable. if <code>true</code> substitute non
+     *     boolean expressions with a virtual new {@link FormulaFactory#variable(String)} variable
+     *     by the string of their {@link IExpr#fullFormString()}
+     * @return
+     * @throws ArgumentTypeException
+     * @see {@link #booleanFunction2Expr(Formula)}
+     */
+    public Formula expr2BooleanFunction(final IExpr logicExpr, boolean substituteExpressions)
+        throws ArgumentTypeException {
       if (logicExpr instanceof IAST) {
         final IAST ast = (IAST) logicExpr;
         int functionID = ast.headID();
@@ -283,12 +304,12 @@ public final class BooleanFunctions {
           switch (functionID) {
             case ID.And:
               if (ast.isAnd()) {
-                return convertAnd(ast);
+                return convertAnd(ast, substituteExpressions);
               }
               break;
             case ID.Or:
               if (ast.isOr()) {
-                return convertOr(ast);
+                return convertOr(ast, substituteExpressions);
               }
               break;
             case ID.Nand:
@@ -296,7 +317,7 @@ public final class BooleanFunctions {
                 final Formula[] result = new Formula[ast.argSize()];
                 ast.forEach(
                     (x, i) -> {
-                      result[i - 1] = factory.not(expr2BooleanFunction(x));
+                      result[i - 1] = factory.not(expr2BooleanFunction(x, substituteExpressions));
                     });
                 // for (int i = 1; i < ast.size(); i++) {
                 // result[i - 1] = factory.not(expr2BooleanFunction(ast.get(i)));
@@ -309,7 +330,7 @@ public final class BooleanFunctions {
                 Formula[] result = new Formula[ast.argSize()];
                 ast.forEach(
                     (x, i) -> {
-                      result[i - 1] = factory.not(expr2BooleanFunction(x));
+                      result[i - 1] = factory.not(expr2BooleanFunction(x, substituteExpressions));
                     });
                 // for (int i = 1; i < ast.size(); i++) {
                 // result[i - 1] = factory.not(expr2BooleanFunction(ast.get(i)));
@@ -319,31 +340,32 @@ public final class BooleanFunctions {
               break;
             case ID.Equivalent:
               if (ast.isSameHeadSizeGE(S.Equivalent, 3)) {
-                return convertEquivalent(ast);
+                return convertEquivalent(ast, substituteExpressions);
               }
               break;
             case ID.Xor:
               if (ast.isSameHeadSizeGE(S.Xor, 3)) {
                 IAST dnf = xorToDNF(ast);
                 if (dnf.isOr()) {
-                  return convertOr(dnf);
+                  return convertOr(dnf, substituteExpressions);
                 }
                 if (dnf.isAnd()) {
-                  return convertAnd(dnf);
+                  return convertAnd(dnf, substituteExpressions);
                 }
-                return expr2BooleanFunction(dnf);
+                return expr2BooleanFunction(dnf, substituteExpressions);
               }
               break;
             case ID.Implies:
               if (ast.isAST(S.Implies, 3)) {
                 return factory.implication(
-                    expr2BooleanFunction(ast.arg1()), expr2BooleanFunction(ast.arg2()));
+                    expr2BooleanFunction(ast.arg1(), substituteExpressions),
+                    expr2BooleanFunction(ast.arg2(), substituteExpressions));
               }
               break;
             case ID.Not:
               if (ast.isNot()) {
                 IExpr expr = ast.arg1();
-                return factory.not(expr2BooleanFunction(expr));
+                return factory.not(expr2BooleanFunction(expr, substituteExpressions));
               }
               break;
           }
@@ -370,27 +392,37 @@ public final class BooleanFunctions {
         }
         return v;
       }
-      // illegal arguments: \"`1`\" in `2`
+      if (substituteExpressions) {
+        Variable v = symbol2variableMap.get(logicExpr);
+        if (v == null) {
+          final Variable value = factory.variable(logicExpr.fullFormString());
+          symbol2variableMap.put(logicExpr, value);
+          variable2symbolMap.put(value, logicExpr);
+          return value;
+        }
+        return v;
+      }
+      //       illegal arguments: \"`1`\" in `2`
       String str =
           IOFunctions.getMessage(
               "argillegal", F.List(logicExpr, F.stringx("LogicFormula")), EvalEngine.get());
       throw new ArgumentTypeException(str);
     }
 
-    private Formula convertOr(final IAST ast) {
+    private Formula convertOr(final IAST ast, boolean substituteExpressions) {
       final Formula[] result = new Formula[ast.argSize()];
       ast.forEach(
           (x, i) -> {
-            result[i - 1] = expr2BooleanFunction(x);
+            result[i - 1] = expr2BooleanFunction(x, substituteExpressions);
           });
       return factory.or(result);
     }
 
-    private Formula convertAnd(final IAST ast) {
+    private Formula convertAnd(final IAST ast, boolean substituteExpressions) {
       final Formula[] result = new Formula[ast.argSize()];
       ast.forEach(
           (x, i) -> {
-            result[i - 1] = expr2BooleanFunction(x);
+            result[i - 1] = expr2BooleanFunction(x, substituteExpressions);
           });
       return factory.and(result);
     }
@@ -948,7 +980,7 @@ public final class BooleanFunctions {
       try {
         FormulaFactory factory = new FormulaFactory();
         LogicFormula lf = new LogicFormula(factory);
-        Formula formula = lf.expr2BooleanFunction(ast.arg1());
+        Formula formula = lf.expr2BooleanFunction(ast.arg1(), true);
         final AdvancedSimplifier simplifier = new AdvancedSimplifier(new DefaultRatingFunction());
         FormulaTransformation transformation = transformation(ast, engine);
         if (transformation == null) {
@@ -1203,8 +1235,7 @@ public final class BooleanFunctions {
    * {True, True, True}
    * </pre>
    */
-  private static class Equal extends AbstractFunctionEvaluator
-      implements ITernaryComparator, IComparatorFunction {
+  private static class Equal extends AbstractFunctionEvaluator implements IComparatorFunction {
 
     /**
      * Create the result for a <code>simplifyCompare()</code> step <code>
@@ -1272,7 +1303,8 @@ public final class BooleanFunctions {
         IExpr arg1 = F.expandAll(result.arg1(), true, true);
         while (i < result.size()) {
           IExpr arg2 = F.expandAll(result.get(i), true, true);
-          b = prepareCompare(arg1, arg2, engine);
+          //          b = compareTernary(arg1, arg2);
+          b = arg1.equalTernary(arg2, engine);
           if (b == IExpr.COMPARE_TERNARY.FALSE) {
             return S.False;
           } else if (b == IExpr.COMPARE_TERNARY.TRUE) {
@@ -1301,52 +1333,76 @@ public final class BooleanFunctions {
      * @param engine
      * @return
      */
-    protected IExpr.COMPARE_TERNARY prepareCompare(
-        final IExpr arg1, final IExpr arg2, EvalEngine engine) {
-      if (arg1.isIndeterminate() || arg2.isIndeterminate()) {
-        return IExpr.COMPARE_TERNARY.UNDECIDABLE;
-      }
-      if (arg1.isList() && arg2.isList()) {
-        IAST list1 = (IAST) arg1;
-        IAST list2 = (IAST) arg2;
-        int size1 = list1.size();
-        if (size1 != list2.size()) {
-          return IExpr.COMPARE_TERNARY.FALSE;
-        }
-        IExpr.COMPARE_TERNARY b = IExpr.COMPARE_TERNARY.TRUE;
-        for (int i = 1; i < size1; i++) {
-          b = prepareCompare(list1.get(i), list2.get(i), engine);
-          if (b == IExpr.COMPARE_TERNARY.FALSE) {
-            return IExpr.COMPARE_TERNARY.FALSE;
-          }
-          if (b == IExpr.COMPARE_TERNARY.TRUE) {
-          } else {
-            return IExpr.COMPARE_TERNARY.UNDECIDABLE;
-          }
-        }
-        return IExpr.COMPARE_TERNARY.TRUE;
-      }
-      IExpr a0 = arg1;
-      IExpr a1 = arg2;
-      if (!a0.isReal() && a0.isNumericFunction(true)) {
-        a0 = engine.evalN(a0);
-      } else if (a1.isInexactNumber() && a0.isInexactNumber()) {
-        a0 = engine.evalN(a0);
-      }
-      if (!a1.isReal() && a1.isNumericFunction(true)) {
-        a1 = engine.evalN(a1);
-      } else if (a0.isInexactNumber() && a1.isRational()) {
-        a1 = engine.evalN(a1);
-      }
+    //    protected IExpr.COMPARE_TERNARY prepareCompare(
+    //        final IExpr arg1, final IExpr arg2, EvalEngine engine) {
+    //      if (arg1.isIndeterminate() || arg2.isIndeterminate()) {
+    //        return IExpr.COMPARE_TERNARY.UNDECIDABLE;
+    //      }
+    //      if (arg1.isList() && arg2.isList()) {
+    //        IAST list1 = (IAST) arg1;
+    //        IAST list2 = (IAST) arg2;
+    //        int size1 = list1.size();
+    //        if (size1 != list2.size()) {
+    //          return IExpr.COMPARE_TERNARY.FALSE;
+    //        }
+    //        IExpr.COMPARE_TERNARY b = IExpr.COMPARE_TERNARY.TRUE;
+    //        for (int i = 1; i < size1; i++) {
+    //          b = prepareCompare(list1.get(i), list2.get(i), engine);
+    //          if (b == IExpr.COMPARE_TERNARY.FALSE) {
+    //            return IExpr.COMPARE_TERNARY.FALSE;
+    //          }
+    //          if (b == IExpr.COMPARE_TERNARY.TRUE) {
+    //          } else {
+    //            return IExpr.COMPARE_TERNARY.UNDECIDABLE;
+    //          }
+    //        }
+    //        return IExpr.COMPARE_TERNARY.TRUE;
+    //      }
+    //
+    //      return compareTernary(arg1, arg2);
+    //    }
 
-      return compareTernary(a0, a1);
-    }
-
-    /** {@inheritDoc} */
-    @Override
-    public IExpr.COMPARE_TERNARY compareTernary(final IExpr o0, final IExpr o1) {
-      return compareEqual(o0, o1);
-    }
+    //    public IExpr.COMPARE_TERNARY compareTernary(IExpr arg1, IExpr arg2) {
+    //      if (arg1.isIndeterminate() || arg2.isIndeterminate()) {
+    //        return IExpr.COMPARE_TERNARY.UNDECIDABLE;
+    //      }
+    //      if (arg1.isList() && arg2.isList()) {
+    //        IAST list1 = (IAST) arg1;
+    //        IAST list2 = (IAST) arg2;
+    //        int size1 = list1.size();
+    //        if (size1 != list2.size()) {
+    //          return IExpr.COMPARE_TERNARY.FALSE;
+    //        }
+    //        IExpr.COMPARE_TERNARY b = IExpr.COMPARE_TERNARY.TRUE;
+    //        for (int i = 1; i < size1; i++) {
+    //          b = compareTernary(list1.get(i), list2.get(i));
+    //          if (b == IExpr.COMPARE_TERNARY.FALSE) {
+    //            return IExpr.COMPARE_TERNARY.FALSE;
+    //          }
+    //          if (b == IExpr.COMPARE_TERNARY.TRUE) {
+    //          } else {
+    //            return IExpr.COMPARE_TERNARY.UNDECIDABLE;
+    //          }
+    //        }
+    //        return IExpr.COMPARE_TERNARY.TRUE;
+    //      }
+    //      IExpr a0 = arg1;
+    //      IExpr a1 = arg2;
+    //      EvalEngine engine = EvalEngine.get();
+    //      if (!a0.isReal() && a0.isNumericFunction(true)) {
+    //        a0 = engine.evalN(a0);
+    //      }
+    //      if (!a1.isReal() && a1.isNumericFunction(true)) {
+    //        a1 = engine.evalN(a1);
+    //      }
+    //      if (a1.isInexactNumber() && a0.isExactNumber()) {
+    //        a0 = engine.evalN(a0);
+    //      }
+    //      if (a0.isInexactNumber() && a1.isExactNumber()) {
+    //        a1 = engine.evalN(a1);
+    //      }
+    //      return compareEqual(a0, a1);
+    //    }
 
     @Override
     public void setUp(final ISymbol newSymbol) {}
@@ -3642,7 +3698,7 @@ public final class BooleanFunctions {
     private static IInteger logicNGSatisfiabilityCount(IExpr booleanExpression, IAST variables) {
       FormulaFactory factory = new FormulaFactory();
       LogicFormula lf = new LogicFormula(factory);
-      final Formula formula = lf.expr2BooleanFunction(booleanExpression);
+      final Formula formula = lf.expr2BooleanFunction(booleanExpression, false);
       final SATSolver miniSat = MiniSat.miniSat(factory);
       miniSat.add(formula);
       Variable[] vars = lf.ast2Variable(variables);
@@ -3821,7 +3877,7 @@ public final class BooleanFunctions {
     private static IExpr logicNGSatisfiableQ(IExpr arg1) {
       FormulaFactory factory = new FormulaFactory();
       LogicFormula lf = new LogicFormula(factory);
-      final Formula formula = lf.expr2BooleanFunction(arg1);
+      final Formula formula = lf.expr2BooleanFunction(arg1, false);
       final SATSolver miniSat = MiniSat.miniSat(factory);
       miniSat.add(formula);
       final Tristate result = miniSat.sat();
@@ -4121,7 +4177,8 @@ public final class BooleanFunctions {
         while (i < result.size()) {
           j = i;
           while (j < result.size()) {
-            b = compareTernary(result.get(i - 1), result.get(j++));
+            //            b = compareTernary(result.get(i - 1), result.get(j++));
+            b = result.get(i - 1).equalTernary(result.get(j++), engine);
             if (b == IExpr.COMPARE_TERNARY.TRUE) {
               return S.False;
             } else if (b == IExpr.COMPARE_TERNARY.UNDECIDABLE) {
@@ -4308,8 +4365,9 @@ public final class BooleanFunctions {
    * @param a2 second argument
    * @return <code>F.NIL</code> or the simplified expression, if equality couldn't be determined.
    */
-  public static IExpr equalNull(final IExpr a1, final IExpr a2, EvalEngine engine) {
-    if (a1.isExactNumber() && a2.isExactNumber()) {
+  private static IExpr equalNull(final IExpr a1, final IExpr a2, EvalEngine engine) {
+    if ((a1.isExactNumber() || a1.isString()) //
+        && (a2.isExactNumber() || a2.isString())) {
       if (a1.isQuantity() && a2.isQuantity()) {
         return quantityEquals((IQuantity) a1, (IQuantity) a2);
       }
@@ -4319,7 +4377,8 @@ public final class BooleanFunctions {
     IExpr arg1 = F.expandAll(a1, true, true);
     IExpr arg2 = F.expandAll(a2, true, true);
 
-    b = CONST_EQUAL.prepareCompare(arg1, arg2, engine);
+    //    b = CONST_EQUAL.compareTernary(arg1, arg2);
+    b = arg1.equalTernary(arg2, engine);
     if (b == IExpr.COMPARE_TERNARY.FALSE) {
       return S.False;
     }
@@ -4414,7 +4473,8 @@ public final class BooleanFunctions {
    * @return <code>F.NIL</code> or the simplified expression, if equality couldn't be determined.
    */
   public static IExpr unequalNull(IExpr a1, IExpr a2, EvalEngine engine) {
-    if (a1.isExactNumber() && a2.isExactNumber()) {
+    if ((a1.isExactNumber() || a1.isString()) //
+        && (a2.isExactNumber() || a2.isString())) {
       if (a1.isQuantity() && a2.isQuantity()) {
         return quantityUnequals((IQuantity) a1, (IQuantity) a2);
       }
@@ -4423,7 +4483,8 @@ public final class BooleanFunctions {
     IExpr.COMPARE_TERNARY b;
     IExpr arg1 = F.expandAll(a1, true, true);
     IExpr arg2 = F.expandAll(a2, true, true);
-    b = CONST_EQUAL.prepareCompare(arg1, arg2, engine);
+    //    b = CONST_EQUAL.compareTernary(arg1, arg2);
+    b = arg1.equalTernary(arg2, engine);
     if (b == IExpr.COMPARE_TERNARY.FALSE) {
       return S.True;
     }
@@ -4543,7 +4604,7 @@ public final class BooleanFunctions {
     FormulaTransformation transformation = transformation(ast, engine);
     if (transformation != null) {
       LogicFormula lf = new LogicFormula();
-      Formula formula = lf.expr2BooleanFunction(ast.arg1()).transform(transformation);
+      Formula formula = lf.expr2BooleanFunction(ast.arg1(), false).transform(transformation);
       // CNFSubsumption s = new CNFSubsumption();
       // formula=s.apply(formula, false);
       return lf.booleanFunction2Expr(formula);
@@ -4554,7 +4615,7 @@ public final class BooleanFunctions {
   public static List<Assignment> logicNGSatisfiabilityInstances(
       IExpr booleanExpression, Variable[] vars, LogicFormula lf, int maxChoices) {
 
-    final Formula formula = lf.expr2BooleanFunction(booleanExpression);
+    final Formula formula = lf.expr2BooleanFunction(booleanExpression, false);
     // MiniSatConfig config = new MiniSatConfig.Builder().initialPhase(true).build();
     final SATSolver miniSat = MiniSat.miniSat(lf.getFactory()); // , config);
     miniSat.add(formula);
@@ -4613,48 +4674,48 @@ public final class BooleanFunctions {
     Initializer.init();
   }
 
-  public static IExpr.COMPARE_TERNARY compareEqual(final IExpr o0, final IExpr o1) {
-    if (o0.isSame(o1)) {
-      return IExpr.COMPARE_TERNARY.TRUE;
-    }
-
-    if (o0.isTrue()) {
-      if (o1.isTrue()) {
-        return IExpr.COMPARE_TERNARY.TRUE;
-      } else if (o1.isFalse()) {
-        return IExpr.COMPARE_TERNARY.FALSE;
-      }
-    } else if (o0.isFalse()) {
-      if (o1.isTrue()) {
-        return IExpr.COMPARE_TERNARY.FALSE;
-      } else if (o1.isFalse()) {
-        return IExpr.COMPARE_TERNARY.TRUE;
-      }
-    }
-    if (o0.isConstantAttribute() && o1.isConstantAttribute()) {
-      return IExpr.COMPARE_TERNARY.FALSE;
-    }
-
-    if ((o0 instanceof StringX) && (o1 instanceof StringX)) {
-      return IExpr.COMPARE_TERNARY.FALSE;
-    }
-    IExpr difference = F.eval(F.Subtract(o0, o1));
-    if (difference.isNumber()) {
-      if (difference.isZero()) {
-        return IExpr.COMPARE_TERNARY.TRUE;
-      }
-      return IExpr.COMPARE_TERNARY.FALSE;
-    }
-    if (difference.isConstantAttribute()) {
-      return IExpr.COMPARE_TERNARY.FALSE;
-    }
-
-    if (o0.isNumber() && o1.isNumber()) {
-      return IExpr.COMPARE_TERNARY.FALSE;
-    }
-
-    return IExpr.COMPARE_TERNARY.UNDECIDABLE;
-  }
+  //  public static IExpr.COMPARE_TERNARY compareEqual(final IExpr o0, final IExpr o1) {
+  //    if (o0.isSame(o1)) {
+  //      return IExpr.COMPARE_TERNARY.TRUE;
+  //    }
+  //
+  //    if (o0.isTrue()) {
+  //      if (o1.isTrue()) {
+  //        return IExpr.COMPARE_TERNARY.TRUE;
+  //      } else if (o1.isFalse()) {
+  //        return IExpr.COMPARE_TERNARY.FALSE;
+  //      }
+  //    } else if (o0.isFalse()) {
+  //      if (o1.isTrue()) {
+  //        return IExpr.COMPARE_TERNARY.FALSE;
+  //      } else if (o1.isFalse()) {
+  //        return IExpr.COMPARE_TERNARY.TRUE;
+  //      }
+  //    }
+  //    if (o0.isConstantAttribute() && o1.isConstantAttribute()) {
+  //      return IExpr.COMPARE_TERNARY.FALSE;
+  //    }
+  //
+  //    if ((o0 instanceof StringX) && (o1 instanceof StringX)) {
+  //      return IExpr.COMPARE_TERNARY.FALSE;
+  //    }
+  //    IExpr difference = F.eval(F.Subtract(o0, o1));
+  //    if (difference.isNumber()) {
+  //      if (difference.isZero()) {
+  //        return IExpr.COMPARE_TERNARY.TRUE;
+  //      }
+  //      return IExpr.COMPARE_TERNARY.FALSE;
+  //    }
+  //    if (difference.isConstantAttribute()) {
+  //      return IExpr.COMPARE_TERNARY.FALSE;
+  //    }
+  //
+  //    if (o0.isNumber() && o1.isNumber()) {
+  //      return IExpr.COMPARE_TERNARY.FALSE;
+  //    }
+  //
+  //    return IExpr.COMPARE_TERNARY.UNDECIDABLE;
+  //  }
 
   private BooleanFunctions() {}
 }
