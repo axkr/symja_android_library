@@ -23,11 +23,9 @@ public class ArchUnitTests extends TestCase {
         methods()
             .that()
             .areDeclaredIn("org.matheclipse.io.eval.Console")
-            . //
-            and()
+            .and()
             .doNotHaveName("main")
-            . //
-            should()
+            .should()
             .notBePublic()
             .andShould()
             .notBeProtected();
@@ -41,11 +39,9 @@ public class ArchUnitTests extends TestCase {
         methods()
             .that()
             .areDeclaredIn("org.matheclipse.io.eval.MMAConsole")
-            . //
-            and()
+            .and()
             .doNotHaveName("main")
-            . //
-            should()
+            .should()
             .notBePublic()
             .andShould()
             .notBeProtected();
@@ -59,12 +55,10 @@ public class ArchUnitTests extends TestCase {
         classes()
             .that()
             .resideInAPackage("org.matheclipse.core.expression..")
-            . //
-            and()
+            .and()
             .haveSimpleName("AST")
-            . //
             // TODO change dependency from "org.matheclipse.core.convert"
-            should()
+            .should()
             .onlyBeAccessed()
             .byAnyPackage("org.matheclipse.core.expression..");
 
@@ -78,11 +72,9 @@ public class ArchUnitTests extends TestCase {
         classes()
             .that()
             .resideInAPackage("org.matheclipse.core.expression..")
-            . //
-            and()
+            .and()
             .haveSimpleName("AST0")
-            . //
-            should()
+            .should()
             .onlyBeAccessed()
             .byAnyPackage("org.matheclipse.core.expression..");
 
@@ -96,11 +88,9 @@ public class ArchUnitTests extends TestCase {
         classes()
             .that()
             .resideInAPackage("org.matheclipse.core.expression..")
-            . //
-            and()
+            .and()
             .haveSimpleName("AST1")
-            . //
-            should()
+            .should()
             .onlyBeAccessed()
             .byAnyPackage("org.matheclipse.core.expression..");
 
@@ -114,11 +104,9 @@ public class ArchUnitTests extends TestCase {
         classes()
             .that()
             .resideInAPackage("org.matheclipse.core.expression..")
-            . //
-            and()
+            .and()
             .haveSimpleName("AST2")
-            . //
-            should()
+            .should()
             .onlyBeAccessed()
             .byAnyPackage("org.matheclipse.core.expression..");
 
@@ -132,11 +120,9 @@ public class ArchUnitTests extends TestCase {
         classes()
             .that()
             .resideInAPackage("org.matheclipse.core.expression..")
-            . //
-            and()
+            .and()
             .haveSimpleName("AST3")
-            . //
-            should()
+            .should()
             .onlyBeAccessed()
             .byAnyPackage("org.matheclipse.core.expression..");
 
@@ -160,8 +146,7 @@ public class ArchUnitTests extends TestCase {
             .haveSimpleName("IExpr")
             .or()
             .haveSimpleName("IAST")
-            . //
-            should()
+            .should()
             .onlyBeAccessed()
             .byAnyPackage( //
                 "org.matheclipse..");
@@ -176,8 +161,7 @@ public class ArchUnitTests extends TestCase {
         classes()
             .that()
             .resideInAPackage("org.logicng..")
-            . //
-            should()
+            .should()
             .onlyBeAccessed()
             .byAnyPackage("org.logicng..", "..core.builtin..");
 
@@ -193,8 +177,7 @@ public class ArchUnitTests extends TestCase {
         classes()
             .that()
             .resideInAPackage("org.jgrapht..")
-            . //
-            should()
+            .should()
             .onlyBeAccessed()
             .byAnyPackage( //
                 "org.jgrapht..", //
