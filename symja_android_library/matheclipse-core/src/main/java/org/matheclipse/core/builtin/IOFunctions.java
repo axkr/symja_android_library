@@ -620,6 +620,8 @@ public class IOFunctions {
     "Argument `1` at position `2` is not a non-empty square matrix.", //
     "mseqs",
     "Sequence specification or a list of sequence specifications expected at position `1` in `2`.", //
+    "needsjdk",
+    "For compiling functions, Symja needs to be executed on a Java Development Kit with javax.tools.JavaCompiler installed.", //
     "nconvss",
     "The argument `1` cannot be converted to a NumericArray of type `2` using method `3`", //
     "nliter",

@@ -12,6 +12,7 @@ import java.util.Locale;
 import java.util.concurrent.TimeUnit;
 
 import org.matheclipse.core.basic.Config;
+import org.matheclipse.core.basic.ToggleFeature;
 import org.matheclipse.core.builtin.IOFunctions;
 import org.matheclipse.core.eval.EvalControlledCallable;
 import org.matheclipse.core.eval.ExprEvaluator;
@@ -91,6 +92,7 @@ public class Console {
   public static void main(final String args[]) {
     Locale.setDefault(Locale.US);
     FEConfig.PARSER_USE_LOWERCASE_SYMBOLS = true;
+    ToggleFeature.COMPILE = true;
     Config.JAVA_UNSAFE = true;
     Config.SHORTEN_STRING_LENGTH = 1024;
     Config.USE_VISJS = true;

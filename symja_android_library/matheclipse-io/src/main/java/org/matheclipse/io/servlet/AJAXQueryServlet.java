@@ -721,7 +721,7 @@ public class AJAXQueryServlet extends HttpServlet {
   public static synchronized void initialization(String servlet) {
     AJAXQueryServlet.INITIALIZED = true;
     FEConfig.PARSER_USE_LOWERCASE_SYMBOLS = true;
-    ToggleFeature.COMPILE = false;
+    ToggleFeature.COMPILE = true;
     Config.UNPROTECT_ALLOWED = false;
     Config.USE_MANIPULATE_JS = true;
     // disable threads for JAS only on google appengine

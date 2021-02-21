@@ -29,7 +29,6 @@
 	<classpathentry kind="lib" path="lib/javalin-1.7.0.jar"/>
 	<classpathentry kind="lib" path="lib/gson-2.8.5.jar"/>
 	<classpathentry kind="lib" path="lib/failureaccess-1.0.1.jar"/>
-	<classpathentry kind="lib" path="lib/compiler-1.0.jar"/>
 	<classpathentry kind="lib" path="lib/geodesy-1.1.3.jar"/>
 	<classpathentry kind="lib" path="lib/slf4j-simple-1.7.25.jar"/>
 	<classpathentry kind="lib" path="lib/apfloat-1.10.0-SNAPSHOT.jar"/>

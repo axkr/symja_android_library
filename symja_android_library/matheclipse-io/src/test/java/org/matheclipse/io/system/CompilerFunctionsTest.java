@@ -26,27 +26,38 @@ public class CompilerFunctionsTest extends AbstractTestCase {
       check(
           "cf(-1.0,2.0)", //
           "I*1.41421");
+      check(
+          "cf2 = Compile({x, y}, x+y);", //
+          "");
+      check(
+          "cf2(1.0,2.0)", //
+          "3.0");
+      check(
+          "cf(1.0,2.0)", //
+          "1.41421");
     }
   }
 
   public void testCompile001() {
     if (ToggleFeature.COMPILE) {
       // A JDK is needed here
-
-      //            check(
-      //                "f = Compile({{n, _Integer}},\n"
-      //                    + "    	             Module({p = Range(n),i,x,t},\n"
-      //                    + "    		            Do(x = RandomInteger({1,i});\n"
-      //                    + "    			        t = p[[i]]; p[[i]] = p[[x]]; p[[x]] = t,\n"
-      //                    + "    			        {i,n,2,-1}\n"
-      //                    + "    			    );\n"
-      //                    + "    		            p\n"
-      //                    + "    		     )\n"
-      //                    + "    	        );", //
-      //                "");
-      //            check(
-      //                " f(4)", //
-      //                "{2,4,1,3}");
+    	
+      // test with random result
+    	
+      //      check(
+      //          "f = Compile({{n, _Integer}},\n"
+      //              + "    	             Module({p = Range(n),i,x,t},\n"
+      //              + "    		            Do(x = RandomInteger({1,i});\n"
+      //              + "    			        t = p[[i]]; p[[i]] = p[[x]]; p[[x]] = t,\n"
+      //              + "    			        {i,n,2,-1}\n"
+      //              + "    			    );\n"
+      //              + "    		            p\n"
+      //              + "    		     )\n"
+      //              + "    	        );", //
+      //          "");
+      //      check(
+      //          " f(4)", //
+      //          "{2,4,1,3}");
 
       check(
           "f=Compile({{x, _Real}}, E^3-Cos(Pi^2/x));  ", //

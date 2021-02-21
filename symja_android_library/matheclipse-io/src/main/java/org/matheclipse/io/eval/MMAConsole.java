@@ -12,6 +12,7 @@ import java.util.Locale;
 import java.util.concurrent.TimeUnit;
 
 import org.matheclipse.core.basic.Config;
+import org.matheclipse.core.basic.ToggleFeature;
 import org.matheclipse.core.builtin.IOFunctions;
 import org.matheclipse.core.eval.EvalControlledCallable;
 import org.matheclipse.core.eval.EvalEngine;
@@ -93,6 +94,7 @@ public class MMAConsole {
     Locale.setDefault(Locale.US);
     // distinguish between lower- and uppercase identifiers
     FEConfig.PARSER_USE_LOWERCASE_SYMBOLS = false;
+    ToggleFeature.COMPILE = true;
     Config.JAVA_UNSAFE = true;
     Config.SHORTEN_STRING_LENGTH = 1024;
     Config.USE_VISJS = true;

@@ -2,13 +2,15 @@ package org.matheclipse.core.preprocessor;
 
 import java.util.Map;
 
+import javax.tools.JavaCompiler;
+import javax.tools.ToolProvider;
+
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.interfaces.AbstractFunctionEvaluator;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.parser.ExprParser;
-
-import com.itranswarp.compiler.JavaStringCompiler;
+import org.matheclipse.io.builtin.CompilerFunctions;
 
 /**
  * Example for <a href="https://github.com/axkr/symja_android_library/issues/132">github #132</a>
@@ -16,7 +18,7 @@ import com.itranswarp.compiler.JavaStringCompiler;
 public class CompileFunction {
 
   public static void main(String[] args) {
-    JavaStringCompiler compiler = new JavaStringCompiler();
+    JavaCompiler compiler = ToolProvider.getSystemJavaCompiler();
     Map<String, byte[]> results;
     try {
       ExprParser p = new ExprParser(EvalEngine.get(), true);
@@ -25,10 +27,11 @@ public class CompileFunction {
           JAVA_SOURCE_CODE.replace(
               "{$expression}", expr.internalJavaString(false, 0, false, true, true, x -> null));
 
-      results = compiler.compile("CompiledFunction.java", source);
+      results = CompilerFunctions.compile(compiler, "CompiledFunction.java", source);
 
       // System.out.println(JAVA_SOURCE_CODE);
-      Class<?> clazz = compiler.loadClass("org.matheclipse.core.compile.CompiledFunction", results);
+      Class<?> clazz =
+          CompilerFunctions.loadClass("org.matheclipse.core.compile.CompiledFunction", results);
       // try instance:
       AbstractFunctionEvaluator fun = (AbstractFunctionEvaluator) clazz.newInstance();
 

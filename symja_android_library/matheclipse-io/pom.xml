@@ -29,11 +29,6 @@
 			<version>2.1.0.Final</version>
 		</dependency>
 		<dependency>
-			<groupId>com.itranswarp</groupId>
-			<artifactId>compiler</artifactId>
-			<version>1.0</version>
-		</dependency>
-		<dependency>
 			<groupId>org.apache.commons</groupId>
 			<artifactId>commons-csv</artifactId>
 			<version>1.4</version>
