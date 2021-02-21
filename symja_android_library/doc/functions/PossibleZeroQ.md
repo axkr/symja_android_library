@@ -12,7 +12,7 @@ PossibleZeroQ(expr)
 Test whether a numeric expression is zero:
 
 ```
->> PossibleZeroQ((x + 1) (x - 1) - x^2 + 1)
+>> PossibleZeroQ(E^(I*Pi/4)-(-1)^(1/4))
 True
 ```
 
