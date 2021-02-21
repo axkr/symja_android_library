@@ -77,6 +77,7 @@ public final class OutputFunctions {
       S.BaseForm.setEvaluator(new BaseForm());
       S.CForm.setEvaluator(new CForm());
       S.CompilePrint.setEvaluator(new CompilePrint());
+      S.FullForm.setEvaluator(new FullForm());
       S.HoldForm.setEvaluator(new HoldForm());
       S.HornerForm.setEvaluator(new HornerForm());
       S.InputForm.setEvaluator(new InputForm());
