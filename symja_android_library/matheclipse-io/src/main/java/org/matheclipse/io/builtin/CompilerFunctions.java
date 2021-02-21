@@ -389,9 +389,6 @@ public class CompilerFunctions {
 
     @Override
     public IExpr evaluate(final IAST ast, EvalEngine engine) {
-      if (!ToggleFeature.COMPILE) {
-        return F.NIL;
-      }
       try {
         if (ast.isAST3()) {
           // TODO implement for 3 args
