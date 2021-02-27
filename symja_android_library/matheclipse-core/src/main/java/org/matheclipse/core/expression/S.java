@@ -105,6 +105,9 @@ public class S {
   public static final IBuiltInSymbol $MinMachineNumber =
       F.initFinalSymbol("$MinMachineNumber", ID.$MinMachineNumber);
 
+  public static final IBuiltInSymbol $OperatingSystem =
+      F.initFinalSymbol("$OperatingSystem", ID.$OperatingSystem);
+
   public static final IBuiltInSymbol $OutputSizeLimit =
       F.initFinalSymbol("$OutputSizeLimit", ID.$OutputSizeLimit);
 
@@ -128,6 +131,9 @@ public class S {
 
   public static final IBuiltInSymbol $RootDirectory =
       F.initFinalSymbol("$RootDirectory", ID.$RootDirectory);
+
+  public static final IBuiltInSymbol $ScriptCommandLine =
+      F.initFinalSymbol("$ScriptCommandLine", ID.$ScriptCommandLine);
 
   public static final IBuiltInSymbol $TemporaryDirectory =
       F.initFinalSymbol("$TemporaryDirectory", ID.$TemporaryDirectory);

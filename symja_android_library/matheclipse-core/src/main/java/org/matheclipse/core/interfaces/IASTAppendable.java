@@ -134,6 +134,71 @@ public interface IASTAppendable extends IASTMutable {
   public boolean append(IExpr expr);
 
   /**
+   * Adds the specified long value at the end of this {@code List}.
+   *
+   * @param value the long value which should be appended.
+   * @return always true.
+   * @throws UnsupportedOperationException if adding to this {@code List} is not supported.
+   * @throws ClassCastException if the class of the object is inappropriate for this {@code List}.
+   * @throws IllegalArgumentException if the object cannot be added to this {@code List}.
+   */
+  default boolean append(long value) {
+    return append(F.ZZ(value));
+  }
+
+  /**
+   * Adds the specified double value at the end of this {@code List}.
+   *
+   * @param value the double value which should be appended.
+   * @return always true.
+   * @throws UnsupportedOperationException if adding to this {@code List} is not supported.
+   * @throws ClassCastException if the class of the object is inappropriate for this {@code List}.
+   * @throws IllegalArgumentException if the object cannot be added to this {@code List}.
+   */
+  default boolean append(double value) {
+    return append(F.num(value));
+  }
+  
+  /**
+   * Adds the specified string value at the end of this {@code List}.
+   *
+   * @param value the string value which should be appended.
+   * @return always true.
+   * @throws UnsupportedOperationException if adding to this {@code List} is not supported.
+   * @throws ClassCastException if the class of the object is inappropriate for this {@code List}.
+   * @throws IllegalArgumentException if the object cannot be added to this {@code List}.
+   */
+  default boolean append(String value) {
+    return append(F.stringx(value));
+  }
+  
+  /**
+   * Adds the specified character value at the end of this {@code List}.
+   *
+   * @param value the character value which should be appended.
+   * @return always true.
+   * @throws UnsupportedOperationException if adding to this {@code List} is not supported.
+   * @throws ClassCastException if the class of the object is inappropriate for this {@code List}.
+   * @throws IllegalArgumentException if the object cannot be added to this {@code List}.
+   */
+  default boolean append(char value) {
+    return append(F.stringx(value));
+  }
+
+  /**
+   * Adds the specified boolean value at the end of this {@code List}.
+   *
+   * @param value the boolean value which should be appended.
+   * @return always true.
+   * @throws UnsupportedOperationException if adding to this {@code List} is not supported.
+   * @throws ClassCastException if the class of the object is inappropriate for this {@code List}.
+   * @throws IllegalArgumentException if the object cannot be added to this {@code List}.
+   */
+  default boolean append(boolean value) {
+    return append(F.bool(value));
+  }
+  
+  /**
    * Inserts the specified object into this {@code List} at the specified location. The object is
    * inserted before the current element at the specified location. If the location is equal to the
    * size of this {@code List}, the object is added at the end. If the location is smaller than the
@@ -148,6 +213,24 @@ public interface IASTAppendable extends IASTMutable {
    * @throws IndexOutOfBoundsException if {@code location < 0 || location > size()}
    */
   public void append(int location, IExpr object);
+
+  /**
+   * Inserts the specified long value into this {@code List} at the specified location. The object
+   * is inserted before the current element at the specified location. If the location is equal to
+   * the size of this {@code List}, the object is added at the end. If the location is smaller than
+   * the size of this {@code List}, then all elements beyond the specified location are moved by one
+   * position towards the end of the {@code List}.
+   *
+   * @param location the index at which to insert.
+   * @param value the long value which should be added
+   * @throws UnsupportedOperationException if adding to this {@code List} is not supported.
+   * @throws ClassCastException if the class of the object is inappropriate for this {@code List}.
+   * @throws IllegalArgumentException if the object cannot be added to this {@code List}.
+   * @throws IndexOutOfBoundsException if {@code location < 0 || location > size()}
+   */
+  default void append(int location, long value) {
+    append(location, F.ZZ(value));
+  }
 
   /**
    * Adds the objects in the specified collection to the end of this {@code List}. The objects are

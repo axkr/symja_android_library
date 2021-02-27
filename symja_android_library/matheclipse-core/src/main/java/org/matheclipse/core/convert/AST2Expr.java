@@ -65,6 +65,7 @@ public class AST2Expr {
     "$MaxMachineNumber",
     "$MessageList",
     "$MinMachineNumber",
+    "$OperatingSystem",
     "$OutputSizeLimit",
     "$Packages",
     "$Path",
@@ -73,6 +74,7 @@ public class AST2Expr {
     "$PreRead",
     "$RecursionLimit",
     "$RootDirectory",
+    "$ScriptCommandLine",
     "$TemporaryDirectory",
     "$UserName",
     "$Version"

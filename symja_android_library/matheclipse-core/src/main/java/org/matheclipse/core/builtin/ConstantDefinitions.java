@@ -8,6 +8,7 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.time.LocalDateTime;
 import java.util.Calendar;
+import java.util.Locale;
 
 import org.apfloat.Apcomplex;
 import org.apfloat.Apfloat;
@@ -85,6 +86,7 @@ public class ConstantDefinitions {
       S.$Line.setEvaluator(new $Line());
       S.$MachineEpsilon.setEvaluator(new $MachineEpsilon());
       S.$MachinePrecision.setEvaluator(new $MachinePrecision());
+      S.$OperatingSystem.setEvaluator(new $OperatingSystem());
       S.$Packages.setEvaluator(new $Packages());
       S.$Path.setEvaluator(new $Path());
       S.$PathnameSeparator.setEvaluator(new $PathnameSeparator());
@@ -92,6 +94,7 @@ public class ConstantDefinitions {
       S.$UserName.setEvaluator(new $UserName());
       S.$RecursionLimit.setEvaluator(new $RecursionLimit());
       S.$RootDirectory.setEvaluator(new $RootDirectory());
+      S.$ScriptCommandLine.setEvaluator(new $ScriptCommandLine());
       S.$TemporaryDirectory.setEvaluator(new $TemporaryDirectory());
       S.$Version.setEvaluator(new $Version());
 
@@ -321,6 +324,33 @@ public class ConstantDefinitions {
     }
   }
 
+  private static class $OperatingSystem extends AbstractSymbolEvaluator {
+
+    @Override
+    public IExpr evaluate(final ISymbol symbol, EvalEngine engine) {
+      String operatingSystem = System.getProperty("os.name", "Unknown").toLowerCase(Locale.ENGLISH);
+      if (operatingSystem == null) {
+        return F.stringx("Unknown");
+      }
+      operatingSystem = operatingSystem.toLowerCase();
+      if (operatingSystem.contains("mac") //
+          || operatingSystem.contains("os2") //
+          || operatingSystem.contains("darwin")) {
+        return F.stringx("MaxOSX");
+      }
+      if (operatingSystem.contains("win")) {
+        return F.stringx("Windows");
+      }
+      if (operatingSystem.contains("six")
+          || operatingSystem.contains("nix")
+          || operatingSystem.contains("nux")
+          || operatingSystem.contains("aix")) {
+        return F.stringx("Unix");
+      }
+      return F.stringx("Unknown");
+    }
+  }
+
   private static class $Packages extends AbstractSymbolEvaluator {
 
     @Override
@@ -400,6 +430,14 @@ public class ConstantDefinitions {
         return F.stringx("/");
       }
       return F.stringx(root.toString());
+    }
+  }
+
+  private static class $ScriptCommandLine extends AbstractSymbolEvaluator {
+
+    @Override
+    public IExpr evaluate(final ISymbol symbol, EvalEngine engine) {
+      return Config.SCRIPT_COMMAND_LINE == null ? F.CEmptyList : Config.SCRIPT_COMMAND_LINE;
     }
   }
 
