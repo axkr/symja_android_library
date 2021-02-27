@@ -10,6 +10,9 @@ import java.util.function.Consumer;
 
 import org.hipparchus.util.Precision;
 import org.matheclipse.core.eval.EvalEngine;
+import org.matheclipse.core.expression.F;
+import org.matheclipse.core.interfaces.IAST;
+import org.matheclipse.core.interfaces.IASTAppendable;
 import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.interfaces.IPattern;
 import org.matheclipse.core.interfaces.IPatternSequence;
@@ -101,7 +104,7 @@ public class Config {
 
   /** Maximum number of loop runs in some Symja functions */
   public static long MAX_LOOP_COUNT = Long.MAX_VALUE;
-  
+
   static {
     EXPR_CACHE =
         CacheBuilder.newBuilder().maximumSize(MAX_EXPR_CACHE_SIZE).weakKeys().weakValues().build();
@@ -159,6 +162,13 @@ public class Config {
 
   public static final Set<ISymbol> SHOW_PATTERN_SYMBOL_STEPS = new HashSet<ISymbol>();
 
+  /**
+   * Contains a list of strings. If executed with the <a
+   * href="https://github.com/axkr/symja_android_library/wiki/Console-apps">console apps</a> the
+   * executable is the first string followed by the argument strings. If not executed with a console
+   * app it returns the empty list.
+   */
+  public static IAST SCRIPT_COMMAND_LINE = null;
   /**
    * Used to serialize the internal Rubi rules or the <code>
    * org.matheclipse.core.reflection.system.rules</code> classes to a file.
@@ -768,4 +778,19 @@ public class Config {
 
   /** Global switch to make all symbols unprotected if set to {@link ISymbol#NOATTRIBUTE} */
   public static int BUILTIN_PROTECTED = ISymbol.PROTECTED;
+
+  public static void setScriptCommandLine(final String[] args) {
+    IASTAppendable commandLine = F.ListAlloc(args.length + 1);
+    String javaHome = System.getProperty("java.home");
+    if (javaHome != null) {
+      commandLine.append(javaHome);
+    } else {
+      commandLine.append("");
+    }
+    for (int i = 0; i < args.length; i++) {
+      commandLine.append(args[i]);
+    }
+    System.out.println(commandLine);
+    SCRIPT_COMMAND_LINE = commandLine;
+  }
 }

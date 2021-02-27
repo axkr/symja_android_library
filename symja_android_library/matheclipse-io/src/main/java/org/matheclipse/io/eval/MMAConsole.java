@@ -348,6 +348,8 @@ public class MMAConsole {
    * @param args the arguments of the program
    */
   private void setArgs(final String args[]) {
+    Config.setScriptCommandLine(args);
+    
     String function = null;
     for (int i = 0; i < args.length; i++) {
       final String arg = args[i];
