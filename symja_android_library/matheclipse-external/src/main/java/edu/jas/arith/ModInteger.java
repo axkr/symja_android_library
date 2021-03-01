@@ -401,7 +401,7 @@ public final class ModInteger implements GcdRingElem<ModInteger>, Modular {
      * @throws NotInvertibleException if the element is not invertible.
      * @return S with S=1/this if defined.
      */
-    public ModInteger inverse() /*throws NotInvertibleException*/{
+    public ModInteger inverse() /*throws NotInvertibleException*/ {
         try {
             return new ModInteger(ring, val.modInverse(ring.modul));
         } catch (ArithmeticException e) {

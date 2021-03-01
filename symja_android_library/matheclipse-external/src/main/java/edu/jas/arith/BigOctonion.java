@@ -11,8 +11,8 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Random;
 
+import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-import org.apache.logging.log4j.LogManager; 
 
 import edu.jas.kern.StringUtil;
 import edu.jas.structure.GcdRingElem;
@@ -64,9 +64,9 @@ public final class BigOctonion
         this.or = r;
         this.oi = i;
         //if (ZERO == null) {
-            //ZERO = new BigOctonion(r.ring.ZERO, i.ring.ZERO);
-            //ONE = new BigOctonion(r.ring.ONE, i.ring.ZERO);
-            //I = new BigOctonion(r.ring.ZERO, i.ring.ONE);
+        //ZERO = new BigOctonion(r.ring.ZERO, i.ring.ZERO);
+        //ONE = new BigOctonion(r.ring.ONE, i.ring.ZERO);
+        //I = new BigOctonion(r.ring.ZERO, i.ring.ONE);
         //}
     }
 
@@ -492,8 +492,8 @@ public final class BigOctonion
     /**
      * Since quaternion numbers are unordered, we use lexicographical order of
      * re, im, jm and km.
-     * @return 0 if this is equal to 0; 1 if or &gt; 0, or or == 0 and oi &gt; 0; -1
-     *         if or &lt; 0, or or == 0 and oi &lt; 0.
+     * @return 0 if this is equal to 0; 1 if or &gt; 0, or or == 0 and oi &gt;
+     *         0; -1 if or &lt; 0, or or == 0 and oi &lt; 0.
      * @see edu.jas.structure.RingElem#signum()
      */
     public int signum() {
@@ -616,13 +616,13 @@ public final class BigOctonion
     /**
      * Octonion number absolute value.
      * @see edu.jas.structure.RingElem#abs()
-     * @return |this|. 
+     * @return |this|.
      */
     public BigOctonion abs() {
         BigOctonion n = norm();
         BigRational r = Roots.sqrt(n.or.re);
         //logger.error("abs() square root missing");
-        return new BigOctonion( new BigQuaternion(n.or.ring, r) );
+        return new BigOctonion(new BigQuaternion(n.or.ring, r));
     }
 
 

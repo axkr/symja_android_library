@@ -8,8 +8,8 @@ package edu.jas.ufd;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-import org.apache.logging.log4j.LogManager; 
 
 import edu.jas.poly.GenPolynomial;
 import edu.jas.poly.GenPolynomialRing;
@@ -41,8 +41,8 @@ public class GreatestCommonDivisorSubres<C extends GcdRingElem<C>> extends Great
      * @return remainder with ldcf(S)<sup>m</sup> P = quotient * S + remainder.
      * @see edu.jas.poly.GenPolynomial#remainder(edu.jas.poly.GenPolynomial).
      * @deprecated(forRemoval=true) Use
-     *             {@link edu.jas.poly.PolyUtil#baseDensePseudoRemainder(edu.jas.poly.GenPolynomial,edu.jas.poly.GenPolynomial)}
-     *             instead
+     *                              {@link edu.jas.poly.PolyUtil#baseDensePseudoRemainder(edu.jas.poly.GenPolynomial,edu.jas.poly.GenPolynomial)}
+     *                              instead
      */
     @Deprecated
     public GenPolynomial<C> basePseudoRemainder(GenPolynomial<C> P, GenPolynomial<C> S) {
@@ -57,8 +57,8 @@ public class GreatestCommonDivisorSubres<C extends GcdRingElem<C>> extends Great
      * @return remainder with ldcf(S)<sup>m</sup> P = quotient * S + remainder.
      * @see edu.jas.poly.GenPolynomial#remainder(edu.jas.poly.GenPolynomial).
      * @deprecated(forRemoval=true) Use
-     *             {@link edu.jas.poly.PolyUtil#recursiveDensePseudoRemainder(edu.jas.poly.GenPolynomial,edu.jas.poly.GenPolynomial)}
-     *             instead
+     *                              {@link edu.jas.poly.PolyUtil#recursiveDensePseudoRemainder(edu.jas.poly.GenPolynomial,edu.jas.poly.GenPolynomial)}
+     *                              instead
      */
     @Deprecated
     public GenPolynomial<GenPolynomial<C>> recursivePseudoRemainder(GenPolynomial<GenPolynomial<C>> P,
@@ -383,8 +383,7 @@ public class GreatestCommonDivisorSubres<C extends GcdRingElem<C>> extends Great
 
     /**
      * Univariate GenPolynomial recursive Subresultant list. Uses
-     * pseudoRemainder for remainder.
-     * <b>Author:</b> Youssef Elbarbary
+     * pseudoRemainder for remainder. <b>Author:</b> Youssef Elbarbary
      * @param P univariate recursive GenPolynomial.
      * @param S univariate recursive GenPolynomial.
      * @return subResList(P,S).

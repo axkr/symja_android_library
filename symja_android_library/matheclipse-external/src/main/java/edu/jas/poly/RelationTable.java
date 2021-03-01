@@ -7,16 +7,16 @@ package edu.jas.poly;
 
 import java.io.Serializable;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.ListIterator;
 import java.util.Map;
-import java.util.Arrays;
 
+import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-import org.apache.logging.log4j.LogManager; 
 
 import edu.jas.kern.PrettyPrint;
 import edu.jas.structure.RingElem;
@@ -34,7 +34,6 @@ import edu.jas.structure.RingElem;
  * relations between coefficients and main variables.
  * @author Heinz Kredel
  */
-
 public class RelationTable<C extends RingElem<C>> implements Serializable {
 
 
@@ -422,16 +421,16 @@ public class RelationTable<C extends RingElem<C>> implements Serializable {
             int[] de = e.dependencyOnVariables();
             int[] df = f.dependencyOnVariables();
             if (debug) {
-                logger.info("update e ? f " + Arrays.toString(de) + "   " + Arrays.toString(df) +
-                            " : " + sring.toScript(e) + " ? " + sring.toScript(f));
+                logger.info("update e ? f " + Arrays.toString(de) + "   " + Arrays.toString(df) + " : "
+                                + sring.toScript(e) + " ? " + sring.toScript(f));
             }
             if (de.length != 1 || df.length != 1) { // can this be relaxed?
                 throw new IllegalArgumentException("RelationTable no univariate relations");
             }
-            if (de[de.length-1] == df[0]) { // error
+            if (de[de.length - 1] == df[0]) { // error
                 throw new IllegalArgumentException("RelationTable update e == f");
             }
-            if (de[de.length-1] > df[0]) { // invalid update
+            if (de[de.length - 1] > df[0]) { // invalid update
                 throw new IllegalArgumentException("RelationTable update e < f");
                 // ExpVector tmp = e;
                 // e = f;
@@ -452,8 +451,8 @@ public class RelationTable<C extends RingElem<C>> implements Serializable {
             ExpVector lp = p.leadingExpVector();
             if (!ef.equals(lp)) { // check for suitable term order
                 logger.error("relation term order = " + ring.tord);
-                throw new IllegalArgumentException("update e*f != lt(p): " + sring.toScript(ef) + " != "
-                                                   + sring.toScript(lp));
+                throw new IllegalArgumentException(
+                                "update e*f != lt(p): " + sring.toScript(ef) + " != " + sring.toScript(lp));
             }
         } else { // is coeffTable
             ExpVector lp = p.leadingExpVector();
@@ -534,8 +533,8 @@ public class RelationTable<C extends RingElem<C>> implements Serializable {
         C ce = E.leadingBaseCoefficient();
         C cf = F.leadingBaseCoefficient();
         if (!ce.isONE()) {
-            throw new IllegalArgumentException("lbcf of polynomials must be one: " + ce + ", " + cf
-                            + ", p = " + p);
+            throw new IllegalArgumentException(
+                            "lbcf of polynomials must be one: " + ce + ", " + cf + ", p = " + p);
         }
         ExpVector e = E.leadingExpVector();
         ExpVector f = F.leadingExpVector();
@@ -843,7 +842,8 @@ public class RelationTable<C extends RingElem<C>> implements Serializable {
                     }
                     //System.out.println("ec = " + ec + ", fc = " + fc + ", qr = " + qr);
                     if (coeffTable) {
-                        String qrs = ring.toScript(ec) + " * " + qr.leadingBaseCoefficient() + " = " + qr.toScript();
+                        String qrs = ring.toScript(ec) + " * " + qr.leadingBaseCoefficient() + " = "
+                                        + qr.toScript();
                         logger.info("coeffTable: adding " + qrs);
                     } else {
                         String qrs = ring.toScript(ec) + " * " + ring.toScript(fc) + " = " + qr.toScript();
@@ -951,7 +951,7 @@ public class RelationTable<C extends RingElem<C>> implements Serializable {
                 GenSolvablePolynomial<C> pe = ring.valueOf(e);
                 ExpVector f = ep.getSecond();
                 GenSolvablePolynomial<C> pf = null;
-                if (coeffTable) { 
+                if (coeffTable) {
                     C cf = null;
                     if (ring.coFac instanceof GenPolynomialRing) {
                         GenPolynomial<C> cpf;
@@ -1010,8 +1010,8 @@ public class RelationTable<C extends RingElem<C>> implements Serializable {
                 throw new IllegalArgumentException("poly part missing");
             }
             GenPolynomial<C> P = relit.next();
-            if (coeffTable) { 
-                if (!F.isConstant()) { 
+            if (coeffTable) {
+                if (!F.isConstant()) {
                     throw new IllegalArgumentException("F  not constant for coeffTable: " + F);
                 }
                 if (ring.coFac instanceof GenPolynomialRing) {

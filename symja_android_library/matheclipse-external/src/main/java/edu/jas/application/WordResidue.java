@@ -445,12 +445,12 @@ public class WordResidue<C extends GcdRingElem<C>> implements GcdRingElem<WordRe
         GenWordPolynomial<C> x = ring.ideal.inverse(val);
         WordResidue<C> xp = new WordResidue<C>(ring, x, 1);
         if (xp.isZERO()) {
-            throw new NotInvertibleException("(" + x + ") * (" + val + ") = " + x.multiply(val) + " = 0 mod "
-                            + ring.ideal);
+            throw new NotInvertibleException(
+                            "(" + x + ") * (" + val + ") = " + x.multiply(val) + " = 0 mod " + ring.ideal);
         }
         if (!xp.multiply(this).isONE()) {
-            throw new NotInvertibleException("(" + x + ") * (" + val + ") = " + x.multiply(val)
-                            + " != 1 mod " + ring.ideal);
+            throw new NotInvertibleException(
+                            "(" + x + ") * (" + val + ") = " + x.multiply(val) + " != 1 mod " + ring.ideal);
         }
         return xp;
     }

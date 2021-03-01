@@ -25,8 +25,8 @@ import edu.jas.ufd.PolyUfdUtil;
 
 
 /**
- * Method related to elementary integration. Czichowski integration of the
- * logarithmic part.
+ * Method related to elementary integration. Czichowski integration based on
+ * Groebner bases for the logarithmic part.
  * 
  * @author Youssef Elbarbary
  * @param <C> coefficient type

@@ -5,8 +5,8 @@
 package edu.jas.ufd;
 
 
+import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-import org.apache.logging.log4j.LogManager; 
 
 import edu.jas.arith.Modular;
 import edu.jas.arith.ModularRingFactory;
@@ -24,8 +24,8 @@ import edu.jas.structure.RingFactory;
  * @author Heinz Kredel
  */
 
-public class GreatestCommonDivisorModEval <MOD extends GcdRingElem<MOD> & Modular> 
-        extends GreatestCommonDivisorAbstract<MOD> {
+public class GreatestCommonDivisorModEval<MOD extends GcdRingElem<MOD> & Modular>
+                extends GreatestCommonDivisorAbstract<MOD> {
 
 
     private static final Logger logger = LogManager.getLogger(GreatestCommonDivisorModEval.class);
@@ -37,14 +37,13 @@ public class GreatestCommonDivisorModEval <MOD extends GcdRingElem<MOD> & Modula
     /**
      * Modular gcd algorithm to use.
      */
-    protected final GreatestCommonDivisorAbstract<MOD> mufd 
-       = new GreatestCommonDivisorSimple<MOD>();
+    protected final GreatestCommonDivisorAbstract<MOD> mufd = new GreatestCommonDivisorSimple<MOD>();
     // not okay = new GreatestCommonDivisorPrimitive<MOD>();
     // not okay = new GreatestCommonDivisorSubres<MOD>();
 
 
     /**
-     * Univariate GenPolynomial greatest common divisor. 
+     * Univariate GenPolynomial greatest common divisor.
      * @param P univariate GenPolynomial.
      * @param S univariate GenPolynomial.
      * @return gcd(P,S).
@@ -57,14 +56,14 @@ public class GreatestCommonDivisorModEval <MOD extends GcdRingElem<MOD> & Modula
 
 
     /**
-     * Recursive univariate GenPolynomial greatest common divisor. 
+     * Recursive univariate GenPolynomial greatest common divisor.
      * @param P univariate recursive GenPolynomial.
      * @param S univariate recursive GenPolynomial.
      * @return gcd(P,S).
      */
     @Override
-    public GenPolynomial<GenPolynomial<MOD>> recursiveUnivariateGcd(
-            GenPolynomial<GenPolynomial<MOD>> P, GenPolynomial<GenPolynomial<MOD>> S) {
+    public GenPolynomial<GenPolynomial<MOD>> recursiveUnivariateGcd(GenPolynomial<GenPolynomial<MOD>> P,
+                    GenPolynomial<GenPolynomial<MOD>> S) {
         //return mufd.recursiveUnivariateGcd(P, S);
         // distributed polynomials gcd
         GenPolynomialRing<GenPolynomial<MOD>> rfac = P.ring;
@@ -100,14 +99,14 @@ public class GreatestCommonDivisorModEval <MOD extends GcdRingElem<MOD> & Modula
             GenPolynomial<MOD> T = baseGcd(P, S);
             return T;
         }
-        long e = P.degree(fac.nvar-1);
-        long f = S.degree(fac.nvar-1);
-        if ( e == 0 && f == 0 ) {
+        long e = P.degree(fac.nvar - 1);
+        long f = S.degree(fac.nvar - 1);
+        if (e == 0 && f == 0) {
             GenPolynomialRing<GenPolynomial<MOD>> rfac = fac.recursive(1);
             GenPolynomial<MOD> Pc = PolyUtil.<MOD> recursive(rfac, P).leadingBaseCoefficient();
             GenPolynomial<MOD> Sc = PolyUtil.<MOD> recursive(rfac, S).leadingBaseCoefficient();
-            GenPolynomial<MOD> r = gcd(Pc,Sc);
-            return r.extend(fac,0,0L);
+            GenPolynomial<MOD> r = gcd(Pc, Sc);
+            return r.extend(fac, 0, 0L);
         }
         GenPolynomial<MOD> q;
         GenPolynomial<MOD> r;
@@ -278,8 +277,8 @@ public class GreatestCommonDivisorModEval <MOD extends GcdRingElem<MOD> & Modula
             if (cp.leadingBaseCoefficient().equals(cc)) {
                 cp = recursivePrimitivePart(cp).abs();
                 logger.debug("test cp == cc: " + cp + " == " + cc);
-                tt = PolyUtil.<MOD> recursiveSparsePseudoRemainder(qr,cp).isZERO();
-                tt = tt && PolyUtil.<MOD> recursiveSparsePseudoRemainder(rr,cp).isZERO();
+                tt = PolyUtil.<MOD> recursiveSparsePseudoRemainder(qr, cp).isZERO();
+                tt = tt && PolyUtil.<MOD> recursiveSparsePseudoRemainder(rr, cp).isZERO();
                 if (tt) {
                     logger.debug("break: is gcd");
                     break;
@@ -292,11 +291,12 @@ public class GreatestCommonDivisorModEval <MOD extends GcdRingElem<MOD> & Modula
             }
             // test for completion
             if (M.degree(0) > G) { //  no && cp.degree(0) > Gm
-                logger.debug("break: M = " + M + ", G = " + G + ", mn = " + mn + ", M.deg(0) = " + M.degree(0));
+                logger.debug("break: M = " + M + ", G = " + G + ", mn = " + mn + ", M.deg(0) = "
+                                + M.degree(0));
                 cp = recursivePrimitivePart(cp).abs();
-                tt = PolyUtil.<MOD> recursiveSparsePseudoRemainder(qr,cp).isZERO();
-                tt = tt && PolyUtil.<MOD> recursiveSparsePseudoRemainder(rr,cp).isZERO();
-                if (! tt) {
+                tt = PolyUtil.<MOD> recursiveSparsePseudoRemainder(qr, cp).isZERO();
+                tt = tt && PolyUtil.<MOD> recursiveSparsePseudoRemainder(rr, cp).isZERO();
+                if (!tt) {
                     logger.debug("break: fail 2, cp = " + cp);
                     cp = rfac.getONE();
                 }
@@ -317,29 +317,29 @@ public class GreatestCommonDivisorModEval <MOD extends GcdRingElem<MOD> & Modula
 
 
     /**
-     * Univariate GenPolynomial resultant. 
+     * Univariate GenPolynomial resultant.
      * @param P univariate GenPolynomial.
      * @param S univariate GenPolynomial.
      * @return res(P,S).
      */
     @Override
-    public GenPolynomial<MOD> baseResultant(GenPolynomial<MOD> P, GenPolynomial<MOD> S) { 
+    public GenPolynomial<MOD> baseResultant(GenPolynomial<MOD> P, GenPolynomial<MOD> S) {
         // required as recursion base
         return mufd.baseResultant(P, S);
     }
 
 
     /**
-     * Univariate GenPolynomial recursive resultant. 
+     * Univariate GenPolynomial recursive resultant.
      * @param P univariate recursive GenPolynomial.
      * @param S univariate recursive GenPolynomial.
      * @return res(P,S).
      */
     @Override
     public GenPolynomial<GenPolynomial<MOD>> recursiveUnivariateResultant(GenPolynomial<GenPolynomial<MOD>> P,
-            GenPolynomial<GenPolynomial<MOD>> S) { 
+                    GenPolynomial<GenPolynomial<MOD>> S) {
         // only in this class
-        return recursiveResultant(P,S);
+        return recursiveResultant(P, S);
     }
 
 
@@ -363,14 +363,14 @@ public class GreatestCommonDivisorModEval <MOD extends GcdRingElem<MOD> & Modula
             GenPolynomial<MOD> T = baseResultant(P, S);
             return T;
         }
-        long e = P.degree(fac.nvar-1);
-        long f = S.degree(fac.nvar-1);
-        if ( e == 0 && f == 0 ) {
+        long e = P.degree(fac.nvar - 1);
+        long f = S.degree(fac.nvar - 1);
+        if (e == 0 && f == 0) {
             GenPolynomialRing<GenPolynomial<MOD>> rfac = fac.recursive(1);
             GenPolynomial<MOD> Pc = PolyUtil.<MOD> recursive(rfac, P).leadingBaseCoefficient();
             GenPolynomial<MOD> Sc = PolyUtil.<MOD> recursive(rfac, S).leadingBaseCoefficient();
-            GenPolynomial<MOD> r = resultant(Pc,Sc);
-            return r.extend(fac,0,0L);
+            GenPolynomial<MOD> r = resultant(Pc, Sc);
+            return r.extend(fac, 0, 0L);
         }
         GenPolynomial<MOD> q;
         GenPolynomial<MOD> r;
@@ -406,12 +406,12 @@ public class GreatestCommonDivisorModEval <MOD extends GcdRingElem<MOD> & Modula
 
         long qd0 = PolyUtil.<MOD> coeffMaxDegree(qr);
         long rd0 = PolyUtil.<MOD> coeffMaxDegree(rr);
-        qd0 = ( qd0 == 0 ? 1 : qd0 );
-        rd0 = ( rd0 == 0 ? 1 : rd0 );
-        long qd1 = qr.degree(); 
+        qd0 = (qd0 == 0 ? 1 : qd0);
+        rd0 = (rd0 == 0 ? 1 : rd0);
+        long qd1 = qr.degree();
         long rd1 = rr.degree();
-        qd1 = ( qd1 == 0 ? 1 : qd1 );
-        rd1 = ( rd1 == 0 ? 1 : rd1 );
+        qd1 = (qd1 == 0 ? 1 : qd1);
+        rd1 = (rd1 == 0 ? 1 : rd1);
         long G = qd0 * rd1 + rd0 * qd1 + 1;
 
         // initialize element
@@ -446,7 +446,8 @@ public class GreatestCommonDivisorModEval <MOD extends GcdRingElem<MOD> & Modula
             //logger.info("qr(" + d + ") = " + qm + ", qr = " + qr);
             if (qm.isZERO() || !qm.degreeVector().equals(qdegv)) {
                 if (debug) {
-                   logger.info("un-lucky evaluation point " + d + ", qm = " + qm.degreeVector() + " < " + qdegv);
+                    logger.info("un-lucky evaluation point " + d + ", qm = " + qm.degreeVector() + " < "
+                                    + qdegv);
                 }
                 continue;
             }
@@ -454,7 +455,8 @@ public class GreatestCommonDivisorModEval <MOD extends GcdRingElem<MOD> & Modula
             //logger.info("rr(" + d + ") = " + rm + ", rr = " + rr);
             if (rm.isZERO() || !rm.degreeVector().equals(rdegv)) {
                 if (debug) {
-                    logger.info("un-lucky evaluation point " + d + ", rm = " + rm.degreeVector() + " < " + rdegv);
+                    logger.info("un-lucky evaluation point " + d + ", rm = " + rm.degreeVector() + " < "
+                                    + rdegv);
                 }
                 continue;
             }

@@ -233,8 +233,8 @@ public class PolyUtil {
      * <b>Author:</b> Axel Kramer
      * @param fac result polynomial factory.
      * @param A polynomial with BigRational coefficients to be converted.
-     * @return Object[] with 3 entries: [0]=gcd [1]=lcm and [2]=polynomial
-     *         with BigInteger coefficients.
+     * @return Object[] with 3 entries: [0]=gcd [1]=lcm and [2]=polynomial with
+     *         BigInteger coefficients.
      */
     public static Object[] integerFromRationalCoefficientsFactor(GenPolynomialRing<BigInteger> fac,
                     GenPolynomial<BigRational> A) {
@@ -873,8 +873,8 @@ public class PolyUtil {
      *         m' &le; deg(P)-deg(S)
      * @see edu.jas.poly.GenPolynomial#remainder(edu.jas.poly.GenPolynomial).
      * @deprecated(forRemoval=true) Use
-     *             {@link #baseSparsePseudoRemainder(edu.jas.poly.GenPolynomial,edu.jas.poly.GenPolynomial)}
-     *             instead
+     *                              {@link #baseSparsePseudoRemainder(edu.jas.poly.GenPolynomial,edu.jas.poly.GenPolynomial)}
+     *                              instead
      */
     @Deprecated
     public static <C extends RingElem<C>> GenPolynomial<C> basePseudoRemainder(GenPolynomial<C> P,
@@ -1320,8 +1320,8 @@ public class PolyUtil {
      * @return remainder with ldcf(S)<sup>m'</sup> P = quotient * S + remainder.
      * @see edu.jas.poly.GenPolynomial#remainder(edu.jas.poly.GenPolynomial).
      * @deprecated(forRemoval=true) Use
-     *             {@link #recursiveSparsePseudoRemainder(edu.jas.poly.GenPolynomial,edu.jas.poly.GenPolynomial)}
-     *             instead
+     *                              {@link #recursiveSparsePseudoRemainder(edu.jas.poly.GenPolynomial,edu.jas.poly.GenPolynomial)}
+     *                              instead
      */
     @Deprecated
     public static <C extends RingElem<C>> GenPolynomial<GenPolynomial<C>> recursivePseudoRemainder(
@@ -1782,7 +1782,7 @@ public class PolyUtil {
             v = v.shiftLeft(16);
         }
         if (n > 0) {
-            v = v.shiftLeft((int)n); // n < 16
+            v = v.shiftLeft((int) n); // n < 16
         }
         BigInteger N = new BigInteger(v);
         return N;

@@ -7,8 +7,8 @@ package edu.jas.structure;
 
 import java.util.List;
 
+import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-import org.apache.logging.log4j.LogManager; 
 
 
 /**
@@ -258,7 +258,8 @@ public class Power<C extends RingElem<C>> {
      * @param fac monoid factory.
      * @return a^n mod m, with a^{-n} = {1/a}^n.
      */
-    public static <C extends MonoidElem<C>> C modPower(MonoidFactory<C> fac, C a, java.math.BigInteger n, C m) {
+    public static <C extends MonoidElem<C>> C modPower(MonoidFactory<C> fac, C a, java.math.BigInteger n,
+                    C m) {
         if (n.signum() == 0) {
             if (fac == null) {
                 throw new IllegalArgumentException("fac may not be null for a^0");

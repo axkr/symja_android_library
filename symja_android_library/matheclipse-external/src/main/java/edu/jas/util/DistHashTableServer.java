@@ -13,14 +13,13 @@ import java.util.Map.Entry;
 import java.util.SortedMap;
 import java.util.TreeMap;
 
+import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-import org.apache.logging.log4j.LogManager; 
 
 
 /**
- * Server for the distributed version of a list.
- * TODO: redistribute list for late coming clients, removal
- *       of elements.
+ * Server for the distributed version of a list. TODO: redistribute list for
+ * late coming clients, removal of elements.
  * @author Heinz Kredel
  */
 

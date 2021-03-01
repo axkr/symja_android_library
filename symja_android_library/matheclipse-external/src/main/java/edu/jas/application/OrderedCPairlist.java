@@ -15,8 +15,8 @@ import java.util.Map;
 import java.util.SortedMap;
 import java.util.TreeMap;
 
+import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-import org.apache.logging.log4j.LogManager; 
 
 import edu.jas.poly.ExpVector;
 import edu.jas.poly.GenPolynomial;
@@ -329,14 +329,14 @@ public class OrderedCPairlist<C extends GcdRingElem<C>> implements Serializable 
                 j = pair.j;
                 // System.out.println("pair(" + j + "," +i+") ");
                 //if (useCriterion4) {
-                    // c = reduction.criterion4( pair.pi, pair.pj, g );
+                // c = reduction.criterion4( pair.pi, pair.pj, g );
                 //    c = true;
                 //}
-                c = true; 
+                c = true;
                 // System.out.println("c4 = " + c);
                 //if (c) {
-                    // c = criterion3( i, j, g );
-                    // System.out.println("c3 = " + c);
+                // c = criterion3( i, j, g );
+                // System.out.println("c3 = " + c);
                 //}
                 red.get(j).clear(i); // set(i,false) jdk1.4
             }

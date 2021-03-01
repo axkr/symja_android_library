@@ -5,8 +5,8 @@
 package edu.jas.ufd;
 
 
+import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-import org.apache.logging.log4j.LogManager; 
 
 import edu.jas.poly.GenPolynomial;
 import edu.jas.poly.PolyUtil;
@@ -19,8 +19,8 @@ import edu.jas.structure.GcdRingElem;
  * @author Heinz Kredel
  */
 
-public class GreatestCommonDivisorPrimitive<C extends GcdRingElem<C>> extends
-        GreatestCommonDivisorAbstract<C> {
+public class GreatestCommonDivisorPrimitive<C extends GcdRingElem<C>>
+                extends GreatestCommonDivisorAbstract<C> {
 
 
     private static final Logger logger = LogManager.getLogger(GreatestCommonDivisorPrimitive.class);
@@ -96,7 +96,7 @@ public class GreatestCommonDivisorPrimitive<C extends GcdRingElem<C>> extends
      */
     @Override
     public GenPolynomial<GenPolynomial<C>> recursiveUnivariateGcd(GenPolynomial<GenPolynomial<C>> P,
-            GenPolynomial<GenPolynomial<C>> S) {
+                    GenPolynomial<GenPolynomial<C>> S) {
         if (S == null || S.isZERO()) {
             return P;
         }

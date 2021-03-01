@@ -9,8 +9,8 @@ import java.util.Map;
 import java.util.SortedMap;
 import java.util.TreeMap;
 
+import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-import org.apache.logging.log4j.LogManager; 
 
 import edu.jas.poly.ExpVector;
 import edu.jas.poly.GenPolynomial;
@@ -77,7 +77,8 @@ public class SquarefreeFieldChar0<C extends GcdRingElem<C>> extends SquarefreeAb
         }
         GenPolynomialRing<C> pfac = P.ring;
         if (pfac.nvar > 1) {
-            throw new IllegalArgumentException(this.getClass().getName() + " only for univariate polynomials");
+            throw new IllegalArgumentException(
+                            this.getClass().getName() + " only for univariate polynomials");
         }
         GenPolynomial<C> pp = P.monic();
         if (pp.isConstant()) {
@@ -105,7 +106,8 @@ public class SquarefreeFieldChar0<C extends GcdRingElem<C>> extends SquarefreeAb
         }
         GenPolynomialRing<C> pfac = P.ring;
         if (pfac.nvar > 1) {
-            throw new IllegalArgumentException(this.getClass().getName() + " only for univariate polynomials");
+            throw new IllegalArgumentException(
+                            this.getClass().getName() + " only for univariate polynomials");
         }
         GenPolynomial<C> pp = P.monic();
         if (pp.isConstant()) {
@@ -124,8 +126,8 @@ public class SquarefreeFieldChar0<C extends GcdRingElem<C>> extends SquarefreeAb
     /**
      * GenPolynomial polynomial squarefree factorization.
      * @param A GenPolynomial.
-     * @return [p_1 -&gt; e_1, ..., p_k -&gt; e_k] with P = prod_{i=1,...,k} p_i^{e_i}
-     *         and p_i squarefree.
+     * @return [p_1 -&gt; e_1, ..., p_k -&gt; e_k] with P = prod_{i=1,...,k}
+     *         p_i^{e_i} and p_i squarefree.
      */
     @Override
     public SortedMap<GenPolynomial<C>, Long> baseSquarefreeFactors(GenPolynomial<C> A) {
@@ -139,7 +141,8 @@ public class SquarefreeFieldChar0<C extends GcdRingElem<C>> extends SquarefreeAb
         }
         GenPolynomialRing<C> pfac = A.ring;
         if (pfac.nvar > 1) {
-            throw new IllegalArgumentException(this.getClass().getName() + " only for univariate polynomials");
+            throw new IllegalArgumentException(
+                            this.getClass().getName() + " only for univariate polynomials");
         }
         C ldbcf = A.leadingBaseCoefficient();
         if (!ldbcf.isONE()) {
@@ -154,14 +157,14 @@ public class SquarefreeFieldChar0<C extends GcdRingElem<C>> extends SquarefreeAb
         if (!et.isZERO()) {
             GenPolynomial<C> tr = pfac.valueOf(et);
             if (logger.isInfoEnabled()) {
-               logger.info("trailing term = " + tr);
+                logger.info("trailing term = " + tr);
             }
             A = PolyUtil.<C> basePseudoDivide(A, tr);
             long ep = et.getVal(0); // univariate
-            et = et.subst(0,1);
+            et = et.subst(0, 1);
             tr = pfac.valueOf(et);
             if (logger.isInfoEnabled()) {
-               logger.info("tr, ep = " + tr + ", " + ep);
+                logger.info("tr, ep = " + tr + ", " + ep);
             }
             sfactors.put(tr, ep);
             if (A.length() == 1) {
@@ -223,14 +226,15 @@ public class SquarefreeFieldChar0<C extends GcdRingElem<C>> extends SquarefreeAb
      * @return squarefree(pp(P)).
      */
     @Override
-    public GenPolynomial<GenPolynomial<C>> recursiveUnivariateSquarefreePart(GenPolynomial<GenPolynomial<C>> P) {
+    public GenPolynomial<GenPolynomial<C>> recursiveUnivariateSquarefreePart(
+                    GenPolynomial<GenPolynomial<C>> P) {
         if (P == null || P.isZERO()) {
             return P;
         }
         GenPolynomialRing<GenPolynomial<C>> pfac = P.ring;
         if (pfac.nvar > 1) {
-            throw new IllegalArgumentException(this.getClass().getName()
-                            + " only for univariate recursive polynomials");
+            throw new IllegalArgumentException(
+                            this.getClass().getName() + " only for univariate recursive polynomials");
         }
         // squarefree content
         GenPolynomial<GenPolynomial<C>> pp = P;
@@ -270,8 +274,8 @@ public class SquarefreeFieldChar0<C extends GcdRingElem<C>> extends SquarefreeAb
         }
         GenPolynomialRing<GenPolynomial<C>> pfac = P.ring;
         if (pfac.nvar > 1) {
-            throw new IllegalArgumentException(this.getClass().getName()
-                            + " only for univariate recursive polynomials");
+            throw new IllegalArgumentException(
+                            this.getClass().getName() + " only for univariate recursive polynomials");
         }
         GenPolynomial<GenPolynomial<C>> pp = P;
         GenPolynomial<GenPolynomial<C>> d = PolyUtil.<C> recursiveDeriviative(pp);
@@ -290,8 +294,8 @@ public class SquarefreeFieldChar0<C extends GcdRingElem<C>> extends SquarefreeAb
     /**
      * GenPolynomial recursive univariate polynomial squarefree factorization.
      * @param P recursive univariate GenPolynomial.
-     * @return [p_1 -&gt; e_1, ..., p_k -&gt; e_k] with P = prod_{i=1,...,k} p_i^{e_i}
-     *         and p_i squarefree.
+     * @return [p_1 -&gt; e_1, ..., p_k -&gt; e_k] with P = prod_{i=1,...,k}
+     *         p_i^{e_i} and p_i squarefree.
      */
     @Override
     public SortedMap<GenPolynomial<GenPolynomial<C>>, Long> recursiveUnivariateSquarefreeFactors(
@@ -303,7 +307,8 @@ public class SquarefreeFieldChar0<C extends GcdRingElem<C>> extends SquarefreeAb
         GenPolynomialRing<GenPolynomial<C>> pfac = P.ring;
         if (pfac.nvar > 1) {
             // recursiveContent not possible by return type
-            throw new IllegalArgumentException(this.getClass().getName() + " only for univariate polynomials");
+            throw new IllegalArgumentException(
+                            this.getClass().getName() + " only for univariate polynomials");
         }
         // if base coefficient ring is a field, make monic
         GenPolynomialRing<C> cfac = (GenPolynomialRing<C>) pfac.coFac;
@@ -345,11 +350,11 @@ public class SquarefreeFieldChar0<C extends GcdRingElem<C>> extends SquarefreeAb
         if (!et.isZERO()) {
             GenPolynomial<GenPolynomial<C>> tr = pfac.valueOf(et);
             if (logger.isInfoEnabled()) {
-               logger.info("trailing term = " + tr);
+                logger.info("trailing term = " + tr);
             }
             P = PolyUtil.<C> recursivePseudoDivide(P, tr);
             long ep = et.getVal(0); // univariate
-            et = et.subst(0,1);
+            et = et.subst(0, 1);
             tr = pfac.valueOf(et);
             sfactors.put(tr, ep);
         }
@@ -464,8 +469,8 @@ public class SquarefreeFieldChar0<C extends GcdRingElem<C>> extends SquarefreeAb
     /**
      * GenPolynomial squarefree factorization.
      * @param P GenPolynomial.
-     * @return [p_1 -&gt; e_1, ..., p_k -&gt; e_k] with P = prod_{i=1,...,k} p_i^{e_i}
-     *         and p_i squarefree.
+     * @return [p_1 -&gt; e_1, ..., p_k -&gt; e_k] with P = prod_{i=1,...,k}
+     *         p_i^{e_i} and p_i squarefree.
      */
     @Override
     public SortedMap<GenPolynomial<C>, Long> squarefreeFactors(GenPolynomial<C> P) {
@@ -504,8 +509,8 @@ public class SquarefreeFieldChar0<C extends GcdRingElem<C>> extends SquarefreeAb
     /**
      * Coefficients squarefree factorization.
      * @param P coefficient.
-     * @return [p_1 -&gt; e_1, ..., p_k -&gt; e_k] with P = prod_{i=1,...,k} p_i^{e_i}
-     *         and p_i squarefree.
+     * @return [p_1 -&gt; e_1, ..., p_k -&gt; e_k] with P = prod_{i=1,...,k}
+     *         p_i^{e_i} and p_i squarefree.
      */
     @Override
     public SortedMap<C, Long> squarefreeFactors(C P) {

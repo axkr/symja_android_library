@@ -9,8 +9,8 @@ import java.util.Map;
 import java.util.SortedMap;
 import java.util.TreeMap;
 
+import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-import org.apache.logging.log4j.LogManager; 
 
 import edu.jas.poly.AlgebraicNumber;
 import edu.jas.poly.AlgebraicNumberRing;
@@ -197,14 +197,14 @@ public abstract class SquarefreeFieldCharP<C extends GcdRingElem<C>> extends Squ
         if (!et.isZERO()) {
             GenPolynomial<C> tr = pfac.valueOf(et);
             if (logger.isInfoEnabled()) {
-               logger.info("trailing term = " + tr);
+                logger.info("trailing term = " + tr);
             }
             A = PolyUtil.<C> basePseudoDivide(A, tr);
             long ep = et.getVal(0); // univariate
-            et = et.subst(0,1);
+            et = et.subst(0, 1);
             tr = pfac.valueOf(et);
             if (logger.isInfoEnabled()) {
-               logger.info("tr, ep = " + tr + ", " + ep);
+                logger.info("tr, ep = " + tr + ", " + ep);
             }
             sfactors.put(tr, ep);
             if (A.length() == 1) {

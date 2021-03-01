@@ -829,7 +829,9 @@ public abstract class FactorAbstract<C extends GcdRingElem<C>> implements Factor
                 fi = fi.negate();
                 f0 = f0.negate();
             }
-            Fp.add(fi);
+            if (!fi.isONE()) {
+                Fp.add(fi);
+            }
         }
         if (!f0.isONE()) {
             Fp.add(0, f0);

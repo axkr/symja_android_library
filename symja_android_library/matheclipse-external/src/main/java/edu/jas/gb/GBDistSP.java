@@ -19,9 +19,9 @@ import edu.jas.util.RemoteExecutable;
  * @author Heinz Kredel
  * @see edu.jas.application.RunGB
  * @see edu.jas.application.RunSGB
- * TODO: to deprecate
+ * @deprecated use RunGB or RunSGB for standalone execution
  */
-
+@Deprecated
 public class GBDistSP<C extends RingElem<C>> {
 
 
@@ -109,7 +109,6 @@ public class GBDistSP<C extends RingElem<C>> {
 /**
  * Objects of this class are to be send to a ExecutableServer.
  */
-
 class GBClientSP<C extends RingElem<C>> implements RemoteExecutable {
 
 

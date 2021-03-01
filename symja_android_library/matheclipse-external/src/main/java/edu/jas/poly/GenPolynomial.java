@@ -11,19 +11,18 @@ import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Iterator;
-import java.util.Spliterator;
 import java.util.List;
 import java.util.Map;
 import java.util.SortedMap;
+import java.util.Spliterator;
 import java.util.TreeMap;
-import java.util.regex.Pattern;
-import java.util.regex.Matcher;
-import java.util.stream.Stream;
-import java.util.stream.Collectors;
 import java.util.function.Function;
+import java.util.regex.Pattern;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
+import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-import org.apache.logging.log4j.LogManager; 
 
 import edu.jas.kern.PreemptingException;
 import edu.jas.kern.PrettyPrint;
@@ -34,26 +33,24 @@ import edu.jas.util.MapEntry;
 
 
 /**
- * GenPolynomial generic polynomials implementing RingElem. n-variate
- * ordered polynomials over coefficients C. The variables commute with each other
- * and with the coefficients. For non-commutative coefficients some
- * care is taken to respect the multiplication order.
+ * GenPolynomial generic polynomials implementing RingElem. n-variate ordered
+ * polynomials over coefficients C. The variables commute with each other and
+ * with the coefficients. For non-commutative coefficients some care is taken to
+ * respect the multiplication order.
  *
- * Objects of this class are intended to be immutable.  The
- * implementation is based on TreeMap respectively SortedMap from
- * exponents to coefficients. Only the coefficients are modeled with
- * generic types, the exponents are fixed to ExpVector with long
- * entries (this will eventually be changed in the future). C can also
- * be a non integral domain, e.g. a ModInteger, i.e. it may contain
- * zero divisors, since multiply() does check for zeros. <b>Note:</b>
- * multiply() now checks for wrong method dispatch for
- * GenSolvablePolynomial.
+ * Objects of this class are intended to be immutable. The implementation is
+ * based on TreeMap respectively SortedMap from exponents to coefficients. Only
+ * the coefficients are modeled with generic types, the exponents are fixed to
+ * ExpVector with long entries (@see edu.jas.poly.ExpVector StorUnit). C can
+ * also be a non integral domain, e.g. a ModInteger, i.e. it may contain zero
+ * divisors, since multiply() does check for zeros. <b>Note:</b> multiply() now
+ * checks for wrong method dispatch for GenSolvablePolynomial.
  * @param <C> coefficient type
  * @author Heinz Kredel
  */
 public class GenPolynomial<C extends RingElem<C>>
-    implements RingElem<GenPolynomial<C>>, /* not yet Polynomial<C> */
-               Iterable<Monomial<C>> {
+                implements RingElem<GenPolynomial<C>>, /* not yet Polynomial<C> */
+                Iterable<Monomial<C>> {
 
 
     /**
@@ -436,7 +433,7 @@ public class GenPolynomial<C extends RingElem<C>>
             ExpVector e = m.getKey();
             String cs = c.toScript();
             boolean parenthesis = (cs.indexOf("-") >= 0 || cs.indexOf("+") >= 0)
-                                  && !klammern.matcher(cs).matches();
+                            && !klammern.matcher(cs).matches();
             if (!c.isONE() || e.isZERO()) {
                 if (parenthesis) {
                     s.append("( ");
@@ -800,8 +797,7 @@ public class GenPolynomial<C extends RingElem<C>>
 
 
     /**
-     * Minimal degree.
-     * <b>Author:</b> Youssef Elbarbary
+     * Minimal degree. <b>Author:</b> Youssef Elbarbary
      * @return minimal degree in any variables.
      */
     public long degreeMin() {
@@ -910,7 +906,7 @@ public class GenPolynomial<C extends RingElem<C>>
                     if (ab * ab == a * b) { // cos == 1
                         fp.val.put(e, m.getValue());
                         logger.info("ab = " + ab + ", a = " + a + ", b = " + b + ", u = " + u + ", e = " + e
-                                    + ", v = " + v);
+                                        + ", v = " + v);
                     }
                 }
             }
@@ -1004,7 +1000,7 @@ public class GenPolynomial<C extends RingElem<C>>
 
     /**
      * GenPolynomial maximum norm.
-     * @return ||this||.
+     * @return ||this|| the maximum of all absolute values of coefficients.
      */
     public C maxNorm() {
         C n = ring.getZEROCoefficient();
@@ -1033,6 +1029,21 @@ public class GenPolynomial<C extends RingElem<C>>
 
 
     /**
+     * GenPolynomial square norm.
+     * @return the sum all squared values of coefficients.
+     */
+    public C squareNorm() {
+        C n = ring.getZEROCoefficient();
+        for (C c : val.values()) {
+            C x = c.abs();
+            x = x.multiply(x);
+            n = n.sum(x);
+        }
+        return n;
+    }
+
+
+    /**
      * GenPolynomial summation.
      * @param S GenPolynomial.
      * @return this+S.
@@ -1045,7 +1056,7 @@ public class GenPolynomial<C extends RingElem<C>>
         if (this.isZERO()) {
             return S;
         }
-        if (this.length() < (3*S.length())/5) {
+        if (this.length() < (3 * S.length()) / 5) {
             return S.sum(this); // performance
         }
         assert (ring.nvar == S.ring.nvar);
@@ -1209,7 +1220,7 @@ public class GenPolynomial<C extends RingElem<C>>
             return S.negate();
         }
         assert (ring.nvar == S.ring.nvar);
-        GenPolynomial<C> n = this.copy(); 
+        GenPolynomial<C> n = this.copy();
         SortedMap<ExpVector, C> nv = n.val;
         SortedMap<ExpVector, C> sv = S.val;
         for (Map.Entry<ExpVector, C> me : sv.entrySet()) {
@@ -1525,7 +1536,7 @@ public class GenPolynomial<C extends RingElem<C>>
         SortedMap<ExpVector, C> v = n.val;
         for (Map.Entry<ExpVector, C> m : v.entrySet()) {
             C x = m.getValue(); // != null, 0
-            m.setValue( x.negate() ); // okay
+            m.setValue(x.negate()); // okay
         }
         return n;
     }
@@ -1601,7 +1612,7 @@ public class GenPolynomial<C extends RingElem<C>>
      * @return this*s.
      */
     public GenPolynomial<C> multiply(C s) {
-        if (s == null||s.isZERO()) {
+        if (s == null || s.isZERO()) {
             return ring.getZERO();
         }
         if (this.isZERO()) {
@@ -1628,13 +1639,13 @@ public class GenPolynomial<C extends RingElem<C>>
 
 
     /**
-     * GenPolynomial left multiplication. Left product with coefficient
-     * ring element.
+     * GenPolynomial left multiplication. Left product with coefficient ring
+     * element.
      * @param s coefficient.
      * @return s*this.
      */
     public GenPolynomial<C> multiplyLeft(C s) {
-        if (s == null||s.isZERO()) {
+        if (s == null || s.isZERO()) {
             return ring.getZERO();
         }
         if (this.isZERO()) {
@@ -1653,7 +1664,7 @@ public class GenPolynomial<C extends RingElem<C>>
             ExpVector e = m.getKey();
             C c = s.multiply(a);
             if (!c.isZERO()) {
-                pv.put(e, c); 
+                pv.put(e, c);
             }
         }
         return p;
@@ -1802,8 +1813,8 @@ public class GenPolynomial<C extends RingElem<C>>
 
 
     /**
-     * GenPolynomial right division. Right division by coefficient ring element. Fails, if
-     * exact division is not possible.
+     * GenPolynomial right division. Right division by coefficient ring element.
+     * Fails, if exact division is not possible.
      * @param s coefficient.
      * @return this * s**(-1).
      */
@@ -1839,8 +1850,8 @@ public class GenPolynomial<C extends RingElem<C>>
 
 
     /**
-     * GenPolynomial left division. Left division by coefficient ring element. Fails, if
-     * exact division is not possible.
+     * GenPolynomial left division. Left division by coefficient ring element.
+     * Fails, if exact division is not possible.
      * @param s coefficient.
      * @return s**(-1) * this.
      */
@@ -2040,7 +2051,7 @@ public class GenPolynomial<C extends RingElem<C>>
         }
         if (ring.nvar != 1) {
             throw new IllegalArgumentException(
-                                               this.getClass().getName() + " not univariate polynomials" + ring);
+                            this.getClass().getName() + " not univariate polynomials" + ring);
         }
         if (this.isConstant() && S.isConstant()) {
             C t = this.leadingBaseCoefficient();
@@ -2112,7 +2123,7 @@ public class GenPolynomial<C extends RingElem<C>>
         }
         if (ring.nvar != 1) {
             throw new IllegalArgumentException(
-                                               this.getClass().getName() + " not univariate polynomials" + ring);
+                            this.getClass().getName() + " not univariate polynomials" + ring);
         }
         GenPolynomial<C>[] qr;
         GenPolynomial<C> q = this;
@@ -2248,7 +2259,7 @@ public class GenPolynomial<C extends RingElem<C>>
         GenPolynomial<C> zero = pfac.getZERO(); //not pfac.coFac;
         TermOrder t = new TermOrder(TermOrder.INVLEX);
         Map<ExpVector, GenPolynomial<C>> B = new TreeMap<ExpVector, GenPolynomial<C>>(
-                                                                                      t.getAscendComparator());
+                        t.getAscendComparator());
         if (this.isZERO()) {
             return B;
         }
@@ -2411,8 +2422,7 @@ public class GenPolynomial<C extends RingElem<C>>
 
 
     /**
-     * GenPolynomial inflate. Only for univariate
-     * polynomials over fields.
+     * GenPolynomial inflate. Only for univariate polynomials over fields.
      * @param e exponent.
      * @return this(x**e)
      */
@@ -2425,7 +2435,7 @@ public class GenPolynomial<C extends RingElem<C>>
         }
         if (ring.nvar != 1) {
             throw new IllegalArgumentException(
-                                               this.getClass().getName() + " not univariate polynomial" + ring);
+                            this.getClass().getName() + " not univariate polynomial" + ring);
         }
         GenPolynomial<C> Cp = ring.getZERO().copy();
         Map<ExpVector, C> C = Cp.val; //getMap();
@@ -2522,26 +2532,28 @@ public class GenPolynomial<C extends RingElem<C>>
      * @param f evaluation functor.
      * @return new polynomial with f(this.entries).
      */
-    public GenPolynomial<C> mapOnStream(final Function<? super Map.Entry<ExpVector,C>, ? extends Map.Entry<ExpVector,C>> f) {
+    public GenPolynomial<C> mapOnStream(
+                    final Function<? super Map.Entry<ExpVector, C>, ? extends Map.Entry<ExpVector, C>> f) {
         return mapOnStream(f, false);
     }
 
-    
+
     /**
      * Map a function to the polynomial stream entries.
      * @param f evaluation functor.
      * @return new polynomial with f(this.entries).
      */
-    public GenPolynomial<C> mapOnStream(final Function<? super Map.Entry<ExpVector,C>, ? extends Map.Entry<ExpVector,C>> f, boolean parallel) {
-        Stream<Map.Entry<ExpVector,C>> st;
+    public GenPolynomial<C> mapOnStream(
+                    final Function<? super Map.Entry<ExpVector, C>, ? extends Map.Entry<ExpVector, C>> f,
+                    boolean parallel) {
+        Stream<Map.Entry<ExpVector, C>> st;
         if (parallel) {
             st = val.entrySet().parallelStream();
         } else {
             st = val.entrySet().stream();
         }
-        Map<ExpVector,C> m = st.map(f)
-            .filter(me -> !me.getValue().isZERO())
-            .collect(Collectors.toMap(me -> me.getKey(), me -> me.getValue()));
+        Map<ExpVector, C> m = st.map(f).filter(me -> !me.getValue().isZERO())
+                        .collect(Collectors.toMap(me -> me.getKey(), me -> me.getValue()));
         //Stream<Map.Entry<ExpVector,C>> stp = st.map(f);
         //Stream<Map.Entry<ExpVector,C>> stf = stp.filter(me -> !me.getValue().isZERO());
         //Map<ExpVector,C> m = stf.collect(Collectors.toMap(me -> me.getKey(), me -> me.getValue()));

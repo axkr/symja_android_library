@@ -8,15 +8,15 @@ package edu.jas.root;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-import org.apache.logging.log4j.LogManager; 
 
 import edu.jas.arith.BigRational;
 import edu.jas.arith.Rational;
+import edu.jas.poly.ExpVector;
 import edu.jas.poly.GenPolynomial;
 import edu.jas.poly.GenPolynomialRing;
 import edu.jas.poly.PolyUtil;
-import edu.jas.poly.ExpVector;
 import edu.jas.structure.RingElem;
 import edu.jas.structure.RingFactory;
 
@@ -95,10 +95,10 @@ public class RealRootsSturm<C extends RingElem<C> & Rational> extends RealRootsA
         if (!et.isZERO()) {
             GenPolynomial<C> tr = pfac.valueOf(et);
             if (logger.isInfoEnabled()) {
-               logger.info("trailing term = " + tr);
+                logger.info("trailing term = " + tr);
             }
             f = PolyUtil.<C> basePseudoDivide(f, tr);
-            R.add(new Interval<C>( pfac.coFac.getZERO() ));
+            R.add(new Interval<C>(pfac.coFac.getZERO()));
         }
         if (f.isConstant()) {
             return R;
@@ -139,7 +139,7 @@ public class RealRootsSturm<C extends RingElem<C> & Rational> extends RealRootsA
             C z = f.leadingBaseCoefficient();
             if (!iv.contains(z)) {
                 throw new IllegalArgumentException(
-                                "root not in interval: f = " + f + ", iv = " + iv + ", z = " + z);
+                                                   "root not in interval: f = " + f + ", iv = " + iv + ", z = " + z);
             }
             Interval<C> iv1 = new Interval<C>(z);
             R.add(iv1);
@@ -330,7 +330,7 @@ public class RealRootsSturm<C extends RingElem<C> & Rational> extends RealRootsA
      * Invariant interval for algebraic number sign.
      * @param iv root isolating interval for f, with f(left) * f(right) &lt; 0.
      * @param f univariate polynomial, non-zero.
-     * @param Sg Sturm sequence for g, a univariate polynomial with gcd(f,g) ==
+     * @param Sg Sturm sequence for (f,g), a univariate polynomial with gcd(f,g) ==
      *            1.
      * @return v with v a new interval contained in iv such that g(w) != 0 for w
      *         in v.
@@ -370,12 +370,12 @@ public class RealRootsSturm<C extends RingElem<C> & Rational> extends RealRootsA
 
 
     /**
-     * Exclude zero.
+     * Exclude zero, old version.
      * @param iv root isolating interval with f(left) * f(right) &lt; 0.
      * @param S sturm sequence for f and I.
      * @return a new interval v such that v &lt; 0 or v &gt; 0.
      */
-    public Interval<C> excludeZero(Interval<C> iv, List<GenPolynomial<C>> S) {
+    public Interval<C> excludeZeroOld(Interval<C> iv, List<GenPolynomial<C>> S) {
         if (S == null || S.isEmpty()) {
             return iv;
         }
@@ -388,6 +388,47 @@ public class RealRootsSturm<C extends RingElem<C> & Rational> extends RealRootsA
             return vn;
         }
         vn = new Interval<C>(zero, iv.right);
+        return vn;
+    }
+
+
+    /**
+     * Exclude zero v2.
+     * @param iv root isolating interval with f(left) * f(right) &lt; 0.
+     * @param S sturm sequence for f and I.
+     * @return a new interval v such that v &lt; 0 or v &gt; 0 or v == 0.
+     */
+    public Interval<C> excludeZero(Interval<C> iv, List<GenPolynomial<C>> S) {
+        if (S == null || S.isEmpty()) {
+            return iv;
+        }
+        GenPolynomial<C> f = S.get(0);
+        C zero = f.ring.coFac.getZERO();
+        if (!iv.contains(zero)) { // left <= 0 <= right
+            return iv;
+        }
+        if (iv.left.isZERO() && iv.right.isZERO()) { // (0, 0)
+            return iv;
+        }
+        C m = realMinimalRootBound(f);
+        Interval<C> vi = iv;
+        Interval<C> vn;
+        if (vi.left.isZERO()) {
+            vi = new Interval<C>(m, vi.right);
+        } else if (vi.right.isZERO()) {
+            vi = new Interval<C>(vi.left, m.negate());
+        }
+        vn = new Interval<C>(vi.left, m.negate()); // l != 0
+        if (realRootCount(vn, S) == 1) {
+            return vn;
+        }
+        vn = new Interval<C>(m, vi.right); // r != 0
+        if (realRootCount(vn, S) == 1) {
+            return vn;
+        }
+        vn = new Interval<C>(zero);
+        logger.warn("interval is zero: iv = " + iv + ", trail = " + f.trailingExpVector().degree()
+                     + ", vi = " + vi + ", vn = " + vn);
         return vn;
     }
 

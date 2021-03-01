@@ -459,8 +459,8 @@ public final class BigComplex
     /**
      * Since complex numbers are unordered, we use lexicographical order of re
      * and im.
-     * @return 0 if this is equal to b; 1 if re &gt; b.re, or re == b.re and im &gt;
-     *         b.im; -1 if re &lt; b.re, or re == b.re and im &lt; b.im
+     * @return 0 if this is equal to b; 1 if re &gt; b.re, or re == b.re and im
+     *         &gt; b.im; -1 if re &lt; b.re, or re == b.re and im &lt; b.im
      */
     @Override
     public int compareTo(BigComplex b) {
@@ -475,8 +475,8 @@ public final class BigComplex
     /**
      * Since complex numbers are unordered, we use lexicographical order of re
      * and im.
-     * @return 0 if this is equal to 0; 1 if re &gt; 0, or re == 0 and im &gt; 0; -1
-     *         if re &lt; 0, or re == 0 and im &lt; 0
+     * @return 0 if this is equal to 0; 1 if re &gt; 0, or re == 0 and im &gt;
+     *         0; -1 if re &lt; 0, or re == 0 and im &lt; 0
      * @see edu.jas.structure.RingElem#signum()
      */
     public int signum() {

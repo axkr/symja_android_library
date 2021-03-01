@@ -8,8 +8,8 @@ package edu.jas.arith;
 import java.util.List;
 import java.util.Random;
 
+import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-import org.apache.logging.log4j.LogManager; 
 
 import edu.jas.structure.GcdRingElem;
 import edu.jas.structure.StarRingElem;
@@ -504,8 +504,8 @@ public /*final*/ class BigQuaternion implements StarRingElem<BigQuaternion>, Gcd
     /**
      * Since quaternion numbers are unordered, we use lexicographical order of
      * re, im, jm and km.
-     * @return 0 if this is equal to 0; 1 if re &gt; 0, or re == 0 and im &gt; 0, or
-     *         ...; -1 if re &lt; 0, or re == 0 and im &lt; 0, or ...
+     * @return 0 if this is equal to 0; 1 if re &gt; 0, or re == 0 and im &gt;
+     *         0, or ...; -1 if re &lt; 0, or re == 0 and im &lt; 0, or ...
      * @see edu.jas.structure.RingElem#signum()
      */
     public int signum() {
@@ -639,7 +639,7 @@ public /*final*/ class BigQuaternion implements StarRingElem<BigQuaternion>, Gcd
     /**
      * Quaternion number absolute value.
      * @see edu.jas.structure.RingElem#abs()
-     * @return |this|. 
+     * @return |this|.
      */
     public BigQuaternion abs() {
         BigQuaternion n = norm();

@@ -13,8 +13,8 @@ import java.util.List;
 import java.util.SortedSet;
 import java.util.TreeSet;
 
+import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-import org.apache.logging.log4j.LogManager; 
 
 import edu.jas.gb.WordGroebnerBaseAbstract;
 import edu.jas.gb.WordGroebnerBaseSeq;
@@ -24,8 +24,8 @@ import edu.jas.gbufd.PolyGBUtil;
 import edu.jas.kern.Scripting;
 import edu.jas.poly.GenWordPolynomial;
 import edu.jas.poly.GenWordPolynomialRing;
-import edu.jas.poly.Word;
 import edu.jas.poly.PolyUtil;
+import edu.jas.poly.Word;
 import edu.jas.structure.GcdRingElem;
 import edu.jas.structure.NotInvertibleException;
 
@@ -711,7 +711,7 @@ public class WordIdeal<C extends GcdRingElem<C>> implements Comparable<WordIdeal
         if (this.isZERO()) {
             return this;
         }
-        List<GenWordPolynomial<C>> c = PolyGBUtil.<C> intersect(getRing(),getList(),B.getList());
+        List<GenWordPolynomial<C>> c = PolyGBUtil.<C> intersect(getRing(), getList(), B.getList());
         WordIdeal<C> I = new WordIdeal<C>(getRing(), c, true);
         return I;
     }
@@ -729,7 +729,7 @@ public class WordIdeal<C extends GcdRingElem<C>> implements Comparable<WordIdeal
         if (R == null) {
             throw new IllegalArgumentException("R may not be null");
         }
-        List<GenWordPolynomial<C>> H = PolyUtil.<C> intersect(R,getList());
+        List<GenWordPolynomial<C>> H = PolyUtil.<C> intersect(R, getList());
         return new WordIdeal<C>(R, H, isGB);
     }
 
@@ -770,9 +770,7 @@ public class WordIdeal<C extends GcdRingElem<C>> implements Comparable<WordIdeal
         H = new ArrayList<GenWordPolynomial<C>>(1);
         H.add(h);
         WordIdeal<C> Hi = new WordIdeal<C>(getRing(), H, true);
-
         WordIdeal<C> I = this.intersect(Hi);
-
         List<GenWordPolynomial<C>> Q;
         Q = new ArrayList<GenWordPolynomial<C>>(I.getList().size());
         for (GenWordPolynomial<C> q : I.getList()) {
@@ -810,8 +808,8 @@ public class WordIdeal<C extends GcdRingElem<C>> implements Comparable<WordIdeal
 
 
     /**
-     * Power. Generators for the power of this word ideal. Note: if this
-     * ideal is a Groebner base, a Groebner base is returned.
+     * Power. Generators for the power of this word ideal. Note: if this ideal
+     * is a Groebner base, a Groebner base is returned.
      * @param d integer
      * @return ideal(this^d)
      */

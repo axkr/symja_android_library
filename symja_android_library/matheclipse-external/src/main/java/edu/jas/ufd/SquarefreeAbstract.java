@@ -11,8 +11,8 @@ import java.util.Map;
 import java.util.SortedMap;
 import java.util.TreeMap;
 
+import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-import org.apache.logging.log4j.LogManager; 
 
 import edu.jas.poly.GenPolynomial;
 import edu.jas.poly.GenPolynomialRing;
@@ -301,7 +301,7 @@ public abstract class SquarefreeAbstract<C extends GcdRingElem<C>> implements Sq
         GenPolynomial<C> t = P.ring.getONE();
         for (Map.Entry<GenPolynomial<C>, Long> me : F.entrySet()) {
             GenPolynomial<C> f = me.getKey();
-            Long E = me.getValue(); 
+            Long E = me.getValue();
             long e = E.longValue();
             GenPolynomial<C> g = f.power(e);
             t = t.multiply(g);
@@ -357,8 +357,8 @@ public abstract class SquarefreeAbstract<C extends GcdRingElem<C>> implements Sq
             if (f) {
                 return f;
             }
-            logger.info("no factorization(map): F  = " + F + ", P  = " + P + ", t  = " + t 
-                        + ", Pp = " + Pp + ", tp = " + tp);
+            logger.info("no factorization(map): F  = " + F + ", P  = " + P + ", t  = " + t + ", Pp = " + Pp
+                            + ", tp = " + tp);
             //RuntimeException e = new RuntimeException("fac-map");
             //e.printStackTrace();
             //throw e;
@@ -476,7 +476,7 @@ public abstract class SquarefreeAbstract<C extends GcdRingElem<C>> implements Sq
         int i = 0;
         for (Map.Entry<GenPolynomial<C>, Long> me : D.entrySet()) { // assume fixed sequence order
             GenPolynomial<C> d = me.getKey();
-            long e = me.getValue(); 
+            long e = me.getValue();
             int ei = (int) e;
             GenPolynomial<C> gi = F.get(i); // assume fixed sequence order
             List<GenPolynomial<C>> Fi = engine.basePartialFraction(gi, d, ei);
@@ -540,7 +540,7 @@ public abstract class SquarefreeAbstract<C extends GcdRingElem<C>> implements Sq
         int i = 0;
         for (Map.Entry<GenPolynomial<C>, Long> me : D.entrySet()) { // assume fixed sequence order
             GenPolynomial<C> d = me.getKey();
-            long e = me.getValue(); 
+            long e = me.getValue();
             int ei = (int) e;
             List<GenPolynomial<C>> Fi = F.get(i + 1); // assume fixed sequence order
 

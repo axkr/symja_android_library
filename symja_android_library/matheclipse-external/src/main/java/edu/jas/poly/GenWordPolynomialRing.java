@@ -5,18 +5,17 @@
 package edu.jas.poly;
 
 
-import java.io.Reader;
 import java.io.IOException;
+import java.io.Reader;
 import java.io.StringReader;
 import java.math.BigInteger;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Arrays;
 import java.util.Map;
 import java.util.Random;
 
+import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-import org.apache.logging.log4j.LogManager; 
 
 import edu.jas.kern.PreemptStatus;
 import edu.jas.kern.Scripting;
@@ -32,7 +31,7 @@ import edu.jas.structure.RingFactory;
  */
 
 public final class GenWordPolynomialRing<C extends RingElem<C>> implements RingFactory<GenWordPolynomial<C>>
-                                                                           /*, Iterable<GenWordPolynomial<C>>*/{
+/*, Iterable<GenWordPolynomial<C>>*/ {
 
 
     /**
@@ -215,7 +214,7 @@ public final class GenWordPolynomialRing<C extends RingElem<C>> implements RingF
 
 
     /**
-     * Extend variables. Extend number of variables by length(vn). 
+     * Extend variables. Extend number of variables by length(vn).
      * @param vn names for extended variables.
      * @return extended polynomial ring factory.
      */
@@ -407,7 +406,8 @@ public final class GenWordPolynomialRing<C extends RingElem<C>> implements RingF
 
 
     /**
-     * Get a GenWordPolynomial&lt;C&gt; element from a coeffcient and an ExpVector.
+     * Get a GenWordPolynomial&lt;C&gt; element from a coeffcient and an
+     * ExpVector.
      * @param a coefficient.
      * @param e exponent vector.
      * @return a GenWordPolynomial&lt;C&gt;.
@@ -441,7 +441,8 @@ public final class GenWordPolynomialRing<C extends RingElem<C>> implements RingF
 
 
     /**
-     * Get a GenWordPolynomial&lt;C&gt; element from a GenWordPolynomial&lt;C&gt;.
+     * Get a GenWordPolynomial&lt;C&gt; element from a
+     * GenWordPolynomial&lt;C&gt;.
      * @param a GenWordPolynomial.
      * @return a GenWordPolynomial&lt;C&gt;.
      */
@@ -592,7 +593,7 @@ public final class GenWordPolynomialRing<C extends RingElem<C>> implements RingF
     public GenWordPolynomial<C> parse(Reader r) {
         if (alphabet.length() <= 1) { // hack for univariate = commuative like cases
             // obsolete case
-            GenPolynomialRing<C> cr = new GenPolynomialRing<C>(coFac, alphabet.getVars() );
+            GenPolynomialRing<C> cr = new GenPolynomialRing<C>(coFac, alphabet.getVars());
             GenPolynomialTokenizer pt = new GenPolynomialTokenizer(cr, r);
             GenPolynomial<C> p = cr.getZERO();
             try {
@@ -606,7 +607,7 @@ public final class GenWordPolynomialRing<C extends RingElem<C>> implements RingF
         GenPolynomialTokenizer tok = new GenPolynomialTokenizer(r);
         GenWordPolynomial<C> a;
         try {
-            a = tok.nextWordPolynomial(this); 
+            a = tok.nextWordPolynomial(this);
         } catch (IOException e) {
             a = null;
             e.printStackTrace();
@@ -664,10 +665,10 @@ public final class GenWordPolynomialRing<C extends RingElem<C>> implements RingF
      */
     public List<GenWordPolynomial<C>> commute(int i) {
         int n = alphabet.length();
-        List<GenWordPolynomial<C>> pols = new ArrayList<GenWordPolynomial<C>>(n-1);
-        for ( int j = 0; j < n; j++ ) {
+        List<GenWordPolynomial<C>> pols = new ArrayList<GenWordPolynomial<C>>(n - 1);
+        for (int j = 0; j < n; j++) {
             if (i != j) {
-                pols.add(commute(i,j));
+                pols.add(commute(i, j));
             }
         }
         return pols;
@@ -680,9 +681,9 @@ public final class GenWordPolynomialRing<C extends RingElem<C>> implements RingF
      */
     public List<GenWordPolynomial<C>> commute() {
         int n = alphabet.length();
-        List<GenWordPolynomial<C>> pols = new ArrayList<GenWordPolynomial<C>>(n*(n-1));
-        for ( int i = 0; i < n; i++ ) {
-            pols.addAll( commute(i) );
+        List<GenWordPolynomial<C>> pols = new ArrayList<GenWordPolynomial<C>>(n * (n - 1));
+        for (int i = 0; i < n; i++) {
+            pols.addAll(commute(i));
         }
         return pols;
     }

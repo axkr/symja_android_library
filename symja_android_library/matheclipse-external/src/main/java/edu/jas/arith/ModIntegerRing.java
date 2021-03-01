@@ -394,22 +394,22 @@ public final class ModIntegerRing implements ModularRingFactory<ModInteger>, Ite
 
 
     /**
-     * Modular integer list chinese remainder algorithm.  m1 and m2 are
-     * positive integers, with GCD(m1,m2)=1 and m=m1*m2 less than
-     * beta.  L1 and L2 are lists of elements of Z(m1) and Z(m2)
-     * respectively.  L is a list of all a in Z(m) such that a is
-     * congruent to a1 modulo m1 and a is congruent to a2 modulo m2
-     * with a1 in L1 and a2 in L2.  This is a factory method. Assert
+     * Modular integer list chinese remainder algorithm. m1 and m2 are positive
+     * integers, with GCD(m1,m2)=1 and m=m1*m2 less than beta. L1 and L2 are
+     * lists of elements of Z(m1) and Z(m2) respectively. L is a list of all a
+     * in Z(m) such that a is congruent to a1 modulo m1 and a is congruent to a2
+     * modulo m2 with a1 in L1 and a2 in L2. This is a factory method. Assert
      * c.modul &ge; a.modul and c.modul * a.modul = this.modul.
      * @param m1 modular integer.
      * @param m2 other modular integer.
      * @return L list of congruences.
      */
-    public static List<ModInteger> chineseRemainder(ModInteger m1, ModInteger m2, List<ModInteger> L1, List<ModInteger> L2) {
+    public static List<ModInteger> chineseRemainder(ModInteger m1, ModInteger m2, List<ModInteger> L1,
+                    List<ModInteger> L2) {
         java.math.BigInteger mm = m1.ring.modul.multiply(m2.ring.modul);
         ModIntegerRing m = new ModIntegerRing(mm);
         ModInteger m21 = m2.ring.fromInteger(m1.ring.modul);
-        ModInteger mi1 = m21.inverse(); 
+        ModInteger mi1 = m21.inverse();
 
         List<ModInteger> L = new ArrayList<ModInteger>();
         for (ModInteger a : L1) {

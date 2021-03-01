@@ -11,8 +11,8 @@ import java.util.Map;
 import java.util.SortedMap;
 import java.util.TreeMap;
 
+import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-import org.apache.logging.log4j.LogManager; 
 
 import edu.jas.kern.PreemptingException;
 import edu.jas.structure.NotInvertibleException;
@@ -31,8 +31,8 @@ import edu.jas.structure.UnaryFunctor;
  * @param <C> coefficient type
  * @author Heinz Kredel
  */
-public final class GenWordPolynomial<C extends RingElem<C>> implements RingElem<GenWordPolynomial<C>>,
-                Iterable<WordMonomial<C>> {
+public final class GenWordPolynomial<C extends RingElem<C>>
+                implements RingElem<GenWordPolynomial<C>>, Iterable<WordMonomial<C>> {
 
 
     /**
@@ -288,7 +288,7 @@ public final class GenWordPolynomial<C extends RingElem<C>> implements RingElem<
                     s.append("( ");
                 }
                 String cs = c.toString();
-                if (cs.indexOf("+")>=0||cs.indexOf("-")>=0) {
+                if (cs.indexOf("+") >= 0 || cs.indexOf("-") >= 0) {
                     s.append("( " + cs + " )");
                 } else {
                     s.append(cs);
@@ -346,7 +346,7 @@ public final class GenWordPolynomial<C extends RingElem<C>> implements RingElem<
                     s.append("( ");
                 }
                 String cs = c.toScript();
-                if (cs.indexOf("+")>=0||cs.indexOf("-")>=0) {
+                if (cs.indexOf("+") >= 0 || cs.indexOf("-") >= 0) {
                     s.append("( " + cs + " )");
                 } else {
                     s.append(cs);
@@ -898,7 +898,7 @@ public final class GenWordPolynomial<C extends RingElem<C>> implements RingElem<
         if (this.isZERO()) {
             return this;
         }
-        assert (ring.alphabet == S.ring.alphabet) : " " + ring + " != " + S.ring ;
+        assert (ring.alphabet == S.ring.alphabet) : " " + ring + " != " + S.ring;
         GenWordPolynomial<C> p = ring.getZERO().copy();
         SortedMap<Word, C> pv = p.val;
         for (Map.Entry<Word, C> m1 : val.entrySet()) {
@@ -1203,8 +1203,8 @@ public final class GenWordPolynomial<C extends RingElem<C>> implements RingElem<
                 C x = c1.remainder(s);
                 if (!x.isZERO()) {
                     logger.info("divide x = " + x);
-                    throw new ArithmeticException(this.getClass().getName() + " no exact division: " + c1
-                                    + "/" + s);
+                    throw new ArithmeticException(
+                                    this.getClass().getName() + " no exact division: " + c1 + "/" + s);
                 }
             }
             if (c.isZERO()) {

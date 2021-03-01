@@ -19,20 +19,20 @@ import java.util.Scanner;
 import java.util.Set;
 import java.util.TreeSet;
 
+import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-import org.apache.logging.log4j.LogManager; 
 
 import edu.jas.arith.BigComplex;
 import edu.jas.arith.BigDecimal;
 import edu.jas.arith.BigInteger;
+import edu.jas.arith.BigOctonion;
 import edu.jas.arith.BigQuaternion;
 import edu.jas.arith.BigQuaternionRing;
-import edu.jas.arith.BigOctonion;
 import edu.jas.arith.BigRational;
+import edu.jas.arith.ModIntRing;
 import edu.jas.arith.ModInteger;
 import edu.jas.arith.ModIntegerRing;
 import edu.jas.arith.ModLongRing;
-import edu.jas.arith.ModIntRing;
 import edu.jas.structure.RingElem;
 import edu.jas.structure.RingFactory;
 
@@ -315,7 +315,7 @@ public class GenPolynomialTokenizer {
         ExpVector e;
         int ix;
         long ie;
-        while (true) { 
+        while (true) {
             // next input. determine next action
             tt = tok.nextToken();
             //System.out.println("while tt = " + tok);
@@ -338,7 +338,7 @@ public class GenPolynomialTokenizer {
             if (tt == StreamTokenizer.TT_EOF)
                 break;
             switch (tt) {
-                // case '_': removed 
+            // case '_': removed 
             case '}':
                 throw new InvalidExpressionException("mismatch of braces after " + a + ", error at " + b);
             case '{': // recursion
@@ -349,7 +349,7 @@ public class GenPolynomialTokenizer {
                     //System.out.println("token { = " + ((char)tt) + ", " + tt + ", level = " + level);
                     if (tt == StreamTokenizer.TT_EOF) {
                         throw new InvalidExpressionException(
-                                                             "mismatch of braces after " + a + ", error at " + b);
+                                        "mismatch of braces after " + a + ", error at " + b);
                     }
                     if (tt == '{') {
                         level++;
@@ -390,9 +390,9 @@ public class GenPolynomialTokenizer {
                 //no break;
                 break;
 
-                //case '.': // eventually a float
-                //System.out.println("start . = " + reader);
-                //throw new InvalidExpressionException("float must start with a digit ");
+            //case '.': // eventually a float
+            //System.out.println("start . = " + reader);
+            //throw new InvalidExpressionException("float must start with a digit ");
 
             case StreamTokenizer.TT_WORD:
                 //System.out.println("TT_WORD: " + tok.sval);
@@ -787,7 +787,7 @@ public class GenPolynomialTokenizer {
             } else if (tok.sval.equalsIgnoreCase("RatFunc") || tok.sval.equalsIgnoreCase("ModFunc")) {
                 //logger.error("RatFunc and ModFunc can no more be read, see edu.jas.application.RingFactoryTokenizer.");
                 throw new InvalidExpressionException(
-                                                     "RatFunc and ModFunc can no more be read, see edu.jas.application.RingFactoryTokenizer.");
+                                "RatFunc and ModFunc can no more be read, see edu.jas.application.RingFactoryTokenizer.");
             } else if (tok.sval.equalsIgnoreCase("IntFunc")) {
                 String[] rfv = nextVariableList();
                 //System.out.println("rfv = " + rfv.length + " " + rfv[0]);
@@ -818,8 +818,8 @@ public class GenPolynomialTokenizer {
                     int vs = anv.length;
                     if (vs != 1) {
                         throw new InvalidExpressionException(
-                                                             "AlgebraicNumber only for univariate polynomials "
-                                                             + Arrays.toString(anv));
+                                        "AlgebraicNumber only for univariate polynomials "
+                                                        + Arrays.toString(anv));
                     }
                     String[] ovars = vars;
                     vars = anv;
@@ -1511,7 +1511,7 @@ public class GenPolynomialTokenizer {
         return new OrderedModuleList(spfac, s); // Ordered
     }
 
-    
+
     /**
      * Parsing method for word polynomial. Syntax: same as for polynomial.
      * Multiplication will be non commutative.
@@ -1540,7 +1540,7 @@ public class GenPolynomialTokenizer {
         GenWordPolynomial a = wfac.getZERO();
         GenWordPolynomial a1 = wfac.getONE();
         Word leer = wfac.wone;
-        RingFactory fac = wfac.coFac; 
+        RingFactory fac = wfac.coFac;
         if (debug) {
             logger.debug("a = " + a);
             logger.debug("a1 = " + a1);
@@ -1551,9 +1551,9 @@ public class GenPolynomialTokenizer {
         char first;
         RingElem r;
         Word e;
-        int ix;
+        //int ix;
         long ie;
-        while (true) { 
+        while (true) {
             // next input. determine next action
             tt = tok.nextToken();
             //System.out.println("while tt = " + tok);
@@ -1578,7 +1578,7 @@ public class GenPolynomialTokenizer {
             if (tt == StreamTokenizer.TT_EOF)
                 break;
             switch (tt) {
-                // case '_': removed 
+            // case '_': removed 
             case '}':
                 throw new InvalidExpressionException("mismatch of braces after " + a + ", error at " + b);
             case '{': // recursion
@@ -1589,7 +1589,7 @@ public class GenPolynomialTokenizer {
                     //System.out.println("token { = " + ((char)tt) + ", " + tt + ", level = " + level);
                     if (tt == StreamTokenizer.TT_EOF) {
                         throw new InvalidExpressionException(
-                                                             "mismatch of braces after " + a + ", error at " + b);
+                                        "mismatch of braces after " + a + ", error at " + b);
                     }
                     if (tt == '{') {
                         level++;
@@ -1630,9 +1630,9 @@ public class GenPolynomialTokenizer {
                 //no break;
                 break;
 
-                //case '.': // eventually a float
-                //System.out.println("start . = " + reader);
-                //throw new InvalidExpressionException("float must start with a digit ");
+            //case '.': // eventually a float
+            //System.out.println("start . = " + reader);
+            //throw new InvalidExpressionException("float must start with a digit ");
 
             case StreamTokenizer.TT_WORD:
                 //System.out.println("TT_WORD: " + tok.sval);
@@ -1826,7 +1826,7 @@ public class GenPolynomialTokenizer {
         return nextWordPolynomialList(wfac);
     }
 
-    
+
     /**
      * Parsing method for word polynomial list. Syntax:
      *

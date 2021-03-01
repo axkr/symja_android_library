@@ -1464,7 +1464,7 @@ class BigRationalUniqueIterator implements Iterator<BigRational> {
 
     /**
      * BigRational iterator constructor.
-     * @param rit backing rational iterator of non unique elements 
+     * @param rit backing rational iterator of non unique elements
      */
     public BigRationalUniqueIterator(Iterator<BigRational> rit) {
         ratit = rit;

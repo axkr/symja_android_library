@@ -10,7 +10,7 @@ import edu.jas.structure.RingFactory;
 
 
 /**
- * Modular ring factory interface. Defines chinese remainder method and get
+ * Modular ring factory interface. Defines Chinese remainder method and get
  * modul method.
  * @author Heinz Kredel
  */

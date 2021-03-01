@@ -341,7 +341,7 @@ public final class ModLong implements GcdRingElem<ModLong>, Modular {
      * @throws NotInvertibleException if the element is not invertible.
      * @return S with S=1/this if defined.
      */
-    public ModLong inverse() /*throws NotInvertibleException*/{
+    public ModLong inverse() /*throws NotInvertibleException*/ {
         try {
             return new ModLong(ring, modInverse(val, ring.modul));
         } catch (ArithmeticException e) {

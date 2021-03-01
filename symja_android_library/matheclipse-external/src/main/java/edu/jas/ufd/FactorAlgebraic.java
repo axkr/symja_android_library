@@ -8,15 +8,13 @@ package edu.jas.ufd;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-import org.apache.logging.log4j.LogManager; 
 
 import edu.jas.poly.AlgebraicNumber;
 import edu.jas.poly.AlgebraicNumberRing;
 import edu.jas.poly.GenPolynomial;
 import edu.jas.poly.GenPolynomialRing;
-import edu.jas.poly.PolyUtil;
-import edu.jas.poly.TermOrder;
 import edu.jas.structure.GcdRingElem;
 
 
@@ -56,14 +54,15 @@ public class FactorAlgebraic<C extends GcdRingElem<C>> extends FactorAbsolute<Al
      * @param fac algebraic number factory.
      */
     public FactorAlgebraic(AlgebraicNumberRing<C> fac) {
-        this(fac, FactorFactory.<C> getImplementation(fac.ring.coFac) );
+        this(fac, FactorFactory.<C> getImplementation(fac.ring.coFac));
     }
 
 
     /**
      * Constructor.
      * @param fac algebraic number factory.
-     * @param factorCoeff factorization engine for polynomials over base coefficients.
+     * @param factorCoeff factorization engine for polynomials over base
+     *            coefficients.
      */
     public FactorAlgebraic(AlgebraicNumberRing<C> fac, FactorAbstract<C> factorCoeff) {
         super(fac);
@@ -77,7 +76,8 @@ public class FactorAlgebraic<C extends GcdRingElem<C>> extends FactorAbsolute<Al
      * @return [p_1,...,p_k] with P = prod_{i=1, ..., k} p_i.
      */
     @Override
-    public List<GenPolynomial<AlgebraicNumber<C>>> baseFactorsSquarefree(GenPolynomial<AlgebraicNumber<C>> P) {
+    public List<GenPolynomial<AlgebraicNumber<C>>> baseFactorsSquarefree(
+                    GenPolynomial<AlgebraicNumber<C>> P) {
         if (P == null) {
             throw new IllegalArgumentException(this.getClass().getName() + " P == null");
         }
@@ -101,17 +101,18 @@ public class FactorAlgebraic<C extends GcdRingElem<C>> extends FactorAbsolute<Al
         }
         //System.out.println("\nP = " + P);
         if (debug) {
-           Squarefree<AlgebraicNumber<C>> sqengine = SquarefreeFactory.<AlgebraicNumber<C>> getImplementation(afac);
-           if ( !sqengine.isSquarefree(P) ) {
-               throw new RuntimeException("P not squarefree: " + sqengine.squarefreeFactors(P));
-           }
-           GenPolynomial<C> modu = afac.modul;
-           if ( !factorCoeff.isIrreducible(modu) ) {
-               throw new RuntimeException("modul not irreducible: " + factorCoeff.factors(modu));
-           }
-           System.out.println("P squarefree and modul irreducible");
-           //GreatestCommonDivisor<AlgebraicNumber<C>> aengine //= GCDFactory.<AlgebraicNumber<C>> getProxy(afac);
-           //  = new GreatestCommonDivisorSimple<AlgebraicNumber<C>>( /*cfac.coFac*/ );
+            Squarefree<AlgebraicNumber<C>> sqengine = SquarefreeFactory
+                            .<AlgebraicNumber<C>> getImplementation(afac);
+            if (!sqengine.isSquarefree(P)) {
+                throw new RuntimeException("P not squarefree: " + sqengine.squarefreeFactors(P));
+            }
+            GenPolynomial<C> modu = afac.modul;
+            if (!factorCoeff.isIrreducible(modu)) {
+                throw new RuntimeException("modul not irreducible: " + factorCoeff.factors(modu));
+            }
+            System.out.println("P squarefree and modul irreducible");
+            //GreatestCommonDivisor<AlgebraicNumber<C>> aengine //= GCDFactory.<AlgebraicNumber<C>> getProxy(afac);
+            //  = new GreatestCommonDivisorSimple<AlgebraicNumber<C>>( /*cfac.coFac*/ );
         }
 
         // search squarefree norm
@@ -195,7 +196,8 @@ public class FactorAlgebraic<C extends GcdRingElem<C>> extends FactorAbsolute<Al
 
     /**
      * GenPolynomial factorization of a squarefree polynomial.
-     * @param P squarefree and primitive! (respectively monic) GenPolynomial&lt;AlgebraicNumber&lt;C&gt;&gt;.
+     * @param P squarefree and primitive! (respectively monic)
+     *            GenPolynomial&lt;AlgebraicNumber&lt;C&gt;&gt;.
      * @return [p_1,...,p_k] with P = prod_{i=1, ..., k} p_i.
      */
     @Override
@@ -215,7 +217,7 @@ public class FactorAlgebraic<C extends GcdRingElem<C>> extends FactorAbsolute<Al
         if (pfac.nvar <= 1) {
             throw new IllegalArgumentException("only for multivariate polynomials");
         }
-        AlgebraicNumberRing<C> afac = (AlgebraicNumberRing<C>) pfac.coFac;
+        //AlgebraicNumberRing<C> afac = (AlgebraicNumberRing<C>) pfac.coFac;
         AlgebraicNumber<C> ldcf = P.leadingBaseCoefficient();
         if (!ldcf.isONE()) {
             P = P.monic();
@@ -274,7 +276,7 @@ public class FactorAlgebraic<C extends GcdRingElem<C>> extends FactorAbsolute<Al
             factors.add(P);
             return factors;
         }
-	
+
         // compute gcds of factors with polynomial in Q(alpha)[X]
         GenPolynomial<AlgebraicNumber<C>> Pp = P;
         //System.out.println("Pp = " + Pp);

@@ -6,6 +6,8 @@ package edu.jas.root;
 
 
 import java.io.Serializable;
+import java.util.SortedSet;
+import java.util.TreeSet;
 
 import edu.jas.arith.BigDecimal;
 import edu.jas.arith.BigRational;
@@ -208,6 +210,50 @@ public class Interval<C extends RingElem<C> & Rational> implements Serializable 
         C rv = left.sum(dr);
         //System.out.println("rv   = " + new BigDecimal(rv.getRational()) );
         return rv;
+    }
+
+
+    /**
+     * Sum of intervals.
+     * @param o other interval.
+     * @return this+other
+     */
+    public Interval<C> sum(Interval<C> o) {
+        C l = left.sum(o.left);
+        C r = right.sum(o.right);
+        Interval<C> v = new Interval<C>(l, r);
+        return v;
+    }
+
+
+    /**
+     * Subtract intervals.
+     * @param o other interval.
+     * @return this-other
+     */
+    public Interval<C> subtract(Interval<C> o) {
+        C l = left.subtract(o.right);
+        C r = right.subtract(o.left);
+        Interval<C> v = new Interval<C>(l, r);
+        return v;
+    }
+
+
+    /**
+     * Multiply intervals.
+     * @param o other interval.
+     * @return this*other
+     */
+    public Interval<C> multiply(Interval<C> o) {
+        C v1 = left.multiply(o.left);
+        C v2 = left.multiply(o.right);
+        C v3 = right.multiply(o.left);
+        C v4 = right.multiply(o.right);
+        SortedSet<C> so = new TreeSet<C>();
+        so.add(v1); so.add(v2); so.add(v3); so.add(v4);
+        //System.out.println("sorted set = " + so);
+        Interval<C> v = new Interval<C>(so.first(), so.last());
+        return v;
     }
 
 }

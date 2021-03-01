@@ -8,6 +8,7 @@ package edu.jas.root;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import java.util.TreeMap;
 import java.util.SortedMap;
 
 import org.apache.logging.log4j.Logger;
@@ -174,8 +175,12 @@ public abstract class ComplexRootsAbstract<C extends RingElem<C> & Rational> imp
             return roots;
         }
         ComplexRing<C> cr = (ComplexRing<C>) a.ring.coFac;
-        SortedMap<GenPolynomial<Complex<C>>, Long> sa = engine.squarefreeFactors(a);
-        for (Map.Entry<GenPolynomial<Complex<C>>, Long> me : sa.entrySet()) {
+        GenPolynomial<Complex<C>> sp = engine.squarefreePart(a);
+        SortedMap<GenPolynomial<Complex<C>>, Long> sa = new TreeMap<GenPolynomial<Complex<C>>, Long>();
+        sa.put(sp, 1L);
+        //SortedMap<GenPolynomial<Complex<C>>, Long> sa = engine.squarefreeFactors(a); // BUG to addAll 
+        //System.out.println("squarefree factors = " + sa);
+        for (Map.Entry<GenPolynomial<Complex<C>>, Long> me : sa.entrySet()) { // todo fix addAll
             GenPolynomial<Complex<C>> p = me.getKey();
             Complex<C> Mb = rootBound(p);
             C M = Mb.getRe();

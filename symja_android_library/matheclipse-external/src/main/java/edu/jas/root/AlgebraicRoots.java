@@ -101,7 +101,7 @@ public class AlgebraicRoots<C extends GcdRingElem<C> & Rational> implements Seri
                 } else {
                     sb.append(", ");
                 }
-                sb.append(r.toScript());
+                sb.append(r.ring.root.toScript());
             }
             sb.append("]");
         }
@@ -114,7 +114,7 @@ public class AlgebraicRoots<C extends GcdRingElem<C> & Rational> implements Seri
                 } else {
                     sb.append(", ");
                 }
-                sb.append(c.toScript());
+                sb.append(c.ring.root.toScript());
             }
             sb.append("]");
         }
@@ -142,6 +142,7 @@ public class AlgebraicRoots<C extends GcdRingElem<C> & Rational> implements Seri
                 } else {
                     sb.append(", ");
                 }
+                r.ring.refineRoot();
                 sb.append(r.ring.root.toDecimal().toScript());
             }
             sb.append("]");
@@ -155,6 +156,7 @@ public class AlgebraicRoots<C extends GcdRingElem<C> & Rational> implements Seri
                 } else {
                     sb.append(", ");
                 }
+                c.ring.refineRoot();
                 sb.append(c.ring.root.getDecimalCenter().toScript());
             }
             sb.append("]");
@@ -189,7 +191,6 @@ public class AlgebraicRoots<C extends GcdRingElem<C> & Rational> implements Seri
         } catch (ClassCastException e) {
             return false;
         }
-        // && cp.equals(a.cp)
         return p.equals(a.p) && real.equals(a.real) && complex.equals(a.complex);
     }
 

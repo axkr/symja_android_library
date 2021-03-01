@@ -10,8 +10,8 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Random;
 
-import edu.jas.arith.BigRational;
 import edu.jas.arith.BigDecimal;
+import edu.jas.arith.BigRational;
 import edu.jas.arith.Rational;
 import edu.jas.poly.AlgebraicNumber;
 import edu.jas.poly.AlgebraicNumberRing;
@@ -48,7 +48,7 @@ public class RealAlgebraicRing<C extends GcdRingElem<C> & Rational>
     /**
      * Precision of the isolating rectangle for a complex root.
      */
-    public static final int PRECISION = BigDecimal.DEFAULT_PRECISION; 
+    public static final int PRECISION = BigDecimal.DEFAULT_PRECISION;
 
 
     /**
@@ -77,7 +77,7 @@ public class RealAlgebraicRing<C extends GcdRingElem<C> & Rational>
             throw new RuntimeException("characteristic not zero");
         }
         BigRational e = new BigRational(10L); //m.ring.coFac.fromInteger(10L);
-        e = e.power( - PRECISION/2); // better not too much for speed
+        e = e.power(-PRECISION / 2); // better not too much for speed
         eps = e; //BigRational.ONE; // initially
     }
 
@@ -157,7 +157,7 @@ public class RealAlgebraicRing<C extends GcdRingElem<C> & Rational>
      */
     public synchronized void refineRoot(BigRational e) {
         root = engine.refineInterval(root, algebraic.modul, e);
-        eps = e; 
+        eps = e;
     }
 
 
@@ -198,7 +198,7 @@ public class RealAlgebraicRing<C extends GcdRingElem<C> & Rational>
     public RealAlgebraicRing<C> copy() {
         if (algebraic.isField()) {
             return new RealAlgebraicRing<C>(algebraic.modul, root, algebraic.isField());
-        } 
+        }
         return new RealAlgebraicRing<C>(algebraic.modul, root);
     }
 
@@ -297,6 +297,16 @@ public class RealAlgebraicRing<C extends GcdRingElem<C> & Rational>
      */
     public RealAlgebraicNumber<C> fromInteger(java.math.BigInteger a) {
         return new RealAlgebraicNumber<C>(this, algebraic.fromInteger(a));
+    }
+
+
+    /**
+     * Get a RealAlgebraicNumber element from a BigRational value.
+     * @param a BigRational.
+     * @return a RealAlgebraicNumber.
+     */
+    public RealAlgebraicNumber<C> fromRational(BigRational a) {
+        return new RealAlgebraicNumber<C>(this, algebraic.parse(a.toString()));
     }
 
 

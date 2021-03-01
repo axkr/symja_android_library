@@ -19,7 +19,7 @@ import edu.jas.structure.RingFactory;
 /**
  * BigDecimal class to make java.math.BigDecimal available with RingElem
  * interface. Objects of this class are immutable. Experimental, use with care,
- * compareTo is hacked.
+ * compareTo is some times hacked.
  * @author Heinz Kredel
  * @see java.math.BigDecimal
  */
@@ -430,7 +430,8 @@ public final class BigDecimal implements GcdRingElem<BigDecimal>, RingFactory<Bi
     @Override
     public int compareTo(BigDecimal b) {
         //return compareToAbsolute(b);
-        return compareToRelative(b);
+        //return compareToRelative(b);
+	return val.compareTo(b.val);
     }
 
 

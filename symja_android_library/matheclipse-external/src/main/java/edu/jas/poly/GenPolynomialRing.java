@@ -11,15 +11,13 @@ import java.io.StringReader;
 import java.math.BigInteger;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Random;
-import java.util.Set;
 import java.util.concurrent.atomic.AtomicLong;
 
+import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-import org.apache.logging.log4j.LogManager; 
 
 import edu.jas.arith.ModIntegerRing;
 import edu.jas.kern.PreemptStatus;
@@ -33,19 +31,18 @@ import edu.jas.util.LongIterable;
 
 
 /**
- * GenPolynomialRing generic polynomial factory. It implements
- * RingFactory for n-variate ordered polynomials over coefficients
- * C. The variables commute with each other and with the
- * coefficients. For non-commutative coefficients some care is taken
- * to respect the multiplication order.
+ * GenPolynomialRing generic polynomial factory. It implements RingFactory for
+ * n-variate ordered polynomials over coefficients C. The variables commute with
+ * each other and with the coefficients. For non-commutative coefficients some
+ * care is taken to respect the multiplication order.
  *
  * Almost immutable object, except variable names.
  * @param <C> coefficient type
  * @author Heinz Kredel
  */
 
-public class GenPolynomialRing<C extends RingElem<C>> implements RingFactory<GenPolynomial<C>>,
-                Iterable<GenPolynomial<C>> {
+public class GenPolynomialRing<C extends RingElem<C>>
+                implements RingFactory<GenPolynomial<C>>, Iterable<GenPolynomial<C>> {
 
 
     /**
@@ -82,6 +79,7 @@ public class GenPolynomialRing<C extends RingElem<C>> implements RingFactory<Gen
      * Counter to distinguish new variables.
      */
     private static AtomicLong varCounter = new AtomicLong(0L);
+
 
     /**
      * The constant polynomial 0 for this ring.
@@ -448,8 +446,8 @@ public class GenPolynomialRing<C extends RingElem<C>> implements RingFactory<Gen
      */
     public String[] setVars(String[] v) {
         if (v.length != nvar) {
-            throw new IllegalArgumentException("v not matching number of variables: " + Arrays.toString(v)
-                            + ", nvar " + nvar);
+            throw new IllegalArgumentException(
+                            "v not matching number of variables: " + Arrays.toString(v) + ", nvar " + nvar);
         }
         String[] t = vars;
         vars = Arrays.copyOf(v, v.length); // > Java-5 
@@ -586,7 +584,7 @@ public class GenPolynomialRing<C extends RingElem<C>> implements RingFactory<Gen
             return null;
         }
         List<GenPolynomial<C>> P = new ArrayList<GenPolynomial<C>>(); //E.size());
-        for ( ExpVector e : E ) {
+        for (ExpVector e : E) {
             GenPolynomial<C> p = valueOf(e);
             P.add(p);
         }
@@ -721,8 +719,8 @@ public class GenPolynomialRing<C extends RingElem<C>> implements RingFactory<Gen
             return L;
         }
         List<GenPolynomial<C>> R = new ArrayList<GenPolynomial<C>>(L.size());
-        for ( GenPolynomial<C> a : L ) {
-            R.add( copy(a) );
+        for (GenPolynomial<C> a : L) {
+            R.add(copy(a));
         }
         return R;
     }
@@ -785,7 +783,7 @@ public class GenPolynomialRing<C extends RingElem<C>> implements RingFactory<Gen
             throw new IllegalArgumentException("no variable name given");
         }
         int i;
-        for ( i = 0 ; i < vars.length; i++ ) {
+        for (i = 0; i < vars.length; i++) {
             if (x.equals(vars[i])) { // use HashMap or TreeMap
                 break;
             }
@@ -945,7 +943,7 @@ public class GenPolynomialRing<C extends RingElem<C>> implements RingFactory<Gen
         return extend(i, false);
     }
 
-    
+
     /**
      * Extend variables. Used e.g. in module embedding. Extend number of
      * variables by i.
@@ -970,7 +968,7 @@ public class GenPolynomialRing<C extends RingElem<C>> implements RingFactory<Gen
         return extend(vn, false);
     }
 
-    
+
     /**
      * Extend variables. Used e.g. in module embedding. Extend number of
      * variables by length(vn).
@@ -1178,7 +1176,7 @@ public class GenPolynomialRing<C extends RingElem<C>> implements RingFactory<Gen
      * @return new variable names.
      */
     public static String[] newVars(String prefix, int n) {
-        String[] vars = new String[n]; 
+        String[] vars = new String[n];
         for (int i = 0; i < n; i++) {
             long m = varCounter.getAndIncrement();
             vars[i] = prefix + m;

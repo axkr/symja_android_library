@@ -9,8 +9,8 @@ import java.util.Map;
 import java.util.Set;
 import java.util.SortedMap;
 
+import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-import org.apache.logging.log4j.LogManager; 
 
 import edu.jas.structure.NotInvertibleException;
 import edu.jas.structure.RingElem;
@@ -22,7 +22,8 @@ import edu.jas.structure.RingElem;
  * intended to be immutable. The implementation is based on TreeMap respectively
  * SortedMap from exponents to coefficients by extension of GenPolybomial. Only
  * the coefficients are modeled with generic types, the exponents are fixed to
- * ExpVector with long entries (this will eventually be changed in the future).
+ * ExpVector with long, int, short entries (@see edu.jas.poly.ExpVector
+ * StorUnit).
  * @param <C> coefficient type
  * @author Heinz Kredel
  */
@@ -136,7 +137,7 @@ public class GenSolvablePolynomial<C extends RingElem<C>> extends GenPolynomial<
         return super.hashCode();
     }
 
-    
+
     /**
      * GenSolvablePolynomial multiplication.
      * @param Bp GenSolvablePolynomial.

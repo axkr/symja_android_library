@@ -12,8 +12,8 @@ import java.util.Comparator;
 import java.util.List;
 import java.util.Map;
 
+import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-import org.apache.logging.log4j.LogManager; 
 
 import edu.jas.poly.ExpVector;
 import edu.jas.poly.GenPolynomial;
@@ -29,7 +29,7 @@ import edu.jas.structure.RingElem;
  */
 
 public class ColorPolynomial<C extends RingElem<C>> implements Serializable
-    /* implements RingElem< ColorPolynomial<C> > */ {
+/* implements RingElem< ColorPolynomial<C> > */ {
 
 
     private static final Logger logger = LogManager.getLogger(ColorPolynomial.class);
@@ -59,8 +59,8 @@ public class ColorPolynomial<C extends RingElem<C>> implements Serializable
      * @param r red colored terms and coefficients.
      * @param w white colored terms and coefficients.
      */
-    public ColorPolynomial(GenPolynomial<GenPolynomial<C>> g,
-            GenPolynomial<GenPolynomial<C>> r, GenPolynomial<GenPolynomial<C>> w) {
+    public ColorPolynomial(GenPolynomial<GenPolynomial<C>> g, GenPolynomial<GenPolynomial<C>> r,
+                    GenPolynomial<GenPolynomial<C>> w) {
         if (g == null || r == null || w == null) {
             throw new IllegalArgumentException("g,r,w may not be null");
         }
@@ -168,7 +168,8 @@ public class ColorPolynomial<C extends RingElem<C>> implements Serializable
 
 
     /**
-     * Check ordering invariants. TT(green) &gt; LT(red) and TT(red) &gt; LT(white).
+     * Check ordering invariants. TT(green) &gt; LT(red) and TT(red) &gt;
+     * LT(white).
      * @return true, if all ordering invariants are met, else false.
      */
     public boolean checkInvariant() {

@@ -5,8 +5,8 @@
 package edu.jas.ufd;
 
 
+import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-import org.apache.logging.log4j.LogManager; 
 
 import edu.jas.arith.BigInteger;
 import edu.jas.arith.Combinatoric;
@@ -24,7 +24,7 @@ import edu.jas.structure.RingFactory;
 
 
 /**
- * Greatest common divisor algorithms with modular computation and chinese
+ * Greatest common divisor algorithms with modular computation and Chinese
  * remainder algorithm.
  * @author Heinz Kredel
  */
