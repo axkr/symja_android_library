@@ -17,37 +17,36 @@ import java.math.BigInteger;
 
 /**
  * A two-dimensional grid of big integers.
- *
+ * 
  * @author Tilman Neumann
  */
 public class BigIntGrid extends NumberGrid<BigInteger> {
 
-  private static final long serialVersionUID = 9189914650661627444L;
+	private static final long serialVersionUID = 9189914650661627444L;
 
-  /**
-   * Simplified constructor with offsets 1.
-   *
-   * @param xLabel The letter to use for the x-axis
-   * @param xStart The start value for the x-axis-values
-   * @param yLabel The letter to use for the y-axis
-   * @param yStart The start value for the y-axis-values
-   */
-  public BigIntGrid(String xLabel, int xStart, String yLabel, int yStart) {
-    super(xLabel, xStart, yLabel, yStart);
-  }
+	/**
+	 * Simplified constructor with offsets 1.
+	 * 
+	 * @param xLabel The letter to use for the x-axis
+	 * @param xStart The start value for the x-axis-values
+	 * @param yLabel The letter to use for the y-axis
+	 * @param yStart The start value for the y-axis-values
+	 */
+	public BigIntGrid(String xLabel, int xStart, String yLabel, int yStart) {
+		super(xLabel, xStart, yLabel, yStart);
+	}
 
-  /**
-   * Full constructor with all options.
-   *
-   * @param xLabel The letter to use for the x-axis
-   * @param xStart The start value for the x-axis-values
-   * @param xIncrement The increment for the x-axis-values
-   * @param yLabel The letter to use for the y-axis
-   * @param yStart The start value for the y-axis-values
-   * @param yIncrement The increment for the y-axis-values
-   */
-  public BigIntGrid(
-      String xLabel, int xStart, int xIncrement, String yLabel, int yStart, int yIncrement) {
-    super(xLabel, xStart, xIncrement, yLabel, yStart, yIncrement);
-  }
+	/**
+	 * Full constructor with all options.
+	 * 
+	 * @param xLabel The letter to use for the x-axis
+	 * @param xStart The start value for the x-axis-values
+	 * @param xIncrement The increment for the x-axis-values
+	 * @param yLabel The letter to use for the y-axis
+	 * @param yStart The start value for the y-axis-values
+	 * @param yIncrement The increment for the y-axis-values
+	 */
+	public BigIntGrid(String xLabel, int xStart, int xIncrement, String yLabel, int yStart, int yIncrement) {
+		super(xLabel, xStart, xIncrement, yLabel, yStart, yIncrement);
+	}
 }

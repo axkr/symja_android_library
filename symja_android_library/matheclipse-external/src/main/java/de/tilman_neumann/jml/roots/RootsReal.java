@@ -28,154 +28,146 @@ import static de.tilman_neumann.jml.base.BigDecimalConstants.F_0;
 
 /**
  * i.th root of floating point numbers.
- *
- * <p>The current state-of-the-art is a Heron-style algorithm with a good initial guess derived from
- * double computations. The Heron-style algorithm realizes the iteration formula x(k+1) = 1/n * (
- * (n-1) * x(k) + N/(x(k)^(n-1)) ), see {@link
- * "https://en.wikipedia.org/wiki/Nth_root_algorithm"}.</br></br>
- *
+ * 
+ * The current state-of-the-art is a Heron-style algorithm with a good initial guess derived from double computations.
+ * The Heron-style algorithm realizes the iteration formula x(k+1) = 1/n * ( (n-1) * x(k) + N/(x(k)^(n-1)) ),
+ * see {@link "https://en.wikipedia.org/wiki/Nth_root_algorithm"}.</br></br>
+ *  
  * @author Tilman Neumann
  */
 public class RootsReal {
-  private static final Logger LOG = Logger.getLogger(RootsReal.class);
+	private static final Logger LOG = Logger.getLogger(RootsReal.class);
 
-  private static final boolean DEBUG = false;
+	private static final boolean DEBUG = false;
+	
+	/**
+	 * Compute i.th root of x.
+	 * 
+	 * @param x argument
+	 * @param i the degree of the root
+	 * @param resultScale desired precision in after-comma digits
+	 * @return i.th root(x) with error < 0.5*10^-resultScale, i.e. resultScale decimal digits are rounded correctly
+	 */
+	public static BigDecimal ithRoot(BigDecimal x, int i, Scale resultScale) {
+		// get initial guess correct to double precision (52 bit)
+		BigDecimal guess = getInitialApproximation(x, i);
+		if (DEBUG) LOG.debug("initial guess: " + i + ".th root(" + x + ") ~ " + guess);
+		// iteration
+		return ithRoot(x, i, guess, resultScale);
+  	}
 
-  /**
-   * Compute i.th root of x.
-   *
-   * @param x argument
-   * @param i the degree of the root
-   * @param resultScale desired precision in after-comma digits
-   * @return i.th root(x) with error < 0.5*10^-resultScale, i.e. resultScale decimal digits are
-   *     rounded correctly
-   */
-  public static BigDecimal ithRoot(BigDecimal x, int i, Scale resultScale) {
-    // get initial guess correct to double precision (52 bit)
-    BigDecimal guess = getInitialApproximation(x, i);
-    if (DEBUG) LOG.debug("initial guess: " + i + ".th root(" + x + ") ~ " + guess);
-    // iteration
-    return ithRoot(x, i, guess, resultScale);
-  }
+	/**
+	 * Get initial approximation.
+	 * @param x argument
+	 * @param i the degree of the root
+	 */
+	private static BigDecimal getInitialApproximation(BigDecimal x, int i) {
+		// x > 10^307 are shifted right an number of times that is a multiple of i so that the result has a double representation != 0
+		// x < 10^-307 are shifted left an number of times that is a multiple of i so that the result has a double representation != 0
+		// In big decimals, a left shift means to use movePointRight(), a right shift to use movePointLeft().
+		// Shifts are done in decimal digits, not bits.
+		int xMag = Magnitude.of(x);
+		if (DEBUG) LOG.debug("xPrec=" + x.precision() + ", xScale=" + x.scale() + ", xMag=" + xMag);
+		int shiftsRight = 0;
+		if (xMag > 307) { // Double.MAX_VALUE is about 1.7*10^308
+			shiftsRight = xMag - 307;
+			int shiftsModi = shiftsRight % i;
+			if (shiftsModi > 0) {
+				shiftsRight += i - shiftsModi;
+			}
+		} else if (xMag < -307) {
+			shiftsRight = xMag + 307;
+			int shiftsModi = shiftsRight % i;
+			if (shiftsModi > 0) {
+				shiftsRight += i - shiftsModi;
+			}
+		}
+		
+		double xShifted_dbl = x.movePointLeft(shiftsRight).doubleValue();
+		if (DEBUG) LOG.debug("shiftsRight=" + shiftsRight + ", xShifted_dbl=" + xShifted_dbl);
+		// compute double estimate
+		double root_dbl = Math.pow(xShifted_dbl, 1.0/i);
+		// shift left the number of right shifts / i
+		if (DEBUG) LOG.debug("i=" + i + ", shiftsLeft=" + shiftsRight/i);
+		BigDecimal guess = new BigDecimal(root_dbl).movePointRight(shiftsRight/i);
+		if (guess.equals(BigDecimal.ZERO)) {
+			// double precision was not enough
+			throw new ArithmeticException("root_dbl was 0 !?");
+			//guess = new BigDecimal(I_1, 52); // old handling
+		}
+		return guess;
+	}
 
-  /**
-   * Get initial approximation.
-   *
-   * @param x argument
-   * @param i the degree of the root
-   */
-  private static BigDecimal getInitialApproximation(BigDecimal x, int i) {
-    // x > 10^307 are shifted right an number of times that is a multiple of i so that the result
-    // has a double representation != 0
-    // x < 10^-307 are shifted left an number of times that is a multiple of i so that the result
-    // has a double representation != 0
-    // In big decimals, a left shift means to use movePointRight(), a right shift to use
-    // movePointLeft().
-    // Shifts are done in decimal digits, not bits.
-    int xMag = Magnitude.of(x);
-    if (DEBUG) LOG.debug("xPrec=" + x.precision() + ", xScale=" + x.scale() + ", xMag=" + xMag);
-    int shiftsRight = 0;
-    if (xMag > 307) { // Double.MAX_VALUE is about 1.7*10^308
-      shiftsRight = xMag - 307;
-      int shiftsModi = shiftsRight % i;
-      if (shiftsModi > 0) {
-        shiftsRight += i - shiftsModi;
-      }
-    } else if (xMag < -307) {
-      shiftsRight = xMag + 307;
-      int shiftsModi = shiftsRight % i;
-      if (shiftsModi > 0) {
-        shiftsRight += i - shiftsModi;
-      }
-    }
+	/**
+	 * Compute the i.th root with initial guess.
+	 * 
+	 * @param x argument
+	 * @param i degree of the root
+	 * @param guess initial guess of i.th root(x)
+	 * @param resultScale desired precision in after-comma digits
+	 * @return i.th root(x) with error < 0.5*10^-resultScale, i.e. resultScale decimal digits are rounded correctly
+	 */
+	public static BigDecimal ithRoot(BigDecimal x, int i, BigDecimal guess, Scale resultScale) {
+		// Make sure x is a positive number
+		int cmpToZero = x.compareTo(F_0);
+		if (cmpToZero > 0) {
+			BigDecimal lastGuess;
+			BigDecimal maxAllowedError = resultScale.getErrorBound();
+			
+			// Iterate while error too big
+			Scale internalScale = resultScale.add(1);
+			BigDecimal error;
+			
+			// x(k+1) = 1/i * ( (i-1) * x(k) + x(0)/(x(k)^(i-1)) )
+			BigDecimal i_big = BigDecimal.valueOf(i);
+			BigDecimal im1_big = BigDecimal.valueOf(i-1);
+			do {
+				lastGuess = guess;
+				BigDecimal term1 = guess.multiply(im1_big);
+				BigDecimal pow = Pow.pow(guess, i-1, internalScale);
+				BigDecimal term2 = BigDecimalMath.divide(x, pow, internalScale);
+				guess = BigDecimalMath.divide(term1.add(term2), i_big, internalScale);
+				if (DEBUG) LOG.debug("next guess: " + i + ".th root(" + x + ") ~ " + guess);
+				error = guess.subtract(lastGuess).abs();
+				if (DEBUG) LOG.debug("error = " + error);
+			} while (error.compareTo(maxAllowedError)>=0);
+	    
+			return resultScale.applyTo(guess);
+		}
+		if (cmpToZero == 0) {
+			return F_0;
+		}
+		
+		throw new IllegalArgumentException("x = " + x + ", but i.th root(x) is defined for x>=0 only!");
+  	}
+  
+	/**
+	 * Test.
+	 * @param argv command line arguments
+	 */
+	public static void main(String[] argv) {
+    	ConfigUtil.initProject();
 
-    double xShifted_dbl = x.movePointLeft(shiftsRight).doubleValue();
-    if (DEBUG) LOG.debug("shiftsRight=" + shiftsRight + ", xShifted_dbl=" + xShifted_dbl);
-    // compute double estimate
-    double root_dbl = Math.pow(xShifted_dbl, 1.0 / i);
-    // shift left the number of right shifts / i
-    if (DEBUG) LOG.debug("i=" + i + ", shiftsLeft=" + shiftsRight / i);
-    BigDecimal guess = new BigDecimal(root_dbl).movePointRight(shiftsRight / i);
-    if (guess.equals(BigDecimal.ZERO)) {
-      // double precision was not enough
-      throw new ArithmeticException("root_dbl was 0 !?");
-      // guess = new BigDecimal(I_1, 52); // old handling
-    }
-    return guess;
-  }
-
-  /**
-   * Compute the i.th root with initial guess.
-   *
-   * @param x argument
-   * @param i degree of the root
-   * @param guess initial guess of i.th root(x)
-   * @param resultScale desired precision in after-comma digits
-   * @return i.th root(x) with error < 0.5*10^-resultScale, i.e. resultScale decimal digits are
-   *     rounded correctly
-   */
-  public static BigDecimal ithRoot(BigDecimal x, int i, BigDecimal guess, Scale resultScale) {
-    // Make sure x is a positive number
-    int cmpToZero = x.compareTo(F_0);
-    if (cmpToZero > 0) {
-      BigDecimal lastGuess;
-      BigDecimal maxAllowedError = resultScale.getErrorBound();
-
-      // Iterate while error too big
-      Scale internalScale = resultScale.add(1);
-      BigDecimal error;
-
-      // x(k+1) = 1/i * ( (i-1) * x(k) + x(0)/(x(k)^(i-1)) )
-      BigDecimal i_big = BigDecimal.valueOf(i);
-      BigDecimal im1_big = BigDecimal.valueOf(i - 1);
-      do {
-        lastGuess = guess;
-        BigDecimal term1 = guess.multiply(im1_big);
-        BigDecimal pow = Pow.pow(guess, i - 1, internalScale);
-        BigDecimal term2 = BigDecimalMath.divide(x, pow, internalScale);
-        guess = BigDecimalMath.divide(term1.add(term2), i_big, internalScale);
-        if (DEBUG) LOG.debug("next guess: " + i + ".th root(" + x + ") ~ " + guess);
-        error = guess.subtract(lastGuess).abs();
-        if (DEBUG) LOG.debug("error = " + error);
-      } while (error.compareTo(maxAllowedError) >= 0);
-
-      return resultScale.applyTo(guess);
-    }
-    if (cmpToZero == 0) {
-      return F_0;
-    }
-
-    throw new IllegalArgumentException("x = " + x + ", but i.th root(x) is defined for x>=0 only!");
-  }
-
-  /**
-   * Test.
-   *
-   * @param argv command line arguments
-   */
-  public static void main(String[] argv) {
-    ConfigUtil.initProject();
-
-    if (argv.length != 2) {
-      // wrong number of arguments !
-      LOG.error("Usage: RootsReal <argument> <scale in decimal digits> !!");
-      return;
-    }
-
-    // get argument for the root function (decimal input required):
-    BigDecimal x = new BigDecimal(argv[0]);
-
-    // get desired maximal precision
-    Scale maxScale = Scale.valueOf(Integer.parseInt(argv[1]));
-    long t0, t1;
-
-    t0 = System.currentTimeMillis();
-    for (int i = 2; i < 10; i++) {
-      for (Scale scale = Scale.valueOf(2); scale.compareTo(maxScale) <= 0; scale = scale.add(1)) {
-        LOG.debug(i + ".th root(" + x + ", " + scale + ")=" + ithRoot(x, i, scale));
-      }
-    }
-    t1 = System.currentTimeMillis();
-    LOG.debug("Time of root computations: " + TimeUtil.timeDiffStr(t0, t1));
-  }
+    	if (argv.length != 2) {
+	        // wrong number of arguments !
+	        LOG.error("Usage: RootsReal <argument> <scale in decimal digits> !!");
+	        return;
+	    }
+        
+        // get argument for the root function (decimal input required):
+	    BigDecimal x = new BigDecimal(argv[0]);
+	    
+        // get desired maximal precision
+	    Scale maxScale = Scale.valueOf(Integer.parseInt(argv[1]));
+        long t0, t1;
+        
+        t0 = System.currentTimeMillis();
+    	for (int i=2; i<10; i++) {
+    		for (Scale scale=Scale.valueOf(2); scale.compareTo(maxScale)<=0; scale = scale.add(1)) {
+        		LOG.debug(i + ".th root(" + x  + ", " + scale + ")=" + ithRoot(x, i, scale));
+        	}
+        }
+        t1 = System.currentTimeMillis();
+        LOG.debug("Time of root computations: " + TimeUtil.timeDiffStr(t0,t1));
+	}
 }

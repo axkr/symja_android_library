@@ -21,59 +21,56 @@ import de.tilman_neumann.jml.factor.siqs.data.SolutionArrays;
 
 /**
  * Interface for trial division engines to find the factorization of smooth Q(x) with given x.
- *
+ * 
  * @author Tilman Neumann
  */
 public interface TDiv_QS {
+	
+	/**
+	 * @return the name of this algorithm
+	 */
+	public String getName();
 
-  /** @return the name of this algorithm */
-  public String getName();
+	/**
+	 * Initialize this trial division engine for a new N.
+	 * @param N_dbl
+	 * @param kN multiplier k (typically Knuth-Schroeppel) * factor argument N
+	 * @param maxQRest the biggest QRest admitted for a smooth relation
+	 */
+	public void initializeForN(double N_dbl, BigInteger kN, double maxQRest);
 
-  /**
-   * Initialize this trial division engine for a new N.
-   *
-   * @param N_dbl
-   * @param kN multiplier k (typically Knuth-Schroeppel) * factor argument N
-   * @param maxQRest the biggest QRest admitted for a smooth relation
-   */
-  public void initializeForN(double N_dbl, BigInteger kN, double maxQRest);
-
-  /**
-   * Set prime/power base, polynomial parameters and smallest x-solutions for a new a-parameter.
-   *
-   * @param da d*a, with d = 1 or 2 depending on kN % 8
-   * @param b the (first) b-parameter
-   * @param primeSolutions
-   * @param filteredBaseSize number of primes and powers use for sieving
-   * @param unsievedBaseElements Prime base elements that were excluded from sieving, like the q's
-   *     that give the a-parameter in SIQS
-   */
-  void initializeForAParameter(
-      BigInteger da,
-      BigInteger b,
-      SolutionArrays primeSolutions,
-      int filteredBaseSize,
-      int[] unsievedBaseElements);
-
-  /**
-   * Set a new b-parameter.
-   *
-   * @param b
-   */
-  void setBParameter(BigInteger b);
-
-  /**
-   * Test if Q(x) is smooth (factors completely over the prime base) or "sufficiently smooth"
-   * (factors almost over the prime base) for all x in the given list.
-   *
-   * @param xList
-   * @return the AQ-pairs where Q is at least "sufficiently smooth"
-   */
-  List<AQPair> testList(List<Integer> xList);
-
-  /** @return a description of the performed tests. */
-  TDivReport getReport();
-
-  /** Release memory after a factorization. */
-  void cleanUp();
+	/**
+	 * Set prime/power base, polynomial parameters and smallest x-solutions for a new a-parameter.
+	 * @param da d*a, with d = 1 or 2 depending on kN % 8
+	 * @param d the d-value
+	 * @param b the (first) b-parameter
+	 * @param primeSolutions
+	 * @param filteredBaseSize number of primes and powers use for sieving
+	 * @param unsievedBaseElements Prime base elements that were excluded from sieving, like the q's that give the a-parameter in SIQS
+	 */
+	void initializeForAParameter(BigInteger da, int d, BigInteger b, SolutionArrays primeSolutions, int filteredBaseSize, int[] unsievedBaseElements);
+	
+	/**
+	 * Set a new b-parameter.
+	 * @param b
+	 */
+	void setBParameter(BigInteger b);
+	
+	/**
+	 * Test if Q(x) is smooth (factors completely over the prime base) or "sufficiently smooth" (factors almost over the prime base)
+	 * for all x in the given list.
+	 * @param xList
+	 * @return the AQ-pairs where Q is at least "sufficiently smooth"
+	 */
+	List<AQPair> testList(List<Integer> xList);
+	
+	/**
+	 * @return a description of the performed tests.
+	 */
+	TDivReport getReport();
+	
+	/**
+	 * Release memory after a factorization.
+	 */
+	void cleanUp();
 }

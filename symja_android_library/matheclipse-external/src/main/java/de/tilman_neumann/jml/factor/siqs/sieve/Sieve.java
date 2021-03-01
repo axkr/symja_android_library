@@ -19,41 +19,42 @@ import de.tilman_neumann.jml.factor.siqs.data.SolutionArrays;
 
 /**
  * Interface for sieve algorithms.
- *
  * @author Tilman Neumann
  */
 public interface Sieve {
+	
+	/**
+	 * @return the name of this sieve algorithm
+	 */
+	String getName();
+	
+	/**
+	 * Initialize for a new N. In PSIQS, this method is called for each thread, so things that can be computed before should be computed before.
+	 * @param sieveParams basic sieve parameters for a new N
+	 * @param mergedBaseSize size of prime/power base after merging, before filtering
+	 */
+	void initializeForN(SieveParams sieveParams, int mergedBaseSize);
+	
+	/**
+	 * Set (filtered) prime base and smallest x1, x2 solutions for a new a-parameter.
+	 * @param primeSolutions
+	 * @param filteredBaseSize number of primes and powers use for sieving
+	 */
+	void initializeForAParameter(SolutionArrays primeSolutions, int filteredBaseSize);
+	
+	/**
+	 * Sieve for a new set of x1, x2 solutions.
+	 * @return list of sieve locations x where Q(x) is smooth enough to be passed to trial division
+	 */
+	List<Integer> sieve();
 
-  /** @return the name of this sieve algorithm */
-  String getName();
-
-  /**
-   * Initialize for a new N. In PSIQS, this method is called for each thread, so things that can be
-   * computed before should be computed before.
-   *
-   * @param sieveParams basic sieve parameters for a new N
-   * @param mergedBaseSize size of prime/power base after merging, before filtering
-   */
-  void initializeForN(SieveParams sieveParams, int mergedBaseSize);
-
-  /**
-   * Set (filtered) prime base and smallest x1, x2 solutions for a new a-parameter.
-   *
-   * @param primeSolutions
-   * @param filteredBaseSize number of primes and powers use for sieving
-   */
-  void initializeForAParameter(SolutionArrays primeSolutions, int filteredBaseSize);
-
-  /**
-   * Sieve for a new set of x1, x2 solutions.
-   *
-   * @return list of sieve locations x where Q(x) is smooth enough to be passed to trial division
-   */
-  List<Integer> sieve();
-
-  /** @return description of the durations of the individual sub-phases */
-  SieveReport getReport();
-
-  /** Release memory after a factorization. */
-  void cleanUp();
+	/**
+	 * @return description of the durations of the individual sub-phases
+	 */
+	SieveReport getReport();
+	
+	/**
+	 * Release memory after a factorization.
+	 */
+	void cleanUp();
 }

@@ -35,117 +35,78 @@ import de.tilman_neumann.util.Timer;
 
 /**
  * Multi-threaded SIQS using Sieve03gU.
- *
+ * 
  * @author Tilman Neumann
  */
 public class PSIQS_U extends PSIQSBase {
 
-  private static final Logger LOG = Logger.getLogger(PSIQS_U.class);
+	private static final Logger LOG = Logger.getLogger(PSIQS_U.class);
 
-  /**
-   * Standard constructor.
-   *
-   * @param Cmult multiplier for prime base size
-   * @param Mmult multiplier for sieve array size
-   * @param wantedQCount hypercube dimension (null for automatic selection)
-   * @param maxQRestExponent A Q with unfactored rest QRest is considered smooth if QRest <=
-   *     N^maxQRestExponent. Good values are 0.16..0.19; null means that it is determined
-   *     automatically.
-   * @param numberOfThreads
-   * @param powerFinder algorithm to add powers to the primes used for sieving
-   * @param matrixSolver solver for smooth congruences matrix
-   */
-  public PSIQS_U(
-      float Cmult,
-      float Mmult,
-      Integer wantedQCount,
-      Float maxQRestExponent,
-      int numberOfThreads,
-      PowerFinder powerFinder,
-      MatrixSolver matrixSolver) {
+	/**
+	 * Standard constructor.
+	 * @param Cmult multiplier for prime base size
+	 * @param Mmult multiplier for sieve array size
+	 * @param wantedQCount hypercube dimension (null for automatic selection)
+	 * @param maxQRestExponent A Q with unfactored rest QRest is considered smooth if QRest <= N^maxQRestExponent.
+	 *                         Good values are 0.16..0.19; null means that it is determined automatically.
+	 * @param numberOfThreads
+	 * @param powerFinder algorithm to add powers to the primes used for sieving
+	 * @param matrixSolver solver for smooth congruences matrix
+	 */
+	public PSIQS_U(float Cmult, float Mmult, Integer wantedQCount, Float maxQRestExponent, 
+				   int numberOfThreads, PowerFinder powerFinder, MatrixSolver matrixSolver) {
+		
+		super(Cmult, Mmult, maxQRestExponent, numberOfThreads, null, powerFinder, matrixSolver, new AParamGenerator01(wantedQCount));
+	}
 
-    super(
-        Cmult,
-        Mmult,
-        maxQRestExponent,
-        numberOfThreads,
-        null,
-        powerFinder,
-        matrixSolver,
-        new AParamGenerator01(wantedQCount));
-  }
+	@Override
+	public String getName() {
+		String maxQRestExponentStr = "maxQRestExponent=" + String.format("%.3f", maxQRestExponent);
+		return "PSIQS_U(Cmult=" + Cmult + ", Mmult=" + Mmult + ", qCount=" + apg.getQCount() + ", " + maxQRestExponentStr + ", " + powerFinder.getName() + ", " + matrixSolver.getName() + ", " + numberOfThreads + " threads)";
+	}
 
-  @Override
-  public String getName() {
-    String maxQRestExponentStr = "maxQRestExponent=" + String.format("%.3f", maxQRestExponent);
-    return "PSIQS_U(Cmult="
-        + Cmult
-        + ", Mmult="
-        + Mmult
-        + ", qCount="
-        + apg.getQCount()
-        + ", "
-        + maxQRestExponentStr
-        + ", "
-        + powerFinder.getName()
-        + ", "
-        + matrixSolver.getName()
-        + ", "
-        + numberOfThreads
-        + " threads)";
-  }
+	@Override
+	protected PSIQSThreadBase createThread(
+			int k, BigInteger N, BigInteger kN, int d, SieveParams sieveParams, BaseArrays baseArrays,
+			AParamGenerator apg, CongruenceCollectorParallel cc, int threadIndex) {
+		
+		return new PSIQSThread_U(k, N, kN, d, sieveParams, baseArrays, apg, cc, threadIndex);
+	}
 
-  @Override
-  protected PSIQSThreadBase createThread(
-      int k,
-      BigInteger N,
-      BigInteger kN,
-      int d,
-      SieveParams sieveParams,
-      BaseArrays baseArrays,
-      AParamGenerator apg,
-      CongruenceCollectorParallel cc,
-      int threadIndex) {
+	// Standalone test --------------------------------------------------------------------------------------------------
 
-    return new PSIQSThread_U(k, N, kN, d, sieveParams, baseArrays, apg, cc, threadIndex);
-  }
+	/**
+	 * Stand-alone test. 
+	 * Should only be called with semiprime arguments.
+	 * For general arguments, use CombinedFactorAlgorithm with searchSmallFactors==true.
+	 * 
+	 * @param args ignored
+	 */
+	public static void main(String[] args) {
+    	ConfigUtil.initProject();
+		Timer timer = new Timer();
+		PSIQS_U qs = new PSIQS_U(0.32F, 0.37F, null, null, 6, new NoPowerFinder(), new MatrixSolver02_BlockLanczos());
 
-  // Standalone test
-  // --------------------------------------------------------------------------------------------------
-
-  /**
-   * Stand-alone test. Should only be called with semiprime arguments. For general arguments, use
-   * CombinedFactorAlgorithm with searchSmallFactors==true.
-   *
-   * @param args ignored
-   */
-  public static void main(String[] args) {
-    ConfigUtil.initProject();
-    Timer timer = new Timer();
-    PSIQS_U qs =
-        new PSIQS_U(
-            0.32F, 0.37F, null, null, 6, new NoPowerFinder(), new MatrixSolver02_BlockLanczos());
-
-    while (true) {
-      try {
-        LOG.info("Please insert the number to factor:");
-        BufferedReader in = new BufferedReader(new InputStreamReader(System.in));
-        String line = in.readLine();
-        String input = line != null ? line.trim() : "";
-        // LOG.debug("input = >" + input + "<");
-        BigInteger N = new BigInteger(input);
-        LOG.info("Factoring " + N + " (" + N.bitLength() + " bits)...");
-        timer.capture();
-        SortedMultiset<BigInteger> factors = qs.factor(N);
-        if (factors != null) {
-          long duration = timer.capture();
-          LOG.info("Factored N = " + factors + " in " + TimeUtil.timeStr(duration) + ".");
-        } else {
-          LOG.info("No factor found...");
-        }
-      } catch (Exception ex) {
-        LOG.error("Error " + ex, ex);
-      }
-    }
-  }
+		while(true) {
+			try {
+				LOG.info("Please insert the number to factor:");
+				BufferedReader in = new BufferedReader(new InputStreamReader(System.in));
+				String line = in.readLine();
+				String input = line !=null ? line.trim() : "";
+				//LOG.debug("input = >" + input + "<");
+				BigInteger N = new BigInteger(input);
+				LOG.info("Factoring " + N + " (" + N.bitLength() + " bits)...");
+				timer.capture();
+				SortedMultiset<BigInteger> factors = qs.factor(N);
+				if (factors != null) {
+					long duration = timer.capture();
+					LOG.info("Factored N = " + factors + " in " + TimeUtil.timeStr(duration) + ".");
+			} else {
+					LOG.info("No factor found...");
+				}
+			} catch (Exception ex) {
+				LOG.error("Error " + ex, ex);
+			}
+		}
+	}
 }

@@ -15,28 +15,29 @@ package de.tilman_neumann.jml.factor;
 
 /**
  * Definition of the "nature" of test numbers.
- *
  * @author Tilman Neumann
  */
 public enum TestNumberNature {
-  /**
-   * Arbitrary random composite numbers N chosen from a certain bit length. Note that there are no
-   * such numbers with less than 3 bits.
-   */
-  RANDOM_COMPOSITES,
-
-  /**
-   * Random odd composite numbers N chosen from a certain bit length. Note that there are no such
-   * numbers with less than 4 bits.
-   */
-  RANDOM_ODD_COMPOSITES,
-
-  /**
-   * Odd semiprimes N=a*b with min(a,b) >= cbrt(N). Note that there are no such numbers with less
-   * than 4 bits.
-   */
-  MODERATE_SEMIPRIMES,
-
-  /** Odd semiprimes N=a*b with bitLength(min(a,b)) == bitLength(N)/2 - 1 bits. */
-  QUITE_HARD_SEMIPRIMES
+	/** 
+	 * Arbitrary random composite numbers N chosen from a certain bit length.
+	 * Note that there are no such numbers with less than 3 bits.
+	 */
+	RANDOM_COMPOSITES,
+	
+	/** 
+	 * Random odd composite numbers N chosen from a certain bit length.
+	 * Note that there are no such numbers with less than 4 bits.
+	 */
+	RANDOM_ODD_COMPOSITES,
+	
+	/**
+	 * Odd semiprimes N=a*b with min(a,b) >= cbrt(N).
+	 * Note that there are no such numbers with less than 4 bits.
+	 */
+	MODERATE_SEMIPRIMES,
+	
+	/**
+	 * Odd semiprimes N=a*b with bitLength(min(a,b)) == bitLength(N)/2 - 1 bits.
+	 */
+	QUITE_HARD_SEMIPRIMES
 }

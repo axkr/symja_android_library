@@ -24,131 +24,123 @@ import static de.tilman_neumann.jml.base.BigIntConstants.*;
 
 /**
  * Implementations of the factorial function.
- *
  * @author Tilman Neumann
  */
 public class Factorial {
 
-  private static final Logger LOG = Logger.getLogger(Factorial.class);
+	private static final Logger LOG = Logger.getLogger(Factorial.class);
 
-  private static final AutoExpandingPrimesArray PRIMES_ARRAY =
-      new AutoExpandingPrimesArray().ensureLimit(1000);
+	private static final AutoExpandingPrimesArray PRIMES_ARRAY = new AutoExpandingPrimesArray().ensureLimit(1000);
 
-  /**
-   * Computes the factorial for non-negative integer arguments by the simple product rule.
-   *
-   * @param n Argument
-   * @return n! if n is a non-negative integer
-   * @throws IllegalArgumentException if n is a negative integer
-   */
-  private static BigInteger simpleProduct(int n) throws IllegalArgumentException {
-    if (n >= 0) {
-      BigInteger ret = I_1;
-      for (int i = 2; i <= n; i++) {
-        ret = ret.multiply(BigInteger.valueOf(i));
-      }
-      return ret;
-    }
-    throw new IllegalArgumentException(
-        "factorial currently supports only non-negative integers, but the argument is n=" + n);
-  }
+	/**
+	 * Computes the factorial for non-negative integer arguments by the
+	 * simple product rule.
+	 * 
+	 * @param n Argument
+	 * @return n! if n is a non-negative integer
+	 * @throws IllegalArgumentException if n is a negative integer
+	 */
+	private static BigInteger simpleProduct(int n) throws IllegalArgumentException {
+		if (n >= 0) {
+			BigInteger ret = I_1;
+			for (int i=2; i<=n; i++) {
+				ret = ret.multiply(BigInteger.valueOf(i));
+			}
+			return ret;
+		}
+		throw new IllegalArgumentException("factorial currently supports only non-negative integers, but the argument is n=" + n);
+	}
+	
+	/**
+	 * Computes the factorial for non-negative integer arguments applying the
+	 * simple product rule, but allowing for a previously computed start value.
+	 * 
+	 * Adapted from http://www.jonelo.de by Johann Nepomuk Loefflmann (jonelo@jonelo.de),
+	 * published under GNU General Public License.
+	 * 
+	 * @param n Argument
+	 * @param start Argument of the start result
+	 * @param startResult Factorial for start
+	 * @return n! if n is a non-negative integer
+	 * @throws ArithmeticException if n is a negative integer
+	 */
+	public static BigInteger withStartResult(int n, int start, BigInteger startResult) throws ArithmeticException {
+        if (n<0) throw new ArithmeticException("The factorial function supports only non-negative arguments.");
+        if (n==0) return I_1;
+        if (n==start) return startResult;
+        if (n<start) {
+        	start=1; 
+        	startResult = I_1; 
+        }
+        BigInteger x = startResult;
+        for (int i=start+1; i <= n; i++) {
+            x=x.multiply(BigInteger.valueOf(i));
+        }
+        return x;
+	}
 
-  /**
-   * Computes the factorial for non-negative integer arguments applying the simple product rule, but
-   * allowing for a previously computed start value.
-   *
-   * <p>Adapted from http://www.jonelo.de by Johann Nepomuk Loefflmann (jonelo@jonelo.de), published
-   * under GNU General Public License.
-   *
-   * @param n Argument
-   * @param start Argument of the start result
-   * @param startResult Factorial for start
-   * @return n! if n is a non-negative integer
-   * @throws ArithmeticException if n is a negative integer
-   */
-  public static BigInteger withStartResult(int n, int start, BigInteger startResult)
-      throws ArithmeticException {
-    if (n < 0)
-      throw new ArithmeticException("The factorial function supports only non-negative arguments.");
-    if (n == 0) return I_1;
-    if (n == start) return startResult;
-    if (n < start) {
-      start = 1;
-      startResult = I_1;
-    }
-    BigInteger x = startResult;
-    for (int i = start + 1; i <= n; i++) {
-      x = x.multiply(BigInteger.valueOf(i));
-    }
-    return x;
-  }
+	/**
+	 * Peter Luschny's swinging prime factorial algorithm, see http://luschny.de/math/factorial/SwingIntro.pdf
+	 * @param n
+	 * @return n!
+	 * @throws ArithmeticException if n is a negative integer
+	 */
+	public static BigInteger factorial/*Luschny*/(int n) throws ArithmeticException {
+        if (n<0) throw new ArithmeticException("The factorial function supports only non-negative arguments.");
+		if (n<2) return I_1;
+		BigInteger f = factorial/*Luschny*/(n>>1); // floor(n/2)
+		return f.multiply(f).multiply(primeSwing(n));
+	}
+	
+	private static BigInteger primeSwing(int n) {
+		// ensure we find all primes <= n
+		PRIMES_ARRAY.ensureLimit(n);
 
-  /**
-   * Peter Luschny's swinging prime factorial algorithm, see
-   * http://luschny.de/math/factorial/SwingIntro.pdf
-   *
-   * @param n
-   * @return n!
-   * @throws ArithmeticException if n is a negative integer
-   */
-  public static BigInteger factorial /*Luschny*/(int n) throws ArithmeticException {
-    if (n < 0)
-      throw new ArithmeticException("The factorial function supports only non-negative arguments.");
-    if (n < 2) return I_1;
-    BigInteger f = factorial /*Luschny*/(n >> 1); // floor(n/2)
-    return f.multiply(f).multiply(primeSwing(n));
-  }
-
-  private static BigInteger primeSwing(int n) {
-    // ensure we find all primes <= n
-    PRIMES_ARRAY.ensureLimit(n);
-
-    BigInteger product = I_1;
-    int i = 0;
-    while (true) {
-      int prime = PRIMES_ARRAY.getPrime(i++); // starts with p[0] = 2
-      if (prime > n) break;
-
-      int q = n;
-      int p = 1;
-      do {
-        q /= prime; // floor(q/prime)
-        if ((q & 1) == 1) p *= prime;
-      } while (q > 0);
-      if (p > 1) product = product.multiply(BigInteger.valueOf(p));
-    }
-    return product;
-  }
-
-  /**
-   * Test.
-   *
-   * @param args Ignored.
-   */
-  public static void main(String[] args) {
-    ConfigUtil.initProject();
-
-    // compute 1000! ten thousand times
-    int n = 1000;
-    int numberOfTests = 10000;
-
-    long start = System.currentTimeMillis();
-    BigInteger result = null;
-    for (int i = 0; i < numberOfTests; i++) {
-      result = simpleProduct(n);
-    }
-    long end = System.currentTimeMillis();
-    LOG.info("simpleProduct(" + n + ") took " + (end - start) + "ms");
-
-    start = System.currentTimeMillis();
-    BigInteger resultLuschny = null;
-    for (int i = 0; i < numberOfTests; i++) {
-      resultLuschny = factorial /*Luschny*/(n);
-    }
-    end = System.currentTimeMillis();
-    LOG.info("factorialLuschny(" + n + ") took " + (end - start) + "ms");
-    if (!resultLuschny.equals(result)) {
-      LOG.error("factorialLuschny() computed wrong result!");
-    }
-  }
+		BigInteger product = I_1;
+		int i=0;
+		while (true) {
+			int prime = PRIMES_ARRAY.getPrime(i++); // starts with p[0] = 2
+			if (prime>n) break;
+			
+			int q=n;
+			int p=1;
+			do {
+				q /= prime; // floor(q/prime)
+				if ((q&1)==1) p *= prime;
+			} while (q>0);
+			if (p>1) product = product.multiply(BigInteger.valueOf(p));
+		}
+		return product;
+	}
+	
+	/**
+	 * Test.
+	 * @param args Ignored.
+	 */
+	public static void main(String[] args) {
+    	ConfigUtil.initProject();
+    	
+    	// compute 1000! ten thousand times
+    	int n=1000;
+    	int numberOfTests = 10000;
+    	
+    	long start = System.currentTimeMillis();
+    	BigInteger result = null;
+    	for (int i=0; i<numberOfTests; i++) {
+    		result = simpleProduct(n);
+    	}
+    	long end = System.currentTimeMillis();
+    	LOG.info("simpleProduct(" + n + ") took " + (end-start) + "ms");
+    	
+    	start = System.currentTimeMillis();
+    	BigInteger resultLuschny = null;
+    	for (int i=0; i<numberOfTests; i++) {
+    		resultLuschny = factorial/*Luschny*/(n);
+    	}
+    	end = System.currentTimeMillis();
+    	LOG.info("factorialLuschny(" + n + ") took " + (end-start) + "ms");
+    	if (!resultLuschny.equals(result)) {
+    		LOG.error("factorialLuschny() computed wrong result!");
+    	}
+	}
 }

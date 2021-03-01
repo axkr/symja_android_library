@@ -24,23 +24,20 @@ import static de.tilman_neumann.jml.base.BigDecimalConstants.*;
 
 /**
  * Inverse hyperbolic cotangens function.
- *
  * @author Tilman Neumann
  */
 public class ArcCotH {
 
-  /**
-   * acoth(x) implemented by ln() formula.
-   *
-   * @param x real argument with |x| > 1
-   * @param scale wanted accuracy in after-comma digits
-   * @return acoth(x)
-   */
-  public static BigDecimal acoth(BigDecimal x, Scale scale) {
-    if (x.abs().compareTo(F_1) <= 0)
-      throw new ArithmeticException("acoth(x) requires |x|>1 but x=" + x);
-    BigDecimal fraction = BigDecimalMath.divide(x.add(F_1), x.subtract(F_1), scale);
-    BigDecimal lnTerm = Ln.ln(fraction, scale);
-    return Pow2.divPow2(lnTerm, 1);
-  }
+	/**
+	 * acoth(x) implemented by ln() formula.
+	 * @param x real argument with |x| > 1
+	 * @param scale wanted accuracy in after-comma digits
+	 * @return acoth(x)
+	 */
+	public static BigDecimal acoth(BigDecimal x, Scale scale) {
+		if (x.abs().compareTo(F_1)<=0) throw new ArithmeticException("acoth(x) requires |x|>1 but x=" + x);
+		BigDecimal fraction = BigDecimalMath.divide(x.add(F_1), x.subtract(F_1), scale);
+		BigDecimal lnTerm = Ln.ln(fraction, scale);
+		return Pow2.divPow2(lnTerm, 1);
+	}
 }

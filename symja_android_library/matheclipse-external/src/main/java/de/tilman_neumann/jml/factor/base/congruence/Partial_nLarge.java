@@ -21,56 +21,55 @@ import de.tilman_neumann.jml.factor.base.SortedLongArray;
 import de.tilman_neumann.util.SortedMultiset;
 
 /**
- * A partial congruence having an arbitrary number of large factors. This class will hardly be
- * needed in SIQS, but may be needed in CFrac.
- *
+ * A partial congruence having an arbitrary number of large factors.
+ * This class will hardly be needed in SIQS, but may be needed in CFrac.
+ * 
  * @author Tilman Neumann
  */
 public class Partial_nLarge extends Partial {
 
-  private long[] bigFactors; // needs about 50 byte for 3 large factors
-  private byte[] bigFactorExponents; // needs about 36 byte for 3 large factors
+	private long[] bigFactors; // needs about 50 byte for 3 large factors
+	private byte[] bigFactorExponents; // needs about 36 byte for 3 large factors
+	
+	/**
+	 * Full constructor.
+	 * @param A
+	 * @param smallFactors small factors of Q
+	 * @param bigFactors large factors of Q
+	 */
+	public Partial_nLarge(BigInteger A, SortedIntegerArray smallFactors, SortedLongArray bigFactors) {
+		super(A, smallFactors);
+		// copy big factors of Q
+		this.bigFactors = bigFactors.copyFactors();
+		this.bigFactorExponents = bigFactors.copyExponents();
+	}
 
-  /**
-   * Full constructor.
-   *
-   * @param A
-   * @param smallFactors small factors of Q
-   * @param bigFactors large factors of Q
-   */
-  public Partial_nLarge(BigInteger A, SortedIntegerArray smallFactors, SortedLongArray bigFactors) {
-    super(A, smallFactors);
-    // copy big factors of Q
-    this.bigFactors = bigFactors.copyFactors();
-    this.bigFactorExponents = bigFactors.copyExponents();
-  }
+	@Override
+	public SortedMultiset<Long> getAllQFactors() {
+		// get small factors of Q
+		SortedMultiset<Long> allFactors = super.getSmallQFactors();
+		// add large factors
+		for (int i=0; i<bigFactors.length; i++) {
+			allFactors.add(bigFactors[i], bigFactorExponents[i]);
+		}
+		return allFactors;
+	}
 
-  @Override
-  public SortedMultiset<Long> getAllQFactors() {
-    // get small factors of Q
-    SortedMultiset<Long> allFactors = super.getSmallQFactors();
-    // add large factors
-    for (int i = 0; i < bigFactors.length; i++) {
-      allFactors.add(bigFactors[i], bigFactorExponents[i]);
-    }
-    return allFactors;
-  }
+	@Override
+	public Long[] getLargeFactorsWithOddExponent() {
+		ArrayList<Long> result = new ArrayList<>();
+		for (int i=0; i<bigFactors.length; i++) {
+			if ((bigFactorExponents[i]&1)==1) result.add(bigFactors[i]);
+		}
+		return result.toArray(new Long[result.size()]);
+	}
 
-  @Override
-  public Long[] getLargeFactorsWithOddExponent() {
-    ArrayList<Long> result = new ArrayList<>();
-    for (int i = 0; i < bigFactors.length; i++) {
-      if ((bigFactorExponents[i] & 1) == 1) result.add(bigFactors[i]);
-    }
-    return result.toArray(new Long[result.size()]);
-  }
-
-  @Override
-  public int getNumberOfLargeQFactors() {
-    int count = 0;
-    for (int i = 0; i < bigFactorExponents.length; i++) {
-      count += bigFactorExponents[i];
-    }
-    return count;
-  }
+	@Override
+	public int getNumberOfLargeQFactors() {
+		int count = 0;
+		for (int i=0; i<bigFactorExponents.length; i++) {
+			count += bigFactorExponents[i];
+		}
+		return count;
+	}
 }

@@ -31,7 +31,7 @@ import de.tilman_neumann.jml.factor.base.matrixSolver.MatrixSolver;
 import de.tilman_neumann.jml.factor.cfrac.tdiv.TDiv_CF63;
 
 import static de.tilman_neumann.jml.base.BigIntConstants.*;
-import static de.tilman_neumann.jml.factor.base.AnalysisOptions.ANALYZE;
+import static de.tilman_neumann.jml.factor.base.GlobalFactoringOptions.ANALYZE;
 
 /**
  * 63 bit CFrac with Knuth-Schroeppel multiplier.
@@ -193,8 +193,9 @@ public class CFrac63 extends FactorAlgorithm {
       floor_sqrt_kN =
           (long)
               Math.sqrt(
-                  kN.doubleValue()); // faster than BigInteger sqrt; but the type conversion may
-      // give ceil(sqrt(kN)) for some N >= 54 bit
+                  kN
+                      .doubleValue()); // faster than BigInteger sqrt; but the type conversion may
+                                       // give ceil(sqrt(kN)) for some N >= 54 bit
       BigInteger sqrt_kN_big = BigInteger.valueOf(floor_sqrt_kN);
       long diff = kN.subtract(sqrt_kN_big.multiply(sqrt_kN_big)).longValue();
       if (diff == 0) return N.gcd(sqrt_kN_big);
@@ -324,8 +325,8 @@ public class CFrac63 extends FactorAlgorithm {
     BigInteger Q_test = i % 2 == 1 ? Q_ip1 : Q_ip1.negate().mod(N);
     BigInteger div[] = A_i.pow(2).subtract(Q_test).divideAndRemainder(N);
     //		assertEquals(I_0, div[1]); // works
-    //		LOG.debug("A^2-Q = " + div[0] + " * N");
-    //		LOG.debug("A^2 % N = " + A_i.pow(2).mod(N) + ", Q = " + Q_test);
+    LOG.debug("A^2-Q = " + div[0] + " * N");
+    LOG.debug("A^2 % N = " + A_i.pow(2).mod(N) + ", Q = " + Q_test);
     //		assertEquals(Q_test, A_i.pow(2).mod(N)); // works
   }
 

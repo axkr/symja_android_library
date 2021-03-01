@@ -14,76 +14,74 @@
 package de.tilman_neumann.util;
 
 public class StringUtil {
-  private StringUtil() {
-    // static class
-  }
+	private StringUtil() {
+		// static class
+	}
+	
+    /**
+     * Concatenates string s n times.
+     *
+     * @param s string to repeat
+     * @param n number of repetitions
+     * @return a string resulting from n repetitions of s, or null if n <= 0
+     */
+    public static String repeat(String s, int n) {
+    	if (s == null || n <= 0) return null;
+    	int sLen = s.length();
+    	if (sLen == 0) return "";
 
-  /**
-   * Concatenates string s n times.
-   *
-   * @param s string to repeat
-   * @param n number of repetitions
-   * @return a string resulting from n repetitions of s, or null if n <= 0
-   */
-  public static String repeat(String s, int n) {
-    if (s == null || n <= 0) return null;
-    int sLen = s.length();
-    if (sLen == 0) return "";
-
-    StringBuffer buffer = new StringBuffer(sLen * n);
-    for (int i = n; i > 0; i--) {
-      buffer.append(s);
+        StringBuffer buffer = new StringBuffer(sLen * n);
+        for (int i = n; i > 0; i--) {
+        	buffer.append(s);
+        }
+        return buffer.toString();
     }
-    return buffer.toString();
-  }
 
-  /**
-   * Inserts a string s left-aligned into a mask, without truncation.<br>
-   * <br>
-   * Examples:<br>
-   * formatLeft("abc", "123456") -> "abc456"<br>
-   * formatLeft("abcdef", "123") -> "abcdef"<br>
-   *
-   * @param s
-   * @param mask
-   * @return s left-aligned in mask
-   */
-  public static String formatLeft(String s, String mask) {
-    // start with s
-    String ret = (s != null) ? s : "";
-    if (mask != null) {
-      int sLen = ret.length();
-      int maskLen = mask.length();
-      if (sLen < maskLen) {
-        // add last chars from the mask
-        ret += mask.substring(sLen, maskLen);
-      }
+    /**
+     * Inserts a string s left-aligned into a mask, without truncation.<br><br>
+     *
+     * Examples:<br>formatLeft("abc", "123456") -> "abc456"<br>
+     *              formatLeft("abcdef", "123") -> "abcdef"<br>
+     *
+     * @param s
+     * @param mask
+     * @return s left-aligned in mask
+     */
+    public static String formatLeft(String s, String mask) {
+        // start with s
+        String ret = (s != null) ? s : "";
+        if (mask != null) {
+            int sLen = ret.length();
+            int maskLen = mask.length();
+            if (sLen < maskLen) {
+                // add last chars from the mask
+                ret += mask.substring(sLen, maskLen);
+            }
+        }
+        return ret;
     }
-    return ret;
-  }
 
-  /**
-   * Inserts a string s right-aligned into a mask, without truncation.<br>
-   * <br>
-   * Examples:<br>
-   * formatRight("abc", "123456") -> "123abc"<br>
-   * formatRight("abcdef", "123") -> "abcdef"<br>
-   *
-   * @param s
-   * @param mask
-   * @return s right-aligned in mask
-   */
-  public static String formatRight(String s, String mask) {
-    // start with s
-    String ret = (s != null) ? s : "";
-    if (mask != null) {
-      int sLen = ret.length();
-      int maskLen = mask.length();
-      if (sLen < maskLen) {
-        // add first chars from the mask
-        ret = mask.substring(0, maskLen - sLen) + ret;
-      }
+    /**
+     * Inserts a string s right-aligned into a mask, without truncation.<br><br>
+     *
+     * Examples:<br>formatRight("abc", "123456") -> "123abc"<br>
+     *              formatRight("abcdef", "123") -> "abcdef"<br>
+     *
+     * @param s
+     * @param mask
+     * @return s right-aligned in mask
+     */
+    public static String formatRight(String s, String mask) {
+        // start with s
+        String ret = (s != null) ? s : "";
+        if (mask != null) {
+            int sLen = ret.length();
+            int maskLen = mask.length();
+            if (sLen < maskLen) {
+                // add first chars from the mask
+                ret = mask.substring(0, maskLen - sLen) + ret;
+            }
+        }
+        return ret;
     }
-    return ret;
-  }
 }

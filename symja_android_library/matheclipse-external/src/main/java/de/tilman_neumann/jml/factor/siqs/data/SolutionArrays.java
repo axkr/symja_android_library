@@ -15,25 +15,24 @@ package de.tilman_neumann.jml.factor.siqs.data;
 
 /**
  * Passive data structure bundling primes/powers and their smallest x-solutions.
- *
- * <p>Having a structure with several arrays of the same size is faster than having an array of a
- * structure, because the former permits to exploit AVX/SSE mechanisms in Java 8.
- *
+ * 
+ * Having a structure with several arrays of the same size is faster than having an array of a structure,
+ * because the former permits to exploit AVX/SSE mechanisms in Java 8.
+ * 
  * @author Tilman Neumann
  */
 public class SolutionArrays extends BaseArrays {
-  public int[] x1Array;
-  public int[] x2Array;
-
-  /**
-   * Full constructor, allocates all arrays.
-   *
-   * @param solutionsCount
-   * @param qCount
-   */
-  public SolutionArrays(int solutionsCount, int qCount) {
-    super(solutionsCount);
-    x1Array = new int[solutionsCount];
-    x2Array = new int[solutionsCount];
-  }
+	public int[] x1Array;
+	public int[] x2Array;
+	
+	/**
+	 * Full constructor, allocates all arrays.
+	 * @param solutionsCount
+	 * @param qCount
+	 */
+	public SolutionArrays(int solutionsCount, int qCount) {
+		super(solutionsCount);
+		x1Array = new int[solutionsCount];
+		x2Array = new int[solutionsCount];
+	}
 }

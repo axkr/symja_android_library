@@ -22,98 +22,77 @@ import de.tilman_neumann.util.ConfigUtil;
 
 /**
  * Tests of quadratic residue computations modulo P^n.
- *
+ * 
  * @author Tilman Neumann
  */
 public class QuadraticResiduesModBPowNTest01 {
+	
+	private static final Logger LOG = Logger.getLogger(QuadraticResiduesModBPowNTest01.class);
+	
+	private static final int P = 23;
 
-  private static final Logger LOG = Logger.getLogger(QuadraticResiduesModBPowNTest01.class);
+	private static final boolean SHOW_ELEMENTS = false;
 
-  private static final int P = 23;
+	private static ArrayList<Long> powerUp(TreeSet<Long> lastSet, long lastM) {
+		ArrayList<Long> nextList = new ArrayList<>(lastSet); // copy
+		for (int i=1; i<P; i++) {
+			long offset = i*lastM;
+			for (long elem : lastSet) {
+				nextList.add(elem + offset);
+			}
+		}
+		return nextList;
+	}
+	
+	/**
+	 * Test.
+	 * @param args ignored
+	 */
+	public static void main(String[] args) {
+		ConfigUtil.initProject();
+		
+		ArrayList<Integer> counts = new ArrayList<Integer>();
+		ArrayList<Integer> removedCounts = new ArrayList<Integer>();
+		
+		// result for i=0
+		TreeSet<Long> lastSet = new TreeSet<>();
+		lastSet.add(0L);
+		
+		for (int n=1; n<5; n++) {
+			long m = (long) Math.pow(P, n);
+			long lastM = m / P;
+			
+			// last set contains entries between 0 and lastM. next we want entries between 0 and m
+			ArrayList<Long> lastPoweredUp = powerUp(lastSet, lastM);
+			if (SHOW_ELEMENTS) LOG.debug("n = " + n + ": lastPoweredUp = " + lastPoweredUp);
+			
+			TreeSet<Long> nextSet = QuadraticResidues.getQuadraticResidues(m);
+			
+			// this is what has been removed in nextSet from the power-up of lastSet
+			lastPoweredUp.removeAll(nextSet);
+			LOG.info("n = " + n + ": After removing " + lastPoweredUp.size() + " elements "  + lastPoweredUp + " from last set powered up, there are " + nextSet.size() + " quadratic residues mod " + P + "^" + n + (SHOW_ELEMENTS ? ": " + nextSet : ""));
+			
+			for (long removed : lastPoweredUp) {
+				long quotient = removed / lastM;
+				boolean isExact = quotient*lastM == removed;
+				LOG.info("lastM = " + lastM + ", removed = " + removed + ", quotient = " + quotient + ", isExact = " + isExact);
+			}
+			
+			counts.add(nextSet.size());
+			removedCounts.add(lastPoweredUp.size());
+			
+			// prepare next round
+			lastSet = nextSet;
+		}
+		
+		LOG.info("");
+		LOG.info("counts = " + counts);
+		// P = 2: A023105(n) = 1, 2, 2, 3, 4, 7, 12, 23, 44, 87, 172, 343, ...
+		// P = 3: A039300(n) = 1, 2, 4, 11, 31, 92, 274, 821, 2461, 7382, 22144, 66431, ...
+		// P = 5: A039302(n) = 1, 3, 11, 53, 261, 1303, 6511, 32553, 162761, ...
+		// ...
+		
+		LOG.info("removedCounts = " + removedCounts);
 
-  private static final boolean SHOW_ELEMENTS = false;
-
-  private static ArrayList<Long> powerUp(TreeSet<Long> lastSet, long lastM) {
-    ArrayList<Long> nextList = new ArrayList<>(lastSet); // copy
-    for (int i = 1; i < P; i++) {
-      long offset = i * lastM;
-      for (long elem : lastSet) {
-        nextList.add(elem + offset);
-      }
-    }
-    return nextList;
-  }
-
-  /**
-   * Test.
-   *
-   * @param args ignored
-   */
-  public static void main(String[] args) {
-    ConfigUtil.initProject();
-
-    ArrayList<Integer> counts = new ArrayList<Integer>();
-    ArrayList<Integer> removedCounts = new ArrayList<Integer>();
-
-    // result for i=0
-    TreeSet<Long> lastSet = new TreeSet<>();
-    lastSet.add(0L);
-
-    for (int n = 1; n < 5; n++) {
-      long m = (long) Math.pow(P, n);
-      long lastM = m / P;
-
-      // last set contains entries between 0 and lastM. next we want entries between 0 and m
-      ArrayList<Long> lastPoweredUp = powerUp(lastSet, lastM);
-      if (SHOW_ELEMENTS) LOG.debug("n = " + n + ": lastPoweredUp = " + lastPoweredUp);
-
-      TreeSet<Long> nextSet = QuadraticResidues.getQuadraticResidues(m);
-
-      // this is what has been removed in nextSet from the power-up of lastSet
-      lastPoweredUp.removeAll(nextSet);
-      LOG.info(
-          "n = "
-              + n
-              + ": After removing "
-              + lastPoweredUp.size()
-              + " elements "
-              + lastPoweredUp
-              + " from last set powered up, there are "
-              + nextSet.size()
-              + " quadratic residues mod "
-              + P
-              + "^"
-              + n
-              + (SHOW_ELEMENTS ? ": " + nextSet : ""));
-
-      for (long removed : lastPoweredUp) {
-        long quotient = removed / lastM;
-        boolean isExact = quotient * lastM == removed;
-        LOG.info(
-            "lastM = "
-                + lastM
-                + ", removed = "
-                + removed
-                + ", quotient = "
-                + quotient
-                + ", isExact = "
-                + isExact);
-      }
-
-      counts.add(nextSet.size());
-      removedCounts.add(lastPoweredUp.size());
-
-      // prepare next round
-      lastSet = nextSet;
-    }
-
-    LOG.info("");
-    LOG.info("counts = " + counts);
-    // P = 2: A023105(n) = 1, 2, 2, 3, 4, 7, 12, 23, 44, 87, 172, 343, ...
-    // P = 3: A039300(n) = 1, 2, 4, 11, 31, 92, 274, 821, 2461, 7382, 22144, 66431, ...
-    // P = 5: A039302(n) = 1, 3, 11, 53, 261, 1303, 6511, 32553, 162761, ...
-    // ...
-
-    LOG.info("removedCounts = " + removedCounts);
-  }
+	}
 }

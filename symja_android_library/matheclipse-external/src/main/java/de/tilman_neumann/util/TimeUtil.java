@@ -15,67 +15,67 @@ package de.tilman_neumann.util;
 
 /**
  * Auxiliary class for formatting time strings.
- *
+ * 
  * @author Tilman Neumann
  */
 public class TimeUtil {
-  /**
-   * @param t0 start time in milliseconds
-   * @param t1 end time in milliseconds
-   * @return duration string
-   */
-  public static String timeDiffStr(long t0, long t1) {
-    return timeStr(t1 - t0);
-  }
-
-  /**
-   * @param milliSeconds duration in milliseconds
-   * @return duration string
-   */
-  public static String timeStr(long milliSeconds) {
-    String ret = "";
-    long seconds = milliSeconds / 1000;
-    if (seconds > 0) {
-      long minutes = seconds / 60;
-      if (minutes > 0) {
-        long hours = minutes / 60;
-        if (hours > 0) {
-          long days = hours / 24;
-          if (days > 0) {
-            ret = days + "d";
-          }
-          long remainingHours = hours % 24;
-          if (remainingHours > 0) {
-            if (ret.length() > 0) {
-              ret += ", ";
-            }
-            ret += remainingHours + "h";
-          }
-        }
-        long remainingMinutes = minutes % 60;
-        if (remainingMinutes > 0) {
-          if (ret.length() > 0) {
-            ret += ", ";
-          }
-          ret += remainingMinutes + "m";
-        }
-      }
-      long remainingSeconds = seconds % 60;
-      if (remainingSeconds > 0) {
-        if (ret.length() > 0) {
-          ret += ", ";
-        }
-        ret += remainingSeconds + "s";
-      }
-    }
-    long remainingMilliSeconds = milliSeconds % 1000;
-    if (ret.length() > 0) {
-      if (remainingMilliSeconds > 0) {
-        ret += ", " + remainingMilliSeconds + "ms";
-      }
-    } else {
-      ret += remainingMilliSeconds + "ms";
-    }
-    return ret;
-  }
+	/**
+	 * @param t0 start time in milliseconds
+	 * @param t1 end time in milliseconds
+	 * @return duration string
+	 */
+	public static String timeDiffStr(long t0, long t1) {
+		return timeStr(t1-t0);
+	}
+	
+	/**
+	 * @param milliSeconds duration in milliseconds
+	 * @return duration string
+	 */
+	public static String timeStr(long milliSeconds) {
+		String ret = "";
+		long seconds = milliSeconds / 1000;
+		if (seconds > 0) {
+			long minutes = seconds / 60;
+			if (minutes > 0) {
+				long hours = minutes / 60;
+				if (hours > 0) {
+					long days = hours / 24;
+					if (days > 0) {
+						ret = days + "d";
+					}
+					long remainingHours = hours % 24;
+					if (remainingHours > 0) {
+						if (ret.length()>0) {
+							ret += ", ";
+						}
+						ret += remainingHours + "h";
+					}
+				}
+				long remainingMinutes = minutes % 60;
+				if (remainingMinutes > 0) {
+					if (ret.length()>0) {
+						ret += ", ";
+					}
+					ret += remainingMinutes + "m";
+				}
+			}
+			long remainingSeconds = seconds % 60;
+			if (remainingSeconds > 0) {
+				if (ret.length()>0) {
+					ret += ", ";
+				}
+				ret += remainingSeconds + "s";
+			}
+		}
+		long remainingMilliSeconds = milliSeconds % 1000;
+		if (ret.length()>0) {
+			if (remainingMilliSeconds>0) {
+				ret += ", " + remainingMilliSeconds + "ms";
+			}
+		} else {
+			ret += remainingMilliSeconds + "ms";
+		}
+		return ret;
+	}
 }

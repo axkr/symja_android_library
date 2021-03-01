@@ -20,102 +20,99 @@ import de.tilman_neumann.util.SortedMultiset;
 import de.tilman_neumann.util.SortedMultiset_BottomUp;
 
 /**
- * An <em>elementary</em> smooth or partially smooth congruence A^2 == Q (mod N). Elementary means
- * that only one (A,Q) pair is involved.
- *
- * <p>Factoring large numbers will produce millions of partials, and their memory demands dominate
- * the memory consumption of the whole quadratic sieve algorithm. To store them as efficiently as
- * possible, large factors are added by subclasses.
- *
- * <p>The estimated memory requirement of the fields in this class is 240 byte; adding 16 bytes for
- * its own object header gives around 256 byte.
- *
+ * An <em>elementary</em> smooth or partially smooth congruence A^2 == Q (mod N).
+ * Elementary means that only one (A,Q) pair is involved.
+ * 
+ * Factoring large numbers will produce millions of partials, and their memory demands dominate the memory consumption
+ * of the whole quadratic sieve algorithm. To store them as efficiently as possible, large factors are added by subclasses.
+ * 
+ * The estimated memory requirement of the fields in this class is 240 byte; adding 16 bytes for its own object header gives around 256 byte.
+ * 
  * @author Tilman Neumann
  */
-public abstract class AQPair {
+abstract public class AQPair {
+	
+	private BigInteger A; // needs about 112 byte for a 350 bit factor argument on a 64-bit machine
+	
+	/** small factors of Q */
+	int[] smallFactors; // needs about 32+4*n = 72 byte for n=10 small factors
+	short[] smallFactorExponents; // needs about 32+2*n = 52 byte for n=10 small factors
+	
+	/** AQ-pairs never change -> compute hashCode only once */
+	private int hashCode;
+	
+	/**
+	 * Full constructor.
+	 * @param A
+	 * @param smallFactors small factors of Q
+	 */
+	public AQPair(BigInteger A, SortedIntegerArray smallFactors) {
+		// The congruence A^2 == Q (mod kN) does not distinguish between +A and -A.
+		// But avoiding such duplicates is asymptotically unfavourable because their likelihood decreases quickly.
+		this.A = A;
+		// Precompute hashCode
+		this.hashCode = A.hashCode();
+		// Copy small factors of Q
+		this.smallFactors = smallFactors.copyFactors();
+		this.smallFactorExponents = smallFactors.copyExponents();
+	}
 
-  private BigInteger A; // needs about 112 byte for a 350 bit factor argument on a 64-bit machine
+	public BigInteger getA() {
+		return A;
+	}
 
-  /** small factors of Q */
-  int[] smallFactors; // needs about 32+4*n = 72 byte for n=10 small factors
+	/**
+	 * @return all Q-factors with exponents.
+	 * This method is only called in the final test of null vectors found by the smooth solver;
+	 * but then it is needed for a whole bunch of AQPairs.
+	 */
+	abstract public SortedMultiset<Long> getAllQFactors();
 
-  short[] smallFactorExponents; // needs about 32+2*n = 52 byte for n=10 small factors
+	/**
+	 * Building block to implement the method above.
+	 * @return SortedMultiset containing all small factors of Q
+	 */
+	protected SortedMultiset<Long> getSmallQFactors() {
+		SortedMultiset<Long> allFactors = new SortedMultiset_BottomUp<Long>();
+		for (int i=0; i<smallFactors.length; i++) {
+			allFactors.add(Long.valueOf(smallFactors[i]), smallFactorExponents[i]);
+		}
+		return allFactors;
+	}
 
-  /** AQ-pairs never change -> compute hashCode only once */
-  private int hashCode;
+	/**
+	 * @return the total number of large factors of Q in this AQPair.
+	 */
+	abstract public int getNumberOfLargeQFactors();
+	
+	/**
+	 * hashCode() and equals() must be based on A to avoid duplicates.
+	 * Q is not required, not even in CFrac.
+	 */
+	@Override
+	public int hashCode() {
+		// used in BlockLanczos solver and (Partial/Smooth)Congruence constructors
+		//LOG.debug("hashCode()", new Throwable());
+		return hashCode;
+	}
 
-  /**
-   * Full constructor.
-   *
-   * @param A
-   * @param smallFactors small factors of Q
-   */
-  public AQPair(BigInteger A, SortedIntegerArray smallFactors) {
-    // The congruence A^2 == Q (mod kN) does not distinguish between +A and -A.
-    // But avoiding such duplicates is asymptotically unfavourable because their likelihood
-    // decreases quickly.
-    this.A = A;
-    // Precompute hashCode
-    this.hashCode = A.hashCode();
-    // Copy small factors of Q
-    this.smallFactors = smallFactors.copyFactors();
-    this.smallFactorExponents = smallFactors.copyExponents();
-  }
+	/**
+	 * hashCode() and equals() must be based on A to avoid duplicates.
+	 * Q is not required, not even in CFrac.
+	 */
+	@Override
+	public boolean equals(Object obj) {
+		if (this == obj) return true;
+		if (obj == null || getClass() != obj.getClass()) return false;
+		AQPair other = (AQPair) obj;
+		// equal objects must have the same hashCode
+		if (hashCode != other.hashCode) return false;
+		// since Q=A^2-kN is a function of A, we only need A
+		return this.A.equals(other.A);
+	}
 
-  public BigInteger getA() {
-    return A;
-  }
-
-  /**
-   * @return all Q-factors with exponents. This method is only called in the final test of null
-   *     vectors found by the smooth solver; but then it is needed for a whole bunch of AQPairs.
-   */
-  public abstract SortedMultiset<Long> getAllQFactors();
-
-  /**
-   * Building block to implement the method above.
-   *
-   * @return SortedMultiset containing all small factors of Q
-   */
-  protected SortedMultiset<Long> getSmallQFactors() {
-    SortedMultiset<Long> allFactors = new SortedMultiset_BottomUp<Long>();
-    for (int i = 0; i < smallFactors.length; i++) {
-      allFactors.add(Long.valueOf(smallFactors[i]), smallFactorExponents[i]);
-    }
-    return allFactors;
-  }
-
-  /** @return the total number of large factors of Q in this AQPair. */
-  public abstract int getNumberOfLargeQFactors();
-
-  /**
-   * hashCode() and equals() must be based on A to avoid duplicates. Q is not required, not even in
-   * CFrac.
-   */
-  @Override
-  public int hashCode() {
-    // used in BlockLanczos solver and (Partial/Smooth)Congruence constructors
-    // LOG.debug("hashCode()", new Throwable());
-    return hashCode;
-  }
-
-  /**
-   * hashCode() and equals() must be based on A to avoid duplicates. Q is not required, not even in
-   * CFrac.
-   */
-  @Override
-  public boolean equals(Object obj) {
-    if (this == obj) return true;
-    if (obj == null || getClass() != obj.getClass()) return false;
-    AQPair other = (AQPair) obj;
-    // equal objects must have the same hashCode
-    if (hashCode != other.hashCode) return false;
-    // since Q=A^2-kN is a function of A, we only need A
-    return this.A.equals(other.A);
-  }
-
-  @Override
-  public String toString() {
-    return "A = {" + A + "}, Q = {" + getAllQFactors().toString("*", "^") + "}";
-  }
+	@Override
+	public String toString() {
+		return "A = {" + A + "}, Q = {" + getAllQFactors().toString("*", "^") + "}";
+	}
 }

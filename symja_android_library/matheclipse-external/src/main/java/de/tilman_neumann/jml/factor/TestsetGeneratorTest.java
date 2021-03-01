@@ -24,40 +24,31 @@ import de.tilman_neumann.util.TimeUtil;
 import de.tilman_neumann.util.Timer;
 
 public class TestsetGeneratorTest {
-  private static final Logger LOG = Logger.getLogger(TestsetGeneratorTest.class);
+	private static final Logger LOG = Logger.getLogger(TestsetGeneratorTest.class);
 
-  public static void main(String[] args) {
-    ConfigUtil.initProject();
-    Timer timer = new Timer();
-    int nCount = 100;
-    for (int bits = 20; ; bits += 10) {
-      long start = timer.capture();
-      BigInteger[] testNumbers =
-          TestsetGenerator.generate(nCount, bits, TestNumberNature.MODERATE_SEMIPRIMES);
-      long end = timer.capture();
-      // Collect the true
-      Map<Integer, Integer> sizeCounts = new TreeMap<>();
-      for (BigInteger num : testNumbers) {
-        int bitlen = num.bitLength();
-        Integer count = sizeCounts.get(bitlen);
-        count = (count == null) ? Integer.valueOf(1) : count.intValue() + 1;
-        sizeCounts.put(bitlen, count);
-      }
-      String generatedBitLens = "";
-      for (int bitlen : sizeCounts.keySet()) {
-        generatedBitLens += sizeCounts.get(bitlen) + "x" + bitlen + ", ";
-      }
-      generatedBitLens = generatedBitLens.substring(0, generatedBitLens.length() - 2);
-      LOG.info(
-          "Requesting "
-              + nCount
-              + " "
-              + bits
-              + "-numbers took "
-              + TimeUtil.timeDiffStr(start, end)
-              + " ms and generated the following bit lengths: "
-              + generatedBitLens);
-      // Roughly 1/3 of generated numbers are one bit smaller than requested. No big problem though.
-    }
-  }
+	public static void main(String[] args) {
+		ConfigUtil.initProject();
+		Timer timer = new Timer();
+		int nCount = 100;
+		for (int bits = 20; ; bits+=10) {
+			long start = timer.capture();
+			BigInteger[] testNumbers = TestsetGenerator.generate(nCount, bits, TestNumberNature.MODERATE_SEMIPRIMES);
+			long end = timer.capture();
+			// Collect the true
+			Map<Integer, Integer> sizeCounts = new TreeMap<>();
+			for (BigInteger num : testNumbers) {
+				int bitlen = num.bitLength();
+				Integer count = sizeCounts.get(bitlen);
+				count = (count==null) ? Integer.valueOf(1) : count.intValue()+1;
+				sizeCounts.put(bitlen, count);
+			}
+			String generatedBitLens = "";
+			for (int bitlen : sizeCounts.keySet()) {
+				generatedBitLens += sizeCounts.get(bitlen) + "x" + bitlen + ", ";
+			}
+			generatedBitLens = generatedBitLens.substring(0, generatedBitLens.length()-2);
+			LOG.info("Requesting " + nCount + " " + bits + "-numbers took " + TimeUtil.timeDiffStr(start, end) + " ms and generated the following bit lengths: " + generatedBitLens);
+			// Roughly 1/3 of generated numbers are one bit smaller than requested. No big problem though.
+		}
+	}
 }

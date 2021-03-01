@@ -15,16 +15,16 @@ package de.tilman_neumann.jml.factor;
 
 /**
  * Factoring test mode.
- *
  * @author Tilman Neumann
  */
 public enum TestMode {
-  /**
-   * Find the first factor of some N. Several algorithms like SIQS expect that the test numbers have
-   * already been stripped of simple factors.
-   */
-  FIRST_FACTOR,
-
-  /** Find the prime factorization of a given N. */
-  PRIME_FACTORIZATION
+	/** 
+	 * Find the first factor of some N. Several algorithms like SIQS expect that the test numbers have already been stripped of simple factors.
+	 */
+	FIRST_FACTOR,
+	
+	/**
+	 * Find the prime factorization of a given N.
+	 */
+	PRIME_FACTORIZATION
 }

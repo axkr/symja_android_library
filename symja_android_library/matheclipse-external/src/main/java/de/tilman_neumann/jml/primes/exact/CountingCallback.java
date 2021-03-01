@@ -15,17 +15,16 @@ package de.tilman_neumann.jml.primes.exact;
 
 /**
  * Simple callback just counting the primes coming in.
- *
  * @author Tilman Neumann
  */
 public class CountingCallback implements SieveCallback {
-  private long count = 0;
+	private long count = 0;
+	
+	public void processPrime(long prime) {
+		count++;
+	}
 
-  public void processPrime(long prime) {
-    count++;
-  }
-
-  public long getCount() {
-    return count;
-  }
+	public long getCount() {
+		return count;
+	}
 }

@@ -24,83 +24,84 @@ import org.apache.log4j.xml.DOMConfigurator;
 
 /**
  * Global configuration tasks.
- *
+ * 
  * @author Tilman Neumann
  */
 public class ConfigUtil {
 
-  private static final Logger LOG = Logger.getLogger(ConfigUtil.class);
+	private static final Logger LOG = Logger.getLogger(ConfigUtil.class);
+	
+	private static boolean alreadyInitialized = false;
+	public static boolean verbose = false;
+	
+	/** File separator used on this OS. */
+	public static String FILE_SEPARATOR;
+	/** Path separator used on this OS. */
+	public static String PATH_SEPARATOR;
+	/** The root directory of the current project. */
+	public static String PROJECT_ROOT;
+	/** The base folder for all configuration files in this project. */
+	public static String CONF_ROOT;
+	/** Java class path */
+	public static String JAVA_CLASS_PATH;
+	/** Java library path */
+	public static String JAVA_LIBRARY_PATH;
+	/** Java temp directory */
+	public static String JAVA_TMP_DIR;
+	/** user home directory */
+	public static String USER_HOME;
 
-  private static boolean alreadyInitialized = false;
-  public static boolean verbose = false;
+	/** number of processors to use for parallel implementations */
+	public static int NUMBER_OF_PROCESSORS;
+	
+	private ConfigUtil() {
+		// static class
+	}
 
-  /** File separator used on this OS. */
-  public static String FILE_SEPARATOR;
-  /** Path separator used on this OS. */
-  public static String PATH_SEPARATOR;
-  /** The root directory of the current project. */
-  public static String PROJECT_ROOT;
-  /** The base folder for all configuration files in this project. */
-  public static String CONF_ROOT;
-  /** Java class path */
-  public static String JAVA_CLASS_PATH;
-  /** Java library path */
-  public static String JAVA_LIBRARY_PATH;
-  /** Java temp directory */
-  public static String JAVA_TMP_DIR;
-  /** user home directory */
-  public static String USER_HOME;
-
-  /** number of processors to use for parallel implementations */
-  public static int NUMBER_OF_PROCESSORS;
-
-  private ConfigUtil() {
-    // static class
-  }
-
-  /** Project configuration. */
-  public static void initProject() {
-    // avoid re-initialization from junit tests
-    if (alreadyInitialized) return;
-
-    FILE_SEPARATOR = System.getProperty("file.separator");
-    if (verbose) System.out.println("system file separator = " + FILE_SEPARATOR);
-    PATH_SEPARATOR = System.getProperty("path.separator");
-    if (verbose) System.out.println("system path separator = " + PATH_SEPARATOR);
-    PROJECT_ROOT = System.getProperty("user.dir");
-    // The project root is something like D:\Projects\math_java when run from a Java project;
-    // but it is different when run from an executable jar!
-    // TODO: get example for executable jar
-    if (verbose) System.out.println("project root directory = " + PROJECT_ROOT);
-    CONF_ROOT = PROJECT_ROOT + FILE_SEPARATOR + "conf";
-    if (verbose) System.out.println("conf root directory = " + CONF_ROOT);
-    JAVA_CLASS_PATH = System.getProperty("java.class.path");
-    if (verbose) System.out.println("java.class.path = " + JAVA_CLASS_PATH);
-    JAVA_LIBRARY_PATH = System.getProperty("java.library.path");
-    if (verbose) System.out.println("java.library.path = " + JAVA_LIBRARY_PATH);
-    JAVA_TMP_DIR = System.getProperty("java.io.tmpdir");
-    if (verbose) System.out.println("java.io.tmpdir = " + JAVA_TMP_DIR);
-    USER_HOME = System.getProperty("user.home");
-    if (verbose) System.out.println("conf root directory = " + USER_HOME);
-    NUMBER_OF_PROCESSORS = Runtime.getRuntime().availableProcessors();
-    if (verbose) System.out.println("number of processors = " + NUMBER_OF_PROCESSORS);
-
-    //		String confFileStr = CONF_ROOT + FILE_SEPARATOR + "log4jconf.xml";
-    //		File confFile = new File(confFileStr);
-    //		if (confFile.exists()) {
-    //			// initialize XML-style Log4j-configuration
-    //	    	DOMConfigurator.configure(CONF_ROOT + FILE_SEPARATOR + "log4jconf.xml");
-    //	    	if (verbose) LOG.info("log4j configuration loaded.");
-    //	    	if (verbose) LOG.info("project initialization finished.\n");
-    //	    	alreadyInitialized = true;
-    //		} else {
-    //			// emergency initialization that logs into console
-    //			PatternLayout layout = new PatternLayout();
-    //			ConsoleAppender appender = new ConsoleAppender(layout);
-    //			appender.setThreshold(Level.DEBUG); // TODO: Set to ERROR before creating jar file, to
-    // DEBUG before creating src distribution
-    //			BasicConfigurator.configure(appender);
-    //	    	alreadyInitialized = true;
-    //		}
-  }
+	/**
+	 * Project configuration.
+	 */
+	public static void initProject() {
+		// avoid re-initialization from junit tests
+		if (alreadyInitialized) return;
+		
+		FILE_SEPARATOR = System.getProperty("file.separator");
+		if (verbose) System.out.println("system file separator = " + FILE_SEPARATOR);
+		PATH_SEPARATOR = System.getProperty("path.separator");
+		if (verbose) System.out.println("system path separator = " + PATH_SEPARATOR);
+		PROJECT_ROOT = System.getProperty("user.dir");
+		// The project root is something like D:\Projects\math_java when run from a Java project;
+		// but it is different when run from an executable jar!
+		// TODO: get example for executable jar
+		if (verbose) System.out.println("project root directory = " + PROJECT_ROOT);
+		CONF_ROOT = PROJECT_ROOT + FILE_SEPARATOR + "conf";
+		if (verbose) System.out.println("conf root directory = " + CONF_ROOT);
+		JAVA_CLASS_PATH = System.getProperty("java.class.path");
+		if (verbose) System.out.println("java.class.path = " + JAVA_CLASS_PATH);
+		JAVA_LIBRARY_PATH = System.getProperty("java.library.path");
+		if (verbose) System.out.println("java.library.path = " + JAVA_LIBRARY_PATH);
+		JAVA_TMP_DIR = System.getProperty("java.io.tmpdir");
+		if (verbose) System.out.println("java.io.tmpdir = " + JAVA_TMP_DIR);
+		USER_HOME = System.getProperty("user.home");
+		if (verbose) System.out.println("conf root directory = " + USER_HOME);
+		NUMBER_OF_PROCESSORS = Runtime.getRuntime().availableProcessors();
+		if (verbose) System.out.println("number of processors = " + NUMBER_OF_PROCESSORS);
+		
+//		String confFileStr = CONF_ROOT + FILE_SEPARATOR + "log4jconf.xml";
+//		File confFile = new File(confFileStr);
+//		if (confFile.exists()) {
+//			// initialize XML-style Log4j-configuration
+//	    	DOMConfigurator.configure(CONF_ROOT + FILE_SEPARATOR + "log4jconf.xml");
+//	    	if (verbose) LOG.info("log4j configuration loaded.");
+//	    	if (verbose) LOG.info("project initialization finished.\n");
+//	    	alreadyInitialized = true;
+//		} else {
+//			// emergency initialization that logs into console
+//			PatternLayout layout = new PatternLayout();
+//			ConsoleAppender appender = new ConsoleAppender(layout);
+//			appender.setThreshold(Level.DEBUG); // TODO: Set to ERROR before creating jar file, to DEBUG before creating src distribution
+//			BasicConfigurator.configure(appender);
+//	    	alreadyInitialized = true;
+//		}
+	}
 }

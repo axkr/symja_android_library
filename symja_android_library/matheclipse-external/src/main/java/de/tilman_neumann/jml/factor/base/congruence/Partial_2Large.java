@@ -20,46 +20,44 @@ import de.tilman_neumann.util.SortedMultiset;
 
 /**
  * A partial congruence having 2 distinct large factors.
- *
+ * 
  * @author Tilman Neumann
  */
 public class Partial_2Large extends Partial {
 
-  private long bigFactor1, bigFactor2; // needs 16 byte instead of 64 byte for a Long[2]
+	private long bigFactor1, bigFactor2; // needs 16 byte instead of 64 byte for a Long[2]
+	
+	/**
+	 * Full constructor.
+	 * @param A
+	 * @param smallFactors small factors of Q
+	 * @param bigFactor1 the first large factor of Q
+	 * @param bigFactor2 the second large factor of Q
+	 */
+	public Partial_2Large(BigInteger A, SortedIntegerArray smallFactors, long bigFactor1, long bigFactor2) {
+		super(A, smallFactors);
+		// we have 2 large factor
+		this.bigFactor1 = bigFactor1;
+		this.bigFactor2 = bigFactor2;
+	}
 
-  /**
-   * Full constructor.
-   *
-   * @param A
-   * @param smallFactors small factors of Q
-   * @param bigFactor1 the first large factor of Q
-   * @param bigFactor2 the second large factor of Q
-   */
-  public Partial_2Large(
-      BigInteger A, SortedIntegerArray smallFactors, long bigFactor1, long bigFactor2) {
-    super(A, smallFactors);
-    // we have 2 large factor
-    this.bigFactor1 = bigFactor1;
-    this.bigFactor2 = bigFactor2;
-  }
+	@Override
+	public SortedMultiset<Long> getAllQFactors() {
+		// get small factors of Q
+		SortedMultiset<Long> allFactors = super.getSmallQFactors();
+		// add single large factor
+		allFactors.add(bigFactor1);
+		allFactors.add(bigFactor2);
+		return allFactors;
+	}
 
-  @Override
-  public SortedMultiset<Long> getAllQFactors() {
-    // get small factors of Q
-    SortedMultiset<Long> allFactors = super.getSmallQFactors();
-    // add single large factor
-    allFactors.add(bigFactor1);
-    allFactors.add(bigFactor2);
-    return allFactors;
-  }
+	@Override
+	public Long[] getLargeFactorsWithOddExponent() {
+		return new Long[] {bigFactor1, bigFactor2};
+	}
 
-  @Override
-  public Long[] getLargeFactorsWithOddExponent() {
-    return new Long[] {bigFactor1, bigFactor2};
-  }
-
-  @Override
-  public int getNumberOfLargeQFactors() {
-    return 2;
-  }
+	@Override
+	public int getNumberOfLargeQFactors() {
+		return 2;
+	}
 }
