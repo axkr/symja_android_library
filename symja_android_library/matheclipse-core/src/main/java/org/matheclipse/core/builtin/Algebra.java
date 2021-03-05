@@ -1614,7 +1614,7 @@ public class Algebra {
         final IASTAppendable expandedResult = F.ast(S.Plus, (int) numberOfTerms, false);
         Expand.NumberPartititon part = new Expand.NumberPartititon(plusAST, n, expandedResult);
         part.partition();
-        return flattenOneIdentity(expandedResult, F.C0); 
+        return flattenOneIdentity(expandedResult, F.C0);
       }
 
       private IExpr expandTimes(final IAST timesAST) {
@@ -1975,7 +1975,10 @@ public class Algebra {
 
       IExpr result = F.REMEMBER_AST_CACHE.getIfPresent(ast);
       if (result != null) {
-        return result;
+        if (result.isPresent()) {
+          return result;
+        }
+        return ast.arg1();
       }
       VariablesSet eVar = new VariablesSet(ast.arg1());
       List<IExpr> varList = eVar.getVarList().copyTo();
@@ -1988,16 +1991,22 @@ public class Algebra {
           if (!parts[1].isOne()) {
             try {
               IExpr numerator = factorExpr(F.Factor(parts[0]), parts[0], eVar, false, engine);
-              IExpr denomimator = factorExpr(F.Factor(parts[1]), parts[1], eVar, false, engine);
-              IExpr temp = F.Divide(numerator, denomimator);
-              F.REMEMBER_AST_CACHE.put(ast, temp);
-              return temp;
+              IExpr denominator = factorExpr(F.Factor(parts[1]), parts[1], eVar, false, engine);
+              if (numerator.isPresent() && denominator.isPresent()) {
+                IExpr temp = F.Divide(numerator, denominator);
+                F.REMEMBER_AST_CACHE.put(ast, temp);
+                if (temp.isPresent()) {
+                  return temp;
+                }
+              } else {
+                F.REMEMBER_AST_CACHE.put(ast, F.NIL);
+              }
             } catch (JASConversionException e) {
               if (Config.DEBUG) {
                 e.printStackTrace();
               }
-              return expr;
             }
+            return ast.arg1();
           }
         }
       }
@@ -2011,13 +2020,15 @@ public class Algebra {
         }
         IExpr temp = factorExpr(ast, expr, eVar, false, engine);
         F.REMEMBER_AST_CACHE.put(ast, temp);
-        return temp;
+        if (temp.isPresent()) {
+          return temp;
+        }
       } catch (JASConversionException e) {
         if (Config.DEBUG) {
           e.printStackTrace();
         }
       }
-      return expr;
+      return ast.arg1();
     }
 
     @Override
@@ -2040,7 +2051,7 @@ public class Algebra {
         // } else
         if (expr.isPower()) {
           IExpr p = factorExpr((IAST) expr, expr.base(), eVar, factorSquareFree, engine);
-          if (!p.equals(expr.base())) {
+          if (p.isPresent() && !p.equals(expr.base())) {
             return F.Power(p, expr.exponent());
           }
           return expr;
@@ -2055,7 +2066,7 @@ public class Algebra {
                         }
                         if (x.isPower() && x.base().isPlus()) {
                           IExpr p = factorExpr(ast, x.base(), eVar, factorSquareFree, engine);
-                          if (!p.equals(x.base())) {
+                          if (p.isPresent() && !p.equals(x.base())) {
                             return F.Power(p, x.exponent());
                           }
                         }
@@ -2090,7 +2101,9 @@ public class Algebra {
         }
         objects = jas.factorTerms(polyRat);
       } catch (JASConversionException e) {
-        // return F.NIL;
+        if (factorSquareFree) {
+          return F.NIL;
+        }
         return factorWithPolynomialHomogenization(expr, eVar, engine);
       }
 
@@ -2299,7 +2312,10 @@ public class Algebra {
       VariablesSet eVar = new VariablesSet(ast.arg1());
       IExpr result = F.REMEMBER_AST_CACHE.getIfPresent(ast);
       if (result != null) {
-        return result;
+        if (result.isPresent()) {
+          return result;
+        }
+        return ast.arg1();
       }
       try {
         IExpr expr = F.evalExpandAll(ast.arg1(), engine);
@@ -2308,14 +2324,18 @@ public class Algebra {
         List<IExpr> varList = eVar.getVarList().copyTo();
 
         if (ast.isAST2()) {
-          return factorWithOption(ast, expr, varList, true, engine);
-        }
-        if (expr.isAST()) {
+          IExpr temp = factorWithOption(ast, expr, varList, true, engine);
+          if (temp.isPresent()) {
+            return temp;
+          }
+        } else if (expr.isAST()) {
           IExpr temp = factorExpr((IAST) expr, (IAST) expr, eVar, true, engine);
           F.REMEMBER_AST_CACHE.put(ast, temp);
-          return temp;
+          if (temp.isPresent()) {
+            return temp;
+          }
         }
-        return expr;
+        return ast.arg1();
 
       } catch (JASConversionException jce) {
         // toInt() conversion failed
@@ -2323,7 +2343,7 @@ public class Algebra {
           jce.printStackTrace();
         }
       }
-      return F.NIL;
+      return ast.arg1();
     }
 
     @Override
