@@ -1121,7 +1121,7 @@ public class HypergeometricFunctions {
         return ((IAST) c).mapThread(ast.setAtCopy(3, F.Slot1), 3);
       }
       if (a.isVector() > 0) {
-        IAST aVector = (IAST) a;
+        IAST aVector = (IAST) a.normal(false);
         if (!aVector.isEvalFlagOn(IAST.IS_SORTED)) {
           IASTMutable aResult = aVector.copy();
           if (EvalAttributes.sortWithFlags(aResult)) {
@@ -1131,7 +1131,7 @@ public class HypergeometricFunctions {
         }
       }
       if (b.isVector() > 0) {
-        IAST bVector = (IAST) b;
+        IAST bVector = (IAST) b.normal(false);
         if (!bVector.isEvalFlagOn(IAST.IS_SORTED)) {
           IASTMutable bResult = bVector.copy();
           if (EvalAttributes.sortWithFlags(bResult)) {
