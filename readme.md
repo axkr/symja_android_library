@@ -54,7 +54,7 @@ Features of the Symja language:
 
 * [Eclipse EASE extension - use Symja as a REPL in Eclipse](https://github.com/axkr/ease_symja) with this [example Github repository](https://github.com/axkr/symja_examples) which contains some Symja example scripts.
 
-### Examples
+### ☕ Examples <a name="examples"></a>
 
 To get an idea of the kinds of expressions Symja handles, see the [tests in this file](https://github.com/axkr/symja_android_library/blob/master/symja_android_library/matheclipse-io/src/test/java/org/matheclipse/io/system/LowercaseTestCase.java).
 
@@ -179,7 +179,7 @@ public class Example {
 }
 ```
 
-### Maven Usage
+### 🔨 Maven Usage <a name="maven-usage"></a>
 
 How to use Maven is described in the [Maven wiki page](https://github.com/axkr/symja_android_library/wiki/Maven-usage).
 
