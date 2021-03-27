@@ -56,7 +56,7 @@ Features of the Symja language:
 
 ### ☕ Examples <a name="examples"></a>
 
-To get an idea of the kinds of expressions Symja handles, see the [tests in this file](https://github.com/axkr/symja_android_library/blob/master/symja_android_library/matheclipse-io/src/test/java/org/matheclipse/io/system/LowercaseTestCase.java).
+To get an idea of the kinds of expressions Symja handles, see the [JUnit tests in this file](https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/matheclipse-io/src/test/java/org/matheclipse/io/system/LowercaseTestCase.java).
 
 ![Console Examples](console.gif)
 
