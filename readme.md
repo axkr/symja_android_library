@@ -25,11 +25,11 @@ Read the [Symja Manual](symja_android_library/doc/index.md) for the description 
 - [Contact](#contact)
 - [License](#license)
 
-### Installation
+### 🔧 Installation <a name="installation"></a>
 
 The different kinds of installations are described in the [Wiki Installation](https://github.com/axkr/symja_android_library/wiki/Installation).
 
-### Features
+### ✨ Features <a name="features"></a>
 
 Features of the Symja language:
 
@@ -44,7 +44,7 @@ Features of the Symja language:
 * developers can use Symja interactively in the [Java jshell](https://github.com/axkr/symja_android_library/wiki/JShell-usage) or with a call to to the [JSON Web API Server](https://github.com/axkr/symja_android_library/wiki/API)
 * the [Rubi symbolic integration rules](https://github.com/axkr/symja_android_library/wiki/Porting-Rubi-Integration-rules-to-Symja) are used to implement the [Integrate](https://github.com/axkr/symja_android_library/blob/master/symja_android_library/doc/functions/Integrate.md) function, they can be systematically applied to determine the antiderivative of a wide variety of mathematical expressions. 
 
-### Applications
+### 📦 Applications <a name="applications"></a>
 
 * [Symja.org](https://symja.org/) - test the [Symja API](https://github.com/axkr/symja_android_library/wiki/API)
 
