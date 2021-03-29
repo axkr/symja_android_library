@@ -55,10 +55,16 @@ Features of the Symja language:
 * [Eclipse EASE extension - use Symja as a REPL in Eclipse](https://github.com/axkr/ease_symja) with this [example Github repository](https://github.com/axkr/symja_examples) which contains some Symja example scripts.
 
 ### ☕ Examples <a name="examples"></a>
+ 
+<img src="https://raw.githubusercontent.com/axkr/symja_android_library/master/screenshots/console.gif" width="33%"></img> 
+<img src="https://raw.githubusercontent.com/axkr/symja_android_library/master/screenshots/symja-browser-usage-001.png" width="33%"></img> 
+<img src="https://raw.githubusercontent.com/axkr/symja_android_library/master/screenshots/symja-browser-usage-002.png" width="33%"></img> 
+
+<img src="https://raw.githubusercontent.com/axkr/symja_android_library/master/screenshots/Symja-screen1.png" width="33%"></img> 
+<img src="https://raw.githubusercontent.com/axkr/symja_android_library/master/screenshots/Symja-screen2.png" width="33%"></img> 
+<img src="https://raw.githubusercontent.com/axkr/symja_android_library/master/screenshots/Symja-screen3.png" width="33%"></img> 
 
 To get an idea of the kinds of expressions Symja handles, see the [JUnit tests in this file](https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/matheclipse-io/src/test/java/org/matheclipse/io/system/LowercaseTestCase.java).
-
-![Console Examples](console.gif)
 
 #### Web Examples
 
