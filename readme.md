@@ -56,7 +56,11 @@ Features of the Symja language:
 
 ### ☕ Examples <a name="examples"></a>
  
+#### Console user interface
+
 <img src="https://raw.githubusercontent.com/axkr/symja_android_library/master/screenshots/console.gif" width="100%"></img> 
+
+#### HTML notebook interface 
 
 <img src="https://raw.githubusercontent.com/axkr/symja_android_library/master/screenshots/symja-browser-usage-001.png" width="45%"></img> 
 <img src="https://raw.githubusercontent.com/axkr/symja_android_library/master/screenshots/symja-browser-usage-002.png" width="45%"></img> 
