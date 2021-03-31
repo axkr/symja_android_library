@@ -10,8 +10,14 @@ JSForm(expr)
 JSForm(expr, "Mathcell")
 ```
 
-> generate JavaScript output for the [github.com/paulmasson/math](https://github.com/paulmasson/math) and [github.com/paulmasson/mathcell](https://github.com/paulmasson/mathcell) JavaScript libraries. This JavaScript flavour is also used in the `Manipulate` function.
-	 
+> returns the JavaScript form of the `expr` with 'Mathcell' flavor output.  
+
+JSForm generates JavaScript output for the following JavaScript libraries:
+* [github.com/jsxgraph/jsxgraph](https://github.com/jsxgraph/jsxgraph)
+* [github.com/paulmasson/math](https://github.com/paulmasson/math) 
+* [github.com/paulmasson/mathcell](https://github.com/paulmasson/mathcell) 
+	  
+This JavaScript flavour is also used in the `[Manipulate](Manipulate.md)` function.
 	 
 See:  
 * [developer.mozilla.org - Global Objects Math](https://developer.mozilla.org/de/docs/Web/JavaScript/Reference/Global_Objects/Math) 
@@ -43,4 +49,4 @@ With `JSForm` you can display the generated JavaScript form of the `Manipulate` 
 
 ### Github
 
-* [Implementation of JSForm](https://github.com/axkr/symja_android_library/blob/master/symja_android_library/matheclipse-core/src/main/java/org/matheclipse/core/builtin/OutputFunctions.java#L603) 
+* [Implementation of JSForm](https://github.com/axkr/symja_android_library/blob/master/symja_android_library/matheclipse-core/src/main/java/org/matheclipse/core/builtin/OutputFunctions.java#L709) 

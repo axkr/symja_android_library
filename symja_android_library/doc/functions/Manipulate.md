@@ -15,7 +15,11 @@ Manipulate(formula, {x, min, max, step})
 	 
 **Note**: This feature is not available on all supported platforms.
 
-Manipulate generates JavaScript math functions for the [github.com/paulmasson/math](https://github.com/paulmasson/math) JavaScript library. 
+Manipulate generates JavaScript output for the following JavaScript libraries:
+
+* [github.com/jsxgraph/jsxgraph](https://github.com/jsxgraph/jsxgraph)
+* [github.com/paulmasson/math](https://github.com/paulmasson/math) 
+* [github.com/paulmasson/mathcell](https://github.com/paulmasson/mathcell) 
 
 ### Examples
 
@@ -51,7 +55,7 @@ With `JSForm` you can display the generated JavaScript form of the `Manipulate` 
 ```
 
 ### Related terms 
-[JSForm](JSForm.md) [ParametricPlot](ParametricPlot.md) [Plot](Plot.md) [Plot3D](Plot3D.md)
+[JSForm](JSForm.md), [ParametricPlot](ParametricPlot.md), [Plot](Plot.md), [Plot3D](Plot3D.md)
 
 ### Github
 
