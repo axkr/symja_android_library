@@ -98,7 +98,7 @@ public class ExprEvaluatorTests extends TestCase {
     IExpr temp;
 
     OutputFormFactory fInputFactory = OutputFormFactory.get(true, false, 5, 7);
-    fInputFactory.setQuotes(true);
+    fInputFactory.setInputForm(true);
     AST2Expr ast2Expr = new AST2Expr(engine.isRelaxedSyntax(), engine);
     byte[] bArray = new byte[0];
     ByteArrayExpr ba = ByteArrayExpr.newInstance(bArray);
@@ -379,6 +379,7 @@ public class ExprEvaluatorTests extends TestCase {
     F.await();
     // define after initialization
     Config.FUZZ_TESTING = true;
+    Config.MAX_LOOP_COUNT = Short.MAX_VALUE;
   }
 
   /**
@@ -1013,8 +1014,8 @@ public class ExprEvaluatorTests extends TestCase {
     checkEvaluator(
         expr, //
         "{19*x+285*x^3+1254*x^5+2508*x^7+2717*x^9+1729*x^11+665*x^13+152*x^15+19*x^17+x^\n"
-        + "19,{9349,18738638,7222746567,19*a+285*a^3+1254*a^5+2508*a^7+2717*a^9+1729*a^11+\n"
-        + "665*a^13+152*a^15+19*a^17+a^19},-57746701/524288}");
+            + "19,{9349,18738638,7222746567,19*a+285*a^3+1254*a^5+2508*a^7+2717*a^9+1729*a^11+\n"
+            + "665*a^13+152*a^15+19*a^17+a^19},-57746701/524288}");
   }
 
   public void testTogether() {

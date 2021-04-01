@@ -413,6 +413,9 @@ public class StringFunctionsTest extends AbstractTestCase {
 
   public void testStringSplit() {
     check(
+        "StringSplit(\"x\", \"x\")", //
+        "{}");
+    check(
         "StringSplit({\"test,fdfd\", \"fhjagsjdg\"},\",\") // InputForm", //
         "{{\"test\",\"fdfd\"},{\"fhjagsjdg\"}}");
     check(

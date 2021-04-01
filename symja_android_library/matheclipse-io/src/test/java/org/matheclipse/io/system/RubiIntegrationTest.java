@@ -682,9 +682,9 @@ public class RubiIntegrationTest extends AbstractTestCase {
 
     check(
         "Integrate((a + b*Sin(c + g*x))^4,x)", //
-        "1/8*(8*a^4+24*a^2*b^2+3*b^4)*x+(a*b*(-19*a^2-16*b^2)*Cos(c+g*x))/(6*g)+((-26*a^2\n"
-            + "-9*b^2)*b^2*Cos(c+g*x)*Sin(c+g*x))/(24*g)-7/12*(a*b*Cos(c+g*x)*(a+b*Sin(c+g*x))^\n"
-            + "2)/g+(-b*Cos(c+g*x)*(a+b*Sin(c+g*x))^3)/(4*g)");
+        "1/8*(8*a^4+24*a^2*b^2+3*b^4)*x+(a*b*(-19*a^2-16*b^2)*Cos(c+g*x))/(6*g)+((-26*a^2-\n"
+        + "9*b^2)*b^2*Cos(c+g*x)*Sin(c+g*x))/(24*g)-7/12*(a*b*Cos(c+g*x)*(a+b*Sin(c+g*x))^2)/g+(-b*Cos(c+g*x)*(a+b*Sin(c+g*x))^\n"
+        + "3)/(4*g)");
 
     check(
         "$f(a_.+b_.*c_):={a,b,c};$f(x)", //

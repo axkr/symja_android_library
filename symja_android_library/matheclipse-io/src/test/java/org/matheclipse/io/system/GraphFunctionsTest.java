@@ -263,6 +263,12 @@ public class GraphFunctionsTest extends AbstractTestCase {
 
   public void testGraphCenter() {
     check(
+        "GraphCenter(Graph({UndirectedEdge(1, 2), UndirectedEdge(1, 3), UndirectedEdge(1, 4),  UndirectedEdge(2, 3), UndirectedEdge(3, 4)}, "
+            + //
+            "{EdgeWeight->{1.6,2.0,1.4,1.9,0.62}}))", //
+        "{1,3}");
+
+    check(
         "GraphCenter(Graph({DirectedEdge(1, 2), DirectedEdge(2, 3), DirectedEdge(3, 1),  DirectedEdge(3, 4), DirectedEdge(4, 5), DirectedEdge(5, 3)}))", //
         "{3}");
 
@@ -339,6 +345,9 @@ public class GraphFunctionsTest extends AbstractTestCase {
     check(
         "GraphQ( Sin(x) )", //
         "False");
+    check(
+        "GraphQ( Graph({1->2, 2->3, 3->1}, EdgeWeight->{5.061,2.282,5.086}) )", //
+        "True");
   }
 
   public void testPetersenGraph() {
@@ -418,6 +427,51 @@ public class GraphFunctionsTest extends AbstractTestCase {
             + " {1,0,0,0}}");
   }
 
+  public void testWeightedAdjacencyMatrix() {
+
+    check(
+        "WeightedAdjacencyMatrix(Graph({1 -> 2, 2 -> 3, 1 -> 3, 4 -> 2}, EdgeWeight->{5.061,2.282,5.086,1.707})) // Normal", //
+        "{{0,5.061,5.086,0},\n" //
+            + " {0,0,2.282,0},\n"
+            + " {0,0,0,0},\n"
+            + " {0,1.707,0,0}}");
+    check(
+        "WeightedAdjacencyMatrix({1 -> 3, 2 -> 1}) // Normal", //
+        "{{0,1,0},\n" //
+            + " {0,0,0},\n"
+            + " {1,0,0}}");
+    check(
+        "wg=Graph({1<->2, 2<->3, 3<->1}, EdgeWeight->{5.061,2.282,5.086})", //
+        "Graph({1,2,3},{1<->2,2<->3,3<->1},{EdgeWeight->{5.061,2.282,5.086}})");
+
+    check(
+        "WeightedAdjacencyMatrix(wg) // Normal", //
+        "{{0,5.061,5.086},\n" //
+            + " {5.061,0,2.282},\n"
+            + " {5.086,2.282,0}}");
+
+    check(
+        "wgd=Graph({1->2, 2->3, 3->1}, EdgeWeight->{5.061,2.282,5.086})", //
+        "Graph({1,2,3},{1->2,2->3,3->1},{EdgeWeight->{5.061,2.282,5.086}})");
+
+    check(
+        "WeightedAdjacencyMatrix(wgd) // Normal", //
+        "{{0,5.061,0},\n" //
+            + " {0,0,2.282},\n"
+            + " {5.086,0,0}}");
+  }
+
+  public void testWeightedGraphQ() {
+    check(
+        "WeightedGraphQ(Graph({1 -> 2, 2 -> 3, 1 -> 3, 4 -> 2}) )", //
+        "False");
+    check(
+        "WeightedGraphQ( Sin(x) ) ", //
+        "False");
+    check(
+        "WeightedGraphQ( Graph({1->2, 2->3, 3->1}, EdgeWeight->{5.061,2.282,5.086}) ) ", //
+        "True");
+  }
   /** The JUnit setup method */
   @Override
   protected void setUp() {

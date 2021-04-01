@@ -27,7 +27,7 @@ public abstract class AbstractRubiTestCase extends TestCase {
 
   protected ExprEvaluator fEvaluator;
   /** Timeout limit in seconds as the default value for Symja expression evaluation. */
-  protected long fSeconds = 10;
+  protected long fSeconds = 40;
 
   private boolean isRelaxedSyntax;
 
@@ -39,7 +39,8 @@ public abstract class AbstractRubiTestCase extends TestCase {
     FEConfig.PARSER_USE_LOWERCASE_SYMBOLS = isRelaxedSyntax;
   }
 
-  private String printResult(IExpr result, String expectedResult, String manuallyCheckedResult)
+  private String printResult(
+      IExpr integral, IExpr result, String expectedResult, String manuallyCheckedResult)
       throws IOException {
     // if (result.equals(F.Null)) {
     // return "";
@@ -84,7 +85,16 @@ public abstract class AbstractRubiTestCase extends TestCase {
           // the expressions are structurally equal
           return expectedResult;
         } else {
-          System.out.println("PossibleZeroQ[\n" + temp.toString() + " \n]");
+          IExpr diff = fEvaluator.eval(F.D(result, F.symbol("x")));
+          temp = fEvaluator.eval(F.Subtract(diff, integral));
+          // System.out.println(temp.toString());
+          expected = fEvaluator.eval(F.PossibleZeroQ(temp));
+          if (expected.isTrue()) {
+            // the expressions are structurally equal
+            return expectedResult;
+          } else {
+            System.out.println("PossibleZeroQ[\n" + temp.toString() + " \n]");
+          }
         }
         // IExpr resultTogether= F.Together.of(F.ExpandAll(result));
         // IExpr expectedTogether = F.Together.of(F.ExpandAll(expected));
@@ -92,6 +102,14 @@ public abstract class AbstractRubiTestCase extends TestCase {
         // // the expressions are structurally equal
         // return expectedResult;
         // }
+      }
+    } else if (manuallyCheckedResult != null) {
+      manuallyCheckedResult = manuallyCheckedResult.trim();
+      if (manuallyCheckedResult.length() > 0) {
+        if (manuallyCheckedResult.equals(result.toString())) {
+          // the expressions are textual equal
+          return expectedResult;
+        }
       }
     }
     final StringWriter buf = new StringWriter();
@@ -104,6 +122,7 @@ public abstract class AbstractRubiTestCase extends TestCase {
       final String inputExpression, final String expectedResult, String manuallyCheckedResult) {
     IExpr result;
     final StringWriter buf = new StringWriter();
+    IExpr integral = fEvaluator.parse(inputExpression).first();
     try {
       if (fSeconds <= 0) {
         result = fEvaluator.eval(inputExpression);
@@ -119,11 +138,11 @@ public abstract class AbstractRubiTestCase extends TestCase {
                 new EvalControlledCallable(fEvaluator.getEvalEngine()));
       }
       if (result != null) {
-        return printResult(result, expectedResult, manuallyCheckedResult);
+        return printResult(integral, result, expectedResult, manuallyCheckedResult);
       }
     } catch (final AbortException re) {
       try {
-        return printResult(F.$Aborted, expectedResult, manuallyCheckedResult);
+        return printResult(integral, F.$Aborted, expectedResult, manuallyCheckedResult);
       } catch (IOException e) {
         Validate.printException(buf, e);
         System.err.println(buf.toString());
@@ -132,7 +151,7 @@ public abstract class AbstractRubiTestCase extends TestCase {
       }
     } catch (final FailedException re) {
       try {
-        return printResult(F.$Failed, expectedResult, manuallyCheckedResult);
+        return printResult(integral, F.$Failed, expectedResult, manuallyCheckedResult);
       } catch (IOException e) {
         Validate.printException(buf, e);
         System.err.println(buf.toString());

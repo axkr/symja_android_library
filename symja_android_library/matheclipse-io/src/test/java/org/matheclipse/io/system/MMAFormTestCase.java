@@ -54,6 +54,6 @@ public class MMAFormTestCase extends AbstractTestCase {
     EvalEngine engine = new EvalEngine("", 256, 256, System.out, System.err, true);
     ExprParser parser = new ExprParser(engine, true);
     IExpr expr = parser.parse("a+i*b^2+k*c^3+d");
-    assertEquals(expr.toMMA(), "a+i*b^2+k*c^3+d");
+    assertEquals(expr.toMMA(), "a + i*b^2 + k*c^3 + d");
   }
 }

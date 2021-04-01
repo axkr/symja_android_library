@@ -63,7 +63,7 @@ public class TeXTests extends TestCase {
     IExpr temp;
     TeXFormFactory fTeXFactory = new TeXFormFactory();
     OutputFormFactory fInputFactory = OutputFormFactory.get(true, false, 5, 7);
-    fInputFactory.setQuotes(true);
+    fInputFactory.setInputForm(true);
     AST2Expr ast2Expr = new AST2Expr(engine.isRelaxedSyntax(), engine);
     IAST seedList =
         F.List( //

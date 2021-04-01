@@ -64,9 +64,10 @@ public class TensorTest extends AbstractTestCase {
             + "0,0},{0,0,0}}},{{{0,0,0},{0,0,0},{0,0,0}},{{0,0,0},{0,0,0},{0,0,0}},{{2,1,4},{0,\n"
             + "3,0},{0,0,1}}}}}");
 
+    // Unicode symbol \[TensorProduct] - \uF3DA looks nearly the same as \[CircleTimes] - \u2997
     check(
         "TensorProduct(a + 2*b, c)", //
-        "(a+2*b)⊗c");
+        "(a+2*b)\uF3DAc");
 
     check(
         "TensorProduct({2, 3}, {{a, b}, {c, d}} )", //

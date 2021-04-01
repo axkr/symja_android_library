@@ -222,8 +222,8 @@ public class DistributionTest extends AbstractTestCase {
             + "1/2,v/2,1/2))}");
     check(
         "Quantile(StudentTDistribution(m,s,v), {1/4, 1/2, 3/4})", //
-        "{m-s*Sqrt(v)*Sqrt(-1+1/InverseBetaRegularized(1/2,v/2,1/2)),m,m+s*Sqrt(v)*Sqrt(\n"
-            + "-1+1/InverseBetaRegularized(1/2,v/2,1/2))}");
+        "{m-s*Sqrt(v)*Sqrt(-1+1/InverseBetaRegularized(1/2,v/2,1/2)),m,m+s*Sqrt(v)*Sqrt(-\n"
+        + "1+1/InverseBetaRegularized(1/2,v/2,1/2))}");
   }
 
   public void testWeibullDistribution() {

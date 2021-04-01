@@ -16,7 +16,7 @@ public class TimofeevProblemsTests extends AbstractRubiTestCase {
   protected void setUp() {
     try {
       super.setUp();
-      fSeconds = 20;
+      fSeconds = 30;
       if (init) {
         System.out.println("Timofeev");
         init = false;

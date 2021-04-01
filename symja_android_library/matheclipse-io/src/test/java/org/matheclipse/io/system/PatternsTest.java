@@ -398,9 +398,9 @@ public class PatternsTest extends AbstractTestCase {
         "{11,a0}");
     check(
         "opts:OptionsPattern() // FullForm", //
-        "Pattern[opts,OptionsPattern[]]");
+        "Pattern(opts,OptionsPattern())");
     check(
         "OptionsPattern() // FullForm", //
-        "OptionsPattern[]");
+        "OptionsPattern()");
   }
 }

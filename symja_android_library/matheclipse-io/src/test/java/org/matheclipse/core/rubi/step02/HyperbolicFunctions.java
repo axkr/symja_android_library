@@ -594,6 +594,7 @@ public class HyperbolicFunctions extends AbstractRubiTestCase {
 
   // {5584, 5582}
   public void test0069() {
+	  fSeconds=60;
     check( //
         "Integrate[F^(c*(a + b*x))*Sinh[d + e*x]^3, x]", //
         "(-6*e^3*F^(c*(a + b*x))*Cosh[d + e*x])/(9*e^4 - 10*b^2*c^2*e^2*Log[F]^2 + b^4*c^4*Log[F]^4) + (6*b*c*e^2*F^(c*(a + b*x))*Log[F]*Sinh[d + e*x])/(9*e^4 - 10*b^2*c^2*e^2*Log[F]^2 + b^4*c^4*Log[F]^4) + (3*e*F^(c*(a + b*x))*Cosh[d + e*x]*Sinh[d + e*x]^2)/(9*e^2 - b^2*c^2*Log[F]^2) - (b*c*F^(c*(a + b*x))*Log[F]*Sinh[d + e*x]^3)/(9*e^2 - b^2*c^2*Log[F]^2)", //

@@ -77,6 +77,18 @@ public abstract class AbstractTestCase extends TestCase {
     check(fScriptEngine, evalString, expectedResult, resultLength);
   }
 
+  public void call(String evalString) {
+    try {
+      if (evalString.length() == 0) {
+        return;
+      }
+      String evaledResult = (String) fScriptEngine.eval(evalString);
+    } catch (Exception e) {
+      e.printStackTrace();
+      assertEquals("", "1");
+    }
+  }
+
   public void check(
       ScriptEngine scriptEngine, String evalString, String expectedResult, int resultLength) {
     try {
