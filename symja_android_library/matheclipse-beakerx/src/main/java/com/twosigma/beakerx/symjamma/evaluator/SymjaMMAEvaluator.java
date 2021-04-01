@@ -120,7 +120,7 @@ public class SymjaMMAEvaluator extends BaseEvaluator {
     fOutputFactory = OutputFormFactory.get(false, false, 5, 7);
     fOutputTraditionalFactory = OutputFormFactory.get(true, false, 5, 7);
     fInputFactory = OutputFormFactory.get(false, false, 5, 7);
-    fInputFactory.setQuotes(true);
+    fInputFactory.setInputForm(true);
     fUsedForm = TEXFORM;
   }
 
