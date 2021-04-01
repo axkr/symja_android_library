@@ -42,6 +42,9 @@ public interface FunctionExpandRules {
           SetDelayed(
               Cos(Times(ArcSin(z_), $p(n, Integer))),
               Condition(ChebyshevT(n, Sqrt(Subtract(C1, Sqr(z)))), Greater(n, C0))),
+          // ExpIntegralE(n_,z_):=Gamma(1-n,z)/z^(1-n)
+          SetDelayed(
+              ExpIntegralE(n_, z_), Times(Power(z, Plus(CN1, n)), Gamma(Subtract(C1, n), z))),
           // Fibonacci(m_Integer+n_):=1/2*Fibonacci(m)*LucasL(n)+1/2*Fibonacci(n)*LucasL(m)/;n∈Integers
           SetDelayed(
               Fibonacci(Plus($p(m, Integer), n_)),

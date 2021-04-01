@@ -12,6 +12,8 @@
  Cos(n_Integer*ArcSin(z_)) := ChebyshevT(n, Sqrt(1 - z^2))
   /; n>0,
  
+ ExpIntegralE(n_,z_) := z^(-1 + n)*Gamma(1 - n, z),
+  
  Fibonacci(m_Integer+n_) := ((1/2)*Fibonacci(m)*LucasL(n) + (1/2)*Fibonacci(n)*LucasL(m)) 
   /; Element(n, Integers),
  Fibonacci(n_+a_) := ((2/(1 + Sqrt(5)))^(-a-n)-((1/2)*(1+Sqrt(5)))^(-a-n)*Cos((a+n)*Pi))/Sqrt(5)

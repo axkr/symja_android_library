@@ -6,7 +6,10 @@ Sum(c_^i_, {i_Symbol,1,Infinity}) := -c*(c-1)^(-1)
   
 Sum(i_^k_Symbol, {i_Symbol,1,n_Symbol}) := HarmonicNumber(n, -k)
   /; FreeQ(k,i)&&FreeQ(n,i),
-  
+
+Sum(z_^i_ * i_^(-n_), {i_Symbol,1,Infinity}) := PolyLog(n,z)
+  /; FreeQ({z,n},i),
+   
 Sum(i_^k_, {i_Symbol,1,Infinity}) := Zeta(-k)
   /; FreeQ(k,i),
 Sum(1/(i_^k_), {i_Symbol,1,Infinity}) := Zeta(k)
