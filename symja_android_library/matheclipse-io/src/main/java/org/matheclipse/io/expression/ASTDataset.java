@@ -309,7 +309,7 @@ public class ASTDataset extends AbstractAST
     final List<String> names = fTable.columnNames();
     IASTAppendable list = F.ListAlloc(names.size());
     for (int i = 0; i < names.size(); i++) {
-      list.append(F.stringx(names.get(i)));
+      list.append(names.get(i));
     }
     return list;
   }
