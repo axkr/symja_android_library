@@ -4,6 +4,7 @@ import java.util.Arrays;
 import java.util.Comparator;
 import java.util.Random;
 import java.util.concurrent.ThreadLocalRandom;
+import java.util.function.Predicate;
 import java.util.function.Supplier;
 
 import org.apfloat.Apcomplex;
@@ -982,7 +983,7 @@ public class StatisticsFunctions {
         }
         IASTAppendable result = F.ListAlloc(capacity + 1);
         for (int i = 0; i < res.length; i++) {
-          result.append(F.ZZ(res[i]));
+          result.append(res[i]);
         }
         return result;
       }
@@ -1546,11 +1547,11 @@ public class StatisticsFunctions {
         // RealVector doubleArray = list.toRealVector();
         // if (doubleArray != null) {
         // IASTAppendable result = F.ListAlloc(5);
-        // result.append(F.num(doubleArray.getMinValue()));
+        // result.append(doubleArray.getMinValue());
         // result.append(F.Quantile(list, F.C1D4, param));
         // result.append(F.Median(list));
         // result.append(F.Quantile(list, F.C3D4, param));
-        // result.append(F.num(doubleArray.getMaxValue()));
+        // result.append(doubleArray.getMaxValue());
         //
         // return result;
         // }
@@ -3163,7 +3164,7 @@ public class StatisticsFunctions {
     }
 
     @Override
-    public IExpr matrixEval(FieldMatrix<IExpr> matrix) {
+    public IExpr matrixEval(FieldMatrix<IExpr> matrix, Predicate<IExpr> zeroChecker) {
       return F.NIL;
     }
 

@@ -410,7 +410,7 @@ public class ClusteringFunctions {
                 }
               } else {
                 for (int i = 0; i < clusterPoints.size(); i++) {
-                  list.append(F.num(clusterPoints.get(i).getPoint()[0]));
+                  list.append(clusterPoints.get(i).getPoint()[0]);
                 }
               }
               result.append(list);

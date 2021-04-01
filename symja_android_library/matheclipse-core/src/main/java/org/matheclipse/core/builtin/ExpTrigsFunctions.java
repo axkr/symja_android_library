@@ -2242,7 +2242,7 @@ public class ExpTrigsFunctions {
         if (arg1.isZero()) {
           return F.C1D2;
         }
-        if (arg1.equals(F.Times(F.CI, F.Pi))) {
+        if (arg1.equals(F.Times(F.CI, S.Pi))) {
         	return F.NIL;
         }
         // 1 / (1 + Exp(-arg1))

@@ -606,8 +606,23 @@ public class SeriesFunctions {
       // IAST rule = data.getRule();
       IExpr base = powerAST.arg1();
       IExpr exponent = powerAST.arg2();
-      if (exponent.equals(data.variable()) && data.limitValue().isZero() && !base.isZero()) {
-        return F.C1;
+      if (exponent.equals(data.variable())) {
+        if (data.limitValue().isZero() && !base.isZero()) {
+          return F.C1;
+        }
+        if (base.isFree(data.variable()) && !base.isZero()) {
+          boolean isInfinityLimit = data.limitValue().isInfinity();
+          if (isInfinityLimit || data.limitValue().isNegativeInfinity()) {
+            if (base.isNumericFunction(true)) {
+              if (S.Greater.ofQ(F.Log(base), F.C0)) {
+                return isInfinityLimit ? F.CInfinity : F.C0;
+              }
+            } else if (base.isNumericFunction(s->s.isSymbol()?"":null)) {
+              return F.ConditionalExpression(
+                  isInfinityLimit ? F.CInfinity : F.C0, F.Greater(F.Log(base), F.C0));
+            }
+          }
+        }
       }
       if (base.isRealResult() && !base.isZero()) {
         IExpr temp = evalReplaceAll(powerAST, data);

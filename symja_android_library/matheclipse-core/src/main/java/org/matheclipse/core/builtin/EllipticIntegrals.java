@@ -599,9 +599,7 @@ public class EllipticIntegrals {
                 return F.C1;
             }
           } else if (a == 1) {
-            if (x.isZero()) {
-              return F.C0;
-            } else if (x.isPi() && m.isNumEqualRational(F.C1D2)) {
+            if (x.isZero() || (x.isPi() && m.isNumEqualRational(F.C1D2))) {
               return F.C0;
             }
           }

@@ -4,8 +4,10 @@ import java.io.IOException;
 import java.io.StringWriter;
 import java.math.BigInteger;
 import java.util.AbstractMap.SimpleImmutableEntry;
+import java.util.ArrayDeque;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
@@ -13,17 +15,14 @@ import java.util.function.Function;
 
 import org.hipparchus.linear.FieldMatrix;
 import org.hipparchus.linear.FieldVector;
-import org.matheclipse.core.builtin.OutputFunctions.VariableManager;
 import org.matheclipse.core.convert.Convert;
 import org.matheclipse.core.convert.VariablesSet;
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.MathMLUtilities;
 import org.matheclipse.core.eval.TeXUtilities;
 import org.matheclipse.core.eval.exception.Validate;
-import org.matheclipse.core.eval.exception.ValidateException;
 import org.matheclipse.core.eval.interfaces.AbstractCoreFunctionEvaluator;
 import org.matheclipse.core.eval.interfaces.AbstractFunctionEvaluator;
-import org.matheclipse.core.eval.interfaces.IFunctionEvaluator;
 import org.matheclipse.core.eval.util.OptionArgs;
 import org.matheclipse.core.expression.Blank;
 import org.matheclipse.core.expression.F;
@@ -33,7 +32,6 @@ import org.matheclipse.core.form.output.DoubleFormFactory;
 import org.matheclipse.core.form.output.JavaDoubleFormFactory;
 import org.matheclipse.core.form.output.JavaScriptFormFactory;
 import org.matheclipse.core.interfaces.IAST;
-import org.matheclipse.core.interfaces.IASTAppendable;
 import org.matheclipse.core.interfaces.IASTDataset;
 import org.matheclipse.core.interfaces.IASTMutable;
 import org.matheclipse.core.interfaces.IExpr;
@@ -47,25 +45,6 @@ import com.ibm.icu.text.NumberFormat;
 import com.ibm.icu.text.RuleBasedNumberFormat;
 
 public final class OutputFunctions {
-  /** Template for CompilePrint */
-  public static final String JAVA_SOURCE_CODE = //
-      "/* an in-memory compiled function */                                      \n"
-          + "package org.matheclipse.core.compile;                                      \n"
-          + "                                                                           \n"
-          + "import org.matheclipse.core.eval.interfaces.AbstractFunctionEvaluator;     \n"
-          + "import org.matheclipse.core.interfaces.IExpr;                              \n"
-          + "import org.matheclipse.core.interfaces.IAST;                               \n"
-          + "import org.matheclipse.core.eval.EvalEngine;                               \n"
-          + "import org.matheclipse.core.expression.F;                                  \n"
-          + "import static org.matheclipse.core.expression.F.*;                         \n"
-          + "                                                                           \n"
-          + "public class CompiledFunction extends AbstractFunctionEvaluator {          \n"
-          + "    public IExpr evaluate(final IAST ast, EvalEngine engine){              \n"
-          + "        if (ast.argSize()!={$size}) { return print(ast,{$size},engine); }     \n"
-          + "        {$variables}                                                       \n"
-          + "        return {$expression}\n"
-          + "    }                                                                      \n"
-          + "}                                                                          \n";
 
   /**
    * See <a href="https://pangin.pro/posts/computation-in-static-initializer">Beware of computation
@@ -76,7 +55,6 @@ public final class OutputFunctions {
     private static void init() {
       S.BaseForm.setEvaluator(new BaseForm());
       S.CForm.setEvaluator(new CForm());
-      S.CompilePrint.setEvaluator(new CompilePrint());
       S.FullForm.setEvaluator(new FullForm());
       S.HoldForm.setEvaluator(new HoldForm());
       S.HornerForm.setEvaluator(new HornerForm());
@@ -113,9 +91,6 @@ public final class OutputFunctions {
     public int[] expectedArgSize(IAST ast) {
       return ARGS_2_2;
     }
-
-    @Override
-    public void setUp(ISymbol newSymbol) {}
   }
 
   private static class CForm extends AbstractCoreFunctionEvaluator {
@@ -138,171 +113,6 @@ public final class OutputFunctions {
     @Override
     public void setUp(ISymbol newSymbol) {
       newSymbol.setAttributes(ISymbol.HOLDALL);
-    }
-  }
-
-  private static class CompileFactory {
-    private abstract static class AbstractConverter implements IConverter {
-      protected CompileFactory fFactory;
-
-      public AbstractConverter() {}
-
-      /** @param factory */
-      @Override
-      public void setFactory(final CompileFactory factory) {
-        fFactory = factory;
-      }
-    }
-
-    private static class CompoundExpressionConverter extends AbstractConverter {
-      @Override
-      public boolean convert(final StringBuilder buf, final IAST f) {
-
-        buf.append("F.CompoundExpression(\n");
-        for (int i = 1; i < f.size(); i++) {
-          fFactory.convert(buf, f.get(i));
-          if (i < f.size() - 1) {
-            buf.append(",\n");
-          } else {
-            buf.append("\n");
-          }
-        }
-        buf.append(")\n");
-        return true;
-      }
-    }
-
-    private static class DoConverter extends AbstractConverter {
-      @Override
-      public boolean convert(final StringBuilder buf, final IAST f) {
-        if (f.size() != 3) {
-          return false;
-        }
-        buf.append("F.Do(\n");
-        fFactory.convert(buf, f.arg1());
-        buf.append(",\n");
-        fFactory.convert(buf, f.arg2());
-        buf.append("\n");
-        buf.append(")\n");
-        return true;
-      }
-    }
-
-    private interface IConverter {
-      public boolean convert(StringBuilder buffer, IAST function);
-
-      public void setFactory(final CompileFactory factory);
-    }
-
-    private static class ModuleConverter extends AbstractConverter {
-      @Override
-      public boolean convert(final StringBuilder buf, final IAST f) {
-        if (f.size() != 3) {
-          return false;
-        }
-        buf.append("F.Module(\n");
-        fFactory.convert(buf, f.arg1());
-        buf.append(",\n");
-        fFactory.convert(buf, f.arg2());
-        buf.append("\n");
-        buf.append(")\n");
-        return true;
-      }
-    }
-
-    public static final HashMap<ISymbol, IConverter> CONVERTERS =
-        new HashMap<ISymbol, IConverter>(199);
-
-    static {
-      CONVERTERS.put(S.CompoundExpression, new CompoundExpressionConverter());
-      CONVERTERS.put(S.Do, new DoConverter());
-      CONVERTERS.put(S.Module, new ModuleConverter());
-    }
-
-    //    final Set<IExpr> variables;
-    Function<IExpr, String> numericVariables;
-
-    Function<IExpr, String> variables;
-
-    final IAST types;
-
-    public CompileFactory(
-        Function<IExpr, String> numericVariables, Function<IExpr, String> variables, IAST types) {
-      this.numericVariables = numericVariables;
-      this.variables = variables;
-      this.types = types;
-    }
-
-    public void convert(StringBuilder buf, IExpr expression) {
-      if (expression.isNumericFunction(numericVariables)) {
-        try {
-          DoubleFormFactory factory = JavaDoubleFormFactory.get(true, false);
-          buf.append("F.num(");
-          expression =
-              expression.replaceAll(
-                  x -> {
-                    String str = numericVariables.apply(x);
-                    if (x.isSymbol() && str != null) {
-                      return F.Dummy(str); // x.toString() + "D");
-                    }
-                    return F.NIL;
-                  });
-          factory.convert(buf, expression);
-          buf.append(")");
-          return;
-        } catch (RuntimeException rex) {
-          //
-        }
-      }
-
-      if (expression.isAST()) {
-        IAST ast = (IAST) expression;
-        IExpr h = ast.head();
-        if (h.isSymbol()) {
-          IConverter converter = CONVERTERS.get(h);
-          if (converter != null) {
-            converter.setFactory(this);
-            StringBuilder sb = new StringBuilder();
-            if (converter.convert(sb, ast)) {
-              buf.append(sb);
-              return;
-            }
-          }
-        }
-      }
-      buf.append(expression.internalJavaString(variables));
-    }
-  }
-
-  public static class CompilePrint extends AbstractCoreFunctionEvaluator {
-
-    @Override
-    public IExpr evaluate(final IAST ast, EvalEngine engine) {
-      try {
-        if (ast.isAST3()) {
-          // TODO implement for 3 args
-          return F.NIL;
-        }
-        IAST[] vars = OutputFunctions.checkIsVariableOrVariableList(ast, 1, engine);
-        if (vars == null) {
-          return F.NIL;
-        }
-        IAST variables = vars[0];
-        IAST types = vars[1];
-
-        String source = OutputFunctions.compilePrint(ast, variables, types, engine);
-        if (source != null) {
-          return F.stringx(source, IStringX.APPLICATION_JAVA);
-        }
-        return F.NIL;
-      } catch (ValidateException ve) {
-        return engine.printMessage(ast.topHead(), ve);
-      }
-    }
-
-    @Override
-    public int[] expectedArgSize(IAST ast) {
-      return IFunctionEvaluator.ARGS_2_3;
     }
   }
 
@@ -712,7 +522,7 @@ public final class OutputFunctions {
     public IExpr evaluate(final IAST ast, EvalEngine engine) {
       try {
         int javascriptFlavor = JavaScriptFormFactory.USE_PURE_JS;
-        if (ast.isAST2() && ast.arg2().isString("Mathcell")) {
+        if (ast.isAST2() && ast.arg2().isStringIgnoreCase("mathcell")) {
           javascriptFlavor = JavaScriptFormFactory.USE_MATHCELL;
         }
         IExpr arg1 = engine.evaluate(ast.arg1());
@@ -1025,55 +835,94 @@ public final class OutputFunctions {
   }
 
   public static class VariableManager implements Function<IExpr, String> {
-    Map<IExpr, String> varMap;
+    ArrayDeque<Map<IExpr, String>> varStack;
+
+    public void put(IExpr key, String variable) {
+      varStack.peek().put(key, variable);
+    }
+
+    public Map<IExpr, String> peek() {
+      return varStack.peek();
+    }
+
+    public void push() {
+      Map<IExpr, String> map = new HashMap<IExpr, String>();
+      varStack.push(map);
+    }
+
+    public void push(Map<IExpr, String> map) {
+      varStack.push(map);
+    }
+
+    public Map<IExpr, String> pop() {
+      return varStack.pop();
+    }
 
     public VariableManager(Map<IExpr, String> map) {
-      this.varMap = map;
+      varStack = new ArrayDeque<Map<IExpr, String>>();
+      varStack.add(map);
     }
 
     @Override
     public String apply(IExpr expr) {
-      return varMap.get(expr);
+      for (Iterator<Map<IExpr, String>> iterator = varStack.descendingIterator();
+          iterator.hasNext(); ) {
+        Map<IExpr, String> map = iterator.next();
+        String temp = map.get(expr);
+        if (temp != null) {
+          return temp;
+        }
+      }
+      return null;
     }
   }
 
-  public static IAST[] checkIsVariableOrVariableList(IAST ast, int position, EvalEngine engine) {
-    IAST[] result = new IAST[2];
-
-    if (ast.get(position).isList()) {
-      IAST list = (IAST) ast.get(position);
-
-      IASTMutable vars = list.copy();
-      IASTAppendable types = F.ListAlloc(list.size());
-
+  /**
+   * Get an array with 2 elements returning the declared variables in the first entry and the
+   * corresponding types <code>Real, Integer,...</code> for the variable names in the second entry.
+   *
+   * @param ast the original definition <code>
+   * CompilePrint({variable/types}, function)</code>
+   * @param engine the evaluation engine
+   * @return <code>null</code> if the variable declaration isn't correct
+   */
+  public static IAST[] checkIsVariableOrVariableList(IAST ast, EvalEngine engine) {
+    IASTMutable[] result = new IASTMutable[2];
+    IExpr arg1 = ast.arg1();
+    if (arg1.isList()) {
+      IAST list = (IAST) arg1;
+      result[0] = list.copy();
+      result[1] = F.constantArray(S.Real, list.argSize());
       for (int i = 1; i < list.size(); i++) {
-        if (!checkVariable(ast, engine, list.get(i), vars, types, i)) {
+        if (!checkVariable(list.get(i), i, result[0], result[1], engine)) {
+          // `1` is not a valid variable.
+          IOFunctions.printMessage(ast.topHead(), "ivar", F.List(list.get(i)), engine);
           return null;
         }
       }
-
-      result[0] = vars;
-      result[1] = types;
-      return result;
     } else {
-      IExpr arg = ast.arg1();
-      IASTMutable vars = F.unaryAST1(S.List, arg);
-      IASTAppendable types = F.ListAlloc(2);
-
-      if (!checkVariable(ast, engine, arg, vars, types, 1)) {
+      result[0] = F.unaryAST1(S.List, arg1);
+      result[1] = F.unaryAST1(S.List, S.Real);
+      if (!checkVariable(arg1, 1, result[0], result[1], engine)) {
         // `1` is not a valid variable.
-        IOFunctions.printMessage(ast.topHead(), "ivar", F.List(arg), engine);
+        IOFunctions.printMessage(ast.topHead(), "ivar", F.List(arg1), engine);
         return null;
       }
-
-      result[0] = vars;
-      result[1] = types;
-      return result;
     }
+    return result;
   }
 
-  public static boolean checkVariable(
-      IAST ast, EvalEngine engine, IExpr arg, IASTMutable vars, IASTAppendable types, int i) {
+  /**
+   * @param arg the input argument for the current <code>variablesIndex</code>
+   * @param variablesIndex
+   * @param variables set the variable at the current <code>variablesIndex</code>
+   * @param types set the corresponding type <code>Real, Integer,...</code> for variable at the
+   *     current <code>variablesIndex</code>
+   * @param engine
+   * @return <code>true</code> if the variables and types
+   */
+  private static boolean checkVariable(
+      IExpr arg, int variablesIndex, IASTMutable variables, IASTMutable types, EvalEngine engine) {
     IExpr sym = arg;
     IExpr headTest = S.Real;
     if (arg.isList1() || arg.isList2()) {
@@ -1084,8 +933,6 @@ public final class OutputFunctions {
           Blank blank = (Blank) arg.second();
           headTest = blank.getHeadTest();
           if (headTest == null) {
-            // `1` is not a valid variable.
-            IOFunctions.printMessage(ast.topHead(), "ivar", F.List(sym), engine);
             return false;
           }
           if (headTest.equals(S.Integer) || headTest.equals(S.Complex) || headTest.equals(S.Real)) {
@@ -1095,73 +942,14 @@ public final class OutputFunctions {
           }
         }
         if (headTest == null) {
-          // `1` is not a valid variable.
-          IOFunctions.printMessage(ast.topHead(), "ivar", F.List(sym), engine);
           return false;
         }
       }
     }
-    //    if (sym.isSymbol() && sym.isVariable()) {
-    vars.set(i, sym);
-    types.append(headTest);
+
+    variables.set(variablesIndex, sym);
+    types.set(variablesIndex, headTest);
     return true;
-    //    }
-    //    // `1` is not a valid variable.
-    //    IOFunctions.printMessage(ast.topHead(), "ivar", F.List(sym), engine);
-    //    return false;
-  }
-
-  public static String compilePrint(final IAST ast, IAST variables, IAST types, EvalEngine engine) {
-    Map<IExpr, String> symbolicVariables = new HashMap<IExpr, String>();
-    Map<IExpr, String> numericVariables = new HashMap<IExpr, String>();
-
-    StringBuilder variablesBuf = new StringBuilder();
-    for (int i = 1; i < variables.size(); i++) {
-      IExpr argType = types.get(i);
-      IExpr variable = variables.get(i);
-      if (numericVariables.get(variable) != null) {
-        // Duplicate parameter `1` found in `2`.
-        IOFunctions.printMessage(ast.topHead(), "fdup", F.List(variable, ast.arg1()), engine);
-        return null;
-      }
-
-      if (argType.equals(S.Real)) {
-        variablesBuf.append("IExpr " + variable + " = ast.get(" + i + ");\n");
-        variablesBuf.append("double " + variable + "d = engine.evalDouble(" + variable + ");\n");
-        symbolicVariables.put(variable, variable.toString());
-        numericVariables.put(variable, variable + "d");
-      } else if (argType.equals(S.Integer)) {
-        variablesBuf.append("IExpr " + variable + " = ast.get(" + i + ");\n");
-        variablesBuf.append("int " + variable + "i = engine.evalInt(" + variable + ");\n");
-        symbolicVariables.put(variable, variable.toString());
-        numericVariables.put(variable, variable + "i");
-      } else if (argType.equals(S.Complex)) {
-        variablesBuf.append("IExpr " + variable + " = ast.get(" + i + ");\n");
-        variablesBuf.append("Complex " + variable + "c = engine.evalComplex(" + variable + ");\n");
-        symbolicVariables.put(variable, variable.toString());
-        numericVariables.put(variable, variable + "c");
-      } else if (argType.equals(S.Booleans)) {
-        variablesBuf.append("IExpr " + variable + " = ast.get(" + i + ");\n");
-        variablesBuf.append("boolean " + variable + "b = engine.evalBoolean(" + variable + ");\n");
-        symbolicVariables.put(variable, variable.toString());
-        numericVariables.put(variable, variable + "b");
-      }
-    }
-    IExpr expression = ast.arg2();
-
-    StringBuilder buf = new StringBuilder();
-    VariableManager numericVars = new VariableManager(numericVariables);
-    VariableManager symbolicVars = new VariableManager(symbolicVariables);
-    OutputFunctions.CompileFactory cf =
-        new OutputFunctions.CompileFactory(numericVars, symbolicVars, types);
-    buf.append("\n");
-    cf.convert(buf, expression);
-    buf.append(";\n");
-    String source = JAVA_SOURCE_CODE.replace("{$variables}", variablesBuf.toString());
-    source = source.replace("{$expression}", buf.toString());
-    source = source.replace("{$size}", Integer.toString(variables.argSize()));
-    //    System.out.println(source);
-    return source;
   }
 
   public static void initialize() {

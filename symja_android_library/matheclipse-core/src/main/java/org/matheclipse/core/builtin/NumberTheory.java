@@ -1169,7 +1169,7 @@ public final class NumberTheory {
       double tNow = doubleValue - aNow;
       double tNext;
       int aNext;
-      continuedFractionList.append(F.ZZ(aNow));
+      continuedFractionList.append(aNow);
       for (int i = 0; i < iterationLimit - 1; i++) {
         if (i >= 99) {
           return engine.printMessage(
@@ -1182,7 +1182,7 @@ public final class NumberTheory {
         }
         tNext = rec - aNext;
 
-        continuedFractionList.append(F.ZZ(aNext));
+        continuedFractionList.append(aNext);
         tNow = tNext;
       }
       return continuedFractionList;
@@ -1356,11 +1356,14 @@ public final class NumberTheory {
    * 1
    * </pre>
    */
-  private static class DiscreteDelta extends AbstractCoreFunctionEvaluator {
+  private static class DiscreteDelta extends AbstractFunctionEvaluator {
 
     @Override
     public IExpr evaluate(final IAST ast, EvalEngine engine) {
       int size = ast.size();
+      if (size == 1) {
+        return F.C1;
+      }
       if (size > 1) {
         IExpr arg1 = engine.evaluate(ast.arg1());
 
@@ -1424,7 +1427,7 @@ public final class NumberTheory {
 
     @Override
     public void setUp(ISymbol newSymbol) {
-      newSymbol.setAttributes(ISymbol.ORDERLESS | ISymbol.NUMERICFUNCTION);
+      newSymbol.setAttributes(ISymbol.HOLDALL | ISymbol.ORDERLESS | ISymbol.NUMERICFUNCTION);
     }
   }
 
@@ -4495,60 +4498,6 @@ public final class NumberTheory {
    */
   private static final class Rationalize extends AbstractFunctionEvaluator {
 
-    //    private static class RationalizeVisitor extends VisitorExpr {
-    //      double epsilon;
-    //
-    //      public RationalizeVisitor(double epsilon) {
-    //        super();
-    //        this.epsilon = epsilon;
-    //      }
-    //
-    //      @Override
-    //      public IExpr visit(IASTMutable ast) {
-    //        if (ast.isNumericFunction(true)) {
-    //          ISignedNumber signedNumber = ast.evalReal();
-    //          if (signedNumber != null) {
-    //            return getRational(signedNumber);
-    //          }
-    //        }
-    //        return super.visitAST(ast);
-    //      }
-    //
-    //      @Override
-    //      public IExpr visit(IComplex element) {
-    //        return element;
-    //      }
-    //
-    //      @Override
-    //      public IExpr visit(IComplexNum element) {
-    //        return F.complex(element.getRealPart(), element.getImaginaryPart(), epsilon);
-    //      }
-    //
-    //      @Override
-    //      public IExpr visit(INum element) {
-    //        return F.fraction(element.getRealPart(), epsilon);
-    //      }
-    //
-    //      /** @return <code>F.NIL</code>, if no evaluation is possible */
-    //      @Override
-    //      public IExpr visit(ISymbol element) {
-    //        if (element.isNumericFunction(true)) {
-    //          ISignedNumber signedNumber = element.evalReal();
-    //          if (signedNumber != null) {
-    //            return getRational(signedNumber);
-    //          }
-    //        }
-    //        return F.NIL;
-    //      }
-    //
-    //      private IRational getRational(ISignedNumber signedNumber) {
-    //        if (signedNumber.isRational()) {
-    //          return (IRational) signedNumber;
-    //        }
-    //        return F.fraction(signedNumber.doubleValue(), epsilon);
-    //      }
-    //    }
-
     static class RationalizeNumericsVisitor extends VisitorExpr {
       double epsilon;
 
@@ -4571,13 +4520,7 @@ public final class NumberTheory {
       public IExpr visit(INum element) {
         return F.fraction(element.getRealPart(), epsilon);
       }
-
-      // private IRational getRational(ISignedNumber signedNumber) {
-      // if (signedNumber.isRational()) {
-      // return (IRational) signedNumber;
-      // }
-      // return F.fraction(signedNumber.doubleValue(), epsilon);
-      // }
+ 
     }
 
     @Override

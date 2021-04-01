@@ -208,9 +208,7 @@ public class MinMaxFunctions {
               if (x2.isPositiveResult()) {
                 return F.Interval(F.C0, F.Power(u, x2));
               }
-              if (x2.isEvenResult()) {
-                return F.Interval(F.C0, F.Power(u, x2));
-              } else if (x2.isFraction() && ((IFraction) x2).denominator().isEven()) {
+              if (x2.isEvenResult() || (x2.isFraction() && ((IFraction) x2).denominator().isEven())) {
                 return F.Interval(F.C0, F.Power(u, x2));
               }
             }

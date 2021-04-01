@@ -331,7 +331,7 @@ public final class RandomFunctions {
               if (size >= 0) {
                 IASTAppendable list = F.ListAlloc(size);
                 for (int i = 0; i < size; i++) {
-                  list.append(F.ZZ(tlr.nextInt((max - min) + 1) + min));
+                  list.append(tlr.nextInt((max - min) + 1) + min);
                 }
                 return list;
               }

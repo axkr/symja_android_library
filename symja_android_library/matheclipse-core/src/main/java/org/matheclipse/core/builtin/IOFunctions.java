@@ -692,8 +692,16 @@ public class IOFunctions {
     "The arguments to `1` must be two lists of integers of identical length, with the second list only containing positive integers.", //
     "plld",
     "Endpoints in `1` must be distinct machine-size real numbers.", //
+    "pllim",
+    "Range specification `1` is not of the form {x, xmin, xmax}.", //
     "plln",
     "Limiting value `1` in `2` is not a machine-size real number.", //
+    "pkspec1",
+    "The expression `1` cannot be used as a part specification.", //
+    "prng",
+    "Value of option `1` is not All, Full, Automatic, a positive machine number, or an appropriate list of range specifications.",
+    "psl1",
+    "Position specification `1` in `2` is not applicable.", //
     "pspec",
     "Part specification `1` is neither an integer nor a list of integer.", //
     "poly",
@@ -706,8 +714,6 @@ public class IOFunctions {
     "`1` contains integers that are not positive.", //
     "posr",
     "The left hand side of `2` in `1` doesn't match an int-array of depth `3`.", //
-    "pkspec1",
-    "The expression `1` cannot be used as a part specification.", //
     "preal",
     "The parameter `1` should be real-valued.", //
     "precsm",
@@ -781,8 +787,12 @@ public class IOFunctions {
     "ucdec",
     "An invalid unicode sequence was encountered and ignored.", //
     // Symja special
+    "zzmaxast",
+    "Maximum AST limit `1` exceeded.", //
+    "zznotimpl",
+    "Function `1` not implemented.", //
     "zzregex",
-    "Regex expression `1` error message: `2`" //
+    "Regex expression `1` error message: `2`." //
   };
 
   public static void initialize() {

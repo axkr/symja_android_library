@@ -770,17 +770,15 @@ public class IntegerFunctions {
           char ch = str.charAt(i);
           if (ch >= '0' && ch <= '9') {
             digit = Character.digit(ch, radix);
-          } else if (ch >= 'A' && ch <= 'Z') {
-            digit = Character.digit(ch, 36);
-          } else if (ch >= 'a' && ch <= 'z') {
+          } else if ((ch >= 'A' && ch <= 'Z') || (ch >= 'a' && ch <= 'z')) {
             digit = Character.digit(ch, 36);
           } else {
-            return F.NIL;
-          }
+        return F.NIL;
+      }
           if (digit == Integer.MIN_VALUE) {
             return F.NIL;
           }
-          digitsList.append(F.ZZ(digit));
+          digitsList.append(digit);
         }
         return fromDigits(digitsList, base);
       }

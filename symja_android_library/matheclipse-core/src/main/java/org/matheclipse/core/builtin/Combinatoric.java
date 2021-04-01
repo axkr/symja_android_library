@@ -579,7 +579,7 @@ public final class Combinatoric {
         for (int i = 1; i < ast2.size(); i++) {
           if (positions[i - 1] > 0) {
             if (expr1.equals(ast2.get(i))) {
-              permList.append(F.ZZ(i));
+              permList.append(i);
               positions[i - 1] = -1;
               break;
             }
@@ -817,7 +817,7 @@ public final class Combinatoric {
               temp = F.ListAlloc(j.length);
               for (int i = 0; i < j.length; i++) {
                 if (j[i] != 0) {
-                  temp.append(F.ZZ(j[i]));
+                  temp.append(j[i]);
                 } else {
                   break;
                 }
@@ -1058,7 +1058,7 @@ public final class Combinatoric {
 
     private IAST createSinglePartition(
         final IAST listArg0,
-        final ISymbol sym,
+        final ISymbol symbol,
         final int[] permutationsIndex,
         final int[] partitionsIndex) {
       IASTAppendable partitionElement;
@@ -1069,10 +1069,10 @@ public final class Combinatoric {
       // 0 is always the first index of a partition
       partitionStartIndex = 0;
       for (int i = 1; i < partitionsIndex.length; i++) {
-        partitionElement = F.ast(sym);
+        partitionElement = F.ast(symbol);
         if (partitionStartIndex + 1 == partitionsIndex[i]) {
           // OneIdentity check here
-          if (sym.hasOneIdentityAttribute()) {
+          if (symbol.hasOneIdentityAttribute()) {
             partition.append(listArg0.get(permutationsIndex[partitionStartIndex] + 1));
           } else {
             partitionElement.append(listArg0.get(permutationsIndex[partitionStartIndex] + 1));
@@ -1094,10 +1094,10 @@ public final class Combinatoric {
       }
       // generate all elements for the last partitionElement of a
       // partition:
-      partitionElement = F.ast(sym);
+      partitionElement = F.ast(symbol);
       if (partitionStartIndex + 1 == n) {
         // OneIdentity check here
-        if ((sym.getAttributes() & ISymbol.ONEIDENTITY) == ISymbol.ONEIDENTITY) {
+        if ((symbol.getAttributes() & ISymbol.ONEIDENTITY) == ISymbol.ONEIDENTITY) {
           partition.append(listArg0.get(permutationsIndex[partitionStartIndex] + 1));
         } else {
           partitionElement.append(listArg0.get(permutationsIndex[partitionStartIndex] + 1));
@@ -1766,7 +1766,7 @@ public final class Combinatoric {
           }
           IASTAppendable result = F.ListAlloc(permutationsListLength);
           for (int i = 1; i <= permutationsListLength; i++) {
-            result.append(F.ZZ(i));
+            result.append(i);
           }
           return permutationReplace(result, cyclesList);
         }
@@ -2065,7 +2065,8 @@ public final class Combinatoric {
             if (maxPart >= 0) {
               maxPart = maxPart < parts ? maxPart : parts;
               final IASTAppendable result = F.ListAlloc(100);
-              for (int i = 0; i <= maxPart; i++) {
+              result.append(F.CEmptyList);
+              for (int i = 1; i <= maxPart; i++) {
                 createPermutationsWithNParts(list, i, result);
               }
               return result;
@@ -2089,6 +2090,9 @@ public final class Combinatoric {
         }
         if (parts > list.argSize()) {
           return F.CEmptyList;
+        }
+        if (parts == 0) {
+          return F.List(F.CEmptyList);
         }
         final IASTAppendable result = F.ListAlloc(100);
         return createPermutationsWithNParts(list, parts, result);
@@ -3061,7 +3065,7 @@ public final class Combinatoric {
             cycleList = F.ListAlloc(permList.argSize() < 16 ? permList.size() : 16);
             mainList.append(cycleList);
           }
-          cycleList.append(F.ZZ(newPosition));
+          cycleList.append(newPosition);
           oldPosition = newPosition;
           while (positions[oldPosition - 1] > 0) {
             newPosition = positions[oldPosition - 1];
@@ -3071,9 +3075,9 @@ public final class Combinatoric {
 
             positions[oldPosition - 1] = -1;
             if (positions[newPosition - 1] < 0) {
-              cycleList.append(1, F.ZZ(newPosition));
+              cycleList.append(1, newPosition);
             } else {
-              cycleList.append(F.ZZ(newPosition));
+              cycleList.append(newPosition);
             }
             oldPosition = newPosition;
           }

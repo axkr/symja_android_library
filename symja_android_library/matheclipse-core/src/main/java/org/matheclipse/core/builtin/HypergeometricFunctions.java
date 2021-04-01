@@ -86,8 +86,8 @@ public class HypergeometricFunctions {
         return F.C1;
       }
       if (z1.isZero()) {
-          return F.Hypergeometric2F1(a, b2, c, z2);
-        }
+        return F.Hypergeometric2F1(a, b2, c, z2);
+      }
       if (z2.isZero()) {
         return F.Hypergeometric2F1(a, b1, c, z1);
       }
@@ -117,22 +117,22 @@ public class HypergeometricFunctions {
                 F.Divide(F.Subtract(z1, z2), F.Subtract(F.C1, z2))),
             F.Power(F.Subtract(F.C1, z2), a));
       }
-      //      if (engine.isDoubleMode()) {
-      //        try {
-      //        } catch (ThrowException te) {
-      //          if (FEConfig.SHOW_STACKTRACE) {
-      //            te.printStackTrace();
-      //          }
-      //          return te.getValue();
-      //        } catch (ValidateException ve) {
-      //          if (FEConfig.SHOW_STACKTRACE) {
-      //            ve.printStackTrace();
-      //          }
-      //        } catch (RuntimeException rex) {
-      //          // rex.printStackTrace();
-      //          return engine.printMessage(ast.topHead(), rex);
-      //        }
-      //      }
+      //            if (engine.isDoubleMode()) {
+      //              try {
+      //              } catch (ThrowException te) {
+      //                if (FEConfig.SHOW_STACKTRACE) {
+      //                  te.printStackTrace();
+      //                }
+      //                return te.getValue();
+      //              } catch (ValidateException ve) {
+      //                if (FEConfig.SHOW_STACKTRACE) {
+      //                  ve.printStackTrace();
+      //                }
+      //              } catch (RuntimeException rex) {
+      //                // rex.printStackTrace();
+      //                return engine.printMessage(ast.topHead(), rex);
+      //              }
+      //            }
       return F.NIL;
     }
 

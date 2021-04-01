@@ -20,6 +20,7 @@ import org.matheclipse.core.expression.S;
 import org.matheclipse.core.expression.data.TestReportObjectExpr;
 import org.matheclipse.core.expression.data.TestResultObjectExpr;
 import org.matheclipse.core.interfaces.IAST;
+import org.matheclipse.core.interfaces.IASTAppendable;
 import org.matheclipse.core.interfaces.IAssociation;
 import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.interfaces.IStringX;
@@ -51,12 +52,12 @@ public class UnitTestingFunctions {
     public IExpr evaluate(final IAST ast, EvalEngine engine) {
       if (Config.isFileSystemEnabled(engine)) {
         if (ast.arg1().isList()) {
-          IAST listÜfVerificationTest = (IAST) ast.arg1();
-          if (listÜfVerificationTest.forAll(x -> x.isAST(S.VerificationTest))) {
-            IAssociation testResults = F.assoc(listÜfVerificationTest.size());
+          IAST listOfVerificationTest = (IAST) ast.arg1();
+          if (listOfVerificationTest.forAll(x -> x.isAST(S.VerificationTest))) {
+            IAssociation testResults = F.assoc(listOfVerificationTest.size());
             int testCounter = 1;
-            for (int j = 1; j < listÜfVerificationTest.size(); j++) {
-              IAST verificationTest = (IAST) listÜfVerificationTest.get(j);
+            for (int j = 1; j < listOfVerificationTest.size(); j++) {
+              IAST verificationTest = (IAST) listOfVerificationTest.get(j);
               IExpr result = engine.evaluate(verificationTest);
               if (result instanceof TestResultObjectExpr) {
                 testResults.appendRule(F.Rule(F.ZZ(testCounter++), result));
@@ -72,9 +73,7 @@ public class UnitTestingFunctions {
           return IOFunctions.printMessage(ast.topHead(), "string", F.List(), engine);
         }
         String arg1 = ast.arg1().toString();
-        if (arg1.startsWith("https://")
-            || //
-            arg1.startsWith("http://")) {
+        if (arg1.startsWith("https://") || arg1.startsWith("http://")) {
           URL url;
           try {
             url = new URL(arg1);
@@ -289,6 +288,19 @@ public class UnitTestingFunctions {
     public void setUp(final ISymbol newSymbol) {
       newSymbol.setAttributes(ISymbol.HOLDALLCOMPLETE);
     }
+  }
+
+  public static IAST readFile(EvalEngine engine, String str) throws IOException {
+    final List<ASTNode> node = FileFunctions.parseReader(str, engine);
+    IExpr temp;
+    int i = 0;
+    AST2Expr ast2Expr = new AST2Expr(engine.isRelaxedSyntax(), engine);
+    IASTAppendable list = F.ListAlloc(node.size());
+    while (i < node.size()) {
+      temp = ast2Expr.convert(node.get(i++));
+      list.append(temp);
+    }
+    return list;
   }
 
   public static void initialize() {

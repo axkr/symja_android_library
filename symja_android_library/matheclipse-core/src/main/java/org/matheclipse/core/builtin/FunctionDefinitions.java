@@ -71,7 +71,6 @@ public final class FunctionDefinitions {
       TrigToExp.setEvaluator(new org.matheclipse.core.reflection.system.TrigToExp());
 
       if (!Config.FUZZY_PARSER) {
-        CreateDirectory.setEvaluator(new org.matheclipse.core.reflection.system.CreateDirectory());
         Export.setEvaluator(new org.matheclipse.core.reflection.system.Export());
         OptimizeExpression.setEvaluator(
             new org.matheclipse.core.reflection.system.OptimizeExpression());
