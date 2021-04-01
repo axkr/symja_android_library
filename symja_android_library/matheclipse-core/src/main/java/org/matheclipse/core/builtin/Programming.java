@@ -110,7 +110,6 @@ public final class Programming {
       S.With.setEvaluator(new With());
 
       if (!Config.FUZZY_PARSER) {
-        S.CompiledFunction.setEvaluator(new CompiledFunction());
         S.On.setEvaluator(new On());
         S.Off.setEvaluator(new Off());
         S.Trace.setEvaluator(new Trace());
@@ -357,7 +356,7 @@ public final class Programming {
 
     @Override
     public int[] expectedArgSize(IAST ast) {
-      return ARGS_2_2;
+      return ARGS_2_3;
     }
 
     @Override
@@ -393,6 +392,11 @@ public final class Programming {
         return result[0];
       }
       return S.Null;
+    }
+
+    @Override
+    public int[] expectedArgSize(IAST ast) {
+      return ARGS_0_INFINITY;
     }
 
     @Override
@@ -514,44 +518,6 @@ public final class Programming {
     public void setUp(final ISymbol newSymbol) {}
   }
 
-  private static final class CompiledFunction extends AbstractCoreFunctionEvaluator {
-
-    @Override
-    public IExpr evaluate(final IAST ast, EvalEngine engine) {
-      final IExpr head = ast.head();
-      if (head instanceof CompiledFunctionExpr) {
-
-        CompiledFunctionExpr compiledFunction = (CompiledFunctionExpr) head;
-        IExpr result = F.NIL;
-        try {
-          result = compiledFunction.evaluate(ast, engine);
-        } catch (RuntimeException rex) {
-          if (FEConfig.SHOW_STACKTRACE) {
-            rex.printStackTrace();
-          }
-          engine.printMessage("CompiledFunction: " + rex.getMessage());
-        }
-        if (result.isPresent()) {
-          result = engine.evaluate(result);
-          if (result.isIndeterminate()) {
-            // Numerical error encountered, proceeding with uncompiled evaluation.
-            IOFunctions.printMessage(S.CompiledFunction, "cfn", F.CEmptyList, engine);
-            IAST variables = compiledFunction.getVariables();
-            IExpr expr = compiledFunction.getExpr();
-            return expr.replaceAll(Functors.equalRules(variables, ast));
-          }
-          return result;
-        }
-      }
-      return F.NIL;
-    }
-
-    @Override
-    public void setUp(final ISymbol newSymbol) {
-      newSymbol.setAttributes(ISymbol.HOLDALL);
-    }
-  }
-
   /**
    *
    *
@@ -577,23 +543,26 @@ public final class Programming {
   private static class Defer extends AbstractCoreFunctionEvaluator {
     @Override
     public IExpr evaluate(final IAST ast, EvalEngine engine) {
-      if (!ToggleFeature.DEFER) {
-        return F.NIL;
-      }
-      // IExpr arg1=ast.arg1();
-      // if (arg1.isAST()){
-      // IAST copy=(IAST)arg1.copy();
-      // copy.addEvalFlags(IAST.DEFER_AST);
-      // return copy;
-      // }
+      //      if (!ToggleFeature.DEFER) {
+      //        return F.NIL;
+      //      }
+      //       IExpr arg1=ast.arg1();
+      //       return arg1;
+      //       if (arg1.isAST()){
+      //       IAST copy=(IAST)arg1.copy();
+      //       copy.addEvalFlags(IAST.DEFER_AST);
+      //       return copy;
+      //       }
       return F.NIL;
     }
 
     @Override
+    public int[] expectedArgSize(IAST ast) {
+      return ARGS_1_1;
+    }
+
+    @Override
     public void setUp(ISymbol newSymbol) {
-      if (!ToggleFeature.DEFER) {
-        return;
-      }
       newSymbol.setAttributes(ISymbol.HOLDALL);
     }
   }
@@ -694,55 +663,6 @@ public final class Programming {
    */
   private static final class Do extends AbstractCoreFunctionEvaluator {
 
-    private static class DoIterator {
-
-      final java.util.List<? extends IIterator<IExpr>> fIterList;
-      final EvalEngine fEngine;
-      int fIndex;
-
-      public DoIterator(
-          final java.util.List<? extends IIterator<IExpr>> iterList, EvalEngine engine) {
-        fIterList = iterList;
-        fEngine = engine;
-        fIndex = 0;
-      }
-
-      public IExpr doIt(IExpr input) {
-        if (fIndex < fIterList.size()) {
-          final IIterator<IExpr> iter = fIterList.get(fIndex);
-          if (iter.setUp()) {
-            try {
-              final int iterationLimit = fEngine.getIterationLimit();
-              int iterationCounter = 1;
-              fIndex++;
-              while (iter.hasNext()) {
-                try {
-                  iter.next();
-                  doIt(input);
-                  if (iterationLimit >= 0 && iterationLimit <= ++iterationCounter) {
-                    IterationLimitExceeded.throwIt(iterationCounter, input);
-                  }
-                } catch (final ReturnException e) {
-                  return e.getValue();
-                } catch (final BreakException e) {
-                  return S.Null;
-                } catch (final ContinueException e) {
-                  continue;
-                }
-              }
-            } finally {
-              --fIndex;
-              iter.tearDown();
-            }
-          }
-          return S.Null;
-        }
-        fEngine.evaluate(input);
-
-        return F.NIL;
-      }
-    }
-
     @Override
     public IExpr evaluate(final IAST ast, EvalEngine engine) {
       try {
@@ -770,6 +690,54 @@ public final class Programming {
     }
   }
 
+  public static class DoIterator {
+
+    final java.util.List<? extends IIterator<IExpr>> fIterList;
+    final EvalEngine fEngine;
+    int fIndex;
+
+    public DoIterator(
+        final java.util.List<? extends IIterator<IExpr>> iterList, EvalEngine engine) {
+      fIterList = iterList;
+      fEngine = engine;
+      fIndex = 0;
+    }
+
+    public IExpr doIt(IExpr input) {
+      if (fIndex < fIterList.size()) {
+        final IIterator<IExpr> iter = fIterList.get(fIndex);
+        if (iter.setUp()) {
+          try {
+            final int iterationLimit = fEngine.getIterationLimit();
+            int iterationCounter = 1;
+            fIndex++;
+            while (iter.hasNext()) {
+              try {
+                iter.next();
+                doIt(input);
+                if (iterationLimit >= 0 && iterationLimit <= ++iterationCounter) {
+                  IterationLimitExceeded.throwIt(iterationCounter, input);
+                }
+              } catch (final ReturnException e) {
+                return e.getValue();
+              } catch (final BreakException e) {
+                return S.Null;
+              } catch (final ContinueException e) {
+                continue;
+              }
+            }
+          } finally {
+            --fIndex;
+            iter.tearDown();
+          }
+        }
+        return S.Null;
+      }
+      fEngine.evaluate(input);
+
+      return F.NIL;
+    }
+  }
   /**
    *
    *
@@ -1530,20 +1498,59 @@ public final class Programming {
 
     @Override
     public IExpr evaluate(final IAST ast, EvalEngine engine) {
+      IExpr n = F.C1;
+      if (ast.argSize() == 4) {
+        n = ast.arg4();
+      }
       return nestWhile(
-          ast.arg2(), engine.evaluate(ast.arg3()), x -> F.unaryAST1(ast.arg1(), x), engine);
+          ast.arg2(), engine.evaluate(ast.arg3()), x -> F.unaryAST1(ast.arg1(), x), n, engine);
     }
 
     @Override
     public int[] expectedArgSize(IAST ast) {
-      return ARGS_3_3;
+      return ARGS_3_4;
     }
 
     public static IExpr nestWhile(
-        final IExpr expr, final IExpr test, final Function<IExpr, IExpr> fn, EvalEngine engine) {
+        final IExpr expr,
+        final IExpr test,
+        final Function<IExpr, IExpr> fn,
+        final IExpr n,
+        EvalEngine engine) {
+      int extraTimes = Integer.MAX_VALUE;
+      if (n != S.All) {
+        extraTimes = n.toIntDefault();
+      } else {
+        IExpr temp = expr;
+        IASTAppendable testFunction = F.ast(test);
+        testFunction.append(temp);
+        while (engine.evalTrue(testFunction)) {
+          temp = engine.evaluate(fn.apply(temp));
+          testFunction.append(temp);
+        }
+        return temp;
+      }
+      if (extraTimes <= 0) {
+        return F.NIL;
+      }
       IExpr temp = expr;
-      while (engine.evalTrue(F.unaryAST1(test, temp))) {
+      if (Config.MAX_AST_SIZE < extraTimes) {
+        // Maximum AST limit `1` exceeded.
+        return IOFunctions.printMessage(S.NestWhile, "zzmaxast", F.List(extraTimes), engine);
+      }
+      IExpr[] args = new IExpr[extraTimes];
+      args[0] = temp;
+      for (int i = 1; i < extraTimes; i++) {
         temp = engine.evaluate(fn.apply(temp));
+        args[i] = temp;
+      }
+      while (engine.evalTrue(F.ast(args, test))) {
+        temp = engine.evaluate(fn.apply(temp));
+
+        IExpr[] argsTemp = new IExpr[extraTimes];
+        System.arraycopy(args, 1, argsTemp, 0, extraTimes - 1);
+        argsTemp[extraTimes - 1] = temp;
+        args = argsTemp;
       }
       return temp;
     }
@@ -1596,9 +1603,14 @@ public final class Programming {
     @Override
     public IExpr evaluate(final IAST ast, EvalEngine engine) {
       IExpr arg1 = ast.arg1();
+      IExpr n = F.C1;
+      if (ast.argSize() == 4) {
+        n = ast.arg4();
+      }
       return nestList(
           ast.arg2(),
           engine.evaluate(ast.arg3()),
+          n,
           x -> F.unaryAST1(arg1, x),
           F.ListAlloc(15),
           engine);
@@ -1607,19 +1619,53 @@ public final class Programming {
 
     @Override
     public int[] expectedArgSize(IAST ast) {
-      return ARGS_3_3;
+      return ARGS_3_4;
     }
 
     public static IAST nestList(
         final IExpr expr,
         final IExpr test,
+        final IExpr n,
         final Function<IExpr, IExpr> fn,
         final IASTAppendable resultList,
         EvalEngine engine) {
+      int extraTimes = Integer.MAX_VALUE;
+      if (n != S.All) {
+        extraTimes = n.toIntDefault();
+      } else {
+        IExpr temp = expr;
+        IASTAppendable testFunction = F.ast(test);
+        testFunction.append(temp);
+        while (engine.evalTrue(testFunction)) {
+          resultList.append(temp);
+          temp = engine.evaluate(fn.apply(temp));
+          testFunction.append(temp);
+        }
+        resultList.append(temp);
+        return resultList;
+      }
+      if (extraTimes <= 0) {
+        return F.NIL;
+      }
+      if (Config.MAX_AST_SIZE < extraTimes) {
+        // Maximum AST limit `1` exceeded.
+        return IOFunctions.printMessage(S.NestWhileList, "zzmaxast", F.List(extraTimes), engine);
+      }
       IExpr temp = expr;
-      while (engine.evalTrue(F.unaryAST1(test, temp))) {
+      IExpr[] args = new IExpr[extraTimes];
+      args[0] = temp;
+      for (int i = 1; i < extraTimes; i++) {
+        temp = engine.evaluate(fn.apply(temp));
+        args[i] = temp;
+      }
+      while (engine.evalTrue(F.ast(args, test))) {
         resultList.append(temp);
         temp = engine.evaluate(fn.apply(temp));
+
+        IExpr[] argsTemp = new IExpr[extraTimes];
+        System.arraycopy(args, 1, argsTemp, 0, extraTimes - 1);
+        argsTemp[extraTimes - 1] = temp;
+        args = argsTemp;
       }
       resultList.append(temp);
       return resultList;
@@ -1710,6 +1756,11 @@ public final class Programming {
       }
 
       return F.NIL;
+    }
+
+    @Override
+    public int[] expectedArgSize(IAST ast) {
+      return ARGS_0_INFINITY;
     }
 
     @Override
@@ -1855,6 +1906,11 @@ public final class Programming {
           }
         }
       }
+    }
+
+    @Override
+    public int[] expectedArgSize(IAST ast) {
+      return ARGS_0_INFINITY;
     }
 
     @Override
@@ -2040,6 +2096,9 @@ public final class Programming {
 
     @Override
     public IExpr evaluate(final IAST ast, EvalEngine engine) {
+      //      if (!ast.head().equals(S.Part)) {
+      //        return F.NIL;
+      //      }
       if (ast.isAST1()) {
         return ast.arg1();
       }
@@ -2177,6 +2236,11 @@ public final class Programming {
         }
       }
       return F.NIL;
+    }
+
+    @Override
+    public int[] expectedArgSize(IAST ast) {
+      return ARGS_0_INFINITY;
     }
 
     @Override
@@ -2323,6 +2387,11 @@ public final class Programming {
         engine.setReapList(oldList);
       }
       return F.NIL;
+    }
+
+    @Override
+    public int[] expectedArgSize(IAST ast) {
+      return ARGS_1_3;
     }
 
     @Override
@@ -2474,6 +2543,11 @@ public final class Programming {
     }
 
     @Override
+    public int[] expectedArgSize(IAST ast) {
+      return ARGS_1_2;
+    }
+
+    @Override
     public void setUp(final ISymbol newSymbol) {
       newSymbol.setAttributes(ISymbol.HOLDALL);
     }
@@ -2620,6 +2694,11 @@ public final class Programming {
         }
       }
       return F.NIL;
+    }
+
+    @Override
+    public int[] expectedArgSize(IAST ast) {
+      return ARGS_1_INFINITY;
     }
 
     @Override
@@ -3256,7 +3335,7 @@ public final class Programming {
         final IAST setFun = (IAST) variablesList.get(i);
         if (setFun.arg1().isSymbol()) {
           oldSymbol = (ISymbol) setFun.arg1();
-          IExpr rightHandSide = setFun.arg2(); 
+          IExpr rightHandSide = setFun.arg2();
           VariablesSet set = new VariablesSet(rightHandSide);
           set.putAllSymbols(variablesMap);
           variablesMap.put(oldSymbol, rightHandSide);
