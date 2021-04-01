@@ -750,7 +750,9 @@ public class MMAAJAXQueryServlet extends HttpServlet {
     Config.USE_MANIPULATE_JS = true;
     // disable threads for JAS only on google appengine
     Config.JAS_NO_THREADS = false;
+    Config.BUILTIN_PROTECTED = ISymbol.NOATTRIBUTE;
     Config.JAVA_UNSAFE = true;
+    Config.SHORTEN_STRING_LENGTH = 1024;
     //		Config.THREAD_FACTORY =
     // com.google.appengine.api.ThreadManager.currentRequestThreadFactory();
     Config.MATHML_TRIG_LOWERCASE = false;

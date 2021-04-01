@@ -27,6 +27,7 @@ import org.matheclipse.core.form.Documentation;
 import org.matheclipse.core.form.output.ASCIIPrettyPrinter3;
 import org.matheclipse.core.form.output.OutputFormFactory;
 import org.matheclipse.core.interfaces.IExpr;
+import org.matheclipse.core.interfaces.ISymbol;
 import org.matheclipse.io.IOInit;
 import org.matheclipse.parser.client.FEConfig;
 import org.matheclipse.parser.client.SyntaxError;
@@ -95,13 +96,14 @@ public class MMAConsole {
     // distinguish between lower- and uppercase identifiers
     FEConfig.PARSER_USE_LOWERCASE_SYMBOLS = false;
     ToggleFeature.COMPILE = true;
+    Config.BUILTIN_PROTECTED = ISymbol.NOATTRIBUTE;
     Config.JAVA_UNSAFE = true;
     Config.SHORTEN_STRING_LENGTH = 1024;
     Config.USE_VISJS = true;
     Config.FILESYSTEM_ENABLED = true;
 
-    F.initSymbols(null, null, true);
     IOInit.init();
+
     MMAConsole console;
     try {
       console = new MMAConsole();
@@ -322,6 +324,7 @@ public class MMAConsole {
   /** Create a console which appends each evaluation output in a history list. */
   public MMAConsole() {
     EvalEngine engine = new EvalEngine(false);
+    EvalEngine.set(engine);
     fEvaluator = new ExprEvaluator(engine, false, (short) 100);
     EvalEngine evalEngine = fEvaluator.getEvalEngine();
     evalEngine.setFileSystemEnabled(true);
@@ -330,7 +333,7 @@ public class MMAConsole {
     fOutputFactory = OutputFormFactory.get(false, false, 5, 7);
     fOutputTraditionalFactory = OutputFormFactory.get(true, false, 5, 7);
     fInputFactory = OutputFormFactory.get(false, false, 5, 7);
-    fInputFactory.setQuotes(true);
+    fInputFactory.setInputForm(true);
 
     // F.$PreRead.assign(//
     // F.Function(F.ReplaceAll(F.Unevaluated(F.Slot1), //
@@ -349,7 +352,7 @@ public class MMAConsole {
    */
   private void setArgs(final String args[]) {
     Config.setScriptCommandLine(args);
-    
+
     String function = null;
     for (int i = 0; i < args.length; i++) {
       final String arg = args[i];
@@ -578,7 +581,7 @@ public class MMAConsole {
               outExpr = F.Show(outExpr);
             }
             String html = F.show(outExpr);
-            if (html != null) {
+            if (html != null && html.length() > 0) {
               return html;
             }
           }
