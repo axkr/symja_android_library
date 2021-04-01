@@ -1,13 +1,19 @@
 package org.matheclipse.core.reflection.system;
 
+import org.hipparchus.analysis.UnivariateFunction;
 import org.hipparchus.complex.Complex;
+import org.hipparchus.transform.DftNormalization;
+import org.hipparchus.transform.FastFourierTransformer;
+import org.hipparchus.transform.TransformType;
 import org.matheclipse.core.builtin.IOFunctions;
 import org.matheclipse.core.convert.Convert;
+import org.matheclipse.core.convert.Object2Expr;
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.interfaces.AbstractFunctionEvaluator;
 import org.matheclipse.core.eval.interfaces.IFunctionEvaluator;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.expression.S;
+import org.matheclipse.core.generic.UnaryNumerical;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.interfaces.ISymbol;
@@ -44,25 +50,16 @@ public class Fourier extends AbstractFunctionEvaluator {
    * @param b is +1 for forward, and -1 for inverse transform
    * @return discrete Fourier transform of given vector
    */
-  protected static IAST fourier(IAST vector, int b) {
+  private static IAST fourier(IAST vector, int b) {
     final int n = vector.argSize();
     Complex[] array = Convert.list2Complex(vector);
-    // TODO use org.hipparchus.transform.FastFourierTransformer
-    // if (array == null) {
-    // return F.NIL;
-    // } else {
-    // if (b == -1) {
-    // FastFourierTransformer fft = new org.hipparchus.transform.FastFourierTransformer(
-    // DftNormalization.UNITARY);
-    // Complex[] cmpResult = fft.transform(array, TransformType.INVERSE);
-    // return Convert.toVector(cmpResult);
-    // } else {
-    // FastFourierTransformer fft = new org.hipparchus.transform.FastFourierTransformer(
-    // DftNormalization.UNITARY);
-    // Complex[] cmpResult = fft.transform(array, TransformType.FORWARD);
-    // return Convert.toVector(cmpResult);
-    // }
-    // }
+    if (array == null) {
+      return F.NIL;
+    }
+    //    FastFourierTransformer fft = new FastFourierTransformer(DftNormalization.UNITARY);
+    //    org.hipparchus.complex.Complex[] result = fft.transform(array, TransformType.FORWARD);
+    //    return Object2Expr.convertComplex(true, result);
+
     if (array == null) {
       return F.NIL;
     } else {
