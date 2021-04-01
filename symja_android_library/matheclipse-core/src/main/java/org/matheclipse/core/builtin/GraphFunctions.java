@@ -91,6 +91,7 @@ public class GraphFunctions {
       S.VertexList.setEvaluator(new VertexList());
       S.VertexQ.setEvaluator(new VertexQ());
       S.WeightedAdjacencyMatrix.setEvaluator(new WeightedAdjacencyMatrix());
+      S.WeightedGraphQ.setEvaluator(new WeightedGraphQ());
     }
   }
 
@@ -1354,7 +1355,7 @@ public class GraphFunctions {
         SingleSourcePaths<IExpr, ?> iPaths = dijkstraAlg.getPaths(ast.arg2());
         GraphPath<IExpr, ?> path = iPaths.getPath(ast.arg3());
 
-        return Object2Expr.convertList(path.getVertexList());
+        return Object2Expr.convertList(path.getVertexList(), true, false);
       } catch (RuntimeException rex) {
         if (FEConfig.SHOW_STACKTRACE) {
           rex.printStackTrace();
@@ -1412,10 +1413,10 @@ public class GraphFunctions {
           }
 
           if (gex.isWeightedGraph()) {
-        	  Graph<IExpr, ExprWeightedEdge> g = (Graph<IExpr, ExprWeightedEdge>) gex.toData();
-              PlanarityTestingAlgorithm<IExpr, ExprWeightedEdge> inspector =
-                  new BoyerMyrvoldPlanarityInspector<IExpr, ExprWeightedEdge>(g);
-              return F.bool(inspector.isPlanar());
+            Graph<IExpr, ExprWeightedEdge> g = (Graph<IExpr, ExprWeightedEdge>) gex.toData();
+            PlanarityTestingAlgorithm<IExpr, ExprWeightedEdge> inspector =
+                new BoyerMyrvoldPlanarityInspector<IExpr, ExprWeightedEdge>(g);
+            return F.bool(inspector.isPlanar());
           } else {
             Graph<IExpr, ExprEdge> g = (Graph<IExpr, ExprEdge>) gex.toData();
             PlanarityTestingAlgorithm<IExpr, ExprEdge> inspector =
@@ -1642,6 +1643,31 @@ public class GraphFunctions {
         }
       }
       return F.NIL;
+    }
+
+    @Override
+    public int[] expectedArgSize(IAST ast) {
+      return ARGS_1_1;
+    }
+  }
+
+  private static class WeightedGraphQ extends AbstractEvaluator {
+
+    @Override
+    public IExpr evaluate(final IAST ast, EvalEngine engine) {
+      try {
+        if (ast.isAST1()) {
+          GraphExpr<?> gex = createGraph(ast.arg1());
+          if (gex != null && gex.isWeightedGraph()) {
+            return S.True;
+          }
+        }
+      } catch (RuntimeException rex) {
+        if (FEConfig.SHOW_STACKTRACE) {
+          rex.printStackTrace();
+        }
+      }
+      return S.False;
     }
 
     @Override
