@@ -1959,22 +1959,17 @@ public final class PatternMatching {
 
   private static void setDelayedDownRule(
       IExpr leftHandSide, int flags, IExpr rightHandSide, boolean packageMode) {
+    ISymbol lhsSymbol = null;
+    if (leftHandSide instanceof PatternNested) {
+      PatternNested pn = (PatternNested) leftHandSide;
+      IExpr pattern = pn.getPatternExpr();
+      lhsSymbol = determineRuleTag(pattern);
+    }
+
     if (leftHandSide.isAST()) {
-      // if (leftHandSide.isAST(F.MessageName, 3) && leftHandSide.first().isSymbol()) {
-      // // Set[MessageName(f,"usage"),"text")
-      // ISymbol symbol = (ISymbol) leftHandSide.first();
-      // String messageName = leftHandSide.second().toString();
-      // IStringX message;
-      // if (rightHandSide instanceof IStringX) {
-      // message = (IStringX) rightHandSide;
-      // } else {
-      // message = F.stringx(rightHandSide.toString());
-      // }
-      // symbol.putMessage(IPatternMatcher.SET_DELAYED, messageName, message);
-      // return;
-      // }
-      final ISymbol lhsSymbol = determineRuleTag(leftHandSide);
-      // final ISymbol lhsSymbol = ((IAST) leftHandSide).topHead();
+      lhsSymbol = determineRuleTag(leftHandSide);
+    }
+    if (lhsSymbol != null) {
       if (lhsSymbol.isProtected()) {
         // Symbol `1` is Protected.
         IOFunctions.printMessage(S.SetDelayed, "wrsym", F.List(lhsSymbol), EvalEngine.get());
@@ -1985,7 +1980,7 @@ public final class PatternMatching {
       return;
     }
     if (leftHandSide.isSymbol()) {
-      final ISymbol lhsSymbol = (ISymbol) leftHandSide;
+      lhsSymbol = (ISymbol) leftHandSide;
       if (lhsSymbol.isProtected()) {
         // Symbol `1` is Protected.
         IOFunctions.printMessage(S.SetDelayed, "wrsym", F.List(lhsSymbol), EvalEngine.get());
