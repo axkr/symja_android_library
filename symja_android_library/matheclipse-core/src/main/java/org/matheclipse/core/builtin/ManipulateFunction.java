@@ -302,16 +302,22 @@ public class ManipulateFunction {
           new JavaScriptFormFactory(true, false, -1, -1, JavaScriptFormFactory.USE_MATHCELL);
 
       int plotID = plot.headID();
-      final OptionArgs options;
       String colorMap = "hot";
+      final OptionArgs options;
       if (plotID == ID.Plot3D
           || plotID == ID.ComplexPlot3D
           || plotID == ID.ContourPlot
           || plotID == ID.DensityPlot) {
-        if (plotID == ID.Plot3D) {
-          options = new OptionArgs(plot.topHead(), plot, 4, engine);
-        } else { // if (plotID == ID.ComplexPlot3D) {
+        if (plotID == ID.ComplexPlot3D) {
           options = new OptionArgs(plot.topHead(), plot, 3, engine);
+          if (plot.size() > 3 && options.isInvalidPosition(plot, 2)) {
+            return F.NIL;
+          }
+        } else {
+          options = new OptionArgs(plot.topHead(), plot, 4, engine);
+          if (plot.size() > 4 && options.isInvalidPosition(plot, 3)) {
+            return F.NIL;
+          }
         }
         IExpr colorFunction = options.getOption(S.ColorFunction);
         if (colorFunction == S.Automatic) {
@@ -354,17 +360,18 @@ public class ManipulateFunction {
             optionPlotRange = F.List(S.Full, F.List(plotRange.negate(), plotRange));
           } else if (plotID == ID.ListPlot || plotID == ID.ListLinePlot) {
             optionPlotRange = F.List(S.Full, F.List(F.C0, plotRange));
-          } else if (plotID == ID.PolarPlot) {
-            optionPlotRange =
-                F.List(
-                    F.List(plotRange.negate(), plotRange), //
-                    F.List(plotRange.negate(), plotRange));
-          } else if (plotID == ID.ParametricPlot) {
+          } else if ((plotID == ID.PolarPlot) || (plotID == ID.ParametricPlot)) {
             optionPlotRange =
                 F.List(
                     F.List(plotRange.negate(), plotRange), //
                     F.List(plotRange.negate(), plotRange));
           }
+        }
+        if (!optionPlotRange.isPresent()) {
+          // Value of option `1` is not All, Full, Automatic, a positive machine
+          // number, or an appropriate list of range specifications.
+          IOFunctions.printMessage(
+              plot.topHead(), "prng", F.List(F.Rule(S.PlotRange, plotRange)), engine);
         }
       }
 
@@ -404,9 +411,6 @@ public class ManipulateFunction {
           function.append(" ]; }\n");
         }
       } else if (manipulateAST.arg1().isAST(S.ComplexPlot3D)) {
-        if (plotRangeY.isPresent()) {
-          return F.NIL;
-        }
         for (int i = 1; i < listOfFunctions.size(); i++) {
           function.append("function z" + i + "(");
           toJS.convert(function, plotSymbolX);
@@ -645,7 +649,7 @@ public class ManipulateFunction {
         stepValue = sliderRange.arg4().evalDouble();
       } else {
         stepValue = (maxValue - minValue) / 100.0;
-        newsliderRange.append(F.num(stepValue));
+        newsliderRange.append(stepValue);
       }
       IExpr list = engine.evaluate(F.Table(formula, newsliderRange));
       if (list.isNonEmptyList()) {
@@ -932,16 +936,13 @@ public class ManipulateFunction {
                   manipulateAST, i, pointList, toJS, function, boundingbox, colour, engine);
             }
           }
-          return true; // JSXGraph.boundingBox(manipulateAST, boundingbox, function.toString(),
-          // toJS, false,
-          // true);
         } else {
           sequenceYValuesListPlot(
               manipulateAST, 1, pointList, toJS, function, boundingbox, colour, engine);
-          return true; // JSXGraph.boundingBox(manipulateAST, boundingbox, function.toString(),
-          // toJS, false,
-          // true);
         }
+    return true; // JSXGraph.boundingBox(manipulateAST, boundingbox, function.toString(),
+      // toJS, false,
+      // true);
       }
       return false;
     }
@@ -955,17 +956,18 @@ public class ManipulateFunction {
       int[] colour = new int[] {1};
       for (int i = 1; i < plots.size(); i++) {
         IAST plot = (IAST) plots.get(i);
-        if (plot.isAST(S.ListLinePlot)
-            || //
-            plot.isAST(S.ListPlot)) {
+        if (plot.isAST(S.ListLinePlot) //
+            || plot.isAST(S.ListPlot)) {
           if (!JSXGraph.plot(plot, manipulateAST, toJS, function, boundingbox, colour, engine)) {
             return F.NIL;
           }
-        } else if (plot.isAST(S.Plot)
-            || //
-            plot.isAST(S.ParametricPlot)
-            || //
-            plot.isAST(S.PolarPlot)) {
+        } else if (plot.isAST(S.Plot) //
+            || plot.isAST(S.ParametricPlot) //
+            || plot.isAST(S.PolarPlot)) {
+          if (!plot.arg2().isList3() || !plot.arg2().first().isSymbol()) {
+            // Range specification `1` is not of the form {x, xmin, xmax}.
+            return IOFunctions.printMessage(plot.topHead(), "pllim", F.List(plot.arg2()), engine);
+          }
           if (plot.size() >= 3 && plot.arg2().isList()) {
             IAST plotRangeX = (IAST) plot.arg2();
             IAST plotRangeY = F.NIL;
@@ -1063,11 +1065,11 @@ public class ManipulateFunction {
       IExpr plotRangeY = options.getOption(S.PlotRange);
       // IAST optionPlotRange = F.NIL;
       if (plotRangeY.isPresent()) {
+        boolean plotRangeEvaled = false;
         if (plotRangeY.isAST(S.List, 3)) {
           try {
-            if (plotRangeY.first().isAST(S.List, 3)
-                && //
-                plotRangeY.second().isAST(S.List, 3)) {
+            if (plotRangeY.first().isAST(S.List, 3) //
+                && plotRangeY.second().isAST(S.List, 3)) {
               IAST list = (IAST) plotRangeY.first();
               plotRangeXMin = engine.evalDouble(list.first());
               plotRangeXMax = engine.evalDouble(list.second());
@@ -1078,29 +1080,26 @@ public class ManipulateFunction {
               plotRangeYMin = engine.evalDouble(plotRangeY.first());
               plotRangeYMax = engine.evalDouble(plotRangeY.second());
             }
-
+            plotRangeEvaled = true;
           } catch (RuntimeException rex) {
           }
-          // optionPlotRange = F.List(F.Full, F.List(plotRange.first(), plotRange.second()));
         } else if (plotRangeY.isReal()) {
-          if (plotID == ID.Plot) {
+          if ((plotID == ID.Plot) || (plotID == ID.ParametricPlot //
+          || plotID == ID.PolarPlot)) {
             try {
               plotRangeYMin = engine.evalDouble(plotRangeY.negate());
               plotRangeYMax = engine.evalDouble(plotRangeY);
+              plotRangeEvaled = true;
             } catch (RuntimeException rex) {
             }
-            // optionPlotRange = F.List(F.Full, F.List(plotRange.negate(), plotRange));
-          } else if (plotID == ID.ParametricPlot
-              || //
-              plotID == ID.PolarPlot) {
-            try {
-              plotRangeYMin = engine.evalDouble(plotRangeY.negate());
-              plotRangeYMax = engine.evalDouble(plotRangeY);
-            } catch (RuntimeException rex) {
-            }
-            // optionPlotRange = F.List(F.List(plotRange.negate(), plotRange), //
-            // F.List(plotRange.negate(), plotRange));
           }
+        }
+
+        if (!plotRangeEvaled) {
+          // Value of option `1` is not All, Full, Automatic, a positive machine
+          // number, or an appropriate list of range specifications.
+          IOFunctions.printMessage(
+              plot.topHead(), "prng", F.List(F.Rule(S.PlotRange, plotRangeY)), engine);
         }
       }
 
@@ -1909,7 +1908,9 @@ public class ManipulateFunction {
   private static final class BoxWhiskerChart extends AbstractEvaluator {
     @Override
     public IExpr evaluate(final IAST ast, EvalEngine engine) {
-      return redirectToManipulate(ast, engine);
+      //      "Function `1` not implemented.", //
+      return IOFunctions.printMessage(ast.topHead(), "zznotimpl", F.List(ast.topHead()), engine);
+      //      return redirectToManipulate(ast, engine);
     }
   }
 
@@ -1924,7 +1925,9 @@ public class ManipulateFunction {
 
     @Override
     public IExpr evaluate(final IAST ast, EvalEngine engine) {
-      return redirectToManipulate(ast, engine);
+      //      "Function `1` not implemented.", //
+      return IOFunctions.printMessage(ast.topHead(), "zznotimpl", F.List(ast.topHead()), engine);
+      //      return redirectToManipulate(ast, engine);
     }
   }
 
@@ -1932,7 +1935,9 @@ public class ManipulateFunction {
 
     @Override
     public IExpr evaluate(final IAST ast, EvalEngine engine) {
-      return redirectToManipulate(ast, engine);
+      //        "Function `1` not implemented.", //
+      return IOFunctions.printMessage(ast.topHead(), "zznotimpl", F.List(ast.topHead()), engine);
+      //      return redirectToManipulate(ast, engine);
     }
   }
 
@@ -2036,37 +2041,39 @@ public class ManipulateFunction {
         // }
 
         if (arg1.isAST(S.BarChart)
-            || //
-            arg1.isAST(S.BoxWhiskerChart)
-            || //
-            arg1.isAST(S.DensityHistogram)
-            || //
-            arg1.isAST(S.Histogram)
-            || //
-            arg1.isAST(S.MatrixPlot)
-            || //
-            arg1.isAST(S.PieChart)) {
+            || arg1.isAST(S.BoxWhiskerChart)
+            || arg1.isAST(S.DensityHistogram)
+            || arg1.isAST(S.Histogram)
+            || arg1.isAST(S.MatrixPlot)
+            || arg1.isAST(S.PieChart)) {
           return Plotly.plot((IAST) arg1, manipulateAST, engine);
         }
 
         if (arg1.isAST(S.Plot3D)
-            || //
-            arg1.isAST(S.ComplexPlot3D)
-            || //
-            arg1.isAST(S.ContourPlot)
-            || //
-            arg1.isAST(S.DensityPlot)) {
+            || arg1.isAST(S.ComplexPlot3D)
+            || arg1.isAST(S.ContourPlot)
+            || arg1.isAST(S.DensityPlot)) {
           IAST plot = (IAST) arg1;
-          if (plot.size() >= 3 && plot.arg2().isList()) {
+          if (plot.size() >= 3) {
+            if (!plot.arg2().isList3() || !plot.arg2().first().isSymbol()) {
+              // Range specification `1` is not of the form {x, xmin, xmax}.
+              return IOFunctions.printMessage(plot.topHead(), "pllim", F.List(plot.arg2()), engine);
+            }
             IAST plotRangeX = (IAST) plot.arg2();
-            // TODO find better default Y plot range instead of [-5, 5]
             IAST plotRangeY = F.NIL;
-            if (plot.size() >= 4 && plot.arg3().isList()) {
-              plotRangeY = (IAST) plot.arg3();
+            if (plot.size() >= 4) {
+              if (plot.arg3().isList3()) {
+                plotRangeY = (IAST) plot.arg3();
+              } else if (!arg1.isAST(S.ComplexPlot3D)) {
+                if (!plot.arg3().isList3() || !plot.arg3().first().isSymbol()) {
+                  // Range specification `1` is not of the form {x, xmin, xmax}.
+                  return IOFunctions.printMessage(
+                      plot.topHead(), "pllim", F.List(plot.arg3()), engine);
+                }
+              }
             }
-            if (plotRangeX.isAST3() && plotRangeX.arg1().isSymbol()) {
-              return Mathcell.sliderWithPlot(plot, plotRangeX, plotRangeY, manipulateAST, engine);
-            }
+
+            return Mathcell.sliderWithPlot(plot, plotRangeX, plotRangeY, manipulateAST, engine);
           }
         } else if (arg1.isAST(S.ListPlot3D)) {
           return Mathcell.plot((IAST) arg1, manipulateAST, engine);
@@ -2610,13 +2617,11 @@ public class ManipulateFunction {
 
     for (double d : data) {
       int bin = (int) ((d - min) / binSize);
-      if (bin < 0) {
+      if ((bin < 0) || (bin >= numBins)) {
         /* this data is smaller than min */
-      } else if (bin >= numBins) {
-        /* this data point is bigger than max */
-      } else {
-        result[bin] += 1;
-      }
+      }else {
+      result[bin] += 1;
+    }
     }
     return result;
   }
