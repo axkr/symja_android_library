@@ -314,10 +314,8 @@ public class Assumptions extends AbstractAssumptions {
       SignedNumberRelations gla = assumptions.valueMap.get(key);
       if (gla == null) {
         gla = new SignedNumberRelations();
-        gla.addGreater(num);
-      } else {
-        gla.addGreater(num);
       }
+  gla.addGreater(num);
       assumptions.valueMap.put(key, gla);
       return true;
     }
@@ -333,10 +331,8 @@ public class Assumptions extends AbstractAssumptions {
       SignedNumberRelations gla = assumptions.valueMap.get(key);
       if (gla == null) {
         gla = new SignedNumberRelations();
-        gla.addLess(num);
-      } else {
-        gla.addLess(num);
       }
+  gla.addLess(num);
       assumptions.valueMap.put(key, gla);
       return true;
     }

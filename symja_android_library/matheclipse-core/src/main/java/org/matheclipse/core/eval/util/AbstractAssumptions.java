@@ -36,8 +36,11 @@ public abstract class AbstractAssumptions implements IAssumptions {
     if (expr.isNumber()) {
       return S.True;
     }
-    if (expr.equals(F.CComplexInfinity)) {
+    if (expr.isDirectedInfinity()) {
       return S.False;
+    }
+    if (expr == S.Undefined) {
+      return S.Undefined;
     }
     if (expr.isSymbol()) {
       if (expr.equals(S.Degree)) {
@@ -81,9 +84,10 @@ public abstract class AbstractAssumptions implements IAssumptions {
    * @return
    */
   public static ISymbol assumeArray(final IExpr expr) {
-    if (expr.isAST(S.Arrays, 4)) {
-      return S.True;
-    }
+	  // TODO implementation
+//    if (expr.isAST(S.Arrays, 4)) {
+//      return S.True;
+//    }
     return null;
   }
 
@@ -100,6 +104,12 @@ public abstract class AbstractAssumptions implements IAssumptions {
     }
     if (expr.isNumber()) {
       return S.False;
+    }
+    if (expr.isDirectedInfinity()) {
+      return S.False;
+    }
+    if (expr == S.Undefined) {
+      return S.Undefined;
     }
     IAssumptions assumptions = EvalEngine.get().getAssumptions();
     if (assumptions != null) {
@@ -123,6 +133,12 @@ public abstract class AbstractAssumptions implements IAssumptions {
     }
     if (expr.isRealConstant()) {
       return S.True;
+    }
+    if (expr.isDirectedInfinity()) {
+      return S.False;
+    }
+    if (expr == S.Undefined) {
+      return S.Undefined;
     }
     IAssumptions assumptions = EvalEngine.get().getAssumptions();
     if (assumptions != null) {
@@ -161,6 +177,12 @@ public abstract class AbstractAssumptions implements IAssumptions {
     }
     if (expr.isNumber()) {
       return S.False;
+    }
+    if (expr.isDirectedInfinity()) {
+      return S.False;
+    }
+    if (expr == S.Undefined) {
+      return S.Undefined;
     }
     IAssumptions assumptions = EvalEngine.get().getAssumptions();
     if (assumptions != null) {
@@ -346,6 +368,12 @@ public abstract class AbstractAssumptions implements IAssumptions {
     if (expr.isNumber()) {
       return S.False;
     }
+    if (expr.isDirectedInfinity()) {
+      return S.False;
+    }
+    if (expr == S.Undefined) {
+      return S.Undefined;
+    }
     IAssumptions assumptions = EvalEngine.get().getAssumptions();
     if (assumptions != null) {
       if (assumptions.isPrime(expr)) {
@@ -368,6 +396,12 @@ public abstract class AbstractAssumptions implements IAssumptions {
     }
     if (expr.isNumber()) {
       return S.False;
+    }
+    if (expr.isDirectedInfinity()) {
+      return S.False;
+    }
+    if (expr == S.Undefined) {
+      return S.Undefined;
     }
     IAssumptions assumptions = EvalEngine.get().getAssumptions();
     if (assumptions != null) {
@@ -454,14 +488,14 @@ public abstract class AbstractAssumptions implements IAssumptions {
         boolean flag = false;
         for (int i = 1; i < size; i++) {
           IExpr x = ast.get(i);
-          if (x.isNonNegativeResult()) {
-          } else if (assumeNonNegative(x)) {
-          } else if (x.isNegativeResult()) {
-            flag = !flag;
-          } else if (assumeNegative(x)) {
-            flag = !flag;
+          if (x.isNonNegativeResult() || assumeNonNegative(x)) {
           } else {
-            return false;
+            if (x.isNegativeResult()) {
+            } else if (assumeNegative(x)) {
+            } else {
+              return false;
+            }
+            flag = !flag;
           }
         }
         return flag;
@@ -513,14 +547,14 @@ public abstract class AbstractAssumptions implements IAssumptions {
         boolean flag = true;
         for (int i = 1; i < size; i++) {
           IExpr x = ast.get(i);
-          if (x.isNonNegativeResult()) {
-          } else if (assumeNonNegative(x)) {
-          } else if (x.isNegativeResult()) {
-            flag = !flag;
-          } else if (assumeNegative(x)) {
-            flag = !flag;
+          if (x.isNonNegativeResult() || assumeNonNegative(x)) {
           } else {
-            return false;
+            if (x.isNegativeResult()) {
+            } else if (assumeNegative(x)) {
+            } else {
+              return false;
+            }
+            flag = !flag;
           }
         }
         return flag;
@@ -578,14 +612,14 @@ public abstract class AbstractAssumptions implements IAssumptions {
         boolean flag = true;
         for (int i = 1; i < size; i++) {
           IExpr x = ast.get(i);
-          if (x.isPositiveResult()) {
-          } else if (assumePositive(x)) {
-          } else if (x.isNegativeResult()) {
-            flag = !flag;
-          } else if (assumeNegative(x)) {
-            flag = !flag;
+          if (x.isPositiveResult() || assumePositive(x)) {
           } else {
-            return false;
+            if (x.isNegativeResult()) {
+            } else if (assumeNegative(x)) {
+            } else {
+              return false;
+            }
+            flag = !flag;
           }
         }
         return flag;
