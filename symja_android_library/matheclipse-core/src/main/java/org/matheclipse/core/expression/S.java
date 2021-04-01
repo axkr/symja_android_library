@@ -105,6 +105,13 @@ public class S {
   public static final IBuiltInSymbol $MinMachineNumber =
       F.initFinalSymbol("$MinMachineNumber", ID.$MinMachineNumber);
 
+  public static final IBuiltInSymbol $Notebooks = F.initFinalSymbol("$Notebooks", ID.$Notebooks);
+
+  /**
+   * $OperatingSystem - gives the type of operating system ("Windows", "MacOSX", or "Unix") running
+   * Symja. | See: <a
+   * href="https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/$OperatingSystem.md">$OperatingSystem</a>
+   */
   public static final IBuiltInSymbol $OperatingSystem =
       F.initFinalSymbol("$OperatingSystem", ID.$OperatingSystem);
 
@@ -132,8 +139,16 @@ public class S {
   public static final IBuiltInSymbol $RootDirectory =
       F.initFinalSymbol("$RootDirectory", ID.$RootDirectory);
 
+  /**
+   * $ScriptCommandLine - is a list of string arguments when running Symja in script mode. The list
+   * starts with the name of the script. | See: <a
+   * href="https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/$ScriptCommandLine.md">$ScriptCommandLine</a>
+   */
   public static final IBuiltInSymbol $ScriptCommandLine =
       F.initFinalSymbol("$ScriptCommandLine", ID.$ScriptCommandLine);
+
+  public static final IBuiltInSymbol $SystemCharacterEncoding =
+      F.initFinalSymbol("$SystemCharacterEncoding", ID.$SystemCharacterEncoding);
 
   public static final IBuiltInSymbol $TemporaryDirectory =
       F.initFinalSymbol("$TemporaryDirectory", ID.$TemporaryDirectory);
@@ -236,6 +251,9 @@ public class S {
    * href="https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/AllTrue.md">AllTrue</a>
    */
   public static final IBuiltInSymbol AllTrue = F.initFinalSymbol("AllTrue", ID.AllTrue);
+
+  public static final IBuiltInSymbol AllowShortContext =
+      F.initFinalSymbol("AllowShortContext", ID.AllowShortContext);
 
   public static final IBuiltInSymbol AllowedHeads =
       F.initFinalSymbol("AllowedHeads", ID.AllowedHeads);
@@ -830,6 +848,8 @@ public class S {
 
   public static final IBuiltInSymbol Button = F.initFinalSymbol("Button", ID.Button);
 
+  public static final IBuiltInSymbol Byte = F.initFinalSymbol("Byte", ID.Byte);
+
   /**
    * ByteArray({list-of-byte-values}) - converts the `list-of-byte-values` into a byte array. | See:
    * <a
@@ -943,6 +963,8 @@ public class S {
   public static final IBuiltInSymbol CentralMoment =
       F.initFinalSymbol("CentralMoment", ID.CentralMoment);
 
+  public static final IBuiltInSymbol Character = F.initFinalSymbol("Character", ID.Character);
+
   public static final IBuiltInSymbol CharacterEncoding =
       F.initFinalSymbol("CharacterEncoding", ID.CharacterEncoding);
 
@@ -1027,6 +1049,8 @@ public class S {
   public static final IBuiltInSymbol CirclePoints =
       F.initFinalSymbol("CirclePoints", ID.CirclePoints);
 
+  public static final IBuiltInSymbol CircleTimes = F.initFinalSymbol("CircleTimes", ID.CircleTimes);
+
   /**
    * Clear(symbol1, symbol2,...) - clears all values of the given symbols. | See: <a
    * href="https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/Clear.md">Clear</a>
@@ -1053,6 +1077,8 @@ public class S {
    * href="https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/Clip.md">Clip</a>
    */
   public static final IBuiltInSymbol Clip = F.initFinalSymbol("Clip", ID.Clip);
+
+  public static final IBuiltInSymbol Close = F.initFinalSymbol("Close", ID.Close);
 
   /**
    * ClosenessCentrality(graph) - Computes the closeness centrality of each vertex of a `graph`. |
@@ -1395,6 +1421,8 @@ public class S {
 
   public static final IBuiltInSymbol CreateDirectory =
       F.initFinalSymbol("CreateDirectory", ID.CreateDirectory);
+
+  public static final IBuiltInSymbol CreateFile = F.initFinalSymbol("CreateFile", ID.CreateFile);
 
   /**
    * Cross(a, b) - computes the vector cross product of `a` and `b`. | See: <a
@@ -1920,6 +1948,8 @@ public class S {
    */
   public static final IBuiltInSymbol End = F.initFinalSymbol("End", ID.End);
 
+  public static final IBuiltInSymbol EndOfFile = F.initFinalSymbol("EndOfFile", ID.EndOfFile);
+
   public static final IBuiltInSymbol EndOfLine = F.initFinalSymbol("EndOfLine", ID.EndOfLine);
 
   public static final IBuiltInSymbol EndOfString = F.initFinalSymbol("EndOfString", ID.EndOfString);
@@ -2198,11 +2228,21 @@ public class S {
    */
   public static final IBuiltInSymbol Fibonacci = F.initFinalSymbol("Fibonacci", ID.Fibonacci);
 
+  public static final IBuiltInSymbol File = F.initFinalSymbol("File", ID.File);
+
   public static final IBuiltInSymbol FileNameJoin =
       F.initFinalSymbol("FileNameJoin", ID.FileNameJoin);
 
   public static final IBuiltInSymbol FileNameTake =
       F.initFinalSymbol("FileNameTake", ID.FileNameTake);
+
+  /**
+   * FileNames( ) - returns a list with the filenames in the current working folder.. | See: <a
+   * href="https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/FileNames.md">FileNames</a>
+   */
+  public static final IBuiltInSymbol FileNames = F.initFinalSymbol("FileNames", ID.FileNames);
+
+  public static final IBuiltInSymbol FilePrint = F.initFinalSymbol("FilePrint", ID.FilePrint);
 
   /**
    * FilterRules(list-of-option-rules, list-of-rules) - filter the `list-of-option-rules` by
@@ -3058,6 +3098,8 @@ public class S {
    */
   public static final IBuiltInSymbol InputForm = F.initFinalSymbol("InputForm", ID.InputForm);
 
+  public static final IBuiltInSymbol InputStream = F.initFinalSymbol("InputStream", ID.InputStream);
+
   /**
    * InputString() - if the file system is enabled, the user can input a string. | See: <a
    * href="https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/InputString.md">InputString</a>
@@ -3070,6 +3112,10 @@ public class S {
    * href="https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/Insert.md">Insert</a>
    */
   public static final IBuiltInSymbol Insert = F.initFinalSymbol("Insert", ID.Insert);
+
+  public static final IBuiltInSymbol InstallJava = F.initFinalSymbol("InstallJava", ID.InstallJava);
+
+  public static final IBuiltInSymbol InstanceOf = F.initFinalSymbol("InstanceOf", ID.InstanceOf);
 
   /**
    * Integer - is the head of integers. | See: <a
@@ -3344,6 +3390,8 @@ public class S {
 
   public static final IBuiltInSymbol JacobiZeta = F.initFinalSymbol("JacobiZeta", ID.JacobiZeta);
 
+  public static final IBuiltInSymbol JavaClass = F.initFinalSymbol("JavaClass", ID.JavaClass);
+
   /**
    * JavaForm(expr) - returns the Symja Java form of the `expr`. In Java you can use the created
    * Symja expressions. | See: <a
@@ -3351,6 +3399,11 @@ public class S {
    */
   public static final IBuiltInSymbol JavaForm = F.initFinalSymbol("JavaForm", ID.JavaForm);
 
+  public static final IBuiltInSymbol JavaNew = F.initFinalSymbol("JavaNew", ID.JavaNew);
+
+  public static final IBuiltInSymbol JavaObject = F.initFinalSymbol("JavaObject", ID.JavaObject);
+
+  public static final IBuiltInSymbol JavaObjectQ = F.initFinalSymbol("JavaObjectQ", ID.JavaObjectQ);
   /**
    * Join(l1, l2) - concatenates the lists `l1` and `l2`. | See: <a
    * href="https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/Join.md">Join</a>
@@ -3684,6 +3737,9 @@ public class S {
   public static final IBuiltInSymbol Listable = F.initFinalSymbol("Listable", ID.Listable);
 
   public static final IBuiltInSymbol Literal = F.initFinalSymbol("Literal", ID.Literal);
+
+  public static final IBuiltInSymbol LoadJavaClass =
+      F.initFinalSymbol("LoadJavaClass", ID.LoadJavaClass);
 
   /**
    * Log(z) - returns the natural logarithm of `z`. | See: <a
@@ -4418,6 +4474,12 @@ public class S {
    * href="https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/OneIdentity.md">OneIdentity</a>
    */
   public static final IBuiltInSymbol OneIdentity = F.initFinalSymbol("OneIdentity", ID.OneIdentity);
+
+  public static final IBuiltInSymbol OpenAppend = F.initFinalSymbol("OpenAppend", ID.OpenAppend);
+
+  public static final IBuiltInSymbol OpenRead = F.initFinalSymbol("OpenRead", ID.OpenRead);
+
+  public static final IBuiltInSymbol OpenWrite = F.initFinalSymbol("OpenWrite", ID.OpenWrite);
 
   /**
    * Operate(p, expr) - applies `p` to the head of `expr`. | See: <a
@@ -5171,6 +5233,10 @@ public class S {
    */
   public static final IBuiltInSymbol Re = F.initFinalSymbol("Re", ID.Re);
 
+  public static final IBuiltInSymbol Read = F.initFinalSymbol("Read", ID.Read);
+
+  public static final IBuiltInSymbol ReadList = F.initFinalSymbol("ReadList", ID.ReadList);
+
   public static final IBuiltInSymbol ReadProtected =
       F.initFinalSymbol("ReadProtected", ID.ReadProtected);
 
@@ -5203,6 +5269,11 @@ public class S {
    * href="https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/Reap.md">Reap</a>
    */
   public static final IBuiltInSymbol Reap = F.initFinalSymbol("Reap", ID.Reap);
+
+  public static final IBuiltInSymbol Record = F.initFinalSymbol("Record", ID.Record);
+
+  public static final IBuiltInSymbol RecordSeparators =
+      F.initFinalSymbol("RecordSeparators", ID.RecordSeparators);
 
   public static final IBuiltInSymbol Rectangle = F.initFinalSymbol("Rectangle", ID.Rectangle);
 
@@ -5417,6 +5488,8 @@ public class S {
    */
   public static final IBuiltInSymbol RussellRaoDissimilarity =
       F.initFinalSymbol("RussellRaoDissimilarity", ID.RussellRaoDissimilarity);
+
+  public static final IBuiltInSymbol SameObjectQ = F.initFinalSymbol("SameObjectQ", ID.SameObjectQ);
 
   /**
    * SameQ(x, y) - returns `True` if `x` and `y` are structurally identical. | See: <a
@@ -5809,6 +5882,9 @@ public class S {
   public static final IBuiltInSymbol StartOfString =
       F.initFinalSymbol("StartOfString", ID.StartOfString);
 
+  public static final IBuiltInSymbol StaticsVisible =
+      F.initFinalSymbol("StaticsVisible", ID.StaticsVisible);
+
   /**
    * StieltjesGamma(a) - returns Stieltjes constant. | See: <a
    * href="https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/StieltjesGamma.md">StieltjesGamma</a>
@@ -5963,6 +6039,9 @@ public class S {
    */
   public static final IBuiltInSymbol StringToByteArray =
       F.initFinalSymbol("StringToByteArray", ID.StringToByteArray);
+
+  public static final IBuiltInSymbol StringToStream =
+      F.initFinalSymbol("StringToStream", ID.StringToStream);
 
   /**
    * StringTrim(s) - returns a version of `s `with whitespace removed from start and end. | See: <a
@@ -6533,6 +6612,9 @@ public class S {
   public static final IBuiltInSymbol UpperTriangularize =
       F.initFinalSymbol("UpperTriangularize", ID.UpperTriangularize);
 
+  public static final IBuiltInSymbol UseTypeChecking =
+      F.initFinalSymbol("UseTypeChecking", ID.UseTypeChecking);
+
   /**
    * ValueQ(expr) - returns `True` if and only if `expr` is defined. | See: <a
    * href="https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/ValueQ.md">ValueQ</a>
@@ -6651,11 +6733,19 @@ public class S {
   public static final IBuiltInSymbol WeierstrassPPrime =
       F.initFinalSymbol("WeierstrassPPrime", ID.WeierstrassPPrime);
 
+  /**
+   * WeightedAdjacencyMatrix(graph) - convert the `graph` into a weighted adjacency matrix in sparse
+   * array format. | See: <a
+   * href="https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/WeightedAdjacencyMatrix.md">WeightedAdjacencyMatrix</a>
+   */
   public static final IBuiltInSymbol WeightedAdjacencyMatrix =
       F.initFinalSymbol("WeightedAdjacencyMatrix", ID.WeightedAdjacencyMatrix);
 
   public static final IBuiltInSymbol WeightedData =
       F.initFinalSymbol("WeightedData", ID.WeightedData);
+
+  public static final IBuiltInSymbol WeightedGraphQ =
+      F.initFinalSymbol("WeightedGraphQ", ID.WeightedGraphQ);
 
   /**
    * Which(cond1, expr1, cond2, expr2, ...) - yields `expr1` if `cond1` evaluates to `True`, `expr2`
@@ -6696,6 +6786,8 @@ public class S {
    */
   public static final IBuiltInSymbol With = F.initFinalSymbol("With", ID.With);
 
+  public static final IBuiltInSymbol Word = F.initFinalSymbol("Word", ID.Word);
+
   /**
    * WordBoundary - represents the boundary between words. | See: <a
    * href="https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/WordBoundary.md">WordBoundary</a>
@@ -6709,6 +6801,11 @@ public class S {
    */
   public static final IBuiltInSymbol WordCharacter =
       F.initFinalSymbol("WordCharacter", ID.WordCharacter);
+
+  public static final IBuiltInSymbol WordSeparators =
+      F.initFinalSymbol("WordSeparators", ID.WordSeparators);
+
+  public static final IBuiltInSymbol Write = F.initFinalSymbol("Write", ID.Write);
 
   public static final IBuiltInSymbol WriteString = F.initFinalSymbol("WriteString", ID.WriteString);
 

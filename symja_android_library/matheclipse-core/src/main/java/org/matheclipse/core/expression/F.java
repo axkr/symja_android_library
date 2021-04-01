@@ -1,7 +1,5 @@
 package org.matheclipse.core.expression;
 
-import static java.lang.Math.abs;
-
 import java.awt.Desktop;
 import java.io.BufferedWriter;
 import java.io.File;
@@ -36,6 +34,7 @@ import org.matheclipse.core.builtin.BesselFunctions;
 import org.matheclipse.core.builtin.BooleanFunctions;
 import org.matheclipse.core.builtin.ClusteringFunctions;
 import org.matheclipse.core.builtin.Combinatoric;
+import org.matheclipse.core.builtin.CompilerFunctions;
 import org.matheclipse.core.builtin.ComputationalGeometryFunctions;
 import org.matheclipse.core.builtin.ConstantDefinitions;
 import org.matheclipse.core.builtin.ContainsFunctions;
@@ -55,6 +54,7 @@ import org.matheclipse.core.builtin.IOFunctions;
 import org.matheclipse.core.builtin.ImageFunctions;
 import org.matheclipse.core.builtin.IntegerFunctions;
 import org.matheclipse.core.builtin.IntervalFunctions;
+import org.matheclipse.core.builtin.JavaFunctions;
 import org.matheclipse.core.builtin.LinearAlgebra;
 import org.matheclipse.core.builtin.ListFunctions;
 import org.matheclipse.core.builtin.ManipulateFunction;
@@ -385,6 +385,12 @@ public class F extends S {
 
   /** Constant double &quot;1.0&quot; */
   public static final Num CD1 = new Num(1.0);
+
+  /** Complex numerical imaginary unit. */
+  public static final IComplexNum CDI = ComplexNum.I;
+
+  /** Complex negative numerical imaginary unit. */
+  public static final IComplexNum CDNI = ComplexNum.NI;
 
   /** Represents the empty Smyja string <code>""</code> */
   public static IStringX CEmptyString;
@@ -901,6 +907,8 @@ public class F extends S {
       UnitTestingFunctions.initialize();
       NumericArrayFunctions.initialize();
       GraphicsFunctions.initialize();
+      CompilerFunctions.initialize();
+      JavaFunctions.initialize();
 
       ComputationalGeometryFunctions.initialize();
 
@@ -1372,7 +1380,7 @@ public class F extends S {
    * @return the <code>object</code> converted to a {@link IExpr}}
    */
   public static IExpr symjify(final Object object, boolean evaluate) {
-    IExpr temp = Object2Expr.convert(object);
+    IExpr temp = Object2Expr.convert(object, true, false);
     return evaluate ? eval(temp) : temp;
   }
 
@@ -1460,7 +1468,8 @@ public class F extends S {
       return symbol;
     }
     if (Config.SERVER_MODE) {
-      if (FEConfig.PARSER_USE_LOWERCASE_SYMBOLS) {
+      if (FEConfig.PARSER_USE_LOWERCASE_SYMBOLS
+          || java.lang.Character.isUpperCase(name.charAt(0))) {
         if (SYMBOL_OBSERVER.createPredefinedSymbol(name)) {
           // second try, because the symbol may now be added to
           // fSymbolMap
@@ -1468,18 +1477,6 @@ public class F extends S {
               org.matheclipse.core.expression.Context.PREDEFINED_SYMBOLS_MAP.get(name);
           if (secondTry != null) {
             return secondTry;
-          }
-        }
-      } else {
-        if (Character.isUpperCase(name.charAt(0))) {
-          if (SYMBOL_OBSERVER.createPredefinedSymbol(name)) {
-            // second try, because the symbol may now be added to
-            // fSymbolMap
-            ISymbol secondTry =
-                org.matheclipse.core.expression.Context.PREDEFINED_SYMBOLS_MAP.get(name);
-            if (secondTry != null) {
-              return secondTry;
-            }
           }
         }
       }
@@ -2214,7 +2211,7 @@ public class F extends S {
    * @return
    */
   public static IExpr cast(Object obj) {
-    return Object2Expr.convert(obj);
+    return Object2Expr.convert(obj, true, false);
   }
 
   public static IAST CatalanNumber(final IExpr a) {
@@ -3876,7 +3873,20 @@ public class F extends S {
         if (symbolObserver != null) {
           SYMBOL_OBSERVER = symbolObserver;
         }
-
+        String autoload = ".\\Autoload";
+        if (FEConfig.PARSER_USE_LOWERCASE_SYMBOLS) {
+          autoload = ".\\AutoloadSymja";
+        }
+        File sourceLocation = new File(autoload);
+        final String[] files = sourceLocation.list();
+        if (files != null) {
+          for (int i = 0; i < files.length; i++) {
+            if (files[i].endsWith(".m")) {
+              File sourceFile = new File(sourceLocation, files[i]);
+              FileFunctions.Get.loadPackage(EvalEngine.get(), sourceFile);
+            }
+          }
+        }
         // if (!noPackageLoading) {
         // Reader reader = null;
         // if (fileName != null) {
@@ -4263,6 +4273,11 @@ public class F extends S {
     return isFuzzyEquals(x, y, Config.MACHINE_EPSILON);
   }
 
+  public static final boolean isEqual(
+      org.hipparchus.complex.Complex x, org.hipparchus.complex.Complex y) {
+    return isFuzzyEquals(x, y, Config.MACHINE_EPSILON);
+  }
+
   /**
    * Returns {@code true} if {@code a} and {@code b} are within {@code tolerance} (exclusive) of
    * each other.
@@ -4296,6 +4311,11 @@ public class F extends S {
         || (Double.isNaN(a) && Double.isNaN(b));
   }
 
+  public static final boolean isFuzzyEquals(
+      org.hipparchus.complex.Complex x, org.hipparchus.complex.Complex y, double tolerance) {
+    return isFuzzyEquals(x.getReal(), y.getReal(), tolerance) //
+        && isFuzzyEquals(x.getImaginary(), y.getImaginary(), tolerance);
+  }
   /**
    * Calculate the relative difference between x and y. In case |x+y|/2 is zero the absolute
    * difference is returned.
@@ -4313,8 +4333,8 @@ public class F extends S {
         error = Double.POSITIVE_INFINITY;
       }
     } else {
-      final double z = abs(x + y) / 2;
-      error = abs(x - y);
+      final double z = java.lang.Math.abs(x + y) / 2;
+      error = java.lang.Math.abs(x - y);
       if (z > 0) {
         error /= z;
       }
@@ -4781,7 +4801,7 @@ public class F extends S {
   public static IAST list(final Object... objects) {
     IExpr[] a = new IExpr[objects.length];
     for (int i = 0; i < objects.length; i++) {
-      a[i] = Object2Expr.convert(objects[i]);
+      a[i] = Object2Expr.convert(objects[i], true, false);
     }
     return F.List(a);
   }
@@ -6183,6 +6203,11 @@ public class F extends S {
     return symbol;
   }
 
+  public static ISymbol symbol(final Context context, final String symbolName, EvalEngine engine) {
+    ContextPath contextPath = engine.getContextPath();
+    return contextPath.getSymbol(symbolName, context, engine.isRelaxedSyntax());
+  }
+
   /**
    * Print the documentation for the given symbol.
    *
@@ -7564,7 +7589,7 @@ public class F extends S {
   public static String openSVGOnDesktop(IAST show) throws IOException {
     StringBuilder stw = new StringBuilder();
     Show2SVG.graphicsToSVG(show.getAST(1), stw);
-    File temp = File.createTempFile("tempfile", ".svg");
+    File temp = java.io.File.createTempFile("tempfile", ".svg");
     BufferedWriter bw = new BufferedWriter(new FileWriter(temp));
     bw.write(stw.toString());
     bw.close();
@@ -7575,7 +7600,7 @@ public class F extends S {
   }
 
   public static String openHTMLOnDesktop(String html) throws IOException {
-    File temp = File.createTempFile("tempfile", ".html");
+    File temp = java.io.File.createTempFile("tempfile", ".html");
     BufferedWriter bw = new BufferedWriter(new FileWriter(temp));
     bw.write(html);
     bw.close();
@@ -7583,5 +7608,53 @@ public class F extends S {
       Desktop.getDesktop().open(temp);
     }
     return temp.toString();
+  }
+
+  /**
+   * Iterate over the arguments of <code>list</code> and flatten the arguments of <code>
+   * Sequence(...)
+   * </code> expressions. (i.e. <code>{Sequence(a,b,...)}</code> is rewritten as <code>{a,b,...}
+   * </code>). If some of the elements is the symbol <code>Nothing</code> it's automatically removed
+   * from the arguments.
+   *
+   * @param list an AST which may contain <code>Sequence(...)</code> expressions or <code>Nothing
+   *     </code> symbols.
+   * @return <code>F.NIL</code> if no sequence is flattened
+   */
+  public static IAST flattenSequence(final IAST list) {
+    if (list.isEvalFlagOn(IAST.SEQUENCE_FLATTENED)) {
+      return NIL;
+    }
+    int attr = list.topHead().getAttributes();
+    final IASTAppendable[] seqResult = new IASTAppendable[] {NIL};
+
+    list.forEach(
+        (x, i) -> {
+          if (x.isSequence()) {
+            IAST seq = (IAST) x;
+            if (!seqResult[0].isPresent()) {
+              seqResult[0] = ast(list.head(), list.size() + seq.size(), false);
+              seqResult[0].appendArgs(list, i);
+            }
+            seqResult[0].appendArgs(seq);
+            return;
+          } else if (x.equals(S.Nothing)) {
+            if ((ISymbol.HOLDALL & attr) == ISymbol.NOATTRIBUTE) {
+              if (!seqResult[0].isPresent()) {
+                seqResult[0] = ast(list.head(), list.size() - 1, false);
+                seqResult[0].appendArgs(list, i);
+              }
+              return;
+            }
+          }
+          if (seqResult[0].isPresent()) {
+            seqResult[0].append(x);
+          }
+        });
+    if (seqResult[0].isPresent()) {
+      return seqResult[0];
+    }
+    list.addEvalFlags(IAST.SEQUENCE_FLATTENED);
+    return NIL;
   }
 }
