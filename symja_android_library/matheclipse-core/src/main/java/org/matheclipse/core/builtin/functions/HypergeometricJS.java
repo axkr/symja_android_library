@@ -40,8 +40,7 @@ public class HypergeometricJS {
     Complex p = Complex.ONE;
     int i = 0;
     while (Math.abs(p.getReal()) > Config.SPECIAL_FUNCTIONS_TOLERANCE
-        || //
-        Math.abs(p.getImaginary()) > Config.SPECIAL_FUNCTIONS_TOLERANCE) {
+        || Math.abs(p.getImaginary()) > Config.SPECIAL_FUNCTIONS_TOLERANCE) {
       for (int j = 0; j < A.length; j++) {
         p = p.multiply(A[j]);
         A[j] = A[j].add(1.0);
@@ -312,7 +311,7 @@ public class HypergeometricJS {
     Complex s = Complex.ONE;
     Complex p = Complex.ONE;
     Complex pLast = p;
-    boolean converging = false;
+    boolean converging = false; // first few terms can be larger than unity
     int i = 1;
 
     while (Math.abs(p.getReal()) > tolerance || Math.abs(p.getImaginary()) > tolerance) {
@@ -373,12 +372,20 @@ public class HypergeometricJS {
     return s;
   }
 
-  public static Complex hypergeometric2F1(Complex a, Complex b, Complex c, Complex x) {
+  public static Complex hypergeometric2F1(
+      final Complex a, final Complex b, final Complex c, final Complex x) {
     return hypergeometric2F1(a, b, c, x, Config.SPECIAL_FUNCTIONS_TOLERANCE);
   }
 
   public static Complex hypergeometric2F1(
       Complex a, Complex b, Complex c, Complex x, double tolerance) {
+
+    if (F.isFuzzyEquals(a, c, tolerance)) {
+      return Complex.ONE.subtract(x).pow(b.negate());
+    }
+    if (F.isFuzzyEquals(b, c, tolerance)) {
+      return Complex.ONE.subtract(x).pow(a.negate());
+    }
 
     // choose smallest absolute value of transformed argument
     // transformations from Abramowitz & Stegun p.559
@@ -405,6 +412,12 @@ public class HypergeometricJS {
       }
     }
 
+    final Complex subtractCA = c.subtract(a);
+    final Complex subtractCB = c.subtract(b);
+    final Complex af = a;
+    final Complex bf = b;
+    final Complex cf = c;
+    final Complex xf = x;
     switch (index) {
       case 0:
         break;
@@ -417,10 +430,18 @@ public class HypergeometricJS {
 
       case 2:
         {
+          if (c.subtract(a.add(b)).isMathematicalInteger()
+              || (subtractCA.isMathematicalInteger() && subtractCA.getReal() <= 0)) {
+            return complexAverage(v -> hypergeometric2F1(v, bf, cf, xf), af);
+          }
+          if (subtractCB.isMathematicalInteger() && subtractCB.getReal() <= 0) {
+            return complexAverage(v -> hypergeometric2F1(af, v, cf, xf), bf);
+          }
+
           Complex t1 =
               Arithmetic.lanczosApproxGamma(c)
                   .multiply(Arithmetic.lanczosApproxGamma(c.subtract(a.add(b))))
-                  .multiply(Arithmetic.lanczosApproxGamma(c.subtract(a)).reciprocal())
+                  .multiply(Arithmetic.lanczosApproxGamma(subtractCA).reciprocal())
                   .multiply(Arithmetic.lanczosApproxGamma(c.subtract(b)).reciprocal())
                   .multiply(
                       hypergeometric2F1(
@@ -436,7 +457,7 @@ public class HypergeometricJS {
                   .multiply(Arithmetic.lanczosApproxGamma(b).reciprocal())
                   .multiply(
                       hypergeometric2F1(
-                          c.subtract(a),
+                          subtractCA,
                           c.subtract(b),
                           a.add(a.negate()).add(b.negate()).add(1),
                           new Complex(1).subtract(x)));
@@ -446,11 +467,18 @@ public class HypergeometricJS {
 
       case 3:
         {
+          if (a.subtract(b).isMathematicalInteger()
+              || (subtractCA.isMathematicalInteger() && subtractCA.getReal() <= 0)) {
+            return complexAverage(v -> hypergeometric2F1(v, bf, cf, xf), af);
+          }
+          if (subtractCB.isMathematicalInteger() && subtractCB.getReal() <= 0) {
+            return complexAverage(v -> hypergeometric2F1(af, v, cf, xf), bf);
+          }
           Complex t1 =
               Arithmetic.lanczosApproxGamma(c)
                   .multiply(Arithmetic.lanczosApproxGamma(b.subtract(a)))
                   .multiply(Arithmetic.lanczosApproxGamma(b).reciprocal())
-                  .multiply(Arithmetic.lanczosApproxGamma(c.subtract(a)).reciprocal())
+                  .multiply(Arithmetic.lanczosApproxGamma(subtractCA).reciprocal())
                   .multiply(x.negate().pow(a.negate()))
                   .multiply(
                       hypergeometric2F1(
@@ -470,6 +498,13 @@ public class HypergeometricJS {
         }
       case 4:
         {
+          if (a.subtract(b).isMathematicalInteger()
+              || (subtractCA.isMathematicalInteger() && subtractCA.getReal() <= 0)) {
+            return complexAverage(v -> hypergeometric2F1(v, bf, cf, xf), af);
+          }
+          if (subtractCB.isMathematicalInteger() && subtractCB.getReal() <= 0) {
+            return complexAverage(v -> hypergeometric2F1(af, v, cf, xf), bf);
+          }
           Complex t1 =
               new Complex(1.0)
                   .subtract(x)
@@ -477,7 +512,7 @@ public class HypergeometricJS {
                   .multiply(Arithmetic.lanczosApproxGamma(c))
                   .multiply(Arithmetic.lanczosApproxGamma(b.subtract(a)))
                   .multiply(Arithmetic.lanczosApproxGamma(b).reciprocal())
-                  .multiply(Arithmetic.lanczosApproxGamma(c.subtract(a)).reciprocal())
+                  .multiply(Arithmetic.lanczosApproxGamma(subtractCA).reciprocal())
                   .multiply(
                       hypergeometric2F1(
                           a,
@@ -496,7 +531,7 @@ public class HypergeometricJS {
                   .multiply(
                       hypergeometric2F1(
                           b,
-                          c.subtract(a),
+                          subtractCA,
                           b.add(a.negate()).add(1),
                           new Complex(1).subtract(x).reciprocal()));
 
@@ -504,10 +539,17 @@ public class HypergeometricJS {
         }
       case 5:
         {
+          if (c.subtract(a.add(b)).isMathematicalInteger()
+              || (subtractCA.isMathematicalInteger() && subtractCA.getReal() <= 0)) {
+            return complexAverage(v -> hypergeometric2F1(v, bf, cf, xf), af);
+          }
+          if (subtractCB.isMathematicalInteger() && subtractCB.getReal() <= 0) {
+            return complexAverage(v -> hypergeometric2F1(af, v, cf, xf), bf);
+          }
           Complex t1 =
               Arithmetic.lanczosApproxGamma(c)
                   .multiply(Arithmetic.lanczosApproxGamma(c.subtract(a.add(b))))
-                  .multiply(Arithmetic.lanczosApproxGamma(c.subtract(a)).reciprocal())
+                  .multiply(Arithmetic.lanczosApproxGamma(subtractCA).reciprocal())
                   .multiply(Arithmetic.lanczosApproxGamma(c.subtract(b)).reciprocal())
                   .multiply(x.pow(a.negate()))
                   .multiply(
@@ -526,7 +568,7 @@ public class HypergeometricJS {
                   .multiply(x.pow(a.subtract(c)))
                   .multiply(
                       hypergeometric2F1(
-                          c.subtract(a),
+                          subtractCA,
                           new Complex(1).subtract(a),
                           c.add(a.negate()).add(b.negate()).add(1),
                           new Complex(1).subtract(x.reciprocal())));
@@ -539,6 +581,7 @@ public class HypergeometricJS {
       throw new ResultException(F.CComplexInfinity);
       // throw new ArgumentTypeException("hypergeometric function pole");
     }
+
     Complex s = Complex.ONE;
     Complex p = Complex.ONE;
     int i = 1;
@@ -564,6 +607,13 @@ public class HypergeometricJS {
   }
 
   public static double hypergeometric2F1(double a, double b, double c, double x, double tolerance) {
+
+    if (F.isFuzzyEquals(a, c, tolerance)) {
+      return Math.pow(1 - x, -b);
+    }
+    if (F.isFuzzyEquals(b, c, tolerance)) {
+      return Math.pow(1 - x, -a);
+    }
 
     if (F.isNumIntValue(c) && c <= 0) {
       throw new ResultException(F.CComplexInfinity);
