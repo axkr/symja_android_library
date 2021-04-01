@@ -15,6 +15,7 @@ import org.matheclipse.core.basic.Config;
 import org.matheclipse.core.basic.ToggleFeature;
 import org.matheclipse.core.builtin.IOFunctions;
 import org.matheclipse.core.eval.EvalControlledCallable;
+import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.ExprEvaluator;
 import org.matheclipse.core.eval.exception.AbortException;
 import org.matheclipse.core.eval.exception.FailedException;
@@ -98,7 +99,6 @@ public class Console {
     Config.USE_VISJS = true;
     Config.FILESYSTEM_ENABLED = true;
 
-    F.initSymbols(null, null, true);
     IOInit.init();
     Console console;
     try {
@@ -108,6 +108,7 @@ public class Console {
       e1.printStackTrace();
       return;
     }
+
     String trimmedInput = null;
     try {
       console.setArgs(args);
@@ -320,7 +321,7 @@ public class Console {
     fEvaluator.getEvalEngine().setFileSystemEnabled(true);
     fOutputTraditionalFactory = OutputFormFactory.get(true, false, 5, 7);
     fInputFactory = OutputFormFactory.get(true, false, 5, 7);
-    fInputFactory.setQuotes(true);
+    fInputFactory.setInputForm(true);
     // F.$PreRead.assign(//
     // F.Function(F.ReplaceAll(F.Unevaluated(F.Slot1), //
     // F.List(F.RuleDelayed(F.binaryAST2(F.Plot, F.x_, F.y_), F.Manipulate(F.binaryAST2(F.Plot, F.x,
@@ -552,7 +553,7 @@ public class Console {
             outExpr = F.Show(outExpr);
           }
           String html = F.show(outExpr);
-          if (html != null) {
+          if (html != null && html.length() > 0) {
             return html;
           }
         }
