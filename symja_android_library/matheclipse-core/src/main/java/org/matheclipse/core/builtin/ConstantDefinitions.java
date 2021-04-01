@@ -86,6 +86,9 @@ public class ConstantDefinitions {
       S.$Line.setEvaluator(new $Line());
       S.$MachineEpsilon.setEvaluator(new $MachineEpsilon());
       S.$MachinePrecision.setEvaluator(new $MachinePrecision());
+      S.$MaxMachineNumber.setEvaluator(new $MaxMachineNumber());
+      S.$MinMachineNumber.setEvaluator(new $MinMachineNumber());
+      S.$Notebooks.setEvaluator(new $Notebooks());
       S.$OperatingSystem.setEvaluator(new $OperatingSystem());
       S.$Packages.setEvaluator(new $Packages());
       S.$Path.setEvaluator(new $Path());
@@ -95,8 +98,12 @@ public class ConstantDefinitions {
       S.$RecursionLimit.setEvaluator(new $RecursionLimit());
       S.$RootDirectory.setEvaluator(new $RootDirectory());
       S.$ScriptCommandLine.setEvaluator(new $ScriptCommandLine());
+      S.$SystemCharacterEncoding.setEvaluator(new $SystemCharacterEncoding());
       S.$TemporaryDirectory.setEvaluator(new $TemporaryDirectory());
       S.$Version.setEvaluator(new $Version());
+
+      S.RecordSeparators.setEvaluator(new RecordSeparators());
+      S.WordSeparators.setEvaluator(new WordSeparators());
 
       // System.out.println(S.$CreationDate.of().toString());
       S.Catalan.setEvaluator(new Catalan());
@@ -324,6 +331,29 @@ public class ConstantDefinitions {
     }
   }
 
+  private static class $MaxMachineNumber extends AbstractSymbolEvaluator {
+    @Override
+    public IExpr evaluate(final ISymbol symbol, EvalEngine engine) {
+      return F.num(Double.MAX_VALUE);
+    }
+  }
+
+  private static class $MinMachineNumber extends AbstractSymbolEvaluator {
+
+    @Override
+    public IExpr evaluate(final ISymbol symbol, EvalEngine engine) {
+      return F.num(Double.valueOf("2.2250738585072014E-308"));
+    }
+  }
+
+  private static class $Notebooks extends AbstractSymbolEvaluator {
+
+    @Override
+    public IExpr evaluate(final ISymbol symbol, EvalEngine engine) {
+      return F.False;
+    }
+  }
+
   private static class $OperatingSystem extends AbstractSymbolEvaluator {
 
     @Override
@@ -441,6 +471,16 @@ public class ConstantDefinitions {
     }
   }
 
+  private static class $SystemCharacterEncoding extends AbstractSymbolEvaluator {
+
+    @Override
+    public IExpr evaluate(final ISymbol symbol, EvalEngine engine) {
+      String characterEncoding = System.getProperty("file.encoding", "UTF-8");
+      return F.stringx(characterEncoding);
+    }
+    
+  }
+
   private static class $TemporaryDirectory extends AbstractSymbolEvaluator {
 
     @Override
@@ -470,6 +510,57 @@ public class ConstantDefinitions {
     @Override
     public IExpr evaluate(final ISymbol symbol, EvalEngine engine) {
       return F.stringx(VERSION);
+    }
+  }
+
+  private static class RecordSeparators extends AbstractSymbolEvaluator
+      implements ISetValueEvaluator {
+
+    @Override
+    public IExpr evaluate(final ISymbol symbol, EvalEngine engine) {
+      if (symbol.hasAssignedSymbolValue()) {
+        return symbol.assignedValue();
+      }
+
+      return F.NIL;
+    }
+
+    @Override
+    public IExpr evaluateSet(IExpr rightHandSide, boolean setDelayed, final EvalEngine engine) {
+      S.RecordSeparators.assignValue(rightHandSide, setDelayed);
+      return rightHandSide;
+    }
+
+    @Override
+    public void setUp(ISymbol newSymbol) {
+      super.setUp(newSymbol);
+      S.RecordSeparators.assignValue(
+          F.List(F.stringx("\n"), F.stringx("\r\n"), F.stringx("\r")), false);
+    }
+  }
+
+  private static class WordSeparators extends AbstractSymbolEvaluator
+      implements ISetValueEvaluator {
+
+    @Override
+    public IExpr evaluate(final ISymbol symbol, EvalEngine engine) {
+      if (symbol.hasAssignedSymbolValue()) {
+        return symbol.assignedValue();
+      }
+
+      return F.NIL;
+    }
+
+    @Override
+    public IExpr evaluateSet(IExpr rightHandSide, boolean setDelayed, final EvalEngine engine) {
+      S.WordSeparators.assignValue(rightHandSide, setDelayed);
+      return rightHandSide;
+    }
+
+    @Override
+    public void setUp(ISymbol newSymbol) {
+      super.setUp(newSymbol);
+      S.WordSeparators.assignValue(F.List(F.stringx(" "), F.stringx("\t")), false);
     }
   }
 
