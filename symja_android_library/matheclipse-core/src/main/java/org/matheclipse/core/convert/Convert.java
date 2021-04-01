@@ -451,7 +451,7 @@ public class Convert {
       }
     }
     IASTAppendable sum = F.PlusAlloc(coefficients.length);
-    sum.append(F.num(coefficients[0]));
+    sum.append(coefficients[0]);
     for (int i = 1; i < coefficients.length; ++i) {
       if (coefficients[i] != 0) {
         sum.append(F.Times(F.num(coefficients[i]), F.Power(sym, F.ZZ(i))));
@@ -557,7 +557,7 @@ public class Convert {
 
     final IASTAppendable out = F.ListAlloc(rowSize);
     for (int i = 0; i < rowSize; i++) {
-      out.append(F.num(vector.getEntry(i)));
+      out.append(vector.getEntry(i));
     }
     out.addEvalFlags(IAST.IS_VECTOR);
     return out;
@@ -597,7 +597,7 @@ public class Convert {
       for (int i = 0; i < columnLength; i++) {
         final IASTAppendable row = F.ListAlloc(rowLength);
         for (int j = 0; j < rowLength; j++) {
-          row.append(F.num(dd[j][i]));
+          row.append(dd[j][i]);
         }
         list.append(row);
       }

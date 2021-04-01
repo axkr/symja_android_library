@@ -545,10 +545,8 @@ public class OpenIntToSet<T> implements Serializable {
     states[index] = FULL;
     if (values[index] == null) {
       values[index] = new TreeSet<T>(comparator);
-      values[index].add(value);
-    } else {
-      values[index].add(value);
     }
+    values[index].add(value);
     if (newMapping) {
       ++size;
       if (shouldGrowTable()) {

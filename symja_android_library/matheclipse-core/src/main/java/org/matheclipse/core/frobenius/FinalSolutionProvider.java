@@ -66,10 +66,7 @@ final class FinalSolutionProvider extends SolutionProviderAbstract {
           currentSolution = null;
           return null;
         }
-      } else if (!currentRemainder[i].mod(coefficients[i]).isZero()) {
-        currentSolution = null;
-        return null;
-      } else if (!currentRemainder[i].div(coefficients[i]).equals(currentCounter)) {
+      } else if (!currentRemainder[i].mod(coefficients[i]).isZero() || !currentRemainder[i].div(coefficients[i]).equals(currentCounter)) {
         currentSolution = null;
         return null;
       }

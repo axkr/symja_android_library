@@ -28,7 +28,7 @@ public class CoreCallbackFunction implements IDoubleCallbackFunction {
       IASTAppendable fun = F.ast(head, args.length, false);
       fun.appendArgs(0, args.length, i -> F.num(args[i]));
       // for (int i = 0; i < args.length; i++) {
-      // fun.append(F.num(args[i]));
+      // fun.append(args[i]);
       // }
       final IExpr result = F.evaln(fun);
       if (result.isReal()) {
@@ -39,7 +39,7 @@ public class CoreCallbackFunction implements IDoubleCallbackFunction {
       IExpr head = ast2Expr.convert(node);
       IASTAppendable fun = F.ast(head);
       for (int i = 0; i < args.length; i++) {
-        fun.append(F.num(args[i]));
+        fun.append(args[i]);
       }
       final IExpr result = F.evaln(fun);
       if (result.isReal()) {

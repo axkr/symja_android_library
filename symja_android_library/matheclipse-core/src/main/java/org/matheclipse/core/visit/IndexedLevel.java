@@ -297,7 +297,7 @@ public class IndexedLevel {
   private IASTAppendable createIndexes(int[] indx) {
     IASTAppendable list = F.ListAlloc(indx.length);
     for (int i = 0; i < indx.length; i++) {
-      list.append(F.ZZ(indx[i]));
+      list.append(indx[i]);
     }
     return list;
   }

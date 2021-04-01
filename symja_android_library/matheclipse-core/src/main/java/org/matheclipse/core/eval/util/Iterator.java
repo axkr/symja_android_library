@@ -123,7 +123,6 @@ public class Iterator {
         if (maxCounterOrListIndex <= ((IAST) maxCounterOrList).size()) {
           return true;
         }
-        return false;
       } else {
         if (step.isZero()) {
           throw NoEvalException.CONST;
@@ -150,10 +149,8 @@ public class Iterator {
         } catch (ValidateException ve) {
           // return false;
         }
-        return false;
-        // }
       }
-      // return false;
+      return false;
     }
 
     @Override

@@ -163,7 +163,7 @@ public class VisitorReplacePart extends AbstractVisitor {
 
     for (int i = offset; i < ast.size(); i++) {
       try {
-        matchedPos.append(F.ZZ(i));
+        matchedPos.append(i);
         for (int j = 0; j < fPatternList.size(); j++) {
           IPatternMatcher matcher = fPatternList.get(j);
           IExpr temp = matcher.eval(matchedPos, engine);

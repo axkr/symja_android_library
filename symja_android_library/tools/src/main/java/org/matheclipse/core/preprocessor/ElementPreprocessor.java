@@ -50,9 +50,9 @@ public class ElementPreprocessor {
               columnList.append(temp);
             } else {
               if (str.charAt(0) == '\"') {
-                columnList.append(F.stringx(str.substring(1, str.length() - 1)));
+                columnList.append(str.substring(1, str.length() - 1));
               } else {
-                columnList.append(F.stringx(str));
+                columnList.append(str);
               }
             }
           }

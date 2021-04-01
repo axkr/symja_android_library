@@ -188,19 +188,15 @@ public class EvalAttributes {
 
     ast.forEach(
         expr -> {
-          if (expr.isAST(head)) {
-            flattened[0] = true;
-            int temp = ((IAST) expr).argSize(); // flattenAlloc(head, (IAST) expr);
-            newSize[0] += temp;
-          } else if (expr.isUnevaluated()
-              && expr.first().head().equals(head)
-              && expr.first().isAST()) {
+          if (expr.isAST(head) || (expr.isUnevaluated()
+          && expr.first().head().equals(head)
+          && expr.first().isAST())) {
             flattened[0] = true;
             int temp = ((IAST) expr).argSize(); // flattenAlloc(head, (IAST) expr);
             newSize[0] += temp;
           } else {
-            newSize[0]++;
-          }
+        newSize[0]++;
+      }
         });
 
     if (flattened[0]) {

@@ -132,6 +132,18 @@ public class OptionArgs {
     return fInvalidPosition;
   }
 
+  public boolean isInvalidPosition(IAST ast, int greaterThanPositon) {
+    int invalidPosition =  getInvalidPosition();
+    if (invalidPosition > greaterThanPositon) {
+      // Options expected (instead of `1`) beyond position `2` in `3`. An option must be a
+      // rule or a list of rules.
+      IOFunctions.printMessage(
+          ast.topHead(), "nonopt", F.List(ast.get(invalidPosition), F.ZZ(greaterThanPositon), ast), EvalEngine.get());
+      return true;
+    }
+    return false;
+  }
+
   /**
    * Construct special <i>Options</i> used in evaluation of function symbols (i.e. <code>
    * Modulus-&gt;n</code> is an option which could be used for an integer <code>n</code> in a
@@ -142,7 +154,8 @@ public class OptionArgs {
    *     startIndex</code>
    * @param startIndex the index from which to look for options defined in <code>currentOptionsList
    *     </code>
-   * @param endIndex the index from which to look for options defined in <code>currentOptionsList
+   * @param endIndex the index up to which (exclusive) to look for options defined in <code>
+   *     currentOptionsList
    *     </code>
    */
   public OptionArgs(

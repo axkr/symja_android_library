@@ -391,8 +391,8 @@ public final class RulesData implements Serializable {
   }
 
   /**
-   * Try matching the <code>expr</code> expression with this pattern-matching rules and if matched, return an
-   * evaluated right-hand-side expression, otherwise return {@link F#NIL}.
+   * Try matching the <code>expr</code> expression with this pattern-matching rules and if matched,
+   * return an evaluated right-hand-side expression, otherwise return {@link F#NIL}.
    *
    * @param expr
    * @return {@link F#NIL} if no evaluation was possible
@@ -465,13 +465,14 @@ public final class RulesData implements Serializable {
 
             result = pmEvaluator.eval(expr, engine);
             if (result.isPresent()) {
-              // if (patternEvaluator.fLhsPatternExpr.isAST(F.Integrate)) {
-              // System.out.println(((IPatternMatcher) patternEvaluator).toString());
-              // // if (((IPatternMatcher) patternEvaluator).getLHSPriority() == 6686) {
-              // System.out.println("Rule number: "+((IPatternMatcher)
-              // patternEvaluator).getLHSPriority());
-              // // }
-              // }
+//              if (patternEvaluator.fLhsPatternExpr.isAST(S.Integrate)) {
+//                System.out.println(((IPatternMatcher) patternEvaluator).toString());
+//                // if (((IPatternMatcher) patternEvaluator).getLHSPriority() == 6686) {
+//                System.out.println(
+//                    "Rule number: " + ((IPatternMatcher) patternEvaluator).getLHSPriority());
+//                // }
+//                System.out.println("Result: "+result.toString());
+//              }
               if (FEConfig.SHOW_STACKTRACE) {
                 if (isShowPriority(pmEvaluator)) {
                   System.out.println(

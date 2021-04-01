@@ -45,7 +45,7 @@ public class Lists {
     if (p_doubles != null) {
       IASTAppendable ast = F.ListAlloc(p_doubles.length);
       for (int i = 0, t = p_doubles.length; i < t; i++) {
-        ast.append(F.num(p_doubles[i]));
+        ast.append(p_doubles[i]);
       }
       return ast;
     }
@@ -65,7 +65,7 @@ public class Lists {
     if (p_doubles != null) {
       IASTAppendable ast = F.ListAlloc(p_doubles.length);
       for (int i = 0, t = p_doubles.length; i < t; i++) {
-        ast.append(F.num(p_doubles[i]));
+        ast.append(p_doubles[i]);
       }
       return ast;
     }
@@ -126,7 +126,7 @@ public class Lists {
     if (p_shorts != null) {
       IASTAppendable ast = F.ListAlloc(p_shorts.length);
       for (int i = 0, t = p_shorts.length; i < t; i++) {
-        ast.append(F.ZZ(p_shorts[i]));
+        ast.append(p_shorts[i]);
       }
       return ast;
     }
@@ -146,7 +146,7 @@ public class Lists {
     if (p_ints != null) {
       IASTAppendable ast = F.ListAlloc(p_ints.length);
       for (int i = 0, t = p_ints.length; i < t; i++) {
-        ast.append(F.ZZ(p_ints[i]));
+        ast.append(p_ints[i]);
       }
       return ast;
     }
@@ -166,7 +166,7 @@ public class Lists {
     if (p_longs != null) {
       IASTAppendable ast = F.ListAlloc(p_longs.length);
       for (int i = 0, t = p_longs.length; i < t; i++) {
-        ast.append(F.ZZ(p_longs[i]));
+        ast.append(p_longs[i]);
       }
       return ast;
     }
@@ -186,7 +186,7 @@ public class Lists {
     if (p_objects != null) {
       IASTAppendable ast = F.ListAlloc(p_objects.length);
       for (int i = 0, t = p_objects.length; i < t; i++) {
-        ast.append(Object2Expr.convert(p_objects[i]));
+        ast.append(Object2Expr.convert(p_objects[i], true, false));
       }
       return ast;
     }

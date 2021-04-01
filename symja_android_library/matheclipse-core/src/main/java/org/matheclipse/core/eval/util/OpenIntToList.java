@@ -401,10 +401,8 @@ public class OpenIntToList<T> implements Serializable {
     states[index] = FULL;
     if (values[index] == null) {
       values[index] = new ArrayList<T>();
-      values[index].add(value);
-    } else {
-      values[index].add(value);
     }
+    values[index].add(value);
     if (newMapping) {
       ++size;
       if (shouldGrowTable()) {

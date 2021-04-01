@@ -1,5 +1,6 @@
 package org.matheclipse.core.generic;
 
+import java.util.function.DoubleFunction;
 import java.util.function.Function;
 
 import org.hipparchus.analysis.UnivariateFunction;
@@ -17,36 +18,35 @@ import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.interfaces.INum;
 import org.matheclipse.core.interfaces.ISymbol;
 
-/**
- * Unary numerical function for functions like Plot
- *
- * @see org.matheclipse.core.reflection.system.Plot
- */
-public class UnaryNumerical implements Function<IExpr, IExpr>, UnivariateDifferentiableFunction {
-  IExpr fFunction;
+/** Unary numerical function for functions like Plot */
+public class UnaryNumerical
+    implements Function<IExpr, IExpr>, UnivariateDifferentiableFunction, DoubleFunction<IExpr> {
+  final IExpr fFunction;
+  final ISymbol fVariable;
+  final EvalEngine fEngine;
+
   UnaryNumerical fFirstDerivative = null;
 
-  ISymbol fVariable;
-
-  EvalEngine fEngine;
-
-  public UnaryNumerical(final IExpr fn, final ISymbol v) {
-    this(fn, v, EvalEngine.get(), false);
+  public UnaryNumerical(final IExpr function, final ISymbol variable) {
+    this(function, variable, EvalEngine.get(), false);
   }
 
-  public UnaryNumerical(final IExpr fn, final ISymbol v, final EvalEngine engine) {
-    this(fn, v, engine, false);
+  public UnaryNumerical(final IExpr function, final ISymbol variable, final EvalEngine engine) {
+    this(function, variable, engine, false);
   }
 
   public UnaryNumerical(
-      final IExpr fn, final ISymbol v, final EvalEngine engine, boolean firstDerivative) {
-    if (!v.isVariable() || v.isBuiltInSymbol()) {
+      final IExpr function,
+      final ISymbol variable,
+      final EvalEngine engine,
+      boolean firstDerivative) {
+    if (!variable.isVariable() || variable.isBuiltInSymbol()) {
       // Cannot assign to raw object `1`.
       throw new ArgumentTypeException(
-          IOFunctions.getMessage("setraw", F.List(v), EvalEngine.get()));
+          IOFunctions.getMessage("setraw", F.List(variable), EvalEngine.get()));
     }
-    fVariable = v;
-    fFunction = fn;
+    fVariable = variable;
+    fFunction = function;
     fEngine = engine;
     if (firstDerivative) {
       IExpr temp = engine.evaluate(F.D(fFunction, fVariable));
@@ -55,10 +55,16 @@ public class UnaryNumerical implements Function<IExpr, IExpr>, UnivariateDiffere
   }
 
   @Override
-  public IExpr apply(final IExpr firstArg) {
-    return fEngine.evalN(F.subst(fFunction, F.Rule(fVariable, firstArg)));
+  public IExpr apply(final IExpr arg1) {
+    return fEngine.evalN(F.subst(fFunction, F.Rule(fVariable, arg1)));
   }
 
+
+  @Override
+  public IExpr apply(double value) {
+	  return fEngine.evalN(F.subst(fFunction, F.Rule(fVariable, F.num(value))));
+  }
+  
   @Override
   public double value(double x) {
     double result = 0.0;
@@ -111,4 +117,5 @@ public class UnaryNumerical implements Function<IExpr, IExpr>, UnivariateDiffere
     }
     throw new ArithmeticException("Expected numerical double value object!");
   }
+
 }

@@ -546,10 +546,10 @@ public class ExprEvaluator {
                 if (!executor.awaitTermination(2, TimeUnit.SECONDS)) {
                   fEngine.printMessage("ExprEvaluator: pool did not terminate");
                 }
-              }
+              } 
             } catch (InterruptedException ie) {
-              // (Re-)Cancel if current thread also interrupted
-              executor.shutdownNow();
+                // (Re-)Cancel if current thread also interrupted
+                executor.shutdownNow();
             }
           }
         }

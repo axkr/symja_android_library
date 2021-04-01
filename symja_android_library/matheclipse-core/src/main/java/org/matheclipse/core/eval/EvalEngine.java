@@ -774,7 +774,7 @@ public class EvalEngine implements Serializable {
     final int attr = symbol.getAttributes();
 
     if ((attr & ISymbol.SEQUENCEHOLD) != ISymbol.SEQUENCEHOLD) {
-      if ((result = flattenSequences(ast)).isPresent()) {
+      if ((result = F.flattenSequence(ast)).isPresent()) {
         return result;
       }
     }
@@ -1001,7 +1001,7 @@ public class EvalEngine implements Serializable {
       IASTMutable returnResult = F.NIL;
 
       if ((attr & ISymbol.SEQUENCEHOLD) != ISymbol.SEQUENCEHOLD) {
-        if ((result = flattenSequences(tempAST)).isPresent()) {
+        if ((result = F.flattenSequence(tempAST)).isPresent()) {
           return result;
         }
       }
@@ -1375,7 +1375,7 @@ public class EvalEngine implements Serializable {
       }
       RecursionLimitExceeded.throwIt(fRecursionLimit, expr);
     }
-    if (fStopRequested) {
+    if (fStopRequested || Thread.currentThread().isInterrupted()) {
       // check before going one recursion deeper
       throw TimeoutException.TIMED_OUT;
     }
@@ -1391,7 +1391,7 @@ public class EvalEngine implements Serializable {
         fTraceStack.setUp(expr, fRecursionCounter);
         temp = result.evaluate(this);
         if (temp.isPresent()) {
-          if (fStopRequested) {
+          if (fStopRequested || Thread.currentThread().isInterrupted()) {
             throw TimeoutException.TIMED_OUT;
           }
           fTraceStack.add(expr, temp, fRecursionCounter, 0L, "Evaluation loop");
@@ -1403,7 +1403,7 @@ public class EvalEngine implements Serializable {
             }
             temp = result.evaluate(this);
             if (temp.isPresent()) {
-              if (fStopRequested) {
+              if (fStopRequested || Thread.currentThread().isInterrupted()) {
                 throw TimeoutException.TIMED_OUT;
               }
               if (FEConfig.SHOW_STACKTRACE) {
@@ -1429,7 +1429,7 @@ public class EvalEngine implements Serializable {
         }
         temp = result.evaluate(this);
         if (temp.isPresent()) {
-          if (fStopRequested) {
+          if (fStopRequested || Thread.currentThread().isInterrupted()) {
             throw TimeoutException.TIMED_OUT;
           }
           if (fOnOffMode) {
@@ -1447,7 +1447,7 @@ public class EvalEngine implements Serializable {
             }
             temp = result.evaluate(this);
             if (temp.isPresent()) {
-              if (fStopRequested) {
+              if (fStopRequested || Thread.currentThread().isInterrupted()) {
                 throw TimeoutException.TIMED_OUT;
               }
               if (FEConfig.SHOW_STACKTRACE) {
@@ -2086,50 +2086,6 @@ public class EvalEngine implements Serializable {
   }
 
   /**
-   * Iterate over the arguments of <code>ast</code> and flatten the arguments of <code>Sequence(...)
-   * </code> expressions.
-   *
-   * @param ast an AST which may contain <code>Sequence(...)</code> expressions.
-   * @return
-   */
-  public IAST flattenSequences(final IAST ast) {
-    if (ast.isEvalFlagOn(IAST.SEQUENCE_FLATTENED)) {
-      return F.NIL;
-    }
-    int attr = ast.topHead().getAttributes();
-    IASTAppendable[] seqResult = new IASTAppendable[] {F.NIL};
-
-    ast.forEach(
-        (x, i) -> {
-          if (x.isSequence()) {
-            IAST seq = (IAST) x;
-            if (!seqResult[0].isPresent()) {
-              seqResult[0] = F.ast(ast.head(), ast.size() + seq.size(), false);
-              seqResult[0].appendArgs(ast, i);
-            }
-            seqResult[0].appendArgs(seq);
-            return;
-          } else if (x.equals(S.Nothing)) {
-            if ((ISymbol.HOLDALL & attr) == ISymbol.NOATTRIBUTE) {
-              if (!seqResult[0].isPresent()) {
-                seqResult[0] = F.ast(ast.head(), ast.size() - 1, false);
-                seqResult[0].appendArgs(ast, i);
-              }
-              return;
-            }
-          }
-          if (seqResult[0].isPresent()) {
-            seqResult[0].append(x);
-          }
-        });
-    if (seqResult[0].isPresent()) {
-      return seqResult[0];
-    }
-    ast.addEvalFlags(IAST.SEQUENCE_FLATTENED);
-    return F.NIL;
-  }
-
-  /**
    * Get the last result (&quot;answer&quot;) expression of this evaluation engine.
    *
    * @return <code>null</code> if no answer is stored in the evaluation engine.
@@ -2565,10 +2521,10 @@ public class EvalEngine implements Serializable {
   /**
    * Print a message to the <code>Out</code> stream, if the engine is not in &quot;quiet mode&quot;.
    *
-   * @param rex the RuntimeException which should be printed
+   * @param exception the RuntimeException which should be printed
    */
-  public IAST printMessage(ISymbol symbol, RuntimeException rex) {
-    String message = rex.getMessage();
+  public IAST printMessage(ISymbol symbol, Exception exception) {
+    String message = exception.getMessage();
     if (!isQuietMode()) {
       PrintStream stream = getErrorPrintStream();
       if (stream == null) {
@@ -2577,7 +2533,7 @@ public class EvalEngine implements Serializable {
       if (message != null) {
         stream.println(symbol + ": " + message);
       } else {
-        stream.println(symbol + ": " + rex.getClass().getSimpleName());
+        stream.println(symbol + ": " + exception.getClass().getSimpleName());
       }
     }
     if (fThrowError) {

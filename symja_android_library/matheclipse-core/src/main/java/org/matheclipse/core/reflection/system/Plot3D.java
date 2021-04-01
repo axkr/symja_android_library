@@ -158,7 +158,7 @@ public class Plot3D extends AbstractEvaluator {
       x += xStep;
     }
     // return Convert.objectToExpr(data);
-    return Object2Expr.convert(data);
+    return Object2Expr.convert(data, true, false);
   }
 
   @Override

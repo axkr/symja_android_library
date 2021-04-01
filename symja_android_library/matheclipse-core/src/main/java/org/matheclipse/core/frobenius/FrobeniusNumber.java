@@ -95,8 +95,10 @@ public class FrobeniusNumber {
    * @return Frobenius number
    */
   public static BigInteger frobeniusNumber(BigInteger[] array) {
-    if (array[0].compareTo(ARRAY_SIZE_THRESHOLD) > 0) return frobeniusNumberIntegerArray(array);
-    else return frobeniusNumberIntegerArray(array);
+    //    if (array[0].compareTo(ARRAY_SIZE_THRESHOLD) > 0)
+    //    	return frobeniusNumberIntegerArray(array);
+    //    else
+    return frobeniusNumberIntegerArray(array);
   }
 
   public static BigInteger frobeniusNumberBigIntArray(BigInteger[] array) {
