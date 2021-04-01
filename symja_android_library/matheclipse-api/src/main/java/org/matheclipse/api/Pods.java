@@ -1105,9 +1105,10 @@ public class Pods {
               if (!outExpr.isFreeAST(x -> x.isTrigFunction())) {
                 inExpr = F.TrigToExp(outExpr);
                 podOut = engine.evaluate(inExpr);
-                if (!S.PossibleZeroQ.ofQ(engine, F.Subtract(podOut, outExpr))) {
+                //                if (!S.PossibleZeroQ.ofQ(engine, F.Subtract(podOut, outExpr))) {
+                if (!podOut.equals(outExpr)) {
                   addSymjaPod(
-                      podsArray,
+                      podsArray, //
                       inExpr,
                       podOut,
                       "Alternate form",
@@ -1135,7 +1136,7 @@ public class Pods {
               if (!outExpr.isFreeAST(x -> x.isTrigFunction())) {
                 inExpr = F.TrigToExp(outExpr);
                 podOut = engine.evaluate(inExpr);
-                if (!S.PossibleZeroQ.ofQ(engine, F.Subtract(podOut, outExpr))) {
+                if (!podOut.equals(outExpr)) {
                   addSymjaPod(
                       podsArray,
                       inExpr,
@@ -1165,9 +1166,10 @@ public class Pods {
               if (!outExpr.isFreeAST(x -> x.isTrigFunction())) {
                 inExpr = F.TrigToExp(outExpr);
                 podOut = engine.evaluate(inExpr);
-                if (!S.PossibleZeroQ.ofQ(engine, F.Subtract(podOut, outExpr))) {
+                //                if (!S.PossibleZeroQ.ofQ(engine, F.Subtract(podOut, outExpr))) {
+                if (!podOut.equals(outExpr)) {
                   addSymjaPod(
-                      podsArray,
+                      podsArray, //
                       inExpr,
                       podOut,
                       "Alternate form",
@@ -1256,9 +1258,7 @@ public class Pods {
                         numpods++;
                       }
                     }
-                    if (!arg1.isZero()
-                        && //
-                        !arg2.isZero()) {
+                    if (!arg1.isZero() && !arg2.isZero()) {
                       inExpr = F.Equal(engine.evaluate(F.Subtract(arg1, arg2)), F.C0);
                       podOut = inExpr;
                       addSymjaPod(
@@ -1331,7 +1331,9 @@ public class Pods {
                 if (!outExpr.isFreeAST(x -> x.isTrigFunction())) {
                   inExpr = F.TrigToExp(outExpr);
                   podOut = engine.evaluate(inExpr);
-                  if (!S.PossibleZeroQ.ofQ(engine, F.Subtract(podOut, outExpr))) {
+                  //                  if (!S.PossibleZeroQ.ofQ(engine, F.Subtract(podOut, outExpr)))
+                  // {
+                  if (!podOut.equals(outExpr)) {
                     addSymjaPod(
                         podsArray,
                         inExpr,
