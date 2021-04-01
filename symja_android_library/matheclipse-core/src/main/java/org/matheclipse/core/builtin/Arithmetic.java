@@ -40,6 +40,7 @@ import static org.matheclipse.core.expression.S.Times;
 import static org.matheclipse.core.expression.S.x;
 import static org.matheclipse.core.expression.S.y;
 
+import java.util.Iterator;
 import java.util.function.DoubleFunction;
 import java.util.function.DoubleUnaryOperator;
 import java.util.function.Function;
@@ -4122,6 +4123,9 @@ public final class Arithmetic {
       if (exponentArg1.isReal() && baseArg1.isNonNegativeResult()) {
         return true;
       }
+      if (exponent.isRational() && exponentArg1.isFraction() && exponentArg1.isRational()) {
+        return true;
+      }
       if (exponent.isNumIntValue() && exponent.isPositive()) {
         if (exponentArg1.isNumIntValue() && exponentArg1.isPositive()) {
           return true;
@@ -5667,6 +5671,9 @@ public final class Arithmetic {
             return ((IQuantity) arg2).ofUnit(F.C0);
           }
           if (arg2.isDirectedInfinity()) {
+            // Indeterminate expression `1` encountered.
+            IOFunctions.printMessage(
+                S.Infinity, "indet", F.List(F.Times(arg1, arg2)), EvalEngine.get());
             return S.Indeterminate;
           }
           return F.C0;
@@ -5677,6 +5684,9 @@ public final class Arithmetic {
             return ((IQuantity) arg1).ofUnit(F.C0);
           }
           if (arg1.isDirectedInfinity()) {
+            // Indeterminate expression `1` encountered.
+            IOFunctions.printMessage(
+                S.Infinity, "indet", F.List(F.Times(arg1, arg2)), EvalEngine.get());
             return S.Indeterminate;
           }
           return F.C0;
@@ -6659,9 +6669,23 @@ public final class Arithmetic {
    * @return
    */
   public static IAST piecewiseExpand(final IAST function, IBuiltInSymbol domain) {
-    if (function.isAST(S.Abs, 2) && (domain.equals(S.Reals) || function.arg1().isRealResult())) {
+    if (function.size() == 2) {
       IExpr x = function.arg1();
-      return F.Piecewise(F.List(F.List(F.Negate(x), F.Less(x, F.C0)), x));
+      if ((domain.equals(S.Reals) || function.arg1().isRealResult())) {
+        if (function.isAST(S.Abs)) {
+          return F.Piecewise(F.List(F.List(F.Negate(x), F.Less(x, F.C0))), x);
+        }
+        if (function.isAST(S.Arg)) {
+          return F.Piecewise(F.List(F.List(S.Pi, F.Less(x, F.C0))), F.C0);
+        }
+        if (function.isAST(S.Sign)) {
+          return F.Piecewise(
+              F.List(
+                  F.List(F.CN1, F.Less(x, F.C0)), //
+                  F.List(F.C1, F.Greater(x, F.C0))),
+              F.C0);
+        }
+      }
     }
     if (function.isAST(S.BernsteinBasis, 4)) {
       IExpr d = function.arg1();
@@ -6708,11 +6732,11 @@ public final class Arithmetic {
       IExpr a1 = function.arg1();
       IExpr a2 = function.arg2();
       IExpr a3 = function.arg3();
-      return F.Piecewise(F.List(F.List(a2, a1), a3));
+      return F.Piecewise(F.List(F.List(a2, a1)), a3);
     }
     if (function.isAST(S.Ramp, 2)) {
       IExpr x = function.arg1();
-      return F.Piecewise(F.List(F.List(x, F.GreaterEqual(x, F.C0)), F.C0));
+      return F.Piecewise(F.List(F.List(x, F.GreaterEqual(x, F.C0))), F.C0);
     }
     if (function.isAST(S.UnitStep) && function.size() > 1) {
       // Piecewise[{{1, x >= 0 && y >= 0 && z >= 0}}, 0]
@@ -6721,7 +6745,33 @@ public final class Arithmetic {
       for (int i = 1; i < size; i++) {
         andAST.append(F.GreaterEqual(function.get(i), F.C0));
       }
-      return F.Piecewise(F.List(F.List(F.C1, andAST), F.C0));
+      return F.Piecewise(F.List(F.List(F.C1, andAST)), F.C0);
+    }
+
+    if (function.size() > 1) {
+      if (function.isAST(S.DiscreteDelta)) {
+        if (function.size() == 2) {
+          return F.Piecewise(F.List(F.List(F.C1, F.Equal(function.arg1(), F.C0))), F.C0);
+        }
+        IASTAppendable andAST = F.ast(S.And, function.argSize(), false);
+        for (int i = 1; i < function.size(); i++) {
+          andAST.append(F.Equal(function.get(i), F.C0));
+        }
+        return F.Piecewise(F.List(F.List(F.C1, andAST)), F.C0);
+      }
+      if (function.isAST(S.KroneckerDelta)) {
+        if (function.size() == 2) {
+          return F.Piecewise(F.List(F.List(F.C1, F.Equal(function.arg1(), F.C0))), F.C0);
+        }
+        IASTAppendable andAST = F.ast(S.And, function.argSize() - 1, false);
+        IExpr last = function.arg1();
+        for (int i = 2; i < function.size(); i++) {
+          IExpr arg = function.get(i);
+          andAST.append(F.Equal(F.Subtract(last, arg), F.C0));
+          last = arg;
+        }
+        return F.Piecewise(F.List(F.List(F.C1, andAST)), F.C0);
+      }
     }
     return F.NIL;
   }
