@@ -16,6 +16,7 @@ import org.matheclipse.core.expression.ASTRealVector;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.expression.S;
 import org.matheclipse.core.expression.data.DateObjectExpr;
+import org.matheclipse.core.expression.data.JavaObjectExpr;
 import org.matheclipse.core.expression.data.TimeObjectExpr;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IASTAppendable;
@@ -56,8 +57,13 @@ public class Object2Expr {
    * boolean[]            a list of {@link S#True} or {@link S#False} symbols
    *
    * </pre>
+   *
+   * @param parseString if <code>true</code> and <code>obj instanceof String</code> parse the string
+   *     as a Symja expression
+   * @param javaObject if <code>true</code> return a wrapper instanceof {@link JavaObjectExpr} if no
+   *     other conversion was found
    */
-  public static IExpr convert(Object obj) {
+  public static IExpr convert(Object obj, boolean parseString, boolean javaObject) {
     if (obj == null) {
       return S.Null;
     }
@@ -65,8 +71,12 @@ public class Object2Expr {
       return (IExpr) obj;
     }
     if (obj instanceof String) {
-      final ExprParser parser = new ExprParser(EvalEngine.get());
-      return parser.parse((String) obj);
+      if (parseString) {
+        final ExprParser parser = new ExprParser(EvalEngine.get());
+        return parser.parse((String) obj);
+      } else {
+        return F.stringx((String) obj);
+      }
     }
     if (obj instanceof Boolean) {
       return ((Boolean) obj).booleanValue() ? S.True : S.False;
@@ -75,7 +85,7 @@ public class Object2Expr {
       return convert((Number) obj);
     }
     if (obj instanceof java.util.Collection) {
-      return convertList((java.util.Collection<?>) obj);
+      return convertList((java.util.Collection<?>) obj, parseString, javaObject);
     }
     if (obj instanceof org.hipparchus.fraction.Fraction) {
       org.hipparchus.fraction.Fraction frac = (org.hipparchus.fraction.Fraction) obj;
@@ -102,7 +112,7 @@ public class Object2Expr {
       final Object[] array = (Object[]) obj;
       int length = array.length;
       final IASTAppendable list = F.ListAlloc(length);
-      return list.appendArgs(0, length, i -> convert(array[i]));
+      return list.appendArgs(0, length, i -> convert(array[i], parseString, javaObject));
     }
     if (obj instanceof boolean[]) {
       final boolean[] array = (boolean[]) obj;
@@ -118,12 +128,15 @@ public class Object2Expr {
     if (obj instanceof LocalTime) {
       return TimeObjectExpr.newInstance((LocalTime) obj);
     }
+    if (javaObject) {
+      return JavaObjectExpr.newInstance(obj);
+    }
     return F.$str(obj.toString());
   }
 
   /**
    * If <code>obj instanceof String</code> return a Symja string object. Otherwise call {@link
-   * #convert(Object)}.
+   * #convert(Object, boolean, boolean)}.
    *
    * @param obj the object which should be converted to a Symja object
    * @return
@@ -132,7 +145,7 @@ public class Object2Expr {
     if (obj instanceof String) {
       return F.stringx((String) obj);
     }
-    return convert(obj);
+    return convert(obj, true, false);
   }
 
   /**
@@ -182,14 +195,23 @@ public class Object2Expr {
     return F.num(n.doubleValue());
   }
 
-  public static IExpr convertList(java.util.Collection<?> lst) {
+  /**
+   * @param lst
+   * @param parseString if <code>true</code> and <code>obj instanceof String</code> parse the string
+   *     as a Symja expression
+   * @param javaObject if <code>true</code> return a wrapper instanceof {@link JavaObjectExpr} if no
+   *     other conversion was found
+   * @return
+   */
+  public static IExpr convertList(
+      java.util.Collection<?> lst, boolean parseString, boolean javaObject) {
     if (lst.size() == 0) {
       return List();
     } else {
       int size = lst.size();
       IASTAppendable list = F.ast(S.List, size, false);
       for (Object element : lst) {
-        list.append(convert(element));
+        list.append(convert(element, parseString, javaObject));
       }
       return list;
     }
