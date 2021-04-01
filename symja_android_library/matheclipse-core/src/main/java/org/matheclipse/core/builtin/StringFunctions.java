@@ -314,12 +314,16 @@ public final class StringFunctions {
           if (list.isAST1()) {
             return list.get(1);
           }
-          String separator = File.separator;
+          char separator = File.separatorChar;
           StringBuilder buf = new StringBuilder();
           for (int i = 1; i < list.size(); i++) {
-            buf.append(list.get(i).toString());
-            if (i < list.size() - 1) {
-              buf.append(separator);
+            String arg = list.get(i).toString();
+            if (arg.length() > 0) {
+              buf.append(arg);
+              if (i < list.size() - 1 //
+                  && arg.charAt(arg.length() - 1) != separator) {
+                buf.append(separator);
+              }
             }
           }
           return F.stringx(buf.toString());
@@ -1927,7 +1931,7 @@ public final class StringFunctions {
       }
       IASTAppendable list = F.ListAlloc(result.length);
       for (int i = 0; i < result.length; i++) {
-        list.append(F.stringx(result[i]));
+        list.append(result[i]);
       }
       return list;
     }
@@ -2276,7 +2280,7 @@ public final class StringFunctions {
       IASTAppendable list = F.ListAlloc(length);
       for (int i = 0; i < length; i++) {
         characterCode = utf8String.charAt(i);
-        list.append(F.ZZ(characterCode));
+        list.append(characterCode);
       }
       return list;
       //      } catch (final UnsupportedEncodingException e) {
@@ -2634,7 +2638,7 @@ public final class StringFunctions {
       StringBuilder buf = new StringBuilder();
       OutputFormFactory off = OutputFormFactory.get(relaxedSyntax, false);
       off.setIgnoreNewLine(true);
-      off.setQuotes(true);
+      off.setInputForm(true);
       if (off.convert(buf, expression)) {
         return buf.toString();
       }
@@ -2647,10 +2651,7 @@ public final class StringFunctions {
   }
 
   public static String inputForm(final IExpr expression) {
-    if (FEConfig.PARSER_USE_LOWERCASE_SYMBOLS) {
-      return StringFunctions.inputForm(expression, true);
-    }
-    return StringFunctions.inputForm(expression, false);
+    return StringFunctions.inputForm(expression, FEConfig.PARSER_USE_LOWERCASE_SYMBOLS);
   }
 
   private static IExpr regexErrorHandling(
