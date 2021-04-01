@@ -17,7 +17,7 @@ public class ToggleFeature {
   /**
    * If <code>true</code>, enable <code>org.matheclipse.core.builtin.function.Defer</code> function.
    */
-  public static boolean DEFER = true;
+//  public static boolean DEFER = true;
 
   /**
    * If <code>true</code>, enable <code>org.matheclipse.core.reflection.system.ReplaceList</code>

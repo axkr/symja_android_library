@@ -245,9 +245,7 @@ public abstract class AbstractFunctionEvaluator extends AbstractEvaluator {
           if (((INumber) arg1).complexSign() < 0) {
             return true;
           }
-        } else if (arg1.isNegativeInfinity()) {
-          return true;
-        } else if (arg1.isTimes() && isNegativeValued(arg1, checkTimesPlus)) {
+        } else if (arg1.isNegativeInfinity() || (arg1.isTimes() && isNegativeValued(arg1, checkTimesPlus))) {
           return true;
         }
       } else if (expression.isDirectedInfinity() && expression.isAST1()) {

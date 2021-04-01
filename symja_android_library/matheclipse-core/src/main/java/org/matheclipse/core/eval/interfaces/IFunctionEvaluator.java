@@ -11,21 +11,31 @@ import org.matheclipse.core.interfaces.IExpr;
 public interface IFunctionEvaluator extends IEvaluator {
 
   int[] ARGS_0_0 = new int[] {0, 0};
+  
   /**
    * The function is allowed to have 0 or 1 argument and the head must be the built-in symbol name
    * of the function.
    */
   int[] ARGS_0_1 = new int[] {0, 1};
+  
   /**
    * The function is allowed to have 0 or 1 argument and the head must be the built-in symbol name
    * of the function or can be an operator form.
    */
   int[] ARGS_0_1_0 = new int[] {0, 1, 0};
+  
   /**
    * The function is allowed to have 0 or 2 arguments and the head must be the built-in symbol name
    * of the function.
    */
   int[] ARGS_0_2 = new int[] {0, 2};
+  
+  /**
+   * The function is allowed to have 0 or 3 arguments and the head must be the built-in symbol name
+   * of the function.
+   */
+  int[] ARGS_0_3 = new int[] {0, 3};
+  
   /**
    * The function is allowed to have 0 or 2 arguments and the head must be the built-in symbol name
    * of the function or can be an operator form.

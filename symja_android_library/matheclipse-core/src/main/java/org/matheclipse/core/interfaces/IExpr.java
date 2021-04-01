@@ -176,6 +176,16 @@ public interface IExpr
 
   public static final int TESTRESULTOBJECT = DATAID + 13;
 
+  public static final int FILEEXPRID = DATAID + 15;
+
+  public static final int OUTPUTSTREAMEXPRID = DATAID + 16;
+
+  public static final int INPUTSTREAMEXPRID = DATAID + 17;
+
+  public static final int JAVACLASSEXPRID = DATAID + 18;
+
+  public static final int JAVAOBJECTEXPRID = DATAID + 19;
+
   public static IExpr convertToExpr(COMPARE_TERNARY temp) {
     if (temp == COMPARE_TERNARY.TRUE) {
       return S.True;
@@ -565,10 +575,10 @@ public interface IExpr
 
     IExpr arg1 = this;
     IExpr arg2 = that;
-    if (!arg1.isReal() && arg1.isNumericFunction(true)) {
+    if (!arg1.isReal() && arg1.isNumericFunction(x -> x.isDirectedInfinity() ? "" : null)) {
       arg1 = engine.evalN(arg1);
     }
-    if (!arg2.isReal() && arg2.isNumericFunction(true)) {
+    if (!arg2.isReal() && arg2.isNumericFunction(x -> x.isDirectedInfinity() ? "" : null)) {
       arg2 = engine.evalN(arg2);
     }
     if (arg2.isInexactNumber() && arg1.isExactNumber()) {
@@ -586,6 +596,22 @@ public interface IExpr
       }
       if (isString() && that.isString()) {
         return IExpr.COMPARE_TERNARY.FALSE;
+      }
+    }
+    if (arg2.isDirectedInfinity()) {
+      if (arg1.isNumber()) {
+        return IExpr.COMPARE_TERNARY.FALSE;
+      }
+      if (arg1.isDirectedInfinity()) {
+        return arg1.equals(arg2) ? IExpr.COMPARE_TERNARY.TRUE : IExpr.COMPARE_TERNARY.FALSE;
+      }
+    }
+    if (arg1.isDirectedInfinity()) {
+      if (arg2.isNumber()) {
+        return IExpr.COMPARE_TERNARY.FALSE;
+      }
+      if (arg2.isDirectedInfinity()) {
+        return arg1.equals(arg2) ? IExpr.COMPARE_TERNARY.TRUE : IExpr.COMPARE_TERNARY.FALSE;
       }
     }
 
@@ -2062,7 +2088,14 @@ public interface IExpr
     return false;
   }
 
-  default boolean isList(Predicate<IExpr> pred) {
+  /**
+   * Test if this expression is a list (i.e. an AST with head List) with all arguments fulfill the
+   * predicate.
+   *
+   * @param predicate
+   * @return
+   */
+  default boolean isList(Predicate<IExpr> predicate) {
     return false;
   }
 
@@ -3273,6 +3306,10 @@ public interface IExpr
     return this instanceof IStringX && toString().equals(str);
   }
 
+  default boolean isStringIgnoreCase(String str) {
+    return this instanceof IStringX && toString().equalsIgnoreCase(str);
+  }
+
   /**
    * Test if this expression is the function <code>Subscript[var, &lt;integer-value&gt;]</code>.
    * <code>var</code> has to be a variable.
@@ -3442,9 +3479,10 @@ public interface IExpr
   }
 
   /**
-   * Test if this expression equals <code>0</code> in symbolic or numeric mode.
+   * Test if this expression equals <code>0</code> in symbolic or numeric mode. For the numeric test
+   * multiple random numbers with a <code>Chop()</code> function test are used.
    *
-   * @param fastTest check only numerical; no <code>Simplify</code> tests.
+   * @param fastTest checks only numerical; no symbolic tests are tried.
    * @return
    */
   default boolean isPossibleZero(boolean fastTest) {
@@ -3752,8 +3790,8 @@ public interface IExpr
   }
 
   /**
-   * Converts a <b>special expression</b> (like a series, association, dataset, ...) into a standard
-   * <i>normalized</i> expression.
+   * Converts a <b>special expression</b> (like a series, association, dataset, sparse array, ...)
+   * into a standard <i>normalized</i> expression.
    *
    * <pre>
    * &gt;&gt; Normal(SeriesData(x, 0, {1, 0, -1, -4, -17, -88, -549}, -1, 6, 1))
@@ -3945,9 +3983,9 @@ public interface IExpr
     }
     EvalEngine engine = EvalEngine.get();
     if (engine.isTogetherMode() && (this.isPlusTimesPower() || that.isPlusTimesPower())) {
-      return engine.evaluate(F.Together(F.Plus(this, that)));
+      return S.Together.of(engine, F.Plus(this, that));
     }
-    return engine.evaluate(F.Plus(this, that));
+    return S.Plus.of(engine, this, that);
   }
 
   /**
@@ -3966,14 +4004,11 @@ public interface IExpr
     } else if (that.isOne()) {
       return this;
     }
-    // if (this.isNumber() && that.isNumber()) {
-    // return F.eval(F.Power(this, that));
-    // }
     EvalEngine engine = EvalEngine.get();
     if (engine.isTogetherMode() && (this.isPlusTimesPower() || that.isPlusTimesPower())) {
-      return engine.evaluate(F.Together(F.Power(this, that)));
+      return S.Together.of(engine, F.Power(this, that));
     }
-    return engine.evaluate(F.Power(this, that));
+    return S.Power.of(engine, this, that);
   }
 
   /**
@@ -4079,12 +4114,12 @@ public interface IExpr
    * Replace all (sub-) expressions with the given rule set. If no substitution matches, the method
    * returns <code>F.NIL</code>.
    *
-   * @param astRules rules of the form <code>x-&gt;y</code> or <code>{a-&gt;b, c-&gt;d}</code>; the
-   *     left-hand-side of the rule can contain pattern objects.
+   * @param listOfRules rules of the form <code>x-&gt;y</code> or <code>{a-&gt;b, c-&gt;d}</code>;
+   *     the left-hand-side of the rule can contain pattern objects.
    * @return <code>F.NIL</code> if no substitution of a (sub-)expression was possible.
    */
-  default IExpr replaceAll(final IAST astRules) {
-    return accept(new VisitorReplaceAll(astRules));
+  default IExpr replaceAll(final IAST listOfRules) {
+    return accept(new VisitorReplaceAll(listOfRules));
   }
 
   /**
@@ -4307,9 +4342,9 @@ public interface IExpr
     }
     EvalEngine engine = EvalEngine.get();
     if (engine.isTogetherMode() && (this.isPlusTimesPower() || that.isPlusTimesPower())) {
-      return engine.evaluate(F.Together(F.Times(this, that)));
+      return S.Together.of(engine, F.Times(this, that));
     }
-    return engine.evaluate(F.Times(this, that));
+    return S.Times.of(engine, this, that);
   }
 
   /**
@@ -4397,9 +4432,35 @@ public interface IExpr
    *
    * @param defaultValue the default value, if this integer is not in the <code>int</code> range
    * @return the numeric value represented by this integer after conversion to type <code>int</code>
-   *     .
    */
   default int toIntDefault(int defaultValue) {
+    return defaultValue;
+  }
+
+  /**
+   * Converts this number to a <code>long</code> value; unlike {@link #longValue} this method
+   * returns <code>Long.MIN_VALUE</code> if the value of this integer isn't in the range <code>
+   * Long.MIN_VALUE</code> to <code>Long.MAX_VALUE</code> or the expression is not convertible to
+   * the <code>long</code> range.
+   *
+   * @return the numeric value represented by this expression after conversion to type <code>long
+   *     </code> or <code>Long.MIN_VALUE</code> if this expression cannot be converted.
+   */
+  default long toLongDefault() {
+    return toLongDefault(Long.MIN_VALUE);
+  }
+
+  /**
+   * Converts this number to a <code>long</code> value; unlike {@link #longValue} this method
+   * returns <code>defaultValue</code> if the value of this integer isn't in the range <code>
+   * Long.MIN_VALUE</code> to <code>Long.MAX_VALUE</code> or the expression is not convertible to
+   * the <code>long</code> range.
+   *
+   * @param defaultValue the default value, if this integer is not in the <code>long</code> range
+   * @return the numeric value represented by this integer after conversion to type <code>long
+   *     </code>
+   */
+  default long toLongDefault(long defaultValue) {
     return defaultValue;
   }
 

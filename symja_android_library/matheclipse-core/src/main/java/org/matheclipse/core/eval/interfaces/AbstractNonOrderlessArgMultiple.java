@@ -65,15 +65,14 @@ public class AbstractNonOrderlessArgMultiple extends AbstractArg2 {
           } else {
             temp = ast.get(i);
           }
-          i++;
         } else {
           evaled = true;
           temp = tres;
           if (i == (size - 1)) {
             result.append(temp);
           }
-          i++;
         }
+    i++;
       }
 
       if (evaled) {

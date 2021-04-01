@@ -637,7 +637,7 @@ public interface ISymbol extends IExpr {
   /**
    * Evaluate this symbol for the arguments as function <code>symbol(arg1, arg2, .... ,argN)</code>,
    * The objects are converted from Java form to IExpr for according to method {@link
-   * Object2Expr#convert(Object)}.
+   * Object2Expr#convert(Object, boolean, boolean)}.
    *
    * @param args the objects which should be used as arguments
    * @return
@@ -645,7 +645,7 @@ public interface ISymbol extends IExpr {
   default IExpr ofObject(Object... args) {
     IExpr[] array = new IExpr[args.length];
     for (int i = 0; i < array.length; i++) {
-      array[i] = Object2Expr.convert(args[i]);
+      array[i] = Object2Expr.convert(args[i], true, false);
     }
     return of(array);
   }
