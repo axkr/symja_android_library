@@ -356,7 +356,7 @@ public class PolynomialFunctions {
     // int len = exp.length();
     // IASTAppendable ruleList = F.ListAlloc(len);
     // for (int i = 0; i < len; i++) {
-    // ruleList.append(F.ZZ(exp.getVal(len - i - 1)));
+    // ruleList.append(exp.getVal(len - i - 1));
     // }
     // resultList.append(F.Rule(ruleList, coeff));
     // }
@@ -387,7 +387,7 @@ public class PolynomialFunctions {
           int len = exp.length();
           IASTAppendable ruleList = F.ListAlloc(len);
           for (int i = 0; i < len; i++) {
-            ruleList.append(F.ZZ(exp.getVal(len - i - 1)));
+            ruleList.append(exp.getVal(len - i - 1));
           }
           resultList.append(F.Rule(ruleList, F.ZZ(coeff.getVal())));
         }
@@ -974,52 +974,41 @@ public class PolynomialFunctions {
       IExpr aExp = S.Exponent.ofNIL(engine, a, x);
       IExpr bExp = S.Exponent.ofNIL(engine, b, x);
       if (aExp.isPresent() && bExp.isPresent()) {
-        if (b.isFree(x)) {
-          return F.Power(b, aExp);
-        }
-        IExpr abExp = aExp.times(bExp);
+        //        if (b.isFree(x)) {
+        //          return F.Power(b, aExp);
+        //        }
+        //        IExpr abExp = aExp.times(bExp);
         if (S.Less.ofQ(engine, aExp, bExp)) {
           IExpr resultant = resultant(b, a, x, engine);
           if (!resultant.isPresent()) {
             return F.NIL;
           }
-          return F.Times(F.Power(F.CN1, abExp), resultant);
+          return resultant;
         }
 
-        IExpr r = S.PolynomialRemainder.ofNIL(engine, a, b, x);
+        IExpr r = jasResultant(a, b, x, engine);
         if (r.isPresent()) {
-          IExpr rExp = r;
-          if (!r.isZero()) {
-            rExp = S.Exponent.ofNIL(engine, r, x);
-            if (!rExp.isPresent()) {
-              return F.NIL;
-            }
-          }
-          return F.Times(
-              F.Power(F.CN1, abExp),
-              F.Power(F.Coefficient(b, x, bExp), F.Subtract(aExp, rExp)),
-              resultant(b, r, x, engine));
+          return r;
         }
       }
       return F.NIL;
     }
 
-    private IExpr jasResultant(IExpr a, IExpr b, ISymbol x, EvalEngine engine) {
+    private static IExpr jasResultant(IExpr a, IExpr b, ISymbol x, EvalEngine engine) {
       VariablesSet eVar = new VariablesSet();
       eVar.addVarList(x);
 
       try {
-        // ASTRange r = new ASTRange(eVar.getVarList(), 1);
         List<IExpr> varList = eVar.getVarList().copyTo();
         JASConvert<edu.jas.arith.BigInteger> jas =
             new JASConvert<edu.jas.arith.BigInteger>(varList, edu.jas.arith.BigInteger.ZERO);
-        GenPolynomial<edu.jas.arith.BigInteger> poly = jas.expr2JAS(a, false);
-        GenPolynomial<edu.jas.arith.BigInteger> temp = jas.expr2JAS(b, false);
+        GenPolynomial<edu.jas.arith.BigInteger> p1 = jas.expr2JAS(a, false);
+        GenPolynomial<edu.jas.arith.BigInteger> p2 = jas.expr2JAS(b, false);
         GreatestCommonDivisorAbstract<edu.jas.arith.BigInteger> factory =
             GCDFactory.getImplementation(edu.jas.arith.BigInteger.ZERO);
-        poly = factory.resultant(poly, temp);
-        return jas.integerPoly2Expr(poly);
-      } catch (JASConversionException e) {
+        p1 = factory.resultant(p1, p2);
+        return jas.integerPoly2Expr(p1);
+      } catch (ClassCastException | JASConversionException e) {
         try {
           if (eVar.size() == 0) {
             return F.NIL;
@@ -1033,13 +1022,13 @@ public class PolynomialFunctions {
           GenPolynomial<IExpr> p1 = jas.expr2IExprJAS(pol1);
           GenPolynomial<IExpr> p2 = jas.expr2IExprJAS(pol2);
 
-          GreatestCommonDivisor<IExpr> factaory =
+          GreatestCommonDivisor<IExpr> factory =
               GCDFactory.getImplementation(ExprRingFactory.CONST);
-          p1 = factaory.resultant(p1, p2);
+          p1 = factory.resultant(p1, p2);
           return jas.exprPoly2Expr(p1);
         } catch (RuntimeException rex) {
           if (Config.DEBUG) {
-            e.printStackTrace();
+            rex.printStackTrace();
           }
         }
       }
@@ -1238,8 +1227,8 @@ public class PolynomialFunctions {
       double discriminant = (b * b - (4 * a * c));
       if (F.isZero(discriminant)) {
         double bothEqual = ((-b / (2.0 * a)));
-        result.append(F.num(bothEqual));
-        result.append(F.num(bothEqual));
+        result.append(bothEqual);
+        result.append(bothEqual);
       } else if (discriminant < 0.0) {
         // two complex roots
         double imaginaryPart = Math.sqrt(-discriminant) / (2 * a);
@@ -1250,8 +1239,8 @@ public class PolynomialFunctions {
         // two real roots
         double real1 = ((-b + Math.sqrt(discriminant)) / (2.0 * a));
         double real2 = ((-b - Math.sqrt(discriminant)) / (2.0 * a));
-        result.append(F.num(real1));
-        result.append(F.num(real2));
+        result.append(real1);
+        result.append(real2);
       }
       return result;
     }
@@ -1289,7 +1278,7 @@ public class PolynomialFunctions {
         s = ((s < 0) ? -Math.pow(-s, (1.0 / 3.0)) : Math.pow(s, (1.0 / 3.0)));
         double t = r - Math.sqrt(discriminant);
         t = ((t < 0) ? -Math.pow(-t, (1.0 / 3.0)) : Math.pow(t, (1.0 / 3.0)));
-        result.append(F.num(-term1 + s + t));
+        result.append(-term1 + s + t);
         term1 += (s + t) / 2.0;
         double realPart = -term1;
         term1 = Math.sqrt(3.0) * (-t + s) / 2;
@@ -1303,9 +1292,9 @@ public class PolynomialFunctions {
       if (F.isZero(discriminant)) {
         // All roots real, at least two are equal.
         r13 = ((r < 0) ? -Math.pow(-r, (1.0 / 3.0)) : Math.pow(r, (1.0 / 3.0)));
-        result.append(F.num(-term1 + 2.0 * r13));
-        result.append(F.num(-(r13 + term1)));
-        result.append(F.num(-(r13 + term1)));
+        result.append(-term1 + 2.0 * r13);
+        result.append(-(r13 + term1));
+        result.append(-(r13 + term1));
         return result;
       }
 
@@ -1315,9 +1304,9 @@ public class PolynomialFunctions {
       double dum1 = q * q * q;
       dum1 = Math.acos(r / Math.sqrt(dum1));
       r13 = 2.0 * Math.sqrt(q);
-      result.append(F.num(-term1 + r13 * Math.cos(dum1 / 3.0)));
-      result.append(F.num(-term1 + r13 * Math.cos((dum1 + 2.0 * Math.PI) / 3.0)));
-      result.append(F.num(-term1 + r13 * Math.cos((dum1 + 4.0 * Math.PI) / 3.0)));
+      result.append(-term1 + r13 * Math.cos(dum1 / 3.0));
+      result.append(-term1 + r13 * Math.cos((dum1 + 2.0 * Math.PI) / 3.0));
+      result.append(-term1 + r13 * Math.cos((dum1 + 4.0 * Math.PI) / 3.0));
       return result;
     }
   }
