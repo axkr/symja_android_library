@@ -27,9 +27,8 @@ import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.exception.ASTElementLimitExceeded;
 import org.matheclipse.core.eval.exception.AbortException;
 import org.matheclipse.core.eval.exception.ArgumentTypeException;
-import org.matheclipse.core.eval.exception.ResultException;
 import org.matheclipse.core.eval.exception.NoEvalException;
-import org.matheclipse.core.eval.exception.ThrowException;
+import org.matheclipse.core.eval.exception.ResultException;
 import org.matheclipse.core.eval.exception.Validate;
 import org.matheclipse.core.eval.exception.ValidateException;
 import org.matheclipse.core.eval.interfaces.AbstractCoreFunctionEvaluator;
@@ -2513,15 +2512,12 @@ public final class ListFunctions {
 
     @Override
     public IExpr evaluate(IAST ast, EvalEngine engine) {
-      //      if (ast.isAST1()) {
-      //        ast = F.operatorForm1Append(ast);
-      //        if (!ast.isPresent()) {
-      //          return F.NIL;
-      //        }
-      //      }
       if (ast.arg1().isASTOrAssociation()) {
         IAST list = (IAST) ast.arg1();
-
+        IExpr arg3 = F.NIL;
+        if (ast.isAST3()) {
+          arg3 = ast.arg3();
+        }
         if (ast.arg2().isInteger()) {
           int indx = ast.arg2().toIntDefault(Integer.MIN_VALUE);
           if (indx == Integer.MIN_VALUE) {
@@ -2536,6 +2532,9 @@ public final class ListFunctions {
             }
           }
           if (indx < list.size()) {
+            if (arg3.isPresent()) {
+              return F.unaryAST1(arg3, list.get(indx));
+            }
             return list.get(indx);
           }
         } else if (ast.arg2().isList()) {
@@ -2544,21 +2543,48 @@ public final class ListFunctions {
             final int arg2Size = arg2.size();
             IASTAppendable result = F.ListAlloc(arg2Size);
             for (int i = 1; i < arg2Size; i++) {
-              IExpr temp = extract(list, arg2.getAST(i));
+              IAST positions = arg2.getAST(i);
+              if (!checkPositions(ast, positions, engine)) {
+                return F.NIL;
+              }
+              IExpr temp = extract(list, positions, engine);
               if (!temp.isPresent()) {
                 return F.NIL;
               }
-              result.append(temp);
+              if (arg3.isPresent()) {
+                result.append(F.unaryAST1(arg3, temp));
+              } else {
+                result.append(temp);
+              }
             }
             return result;
           }
           if (arg2.isEmptyList()) {
-        	  return F.CEmptyList;
+            return F.CEmptyList;
           }
-          return extract(list, arg2);
+          if (!checkPositions(ast, arg2, engine)) {
+              return F.NIL;
+            }
+          return extract(list, arg2, engine);
         }
       }
       return F.NIL;
+    }
+
+    private boolean checkPositions(IAST ast, IAST positions, EvalEngine engine) {
+      for (int j = 1; j < positions.size(); j++) {
+        IExpr arg = positions.get(j);
+        if (arg.isAST(S.Key)) {
+        	continue;
+        }
+        int intValue = arg.toIntDefault();
+        if (intValue == Integer.MIN_VALUE) {
+          // Position specification `1` in `2` is not applicable.
+          IOFunctions.printMessage(ast.topHead(), "psl1", F.List(ast.arg2(), ast), engine);
+          return false;
+        }
+      }
+      return true;
     }
 
     @Override
@@ -2566,10 +2592,10 @@ public final class ListFunctions {
       return ARGS_2_3_1;
     }
 
-    private static IExpr extract(final IAST list, final IAST position) {
+    private static IExpr extract(final IAST list, final IAST position, EvalEngine engine) {
       IASTAppendable part = F.Part(position.argSize(), list);
       part.appendAll(position, 1, position.size());
-      return part;
+      return engine.evaluate(part);
     }
 
     @Override
