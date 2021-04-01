@@ -755,6 +755,11 @@ public class BuiltInDummy implements IBuiltInSymbol, Serializable {
   }
 
   @Override
+  public final boolean isStringIgnoreCase(final String str) {
+    return fSymbolName.equalsIgnoreCase(str);
+  }
+
+  @Override
   public final boolean isSymbolName(String name) {
     if (FEConfig.PARSER_USE_LOWERCASE_SYMBOLS) {
       if (fSymbolName.length() == 1) {

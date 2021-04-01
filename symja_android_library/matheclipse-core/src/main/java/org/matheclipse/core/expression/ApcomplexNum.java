@@ -23,6 +23,7 @@ import org.matheclipse.core.visit.IVisitor;
 import org.matheclipse.core.visit.IVisitorBoolean;
 import org.matheclipse.core.visit.IVisitorInt;
 import org.matheclipse.core.visit.IVisitorLong;
+import org.matheclipse.parser.client.FEConfig;
 
 /**
  * <code>IComplexNum</code> implementation which wraps a <code>
@@ -589,6 +590,40 @@ public class ApcomplexNum implements IComplexNum {
     return F.complex(
         F.ZZ(ApfloatMath.floor(fApcomplex.real()).toBigInteger()),
         F.ZZ(ApfloatMath.floor(fApcomplex.imag()).toBigInteger()));
+  }
+
+  /** {@inheritDoc} */
+  @Override
+  public String fullFormString() {
+    StringBuilder buf = new StringBuilder();
+    long precision = fApcomplex.precision();
+    String str = fApcomplex.real().toString();
+    if (!FEConfig.EXPLICIT_TIMES_OPERATOR) {
+      int indx = str.indexOf("e");
+      if (indx > 0) {
+        str = str.substring(0, indx) + "``" + precision + "*^" + str.substring(indx + 1);
+      } else {
+        str = str + "``" + precision;
+      }
+    }
+    buf.append(str);
+    buf.append(',');
+    str = fApcomplex.imag().toString();
+    if (!FEConfig.EXPLICIT_TIMES_OPERATOR) {
+      int indx = str.indexOf("e");
+      if (indx > 0) {
+        str = str.substring(0, indx) + "``" + precision + "*^" + str.substring(indx + 1);
+      } else {
+        str = str + "``" + precision;
+      }
+    }
+    buf.append(str);
+    if (FEConfig.PARSER_USE_LOWERCASE_SYMBOLS) {
+      buf.append(')');
+    } else {
+      buf.append(']');
+    }
+    return buf.toString();
   }
 
   /** {@inheritDoc} */

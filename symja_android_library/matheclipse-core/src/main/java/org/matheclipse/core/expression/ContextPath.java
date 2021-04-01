@@ -182,7 +182,7 @@ public final class ContextPath implements Iterable<Context> {
     IASTAppendable result = F.ListAlloc(size);
 
     for (int i = 0; i < size; i++) {
-      result.append(F.stringx(path.get(i).getContextName()));
+      result.append(path.get(i).getContextName());
     }
     return result;
   }

@@ -264,12 +264,10 @@ public class Num implements INum {
       if (Double.isNaN(c.fDouble)) {
         return Double.isNaN(fDouble);
       } else {
-        return MathUtils.equals(fDouble, c.fDouble);
+        return Double.doubleToLongBits(fDouble) //
+            == Double.doubleToLongBits(c.fDouble);
       }
     }
-    // if (other instanceof Num) {
-    // return fDouble == ((Num) other).fDouble;
-    // }
     return false;
   }
 
@@ -324,6 +322,21 @@ public class Num implements INum {
   @Override
   public ISignedNumber fractionalPart() {
     return F.num(getRealPart() % 1);
+  }
+
+  /** {@inheritDoc} */
+  @Override
+  public String fullFormString() {
+    String result = Double.toString(fDouble);
+    if (!FEConfig.EXPLICIT_TIMES_OPERATOR) {
+      int indx = result.indexOf("E");
+      if (indx > 0) {
+        result = result.replace("E", "`*^");
+      } else {
+        result = result + "`";
+      }
+    }
+    return result;
   }
 
   /** {@inheritDoc} */
@@ -720,6 +733,16 @@ public class Num implements INum {
   public int toIntDefault(int defaultValue) {
     try {
       return NumberUtil.toInt(fDouble);
+    } catch (ArithmeticException ae) {
+      return defaultValue;
+    }
+  }
+
+  /** {@inheritDoc} */
+  @Override
+  public long toLongDefault(long defaultValue) {
+    try {
+      return NumberUtil.toLong(fDouble);
     } catch (ArithmeticException ae) {
       return defaultValue;
     }

@@ -89,9 +89,7 @@ public class BuiltInSymbol extends Symbol implements IBuiltInSymbol {
     super(symbolName, Context.SYSTEM);
     fEvaluator = DUMMY_EVALUATOR;
     fOrdinal = ordinal;
-    if (symbolName.charAt(0) != '$') {
-      fAttributes = Config.BUILTIN_PROTECTED;
-    } else if (FEConfig.PARSER_USE_LOWERCASE_SYMBOLS) {
+    if ((symbolName.charAt(0) != '$') || FEConfig.PARSER_USE_LOWERCASE_SYMBOLS) {
       fAttributes = Config.BUILTIN_PROTECTED;
     }
   }

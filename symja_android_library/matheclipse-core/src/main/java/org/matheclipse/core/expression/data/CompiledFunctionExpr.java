@@ -3,17 +3,18 @@ package org.matheclipse.core.expression.data;
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.interfaces.AbstractFunctionEvaluator;
 import org.matheclipse.core.expression.DataExpr;
+import org.matheclipse.core.expression.F;
 import org.matheclipse.core.expression.S;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IExpr;
 
-public class CompiledFunctionExpr extends DataExpr<AbstractFunctionEvaluator> {
+public class CompiledFunctionExpr extends DataExpr<Class<?>> {
 
   private static final long serialVersionUID = 3098987741558862963L;
 
   public static CompiledFunctionExpr newInstance(
-      IAST variables, IAST types, IExpr expr, final AbstractFunctionEvaluator value) {
-    return new CompiledFunctionExpr(variables, types, expr, value);
+      IAST variables, IAST types, IExpr expr, Class<?> clazz) {
+    return new CompiledFunctionExpr(variables, types, expr, clazz);
   }
 
   private IAST variables;
@@ -21,9 +22,8 @@ public class CompiledFunctionExpr extends DataExpr<AbstractFunctionEvaluator> {
 
   private IExpr expr;
 
-  protected CompiledFunctionExpr(
-      IAST variables, IAST types, IExpr expr, final AbstractFunctionEvaluator function) {
-    super(S.CompiledFunction, function);
+  protected CompiledFunctionExpr(IAST variables, IAST types, IExpr expr, Class<?> clazz) {
+    super(S.CompiledFunction, clazz);
     this.variables = variables;
     this.types = types;
     this.expr = expr;
@@ -46,7 +46,15 @@ public class CompiledFunctionExpr extends DataExpr<AbstractFunctionEvaluator> {
   }
 
   public IExpr evaluate(IAST ast, EvalEngine engine) {
-    return fData.evaluate(ast, engine);
+
+    AbstractFunctionEvaluator fun;
+    try {
+      fun = (AbstractFunctionEvaluator) fData.getDeclaredConstructor().newInstance();
+      return fun.evaluate(ast, engine);
+    } catch (ReflectiveOperationException rex) {
+      rex.printStackTrace();
+    }
+    return F.NIL;
   }
 
   public IExpr getExpr() {

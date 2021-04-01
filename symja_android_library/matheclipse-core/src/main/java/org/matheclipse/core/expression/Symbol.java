@@ -439,13 +439,20 @@ public class Symbol implements ISymbol, Serializable {
   /** {@inheritDoc} */
   @Override
   public String fullFormString() {
-    if (FEConfig.PARSER_USE_LOWERCASE_SYMBOLS) {
-      String str = AST2Expr.PREDEFINED_SYMBOLS_MAP.get(fSymbolName);
-      if (str != null) {
-        return str;
-      }
+    try {
+      StringBuilder sb = new StringBuilder();
+      OutputFormFactory.get(EvalEngine.get().isRelaxedSyntax()).convertSymbol(sb, this);
+      return sb.toString();
+    } catch (Exception e1) {
+      return fSymbolName;
     }
-    return fSymbolName;
+    //    if (FEConfig.PARSER_USE_LOWERCASE_SYMBOLS) {
+    //      String str = AST2Expr.PREDEFINED_SYMBOLS_MAP.get(fSymbolName);
+    //      if (str != null) {
+    //        return str;
+    //      }
+    //    }
+    //    return fSymbolName;
   }
 
   /** {@inheritDoc} */
@@ -503,12 +510,12 @@ public class Symbol implements ISymbol, Serializable {
   public final boolean hasFlatAttribute() {
     return ISymbol.hasFlatAttribute(fAttributes);
   }
-  
+
   @Override
   public final boolean hasHoldAllCompleteAttribute() {
     return ISymbol.hasHoldAllCompleteAttribute(fAttributes);
   }
-   
+
   /** {@inheritDoc} */
   @Override
   public int hashCode() {
@@ -771,6 +778,11 @@ public class Symbol implements ISymbol, Serializable {
   @Override
   public final boolean isString(final String str) {
     return fSymbolName.equals(str);
+  }
+
+  @Override
+  public final boolean isStringIgnoreCase(final String str) {
+    return fSymbolName.equalsIgnoreCase(str);
   }
 
   @Override

@@ -328,6 +328,11 @@ public class ComplexSym implements IComplex {
   @Override
   public IExpr evaluate(EvalEngine engine) {
     if (engine.isNumericMode()) {
+      if (isImaginaryUnit()) {
+        return F.CDI;
+      } else if (isNegativeImaginaryUnit()) {
+        return F.CDNI;
+      }
       return numericNumber();
     }
     final INumber cTemp = normalize();

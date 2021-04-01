@@ -9,6 +9,7 @@ import java.util.Map.Entry;
 import java.util.Set;
 
 import org.matheclipse.core.basic.Config;
+import org.matheclipse.core.builtin.JavaFunctions;
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.interfaces.ISymbol;
 import org.matheclipse.parser.trie.TrieMatch;
@@ -43,6 +44,8 @@ public class Context implements Serializable {
   private transient Context parentContext;
 
   private Map<String, ISymbol> symbolTable;
+
+  private transient Class<?> javaClass = null;;
 
   public static final String GLOBAL_CONTEXT_NAME = "Global`";
 
@@ -96,6 +99,16 @@ public class Context implements Serializable {
    */
   public String getContextName() {
     return contextName;
+  }
+
+  /**
+   * Get the java class if this is a {@link JavaFunctions} class context. <code>null</code>
+   * otherwise.
+   *
+   * @return <code>null</code> if this is not a context for Java classes
+   */
+  public Class<?> getJavaClass() {
+    return javaClass;
   }
 
   /**
@@ -154,6 +167,15 @@ public class Context implements Serializable {
 
   public ISymbol remove(String key) {
     return symbolTable.remove(key);
+  }
+
+  /**
+   * If this is a {@link JavaFunctions} class context the class to this context.
+   *
+   * @param javaClass
+   */
+  public void setJavaClass(Class<?> javaClass) {
+    this.javaClass = javaClass;
   }
 
   public int size() {

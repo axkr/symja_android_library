@@ -21,6 +21,7 @@ import org.matheclipse.core.visit.IVisitor;
 import org.matheclipse.core.visit.IVisitorBoolean;
 import org.matheclipse.core.visit.IVisitorInt;
 import org.matheclipse.core.visit.IVisitorLong;
+import org.matheclipse.parser.client.FEConfig;
 
 /**
  * <code>INum</code> implementation which wraps a <code>Apfloat</code> value to represent a numeric
@@ -297,6 +298,17 @@ public class ApfloatNum implements INum {
 
   /** {@inheritDoc} */
   @Override
+  public long toLongDefault(long defaultValue) {
+    try {
+      return fApfloat.longValueExact();
+    } catch (RuntimeException rex) {
+      // ArithmeticException
+    }
+    return defaultValue;
+  }
+
+  /** {@inheritDoc} */
+  @Override
   public long toLong() throws ArithmeticException {
     return fApfloat.longValueExact();
   }
@@ -452,6 +464,22 @@ public class ApfloatNum implements INum {
   @Override
   public ISignedNumber fractionalPart() {
     return F.num(fApfloat.frac());
+  }
+
+  /** {@inheritDoc} */
+  @Override
+  public String fullFormString() {
+    String str = fApfloat.toString();
+    long precision = fApfloat.precision();
+    if (!FEConfig.EXPLICIT_TIMES_OPERATOR) {
+      int indx = str.indexOf("e");
+      if (indx > 0) {
+        str = str.substring(0, indx) + "``" + precision + "*^" + str.substring(indx + 1);
+      } else {
+        str = str + "``" + precision;
+      }
+    }
+    return str;
   }
 
   /** {@inheritDoc} */

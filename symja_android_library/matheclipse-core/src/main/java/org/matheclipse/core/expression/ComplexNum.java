@@ -100,9 +100,7 @@ public class ComplexNum implements IComplexNum {
    * @return
    */
   private static ComplexNum newInstance(final Complex value) {
-    ComplexNum d = new ComplexNum(0.0, 0.0);
-    d.fComplex = value;
-    return d;
+    return new ComplexNum(value);
   }
 
   public static ComplexNum valueOf(final Complex c) {
@@ -153,6 +151,10 @@ public class ComplexNum implements IComplexNum {
 
   private ComplexNum(final double r, final double i) {
     fComplex = new Complex(r, i);
+  }
+
+  private ComplexNum(Complex complex) {
+    fComplex = complex;
   }
 
   /** {@inheritDoc} */
@@ -423,6 +425,48 @@ public class ComplexNum implements IComplexNum {
   @Override
   public INumber fractionalPart() {
     return F.complexNum(getRealPart() % 1, getImaginaryPart() % 1);
+  }
+
+  /** {@inheritDoc} */
+  @Override
+  public String fullFormString() {
+    double re = fComplex.getReal();
+    double im = fComplex.getImaginary();
+    StringBuilder buf = new StringBuilder("Complex");
+    if (FEConfig.PARSER_USE_LOWERCASE_SYMBOLS) {
+      buf.append('(');
+    } else {
+      buf.append('[');
+    }
+
+    String str = Double.toString(re);
+    if (!FEConfig.EXPLICIT_TIMES_OPERATOR) {
+      int indx = str.indexOf("E");
+      if (indx > 0) {
+        str = str.replace("E", "`*^");
+      } else {
+        str = str + "`";
+      }
+    }
+    buf.append(str);
+    buf.append(',');
+    str = Double.toString(im);
+    if (!FEConfig.EXPLICIT_TIMES_OPERATOR) {
+      int indx = str.indexOf("E");
+      //    `*^
+      if (indx > 0) {
+        str = str.replace("E", "`*^");
+      } else {
+        str = str + "`";
+      }
+    }
+    buf.append(str);
+    if (FEConfig.PARSER_USE_LOWERCASE_SYMBOLS) {
+      buf.append(')');
+    } else {
+      buf.append(']');
+    }
+    return buf.toString();
   }
 
   /** {@inheritDoc} */
@@ -752,15 +796,7 @@ public class ComplexNum implements IComplexNum {
 
   @Override
   public String toString() {
-    // try {
-    // StringBuilder sb = new StringBuilder();
-    // OutputFormFactory.get().convertDoubleComplex(sb, this, Integer.MIN_VALUE,
-    // OutputFormFactory.NO_PLUS_CALL);
-    // return sb.toString();
-    // } catch (Exception e1) {
-    // fall back to simple output format
     return fComplex.toString();
-    // }
   }
 
   /**

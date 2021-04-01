@@ -669,7 +669,7 @@ public abstract class AbstractIntegerSym implements IInteger, Externalizable {
   // prime = TDIV31.findSingleFactor(intValue);
   // intValue /= prime;
   // if (prime != 1) {
-  // result.append(F.ZZ(prime));
+  // result.append(prime);
   // } else {
   // break;
   // }

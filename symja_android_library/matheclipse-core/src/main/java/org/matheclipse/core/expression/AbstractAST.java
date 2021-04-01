@@ -1,6 +1,10 @@
 package org.matheclipse.core.expression;
 
 import java.io.ObjectStreamException;
+import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
+import java.lang.reflect.Modifier;
+import java.lang.reflect.Parameter;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
@@ -30,9 +34,11 @@ import org.jgrapht.graph.DefaultGraphType;
 import org.jgrapht.graph.DefaultGraphType.Builder;
 import org.matheclipse.core.basic.Config;
 import org.matheclipse.core.builtin.BooleanFunctions;
+import org.matheclipse.core.builtin.JavaFunctions;
 import org.matheclipse.core.builtin.PredicateQ;
 import org.matheclipse.core.builtin.StructureFunctions;
 import org.matheclipse.core.convert.AST2Expr;
+import org.matheclipse.core.convert.Object2Expr;
 import org.matheclipse.core.convert.VariablesSet;
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.exception.ArgumentTypeException;
@@ -1646,6 +1652,7 @@ public abstract class AbstractAST implements IASTMutable {
     return true;
   }
 
+  @Override
   public IExpr.COMPARE_TERNARY equalTernary(IExpr that, EvalEngine engine) {
     if (that.isIndeterminate()) {
       return IExpr.COMPARE_TERNARY.UNDECIDABLE;
@@ -1762,46 +1769,106 @@ public abstract class AbstractAST implements IASTMutable {
     }
     final IExpr head = head();
     final int argSize = argSize();
-    if (head instanceof IBuiltInSymbol) {
-      final IEvaluator evaluator = ((IBuiltInSymbol) head).getEvaluator();
-      if (evaluator instanceof ICoreFunctionEvaluator) {
-        try {
-          ICoreFunctionEvaluator functionEvaluator = (ICoreFunctionEvaluator) evaluator;
-          IAST ast = EvalEngine.checkBuiltinArguments(this, functionEvaluator, engine);
-          if (!ast.isPresent()) {
-            return F.NIL;
-          }
+    if (head instanceof ISymbol) {
+      ISymbol headSymbol = (ISymbol) head;
+      Class<?> clazz = headSymbol.getContext().getJavaClass();
+      if (clazz != null) {
+        String staticMethodName = headSymbol.getSymbolName();
+        //        try {
+        //          Method method = clazz.getMethod(staticMethodName);
+        //          if (Modifier.isStatic(method.getModifiers())) {
+        //            Parameter[] parameters = method.getParameters();
+        //            if (parameters.length == argSize()) {
+        //              Object[] params = JavaFunctions.determineParameters(this, parameters, 1);
+        //              if (params != null) {
+        //                Object result;
+        //                try {
+        //                  result = method.invoke(null, params);
+        //                  if (result instanceof String) {
+        //                    return F.stringx((String) result);
+        //                  }
+        //                  return Object2Expr.convert(result);
+        //                } catch (IllegalAccessException
+        //                    | IllegalArgumentException
+        //                    | InvocationTargetException e) {
+        //                  // fall through?
+        //                }
+        //              }
+        //            }
+        //          }
+        //
+        //        } catch (IllegalArgumentException | NoSuchMethodException | SecurityException e) {
+        //          // fall through?
+        //        }
+        Method[] methods = clazz.getMethods();
+        for (int i = 0; i < methods.length; i++) {
+          if (Modifier.isStatic(methods[i].getModifiers())) {
+            if (staticMethodName.equals(methods[i].getName())) {
+              Parameter[] parameters = methods[i].getParameters();
+              if (parameters.length == argSize()) {
+                Object[] params = JavaFunctions.determineParameters(this, parameters, 1);
+                if (params != null) {
+                  Object result;
+                  try {
+                    result = methods[i].invoke(null, params);
 
-          IBuiltInSymbol header = ((IBuiltInSymbol) head);
-          if ((header.getAttributes() & ISymbol.SEQUENCEHOLD) != ISymbol.SEQUENCEHOLD) {
-            IExpr temp;
-            if ((temp = engine.flattenSequences(this)).isPresent()) {
-              return temp;
+                    if (result instanceof String) {
+                      return F.stringx((String) result);
+                    }
+                    return Object2Expr.convert(result, false, true);
+                  } catch (IllegalAccessException
+                      | IllegalArgumentException
+                      | InvocationTargetException e) {
+                    // fall through?
+                  }
+                }
+              }
             }
           }
-          if (isBooleanFunction()) {
-            IExpr temp = extractConditionalExpression(false);
-            if (temp.isPresent()) {
-              return temp;
+        }
+      }
+
+      if (head instanceof IBuiltInSymbol) {
+        final IEvaluator evaluator = ((IBuiltInSymbol) head).getEvaluator();
+        if (evaluator instanceof ICoreFunctionEvaluator) {
+          try {
+            ICoreFunctionEvaluator functionEvaluator = (ICoreFunctionEvaluator) evaluator;
+            IAST ast = EvalEngine.checkBuiltinArguments(this, functionEvaluator, engine);
+            if (!ast.isPresent()) {
+              return F.NIL;
             }
-          }
 
-          IExpr evaluateTemp = evalEvaluate(engine);
-          if (evaluateTemp.isPresent()) {
-            return evaluateTemp;
-          }
-          return functionEvaluator.evaluate(ast, engine);
+            IBuiltInSymbol header = ((IBuiltInSymbol) head);
+            if ((header.getAttributes() & ISymbol.SEQUENCEHOLD) != ISymbol.SEQUENCEHOLD) {
+              IExpr temp;
+              if ((temp = F.flattenSequence(this)).isPresent()) {
+                return temp;
+              }
+            }
+            if (isBooleanFunction()) {
+              IExpr temp = extractConditionalExpression(false);
+              if (temp.isPresent()) {
+                return temp;
+              }
+            }
 
-        } catch (FlowControlException fce) {
-          throw fce;
-        } catch (SymjaMathException ve) {
-          if (ve instanceof LimitException) {
-            throw ve;
+            IExpr evaluateTemp = evalEvaluate(engine);
+            if (evaluateTemp.isPresent()) {
+              return evaluateTemp;
+            }
+            return functionEvaluator.evaluate(ast, engine);
+
+          } catch (FlowControlException fce) {
+            throw fce;
+          } catch (SymjaMathException ve) {
+            if (ve instanceof LimitException) {
+              throw ve;
+            }
+            if (FEConfig.SHOW_STACKTRACE) {
+              ve.printStackTrace();
+            }
+            return engine.printMessage(topHead(), ve);
           }
-          if (FEConfig.SHOW_STACKTRACE) {
-            ve.printStackTrace();
-          }
-          return engine.printMessage(topHead(), ve);
         }
       }
     }
@@ -2764,9 +2831,6 @@ public abstract class AbstractAST implements IASTMutable {
           usePrefix,
           noSymbolPrefix,
           variables);
-      if (depth == 0 && isList()) {
-        text.append('\n');
-      }
     } else {
       if (depth == 0 && isList()) {
         text.append('\n');
@@ -2788,9 +2852,9 @@ public abstract class AbstractAST implements IASTMutable {
           }
         }
       }
-      if (depth == 0 && isList()) {
-        text.append('\n');
-      }
+    }
+    if (depth == 0 && isList()) {
+      text.append('\n');
     }
     text.append(')');
     return text.toString();
@@ -3395,7 +3459,7 @@ public abstract class AbstractAST implements IASTMutable {
   /** {@inheritDoc} */
   @Override
   public boolean isList(Predicate<IExpr> pred) {
-    if (isList()) {
+    if (isList() && size() > 1) {
       for (int i = 1; i < size(); i++) {
         if (!pred.test(get(i))) {
           // the row is no list
@@ -3759,11 +3823,13 @@ public abstract class AbstractAST implements IASTMutable {
   /** {@inheritDoc} */
   @Override
   public boolean isNumericFunction(Function<IExpr, String> list) {
-    if (head().isSymbol() && ((ISymbol) head()).isNumericFunctionAttribute() || isList()) {
+    if (head().isSymbol() && ((ISymbol) head()).isNumericFunctionAttribute()
+        || isList()
+        || list.apply(this) != null) {
       // check if all arguments are &quot;numeric&quot;
       return forAll(x -> x.isNumericFunction(list));
     }
-    return false;
+    return IASTMutable.super.isNumericFunction(list);
   }
 
   /** {@inheritDoc} */

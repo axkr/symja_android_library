@@ -886,6 +886,12 @@ public class IntegerSym extends AbstractIntegerSym {
   public int toIntDefault(int defaultValue) {
     return fIntValue;
   }
+  
+  /** {@inheritDoc} */
+  @Override
+  public long toLongDefault(long defaultValue) {
+    return fIntValue;
+  }
 
   /** {@inheritDoc} */
   @Override

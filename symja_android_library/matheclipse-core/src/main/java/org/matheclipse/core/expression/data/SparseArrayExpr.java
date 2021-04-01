@@ -1455,12 +1455,11 @@ public class SparseArrayExpr extends DataExpr<Trie<int[], IExpr>>
       }
       this.fDimension = new int[dimension.length];
       System.arraycopy(dimension, 0, this.fDimension, 0, dimension.length);
-      this.fDefaultValue = defaultValue;
     } else {
       this.fDimension = dimension;
-      this.fDefaultValue = defaultValue;
     }
     // this.addEvalFlags(IAST.SEQUENCE_FLATTENED);
+  this.fDefaultValue = defaultValue;
   }
 
   /** {@inheritDoc} */
@@ -1626,7 +1625,7 @@ public class SparseArrayExpr extends DataExpr<Trie<int[], IExpr>>
         int[] key = entry.getKey();
         int row = key[0];
         while (rowCounter < row) {
-          rowPointers.append(F.ZZ(columnIndex));
+          rowPointers.append(columnIndex);
           rowCounter++;
         }
         columnIndex++;
@@ -1638,7 +1637,7 @@ public class SparseArrayExpr extends DataExpr<Trie<int[], IExpr>>
       }
     } else {
       // vector case
-      rowPointers.append(F.ZZ(columnIndex));
+      rowPointers.append(columnIndex);
       for (TrieNode<int[], IExpr> entry : fData.nodeSet()) {
         int[] key = entry.getKey();
         columnIndex++;
@@ -1647,7 +1646,7 @@ public class SparseArrayExpr extends DataExpr<Trie<int[], IExpr>>
         nonZeroValues.append(entry.getValue());
       }
     }
-    rowPointers.append(F.ZZ(columnIndex));
+    rowPointers.append(columnIndex);
     list1.append(nonZeroValues);
     return result;
   }

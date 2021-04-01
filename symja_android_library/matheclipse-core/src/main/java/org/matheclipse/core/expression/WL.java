@@ -264,7 +264,7 @@ public class WL {
               IASTAppendable list = F.ListAlloc(dimensions[0]);
               for (int i = 0; i < dimensions[0]; i++) {
                 int value = parseInteger8();
-                list.append(F.ZZ(value));
+                list.append(value);
               }
               return list;
             } else if (rank == 2) {
@@ -272,7 +272,7 @@ public class WL {
               for (int i = 0; i < dimensions[0]; i++) {
                 IASTAppendable row = F.ListAlloc(dimensions[1]);
                 for (int j = 0; j < dimensions[1]; j++) {
-                  row.append(F.ZZ(parseInteger8()));
+                  row.append(parseInteger8());
                 }
                 m.append(row);
               }
@@ -1205,7 +1205,7 @@ public class WL {
     IASTAppendable list = F.ListAlloc(bArray.length);
     for (int i = 0; i < bArray.length; i++) {
       int value = 0x000000FF & bArray[i];
-      list.append(F.ZZ(value));
+      list.append(value);
     }
     return list;
   }
