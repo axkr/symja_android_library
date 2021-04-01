@@ -1893,11 +1893,10 @@ public class TeXFormFactory {
       final Object convertedSymbol = CONSTANT_SYMBOLS.get(headStr);
       if (convertedSymbol == null) {
         buf.append(headStr);
-        return;
       } else {
         convertConstantSymbol(buf, sym, convertedSymbol);
-        return;
       }
+      return;
     }
 
     if (EvalEngine.get().getContextPath().contains(context)) {

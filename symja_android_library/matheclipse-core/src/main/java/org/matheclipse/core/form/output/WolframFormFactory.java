@@ -15,7 +15,7 @@ public class WolframFormFactory extends OutputFormFactory {
       int exponentFigures,
       int significantFigures) {
     super(relaxedSyntax, reversed, exponentFigures, significantFigures);
-    this.fQuotes = true;
+    this.fInputForm = true;
   }
 
   @Override

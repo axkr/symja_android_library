@@ -1283,16 +1283,13 @@ public class MathMLFormFactory extends AbstractMathMLFormFactory {
 
   public void convertArgs(final StringBuilder buf, IExpr head, final IAST function) {
     tagStart(buf, "mrow");
-    if (head.isAST()) {
+    if (head.isAST() || !fRelaxedSyntax) {
       // append(buf, "[");
       tag(buf, "mo", "[");
-    } else if (fRelaxedSyntax) {
-      // append(buf, "(");
-      tag(buf, "mo", "(");
-    } else {
-      // append(buf, "[");
-      tag(buf, "mo", "[");
-    }
+    }else {
+    // append(buf, "(");
+    tag(buf, "mo", "(");
+  }
     final int functionSize = function.size();
     if (functionSize > 1) {
       convertInternal(buf, function.arg1(), Integer.MIN_VALUE, false);
@@ -1301,16 +1298,13 @@ public class MathMLFormFactory extends AbstractMathMLFormFactory {
       tag(buf, "mo", ",");
       convertInternal(buf, function.get(i), Integer.MIN_VALUE, false);
     }
-    if (head.isAST()) {
+    if (head.isAST() || !fRelaxedSyntax) {
       // append(buf, "]");
       tag(buf, "mo", "]");
-    } else if (fRelaxedSyntax) {
-      // append(buf, ")");
-      tag(buf, "mo", ")");
-    } else {
-      // append(buf, "]");
-      tag(buf, "mo", "]");
-    }
+    }else {
+    // append(buf, ")");
+    tag(buf, "mo", ")");
+  }
     tagEnd(buf, "mrow");
   }
 
@@ -1603,13 +1597,11 @@ public class MathMLFormFactory extends AbstractMathMLFormFactory {
         // <!ENTITY ImaginaryI "&#x2148;"
         tag(buf, "mi", "&#x2148;");
       }
-      tagEnd(buf, "mrow");
     } else if (isImMinusOne) {
       tagStart(buf, "mrow");
       tag(buf, "mo", "-");
       // <!ENTITY ImaginaryI "&#x2148;"
       tag(buf, "mi", "&#x2148;");
-      tagEnd(buf, "mrow");
     } else {
       tagStart(buf, "mrow");
       if (isImNegative) {
@@ -1635,10 +1627,8 @@ public class MathMLFormFactory extends AbstractMathMLFormFactory {
       tag(buf, "mo", "&#0183;");
       // <!ENTITY ImaginaryI "&#x2148;"
       tag(buf, "mi", "&#x2148;");
-      tagEnd(buf, "mrow");
-      // } else {
-      // tag(buf, "mi", "&#x2148;");
     }
+  tagEnd(buf, "mrow");
     if (!isReZero && (Precedence.PLUS < precedence)) {
       tag(buf, "mo", ")");
     }
@@ -2371,12 +2361,11 @@ public class MathMLFormFactory extends AbstractMathMLFormFactory {
     if (EvalEngine.get().getContextPath().contains(context)) {
       tagStart(buf, "mi");
       buf.append(sym.getSymbolName());
-      tagEnd(buf, "mi");
     } else {
       tagStart(buf, "mi");
       buf.append(context.toString() + sym.getSymbolName());
-      tagEnd(buf, "mi");
     }
+  tagEnd(buf, "mi");
   }
 
   public void init() {
