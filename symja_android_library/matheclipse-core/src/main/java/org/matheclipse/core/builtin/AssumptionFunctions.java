@@ -85,11 +85,34 @@ public class AssumptionFunctions {
       if (arg2.isSymbol()) {
         final ISymbol domain = (ISymbol) arg2;
         final IExpr arg1 = engine.evaluate(ast.arg1());
-        if (arg1.isAST(S.Alternatives)) {
-          return ((IAST) arg1).findFirst(x -> assumeDomain(x, domain));
-        } else {
-          return assumeDomain(arg1, domain);
+        if (arg1.isAST()) {
+          IAST arg1AST = (IAST) arg1;
+          if (arg1.isList() || arg1.isAST(S.Alternatives)) {
+            if (arg1AST.size() == 1) {
+              return S.True;
+            }
+            if (arg1AST.size() == 2) {
+              return F.Element(arg1AST.first(), domain);
+            }
+            IASTAppendable result = F.ast(arg1.head(), arg1AST.size(), false);
+            boolean evaled = false;
+            for (int i = 1; i < arg1AST.size(); i++) {
+              IExpr temp = arg1AST.get(i);
+              IExpr assumeDomain = assumeDomain(temp, domain);
+              if (assumeDomain.isFalse()) {
+                evaled = true;
+                return S.False;
+              }
+              if (assumeDomain.isTrue()) {
+                evaled = true;
+                continue;
+              }
+              result.append(temp);
+            }
+            return evaled ? F.Element(result, domain) : F.NIL;
+          }
         }
+        return assumeDomain(arg1, domain);
       }
       return F.NIL;
     }
@@ -111,52 +134,31 @@ public class AssumptionFunctions {
     private IExpr assumeDomain(final IExpr arg1, final ISymbol domain) {
       if (domain.isBuiltInSymbol()) {
         ISymbol truthValue;
-        int symbolID = ((IBuiltInSymbol) domain).ordinal();
+        final int symbolID = ((IBuiltInSymbol) domain).ordinal();
         switch (symbolID) {
           case ID.Algebraics:
             truthValue = AbstractAssumptions.assumeAlgebraic(arg1);
-            if (truthValue != null) {
-              return truthValue;
-            }
-            break;
+            return (truthValue != null) ? truthValue : F.NIL;
           case ID.Arrays:
             truthValue = AbstractAssumptions.assumeArray(arg1);
-            if (truthValue != null) {
-              return truthValue;
-            }
-            break;
+            return (truthValue != null) ? truthValue : F.NIL;
           case ID.Booleans:
             truthValue = AbstractAssumptions.assumeBoolean(arg1);
-            if (truthValue != null) {
-              return truthValue;
-            }
-            break;
+            return (truthValue != null) ? truthValue : F.NIL;
           case ID.Complexes:
             truthValue = AbstractAssumptions.assumeComplex(arg1);
-            if (truthValue != null) {
-              return truthValue;
-            }
-            break;
+            return (truthValue != null) ? truthValue : F.NIL;
           case ID.Integers:
             truthValue = AbstractAssumptions.assumeInteger(arg1);
-            if (truthValue != null) {
-              return truthValue;
-            }
-            break;
+            return (truthValue != null) ? truthValue : F.NIL;
           case ID.Primes:
             return AbstractAssumptions.assumePrime(arg1);
           case ID.Rationals:
             truthValue = AbstractAssumptions.assumeRational(arg1);
-            if (truthValue != null) {
-              return truthValue;
-            }
-            break;
+            return (truthValue != null) ? truthValue : F.NIL;
           case ID.Reals:
             truthValue = AbstractAssumptions.assumeReal(arg1);
-            if (truthValue != null) {
-              return truthValue;
-            }
-            break;
+            return (truthValue != null) ? truthValue : F.NIL;
           default:
             break;
         }
