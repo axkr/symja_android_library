@@ -64,7 +64,7 @@ public class OutputFormFactory {
   private final boolean fPlusReversed;
   private boolean fIgnoreNewLine = false;
   /** If <code>true</code> print leading and trailing quotes in Symja strings */
-  protected boolean fQuotes = false;
+  protected boolean fInputForm = false;
 
   private boolean fEmpty = true;
   private int fColumnCounter;
@@ -167,7 +167,7 @@ public class OutputFormFactory {
     if (d instanceof ApfloatNum) {
       final boolean isNegative = d.isNegative();
       if (!isNegative && caller == PLUS_CALL) {
-        append(buf, "+");
+        append(buf, fInputForm ? " + " : "+");
       }
       convertDoubleString(
           buf,
@@ -182,7 +182,7 @@ public class OutputFormFactory {
     }
     final boolean isNegative = d.isNegative();
     if (!isNegative && caller == PLUS_CALL) {
-      append(buf, "+");
+      append(buf, fInputForm ? " + " : "+");
     }
     if (d instanceof Num) {
       convertDoubleString(buf, convertDoubleToFormattedString(doubleValue), precedence, isNegative);
@@ -239,7 +239,7 @@ public class OutputFormFactory {
     }
     if (Precedence.PLUS < precedence) {
       if (caller == PLUS_CALL) {
-        append(buf, "+");
+        append(buf, fInputForm ? " + " : "+");
         caller = false;
       }
       append(buf, "(");
@@ -261,7 +261,7 @@ public class OutputFormFactory {
         }
       } else {
         if (caller == PLUS_CALL) {
-          append(buf, "+");
+          append(buf, fInputForm ? " + " : "+");
           caller = false;
         }
         append(buf, "I*");
@@ -280,7 +280,7 @@ public class OutputFormFactory {
       throws IOException {
     if (Precedence.PLUS < precedence) {
       if (caller == PLUS_CALL) {
-        append(buf, "+");
+        append(buf, fInputForm ? " + " : "+");
         caller = false;
       }
       append(buf, "(");
@@ -302,7 +302,7 @@ public class OutputFormFactory {
         }
       } else {
         if (caller == PLUS_CALL) {
-          append(buf, "+");
+          append(buf, fInputForm ? " + " : "+");
           caller = false;
         }
         append(buf, "I*");
@@ -344,14 +344,20 @@ public class OutputFormFactory {
       final Appendable buf, final IInteger i, final int precedence, boolean caller)
       throws IOException {
     final boolean isNegative = i.isNegative();
+    BigInteger bigNumerator = i.toBigNumerator();
     if (!isNegative && caller == PLUS_CALL) {
-      append(buf, "+");
+      append(buf, fInputForm ? " + " : "+");
     }
     if (isNegative && (Precedence.PLUS < precedence)) {
       append(buf, "(");
     }
-    final String str = i.toBigNumerator().toString();
-    if ((str.length() + getColumnCounter() > 80)) {
+    if (isNegative) {
+      bigNumerator = bigNumerator.negate();
+      append(buf, fInputForm && (caller == PLUS_CALL) ? " - " : "-");
+    }
+
+    final String str = bigNumerator.toString();
+    if ((str.length() + getColumnCounter() > Config.MAX_OUTPUT_LINE)) {
       if (getColumnCounter() > 40) {
         newLine(buf);
       }
@@ -381,7 +387,7 @@ public class OutputFormFactory {
 
   public void convertFraction(
       final Appendable buf,
-      final BigInteger numerator,
+      BigInteger numerator,
       BigInteger denominator,
       final int precedence,
       boolean caller)
@@ -391,16 +397,19 @@ public class OutputFormFactory {
     final int prec = isNegative ? Precedence.PLUS : Precedence.TIMES;
     if (!isNegative) {
       if (caller == PLUS_CALL) {
-        append(buf, "+");
+        append(buf, fInputForm ? " + " : "+");
       }
     }
 
     if (prec < precedence) {
       append(buf, "(");
     }
-
+    if (isNegative) {
+      numerator = numerator.negate();
+      append(buf, fInputForm && (caller == PLUS_CALL) ? " - " : "-");
+    }
     String str = numerator.toString();
-    if ((str.length() + getColumnCounter() > 80)) {
+    if ((str.length() + getColumnCounter() > Config.MAX_OUTPUT_LINE)) {
       if (getColumnCounter() > 40) {
         newLine(buf);
       }
@@ -420,7 +429,7 @@ public class OutputFormFactory {
     if (!isInteger) {
       append(buf, "/");
       str = denominator.toString();
-      if ((str.length() + getColumnCounter() > 80)) {
+      if ((str.length() + getColumnCounter() > Config.MAX_OUTPUT_LINE)) {
         if (getColumnCounter() > 40) {
           newLine(buf);
         }
@@ -451,7 +460,7 @@ public class OutputFormFactory {
     final boolean isImMinusOne = c.getImaginaryPart().isMinusOne();
     if (!isReZero && (Precedence.PLUS < precedence)) {
       if (caller == PLUS_CALL) {
-        append(buf, "+");
+        append(buf, fInputForm ? " + " : "+");
         caller = false;
       }
       append(buf, "(");
@@ -462,16 +471,16 @@ public class OutputFormFactory {
     if (isImOne) {
       if (isReZero) {
         if (caller == PLUS_CALL) {
-          append(buf, "+");
+          append(buf, fInputForm ? " + " : "+");
           caller = false;
         }
         append(buf, "I");
         return;
       } else {
-        append(buf, "+I");
+        append(buf, fInputForm ? " + I" : "+I");
       }
     } else if (isImMinusOne) {
-      append(buf, "-I");
+      append(buf, fInputForm ? " - I" : "-I");
     } else {
       final IRational im = c.getImaginaryPart();
       int oldColumnCounter = fColumnCounter;
@@ -481,7 +490,7 @@ public class OutputFormFactory {
           if (isReZero && (Precedence.TIMES < precedence)) {
             append(buf, "(");
           }
-          append(buf, "-");
+          append(buf, fInputForm ? " - " : "-");
           oldColumnCounter = fColumnCounter;
           fColumnCounter = 0;
           append(imagBuf, "I*");
@@ -489,7 +498,7 @@ public class OutputFormFactory {
         } else {
           if (isReZero) {
             if (caller == PLUS_CALL) {
-              append(buf, "+");
+              append(buf, fInputForm ? " + " : "+");
             }
             if (Precedence.TIMES < precedence) {
               append(buf, "(");
@@ -498,7 +507,7 @@ public class OutputFormFactory {
             fColumnCounter = 0;
             append(imagBuf, "I*");
           } else {
-            append(buf, "+");
+            append(buf, fInputForm ? " + " : "+");
             oldColumnCounter = fColumnCounter;
             fColumnCounter = 0;
             append(imagBuf, "I*");
@@ -510,7 +519,7 @@ public class OutputFormFactory {
         fColumnCounter = oldColumnCounter;
       }
       String str = imagBuf.toString();
-      if ((str.length() + getColumnCounter() > 80)) {
+      if ((str.length() + getColumnCounter() > Config.MAX_OUTPUT_LINE)) {
         newLine(buf);
       }
       append(buf, str);
@@ -525,7 +534,7 @@ public class OutputFormFactory {
   }
 
   public void convertString(final Appendable buf, final String str) throws IOException {
-    if (fQuotes) {
+    if (fInputForm) {
       append(buf, "\"");
       append(buf, str);
       append(buf, "\"");
@@ -599,7 +608,7 @@ public class OutputFormFactory {
         convert(buf, plusArg, Integer.MIN_VALUE, false);
       } else {
         if (caller == PLUS_CALL) {
-          append(buf, "+");
+          append(buf, fInputForm ? " + " : "+");
         }
         convert(buf, plusArg, Precedence.PLUS, false);
       }
@@ -633,7 +642,7 @@ public class OutputFormFactory {
             showOperator = false;
           } else {
             if (arg1.isMinusOne()) {
-              append(buf, "-");
+              append(buf, fInputForm ? " - " : "-");
               showOperator = false;
             } else {
               convertNumber(buf, (INumber) arg1, operPrecedence, NO_PLUS_CALL);
@@ -709,11 +718,11 @@ public class OutputFormFactory {
         convertNumber(buf, (INumber) numerator, Precedence.DIVIDE, caller);
       } else {
         if (numerator.isTimes() && numerator.isAST2() && numerator.first().isMinusOne()) {
-          append(buf, "-");
+          append(buf, fInputForm ? " - " : "-");
           convert(buf, numerator.second(), Precedence.TIMES, false);
         } else {
           if (caller == PLUS_CALL) {
-            append(buf, "+");
+            append(buf, fInputForm ? " + " : "+");
           }
           // insert numerator in buffer:
           if (numerator.isTimes()) {
@@ -755,7 +764,7 @@ public class OutputFormFactory {
       IExpr arg1 = timesAST.arg1();
       if (arg1.isReal() && timesAST.size() > 2 && !timesAST.arg2().isNumber()) {
         if (arg1.isMinusOne()) {
-          append(buf, "-");
+          append(buf, fInputForm && (caller == PLUS_CALL) ? " - " : "-");
           showOperator = false;
         } else {
           convertNumber(buf, (ISignedNumber) arg1, Precedence.PLUS, caller);
@@ -764,7 +773,7 @@ public class OutputFormFactory {
         convertComplex(buf, (IComplex) arg1, oper.getPrecedence(), caller);
       } else {
         if (caller == PLUS_CALL) {
-          append(buf, "+");
+          append(buf, fInputForm ? " + " : "+");
         }
         convert(buf, arg1, oper.getPrecedence(), false);
       }
@@ -1631,7 +1640,7 @@ public class OutputFormFactory {
     if (coefficient.isOne()) {
       if (pow.isPlus()) {
         if (call == PLUS_CALL) {
-          append(buf, "+");
+          append(buf, fInputForm ? " + " : "+");
         }
         append(buf, "(");
         convertPlusArgument(buf, pow, call);
@@ -1736,10 +1745,10 @@ public class OutputFormFactory {
   /**
    * If <code>true</code> print leading and trailing quotes in Symja strings
    *
-   * @param quotes
+   * @param inputForm
    */
-  public void setQuotes(final boolean quotes) {
-    fQuotes = quotes;
+  public void setInputForm(final boolean inputForm) {
+    fInputForm = inputForm;
   }
 
   public void setEmpty(final boolean empty) {
