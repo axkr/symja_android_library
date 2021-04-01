@@ -3,14 +3,24 @@ package org.matheclipse.core.builtin;
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileInputStream;
+import java.io.FileNotFoundException;
+import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.io.InputStreamReader;
+import java.io.PrintStream;
+import java.io.Reader;
+import java.io.StringReader;
+import java.io.UnsupportedEncodingException;
+import java.io.Writer;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.FileSystems;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.List;
 
 import org.matheclipse.core.basic.Config;
@@ -19,21 +29,30 @@ import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.exception.Validate;
 import org.matheclipse.core.eval.exception.ValidateException;
 import org.matheclipse.core.eval.interfaces.AbstractCoreFunctionEvaluator;
+import org.matheclipse.core.eval.interfaces.AbstractEvaluator;
 import org.matheclipse.core.eval.interfaces.AbstractFunctionEvaluator;
 import org.matheclipse.core.expression.ContextPath;
 import org.matheclipse.core.expression.F;
+import org.matheclipse.core.expression.ID;
 import org.matheclipse.core.expression.S;
+import org.matheclipse.core.expression.data.FileExpr;
+import org.matheclipse.core.expression.data.InputStreamExpr;
+import org.matheclipse.core.expression.data.OutputStreamExpr;
 import org.matheclipse.core.form.output.OutputFormFactory;
 import org.matheclipse.core.interfaces.IAST;
+import org.matheclipse.core.interfaces.IASTAppendable;
+import org.matheclipse.core.interfaces.IBuiltInSymbol;
 import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.interfaces.IStringX;
 import org.matheclipse.core.interfaces.ISymbol;
+import org.matheclipse.core.parser.ExprParser;
 import org.matheclipse.parser.client.FEConfig;
 import org.matheclipse.parser.client.Parser;
+import org.matheclipse.parser.client.SyntaxError;
 import org.matheclipse.parser.client.ast.ASTNode;
 import org.matheclipse.parser.client.ast.FunctionNode;
 
-import com.google.common.io.Files;
+import com.google.common.io.CharStreams;
 import com.google.common.io.Resources;
 
 public class FileFunctions {
@@ -45,15 +64,29 @@ public class FileFunctions {
 
     private static void init() {
       if (!Config.FUZZY_PARSER) {
+
         S.BeginPackage.setEvaluator(new BeginPackage());
         S.EndPackage.setEvaluator(new EndPackage());
         S.Begin.setEvaluator(new Begin());
+        S.Close.setEvaluator(new Close());
+        S.CreateDirectory.setEvaluator(new CreateDirectory());
+        S.CreateFile.setEvaluator(new CreateFile());
         S.End.setEvaluator(new End());
+        S.File.setEvaluator(new FileEvaluator());
+        S.FilePrint.setEvaluator(new FilePrint());
         S.Get.setEvaluator(new Get());
+        S.InputStream.setEvaluator(new InputStream());
         S.Needs.setEvaluator(new Needs());
+        S.OpenAppend.setEvaluator(new OpenAppend());
+        S.OpenRead.setEvaluator(new OpenRead());
+        S.OpenWrite.setEvaluator(new OpenWrite());
+        S.OutputStream.setEvaluator(new OutputStream());
         S.Put.setEvaluator(new Put());
+        S.Read.setEvaluator(new Read());
         S.ReadString.setEvaluator(new ReadString());
+        S.StringToStream.setEvaluator(new StringToStream());
         S.URLFetch.setEvaluator(new URLFetch());
+        S.Write.setEvaluator(new Write());
         S.WriteString.setEvaluator(new WriteString());
       }
     }
@@ -124,6 +157,106 @@ public class FileFunctions {
     }
   }
 
+  private static final class Close extends AbstractFunctionEvaluator {
+
+    @Override
+    public IExpr evaluate(final IAST ast, EvalEngine engine) {
+      try {
+        IExpr arg1 = ast.arg1();
+        if (arg1 instanceof OutputStreamExpr) {
+          OutputStreamExpr out = (OutputStreamExpr) arg1;
+          out.toData().close();
+          return F.stringx(out.getStreamName());
+        }
+        if (arg1 instanceof InputStreamExpr) {
+          InputStreamExpr in = ((InputStreamExpr) arg1);
+          in.toData().close();
+          return F.stringx(in.getStreamName());
+        }
+        if (arg1 instanceof FileExpr) {
+          // TODO
+          //            ((FileExpr) arg1).toData().close();
+          return S.String;
+        }
+      } catch (IOException | RuntimeException ex) {
+        if (FEConfig.SHOW_STACKTRACE) {
+          ex.printStackTrace();
+        }
+        return engine.printMessage(ast.topHead(), ex);
+      }
+
+      return F.NIL;
+    }
+
+    @Override
+    public int[] expectedArgSize(IAST ast) {
+      return ARGS_1_2;
+    }
+  }
+
+  /** Create a default temporary directory */
+  private static class CreateDirectory extends AbstractEvaluator {
+
+    @Override
+    public IExpr evaluate(final IAST ast, EvalEngine engine) {
+      if (Config.isFileSystemEnabled(engine)) {
+        try {
+          if (ast.isAST0()) {
+            Path tempDir = Files.createTempDirectory("");
+            return F.stringx(tempDir.toString());
+          } else if (ast.isAST1() && ast.arg1() instanceof IStringX) {
+            Path path = Paths.get(ast.arg1().toString());
+            if (!Files.exists(path)) {
+              Files.createDirectory(path);
+              //              System.out.println("Directory created");
+            } else {
+              //              System.out.println("Directory already exists");
+            }
+            return F.stringx(path.toString());
+          }
+        } catch (IOException | RuntimeException ex) {
+          if (FEConfig.SHOW_STACKTRACE) {
+            ex.printStackTrace();
+          }
+          return engine.printMessage(ast.topHead(), ex);
+        }
+      }
+      return F.NIL;
+    }
+
+    @Override
+    public int[] expectedArgSize(IAST ast) {
+      return ARGS_0_1;
+    }
+  }
+
+  /** Create a default temporary directory */
+  private static class CreateFile extends AbstractEvaluator {
+
+    @Override
+    public IExpr evaluate(final IAST ast, EvalEngine engine) {
+      if (Config.isFileSystemEnabled(engine)) {
+        try {
+          if (ast.isAST0()) {
+            Path tempFile = Files.createTempFile(null, null);
+            return F.stringx(tempFile.toString());
+          } else if (ast.isAST1() && ast.arg1() instanceof IStringX) {
+          }
+        } catch (IOException | RuntimeException ex) {
+          if (FEConfig.SHOW_STACKTRACE) {
+            ex.printStackTrace();
+          }
+          return engine.printMessage(ast.topHead(), ex);
+        }
+      }
+      return F.NIL;
+    }
+
+    @Override
+    public int[] expectedArgSize(IAST ast) {
+      return ARGS_0_1;
+    }
+  }
   /**
    *
    *
@@ -225,8 +358,97 @@ public class FileFunctions {
     }
   }
 
+  private static final class FileEvaluator extends AbstractFunctionEvaluator {
+
+    @Override
+    public IExpr evaluate(final IAST ast, EvalEngine engine) {
+      if (Config.isFileSystemEnabled(engine)) {
+        try {
+          IExpr arg1 = ast.arg1();
+          if (arg1.isString()) {
+            return FileExpr.newInstance(arg1.toString());
+          }
+        } catch (FileNotFoundException | RuntimeException ex) {
+          if (FEConfig.SHOW_STACKTRACE) {
+            ex.printStackTrace();
+          }
+          return engine.printMessage(ast.topHead(), ex);
+        }
+      }
+      return F.NIL;
+    }
+
+    @Override
+    public int[] expectedArgSize(IAST ast) {
+      return ARGS_1_2;
+    }
+  }
+
+  private static final class FilePrint extends AbstractFunctionEvaluator {
+
+    @Override
+    public IExpr evaluate(final IAST ast, EvalEngine engine) {
+      if (Config.isFileSystemEnabled(engine)) {
+        IExpr arg1 = ast.arg1();
+
+        if (arg1.isString()) {
+          try (BufferedReader br = new BufferedReader(new FileReader(arg1.toString()))) {
+            final PrintStream s = engine.getOutPrintStream();
+            final PrintStream stream;
+            if (s == null) {
+              stream = System.out;
+            } else {
+              stream = s;
+            }
+            String line;
+            int numberOfLines = Integer.MAX_VALUE;
+            if (ast.isAST2()) {
+              numberOfLines = ast.arg2().toIntDefault();
+              if (numberOfLines == Integer.MIN_VALUE) {
+                return F.NIL;
+              }
+            }
+            if (numberOfLines < 0) {
+              numberOfLines = -numberOfLines;
+              String[] lastLines = new String[numberOfLines];
+              int i = 0;
+              while ((line = br.readLine()) != null && i < numberOfLines) {
+                lastLines[i++] = line;
+              }
+              while ((line = br.readLine()) != null) {
+                System.arraycopy(lastLines, 1, lastLines, 0, numberOfLines - 1);
+                lastLines[numberOfLines - 1] = line;
+              }
+              i = 0;
+              while (i < lastLines.length && lastLines[i] != null) {
+                stream.println(lastLines[i++]);
+              }
+            } else {
+              while ((line = br.readLine()) != null && numberOfLines-- > 0) {
+                stream.println(line);
+              }
+            }
+            return S.Null;
+
+          } catch (IOException | RuntimeException ex) {
+            if (FEConfig.SHOW_STACKTRACE) {
+              ex.printStackTrace();
+            }
+            return engine.printMessage(ast.topHead(), ex);
+          }
+        }
+      }
+      return F.NIL;
+    }
+
+    @Override
+    public int[] expectedArgSize(IAST ast) {
+      return ARGS_1_2;
+    }
+  }
+
   /** Get[{&lt;file name&gt;}} */
-  private static class Get extends AbstractFunctionEvaluator {
+  public static class Get extends AbstractFunctionEvaluator {
 
     /**
      * Load a package from the given reader
@@ -243,6 +465,21 @@ public class FileFunctions {
         e.printStackTrace();
       }
       return S.Null;
+    }
+
+    /**
+     * Load a package from the given file
+     *
+     * @param engine
+     * @param file
+     * @return the last evaluated expression result
+     * @throws FileNotFoundException
+     * @throws UnsupportedEncodingException
+     */
+    public static IExpr loadPackage(final EvalEngine engine, final File file)
+        throws FileNotFoundException {
+      BufferedReader reader = new BufferedReader(new FileReader(file));
+      return loadPackage(engine, reader);
     }
 
     /**
@@ -279,7 +516,7 @@ public class FileFunctions {
         engine.setPackageMode(true);
         engine.set$Input(arg1Str);
         engine.set$InputFileName(file.getAbsolutePath());
-        String str = Files.asCharSource(file, Charset.defaultCharset()).read();
+        String str = com.google.common.io.Files.asCharSource(file, Charset.defaultCharset()).read();
         return Get.loadPackage(engine, str);
       } catch (IOException e) {
         if (FEConfig.SHOW_STACKTRACE) {
@@ -359,6 +596,138 @@ public class FileFunctions {
     }
   }
 
+  private static final class InputStream extends AbstractFunctionEvaluator {
+
+    @Override
+    public IExpr evaluate(final IAST ast, EvalEngine engine) {
+      if (Config.isFileSystemEnabled(engine)) {
+        try {
+          IExpr arg1 = ast.arg1();
+          if (arg1.isString()) {
+            return InputStreamExpr.newInstance(arg1.toString());
+          }
+        } catch (FileNotFoundException | RuntimeException ex) {
+          if (FEConfig.SHOW_STACKTRACE) {
+            ex.printStackTrace();
+          }
+          return engine.printMessage(ast.topHead(), ex);
+        }
+      }
+      return F.NIL;
+    }
+
+    @Override
+    public int[] expectedArgSize(IAST ast) {
+      return ARGS_1_2;
+    }
+  }
+
+  private static final class OpenAppend extends OpenWrite {
+
+    @Override
+    public IExpr evaluate(final IAST ast, EvalEngine engine) {
+      return openOutputStream(ast, true, engine);
+    }
+
+    @Override
+    public int[] expectedArgSize(IAST ast) {
+      return ARGS_0_1;
+    }
+  }
+
+  private static final class OpenRead extends AbstractFunctionEvaluator {
+
+    @Override
+    public IExpr evaluate(final IAST ast, EvalEngine engine) {
+      if (Config.isFileSystemEnabled(EvalEngine.get())) {
+        try {
+          if (ast.isAST1()) {
+            IExpr arg1 = ast.arg1();
+            if (arg1.isString()) {
+              return InputStreamExpr.newInstance(arg1.toString());
+            }
+          }
+        } catch (FileNotFoundException | RuntimeException ex) {
+          if (FEConfig.SHOW_STACKTRACE) {
+            ex.printStackTrace();
+          }
+          return engine.printMessage(ast.topHead(), ex);
+        }
+      }
+      return F.NIL;
+    }
+
+    @Override
+    public int[] expectedArgSize(IAST ast) {
+      return ARGS_0_1;
+    }
+  }
+
+  private static class OpenWrite extends AbstractFunctionEvaluator {
+
+    @Override
+    public IExpr evaluate(final IAST ast, EvalEngine engine) {
+      return openOutputStream(ast, false, engine);
+    }
+
+    /**
+     * @param ast
+     * @param append if <code>true</code>, then bytes will be written to the end of the file rather
+     *     than the beginning
+     * @param engine
+     * @return
+     */
+    protected IExpr openOutputStream(final IAST ast, boolean append, EvalEngine engine) {
+      if (Config.isFileSystemEnabled(engine)) {
+        try {
+          if (ast.isAST1()) {
+            IExpr arg1 = ast.arg1();
+            if (arg1.isString()) {
+              return OutputStreamExpr.newInstance(arg1.toString(), append);
+            }
+          }
+        } catch (FileNotFoundException | RuntimeException ex) {
+          if (FEConfig.SHOW_STACKTRACE) {
+            ex.printStackTrace();
+          }
+          return engine.printMessage(ast.topHead(), ex);
+        }
+      }
+      return F.NIL;
+    }
+
+    @Override
+    public int[] expectedArgSize(IAST ast) {
+      return ARGS_0_1;
+    }
+  }
+
+  private static final class OutputStream extends AbstractFunctionEvaluator {
+
+    @Override
+    public IExpr evaluate(final IAST ast, EvalEngine engine) {
+      if (Config.isFileSystemEnabled(engine)) {
+        try {
+          IExpr arg1 = ast.arg1();
+          if (arg1.isString()) {
+            return OutputStreamExpr.newInstance(arg1.toString(), false);
+          }
+        } catch (FileNotFoundException | RuntimeException ex) {
+          if (FEConfig.SHOW_STACKTRACE) {
+            ex.printStackTrace();
+          }
+          return engine.printMessage(ast.topHead(), ex);
+        }
+      }
+      return F.NIL;
+    }
+
+    @Override
+    public int[] expectedArgSize(IAST ast) {
+      return ARGS_1_2;
+    }
+  }
+
   private static final class Needs extends Get {
     @Override
     public IExpr evaluate(final IAST ast, EvalEngine engine) {
@@ -435,6 +804,257 @@ public class FileFunctions {
     }
   }
 
+  private static final class Read extends AbstractFunctionEvaluator {
+
+    @Override
+    public IExpr evaluate(final IAST ast, EvalEngine engine) {
+      if (Config.isFileSystemEnabled(engine)) {
+        try {
+          IExpr arg1 = ast.arg1();
+          Reader reader = null;
+          if (arg1 instanceof FileExpr) {
+            File file = ((FileExpr) arg1).toData();
+            InputStreamExpr in = InputStreamExpr.newInstance(file);
+            BufferedReader br = new BufferedReader(new FileReader(file));
+            reader = in.toData();
+          } else if (arg1 instanceof InputStreamExpr) {
+            reader = ((InputStreamExpr) arg1).toData();
+          }
+          if (reader != null) {
+            if (ast.isAST1()) {
+              String str = CharStreams.toString(reader);
+              return S.ToExpression.of(engine, F.stringx(str));
+            }
+            IExpr arg2 = ast.arg2();
+            if (arg2.isList()) {
+              IAST list = (IAST) ast.arg2();
+              IASTAppendable result = F.ListAlloc();
+              for (int i = 1; i < list.size(); i++) {
+                if (!list.get(i).isBuiltInSymbol()) {
+                  return F.$Failed;
+                }
+                IExpr temp = readType((IBuiltInSymbol) list.get(i), reader, engine);
+                result.append(temp);
+              }
+
+              return result;
+            }
+            if (arg2.isAST(S.Hold, 2)) {
+              IExpr holdArg = arg2.first();
+              if (!holdArg.isBuiltInSymbol()) {
+                return F.$Failed;
+              }
+              IExpr temp = readType((IBuiltInSymbol) holdArg, reader, engine);
+              if (temp.isPresent()) {
+                return F.Hold(temp);
+              }
+            } else if (!arg2.isBuiltInSymbol()) {
+              return F.$Failed;
+            }
+            return readType((IBuiltInSymbol) arg2, reader, engine);
+          }
+        } catch (IOException | RuntimeException ex) {
+          if (FEConfig.SHOW_STACKTRACE) {
+            ex.printStackTrace();
+          }
+          engine.printMessage(ast.topHead(), ex);
+          return F.$Failed;
+        }
+      }
+      return F.NIL;
+    }
+
+    private IExpr readType(IBuiltInSymbol arg2, Reader reader, EvalEngine engine)
+        throws IOException {
+      int headID = arg2.ordinal();
+      int numberOfChar = -1;
+      if (headID > 0) {
+
+        switch (headID) {
+          case ID.Byte:
+            // TODO
+            return F.$Failed;
+          case ID.Character:
+            char[] temp = new char[1];
+            numberOfChar = reader.read(temp);
+            if (numberOfChar < 0) {
+              return S.EndOfFile;
+            }
+            return F.$str(temp[0]);
+          case ID.Expression:
+            StringBuilder buf = new StringBuilder();
+            char[] tempExpr = new char[1];
+            numberOfChar = reader.read(tempExpr);
+            if (numberOfChar < 0) {
+              return S.EndOfFile;
+            }
+            buf.append(tempExpr[0]);
+            while (true) {
+              numberOfChar = reader.read(tempExpr);
+              if (numberOfChar < 0) {
+                break;
+              }
+              buf.append(tempExpr[0]);
+              if (tempExpr[0] == '\n') {
+                try {
+                  String str = buf.toString();
+                  ExprParser parser = new ExprParser(engine);
+                  return parser.parse(str);
+                } catch (SyntaxError se) {
+                  // the string is probably not a complete expression
+                  continue;
+                }
+              }
+            }
+            try {
+              String str = buf.toString();
+              ExprParser parser = new ExprParser(engine);
+              return parser.parse(str);
+            } catch (SyntaxError se) {
+
+            }
+            return F.$Failed;
+          case ID.Number:
+            IAST numberSeparators =
+                F.list(
+                    F.stringx("0"), //
+                    F.stringx("1"),
+                    F.stringx("2"),
+                    F.stringx("3"),
+                    F.stringx("4"),
+                    F.stringx("5"),
+                    F.stringx("6"),
+                    F.stringx("7"),
+                    F.stringx("8"),
+                    F.stringx("9"));
+            String tempNumber = numberReader(reader, numberSeparators);
+            if (tempNumber == null) {
+              return S.$Failed;
+            }
+            return F.$str(tempNumber);
+
+          case ID.Real:
+            // TODO
+            return F.$Failed;
+          case ID.Record:
+            IExpr recordSeparators = engine.evaluate(S.RecordSeparators);
+            if (recordSeparators.isAST()) {
+              String tempRecord = separatorReader(reader, (IAST) recordSeparators);
+              if (tempRecord == null) {
+                return S.$Failed;
+              }
+              return F.$str(tempRecord);
+            }
+            return F.$Failed;
+          case ID.String:
+            BufferedReader sReader = new BufferedReader(reader);
+            String tempStr = sReader.readLine();
+            if (tempStr == null) {
+              return S.EndOfFile;
+            }
+            return F.$str(tempStr + "\n");
+          case ID.Word:
+            IExpr wordSeparators = engine.evaluate(S.WordSeparators);
+            if (wordSeparators.isAST()) {
+              String tempWord = separatorReader(reader, (IAST) wordSeparators);
+              if (tempWord == null) {
+                return S.$Failed;
+              }
+              return F.$str(tempWord);
+            }
+            return F.$Failed;
+          default:
+            break;
+        }
+      }
+      return F.$Failed;
+    }
+
+    private static String numberReader(Reader reader, IAST wordSeparators) throws IOException {
+
+      try {
+        StringBuilder word = new StringBuilder();
+        char[] temp = new char[1];
+        reader.mark(256);
+        int numberOfChar = reader.read(temp);
+        if (numberOfChar < 0) {
+          return null;
+        }
+
+        int indx = wordSeparators.indexOf(F.stringx(temp[0]));
+        if (indx > 0) {
+          word.append(temp[0]);
+        } else {
+          reader.reset();
+          return word.toString();
+        }
+        while (true) {
+          reader.mark(256);
+          numberOfChar = reader.read(temp);
+          if (numberOfChar < 0) {
+            break;
+          }
+          indx = wordSeparators.indexOf(F.stringx(temp[0]));
+          if (indx > 0) {
+            word.append(temp[0]);
+          } else {
+            reader.reset();
+            return word.toString();
+          }
+        }
+        return word.toString();
+      } catch (IOException ioex) {
+        reader.reset();
+      }
+      return null;
+    }
+
+    private static String separatorReader(Reader reader, IAST wordSeparators) throws IOException {
+      reader.mark(256);
+      try {
+        StringBuilder word = new StringBuilder();
+        char[] temp = new char[1];
+        int numberOfChar = reader.read(temp);
+        if (numberOfChar < 0) {
+          return null;
+        }
+
+        while (true) {
+          int indx = wordSeparators.indexOf(F.stringx(temp[0]));
+          if (indx < 0) {
+            word.append(temp[0]);
+            break;
+          }
+          numberOfChar = reader.read(temp);
+          if (numberOfChar < 0) {
+            return word.toString();
+          }
+        }
+        while (true) {
+          numberOfChar = reader.read(temp);
+          if (numberOfChar < 0) {
+            break;
+          }
+          int indx = wordSeparators.indexOf(F.stringx(temp[0]));
+          if (indx < 0) {
+            word.append(temp[0]);
+          } else {
+            return word.toString();
+          }
+        }
+        return word.toString();
+      } catch (IOException ioex) {
+        reader.reset();
+      }
+      return null;
+    }
+
+    @Override
+    public int[] expectedArgSize(IAST ast) {
+      return ARGS_1_2;
+    }
+  }
+
   private static final class ReadString extends AbstractFunctionEvaluator {
 
     @Override
@@ -462,7 +1082,8 @@ public class FileFunctions {
         File file = new File(arg1);
         if (file.exists()) {
           try {
-            String str = Files.asCharSource(file, Charset.defaultCharset()).read();
+            String str =
+                com.google.common.io.Files.asCharSource(file, Charset.defaultCharset()).read();
             return F.stringx(str);
           } catch (IOException e) {
             if (FEConfig.SHOW_STACKTRACE) {
@@ -479,6 +1100,35 @@ public class FileFunctions {
     @Override
     public int[] expectedArgSize(IAST ast) {
       return ARGS_1_1;
+    }
+  }
+
+  private static final class StringToStream extends AbstractFunctionEvaluator {
+
+    @Override
+    public IExpr evaluate(final IAST ast, EvalEngine engine) {
+      if (Config.isFileSystemEnabled(engine)) {
+        try {
+          if (ast.isAST1()) {
+            IExpr arg1 = ast.arg1();
+            if (arg1.isString()) {
+              StringReader sr = new StringReader(arg1.toString());
+              return InputStreamExpr.newInstance("String", sr);
+            }
+          }
+        } catch (RuntimeException ex) {
+          if (FEConfig.SHOW_STACKTRACE) {
+            ex.printStackTrace();
+          }
+          return engine.printMessage(ast.topHead(), ex);
+        }
+      }
+      return F.NIL;
+    }
+
+    @Override
+    public int[] expectedArgSize(IAST ast) {
+      return ARGS_0_1;
     }
   }
 
@@ -513,6 +1163,46 @@ public class FileFunctions {
     @Override
     public int[] expectedArgSize(IAST ast) {
       return ARGS_1_1;
+    }
+  }
+
+  private static final class Write extends AbstractFunctionEvaluator {
+
+    @Override
+    public IExpr evaluate(final IAST ast, EvalEngine engine) {
+      if (Config.isFileSystemEnabled(engine)) {
+        try {
+          IExpr arg1 = ast.arg1();
+          IExpr arg2 = ast.arg2();
+
+          Writer writer = null;
+          if (arg1 instanceof FileExpr) {
+            File file = ((FileExpr) arg1).toData();
+            OutputStreamExpr out = OutputStreamExpr.newInstance(file, false);
+            writer = out.toData();
+          }
+          if (arg1 instanceof OutputStreamExpr) {
+            writer = ((OutputStreamExpr) arg1).toData();
+          }
+          if (writer != null) {
+            String arg2String = StringFunctions.inputForm(arg2);
+            writer.write(arg2String);
+            writer.flush();
+            return S.Null;
+          }
+        } catch (IOException | RuntimeException ex) {
+          if (FEConfig.SHOW_STACKTRACE) {
+            ex.printStackTrace();
+          }
+          return engine.printMessage(ast.topHead(), ex);
+        }
+      }
+      return F.NIL;
+    }
+
+    @Override
+    public int[] expectedArgSize(IAST ast) {
+      return ARGS_2_2;
     }
   }
 
@@ -643,6 +1333,7 @@ public class FileFunctions {
       builder.append(record);
       builder.append('\n');
     }
+  
     final Parser parser = new Parser(engine.isRelaxedSyntax(), true);
     final List<ASTNode> node = parser.parsePackage(builder.toString());
     return node;
