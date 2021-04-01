@@ -4,7 +4,7 @@
 Compile(list-of-arguments}, expression)
 ```
 
-> compile the `expression` into a Java function, which has the arguments defined in `list-of-arguments` and return the compile result in an `CompiledFunction` expression. You have to run Symja from a Java Development Kit (JDK) to compile to Java binary code.
+> compile the `expression` into a Java function, which has the arguments defined in `list-of-arguments` and return the compiled result in an `CompiledFunction` expression. 
 
 
 ### Examples

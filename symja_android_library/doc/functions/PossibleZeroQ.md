@@ -4,9 +4,11 @@
 PossibleZeroQ(expr)
 ```
 
-> returns `True` if basic symbolic and numerical methods suggest that `expr` has value zero, and `False` otherwise.
+> returns `True` if basic symbolic and numerical methods suggests that `expr` has value zero, and `False` otherwise.
 
- 
+See
+* [Wikipedia - Constant problem](https://en.wikipedia.org/wiki/Constant_problem)
+
 ### Examples
 
 Test whether a numeric expression is zero:
