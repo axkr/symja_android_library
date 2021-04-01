@@ -112,14 +112,13 @@ public class IntervalSym {
             if (max2.lessEqual(max1).isTrue()) {
               evaled = true;
               result.remove(i);
-              continue;
             } else {
               evaled = true;
               result.remove(i);
               list1 = F.List(min1, max2);
               max1 = max2;
-              continue;
             }
+            continue;
           }
           result.set(j++, list1);
           list1 = list2;
@@ -843,16 +842,11 @@ public class IntervalSym {
               }
             } else { // difference between {Pi/2, Pi}
               if (dMin >= 0) {
-                if (dMax < 0) {
+                if ((dMax < 0) || (dMin > dMax)) {
                   result.append(F.List(F.CNInfinity, F.Tan(max)));
                   result.append(F.List(F.Tan(min), F.CInfinity));
                 } else {
-                  if (dMin <= dMax) {
-                    result.append(F.List(F.CNInfinity, F.CInfinity));
-                  } else {
-                    result.append(F.List(F.CNInfinity, F.Tan(max)));
-                    result.append(F.List(F.Tan(min), F.CInfinity));
-                  }
+                  result.append(F.List(F.CNInfinity, F.CInfinity));
                 }
               } else {
                 if (dMax < 0) {
