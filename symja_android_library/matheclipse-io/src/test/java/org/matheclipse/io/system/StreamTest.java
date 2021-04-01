@@ -60,12 +60,10 @@ public class StreamTest extends AbstractTestCase {
   }
 
   public void testRead004() {
-	  // newline after ::usage
+    // newline after ::usage
     check(
         "str = \"foo::usage = \n \\\"foo is ...\\\";\n" + "bar::usage = \\\"bar is ...\\\";\"", //
-        "foo::usage = \n"
-        + " \"foo is ...\";\n"
-        + "bar::usage = \"bar is ...\";");
+        "foo::usage = \n" + " \"foo is ...\";\n" + "bar::usage = \"bar is ...\";");
     check(
         "strm = StringToStream(str);", //
         "");
@@ -103,9 +101,8 @@ public class StreamTest extends AbstractTestCase {
         "String");
   }
 
-  public void testOpenAppend() {
+  public void testOpenAppend001() {
     call("f = FileNameJoin({$TemporaryDirectory, \"test_open.txt\"});Print(f)");
-
     check(
         "str = OpenWrite(f);", //
         "");
@@ -113,8 +110,8 @@ public class StreamTest extends AbstractTestCase {
         "Write(str, x^2 - y^2)", //
         "");
     check(
-        "Close(str)", //
-        "String");
+        "Close(str);", //
+        "");
     check(
         "FilePrint(f)", //
         "");
@@ -126,11 +123,25 @@ public class StreamTest extends AbstractTestCase {
         "Write(str, x^2 + y^2)", //
         "");
     check(
-        "Close(str)", //
-        "String");
+        "Close(str);", //
+        "");
     check(
         "FilePrint(f)", //
         "");
+  }
+
+  public void testOpenAppend002() {
+	  // create temporary file and open output stream
+    check(
+        "str = OpenWrite();Print(str);", //
+        "");
+    check(
+        "Write(str, x^2 - y^2)", //
+        "");
+    check(
+        "Close(str);", //
+        "");
+     
   }
 
   /** The JUnit setup method */

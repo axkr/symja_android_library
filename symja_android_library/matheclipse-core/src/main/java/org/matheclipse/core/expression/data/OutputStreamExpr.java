@@ -35,20 +35,31 @@ public class OutputStreamExpr extends DataExpr<Writer> implements Externalizable
    * @param append if <code>true</code>, then bytes will be written to the end of the file rather
    *     than the beginning
    * @return
-   * @throws FileNotFoundException
+   * @throws IOException
    */
   public static OutputStreamExpr newInstance(final String fileName, boolean append)
-      throws FileNotFoundException {
+      throws IOException {
     File file = new File(fileName);
     return newInstance(file, append);
   }
 
-  public static OutputStreamExpr newInstance(final RandomAccessFile file)
+  /**
+   * Create a temporary file with prefix <code>symja</code>
+   *
+   * @return
+   * @throws IOException
+   */
+  public static OutputStreamExpr newInstance() throws IOException {
+    File file = File.createTempFile("symja", "");
+    return newInstance(file, false);
+  }
+
+  public static OutputStreamExpr newInstance(final RandomAccessFile file, String streamName)
       throws FileNotFoundException {
 
     OutputStream outputStream = Channels.newOutputStream(file.getChannel());
     OutputStreamWriter osw = new OutputStreamWriter(outputStream);
-    return new OutputStreamExpr(osw);
+    return new OutputStreamExpr(osw, streamName);
   }
 
   /**
@@ -56,27 +67,26 @@ public class OutputStreamExpr extends DataExpr<Writer> implements Externalizable
    * @param append if <code>true</code>, then bytes will be written to the end of the file rather
    *     than the beginning
    * @return
-   * @throws FileNotFoundException
+   * @throws IOException
    */
-  public static OutputStreamExpr newInstance(final File file, boolean append)
-      throws FileNotFoundException {
+  public static OutputStreamExpr newInstance(final File file, boolean append) throws IOException {
 
     FileOutputStream fos = new FileOutputStream(file, append);
     if (append) {
       try {
         fos.write('\n');
-      } catch (IOException e) { 
+      } catch (IOException e) {
         e.printStackTrace();
       }
     }
     OutputStreamWriter osw = new OutputStreamWriter(fos);
-    return new OutputStreamExpr(osw);
+    return new OutputStreamExpr(osw, file.getCanonicalPath());
   }
 
-  protected OutputStreamExpr(final Writer value) {
+  protected OutputStreamExpr(final Writer value, String streamName) {
     super(S.OutputStream, value);
-    uniqueID = InputStreamExpr.STREAM_COUNTER.getAndIncrement();
-    streamName = "String";
+    this.uniqueID = InputStreamExpr.STREAM_COUNTER.getAndIncrement();
+    this.streamName = streamName;
   }
 
   @Override
@@ -106,7 +116,7 @@ public class OutputStreamExpr extends DataExpr<Writer> implements Externalizable
 
   @Override
   public IExpr copy() {
-    return new OutputStreamExpr(fData);
+    return new OutputStreamExpr(fData, streamName);
   }
 
   @Override

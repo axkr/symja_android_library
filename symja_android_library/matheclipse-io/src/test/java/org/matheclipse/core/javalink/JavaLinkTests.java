@@ -23,6 +23,22 @@ public class JavaLinkTests extends AbstractRubiTestCase {
         "\".81\"");
   }
 
+  public void testInstanceOf001() {
+
+    check(
+        "loc= JavaNew[\"java.util.Locale\",\"US\"]", //
+        "JavaObject[class java.util.Locale]");
+    check(
+        "InstanceOf[loc, \"java.util.Locale\"]", //
+        "True");
+    check(
+        "InstanceOf[loc, \"java.io.Serializable\"]", //
+        "True");
+    check(
+        "InstanceOf[loc, \"test\"]", //
+        "False");
+  }
+
   public void testLoadJavaClass001() {
 
     check(
@@ -46,6 +62,32 @@ public class JavaLinkTests extends AbstractRubiTestCase {
     check(
         "Print[doc@title[ ]];", //
         "Null");
+  }
+
+  public void testJavaObjectQ001() {
+
+    check(
+        "loc = JavaNew[\"java.util.Locale\",\"US\"]", //
+        "JavaObject[class java.util.Locale]");
+    check(
+        "JavaObjectQ[loc]", //
+        "True");
+  }
+
+  public void testSameObject001() {
+
+    check(
+        "loc1= JavaNew[\"java.util.Locale\",\"US\"]", //
+        "JavaObject[class java.util.Locale]");
+    check(
+        "loc2= JavaNew[\"java.util.Locale\",\"US\"]", //
+        "JavaObject[class java.util.Locale]");
+    check(
+        "SameObjectQ[loc1, loc2]", //
+        "False");
+    check(
+        "SameObjectQ[loc1, loc1]", //
+        "True");
   }
 
   /** The JUnit setup method */

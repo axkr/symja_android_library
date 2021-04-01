@@ -53,7 +53,8 @@ public class JavaFunctions {
         try {
           arg2 = JavaClassExpr.newInstance(arg2.toString());
         } catch (ClassNotFoundException cnfex) {
-          return IOFunctions.printMessage(ast.topHead(), cnfex, engine);
+          IOFunctions.printMessage(ast.topHead(), cnfex, engine);
+          return F.False;
         }
       }
       if (arg1 instanceof JavaObjectExpr && arg2 instanceof JavaClassExpr) {

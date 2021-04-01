@@ -13,7 +13,7 @@ public class ComplexPlot3DExample extends BasePlotExample {
   public String exampleFunction() {
 //    return "ComplexPlot3D(StruveH(2, z), {z, -5-5*I,5+5*I}, PlotRange->{-5.0,10.0}) ";
 //    		return "ComplexPlot3D((z^2 + 1)/(z^2 - 1),  {z, -2 - 2*I, 2 + 2*I}, PlotRange->{0,3}) ";
- 	  return "ComplexPlot3D((z^4-1)/(z^2),  {z, -2 - 2*I, 2 + 2*I}, PlotRange->{0,10}) ";
+ 	  return "ComplexPlot3D((z^4-1)/(z^2),  {z, -2 - 2*I, 2 + 2*I}, PlotRange->{0,10}) ";  // 
   }
 
   public static void main(String[] args) {

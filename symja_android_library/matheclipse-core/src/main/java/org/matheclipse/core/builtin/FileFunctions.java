@@ -680,13 +680,16 @@ public class FileFunctions {
     protected IExpr openOutputStream(final IAST ast, boolean append, EvalEngine engine) {
       if (Config.isFileSystemEnabled(engine)) {
         try {
+          if (ast.isAST0()) {
+            return OutputStreamExpr.newInstance();
+          }
           if (ast.isAST1()) {
             IExpr arg1 = ast.arg1();
             if (arg1.isString()) {
               return OutputStreamExpr.newInstance(arg1.toString(), append);
             }
           }
-        } catch (FileNotFoundException | RuntimeException ex) {
+        } catch (IOException | RuntimeException ex) {
           if (FEConfig.SHOW_STACKTRACE) {
             ex.printStackTrace();
           }
@@ -712,7 +715,7 @@ public class FileFunctions {
           if (arg1.isString()) {
             return OutputStreamExpr.newInstance(arg1.toString(), false);
           }
-        } catch (FileNotFoundException | RuntimeException ex) {
+        } catch (IOException | RuntimeException ex) {
           if (FEConfig.SHOW_STACKTRACE) {
             ex.printStackTrace();
           }
@@ -1333,7 +1336,7 @@ public class FileFunctions {
       builder.append(record);
       builder.append('\n');
     }
-  
+
     final Parser parser = new Parser(engine.isRelaxedSyntax(), true);
     final List<ASTNode> node = parser.parsePackage(builder.toString());
     return node;
