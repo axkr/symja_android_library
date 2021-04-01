@@ -174,49 +174,27 @@ public class Pattern extends Blank {
       return expr.equals(value);
     }
     return patternMap.setValue(this, expr);
-    // return true;
   }
 
   @Override
   public String fullFormString() {
     StringBuilder buf = new StringBuilder();
-    // if (fOptionalValue != null || fDefault) {
     if (fDefault) {
       buf.append("Optional");
-      if (FEConfig.PARSER_USE_LOWERCASE_SYMBOLS) {
-        buf.append('(');
-      } else {
-        buf.append('[');
-      }
+      buf.append(FEConfig.PARSER_USE_LOWERCASE_SYMBOLS ? '(' : '[');
     }
     buf.append("Pattern");
-    if (FEConfig.PARSER_USE_LOWERCASE_SYMBOLS) {
-      buf.append('(');
-    } else {
-      buf.append('[');
-    }
+    buf.append(FEConfig.PARSER_USE_LOWERCASE_SYMBOLS ? '(' : '[');
     buf.append(fSymbol.toString());
     buf.append(", ");
     buf.append("Blank");
-    if (FEConfig.PARSER_USE_LOWERCASE_SYMBOLS) {
-      buf.append('(');
-    } else {
-      buf.append('[');
-    }
+    buf.append(FEConfig.PARSER_USE_LOWERCASE_SYMBOLS ? '(' : '[');
     if (fHeadTest != null) {
       buf.append(fHeadTest.fullFormString());
     }
-    if (FEConfig.PARSER_USE_LOWERCASE_SYMBOLS) {
-      buf.append("))");
-    } else {
-      buf.append("]]");
-    }
+    buf.append(FEConfig.PARSER_USE_LOWERCASE_SYMBOLS ? "))" : "]]");
     if (fDefault) {
-      if (FEConfig.PARSER_USE_LOWERCASE_SYMBOLS) {
-        buf.append(")");
-      } else {
-        buf.append("]");
-      }
+      buf.append(FEConfig.PARSER_USE_LOWERCASE_SYMBOLS ? ')' : ']');
     }
     return buf.toString();
   }
