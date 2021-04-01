@@ -15,7 +15,9 @@
  */
 package org.matheclipse.parser.client.operator;
 
+import org.matheclipse.parser.client.Scanner;
 import org.matheclipse.parser.client.ast.ASTNode;
+import org.matheclipse.parser.client.ast.FunctionNode;
 import org.matheclipse.parser.client.ast.INodeParserFactory;
 
 public class InfixOperator extends Operator {
@@ -49,5 +51,18 @@ public class InfixOperator extends Operator {
       return factory.unaryAST(rhs, lhs);
     }
     return factory.createFunction(factory.createSymbol(getFunctionName()), lhs, rhs);
+  }
+
+  /**
+   * At the end of parsing infix operators with multiple arguments this method will be called.
+   *
+   * @param factory
+   * @param function
+   * @param scanner can throw SyntaxError exceptions if necessary
+   * @return
+   */
+  public FunctionNode endFunction(
+      final INodeParserFactory factory, final FunctionNode function, final Scanner scanner) {
+    return function;
   }
 }

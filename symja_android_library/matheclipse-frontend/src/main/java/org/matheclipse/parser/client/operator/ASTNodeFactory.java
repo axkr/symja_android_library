@@ -20,6 +20,8 @@ import java.util.List;
 import java.util.Map;
 
 import org.matheclipse.parser.client.FEConfig;
+import org.matheclipse.parser.client.Scanner;
+import org.matheclipse.parser.client.SyntaxError;
 import org.matheclipse.parser.client.ast.ASTNode;
 import org.matheclipse.parser.client.ast.FloatNode;
 import org.matheclipse.parser.client.ast.FractionNode;
@@ -116,6 +118,41 @@ public class ASTNodeFactory implements INodeParserFactory {
           factory.createSymbol("Times"),
           lhs,
           factory.createFunction(factory.createSymbol("Power"), rhs, factory.createInteger(-1)));
+    }
+  }
+
+  private static class TildeOperator extends InfixOperator {
+
+    public TildeOperator(
+        final String oper, final String functionName, final int precedence, final int grouping) {
+      super(oper, functionName, precedence, grouping);
+    }
+
+    @Override
+    public ASTNode createFunction(
+        final INodeParserFactory factory, final ASTNode lhs, final ASTNode rhs) {
+      return factory.createFunction(factory.createSymbol("§TILDE§"), lhs, rhs);
+    }
+
+    @Override
+    public FunctionNode endFunction(
+        final INodeParserFactory factory, final FunctionNode function, final Scanner scanner) {
+      final int size = function.size();
+      if (size < 4 || (size & 0x01) != 0x00) {
+        scanner.throwSyntaxError("Operator ~ requires even number of arguments");
+      }
+
+      FunctionNode result = factory.createAST(function.get(2));
+      result.add(function.get(1));
+      result.add(function.get(3));
+      for (int i = 4; i < size; i += 2) {
+        FunctionNode temp = factory.createAST(function.get(i));
+        temp.add(result);
+        temp.add(function.get(i + 1));
+        result = temp;
+      }
+
+      return result;
     }
   }
 
@@ -244,11 +281,13 @@ public class ASTNodeFactory implements INodeParserFactory {
     "UndirectedEdge",
     "CenterDot",
     "CircleDot",
+    "CircleTimes",
     "Element",
     "Intersection",
     "NotEqual",
     "Wedge",
-    "TensorProduct"
+    "TensorProduct",
+    "§TILDE§"
   };
 
   static final String[] OPERATOR_STRINGS = {
@@ -311,18 +350,20 @@ public class ASTNodeFactory implements INodeParserFactory {
     "/.",
     "/:",
     "@*",
-    "~~", //
+    "~~", // StringExpression
     "<->", // TwoWayRule
     "\uF120", // TwoWayRule
     "\uF3D5", // DirectedEdge
     "\uF3D4", // UndirectedEdge
     "\u00B7", // CenterDot
-    "\u2299", // CircleDot0
+    "\u2299", // CircleDot
+    "\u2297", // CircleTimes
     "\u2208", // Element
     "\u22C2", // Intersection
     "\u2260", // NotEqual,
     "\u22C0", // Wedge
-    "\u2297" // TensorProduct
+    "\uF3DA", // TensorProduct
+    "~"
   };
 
   public static final ApplyOperator APPLY_HEAD_OPERATOR =
@@ -448,13 +489,16 @@ public class ASTNodeFactory implements INodeParserFactory {
                 InfixOperator.RIGHT_ASSOCIATIVE),
             new InfixOperator("\u00B7", "CenterDot", Precedence.CENTERDOT, InfixOperator.NONE), //
             new InfixOperator("\u2299", "CircleDot", Precedence.CIRCLEDOT, InfixOperator.NONE), //
+            new InfixOperator(
+                "\u2297", "CircleTimes", Precedence.CIRCLETIMES, InfixOperator.NONE), //
             new InfixOperator("\u2208", "Element", Precedence.ELEMENT, InfixOperator.NONE), //
             new InfixOperator(
                 "\u22C2", "Intersection", Precedence.INTERSECTION, InfixOperator.NONE), //
             new InfixOperator("\u2260", "Unequal", Precedence.UNEQUAL, InfixOperator.NONE), //
             new InfixOperator("\u22C0", "Wedge", Precedence.WEDGE, InfixOperator.NONE), //
             new InfixOperator(
-                "\u2297", "TensorProduct", Precedence.TENSORPRODUCT, InfixOperator.NONE)
+                "\uF3DA", "TensorProduct", Precedence.TENSORPRODUCT, InfixOperator.NONE),
+            new TildeOperator("~", "§TILDE§", Precedence.TILDE_OPERATOR, InfixOperator.NONE)
           };
       StringBuilder buf = new StringBuilder(BASIC_OPERATOR_CHARACTERS);
 

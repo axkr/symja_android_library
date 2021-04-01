@@ -1963,8 +1963,7 @@ public class Characters {
     "TaurusSign",
     "\u2649",
     "TensorProduct",
-    "\u2297", // "\uF3DA" - replaced according to
-    // https://en.wikipedia.org/wiki/List_of_mathematical_symbols_by_subject
+    "\uF3DA",  
     "TensorWedge",
     "\uF3DB",
     "Therefore",

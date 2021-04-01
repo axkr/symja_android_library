@@ -9,6 +9,7 @@ public class Precedence {
   public static final int APPLY_HEAD = 660;
   public static final int CENTERDOT = 410;
   public static final int CIRCLEDOT = 520;
+  public static final int CIRCLETIMES = 420;
   public static final int COLON = 80;
   public static final int COMPOSITION = 625;
   public static final int COMPOUNDEXPRESSION = 10;
@@ -93,4 +94,5 @@ public class Precedence {
   public static final int UPSETDELAYED = 40;
   public static final int WEDGE = 440;
   public static final int TENSORPRODUCT = 495;
+  public static final int TILDE_OPERATOR = 630;
 }

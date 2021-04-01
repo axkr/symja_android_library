@@ -724,7 +724,15 @@ public class Parser extends Scanner {
       if (numFormat < 0) {
         if (fCurrentChar == '`' && isValidPosition()) {
           fCurrentPosition++;
-          if (isValidPosition() && fInputString[fCurrentPosition] == '`') {
+          if (isValidPosition() && fInputString[fCurrentPosition] == '*') {
+            fCurrentPosition++;
+            if (isValidPosition() && fInputString[fCurrentPosition] == '^') {
+              fCurrentPosition += 2;
+              long exponent = getJavaLong();
+              //              Double d = Double.valueOf(number + "E" + exponent);
+              return fFactory.createDouble(number + "E" + exponent);
+            }
+          } else if (isValidPosition() && fInputString[fCurrentPosition] == '`') {
             fCurrentPosition += 2;
             long precision = getJavaLong();
             if (precision < FEConfig.MACHINE_PRECISION) {
@@ -746,6 +754,7 @@ public class Parser extends Scanner {
               return fFactory.createDouble(number);
             }
           }
+          throwSyntaxError("Number format error: " + number, number.length());
         }
         temp = fFactory.createDouble(number);
       } else {
@@ -1170,6 +1179,7 @@ public class Parser extends Scanner {
         rhs = parseLookaheadOperator(infixOperator.getPrecedence());
         ast.add(rhs);
       }
+      lhs = infixOperator.endFunction(fFactory, ast, this);
     } else {
       if (fToken == TT_OPERATOR
           && infixOperator.getGrouping() == InfixOperator.NONE
@@ -1303,7 +1313,12 @@ public class Parser extends Scanner {
    * @throws SyntaxError
    */
   public List<ASTNode> parsePackage(final String expression) throws SyntaxError {
-    initialize(expression);
+    String input = expression.trim();
+    initialize(input);
+    if (fToken == TT_EOF) {
+      return new ArrayList<ASTNode>(1);
+    }
+
     while (fToken == TT_NEWLINE) {
       getNextToken();
     }

@@ -481,7 +481,7 @@ public class ExprParser extends Scanner {
         getNextToken();
         if (fToken == TT_DIGIT) {
           countPercent = getJavaInt();
-          out.append(F.ZZ(countPercent));
+          out.append(countPercent);
           return out;
         }
 
@@ -490,7 +490,7 @@ public class ExprParser extends Scanner {
           getNextToken();
         }
 
-        out.append(F.ZZ(-countPercent));
+        out.append(-countPercent);
         return parseArguments(out);
 
       case TT_SLOT:
@@ -503,12 +503,12 @@ public class ExprParser extends Scanner {
             return parseArguments(F.Slot2);
           }
           final IASTAppendable slot = F.ast(S.Slot);
-          slot.append(F.ZZ(slotNumber));
+          slot.append(slotNumber);
           return parseArguments(slot);
         } else if (fToken == TT_IDENTIFIER) {
           String[] identifierContext = getIdentifier();
           final IASTAppendable slot = F.ast(S.Slot);
-          slot.append(F.stringx(identifierContext[0]));
+          slot.append(identifierContext[0]);
           getNextToken();
           return parseArguments(slot);
         } else if (fToken == TT_STRING) {
@@ -946,7 +946,15 @@ public class ExprParser extends Scanner {
       if (numFormat < 0) {
         if (fCurrentChar == '`' && isValidPosition()) {
           fCurrentPosition++;
-          if (isValidPosition() && fInputString[fCurrentPosition] == '`') {
+          if (isValidPosition() && fInputString[fCurrentPosition] == '*') {
+            fCurrentPosition++;
+            if (isValidPosition() && fInputString[fCurrentPosition] == '^') {
+              fCurrentPosition += 2;
+              long exponent = getJavaLong(); 
+              Double d = Double.valueOf(number + "E" + exponent);
+              return F.num(d);
+            }
+          } else if (isValidPosition() && fInputString[fCurrentPosition] == '`') {
             fCurrentPosition += 2;
             long precision = getJavaLong();
             if (precision < FEConfig.MACHINE_PRECISION) {
@@ -967,6 +975,7 @@ public class ExprParser extends Scanner {
               return F.num(number);
             }
           }
+          throwSyntaxError("Number format error: " + number, number.length());
         }
         temp = new NumStr(number);
         // temp = fFactory.createDouble(number);
@@ -1472,7 +1481,7 @@ public class ExprParser extends Scanner {
         ast.append(rhs);
       }
 
-      return ast;
+      return infixOperator.endFunction(fFactory, ast, this);
     } else {
       if (fToken == TT_OPERATOR
           && infixOperator.getGrouping() == InfixOperator.NONE

@@ -37,4 +37,12 @@ public class ExprParserTestCase extends AbstractTestCase {
     IExpr expr = parser.parse("-9223372036854775808");
     assertEquals(expr.toMMA(), "-9223372036854775808");
   }
+
+  public void testParserDoubleMaxValue() {
+    EvalEngine engine = new EvalEngine("", 256, 256, System.out, System.err, true);
+    ExprParser parser = new ExprParser(engine, true);
+    IExpr expr = parser.parse("2.2250738585072014`*^-308 // FullForm");
+    IExpr result = engine.evaluate(expr);
+    assertEquals(result.toString(), "2.2250738585072014`*^-308");
+  }
 }

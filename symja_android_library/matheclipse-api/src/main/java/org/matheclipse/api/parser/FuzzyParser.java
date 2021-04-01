@@ -497,7 +497,7 @@ public class FuzzyParser extends Scanner {
         getNextToken();
         if (fToken == TT_DIGIT) {
           countPercent = getJavaInt();
-          out.append(F.ZZ(countPercent));
+          out.append(countPercent);
           return out;
         }
 
@@ -506,7 +506,7 @@ public class FuzzyParser extends Scanner {
           getNextToken();
         }
 
-        out.append(F.ZZ(-countPercent));
+        out.append(-countPercent);
         return parseArguments(out);
 
       case TT_SLOT:
@@ -519,12 +519,12 @@ public class FuzzyParser extends Scanner {
             return parseArguments(F.Slot2);
           }
           final IASTAppendable slot = F.ast(S.Slot);
-          slot.append(F.ZZ(slotNumber));
+          slot.append(slotNumber);
           return parseArguments(slot);
         } else if (fToken == TT_IDENTIFIER) {
           String[] identifierContext = getIdentifier();
           final IASTAppendable slot = F.ast(S.Slot);
-          slot.append(F.stringx(identifierContext[0]));
+          slot.append(identifierContext[0]);
           getNextToken();
           return parseArguments(slot);
         } else if (fToken == TT_STRING) {

@@ -22,10 +22,15 @@ import java.util.Map;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.expression.S;
 import org.matheclipse.core.interfaces.IAST;
+import org.matheclipse.core.interfaces.IASTAppendable;
 import org.matheclipse.core.interfaces.IASTMutable;
 import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.interfaces.IInteger;
 import org.matheclipse.parser.client.FEConfig;
+import org.matheclipse.parser.client.Scanner;
+import org.matheclipse.parser.client.ast.ASTNode;
+import org.matheclipse.parser.client.ast.FunctionNode;
+import org.matheclipse.parser.client.ast.INodeParserFactory;
 import org.matheclipse.parser.client.ast.IParserFactory;
 import org.matheclipse.parser.client.operator.InfixOperator;
 import org.matheclipse.parser.client.operator.Operator;
@@ -99,6 +104,40 @@ public class ExprParserFactory implements IParserFactory {
         }
       }
       return F.binaryAST2(S.TagSet, lhs, rhs);
+    }
+  }
+
+  private static class TildeOperator extends InfixExprOperator {
+
+    public TildeOperator(
+        final String oper, final String functionName, final int precedence, final int grouping) {
+      super(oper, functionName, precedence, grouping);
+    }
+
+    @Override
+    public IASTAppendable createFunction(
+        final IParserFactory factory, ExprParser parser, final IExpr lhs, final IExpr rhs) {
+      IASTAppendable result = F.ast(F.NIL);
+      result.append(lhs);
+      result.append(rhs);
+      return result;
+    }
+
+    @Override
+    public IAST endFunction(
+        final IParserFactory factory, final IAST function, final Scanner scanner) {
+      final int size = function.size();
+      if (size < 4 || (size & 0x01) != 0x00) {
+        scanner.throwSyntaxError("Operator ~ requires even number of arguments");
+      }
+
+      IAST result = F.binaryAST2(function.arg2(), function.arg1(), function.arg3());
+      for (int i = 4; i < size; i += 2) {
+        IAST temp = F.binaryAST2(function.get(i), result, function.get(i + 1));
+        result = temp;
+      }
+
+      return result;
     }
   }
 
@@ -278,79 +317,33 @@ public class ExprParserFactory implements IParserFactory {
     "UndirectedEdge",
     "CenterDot",
     "CircleDot",
-    "TensorProduct"
+    "CircleTimes",
+    "Element",
+    "Intersection",
+    "NotEqual",
+    "Wedge",
+    "TensorProduct",
+    "§TILDE§"
   };
 
   static final String[] OPERATOR_STRINGS = {
-    "::",
-    "<<",
-    "?",
-    "??",
-    "?",
-    "//@",
-    "*=",
-    "+",
-    "^=",
-    ";",
-    "@",
-    "/@",
-    "=.",
-    "@@",
-    "@@@",
-    "//.",
-    "<",
-    "&&",
-    "/",
-    "=",
-    "++",
-    "!!",
-    "<=",
-    "**",
-    "!",
-    "*",
-    "^",
-    ".",
-    "!",
-    "-",
-    "===",
-    ":>",
-    ">=",
-    "/;",
-    ":",
-    "//",
-    "/=",
-    "||",
-    ";;",
-    "==",
-    "<>",
-    "!=",
-    "--",
-    "-=",
-    "+",
-    "...",
-    "=!=",
-    "->",
-    "^:=",
-    "++",
-    "&",
-    ">",
-    "--",
-    "-",
-    ":=",
-    "|",
-    "+=",
-    "..",
-    "/.",
-    "/:",
-    "@*",
-    "~~", //
+    "::", "<<", "?", "??", "?", "//@", "*=", "+", "^=", ";", "@", "/@", "=.", "@@", "@@@", "//.",
+    "<", "&&", "/", "=", "++", "!!", "<=", "**", "!", "*", "^", ".", "!", "-", "===", ":>", ">=",
+    "/;", ":", "//", "/=", "||", ";;", "==", "<>", "!=", "--", "-=", "+", "...", "=!=", "->", "^:=",
+    "++", "&", ">", "--", "-", ":=", "|", "+=", "..", "/.", "/:", "@*", "~~", //
     "<->", // TwoWayRule
     "\uF120", // TwoWayRule
     "\uF3D5", // DirectedEdge
     "\uF3D4", // UndirectedEdge
     "\u00B7", // CenterDot
     "\u2299", // CircleDot
-    "\u2297" // TensorProduct
+    "\u2297", // CircleTimes
+    "\u2208", // Element
+    "\u22C2", // Intersection
+    "\u2260", // NotEqual,
+    "\u22C0", // Wedge
+    "\uF3DA", // TensorProduct
+    "~"
   };
   private static Operator[] OPERATORS;
 
@@ -494,7 +487,17 @@ public class ExprParserFactory implements IParserFactory {
             new InfixExprOperator(
                 "\u2299", "CircleDot", Precedence.CIRCLEDOT, InfixExprOperator.NONE), //
             new InfixExprOperator(
-                "\u2297", "TensorProduct", Precedence.TENSORPRODUCT, InfixExprOperator.NONE)
+                "\u2297", "CircleTimes", Precedence.CIRCLETIMES, InfixExprOperator.NONE), //
+            new InfixExprOperator(
+                "\u2208", "Element", Precedence.ELEMENT, InfixExprOperator.NONE), //
+            new InfixExprOperator(
+                "\u22C2", "Intersection", Precedence.INTERSECTION, InfixExprOperator.NONE), //
+            new InfixExprOperator(
+                "\u2260", "Unequal", Precedence.UNEQUAL, InfixExprOperator.NONE), //
+            new InfixExprOperator("\u22C0", "Wedge", Precedence.WEDGE, InfixExprOperator.NONE), //
+            new InfixExprOperator(
+                "\uF3DA", "TensorProduct", Precedence.TENSORPRODUCT, InfixExprOperator.NONE),
+            new TildeOperator("~", "§TILDE§", Precedence.TILDE_OPERATOR, InfixOperator.NONE)
           };
       StringBuilder buf = new StringBuilder(BASIC_OPERATOR_CHARACTERS);
 

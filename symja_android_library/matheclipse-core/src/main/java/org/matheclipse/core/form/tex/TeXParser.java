@@ -287,15 +287,12 @@ public class TeXParser {
                 if (temp.isPresent()) {
                   lhs = temp;
                 }
-                if (position[0] == listSize) {
-                  return lhs;
-                }
               } else {
                 lhs = F.unaryAST1(lhs, args);
-                if (position[0] == listSize) {
-                  return lhs;
-                }
               }
+      if (position[0] == listSize) {
+        return lhs;
+      }
             }
           }
         }

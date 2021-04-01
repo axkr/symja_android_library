@@ -1453,7 +1453,7 @@ public abstract class Scanner {
     }
   }
 
-  protected void throwSyntaxError(final String error) throws SyntaxError {
+  public void throwSyntaxError(final String error) throws SyntaxError {
     throw new SyntaxError(
         fCurrentPosition - 1,
         fRowCounter,

@@ -1,9 +1,11 @@
 package org.matheclipse.core.parser;
 
 import org.matheclipse.core.expression.F;
+import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IASTAppendable;
 import org.matheclipse.core.interfaces.IASTMutable;
 import org.matheclipse.core.interfaces.IExpr;
+import org.matheclipse.parser.client.Scanner;
 import org.matheclipse.parser.client.ast.IParserFactory;
 import org.matheclipse.parser.client.operator.Operator;
 
@@ -42,6 +44,11 @@ class InfixExprOperator extends Operator {
     IASTAppendable function = F.ast(F.$s(getFunctionName()), 10, false);
     function.append(lhs);
     function.append(rhs);
+    return function;
+  }
+
+  public IAST endFunction(
+      final IParserFactory factory, final IAST function, final Scanner scanner) {
     return function;
   }
 }
