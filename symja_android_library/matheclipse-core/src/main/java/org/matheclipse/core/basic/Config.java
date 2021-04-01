@@ -90,6 +90,9 @@ public class Config {
   /** Maximum output size in characters for an output form (i.e. TeXForm, MathMLForm,...I) */
   public static int MAX_OUTPUT_SIZE = Integer.MAX_VALUE;
 
+  /** Maximum size in characters for a single output line */
+  public static int MAX_OUTPUT_LINE = 80;
+
   /** Maximum number of elements which could be allocated for an AST */
   public static int MAX_AST_SIZE = Integer.MAX_VALUE;
 
@@ -206,6 +209,8 @@ public class Config {
 
   /**
    * Replace <code>double</code> values in root algorithms by 0 if they are below this tolerance.
+   * Assume <code>double</code> values in <code>PossibleZeroQ</code> to be 0 if they are below this
+   * tolerance.
    */
   public static double DEFAULT_ROOTS_CHOP_DELTA = 1.0e-5;
 
