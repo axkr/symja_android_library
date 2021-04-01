@@ -3,6 +3,7 @@ package org.matheclipse.core.builtin.functions;
 import org.hipparchus.complex.Complex;
 import org.hipparchus.util.FastMath;
 import org.matheclipse.core.basic.Config;
+import org.matheclipse.core.eval.exception.ArgumentTypeException;
 
 /**
  * Ported from JavaScript file <a href=
@@ -80,6 +81,7 @@ public class EllipticIntegralsJS {
     Complex zm = z;
     Complex A0 = x.add(y).add(z).divide(3.0);
     Complex Am = A0;
+
     double Q =
         Math.pow(3.0 * tolerance, -1.0 / 6.0)
             * Math.max(A0.subtract(x).abs(), Math.max(A0.subtract(y).abs(), A0.subtract(z).abs()));
@@ -88,18 +90,23 @@ public class EllipticIntegralsJS {
     double m = 0.0;
 
     while (true) {
+      double absAm = Am.abs();
+      if (Double.isNaN(absAm) || Double.isInfinite(absAm)) {
+        throw new ArgumentTypeException("carlsonRF: Am is undefined");
+      }
       Complex xs = xm.sqrt();
       Complex ys = ym.sqrt();
       Complex zs = zm.sqrt();
       Complex lm = xs.multiply(ys).add(xs.multiply(zs)).add(ys.multiply(zs));
-      Complex Am1 = Am.add(lm).multiply(g);
+      //      Complex Am1 = Am.add(lm).multiply(g);
       xm = xm.add(lm).multiply(g);
       ym = ym.add(lm).multiply(g);
       zm = zm.add(lm).multiply(g);
-      if (pow4 * Q < Am.abs()) {
+      if (pow4 * Q < absAm) {
         break;
       }
-      Am = Am1;
+      // Am=Am1;
+      Am = Am.add(lm).multiply(g);
       m += 1;
       pow4 *= g;
     }
