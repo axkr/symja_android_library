@@ -40,7 +40,6 @@ import org.matheclipse.core.expression.F;
 import org.matheclipse.core.expression.ID;
 import org.matheclipse.core.expression.IntervalSym;
 import org.matheclipse.core.expression.S;
-import org.matheclipse.core.expression.StringX;
 import org.matheclipse.core.generic.Comparators;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IASTAppendable;
@@ -56,7 +55,6 @@ import org.matheclipse.core.interfaces.ISignedNumber;
 import org.matheclipse.core.interfaces.IStringX;
 import org.matheclipse.core.interfaces.ISymbol;
 import org.matheclipse.core.interfaces.ITernaryComparator;
-import org.matheclipse.core.polynomials.symbolicexponent.SymbolicAlgebraicNotInvertibleException;
 import org.matheclipse.core.tensor.qty.IQuantity;
 
 public final class BooleanFunctions {
@@ -1053,11 +1051,10 @@ public final class BooleanFunctions {
               newList.append(engine.evalTrue(list.get(i)) ? S.True : S.False);
             }
             resultList.append(newList);
-            return resultList;
           } else {
             resultList.append(engine.evalTrue(expr) ? S.True : S.False);
-            return resultList;
           }
+    return resultList;
         }
         IExpr sym = variables.get(position);
         if (sym.isSymbol()) {
@@ -1472,21 +1469,17 @@ public final class BooleanFunctions {
         if (temp.isFalse()) {
           if (!boole.isPresent()) {
             boole = S.False;
-            evaled = true;
           } else if (boole.isTrue()) {
             return S.False;
-          } else {
-            evaled = true;
           }
+    evaled = true;
         } else if (temp.isTrue()) {
           if (!boole.isPresent()) {
             boole = S.True;
-            evaled = true;
           } else if (boole.isFalse()) {
             return S.False;
-          } else {
-            evaled = true;
           }
+    evaled = true;
         } else {
           if (!last.equals(temp)) {
             result.append(temp);
@@ -1881,14 +1874,10 @@ public final class BooleanFunctions {
     }
 
     private IExpr.COMPARE_TERNARY prepareCompare(IExpr a0, IExpr a1, EvalEngine engine) {
-      if (!a0.isReal() && a0.isNumericFunction(true)) {
-        a0 = engine.evalN(a0);
-      } else if (a1.isInexactNumber() && a0.isRational()) {
+      if ((!a0.isReal() && a0.isNumericFunction(true)) || (a1.isInexactNumber() && a0.isRational())) {
         a0 = engine.evalN(a0);
       }
-      if (!a1.isReal() && a1.isNumericFunction(true)) {
-        a1 = engine.evalN(a1);
-      } else if (a0.isInexactNumber() && a1.isRational()) {
+      if ((!a1.isReal() && a1.isNumericFunction(true)) || (a0.isInexactNumber() && a1.isRational())) {
         a1 = engine.evalN(a1);
       }
 
