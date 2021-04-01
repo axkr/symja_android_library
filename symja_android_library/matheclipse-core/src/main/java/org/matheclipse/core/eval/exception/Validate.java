@@ -104,11 +104,7 @@ public final class Validate {
             } else if (expr instanceof INum) {
               longValue = BigInteger.valueOf(((INum) expr).toLong());
             }
-            if (longValue == null) {
-              // The first argument `1` of `2` should be a non-empty list of positive integers.
-              IOFunctions.printMessage(ast.topHead(), "coef", F.List(arg, ast.topHead()), engine);
-              return null;
-            } else if (nonNegative && longValue.compareTo(BigInteger.ZERO) <= 0) {
+            if ((longValue == null) || (nonNegative && longValue.compareTo(BigInteger.ZERO) <= 0)) {
               // The first argument `1` of `2` should be a non-empty list of positive integers.
               IOFunctions.printMessage(ast.topHead(), "coef", F.List(arg, ast.topHead()), engine);
               return null;
@@ -294,8 +290,8 @@ public final class Validate {
   }
 
   /**
-   * Get a dimension parameter. <code>arg</code> is expected to be a positive integer or a
-   * list of positive integers.
+   * Get a dimension parameter. <code>arg</code> is expected to be a positive integer or a list of
+   * positive integers.
    *
    * @param ast
    * @param arg
@@ -593,7 +589,8 @@ public final class Validate {
   }
 
   /**
-   * Check if the argument at the given position is a list of symbols.
+   * Check if the argument at the given position is a list of symbols or <code>Set</code> and <code>SefDelayed</code>
+   * definitions from a local variable definition. 
    *
    * @param ast
    * @param position the position which has to be a list of symbols
@@ -603,16 +600,13 @@ public final class Validate {
   public static IAST checkLocalVariableList(IAST ast, int position, EvalEngine engine) {
     if (ast.get(position).isList()) {
       IAST listOfSymbols = (IAST) ast.get(position);
+      listOfSymbols = F.flattenSequence(listOfSymbols).orElse(listOfSymbols);
       for (int i = 1; i < listOfSymbols.size(); i++) {
         IExpr arg = listOfSymbols.get(i);
         if (arg.isSymbol()) {
           continue;
         }
-        if (arg.isAST(S.Set, 3)) {
-          if (arg.first().isSymbol()) {
-            continue;
-          }
-        } else if (arg.isAST(S.SetDelayed, 3)) {
+        if (arg.isAST(S.Set, 3) || arg.isAST(S.SetDelayed, 3)) {
           if (arg.first().isSymbol()) {
             continue;
           }
@@ -668,7 +662,7 @@ public final class Validate {
    * @return <code>F.NIL</code> if the argument at the given position is not a symbol.
    */
   public static IExpr checkSymbolType(IAST ast, int position, EvalEngine engine) {
-    if (ast.get(position).isSymbol()) {
+    if (ast.get(position).isSymbol() && ast.get(position).isVariable()) {
       return ast.get(position);
     }
     // Argument `1` at position `2` is expected to be a symbol.
@@ -973,9 +967,7 @@ public final class Validate {
    * @return <code>null</code> if <code>expr</code> cannot be converted into a symbol
    */
   public static String checkMessageNameTag(final IExpr expr, IAST ast, EvalEngine engine) {
-    if (expr.isString()) {
-      return expr.toString();
-    } else if (expr.isSymbol()) {
+    if (expr.isString() || expr.isSymbol()) {
       return expr.toString();
     } else {
       // Argument `1` at position `2` is expected to be a symbol.
