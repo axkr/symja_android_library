@@ -106,21 +106,12 @@ public class PatternNested extends Pattern {
   @Override
   public String fullFormString() {
     StringBuilder buf = new StringBuilder();
-    buf.append("Pattern2");
-    if (FEConfig.PARSER_USE_LOWERCASE_SYMBOLS) {
-      buf.append('(');
-    } else {
-      buf.append('[');
-    }
+    buf.append("Pattern");
+    buf.append(FEConfig.PARSER_USE_LOWERCASE_SYMBOLS ? '(' : '[');
     buf.append(fSymbol.toString());
     buf.append(", ");
     buf.append(fPatternExpr.fullFormString());
-
-    if (FEConfig.PARSER_USE_LOWERCASE_SYMBOLS) {
-      buf.append("))");
-    } else {
-      buf.append("]]");
-    }
+    buf.append(FEConfig.PARSER_USE_LOWERCASE_SYMBOLS ? ')' : ']');
     return buf.toString();
   }
 

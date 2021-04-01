@@ -6,6 +6,7 @@ import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.interfaces.ISymbol;
 import org.matheclipse.core.patternmatching.IPatternMap;
 import org.matheclipse.core.patternmatching.IPatternMatcher;
+import org.matheclipse.parser.client.FEConfig;
 
 public class RepeatedPattern extends PatternSequence {
 
@@ -95,12 +96,13 @@ public class RepeatedPattern extends PatternSequence {
   public String fullFormString() {
     StringBuilder buf = new StringBuilder();
     if (fZeroArgsAllowed) {
-      buf.append("RepeatedNull[");
+      buf.append("RepeatedNull");
     } else {
-      buf.append("Repeated[");
+      buf.append("Repeated");
     }
+    buf.append(FEConfig.PARSER_USE_LOWERCASE_SYMBOLS ? '(' : '[');
     buf.append(fRepeatedExpr.fullFormString());
-    buf.append(']');
+    buf.append(FEConfig.PARSER_USE_LOWERCASE_SYMBOLS ? ')' : ']');
     return buf.toString();
   }
 
