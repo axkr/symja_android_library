@@ -1,5 +1,6 @@
 package org.matheclipse.core.builtin;
 
+import java.util.concurrent.ThreadLocalRandom;
 import java.util.function.Predicate;
 
 import org.hipparchus.linear.FieldMatrix;
@@ -7,16 +8,19 @@ import org.hipparchus.linear.FieldVector;
 import org.matheclipse.core.basic.Config;
 import org.matheclipse.core.builtin.Algebra.InternalFindCommonFactorPlus;
 import org.matheclipse.core.convert.Convert;
+import org.matheclipse.core.convert.VariablesSet;
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.exception.ValidateException;
 import org.matheclipse.core.eval.interfaces.AbstractCoreFunctionEvaluator;
 import org.matheclipse.core.eval.interfaces.AbstractCorePredicateEvaluator;
 import org.matheclipse.core.eval.util.OptionArgs;
 import org.matheclipse.core.expression.F;
+import org.matheclipse.core.expression.ID;
 import org.matheclipse.core.expression.S;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IASTAppendable;
 import org.matheclipse.core.interfaces.IExpr;
+import org.matheclipse.core.interfaces.IExpr.COMPARE_TERNARY;
 import org.matheclipse.core.interfaces.IInteger;
 import org.matheclipse.core.interfaces.INumber;
 import org.matheclipse.core.interfaces.IPredicate;
@@ -28,6 +32,7 @@ import org.matheclipse.core.patternmatching.IPatternMatcher;
 import org.matheclipse.core.patternmatching.PatternMatcher;
 import org.matheclipse.core.visit.IVisitorBoolean;
 import org.matheclipse.core.visit.VisitorBooleanLevelSpecification;
+import org.matheclipse.core.visit.VisitorReplaceAll;
 import org.matheclipse.parser.client.FEConfig;
 
 public class PredicateQ {
@@ -1493,33 +1498,119 @@ public class PredicateQ {
     if (expr.isZero()) {
       return true;
     }
-    if (expr.leafCount() > Config.MAX_POSSIBLE_ZERO_LEAFCOUNT) {
+    long leafCount = expr.leafCount();
+    if (leafCount > Config.MAX_POSSIBLE_ZERO_LEAFCOUNT) {
       return false;
     }
     if (expr.isPlusTimesPower()) {
-      expr = engine.evaluate(expr);
+      if (leafCount > (Config.MAX_POSSIBLE_ZERO_LEAFCOUNT / 5)) {
+        return false;
+      }
+      expr = S.Together.of(engine, expr);
       if (expr.isNumber()) {
         return expr.isZero();
-      }
-      if (expr.isPlusTimesPower()) {
-        expr = S.Together.of(engine, expr);
-        if (expr.isNumber()) {
-          return expr.isZero();
-        }
       }
     }
     return false;
   }
 
-  public static boolean isPossibleZeroQ(IAST ast, boolean fastTest, EvalEngine engine) {
+  public static boolean isPossibleZeroQ(IAST function, boolean fastTest, EvalEngine engine) {
     try {
-      if (fastTest) {
-        INumber temp = ast.isNumericFunction(true) ? ast.evalNumber() : null;
-        return (temp != null && temp.isZero());
+      VariablesSet varSet = new VariablesSet(function);
+      IAST variables = varSet.getVarList();
+
+      if (variables.size() <= 1) {
+        INumber num = function.isNumericFunction(true) ? function.evalNumber() : null;
+        if (num == null
+            || !(F.isZero(num.reDoubleValue(), Config.DEFAULT_ROOTS_CHOP_DELTA)
+                && F.isZero(num.imDoubleValue(), Config.DEFAULT_ROOTS_CHOP_DELTA))) {
+          return false;
+        }
+        return true;
+        //      } else if (variables.size() == 2) {
+        //        ThreadLocalRandom tlr = ThreadLocalRandom.current();
+        //        IExpr x = variables.arg1();
+        //        COMPARE_TERNARY possibeZero = isPossibeZero(function, x, 0.0, 1.0, engine);
+        //        int trueCounter = 0;
+        //        if (possibeZero == IExpr.COMPARE_TERNARY.FALSE) {
+        //          return false;
+        //        }
+        //        if (possibeZero == IExpr.COMPARE_TERNARY.TRUE) {
+        //          trueCounter++;
+        //        }
+        //        possibeZero = isPossibeZero(function, x, 0.0, -1.0, engine);
+        //        if (possibeZero == IExpr.COMPARE_TERNARY.FALSE) {
+        //          return false;
+        //        }
+        //        if (possibeZero == IExpr.COMPARE_TERNARY.TRUE) {
+        //          trueCounter++;
+        //        }
+        //        possibeZero = isPossibeZero(function, x, 1.0, 0.0, engine);
+        //        if (possibeZero == IExpr.COMPARE_TERNARY.FALSE) {
+        //          return false;
+        //        }
+        //        if (possibeZero == IExpr.COMPARE_TERNARY.TRUE) {
+        //          trueCounter++;
+        //        }
+        //        possibeZero = isPossibeZero(function, x, -1.0, 0.0, engine);
+        //        if (possibeZero == IExpr.COMPARE_TERNARY.FALSE) {
+        //          return false;
+        //        }
+        //        if (possibeZero == IExpr.COMPARE_TERNARY.TRUE) {
+        //          trueCounter++;
+        //        }
+        //        possibeZero = isPossibeZero(function, x, 0.0, 0.0, engine);
+        //        if (possibeZero == IExpr.COMPARE_TERNARY.FALSE) {
+        //          return false;
+        //        }
+        //        if (possibeZero == IExpr.COMPARE_TERNARY.TRUE) {
+        //          trueCounter++;
+        //        }
+        //        for (int i = 0; i < 32; i++) {
+        //          double re = tlr.nextDouble(-100.0, 100.0);
+        //          double im = tlr.nextDouble(-100.0, 100.0);
+        //          possibeZero = isPossibeZero(function, x, re, im, engine);
+        //          if (possibeZero == IExpr.COMPARE_TERNARY.FALSE) {
+        //            return false;
+        //          }
+        //          if (possibeZero == IExpr.COMPARE_TERNARY.TRUE) {
+        //            trueCounter++;
+        //          }
+        //        }
+        //        if (trueCounter > 24) {
+        //          return true;
+        //        }
+        //        if (fastTest) {
+        //          return false;
+        //        }
+      } else {
+        if (function.isNumericFunction(varSet)) {
+          if (function.isFreeAST(h -> specialNumericFunction(h)) && function.leafCount() < 50) {
+            //            System.out.println(function.toString());
+            //            System.out.println(engine.getStack().toString());
+
+            int trueCounter = 0;
+            for (int i = 0; i < 32; i++) {
+              COMPARE_TERNARY possibeZero = isPossibeZero(function, variables, engine);
+              if (possibeZero == IExpr.COMPARE_TERNARY.FALSE) {
+                return false;
+              }
+              if (possibeZero == IExpr.COMPARE_TERNARY.TRUE) {
+                trueCounter++;
+              }
+            }
+            if (trueCounter > 24) {
+              return true;
+            }
+            if (fastTest) {
+              return false;
+            }
+          }
+        }
       }
 
       IExpr temp =
-          ast.replace( //
+          function.replace( //
               x -> x.isNumericFunction(true), //
               x -> {
                 IExpr t = x.evalNumber();
@@ -1532,8 +1623,8 @@ public class PredicateQ {
         }
       }
 
-      if (ast.isPlus()) {
-        IExpr[] commonFactors = InternalFindCommonFactorPlus.findCommonFactors((IAST) ast, true);
+      if (function.isPlus()) {
+        IExpr[] commonFactors = InternalFindCommonFactorPlus.findCommonFactors(function, true);
         if (commonFactors != null) {
           temp = S.Simplify.of(engine, F.Times(commonFactors[0], commonFactors[1]));
           if (temp.isNumber()) {
@@ -1548,13 +1639,159 @@ public class PredicateQ {
         }
       }
 
-      return isZeroTogether(ast, engine);
+      return isZeroTogether(function, engine);
     } catch (ValidateException ve) {
       if (FEConfig.SHOW_STACKTRACE) {
         ve.printStackTrace();
       }
     }
     return false;
+  }
+
+  private static boolean specialNumericFunction(IExpr head) {
+    if (head.isPower()) {
+      if (!head.exponent().isNumber()) {
+        return false;
+      }
+      return true;
+    }
+    int h = head.headID();
+
+    return h == ID.AppellF1
+        || h == ID.Clip
+        || h == ID.Cosh
+        || h == ID.Csch
+        || h == ID.Cot
+        || h == ID.Csc
+        || h == ID.Gamma
+        || h == ID.HankelH1
+        || h == ID.HankelH2
+        || h == ID.Hypergeometric0F1
+        || h == ID.Hypergeometric1F1
+        || h == ID.Hypergeometric2F1
+        || h == ID.Hypergeometric1F1Regularized
+        || h == ID.HypergeometricPFQ
+        || h == ID.HypergeometricPFQRegularized
+        || h == ID.HypergeometricU
+        || h == ID.KleinInvariantJ
+        || h == ID.Log
+        || h == ID.Piecewise
+        // || h == ID.Power
+        || h == ID.ProductLog
+        || h == ID.Sinh
+        || h == ID.StruveH
+        || h == ID.StruveL
+        || h == ID.Tan
+        || h == ID.WeierstrassHalfPeriods
+        || h == ID.WeierstrassInvariants
+        || h == ID.WeierstrassP
+        || h == ID.WeierstrassPPrime
+        || h == ID.InverseWeierstrassP;
+  }
+
+  /**
+   * Test if <code>Complex(re, im)</code> inserted into the function approximates <code>0</code>.
+   *
+   * <ul>
+   *   <li><code>IExpr.COMPARE_TERNARY.TRUE</code> if the result approximates <code>0</code>
+   *   <li><code>IExpr.COMPARE_TERNARY.FALSE</code> if the result is a number and doesn't
+   *       approximate <code>0</code>
+   *   <li><code>IExpr.COMPARE_TERNARY.UNDECIDABLE</code> if the result isn't a number
+   * </ul>
+   *
+   * @param function the function which should be evaluate for the <code>variable</code>
+   * @param variable the symbol which will be replaced by <code>Complex(re, im)</code> to evaluate
+   *     <code>function</code>
+   * @param realPart the real value of the complex variable
+   * @param imaginaryPart the imaginary value of the complex variable
+   * @param engine
+   * @return
+   */
+  //  private static IExpr.COMPARE_TERNARY isPossibeZero(
+  //      IAST function, IExpr variable, double realPart, double imaginaryPart, EvalEngine engine) {
+  //    IComplexNum c = F.complexNum(realPart, imaginaryPart);
+  //    IExpr temp = function.replaceAll(F.Rule(variable, c));
+  //    try {
+  //      if (temp.isPresent()) {
+  //        IExpr result = engine.evalN(temp);
+  //        if (result.isZero()) {
+  //          return IExpr.COMPARE_TERNARY.TRUE;
+  //        }
+  //        if (result.isNumber() && !result.isZero()) {
+  //          INumber num = (INumber) result;
+  //          if (!(F.isZero(num.reDoubleValue(), Config.DEFAULT_ROOTS_CHOP_DELTA)
+  //              && F.isZero(num.imDoubleValue(), Config.DEFAULT_ROOTS_CHOP_DELTA))) {
+  //            return IExpr.COMPARE_TERNARY.FALSE;
+  //          }
+  //          return IExpr.COMPARE_TERNARY.TRUE;
+  //        }
+  //        if (result.isDirectedInfinity()) {
+  //          return IExpr.COMPARE_TERNARY.FALSE;
+  //        }
+  //      }
+  //    } catch (RuntimeException rex) {
+  //      //
+  //    }
+  //    return IExpr.COMPARE_TERNARY.UNDECIDABLE;
+  //  }
+
+  /**
+   * Test if <code>Complex(re, im)</code> inserted into the arguments of the function and evaluated
+   * approximates <code>0</code>.
+   *
+   * <ul>
+   *   <li><code>IExpr.COMPARE_TERNARY.TRUE</code> if the result approximates <code>0</code>
+   *   <li><code>IExpr.COMPARE_TERNARY.FALSE</code> if the result is a number and doesn't
+   *       approximate <code>0</code>
+   *   <li><code>IExpr.COMPARE_TERNARY.UNDECIDABLE</code> if the result isn't a number
+   * </ul>
+   *
+   * @param function the function which should be evaluate for the <code>variables</code>
+   * @param variables variables the symbols which will be replaced by <code>Complex(re, im)</code>
+   *     to evaluate <code>function</code>
+   * @param engine
+   * @return
+   */
+  private static IExpr.COMPARE_TERNARY isPossibeZero(
+      IAST function, IAST variables, EvalEngine engine) {
+    IASTAppendable listOfRules = F.ListAlloc(variables.size());
+    ThreadLocalRandom tlr = ThreadLocalRandom.current();
+    for (int i = 1; i < variables.size(); i++) {
+      double re = tlr.nextDouble(-100, 100);
+      double im = tlr.nextDouble(-100, 100);
+      listOfRules.append(F.Rule(variables.get(i), F.complexNum(re, im)));
+    }
+    IExpr temp = function.replaceAll(listOfRules);
+    try {
+      if (temp.isPresent()) {
+        IExpr result = engine.evalQuiet(F.N(temp));
+        if (result.isZero()) {
+          return IExpr.COMPARE_TERNARY.TRUE;
+        }
+        if (result.isNumber() && !result.isZero()) {
+          double realPart = ((INumber) result).reDoubleValue();
+          double imaginaryPart = ((INumber) result).imDoubleValue();
+          if (!(F.isZero(realPart, Config.DEFAULT_ROOTS_CHOP_DELTA)
+              && F.isZero(imaginaryPart, Config.DEFAULT_ROOTS_CHOP_DELTA))) {
+            if (Double.isNaN(realPart)
+                || Double.isNaN(imaginaryPart)
+                || Double.isInfinite(realPart)
+                || Double.isInfinite(imaginaryPart)) {
+              return IExpr.COMPARE_TERNARY.UNDECIDABLE;
+            }
+            //            System.out.println("\n"+temp.toString() +((INumber) result).toString());
+            return IExpr.COMPARE_TERNARY.FALSE;
+          }
+          return IExpr.COMPARE_TERNARY.TRUE;
+        }
+        if (result.isDirectedInfinity()) {
+          return IExpr.COMPARE_TERNARY.FALSE;
+        }
+      }
+    } catch (RuntimeException rex) {
+      //
+    }
+    return IExpr.COMPARE_TERNARY.UNDECIDABLE;
   }
 
   public static void initialize() {
