@@ -4,7 +4,7 @@
 Compile(list-of-arguments}, expression)
 ```
 
-> compile the `expression` into a Java function, which has the arguments defined in `list-of-arguments` and return the compile result in an `CompiledFunction` expression. You have to run Symja from a Java Development Kit (JDK) to compile to Java binary code.
+> compile the `expression` into a Java function, which has the arguments defined in `list-of-arguments` and return the compiled result in an `CompiledFunction` expression. 
 
 
 ### Examples
@@ -26,3 +26,7 @@ Compile the expression into a `CompiledFunction` and assign it to `f`:
 
 ### Related terms 
 [CompiledFunction](CompiledFunction.md), [CompilePrint](CompilePrint.md), [OptimizeExpression](OptimizeExpression.md)
+
+### Github
+
+* [Implementation of Compile](https://github.com/axkr/symja_android_library/blob/master/symja_android_library/matheclipse-core/src/main/java/org/matheclipse/core/builtin/CompilerFunctions.java#L109) 

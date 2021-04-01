@@ -4,9 +4,11 @@
 PossibleZeroQ(expr)
 ```
 
-> returns `True` if basic symbolic and numerical methods suggest that `expr` has value zero, and `False` otherwise.
+> returns `True` if basic symbolic and numerical methods suggests that `expr` has value zero, and `False` otherwise.
 
- 
+See
+* [Wikipedia - Constant problem](https://en.wikipedia.org/wiki/Constant_problem)
+
 ### Examples
 
 Test whether a numeric expression is zero:
@@ -43,4 +45,4 @@ False
 
 ### Github
 
-* [Implementation of PossibleZeroQ](https://github.com/axkr/symja_android_library/blob/master/symja_android_library/matheclipse-core/src/main/java/org/matheclipse/core/builtin/PredicateQ.java#L984) 
+* [Implementation of PossibleZeroQ](https://github.com/axkr/symja_android_library/blob/master/symja_android_library/matheclipse-core/src/main/java/org/matheclipse/core/builtin/PredicateQ.java#L989) 

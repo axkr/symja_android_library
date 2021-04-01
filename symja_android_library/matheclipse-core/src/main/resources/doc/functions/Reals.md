@@ -11,4 +11,7 @@ Reals
 ```
 >> Refine(D(Abs(x),x), Element(x, Reals)) 
 x/Abs(x)
+
+>> Element(Infinity,Reals)
+False
 ```

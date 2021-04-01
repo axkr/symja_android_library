@@ -25,3 +25,7 @@ See:
 -b(a)+5*b(a+c)-10*b(a+2*c)+10*b(a+3*c)-5*b(a+4*c)+b(a+5*c)
  
 ```
+
+### Github
+
+* [Implementation of DifferenceDelta](https://github.com/axkr/symja_android_library/blob/master/symja_android_library/matheclipse-core/src/main/java/org/matheclipse/core/reflection/system/DifferenceDelta.java#L45) 

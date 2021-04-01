@@ -26,3 +26,7 @@ Compile the expression into a `CompiledFunction` and assign it to `f`:
 
 ### Related terms 
 [CompiledFunction](CompiledFunction.md), [CompilePrint](CompilePrint.md), [OptimizeExpression](OptimizeExpression.md)
+
+### Github
+
+* [Implementation of Compile](https://github.com/axkr/symja_android_library/blob/master/symja_android_library/matheclipse-core/src/main/java/org/matheclipse/core/builtin/CompilerFunctions.java#L109) 
