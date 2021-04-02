@@ -14,11 +14,13 @@ import org.matheclipse.core.eval.exception.ValidateException;
 import org.matheclipse.core.eval.interfaces.AbstractCoreFunctionEvaluator;
 import org.matheclipse.core.eval.interfaces.AbstractCorePredicateEvaluator;
 import org.matheclipse.core.eval.util.OptionArgs;
+import org.matheclipse.core.expression.ComplexNum;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.expression.ID;
 import org.matheclipse.core.expression.S;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IASTAppendable;
+import org.matheclipse.core.interfaces.IComplexNum;
 import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.interfaces.IExpr.COMPARE_TERNARY;
 import org.matheclipse.core.interfaces.IInteger;
@@ -32,7 +34,6 @@ import org.matheclipse.core.patternmatching.IPatternMatcher;
 import org.matheclipse.core.patternmatching.PatternMatcher;
 import org.matheclipse.core.visit.IVisitorBoolean;
 import org.matheclipse.core.visit.VisitorBooleanLevelSpecification;
-import org.matheclipse.core.visit.VisitorReplaceAll;
 import org.matheclipse.parser.client.FEConfig;
 
 public class PredicateQ {
@@ -1519,7 +1520,7 @@ public class PredicateQ {
       VariablesSet varSet = new VariablesSet(function);
       IAST variables = varSet.getVarList();
 
-      if (variables.size() <= 1) {
+      if (variables.isEmpty()) {
         INumber num = function.isNumericFunction(true) ? function.evalNumber() : null;
         if (num == null
             || !(F.isZero(num.reDoubleValue(), Config.DEFAULT_ROOTS_CHOP_DELTA)
@@ -1586,21 +1587,61 @@ public class PredicateQ {
       } else {
         if (function.isNumericFunction(varSet)) {
           if (function.isFreeAST(h -> specialNumericFunction(h)) && function.leafCount() < 50) {
-            //            System.out.println(function.toString());
-            //            System.out.println(engine.getStack().toString());
-
             int trueCounter = 0;
-            for (int i = 0; i < 32; i++) {
-              COMPARE_TERNARY possibeZero = isPossibeZero(function, variables, engine);
-              if (possibeZero == IExpr.COMPARE_TERNARY.FALSE) {
-                return false;
-              }
-              if (possibeZero == IExpr.COMPARE_TERNARY.TRUE) {
-                trueCounter++;
-              }
+
+            // 1. step test some special complex numeric values
+            COMPARE_TERNARY possibeZero =
+                isPossibeZeroFixedValues(ComplexNum.ONE, function, variables, engine);
+            if (possibeZero == IExpr.COMPARE_TERNARY.FALSE) {
+              return false;
             }
-            if (trueCounter > 24) {
-              return true;
+            if (possibeZero == IExpr.COMPARE_TERNARY.TRUE) {
+              trueCounter++;
+            }
+            possibeZero =
+                isPossibeZeroFixedValues(ComplexNum.MINUS_ONE, function, variables, engine);
+            if (possibeZero == IExpr.COMPARE_TERNARY.FALSE) {
+              return false;
+            }
+            if (possibeZero == IExpr.COMPARE_TERNARY.TRUE) {
+              trueCounter++;
+            }
+            possibeZero = isPossibeZeroFixedValues(ComplexNum.NI, function, variables, engine);
+            if (possibeZero == IExpr.COMPARE_TERNARY.FALSE) {
+              return false;
+            }
+            if (possibeZero == IExpr.COMPARE_TERNARY.TRUE) {
+              trueCounter++;
+            }
+            possibeZero = isPossibeZeroFixedValues(ComplexNum.I, function, variables, engine);
+            if (possibeZero == IExpr.COMPARE_TERNARY.FALSE) {
+              return false;
+            }
+            if (possibeZero == IExpr.COMPARE_TERNARY.TRUE) {
+              trueCounter++;
+            }
+            possibeZero = isPossibeZeroFixedValues(ComplexNum.ZERO, function, variables, engine);
+            if (possibeZero == IExpr.COMPARE_TERNARY.FALSE) {
+              return false;
+            }
+            if (possibeZero == IExpr.COMPARE_TERNARY.TRUE) {
+              trueCounter++;
+            }
+
+            if (trueCounter == 5) {
+              // 2. step test some random complex numeric values
+              for (int i = 0; i < 36; i++) {
+                possibeZero = isPossibeZero(function, variables, engine);
+                if (possibeZero == IExpr.COMPARE_TERNARY.FALSE) {
+                  return false;
+                }
+                if (possibeZero == IExpr.COMPARE_TERNARY.TRUE) {
+                  trueCounter++;
+                }
+              }
+              if (trueCounter > 28) {
+                return true;
+              }
             }
             if (fastTest) {
               return false;
@@ -1762,6 +1803,20 @@ public class PredicateQ {
       listOfRules.append(F.Rule(variables.get(i), F.complexNum(re, im)));
     }
     IExpr temp = function.replaceAll(listOfRules);
+    return isPossibleZeroApproximate(temp, engine);
+  }
+
+  private static IExpr.COMPARE_TERNARY isPossibeZeroFixedValues(
+      IComplexNum complexNumber, IAST function, IAST variables, EvalEngine engine) {
+    IASTAppendable listOfRules = F.ListAlloc(variables.size());
+    for (int i = 1; i < variables.size(); i++) {
+      listOfRules.append(F.Rule(variables.get(i), complexNumber));
+    }
+    IExpr temp = function.replaceAll(listOfRules);
+    return isPossibleZeroApproximate(temp, engine);
+  }
+
+  private static IExpr.COMPARE_TERNARY isPossibleZeroApproximate(IExpr temp, EvalEngine engine) {
     try {
       if (temp.isPresent()) {
         IExpr result = engine.evalQuiet(F.N(temp));
