@@ -402,8 +402,7 @@ public class GammaJS {
 
       Complex xInverse = x.reciprocal();
       while (Math.abs(p.getReal()) > Config.SPECIAL_FUNCTIONS_TOLERANCE
-          || //
-          Math.abs(p.getImaginary()) > Config.SPECIAL_FUNCTIONS_TOLERANCE) {
+          || Math.abs(p.getImaginary()) > Config.SPECIAL_FUNCTIONS_TOLERANCE) {
         p = p.multiply(i).multiply(xInverse);
         s = s.add(p);
         i++;
