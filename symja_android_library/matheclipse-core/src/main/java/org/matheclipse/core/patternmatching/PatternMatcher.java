@@ -902,180 +902,226 @@ public class PatternMatcher extends IPatternMatcher implements Externalizable {
   private boolean matchASTSpecialBuiltIn(
       IAST lhsPatternAST, final IExpr lhsEvalExpr, EvalEngine engine, StackMatcher stackMatcher) {
     int functionID = lhsPatternAST.headID();
-    if (functionID >= ID.Alternatives && functionID <= ID.Verbatim) {
+    if (functionID >= ID.Association && functionID <= ID.Verbatim) {
       boolean matched = false;
-      switch (functionID) {
-        case ID.Association:
-          if (lhsPatternAST.isAST(S.Association, 2)) {
-            final IExpr[] patternValues = fPatternMap.copyPattern();
-            try {
-              if (lhsEvalExpr.isAssociation()) {
-                IAST lhsPatternAssociation = lhsPatternAST;
-                // TODO set/determine pattern matching flags?
-                IASTMutable lhsPatternList = (IASTMutable) lhsPatternAssociation.normal(false);
-                lhsPatternList.set(0, S.Association);
-                IAssociation lhsEvalAssociation = (IAssociation) lhsEvalExpr;
-                IASTMutable lhsEvalList = lhsEvalAssociation.normal(false);
-                lhsEvalList.set(0, S.Association);
-                matched = matchExpr(lhsPatternList, lhsEvalList, engine, stackMatcher);
+      if (lhsPatternAST.size() == 2) {
+        if (functionID >= ID.Association && functionID <= ID.Verbatim) {
+          final IExpr[] patternValues;
+          switch (functionID) {
+            case ID.Association:
+              patternValues = fPatternMap.copyPattern();
+              try {
+                if (lhsEvalExpr.isAssociation()) {
+                  IAST lhsPatternAssociation = lhsPatternAST;
+                  // TODO set/determine pattern matching flags?
+                  IASTMutable lhsPatternList = (IASTMutable) lhsPatternAssociation.normal(false);
+                  lhsPatternList.set(0, S.Association);
+                  IAssociation lhsEvalAssociation = (IAssociation) lhsEvalExpr;
+                  IASTMutable lhsEvalList = lhsEvalAssociation.normal(false);
+                  lhsEvalList.set(0, S.Association);
+                  matched = matchExpr(lhsPatternList, lhsEvalList, engine, stackMatcher);
+                  return matched;
+                }
+                matched = matchASTExpr(lhsPatternAST, lhsEvalExpr, engine, stackMatcher);
                 return matched;
+              } finally {
+                if (!matched) {
+                  fPatternMap.resetPattern(patternValues);
+                }
               }
-              matched = matchASTExpr(lhsPatternAST, lhsEvalExpr, engine, stackMatcher);
-              return matched;
-            } finally {
-              if (!matched) {
-                fPatternMap.resetPattern(patternValues);
+            case ID.Except:
+              patternValues = fPatternMap.copyPattern();
+              try {
+                matched = !matchExpr(lhsPatternAST.arg1(), lhsEvalExpr, engine, stackMatcher);
+                return matched;
+              } finally {
+                if (!matched) {
+                  fPatternMap.resetPattern(patternValues);
+                }
               }
-            }
-          }
-          break;
-        case ID.HoldPattern:
-        case ID.Literal:
-          if (lhsPatternAST.isHoldPatternOrLiteral()) {
-            final IExpr[] patternValues = fPatternMap.copyPattern();
-            try {
-              matched = matchExpr(lhsPatternAST.arg1(), lhsEvalExpr, engine, stackMatcher);
-              return matched;
-            } finally {
-              if (!matched) {
-                fPatternMap.resetPattern(patternValues);
+            case ID.HoldPattern:
+            case ID.Literal:
+              patternValues = fPatternMap.copyPattern();
+              try {
+                matched = matchExpr(lhsPatternAST.arg1(), lhsEvalExpr, engine, stackMatcher);
+                return matched;
+              } finally {
+                if (!matched) {
+                  fPatternMap.resetPattern(patternValues);
+                }
               }
-            }
+            case ID.Optional:
+              return matchOptional(lhsPatternAST, lhsEvalExpr, engine, stackMatcher);
+            case ID.Verbatim:
+              return lhsPatternAST.arg1().equals(lhsEvalExpr);
+            default:
           }
-          break;
-        case ID.Condition:
-          if (lhsPatternAST.isCondition()) {
-            return matchCondition(lhsPatternAST, lhsEvalExpr, engine, stackMatcher);
-          }
-          break;
-        case ID.Alternatives:
-          if (lhsPatternAST.isAlternatives()) {
-            final IExpr[] patternValues = fPatternMap.copyPattern();
-            try {
-              IAST alternatives = lhsPatternAST;
-              matched = alternatives.exists(x -> matchExpr(x, lhsEvalExpr, engine));
-              return matched;
-            } finally {
-              if (!matched) {
-                fPatternMap.resetPattern(patternValues);
+        }
+      } else if (lhsPatternAST.size() == 3) {
+        if (functionID >= ID.Complex && functionID <= ID.Rational) {
+          final IExpr[] patternValues;
+          switch (functionID) {
+            case ID.Complex:
+              patternValues = fPatternMap.copyPattern();
+              try {
+                if (lhsEvalExpr.isNumber()) {
+                  INumber number = (INumber) lhsEvalExpr;
+                  matched =
+                      matchExpr(lhsPatternAST.arg1(), number.re(), engine, stackMatcher)
+                          && matchExpr(lhsPatternAST.arg2(), number.im(), engine, stackMatcher);
+                  return matched;
+                }
+                matched = matchASTExpr(lhsPatternAST, lhsEvalExpr, engine, stackMatcher);
+                return matched;
+              } finally {
+                if (!matched) {
+                  fPatternMap.resetPattern(patternValues);
+                }
               }
-            }
-          }
-          break;
-        case ID.Except:
-          if (lhsPatternAST.isExcept()) {
-            final IExpr[] patternValues = fPatternMap.copyPattern();
-            try {
-              if (lhsPatternAST.isAST2()) {
+            case ID.Condition:
+              return matchCondition(lhsPatternAST, lhsEvalExpr, engine, stackMatcher);
+            case ID.Except:
+              patternValues = fPatternMap.copyPattern();
+              try {
                 matched =
                     !matchExpr(lhsPatternAST.arg1(), lhsEvalExpr, engine, stackMatcher)
                         && matchExpr(lhsPatternAST.arg2(), lhsEvalExpr, engine, stackMatcher);
                 return matched;
-              }
-              matched = !matchExpr(lhsPatternAST.arg1(), lhsEvalExpr, engine, stackMatcher);
-              return matched;
-            } finally {
-              if (!matched) {
-                fPatternMap.resetPattern(patternValues);
-              }
-            }
-          }
-          break;
-        case ID.Complex:
-          if (lhsPatternAST.isAST(S.Complex, 3)) {
-            final IExpr[] patternValues = fPatternMap.copyPattern();
-            try {
-              if (lhsEvalExpr.isNumber()) {
-                INumber number = (INumber) lhsEvalExpr;
-                matched =
-                    matchExpr(lhsPatternAST.arg1(), number.re(), engine, stackMatcher)
-                        && matchExpr(lhsPatternAST.arg2(), number.im(), engine, stackMatcher);
-                return matched;
-              }
-              matched = matchASTExpr(lhsPatternAST, lhsEvalExpr, engine, stackMatcher);
-              return matched;
-            } finally {
-              if (!matched) {
-                fPatternMap.resetPattern(patternValues);
-              }
-            }
-          }
-          break;
-        case ID.Rational:
-          if (lhsPatternAST.isAST(S.Rational, 3)) {
-            final IExpr[] patternValues = fPatternMap.copyPattern();
-            try {
-              if (lhsEvalExpr.isRational()) {
-                IRational rational = (IRational) lhsEvalExpr;
-                matched =
-                    matchExpr(lhsPatternAST.arg1(), rational.numerator(), engine, stackMatcher)
-                        && matchExpr(
-                            lhsPatternAST.arg2(), rational.denominator(), engine, stackMatcher);
-                return matched;
-              }
-              matched = matchASTExpr(lhsPatternAST, lhsEvalExpr, engine, stackMatcher);
-              return matched;
-            } finally {
-              if (!matched) {
-                fPatternMap.resetPattern(patternValues);
-              }
-            }
-          }
-          break;
-        case ID.Optional:
-          if (lhsPatternAST.isOptional()) {
-            final IExpr[] patternValues = fPatternMap.copyPattern();
-            try {
-              matched = matchExpr(lhsPatternAST.arg1(), lhsEvalExpr, engine, stackMatcher);
-              return matched;
-            } finally {
-              if (!matched) {
-                fPatternMap.resetPattern(patternValues);
-              }
-            }
-          }
-          break;
-        case ID.PatternTest:
-          if (lhsPatternAST.isPatternTest()) {
-            final IExpr[] patternValues = fPatternMap.copyPattern();
-            try {
-              final IExpr lhsPatternExpr = lhsPatternAST.arg1();
-              final IExpr patternTest = lhsPatternAST.arg2();
-              if (lhsPatternExpr instanceof IPatternObject && patternTest.isFreeOfPatterns()) {
-                // isPatternTest() can be done immediately, because patternTest contains no
-                // other pattern symbol
-                if (matchPattern(
-                    (IPatternObject) lhsPatternExpr, lhsEvalExpr, engine, stackMatcher)) {
-                  if (fPatternMap.isPatternTest(lhsPatternExpr, patternTest, engine)) {
-                    matched = stackMatcher.matchRest();
-                  }
+              } finally {
+                if (!matched) {
+                  fPatternMap.resetPattern(patternValues);
                 }
-              } else if (matchExpr(lhsPatternExpr, lhsEvalExpr, engine, stackMatcher)) {
-                matched = fPatternMap.isPatternTest(lhsPatternExpr, patternTest, engine);
               }
-              return matched;
-            } finally {
-              if (!matched) {
-                fPatternMap.resetPattern(patternValues);
+            case ID.Optional:
+              return matchOptional(lhsPatternAST, lhsEvalExpr, engine, stackMatcher);
+            case ID.PatternTest:
+              patternValues = fPatternMap.copyPattern();
+              try {
+                final IExpr lhsPatternExpr = lhsPatternAST.arg1();
+                final IExpr patternTest = lhsPatternAST.arg2();
+                if (lhsPatternExpr instanceof IPatternObject && patternTest.isFreeOfPatterns()) {
+                  // isPatternTest() can be done immediately, because patternTest contains no
+                  // other pattern symbol
+                  if (matchPattern(
+                      (IPatternObject) lhsPatternExpr, lhsEvalExpr, engine, stackMatcher)) {
+                    if (fPatternMap.isPatternTest(lhsPatternExpr, patternTest, engine)) {
+                      matched = stackMatcher.matchRest();
+                    }
+                  }
+                } else if (matchExpr(lhsPatternExpr, lhsEvalExpr, engine, stackMatcher)) {
+                  matched = fPatternMap.isPatternTest(lhsPatternExpr, patternTest, engine);
+                }
+                return matched;
+              } finally {
+                if (!matched) {
+                  fPatternMap.resetPattern(patternValues);
+                }
               }
-            }
-          }
-          break;
-        case ID.Verbatim:
-          if (lhsPatternAST.isAST(S.Verbatim, 2)) {
-            return lhsPatternAST.arg1().equals(lhsEvalExpr);
-          }
-          break;
 
-        default:
-          //
+            case ID.Rational:
+              patternValues = fPatternMap.copyPattern();
+              try {
+                if (lhsEvalExpr.isRational()) {
+                  IRational rational = (IRational) lhsEvalExpr;
+                  matched =
+                      matchExpr(lhsPatternAST.arg1(), rational.numerator(), engine, stackMatcher)
+                          && matchExpr(
+                              lhsPatternAST.arg2(), rational.denominator(), engine, stackMatcher);
+                  return matched;
+                }
+                matched = matchASTExpr(lhsPatternAST, lhsEvalExpr, engine, stackMatcher);
+                return matched;
+              } finally {
+                if (!matched) {
+                  fPatternMap.resetPattern(patternValues);
+                }
+              }
+
+            default:
+          }
+        }
+      }
+    } else {
+      if (lhsPatternAST.isAlternatives()) {
+        return matchAlternatives(lhsPatternAST, lhsEvalExpr, engine);
       }
     }
+
     return matchASTExpr(lhsPatternAST, lhsEvalExpr, engine, stackMatcher);
   }
 
   /**
-   * Match a left-hand-side <code>Condition</code> (i.e. expression /; test).
+   * Match a left-hand-side <code>Alternatives(p1, p2, ..., p_i)</code>.
+   *
+   * <pre>Alternatives(p1, p2, ..., p_i)
+   * </pre>
+   *
+   * or
+   *
+   * <pre>p1 | p2 | ... | p_i
+   * </pre>
+   *
+   * <p>is a pattern that matches any of the patterns <code>p1, p2,...., p_i</code>.
+   *
+   * <h3>Examples</h3>
+   *
+   * <pre>&gt;&gt; a+b+c+d/.(a|b)-&gt;t
+   * c + d + 2 t
+   * </pre>
+   *
+   * @param lhsPatternAlternatives a <code>Alternatives(...)</code> expression
+   * @param lhsEvalExpr the value which should be matched
+   * @param engine
+   * @return
+   */
+  private boolean matchAlternatives(
+      IAST lhsPatternAlternatives, final IExpr lhsEvalExpr, EvalEngine engine) {
+    boolean matched = false;
+    final IExpr[] patternValues = fPatternMap.copyPattern();
+    try {
+      matched = lhsPatternAlternatives.exists(x -> matchExpr(x, lhsEvalExpr, engine));
+      return matched;
+    } finally {
+      if (!matched) {
+        fPatternMap.resetPattern(patternValues);
+      }
+    }
+  }
+
+  /**
+   * Match a left-hand-side <code>Condition(pattern, expr)</code>.
+   *
+   * <pre><code>Condition(pattern, expr)
+   * </code></pre>
+   *
+   * <p>or
+   *
+   * <pre><code>pattern /; expr
+   * </code></pre>
+   *
+   * <p>places an additional constraint on <code>pattern</code> that only allows it to match if
+   * <code>expr</code> evaluates to <code>True</code>.
+   *
+   * <h3>Examples</h3>
+   *
+   * <p>The controlling expression of a <code>Condition</code> can use variables from the pattern:
+   *
+   * <pre><code>&gt;&gt; f(3) /. f(x_) /; x&gt;0 -&gt; t
+   * t
+   *
+   * &gt;&gt; f(-3) /. f(x_) /; x&gt;0 -&gt; t
+   * f(-3)
+   * </code></pre>
+   *
+   * <p><code>Condition</code> can be used in an assignment:
+   *
+   * <pre><code>&gt;&gt; f(x_) := p(x) /; x&gt;0
+   * &gt;&gt; f(3)
+   * p(3)
+   *
+   * &gt;&gt; f(-3)
+   * f(-3)
+   * </code></pre>
    *
    * @param lhsPatternCondition a <code>Condition(pattern-expr, test)</code> expression
    * @param lhsEvalExpr the value which should be matched
@@ -1098,6 +1144,55 @@ public class PatternMatcher extends IPatternMatcher implements Externalizable {
         fPatternMap.resetPattern(patternValues);
       }
     }
+  }
+
+  /**
+   * Match a left-hand-side <code>Optional(patt, default)</code>.
+   *
+   * <pre><code>Optional(patt, default)
+   * </code></pre>
+   *
+   * <p>or
+   *
+   * <pre><code>patt : default
+   * </code></pre>
+   *
+   * <p>is a pattern which matches <code>patt</code>, which if omitted should be replaced by <code>
+   * default</code>.
+   *
+   * <h3>Examples</h3>
+   *
+   * <pre><code>&gt;&gt; f(x_, y_:1) := {x, y}
+   *
+   * &gt;&gt; f(1, 2)
+   * {1,2}
+   *
+   * &gt;&gt; f(a)
+   * {a,1}
+   * </code></pre>
+   *
+   * @param lhsPatternOptional a <code>Optional(patt, default</code> expression
+   * @param lhsEvalExpr the value which should be matched
+   * @param engine
+   * @param stackMatcher
+   * @return
+   */
+  private boolean matchOptional(
+      final IAST lhsPatternOptional,
+      final IExpr lhsEvalExpr,
+      EvalEngine engine,
+      StackMatcher stackMatcher) {
+    boolean matched = false;
+    final IExpr[] patternValues = fPatternMap.copyPattern();
+    try {
+      matched = matchExpr(lhsPatternOptional.arg1(), lhsEvalExpr, engine, stackMatcher);
+
+    } finally {
+      if (!matched) {
+        fPatternMap.resetPattern(patternValues);
+      }
+    }
+    return matched;
   }
 
   private boolean matchBlankSequence(
