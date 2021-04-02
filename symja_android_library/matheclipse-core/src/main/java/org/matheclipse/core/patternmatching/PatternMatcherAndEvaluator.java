@@ -342,13 +342,7 @@ public class PatternMatcherAndEvaluator extends PatternMatcher implements Extern
 
   public IAST getAsAST() {
     ISymbol setSymbol = getSetSymbol();
-    IExpr condition = getCondition();
-    IAST temp;
-    if (condition != null) {
-      temp = F.binaryAST2(setSymbol, getLHS(), F.Condition(getRHS(), condition));
-    } else {
-      temp = F.binaryAST2(setSymbol, getLHS(), getRHS());
-    }
+    IAST temp = F.binaryAST2(setSymbol, getLHS(), getRHS());
     if (isFlagOn(HOLDPATTERN)) {
       return F.HoldPattern(temp);
     }
@@ -437,27 +431,16 @@ public class PatternMatcherAndEvaluator extends PatternMatcher implements Extern
 
   @Override
   public void writeExternal(ObjectOutput objectOutput) throws IOException {
-    short ordinal = (short) fSetFlags;
-    if (fPatternCondition == null) {
-      ordinal |= SERIALIZATION_MASK;
-    }
-    objectOutput.writeShort(ordinal);
+    objectOutput.writeShort((short) fSetFlags);
     objectOutput.writeObject(fLhsPatternExpr);
     objectOutput.writeObject(fRightHandSide);
-    if (fPatternCondition != null) {
-      objectOutput.writeObject(fPatternCondition);
-    }
   }
 
   @Override
   public void readExternal(ObjectInput objectInput) throws IOException, ClassNotFoundException {
-    short ordinal = objectInput.readShort();
-    fSetFlags = ordinal & 0x7FFF;
+    fSetFlags = objectInput.readShort();
     fLhsPatternExpr = (IExpr) objectInput.readObject();
     fRightHandSide = (IExpr) objectInput.readObject();
-    if ((ordinal & 0x8000) == 0x0000) {
-      fPatternCondition = (IExpr) objectInput.readObject();
-    }
 
     if (fLhsPatternExpr != null) {
       int[] priority = new int[] {IPatternMap.DEFAULT_RULE_PRIORITY};

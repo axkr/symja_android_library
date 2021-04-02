@@ -145,7 +145,6 @@ public final class RulesData implements Serializable {
     IExpr key;
     PatternMatcherEquals pmEquals;
     IAST ast;
-    IExpr condition;
     PatternMatcherAndEvaluator pmEvaluator;
     if (fEqualUpRules != null && fEqualUpRules.size() > 0) {
       iter = fEqualUpRules.keySet().iterator();
@@ -173,12 +172,6 @@ public final class RulesData implements Serializable {
             }
             if (pmEvaluator.getRHS().isASTOrAssociation()) {
               pmEvaluator.getRHS().accept(visitor);
-            }
-            condition = pmEvaluator.getCondition();
-            if (condition != null) {
-              if (condition.isASTOrAssociation()) {
-                condition.accept(visitor);
-              }
             }
           }
         }

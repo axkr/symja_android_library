@@ -4848,44 +4848,6 @@ public class LowercaseTestCase extends AbstractTestCase {
   }
 
   public void testCondition() {
-    // F[x_,y_]/; x>0 /; x<y:= x/y
-    // F[x_,y_]/; x<0 := 0
-    // F[x_,y_]:=y/x
-    check(
-        "nested(x_,y_)/; x>0 /; x<y:= x/y", //
-        "");
-    //    check(
-    //            "nested(4,3)", //
-    //            "3/4");
-
-    check(
-        "nested(3,4)", //
-        "3/4");
-    check(
-        "nested(-3,4)", //
-        "nested(-3,4)");
-    check(
-        "nested(x_,y_)/; x<0 := 0", //
-        "");
-    check(
-        "nested(3,4)", //
-        "3/4");
-    check(
-        "nested(-3,4)", //
-        "0");
-    check(
-        "nested(x_,y_) := y/x", //
-        "");
-    check(
-        "nested(3,4)", //
-        "3/4");
-    check(
-        "nested(-3,4)", //
-        "0");
-    check(
-        "nested(4,3)", //
-        "3/4");
-
     check(
         "Cases({z(1, 1), z(-1, 1), z(-2, 2)}, z(x_ /; x < 0, y_))", //
         "{z(-1,1),z(-2,2)}");
@@ -4970,6 +4932,42 @@ public class LowercaseTestCase extends AbstractTestCase {
     check(
         "g(5)", //
         "g(5)");
+  }
+
+  public void testConditionNested() {
+    // nested(x_,y_)/; x>0 /; x<y:= x/y
+    // nested(x_,y_)/; x<0 := 0
+    // nested(x_,y_):=y/x
+    check(
+        "nested(x_,y_)/; x>0 /; x<y:= x/y", //
+        "");
+    check(
+        "nested(3,4)", //
+        "3/4");
+    check(
+        "nested(-3,4)", //
+        "nested(-3,4)");
+    check(
+        "nested(x_,y_)/; x<0 := 0", //
+        "");
+    check(
+        "nested(3,4)", //
+        "3/4");
+    check(
+        "nested(-3,4)", //
+        "0");
+    check(
+        "nested(x_,y_) := y/x", //
+        "");
+    check(
+        "nested(3,4)", //
+        "3/4");
+    check(
+        "nested(-3,4)", //
+        "0");
+    check(
+        "nested(4,3)", //
+        "3/4");
   }
 
   public void testConditionalExpression() {
@@ -23470,9 +23468,11 @@ public class LowercaseTestCase extends AbstractTestCase {
 
   public void testReplaceRepeated() {
     // example from https://en.wikipedia.org/wiki/Wolfram_Language
-//    check(
-//        "Hold(sortRule := {x___,y_,z_,k___} /; y>z -> {x,z,y,k}) // FullForm", //
-//        "Hold(SetDelayed(sortrule, Rule(Condition(List(PatternSequence(x, BlankNullSequence()), Pattern(y, Blank()), Pattern(z, Blank()), PatternSequence(k, BlankNullSequence())), Greater(y, z)), List(x, z, y, k))))");
+    //    check(
+    //        "Hold(sortRule := {x___,y_,z_,k___} /; y>z -> {x,z,y,k}) // FullForm", //
+    //        "Hold(SetDelayed(sortrule, Rule(Condition(List(PatternSequence(x,
+    // BlankNullSequence()), Pattern(y, Blank()), Pattern(z, Blank()), PatternSequence(k,
+    // BlankNullSequence())), Greater(y, z)), List(x, z, y, k))))");
     check(
         "sortRule := {x___,y_,z_,k___} /; y>z -> {x,z,y,k}", //
         "");
