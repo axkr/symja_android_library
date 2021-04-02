@@ -4848,6 +4848,44 @@ public class LowercaseTestCase extends AbstractTestCase {
   }
 
   public void testCondition() {
+    // F[x_,y_]/; x>0 /; x<y:= x/y
+    // F[x_,y_]/; x<0 := 0
+    // F[x_,y_]:=y/x
+    check(
+        "nested(x_,y_)/; x>0 /; x<y:= x/y", //
+        "");
+    //    check(
+    //            "nested(4,3)", //
+    //            "3/4");
+
+    check(
+        "nested(3,4)", //
+        "3/4");
+    check(
+        "nested(-3,4)", //
+        "nested(-3,4)");
+    check(
+        "nested(x_,y_)/; x<0 := 0", //
+        "");
+    check(
+        "nested(3,4)", //
+        "3/4");
+    check(
+        "nested(-3,4)", //
+        "0");
+    check(
+        "nested(x_,y_) := y/x", //
+        "");
+    check(
+        "nested(3,4)", //
+        "3/4");
+    check(
+        "nested(-3,4)", //
+        "0");
+    check(
+        "nested(4,3)", //
+        "3/4");
+
     check(
         "Cases({z(1, 1), z(-1, 1), z(-2, 2)}, z(x_ /; x < 0, y_))", //
         "{z(-1,1),z(-2,2)}");
@@ -4857,7 +4895,9 @@ public class LowercaseTestCase extends AbstractTestCase {
         "1");
     check(
         "Definition(q)", //
-        "q(0,0)=1\n" + "q(i_,j_)=0/;i<0||j<0\n" + "q(i_,j_):=q(i,j)=q(-1+i,j)+q(i,-1+j)");
+        "q(0,0)=1\n" //
+            + "q(i_,j_)/;i<0||j<0=0\n"
+            + "q(i_,j_):=q(i,j)=q(-1+i,j)+q(i,-1+j)");
     check(
         "q(5,5)", //
         "252");
@@ -23430,6 +23470,9 @@ public class LowercaseTestCase extends AbstractTestCase {
 
   public void testReplaceRepeated() {
     // example from https://en.wikipedia.org/wiki/Wolfram_Language
+//    check(
+//        "Hold(sortRule := {x___,y_,z_,k___} /; y>z -> {x,z,y,k}) // FullForm", //
+//        "Hold(SetDelayed(sortrule, Rule(Condition(List(PatternSequence(x, BlankNullSequence()), Pattern(y, Blank()), Pattern(z, Blank()), PatternSequence(k, BlankNullSequence())), Greater(y, z)), List(x, z, y, k))))");
     check(
         "sortRule := {x___,y_,z_,k___} /; y>z -> {x,z,y,k}", //
         "");

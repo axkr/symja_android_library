@@ -32,8 +32,13 @@ import org.matheclipse.parser.client.FEConfig;
 
 public class PatternMatcher extends IPatternMatcher implements Externalizable {
   private static final class Entry {
-    IExpr fPatternExpr;
-    IExpr fEvalExpr;
+    final IExpr fPatternExpr;
+    final IExpr fEvalExpr;
+
+    public Entry(IExpr patternExpr) {
+      this.fPatternExpr = patternExpr;
+      this.fEvalExpr = F.NIL;
+    }
 
     public Entry(IExpr patternExpr, IExpr evalExpr) {
       this.fPatternExpr = patternExpr;
@@ -128,7 +133,17 @@ public class PatternMatcher extends IPatternMatcher implements Externalizable {
     }
   }
 
-  /** Manage a stack of pairs of expressions, which have to match each other */
+  /**
+   * Manage a stack of pairs of expressions, which have to match each other.
+   *
+   * <p>There are two kinds of matching each entry-pair in the stack:
+   *
+   * <ul>
+   *   <li>The first expression of the pair must pattern-match the second expression of the pair.
+   *   <li>If the second expression of the pair is {@link F#NIL}, substitute the symbols in the
+   *       first expression of the pair and try to evaluate to <code>True</code>.
+   * </ul>
+   */
   @SuppressWarnings("serial")
   /* package private */ final class StackMatcher extends ArrayDeque<Entry> {
     final EvalEngine fEngine;
@@ -140,7 +155,18 @@ public class PatternMatcher extends IPatternMatcher implements Externalizable {
     /**
      * Match the entries of the stack recursively starting from the top entry.
      *
-     * @return <code>true</code> if all expressions could be matched.
+     * <p>There are two kinds of matching each entry-pair in the stack:
+     *
+     * <ul>
+     *   <li>The first expression of the pair must pattern-match the second expression of the pair.
+     *   <li>If the second expression of the pair is {@link F#NIL}, substitute the symbols in the
+     *       first expression of the pair and try to evaluate to <code>True</code>.
+     * </ul>
+     *
+     * The entry will be popped from the stack if the match succeeds. Otherwise it will be left on
+     * the stack.
+     *
+     * @return <code>true</code> if all entry-pairs on the stack could be matched.
      */
     public boolean matchRest() {
       if (isEmpty()) {
@@ -149,8 +175,12 @@ public class PatternMatcher extends IPatternMatcher implements Externalizable {
       boolean matched = true;
       Entry entry = pop();
       try {
-        matched = matchExpr(entry.fPatternExpr, entry.fEvalExpr, fEngine, this);
-        // matched = matchSubstExpr(entry.fPatternExpr, entry.fEvalExpr, fEngine, this);
+        IExpr evalExpr = entry.fEvalExpr;
+        if (evalExpr.isPresent()) {
+          matched = matchExpr(entry.fPatternExpr, evalExpr, fEngine, this);
+        } else {
+          matched = matchTrue(entry.fPatternExpr, fEngine, this);
+        }
         return matched;
       } finally {
         if (!matched) {
@@ -415,10 +445,10 @@ public class PatternMatcher extends IPatternMatcher implements Externalizable {
     this.fLHSPriority = IPatternMap.DEFAULT_RULE_PRIORITY;
     this.fThrowIfTrue = false;
     this.fPatternCondition = null;
-    if (patternExpr.isCondition()) {
-      this.fLhsPatternExpr = patternExpr.first();
-      this.fPatternCondition = patternExpr.second();
-    }
+    //    if (patternExpr.isCondition()) {
+    //      this.fLhsPatternExpr = patternExpr.first();
+    //      this.fPatternCondition = patternExpr.second();
+    //    }
     if (initAll) {
       int[] priority = new int[] {IPatternMap.DEFAULT_RULE_PRIORITY};
       fPatternMap = determinePatterns(priority);
@@ -745,7 +775,7 @@ public class PatternMatcher extends IPatternMatcher implements Externalizable {
           return false;
         }
       } else {
-        if (!matchExpr(lhsPatternHead, lhsEvalHead, engine, stackMatcher)) {
+        if (!matchExpr(lhsPatternHead, lhsEvalHead, engine)) {
           return false;
         }
       }
@@ -935,25 +965,7 @@ public class PatternMatcher extends IPatternMatcher implements Externalizable {
           break;
         case ID.Condition:
           if (lhsPatternAST.isCondition()) {
-            // expression /; test
-            final IExpr[] patternValues = fPatternMap.copyPattern();
-            try {
-              IExpr lhsTempPatternExpr = fPatternMap.substituteSymbols(lhsPatternAST, F.NIL);
-              if (lhsTempPatternExpr.isASTOrAssociation()) {
-                lhsTempPatternExpr = engine.evalHoldPattern((IAST) lhsTempPatternExpr);
-              }
-              final PatternMatcher matcher =
-                  new PatternMatcherEvalEngine(lhsTempPatternExpr, engine);
-              if (matcher.test(lhsEvalExpr, engine)) {
-                matched = true;
-                fPatternMap.copyPatternValuesFromPatternMatcher(matcher.fPatternMap);
-              }
-              return matched;
-            } finally {
-              if (!matched) {
-                fPatternMap.resetPattern(patternValues);
-              }
-            }
+            return matchCondition(lhsPatternAST, lhsEvalExpr, engine, stackMatcher);
           }
           break;
         case ID.Alternatives:
@@ -1080,6 +1092,45 @@ public class PatternMatcher extends IPatternMatcher implements Externalizable {
       }
     }
     return matchASTExpr(lhsPatternAST, lhsEvalExpr, engine, stackMatcher);
+  }
+
+  /**
+   * Match a left-hand-side <code>Condition</code> (i.e. expression /; test).
+   *
+   * @param lhsPatternAST
+   * @param lhsEvalExpr
+   * @param engine
+   * @param stackMatcher
+   * @return
+   */
+  private boolean matchCondition(
+      IAST lhsPatternAST, final IExpr lhsEvalExpr, EvalEngine engine, StackMatcher stackMatcher) {
+    boolean conditionMatched = false;
+    final IExpr[] patternValues = fPatternMap.copyPattern();
+    try {
+      IExpr lhsTempPatternExpr = fPatternMap.substituteSymbols(lhsPatternAST, F.NIL);
+      if (lhsTempPatternExpr.isASTOrAssociation()) {
+        lhsTempPatternExpr = engine.evalHoldPattern((IAST) lhsTempPatternExpr);
+      }
+      if (lhsTempPatternExpr.isCondition()) {
+
+        if (lhsTempPatternExpr.first().isCondition()) {
+          stackMatcher.push(new Entry(lhsTempPatternExpr.second()));
+          conditionMatched =
+              matchCondition((IAST) lhsTempPatternExpr.first(), lhsEvalExpr, engine, stackMatcher);
+          return conditionMatched;
+        }
+        stackMatcher.push(new Entry(lhsTempPatternExpr.second()));
+        if (matchExpr(lhsTempPatternExpr.first(), lhsEvalExpr, engine, stackMatcher)) {
+          conditionMatched = true;
+        }
+      }
+      return conditionMatched;
+    } finally {
+      if (!conditionMatched) {
+        fPatternMap.resetPattern(patternValues);
+      }
+    }
   }
 
   private boolean matchBlankSequence(
@@ -1236,8 +1287,13 @@ public class PatternMatcher extends IPatternMatcher implements Externalizable {
   }
 
   /**
-   * Checks if the two expressions match each other
+   * Checks if the two expressions match each other. If <code>true</code> match the rest of the
+   * <code>stackMatcher</code>.
    *
+   * @param lhsPatternExpr the left-hand-side pattern expression
+   * @param lhsEvalExpr the left-hand-side expression which should match <code>lhsPatternExpr</code>
+   * @param engine
+   * @param stackMatcher
    * @return
    */
   protected boolean matchExpr(
@@ -1257,6 +1313,14 @@ public class PatternMatcher extends IPatternMatcher implements Externalizable {
       matched = lhsPatternExpr.equals(lhsEvalExpr);
     }
     if (matched) {
+      return stackMatcher.matchRest();
+    }
+    return false;
+  }
+
+  private boolean matchTrue(IExpr lhsPatternExpr, EvalEngine engine, StackMatcher stackMatcher) {
+    IExpr lhsTest = fPatternMap.substituteSymbols(lhsPatternExpr, F.NIL);
+    if (engine.evalTrue(lhsTest)) {
       return stackMatcher.matchRest();
     }
     return false;
