@@ -35,4 +35,4 @@ Calls the `format` method of the `dm` Java object.
 ```
 
 ### Related terms 
-[InstanceOf](InstanceOf.md), [JavaClass](JavaClass.md), [JavaNew](JavaNew.md), [JavaObjectQ](JavaObjectQ.md), [LoadJavaClass](LoadJavaClass.md), [SameObjectQ](SameObjectQ.md)
+[InstanceOf](InstanceOf.md), [JavaClass](JavaClass.md), [JavaNew](JavaNew.md), [JavaObjectQ](JavaObjectQ.md), [JavaShow](JavaShow.md), [LoadJavaClass](LoadJavaClass.md), [SameObjectQ](SameObjectQ.md)

@@ -23,4 +23,4 @@ JavaClass[java.lang.Math]
  
 
 ### Related terms
-[InstanceOf](InstanceOf.md), [JavaNew](JavaNew.md), [JavaObject](JavaObject.md), [JavaObjectQ](JavaObjectQ.md), [LoadJavaClass](LoadJavaClass.md), [SameObjectQ](SameObjectQ.md)
+[InstanceOf](InstanceOf.md), [JavaNew](JavaNew.md), [JavaObject](JavaObject.md), [JavaObjectQ](JavaObjectQ.md), [JavaShow](JavaShow.md), [LoadJavaClass](LoadJavaClass.md), [SameObjectQ](SameObjectQ.md)
