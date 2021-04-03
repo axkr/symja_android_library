@@ -202,6 +202,9 @@ public class S {
    */
   public static final IBuiltInSymbol AddTo = F.initFinalSymbol("AddTo", ID.AddTo);
 
+  public static final IBuiltInSymbol AddToClassPath =
+      F.initFinalSymbol("AddToClassPath", ID.AddToClassPath);
+
   /**
    * AdjacencyMatrix(graph) - convert the `graph` into a adjacency matrix in sparse array format. |
    * See: <a
@@ -3404,6 +3407,9 @@ public class S {
   public static final IBuiltInSymbol JavaObject = F.initFinalSymbol("JavaObject", ID.JavaObject);
 
   public static final IBuiltInSymbol JavaObjectQ = F.initFinalSymbol("JavaObjectQ", ID.JavaObjectQ);
+  
+  public static final IBuiltInSymbol JavaShow = F.initFinalSymbol("JavaShow", ID.JavaShow);
+  
   /**
    * Join(l1, l2) - concatenates the lists `l1` and `l2`. | See: <a
    * href="https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/Join.md">Join</a>

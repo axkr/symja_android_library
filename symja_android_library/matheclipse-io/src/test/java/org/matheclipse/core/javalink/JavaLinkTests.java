@@ -4,6 +4,7 @@ import org.matheclipse.core.basic.Config;
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.interfaces.ISymbol;
 import org.matheclipse.core.rubi.AbstractRubiTestCase;
+import org.matheclipse.io.IOInit;
 
 public class JavaLinkTests extends AbstractRubiTestCase {
 
@@ -90,6 +91,15 @@ public class JavaLinkTests extends AbstractRubiTestCase {
         "True");
   }
 
+  public void testJavaShow001() {
+//    check(
+//        "frame= JavaNew[ \"javax.swing.JFrame\", \"Simple JFrame Demo\"];", //
+//        "Null");
+//    check(
+//        "loc= JavaShow[frame ];Pause[10]", //
+//        ""); 
+  }
+
   /** The JUnit setup method */
   @Override
   protected void setUp() {
@@ -99,6 +109,7 @@ public class JavaLinkTests extends AbstractRubiTestCase {
     Config.SHORTEN_STRING_LENGTH = 1024;
     Config.MAX_AST_SIZE = 1000000;
     EvalEngine.get().setIterationLimit(50000);
+    IOInit.init();
   }
 
   @Override

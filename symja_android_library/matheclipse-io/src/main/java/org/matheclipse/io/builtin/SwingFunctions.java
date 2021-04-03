@@ -59,16 +59,18 @@ public class SwingFunctions {
   private static class Initializer {
 
     private static void init() {
-      if (Config.FILESYSTEM_ENABLED) {
-        S.Button.setEvaluator(new Button());
-        S.DefaultButton.setEvaluator(new DefaultButton());
-        S.Dynamic.setEvaluator(new Dynamic());
-        S.CancelButton.setEvaluator(new CancelButton());
-        S.DialogInput.setEvaluator(new DialogInput());
-        S.DialogReturn.setEvaluator(new DialogReturn());
-        S.Input.setEvaluator(new Input());
-        S.InputString.setEvaluator(new InputString());
-        S.SystemDialogInput.setEvaluator(new SystemDialogInput());
+      if (!Config.FUZZY_PARSER) {
+        if (Config.FILESYSTEM_ENABLED) {
+          S.Button.setEvaluator(new Button());
+          S.DefaultButton.setEvaluator(new DefaultButton());
+          S.Dynamic.setEvaluator(new Dynamic());
+          S.CancelButton.setEvaluator(new CancelButton());
+          S.DialogInput.setEvaluator(new DialogInput());
+          S.DialogReturn.setEvaluator(new DialogReturn());
+          S.Input.setEvaluator(new Input());
+          S.InputString.setEvaluator(new InputString());
+          S.SystemDialogInput.setEvaluator(new SystemDialogInput());
+        }
       }
     }
   }

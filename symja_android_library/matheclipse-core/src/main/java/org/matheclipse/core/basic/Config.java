@@ -2,6 +2,7 @@ package org.matheclipse.core.basic;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.net.URLClassLoader;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.Properties;
@@ -783,6 +784,9 @@ public class Config {
 
   /** Global switch to make all symbols unprotected if set to {@link ISymbol#NOATTRIBUTE} */
   public static int BUILTIN_PROTECTED = ISymbol.PROTECTED;
+
+  /** Global dynamic classloader */
+  public static URLClassLoader URL_CLASS_LOADER = null;
 
   public static void setScriptCommandLine(final String[] args) {
     IASTAppendable commandLine = F.ListAlloc(args.length + 1);

@@ -1,10 +1,18 @@
 package org.matheclipse.core.builtin;
 
+import java.awt.Dimension;
+import java.io.File;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
 import java.lang.reflect.Parameter;
+import java.net.MalformedURLException;
+import java.net.URL;
+import java.net.URLClassLoader;
+
+import javax.swing.JFrame;
+import javax.swing.SwingUtilities;
 
 import org.matheclipse.core.basic.Config;
 import org.matheclipse.core.convert.Object2Expr;
@@ -32,6 +40,7 @@ public class JavaFunctions {
     private static void init() {
       if (!Config.FUZZY_PARSER) {
         if (!FEConfig.PARSER_USE_LOWERCASE_SYMBOLS) {
+          S.AddToClassPath.setEvaluator(new AddToClassPath());
           S.InstanceOf.setEvaluator(new InstanceOf());
           S.JavaNew.setEvaluator(new JavaNew());
           S.JavaObject.setEvaluator(new JavaObject());
@@ -43,6 +52,41 @@ public class JavaFunctions {
     }
   }
 
+  private static class AddToClassPath extends AbstractEvaluator {
+
+    @Override
+    public IExpr evaluate(final IAST ast, EvalEngine engine) {
+      try {
+        if (Config.URL_CLASS_LOADER == null) {
+          Config.URL_CLASS_LOADER = (URLClassLoader) ClassLoader.getSystemClassLoader();
+        }
+        URLClassLoader child = Config.URL_CLASS_LOADER;
+        for (int i = 1; i < ast.size(); i++) {
+          IExpr arg = ast.get(i);
+          File file = null;
+          if (arg.isString()) {
+            String path = arg.toString();
+            file = new File(path);
+          }
+          if (file != null) {
+            child = new URLClassLoader(new URL[] {file.toURI().toURL()}, child);
+          }
+        }
+        if (child != null) {
+          Config.URL_CLASS_LOADER = child;
+        }
+      } catch (MalformedURLException ex) {
+        return IOFunctions.printMessage(ast.topHead(), ex, engine);
+      }
+      return F.NIL;
+    }
+
+    @Override
+    public int[] expectedArgSize(IAST ast) {
+      return ARGS_1_INFINITY;
+    }
+  }
+
   private static class InstanceOf extends AbstractEvaluator {
 
     @Override
@@ -51,7 +95,10 @@ public class JavaFunctions {
       IExpr arg2 = ast.arg2();
       if (arg2.isString()) {
         try {
-          arg2 = JavaClassExpr.newInstance(arg2.toString());
+          if (Config.URL_CLASS_LOADER == null) {
+            Config.URL_CLASS_LOADER = (URLClassLoader) ClassLoader.getSystemClassLoader();
+          }
+          arg2 = JavaClassExpr.newInstance(arg2.toString(), Config.URL_CLASS_LOADER);
         } catch (ClassNotFoundException cnfex) {
           IOFunctions.printMessage(ast.topHead(), cnfex, engine);
           return F.False;
@@ -77,7 +124,10 @@ public class JavaFunctions {
         IExpr arg1 = ast.arg1();
         if (arg1.isString()) {
           try {
-            arg1 = JavaClassExpr.newInstance(arg1.toString());
+            if (Config.URL_CLASS_LOADER == null) {
+              Config.URL_CLASS_LOADER = (URLClassLoader) ClassLoader.getSystemClassLoader();
+            }
+            arg1 = JavaClassExpr.newInstance(arg1.toString(), Config.URL_CLASS_LOADER);
           } catch (ClassNotFoundException cnfex) {
             return IOFunctions.printMessage(ast.topHead(), cnfex, engine);
           }
@@ -178,7 +228,10 @@ public class JavaFunctions {
         if (arg1.isString()) {
           try {
             String className = arg1.toString();
-            JavaClassExpr jClazz = JavaClassExpr.newInstance(className);
+            if (Config.URL_CLASS_LOADER == null) {
+              Config.URL_CLASS_LOADER = (URLClassLoader) ClassLoader.getSystemClassLoader();
+            }
+            JavaClassExpr jClazz = JavaClassExpr.newInstance(className, Config.URL_CLASS_LOADER);
             Class<?> clazz = jClazz.toData();
             int indx = className.lastIndexOf('.');
             if (indx > 0) {
