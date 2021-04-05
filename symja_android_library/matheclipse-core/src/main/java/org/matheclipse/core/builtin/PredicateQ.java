@@ -25,6 +25,7 @@ import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.interfaces.IExpr.COMPARE_TERNARY;
 import org.matheclipse.core.interfaces.IInteger;
 import org.matheclipse.core.interfaces.INumber;
+import org.matheclipse.core.interfaces.IPatternSequence;
 import org.matheclipse.core.interfaces.IPredicate;
 import org.matheclipse.core.interfaces.ISparseArray;
 import org.matheclipse.core.interfaces.IStringX;
@@ -482,30 +483,25 @@ public class PredicateQ {
 
     @Override
     public IExpr evaluate(IAST ast, EvalEngine engine) {
-      //      if (ast.isAST1()) {
-      //        ast = F.operatorForm1Append(ast);
-      //        if (!ast.isPresent()) {
-      //          return F.NIL;
-      //        }
-      //      }
       if (ast.size() == 3) {
         final IExpr arg1 = engine.evaluate(ast.arg1());
         final IExpr arg2 = engine.evalPattern(ast.arg2());
         if (arg2.isSymbol() || arg2.isNumber() || arg2.isString()) {
-          return F.bool(arg1.isFree(arg2, true));
+          return F.bool(!arg1.has(arg2, true));
         }
 
-        // final IPatternMatcher matcher = new PatternMatcherEvalEngine(arg2, engine);
-        final IPatternMatcher matcher = engine.evalPatternMatcher(arg2);
-        if (matcher.isRuleWithoutPatterns()) {
-          // special for FreeQ(), don't implemented in MemberQ()!
-          if (arg1.isOrderlessAST() && arg2.isOrderlessAST() && arg1.head().equals(arg2.head())) {
-            if (!isFreeOrderless((IAST) arg1, (IAST) arg1)) {
-              return S.False;
-            }
-          }
+        final IPatternMatcher matcher;
+        if (arg2.isOrderlessAST()) {
+          // append a BlankNullSequence[] to match the parts of an Orderless expression
+          IPatternSequence blankNullRest = F.$ps(null, true);
+          IASTAppendable newPattern = ((IAST) arg2).copyAppendable();
+          newPattern.append(blankNullRest);
+          matcher = engine.evalPatternMatcher(newPattern);
+        } else {
+          matcher = engine.evalPatternMatcher(arg2);
         }
-        return F.bool(arg1.isFree(matcher, true));
+
+        return F.bool(!arg1.has(matcher, true));
       }
       return F.NIL;
     }
