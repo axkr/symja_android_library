@@ -201,24 +201,27 @@ public abstract class IPatternMatcher
   public abstract boolean isRuleWithoutPatterns();
 
   /**
-   * Start pattern matching.
+   * Return <code>true</code> if the pattern-matchings left-hand-side matches the <code>expr</code>
+   * or if <code>Orderlesss</code> the pattern-matchings left-hand-side matches only a part of the
+   * <code>expr</code>.
    *
    * @param expr
    * @return <code>true</code> if the <code>expr</code> matches the pattern-matchings left-hand-side
    *     expression.
    */
   @Override
-  public abstract boolean test(IExpr expr) throws ThrowException ;
+  public abstract boolean test(IExpr expr) throws ThrowException;
 
   /**
-   * Start pattern matching. Initialize all patterns before matching.
+   * Return <code>true</code> if the the pattern-matchings left-hand-side matches the <code>expr
+   * </code>.
    *
    * @param expr
    * @param engine
    * @return <code>true</code> if the <code>expr</code> matches the pattern-matchings left-hand-side
    *     expression.
    */
-  public abstract boolean test(IExpr expr, EvalEngine engine) throws ThrowException ;
+  public abstract boolean test(IExpr expr, EvalEngine engine) throws ThrowException;
 
   /**
    * Start pattern matching. Initialize only <code>Blank...()</code> patterns (without assigned

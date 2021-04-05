@@ -888,7 +888,7 @@ public interface IExpr
   default boolean has(Predicate<IExpr> predicate, boolean heads) {
     return predicate.test(this);
   }
-
+  
   /**
    * Returns <code>false</code>, if <b>all of the elements</b> in the subexpressions or the
    * expression itself, aren't a symbolic or numerical complex number or a structure with complex
@@ -1867,6 +1867,19 @@ public interface IExpr
     return !matcher.test(this);
   }
 
+  /**
+   * Returns <code>true</code>, if <b>all of the elements</b> in the subexpressions or the
+   * expression itself, did not satisfy the given unary predicate.
+   *
+   * @param predicate a unary predicate
+   * @param heads if set to <code>false</code>, only the arguments of an IAST should be tested and
+   *     not the <code>Head[]</code> element.
+   * @return
+   */
+  default boolean isFree(IPatternMatcher predicate, boolean heads) {
+    return !predicate.test(this);
+  }
+  
   /**
    * Returns <code>true</code>, if <b>all of the elements</b> in the subexpressions or the
    * expression itself, did not satisfy the given unary predicate.

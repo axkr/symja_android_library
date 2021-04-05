@@ -1212,7 +1212,7 @@ public interface IPatternMap {
     public IExpr getValue(IPatternObject pattern) {
       ISymbol sym = pattern.getSymbol();
       if (sym != null) {
-        return val(sym);
+        return getSymbolValue(sym);
       }
       IExpr temp = pattern;
 
@@ -1226,7 +1226,7 @@ public interface IPatternMap {
      * @param symbol the symbol
      * @return <code>null</code> if no matched expression exists
      */
-    public final IExpr val(ISymbol symbol) {
+    private final IExpr getSymbolValue(ISymbol symbol) {
       int indx = get(symbol);
       return indx >= 0 ? fSymbolsOrPatternValues[indx] : null;
     }
@@ -1888,6 +1888,14 @@ public interface IPatternMap {
     return lhsPatternExpr;
   }
 
+  /**
+   * Substitute all already find matchings in <code>lhsPatternExpr</code> and return the new pattern
+   * expression.
+   *
+   * @param lhsPatternExpr
+   * @param onlyNamedPatterns
+   * @return {@link F#NIL} if no substitution can be found.
+   */
   default IExpr substituteASTPatternOrSymbols(
       final IAST lhsPatternExpr, boolean onlyNamedPatterns) {
     VisitorReplaceAllWithPatternFlags visitor =

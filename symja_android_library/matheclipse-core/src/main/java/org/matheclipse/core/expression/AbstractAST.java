@@ -3250,6 +3250,12 @@ public abstract class AbstractAST implements IASTMutable {
 
   /** {@inheritDoc} */
   @Override
+  public final boolean isFree(IPatternMatcher predicate, boolean heads) {
+    return !has(predicate, heads);
+  }
+
+  /** {@inheritDoc} */
+  @Override
   public final boolean isFree(Predicate<IExpr> predicate, boolean heads) {
     return !has(predicate, heads);
   }
