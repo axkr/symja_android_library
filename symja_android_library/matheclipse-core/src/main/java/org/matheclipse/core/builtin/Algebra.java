@@ -52,6 +52,7 @@ import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.interfaces.IFraction;
 import org.matheclipse.core.interfaces.IInteger;
 import org.matheclipse.core.interfaces.INumber;
+import org.matheclipse.core.interfaces.IPatternSequence;
 import org.matheclipse.core.interfaces.IRational;
 import org.matheclipse.core.interfaces.ISignedNumber;
 import org.matheclipse.core.interfaces.ISymbol;
@@ -912,6 +913,15 @@ public class Algebra {
       return F.NIL;
     }
 
+    private static IExpr getRest(
+        IPatternMatcher matcher, IPatternSequence blankNullRest, IExpr defaultValue) {
+      IExpr rest = matcher.getPatternMap().getValue(blankNullRest);
+      if (rest != null) {
+        return rest;
+      }
+      return defaultValue;
+    }
+    
     /**
      * Collect terms in <code>expr</code> containing the same power expressions of <code>x</code>.
      *
@@ -938,9 +948,23 @@ public class Algebra {
         IAST poly = (IAST) expr;
         IASTAppendable rest = F.PlusAlloc(poly.size());
 
-        // IPatternMatcher matcher = new PatternMatcherEvalEngine(x, engine);
-        final IPatternMatcher matcher = engine.evalPatternMatcher(x);
-        collectToMap(poly, matcher, map, rest);
+        if (x.isTimes()) {
+          // append a BlankNullSequence[] to match the parts of an Orderless expression into a
+          // "rest" variable
+          IPatternSequence blankNullRest =
+              F.$ps(F.Dummy("§rest§" + engine.incModuleCounter()), true);
+          IASTAppendable newLHS = ((IAST) x).copyAppendable();
+          newLHS.append(blankNullRest);
+          final IPatternMatcher matcher = engine.evalPatternMatcher(newLHS);
+
+          collectTimesToMap(x, poly, matcher, map, rest, blankNullRest);
+
+        } else {
+          final IPatternMatcher matcher = engine.evalPatternMatcher(x);
+
+          collectToMap(x, poly, matcher, map, rest);
+        }
+
         if (listOfVariables != null && listPosition < listOfVariables.size()) {
           // collect next pattern in sub-expressions
           IASTAppendable result = F.PlusAlloc(map.size() + 1);
@@ -967,7 +991,6 @@ public class Algebra {
           }
           return result;
         }
-
         if (head != null) {
           IASTMutable simplifyAST = F.unaryAST1(head, null);
           IExpr coefficient;
@@ -1000,8 +1023,79 @@ public class Algebra {
       return expr;
     }
 
+    public void collectTimesToMap(
+        final IExpr key,
+        IExpr expr,
+        IPatternMatcher matcher,
+        Map<IExpr, IASTAppendable> map,
+        IASTAppendable rest,
+        IPatternSequence blankNullRest) {
+      if (expr.isFree(matcher, false)) {
+        rest.append(expr);
+        return;
+      } else if (matcher.test(expr)) {
+        addPowerFactor(expr, getRest(matcher, blankNullRest, F.C1), map);
+        return;
+      } else if (blankNullRest == null && isPowerMatched(expr, matcher)) {
+        addPowerFactor(expr, F.C1, map);
+        return;
+      } else if (expr.isPlus()) {
+        IAST plusAST = (IAST) expr;
+        IASTAppendable clone = plusAST.copyAppendable();
+        int i = 1;
+        while (i < clone.size()) {
+          if (collectTimesToMapPlus(key, clone.get(i), matcher, map, blankNullRest)) {
+            clone.remove(i);
+          } else {
+            i++;
+          }
+        }
+        if (clone.size() > 1) {
+          rest.appendOneIdentity(clone);
+        }
+        return;
+      } else if (blankNullRest == null && expr.isTimes()) {
+        IAST timesAST = (IAST) expr;
+        if (timesAST.exists(
+            (x, i) -> {
+              if (matcher.test(x) || isPowerMatched(x, matcher)) {
+                IASTAppendable clone = timesAST.copyAppendable();
+                clone.remove(i);
+                addOneIdentityPowerFactor(x, clone, map);
+                return true;
+              }
+              return false;
+            },
+            1)) {
+          return;
+        }
+        rest.append(expr);
+        return;
+      }
+      rest.append(expr);
+    }
+
+    public boolean collectTimesToMapPlus(
+        final IExpr key,
+        IExpr expr,
+        IPatternMatcher matcher,
+        Map<IExpr, IASTAppendable> map,
+        IPatternSequence blankNullRest) {
+      if (expr.isFree(matcher, false)) {
+        return false;
+      } else if (matcher.test(expr)) {
+        addPowerFactor(key, getRest(matcher, blankNullRest, F.C0), map);
+        return true;
+      }
+      return false;
+    }
+
     public void collectToMap(
-        IExpr expr, IPatternMatcher matcher, Map<IExpr, IASTAppendable> map, IASTAppendable rest) {
+        final IExpr key,
+        IExpr expr,
+        IPatternMatcher matcher,
+        Map<IExpr, IASTAppendable> map,
+        IASTAppendable rest) {
       if (expr.isFree(matcher, false)) {
         rest.append(expr);
         return;
@@ -1016,7 +1110,7 @@ public class Algebra {
         IASTAppendable clone = plusAST.copyAppendable();
         int i = 1;
         while (i < clone.size()) {
-          if (collectToMapPlus(clone.get(i), matcher, map)) {
+          if (collectToMapPlus(key, clone.get(i), matcher, map)) {
             clone.remove(i);
           } else {
             i++;
@@ -1048,7 +1142,7 @@ public class Algebra {
     }
 
     public boolean collectToMapPlus(
-        IExpr expr, IPatternMatcher matcher, Map<IExpr, IASTAppendable> map) {
+        final IExpr key, IExpr expr, IPatternMatcher matcher, Map<IExpr, IASTAppendable> map) {
       if (expr.isFree(matcher, false)) {
         return false;
       } else if (matcher.test(expr)) {
