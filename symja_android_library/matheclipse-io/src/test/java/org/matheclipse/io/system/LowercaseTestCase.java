@@ -4538,6 +4538,9 @@ public class LowercaseTestCase extends AbstractTestCase {
 
   public void testCollect() {
     check(
+        "Collect(a*x*Log(x)+ b*(x*Log(x)), x*Log(x))", //
+        "(a+b)*x*Log(x)");
+    check(
         "Collect(e+f*x, {})", //
         "e+f*x");
     check(
@@ -4546,6 +4549,9 @@ public class LowercaseTestCase extends AbstractTestCase {
     check(
         "Collect(e+f*x, x)", //
         "e+f*x");
+    check(
+            "Collect((1 + a + x)^4, x)", //
+            "1+4*a+6*a^2+4*a^3+a^4+(4+12*a+12*a^2+4*a^3)*x+(6+12*a+6*a^2)*x^2+(4+4*a)*x^3+x^4");
     check(
         "Collect((1 + a + x)^4, x, Simplify)", //
         "(1+a)^4+4*(1+a)^3*x+6*(1+a)^2*x^2+4*(1+a)*x^3+x^4");
@@ -12939,6 +12945,12 @@ public class LowercaseTestCase extends AbstractTestCase {
 
   public void testFreeQ() {
     // see notes for MemberQ
+    check(
+        "FreeQ(a*x*Log(x), x*Log(x))", //
+        "False");
+    check(
+        "FreeQ(a*x*Log(x)+ b*(x*Log(x)),  x*Log(x))", //
+        "False");
     check(
         "FreeQ(Sin(x*y),Sin)", //
         "False");
@@ -28024,6 +28036,9 @@ public class LowercaseTestCase extends AbstractTestCase {
   public void testQuantity() {
     if (ToggleFeature.QUANTITY) {
       check(
+          "Quantity(\"StandardAccelerationOfGravity\")", //
+          "1[StandardAccelerationOfGravity]");
+      check(
           "1+(3+Quantity(1.2,\"m\"))", //
           "4+1.2[m]");
       //      check(
@@ -37056,6 +37071,9 @@ public class LowercaseTestCase extends AbstractTestCase {
 
   public void testUnitConvert() {
     if (ToggleFeature.QUANTITY) {
+      check(
+          "UnitConvert(Quantity(\"StandardAccelerationOfGravity\"),\"m/s^2\")", //
+          "196133/20000[m*s^-2]");
       check(
           "UnitConvert(Quantity(111, \"cm\"),\"m\" )", //
           "111/100[m]");
