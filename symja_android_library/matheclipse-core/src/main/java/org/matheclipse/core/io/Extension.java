@@ -22,6 +22,8 @@ public enum Extension {
   GZ, //
   /** compressed, lossy image format */
   JPG, //
+  /** JSON */
+  JSON, //
   /** MATLAB m file */
   M, //
   /** compressed image format with alpha channel */
@@ -62,6 +64,9 @@ public enum Extension {
         if (ucExtension.equals("DATA")) {
           return DAT;
         }
+        if (ucExtension.equals("ExpressionJSON")) {
+          return JSON;
+        }
         return valueOf(ucExtension);
       }
     } catch (RuntimeException rex) {
@@ -79,6 +84,9 @@ public enum Extension {
    */
   public static Extension exportExtension(String extensionString) {
     try {
+      if (extensionString.equals("ExpressionJSON")) {
+        return JSON;
+      }
       String ucExtension = extensionString.toUpperCase();
       if (ucExtension.equals("DATA")) {
         return DAT;

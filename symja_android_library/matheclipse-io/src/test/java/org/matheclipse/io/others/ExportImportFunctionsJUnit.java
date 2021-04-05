@@ -40,14 +40,14 @@ public class ExportImportFunctionsJUnit extends AbstractTestCase {
         check(
             "ExportString(gr, \"GraphML\")", //
             "<?xml version=\"1.0\" encoding=\"UTF-8\"?><graphml xmlns=\"http://graphml.graphdrawing.org/xmlns\" xsi:schemaLocation=\"http://graphml.graphdrawing.org/xmlns http://graphml.graphdrawing.org/xmlns/1.0/graphml.xsd\" xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\">\r\n"
-                + "    <graph edgedefault=\"directed\">\r\n"
-                + "        <node id=\"1\"/>\r\n"
-                + "        <node id=\"2\"/>\r\n"
-                + "        <node id=\"3\"/>\r\n"
-                + "        <edge source=\"1\" target=\"2\"/>\r\n"
-                + "        <edge source=\"2\" target=\"3\"/>\r\n"
-                + "        <edge source=\"3\" target=\"1\"/>\r\n"
-                + "    </graph>\r\n"
+                + "<graph edgedefault=\"directed\">\r\n"
+                + "<node id=\"1\"/>\r\n"
+                + "<node id=\"2\"/>\r\n"
+                + "<node id=\"3\"/>\r\n"
+                + "<edge source=\"1\" target=\"2\"/>\r\n"
+                + "<edge source=\"2\" target=\"3\"/>\r\n"
+                + "<edge source=\"3\" target=\"1\"/>\r\n"
+                + "</graph>\r\n"
                 + "</graphml>\r\n"
                 + "");
         System.out.println(".");
@@ -75,6 +75,42 @@ public class ExportImportFunctionsJUnit extends AbstractTestCase {
             "63/256*x-63/256*Cos(x)*Sin(x)-21/128*Cos(x)*Sin(x)^3-21/160*Cos(x)*Sin(x)^5-9/80*Cos(x)*Sin(x)^\n" //
                 + "7-1/10*Cos(x)*Sin(x)^9");
         System.out.println(".");
+      }
+    }
+  }
+
+  public void testExportStringList() {
+    if (Config.FILESYSTEM_ENABLED) {
+      String s = System.getProperty("os.name");
+      if (s.contains("Windows")) {
+        check(
+            "ExportString[{1, 2, 3}, \"ExpressionJSON\"]", //
+            "[\"List\",\"1\",\"2\",\"3\"]");
+      }
+    }
+  }
+
+  public void testExportStringComplex() {
+    if (Config.FILESYSTEM_ENABLED) {
+      String s = System.getProperty("os.name");
+      if (s.contains("Windows")) {
+        check(
+            "ExportString[{2.1+I*3.4}, \"ExpressionJSON\"]", //
+            "[\"List\",[\"Complex\",2.1,3.4]]");
+      }
+    }
+  }
+
+  public void testExportStringAssociation() {
+    if (Config.FILESYSTEM_ENABLED) {
+      String s = System.getProperty("os.name");
+      if (s.contains("Windows")) {
+        check(
+            "ExportString(<|\"PlanckConstant\" -> 6.626070040*10^-34, \"AvogadroConstant\" -> 6.02214*10^23, \"Pi\" -> N[Pi, 20]|>, \"ExpressionJSON\")", //
+            "[\"Association\",[\"Rule\",\"'PlanckConstant'\",6.62607004E-34],[\"Rule\",\"'AvogadroConstant'\",6.022139999999999E23],[\"Rule\",\"'Pi'\",3.1415926535897927]]");
+        check(
+            "ExportString(<|\"x\" -> 1, \"y\" -> 2, \"z\" -> 3|>, \"ExpressionJSON\")", //
+            "[\"Association\",[\"Rule\",\"'x'\",\"1\"],[\"Rule\",\"'y'\",\"2\"],[\"Rule\",\"'z'\",\"3\"]]");
       }
     }
   }
