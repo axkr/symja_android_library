@@ -144,19 +144,19 @@ public class QuarticSolver {
    * @return
    */
   public static IASTAppendable quarticSolve(IExpr a, IExpr b, IExpr c, IExpr d, IExpr e) {
-    if (a.isPossibleZero(true)) {
+    if (a.isPossibleZero(false)) {
       return cubicSolve(b, c, d, e, null);
     } else {
-      if (e.isPossibleZero(true)) {
+      if (e.isPossibleZero(false)) {
         return cubicSolve(a, b, c, d, C0);
       }
-      if (b.isPossibleZero(true) && d.isPossibleZero(true)) {
+      if (b.isPossibleZero(false) && d.isPossibleZero(false)) {
         return biQuadraticSolve(a, c, e, null);
       }
       IExpr temp = a.subtract(e);
-      if (temp.isPossibleZero(true)) {
+      if (temp.isPossibleZero(false)) {
         temp = b.subtract(d);
-        if (temp.isPossibleZero(true)) {
+        if (temp.isPossibleZero(false)) {
           return quasiSymmetricQuarticSolve(a, b, c);
         }
       }
@@ -504,10 +504,10 @@ public class QuarticSolver {
    */
   public static IASTAppendable cubicSolve(
       IExpr a, IExpr b, IExpr c, IExpr d, IExpr additionalSulution) {
-    if (a.isPossibleZero(true)) {
+    if (a.isPossibleZero(false)) {
       return quadraticSolve(b, c, d, additionalSulution, null);
     } else {
-      if (d.isPossibleZero(true)) {
+      if (d.isPossibleZero(false)) {
         return quadraticSolve(a, b, c, additionalSulution, C0);
       }
       IASTAppendable result = F.ListAlloc(4);
@@ -538,8 +538,8 @@ public class QuarticSolver {
       IExpr delta3 = F.eval(Power(argDelta3, C1D3));
 
       // IExpr C = F.eval(Times(ZZ(-27L), a.power(C2), discriminant));
-      if (discriminant.isPossibleZero(true)) {
-        if (delta0.isPossibleZero(true)) {
+      if (discriminant.isPossibleZero(false)) {
+        if (delta0.isPossibleZero(false)) {
           // the three roots are equal
           // (-b)/(3*a)
           result.append(Times(CN1, b, Power(Times(C3, a), CN1)));
@@ -669,14 +669,14 @@ public class QuarticSolver {
     if (solution2 != null) {
       result.append(solution2);
     }
-    if (!a.isPossibleZero(true)) {
-      if (c.isPossibleZero(true)) {
+    if (!a.isPossibleZero(false)) {
+      if (c.isPossibleZero(false)) {
         result.append(F.C0);
         if (!b.isZero()) {
           result.append(F.Times(F.CN1, b, Power(a, -1L)));
         }
       } else {
-        if (b.isPossibleZero(true)) {
+        if (b.isPossibleZero(false)) {
           // a*x^2 + c == 0
           IExpr rhs = S.Divide.of(F.Negate(c), a);
           IExpr negExpr = AbstractFunctionEvaluator.getNormalizedNegativeExpression(rhs);
@@ -700,7 +700,7 @@ public class QuarticSolver {
         return result;
       }
     } else {
-      if (!b.isPossibleZero(true)) {
+      if (!b.isPossibleZero(false)) {
         result.append(Times(CN1, c, Power(b, -1L)));
       }
     }

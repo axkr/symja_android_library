@@ -888,7 +888,7 @@ public interface IExpr
   default boolean has(Predicate<IExpr> predicate, boolean heads) {
     return predicate.test(this);
   }
-  
+
   /**
    * Returns <code>false</code>, if <b>all of the elements</b> in the subexpressions or the
    * expression itself, aren't a symbolic or numerical complex number or a structure with complex
@@ -1863,8 +1863,17 @@ public interface IExpr
     if (pattern.isSymbol() || pattern.isNumber() || pattern.isString()) {
       return isFree(x -> x.equals(pattern), heads);
     }
-    final IPatternMatcher matcher = new PatternMatcher(pattern);
-    return !matcher.test(this);
+    final IPatternMatcher matcher;
+    if (pattern.isOrderlessAST() && pattern.isFreeOfPatterns()) {
+      // append a BlankNullSequence[] to match the parts of an Orderless expression
+      IPatternSequence blankNullRest = F.$ps(null, true);
+      IASTAppendable newPattern = ((IAST) pattern).copyAppendable();
+      newPattern.append(blankNullRest);
+      matcher = new PatternMatcher(newPattern);
+    } else {
+      matcher = new PatternMatcher(pattern);
+    }
+    return !has(matcher, heads);
   }
 
   /**
@@ -1879,7 +1888,7 @@ public interface IExpr
   default boolean isFree(IPatternMatcher predicate, boolean heads) {
     return !predicate.test(this);
   }
-  
+
   /**
    * Returns <code>true</code>, if <b>all of the elements</b> in the subexpressions or the
    * expression itself, did not satisfy the given unary predicate.
@@ -3512,7 +3521,8 @@ public interface IExpr
     if (isNumber()) {
       return isZero();
     }
-    return isAST() && PredicateQ.isZeroTogether(this, EvalEngine.get());
+    return isAST() &&  PredicateQ.isPossibleZeroQ((IAST) this, false, EvalEngine.get());
+     // PredicateQ.isZeroTogether(this, EvalEngine.get());
   }
 
   /**

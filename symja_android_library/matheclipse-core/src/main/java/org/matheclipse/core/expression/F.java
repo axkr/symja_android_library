@@ -1178,7 +1178,7 @@ public class F extends S {
   }
 
   /**
-   * Create a pattern for pattern-matching and term rewriting
+   * Create a new PatternSequence <code>BlankSequence</code>.
    *
    * @param symbol
    * @return IPattern
@@ -1188,8 +1188,11 @@ public class F extends S {
   }
 
   /**
-   * @param symbol
-   * @param zeroArgsAllowed if <code>true</code> 0 argument sequences are allowed for this pattern
+   * Create a new PatternSequence <code>BlankSequence</code> or <code>BlankNullSequence</code>.
+   *
+   * @param symbol the associated symbol of the pattern sequence. Maybe <code>null</code>.
+   * @param zeroArgsAllowed if <code>true</code>, 0 arguments are allowed, otherwise the number of
+   *     args has to be >= 1.
    * @return
    */
   public static IPatternSequence $ps(final ISymbol symbol, boolean zeroArgsAllowed) {
@@ -1197,18 +1200,18 @@ public class F extends S {
   }
 
   /**
-   * Create a pattern for pattern-matching and term rewriting
+   * Create a new PatternSequence <code>BlankSequence</code> or <code>BlankNullSequence</code>.
    *
-   * @param symbol
-   * @param check additional condition which should be checked in pattern-matching
-   * @return IPattern
+   * @param symbol the associated symbol of the pattern sequence. Maybe <code>null</code>.
+   * @param check a header check.Maybe <code>null</code>.
+   * @return IPatternSequence
    */
   public static IPatternSequence $ps(final ISymbol symbol, final IExpr check) {
     return PatternSequence.valueOf(symbol, check, false);
   }
 
   /**
-   * Create a pattern for pattern-matching and term rewriting
+   * Create a new PatternSequence <code>BlankSequence</code> or <code>BlankNullSequence</code>.
    *
    * @param symbol
    * @param check additional condition which should be checked in pattern-matching
@@ -1911,9 +1914,9 @@ public class F extends S {
   }
 
   /**
-   * Create a new abstract syntax tree (AST).
+   * Create a new function expression (AST - abstract syntax tree).
    *
-   * @param arr
+   * @param arr an array of arguments for this function expression
    * @param head the header expression of the function. If the ast represents a function like <code>
    *     f[x,y], Sin[x],...</code>, the <code>head</code> will be an instance of type ISymbol.
    * @return
@@ -1922,14 +1925,42 @@ public class F extends S {
     return new AST(head, arr);
   }
 
+  /**
+   * Create a new function expression (AST - abstract syntax tree), where all arguments are Java
+   * <code>int</code> values.
+   *
+   * @param head the header expression of the function. If the ast represents a function like <code>
+   *     f[x,y], Sin[x],...</code>, the <code>head</code> will be an instance of type ISymbol.
+   * @param arr the integer arguments of the function expression
+   * @return
+   */
   public static IASTAppendable ast(final ISymbol head, final int[] arr) {
     return AST.newInstance(head, arr);
   }
 
+  /**
+   * Create a new function expression (AST - abstract syntax tree), where all arguments are Java
+   * <code>org.hipparchus.complex.Complex</code> values.
+   *
+   * @param head the header expression of the function. If the ast represents a function like <code>
+   *     f[x,y], Sin[x],...</code>, the <code>head</code> will be an instance of type ISymbol.
+   * @param arr the <code>org.hipparchus.complex.Complex</code> arguments of the function expression
+   * @return
+   */
   public static IASTAppendable ast(final ISymbol head, final org.hipparchus.complex.Complex[] arr) {
     return AST.newInstance(head, false, arr);
   }
 
+  /**
+   * Create a new function expression (AST - abstract syntax tree), where all arguments are Java
+   * {@link ComplexNum} values.
+   *
+   * @param head
+   * @param evalComplex if <code>true</code> test if the imaginary part of the complex number is
+   *     zero and insert a {@link Num} real value.
+   * @param arr the complex number arguments
+   * @return
+   */
   public static IASTAppendable ast(
       final ISymbol head, boolean evalComplex, org.hipparchus.complex.Complex[] arr) {
     return AST.newInstance(head, evalComplex, arr);

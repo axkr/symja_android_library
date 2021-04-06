@@ -6,7 +6,6 @@ import java.util.function.Predicate;
 import org.hipparchus.linear.FieldMatrix;
 import org.hipparchus.linear.FieldVector;
 import org.matheclipse.core.basic.Config;
-import org.matheclipse.core.builtin.Algebra.InternalFindCommonFactorPlus;
 import org.matheclipse.core.convert.Convert;
 import org.matheclipse.core.convert.VariablesSet;
 import org.matheclipse.core.eval.EvalEngine;
@@ -20,12 +19,10 @@ import org.matheclipse.core.expression.ID;
 import org.matheclipse.core.expression.S;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IASTAppendable;
-import org.matheclipse.core.interfaces.IComplexNum;
 import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.interfaces.IExpr.COMPARE_TERNARY;
 import org.matheclipse.core.interfaces.IInteger;
 import org.matheclipse.core.interfaces.INumber;
-import org.matheclipse.core.interfaces.IPatternSequence;
 import org.matheclipse.core.interfaces.IPredicate;
 import org.matheclipse.core.interfaces.ISparseArray;
 import org.matheclipse.core.interfaces.IStringX;
@@ -455,53 +452,38 @@ public class PredicateQ {
      *     orderless2.size()</code> and if every argument in <code>orderless2</code> equals an
      *     argument in <code>orderless1</code>
      */
-    private static boolean isFreeOrderless(IAST orderless1, IAST orderless2) {
-      if (orderless1.size() >= orderless2.size()) {
-        IExpr temp;
-        boolean evaled = false;
-        int[] array = new int[orderless1.size()];
-        for (int i = 1; i < orderless2.size(); i++) {
-          temp = orderless2.get(i);
-          evaled = false;
-          for (int j = 1; j < orderless1.size(); j++) {
-            if (array[j] != (-1) && temp.equals(orderless1.get(j))) {
-              array[j] = -1;
-              evaled = true;
-              break;
-            }
-          }
-          if (!evaled) {
-            break;
-          }
-        }
-        if (evaled) {
-          return false;
-        }
-      }
-      return true;
-    }
+    //    private static boolean isFreeOrderless(IAST orderless1, IAST orderless2) {
+    //      if (orderless1.size() >= orderless2.size()) {
+    //        IExpr temp;
+    //        boolean evaled = false;
+    //        int[] array = new int[orderless1.size()];
+    //        for (int i = 1; i < orderless2.size(); i++) {
+    //          temp = orderless2.get(i);
+    //          evaled = false;
+    //          for (int j = 1; j < orderless1.size(); j++) {
+    //            if (array[j] != (-1) && temp.equals(orderless1.get(j))) {
+    //              array[j] = -1;
+    //              evaled = true;
+    //              break;
+    //            }
+    //          }
+    //          if (!evaled) {
+    //            break;
+    //          }
+    //        }
+    //        if (evaled) {
+    //          return false;
+    //        }
+    //      }
+    //      return true;
+    //    }
 
     @Override
     public IExpr evaluate(IAST ast, EvalEngine engine) {
       if (ast.size() == 3) {
         final IExpr arg1 = engine.evaluate(ast.arg1());
         final IExpr arg2 = engine.evalPattern(ast.arg2());
-        if (arg2.isSymbol() || arg2.isNumber() || arg2.isString()) {
-          return F.bool(!arg1.has(arg2, true));
-        }
-
-        final IPatternMatcher matcher;
-        if (arg2.isOrderlessAST()) {
-          // append a BlankNullSequence[] to match the parts of an Orderless expression
-          IPatternSequence blankNullRest = F.$ps(null, true);
-          IASTAppendable newPattern = ((IAST) arg2).copyAppendable();
-          newPattern.append(blankNullRest);
-          matcher = engine.evalPatternMatcher(newPattern);
-        } else {
-          matcher = engine.evalPatternMatcher(arg2);
-        }
-
-        return F.bool(!arg1.has(matcher, true));
+        return F.bool(arg1.isFree(arg2, true));
       }
       return F.NIL;
     }
@@ -1489,23 +1471,32 @@ public class PredicateQ {
     }
   }
 
-  public static boolean isZeroTogether(IExpr expr, EvalEngine engine) {
-    expr = F.expandAll(expr, true, true);
-    expr = engine.evaluate(expr);
-    if (expr.isZero()) {
-      return true;
-    }
+  private static boolean isZeroTogether(IExpr expr, EvalEngine engine) {
+    //    expr = F.expandAll(expr, true, true);
+    //    expr = engine.evaluate(expr);
+    //    if (expr.isZero()) {
+    //      return true;
+    //    }
     long leafCount = expr.leafCount();
     if (leafCount > Config.MAX_POSSIBLE_ZERO_LEAFCOUNT) {
       return false;
     }
     if (expr.isPlusTimesPower()) {
-      if (leafCount > (Config.MAX_POSSIBLE_ZERO_LEAFCOUNT / 5)) {
+      if (leafCount > (Config.MAX_POSSIBLE_ZERO_LEAFCOUNT / 3)) {
         return false;
       }
-      expr = S.Together.of(engine, expr);
+      expr = engine.evaluate(F.Together(expr));
       if (expr.isNumber()) {
         return expr.isZero();
+      }
+      if (expr.isTimes()) {
+        IExpr denominator = engine.evaluate(F.Denominator(expr));
+        if (!denominator.isOne()) {
+          IExpr numerator = engine.evaluate(F.Numerator(expr));
+          if (numerator.isAST()) {
+            return isPossibleZeroQ((IAST) numerator, false, engine);
+          }
+        }
       }
     }
     return false;
@@ -1516,107 +1507,61 @@ public class PredicateQ {
       VariablesSet varSet = new VariablesSet(function);
       IAST variables = varSet.getVarList();
 
+      if (function.leafCount() < Config.MAX_POSSIBLE_ZERO_LEAFCOUNT / 5) {
+        IExpr expr = F.TrigExpand.of(engine, function);
+        expr = F.expandAll(expr, true, true);
+        expr = engine.evaluate(expr);
+        if (!expr.isAST()) {
+          return expr.isZero();
+        }
+        function = (IAST) expr;
+      }
+
       if (variables.isEmpty()) {
         INumber num = function.isNumericFunction(true) ? function.evalNumber() : null;
         if (num == null
-            || !(F.isZero(num.reDoubleValue(), Config.DEFAULT_ROOTS_CHOP_DELTA)
-                && F.isZero(num.imDoubleValue(), Config.DEFAULT_ROOTS_CHOP_DELTA))) {
+            || !(F.isZero(num.reDoubleValue(), Config.SPECIAL_FUNCTIONS_TOLERANCE)
+                && F.isZero(num.imDoubleValue(), Config.SPECIAL_FUNCTIONS_TOLERANCE))) {
           return false;
         }
         return true;
-        //      } else if (variables.size() == 2) {
-        //        ThreadLocalRandom tlr = ThreadLocalRandom.current();
-        //        IExpr x = variables.arg1();
-        //        COMPARE_TERNARY possibeZero = isPossibeZero(function, x, 0.0, 1.0, engine);
-        //        int trueCounter = 0;
-        //        if (possibeZero == IExpr.COMPARE_TERNARY.FALSE) {
-        //          return false;
-        //        }
-        //        if (possibeZero == IExpr.COMPARE_TERNARY.TRUE) {
-        //          trueCounter++;
-        //        }
-        //        possibeZero = isPossibeZero(function, x, 0.0, -1.0, engine);
-        //        if (possibeZero == IExpr.COMPARE_TERNARY.FALSE) {
-        //          return false;
-        //        }
-        //        if (possibeZero == IExpr.COMPARE_TERNARY.TRUE) {
-        //          trueCounter++;
-        //        }
-        //        possibeZero = isPossibeZero(function, x, 1.0, 0.0, engine);
-        //        if (possibeZero == IExpr.COMPARE_TERNARY.FALSE) {
-        //          return false;
-        //        }
-        //        if (possibeZero == IExpr.COMPARE_TERNARY.TRUE) {
-        //          trueCounter++;
-        //        }
-        //        possibeZero = isPossibeZero(function, x, -1.0, 0.0, engine);
-        //        if (possibeZero == IExpr.COMPARE_TERNARY.FALSE) {
-        //          return false;
-        //        }
-        //        if (possibeZero == IExpr.COMPARE_TERNARY.TRUE) {
-        //          trueCounter++;
-        //        }
-        //        possibeZero = isPossibeZero(function, x, 0.0, 0.0, engine);
-        //        if (possibeZero == IExpr.COMPARE_TERNARY.FALSE) {
-        //          return false;
-        //        }
-        //        if (possibeZero == IExpr.COMPARE_TERNARY.TRUE) {
-        //          trueCounter++;
-        //        }
-        //        for (int i = 0; i < 32; i++) {
-        //          double re = tlr.nextDouble(-100.0, 100.0);
-        //          double im = tlr.nextDouble(-100.0, 100.0);
-        //          possibeZero = isPossibeZero(function, x, re, im, engine);
-        //          if (possibeZero == IExpr.COMPARE_TERNARY.FALSE) {
-        //            return false;
-        //          }
-        //          if (possibeZero == IExpr.COMPARE_TERNARY.TRUE) {
-        //            trueCounter++;
-        //          }
-        //        }
-        //        if (trueCounter > 24) {
-        //          return true;
-        //        }
-        //        if (fastTest) {
-        //          return false;
-        //        }
       } else {
         if (function.isNumericFunction(varSet)) {
-          if (function.isFreeAST(h -> specialNumericFunction(h)) && function.leafCount() < 50) {
+
+          if (function.isFreeAST(h -> specialNumericFunction(h))) {
             int trueCounter = 0;
 
             // 1. step test some special complex numeric values
             COMPARE_TERNARY possibeZero =
-                isPossibeZeroFixedValues(ComplexNum.ONE, function, variables, engine);
+                isPossibeZeroFixedValues(F.C0, function, variables, engine);
             if (possibeZero == IExpr.COMPARE_TERNARY.FALSE) {
               return false;
             }
             if (possibeZero == IExpr.COMPARE_TERNARY.TRUE) {
               trueCounter++;
             }
-            possibeZero =
-                isPossibeZeroFixedValues(ComplexNum.MINUS_ONE, function, variables, engine);
+            possibeZero = isPossibeZeroFixedValues(F.C1, function, variables, engine);
             if (possibeZero == IExpr.COMPARE_TERNARY.FALSE) {
               return false;
             }
             if (possibeZero == IExpr.COMPARE_TERNARY.TRUE) {
               trueCounter++;
             }
-            possibeZero = isPossibeZeroFixedValues(ComplexNum.NI, function, variables, engine);
+            possibeZero = isPossibeZeroFixedValues(F.CN1, function, variables, engine);
             if (possibeZero == IExpr.COMPARE_TERNARY.FALSE) {
               return false;
             }
             if (possibeZero == IExpr.COMPARE_TERNARY.TRUE) {
               trueCounter++;
             }
-            possibeZero = isPossibeZeroFixedValues(ComplexNum.I, function, variables, engine);
+            possibeZero = isPossibeZeroFixedValues(F.CI, function, variables, engine);
             if (possibeZero == IExpr.COMPARE_TERNARY.FALSE) {
               return false;
             }
             if (possibeZero == IExpr.COMPARE_TERNARY.TRUE) {
               trueCounter++;
             }
-            possibeZero = isPossibeZeroFixedValues(ComplexNum.ZERO, function, variables, engine);
+            possibeZero = isPossibeZeroFixedValues(F.CNI, function, variables, engine);
             if (possibeZero == IExpr.COMPARE_TERNARY.FALSE) {
               return false;
             }
@@ -1660,21 +1605,22 @@ public class PredicateQ {
         }
       }
 
-      if (function.isPlus()) {
-        IExpr[] commonFactors = InternalFindCommonFactorPlus.findCommonFactors(function, true);
-        if (commonFactors != null) {
-          temp = S.Simplify.of(engine, F.Times(commonFactors[0], commonFactors[1]));
-          if (temp.isNumber()) {
-            return temp.isZero();
-          }
-          temp = temp.evalNumber();
-          if (temp != null) {
-            if (temp.isZero()) {
-              return true;
-            }
-          }
-        }
-      }
+      //      if (function.isPlus()) {
+      //        IExpr[] commonFactors = InternalFindCommonFactorPlus.findCommonFactors(function,
+      // true);
+      //        if (commonFactors != null) {
+      //          temp = S.Simplify.of(engine, F.Times(commonFactors[0], commonFactors[1]));
+      //          if (temp.isNumber()) {
+      //            return temp.isZero();
+      //          }
+      //          temp = temp.evalNumber();
+      //          if (temp != null) {
+      //            if (temp.isZero()) {
+      //              return true;
+      //            }
+      //          }
+      //        }
+      //      }
 
       return isZeroTogether(function, engine);
     } catch (ValidateException ve) {
@@ -1696,7 +1642,7 @@ public class PredicateQ {
 
     return h == ID.AppellF1
         || h == ID.Clip
-        || h == ID.Cosh
+        //        || h == ID.Cosh
         || h == ID.Csch
         || h == ID.Cot
         || h == ID.Csc
@@ -1715,7 +1661,7 @@ public class PredicateQ {
         || h == ID.Piecewise
         // || h == ID.Power
         || h == ID.ProductLog
-        || h == ID.Sinh
+        //        || h == ID.Sinh
         || h == ID.StruveH
         || h == ID.StruveL
         || h == ID.Tan
@@ -1803,13 +1749,34 @@ public class PredicateQ {
   }
 
   private static IExpr.COMPARE_TERNARY isPossibeZeroFixedValues(
-      IComplexNum complexNumber, IAST function, IAST variables, EvalEngine engine) {
+      INumber number, IAST function, IAST variables, EvalEngine engine) {
     IASTAppendable listOfRules = F.ListAlloc(variables.size());
     for (int i = 1; i < variables.size(); i++) {
-      listOfRules.append(F.Rule(variables.get(i), complexNumber));
+      listOfRules.append(F.Rule(variables.get(i), number));
     }
     IExpr temp = function.replaceAll(listOfRules);
-    return isPossibleZeroApproximate(temp, engine);
+    return isPossibleZeroExact(temp, engine);
+  }
+
+  private static IExpr.COMPARE_TERNARY isPossibleZeroExact(IExpr temp, EvalEngine engine) {
+    try {
+      if (temp.isPresent()) {
+        IExpr result = engine.evalQuiet(temp);
+        if (result.isNumber()) {
+          return result.isZero() ? IExpr.COMPARE_TERNARY.TRUE : IExpr.COMPARE_TERNARY.FALSE;
+        }
+        if (result.isDirectedInfinity()) {
+          return IExpr.COMPARE_TERNARY.FALSE;
+        }
+
+        //        if (isZeroTogether(result, engine)) {
+        //          return IExpr.COMPARE_TERNARY.TRUE;
+        //        }
+      }
+    } catch (RuntimeException rex) {
+      //
+    }
+    return IExpr.COMPARE_TERNARY.UNDECIDABLE;
   }
 
   private static IExpr.COMPARE_TERNARY isPossibleZeroApproximate(IExpr temp, EvalEngine engine) {
@@ -1822,8 +1789,8 @@ public class PredicateQ {
         if (result.isNumber() && !result.isZero()) {
           double realPart = ((INumber) result).reDoubleValue();
           double imaginaryPart = ((INumber) result).imDoubleValue();
-          if (!(F.isZero(realPart, Config.DEFAULT_ROOTS_CHOP_DELTA)
-              && F.isZero(imaginaryPart, Config.DEFAULT_ROOTS_CHOP_DELTA))) {
+          if (!(F.isZero(realPart, Config.SPECIAL_FUNCTIONS_TOLERANCE)
+              && F.isZero(imaginaryPart, Config.SPECIAL_FUNCTIONS_TOLERANCE))) {
             if (Double.isNaN(realPart)
                 || Double.isNaN(imaginaryPart)
                 || Double.isInfinite(realPart)

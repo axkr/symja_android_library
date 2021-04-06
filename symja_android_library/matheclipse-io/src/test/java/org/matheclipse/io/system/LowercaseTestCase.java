@@ -4550,8 +4550,8 @@ public class LowercaseTestCase extends AbstractTestCase {
         "Collect(e+f*x, x)", //
         "e+f*x");
     check(
-            "Collect((1 + a + x)^4, x)", //
-            "1+4*a+6*a^2+4*a^3+a^4+(4+12*a+12*a^2+4*a^3)*x+(6+12*a+6*a^2)*x^2+(4+4*a)*x^3+x^4");
+        "Collect((1 + a + x)^4, x)", //
+        "1+4*a+6*a^2+4*a^3+a^4+(4+12*a+12*a^2+4*a^3)*x+(6+12*a+6*a^2)*x^2+(4+4*a)*x^3+x^4");
     check(
         "Collect((1 + a + x)^4, x, Simplify)", //
         "(1+a)^4+4*(1+a)^3*x+6*(1+a)^2*x^2+4*(1+a)*x^3+x^4");
@@ -25972,6 +25972,10 @@ public class LowercaseTestCase extends AbstractTestCase {
 
   public void testPolynomialQuotientRemainder() {
     check(
+        "PolynomialQuotientRemainder(1+b*x+x^2,-2147483648,x)", //
+        "{-1/2147483648-1/2147483648*b*x-x^2/2147483648,0}");
+
+    check(
         "PolynomialQuotientRemainder(x^2 + x + 1, Pi*x + 1, x)", //
         "{-1/Pi^2+1/Pi+x/Pi,1+1/Pi^2-1/Pi}");
     check(
@@ -26183,7 +26187,7 @@ public class LowercaseTestCase extends AbstractTestCase {
         "{False,True}");
   }
 
-  public void testPossibleZeroQ() { //
+  public void testPossibleZeroQ() {
     //    check(
     //        "(-99.12580575458303)*I", //
     //        "I*(-99.12581)");
@@ -26199,7 +26203,10 @@ public class LowercaseTestCase extends AbstractTestCase {
     //
     // "+1/8*Cos[95.78967105119972+I*(-99.12580575458303)]*Sin[95.78967105119972+I*(-99.12580575458303)]", //
     //        "2.27086*10^83+I*3.92378*10^84");
-
+//check(
+//        "PossibleZeroQ(((-Cosh(a+b*x)+Sinh(a+b*x))*(-b*Cosh(a+b*x)+b*Sinh(a+b*x)))/b+(-Cosh(a+b*x)+Sinh(a+b*x))/(Cosh(a+b*x)+Sinh(a+b*x)))", //
+//        "True");
+//     
     check(
         "-2.27086*10^83+I*(-3.92378*10^84)+2.27086*10^83+I*3.92378*10^84", //
         "0.0");
@@ -32553,9 +32560,8 @@ public class LowercaseTestCase extends AbstractTestCase {
   }
 
   public void testSolve() {
-
     // https://en.wikipedia.org/wiki/Lambert_W_function#Solving_equations
-    // TODO generate 2 solutons
+    // TODO generate 2 solutions
     check(
         "Solve(3^x==2*x+2, x)", //
         "{{x->-(Log(3)+ProductLog(-Log(3)/6))/Log(3)}}");
@@ -37126,9 +37132,19 @@ public class LowercaseTestCase extends AbstractTestCase {
   }
 
   public void testUnitize() {
-    check(
-        "Unitize({0, -1})", //
-        "{0,1}");
+    // Unitize uses PossibleZeroQ
+    //	  checkNumeric(
+    //		        "N((E + Pi)^2 )", //
+    //		        "34.33812894536713");
+    //	  checkNumeric(
+    //		        "N((E + Pi)*(E + Pi) )", //
+    //		        "34.33812894536713");
+    //	  checkNumeric(
+    //		        "N(-E^2 - Pi^2 - 2*E*Pi)", //
+    //		        "-34.33812894536714");
+    //	  check(
+    //		        "N((E + Pi)^2 - E^2 - Pi^2 - 2*E*Pi)", //
+    //		        "-7.10543*10^-15");
     check(
         "Unitize((E + Pi)^2 - E^2 - Pi^2 - 2*E*Pi)", //
         "0");
@@ -37138,6 +37154,10 @@ public class LowercaseTestCase extends AbstractTestCase {
     check(
         "Unitize(Sqrt(2) + Sqrt(3) - Sqrt(5 + 2*Sqrt(6)))", //
         "0");
+
+    check(
+        "Unitize({0, -1})", //
+        "{0,1}");
     check(
         "Unitize(0)", //
         "0");

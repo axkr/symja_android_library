@@ -3244,8 +3244,17 @@ public abstract class AbstractAST implements IASTMutable {
     if (pattern.isSymbol() || pattern.isNumber() || pattern.isString()) {
       return isFree(x -> x.equals(pattern), heads);
     }
-    final IPatternMatcher matcher = new PatternMatcherEvalEngine(pattern, EvalEngine.get());
-    return !has(matcher, heads);
+    final IPatternMatcher matcher;
+    if (pattern.isOrderlessAST() && pattern.isFreeOfPatterns()) {
+      // append a BlankNullSequence[] to match the parts of an Orderless expression
+      IPatternSequence blankNullRest = F.$ps(null, true);
+      IASTAppendable newPattern = ((IAST) pattern).copyAppendable();
+      newPattern.append(blankNullRest);
+      matcher = new PatternMatcher(newPattern);
+    } else {
+      matcher = new PatternMatcher(pattern);
+    }
+     return !has(matcher, heads);
   }
 
   /** {@inheritDoc} */
