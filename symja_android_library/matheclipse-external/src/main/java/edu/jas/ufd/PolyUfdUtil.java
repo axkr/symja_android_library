@@ -9,6 +9,8 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 import java.util.Map;
+import java.util.SortedMap;
+import java.util.TreeMap;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -42,6 +44,83 @@ public class PolyUfdUtil {
 
 
     private static final boolean debug = logger.isDebugEnabled();
+
+
+    /**
+     * Factors of Quotient rational function.
+     * @param A rational function to be factored.
+     * @return list of irreducible rational function parts.
+     */
+    public static <C extends GcdRingElem<C>> SortedMap<Quotient<C>, Long> factors(Quotient<C> A) {
+        SortedMap<Quotient<C>, Long> factors = new TreeMap<Quotient<C>, Long>();
+        if (A == null || A.isZERO()) {
+            return factors;
+        }
+        if (A.abs().isONE()) {
+            factors.put(A, 1L);
+            return factors;
+        }
+        QuotientRing<C> qfac = A.ring;
+        GenPolynomialRing<C> fac = qfac.ring;
+        FactorAbstract<C> eng = FactorFactory.<C> getImplementation(fac.coFac);
+        GenPolynomial<C> n = A.num;
+        SortedMap<GenPolynomial<C>, Long> numfactors = eng.factors(n);
+        for (Map.Entry<GenPolynomial<C>, Long> me : numfactors.entrySet()) {
+            GenPolynomial<C> f = me.getKey();
+            Long e = me.getValue();
+            Quotient<C> q = new Quotient<C>(qfac, f);
+            factors.put(q, e);
+        }
+        GenPolynomial<C> d = A.den;
+        if (d.isONE()) {
+            return factors;
+        }
+        GenPolynomial<C> one = fac.getONE();
+        SortedMap<GenPolynomial<C>, Long> denfactors = eng.factors(d);
+        for (Map.Entry<GenPolynomial<C>, Long> me : denfactors.entrySet()) {
+            GenPolynomial<C> f = me.getKey();
+            Long e = me.getValue();
+            Quotient<C> q = new Quotient<C>(qfac, one, f);
+            factors.put(q, e);
+        }
+        return factors;
+    }
+
+
+    /**
+     * Quotient is (squarefree) factorization.
+     * @param P Quotient.
+     * @param F = [p_1 -&gt; e_1, ..., p_k -&gt; e_k].
+     * @return true if P = prod_{i=1,...,k} p_i**e_i, else false.
+     */
+    public static <C extends GcdRingElem<C>> boolean isFactorization(Quotient<C> P,
+                    SortedMap<Quotient<C>, Long> F) {
+        if (P == null || F == null) {
+            throw new IllegalArgumentException("P and F may not be null");
+        }
+        if (P.isZERO() && F.size() == 0) {
+            return true;
+        }
+        Quotient<C> t = P.ring.getONE();
+        for (Map.Entry<Quotient<C>, Long> me : F.entrySet()) {
+            Quotient<C> f = me.getKey();
+            Long E = me.getValue();
+            long e = E.longValue();
+            Quotient<C> g = f.power(e);
+            t = t.multiply(g);
+        }
+        boolean f = P.equals(t) || P.equals(t.negate());
+        if (!f) {
+            P = P.monic();
+            t = t.monic();
+            f = P.equals(t) || P.equals(t.negate());
+            if (f) {
+                return f;
+            }
+            logger.info("no factorization(map): F = " + F + ", P = " + P + ", t = " + t);
+        }
+        return f;
+    }
 
 
     /**
