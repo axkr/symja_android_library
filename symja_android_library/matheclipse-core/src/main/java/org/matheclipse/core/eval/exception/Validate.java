@@ -590,7 +590,7 @@ public final class Validate {
 
   /**
    * Check if the argument at the given position is a list of symbols or <code>Set</code> and <code>SefDelayed</code>
-   * definitions from a local variable definition. 
+   * definitions from a local variable definition.
    *
    * @param ast
    * @param position the position which has to be a list of symbols
@@ -796,28 +796,36 @@ public final class Validate {
       for (int i = 1; i < eqns.size(); i++) {
         if (eqns.get(i).isAST2()) {
           IAST eq = (IAST) eqns.get(i);
-          termsEqualZeroList.append(checkEquationAndInequation(eq));
+          checkEquationAndInequation(eq, termsEqualZeroList);
         } else {
           // not an equation or inequation
           throw new ArgumentTypeException(
               "binary equation or inequation expression expected at position " + i);
         }
       }
-      return termsEqualZeroList;
+    } else {
+      termsEqualZeroList = F.ListAlloc();
+      checkEquationAndInequation(expr, termsEqualZeroList);
     }
-    return F.ListAlloc(checkEquationAndInequation(expr));
+    return termsEqualZeroList;
   }
 
-  private static IExpr checkEquationAndInequation(IExpr eq) {
+  private static void checkEquationAndInequation(IExpr eq, IASTAppendable termsEqualZeroList) {
     if (eq.isEqual()) {
       IAST equal = (IAST) eq;
       IExpr subtract = EvalEngine.get().evaluate(F.Subtract(equal.arg1(), equal.arg2()));
-      final IExpr[] arr =
-          new IExpr[] { //
-            subtract.isTimes() ? subtract : F.evalExpandAll(subtract), //
-            F.C0
-          };
-      return F.function(S.Equal, arr);
+      if (subtract.isList()) {
+        IAST list = (IAST) subtract;
+        IASTAppendable result = F.ListAlloc(list.size());
+        for (int i = 1; i < list.size(); i++) {
+          IExpr arg = list.get(i);
+          termsEqualZeroList.append(F.Equal(arg.isTimes() ? arg : F.evalExpandAll(arg), F.C0));
+        }
+        return;
+      }
+      termsEqualZeroList.append(
+          F.Equal(subtract.isTimes() ? subtract : F.evalExpandAll(subtract), F.C0));
+      return;
     }
     if (eq.isAST2()) {
       IAST equal = (IAST) eq;
@@ -832,12 +840,15 @@ public final class Validate {
             new IExpr[] {
               F.expandAll(equal.arg1(), true, true), F.expandAll(equal.arg2(), true, true)
             };
-        return F.ast(arr, head);
+        termsEqualZeroList.append(F.ast(arr, head));
+        return;
       }
     } else if (eq.isTrue()) {
-      return S.True;
+      termsEqualZeroList.append(S.True);
+      return;
     } else if (eq.isFalse()) {
-      return S.False;
+      termsEqualZeroList.append(S.False);
+      return;
     }
     // not an equation or inequation
     throw new ArgumentTypeException(
