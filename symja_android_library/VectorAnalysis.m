@@ -26,7 +26,7 @@ Unprotect[DotProduct, CrossProduct, ScalarTripleProduct,
 DotProduct::usage =
 "DotProduct[v1, v2] gives the dot product between v1 and v2 in three spatial
 dimensions. DotProduct[v1, v2, coordsys] gives the dot product of vectors v1
-and v2 in the specified coordinate system, coordsys.";
+and v2 in the specified coodrinate system, coordsys.";
 
 DotProduct[v1_?$IsVecQ, v2_?$IsVecQ, coordsys_:CoordinateSystem] :=
     Module[{c1, c2},
@@ -48,7 +48,7 @@ CrossProduct[v1_?$IsVecQ, v2_?$IsVecQ, coordsys_:CoordinateSystem] :=
     Module[{c1, c2},
     c1 = CoordinatesToCartesian[v1, coordsys];
     c2 = CoordinatesToCartesian[v2, coordsys];
-    CoordinatesFromCartesian[{Det[{{1,0,0}, c1, c2}], Det[{{0,1,0}, c1, c2}], Det[{{0,0,1}, c1, c2}]}]]
+    CoordinatesFromCartesian[Det[{IdentityMatrix[3], c1, c2}]]]
 
 Attributes[CrossProduct] = {ReadProtected, Protected};
 
@@ -116,7 +116,7 @@ Attributes[CoordinatesFromCartesian] = {ReadProtected, Protected};
   (* ============================ Coordinates ============================ *)
 
 Coordinates::usage =
-"Coordinates[] gives the default coordinate variables of the current coordinate
+"Coordinates[] gives the default cordinate variables of the current coordinate
 system. Coordinates[coordsys] gives the default coordinate variables of the
 specified coordinate system, coordsys.";
 
