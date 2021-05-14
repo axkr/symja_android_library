@@ -6,7 +6,21 @@ import org.matheclipse.core.interfaces.ISignedNumber;
 
 public interface IAssumptions {
 
-  public IAssumptions addAssumption(IAST ast);
+  /**
+   * Add more assumptions from the given <code>expr</code>. If <code>expr</code> is not a valid
+   * assumption,+ return <code>this</code> unmodified
+   *
+   * @param expr the assumptions which should be added to the <code>assumptions</code> instance.
+   * @return <code>this</code>
+   */
+  public IAssumptions addAssumption(IExpr expr);
+
+  /**
+   * Copy the assumptions to a new instance.
+   *
+   * @return
+   */
+  public IAssumptions copy();
 
   /**
    * Get the distribution which is associated with the expression
@@ -15,6 +29,8 @@ public interface IAssumptions {
    * @return <code>F.NIL</code> if no distribution is associated
    */
   public IAST distribution(IExpr expr);
+
+  public IExpr get$Assumptions();
 
   /**
    * Gives <code>true</code>, if the expression is assumed to be an algebraic value (i.e. an element
@@ -153,4 +169,6 @@ public interface IAssumptions {
    * @return <code>null</code> if no interval can be determined
    */
   public int[] reduceRange(IExpr x, final int[] range);
+
+  public void set$Assumptions(IExpr expr);
 }
