@@ -34,6 +34,8 @@ public enum Extension {
   TABLE,
   /** Tab-Separated Values */
   TSV, //
+  /** plain text format */
+  TXT,
   /** WXF format */
   WXF;
 
@@ -129,6 +131,9 @@ public enum Extension {
       return valueOf(extensionString.toUpperCase());
     } catch (RuntimeException rex) {
       //
+    }
+    if (extensionString.equals("Text")) {
+    	return TXT;
     }
     return STRING;
   }
