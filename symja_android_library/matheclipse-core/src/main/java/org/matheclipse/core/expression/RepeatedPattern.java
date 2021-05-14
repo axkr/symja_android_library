@@ -20,7 +20,7 @@ public class RepeatedPattern extends PatternSequence {
       IExpr patternExpr, int min, int max, boolean zeroArgsAllowed, EvalEngine engine) {
     RepeatedPattern p = new RepeatedPattern();
     p.fSymbol = null;
-    p.fCondition = null;
+    p.fHeadTest = null;
     p.fDefault = false;
     p.fZeroArgsAllowed = zeroArgsAllowed;
     p.fRepeatedExpr = patternExpr;
