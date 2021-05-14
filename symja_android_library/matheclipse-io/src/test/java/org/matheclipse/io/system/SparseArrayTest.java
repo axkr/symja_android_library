@@ -63,29 +63,29 @@ public class SparseArrayTest extends AbstractTestCase {
         "");
   }
 
-  public void testCoefficientArrays() {
-    check(
-        "CoefficientArrays(2*x + 3*y + 4*z + 5, {x, y, z}) // Normal", //
-        "{5,{2,3,4}}");
-
-        check(
-            "CoefficientArrays({a + x - y - z == 0, b + x + 2 y + z == 0}, {x, y, z})", //
-            " ");
-
-    check(
-        "CoefficientList({a + x - y - z , b + x + 2 y + z}, {x, y, z})", //
-        "{{{{a,-1},{-1,0}},{{1,0},{0,0}}},{{{b,1},{2,0}},{{1,0},{0,0}}}}");
-    check(
-        "CoefficientRules({a + x - y - z, b + x + 2 y + z}, {x, y, z})", //
-        "{{{1,0,0}->1,{0,1,0}->-1,{0,0,1}->-1,{0,0,0}->a},{{1,0,0}->1,{0,1,0}->2,{0,0,1}->\n"
-            + "1,{0,0,0}->b}}");
-    check(
-        "CoefficientRules(a+x - y - z, {x, y, z})", //
-        "{{1,0,0}->1,{0,1,0}->-1,{0,0,1}->-1,{0,0,0}->a}");
-    check(
-        "SparseArray({{2,1,1}->1,{1,2,1}->-1,{1,1,2}->-1,{1,1,1}->a}) // Normal", //
-        "{{{a,-1},{-1,0}},{{1,0},{0,0}}}");
-  }
+//  public void testCoefficientArrays() {
+//    check(
+//        "CoefficientArrays(2*x + 3*y + 4*z + 5, {x, y, z}) // Normal", //
+//        "{5,{2,3,4}}");
+//
+//        check(
+//            "CoefficientArrays({a + x - y - z == 0, b + x + 2 y + z == 0}, {x, y, z})", //
+//            " ");
+//
+//    check(
+//        "CoefficientList({a + x - y - z , b + x + 2 y + z}, {x, y, z})", //
+//        "{{{{a,-1},{-1,0}},{{1,0},{0,0}}},{{{b,1},{2,0}},{{1,0},{0,0}}}}");
+//    check(
+//        "CoefficientRules({a + x - y - z, b + x + 2 y + z}, {x, y, z})", //
+//        "{{{1,0,0}->1,{0,1,0}->-1,{0,0,1}->-1,{0,0,0}->a},{{1,0,0}->1,{0,1,0}->2,{0,0,1}->\n"
+//            + "1,{0,0,0}->b}}");
+//    check(
+//        "CoefficientRules(a+x - y - z, {x, y, z})", //
+//        "{{1,0,0}->1,{0,1,0}->-1,{0,0,1}->-1,{0,0,0}->a}");
+//    check(
+//        "SparseArray({{2,1,1}->1,{1,2,1}->-1,{1,1,2}->-1,{1,1,1}->a}) // Normal", //
+//        "{{{a,-1},{-1,0}},{{1,0},{0,0}}}");
+//  }
 
   public void testDot() {
     check(
