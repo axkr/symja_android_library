@@ -7,6 +7,7 @@ SquareMatrixQ(m)
 > returns `True` if `m` is a square matrix.
 
 See
+* [Wikipedia - Square matrix](https://en.wikipedia.org/wiki/Square_matrix)
 * [Wikipedia - Matrix (mathematics)](https://en.wikipedia.org/wiki/Matrix_(mathematics))
 
 ### Examples
@@ -21,4 +22,4 @@ False
 
 ### Github
 
-* [Implementation of SquareMatrixQ](https://github.com/axkr/symja_android_library/blob/master/symja_android_library/matheclipse-core/src/main/java/org/matheclipse/core/builtin/PredicateQ.java#L1229) 
+* [Implementation of SquareMatrixQ](https://github.com/axkr/symja_android_library/blob/master/symja_android_library/matheclipse-core/src/main/java/org/matheclipse/core/builtin/PredicateQ.java#L1170) 

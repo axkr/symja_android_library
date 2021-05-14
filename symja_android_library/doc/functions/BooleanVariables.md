@@ -13,6 +13,9 @@ BooleanVariables(logical-expr)
 {p,q,r}
 ```
 
+### Related terms 
+[Variables](Variables.md)
+
 ### Github
 
-* [Implementation of BooleanVariables](https://github.com/axkr/symja_android_library/blob/master/symja_android_library/matheclipse-core/src/main/java/org/matheclipse/core/builtin/BooleanFunctions.java#L1128) 
+* [Implementation of BooleanVariables](https://github.com/axkr/symja_android_library/blob/master/symja_android_library/matheclipse-core/src/main/java/org/matheclipse/core/builtin/BooleanFunctions.java#L1136) 

@@ -89,6 +89,9 @@ Set a submatrix:
 {{1, t, u}, {4, y, z}, {7, 8, 9}}    
 ```
 
+### Related terms 
+[SetDelayed](SetDelayed.md), [TagSet](TagSet.md), [TagSetDelayed](TagSetDelayed.md) 
+
 ### Github
 
 * [Implementation of Set](https://github.com/axkr/symja_android_library/blob/master/symja_android_library/matheclipse-core/src/main/java/org/matheclipse/core/builtin/PatternMatching.java#L1724) 

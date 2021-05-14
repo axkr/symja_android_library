@@ -7,6 +7,12 @@ Sum(expr, {i, imin, imax})
 > evaluates the discrete sum of `expr` with `i` ranging from `imin` to `imax`.
 
 ```
+Sum(expr, {i, imax})
+```
+
+> same as `Sum(expr, {i, 1, imax})`. 
+      
+```
 Sum(expr, {i, imin, imax, di})
 ```
 
@@ -34,6 +40,9 @@ Double sum:
 ```
 >> Sum(i * j, {i, 1, 10}, {j, 1, 10})    
 3025    
+
+>> Table(Sum(i * j, {i, 0, n}, {j, 0, n}), {n, 0, 4})
+{0,1,9,36,100}
 ```
 
 Symbolic sums are evaluated: 

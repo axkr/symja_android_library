@@ -80,7 +80,7 @@ Derivative(0,1)[f][x,x]+Derivative(1,0)[f][x,x]
 Chain rule:
 
 ```
->> D(f(2*x+1, 2*y, x+y)    
+>> D(f(2*x+1, 2*y, x+y), x)    
 2*Derivative(1,0,0)[f][1+2*x,2*y,x+y]+Derivative(0,0,1)[f][1+2*x,2*y,x+y]    
  
 >> D(f(x^2, x, 2*y), {x,2}, y) // Expand    

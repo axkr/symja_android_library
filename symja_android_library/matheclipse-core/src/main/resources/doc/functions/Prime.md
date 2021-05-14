@@ -13,6 +13,8 @@ See
 
 ### Examples
 
+Note that the first prime is 2, not 1:
+ 
 ```
 >> Prime(1)
 2
@@ -21,6 +23,13 @@ See
 991
 ```
 
+When given a list of integers, a list is returned:
+
+```
+>> Prime({5, 10, 15})
+{11,29,47}
+```
+
 ### Github
 
-* [Implementation of Prime](https://github.com/axkr/symja_android_library/blob/master/symja_android_library/matheclipse-core/src/main/java/org/matheclipse/core/builtin/NumberTheory.java#L4144) 
+* [Implementation of Prime](https://github.com/axkr/symja_android_library/blob/master/symja_android_library/matheclipse-core/src/main/java/org/matheclipse/core/builtin/NumberTheory.java#L4112) 

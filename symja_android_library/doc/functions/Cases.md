@@ -10,6 +10,11 @@ Cases(list, pattern, ls)
 ```
 > returns the elements matching at levelspec `ls`.
 
+```
+Cases(list, pattern, Heads->True)
+```
+> match including the head of the expression in the search.
+
 ### Examples
 
 ```
