@@ -14,6 +14,7 @@ import org.matheclipse.core.expression.S;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IASTAppendable;
 import org.matheclipse.core.interfaces.IASTMutable;
+import org.matheclipse.core.interfaces.IBuiltInSymbol;
 import org.matheclipse.core.interfaces.IComplex;
 import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.interfaces.INumber;
@@ -245,7 +246,8 @@ public abstract class AbstractFunctionEvaluator extends AbstractEvaluator {
           if (((INumber) arg1).complexSign() < 0) {
             return true;
           }
-        } else if (arg1.isNegativeInfinity() || (arg1.isTimes() && isNegativeValued(arg1, checkTimesPlus))) {
+        } else if (arg1.isNegativeInfinity()
+            || (arg1.isTimes() && isNegativeValued(arg1, checkTimesPlus))) {
           return true;
         }
       } else if (expression.isDirectedInfinity() && expression.isAST1()) {
@@ -710,6 +712,135 @@ public abstract class AbstractFunctionEvaluator extends AbstractEvaluator {
         out.close();
       } catch (IOException e) {
         e.printStackTrace();
+      }
+    }
+  }
+
+  /**
+   * Determine the options from the last arguments of <code>ast</code> or from the default options.
+   *
+   * @param options the result array of options and their (possibly default) values.
+   * @param ast
+   * @param argSize
+   * @param expectedArgSize
+   * @param optionSymbol
+   * @param engine
+   * @return
+   */
+  protected static int determineOptions(
+      IExpr[] options,
+      IAST ast,
+      int argSize,
+      int[] expectedArgSize,
+      IBuiltInSymbol[] optionSymbol,
+      EvalEngine engine) {
+    argSize = determineArgumentOptions(options, ast, argSize, expectedArgSize, optionSymbol);
+
+    determineDefaultOptions(options, ast, optionSymbol, engine);
+    return argSize;
+  }
+
+  /**
+   * Determine the options only from the last arguments of <code>ast</code>. Possibly additional
+   * options are <code>null</code> if no matching option is found in the arguments of the <code>ast
+   * </code>.
+   *
+   * @param options
+   * @param ast
+   * @param argSize
+   * @param expectedArgSize
+   * @param optionSymbol
+   * @return
+   */
+  private static int determineArgumentOptions(
+      IExpr[] options,
+      IAST ast,
+      int argSize,
+      int[] expectedArgSize,
+      IBuiltInSymbol[] optionSymbol) {
+    int minNumberOfArgs = 1;
+    if (expectedArgSize != null) {
+      // the ast function must at least contain the minimum number of arguments
+      minNumberOfArgs = expectedArgSize[0];
+      if (minNumberOfArgs < 1) {
+        minNumberOfArgs = 1;
+      }
+    }
+
+    int counter = 0;
+    boolean evaled = true;
+    while (argSize > minNumberOfArgs && evaled && counter < optionSymbol.length) {
+      IExpr arg = ast.get(argSize);
+
+      // check that arg has the correct options format:
+      if (arg.isRule()) {
+        evaled = false;
+        for (int i = 0; i < optionSymbol.length; i++) {
+          if (optionSymbol[i].equals(arg.first())) {
+            options[i] = arg.second();
+            argSize--;
+            counter++;
+            evaled = true;
+            break;
+          }
+        }
+      } else if (arg.isListOfRules(true) && !arg.isEmptyList()) {
+        IAST listOfRules = (IAST) arg;
+        for (int j = 1; j < listOfRules.size(); j++) {
+          IAST rule = (IAST) listOfRules.get(j);
+          evaled = false;
+          for (int i = 0; i < optionSymbol.length; i++) {
+            if (optionSymbol[i].equals(rule.first())) {
+              options[i] = rule.second();
+              argSize--;
+              counter++;
+              evaled = true;
+              break;
+            }
+          }
+        }
+      } else {
+        evaled = false;
+        break;
+      }
+    }
+    return argSize;
+  }
+
+  /**
+   * Replace the options which are <code>null</code> only from the default options of the head
+   * symbol.
+   *
+   * @param options
+   * @param ast
+   * @param optionSymbol
+   * @param engine
+   */
+  private static void determineDefaultOptions(
+      IExpr[] options, IAST ast, IBuiltInSymbol[] optionSymbol, EvalEngine engine) {
+    int optionNullStart = -1;
+    for (int i = 0; i < options.length; i++) {
+      if (options[i] == null) {
+        optionNullStart = i;
+        break;
+      }
+    }
+    if (optionNullStart >= 0) {
+      final IExpr temp = engine.evaluate(F.Options(ast.topHead()));
+      if (temp.isList() && temp.size() > 1) {
+        IAST list = (IAST) temp;
+        for (int i = optionNullStart; i < options.length; i++) {
+          if (options[i] == null) {
+            options[i] = S.None;
+            for (int j = 1; j < list.size(); j++) {
+              IAST rule = (IAST) list.get(j);
+              if (optionSymbol[i].equals(rule.first())) {
+                options[i] = rule.second();
+                break;
+              }
+            }
+          }
+        }
       }
     }
   }

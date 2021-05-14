@@ -23,18 +23,16 @@ import org.hipparchus.linear.RealVector;
 import org.jgrapht.GraphType;
 import org.matheclipse.core.basic.Config;
 import org.matheclipse.core.builtin.BooleanFunctions;
+import org.matheclipse.core.builtin.IOFunctions;
 import org.matheclipse.core.builtin.PredicateQ;
 import org.matheclipse.core.convert.VariablesSet;
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.exception.ASTElementLimitExceeded;
 import org.matheclipse.core.eval.exception.ArgumentTypeException;
-import org.matheclipse.core.eval.exception.IterationLimitExceeded;
 import org.matheclipse.core.eval.util.AbstractAssumptions;
 import org.matheclipse.core.expression.ASTRealMatrix;
 import org.matheclipse.core.expression.ASTRealVector;
 import org.matheclipse.core.expression.ComplexNum;
-import org.matheclipse.core.expression.ExprField;
-import org.matheclipse.core.expression.ExprID;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.expression.ID;
 import org.matheclipse.core.expression.Num;
@@ -781,7 +779,7 @@ public interface IExpr
 
   @Override
   public default Field<IExpr> getField() {
-    return ExprField.CONST;
+    return F.EXPR_FIELD;
   }
 
   default IExpr getOptionalValue() {
@@ -2194,18 +2192,27 @@ public interface IExpr
   /**
    * Test if this expression is a list of rules (head Rule or RuleDelayed)
    *
-   * @param ignoreEmptyList if <code>true</code>, ignore elements which equals an empty list <code>
+   * @param ignoreEmptySublists if <code>true</code>, ignore elements which equals an empty list
+   *     <code>
    *     { }</code>
    * @return
    * @see #isList()
    * @see #isMatrix(boolean)
    * @see #isVector()
    */
-  default boolean isListOfRules(boolean ignoreEmptyList) {
+  default boolean isListOfRules(boolean ignoreEmptySublists) {
     return false;
   }
 
-  default boolean isListOfRulesOrAssociation(boolean ignoreEmptyList) {
+  /**
+   * Test if this expression is a list of rules (head Rule or RuleDelayed) or an Association.
+   *
+   * @param ignoreEmptySublists if <code>true</code>, ignore elements which equals an empty list
+   *     <code>
+   *     { }</code> but only in lists.
+   * @return
+   */
+  default boolean isListOfRulesOrAssociation(boolean ignoreEmptySublists) {
     return false;
   }
 
@@ -3521,8 +3528,8 @@ public interface IExpr
     if (isNumber()) {
       return isZero();
     }
-    return isAST() &&  PredicateQ.isPossibleZeroQ((IAST) this, false, EvalEngine.get());
-     // PredicateQ.isZeroTogether(this, EvalEngine.get());
+    return isAST() && PredicateQ.isPossibleZeroQ((IAST) this, false, EvalEngine.get());
+    // PredicateQ.isZeroTogether(this, EvalEngine.get());
   }
 
   /**
@@ -3693,6 +3700,20 @@ public interface IExpr
   }
 
   /**
+   * Get the elements of the <code>AST</code> or <code>ASTAssociation
+   * </code> list with the last element removed. Return <code>F.NIL</code> if this object isn't an
+   * <code>AST</code> or <code>ASTAssociation
+   * </code>.
+   *
+   * @return the argument of the function represented by this <code>AST</code> with the last element
+   *     removed or {@link F#NIL}
+   * @see IExpr#head()
+   */
+  default IExpr most() {
+    return F.NIL;
+  }
+
+  /**
    * Additional multiply method which works with overriden <code>JAS</code> method.
    *
    * @param that
@@ -3850,11 +3871,7 @@ public interface IExpr
    * @see NILPointer#optional(IExpr)
    */
   default IExpr optional() {
-    short id = S.GLOBAL_IDS_MAP.getShort(this);
-    if (id >= 0) {
-      return new ExprID(id);
-    }
-    return this;
+    return S.exprID(this);
   }
 
   /**
@@ -4184,7 +4201,7 @@ public interface IExpr
    * @return <code>this</code> if no substitution of a (sub-)expression was possible.
    */
   default IExpr replaceRepeated(final Function<IExpr, IExpr> function) {
-    return replaceRepeated(new VisitorReplaceAll(function));
+    return replaceRepeated(new VisitorReplaceAll(function), -1);
   }
 
   /**
@@ -4196,7 +4213,7 @@ public interface IExpr
    * @return <code>this</code> if no substitution of a (sub-)expression was possible.
    */
   default IExpr replaceRepeated(final IAST astRules) {
-    return replaceRepeated(new VisitorReplaceAll(astRules));
+    return replaceRepeated(new VisitorReplaceAll(astRules), -1);
   }
 
   /**
@@ -4204,20 +4221,28 @@ public interface IExpr
    * the method returns <code>this</code>.
    *
    * @param visitor
+   * @param maxIterations the maximum number of iterations
    * @return
    */
-  default IExpr replaceRepeated(VisitorReplaceAll visitor) {
+  default IExpr replaceRepeated(VisitorReplaceAll visitor, int maxIterations) {
     IExpr result = this;
     IExpr temp = accept(visitor);
-    EvalEngine engine = EvalEngine.get();
-    final int iterationLimit = engine.getIterationLimit();
-    int iterationCounter = 1;
+    final EvalEngine engine = EvalEngine.get();
+    int iterationLimit = engine.getIterationLimit();
+    if (maxIterations > 0 && maxIterations < iterationLimit) {
+      iterationLimit = maxIterations;
+    }
+    int iterationCounter = 0;
     while (temp.isPresent()) {
       result = engine.evaluate(temp);
-      temp = result.accept(visitor);
       if (iterationLimit >= 0 && iterationLimit <= ++iterationCounter) {
-        IterationLimitExceeded.throwIt(iterationCounter, result);
+        // Exiting after `1` scanned `2` times.
+        IOFunctions.printMessage(
+            S.ReplaceRepeated, "rrlim", F.List(this, F.ZZ(iterationLimit)), engine);
+        return result;
       }
+
+      temp = result.accept(visitor);
     }
     return result;
   }
@@ -4238,8 +4263,8 @@ public interface IExpr
   }
 
   /**
-   * Get the rest of the elements of this <code>AST</code> list. Return <code>F.NIL</code> if this
-   * object isn't an <code>AST</code>.
+   * Get the rest of the elements of this <code>AST</code> or <code>ASTAssociation</code> list.
+   * Return <code>F.NIL</code> if this object isn't an <code>AST</code>.
    *
    * @return the rest arguments of the function represented by this <code>AST</code> with the first
    *     argument removed.

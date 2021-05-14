@@ -11,38 +11,43 @@ import org.matheclipse.core.interfaces.IExpr;
 public interface IFunctionEvaluator extends IEvaluator {
 
   int[] ARGS_0_0 = new int[] {0, 0};
-  
+
   /**
    * The function is allowed to have 0 or 1 argument and the head must be the built-in symbol name
    * of the function.
    */
   int[] ARGS_0_1 = new int[] {0, 1};
-  
+
   /**
    * The function is allowed to have 0 or 1 argument and the head must be the built-in symbol name
    * of the function or can be an operator form.
    */
   int[] ARGS_0_1_0 = new int[] {0, 1, 0};
-  
+
   /**
    * The function is allowed to have 0 or 2 arguments and the head must be the built-in symbol name
    * of the function.
    */
   int[] ARGS_0_2 = new int[] {0, 2};
-  
+
   /**
    * The function is allowed to have 0 or 3 arguments and the head must be the built-in symbol name
    * of the function.
    */
   int[] ARGS_0_3 = new int[] {0, 3};
-  
+
   /**
-   * The function is allowed to have 0 or 2 arguments and the head must be the built-in symbol name
-   * of the function or can be an operator form.
+   * The function is allowed to have 0 up to 2 arguments and the head must be the built-in symbol
+   * name of the function or can be an operator form.
    */
   int[] ARGS_0_2_0 = new int[] {0, 2, 0};
 
+  /**
+   * The function is allowed to have exactly 1 argument and the head must be the built-in symbol
+   * name of the function.
+   */
   int[] ARGS_1_1 = new int[] {1, 1};
+
   /**
    * The function is allowed to have 1 or 2 arguments and the head must be the built-in symbol name
    * of the function.
@@ -74,6 +79,10 @@ public interface IFunctionEvaluator extends IEvaluator {
    */
   int[] ARGS_1_5_1 = new int[] {1, 5, 1};
 
+  /**
+   * The function is allowed to have exactly 2 arguments and the head must be the built-in symbol
+   * name of the function.
+   */
   int[] ARGS_2_2 = new int[] {2, 2};
 
   /**
@@ -130,6 +139,10 @@ public interface IFunctionEvaluator extends IEvaluator {
    */
   int[] ARGS_1_4_2 = new int[] {1, 4, 2};
 
+  /**
+   * The function is allowed to have 2 or 3 arguments and the head must be the built-in symbol name
+   * of the function.
+   */
   int[] ARGS_2_3 = new int[] {2, 3};
 
   int[] ARGS_2_3_0 = new int[] {2, 3, 0};
@@ -167,7 +180,7 @@ public interface IFunctionEvaluator extends IEvaluator {
   int[] ARGS_4_4 = new int[] {4, 4};
 
   int[] ARGS_5_5 = new int[] {5, 5};
-  
+
   int[] ARGS_6_6 = new int[] {6, 6};
 
   int[] ARGS_0_INFINITY = new int[] {0, Integer.MAX_VALUE};

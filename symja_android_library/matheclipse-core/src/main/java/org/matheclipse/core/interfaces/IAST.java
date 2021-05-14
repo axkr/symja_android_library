@@ -1242,6 +1242,19 @@ public interface IAST extends IExpr, Iterable<IExpr> {
   public IASTAppendable mapThreadEvaled(
       EvalEngine engine, IASTAppendable appendAST, final IAST replacement, int position);
 
+  /** {@inheritDoc} */
+  @Override
+  default IAST most() {
+    switch (size()) {
+      case 0:
+        return this;
+      case 1:
+        return this;
+      default:
+        return splice(argSize());
+    }
+  }
+
   /**
    * Get the argument at index 1, if the <code>size() == 2</code> or the complete ast if the <code>
    * size() > 2</code> (useful for ASTs with attribute <code>OneIdentity</code> for example for
@@ -1390,6 +1403,8 @@ public interface IAST extends IExpr, Iterable<IExpr> {
   @Override
   default IAST rest() {
     switch (size()) {
+      case 0:
+        return this;
       case 1:
         return this;
       case 2:
