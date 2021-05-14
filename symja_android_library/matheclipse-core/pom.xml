@@ -12,6 +12,15 @@
 	<artifactId>matheclipse-core</artifactId>
 	<packaging>jar</packaging>
 
+	<licenses>
+		<license>
+			<name>GNU Lesser General Public License, Version 3</name>
+			<url>https://www.gnu.org/licenses/lgpl-3.0.html</url>
+			<distribution>repo</distribution>
+			<comments>A free, copyleft license for software and other kinds of works</comments>
+		</license>
+	</licenses>
+	
 	<dependencies>
 		<dependency>
 			<groupId>org.matheclipse</groupId>
@@ -26,12 +35,12 @@
 		<dependency>
 			<groupId>org.commonmark</groupId>
 			<artifactId>commonmark</artifactId>
-			<version>0.17.1</version>
+			<version>0.17.2</version>
 		</dependency>
 		<dependency>
 			<groupId>org.commonmark</groupId>
 			<artifactId>commonmark-ext-gfm-tables</artifactId>
-			<version>0.17.1</version>
+			<version>0.17.2</version>
 		</dependency>
 		<!-- <dependency> <groupId>de.uni-mannheim.rz.krum</groupId> <artifactId>jas</artifactId> 
 			<version>2.6.6025</version> </dependency> -->

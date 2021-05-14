@@ -12,6 +12,16 @@
 	<artifactId>matheclipse-external</artifactId>
 	<packaging>jar</packaging>
 
+
+	<licenses>
+		<license>
+			<name>GNU Lesser General Public License, Version 3</name>
+			<url>https://www.gnu.org/licenses/lgpl-3.0.html</url>
+			<distribution>repo</distribution>
+			<comments>A free, copyleft license for software and other kinds of works</comments>
+		</license>
+	</licenses>
+	
 	<dependencies>
 		<dependency>
 			<groupId>org.apache.logging.log4j</groupId>

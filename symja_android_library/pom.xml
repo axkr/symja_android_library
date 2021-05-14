@@ -24,6 +24,12 @@
 			<distribution>repo</distribution>
 			<comments>A free, copyleft license for software and other kinds of works</comments>
 		</license>
+		<license>
+			<name>GNU Lesser General Public License, Version 3</name>
+			<url>https://www.gnu.org/licenses/lgpl-3.0.html</url>
+			<distribution>repo</distribution>
+			<comments>A free, copyleft license for software and other kinds of works</comments>
+		</license>
 	</licenses>
 
 	<scm>
@@ -45,13 +51,14 @@
 		<maven.compiler.target>1.8</maven.compiler.target>
 		<hipparchus.version>1.8</hipparchus.version>
 		<timestamp>${maven.build.timestamp}</timestamp>
-		<maven.build.timestamp.format>yyyyMMddHHmmss</maven.build.timestamp.format> 
+		<maven.build.timestamp.format>yyyyMMddHHmmss</maven.build.timestamp.format>
 	</properties>
 
 	<modules>
 		<module>matheclipse-external</module>
 		<module>matheclipse-frontend</module>
 		<module>matheclipse-core</module>
+		<module>matheclipse-gpl</module>
 		<module>matheclipse-api</module>
 		<module>matheclipse-io</module>
 		<module>matheclipse-beakerx</module>
@@ -109,8 +116,8 @@
 					<artifactId>maven-javadoc-plugin</artifactId>
 					<version>2.10.3</version>
 					<configuration>
-						<additionalparam>-Xdoclint:none</additionalparam> 
-                        <failOnError>false</failOnError> 
+						<additionalparam>-Xdoclint:none</additionalparam>
+						<failOnError>false</failOnError>
 					</configuration>
 					<executions>
 						<execution>
@@ -156,21 +163,10 @@
 					</configuration>
 				</plugin>
 
-<!-- 
-				<plugin>
-					<groupId>com.google.cloud.tools</groupId>
-					<artifactId>jib-maven-plugin</artifactId>
-					<version>2.7.0</version>
-					<configuration>
-						<to>
-							<image>servletserver</image>
-						</to>
-						<container>
-							<mainClass>org.matheclipse.io.servlet.ServletServer</mainClass>
-						</container>
-					</configuration>
-				</plugin>
---> 
+				<!-- <plugin> <groupId>com.google.cloud.tools</groupId> <artifactId>jib-maven-plugin</artifactId> 
+					<version>2.7.0</version> <configuration> <to> <image>servletserver</image> 
+					</to> <container> <mainClass>org.matheclipse.io.servlet.ServletServer</mainClass> 
+					</container> </configuration> </plugin> -->
 			</plugins>
 		</pluginManagement>
 	</build>
@@ -233,6 +229,10 @@
 		<repository>
 			<id>sonatype</id>
 			<url>https://oss.sonatype.org/content/groups/public/</url>
+		</repository>
+		<repository>
+			<id>orekit</id>
+			<url>https://packages.orekit.org/repository/maven-public/</url>
 		</repository>
 	</repositories>
 

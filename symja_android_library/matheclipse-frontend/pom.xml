@@ -11,6 +11,16 @@
 	<artifactId>matheclipse-frontend</artifactId>
 	<packaging>jar</packaging>
 
+
+	<licenses>
+		<license>
+			<name>GNU Lesser General Public License, Version 3</name>
+			<url>https://www.gnu.org/licenses/lgpl-3.0.html</url>
+			<distribution>repo</distribution>
+			<comments>A free, copyleft license for software and other kinds of works</comments>
+		</license>
+	</licenses>
+	
 	<dependencies>
 		<dependency>
 			<groupId>junit</groupId>
@@ -19,6 +29,7 @@
 			<scope>test</scope>
 		</dependency>
 	</dependencies>
+	
 	<build>
 		<resources>
 			<resource>
