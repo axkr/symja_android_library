@@ -11,7 +11,9 @@ import org.matheclipse.core.expression.S;
 import org.matheclipse.core.expression.WL;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IASTAppendable;
+import org.matheclipse.core.interfaces.IASTMutable;
 import org.matheclipse.core.interfaces.IExpr;
+import org.matheclipse.core.interfaces.IPatternObject;
 import org.matheclipse.core.parser.ExprParser;
 import org.matheclipse.core.patternmatching.RulesData;
 import org.matheclipse.parser.client.FEConfig;
@@ -132,10 +134,10 @@ public class RulePreprocessor {
       if (expr.isListOfLists()) {
         IAST list = (IAST) expr;
         for (int i = 1; i < list.size(); i++) {
-          convertExpr(list.get(i), Integer.toString(i), out, null);
+          convertExpr(list.get(i), Integer.toString(i), out, null, engine);
         }
       } else {
-        convertExpr(expr, rulePostfix, out, symbolName);
+        convertExpr(expr, rulePostfix, out, symbolName, engine);
       }
     } catch (UnsupportedOperationException uoe) {
       System.out.println(uoe.getMessage());
@@ -144,7 +146,7 @@ public class RulePreprocessor {
   }
 
   private static void convertExpr(
-      IExpr expr, String rulePostfix, final PrintWriter out, String symbolName) {
+      IExpr expr, String rulePostfix, final PrintWriter out, String symbolName, EvalEngine engine) {
     boolean last;
     StringBuilder buffer = new StringBuilder();
     // ArraySet<ISymbol> headerSymbols = new ArraySet<ISymbol>();
@@ -181,17 +183,30 @@ public class RulePreprocessor {
         last = i == (list.argSize());
         expr = list.get(i);
         if (expr.isAST(S.SetDelayed, 3)) {
-          IAST ast = (IAST) expr;
+          IASTMutable ast = ((IAST) expr).copy();
+          if (ast.arg1().isAST()) {
+            //            if (ast.arg1().isAST(S.Sum)) {
+            // HoldAll in Sum prevents evaluation in evalHoldPattern
+            //              System.out.println(ast.arg1().toString());
+            //            }
+            ast.set(1, engine.evalHoldPattern((IAST) ast.arg1()));
+          }
           buffer.append("    // " + ast.toString().replaceAll("\\n", "") + "\n");
           buffer.append("    ISetDelayed(");
           appendSetDelayedToBuffer(ast, buffer, false, last);
         } else if (expr.isAST(S.Set, 3)) {
-          IAST ast = (IAST) expr;
+          IASTMutable ast = ((IAST) expr).copy();
+          if (ast.arg1().isAST()) {
+            ast.set(1, engine.evalHoldPattern((IAST) ast.arg1()));
+          }
           buffer.append("    // " + ast.toString().replaceAll("\\n", "") + "\n");
           buffer.append("    ISet(");
           appendSetDelayedToBuffer(ast, buffer, true, last);
         } else if (expr.isAST(S.Rule, 3)) {
-          IAST ast = (IAST) expr;
+          IASTMutable ast = ((IAST) expr).copy();
+          if (ast.arg1().isAST()) {
+            ast.set(1, engine.evalHoldPattern((IAST) ast.arg1()));
+          }
           buffer.append("    // " + ast.toString().replaceAll("\\n", "") + "\n");
           buffer.append("    Rule(");
           appendSetDelayedToBuffer(ast, buffer, true, last);
@@ -472,7 +487,7 @@ public class RulePreprocessor {
     System.out.println("Generate Java source files from rule definitions");
 
     // C:\\Users\\dev\\git\\symja_android_library
-    File sourceLocation = new File("..\\symja_android_library\\rules");
+    File sourceLocation = new File("..\\symja_android_library\\rules\\");
     File javaTargetLocation =
         new File(
             "..\\symja_android_library\\matheclipse-core\\src\\main\\java\\org\\matheclipse\\core\\reflection\\system\\rules");
