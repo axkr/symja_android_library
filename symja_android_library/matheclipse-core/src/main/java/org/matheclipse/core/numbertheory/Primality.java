@@ -4,13 +4,16 @@ import java.math.BigInteger;
 import java.math.RoundingMode;
 import java.security.SecureRandom;
 import java.util.ArrayList;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.Set;
 import java.util.SortedMap;
 import java.util.TreeSet;
 
 import org.matheclipse.core.basic.Config;
+import org.matheclipse.core.builtin.IOFunctions;
 import org.matheclipse.core.combinatoric.KSubsets;
 import org.matheclipse.core.combinatoric.KSubsets.KSubsetsList;
 import org.matheclipse.core.eval.exception.ReturnException;
@@ -18,23 +21,26 @@ import org.matheclipse.core.eval.util.OpenIntToIExprHashMap;
 import org.matheclipse.core.expression.AbstractIntegerSym;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.expression.IntegerSym;
+import org.matheclipse.core.interfaces.IAST;
+import org.matheclipse.core.interfaces.IASTAppendable;
 import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.interfaces.IInteger;
 
 import com.google.common.math.BigIntegerMath;
 import com.google.common.math.LongMath;
 
-import de.tilman_neumann.jml.factor.CombinedFactorAlgorithm;
-import de.tilman_neumann.util.SortedMultiset;
-import de.tilman_neumann.util.SortedMultiset_BottomUp;
+import edu.jas.arith.PrimeInteger;
 import it.unimi.dsi.fastutil.ints.Int2IntMap;
+import it.unimi.dsi.fastutil.ints.Int2IntRBTreeMap;
+import it.unimi.dsi.fastutil.objects.ObjectSet;
 
 /**
- * Provides primality probabilistic methods.
+ * Provides primality probabilistic methods for small prime factors.
  *
- * <p>Copied from Apache Harmony projects java.math package.
+ * @see org.matheclipse.gpl.numbertheory.BigIntegerPrimality for elliptic curve method and faster
+ *     prime factorization
  */
-public class Primality {
+public class Primality implements IPrimality {
 
   private static class PrimePowerTreedMap extends SortedMultiset_BottomUp<BigInteger> {
     private static final long serialVersionUID = 7802239809732541730L;
@@ -87,8 +93,7 @@ public class Primality {
   private static final SecureRandom random = new SecureRandom();
   private static final BigInteger TWO = new BigInteger("2");
 
-  /** Just to denote that this class can't be instantied. */
-  private Primality() {}
+  public Primality() {}
 
   /* Private Fields */
 
@@ -375,24 +380,6 @@ public class Primality {
   private static final int[][] offsetPrimes = {
     null, null, {0, 2}, {2, 2}, {4, 2}, {6, 5}, {11, 7}, {18, 13}, {31, 23}, {54, 43}, {97, 75}
   };
-
-  private static final transient ThreadLocal<CombinedFactorAlgorithm> instance =
-      new ThreadLocal<CombinedFactorAlgorithm>() {
-
-        @Override
-        public CombinedFactorAlgorithm initialValue() {
-          if (Config.JAVA_UNSAFE) {
-            final int cores = Runtime.getRuntime().availableProcessors();
-            return new CombinedFactorAlgorithm(cores / 2 + 1, null, true);
-          } else {
-            return new CombinedFactorAlgorithm(1, null, false);
-          }
-        }
-      };
-
-  public static CombinedFactorAlgorithm getFactorizer() {
-    return instance.get();
-  }
 
   static { // To initialize the dual table of BigInteger primes
     for (int i = 0; i < primes.length; i++) {
@@ -767,7 +754,7 @@ public class Primality {
 
   public static List<BigInteger> factorize(final BigInteger val, List<BigInteger> result) {
     //    SortedMap<BigInteger, Integer> bigMap = new TreeMap<BigInteger, Integer>();
-    SortedMap<BigInteger, Integer> bigMap = Primality.factorInteger(val);
+    SortedMap<BigInteger, Integer> bigMap = Config.PRIME_FACTORS.factorInteger(val);
     if (result == null) {
       result = new ArrayList<BigInteger>(bigMap.size() * 2);
     }
@@ -787,44 +774,50 @@ public class Primality {
   }
 
   /**
-   * Decomposes the argument <code>n</code> into prime factors. The result is stored in the <code>
-   * map</code> .
+   * Decomposes the argument <code>n</code> into small prime factors. The result is stored in the
+   * <code>
+   * map</code>.
    *
-   * @param n
-   * @param map of all BigInteger primes and their associated exponents
+   * @param b
+   * @param map3 of all BigInteger primes and their associated exponents
+   * @see org.matheclipse.gpl.numbertheory.BigIntegerPrimality
    */
-  public static void factorInteger(BigInteger n, SortedMultiset<BigInteger> map) {
+  @Override
+  public void factorInteger(BigInteger b, SortedMultiset<BigInteger> map3) {
+    // factor only small primes
+    Int2IntMap map = new Int2IntRBTreeMap();
 
-    // Do trial division by all primes < 131072.
-    //    TDiv tdiv = new TDiv();
-    //    n = tdiv.findSmallFactors(n, 131072, map);
-    //    if (n.equals(BigInteger.ONE)) {
-    //      return;
-    //    }
-
-    //    if (n.compareTo(BigInteger.ONE) > 0) {
-    getFactorizer().factor(n, map);
+    boolean isNegative = false;
+    if (b.signum() < 0) {
+      b = b.negate();
+      isNegative = true;
+    }
+    BigInteger rest = Primality.countPrimes32749(b, map);
+    if (isNegative) {
+      map3.put(BigInteger.valueOf(-1), 1);
+    }
+    ObjectSet<it.unimi.dsi.fastutil.ints.Int2IntMap.Entry> entrySet = map.int2IntEntrySet();
+    for (Entry<Integer, Integer> entry : entrySet) {
+      map3.put(BigInteger.valueOf(entry.getKey()), entry.getValue());
+    }
+    if (!rest.equals(BigInteger.ONE)) {
+      //      map3.put(rest, 1);
+      pollardRhoFactors(rest, map3);
+    }
   }
 
   /**
-   * Decomposes the argument <code>n</code> into prime factors. The result is a multiset of
+   * Decomposes the argument <code>n</code> into small prime factors. The result is a multiset of
    * BigIntegers, sorted bottom-up.
    *
    * @param n
    * @return map of all BigInteger primes and their associated exponents
+   * @see org.matheclipse.gpl.numbertheory.BigIntegerPrimality
    */
-  public static SortedMap<BigInteger, Integer> factorInteger(BigInteger n) {
+  @Override
+  public SortedMap<BigInteger, Integer> factorInteger(BigInteger n) {
     SortedMultiset<BigInteger> map = new SortedMultiset_BottomUp<>();
-    // Do trial division by all primes < 131072.
-    //    TDiv tdiv = new TDiv();
-    //    n = tdiv.findSmallFactors(n, 131072, map);
-    //    if (n.equals(BigInteger.ONE)) {
-    //      return map;
-    //    }
-
-    //    if (n.compareTo(BigInteger.ONE) > 0) {
-    getFactorizer().factor(n, map);
-    //    }
+    factorInteger(n, map);
     return map;
   }
 
@@ -1032,7 +1025,7 @@ public class Primality {
     }
 
     //    SortedMap<BigInteger, Integer> map = new TreeMap<BigInteger, Integer>();
-    SortedMap<BigInteger, Integer> map = factorInteger(value);
+    SortedMap<BigInteger, Integer> map = Config.PRIME_FACTORS.factorInteger(value);
     BigInteger l = BigInteger.ONE;
     for (Map.Entry<BigInteger, Integer> entry : map.entrySet()) {
       BigInteger base = entry.getKey();
@@ -1066,7 +1059,7 @@ public class Primality {
       return BigInteger.ONE;
     }
     //    SortedMap<BigInteger, Integer> map = new TreeMap<BigInteger, Integer>();
-    SortedMap<BigInteger, Integer> map = factorInteger(value);
+    SortedMap<BigInteger, Integer> map = Config.PRIME_FACTORS.factorInteger(value);
     BigInteger phi = BigInteger.ONE;
     for (Map.Entry<BigInteger, Integer> entry : map.entrySet()) {
       BigInteger q = entry.getKey();
@@ -1092,7 +1085,7 @@ public class Primality {
     }
     SortedMultiset<BigInteger> map = new SquareFreeTreedMap();
     try {
-      factorInteger(value, map);
+      Config.PRIME_FACTORS.factorInteger(value, map);
       // value is square-free
       Integer max = 1;
       for (Map.Entry<BigInteger, Integer> entry : map.entrySet()) {
@@ -1126,7 +1119,7 @@ public class Primality {
     if (!k.gcd(n).equals(BigInteger.ONE)) {
       return null;
     }
-    SortedMap<BigInteger, Integer> map = Primality.factorInteger(n);
+    SortedMap<BigInteger, Integer> map = Config.PRIME_FACTORS.factorInteger(n);
     BigInteger res = BigInteger.ONE;
     for (Map.Entry<BigInteger, Integer> entry : map.entrySet()) {
       res = lcm(res, multiplicativeOrder(k, entry.getKey(), entry.getValue()));
@@ -1150,7 +1143,7 @@ public class Primality {
 
   public static BigInteger primeOmega(BigInteger value) {
     //    SortedMap<BigInteger, Integer> map = new TreeMap<BigInteger, Integer>();
-    SortedMap<BigInteger, Integer> map = factorInteger(value);
+    SortedMap<BigInteger, Integer> map = Config.PRIME_FACTORS.factorInteger(value);
     BigInteger sum = BigInteger.ZERO;
     for (Map.Entry<BigInteger, Integer> entry : map.entrySet()) {
       sum = sum.add(BigInteger.valueOf(entry.getValue()));
@@ -1176,7 +1169,7 @@ public class Primality {
     }
     try {
       PrimePowerTreedMap map = new PrimePowerTreedMap();
-      factorInteger(value, map);
+      Config.PRIME_FACTORS.factorInteger(value, map);
       if (map.size() == 1) {
         for (Map.Entry<BigInteger, Integer> entry : map.entrySet()) {
           if (entry.getValue() > 0) {
@@ -1205,7 +1198,7 @@ public class Primality {
     }
     try {
       //      SortedMap<BigInteger, Integer> map = new PrimePowerTreedMap();
-      SortedMap<BigInteger, Integer> map = factorInteger(value);
+      SortedMap<BigInteger, Integer> map = Config.PRIME_FACTORS.factorInteger(value);
       if (map.size() == 1) {
         for (Map.Entry<BigInteger, Integer> entry : map.entrySet()) {
           if (entry.getValue() > 0) {
@@ -1230,7 +1223,7 @@ public class Primality {
     }
     SquareFreeTreedMap map = new SquareFreeTreedMap();
     try {
-      factorInteger(val, map);
+      Config.PRIME_FACTORS.factorInteger(val, map);
       for (Map.Entry<BigInteger, Integer> entry : map.entrySet()) {
         if (entry.getValue() > 1) {
           return false;
@@ -1250,12 +1243,19 @@ public class Primality {
    * <a href=
    * "http://stackoverflow.com/questions/9625663/calculating-and-printing-the-nth-prime-number/9704912#9704912">
    * stackoverflow. com - Calculating and printing the nth prime number</a>
+   *
+   * @param n
+   * @return <code>-1</code> if <code>n < 1</code>
    */
   public static long prime(long n) {
     // Speed up counting by counting the primes per
     // array slot and not individually. This yields
     // another factor of about 1.24 or so.
-    if (n < 2L) {
+
+    if (n < 1L) {
+      return -1L;
+    }
+    if (n == 1L) {
       return 2L;
     }
     if (n == 2L) {
@@ -1330,5 +1330,74 @@ public class Primality {
     n = ((n >>> 2) & 0x33333333) + (n & 0x33333333);
     n = ((n >> 4) & 0x0F0F0F0F) + (n & 0x0F0F0F0F);
     return (n * 0x01010101) >> 24;
+  }
+
+  @Override
+  public IAST factorIInteger(IInteger b) {
+    if (b.isZero()) {
+      return F.CListC0;
+    } else if (b.isOne()) {
+      return F.CListC1;
+    } else if (b.isMinusOne()) {
+      return F.CListCN1;
+    }
+    if (b instanceof IntegerSym) {
+      int intValue = b.intValue();
+      return AbstractIntegerSym.factorizeLong(intValue);
+    }
+    boolean negative = false;
+    if (b.sign() < 0) {
+      b = b.negate();
+      negative = true;
+    }
+
+    BigInteger big = b.toBigNumerator();
+    try {
+      long longValue = big.longValueExact();
+      if (longValue < PrimeInteger.BETA) {
+        return AbstractIntegerSym.factorizeLong(longValue);
+      }
+    } catch (ArithmeticException aex) {
+      // go on with big integers
+    }
+    Int2IntMap map = new Int2IntRBTreeMap();
+    // SortedMap<Integer, Integer> map = new TreeMap<Integer, Integer>();
+    BigInteger rest = countPrimes32749(big, map);
+    int allocSize = 1;
+    for (Int2IntMap.Entry entry : map.int2IntEntrySet()) {
+      allocSize += entry.getIntValue();
+    }
+    IASTAppendable result = F.ListAlloc(allocSize);
+    if (negative) {
+      result.append(F.CN1);
+    }
+    for (Int2IntMap.Entry entry : map.int2IntEntrySet()) {
+      int key = entry.getIntKey();
+      IInteger is = AbstractIntegerSym.valueOf(key);
+      for (int i = 0; i < entry.getIntValue(); i++) {
+        result.append(is);
+      }
+    }
+    if (rest.equals(BigInteger.ONE)) {
+      return result;
+    }
+    if (rest.isProbablePrime(IInteger.PRIME_CERTAINTY)) {
+      result.append(AbstractIntegerSym.valueOf(rest));
+      return result;
+    }
+    b = AbstractIntegerSym.valueOf(rest);
+
+    //    SortedMap<BigInteger, Integer> bigMap = new TreeMap<BigInteger, Integer>();
+    SortedMap<BigInteger, Integer> bigMap = factorInteger(rest);
+
+    for (Map.Entry<BigInteger, Integer> entry : bigMap.entrySet()) {
+      BigInteger key = entry.getKey();
+      IInteger is = AbstractIntegerSym.valueOf(key);
+      for (int i = 0; i < entry.getValue(); i++) {
+        result.append(is);
+      }
+    }
+
+    return result;
   }
 }

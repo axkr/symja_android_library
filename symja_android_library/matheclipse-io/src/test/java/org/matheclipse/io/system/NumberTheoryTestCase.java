@@ -6,27 +6,31 @@ import java.util.List;
 import java.util.SortedMap;
 import java.util.TreeMap;
 
+import org.matheclipse.core.basic.Config;
+import org.matheclipse.core.numbertheory.IPrimality;
 import org.matheclipse.core.numbertheory.Primality;
+import org.matheclipse.gpl.numbertheory.BigIntegerPrimality;
 
 import junit.framework.TestCase;
 
 public class NumberTheoryTestCase extends TestCase {
+  private static IPrimality PRIME_FACTORS = new BigIntegerPrimality();
 
   public void testFactorInteger() {
     //    SortedMap<BigInteger, Integer> map = new TreeMap<BigInteger, Integer>();
-    SortedMap<BigInteger, Integer> map = Primality.factorInteger(BigInteger.valueOf(990));
+    SortedMap<BigInteger, Integer> map = PRIME_FACTORS.factorInteger(BigInteger.valueOf(990));
     assertEquals(map.toString(), "{2=1, 3=2, 5=1, 11=1}");
 
     map.clear();
-    map = Primality.factorInteger(new BigInteger("341550071728321"));
+    map = PRIME_FACTORS.factorInteger(new BigInteger("341550071728321"));
     assertEquals(map.toString(), "{10670053=1, 32010157=1}");
 
     map.clear();
-    map = Primality.factorInteger(BigInteger.valueOf(2010));
+    map = PRIME_FACTORS.factorInteger(BigInteger.valueOf(2010));
     assertEquals(map.toString(), "{2=1, 3=1, 5=1, 67=1}");
 
     map.clear();
-    map = Primality.factorInteger(BigInteger.valueOf(24));
+    map = PRIME_FACTORS.factorInteger(BigInteger.valueOf(24));
     assertEquals(map.toString(), "{2=3, 3=1}");
   }
 
@@ -51,12 +55,12 @@ public class NumberTheoryTestCase extends TestCase {
         result.toString(),
         "[1, 2, 3, 5, 6, 9, 10, 11, 15, 18, 22, 30, 33, 45, 55, 66, 90, 99, 110, 165, 198, 330, 495, 990]");
 
-    result = Primality.divisors(new BigInteger("341550071728321"));
-    assertEquals(result.toString(), "[1, 10670053, 32010157, 341550071728321]");
-
     result = Primality.divisors(BigInteger.valueOf(2010));
     assertEquals(
         result.toString(), "[1, 2, 3, 5, 6, 10, 15, 30, 67, 134, 201, 335, 402, 670, 1005, 2010]");
+
+    result = Primality.divisors(new BigInteger("341550071728321"));
+    assertEquals(result.toString(), "[1, 10670053, 32010157, 341550071728321]");
   }
 
   public void testPrime() {

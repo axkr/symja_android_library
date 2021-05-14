@@ -15,6 +15,7 @@ import java.util.Map;
 import java.util.SortedMap;
 import java.util.TreeMap;
 
+import org.matheclipse.core.basic.Config;
 import org.matheclipse.core.expression.ComplexSym;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.interfaces.IAST;
@@ -74,7 +75,7 @@ public final class GaussianInteger {
     }
     if (norm.compareTo(BigInteger.ONE) > 0) {
       //      SortedMap<BigInteger, Integer> bigMap = new TreeMap<BigInteger, Integer>();
-      SortedMap<BigInteger, Integer> bigMap = Primality.factorInteger(norm);
+      SortedMap<BigInteger, Integer> bigMap = Config.PRIME_FACTORS.factorInteger(norm);
       Ind = bigMap.size();
       Primes = new BigInteger[Ind];
       Exponents = new int[Ind];

@@ -1484,6 +1484,10 @@ public final class NumberTheory {
       return ARGS_2_2;
     }
 
+    @Override
+    public void setUp(final ISymbol newSymbol) {
+      newSymbol.setAttributes(ISymbol.LISTABLE);
+    }
     /**
      * Return S.True or S.False if result is divisible. Return <code>F.NIL</code>, if the result
      * could not be determined.
@@ -1855,17 +1859,6 @@ public final class NumberTheory {
     }
   }
 
-  // public static void main(String[] args) {
-  // BigInteger[] gcdArgs = new BigInteger[] { BigInteger.valueOf(550), BigInteger.valueOf(420),
-  // BigInteger.valueOf(3515) };
-  // BigInteger[] bezoutCoefficients = new BigInteger[3];
-  // BigInteger gcd = ExtendedGCD.extendedGCD(gcdArgs, bezoutCoefficients);
-  // System.out.println("GCD: " + gcd.toString());
-  // System.out.println("Bezout Coefficients: ");
-  // for (int i = 0; i < bezoutCoefficients.length; i++) {
-  // System.out.print(" " + bezoutCoefficients[i].toString());
-  // }
-  // }
   /**
    *
    *
@@ -2981,8 +2974,7 @@ public final class NumberTheory {
 
     @Override
     public void setUp(ISymbol newSymbol) {
-      newSymbol.setAttributes(
-          ISymbol.HOLDALL | ISymbol.ORDERLESS | ISymbol.LISTABLE | ISymbol.NUMERICFUNCTION);
+      newSymbol.setAttributes(ISymbol.HOLDALL | ISymbol.ORDERLESS | ISymbol.NUMERICFUNCTION);
     }
   }
 
@@ -3100,6 +3092,9 @@ public final class NumberTheory {
     @Override
     public IExpr evaluate(final IAST ast, EvalEngine engine) {
       IExpr arg1 = ast.arg1();
+      if (arg1.isList()) {
+        return ((IAST) arg1).mapThread(ast, 1);
+      }
       if (arg1.isOne()) {
         return F.C1;
       }
@@ -3131,11 +3126,6 @@ public final class NumberTheory {
     @Override
     public int[] expectedArgSize(IAST ast) {
       return ARGS_1_1;
-    }
-
-    @Override
-    public void setUp(final ISymbol newSymbol) {
-      newSymbol.setAttributes(ISymbol.LISTABLE);
     }
   }
 
@@ -3282,6 +3272,9 @@ public final class NumberTheory {
     @Override
     public IExpr evaluate(final IAST ast, EvalEngine engine) {
       IExpr arg1 = ast.arg1();
+      if (ast.arg1().isList()) {
+        return ((IAST) arg1).mapThread(ast, 1);
+      }
       if (arg1.isInteger()) {
         if (arg1.isZero() || arg1.isOne() || arg1.isNegative()) {
           return F.C0;
@@ -3302,11 +3295,6 @@ public final class NumberTheory {
     @Override
     public int[] expectedArgSize(IAST ast) {
       return ARGS_1_1;
-    }
-
-    @Override
-    public void setUp(final ISymbol newSymbol) {
-      newSymbol.setAttributes(ISymbol.LISTABLE);
     }
   }
 
@@ -3354,11 +3342,6 @@ public final class NumberTheory {
         }
       }
       return F.NIL;
-    }
-
-    @Override
-    public void setUp(final ISymbol newSymbol) {
-      newSymbol.setAttributes(ISymbol.LISTABLE);
     }
   }
 
@@ -3423,11 +3406,6 @@ public final class NumberTheory {
     @Override
     public int[] expectedArgSize(IAST ast) {
       return ARGS_1_1;
-    }
-
-    @Override
-    public void setUp(final ISymbol newSymbol) {
-      newSymbol.setAttributes(ISymbol.LISTABLE);
     }
   }
 
@@ -4064,11 +4042,6 @@ public final class NumberTheory {
       }
       return F.NIL;
     }
-
-    @Override
-    public void setUp(final ISymbol newSymbol) {
-      newSymbol.setAttributes(ISymbol.LISTABLE);
-    }
   }
 
   private static class PerfectNumberQ extends AbstractFunctionEvaluator {
@@ -4112,11 +4085,6 @@ public final class NumberTheory {
     public int[] expectedArgSize(IAST ast) {
       return ARGS_1_1;
     }
-
-    @Override
-    public void setUp(final ISymbol newSymbol) {
-      newSymbol.setAttributes(ISymbol.LISTABLE);
-    }
   }
 
   /**
@@ -4147,8 +4115,13 @@ public final class NumberTheory {
     public IExpr evaluate(IAST ast, EvalEngine engine) {
       if (ast.arg1().isInteger()) {
         int nthPrime = ((IInteger) ast.arg1()).toIntDefault(Integer.MIN_VALUE);
-        if (nthPrime < 0 || nthPrime > 103000000) {
-          return F.NIL;
+        if (nthPrime <= 0) {
+          // Positive integer argument expected in `1`.
+          return IOFunctions.printMessage(ast.topHead(), "intpp", F.List(ast), engine);
+        }
+        if (nthPrime > 103000000) {
+          // Maximum Prime limit `1` exceeded.
+          return IOFunctions.printMessage(ast.topHead(), "zzprime", F.List(ast.arg1()), engine);
         }
         try {
           return F.ZZ(Primality.prime(nthPrime));
@@ -4270,6 +4243,9 @@ public final class NumberTheory {
     @Override
     public IExpr evaluate(final IAST ast, EvalEngine engine) {
       IExpr arg1 = ast.arg1();
+      if (ast.arg1().isList()) {
+        return ((IAST) arg1).mapThread(ast, 1);
+      }
       if (arg1.isZero()) {
         return F.NIL;
       }
@@ -4282,7 +4258,7 @@ public final class NumberTheory {
         }
         //        SortedMap<BigInteger, Integer> map = new TreeMap<BigInteger, Integer>();
         SortedMap<BigInteger, Integer> map =
-            Primality.factorInteger(((IInteger) arg1).toBigNumerator());
+        		Config.PRIME_FACTORS.factorInteger(((IInteger) arg1).toBigNumerator());
         BigInteger sum = BigInteger.ZERO;
         for (Map.Entry<BigInteger, Integer> entry : map.entrySet()) {
           sum = sum.add(BigInteger.valueOf(entry.getValue()));
@@ -4300,11 +4276,6 @@ public final class NumberTheory {
     @Override
     public int[] expectedArgSize(IAST ast) {
       return ARGS_1_1;
-    }
-
-    @Override
-    public void setUp(final ISymbol newSymbol) {
-      newSymbol.setAttributes(ISymbol.LISTABLE);
     }
   }
 
@@ -4354,11 +4325,6 @@ public final class NumberTheory {
     @Override
     public int[] expectedArgSize(IAST ast) {
       return ARGS_1_1;
-    }
-
-    @Override
-    public void setUp(final ISymbol newSymbol) {
-      newSymbol.setAttributes(ISymbol.LISTABLE);
     }
   }
 
@@ -4520,7 +4486,6 @@ public final class NumberTheory {
       public IExpr visit(INum element) {
         return F.fraction(element.getRealPart(), epsilon);
       }
- 
     }
 
     @Override
@@ -4557,7 +4522,7 @@ public final class NumberTheory {
 
     @Override
     public void setUp(final ISymbol newSymbol) {
-      newSymbol.setAttributes(ISymbol.HOLDALL | ISymbol.LISTABLE);
+      newSymbol.setAttributes(ISymbol.HOLDALL);
     }
   }
 
