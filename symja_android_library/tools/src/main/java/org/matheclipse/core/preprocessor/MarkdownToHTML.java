@@ -55,6 +55,10 @@ public class MarkdownToHTML {
                   String[] lines = html.split("\\n");
                   System.out.println("/**");
                   for (int j = 0; j < lines.length; j++) {
+                    if (lines[j].startsWith("<h3>Github</h3>")) {
+                      // don't include link to github implementation
+                      break;
+                    }
                     if (!lines[j].startsWith("<h2>")) {
                       System.out.println(" * " + lines[j]);
                     }
