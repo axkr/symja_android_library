@@ -1,22 +1,21 @@
 package org.matheclipse.io.others;
 
 import java.math.BigInteger;
-import java.util.SortedMap;
-import java.util.TreeMap;
 
-import org.matheclipse.core.numbertheory.Primality;
+import org.matheclipse.core.numbertheory.IPrimality;
+import org.matheclipse.core.numbertheory.SortedMultiset;
+import org.matheclipse.core.numbertheory.SortedMultiset_BottomUp;
+import org.matheclipse.gpl.numbertheory.BigIntegerPrimality;
 
-import de.tilman_neumann.jml.factor.ecm.EllipticCurveMethod;
-import de.tilman_neumann.util.SortedMultiset;
-import de.tilman_neumann.util.SortedMultiset_BottomUp;
 import junit.framework.TestCase;
 
 public class EllipticCurveMethodJUnit extends TestCase {
+  private static IPrimality PRIME_FACTORS = new BigIntegerPrimality();
 
   public void testECM() {
     BigInteger big = new BigInteger("8438503049348381100385800049534923490020044110031");
     SortedMultiset<BigInteger> bigMap = new SortedMultiset_BottomUp<BigInteger>();
-    Primality.factorInteger(big, bigMap);
+    PRIME_FACTORS.factorInteger(big, bigMap);
     System.out.println(bigMap.toString());
     assertEquals(
         "{59=1, 41387=1, 40320271=1, 85708917607365601059185614891297817=1}", bigMap.toString());
@@ -25,7 +24,7 @@ public class EllipticCurveMethodJUnit extends TestCase {
     big = new BigInteger("8392894255239922239");
     bigMap = new SortedMultiset_BottomUp<BigInteger>();
 
-    Primality.factorInteger(big, bigMap);
+    PRIME_FACTORS.factorInteger(big, bigMap);
     System.out.println(bigMap.toString());
     assertEquals("{3=1, 7=1, 457=1, 11717=1, 84053=1, 887987=1}", bigMap.toString());
 
@@ -33,7 +32,7 @@ public class EllipticCurveMethodJUnit extends TestCase {
     big = new BigInteger("44343535354351600000003434353");
     bigMap = new SortedMultiset_BottomUp<BigInteger>();
 
-    Primality.factorInteger(big, bigMap);
+    PRIME_FACTORS.factorInteger(big, bigMap);
     System.out.println(bigMap.toString());
     assertEquals("{149=1, 329569479697=1, 903019357561501=1}", bigMap.toString());
 
@@ -43,7 +42,7 @@ public class EllipticCurveMethodJUnit extends TestCase {
         new BigInteger(
             "255262268110991784076989150819008060991712040134738393813423038941626368000000000000");
     bigMap = new SortedMultiset_BottomUp<BigInteger>();
-    Primality.factorInteger(big, bigMap);
+    PRIME_FACTORS.factorInteger(big, bigMap);
     System.out.println(bigMap.toString());
     assertEquals(
         "{2=47, 3=23, 5=12, 7=9, 11=4, 13=3, 17=2, 19=2, 23=2, 29=1, 31=1, "
@@ -55,7 +54,7 @@ public class EllipticCurveMethodJUnit extends TestCase {
         new BigInteger(
             "10000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000001");
     bigMap = new SortedMultiset_BottomUp<BigInteger>();
-    Primality.factorInteger(big, bigMap);
+    PRIME_FACTORS.factorInteger(big, bigMap);
     System.out.println(bigMap.toString());
     assertEquals(
         "{73=1, 137=1, 401=1, 1201=1, 1601=1, 1676321=1, "
@@ -65,28 +64,28 @@ public class EllipticCurveMethodJUnit extends TestCase {
     System.out.println();
     big = new BigInteger("2010");
     bigMap = new SortedMultiset_BottomUp<BigInteger>();
-    Primality.factorInteger(big, bigMap);
+    PRIME_FACTORS.factorInteger(big, bigMap);
     System.out.println(bigMap.toString());
     assertEquals("{2=1, 3=1, 5=1, 67=1}", bigMap.toString());
 
     System.out.println();
     big = new BigInteger("65536");
     bigMap = new SortedMultiset_BottomUp<BigInteger>();
-    Primality.factorInteger(big, bigMap);
+    PRIME_FACTORS.factorInteger(big, bigMap);
     System.out.println(bigMap.toString());
     assertEquals("{2=16}", bigMap.toString());
 
     System.out.println();
     big = new BigInteger("140016480344628383");
     bigMap = new SortedMultiset_BottomUp<BigInteger>();
-    Primality.factorInteger(big, bigMap);
+    PRIME_FACTORS.factorInteger(big, bigMap);
     System.out.println(bigMap.toString());
     assertEquals("{373607131=1, 374769293=1}", bigMap.toString());
 
     System.out.println();
     big = new BigInteger("798645312654798147285393218574111453126547981472185139328574111781");
     bigMap = new SortedMultiset_BottomUp<BigInteger>();
-    Primality.factorInteger(big, bigMap);
+    PRIME_FACTORS.factorInteger(big, bigMap);
     System.out.println(bigMap.toString());
     assertEquals(
         "{61=1, 67=1, 74729=1, 97913387938680010938335707=1, 26706566722753457593818813677521=1}",
