@@ -8,6 +8,7 @@ import java.io.IOException;
 import java.math.BigInteger;
 import java.util.HashSet;
 import java.util.IdentityHashMap;
+import java.util.Iterator;
 import java.util.Locale;
 import java.util.Map;
 import java.util.Set;
@@ -19,9 +20,13 @@ import java.util.function.IntFunction;
 import java.util.function.Predicate;
 
 import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.text.StringEscapeUtils;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.apfloat.Apcomplex;
 import org.apfloat.Apfloat;
 import org.apfloat.ApfloatContext;
+import org.hipparchus.Field;
 import org.hipparchus.complex.Complex;
 import org.hipparchus.fraction.BigFraction;
 import org.matheclipse.core.basic.Config;
@@ -130,9 +135,12 @@ import com.google.common.cache.CacheBuilder;
 
 import edu.jas.kern.ComputerThreads;
 import edu.jas.kern.PreemptStatus;
+import edu.jas.ps.OrderedPairlist;
 
 /** Factory for creating Symja predefined function expression objects (interface {@link IAST}). */
 public class F extends S {
+
+  private static final Logger logger = LogManager.getLogger(F.class);
 
   /**
    * In computing, memoization or memoisation is an optimization technique used primarily to speed
@@ -538,6 +546,8 @@ public class F extends S {
 
   /** Represents <code>#3</code>, the third argument of a pure function. */
   public static IAST Slot3;
+
+  public static final Field<IExpr> EXPR_FIELD = new ExprField();
 
   /** Constant integer &quot;-1&quot; */
   public static final IInteger CN1 = AbstractIntegerSym.valueOf(-1);
@@ -2160,6 +2170,10 @@ public class F extends S {
     return new AST2(BooleanTable, a0, a1);
   }
 
+  public static IAST BooleanVariables(final IExpr a0) {
+    return new AST1(BooleanVariables, a0);
+  }
+
   public static IAST BesselI(final IExpr a0, final IExpr a1) {
     return new AST2(BesselI, a0, a1);
   }
@@ -2743,8 +2757,16 @@ public class F extends S {
     return new AST1(Csch, a0);
   }
 
+  public static IAST Cuboid(final IExpr a0, final IExpr a1) {
+    return new AST2(Cuboid, a0, a1);
+  }
+
   public static IAST Cycles(final IExpr a0) {
     return new AST1(Cycles, a0);
+  }
+
+  public static IAST Cylinder(final IExpr a0) {
+    return new AST1(Cylinder, a0);
   }
 
   public static IAST D() {
@@ -3374,6 +3396,10 @@ public class F extends S {
     return new AST1(ExponentialDistribution, a0);
   }
 
+  public static IAST ExportString(final IExpr a0, final IExpr a1) {
+    return new AST2(ExportString, a0, a1);
+  }
+
   public static IAST Extract(final IExpr a0, final IExpr a1) {
     return new AST2(Extract, a0, a1);
   }
@@ -3676,12 +3702,24 @@ public class F extends S {
     return new B2.GreaterEqual(a0, a1);
   }
 
+  public static IAST Gudermannian(final IExpr a0) {
+    return new AST1(Gudermannian, a0);
+  }
+
   public static IAST GumbelDistribution() {
     return new AST0(GumbelDistribution);
   }
 
   public static IAST GumbelDistribution(final IExpr a0, final IExpr a1) {
     return new AST2(GumbelDistribution, a0, a1);
+  }
+
+  public static IAST HankelH1(final IExpr a0, final IExpr a1) {
+    return new AST2(HankelH1, a0, a1);
+  }
+
+  public static IAST HankelH2(final IExpr a0, final IExpr a1) {
+    return new AST2(HankelH2, a0, a1);
   }
 
   public static IAST HarmonicMean(final IExpr a0) {
@@ -3904,19 +3942,26 @@ public class F extends S {
         if (symbolObserver != null) {
           SYMBOL_OBSERVER = symbolObserver;
         }
-        String autoload = ".\\Autoload";
-        if (FEConfig.PARSER_USE_LOWERCASE_SYMBOLS) {
-          autoload = ".\\AutoloadSymja";
-        }
-        File sourceLocation = new File(autoload);
-        final String[] files = sourceLocation.list();
-        if (files != null) {
-          for (int i = 0; i < files.length; i++) {
-            if (files[i].endsWith(".m")) {
-              File sourceFile = new File(sourceLocation, files[i]);
-              FileFunctions.Get.loadPackage(EvalEngine.get(), sourceFile);
+        try {
+          String autoload = ".\\Autoload";
+          if (FEConfig.PARSER_USE_LOWERCASE_SYMBOLS) {
+            autoload = ".\\AutoloadSymja";
+          }
+          File sourceLocation = new File(autoload);
+          final String[] files = sourceLocation.list();
+          if (files != null) {
+            for (int i = 0; i < files.length; i++) {
+              if (files[i].endsWith(".m")) {
+                File sourceFile = new File(sourceLocation, files[i]);
+                FileFunctions.Get.loadPackage(EvalEngine.get(), sourceFile);
+              }
             }
           }
+        } catch (java.security.AccessControlException acex) {
+          // no read access for current user
+          logger.warn("Cannot read packages in autoload folder:", acex); 
+        } catch (RuntimeException ex) {
+          logger.error(ex); 
         }
         // if (!noPackageLoading) {
         // Reader reader = null;
@@ -4185,6 +4230,10 @@ public class F extends S {
 
   public static IAST InverseGammaRegularized(final IExpr a0, final IExpr a1, final IExpr a2) {
     return new AST3(InverseGammaRegularized, a0, a1, a2);
+  }
+
+  public static IAST InverseGudermannian(final IExpr a0) {
+    return new AST1(InverseGudermannian, a0);
   }
 
   public static IAST InverseHaversine(final IExpr a) {
@@ -4472,6 +4521,14 @@ public class F extends S {
 
   public static IAST Join(final IExpr a0, final IExpr a1) {
     return new AST2(Join, a0, a1);
+  }
+
+  public static IAST KelvinBei(final IExpr a0, final IExpr a1) {
+    return new AST2(KelvinBei, a0, a1);
+  }
+
+  public static IAST KelvinBer(final IExpr a0, final IExpr a1) {
+    return new AST2(KelvinBer, a0, a1);
   }
 
   public static IAST Key(final IExpr a0) {
@@ -4765,6 +4822,14 @@ public class F extends S {
     return ast(a, List);
   }
 
+  public static IAST TemplateSlot(final IExpr a0) {
+    return new AST1(TemplateSlot, a0);
+  }
+
+  public static IAST TemplateSlot(final IExpr a0, final IExpr a1) {
+    return new AST2(TemplateSlot, a0, a1);
+  }
+
   /**
    * For positive n, add the first n elements of <code>numbers</code> to the list.For negative n,
    * add the last n elements of <code>numbers</code> to the list.
@@ -4808,6 +4873,14 @@ public class F extends S {
     INum a[] = new INum[numbers.length];
     for (int i = 0; i < numbers.length; i++) {
       a[i] = num(numbers[i]);
+    }
+    return function(List, a);
+  }
+
+  public static IAST List(final String... strs) {
+    IStringX a[] = new IStringX[strs.length];
+    for (int i = 0; i < strs.length; i++) {
+      a[i] = F.stringx(strs[i]);
     }
     return function(List, a);
   }
@@ -5299,6 +5372,10 @@ public class F extends S {
 
   public static IAST NakagamiDistribution(final IExpr a0, final IExpr a1) {
     return new AST2(NakagamiDistribution, a0, a1);
+  }
+
+  public static IAST Needs(final IExpr a0) {
+    return new AST1(Needs, a0);
   }
 
   /**
@@ -6611,6 +6688,15 @@ public class F extends S {
     return function(Span, a);
   }
 
+  public static IAST Sphere(final IExpr a0, final IExpr a1) {
+    return new AST2(Sphere, a0, a1);
+  }
+
+  public static IAST SphericalHarmonicY(
+      final IExpr a0, final IExpr a1, final IExpr a2, final IExpr a3) {
+    return function(SphericalHarmonicY, a0, a1, a2, a3);
+  }
+
   /**
    * Create a "square" expression: <code>Power(x, 2)</code>.
    *
@@ -7263,6 +7349,10 @@ public class F extends S {
     return new AST2(UpSetDelayed, a0, a1);
   }
 
+  public static IAST Variables(final IExpr a0) {
+    return new AST1(Variables, a0);
+  }
+
   public static IAST Variance(final IExpr a0) {
     return new AST1(Variance, a0);
   }
@@ -7357,8 +7447,19 @@ public class F extends S {
    * @return
    */
   public static IAST operatorForm1Append(final IAST ast1) {
-    if (ast1.head().isAST1() && ast1.isAST1()) {
-      return new AST2(ast1.topHead(), ast1.arg1(), ((IAST) ast1.head()).arg1());
+    if (ast1.isAST1() && ast1.head().isAST() && ast1.head().size() > 1) {
+      IAST head = (IAST) ast1.head();
+      switch (head.size()) {
+        case 2:
+          return new AST2(ast1.topHead(), ast1.arg1(), head.arg1());
+        case 3:
+          return new AST3(ast1.topHead(), ast1.arg1(), head.arg1(), head.arg2());
+        default:
+          IASTAppendable result = F.ast(ast1.topHead(), head.size() + 1, false);
+          result.append(ast1.arg1());
+          result.appendArgs(head);
+          return result;
+      }
     }
     return NIL;
   }
@@ -7484,6 +7585,21 @@ public class F extends S {
         if (show.size() > 1 && show.arg1().isSameHeadSizeGE(Graphics, 2)) {
           return openSVGOnDesktop(show);
         }
+      } else if (expr.isAST(S.Graphics3D)) {
+        IExpr expressionJSON =
+            EvalEngine.get().evaluate(F.ExportString(F.N(expr), F.stringx("ExpressionJSON")));
+        if (expressionJSON.isString()) {
+          String jsonStr = expressionJSON.toString();
+          try {
+            String html = Config.GRAPHICS3D_PAGE;
+            html = StringUtils.replace(html, "`1`", jsonStr);
+            return openHTMLOnDesktop(html);
+          } catch (Exception ex) {
+            if (FEConfig.SHOW_STACKTRACE) {
+              ex.printStackTrace();
+            }
+          }
+        }
       } else if (expr instanceof GraphExpr) {
         String javaScriptStr = GraphFunctions.graphToJSForm((GraphExpr) expr);
         if (javaScriptStr != null) {
@@ -7492,7 +7608,7 @@ public class F extends S {
           html = StringUtils.replace(html, "`2`", "var options = {};");
           return openHTMLOnDesktop(html);
         }
-      } else if (expr.isAST(JSFormData, 3)) {
+      } else if (expr.isAST(S.JSFormData, 3)) {
         return printJSFormData(expr);
       } else if (expr.isString()) {
         IStringX str = (IStringX) expr;
@@ -7529,6 +7645,17 @@ public class F extends S {
           ex.printStackTrace();
         }
       }
+      //    } else if (jsFormData.arg2().toString().equals("graphics3d")) {
+      //      try {
+      //        String graphics3dStr = jsFormData.arg1().toString();
+      //        String html = Config.GRAPHICS3D_PAGE;
+      //        html = StringUtils.replace(html, "`1`", graphics3dStr);
+      //        return openHTMLOnDesktop(html);
+      //      } catch (Exception ex) {
+      //        if (FEConfig.SHOW_STACKTRACE) {
+      //          ex.printStackTrace();
+      //        }
+      //      }
     } else if (jsFormData.arg2().toString().equals("jsxgraph")) {
       try {
         String manipulateStr = jsFormData.arg1().toString();
@@ -7561,40 +7688,23 @@ public class F extends S {
                 html,
                 "`2`", //
                 "  var options = {\n"
-                    + //
-                    "		  edges: {\n"
-                    + //
-                    "              smooth: {\n"
-                    + //
-                    "                  type: 'cubicBezier',\n"
-                    + //
-                    "                  forceDirection:  'vertical',\n"
-                    + //
-                    "                  roundness: 0.4\n"
-                    + //
-                    "              }\n"
-                    + //
-                    "          },\n"
-                    + //
-                    "          layout: {\n"
-                    + //
-                    "              hierarchical: {\n"
-                    + //
-                    "                  direction: \"UD\"\n"
-                    + //
-                    "              }\n"
-                    + //
-                    "          },\n"
-                    + //
-                    "          nodes: {\n"
-                    + //
-                    "            shape: 'box'\n"
-                    + //
-                    "          },\n"
-                    + //
-                    "          physics:false\n"
-                    + //
-                    "      }; " //
+                    + "		  edges: {\n"
+                    + "              smooth: {\n"
+                    + "                  type: 'cubicBezier',\n"
+                    + "                  forceDirection:  'vertical',\n"
+                    + "                  roundness: 0.4\n"
+                    + "              }\n"
+                    + "          },\n"
+                    + "          layout: {\n"
+                    + "              hierarchical: {\n"
+                    + "                  direction: \"UD\"\n"
+                    + "              }\n"
+                    + "          },\n"
+                    + "          nodes: {\n"
+                    + "            shape: 'box'\n"
+                    + "          },\n"
+                    + "          physics:false\n"
+                    + "      }; " //
                 );
         return openHTMLOnDesktop(html);
       } catch (Exception ex) {

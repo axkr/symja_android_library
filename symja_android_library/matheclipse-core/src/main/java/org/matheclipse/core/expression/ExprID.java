@@ -16,7 +16,7 @@ import org.matheclipse.core.visit.IVisitorLong;
  *
  * @see F#GLOBAL_IDS
  */
-public class ExprID implements IExpr {
+/* private package */ class ExprID implements IExpr {
   @Override
   public int hashCode() {
     final int prime = 31;

@@ -82,14 +82,14 @@ public class Object2Expr {
       return ((Boolean) obj).booleanValue() ? S.True : S.False;
     }
     if (obj instanceof Number) {
+      if (obj instanceof org.hipparchus.fraction.Fraction) {
+        org.hipparchus.fraction.Fraction frac = (org.hipparchus.fraction.Fraction) obj;
+        return F.fraction(frac.getNumerator(), frac.getDenominator());
+      }
       return convert((Number) obj);
     }
     if (obj instanceof java.util.Collection) {
       return convertList((java.util.Collection<?>) obj, parseString, javaObject);
-    }
-    if (obj instanceof org.hipparchus.fraction.Fraction) {
-      org.hipparchus.fraction.Fraction frac = (org.hipparchus.fraction.Fraction) obj;
-      return F.fraction(frac.getNumerator(), frac.getDenominator());
     }
     if (obj instanceof org.hipparchus.complex.Complex) {
       org.hipparchus.complex.Complex cmp = (org.hipparchus.complex.Complex) obj;

@@ -461,4 +461,9 @@ public class VariablesSet {
       }
     }
   }
+
+  @Override
+  public String toString() {
+    return "VariablesSet = " + fVariablesSet.toString();
+  }
 }

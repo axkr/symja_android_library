@@ -8,8 +8,7 @@ import org.matheclipse.core.interfaces.IExpr;
  *
  * @see ExprFieldElement
  */
-public class ExprField implements Field<IExpr> {
-  public static final ExprField CONST = new ExprField();
+/* package private*/ final class ExprField implements Field<IExpr> {
 
   // public final static IExpr ONE = F.C1;
   // public final static IExpr ZERO  =F.C0;
