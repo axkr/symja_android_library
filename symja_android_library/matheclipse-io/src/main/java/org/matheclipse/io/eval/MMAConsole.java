@@ -11,6 +11,8 @@ import java.nio.charset.StandardCharsets;
 import java.util.Locale;
 import java.util.concurrent.TimeUnit;
 
+import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.text.StringEscapeUtils;
 import org.matheclipse.core.basic.Config;
 import org.matheclipse.core.basic.ToggleFeature;
 import org.matheclipse.core.builtin.IOFunctions;
@@ -579,7 +581,7 @@ public class MMAConsole {
             IExpr outExpr = result;
             if (result.isAST(S.Graphics)) { // || result.isAST(F.Graphics3D)) {
               outExpr = F.Show(outExpr);
-            }
+            } 
             String html = F.show(outExpr);
             if (html != null && html.length() > 0) {
               return html;

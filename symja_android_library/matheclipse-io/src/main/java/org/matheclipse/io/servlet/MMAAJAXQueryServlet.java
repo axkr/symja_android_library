@@ -6,7 +6,6 @@ import java.io.PrintWriter;
 import java.io.StringWriter;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.logging.Logger;
 
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServlet;
@@ -16,6 +15,8 @@ import javax.servlet.http.HttpSession;
 
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.text.StringEscapeUtils;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.matheclipse.core.basic.Config;
 import org.matheclipse.core.basic.ToggleFeature;
 import org.matheclipse.core.builtin.GraphFunctions;
@@ -46,7 +47,7 @@ public class MMAAJAXQueryServlet extends HttpServlet {
 
   static final Map<String, EvalEngine> ENGINES = new HashMap<String, EvalEngine>();
 
-  static final String JSXGRAPH_IFRAME = //
+  protected static final String GRAPHICS3D_IFRAME = //
       "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n"
           + "\n"
           + "<!DOCTYPE html PUBLIC\n"
@@ -56,62 +57,19 @@ public class MMAAJAXQueryServlet extends HttpServlet {
           + "<html xmlns=\"http://www.w3.org/1999/xhtml\" style=\"width: 100%; height: 100%; margin: 0; padding: 0\">\n"
           + "<head>\n"
           + "<meta charset=\"utf-8\">\n"
-          + "<title>JSXGraph</title>\n"
-          + "\n"
-          + "<body style=\"width: 100%; height: 100%; margin: 0; padding: 0\">\n"
-          + "\n"
-          + "<link rel=\"stylesheet\" type=\"text/css\" href=\"https://cdnjs.cloudflare.com/ajax/libs/jsxgraph/1.2.1/jsxgraph.min.css\" />\n"
-          + "<script src=\"https://cdn.jsdelivr.net/gh/paulmasson/math@1.4.4/build/math.js\"></script>\n"
-          + "<script src=\"https://cdnjs.cloudflare.com/ajax/libs/jsxgraph/1.2.1/jsxgraphcore.min.js\"\n"
-          + "        type=\"text/javascript\"></script>\n"
-          + "<script src=\"https://cdnjs.cloudflare.com/ajax/libs/jsxgraph/1.2.1/geonext.min.js\"\n"
-          + "        type=\"text/javascript\"></script>\n"
-          + "\n"
-          + "<div id=\"jxgbox\" class=\"jxgbox\" style=\"display: flex; width:99%; height:99%; margin: 0; flex-direction: column; overflow: hidden\">\n"
-          + "<script>\n"
-          + "`1`\n"
-          + "</script>\n"
-          + "</div>\n"
-          + "\n"
-          + "</body>\n"
-          + "</html>"; //
-
-  protected static final String MATHCELL_IFRAME = //
-      // "<html style=\"width: 100%; height: 100%; margin: 0; padding: 0\">\n"
-      "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n"
-          + "\n"
-          + "<!DOCTYPE html PUBLIC\n"
-          + "  \"-//W3C//DTD XHTML 1.1 plus MathML 2.0 plus SVG 1.1//EN\"\n"
-          + "  \"http://www.w3.org/2002/04/xhtml-math-svg/xhtml-math-svg.dtd\">\n"
-          + "\n"
-          + "<html xmlns=\"http://www.w3.org/1999/xhtml\" style=\"width: 100%; height: 100%; margin: 0; padding: 0\">\n"
-          + "<head>\n"
-          + "<meta charset=\"utf-8\">\n"
-          + "<title>MathCell</title>\n"
+          + "<title>Graphics3D</title>\n"
+          + "<script src=https://cdnjs.cloudflare.com/ajax/libs/three.js/r116/three.min.js></script>\n"
+          + "<script src=https://cdn.jsdelivr.net/gh/JerryI/Mathematica-ThreeJS-graphics-engine@latest/Mathics/Detector.js></script>\n"
+          + "<script src=https://cdn.jsdelivr.net/gh/JerryI/Mathematica-ThreeJS-graphics-engine@latest/graphics3d.js></script>"
           + "</head>\n"
           + "\n"
-          + "<body style=\"width: 100%; height: 100%; margin: 0; padding: 0\">\n"
-          + "\n"
-          + "<script src=\"https://cdn.jsdelivr.net/gh/paulmasson/math@1.4.4/build/math.js\"></script>\n"
-          + "<script src=\"https://cdn.jsdelivr.net/gh/paulmasson/mathcell@1.9.1/build/mathcell.js\"></script>\n"
-          + "<script src=\"https://cdn.jsdelivr.net/gh/mathjax/MathJax@2.7.5/MathJax.js?config=TeX-AMS_HTML\"></script>"
-          + "\n"
-          + "<div class=\"mathcell\" style=\"display: flex; width: 100%; height: 100%; margin: 0;  padding: .25in .5in .5in .5in; flex-direction: column; overflow: hidden\">\n"
-          + "<script>\n"
-          + "\n"
-          + "var parent = document.currentScript.parentNode;\n"
-          + "\n"
-          + "var id = generateId();\n"
-          + "parent.id = id;\n"
-          + "\n"
-          + "`1`\n"
-          + "\n"
-          + "parent.update( id );\n"
-          + "\n"
-          + "</script>\n"
-          + "</div>\n"
-          + "\n"
+          + "<body>\n"
+          + "  <div id=\"graphics3d\"></div>\n"
           + "</body>\n"
+          + "<script>\n"
+          + "var JSONThree = `1`;\n"
+          + "	interpretate(JSONThree);\n"
+          + "</script>"
           + "</html>"; //
 
   protected static final String VISJS_IFRAME = //
@@ -145,26 +103,6 @@ public class MMAAJAXQueryServlet extends HttpServlet {
           + "</body>\n"
           + "</html>"; //
 
-  protected static final String PLOTLY_IFRAME = //
-      "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n"
-          + "\n"
-          + "<!DOCTYPE html PUBLIC\n"
-          + "  \"-//W3C//DTD XHTML 1.1 plus MathML 2.0 plus SVG 1.1//EN\"\n"
-          + "  \"http://www.w3.org/2002/04/xhtml-math-svg/xhtml-math-svg.dtd\">\n"
-          + "\n"
-          + "<html xmlns=\"http://www.w3.org/1999/xhtml\" style=\"width: 100%; height: 100%; margin: 0; padding: 0\">\n"
-          + "<head>\n"
-          + "<meta charset=\"utf-8\">\n"
-          + "<title>Plotly</title>\n"
-          + "\n"
-          + "   <script src=\"https://cdn.plot.ly/plotly-latest.min.js\"></script>\n"
-          + "</head>\n"
-          + "<body>\n"
-          + "<div id='plotly' ></div>\n"
-          + "`1`\n"
-          + "</body>\n"
-          + "</html>"; //
-
   protected static final String HTML_IFRAME = //
       "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n"
           + "\n"
@@ -193,7 +131,7 @@ public class MMAAJAXQueryServlet extends HttpServlet {
 
   private static final long serialVersionUID = 6265703737413093134L;
 
-  private static final Logger log = Logger.getLogger(MMAAJAXQueryServlet.class.getName());
+  private static final Logger logger = LogManager.getLogger(MMAAJAXQueryServlet.class);
 
   public static final String UTF8 = "utf-8";
 
@@ -276,7 +214,7 @@ public class MMAAJAXQueryServlet extends HttpServlet {
     PrintStream errors = null;
     HttpSession session = request.getSession();
     try {
-      log.warning("(" + session.getId() + ") In::" + expression);
+      logger.warn("(" + session.getId() + ") In::" + expression);
       final StringWriter outWriter = new StringWriter();
       WriterOutputStream wouts = new WriterOutputStream(outWriter);
       outs = new PrintStream(wouts);
@@ -348,8 +286,27 @@ public class MMAAJAXQueryServlet extends HttpServlet {
         outExpr = evalTopLevel(engine, outBuffer, inExpr);
 
         if (outExpr != null) {
-          if (outExpr.isAST(S.Graphics) || outExpr.isAST(S.Graphics3D)) {
+          if (outExpr.isAST(S.Graphics)) {
             outExpr = F.Show(outExpr);
+          } else if (outExpr.isAST(S.Graphics3D)) {
+            IExpr expressionJSON =
+                engine.evaluate(F.ExportString(F.N(outExpr), F.stringx("ExpressionJSON")));
+            if (expressionJSON.isString()) {
+              String jsonStr = expressionJSON.toString();
+              try {
+                String html = GRAPHICS3D_IFRAME;
+                html = StringUtils.replace(html, "`1`", jsonStr);
+                html = StringEscapeUtils.escapeHtml4(html);
+                return JSONBuilder.createJSONJavaScript(
+                    "<iframe srcdoc=\""
+                        + html
+                        + "\" style=\"display: block; width: 100%; height: 100%; border: none;\" ></iframe>");
+              } catch (Exception ex) {
+                if (FEConfig.SHOW_STACKTRACE) {
+                  ex.printStackTrace();
+                }
+              }
+            }
           }
           if (outExpr.isASTSizeGE(S.Show, 2)) {
             IAST show = (IAST) outExpr;
@@ -390,14 +347,18 @@ public class MMAAJAXQueryServlet extends HttpServlet {
             IAST jsFormData = (IAST) outExpr;
             if (jsFormData.arg2().toString().equals("mathcell")) {
               try {
-                String manipulateStr = jsFormData.arg1().toString();
-                String html = MATHCELL_IFRAME;
-                html = StringUtils.replace(html, "`1`", manipulateStr);
-                html = StringEscapeUtils.escapeHtml4(html);
-                return JSONBuilder.createJSONJavaScript(
-                    "<iframe srcdoc=\""
-                        + html
-                        + "\" style=\"display: block; width: 100%; height: 100%; border: none;\" ></iframe>");
+                return JSONBuilder.createJSONIFrame(
+                    JSONBuilder.MATHCELL_IFRAME, jsFormData.arg1().toString());
+                //
+                //                String manipulateStr = jsFormData.arg1().toString();
+                //                String html = MATHCELL_IFRAME;
+                //                html = StringUtils.replace(html, "`1`", manipulateStr);
+                //                html = StringEscapeUtils.escapeHtml4(html);
+                //                return JSONBuilder.createJSONJavaScript(
+                //                    "<iframe srcdoc=\""
+                //                        + html
+                //                        + "\" style=\"display: block; width: 100%; height: 100%;
+                // border: none;\" ></iframe>");
               } catch (Exception ex) {
                 if (FEConfig.SHOW_STACKTRACE) {
                   ex.printStackTrace();
@@ -405,14 +366,17 @@ public class MMAAJAXQueryServlet extends HttpServlet {
               }
             } else if (jsFormData.arg2().toString().equals("jsxgraph")) {
               try {
-                String manipulateStr = jsFormData.arg1().toString();
-                String html = JSXGRAPH_IFRAME;
-                html = StringUtils.replace(html, "`1`", manipulateStr);
-                html = StringEscapeUtils.escapeHtml4(html);
-                return JSONBuilder.createJSONJavaScript(
-                    "<iframe srcdoc=\""
-                        + html
-                        + "\" style=\"display: block; width: 100%; height: 100%; border: none;\" ></iframe>");
+                return JSONBuilder.createJSONIFrame(
+                    JSONBuilder.JSXGRAPH_IFRAME, jsFormData.arg1().toString());
+                //                String manipulateStr = jsFormData.arg1().toString();
+                //                String html = JSXGRAPH_IFRAME;
+                //                html = StringUtils.replace(html, "`1`", manipulateStr);
+                //                html = StringEscapeUtils.escapeHtml4(html);
+                //                return JSONBuilder.createJSONJavaScript(
+                //                    "<iframe srcdoc=\""
+                //                        + html
+                //                        + "\" style=\"display: block; width: 100%; height: 100%;
+                // border: none;\" ></iframe>");
               } catch (Exception ex) {
                 if (FEConfig.SHOW_STACKTRACE) {
                   ex.printStackTrace();
@@ -420,14 +384,17 @@ public class MMAAJAXQueryServlet extends HttpServlet {
               }
             } else if (jsFormData.arg2().toString().equals("plotly")) {
               try {
-                String manipulateStr = jsFormData.arg1().toString();
-                String html = PLOTLY_IFRAME;
-                html = StringUtils.replace(html, "`1`", manipulateStr);
-                html = StringEscapeUtils.escapeHtml4(html);
-                return JSONBuilder.createJSONJavaScript(
-                    "<iframe srcdoc=\""
-                        + html
-                        + "\" style=\"display: block; width: 100%; height: 100%; border: none;\" ></iframe>");
+                return JSONBuilder.createJSONIFrame(
+                    JSONBuilder.PLOTLY_IFRAME, jsFormData.arg1().toString());
+                //                String manipulateStr = jsFormData.arg1().toString();
+                //                String html = PLOTLY_IFRAME;
+                //                html = StringUtils.replace(html, "`1`", manipulateStr);
+                //                html = StringEscapeUtils.escapeHtml4(html);
+                //                return JSONBuilder.createJSONJavaScript(
+                //                    "<iframe srcdoc=\""
+                //                        + html
+                //                        + "\" style=\"display: block; width: 100%; height: 100%;
+                // border: none;\" ></iframe>");
               } catch (Exception ex) {
                 if (FEConfig.SHOW_STACKTRACE) {
                   ex.printStackTrace();
