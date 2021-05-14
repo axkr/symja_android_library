@@ -1,10 +1,12 @@
 package org.matheclipse.io.system.archunit;
 
-import static com.tngtech.archunit.lang.syntax.ArchRuleDefinition.noClasses;
 import static com.tngtech.archunit.lang.syntax.ArchRuleDefinition.classes;
 import static com.tngtech.archunit.lang.syntax.ArchRuleDefinition.methods;
-import static com.tngtech.archunit.library.dependencies.SlicesRuleDefinition.slices;
 
+import org.matheclipse.core.expression.F;
+
+import com.tngtech.archunit.base.DescribedPredicate;
+import com.tngtech.archunit.core.domain.JavaClass;
 import com.tngtech.archunit.core.domain.JavaClasses;
 import com.tngtech.archunit.core.importer.ClassFileImporter;
 import com.tngtech.archunit.lang.ArchRule;
@@ -48,15 +50,36 @@ public class ArchUnitTests extends TestCase {
     rule.check(importedClasses);
   }
 
-  public void testAST() {
+//  public void test_expession_data_access() {
+//    JavaClasses importedClasses = new ClassFileImporter().importPackages("org.matheclipse");
+//
+//    ArchRule myRule =
+//        classes()
+//            .that()
+//            .resideInAPackage("org.matheclipse.core.expression.data..")
+//            .should()
+//            .onlyBeAccessed()
+//            .byAnyPackage("org.matheclipse.core.expression..");
+//
+//    myRule.check(importedClasses);
+//  }
+
+  public void test_expession_access() {
     JavaClasses importedClasses = new ClassFileImporter().importPackages("org.matheclipse");
 
     ArchRule myRule =
         classes()
             .that()
             .resideInAPackage("org.matheclipse.core.expression..")
-            .and()
-            .haveSimpleName("AST")
+            .and(
+                new DescribedPredicate<JavaClass>("") {
+                  @Override
+                  public boolean apply(JavaClass arg0) {
+                    return arg0.getSimpleName().equals("AST")
+                        || arg0.getSimpleName().equals("ExprField")
+                        || arg0.getSimpleName().equals("ExprID");
+                  }
+                })
             // TODO change dependency from "org.matheclipse.core.convert"
             .should()
             .onlyBeAccessed()
