@@ -30,6 +30,7 @@
   D(FresnelC(f_),x_?NotListQ):=D(f,x)*Cos((Pi*f^2)/2),
   D(FresnelS(f_),x_?NotListQ):=D(f,x)*Sin((Pi*f^2)/2),
   D(Gamma(f_),x_?NotListQ):=D(f,x)*Gamma(f)*PolyGamma(f),
+  D(Gudermannian(f_),x_?NotListQ):=Sech(f)*D(f,x),
   D(HarmonicNumber(f_),x_?NotListQ):=D(f,x)*((Pi^2)/6 - HarmonicNumber(f, 2)),
   D(HarmonicNumber(f_,g_),x_?NotListQ):=D(f,x)*g*(-HarmonicNumber(f, 1 + g) + Zeta(1 + g))
     /; FreeQ({g},x),
@@ -39,6 +40,7 @@
   D(InverseErf(f_),x_?NotListQ):=D(f,x)*(1/2*Sqrt(Pi)*E^(InverseErf(f)^2)),
   D(InverseErfc(f_),x_?NotListQ):=D(f,x)*(-(1/2))*E^InverseErfc(f)^2*Sqrt(Pi),
   D(InverseHaversine(f_),x_?NotListQ):=D(f,x)/Sqrt((1 - f)*f),
+  D(InverseGudermannian(f_),x_?NotListQ):=Sec(f)*D(f,x),
   D(Log(f_),x_?NotListQ):=D(f,x)*f^(-1),
   D(LogGamma(f_),x_?NotListQ):=D(f,x)*PolyGamma(0,f),
   D(LogisticSigmoid(f_),x_?NotListQ):=D(f,x)*LogisticSigmoid(f)*(1-LogisticSigmoid(f)),

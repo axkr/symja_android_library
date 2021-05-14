@@ -17,6 +17,6 @@
  Tanh(ArcCsch(x_)):=1/(Sqrt(1 + 1/x^2)*x),
  Tanh(Log(x_)):=(x^2-1)/(1+x^2), 
  
- Tanh(Infinity)=1,
+ Tanh(Infinity)=1, 
  Tanh(ComplexInfinity)=Indeterminate 
 }

@@ -1,12 +1,17 @@
 {
 {
 
+(* Sum has attribute HoldAll *)
+
 Sum(c_^i_, {i_Symbol,1,Infinity}) := -c*(c-1)^(-1)
   /; FreeQ(c,i) && (!NumberQ(c) || (c>(-1) && c<1)),
   
 Sum(i_^k_Symbol, {i_Symbol,1,n_Symbol}) := HarmonicNumber(n, -k)
   /; FreeQ(k,i)&&FreeQ(n,i),
 
+Sum(a_. *(b_^i_), {i_Symbol,1,n_Symbol}) := (a*b*(-1 + b^k))/(-1 + b)
+  /; FreeQ({a,b,n},i),
+  
 Sum(z_^i_ * i_^(-n_), {i_Symbol,1,Infinity}) := PolyLog(n,z)
   /; FreeQ({z,n},i),
    
@@ -41,6 +46,8 @@ Sum(1/(i_!), {i_Symbol,0,Infinity}) := E
   /;  FreeQ(x,i),
 Sum(x_^i_/(i_!), {i_Symbol,0,Infinity}) := E^x
   /;  FreeQ(x,i), 
+  
+Sum( (-1)^(-i_)*(2*i_ + 1)^(-1), {i_Symbol, 1, Infinity}) := 1/4*(-4+Pi),
 
 Sum(1/Binomial(2*i_,i_), {i_Symbol,1,Infinity}) :=  (2*Pi*Sqrt(3)+9)/27,
 Sum(1/i_*1/Binomial(2*i_,i_), {i_Symbol,1,Infinity}) :=  (Pi*Sqrt(3))/9,
