@@ -574,6 +574,8 @@ public final class Arithmetic {
           }
           return F.Arg(directedInfininty.arg1());
         } else if (arg1.isComplexInfinity()) {
+          // Indeterminate expression `1` encountered.
+          IOFunctions.printMessage(ast.topHead(), "indet", F.List(ast), engine);
           return F.Interval(F.List(S.Pi.negate(), S.Pi));
         }
       } else if (arg1.isNumber()) {
@@ -681,7 +683,7 @@ public final class Arithmetic {
    * 0
    * </pre>
    */
-  private static class Chop extends AbstractCoreFunctionEvaluator {
+  private static class Chop extends AbstractFunctionEvaluator {
 
     @Override
     public IExpr evaluate(final IAST ast, EvalEngine engine) {
@@ -691,7 +693,7 @@ public final class Arithmetic {
         delta = ((INum) ast.arg2()).getRealPart();
       }
       try {
-        arg1 = engine.evaluate(arg1);
+        // arg1 = engine.evaluate(arg1);
         if (arg1.isAST()) {
           IAST list = (IAST) arg1;
           // Chop[{a,b,c}] -> {Chop[a],Chop[b],Chop[c]}
@@ -712,11 +714,6 @@ public final class Arithmetic {
     @Override
     public int[] expectedArgSize(IAST ast) {
       return ARGS_1_2;
-    }
-
-    @Override
-    public void setUp(final ISymbol newSymbol) {
-      newSymbol.setAttributes(ISymbol.HOLDALL | ISymbol.LISTABLE);
     }
   }
 
@@ -3056,12 +3053,6 @@ public final class Arithmetic {
         if (temp.isPresent()) {
           return temp;
         }
-        // for (int i = 1; i < size; i++) {
-        // final IExpr temp = plusOp.plus(ast.get(i));
-        // if (temp.isPresent()) {
-        // return temp;
-        // }
-        // }
         if (plusOp.isEvaled()) {
           return plusOp.getSum();
         }
@@ -6754,9 +6745,7 @@ public final class Arithmetic {
           return F.Piecewise(F.List(F.List(F.C1, F.Equal(function.arg1(), F.C0))), F.C0);
         }
         IASTAppendable andAST = F.ast(S.And, function.argSize(), false);
-        for (int i = 1; i < function.size(); i++) {
-          andAST.append(F.Equal(function.get(i), F.C0));
-        }
+        function.forEach(x -> andAST.append(F.Equal(x, F.C0)));
         return F.Piecewise(F.List(F.List(F.C1, andAST)), F.C0);
       }
       if (function.isAST(S.KroneckerDelta)) {

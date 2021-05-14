@@ -10,19 +10,23 @@ import static org.matheclipse.core.expression.F.Round;
 import java.math.BigInteger;
 import java.util.function.Function;
 
+import org.apfloat.Apfloat;
 import org.hipparchus.complex.Complex;
 import org.matheclipse.core.basic.Config;
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.exception.ASTElementLimitExceeded;
+import org.matheclipse.core.eval.exception.ArgumentTypeException;
 import org.matheclipse.core.eval.exception.ValidateException;
 import org.matheclipse.core.eval.interfaces.AbstractCoreFunctionEvaluator;
 import org.matheclipse.core.eval.interfaces.AbstractEvaluator;
 import org.matheclipse.core.eval.interfaces.AbstractFunctionEvaluator;
 import org.matheclipse.core.eval.interfaces.INumeric;
+import org.matheclipse.core.expression.ApfloatNum;
 import org.matheclipse.core.expression.ComplexNum;
 import org.matheclipse.core.expression.ComplexSym;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.expression.IntervalSym;
+import org.matheclipse.core.expression.Num;
 import org.matheclipse.core.expression.S;
 import org.matheclipse.core.expression.StringX;
 import org.matheclipse.core.interfaces.IAST;
@@ -64,9 +68,32 @@ public class IntegerFunctions {
       S.PowerMod.setEvaluator(new PowerMod());
       S.Quotient.setEvaluator(new Quotient());
       S.QuotientRemainder.setEvaluator(new QuotientRemainder());
+      S.RealDigits.setEvaluator(new RealDigits());
       S.Round.setEvaluator(new Round());
       S.UnitStep.setEvaluator(new UnitStep());
     }
+  }
+
+  private static IAST integerDigits(IInteger n, IInteger base, int padLeftZeros) {
+    IASTAppendable list = F.ListAlloc(16);
+    if (n.isZero()) {
+      list.append(F.C0);
+    } else {
+      while (n.isPositive()) {
+        IInteger mod = n.mod(base);
+        list.append(mod);
+        n = n.subtract(mod).div(base);
+      }
+    }
+    int padSizeZeros = padLeftZeros - list.argSize();
+    if (padSizeZeros < 0) {
+      padSizeZeros = 0;
+    }
+    IASTAppendable result = F.ListAlloc(list.argSize() + padSizeZeros);
+    for (int i = 0; i < padSizeZeros; i++) {
+      result.append(F.C0);
+    }
+    return list.reverse(result);
   }
 
   /**
@@ -277,6 +304,10 @@ public class IntegerFunctions {
       if (ast.isAST1()) {
         result = S.IntegerDigits.of(engine, ast.arg1());
       } else if (ast.size() >= 3) {
+        if (ast.isAST3() && ast.arg3().isList()) {
+          return ((IAST) ast.arg3()).mapThread(ast, 3);
+        }
+
         radix = ast.arg2().toIntDefault();
         if (radix <= 0) {
           return F.NIL;
@@ -325,11 +356,6 @@ public class IntegerFunctions {
     @Override
     public int[] expectedArgSize(IAST ast) {
       return ARGS_1_3;
-    }
-
-    @Override
-    public void setUp(ISymbol newSymbol) {
-      newSymbol.setAttributes(ISymbol.LISTABLE);
     }
   }
 
@@ -397,26 +423,8 @@ public class IntegerFunctions {
       }
       IExpr arg1 = ast.arg1();
       if (arg1.isInteger()) {
-        IASTAppendable list = F.ListAlloc(16);
         IInteger n = ((IInteger) arg1).abs();
-        if (n.isZero()) {
-          list.append(F.C0);
-        } else {
-          while (n.isPositive()) {
-            IInteger mod = n.mod(base);
-            list.append(mod);
-            n = n.subtract(mod).div(base);
-          }
-        }
-        int padSizeZeros = padLeftZeros - list.argSize();
-        if (padSizeZeros < 0) {
-          padSizeZeros = 0;
-        }
-        IASTAppendable result = F.ListAlloc(list.argSize() + padSizeZeros);
-        for (int i = 0; i < padSizeZeros; i++) {
-          result.append(F.C0);
-        }
-        return list.reverse(result);
+        return integerDigits(n, base, padLeftZeros);
       }
       return F.NIL;
     }
@@ -773,8 +781,8 @@ public class IntegerFunctions {
           } else if ((ch >= 'A' && ch <= 'Z') || (ch >= 'a' && ch <= 'z')) {
             digit = Character.digit(ch, 36);
           } else {
-        return F.NIL;
-      }
+            return F.NIL;
+          }
           if (digit == Integer.MIN_VALUE) {
             return F.NIL;
           }
@@ -1437,6 +1445,98 @@ public class IntegerFunctions {
   }
 
   private IntegerFunctions() {}
+
+  private static class RealDigits extends AbstractFunctionEvaluator {
+
+    @Override
+    public IExpr evaluate(final IAST ast, EvalEngine engine) {
+      IExpr arg1 = ast.arg1();
+      if (arg1.isInteger()) {
+        IInteger number = (IInteger) arg1;
+        if (number.isNegative()) {
+          number = number.abs();
+        }
+        IAST list = integerDigits(number, F.C10, 0);
+        return F.List(list, F.ZZ(list.size() - 1));
+      }
+      try {
+        ISignedNumber number = null;
+        if (arg1.isReal()) {
+          number = (ISignedNumber) arg1;
+        } else {
+          number = arg1.evalReal();
+        }
+        if (number != null) {
+          if (number.isNegative()) {
+            number = number.abs();
+          }
+
+          if (number instanceof ApfloatNum) {
+            Apfloat apfloat = number.apfloatValue(engine.getNumericPrecision());
+            String str = apfloat.toString();
+            IASTAppendable list = F.ListAlloc(str.length() + 1);
+            int numberOfLeftDigits = 0;
+            for (int i = 0; i < str.length(); i++) {
+              char ch = str.charAt(i);
+              if (ch == '.') {
+                numberOfLeftDigits = i;
+                continue;
+              }
+              if (ch == 'e' || ch == 'E') {
+                String exponentStr = str.substring(i + 1);
+                int exponent = Integer.parseInt(exponentStr);
+
+                numberOfLeftDigits += exponent;
+
+                break;
+              }
+              list.append(ch);
+            }
+
+            return F.List(list, F.ZZ(numberOfLeftDigits));
+          } else if (number instanceof Num) {
+            String str = Double.toString(number.doubleValue());
+            IASTAppendable list = F.ListAlloc(str.length() + 1);
+            int numberOfLeftDigits = 0;
+            for (int i = 0; i < str.length(); i++) {
+              char ch = str.charAt(i);
+              if (ch == '.') {
+                numberOfLeftDigits = i;
+                continue;
+              }
+              if (ch == 'e' || ch == 'E') {
+                String exponentStr = str.substring(i + 1);
+                int exponent = Integer.parseInt(exponentStr);
+                numberOfLeftDigits += exponent;
+                break;
+              }
+              list.append(ch);
+            }
+
+            return F.List(list, F.ZZ(numberOfLeftDigits));
+          }
+        }
+      } catch (NumberFormatException | ArgumentTypeException atex) {
+        return IOFunctions.printMessage(ast.topHead(), atex, engine);
+      }
+
+      if (arg1.isNumber()) {
+        // The value `1` is not a real number.
+        return IOFunctions.printMessage(ast.topHead(), "realx", F.List(arg1), engine);
+      }
+      return F.NIL;
+    }
+
+    @Override
+    public int[] expectedArgSize(IAST ast) {
+      return ARGS_1_1;
+    }
+
+    @Override
+    public void setUp(ISymbol newSymbol) {
+      newSymbol.setAttributes(ISymbol.LISTABLE);
+    }
+  }
 
   /**
    *

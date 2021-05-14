@@ -1,6 +1,9 @@
 package org.matheclipse.core.builtin;
 
 import java.io.BufferedReader;
+import java.io.DataInput;
+import java.io.DataOutput;
+import java.io.EOFException;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
@@ -37,6 +40,9 @@ import org.matheclipse.core.expression.ID;
 import org.matheclipse.core.expression.S;
 import org.matheclipse.core.expression.data.FileExpr;
 import org.matheclipse.core.expression.data.InputStreamExpr;
+import org.matheclipse.core.expression.data.NumericArrayExpr;
+import org.matheclipse.core.expression.data.NumericArrayExpr.RangeException;
+import org.matheclipse.core.expression.data.NumericArrayExpr.TypeException;
 import org.matheclipse.core.expression.data.OutputStreamExpr;
 import org.matheclipse.core.form.output.OutputFormFactory;
 import org.matheclipse.core.interfaces.IAST;
@@ -66,6 +72,8 @@ public class FileFunctions {
       if (!Config.FUZZY_PARSER) {
 
         S.BeginPackage.setEvaluator(new BeginPackage());
+        S.BinaryRead.setEvaluator(new BinaryRead());
+        S.BinaryWrite.setEvaluator(new BinaryWrite());
         S.EndPackage.setEvaluator(new EndPackage());
         S.Begin.setEvaluator(new Begin());
         S.Close.setEvaluator(new Close());
@@ -99,12 +107,6 @@ public class FileFunctions {
         String contextName = Validate.checkContextName(ast, 1);
         org.matheclipse.core.expression.Context pack =
             EvalEngine.get().getContextPath().currentContext();
-        // String packageName = pack.getContextName();
-        // if (packageName.equals(Context.GLOBAL_CONTEXT_NAME)) {
-        // completeContextName = contextName;
-        // } else {
-        // completeContextName = packageName.substring(0, packageName.length() - 1) + contextName;
-        // }
         org.matheclipse.core.expression.Context context = engine.begin(contextName, pack);
         return F.stringx(context.completeContextName());
       } catch (ValidateException ve) {
@@ -126,34 +128,198 @@ public class FileFunctions {
   private static final class BeginPackage extends AbstractFunctionEvaluator {
     @Override
     public IExpr evaluate(final IAST ast, EvalEngine engine) {
-      if (ast.size() > 1) {
-        try {
-          String contextName = Validate.checkContextName(ast, 1);
-          engine.beginPackage(contextName);
-          if (Config.isFileSystemEnabled(engine)) {
-            try {
-              for (int j = 2; j < ast.size(); j++) {
-                // FileReader reader = new FileReader(ast.get(j).toString());
-                FileInputStream fis = new FileInputStream(ast.get(j).toString());
-                BufferedReader reader =
-                    new BufferedReader(new InputStreamReader(fis, StandardCharsets.UTF_8));
-                Get.loadPackage(engine, reader);
-                reader.close();
-                fis.close();
-              }
-            } catch (IOException e) {
-              if (FEConfig.SHOW_STACKTRACE) {
-                e.printStackTrace();
-              }
+
+      try {
+        String contextName = Validate.checkContextName(ast, 1);
+        engine.beginPackage(contextName);
+        if (ast.isAST2()) {
+          IExpr arg2 = ast.arg2();
+          if (arg2.isList()) {
+            IAST needs = ((IAST) arg2).mapThread(F.Needs(F.Slot1), 1);
+            return engine.evaluate(needs);
+          }
+          return engine.evaluate(F.Needs(arg2));
+        }
+
+        if (Config.isFileSystemEnabled(engine)) {
+          try {
+            for (int j = 2; j < ast.size(); j++) {
+              // FileReader reader = new FileReader(ast.get(j).toString());
+              FileInputStream fis = new FileInputStream(ast.get(j).toString());
+              BufferedReader reader =
+                  new BufferedReader(new InputStreamReader(fis, StandardCharsets.UTF_8));
+              Get.loadPackage(engine, reader);
+              reader.close();
+              fis.close();
+            }
+          } catch (IOException e) {
+            if (FEConfig.SHOW_STACKTRACE) {
+              e.printStackTrace();
             }
           }
-          return S.Null;
+        }
+        return S.Null;
 
-        } catch (ValidateException ve) {
-          return engine.printMessage(ve.getMessage(ast.topHead()));
+      } catch (ValidateException ve) {
+        return engine.printMessage(ve.getMessage(ast.topHead()));
+      }
+    }
+
+    @Override
+    public int[] expectedArgSize(IAST ast) {
+      return ARGS_1_2;
+    }
+  }
+
+  private static final class BinaryRead extends AbstractFunctionEvaluator {
+
+    @Override
+    public IExpr evaluate(final IAST ast, EvalEngine engine) {
+      if (Config.isFileSystemEnabled(engine)) {
+        try {
+          IExpr arg1 = ast.arg1();
+          DataInput reader = null;
+          if (arg1 instanceof FileExpr) {
+            InputStreamExpr stream = InputStreamExpr.getFromFile((FileExpr) arg1, "String", engine);
+            reader = stream.getDataInput();
+          } else if (arg1 instanceof InputStreamExpr) {
+            reader = ((InputStreamExpr) arg1).getDataInput();
+          }
+          if (reader != null) {
+            if (ast.isAST2()) {
+              IExpr typeExpr = ast.arg2();
+              if (typeExpr.isList()) {
+                IAST list = (IAST) ast.arg2();
+                IASTAppendable result = F.ListAlloc(list.size());
+                for (int i = 1; i < list.size(); i++) {
+                  String typeStr = list.get(i).toString();
+                  IExpr temp = readType(reader, typeStr);
+                  result.append(temp);
+                }
+
+                return result;
+              }
+            }
+            String typeStr = ast.isAST2() ? ast.arg2().toString() : "UnsignedInteger8";
+            return readType(reader, typeStr);
+          }
+        } catch (EOFException ex) {
+          return S.EndOfFile;
+        } catch (IOException | RuntimeException ex) {
+          if (FEConfig.SHOW_STACKTRACE) {
+            ex.printStackTrace();
+          }
+          engine.printMessage(ast.topHead(), ex);
+          return S.$Failed;
         }
       }
       return F.NIL;
+    }
+
+    private IExpr readType(DataInput reader, String typeStr) throws IOException {
+      if (typeStr.equals("Byte")) {
+        typeStr = "UnsignedInteger8";
+      }
+      byte typeByte = NumericArrayExpr.toType(typeStr);
+      if (typeByte == NumericArrayExpr.UNDEFINED) {
+        if (typeStr.equals("Character8")) {
+          int uInt = Byte.toUnsignedInt(reader.readByte());
+          char ch = (char) uInt;
+          return F.stringx(ch);
+        }
+        return S.$Failed;
+      }
+      switch (typeByte) {
+        case NumericArrayExpr.Integer8:
+          byte sByte = reader.readByte();
+          return F.ZZ(sByte);
+        case NumericArrayExpr.UnsignedInteger8:
+          byte uByte = reader.readByte();
+          return F.ZZ(Byte.toUnsignedInt(uByte));
+      }
+      return F.$Failed;
+    }
+
+    @Override
+    public int[] expectedArgSize(IAST ast) {
+      return ARGS_1_2;
+    }
+  }
+
+  private static final class BinaryWrite extends AbstractFunctionEvaluator {
+
+    @Override
+    public IExpr evaluate(final IAST ast, EvalEngine engine) {
+      if (Config.isFileSystemEnabled(engine)) {
+        try {
+          IExpr arg1 = ast.arg1();
+          DataOutput dataOutput = null;
+          if (arg1 instanceof FileExpr) {
+            File file = ((FileExpr) arg1).toData();
+            OutputStreamExpr out = OutputStreamExpr.newInstance(file, false);
+            dataOutput = out.getDataOutput();
+          }
+          if (arg1 instanceof OutputStreamExpr) {
+            dataOutput = ((OutputStreamExpr) arg1).getDataOutput();
+          }
+
+          IExpr arg2 = ast.arg2();
+          String typeStr = ast.isAST3() ? ast.arg3().toString() : "UnsignedInteger8";
+          if (typeStr.equals("Byte")) {
+            typeStr = "UnsignedInteger8";
+          }
+          byte typeByte = NumericArrayExpr.toType(typeStr);
+          if (typeByte == NumericArrayExpr.UNDEFINED) {
+            return S.$Failed;
+          }
+          if (arg2.isList()) {
+            IAST list = (IAST) arg2;
+            for (int i = 1; i < list.size(); i++) {
+
+              if (!writeType(dataOutput, list.get(i), typeByte)) {
+                return S.$Failed;
+              }
+            }
+            return S.Null;
+          }
+          writeType(dataOutput, arg2, typeByte);
+          return S.Null;
+        } catch (ArithmeticException
+            | IllegalArgumentException
+            | RangeException
+            | TypeException tex) {
+          if (FEConfig.SHOW_STACKTRACE) {
+            tex.printStackTrace();
+          }
+          engine.printMessage(ast.topHead(), tex);
+          return F.$Failed;
+        } catch (IOException | RuntimeException ex) {
+          if (FEConfig.SHOW_STACKTRACE) {
+            ex.printStackTrace();
+          }
+          engine.printMessage(ast.topHead(), ex);
+          return F.$Failed;
+        }
+      }
+      return F.NIL;
+    }
+
+    private static boolean writeType(DataOutput outputChannel, IExpr arg, byte typeByte)
+        throws RangeException, TypeException, IllegalArgumentException, IOException {
+      switch (typeByte) {
+        case NumericArrayExpr.Integer8:
+          outputChannel.writeByte(NumericArrayExpr.getByte(arg));
+          return true;
+        case NumericArrayExpr.UnsignedInteger8:
+          outputChannel.writeByte(NumericArrayExpr.getUnsignedByte(arg));
+          return true;
+      }
+      return false;
+    }
+
+    @Override
+    public int[] expectedArgSize(IAST ast) {
+      return ARGS_2_3;
     }
   }
 
@@ -165,18 +331,13 @@ public class FileFunctions {
         IExpr arg1 = ast.arg1();
         if (arg1 instanceof OutputStreamExpr) {
           OutputStreamExpr out = (OutputStreamExpr) arg1;
-          out.toData().close();
+          out.close();
           return F.stringx(out.getStreamName());
         }
         if (arg1 instanceof InputStreamExpr) {
-          InputStreamExpr in = ((InputStreamExpr) arg1);
-          in.toData().close();
+          InputStreamExpr in = (InputStreamExpr) arg1;
+          in.close();
           return F.stringx(in.getStreamName());
-        }
-        if (arg1 instanceof FileExpr) {
-          // TODO
-          //            ((FileExpr) arg1).toData().close();
-          return S.String;
         }
       } catch (IOException | RuntimeException ex) {
         if (FEConfig.SHOW_STACKTRACE) {
@@ -255,6 +416,11 @@ public class FileFunctions {
     @Override
     public int[] expectedArgSize(IAST ast) {
       return ARGS_0_1;
+    }
+
+    @Override
+    public void setUp(final ISymbol newSymbol) {
+      newSymbol.setAttributes(ISymbol.LISTABLE);
     }
   }
   /**
@@ -604,7 +770,7 @@ public class FileFunctions {
         try {
           IExpr arg1 = ast.arg1();
           if (arg1.isString()) {
-            return InputStreamExpr.newInstance(arg1.toString());
+            return InputStreamExpr.newInstance(arg1.toString(), "String");
           }
         } catch (FileNotFoundException | RuntimeException ex) {
           if (FEConfig.SHOW_STACKTRACE) {
@@ -644,7 +810,7 @@ public class FileFunctions {
           if (ast.isAST1()) {
             IExpr arg1 = ast.arg1();
             if (arg1.isString()) {
-              return InputStreamExpr.newInstance(arg1.toString());
+              return InputStreamExpr.newInstance(arg1.toString(), "String");
             }
           }
         } catch (FileNotFoundException | RuntimeException ex) {
@@ -816,55 +982,58 @@ public class FileFunctions {
           IExpr arg1 = ast.arg1();
           Reader reader = null;
           if (arg1 instanceof FileExpr) {
-            File file = ((FileExpr) arg1).toData();
-            InputStreamExpr in = InputStreamExpr.newInstance(file);
-            BufferedReader br = new BufferedReader(new FileReader(file));
-            reader = in.toData();
+            InputStreamExpr in = InputStreamExpr.getFromFile((FileExpr) arg1, "String", engine);
+            reader = in.getReader();
           } else if (arg1 instanceof InputStreamExpr) {
-            reader = ((InputStreamExpr) arg1).toData();
+            reader = ((InputStreamExpr) arg1).getReader();
           }
           if (reader != null) {
             if (ast.isAST1()) {
               String str = CharStreams.toString(reader);
               return S.ToExpression.of(engine, F.stringx(str));
             }
-            IExpr arg2 = ast.arg2();
-            if (arg2.isList()) {
+            IExpr typeExpr = ast.arg2();
+            if (typeExpr.isList()) {
               IAST list = (IAST) ast.arg2();
-              IASTAppendable result = F.ListAlloc();
+              IASTAppendable result = F.ListAlloc(list.size());
               for (int i = 1; i < list.size(); i++) {
-                if (!list.get(i).isBuiltInSymbol()) {
-                  return F.$Failed;
+                IExpr argTypeExpr = list.get(i);
+                IExpr temp = readTypeOrHold(argTypeExpr, reader, engine);
+                if (temp == S.$Failed) {
+                  return S.$Failed;
                 }
-                IExpr temp = readType((IBuiltInSymbol) list.get(i), reader, engine);
                 result.append(temp);
               }
 
               return result;
             }
-            if (arg2.isAST(S.Hold, 2)) {
-              IExpr holdArg = arg2.first();
-              if (!holdArg.isBuiltInSymbol()) {
-                return F.$Failed;
-              }
-              IExpr temp = readType((IBuiltInSymbol) holdArg, reader, engine);
-              if (temp.isPresent()) {
-                return F.Hold(temp);
-              }
-            } else if (!arg2.isBuiltInSymbol()) {
-              return F.$Failed;
-            }
-            return readType((IBuiltInSymbol) arg2, reader, engine);
+            return readTypeOrHold(typeExpr, reader, engine);
           }
         } catch (IOException | RuntimeException ex) {
           if (FEConfig.SHOW_STACKTRACE) {
             ex.printStackTrace();
           }
           engine.printMessage(ast.topHead(), ex);
-          return F.$Failed;
+          return S.$Failed;
         }
       }
       return F.NIL;
+    }
+
+    private IExpr readTypeOrHold(IExpr arg, Reader reader, EvalEngine engine) throws IOException {
+      if (arg.isAST(S.Hold, 2)) {
+        IExpr holdArg = arg.first();
+        if (!holdArg.isBuiltInSymbol()) {
+          return F.$Failed;
+        }
+        IExpr temp = readType((IBuiltInSymbol) holdArg, reader, engine);
+        if (temp.isPresent()) {
+          return F.Hold(temp);
+        }
+      } else if (!arg.isBuiltInSymbol()) {
+        return F.$Failed;
+      }
+      return readType((IBuiltInSymbol) arg, reader, engine);
     }
 
     private IExpr readType(IBuiltInSymbol arg2, Reader reader, EvalEngine engine)
@@ -932,7 +1101,7 @@ public class FileFunctions {
                     F.stringx("9"));
             String tempNumber = numberReader(reader, numberSeparators);
             if (tempNumber == null) {
-              return S.$Failed;
+              return S.EndOfFile;
             }
             return F.$str(tempNumber);
 
@@ -1115,11 +1284,16 @@ public class FileFunctions {
           if (ast.isAST1()) {
             IExpr arg1 = ast.arg1();
             if (arg1.isString()) {
-              StringReader sr = new StringReader(arg1.toString());
-              return InputStreamExpr.newInstance("String", sr);
+              StringReader stringReader = new StringReader(arg1.toString());
+              return InputStreamExpr.newInstance(stringReader);
             }
           }
         } catch (RuntimeException ex) {
+          if (FEConfig.SHOW_STACKTRACE) {
+            ex.printStackTrace();
+          }
+          return engine.printMessage(ast.topHead(), ex);
+        } catch (IOException ex) {
           if (FEConfig.SHOW_STACKTRACE) {
             ex.printStackTrace();
           }
@@ -1182,10 +1356,12 @@ public class FileFunctions {
           if (arg1 instanceof FileExpr) {
             File file = ((FileExpr) arg1).toData();
             OutputStreamExpr out = OutputStreamExpr.newInstance(file, false);
-            writer = out.toData();
+            writer = out.getWriter();
+            ;
           }
           if (arg1 instanceof OutputStreamExpr) {
-            writer = ((OutputStreamExpr) arg1).toData();
+            writer = ((OutputStreamExpr) arg1).getWriter();
+            ;
           }
           if (writer != null) {
             String arg2String = StringFunctions.inputForm(arg2);

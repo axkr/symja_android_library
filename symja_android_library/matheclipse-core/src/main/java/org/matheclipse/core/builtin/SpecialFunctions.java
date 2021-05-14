@@ -789,7 +789,7 @@ public class SpecialFunctions {
 
     @Override
     public void setUp(final ISymbol newSymbol) {
-      newSymbol.setAttributes(ISymbol.LISTABLE | ISymbol.NUMERICFUNCTION);
+      newSymbol.setAttributes(ISymbol.NUMERICFUNCTION);
       super.setUp(newSymbol);
     }
   }
@@ -937,6 +937,9 @@ public class SpecialFunctions {
 
     @Override
     public IExpr evaluateArg1(final IExpr arg1, EvalEngine engine) {
+      if (arg1.isList()) {
+        return ((IAST) arg1).mapThread(x -> F.InverseErf(x));
+      }
       if (arg1.isReal()) {
         if (arg1.isZero()) {
           return F.C0;
@@ -953,7 +956,7 @@ public class SpecialFunctions {
 
     @Override
     public void setUp(final ISymbol newSymbol) {
-      newSymbol.setAttributes(ISymbol.LISTABLE | ISymbol.NUMERICFUNCTION);
+      newSymbol.setAttributes(ISymbol.NUMERICFUNCTION);
       super.setUp(newSymbol);
     }
   }
@@ -993,6 +996,9 @@ public class SpecialFunctions {
 
     @Override
     public IExpr evaluateArg1(final IExpr arg1, EvalEngine engine) {
+      if (arg1.isList()) {
+        return ((IAST) arg1).mapThread(x -> F.InverseErfc(x));
+      }
       if (arg1.isReal()) {
         ISignedNumber z = (ISignedNumber) arg1;
         if (z.isZero()) {
@@ -1013,7 +1019,7 @@ public class SpecialFunctions {
 
     @Override
     public void setUp(final ISymbol newSymbol) {
-      newSymbol.setAttributes(ISymbol.LISTABLE | ISymbol.NUMERICFUNCTION);
+      newSymbol.setAttributes(ISymbol.NUMERICFUNCTION);
       super.setUp(newSymbol);
     }
   }

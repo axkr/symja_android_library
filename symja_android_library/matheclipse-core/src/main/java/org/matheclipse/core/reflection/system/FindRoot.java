@@ -174,10 +174,14 @@ public class FindRoot extends AbstractFunctionEvaluator {
     int maxIterations = 100;
     if (ast.size() >= 4) {
       final OptionArgs options = new OptionArgs(ast.topHead(), ast, 3, engine);
-      IExpr optionMaxIterations = options.getOption(S.MaxIterations);
-      if (optionMaxIterations.isReal()) {
-        maxIterations = ((ISignedNumber) optionMaxIterations).toInt();
+      maxIterations = options.getOptionMaxIterations(S.MaxIterations);
+      if (maxIterations == Integer.MIN_VALUE) {
+        return F.NIL;
       }
+      if (maxIterations < 0) {
+        maxIterations = 100;
+      }
+
       IExpr optionMethod = options.getOption(S.Method);
       if (optionMethod.isSymbol()) {
         method = optionMethod.toString();
@@ -187,21 +191,22 @@ public class FindRoot extends AbstractFunctionEvaluator {
         }
       }
     }
-    if ((ast.arg2().isList())) {
-      IAST list = (IAST) ast.arg2();
-      IExpr function = ast.arg1();
+
+    IExpr arg2 = engine.evaluate(ast.arg2());
+    if ((arg2.isList())) {
+      IAST list = (IAST) arg2;
       if (list.size() >= 3 && list.arg1().isSymbol()) {
-        if (function.isEqual()) {
-          IAST equalAST = (IAST) function;
-          function = F.Plus(equalAST.arg1(), F.Negate(equalAST.arg2()));
-        }
         ISignedNumber min = list.arg2().evalReal();
         if (min != null) {
           ISignedNumber max = null;
           if (list.size() > 3) {
             max = list.arg3().evalReal();
           }
-
+          IExpr function = engine.evaluate(ast.arg1());
+          if (function.isEqual()) {
+            IAST equalAST = (IAST) function;
+            function = F.Plus(equalAST.arg1(), F.Negate(equalAST.arg2()));
+          }
           try {
             return F.List(
                 F.Rule(
@@ -299,6 +304,6 @@ public class FindRoot extends AbstractFunctionEvaluator {
 
   @Override
   public void setUp(final ISymbol newSymbol) {
-    newSymbol.setAttributes(ISymbol.HOLDFIRST);
+    newSymbol.setAttributes(ISymbol.HOLDALL);
   }
 }

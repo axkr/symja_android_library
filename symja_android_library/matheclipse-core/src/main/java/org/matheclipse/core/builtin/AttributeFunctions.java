@@ -6,6 +6,7 @@ import org.matheclipse.core.eval.exception.FailedException;
 import org.matheclipse.core.eval.exception.RuleCreationError;
 import org.matheclipse.core.eval.exception.Validate;
 import org.matheclipse.core.eval.interfaces.AbstractCoreFunctionEvaluator;
+import org.matheclipse.core.eval.interfaces.AbstractFunctionEvaluator;
 import org.matheclipse.core.eval.interfaces.ISetEvaluator;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.expression.ID;
@@ -52,28 +53,27 @@ public class AttributeFunctions {
    * {Flat,Listable,OneIdentity,Orderless,NumericFunction}
    * </pre>
    */
-  private static final class Attributes extends AbstractCoreFunctionEvaluator
-      implements ISetEvaluator {
+  private static final class Attributes extends AbstractFunctionEvaluator implements ISetEvaluator {
 
     @Override
     public IExpr evaluate(final IAST ast, EvalEngine engine) {
       if (ast.isAST1()) {
         IExpr arg1 = ast.arg1();
-        if (arg1.isList()) {
-          IAST list = (IAST) arg1;
-          if (list.exists(x -> !x.isSymbol())) {
-            return F.NIL;
-          }
-          final IASTAppendable result = F.ListAlloc(list.size());
-          for (int i = 1; i < list.size(); i++) {
-            IExpr temp = attributesList(list.get(i), ast, engine);
-            if (!temp.isPresent()) {
-              return F.NIL;
-            }
-            result.append(temp);
-          }
-          return result;
-        }
+        //        if (arg1.isList()) {
+        //          IAST list = (IAST) arg1;
+        //          if (list.exists(x -> !x.isSymbol())) {
+        //            return F.NIL;
+        //          }
+        //          final IASTAppendable result = F.ListAlloc(list.size());
+        //          for (int i = 1; i < list.size(); i++) {
+        //            IExpr temp = attributesList(list.get(i), ast, engine);
+        //            if (!temp.isPresent()) {
+        //              return F.NIL;
+        //            }
+        //            result.append(temp);
+        //          }
+        //          return result;
+        //        }
         return attributesList(arg1, ast, engine);
       }
 
@@ -97,6 +97,16 @@ public class AttributeFunctions {
         }
       }
       return F.NIL;
+    }
+
+    @Override
+    public int[] expectedArgSize(IAST ast) {
+      return ARGS_1_1;
+    }
+
+    @Override
+    public void setUp(final ISymbol newSymbol) {
+      newSymbol.setAttributes(ISymbol.HOLDALL | ISymbol.LISTABLE);
     }
   }
 

@@ -142,7 +142,8 @@ public class SimplifyFunctions {
               F.Sinh(x_), //
               F.Exp(x), //
               false, //
-              null, true));
+              null,
+              true));
     }
 
     private static class SimplifiedResult {
@@ -1253,22 +1254,14 @@ public class SimplifyFunctions {
       if (result != null) {
         return result;
       }
-      IExpr assumptionExpr = F.NIL;
+
       IExpr complexityFunctionHead = F.NIL;
-
+      OptionArgs options = null;
       if (ast.size() > 2) {
-        IExpr arg2 = ast.arg2();
-
-        if (!arg2.isRule()) {
-          assumptionExpr = arg2;
-        }
-        final OptionArgs options = new OptionArgs(ast.topHead(), ast, 2, engine);
-        IExpr option = options.getOption(S.Assumptions);
-        if (option.isPresent() && !option.equals(S.$Assumptions)) {
-          assumptionExpr = option;
-        }
+        options = new OptionArgs(ast.topHead(), ast, ast.argSize(), engine);
         complexityFunctionHead = options.getOptionAutomatic(S.ComplexityFunction);
       }
+      IExpr assumptionExpr = OptionArgs.determineAssumptions(ast, 2, options);
 
       IAssumptions oldAssumptions = engine.getAssumptions();
       try {
@@ -1278,13 +1271,14 @@ public class SimplifyFunctions {
         result = arg1;
         long count = 0L;
         if (assumptionExpr.isPresent() && assumptionExpr.isAST()) {
-
-          IAssumptions assumptions = oldAssumptions;
-          if (oldAssumptions == null) {
-            assumptions = org.matheclipse.core.eval.util.Assumptions.getInstance(assumptionExpr);
-          } else {
-            assumptions = oldAssumptions.addAssumption((IAST) assumptionExpr);
-          }
+        	IAssumptions assumptions = org.matheclipse.core.eval.util.Assumptions.getInstance(assumptionExpr);
+//          IAssumptions assumptions = oldAssumptions;
+//          if (oldAssumptions == null) {
+//            assumptions = org.matheclipse.core.eval.util.Assumptions.getInstance(assumptionExpr);
+//          } else {
+//            assumptions = oldAssumptions.copy();
+//            assumptions = assumptions.addAssumption((IAST) assumptionExpr);
+//          }
           if (assumptions != null) {
             engine.setAssumptions(assumptions);
             arg1 = AssumptionFunctions.refineAssumptions(arg1, assumptions, engine);

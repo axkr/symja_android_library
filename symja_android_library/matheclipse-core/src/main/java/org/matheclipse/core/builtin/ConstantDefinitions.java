@@ -21,6 +21,8 @@ import org.matheclipse.core.eval.EvalHistory;
 import org.matheclipse.core.eval.interfaces.AbstractSymbolEvaluator;
 import org.matheclipse.core.eval.interfaces.ISetValueEvaluator;
 import org.matheclipse.core.eval.interfaces.ISignedNumberConstant;
+import org.matheclipse.core.eval.util.Assumptions;
+import org.matheclipse.core.eval.util.IAssumptions;
 import org.matheclipse.core.expression.ContextPath;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.expression.S;
@@ -74,7 +76,8 @@ public class ConstantDefinitions {
 
       // System.out.println(VERSION);
       // System.out.println(TIMESTAMP);
-
+      S.$Assumptions.setEvaluator(new $Assumptions());
+      S.$BaseDirectory.setEvaluator(new $BaseDirectory());
       S.$Context.setEvaluator(new $Context());
       S.$ContextPath.setEvaluator(new $ContextPath());
       S.$CreationDate.setEvaluator(new $CreationDate());
@@ -99,7 +102,9 @@ public class ConstantDefinitions {
       S.$RootDirectory.setEvaluator(new $RootDirectory());
       S.$ScriptCommandLine.setEvaluator(new $ScriptCommandLine());
       S.$SystemCharacterEncoding.setEvaluator(new $SystemCharacterEncoding());
+      S.$SystemMemory.setEvaluator(new $SystemMemory());
       S.$TemporaryDirectory.setEvaluator(new $TemporaryDirectory());
+      S.$UserBaseDirectory.setEvaluator(new $UserBaseDirectory());
       S.$Version.setEvaluator(new $Version());
 
       S.RecordSeparators.setEvaluator(new RecordSeparators());
@@ -150,6 +155,41 @@ public class ConstantDefinitions {
     @Override
     public void setUp(final ISymbol newSymbol) {
       // don't set CONSTANT attribute !
+    }
+  }
+
+  private static class $Assumptions extends AbstractSymbolEvaluator implements ISetValueEvaluator {
+
+    @Override
+    public IExpr evaluate(final ISymbol symbol, EvalEngine engine) {
+      //      IAssumptions assumptions = engine.getAssumptions();
+      //      if (assumptions == null) {
+      //        return F.True;
+      //      }
+      IExpr assume = S.$Assumptions.assignedValue();
+      if (assume != null) {
+        return assume;
+      }
+      return F.True;
+    }
+
+    @Override
+    public IExpr evaluateSet(IExpr rightHandSide, boolean setDelayed, final EvalEngine engine) {
+      S.$Assumptions.assignValue(rightHandSide, setDelayed);
+      return rightHandSide;
+    }
+  }
+
+  private static class $BaseDirectory extends AbstractSymbolEvaluator {
+
+    @Override
+    public IExpr evaluate(final ISymbol symbol, EvalEngine engine) {
+      String userHome = System.getProperty("user.home");
+      if (userHome == null) {
+        return F.CEmptyString;
+      }
+      Path path = Paths.get(userHome, "Symja");
+      return F.stringx(path.toString());
     }
   }
 
@@ -234,7 +274,8 @@ public class ConstantDefinitions {
       if (userHome == null) {
         return F.CEmptyString;
       }
-      return F.stringx(userHome);
+      Path path = Paths.get(userHome);
+      return F.stringx(path.toString());
     }
   }
 
@@ -478,7 +519,15 @@ public class ConstantDefinitions {
       String characterEncoding = System.getProperty("file.encoding", "UTF-8");
       return F.stringx(characterEncoding);
     }
-    
+  }
+
+  private static class $SystemMemory extends AbstractSymbolEvaluator {
+
+    @Override
+    public IExpr evaluate(final ISymbol symbol, EvalEngine engine) {
+      long totalMemory = Runtime.getRuntime().maxMemory();
+      return F.ZZ(totalMemory);
+    }
   }
 
   private static class $TemporaryDirectory extends AbstractSymbolEvaluator {
@@ -490,6 +539,19 @@ public class ConstantDefinitions {
         return F.CEmptyString;
       }
       return F.stringx(tempDirectory);
+    }
+  }
+
+  private static class $UserBaseDirectory extends AbstractSymbolEvaluator {
+
+    @Override
+    public IExpr evaluate(final ISymbol symbol, EvalEngine engine) {
+      String userHome = System.getProperty("user.home");
+      if (userHome == null) {
+        return F.CEmptyString;
+      }
+      Path path = Paths.get(userHome, "Symja");
+      return F.stringx(path.toString());
     }
   }
 

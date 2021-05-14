@@ -394,23 +394,4 @@ public class DSolve extends AbstractFunctionEvaluator {
 
     return F.NIL;
   }
-
-  // public static void main(String[] args) {
-  // Config.SERVER_MODE = false;
-  // F.initSymbols();
-  // F.join();
-  // EvalEngine engine = new EvalEngine(true);
-  // EvalEngine.set(engine);
-  //
-  // IExpr fy = F.y;
-  // IExpr C_1 = F.$(F.CSymbol, F.C1); // constant C(1)
-  //
-  // // IExpr result = exactSolve(engine, F.Power(fy, F.CN2), F.Times(F.C2, F.x), fy, F.x);
-  // IExpr result = odeSolve(engine, F.Equal(F.Times(F.C2, F.Power(fy, F.C2), F.x), F.C0), fy, F.x,
-  // C_1);
-  //
-  // result = engine.evaluate(F.Solve(result, F.y));
-  // System.out.println(result.toString());
-  // }
-
 }

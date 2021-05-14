@@ -1,5 +1,6 @@
 package org.matheclipse.core.builtin;
 
+import org.matheclipse.core.basic.Config;
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.interfaces.AbstractCoreFunctionEvaluator;
 import org.matheclipse.core.eval.interfaces.AbstractEvaluator;
@@ -15,6 +16,7 @@ import org.matheclipse.core.interfaces.IASTAppendable;
 import org.matheclipse.core.interfaces.IBuiltInSymbol;
 import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.interfaces.ISymbol;
+import org.matheclipse.core.reflection.system.Integrate.IntegrateInitializer;
 
 public class AssumptionFunctions {
   /**
@@ -25,6 +27,7 @@ public class AssumptionFunctions {
 
     private static void init() {
       S.Arrays.setEvaluator(new Arrays());
+      S.Assuming.setEvaluator(new Assuming());
       S.Element.setEvaluator(new Element());
       S.NotElement.setEvaluator(new NotElement());
       S.Refine.setEvaluator(new Refine());
@@ -46,7 +49,51 @@ public class AssumptionFunctions {
     }
 
     @Override
-    public void setUp(ISymbol newSymbol) {}
+    public void setUp(final ISymbol newSymbol) {
+      newSymbol.setAttributes(ISymbol.NHOLDALL);
+    }
+  }
+
+  private static final class Assuming extends AbstractEvaluator {
+
+    @Override
+    public IExpr evaluate(final IAST ast, EvalEngine engine) {
+
+      IExpr oldValue = S.$Assumptions.assignedValue();
+      IExpr value = S.True;
+      if (oldValue == null) {
+        if (ast.arg1().isList()) {
+          value = (IAST) ast.arg1();
+        } else {
+          value = F.List(ast.arg1());
+        }
+      } else {
+        value = oldValue;
+        if (value.isList()) {
+          value = ((IAST) value).appendClone(ast.arg1());
+        } else {
+          value = F.ListAlloc(value, ast.arg1());
+        }
+      }
+
+      try {
+        S.$Assumptions.assignValue(value);
+        IExpr temp = engine.evaluate(ast.arg2());
+        return temp;
+      } finally {
+        S.$Assumptions.assignValue(oldValue);
+      }
+    }
+
+    @Override
+    public int[] expectedArgSize(IAST ast) {
+      return ARGS_2_2;
+    }
+
+    @Override
+    public void setUp(final ISymbol newSymbol) {
+      newSymbol.setAttributes(ISymbol.HOLDREST);
+    }
   }
 
   /**
@@ -177,9 +224,7 @@ public class AssumptionFunctions {
         if (arg1.isAST(S.Alternatives)) {
           IAST alternatives = (IAST) arg1;
           IASTAppendable andList = F.And();
-          for (int i = 1; i < alternatives.size(); i++) {
-            andList.append(F.Not(F.Element(alternatives.get(i), arg2)));
-          }
+          alternatives.forEach(x -> andList.append(F.Not(F.Element(x, arg2))));
           return andList;
         }
         return F.Not(F.Element(arg1, arg2));
@@ -229,43 +274,43 @@ public class AssumptionFunctions {
 
     @Override
     public IExpr evaluate(final IAST ast, EvalEngine engine) {
-      if (ast.size() == 3) {
-        final IExpr arg2 = engine.evaluate(ast.arg2());
-        IAssumptions assumptions = determineAssumptions(ast.topHead(), arg2, engine);
-        if (assumptions != null) {
-          return refineAssumptions(ast.arg1(), assumptions, engine);
-        }
+      OptionArgs options = null;
+      IAssumptions assumptions = null;
+      if (ast.size() > 2) {
+        options = new OptionArgs(S.Refine, ast, 2, engine);
       }
-      return ast.arg1();
+      IExpr assumptionExpr = OptionArgs.determineAssumptions(ast, 2, options);
+      if (assumptionExpr.isPresent() && assumptionExpr.isAST()) {
+        assumptions = org.matheclipse.core.eval.util.Assumptions.getInstance(assumptionExpr);
+      }
+      return refineAssumptions(ast.arg1(), assumptions, engine);
     }
 
     @Override
     public int[] expectedArgSize(IAST ast) {
-      return ARGS_1_2;
+      return ARGS_1_3;
     }
-  }
 
-  public static IAssumptions determineAssumptions(
-      final ISymbol symbol, final IExpr arg2, EvalEngine engine) {
-    final OptionArgs options = new OptionArgs(symbol, arg2, engine);
-    IExpr option = options.getOption(S.Assumptions);
-    if (option.isPresent()) {
-      return Assumptions.getInstance(option);
-    } else {
-      return Assumptions.getInstance(arg2);
+    @Override
+    public void setUp(final ISymbol newSymbol) {
+      newSymbol.setAttributes(ISymbol.HOLDALL);
+      setOptions(newSymbol, F.List(F.Rule(S.Assumptions, S.$Assumptions)));
     }
   }
 
   public static IExpr refineAssumptions(
       final IExpr expr, IAssumptions assumptions, EvalEngine engine) {
-    IAssumptions oldAssumptions = engine.getAssumptions();
-    try {
-      engine.setAssumptions(assumptions);
-      // System.out.println(expr.toString());
-      return engine.evalWithoutNumericReset(expr);
-    } finally {
-      engine.setAssumptions(oldAssumptions);
+    if (assumptions != null) {
+      IAssumptions oldAssumptions = engine.getAssumptions();
+      try {
+        engine.setAssumptions(assumptions);
+        // System.out.println(expr.toString());
+        return engine.evalWithoutNumericReset(expr);
+      } finally {
+        engine.setAssumptions(oldAssumptions);
+      }
     }
+    return engine.evalWithoutNumericReset(expr);
   }
 
   public static void initialize() {

@@ -192,7 +192,5 @@ public class TrigReduce extends AbstractEvaluator {
         Cot(y_),
         // [$ 1/2 * (Sin(x-y)+Sin(x+y)) * Csc(y) $]
         F.Times(F.C1D2, F.Plus(F.Sin(F.Subtract(x, y)), F.Sin(F.Plus(x, y))), F.Csc(y))); // $$);
-
-    newSymbol.setAttributes(ISymbol.LISTABLE);
   }
 }

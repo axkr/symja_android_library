@@ -139,6 +139,9 @@ public class QuantityFunctions {
       try {
         if (ast.isAST1()) {
           IExpr arg1 = ast.arg1();
+          if (ast.arg1().isList()) {
+            return ((IAST) ast.arg1()).mapThread(ast, 1);
+          }
           if (arg1.isString()) {
             String str = ((IStringX) arg1).toString();
             Function<LocalDateTime, IExpr> function = DATEVALUE_MAP.get(str);
@@ -151,6 +154,9 @@ public class QuantityFunctions {
         if (ast.isAST2()) {
           IExpr arg1 = ast.arg1();
           IExpr arg2 = ast.arg2();
+          if (arg2.isList()) {
+            return ((IAST) ast.arg2()).mapThread(ast, 2);
+          }
           if (arg1 instanceof DateObjectExpr && arg2.isString()) {
             LocalDateTime ldt = ((DateObjectExpr) arg1).toData();
             String str = ((IStringX) arg2).toString();
@@ -174,11 +180,6 @@ public class QuantityFunctions {
     @Override
     public int[] expectedArgSize(IAST ast) {
       return ARGS_1_3;
-    }
-
-    @Override
-    public void setUp(ISymbol newSymbol) {
-      newSymbol.setAttributes(ISymbol.LISTABLE);
     }
   }
 

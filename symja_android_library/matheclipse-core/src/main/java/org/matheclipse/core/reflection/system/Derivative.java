@@ -1,8 +1,5 @@
 package org.matheclipse.core.reflection.system;
 
-import java.util.HashMap;
-import java.util.Map;
-
 import org.matheclipse.core.builtin.IOFunctions;
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.interfaces.AbstractFunctionEvaluator;
@@ -82,40 +79,9 @@ import org.matheclipse.core.reflection.system.rules.DerivativeRules;
  * </pre>
  */
 public class Derivative extends AbstractFunctionEvaluator implements DerivativeRules {
-
-  /** Mapped symbol to value for Derivative[1][&lt;symbol&gt;] */
-  // private static Map<ISymbol, IExpr> DERIVATIVE_1_MAP = new IdentityHashMap<ISymbol, IExpr>(197);
-
-  /** Mapped symbol to value for Derivative[2][&lt;symbol&gt;] */
-  // private static Map<ISymbol, IExpr> DERIVATIVE_2_MAP = new IdentityHashMap<ISymbol, IExpr>(97);
-
-  /** Mapped symbol to value for Derivative[&lt;n&gt;][&lt;symbol&gt;] */
-  // private static Map<ISymbol, IExpr> DERIVATIVE_N_MAP = new IdentityHashMap<ISymbol, IExpr>(197);
-
-  /** Mapped symbol to value for Derivative[&lt;n&gt;, &lt;m&gt;][&lt;symbol&gt;] */
-  private static Map<IAST, IExpr> DERIVATIVE_N_M_MAP = new HashMap<IAST, IExpr>(197);
-
-  static {
-    // for (int i = 1; i < RULES1.size(); i++) {
-    // IAST rule = (IAST) RULES1.get(i);
-    // // Derivative[1][symbol]
-    // DERIVATIVE_1_MAP.put((ISymbol) rule.arg1(), rule.arg2());
-    // }
-    // for (int i = 1; i < RULES2.size(); i++) {
-    // IAST rule = (IAST) RULES2.get(i);
-    // // Derivative[2][symbol]
-    // DERIVATIVE_2_MAP.put((ISymbol) rule.arg1(), rule.arg2());
-    // }
-    // for (int i = 1; i < RULES3.size(); i++) {
-    // IAST rule = (IAST) RULES3.get(i);
-    // // Derivative[n][symbol]
-    // DERIVATIVE_N_MAP.put((ISymbol) rule.arg1(), rule.arg2());
-    // }
-    for (int i = 1; i < RULES4.size(); i++) {
-      IAST rule = (IAST) RULES4.get(i);
-      // Derivative[n][symbol]
-      DERIVATIVE_N_M_MAP.put((IAST) rule.arg1(), rule.arg2());
-    }
+  @Override
+  public IAST getRuleAST() {
+    return RULES;
   }
 
   public Derivative() {}
@@ -172,26 +138,6 @@ public class Derivative extends AbstractFunctionEvaluator implements DerivativeR
                 if (arg1.isFunction()) {
                   return derivative(n, (IAST) arg1, engine);
                 }
-              }
-            }
-          } catch (ArithmeticException ae) {
-
-          }
-        }
-        return F.NIL;
-      }
-      if (ast.head().isAST(S.Derivative, 3)) {
-        // Derivative(n, m)
-        IAST head = (IAST) ast.head();
-        if (head.arg1().isInteger() && head.arg2().isInteger()) {
-          try {
-            int n = ((IInteger) head.arg1()).toInt();
-            int m = ((IInteger) head.arg2()).toInt();
-            IExpr arg1 = ast.arg1();
-            if (n >= 0 && m >= 0) {
-              if (arg1.isSymbol()) {
-                ISymbol symbol = (ISymbol) arg1;
-                return derivative(n, m, symbol, engine);
               }
             }
           } catch (ArithmeticException ae) {
@@ -303,24 +249,6 @@ public class Derivative extends AbstractFunctionEvaluator implements DerivativeR
     return F.NIL;
   }
 
-  /**
-   * Get the (n, m)-th derivative (<code>Derivative[n, m][symbol]</code>) if possible. Otherwise
-   * return <code>null</code>
-   *
-   * @param n differentiating <code>n</code> times with respect to the 1. argument
-   * @param m differentiating <code>m</code> times with respect to the 2. argument
-   * @param symbol the function symbol which should be searched in the look-up table.
-   * @return <code>F.NIL</code> if no entry was found
-   */
-  private static IExpr derivative(int n, int m, ISymbol symbol, EvalEngine engine) {
-    IAST listKey = F.List(symbol, F.ZZ(n), F.ZZ(m));
-    IExpr result = DERIVATIVE_N_M_MAP.get(listKey);
-    if (result != null) {
-      return F.unaryAST1(S.Function, engine.evaluate(result));
-    }
-    return F.NIL;
-  }
-
   @Override
   public void setUp(final ISymbol newSymbol) {
     newSymbol.setAttributes(ISymbol.NHOLDALL);
@@ -328,12 +256,12 @@ public class Derivative extends AbstractFunctionEvaluator implements DerivativeR
   }
 
   /**
-   * Create <code>Derivative[n][header][arg1]</code>
+   * Create <code>Derivative(n)[header][arg1]</code>
    *
    * @param n
    * @param header
    * @param arg1
-   * @return
+   * @returnW
    */
   public static IAST createDerivative(final int n, final IExpr header, final IExpr arg1) {
     IAST deriv = F.Derivative(F.ZZ(n));
@@ -345,7 +273,7 @@ public class Derivative extends AbstractFunctionEvaluator implements DerivativeR
   }
 
   /**
-   * Create <code>Derivative[n][header][arg1]</code>
+   * Create <code>Derivative(n)[header]</code>
    *
    * @param n
    * @param header

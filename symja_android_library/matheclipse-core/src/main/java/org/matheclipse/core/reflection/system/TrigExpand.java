@@ -397,9 +397,4 @@ public class TrigExpand extends AbstractEvaluator {
   public int[] expectedArgSize(IAST ast) {
     return IFunctionEvaluator.ARGS_1_1;
   }
-
-  @Override
-  public void setUp(final ISymbol newSymbol) {
-    newSymbol.setAttributes(ISymbol.LISTABLE);
-  }
 }

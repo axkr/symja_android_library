@@ -472,11 +472,12 @@ public class FunctionExpand extends AbstractEvaluator implements FunctionExpandR
     if (assumptionExpr.isPresent()) {
       if (assumptionExpr.isAST()) {
         IAssumptions oldAssumptions = engine.getAssumptions();
-        IAssumptions assumptions = oldAssumptions;
+        IAssumptions assumptions;
         if (oldAssumptions == null) {
           assumptions = org.matheclipse.core.eval.util.Assumptions.getInstance(assumptionExpr);
         } else {
-          assumptions = oldAssumptions.addAssumption((IAST) assumptionExpr);
+          assumptions = oldAssumptions.copy();
+          assumptions = assumptions.addAssumption((IAST) assumptionExpr);
         }
         if (assumptions != null) {
           try {
@@ -505,6 +506,5 @@ public class FunctionExpand extends AbstractEvaluator implements FunctionExpandR
   public void setUp(final ISymbol newSymbol) {
     // Initializer.init();
     LAZY_MATCHER = Suppliers.memoize(Initializer::init);
-    newSymbol.setAttributes(ISymbol.LISTABLE);
   }
 }

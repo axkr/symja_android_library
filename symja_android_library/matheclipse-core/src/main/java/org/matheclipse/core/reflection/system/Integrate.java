@@ -15,6 +15,7 @@ import java.util.function.Predicate;
 
 import org.matheclipse.core.basic.Config;
 import org.matheclipse.core.builtin.Algebra;
+import org.matheclipse.core.builtin.AssumptionFunctions;
 import org.matheclipse.core.builtin.IOFunctions;
 import org.matheclipse.core.builtin.NumberTheory;
 import org.matheclipse.core.eval.EvalEngine;
@@ -22,6 +23,8 @@ import org.matheclipse.core.eval.exception.AbortException;
 import org.matheclipse.core.eval.exception.FailedException;
 import org.matheclipse.core.eval.exception.RecursionLimitExceeded;
 import org.matheclipse.core.eval.interfaces.AbstractFunctionEvaluator;
+import org.matheclipse.core.eval.util.IAssumptions;
+import org.matheclipse.core.eval.util.OptionArgs;
 import org.matheclipse.core.expression.ASTSeriesData;
 import org.matheclipse.core.expression.Context;
 import org.matheclipse.core.expression.ContextPath;
@@ -199,7 +202,7 @@ public class Integrate extends AbstractFunctionEvaluator {
   public Integrate() {}
 
   @Override
-  public IExpr evaluate(final IAST holdallAST, EvalEngine engine) {
+  public IExpr evaluate(IAST holdallAST, EvalEngine engine) {
     if (Config.JAS_NO_THREADS) {
       // Android changed: call static initializer in evaluate() method.
       new IntegrateInitializer().run();
@@ -207,14 +210,32 @@ public class Integrate extends AbstractFunctionEvaluator {
       // see #setUp() method
     }
     try {
-      // wait for initializer runs completely, no matter how many threads call evaluate() method
+      // wait for initializer run is completed, no matter how many threads call evaluate() method
       await();
     } catch (InterruptedException ignored) {
     }
-    boolean evaled = false;
-    IExpr result;
+
+    IAssumptions oldAssumptions = engine.getAssumptions();
     boolean numericMode = engine.isNumericMode();
     try {
+      OptionArgs options = null;
+      if (holdallAST.size() > 3) {
+        options = new OptionArgs(S.Integrate, holdallAST, holdallAST.size() - 1, engine);
+        if (!options.isInvalidPosition()) {
+          holdallAST = (IAST) holdallAST.most();
+        }
+      }
+      IExpr assumptionExpr = OptionArgs.determineAssumptions(holdallAST, -1, options);
+      if (assumptionExpr.isPresent() && assumptionExpr.isAST()) {
+        IAssumptions assumptions =
+            org.matheclipse.core.eval.util.Assumptions.getInstance(assumptionExpr);
+        if (assumptions != null) {
+          engine.setAssumptions(assumptions);
+        }
+      }
+
+      boolean evaled = false;
+      IExpr result;
       engine.setNumericMode(false);
       if (holdallAST.size() < 3 || holdallAST.isEvalFlagOn(IAST.BUILT_IN_EVALED)) {
         return F.NIL;
@@ -371,6 +392,7 @@ public class Integrate extends AbstractFunctionEvaluator {
       }
       return evaled ? ast : F.NIL;
     } finally {
+      engine.setAssumptions(oldAssumptions);
       engine.setNumericMode(numericMode);
     }
   }
@@ -866,5 +888,6 @@ public class Integrate extends AbstractFunctionEvaluator {
     } else {
       // see #evaluate() method
     }
+    setOptions(newSymbol, F.List(F.Rule(S.Assumptions, S.$Assumptions)));
   }
 }

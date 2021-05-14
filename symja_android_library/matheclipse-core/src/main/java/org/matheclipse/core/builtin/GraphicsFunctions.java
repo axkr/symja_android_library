@@ -1,10 +1,13 @@
 package org.matheclipse.core.builtin;
 
+import java.util.Iterator;
+
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.interfaces.AbstractEvaluator;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.expression.S;
 import org.matheclipse.core.interfaces.IAST;
+import org.matheclipse.core.interfaces.IASTMutable;
 import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.interfaces.IInteger;
 import org.matheclipse.core.interfaces.ISymbol;
@@ -18,6 +21,10 @@ public class GraphicsFunctions {
 
     private static void init() {
       S.BernsteinBasis.setEvaluator(new BernsteinBasis());
+      S.Cuboid.setEvaluator(new Cuboid());
+      S.Cylinder.setEvaluator(new Cylinder());
+      S.Sphere.setEvaluator(new Sphere());
+      S.Volume.setEvaluator(new Volume());
     }
   }
 
@@ -68,6 +75,116 @@ public class GraphicsFunctions {
     public void setUp(final ISymbol newSymbol) {
       newSymbol.setAttributes(ISymbol.LISTABLE | ISymbol.NHOLDALL | ISymbol.NUMERICFUNCTION);
     }
+  }
+
+  private static class Cuboid extends AbstractEvaluator {
+
+    @Override
+    public IExpr evaluate(final IAST ast, EvalEngine engine) {
+      if (ast.isAST0()) {
+        return F.Cuboid(F.List(0, 0, 0), F.List(1, 1, 1));
+      } else if (ast.isAST1() && ast.arg1().isList3()) {
+        IASTMutable list2 = ((IAST) ast.arg1()).copy();
+        for (int i = 1; i < list2.size(); i++) {
+          list2.set(i, F.Plus(F.C1, list2.get(i)));
+        }
+        return F.Cuboid(ast.arg1(), list2);
+      }
+      return F.NIL;
+    }
+
+    @Override
+    public int[] expectedArgSize(IAST ast) {
+      return ARGS_0_INFINITY;
+    }
+
+    @Override
+    public void setUp(final ISymbol newSymbol) {}
+  }
+
+  private static class Cylinder extends AbstractEvaluator {
+
+    @Override
+    public IExpr evaluate(final IAST ast, EvalEngine engine) {
+      if (ast.isAST0()) {
+        return F.Cylinder(F.List(F.List(0, 0, -1), F.List(0, 0, 1)));
+      }
+      return F.NIL;
+    }
+
+    @Override
+    public int[] expectedArgSize(IAST ast) {
+      return ARGS_0_2;
+    }
+
+    @Override
+    public void setUp(final ISymbol newSymbol) {}
+  }
+
+  private static class Sphere extends AbstractEvaluator {
+
+    @Override
+    public IExpr evaluate(final IAST ast, EvalEngine engine) {
+      if (ast.isAST0()) {
+        return F.Sphere(F.List(0, 0, 0), F.C1);
+      }
+      if (ast.isAST1()) {
+        return F.Sphere(ast.arg1(), F.C1);
+      }
+      return F.NIL;
+    }
+
+    @Override
+    public int[] expectedArgSize(IAST ast) {
+      return ARGS_0_2;
+    }
+
+    @Override
+    public void setUp(final ISymbol newSymbol) {}
+  }
+
+  private static class Volume extends AbstractEvaluator {
+
+    @Override
+    public IExpr evaluate(final IAST ast, EvalEngine engine) {
+      if (ast.arg1().isAST()) {
+        IAST graphic = (IAST) ast.arg1();
+        if (graphic.isAST(S.Ball, 2, 3) && graphic.first().isList3()) {
+          IExpr radius = F.C1;
+          if (graphic.size() == 3) {
+            radius = graphic.second();
+          }
+          return F.Times(F.C3D4, S.Pi, F.Power(radius, F.C3));
+        } else if (graphic.isAST(S.Cuboid, 3)
+            && graphic.first().isList3()
+            && graphic.second().isList3()) {
+          IAST v1 = (IAST) graphic.first();
+          IAST v2 = (IAST) graphic.second();
+          // Abs((-a + x)*(-b + y)*(-c + z))
+          return F.Abs(
+              F.Times( //
+                  F.Plus(v1.arg1().negate(), v2.arg1()),
+                  F.Plus(v1.arg2().negate(), v2.arg2()),
+                  F.Plus(v1.arg3().negate(), v2.arg3())));
+        } else if (graphic.isAST(S.Ellipsoid, 3)
+            && graphic.first().isList3()
+            && graphic.second().isList3()) {
+          // IAST v1 = (IAST) graphic.first();
+          IAST v2 = (IAST) graphic.second();
+          return F.Times(F.QQ(4, 3), S.Pi, v2.arg1(), v2.arg2(), v2.arg3());
+        }
+      }
+
+      return F.NIL;
+    }
+
+    @Override
+    public int[] expectedArgSize(IAST ast) {
+      return ARGS_1_1;
+    }
+
+    @Override
+    public void setUp(final ISymbol newSymbol) {}
   }
 
   public static void initialize() {

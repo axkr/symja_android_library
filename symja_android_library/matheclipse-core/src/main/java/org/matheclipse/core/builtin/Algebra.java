@@ -128,6 +128,7 @@ public class Algebra {
   }
 
   protected static class InternalFindCommonFactorPlus {
+
     private static void splitTimesArg1(IExpr expr, HashMap<IExpr, IInteger> map) {
       if (expr.isTimes()) {
         IAST timesAST = (IAST) expr;
@@ -921,7 +922,7 @@ public class Algebra {
       }
       return defaultValue;
     }
-    
+
     /**
      * Collect terms in <code>expr</code> containing the same power expressions of <code>x</code>.
      *
@@ -2057,7 +2058,11 @@ public class Algebra {
     public void setUp(final ISymbol newSymbol) {
       setOptions(
           newSymbol, //
-          F.List(F.Rule(S.GaussianIntegers, S.False), F.Rule(S.Modulus, F.C0)));
+          F.List(
+              F.Rule(S.Extension, S.None),
+              F.Rule(S.GaussianIntegers, S.False),
+              F.Rule(S.Modulus, F.C0)));
+      newSymbol.setAttributes(ISymbol.LISTABLE);
     }
 
     @Override
@@ -2443,6 +2448,11 @@ public class Algebra {
     @Override
     public int[] expectedArgSize(IAST ast) {
       return ARGS_1_2;
+    }
+
+    @Override
+    public void setUp(final ISymbol newSymbol) {
+      newSymbol.setAttributes(ISymbol.LISTABLE);
     }
   }
 
@@ -3090,7 +3100,7 @@ public class Algebra {
 
     @Override
     public void setUp(final ISymbol newSymbol) {
-      // newSymbol.setAttributes(ISymbol.HOLDALL);
+      newSymbol.setAttributes(ISymbol.LISTABLE);
       setOptions(
           newSymbol, //
           F.List(F.Rule(S.Modulus, F.C0)));
@@ -3241,7 +3251,7 @@ public class Algebra {
 
     @Override
     public void setUp(final ISymbol newSymbol) {
-      // newSymbol.setAttributes(ISymbol.HOLDALL);
+      newSymbol.setAttributes(ISymbol.LISTABLE);
       setOptions(
           newSymbol, //
           F.List(F.Rule(S.Modulus, F.C0)));
@@ -3882,7 +3892,6 @@ public class Algebra {
     /** {@inheritDoc} */
     @Override
     public void setUp(final ISymbol newSymbol) {
-      newSymbol.setAttributes(ISymbol.LISTABLE);
       setOptions(
           newSymbol, //
           F.List(F.Rule(S.Assumptions, S.Automatic)));

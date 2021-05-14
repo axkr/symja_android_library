@@ -440,44 +440,6 @@ public class PredicateQ {
    */
   private static final class FreeQ extends AbstractCoreFunctionEvaluator implements IPredicate {
 
-    /**
-     * Checks if <code>orderless1.size()</code> is greater or equal <code>orderless2.size()</code>
-     * and returns <code>false</code>, if every argument in <code>orderless2</code> equals an
-     * argument in <code>orderless1</code>. I.e. <code>orderless1</code> doesn't contain every
-     * argument of <code>orderless2</code>.
-     *
-     * @param orderless1
-     * @param orderless2
-     * @return <code>false</code> if <code>orderless1.size()</code> is greater or equal <code>
-     *     orderless2.size()</code> and if every argument in <code>orderless2</code> equals an
-     *     argument in <code>orderless1</code>
-     */
-    //    private static boolean isFreeOrderless(IAST orderless1, IAST orderless2) {
-    //      if (orderless1.size() >= orderless2.size()) {
-    //        IExpr temp;
-    //        boolean evaled = false;
-    //        int[] array = new int[orderless1.size()];
-    //        for (int i = 1; i < orderless2.size(); i++) {
-    //          temp = orderless2.get(i);
-    //          evaled = false;
-    //          for (int j = 1; j < orderless1.size(); j++) {
-    //            if (array[j] != (-1) && temp.equals(orderless1.get(j))) {
-    //              array[j] = -1;
-    //              evaled = true;
-    //              break;
-    //            }
-    //          }
-    //          if (!evaled) {
-    //            break;
-    //          }
-    //        }
-    //        if (evaled) {
-    //          return false;
-    //        }
-    //      }
-    //      return true;
-    //    }
-
     @Override
     public IExpr evaluate(IAST ast, EvalEngine engine) {
       if (ast.size() == 3) {
@@ -1656,6 +1618,17 @@ public class PredicateQ {
         || h == ID.HypergeometricPFQ
         || h == ID.HypergeometricPFQRegularized
         || h == ID.HypergeometricU
+        || h == ID.JacobiAmplitude
+        || h == ID.JacobiCD
+        || h == ID.JacobiCN
+        || h == ID.JacobiDC
+        || h == ID.JacobiDN
+        || h == ID.JacobiNC
+        || h == ID.JacobiND
+        || h == ID.JacobiSC
+        || h == ID.JacobiSD
+        || h == ID.JacobiSN
+        || h == ID.JacobiZeta
         || h == ID.KleinInvariantJ
         || h == ID.Log
         || h == ID.Piecewise

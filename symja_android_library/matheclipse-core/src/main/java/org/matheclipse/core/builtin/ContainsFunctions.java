@@ -2,6 +2,7 @@ package org.matheclipse.core.builtin;
 
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.interfaces.AbstractEvaluator;
+import org.matheclipse.core.eval.interfaces.AbstractFunctionOptionEvaluator;
 import org.matheclipse.core.eval.util.OptionArgs;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.expression.S;
@@ -50,27 +51,15 @@ public class ContainsFunctions {
     }
   }
 
-  private static class ContainsAny extends AbstractEvaluator {
+  private static class ContainsAny extends AbstractFunctionOptionEvaluator {
+
     static final ContainsAny CONST = new ContainsAny();
 
     @Override
-    public IExpr evaluate(IAST ast, EvalEngine engine) {
-      //      if (ast.isAST1()) {
-      //        ast = F.operatorForm1Append(ast);
-      //        if (!ast.isPresent()) {
-      //          return F.NIL;
-      //        }
-      //      }
-      IExpr sameTest = S.SameQ;
-      if (validateArgs(ast.arg1(), ast.arg2(), engine)) {
-        if (ast.isAST3()) {
-          // determine option SameTest
-          final OptionArgs options = new OptionArgs(ast.topHead(), ast, 2, engine);
-          IExpr option = options.getOptionAutomatic(S.SameTest);
-          if (option.isPresent()) {
-            sameTest = option;
-          }
-        }
+    protected IExpr evaluate(
+        final IAST ast, final int argSize, final IExpr[] option, final EvalEngine engine) {
+      if (argSize >= 2 && validateArgs(ast.arg1(), ast.arg2(), engine)) {
+        IExpr sameTest = option[0].equals(S.Automatic) ? S.SameQ : option[0];
         IAST list1 = (IAST) ast.arg1();
         IAST list2 = (IAST) ast.arg2();
         return containsFunction(list1, list2, sameTest, engine);
@@ -100,9 +89,7 @@ public class ContainsFunctions {
 
     @Override
     public void setUp(final ISymbol newSymbol) {
-      setOptions(
-          newSymbol, //
-          F.List(F.Rule(S.SameTest, S.Automatic)));
+      setOptions(newSymbol, S.SameTest, S.Automatic);
     }
   }
 

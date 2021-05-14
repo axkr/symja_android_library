@@ -14,7 +14,7 @@ import org.matheclipse.core.interfaces.ISymbol;
 public abstract class AbstractAssumptions implements IAssumptions {
 
   @Override
-  public IAssumptions addAssumption(IAST ast) {
+  public IAssumptions addAssumption(IExpr expr) {
     return null;
   }
 

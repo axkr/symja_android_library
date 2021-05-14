@@ -5,8 +5,12 @@ import static org.matheclipse.core.expression.F.Floor;
 import static org.matheclipse.core.expression.F.x;
 import static org.matheclipse.core.expression.F.y;
 
+import java.util.HashMap;
+
 import org.matheclipse.core.eval.EvalUtilities;
 import org.matheclipse.core.eval.util.AbstractAssumptions;
+import org.matheclipse.core.eval.util.Assumptions;
+import org.matheclipse.core.eval.util.IAssumptions;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IExpr;
@@ -24,6 +28,11 @@ public class AssumptionTestCase extends TestCase {
 
   /** Assumption which implements <code>x > 0</code> or <code>y is integer number</code> */
   public class XGreaterZeroOrYInteger extends AbstractAssumptions {
+
+    public IAssumptions copy() {
+      XGreaterZeroOrYInteger assumptions = new XGreaterZeroOrYInteger();
+      return assumptions;
+    }
 
     @Override
     public boolean isNegative(IExpr expr) {
@@ -57,6 +66,16 @@ public class AssumptionTestCase extends TestCase {
     @Override
     public int[] reduceRange(IExpr x, int[] range) {
       return range;
+    }
+
+    @Override
+    public IExpr get$Assumptions() {
+      return F.NIL;
+    }
+
+    @Override
+    public void set$Assumptions(IExpr expr) {
+
     }
   }
 

@@ -119,7 +119,7 @@ import org.matheclipse.core.reflection.system.rules.DRules;
  * <p>Chain rule:<br>
  *
  * <pre>
- * &gt;&gt; D(f(2*x+1, 2*y, x+y)
+ * &gt;&gt; D(f(2*x+1, 2*y, x+y),x)
  * 2*Derivative(1,0,0)[f][1+2*x,2*y,x+y]+Derivative(0,0,1)[f][1+2*x,2*y,x+y]
  *
  * &gt;&gt; D(f(x^2, x, 2*y), {x,2}, y) // Expand

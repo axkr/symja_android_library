@@ -7,6 +7,7 @@ import java.util.function.Function;
 
 import org.matheclipse.core.basic.Config;
 import org.matheclipse.core.basic.ToggleFeature;
+import org.matheclipse.core.convert.VariablesSet;
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.exception.RecursionLimitExceeded;
 import org.matheclipse.core.eval.interfaces.AbstractFunctionEvaluator;
@@ -617,7 +618,7 @@ public class SeriesFunctions {
               if (S.Greater.ofQ(F.Log(base), F.C0)) {
                 return isInfinityLimit ? F.CInfinity : F.C0;
               }
-            } else if (base.isNumericFunction(s->s.isSymbol()?"":null)) {
+            } else if (base.isNumericFunction(s -> s.isSymbol() ? "" : null)) {
               return F.ConditionalExpression(
                   isInfinityLimit ? F.CInfinity : F.C0, F.Greater(F.Log(base), F.C0));
             }
@@ -1128,7 +1129,7 @@ public class SeriesFunctions {
         if (function.isFree(x)) {
           return function;
         }
-        ASTSeriesData series = seriesData(function, x, x0, n, engine);
+        ASTSeriesData series = seriesDataRecursive(function, x, x0, n, engine);
         if (series != null) {
           return series;
         }
@@ -1144,20 +1145,18 @@ public class SeriesFunctions {
      * @param x0 the point to do the power expansion for
      * @param n the order of the expansion
      * @param engine the evaluation engine
-     * @return
+     * @return the series or <code>null</code> if no series is found
      */
-    private static ASTSeriesData seriesData(
+    private static ASTSeriesData seriesDataRecursive(
         final IExpr function, IExpr x, IExpr x0, final int n, EvalEngine engine) {
+      final int denominator = 1;
       if (function.isFree(x) || function.equals(x)) {
         Map<IExpr, IExpr> coefficientMap = new HashMap<IExpr, IExpr>();
         IASTAppendable rest = F.PlusAlloc(4);
         return polynomialSeries(function, x, x0, n, coefficientMap, rest);
-      } else if (function.isPower()) {
-        ASTSeriesData temp = powerSeriesData(function, x, x0, n, engine);
-        if (temp != null) {
-          return temp;
-        }
-      } else if (function.isPlus()) {
+      }
+
+      if (function.isPlus()) {
         ASTSeriesData temp = plusSeriesData((IAST) function, x, x0, n, engine);
         if (temp != null) {
           return temp;
@@ -1167,21 +1166,88 @@ public class SeriesFunctions {
         if (temp != null) {
           return temp;
         }
+      }
+      ASTSeriesData sd = simpleSeries(function, x, x0, n, denominator, engine);
+      if (sd != null) {
+        return sd;
+      }
+
+      if (function.isPower()) {
+        ASTSeriesData temp = powerSeriesData(function, x, x0, n, engine);
+        if (temp != null) {
+          return temp;
+        }
       } else if (function.isLog() && function.first().equals(x) && x0.isZero() && n >= 0) {
         return new ASTSeriesData(x, x0, F.List(function), 0, n + 1, 1);
       }
+      return null;
+    }
 
+    /**
+     * Try to find a series with the steps:
+     *
+     * <ol>
+     *   <li><a
+     *       href="https://github.com/axkr/symja_android_library/blob/master/symja_android_library/doc/functions/SeriesCoefficient.md">SeriesCoefficient()</a>.
+     *   <li><a href="https://en.wikipedia.org/wiki/Taylor_series">Wikipedia - Taylor's formula</a>
+     * </ol>
+     *
+     * @param function the function which should be generated as a power series
+     * @param x the variable
+     * @param x0 the point to do the power expansion for
+     * @param n the order of the expansion
+     * @param denominator
+     * @param engine the evaluation engine
+     * @return the series or <code>null</code> if no series is found
+     */
+    private static ASTSeriesData simpleSeries(
+        final IExpr function,
+        IExpr x,
+        IExpr x0,
+        final int n,
+        final int denominator,
+        EvalEngine engine) {
+      VariablesSet varSet = new VariablesSet(function);
+      varSet.add(x);
+      varSet.addVarList(x0);
+      ASTSeriesData sd = seriesCoefficient(function, x, x0, n, denominator, varSet, engine);
+      if (sd != null) {
+        return sd;
+      }
+      return taylorSeries(function, x, x0, n, denominator, varSet, engine);
+    }
+
+    /**
+     * Try to find a series with function {@link SeriesCoefficient}
+     *
+     * @param function the function which should be generated as a power series
+     * @param x the variable
+     * @param x0 the point to do the power expansion for
+     * @param n the order of the expansion
+     * @param denominator
+     * @param varSet the variables of the function (including x)
+     * @param engine the evaluation engine
+     * @return the <code>SeriesCoefficient()</code> series or <code>null</code> if the function is
+     *     not numeric w.r.t the varSet
+     */
+    private static ASTSeriesData seriesCoefficient(
+        final IExpr function,
+        IExpr x,
+        IExpr x0,
+        final int n,
+        final int denominator,
+        VariablesSet varSet,
+        EvalEngine engine) {
       ISymbol power = F.Dummy("$$$n");
-      int denominator = 1;
-      IExpr temp = engine.evaluate(F.SeriesCoefficient(function, F.List(x, x0, power)));
-      if (temp.isFree(S.SeriesCoefficient)) {
+      IExpr temp = engine.evalQuiet(F.SeriesCoefficient(function, F.List(x, x0, power)));
+      if (temp.isNumericFunction(varSet)) {
         int end = n;
         if (n < 0) {
           end = 0;
         }
         ASTSeriesData ps = new ASTSeriesData(x, x0, end + 1, end + denominator, denominator);
         for (int i = 0; i <= end; i++) {
-          ps.setCoeff(i, engine.evaluate(F.subst(temp, F.Rule(power, F.ZZ(i)))));
+          ps.setCoeff(i, engine.evalQuiet(F.subst(temp, F.Rule(power, F.ZZ(i)))));
         }
         return ps;
       } else {
@@ -1189,14 +1255,14 @@ public class SeriesFunctions {
         if (n < 0) {
           end = 0;
         }
-        temp = engine.evaluate(F.SeriesCoefficient(function, F.List(x, x0, F.C0)));
-        if (temp.isFree(S.SeriesCoefficient) && !temp.isIndeterminate()) {
+        temp = engine.evalQuiet(F.SeriesCoefficient(function, F.List(x, x0, F.C0)));
+        if (temp.isNumericFunction(varSet)) {
           boolean evaled = true;
           ASTSeriesData ps = new ASTSeriesData(x, x0, end + 1, end + denominator, denominator);
           ps.setCoeff(0, temp);
           for (int i = 1; i <= end; i++) {
-            temp = engine.evaluate(F.SeriesCoefficient(function, F.List(x, x0, F.ZZ(i))));
-            if (temp.isFree(S.SeriesCoefficient)) {
+            temp = engine.evalQuiet(F.SeriesCoefficient(function, F.List(x, x0, F.ZZ(i))));
+            if (temp.isNumericFunction(varSet)) {
               ps.setCoeff(i, temp);
             } else {
               evaled = false;
@@ -1208,21 +1274,48 @@ public class SeriesFunctions {
           }
         }
       }
+      return null;
+    }
+
+    /**
+     * Create a series with <a href="https://en.wikipedia.org/wiki/Taylor_series">Wikipedia -
+     * Taylor's formula</a>.
+     *
+     * @param function the function which should be generated as a power series
+     * @param x the variable
+     * @param x0 the point to do the power expansion for
+     * @param n the order of the expansion
+     * @param denominator
+     * @param varSet the variables of the function (including x)
+     * @param engine the evaluation engine
+     * @return the Taylor series or <code>null</code> if the function is not numeric w.r.t the
+     *     varSet
+     */
+    private static ASTSeriesData taylorSeries(
+        final IExpr function,
+        IExpr x,
+        IExpr x0,
+        final int n,
+        int denominator,
+        VariablesSet varSet,
+        EvalEngine engine) {
       ASTSeriesData ps = new ASTSeriesData(x, x0, 0, n + denominator, denominator);
       IExpr derivedFunction = function;
       for (int i = 0; i <= n; i++) {
         IExpr functionPart = engine.evalQuiet(F.ReplaceAll(derivedFunction, F.Rule(x, x0)));
         if (functionPart.isIndeterminate()) {
           functionPart = engine.evalQuiet(F.Limit(derivedFunction, F.Rule(x, x0)));
-          if (!functionPart.isFree(S.Limit) || functionPart.isIndeterminate()) {
+          if (!functionPart.isNumericFunction(varSet)) {
             return null;
           }
         }
         IExpr coefficient =
-            S.Times.of(engine, F.Power(NumberTheory.factorial(i), F.CN1), functionPart);
-
+            engine.evalQuiet(F.Times(F.Power(NumberTheory.factorial(i), F.CN1), functionPart));
+        if (coefficient.isIndeterminate() || coefficient.isComplexInfinity()) {
+          return null;
+        }
         ps.setCoeff(i, coefficient);
-        derivedFunction = S.D.of(engine, derivedFunction, x);
+        derivedFunction = engine.evalQuiet(F.D(derivedFunction, x));
       }
       return ps;
     }
@@ -1258,14 +1351,14 @@ public class SeriesFunctions {
         }
         timesAST = rest;
         if (temp != null) {
-          arg = seriesData(timesAST.arg1(), x, x0, ni, engine);
+          arg = seriesDataRecursive(timesAST.arg1(), x, x0, ni, engine);
           if (arg instanceof ASTSeriesData) {
             series = temp.timesPS((ASTSeriesData) arg);
           } else {
             return null;
           }
         } else {
-          arg = seriesData(timesAST.arg1(), x, x0, ni, engine);
+          arg = seriesDataRecursive(timesAST.arg1(), x, x0, ni, engine);
           if (arg instanceof ASTSeriesData) {
             series = (ASTSeriesData) arg;
           } else {
@@ -1273,7 +1366,7 @@ public class SeriesFunctions {
           }
         }
       } else {
-        arg = seriesData(timesAST.arg1(), x, x0, ni, engine);
+        arg = seriesDataRecursive(timesAST.arg1(), x, x0, ni, engine);
         if (arg instanceof ASTSeriesData) {
           series = (ASTSeriesData) arg;
         } else {
@@ -1290,7 +1383,7 @@ public class SeriesFunctions {
               if (exp != Integer.MIN_VALUE) {
                 if (exp == -1) {
                   // arg1.divide(arg2.base())
-                  arg = seriesData(timesArg.base(), x, x0, ni, engine);
+                  arg = seriesDataRecursive(timesArg.base(), x, x0, ni, engine);
                   if (arg instanceof ASTSeriesData) {
                     series = series.dividePS((ASTSeriesData) arg);
                     continue;
@@ -1300,7 +1393,7 @@ public class SeriesFunctions {
               }
             }
 
-            arg = seriesData(timesArg, x, x0, ni, engine);
+            arg = seriesDataRecursive(timesArg, x, x0, ni, engine);
             if (arg instanceof ASTSeriesData) {
               series = series.timesPS((ASTSeriesData) arg);
               continue;
@@ -1333,7 +1426,7 @@ public class SeriesFunctions {
       if (temp != null) {
         series = temp;
       } else {
-        arg = seriesData(rest.arg1(), x, x0, n, engine);
+        arg = seriesDataRecursive(rest.arg1(), x, x0, n, engine);
         if (arg instanceof ASTSeriesData) {
           series = (ASTSeriesData) arg;
           start = 2;
@@ -1341,7 +1434,7 @@ public class SeriesFunctions {
       }
       if (series != null) {
         for (int i = start; i < rest.size(); i++) {
-          arg = seriesData(rest.get(i), x, x0, n, engine);
+          arg = seriesDataRecursive(rest.get(i), x, x0, n, engine);
           if (arg instanceof ASTSeriesData) {
             series = series.plusPS((ASTSeriesData) arg);
           } else {
@@ -1367,7 +1460,7 @@ public class SeriesFunctions {
             int numerator = rat.numerator().toIntDefault(Integer.MIN_VALUE);
             int denominator = rat.denominator().toIntDefault(Integer.MIN_VALUE);
             if (denominator != Integer.MIN_VALUE) {
-              IExpr temp = seriesData(F.Power(base, x), x, x0, n * denominator, engine);
+              IExpr temp = seriesDataRecursive(F.Power(base, x), x, x0, n * denominator, engine);
               if (temp instanceof ASTSeriesData) {
                 ASTSeriesData series = (ASTSeriesData) temp;
                 if (numerator != 1) {
@@ -1389,7 +1482,7 @@ public class SeriesFunctions {
       }
       int exp = exponent.toIntDefault(Integer.MIN_VALUE);
       if (exp != Integer.MIN_VALUE) {
-        ASTSeriesData series = seriesData(base, x, x0, n, engine);
+        ASTSeriesData series = seriesDataRecursive(base, x, x0, n, engine);
         if (series instanceof ASTSeriesData) {
           return series.pow(exp);
         }

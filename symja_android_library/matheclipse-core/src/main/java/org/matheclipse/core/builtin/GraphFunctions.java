@@ -152,7 +152,7 @@ public class GraphFunctions {
           }
         } else if (ast.size() >= 3 && ast.arg1().isList()) {
           IExpr edgeWeight = F.NIL;
-          final OptionArgs options = new OptionArgs(S.Graph, ast, 2, engine);
+          final OptionArgs options = new OptionArgs(S.Graph, ast, ast.argSize(), engine);
           IExpr option = options.getOption(S.EdgeWeight);
           if (option.isPresent() && !option.equals(S.Automatic)) {
             edgeWeight = option;
@@ -1792,7 +1792,7 @@ public class GraphFunctions {
   /**
    * Create an eulerian cycle.
    *
-   * @param g
+   * @param gex a graph object
    * @return <code>null</code> if no eulerian cycle can be created
    */
   private static GraphPath<IExpr, ?> eulerianCycle(GraphExpr<?> gex) {

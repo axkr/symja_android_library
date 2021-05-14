@@ -94,7 +94,9 @@ public class Import extends AbstractEvaluator {
             }
             return rowList;
           case STRING:
-            return of(file, engine);
+            return ofString(file, engine);
+          case TXT:
+            return ofText(file, engine);
           case WXF:
             byte[] byteArray = com.google.common.io.Files.toByteArray(file);
             return WL.deserialize(byteArray);
@@ -126,7 +128,15 @@ public class Import extends AbstractEvaluator {
     return IFunctionEvaluator.ARGS_1_2;
   }
 
-  public static IExpr of(File file, EvalEngine engine) throws IOException {
+  /**
+   * Get arbitrary data represented as a Symja expression string
+   *
+   * @param file
+   * @param engine
+   * @return
+   * @throws IOException
+   */
+  public static IExpr ofString(File file, EvalEngine engine) throws IOException {
     String filename = file.getName();
     Extension extension = Extension.importFilename(filename);
     // Extension extension = filename.extension();
@@ -140,6 +150,19 @@ public class Import extends AbstractEvaluator {
     String str = com.google.common.io.Files.asCharSource(file, Charset.defaultCharset()).read();
     final ASTNode node = parser.parse(str);
     return ast2Expr.convert(node);
+  }
+
+  /**
+   * Get plain text from file
+   *
+   * @param file
+   * @param engine
+   * @return
+   * @throws IOException
+   */
+  public static IExpr ofText(File file, EvalEngine engine) throws IOException {
+    String str = com.google.common.io.Files.asCharSource(file, Charset.defaultCharset()).read();
+    return F.stringx(str);
   }
 
   private IExpr graphImport(Reader reader, Extension format, EvalEngine engine)

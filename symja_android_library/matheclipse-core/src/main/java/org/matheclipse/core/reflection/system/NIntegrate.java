@@ -162,16 +162,12 @@ public class NIntegrate extends AbstractFunctionEvaluator {
           maxPoints = DEFAULT_MAX_POINTS;
         }
       }
-      option = options.getOption(S.MaxIterations);
-      if (option.isReal()) {
-        maxIterations = ((ISignedNumber) option).toIntDefault(-1);
-        if (maxIterations <= 0) {
-          engine.printMessage(
-              "NIntegrate: "
-                  + "Error in option MaxIterations. Using default value: "
-                  + maxIterations);
-          maxIterations = DEFAULT_MAX_ITERATIONS;
-        }
+      maxIterations = options.getOptionMaxIterations(S.MaxIterations);
+      if (maxIterations == Integer.MIN_VALUE) {
+        return F.NIL;
+      }
+      if (maxIterations < 0) {
+        maxIterations = DEFAULT_MAX_ITERATIONS;
       }
       option = options.getOption(S.PrecisionGoal);
       if (option.isReal()) {

@@ -221,7 +221,8 @@ public class ComplexExpand extends AbstractEvaluator {
       if (oldAssumptions == null) {
         assumptions = org.matheclipse.core.eval.util.Assumptions.getInstance(assumptionExpr);
       } else {
-        assumptions = oldAssumptions.addAssumption(assumptionExpr);
+        assumptions = oldAssumptions.copy();
+        assumptions = assumptions.addAssumption(assumptionExpr);
       }
       engine.setAssumptions(assumptions);
 
@@ -239,15 +240,5 @@ public class ComplexExpand extends AbstractEvaluator {
   @Override
   public int[] expectedArgSize(IAST ast) {
     return IFunctionEvaluator.ARGS_1_2;
-  }
-
-  // private static IExpr complexExpandNull(IExpr arg1, EvalEngine engine) {
-  // ComplexExpandVisitor tteVisitor = new ComplexExpandVisitor(engine);
-  // return arg1.accept(tteVisitor);
-  // }
-
-  @Override
-  public void setUp(final ISymbol newSymbol) {
-    newSymbol.setAttributes(ISymbol.LISTABLE);
   }
 }

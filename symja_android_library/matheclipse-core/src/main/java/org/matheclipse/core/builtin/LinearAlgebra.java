@@ -62,7 +62,6 @@ import org.matheclipse.core.eval.util.IndexFunctionDiagonal;
 import org.matheclipse.core.eval.util.IndexTableGenerator;
 import org.matheclipse.core.expression.ASTRealMatrix;
 import org.matheclipse.core.expression.ASTRealVector;
-import org.matheclipse.core.expression.ExprField;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.expression.S;
 import org.matheclipse.core.generic.Comparators;
@@ -2928,7 +2927,7 @@ public final class LinearAlgebra {
           if (p == 0) {
             resultMatrix =
                 new BlockFieldMatrix<IExpr>(
-                    ExprField.CONST, matrix.getRowDimension(), matrix.getColumnDimension());
+                    F.EXPR_FIELD, matrix.getRowDimension(), matrix.getColumnDimension());
             int min = matrix.getRowDimension();
             if (min > matrix.getColumnDimension()) {
               min = matrix.getColumnDimension();

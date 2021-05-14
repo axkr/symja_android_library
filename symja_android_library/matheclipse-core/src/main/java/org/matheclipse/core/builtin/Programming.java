@@ -112,6 +112,9 @@ public final class Programming {
       if (!Config.FUZZY_PARSER) {
         S.On.setEvaluator(new On());
         S.Off.setEvaluator(new Off());
+        S.MaxMemoryUsed.setEvaluator(new MaxMemoryUsed());
+        S.MemoryAvailable.setEvaluator(new MemoryAvailable());
+        S.MemoryInUse.setEvaluator(new MemoryInUse());
         S.Trace.setEvaluator(new Trace());
         S.TraceForm.setEvaluator(new TraceForm());
       }
@@ -796,23 +799,23 @@ public final class Programming {
           // Nonatomic expression expected at position `1` in `2`.
           return IOFunctions.printMessage(ast.topHead(), "normal", F.List(F.C1, ast), engine);
         }
-        int iterations = Integer.MAX_VALUE;
+        int maxIterations = Integer.MAX_VALUE;
         if (ast.isAST3()) {
           IExpr arg3 = ast.arg3();
           if (arg3.isInfinity()) {
-            iterations = Integer.MAX_VALUE;
+            maxIterations = Integer.MAX_VALUE;
           } else if (arg3.isNegativeInfinity()) {
-            iterations = Integer.MIN_VALUE;
+            maxIterations = Integer.MIN_VALUE;
           } else {
-            iterations = Validate.checkNonNegativeIntType(ast, 3);
+            maxIterations = Validate.checkNonNegativeIntType(ast, 3);
           }
         }
-        if (iterations < 0) {
+        if (maxIterations < 0) {
           // Non-negative machine-sized integer expected at position `2` in `1`.
           return IOFunctions.printMessage(
               ast.topHead(), "intnm", F.List(ast, F.ZZ(3)), EvalEngine.get());
         }
-        if (iterations == 0) {
+        if (maxIterations == 0) {
           return ast.arg2();
         } else {
           IExpr current = ast.arg2();
@@ -825,7 +828,7 @@ public final class Programming {
             if (iterationLimit >= 0 && iterationLimit <= ++iterationCounter) {
               IterationLimitExceeded.throwIt(iterationCounter, ast);
             }
-          } while ((!current.isSame(last)) && (--iterations > 0));
+          } while ((!current.isSame(last)) && (--maxIterations > 0));
           return current;
         }
 
@@ -1280,6 +1283,54 @@ public final class Programming {
         }
       }
       return F.NIL;
+    }
+  }
+
+  private static class MaxMemoryUsed extends AbstractCoreFunctionEvaluator {
+
+    @Override
+    public IExpr evaluate(final IAST ast, EvalEngine engine) {
+      if (ast.isAST0()) {
+        long freeMemory = Runtime.getRuntime().totalMemory();
+        return F.ZZ(freeMemory);
+      }
+      return F.NIL;
+    }
+
+    @Override
+    public int[] expectedArgSize(IAST ast) {
+      return ARGS_0_1;
+    }
+  }
+
+  private static class MemoryAvailable extends AbstractCoreFunctionEvaluator {
+
+    @Override
+    public IExpr evaluate(final IAST ast, EvalEngine engine) {
+      long freeMemory = Runtime.getRuntime().freeMemory();
+      return F.ZZ(freeMemory);
+    }
+
+    @Override
+    public int[] expectedArgSize(IAST ast) {
+      return ARGS_0_0;
+    }
+  }
+
+  private static class MemoryInUse extends AbstractCoreFunctionEvaluator {
+
+    @Override
+    public IExpr evaluate(final IAST ast, EvalEngine engine) {
+      if (ast.isAST0()) {
+        long freeMemory = Runtime.getRuntime().totalMemory() - Runtime.getRuntime().freeMemory();
+        return F.ZZ(freeMemory);
+      }
+      return F.NIL;
+    }
+
+    @Override
+    public int[] expectedArgSize(IAST ast) {
+      return ARGS_0_1;
     }
   }
 
@@ -1882,9 +1933,7 @@ public final class Programming {
         return S.Null;
       }
       IdentityHashMap<ISymbol, ISymbol> map = null;
-      for (int i = 1; i < ast.size(); i++) {
-        enableOnOffTrace(ast.get(i), map, engine);
-      }
+      ast.forEach(x -> enableOnOffTrace(x, map, engine));
       engine.setOnOffMode(true, map, false);
       return F.NIL;
     }
@@ -2358,6 +2407,7 @@ public final class Programming {
           IPatternMatcher[] matcher;
           if (arg2.isList()) {
             IAST matcherAST = (IAST) arg2;
+            
             matcher = new IPatternMatcher[matcherAST.size() - 1];
             for (int i = 1; i < matcherAST.size(); i++) {
               matcher[i - 1] = engine.evalPatternMatcher(matcherAST.get(i));
@@ -2512,11 +2562,7 @@ public final class Programming {
           IExpr arg1 = engine.evaluate(ast.arg1());
           IExpr tags = engine.evaluate(ast.arg2());
           if (tags.isList()) {
-            IAST list = (IAST) tags;
-            for (int i = 1; i < list.size(); i++) {
-              appendReapList(arg1, list.get(i), reapList);
-            }
-
+            ((IAST) tags).forEach(x -> appendReapList(arg1, x, reapList));
           } else {
             appendReapList(arg1, tags, reapList);
             return arg1;

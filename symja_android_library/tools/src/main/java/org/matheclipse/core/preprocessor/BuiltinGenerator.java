@@ -44,11 +44,11 @@ public class BuiltinGenerator {
           out.println();
           out.print("\n        /**");
           out.print(
-              "| See: <a href=\"https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/"
+              " @see <a href=\"https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/"
                   + sym
                   + ".md\">"
                   + sym
-                  + "</a>");
+                  + " documentation</a>");
           out.print(" */\n");
         } else {
           out.println();

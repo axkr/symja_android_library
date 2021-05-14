@@ -41,6 +41,7 @@ import org.matheclipse.core.interfaces.ISymbol;
 import org.matheclipse.core.polynomials.HornerScheme;
 import org.matheclipse.parser.client.FEConfig;
 
+import com.baeldung.algorithms.romannumerals.RomanArabicConverter;
 import com.ibm.icu.text.NumberFormat;
 import com.ibm.icu.text.RuleBasedNumberFormat;
 
@@ -292,6 +293,9 @@ public final class OutputFunctions {
     @Override
     public IExpr evaluate(final IAST ast, EvalEngine engine) {
       IExpr arg1 = ast.arg1();
+      if (ast.arg1().isList()) {
+        return ((IAST) ast.arg1()).mapThread(ast, 1);
+      }
       if (arg1.isInteger()) {
         NumberFormat formatter = null;
         try {
@@ -311,38 +315,22 @@ public final class OutputFunctions {
             }
             IStringX arg2 = (IStringX) ast.arg2();
             if (arg2.isString("Dutch")
-                || //
-                arg2.isString("Finnish")
-                || //
-                arg2.isString("English")
-                || //
-                arg2.isString("Esperanto")
-                || //
-                arg2.isString("French")
-                || //
-                arg2.isString("German")
-                || //
-                arg2.isString("Hungarian")
-                || //
-                arg2.isString("Italian")
-                || //
-                arg2.isString("Latin")
-                || //
-                arg2.isString("Polish")
-                || //
-                arg2.isString("Portuguese")
-                || //
-                arg2.isString("Romanian")
-                || //
-                arg2.isString("Russian")
-                || //
-                arg2.isString("Spanish")
-                || //
-                arg2.isString("Swedish")
-                || //
-                arg2.isString("Tongan")
-                || //
-                arg2.isString("Turkish")) {
+                || arg2.isString("Finnish")
+                || arg2.isString("English")
+                || arg2.isString("Esperanto")
+                || arg2.isString("French")
+                || arg2.isString("German")
+                || arg2.isString("Hungarian")
+                || arg2.isString("Italian")
+                || arg2.isString("Latin")
+                || arg2.isString("Polish")
+                || arg2.isString("Portuguese")
+                || arg2.isString("Romanian")
+                || arg2.isString("Russian")
+                || arg2.isString("Spanish")
+                || arg2.isString("Swedish")
+                || arg2.isString("Tongan")
+                || arg2.isString("Turkish")) {
               language = arg2;
             } else {
               qual = arg2;
@@ -417,11 +405,6 @@ public final class OutputFunctions {
     @Override
     public int[] expectedArgSize(IAST ast) {
       return ARGS_1_2;
-    }
-
-    @Override
-    public void setUp(final ISymbol newSymbol) {
-      newSymbol.setAttributes(ISymbol.LISTABLE);
     }
   }
 
@@ -593,24 +576,24 @@ public final class OutputFunctions {
     @Override
     public IExpr evaluate(final IAST ast, EvalEngine engine) {
       IExpr arg1 = ast.arg1();
+      if (arg1.isList()) {
+        return ((IAST) arg1).mapThread(ast, 1);
+      }
       if (arg1.isInteger()) {
         try {
-          long value = ((IInteger) arg1).toLong();
-          if (value == 0) {
-            return F.stringx("N");
+          int value = arg1.toIntDefault();
+          if (value < RomanArabicConverter.MIN_VALUE || value > RomanArabicConverter.MAX_VALUE) {
+            // Integer expected in range `1` to `2`.
+            return IOFunctions.printMessage( //
+                ast.topHead(), //
+                "intrange", //
+                F.List(
+                    F.ZZ(RomanArabicConverter.MIN_VALUE), //
+                    F.ZZ(RomanArabicConverter.MAX_VALUE)), //
+                engine);
           }
-          net.numericalchameleon.util.romannumerals.RomanNumeral romanNumeral = //
-              new net.numericalchameleon.util.romannumerals.RomanNumeral(value);
-          return F.stringx(romanNumeral.toRoman());
-        } catch (net.numericalchameleon.util.romannumerals.RomanNumeralException rne) {
-          // Integer expected in range `1` to `2`.
-          return IOFunctions.printMessage( //
-              ast.topHead(), //
-              "intrange", //
-              F.List(
-                  F.ZZ(net.numericalchameleon.util.romannumerals.RomanNumeral.MIN_VALUE), //
-                  F.ZZ(net.numericalchameleon.util.romannumerals.RomanNumeral.MAX_VALUE)), //
-              engine);
+          String result = RomanArabicConverter.arabicToRoman(value);
+          return F.stringx(result);
         } catch (RuntimeException rex) {
           if (FEConfig.SHOW_STACKTRACE) {
             rex.printStackTrace();
@@ -623,11 +606,6 @@ public final class OutputFunctions {
     @Override
     public int[] expectedArgSize(IAST ast) {
       return ARGS_1_1;
-    }
-
-    @Override
-    public void setUp(final ISymbol newSymbol) {
-      newSymbol.setAttributes(ISymbol.LISTABLE);
     }
   }
 

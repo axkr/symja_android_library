@@ -1,11 +1,18 @@
 package org.matheclipse.core.builtin;
 
+import java.io.IOException;
 import java.io.PrintStream;
+import java.io.StringWriter;
+import java.io.Writer;
 import java.util.ArrayList;
+import java.util.Collection;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
 import org.apache.commons.lang3.StringUtils;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.matheclipse.core.basic.Config;
 import org.matheclipse.core.convert.AST2Expr;
 import org.matheclipse.core.eval.EvalEngine;
@@ -21,6 +28,7 @@ import org.matheclipse.core.expression.S;
 import org.matheclipse.core.form.output.OutputFormFactory;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IASTAppendable;
+import org.matheclipse.core.interfaces.IAssociation;
 import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.interfaces.IStringX;
 import org.matheclipse.core.interfaces.ISymbol;
@@ -30,8 +38,21 @@ import org.matheclipse.parser.client.FEConfig;
 import org.matheclipse.parser.trie.SuggestTree;
 import org.matheclipse.parser.trie.SuggestTree.Node;
 
+import com.mitchellbosecke.pebble.PebbleEngine;
+import com.mitchellbosecke.pebble.cache.PebbleCache;
+import com.mitchellbosecke.pebble.node.BodyNode;
+import com.mitchellbosecke.pebble.node.PrintNode;
+import com.mitchellbosecke.pebble.node.RenderableNode;
+import com.mitchellbosecke.pebble.node.RootNode;
+import com.mitchellbosecke.pebble.node.TextNode;
+import com.mitchellbosecke.pebble.node.expression.ContextVariableExpression;
+import com.mitchellbosecke.pebble.node.expression.Expression;
+import com.mitchellbosecke.pebble.template.PebbleTemplate;
+import com.mitchellbosecke.pebble.template.PebbleTemplateImpl;
+
 public class IOFunctions {
 
+  private static PebbleEngine PEBBLE_ENGINE = new PebbleEngine.Builder().build();
   /**
    * See <a href="https://pangin.pro/posts/computation-in-static-initializer">Beware of computation
    * in static initializer</a>
@@ -461,6 +482,10 @@ public class IOFunctions {
     }
   }
 
+  /**
+   * Contains pairwise an error or warning messages shortcut and the corresponding message template
+   * printed for that shortcut.
+   */
   private static final String[] MESSAGES = { //
     "argillegal",
     "illegal arguments: \"`1`\" in `2`", //
@@ -550,6 +575,8 @@ public class IOFunctions {
     "Level specification value greater equal `1` expected instead of `2`.", //
     "intp",
     "Positive integer expected.", //
+    "intpp",
+    "Positive integer argument expected in `1`.", //
     "intnn",
     "Non-negative integer expected.", //
     "intnm",
@@ -572,6 +599,8 @@ public class IOFunctions {
     "Index `1` should be a machine sized integer between `2` and `3`.", //
     "invrl",
     "The argument `1` is not a valid Association or a list of rules.", //
+    "iopnf",
+    "Value of option `1` should be a non-negative integer or Infinity.", //
     "iterb",
     "Iterator does not have appropriate bounds.", //
     "itform",
@@ -620,6 +649,10 @@ public class IOFunctions {
     "Argument `1` at position `2` is not a non-empty square matrix.", //
     "mseqs",
     "Sequence specification or a list of sequence specifications expected at position `1` in `2`.", //
+    "nalph",
+    "The alphabet `1` is not known or not available.", //
+    "nas",
+    "The argument `1` is not a string.", //
     "needsjdk",
     "For compiling functions, Symja needs to be executed on a Java Development Kit with javax.tools.JavaCompiler installed.", //
     "nconvss",
@@ -684,6 +717,8 @@ public class IOFunctions {
     "Part specification `1` is longer than depth of object.", //
     "partw",
     "Part `1` of `2` does not exist.", //
+    "patvar",
+    "First element in `1` is not a valid pattern name.", //
     "perm",
     "`1` is not a valid permutation.", //
     "permlist",
@@ -734,6 +769,8 @@ public class IOFunctions {
     "(`1`) is neither a list of replacement nor a valid dispatch table and cannot be used for replacing.", //
     "root",
     "Unable to determine the appropriate root for the periodic continued fraction.", //
+    "rrlim",
+    "Exiting after `1` scanned `2` times.", //
     "rvalue",
     "`1` is not a variable with a value, so its value cannot be changed.", //
     "rubiendless",
@@ -766,6 +803,8 @@ public class IOFunctions {
     "Objects of unequal length in `1` cannot be combined.", //
     "tag",
     "Rule for `1` can only be attached to `2`.", //
+    "tagnf",
+    "Tag `1` not found in `2`.", //
     "take",
     "Cannot take positions `1` through `2` in `3`.", //
     "toggle",
@@ -791,6 +830,8 @@ public class IOFunctions {
     "Maximum AST limit `1` exceeded.", //
     "zznotimpl",
     "Function `1` not implemented.", //
+    "zzprime",
+    "Maximum Prime limit `1` exceeded.", //
     "zzregex",
     "Regex expression `1` error message: `2`." //
   };
@@ -849,8 +890,8 @@ public class IOFunctions {
   }
 
   /**
-   * Format a message according to the shortcut from the <code>MESSAGES</code> array and print it to
-   * the error stream with the <code>engine.printMessage()</code>method.
+   * Format a message according to the shortcut from the {@link #MESSAGES} array and print it to the
+   * error stream with the <code>engine.printMessage()</code>method.
    *
    * <p>Usage pattern:
    *
@@ -883,13 +924,21 @@ public class IOFunctions {
       engine.setMessageShortcut(messageShortcut);
       engine.printMessage(symbol.toString() + ": " + message);
     } else {
-      if (listOfArgs != null) {
-        for (int i = 1; i < listOfArgs.size(); i++) {
-          message = StringUtils.replace(message, "`" + (i) + "`", shorten(listOfArgs.get(i)));
+      try {
+        Writer writer = new StringWriter();
+        Map<String, Object> context = new HashMap<String, Object>();
+        if (listOfArgs != null) {
+          for (int i = 1; i < listOfArgs.size(); i++) {
+            context.put(Integer.toString(i), shorten(listOfArgs.get(i)));
+          }
         }
+
+        templateApply(message, writer, context);
+        engine.setMessageShortcut(messageShortcut);
+        engine.printMessage(symbol.toString() + ": " + writer.toString());
+      } catch (IOException e) {
+        e.printStackTrace();
       }
-      engine.setMessageShortcut(messageShortcut);
-      engine.printMessage(symbol.toString() + ": " + message);
     }
     return F.NIL;
   }
@@ -937,8 +986,8 @@ public class IOFunctions {
 
   /**
    * Shorten the output string generated from <code>expr</code> to a maximum length of <code>
-   * Config.SHORTEN_STRING_LENGTH</code> characters. Print <<SHORT>> as substitute of the middle of
-   * the expression if necessary.
+   * Config.SHORTEN_STRING_LENGTH</code> characters. Insert <code>&lt;&lt;SHORT&gt;&gt;</code> as
+   * substitute in the middle of the expression if necessary.
    *
    * @param expr
    * @return
@@ -949,8 +998,8 @@ public class IOFunctions {
 
   /**
    * Shorten the output string generated from <code>expr</code> to a maximum length of <code>
-   * maximuLength</code> characters. Print <<SHORT>> as substitute of the middle of the expression
-   * if necessary.
+   * maximuLength</code> characters. Insert <code>&lt;&lt;SHORT&gt;&gt;</code> as substitute of the
+   * middle in the expression if necessary.
    *
    * @param expr
    * @param maximuLength the maximum length of the result string.
@@ -963,8 +1012,8 @@ public class IOFunctions {
 
   /**
    * Shorten the output string to a maximum length of <code>
-   * maximuLength</code> characters. Print <<SHORT>> as substitute of the middle of the expression
-   * if necessary.
+   * maximuLength</code> characters. Insert <code>&lt;&lt;SHORT&gt;&gt;</code> as substitute in the
+   * middle of the expression if necessary.
    *
    * @param str
    * @param maximuLength
@@ -980,6 +1029,158 @@ public class IOFunctions {
       return buf.toString();
     }
     return str;
+  }
+
+  /**
+   * Compile the template into an object hierarchy representation for the <a
+   * href="https://github.com/PebbleTemplates/pebble">Pebble template engine</a>.
+   *
+   * @param templateStr
+   * @return
+   */
+  private static PebbleTemplate templateCompile(String templateStr) {
+    List<RenderableNode> nodes = new ArrayList<>();
+    final int length = templateStr.length();
+    int currentPosition = 0;
+    int counter = 1;
+    int lastLineNumber = 0;
+    int lineNumber = 0;
+    int lastPosition = 0;
+    while (currentPosition < length) {
+      char ch = templateStr.charAt(currentPosition++);
+      if (ch == '\n') {
+        lineNumber++;
+        continue;
+      }
+      if (ch == '`') {
+        if (lastPosition < currentPosition - 1) {
+          nodes.add(
+              new TextNode(
+                  templateStr.substring(lastPosition, currentPosition - 1), lastLineNumber));
+          lastPosition = currentPosition;
+          lastLineNumber = lineNumber;
+        }
+
+        int j = currentPosition;
+        StringBuilder nameBuf = new StringBuilder();
+        while (j < length) {
+          char nextCh = templateStr.charAt(j++);
+          if (nextCh == '`') {
+            if (j == currentPosition + 1) {
+              nameBuf.append(counter++);
+            }
+            currentPosition = j;
+            break;
+          }
+          nameBuf.append(nextCh);
+        }
+        Expression<?> expression = new ContextVariableExpression(nameBuf.toString(), lineNumber);
+        nodes.add(new PrintNode(expression, lineNumber));
+        lastPosition = currentPosition;
+        lastLineNumber = lineNumber;
+      }
+    }
+    if (lastPosition < length) {
+      nodes.add(new TextNode(templateStr.substring(lastPosition, length), lineNumber));
+      lastPosition = currentPosition;
+    }
+    BodyNode body = new BodyNode(0, nodes);
+    RootNode rootNode = new RootNode(body);
+    return new PebbleTemplateImpl(PEBBLE_ENGINE, rootNode, templateStr);
+  }
+
+  /**
+   * Render the template with the assigned context variable strings.
+   *
+   * @param templateString the template which should be rendered
+   * @param outputWriter use {@link Writer#toString()} to get the rendered result
+   * @param context the assigned variables which should be rendered in the template
+   * @throws IOException
+   */
+  private static void templateApply(
+      String templateString, Writer outputWriter, Map<String, Object> context) throws IOException {
+    PebbleCache<Object, PebbleTemplate> cache = PEBBLE_ENGINE.getTemplateCache();
+    PebbleTemplate template =
+        cache.computeIfAbsent(templateString, x -> templateCompile(templateString));
+
+    template.evaluate(outputWriter, context);
+  }
+
+  /**
+   * Render the template string with the <code>args</code> parameters. Typically the <code>args
+   * </code> are a <code>List</code> or an <code>Association</code> expressiosn, otherwise the
+   * <code>args</code> parameter will be ignored.
+   *
+   * @param templateStr
+   * @param args a <code>List</code> or an <code>Association</code> expression
+   * @return the rendered template as an {@link IStringX} expression
+   */
+  public static IStringX templateApply(String templateStr, IExpr args) {
+    String str = templateRender(templateStr, args);
+    return F.stringx(str);
+  }
+
+  /**
+   * Render the template string with the <code>args</code> parameters. Typically the <code>args
+   * </code> are a <code>List</code> or an <code>Association</code> expressiosn, otherwise the
+   * <code>args</code> parameter will be ignored.
+   *
+   * @param templateStr
+   * @param args
+   * @return the rendered template as a {@link String} expression
+   */
+  public static String templateRender(String templateStr, IExpr args) {
+    try {
+      Map<String, Object> context = new HashMap<>();
+      if (args.isListOrAssociation()) {
+
+        if (args.isList()) {
+          IAST list = (IAST) args;
+          for (int i = 1; i < list.size(); i++) {
+            context.put(Integer.toString(i), list.get(i).toString());
+          }
+        } else if (args.isAssociation()) {
+          IAssociation assoc = (IAssociation) args;
+          for (int i = 1; i < assoc.size(); i++) {
+            IAST rule = assoc.getRule(i);
+            IExpr lhs = rule.arg1();
+            IExpr rhs = rule.arg2();
+            context.put(lhs.toString(), rhs.toString());
+          }
+        }
+      }
+      Writer writer = new StringWriter();
+      templateApply(templateStr, writer, context);
+      return writer.toString();
+    } catch (IOException e) {
+      e.printStackTrace();
+    }
+    return templateStr;
+  }
+
+  /**
+   * Render the template string with the <code>args</code> parameters. Typically the <code>args
+   * </code> are a <code>List</code> or an <code>Association</code> expressiosn, otherwise the
+   * <code>args</code> parameter will be ignored.
+   *
+   * @param templateStr
+   * @param args
+   * @return
+   */
+  public static String templateRender(String templateStr, String[] args) {
+    try {
+      Map<String, Object> context = new HashMap<>();
+      int i = 1;
+      for (String str : args) {
+        context.put(Integer.toString(i++), str);
+      }
+      Writer writer = new StringWriter();
+      templateApply(templateStr, writer, context);
+      return writer.toString();
+    } catch (IOException e) {
+      e.printStackTrace();
+    }
+    return templateStr;
   }
 
   public static IAST getNamesByPattern(java.util.regex.Pattern pattern, EvalEngine engine) {

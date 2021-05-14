@@ -13,6 +13,7 @@ import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.interfaces.IRational;
 import org.matheclipse.core.interfaces.ISymbol;
+import org.matheclipse.core.reflection.system.rules.JacobiSCRules;
 import org.matheclipse.core.reflection.system.rules.KleinInvariantJRules;
 import org.matheclipse.parser.client.FEConfig;
 
@@ -34,6 +35,7 @@ public class EllipticIntegrals {
       S.JacobiAmplitude.setEvaluator(new JacobiAmplitude());
       S.JacobiCN.setEvaluator(new JacobiCN());
       S.JacobiDN.setEvaluator(new JacobiDN());
+      S.JacobiSC.setEvaluator(new JacobiSC());
       S.JacobiSN.setEvaluator(new JacobiSN());
       S.JacobiZeta.setEvaluator(new JacobiZeta());
 
@@ -813,6 +815,41 @@ public class EllipticIntegrals {
           return engine.printMessage(ast.topHead(), rex);
         }
       }
+      return F.NIL;
+    }
+
+    @Override
+    public int[] expectedArgSize(IAST ast) {
+      return ARGS_2_2;
+    }
+
+    @Override
+    public void setUp(final ISymbol newSymbol) {
+      newSymbol.setAttributes(ISymbol.LISTABLE | ISymbol.NUMERICFUNCTION);
+      super.setUp(newSymbol);
+    }
+  }
+
+  private static class JacobiSC extends AbstractFunctionEvaluator implements JacobiSCRules {
+    @Override
+    public IAST getRuleAST() {
+      return RULES;
+    }
+
+    @Override
+    public IExpr evaluate(IAST ast, EvalEngine engine) {
+      IExpr z = ast.arg1();
+      IExpr m = ast.arg2();
+      if (m.isZero()) {
+        return F.Tan(z);
+      }
+      if (m.isOne()) {
+        return F.Sinh(z);
+      }
+      if (z.isZero()) {
+        return F.C0;
+      }
+
       return F.NIL;
     }
 

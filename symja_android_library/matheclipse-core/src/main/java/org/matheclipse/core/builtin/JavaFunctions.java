@@ -63,13 +63,12 @@ public class JavaFunctions {
         URLClassLoader child = Config.URL_CLASS_LOADER;
         for (int i = 1; i < ast.size(); i++) {
           IExpr arg = ast.get(i);
-          File file = null;
           if (arg.isString()) {
             String path = arg.toString();
-            file = new File(path);
-          }
-          if (file != null) {
-            child = new URLClassLoader(new URL[] {file.toURI().toURL()}, child);
+            File file = new File(path);
+            if (file != null) {
+              child = new URLClassLoader(new URL[] {file.toURI().toURL()}, child);
+            }
           }
         }
         if (child != null) {

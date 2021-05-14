@@ -41,6 +41,7 @@ import org.apfloat.ApfloatMath;
 import org.hipparchus.complex.Complex;
 import org.hipparchus.util.FastMath;
 import org.matheclipse.core.eval.EvalEngine;
+import org.matheclipse.core.eval.exception.ValidateException;
 import org.matheclipse.core.eval.interfaces.AbstractArg1;
 import org.matheclipse.core.eval.interfaces.AbstractArg12;
 import org.matheclipse.core.eval.interfaces.AbstractEvaluator;
@@ -84,6 +85,7 @@ import org.matheclipse.core.reflection.system.rules.CotRules;
 import org.matheclipse.core.reflection.system.rules.CothRules;
 import org.matheclipse.core.reflection.system.rules.CscRules;
 import org.matheclipse.core.reflection.system.rules.CschRules;
+import org.matheclipse.core.reflection.system.rules.GudermannianRules;
 import org.matheclipse.core.reflection.system.rules.LogRules;
 import org.matheclipse.core.reflection.system.rules.SecRules;
 import org.matheclipse.core.reflection.system.rules.SechRules;
@@ -92,6 +94,7 @@ import org.matheclipse.core.reflection.system.rules.SincRules;
 import org.matheclipse.core.reflection.system.rules.SinhRules;
 import org.matheclipse.core.reflection.system.rules.TanRules;
 import org.matheclipse.core.reflection.system.rules.TanhRules;
+import org.matheclipse.parser.client.FEConfig;
 
 import com.google.common.math.DoubleMath;
 
@@ -124,8 +127,11 @@ public class ExpTrigsFunctions {
       S.Csc.setEvaluator(new Csc());
       S.Csch.setEvaluator(new Csch());
       S.Exp.setEvaluator(new Exp());
+      S.Gudermannian.setEvaluator(new Gudermannian());
       S.Haversine.setEvaluator(new Haversine());
+      S.InverseGudermannian.setEvaluator(new InverseGudermannian());
       S.InverseHaversine.setEvaluator(new InverseHaversine());
+      S.LambertW.setEvaluator(new LambertW());
       S.Log.setEvaluator(new Log());
       S.LogisticSigmoid.setEvaluator(new LogisticSigmoid());
       S.Log10.setEvaluator(new Log10());
@@ -2044,7 +2050,6 @@ public class ExpTrigsFunctions {
   }
 
   private static final class Exp extends AbstractArg1 implements INumeric {
-    public Exp() {}
 
     @Override
     public IExpr e1ObjArg(final IExpr o) {
@@ -2058,6 +2063,64 @@ public class ExpTrigsFunctions {
       }
       return Math.exp(stack[top]);
     }
+
+    @Override
+    public void setUp(ISymbol newSymbol) {
+      newSymbol.setAttributes(ISymbol.LISTABLE | ISymbol.NUMERICFUNCTION);
+    }
+  }
+
+  private static final class Gudermannian extends AbstractFunctionEvaluator
+      implements GudermannianRules {
+
+    @Override
+    public IAST getRuleAST() {
+      return RULES;
+    }
+
+    @Override
+    public IExpr evaluate(IAST ast, EvalEngine engine) {
+      IExpr z = ast.arg1();
+      if (engine.isDoubleMode()) {
+        try {
+          double zDouble = Double.NaN;
+          try {
+            zDouble = z.evalDouble();
+
+          } catch (ValidateException ve) {
+          }
+          if (Double.isNaN(zDouble)) {
+            Complex mComplex = z.evalComplex();
+            return F.complexNum(mComplex.multiply(0.5).tanh().atan().multiply(2.0));
+          } else {
+            double zTemp = 2.0 * Math.atan(Math.tanh(zDouble * 0.5));
+            if (!Double.isNaN(zTemp)) {
+              return F.complexNum(zTemp);
+            }
+            Complex mComplex = z.evalComplex();
+            return F.complexNum(mComplex.multiply(0.5).tanh().atan().multiply(2.0));
+          }
+        } catch (ValidateException ve) {
+          if (FEConfig.SHOW_STACKTRACE) {
+            ve.printStackTrace();
+          }
+        } catch (RuntimeException rex) {
+          return engine.printMessage(ast.topHead(), rex);
+        }
+      }
+      return F.NIL;
+    }
+
+    @Override
+    public int[] expectedArgSize(IAST ast) {
+      return ARGS_1_1;
+    }
+
+    @Override
+    public void setUp(ISymbol newSymbol) {
+      newSymbol.setAttributes(ISymbol.LISTABLE | ISymbol.NUMERICFUNCTION);
+      super.setUp(newSymbol);
+    }
   }
 
   private static final class Haversine extends AbstractFunctionEvaluator {
@@ -2069,6 +2132,52 @@ public class ExpTrigsFunctions {
         // 1/2 * (1-Cos(x))
         return F.Times(F.C1D2, F.Subtract(F.C1, F.Cos(arg1)));
         // return F.Power(F.Sin(F.C1D2.times(ast.arg1())), F.C2);
+      }
+      return F.NIL;
+    }
+
+    @Override
+    public int[] expectedArgSize(IAST ast) {
+      return ARGS_1_1;
+    }
+
+    @Override
+    public void setUp(ISymbol newSymbol) {
+      newSymbol.setAttributes(ISymbol.LISTABLE | ISymbol.NUMERICFUNCTION);
+    }
+  }
+
+  private static final class InverseGudermannian extends AbstractFunctionEvaluator {
+
+    @Override
+    public IExpr evaluate(IAST ast, EvalEngine engine) {
+      IExpr z = ast.arg1();
+      if (engine.isDoubleMode()) {
+        try {
+          double zDouble = Double.NaN;
+          try {
+            zDouble = z.evalDouble();
+
+          } catch (ValidateException ve) {
+          }
+          if (Double.isNaN(zDouble)) {
+            Complex mComplex = z.evalComplex();
+            return F.complexNum(mComplex.multiply(0.5).add(Math.PI / 4.0).tan().log());
+          } else {
+            double zTemp = Math.log(Math.tan(zDouble * 0.5 + Math.PI / 4.0));
+            if (!Double.isNaN(zTemp)) {
+              return F.complexNum(zTemp);
+            }
+            Complex mComplex = z.evalComplex();
+            return F.complexNum(mComplex.multiply(0.5).add(Math.PI / 4.0).tan().log());
+          }
+        } catch (ValidateException ve) {
+          if (FEConfig.SHOW_STACKTRACE) {
+            ve.printStackTrace();
+          }
+        } catch (RuntimeException rex) {
+          return engine.printMessage(ast.topHead(), rex);
+        }
       }
       return F.NIL;
     }
@@ -2103,6 +2212,19 @@ public class ExpTrigsFunctions {
     @Override
     public void setUp(ISymbol newSymbol) {
       newSymbol.setAttributes(ISymbol.LISTABLE | ISymbol.NUMERICFUNCTION);
+    }
+  }
+
+  private static final class LambertW extends AbstractArg1 {
+
+    @Override
+    public IExpr e1ObjArg(final IExpr o) {
+      return F.ProductLog(o);
+    }
+
+    @Override
+    public void setUp(ISymbol newSymbol) {
+      newSymbol.setAttributes(ISymbol.LISTABLE);
     }
   }
 
@@ -2243,7 +2365,7 @@ public class ExpTrigsFunctions {
           return F.C1D2;
         }
         if (arg1.equals(F.Times(F.CI, S.Pi))) {
-        	return F.NIL;
+          return F.NIL;
         }
         // 1 / (1 + Exp(-arg1))
         return F.Power(F.Plus(F.C1, F.Power(S.E, F.Times(F.CN1, arg1))), F.CN1);
