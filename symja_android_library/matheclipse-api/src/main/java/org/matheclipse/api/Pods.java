@@ -53,6 +53,7 @@ import org.matheclipse.parser.trie.TrieBuilder;
 import org.matheclipse.parser.trie.TrieMatch;
 import org.owasp.encoder.Encode;
 
+import com.baeldung.algorithms.romannumerals.RomanArabicConverter;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
@@ -192,7 +193,7 @@ public class Pods {
           + "<body style=\"width: 100%; height: 100%; margin: 0; padding: 0\">\n"
           + "\n"
           + "<script src=\"https://cdn.jsdelivr.net/gh/paulmasson/math@1.4.4/build/math.js\"></script>\n"
-          + "<script src=\"https://cdn.jsdelivr.net/gh/paulmasson/mathcell@1.9.1/build/mathcell.js\"></script>\n"
+          + "<script src=\"https://cdn.jsdelivr.net/gh/paulmasson/mathcell@1.9.2/build/mathcell.js\"></script>\n"
           + "<script src=\"https://cdn.jsdelivr.net/gh/mathjax/MathJax@2.7.5/MathJax.js?config=TeX-AMS_HTML\"></script>"
           + "\n"
           + "<div class=\"mathcell\" style=\"display: flex; width: 100%; height: 100%; margin: 0;  padding: .25in .5in .5in .5in; flex-direction: column; overflow: hidden\">\n"
@@ -1628,9 +1629,7 @@ public class Pods {
       numpods++;
     }
 
-    if (intValue >= net.numericalchameleon.util.romannumerals.RomanNumeral.MIN_VALUE
-        && //
-        intValue <= net.numericalchameleon.util.romannumerals.RomanNumeral.MAX_VALUE) {
+    if (intValue >= RomanArabicConverter.MIN_VALUE && intValue <= RomanArabicConverter.MAX_VALUE) {
       inExpr = F.RomanNumeral(n);
       podOut = engine.evaluate(inExpr);
       addSymjaPod(podsArray, inExpr, podOut, "Roman numerals", "Integer", formats, engine);
