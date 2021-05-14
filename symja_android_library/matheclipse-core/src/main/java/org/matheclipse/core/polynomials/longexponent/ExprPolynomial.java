@@ -10,10 +10,12 @@ import java.util.function.Function;
 import org.matheclipse.core.basic.Config;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.expression.S;
+import org.matheclipse.core.expression.data.SparseArrayExpr;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IASTAppendable;
 import org.matheclipse.core.interfaces.IASTMutable;
 import org.matheclipse.core.interfaces.IExpr;
+import org.matheclipse.parser.trie.Trie;
 
 import edu.jas.kern.PrettyPrint;
 import edu.jas.structure.NotInvertibleException;
@@ -2262,6 +2264,49 @@ public class ExprPolynomial implements RingElem<ExprPolynomial>, Iterable<ExprMo
         ruleList.append(exp.getVal(len - i - 1));
       }
       result.append(F.Rule(ruleList, coeff));
+    }
+    return result;
+  }
+
+  public IAST coefficientArrays(int degree) {
+    int numberOfVariables = ring.nvar;
+    IASTAppendable result = F.ListAlloc(degree + 1);
+    result.append(F.C0);
+    for (int i = 0; i < degree; i++) {
+      int[] dimension = new int[i + 1];
+      for (int j = 0; j < dimension.length; j++) {
+        dimension[i] = numberOfVariables;
+      }
+      SparseArrayExpr sparse = SparseArrayExpr.newArrayRules(F.List(), dimension, i + 1, F.C0);
+      result.append(sparse);
+    }
+
+    for (Map.Entry<ExpVectorLong, IExpr> monomial : val.entrySet()) {
+      IExpr coeff = monomial.getValue();
+
+      ExpVectorLong exp = monomial.getKey();
+      int maxDegree = (int) exp.maxDeg();
+      if (maxDegree == 0) {
+        result.set(1, coeff);
+      } else {
+        for (int i = exp.length()-1; i >=0; i--) {
+          if (exp.getVal(i) != 0L) {
+            SparseArrayExpr sparse = (SparseArrayExpr) result.get(maxDegree + 1);
+            int[] positions = new int[maxDegree];
+            positions[0] = exp.length()-i;
+
+            Trie<int[], IExpr> data = sparse.toData();
+            data.put(positions, coeff);
+            break;
+          }
+        }
+      }
+      //      int len = exp.length();
+      //      IASTAppendable ruleList = F.ListAlloc(len);
+      //      for (int i = 0; i < len; i++) {
+      //        ruleList.append(exp.getVal(len - i - 1));
+      //      }
+      //      result.append(F.Rule(ruleList, coeff));
     }
     return result;
   }
