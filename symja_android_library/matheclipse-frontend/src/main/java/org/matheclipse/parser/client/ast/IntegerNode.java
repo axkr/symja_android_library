@@ -20,6 +20,9 @@ public final class IntegerNode extends NumberNode {
   /** IntegerNode representing one. */
   public static final IntegerNode C1 = new IntegerNode("1", 10);
 
+  /** IntegerNode representing minus one. */
+  public static final IntegerNode CN1 = new IntegerNode("-1", 10);
+
   private final int fNumberFormat;
 
   private final int fIntValue;

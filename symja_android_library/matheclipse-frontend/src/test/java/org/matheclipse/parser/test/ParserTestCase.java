@@ -1045,4 +1045,43 @@ public class ParserTestCase extends TestCase {
       assertEquals("", e.getMessage());
     }
   }
+
+  public void testParser68() {
+    try {
+      Parser p = new Parser();
+      ASTNode obj = p.parse("8 + 1*^-28");
+      assertEquals(
+          obj.toString(), //
+          "Plus(8, Power(10000000000000000000000000000, -1))");
+    } catch (Exception e) {
+      e.printStackTrace();
+      assertEquals("", e.getMessage());
+    }
+  }
+
+  public void testParser69() {
+    try {
+      Parser p = new Parser();
+      ASTNode obj = p.parse("2/3 + Pi + 5.5`30");
+      assertEquals(
+          obj.toString(), //
+          "Plus(2/3, Pi, 5.5)");
+    } catch (Exception e) {
+      e.printStackTrace();
+      assertEquals("", e.getMessage());
+    }
+  }
+
+  public void testParser70() {
+    try {
+      Parser p = new Parser();
+      ASTNode obj = p.parse("Plot3D[Sin[x*y],{x,-1.5`,1.5`},{y,-1.5`,1.5`}]");
+      assertEquals(
+          obj.toString(), //
+          "Plot3D(Sin(Times(x, y)), List(x, -1.5, 1.5), List(y, -1.5, 1.5))");
+    } catch (Exception e) {
+      e.printStackTrace();
+      assertEquals("", e.getMessage());
+    }
+  }
 }

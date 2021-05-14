@@ -713,13 +713,14 @@ public class Parser extends Scanner {
    */
   private ASTNode getNumber(final boolean negative) throws SyntaxError {
     ASTNode temp = null;
-    String number = "";
+    String numberStr = "";
     try {
       final Object[] result = getNumberString();
-      number = (String) result[0];
+      numberStr = (String) result[0];
       final int numFormat = ((Integer) result[1]).intValue();
+      String exponentStr = (String) result[2];
       if (negative) {
-        number = '-' + number;
+        numberStr = '-' + numberStr;
       }
       if (numFormat < 0) {
         if (fCurrentChar == '`' && isValidPosition()) {
@@ -730,7 +731,7 @@ public class Parser extends Scanner {
               fCurrentPosition += 2;
               long exponent = getJavaLong();
               //              Double d = Double.valueOf(number + "E" + exponent);
-              return fFactory.createDouble(number + "E" + exponent);
+              return fFactory.createDouble(numberStr + "E" + exponent);
             }
           } else if (isValidPosition() && fInputString[fCurrentPosition] == '`') {
             fCurrentPosition += 2;
@@ -738,30 +739,62 @@ public class Parser extends Scanner {
             if (precision < FEConfig.MACHINE_PRECISION) {
               precision = FEConfig.MACHINE_PRECISION;
             }
-            return fFactory.createDouble(number);
-            // return F.num(new Apfloat(number, precision));
+            return fFactory.createDouble(numberStr);
           } else {
-            fCurrentPosition++;
-            long precision = FEConfig.MACHINE_PRECISION;
             if (isValidPosition() && Character.isDigit(fInputString[fCurrentPosition])) {
-              precision = getJavaLong();
+              fCurrentPosition++;
+              long precision = getJavaLong();
               if (precision < FEConfig.MACHINE_PRECISION) {
                 precision = FEConfig.MACHINE_PRECISION;
               }
-              return fFactory.createDouble(number);
+              return fFactory.createDouble(numberStr);
             } else {
               getNextToken();
-              return fFactory.createDouble(number);
+              return fFactory.createDouble(numberStr);
             }
           }
-          throwSyntaxError("Number format error: " + number, number.length());
+          throwSyntaxError("Number format error: " + numberStr, numberStr.length());
         }
-        temp = fFactory.createDouble(number);
+        temp = fFactory.createDouble(numberStr);
       } else {
-        temp = fFactory.createInteger(number, numFormat);
+        if (exponentStr == null || exponentStr.equals("1")) {
+          temp = fFactory.createInteger(numberStr, numFormat);
+        } else {
+          if (numFormat == 10) {
+            try {
+              int exponent = Integer.parseInt(exponentStr, 10);
+              if (exponent < 0) {
+                exponent = -exponent;
+                StringBuilder buf = new StringBuilder(numberStr.length() + exponent);
+                buf.append(numberStr);
+                for (int i = 0; i < exponent; i++) {
+                  buf.append('0');
+                }
+                temp =
+                    fFactory.createFunction(
+                        new SymbolNode("Power"),
+                        fFactory.createInteger(buf.toString(), numFormat),
+                        IntegerNode.CN1);
+              } else {
+                StringBuilder buf = new StringBuilder(numberStr.length() + exponent);
+                buf.append(numberStr);
+                for (int i = 0; i < exponent; i++) {
+                  buf.append('0');
+                }
+                temp = fFactory.createInteger(buf.toString(), numFormat);
+              }
+
+            } catch (final NumberFormatException e) {
+              throwSyntaxError(
+                  "Number format error (not an int type): " + exponentStr, exponentStr.length());
+            }
+          } else {
+            throwSyntaxError("Number format error: " + numberStr, numberStr.length());
+          }
+        }
       }
     } catch (final SyntaxError e) {
-      throwSyntaxError("Number format error: " + number, number.length());
+      throwSyntaxError("Number format error: " + numberStr, numberStr.length());
     }
     getNextToken();
     return temp;

@@ -886,7 +886,8 @@ public abstract class Scanner {
 
   /**
    * Return an array of a <code>String</code> at index 0 representing the parse number string and an
-   * <code>Integer</code> representing the number format at index 1. The number format value can be
+   * <code>Integer</code> representing the number format at index 1 and a <code>String</code>
+   * representing the integer exponent at index 2. The number format value can be
    *
    * <ul>
    *   <li>-1 for floating point numbers
@@ -899,7 +900,8 @@ public abstract class Scanner {
    * @return
    */
   protected Object[] getNumberString() {
-    final Object[] result = new Object[2];
+    final Object[] result = new Object[3];
+    result[2] = "1";
     int numFormat = 10;
     int startPosition = fCurrentPosition - 1;
     final char firstCh = fCurrentChar;
@@ -1028,8 +1030,9 @@ public abstract class Scanner {
           }
         }
       } else {
-        if (numFormat < 0) {
+        if (numFormat < 0 || numFormat == 10) {
           if (fCurrentChar == '*') {
+            //            numFormat = -1;
             int lastPosition = fCurrentPosition;
             getChar();
             if (fCurrentChar == '^') {
@@ -1070,6 +1073,15 @@ public abstract class Scanner {
     String numberStr = new String(fInputString, startPosition, (--endPosition) - startPosition);
     if (backslash) {
       numberStr = sanitizeBackslash(numberStr);
+    }
+    if (numFormat == 10) {
+      int indx = numberStr.indexOf("*^");
+      if (indx > 0) {
+        result[0] = numberStr.substring(0, indx);
+        result[1] = Integer.valueOf(numFormat);
+        result[2] = numberStr.substring(indx + 2);
+        return result;
+      }
     }
     result[0] = numberStr;
     result[1] = Integer.valueOf(numFormat);

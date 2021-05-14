@@ -19,6 +19,8 @@ import org.matheclipse.core.interfaces.IPattern;
 import org.matheclipse.core.interfaces.IPatternSequence;
 import org.matheclipse.core.interfaces.IStringX;
 import org.matheclipse.core.interfaces.ISymbol;
+import org.matheclipse.core.numbertheory.IPrimality;
+import org.matheclipse.core.numbertheory.Primality;
 import org.matheclipse.parser.client.FEConfig;
 import org.matheclipse.parser.trie.TrieBuilder;
 import org.matheclipse.parser.trie.TrieMatch;
@@ -299,6 +301,10 @@ public class Config {
 
   public static Consumer<IExpr> PRINT_OUT = x -> {};
 
+  /** The algorithm which should be used for the factorization of integer numbers. */
+  //  public static Function<IInteger, IAST> FACTOR_INTEGER =  Primality::factorIInteger;
+  public static IPrimality PRIME_FACTORS = new Primality();
+  
   /** Use JavaScript libraries for the <code>Manipulate()</code> function */
   public static boolean USE_MANIPULATE_JS = true;
 
@@ -641,14 +647,11 @@ public class Config {
           + "<head>\n"
           + "<meta charset=\"utf-8\">\n"
           + "<title>MathCell</title>\n"
-          + "<link rel=\"stylesheet\" type=\"text/css\" href=\"style.css\">\n"
           + "</head>\n"
           + "\n"
           + "<body>\n"
           + "<script src=\"https://cdn.jsdelivr.net/gh/paulmasson/math@1.4.4/build/math.js\"></script>"
-          + "\n"
-          + "\n"
-          + "<script src=\"https://cdn.jsdelivr.net/gh/paulmasson/mathcell@1.9.1/build/mathcell.js\"></script>\n"
+          + "<script src=\"https://cdn.jsdelivr.net/gh/paulmasson/mathcell@1.9.2/build/mathcell.js\"></script>\n"
           + "<script src=\"https://cdn.jsdelivr.net/gh/mathjax/MathJax@2.7.5/MathJax.js?config=TeX-AMS_HTML\"></script>"
           + "\n"
           + "<div class=\"mathcell\" style=\"width: 100%; height: 100%; padding: .25in .5in .5in .5in;\">\n"
@@ -667,6 +670,25 @@ public class Config {
           + "</div>\n"
           + "\n"
           + "</body>\n"
+          + "</html>"; //
+
+  public static final String GRAPHICS3D_PAGE = //
+      "<html>\n"
+          + "<head>\n"
+          + "<meta charset=\"utf-8\">\n"
+          + "<title>Graphics3D</title>\n"
+          + "<script src=https://cdnjs.cloudflare.com/ajax/libs/three.js/r116/three.min.js></script>\n"
+          + "<script src=https://cdn.jsdelivr.net/gh/JerryI/Mathematica-ThreeJS-graphics-engine@latest/Mathics/Detector.js></script>\n"
+          + "<script src=https://cdn.jsdelivr.net/gh/JerryI/Mathematica-ThreeJS-graphics-engine@latest/graphics3d.js></script>"
+          + "</head>\n"
+          + "\n"
+          + "<body>\n"
+          + "  <div id=\"graphics3d\"></div>\n"
+          + "</body>\n"
+          + "<script>\n"
+          + "var JSONThree = `1`;\n"
+          + "	interpretate(JSONThree);\n"
+          + "</script>"
           + "</html>"; //
 
   /** HTML template for JSXGraph */
