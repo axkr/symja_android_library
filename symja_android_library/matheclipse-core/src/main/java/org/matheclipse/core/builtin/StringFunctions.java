@@ -19,7 +19,9 @@ import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.exception.Validate;
 import org.matheclipse.core.eval.exception.ValidateException;
 import org.matheclipse.core.eval.interfaces.AbstractCoreFunctionEvaluator;
+import org.matheclipse.core.eval.interfaces.AbstractCoreFunctionOptionEvaluator;
 import org.matheclipse.core.eval.interfaces.AbstractFunctionEvaluator;
+import org.matheclipse.core.eval.interfaces.AbstractFunctionOptionEvaluator;
 import org.matheclipse.core.eval.util.OptionArgs;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.expression.ID;
@@ -32,6 +34,7 @@ import org.matheclipse.core.form.output.OutputFormFactory;
 import org.matheclipse.core.form.tex.TeXParser;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IASTAppendable;
+import org.matheclipse.core.interfaces.IAssociation;
 import org.matheclipse.core.interfaces.IBuiltInSymbol;
 import org.matheclipse.core.interfaces.IDataExpr;
 import org.matheclipse.core.interfaces.IExpr;
@@ -48,7 +51,162 @@ import com.univocity.parsers.csv.CsvParser;
 import com.univocity.parsers.csv.CsvParserSettings;
 
 public final class StringFunctions {
-  private static final Map<String, String> LANGUAGE_MAP = new HashMap<String, String>();
+
+  /** The English alphabet */
+  private static final String LATIN_ALPHABET = "abcdefghijklmnopqrstuvwxyz";
+
+  private static final String CYRILLIC_ALPHABET =
+      "\u0430\u0431\u0432\u0433\u0491\u0434\u0452\u0453\u0435\u0451\u0454\u0436\u0437\u0437\u0301\u0455\u0438\u0456\u0457\u0439\u0458\u043a\u043b\u0459\u043c\u043d\u045a\u043e\u043f\u0440\u0441\u0441\u0301\u0442\u045b\u045c\u0443\u045e\u0444\u0445\u0446\u0447\u045f\u0448\u0449\u044a\u044b\u044c\u044d\u044e\u044f";
+
+  /** Alphabet strings which contain only single characters not separated by comma. */
+  private static final String[] ALPHABETS = {
+    "Arabic",
+    "\u0627\u0628\u062a\u062b\u062c\u062d\u062e\u062f\u0630\u0631\u0632\u0633\u0634\u0635\u0636\u0637\u0638\u0639\u063a\u0641\u0642\u0643\u0644\u0645\u0646\u0647\u0648\u064a",
+    "Belarusian",
+    "\u0430\u0431\u0432\u0433\u0434\u0435\u0451\u0436\u0437\u0456\u0439\u043a\u043b\u043c\u043d\u043e\u043f\u0440\u0441\u0442\u0443\u045e\u0444\u0445\u0446\u0447\u0448\u044b\u044c\u044d\u044e\u044f\u0027",
+    "Bulgarian",
+    "\u0430\u0431\u0432\u0433\u0434\u0435\u0436\u0437\u0438\u0439\u043a\u043b\u043c\u043d\u043e\u043f\u0440\u0441\u0442\u0443\u0444\u0445\u0446\u0447\u0448\u0449\u044a\u044c\u044e\u044f",
+    "Catalan",
+    "abcçdefghijklmnopqrstuvwxyz",
+    //    "Chinese", EMPTY_ALPHABET,  // not known
+    "Cyrillic",
+    CYRILLIC_ALPHABET,
+    "Danish",
+    "abcdefghijklmnopqrstuvwxyzæøå",
+    "English",
+    LATIN_ALPHABET,
+    "Esperanto",
+    "abcĉdefgĝhĥijĵklmnoprsŝtuŭvz",
+    "Estonian",
+    "abdefghijklmnoprsšzžtuvõäöü",
+    "Finnish",
+    "abcdefghijklmnopqrstuvwxyzåäö",
+    "French",
+    LATIN_ALPHABET,
+    "German",
+    LATIN_ALPHABET,
+    "Greek",
+    "\u03b1\u03b2\u03b3\u03b4\u03b5\u03b6\u03b7\u03b8\u03b9\u03ba\u03bb\u03bc\u03bd\u03be\u03bf\u03c0\u03c1\u03c3\u03c4\u03c5\u03c6\u03c7\u03c8\u03c9",
+    "Hebrew",
+    "\u05d0\u05d1\u05d2\u05d3\u05d4\u05d5\u05d6\u05d7\u05d8\u05d9\u05db\u05dc\u05de\u05e0\u05e1\u05e2\u05e4\u05e6\u05e7\u05e8\u05e9\u05ea",
+    "Hindi",
+    "\u0905\u0906\u0907\u0908\u0909\u090a\u090b\u090f\u0910\u0913\u0914\u0915\u0916\u0917\u0918\u0919\u091a\u091b\u091c\u091d\u091e\u091f\u0920\u0921\u0922\u0923\u0924\u0925\u0926\u0927\u0928\u092a\u092b\u092c\u092d\u092e\u092f\u0930\u0932\u0935\u0936\u0937\u0938\u0939",
+    "Icelandic",
+    "aábdðeéfghiíjklmnoóprstuúvxyýþæö",
+    "Indonesian",
+    LATIN_ALPHABET,
+    "Irish",
+    "abcdefghilmnoprstu",
+    "Italian",
+    "abcdefghilmnopqrstuvz",
+    // "Japanese", EMPTY_ALPHABET,// not known
+    "Korean",
+    "\u3131\u3132\u3134\u3137\u3138\u3139\u3141\u3142\u3143\u3145\u3146\u3147\u3148\u3149\u314a\u314b\u314c\u314d\u314e\u314f\u3150\u3151\u3152\u3153\u3154\u3155\u3156\u3157\u3158\u3159\u315a\u315b\u315c\u315d\u315e\u315f\u3160\u3161\u3162\u3163",
+    "Latin",
+    LATIN_ALPHABET,
+    "Latvian",
+    "aābcčdeēfgģhiījkķlļmnņoprsštuūvzž",
+    "Lithuanian",
+    "aąbcčdeęėfghiįyjklmnoprsštuųūvzž",
+    "Macedonian",
+    "\u0430\u0431\u0432\u0433\u0434\u0453\u0435\u0436\u0437\u0455\u0438\u0458\u043a\u043b\u0459\u043c\u043d\u045a\u043e\u043f\u0440\u0441\u0442\u045c\u0443\u0444\u0445\u0446\u0447\u045f\u0448",
+    "Malay",
+    LATIN_ALPHABET,
+    "Norwegian",
+    "abcdefghijklmnopqrstuvwxyzæøå",
+    "Polish",
+    "aąbcćdeęfghijklłmnńoóprsśtuwyzźż",
+    "Portuguese",
+    LATIN_ALPHABET,
+    "Romanian",
+    "aăâbcdefghiîjklmnopqrsștțuvwxyz",
+    "Russian",
+    "\u0430\u0431\u0432\u0433\u0434\u0435\u0451\u0436\u0437\u0438\u0439\u043a\u043b\u043c\u043d\u043e\u043f\u0440\u0441\u0442\u0443\u0444\u0445\u0446\u0447\u0448\u0449\u044a\u044b\u044c\u044d\u044e\u044f",
+    // "Serbian", EMPTY_ALPHABET,// not known
+    "Slovenian",
+    "abcčdefghijklmnoprsštuvzž",
+    "Spanish",
+    "abcdefghijklmnñopqrstuvwxyz",
+    "Swedish",
+    "abcdefghijklmnopqrstuvwxyzåäö",
+    // "Thai", EMPTY_ALPHABET,// not known
+    "Turkish",
+    "abcçdefgğhıijklmnoöprsştuüvyz",
+    "Ukrainian",
+    "\u0430\u0431\u0432\u0433\u0491\u0434\u0435\u0454\u0436\u0437\u0438\u0456\u0457\u0439\u043a\u043b\u043c\u043d\u043e\u043f\u0440\u0441\u0442\u0443\u0444\u0445\u0446\u0447\u0448\u0449\u044c\u044e\u044f",
+    "Vietnamese",
+    "aăâbcdđeêfghiklmnoôơpqrstuưvxy"
+  };
+
+  /** Alphabet strings which contain single/multiple characters separated by comma. */
+  private static final String[] ALPHABETS_CSV = {
+    "Albanian", "a,b,c,ç,d,dh,e,ë,f,g,gj,h,i,j,k,l,ll,m,n,nj,o,p,q,r,rr,s,sh,t,th,u,v,x,xh,y,z,zh",
+    "Croatian", "a,b,c,č,ć,d,dž,đ,e,f,g,h,i,j,k,l,lj,m,n,nj,o,p,r,s,š,t,u,v,z,ž",
+    "Czech", "a,á,b,c,č,d,ď,e,é,ě,f,g,h,ch,i,í,j,k,l,m,n,ň,o,ó,p,q,r,ř,s,š,t,ť,u,ú,ů,v,w,x,y,ý,z,ž",
+    "Dutch", "a,b,c,d,e,f,g,h,i,j,k,l,m,n,o,p,q,r,s,t,u,v,w,x,y,ij,z",
+    "Hungarian",
+        "a,á,b,c,cs,d,dz,dzs,e,é,f,g,gy,h,i,í,j,k,l,ly,m,n,ny,o,ó,ö,ő,p,q,r,s,sz,t,ty,u,ú,ü,ű,v,w,x,y,z,zs",
+    "Maltese", "a,b,ċ,d,e,f,ġ,g,għ,h,ħ,i,ie,j,k,l,m,n,o,p,q,r,s,t,u,v,w,x,ż,z",
+    "Slovak",
+        "a,á,ä,b,c,č,d,ď,dz,dž,e,é,f,g,h,ch,i,í,j,k,l,ĺ,ľ,m,n,ň,o,ó,ô,p,q,r,ŕ,s,š,t,ť,u,ú,v,w,x,y,ý,z,ž"
+  };
+
+  /** The languages locale shortcut. */
+  private static final String[] LANGUAGES = {
+    "Albanian", "sq",
+    "Arabic", "ar",
+    "Belarusian", "be",
+    "Bulgarian", "bg",
+    "Catalan", "ca",
+    "Chinese", "zh",
+    "Croatian", "hr",
+    "Czech", "cs",
+    "Danish", "da",
+    "Dutch", "nl",
+    "English", "en",
+    "Estonian", "et",
+    "Finnish", "fi",
+    "French", "fr",
+    "German", "de",
+    "Greek", "el",
+    "Hebrew", "iw",
+    "Hindi", "hi",
+    "Hungarian", "hu",
+    "Icelandic", "is",
+    "Indonesian", "in",
+    "Irish", "ga",
+    "Italian", "it",
+    "Japanese", "ja",
+    "Korean", "ko",
+    "Latvian", "lv",
+    "Lithuanian", "lt",
+    "Macedonian", "mk",
+    "Malay", "ms",
+    "Maltese", "mt",
+    "Norwegian", "no",
+    "Polish", "pl",
+    "Portuguese", "pt",
+    "Romanian", "ro",
+    "Russian", "ru",
+    "Serbian", "sr",
+    "Slovak", "sk",
+    "Slovenian", "sl",
+    "Spanish", "es",
+    "Swedish", "sv",
+    "Thai", "th",
+    "Turkish", "tr",
+    "Ukrainian", "uk",
+    "Vietnamese", "vi",
+  };
+
+  /** Map language name to alphabet string with characters not separated by comma.. */
+  private static final Map<String, String> ALPHABET_MAP = new HashMap<String, String>();
+
+  /** Map language name to alphabet charcter strings */
+  private static final Map<String, String[]> ALPHABET_CSV_MAP = new HashMap<String, String[]>();
+
+  /** Map English to Latin for the ICU <code>Transliterate()</code> function. */
+  private static final Map<String, String> TRANSLITERATE_MAP = new HashMap<String, String>();
 
   /**
    * See <a href="https://pangin.pro/posts/computation-in-static-initializer">Beware of computation
@@ -57,7 +215,16 @@ public final class StringFunctions {
   private static class Initializer {
 
     private static void init() {
-      LANGUAGE_MAP.put("English", "Latin");
+      for (int i = 0; i < ALPHABETS.length; i += 2) {
+        ALPHABET_MAP.put(ALPHABETS[i], ALPHABETS[i + 1]);
+      }
+      for (int i = 0; i < ALPHABETS_CSV.length; i += 2) {
+        String alphabetCSV = ALPHABETS_CSV[i + 1];
+        String[] result = alphabetCSV.split(",");
+        ALPHABET_CSV_MAP.put(ALPHABETS_CSV[i], result);
+      }
+      TRANSLITERATE_MAP.put("English", "Latin");
+      S.Alphabet.setEvaluator(new Alphabet());
       S.BaseDecode.setEvaluator(new BaseDecode());
       S.BaseEncode.setEvaluator(new BaseEncode());
       S.ByteArrayToString.setEvaluator(new ByteArrayToString());
@@ -68,7 +235,9 @@ public final class StringFunctions {
       S.FileNameJoin.setEvaluator(new FileNameJoin());
       S.FileNameTake.setEvaluator(new FileNameTake());
       S.FromCharacterCode.setEvaluator(new FromCharacterCode());
+      S.FromLetterNumber.setEvaluator(new FromLetterNumber());
       S.HammingDistance.setEvaluator(new HammingDistance());
+      S.LetterNumber.setEvaluator(new LetterNumber());
       S.LetterQ.setEvaluator(new LetterQ());
       S.LowerCaseQ.setEvaluator(new LowerCaseQ());
       S.PrintableASCIIQ.setEvaluator(new PrintableASCIIQ());
@@ -87,12 +256,17 @@ public final class StringFunctions {
       S.StringPart.setEvaluator(new StringPart());
       S.StringPosition.setEvaluator(new StringPosition());
       S.StringReplace.setEvaluator(new StringReplace());
+      S.StringReverse.setEvaluator(new StringReverse());
       S.StringRiffle.setEvaluator(new StringRiffle());
       S.StringSplit.setEvaluator(new StringSplit());
       S.StringTake.setEvaluator(new StringTake());
+      S.StringTemplate.setEvaluator(new StringTemplate());
       S.StringToByteArray.setEvaluator(new StringToByteArray());
       S.StringTrim.setEvaluator(new StringTrim());
       S.SyntaxLength.setEvaluator(new SyntaxLength());
+      S.TemplateApply.setEvaluator(new TemplateApply());
+      S.TemplateIf.setEvaluator(new TemplateIf());
+      S.TemplateSlot.setEvaluator(new TemplateSlot());
       S.TextString.setEvaluator(new TextString());
       S.ToCharacterCode.setEvaluator(new ToCharacterCode());
       S.ToString.setEvaluator(new ToString());
@@ -128,11 +302,6 @@ public final class StringFunctions {
     public int[] expectedArgSize(IAST ast) {
       return ARGS_1_1;
     }
-
-    @Override
-    public void setUp(final ISymbol newSymbol) {
-      newSymbol.setAttributes(ISymbol.LISTABLE);
-    }
   }
 
   private static class BaseEncode extends AbstractFunctionEvaluator {
@@ -155,11 +324,6 @@ public final class StringFunctions {
     @Override
     public int[] expectedArgSize(IAST ast) {
       return ARGS_1_1;
-    }
-
-    @Override
-    public void setUp(final ISymbol newSymbol) {
-      newSymbol.setAttributes(ISymbol.LISTABLE);
     }
   }
 
@@ -466,40 +630,102 @@ public final class StringFunctions {
 
     @Override
     public void setUp(final ISymbol newSymbol) {}
-
-    // public static IAST fromCharacterCode(final String unicodeInput, final String inputEncoding,
-    // final IASTAppendable list) {
-    // try {
-    // final String utf8String = new String(unicodeInput.getBytes(inputEncoding), "UTF-8");
-    // int characterCode;
-    // for (int i = 0; i < utf8String.length(); i++) {
-    // characterCode = utf8String.charAt(i);
-    // list.append(F.integer(characterCode));
-    // }
-    // return list;
-    // } catch (final UnsupportedEncodingException e) {
-    // e.printStackTrace();
-    // }
-    // return F.NIL;
-    // }
   }
 
-  private static final class HammingDistance extends AbstractFunctionEvaluator {
+  /**
+   *
+   *
+   * <pre><code>FromLetterNumber(number)
+   * </code></pre>
+   *
+   * <p>get the corresponding characters from the English alphabet.
+   *
+   * <pre><code>FromLetterNumber(number, language-string)
+   * </code></pre>
+   *
+   * <p>get the corresponding characters from the languages alphabet.
+   *
+   * <h3>Examples</h3>
+   *
+   * <pre><code>&gt;&gt; FromLetterNumber(-2, &quot;Dutch&quot;)
+   * ij
+   *
+   * &gt;&gt; FromLetterNumber(26, &quot;Dutch&quot;)
+   * ij
+   *
+   * &gt;&gt; FromLetterNumber(1)
+   * a
+   * </code></pre>
+   *
+   * <h3>Related terms</h3>
+   *
+   * <p><a href="Alphabet.md">Alphabet</a>, <a href="LetterNumber.md">LetterNumber</a>
+   */
+  private static class FromLetterNumber extends AbstractFunctionEvaluator {
 
     @Override
     public IExpr evaluate(final IAST ast, EvalEngine engine) {
+      if (ast.arg1().isList()) {
+        return ((IAST) ast.arg1()).mapThread(ast, 1);
+      }
+      int number = ast.arg1().toIntDefault();
+      if (number != Integer.MIN_VALUE) {
+        String alphabet = LATIN_ALPHABET;
+        if (ast.isAST2()) {
+          IExpr arg2 = ast.arg2();
+          if (arg2.isList()) {
+            return ((IAST) arg2).mapThread(ast, 2);
+          }
+          if (arg2.isString()) {
+            String str = ast.arg2().toString();
+            alphabet = ALPHABET_MAP.get(str);
+            if (alphabet == null) {
+              String[] strs = ALPHABET_CSV_MAP.get(str);
+              if (strs == null) {
+                // The alphabet `1` is not known or not available.
+                IOFunctions.printMessage(ast.topHead(), "nalph", F.List(ast.arg2()), engine);
+                return F.Missing(S.NotAvailable);
+              }
+              int length = strs.length;
+              if (number > 0 && number <= length) {
+                return F.stringx(strs[number - 1]);
+              } else if (number < 0 && length + number >= 0) {
+                return F.stringx(strs[length + number]);
+              }
+              return F.Missing(S.NotApplicable);
+            }
+          } else {
+            return F.NIL;
+          }
+        }
+
+        int length = alphabet.length();
+        if (number > 0 && number <= length) {
+          return F.stringx(alphabet.charAt(number - 1));
+        } else if (number < 0 && length + number >= 0) {
+          return F.stringx(alphabet.charAt(length + number));
+        }
+        return F.Missing(S.NotApplicable);
+      }
+      return F.NIL;
+    }
+
+    @Override
+    public int[] expectedArgSize(IAST ast) {
+      return ARGS_1_2;
+    }
+  }
+
+  private static final class HammingDistance extends AbstractFunctionOptionEvaluator {
+
+    @Override
+    protected IExpr evaluate(
+        final IAST ast, final int argSize, final IExpr[] option, final EvalEngine engine) {
 
       IExpr arg1 = ast.arg1();
       IExpr arg2 = ast.arg2();
       if (arg1.isString() && arg2.isString()) {
-        boolean ignoreCase = false;
-        if (ast.size() > 3) {
-          final OptionArgs options = new OptionArgs(ast.topHead(), ast, 3, engine, true);
-          IExpr option = options.getOption(S.IgnoreCase);
-          if (option.isTrue()) {
-            ignoreCase = true;
-          }
-        }
+        boolean ignoreCase = option[0].isTrue();
 
         org.apache.commons.text.similarity.HammingDistance hammingDistance =
             new org.apache.commons.text.similarity.HammingDistance();
@@ -515,12 +741,168 @@ public final class StringFunctions {
         }
         return F.ZZ(hammingDistance.apply(str1, str2));
       }
+
       return F.NIL;
     }
 
     @Override
     public int[] expectedArgSize(IAST ast) {
       return ARGS_2_3;
+    }
+
+    @Override
+    public void setUp(final ISymbol newSymbol) {
+      setOptions(newSymbol, S.IgnoreCase, S.False);
+    }
+  }
+
+  /**
+   *
+   *
+   * <pre><code>Alphabet()
+   * </code></pre>
+   *
+   * <p>gives the list of lowercase letters <code>a-z</code> in the English or Latin alphabet .
+   *
+   * <pre><code>Alphabet(language-string)
+   * </code></pre>
+   *
+   * <p>returns the languages alphabet as a list of lowercase letters.
+   *
+   * <h3>Examples</h3>
+   *
+   * <pre><code>&gt;&gt; Alphabet()
+   * {a,b,c,d,e,f,g,h,i,j,k,l,m,n,o,p,q,r,s,t,u,v,w,x,y,z}
+   *
+   * &gt;&gt; Alphabet(&quot;Dutch&quot;)
+   * {a,b,c,d,e,f,g,h,i,j,k,l,m,n,o,p,q,r,s,t,u,v,w,x,y,ij,z}
+   * </code></pre>
+   *
+   * <h3>Related terms</h3>
+   *
+   * <p><a href="FromLetterNumber.md">FromLetterNumber</a>, <a
+   * href="LetterNumber.md">LetterNumber</a>
+   */
+  private static class Alphabet extends AbstractFunctionEvaluator {
+
+    @Override
+    public IExpr evaluate(final IAST ast, EvalEngine engine) {
+      String alphabet = LATIN_ALPHABET;
+      if (ast.isAST1()) {
+        String str = ast.arg1().toString();
+        alphabet = ALPHABET_MAP.get(str);
+        if (alphabet == null) {
+          String[] strs = ALPHABET_CSV_MAP.get(str);
+          if (strs == null) {
+            // The alphabet `1` is not known or not available.
+            return IOFunctions.printMessage(ast.topHead(), "nalph", F.List(ast.arg1()), engine);
+          }
+          return F.List(strs);
+        }
+      }
+      if (alphabet.length() > 2) {
+        IASTAppendable result = F.ListAlloc(alphabet.length());
+        for (int i = 0; i < alphabet.length(); i++) {
+          result.append(F.stringx(alphabet.charAt(i)));
+        }
+        return result;
+      }
+      return F.NIL;
+    }
+
+    @Override
+    public int[] expectedArgSize(IAST ast) {
+      return ARGS_0_1;
+    }
+  }
+
+  /**
+   *
+   *
+   * <pre><code>LetterNumber(character)
+   * </code></pre>
+   *
+   * <p>returns the position of the <code>character</code> in the English alphabet.
+   *
+   * <pre><code>FromLetterNumber(character, language-string)
+   * </code></pre>
+   *
+   * <p>returns the position of the <code>character</code> in the languages alphabet.
+   *
+   * <h3>Examples</h3>
+   *
+   * <pre><code>&gt;&gt; LetterNumber(&quot;b&quot;)
+   * 2
+   *
+   * &gt;&gt; LetterNumber(&quot;B&quot;)
+   * 2
+   *
+   * &gt;&gt; LetterNumber(&quot;ij&quot;, &quot;Dutch&quot;)
+   * 26
+   *
+   * &gt;&gt; LetterNumber(&quot;dzs&quot;,&quot;Hungarian&quot;)
+   * 8
+   * </code></pre>
+   *
+   * <h3>Related terms</h3>
+   *
+   * <p><a href="Alphabet.md">Alphabet</a>, <a href="FromLetterNumber.md">FromLetterNumber</a>
+   */
+  private static class LetterNumber extends AbstractFunctionEvaluator {
+
+    @Override
+    public IExpr evaluate(final IAST ast, EvalEngine engine) {
+      if (ast.arg1().isList()) {
+        return ((IAST) ast.arg1()).mapThread(ast, 1);
+      }
+      if (ast.arg1().isString()) {
+        String characters = ast.arg1().toString().toLowerCase();
+        String alphabet = LATIN_ALPHABET;
+        if (ast.isAST2()) {
+          String str = ast.arg2().toString();
+          alphabet = ALPHABET_MAP.get(str);
+          if (alphabet == null) {
+            String[] strs = ALPHABET_CSV_MAP.get(str);
+            if (strs == null) {
+              // The alphabet `1` is not known or not available.
+              IOFunctions.printMessage(ast.topHead(), "nalph", F.List(ast.arg2()), engine);
+              return F.C0;
+            }
+            for (int i = 0; i < strs.length; i++) {
+              if (strs[i].equals(characters)) {
+                return F.ZZ(i + 1);
+              }
+            }
+            return F.C0;
+          }
+        }
+
+        if (characters.length() > 1) {
+          IASTAppendable result = F.ListAlloc(characters.length());
+          for (int i = 0; i < characters.length(); i++) {
+            int indx = alphabet.indexOf(characters.charAt(i));
+            if (indx >= 0) {
+              result.append(F.ZZ(indx + 1));
+            } else {
+              result.append(F.C0);
+            }
+          }
+          return result;
+        }
+        int indx = alphabet.indexOf(characters);
+        if (indx >= 0) {
+          return F.ZZ(indx + 1);
+        }
+
+        return F.C0;
+      }
+      // The argument `1` is not a string.
+      return IOFunctions.printMessage(ast.topHead(), "nas", F.List(ast.arg1()), engine);
+    }
+
+    @Override
+    public int[] expectedArgSize(IAST ast) {
+      return ARGS_1_2;
     }
   }
 
@@ -564,11 +946,6 @@ public final class StringFunctions {
     @Override
     public int[] expectedArgSize(IAST ast) {
       return ARGS_1_1;
-    }
-
-    @Override
-    public void setUp(final ISymbol newSymbol) {
-      newSymbol.setAttributes(ISymbol.LISTABLE);
     }
 
     @Override
@@ -617,11 +994,6 @@ public final class StringFunctions {
     }
 
     @Override
-    public void setUp(final ISymbol newSymbol) {
-      newSymbol.setAttributes(ISymbol.LISTABLE);
-    }
-
-    @Override
     public boolean test(final IExpr obj) {
       final String str = obj.toString();
       char ch;
@@ -635,22 +1007,57 @@ public final class StringFunctions {
     }
   }
 
-  private static final class EditDistance extends AbstractFunctionEvaluator {
+  /**
+   *
+   *
+   * <pre><code>EditDistance(a, b)
+   * </code></pre>
+   *
+   * <p>returns the Levenshtein distance of <code>a</code> and <code>b</code>, which is defined as
+   * the minimum number of insertions, deletions and substitutions on the constituents of <code>a
+   * </code> and <code>b</code> needed to transform one into the other.
+   *
+   * <p>See:
+   *
+   * <ul>
+   *   <li><a href="https://en.wikipedia.org/wiki/Levenshtein_distance">Wikipedia - Levenshtein
+   *       distance</a>
+   * </ul>
+   *
+   * <h3>Examples</h3>
+   *
+   * <pre><code>&gt;&gt; EditDistance(&quot;kitten&quot;, &quot;kitchen&quot;)
+   * 2
+   *
+   * &gt;&gt; EditDistance(&quot;abc&quot;, &quot;ac&quot;)
+   * 1
+   * &gt;&gt; EditDistance(&quot;abc&quot;, &quot;acb&quot;)
+   * 2
+   *
+   * &gt;&gt; EditDistance(&quot;azbc&quot;, &quot;abxyc&quot;)
+   * 3
+   * </code></pre>
+   *
+   * <p>The <code>IgnoreCase</code> option makes <code>EditDistance</code> ignore the case of
+   * letters:
+   *
+   * <pre><code>&gt;&gt; EditDistance(&quot;time&quot;, &quot;Thyme&quot;)
+   * 3
+   *
+   * &gt;&gt; EditDistance(&quot;time&quot;, &quot;Thyme&quot;, IgnoreCase -&gt; True)
+   * 2
+   * </code></pre>
+   */
+  private static final class EditDistance extends AbstractFunctionOptionEvaluator {
 
     @Override
-    public IExpr evaluate(final IAST ast, EvalEngine engine) {
+    protected IExpr evaluate(
+        final IAST ast, final int argSize, final IExpr[] option, final EvalEngine engine) {
 
       IExpr arg1 = ast.arg1();
       IExpr arg2 = ast.arg2();
       if (arg1.isString() && arg2.isString()) {
-        boolean ignoreCase = false;
-        if (ast.size() > 3) {
-          final OptionArgs options = new OptionArgs(ast.topHead(), ast, 3, engine, true);
-          IExpr option = options.getOption(S.IgnoreCase);
-          if (option.isTrue()) {
-            ignoreCase = true;
-          }
-        }
+        boolean ignoreCase = option[0].isTrue();
 
         LevenshteinDistance levenshteinDistance = new LevenshteinDistance();
         if (ignoreCase) {
@@ -666,6 +1073,11 @@ public final class StringFunctions {
     @Override
     public int[] expectedArgSize(IAST ast) {
       return ARGS_2_3;
+    }
+
+    @Override
+    public void setUp(final ISymbol newSymbol) {
+      setOptions(newSymbol, S.IgnoreCase, S.False);
     }
   }
 
@@ -775,11 +1187,6 @@ public final class StringFunctions {
     public int[] expectedArgSize(IAST ast) {
       return ARGS_1_1;
     }
-
-    @Override
-    public void setUp(final ISymbol newSymbol) {
-      newSymbol.setAttributes(ISymbol.LISTABLE);
-    }
   }
 
   /**
@@ -810,35 +1217,20 @@ public final class StringFunctions {
    * </code>
    * </pre>
    */
-  private static class StringCases extends AbstractCoreFunctionEvaluator {
+  private static class StringCases extends AbstractCoreFunctionOptionEvaluator {
 
     @Override
-    public IExpr evaluate(IAST ast, EvalEngine engine) {
-      //      if (ast.isAST1()) {
-      //        ast = F.operatorForm1Append(ast);
-      //        if (!ast.isPresent()) {
-      //          return F.NIL;
-      //        }
-      //      }
-      if (ast.size() >= 3) {
+    protected IExpr evaluate(
+        final IAST ast, final int argSize, final IExpr[] option, final EvalEngine engine) {
+
+      if (argSize >= 2) {
         IExpr arg1 = engine.evaluate(ast.arg1());
         if (arg1.isList()) {
           return ((IAST) arg1).mapThread(ast, 1);
         }
         if (arg1.isString()) {
-          boolean ignoreCase = false;
-          if (ast.size() > 3) {
-            final OptionArgs options = new OptionArgs(ast.topHead(), ast, 3, engine, true);
-            IExpr option = options.getOption(S.IgnoreCase);
-            if (option.isTrue()) {
-              ignoreCase = true;
-            }
-            // TODO Overlaps option
-            // IExpr option = options.getOption(S.Overlaps);
-            // if (option.isTrue()) {
-            // ignoreCase = true;
-            // }
-          }
+          boolean ignoreCase = option[0].isTrue();
+
           String str = ((IStringX) arg1).toString();
           IExpr arg2 = ast.arg2();
           if (!arg2.isList()) {
@@ -869,6 +1261,12 @@ public final class StringFunctions {
     public int[] expectedArgSize(IAST ast) {
       return ARGS_1_4_1;
     }
+
+    @Override
+    public void setUp(final ISymbol newSymbol) {
+      // TODO S.Overlaps
+      setOptions(newSymbol, S.IgnoreCase, S.False);
+    }
   }
 
   /**
@@ -881,7 +1279,7 @@ public final class StringFunctions {
    *
    * <blockquote>
    *
-   * <p>counts all occurences of <code>pattern</code> in <code>string</code>.
+   * <p>counts all ocurences of <code>pattern</code> in <code>string</code>.
    *
    * </blockquote>
    *
@@ -896,35 +1294,20 @@ public final class StringFunctions {
    * </code>
    * </pre>
    */
-  private static class StringCount extends AbstractCoreFunctionEvaluator {
+  private static class StringCount extends AbstractCoreFunctionOptionEvaluator {
 
     @Override
-    public IExpr evaluate(IAST ast, EvalEngine engine) {
-      //      if (ast.isAST1()) {
-      //        ast = F.operatorForm1Append(ast);
-      //        if (!ast.isPresent()) {
-      //          return F.NIL;
-      //        }
-      //      }
-      if (ast.size() >= 3) {
+    protected IExpr evaluate(
+        final IAST ast, final int argSize, final IExpr[] option, final EvalEngine engine) {
+
+      if (argSize >= 2) {
         IExpr arg1 = engine.evaluate(ast.arg1());
         if (arg1.isList()) {
           return ((IAST) arg1).mapThread(ast, 1);
         }
         if (arg1.isString()) {
-          boolean ignoreCase = false;
-          if (ast.size() > 3) {
-            final OptionArgs options = new OptionArgs(ast.topHead(), ast, 3, engine, true);
-            IExpr option = options.getOption(S.IgnoreCase);
-            if (option.isTrue()) {
-              ignoreCase = true;
-            }
-            // TODO Overlaps option
-            // IExpr option = options.getOption(S.Overlaps);
-            // if (option.isTrue()) {
-            // ignoreCase = true;
-            // }
-          }
+          boolean ignoreCase = option[0].isTrue();
+
           String str = ((IStringX) arg1).toString();
           IExpr arg2 = ast.arg2();
           if (!arg2.isList()) {
@@ -954,6 +1337,11 @@ public final class StringFunctions {
     public int[] expectedArgSize(IAST ast) {
       return ARGS_1_4_1;
     }
+
+    @Override
+    public void setUp(final ISymbol newSymbol) {
+      setOptions(newSymbol, S.IgnoreCase, S.False);
+    }
   }
 
   /**
@@ -979,31 +1367,18 @@ public final class StringFunctions {
    * </code>
    * </pre>
    */
-  private static class StringContainsQ extends AbstractCoreFunctionEvaluator {
+  private static class StringContainsQ extends AbstractCoreFunctionOptionEvaluator {
 
     @Override
-    public IExpr evaluate(IAST ast, EvalEngine engine) {
-      //      if (ast.isAST1()) {
-      //        ast = F.operatorForm1Append(ast);
-      //        if (!ast.isPresent()) {
-      //          return F.NIL;
-      //        }
-      //      }
-      boolean ignoreCase = false;
-      if (ast.size() > 3) {
-        final OptionArgs options = new OptionArgs(ast.topHead(), ast, 3, engine, true);
-        IExpr option = options.getOption(S.IgnoreCase);
-        if (option.isTrue()) {
-          ignoreCase = true;
-        }
-      }
-
-      if (ast.size() >= 3) {
+    protected IExpr evaluate(
+        final IAST ast, final int argSize, final IExpr[] option, final EvalEngine engine) {
+      if (argSize >= 2) {
+        boolean ignoreCase = option[0].isTrue();
         IExpr arg1 = engine.evaluate(ast.arg1());
         if (arg1.isList()) {
           return ((IAST) arg1).mapThread(ast, 1);
         }
-        if (arg1.isString()) {
+        if (arg1.isString() && !ast.arg2().isRuleAST()) {
           IExpr arg2 = ast.arg2();
           java.util.regex.Pattern pattern = toRegexPattern(arg2, true, ignoreCase, ast, engine);
           if (pattern == null) {
@@ -1024,6 +1399,11 @@ public final class StringFunctions {
     @Override
     public int[] expectedArgSize(IAST ast) {
       return ARGS_1_4_1;
+    }
+
+    @Override
+    public void setUp(final ISymbol newSymbol) {
+      setOptions(newSymbol, S.IgnoreCase, S.False);
     }
   }
 
@@ -1131,25 +1511,14 @@ public final class StringFunctions {
     }
   }
 
-  private static class StringFreeQ extends AbstractCoreFunctionEvaluator {
+  private static class StringFreeQ extends AbstractCoreFunctionOptionEvaluator {
 
     @Override
-    public IExpr evaluate(IAST ast, EvalEngine engine) {
-      //      if (ast.isAST1()) {
-      //        ast = F.operatorForm1Append(ast);
-      //        if (!ast.isPresent()) {
-      //          return F.NIL;
-      //        }
-      //      }
-      if (ast.size() >= 3) {
-        boolean ignoreCase = false;
-        if (ast.size() > 3) {
-          final OptionArgs options = new OptionArgs(ast.topHead(), ast, 3, engine, true);
-          IExpr option = options.getOption(S.IgnoreCase);
-          if (option.isTrue()) {
-            ignoreCase = true;
-          }
-        }
+    protected IExpr evaluate(
+        final IAST ast, final int argSize, final IExpr[] option, final EvalEngine engine) {
+
+      if (argSize >= 2) {
+        boolean ignoreCase = option[0].isTrue();
 
         IExpr arg1 = engine.evaluate(ast.arg1());
         if (arg1.isList()) {
@@ -1190,6 +1559,11 @@ public final class StringFunctions {
     @Override
     public int[] expectedArgSize(IAST ast) {
       return ARGS_1_4_1;
+    }
+
+    @Override
+    public void setUp(final ISymbol newSymbol) {
+      setOptions(newSymbol, S.IgnoreCase, S.False);
     }
   }
 
@@ -1468,25 +1842,14 @@ public final class StringFunctions {
    * </code>
    * </pre>
    */
-  private static class StringMatchQ extends AbstractCoreFunctionEvaluator {
+  private static class StringMatchQ extends AbstractCoreFunctionOptionEvaluator {
 
     @Override
-    public IExpr evaluate(IAST ast, EvalEngine engine) {
-      //      if (ast.isAST1()) {
-      //        ast = F.operatorForm1Append(ast);
-      //        if (!ast.isPresent()) {
-      //          return F.NIL;
-      //        }
-      //      }
-      if (ast.size() >= 3) {
-        boolean ignoreCase = false;
-        if (ast.size() > 3) {
-          final OptionArgs options = new OptionArgs(ast.topHead(), ast, 3, engine, true);
-          IExpr option = options.getOption(S.IgnoreCase);
-          if (option.isTrue()) {
-            ignoreCase = true;
-          }
-        }
+    protected IExpr evaluate(
+        final IAST ast, final int argSize, final IExpr[] option, final EvalEngine engine) {
+
+      if (argSize >= 2) {
+        boolean ignoreCase = option[0].isTrue();
 
         IExpr arg1 = engine.evaluate(ast.arg1());
         if (arg1.isList()) {
@@ -1510,7 +1873,12 @@ public final class StringFunctions {
 
     @Override
     public int[] expectedArgSize(IAST ast) {
-      return ARGS_1_4_1;
+      return ARGS_2_4_1;
+    }
+
+    @Override
+    public void setUp(final ISymbol newSymbol) {
+      setOptions(newSymbol, S.IgnoreCase, S.False);
     }
   }
 
@@ -1585,28 +1953,19 @@ public final class StringFunctions {
     public void setUp(final ISymbol newSymbol) {}
   }
 
-  private static class StringPosition extends AbstractCoreFunctionEvaluator {
+  private static class StringPosition extends AbstractCoreFunctionOptionEvaluator {
 
     @Override
-    public IExpr evaluate(IAST ast, EvalEngine engine) {
-      //      if (ast.isAST1()) {
-      //        ast = F.operatorForm1Append(ast);
-      //        if (!ast.isPresent()) {
-      //          return F.NIL;
-      //        }
-      //      }
-      if (ast.size() >= 3) {
+    protected IExpr evaluate(
+        final IAST ast, final int argSize, final IExpr[] option, final EvalEngine engine) {
+
+      if (argSize >= 2) {
         int maxOccurences = Integer.MAX_VALUE;
-        boolean ignoreCase = false;
-        if (ast.size() > 3) {
+        boolean ignoreCase = option[0].isTrue();
+        if (argSize > 2) {
           maxOccurences = ast.arg3().toIntDefault();
           if (maxOccurences < 0) {
             maxOccurences = Integer.MAX_VALUE;
-          }
-          final OptionArgs options = new OptionArgs(ast.topHead(), ast, 3, engine, true);
-          IExpr option = options.getOption(S.IgnoreCase);
-          if (option.isTrue()) {
-            ignoreCase = true;
           }
         }
 
@@ -1664,6 +2023,11 @@ public final class StringFunctions {
     public int[] expectedArgSize(IAST ast) {
       return ARGS_1_4_1;
     }
+
+    @Override
+    public void setUp(final ISymbol newSymbol) {
+      setOptions(newSymbol, S.IgnoreCase, S.False);
+    }
   }
   /**
    *
@@ -1691,31 +2055,20 @@ public final class StringFunctions {
    * </code>
    * </pre>
    */
-  private static class StringReplace extends AbstractCoreFunctionEvaluator {
+  private static class StringReplace extends AbstractCoreFunctionOptionEvaluator {
 
     @Override
-    public IExpr evaluate(IAST ast, EvalEngine engine) {
-      //      if (ast.isAST1()) {
-      //        ast = F.operatorForm1Append(ast);
-      //        if (!ast.isPresent()) {
-      //          return F.NIL;
-      //        }
-      //      }
-      if (ast.size() >= 3) {
+    protected IExpr evaluate(
+        final IAST ast, final int argSize, final IExpr[] option, final EvalEngine engine) {
+
+      if (argSize >= 2) {
+        boolean ignoreCase = option[0].isTrue();
         IExpr arg1 = engine.evaluate(ast.arg1());
         if (arg1.isList()) {
           return ((IAST) arg1).mapThread(ast, 1);
         }
         if (!arg1.isString()) {
           return F.NIL;
-        }
-        boolean ignoreCase = false;
-        if (ast.size() > 3) {
-          final OptionArgs options = new OptionArgs(ast.topHead(), ast, 3, engine, true);
-          IExpr option = options.getOption(S.IgnoreCase);
-          if (option.isTrue()) {
-            ignoreCase = true;
-          }
         }
         String str = ((IStringX) arg1).toString();
         IExpr arg2 = ast.arg2();
@@ -1730,7 +2083,6 @@ public final class StringFunctions {
         for (int i = 1; i < list.size(); i++) {
           IAST rule = (IAST) list.get(i);
           if (!rule.arg2().isString()) {
-            // if (!rule.arg1().isString() || !rule.arg2().isString()) {
             return F.NIL;
           }
 
@@ -1752,7 +2104,29 @@ public final class StringFunctions {
     }
 
     @Override
-    public void setUp(final ISymbol newSymbol) {}
+    public void setUp(final ISymbol newSymbol) {
+      setOptions(newSymbol, S.IgnoreCase, S.False);
+    }
+  }
+
+  private static class StringReverse extends AbstractFunctionEvaluator {
+
+    @Override
+    public IExpr evaluate(IAST ast, EvalEngine engine) {
+      IExpr arg1 = ast.arg1();
+      String str = arg1.toString();
+      return F.stringx(new StringBuilder(str).reverse().toString());
+    }
+
+    @Override
+    public int[] expectedArgSize(IAST ast) {
+      return ARGS_1_1;
+    }
+
+    @Override
+    public void setUp(final ISymbol newSymbol) {
+      newSymbol.setAttributes(ISymbol.LISTABLE);
+    }
   }
 
   private static class StringRiffle extends AbstractFunctionEvaluator {
@@ -1890,10 +2264,11 @@ public final class StringFunctions {
    * </code>
    * </pre>
    */
-  private static class StringSplit extends AbstractCoreFunctionEvaluator {
+  private static class StringSplit extends AbstractCoreFunctionOptionEvaluator {
 
     @Override
-    public IExpr evaluate(final IAST ast, EvalEngine engine) {
+    protected IExpr evaluate(
+        final IAST ast, final int argSize, final IExpr[] option, final EvalEngine engine) {
       IExpr arg1 = engine.evaluate(ast.arg1());
       if (!arg1.isString()) {
         if (arg1.isListOfStrings()) {
@@ -1906,14 +2281,8 @@ public final class StringFunctions {
       if (ast.isAST1()) {
         return splitList(str1, str1.split("\\s+"));
       }
-      boolean ignoreCase = false;
-      if (ast.size() > 3) {
-        final OptionArgs options = new OptionArgs(ast.topHead(), ast, 3, engine, true);
-        IExpr option = options.getOption(S.IgnoreCase);
-        if (option.isTrue()) {
-          ignoreCase = true;
-        }
-      }
+      boolean ignoreCase = option[0].isTrue();
+
       if (ast.isAST2()) {
         IExpr arg2 = ast.arg2();
         java.util.regex.Pattern pattern = toRegexPattern(arg2, true, ignoreCase, ast, engine);
@@ -1940,6 +2309,11 @@ public final class StringFunctions {
     public int[] expectedArgSize(IAST ast) {
       return ARGS_1_3;
     }
+
+    @Override
+    public void setUp(final ISymbol newSymbol) {
+      setOptions(newSymbol, S.IgnoreCase, S.False);
+    }
   }
 
   private static class StringTake extends AbstractFunctionEvaluator {
@@ -1950,7 +2324,13 @@ public final class StringFunctions {
       int to = 1;
       IExpr arg1 = ast.arg1();
       try {
-        if (arg1.isString()) {
+        if (!arg1.isString()) {
+          if (arg1.isListOfStrings()) {
+            return ((IAST) arg1).mapThread(ast, 1);
+          }
+          // String or list of strings expected at position `1` in `2`.
+          return IOFunctions.printMessage(ast.topHead(), "strse", F.List(F.C1, ast), engine);
+        } else {
           // final ISequence[] sequ = Sequence.createSequences(ast, 2, "take", engine);
           // if (sequ == null) {
           // return F.NIL;
@@ -2088,7 +2468,6 @@ public final class StringFunctions {
         // int number validation
         return engine.printMessage(ve.getMessage(ast.topHead()));
       }
-      return F.NIL;
     }
 
     @Override
@@ -2101,7 +2480,11 @@ public final class StringFunctions {
 
     @Override
     public IExpr evaluate(final IAST ast, EvalEngine engine) {
-      if (!(ast.arg1() instanceof IStringX)) {
+      IExpr arg1 = ast.arg1();
+      if (arg1.isList()) {
+        return ((IAST) arg1).mapThread(ast, 1);
+      }
+      if (!arg1.isString()) {
         return F.NIL;
       }
       String str = ast.arg1().toString();
@@ -2118,20 +2501,19 @@ public final class StringFunctions {
     public int[] expectedArgSize(IAST ast) {
       return ARGS_1_1;
     }
-
-    @Override
-    public void setUp(final ISymbol newSymbol) {
-      newSymbol.setAttributes(ISymbol.LISTABLE);
-    }
   }
 
   private static class StringTrim extends AbstractFunctionEvaluator {
 
     @Override
     public IExpr evaluate(final IAST ast, EvalEngine engine) {
-      if (ast.arg1().isString()) {
+      IExpr arg1 = ast.arg1();
+      if (arg1.isList()) {
+        return ((IAST) arg1).mapThread(ast, 1);
+      }
+      if (arg1.isString()) {
         if (ast.isAST1()) {
-          return F.$str(ast.arg1().toString().trim());
+          return F.$str(arg1.toString().trim());
         }
         if (ast.isAST2()) {
           if (!ast.arg1().isString()) {
@@ -2162,21 +2544,20 @@ public final class StringFunctions {
     public int[] expectedArgSize(IAST ast) {
       return ARGS_1_2;
     }
-
-    @Override
-    public void setUp(final ISymbol newSymbol) {
-      newSymbol.setAttributes(ISymbol.LISTABLE);
-    }
   }
 
   private static class SyntaxLength extends AbstractFunctionEvaluator {
 
     @Override
     public IExpr evaluate(final IAST ast, EvalEngine engine) {
-      if (!(ast.arg1() instanceof IStringX)) {
+      IExpr arg1 = ast.arg1();
+      if (arg1.isList()) {
+        return ((IAST) arg1).mapThread(ast, 1);
+      }
+      if (!arg1.isString()) {
         return F.NIL;
       }
-      final String str = ast.arg1().toString();
+      final String str = arg1.toString();
       return F.ZZ(ExprParser.syntaxLength(str, engine));
     }
 
@@ -2184,10 +2565,173 @@ public final class StringFunctions {
     public int[] expectedArgSize(IAST ast) {
       return ARGS_1_1;
     }
+  }
+
+  private static class StringTemplate extends AbstractFunctionEvaluator {
+
+    @Override
+    public IExpr evaluate(final IAST ast, EvalEngine engine) {
+
+      if (ast.isAST1()) {
+        IExpr head = ast.head();
+        if (head.isAST(S.StringTemplate, 2)) {
+          return S.TemplateApply.of(engine, head, ast.arg1());
+        }
+      }
+      return F.NIL;
+    }
+
+    @Override
+    public int[] expectedArgSize(IAST ast) {
+      return null;
+    }
+  }
+
+  private static class TemplateApply extends AbstractFunctionEvaluator {
+
+    @Override
+    public IExpr evaluate(final IAST ast, EvalEngine engine) {
+      IExpr arg1 = ast.arg1();
+      IExpr arg2 = F.NIL;
+      if (ast.isAST2()) {
+        arg2 = ast.arg2();
+      }
+      if (arg1.isString()) {
+        return IOFunctions.templateApply(arg1.toString(), arg2);
+      } else if (arg1.isAST(S.StringTemplate, 2) && arg1.first().isString()) {
+        return IOFunctions.templateApply(arg1.first().toString(), arg2);
+      }
+      return templateApplyTemplateSlot(arg1, arg2);
+    }
+
+    /**
+     * Replace all {@link S#TemplateSlot} expressions in an {@link IAST} tree.
+     *
+     * @param templateExpr
+     * @param args
+     * @return
+     */
+    private static IExpr templateApplyTemplateSlot(IExpr templateExpr, IExpr args) {
+      final Map<IExpr, IExpr> context = new HashMap<>();
+      if (args.isListOrAssociation()) {
+        if (args.isAssociation()) {
+          IAssociation assoc = (IAssociation) args;
+          for (int i = 1; i < assoc.size(); i++) {
+            IAST rule = assoc.getRule(i);
+            IExpr lhs = rule.arg1();
+            IExpr rhs = rule.arg2();
+            context.put(lhs, rhs);
+          }
+        } else if (args.isList()) {
+          IAST list = (IAST) args;
+          for (int i = 1; i < list.size(); i++) {
+            IExpr expr = list.get(i);
+            context.put(F.ZZ(i), expr);
+          }
+        }
+      }
+      return templateExpr
+          .replaceAll(x -> replaceTemplateSlotFunction(x, context))
+          .orElse(templateExpr);
+    }
+
+    /**
+     * Lambda function for replacing all {@link S#TemplateSlot} expressions in an {@link IAST} tree.
+     *
+     * @param expr the current expression
+     * @param map the replacement map
+     * @return {@link F#NIL} if no replacement was found
+     */
+    private static IExpr replaceTemplateSlotFunction(IExpr expr, final Map<IExpr, IExpr> map) {
+      if (expr.isASTSizeGE(S.TemplateIf, 3)) {
+        IAST templateIf = (IAST) expr;
+        IExpr condition = templateIf.arg1();
+        IExpr thenExpr = templateIf.arg2();
+        IExpr elseExpr = F.CEmptySequence;
+        if (templateIf.size() > 3) {
+          elseExpr = templateIf.arg3();
+        }
+        condition =
+            condition.replaceAll(x -> replaceTemplateSlotFunction(x, map)).orElse(condition);
+        boolean b = EvalEngine.get().evalTrue(condition);
+        if (b) {
+          return thenExpr.replaceAll(x -> replaceTemplateSlotFunction(x, map)).orElse(thenExpr);
+        }
+        return elseExpr.replaceAll(x -> replaceTemplateSlotFunction(x, map)).orElse(elseExpr);
+      }
+      if (expr.isASTSizeGE(S.TemplateSlot, 2)) {
+        IAST templateSlot = (IAST) expr;
+        return replaceSingleTemplateSlot(map, templateSlot);
+      }
+      return F.NIL;
+    }
+
+    private static IExpr replaceSingleTemplateSlot(final Map<IExpr, IExpr> map, IAST templateSlot) {
+      IExpr defaultValue = F.Missing(S.SlotAbsent, templateSlot.first());
+      if (templateSlot.size() > 2) {
+        final OptionArgs options =
+            new OptionArgs(S.TemplateSlot, templateSlot, 2, EvalEngine.get(), true);
+        IExpr option = options.getOption(S.DefaultValue);
+        if (option.isPresent()) {
+          defaultValue = option;
+        }
+        IExpr insertionFunction = options.getOption(S.InsertionFunction);
+        if (insertionFunction.isPresent()) {
+          IExpr result = map.get(templateSlot.first());
+          if (result == null) {
+            if (defaultValue.isPresent()) {
+              return F.unaryAST1(insertionFunction, defaultValue);
+            }
+            return F.NIL;
+          }
+          return result == null ? defaultValue : F.unaryAST1(insertionFunction, result);
+        }
+      }
+
+      IExpr result = map.get(templateSlot.first());
+      return result == null ? defaultValue : result;
+    }
+
+    @Override
+    public int[] expectedArgSize(IAST ast) {
+      return ARGS_1_2;
+    }
+  }
+
+  private static class TemplateIf extends AbstractFunctionEvaluator {
+
+    @Override
+    public IExpr evaluate(final IAST ast, EvalEngine engine) {
+      //      IExpr arg1 = ast.arg1();
+      return F.NIL;
+    }
+
+    @Override
+    public int[] expectedArgSize(IAST ast) {
+      return ARGS_2_3;
+    }
 
     @Override
     public void setUp(final ISymbol newSymbol) {
-      newSymbol.setAttributes(ISymbol.LISTABLE);
+      newSymbol.setAttributes(ISymbol.HOLDALL);
+    }
+  }
+
+  private static class TemplateSlot extends AbstractFunctionEvaluator {
+
+    @Override
+    public IExpr evaluate(final IAST ast, EvalEngine engine) {
+      return F.NIL;
+    }
+
+    @Override
+    public int[] expectedArgSize(IAST ast) {
+      return ARGS_1_3;
+    }
+
+    @Override
+    public void setUp(final ISymbol newSymbol) {
+      newSymbol.setAttributes(ISymbol.HOLDALL);
     }
   }
 
@@ -2253,7 +2797,11 @@ public final class StringFunctions {
 
     @Override
     public IExpr evaluate(final IAST ast, EvalEngine engine) {
-      if (!(ast.arg1() instanceof IStringX)) {
+      IExpr arg1 = ast.arg1();
+      if (arg1.isList()) {
+        return ((IAST) arg1).mapThread(ast, 1);
+      }
+      if (!arg1.isString()) {
         return F.NIL;
       }
 
@@ -2263,11 +2811,6 @@ public final class StringFunctions {
     @Override
     public int[] expectedArgSize(IAST ast) {
       return ARGS_1_1;
-    }
-
-    @Override
-    public void setUp(final ISymbol newSymbol) {
-      newSymbol.setAttributes(ISymbol.LISTABLE);
     }
 
     public static IAST toCharacterCode(final String unicodeInput, final Charset inputEncoding) {
@@ -2353,7 +2896,9 @@ public final class StringFunctions {
     }
 
     @Override
-    public void setUp(final ISymbol newSymbol) {}
+    public void setUp(final ISymbol newSymbol) {
+      newSymbol.setAttributes(ISymbol.LISTABLE);
+    }
   }
 
   /**
@@ -2426,7 +2971,11 @@ public final class StringFunctions {
 
     @Override
     public IExpr evaluate(final IAST ast, EvalEngine engine) {
-      if (!(ast.arg1() instanceof IStringX)) {
+      IExpr arg1 = ast.arg1();
+      if (arg1.isList()) {
+        return ((IAST) arg1).mapThread(ast, 1);
+      }
+      if (!arg1.isString()) {
         return F.NIL;
       }
 
@@ -2436,11 +2985,6 @@ public final class StringFunctions {
     @Override
     public int[] expectedArgSize(IAST ast) {
       return ARGS_1_1;
-    }
-
-    @Override
-    public void setUp(final ISymbol newSymbol) {
-      newSymbol.setAttributes(ISymbol.LISTABLE);
     }
 
     public static String toUnicodeString(final String unicodeInput, final Charset inputEncoding) {
@@ -2506,23 +3050,27 @@ public final class StringFunctions {
 
     @Override
     public IExpr evaluate(final IAST ast, EvalEngine engine) {
-      if (!(ast.arg1() instanceof IStringX)) {
+      IExpr arg1 = ast.arg1();
+      if (arg1.isList()) {
+        return ((IAST) arg1).mapThread(ast, 1);
+      }
+      if (!arg1.isString()) {
         return F.NIL;
       }
-      // Enumeration<String> ids = Transliterator.getAvailableIDs();
+      //       Enumeration<String> ids = Transliterator.getAvailableIDs();
       //
-      // while (ids.hasMoreElements()) {
-      // String s = ids.nextElement();
-      // System.out.println(s);
-      // }
+      //       while (ids.hasMoreElements()) {
+      //       String s = ids.nextElement();
+      //       System.out.println(s);
+      //       }
       if (ast.isAST2()) {
-        if (ast.arg2().isRuleAST()) {
-          if (ast.arg2().first().isString()
-              && //
-              ast.arg2().second().isString()) {
+        IExpr arg2 = ast.arg2();
+        if (arg2.isRuleAST()) {
+          if (arg2.first().isString() //
+              && arg2.second().isString()) {
             try {
-              String str1 = mapToICU4J(ast.arg2().first().toString());
-              String str2 = mapToICU4J(ast.arg2().second().toString());
+              String str1 = mapToICU4J(arg2.first().toString());
+              String str2 = mapToICU4J(arg2.second().toString());
               String str = ast.arg1().toString();
               Transliterator transform = Transliterator.getInstance(str1 + "-" + str2);
               String result = transform.transliterate(str);
@@ -2531,10 +3079,10 @@ public final class StringFunctions {
 
             }
           }
-        } else if (ast.arg2().isString()) {
+        } else if (arg2.isString()) {
           try {
             String str1 = "Latin";
-            String str2 = mapToICU4J(ast.arg2().toString());
+            String str2 = mapToICU4J(arg2.toString());
             String str = ast.arg1().toString();
             Transliterator transform = Transliterator.getInstance(str1 + "-" + str2);
             String result = transform.transliterate(str);
@@ -2558,7 +3106,7 @@ public final class StringFunctions {
     }
 
     private static String mapToICU4J(String language) {
-      String temp = LANGUAGE_MAP.get(language);
+      String temp = TRANSLITERATE_MAP.get(language);
       if (temp != null) {
         language = temp;
       }
@@ -2568,11 +3116,6 @@ public final class StringFunctions {
     @Override
     public int[] expectedArgSize(IAST ast) {
       return ARGS_1_2;
-    }
-
-    @Override
-    public void setUp(final ISymbol newSymbol) {
-      newSymbol.setAttributes(ISymbol.LISTABLE);
     }
   }
 
@@ -2741,7 +3284,7 @@ public final class StringFunctions {
   private static String toRegexString(
       IExpr partOfRegex, boolean abbreviatedPatterns, IAST stringFunction, EvalEngine engine) {
     if (partOfRegex.isString()) {
-      // Guide to Escaping Characters in Java RegExps -
+      // Guide to escaping characters in Java RegExps -
       // https://www.baeldung.com/java-regexp-escape-char
       final String str = partOfRegex.toString();
       if (abbreviatedPatterns) {

@@ -1,5 +1,9 @@
 package org.matheclipse.io.system;
 
+import java.util.Locale;
+import java.util.Map;
+import java.util.TreeMap;
+
 import org.matheclipse.core.basic.Config;
 import org.matheclipse.core.eval.EvalEngine;
 
@@ -46,6 +50,24 @@ public class StringFunctionsTest extends AbstractTestCase {
     }
   }
 
+  public void testFromLetterNumber() {
+    check(
+        "FromLetterNumber({1,4,10,17})", //
+        "{a,d,j,q}");
+    check(
+        "FromLetterNumber(26, \"Dutch\")", //
+        "ij");
+    check(
+        "FromLetterNumber(-2, \"Dutch\")", //
+        "ij");
+    check(
+        "FromLetterNumber(-1, \"Greek\")", //
+        "ω");
+    check(
+        "FromLetterNumber(10000)", //
+        "Missing(NotApplicable)");
+  }
+
   public void testHammingDistance() {
     check(
         "HammingDistance(\"time\", \"dime\")", //
@@ -53,6 +75,95 @@ public class StringFunctionsTest extends AbstractTestCase {
     check(
         "HammingDistance(\"TIME\", \"dime\", IgnoreCase -> True)", //
         "1");
+  }
+
+  public void testAlphabet() {
+    //    check(
+    //        "Alphabet(\"Hindi\")", //
+    // "{अ,आ,इ,ई,उ,ऊ,ऋ,ए,ऐ,ओ,औ,क,ख,ग,घ,ङ,च,छ,ज,झ,ञ,ट,ठ,ड,ढ,ण,त,थ,द,ध,न,प,फ,ब,भ,म,य,र,ल,व,श,ष,स,ह}");
+    check(
+        "Alphabet(\"Vietnamese\")", //
+        "{a,ă,â,b,c,d,đ,e,ê,f,g,h,i,k,l,m,n,o,ô,ơ,p,q,r,s,t,u,ư,v,x,y}");
+    //    check(
+    //        "Alphabet(\"Korean\")", //
+    //        "{ㄱ,ㄲ,ㄴ,ㄷ,ㄸ,ㄹ,ㅁ,ㅂ,ㅃ,ㅅ,ㅆ,ㅇ,ㅈ,ㅉ,ㅊ,ㅋ,ㅌ,ㅍ,ㅎ,ㅏ,ㅐ,ㅑ,ㅒ,ㅓ,ㅔ,ㅕ,ㅖ,ㅗ,ㅘ,ㅙ,ㅚ,ㅛ,ㅜ,ㅝ,ㅞ,ㅟ,ㅠ,ㅡ,ㅢ,ㅣ}");
+    //    check(
+    //        "Alphabet(\"Arabic\")", //
+    //        "{ا,ب,ت,ث,ج,ح,خ,د,ذ,ر,ز,س,ش,ص,ض,ط,ظ,ع,غ,ف,ق,ك,ل,م,ن,ه,و,ي}");
+    //	  check(
+    //		        "Alphabet(\"Belarusian\")", //
+    //		        "{а,б,в,г,д,е,ё,ж,з,і,й,к,л,м,н,о,п,р,с,т,у,ў,ф,х,ц,ч,ш,ы,ь,э,ю,я,'}");
+    //    check(
+    //        "Alphabet(\"Bulgarian\")", //
+    //        "{а,б,в,г,д,е,ж,з,и,й,к,л,м,н,о,п,р,с,т,у,ф,х,ц,ч,ш,щ,ъ,ь,ю,я}");
+    check(
+        "Alphabet(\"Dutch\")", //
+        "{a,b,c,d,e,f,g,h,i,j,k,l,m,n,o,p,q,r,s,t,u,v,w,x,y,ij,z}");
+    check(
+        "Alphabet(\"Greek\")", //
+        "{α,β,γ,δ,ε,ζ,η,θ,ι,κ,λ,μ,ν,ξ,ο,π,ρ,σ,τ,υ,φ,χ,ψ,ω}");
+    //    check(
+    //        "Alphabet(\"Hebrew\")", //
+    //        "{α,β,γ,δ,ε,ζ,η,θ,ι,κ,λ,μ,ν,ξ,ο,π,ρ,σ,τ,υ,φ,χ,ψ,ω}");
+    check(
+        "Alphabet(\"German\")", //
+        "{a,b,c,d,e,f,g,h,i,j,k,l,m,n,o,p,q,r,s,t,u,v,w,x,y,z}");
+    check(
+        "Alphabet(\"Polish\")", //
+        "{a,ą,b,c,ć,d,e,ę,f,g,h,i,j,k,l,ł,m,n,ń,o,ó,p,r,s,ś,t,u,w,y,z,ź,ż}");
+    check(
+        "Alphabet( )", //
+        "{a,b,c,d,e,f,g,h,i,j,k,l,m,n,o,p,q,r,s,t,u,v,w,x,y,z}");
+  }
+
+  public void testLetterNumber() {
+    // English alphabet has only single character elements
+    check(
+        "LetterNumber({\"P\", \"Pe\", \"P1\", \"eck\"})", //
+        "{16,{16,5},{16,0},{5,3,11}}");
+    // Dutch alphabet can have elements with multiple characters
+    check(
+        "LetterNumber({\"P\", \"Pe\", \"P1\", \"eck\"},  \"Dutch\")", //
+        "{16,0,0,0}");
+
+    check(
+        "LetterNumber(\"я\",  \"Russian\")", //
+        "33");
+    check(
+        "LetterNumber(Characters(\"Turtle\"))", //
+        "{20,21,18,20,12,5}");
+    check(
+        "LetterNumber(\"\\[Gamma]\", \"Greek\")", //
+        "3");
+    check(
+        "LetterNumber(\"\\[Lambda]\", \"Greek\")", //
+        "11");
+    // by default "English" alphabet is assumed
+    check(
+        "LetterNumber(\"\\[Alpha]\")", //
+        "0");
+
+    check(
+        "LetterNumber(\"a\")", //
+        "1");
+    check(
+        "LetterNumber(\"d\")", //
+        "4");
+    check(
+        "LetterNumber(\"A\")", //
+        "1");
+    check(
+        "LetterNumber(\"D\")", //
+        "4");
+    check(
+        "LetterNumber(\"a\",\"French\")", //
+        "1");
+    check(
+        "LetterNumber(\"ij\",\"Dutch\")", //
+        "26");
+    check(
+        "LetterNumber(\"dzs\",\"Hungarian\")", //
+        "8");
   }
 
   public void testString() {
@@ -189,6 +300,9 @@ public class StringFunctionsTest extends AbstractTestCase {
   }
 
   public void testStringContainsQ() {
+    check(
+        "StringContainsQ( \"BC\" , IgnoreCase -> True)[\"abcd\"]", //
+        "True");
     check(
         "StringContainsQ({\"the quick brown fox\", \"jumps\", \"over the lazy dog\"}, \"the\")", //
         "{True,False,True}");
@@ -521,6 +635,13 @@ public class StringFunctionsTest extends AbstractTestCase {
         "\"  see you later alligator.\"");
   }
 
+  public void testStringReverse() {
+    // https://en.wikipedia.org/wiki/Palindrome
+    check(
+        "StringReverse(\"Never odd or even\")", //
+        "neve ro ddo reveN");
+  }
+
   public void testStringRiffle() {
     check(
         "StringRiffle({\"a\", \"b\", \"c\", \"d\", \"e\"})", //
@@ -562,6 +683,11 @@ public class StringFunctionsTest extends AbstractTestCase {
     //    check(
     //        "StringTake( \"abc\",{{1,1},{1,3},{0,0},{1,2},{-1},{4}}) // InputForm", //
     //        " ");
+
+    check(
+        "StringTake({\"abcdef\", \"stuv\", \"xyzw\"}, -2) ", //
+        "{ef,uv,zw}");
+
     check(
         "StringTake(\"abc\",{1,3,0,2,-1,4}) // InputForm", //
         "{\"a\",\"abc\",\"\",\"ab\",\"c\",StringTake(\"abc\",4)}");
@@ -673,6 +799,87 @@ public class StringFunctionsTest extends AbstractTestCase {
     check(
         "StringTake(\"abcdefghijklm\", -4)", //
         "jklm");
+  }
+
+  public void testStringTemplate() {
+    // operator form
+    check(
+        "StringTemplate(\"The quick brown `a` jumps over the lazy `b`.\")[<|\"a\" -> \"fox\", \"b\" -> \"dog\"|>]", //
+        "The quick brown fox jumps over the lazy dog.");
+  }
+
+  public void testTemplateApply() {
+    check(
+        "TemplateApply(\"The quick brown `a` jumps over the lazy `b`.\",<|\"a\" -> \"fox\", \"b\" -> \"dog\"|>)", //
+        "The quick brown fox jumps over the lazy dog.");
+    check(
+        "TemplateApply(StringTemplate(\"The quick brown `a` jumps over the lazy `b`.\"),<|\"a\" -> \"fox\", \"b\" -> \"dog\"|>)", //
+        "The quick brown fox jumps over the lazy dog.");
+    check(
+        "t = TemplateSlot(\"dd\") -> TemplateIf(\n" //
+            + "    MatchQ(TemplateSlot(\"dd\"), _Integer),\n"
+            + "    Fibonacci(TemplateSlot(\"dd\")),\n"
+            + "    None);\n"
+            + "TemplateApply(t, <|\"dd\" -> 10|>)", //
+        "10->55");
+    check(
+        "t = TemplateSlot(1);TemplateApply({\"Variable t is:\", t})", //
+        "{Variable t is:,Missing(SlotAbsent,1)}");
+    check(
+        "t = TemplateSlot(1, DefaultValue->\"No data found\");TemplateApply({\"Variable t is:\", t})", //
+        "{Variable t is:,No data found}");
+    check(
+        "t = TemplateSlot(\"data\", InsertionFunction -> Total);TemplateApply(t, <|\"data\" -> Range(10)|>)", //
+        "55");
+    check(
+        "TemplateApply(\"The orbit of `planet` has period `period`.\", <|\"planet\" -> \"Jupiter\", \"period\" -> Quantity(11.8707, \"Years\")|>)", //
+        "The orbit of Jupiter has period 11.8707[Years].");
+    check(
+        "TemplateApply({1, 2, 3, TemplateSlot(\"element\"), 5}, <|\"element\" -> 4|>)", //
+        "{1,2,3,4,5}");
+    //    check(
+    //        "TemplateApply( \"We use the `` template ``.\" , {\"Pebble\", \"engine\"})", //
+    //        "We use the Pebble template engine.");
+    //    check(
+    //        "TemplateApply(StringTemplate(\"We use the `` template ``.\"), {\"Pebble\",
+    // \"engine\"})", //
+    //        "We use the Pebble template engine.");
+    check(
+        "TemplateApply(StringTemplate(\"We use the `2` template `1`.\"), {\"engine\", \"Pebble\"})", //
+        "We use the Pebble template engine.");
+    check(
+        "TemplateApply(StringTemplate(\"We use the `name` template `motor`.\"), <|\"name\"->\"Pebble\", \"motor\"->\"engine\"|>)", //
+        "We use the Pebble template engine.");
+  }
+
+  public void testTemplateIf() {
+    check(
+        "t=TemplateIf( TemplateSlot(\"summer\"), \"in summer ice cream is delicious\", \"ice cream is boring in winter\"); TemplateApply(t, <|\"summer\" -> True|>)", //
+        "in summer ice cream is delicious");
+    check(
+        "t = TemplateIf( TemplateSlot(\"tt\"), True, False); TemplateApply(t, <|\"tt\" -> True === True|>)", //
+        "True");
+  }
+
+  public void testTransliterate() {
+    check(
+        "Transliterate(\"tadaima\", \"Hiragana\")", //
+        "ただいま");
+    check(
+        "Transliterate(\"fish\",\"Bopomofo\")", //
+        "ㄈㄧ˙ㄕ");
+    check(
+        "Transliterate(\"Фёдоров, Николай Алексеевич\",\"Cyrillic\"->\"English\")", //
+        "Fëdorov, Nikolaj Alekseevič");
+    check(
+        "Transliterate(\"Фёдоров, Николай Алексеевич\")", //
+        "Fedorov, Nikolaj Alekseevic");
+    check(
+        "Transliterate(\"Горбачёв, Михаил Сергеевич\")", //
+        "Gorbacev, Mihail Sergeevic");
+    check(
+        "Transliterate(\"\\[CapitalAlpha]\\[Lambda]\\[CurlyPhi]\\[Alpha]\\[Beta]\\[Eta]\\[Tau]\\[Iota]\\[Kappa]\\[Omega]\\[FinalSigma]\")", //
+        "Alphabetikos");
   }
 
   public void testWhitespace() {
