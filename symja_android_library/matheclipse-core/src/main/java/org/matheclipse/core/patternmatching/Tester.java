@@ -49,12 +49,4 @@ public class Tester implements Predicate<IExpr> {
   public boolean test(IExpr expression) {
     return rules.evalDownRule(expression, engine).isTrue();
   }
-
-  // public static void main(String[] args) {
-  // Tester matcher = new Tester();
-  // matcher.caseOf(F.Sin(F.x_));
-  //
-  // System.out.println(matcher.test(F.Sin(F.y)));
-  // }
-
 }

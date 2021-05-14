@@ -12,6 +12,8 @@ import java.util.concurrent.atomic.AtomicLong;
 import java.util.function.DoubleUnaryOperator;
 import java.util.function.Predicate;
 
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.hipparchus.complex.Complex;
 import org.matheclipse.core.basic.Config;
 import org.matheclipse.core.builtin.Arithmetic;
@@ -72,6 +74,8 @@ import com.google.common.cache.Cache;
  */
 public class EvalEngine implements Serializable {
 
+  private static final Logger logger = LogManager.getLogger(EvalEngine.class);
+
   /** Stack to manage the <code>OptionsPattern()</code> mappings for a pattern-matching rule. */
   private static class OptionsStack extends ArrayDeque<IdentityHashMap<ISymbol, IASTAppendable>> {
 
@@ -90,6 +94,8 @@ public class EvalEngine implements Serializable {
   private static final long serialVersionUID = 8402201556123198590L;
 
   public transient Cache<IAST, IExpr> rememberASTCache = null;
+
+  public transient IdentityHashMap<Object, IExpr> rememberMap = null;
 
   public static final boolean DEBUG = false;
 
@@ -485,6 +491,7 @@ public class EvalEngine implements Serializable {
   public synchronized EvalEngine copy() {
     EvalEngine engine = new EvalEngine();
     engine.rememberASTCache = null; // rememberASTCache;
+    engine.rememberMap = rememberMap;
     engine.fAnswer = fAnswer;
     engine.fAssumptions = fAssumptions;
     engine.fContextPath = fContextPath.copy();
@@ -895,10 +902,8 @@ public class EvalEngine implements Serializable {
           }
           IExpr result =
               fNumericMode
-                  ? //
-                  functionEvaluator.numericEval(ast, this)
-                  : //
-                  functionEvaluator.evaluate(ast, this);
+                  ? functionEvaluator.numericEval(ast, this)
+                  : functionEvaluator.evaluate(ast, this);
           if (result.isPresent()) {
             return result;
           }
@@ -1786,7 +1791,7 @@ public class EvalEngine implements Serializable {
       IAST ast, boolean noEvaluation, boolean evalNumericFunction, int level) {
     // final ISymbol symbol = ast.topHead();
     IExpr head = ast.head();
-    if (!head.isPattern()) {
+    if (!(head instanceof IPatternObject) && !noEvaluation) {
       IExpr headResult = head.evaluate(this);
       if (headResult.isPresent()) {
         ast = ast.apply(headResult);
@@ -1806,20 +1811,13 @@ public class EvalEngine implements Serializable {
     int headID = ast.headID();
     if (headID >= 0) {
       if (headID == ID.Blank
-          || //
-          headID == ID.BlankSequence
-          || //
-          headID == ID.BlankNullSequence
-          || //
-          headID == ID.Pattern
-          || //
-          headID == ID.Optional
-          || //
-          headID == ID.OptionsPattern
-          || //
-          headID == ID.Repeated
-          || //
-          headID == ID.RepeatedNull) {
+          || headID == ID.BlankSequence
+          || headID == ID.BlankNullSequence
+          || headID == ID.Pattern
+          || headID == ID.Optional
+          || headID == ID.OptionsPattern
+          || headID == ID.Repeated
+          || headID == ID.RepeatedNull) {
         return ((IFunctionEvaluator) ((IBuiltInSymbol) ast.head()).getEvaluator())
             .evaluate(ast, this);
       }
@@ -1837,7 +1835,7 @@ public class EvalEngine implements Serializable {
           IExpr expr = ast.arg1();
           if (expr.isAST()) {
             resultList = evalSetAttributeArg(ast, 1, (IAST) expr, resultList, noEvaluation, level);
-          } else if (!expr.isPatternExpr()) {
+          } else if (!(expr instanceof IPatternObject) && !noEvaluation) {
             IExpr temp = expr.evaluate(this);
             if (temp.isPresent()) {
               resultList = ast.setAtCopy(1, temp);
@@ -1853,7 +1851,7 @@ public class EvalEngine implements Serializable {
             if (expr.isAST()) {
               resultList =
                   evalSetAttributeArg(ast, i, (IAST) expr, resultList, noEvaluation, level);
-            } else if (!expr.isPatternExpr()) {
+            } else if (!(expr instanceof IPatternObject) && !noEvaluation) {
               IExpr temp = expr.evaluate(this);
               if (temp.isPresent()) {
                 if (resultList.isPresent()) {
@@ -1918,16 +1916,17 @@ public class EvalEngine implements Serializable {
   private IExpr evalSetOrderless(IAST ast, final int attr, boolean noEvaluation, int level) {
     if (ISymbol.hasOrderlessAttribute(attr)) {
       EvalAttributes.sortWithFlags((IASTMutable) ast);
-      if (level > 0 && !noEvaluation && ast.isFreeOfPatterns()) {
+      //      if (level > 0 && !noEvaluation && ast.isFreeOfPatterns()) {
+      if (!noEvaluation) {
         if (ast.isPlus()) {
-          return Arithmetic.CONST_PLUS.evaluate(ast, this);
+          return Arithmetic.CONST_PLUS.evaluate(ast, this).orElse(ast);
         }
         if (ast.isTimes()) {
-          return Arithmetic.CONST_TIMES.evaluate(ast, this);
+          return Arithmetic.CONST_TIMES.evaluate(ast, this).orElse(ast);
         }
       }
     }
-    if (level > 0 && !noEvaluation && ast.isFreeOfPatterns()) {
+    if (level > 0 && !noEvaluation) {
       return evaluate(ast);
     }
 
@@ -1997,6 +1996,19 @@ public class EvalEngine implements Serializable {
       }
       return false;
     }
+  }
+
+  /**
+   * Test if <code>expr</code> could be evaluated to {@link S#True}. If a <code>
+   * org.matheclipse.parser.client.math.MathException</code> occurs during evaluation, return {@link
+   * S#False}.
+   *
+   * @param expr
+   * @return {@link S#True} if the expression could be evaluated to symbol <code>True</code> and
+   *     {@link S#False} in all other cases
+   */
+  public final IBuiltInSymbol evalSymbolTrue(final IExpr expr) {
+    return evalTrue(expr) ? S.True : S.False;
   }
 
   /**
@@ -2295,6 +2307,9 @@ public class EvalEngine implements Serializable {
   /** Initialize this <code>EvalEngine</code> */
   public final void init() {
     stackBegin();
+    fAnswer = null;
+    fAssumptions = null;
+    S.$Assumptions.clearValue();
     fNumericPrecision = 15;
     fSignificantFigures = 6;
     fRecursionCounter = 0;
@@ -2319,6 +2334,7 @@ public class EvalEngine implements Serializable {
     f$InputFileName = "";
     fOptionsStack = new OptionsStack();
     rememberASTCache = null;
+    rememberMap = new IdentityHashMap<Object, IExpr>();
   }
 
   public ArrayDeque<IExpr> stackBegin() {
@@ -2510,6 +2526,7 @@ public class EvalEngine implements Serializable {
       if (stream == null) {
         stream = System.err;
       }
+      logger.warn(str);
       stream.println(str);
     }
     if (fThrowError) {

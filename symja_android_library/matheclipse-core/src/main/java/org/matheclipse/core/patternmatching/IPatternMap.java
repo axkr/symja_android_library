@@ -1973,11 +1973,7 @@ public interface IPatternMap {
    */
   public static void addOptionsPattern(OptionsPattern op, IExpr x, EvalEngine engine) {
     if (x.size() > 1 && (x.isSequence() || x.isList())) {
-      IAST list = (IAST) x;
-      for (int i = 1; i < list.size(); i++) {
-        // also for nested lists
-        addOptionsPattern(op, list.get(i), engine);
-      }
+      ((IAST) x).forEach(arg -> addOptionsPattern(op, arg, engine));
     } else {
       engine.addOptionsPattern(op, (IAST) x);
     }

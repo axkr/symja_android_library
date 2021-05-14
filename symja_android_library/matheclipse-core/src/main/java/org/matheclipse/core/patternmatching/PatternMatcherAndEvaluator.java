@@ -272,7 +272,7 @@ public class PatternMatcherAndEvaluator extends PatternMatcher implements Extern
       patternMap = createPatternMap();
       patternMap.initPattern();
       if (matchExpr(fLhsPatternExpr, leftHandSide, engine, new StackMatcher(engine))) {
-
+    	 
         if (RulesData.showSteps) {
           if (fLhsPatternExpr.head().equals(S.Integrate)) {
             IExpr rhs = fRightHandSide.orElse(S.Null);

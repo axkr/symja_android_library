@@ -834,7 +834,7 @@ public final class PatternMatching {
       if (ast.size() == 2) {
         IExpr arg1 = ast.arg1();
         if (arg1.isAST()) {
-          IExpr temp = engine.evalHoldPattern((IAST) arg1);
+          IExpr temp = engine.evalHoldPattern((IAST) arg1, true, false);
           if (temp == arg1) {
             return F.NIL;
           }
@@ -863,7 +863,7 @@ public final class PatternMatching {
       if (ast.size() == 2) {
         IExpr arg1 = ast.arg1();
         if (arg1.isAST()) {
-          IExpr temp = engine.evalHoldPattern((IAST) arg1);
+          IExpr temp = engine.evalHoldPattern((IAST) arg1, true, false);
           if (temp == arg1) {
             return F.NIL;
           }
@@ -1348,6 +1348,9 @@ public final class PatternMatching {
               arg2 = engine.evalHoldPattern((IAST) arg2);
             }
             return PatternNested.valueOf(symbol, arg2);
+          } else {
+            // First element in `1` is not a valid pattern name.
+            return IOFunctions.printMessage(ast.topHead(), "patvar", F.List(ast), engine);
           }
         }
       }
@@ -1356,7 +1359,7 @@ public final class PatternMatching {
 
     @Override
     public int[] expectedArgSize(IAST ast) {
-      return ARGS_1_2;
+      return ARGS_2_2;
     }
 
     @Override
@@ -2008,7 +2011,7 @@ public final class PatternMatching {
     throw new RuleCreationError(leftHandSide);
   }
 
-  private static final class TagSet extends AbstractCoreFunctionEvaluator {
+  private static class TagSet extends AbstractCoreFunctionEvaluator {
 
     @Override
     public IExpr evaluate(final IAST ast, EvalEngine engine) {
@@ -2044,10 +2047,11 @@ public final class PatternMatching {
         }
         try {
           Object[] result =
-              createPatternMatcher(symbol, leftHandSide, rightHandSide, false, engine);
+              createPatternMatcher(symbol, leftHandSide, rightHandSide, false, S.TagSet, engine);
           return (IExpr) result[1];
         } catch (final ValidateException ve) {
-          return engine.printMessage(ve.getMessage(ast.topHead()));
+          engine.printMessage(ve.getMessage(ast.topHead()));
+          return rightHandSide;
         }
       }
       return F.NIL;
@@ -2058,18 +2062,29 @@ public final class PatternMatching {
       return ARGS_3_3;
     }
 
-    private static Object[] createPatternMatcher(
+    /**
+     * Define an <code>UpValues</code> rule for <code>
+     * TagSet(tagSetSymbol, leftHandSide, rightHandSide)</code> or <code>
+     * TagSetDelayed(tagSetSymbol, leftHandSide, rightHandSide)</code>.
+     *
+     * @param tagSetSymbol
+     * @param leftHandSide
+     * @param rightHandSide
+     * @param packageMode
+     * @param engine
+     * @return
+     * @throws RuleCreationError
+     */
+    protected static Object[] createPatternMatcher(
         ISymbol tagSetSymbol,
         IExpr leftHandSide,
         IExpr rightHandSide,
         boolean packageMode,
+        IBuiltInSymbol tagSymbol,
         EvalEngine engine)
         throws RuleCreationError {
       final Object[] result = new Object[2];
 
-      // if (leftHandSide.isAST()) {
-      // leftHandSide = engine.evalHoldPattern((IAST) leftHandSide);
-      // }
       int[] flags = new int[] {IPatternMatcher.NOFLAG};
       leftHandSide = evalLHS(leftHandSide, flags, engine);
 
@@ -2077,8 +2092,32 @@ public final class PatternMatching {
       result[1] = rightHandSide;
 
       IAST lhsAST = Validate.checkASTUpRuleType(leftHandSide);
-      result[0] =
-          tagSetSymbol.putUpRule(flags[0] | IPatternMatcher.TAGSET, false, lhsAST, rightHandSide);
+      boolean found = false;
+      if (lhsAST.head().equals(tagSetSymbol)) {
+        found = true;
+      } else {
+        for (int i = 1; i < lhsAST.size(); i++) {
+          IExpr arg = lhsAST.get(i);
+          if (arg.equals(tagSetSymbol) || arg.topHead().equals(tagSetSymbol)) {
+            found = true;
+            break;
+          }
+          if (arg instanceof IPatternObject) {
+            IPatternObject pObject = (IPatternObject) arg;
+            if (tagSetSymbol.equals(pObject.getHeadTest())) {
+              found = true;
+              break;
+            }
+          }
+        }
+      }
+      if (found) {
+        result[0] =
+            tagSetSymbol.putUpRule(flags[0] | IPatternMatcher.TAGSET, false, lhsAST, rightHandSide);
+        return result;
+      }
+      // Tag `1` not found in `2`
+      IOFunctions.printMessage(tagSymbol, "tagnf", F.List(tagSetSymbol, lhsAST), engine);
       return result;
     }
 
@@ -2088,7 +2127,7 @@ public final class PatternMatching {
     }
   }
 
-  private static final class TagSetDelayed extends AbstractCoreFunctionEvaluator {
+  private static final class TagSetDelayed extends TagSet {
 
     @Override
     public IExpr evaluate(final IAST ast, EvalEngine engine) {
@@ -2103,11 +2142,11 @@ public final class PatternMatching {
           throw new FailedException();
         }
         try {
-          createPatternMatcher(symbol, leftHandSide, rightHandSide, false, engine);
-
+          createPatternMatcher(symbol, leftHandSide, rightHandSide, false, S.TagSetDelayed, engine);
           return S.Null;
         } catch (final ValidateException ve) {
-          return engine.printMessage(ve.getMessage(ast.topHead()));
+          engine.printMessage(ve.getMessage(ast.topHead()));
+          return S.Null;
         }
       }
       return F.NIL;
@@ -2116,33 +2155,6 @@ public final class PatternMatching {
     @Override
     public int[] expectedArgSize(IAST ast) {
       return ARGS_3_3;
-    }
-
-    private static Object[] createPatternMatcher(
-        ISymbol lhsSymbol,
-        IExpr leftHandSide,
-        IExpr rightHandSide,
-        boolean packageMode,
-        EvalEngine engine)
-        throws RuleCreationError {
-      final Object[] result = new Object[2];
-
-      // if (leftHandSide.isAST()
-      // && (((IAST) leftHandSide).getEvalFlags() & IAST.IS_FLATTENED_OR_SORTED_MASK) ==
-      // IAST.NO_FLAG) {
-      // leftHandSide = engine.evalHoldPattern((IAST) leftHandSide);
-      // }
-      int[] flags = new int[] {IPatternMatcher.NOFLAG};
-      leftHandSide = evalLHS(leftHandSide, flags, engine);
-
-      result[0] = null;
-      result[1] = rightHandSide;
-
-      IAST lhsAST = Validate.checkASTUpRuleType(leftHandSide);
-      result[0] =
-          lhsSymbol.putUpRule(
-              flags[0] | IPatternMatcher.TAGSET_DELAYED, false, lhsAST, rightHandSide);
-      return result;
     }
 
     @Override
@@ -2570,11 +2582,7 @@ public final class PatternMatching {
   public static void extractRules(IExpr x, IASTAppendable optionsPattern) {
     if (x != null) {
       if (x.isSequence() || x.isList()) {
-        IAST list = (IAST) x;
-        for (int i = 1; i < list.size(); i++) {
-          // also for nested lists
-          extractRules(list.get(i), optionsPattern);
-        }
+        ((IAST) x).forEach(arg -> extractRules(arg, optionsPattern));
       } else if (x.isRuleAST()) {
         if (x.first().isSymbol()) {
           String name = ((ISymbol) x.first()).getSymbolName();

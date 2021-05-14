@@ -403,15 +403,7 @@ public class PatternMatcher extends IPatternMatcher implements Externalizable {
       lhsPatternAST.remove(iIndex);
       lhsEvalAST.remove(jIndex);
       while (iIndex < lhsPatternAST.size()) {
-        // for (int i = 1; i < lhsPatternSize; i++) {
         IExpr temp = lhsPatternAST.get(iIndex);
-        // if (temp instanceof IPatternObject) {
-        // temp = fPatternMap.getValue((IPatternObject) temp);
-        // if (temp == null) {
-        // iIndex++;
-        // continue;
-        // }
-        // }
         if (temp.isFreeOfPatterns()) {
           evaled = false;
           jIndex = 1;

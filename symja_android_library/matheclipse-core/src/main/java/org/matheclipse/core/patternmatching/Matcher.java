@@ -297,18 +297,4 @@ public class Matcher implements Function<IExpr, IExpr> {
   public IExpr replaceAll(IExpr expression, Function<IAST, IExpr> function) {
     return expression.accept(new MatcherVisitor(this, function));
   }
-
-  // public static IExpr evalTest(PatternMap pm) {
-  // return F.List(pm.val(F.y));
-  // }
-  //
-  // public static void main(String[] args) {
-  // Matcher matcher = new Matcher();
-  // matcher.caseOf(F.Sin(F.x_), F.D(F.Sin(F.x), F.x));
-  // matcher.caseOf(F.Cos(F.x_), x -> F.Floor(x));
-  // matcher.caseBoole(F.Cot(F.x_), x -> false);
-  // matcher.caseMethod(F.Tan(F.y_), Matcher::evalTest);
-  // System.out.println(matcher.apply(F.Tan(F.z)));
-  // }
-
 }
