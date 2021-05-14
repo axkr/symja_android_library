@@ -35,7 +35,7 @@ public class StreamTest extends AbstractTestCase {
     // BinaryRead: EOFException
     check(
         "BinaryRead(f, \"UnsignedInteger8\")", //
-        "$Failed");
+        "EndOfFile");
   }
 
   public void testRead001() {
