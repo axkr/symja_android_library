@@ -425,7 +425,7 @@ public final class RulesData implements Serializable {
           patternHash = ((IAST) expr).patternHashCode();
         }
         for (IPatternMatcher patternEvaluator : fPatternDownRules) {
-          // if (patternEvaluator.fLhsPatternExpr.isAST(F.Integrate)) {
+          // if (patternEvaluator.fLhsPatternExpr.isAST(S.Integrate)) {
           // System.out.println(((IPatternMatcher) patternEvaluator).getLHSPriority());
           // if (((IPatternMatcher) patternEvaluator).getLHSPriority() == 5665) {
           // System.out.println("Debug from this line");
@@ -458,14 +458,16 @@ public final class RulesData implements Serializable {
 
             result = pmEvaluator.eval(expr, engine);
             if (result.isPresent()) {
-//              if (patternEvaluator.fLhsPatternExpr.isAST(S.Integrate)) {
-//                System.out.println(((IPatternMatcher) patternEvaluator).toString());
-//                // if (((IPatternMatcher) patternEvaluator).getLHSPriority() == 6686) {
-//                System.out.println(
-//                    "Rule number: " + ((IPatternMatcher) patternEvaluator).getLHSPriority());
-//                // }
-//                System.out.println("Result: "+result.toString());
-//              }
+              //              if (patternEvaluator.fLhsPatternExpr.isAST(S.Integrate)) {
+              //                System.out.println(((IPatternMatcher) patternEvaluator).toString());
+              //                // if (((IPatternMatcher) patternEvaluator).getLHSPriority() ==
+              // 6686) {
+              //                System.out.println(
+              //                    "Rule number: " + ((IPatternMatcher)
+              // patternEvaluator).getLHSPriority());
+              //                // }
+              //                System.out.println("Result: "+result.toString());
+              //              }
               if (FEConfig.SHOW_STACKTRACE) {
                 if (isShowPriority(pmEvaluator)) {
                   System.out.println(
@@ -634,6 +636,9 @@ public final class RulesData implements Serializable {
     final PatternMatcherAndEvaluator pmEvaluator;
     int patternHash = 0;
     if (!isComplicatedPatternRule(leftHandSide) && !leftHandSide.isCondition()) {
+      //            if (leftHandSide.isAST(S.Sum)) {
+      //              System.out.println(leftHandSide.toString());
+      //            }
       patternHash = ((IAST) leftHandSide).patternHashCode();
     }
     if (leftHandSide.isAST(S.Integrate)) {
