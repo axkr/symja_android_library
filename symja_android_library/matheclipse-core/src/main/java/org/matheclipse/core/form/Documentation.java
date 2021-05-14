@@ -206,11 +206,11 @@ public class Documentation {
             out.append(line.substring(2));
             out.append("\n         * ");
             out.append(
-                "| See: <a href=\"https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/"
+                "@see <a href=\"https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/"
                     + symbolName
                     + ".md\">"
                     + symbolName
-                    + "</a>");
+                    + " documentation</a>");
             out.append(" */");
             return 1;
           }

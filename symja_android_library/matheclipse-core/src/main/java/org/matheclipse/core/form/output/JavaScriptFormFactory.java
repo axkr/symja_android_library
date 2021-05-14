@@ -124,6 +124,8 @@ public class JavaScriptFormFactory extends DoubleFormFactory {
     FUNCTIONS_STR_MATHCELL.put(S.Erfc, "erfc");
     FUNCTIONS_STR_MATHCELL.put(S.FresnelC, "fresnelC");
     FUNCTIONS_STR_MATHCELL.put(S.FresnelS, "fresnelS");
+    FUNCTIONS_STR_MATHCELL.put(S.Gudermannian, "gudermannian");
+    FUNCTIONS_STR_MATHCELL.put(S.InverseGudermannian, "inverseGudermannian"); 
     // PM: Since polylog is a shortened form of the full function name, polylogarithm, the small "l"
     // is
     // more appropriate here:
@@ -156,7 +158,8 @@ public class JavaScriptFormFactory extends DoubleFormFactory {
     FUNCTIONS_STR_MATHCELL.put(S.ChebyshevT, "chebyshevT");
     FUNCTIONS_STR_MATHCELL.put(S.ChebyshevU, "chebyshevU");
     FUNCTIONS_STR_MATHCELL.put(S.LegendreP, "legendreP");
-
+    FUNCTIONS_STR_MATHCELL.put(S.LegendreQ, "legendreQ");
+    
     // FUNCTIONS_STR_MATHCELL.put(S.SpheriacelHarmonic, "sphericalHarmonic");
 
     FUNCTIONS_STR_MATHCELL.put(S.Sin, "sin");
@@ -205,7 +208,6 @@ public class JavaScriptFormFactory extends DoubleFormFactory {
     FUNCTIONS_STR_MATHCELL.put(S.Min, "Math.min");
     FUNCTIONS_STR_MATHCELL.put(S.Surd, "surd");
     FUNCTIONS_STR_MATHCELL.put(S.Root, "root");
-
 
     //
     // pure JavaScript mappings

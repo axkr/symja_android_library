@@ -164,28 +164,38 @@ public class OutputFormFactory {
       final int precedence,
       boolean caller)
       throws IOException {
+    final boolean isNegative = d.isNegative();
     if (d instanceof ApfloatNum) {
-      final boolean isNegative = d.isNegative();
+      Apfloat apfloat = ((ApfloatNum) d).apfloatValue();
       if (!isNegative && caller == PLUS_CALL) {
         append(buf, fInputForm ? " + " : "+");
       }
-      convertDoubleString(
-          buf,
-          convertApfloatToFormattedString(((ApfloatNum) d).apfloatValue()),
-          precedence,
-          isNegative);
+      String str =
+          fInputForm
+              ? ApfloatNum.fullFormString(apfloat)
+              : convertApfloatToFormattedString(apfloat);
+      convertDoubleString(buf, str, precedence, isNegative);
       return;
     }
     if (F.isZero(doubleValue, Config.MACHINE_EPSILON)) {
-      convertDoubleString(buf, convertDoubleToFormattedString(0.0), precedence, false);
+      if (fInputForm) {
+        convertDoubleString(buf, d.fullFormString(), precedence, false);
+      } else {
+        convertDoubleString(buf, convertDoubleToFormattedString(0.0), precedence, false);
+      }
       return;
     }
-    final boolean isNegative = d.isNegative();
+
     if (!isNegative && caller == PLUS_CALL) {
       append(buf, fInputForm ? " + " : "+");
     }
     if (d instanceof Num) {
-      convertDoubleString(buf, convertDoubleToFormattedString(doubleValue), precedence, isNegative);
+      if (fInputForm) {
+        convertDoubleString(buf, d.fullFormString(), precedence, isNegative);
+      } else {
+        convertDoubleString(
+            buf, convertDoubleToFormattedString(doubleValue), precedence, isNegative);
+      }
     }
   }
 
@@ -215,7 +225,6 @@ public class OutputFormFactory {
       return buf.toString();
     }
     return Double.toString(dValue);
-    // return fNumberFormat == null ? Double.toString(dValue) : fNumberFormat.format(dValue);
   }
 
   private void convertDoubleString(
@@ -244,6 +253,7 @@ public class OutputFormFactory {
       }
       append(buf, "(");
     }
+
     double realPart = dc.getRealPart();
     double imaginaryPart = dc.getImaginaryPart();
     boolean realZero = F.isZero(realPart);
@@ -252,12 +262,17 @@ public class OutputFormFactory {
       convertDoubleString(buf, convertDoubleToFormattedString(0.0), Precedence.PLUS, false);
     } else {
       if (!realZero) {
-        append(buf, convertDoubleToFormattedString(realPart));
+        String str =
+            fInputForm ? Num.fullFormString(realPart) : convertDoubleToFormattedString(realPart);
+        append(buf, str);
         if (!imaginaryZero) {
           append(buf, "+I*");
           final boolean isNegative = imaginaryPart < 0;
-          convertDoubleString(
-              buf, convertDoubleToFormattedString(imaginaryPart), Precedence.TIMES, isNegative);
+          str =
+              fInputForm
+                  ? Num.fullFormString(imaginaryPart)
+                  : convertDoubleToFormattedString(imaginaryPart);
+          convertDoubleString(buf, str, Precedence.TIMES, isNegative);
         }
       } else {
         if (caller == PLUS_CALL) {
@@ -266,10 +281,14 @@ public class OutputFormFactory {
         }
         append(buf, "I*");
         final boolean isNegative = imaginaryPart < 0;
-        convertDoubleString(
-            buf, convertDoubleToFormattedString(imaginaryPart), Precedence.TIMES, isNegative);
+        String str =
+            fInputForm
+                ? Num.fullFormString(imaginaryPart)
+                : convertDoubleToFormattedString(imaginaryPart);
+        convertDoubleString(buf, str, Precedence.TIMES, isNegative);
       }
     }
+
     if (Precedence.PLUS < precedence) {
       append(buf, ")");
     }
@@ -293,12 +312,19 @@ public class OutputFormFactory {
       convertDoubleString(buf, "0.0", Precedence.PLUS, false);
     } else {
       if (!realZero) {
-        append(buf, convertApfloatToFormattedString(realPart));
+        String str =
+            fInputForm
+                ? ApfloatNum.fullFormString(realPart)
+                : convertApfloatToFormattedString(realPart);
+        append(buf, str);
         if (!imaginaryZero) {
           append(buf, "+I*");
           final boolean isNegative = imaginaryPart.compareTo(Apcomplex.ZERO) < 0;
-          convertDoubleString(
-              buf, convertApfloatToFormattedString(imaginaryPart), Precedence.TIMES, isNegative);
+          str =
+              fInputForm
+                  ? ApfloatNum.fullFormString(imaginaryPart)
+                  : convertApfloatToFormattedString(imaginaryPart);
+          convertDoubleString(buf, str, Precedence.TIMES, isNegative);
         }
       } else {
         if (caller == PLUS_CALL) {
@@ -307,8 +333,11 @@ public class OutputFormFactory {
         }
         append(buf, "I*");
         final boolean isNegative = imaginaryPart.compareTo(Apcomplex.ZERO) < 0;
-        convertDoubleString(
-            buf, convertApfloatToFormattedString(imaginaryPart), Precedence.TIMES, isNegative);
+        String str =
+            fInputForm
+                ? ApfloatNum.fullFormString(imaginaryPart)
+                : convertApfloatToFormattedString(imaginaryPart);
+        convertDoubleString(buf, str, Precedence.TIMES, isNegative);
       }
     }
     if (Precedence.PLUS < precedence) {
