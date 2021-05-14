@@ -6,6 +6,7 @@
 		</attributes>
 	</classpathentry>
 	<classpathentry kind="src" path="matheclipse-api/src/main/java"/>
+	<classpathentry kind="src" path="matheclipse-gpl/src/main/java"/>
 	<classpathentry kind="src" path="matheclipse-api/src/main/resources"/>
 	<classpathentry kind="src" path="matheclipse-api/src/test/java"/>
 	<classpathentry kind="src" path="matheclipse-core/src/main/java"/>
@@ -69,8 +70,6 @@
 	<classpathentry kind="lib" path="lib/commons-text-1.8.jar"/>
 	<classpathentry kind="lib" path="lib/jheaps-0.13.jar"/>
 	<classpathentry kind="lib" path="lib/logicng-2.0.2.jar"/>
-	<classpathentry kind="lib" path="lib/commonmark-0.17.1.jar"/>
-	<classpathentry kind="lib" path="lib/commonmark-ext-gfm-tables-0.17.1.jar"/>
 	<classpathentry kind="lib" path="lib/fastutil-8.5.2.jar"/>
 	<classpathentry kind="lib" path="lib/pebble-3.1.5.jar"/>
 	<classpathentry kind="lib" path="lib/jackson-annotations-2.11.0.jar"/>
@@ -85,5 +84,7 @@
 	<classpathentry kind="lib" path="lib/archunit-junit4-0.18.0.jar"/>
 	<classpathentry kind="lib" path="lib/janino-3.1.4.jar"/>
 	<classpathentry kind="lib" path="lib/commons-compiler-3.1.4.jar"/>
+	<classpathentry kind="lib" path="lib/commonmark-0.17.2.jar"/>
+	<classpathentry kind="lib" path="lib/commonmark-ext-gfm-tables-0.17.2.jar"/>
 	<classpathentry kind="output" path="bin/classes"/>
 </classpath>
