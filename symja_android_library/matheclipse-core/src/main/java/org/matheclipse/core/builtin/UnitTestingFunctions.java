@@ -70,6 +70,7 @@ public class UnitTestingFunctions {
           return F.NIL;
         }
         if (!(ast.arg1() instanceof IStringX)) {
+          // String expected at position `1` in `2`.
           return IOFunctions.printMessage(ast.topHead(), "string", F.List(), engine);
         }
         String arg1 = ast.arg1().toString();
