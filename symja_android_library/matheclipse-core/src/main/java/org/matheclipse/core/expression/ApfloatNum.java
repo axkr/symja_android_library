@@ -469,14 +469,18 @@ public class ApfloatNum implements INum {
   /** {@inheritDoc} */
   @Override
   public String fullFormString() {
-    String str = fApfloat.toString();
-    long precision = fApfloat.precision();
+    return fullFormString(fApfloat);
+  }
+
+  public static String fullFormString(Apfloat apfloat) {
+    String str = apfloat.toString();
+    long precision = apfloat.precision();
     if (!FEConfig.EXPLICIT_TIMES_OPERATOR) {
       int indx = str.indexOf("e");
       if (indx > 0) {
-        str = str.substring(0, indx) + "``" + precision + "*^" + str.substring(indx + 1);
+        str = str.substring(0, indx) + "`" + precision + "*^" + str.substring(indx + 1);
       } else {
-        str = str + "``" + precision;
+        str = str + "`" + precision;
       }
     }
     return str;

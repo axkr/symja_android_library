@@ -35,13 +35,13 @@ import com.google.common.primitives.UnsignedLong;
 
 public class NumericArrayExpr extends DataExpr<Object> implements INumericArray, Externalizable {
 
-  static class RangeException extends Exception {
+  public static class RangeException extends Exception {
     RangeException(String message) {
       super(message);
     }
   }
 
-  static class TypeException extends Exception {
+  public static class TypeException extends Exception {
     TypeException(String message) {
       super(message);
     }
@@ -255,14 +255,8 @@ public class NumericArrayExpr extends DataExpr<Object> implements INumericArray,
     for (int i = 1; i < nestedListsOfValues.size(); i++) {
       IExpr arg = nestedListsOfValues.get(i);
       if (level == 0) {
-        if (!arg.isInteger()) {
-          throw new TypeException("Not a valid Integers type");
-        }
-        int value = ((ISignedNumber) arg).toInt();
-        if (value < (Byte.MIN_VALUE) || value > Byte.MAX_VALUE) {
-          throw new RangeException("Value " + value + " out of Integer8 range");
-        }
-        byteArr[index[0]++] = (byte) value;
+        byte b = getByte(arg);
+        byteArr[index[0]++] = b;
       } else {
         if (!arg.isList() || !arrayByteRecursive((IAST) arg, level, byteArr, index)) {
           return false;
@@ -343,11 +337,8 @@ public class NumericArrayExpr extends DataExpr<Object> implements INumericArray,
     for (int i = 1; i < nestedListsOfValues.size(); i++) {
       IExpr arg = nestedListsOfValues.get(i);
       if (level == 0) {
-        if (!arg.isInteger()) {
-          throw new TypeException("Not a valid Integers type");
-        }
-        long value = ((ISignedNumber) arg).toLong();
-        byteArr[index[0]++] = UnsignedBytes.checkedCast(value);
+        byte b = getUnsignedByte(arg);
+        byteArr[index[0]++] = b;
       } else {
         if (!arg.isList() || !arrayUnsignedByteRecursive((IAST) arg, level, byteArr, index)) {
           return false;
@@ -355,6 +346,27 @@ public class NumericArrayExpr extends DataExpr<Object> implements INumericArray,
       }
     }
     return true;
+  }
+
+  public static byte getByte(IExpr arg) throws TypeException, RangeException {
+    if (!arg.isInteger()) {
+      throw new TypeException("Not a valid Integers type");
+    }
+    int value = arg.toIntDefault();
+    if (value < (Byte.MIN_VALUE) || value > Byte.MAX_VALUE) {
+      throw new RangeException("Value " + value + " out of Integer8 range");
+    }
+    byte b = (byte) value;
+    return b;
+  }
+
+  public static byte getUnsignedByte(IExpr arg) throws IllegalArgumentException, TypeException {
+    if (!arg.isInteger()) {
+      throw new TypeException("Not a valid Integers type");
+    }
+    long value = ((ISignedNumber) arg).toLong();
+    byte b = UnsignedBytes.checkedCast(value);
+    return b;
   }
 
   /**

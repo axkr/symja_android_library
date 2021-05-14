@@ -28,7 +28,6 @@ import org.matheclipse.core.builtin.LinearAlgebra;
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.exception.ArgumentTypeException;
 import org.matheclipse.core.expression.DataExpr;
-import org.matheclipse.core.expression.ExprField;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.expression.S;
 import org.matheclipse.core.generic.Tensors;
@@ -68,7 +67,7 @@ public class SparseArrayExpr extends DataExpr<Trie<int[], IExpr>>
      *     not positive.
      */
     public SparseExprMatrix(final int rowDimension, final int columnDimension, IExpr defaultValue) {
-      super(ExprField.CONST, rowDimension, columnDimension);
+      super(F.EXPR_FIELD, rowDimension, columnDimension);
       this.array =
           new SparseArrayExpr(
               Config.TRIE_INT2EXPR_BUILDER.build(),
@@ -84,7 +83,7 @@ public class SparseArrayExpr extends DataExpr<Trie<int[], IExpr>>
      * @param copyArray Whether to copy or reference the input array.
      */
     public SparseExprMatrix(SparseArrayExpr array, boolean copyArray) {
-      super(ExprField.CONST, array.fDimension[0], array.fDimension[1]);
+      super(F.EXPR_FIELD, array.fDimension[0], array.fDimension[1]);
       if (copyArray) {
         this.array = new SparseArrayExpr(array.fData, array.fDimension, array.fDefaultValue, true);
       } else {
@@ -98,7 +97,7 @@ public class SparseArrayExpr extends DataExpr<Trie<int[], IExpr>>
      * @param other Instance to copy.
      */
     public SparseExprMatrix(SparseExprMatrix other) {
-      super(ExprField.CONST, other.array.fDimension[0], other.array.fDimension[1]);
+      super(F.EXPR_FIELD, other.array.fDimension[0], other.array.fDimension[1]);
       this.array =
           new SparseArrayExpr(
               other.array.fData, other.array.fDimension, other.array.fDefaultValue, true);
@@ -557,7 +556,7 @@ public class SparseArrayExpr extends DataExpr<Trie<int[], IExpr>>
      */
     @Override
     public Field<IExpr> getField() {
-      return ExprField.CONST;
+      return F.EXPR_FIELD;
     }
 
     public SparseArrayExpr getSparseArray() {
@@ -981,80 +980,83 @@ public class SparseArrayExpr extends DataExpr<Trie<int[], IExpr>>
       IExpr[] defaultValue,
       EvalEngine engine) {
     boolean determineDimension = defaultDimension < 0 || dimension == null;
-    IExpr arg1 = arrayRulesList.arg1();
-    IAST rule1 = (IAST) arg1;
+
     int[] positions = null;
     int depth = 1;
     if (dimension != null) {
       depth = dimension.length;
     }
-    if (rule1.arg1().isList()) {
-      IAST positionList = (IAST) rule1.arg1();
-      if (dimension == null) {
-        depth = positionList.argSize();
-        dimension = new int[depth];
-      } else {
-        if (dimension.length != positionList.argSize()) {
-          // TODO print message
-          return null;
-        }
-        depth = dimension.length;
-      }
-      positions = checkPositions(arrayRulesList, positionList, engine);
-      if (positions == null) {
-        if (!checkPatternPositions(
-            value, positionList, rule1.arg2(), dimension, defaultValue, arrayRulesList, engine)) {
-          return null;
-        }
-      }
-    } else {
-      int n = rule1.arg1().toIntDefault();
-      if (n > 0) {
+    if (arrayRulesList.isNonEmptyList()) {
+      IExpr arg1 = arrayRulesList.arg1();
+      IAST rule1 = (IAST) arg1;
+      if (rule1.arg1().isList()) {
+        IAST positionList = (IAST) rule1.arg1();
         if (dimension == null) {
-          depth = 1;
+          depth = positionList.argSize();
           dimension = new int[depth];
         } else {
-          if (dimension.length != 1) {
+          if (dimension.length != positionList.argSize()) {
             // TODO print message
             return null;
           }
-          depth = 1;
+          depth = dimension.length;
         }
-        positions = new int[1];
-        positions[0] = n;
-      } else {
-        if (rule1.arg1().isBlank()) {
-          // pattern matching
-          if (!defaultValue[0].isPresent()) {
-            defaultValue[0] = rule1.arg2();
-          } else if (!defaultValue[0].equals(rule1.arg2())) {
-            // The left hand side of `2` in `1` doesn't match an int-array of depth `3`.
-            IOFunctions.printMessage(
-                S.SparseArray, "posr", F.List(arrayRulesList, rule1.arg1(), F.ZZ(depth)), engine);
+        positions = checkPositions(arrayRulesList, positionList, engine);
+        if (positions == null) {
+          if (!checkPatternPositions(
+              value, positionList, rule1.arg2(), dimension, defaultValue, arrayRulesList, engine)) {
             return null;
           }
-        } else if (!patternPositionsList(
-            value, rule1.arg1(), rule1.arg2(), dimension, arrayRulesList, engine)) {
-          return null;
-        }
-      }
-    }
-
-    if (positions != null) {
-      if (defaultDimension > 0) {
-        for (int i = 0; i < depth; i++) {
-          dimension[i] = defaultDimension;
         }
       } else {
-        if (determineDimension) {
+        int n = rule1.arg1().toIntDefault();
+        if (n > 0) {
+          if (dimension == null) {
+            depth = 1;
+            dimension = new int[depth];
+          } else {
+            if (dimension.length != 1) {
+              // TODO print message
+              return null;
+            }
+            depth = 1;
+          }
+          positions = new int[1];
+          positions[0] = n;
+        } else {
+          if (rule1.arg1().isBlank()) {
+            // pattern matching
+            if (!defaultValue[0].isPresent()) {
+              defaultValue[0] = rule1.arg2();
+            } else if (!defaultValue[0].equals(rule1.arg2())) {
+              // The left hand side of `2` in `1` doesn't match an int-array of depth `3`.
+              IOFunctions.printMessage(
+                  S.SparseArray, "posr", F.List(arrayRulesList, rule1.arg1(), F.ZZ(depth)), engine);
+              return null;
+            }
+          } else if (!patternPositionsList(
+              value, rule1.arg1(), rule1.arg2(), dimension, arrayRulesList, engine)) {
+            return null;
+          }
+        }
+      }
+
+      if (positions != null) {
+        if (defaultDimension > 0) {
           for (int i = 0; i < depth; i++) {
-            if (positions[i] > dimension[i]) {
-              dimension[i] = positions[i];
+            dimension[i] = defaultDimension;
+          }
+        } else {
+          if (determineDimension) {
+            for (int i = 0; i < depth; i++) {
+              if (positions[i] > dimension[i]) {
+                dimension[i] = positions[i];
+              }
             }
           }
         }
+        value.put(positions, rule1.arg2());
       }
-      value.put(positions, rule1.arg2());
     }
     for (int j = 2; j < arrayRulesList.size(); j++) {
       IExpr arg = arrayRulesList.get(j);
@@ -1459,7 +1461,7 @@ public class SparseArrayExpr extends DataExpr<Trie<int[], IExpr>>
       this.fDimension = dimension;
     }
     // this.addEvalFlags(IAST.SEQUENCE_FLATTENED);
-  this.fDefaultValue = defaultValue;
+    this.fDefaultValue = defaultValue;
   }
 
   /** {@inheritDoc} */

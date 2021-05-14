@@ -6,7 +6,6 @@ import java.math.RoundingMode;
 import java.util.ArrayList;
 import java.util.Map;
 import java.util.Set;
-import java.util.SortedMap;
 import java.util.SortedSet;
 import java.util.Stack;
 import java.util.TreeSet;
@@ -515,71 +514,7 @@ public abstract class AbstractIntegerSym implements IInteger, Externalizable {
    * @return
    */
   public IAST factorize() {
-
-    IInteger b = this;
-    if (b.isZero()) {
-      return F.CListC0;
-    } else if (b.isOne()) {
-      return F.CListC1;
-    } else if (b.isMinusOne()) {
-      return F.CListCN1;
-    }
-    if (sign() < 0) {
-      b = b.negate();
-    }
-    if (b instanceof IntegerSym) {
-      int intValue = b.intValue();
-      return factorizeLong(intValue);
-    }
-
-    BigInteger big = b.toBigNumerator();
-    try {
-      long longValue = big.longValueExact();
-      if (longValue < PrimeInteger.BETA) {
-        return factorizeLong(longValue);
-      }
-    } catch (ArithmeticException aex) {
-      // go on with big integers
-    }
-    Int2IntMap map = new Int2IntRBTreeMap();
-    // SortedMap<Integer, Integer> map = new TreeMap<Integer, Integer>();
-    BigInteger rest = Primality.countPrimes32749(big, map);
-    int allocSize = 1;
-    for (Int2IntMap.Entry entry : map.int2IntEntrySet()) {
-      allocSize += entry.getIntValue();
-    }
-    IASTAppendable result = F.ListAlloc(allocSize);
-    if (sign() < 0) {
-      result.append(F.CN1);
-    }
-    for (Int2IntMap.Entry entry : map.int2IntEntrySet()) {
-      int key = entry.getIntKey();
-      IInteger is = valueOf(key);
-      for (int i = 0; i < entry.getIntValue(); i++) {
-        result.append(is);
-      }
-    }
-    if (rest.equals(BigInteger.ONE)) {
-      return result;
-    }
-    if (rest.isProbablePrime(PRIME_CERTAINTY)) {
-      result.append(valueOf(rest));
-      return result;
-    }
-    b = valueOf(rest);
-
-    //    SortedMap<BigInteger, Integer> bigMap = new TreeMap<BigInteger, Integer>();
-    SortedMap<BigInteger, Integer> bigMap = Primality.factorInteger(rest);
-
-    for (Map.Entry<BigInteger, Integer> entry : bigMap.entrySet()) {
-      BigInteger key = entry.getKey();
-      IInteger is = valueOf(key);
-      for (int i = 0; i < entry.getValue(); i++) {
-        result.append(is);
-      }
-    }
-
-    return result;
+    return Config.PRIME_FACTORS.factorIInteger(this);
   }
 
   /** {@inheritDoc} */
@@ -687,14 +622,19 @@ public abstract class AbstractIntegerSym implements IInteger, Externalizable {
   // return result;
   // }
 
-  private IAST factorizeLong(long longValue) {
+  public static IAST factorizeLong(long value) {
+    int allocSize = 0;
+    long longValue = value;
+    if (longValue < 0) {
+      allocSize = 1;
+      longValue = -longValue;
+    }
     Map<Long, Integer> map = PrimeInteger.factors(longValue);
-    int allocSize = sign() < 0 ? 1 : 0;
     for (Map.Entry<Long, Integer> entry : map.entrySet()) {
       allocSize += entry.getValue();
     }
     IASTAppendable result = F.ListAlloc(allocSize);
-    if (sign() < 0) {
+    if (value < 0) {
       result.append(F.CN1);
     }
     for (Map.Entry<Long, Integer> entry : map.entrySet()) {

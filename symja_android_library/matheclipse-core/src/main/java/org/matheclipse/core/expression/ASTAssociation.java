@@ -497,7 +497,6 @@ public class ASTAssociation extends AST implements IAssociation {
     }
   }
 
-
   /** {@inheritDoc} */
   @Override
   public final int indexOf(Predicate<? super IExpr> predicate, int fromIndex) {
@@ -511,7 +510,7 @@ public class ASTAssociation extends AST implements IAssociation {
     }
     return -1;
   }
-  
+
   /**
    * Test if this AST is an association <code>&lt;|a-&gt;b, c-&gt;d|&gt;</code>(i.e. type <code>
    * AssociationAST</code>)
@@ -717,6 +716,15 @@ public class ASTAssociation extends AST implements IAssociation {
       }
       return list;
     }
+  }
+
+  /** {@inheritDoc} */
+  @Override
+  public IAST most() {
+    if (size() > 1) {
+      return splice(argSize());
+    }
+    return F.NIL;
   }
 
   @Override

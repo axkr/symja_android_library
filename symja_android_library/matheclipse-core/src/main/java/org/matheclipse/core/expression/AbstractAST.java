@@ -52,7 +52,7 @@ import org.matheclipse.core.eval.util.AbstractAssumptions;
 import org.matheclipse.core.form.output.OutputFormFactory;
 import org.matheclipse.core.generic.ObjIntPredicate;
 import org.matheclipse.core.generic.Predicates;
-import org.matheclipse.core.generic.UnaryVariable2Slot;
+import org.matheclipse.core.generic.UnaryVariable2Slot; 
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IASTAppendable;
 import org.matheclipse.core.interfaces.IASTMutable;
@@ -622,13 +622,13 @@ public abstract class AbstractAST implements IASTMutable {
 
     /** {@inheritDoc} */
     @Override
-    public final boolean isListOfRules(boolean ignoreEmptyList) {
+    public final boolean isListOfRules(boolean ignoreEmptySublists) {
       return false;
     }
 
     /** {@inheritDoc} */
     @Override
-    public final boolean isListOfRulesOrAssociation(boolean ignoreEmptyList) {
+    public final boolean isListOfRulesOrAssociation(boolean ignoreEmptySublists) {
       return false;
     }
 
@@ -3254,7 +3254,7 @@ public abstract class AbstractAST implements IASTMutable {
     } else {
       matcher = new PatternMatcher(pattern);
     }
-     return !has(matcher, heads);
+    return !has(matcher, heads);
   }
 
   /** {@inheritDoc} */
@@ -3562,11 +3562,11 @@ public abstract class AbstractAST implements IASTMutable {
 
   /** {@inheritDoc} */
   @Override
-  public boolean isListOfRules(boolean ignoreEmptyList) {
+  public boolean isListOfRules(boolean ignoreEmptySublists) {
     if (head().equals(S.List)) {
       for (int i = 1; i < size(); i++) {
         if (!get(i).isRuleAST()) {
-          if (ignoreEmptyList && get(i).isEmptyList()) {
+          if (ignoreEmptySublists && get(i).isEmptyList()) {
             continue;
           }
           // the row is no list
@@ -3580,7 +3580,7 @@ public abstract class AbstractAST implements IASTMutable {
 
   /** {@inheritDoc} */
   @Override
-  public boolean isListOfRulesOrAssociation(boolean ignoreEmptyList) {
+  public boolean isListOfRulesOrAssociation(boolean ignoreEmptySublists) {
     if (isAssociation()) {
       return true;
     }
@@ -3588,12 +3588,12 @@ public abstract class AbstractAST implements IASTMutable {
       for (int i = 1; i < size(); i++) {
         if (!get(i).isRuleAST()) {
           if (get(i).isAssociation()) {
-            if (!ignoreEmptyList && get(i).size() <= 1) {
+            if (!ignoreEmptySublists && get(i).size() <= 1) {
               return false;
             }
             continue;
           }
-          if (ignoreEmptyList && get(i).isEmptyList()) {
+          if (ignoreEmptySublists && get(i).isEmptyList()) {
             continue;
           }
           // the row is no list
@@ -4985,6 +4985,15 @@ public abstract class AbstractAST implements IASTMutable {
   }
 
   @Override
+  public IExpr optional() {
+    short id = S.GLOBAL_IDS_MAP.getShort(this);
+    if (id >= 0) {
+      return new ExprID(id);
+    }
+    return this;
+  }
+
+  @Override
   public IAST orElse(final IAST other) {
     return this;
   }
@@ -5063,7 +5072,8 @@ public abstract class AbstractAST implements IASTMutable {
       }
       if (arg1().isPresent()) {
         if (arg1() instanceof IAST) {
-          return 31 * head().hashCode() + ((IAST) arg1()).head().hashCode() + size();
+          IAST ast1 = (IAST) arg1();
+          return 31 * head().hashCode() + ast1.head().hashCode() + size();
         }
         return 37 * head().hashCode() + arg1().hashCode() + size();
       }

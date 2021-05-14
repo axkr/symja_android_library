@@ -327,7 +327,11 @@ public class Num implements INum {
   /** {@inheritDoc} */
   @Override
   public String fullFormString() {
-    String result = Double.toString(fDouble);
+    return fullFormString(fDouble);
+  }
+
+  public static String fullFormString(double d) {
+    String result = Double.toString(d);
     if (!FEConfig.EXPLICIT_TIMES_OPERATOR) {
       int indx = result.indexOf("E");
       if (indx > 0) {

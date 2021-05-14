@@ -362,11 +362,7 @@ public abstract class AbstractFractionSym implements IFraction {
     IASTAppendable result = den.factorInteger();
 
     // negate the exponents of the denominator part
-    for (int i = 1; i < result.size(); i++) {
-      IASTMutable list = (IASTMutable) result.get(i);
-      list.set(2, ((ISignedNumber) list.arg2()).negate());
-    }
-
+    result.forEach(list -> ((IASTMutable) list).set(2, list.second().negate()));
     // add the factors from the numerator part
     result.appendArgs(num.factorInteger());
     EvalAttributes.sort(result);

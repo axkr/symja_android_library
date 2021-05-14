@@ -601,9 +601,9 @@ public class ApcomplexNum implements IComplexNum {
     if (!FEConfig.EXPLICIT_TIMES_OPERATOR) {
       int indx = str.indexOf("e");
       if (indx > 0) {
-        str = str.substring(0, indx) + "``" + precision + "*^" + str.substring(indx + 1);
+        str = str.substring(0, indx) + "`" + precision + "*^" + str.substring(indx + 1);
       } else {
-        str = str + "``" + precision;
+        str = str + "`" + precision;
       }
     }
     buf.append(str);
@@ -614,7 +614,7 @@ public class ApcomplexNum implements IComplexNum {
       if (indx > 0) {
         str = str.substring(0, indx) + "``" + precision + "*^" + str.substring(indx + 1);
       } else {
-        str = str + "``" + precision;
+        str = str + "`" + precision;
       }
     }
     buf.append(str);

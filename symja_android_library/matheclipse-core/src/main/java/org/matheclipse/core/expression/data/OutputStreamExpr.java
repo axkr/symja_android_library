@@ -1,17 +1,17 @@
 package org.matheclipse.core.expression.data;
 
+import java.io.DataOutput;
+import java.io.DataOutputStream;
 import java.io.Externalizable;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
-import java.io.InputStreamReader;
 import java.io.ObjectInput;
 import java.io.ObjectOutput;
 import java.io.OutputStream;
 import java.io.OutputStreamWriter;
 import java.io.RandomAccessFile;
-import java.io.Reader;
 import java.io.Writer;
 import java.nio.channels.Channels;
 
@@ -19,10 +19,29 @@ import org.matheclipse.core.expression.DataExpr;
 import org.matheclipse.core.expression.S;
 import org.matheclipse.core.interfaces.IExpr;
 
-public class OutputStreamExpr extends DataExpr<Writer> implements Externalizable {
+public class OutputStreamExpr extends DataExpr<OutputStream> implements Externalizable {
   private final int uniqueID;
 
   private final String streamName;
+
+  /** Character based writer */
+  private Writer writer;
+
+  private DataOutput dataOut;
+
+  public DataOutput getDataOutput() {
+    if (dataOut == null) {
+      dataOut = new DataOutputStream(fData);
+    }
+    return dataOut;
+  }
+
+  public Writer getWriter() {
+    if (writer == null) {
+      writer = new OutputStreamWriter(fData);
+    }
+    return writer;
+  }
 
   public OutputStreamExpr() {
     super(S.OutputStream, null);
@@ -58,8 +77,8 @@ public class OutputStreamExpr extends DataExpr<Writer> implements Externalizable
       throws FileNotFoundException {
 
     OutputStream outputStream = Channels.newOutputStream(file.getChannel());
-    OutputStreamWriter osw = new OutputStreamWriter(outputStream);
-    return new OutputStreamExpr(osw, streamName);
+    //    OutputStreamWriter osw = new OutputStreamWriter(outputStream);
+    return new OutputStreamExpr(outputStream, streamName);
   }
 
   /**
@@ -79,15 +98,21 @@ public class OutputStreamExpr extends DataExpr<Writer> implements Externalizable
         e.printStackTrace();
       }
     }
-    OutputStreamWriter osw = new OutputStreamWriter(fos);
-    return new OutputStreamExpr(osw, file.getCanonicalPath());
+    //    OutputStreamWriter osw = new OutputStreamWriter(fos);
+    return new OutputStreamExpr(fos, file.getCanonicalPath());
   }
 
-  protected OutputStreamExpr(final Writer value, String streamName) {
-    super(S.OutputStream, value);
+  protected OutputStreamExpr(final OutputStream stream, String streamName) {
+    super(S.OutputStream, stream);
     this.uniqueID = InputStreamExpr.STREAM_COUNTER.getAndIncrement();
     this.streamName = streamName;
   }
+
+  //  protected OutputStreamExpr(final Writer value, String streamName) {
+  //    super(S.OutputStream, value);
+  //    this.uniqueID = InputStreamExpr.STREAM_COUNTER.getAndIncrement();
+  //    this.streamName = streamName;
+  //  }
 
   @Override
   public boolean equals(final Object obj) {
@@ -114,6 +139,15 @@ public class OutputStreamExpr extends DataExpr<Writer> implements Externalizable
     return OUTPUTSTREAMEXPRID;
   }
 
+  public void close() throws IOException {
+    if (writer != null) {
+      writer.close();
+      writer = null;
+    }
+    fData.close();
+    dataOut = null;
+  }
+
   @Override
   public IExpr copy() {
     return new OutputStreamExpr(fData, streamName);
@@ -126,7 +160,7 @@ public class OutputStreamExpr extends DataExpr<Writer> implements Externalizable
 
   @Override
   public void readExternal(ObjectInput in) throws IOException, ClassNotFoundException {
-    fData = (OutputStreamWriter) in.readObject();
+    fData = (OutputStream) in.readObject();
   }
 
   @Override
