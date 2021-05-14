@@ -165,6 +165,12 @@ public class ExprEvaluatorTests extends TestCase {
             F.x_, //
             F.y_, //
             F.CEmptyList, //
+            F.Rule(S.Heads, S.True), //
+            F.Rule(S.IgnoreCase, S.True), //
+            F.Rule(S.SameTest, S.Automatic), //
+            F.Rule(S.Heads, F.C10), //
+            F.Rule(S.IgnoreCase, F.CN1), //
+            F.Rule(S.SameTest, F.C0), //
             F.assoc(F.List(F.Rule(F.a, F.C0), F.RuleDelayed(F.b, F.C1))), //
             F.assoc(F.List()), //
             F.assoc(
@@ -483,6 +489,8 @@ public class ExprEvaluatorTests extends TestCase {
             F.Function(F.Expand(F.Power(F.Plus(F.C2, F.Slot1), F.C3))), //
             F.Graph(F.List(F.Rule(F.C1, F.C2), F.Rule(F.C2, F.C3), F.Rule(F.C3, F.C1))), //
             F.Graph(F.List()), //
+            F.CEmptySequence, //
+            F.CEmptyList, //
             F.List(F.List(F.C0)), //
             F.List(F.List(F.C1)), //
             F.List(F.List(F.CN1)), //
@@ -549,8 +557,8 @@ public class ExprEvaluatorTests extends TestCase {
             F.Slot(Integer.MAX_VALUE), //
             IQuantity.of(1.2, "m"), //
             // throws PatternSyntaxException
-            F.RegularExpression("?i)"), //
-            F.stringx(""), //
+            F.RegularExpression("?i)"), // 
+            F.CEmptyString, //
             F.stringx("\\"), //
             F.stringx("\r"), //
             F.stringx("\t"), //

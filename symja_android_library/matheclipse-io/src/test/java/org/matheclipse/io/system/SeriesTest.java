@@ -136,7 +136,12 @@ public class SeriesTest extends AbstractTestCase {
           "Sqrt(x)-x^(3/2)/6+x^(5/2)/120-x^(7/2)/5040+x^(9/2)/362880");
     }
   }
-
+  public void testSeriesTaylor() {
+	    check(
+	        "Series[1/(1-x),{x,0,2}]", //
+	        "1+x+x^2+O(x)^3");
+  }
+  
   public void testSeries() {
     // TODO check max power
     check(

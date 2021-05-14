@@ -19,6 +19,21 @@ public class GraphicsTest extends AbstractTestCase {
         "0.189");
   }
 
+  public void testVolume() {
+    check(
+        "Volume(Ball({a,b,c}, r))", //
+        "3/4*Pi*r^3");
+    check(
+        "Volume(Cuboid({a,b,c}, {x,y,z}))", //
+        "Abs((-a+x)*(-b+y)*(-c+z))");
+    check(
+        "Volume(Ellipsoid({a,b,c}, {x,y,z}))", //
+        "4/3*Pi*x*y*z");
+    check(
+        "Volume(Ellipsoid({0,0,0}, {3,2,1}))", //
+        "8*Pi");
+  }
+
   /** The JUnit setup method */
   @Override
   protected void setUp() {

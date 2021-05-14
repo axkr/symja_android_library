@@ -71,9 +71,13 @@ public class ExportImportFunctionsJUnit extends AbstractTestCase {
             "c:\\temp\\data.txt");
         System.out.println(".");
         check(
-            "Import(\"c:\\\\temp\\\\data.txt\", \"String\")", //
-            "63/256*x-63/256*Cos(x)*Sin(x)-21/128*Cos(x)*Sin(x)^3-21/160*Cos(x)*Sin(x)^5-9/80*Cos(x)*Sin(x)^\n" //
-                + "7-1/10*Cos(x)*Sin(x)^9");
+            "Import(\"c:\\\\temp\\\\data.txt\", \"String\") // InputForm", //
+            "63/256*x - 63/256*Cos(x)*Sin(x) - 21/128*Cos(x)*Sin(x)^3 - 21/160*Cos(x)*Sin(x)^5 - 9/80*Cos(x)*Sin(x)^7 - 1/10*Cos(x)*Sin(x)^9");
+        System.out.println(".");
+        check(
+            "Import(\"c:\\\\temp\\\\data.txt\", \"Text\") // InputForm", //
+            "\"63/256*x-63/256*Cos(x)*Sin(x)-21/128*Cos(x)*Sin(x)^3-21/160*Cos(x)*Sin(x)^5-9/80*Cos(x)*Sin(x)^\n" //
+                + "7-1/10*Cos(x)*Sin(x)^9\"");
         System.out.println(".");
       }
     }
@@ -115,6 +119,28 @@ public class ExportImportFunctionsJUnit extends AbstractTestCase {
     }
   }
 
+  public void testExportStringLine() {
+    if (Config.FILESYSTEM_ENABLED) {
+      String s = System.getProperty("os.name");
+      if (s.contains("Windows")) {
+
+        check(
+            "l=Graphics3D(Line({{1, 1, -1}, {2, 2, 1}, {3, 3, -1}, {4, 4, 1}}))", //
+            "Graphics3D(Line({{1,1,-1},{2,2,1},{3,3,-1},{4,4,1}}))");
+
+        check(
+            "ExportString(l//N, \"ExpressionJSON\")", //
+            "[\"Graphics3D\"," //
+                + "[\"Line\",[\"List\","
+                + "[\"List\",1.0,1.0,-1.0],"
+                + "[\"List\",2.0,2.0,1.0],"
+                + "[\"List\",3.0,3.0,-1.0],"
+                + "[\"List\",4.0,4.0,1.0]]"
+                + "]"
+                + "]");
+      }
+    }
+  }
   /** The JUnit setup method */
   @Override
   protected void setUp() {

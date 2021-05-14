@@ -63,6 +63,30 @@ public class SparseArrayTest extends AbstractTestCase {
         "");
   }
 
+  public void testCoefficientArrays() {
+    check(
+        "CoefficientArrays(2*x + 3*y + 4*z + 5, {x, y, z}) // Normal", //
+        "{5,{2,3,4}}");
+
+        check(
+            "CoefficientArrays({a + x - y - z == 0, b + x + 2 y + z == 0}, {x, y, z})", //
+            " ");
+
+    check(
+        "CoefficientList({a + x - y - z , b + x + 2 y + z}, {x, y, z})", //
+        "{{{{a,-1},{-1,0}},{{1,0},{0,0}}},{{{b,1},{2,0}},{{1,0},{0,0}}}}");
+    check(
+        "CoefficientRules({a + x - y - z, b + x + 2 y + z}, {x, y, z})", //
+        "{{{1,0,0}->1,{0,1,0}->-1,{0,0,1}->-1,{0,0,0}->a},{{1,0,0}->1,{0,1,0}->2,{0,0,1}->\n"
+            + "1,{0,0,0}->b}}");
+    check(
+        "CoefficientRules(a+x - y - z, {x, y, z})", //
+        "{{1,0,0}->1,{0,1,0}->-1,{0,0,1}->-1,{0,0,0}->a}");
+    check(
+        "SparseArray({{2,1,1}->1,{1,2,1}->-1,{1,1,2}->-1,{1,1,1}->a}) // Normal", //
+        "{{{a,-1},{-1,0}},{{1,0},{0,0}}}");
+  }
+
   public void testDot() {
     check(
         "s=SparseArray({{a, b}, {c, d}}).SparseArray({{u, v}, {w, x}}) ", //
@@ -70,7 +94,7 @@ public class SparseArrayTest extends AbstractTestCase {
     check(
         "s // Normal", //
         "{{a*u+b*w,a*v+b*x},\n" //
-        + " {c*u+d*w,c*v+d*x}}");
+            + " {c*u+d*w,c*v+d*x}}");
 
     check(
         "{1,2,3.0}.SparseArray({4,5.0,6}) ", //
@@ -87,8 +111,8 @@ public class SparseArrayTest extends AbstractTestCase {
     check(
         "s // Normal", //
         "{{3},\n" //
-        + " {7},\n"
-        + " {11}}");
+            + " {7},\n"
+            + " {11}}");
     check(
         "s=SparseArray({{1, 2}, {3.0, 4}, {5, 6}}).SparseArray({1,1})", //
         "SparseArray(Number of elements: 3 Dimensions: {3} Default value: 0)");
@@ -103,9 +127,7 @@ public class SparseArrayTest extends AbstractTestCase {
         "SparseArray(Number of elements: 3 Dimensions: {3,1} Default value: 0)");
     check(
         "s // Normal", //
-        "{{3},\n"
-        + " {7},\n"
-        + " {11}}");
+        "{{3},\n" + " {7},\n" + " {11}}");
   }
 
   public void testFlatten() {
@@ -188,8 +210,8 @@ public class SparseArrayTest extends AbstractTestCase {
     check(
         "Normal(s)", //
         "{{1,0,4},\n" //
-        + " {0,2,0},\n"
-        + " {0,0,3}}");
+            + " {0,2,0},\n"
+            + " {0,0,3}}");
   }
 
   public void testNormVector() {
@@ -298,7 +320,156 @@ public class SparseArrayTest extends AbstractTestCase {
         "{1,0,1,0}");
   }
 
-  public void testSparseArray() {
+  public void testSparseArray001() {
+    check(
+        "s=SparseArray[Automatic, {5}, 0, {1, {{0, 5}, {{1}, {2}, {3}, {4}, {5}}},  {1, 2, 3, 4, 5}}]", //
+        "SparseArray(Number of elements: 5 Dimensions: {5} Default value: 0)");
+    check(
+        "ArrayRules(s)", //
+        "{{1}->1,{2}->2,{3}->3,{4}->4,{5}->5,{_}->0}");
+    check(
+        "s = SparseArray({i_} -> i, {5})", //
+        "SparseArray(Number of elements: 5 Dimensions: {5} Default value: 0)");
+    check(
+        "ArrayRules(s)", //
+        "{{1}->1,{2}->2,{3}->3,{4}->4,{5}->5,{_}->0}");
+
+    check(
+        "s = SparseArray(Automatic, {5}, 0, {1, {{0, 5}, {{1}, {2}, {3}, {4}, {5}}},  {1, 2, 3, 4, 5}})", //
+        "SparseArray(Number of elements: 5 Dimensions: {5} Default value: 0)");
+
+    check(
+        "u=SparseArray(Automatic, {2, 2, 3}, 0, {1, {{0, 0, 2}, {{2, 2}, {2, 3}}}, {1, 2}})", //
+        "SparseArray(Number of elements: 2 Dimensions: {2,2,3} Default value: 0)");
+    check(
+        "ArrayRules(u)", //
+        "{{2,2,2}->1,{2,2,3}->2,{_,_,_}->0}");
+
+    check(
+        "u=SparseArray(Automatic, {2, 2, 3}, 0, {1, {{0, 4, 7}, {{1, 3}, {2, 1}, {2, 2}, {2, 3}, {1, 2}, {2, 2}, {2, 3}}}, {3, 1, 1, 5, 1, 1, 2}})", //
+        "SparseArray(Number of elements: 7 Dimensions: {2,2,3} Default value: 0)");
+    check(
+        "ArrayRules(u)", //
+        "{{1,1,3}->3,{1,2,1}->1,{1,2,2}->1,{1,2,3}->5,{2,1,2}->1,{2,2,2}->1,{2,2,3}->2,{_,_,_}->\n"
+            + //
+            "0}");
+    check(
+        "MatrixForm(u)", //
+        "{{{0,0,3},{1,1,5}},\n"
+            + //
+            " {{0,1,0},{0,1,2}}}");
+
+    check(
+        "s = SparseArray({{i_, i_} -> -2, {i_, j_} /; Abs(i - j) == 1 -> 1}, {100, 100})", //
+        "SparseArray(Number of elements: 298 Dimensions: {100,100} Default value: 0)");
+    check(
+        "s = SparseArray({{i_, i_} -> -2, {i_, j_} /; Abs(i - j) == 1 -> 1}, {5, 5})", //
+        "SparseArray(Number of elements: 13 Dimensions: {5,5} Default value: 0)");
+    check(
+        "MatrixForm(s)", //
+        "{{-2,1,0,0,0},\n"
+            + " {1,-2,1,0,0},\n"
+            + " {0,1,-2,1,0},\n"
+            + " {0,0,1,-2,1},\n"
+            + " {0,0,0,1,-2}}");
+
+    check(
+        "SparseArray(Table({2^i, 3^i + i} -> 1, {i, 10}))", //
+        "SparseArray(Number of elements: 10 Dimensions: {1024,59059} Default value: 0)");
+    check(
+        "r=SparseArray({{1, 1} -> 1, {2, 2} -> 2, {4, 3} -> 3, {1, 4} -> 4, {3, 5} -> 2})", //
+        "SparseArray(Number of elements: 5 Dimensions: {4,5} Default value: 0)");
+    check(
+        "r[[1,All]]", //
+        "SparseArray(Number of elements: 2 Dimensions: {5} Default value: 0)");
+    check(
+        "r[[{1},All]]", //
+        "SparseArray(Number of elements: 2 Dimensions: {1,5} Default value: 0)");
+    check(
+        "Transpose(r[[{1},All]])", //
+        "SparseArray(Number of elements: 2 Dimensions: {5,1} Default value: 0)");
+    check(
+        "SparseArray({{1,1,1,1,1}}).Transpose(r[[{1},All]]) ", //
+        "SparseArray(Number of elements: 1 Dimensions: {1,1} Default value: 0)");
+    check(
+        "r=SparseArray({{{0,0,3},{1,1,5}},{{0,1,0},{0,1,2}}})", //
+        "SparseArray(Number of elements: 7 Dimensions: {2,2,3} Default value: 0)");
+    check(
+        "ArrayRules(r)", //
+        "{{1,1,3}->3,{1,2,1}->1,{1,2,2}->1,{1,2,3}->5,{2,1,2}->1,{2,2,2}->1,{2,2,3}->2,{_,_,_}->\n"
+            + "0}");
+    check(
+        "r[[2,All]] // Normal", //
+        "{{0,1,0},\n" //
+            + " {0,1,2}}");
+    // index 3 does not exist
+    check(
+        "r[[All,3]] // Normal", //
+        "{{{0,0,3},{1,1,5}},{{0,1,0},{0,1,2}}}[[All,3]]");
+    check(
+        "r[[All,1]] // Normal", //
+        "{{0,0,3},\n" //
+            + " {0,1,0}}");
+    check(
+        "r[[All,All]] // Normal", //
+        "{{{0,0,3},{1,1,5}},{{0,1,0},{0,1,2}}}");
+    check(
+        "r[[1,All,3]] // Normal", //
+        "{3,5}");
+    check(
+        "s=SparseArray({{1, 1} -> 1, {2, 2} -> 2, {4, 3} -> 3, {1, 4} -> 4, {3, 5} -> 2} )", //
+        "SparseArray(Number of elements: 5 Dimensions: {4,5} Default value: 0)");
+    check(
+        "s[[1,1]]  ", //
+        "1");
+    check(
+        "s[[1,1,2]]  ", //
+        "(SparseArray(Number of elements: 5 Dimensions: {4,5} Default value: 0))[[1,1,2]]");
+    check(
+        "s[[All,1]] // Normal", //
+        "{1,0,0,0}");
+    check(
+        "s[[All,2]] // Normal", //
+        "{0,2,0,0}");
+    check(
+        "s[[2,All ]] // Normal", //
+        "{0,2,0,0,0}");
+    check(
+        "Normal(s)", //
+        "{{1,0,0,4,0},\n" //
+            + " {0,2,0,0,0},\n"
+            + " {0,0,0,0,2},\n"
+            + " {0,0,3,0,0}}");
+    check(
+        "Normal(SparseArray({{1, 1} -> 1, {1, 1} -> 2}))", //
+        "{{1}}");
+    check(
+        "Normal(SparseArray({1 -> 2, 10 -> 7, 3 -> 2}))", //
+        "{2,0,2,0,0,0,0,0,0,7}");
+    check(
+        "s=SparseArray({3, 3} -> 1, 5)", //
+        "SparseArray(Number of elements: 1 Dimensions: {5,5} Default value: 0)");
+    check(
+        "Normal(s)", //
+        "{{0,0,0,0,0},\n" //
+            + " {0,0,0,0,0},\n"
+            + " {0,0,1,0,0},\n"
+            + " {0,0,0,0,0},\n"
+            + " {0,0,0,0,0}}");
+    check(
+        "Normal(SparseArray(10 -> 1, 19))", //
+        "{0,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0}");
+    check(
+        "s = SparseArray({{1, 1} -> 1, {2, 2} -> 2, {3, 3} -> 3, {1, 3} -> 4})", //
+        "SparseArray(Number of elements: 4 Dimensions: {3,3} Default value: 0)");
+    check(
+        "Normal(s)", //
+        "{{1,0,4},\n" //
+            + " {0,2,0},\n"
+            + " {0,0,3}}");
+  }
+
+  public void testSparseArray002() {
     check(
         "s=SparseArray(Automatic, {5}, 0, {1, {{0, 5}, {{1}, {2}, {3}, {4}, {5}}},  {1, 2, 3, 4, 5}})", //
         "SparseArray(Number of elements: 5 Dimensions: {5} Default value: 0)");
@@ -390,16 +561,16 @@ public class SparseArrayTest extends AbstractTestCase {
             + "0}");
     check(
         "r[[2,All]] // Normal", //
-        "{{0,1,0},\n"//
-        + " {0,1,2}}");
+        "{{0,1,0},\n" //
+            + " {0,1,2}}");
     // index 3 does not exist
     check(
         "r[[All,3]] // Normal", //
         "{{{0,0,3},{1,1,5}},{{0,1,0},{0,1,2}}}[[All,3]]");
     check(
         "r[[All,1]] // Normal", //
-        "{{0,0,3},\n"//
-        + " {0,1,0}}");
+        "{{0,0,3},\n" //
+            + " {0,1,0}}");
     check(
         "r[[All,All]] // Normal", //
         "{{{0,0,3},{1,1,5}},{{0,1,0},{0,1,2}}}");
@@ -426,10 +597,10 @@ public class SparseArrayTest extends AbstractTestCase {
         "{0,2,0,0,0}");
     check(
         "Normal(s)", //
-        "{{1,0,0,4,0},\n"//
-        + " {0,2,0,0,0},\n"
-        + " {0,0,0,0,2},\n"
-        + " {0,0,3,0,0}}");
+        "{{1,0,0,4,0},\n" //
+            + " {0,2,0,0,0},\n"
+            + " {0,0,0,0,2},\n"
+            + " {0,0,3,0,0}}");
     check(
         "Normal(SparseArray({{1, 1} -> 1, {1, 1} -> 2}))", //
         "{{1}}");
@@ -441,11 +612,11 @@ public class SparseArrayTest extends AbstractTestCase {
         "SparseArray(Number of elements: 1 Dimensions: {5,5} Default value: 0)");
     check(
         "Normal(s)", //
-        "{{0,0,0,0,0},\n"//
-        + " {0,0,0,0,0},\n"
-        + " {0,0,1,0,0},\n"
-        + " {0,0,0,0,0},\n"
-        + " {0,0,0,0,0}}");
+        "{{0,0,0,0,0},\n" //
+            + " {0,0,0,0,0},\n"
+            + " {0,0,1,0,0},\n"
+            + " {0,0,0,0,0},\n"
+            + " {0,0,0,0,0}}");
     check(
         "Normal(SparseArray(10 -> 1, 19))", //
         "{0,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0}");
@@ -455,8 +626,8 @@ public class SparseArrayTest extends AbstractTestCase {
     check(
         "Normal(s)", //
         "{{1,0,4},\n" //
-        + " {0,2,0},\n"
-        + " {0,0,3}}");
+            + " {0,2,0},\n"
+            + " {0,0,3}}");
   }
 
   public void testSparseArrayPattern() {
@@ -487,8 +658,8 @@ public class SparseArrayTest extends AbstractTestCase {
         "SparseArray(Number of elements: 8 Dimensions: {2,4} Default value: 0)");
     check(
         "s // Normal", //
-        "{{11,1,19,2},\n"//
-        + " {11,1,19,2}}");
+        "{{11,1,19,2},\n" //
+            + " {11,1,19,2}}");
   }
 
   /** The JUnit setup method */

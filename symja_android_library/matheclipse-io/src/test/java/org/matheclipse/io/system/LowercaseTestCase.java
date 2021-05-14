@@ -58,6 +58,10 @@ public class LowercaseTestCase extends AbstractTestCase {
     check(
         "expand((a+b+c)^3)", //
         "a^3+3*a^2*b+3*a*b^2+b^3+3*a^2*c+6*a*b*c+3*b^2*c+3*a*c^2+3*b*c^2+c^3");
+
+    check(
+        "f(g(x),{x,-1.5`,1.5`},{y,-1.5`,1.5`})", //
+        "f(g(x),{x,-1.5,1.5},{y,-1.5,1.5})");
   }
 
   public void testTildeOperator() {
@@ -1686,6 +1690,25 @@ public class LowercaseTestCase extends AbstractTestCase {
         "{{{{a,b},{c,d},{e,f}},{{x,x},{x,x},{x,x}},{{x,x},{x,x},{x,x}}},{{{x,x},{x,x},{x,x}},{{x,x},{x,x},{x,x}},{{x,x},{x,x},{x,x}}}}");
   }
 
+  public void testAssuming() {
+    check(
+        "$Assumptions = { x > 0 }", //
+        "{x>0}");
+    check(
+        "Assuming(y>0, $Assumptions)", //
+        "{x>0,y>0}");
+
+    check(
+        "Assuming(y>0, ConditionalExpression(y x^2, y>0)//Simplify)", //
+        "x^2*y");
+    check(
+        "Assuming(a > 0, {Refine(Sqrt(a^2)), Integrate(x^a, {x, 0, 1})})", //
+        "{a,1/(1+a)}");
+    check(
+        "Assuming(x>0, Simplify(Sqrt(x^2)))", //
+        "x");
+  }
+
   public void testAtomQ() {
     check(
         "AtomQ(<|\"a\"->1|> // Unevaluated)", //
@@ -1804,6 +1827,11 @@ public class LowercaseTestCase extends AbstractTestCase {
     check(
         "xxx", //
         "xxx");
+
+    // file system disabled => Needs has no effect in this test
+    check(
+        "BeginPackage(\"needed`\", {\"needit1`\", \"needit2`\"}) // InputForm", //
+        "{Needs(\"needit1`\"),Needs(\"needit2`\")}");
   }
 
   public void testBeginPackageNested() {
@@ -3337,6 +3365,12 @@ public class LowercaseTestCase extends AbstractTestCase {
 
   public void testCases() {
     check(
+        "Cases({b, 6, \\[Pi]}, _Symbol, Heads->True)", //
+        "{List,b,Pi}");
+    check(
+        "Cases({b, 6, \\[Pi]}, _Symbol)", //
+        "{b,Pi}");
+    check(
         "Cases({x,-1,1,1},SparseArray({{1,0},{0,2}}))", //
         "{}");
     check(
@@ -4063,7 +4097,6 @@ public class LowercaseTestCase extends AbstractTestCase {
     check(
         "Coefficient(Series((x + x^2 + 2*x^3 + x^4 - x^5)/(1 + 4*x^3 - x^6), {x, 0, 38}), x^10)", //
         "-55");
-
     check(
         "Coefficient(ComplexInfinity,{x,y,z})", //
         "{0,0,0}");
@@ -5248,6 +5281,10 @@ public class LowercaseTestCase extends AbstractTestCase {
   }
 
   public void testContainsExactly() {
+    check(
+        "ContainsExactly({a, b, c},{ })", //
+        "False");
+
     check(
         "ContainsExactly({b,a,b,c}, {a, b,c})", //
         "True");
@@ -7144,6 +7181,13 @@ public class LowercaseTestCase extends AbstractTestCase {
   }
 
   public void testDerivative() {
+
+    check(
+        "D(f(x), x)", //
+        "f'(x)");
+    check(
+        "D(f(x, x), x)", //
+        "Derivative(0,1)[f][x,x]+Derivative(1,0)[f][x,x]");
     check(
         "Derivative(2147483647)[x[[-1,1,1]]]", //
         "Derivative(2147483647)[x[[-1,1,1]]]");
@@ -9271,6 +9315,27 @@ public class LowercaseTestCase extends AbstractTestCase {
             + "0.872126,0.839629,0.820388,0.817375,0.831037,0.859308,0.897567,0.938793,0.974401}");
   }
 
+  public void testJacobiSC() {
+    check(
+        "f(1/2*I*m_):={m}", //
+        "");
+    check(
+        "f(1/2*I*x)", //
+        "{x}");
+    check(
+        "JacobiSC((I*EllipticK(1 - m))/2, m)", //
+        "I/Sqrt(1+Sqrt(m))");
+    check(
+        "JacobiSC(z,0)", //
+        "Tan(z)");
+    check(
+        "JacobiSC(z,1)", //
+        "Sinh(z)");
+    check(
+        "JacobiSC(0,m)", //
+        "0");
+  }
+
   public void testJacobiSN() {
     check(
         "JacobiSN(2.5,0.5)", //
@@ -11346,218 +11411,218 @@ public class LowercaseTestCase extends AbstractTestCase {
           "{{149,1},{329569479697,1},{903019357561501,1}}");
       System.out.println();
       System.out.println("End of FactorInteger  EXPENSIVE_JUNIT_TESTS");
+
+      check(
+          "FactorInteger(341550071728321)", //
+          "{{10670053,1},{32010157,1}}");
+      check(
+          "FactorInteger(20568266680457)", //
+          "{{19,1},{101,5},{103,1}}");
+      check(
+          "FactorInteger(1524157877488187891)", //
+          "{{9091,1},{167655689966801,1}}");
+
+      // Java "long" numbers
+      check(
+          "FactorInteger(621887327)", //
+          "{{853,1},{729059,1}}");
+      check(
+          "FactorInteger(676762483)", //
+          "{{877,1},{771679,1}}");
+
+      check(
+          "FactorInteger(2947524803)", //
+          "{{1433,1},{2056891,1}}");
+      check(
+          "FactorInteger(5616540799)", //
+          "{{1777,1},{3160687,1}}");
+      check(
+          "FactorInteger(35936505149)", //
+          "{{3299,1},{10893151,1}}");
+      check(
+          "FactorInteger(145682871839)", //
+          "{{5261,1},{27691099,1}}");
+      check(
+          "FactorInteger(317756737253)", //
+          "{{6823,1},{46571411,1}}");
+      check(
+          "FactorInteger(3294635112749)", //
+          "{{14879,1},{221428531,1}}");
+      check(
+          "FactorInteger(13293477682249)", //
+          "{{398077,1},{33394237,1}}");
+
+      check(
+          "FactorInteger(24596491225651)", //
+          "{{3311299,1},{7428049,1}}");
+      check(
+          "FactorInteger(44579405690563)", //
+          "{{930889,1},{47889067,1}}");
+      check(
+          "FactorInteger(72795445155721)", //
+          "{{83459,1},{872230019,1}}");
+      check(
+          "FactorInteger(155209074377713)", //
+          "{{361909,1},{428862157,1}}");
+      check(
+          "FactorInteger(293851765137859)", //
+          "{{11736397,1},{25037647,1}}");
+      // 67915439339311L == 2061599 * 32943089
+      check(
+          "FactorInteger(67915439339311)", //
+          "{{2061599,1},{32943089,1}}");
+
+      // 5640012124823L,
+      check(
+          "FactorInteger(5640012124823)", //
+          "{{23117,1},{243976819,1}}");
+      // 7336014366011L,
+      check(
+          "FactorInteger(7336014366011)", //
+          "{{24781,1},{296033831,1}}");
+      // 19699548984827L,
+      check(
+          "FactorInteger(19699548984827)", //
+          "{{1464751,1},{13449077,1}}");
+      // 52199161732031L,
+      check(
+          "FactorInteger(52199161732031)", //
+          "{{2065879,1},{25267289,1}}");
+      // 73891306919159L,
+      check(
+          "FactorInteger(73891306919159)", //
+          "{{767827,1},{96234317,1}}");
+      // 112454098638991L,
+      check(
+          "FactorInteger(112454098638991)", //
+          "{{80309,1},{1400267699,1}}");
+
+      // 32427229648727L,
+      check(
+          "FactorInteger(32427229648727)", //
+          "{{1833401,1},{17686927,1}}");
+      // 87008511088033L,
+      check(
+          "FactorInteger(87008511088033)", //
+          "{{125299,1},{694407067,1}}");
+      // 92295512906873L,
+      check(
+          "FactorInteger(92295512906873)", //
+          "{{170123,1},{542522251,1}}");
+      // 338719143795073L,
+      check(
+          "FactorInteger(112454098638991)", //
+          "{{80309,1},{1400267699,1}}");
+      // 346425669865991L,
+      check(
+          "FactorInteger(346425669865991)", //
+          "{{70163,1},{4937440957,1}}");
+      // 1058244082458461L,
+      check(
+          "FactorInteger(1058244082458461)", //
+          "{{65677,1},{16112856593,1}}");
+      // 1773019201473077L,
+      check(
+          "FactorInteger(1773019201473077)", //
+          "{{6539893,1},{271108289,1}}");
+      // 6150742154616377L,
+      check(
+          "FactorInteger(6150742154616377)", //
+          "{{181039,1},{33974680343,1}}");
+
+      // 44843649362329L,
+      check(
+          "FactorInteger(44843649362329)", //
+          "{{673879,1},{66545551,1}}");
+      // 67954151927287L,
+      check(
+          "FactorInteger(67954151927287)", //
+          "{{4919639,1},{13812833,1}}");
+      // 134170056884573L,
+      check(
+          "FactorInteger(134170056884573)", //
+          "{{446333,1},{300605281,1}}");
+      // 198589283218993L,
+      check(
+          "FactorInteger(198589283218993)", //
+          "{{1151581,1},{172449253,1}}");
+      // 737091621253457L,
+      check(
+          "FactorInteger(737091621253457)", //
+          "{{1772291,1},{415897627,1}}");
+      // 1112268234497993L,
+      check(
+          "FactorInteger(1112268234497993)", //
+          "{{68053,1},{16344146981,1}}");
+      // 2986396307326613L,
+      check(
+          "FactorInteger(2986396307326613)", //
+          "{{27054757,1},{110383409,1}}");
+
+      // 26275638086419L,
+      check(
+          "FactorInteger(26275638086419)", //
+          "{{92893,1},{282859183,1}}");
+      // 62246008190941L,
+      check(
+          "FactorInteger(62246008190941)", //
+          "{{2874499,1},{21654559,1}}");
+      // 209195243701823L,
+      check(
+          "FactorInteger(209195243701823)", //
+          "{{248231,1},{842744233,1}}");
+      // 290236682491211L,
+      check(
+          "FactorInteger(290236682491211)", //
+          "{{12819941,1},{22639471,1}}");
+      // 485069046631849L,
+      check(
+          "FactorInteger(485069046631849)", //
+          "{{287537,1},{1686979577,1}}");
+      // 1239671094365611L,
+      check(
+          "FactorInteger(1239671094365611)", //
+          "{{5148659,1},{240775529,1}}");
+      // 2815471543494793L,
+      check(
+          "FactorInteger(2815471543494793)", //
+          "{{3865469,1},{728364797,1}}");
+      // 5682546780292609L,
+      check(
+          "FactorInteger(5682546780292609)", //
+          "{{52196827,1},{108867667,1}}");
+
+      // SIQS numbers
+      check(
+          "factors=FactorInteger(11111111111111111111111111)", //
+          "{{11,1},{53,1},{79,1},{859,1},{265371653,1},{1058313049,1}}");
+      check(
+          "factors=FactorInteger(5679148659138759837165981543)", //
+          "{{3,3},{466932157,1},{450469808245315337,1}}");
+      check(
+          "factors=FactorInteger(11111111111111111111111111155555555555111111111111111)", //
+          "{{67,1},{157,1},{1056289676880987842105819104055096069503860738769,1}}");
+
+      check(
+          "factors=FactorInteger(2900608971182010301486951469292513060638582965350239259380273225053930627446289431038392125)", //
+          "{{3,11},{5,3},{7,6},{11,2},{13,2},{17,2},{19,1},{37,1},{41,1},{53,1},{59,1},{61,\n"
+              + "1},{73,1},{113,1},{151,1},{227,2},{271,1},{337,1},{433,1},{457,1},{547,1},{953,1},{\n"
+              + "11113,1},{11117,1},{11119,1},{33343,1},{33347,1},{33349,1},{33353,1},{33359,1}}");
+      check(
+          "Times @@ Power @@@ factors", //
+          "2900608971182010301486951469292513060638582965350239259380273225053930627446289\\\n" //
+              + "431038392125");
+
+      check(
+          "FactorInteger(5679148659138759837165981543 )", //
+          "{{3,3},{466932157,1},{450469808245315337,1}}");
+      check(
+          "FactorInteger(2^128 + 1 )", //
+          "{{59649589127497217,1},{5704689200685129054721,1}}");
+      check(
+          "FactorInteger(600851475143)", //
+          "{{71,1},{839,1},{1471,1},{6857,1}}");
     }
-
-    check(
-        "FactorInteger(341550071728321)", //
-        "{{10670053,1},{32010157,1}}");
-    check(
-        "FactorInteger(20568266680457)", //
-        "{{19,1},{101,5},{103,1}}");
-    check(
-        "FactorInteger(1524157877488187891)", //
-        "{{9091,1},{167655689966801,1}}");
-
-    // Java "long" numbers
-    check(
-        "FactorInteger(621887327)", //
-        "{{853,1},{729059,1}}");
-    check(
-        "FactorInteger(676762483)", //
-        "{{877,1},{771679,1}}");
-
-    check(
-        "FactorInteger(2947524803)", //
-        "{{1433,1},{2056891,1}}");
-    check(
-        "FactorInteger(5616540799)", //
-        "{{1777,1},{3160687,1}}");
-    check(
-        "FactorInteger(35936505149)", //
-        "{{3299,1},{10893151,1}}");
-    check(
-        "FactorInteger(145682871839)", //
-        "{{5261,1},{27691099,1}}");
-    check(
-        "FactorInteger(317756737253)", //
-        "{{6823,1},{46571411,1}}");
-    check(
-        "FactorInteger(3294635112749)", //
-        "{{14879,1},{221428531,1}}");
-    check(
-        "FactorInteger(13293477682249)", //
-        "{{398077,1},{33394237,1}}");
-
-    check(
-        "FactorInteger(24596491225651)", //
-        "{{3311299,1},{7428049,1}}");
-    check(
-        "FactorInteger(44579405690563)", //
-        "{{930889,1},{47889067,1}}");
-    check(
-        "FactorInteger(72795445155721)", //
-        "{{83459,1},{872230019,1}}");
-    check(
-        "FactorInteger(155209074377713)", //
-        "{{361909,1},{428862157,1}}");
-    check(
-        "FactorInteger(293851765137859)", //
-        "{{11736397,1},{25037647,1}}");
-    // 67915439339311L == 2061599 * 32943089
-    check(
-        "FactorInteger(67915439339311)", //
-        "{{2061599,1},{32943089,1}}");
-
-    // 5640012124823L,
-    check(
-        "FactorInteger(5640012124823)", //
-        "{{23117,1},{243976819,1}}");
-    // 7336014366011L,
-    check(
-        "FactorInteger(7336014366011)", //
-        "{{24781,1},{296033831,1}}");
-    // 19699548984827L,
-    check(
-        "FactorInteger(19699548984827)", //
-        "{{1464751,1},{13449077,1}}");
-    // 52199161732031L,
-    check(
-        "FactorInteger(52199161732031)", //
-        "{{2065879,1},{25267289,1}}");
-    // 73891306919159L,
-    check(
-        "FactorInteger(73891306919159)", //
-        "{{767827,1},{96234317,1}}");
-    // 112454098638991L,
-    check(
-        "FactorInteger(112454098638991)", //
-        "{{80309,1},{1400267699,1}}");
-
-    // 32427229648727L,
-    check(
-        "FactorInteger(32427229648727)", //
-        "{{1833401,1},{17686927,1}}");
-    // 87008511088033L,
-    check(
-        "FactorInteger(87008511088033)", //
-        "{{125299,1},{694407067,1}}");
-    // 92295512906873L,
-    check(
-        "FactorInteger(92295512906873)", //
-        "{{170123,1},{542522251,1}}");
-    // 338719143795073L,
-    check(
-        "FactorInteger(112454098638991)", //
-        "{{80309,1},{1400267699,1}}");
-    // 346425669865991L,
-    check(
-        "FactorInteger(346425669865991)", //
-        "{{70163,1},{4937440957,1}}");
-    // 1058244082458461L,
-    check(
-        "FactorInteger(1058244082458461)", //
-        "{{65677,1},{16112856593,1}}");
-    // 1773019201473077L,
-    check(
-        "FactorInteger(1773019201473077)", //
-        "{{6539893,1},{271108289,1}}");
-    // 6150742154616377L,
-    check(
-        "FactorInteger(6150742154616377)", //
-        "{{181039,1},{33974680343,1}}");
-
-    // 44843649362329L,
-    check(
-        "FactorInteger(44843649362329)", //
-        "{{673879,1},{66545551,1}}");
-    // 67954151927287L,
-    check(
-        "FactorInteger(67954151927287)", //
-        "{{4919639,1},{13812833,1}}");
-    // 134170056884573L,
-    check(
-        "FactorInteger(134170056884573)", //
-        "{{446333,1},{300605281,1}}");
-    // 198589283218993L,
-    check(
-        "FactorInteger(198589283218993)", //
-        "{{1151581,1},{172449253,1}}");
-    // 737091621253457L,
-    check(
-        "FactorInteger(737091621253457)", //
-        "{{1772291,1},{415897627,1}}");
-    // 1112268234497993L,
-    check(
-        "FactorInteger(1112268234497993)", //
-        "{{68053,1},{16344146981,1}}");
-    // 2986396307326613L,
-    check(
-        "FactorInteger(2986396307326613)", //
-        "{{27054757,1},{110383409,1}}");
-
-    // 26275638086419L,
-    check(
-        "FactorInteger(26275638086419)", //
-        "{{92893,1},{282859183,1}}");
-    // 62246008190941L,
-    check(
-        "FactorInteger(62246008190941)", //
-        "{{2874499,1},{21654559,1}}");
-    // 209195243701823L,
-    check(
-        "FactorInteger(209195243701823)", //
-        "{{248231,1},{842744233,1}}");
-    // 290236682491211L,
-    check(
-        "FactorInteger(290236682491211)", //
-        "{{12819941,1},{22639471,1}}");
-    // 485069046631849L,
-    check(
-        "FactorInteger(485069046631849)", //
-        "{{287537,1},{1686979577,1}}");
-    // 1239671094365611L,
-    check(
-        "FactorInteger(1239671094365611)", //
-        "{{5148659,1},{240775529,1}}");
-    // 2815471543494793L,
-    check(
-        "FactorInteger(2815471543494793)", //
-        "{{3865469,1},{728364797,1}}");
-    // 5682546780292609L,
-    check(
-        "FactorInteger(5682546780292609)", //
-        "{{52196827,1},{108867667,1}}");
-
-    // SIQS numbers
-    check(
-        "factors=FactorInteger(11111111111111111111111111)", //
-        "{{11,1},{53,1},{79,1},{859,1},{265371653,1},{1058313049,1}}");
-    check(
-        "factors=FactorInteger(5679148659138759837165981543)", //
-        "{{3,3},{466932157,1},{450469808245315337,1}}");
-    check(
-        "factors=FactorInteger(11111111111111111111111111155555555555111111111111111)", //
-        "{{67,1},{157,1},{1056289676880987842105819104055096069503860738769,1}}");
-
-    check(
-        "factors=FactorInteger(2900608971182010301486951469292513060638582965350239259380273225053930627446289431038392125)", //
-        "{{3,11},{5,3},{7,6},{11,2},{13,2},{17,2},{19,1},{37,1},{41,1},{53,1},{59,1},{61,\n"
-            + "1},{73,1},{113,1},{151,1},{227,2},{271,1},{337,1},{433,1},{457,1},{547,1},{953,1},{\n"
-            + "11113,1},{11117,1},{11119,1},{33343,1},{33347,1},{33349,1},{33353,1},{33359,1}}");
-    check(
-        "Times @@ Power @@@ factors", //
-        "2900608971182010301486951469292513060638582965350239259380273225053930627446289\\\n" //
-            + "431038392125");
-
-    check(
-        "FactorInteger(5679148659138759837165981543 )", //
-        "{{3,3},{466932157,1},{450469808245315337,1}}");
-    check(
-        "FactorInteger(2^128 + 1 )", //
-        "{{59649589127497217,1},{5704689200685129054721,1}}");
-    check(
-        "FactorInteger(600851475143)", //
-        "{{71,1},{839,1},{1471,1},{6857,1}}");
     check(
         "FactorInteger(2^32-1)", //
         "{{3,1},{5,1},{17,1},{257,1},{65537,1}}");
@@ -12035,6 +12100,15 @@ public class LowercaseTestCase extends AbstractTestCase {
 
   public void testFindRoot() {
     check(
+        "v1:=  E^x - 3*x ;v2:={x, 2};", //
+        "");
+    check(
+        "FindRoot(v1,v2)", //
+        "{x->1.51213}");
+    check(
+        "{v1,v2,x}", //
+        "{E^x-3*x,{x,2},x}");
+    check(
         "FindRoot(Surd(x, 2) == 1.5, {x, 1})", //
         "{x->2.25}");
     check(
@@ -12243,6 +12317,9 @@ public class LowercaseTestCase extends AbstractTestCase {
   }
 
   public void testFirstCase() {
+    check(
+        "FirstCase({a, 5, \\[Pi]}, _Symbol, Heads -> True)", //
+        "List");
 
     check(
         "FirstCase({1, 1, f(a), 2, 3, y, f(8), 9, f(10)}, f(x_) :> x)", //
@@ -13292,11 +13369,14 @@ public class LowercaseTestCase extends AbstractTestCase {
 
   public void testFullForm() {
     check(
+        "N( 1/2+8 ,12)//FullForm", //
+        "8.5`");
+    check(
         "N( Pi/13^101 ,30)//FullForm", //
-        "9.74700726352830962565070727338``30*^-113");
+        "9.74700726352830962565070727338`30*^-113");
     check(
         "N(Sin(Pi/7),30)//FullForm", //
-        "4.338837391175581204757683328483``31*^-1");
+        "4.338837391175581204757683328483`31*^-1");
     check(
         "Association(A->1,B->2,C->3,D->4) // FullForm", //
         "Association(Rule(A, 1), Rule(B, 2), Rule(C, 3), Rule(D, 4))");
@@ -13546,6 +13626,18 @@ public class LowercaseTestCase extends AbstractTestCase {
   }
 
   public void testFunctionExpand() {
+    check(
+        "FunctionExpand(SphericalHarmonicY(3,1,t,p)) ", //
+        "(-3*Sqrt(7/2)*E^(I*p)*Sqrt(1-Cos(t))*Sqrt(1+Cos(t))*Hypergeometric2F1(-2,5,2,Sin(t/\n"
+            + "2)^2)*Sin(t))/(Sqrt(6*Pi)*Sqrt(1-Cos(t)^2))");
+    check(
+        "FunctionExpand(SphericalHarmonicY(l,m,t,p))", //
+        "(E^(I*m*p)*Sqrt(1+2*l)*(1+Cos(t))^(m/2)*Sqrt(Gamma(1+l-m))*Hypergeometric2F1(-l,\n"
+            + "1+l,1-m,Sin(t/2)^2)*Sin(t)^m)/(2*Sqrt(Pi)*(1-Cos(t))^(m/2)*(1-Cos(t)^2)^(m/2)*Gamma(\n"
+            + "1-m)*Sqrt(Gamma(1+l+m)))");
+    check(
+        "FunctionExpand({Degree, GoldenRatio})", //
+        "{Pi/180,1/2*(1+Sqrt(5))}");
     check(
         "FunctionExpand(ExpIntegralE(n,z))", //
         "Gamma(1-n,z)/z^(1-n)");
@@ -14406,6 +14498,24 @@ public class LowercaseTestCase extends AbstractTestCase {
         "{1}");
   }
 
+  public void testGudermannian() {
+    check(
+        "Gudermannian(6/4*Pi*I)", //
+        "-I*Infinity");
+    check(
+        "Gudermannian(3.75)", //
+        "1.52377");
+    check(
+        "Gudermannian(1.111111)", //
+        "0.934757");
+    check(
+        "Gudermannian(100.0)", //
+        "1.5708");
+    check(
+        "Gudermannian(I*Pi+5.0)", //
+        "1.58427");
+  }
+
   public void testHarmonicMean() {
     check(
         "HarmonicMean({1, 2, 3, 4,5, 6, 7})", //
@@ -14710,6 +14820,10 @@ public class LowercaseTestCase extends AbstractTestCase {
   }
 
   public void testHoldPattern() {
+    check(
+        "a + b /. HoldPattern(_ + _) -> 0", //
+        "0");
+
     check(
         "MatchQ(And(x, y, z), Times(p__))", //
         "True");
@@ -16440,6 +16554,10 @@ public class LowercaseTestCase extends AbstractTestCase {
 
   public void testIntersectingQ() {
     check(
+        "IntersectingQ({1.0,2.0}, {1,2,3}, SameTest->Equal)", //
+        "True");
+
+    check(
         "IntersectingQ(f(b, a, b,d), f(c,c,c,d))", //
         "True");
     check(
@@ -17586,6 +17704,25 @@ public class LowercaseTestCase extends AbstractTestCase {
         "0");
   }
 
+  public void testInverseGudermannian() {
+    check(
+        "InverseGudermannian(3.75)", //
+        "-0.649839+I*3.14159");
+    check(
+        "InverseGudermannian(1.111111)", //
+        "1.45253");
+    check(
+        "InverseGudermannian(100.0)", //
+        "-0.55783");
+    check(
+        "InverseGudermannian(I*Pi+5.0)", //
+        "-0.0829127+I*1.54624");
+
+    check(
+        "InverseGudermannian({1.5, 3.75, 5.5, 7.25})", //
+        "{3.34068,-0.649839+I*3.14159,-0.878248,1.1663}");
+  }
+
   public void testInverseHaversine() {
 
     checkNumeric(
@@ -17669,6 +17806,10 @@ public class LowercaseTestCase extends AbstractTestCase {
   }
 
   public void testJavaForm() {
+    check(
+        "JavaForm(f(123456789123456789))", //
+        "$(f,ZZ(\"123456789123456789\", 10))");
+
     check(
         "JavaForm(E^3-Cos(Pi^2/x), Prefix->True)", //
         "F.Subtract(F.Exp(F.C3),F.Cos(F.Times(F.Sqr(F.Pi),F.Power(F.x,F.CN1))))");
@@ -18170,6 +18311,12 @@ public class LowercaseTestCase extends AbstractTestCase {
         "1.42098");
   }
 
+  public void testLambertW() {
+    check(
+        "LambertW(x)", //
+        "ProductLog(x)");
+  }
+
   public void testLaguerreL() {
     // TODO improve error messages
     check(
@@ -18233,7 +18380,6 @@ public class LowercaseTestCase extends AbstractTestCase {
   }
 
   public void testInverseLaplaceTransform() {
-
     check(
         "InverseLaplaceTransform(f(x)*s,s,t)", //
         "f(x)*DiracDelta'(t)");
@@ -18275,6 +18421,9 @@ public class LowercaseTestCase extends AbstractTestCase {
   }
 
   public void testLaplaceTransform() {
+    check(
+        "LaplaceTransform(Tanh(t),t,s)", //
+        "1/2*(-2/s-PolyGamma(0,s/4)+PolyGamma(0,1/4*(2+s)))");
     check(
         "LaplaceTransform(E^2,t,-3+s)", //
         "E^2/(-3+s)");
@@ -18330,7 +18479,7 @@ public class LowercaseTestCase extends AbstractTestCase {
         "1/(1+s^2)");
     check(
         "LaplaceTransform(Sin(t), t, t)", //
-        "1/(1+t^2)");
+        "LaplaceTransform(Sin(t),t,t)");
     check(
         "LaplaceTransform(Cos(t), t, s)", //
         "s/(1+s^2)");
@@ -18526,12 +18675,12 @@ public class LowercaseTestCase extends AbstractTestCase {
 
   public void testLegendreP() {
     // TODO support negative values
-    check(
-        "LegendreP(-3,x)", //
-        "LegendreP(-3,x)");
-    check(
-        "Sqrt(Pi)/(Gamma((1 - Pi)/2) * Gamma(1 + Pi/2))", //
-        "Sqrt(Pi)/(Gamma(1/2*(1-Pi))*Gamma(1+Pi/2))");
+    //    check(
+    //        "LegendreP(-3,x)", //
+    //        "LegendreP(-3,x)");
+    //    check(
+    //        "Sqrt(Pi)/(Gamma((1 - Pi)/2) * Gamma(1 + Pi/2))", //
+    //        "Sqrt(Pi)/(Gamma(1/2*(1-Pi))*Gamma(1+Pi/2))");
 
     check(
         "LegendreP(-(1/2), 1 - 2*z)", //
@@ -20111,7 +20260,6 @@ public class LowercaseTestCase extends AbstractTestCase {
   }
 
   public void testMap() {
-
     // Map: Options expected (instead of y_) beyond position Map(1/Sqrt(5),{},I,y_) in `3`. An
     // option must be a rule or a list of rules.
     check(
@@ -21964,7 +22112,16 @@ public class LowercaseTestCase extends AbstractTestCase {
   }
 
   public void testN() {
-
+    check(
+        "N(8 + 1*^28, 40) // InputForm", //
+        "1.0000000000000000000000000008`40*^28");
+    check(
+        "N(8 + 1*^28, 40)", //
+        "10000000000000000000000000008");
+    //        1.0000000000000000000000000008`40.*^28
+    check(
+        "N(8 + 1*^-28, 40)", //
+        "8.0000000000000000000000000001");
     // github #207
     check(
         "N(((2)/(3))*(4-3*Sqrt(2)), 100)", //
@@ -23479,12 +23636,12 @@ public class LowercaseTestCase extends AbstractTestCase {
   }
 
   public void testReplaceRepeated() {
+
+    check(
+        "ReplaceRepeated(x, x -> x + 1, MaxIterations -> 4)", //
+        "4+x");
+
     // example from https://en.wikipedia.org/wiki/Wolfram_Language
-    //    check(
-    //        "Hold(sortRule := {x___,y_,z_,k___} /; y>z -> {x,z,y,k}) // FullForm", //
-    //        "Hold(SetDelayed(sortrule, Rule(Condition(List(PatternSequence(x,
-    // BlankNullSequence()), Pattern(y, Blank()), Pattern(z, Blank()), PatternSequence(k,
-    // BlankNullSequence())), Greater(y, z)), List(x, z, y, k))))");
     check(
         "sortRule := {x___,y_,z_,k___} /; y>z -> {x,z,y,k}", //
         "");
@@ -24622,6 +24779,11 @@ public class LowercaseTestCase extends AbstractTestCase {
   }
 
   public void testPattern() {
+    // Pattern: First element in Pattern(3,3) is not a valid pattern name.
+    check(
+        "Pattern(3,3)", //
+        "Pattern(3,3)");
+
     check(
         "me:f(___,_Plus,___):={Unevaluated(me),Plus}", //
         "");
@@ -25687,7 +25849,7 @@ public class LowercaseTestCase extends AbstractTestCase {
 
     check(
         "PolynomialGCD({},0.5,x^4+(-1)*1,x^5+(-1)*1,x^6+(-1)*1,x^7+(-1)*1)", //
-        "PolynomialGCD({},0.5,-1+x^4,-1+x^5,-1+x^6,-1+x^7)");
+        "{}");
     check(
         "PolynomialGCD(f(x),f(x)*x^2)", //
         "f(x)");
@@ -25761,7 +25923,7 @@ public class LowercaseTestCase extends AbstractTestCase {
 
     check(
         "PolynomialLCM({},0.5,x^4+(-1)*1,x^5+(-1)*1,x^6+(-1)*1,x^7+(-1)*1)", //
-        "PolynomialLCM({},0.5,-1+x^4,-1+x^5,-1+x^6,-1+x^7)");
+        "{}");
     check(
         "PolynomialLCM(f(x)*y^3,f(x)*x^2)", //
         "x^2*y^3*f(x)");
@@ -26203,10 +26365,11 @@ public class LowercaseTestCase extends AbstractTestCase {
     //
     // "+1/8*Cos[95.78967105119972+I*(-99.12580575458303)]*Sin[95.78967105119972+I*(-99.12580575458303)]", //
     //        "2.27086*10^83+I*3.92378*10^84");
-//check(
-//        "PossibleZeroQ(((-Cosh(a+b*x)+Sinh(a+b*x))*(-b*Cosh(a+b*x)+b*Sinh(a+b*x)))/b+(-Cosh(a+b*x)+Sinh(a+b*x))/(Cosh(a+b*x)+Sinh(a+b*x)))", //
-//        "True");
-//     
+    // check(
+    //
+    // "PossibleZeroQ(((-Cosh(a+b*x)+Sinh(a+b*x))*(-b*Cosh(a+b*x)+b*Sinh(a+b*x)))/b+(-Cosh(a+b*x)+Sinh(a+b*x))/(Cosh(a+b*x)+Sinh(a+b*x)))", //
+    //        "True");
+    //
     check(
         "-2.27086*10^83+I*(-3.92378*10^84)+2.27086*10^83+I*3.92378*10^84", //
         "0.0");
@@ -28827,6 +28990,36 @@ public class LowercaseTestCase extends AbstractTestCase {
         "Real");
   }
 
+  public void testRealDigits() {
+    check(
+        "RealDigits(423.012345678*^-11)", //
+        "{{4,2,3,0,1,2,3,4,5,6,7,8},-8}");
+    check(
+        "RealDigits(423.012345678*^9)", //
+        "{{4,2,3,0,1,2,3,4,5,6,7,8},12}");
+    check(
+        "RealDigits(1.012345678*^-11)", //
+        "{{1,0,1,2,3,4,5,6,7,8},-10}");
+    check(
+        "RealDigits(1.012345678*^9)", //
+        "{{1,0,1,2,3,4,5,6,7,8},10}");
+    check(
+        "RealDigits(1.012345678*^-42)", //
+        "{{1,0,1,2,3,4,5,6,7,8},-41}");
+    check(
+        "RealDigits(1.012345678*^123)", //
+        "{{1,0,1,2,3,4,5,6,7,8},124}");
+    check(
+        "N(RealDigits(Pi+42),30)", //
+        "{{4,5,1,4,1,5,9,2,6,5,3,5,8,9,7,9,3,2,3,8,4,6,2,6,4,3,3,8,3,2},2}");
+    check(
+        "RealDigits(-42)", //
+        "{{4,2},2}");
+    check(
+        "RealDigits(123.33333)", //
+        "{{1,2,3,3,3,3,3,3},3}");
+  }
+
   public void testRealNumberQ() {
     check(
         "RealNumberQ(10)", //
@@ -30254,8 +30447,8 @@ public class LowercaseTestCase extends AbstractTestCase {
         "RomanNumeral(0)", //
         "N");
     check(
-        "RomanNumeral({4548,3267,3603,1929,2575,746,666,4108,1457,3828})", //
-        "{MↁDXLVIII,MMMCCLXVII,MMMDCIII,MCMXXIX,MMDLXXV,DCCXLVI,DCLXVI,MↁCVIII,MCDLVII,MMMDCCCXXVIII}");
+        "RomanNumeral({4000,3267,3603,1929,2575,746,666,1457,3828})", //
+        "{MMMM,MMMCCLXVII,MMMDCIII,MCMXXIX,MMDLXXV,DCCXLVI,DCLXVI,MCDLVII,MMMDCCCXXVIII}");
     check(
         "RomanNumeral({1, 2, 3, 4, 5, 10, 50, 60, 100, 250, 500, 1000, 1500, 2600})", //
         "{I,II,III,IV,V,X,L,LX,C,CCL,D,M,MD,MMDC}");
@@ -31566,6 +31759,21 @@ public class LowercaseTestCase extends AbstractTestCase {
         "f(-3)");
   }
 
+  public void testSetDelayedOneIdentity() {
+    check(
+        "SetAttributes(SUNIndex, {OneIdentity})", //
+        "");
+    check(
+        "SetAttributes(SUNFIndex, {OneIdentity})", //
+        "");
+    check(
+        "SUNIndex(SUNFIndex(___)):= (Print(\"This error shouldn't be triggered here!\"); Abort())", //
+        "");
+    check(
+        "SUNFIndex(SUNIndex(___)):= (Print(\"This error shouldn't be triggered here!\"); Abort())", //
+        "");
+  }
+
   public void testShare() {
     check(
         "people = <|\n"
@@ -32560,6 +32768,10 @@ public class LowercaseTestCase extends AbstractTestCase {
   }
 
   public void testSolve() {
+    check(
+        "Solve({{x,y}=={3,4}},{x,y})", //
+        "{{x->3,y->4}}");
+
     // https://en.wikipedia.org/wiki/Lambert_W_function#Solving_equations
     // TODO generate 2 solutions
     check(
@@ -33313,6 +33525,24 @@ public class LowercaseTestCase extends AbstractTestCase {
         "-0.16499545760108916");
   }
 
+  public void testSphericalHarmonicY() {
+    check(
+        "SphericalHarmonicY(0,0,t,p)", //
+        "1/(2*Sqrt(Pi))");
+    check(
+        "SphericalHarmonicY(a,0,0,p)", //
+        "Sqrt(1+2*a)/(2*Sqrt(Pi))");
+    check(
+        "SphericalHarmonicY(1,2,t,p)", //
+        "0");
+    check(
+        "SphericalHarmonicY(1,1,t,p)", //
+        "-1/2*E^(I*p)*Sqrt(3/2*1/Pi)*Sin(t)");
+    check(
+        "SphericalHarmonicY(n,-n-1,t,p)", //
+        "0");
+  }
+
   public void testSplit() {
     check(
         "Split({x, x, x, y, x, y, y, z})", //
@@ -33497,155 +33727,6 @@ public class LowercaseTestCase extends AbstractTestCase {
     check(
         "{a, b, c, d, e, f, g, h}[[2 ;; All]]", //
         "{b,c,d,e,f,g,h}");
-  }
-
-  public void testSparseArray() {
-    check(
-        "s=SparseArray[Automatic, {5}, 0, {1, {{0, 5}, {{1}, {2}, {3}, {4}, {5}}},  {1, 2, 3, 4, 5}}]", //
-        "SparseArray(Number of elements: 5 Dimensions: {5} Default value: 0)");
-    check(
-        "ArrayRules(s)", //
-        "{{1}->1,{2}->2,{3}->3,{4}->4,{5}->5,{_}->0}");
-    check(
-        "s = SparseArray({i_} -> i, {5})", //
-        "SparseArray(Number of elements: 5 Dimensions: {5} Default value: 0)");
-    check(
-        "ArrayRules(s)", //
-        "{{1}->1,{2}->2,{3}->3,{4}->4,{5}->5,{_}->0}");
-
-    check(
-        "s = SparseArray(Automatic, {5}, 0, {1, {{0, 5}, {{1}, {2}, {3}, {4}, {5}}},  {1, 2, 3, 4, 5}})", //
-        "SparseArray(Number of elements: 5 Dimensions: {5} Default value: 0)");
-
-    check(
-        "u=SparseArray(Automatic, {2, 2, 3}, 0, {1, {{0, 0, 2}, {{2, 2}, {2, 3}}}, {1, 2}})", //
-        "SparseArray(Number of elements: 2 Dimensions: {2,2,3} Default value: 0)");
-    check(
-        "ArrayRules(u)", //
-        "{{2,2,2}->1,{2,2,3}->2,{_,_,_}->0}");
-
-    check(
-        "u=SparseArray(Automatic, {2, 2, 3}, 0, {1, {{0, 4, 7}, {{1, 3}, {2, 1}, {2, 2}, {2, 3}, {1, 2}, {2, 2}, {2, 3}}}, {3, 1, 1, 5, 1, 1, 2}})", //
-        "SparseArray(Number of elements: 7 Dimensions: {2,2,3} Default value: 0)");
-    check(
-        "ArrayRules(u)", //
-        "{{1,1,3}->3,{1,2,1}->1,{1,2,2}->1,{1,2,3}->5,{2,1,2}->1,{2,2,2}->1,{2,2,3}->2,{_,_,_}->\n"
-            + //
-            "0}");
-    check(
-        "MatrixForm(u)", //
-        "{{{0,0,3},{1,1,5}},\n"
-            + //
-            " {{0,1,0},{0,1,2}}}");
-
-    check(
-        "s = SparseArray({{i_, i_} -> -2, {i_, j_} /; Abs(i - j) == 1 -> 1}, {100, 100})", //
-        "SparseArray(Number of elements: 298 Dimensions: {100,100} Default value: 0)");
-    check(
-        "s = SparseArray({{i_, i_} -> -2, {i_, j_} /; Abs(i - j) == 1 -> 1}, {5, 5})", //
-        "SparseArray(Number of elements: 13 Dimensions: {5,5} Default value: 0)");
-    check(
-        "MatrixForm(s)", //
-        "{{-2,1,0,0,0},\n"
-            + " {1,-2,1,0,0},\n"
-            + " {0,1,-2,1,0},\n"
-            + " {0,0,1,-2,1},\n"
-            + " {0,0,0,1,-2}}");
-
-    check(
-        "SparseArray(Table({2^i, 3^i + i} -> 1, {i, 10}))", //
-        "SparseArray(Number of elements: 10 Dimensions: {1024,59059} Default value: 0)");
-    check(
-        "r=SparseArray({{1, 1} -> 1, {2, 2} -> 2, {4, 3} -> 3, {1, 4} -> 4, {3, 5} -> 2})", //
-        "SparseArray(Number of elements: 5 Dimensions: {4,5} Default value: 0)");
-    check(
-        "r[[1,All]]", //
-        "SparseArray(Number of elements: 2 Dimensions: {5} Default value: 0)");
-    check(
-        "r[[{1},All]]", //
-        "SparseArray(Number of elements: 2 Dimensions: {1,5} Default value: 0)");
-    check(
-        "Transpose(r[[{1},All]])", //
-        "SparseArray(Number of elements: 2 Dimensions: {5,1} Default value: 0)");
-    check(
-        "SparseArray({{1,1,1,1,1}}).Transpose(r[[{1},All]]) ", //
-        "SparseArray(Number of elements: 1 Dimensions: {1,1} Default value: 0)");
-    check(
-        "r=SparseArray({{{0,0,3},{1,1,5}},{{0,1,0},{0,1,2}}})", //
-        "SparseArray(Number of elements: 7 Dimensions: {2,2,3} Default value: 0)");
-    check(
-        "ArrayRules(r)", //
-        "{{1,1,3}->3,{1,2,1}->1,{1,2,2}->1,{1,2,3}->5,{2,1,2}->1,{2,2,2}->1,{2,2,3}->2,{_,_,_}->\n"
-            + "0}");
-    check(
-        "r[[2,All]] // Normal", //
-        "{{0,1,0},\n" //
-            + " {0,1,2}}");
-    // index 3 does not exist
-    check(
-        "r[[All,3]] // Normal", //
-        "{{{0,0,3},{1,1,5}},{{0,1,0},{0,1,2}}}[[All,3]]");
-    check(
-        "r[[All,1]] // Normal", //
-        "{{0,0,3},\n" //
-            + " {0,1,0}}");
-    check(
-        "r[[All,All]] // Normal", //
-        "{{{0,0,3},{1,1,5}},{{0,1,0},{0,1,2}}}");
-    check(
-        "r[[1,All,3]] // Normal", //
-        "{3,5}");
-    check(
-        "s=SparseArray({{1, 1} -> 1, {2, 2} -> 2, {4, 3} -> 3, {1, 4} -> 4, {3, 5} -> 2} )", //
-        "SparseArray(Number of elements: 5 Dimensions: {4,5} Default value: 0)");
-    check(
-        "s[[1,1]]  ", //
-        "1");
-    check(
-        "s[[1,1,2]]  ", //
-        "(SparseArray(Number of elements: 5 Dimensions: {4,5} Default value: 0))[[1,1,2]]");
-    check(
-        "s[[All,1]] // Normal", //
-        "{1,0,0,0}");
-    check(
-        "s[[All,2]] // Normal", //
-        "{0,2,0,0}");
-    check(
-        "s[[2,All ]] // Normal", //
-        "{0,2,0,0,0}");
-    check(
-        "Normal(s)", //
-        "{{1,0,0,4,0},\n" //
-            + " {0,2,0,0,0},\n"
-            + " {0,0,0,0,2},\n"
-            + " {0,0,3,0,0}}");
-    check(
-        "Normal(SparseArray({{1, 1} -> 1, {1, 1} -> 2}))", //
-        "{{1}}");
-    check(
-        "Normal(SparseArray({1 -> 2, 10 -> 7, 3 -> 2}))", //
-        "{2,0,2,0,0,0,0,0,0,7}");
-    check(
-        "s=SparseArray({3, 3} -> 1, 5)", //
-        "SparseArray(Number of elements: 1 Dimensions: {5,5} Default value: 0)");
-    check(
-        "Normal(s)", //
-        "{{0,0,0,0,0},\n" //
-            + " {0,0,0,0,0},\n"
-            + " {0,0,1,0,0},\n"
-            + " {0,0,0,0,0},\n"
-            + " {0,0,0,0,0}}");
-    check(
-        "Normal(SparseArray(10 -> 1, 19))", //
-        "{0,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0}");
-    check(
-        "s = SparseArray({{1, 1} -> 1, {2, 2} -> 2, {3, 3} -> 3, {1, 3} -> 4})", //
-        "SparseArray(Number of elements: 4 Dimensions: {3,3} Default value: 0)");
-    check(
-        "Normal(s)", //
-        "{{1,0,4},\n" //
-            + " {0,2,0},\n"
-            + " {0,0,3}}");
   }
 
   public void testStandardize() {
@@ -34144,6 +34225,19 @@ public class LowercaseTestCase extends AbstractTestCase {
   }
 
   public void testSum() {
+    // Leibnitz formula
+    check(
+        "Sum( ((-1)^k*(2*k + 1))^(-1), {k, 1, Infinity}) ", //
+        "1/4*(-4+Pi)");
+    check(
+        "Sum(b ^ i, {i, 0, k})", //
+        "(-1+b^(1+k))/(-1+b)");
+    check(
+        "Sum(a * b ^ i, {i, 0, k})", //
+        "(a*(-1+b^(1+k)))/(-1+b)");
+    check(
+        "Sum(a * b ^ i, {i, 1, k})", //
+        "a*(-1+(-1+b^(1+k))/(-1+b))");
     // message Sum: Raw object 0 cannot be used as an iterator.
     check(
         "Sum(101,{0,0,0})", //
@@ -35178,6 +35272,9 @@ public class LowercaseTestCase extends AbstractTestCase {
 
   public void testTagSet() {
     check(
+        "x /: g(h(x)) = 3", //
+        "3");
+    check(
         "f/:format(f)=0", //
         "0");
     check(
@@ -35207,7 +35304,7 @@ public class LowercaseTestCase extends AbstractTestCase {
   public void testTagSetDelayed02() {
     check(
         "TagSetDelayed(g,0,\"TagSetDelayed test\")", //
-        "TagSetDelayed(g,0,TagSetDelayed test)");
+        "");
     check(
         "g/: Format(a_,g(x)) := \"TagSetDelayed test\"", //
         "");
@@ -36463,24 +36560,6 @@ public class LowercaseTestCase extends AbstractTestCase {
         "45");
   }
 
-  public void testTransliterate() {
-    check(
-        "Transliterate(\"fish\",\"Bopomofo\")", //
-        "ㄈㄧ˙ㄕ");
-    check(
-        "Transliterate(\"Фёдоров, Николай Алексеевич\",\"Cyrillic\"->\"English\")", //
-        "Fëdorov, Nikolaj Alekseevič");
-    check(
-        "Transliterate(\"Фёдоров, Николай Алексеевич\")", //
-        "Fedorov, Nikolaj Alekseevic");
-    check(
-        "Transliterate(\"Горбачёв, Михаил Сергеевич\")", //
-        "Gorbacev, Mihail Sergeevic");
-    check(
-        "Transliterate(\"\\[CapitalAlpha]\\[Lambda]\\[CurlyPhi]\\[Alpha]\\[Beta]\\[Eta]\\[Tau]\\[Iota]\\[Kappa]\\[Omega]\\[FinalSigma]\")", //
-        "Alphabetikos");
-  }
-
   public void testTranspose() {
     check(
         "Transpose(SparseArray({{1, 2, 3}, {4, 5, 6}})) // Normal", //
@@ -37597,8 +37676,7 @@ public class LowercaseTestCase extends AbstractTestCase {
 
     check(
         "VertexEccentricity(Graph({UndirectedEdge(1, 2), UndirectedEdge(1, 3), UndirectedEdge(1, 4),  UndirectedEdge(2, 3), UndirectedEdge(3, 4)}, "
-            + //
-            "{EdgeWeight->{1.6,1.4,0.62,1.9,2.1}}), 4)", //
+            + "{EdgeWeight->{1.6,1.4,0.62,1.9,2.1}}), 4)", //
         "2.22");
     check(
         "VertexEccentricity({UndirectedEdge(1, 2), UndirectedEdge(1, 3), UndirectedEdge(1, 4),  UndirectedEdge(2, 3), UndirectedEdge(3, 4)}, 4)", //

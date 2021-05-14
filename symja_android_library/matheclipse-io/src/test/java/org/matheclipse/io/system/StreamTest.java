@@ -12,6 +12,32 @@ public class StreamTest extends AbstractTestCase {
     super(name);
   }
 
+  public void testBinaryWrite001() {
+    call("f = File(\"test.bin\")");
+    check(
+        "BinaryWrite(f, {8, 97, 255, 255, 255});", //
+        "");
+    check(
+        "BinaryRead(f)", //
+        "8");
+    check(
+        "BinaryRead(f, \"Character8\")", //
+        "a");
+    check(
+        "BinaryRead(f, \"Integer8\")", //
+        "-1");
+    check(
+        "BinaryRead(f, \"Byte\")", //
+        "255");
+    check(
+        "BinaryRead(f, \"UnsignedInteger8\")", //
+        "255");
+    // BinaryRead: EOFException
+    check(
+        "BinaryRead(f, \"UnsignedInteger8\")", //
+        "$Failed");
+  }
+
   public void testRead001() {
     call("str = StringToStream(\"4711 dummy 0815\")");
     check(
@@ -20,6 +46,9 @@ public class StreamTest extends AbstractTestCase {
     check(
         "Read(str, {Word, Number})", //
         "{dummy,0815}");
+    check(
+        "Read(str, Number)", //
+        "EndOfFile");
     check(
         "Close(str)", //
         "String");
@@ -131,7 +160,7 @@ public class StreamTest extends AbstractTestCase {
   }
 
   public void testOpenAppend002() {
-	  // create temporary file and open output stream
+    // create temporary file and open output stream
     check(
         "str = OpenWrite();Print(str);", //
         "");
@@ -141,7 +170,6 @@ public class StreamTest extends AbstractTestCase {
     check(
         "Close(str);", //
         "");
-     
   }
 
   /** The JUnit setup method */

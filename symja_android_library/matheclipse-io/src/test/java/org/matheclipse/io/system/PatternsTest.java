@@ -105,7 +105,7 @@ public class PatternsTest extends AbstractTestCase {
         "{}");
     check(
         "Options(Factor)", //
-        "{GaussianIntegers->False,Modulus->0}");
+        "{Extension->None,GaussianIntegers->False,Modulus->0}");
   }
 
   public void testOptional() {
