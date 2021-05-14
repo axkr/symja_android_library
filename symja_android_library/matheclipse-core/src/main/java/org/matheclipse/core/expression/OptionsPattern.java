@@ -17,7 +17,7 @@ public class OptionsPattern extends PatternSequence {
   public static OptionsPattern valueOf(final ISymbol symbol, IExpr defaultOptions) {
     OptionsPattern p = new OptionsPattern();
     p.fSymbol = symbol;
-    p.fCondition = null;
+    p.fHeadTest = null;
     p.fDefault = false;
     p.fZeroArgsAllowed = true;
     p.fDefaultOptions = defaultOptions;
@@ -90,7 +90,7 @@ public class OptionsPattern extends PatternSequence {
     }
     return false;
   }
-
+  
   @Override
   public String fullFormString() {
     StringBuilder buf = new StringBuilder();
