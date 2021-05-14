@@ -29,7 +29,6 @@ import org.matheclipse.core.eval.exception.LimitException;
 import org.matheclipse.core.eval.exception.PolynomialDegreeLimitExceeded;
 import org.matheclipse.core.eval.exception.RecursionLimitExceeded;
 import org.matheclipse.core.eval.exception.Validate;
-import org.matheclipse.core.eval.interfaces.AbstractCoreFunctionEvaluator;
 import org.matheclipse.core.eval.interfaces.AbstractFunctionEvaluator;
 import org.matheclipse.core.eval.util.OptionArgs;
 import org.matheclipse.core.expression.F;
@@ -53,12 +52,13 @@ import org.matheclipse.core.polynomials.longexponent.ExprMonomial;
 import org.matheclipse.core.polynomials.longexponent.ExprPolynomial;
 import org.matheclipse.core.polynomials.longexponent.ExprPolynomialRing;
 import org.matheclipse.core.polynomials.longexponent.ExprRingFactory;
+import org.matheclipse.core.polynomials.longexponent.ExprTermOrder;
 import org.matheclipse.core.polynomials.symbolicexponent.ExpVectorSymbolic;
 import org.matheclipse.core.polynomials.symbolicexponent.SymbolicPolynomial;
 import org.matheclipse.core.polynomials.symbolicexponent.SymbolicPolynomialRing;
-import org.matheclipse.core.polynomials.symbolicexponent.SymbolicTermOrder;
 import org.matheclipse.core.reflection.system.rules.LegendrePRules;
 import org.matheclipse.core.reflection.system.rules.LegendreQRules;
+import org.matheclipse.core.reflection.system.rules.SphericalHarmonicYRules;
 import org.matheclipse.parser.client.FEConfig;
 
 import com.google.common.math.LongMath;
@@ -101,6 +101,7 @@ public class PolynomialFunctions {
       S.ChebyshevT.setEvaluator(new ChebyshevT());
       S.ChebyshevU.setEvaluator(new ChebyshevU());
       S.Coefficient.setEvaluator(new Coefficient());
+//      S.CoefficientArrays.setEvaluator(new CoefficientArrays());
       S.CoefficientList.setEvaluator(new CoefficientList());
       S.CoefficientRules.setEvaluator(new CoefficientRules());
       S.Cyclotomic.setEvaluator(new Cyclotomic());
@@ -116,6 +117,7 @@ public class PolynomialFunctions {
       S.Resultant.setEvaluator(new Resultant());
       S.RootIntervals.setEvaluator(new RootIntervals());
       S.Roots.setEvaluator(new Roots());
+      S.SphericalHarmonicY.setEvaluator(new SphericalHarmonicY());
     }
   }
 
@@ -213,7 +215,7 @@ public class PolynomialFunctions {
           // n = Validate.checkLongType(ast.arg3());
           n = ast.arg3();
           for (int i = 0; i < exponents.length; i++) {
-            exponents[i] = exponents[i].times(n);
+            exponents[i] = exponents[i].multiply(n);
           }
         }
         ExpVectorSymbolic expArr = new ExpVectorSymbolic(exponents);
@@ -248,11 +250,69 @@ public class PolynomialFunctions {
     }
   }
 
+  private static class CoefficientArrays extends AbstractFunctionEvaluator {
+
+    @Override
+    public IExpr evaluate(final IAST ast, final EvalEngine engine) {
+
+      IExpr expr = F.evalExpandAll(ast.arg1(), engine);
+      VariablesSet eVar;
+      IAST symbolList;
+      List<IExpr> varList;
+      if (ast.isAST1()) {
+        // extract all variables from the polynomial expression
+        eVar = new VariablesSet(ast.arg1());
+        varList = eVar.getArrayList();
+        symbolList = eVar.getVarList();
+      } else {
+        symbolList = Validate.checkIsVariableOrVariableList(ast, 2, ast.topHead(), engine);
+        if (!symbolList.isPresent()) {
+          return F.NIL;
+        }
+        varList = new ArrayList<IExpr>(symbolList.argSize());
+        symbolList.forEach(x -> varList.add(x));
+      }
+      TermOrder termOrder = TermOrderByName.Lexicographic;
+
+      if (ast.size() > 3) {
+        if (ast.arg3().isSymbol()) {
+          termOrder = JASIExpr.monomialOrder((ISymbol) ast.arg3(), termOrder);
+        }
+      }
+
+      try {
+        ExprPolynomialRing ring =
+            new ExprPolynomialRing(symbolList, new ExprTermOrder(termOrder.getEvord()));
+        ExprPolynomial poly = ring.create(expr, false, true, true);
+        return poly.coefficientArrays((int) poly.degree());
+      } catch (RuntimeException rex) {
+        if (FEConfig.SHOW_STACKTRACE) {
+          rex.printStackTrace();
+        }
+      }
+      // default mapping
+      IASTAppendable ruleList = F.ListAlloc(symbolList.size());
+      for (int j = 1; j < symbolList.size(); j++) {
+        ruleList.append(F.C0);
+      }
+      return F.List(F.Rule(ruleList, expr));
+    }
+
+    @Override
+    public int[] expectedArgSize(IAST ast) {
+      return ARGS_1_4;
+    }
+  }
+
   /** */
   private static class CoefficientList extends AbstractFunctionEvaluator {
     @Override
     public IExpr evaluate(final IAST ast, EvalEngine engine) {
-      IExpr expr = F.evalExpandAll(ast.arg1(), engine).normal(false);
+      IExpr arg1 = ast.arg1();
+      if (ast.arg1().isList()) {
+        return ((IAST) arg1).mapThread(ast, 1);
+      }
+      IExpr expr = F.evalExpandAll(arg1, engine).normal(false);
       IAST list = ast.arg2().orNewList();
       return coefficientList(expr, list);
     }
@@ -271,6 +331,10 @@ public class PolynomialFunctions {
   private static class CoefficientRules extends AbstractFunctionEvaluator {
     @Override
     public IExpr evaluate(final IAST ast, final EvalEngine engine) {
+      IExpr arg1 = ast.arg1();
+      if (ast.arg1().isList()) {
+        return ((IAST) arg1).mapThread(ast, 1);
+      }
       IExpr expr = F.evalExpandAll(ast.arg1(), engine);
       VariablesSet eVar;
       IAST symbolList;
@@ -314,9 +378,9 @@ public class PolynomialFunctions {
       }
 
       try {
-        SymbolicPolynomialRing ring =
-            new SymbolicPolynomialRing(symbolList, new SymbolicTermOrder(termOrder.getEvord()));
-        SymbolicPolynomial poly = ring.create(expr, false, true, true);
+        ExprPolynomialRing ring =
+            new ExprPolynomialRing(symbolList, new ExprTermOrder(termOrder.getEvord()));
+        ExprPolynomial poly = ring.create(expr, false, true, true);
         return poly.coefficientRules();
       } catch (RuntimeException rex) {
         if (FEConfig.SHOW_STACKTRACE) {
@@ -744,7 +808,7 @@ public class PolynomialFunctions {
    * 3
    * </pre>
    */
-  private static class Exponent extends AbstractCoreFunctionEvaluator {
+  private static class Exponent extends AbstractFunctionEvaluator {
 
     @Override
     public IExpr evaluate(final IAST ast, EvalEngine engine) {
@@ -896,6 +960,11 @@ public class PolynomialFunctions {
       if (!evaled) {
         collector.add(F.C0);
       }
+    }
+
+    @Override
+    public void setUp(final ISymbol newSymbol) {
+      newSymbol.setAttributes(ISymbol.LISTABLE);
     }
   }
 
@@ -1477,6 +1546,37 @@ public class PolynomialFunctions {
     }
   }
 
+  private static final class SphericalHarmonicY extends AbstractFunctionEvaluator
+      implements SphericalHarmonicYRules {
+
+    @Override
+    public IExpr evaluate(final IAST ast, EvalEngine engine) {
+      //      int degree = ast.arg1().toIntDefault(Integer.MIN_VALUE);
+      //      if (degree >= 0) {
+      //        if (degree > Config.MAX_POLYNOMIAL_DEGREE) {
+      //          PolynomialDegreeLimitExceeded.throwIt(degree);
+      //        }
+      //        return PolynomialsUtils.createLegendrePolynomial(degree, ast.arg2());
+      //      }
+      return F.NIL;
+    }
+
+    @Override
+    public int[] expectedArgSize(IAST ast) {
+      return ARGS_4_4;
+    }
+
+    @Override
+    public IAST getRuleAST() {
+      return RULES;
+    }
+
+    @Override
+    public void setUp(final ISymbol newSymbol) {
+      newSymbol.setAttributes(ISymbol.NUMERICFUNCTION | ISymbol.LISTABLE);
+      super.setUp(newSymbol);
+    }
+  }
   /**
    *
    *
@@ -2042,6 +2142,12 @@ public class PolynomialFunctions {
     public int[] expectedArgSize(IAST ast) {
       return ARGS_2_3;
     }
+
+    @Override
+    public void setUp(final ISymbol newSymbol) {
+      newSymbol.setAttributes(ISymbol.LISTABLE);
+      super.setUp(newSymbol);
+    }
   }
 
   /**
@@ -2094,6 +2200,12 @@ public class PolynomialFunctions {
     public IAST getRuleAST() {
       return RULES;
     }
+
+    @Override
+    public void setUp(final ISymbol newSymbol) {
+      newSymbol.setAttributes(ISymbol.LISTABLE);
+      super.setUp(newSymbol);
+    }
   }
 
   /**
@@ -2144,6 +2256,12 @@ public class PolynomialFunctions {
     @Override
     public IAST getRuleAST() {
       return RULES;
+    }
+
+    @Override
+    public void setUp(final ISymbol newSymbol) {
+      newSymbol.setAttributes(ISymbol.LISTABLE);
+      super.setUp(newSymbol);
     }
   }
 
@@ -2218,9 +2336,9 @@ public class PolynomialFunctions {
       }
 
       try {
-        SymbolicPolynomialRing ring =
-            new SymbolicPolynomialRing(symbolList, new SymbolicTermOrder(termOrder.getEvord()));
-        SymbolicPolynomial poly = ring.create(expr, false, true, true);
+        ExprPolynomialRing ring =
+            new ExprPolynomialRing(symbolList, new ExprTermOrder(termOrder.getEvord()));
+        ExprPolynomial poly = ring.create(expr, false, true, true);
         return poly.monomialList();
       } catch (RuntimeException rex) {
         if (FEConfig.SHOW_STACKTRACE) {
