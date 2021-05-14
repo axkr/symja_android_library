@@ -944,6 +944,11 @@ public final class BooleanFunctions {
     public int[] expectedArgSize(IAST ast) {
       return ARGS_1_2;
     }
+
+    @Override
+    public void setUp(final ISymbol newSymbol) {
+      newSymbol.setAttributes(ISymbol.LISTABLE);
+    }
   }
 
   /**
@@ -1003,6 +1008,11 @@ public final class BooleanFunctions {
     public int[] expectedArgSize(IAST ast) {
       return ARGS_1_2;
     }
+
+    @Override
+    public void setUp(final ISymbol newSymbol) {
+      newSymbol.setAttributes(ISymbol.LISTABLE);
+    }
   }
 
   /**
@@ -1047,14 +1057,12 @@ public final class BooleanFunctions {
           if (expr.isList()) {
             IAST list = (IAST) expr;
             IASTAppendable newList = F.ListAlloc(list.size());
-            for (int i = 1; i < list.size(); i++) {
-              newList.append(engine.evalTrue(list.get(i)) ? S.True : S.False);
-            }
+            list.forEach(x -> newList.append(engine.evalSymbolTrue(x)));
             resultList.append(newList);
           } else {
-            resultList.append(engine.evalTrue(expr) ? S.True : S.False);
+            resultList.append(engine.evalSymbolTrue(expr));
           }
-    return resultList;
+          return resultList;
         }
         IExpr sym = variables.get(position);
         if (sym.isSymbol()) {
@@ -1472,14 +1480,14 @@ public final class BooleanFunctions {
           } else if (boole.isTrue()) {
             return S.False;
           }
-    evaled = true;
+          evaled = true;
         } else if (temp.isTrue()) {
           if (!boole.isPresent()) {
             boole = S.True;
           } else if (boole.isFalse()) {
             return S.False;
           }
-    evaled = true;
+          evaled = true;
         } else {
           if (!last.equals(temp)) {
             result.append(temp);
@@ -1874,10 +1882,12 @@ public final class BooleanFunctions {
     }
 
     private IExpr.COMPARE_TERNARY prepareCompare(IExpr a0, IExpr a1, EvalEngine engine) {
-      if ((!a0.isReal() && a0.isNumericFunction(true)) || (a1.isInexactNumber() && a0.isRational())) {
+      if ((!a0.isReal() && a0.isNumericFunction(true))
+          || (a1.isInexactNumber() && a0.isRational())) {
         a0 = engine.evalN(a0);
       }
-      if ((!a1.isReal() && a1.isNumericFunction(true)) || (a0.isInexactNumber() && a1.isRational())) {
+      if ((!a1.isReal() && a1.isNumericFunction(true))
+          || (a0.isInexactNumber() && a1.isRational())) {
         a1 = engine.evalN(a1);
       }
 
@@ -2298,11 +2308,6 @@ public final class BooleanFunctions {
       } catch (ValidateException ve) {
         return engine.printMessage(ast.topHead(), ve);
       }
-    }
-
-    @Override
-    public void setUp(final ISymbol newSymbol) {
-      newSymbol.setAttributes(ISymbol.LISTABLE);
     }
   }
 
