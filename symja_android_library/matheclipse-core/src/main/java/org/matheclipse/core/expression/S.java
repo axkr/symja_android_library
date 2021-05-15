@@ -9017,6 +9017,8 @@ public class S {
   public static final IBuiltInSymbol ToExpression =
       F.initFinalSymbol("ToExpression", ID.ToExpression);
 
+  public static final IBuiltInSymbol ToLowerCase = F.initFinalSymbol("ToLowerCase", ID.ToLowerCase);
+
   /**
    * ToPolarCoordinates({x, y}) - return the polar coordinates for the cartesian coordinates `{x,
    * y}`.
@@ -9048,6 +9050,8 @@ public class S {
    */
   public static final IBuiltInSymbol ToUnicode = F.initFinalSymbol("ToUnicode", ID.ToUnicode);
 
+  public static final IBuiltInSymbol ToUpperCase = F.initFinalSymbol("ToUpperCase", ID.ToUpperCase);
+  
   public static final IBuiltInSymbol Today = F.initFinalSymbol("Today", ID.Today);
 
   /**

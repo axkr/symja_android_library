@@ -585,6 +585,10 @@ public class StringFunctionsTest extends AbstractTestCase {
 
   public void testStringReplace() {
     check(
+        "StringReplace(\"this is a text\", WordBoundary ~~ x_ :> ToUpperCase(x))", //
+        "This Is A Text");
+
+    check(
         "StringReplace(\"this is text\", CharacterRange(\"a\", \"z\") -> \"X\")", //
         "XXXX XX XXXX");
     check(
@@ -859,6 +863,18 @@ public class StringFunctionsTest extends AbstractTestCase {
     check(
         "t = TemplateIf( TemplateSlot(\"tt\"), True, False); TemplateApply(t, <|\"tt\" -> True === True|>)", //
         "True");
+  }
+
+  public void testToLowerCase() {
+    check(
+        "ToLowerCase(\"This is a Test\")", //
+        "this is a test");
+  }
+
+  public void testToUpperCase() {
+    check(
+        "ToUpperCase(\"This is a Test\")", //
+        "THIS IS A TEST");
   }
 
   public void testTransliterate() {

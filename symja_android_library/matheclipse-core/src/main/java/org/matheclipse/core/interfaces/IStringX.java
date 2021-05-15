@@ -105,4 +105,9 @@ public interface IStringX extends IExpr {
    * @see String#substring(int, int)
    */
   public String substring(final int beginIndex, final int endIndex);
+  
+  public String toLowerCase();
+  
+  public String toUpperCase();
+  
 }

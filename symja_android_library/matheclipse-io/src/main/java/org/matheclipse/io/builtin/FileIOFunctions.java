@@ -3,6 +3,8 @@ package org.matheclipse.io.builtin;
 import java.io.File;
 import java.nio.file.InvalidPathException;
 import java.nio.file.Paths;
+import java.util.HashMap;
+import java.util.Map;
 
 import org.matheclipse.core.basic.Config;
 import org.matheclipse.core.builtin.StringFunctions;
@@ -63,8 +65,9 @@ public class FileIOFunctions {
             }
           }
 
+          Map<ISymbol, String> groups = new HashMap<ISymbol, String>();
           java.util.regex.Pattern pattern =
-              StringFunctions.toRegexPattern(arg1, true, ignoreCase, ast, engine);
+              StringFunctions.toRegexPattern(arg1, true, ignoreCase, ast, groups, engine);
           if (pattern == null) {
             return F.NIL;
           }

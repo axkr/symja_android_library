@@ -421,8 +421,10 @@ public class IOFunctions {
       if (arg1.isString() && arg1.toString().indexOf("`") < 0) {
         arg1 = F.$str("System`" + arg1.toString());
       }
+
+      Map<ISymbol, String> groups = new HashMap<ISymbol, String>();
       java.util.regex.Pattern pattern =
-          StringFunctions.toRegexPattern(arg1, true, ignoreCase, ast, engine);
+          StringFunctions.toRegexPattern(arg1, true, ignoreCase, ast, groups, engine);
 
       if (pattern == null) {
         return F.NIL;
