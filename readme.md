@@ -242,17 +242,20 @@ If you have any questions about using or developing for this project, send me an
 
 ### License
 
-* the complete Symja system is published under the GNU GENERAL PUBLIC LICENSE Version 3.
+* the complete Symja system is published under the GNU GENERAL PUBLIC LICENSE Version 3 (GPL) starting with Symja version 2.0.0 parts are published under the Lesser GNU GENERAL PUBLIC LICENSE Version 3 (LGPL).
 
-If you would like to use parts of the system here are some of the associated **Java** licenses:
+If you would like to use parts of the system here are some Maven module licenses:
+* the maven modules: `frontend, external, core` are published under LGPL license.
+* the maven modules: `gpl, api, io` are published under GPL license.
 
+Here are some of the associated **Java** library dependency licenses:
+* the [TilmanNeumann/java-math-library](https://github.com/TilmanNeumann/java-math-library) is published under the GNU GENERAL PUBLIC LICENSE license.
 * the [apfloat project](https://github.com/mtommila/apfloat) is published under the (LESSER) GNU GENERAL PUBLIC LICENSE license. 
-* the [Hipparchus Mathematics Library](https://www.hipparchus.org/) is published under the Apache software license
 * the [JAS Java Algebra System](http://krum.rz.uni-mannheim.de/jas/) is published under the (LESSER) GNU GENERAL PUBLIC LICENSE license. The Java bytecode is dual licenced also under the Apache 2.0 license to allow usage in Android projects.  
-* the [JGraphT Library](https://jgrapht.org/)  is published under the Eclipse Public License (EPL) or (LESSER) GNU GENERAL PUBLIC LICENSE license. 
+* the [JGraphT Library](https://jgrapht.org/)  is published under the Eclipse Public License (EPL) or (LESSER) GNU GENERAL PUBLIC LICENSE license.
+* the [Hipparchus Mathematics Library](https://www.hipparchus.org/) is published under the Apache software license
 * the [LogicNG project](https://github.com/logic-ng/LogicNG) is published under the Apache software license
-* the [Tablesaw](https://github.com/jtablesaw/tablesaw) is published under the Apache software license
-* the Symja parser libraries (org.matheclipse.parser* packages) are published under the APACHE LICENSE Version 2.0.
+* the [Tablesaw](https://github.com/jtablesaw/tablesaw) is published under the Apache software license 
 
 Here are some of the associated **JavaScript** licenses:
 * the [Paul Masson's Math project](https://github.com/paulmasson/math) is published under the MIT license. 
