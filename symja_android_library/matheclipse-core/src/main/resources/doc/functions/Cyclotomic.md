@@ -28,4 +28,4 @@ The case of the 105-th cyclotomic polynomial is interesting because 105 is the l
 
 ### Github
 
-* [Implementation of Cyclotomic](https://github.com/axkr/symja_android_library/blob/master/symja_android_library/matheclipse-core/src/main/java/org/matheclipse/core/builtin/PolynomialFunctions.java#L559) 
+* [Implementation of Cyclotomic](https://github.com/axkr/symja_android_library/blob/master/symja_android_library/matheclipse-core/src/main/java/org/matheclipse/core/builtin/PolynomialFunctions.java#L516) 

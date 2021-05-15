@@ -22,4 +22,4 @@ a + b
 
 ### Github
 
-* [Implementation of Numerator](https://github.com/axkr/symja_android_library/blob/master/symja_android_library/matheclipse-core/src/main/java/org/matheclipse/core/builtin/Algebra.java#L2696) 
+* [Implementation of Numerator](https://github.com/axkr/symja_android_library/blob/master/symja_android_library/matheclipse-core/src/main/java/org/matheclipse/core/builtin/Algebra.java#L2699) 

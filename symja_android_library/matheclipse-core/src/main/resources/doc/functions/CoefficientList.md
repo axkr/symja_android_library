@@ -75,4 +75,4 @@ All other coefficients under `coeff[[6]]` are zero which agrees with the result 
 
 ### Github
 
-* [Implementation of CoefficientList](https://github.com/axkr/symja_android_library/blob/master/symja_android_library/matheclipse-core/src/main/java/org/matheclipse/core/builtin/PolynomialFunctions.java#L362) 
+* [Implementation of CoefficientList](https://github.com/axkr/symja_android_library/blob/master/symja_android_library/matheclipse-core/src/main/java/org/matheclipse/core/builtin/PolynomialFunctions.java#L319) 
