@@ -5455,7 +5455,7 @@ public class LowercaseTestCase extends AbstractTestCase {
   public void test$Version() {
     check(
         "$Version", //
-        "1.0.0-SNAPSHOT");
+        "2.0.0-SNAPSHOT");
   }
 
   public void testContinue() {

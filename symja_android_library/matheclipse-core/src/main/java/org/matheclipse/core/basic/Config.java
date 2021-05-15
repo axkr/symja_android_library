@@ -772,7 +772,7 @@ public class Config {
         e.printStackTrace();
       }
     }
-    return "1.0.0-SNAPSHOT";
+    return "2.0.0-SNAPSHOT";
   }
 
   /** A trie builder for mapping int[] sequences to IExpr. */
