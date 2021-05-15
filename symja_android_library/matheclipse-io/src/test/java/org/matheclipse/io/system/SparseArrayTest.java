@@ -64,13 +64,17 @@ public class SparseArrayTest extends AbstractTestCase {
   }
 
 //  public void testCoefficientArrays() {
+//	  // TODO 
+//    check(
+//        "CoefficientArrays(2*x + 3*y^2 + 4*z + 5, {x, y, z}) // Normal", //
+//        "{5,{2,0,4},{{0,0,0},{0,3,0},{0,0,0}}}");
 //    check(
 //        "CoefficientArrays(2*x + 3*y + 4*z + 5, {x, y, z}) // Normal", //
 //        "{5,{2,3,4}}");
 //
-//        check(
-//            "CoefficientArrays({a + x - y - z == 0, b + x + 2 y + z == 0}, {x, y, z})", //
-//            " ");
+//    check(
+//        "CoefficientArrays({a + x - y - z == 0, b + x + 2 y + z == 0}, {x, y, z})", //
+//        " ");
 //
 //    check(
 //        "CoefficientList({a + x - y - z , b + x + 2 y + z}, {x, y, z})", //

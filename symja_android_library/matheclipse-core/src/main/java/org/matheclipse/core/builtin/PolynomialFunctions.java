@@ -101,7 +101,8 @@ public class PolynomialFunctions {
       S.ChebyshevT.setEvaluator(new ChebyshevT());
       S.ChebyshevU.setEvaluator(new ChebyshevU());
       S.Coefficient.setEvaluator(new Coefficient());
-//      S.CoefficientArrays.setEvaluator(new CoefficientArrays());
+      // TODO
+      // S.CoefficientArrays.setEvaluator(new CoefficientArrays());
       S.CoefficientList.setEvaluator(new CoefficientList());
       S.CoefficientRules.setEvaluator(new CoefficientRules());
       S.Cyclotomic.setEvaluator(new Cyclotomic());
@@ -250,8 +251,18 @@ public class PolynomialFunctions {
     }
   }
 
+  /**
+   * TODO currently not implemented
+   *
+   * @deprecated
+   */
   private static class CoefficientArrays extends AbstractFunctionEvaluator {
 
+    /**
+     * TODO currently not implemented
+     *
+     * @deprecated
+     */
     @Override
     public IExpr evaluate(final IAST ast, final EvalEngine engine) {
 

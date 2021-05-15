@@ -2268,6 +2268,11 @@ public class ExprPolynomial implements RingElem<ExprPolynomial>, Iterable<ExprMo
     return result;
   }
 
+  /**
+   * TODO currently not implemented
+   *
+   * @deprecated
+   */
   public IAST coefficientArrays(int degree) {
     int numberOfVariables = ring.nvar;
     IASTAppendable result = F.ListAlloc(degree + 1);
@@ -2275,7 +2280,7 @@ public class ExprPolynomial implements RingElem<ExprPolynomial>, Iterable<ExprMo
     for (int i = 0; i < degree; i++) {
       int[] dimension = new int[i + 1];
       for (int j = 0; j < dimension.length; j++) {
-        dimension[i] = numberOfVariables;
+        dimension[j] = numberOfVariables;
       }
       SparseArrayExpr sparse = SparseArrayExpr.newArrayRules(F.List(), dimension, i + 1, F.C0);
       result.append(sparse);
