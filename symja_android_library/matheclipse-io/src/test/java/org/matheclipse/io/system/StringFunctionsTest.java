@@ -166,6 +166,32 @@ public class StringFunctionsTest extends AbstractTestCase {
         "8");
   }
 
+  public void testLongest() {
+    check(
+        "StringCases(\"aabaaab\", Longest(\"a\" ~~ __ ~~ \"b\"))", //
+        "{aabaaab}");
+    check(
+        "StringCases(\"aabaaabaaabaaabaaab\", Longest(RegularExpression(\"a+b\")))", //
+        "{aab,aaab,aaab,aaab,aaab}");
+  }
+
+  public void testShortest() {
+    check(
+        "StringCases(\"-(a)--(bb)--(c)-\", \"(\" ~~ __ ~~ \")\")", //
+        "{(a)--(bb)--(c)}");
+    // TODO
+    //    check(
+    //        "StringCases(\"-(a)--(bb)--(c)-\", Shortest(\"(\" ~~ __ ~~ \")\"))", //
+    //        "{(a),(bb),(c)}");
+
+    check(
+        "StringCases(\"aabaaab\", Shortest(\"a\" ~~ __ ~~ \"b\"))", //
+        "{aabaaab}");
+    check(
+        "StringCases(\"aabaaabaaabaaabaaab\", Shortest(RegularExpression(\"a+b\")))", //
+        "{aab,aaab,aaab,aaab,aaab}");
+  }
+
   public void testString() {
     check(
         "Head(\"abc\")", //

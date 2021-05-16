@@ -53,6 +53,38 @@ import com.univocity.parsers.csv.CsvParserSettings;
 
 public final class StringFunctions {
 
+  /**
+   * Index <code>0</code> in {@link REGEX_LONGEST} and {@link REGEX_SHORTEST}. The plus quantifier
+   * indicates one or more occurrences of the preceding element. For example, ab+c matches "abc",
+   * "abbc", "abbbc", and so on, but not "ac".
+   */
+  static final int PLUS_Q = 0;
+
+  /**
+   * Index <code>1</code> in {@link REGEX_LONGEST} and {@link REGEX_SHORTEST}. The asterisk
+   * quantifier indicates zero or more occurrences of the preceding element. For example, ab*c
+   * matches "ac", "abc", "abbc", "abbbc", and so on.
+   */
+  static final int ASTERISK_Q = 1;
+
+  /**
+   * Longest regex quantifier for <code>BlankSequence</code>,<code>BlankNullSequence</code>, <code>
+   * Repeated</code>, <code>RepeatedNull</code>.
+   *
+   * @see <a href="https://en.wikipedia.org/wiki/Regular_expression">Wikipedia - Regular
+   *     expression</a>
+   */
+  static final String[] REGEX_LONGEST = new String[] {"+", "*"};
+
+  /**
+   * Shortest regex quantifier for <code>BlankSequence</code>,<code>BlankNullSequence</code>, <code>
+   * Repeated</code>, <code>RepeatedNull</code>.
+   *
+   * @see <a href="https://en.wikipedia.org/wiki/Regular_expression">Wikipedia - Regular
+   *     expression</a>
+   */
+  static final String[] REGEX_SHORTEST = new String[] {"+?", "*?"};
+
   /** The English alphabet */
   private static final String LATIN_ALPHABET = "abcdefghijklmnopqrstuvwxyz";
 
@@ -2130,7 +2162,6 @@ public final class StringFunctions {
     }
 
     /**
-     * 
      * @param str
      * @param ruleRHS
      * @param pattern
@@ -2163,7 +2194,6 @@ public final class StringFunctions {
     }
 
     /**
-     * 
      * @param str
      * @param conditionTest
      * @param ruleRHS
@@ -2647,7 +2677,7 @@ public final class StringFunctions {
           String str = ((IStringX) ast.arg1()).toString();
           try {
             Map<ISymbol, String> groups = new HashMap<ISymbol, String>();
-            String regex = toRegexString(ast.arg2(), true, ast, groups, engine);
+            String regex = toRegexString(ast.arg2(), true, ast, REGEX_LONGEST, groups, engine);
             if (regex != null) {
               // prepend StartOfString
               java.util.regex.Pattern pattern = java.util.regex.Pattern.compile("\\A" + regex);
@@ -3419,7 +3449,13 @@ public final class StringFunctions {
       EvalEngine engine) {
 
     String regex =
-        toRegexString(partOfRegex, abbreviatedPatterns, stringFunction, namedRegexGroups, engine);
+        toRegexString(
+            partOfRegex,
+            abbreviatedPatterns,
+            stringFunction,
+            REGEX_LONGEST,
+            namedRegexGroups,
+            engine);
     if (regex != null) {
       java.util.regex.Pattern pattern;
       try {
@@ -3441,33 +3477,29 @@ public final class StringFunctions {
   }
 
   /**
-   * See:
+   * Convert a Symja expression which represents a 'piece of a regular expression' to a Java regular
+   * expression string.
    *
-   * <ul>
-   *   <li><a
-   *       href="https://github.com/mathics/Mathics/blob/master/mathics/builtin/strings.py#L78">to_regex()
-   *       function</a>
-   *   <li><a href="https://en.wikipedia.org/wiki/Perl_Compatible_Regular_Expressions">Wikipedia -
-   *       Perl Compatible Regular Expression</a>
-   * </ul>
-   *
-   * @param partOfRegex the expression which represents a regex 'piece'
+   * @param partOfRegex the expression which represents a regex 'piece' which must be converted to a
+   *     Java regex string
    * @param abbreviatedPatterns if <code>true</code> allow 'abbreviated patterns" in strings (i.e.
    *     '\','*' and '@' operators)
    * @param stringFunction the original string function, used in error messages
+   * @param shortestLongest either {@link #REGEX_LONGEST} or {@link #REGEX_SHORTEST}
    * @param engine the evaluation engine
    * @return
+   * @see <a href="https://en.wikipedia.org/wiki/Perl_Compatible_Regular_Expressions">Wikipedia -
+   *     Perl Compatible Regular Expression</a>
    */
   private static String toRegexString(
       IExpr partOfRegex,
       boolean abbreviatedPatterns,
       IAST stringFunction,
+      String[] shortestLongest,
       Map<ISymbol, String> groups,
       EvalEngine engine) {
 
     if (partOfRegex.isString()) {
-      // Guide to escaping characters in Java RegExps -
-      // https://www.baeldung.com/java-regexp-escape-char
       final String str = partOfRegex.toString();
       if (abbreviatedPatterns) {
         StringBuilder pieces = new StringBuilder();
@@ -3515,23 +3547,31 @@ public final class StringFunctions {
       if (expr.isAST(S.Pattern, 3) && expr.first().isSymbol()) {
         final ISymbol symbol = (ISymbol) expr.first();
         String str =
-            toRegexString(expr.second(), abbreviatedPatterns, stringFunction, groups, engine);
+            toRegexString(
+                expr.second(),
+                abbreviatedPatterns,
+                stringFunction,
+                shortestLongest,
+                groups,
+                engine);
         if (str != null) {
           final String groupName = symbol.toString();
           groups.put(symbol, groupName);
           if (repeated.isNullSequence()) {
-            return "(?<" + groupName + ">(" + str + ")*)";
+            return "(?<" + groupName + ">(" + str + ")" + shortestLongest[ASTERISK_Q] + ")";
           } else {
-            return "(?<" + groupName + ">(" + str + ")+)";
+            return "(?<" + groupName + ">(" + str + ")" + shortestLongest[PLUS_Q] + ")";
           }
         }
       } else {
-        String str = toRegexString(expr, abbreviatedPatterns, stringFunction, groups, engine);
+        String str =
+            toRegexString(
+                expr, abbreviatedPatterns, stringFunction, shortestLongest, groups, engine);
         if (str != null) {
           if (repeated.isNullSequence()) {
-            return "(" + str + ")*";
+            return "(" + str + ")" + shortestLongest[ASTERISK_Q];
           } else {
-            return "(" + str + ")+";
+            return "(" + str + ")" + shortestLongest[PLUS_Q];
           }
         }
       }
@@ -3552,7 +3592,13 @@ public final class StringFunctions {
     } else if (partOfRegex.isAST(S.Pattern, 3) && partOfRegex.first().isSymbol()) {
       final ISymbol symbol = (ISymbol) partOfRegex.first();
       String str =
-          toRegexString(partOfRegex.second(), abbreviatedPatterns, stringFunction, groups, engine);
+          toRegexString(
+              partOfRegex.second(),
+              abbreviatedPatterns,
+              stringFunction,
+              shortestLongest,
+              groups,
+              engine);
       if (str != null) {
         final String groupName = symbol.toString();
         groups.put(symbol, groupName);
@@ -3562,10 +3608,10 @@ public final class StringFunctions {
       PatternSequence ps = ((PatternSequence) partOfRegex);
       if (ps.isNullSequence()) {
         // RepeatedNull
-        return "(.|\\n)*";
+        return "(.|\\n)" + shortestLongest[ASTERISK_Q];
       } else {
         // Repeated
-        return "(.|\\n)+";
+        return "(.|\\n)" + shortestLongest[PLUS_Q];
       }
     } else if (partOfRegex.isAST(S.CharacterRange, 3)) {
       String[] characterRange = characterRange((IAST) partOfRegex);
@@ -3583,7 +3629,13 @@ public final class StringFunctions {
       StringBuilder pieces = new StringBuilder();
       for (int i = 1; i < alternatives.size(); i++) {
         String str =
-            toRegexString(alternatives.get(i), abbreviatedPatterns, stringFunction, groups, engine);
+            toRegexString(
+                alternatives.get(i),
+                abbreviatedPatterns,
+                stringFunction,
+                shortestLongest,
+                groups,
+                engine);
         if (str == null) {
           // `1` currently not supported in `2`.
           IOFunctions.printMessage(
@@ -3599,6 +3651,12 @@ public final class StringFunctions {
         }
       }
       return pieces.toString();
+    } else if (partOfRegex.isAST(S.Shortest, 2)) {
+      return toRegexString(
+          partOfRegex.first(), abbreviatedPatterns, stringFunction, REGEX_SHORTEST, groups, engine);
+    } else if (partOfRegex.isAST(S.Longest, 2)) {
+      return toRegexString(
+          partOfRegex.first(), abbreviatedPatterns, stringFunction, REGEX_LONGEST, groups, engine);
     } else if (partOfRegex.isBuiltInSymbol()) {
       int ordinal = ((IBuiltInSymbol) partOfRegex).ordinal();
       switch (ordinal) {
@@ -3659,7 +3717,7 @@ public final class StringFunctions {
     StringBuilder regex = new StringBuilder();
     for (int i = 1; i < stringExpression.size(); i++) {
       IExpr arg = stringExpression.get(i);
-      String str = toRegexString(arg, abbreviatedPatterns, ast, groups, engine);
+      String str = toRegexString(arg, abbreviatedPatterns, ast, REGEX_LONGEST, groups, engine);
       if (str == null) {
         return null;
       }
