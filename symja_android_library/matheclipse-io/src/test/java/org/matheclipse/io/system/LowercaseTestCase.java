@@ -9752,6 +9752,9 @@ public class LowercaseTestCase extends AbstractTestCase {
 
   public void testEulerGamma() {
     check(
+        "N(EulerGamma,100)", //
+        "0.5772156649015328606065120900824024310421593359399235988057672348848677267776646709369470632917467495");
+    check(
         "N(EulerGamma)", //
         "0.577216");
   }
@@ -15077,7 +15080,7 @@ public class LowercaseTestCase extends AbstractTestCase {
         "{29.48263182051029,11.393052728194332,6.2358316369166005}");
   }
 
-  public void testHypergeometric2F1() { 
+  public void testHypergeometric2F1() {
     check(
         "Hypergeometric2F1(n,n,2*n+1,1)", //
         "Gamma(1+2*n)/Gamma(1+n)^2");

@@ -846,7 +846,12 @@ public class ConstantDefinitions {
     public IExpr numericEval(final ISymbol symbol, EvalEngine engine) {
       return F.num(EULER_GAMMA);
     }
-
+    
+    @Override
+    public IExpr apfloatEval(ISymbol symbol, EvalEngine engine) {
+      return F.num(ApfloatMath.euler(engine.getNumericPrecision()));
+    }
+    
     @Override
     public double evalReal() {
       return EULER_GAMMA;
