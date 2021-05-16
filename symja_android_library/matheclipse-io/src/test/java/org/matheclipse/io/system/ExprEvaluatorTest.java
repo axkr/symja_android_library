@@ -312,7 +312,7 @@ public class ExprEvaluatorTest extends TestCase {
       ExprEvaluator util = new ExprEvaluator(false, (short) 100);
 
       IExpr result =
-          util.evaluate(
+          util.eval(
               "Variables(termquery$$fuchs*(termquery$$huhn*(1-termquery$$schaf)+termquery$$schaf)+(1-termquery$$fuchs)*termquery$$schaf*termquery$$wolf)");
       assertEquals(
           "{termquery$$fuchs,termquery$$huhn,termquery$$schaf,termquery$$wolf}", result.toString());
