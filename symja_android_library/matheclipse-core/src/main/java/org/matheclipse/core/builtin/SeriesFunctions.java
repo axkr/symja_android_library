@@ -426,8 +426,8 @@ public class SeriesFunctions {
      * @param numeratorPoly
      * @param denominatorPoly
      * @param symbol the variable for which to approach to the limit
+     * @param limit the limit value
      * @param data the limit expression which the variable should approach to
-     * @param rule
      * @return
      */
     private static IExpr limitsInfinityOfRationalFunctions(

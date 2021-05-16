@@ -78,7 +78,6 @@ public class SemanticImport extends AbstractEvaluator {
    *
    * @param urlName
    * @param format CSV or TSV format
-   * @param ast
    * @param engine
    * @return
    */
