@@ -585,6 +585,9 @@ public class StringFunctionsTest extends AbstractTestCase {
 
   public void testStringReplace() {
     check(
+        "StringReplace(\"The number 17 is a prime number, 42 is not\", WordBoundary ~~ x:DigitCharacter.. ~~ WordBoundary /; PrimeQ(ToExpression(x)) :> \"*\" <> x <> \"*\")", //
+        "The number *17* is a prime number, 42 is not");
+    check(
         "StringReplace(\"this is a text\", WordBoundary ~~ x_ :> ToUpperCase(x))", //
         "This Is A Text");
 

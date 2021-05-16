@@ -2101,38 +2101,97 @@ public final class StringFunctions {
           final IExpr ruleLHS = rule.arg1();
           final IExpr ruleRHS = rule.arg2();
 
-          Map<ISymbol, String> groups = new HashMap<ISymbol, String>();
-          java.util.regex.Pattern pattern =
-              toRegexPattern(ruleLHS, true, ignoreCase, ast, groups, engine);
-          if (pattern == null) {
-            return F.NIL;
-          }
-          Matcher matcher = pattern.matcher(str);
-          if (!ruleRHS.isString() //
-              && groups.size() > 0
-              && matcher.find()) {
-            StringBuffer buf = new StringBuffer(str.length() + 16);
-            do {
-              IExpr replaced = ruleRHS;
-              for (Map.Entry<ISymbol, String> group : groups.entrySet()) {
-                String groupValue = matcher.group(group.getValue());
-                if (groupValue != null) {
-                  replaced = replaced.replaceAll(F.Rule(group.getKey(), F.stringx(groupValue)));
-                }
-              }
-              IExpr temp = engine.evaluate(replaced);
-              matcher.appendReplacement(buf, temp.toString());
-            } while (matcher.find());
-            matcher.appendTail(buf);
-            str = buf.toString();
+          // see github #221 - use Java regex - named capturing groups
+          Map<ISymbol, String> namedRegexGroups = new HashMap<ISymbol, String>();
+          if (ruleLHS.isCondition()) {
+            final IAST condition = (IAST) ruleLHS;
+            final IExpr conditionPattern = condition.arg1();
+            final IExpr conditionTest = condition.arg2();
+            java.util.regex.Pattern pattern =
+                toRegexPattern(conditionPattern, true, ignoreCase, ast, namedRegexGroups, engine);
+            if (pattern == null) {
+              return F.NIL;
+            }
+            str =
+                stringReplaceCondition(
+                    str, conditionTest, ruleRHS, pattern, namedRegexGroups, engine);
           } else {
-            IExpr temp = engine.evaluate(ruleRHS);
-            str = pattern.matcher(str).replaceAll(temp.toString());
+            java.util.regex.Pattern pattern =
+                toRegexPattern(ruleLHS, true, ignoreCase, ast, namedRegexGroups, engine);
+            if (pattern == null) {
+              return F.NIL;
+            }
+            str = stringReplace(str, ruleRHS, pattern, namedRegexGroups, engine);
           }
         }
         return F.$str(str);
       }
       return F.NIL;
+    }
+
+    private static String stringReplace(
+        String str,
+        final IExpr ruleRHS,
+        java.util.regex.Pattern pattern,
+        Map<ISymbol, String> namedRegexGroups,
+        final EvalEngine engine) {
+
+      Matcher matcher = pattern.matcher(str);
+      if (!ruleRHS.isString() && namedRegexGroups.size() > 0 && matcher.find()) {
+        StringBuffer buf = new StringBuffer(str.length() + 16);
+        do {
+          IExpr replacedRHS = ruleRHS;
+          replacedRHS = replaceGroups(replacedRHS, matcher, namedRegexGroups);
+          IExpr temp = engine.evaluate(replacedRHS);
+          matcher.appendReplacement(buf, temp.toString());
+        } while (matcher.find());
+        matcher.appendTail(buf);
+        return buf.toString();
+      }
+
+      IExpr temp = engine.evaluate(ruleRHS);
+      return pattern.matcher(str).replaceAll(temp.toString());
+    }
+
+    private static String stringReplaceCondition(
+        String str,
+        IExpr conditionTest,
+        final IExpr ruleRHS,
+        java.util.regex.Pattern pattern,
+        Map<ISymbol, String> namedRegexGroups,
+        final EvalEngine engine) {
+
+      Matcher matcher = pattern.matcher(str);
+      if (!ruleRHS.isString() && namedRegexGroups.size() > 0 && matcher.find()) {
+        StringBuffer buf = new StringBuffer(str.length() + 16);
+        do {
+          IExpr replacedTest = conditionTest;
+          replacedTest = replaceGroups(replacedTest, matcher, namedRegexGroups);
+          if (engine.evalTrue(replacedTest)) {
+            IExpr replacedRHS = ruleRHS;
+            replacedRHS = replaceGroups(replacedRHS, matcher, namedRegexGroups);
+            IExpr temp = engine.evaluate(replacedRHS);
+            matcher.appendReplacement(buf, temp.toString());
+          }
+        } while (matcher.find());
+        matcher.appendTail(buf);
+        return buf.toString();
+      }
+
+      IExpr temp = engine.evaluate(ruleRHS);
+      return pattern.matcher(str).replaceAll(temp.toString());
+    }
+
+    private static IExpr replaceGroups(
+        IExpr replacedTest, Matcher matcher, Map<ISymbol, String> groups) {
+
+      for (Map.Entry<ISymbol, String> group : groups.entrySet()) {
+        String groupValue = matcher.group(group.getValue());
+        if (groupValue != null) {
+          replacedTest = replacedTest.replaceAll(F.Rule(group.getKey(), F.stringx(groupValue)));
+        }
+      }
+      return replacedTest;
     }
 
     @Override
@@ -3326,9 +3385,11 @@ public final class StringFunctions {
       boolean abbreviatedPatterns,
       boolean ignoreCase,
       IAST stringFunction,
-      Map<ISymbol, String> groups,
+      Map<ISymbol, String> namedRegexGroups,
       EvalEngine engine) {
-    String regex = toRegexString(partOfRegex, abbreviatedPatterns, stringFunction, groups, engine);
+
+    String regex =
+        toRegexString(partOfRegex, abbreviatedPatterns, stringFunction, namedRegexGroups, engine);
     if (regex != null) {
       java.util.regex.Pattern pattern;
       try {
@@ -3345,6 +3406,7 @@ public final class StringFunctions {
         regexErrorHandling(stringFunction, iae, engine);
       }
     }
+
     return null;
   }
 
@@ -3372,6 +3434,7 @@ public final class StringFunctions {
       IAST stringFunction,
       Map<ISymbol, String> groups,
       EvalEngine engine) {
+
     if (partOfRegex.isString()) {
       // Guide to escaping characters in Java RegExps -
       // https://www.baeldung.com/java-regexp-escape-char
@@ -3419,18 +3482,28 @@ public final class StringFunctions {
       if (expr == null) {
         return null;
       }
-      if (repeated.isNullSequence()) {
-        String str = toRegexString(expr, abbreviatedPatterns, stringFunction, groups, engine);
-        if (str == null) {
-          return null;
+      if (expr.isAST(S.Pattern, 3) && expr.first().isSymbol()) {
+        final ISymbol symbol = (ISymbol) expr.first();
+        String str =
+            toRegexString(expr.second(), abbreviatedPatterns, stringFunction, groups, engine);
+        if (str != null) {
+          final String groupName = symbol.toString();
+          groups.put(symbol, groupName);
+          if (repeated.isNullSequence()) {
+            return "(?<" + groupName + ">(" + str + ")*)";
+          } else {
+            return "(?<" + groupName + ">(" + str + ")+)";
+          }
         }
-        return "(" + str + ")*";
       } else {
         String str = toRegexString(expr, abbreviatedPatterns, stringFunction, groups, engine);
-        if (str == null) {
-          return null;
+        if (str != null) {
+          if (repeated.isNullSequence()) {
+            return "(" + str + ")*";
+          } else {
+            return "(" + str + ")+";
+          }
         }
-        return "(" + str + ")+";
       }
     } else if (partOfRegex.isAST(S.StringExpression)) {
       IAST stringExpression = (IAST) partOfRegex;
@@ -3446,6 +3519,15 @@ public final class StringFunctions {
         groups.put(symbol, groupName);
         return "(?<" + groupName + ">(.|\\n))";
       }
+    } else if (partOfRegex.isAST(S.Pattern, 3) && partOfRegex.first().isSymbol()) {
+      final ISymbol symbol = (ISymbol) partOfRegex.first();
+      String str =
+          toRegexString(partOfRegex.second(), abbreviatedPatterns, stringFunction, groups, engine);
+      if (str != null) {
+        final String groupName = symbol.toString();
+        groups.put(symbol, groupName);
+        return "(?<" + groupName + ">" + str + ")";
+      }
     } else if (partOfRegex.isPatternSequence(false)) {
       PatternSequence ps = ((PatternSequence) partOfRegex);
       if (ps.isNullSequence()) {
@@ -3457,16 +3539,15 @@ public final class StringFunctions {
       }
     } else if (partOfRegex.isAST(S.CharacterRange, 3)) {
       String[] characterRange = characterRange((IAST) partOfRegex);
-      if (characterRange == null) {
-        return null;
+      if (characterRange != null) {
+        StringBuilder buf = new StringBuilder();
+        buf.append("[");
+        buf.append(Pattern.quote(characterRange[0]));
+        buf.append("-");
+        buf.append(Pattern.quote(characterRange[1]));
+        buf.append("]");
+        return buf.toString();
       }
-      StringBuilder buf = new StringBuilder();
-      buf.append("[");
-      buf.append(Pattern.quote(characterRange[0]));
-      buf.append("-");
-      buf.append(Pattern.quote(characterRange[1]));
-      buf.append("]");
-      return buf.toString();
     } else if (partOfRegex.isAlternatives()) {
       IAST alternatives = (IAST) partOfRegex;
       StringBuilder pieces = new StringBuilder();
@@ -3474,6 +3555,12 @@ public final class StringFunctions {
         String str =
             toRegexString(alternatives.get(i), abbreviatedPatterns, stringFunction, groups, engine);
         if (str == null) {
+          // `1` currently not supported in `2`.
+          IOFunctions.printMessage(
+              stringFunction.topHead(),
+              "unsupported",
+              F.List(alternatives.get(i), stringFunction.topHead()),
+              engine);
           return null;
         }
         pieces.append(str);
@@ -3522,6 +3609,7 @@ public final class StringFunctions {
           return null;
       }
     }
+
     // `1` currently not supported in `2`.
     IOFunctions.printMessage(
         stringFunction.topHead(),
@@ -3537,6 +3625,7 @@ public final class StringFunctions {
       boolean abbreviatedPatterns,
       Map<ISymbol, String> groups,
       EvalEngine engine) {
+
     StringBuilder regex = new StringBuilder();
     for (int i = 1; i < stringExpression.size(); i++) {
       IExpr arg = stringExpression.get(i);
@@ -3546,6 +3635,7 @@ public final class StringFunctions {
       }
       regex.append(str);
     }
+
     return regex.toString();
   }
 
@@ -3557,8 +3647,10 @@ public final class StringFunctions {
    *     character range cannot be generated
    */
   private static String[] characterRange(final IAST characterRangeAST) {
+
     if (!(characterRangeAST.arg1() instanceof IStringX)
         || !(characterRangeAST.arg2() instanceof IStringX)) {
+
       if (!(characterRangeAST.arg1().isInteger()) || !(characterRangeAST.arg2().isInteger())) {
         return null;
       }
@@ -3574,6 +3666,7 @@ public final class StringFunctions {
     if (str1.length() != 1 || str2.length() != 1) {
       return null;
     }
+
     char from = str1.charAt(0);
     char to = str2.charAt(0);
     return new String[] {String.valueOf(from), String.valueOf(to)};
