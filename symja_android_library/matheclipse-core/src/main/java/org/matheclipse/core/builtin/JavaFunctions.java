@@ -66,9 +66,7 @@ public class JavaFunctions {
           if (arg.isString()) {
             String path = arg.toString();
             File file = new File(path);
-            if (file != null) {
-              child = new URLClassLoader(new URL[] {file.toURI().toURL()}, child);
-            }
+            child = new URLClassLoader(new URL[] {file.toURI().toURL()}, child);
           }
         }
         if (child != null) {

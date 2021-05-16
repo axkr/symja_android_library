@@ -2966,18 +2966,17 @@ public final class ListFunctions {
             position((IAST) arg1, arg2, level, engine);
             return defaultValue;
           }
-          if (argSize >= 3) {
-            defaultValue = ast.arg3();
-            if (argSize == 3) {
-              final LevelSpec level = new LevelSpec(0, Integer.MAX_VALUE, heads);
-              position((IAST) arg1, arg2, level, engine);
-              return defaultValue;
-            }
-            IExpr arg4 = engine.evaluate(ast.arg4());
-            final LevelSpec level = new LevelSpecification(arg4, heads);
+
+          defaultValue = ast.arg3();
+          if (argSize == 3) {
+            final LevelSpec level = new LevelSpec(0, Integer.MAX_VALUE, heads);
             position((IAST) arg1, arg2, level, engine);
             return defaultValue;
           }
+          IExpr arg4 = engine.evaluate(ast.arg4());
+          final LevelSpec level = new LevelSpecification(arg4, heads);
+          position((IAST) arg1, arg2, level, engine);
+          return defaultValue;
         }
       } catch (final ResultException frex) {
         return frex.getValue();

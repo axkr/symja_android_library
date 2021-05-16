@@ -52,7 +52,7 @@ import org.matheclipse.core.eval.util.AbstractAssumptions;
 import org.matheclipse.core.form.output.OutputFormFactory;
 import org.matheclipse.core.generic.ObjIntPredicate;
 import org.matheclipse.core.generic.Predicates;
-import org.matheclipse.core.generic.UnaryVariable2Slot; 
+import org.matheclipse.core.generic.UnaryVariable2Slot;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IASTAppendable;
 import org.matheclipse.core.interfaces.IASTMutable;
@@ -4559,7 +4559,7 @@ public abstract class AbstractAST implements IASTMutable {
   /** {@inheritDoc} */
   @Override
   public IExpr last() {
-    if (this instanceof IAST && size() < 2) {
+    if (size() < 2) {
       return F.NIL;
     }
     return get(argSize());

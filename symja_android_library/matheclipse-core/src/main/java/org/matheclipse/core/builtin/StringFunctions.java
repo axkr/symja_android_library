@@ -2840,7 +2840,7 @@ public final class StringFunctions {
             }
             return F.NIL;
           }
-          return result == null ? defaultValue : F.unaryAST1(insertionFunction, result);
+          return F.unaryAST1(insertionFunction, result);
         }
       }
 

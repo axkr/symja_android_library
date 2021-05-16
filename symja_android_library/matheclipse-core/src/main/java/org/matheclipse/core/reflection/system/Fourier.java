@@ -60,24 +60,21 @@ public class Fourier extends AbstractFunctionEvaluator {
     //    org.hipparchus.complex.Complex[] result = fft.transform(array, TransformType.FORWARD);
     //    return Object2Expr.convertComplex(true, result);
 
-    if (array == null) {
-      return F.NIL;
-    } else {
-      int j = 0;
-      for (int i = 0; i < n; ++i) {
-        if (j > i) {
-          Complex val = array[i];
-          array[i] = array[j];
-          array[j] = val;
-        }
-        int m = n >> 1;
-        while (m > 0 && j >= m) {
-          j -= m;
-          m >>= 1;
-        }
-        j += m;
+    int j = 0;
+    for (int i = 0; i < n; ++i) {
+      if (j > i) {
+        Complex val = array[i];
+        array[i] = array[j];
+        array[j] = val;
       }
+      int m = n >> 1;
+      while (m > 0 && j >= m) {
+        j -= m;
+        m >>= 1;
+      }
+      j += m;
     }
+
     int mmax = 1;
     while (n > mmax) {
       int istep = mmax << 1;
@@ -87,7 +84,7 @@ public class Fourier extends AbstractFunctionEvaluator {
       Complex w = Complex.ONE;
       for (int m = 0; m < mmax; ++m) {
         for (int i = m; i < n; i += istep) {
-          int j = i + mmax;
+          j = i + mmax;
           Complex temp = array[j].multiply(w);
           array[j] = array[i].subtract(temp);
           array[i] = array[i].add(temp);

@@ -922,57 +922,55 @@ public class PatternMatcher extends IPatternMatcher implements Externalizable {
     if (functionID >= ID.Association && functionID <= ID.Verbatim) {
       boolean matched = false;
       if (lhsPatternAST.size() == 2) {
-        if (functionID >= ID.Association && functionID <= ID.Verbatim) {
-          final IExpr[] patternValues;
-          switch (functionID) {
-            case ID.Association:
-              patternValues = fPatternMap.copyPattern();
-              try {
-                if (lhsEvalExpr.isAssociation()) {
-                  IAST lhsPatternAssociation = lhsPatternAST;
-                  // TODO set/determine pattern matching flags?
-                  IASTMutable lhsPatternList = (IASTMutable) lhsPatternAssociation.normal(false);
-                  lhsPatternList.set(0, S.Association);
-                  IAssociation lhsEvalAssociation = (IAssociation) lhsEvalExpr;
-                  IASTMutable lhsEvalList = lhsEvalAssociation.normal(false);
-                  lhsEvalList.set(0, S.Association);
-                  matched = matchExpr(lhsPatternList, lhsEvalList, engine, stackMatcher);
-                  return matched;
-                }
-                matched = matchASTExpr(lhsPatternAST, lhsEvalExpr, engine, stackMatcher);
-              } finally {
-                if (!matched) {
-                  fPatternMap.resetPattern(patternValues);
-                }
+        final IExpr[] patternValues;
+        switch (functionID) {
+          case ID.Association:
+            patternValues = fPatternMap.copyPattern();
+            try {
+              if (lhsEvalExpr.isAssociation()) {
+                IAST lhsPatternAssociation = lhsPatternAST;
+                // TODO set/determine pattern matching flags?
+                IASTMutable lhsPatternList = (IASTMutable) lhsPatternAssociation.normal(false);
+                lhsPatternList.set(0, S.Association);
+                IAssociation lhsEvalAssociation = (IAssociation) lhsEvalExpr;
+                IASTMutable lhsEvalList = lhsEvalAssociation.normal(false);
+                lhsEvalList.set(0, S.Association);
+                matched = matchExpr(lhsPatternList, lhsEvalList, engine, stackMatcher);
+                return matched;
               }
-              return matched;
-            case ID.Except:
-              patternValues = fPatternMap.copyPattern();
-              try {
-                matched = !matchExpr(lhsPatternAST.arg1(), lhsEvalExpr, engine, stackMatcher);
-              } finally {
-                if (!matched) {
-                  fPatternMap.resetPattern(patternValues);
-                }
+              matched = matchASTExpr(lhsPatternAST, lhsEvalExpr, engine, stackMatcher);
+            } finally {
+              if (!matched) {
+                fPatternMap.resetPattern(patternValues);
               }
-              return matched;
-            case ID.HoldPattern:
-            case ID.Literal:
-              patternValues = fPatternMap.copyPattern();
-              try {
-                matched = matchExpr(lhsPatternAST.arg1(), lhsEvalExpr, engine, stackMatcher);
-              } finally {
-                if (!matched) {
-                  fPatternMap.resetPattern(patternValues);
-                }
+            }
+            return matched;
+          case ID.Except:
+            patternValues = fPatternMap.copyPattern();
+            try {
+              matched = !matchExpr(lhsPatternAST.arg1(), lhsEvalExpr, engine, stackMatcher);
+            } finally {
+              if (!matched) {
+                fPatternMap.resetPattern(patternValues);
               }
-              return matched;
-            case ID.Optional:
-              return matchOptional(lhsPatternAST, lhsEvalExpr, engine, stackMatcher);
-            case ID.Verbatim:
-              return lhsPatternAST.arg1().equals(lhsEvalExpr);
-            default:
-          }
+            }
+            return matched;
+          case ID.HoldPattern:
+          case ID.Literal:
+            patternValues = fPatternMap.copyPattern();
+            try {
+              matched = matchExpr(lhsPatternAST.arg1(), lhsEvalExpr, engine, stackMatcher);
+            } finally {
+              if (!matched) {
+                fPatternMap.resetPattern(patternValues);
+              }
+            }
+            return matched;
+          case ID.Optional:
+            return matchOptional(lhsPatternAST, lhsEvalExpr, engine, stackMatcher);
+          case ID.Verbatim:
+            return lhsPatternAST.arg1().equals(lhsEvalExpr);
+          default:
         }
       } else if (lhsPatternAST.size() == 3) {
         if (functionID >= ID.Complex && functionID <= ID.Rational) {
