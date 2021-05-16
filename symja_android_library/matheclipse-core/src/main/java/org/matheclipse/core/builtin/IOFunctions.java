@@ -685,6 +685,8 @@ public class IOFunctions {
     "Invalid comparison with `1` attempted.", //
     "normal",
     "Nonatomic expression expected at position `1` in `2`.", //
+    "nostr",
+    "`1` is not a string.", //
     "notent",
     "`2` is not a known entity, class, or tag for `1`.", //
     "nquan",

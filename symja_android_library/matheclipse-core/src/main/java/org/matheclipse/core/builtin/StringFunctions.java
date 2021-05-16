@@ -2129,6 +2129,15 @@ public final class StringFunctions {
       return F.NIL;
     }
 
+    /**
+     * 
+     * @param str
+     * @param ruleRHS
+     * @param pattern
+     * @param namedRegexGroups maps a pattern symbol to the regex name
+     * @param engine
+     * @return
+     */
     private static String stringReplace(
         String str,
         final IExpr ruleRHS,
@@ -2153,6 +2162,16 @@ public final class StringFunctions {
       return pattern.matcher(str).replaceAll(temp.toString());
     }
 
+    /**
+     * 
+     * @param str
+     * @param conditionTest
+     * @param ruleRHS
+     * @param pattern
+     * @param namedRegexGroups maps a pattern symbol to the regex name
+     * @param engine
+     * @return
+     */
     private static String stringReplaceCondition(
         String str,
         IExpr conditionTest,
@@ -2182,16 +2201,24 @@ public final class StringFunctions {
       return pattern.matcher(str).replaceAll(temp.toString());
     }
 
+    /**
+     * Replace all pattern symbols in <code>expr</code> with the value from the named regex group.
+     *
+     * @param expr
+     * @param matcher
+     * @param namedRegexGroups maps a pattern symbol to the regex name
+     * @return
+     */
     private static IExpr replaceGroups(
-        IExpr replacedTest, Matcher matcher, Map<ISymbol, String> groups) {
+        IExpr expr, Matcher matcher, Map<ISymbol, String> namedRegexGroups) {
 
-      for (Map.Entry<ISymbol, String> group : groups.entrySet()) {
+      for (Map.Entry<ISymbol, String> group : namedRegexGroups.entrySet()) {
         String groupValue = matcher.group(group.getValue());
         if (groupValue != null) {
-          replacedTest = replacedTest.replaceAll(F.Rule(group.getKey(), F.stringx(groupValue)));
+          expr = expr.replaceAll(F.Rule(group.getKey(), F.stringx(groupValue)));
         }
       }
-      return replacedTest;
+      return expr;
     }
 
     @Override
@@ -2985,6 +3012,9 @@ public final class StringFunctions {
           }
           return S.$Aborted;
         }
+      } else {
+        // `1` is not a string.
+        return IOFunctions.printMessage(ast.topHead(), "nostr", F.List(ast.arg1()), engine);
       }
       return F.NIL;
     }
