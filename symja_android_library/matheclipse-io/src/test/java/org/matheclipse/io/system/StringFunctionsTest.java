@@ -179,14 +179,13 @@ public class StringFunctionsTest extends AbstractTestCase {
     check(
         "StringCases(\"-(a)--(bb)--(c)-\", \"(\" ~~ __ ~~ \")\")", //
         "{(a)--(bb)--(c)}");
-    // TODO
-    //    check(
-    //        "StringCases(\"-(a)--(bb)--(c)-\", Shortest(\"(\" ~~ __ ~~ \")\"))", //
-    //        "{(a),(bb),(c)}");
+    check(
+        "StringCases(\"-(a)--(bb)--(c)-\", Shortest(\"(\" ~~ __ ~~ \")\"))", //
+        "{(a),(bb),(c)}");
 
     check(
         "StringCases(\"aabaaab\", Shortest(\"a\" ~~ __ ~~ \"b\"))", //
-        "{aabaaab}");
+        "{aab,aaab}");
     check(
         "StringCases(\"aabaaabaaabaaabaaab\", Shortest(RegularExpression(\"a+b\")))", //
         "{aab,aaab,aaab,aaab,aaab}");

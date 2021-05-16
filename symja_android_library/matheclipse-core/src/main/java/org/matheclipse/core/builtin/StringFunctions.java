@@ -3486,6 +3486,7 @@ public final class StringFunctions {
    *     '\','*' and '@' operators)
    * @param stringFunction the original string function, used in error messages
    * @param shortestLongest either {@link #REGEX_LONGEST} or {@link #REGEX_SHORTEST}
+   * @param groups
    * @param engine the evaluation engine
    * @return
    * @see <a href="https://en.wikipedia.org/wiki/Perl_Compatible_Regular_Expressions">Wikipedia -
@@ -3577,7 +3578,8 @@ public final class StringFunctions {
       }
     } else if (partOfRegex.isAST(S.StringExpression)) {
       IAST stringExpression = (IAST) partOfRegex;
-      return toRegexString(stringFunction, stringExpression, abbreviatedPatterns, groups, engine);
+      return toRegexString(
+          stringFunction, stringExpression, abbreviatedPatterns, shortestLongest, groups, engine);
     } else if (partOfRegex.isBlank()) {
       return "(.|\\n)";
     } else if (partOfRegex.isPattern()) {
@@ -3652,8 +3654,15 @@ public final class StringFunctions {
       }
       return pieces.toString();
     } else if (partOfRegex.isAST(S.Shortest, 2)) {
-      return toRegexString(
-          partOfRegex.first(), abbreviatedPatterns, stringFunction, REGEX_SHORTEST, groups, engine);
+      String str =
+          toRegexString(
+              partOfRegex.first(),
+              abbreviatedPatterns,
+              stringFunction,
+              REGEX_SHORTEST,
+              groups,
+              engine);
+      return str;
     } else if (partOfRegex.isAST(S.Longest, 2)) {
       return toRegexString(
           partOfRegex.first(), abbreviatedPatterns, stringFunction, REGEX_LONGEST, groups, engine);
@@ -3707,17 +3716,32 @@ public final class StringFunctions {
     return null;
   }
 
+  /**
+   * Convert the <code>StringExpression( ... )</code> to a java regex string.
+   *
+   * @param ast
+   * @param stringExpression the <code>StringExpression( ... )</code> expression
+   * @param abbreviatedPatterns if <code>true</code> allow 'abbreviated patterns" in strings (i.e.
+   *     '\','*' and '@' operators)
+   * @param shortestLongest either {@link #REGEX_LONGEST} or {@link #REGEX_SHORTEST}
+   * @param groups
+   * @param engine the evaluation engine
+   * @return
+   * @see <a href="https://en.wikipedia.org/wiki/Perl_Compatible_Regular_Expressions">Wikipedia -
+   *     Perl Compatible Regular Expression</a>
+   */
   private static String toRegexString(
       IAST ast,
       IAST stringExpression,
       boolean abbreviatedPatterns,
+      String[] shortestLongest,
       Map<ISymbol, String> groups,
       EvalEngine engine) {
 
     StringBuilder regex = new StringBuilder();
     for (int i = 1; i < stringExpression.size(); i++) {
       IExpr arg = stringExpression.get(i);
-      String str = toRegexString(arg, abbreviatedPatterns, ast, REGEX_LONGEST, groups, engine);
+      String str = toRegexString(arg, abbreviatedPatterns, ast, shortestLongest, groups, engine);
       if (str == null) {
         return null;
       }
