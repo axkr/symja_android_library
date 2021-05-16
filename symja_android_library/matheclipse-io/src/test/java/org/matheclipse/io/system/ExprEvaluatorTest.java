@@ -306,4 +306,29 @@ public class ExprEvaluatorTest extends TestCase {
         evalEngine.evaluate("N[1/(N(0.0000000000000000001602176620898, 100)), 100]").toString(),
         "6.241509125501484852088071665173164020252959820255548406024372975427711002340001391293975286331422182*10^18");
   }
+
+  public void testStringVariables001() {
+    try {
+      ExprEvaluator util = new ExprEvaluator(false, (short) 100);
+
+      IExpr result =
+          util.evaluate(
+              "Variables(termquery$$fuchs*(termquery$$huhn*(1-termquery$$schaf)+termquery$$schaf)+(1-termquery$$fuchs)*termquery$$schaf*termquery$$wolf)");
+      assertEquals(
+          "{termquery$$fuchs,termquery$$huhn,termquery$$schaf,termquery$$wolf}", result.toString());
+
+    } catch (SyntaxError e) {
+      // catch Symja parser errors here
+      assertTrue(false);
+    } catch (MathException me) {
+      // catch Symja math errors here
+      assertTrue(false);
+    } catch (final Exception ex) {
+      assertTrue(false);
+    } catch (final StackOverflowError soe) {
+      assertTrue(false);
+    } catch (final OutOfMemoryError oome) {
+      assertTrue(false);
+    }
+  }
 }
