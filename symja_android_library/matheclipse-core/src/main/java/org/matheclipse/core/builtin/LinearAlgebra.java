@@ -2759,14 +2759,16 @@ public final class LinearAlgebra {
             final IASTAppendable iList = F.ListAlloc(size);
             // +1 because in Symja the offset is +1 compared to java arrays
             iList.appendArgs(0, size, i -> F.ZZ(iArr[i] + 1));
-            return F.List(Convert.matrix2List(lMatrix), Convert.matrix2List(uMatrix), iList);
+            IASTAppendable m1 = Convert.matrix2List(lMatrix);
+            if (m1.isPresent()) {
+              IASTAppendable m2 = Convert.matrix2List(uMatrix);
+              if (m2.isPresent()) {
+                return F.List(m1, m2, iList);
+              }
+            }
           }
         }
-      } catch (final ClassCastException e) {
-        if (FEConfig.SHOW_STACKTRACE) {
-          e.printStackTrace();
-        }
-      } catch (final IndexOutOfBoundsException e) {
+      } catch (IndexOutOfBoundsException | ClassCastException e) {
         if (FEConfig.SHOW_STACKTRACE) {
           e.printStackTrace();
         }
@@ -3659,17 +3661,17 @@ public final class LinearAlgebra {
         engine.setTogetherMode(true);
         int[] dim = ast.arg1().isMatrix();
         if (dim != null) {
-//          matrix = Convert.list2Matrix((IAST) ast.arg1());
-//          if (matrix != null) {
-//            FieldQRDecomposition ed =
-//                new FieldQRDecomposition(matrix, F.C0, x -> x.isPossibleZero(true));
-//            FieldMatrix<IExpr> q = ed.getQ();
-//            FieldMatrix<IExpr> r = ed.getR();
-//            if (Convert.matrix2List(q) != null && Convert.matrix2List(r) != null) {
-//              return F.List(Convert.matrix2List(q), Convert.matrix2List(r));
-//            }
-//            return F.NIL;
-//          }
+          //          matrix = Convert.list2Matrix((IAST) ast.arg1());
+          //          if (matrix != null) {
+          //            FieldQRDecomposition ed =
+          //                new FieldQRDecomposition(matrix, F.C0, x -> x.isPossibleZero(true));
+          //            FieldMatrix<IExpr> q = ed.getQ();
+          //            FieldMatrix<IExpr> r = ed.getR();
+          //            if (Convert.matrix2List(q) != null && Convert.matrix2List(r) != null) {
+          //              return F.List(Convert.matrix2List(q), Convert.matrix2List(r));
+          //            }
+          //            return F.NIL;
+          //          }
         }
 
       } catch (final ClassCastException e) {

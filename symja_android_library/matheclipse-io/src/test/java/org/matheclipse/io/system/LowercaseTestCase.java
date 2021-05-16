@@ -15077,7 +15077,7 @@ public class LowercaseTestCase extends AbstractTestCase {
         "{29.48263182051029,11.393052728194332,6.2358316369166005}");
   }
 
-  public void testHypergeometric2F1() {
+  public void testHypergeometric2F1() { 
     check(
         "Hypergeometric2F1(n,n,2*n+1,1)", //
         "Gamma(1+2*n)/Gamma(1+n)^2");
@@ -28616,6 +28616,9 @@ public class LowercaseTestCase extends AbstractTestCase {
     // check("RandomInteger(20,{10,3})", //
     // "");
     // message: RandomPrime: Positive integer value expected.
+    check(
+        "RandomPrime(#2,{1,1,1,1})", //
+        "RandomPrime(#2,{1,1,1,1})");
     check(
         "RandomPrime(-11)", //
         "RandomPrime(-11)");

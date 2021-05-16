@@ -440,7 +440,7 @@ public final class RandomFunctions {
       } else {
         // Positive integer expected.
         IOFunctions.printMessage(ast.topHead(), "intp", F.List(), engine);
-        return null;
+        return F.NIL;
       }
       if (parametersChecked) {
         try {
