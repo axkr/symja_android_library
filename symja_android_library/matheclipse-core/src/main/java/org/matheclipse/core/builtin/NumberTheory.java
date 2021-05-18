@@ -14,16 +14,18 @@ import static org.matheclipse.core.expression.F.Subtract;
 import static org.matheclipse.core.expression.F.Times;
 
 import java.math.BigInteger;
-import java.math.RoundingMode;
 import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.SortedMap;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutionException;
 
+import org.apfloat.Apcomplex;
+import org.apfloat.ApcomplexMath;
+import org.apfloat.Apfloat;
+import org.apfloat.ApfloatMath;
 import org.hipparchus.complex.Complex;
 import org.hipparchus.exception.MathRuntimeException;
 import org.hipparchus.util.CombinatoricsUtils;
@@ -41,7 +43,6 @@ import org.matheclipse.core.eval.exception.PolynomialDegreeLimitExceeded;
 import org.matheclipse.core.eval.exception.Validate;
 import org.matheclipse.core.eval.exception.ValidateException;
 import org.matheclipse.core.eval.interfaces.AbstractArg2;
-import org.matheclipse.core.eval.interfaces.AbstractCoreFunctionEvaluator;
 import org.matheclipse.core.eval.interfaces.AbstractEvaluator;
 import org.matheclipse.core.eval.interfaces.AbstractFunctionEvaluator;
 import org.matheclipse.core.eval.interfaces.AbstractTrigArg1;
@@ -2100,6 +2101,21 @@ public final class NumberTheory {
    * </pre>
    */
   private static class Factorial extends AbstractTrigArg1 {
+
+    @Override
+    public IExpr e1ComplexArg(Complex c) {
+      return F.complexNum(Arithmetic.lanczosApproxGamma(c.add(1.0)));
+    }
+
+    @Override
+    public IExpr e1ApcomplexArg(Apcomplex c) {
+      return F.complexNum(ApcomplexMath.gamma(c.add(new Apfloat(1L))));
+    }
+
+    @Override
+    public IExpr e1ApfloatArg(Apfloat d) {
+      return F.num(ApfloatMath.gamma(d.add(new Apfloat(1L))));
+    }
 
     @Override
     public IExpr e1DblArg(final double arg1) {
@@ -4258,7 +4274,7 @@ public final class NumberTheory {
         }
         //        SortedMap<BigInteger, Integer> map = new TreeMap<BigInteger, Integer>();
         SortedMap<BigInteger, Integer> map =
-        		Config.PRIME_FACTORS.factorInteger(((IInteger) arg1).toBigNumerator());
+            Config.PRIME_FACTORS.factorInteger(((IInteger) arg1).toBigNumerator());
         BigInteger sum = BigInteger.ZERO;
         for (Map.Entry<BigInteger, Integer> entry : map.entrySet()) {
           sum = sum.add(BigInteger.valueOf(entry.getValue()));
