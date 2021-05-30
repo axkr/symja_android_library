@@ -794,8 +794,9 @@ public final class Validate {
       eqns = (IAST) expr;
       termsEqualZeroList = F.ListAlloc(eqns.size());
       for (int i = 1; i < eqns.size(); i++) {
-        if (eqns.get(i).isAST2()) {
-          IAST eq = (IAST) eqns.get(i);
+        IExpr arg = eqns.get(i);
+        if (arg.isAST2()) {
+          IAST eq = (IAST) arg;
           checkEquationAndInequation(eq, termsEqualZeroList);
         } else {
           // not an equation or inequation
