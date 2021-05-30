@@ -93,6 +93,8 @@ To get an idea of the kinds of expressions Symja handles, see the [JUnit tests i
 
 > [Integrate(Cos(x)^5, x)](http://matheclipse.org/input?i=Integrate(Cos(x)^5,%20x))
 
+> [JavaForm((x+1)^2+(x+1)^3, Float)](http://matheclipse.org/input?i=JavaForm%28%28x%2B1%29%5E2%2B%28x%2B1%29%5E3%2C%20Float%29)
+
 A [Java usage example](https://github.com/axkr/symja_android_library/wiki/Java-usage):
 
 ```java
