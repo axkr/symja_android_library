@@ -376,8 +376,8 @@ function submitQuery(textarea, onfinish) {
 		onSuccess: function(transport) {
 			textarea.ul.select('li[class!=request][class!=submitbutton]').invoke('deleteElement');
 			if (!transport.responseText) {
-				// A fatal Python error has occured, e.g. on 4.4329408320439^43214234345
-				// ("Fatal Python error: mp_reallocate failure")
+				// A fatal Java error has occured, e.g. on 4.4329408320439^43214234345
+				// ("Fatal Java error: mp_reallocate failure")
 				// -> print overflow message
 				transport.responseText = '{"results": [{"out": [{"prefix": "General::noserver", "message": true, "tag": "noserver", "symbol": "General", "text": "<math><mrow><mtext>No server running.</mtext></mrow></math>"}]}]}';
 			}
