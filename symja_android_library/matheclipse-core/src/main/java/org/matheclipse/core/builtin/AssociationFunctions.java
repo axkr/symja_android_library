@@ -259,19 +259,19 @@ public class AssociationFunctions {
         try {
           assocList = ast.copy();
           for (int i = 1; i < ast.size(); i++) {
-            IExpr arg = ast.get(i);
+            final IExpr arg = ast.get(i);
             if (!arg.isAssociation()) {
-              arg = engine.evaluateNull(arg);
-              if (arg.isPresent()) {
+              final IExpr temp = engine.evaluateNIL(arg);
+              if (temp.isPresent()) {
                 evaled = true;
-                assocList.set(i, arg);
+                assocList.set(i, temp);
               }
             }
           }
 
           IAssociation assoc = F.assoc(assocList.size());
           for (int i = 1; i < assocList.size(); i++) {
-            IExpr arg = assocList.get(i);
+            final IExpr arg = assocList.get(i);
             if (arg.isASTOrAssociation()) {
               assoc.appendRules((IAST) arg);
             } else {
@@ -400,7 +400,7 @@ public class AssociationFunctions {
         IAST list2 = (IAST) arg2;
         IAssociation result = F.assoc(list2.size());
         for (int i = 1; i < list2.size(); i++) {
-          IExpr function = engine.evaluate(F.unaryAST1(arg1, list2.get(i)));
+          final IExpr function = engine.evaluate(F.unaryAST1(arg1, list2.get(i)));
           result.append(F.binaryAST2(symbol, list2.get(i), function));
         }
         return result;
@@ -409,7 +409,7 @@ public class AssociationFunctions {
         IAssociation list2 = (IAssociation) arg2;
         IASTAppendable result = F.ast(S.Association, list2.size(), false);
         for (int i = 1; i < list2.size(); i++) {
-          IExpr function = engine.evaluate(F.unaryAST1(arg1, list2.getRule(i)));
+          final IExpr function = engine.evaluate(F.unaryAST1(arg1, list2.getRule(i)));
           result.appendRule(function);
         }
         return result;
@@ -574,7 +574,7 @@ public class AssociationFunctions {
         if (arg1.isListOfRules(true)) {
           IAST listOfRules = (IAST) arg1;
           for (int i = 1; i < listOfRules.size(); i++) {
-            IExpr rule = listOfRules.get(i);
+            final IExpr rule = listOfRules.get(i);
             if (rule.isRuleAST()) {
               if (arg2.equals(rule.first())) {
                 return S.True;
@@ -666,7 +666,7 @@ public class AssociationFunctions {
           IAST listOfRules = (IAST) arg1;
           IASTAppendable list = F.ast(S.List, listOfRules.argSize(), false);
           for (int i = 1; i < listOfRules.size(); i++) {
-            IExpr rule = listOfRules.get(i);
+            final IExpr rule = listOfRules.get(i);
             if (rule.isRuleAST()) {
               list.append(rule.first());
             } else if (rule.isEmptyList()) {
@@ -754,7 +754,7 @@ public class AssociationFunctions {
       int[] items = new int[assoc.size()];
       int length = 0;
       for (int i = 1; i < assoc.size(); i++) {
-        IAST rule = (IAST) assoc.getRule(i);
+        final IAST rule = (IAST) assoc.getRule(i);
         if (predicate.test(rule.first())) {
           items[length++] = i;
         }
@@ -967,7 +967,7 @@ public class AssociationFunctions {
             }
             IAST listOfRules = (IAST) arg1;
             for (int i = 1; i < listOfRules.size(); i++) {
-              IExpr rule = listOfRules.get(i);
+              final IExpr rule = listOfRules.get(i);
               if (rule.isRuleAST()) {
                 if (rule.first().equals(key)) {
                   return rule.second();
@@ -1116,7 +1116,7 @@ public class AssociationFunctions {
       // final IASTAppendable assoc = F.assoc(expr);
       final IASTAppendable resultAssoc = F.assoc(10 > size ? size : 10);
       for (int i = 1; i < size; i++) {
-        IExpr rule = expr.getRule(list.get(i));
+        final IExpr rule = expr.getRule(list.get(i));
         if (rule.isPresent()) {
           resultAssoc.appendRule(rule);
         }
@@ -1192,7 +1192,7 @@ public class AssociationFunctions {
           IAST listOfRules = (IAST) arg1;
           IASTAppendable list = F.ast(S.List, listOfRules.argSize(), false);
           for (int i = 1; i < listOfRules.size(); i++) {
-            IExpr rule = listOfRules.get(i);
+            final IExpr rule = listOfRules.get(i);
             if (rule.isRuleAST()) {
               list.append(rule.second());
             } else if (rule.isEmptyList()) {

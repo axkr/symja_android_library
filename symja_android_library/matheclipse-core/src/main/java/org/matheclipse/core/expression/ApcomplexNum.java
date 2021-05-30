@@ -139,6 +139,11 @@ public class ApcomplexNum implements IComplexNum {
   }
 
   @Override
+  public Apcomplex apcomplexValue(long precision) {
+    return fApcomplex;
+  }
+
+  @Override
   public ComplexNum complexNumValue() {
     return ComplexNum.valueOf(fApcomplex.real().doubleValue(), fApcomplex.imag().doubleValue());
   }

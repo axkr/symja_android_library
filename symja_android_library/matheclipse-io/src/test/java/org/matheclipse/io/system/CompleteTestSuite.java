@@ -23,7 +23,7 @@ public class CompleteTestSuite extends TestCase {
    */
   public static Test suite() {
     TestSuite suite = new TestSuite();
-    
+
     suite.addTestSuite(ConstantTest.class);
     suite.addTestSuite(NumberTheoryTestCase.class);
     suite.addTestSuite(ASCIIPrintTest.class);
@@ -41,7 +41,7 @@ public class CompleteTestSuite extends TestCase {
     suite.addTestSuite(BasicTeXTestCase.class);
     suite.addTestSuite(TeXConverterTestCase.class);
 
-//    suite.addTestSuite(LastCalculationsHistoryTest.class);
+    //    suite.addTestSuite(LastCalculationsHistoryTest.class);
     suite.addTestSuite(ExpandTestCase.class);
 
     suite.addTestSuite(OpenFixedSizeMapTest.class);
@@ -76,6 +76,7 @@ public class CompleteTestSuite extends TestCase {
     suite.addTestSuite(TensorTest.class);
     suite.addTestSuite(GraphFunctionsTest.class);
     suite.addTestSuite(GraphicsTest.class);
+    suite.addTestSuite(MatrixDTest.class);
     // suite.addTestSuite(ArchUnitTests.class);
 
     return suite;

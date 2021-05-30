@@ -272,7 +272,13 @@ public class D extends AbstractFunctionEvaluator implements DRules {
       }
       if (ast.size() > 3) {
         // reduce arguments by folding D[fxy, x, y] to D[ D[fxy, x], y] ...
-        return ast.foldLeft((x, y) -> engine.evaluate(F.D(x, y)), fx, 2);
+        return ast.foldLeft((x, y) -> engine.evaluateNIL(F.D(x, y)), fx, 2);
+      }
+
+      IExpr x = ast.arg2();
+      if (!(x.isVariable() || x.isList())) {
+        // `1` is not a valid variable.
+        return IOFunctions.printMessage(ast.topHead(), "ivar", F.List(x), engine);
       }
 
       if (fx.isList()) {
@@ -281,7 +287,6 @@ public class D extends AbstractFunctionEvaluator implements DRules {
         return list.mapThreadEvaled(engine, F.ListAlloc(list.size()), ast, 1);
       }
 
-      IExpr x = ast.arg2();
       if (x.isList()) {
         // D[fx_, {...}]
         IAST xList = (IAST) x;
@@ -292,7 +297,7 @@ public class D extends AbstractFunctionEvaluator implements DRules {
           return result;
         } else if (xList.isAST1() && xList.arg1().isList()) {
           IAST subList = (IAST) xList.arg1();
-          return subList.mapLeft(F.ListAlloc(), (a, b) -> engine.evaluate(F.D(a, b)), fx);
+          return subList.mapLeft(F.ListAlloc(), (a, b) -> engine.evaluateNIL(F.D(a, b)), fx);
         } else if (xList.isAST2()) {
           if (ast.isEvalFlagOn(IAST.IS_DERIVATIVE_EVALED)) {
             return F.NIL;
@@ -355,160 +360,173 @@ public class D extends AbstractFunctionEvaluator implements DRules {
         // `1` is not a valid variable.
         return IOFunctions.printMessage(ast.topHead(), "ivar", F.List(x), engine);
       }
-      int[] dim = fx.isPiecewise();
-      if (dim != null) {
-        return dPiecewise(dim, (IAST) fx, ast, engine);
-      }
-
-      if (fx instanceof ASTSeriesData) {
-        ASTSeriesData series = ((ASTSeriesData) fx);
-        if (series.getX().equals(x)) {
-          final IExpr temp = ((ASTSeriesData) fx).derive(x);
-          if (temp != null) {
-            return temp;
-          }
-          return F.NIL;
-        }
-        return F.C0;
-      }
-      if (fx.isFree(x, true)) {
-        return F.C0;
-      }
-
-      if (fx.isNumber()) {
-        // D[x_?NumberQ,y_] -> 0
-        return F.C0;
-      }
-      if (fx.equals(x)) {
-        // D[x_,x_] -> 1
-        return F.C1;
-      }
-
-      if (fx.isAST()) {
-        final IAST function = (IAST) fx;
-        final IExpr header = function.head();
-        if (function.isPlus()) {
-          // D(a_+b_+c_,x_) -> D(a,x)+D(b,x)+D(c,x)
-          return function.mapThread(F.D(F.Slot1, x), 1);
-        } else if (function.isTimes()) {
-          return function.map(F.PlusAlloc(16), new BinaryBindIth1st(function, F.D(S.Null, x)));
-        } else if (function.isPower()) {
-          // f ^ g
-          final IExpr f = function.base();
-          final IExpr g = function.exponent();
-          if (g.isFree(x)) {
-            // g*D(f,y)*f^(g-1)
-            return F.Times(g, F.D(f, x), F.Power(f, g.dec()));
-          }
-          if (f.isFree(x)) {
-            if (f.isE()) {
-              return F.Times(F.D(g, x), F.Exp(g));
-            }
-            // D(g,y)*Log(f)*f^g
-            return F.Times(F.D(g, x), F.Log(f), F.Power(f, g));
-          }
-
-          // D[f_^g_,y_]:= f^g*(((g*D[f,y])/f)+Log[f]*D[g,y])
-          final IASTAppendable resultList = F.TimesAlloc(2);
-          resultList.append(F.Power(f, g));
-          resultList.append(
-              F.Plus(F.Times(g, F.D(f, x), F.Power(f, F.CN1)), F.Times(F.Log(f), F.D(g, x))));
-          return resultList;
-        } else if (function.isAST(S.Surd, 3)) {
-          // Surd[f,g]
-          final IExpr f = function.base();
-
-          if (function.exponent().isInteger()) {
-            final IInteger g = (IInteger) function.exponent();
-            if (g.isMinusOne()) {
-              return F.Times(F.CN1, F.D(f, x), F.Power(f, F.CN2));
-            }
-            final IRational gInverse = g.inverse();
-            if (g.isNegative()) {
-              if (g.isEven()) {
-                return F.Times(gInverse, F.D(f, x), F.Power(F.Surd(f, g.negate()), g.dec()));
-              }
-              return F.Times(
-                  gInverse, F.D(f, x), F.Power(f, F.CN1), F.Power(F.Surd(f, g.negate()), F.CN1));
-            }
-            return F.Times(gInverse, F.D(f, x), F.Power(F.Surd(f, g), g.dec().negate()));
-          }
-        } else if ((header == S.Log) && (function.isAST2())) {
-          if (function.isFreeAt(1, x)) {
-            // D[Log[i_FreeQ(x), x_], z_]:= (x*Log[a])^(-1)*D[x,z];
-            return F.Times(
-                F.Power(F.Times(function.arg2(), F.Log(function.arg1())), F.CN1),
-                F.D(function.arg2(), x));
-          }
-          // } else if (header == F.LaplaceTransform && (listArg1.size()
-          // == 4)) {
-          // if (listArg1.arg3().equals(x) && listArg1.arg1().isFree(x,
-          // true)) {
-          // // D(LaplaceTransform(c,t,s), s) -> -c / s^2
-          // return F.Times(-1L, listArg1.arg2(), F.Power(x, -2L));
-          // } else if (listArg1.arg1().equals(x)) {
-          // // D(LaplaceTransform(c,t,s), c) -> 1/s
-          // return F.Power(x, -1L);
-          // } else if (listArg1.arg1().isFree(x, true) &&
-          // listArg1.arg2().isFree(x, true) && listArg1.arg3().isFree(x,
-          // true))
-          // {
-          // // D(LaplaceTransform(c,t,s), w) -> 0
-          // return F.C0;
-          // } else if (listArg1.arg2().equals(x)) {
-          // // D(LaplaceTransform(c,t,s), t) -> 0
-          // return F.C0;
-          // }
-        } else if (function.isAST1() && ast.isEvalFlagOff(IAST.IS_DERIVATIVE_EVALED)) {
-          IAST[] derivStruct = function.isDerivativeAST1();
-          if (derivStruct != null && derivStruct[2] != null) {
-            IAST headAST = derivStruct[1];
-            IAST a1Head = derivStruct[0];
-            if (a1Head.isAST1() && a1Head.arg1().isInteger()) {
-              try {
-                int n = ((IInteger) a1Head.arg1()).toInt();
-                IExpr arg1 = function.arg1();
-                if (n > 0) {
-                  IAST fDerivParam = Derivative.createDerivative(n + 1, headAST.arg1(), arg1);
-                  if (x.equals(arg1)) {
-                    return fDerivParam;
-                  }
-                  return F.Times(F.D(arg1, x), fDerivParam);
-                }
-              } catch (ArithmeticException ae) {
-
-              }
-            }
-            return F.NIL;
-          }
-          return getDerivativeArg1(x, function.arg1(), header, engine);
-        } else if (function.isAST() && ast.isEvalFlagOff(IAST.IS_DERIVATIVE_EVALED)) {
-          return getDerivativeArgN(x, function, header);
-        }
-      }
+      return binaryD(fx, x, ast, engine);
     } catch (final ValidateException ve) {
       // int number validation
       return engine.printMessage(ve.getMessage(ast.topHead()));
+    }
+  }
+
+  /**
+   * Evaluate <code>D(functionO>fX, x)</code> for some general cases.
+   *
+   * @param functionOfX the function of <code>x</code>
+   * @param x derive w.r.t this variable
+   * @param ast
+   * @param engine
+   * @return
+   */
+  private static IExpr binaryD(
+      final IExpr functionOfX, IExpr x, final IAST ast, EvalEngine engine) {
+    int[] dim = functionOfX.isPiecewise();
+    if (dim != null) {
+      return dPiecewise(dim, (IAST) functionOfX, ast, engine);
+    }
+
+    if (functionOfX instanceof ASTSeriesData) {
+      ASTSeriesData series = ((ASTSeriesData) functionOfX);
+      if (series.getX().equals(x)) {
+        final IExpr temp = ((ASTSeriesData) functionOfX).derive(x);
+        if (temp != null) {
+          return temp;
+        }
+        return F.NIL;
+      }
+      return F.C0;
+    }
+    if (functionOfX.isFree(x, true)) {
+      return F.C0;
+    }
+
+    if (functionOfX.isNumber()) {
+      // D[x_?NumberQ,y_] -> 0
+      return F.C0;
+    }
+    if (functionOfX.equals(x)) {
+      // D[x_,x_] -> 1
+      return F.C1;
+    }
+
+    if (functionOfX.isAST()) {
+      final IAST function = (IAST) functionOfX;
+      final IExpr header = function.head();
+      if (function.isPlus()) {
+        // D(a_+b_+c_,x_) -> D(a,x)+D(b,x)+D(c,x)
+        return function.mapThread(F.D(F.Slot1, x), 1);
+      } else if (function.isTimes()) {
+        return function.map(F.PlusAlloc(16), new BinaryBindIth1st(function, F.D(S.Null, x)));
+      } else if (function.isPower()) {
+        // f ^ g
+        final IExpr f = function.base();
+        final IExpr g = function.exponent();
+        if (g.isFree(x)) {
+          // g*D(f,y)*f^(g-1)
+          return F.Times(g, F.D(f, x), F.Power(f, g.dec()));
+        }
+        if (f.isFree(x)) {
+          if (f.isE()) {
+            return F.Times(F.D(g, x), F.Exp(g));
+          }
+          // D(g,y)*Log(f)*f^g
+          return F.Times(F.D(g, x), F.Log(f), F.Power(f, g));
+        }
+
+        // D[f_^g_,y_]:= f^g*(((g*D[f,y])/f)+Log[f]*D[g,y])
+        final IASTAppendable resultList = F.TimesAlloc(2);
+        resultList.append(F.Power(f, g));
+        resultList.append(
+            F.Plus(F.Times(g, F.D(f, x), F.Power(f, F.CN1)), F.Times(F.Log(f), F.D(g, x))));
+        return resultList;
+      } else if (function.isAST(S.Surd, 3)) {
+        // Surd[f,g]
+        final IExpr f = function.base();
+
+        if (function.exponent().isInteger()) {
+          final IInteger g = (IInteger) function.exponent();
+          if (g.isMinusOne()) {
+            return F.Times(F.CN1, F.D(f, x), F.Power(f, F.CN2));
+          }
+          final IRational gInverse = g.inverse();
+          if (g.isNegative()) {
+            if (g.isEven()) {
+              return F.Times(gInverse, F.D(f, x), F.Power(F.Surd(f, g.negate()), g.dec()));
+            }
+            return F.Times(
+                gInverse, F.D(f, x), F.Power(f, F.CN1), F.Power(F.Surd(f, g.negate()), F.CN1));
+          }
+          return F.Times(gInverse, F.D(f, x), F.Power(F.Surd(f, g), g.dec().negate()));
+        }
+      } else if ((header == S.Log) && (function.isAST2())) {
+        if (function.isFreeAt(1, x)) {
+          // D[Log[i_FreeQ(x), x_], z_]:= (x*Log[a])^(-1)*D[x,z];
+          return F.Times(
+              F.Power(F.Times(function.arg2(), F.Log(function.arg1())), F.CN1),
+              F.D(function.arg2(), x));
+        }
+        // } else if (header == F.LaplaceTransform && (listArg1.size()
+        // == 4)) {
+        // if (listArg1.arg3().equals(x) && listArg1.arg1().isFree(x,
+        // true)) {
+        // // D(LaplaceTransform(c,t,s), s) -> -c / s^2
+        // return F.Times(-1L, listArg1.arg2(), F.Power(x, -2L));
+        // } else if (listArg1.arg1().equals(x)) {
+        // // D(LaplaceTransform(c,t,s), c) -> 1/s
+        // return F.Power(x, -1L);
+        // } else if (listArg1.arg1().isFree(x, true) &&
+        // listArg1.arg2().isFree(x, true) && listArg1.arg3().isFree(x,
+        // true))
+        // {
+        // // D(LaplaceTransform(c,t,s), w) -> 0
+        // return F.C0;
+        // } else if (listArg1.arg2().equals(x)) {
+        // // D(LaplaceTransform(c,t,s), t) -> 0
+        // return F.C0;
+        // }
+      } else if (function.isAST1() && ast.isEvalFlagOff(IAST.IS_DERIVATIVE_EVALED)) {
+        IAST[] derivStruct = function.isDerivativeAST1();
+        if (derivStruct != null && derivStruct[2] != null) {
+          IAST headAST = derivStruct[1];
+          IAST a1Head = derivStruct[0];
+          if (a1Head.isAST1() && a1Head.arg1().isInteger()) {
+            try {
+              int n = ((IInteger) a1Head.arg1()).toInt();
+              IExpr arg1 = function.arg1();
+              if (n > 0) {
+                IAST fDerivParam = Derivative.createDerivative(n + 1, headAST.arg1(), arg1);
+                if (x.equals(arg1)) {
+                  return fDerivParam;
+                }
+                return F.Times(F.D(arg1, x), fDerivParam);
+              }
+            } catch (ArithmeticException ae) {
+
+            }
+          }
+          return F.NIL;
+        }
+        return getDerivativeArg1(x, function.arg1(), header, engine);
+      } else if (function.isAST() && ast.isEvalFlagOff(IAST.IS_DERIVATIVE_EVALED)) {
+        return getDerivativeArgN(x, function, header);
+      }
     }
     return F.NIL;
   }
 
   private static IExpr dPiecewise(
       int[] dim, final IAST piecewiseFunction, final IAST ast, EvalEngine engine) {
-    // int[] dim = piecewiseFunction.arg1().isMatrix(false);
-    // if (dim != null && dim[0] > 0 && dim[1] == 2) {
+
     IAST list = (IAST) piecewiseFunction.arg1();
     if (list.size() > 1) {
       IASTAppendable pwResult = F.ListAlloc(list.size());
       for (int i = 1; i < list.size(); i++) {
-        IASTMutable diff = ast.copy();
-        diff.set(1, list.get(i).first());
-        pwResult.append(F.List(diff, list.get(i).second()));
+        IASTMutable piecewiseD = ast.copy();
+        piecewiseD.set(1, list.get(i).first());
+        pwResult.append(F.List(piecewiseD, list.get(i).second()));
       }
       if (piecewiseFunction.size() > 2) {
-        IASTMutable diff = ast.copy();
-        diff.set(1, piecewiseFunction.arg2());
-        pwResult.append(F.List(engine.evaluate(diff), S.True));
+        IASTMutable piecewiseD = ast.copy();
+        piecewiseD.set(1, piecewiseFunction.arg2());
+        pwResult.append(F.List(engine.evaluate(piecewiseD), S.True));
       }
       IASTMutable piecewise = piecewiseFunction.copy();
       piecewise.set(1, pwResult);
@@ -517,7 +535,11 @@ public class D extends AbstractFunctionEvaluator implements DRules {
       }
       return piecewise;
     }
-    // }
     return F.NIL;
+  }
+
+  @Override
+  public int[] expectedArgSize(IAST ast) {
+    return ARGS_2_INFINITY;
   }
 }

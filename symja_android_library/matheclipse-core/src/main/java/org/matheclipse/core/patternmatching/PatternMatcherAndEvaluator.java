@@ -116,7 +116,7 @@ public class PatternMatcherAndEvaluator extends PatternMatcher implements Extern
       if (fRightHandSide.isCondition()) {
         fRHSleafCountSimplify = fRightHandSide.second().leafCountSimplify();
       } else if (fRightHandSide.isModuleOrWithCondition()) {
-        IAST condition = (IAST) fRightHandSide.second();
+        IAST condition = (IAST) fRightHandSide.last();
         fRHSleafCountSimplify = condition.second().leafCountSimplify();
       }
     }
@@ -156,14 +156,14 @@ public class PatternMatcherAndEvaluator extends PatternMatcher implements Extern
         }
         return p1.compareTo(p2);
       } else if (patternExpr2.isModuleOrWithCondition()) {
-        p2 = patternExpr2.second().second();
+        p2 = patternExpr2.last().second();
         if (equivalent(p1, p2, pm1, pm2)) {
           return 0;
         }
         return p1.compareTo(p2);
       }
     } else if (patternExpr1.isModuleOrWithCondition()) {
-      p1 = patternExpr1.second().second();
+      p1 = patternExpr1.last().second();
       if (patternExpr2.isCondition()) {
         p2 = patternExpr2.second();
         if (equivalent(p1, p2, pm1, pm2)) {
@@ -171,7 +171,7 @@ public class PatternMatcherAndEvaluator extends PatternMatcher implements Extern
         }
         return p1.compareTo(p2);
       } else if (patternExpr2.isModuleOrWithCondition()) {
-        p2 = patternExpr2.second().second();
+        p2 = patternExpr2.last().second();
         if (equivalent(p1, p2, pm1, pm2)) {
           return 0;
         }
@@ -272,7 +272,7 @@ public class PatternMatcherAndEvaluator extends PatternMatcher implements Extern
       patternMap = createPatternMap();
       patternMap.initPattern();
       if (matchExpr(fLhsPatternExpr, leftHandSide, engine, new StackMatcher(engine))) {
-    	 
+
         if (RulesData.showSteps) {
           if (fLhsPatternExpr.head().equals(S.Integrate)) {
             IExpr rhs = fRightHandSide.orElse(S.Null);

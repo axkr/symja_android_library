@@ -506,17 +506,13 @@ public abstract class Scanner {
       getChar();
     }
     int contextIndex = -1;
-    while ((Character.isJavaIdentifierPart(fCurrentChar) && (fCurrentChar != '_'))
-        || (fCurrentChar == '$')
-        || (fCurrentChar == '`')) {
+    while (Characters.isSymjaIdentifierPart(fCurrentChar)) {
       if (fCurrentChar == '`') {
         contextIndex = fCurrentPosition - 1;
       }
       getChar();
     }
-    while ((Character.isJavaIdentifierPart(fCurrentChar) && (fCurrentChar != '_'))
-        || (fCurrentChar == '$')
-        || (fCurrentChar == '`')) {
+    while (Characters.isSymjaIdentifierPart(fCurrentChar)) {
       if (fCurrentChar == '`') {
         contextIndex = fCurrentPosition - 1;
       }
@@ -652,8 +648,7 @@ public abstract class Scanner {
           continue; // while loop
         }
 
-        if ((Character.isJavaIdentifierStart(fCurrentChar) && (fCurrentChar != '_'))
-            || (fCurrentChar == '$')) {
+        if (Characters.isSymjaIdentifierStart(fCurrentChar)) {
           // the Character.isUnicodeIdentifierStart method doesn't
           // work in Google Web Toolkit:
           // || (Character.isUnicodeIdentifierStart(fCurrentChar))) {

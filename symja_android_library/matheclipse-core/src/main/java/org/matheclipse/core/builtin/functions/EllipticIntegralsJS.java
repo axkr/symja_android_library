@@ -84,13 +84,13 @@ public class EllipticIntegralsJS {
 
     double Q =
         Math.pow(3.0 * tolerance, -1.0 / 6.0)
-            * Math.max(A0.subtract(x).abs(), Math.max(A0.subtract(y).abs(), A0.subtract(z).abs()));
+            * Math.max(
+                A0.subtract(x).norm(), Math.max(A0.subtract(y).norm(), A0.subtract(z).norm()));
     double g = 0.25;
     double pow4 = 1.0;
-    double m = 0.0;
 
     while (true) {
-      double absAm = Am.abs();
+      double absAm = Am.norm();
       if (Double.isNaN(absAm) || Double.isInfinite(absAm)) {
         throw new ArgumentTypeException("carlsonRF: Am is undefined");
       }
@@ -107,7 +107,6 @@ public class EllipticIntegralsJS {
       }
       // Am=Am1;
       Am = Am.add(lm).multiply(g);
-      m += 1;
       pow4 *= g;
     }
 
@@ -159,7 +158,6 @@ public class EllipticIntegralsJS {
             * Math.max(Math.max(Math.abs(A0 - x), Math.abs(A0 - y)), Math.abs(A0 - z));
     double g = .25;
     double pow4 = 1.0;
-    int m = 0;
 
     while (true) {
       double xs = Math.sqrt(xm);
@@ -174,7 +172,6 @@ public class EllipticIntegralsJS {
         break;
       }
       Am = Am1;
-      m += 1;
       pow4 *= g;
     }
 
@@ -220,9 +217,9 @@ public class EllipticIntegralsJS {
     double Q =
         Math.pow(0.25 * tolerance, -1.0 / 6.0)
             * Math.max(
-                A0.subtract(x).abs(),
+                A0.subtract(x).norm(),
                 Math.max(
-                    A0.subtract(y).abs(), Math.max(A0.subtract(z).abs(), A0.subtract(p).abs())));
+                    A0.subtract(y).norm(), Math.max(A0.subtract(z).norm(), A0.subtract(p).norm())));
     double m = 0.0;
     double g = 0.25;
     double pow4 = 1.0;
@@ -245,7 +242,7 @@ public class EllipticIntegralsJS {
               .multiply(dm.reciprocal())
               .multiply(delta)
               .multiply(Math.pow(4.0, -3.0 * m));
-      if (pow4 * Q < Am.abs()) {
+      if (pow4 * Q < Am.norm()) {
         break;
       }
       Complex T = carlsonRC(Complex.ONE, em.add(1)).multiply(pow4).multiply(dm.reciprocal());

@@ -27,4 +27,4 @@ y
 
 ### Github
 
-* [Implementation of ReleaseHold](https://github.com/axkr/symja_android_library/blob/master/symja_android_library/matheclipse-core/src/main/java/org/matheclipse/core/builtin/PatternMatching.java#L1371) 
+* [Implementation of ReleaseHold](https://github.com/axkr/symja_android_library/blob/master/symja_android_library/matheclipse-core/src/main/java/org/matheclipse/core/builtin/PatternMatching.java#L1373) 

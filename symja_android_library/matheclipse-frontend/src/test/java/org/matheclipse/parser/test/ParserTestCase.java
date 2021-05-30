@@ -1084,4 +1084,40 @@ public class ParserTestCase extends TestCase {
       assertEquals("", e.getMessage());
     }
   }
+
+  public void testParser71() {
+    try {
+      Parser p = new Parser();
+      ASTNode obj =
+          p.parse(
+              "  \n"
+                  + "a = f[Rule, {#, RandomReal[1, Length[#]]}]&[\n"
+                  + "Flatten[constants[[All,2]]]"
+                  + "\n]");
+      assertEquals(
+          obj.toString(), //
+          "Set(a, Function(f(Rule, List(Slot(1), RandomReal(1, Length(Slot(1))))))[Flatten(Part(constants, All, 2))])");
+    } catch (Exception e) {
+      e.printStackTrace();
+      assertEquals("", e.getMessage());
+    }
+  }
+
+  public void testParser72() {
+    try {
+      Parser p = new Parser();
+      ASTNode obj =
+          p.parse(
+              "  \n"
+                  + "	constantRules = f[Rule, {#, RandomReal[1, Length[#]]}]&[\n"
+                  + "		Flatten[constants[[All,2]]]\n"
+                  + "	]");
+      assertEquals(
+          obj.toString(), //
+          "Set(constantRules, Function(f(Rule, List(Slot(1), RandomReal(1, Length(Slot(1))))))[Flatten(Part(constants, All, 2))])");
+    } catch (Exception e) {
+      e.printStackTrace();
+      assertEquals("", e.getMessage());
+    }
+  }
 }

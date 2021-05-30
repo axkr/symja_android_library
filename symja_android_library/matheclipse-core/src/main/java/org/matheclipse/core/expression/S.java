@@ -77,6 +77,9 @@ public class S {
   public static final IBuiltInSymbol $HomeDirectory =
       F.initFinalSymbol("$HomeDirectory", ID.$HomeDirectory);
 
+  public static final IBuiltInSymbol $IdentityMatrix =
+      F.initFinalSymbol("$IdentityMatrix", ID.$IdentityMatrix);
+
   public static final IBuiltInSymbol $Input = F.initFinalSymbol("$Input", ID.$Input);
 
   public static final IBuiltInSymbol $InputFileName =
@@ -167,6 +170,9 @@ public class S {
    */
   public static final IBuiltInSymbol $ScriptCommandLine =
       F.initFinalSymbol("$ScriptCommandLine", ID.$ScriptCommandLine);
+
+  public static final IBuiltInSymbol $SingleEntryMatrix =
+      F.initFinalSymbol("$SingleEntryMatrix", ID.$SingleEntryMatrix);
 
   public static final IBuiltInSymbol $SystemCharacterEncoding =
       F.initFinalSymbol("$SystemCharacterEncoding", ID.$SystemCharacterEncoding);
@@ -4232,6 +4238,8 @@ public class S {
    *     documentation</a>
    */
   public static final IBuiltInSymbol Import = F.initFinalSymbol("Import", ID.Import);
+  
+  public static final IBuiltInSymbol ImportString = F.initFinalSymbol("ImportString", ID.ImportString);
 
   /**
    * In(k) - gives the `k`th line of input.
@@ -4696,6 +4704,9 @@ public class S {
    */
   public static final IBuiltInSymbol JacobiDN = F.initFinalSymbol("JacobiDN", ID.JacobiDN);
 
+  public static final IBuiltInSymbol JacobiEpsilon =
+      F.initFinalSymbol("JacobiEpsilon", ID.JacobiEpsilon);
+
   /**
    * JacobiMatrix(matrix, var) - creates a Jacobian matrix.
    *
@@ -4899,6 +4910,9 @@ public class S {
    */
   public static final IBuiltInSymbol KroneckerDelta =
       F.initFinalSymbol("KroneckerDelta", ID.KroneckerDelta);
+
+  public static final IBuiltInSymbol KroneckerProduct =
+      F.initFinalSymbol("KroneckerProduct", ID.KroneckerProduct);
 
   /**
    * Kurtosis(list) - gives the Pearson measure of kurtosis for `list` (a measure of existing
@@ -5496,6 +5510,10 @@ public class S {
    */
   public static final IBuiltInSymbol MathMLForm = F.initFinalSymbol("MathMLForm", ID.MathMLForm);
 
+  public static final IBuiltInSymbol Matrices = F.initFinalSymbol("Matrices", ID.Matrices);
+
+  public static final IBuiltInSymbol MatrixD = F.initFinalSymbol("MatrixD", ID.MatrixD);
+
   /**
    * MatrixExp(matrix) - computes the matrix exponential of the square `matrix`.
    *
@@ -5513,6 +5531,8 @@ public class S {
    *     documentation</a>
    */
   public static final IBuiltInSymbol MatrixForm = F.initFinalSymbol("MatrixForm", ID.MatrixForm);
+
+  public static final IBuiltInSymbol MatrixLog = F.initFinalSymbol("MatrixLog", ID.MatrixLog);
 
   /**
    * MatrixMinimalPolynomial(matrix, var) - computes the matrix minimal polynomial of a `matrix` for
@@ -7898,6 +7918,8 @@ public class S {
   public static final IBuiltInSymbol SetAttributes =
       F.initFinalSymbol("SetAttributes", ID.SetAttributes);
 
+  public static final IBuiltInSymbol SetSystemOptions =
+      F.initFinalSymbol("SetSystemOptions", ID.SetSystemOptions);
   /**
    * SetDelayed(expr, value) - assigns `value` to `expr`, without evaluating `value`.
    *
@@ -8734,6 +8756,9 @@ public class S {
   public static final IBuiltInSymbol SystemDialogInput =
       F.initFinalSymbol("SystemDialogInput", ID.SystemDialogInput);
 
+  public static final IBuiltInSymbol SystemOptions =
+      F.initFinalSymbol("SystemOptions", ID.SystemOptions);
+
   /**
    * Table(expr, {i, n}) - evaluates `expr` with `i` ranging from `1` to `n`, returning a list of
    * the results.
@@ -9051,7 +9076,7 @@ public class S {
   public static final IBuiltInSymbol ToUnicode = F.initFinalSymbol("ToUnicode", ID.ToUnicode);
 
   public static final IBuiltInSymbol ToUpperCase = F.initFinalSymbol("ToUpperCase", ID.ToUpperCase);
-  
+
   public static final IBuiltInSymbol Today = F.initFinalSymbol("Today", ID.Today);
 
   /**
@@ -9431,6 +9456,8 @@ public class S {
    */
   public static final IBuiltInSymbol VectorQ = F.initFinalSymbol("VectorQ", ID.VectorQ);
 
+  public static final IBuiltInSymbol Vectors = F.initFinalSymbol("Vectors", ID.Vectors);
+
   /**
    * Verbatim(expr) - prevents pattern constructs in `expr` from taking effect, allowing them to
    * match themselves.
@@ -9803,5 +9830,22 @@ public class S {
       return new ExprID(id);
     }
     return expr;
+  }
+
+  /**
+   * Is the symbol <code>domain</code> one of the following predefined domain symbols: <code>
+   * Algebraics, Booleans, Complexes, Integers, Primes, Rationals, Reals</code>
+   *
+   * @param domain the symbol which can represent a predefined domain
+   * @return
+   */
+  public static boolean isDomain(ISymbol domain) {
+    return domain == Algebraics
+        || domain == Booleans
+        || domain == Complexes
+        || domain == Integers
+        || domain == Primes
+        || domain == Rationals
+        || domain == Reals;
   }
 }

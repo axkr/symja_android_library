@@ -2158,7 +2158,7 @@ public final class Programming {
         try {
           //        System.out.println(ast.toString() );
           IASTMutable evaledAST = F.NIL;
-          IExpr arg1 = engine.evaluateNull(ast.arg1());
+          IExpr arg1 = engine.evaluateNIL(ast.arg1());
           if (arg1.isPresent()) {
             evaledAST = ast.setAtCopy(1, arg1);
             if (!arg1.isASTOrAssociation()) {
@@ -2186,7 +2186,7 @@ public final class Programming {
 
           int astSize = ast.size();
           for (int i = 2; i < astSize; i++) {
-            temp = engine.evaluateNull(ast.get(i));
+            temp = engine.evaluateNIL(ast.get(i));
             if (temp.isPresent()) {
               if (evaledAST.isPresent()) {
                 evaledAST.set(i, temp);
@@ -2218,7 +2218,7 @@ public final class Programming {
 
         int astSize = ast.size();
         for (int i = 2; i < astSize; i++) {
-          temp = engine.evaluateNull(ast.get(i));
+          temp = engine.evaluateNIL(ast.get(i));
           if (temp.isPresent()) {
             if (evaledAST.isPresent()) {
               evaledAST.set(i, temp);
@@ -2407,7 +2407,7 @@ public final class Programming {
           IPatternMatcher[] matcher;
           if (arg2.isList()) {
             IAST matcherAST = (IAST) arg2;
-            
+
             matcher = new IPatternMatcher[matcherAST.size() - 1];
             for (int i = 1; i < matcherAST.size(); i++) {
               matcher[i - 1] = engine.evalPatternMatcher(matcherAST.get(i));
@@ -3329,7 +3329,13 @@ public final class Programming {
     public IExpr evaluate(final IAST ast, EvalEngine engine) {
       final IAST moduleVariablesList = Validate.checkLocalVariableList(ast, 1, engine);
       if (moduleVariablesList.isPresent()) {
-        IExpr temp = withSubstVariables(moduleVariablesList, ast.arg2(), engine);
+        IExpr lastArg;
+        if (ast.argSize() > 2) {
+          lastArg = ast.rest();
+        } else {
+          lastArg = ast.arg2();
+        }
+        IExpr temp = withSubstVariables(moduleVariablesList, lastArg, engine);
         if (temp.isPresent()) {
           return engine.evaluate(temp);
         }
@@ -3339,7 +3345,8 @@ public final class Programming {
 
     @Override
     public int[] expectedArgSize(IAST ast) {
-      return ARGS_2_2;
+      // in contrast to `Module` (which only allows 2 arguments), `With` allows multiple initializer blocks
+      return ARGS_2_INFINITY;
     }
 
     @Override
@@ -3371,8 +3378,7 @@ public final class Programming {
           variablesMap.put(oldSymbol, temp);
         } else {
           // Local variable specification `1` contains `2`, which is an assignment to `3`; only
-          // assignments to
-          // symbols are allowed.
+          // assignments to  symbols are allowed.
           IOFunctions.printMessage(
               S.With, "lvset", F.List(variablesList, variablesList.get(i), setFun.arg1()), engine);
           return false;
@@ -3387,8 +3393,7 @@ public final class Programming {
           variablesMap.put(oldSymbol, rightHandSide);
         } else {
           // Local variable specification `1` contains `2`, which is an assignment to `3`; only
-          // assignments to
-          // symbols are allowed.
+          // assignments to symbols are allowed.
           IOFunctions.printMessage(
               S.With, "lvset", F.List(variablesList, variablesList.get(i), setFun.arg1()), engine);
           return false;

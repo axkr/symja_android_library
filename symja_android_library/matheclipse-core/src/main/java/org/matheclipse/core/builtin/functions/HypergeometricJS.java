@@ -13,6 +13,7 @@ import org.matheclipse.core.builtin.Arithmetic;
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.exception.ArgumentTypeException;
 import org.matheclipse.core.eval.exception.IterationLimitExceeded;
+import org.matheclipse.core.eval.exception.RecursionLimitExceeded;
 import org.matheclipse.core.eval.exception.ResultException;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.expression.S;
@@ -163,7 +164,7 @@ public class HypergeometricJS {
     }
 
     // asymptotic form as per Johansson
-    if (x.abs() > useAsymptotic) {
+    if (x.norm() > useAsymptotic) {
       // transform variables for convenience
       Complex b = a.multiply(2).subtract(1);
       a = a.subtract(0.5);
@@ -222,7 +223,7 @@ public class HypergeometricJS {
     }
 
     // asymptotic form as per Johansson arxiv.org/abs/1606.06977
-    if (x.abs() > useAsymptotic) {
+    if (x.norm() > useAsymptotic) {
       Complex t1 =
           Arithmetic.lanczosApproxGamma(b)
               .multiply(x.negate().pow(a.negate()))
@@ -318,10 +319,10 @@ public class HypergeometricJS {
 
       p = p.multiply(x).multiply(a).multiply(b).divide(i);
 
-      if (p.abs() > pLast.abs() && converging) {
+      if (p.norm() > pLast.norm() && converging) {
         break; // prevent runaway sum
       }
-      if (p.abs() < pLast.abs()) {
+      if (p.norm() < pLast.norm()) {
         converging = true;
       }
       if (i > terms) {
@@ -387,218 +388,235 @@ public class HypergeometricJS {
       return Complex.ONE.subtract(x).pow(a.negate());
     }
 
-    // choose smallest absolute value of transformed argument
-    // transformations from Abramowitz & Stegun p.559
-    // fewer operations compared to dlmf.nist.gov/15.8
+    EvalEngine engine = EvalEngine.get();
+    final int recursionLimit = engine.getRecursionLimit();
+    try {
+      if (recursionLimit > 0) {
+        int counter = engine.incRecursionCounter();
+        if (counter > recursionLimit) {
+          RecursionLimitExceeded.throwIt(
+              counter, //
+              F.Hypergeometric2F1(
+                  F.complexNum(a), F.complexNum(b), F.complexNum(c), F.complexNum(x)));
+        }
+      }
+      // choose smallest absolute value of transformed argument
+      // transformations from Abramowitz & Stegun p.559
+      // fewer operations compared to dlmf.nist.gov/15.8
 
-    double[] absArray =
-        new double[] {
-          x.abs(), //
-          x.divide(x.subtract(1)).abs(), //
-          new Complex(1).subtract(x).abs(), //
-          x.reciprocal().abs(), //
-          new Complex(1).subtract(x).reciprocal().abs(), //
-          new Complex(1).subtract(x.reciprocal()).abs()
-        };
+      double[] absArray =
+          new double[] {
+            x.norm(), //
+            x.divide(x.subtract(1)).norm(), //
+            new Complex(1).subtract(x).norm(), //
+            x.reciprocal().norm(), //
+            new Complex(1).subtract(x).reciprocal().norm(), //
+            new Complex(1).subtract(x.reciprocal()).norm()
+          };
 
-    double min = Double.POSITIVE_INFINITY;
-    double newMin = Double.POSITIVE_INFINITY;
-    int index = -1;
-    for (int i = 0; i < absArray.length; i++) {
-      newMin = Math.min(min, absArray[i]);
-      if (newMin != min) {
-        min = newMin;
-        index = i;
+      double min = Double.POSITIVE_INFINITY;
+      double newMin = Double.POSITIVE_INFINITY;
+      int index = -1;
+      for (int i = 0; i < absArray.length; i++) {
+        newMin = Math.min(min, absArray[i]);
+        if (newMin != min) {
+          min = newMin;
+          index = i;
+        }
+      }
+
+      final Complex subtractCA = c.subtract(a);
+      final Complex subtractCB = c.subtract(b);
+      final Complex af = a;
+      final Complex bf = b;
+      final Complex cf = c;
+      final Complex xf = x;
+      switch (index) {
+        case 0:
+          break;
+
+        case 1:
+          return new Complex(1.0)
+              .subtract(x)
+              .pow(a.negate())
+              .multiply(hypergeometric2F1(a, c.subtract(b), c, x.divide(x.subtract(1))));
+
+        case 2:
+          {
+            if (c.subtract(a.add(b)).isMathematicalInteger()
+                || (subtractCA.isMathematicalInteger() && subtractCA.getReal() <= 0)) {
+              return complexAverage(v -> hypergeometric2F1(v, bf, cf, xf), af);
+            }
+            if (subtractCB.isMathematicalInteger() && subtractCB.getReal() <= 0) {
+              return complexAverage(v -> hypergeometric2F1(af, v, cf, xf), bf);
+            }
+
+            Complex t1 =
+                Arithmetic.lanczosApproxGamma(c)
+                    .multiply(Arithmetic.lanczosApproxGamma(c.subtract(a.add(b))))
+                    .multiply(Arithmetic.lanczosApproxGamma(subtractCA).reciprocal())
+                    .multiply(Arithmetic.lanczosApproxGamma(c.subtract(b)).reciprocal())
+                    .multiply(
+                        hypergeometric2F1(
+                            a, b, a.add(b).add(c.negate()).add(1), new Complex(1).subtract(x)));
+
+            Complex t2 =
+                new Complex(1)
+                    .subtract(x)
+                    .pow(c.subtract(a.add(b)))
+                    .multiply(Arithmetic.lanczosApproxGamma(c))
+                    .multiply(Arithmetic.lanczosApproxGamma(a.add(b).subtract(c)))
+                    .multiply(Arithmetic.lanczosApproxGamma(a).reciprocal())
+                    .multiply(Arithmetic.lanczosApproxGamma(b).reciprocal())
+                    .multiply(
+                        hypergeometric2F1(
+                            subtractCA,
+                            c.subtract(b),
+                            a.add(a.negate()).add(b.negate()).add(1),
+                            new Complex(1).subtract(x)));
+
+            return t1.add(t2);
+          }
+
+        case 3:
+          {
+            if (a.subtract(b).isMathematicalInteger()
+                || (subtractCA.isMathematicalInteger() && subtractCA.getReal() <= 0)) {
+              return complexAverage(v -> hypergeometric2F1(v, bf, cf, xf), af);
+            }
+            if (subtractCB.isMathematicalInteger() && subtractCB.getReal() <= 0) {
+              return complexAverage(v -> hypergeometric2F1(af, v, cf, xf), bf);
+            }
+            Complex t1 =
+                Arithmetic.lanczosApproxGamma(c)
+                    .multiply(Arithmetic.lanczosApproxGamma(b.subtract(a)))
+                    .multiply(Arithmetic.lanczosApproxGamma(b).reciprocal())
+                    .multiply(Arithmetic.lanczosApproxGamma(subtractCA).reciprocal())
+                    .multiply(x.negate().pow(a.negate()))
+                    .multiply(
+                        hypergeometric2F1(
+                            a, a.add(1).add(c.negate()), a.add(1).add(b.negate()), x.reciprocal()));
+
+            Complex t2 =
+                Arithmetic.lanczosApproxGamma(c)
+                    .multiply(Arithmetic.lanczosApproxGamma(a.subtract(b)))
+                    .multiply(Arithmetic.lanczosApproxGamma(a).reciprocal())
+                    .multiply(Arithmetic.lanczosApproxGamma(c.subtract(b)).reciprocal())
+                    .multiply(x.negate().pow(b.negate()))
+                    .multiply(
+                        hypergeometric2F1(
+                            b, b.add(1).add(c.negate()), b.add(1).add(a.negate()), x.reciprocal()));
+
+            return t1.add(t2);
+          }
+        case 4:
+          {
+            if (a.subtract(b).isMathematicalInteger()
+                || (subtractCA.isMathematicalInteger() && subtractCA.getReal() <= 0)) {
+              return complexAverage(v -> hypergeometric2F1(v, bf, cf, xf), af);
+            }
+            if (subtractCB.isMathematicalInteger() && subtractCB.getReal() <= 0) {
+              return complexAverage(v -> hypergeometric2F1(af, v, cf, xf), bf);
+            }
+            Complex t1 =
+                new Complex(1.0)
+                    .subtract(x)
+                    .pow(a.negate())
+                    .multiply(Arithmetic.lanczosApproxGamma(c))
+                    .multiply(Arithmetic.lanczosApproxGamma(b.subtract(a)))
+                    .multiply(Arithmetic.lanczosApproxGamma(b).reciprocal())
+                    .multiply(Arithmetic.lanczosApproxGamma(subtractCA).reciprocal())
+                    .multiply(
+                        hypergeometric2F1(
+                            a,
+                            c.subtract(b),
+                            a.add(b.negate()).add(1),
+                            new Complex(1).subtract(x).reciprocal()));
+
+            Complex t2 =
+                new Complex(1)
+                    .subtract(x)
+                    .pow(b.negate())
+                    .multiply(Arithmetic.lanczosApproxGamma(c))
+                    .multiply(Arithmetic.lanczosApproxGamma(a.subtract(b)))
+                    .multiply(Arithmetic.lanczosApproxGamma(a).reciprocal())
+                    .multiply(Arithmetic.lanczosApproxGamma(c.subtract(b)).reciprocal())
+                    .multiply(
+                        hypergeometric2F1(
+                            b,
+                            subtractCA,
+                            b.add(a.negate()).add(1),
+                            new Complex(1).subtract(x).reciprocal()));
+
+            return t1.add(t2);
+          }
+        case 5:
+          {
+            if (c.subtract(a.add(b)).isMathematicalInteger()
+                || (subtractCA.isMathematicalInteger() && subtractCA.getReal() <= 0)) {
+              return complexAverage(v -> hypergeometric2F1(v, bf, cf, xf), af);
+            }
+            if (subtractCB.isMathematicalInteger() && subtractCB.getReal() <= 0) {
+              return complexAverage(v -> hypergeometric2F1(af, v, cf, xf), bf);
+            }
+            Complex t1 =
+                Arithmetic.lanczosApproxGamma(c)
+                    .multiply(Arithmetic.lanczosApproxGamma(c.subtract(a.add(b))))
+                    .multiply(Arithmetic.lanczosApproxGamma(subtractCA).reciprocal())
+                    .multiply(Arithmetic.lanczosApproxGamma(c.subtract(b)).reciprocal())
+                    .multiply(x.pow(a.negate()))
+                    .multiply(
+                        hypergeometric2F1(
+                            a,
+                            a.add(c.negate()).add(1),
+                            a.add(b).add(c.negate()).add(1),
+                            new Complex(1).subtract(x.reciprocal())));
+
+            Complex t2 =
+                Arithmetic.lanczosApproxGamma(c)
+                    .multiply(Arithmetic.lanczosApproxGamma(a.add(b).subtract(c)))
+                    .multiply(Arithmetic.lanczosApproxGamma(a).reciprocal())
+                    .multiply(Arithmetic.lanczosApproxGamma(b).reciprocal())
+                    .multiply(new Complex(1).subtract(x).pow(c.subtract(a.add(b))))
+                    .multiply(x.pow(a.subtract(c)))
+                    .multiply(
+                        hypergeometric2F1(
+                            subtractCA,
+                            new Complex(1).subtract(a),
+                            c.add(a.negate()).add(b.negate()).add(1),
+                            new Complex(1).subtract(x.reciprocal())));
+
+            return t1.add(t2);
+          }
+      }
+
+      if (c.isMathematicalInteger() && c.getReal() <= 0) {
+        throw new ResultException(F.CComplexInfinity);
+        // throw new ArgumentTypeException("hypergeometric function pole");
+      }
+
+      Complex s = Complex.ONE;
+      Complex p = Complex.ONE;
+      int i = 1;
+
+      long iterationLimit = engine.getIterationLimit();
+      while (Math.abs(p.getReal()) > tolerance || Math.abs(p.getImaginary()) > tolerance) {
+        p = p.multiply(x).multiply(a).multiply(b).multiply(c.reciprocal()).divide(i);
+        s = s.add(p);
+        a = a.add(1);
+        b = b.add(1);
+        c = c.add(1);
+        if (i++ > iterationLimit && iterationLimit > 0) {
+          IterationLimitExceeded.throwIt(i, S.Hypergeometric2F1);
+        }
+      }
+
+      return s;
+    } finally {
+      if (recursionLimit > 0) {
+        engine.decRecursionCounter();
       }
     }
-
-    final Complex subtractCA = c.subtract(a);
-    final Complex subtractCB = c.subtract(b);
-    final Complex af = a;
-    final Complex bf = b;
-    final Complex cf = c;
-    final Complex xf = x;
-    switch (index) {
-      case 0:
-        break;
-
-      case 1:
-        return new Complex(1.0)
-            .subtract(x)
-            .pow(a.negate())
-            .multiply(hypergeometric2F1(a, c.subtract(b), c, x.divide(x.subtract(1))));
-
-      case 2:
-        {
-          if (c.subtract(a.add(b)).isMathematicalInteger()
-              || (subtractCA.isMathematicalInteger() && subtractCA.getReal() <= 0)) {
-            return complexAverage(v -> hypergeometric2F1(v, bf, cf, xf), af);
-          }
-          if (subtractCB.isMathematicalInteger() && subtractCB.getReal() <= 0) {
-            return complexAverage(v -> hypergeometric2F1(af, v, cf, xf), bf);
-          }
-
-          Complex t1 =
-              Arithmetic.lanczosApproxGamma(c)
-                  .multiply(Arithmetic.lanczosApproxGamma(c.subtract(a.add(b))))
-                  .multiply(Arithmetic.lanczosApproxGamma(subtractCA).reciprocal())
-                  .multiply(Arithmetic.lanczosApproxGamma(c.subtract(b)).reciprocal())
-                  .multiply(
-                      hypergeometric2F1(
-                          a, b, a.add(b).add(c.negate()).add(1), new Complex(1).subtract(x)));
-
-          Complex t2 =
-              new Complex(1)
-                  .subtract(x)
-                  .pow(c.subtract(a.add(b)))
-                  .multiply(Arithmetic.lanczosApproxGamma(c))
-                  .multiply(Arithmetic.lanczosApproxGamma(a.add(b).subtract(c)))
-                  .multiply(Arithmetic.lanczosApproxGamma(a).reciprocal())
-                  .multiply(Arithmetic.lanczosApproxGamma(b).reciprocal())
-                  .multiply(
-                      hypergeometric2F1(
-                          subtractCA,
-                          c.subtract(b),
-                          a.add(a.negate()).add(b.negate()).add(1),
-                          new Complex(1).subtract(x)));
-
-          return t1.add(t2);
-        }
-
-      case 3:
-        {
-          if (a.subtract(b).isMathematicalInteger()
-              || (subtractCA.isMathematicalInteger() && subtractCA.getReal() <= 0)) {
-            return complexAverage(v -> hypergeometric2F1(v, bf, cf, xf), af);
-          }
-          if (subtractCB.isMathematicalInteger() && subtractCB.getReal() <= 0) {
-            return complexAverage(v -> hypergeometric2F1(af, v, cf, xf), bf);
-          }
-          Complex t1 =
-              Arithmetic.lanczosApproxGamma(c)
-                  .multiply(Arithmetic.lanczosApproxGamma(b.subtract(a)))
-                  .multiply(Arithmetic.lanczosApproxGamma(b).reciprocal())
-                  .multiply(Arithmetic.lanczosApproxGamma(subtractCA).reciprocal())
-                  .multiply(x.negate().pow(a.negate()))
-                  .multiply(
-                      hypergeometric2F1(
-                          a, a.add(1).add(c.negate()), a.add(1).add(b.negate()), x.reciprocal()));
-
-          Complex t2 =
-              Arithmetic.lanczosApproxGamma(c)
-                  .multiply(Arithmetic.lanczosApproxGamma(a.subtract(b)))
-                  .multiply(Arithmetic.lanczosApproxGamma(a).reciprocal())
-                  .multiply(Arithmetic.lanczosApproxGamma(c.subtract(b)).reciprocal())
-                  .multiply(x.negate().pow(b.negate()))
-                  .multiply(
-                      hypergeometric2F1(
-                          b, b.add(1).add(c.negate()), b.add(1).add(a.negate()), x.reciprocal()));
-
-          return t1.add(t2);
-        }
-      case 4:
-        {
-          if (a.subtract(b).isMathematicalInteger()
-              || (subtractCA.isMathematicalInteger() && subtractCA.getReal() <= 0)) {
-            return complexAverage(v -> hypergeometric2F1(v, bf, cf, xf), af);
-          }
-          if (subtractCB.isMathematicalInteger() && subtractCB.getReal() <= 0) {
-            return complexAverage(v -> hypergeometric2F1(af, v, cf, xf), bf);
-          }
-          Complex t1 =
-              new Complex(1.0)
-                  .subtract(x)
-                  .pow(a.negate())
-                  .multiply(Arithmetic.lanczosApproxGamma(c))
-                  .multiply(Arithmetic.lanczosApproxGamma(b.subtract(a)))
-                  .multiply(Arithmetic.lanczosApproxGamma(b).reciprocal())
-                  .multiply(Arithmetic.lanczosApproxGamma(subtractCA).reciprocal())
-                  .multiply(
-                      hypergeometric2F1(
-                          a,
-                          c.subtract(b),
-                          a.add(b.negate()).add(1),
-                          new Complex(1).subtract(x).reciprocal()));
-
-          Complex t2 =
-              new Complex(1)
-                  .subtract(x)
-                  .pow(b.negate())
-                  .multiply(Arithmetic.lanczosApproxGamma(c))
-                  .multiply(Arithmetic.lanczosApproxGamma(a.subtract(b)))
-                  .multiply(Arithmetic.lanczosApproxGamma(a).reciprocal())
-                  .multiply(Arithmetic.lanczosApproxGamma(c.subtract(b)).reciprocal())
-                  .multiply(
-                      hypergeometric2F1(
-                          b,
-                          subtractCA,
-                          b.add(a.negate()).add(1),
-                          new Complex(1).subtract(x).reciprocal()));
-
-          return t1.add(t2);
-        }
-      case 5:
-        {
-          if (c.subtract(a.add(b)).isMathematicalInteger()
-              || (subtractCA.isMathematicalInteger() && subtractCA.getReal() <= 0)) {
-            return complexAverage(v -> hypergeometric2F1(v, bf, cf, xf), af);
-          }
-          if (subtractCB.isMathematicalInteger() && subtractCB.getReal() <= 0) {
-            return complexAverage(v -> hypergeometric2F1(af, v, cf, xf), bf);
-          }
-          Complex t1 =
-              Arithmetic.lanczosApproxGamma(c)
-                  .multiply(Arithmetic.lanczosApproxGamma(c.subtract(a.add(b))))
-                  .multiply(Arithmetic.lanczosApproxGamma(subtractCA).reciprocal())
-                  .multiply(Arithmetic.lanczosApproxGamma(c.subtract(b)).reciprocal())
-                  .multiply(x.pow(a.negate()))
-                  .multiply(
-                      hypergeometric2F1(
-                          a,
-                          a.add(c.negate()).add(1),
-                          a.add(b).add(c.negate()).add(1),
-                          new Complex(1).subtract(x.reciprocal())));
-
-          Complex t2 =
-              Arithmetic.lanczosApproxGamma(c)
-                  .multiply(Arithmetic.lanczosApproxGamma(a.add(b).subtract(c)))
-                  .multiply(Arithmetic.lanczosApproxGamma(a).reciprocal())
-                  .multiply(Arithmetic.lanczosApproxGamma(b).reciprocal())
-                  .multiply(new Complex(1).subtract(x).pow(c.subtract(a.add(b))))
-                  .multiply(x.pow(a.subtract(c)))
-                  .multiply(
-                      hypergeometric2F1(
-                          subtractCA,
-                          new Complex(1).subtract(a),
-                          c.add(a.negate()).add(b.negate()).add(1),
-                          new Complex(1).subtract(x.reciprocal())));
-
-          return t1.add(t2);
-        }
-    }
-
-    if (c.isMathematicalInteger() && c.getReal() <= 0) {
-      throw new ResultException(F.CComplexInfinity);
-      // throw new ArgumentTypeException("hypergeometric function pole");
-    }
-
-    Complex s = Complex.ONE;
-    Complex p = Complex.ONE;
-    int i = 1;
-
-    long iterationLimit = EvalEngine.get().getIterationLimit();
-    while (Math.abs(p.getReal()) > tolerance || Math.abs(p.getImaginary()) > tolerance) {
-      p = p.multiply(x).multiply(a).multiply(b).multiply(c.reciprocal()).divide(i);
-      s = s.add(p);
-      a = a.add(1);
-      b = b.add(1);
-      c = c.add(1);
-      if (i++ > iterationLimit && iterationLimit > 0) {
-        IterationLimitExceeded.throwIt(i, S.Hypergeometric2F1);
-      }
-    }
-
-    return s;
   }
 
   public static double hypergeometric2F1(double a, double b, double c, double x) {
@@ -693,7 +711,7 @@ public class HypergeometricJS {
 
   public static Complex hypergeometricPFQ(Complex[] A, Complex[] B, Complex x, double tolerance) {
     // dlmf.nist.gov/16.11 for general transformations
-    if (x.abs() > 1.0) {
+    if (x.norm() > 1.0) {
 
       throw new ArgumentTypeException("general hypergeometric argument currently restricted");
     }
@@ -704,7 +722,7 @@ public class HypergeometricJS {
 
     final int useAsymptotic = 200;
 
-    if (x.abs() > useAsymptotic) {
+    if (x.norm() > useAsymptotic) {
 
       Complex p = a.add(b.negate()).add(c.negate()).add(0.5).divide(2.0);
 
@@ -751,7 +769,7 @@ public class HypergeometricJS {
                   u2.multiply(Complex.I.multiply(w.apply(1)).add(w2Negate).add(1.0)));
       int k = 3;
 
-      while (wLast.abs() > w.apply(k).abs()) {
+      while (wLast.norm() > w.apply(k).norm()) {
 
         ck.add( //
             a.multiply(-6.0)
@@ -841,7 +859,7 @@ public class HypergeometricJS {
     double useAsymptotic = 20;
 
     // asymptotic form as per Johansson arxiv.org/abs/1606.06977
-    if (x.abs() > useAsymptotic) {
+    if (x.norm() > useAsymptotic) {
 
       return x.pow(a.negate())
           .multiply(hypergeometric2F0(a, a.add(b.negate()).add(1.0), x.reciprocal().negate()));

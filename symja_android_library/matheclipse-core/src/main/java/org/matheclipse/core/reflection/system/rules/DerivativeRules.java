@@ -13,7 +13,7 @@ public interface DerivativeRules {
    * <li>index 0 - number of equal rules in <code>RULES</code></li>
 	 * </ul>
 	 */
-  final public static int[] SIZES = { 0, 84 };
+  final public static int[] SIZES = { 0, 97 };
 
   final public static IAST RULES = List(
     IInit(Derivative, SIZES),
@@ -116,6 +116,9 @@ public interface DerivativeRules {
     // Derivative(1)[HeavisideTheta]:=DiracDelta(#1)&
     ISetDelayed($(Derivative(C1),HeavisideTheta),
       Function(DiracDelta(Slot1))),
+    // Derivative(1)[Identity]:=1&
+    ISetDelayed($(Derivative(C1),Identity),
+      Function(C1)),
     // Derivative(1)[IntegerPart]:=0&
     ISetDelayed($(Derivative(C1),IntegerPart),
       Function(C0)),
@@ -206,6 +209,18 @@ public interface DerivativeRules {
     // Derivative(1)[CoshIntegral]:=Cosh(#1)/#1&
     ISetDelayed($(Derivative(C1),CoshIntegral),
       Function(Times(Cosh(Slot1),Power(Slot1,CN1)))),
+    // Derivative(n_Symbol)[Cos]:=Cos(1/2*n*Pi+#1)&
+    ISetDelayed($(Derivative(n_Symbol),Cos),
+      Function(Cos(Plus(Times(C1D2,n,Pi),Slot1)))),
+    // Derivative(n_Symbol)[Sin]:=Sin(1/2*n*Pi+#1)&
+    ISetDelayed($(Derivative(n_Symbol),Sin),
+      Function(Sin(Plus(Times(C1D2,n,Pi),Slot1)))),
+    // Derivative(n_Symbol)[Cosh]:=-I^n*Cos(1/2*n*Pi-I*#1)&
+    ISetDelayed($(Derivative(n_Symbol),Cosh),
+      Function(Times(Power(CNI,n),Cos(Plus(Times(C1D2,n,Pi),Times(CNI,Slot1)))))),
+    // Derivative(n_Symbol)[Sinh]:=I*-I^n*Sin(1/2*n*Pi-I*#1)&
+    ISetDelayed($(Derivative(n_Symbol),Sinh),
+      Function(Times(CI,Power(CNI,n),Sin(Plus(Times(C1D2,n,Pi),Times(CNI,Slot1)))))),
     // Derivative(0,1)[BesselJ]:=1/2*(BesselJ(-1+#1,#2)-BesselJ(1+#1,#2))&
     ISetDelayed($(Derivative(C0,C1),BesselJ),
       Function(Times(C1D2,Subtract(BesselJ(Plus(CN1,Slot1),Slot2),BesselJ(Plus(C1,Slot1),Slot2))))),
@@ -251,6 +266,36 @@ public interface DerivativeRules {
     // Derivative(0,1)[ProductLog]:=ProductLog(#1,#2)/#2*(1+ProductLog(#1,#2))&
     ISetDelayed($(Derivative(C0,C1),ProductLog),
       Function(Times(ProductLog(Slot1,Slot2),Power(Slot2,CN1),Plus(C1,ProductLog(Slot1,Slot2))))),
+    // Derivative(0,1)[BernoulliB]:=BernoulliB(-1+#1,#2)*#1&
+    ISetDelayed($(Derivative(C0,C1),BernoulliB),
+      Function(Times(BernoulliB(Plus(CN1,Slot1),Slot2),Slot1))),
+    // Derivative(1,0)[ChebyshevT]:=-ArcCos(#2)*ChebyshevU(-1+#1,#2)*Sqrt(1-#2^2)&
+    ISetDelayed($(Derivative(C1,C0),ChebyshevT),
+      Function(Times(CN1,ArcCos(Slot2),ChebyshevU(Plus(CN1,Slot1),Slot2),Sqrt(Subtract(C1,Sqr(Slot2)))))),
+    // Derivative(0,1)[ChebyshevT]:=ChebyshevU(-1+#1,#2)*#1&
+    ISetDelayed($(Derivative(C0,C1),ChebyshevT),
+      Function(Times(ChebyshevU(Plus(CN1,Slot1),Slot2),Slot1))),
+    // Derivative(1,0)[ChebyshevU]:=(ArcCos(#2)*ChebyshevT(1+#1,#2))/Sqrt(1-#2^2)&
+    ISetDelayed($(Derivative(C1,C0),ChebyshevU),
+      Function(Times(ArcCos(Slot2),ChebyshevT(Plus(C1,Slot1),Slot2),Power(Subtract(C1,Sqr(Slot2)),CN1D2)))),
+    // Derivative(0,1)[ChebyshevU]:=(ChebyshevU(-1+#1,#2)*(-1-#1)+ChebyshevU(#1,#2)*#1*#2)/(-1+#2^2)&
+    ISetDelayed($(Derivative(C0,C1),ChebyshevU),
+      Function(Times(Plus(Times(ChebyshevU(Plus(CN1,Slot1),Slot2),Subtract(CN1,Slot1)),Times(ChebyshevU(Slot1,Slot2),Slot1,Slot2)),Power(Plus(CN1,Sqr(Slot2)),CN1)))),
+    // Derivative(1,0)[GegenbauerC]:=((-1)*2*ChebyshevT(#1,#2))/#1^2+(-2*ArcCos(#2)*ChebyshevU(-1+#1,#2)*Sqrt(1-#2^2))/#1&
+    ISetDelayed($(Derivative(C1,C0),GegenbauerC),
+      Function(Plus(Times(CN1,C2,ChebyshevT(Slot1,Slot2),Power(Slot1,CN2)),Times(CN2,ArcCos(Slot2),ChebyshevU(Plus(CN1,Slot1),Slot2),Power(Slot1,CN1),Sqrt(Subtract(C1,Sqr(Slot2))))))),
+    // Derivative(0,1)[GegenbauerC]:=2*ChebyshevU(-1+#1,#2)&
+    ISetDelayed($(Derivative(C0,C1),GegenbauerC),
+      Function(Times(C2,ChebyshevU(Plus(CN1,Slot1),Slot2)))),
+    // Derivative(0,0,1)[GegenbauerC]:=2*GegenbauerC(-1+#1,1+#2,#3)*#2&
+    ISetDelayed($(Derivative(C0,C0,C1),GegenbauerC),
+      Function(Times(C2,GegenbauerC(Plus(CN1,Slot1),Plus(C1,Slot2),Slot(C3)),Slot2))),
+    // Derivative(0,1)[LaguerreL]:=-LaguerreL(-1+#1,1,#2)&
+    ISetDelayed($(Derivative(C0,C1),LaguerreL),
+      Function(Negate(LaguerreL(Plus(CN1,Slot1),C1,Slot2)))),
+    // Derivative(0,0,1)[LaguerreL]:=-LaguerreL(-1+#1,1+#2,#3)&
+    ISetDelayed($(Derivative(C0,C0,C1),LaguerreL),
+      Function(Negate(LaguerreL(Plus(CN1,Slot1),Plus(C1,Slot2),Slot(C3))))),
     // Derivative(0,1)[LegendreP]:=((-1-#1)*x*LegendreP(#1,#2)+(1+#1)*LegendreP(1+#1,#2))/(-1+#2^2)&
     ISetDelayed($(Derivative(C0,C1),LegendreP),
       Function(Times(Plus(Times(Subtract(CN1,Slot1),x,LegendreP(Slot1,Slot2)),Times(Plus(C1,Slot1),LegendreP(Plus(C1,Slot1),Slot2))),Power(Plus(CN1,Sqr(Slot2)),CN1)))),
@@ -268,6 +313,12 @@ public interface DerivativeRules {
       Function(Plus(Times(Cot(Slot(C3)),Slot2,SphericalHarmonicY(Slot1,Slot2,Slot(C3),Slot(C4))),Times(Sqrt(Gamma(Plus(C1,Slot1,Negate(Slot2)))),Power(Times(Exp(Times(CI,Slot(C4))),Sqrt(Gamma(Subtract(Slot1,Slot2))),Sqrt(Gamma(Plus(C1,Slot1,Slot2)))),CN1),Sqrt(Gamma(Plus(C2,Slot1,Slot2))),SphericalHarmonicY(Slot1,Plus(C1,Slot2),Slot(C3),Slot(C4)))))),
     // Derivative(0,0,0,1)[SphericalHarmonicY]:=I*#2*SphericalHarmonicY(#1,#2,#3,#4)&
     ISetDelayed($(Derivative(C0,C0,C0,C1),SphericalHarmonicY),
-      Function(Times(CI,Slot2,SphericalHarmonicY(Slot1,Slot2,Slot(C3),Slot(C4)))))
+      Function(Times(CI,Slot2,SphericalHarmonicY(Slot1,Slot2,Slot(C3),Slot(C4))))),
+    // Derivative(0,1)[StruveH]:=1/2*(-StruveH(#1+1,#2)+StruveH(-1+#1,#2)+(#2/2)^#1/(Sqrt(Pi)*Gamma(#1+3/2)))&
+    ISetDelayed($(Derivative(C0,C1),StruveH),
+      Function(Times(C1D2,Plus(Negate(StruveH(Plus(Slot1,C1),Slot2)),StruveH(Plus(CN1,Slot1),Slot2),Times(Power(Times(Sqrt(Pi),Gamma(Plus(Slot1,QQ(3L,2L)))),CN1),Power(Times(C1D2,Slot2),Slot1)))))),
+    // Derivative(0,1)[StruveL]:=1/2*(StruveL(-1+#1,#2)+StruveL(#1+1,#2)+(#2/2)^#1/(Sqrt(Pi)*Gamma(#1+3/2)))&
+    ISetDelayed($(Derivative(C0,C1),StruveL),
+      Function(Times(C1D2,Plus(StruveL(Plus(CN1,Slot1),Slot2),StruveL(Plus(Slot1,C1),Slot2),Times(Power(Times(Sqrt(Pi),Gamma(Plus(Slot1,QQ(3L,2L)))),CN1),Power(Times(C1D2,Slot2),Slot1))))))
   );
 }

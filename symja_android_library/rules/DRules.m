@@ -68,26 +68,17 @@
   D(ExpIntegralE(g_, f_),x_?NotListQ):= -1*ExpIntegralE(-1+g,f)*D(f,x)
     /; FreeQ({g},x),
 
-  D(JacobiAmplitude(g_, f_),x_?NotListQ):= (((EllipticE(JacobiAmplitude(g,f),f)+(-1+f)*g)*JacobiDN(g,f)-f*JacobiCN(g,f)*JacobiSN(g,f))*D(f,x))/(2*(-1+f)*f)
-    /; FreeQ({g},x),
-  D(JacobiCD(g_, f_),x_?NotListQ):= ((EllipticE(JacobiAmplitude(g,f),f)+(-1+f)*g)*JacobiND(g,f)*JacobiSD(g,f)*D(f,x))/(2*f)
-    /; FreeQ({g},x), 
-  D(JacobiCN(g_, f_),x_?NotListQ):= (JacobiDN(g,f)*JacobiSN(g,f)*(EllipticE(JacobiAmplitude(g,f),f)+(-1+f)*g-f*JacobiCD(g,f)*JacobiSN(g, f))*D(f,x))/(2*(1-f)*f)
-    /; FreeQ({g},x),
-  D(JacobiDC(g_, f_),x_?NotListQ):= ((-EllipticE(JacobiAmplitude(g,f),f)+(1-f)*g)*JacobiNC(g,f)*JacobiSC(g, f)*D(f,x))/(2*f)
-    /; FreeQ({g},x), 
-  D(JacobiDN(g_, f_),x_?NotListQ):= (JacobiCN(g,f)*(EllipticE(JacobiAmplitude(g,f),f)+(-1+f)*g-JacobiDN(g,f)*JacobiSC(g,f))*JacobiSN(g,f)*D(f,x))/(2*(1-f))
-    /; FreeQ({g},x), 
-  D(JacobiNC(g_, f_),x_?NotListQ):= (JacobiDC(g,f)*JacobiSC(g,f)*(-EllipticE(JacobiAmplitude(g,f),f)+(1-f)*g+f*JacobiCD(g,f)*JacobiSN(g,f))*D(f,x))/(2*(1-f)*f)
-    /; FreeQ({g},x),    
-  D(JacobiND(g_, f_),x_?NotListQ):= (JacobiCD(g,f)*(-EllipticE(JacobiAmplitude(g,f),f)+(1-f)*g+JacobiDN(g,f)*JacobiSC(g,f))*JacobiSD(g,f)*D(f,x))/(2*(1-f))
-    /; FreeQ({g},x), 
-  D(JacobiSC(g_, f_),x_?NotListQ):= (JacobiDC(g,f)*JacobiNC(g,f)*(-EllipticE(JacobiAmplitude(g,f),f)+(1-f)*g+f*JacobiCD[g,f]*JacobiSN[g,f])*D(f,x))/(2*(1-f)*f)
-    /; FreeQ({g},x), 
-  D(JacobiSD(g_, f_),x_?NotListQ):= (JacobiCD(g,f)*JacobiND(g,f)*(-EllipticE(JacobiAmplitude(g,f),f)+(1-f)*g+f*JacobiDN(g,f)*JacobiSC(g,f))*D(f,x))/(2*(1-f)*f)
-    /; FreeQ({g},x), 
-  D(JacobiSN(g_, f_),x_?NotListQ):= (JacobiCN(g,f)*JacobiDN(g,f)*(-EllipticE(JacobiAmplitude(g,f),f)+(1-f)*g+f*JacobiCD(g,f)*JacobiSN(g,f))*D(f,x))/(2*(1-f)*f)
-    /; FreeQ({g},x),
+  D(JacobiAmplitude(g_, f_),x_?NotListQ):= JacobiDN(f,g)*D(f,x) + ((JacobiDN(f,g)*(f*(-1 + g) + JacobiEpsilon(f,g)) - g*JacobiCN(f,g)*JacobiSN(f,g))*D(g,x))/(2*(-1 + g)*g),
+  
+  D(JacobiCD(g_, f_),x_?NotListQ):= (-1 + g)*JacobiND(f,g)*JacobiSD(f,g)*D(f,x) + ((f*(-1 + g) + JacobiEpsilon(f,g))*JacobiND(f,g)*JacobiSD(f,g)*D(g,x))/(2*g), 
+  D(JacobiCN(g_, f_),x_?NotListQ):= (-JacobiDN(f,g))*JacobiSN(f,g)*D(f,x) + (JacobiDN(f,g)*JacobiSN(f,g)*(f*(-1 + g) + JacobiEpsilon(f,g) - g*JacobiCD(f,g)*JacobiSN(f,g))*D(g,x))/(2*(1 - g)*g),
+  D(JacobiDC(g_, f_),x_?NotListQ):= (1 - g)*JacobiNC(f,g)*JacobiSC(f,g)*D(f,x) + ((f*(1 - g) - JacobiEpsilon(f,g))*JacobiNC(f,g)*JacobiSC(f,g)*D(g,x))/(2*g),
+  D(JacobiDN(g_, f_),x_?NotListQ):= (-g)*JacobiCN(f,g)*JacobiSN(f,g)*D(f,x) + (JacobiCN(f,g)*(f*(-1 + g) + JacobiEpsilon(f,g) - JacobiDN(f,g)*JacobiSC(f,g))*JacobiSN(f,g)*D(g,x))/(2*(1 - g)),
+  D(JacobiNC(g_, f_),x_?NotListQ):= JacobiDC(f,g)*JacobiSC(f,g)*D(f,x) + (JacobiDC(f,g)*JacobiSC(f,g)*(f*(1 - g) - JacobiEpsilon(f,g) + g*JacobiCD(f,g)*JacobiSN(f,g))*D(g,x))/(2*(1 - g)*g),
+  D(JacobiND(g_, f_),x_?NotListQ):= g*JacobiCD(f,g)*JacobiSD(f,g)*D(f,x) + (JacobiCD(f,g)*(f*(1 - g) - JacobiEpsilon(f,g) + JacobiDN(f,g)*JacobiSC(f,g))*JacobiSD(f,g)*D(g,x))/(2*(1 - g)),
+  D(JacobiSC(g_, f_),x_?NotListQ):= JacobiDC(f,g)*JacobiNC(f,g)*D(f,x) + (JacobiDC(f,g)*JacobiNC(f,g)*(f*(1 - g) - JacobiEpsilon(f,g) + g*JacobiCD(f,g)*JacobiSN(f,g))*D(g,x))/(2*(1 - g)*g),
+  D(JacobiSD(g_, f_),x_?NotListQ):= JacobiCD(f,g)*JacobiND(f,g)*D(f,x) + (JacobiCD(f,g)*JacobiND(f,g)*(f*(1 - g) - JacobiEpsilon(f,g) + g*JacobiDN(f,g)*JacobiSC(f,g))*D(g,x))/(2*(1 - g)*g),
+  D(JacobiSN(g_, f_),x_?NotListQ):= JacobiCN(f,g)*JacobiDN(f,g)*D(f,x) + (JacobiCN(f,g)*JacobiDN(f,g)*(f*(1 - g) - JacobiEpsilon(f,g) + g*JacobiCD(f,g)*JacobiSN(f,g))*D(g,x))/(2*(1 - g)*g),
     
   D(BernoulliB(g_, f_),x_?NotListQ):= BernoulliB(-1+g, f)*g*D(f,x)
     /; FreeQ({g},x), 

@@ -15,6 +15,7 @@ import java.util.TreeMap;
 import java.util.TreeSet;
 import java.util.function.BiFunction;
 import java.util.function.BiPredicate;
+import java.util.function.Consumer;
 import java.util.function.Function;
 import java.util.function.Predicate;
 
@@ -129,8 +130,9 @@ public final class ListFunctions {
     public IExpr evaluate(final ISymbol[] variables, final IExpr[] index) {
       HashMap<ISymbol, IExpr> map = new HashMap<ISymbol, IExpr>();
       for (int i = 0; i < variables.length; i++) {
-        if (variables[i] != null) {
-          map.put(variables[i], index[i]);
+        ISymbol variable = variables[i];
+        if (variable != null) {
+          map.put(variable, index[i]);
         }
       }
       IExpr temp = map.size() == 0 ? fValue : fValue.replaceAll(map).orElse(fValue);
@@ -216,24 +218,6 @@ public final class ListFunctions {
       S.Union.setEvaluator(new Union());
     }
   }
-
-  //  private static interface IPositionConverter<T> {
-  //    /**
-  //     * Convert the integer position number >= 0 into an object
-  //     *
-  //     * @param position which should be converted to an object
-  //     * @return
-  //     */
-  //    T toObject(int position);
-  //
-  //    /**
-  //     * Convert the object into an integer number >= 0
-  //     *
-  //     * @param position the object which should be converted
-  //     * @return -1 if the conversion is not possible
-  //     */
-  //    int toInt(T position);
-  //  }
 
   private static class PositionConverter {
     /**
@@ -1238,17 +1222,27 @@ public final class ListFunctions {
         return results[0];
       }
       final IPatternMatcher matcher = engine.evalPatternMatcher(pattern);
-      IASTAppendable filterAST = F.ListAlloc(ast.size());
-      ast.forEach(
-          heads ? 0 : 1,
-          ast.size(),
-          x -> {
-            if (matcher.test(x)) {
-              filterAST.append(x);
-            }
-          });
-      return filterAST;
-      //      return ast.filter(F.ListAlloc(ast.size()), matcher);
+      IASTAppendable resultAST = F.ListAlloc(ast.size());
+      ast.forEach(heads ? 0 : 1, ast.size(), appendIfMatched(matcher, resultAST));
+      return resultAST;
+    }
+
+    /**
+     * Create a <code>Consumer</code> which, if <code>matcher</code> returns <code>true</code>,
+     * appends the argument to the <code>resultAST
+     * </code>
+     *
+     * @param matcher
+     * @param resultAST
+     * @return
+     */
+    private static Consumer<? super IExpr> appendIfMatched(
+        final IPatternMatcher matcher, IASTAppendable resultAST) {
+      return x -> {
+        if (matcher.test(x)) {
+          resultAST.append(x);
+        }
+      };
     }
 
     @Override
@@ -1286,22 +1280,31 @@ public final class ListFunctions {
     public IExpr evaluate(final IAST ast, EvalEngine engine) {
       if (ast.arg1().isList()) {
         IAST list = (IAST) ast.arg1();
-        int[] size = {1};
-        if (list.exists(
-            x -> {
-              if (!(x.isList() || x.isAssociation())) {
-                return true;
-              }
-              size[0] += list.argSize();
-              return false;
-            })) {
-          return F.NIL;
+        int[] calculatedAllocSize = {1};
+        if (list.forAll(isListOrAssociation(calculatedAllocSize))) {
+          IASTAppendable resultList = F.ast(S.List, calculatedAllocSize[0], false);
+          list.forEach(x -> resultList.appendArgs((IAST) x));
+          return resultList;
         }
-        IASTAppendable resultList = F.ast(S.List, size[0], false);
-        list.forEach(x -> resultList.appendArgs((IAST) x));
-        return resultList;
       }
       return F.NIL;
+    }
+
+    /**
+     * Gives a <code>Predicate</code> which tests if the arguments are all a <code>List</code> or an
+     * <code>Association</code>.
+     *
+     * @param calculatedAllocSize the size needed to allocate for a reuslt list
+     * @return
+     */
+    private static Predicate<? super IExpr> isListOrAssociation(int[] calculatedAllocSize) {
+      return x -> {
+        if (x.isList() || x.isAssociation()) {
+          calculatedAllocSize[0] += x.argSize();
+          return true;
+        }
+        return false;
+      };
     }
 
     @Override
@@ -1471,8 +1474,9 @@ public final class ListFunctions {
         IAST result = complement(arg1, arg2);
         if (result.isPresent()) {
           for (int i = 3; i < ast.size(); i++) {
-            if (ast.get(i).isASTOrAssociation()) {
-              result = complement(result, (IAST) ast.get(i));
+            IExpr arg = ast.get(i);
+            if (arg.isASTOrAssociation()) {
+              result = complement(result, (IAST) arg);
             } else {
               return F.NIL;
             }
@@ -1845,12 +1849,6 @@ public final class ListFunctions {
 
     @Override
     public IExpr evaluate(IAST ast, EvalEngine engine) {
-      //      if (ast.isAST1()) {
-      //        ast = F.operatorForm1Append(ast);
-      //        if (!ast.isPresent()) {
-      //          return F.NIL;
-      //        }
-      //      }
       final IExpr arg1 = engine.evaluate(ast.arg1());
       final IExpr arg2 = engine.evaluate(ast.arg2());
       if (arg1.isASTOrAssociation()) {
@@ -2102,16 +2100,15 @@ public final class ListFunctions {
       if (ast.arg1().isList()) {
         IAST list = (IAST) ast.arg1();
 
-        IExpr temp;
         boolean evaledTrue;
         BiPredicate<IExpr, IExpr> biPredicate = Predicates.isBinaryTrue(test);
         int size = list.size();
         final IASTAppendable result = F.ListAlloc(size);
         for (int i = 1; i < size; i++) {
-          temp = list.get(i);
+          IExpr listElement = list.get(i);
           evaledTrue = false;
           for (int j = 1; j < result.size(); j++) {
-            if (biPredicate.test(result.get(j), temp)) {
+            if (biPredicate.test(result.get(j), listElement)) {
               evaledTrue = true;
               break;
             }
@@ -2119,7 +2116,7 @@ public final class ListFunctions {
           if (evaledTrue) {
             continue;
           }
-          result.append(temp);
+          result.append(listElement);
         }
         return result;
       }
@@ -2136,12 +2133,6 @@ public final class ListFunctions {
 
     @Override
     public IExpr evaluate(IAST ast, EvalEngine engine) {
-      //      if (ast.isAST1()) {
-      //        ast = F.operatorForm1Append(ast);
-      //        if (!ast.isPresent()) {
-      //          return F.NIL;
-      //        }
-      //      }
       if (ast.isAST2()) {
         if (ast.arg1().isList() || ast.arg1().isAssociation()) {
           IExpr test = ast.arg2();
@@ -2151,23 +2142,23 @@ public final class ListFunctions {
             int size = list.size();
             final IASTAppendable result = list.copyHead(size);
             for (int i = 1; i < size; i++) {
-              IExpr arg = list.get(i);
-              IExpr x = engine.evaluate(F.unaryAST1(test, arg));
+              IExpr listElement = list.get(i);
+              IExpr x = engine.evaluate(F.unaryAST1(test, listElement));
               if (!set.contains(x)) {
-                result.append(arg);
+                result.append(listElement);
                 set.add(x);
               }
             }
             return result;
           } else {
-            IAssociation list = (IAssociation) ast.arg1();
-            int size = list.size();
-            final IASTAppendable result = list.copyHead(size);
+            IAssociation assoc = (IAssociation) ast.arg1();
+            int size = assoc.size();
+            final IASTAppendable result = assoc.copyHead(size);
             for (int i = 1; i < size; i++) {
-              IExpr rule = list.getRule(i);
-              IExpr x = engine.evaluate(F.unaryAST1(test, rule.second()));
+              IExpr assocRule = assoc.getRule(i);
+              IExpr x = engine.evaluate(F.unaryAST1(test, assocRule.second()));
               if (!set.contains(x)) {
-                result.append(rule);
+                result.append(assocRule);
                 set.add(x);
               }
             }
@@ -2194,14 +2185,14 @@ public final class ListFunctions {
       if (ast.isAST1()) {
         // print no message if args have wrong type
         try {
-          IExpr arg1 = engine.evaluate(ast.arg1());
+          IExpr evaledArg1 = engine.evaluate(ast.arg1());
 
-          if (arg1.isListOfRules(false)) {
-            return DispatchExpr.newInstance((IAST) arg1);
-          } else if (arg1.isRuleAST()) {
-            return DispatchExpr.newInstance(F.List(arg1));
-          } else if (arg1.isAssociation()) {
-            return DispatchExpr.newInstance((IAssociation) arg1);
+          if (evaledArg1.isListOfRules(false)) {
+            return DispatchExpr.newInstance((IAST) evaledArg1);
+          } else if (evaledArg1.isRuleAST()) {
+            return DispatchExpr.newInstance(F.List(evaledArg1));
+          } else if (evaledArg1.isAssociation()) {
+            return DispatchExpr.newInstance((IAssociation) evaledArg1);
             //          } else {
             //            throw new ArgumentTypeException(
             //                "rule expressions (x->y) expected instead of " + arg1.toString());
@@ -2229,13 +2220,13 @@ public final class ListFunctions {
       }
       if (ast.arg1().isList()) {
         IAST list = (IAST) ast.arg1();
-        IExpr temp;
+
         BiPredicate<IExpr, IExpr> biPredicate = Predicates.isBinaryTrue(test);
         int size = list.size();
         for (int i = 1; i < size; i++) {
-          temp = list.get(i);
+          IExpr listElement = list.get(i);
           for (int j = i + 1; j < list.size(); j++) {
-            if (biPredicate.test(list.get(j), temp)) {
+            if (biPredicate.test(list.get(j), listElement)) {
               return S.False;
             }
           }
@@ -2467,7 +2458,8 @@ public final class ListFunctions {
           // use base E logarithm
           return entropy(list, F.Log(F.Slot1), 1);
         }
-        return entropy(list, F.Log(ast.arg1(), F.Slot1), 2);
+        IExpr shannonBase = ast.arg1();
+        return entropy(list, F.Log(shannonBase, F.Slot1), 2);
       }
       return F.NIL;
     }
@@ -3163,7 +3155,7 @@ public final class ListFunctions {
     public IExpr evaluate(final IAST ast, EvalEngine engine) {
       int size = ast.size();
       if (ast.arg1().isAST()) {
-        IAST arg1 = (IAST) ast.arg1();
+        IAST arg1AST = (IAST) ast.arg1();
         java.util.Map<IExpr, IASTAppendable> map;
         if (size > 2) {
           IExpr arg2 = ast.arg2();
@@ -3171,16 +3163,17 @@ public final class ListFunctions {
         } else {
           map = new TreeMap<IExpr, IASTAppendable>();
         }
-        IASTAppendable result = F.ListAlloc(arg1.size());
-        for (int i = 1; i < arg1.size(); i++) {
-          IASTAppendable list = map.get(arg1.get(i));
-          if (list == null) {
+        IASTAppendable result = F.ListAlloc(arg1AST.size());
+        for (int i = 1; i < arg1AST.size(); i++) {
+          IExpr arg = arg1AST.get(i);
+          IASTAppendable subResult = map.get(arg);
+          if (subResult == null) {
             IASTAppendable subList = F.ListAlloc();
-            subList.append(arg1.get(i));
-            map.put(arg1.get(i), subList);
+            subList.append(arg);
+            map.put(arg, subList);
             result.append(subList);
           } else {
-            list.append(arg1.get(i));
+            subResult.append(arg);
           }
         }
         return result;
@@ -3249,9 +3242,9 @@ public final class ListFunctions {
       if (!ast.arg1().isList()) {
         return IOFunctions.printMessage(ast.topHead(), "list", F.List(), engine);
       }
-      IAST arg1 = (IAST) ast.arg1();
+      IAST list1 = (IAST) ast.arg1();
       if (ast.isAST1()) {
-        return F.GatherBy(arg1, S.Identity);
+        return F.GatherBy(list1, S.Identity);
       }
       IExpr arg2 = ast.arg2();
       if (arg2.isList()) {
@@ -3264,26 +3257,27 @@ public final class ListFunctions {
             return F.GatherBy(ast.arg1(), list2.arg1());
           case 2:
             return F.Map(
-                F.Function(F.GatherBy(F.Slot1, list2.arg2())), F.GatherBy(arg1, list2.arg1()));
+                F.Function(F.GatherBy(F.Slot1, list2.arg2())), F.GatherBy(list1, list2.arg1()));
         }
         IAST r = list2.copyUntil(size2);
         IExpr f = list2.last();
         // GatherBy(l_, {r__, f_}) := Map(GatherBy(#, f)&, GatherBy(l, {r}), {Length({r})})
         return F.Map(
-            F.Function(F.GatherBy(F.Slot1, f)), F.GatherBy(arg1, r), F.List(F.ZZ(r.argSize())));
+            F.Function(F.GatherBy(F.Slot1, f)), F.GatherBy(list1, r), F.List(F.ZZ(r.argSize())));
       }
       java.util.Map<IExpr, IASTAppendable> map = new TreeMap<IExpr, IASTAppendable>();
-      IASTAppendable result = F.ListAlloc(F.allocMin8(arg1.size()));
-      for (int i = 1; i < arg1.size(); i++) {
-        IExpr temp = engine.evaluate(F.unaryAST1(arg2, arg1.get(i)));
-        IASTAppendable list = map.get(temp);
-        if (list == null) {
-          IASTAppendable subList = F.ListAlloc(F.allocMin8(arg1.size()));
-          subList.append(arg1.get(i));
+      IASTAppendable result = F.ListAlloc(F.allocMin8(list1.size()));
+      for (int i = 1; i < list1.size(); i++) {
+        IExpr list1Element = list1.get(i);
+        IExpr temp = engine.evaluate(F.unaryAST1(arg2, list1Element));
+        IASTAppendable subResult = map.get(temp);
+        if (subResult == null) {
+          IASTAppendable subList = F.ListAlloc(F.allocMin8(list1.size()));
+          subList.append(list1Element);
           map.put(temp, subList);
           result.append(subList);
         } else {
-          list.append(arg1.get(i));
+          subResult.append(list1Element);
         }
       }
       return result;
@@ -3302,33 +3296,21 @@ public final class ListFunctions {
 
     @Override
     public IExpr evaluate(IAST ast, EvalEngine engine) {
-      //      if (ast.isAST1()) {
-      //        ast = F.operatorForm1Append(ast);
-      //        if (!ast.isPresent()) {
-      //          return F.NIL;
-      //        }
-      //      }
       if (ast.size() >= 3) {
         try {
           IExpr arg1 = ast.arg1();
           IExpr arg2 = ast.arg2();
-          IAST list2;
-
-          if (arg2.isList()) {
-            list2 = (IAST) ast.arg2();
-            if (list2.isEmptyList()) {
-              return arg1;
-            }
-          } else {
-            list2 = F.List(arg2);
+          IAST list2 = arg2.isList() ? (IAST) ast.arg2() : F.List(arg2);
+          if (list2.isEmptyList()) {
+            return arg1;
           }
 
-          if (arg1.isList() || arg1.isAssociation()) {
+          if (arg1.isListOrAssociation()) {
             return recurseGroupBy((IAST) arg1, list2, 1, ast, engine);
-          } else if (ast.arg1().isDataset()) {
-            List<String> listOfStrings = Convert.toStringList(ast.arg2());
+          } else if (arg1.isDataset()) {
+            List<String> listOfStrings = Convert.toStringList(arg2);
             if (listOfStrings != null) {
-              return ((IASTDataset) ast.arg1()).groupBy(listOfStrings);
+              return ((IASTDataset) arg1).groupBy(listOfStrings);
             }
           }
         } catch (ValidateException ve) {
@@ -3392,7 +3374,7 @@ public final class ListFunctions {
 
         if (positionOfHeads < listOfHeads.size()) {
           // recurse with next argument in listOfHeads
-          if (temp.isList() || temp.isAssociation()) {
+          if (temp.isListOrAssociation()) {
             temp = recurseGroupBy((IAST) temp, listOfHeads, positionOfHeads, ast, engine);
             if (temp.isPresent()) {
               result.appendRule(F.Rule(entry.getKey(), temp));
@@ -3834,10 +3816,7 @@ public final class ListFunctions {
     @Override
     public IExpr evaluate(final IAST ast, EvalEngine engine) {
       IExpr arg1 = engine.evaluate(ast.arg1());
-      if (arg1.isASTOrAssociation()) {
-        return F.ZZ(((IAST) arg1).argSize());
-      }
-      return F.C0;
+      return arg1.isASTOrAssociation() ? F.ZZ(arg1.argSize()) : F.C0;
     }
 
     @Override
@@ -4079,7 +4058,7 @@ public final class ListFunctions {
     public IExpr evaluate(final IAST ast, EvalEngine engine) {
       IExpr arg1 = ast.arg1();
       if (arg1.isASTOrAssociation()) {
-        if (((IAST) arg1).size() > 1) {
+        if (arg1.argSize() > 0) {
           return ((IAST) arg1).most();
         }
         // `1` has zero length and no last element.
@@ -4100,12 +4079,11 @@ public final class ListFunctions {
     @Override
     public IExpr evaluate(final IAST ast, EvalEngine engine) {
       if (ast.arg1().isASTOrAssociation()) {
-        if (ast.size() == 3 && ast.arg2().isNumber()) {
+        if (ast.isAST2() && ast.arg2().isNumber()) {
           IAST listArg1 = (IAST) ast.arg1();
-          if (listArg1.size() > 1) {
+          if (listArg1.argSize() > 0) {
             INumber arg2 = (INumber) ast.arg2();
-            // Norm() is the default distance function for numeric
-            // data
+            // Norm() is the default distance function for numeric data
             IExpr distanceFunction = F.Function(F.Norm(F.Subtract(F.Slot1, F.Slot2)));
             return numericalNearest(listArg1, arg2, distanceFunction, engine);
           }
@@ -4220,7 +4198,7 @@ public final class ListFunctions {
 
     @Override
     public IExpr evaluate(final IAST ast, EvalEngine engine) {
-      if (ast.arg1().isAtom()) {
+      if (!ast.arg1().isAST()) {
         // Nonatomic expression expected at position `1` in `2`.
         return IOFunctions.printMessage(ast.topHead(), "normal", F.List(F.C1, ast), engine);
       }
@@ -4306,10 +4284,7 @@ public final class ListFunctions {
           ASTElementLimitExceeded.throwIt(intialCapacity);
         }
         IASTAppendable result = ast.copyHead((int) intialCapacity);
-        result.appendArgs(0, length, i -> atom);
-        // for (int i = 0; i < length; i++) {
-        // result.append(atom);
-        // }
+        result.appendArgs(0, length, i -> atom); 
         result.appendArgs(ast);
         return result;
       }
@@ -4858,7 +4833,8 @@ public final class ListFunctions {
         IASTAppendable clone = null;
         final int size = ast.size();
         for (int i = headOffset; i < size; i++) {
-          if (ast.get(i).isASTOrAssociation()) {
+          IExpr arg = ast.get(i);
+          if (arg.isASTOrAssociation()) {
             // clone = (INestedList<IExpr>) prototypeList.clone();
             clone = prototypeList.copyAppendable(1);
             if (ast.isAssociation()) {
@@ -4866,12 +4842,12 @@ public final class ListFunctions {
             } else {
               clone.append(positionConverter.toObject(i));
             }
-            positionRecursive((IAST) ast.get(i), clone);
+            positionRecursive((IAST) arg, clone);
             if (level.getCurrentDepth() < minDepth) {
               minDepth = level.getCurrentDepth();
             }
           }
-          if (matcher.test(ast.get(i))) {
+          if (matcher.test(arg)) {
             if (level.isInRange()) {
               clone = prototypeList.copyAppendable(1);
               if (ast.isAssociation() && i > 0) {
@@ -6315,12 +6291,6 @@ public final class ListFunctions {
 
     @Override
     public IExpr evaluate(IAST ast, EvalEngine engine) {
-      //      if (ast.isAST1()) {
-      //        ast = F.operatorForm1Append(ast);
-      //        if (!ast.isPresent()) {
-      //          return F.NIL;
-      //        }
-      //      }
       int size = ast.size();
       if (size >= 3) {
         try {
@@ -6328,7 +6298,6 @@ public final class ListFunctions {
           if (ast.arg1().isASTOrAssociation()) {
             IAST list = (IAST) ast.arg1();
             IExpr predicateHead = ast.arg2();
-            // int allocSize = list.size() > 4 ? list.size() / 4 : 4;
             if (size == 3) {
               return list.select(x -> engine.evalTrue(F.unaryAST1(predicateHead, x)));
             } else if ((size == 4) && ast.arg3().isInteger()) {
@@ -6462,17 +6431,18 @@ public final class ListFunctions {
         IASTAppendable result = F.ListAlloc(8);
         if (list.size() > 1) {
           IExpr current = list.arg1();
-          IASTAppendable temp = F.ListAlloc(8);
-          result.append(temp);
-          temp.append(current);
+          IASTAppendable subResultList = F.ListAlloc(8);
+          result.append(subResultList);
+          subResultList.append(current);
           for (int i = 2; i < list.size(); i++) {
-            if (pred.test(current, list.get(i))) {
+            IExpr listElement = list.get(i);
+            if (pred.test(current, listElement)) {
             } else {
-              temp = F.ListAlloc(8);
-              result.append(temp);
+              subResultList = F.ListAlloc(8);
+              result.append(subResultList);
             }
-            temp.append(list.get(i));
-            current = list.get(i);
+            subResultList.append(listElement);
+            current = listElement;
           }
         }
         return result;
@@ -6547,7 +6517,8 @@ public final class ListFunctions {
 
         temp.append(list.arg1());
         for (int i = 2; i < list.size(); i++) {
-          current = function.apply(list.get(i));
+          IExpr listElement = list.get(i);
+          current = function.apply(listElement);
           if (current.equals(last)) {
           } else {
             IExpr subList = splitByFunction(functorList, pos + 1, temp, engine);
@@ -6558,7 +6529,7 @@ public final class ListFunctions {
             }
             temp = F.ListAlloc(8);
           }
-          temp.append(list.get(i));
+          temp.append(listElement);
           last = current;
         }
         IExpr subList = splitByFunction(functorList, pos + 1, temp, engine);
@@ -6728,16 +6699,17 @@ public final class ListFunctions {
         if (ast.size() > 2) {
           final List<IIterator<IExpr>> iterList = new ArrayList<IIterator<IExpr>>();
           for (int i = 2; i < ast.size(); i++) {
-            if (ast.get(i).isList()) {
-              iterList.add(Iterator.create((IAST) ast.get(i), i, engine));
+            IExpr arg = ast.get(i);
+            if (arg.isList()) {
+              iterList.add(Iterator.create((IAST) arg, i, engine));
             } else {
-              IExpr arg = engine.evaluate(ast.get(i));
-              if (arg.isReal()) {
-                iterList.add(Iterator.create(F.List(arg), i, engine));
+              IExpr evaledArg = engine.evaluate(arg);
+              if (evaledArg.isReal()) {
+                iterList.add(Iterator.create(F.List(evaledArg), i, engine));
               } else {
                 // Non-list iterator `1` at position `2` does not evaluate to a real numeric value.
                 return IOFunctions.printMessage(
-                    ast.topHead(), "nliter", F.List(ast.get(i), F.ZZ(i)), engine);
+                    ast.topHead(), "nliter", F.List(arg, F.ZZ(i)), engine);
               }
             }
           }
@@ -6768,11 +6740,8 @@ public final class ListFunctions {
         if (ast.size() > 2) {
           final List<IIterator<IExpr>> iterList = new ArrayList<IIterator<IExpr>>();
           for (int i = 2; i < ast.size(); i++) {
-            if (ast.get(i).isList()) {
-              iterList.add(Iterator.create((IAST) ast.get(i), i, engine));
-            } else {
-              iterList.add(Iterator.create(F.List(ast.get(i)), i, engine));
-            }
+            IExpr arg = ast.get(i);
+            iterList.add(Iterator.create(arg.isList() ? (IAST) arg : F.List(arg), i, engine));
           }
 
           final TableGenerator generator =
@@ -6843,16 +6812,12 @@ public final class ListFunctions {
       int size = ast.size();
       IASTAppendable variableList = F.ListAlloc(size);
       for (int i = 2; i < size; i++) {
-        if (ast.get(i).isVariable()) {
-          variableList.append(ast.get(i));
+        IExpr arg = ast.get(i);
+        if (arg.isVariable()) {
+          variableList.append(arg);
         } else {
-          if (ast.get(i).isList()) {
-            IAST list = (IAST) ast.get(i);
-            if (list.size() >= 2) {
-              if (list.arg1().isVariable()) {
-                variableList.append(list.arg1());
-              }
-            }
+          if (arg.isList() && arg.size() >= 2 && arg.first().isVariable()) {
+            variableList.append(arg.first());
           }
         }
       }
@@ -6869,16 +6834,12 @@ public final class ListFunctions {
     public VariablesSet determineIteratorExprVariables(final IAST ast) {
       VariablesSet variableList = new VariablesSet();
       for (int i = 2; i < ast.size(); i++) {
-        if (ast.get(i).isVariable()) {
-          variableList.add(ast.get(i));
+        IExpr arg = ast.get(i);
+        if (arg.isVariable()) {
+          variableList.add(arg);
         } else {
-          if (ast.get(i).isList()) {
-            IAST list = (IAST) ast.get(i);
-            if (list.size() >= 2) {
-              if (list.arg1().isVariable()) {
-                variableList.add(list.arg1());
-              }
-            }
+          if (arg.isList() && arg.size() >= 2 && arg.first().isVariable()) {
+            variableList.add(arg.first());
           }
         }
       }
@@ -6987,30 +6948,28 @@ public final class ListFunctions {
     public static IASTAppendable tally1Arg(IAST list) {
       java.util.Map<IExpr, Integer> map = new LinkedHashMap<IExpr, Integer>();
       for (int i = 1; i < list.size(); i++) {
-        Integer value = map.get(list.get(i));
-        if (value == null) {
-          map.put(list.get(i), Integer.valueOf(1));
-        } else {
-          map.put(list.get(i), Integer.valueOf(value + 1));
-        }
+        IExpr arg = list.get(i);
+        Integer value = map.get(arg);
+        map.put(arg, Integer.valueOf(value == null ? 1 : value + 1));
       }
       return createResultList(map);
     }
 
     private static IAST tally2Args(IAST list, BiPredicate<IExpr, IExpr> test) {
       java.util.Map<IExpr, Integer> map = new LinkedHashMap<IExpr, Integer>();
-      boolean evaledTrue;
+      boolean evaled;
       for (int i = 1; i < list.size(); i++) {
-        evaledTrue = false;
+        evaled = false;
+        IExpr arg = list.get(i);
         for (java.util.Map.Entry<IExpr, Integer> entry : map.entrySet()) {
-          if (test.test(entry.getKey(), list.get(i))) {
-            evaledTrue = true;
+          if (test.test(entry.getKey(), arg)) {
+            evaled = true;
             map.put(entry.getKey(), Integer.valueOf(entry.getValue() + 1));
             break;
           }
         }
-        if (!evaledTrue) {
-          map.put(list.get(i), Integer.valueOf(1));
+        if (!evaled) {
+          map.put(arg, Integer.valueOf(1));
         }
       }
       return createResultList(map);
@@ -7303,12 +7262,6 @@ public final class ListFunctions {
 
     @Override
     public IExpr evaluate(IAST ast, EvalEngine engine) {
-      //      if (ast.isAST1()) {
-      //        ast = F.operatorForm1Append(ast);
-      //        if (!ast.isPresent()) {
-      //          return F.NIL;
-      //        }
-      //      }
       if (ast.isAST2()) {
         try {
           if (ast.arg1().isASTOrAssociation()) {
@@ -7571,12 +7524,10 @@ public final class ListFunctions {
         }
 
         if (ast.arg1().isASTOrAssociation()) {
-          IAST result = ((IAST) ast.arg1());
-          for (int i = 2; i < ast.size(); i++) {
-            if (!ast.get(i).isASTOrAssociation()) {
-              return F.NIL;
-            }
+          if (ast.exists(x -> !x.isASTOrAssociation(), 2)) {
+            return F.NIL;
           }
+          IAST result = ((IAST) ast.arg1());
           for (int i = 2; i < ast.size(); i++) {
             IAST expr = (IAST) ast.get(i);
             final IASTAppendable list = F.ListAlloc(result.size() + expr.size());
@@ -7695,12 +7646,9 @@ public final class ListFunctions {
     return list.select(
         x ->
             !(x.equals(S.Indeterminate)
-                || //
-                x.equals(S.Null)
-                || //
-                x.equals(S.None)
-                || //
-                x.isAST(S.Missing)));
+                || x.equals(S.Null)
+                || x.equals(S.None)
+                || x.isAST(S.Missing)));
   }
 
   /**

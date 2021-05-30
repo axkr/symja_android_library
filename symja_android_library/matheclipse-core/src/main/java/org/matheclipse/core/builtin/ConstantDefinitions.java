@@ -175,7 +175,7 @@ public class ConstantDefinitions {
 
     @Override
     public IExpr evaluateSet(IExpr rightHandSide, boolean setDelayed, final EvalEngine engine) {
-      S.$Assumptions.assignValue(rightHandSide, setDelayed);
+      S.$Assumptions.assignValue(rightHandSide, setDelayed); 
       return rightHandSide;
     }
   }

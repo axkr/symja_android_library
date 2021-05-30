@@ -160,11 +160,11 @@ public class Pods {
           + "\n"
           + "<body style=\"width: 100%; height: 100%; margin: 0; padding: 0\">\n"
           + "\n"
-          + "<link rel=\"stylesheet\" type=\"text/css\" href=\"https://cdnjs.cloudflare.com/ajax/libs/jsxgraph/1.1.0/jsxgraph.min.css\" />\n"
+          + "<link rel=\"stylesheet\" type=\"text/css\" href=\"https://cdnjs.cloudflare.com/ajax/libs/jsxgraph/1.2.2/jsxgraph.min.css\" />\n"
           + "<script src=\"https://cdn.jsdelivr.net/gh/paulmasson/math@1.4.4/build/math.js\"></script>\n"
-          + "<script src=\"https://cdnjs.cloudflare.com/ajax/libs/jsxgraph/1.1.0/jsxgraphcore.min.js\"\n"
+          + "<script src=\"https://cdnjs.cloudflare.com/ajax/libs/jsxgraph/1.2.2/jsxgraphcore.min.js\"\n"
           + "        type=\"text/javascript\"></script>\n"
-          + "<script src=\"https://cdnjs.cloudflare.com/ajax/libs/jsxgraph/1.1.0/geonext.min.js\"\n"
+          + "<script src=\"https://cdnjs.cloudflare.com/ajax/libs/jsxgraph/1.2.2/geonext.min.js\"\n"
           + "        type=\"text/javascript\"></script>\n"
           + "\n"
           + "<div id=\"jxgbox\" class=\"jxgbox\" style=\"display: flex; width:99%; height:99%; margin: 0; flex-direction: column; overflow: hidden\">\n"
@@ -806,7 +806,7 @@ public class Pods {
             IExpr firstEval = F.NIL;
             try {
               engine.setErrorPrintStream(errors);
-              firstEval = engine.evaluateNull(inExpr);
+              firstEval = engine.evaluateNIL(inExpr);
             } finally {
               engine.setErrorPrintStream(null);
             }
@@ -886,7 +886,7 @@ public class Pods {
         IExpr firstEval = F.NIL;
         try {
           engine.setErrorPrintStream(errors);
-          firstEval = engine.evaluateNull(inExpr);
+          firstEval = engine.evaluateNIL(inExpr);
         } finally {
           engine.setErrorPrintStream(null);
         }
@@ -1623,7 +1623,7 @@ public class Pods {
     inExpr = outExpr;
 
     inExpr = F.IntegerName(n, F.stringx("Words"));
-    IExpr podOut = engine.evaluateNull(inExpr);
+    IExpr podOut = engine.evaluateNIL(inExpr);
     if (podOut.isPresent()) {
       addSymjaPod(podsArray, inExpr, podOut, "Number name", "Integer", formats, engine);
       numpods++;

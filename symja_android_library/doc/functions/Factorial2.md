@@ -26,4 +26,4 @@ See
 
 ### Github
 
-* [Implementation of Factorial2](https://github.com/axkr/symja_android_library/blob/master/symja_android_library/matheclipse-core/src/main/java/org/matheclipse/core/builtin/NumberTheory.java#L2361) 
+* [Implementation of Factorial2](https://github.com/axkr/symja_android_library/blob/master/symja_android_library/matheclipse-core/src/main/java/org/matheclipse/core/builtin/NumberTheory.java#L2377) 

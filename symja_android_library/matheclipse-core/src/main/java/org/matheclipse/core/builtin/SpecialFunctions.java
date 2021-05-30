@@ -1953,6 +1953,12 @@ public class SpecialFunctions {
   private static final class Zeta extends AbstractArg12 {
 
     @Override
+    public IExpr e1ApfloatArg(Apfloat arg1) {
+      // TODO org.apfloat.ZetaHelper.zeta( );
+      return F.NIL;
+    }
+
+    @Override
     public IExpr e1DblArg(INum num) {
       double d = de.lab4inf.math.functions.Zeta.zeta(num.doubleValue());
       return F.num(d);

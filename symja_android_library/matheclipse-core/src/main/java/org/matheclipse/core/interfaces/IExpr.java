@@ -641,14 +641,18 @@ public interface IExpr
     return EvalEngine.get().evalComplex(this);
   }
 
+  default double evalDouble() throws ArgumentTypeException {
+    return EvalEngine.get().evalDouble(this);
+  }
+
   /**
    * Evaluate the expression to a Java <code>double</code> value. If the conversion to a double
    * value is not possible, the method throws an exception.
    *
    * @return this expression converted to a Java <code>double</code> value.
    */
-  default double evalDouble() throws ArgumentTypeException {
-    return EvalEngine.get().evalDouble(this);
+  default double getReal() throws ArgumentTypeException {
+    return evalDouble();
   }
 
   /**
@@ -701,7 +705,7 @@ public interface IExpr
   }
 
   default IExpr evaluateHead(IAST ast, EvalEngine engine) {
-    IExpr result = engine.evaluateNull(this);
+    IExpr result = engine.evaluateNIL(this);
     if (result.isPresent()) {
       // set the new evaluated header !
       return ast.apply(result);

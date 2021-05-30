@@ -1,5 +1,6 @@
 package org.matheclipse.core.interfaces;
 
+import org.apfloat.Apcomplex;
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.expression.ApcomplexNum;
 import org.matheclipse.core.expression.ComplexNum;
@@ -20,9 +21,17 @@ public interface INumber extends IExpr {
    * Get a <code>Apcomplex</code> number wrapped into an <code>ApcomplexNum</code> object.
    *
    * @param precision set the precision of the resulting ApcomplexNum
-   * @return this signed number represented as an ApcomplexNum
+   * @return this number represented as an ApcomplexNum
    */
   public ApcomplexNum apcomplexNumValue(long precision);
+
+  /**
+   * Get a <code>Apcomplex</code> object.
+   *
+   * @param precision set the precision of the resulting Apcomplex
+   * @return this number represented as an Apcomplex
+   */
+  public Apcomplex apcomplexValue(long precision);
 
   /**
    * Returns the smallest (closest to negative infinity) <code>IInteger</code> value that is not

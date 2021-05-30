@@ -145,9 +145,10 @@ public class Import extends AbstractEvaluator {
       return ImageFormat.from(ImageIO.read(file));
     }
 
+    String str = com.google.common.io.Files.asCharSource(file, Charset.defaultCharset()).read();
+    
     AST2Expr ast2Expr = new AST2Expr(engine.isRelaxedSyntax(), engine);
     final Parser parser = new Parser(engine.isRelaxedSyntax(), true);
-    String str = com.google.common.io.Files.asCharSource(file, Charset.defaultCharset()).read();
     final ASTNode node = parser.parse(str);
     return ast2Expr.convert(node);
   }

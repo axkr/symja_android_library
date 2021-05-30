@@ -20,4 +20,4 @@ in summer ice cream is delicious
 
 ### Github
 
-* [Implementation of TemplateIf](https://github.com/axkr/symja_android_library/blob/master/symja_android_library/matheclipse-core/src/main/java/org/matheclipse/core/builtin/StringFunctions.java#L2741) 
+* [Implementation of TemplateIf](https://github.com/axkr/symja_android_library/blob/master/symja_android_library/matheclipse-core/src/main/java/org/matheclipse/core/builtin/StringFunctions.java#L2857) 

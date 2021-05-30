@@ -2066,32 +2066,21 @@ public abstract class AbstractAST implements IASTMutable {
     return filterAST;
   }
 
-  /**
-   * Apply the functor to the elements of the range from left to right and return the final result.
-   * Results do accumulate from one invocation to the next: each time this method is called, the
-   * accumulation starts over with value from the previous function call.
-   *
-   * @param function a binary function that accumulate the elements
-   * @param startValue
-   * @return the accumulated elements
-   */
+  /** {@inheritDoc} */
   @Override
   public IExpr foldLeft(
       final BiFunction<IExpr, IExpr, ? extends IExpr> function, IExpr startValue, int start) {
-    final IExpr[] value = {startValue};
-    forEach(start, size(), x -> value[0] = function.apply(value[0], x));
-    return value[0];
+    IExpr value = startValue;
+    for (int i = start; i < size(); i++) {
+      value = function.apply(value, get(i));
+      if (!value.isPresent()) {
+        return F.NIL;
+      }
+    }
+    return value;
   }
 
-  /**
-   * Apply the functor to the elements of the range from right to left and return the final result.
-   * Results do accumulate from one invocation to the next: each time this method is called, the
-   * accumulation starts over with value from the previous function call.
-   *
-   * @param function a binary function that accumulate the elements
-   * @param startValue
-   * @return the accumulated elements
-   */
+  /** {@inheritDoc} */
   @Override
   public IExpr foldRight(
       final BiFunction<IExpr, IExpr, ? extends IExpr> function, IExpr startValue, int start) {
@@ -2099,6 +2088,9 @@ public abstract class AbstractAST implements IASTMutable {
     int end = argSize();
     for (int i = end; i >= start; i--) {
       value = function.apply(value, get(i));
+      if (!value.isPresent()) {
+        return F.NIL;
+      }
     }
     return value;
   }
@@ -3731,9 +3723,10 @@ public abstract class AbstractAST implements IASTMutable {
   /** {@inheritDoc} */
   @Override
   public final boolean isModuleOrWithCondition() {
-    return size() == 3
-        && (head().equals(S.With) || head().equals(S.Module))
-        && (get(2).isCondition() || get(2).isModuleOrWithCondition());
+    if ((head() == S.With && size() >= 3) || (head() == S.Module && size() == 3)) {
+      return (last().isCondition() || last().isModuleOrWithCondition());
+    }
+    return false;
   }
 
   /** {@inheritDoc} */
@@ -4531,7 +4524,7 @@ public abstract class AbstractAST implements IASTMutable {
   /** {@inheritDoc} */
   @Override
   public final boolean isWith() {
-    return head() == S.With && size() == 3;
+    return head() == S.With && size() >= 3;
   }
 
   /** {@inheritDoc} */
@@ -4823,19 +4816,17 @@ public abstract class AbstractAST implements IASTMutable {
     return map(setAtCopy(0, head), function);
   }
 
-  /**
-   * Append the mapped ranges elements directly to the given <code>list</code>
-   *
-   * @param list
-   * @param binaryFunction binary function
-   * @param leftArg left argument of the binary functions <code>apply()</code> method.
-   * @return
-   */
+  /** {@inheritDoc} */
   @Override
   public IAST mapLeft(
       IASTAppendable list, BiFunction<IExpr, IExpr, IExpr> binaryFunction, IExpr leftArg) {
     for (int i = 1; i < size(); i++) {
-      list.append(binaryFunction.apply(leftArg, get(i)));
+      IExpr functionResult = binaryFunction.apply(leftArg, get(i));
+      if (functionResult.isPresent()) {
+        list.append(functionResult);
+      } else {
+        return F.NIL;
+      }
     }
     return list;
   }
@@ -4856,19 +4847,17 @@ public abstract class AbstractAST implements IASTMutable {
     return result;
   }
 
-  /**
-   * Append the mapped ranges elements directly to the given <code>list</code>
-   *
-   * @param list
-   * @param binaryFunction a binary function
-   * @param rightArg right argument of the binary functions <code>apply()</code> method.
-   * @return the given list
-   */
+  /** {@inheritDoc} */
   @Override
-  public Collection<IExpr> mapRight(
-      Collection<IExpr> list, BiFunction<IExpr, IExpr, IExpr> binaryFunction, IExpr rightArg) {
+  public IAST mapRight(
+      IASTAppendable list, BiFunction<IExpr, IExpr, IExpr> binaryFunction, IExpr rightArg) {
     for (int i = 1; i < size(); i++) {
-      list.add(binaryFunction.apply(get(i), rightArg));
+      IExpr functionResult = binaryFunction.apply(get(i), rightArg);
+      if (functionResult.isPresent()) {
+        list.append(functionResult);
+      } else {
+        return F.NIL;
+      }
     }
     return list;
   }

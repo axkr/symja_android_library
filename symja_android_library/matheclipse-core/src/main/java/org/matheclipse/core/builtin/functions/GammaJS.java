@@ -320,7 +320,7 @@ public class GammaJS {
     }
 
     double delta = 1e-5;
-    if (x.abs() < delta) {
+    if (x.norm() < delta) {
       // TODO implement case for abs value near 0
 
       // return taylorSeries( t => gamma(t,y), mul( x, delta/x.abs( ) ), 2.0)(x);
@@ -394,7 +394,7 @@ public class GammaJS {
 
   public static Complex expIntegralEi(Complex x) {
     double useAsymptotic = 26.0;
-    if (x.abs() > useAsymptotic) {
+    if (x.norm() > useAsymptotic) {
 
       Complex s = Complex.ONE;
       Complex p = Complex.ONE;

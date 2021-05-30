@@ -1527,7 +1527,7 @@ public class SparseArrayExpr extends DataExpr<Trie<int[], IExpr>>
     if (isEvalFlagOff(IAST.BUILT_IN_EVALED)) {
       boolean evaled = false;
       IExpr newDefaultValue = fDefaultValue;
-      IExpr temp = engine.evaluateNull(fDefaultValue);
+      IExpr temp = engine.evaluateNIL(fDefaultValue);
       if (temp.isPresent()) {
         evaled = true;
         newDefaultValue = temp;
@@ -1535,7 +1535,7 @@ public class SparseArrayExpr extends DataExpr<Trie<int[], IExpr>>
       final Trie<int[], IExpr> trie = Config.TRIE_INT2EXPR_BUILDER.build();
       for (TrieNode<int[], IExpr> entry : fData.nodeSet()) {
         IExpr value = entry.getValue();
-        temp = engine.evaluateNull(value);
+        temp = engine.evaluateNIL(value);
         if (temp.isPresent()) {
           evaled = true;
           trie.put(entry.getKey(), temp);

@@ -510,7 +510,7 @@ public class ApfloatNum implements INum {
     }
     if (expr.isNumber()) {
       if (expr.isReal()) {
-        return Double.compare(fApfloat.doubleValue(), ((ISignedNumber) expr).doubleValue());
+        return fApfloat.compareTo(((ISignedNumber) expr).apfloatValue(precision()));
       }
       int c = this.compareTo(((INumber) expr).re());
       if (c != 0) {

@@ -36,6 +36,12 @@ public interface FunctionExpandRules {
     // ExpIntegralE(n_,z_):=Gamma(1-n,z)/z^(1-n)
     SetDelayed(ExpIntegralE(n_,z_),
       Times(Power(z,Plus(CN1,n)),Gamma(Subtract(C1,n),z))),
+    // z_!:=Gamma(1+z)
+    SetDelayed(Factorial(z_),
+      Gamma(Plus(C1,z))),
+    // n_!!:=2^(n/2+1/4*(1-Cos(n*Pi)))*Pi^(1/4*(-1+Cos(n*Pi)))*Gamma(1+n/2)
+    SetDelayed(Factorial2(n_),
+      Times(Power(C2,Plus(Times(C1D2,n),Times(C1D4,Subtract(C1,Cos(Times(n,Pi)))))),Power(Pi,Times(C1D4,Plus(CN1,Cos(Times(n,Pi))))),Gamma(Plus(C1,Times(C1D2,n))))),
     // Fibonacci(m_Integer+n_):=1/2*Fibonacci(m)*LucasL(n)+1/2*Fibonacci(n)*LucasL(m)/;n∈Integers
     SetDelayed(Fibonacci(Plus($p(m, Integer),n_)),
       Condition(Plus(Times(C1D2,Fibonacci(m),LucasL(n)),Times(C1D2,Fibonacci(n),LucasL(m))),Element(n,Integers))),
@@ -60,12 +66,18 @@ public interface FunctionExpandRules {
     // GegenbauerC(n_,x_):=(2*Cos(n*ArcCos(x)))/n
     SetDelayed(GegenbauerC(n_,x_),
       Times(C2,Power(n,CN1),Cos(Times(n,ArcCos(x))))),
+    // Gudermannian(z_):=Piecewise({{1/2*(Pi-4*ArcCot(E^z)),Re(z)>0||(Re(z)==0&&Im(z)>=0)}},1/2*(-Pi+4*ArcTan(E^z)))
+    SetDelayed(Gudermannian(z_),
+      Piecewise(List(List(Times(C1D2,Plus(Pi,Times(CN4,ArcCot(Exp(z))))),Or(Greater(Re(z),C0),And(Equal(Re(z),C0),GreaterEqual(Im(z),C0))))),Times(C1D2,Plus(CNPi,Times(C4,ArcTan(Exp(z))))))),
     // HarmonicNumber(n_):=EulerGamma+PolyGamma(0,1+n)
     SetDelayed(HarmonicNumber(n_),
       Plus(EulerGamma,PolyGamma(C0,Plus(C1,n)))),
     // HarmonicNumber(z_,n_):=-HurwitzZeta(n,1+z)+Zeta(n)
     SetDelayed(HarmonicNumber(z_,n_),
       Plus(Negate(HurwitzZeta(n,Plus(C1,z))),Zeta(n))),
+    // Haversine(z_):=1/2*(1-Cos(z))
+    SetDelayed(Haversine(z_),
+      Times(C1D2,Subtract(C1,Cos(z)))),
     // HurwitzZeta(n_Integer,a_):=(-1)^n/(-1+n)!*PolyGamma(-1+n,a)/;n>1
     SetDelayed(HurwitzZeta($p(n, Integer),a_),
       Condition(Times(Power(CN1,n),Power(Factorial(Plus(CN1,n)),CN1),PolyGamma(Plus(CN1,n),a)),Greater(n,C1))),
@@ -75,6 +87,30 @@ public interface FunctionExpandRules {
     // Hypergeometric2F1(a_,b_,b_+n_Integer,z_):=Sum((z^k*Pochhammer(n,k)*Pochhammer(-a+b+n,k))/(Pochhammer(b+n,k)*k!),{k,0,-n})/(1-z)^(a-n)/;n<0
     SetDelayed(Hypergeometric2F1(a_,b_,Plus(b_,$p(n, Integer)),z_),
       Condition(Times(Power(Subtract(C1,z),Plus(Negate(a),n)),Sum(Times(Power(z,k),Power(Times(Pochhammer(Plus(b,n),k),Factorial(k)),CN1),Pochhammer(n,k),Pochhammer(Plus(Negate(a),b,n),k)),List(k,C0,Negate(n)))),Less(n,C0))),
+    // InverseGudermannian(z_):=Log(Tan(Pi/4+z/2))
+    SetDelayed(InverseGudermannian(z_),
+      Log(Tan(Plus(Times(C1D4,Pi),Times(C1D2,z))))),
+    // InverseHaversine(z_):=2*ArcSin(Sqrt(z))
+    SetDelayed(InverseHaversine(z_),
+      Times(C2,ArcSin(Sqrt(z)))),
+    // JacobiCD(f_,g_):=JacobiCN(f,g)/JacobiDN(f,g)
+    SetDelayed(JacobiCD(f_,g_),
+      Times(JacobiCN(f,g),Power(JacobiDN(f,g),CN1))),
+    // JacobiDC(f_,g_):=JacobiDN(f,g)/JacobiCN(f,g)
+    SetDelayed(JacobiDC(f_,g_),
+      Times(Power(JacobiCN(f,g),CN1),JacobiDN(f,g))),
+    // JacobiNC(f_,g_):=1/JacobiCN(f,g)
+    SetDelayed(JacobiNC(f_,g_),
+      Power(JacobiCN(f,g),CN1)),
+    // JacobiND(f_,g_):=1/JacobiDN(f,g)
+    SetDelayed(JacobiND(f_,g_),
+      Power(JacobiDN(f,g),CN1)),
+    // JacobiSC(f_,g_):=JacobiSN(f,g)/JacobiCN(f,g)
+    SetDelayed(JacobiSC(f_,g_),
+      Times(Power(JacobiCN(f,g),CN1),JacobiSN(f,g))),
+    // JacobiSD(f_,g_):=JacobiSN(f,g)/JacobiDN(f,g)
+    SetDelayed(JacobiSD(f_,g_),
+      Times(Power(JacobiDN(f,g),CN1),JacobiSN(f,g))),
     // LegendreQ(l_,m_,x_):=(-Pi*Csc(m*Pi)*Gamma(1+l+m)*LegendreP(l,-m,x))/(2*Gamma(1+l-m))+1/2*Pi*Cot(m*Pi)*LegendreP(l,m,x)
     SetDelayed(LegendreQ(l_,m_,x_),
       Plus(Times(CN1,Pi,Csc(Times(m,Pi)),Power(Times(C2,Gamma(Plus(C1,l,Negate(m)))),CN1),Gamma(Plus(C1,l,m)),LegendreP(l,Negate(m),x)),Times(C1D2,Pi,Cot(Times(m,Pi)),LegendreP(l,m,x)))),

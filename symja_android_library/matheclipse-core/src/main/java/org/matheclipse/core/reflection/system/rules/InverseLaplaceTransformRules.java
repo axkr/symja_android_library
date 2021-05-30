@@ -13,7 +13,7 @@ public interface InverseLaplaceTransformRules {
    * <li>index 0 - number of equal rules in <code>RULES</code></li>
 	 * </ul>
 	 */
-  final public static int[] SIZES = { 0, 8 };
+  final public static int[] SIZES = { 0, 9 };
 
   final public static IAST RULES = List(
     IInit(InverseLaplaceTransform, SIZES),
@@ -29,6 +29,9 @@ public interface InverseLaplaceTransformRules {
     // InverseLaplaceTransform(1/(a_+s_),s_,t_):=E^(-a*t)/;FreeQ(a,s)
     ISetDelayed(InverseLaplaceTransform(Power(Plus(a_,s_),CN1),s_,t_),
       Condition(Exp(Times(CN1,a,t)),FreeQ(a,s))),
+    // InverseLaplaceTransform((a_+s_)^n_,s_,t_):=1/(t^(1+n)*E^(a*t)*Gamma(-n))/;FreeQ({a,n},s)
+    ISetDelayed(InverseLaplaceTransform(Power(Plus(a_,s_),n_),s_,t_),
+      Condition(Times(Power(t,Subtract(CN1,n)),Power(Times(Exp(Times(a,t)),Gamma(Negate(n))),CN1)),FreeQ(List(a,n),s))),
     // InverseLaplaceTransform(1/(a_?RealNumberQ+s_^2),s_,t_):=If(a>0,Sin(Sqrt(a)*t)/Sqrt(a),(-1+E^(2*Sqrt(-a)*t))/(E^(Sqrt(-a)*t)*2*Sqrt(-a)))
     ISetDelayed(InverseLaplaceTransform(Power(Plus(PatternTest(a_,RealNumberQ),Sqr(s_)),CN1),s_,t_),
       If(Greater(a,C0),Times(Power(a,CN1D2),Sin(Times(Sqrt(a),t))),Times(Power(Times(Exp(Times(Sqrt(Negate(a)),t)),C2,Sqrt(Negate(a))),CN1),Plus(CN1,Exp(Times(C2,Sqrt(Negate(a)),t)))))),

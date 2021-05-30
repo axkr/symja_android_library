@@ -5,6 +5,7 @@ import java.math.BigInteger;
 
 import org.apfloat.Apcomplex;
 import org.apfloat.Apfloat;
+import org.hipparchus.complex.Complex;
 import org.hipparchus.linear.RealMatrix;
 import org.hipparchus.linear.RealVector;
 import org.matheclipse.core.basic.Config;
@@ -332,83 +333,6 @@ public abstract class ComplexFormFactory {
     }
   }
 
-  public void convertComplex(
-      final StringBuilder buf, final IComplex c, final int precedence, boolean caller) {
-    boolean isReZero = c.getRealPart().isZero();
-    final boolean isImOne = c.getImaginaryPart().isOne();
-    final boolean isImMinusOne = c.getImaginaryPart().isMinusOne();
-    if (!isReZero && (Precedence.PLUS < precedence)) {
-      if (caller == PLUS_CALL) {
-        append(buf, "+");
-        caller = false;
-      }
-      append(buf, "(");
-    }
-    if (!isReZero) {
-      convertFraction(buf, c.getRealPart(), Precedence.PLUS, caller);
-    }
-    if (isImOne) {
-      if (isReZero) {
-        if (caller == PLUS_CALL) {
-          append(buf, "+");
-          caller = false;
-        }
-        append(buf, "I");
-        return;
-      } else {
-        append(buf, "+I");
-      }
-    } else if (isImMinusOne) {
-      append(buf, "-I");
-    } else {
-      final IRational im = c.getImaginaryPart();
-      // int oldColumnCounter = fColumnCounter;
-      StringBuilder imagBuf = new StringBuilder();
-      try {
-        if (im.isNegative()) {
-          if (isReZero && (Precedence.TIMES < precedence)) {
-            append(buf, "(");
-          }
-          append(buf, "-");
-          // oldColumnCounter = fColumnCounter;
-          // fColumnCounter = 0;
-          append(imagBuf, "I*");
-          convertFraction(imagBuf, im.negate(), Precedence.TIMES, NO_PLUS_CALL);
-        } else {
-          if (isReZero) {
-            if (caller == PLUS_CALL) {
-              append(buf, "+");
-            }
-            if (Precedence.TIMES < precedence) {
-              append(buf, "(");
-            }
-          } else {
-            append(buf, "+");
-          }
-    // oldColumnCounter = fColumnCounter;
-    // fColumnCounter = 0;
-    append(imagBuf, "I*");
-          convertFraction(imagBuf, im, Precedence.TIMES, NO_PLUS_CALL);
-        }
-
-      } finally {
-        // fColumnCounter = oldColumnCounter;
-      }
-      String str = imagBuf.toString();
-      // if ((str.length() + getColumnCounter() > 80)) {
-      // newLine(buf);
-      // }
-      append(buf, str);
-      if (isReZero && (Precedence.TIMES < precedence)) {
-        append(buf, ")");
-      }
-    }
-
-    if (!isReZero && (Precedence.PLUS < precedence)) {
-      append(buf, ")");
-    }
-  }
-
   public void convertString(final StringBuilder buf, final String str) {
     if (fQuotes) {
       append(buf, "\"");
@@ -472,249 +396,41 @@ public abstract class ComplexFormFactory {
     convertInternal(buf, obj);
   }
 
-  private void convertPlusOperator(
-      final StringBuilder buf, final IAST plusAST, final InfixOperator oper, final int precedence) {
-    int operPrecedence = oper.getPrecedence();
-    if (operPrecedence < precedence) {
-      append(buf, "(");
-    }
-
-    IExpr plusArg;
-    int size = plusAST.size();
-    if (size > 0) {
-      convertPlusArgument(buf, plusAST.arg1(), NO_PLUS_CALL);
-      for (int i = 2; i < size; i++) {
-        plusArg = plusAST.get(i);
-        convertPlusArgument(buf, plusArg, PLUS_CALL);
+  private void convertInfixOperator(
+      final StringBuilder buf, final IAST operatorAST, String operatorStr) {
+    int j = 0;
+    for (int i = 1; i < operatorAST.size(); i++) {
+      final IExpr plusArg = operatorAST.get(i);
+      convertInternal(buf, plusArg);
+      if (i < operatorAST.size() - 1) {
+        buf.append("." + operatorStr + "(");
+        j++;
       }
     }
-    if (operPrecedence < precedence) {
-      append(buf, ")");
+    for (int i = 0; i < j; i++) {
+      buf.append(")");
     }
   }
 
-  public void convertPlusArgument(final StringBuilder buf, IExpr plusArg, boolean caller) {
-    if (plusArg.isTimes()) {
-      final IAST timesAST = (IAST) plusArg;
-      // IExpr arg1 = timesAST.arg1();
-      final InfixOperator TIMES_OPERATOR =
-          (InfixOperator) ASTNodeFactory.MMA_STYLE_FACTORY.get("Times");
-      convertTimesFraction(buf, timesAST, TIMES_OPERATOR, Precedence.TIMES, caller);
-    } else {
-      if (plusArg.isNegativeSigned()) {
-        // special case negative number or -Infinity...
-        convertInternal(buf, plusArg);
-      } else {
-        if (caller == PLUS_CALL) {
-          append(buf, "+");
-        }
-        convertInternal(buf, plusArg, Precedence.PLUS, false);
-      }
-    }
-  }
-
-  private void convertPlusOperatorReversed(
-      final StringBuilder buf, final IAST plusAST, final InfixOperator oper, final int precedence) {
-    int operPrecedence = oper.getPrecedence();
-    if (operPrecedence < precedence) {
-      append(buf, "(");
-    }
-
-    String operatorStr = oper.getOperatorString();
+  private void convertInfixOperatorReversed(
+      final StringBuilder buf, final IAST operatorAST, String operatorStr) {
 
     IExpr plusArg;
-    int size = plusAST.argSize();
+    int size = operatorAST.argSize();
+    int j = 0;
     // print Plus[] in reverse order (i.e. numbers at last)
     for (int i = size; i > 0; i--) {
-      plusArg = plusAST.get(i);
-
-      if (plusArg.isTimes()) {
-        final String multCh = ASTNodeFactory.MMA_STYLE_FACTORY.get("Times").getOperatorString();
-        boolean showOperator = true;
-        final IAST timesAST = (IAST) plusArg;
-        IExpr arg1 = timesAST.arg1();
-
-        if (arg1.isNumber() && (((INumber) arg1).complexSign() < 0)) {
-          if (((INumber) arg1).isOne()) {
-            showOperator = false;
-          } else {
-            if (arg1.isMinusOne()) {
-              append(buf, "-");
-              showOperator = false;
-            } else {
-              convertNumber(buf, (INumber) arg1, operPrecedence, NO_PLUS_CALL);
-            }
-          }
-        } else {
-          if (i < size) {
-            append(buf, operatorStr);
-          }
-          convertInternal(buf, arg1, Precedence.TIMES, false);
-        }
-
-        IExpr timesArg;
-        for (int j = 2; j < timesAST.size(); j++) {
-          timesArg = timesAST.get(j);
-
-          if (showOperator) {
-            append(buf, multCh);
-          } else {
-            showOperator = true;
-          }
-
-          convertInternal(buf, timesArg, Precedence.TIMES, false);
-        }
-      } else {
-        if (plusArg.isNumber() && (((INumber) plusArg).complexSign() < 0)) {
-          // special case negative number:
-          convertInternal(buf, plusArg);
-        } else {
-          if (i < size) {
-            append(buf, operatorStr);
-          }
-
-          convertInternal(buf, plusArg, Precedence.PLUS, false);
-        }
+      plusArg = operatorAST.get(i);
+      convertInternal(buf, plusArg);
+      if (i > 1) {
+        buf.append("." + operatorStr + "(");
+        j++;
       }
     }
-
-    if (operPrecedence < precedence) {
-      append(buf, ")");
+    for (int i = 0; i < j; i++) {
+      buf.append(")");
     }
   }
-
-  private void convertTimesFraction(
-      final StringBuilder buf,
-      final IAST timesAST,
-      final InfixOperator oper,
-      final int precedence,
-      boolean caller) {
-    IExpr[] parts =
-        Algebra.fractionalPartsTimesPower(timesAST, true, false, false, false, false, false);
-    if (parts == null) {
-      convertTimesOperator(buf, timesAST, oper, precedence, caller);
-      return;
-    }
-    final IExpr numerator = parts[0];
-    final IExpr denominator = parts[1];
-    if (!denominator.isOne()) {
-      int currPrecedence = oper.getPrecedence();
-      if (currPrecedence < precedence) {
-        append(buf, "(");
-      }
-      final IExpr fraction = parts[2];
-      if (fraction != null) {
-        convertNumber(buf, (ISignedNumber) fraction, Precedence.PLUS, caller);
-        append(buf, "*");
-        caller = NO_PLUS_CALL;
-      }
-      if (numerator.isReal()) {
-        convertNumber(buf, (ISignedNumber) numerator, Precedence.PLUS, caller);
-      } else if (numerator.isComplex() || numerator.isComplexNumeric()) {
-        convertNumber(buf, (INumber) numerator, Precedence.DIVIDE, caller);
-      } else {
-        if (numerator.isTimes() && numerator.isAST2() && numerator.first().isMinusOne()) {
-          append(buf, "-");
-          convertInternal(buf, numerator.second(), Precedence.TIMES, false);
-        } else {
-          if (caller == PLUS_CALL) {
-            append(buf, "+");
-          }
-          // insert numerator in buffer:
-          if (numerator.isTimes()) {
-            convertTimesOperator(buf, (IAST) numerator, oper, Precedence.DIVIDE, NO_PLUS_CALL);
-          } else {
-            convertInternal(buf, numerator, Precedence.DIVIDE, false);
-          }
-        }
-      }
-      append(buf, "/");
-      // insert denominator in buffer:
-      if (denominator.isTimes()) {
-        convertTimesOperator(buf, (IAST) denominator, oper, Precedence.DIVIDE, NO_PLUS_CALL);
-      } else {
-        convertInternal(buf, denominator, Precedence.DIVIDE, false);
-      }
-      if (currPrecedence < precedence) {
-        append(buf, ")");
-      }
-      return;
-    }
-    convertTimesOperator(buf, timesAST, oper, precedence, caller);
-  }
-
-  private void convertTimesOperator(
-      final StringBuilder buf,
-      final IAST timesAST,
-      final InfixOperator oper,
-      final int precedence,
-      boolean caller) {
-    boolean showOperator = true;
-    int currPrecedence = oper.getPrecedence();
-    if (currPrecedence < precedence) {
-      append(buf, "(");
-    }
-
-    if (timesAST.size() > 1) {
-      IExpr arg1 = timesAST.arg1();
-      if (arg1.isReal() && timesAST.size() > 2 && !timesAST.arg2().isNumber()) {
-        if (arg1.isMinusOne()) {
-          append(buf, "-");
-          showOperator = false;
-        } else {
-          convertNumber(buf, (ISignedNumber) arg1, Precedence.PLUS, caller);
-        }
-      } else if (arg1.isComplex() && timesAST.size() > 2) {
-        convertComplex(buf, (IComplex) arg1, oper.getPrecedence(), caller);
-      } else {
-        if (caller == PLUS_CALL) {
-          append(buf, "+");
-        }
-        convertInternal(buf, arg1, oper.getPrecedence(), false);
-      }
-    }
-    for (int i = 2; i < timesAST.size(); i++) {
-      if (showOperator) {
-        append(buf, oper.getOperatorString());
-      } else {
-        showOperator = true;
-      }
-      convertInternal(buf, timesAST.get(i), oper.getPrecedence(), false);
-    }
-    if (currPrecedence < precedence) {
-      append(buf, ")");
-    }
-  }
-
-  // public void convertApplyOperator(final StringBuilder buf, final IAST list, final InfixOperator
-  // oper,
-  // final int precedence) {
-  // IExpr arg2 = list.arg2();
-  // if (arg2.isNumber()) {
-  // INumber exp = (INumber) arg2;
-  // if (exp.complexSign() < 0) {
-  // if (ASTNodeFactory.APPLY_PRECEDENCE < precedence) {
-  // append(buf, "(");
-  // }
-  // append(buf, "1/");
-  // if (exp.isMinusOne()) {
-  // convertInternal(buf, list.arg1(), ASTNodeFactory.DIVIDE_PRECEDENCE, false);
-  // if (ASTNodeFactory.DIVIDE_PRECEDENCE < precedence) {
-  // append(buf, ")");
-  // }
-  // return;
-  // }
-  // // flip presign of the exponent
-  // IAST pow = list.setAtCopy(2, exp.opposite());
-  // convertPowerOperator(buf, pow, oper, ASTNodeFactory.DIVIDE_PRECEDENCE);
-  // if (ASTNodeFactory.APPLY_PRECEDENCE < precedence) {
-  // append(buf, ")");
-  // }
-  // return;
-  // }
-  // }
-  // convertInfixOperator(buf, list, oper, precedence);
-  // }
 
   public void convertPowerOperator(
       final StringBuilder buf, final IAST list, final InfixOperator oper, final int precedence) {
@@ -889,66 +605,11 @@ public abstract class ComplexFormFactory {
     convertInternal(buf, o, Integer.MIN_VALUE, false);
   }
 
-  private void convertNumber(
-      final StringBuilder buf, final INumber o, final int precedence, boolean caller) {
-    if (o instanceof INum) {
-      convertDouble(buf, (INum) o, precedence, caller);
-      return;
-    }
-    if (o instanceof IComplexNum) {
-      convertDoubleComplex(buf, (IComplexNum) o, precedence, caller);
-      return;
-    }
-    if (o instanceof IInteger) {
-      convertInteger(buf, (IInteger) o, precedence, caller);
-      return;
-    }
-    if (o instanceof IFraction) {
-      convertFraction(buf, (IFraction) o, precedence, caller);
-      return;
-    }
-    if (o instanceof IComplex) {
-      convertComplex(buf, (IComplex) o, precedence, caller);
-    }
-  }
-
   private void convertInternal(
       final StringBuilder buf, final IExpr o, final int precedence, boolean isASTHead) {
     if (o instanceof IAST) {
       final IAST list = (IAST) o;
-      // IExpr header = list.head();
-      // if (!header.isSymbol()) {
-      // // print expressions like: f(#1, y)& [x]
-      //
-      // IAST[] derivStruct = list.isDerivativeAST1();
-      // if (derivStruct != null) {
-      // IAST a1Head = derivStruct[0];
-      // IAST headAST = derivStruct[1];
-      // if (a1Head.isAST1() && a1Head.arg1().isInteger() && headAST.isAST1()
-      // && (headAST.arg1().isSymbol() || headAST.arg1().isAST()) && derivStruct[2] != null) {
-      // try {
-      // int n = ((IInteger) a1Head.arg1()).toInt();
-      // if (n == 1 || n == 2) {
-      // IExpr symbolOrAST = headAST.arg1();
-      // convertInternal(buf, symbolOrAST);
-      // if (n == 1) {
-      // append(buf, "'");
-      // } else if (n == 2) {
-      // append(buf, "''");
-      // }
-      // convertArgs(buf, symbolOrAST, list);
-      // return;
-      // }
-      // } catch (ArithmeticException ae) {
-      //
-      // }
-      // }
-      // }
-      //
-      // convertInternal(buf, header, Integer.MIN_VALUE, true);
-      // convertFunctionArgs(buf, list);
-      // return;
-      // }
+
       if (list.head().isSymbol()) {
         ISymbol head = (ISymbol) list.head();
         final Operator operator = getOperator(head);
@@ -965,113 +626,23 @@ public abstract class ComplexFormFactory {
             }
           }
         }
-
-        // int functionID = head.ordinal();
-        // if (functionID > ID.UNKNOWN) {
-        // switch (functionID) {
-        // case ID.Quantity:
-        // // if (head.equals(F.SeriesData) && (list.size() == 7)) {
-        // if (list instanceof IQuantity) {
-        // if (convertQuantityData(buf, (IQuantity) list, precedence)) {
-        // return;
-        // }
-        // }
-        // break;
-        // case ID.SeriesData:
-        // // if (head.equals(F.SeriesData) && (list.size() == 7)) {
-        // if (list instanceof ASTSeriesData) {
-        // if (convertSeriesData(buf, (ASTSeriesData) list, precedence)) {
-        // return;
-        // }
-        // }
-        // break;
-        // case ID.List:
-        // convertList(buf, list);
-        // return;
-        // case ID.Part:
-        // if (list.size() >= 3) {
-        // convertPart(buf, list);
-        // return;
-        // }
-        // break;
-        // case ID.Slot:
-        // if (list.isAST1() && list.arg1().isInteger()) {
-        // convertSlot(buf, list);
-        // return;
-        // }
-        // break;
-        // case ID.SlotSequence:
-        // if (list.isAST1() && list.arg1().isInteger()) {
-        // convertSlotSequence(buf, list);
-        // return;
-        // }
-        // break;
-        // case ID.Defer:
-        // case ID.HoldForm:
-        // if (list.isAST1()) {
-        // convertInternal(buf, list.arg1());
-        // return;
-        // }
-        // break;
-        // case ID.DirectedInfinity:
-        // if (list.isDirectedInfinity()) { // head.equals(F.DirectedInfinity))
-        // if (list.isAST0()) {
-        // append(buf, "ComplexInfinity");
-        // return;
-        // }
-        // if (list.isAST1()) {
-        // if (list.arg1().isOne()) {
-        // append(buf, "Infinity");
-        // return;
-        // } else if (list.arg1().isMinusOne()) {
-        // if (ASTNodeFactory.PLUS_PRECEDENCE < precedence) {
-        // append(buf, "(");
-        // }
-        // append(buf, "-Infinity");
-        // if (ASTNodeFactory.PLUS_PRECEDENCE < precedence) {
-        // append(buf, ")");
-        // }
-        // return;
-        // } else if (list.arg1().isImaginaryUnit()) {
-        // append(buf, "I*Infinity");
-        // return;
-        // } else if (list.arg1().isNegativeImaginaryUnit()) {
-        // append(buf, "-I*Infinity");
-        // return;
-        // }
-        // }
-        // }
-        // break;
-        // case ID.Optional:
-        // if (list.isAST2() && (list.arg1().isBlank() || list.arg1().isPattern())) {
-        // convertInternal(buf, list.arg1());
-        // buf.append(":");
-        // convertInternal(buf, list.arg2());
-        // return;
-        // }
-        // break;
-        // }
-        // } else {
-        // if (list instanceof ASTRealVector || list instanceof ASTRealMatrix) {
-        // convertList(buf, list);
-        // return;
-        // }
-        // }
       }
 
       convertAST(buf, list);
       return;
     }
     if (o instanceof ISignedNumber) {
-      convertNumber(buf, (ISignedNumber) o, precedence, NO_PLUS_CALL);
+      double d = o.evalDouble();
+      buf.append("Complex.valueOf(" + d + ")");
       return;
     }
-    if (o instanceof IComplexNum) {
-      convertDoubleComplex(buf, (IComplexNum) o, precedence, NO_PLUS_CALL);
-      return;
-    }
-    if (o instanceof IComplex) {
-      convertComplex(buf, (IComplex) o, precedence, NO_PLUS_CALL);
+    if (o instanceof INumber) {
+      Complex c = o.evalComplex();
+      if (c != null) {
+        buf.append("Complex.valueOf(" + c.getReal() + ", " + c.getImaginary() + ")");
+      } else {
+        buf.append("Complex.valueOf(" + o.toString() + ")");
+      }
       return;
     }
     if (o instanceof ISymbol) {
@@ -1099,16 +670,16 @@ public abstract class ComplexFormFactory {
       InfixOperator infixOperator = (InfixOperator) operator;
       if (head.equals(S.Plus)) {
         if (fPlusReversed) {
-          convertPlusOperatorReversed(buf, list, infixOperator, precedence);
+          convertInfixOperatorReversed(buf, list, "add");
         } else {
-          convertPlusOperator(buf, list, infixOperator, precedence);
+          convertInfixOperator(buf, list, "add");
         }
         return true;
       } else if (head.equals(S.Times)) {
-        convertTimesFraction(buf, list, infixOperator, precedence, NO_PLUS_CALL);
+        convertInfixOperator(buf, list, "multiply");
         return true;
       } else if (list.isPower()) {
-        convertPowerOperator(buf, list, infixOperator, precedence);
+        convertInfixOperator(buf, list, "pow");
         return true;
       } else if (list.isAST(S.Apply)) {
         if (list.size() == 3) {
@@ -1272,57 +843,6 @@ public abstract class ComplexFormFactory {
     append(buf, "]]");
   }
 
-  /**
-   * Convert a <code>SeriesData(...)</code> expression.
-   *
-   * @param buf
-   * @param seriesData <code>SeriesData[x, x0, list, nmin, nmax, den]</code> expression
-   * @param precedence the precedence of the parent expression
-   * @return <code>true</code> if the conversion was successful
-   * @throws IOException
-   */
-  public boolean convertSeriesData(
-      final StringBuilder buf, final ASTSeriesData seriesData, final int precedence) {
-    StringBuilder tempBuffer = new StringBuilder();
-    if (Precedence.PLUS < precedence) {
-      append(tempBuffer, "(");
-    }
-
-    try {
-      IExpr plusArg;
-      // SeriesData[x, x0, list, nmin, nmax, den]
-      IExpr x = seriesData.getX();
-      IExpr x0 = seriesData.getX0();
-      int nmin = seriesData.getNMin();
-      int nmax = seriesData.getNMax();
-      int order = seriesData.order();
-      long den = seriesData.getDenominator();
-      boolean call = NO_PLUS_CALL;
-      if (nmax > nmin) {
-        INumber exp = F.fraction(nmin, den).normalize();
-        IExpr pow = x.subtract(x0).power(exp);
-        call = convertSeriesDataArg(tempBuffer, seriesData.coefficient(nmin), pow, call);
-        for (int i = nmin + 1; i < nmax; i++) {
-          exp = F.fraction(i, den).normalize();
-          pow = x.subtract(x0).power(exp);
-          call = convertSeriesDataArg(tempBuffer, seriesData.coefficient(i), pow, call);
-        }
-      }
-      plusArg = F.Power(F.O(x.subtract(x0)), F.fraction(order, den).normalize());
-      if (!plusArg.isZero()) {
-        convertPlusArgument(tempBuffer, plusArg, call);
-        call = PLUS_CALL;
-      }
-    } catch (Exception ex) {
-      return false;
-    }
-    if (Precedence.PLUS < precedence) {
-      append(tempBuffer, ")");
-    }
-    buf.append(tempBuffer);
-    return true;
-  }
-
   public boolean convertQuantityData(
       final StringBuilder buf, final IQuantity quantity, final int precedence) {
     StringBuilder tempBuffer = new StringBuilder();
@@ -1342,64 +862,15 @@ public abstract class ComplexFormFactory {
     return true;
   }
 
-  /**
-   * Convert a factor of a <code>SeriesData</code> object.
-   *
-   * @param buf
-   * @param coefficient the coefficient expression of the factor
-   * @param pow the power expression of the factor
-   * @param call
-   * @return the current call status
-   * @throws IOException
-   */
-  private boolean convertSeriesDataArg(
-      StringBuilder buf, IExpr coefficient, IExpr pow, boolean call) {
-    IExpr plusArg;
-    if (coefficient.isZero()) {
-      return call;
-    }
-    if (coefficient.isOne()) {
-      if (pow.isPlus()) {
-        if (call == PLUS_CALL) {
-          append(buf, "+");
-        }
-        append(buf, "(");
-        convertPlusArgument(buf, pow, call);
-        append(buf, ")");
-        call = PLUS_CALL;
-        return call;
-      }
-      plusArg = pow;
-    } else {
-      if (pow.isOne()) {
-        plusArg = coefficient;
-      } else {
-        IASTAppendable times = F.TimesAlloc(3);
-        if (coefficient.isTimes()) {
-          times.appendArgs((IAST) coefficient);
-        } else {
-          times.append(coefficient);
-        }
-        times.append(pow);
-        plusArg = times;
-      }
-    }
-    if (!plusArg.isZero()) {
-      convertPlusArgument(buf, plusArg, call);
-      call = PLUS_CALL;
-    }
-    return call;
-  }
-
   public void convertFunctionArgs(final StringBuilder buf, final IAST list) {
-    append(buf, "[");
+    append(buf, "(");
     for (int i = 1; i < list.size(); i++) {
       convertInternal(buf, list.get(i));
       if (i < list.argSize()) {
         append(buf, ",");
       }
     }
-    append(buf, "]");
+    append(buf, ")");
   }
 
   public abstract String functionHead(ISymbol symbol);

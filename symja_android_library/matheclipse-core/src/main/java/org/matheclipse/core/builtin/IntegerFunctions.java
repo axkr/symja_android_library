@@ -234,7 +234,7 @@ public class IntegerFunctions {
         if (ast.isAST2()) {
           return F.Times(F.Ceiling(F.Divide(ast.arg1(), ast.arg2())), ast.arg2());
         }
-        IExpr arg1 = engine.evaluateNull(ast.arg1());
+        IExpr arg1 = engine.evaluateNIL(ast.arg1());
         if (arg1.isPresent()) {
           return evalCeiling(arg1).orElseGet(() -> F.Ceiling(arg1));
         }
@@ -597,7 +597,7 @@ public class IntegerFunctions {
         if (ast.isAST2()) {
           return F.Times(F.Floor(F.Divide(ast.arg1(), ast.arg2())), ast.arg2());
         }
-        IExpr arg1 = engine.evaluateNull(ast.arg1());
+        IExpr arg1 = engine.evaluateNIL(ast.arg1());
         if (arg1.isPresent()) {
           return evalFloor(arg1).orElseGet(() -> F.Floor(arg1));
         }
@@ -1589,7 +1589,7 @@ public class IntegerFunctions {
       IExpr res = F.NIL;
       try {
         IExpr arg1 = ast.arg1();
-        IExpr temp = engine.evaluateNull(arg1);
+        IExpr temp = engine.evaluateNIL(arg1);
         if (temp.isPresent()) {
           arg1 = temp;
           res = ast.setAtCopy(1, temp);
@@ -1602,7 +1602,7 @@ public class IntegerFunctions {
           // Round(z, a)
 
           IExpr arg2 = ast.arg2();
-          temp = engine.evaluateNull(arg2);
+          temp = engine.evaluateNIL(arg2);
           if (temp.isPresent()) {
             arg2 = temp;
             if (!res.isPresent()) {

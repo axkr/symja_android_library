@@ -529,6 +529,8 @@ public class IOFunctions {
     "Digit at position `1` in `2` is too large to be used in base `3`.", //
     "dmval",
     "Input value `1` lies outside the range of data in the interpolating function. Extrapolation will be used.",
+    "dotdim",
+    "Dot contraction of `1` and `2` is invalid because dimensions `3` and `4` are incompatible.",
     "drop",
     "Cannot drop positions `1` through `2` in `3`.", //
     "dvar",
@@ -761,6 +763,8 @@ public class IOFunctions {
     "Requested precision `1` is greater than `2`.", //
     "range",
     "Range specification in `1` does not have appropriate bounds.", //
+    "rankl",
+    "The list `1` of dimensions must have length `2`.",
     "realx",
     "The value `1` is not a real number.", //
     "reclim2",

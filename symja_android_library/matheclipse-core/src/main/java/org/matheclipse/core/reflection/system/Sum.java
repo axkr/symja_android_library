@@ -481,7 +481,7 @@ public class Sum extends ListFunctions.Table implements SumRules {
       return F.C0;
     }
     if (from.isInteger() && !from.isOne()) {
-      IExpr subSum = engine.evaluateNull(F.Sum(expr, F.List(var, C1, to)));
+      IExpr subSum = engine.evaluateNIL(F.Sum(expr, F.List(var, C1, to)));
       if (subSum.isPresent()) {
         if (S.Less.ofQ(engine, from, C1)) {
           return F.Plus(F.Sum(expr, F.List(var, from, C0)), subSum);

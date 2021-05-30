@@ -1,5 +1,7 @@
 package org.matheclipse.core.eval.util;
 
+import java.util.Map;
+
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.interfaces.ISignedNumber;
@@ -32,6 +34,8 @@ public interface IAssumptions {
 
   public IExpr get$Assumptions();
 
+  public Map<IExpr, IAST> getTensorsMap();
+  
   /**
    * Gives <code>true</code>, if the expression is assumed to be an algebraic value (i.e. an element
    * of the <code>Algebraics</code> domain), <code>false</code> in all other cases.
@@ -171,4 +175,12 @@ public interface IAssumptions {
   public int[] reduceRange(IExpr x, final int[] range);
 
   public void set$Assumptions(IExpr expr);
+
+  /**
+   * Get some assumptions about tensor symbols
+   *
+   * @param expr
+   * @return <code>F.NIL</code> if no tensor property is associated
+   */
+  public IAST tensors(IExpr expr);
 }

@@ -60,12 +60,6 @@
 	<classpathentry kind="lib" path="lib/undertow-servlet-2.1.0.Final.jar"/>
 	<classpathentry kind="lib" path="lib/jboss-servlet-api_4.0_spec-2.0.0.Final.jar"/>
 	<classpathentry kind="lib" path="lib/commons-lang3-3.11.jar"/>
-	<classpathentry kind="lib" path="lib/hipparchus-clustering-1.8.jar"/>
-	<classpathentry kind="lib" path="lib/hipparchus-fft-1.8.jar"/>
-	<classpathentry kind="lib" path="lib/hipparchus-ode-1.8.jar"/>
-	<classpathentry kind="lib" path="lib/hipparchus-optim-1.8.jar"/>
-	<classpathentry kind="lib" path="lib/hipparchus-stat-1.8.jar"/>
-	<classpathentry kind="lib" path="lib/hipparchus-fitting-1.8.jar"/>
 	<classpathentry kind="lib" path="lib/commons-text-1.8.jar"/>
 	<classpathentry kind="lib" path="lib/jheaps-0.13.jar"/>
 	<classpathentry kind="lib" path="lib/logicng-2.0.2.jar"/>
@@ -76,7 +70,6 @@
 	<classpathentry kind="lib" path="lib/jackson-databind-2.11.0.jar"/>
 	<classpathentry kind="lib" path="lib/jackson-datatype-jsr310-2.11.0.jar"/>
 	<classpathentry kind="lib" path="lib/icu4j-68.2.jar"/>
-	<classpathentry kind="lib" path="lib/hipparchus-core-1.8.jar"/>
 	<classpathentry kind="con" path="org.eclipse.jdt.junit.JUNIT_CONTAINER/5"/>
 	<classpathentry kind="lib" path="lib/guava-30.1.1-jre.jar"/>
 	<classpathentry kind="lib" path="lib/archunit-0.18.0.jar"/>
@@ -85,6 +78,13 @@
 	<classpathentry kind="lib" path="lib/commons-compiler-3.1.4.jar"/>
 	<classpathentry kind="lib" path="lib/commonmark-0.17.2.jar"/>
 	<classpathentry kind="lib" path="lib/commonmark-ext-gfm-tables-0.17.2.jar"/>
-	<classpathentry kind="lib" path="lib/apfloat-1.10.0.jar"/>
+	<classpathentry kind="lib" path="lib/hipparchus-clustering-2.0-SNAPSHOT.jar"/>
+	<classpathentry kind="lib" path="lib/hipparchus-fft-2.0-SNAPSHOT.jar"/>
+	<classpathentry kind="lib" path="lib/hipparchus-fitting-2.0-SNAPSHOT.jar"/>
+	<classpathentry kind="lib" path="lib/hipparchus-ode-2.0-SNAPSHOT.jar"/>
+	<classpathentry kind="lib" path="lib/hipparchus-optim-2.0-SNAPSHOT.jar"/>
+	<classpathentry kind="lib" path="lib/hipparchus-stat-2.0-SNAPSHOT.jar"/>
+	<classpathentry kind="lib" path="lib/apfloat-1.10.1-SNAPSHOT.jar"/>
+	<classpathentry kind="lib" path="lib/hipparchus-core-2.0-SNAPSHOT.jar"/>
 	<classpathentry kind="output" path="bin/classes"/>
 </classpath>

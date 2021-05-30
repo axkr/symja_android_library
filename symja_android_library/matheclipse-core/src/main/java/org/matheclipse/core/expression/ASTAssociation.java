@@ -321,7 +321,7 @@ public class ASTAssociation extends AST implements IAssociation {
         IExpr arg = getRule(i);
         if (arg.isRule()) {
           // for Rules eval rhs / for RuleDelayed don't
-          IExpr temp = engine.evaluateNull(arg.second());
+          IExpr temp = engine.evaluateNIL(arg.second());
           if (temp.isPresent()) {
             if (!result.isPresent()) {
               result = copy();

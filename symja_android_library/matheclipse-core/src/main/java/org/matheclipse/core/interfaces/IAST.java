@@ -16,7 +16,7 @@ import java.util.stream.Stream;
 
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.exception.RecursionLimitExceeded;
-import org.matheclipse.core.expression.F;
+import org.matheclipse.core.expression.F; 
 import org.matheclipse.core.generic.ObjIntPredicate;
 import org.matheclipse.core.visit.IVisitor;
 
@@ -671,7 +671,7 @@ public interface IAST extends IExpr, Iterable<IExpr> {
    *
    * @param function a binary function that accumulate the elements
    * @param startValue
-   * @return the accumulated elements
+   * @return the accumulated elements or {@link F#NIL} if the function returns {@link F#NIL}
    */
   public IExpr foldLeft(
       final BiFunction<IExpr, IExpr, ? extends IExpr> function, IExpr startValue, int start);
@@ -683,7 +683,7 @@ public interface IAST extends IExpr, Iterable<IExpr> {
    *
    * @param function a binary function that accumulate the elements
    * @param startValue
-   * @return the accumulated elements
+   * @return the accumulated elements or {@link F#NIL} if the function returns {@link F#NIL}
    */
   public IExpr foldRight(
       final BiFunction<IExpr, IExpr, ? extends IExpr> function, IExpr startValue, int start);
@@ -1155,12 +1155,12 @@ public interface IAST extends IExpr, Iterable<IExpr> {
   }
 
   /**
-   * Append the mapped elements directly to the given <code>list</code>
+   * Append the mapped ranges elements directly to the given <code>list</code>
    *
    * @param list
    * @param binaryFunction binary function
    * @param leftArg left argument of the binary functions <code>apply()</code> method.
-   * @return
+   * @return {@link F#NIL} if <code>binaryFunction</code> returns {@link F#NIL}
    */
   public IAST mapLeft(
       IASTAppendable list, BiFunction<IExpr, IExpr, IExpr> binaryFunction, IExpr leftArg);
@@ -1179,15 +1179,15 @@ public interface IAST extends IExpr, Iterable<IExpr> {
   public IExpr mapMatrixColumns(int[] dim, Function<IExpr, IExpr> f);
 
   /**
-   * Append the mapped elements directly to the given <code>list</code>
+   * Append the mapped ranges elements directly to the given <code>list</code>
    *
    * @param list
    * @param binaryFunction a binary function
    * @param rightArg right argument of the binary functions <code>apply()</code> method.
-   * @return the given list
+   * @return {@link F#NIL} if <code>binaryFunction</code> returns {@link F#NIL}
    */
-  public Collection<IExpr> mapRight(
-      Collection<IExpr> list, BiFunction<IExpr, IExpr, IExpr> binaryFunction, IExpr rightArg);
+  public IAST mapRight(
+      IASTAppendable list, BiFunction<IExpr, IExpr, IExpr> binaryFunction, IExpr rightArg);
 
   /**
    * Maps the elements of this {@link IAST} on the first level of arguments with the unary functor

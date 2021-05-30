@@ -304,7 +304,7 @@ public class Config {
   /** The algorithm which should be used for the factorization of integer numbers. */
   //  public static Function<IInteger, IAST> FACTOR_INTEGER =  Primality::factorIInteger;
   public static IPrimality PRIME_FACTORS = new Primality();
-  
+
   /** Use JavaScript libraries for the <code>Manipulate()</code> function */
   public static boolean USE_MANIPULATE_JS = true;
 
@@ -701,11 +701,11 @@ public class Config {
           + "\n"
           + "<body>\n"
           + "\n"
-          + "<link rel=\"stylesheet\" type=\"text/css\" href=\"https://cdnjs.cloudflare.com/ajax/libs/jsxgraph/1.2.1/jsxgraph.min.css\" />\n"
+          + "<link rel=\"stylesheet\" type=\"text/css\" href=\"https://cdnjs.cloudflare.com/ajax/libs/jsxgraph/1.2.2/jsxgraph.min.css\" />\n"
           + "<script src=\"https://cdn.jsdelivr.net/gh/paulmasson/math@1.4.4/build/math.js\"></script>\n"
-          + "<script src=\"https://cdnjs.cloudflare.com/ajax/libs/jsxgraph/1.2.1/jsxgraphcore.min.js\"\n"
+          + "<script src=\"https://cdnjs.cloudflare.com/ajax/libs/jsxgraph/1.2.2/jsxgraphcore.min.js\"\n"
           + "        type='text/javascript'></script>\n"
-          + "<script src=\"https://cdnjs.cloudflare.com/ajax/libs/jsxgraph/1.2.1/geonext.min.js\"\n"
+          + "<script src=\"https://cdnjs.cloudflare.com/ajax/libs/jsxgraph/1.2.2/geonext.min.js\"\n"
           + "        type='text/javascript'></script>\n"
           + "\n"
           + "<div id=\"jxgbox\" class=\"jxgbox\" style=\"display: flex; width:99%; height:99%; margin: 0; flex-direction: column; overflow: hidden\">\n"

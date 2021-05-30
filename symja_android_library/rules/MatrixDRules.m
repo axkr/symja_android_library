@@ -20,7 +20,13 @@ MatrixD(Log(Det(Transpose(x_).x_)), x_?(TensorRank(x)==2)) := 2*Inverse(Transpos
 (* Rule 57 *)
 MatrixD(Log(Det(x_)), x_?(TensorRank(x)==2)) := Inverse(Transpose(x)),
 
-(* Rule 62 *)s
+(* Rule 58 *)
+MatrixD(Det(MatrixPower(x_,k_)), x_?(TensorRank(x)==2)) := k*Det(MatrixPower(x,k))*Inverse(Transpose(x)),
+
+(* Rule 60 *)
+MatrixD(Inverse(x_),x_?(TensorRank(x)==2)) := (-Inverse(x)) . $SingleEntryMatrix . Inverse(x),
+
+(* Rule 62 *)
 MatrixD(Det(Inverse(x_)),x_?(TensorRank(x)==2)) := (-Det(Inverse(x)))*Transpose(Inverse(x))
   
 } 

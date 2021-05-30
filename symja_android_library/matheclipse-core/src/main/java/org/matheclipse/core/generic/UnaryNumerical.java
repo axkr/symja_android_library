@@ -4,8 +4,10 @@ import java.util.function.DoubleFunction;
 import java.util.function.Function;
 
 import org.hipparchus.analysis.UnivariateFunction;
-import org.hipparchus.analysis.differentiation.DerivativeStructure;
+import org.hipparchus.analysis.differentiation.Derivative;
 import org.hipparchus.analysis.differentiation.UnivariateDifferentiableFunction;
+import org.hipparchus.complex.Complex;
+import org.hipparchus.exception.MathIllegalArgumentException;
 import org.matheclipse.core.builtin.IOFunctions;
 import org.matheclipse.core.eval.DoubleStackEvaluator;
 import org.matheclipse.core.eval.EvalEngine;
@@ -59,12 +61,11 @@ public class UnaryNumerical
     return fEngine.evalN(F.subst(fFunction, F.Rule(fVariable, arg1)));
   }
 
-
   @Override
   public IExpr apply(double value) {
-	  return fEngine.evalN(F.subst(fFunction, F.Rule(fVariable, F.num(value))));
+    return fEngine.evalN(F.subst(fFunction, F.Rule(fVariable, F.num(value))));
   }
-  
+
   @Override
   public double value(double x) {
     double result = 0.0;
@@ -81,11 +82,16 @@ public class UnaryNumerical
     return result;
   }
 
+  //  @Override
+  //  public DerivativeStructure value(final DerivativeStructure x) {
+  //    // x.getPartialDerivative(1)==1.0 in the case:
+  //    // fFirstDerivative.value(x.getValue() * x.getPartialDerivative(1)
+  //    return x.getFactory().build(value(x.getValue()), fFirstDerivative.value(x.getValue()));
+  //  }
+
   @Override
-  public DerivativeStructure value(final DerivativeStructure x) {
-    // x.getPartialDerivative(1)==1.0 in the case:
-    // fFirstDerivative.value(x.getValue() * x.getPartialDerivative(1)
-    return x.getFactory().build(value(x.getValue()), fFirstDerivative.value(x.getValue()));
+  public <T extends Derivative<T>> T value(T x) throws MathIllegalArgumentException {
+    return x.compose(value(x.getReal()), fFirstDerivative.value(x.getReal()));
   }
 
   /** First derivative of unary function */
@@ -110,6 +116,17 @@ public class UnaryNumerical
     throw new ArithmeticException("Expected numerical complex value object!");
   }
 
+  public Complex value(final Complex z) {
+    final Object temp = apply(F.complexNum(z));
+    if (temp instanceof ComplexNum) {
+      return ((ComplexNum) temp).complexValue();
+    }
+    if (temp instanceof INum) {
+      return Complex.valueOf(((INum) temp).doubleValue());
+    }
+    throw new ArithmeticException("Expected numerical complex value object!");
+  }
+
   public INum value(final INum z) {
     final Object temp = apply(z);
     if (temp instanceof INum) {
@@ -117,5 +134,4 @@ public class UnaryNumerical
     }
     throw new ArithmeticException("Expected numerical double value object!");
   }
-
 }

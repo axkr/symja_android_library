@@ -1623,7 +1623,7 @@ public class PolynomialFunctions {
       IExpr z = ast.arg2();
       if (engine.isNumericMode() && n.isNumber() && z.isNumber()) {
         // (n, z) => Cos(n*ArcCos(z))
-        return F.Cos(F.Times(n, F.ArcCos(z)));
+        return F.Cos.of(engine, F.Times(n, F.ArcCos(z)));
       }
 
       int degree = n.toIntDefault(Integer.MIN_VALUE);
@@ -1696,7 +1696,8 @@ public class PolynomialFunctions {
       IExpr z = ast.arg2();
       if (engine.isNumericMode() && n.isNumber() && z.isNumber()) {
         // Sin((n + 1)*ArcCos(z))/Sqrt(1 - z^2)
-        return F.Times(
+        return F.Times.of(
+            engine,
             F.Power(F.Plus(F.C1, F.Negate(F.Sqr(z))), F.CN1D2),
             F.Sin(F.Times(F.Plus(F.C1, n), F.ArcCos(z))));
       }

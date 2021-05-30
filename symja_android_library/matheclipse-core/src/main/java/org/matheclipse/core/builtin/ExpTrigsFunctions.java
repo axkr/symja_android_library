@@ -38,6 +38,7 @@ import org.apfloat.Apcomplex;
 import org.apfloat.ApcomplexMath;
 import org.apfloat.Apfloat;
 import org.apfloat.ApfloatMath;
+import org.apfloat.Apint;
 import org.hipparchus.complex.Complex;
 import org.hipparchus.util.FastMath;
 import org.matheclipse.core.eval.EvalEngine;
@@ -64,6 +65,7 @@ import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.interfaces.IFraction;
 import org.matheclipse.core.interfaces.IInteger;
 import org.matheclipse.core.interfaces.INum;
+import org.matheclipse.core.interfaces.INumber;
 import org.matheclipse.core.interfaces.IRational;
 import org.matheclipse.core.interfaces.ISignedNumber;
 import org.matheclipse.core.interfaces.ISymbol;
@@ -216,6 +218,9 @@ public class ExpTrigsFunctions {
 
     @Override
     public IExpr e1ApfloatArg(Apfloat arg1) {
+      if (arg1.compareTo(Apfloat.ONE) == 1 || arg1.compareTo(new Apint(-1)) == -1) {
+        return F.complexNum(ApcomplexMath.acos(new Apcomplex(arg1)));
+      }
       return F.num(ApfloatMath.acos(arg1));
     }
 
@@ -226,11 +231,11 @@ public class ExpTrigsFunctions {
 
     @Override
     public IExpr e1DblArg(final double arg1) {
-      double val = Math.acos(arg1);
-      if (Double.isNaN(val)) {
+      // https://github.com/Hipparchus-Math/hipparchus/issues/128
+      if (arg1 > 1.0 || arg1 < -1.0) {
         return F.complexNum(Complex.valueOf(arg1).acos());
       }
-      return F.num(val);
+      return F.num(Math.acos(arg1));
     }
 
     @Override
@@ -797,11 +802,10 @@ public class ExpTrigsFunctions {
 
     @Override
     public IExpr e1ApfloatArg(Apfloat arg1) {
-      try {
-        return F.num(ApfloatMath.asin(arg1));
-      } catch (ArithmeticException ae) {
-        return F.complexNum(ApcomplexMath.asin(new Apcomplex(arg1, Apcomplex.ZERO)));
+      if (arg1.compareTo(Apfloat.ONE) == 1 || arg1.compareTo(new Apint(-1)) == -1) {
+        return F.complexNum(ApcomplexMath.asin(new Apcomplex(arg1)));
       }
+      return F.num(ApfloatMath.asin(arg1));
     }
 
     @Override
@@ -811,11 +815,13 @@ public class ExpTrigsFunctions {
 
     @Override
     public IExpr e1DblArg(final double arg1) {
-      double val = Math.asin(arg1);
-      if (Double.isNaN(val)) {
-        return F.complexNum(Complex.valueOf(arg1).asin());
+      // https://github.com/Hipparchus-Math/hipparchus/issues/128
+      if (arg1 > 1.0) {
+        return F.complexNum(Complex.valueOf(arg1, -0.0).asin());
+      } else if (arg1 < -1.0) {
+        return F.complexNum(Complex.valueOf(arg1, 0.0).asin());
       }
-      return F.num(val);
+      return F.num(Math.asin(arg1));
     }
 
     @Override
@@ -2081,24 +2087,20 @@ public class ExpTrigsFunctions {
     @Override
     public IExpr evaluate(IAST ast, EvalEngine engine) {
       IExpr z = ast.arg1();
-      if (engine.isDoubleMode()) {
+      if (engine.isNumericMode()) {
         try {
-          double zDouble = Double.NaN;
-          try {
-            zDouble = z.evalDouble();
-
-          } catch (ValidateException ve) {
-          }
-          if (Double.isNaN(zDouble)) {
-            Complex mComplex = z.evalComplex();
-            return F.complexNum(mComplex.multiply(0.5).tanh().atan().multiply(2.0));
-          } else {
-            double zTemp = 2.0 * Math.atan(Math.tanh(zDouble * 0.5));
-            if (!Double.isNaN(zTemp)) {
-              return F.complexNum(zTemp);
+          if (z.isNumber()) {
+            // Re(z)>0  ||  (Re(z)==0&&Im(z)>=0)
+            if (((INumber) z).complexSign() >= 0) {
+              // (1/2)*(Pi - 4*ArcCot(E^z))
+              return F.Times.of(
+                  engine, F.C1D2, F.Subtract(S.Pi, F.Times(F.C4, F.ArcCot(F.Power(S.E, z)))));
             }
-            Complex mComplex = z.evalComplex();
-            return F.complexNum(mComplex.multiply(0.5).tanh().atan().multiply(2.0));
+            // (1/2)*(-Pi + 4*ArcTan(E^z))
+            return F.Times.of(
+                engine,
+                F.C1D2,
+                F.Plus(F.Times(F.CN1, S.Pi), F.Times(F.C4, F.ArcTan(F.Power(S.E, z)))));
           }
         } catch (ValidateException ve) {
           if (FEConfig.SHOW_STACKTRACE) {
@@ -2127,11 +2129,21 @@ public class ExpTrigsFunctions {
 
     @Override
     public IExpr evaluate(final IAST ast, EvalEngine engine) {
-      final IExpr arg1 = ast.arg1();
-      if (arg1.isNumericFunction(true)) {
-        // 1/2 * (1-Cos(x))
-        return F.Times(F.C1D2, F.Subtract(F.C1, F.Cos(arg1)));
-        // return F.Power(F.Sin(F.C1D2.times(ast.arg1())), F.C2);
+      final IExpr z = ast.arg1();
+      if (engine.isNumericMode()) {
+        if (z.isNumber()) {
+          // 1/2 * (1-Cos(x))
+          return F.Times.of(engine, F.C1D2, F.Subtract(F.C1, F.Cos(z)));
+          // return F.Power(F.Sin(F.C1D2.times(ast.arg1())), F.C2);
+        }
+      } else {
+        if (z.isNumericFunction()) {
+          IExpr cos = S.Cos.ofNIL(engine, z);
+          if (cos.isPresent()) {
+            // 1/2 * (1-Cos(x))
+            return F.Times.of(engine, F.C1D2, F.Subtract(F.C1, cos));
+          }
+        }
       }
       return F.NIL;
     }
@@ -2152,24 +2164,15 @@ public class ExpTrigsFunctions {
     @Override
     public IExpr evaluate(IAST ast, EvalEngine engine) {
       IExpr z = ast.arg1();
-      if (engine.isDoubleMode()) {
+      if (engine.isNumericMode()) {
         try {
-          double zDouble = Double.NaN;
-          try {
-            zDouble = z.evalDouble();
-
-          } catch (ValidateException ve) {
-          }
-          if (Double.isNaN(zDouble)) {
-            Complex mComplex = z.evalComplex();
-            return F.complexNum(mComplex.multiply(0.5).add(Math.PI / 4.0).tan().log());
-          } else {
-            double zTemp = Math.log(Math.tan(zDouble * 0.5 + Math.PI / 4.0));
-            if (!Double.isNaN(zTemp)) {
-              return F.complexNum(zTemp);
-            }
-            Complex mComplex = z.evalComplex();
-            return F.complexNum(mComplex.multiply(0.5).add(Math.PI / 4.0).tan().log());
+          if (z.isNumber()) {
+            // Log(Tan(Pi/4 + z/2))
+            return F.Log.of(
+                engine,
+                F.Tan( //
+                    F.Plus(F.Times(F.C1D4, S.Pi), F.Times(F.C1D2, z)) //
+                    ));
           }
         } catch (ValidateException ve) {
           if (FEConfig.SHOW_STACKTRACE) {
@@ -2197,9 +2200,18 @@ public class ExpTrigsFunctions {
 
     @Override
     public IExpr evaluate(final IAST ast, EvalEngine engine) {
-      final IExpr arg1 = ast.arg1();
-      if (arg1.isNumericFunction(true)) {
-        return F.Times(F.C2, F.ArcSin(F.Sqrt(arg1)));
+      final IExpr z = ast.arg1();
+      if (engine.isNumericMode()) {
+        if (z.isNumber()) {
+          return F.Times.of(engine, F.C2, F.ArcSin(F.Sqrt(z)));
+        }
+      } else {
+        if (z.isNumericFunction()) {
+          IExpr arcSin = S.ArcSin.ofNIL(engine, F.Sqrt(z));
+          if (arcSin.isPresent()) {
+            return F.Times.of(engine, F.C2, arcSin);
+          }
+        }
       }
       return F.NIL;
     }
@@ -2353,22 +2365,26 @@ public class ExpTrigsFunctions {
 
     @Override
     public IExpr evaluate(final IAST ast, EvalEngine engine) {
-      IExpr arg1 = ast.arg1();
-      if (arg1.isInfinity()) {
+      IExpr z = ast.arg1();
+      if (z.isInfinity()) {
         return F.C1;
       }
-      if (arg1.isNegativeInfinity()) {
+      if (z.isNegativeInfinity()) {
         return F.C0;
       }
-      if (arg1.isNumericFunction(true)) {
-        if (arg1.isZero()) {
+      if (z.isNumericFunction(true)) {
+        if (z.isZero()) {
           return F.C1D2;
         }
-        if (arg1.equals(F.Times(F.CI, S.Pi))) {
+        if (z.equals(F.Times(F.CI, S.Pi))) {
           return F.NIL;
         }
-        // 1 / (1 + Exp(-arg1))
-        return F.Power(F.Plus(F.C1, F.Power(S.E, F.Times(F.CN1, arg1))), F.CN1);
+        if (engine.isDoubleMode() || engine.isArbitraryMode()) {
+          if (z.isNumber()) {
+            // 1 / (1 + Exp(-arg1))
+            return F.Power.of(engine, F.Plus(F.C1, F.Power(S.E, F.Times(F.CN1, z))), F.CN1);
+          }
+        }
       }
       return F.NIL;
     }

@@ -1,5 +1,8 @@
 package org.matheclipse.core.eval.util;
 
+import java.util.HashMap;
+import java.util.Map;
+
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.interfaces.ISignedNumberConstant;
 import org.matheclipse.core.expression.F;
@@ -23,6 +26,14 @@ public abstract class AbstractAssumptions implements IAssumptions {
     return F.NIL;
   }
 
+  public Map<IExpr, IAST> getTensorsMap() {
+    return new HashMap<IExpr, IAST>();
+  }
+
+  @Override
+  public IAST tensors(IExpr expr) {
+    return F.NIL;
+  }
   /**
    * TODO implement algebraic number conditions.
    *
@@ -84,13 +95,37 @@ public abstract class AbstractAssumptions implements IAssumptions {
    * @return
    */
   public static ISymbol assumeArray(final IExpr expr) {
-	  // TODO implementation
-//    if (expr.isAST(S.Arrays, 4)) {
-//      return S.True;
-//    }
+    IAssumptions assumptions = EvalEngine.get().getAssumptions();
+    if (assumptions != null) {
+      IAST temp = assumptions.tensors(expr);
+      if (temp.isAST(S.Arrays, 2, 4)) {
+        return S.True;
+      }
+    }
     return null;
   }
 
+  public static ISymbol assumeMatrices(final IExpr expr) {
+    IAssumptions assumptions = EvalEngine.get().getAssumptions();
+    if (assumptions != null) {
+      IAST temp = assumptions.tensors(expr);
+      if (temp.isAST(S.Matrices, 3, 4)) {
+        return S.True;
+      }
+    }
+    return null;
+  }
+
+  public static ISymbol assumeVectors(final IExpr expr) {
+    IAssumptions assumptions = EvalEngine.get().getAssumptions();
+    if (assumptions != null) {
+      IAST temp = assumptions.tensors(expr);
+      if (temp.isAST(S.Vectors, 3, 4)) {
+        return S.True;
+      }
+    }
+    return null;
+  }
   /**
    * Test if <code>expr</code> is assumed to be an boolean value.
    *

@@ -133,7 +133,7 @@ public class EllipticFunctionsJS {
 
   public static Complex jacobiTheta(int n, Complex x, Complex q, double tolerance) {
 
-    if (q.abs() >= 1) {
+    if (q.norm() >= 1) {
       throw new ArgumentTypeException("unsupported elliptic nome");
     }
 

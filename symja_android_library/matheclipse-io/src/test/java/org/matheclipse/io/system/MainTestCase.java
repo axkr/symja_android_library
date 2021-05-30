@@ -1453,8 +1453,7 @@ public class MainTestCase extends AbstractTestCase {
     // check("LUDecomposition({{1,2},{3,4}})", "{{{1,2},{3,-2}},{1,2},0}");
     check(
         "LUDecomposition({{0}},Sqrt(2)/2)", //
-        "LUDecomposition(\n"
-        + "{{0}},1/Sqrt(2))");
+        "LUDecomposition(\n" + "{{0}},1/Sqrt(2))");
     check(
         "LUDecomposition({{1,2},{3,4}})",
         "{\n" + "{{1,0},\n" + " {3,1}},\n" + "{{1,2},\n" + " {0,-2}},{1,2}}");

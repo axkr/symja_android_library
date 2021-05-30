@@ -212,36 +212,36 @@ public interface DRules {
     // D(ExpIntegralE(g_,f_),x_?NotListQ):=-ExpIntegralE(-1+g,f)*D(f,x)/;FreeQ({g},x)
     ISetDelayed(D(ExpIntegralE(g_,f_),PatternTest(x_,NotListQ)),
       Condition(Times(CN1,ExpIntegralE(Plus(CN1,g),f),D(f,x)),FreeQ(List(g),x))),
-    // D(JacobiAmplitude(g_,f_),x_?NotListQ):=(D(f,x)*((EllipticE(JacobiAmplitude(g,f),f)+(-1+f)*g)*JacobiDN(g,f)-f*JacobiCN(g,f)*JacobiSN(g,f)))/(2*(-1+f)*f)/;FreeQ({g},x)
+    // D(JacobiAmplitude(g_,f_),x_?NotListQ):=JacobiDN(f,g)*D(f,x)+(D(g,x)*(JacobiDN(f,g)*(f*(-1+g)+JacobiEpsilon(f,g))-g*JacobiCN(f,g)*JacobiSN(f,g)))/(2*(-1+g)*g)
     ISetDelayed(D(JacobiAmplitude(g_,f_),PatternTest(x_,NotListQ)),
-      Condition(Times(Power(Times(C2,Plus(CN1,f),f),CN1),D(f,x),Plus(Times(Plus(EllipticE(JacobiAmplitude(g,f),f),Times(Plus(CN1,f),g)),JacobiDN(g,f)),Times(CN1,f,JacobiCN(g,f),JacobiSN(g,f)))),FreeQ(List(g),x))),
-    // D(JacobiCD(g_,f_),x_?NotListQ):=((EllipticE(JacobiAmplitude(g,f),f)+(-1+f)*g)*D(f,x)*JacobiND(g,f)*JacobiSD(g,f))/(2*f)/;FreeQ({g},x)
+      Plus(Times(JacobiDN(f,g),D(f,x)),Times(Power(Times(C2,Plus(CN1,g),g),CN1),D(g,x),Plus(Times(JacobiDN(f,g),Plus(Times(f,Plus(CN1,g)),JacobiEpsilon(f,g))),Times(CN1,g,JacobiCN(f,g),JacobiSN(f,g)))))),
+    // D(JacobiCD(g_,f_),x_?NotListQ):=(-1+g)*JacobiND(f,g)*JacobiSD(f,g)*D(f,x)+(D(g,x)*(f*(-1+g)+JacobiEpsilon(f,g))*JacobiND(f,g)*JacobiSD(f,g))/(2*g)
     ISetDelayed(D(JacobiCD(g_,f_),PatternTest(x_,NotListQ)),
-      Condition(Times(Power(Times(C2,f),CN1),Plus(EllipticE(JacobiAmplitude(g,f),f),Times(Plus(CN1,f),g)),D(f,x),JacobiND(g,f),JacobiSD(g,f)),FreeQ(List(g),x))),
-    // D(JacobiCN(g_,f_),x_?NotListQ):=(D(f,x)*JacobiDN(g,f)*JacobiSN(g,f)*((-1+f)*g+EllipticE(JacobiAmplitude(g,f),f)-f*JacobiCD(g,f)*JacobiSN(g,f)))/(2*(1-f)*f)/;FreeQ({g},x)
+      Plus(Times(Plus(CN1,g),JacobiND(f,g),JacobiSD(f,g),D(f,x)),Times(Power(Times(C2,g),CN1),D(g,x),Plus(Times(f,Plus(CN1,g)),JacobiEpsilon(f,g)),JacobiND(f,g),JacobiSD(f,g)))),
+    // D(JacobiCN(g_,f_),x_?NotListQ):=-JacobiDN(f,g)*JacobiSN(f,g)*D(f,x)+(D(g,x)*JacobiDN(f,g)*JacobiSN(f,g)*(f*(-1+g)+JacobiEpsilon(f,g)-g*JacobiCD(f,g)*JacobiSN(f,g)))/(2*(1-g)*g)
     ISetDelayed(D(JacobiCN(g_,f_),PatternTest(x_,NotListQ)),
-      Condition(Times(Power(Times(C2,Subtract(C1,f),f),CN1),D(f,x),JacobiDN(g,f),JacobiSN(g,f),Plus(Times(Plus(CN1,f),g),EllipticE(JacobiAmplitude(g,f),f),Times(CN1,f,JacobiCD(g,f),JacobiSN(g,f)))),FreeQ(List(g),x))),
-    // D(JacobiDC(g_,f_),x_?NotListQ):=((-EllipticE(JacobiAmplitude(g,f),f)+(1-f)*g)*D(f,x)*JacobiNC(g,f)*JacobiSC(g,f))/(2*f)/;FreeQ({g},x)
+      Plus(Times(CN1,JacobiDN(f,g),JacobiSN(f,g),D(f,x)),Times(Power(Times(C2,Subtract(C1,g),g),CN1),D(g,x),JacobiDN(f,g),JacobiSN(f,g),Plus(Times(f,Plus(CN1,g)),JacobiEpsilon(f,g),Times(CN1,g,JacobiCD(f,g),JacobiSN(f,g)))))),
+    // D(JacobiDC(g_,f_),x_?NotListQ):=(1-g)*JacobiNC(f,g)*JacobiSC(f,g)*D(f,x)+(D(g,x)*(f*(1-g)-JacobiEpsilon(f,g))*JacobiNC(f,g)*JacobiSC(f,g))/(2*g)
     ISetDelayed(D(JacobiDC(g_,f_),PatternTest(x_,NotListQ)),
-      Condition(Times(Power(Times(C2,f),CN1),Plus(Negate(EllipticE(JacobiAmplitude(g,f),f)),Times(Subtract(C1,f),g)),D(f,x),JacobiNC(g,f),JacobiSC(g,f)),FreeQ(List(g),x))),
-    // D(JacobiDN(g_,f_),x_?NotListQ):=(D(f,x)*JacobiCN(g,f)*((-1+f)*g+EllipticE(JacobiAmplitude(g,f),f)-JacobiDN(g,f)*JacobiSC(g,f))*JacobiSN(g,f))/(2*(1-f))/;FreeQ({g},x)
+      Plus(Times(Subtract(C1,g),JacobiNC(f,g),JacobiSC(f,g),D(f,x)),Times(Power(Times(C2,g),CN1),D(g,x),Subtract(Times(f,Subtract(C1,g)),JacobiEpsilon(f,g)),JacobiNC(f,g),JacobiSC(f,g)))),
+    // D(JacobiDN(g_,f_),x_?NotListQ):=-g*JacobiCN(f,g)*JacobiSN(f,g)*D(f,x)+(D(g,x)*JacobiCN(f,g)*(f*(-1+g)+JacobiEpsilon(f,g)-JacobiDN(f,g)*JacobiSC(f,g))*JacobiSN(f,g))/(2*(1-g))
     ISetDelayed(D(JacobiDN(g_,f_),PatternTest(x_,NotListQ)),
-      Condition(Times(Power(Times(C2,Subtract(C1,f)),CN1),D(f,x),JacobiCN(g,f),Plus(Times(Plus(CN1,f),g),EllipticE(JacobiAmplitude(g,f),f),Times(CN1,JacobiDN(g,f),JacobiSC(g,f))),JacobiSN(g,f)),FreeQ(List(g),x))),
-    // D(JacobiNC(g_,f_),x_?NotListQ):=(D(f,x)*JacobiDC(g,f)*JacobiSC(g,f)*(-EllipticE(JacobiAmplitude(g,f),f)+(1-f)*g+f*JacobiCD(g,f)*JacobiSN(g,f)))/(2*(1-f)*f)/;FreeQ({g},x)
+      Plus(Times(CN1,g,JacobiCN(f,g),JacobiSN(f,g),D(f,x)),Times(Power(Times(C2,Subtract(C1,g)),CN1),D(g,x),JacobiCN(f,g),Plus(Times(f,Plus(CN1,g)),JacobiEpsilon(f,g),Times(CN1,JacobiDN(f,g),JacobiSC(f,g))),JacobiSN(f,g)))),
+    // D(JacobiNC(g_,f_),x_?NotListQ):=JacobiDC(f,g)*JacobiSC(f,g)*D(f,x)+(D(g,x)*JacobiDC(f,g)*JacobiSC(f,g)*(f*(1-g)-JacobiEpsilon(f,g)+g*JacobiCD(f,g)*JacobiSN(f,g)))/(2*(1-g)*g)
     ISetDelayed(D(JacobiNC(g_,f_),PatternTest(x_,NotListQ)),
-      Condition(Times(Power(Times(C2,Subtract(C1,f),f),CN1),D(f,x),JacobiDC(g,f),JacobiSC(g,f),Plus(Negate(EllipticE(JacobiAmplitude(g,f),f)),Times(Subtract(C1,f),g),Times(f,JacobiCD(g,f),JacobiSN(g,f)))),FreeQ(List(g),x))),
-    // D(JacobiND(g_,f_),x_?NotListQ):=(D(f,x)*JacobiCD(g,f)*(-EllipticE(JacobiAmplitude(g,f),f)+(1-f)*g+JacobiDN(g,f)*JacobiSC(g,f))*JacobiSD(g,f))/(2*(1-f))/;FreeQ({g},x)
+      Plus(Times(JacobiDC(f,g),JacobiSC(f,g),D(f,x)),Times(Power(Times(C2,Subtract(C1,g),g),CN1),D(g,x),JacobiDC(f,g),JacobiSC(f,g),Plus(Times(f,Subtract(C1,g)),Negate(JacobiEpsilon(f,g)),Times(g,JacobiCD(f,g),JacobiSN(f,g)))))),
+    // D(JacobiND(g_,f_),x_?NotListQ):=g*JacobiCD(f,g)*JacobiSD(f,g)*D(f,x)+(D(g,x)*JacobiCD(f,g)*(f*(1-g)-JacobiEpsilon(f,g)+JacobiDN(f,g)*JacobiSC(f,g))*JacobiSD(f,g))/(2*(1-g))
     ISetDelayed(D(JacobiND(g_,f_),PatternTest(x_,NotListQ)),
-      Condition(Times(Power(Times(C2,Subtract(C1,f)),CN1),D(f,x),JacobiCD(g,f),Plus(Negate(EllipticE(JacobiAmplitude(g,f),f)),Times(Subtract(C1,f),g),Times(JacobiDN(g,f),JacobiSC(g,f))),JacobiSD(g,f)),FreeQ(List(g),x))),
-    // D(JacobiSC(g_,f_),x_?NotListQ):=(D(f,x)*JacobiDC(g,f)*JacobiNC(g,f)*(-EllipticE(JacobiAmplitude(g,f),f)+(1-f)*g+f*JacobiCD(g,f)*JacobiSN(g,f)))/(2*(1-f)*f)/;FreeQ({g},x)
+      Plus(Times(g,JacobiCD(f,g),JacobiSD(f,g),D(f,x)),Times(Power(Times(C2,Subtract(C1,g)),CN1),D(g,x),JacobiCD(f,g),Plus(Times(f,Subtract(C1,g)),Negate(JacobiEpsilon(f,g)),Times(JacobiDN(f,g),JacobiSC(f,g))),JacobiSD(f,g)))),
+    // D(JacobiSC(g_,f_),x_?NotListQ):=JacobiDC(f,g)*JacobiNC(f,g)*D(f,x)+(D(g,x)*JacobiDC(f,g)*JacobiNC(f,g)*(f*(1-g)-JacobiEpsilon(f,g)+g*JacobiCD(f,g)*JacobiSN(f,g)))/(2*(1-g)*g)
     ISetDelayed(D(JacobiSC(g_,f_),PatternTest(x_,NotListQ)),
-      Condition(Times(Power(Times(C2,Subtract(C1,f),f),CN1),D(f,x),JacobiDC(g,f),JacobiNC(g,f),Plus(Negate(EllipticE(JacobiAmplitude(g,f),f)),Times(Subtract(C1,f),g),Times(f,JacobiCD(g,f),JacobiSN(g,f)))),FreeQ(List(g),x))),
-    // D(JacobiSD(g_,f_),x_?NotListQ):=(D(f,x)*JacobiCD(g,f)*JacobiND(g,f)*(-EllipticE(JacobiAmplitude(g,f),f)+(1-f)*g+f*JacobiDN(g,f)*JacobiSC(g,f)))/(2*(1-f)*f)/;FreeQ({g},x)
+      Plus(Times(JacobiDC(f,g),JacobiNC(f,g),D(f,x)),Times(Power(Times(C2,Subtract(C1,g),g),CN1),D(g,x),JacobiDC(f,g),JacobiNC(f,g),Plus(Times(f,Subtract(C1,g)),Negate(JacobiEpsilon(f,g)),Times(g,JacobiCD(f,g),JacobiSN(f,g)))))),
+    // D(JacobiSD(g_,f_),x_?NotListQ):=JacobiCD(f,g)*JacobiND(f,g)*D(f,x)+(D(g,x)*JacobiCD(f,g)*JacobiND(f,g)*(f*(1-g)-JacobiEpsilon(f,g)+g*JacobiDN(f,g)*JacobiSC(f,g)))/(2*(1-g)*g)
     ISetDelayed(D(JacobiSD(g_,f_),PatternTest(x_,NotListQ)),
-      Condition(Times(Power(Times(C2,Subtract(C1,f),f),CN1),D(f,x),JacobiCD(g,f),JacobiND(g,f),Plus(Negate(EllipticE(JacobiAmplitude(g,f),f)),Times(Subtract(C1,f),g),Times(f,JacobiDN(g,f),JacobiSC(g,f)))),FreeQ(List(g),x))),
-    // D(JacobiSN(g_,f_),x_?NotListQ):=(D(f,x)*JacobiCN(g,f)*JacobiDN(g,f)*(-EllipticE(JacobiAmplitude(g,f),f)+(1-f)*g+f*JacobiCD(g,f)*JacobiSN(g,f)))/(2*(1-f)*f)/;FreeQ({g},x)
+      Plus(Times(JacobiCD(f,g),JacobiND(f,g),D(f,x)),Times(Power(Times(C2,Subtract(C1,g),g),CN1),D(g,x),JacobiCD(f,g),JacobiND(f,g),Plus(Times(f,Subtract(C1,g)),Negate(JacobiEpsilon(f,g)),Times(g,JacobiDN(f,g),JacobiSC(f,g)))))),
+    // D(JacobiSN(g_,f_),x_?NotListQ):=JacobiCN(f,g)*JacobiDN(f,g)*D(f,x)+(D(g,x)*JacobiCN(f,g)*JacobiDN(f,g)*(f*(1-g)-JacobiEpsilon(f,g)+g*JacobiCD(f,g)*JacobiSN(f,g)))/(2*(1-g)*g)
     ISetDelayed(D(JacobiSN(g_,f_),PatternTest(x_,NotListQ)),
-      Condition(Times(Power(Times(C2,Subtract(C1,f),f),CN1),D(f,x),JacobiCN(g,f),JacobiDN(g,f),Plus(Negate(EllipticE(JacobiAmplitude(g,f),f)),Times(Subtract(C1,f),g),Times(f,JacobiCD(g,f),JacobiSN(g,f)))),FreeQ(List(g),x))),
+      Plus(Times(JacobiCN(f,g),JacobiDN(f,g),D(f,x)),Times(Power(Times(C2,Subtract(C1,g),g),CN1),D(g,x),JacobiCN(f,g),JacobiDN(f,g),Plus(Times(f,Subtract(C1,g)),Negate(JacobiEpsilon(f,g)),Times(g,JacobiCD(f,g),JacobiSN(f,g)))))),
     // D(BernoulliB(g_,f_),x_?NotListQ):=BernoulliB(-1+g,f)*g*D(f,x)/;FreeQ({g},x)
     ISetDelayed(D(BernoulliB(g_,f_),PatternTest(x_,NotListQ)),
       Condition(Times(BernoulliB(Plus(CN1,g),f),g,D(f,x)),FreeQ(List(g),x))),

@@ -1678,6 +1678,18 @@ public class F extends S {
     return new AST2(Array, a0, a1);
   }
 
+  public static IAST Arrays(final IExpr a0, final IExpr a1, final IExpr a2) {
+    return new AST3(Arrays, a0, a1, a2);
+  }
+
+  public static IAST Arrays(final IExpr a0, final IExpr a1) {
+    return new AST2(Arrays, a0, a1);
+  }
+
+  public static IAST Arrays(final IExpr a0) {
+    return new AST1(Arrays, a0);
+  }
+
   public static IAST ArcCos(final IExpr a0) {
     return new AST1(ArcCos, a0);
   }
@@ -2495,6 +2507,14 @@ public class F extends S {
     }
     throw new UnsupportedOperationException(
         "compareTo() - second argument could not be converted into a signed number.");
+  }
+
+  public static IAST Compile(final IExpr a0, final IExpr a1) {
+    return new AST2(Compile, a0, a1);
+  }
+
+  public static IAST CompilePrint(final IExpr a0, final IExpr a1) {
+    return new AST2(CompilePrint, a0, a1);
   }
 
   /**
@@ -3959,9 +3979,9 @@ public class F extends S {
           }
         } catch (java.security.AccessControlException acex) {
           // no read access for current user
-          logger.warn("Cannot read packages in autoload folder:", acex); 
+          logger.warn("Cannot read packages in autoload folder:", acex);
         } catch (RuntimeException ex) {
-          logger.error(ex); 
+          logger.error(ex);
         }
         // if (!noPackageLoading) {
         // Reader reader = null;
@@ -4495,6 +4515,10 @@ public class F extends S {
     return new AST2(JacobiDC, a0, a1);
   }
 
+  public static IAST JacobiEpsilon(final IExpr a0, final IExpr a1) {
+    return new AST2(JacobiEpsilon, a0, a1);
+  }
+
   public static IAST JacobiNC(final IExpr a0, final IExpr a1) {
     return new AST2(JacobiNC, a0, a1);
   }
@@ -4830,6 +4854,9 @@ public class F extends S {
     return new AST2(TemplateSlot, a0, a1);
   }
 
+  public static IAST TensorDimensions(final IExpr a0) {
+    return new AST1(TensorDimensions, a0);
+  }
   /**
    * For positive n, add the first n elements of <code>numbers</code> to the list.For negative n,
    * add the last n elements of <code>numbers</code> to the list.
@@ -5173,6 +5200,18 @@ public class F extends S {
 
   public static IAST MathMLForm(final IExpr a0) {
     return new AST1(MathMLForm, a0);
+  }
+
+  public static IAST MatrixD(final IExpr a0, final IExpr a1) {
+    return new AST2(MatrixD, a0, a1);
+  }
+
+  public static IAST MatrixExp(final IExpr a0) {
+    return new AST1(MatrixExp, a0);
+  }
+
+  public static IAST MatrixLog(final IExpr a0) {
+    return new AST1(MatrixLog, a0);
   }
 
   public static IAST MatrixForm(final IExpr a0) {
@@ -5607,6 +5646,10 @@ public class F extends S {
 
   public static IAST On(final IExpr a0) {
     return new AST1(On, a0);
+  }
+
+  public static IAST OptimizeExpression(final IExpr a0) {
+    return new AST1(OptimizeExpression, a0);
   }
 
   public static IAST Optional(final IExpr a0, final IExpr a1) {
@@ -6204,6 +6247,10 @@ public class F extends S {
 
   public static IAST ReplacePart(final IExpr a0, final IExpr a1, final IExpr a2) {
     return new AST3(ReplacePart, a0, a1, a2);
+  }
+
+  public static IAST ReplaceRepeated(final IExpr a0, final IExpr a1) {
+    return new AST2(ReplaceRepeated, a0, a1);
   }
 
   public static IAST Rest(final IExpr a0) {
@@ -7029,6 +7076,10 @@ public class F extends S {
     return new AST2(Taylor, a0, a1);
   }
 
+  public static IAST TensorRank(final IExpr a0) {
+    return new AST1(TensorRank, a0);
+  }
+
   public static IAST TensorSymmetry(final IExpr a0) {
     return new AST1(TensorSymmetry, a0);
   }
@@ -7496,6 +7547,18 @@ public class F extends S {
     return NIL;
   }
 
+  public static IAST Matrices(final IExpr a0, final IExpr a1, final IExpr a2) {
+    return new AST3(Matrices, a0, a1, a2);
+  }
+
+  public static IAST Matrices(final IExpr a0, final IExpr a1) {
+    return new AST2(Matrices, a0, a1);
+  }
+
+  public static IAST Matrices(final IExpr a0) {
+    return new AST1(Matrices, a0);
+  }
+
   /**
    * Generate a <code>n x m</code> matrix.
    *
@@ -7538,6 +7601,14 @@ public class F extends S {
     }
     matrix.addEvalFlags(IAST.IS_VECTOR);
     return matrix;
+  }
+
+  public static IAST Vectors(final IExpr a0, final IExpr a1) {
+    return new AST2(Vectors, a0, a1);
+  }
+
+  public static IAST Vectors(final IExpr a0) {
+    return new AST1(Vectors, a0);
   }
 
   /**

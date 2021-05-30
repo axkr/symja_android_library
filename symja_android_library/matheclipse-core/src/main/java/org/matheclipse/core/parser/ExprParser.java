@@ -1441,15 +1441,9 @@ public class ExprParser extends Scanner {
           }
         } else {
           postfixOperator = determinePostfixOperator();
-
-          if (postfixOperator != null) {
-            if (postfixOperator.getPrecedence() >= min_precedence) {
-              lhs = parsePostfixOperator(lhs, postfixOperator);
-              continue;
-            }
-            // } else {
-            // throwSyntaxError("Operator: " + fOperatorString + " is no infix or postfix
-            // operator.");
+          if (postfixOperator != null && postfixOperator.getPrecedence() >= min_precedence) {
+            lhs = parsePostfixOperator(lhs, postfixOperator);
+            continue;
           }
         }
       }
@@ -1564,6 +1558,9 @@ public class ExprParser extends Scanner {
     getNextToken();
     lhs = convert(postfixOperator.createFunction(fFactory, lhs));
     lhs = parseArguments(lhs);
+    if (fToken == TT_ARGUMENTS_OPEN) {
+      return getFunctionArguments(lhs);
+    }
     return lhs;
   }
 

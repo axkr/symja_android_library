@@ -92,20 +92,21 @@ public class ND extends AbstractFunctionEvaluator {
 
   private IExpr partialDerivative(
       IExpr arg1, ISymbol arg2, int order, IExpr arg3, EvalEngine engine) {
-    // try {
     double a3Double = Double.NaN;
     try {
       a3Double = arg3.evalDouble();
     } catch (ValidateException ve) {
     }
+
     if (Double.isNaN(a3Double)) {
-      //
+
     } else {
+      DSFactory factory = new DSFactory(1, order);
       FiniteDifferencesDifferentiator differentiator =
           new FiniteDifferencesDifferentiator(15, 0.01);
       UnivariateDifferentiableFunction f =
           differentiator.differentiate(new UnaryNumerical(arg1, arg2, EvalEngine.get()));
-      DSFactory factory = new DSFactory(1, order);
+
       return F.num(f.value(factory.variable(0, a3Double)).getPartialDerivative(order));
     }
     return F.NIL;

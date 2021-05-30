@@ -14,4 +14,4 @@ See
 
 ### Github
 
-* [Implementation of Glaisher](https://github.com/axkr/symja_android_library/blob/master/symja_android_library/matheclipse-core/src/main/java/org/matheclipse/core/builtin/ConstantDefinitions.java#L875) 
+* [Implementation of Glaisher](https://github.com/axkr/symja_android_library/blob/master/symja_android_library/matheclipse-core/src/main/java/org/matheclipse/core/builtin/ConstantDefinitions.java#L880) 

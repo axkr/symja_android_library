@@ -836,7 +836,7 @@ public class Symbol implements ISymbol, Serializable {
   @Override
   public final IExpr ofNIL(EvalEngine engine, IExpr... args) {
     IAST ast = F.function(this, args);
-    IExpr temp = engine.evaluateNull(ast);
+    IExpr temp = engine.evaluateNIL(ast);
     if (temp.isPresent() && temp.head() == this) {
       return F.NIL;
     }

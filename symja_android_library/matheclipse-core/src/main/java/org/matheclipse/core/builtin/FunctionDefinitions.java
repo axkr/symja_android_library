@@ -31,6 +31,7 @@ public final class FunctionDefinitions {
       FunctionExpand.setEvaluator(new org.matheclipse.core.reflection.system.FunctionExpand());
       HeavisideTheta.setEvaluator(new org.matheclipse.core.reflection.system.HeavisideTheta());
       Horner.setEvaluator(new org.matheclipse.core.reflection.system.Horner());
+      ImportString.setEvaluator(new org.matheclipse.core.reflection.system.ImportString());
       In.setEvaluator(new org.matheclipse.core.reflection.system.In());
       InterpolatingFunction.setEvaluator(
           new org.matheclipse.core.reflection.system.InterpolatingFunction());
@@ -47,6 +48,7 @@ public final class FunctionDefinitions {
       ListLinePlot.setEvaluator(new org.matheclipse.core.reflection.system.ListLinePlot());
       ListPlot.setEvaluator(new org.matheclipse.core.reflection.system.ListPlot());
       ListPlot3D.setEvaluator(new org.matheclipse.core.reflection.system.ListPlot3D());
+      MatrixD.setEvaluator(new org.matheclipse.core.reflection.system.MatrixD());
       ND.setEvaluator(new org.matheclipse.core.reflection.system.ND());
       NDSolve.setEvaluator(new org.matheclipse.core.reflection.system.NDSolve());
       NFourierTransform.setEvaluator(

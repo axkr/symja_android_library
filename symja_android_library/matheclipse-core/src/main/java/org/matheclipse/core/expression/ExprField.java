@@ -26,7 +26,7 @@ import org.matheclipse.core.interfaces.IExpr;
 
   /** {@inheritDoc} */
   @Override
-  public Class<? extends IExpr> getRuntimeClass() {
+  public Class<IExpr> getRuntimeClass() {
     return IExpr.class;
   }
 

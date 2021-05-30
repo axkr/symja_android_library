@@ -73,6 +73,8 @@ public final class PatternMatching {
       S.Set.setEvaluator(new Set());
       S.SetDelayed.setEvaluator(new SetDelayed());
       // }
+      S.SetSystemOptions.setEvaluator(new SetSystemOptions());
+      S.SystemOptions.setEvaluator(new SystemOptions());
       S.Unique.setEvaluator(new Unique());
       if (!Config.FUZZY_PARSER) {
         S.Blank.setEvaluator(Blank.CONST);
@@ -1011,7 +1013,7 @@ public final class PatternMatching {
       if (ast.arg2().isString()) {
         return F.NIL;
       }
-      IExpr arg2 = engine.evaluateNull(ast.arg2());
+      IExpr arg2 = engine.evaluateNIL(ast.arg2());
       if (arg2.isString()) {
         return F.MessageName(ast.arg1(), arg2);
       }
@@ -1557,7 +1559,7 @@ public final class PatternMatching {
       // } else {
       leftHandSide = engine.evaluate(leftHandSide);
       // }
-      IExpr arg2 = engine.evaluateNull(ast.arg2());
+      IExpr arg2 = engine.evaluateNIL(ast.arg2());
       if (!arg2.isPresent()) {
         if (leftHandSide.equals(ast.arg1())) {
           return F.NIL;
@@ -1903,6 +1905,74 @@ public final class PatternMatching {
     }
   }
 
+  private static final class SetSystemOptions extends AbstractFunctionEvaluator {
+
+	    @Override
+	    public IExpr evaluate(final IAST ast, EvalEngine engine) {
+	      // stub implementation 
+	      if (ast.isAST1() && ast.arg1().isString()) {
+	      
+	      }
+	      return S.Null;
+	    }
+
+	    @Override
+	    public int[] expectedArgSize(IAST ast) {
+	      return ARGS_1_1;
+	    }
+
+	    @Override
+	    public void setUp(final ISymbol newSymbol) {}
+	  }
+  private static final class SystemOptions extends AbstractFunctionEvaluator {
+
+    @Override
+    public IExpr evaluate(final IAST ast, EvalEngine engine) {
+      // stub implementation returning empty list
+      if (ast.isAST1() && ast.arg1().isString()) {
+        String str = ast.arg1().toString();
+        if (str.equals("DifferentiationOptions")) {
+          IAST list =
+              F.List(
+                  S.Hold,
+                  S.HoldComplete,
+                  S.Less,
+                  S.LessEqual,
+                  S.Greater,
+                  S.GreaterEqual,
+                  S.Inequality,
+                  S.Unequal,
+                  S.Nand,
+                  S.Nor,
+                  S.Xor,
+                  S.Not,
+                  S.Element,
+                  S.Exists,
+                  S.ForAll,
+                  S.Implies,
+                  S.Positive,
+                  S.Negative,
+                  S.NonPositive,
+                  S.NonNegative,
+                  S.Replace,
+                  S.ReplaceAll,
+                  S.ReplaceRepeated);
+          IAST excludedFunctions = F.Rule("ExcludedFunctions", list);
+          return F.List(F.Rule("DifferentiationOptions", F.List(excludedFunctions)));
+        }
+      }
+      return F.CEmptyList;
+    }
+
+    @Override
+    public int[] expectedArgSize(IAST ast) {
+      return ARGS_0_1;
+    }
+
+    @Override
+    public void setUp(final ISymbol newSymbol) {}
+  }
+
   private static IExpr setDownRule(
       IExpr leftHandSide, int flags, IExpr rightHandSide, boolean packageMode) {
     // final Object[] result = new Object[] { null, rightHandSide };
@@ -2028,6 +2098,7 @@ public final class PatternMatching {
           rightHandSide = e.getValue();
         }
         if (symbol.isProtected()) {
+          // Tag `1` in `2` is Protected.
           IOFunctions.printMessage(
               S.SetDelayed, "write", F.List(symbol, leftHandSide), EvalEngine.get());
           throw new FailedException();
@@ -2096,19 +2167,10 @@ public final class PatternMatching {
       if (lhsAST.head().equals(tagSetSymbol)) {
         found = true;
       } else {
-        for (int i = 1; i < lhsAST.size(); i++) {
-          IExpr arg = lhsAST.get(i);
-          if (arg.equals(tagSetSymbol) || arg.topHead().equals(tagSetSymbol)) {
-            found = true;
-            break;
-          }
-          if (arg instanceof IPatternObject) {
-            IPatternObject pObject = (IPatternObject) arg;
-            if (tagSetSymbol.equals(pObject.getHeadTest())) {
-              found = true;
-              break;
-            }
-          }
+        if (lhsAST.isCondition() && lhsAST.first().isAST()) {
+          found = isTagAvailable(tagSetSymbol, (IAST) lhsAST.first());
+        } else {
+          found = isTagAvailable(tagSetSymbol, lhsAST);
         }
       }
       if (found) {
@@ -2119,6 +2181,22 @@ public final class PatternMatching {
       // Tag `1` not found in `2`
       IOFunctions.printMessage(tagSymbol, "tagnf", F.List(tagSetSymbol, lhsAST), engine);
       return result;
+    }
+
+    private static boolean isTagAvailable(ISymbol tagSetSymbol, IAST lhsAST) {
+      for (int i = 1; i < lhsAST.size(); i++) {
+        IExpr arg = lhsAST.get(i);
+        if (arg.equals(tagSetSymbol) || arg.topHead().equals(tagSetSymbol)) {
+          return true;
+        }
+        if (arg instanceof IPatternObject) {
+          IPatternObject pObject = (IPatternObject) arg;
+          if (tagSetSymbol.equals(pObject.getHeadTest())) {
+            return true;
+          }
+        }
+      }
+      return false;
     }
 
     @Override
@@ -2137,6 +2215,7 @@ public final class PatternMatching {
         final IExpr leftHandSide = ast.arg2();
         final IExpr rightHandSide = ast.arg3();
         if (symbol.isProtected()) {
+          // Tag `1` in `2` is Protected.
           IOFunctions.printMessage(
               ast.topHead(), "write", F.List(symbol, leftHandSide), EvalEngine.get());
           throw new FailedException();

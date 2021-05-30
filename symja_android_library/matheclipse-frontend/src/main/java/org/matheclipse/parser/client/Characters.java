@@ -1963,7 +1963,7 @@ public class Characters {
     "TaurusSign",
     "\u2649",
     "TensorProduct",
-    "\uF3DA",  
+    "\uF3DA",
     "TensorWedge",
     "\uF3DB",
     "Therefore",
@@ -2348,5 +2348,39 @@ public class Characters {
     int codePoint = Integer.parseInt(number, 16);
     buffer.append(Character.toChars(codePoint));
     return startPosition + numberOfUnicodeDigits;
+  }
+
+  /**
+   * Determines if the specified character is permissible as the first character in a Symja
+   * identifier.
+   *
+   * <p>A character may start a Symja identifier if and only if one of the following conditions is
+   * true: • isLetter(ch) returns true • getType(ch) returns LETTER_NUMBER • ch is a currency symbol
+   * (such as '$').
+   *
+   * @param ch
+   * @return <code>true</code> if the character may start a Symja identifier; false otherwise.
+   */
+  public static boolean isSymjaIdentifierStart(char ch) {
+    return (Character.isJavaIdentifierStart(ch) && (ch != '_'))
+        || (ch >= '\uF800' && ch <= '\uF819'); // FormalA <= ch <= FormalZ
+  }
+
+  /**
+   * Determines if the specified character may be part of a Symja identifier as other than the first
+   * character.
+   *
+   * <p>A character may be part of a Symja identifier if any of the followingare true: • it is a
+   * letter • it is a currency symbol (such as '$') • it is a digit • it is a numeric letter (such
+   * as a Roman numeral character) • it is a combining mark • it is a non-spacing mark • <code>
+   * Character#isIdentifierIgnorable</code> returns true for the character
+   *
+   * @param ch the character to be tested.
+   * @return <code>true</code> if the character may be part of a Symja identifier; false otherwise.
+   */
+  public static boolean isSymjaIdentifierPart(char ch) {
+    return (Character.isJavaIdentifierPart(ch) && (ch != '_'))
+        || (ch == '`') // context name separator character
+        || (ch >= '\uF800' && ch <= '\uF819'); // FormalA <= ch <= FormalZ
   }
 }

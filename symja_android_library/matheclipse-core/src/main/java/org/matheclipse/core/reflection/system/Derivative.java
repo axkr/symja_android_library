@@ -1,5 +1,7 @@
 package org.matheclipse.core.reflection.system;
 
+import java.util.Iterator;
+
 import org.matheclipse.core.builtin.IOFunctions;
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.interfaces.AbstractFunctionEvaluator;
@@ -7,6 +9,7 @@ import org.matheclipse.core.expression.F;
 import org.matheclipse.core.expression.S;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IASTAppendable;
+import org.matheclipse.core.interfaces.IBuiltInSymbol;
 import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.interfaces.IInteger;
 import org.matheclipse.core.interfaces.ISymbol;
@@ -108,19 +111,43 @@ public class Derivative extends AbstractFunctionEvaluator implements DerivativeR
         }
       }
 
-      if (derivativeHead.size() == 2) {
-        IExpr head = derivativeHead.arg1();
-        // IAST functions = derivativeAST[1];
-        if (functions.size() == 2) {
-          int n = head.toIntDefault();
-          if (n >= 0 || head.isFree(num -> num.isNumber(), false)) {
-            IAST fullDerivative = derivativeAST[2];
-            return evaluateDArg1IfPossible(head, derivativeHead, functions, fullDerivative, engine);
+      //      if (derivativeHead.size() == 2) {
+      //        IExpr nTimes = derivativeHead.arg1();
+      //        if (functions.size() >= 2) {
+      //          int n = nTimes.toIntDefault();
+      //          if (n >= 0 || nTimes.isFree(num -> num.isNumber(), false)) {
+      //            IAST fullDerivative = derivativeAST[2];
+      //            return evaluateDArg1IfPossible(
+      //                nTimes, derivativeHead, (IAST) functions, fullDerivative, engine);
+      //          }
+      //          // Multiple derivative specifier `1` does not have the form {variable, n} where n
+      // is a
+      //          // symbolic expression or a non-negative integer.
+      //          return IOFunctions.printMessage(
+      //              ast.topHead(), "dvar", F.List(F.List(F.Slot1, nTimes)), engine);
+      //        }
+      //      } else
+      if (derivativeHead.size() >= 2) {
+        IExpr result = F.NIL;
+        for (int i = 1; i < derivativeHead.size(); i++) {
+          IExpr nTimes = derivativeHead.get(i);
+          if (!result.isPresent()) {
+            result = functions;
           }
-          // Multiple derivative specifier `1` does not have the form {variable, n} where n is a
-          // symbolic expression or a non-negative integer.
-          return IOFunctions.printMessage(
-              ast.topHead(), "dvar", F.List(F.List(F.Slot1, head)), engine);
+          if (result.size() >= 2) {
+            int n = nTimes.toIntDefault();
+            if (n >= 0 || nTimes.isFree(num -> num.isNumber(), false)) {
+              IAST fullDerivative = derivativeAST[2];
+              return evaluateDIfPossible(derivativeHead, functions, fullDerivative, engine);
+            }
+            // Multiple derivative specifier `1` does not have the form {variable, n} where n is a
+            // symbolic expression or a non-negative integer.
+            return IOFunctions.printMessage(
+                ast.topHead(), "dvar", F.List(F.List(F.Slot1, nTimes)), engine);
+          }
+        }
+        if (result.isPresent()) {
+          return result;
         }
       }
       if (ast.head().isAST(S.Derivative, 2)) {
@@ -160,7 +187,7 @@ public class Derivative extends AbstractFunctionEvaluator implements DerivativeR
    * @param engine
    * @return
    */
-  private IExpr evaluateDArg1IfPossible(
+  private static IExpr evaluateDArg1IfPossible(
       IExpr n, IAST head, IAST headDerivative, IAST fullDerivative, EvalEngine engine) {
     IExpr newFunction;
     IExpr symbol = F.Slot1;
@@ -216,6 +243,87 @@ public class Derivative extends AbstractFunctionEvaluator implements DerivativeR
         }
         return F.Function(newFunction);
       }
+    }
+    return F.NIL;
+  }
+
+  private static IExpr evaluateDIfPossible(
+      IAST head, IAST headDerivative, IAST fullDerivative, EvalEngine engine) {
+    IASTAppendable newFunction = F.ast(headDerivative.arg1());
+    IASTAppendable list = F.ListAlloc(headDerivative.size());
+    IASTAppendable dExpr;
+    for (int i = 1; i < head.size(); i++) {
+      IExpr n = head.get(i);
+      IExpr symbol = F.Slot(i);
+      if (fullDerivative != null) {
+        if (fullDerivative.size() != headDerivative.size()) {
+          return F.NIL;
+        }
+        symbol = fullDerivative.get(i);
+        if (!symbol.isVariable()) {
+          return F.NIL;
+        }
+      }
+
+      newFunction.append(symbol);
+
+      if (n.isOne()) {
+        list.append(symbol);
+      } else {
+        int ni = n.toIntDefault();
+        if (ni < 0) {
+          if (ni == Integer.MIN_VALUE) {
+            list.append(F.List(symbol, n));
+          } else {
+            return F.NIL;
+          }
+        } else if (ni > 0) {
+          int iterationLimit = engine.getIterationLimit();
+          if (iterationLimit > 0 && iterationLimit < ni) {
+            // Iteration limit of `1` exceeded.
+            return IOFunctions.printMessage(
+                S.Derivative, "itlim", F.List(F.ZZ(iterationLimit)), engine);
+          }
+          list.append(F.List(symbol, n));
+        }
+      }
+    }
+    boolean doEval = false;
+    IExpr temp = newFunction;
+    if (headDerivative.arg1().isBuiltInSymbol()) {
+      IBuiltInSymbol builtin = (IBuiltInSymbol) headDerivative.arg1();
+      if (builtin.isNumericFunctionAttribute()) {
+        if (head.isAST1()) {
+          int n = head.first().toIntDefault();
+          if (n > 0) {
+            IExpr dResult =
+                S.Derivative.evalDownRule(
+                    engine,
+                    (n == 1)
+                        ? headDerivative
+                        : headDerivative.setAtCopy(0, head.setAtCopy(1, F.C1)));
+            if (dResult.isPresent()) {
+              doEval = true;
+            }
+          }
+        } else {
+          IExpr dResult = S.Derivative.evalDownRule(engine, headDerivative);
+          if (dResult.isPresent()) {
+            doEval = true;
+          }
+        }
+      }
+    } else {
+      temp = engine.evalLoop(newFunction);
+      if (temp.isPresent()) {
+        doEval = true;
+      }
+    }
+    if (doEval) {
+      dExpr = F.ast(S.D, list.size() + 1, false);
+      dExpr.append(temp);
+      dExpr.appendArgs(list); // w.r.t these symbols
+      return F.Function(engine.evaluate(dExpr));
     }
     return F.NIL;
   }

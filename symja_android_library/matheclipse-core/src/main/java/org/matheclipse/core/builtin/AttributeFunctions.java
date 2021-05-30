@@ -382,9 +382,9 @@ public class AttributeFunctions {
         IAST listOfSymbols, IExpr attributes, IAST ast, EvalEngine engine) {
       attributes = engine.evaluate(attributes);
       for (int i = 1; i < listOfSymbols.size(); i++) {
-        if (listOfSymbols.get(i).isSymbol()) {
-          IExpr temp = addAttributes(listOfSymbols.get(i), attributes, ast, engine);
-          if (!temp.isPresent()) {
+        final IExpr arg = listOfSymbols.get(i);
+        if (arg.isSymbol()) {
+          if (!addAttributes(arg, attributes, ast, engine).isPresent()) {
             return F.NIL;
           }
         }
@@ -419,7 +419,7 @@ public class AttributeFunctions {
         final IAST lst = (IAST) attributes;
         // lst.forEach(x -> addAttributes(sym, (ISymbol) x));
         for (int i = 1; i < lst.size(); i++) {
-          ISymbol attribute = (ISymbol) lst.get(i);
+          final ISymbol attribute = (ISymbol) lst.get(i);
           addAttributes(sym, attribute);
         }
       }

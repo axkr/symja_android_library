@@ -242,7 +242,7 @@ public class Integrate extends AbstractFunctionEvaluator {
       }
       final IExpr arg1Holdall = holdallAST.arg1();
       final IExpr a1 = NumberTheory.rationalize(arg1Holdall).orElse(arg1Holdall);
-      IExpr arg1 = engine.evaluateNull(a1);
+      IExpr arg1 = engine.evaluateNIL(a1);
       if (arg1.isPresent()) {
         evaled = true;
       } else {
@@ -254,10 +254,10 @@ public class Integrate extends AbstractFunctionEvaluator {
       if (holdallAST.size() > 3) {
         // reduce arguments by folding Integrate[fxy, x, y] to
         // Integrate[Integrate[fxy, y], x] ...
-        return holdallAST.foldRight((x, y) -> engine.evaluate(F.Integrate(x, y)), arg1, 2);
+        return holdallAST.foldRight((x, y) -> engine.evaluateNIL(F.Integrate(x, y)), arg1, 2);
       }
 
-      IExpr arg2 = engine.evaluateNull(holdallAST.arg2());
+      IExpr arg2 = engine.evaluateNIL(holdallAST.arg2());
       if (arg2.isPresent()) {
         evaled = true;
       } else {

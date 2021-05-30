@@ -32,6 +32,7 @@ Derivative(1)[Gudermannian] := Sech(#) &,
 Derivative(1)[HarmonicNumber] := (Pi^2)/6 - HarmonicNumber(#, 2) &,
 Derivative(1)[Haversine] := (1/2)*Sin(#) &,
 Derivative(1)[HeavisideTheta] := DiracDelta(#) &,
+Derivative(1)[Identity] := 1 &,
 Derivative(1)[IntegerPart] := 0 &,
 Derivative(1)[InverseErf] := (1/2*Sqrt(Pi)*E^(InverseErf(x)^2)) &,
 Derivative(1)[InverseErfc] := (-(1/2))*E^InverseErfc(#)^2*Sqrt(Pi) &,
@@ -62,7 +63,12 @@ Derivative(1)[SinIntegral] := Sinc(#) &,
 Derivative(1)[SinhIntegral] := Sinh(#)/# &,
 Derivative(1)[CosIntegral] := Cos(#)/# &,
 Derivative(1)[CoshIntegral] := Cosh(#)/# &,
- 
+
+Derivative(n_Symbol)[Cos] := Cos((n*Pi)/2+#) &,
+Derivative(n_Symbol)[Sin] := Sin((n*Pi)/2+#) &,
+Derivative(n_Symbol)[Cosh] := (-I)^n*Cos((n*Pi)/2 - I*#) &,
+Derivative(n_Symbol)[Sinh] := I*(-I)^n*Sin((n*Pi)/2 - I*#) &,
+
 Derivative(0,1)[BesselJ] := 1/2*(BesselJ(-1+#,#2)-BesselJ(1+#,#2)) &,
 Derivative(0,1)[BesselY] := 1/2*(BesselY(-1+#,#2)-BesselY(1+#,#2)) &,
 Derivative(0,1)[BesselI] := ((BesselI(-1+#, #2) + BesselI(1+#, #2))/2) &,
@@ -80,12 +86,25 @@ Derivative(1,1)[Power] := #^(-1+#2)+Log(#)*#^(-1+#2)*#2 &,
 Derivative(0,1)[PolyLog] := PolyLog(-1+#2,#)*(#^(-1)) &,
 Derivative(0,1)[ProductLog] := ProductLog(#, #2)/#2 * (1+ProductLog(#, #2)) &,
 
+Derivative(0,1)[BernoulliB] := BernoulliB(-1+#, #2)*# &,
+Derivative(1,0)[ChebyshevT] := (-ArcCos(#2))*ChebyshevU(-1+#, #2)*Sqrt(1 - #2^2) &,
+Derivative(0,1)[ChebyshevT] := ChebyshevU(-1 + #, #2)*# &,
+Derivative(1,0)[ChebyshevU] := (ArcCos(#2)*ChebyshevT(1+#, #2))/Sqrt(1 - #2^2) &,
+Derivative(0,1)[ChebyshevU] := (ChebyshevU(-1 + #, #2)*(-1-#) + ChebyshevU(#, #2)*#*#2)/(-1 + #2^2) &,
+Derivative(1,0)[GegenbauerC] := -((2*ChebyshevT(#, #2))/#^2) - (2*ArcCos(#2)*ChebyshevU(-1+#, #2)*Sqrt(1 - #2^2))/# &,
+Derivative(0,1)[GegenbauerC] := 2*ChebyshevU(-1 + #, #2) &,
+Derivative(0,0,1)[GegenbauerC] := 2*GegenbauerC(-1 + #, 1 + #2, #3)*#2 &,
+
+Derivative(0,1)[LaguerreL] := -LaguerreL(-1 + #, 1, #2) &, 
+Derivative(0,0,1)[LaguerreL] := -LaguerreL(-1 + #, 1 + #2, #3) &,
 Derivative(0,1)[LegendreP] := (((-1 - #)*x*LegendreP(#, #2) + (1+#)*LegendreP(1+#, #2))/(-1 + #2^2)) &,
 Derivative(0,0,1)[LegendreP] := ((LegendreP(1+#, #2, #3)*(1+#-#2) + LegendreP(#, #2, #3)*(-1-#)*#3)/(-1 + #3^2)) &,
 Derivative(0,1)[LegendreQ] := ((LegendreQ(1+#, #2)*(1+#) + LegendreQ(#, #2)*(-1-#)*#2)/(-1 + #2^2)) &,
 Derivative(0,0,1)[LegendreQ] := ((LegendreQ(1+#, #2, #3)*(1 + #-#2) + LegendreQ(#, #2, #3)*(-1-#)*#3)/(-1 + #3^2)) &,
 
 Derivative(0,0,1,0)[SphericalHarmonicY] := (Cot(#3)*#2*SphericalHarmonicY(#, #2, #3, #4) + (Sqrt(Gamma(1+#-#2))*Sqrt(Gamma(2+#+#2))*SphericalHarmonicY(#, 1 + #2, #3, #4))/(E^(I*#4)*Sqrt(Gamma(#-#2))*Sqrt(Gamma(1+# + #2)))) &,
-Derivative(0,0,0,1)[SphericalHarmonicY] := (I*#2*SphericalHarmonicY[#, #2, #3, #4]) &
+Derivative(0,0,0,1)[SphericalHarmonicY] := (I*#2*SphericalHarmonicY[#, #2, #3, #4]) &,
  
+Derivative(0,1)[StruveH] := (1/2)*(StruveH(#-1, #2) - StruveH(#+1, #2) + (#2/2)^#/(Sqrt(Pi)*Gamma(#+3/2))) &,
+Derivative(0,1)[StruveL] := (1/2)*(StruveL(#-1, #2) + StruveL(#+1, #2) + (#2/2)^#/(Sqrt(Pi)*Gamma(#+3/2))) &  
 }

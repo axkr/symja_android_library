@@ -3015,6 +3015,7 @@ public final class StringFunctions {
     @Override
     public IExpr evaluate(final IAST ast, EvalEngine engine) {
       IExpr arg1 = ast.arg1();
+      IExpr head = F.NIL;
       if (arg1.isString()) {
         ISymbol form = S.InputForm;
         if (ast.size() == 3) {
@@ -3027,14 +3028,24 @@ public final class StringFunctions {
             return F.NIL;
           }
         }
+        if (ast.size() == 4) {
+          head = ast.arg3();
+        }
         try {
           if (form.equals(S.InputForm)) {
             ExprParser parser = new ExprParser(engine);
             IExpr temp = parser.parse(arg1.toString());
+            if (head.isPresent()) {
+              return F.unaryAST1(head, temp);
+            }
             return temp;
           } else if (form.equals(S.TeXForm)) {
             TeXParser texParser = new TeXParser(engine);
-            return texParser.toExpression(arg1.toString());
+            IExpr temp = texParser.toExpression(arg1.toString());
+            if (head.isPresent()) {
+              return F.unaryAST1(head, temp);
+            }
+            return temp;
           }
         } catch (RuntimeException rex) {
           if (FEConfig.SHOW_STACKTRACE) {
@@ -3051,7 +3062,7 @@ public final class StringFunctions {
 
     @Override
     public int[] expectedArgSize(IAST ast) {
-      return ARGS_1_2;
+      return ARGS_1_3;
     }
 
     @Override

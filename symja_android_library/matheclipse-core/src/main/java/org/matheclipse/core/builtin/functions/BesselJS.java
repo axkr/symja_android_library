@@ -275,7 +275,7 @@ public class BesselJS {
     double delta = 1e-5;
 
     // asymptotic form as per Johansson
-    if (x.abs() > useAsymptotic) {
+    if (x.norm() > useAsymptotic) {
       Complex t1 = new Complex(Math.PI / 2.0).divide(x).sqrt().multiply(x.negate().exp());
       // Complex t2 = HypergeometricJS.hypergeometricSeries(new Complex[] { n.add(0.5),
       // n.negate().add(0.5) },

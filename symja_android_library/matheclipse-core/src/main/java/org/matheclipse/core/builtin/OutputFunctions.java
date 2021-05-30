@@ -29,6 +29,7 @@ import org.matheclipse.core.expression.F;
 import org.matheclipse.core.expression.S;
 import org.matheclipse.core.expression.data.GraphExpr;
 import org.matheclipse.core.form.output.DoubleFormFactory;
+import org.matheclipse.core.form.output.JavaComplexFormFactory;
 import org.matheclipse.core.form.output.JavaDoubleFormFactory;
 import org.matheclipse.core.form.output.JavaScriptFormFactory;
 import org.matheclipse.core.interfaces.IAST;
@@ -463,12 +464,15 @@ public final class OutputFunctions {
       try {
         IExpr arg1 = engine.evaluate(ast.arg1());
         boolean floatJava = false;
+        boolean complexJava = false;
         boolean strictJava = false;
         boolean usePrefix = false;
         if (ast.isAST2()) {
           IExpr arg2 = engine.evaluate(ast.arg2());
-          if (arg2 == S.Float) {
+          if (arg2 == S.Float || arg2 == S.Real) {
             floatJava = true;
+          } else if (arg2 == S.Complex) {
+            complexJava = true;
           } else if (arg2 == S.Strict) {
             strictJava = true;
           } else if (arg2 == S.Prefix) {
@@ -481,8 +485,78 @@ public final class OutputFunctions {
           }
         }
         if (floatJava) {
+          IExpr optimized = S.OptimizeExpression.of(engine, arg1);
+          if (optimized.isList2() && optimized.second().isListOfRules()) {
+            IExpr newExpr = optimized.first();
+            IAST listOfRules = (IAST) optimized.second();
+            VariablesSet varSet = new VariablesSet(arg1);
+            List<IExpr> functionsParameters = varSet.getArrayList();
+            StringBuilder buf = new StringBuilder();
+            long functionCounter = engine.incModuleCounter();
+            buf.append("double f");
+            buf.append(functionCounter);
+            buf.append("(");
+            for (int i = 0; i < functionsParameters.size(); i++) {
+              buf.append("double ");
+              buf.append(functionsParameters.get(i));
+              if (i < functionsParameters.size() - 1) {
+                buf.append(", ");
+              }
+            }
+            buf.append(") {\n");
+            for (int i = 1; i < listOfRules.size(); i++) {
+              IAST rule = (IAST) listOfRules.get(i);
+              buf.append("double ");
+              buf.append(toJavaDouble(rule.first()));
+              buf.append(" = ");
+              buf.append(toJavaDouble(rule.second()));
+              buf.append(";\n");
+            }
+            buf.append("return ");
+            buf.append(toJavaDouble(newExpr));
+            buf.append(";\n");
+            buf.append("}\n");
+            return F.$str(buf.toString(), IStringX.APPLICATION_JAVA);
+          }
+
           return F.$str(toJavaDouble(arg1), IStringX.APPLICATION_JAVA);
-        }
+        } else if (complexJava) {
+            IExpr optimized = S.OptimizeExpression.of(engine, arg1);
+            if (optimized.isList2() && optimized.second().isListOfRules()) {
+              IExpr newExpr = optimized.first();
+              IAST listOfRules = (IAST) optimized.second();
+              VariablesSet varSet = new VariablesSet(arg1);
+              List<IExpr> functionsParameters = varSet.getArrayList();
+              StringBuilder buf = new StringBuilder();
+              long functionCounter = engine.incModuleCounter();
+              buf.append("Complex f");
+              buf.append(functionCounter);
+              buf.append("(");
+              for (int i = 0; i < functionsParameters.size(); i++) {
+                buf.append("Complex ");
+                buf.append(functionsParameters.get(i));
+                if (i < functionsParameters.size() - 1) {
+                  buf.append(", ");
+                }
+              }
+              buf.append(") {\n");
+              for (int i = 1; i < listOfRules.size(); i++) {
+                IAST rule = (IAST) listOfRules.get(i);
+                buf.append("Complex ");
+                buf.append(toJavaComplex(rule.first()));
+                buf.append(" = ");
+                buf.append(toJavaComplex(rule.second()));
+                buf.append(";\n");
+              }
+              buf.append("return ");
+              buf.append(toJavaComplex(newExpr));
+              buf.append(";\n");
+              buf.append("}\n");
+              return F.$str(buf.toString(), IStringX.APPLICATION_JAVA);
+            }
+
+            return F.$str(toJavaDouble(arg1), IStringX.APPLICATION_JAVA);
+          }
         String resultStr = javaForm(arg1, strictJava, usePrefix);
         return F.$str(resultStr, IStringX.APPLICATION_JAVA);
       } catch (Exception rex) {
@@ -1091,6 +1165,13 @@ public final class OutputFunctions {
 
   public static String toJavaDouble(final IExpr arg1) throws IOException {
     DoubleFormFactory factory = JavaDoubleFormFactory.get(true, false);
+    StringBuilder buf = new StringBuilder();
+    factory.convert(buf, arg1);
+    return buf.toString();
+  }
+
+  public static String toJavaComplex(final IExpr arg1) throws IOException {
+    JavaComplexFormFactory factory = JavaComplexFormFactory.get(true, false);
     StringBuilder buf = new StringBuilder();
     factory.convert(buf, arg1);
     return buf.toString();

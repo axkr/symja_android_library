@@ -62,8 +62,10 @@ import org.matheclipse.core.eval.util.IndexFunctionDiagonal;
 import org.matheclipse.core.eval.util.IndexTableGenerator;
 import org.matheclipse.core.expression.ASTRealMatrix;
 import org.matheclipse.core.expression.ASTRealVector;
+import org.matheclipse.core.expression.ASTSeriesData;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.expression.S;
+import org.matheclipse.core.generic.BinaryBindIth1st;
 import org.matheclipse.core.generic.Comparators;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IASTAppendable;
@@ -71,10 +73,13 @@ import org.matheclipse.core.interfaces.IASTMutable;
 import org.matheclipse.core.interfaces.IBuiltInSymbol;
 import org.matheclipse.core.interfaces.IEvalStepListener;
 import org.matheclipse.core.interfaces.IExpr;
+import org.matheclipse.core.interfaces.IInteger;
 import org.matheclipse.core.interfaces.INumber;
 import org.matheclipse.core.interfaces.INumericArray;
+import org.matheclipse.core.interfaces.IRational;
 import org.matheclipse.core.interfaces.ISparseArray;
 import org.matheclipse.core.interfaces.ISymbol;
+import org.matheclipse.core.reflection.system.Derivative;
 import org.matheclipse.parser.client.FEConfig;
 
 public final class LinearAlgebra {
@@ -112,6 +117,7 @@ public final class LinearAlgebra {
       S.LUDecomposition.setEvaluator(new LUDecomposition());
       S.MatrixMinimalPolynomial.setEvaluator(new MatrixMinimalPolynomial());
       S.MatrixExp.setEvaluator(new MatrixExp());
+      S.MatrixLog.setEvaluator(new MatrixLog());
       S.MatrixPower.setEvaluator(new MatrixPower());
       S.MatrixRank.setEvaluator(new MatrixRank());
       S.Norm.setEvaluator(new Norm());
@@ -2788,17 +2794,43 @@ public final class LinearAlgebra {
   private static class MatrixExp extends AbstractFunctionEvaluator {
     @Override
     public IExpr evaluate(final IAST ast, EvalEngine engine) {
-      if (ast.size() == 2) {
-        int[] dim = ast.arg1().isMatrix();
-        if (dim != null && dim[0] == dim[1] && dim[0] > 0) {
-          RealMatrix matrix = ast.arg1().toRealMatrix();
-          if (matrix != null) {
-            RealMatrix result = MatrixUtils.matrixExponential(matrix);
-            return new ASTRealMatrix(result, false);
-          }
+
+      int[] dim = ast.arg1().isMatrix();
+      if (dim != null && dim[0] == dim[1] && dim[0] > 0) {
+        RealMatrix matrix = ast.arg1().toRealMatrix();
+        if (matrix != null) {
+          RealMatrix result = MatrixUtils.matrixExponential(matrix);
+          return new ASTRealMatrix(result, false);
         }
       }
+
       return F.NIL;
+    }
+
+    @Override
+    public int[] expectedArgSize(IAST ast) {
+      return ARGS_1_1;
+    }
+  }
+
+  private static class MatrixLog extends AbstractFunctionEvaluator {
+    @Override
+    public IExpr evaluate(final IAST ast, EvalEngine engine) {
+
+      int[] dim = ast.arg1().isMatrix();
+      if (dim != null && dim[0] == dim[1] && dim[0] > 0) {
+        RealMatrix matrix = ast.arg1().toRealMatrix();
+        if (matrix != null) {
+          // TODO
+        }
+      }
+
+      return F.NIL;
+    }
+
+    @Override
+    public int[] expectedArgSize(IAST ast) {
+      return ARGS_1_1;
     }
   }
 

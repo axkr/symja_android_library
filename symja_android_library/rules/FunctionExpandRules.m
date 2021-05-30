@@ -13,11 +13,15 @@
   /; n>0,
  
  ExpIntegralE(n_,z_) := z^(-1 + n)*Gamma(1 - n, z),
-  
+ 
+ Factorial(z_) := Gamma(1+z),  
+ Factorial2(n_) := 2^(n/2 + (1/4)*(1 - Cos(n*Pi)))*Pi^((1/4)*(-1 + Cos(n*Pi)))*Gamma(1 + n/2),
+ 
  Fibonacci(m_Integer+n_) := ((1/2)*Fibonacci(m)*LucasL(n) + (1/2)*Fibonacci(n)*LucasL(m)) 
   /; Element(n, Integers),
  Fibonacci(n_+a_) := ((2/(1 + Sqrt(5)))^(-a-n)-((1/2)*(1+Sqrt(5)))^(-a-n)*Cos((a+n)*Pi))/Sqrt(5)
-  /; Element(n, Integers),				
+  /; Element(n, Integers),
+  
  Gamma(-1, z_) := 1/(E^z*z) + ExpIntegralEi(-z) + (1/2)*(Log(-(1/z)) - Log(-z)) + Log(z),
  Gamma(-1/2, z_) := 2/(E^z*Sqrt(z)) - 2*Sqrt(Pi)*(1 - Erf(Sqrt(z))),
  Gamma(0, z_) := -ExpIntegralEi(-z) + (1/2)*(-Log(-(1/z)) + Log(-z)) - Log(z),
@@ -27,14 +31,27 @@
  
  GegenbauerC(n_, x_) := (2*Cos(n*ArcCos(x)))/n,
  
+ Gudermannian(z_) := Piecewise({{(1/2)*(Pi - 4*ArcCot(E^z)), Re(z)>0||(Re(z)==0&&Im(z)>=0 )}}, (1/2)*(-Pi + 4*ArcTan(E^z))), 
+ 
  HarmonicNumber(n_) := EulerGamma + PolyGamma(0, 1 + n),
  HarmonicNumber(z_, n_) := -HurwitzZeta(n, 1 + z) + Zeta(n),
+ Haversine(z_) := (1/2)*(1-Cos(z)),
  HurwitzZeta(n_Integer, a_) := ((-1)^n/(n - 1)!)*PolyGamma(n - 1, a)
   /; n>1,
    
  HypergeometricPFQ({1/2}, {1, 1}, z_) := BesselI(0, Sqrt(z))^2,
  Hypergeometric2F1(a_, b_, b_ + n_Integer, z_) := (1-z)^(-a+n) * Sum((Pochhammer(n, k)*Pochhammer(b-a+n,k)*z^k) / (Pochhammer(b+n,k)*k!), {k, 0, -n})  
   /; n<0,
+ 
+ InverseGudermannian(z_) := Log(Tan(Pi/4 + z/2)), 
+ InverseHaversine(z_) := 2*ArcSin(Sqrt(z)),
+ 
+ JacobiCD(f_, g_) := JacobiCN(f,g) / JacobiDN(f,g),
+ JacobiDC(f_, g_) := JacobiDN(f,g) / JacobiCN(f,g),
+ JacobiNC(f_, g_) := 1 / JacobiCN(f,g), 
+ JacobiND(f_, g_) := 1 / JacobiDN(f,g), 
+ JacobiSC(f_, g_) := JacobiSN(f,g) / JacobiCN(f,g),
+ JacobiSD(f_, g_) := JacobiSN(f,g) / JacobiDN(f,g),
  
  LegendreQ(l_, m_, x_) := -((Pi*Csc(m*Pi)*Gamma(1+l+m)*LegendreP(l, -m, x))/(2*Gamma(1+l-m))) + (1/2)*Pi*Cot(m*Pi)*LegendreP(l, m, x),
  

@@ -1669,7 +1669,7 @@ public class EvalEngine implements Serializable {
     boolean quiet = isQuietMode();
     try {
       setQuietMode(true);
-      return evaluateNull(expr);
+      return evaluateNIL(expr);
     } finally {
       setQuietMode(quiet);
     }
@@ -1710,7 +1710,12 @@ public class EvalEngine implements Serializable {
     result[0] = F.NIL;
     if (ast.exists(
         x -> {
-          if (!(x instanceof IPatternObject) && x.isPresent()) {
+          if (x.isSymbol()) {
+            result[0] = ((ISymbol) x).evalUpRules(ast, this);
+            if (result[0].isPresent()) {
+              return true;
+            }
+          } else if (!(x instanceof IPatternObject) && x.isPresent()) {
             result[0] = x.topHead().evalUpRules(ast, this);
             if (result[0].isPresent()) {
               return true;
@@ -2072,18 +2077,27 @@ public class EvalEngine implements Serializable {
 
   /**
    * Evaluate an object and reset the numeric mode to the value before the evaluation step. If
-   * evaluation is not possible return <code>F.NIL</code>.
+   * evaluation is not possible return {@link F#NIL}
    *
    * @param expr the object which should be evaluated
    * @return the evaluated object or <code>F.NIL</code> if no evaluation was possible
    */
-  public final IExpr evaluateNull(final IExpr expr) {
+  public final IExpr evaluateNIL(final IExpr expr) {
     boolean numericMode = fNumericMode;
     try {
       return evalLoop(expr);
     } finally {
       fNumericMode = numericMode;
     }
+  }
+
+  /**
+   * @param expr
+   * @return
+   * @deprecated use {@link #evaluateNIL(IExpr)}
+   */
+  public final IExpr evaluateNull(final IExpr expr) {
+    return evaluateNull(expr);
   }
 
   /**

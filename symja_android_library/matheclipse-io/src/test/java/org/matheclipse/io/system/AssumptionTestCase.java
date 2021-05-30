@@ -2,16 +2,14 @@ package org.matheclipse.io.system;
 
 import static org.matheclipse.core.expression.F.Abs;
 import static org.matheclipse.core.expression.F.Floor;
-import static org.matheclipse.core.expression.F.x;
-import static org.matheclipse.core.expression.F.y;
-
-import java.util.HashMap;
+import static org.matheclipse.core.expression.S.x;
+import static org.matheclipse.core.expression.S.y;
 
 import org.matheclipse.core.eval.EvalUtilities;
 import org.matheclipse.core.eval.util.AbstractAssumptions;
-import org.matheclipse.core.eval.util.Assumptions;
 import org.matheclipse.core.eval.util.IAssumptions;
 import org.matheclipse.core.expression.F;
+import org.matheclipse.core.expression.S;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.interfaces.ISymbol;
@@ -74,9 +72,7 @@ public class AssumptionTestCase extends TestCase {
     }
 
     @Override
-    public void set$Assumptions(IExpr expr) {
-
-    }
+    public void set$Assumptions(IExpr expr) {}
   }
 
   public AssumptionTestCase(String name) {
@@ -135,5 +131,21 @@ public class AssumptionTestCase extends TestCase {
     IAST function = F.Floor(t);
     IExpr result = util.evaluate(function);
     assertEquals(result.toString(), "t");
+  }
+
+  public void testTensorDimensions001() {
+    // don't distinguish between lower- and uppercase identifiers
+    FEConfig.PARSER_USE_LOWERCASE_SYMBOLS = true;
+
+    EvalUtilities util = new EvalUtilities(false, true);
+
+    //  Element(M, Matrices({3, 3}, Reals))
+    // define "m" with "m" assumed to be a  3x3 matrix
+    // use #1 (Slot1) as placeholder for a new symbol!
+    ISymbol t = F.symbol("m", F.Element(F.Slot1, F.Matrices(F.List(3, 3), S.Reals)));
+
+    IAST function = F.TensorDimensions(t);
+    IExpr result = util.evaluate(function);
+    assertEquals(result.toString(), "{3,3}");
   }
 }

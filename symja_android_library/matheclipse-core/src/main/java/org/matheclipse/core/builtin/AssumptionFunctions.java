@@ -144,8 +144,8 @@ public class AssumptionFunctions {
             IASTAppendable result = F.ast(arg1.head(), arg1AST.size(), false);
             boolean evaled = false;
             for (int i = 1; i < arg1AST.size(); i++) {
-              IExpr temp = arg1AST.get(i);
-              IExpr assumeDomain = assumeDomain(temp, domain);
+              final IExpr arg = arg1AST.get(i);
+              IExpr assumeDomain = assumeDomain(arg, domain);
               if (assumeDomain.isFalse()) {
                 evaled = true;
                 return S.False;
@@ -154,7 +154,7 @@ public class AssumptionFunctions {
                 evaled = true;
                 continue;
               }
-              result.append(temp);
+              result.append(arg);
             }
             return evaled ? F.Element(result, domain) : F.NIL;
           }

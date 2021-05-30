@@ -957,6 +957,7 @@ public class ExprEvaluatorTests extends TestCase {
         // System.out.print(".");
         thread = new SlowComputationThread(">> " + ast.toString());
         thread.start();
+//        engine.evaluate(ast);
         if (evaluator != null) {
           evaluator.evaluate(ast, engine);
         } else {

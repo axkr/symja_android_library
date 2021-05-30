@@ -4,6 +4,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 import org.matheclipse.core.builtin.IOFunctions;
+import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.expression.S;
 import org.matheclipse.core.interfaces.IAST;
@@ -141,22 +142,89 @@ public class Assumptions extends AbstractAssumptions {
    * @return
    */
   private static boolean addElement(IAST element, Assumptions assumptions) {
-    if (element.arg2().isSymbol()) {
-      ISymbol domain = (ISymbol) element.arg2();
-      if (domain.equals(S.Algebraics)
-          || domain.equals(S.Booleans)
-          || domain.equals(S.Complexes)
-          || domain.equals(S.Integers)
-          || domain.equals(S.Primes)
-          || domain.equals(S.Rationals)
-          || domain.equals(S.Reals)) {
-        IExpr arg1 = element.arg1();
-        if (arg1.isAST(S.Alternatives)) {
-          ((IAST) arg1).forEach(x -> assumptions.elementsMap.put(x, domain));
-        } else {
-          assumptions.elementsMap.put(arg1, domain);
+    if (element.size() >= 3) {
+      IExpr arg1 = element.arg1();
+      if (arg1.isAlternatives()) {
+        IAST list = ((IAST) arg1).apply(S.List);
+        list = list.mapThread(element, 1);
+        for (int i = 1; i < list.size(); i++) {
+          final IExpr arg = list.get(i);
+          if (!arg.isAST()) {
+            return false;
+          }
+          if (!addElement((IAST) arg, assumptions)) {
+            return false;
+          }
         }
         return true;
+      }
+      if (element.arg2().isSymbol()) {
+        ISymbol domain = (ISymbol) element.arg2();
+        if (S.isDomain(domain)) {
+          if (arg1.isAST(S.Alternatives)) {
+            ((IAST) arg1).forEach(x -> assumptions.elementsMap.put(x, domain));
+          } else {
+            assumptions.elementsMap.put(arg1, domain);
+          }
+          return true;
+        }
+      } else if (element.arg2().isAST(S.Arrays, 2, 3)) {
+        IAST arrays = (IAST) element.arg2();
+        ISymbol domain = S.Complexes;
+        if (arrays.size() > 2 && arrays.arg2().isSymbol()) {
+          domain = (ISymbol) arrays.arg2();
+          if (S.isDomain(domain)) {
+            // pass
+          } else {
+            return false;
+          }
+        }
+        if (arrays.arg1().isList() && arrays.arg1().argSize() >= 2) {
+          assumptions.tensorsMap.put(arg1, F.Arrays(arrays.arg1(), domain));
+          return true;
+        } else {
+          // The list `1` of dimensions must have length `2`.
+          IOFunctions.printMessage(
+              S.Arrays, "rankl", F.List(arrays.arg1(), F.C2), EvalEngine.get());
+        }
+      } else if (element.arg2().isAST(S.Matrices, 2, 4)) {
+        IAST matrices = (IAST) element.arg2();
+        ISymbol domain = S.Complexes;
+        if (matrices.size() > 2 && matrices.arg2().isSymbol()) {
+          domain = (ISymbol) matrices.arg2();
+          if (S.isDomain(domain)) {
+            // pass
+          } else {
+            return false;
+          }
+        }
+        if (matrices.arg1().isList() && matrices.arg1().argSize() == 2) {
+          assumptions.tensorsMap.put(arg1, F.Matrices(matrices.arg1(), domain));
+          return true;
+        } else {
+          // The list `1` of dimensions must have length `2`.
+          IOFunctions.printMessage(
+              S.Matrices, "rankl", F.List(matrices.arg1(), F.C2), EvalEngine.get());
+        }
+      } else if (element.arg2().isAST(S.Vectors, 2, 3)) {
+        IAST vectors = (IAST) element.arg2();
+        ISymbol domain = S.Complexes;
+        if (vectors.size() > 2 && vectors.arg2().isSymbol()) {
+          domain = (ISymbol) vectors.arg2();
+          if (S.isDomain(domain)) {
+            // pass
+          } else {
+            return false;
+          }
+        }
+        if (!vectors.arg1().isList()) {
+          assumptions.tensorsMap.put(arg1, F.Vectors(vectors.arg1(), domain));
+          return true;
+        } else {
+          // The list `1` of dimensions must have length `2`.
+          IOFunctions.printMessage(
+              S.Vectors, "rankl", F.List(vectors.arg1(), F.C2), EvalEngine.get());
+        }
       }
     }
     return false;
@@ -478,7 +546,9 @@ public class Assumptions extends AbstractAssumptions {
     if (expr.isAST()) {
       Assumptions assumptions = new Assumptions();
       assumptions.$assumptions = expr;
-      if (expr.isAST()) {
+      if (expr.isList()) {
+        Assumptions.addList((IAST) expr, assumptions);
+      } else if (expr.isAST()) {
         assumptions.addAssumption((IAST) expr);
       }
       return assumptions;
@@ -491,6 +561,8 @@ public class Assumptions extends AbstractAssumptions {
   private HashMap<IExpr, ISymbol> elementsMap = new HashMap<IExpr, ISymbol>();
 
   private HashMap<IExpr, IAST> distributionsMap = new HashMap<IExpr, IAST>();
+
+  private Map<IExpr, IAST> tensorsMap = new HashMap<IExpr, IAST>();
 
   private HashMap<IExpr, SignedNumberRelations> valueMap =
       new HashMap<IExpr, SignedNumberRelations>();
@@ -553,8 +625,18 @@ public class Assumptions extends AbstractAssumptions {
     return (dist == null) ? F.NIL : dist;
   }
 
+  @Override
+  public final IAST tensors(IExpr expr) {
+    IAST tensor = tensorsMap.get(expr);
+    return (tensor == null) ? F.NIL : tensor;
+  }
+
   public IExpr get$Assumptions() {
     return $assumptions;
+  }
+
+  public Map<IExpr, IAST> getTensorsMap() {
+    return tensorsMap;
   }
 
   @Override

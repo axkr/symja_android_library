@@ -450,7 +450,7 @@ public final class Arithmetic {
         if (head.isBuiltInSymbol() && leftHandSide.isAST()) {
           IEvaluator eval = ((IBuiltInSymbol) head).getEvaluator();
           if (eval instanceof ISetEvaluator) {
-            IExpr temp = engine.evaluateNull(leftHandSide);
+            IExpr temp = engine.evaluateNIL(leftHandSide);
             if (!temp.isPresent()) {
               return F.NIL;
             }
@@ -554,7 +554,7 @@ public final class Arithmetic {
     @Override
     public IExpr evaluate(final IAST ast, EvalEngine engine) {
       IExpr result = F.NIL;
-      IExpr arg1 = engine.evaluateNull(ast.arg1());
+      IExpr arg1 = engine.evaluateNIL(ast.arg1());
       if (arg1.isPresent()) {
         result = F.Arg(arg1);
       } else {
@@ -1530,7 +1530,7 @@ public final class Arithmetic {
         try {
           engine.setNumericMode(false);
           IExpr arg1 = ast.arg1();
-          IExpr temp = engine.evaluateNull(arg1);
+          IExpr temp = engine.evaluateNIL(arg1);
           if (temp.isPresent()) {
             arg1 = temp;
             evaled = true;
@@ -1678,8 +1678,12 @@ public final class Arithmetic {
     public IExpr e1ApfloatArg(Apfloat arg1) {
       try {
         return F.num(ApfloatMath.gamma(arg1));
-      } catch (ArithmeticException ae) {
-        return F.complexNum(ApcomplexMath.gamma(new Apcomplex(arg1, Apcomplex.ZERO)));
+      } catch (ArithmeticException aex1) {
+        try {
+          return F.complexNum(ApcomplexMath.gamma(new Apcomplex(arg1, Apcomplex.ZERO)));
+        } catch (ArithmeticException aex2) {
+          return F.NIL;
+        }
       }
     }
 
@@ -1710,8 +1714,7 @@ public final class Arithmetic {
     @Override
     public IExpr e2ApcomplexArg(final ApcomplexNum arg1, final ApcomplexNum arg2) {
       try {
-        // TODO Incomplete gamma function for apfloat
-        // return F.complexNum(ApcomplexMath.gamma(arg1, arg2));
+        return F.complexNum(ApcomplexMath.gamma(arg1.apcomplexValue(), arg2.apcomplexValue()));
       } catch (ArithmeticException ae) {
       }
       return F.NIL;
@@ -1720,9 +1723,13 @@ public final class Arithmetic {
     @Override
     public IExpr e2ApfloatArg(final ApfloatNum arg1, final ApfloatNum arg2) {
       try {
-        return e2ApcomplexArg(
-            ApcomplexNum.valueOf(arg1.apfloatValue()), ApcomplexNum.valueOf(arg2.apfloatValue()));
-      } catch (ArithmeticException ae) {
+        return F.num(ApfloatMath.gamma(arg1.apfloatValue(), arg2.apfloatValue()));
+      } catch (ArithmeticException aex1) {
+        try {
+          return e2ApcomplexArg(
+              ApcomplexNum.valueOf(arg1.apfloatValue()), ApcomplexNum.valueOf(arg2.apfloatValue()));
+        } catch (ArithmeticException aex2) {
+        }
       }
       return F.NIL;
     }
@@ -1787,7 +1794,7 @@ public final class Arithmetic {
       try {
         IExpr a = ast.arg1();
         if (ast.isAST3()) {
-          // see GammaRules.m
+          // see GammaRules.m - Gamma(a_, x_, y_) := Gamma(a, x) - Gamma(a, y)
           return F.NIL;
         }
         if (ast.size() != 3) {
@@ -2116,12 +2123,8 @@ public final class Arithmetic {
             }
             IRational result = F.C0;
             for (int i = 1; i <= n; i++) {
-              IInteger pow = F.ZZ(i).pow(exponent);
-              if (intArg2 < 0) {
-                result = result.add(pow);
-              } else {
-                result = result.add(pow.inverse());
-              }
+              final IInteger pow = F.ZZ(i).pow(exponent);
+              result = result.add(intArg2 < 0 ? pow : pow.inverse());
               result.checkBitLength();
             }
             return result;
@@ -2690,14 +2693,13 @@ public final class Arithmetic {
         defaultValue = ast.arg2();
       }
       IExpr condition;
-      IAST row;
       int matrixSize = matrix.size();
       IASTAppendable result = F.NIL;
       IASTAppendable piecewiseAST = F.NIL;
       boolean evaluated = false;
       boolean noBoolean = false;
       for (int i = 1; i < matrixSize; i++) {
-        row = matrix.getAST(i);
+        final IAST row = matrix.getAST(i);
         condition = row.arg2();
         if (condition.isTrue()) {
           if (!evaluated && i == matrixSize - 1) {
@@ -2717,7 +2719,7 @@ public final class Arithmetic {
           evaluated = true;
           continue;
         }
-        condition = engine.evaluateNull(condition);
+        condition = engine.evaluateNIL(condition);
         if (condition.isPresent()) {
           evaluated = true;
           if (condition.isTrue()) {
@@ -2730,7 +2732,7 @@ public final class Arithmetic {
             continue;
           }
         }
-        IExpr rowArg1 = engine.evaluateNull(row.arg1());
+        IExpr rowArg1 = engine.evaluateNIL(row.arg1());
         if (rowArg1.isPresent()) {
           evaluated = true;
         } else {
@@ -2965,18 +2967,18 @@ public final class Arithmetic {
       INum number = F.CD0;
       int start = -1;
       for (int i = 1; i < ast.size(); i++) {
-        IExpr temp = ast.get(i);
-        if (temp instanceof INum) {
-          if (temp instanceof ApfloatNum) {
-            number = number.add((INum) temp);
+        final IExpr arg = ast.get(i);
+        if (arg instanceof INum) {
+          if (arg instanceof ApfloatNum) {
+            number = number.add((INum) arg);
           } else {
             if (number instanceof ApfloatNum) {
-              number = number.add(((INum) temp).apfloatNumValue(number.precision()));
+              number = number.add(((INum) arg).apfloatNumValue(number.precision()));
             } else {
-              number = number.add((INum) temp);
+              number = number.add((INum) arg);
             }
           }
-        } else if (temp instanceof IComplexNum) {
+        } else if (arg instanceof IComplexNum) {
           start = i;
           break;
         } else {
@@ -2993,22 +2995,21 @@ public final class Arithmetic {
         complexNumber = F.complexNum(number.apfloatValue(number.precision()));
       }
       for (int i = start; i < ast.size(); i++) {
-        IExpr temp = ast.get(i);
-        if (temp instanceof INum) {
-          number = (INum) temp;
+        final IExpr arg = ast.get(i);
+        if (arg instanceof INum) {
+          number = (INum) arg;
           if (number instanceof Num) {
             complexNumber = complexNumber.add(F.complexNum(((Num) number).doubleValue()));
           } else {
             complexNumber =
                 complexNumber.add(F.complexNum(number.apfloatValue(number.precision())));
           }
-        } else if (temp instanceof IComplexNum) {
+        } else if (arg instanceof IComplexNum) {
           if (complexNumber instanceof ApcomplexNum) {
             complexNumber =
-                complexNumber.add(
-                    ((IComplexNum) temp).apcomplexNumValue(complexNumber.precision()));
+                complexNumber.add(((IComplexNum) arg).apcomplexNumValue(complexNumber.precision()));
           } else {
-            complexNumber = complexNumber.add((IComplexNum) temp);
+            complexNumber = complexNumber.add((IComplexNum) arg);
           }
         } else {
           return F.NIL;
@@ -3373,155 +3374,159 @@ public final class Arithmetic {
   public static class Power extends AbstractFunctionEvaluator implements INumeric, PowerRules {
 
     public static IExpr binaryOperator(IAST ast, final IExpr base, final IExpr exponent) {
-      if (base.isInexactNumber() && exponent.isInexactNumber()) {
-        IExpr result = e2NumericArg(ast, base, exponent);
-        if (result.isPresent()) {
-          return result;
+      try {
+        if (base.isInexactNumber() && exponent.isInexactNumber()) {
+          IExpr result = e2NumericArg(ast, base, exponent);
+          if (result.isPresent()) {
+            return result;
+          }
         }
-      }
 
-      if (exponent.isDirectedInfinity()) {
-        IExpr temp = evalDirectedInfinityArg2(base, (IAST) exponent);
-        if (temp.isPresent()) {
-          return temp;
+        if (exponent.isDirectedInfinity()) {
+          IExpr temp = evalDirectedInfinityArg2(base, (IAST) exponent);
+          if (temp.isPresent()) {
+            return temp;
+          }
         }
-      }
-      if (base.isDirectedInfinity()) {
-        IExpr temp = evalDirectedInfinityArg1((IAST) base, exponent);
-        if (temp.isPresent()) {
-          return temp;
+        if (base.isDirectedInfinity()) {
+          IExpr temp = evalDirectedInfinityArg1((IAST) base, exponent);
+          if (temp.isPresent()) {
+            return temp;
+          }
         }
-      }
 
-      if (base.isZero()) {
-        if (exponent.isInterval()) {
-          return org.matheclipse.core.expression.IntervalSym.power(base, (IAST) exponent);
-        }
-        return powerZeroArg1(exponent);
-      }
-      if (base.isQuantity()) {
-        try {
-          IQuantity q = (IQuantity) base;
-          return q.power(exponent);
-        } catch (MathException mex) {
-          return F.NIL;
-        }
-      } else if (base.isAST()) {
-        if (base.isInterval()) {
-          if (exponent.isInteger()) {
-            return IntervalSym.power((IAST) base, (IInteger) exponent);
-            // return powerInterval(base, ii);
+        if (base.isZero()) {
+          if (exponent.isInterval()) {
+            return org.matheclipse.core.expression.IntervalSym.power(base, (IAST) exponent);
           }
-          if (exponent.isReal()) {
-            return IntervalSym.power((IAST) base, (ISignedNumber) exponent);
-            // return powerInterval(base, ii);
-          }
-          // } else if (base.isQuantity()) {
-          // try {
-          // IQuantity q = (IQuantity) base;
-          // return q.power(exponent);
-          // } catch (MathException mex) {
-          // return F.NIL;
-          // }
-        } else if (base instanceof ASTSeriesData) {
-          int exp = exponent.toIntDefault(Integer.MIN_VALUE);
-          if (exp != Integer.MIN_VALUE) {
-            return ((ASTSeriesData) base).pow(exp);
-          }
-          return F.NIL;
+          return powerZeroArg1(exponent);
         }
-      }
-
-      if (exponent.isInterval()) {
-        if (base.isRealResult()) {
-          return org.matheclipse.core.expression.IntervalSym.power(base, (IAST) exponent);
-        }
-      }
-
-      if (exponent.isReal()) {
-        if (exponent.isZero()) {
-          return (base.isInfinity() || base.isNegativeInfinity()) ? S.Indeterminate : F.C1;
-        }
-        if (exponent.isOne()) {
-          return base;
-        }
-        if (exponent.isInteger()) {
-          if (base.isInteger()) {
-            return integerInteger((IInteger) base, (IInteger) exponent);
+        if (base.isQuantity()) {
+          try {
+            IQuantity q = (IQuantity) base;
+            return q.power(exponent);
+          } catch (MathException mex) {
+            return F.NIL;
           }
-          if (base instanceof IFraction) {
-            return fractionInteger((IFraction) base, (IInteger) exponent);
-          }
-          if (base instanceof IComplex) {
-            return complexInteger((IComplex) base, (IInteger) exponent);
-          }
-          if (base.isAtom()) {
+        } else if (base.isAST()) {
+          if (base.isInterval()) {
+            if (exponent.isInteger()) {
+              return IntervalSym.power((IAST) base, (IInteger) exponent);
+              // return powerInterval(base, ii);
+            }
+            if (exponent.isReal()) {
+              return IntervalSym.power((IAST) base, (ISignedNumber) exponent);
+              // return powerInterval(base, ii);
+            }
+            // } else if (base.isQuantity()) {
+            // try {
+            // IQuantity q = (IQuantity) base;
+            // return q.power(exponent);
+            // } catch (MathException mex) {
+            // return F.NIL;
+            // }
+          } else if (base instanceof ASTSeriesData) {
+            int exp = exponent.toIntDefault(Integer.MIN_VALUE);
+            if (exp != Integer.MIN_VALUE) {
+              return ((ASTSeriesData) base).pow(exp);
+            }
             return F.NIL;
           }
         }
-      }
 
-      if (base.isOne()) {
-        return F.C1;
-      }
-      if (base.isMinusOne()) {
-        // if (exponent.isInteger()) {
-        // return (((IInteger) exponent).isEven()) ? F.C1 : F.CN1;
-        // }
-        if (exponent.isEvenResult()) {
-          return F.C1;
-        }
-        if (exponent.isIntegerResult()) {
-          if (exponent.isPlus() && exponent.first().isInteger()) {
-            IInteger arg1Plus = (IInteger) exponent.first();
-            if (!arg1Plus.isOne()) {
-              IInteger factor = (((IInteger) exponent.first()).isEven()) ? F.C1 : F.CN1;
-              if (factor.isMinusOne()) {
-                return F.Power(F.CN1, F.Plus(1, exponent.rest().oneIdentity1()));
-              }
-              return F.Times(factor, F.Power(F.CN1, exponent.rest().oneIdentity1()));
-            }
-          } else if (exponent.isTimes() && exponent.first().isInteger()) {
-            IInteger arg1Times = (IInteger) exponent.first();
-            return F.Power(F.Power(F.CN1, arg1Times), exponent.rest().oneIdentity1());
+        if (exponent.isInterval()) {
+          if (base.isRealResult()) {
+            return org.matheclipse.core.expression.IntervalSym.power(base, (IAST) exponent);
           }
         }
-      }
 
-      IExpr result = e2ObjArg(ast, base, exponent);
-      if (result.isPresent()) {
-        return result;
-      }
+        if (exponent.isReal()) {
+          if (exponent.isZero()) {
+            return (base.isInfinity() || base.isNegativeInfinity()) ? S.Indeterminate : F.C1;
+          }
+          if (exponent.isOne()) {
+            return base;
+          }
+          if (exponent.isInteger()) {
+            if (base.isInteger()) {
+              return integerInteger((IInteger) base, (IInteger) exponent);
+            }
+            if (base instanceof IFraction) {
+              return fractionInteger((IFraction) base, (IInteger) exponent);
+            }
+            if (base instanceof IComplex) {
+              return complexInteger((IComplex) base, (IInteger) exponent);
+            }
+            if (base.isAtom()) {
+              return F.NIL;
+            }
+          }
+        }
 
-      if (base instanceof IInteger) {
-        if (exponent instanceof IFraction) {
-          return fractionFraction(F.fraction((IInteger) base, F.C1), (IFraction) exponent);
+        if (base.isOne()) {
+          return F.C1;
         }
-        if (exponent instanceof IComplex) {
-          return complexComplex(F.complex((IInteger) base, F.C0), (IComplex) exponent);
+        if (base.isMinusOne()) {
+          // if (exponent.isInteger()) {
+          // return (((IInteger) exponent).isEven()) ? F.C1 : F.CN1;
+          // }
+          if (exponent.isEvenResult()) {
+            return F.C1;
+          }
+          if (exponent.isIntegerResult()) {
+            if (exponent.isPlus() && exponent.first().isInteger()) {
+              IInteger arg1Plus = (IInteger) exponent.first();
+              if (!arg1Plus.isOne()) {
+                IInteger factor = (((IInteger) exponent.first()).isEven()) ? F.C1 : F.CN1;
+                if (factor.isMinusOne()) {
+                  return F.Power(F.CN1, F.Plus(1, exponent.rest().oneIdentity1()));
+                }
+                return F.Times(factor, F.Power(F.CN1, exponent.rest().oneIdentity1()));
+              }
+            } else if (exponent.isTimes() && exponent.first().isInteger()) {
+              IInteger arg1Times = (IInteger) exponent.first();
+              return F.Power(F.Power(F.CN1, arg1Times), exponent.rest().oneIdentity1());
+            }
+          }
         }
-        return F.NIL;
-      }
 
-      if (base instanceof IFraction) {
-        if (exponent instanceof IFraction) {
-          return fractionFraction((IFraction) base, (IFraction) exponent);
+        IExpr result = e2ObjArg(ast, base, exponent);
+        if (result.isPresent()) {
+          return result;
         }
-        if (exponent instanceof IComplex) {
-          return complexComplex(F.complex((IFraction) base), (IComplex) exponent);
-        }
-        return F.NIL;
-      }
 
-      if (base instanceof IComplex) {
-        if (exponent instanceof IFraction) {
-          return complexFraction((IComplex) base, (IFraction) exponent);
+        if (base instanceof IInteger) {
+          if (exponent instanceof IFraction) {
+            return fractionFraction(F.fraction((IInteger) base, F.C1), (IFraction) exponent);
+          }
+          if (exponent instanceof IComplex) {
+            return complexComplex(F.complex((IInteger) base, F.C0), (IComplex) exponent);
+          }
+          return F.NIL;
         }
-        if (exponent instanceof IComplex) {
-          return complexComplex((IComplex) base, (IComplex) exponent);
-        }
-      }
 
+        if (base instanceof IFraction) {
+          if (exponent instanceof IFraction) {
+            return fractionFraction((IFraction) base, (IFraction) exponent);
+          }
+          if (exponent instanceof IComplex) {
+            return complexComplex(F.complex((IFraction) base), (IComplex) exponent);
+          }
+          return F.NIL;
+        }
+
+        if (base instanceof IComplex) {
+          if (exponent instanceof IFraction) {
+            return complexFraction((IComplex) base, (IFraction) exponent);
+          }
+          if (exponent instanceof IComplex) {
+            return complexComplex((IComplex) base, (IComplex) exponent);
+          }
+        }
+      } catch (ArithmeticException aex) {
+        // Overflow occurred in computation.
+        return IOFunctions.printMessage(S.General, "ovfl", F.List(), EvalEngine.get());
+      }
       return F.NIL;
     }
 
@@ -3781,7 +3786,8 @@ public final class Arithmetic {
       return F.NIL;
     }
 
-    private static IExpr integerInteger(final IInteger base, final IInteger exponent) {
+    private static IExpr integerInteger(final IInteger base, final IInteger exponent)
+        throws ArithmeticException {
       if (base.isMinusOne()) {
         return (exponent.isEven()) ? F.C1 : F.CN1;
       }
@@ -3789,14 +3795,9 @@ public final class Arithmetic {
         // all other cases see e2ObjArg
         return F.NIL;
       }
-
-      try {
-        long n = exponent.toLong();
-        return base.power(n);
-      } catch (ArithmeticException ae) {
-
-      }
-      return F.NIL;
+      // may throw ArithmeticException
+      long n = exponent.toLong();
+      return base.power(n);
     }
 
     /**
@@ -4255,16 +4256,16 @@ public final class Arithmetic {
     private static IExpr powerTimesInverse(final IAST timesAST, final ISignedNumber arg2) {
       IASTAppendable resultAST = F.NIL;
       for (int i = 1; i < timesAST.size(); i++) {
-        IExpr temp = timesAST.get(i);
-        if (temp.isPower() && temp.exponent().isReal()) {
+        final IExpr arg = timesAST.get(i);
+        if (arg.isPower() && arg.exponent().isReal()) {
           if (!resultAST.isPresent()) {
             resultAST = timesAST.copyAppendable();
             resultAST.map(resultAST, x -> F.Power(x, arg2));
           }
-          if (temp.exponent().isMinusOne()) {
-            resultAST.set(i, temp.base());
+          if (arg.exponent().isMinusOne()) {
+            resultAST.set(i, arg.base());
           } else {
-            resultAST.set(i, F.Power(temp.base(), temp.exponent().times(arg2)));
+            resultAST.set(i, F.Power(arg.base(), arg.exponent().times(arg2)));
           }
         }
       }
@@ -4337,19 +4338,19 @@ public final class Arithmetic {
       IASTAppendable multiplicationFactors = F.NIL;
       IASTAppendable plusClone = F.NIL;
       for (int i = plus.argSize(); i > 0; i--) {
-        IExpr temp = plus.get(i);
-        if (temp.isLog()) {
+        final IExpr arg = plus.get(i);
+        if (arg.isLog()) {
           if (!multiplicationFactors.isPresent()) {
             multiplicationFactors = F.TimesAlloc(8);
             plusClone = plus.copyAppendable();
           }
-          multiplicationFactors.append(temp.first());
+          multiplicationFactors.append(arg.first());
           plusClone.remove(i);
-        } else if (temp.isTimes()
-            && temp.size() == 3
-            && temp.second().isLog()
-            && temp.first().isReal()) {
-          IAST times = (IAST) temp;
+        } else if (arg.isTimes()
+            && arg.size() == 3
+            && arg.second().isLog()
+            && arg.first().isReal()) {
+          IAST times = (IAST) arg;
           IExpr logArgument = times.arg2().first();
           if (!multiplicationFactors.isPresent()) {
             multiplicationFactors = F.TimesAlloc(8);
@@ -4466,11 +4467,36 @@ public final class Arithmetic {
           case 3:
             return binaryOperator(ast, ast.arg1(), ast.arg2());
           default:
-            // Power(a,b,c,d) ==> Power(a, b, Power(c, d)))
-            return ast.splice(size - 2, 2, F.Power(ast.get(size - 2), ast.get(size - 1)));
+            return powerFoldRight(ast, engine);
         }
       }
       return F.NIL;
+    }
+
+    /**
+     * <code>Power(a,b,c,d)</code> ==> <code>Power(a, b, Power(c, d)))</code>
+     *
+     * @param ast
+     * @param engine
+     * @return
+     */
+    private static IExpr powerFoldRight(final IAST ast, EvalEngine engine) {
+      IExpr last = ast.last();
+      for (int i = ast.size() - 2; i >= 0; i--) {
+        final IExpr arg = ast.get(i);
+        IExpr temp = Power.ofNIL(engine, arg, last);
+        if (temp.isPresent()) {
+          last = temp;
+        } else {
+          if (i <= 1) {
+            return F.Power(arg, last);
+          }
+          IASTAppendable result = ast.copyUntil(i);
+          result.append(F.Power(arg, last));
+          return result;
+        }
+      }
+      return last;
     }
 
     /** {@inheritDoc} */
@@ -4875,7 +4901,7 @@ public final class Arithmetic {
     @Override
     public IExpr evaluate(final IAST ast, EvalEngine engine) {
       IExpr result = F.NIL;
-      IExpr arg1 = engine.evaluateNull(ast.arg1());
+      IExpr arg1 = engine.evaluateNIL(ast.arg1());
       if (arg1.isPresent()) {
         result = F.Sign(arg1);
       } else {
@@ -5559,9 +5585,9 @@ public final class Arithmetic {
       }
       IASTAppendable result = F.NIL;
       for (int i = 2; i < times.size(); i++) {
-        IExpr temp = times.get(i);
-        if (temp.isPower() && temp.base().isInteger() && !temp.exponent().isNumber()) {
-          IInteger powArg1 = (IInteger) temp.base();
+        final IExpr arg = times.get(i);
+        if (arg.isPower() && arg.base().isInteger() && !arg.exponent().isNumber()) {
+          IInteger powArg1 = (IInteger) arg.base();
           if (powArg1.isPositive()) {
             IInteger mod = F.C0;
             int count = 0;
@@ -5578,7 +5604,7 @@ public final class Arithmetic {
               if (!result.isPresent()) {
                 result = times.copyAppendable();
               }
-              result.set(i, F.Power(temp.base(), F.Plus(F.ZZ(count), temp.exponent())));
+              result.set(i, F.Power(arg.base(), F.Plus(F.ZZ(count), arg.exponent())));
             }
           }
         }
@@ -5610,11 +5636,12 @@ public final class Arithmetic {
     private static IExpr distributeLeadingFactorCN1(IExpr noEvalExpr, IAST times) {
       IASTAppendable result = F.NIL;
       for (int i = 2; i < times.size(); i++) {
-        IExpr temp = times.get(i);
-        if (temp.isPlus()) {
-          IAST plus = (IAST) temp;
+        final IExpr arg = times.get(i);
+        if (arg.isPlus()) {
+          IAST plus = (IAST) arg;
           if (AbstractFunctionEvaluator.isNegativeWeighted(plus, true)) {
-            temp = EvalEngine.get().evaluate(plus.mapThread(F.binaryAST2(Times, CN1, F.Slot1), 2));
+            IExpr temp =
+                EvalEngine.get().evaluate(plus.mapThread(F.binaryAST2(Times, CN1, F.Slot1), 2));
             result = times.copyAppendable();
             result.set(i, temp);
             result.remove(1);
@@ -5850,18 +5877,18 @@ public final class Arithmetic {
       INum number = F.CD1;
       int start = -1;
       for (int i = 1; i < ast.size(); i++) {
-        IExpr temp = ast.get(i);
-        if (temp instanceof INum) {
-          if (temp instanceof ApfloatNum) {
-            number = number.multiply((INum) temp);
+        final IExpr arg = ast.get(i);
+        if (arg instanceof INum) {
+          if (arg instanceof ApfloatNum) {
+            number = number.multiply((INum) arg);
           } else {
             if (number instanceof ApfloatNum) {
-              number = number.multiply(((INum) temp).apfloatNumValue(number.precision()));
+              number = number.multiply(((INum) arg).apfloatNumValue(number.precision()));
             } else {
-              number = number.multiply((INum) temp);
+              number = number.multiply((INum) arg);
             }
           }
-        } else if (temp instanceof IComplexNum) {
+        } else if (arg instanceof IComplexNum) {
           start = i;
           break;
         } else {
@@ -5878,22 +5905,22 @@ public final class Arithmetic {
         complexNumber = F.complexNum(number.apfloatValue(number.precision()));
       }
       for (int i = start; i < ast.size(); i++) {
-        IExpr temp = ast.get(i);
-        if (temp instanceof INum) {
-          number = (INum) temp;
+        final IExpr arg = ast.get(i);
+        if (arg instanceof INum) {
+          number = (INum) arg;
           if (number instanceof Num) {
             complexNumber = complexNumber.multiply(F.complexNum(((Num) number).doubleValue()));
           } else {
             complexNumber =
                 complexNumber.multiply(F.complexNum(number.apfloatValue(number.precision())));
           }
-        } else if (temp instanceof IComplexNum) {
+        } else if (arg instanceof IComplexNum) {
           if (complexNumber instanceof ApcomplexNum) {
             complexNumber =
                 complexNumber.multiply(
-                    ((IComplexNum) temp).apcomplexNumValue(complexNumber.precision()));
+                    ((IComplexNum) arg).apcomplexNumValue(complexNumber.precision()));
           } else {
-            complexNumber = complexNumber.multiply((IComplexNum) temp);
+            complexNumber = complexNumber.multiply((IComplexNum) arg);
           }
         } else {
           return F.NIL;
@@ -6755,7 +6782,7 @@ public final class Arithmetic {
         IASTAppendable andAST = F.ast(S.And, function.argSize() - 1, false);
         IExpr last = function.arg1();
         for (int i = 2; i < function.size(); i++) {
-          IExpr arg = function.get(i);
+          final IExpr arg = function.get(i);
           andAST.append(F.Equal(F.Subtract(last, arg), F.C0));
           last = arg;
         }

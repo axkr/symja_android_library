@@ -167,9 +167,9 @@ public final class BooleanFunctions {
       if (listOfSymbols instanceof IAST) {
         Variable[] result = new Variable[listOfSymbols.argSize()];
         for (int i = 1; i < listOfSymbols.size(); i++) {
-          IExpr temp = listOfSymbols.get(i);
-          if (temp instanceof ISymbol) {
-            ISymbol symbol = (ISymbol) temp;
+          final IExpr arg = listOfSymbols.get(i);
+          if (arg.isSymbol()) {
+            ISymbol symbol = (ISymbol) arg;
             if (symbol.isFalse() || symbol.isTrue()) {
               // `1` is not a valid variable.
               String str = IOFunctions.getMessage("ivar", F.List(symbol), EvalEngine.get());
@@ -186,7 +186,7 @@ public final class BooleanFunctions {
             }
           } else {
             // `1` is not a valid variable.
-            String str = IOFunctions.getMessage("ivar", F.List(temp), EvalEngine.get());
+            String str = IOFunctions.getMessage("ivar", F.List(arg), EvalEngine.get());
             throw new ArgumentTypeException(str);
           }
         }
@@ -432,14 +432,14 @@ public final class BooleanFunctions {
     private Collection<Variable> list2LiteralCollection(final IAST list) {
       Collection<Variable> arr = new ArrayList<Variable>(list.argSize());
       for (int i = 1; i < list.size(); i++) {
-        IExpr temp = list.get(i);
-        if (!temp.isSymbol()) {
+        final IExpr arg = list.get(i);
+        if (!arg.isSymbol()) {
           // illegal arguments: \"`1`\" in `2`
-          String str = IOFunctions.getMessage("argillegal", F.List(temp, list), EvalEngine.get());
+          String str = IOFunctions.getMessage("argillegal", F.List(arg, list), EvalEngine.get());
           throw new ArgumentTypeException(str);
         }
 
-        ISymbol symbol = (ISymbol) temp;
+        ISymbol symbol = (ISymbol) arg;
 
         Variable v = symbol2variableMap.get(symbol);
         if (v == null) {
@@ -469,7 +469,7 @@ public final class BooleanFunctions {
       }
 
       for (Literal a : literals) {
-        Integer val = map.get(a.name());
+        final Integer val = map.get(a.name());
         if (val != null) {
           if (a.phase()) {
             list.set(val + 1, S.True);
@@ -490,7 +490,7 @@ public final class BooleanFunctions {
       }
 
       for (Literal a : literals) {
-        Integer val = map.get(a.name());
+        final Integer val = map.get(a.name());
         if (val != null) {
           if (a.phase()) {
             list.set(val + 1, F.Rule(variable2symbolMap.get(a.variable()), S.True));
@@ -624,7 +624,7 @@ public final class BooleanFunctions {
           }
         }
 
-        temp = engine.evaluateNull(temp);
+        temp = engine.evaluateNIL(temp);
         if (temp.isPresent()) {
           if (temp.isFalse()) {
             return S.False;
@@ -657,7 +657,7 @@ public final class BooleanFunctions {
           continue;
         }
 
-        temp = engine.evaluateNull(temp);
+        temp = engine.evaluateNIL(temp);
         if (temp.isPresent()) {
           if (temp.isFalse()) {
             return S.False;
@@ -844,7 +844,7 @@ public final class BooleanFunctions {
 
     @Override
     public IExpr evaluate(final IAST ast, EvalEngine engine) {
-      IExpr arg1 = engine.evaluateNull(ast.arg1());
+      IExpr arg1 = engine.evaluateNIL(ast.arg1());
       if (arg1.isPresent()) {
         return booleValue(arg1, F.Boole(arg1));
       }
@@ -1473,15 +1473,15 @@ public final class BooleanFunctions {
       boolean evaled = false;
 
       for (int i = 1; i < ast.size(); i++) {
-        IExpr temp = ast.get(i);
-        if (temp.isFalse()) {
+        final IExpr arg = ast.get(i);
+        if (arg.isFalse()) {
           if (!boole.isPresent()) {
             boole = S.False;
           } else if (boole.isTrue()) {
             return S.False;
           }
           evaled = true;
-        } else if (temp.isTrue()) {
+        } else if (arg.isTrue()) {
           if (!boole.isPresent()) {
             boole = S.True;
           } else if (boole.isFalse()) {
@@ -1489,13 +1489,13 @@ public final class BooleanFunctions {
           }
           evaled = true;
         } else {
-          if (!last.equals(temp)) {
-            result.append(temp);
+          if (!last.equals(arg)) {
+            result.append(arg);
           } else {
             evaled = true;
           }
 
-          last = temp;
+          last = arg;
         }
       }
       if (evaled) {
@@ -1530,14 +1530,14 @@ public final class BooleanFunctions {
     public IExpr evaluate(final IAST ast, EvalEngine engine) {
       boolean evaled = false;
       // TODO localize x
-      IExpr x = engine.evaluateNull(ast.arg1());
+      IExpr x = engine.evaluateNIL(ast.arg1());
       if (x.isPresent()) {
         evaled = true;
       } else {
         x = ast.arg1();
       }
 
-      IExpr expr = engine.evaluateNull(ast.arg2());
+      IExpr expr = engine.evaluateNIL(ast.arg2());
       if (expr.isPresent()) {
         evaled = true;
       } else {
@@ -1545,7 +1545,7 @@ public final class BooleanFunctions {
       }
 
       if (ast.isAST3()) {
-        IExpr arg3 = engine.evaluateNull(ast.arg3());
+        IExpr arg3 = engine.evaluateNIL(ast.arg3());
         if (arg3.isPresent()) {
           evaled = true;
         } else {
@@ -1582,14 +1582,14 @@ public final class BooleanFunctions {
     public IExpr evaluate(final IAST ast, EvalEngine engine) {
       boolean evaled = false;
       // TODO localize x
-      IExpr x = engine.evaluateNull(ast.arg1());
+      IExpr x = engine.evaluateNIL(ast.arg1());
       if (x.isPresent()) {
         evaled = true;
       } else {
         x = ast.arg1();
       }
 
-      IExpr expr = engine.evaluateNull(ast.arg2());
+      IExpr expr = engine.evaluateNIL(ast.arg2());
       if (expr.isPresent()) {
         evaled = true;
       } else {
@@ -1597,7 +1597,7 @@ public final class BooleanFunctions {
       }
 
       if (ast.isAST3()) {
-        IExpr arg3 = engine.evaluateNull(ast.arg3());
+        IExpr arg3 = engine.evaluateNIL(ast.arg3());
         if (arg3.isPresent()) {
           evaled = true;
         } else {
@@ -1841,12 +1841,12 @@ public final class BooleanFunctions {
         }
       }
       boolean evaled = false;
-      IExpr.COMPARE_TERNARY b;
+
       IASTAppendable result = astEvaled.copyAppendable();
       IExpr.COMPARE_TERNARY[] cResult = new IExpr.COMPARE_TERNARY[astEvaled.size()];
       cResult[0] = IExpr.COMPARE_TERNARY.TRUE;
       for (int i = 1; i < astEvaled.argSize(); i++) {
-        b = prepareCompare(result.get(i), result.get(i + 1), engine);
+        final IExpr.COMPARE_TERNARY b = prepareCompare(result.get(i), result.get(i + 1), engine);
         if (b == IExpr.COMPARE_TERNARY.FALSE) {
           return S.False;
         }
@@ -2150,7 +2150,7 @@ public final class BooleanFunctions {
     @Override
     public IExpr evaluate(final IAST ast, EvalEngine engine) {
       boolean evaled = false;
-      IExpr arg1 = engine.evaluateNull(ast.arg1());
+      IExpr arg1 = engine.evaluateNIL(ast.arg1());
       if (arg1.isPresent()) {
         evaled = true;
       } else {
@@ -2163,7 +2163,7 @@ public final class BooleanFunctions {
         return S.True;
       }
 
-      IExpr arg2 = engine.evaluateNull(ast.arg2());
+      IExpr arg2 = engine.evaluateNIL(ast.arg2());
       if (arg2.isPresent()) {
         evaled = true;
       } else {
@@ -2244,7 +2244,7 @@ public final class BooleanFunctions {
         }
         if (firstSign != 0) {
           for (int i = 4; i < ast.size(); i += 2) {
-            int thisSign = getCompSign(ast.get(i));
+            final int thisSign = getCompSign(ast.get(i));
             if (thisSign == -2) {
               return F.NIL;
             }
@@ -2252,11 +2252,12 @@ public final class BooleanFunctions {
               IASTAppendable firstIneq = F.ast(S.Inequality);
               IASTAppendable secondIneq = F.ast(S.Inequality);
               for (int j = 1; j < ast.size(); j++) {
+                final IExpr arg = ast.get(j);
                 if (j < i) {
-                  firstIneq.append(ast.get(j));
+                  firstIneq.append(arg);
                 }
                 if (j > (i - 2)) {
-                  secondIneq.append(ast.get(j));
+                  secondIneq.append(arg);
                 }
               }
               return F.And(firstIneq, secondIneq);
@@ -2266,15 +2267,13 @@ public final class BooleanFunctions {
         IASTAppendable res = F.ast(S.Inequality);
         IExpr lastOp = F.NIL;
         for (int i = 0; i < (ast.size() - 1) / 2; i++) {
-          IExpr lhs = ast.get(2 * i + 1);
-          // if (res.size() > 1) {
-          // lhs = res.get(res.size() - 1);
-          // }
-          IExpr op = ast.get(2 * i + 2);
-          IExpr rhs = ast.get(2 * i + 3);
+          final IExpr lhs = ast.get(2 * i + 1);
+          final IExpr op = ast.get(2 * i + 2);
+          final IExpr rhs = ast.get(2 * i + 3);
           for (int rhsI = 2 * i + 3; rhsI < ast.size(); rhsI += 2) {
-            IExpr temp = engine.evaluate(F.binaryAST2(op, lhs, ast.get(rhsI)));
-            if (temp.isFalse()) {
+            final IExpr arg = engine.evaluate(F.binaryAST2(op, lhs, ast.get(rhsI)));
+            if (arg.isFalse()) {
+              // explicitly tested for False symbol
               return S.False;
             }
           }
@@ -2513,10 +2512,11 @@ public final class BooleanFunctions {
         if (x.isAST()) {
           IAST formula = (IAST) x;
           if (x.isNot() && x.first().isOr()) {
-            IASTMutable result = ((IAST) x.first()).apply(S.And);
-            for (int i = 1; i < result.size(); i++) {
-              result.set(i, F.Not(result.get(i)));
-            }
+            IAST result = ((IAST) x.first()).apply(S.And);
+            result = result.map(arg -> F.Not(arg));
+            //            for (int i = 1; i < result.size(); i++) {
+            //              result.set(i, F.Not(result.get(i)));
+            //            }
             return engine.evaluate(result);
           }
           if (formula.isSameHeadSizeGE(S.Xor, 3)) {
@@ -2922,13 +2922,13 @@ public final class BooleanFunctions {
       boolean evaled = false;
 
       for (int i = 1; i < ast.size(); i++) {
-        IExpr temp = engine.evaluate(ast.get(i));
-        if (temp.isFalse()) {
+        final IExpr arg = engine.evaluate(ast.get(i));
+        if (arg.isFalse()) {
           return S.True;
-        } else if (temp.isTrue()) {
+        } else if (arg.isTrue()) {
           evaled = true;
         } else {
-          result.append(temp);
+          result.append(arg);
         }
       }
       if (evaled) {
@@ -3270,13 +3270,13 @@ public final class BooleanFunctions {
       boolean evaled = false;
 
       for (int i = 1; i < ast.size(); i++) {
-        IExpr temp = engine.evaluate(ast.get(i));
-        if (temp.isTrue()) {
+        final IExpr arg = engine.evaluate(ast.get(i));
+        if (arg.isTrue()) {
           return S.False;
-        } else if (temp.isFalse()) {
+        } else if (arg.isFalse()) {
           evaled = true;
         } else {
-          result.append(temp);
+          result.append(arg);
         }
       }
       if (evaled) {
@@ -3420,43 +3420,42 @@ public final class BooleanFunctions {
       }
 
       IASTAppendable result = flattenedAST.copyAppendable();
-      IExpr temp;
       IExpr sym;
       int[] symbols = new int[flattenedAST.size()];
       int[] notSymbols = new int[flattenedAST.size()];
       int index = 1;
 
       for (int i = 1; i < flattenedAST.size(); i++) {
-        temp = flattenedAST.get(i);
-        if (temp.isTrue()) {
+        IExpr arg = flattenedAST.get(i);
+        if (arg.isTrue()) {
           return S.True;
         }
-        if (temp.isFalse()) {
+        if (arg.isFalse()) {
           result.remove(index);
           evaled = true;
           continue;
         }
 
-        temp = engine.evaluateNull(flattenedAST.get(i));
-        if (temp.isPresent()) {
-          if (temp.isTrue()) {
+        arg = engine.evaluateNIL(arg);
+        if (arg.isPresent()) {
+          if (arg.isTrue()) {
             return S.True;
           }
-          if (temp.isFalse()) {
+          if (arg.isFalse()) {
             result.remove(index);
             evaled = true;
             continue;
           }
-          result.set(index, temp);
+          result.set(index, arg);
           evaled = true;
         } else {
-          temp = flattenedAST.get(i);
+          arg = flattenedAST.get(i);
         }
 
-        if (temp.isSymbol()) {
-          symbols[i] = flattenedAST.get(i).hashCode();
-        } else if (temp.isNot()) {
-          sym = temp.first();
+        if (arg.isSymbol()) {
+          symbols[i] = arg.hashCode();
+        } else if (arg.isNot()) {
+          sym = arg.first();
           if (sym.isSymbol()) {
             notSymbols[i] = sym.hashCode();
           }
@@ -4299,14 +4298,13 @@ public final class BooleanFunctions {
         return ast.arg1();
       }
 
-      IExpr temp;
       IExpr result = ast.arg1();
       int size = ast.size();
       IASTAppendable xor = F.ast(S.Xor, size - 1, false);
       boolean evaled = false;
       for (int i = 2; i < size; i++) {
-        temp = ast.get(i);
-        if (temp.isTrue()) {
+        final IExpr arg = ast.get(i);
+        if (arg.isTrue()) {
           if (result.isTrue()) {
             result = S.False;
           } else if (result.isFalse()) {
@@ -4315,7 +4313,7 @@ public final class BooleanFunctions {
             result = S.Not.of(engine, result);
           }
           evaled = true;
-        } else if (temp.isFalse()) {
+        } else if (arg.isFalse()) {
           if (result.isTrue()) {
             result = S.True;
           } else if (result.isFalse()) {
@@ -4323,18 +4321,18 @@ public final class BooleanFunctions {
           }
           evaled = true;
         } else {
-          if (temp.equals(result)) {
+          if (arg.equals(result)) {
             result = S.False;
             evaled = true;
           } else {
             if (result.isTrue()) {
-              result = S.Not.of(engine, temp);
+              result = S.Not.of(engine, arg);
               evaled = true;
             } else if (result.isFalse()) {
-              result = temp;
+              result = arg;
               evaled = true;
             } else {
-              xor.append(temp);
+              xor.append(arg);
             }
           }
         }
