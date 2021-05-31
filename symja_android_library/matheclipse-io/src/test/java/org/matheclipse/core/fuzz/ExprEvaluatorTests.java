@@ -430,6 +430,7 @@ public class ExprEvaluatorTests extends TestCase {
             F.complex(-2.0, -2.0), //
             F.complex(-2.0, 2.0), //
             F.complexNum(new Apfloat("-0.8", 30), new Apfloat("1.2", 30)), //
+            F.complexNum(new Apfloat(Long.MIN_VALUE, 30), new Apfloat(Long.MAX_VALUE, 30)), //
             F.num(0.5), //
             F.num(-0.5), //
             F.num(Math.PI * (-0.5)), //
@@ -439,6 +440,8 @@ public class ExprEvaluatorTests extends TestCase {
             F.num(-Math.E), //
             F.num(Math.E), //
             F.num(new Apfloat("-0.8", 30)), //
+            F.num(new Apfloat(Long.MAX_VALUE, 30)), //
+            F.num(new Apfloat(Long.MIN_VALUE, 30)), //
             F.C0, //
             F.C1, //
             F.CN1, //
@@ -502,6 +505,12 @@ public class ExprEvaluatorTests extends TestCase {
             F.List(F.List(F.C0, F.C0), F.List(F.C0, F.C0)), //
             F.List(F.List(F.C1, F.C0), F.List(F.C0, F.C1), F.C0), //
             F.List(F.List(F.C0, F.C0), F.List(F.C0, F.C0), F.C0), //
+            F.List(
+                F.num(new Apfloat("-3.1415", 30)),
+                F.num(new Apfloat("2.987", 30)),
+                F.num(new Apfloat(-1, 30)),
+                F.num(new Apfloat("0.0", 30)),
+                F.num(new Apfloat(1, 30))), //
             F.List(F.CN1, F.CN2, F.C3), //
             F.List(F.CN1D2, F.CN2, F.C3), //
             F.List(F.x, F.CN2, F.C3), //
