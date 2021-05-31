@@ -3948,6 +3948,17 @@ public class LowercaseTestCase extends AbstractTestCase {
   }
 
   public void testChineseRemainder() {
+
+    check(
+        "mydata = {931074546, 117172357, 482333642, 199386034, 394354985};", //
+        "");
+    check(
+        "mykeys={104881749667,21415628519,50887356077,224339216447,52131541939};", //
+        "");
+    check(
+        "ChineseRemainder(mydata,mykeys)", //
+        "193166521325770200917536987616405491738358926101878755");
+
     check(
         "ChineseRemainder({-1/2,-2,3},{-1/2,-2,3})", //
         "ChineseRemainder({-1/2,-2,3},{-1/2,-2,3})");
@@ -9171,7 +9182,7 @@ public class LowercaseTestCase extends AbstractTestCase {
         "{1.26549+I*0.162237,1.30064+I*0.18478,1.33866+I*0.213052,1.37925+I*0.249038,1.42127+I*0.29538,1.46203+I*0.355241,1.49611+I*0.431362,1.51493+I*0.523542,1.50924+I*0.625146}");
   }
 
-  public void testEllipticPi() {  
+  public void testEllipticPi() {
     check(
         "EllipticPi(0,-1,1.5708)", //
         "-1.58877+I*0.451013");
@@ -9187,9 +9198,9 @@ public class LowercaseTestCase extends AbstractTestCase {
             + "0.57283+I*1.52838,0.420978+I*1.46215}");
 
     // TODO improve see discussion: https://github.com/paulmasson/math/issues/6
-//    check(
-//        "EllipticPi(2.0, 0.5)", //
-//        "-0.313545+I*(-1.8138)");
+    //    check(
+    //        "EllipticPi(2.0, 0.5)", //
+    //        "-0.313545+I*(-1.8138)");
 
     check(
         "EllipticPi(0,z,m)", //
@@ -9216,9 +9227,10 @@ public class LowercaseTestCase extends AbstractTestCase {
         "EllipticPi(1/3, Pi/5, 0.3)", //
         "0.668735");
     // TODO improve see discussion: https://github.com/paulmasson/math/issues/6
-//    check(
-//        "Table(EllipticPi(x,0.5), {x,-2.0, 2.0, 1/4})", //
-//        "{1.0227,1.07184,1.12843,1.19454,1.27313,1.36859,1.48785,1.64253,1.85407,2.16762,2.70129,3.93061,ComplexInfinity,-0.592756+I*(-4.05578),-0.45672+I*(-2.7207),-0.371748+I*(-2.14612),-0.313545+I*(-1.8138)}");
+    //    check(
+    //        "Table(EllipticPi(x,0.5), {x,-2.0, 2.0, 1/4})", //
+    //
+    // "{1.0227,1.07184,1.12843,1.19454,1.27313,1.36859,1.48785,1.64253,1.85407,2.16762,2.70129,3.93061,ComplexInfinity,-0.592756+I*(-4.05578),-0.45672+I*(-2.7207),-0.371748+I*(-2.14612),-0.313545+I*(-1.8138)}");
   }
 
   public void testEllipticTheta() {

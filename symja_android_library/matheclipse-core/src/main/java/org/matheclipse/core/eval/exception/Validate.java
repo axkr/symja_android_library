@@ -125,13 +125,18 @@ public final class Validate {
   }
 
   /**
-   * @param ast
-   * @param arg
-   * @param nonNegative
+   * Check the argument, if it's an {@code IAST} of {@code int} values in the range
+   * [Integer.MIN_VALUE+1, Integer.MAX_VALUE]
+   *
+   * @param ast 
+   * @param arg the non-empty list of integer values
+   * @param nonNegative chek if all values are greater or equal 0
+   * @param quiet print no error message
    * @param engine
    * @return <code>null</code> if the conversion isn't possible
    */
-  public static int[] checkListOfInts(IAST ast, IExpr arg, boolean nonNegative, EvalEngine engine) {
+  public static int[] checkListOfInts(
+      IAST ast, IExpr arg, boolean nonNegative, boolean quiet, EvalEngine engine) {
     if (arg.isNonEmptyList()) {
       IAST list = (IAST) arg;
       if (list.argSize() > 0) {
@@ -143,13 +148,17 @@ public final class Validate {
             expr = list.get(i);
             int intValue = expr.toIntDefault();
             if (intValue == Integer.MIN_VALUE) {
-              // The first argument `1` of `2` should be a non-empty list of positive integers.
-              IOFunctions.printMessage(ast.topHead(), "coef", F.List(arg, ast.topHead()), engine);
+              if (!quiet) {
+                // The first argument `1` of `2` should be a non-empty list of positive integers.
+                IOFunctions.printMessage(ast.topHead(), "coef", F.List(arg, ast.topHead()), engine);
+              }
               return null;
             }
             if (nonNegative && intValue < 0) {
-              // The first argument `1` of `2` should be a non-empty list of positive integers.
-              IOFunctions.printMessage(ast.topHead(), "coef", F.List(arg, ast.topHead()), engine);
+              if (!quiet) {
+                // The first argument `1` of `2` should be a non-empty list of positive integers.
+                IOFunctions.printMessage(ast.topHead(), "coef", F.List(arg, ast.topHead()), engine);
+              }
               return null;
             }
             result[i - 1] = intValue;
@@ -162,8 +171,10 @@ public final class Validate {
         }
       }
     }
-    // The first argument `1` of `2` should be a non-empty list of positive integers.
-    IOFunctions.printMessage(ast.topHead(), "coef", F.List(arg, ast.topHead()), engine);
+    if (!quiet) {
+      // The first argument `1` of `2` should be a non-empty list of positive integers.
+      IOFunctions.printMessage(ast.topHead(), "coef", F.List(arg, ast.topHead()), engine);
+    }
     return null;
   }
 

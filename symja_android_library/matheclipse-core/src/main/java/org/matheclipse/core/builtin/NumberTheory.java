@@ -721,7 +721,7 @@ public final class NumberTheory {
      * @param remainders remainder
      * @return the result
      */
-    public static long chineseRemainders(final long[] primes, final long[] remainders) {
+    private static long chineseRemaindersInt(final int[] primes, final int[] remainders) {
       if (primes.length != remainders.length) {
         // The arguments to `1` must be two lists of integers of identical length, with the second
         // list only
@@ -734,13 +734,12 @@ public final class NumberTheory {
       for (int i = 1; i < primes.length; ++i) {
         if (primes[i] <= 0) {
           // The arguments to `1` must be two lists of integers of identical length, with the second
-          // list only
-          // containing positive integers.
+          // list only containing positive integers.
           String message =
               IOFunctions.getMessage("pilist", F.List(S.ChineseRemainder), EvalEngine.get());
           throw new ArgumentTypeException(message);
         }
-        modulus = multiplyExact(primes[i], modulus);
+        modulus = Math.multiplyExact(primes[i], modulus);
       }
 
       long result = 0;
@@ -811,29 +810,13 @@ public final class NumberTheory {
     public IExpr evaluate(final IAST ast, EvalEngine engine) {
       if (ast.arg1().isList() && ast.arg2().isList()) {
         try {
-          long[] a = Validate.checkListOfLongs(ast, ast.arg1(), Long.MIN_VALUE, true, engine);
-          long[] n = Validate.checkListOfLongs(ast, ast.arg2(), Long.MIN_VALUE, true, engine);
-          if (a == null || n == null) {
-            // try with BigIntegers
-            BigInteger[] aBig = Validate.checkListOfBigIntegers(ast, ast.arg1(), false, engine);
-            if (aBig == null) {
-              return F.NIL;
-            }
-            BigInteger[] nBig = Validate.checkListOfBigIntegers(ast, ast.arg2(), false, engine);
-            if (nBig == null) {
-              return F.NIL;
-            }
-            if (aBig.length != nBig.length) {
-              return F.NIL;
-            }
-            try {
-              return F.ZZ(chineseRemainders(nBig, aBig));
-            } catch (ArithmeticException ae) {
-              if (FEConfig.SHOW_STACKTRACE) {
-                ae.printStackTrace();
-              }
-            }
-            return F.NIL;
+          int[] a = Validate.checkListOfInts(ast, ast.arg1(), false, true, engine);
+          if (a == null) {
+            return chineseRemainderBigInteger(ast, engine);
+          }
+          int[] n = Validate.checkListOfInts(ast, ast.arg2(), false, true, engine);
+          if (n == null) {
+            return chineseRemainderBigInteger(ast, engine);
           }
           if (a.length != n.length) {
             return F.NIL;
@@ -841,14 +824,41 @@ public final class NumberTheory {
           if (a.length == 0) {
             return F.NIL;
           }
-
-          return F.ZZ(chineseRemainders(n, a));
+          try {
+            return F.ZZ(chineseRemaindersInt(n, a));
+          } catch (ArithmeticException aex) {
+            // from Math.multiplyExact()
+            return chineseRemainderBigInteger(ast, engine);
+          }
         } catch (ValidateException ve) {
           return engine.printMessage(ast.topHead(), ve);
         } catch (ArithmeticException ae) {
           if (FEConfig.SHOW_STACKTRACE) {
             ae.printStackTrace();
           }
+        }
+      }
+      return F.NIL;
+    }
+
+    private static IExpr chineseRemainderBigInteger(final IAST ast, EvalEngine engine) {
+      // try with BigIntegers
+      BigInteger[] aBig = Validate.checkListOfBigIntegers(ast, ast.arg1(), false, engine);
+      if (aBig == null) {
+        return F.NIL;
+      }
+      BigInteger[] nBig = Validate.checkListOfBigIntegers(ast, ast.arg2(), false, engine);
+      if (nBig == null) {
+        return F.NIL;
+      }
+      if (aBig.length != nBig.length) {
+        return F.NIL;
+      }
+      try {
+        return F.ZZ(chineseRemainders(nBig, aBig));
+      } catch (ArithmeticException ae) {
+        if (FEConfig.SHOW_STACKTRACE) {
+          ae.printStackTrace();
         }
       }
       return F.NIL;

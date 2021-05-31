@@ -4227,7 +4227,7 @@ public final class ListFunctions {
         }
 
         if (ast.argSize() > 1 && ast.arg2().isList()) {
-          int[] levels = Validate.checkListOfInts(ast, ast.arg2(), true, engine);
+          int[] levels = Validate.checkListOfInts(ast, ast.arg2(), true, false, engine);
           if (levels != null && levels.length > 0) {
             int listLevel = list.depth() - 1;
             if (levels.length > listLevel) {
@@ -4474,7 +4474,7 @@ public final class ListFunctions {
         }
 
         if (ast.argSize() > 1 && ast.arg2().isList()) {
-          int[] levels = Validate.checkListOfInts(ast, ast.arg2(), true, engine);
+          int[] levels = Validate.checkListOfInts(ast, ast.arg2(), true, false, engine);
           if (levels != null && levels.length > 0) {
             int listLevel = list.depth() - 1;
             if (levels.length > listLevel) {

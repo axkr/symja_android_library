@@ -63,7 +63,7 @@ public class FrobeniusSolve extends AbstractEvaluator {
     if (ast.arg1().isList() && ast.arg2().isInteger()) {
       IAST list = ast.getAST(1);
       try {
-        int[] listInt = Validate.checkListOfInts(ast, list, true, engine);
+        int[] listInt = Validate.checkListOfInts(ast, list, true, false, engine);
         if (listInt != null) {
           for (int i = 0; i < listInt.length; i++) {
             if (listInt[i] < 0 && ast.size() < 4) {}
