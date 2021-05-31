@@ -7,6 +7,8 @@ import java.util.List;
 import java.util.concurrent.ThreadLocalRandom;
 import java.util.concurrent.atomic.AtomicBoolean;
 
+import org.apfloat.Apcomplex;
+import org.apfloat.Apfloat;
 import org.matheclipse.core.basic.Config;
 import org.matheclipse.core.convert.AST2Expr;
 import org.matheclipse.core.eval.EvalEngine;
@@ -427,6 +429,7 @@ public class ExprEvaluatorTests extends TestCase {
             F.complex(2.0, 1.0), //
             F.complex(-2.0, -2.0), //
             F.complex(-2.0, 2.0), //
+            F.complexNum(new Apfloat("-0.8", 30), new Apfloat("1.2", 30)), //
             F.num(0.5), //
             F.num(-0.5), //
             F.num(Math.PI * (-0.5)), //
@@ -435,6 +438,7 @@ public class ExprEvaluatorTests extends TestCase {
             F.num(Math.PI), //
             F.num(-Math.E), //
             F.num(Math.E), //
+            F.num(new Apfloat("-0.8", 30)), //
             F.C0, //
             F.C1, //
             F.CN1, //
@@ -557,7 +561,7 @@ public class ExprEvaluatorTests extends TestCase {
             F.Slot(Integer.MAX_VALUE), //
             IQuantity.of(1.2, "m"), //
             // throws PatternSyntaxException
-            F.RegularExpression("?i)"), // 
+            F.RegularExpression("?i)"), //
             F.CEmptyString, //
             F.stringx("\\"), //
             F.stringx("\r"), //
@@ -957,7 +961,7 @@ public class ExprEvaluatorTests extends TestCase {
         // System.out.print(".");
         thread = new SlowComputationThread(">> " + ast.toString());
         thread.start();
-//        engine.evaluate(ast);
+        //        engine.evaluate(ast);
         if (evaluator != null) {
           evaluator.evaluate(ast, engine);
         } else {
