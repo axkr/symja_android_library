@@ -50,6 +50,7 @@ import org.apfloat.ApcomplexMath;
 import org.apfloat.Apfloat;
 import org.apfloat.ApfloatMath;
 import org.apfloat.InfiniteExpansionException;
+import org.apfloat.OverflowException;
 import org.hipparchus.fraction.BigFraction;
 import org.hipparchus.linear.Array2DRowRealMatrix;
 import org.hipparchus.linear.ArrayRealVector;
@@ -3524,7 +3525,7 @@ public final class Arithmetic {
             return complexComplex((IComplex) base, (IComplex) exponent);
           }
         }
-      } catch (InfiniteExpansionException|ArithmeticException aex) {
+      } catch (OverflowException | InfiniteExpansionException | ArithmeticException aex) {
         // Overflow occurred in computation.
         return IOFunctions.printMessage(S.General, "ovfl", F.List(), EvalEngine.get());
       }
