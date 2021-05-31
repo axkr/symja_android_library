@@ -45,7 +45,7 @@ public class ApcomplexNum implements IComplexNum {
   }
 
   public static ApcomplexNum valueOf(final double real, long precision) {
-    return valueOf(new Apcomplex(new Apfloat(new BigDecimal(real), precision), Apcomplex.ZERO));
+    return valueOf(new Apcomplex(new Apfloat(new BigDecimal(real), precision)));
   }
 
   public static ApcomplexNum valueOf(final double real, final double imaginary, long precision) {
@@ -178,7 +178,8 @@ public class ApcomplexNum implements IComplexNum {
 
   @Override
   public boolean isZero() {
-    return fApcomplex.equals(Apcomplex.ZERO);
+    return fApcomplex.real().signum() == 0 //
+        && fApcomplex.imag().signum() == 0;
   }
 
   @Override

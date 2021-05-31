@@ -92,7 +92,7 @@ public class ApfloatNum implements INum {
   @Override
   public boolean isNumEqualInteger(IInteger ii) throws ArithmeticException {
     return fApfloat.truncate().equals(new Apint(ii.toBigNumerator()))
-        && fApfloat.frac().equals(Apcomplex.ZERO);
+        && fApfloat.frac().equals(Apfloat.ZERO);
   }
 
   /** {@inheritDoc} */
@@ -107,7 +107,7 @@ public class ApfloatNum implements INum {
   /** {@inheritDoc} */
   @Override
   public boolean isNumIntValue() {
-    return fApfloat.frac().equals(Apcomplex.ZERO);
+    return fApfloat.frac().equals(Apfloat.ZERO);
   }
 
   /** {@inheritDoc} */
@@ -153,7 +153,7 @@ public class ApfloatNum implements INum {
 
   @Override
   public INum add(final INum val) {
-    return valueOf(fApfloat.add(((ApfloatNum) val).fApfloat));
+    return valueOf(fApfloat.add(val.apfloatValue(fApfloat.precision())));
   }
 
   @Override
@@ -163,7 +163,7 @@ public class ApfloatNum implements INum {
 
   @Override
   public INum pow(final INum val) {
-    return valueOf(ApfloatMath.pow(fApfloat, ((ApfloatNum) val).fApfloat));
+    return valueOf(ApfloatMath.pow(fApfloat, val.apfloatValue(fApfloat.precision())));
   }
 
   @Override
@@ -180,7 +180,7 @@ public class ApfloatNum implements INum {
   /** {@inheritDoc} */
   @Override
   public int compareAbsValueToOne() {
-    return ApfloatMath.abs(fApfloat).compareTo(Apcomplex.ONE);
+    return ApfloatMath.abs(fApfloat).compareTo(Apfloat.ONE);
   }
 
   /** {@inheritDoc} */
@@ -210,11 +210,11 @@ public class ApfloatNum implements INum {
       return add(ApfloatNum.valueOf(((Num) that).getRealPart(), fApfloat.precision()));
     }
     if (that instanceof ApcomplexNum) {
-      return ApcomplexNum.valueOf(fApfloat, Apcomplex.ZERO).add((ApcomplexNum) that);
+      return ApcomplexNum.valueOf(fApfloat).add((ApcomplexNum) that);
     }
     if (that instanceof ComplexNum) {
       ComplexNum cn = (ComplexNum) that;
-      return ApcomplexNum.valueOf(fApfloat, Apcomplex.ZERO)
+      return ApcomplexNum.valueOf(fApfloat)
           .add(ApcomplexNum.valueOf(cn.getRealPart(), cn.getImaginaryPart(), fApfloat.precision()));
     }
     return INum.super.plus(that);
@@ -336,11 +336,11 @@ public class ApfloatNum implements INum {
       return multiply(ApfloatNum.valueOf(((Num) that).getRealPart(), fApfloat.precision()));
     }
     if (that instanceof ApcomplexNum) {
-      return ApcomplexNum.valueOf(fApfloat, Apcomplex.ZERO).multiply((ApcomplexNum) that);
+      return ApcomplexNum.valueOf(fApfloat).multiply((ApcomplexNum) that);
     }
     if (that instanceof ComplexNum) {
       ComplexNum cn = (ComplexNum) that;
-      return ApcomplexNum.valueOf(fApfloat, Apcomplex.ZERO)
+      return ApcomplexNum.valueOf(fApfloat)
           .multiply(
               ApcomplexNum.valueOf(cn.getRealPart(), cn.getImaginaryPart(), fApfloat.precision()));
     }
@@ -384,7 +384,7 @@ public class ApfloatNum implements INum {
   /** {@inheritDoc} */
   @Override
   public boolean isE() {
-    return fApfloat.equals(ApfloatMath.exp(Apcomplex.ONE));
+    return fApfloat.equals(ApfloatMath.exp(new Apfloat(1, fApfloat.precision())));
   }
 
   /** {@inheritDoc} */
@@ -396,7 +396,7 @@ public class ApfloatNum implements INum {
   /** {@inheritDoc} */
   @Override
   public boolean isOne() {
-    return fApfloat.equals(Apcomplex.ONE);
+    return fApfloat.equals(Apfloat.ONE);
   }
 
   /** {@inheritDoc} */
@@ -610,7 +610,7 @@ public class ApfloatNum implements INum {
 
   @Override
   public ApcomplexNum apcomplexNumValue(long precision) {
-    return ApcomplexNum.valueOf(fApfloat, Apcomplex.ZERO);
+    return ApcomplexNum.valueOf(fApfloat, new Apfloat(0, fApfloat.precision()));
   }
 
   @Override

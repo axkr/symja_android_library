@@ -36,11 +36,11 @@ import static org.matheclipse.core.expression.F.y_;
 import static org.matheclipse.core.expression.S.Conjugate;
 import static org.matheclipse.core.expression.S.E;
 import static org.matheclipse.core.expression.S.Pi;
+import static org.matheclipse.core.expression.S.Power;
 import static org.matheclipse.core.expression.S.Times;
 import static org.matheclipse.core.expression.S.x;
 import static org.matheclipse.core.expression.S.y;
 
-import java.util.Iterator;
 import java.util.function.DoubleFunction;
 import java.util.function.DoubleUnaryOperator;
 import java.util.function.Function;
@@ -49,6 +49,7 @@ import org.apfloat.Apcomplex;
 import org.apfloat.ApcomplexMath;
 import org.apfloat.Apfloat;
 import org.apfloat.ApfloatMath;
+import org.apfloat.InfiniteExpansionException;
 import org.hipparchus.fraction.BigFraction;
 import org.hipparchus.linear.Array2DRowRealMatrix;
 import org.hipparchus.linear.ArrayRealVector;
@@ -3523,7 +3524,7 @@ public final class Arithmetic {
             return complexComplex((IComplex) base, (IComplex) exponent);
           }
         }
-      } catch (ArithmeticException aex) {
+      } catch (InfiniteExpansionException|ArithmeticException aex) {
         // Overflow occurred in computation.
         return IOFunctions.printMessage(S.General, "ovfl", F.List(), EvalEngine.get());
       }
