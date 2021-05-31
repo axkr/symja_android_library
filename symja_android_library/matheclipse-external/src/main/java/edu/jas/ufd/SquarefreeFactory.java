@@ -120,7 +120,7 @@ public class SquarefreeFactory {
      * @return squarefree factorization algorithm implementation.
      */
     public static SquarefreeAbstract<BigRational> getImplementation(BigRational fac) {
-        return new SquarefreeFieldChar0<BigRational>(fac);
+        return new SquarefreeFieldChar0Yun<BigRational>(fac);
     }
 
 
@@ -136,7 +136,7 @@ public class SquarefreeFactory {
         PolyUfdUtil.<C> ensureFieldProperty(fac);
         if (fac.isField()) {
             if (fac.characteristic().signum() == 0) {
-                return new SquarefreeFieldChar0<AlgebraicNumber<C>>(fac);
+                return new SquarefreeFieldChar0Yun<AlgebraicNumber<C>>(fac);
             }
             if (fac.isFinite()) {
                 return new SquarefreeFiniteFieldCharP<AlgebraicNumber<C>>(fac);
@@ -157,7 +157,7 @@ public class SquarefreeFactory {
     public static <C extends GcdRingElem<C>> SquarefreeAbstract<Quotient<C>> getImplementation(
                     QuotientRing<C> fac) {
         if (fac.characteristic().signum() == 0) {
-            return new SquarefreeFieldChar0<Quotient<C>>(fac);
+            return new SquarefreeFieldChar0Yun<Quotient<C>>(fac);
         }
         return new SquarefreeInfiniteFieldCharP<C>(fac);
     }
@@ -188,7 +188,7 @@ public class SquarefreeFactory {
                     GenPolynomialRing<C> fac) {
         if (fac.characteristic().signum() == 0) {
             if (fac.coFac.isField()) {
-                return new SquarefreeFieldChar0<C>(fac.coFac);
+                return new SquarefreeFieldChar0Yun<C>(fac.coFac);
             }
             return new SquarefreeRingChar0<C>(fac.coFac);
         }
@@ -231,7 +231,7 @@ public class SquarefreeFactory {
         if (ofac instanceof BigInteger) {
             ufd = new SquarefreeRingChar0<C>(fac);
         } else if (ofac instanceof BigRational) {
-            ufd = new SquarefreeFieldChar0<C>(fac);
+            ufd = new SquarefreeFieldChar0Yun<C>(fac);
         } else if (ofac instanceof ModIntegerRing) {
             ufd = new SquarefreeFiniteFieldCharP<C>(fac);
         } else if (ofac instanceof ModLongRing) {
@@ -252,7 +252,7 @@ public class SquarefreeFactory {
         } else if (fac.isField()) {
             //System.out.println("fac_field = " + fac);
             if (fac.characteristic().signum() == 0) {
-                ufd = new SquarefreeFieldChar0<C>(fac);
+                ufd = new SquarefreeFieldChar0Yun<C>(fac);
             } else {
                 if (fac.isFinite()) {
                     ufd = new SquarefreeFiniteFieldCharP<C>(fac);

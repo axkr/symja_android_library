@@ -138,8 +138,8 @@ public abstract class SquarefreeFieldCharP<C extends GcdRingElem<C>> extends Squ
     /**
      * GenPolynomial polynomial squarefree factorization.
      * @param A GenPolynomial.
-     * @return [p_1 -&gt; e_1, ..., p_k -&gt; e_k] with P = prod_{i=1,...,k}
-     *         p_i^{e_i} and p_i squarefree.
+     * @return [p_1 -&gt; e_1, ..., p_k -&gt; e_k] with A = prod_{i=1,...,k}
+     *         p_i^{e_i} and p_i squarefree and gcd(p_i, p_j) = 1, for i != j.
      */
     @Override
     public SortedMap<GenPolynomial<C>, Long> baseSquarefreeFactors(GenPolynomial<C> A) {
@@ -315,7 +315,7 @@ public abstract class SquarefreeFieldCharP<C extends GcdRingElem<C>> extends Squ
      * GenPolynomial recursive univariate polynomial squarefree factorization.
      * @param P recursive univariate GenPolynomial.
      * @return [p_1 -&gt; e_1, ..., p_k -&gt; e_k] with P = prod_{i=1,...,k}
-     *         p_i^{e_i} and p_i squarefree.
+     *         p_i^{e_i} and p_i squarefree and gcd(p_i, p_j) = 1, for i != j.
      */
     @Override
     public SortedMap<GenPolynomial<GenPolynomial<C>>, Long> recursiveUnivariateSquarefreeFactors(
@@ -488,7 +488,7 @@ public abstract class SquarefreeFieldCharP<C extends GcdRingElem<C>> extends Squ
      * GenPolynomial squarefree factorization.
      * @param P GenPolynomial.
      * @return [p_1 -&gt; e_1, ..., p_k -&gt; e_k] with P = prod_{i=1,...,k}
-     *         p_i^{e_i} and p_i squarefree.
+     *         p_i^{e_i} and p_i squarefree and gcd(p_i, p_j) = 1, for i != j.
      */
     @Override
     public SortedMap<GenPolynomial<C>, Long> squarefreeFactors(GenPolynomial<C> P) {
@@ -523,8 +523,8 @@ public abstract class SquarefreeFieldCharP<C extends GcdRingElem<C>> extends Squ
     /**
      * Coefficient squarefree factorization.
      * @param coeff coefficient.
-     * @return [p_1 -&gt; e_1, ..., p_k -&gt; e_k] with P = prod_{i=1,...,k}
-     *         p_i^{e_i} and p_i squarefree.
+     * @return [p_1 -&gt; e_1, ..., p_k -&gt; e_k] with coeff = prod_{i=1,...,k}
+     *         p_i^{e_i} and p_i squarefree and gcd(p_i, p_j) = 1, for i != j.
      */
     @SuppressWarnings("unchecked")
     @Override

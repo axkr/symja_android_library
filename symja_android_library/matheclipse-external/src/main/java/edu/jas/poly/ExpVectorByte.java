@@ -372,7 +372,7 @@ public final class ExpVectorByte extends ExpVector
      */
     @Override
     public boolean equals(Object B) {
-        if (!(B instanceof ExpVectorByte) || B == null) {
+        if (!(B instanceof ExpVectorByte)) {
             return false;
         }
         ExpVectorByte b = (ExpVectorByte) B;

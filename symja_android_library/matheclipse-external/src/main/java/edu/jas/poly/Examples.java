@@ -12,7 +12,6 @@ import edu.jas.arith.BigInteger;
 import edu.jas.arith.BigRational;
 import edu.jas.arith.ModInteger;
 import edu.jas.arith.ModIntegerRing;
-import edu.jas.kern.Scripting;
 
 
 /**
@@ -455,7 +454,7 @@ public class Examples {
      * example11. degree matrix;
      * 
      */
-    @SuppressWarnings("cast")
+    @SuppressWarnings("unchecked")
     public static void example11() {
         int n = 50;
         BigRational fac = new BigRational();
@@ -562,8 +561,7 @@ public class Examples {
 
         //Scripting.setPrecision(5);
 
-        GenPolynomialRing<BigRational> pfac 
-            = new GenPolynomialRing<BigRational>(cfraction, 1, to, vars);
+        GenPolynomialRing<BigRational> pfac = new GenPolynomialRing<BigRational>(cfraction, 1, to, vars);
         GenPolynomial<BigRational> FF0 = pfac.parse("19(6)/10");
         System.out.println("FF0 = " + FF0);
         FF0 = pfac.parse("19(6)1/10");

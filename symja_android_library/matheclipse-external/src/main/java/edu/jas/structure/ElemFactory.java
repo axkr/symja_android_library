@@ -77,6 +77,16 @@ public interface ElemFactory<C extends Element<C>> extends Serializable {
 
 
     /**
+     * Value from String.
+     * @param s String.
+     * @return a Element corresponding to s.
+     */
+    default public C valueOf(String s) {
+        return parse(s);
+    }
+
+
+    /**
      * Parse from String.
      * @param s String.
      * @return a Element corresponding to s.

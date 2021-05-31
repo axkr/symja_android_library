@@ -76,8 +76,8 @@ public class SquarefreeInfiniteAlgebraicFieldCharP<C extends GcdRingElem<C>>
     /**
      * Squarefree factors of a AlgebraicNumber.
      * @param P AlgebraicNumber.
-     * @return [p_1 -&gt; e_1,...,p_k - &gt; e_k] with P = prod_{i=1, ..., k}
-     *         p_i**e_k.
+     * @return [p_1 -&gt; e_1, ..., p_k -&gt; e_k] with P = prod_{i=1, ..., k}
+     *         p_i^{e_i} and p_i squarefree and gcd(p_i, p_j) = 1, for i != j.
      */
     @Override
     public SortedMap<AlgebraicNumber<C>, Long> squarefreeFactors(AlgebraicNumber<C> P) {

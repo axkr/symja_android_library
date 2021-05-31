@@ -373,7 +373,7 @@ public final class ExpVectorInteger extends ExpVector
      */
     @Override
     public boolean equals(Object B) {
-        if (!(B instanceof ExpVectorInteger) || B == null) {
+        if (!(B instanceof ExpVectorInteger)) {
             return false;
         }
         ExpVectorInteger b = (ExpVectorInteger) B;

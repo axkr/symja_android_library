@@ -360,7 +360,7 @@ public final class ExpVectorLong extends ExpVector
      */
     @Override
     public boolean equals(Object B) {
-        if (!(B instanceof ExpVectorLong) || B == null) {
+        if (!(B instanceof ExpVectorLong)) {
             return false;
         }
         ExpVectorLong b = (ExpVectorLong) B;

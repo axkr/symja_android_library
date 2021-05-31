@@ -126,8 +126,8 @@ public class SquarefreeFieldChar0<C extends GcdRingElem<C>> extends SquarefreeAb
     /**
      * GenPolynomial polynomial squarefree factorization.
      * @param A GenPolynomial.
-     * @return [p_1 -&gt; e_1, ..., p_k -&gt; e_k] with P = prod_{i=1,...,k}
-     *         p_i^{e_i} and p_i squarefree.
+     * @return [p_1 -&gt; e_1, ..., p_k -&gt; e_k] with A = prod_{i=1,...,k}
+     *         p_i^{e_i} and p_i squarefree and gcd(p_i, p_j) = 1, for i != j.
      */
     @Override
     public SortedMap<GenPolynomial<C>, Long> baseSquarefreeFactors(GenPolynomial<C> A) {
@@ -295,7 +295,7 @@ public class SquarefreeFieldChar0<C extends GcdRingElem<C>> extends SquarefreeAb
      * GenPolynomial recursive univariate polynomial squarefree factorization.
      * @param P recursive univariate GenPolynomial.
      * @return [p_1 -&gt; e_1, ..., p_k -&gt; e_k] with P = prod_{i=1,...,k}
-     *         p_i^{e_i} and p_i squarefree.
+     *         p_i^{e_i} and p_i squarefree and gcd(p_i, p_j) = 1, for i != j.
      */
     @Override
     public SortedMap<GenPolynomial<GenPolynomial<C>>, Long> recursiveUnivariateSquarefreeFactors(
@@ -470,7 +470,7 @@ public class SquarefreeFieldChar0<C extends GcdRingElem<C>> extends SquarefreeAb
      * GenPolynomial squarefree factorization.
      * @param P GenPolynomial.
      * @return [p_1 -&gt; e_1, ..., p_k -&gt; e_k] with P = prod_{i=1,...,k}
-     *         p_i^{e_i} and p_i squarefree.
+     *         p_i^{e_i} and p_i squarefree and gcd(p_i, p_j) = 1, for i != j.
      */
     @Override
     public SortedMap<GenPolynomial<C>, Long> squarefreeFactors(GenPolynomial<C> P) {
@@ -510,7 +510,7 @@ public class SquarefreeFieldChar0<C extends GcdRingElem<C>> extends SquarefreeAb
      * Coefficients squarefree factorization.
      * @param P coefficient.
      * @return [p_1 -&gt; e_1, ..., p_k -&gt; e_k] with P = prod_{i=1,...,k}
-     *         p_i^{e_i} and p_i squarefree.
+     *         p_i^{e_i} and p_i squarefree and gcd(p_i, p_j) = 1, for i != j.
      */
     @Override
     public SortedMap<C, Long> squarefreeFactors(C P) {
