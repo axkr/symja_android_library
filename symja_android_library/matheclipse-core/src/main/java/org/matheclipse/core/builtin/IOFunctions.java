@@ -841,7 +841,9 @@ public class IOFunctions {
     "zzprime",
     "Maximum Prime limit `1` exceeded.", //
     "zzregex",
-    "Regex expression `1` error message: `2`." //
+    "Regex expression `1` error message: `2`.", //
+    "zzapfloatcld",
+    "Complete loss of accurate digits (apfloat)." //
   };
 
   public static void initialize() {

@@ -50,6 +50,7 @@ import org.apfloat.ApcomplexMath;
 import org.apfloat.Apfloat;
 import org.apfloat.ApfloatMath;
 import org.apfloat.InfiniteExpansionException;
+import org.apfloat.LossOfPrecisionException;
 import org.apfloat.OverflowException;
 import org.hipparchus.fraction.BigFraction;
 import org.hipparchus.linear.Array2DRowRealMatrix;
@@ -3525,6 +3526,9 @@ public final class Arithmetic {
             return complexComplex((IComplex) base, (IComplex) exponent);
           }
         }
+      } catch (LossOfPrecisionException lpe) {
+        // Complete loss of accurate digits (apfloat).
+        return IOFunctions.printMessage(S.General, "zzapfloatcld", F.List(), EvalEngine.get());
       } catch (OverflowException | InfiniteExpansionException | ArithmeticException aex) {
         // Overflow occurred in computation.
         return IOFunctions.printMessage(S.General, "ovfl", F.List(), EvalEngine.get());
