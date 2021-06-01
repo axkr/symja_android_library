@@ -454,6 +454,9 @@ public class ApcomplexNum implements IComplexNum {
   @Override
   public String toString() {
     String str = fApcomplex.toString();
+    if (FEConfig.EXPLICIT_TIMES_OPERATOR) {
+      return str.replace("e", "E");
+    }
     int index = str.indexOf('e');
     if (index > 0) {
       String exponentStr1 = str.substring(++index);

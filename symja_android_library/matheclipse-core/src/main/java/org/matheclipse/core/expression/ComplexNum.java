@@ -15,6 +15,7 @@ import org.matheclipse.core.basic.Config;
 import org.matheclipse.core.builtin.IOFunctions;
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.exception.ArgumentTypeException;
+import org.matheclipse.core.form.DoubleToMMA;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IComplex;
 import org.matheclipse.core.interfaces.IComplexNum;
@@ -796,7 +797,30 @@ public class ComplexNum implements IComplexNum {
 
   @Override
   public String toString() {
-    return fComplex.toString();
+    if (FEConfig.EXPLICIT_TIMES_OPERATOR) {
+      return fComplex.toString();
+    }
+    StringBuilder buf = new StringBuilder();
+    buf.append("(");
+    double realPart = fComplex.getReal();
+    double imaginaryPart = fComplex.getImaginary();
+    if (realPart != 0.0 || imaginaryPart == 0.0) {
+      DoubleToMMA.doubleToMMA(buf, realPart, 5, 7);
+    }
+    if (imaginaryPart != 0.0) {
+      if (imaginaryPart < 0.0) {
+        buf.append("-I*");
+        imaginaryPart *= (-1);
+      } else {
+        if (realPart != 0.0) {
+          buf.append("+");
+        }
+        buf.append("I*");
+      }
+      DoubleToMMA.doubleToMMA(buf, imaginaryPart, 5, 7);
+    }
+    buf.append(")");
+    return buf.toString();
   }
 
   /**

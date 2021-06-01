@@ -27,14 +27,14 @@ public class NumberTest extends TestCase {
             new BigInteger("3802951800684688204490109616127"),
             new BigInteger("1267650600228229401496703205376"));
     ComplexNum cn = f.complexNumValue();
-    assertEquals(cn.toString(), "(3.0, 0.0)");
+    assertEquals(cn.toString(), "(3.0)");
     // 2535301200456458802993406410751/1267650600228229401496703205376
     f =
         AbstractFractionSym.valueOf(
             new BigInteger("2535301200456458802993406410751"),
             new BigInteger("1267650600228229401496703205376"));
     cn = f.complexNumValue();
-    assertEquals(cn.toString(), "(2.0, 0.0)");
+    assertEquals(cn.toString(), "(2.0)");
   }
 
   public void testPower() {

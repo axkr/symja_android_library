@@ -11,6 +11,7 @@ import org.hipparchus.util.MathUtils;
 import org.matheclipse.core.basic.Config;
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.exception.ArgumentTypeException;
+import org.matheclipse.core.form.DoubleToMMA;
 import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.interfaces.IInteger;
 import org.matheclipse.core.interfaces.INum;
@@ -761,6 +762,11 @@ public class Num implements INum {
   /** {@inheritDoc} */
   @Override
   public String toString() {
-    return Double.toString(fDouble);
+    if (FEConfig.EXPLICIT_TIMES_OPERATOR) {
+      return Double.toString(fDouble);
+    }
+    StringBuilder buf = new StringBuilder();
+    DoubleToMMA.doubleToMMA(buf, fDouble, 5, 7);
+    return buf.toString();
   }
 }

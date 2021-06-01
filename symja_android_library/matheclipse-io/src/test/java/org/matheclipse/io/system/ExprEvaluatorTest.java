@@ -94,7 +94,7 @@ public class ExprEvaluatorTest extends TestCase {
       // (the "N()" function input must be written as upper case
       // character)
       result = util.eval("N(sinh(5))");
-      assertEquals("74.20321057778875", result.toString());
+      assertEquals("74.20321", result.toString());
 
       // define a function with a recursive factorial function definition.
       // Note: fac(0) is the stop condition.
@@ -197,7 +197,7 @@ public class ExprEvaluatorTest extends TestCase {
       util.defineVariable("x", 1.0);
       util.defineVariable("y", 1.0);
       IExpr expr = util.eval("If(x*x+y*y==0,1,Sin(x*x+y*y)/(x*x+y*y))");
-      assertEquals("0.45464871341284085", expr.toString());
+      assertEquals("0.454649", expr.toString());
 
     } catch (SyntaxError e) {
       // catch Symja parser errors here
@@ -222,7 +222,7 @@ public class ExprEvaluatorTest extends TestCase {
     try {
       ExprEvaluator util = new ExprEvaluator();
       IExpr expr = util.eval("1.2 * 1.5");
-      assertEquals("1.7999999999999998", expr.toString());
+      assertEquals("1.8", expr.toString());
 
       StringWriter buf = new StringWriter();
       OutputFormFactory.get(util.getEvalEngine().isRelaxedSyntax()).convert(buf, expr);
@@ -235,7 +235,7 @@ public class ExprEvaluatorTest extends TestCase {
       assertEquals("1.8", buf.toString());
 
       expr = util.eval("10.0^-15");
-      assertEquals("1.0E-15", expr.toString());
+      assertEquals("1.00000*10^-15", expr.toString());
 
       buf = new StringWriter();
       OutputFormFactory.get(util.getEvalEngine().isRelaxedSyntax()).convert(buf, expr);
