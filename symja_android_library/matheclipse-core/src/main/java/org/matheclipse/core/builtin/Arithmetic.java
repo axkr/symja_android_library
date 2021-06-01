@@ -49,9 +49,11 @@ import org.apfloat.Apcomplex;
 import org.apfloat.ApcomplexMath;
 import org.apfloat.Apfloat;
 import org.apfloat.ApfloatMath;
+import org.apfloat.ApfloatRuntimeException;
 import org.apfloat.InfiniteExpansionException;
 import org.apfloat.LossOfPrecisionException;
 import org.apfloat.OverflowException;
+import org.apfloat.internal.BackingStorageException;
 import org.hipparchus.fraction.BigFraction;
 import org.hipparchus.linear.Array2DRowRealMatrix;
 import org.hipparchus.linear.ArrayRealVector;
@@ -1804,6 +1806,11 @@ public final class Arithmetic {
           return unaryOperator(a);
         }
         return binaryOperator(ast, a, ast.arg2());
+      } catch (ApfloatRuntimeException arex) {
+        if (FEConfig.SHOW_STACKTRACE) {
+          arex.printStackTrace();
+        }
+        return engine.printMessage(ast.topHead(), arex);
       } catch (ValidateException ve) {
         if (FEConfig.SHOW_STACKTRACE) {
           ve.printStackTrace();
@@ -3526,7 +3533,7 @@ public final class Arithmetic {
             return complexComplex((IComplex) base, (IComplex) exponent);
           }
         }
-      } catch (LossOfPrecisionException lpe) {
+      } catch (BackingStorageException | LossOfPrecisionException lpe) {
         // Complete loss of accurate digits (apfloat).
         return IOFunctions.printMessage(S.General, "zzapfloatcld", F.List(), EvalEngine.get());
       } catch (OverflowException | InfiniteExpansionException | ArithmeticException aex) {
