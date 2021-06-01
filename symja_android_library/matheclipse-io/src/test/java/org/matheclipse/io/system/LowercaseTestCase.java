@@ -3369,6 +3369,30 @@ public class LowercaseTestCase extends AbstractTestCase {
         "(3+2*x)/((1+x)*(2+x))");
   }
 
+  public void testCarlsonRC() {
+    check(
+        "CarlsonRC(4., 5)", //
+        "0.463648");
+  }
+
+  public void testCarlsonRD() {
+    check(
+        "CarlsonRD(2., 3.,5.0)", //
+        "0.133211");
+  }
+
+  public void testCarlsonRF() {
+    check(
+        "CarlsonRF(1.,2.,3.)", //
+        "0.726946");
+  }
+
+  public void testCarlsonRJ() {
+    check(
+        "CarlsonRJ(2., 3., 5., 7.2)", //
+        "0.104459");
+  }
+
   public void testCarmichaelLambda() {
     check(
         "CarmichaelLambda(-n)", //

@@ -1255,6 +1255,15 @@ public class S {
   public static final IBuiltInSymbol CancelButton =
       F.initFinalSymbol("CancelButton", ID.CancelButton);
 
+  public static final IBuiltInSymbol CarlsonRC = F.initFinalSymbol("CarlsonRC", ID.CarlsonRC);
+
+  public static final IBuiltInSymbol CarlsonRD = F.initFinalSymbol("CarlsonRD", ID.CarlsonRD);
+
+  public static final IBuiltInSymbol CarlsonRF = F.initFinalSymbol("CarlsonRF", ID.CarlsonRF);
+  
+  public static final IBuiltInSymbol CarlsonRG = F.initFinalSymbol("CarlsonRG", ID.CarlsonRG);
+  
+  public static final IBuiltInSymbol CarlsonRJ = F.initFinalSymbol("CarlsonRJ", ID.CarlsonRJ);
   /**
    * CarmichaelLambda(n) - the Carmichael function of `n`
    *
@@ -4238,8 +4247,9 @@ public class S {
    *     documentation</a>
    */
   public static final IBuiltInSymbol Import = F.initFinalSymbol("Import", ID.Import);
-  
-  public static final IBuiltInSymbol ImportString = F.initFinalSymbol("ImportString", ID.ImportString);
+
+  public static final IBuiltInSymbol ImportString =
+      F.initFinalSymbol("ImportString", ID.ImportString);
 
   /**
    * In(k) - gives the `k`th line of input.
