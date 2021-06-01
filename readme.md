@@ -95,7 +95,7 @@ To get an idea of the kinds of expressions Symja handles, see the [JUnit tests i
 
 > [JavaForm((x+1)^2+(x+1)^3, Float)](http://matheclipse.org/input?i=JavaForm%28%28x%2B1%29%5E2%2B%28x%2B1%29%5E3%2C%20Float%29)
 
-> [ToExpression("\\frac{x}{\\sqrt{5}}", TeXForm)](http://matheclipse.org/input?i=ToExpression%28%22%5C%5C%5C%5Cfrac%7Bx%7D%7B%5C%5C%5C%5Csqrt%7B5%7D%7D%22%2C%20TeXForm%29)
+> [ToExpression("\\\\frac{x}{\\\\sqrt{5}}", TeXForm)](http://matheclipse.org/input?i=ToExpression%28%22%5C%5C%5C%5Cfrac%7Bx%7D%7B%5C%5C%5C%5Csqrt%7B5%7D%7D%22%2C%20TeXForm%29)
 
 A [Java usage example](https://github.com/axkr/symja_android_library/wiki/Java-usage):
 
