@@ -48,7 +48,7 @@
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
 		<endorsed.dir>${project.build.directory}/endorsed</endorsed.dir>
 		<maven.compiler.source>1.8</maven.compiler.source>
-		<maven.compiler.target>1.8</maven.compiler.target> 
+		<maven.compiler.target>1.8</maven.compiler.target>
 		<symja.version>2.0.0-SNAPSHOT</symja.version>
 		<hipparchus.version>2.0-SNAPSHOT</hipparchus.version>
 		<timestamp>${maven.build.timestamp}</timestamp>
@@ -228,13 +228,14 @@
 
 	<repositories>
 		<repository>
-			<id>sonatype</id>
-			<url>https://oss.sonatype.org/content/groups/public/</url>
-		</repository>
-		<repository>
 			<id>orekit</id>
 			<url>https://packages.orekit.org/repository/maven-public/</url>
 		</repository>
+		<repository>
+			<id>sonatype</id>
+			<url>https://oss.sonatype.org/content/groups/public/</url>
+		</repository>
+
 	</repositories>
 
 </project>

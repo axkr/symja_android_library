@@ -1,6 +1,7 @@
 package org.matheclipse.core.builtin.functions;
 
 import org.hipparchus.complex.Complex;
+import org.hipparchus.special.elliptic.CarlsonEllipticIntegral;
 import org.hipparchus.util.FastMath;
 import org.matheclipse.core.basic.Config;
 import org.matheclipse.core.eval.exception.ArgumentTypeException;
@@ -33,29 +34,30 @@ public class EllipticIntegralsJS {
   // Carlson symmetric integrals
 
   public static Complex carlsonRC(Complex x, Complex y) {
-
-    if (Complex.equals(x, y, Config.SPECIAL_FUNCTIONS_TOLERANCE)) {
-      return x.sqrt().reciprocal();
-    }
-    return x.sqrt()
-        .divide(y.sqrt())
-        .acos()
-        .divide(y.sqrt().multiply(Complex.ONE.subtract(x.divide(y)).sqrt()));
+    return CarlsonEllipticIntegral.rC(x, y);
+    //    if (Complex.equals(x, y, Config.SPECIAL_FUNCTIONS_TOLERANCE)) {
+    //      return x.sqrt().reciprocal();
+    //    }
+    //    return x.sqrt()
+    //        .divide(y.sqrt())
+    //        .acos()
+    //        .divide(y.sqrt().multiply(Complex.ONE.subtract(x.divide(y)).sqrt()));
   }
 
   public static Complex carlsonRC(double x, double y) {
-    if (x < 0 || y < 0) {
-      return carlsonRC(new Complex(x), new Complex(y));
-    }
-    if (x == y) {
-      return new Complex(1 / x).sqrt();
-    }
-
-    if (x < y) {
-      return new Complex(Math.acos(Math.sqrt(x / y)) / Math.sqrt(y - x));
-    }
-
-    return new Complex(FastMath.acosh(Math.sqrt(x / y)) / Math.sqrt(x - y));
+    return CarlsonEllipticIntegral.rC(Complex.valueOf(x), Complex.valueOf(y));
+    //    if (x < 0 || y < 0) {
+    //      return carlsonRC(new Complex(x), new Complex(y));
+    //    }
+    //    if (x == y) {
+    //      return new Complex(1 / x).sqrt();
+    //    }
+    //
+    //    if (x < y) {
+    //      return new Complex(Math.acos(Math.sqrt(x / y)) / Math.sqrt(y - x));
+    //    }
+    //
+    //    return new Complex(FastMath.acosh(Math.sqrt(x / y)) / Math.sqrt(x - y));
   }
 
   public static Complex carlsonRD(Complex x, Complex y, Complex z) {
@@ -67,10 +69,11 @@ public class EllipticIntegralsJS {
   }
 
   public static Complex carlsonRF(Complex x, Complex y, Complex z) {
-    return carlsonRF(x, y, z, Config.SPECIAL_FUNCTIONS_TOLERANCE);
+    return CarlsonEllipticIntegral.rF(x, y, z);
+    //    return carlsonRF(x, y, z, Config.SPECIAL_FUNCTIONS_TOLERANCE);
   }
 
-  public static Complex carlsonRF(Complex x, Complex y, Complex z, double tolerance) {
+  private static Complex carlsonRF(Complex x, Complex y, Complex z, double tolerance) {
 
     // if ( isComplex(x) || isComplex(y) || isComplex(z) ) {
     // if (y.getImaginary()==0.0) {
@@ -131,10 +134,11 @@ public class EllipticIntegralsJS {
   }
 
   public static Complex carlsonRF(double x, double y, double z) {
-    return carlsonRF(x, y, z, Config.SPECIAL_FUNCTIONS_TOLERANCE);
+    return CarlsonEllipticIntegral.rF(Complex.valueOf(x), Complex.valueOf(y), Complex.valueOf(z));
+    //    return carlsonRF(x, y, z, Config.SPECIAL_FUNCTIONS_TOLERANCE);
   }
 
-  public static Complex carlsonRF(double x, double y, double z, double tolerance) {
+  private static Complex carlsonRF(double x, double y, double z, double tolerance) {
     if (y == z) {
       return carlsonRC(x, y);
     }
@@ -188,8 +192,7 @@ public class EllipticIntegralsJS {
             / 9240.0);
   }
 
-  private static Complex carlsonRG(Complex x, Complex y, Complex z) {
-
+  private static Complex carlsonRG(Complex x, Complex y, Complex z) { 
     Complex t1 = carlsonRF(x, y, z).multiply(z);
     Complex t2 =
         x.subtract(z).multiply(y.subtract(z)).multiply(carlsonRD(x, y, z)).multiply(-1.0 / 3.0);
@@ -199,10 +202,11 @@ public class EllipticIntegralsJS {
   }
 
   public static Complex carlsonRJ(Complex x, Complex y, Complex z, Complex p) {
-    return carlsonRJ(x, y, z, p, Config.SPECIAL_FUNCTIONS_TOLERANCE);
+    return CarlsonEllipticIntegral.rJ(x, y, z, p);
+    //    return carlsonRJ(x, y, z, p, Config.SPECIAL_FUNCTIONS_TOLERANCE);
   }
 
-  public static Complex carlsonRJ(Complex x, Complex y, Complex z, Complex p, double tolerance) {
+  private static Complex carlsonRJ(Complex x, Complex y, Complex z, Complex p, double tolerance) {
 
     // if ( isComplex(x) || isComplex(y) || isComplex(z) || isComplex(p) ) {
 
@@ -286,10 +290,12 @@ public class EllipticIntegralsJS {
   }
 
   public static Complex carlsonRJ(double x, double y, double z, double p) {
-    return carlsonRJ(x, y, z, p, Config.SPECIAL_FUNCTIONS_TOLERANCE);
+    return CarlsonEllipticIntegral.rJ(
+        Complex.valueOf(x), Complex.valueOf(y), Complex.valueOf(z), Complex.valueOf(p));
+    //    return carlsonRJ(x, y, z, p, Config.SPECIAL_FUNCTIONS_TOLERANCE);
   }
 
-  public static Complex carlsonRJ(double x, double y, double z, double p, double tolerance) {
+  private static Complex carlsonRJ(double x, double y, double z, double p, double tolerance) {
     // adapted from mpmath / elliptic.py
 
     double xm = x;
