@@ -1,21 +1,16 @@
 package org.matheclipse.core.builtin;
 
 import org.hipparchus.complex.Complex;
-import org.matheclipse.core.basic.Config;
 import org.matheclipse.core.builtin.functions.EllipticFunctionsJS;
 import org.matheclipse.core.builtin.functions.EllipticIntegralsJS;
-import org.matheclipse.core.builtin.functions.HypergeometricJS;
 import org.matheclipse.core.convert.Object2Expr;
-import org.matheclipse.core.eval.EvalAttributes;
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.exception.ValidateException;
 import org.matheclipse.core.eval.interfaces.AbstractFunctionEvaluator;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.expression.S;
 import org.matheclipse.core.interfaces.IAST;
-import org.matheclipse.core.interfaces.IASTMutable;
 import org.matheclipse.core.interfaces.IExpr;
-import org.matheclipse.core.interfaces.INum;
 import org.matheclipse.core.interfaces.IRational;
 import org.matheclipse.core.interfaces.ISymbol;
 import org.matheclipse.core.reflection.system.rules.JacobiSCRules;
@@ -33,8 +28,9 @@ public class EllipticIntegrals {
       S.CarlsonRC.setEvaluator(new CarlsonRC());
       S.CarlsonRD.setEvaluator(new CarlsonRD());
       S.CarlsonRF.setEvaluator(new CarlsonRF());
+      S.CarlsonRG.setEvaluator(new CarlsonRG());
       S.CarlsonRJ.setEvaluator(new CarlsonRJ());
-      
+
       S.EllipticE.setEvaluator(new EllipticE());
       S.EllipticF.setEvaluator(new EllipticF());
       S.EllipticK.setEvaluator(new EllipticK());
@@ -64,6 +60,26 @@ public class EllipticIntegrals {
     public IExpr evaluate(IAST ast, EvalEngine engine) {
       IExpr x = ast.arg1();
       IExpr y = ast.arg2();
+      if (x.equals(y)) {
+        IExpr reCondition = S.LessEqual.of(engine, F.Re(x), F.C0);
+        IExpr imCondition = S.Equal.of(engine, F.Im(x), F.C0);
+        if (reCondition.isTrue() && imCondition.isTrue()) {
+          return F.CComplexInfinity;
+        }
+        if (reCondition.isFalse() || imCondition.isFalse()) {
+          // 1 / Sqrt(x)
+          return F.Power.of(engine, x, F.CN1D2);
+        }
+        return F.Piecewise(
+            F.List(
+                F.List(
+                    F.CComplexInfinity, F.And(F.LessEqual(F.Re(x), F.C0), F.Equal(F.Im(x), F.C0)))),
+            F.Power(x, F.CN1D2));
+      }
+      if (y.isZero()) {
+        return F.CComplexInfinity;
+      }
+
       if (engine.isDoubleMode()) {
         try {
           Complex xc = x.evalComplex();
@@ -139,16 +155,61 @@ public class EllipticIntegrals {
       IExpr x = ast.arg1();
       IExpr y = ast.arg2();
       IExpr z = ast.arg3();
-      //      if (c.isList()) {
-      //        // thread elementwise over list in arg3
-      //        return ((IAST) c).mapThread(ast.setAtCopy(3, F.Slot1), 3);
-      //      }
+      if (x.equals(y) && x.equals(z)) {
+        // 1 / Sqrt(x)
+        return F.Power.of(engine, x, F.CN1D2);
+      }
       if (engine.isDoubleMode()) {
         try {
           Complex xc = x.evalComplex();
           Complex yc = y.evalComplex();
           Complex zc = z.evalComplex();
           return F.complexNum(EllipticIntegralsJS.carlsonRF(xc, yc, zc));
+        } catch (ValidateException ve) {
+          if (FEConfig.SHOW_STACKTRACE) {
+            ve.printStackTrace();
+          }
+        } catch (RuntimeException rex) {
+          return engine.printMessage(ast.topHead(), rex);
+        }
+      }
+      return F.NIL;
+    }
+
+    @Override
+    public int[] expectedArgSize(IAST ast) {
+      return ARGS_3_3;
+    }
+
+    @Override
+    public void setUp(final ISymbol newSymbol) {
+      newSymbol.setAttributes(ISymbol.NUMERICFUNCTION);
+      super.setUp(newSymbol);
+    }
+  }
+
+  private static class CarlsonRG extends AbstractFunctionEvaluator {
+
+    @Override
+    public IExpr evaluate(IAST ast, EvalEngine engine) {
+      IExpr x = ast.arg1();
+      IExpr y = ast.arg2();
+      IExpr z = ast.arg3();
+      if (x.equals(y)) {
+        if (x.equals(z)) {
+          // 1 / Sqrt(x)
+          return F.Power.of(engine, x, F.CN1D2);
+        }
+        // (1/2) * (Sqrt(z) + x*CarlsonRF(x,x,z)) 
+        return S.Times.of(engine, F.C1D2, F.Plus(F.Sqrt(z), F.Times(x, F.CarlsonRF(x,x,z))));
+ 
+      }
+      if (engine.isDoubleMode()) {
+        try {
+          Complex xc = x.evalComplex();
+          Complex yc = y.evalComplex();
+          Complex zc = z.evalComplex();
+          return F.complexNum(EllipticIntegralsJS.carlsonRG(xc, yc, zc));
         } catch (ValidateException ve) {
           if (FEConfig.SHOW_STACKTRACE) {
             ve.printStackTrace();

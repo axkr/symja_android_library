@@ -192,7 +192,7 @@ public class EllipticIntegralsJS {
             / 9240.0);
   }
 
-  private static Complex carlsonRG(Complex x, Complex y, Complex z) { 
+  public static Complex carlsonRG(Complex x, Complex y, Complex z) { 
     Complex t1 = carlsonRF(x, y, z).multiply(z);
     Complex t2 =
         x.subtract(z).multiply(y.subtract(z)).multiply(carlsonRD(x, y, z)).multiply(-1.0 / 3.0);

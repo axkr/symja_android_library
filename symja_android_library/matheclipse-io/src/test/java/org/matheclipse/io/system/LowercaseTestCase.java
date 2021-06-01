@@ -3371,6 +3371,12 @@ public class LowercaseTestCase extends AbstractTestCase {
 
   public void testCarlsonRC() {
     check(
+        "CarlsonRC(y,y)", //
+        "Piecewise({{ComplexInfinity,Re(y)<=0&&Im(y)==0}},1/Sqrt(y))");
+    check(
+        "CarlsonRC(42,42)", //
+        "1/Sqrt(42)");
+    check(
         "CarlsonRC(4., 5)", //
         "0.463648");
   }
@@ -3383,8 +3389,20 @@ public class LowercaseTestCase extends AbstractTestCase {
 
   public void testCarlsonRF() {
     check(
+        "CarlsonRF(x,x,x)", //
+        "1/Sqrt(x)");
+    check(
         "CarlsonRF(1.,2.,3.)", //
         "0.726946");
+  }
+
+  public void testCarlsonRG() {
+    check(
+        "CarlsonRG(x,x,y)", //
+        "1/2*(Sqrt(y)+x*CarlsonRF(x,x,y))");
+    check(
+        "CarlsonRG(3.,5.,11.0)", //
+        "2.48078");
   }
 
   public void testCarlsonRJ() {

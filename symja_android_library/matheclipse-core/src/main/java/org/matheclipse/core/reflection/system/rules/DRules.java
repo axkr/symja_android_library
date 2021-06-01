@@ -13,7 +13,7 @@ public interface DRules {
    * <li>index 0 - number of equal rules in <code>RULES</code></li>
 	 * </ul>
 	 */
-  final public static int[] SIZES = { 0, 131 };
+  final public static int[] SIZES = { 0, 135 };
 
   final public static IAST RULES = List(
     IInit(D, SIZES),
@@ -395,6 +395,18 @@ public interface DRules {
     // D(BesselY(f_,g_),x_?NotListQ):=1/2*(BesselY(-1+f,g)-BesselY(1+f,g))*D(g,x)+D(f,x)*Derivative(1,0)[BesselY][f,g]
     ISetDelayed(D(BesselY(f_,g_),PatternTest(x_,NotListQ)),
       Plus(Times(C1D2,Subtract(BesselY(Plus(CN1,f),g),BesselY(Plus(C1,f),g)),D(g,x)),Times(D(f,x),$($(Derivative(C1,C0),BesselY),f,g)))),
+    // D(CarlsonRC(f_,g_),x_?NotListQ):=Piecewise({{(-CarlsonRC(f,g)+1/Sqrt(f))/(2*(f-g)),f!=g},{-1/(6*f^(3/2)),f==g&&(Im(g)!=0||Re(g)>0)}},ComplexInfinity)*D(f,x)+Piecewise({{(-Sqrt(f)/g+CarlsonRC(f,g))/(2*(f-g)),f!=g},{-1/(3*f^(3/2)),f==g&&(Im(g)!=0||Re(g)>0)}},ComplexInfinity)*D(g,x)
+    ISetDelayed(D(CarlsonRC(f_,g_),PatternTest(x_,NotListQ)),
+      Plus(Times(Piecewise(List(List(Times(Plus(Negate(CarlsonRC(f,g)),Power(f,CN1D2)),Power(Times(C2,Subtract(f,g)),CN1)),Unequal(f,g)),List(Negate(Power(Times(C6,Power(f,QQ(3L,2L))),CN1)),And(Equal(f,g),Or(Unequal(Im(g),C0),Greater(Re(g),C0))))),CComplexInfinity),D(f,x)),Times(Piecewise(List(List(Times(Power(Times(C2,Subtract(f,g)),CN1),Plus(Times(CN1,Sqrt(f),Power(g,CN1)),CarlsonRC(f,g))),Unequal(f,g)),List(Negate(Power(Times(C3,Power(f,QQ(3L,2L))),CN1)),And(Equal(f,g),Or(Unequal(Im(g),C0),Greater(Re(g),C0))))),CComplexInfinity),D(g,x)))),
+    // D(CarlsonRD(f_,g_,h_),x_?NotListQ):=-1/6*CarlsonRD(g,h,f)*D(f,x)-1/6*CarlsonRD(f,h,g)*D(g,x)-1/6*CarlsonRD(f,g,h)*D(h,x)
+    ISetDelayed(D(CarlsonRD(f_,g_,h_),PatternTest(x_,NotListQ)),
+      Plus(Times(QQ(-1L,6L),CarlsonRD(g,h,f),D(f,x)),Times(QQ(-1L,6L),CarlsonRD(f,h,g),D(g,x)),Times(QQ(-1L,6L),CarlsonRD(f,g,h),D(h,x)))),
+    // D(CarlsonRF(f_,g_,h_),x_?NotListQ):=-1/6*CarlsonRD(g,h,f)*D(f,x)-1/6*CarlsonRD(f,h,g)*D(g,x)-1/6*CarlsonRD(f,g,h)*D(h,x)
+    ISetDelayed(D(CarlsonRF(f_,g_,h_),PatternTest(x_,NotListQ)),
+      Plus(Times(QQ(-1L,6L),CarlsonRD(g,h,f),D(f,x)),Times(QQ(-1L,6L),CarlsonRD(f,h,g),D(g,x)),Times(QQ(-1L,6L),CarlsonRD(f,g,h),D(h,x)))),
+    // D(CarlsonRG(f_,g_,h_),x_?NotListQ):=1/12*(-f*CarlsonRD(g,h,f)+3*CarlsonRF(f,g,h))*D(f,x)+1/12*(-g*CarlsonRD(f,h,g)+3*CarlsonRF(f,g,h))*D(g,x)+1/12*(-h*CarlsonRD(f,g,h)+3*CarlsonRF(f,g,h))*D(h,x)
+    ISetDelayed(D(CarlsonRG(f_,g_,h_),PatternTest(x_,NotListQ)),
+      Plus(Times(QQ(1L,12L),Plus(Times(CN1,f,CarlsonRD(g,h,f)),Times(C3,CarlsonRF(f,g,h))),D(f,x)),Times(QQ(1L,12L),Plus(Times(CN1,g,CarlsonRD(f,h,g)),Times(C3,CarlsonRF(f,g,h))),D(g,x)),Times(QQ(1L,12L),Plus(Times(CN1,h,CarlsonRD(f,g,h)),Times(C3,CarlsonRF(f,g,h))),D(h,x)))),
     // D(PolyLog(f_,g_),x_?NotListQ):=(D(g,x)*PolyLog(-1+f,g))/g+D(f,x)*Derivative(1,0)[PolyLog][f,g]
     ISetDelayed(D(PolyLog(f_,g_),PatternTest(x_,NotListQ)),
       Plus(Times(Power(g,CN1),D(g,x),PolyLog(Plus(CN1,f),g)),Times(D(f,x),$($(Derivative(C1,C0),PolyLog),f,g)))),

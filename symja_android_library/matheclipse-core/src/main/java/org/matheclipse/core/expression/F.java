@@ -2235,6 +2235,22 @@ public class F extends S {
     return new AST0(CancelButton);
   }
 
+  public static IAST CarlsonRC(final IExpr a0, final IExpr a1) {
+    return new AST2(CarlsonRC, a0, a1);
+  }
+
+  public static IAST CarlsonRD(final IExpr a0, final IExpr a1, final IExpr a2) {
+    return new AST3(CarlsonRD, a0, a1, a2);
+  }
+
+  public static IAST CarlsonRF(final IExpr a0, final IExpr a1, final IExpr a2) {
+    return new AST3(CarlsonRF, a0, a1, a2);
+  }
+
+  public static IAST CarlsonRG(final IExpr a0, final IExpr a1, final IExpr a2) {
+    return new AST3(CarlsonRG, a0, a1, a2);
+  }
+
   public static IAST CarmichaelLambda(final IExpr a0) {
     return new AST1(CarmichaelLambda, a0);
   }

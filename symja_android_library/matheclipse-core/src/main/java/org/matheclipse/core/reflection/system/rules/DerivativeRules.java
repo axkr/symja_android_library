@@ -13,7 +13,7 @@ public interface DerivativeRules {
    * <li>index 0 - number of equal rules in <code>RULES</code></li>
 	 * </ul>
 	 */
-  final public static int[] SIZES = { 0, 97 };
+  final public static int[] SIZES = { 0, 105 };
 
   final public static IAST RULES = List(
     IInit(Derivative, SIZES),
@@ -233,6 +233,30 @@ public interface DerivativeRules {
     // Derivative(0,1)[BesselK]:=1/2*(-BesselK(-1+#1,#2)-BesselK(1+#1,#2))&
     ISetDelayed($(Derivative(C0,C1),BesselK),
       Function(Times(C1D2,Subtract(Negate(BesselK(Plus(CN1,Slot1),Slot2)),BesselK(Plus(C1,Slot1),Slot2))))),
+    // Derivative(1,0)[CarlsonRC]:=Piecewise({{(-CarlsonRC(#1,#2)+1/Sqrt(#1))/(2*(#1-#2)),#1!=#2},{-1/(6*#1^(3/2)),#1==#2&&(Im(#2)!=0||Re(#2)>0)}},ComplexInfinity)&
+    ISetDelayed($(Derivative(C1,C0),CarlsonRC),
+      Function(Piecewise(List(List(Times(Plus(Negate(CarlsonRC(Slot1,Slot2)),Power(Slot1,CN1D2)),Power(Times(C2,Subtract(Slot1,Slot2)),CN1)),Unequal(Slot1,Slot2)),List(Negate(Power(Times(C6,Power(Slot1,QQ(3L,2L))),CN1)),And(Equal(Slot1,Slot2),Or(Unequal(Im(Slot2),C0),Greater(Re(Slot2),C0))))),CComplexInfinity))),
+    // Derivative(0,1)[CarlsonRC]:=Piecewise({{(CarlsonRC(#1,#2)-Sqrt(#1)/#2)/(2*(#1-#2)),#1!=#2},{-1/(3*#1^(3/2)),#1==#2&&(Im(#2)!=0||Re(#2)>0)}},ComplexInfinity)&
+    ISetDelayed($(Derivative(C0,C1),CarlsonRC),
+      Function(Piecewise(List(List(Times(Power(Times(C2,Subtract(Slot1,Slot2)),CN1),Plus(CarlsonRC(Slot1,Slot2),Times(CN1,Sqrt(Slot1),Power(Slot2,CN1)))),Unequal(Slot1,Slot2)),List(Negate(Power(Times(C3,Power(Slot1,QQ(3L,2L))),CN1)),And(Equal(Slot1,Slot2),Or(Unequal(Im(Slot2),C0),Greater(Re(Slot2),C0))))),CComplexInfinity))),
+    // Derivative(1,0,0)[CarlsonRF]:=-CarlsonRD(#2,#3,#1)/6&
+    ISetDelayed($(Derivative(C1,C0,C0),CarlsonRF),
+      Function(Times(QQ(-1L,6L),CarlsonRD(Slot2,Slot(C3),Slot1)))),
+    // Derivative(0,1,0)[CarlsonRF]:=-CarlsonRD(#1,#3,#2)/6&
+    ISetDelayed($(Derivative(C0,C1,C0),CarlsonRF),
+      Function(Times(QQ(-1L,6L),CarlsonRD(Slot1,Slot(C3),Slot2)))),
+    // Derivative(0,0,1)[CarlsonRF]:=-CarlsonRD(#1,#2,#3)/6&
+    ISetDelayed($(Derivative(C0,C0,C1),CarlsonRF),
+      Function(Times(QQ(-1L,6L),CarlsonRD(Slot1,Slot2,Slot(C3))))),
+    // Derivative(1,0,0)[CarlsonRG]:=CarlsonRF(#1,#2,#3)/4-1/12*CarlsonRD(#2,#3,#1)*#1&
+    ISetDelayed($(Derivative(C1,C0,C0),CarlsonRG),
+      Function(Plus(Times(C1D4,CarlsonRF(Slot1,Slot2,Slot(C3))),Times(QQ(-1L,12L),CarlsonRD(Slot2,Slot(C3),Slot1),Slot1)))),
+    // Derivative(0,1,0)[CarlsonRG]:=CarlsonRF(#1,#2,#3)/4-1/12*CarlsonRD(#1,#3,#2)*#2&
+    ISetDelayed($(Derivative(C0,C1,C0),CarlsonRG),
+      Function(Plus(Times(C1D4,CarlsonRF(Slot1,Slot2,Slot(C3))),Times(QQ(-1L,12L),CarlsonRD(Slot1,Slot(C3),Slot2),Slot2)))),
+    // Derivative(0,0,1)[CarlsonRG]:=CarlsonRF(#1,#2,#3)/4-1/12*CarlsonRD(#1,#2,#3)*#3&
+    ISetDelayed($(Derivative(C0,C0,C1),CarlsonRG),
+      Function(Plus(Times(C1D4,CarlsonRF(Slot1,Slot2,Slot(C3))),Times(QQ(-1L,12L),CarlsonRD(Slot1,Slot2,Slot(C3)),Slot(C3))))),
     // Derivative(0,1)[Gamma]:=-E^(-#2)/#2^(1-#1)&
     ISetDelayed($(Derivative(C0,C1),Gamma),
       Function(Times(CN1,Exp(Negate(Slot2)),Power(Slot2,Plus(CN1,Slot1))))),

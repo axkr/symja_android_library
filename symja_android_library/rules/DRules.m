@@ -181,6 +181,14 @@
   D(ArcTan(f_, g_),x_?NotListQ):= With({d=((-g*D(f,x)+f*D(g,x))/(f^2 + g^2))},If(PossibleZeroQ(d),0,d)),
   D(BesselJ(f_, g_),x_?NotListQ):= 1/2*(BesselJ(-1+f, g)-BesselJ(1+f, g))*D(g,x)+D(f,x)*Derivative(1,0)[BesselJ][f,g],
   D(BesselY(f_, g_),x_?NotListQ):= 1/2*(BesselY(-1+f, g)-BesselY(1+f, g))*D(g,x)+D(f,x)*Derivative(1,0)[BesselY][f,g],
+  
+  D(CarlsonRC(f_, g_),x_?NotListQ) := 
+    Piecewise({{(-CarlsonRC(f,g) + 1/Sqrt(f))/(2*(f-g)), f!=g}, {-(1/(6*f^(3/2))), f==g && (Im(g)!=0 || Re(g)>0)}}, ComplexInfinity)*D(f,x) + 
+    Piecewise({{(CarlsonRC(f,g) - Sqrt(f)/g)/(2*(f-g)), f!=g}, {-(1/(3*f^(3/2))), f==g && (Im(g)!=0 || Re(g)>0)}}, ComplexInfinity)*D(g,x),
+  D(CarlsonRD(f_, g_, h_),x_?NotListQ):= (-(1/6))*CarlsonRD(g,h,f)*D(f,x) - (1/6)*CarlsonRD(f,h,g)*D(g,x) - (1/6)*CarlsonRD(f,g,h)*D(h,x),
+  D(CarlsonRF(f_, g_, h_),x_?NotListQ):= (-(1/6))*CarlsonRD(g,h,f)*D(f,x) - (1/6)*CarlsonRD(f,h,g)*D(g,x) - (1/6)*CarlsonRD(f,g,h)*D(h,x),
+  D(CarlsonRG(f_, g_, h_),x_?NotListQ):= (1/12)*(3*CarlsonRF(f,g,h) - CarlsonRD(g,h,f)*f)*D(f,x) + (1/12)*(3*CarlsonRF(f,g,h) - CarlsonRD(f,h,g)*g)*D(g,x) + (1/12)*(3*CarlsonRF(f,g,h) - CarlsonRD(f,g,h)*h)*D(h,x), 
+   
   D(PolyLog(f_, g_),x_?NotListQ):= (PolyLog(-1 + f, g)*D(g,x))/g + D(f,x)*Derivative(1, 0)[PolyLog][f, g],
   D(ProductLog(f_),x_?NotListQ) := (ProductLog[f]*D(f, x))/(f*(1 + ProductLog[f])),
   D(ProductLog(f_, g_),x_?NotListQ):= ProductLog(f,g)*D(g,x)/(g*(1+ProductLog(f,g)))+D(f,x)*Derivative(1,0)[ProductLog][f,g],
