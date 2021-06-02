@@ -1,8 +1,15 @@
-proguard.map
-/bin
-/build
+# build artifacts
+bin/
+build/
+target/
+
+# Eclipse configuration files
+.project
+.classpath
+.settings/
+
+#misc
 /js
 /matheclipse-aar/
 /dump/
-/.classpath
-/.settings/
+proguard.map
