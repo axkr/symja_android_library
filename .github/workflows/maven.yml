@@ -26,11 +26,10 @@ jobs:
       with:
         path: ~/.m2
         key: ${{ runner.os }}-m2-${{ hashFiles('**/pom.xml') }}
-        restore-keys: ${{ runner.os }}-m2
-    - name: Build with Maven
-      run: mvn --batch-mode --update-snapshots verify --file symja_android_library/pom.xml
-      run: mkdir staging && cp target/*.jar staging
-      uses: actions/upload-artifact@v2
+        restore-keys: ${{ runner.os }}-m2 
+    - run: mvn --batch-mode --update-snapshots verify --file symja_android_library/pom.xml
+    - run: mkdir staging && cp target/*.jar staging
+    - uses: actions/upload-artifact@v2
       with:
         name: Package
         path: staging
