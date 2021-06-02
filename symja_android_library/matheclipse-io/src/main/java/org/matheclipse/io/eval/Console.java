@@ -354,6 +354,7 @@ public class Console {
         String outputExpression = interpreter(args[i + 1].trim());
         if (outputExpression.length() > 0) {
           stdout.print(outputExpression);
+          stdout.flush();
         }
         throw ReturnException.RETURN_TRUE;
       } else if (arg.equals("-function") || arg.equals("-f")) {
