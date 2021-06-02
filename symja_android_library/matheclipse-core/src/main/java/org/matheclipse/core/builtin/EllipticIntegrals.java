@@ -39,9 +39,11 @@ public class EllipticIntegrals {
 
       // S.InverseWeierstrassP.setEvaluator(new InverseWeierstrassP());
       S.JacobiAmplitude.setEvaluator(new JacobiAmplitude());
+      S.JacobiCD.setEvaluator(new JacobiCD());
       S.JacobiCN.setEvaluator(new JacobiCN());
       S.JacobiDN.setEvaluator(new JacobiDN());
       S.JacobiSC.setEvaluator(new JacobiSC());
+      S.JacobiSD.setEvaluator(new JacobiSD());
       S.JacobiSN.setEvaluator(new JacobiSN());
       S.JacobiZeta.setEvaluator(new JacobiZeta());
 
@@ -54,6 +56,21 @@ public class EllipticIntegrals {
     }
   }
 
+  /**
+   *
+   *
+   * <pre><code>CarlsonRC(x, y)
+   * </code></pre>
+   *
+   * <p>returns the Carlson RC function..
+   *
+   * <p>See:
+   *
+   * <ul>
+   *   <li><a href="https://en.wikipedia.org/wiki/Carlson_symmetric_form">Wikipedia - Carlson
+   *       symmetric form</a>
+   * </ul>
+   */
   private static class CarlsonRC extends AbstractFunctionEvaluator {
 
     @Override
@@ -108,6 +125,21 @@ public class EllipticIntegrals {
     }
   }
 
+  /**
+   *
+   *
+   * <pre><code>CarlsonRD(x, y, z)
+   * </code></pre>
+   *
+   * <p>returns the Carlson RD function.
+   *
+   * <p>See:
+   *
+   * <ul>
+   *   <li><a href="https://en.wikipedia.org/wiki/Carlson_symmetric_form">Wikipedia - Carlson
+   *       symmetric form</a>
+   * </ul>
+   */
   private static class CarlsonRD extends AbstractFunctionEvaluator {
 
     @Override
@@ -148,6 +180,21 @@ public class EllipticIntegrals {
     }
   }
 
+  /**
+   *
+   *
+   * <pre><code>CarlsonRF(x, y, z)
+   * </code></pre>
+   *
+   * <p>returns the Carlson RF function.
+   *
+   * <p>See:
+   *
+   * <ul>
+   *   <li><a href="https://en.wikipedia.org/wiki/Carlson_symmetric_form">Wikipedia - Carlson
+   *       symmetric form</a>
+   * </ul>
+   */
   private static class CarlsonRF extends AbstractFunctionEvaluator {
 
     @Override
@@ -188,6 +235,21 @@ public class EllipticIntegrals {
     }
   }
 
+  /**
+   *
+   *
+   * <pre><code>CarlsonRG(x, y, z)
+   * </code></pre>
+   *
+   * <p>returns the Carlson RG function.
+   *
+   * <p>See:
+   *
+   * <ul>
+   *   <li><a href="https://en.wikipedia.org/wiki/Carlson_symmetric_form">Wikipedia - Carlson
+   *       symmetric form</a>
+   * </ul>
+   */
   private static class CarlsonRG extends AbstractFunctionEvaluator {
 
     @Override
@@ -200,9 +262,8 @@ public class EllipticIntegrals {
           // 1 / Sqrt(x)
           return F.Power.of(engine, x, F.CN1D2);
         }
-        // (1/2) * (Sqrt(z) + x*CarlsonRF(x,x,z)) 
-        return S.Times.of(engine, F.C1D2, F.Plus(F.Sqrt(z), F.Times(x, F.CarlsonRF(x,x,z))));
- 
+        // (1/2) * (Sqrt(z) + x*CarlsonRF(x,x,z))
+        return S.Times.of(engine, F.C1D2, F.Plus(F.Sqrt(z), F.Times(x, F.CarlsonRF(x, x, z))));
       }
       if (engine.isDoubleMode()) {
         try {
@@ -233,6 +294,21 @@ public class EllipticIntegrals {
     }
   }
 
+  /**
+   *
+   *
+   * <pre><code>CarlsonRJ(x, y, z, p)
+   * </code></pre>
+   *
+   * <p>returns the Carlson RJ function.
+   *
+   * <p>See:
+   *
+   * <ul>
+   *   <li><a href="https://en.wikipedia.org/wiki/Carlson_symmetric_form">Wikipedia - Carlson
+   *       symmetric form</a>
+   * </ul>
+   */
   private static class CarlsonRJ extends AbstractFunctionEvaluator {
 
     @Override
@@ -923,6 +999,22 @@ public class EllipticIntegrals {
   // }
   // }
 
+  /**
+   *
+   *
+   * <pre><code>JacobiAmplitude(x, m)
+   * </code></pre>
+   *
+   * <p>returns the amplitude <code>am(x, m)</code> for Jacobian elliptic function.
+   *
+   * <p>See
+   *
+   * <ul>
+   *   <li><a href="https://en.wikipedia.org/wiki/Jacobi_elliptic_functions">Wikipedia - Jacobi
+   *       elliptic functions</a>
+   *   <li><a href="https://dlmf.nist.gov/22.16">NIST - Jacobi’s Amplitude (am) Function</a>
+   * </ul>
+   */
   private static class JacobiAmplitude extends AbstractFunctionEvaluator {
 
     @Override
@@ -972,6 +1064,98 @@ public class EllipticIntegrals {
     }
   }
 
+  /**
+   *
+   *
+   * <pre><code>JacobiCD(x, m)
+   * </code></pre>
+   *
+   * <p>returns the Jacobian elliptic function <code>cd(x, m)</code>.
+   *
+   * <p>See
+   *
+   * <ul>
+   *   <li><a href="https://en.wikipedia.org/wiki/Jacobi_elliptic_functions">Wikipedia - Jacobi
+   *       elliptic functions</a>
+   *   <li><a href="https://dlmf.nist.gov/22.5">NIST - Jacobian elliptic functions</a>
+   * </ul>
+   *
+   * <h3>Examples</h3>
+   *
+   * <pre><code>&gt;&gt; JacobiCD(10.0,1/3)
+   * -0.945268
+   * </code></pre>
+   */
+  private static class JacobiCD extends AbstractFunctionEvaluator {
+
+    @Override
+    public IExpr evaluate(IAST ast, EvalEngine engine) {
+      IExpr z = ast.arg1();
+      IExpr m = ast.arg2();
+      if (m.isZero()) {
+        return F.Cos(z);
+      }
+      if (m.isOne() || z.isZero()) {
+        return F.C1;
+      }
+      try {
+        double zDouble = Double.NaN;
+        double mDouble = Double.NaN;
+        try {
+          zDouble = z.evalDouble();
+          mDouble = m.evalDouble();
+        } catch (ValidateException ve) {
+        }
+        if (Double.isNaN(zDouble) || Double.isNaN(mDouble)) {
+          //          return F.complexNum(EllipticFunctionsJS.jacobiCD(z.evalComplex(),
+          // m.evalComplex()));
+        } else {
+          return F.num(EllipticFunctionsJS.jacobiCD(zDouble, mDouble));
+        }
+      } catch (ValidateException ve) {
+        if (FEConfig.SHOW_STACKTRACE) {
+          ve.printStackTrace();
+        }
+      } catch (RuntimeException rex) {
+        return engine.printMessage(ast.topHead(), rex);
+      }
+      return F.NIL;
+    }
+
+    @Override
+    public int[] expectedArgSize(IAST ast) {
+      return ARGS_2_2;
+    }
+
+    @Override
+    public void setUp(final ISymbol newSymbol) {
+      newSymbol.setAttributes(ISymbol.LISTABLE | ISymbol.NUMERICFUNCTION);
+      super.setUp(newSymbol);
+    }
+  }
+
+  /**
+   *
+   *
+   * <pre><code>JacobiCN(x, m)
+   * </code></pre>
+   *
+   * <p>returns the Jacobian elliptic function <code>cn(x, m)</code>.
+   *
+   * <p>See
+   *
+   * <ul>
+   *   <li><a href="https://en.wikipedia.org/wiki/Jacobi_elliptic_functions">Wikipedia - Jacobi
+   *       elliptic functions</a>
+   *   <li><a href="https://dlmf.nist.gov/22.5">NIST - Jacobian elliptic functions</a>
+   * </ul>
+   *
+   * <h3>Examples</h3>
+   *
+   * <pre><code>&gt;&gt; JacobiCN(10.0,1/3)
+   * -0.92107
+   * </code></pre>
+   */
   private static class JacobiCN extends AbstractFunctionEvaluator {
 
     @Override
@@ -987,15 +1171,25 @@ public class EllipticIntegrals {
       if (z.isZero()) {
         return F.C1;
       }
-      if (z.isInexactNumber() && m.isInexactNumber()) {
+      try {
+        double zDouble = Double.NaN;
+        double mDouble = Double.NaN;
         try {
-          if (z.isReal() && m.isReal()) {
-            return F.complexNum(EllipticFunctionsJS.jacobiCN(z.evalDouble(), m.evalDouble()));
-          }
-          return F.complexNum(EllipticFunctionsJS.jacobiCN(z.evalComplex(), m.evalComplex()));
-        } catch (RuntimeException rex) {
-          return engine.printMessage(ast.topHead(), rex);
+          zDouble = z.evalDouble();
+          mDouble = m.evalDouble();
+        } catch (ValidateException ve) {
         }
+        if (Double.isNaN(zDouble) || Double.isNaN(mDouble)) {
+          return F.complexNum(EllipticFunctionsJS.jacobiCN(z.evalComplex(), m.evalComplex()));
+        } else {
+          return F.num(EllipticFunctionsJS.jacobiCN(zDouble, mDouble));
+        }
+      } catch (ValidateException ve) {
+        if (FEConfig.SHOW_STACKTRACE) {
+          ve.printStackTrace();
+        }
+      } catch (RuntimeException rex) {
+        return engine.printMessage(ast.topHead(), rex);
       }
       return F.NIL;
     }
@@ -1012,6 +1206,28 @@ public class EllipticIntegrals {
     }
   }
 
+  /**
+   *
+   *
+   * <pre><code>JacobiDN(x, m)
+   * </code></pre>
+   *
+   * <p>returns the Jacobian elliptic function <code>dn(x, m)</code>.
+   *
+   * <p>See
+   *
+   * <ul>
+   *   <li><a href="https://en.wikipedia.org/wiki/Jacobi_elliptic_functions">Wikipedia - Jacobi
+   *       elliptic functions</a>
+   *   <li><a href="https://dlmf.nist.gov/22.5">NIST - Jacobian elliptic functions</a>
+   * </ul>
+   *
+   * <h3>Examples</h3>
+   *
+   * <pre><code>&gt;&gt; JacobiDN(10.0,1/3)
+   * 0.974401
+   * </code></pre>
+   */
   private static class JacobiDN extends AbstractFunctionEvaluator {
 
     @Override
@@ -1027,15 +1243,25 @@ public class EllipticIntegrals {
       if (z.isZero()) {
         return F.C1;
       }
-      if (z.isInexactNumber() && m.isInexactNumber()) {
+      try {
+        double zDouble = Double.NaN;
+        double mDouble = Double.NaN;
         try {
-          if (z.isReal() && m.isReal()) {
-            return F.complexNum(EllipticFunctionsJS.jacobiDN(z.evalDouble(), m.evalDouble()));
-          }
-          return F.complexNum(EllipticFunctionsJS.jacobiDN(z.evalComplex(), m.evalComplex()));
-        } catch (RuntimeException rex) {
-          return engine.printMessage(ast.topHead(), rex);
+          zDouble = z.evalDouble();
+          mDouble = m.evalDouble();
+        } catch (ValidateException ve) {
         }
+        if (Double.isNaN(zDouble) || Double.isNaN(mDouble)) {
+          return F.complexNum(EllipticFunctionsJS.jacobiDN(z.evalComplex(), m.evalComplex()));
+        } else {
+          return F.num(EllipticFunctionsJS.jacobiDN(zDouble, mDouble));
+        }
+      } catch (ValidateException ve) {
+        if (FEConfig.SHOW_STACKTRACE) {
+          ve.printStackTrace();
+        }
+      } catch (RuntimeException rex) {
+        return engine.printMessage(ast.topHead(), rex);
       }
       return F.NIL;
     }
@@ -1052,6 +1278,28 @@ public class EllipticIntegrals {
     }
   }
 
+  /**
+   *
+   *
+   * <pre><code>JacobiSC(x, m)
+   * </code></pre>
+   *
+   * <p>returns the Jacobian elliptic function <code>sc(x, m)</code>.
+   *
+   * <p>See
+   *
+   * <ul>
+   *   <li><a href="https://en.wikipedia.org/wiki/Jacobi_elliptic_functions">Wikipedia - Jacobi
+   *       elliptic functions</a>
+   *   <li><a href="https://dlmf.nist.gov/22.5">NIST - Jacobian elliptic functions</a>
+   * </ul>
+   *
+   * <h3>Examples</h3>
+   *
+   * <pre><code>&gt;&gt; JacobiSC(10.0,1/3)
+   * -0.422766
+   * </code></pre>
+   */
   private static class JacobiSC extends AbstractFunctionEvaluator implements JacobiSCRules {
     @Override
     public IAST getRuleAST() {
@@ -1071,6 +1319,28 @@ public class EllipticIntegrals {
       if (z.isZero()) {
         return F.C0;
       }
+      if (engine.isDoubleMode()) {
+        try {
+          double zDouble = Double.NaN;
+          double mDouble = Double.NaN;
+          try {
+            zDouble = z.evalDouble();
+            mDouble = m.evalDouble();
+          } catch (ValidateException ve) {
+          }
+          if (Double.isNaN(zDouble) || Double.isNaN(mDouble)) {
+            // pass
+          } else {
+            return F.num(EllipticFunctionsJS.jacobiSC(zDouble, mDouble));
+          }
+        } catch (ValidateException ve) {
+          if (FEConfig.SHOW_STACKTRACE) {
+            ve.printStackTrace();
+          }
+        } catch (RuntimeException rex) {
+          return engine.printMessage(ast.topHead(), rex);
+        }
+      }
 
       return F.NIL;
     }
@@ -1087,6 +1357,103 @@ public class EllipticIntegrals {
     }
   }
 
+  /**
+   *
+   *
+   * <pre><code>JacobiSD(x, m)
+   * </code></pre>
+   *
+   * <p>returns the Jacobian elliptic function <code>sd(x, m)</code>.
+   *
+   * <p>See
+   *
+   * <ul>
+   *   <li><a href="https://en.wikipedia.org/wiki/Jacobi_elliptic_functions">Wikipedia - Jacobi
+   *       elliptic functions</a>
+   *   <li><a href="https://dlmf.nist.gov/22.5">NIST - Jacobian elliptic functions</a>
+   * </ul>
+   *
+   * <h3>Examples</h3>
+   *
+   * <pre><code>&gt;&gt; JacobiSD(10.0,1/3)
+   * 0.399627
+   * </code></pre>
+   */
+  private static class JacobiSD extends AbstractFunctionEvaluator {
+
+    @Override
+    public IExpr evaluate(IAST ast, EvalEngine engine) {
+      IExpr z = ast.arg1();
+      IExpr m = ast.arg2();
+      if (m.isZero()) {
+        return F.Sin(z);
+      }
+      if (m.isOne()) {
+        return F.Sinh(z);
+      }
+      if (z.isZero()) {
+        return F.C0;
+      }
+      if (engine.isDoubleMode()) {
+        try {
+          double zDouble = Double.NaN;
+          double mDouble = Double.NaN;
+          try {
+            zDouble = z.evalDouble();
+            mDouble = m.evalDouble();
+          } catch (ValidateException ve) {
+          }
+          if (Double.isNaN(zDouble) || Double.isNaN(mDouble)) {
+            //	            return F.complexNum(EllipticFunctionsJS.jacobiSD(z.evalComplex(),
+            // m.evalComplex()));
+          } else {
+            return F.num(EllipticFunctionsJS.jacobiSD(zDouble, mDouble));
+          }
+        } catch (ValidateException ve) {
+          if (FEConfig.SHOW_STACKTRACE) {
+            ve.printStackTrace();
+          }
+        } catch (RuntimeException rex) {
+          return engine.printMessage(ast.topHead(), rex);
+        }
+      }
+      return F.NIL;
+    }
+
+    @Override
+    public int[] expectedArgSize(IAST ast) {
+      return ARGS_2_2;
+    }
+
+    @Override
+    public void setUp(final ISymbol newSymbol) {
+      newSymbol.setAttributes(ISymbol.LISTABLE | ISymbol.NUMERICFUNCTION);
+      super.setUp(newSymbol);
+    }
+  }
+
+  /**
+   *
+   *
+   * <pre><code>JacobiSN(x, m)
+   * </code></pre>
+   *
+   * <p>returns the Jacobian elliptic function <code>sn(x, m)</code>.
+   *
+   * <p>See
+   *
+   * <ul>
+   *   <li><a href="https://en.wikipedia.org/wiki/Jacobi_elliptic_functions">Wikipedia - Jacobi
+   *       elliptic functions</a>
+   *   <li><a href="https://dlmf.nist.gov/22.5">NIST - Jacobian elliptic functions</a>
+   * </ul>
+   *
+   * <h3>Examples</h3>
+   *
+   * <pre><code>&gt;&gt; JacobiSN(10.0,1/3)
+   * 0.389397
+   * </code></pre>
+   */
   private static class JacobiSN extends AbstractFunctionEvaluator {
 
     @Override
@@ -1102,12 +1469,24 @@ public class EllipticIntegrals {
       if (z.isZero()) {
         return F.C0;
       }
-      if (z.isInexactNumber() && m.isInexactNumber()) {
+      if (engine.isDoubleMode()) {
         try {
-          if (z.isReal() && m.isReal()) {
-            return F.complexNum(EllipticFunctionsJS.jacobiSN(z.evalDouble(), m.evalDouble()));
+          double zDouble = Double.NaN;
+          double mDouble = Double.NaN;
+          try {
+            zDouble = z.evalDouble();
+            mDouble = m.evalDouble();
+          } catch (ValidateException ve) {
           }
-          return F.complexNum(EllipticFunctionsJS.jacobiSN(z.evalComplex(), m.evalComplex()));
+          if (Double.isNaN(zDouble) || Double.isNaN(mDouble)) {
+            return F.complexNum(EllipticFunctionsJS.jacobiSN(z.evalComplex(), m.evalComplex()));
+          } else {
+            return F.num(EllipticFunctionsJS.jacobiSN(zDouble, mDouble));
+          }
+        } catch (ValidateException ve) {
+          if (FEConfig.SHOW_STACKTRACE) {
+            ve.printStackTrace();
+          }
         } catch (RuntimeException rex) {
           return engine.printMessage(ast.topHead(), rex);
         }
@@ -1151,15 +1530,6 @@ public class EllipticIntegrals {
       if (m.isInfinity() || m.isNegativeInfinity()) {
         return F.CComplexInfinity;
       }
-
-      // if (z.isNumeric() && m.isNumeric()) {
-      // try {
-      // return F.complexNum(EllipticIntegralsJS.jacobiZeta(z.evalComplex(), m.evalComplex()));
-      // } catch (RuntimeException rte) {
-      // return engine.printMessage("EllipticPi: " + rte.getMessage());
-      // }
-      // }
-
       return F.NIL;
     }
 
