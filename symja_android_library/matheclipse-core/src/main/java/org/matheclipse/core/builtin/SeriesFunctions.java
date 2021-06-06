@@ -380,7 +380,7 @@ public class SeriesFunctions {
      */
     private static IExpr lHospitalesRule(IExpr numerator, IExpr denominator, LimitData data) {
       EvalEngine engine = EvalEngine.get();
-      ISymbol x = data.variable();
+      final ISymbol x = data.variable();
       int recursionLimit = engine.getRecursionLimit();
       try {
         if (recursionLimit <= 0 || recursionLimit > Config.LIMIT_LHOSPITAL_RECURSION_LIMIT) {
@@ -408,6 +408,9 @@ public class SeriesFunctions {
             }
           }
         }
+        if (numerator.isPower() && numerator.exponent().isFraction()) {
+          return lHospitalesRuleWithNumeratorRoot(numerator, denominator, data, engine);
+        }
         IExpr expr =
             engine.evalQuiet(F.Times(F.D(numerator, x), F.Power(F.D(denominator, x), F.CN1)));
         return evalLimit(expr, data);
@@ -415,6 +418,35 @@ public class SeriesFunctions {
         engine.setRecursionLimit(recursionLimit);
       } finally {
         engine.setRecursionLimit(recursionLimit);
+      }
+      return F.NIL;
+    }
+
+    /**
+     * The <code>numerator</code> is of the form <code>base ^ (n/root)</code>. L'hospital rule is
+     * tried for <code>{base ^ n, denominator ^ root}</code> and the result returned as <code>
+     * result ^ (1/root)</code>.
+     *
+     * @param numerator is of the form <code>Power(base,n/root)</code>
+     * @param denominator
+     * @param data
+     * @param engine
+     * @return
+     */
+    private static IExpr lHospitalesRuleWithNumeratorRoot(
+        IExpr numerator, IExpr denominator, LimitData data, EvalEngine engine) {
+      // see github #230
+      final ISymbol x = data.variable();
+      final IFraction exponentFraction = (IFraction) numerator.exponent();
+      final IInteger n = exponentFraction.numerator();
+      final IInteger root = exponentFraction.denominator();
+      final IExpr newNumerator = engine.evalQuiet(F.Power(numerator.base(), n));
+      final IExpr newDenominator = engine.evalQuiet(F.Power(denominator, root));
+      final IExpr expr =
+          engine.evalQuiet(F.Times(F.D(newNumerator, x), F.Power(F.D(newDenominator, x), F.CN1)));
+      final IExpr temp = evalLimit(expr, data);
+      if (temp.isPresent()) {
+        return F.Power(temp, F.QQ(F.C1, root));
       }
       return F.NIL;
     }
