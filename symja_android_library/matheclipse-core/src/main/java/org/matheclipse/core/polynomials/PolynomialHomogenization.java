@@ -3,6 +3,7 @@ package org.matheclipse.core.polynomials;
 import java.util.HashMap;
 import java.util.IdentityHashMap;
 import java.util.Map;
+import java.util.Map.Entry;
 
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.expression.F;
@@ -89,7 +90,7 @@ public class PolynomialHomogenization {
    * @param x
    * @return
    */
-  private IInteger getLCM(IExpr x) {
+  public IInteger getLCM(IExpr x) {
     if (variablesLCM == null) {
       return F.C1;
     }
@@ -441,5 +442,29 @@ public class PolynomialHomogenization {
 
   public int size() {
     return substitutedVariables.size();
+  }
+
+  /**
+   * Return a list of rules containing the backward substitutions, of the &quot;dummy
+   * variables&quot;
+   *
+   * @return
+   */
+  public IASTAppendable listOfBackwardSubstitutions() {
+    Map<ISymbol, IExpr> map = substitutedVariables();
+    IASTAppendable list = F.ListAlloc(size());
+    for (Map.Entry<ISymbol, IExpr> x : map.entrySet()) {
+      IExpr value = x.getValue();
+      if (value != null) {
+        IExpr key = x.getKey();
+        IInteger denominatorLCM = getLCM(key);
+        if (denominatorLCM.isOne()) {
+          list.append(F.Rule(key, value));
+        } else {
+          list.append(F.Rule(key, F.Power(value, F.fraction(F.C1, denominatorLCM))));
+        }
+      }
+    }
+    return list;
   }
 }

@@ -299,7 +299,8 @@ public class PolynomialHomogenizationNew {
                 replaceForwardRecursive(F.Power(base, plusAST.rest().oneIdentity0())));
           }
         }
-
+        // PowerExpand assumes that the variable is a positive real number
+        //        return F.PowerExpand.of(F.Power(base, exp));
         return F.Power(base, exp);
       }
       return replaceExpression(expression);
@@ -445,5 +446,29 @@ public class PolynomialHomogenizationNew {
 
   public int size() {
     return substitutedVariables.size();
+  }
+
+  /**
+   * Return a list of rules containing the backward substitutions, of the &quot;dummy
+   * variables&quot;
+   *
+   * @return
+   */
+  public IASTAppendable listOfBackwardSubstitutions() {
+    Map<ISymbol, IExpr> map = substitutedVariables();
+    IASTAppendable list = F.ListAlloc(size());
+    for (Map.Entry<ISymbol, IExpr> x : map.entrySet()) {
+      IExpr value = x.getValue();
+      if (value != null) {
+        IExpr key = x.getKey();
+        IInteger denominatorLCM = getLCM(key);
+        if (denominatorLCM.isOne()) {
+          list.append(F.Rule(key, value));
+        } else {
+          list.append(F.Rule(key, F.Power(value, F.fraction(F.C1, denominatorLCM))));
+        }
+      }
+    }
+    return list;
   }
 }
