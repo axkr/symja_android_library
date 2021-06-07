@@ -1,7 +1,5 @@
 package org.matheclipse.io.others;
 
-import java.util.Map;
-
 import org.matheclipse.core.convert.VariablesSet;
 import org.matheclipse.core.eval.EvalAttributes;
 import org.matheclipse.core.eval.EvalEngine;
@@ -14,8 +12,7 @@ import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IASTAppendable;
 import org.matheclipse.core.interfaces.IBuiltInSymbol;
 import org.matheclipse.core.interfaces.IExpr;
-import org.matheclipse.core.interfaces.ISymbol;
-import org.matheclipse.core.polynomials.PolynomialHomogenizationNew;
+import org.matheclipse.core.polynomials.PolynomialHomogenization;
 import org.matheclipse.io.system.AbstractTestCase;
 
 public class HomogenizationJUnit extends AbstractTestCase {
@@ -36,12 +33,11 @@ public class HomogenizationJUnit extends AbstractTestCase {
       IExpr arg1 = ast.arg1();
       if (arg1.isAST()) {
         VariablesSet eVar = new VariablesSet(arg1);
-        PolynomialHomogenizationNew substitutions =
-            new PolynomialHomogenizationNew(eVar.getVarList(), engine);
+        PolynomialHomogenization substitutions =
+            new PolynomialHomogenization(eVar.getVarList(), engine);
         IExpr temp = substitutions.replaceForward(arg1);
-        Map<ISymbol, IExpr> map = substitutions.substitutedVariables();
-        IASTAppendable list = F.ListAlloc(substitutions.size());
-        list.appendAll(map);
+        IASTAppendable list = substitutions.listOfBackwardSubstitutions();
+
         // sort for canonical expressions:
         EvalAttributes.sort(list);
         return F.List(temp, list);
@@ -56,25 +52,29 @@ public class HomogenizationJUnit extends AbstractTestCase {
 
   public void testHomogenization() {
     EvalEngine engine = EvalEngine.get();
-
+    engine.resetModuleCounter4JUnit();
+    // TODO jas$1->Sqrt(x)
+    check(
+        "Homogenization(x+2*Sqrt(x)+1)", //
+        "{1+2*jas$1+jas$1^2,{jas$1->Sqrt(x)}}");
     engine.resetModuleCounter4JUnit();
     check(
         "Homogenization(Sin(x))", //
-        "{hg$1,{hg$1->Sin(x)}}");
+        "{jas$1,{jas$1->Sin(x)}}");
 
     engine.resetModuleCounter4JUnit();
     check(
         "Homogenization(x^2+Sin(x)+Sin(x)^3)", //
-        "{hg$1^2+hg$2+hg$2^3,{hg$1->x,hg$2->Sin(x)}}");
+        "{jas$1^2+jas$2+jas$2^3,{jas$1->x,jas$2->Sin(x)}}");
 
     engine.resetModuleCounter4JUnit();
     check(
         "Homogenization((1+x^2)^(-1))", //
-        "{1/(1+hg$1^2),{hg$1->x}}");
+        "{1/jas$1,{jas$1->1+x^2}}");
 
     engine.resetModuleCounter4JUnit();
     check(
         "Homogenization(f(x)^(-1))", //
-        "{1/hg$1,{hg$1->f(x)}}");
+        "{1/jas$1,{jas$1->f(x)}}");
   }
 }
