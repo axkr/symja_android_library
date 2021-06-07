@@ -854,6 +854,7 @@ public class AST2Expr {
     "LinearProgramming",
     "LinearRecurrence",
     "LinearSolve",
+    "LinearSolveFunction",
     "LineGraph",
     "LiouvilleLambda",
     "List",

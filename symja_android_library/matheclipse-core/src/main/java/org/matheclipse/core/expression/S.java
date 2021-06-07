@@ -1260,9 +1260,9 @@ public class S {
   public static final IBuiltInSymbol CarlsonRD = F.initFinalSymbol("CarlsonRD", ID.CarlsonRD);
 
   public static final IBuiltInSymbol CarlsonRF = F.initFinalSymbol("CarlsonRF", ID.CarlsonRF);
-  
+
   public static final IBuiltInSymbol CarlsonRG = F.initFinalSymbol("CarlsonRG", ID.CarlsonRG);
-  
+
   public static final IBuiltInSymbol CarlsonRJ = F.initFinalSymbol("CarlsonRJ", ID.CarlsonRJ);
   /**
    * CarmichaelLambda(n) - the Carmichael function of `n`
@@ -5195,6 +5195,9 @@ public class S {
    *     documentation</a>
    */
   public static final IBuiltInSymbol LinearSolve = F.initFinalSymbol("LinearSolve", ID.LinearSolve);
+
+  public static final IBuiltInSymbol LinearSolveFunction =
+      F.initFinalSymbol("LinearSolveFunction", ID.LinearSolveFunction);
 
   public static final IBuiltInSymbol LiouvilleLambda =
       F.initFinalSymbol("LiouvilleLambda", ID.LiouvilleLambda);
