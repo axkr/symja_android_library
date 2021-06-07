@@ -1,5 +1,11 @@
 package org.matheclipse.io.others;
 
+import org.apfloat.Apfloat;
+import org.matheclipse.core.expression.F;
+import org.matheclipse.core.expression.S;
+import org.matheclipse.core.interfaces.IComplexNum;
+import org.matheclipse.core.interfaces.IExpr;
+import org.matheclipse.core.interfaces.INum;
 import org.matheclipse.io.system.AbstractTestCase;
 
 public class ApfloatJUnit extends AbstractTestCase {
@@ -48,5 +54,15 @@ public class ApfloatJUnit extends AbstractTestCase {
     checkNumeric(
         "N(Pi, 100)", //
         "3.141592653589793238462643383279502884197169399375105820974944592307816406286208998628034825342117067");
+  }
+
+  public void testApfloatDivide() {
+    IComplexNum cnum1 =
+        F.complexNum(new Apfloat(Long.MIN_VALUE, 30), new Apfloat(Long.MAX_VALUE, 30));
+    INum cnum2 = F.num(new Apfloat(Long.MIN_VALUE, 30));
+    IExpr value = S.Divide.of(cnum2, cnum1);
+    assertEquals(
+        value.toString(), //
+        "(5.00000000000000000054210108624*10^-1, 4.9999999999999999999999999999*10^-1)");
   }
 }
