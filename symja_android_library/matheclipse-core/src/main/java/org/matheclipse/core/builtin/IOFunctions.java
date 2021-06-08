@@ -639,6 +639,8 @@ public class IOFunctions {
     "Symbol `1` is locked.", //
     "lowlen",
     "Required length `1` is smaller than maximum `2` of support of `3`.", //
+    "lslc",
+    "Coefficient matrix and target vector or matrix do not have the same dimensions.",//
     "lvlist",
     "Local variable specification `1` is not a List.", //
     "lvws",
