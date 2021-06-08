@@ -184,6 +184,8 @@ public interface IExpr
 
   public static final int JAVAOBJECTEXPRID = DATAID + 19;
 
+  public static final int LINEARSOLVEUNCTONID = DATAID + 20;
+
   public static IExpr convertToExpr(COMPARE_TERNARY temp) {
     if (temp == COMPARE_TERNARY.TRUE) {
       return S.True;

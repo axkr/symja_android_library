@@ -17,6 +17,14 @@ import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.parser.client.FEConfig;
 
 public abstract class AbstractMatrix1Expr extends AbstractFunctionEvaluator {
+  public final static PossibleZeroQTest POSSIBLE_ZEROQ_TEST = new PossibleZeroQTest();
+  
+  public static class PossibleZeroQTest implements Predicate<IExpr> {
+    @Override
+    public boolean test(IExpr x) {
+      return x.isPossibleZero(false);
+    }
+  }
 
   public AbstractMatrix1Expr() {}
 
@@ -111,7 +119,7 @@ public abstract class AbstractMatrix1Expr extends AbstractFunctionEvaluator {
   }
 
   public static Predicate<IExpr> optionZeroTest(final IAST ast, int start, EvalEngine engine) {
-    Predicate<IExpr> zeroChecker = x -> x.isPossibleZero(true);
+    Predicate<IExpr> zeroChecker = POSSIBLE_ZEROQ_TEST;
     if (ast.size() > 1) {
       final OptionArgs options = new OptionArgs(ast.topHead(), ast, start, ast.size(), engine);
       IExpr zeroTest = options.getOption(S.ZeroTest);

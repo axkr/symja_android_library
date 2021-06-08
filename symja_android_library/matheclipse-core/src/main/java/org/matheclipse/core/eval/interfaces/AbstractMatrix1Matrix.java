@@ -44,6 +44,10 @@ public abstract class AbstractMatrix1Matrix extends AbstractFunctionEvaluator {
       if (FEConfig.SHOW_STACKTRACE) {
         e.printStackTrace();
       }
+    } catch (final RuntimeException rex) {
+      if (FEConfig.SHOW_STACKTRACE) {
+        rex.printStackTrace();
+      }
     } finally {
       engine.setTogetherMode(togetherMode);
     }
