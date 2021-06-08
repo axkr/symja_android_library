@@ -28,9 +28,7 @@ jobs:
         key: ${{ runner.os }}-m2-${{ hashFiles('**/pom.xml') }}
         restore-keys: ${{ runner.os }}-m2 
     - run: mvn --batch-mode --update-snapshots verify --file symja_android_library/pom.xml
-    - run: shopt -s globstar
-    - run: mkdir staging && cp **/target/*.jar staging
     - uses: actions/upload-artifact@v2
       with:
         name: Package
-        path: staging
+        path: '**/target/*.jar'
