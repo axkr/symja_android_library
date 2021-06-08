@@ -1,8 +1,9 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project xmlns="http://maven.apache.org/POM/4.0.0"
 	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/xsd/maven-4.0.0.xsd">
 	<modelVersion>4.0.0</modelVersion>
+
 	<parent>
 		<groupId>org.matheclipse</groupId>
 		<artifactId>matheclipse</artifactId>
@@ -11,7 +12,7 @@
 
 	<artifactId>matheclipse-io</artifactId>
 	<packaging>jar</packaging>
-	
+
 	<licenses>
 		<license>
 			<name>GNU General Public License, Version 3</name>
@@ -20,81 +21,119 @@
 			<comments>A free, copyleft license for software and other kinds of works</comments>
 		</license>
 	</licenses>
-	
+
 	<dependencies>
+
 		<dependency>
 			<groupId>org.matheclipse</groupId>
 			<artifactId>matheclipse-core</artifactId>
 			<version>${symja.version}</version>
 		</dependency>
+
 		<dependency>
 			<groupId>org.matheclipse</groupId>
 			<artifactId>matheclipse-gpl</artifactId>
 			<version>${symja.version}</version>
 		</dependency>
+
 		<dependency>
 			<groupId>io.undertow</groupId>
 			<artifactId>undertow-core</artifactId>
 			<version>2.1.0.Final</version>
 		</dependency>
+
 		<dependency>
 			<groupId>io.undertow</groupId>
 			<artifactId>undertow-servlet</artifactId>
 			<version>2.1.0.Final</version>
 		</dependency>
+
 		<dependency>
 			<groupId>org.roaringbitmap</groupId>
 			<artifactId>RoaringBitmap</artifactId>
 			<version>0.8.12</version>
 		</dependency>
+
 		<dependency>
 			<groupId>io.github.classgraph</groupId>
 			<artifactId>classgraph</artifactId>
 			<version>4.8.60</version>
 		</dependency>
+
 		<dependency>
 			<groupId>org.jsoup</groupId>
 			<artifactId>jsoup</artifactId>
 			<version>1.12.1</version>
 		</dependency>
+
 		<dependency>
 			<groupId>com.github.wnameless.json</groupId>
 			<artifactId>json-flattener</artifactId>
 			<version>0.8.1</version>
 		</dependency>
+
 		<dependency>
 			<groupId>org.apache.poi</groupId>
 			<artifactId>poi-ooxml</artifactId>
 			<version>4.1.1</version>
 		</dependency>
+
 		<dependency>
 			<groupId>junit</groupId>
 			<artifactId>junit</artifactId>
 			<version>4.13.1</version>
 			<scope>test</scope>
 		</dependency>
+
 		<dependency>
 			<groupId>com.tngtech.archunit</groupId>
 			<artifactId>archunit</artifactId>
 			<version>0.18.0</version>
 			<scope>test</scope>
 		</dependency>
+
 		<dependency>
 			<groupId>com.tngtech.archunit</groupId>
 			<artifactId>archunit-junit4</artifactId>
 			<version>0.18.0</version>
 			<scope>test</scope>
 		</dependency>
+
 	</dependencies>
+
 	<build>
 		<resources>
 			<resource>
-				<directory>src/main/resources</directory>
 				<filtering>true</filtering>
+				<directory>src/main/resources</directory>
 			</resource>
 		</resources>
 		<pluginManagement>
 			<plugins>
+
+				<plugin>
+					<artifactId>maven-assembly-plugin</artifactId>
+					<configuration>
+						<archive>
+							<manifest>
+								<mainClass>org.matheclipse.io.eval.Console</mainClass>
+							</manifest>
+						</archive>
+						<descriptorRefs>
+							<descriptorRef>jar-with-dependencies</descriptorRef>
+						</descriptorRefs>
+					</configuration>
+					<executions>
+						<execution>
+							<id>make-assembly</id> <!-- this is used for inheritance merges -->
+							<goals>
+								<goal>single</goal>
+							</goals>
+							<phase>package</phase> <!-- bind to the packaging phase -->
+						</execution>
+					</executions>
+				</plugin>
+
 				<plugin>
 					<groupId>org.codehaus.mojo</groupId>
 					<artifactId>exec-maven-plugin</artifactId>
@@ -139,30 +178,6 @@
 							<configuration>
 								<mainClass>org.matheclipse.io.eval.MMAConsole</mainClass>
 							</configuration>
-						</execution>
-					</executions>
-
-				</plugin>
-
-				<plugin>
-					<artifactId>maven-assembly-plugin</artifactId>
-					<configuration>
-						<archive>
-							<manifest>
-								<mainClass>org.matheclipse.io.eval.Console</mainClass>
-							</manifest>
-						</archive>
-						<descriptorRefs>
-							<descriptorRef>jar-with-dependencies</descriptorRef>
-						</descriptorRefs>
-					</configuration>
-					<executions>
-						<execution>
-							<id>make-assembly</id> <!-- this is used for inheritance merges -->
-							<phase>package</phase> <!-- bind to the packaging phase -->
-							<goals>
-								<goal>single</goal>
-							</goals>
 						</execution>
 					</executions>
 				</plugin>
