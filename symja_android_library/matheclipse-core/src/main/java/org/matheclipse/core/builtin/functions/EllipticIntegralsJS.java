@@ -1,7 +1,7 @@
 package org.matheclipse.core.builtin.functions;
 
 import org.hipparchus.complex.Complex;
-import org.hipparchus.special.elliptic.CarlsonEllipticIntegral;
+import org.hipparchus.special.elliptic.carlson.CarlsonEllipticIntegral;
 import org.hipparchus.util.FastMath;
 import org.matheclipse.core.basic.Config;
 import org.matheclipse.core.eval.exception.ArgumentTypeException;
