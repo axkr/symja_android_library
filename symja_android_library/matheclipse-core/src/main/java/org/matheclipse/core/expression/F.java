@@ -4559,6 +4559,10 @@ public class F extends S {
     return new AST2(JacobiSN, a0, a1);
   }
 
+  public static IAST JavaForm(final IExpr a0, final IExpr a1) {
+    return new AST2(JavaForm, a0, a1);
+  }
+
   public static IAST Join(final IExpr a0, final IExpr a1) {
     return new AST2(Join, a0, a1);
   }
