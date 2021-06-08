@@ -17,3 +17,7 @@ See
 >> JacobiSC(10.0,1/3)
 -0.422766
 ```
+
+### Github
+
+* [Implementation of JacobiSC](https://github.com/axkr/symja_android_library/blob/master/symja_android_library/matheclipse-core/src/main/java/org/matheclipse/core/builtin/EllipticIntegrals.java#L1302) 
