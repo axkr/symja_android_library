@@ -17,12 +17,9 @@ import org.hipparchus.linear.RealMatrix;
 import org.hipparchus.linear.RealVector;
 import org.matheclipse.core.builtin.IOFunctions;
 import org.matheclipse.core.eval.EvalEngine;
+import org.matheclipse.core.eval.exception.ValidateException;
 import org.matheclipse.core.expression.ASTRealMatrix;
 import org.matheclipse.core.expression.ASTRealVector;
-// import org.matheclipse.commons.math.linear.Array2DRowFieldMatrix;
-// import org.matheclipse.commons.math.linear.ArrayFieldVector;
-// import org.matheclipse.commons.math.linear.FieldMatrix;
-// import org.matheclipse.commons.math.linear.FieldVector;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.expression.S;
 import org.matheclipse.core.expression.data.SparseArrayExpr;
@@ -70,7 +67,7 @@ public class Convert {
   }
 
   /**
-   * Returns a FieldMatrix if possible.
+   * Returns a <code>FieldMatrix<IExpr></code> if possible.
    *
    * @param expr
    * @return <code>null</code> if the conversion isn't possible.
@@ -78,6 +75,20 @@ public class Convert {
    * @throws IndexOutOfBoundsException
    */
   public static FieldMatrix<IExpr> list2Matrix(final IExpr expr)
+      throws ClassCastException, IndexOutOfBoundsException {
+    return list2Matrix(expr, false);
+  }
+
+  /**
+   * Returns a <code>FieldMatrix<IExpr></code> if possible.
+   *
+   * @param expr
+   * @param ifNumericReturnNull if all elements are numeric stop conversion by returning null
+   * @return <code>null</code> if the conversion isn't possible.
+   * @throws ClassCastException
+   * @throws IndexOutOfBoundsException
+   */
+  public static FieldMatrix<IExpr> list2Matrix(final IExpr expr, boolean ifNumericReturnNull)
       throws ClassCastException, IndexOutOfBoundsException {
     if (expr == null) {
       return null;
@@ -100,7 +111,33 @@ public class Convert {
       }
       final int rowSize = expr.argSize();
       final int colSize = currInRow.argSize();
-
+      if (ifNumericReturnNull) {
+        boolean hasInexactNumber = false;
+        boolean isNoNumericFunction = true;
+        for (int i = 1; i < rowSize + 1; i++) {
+          currInRow = (IAST) list.get(i);
+          if (currInRow.isVector() < 0 || colSize != currInRow.argSize()) {
+            return null;
+          }
+          for (int j = 1; j < colSize + 1; j++) {
+            final IExpr arg = currInRow.get(j);
+            if (arg.isInexactNumber()) {
+              hasInexactNumber = true;
+            }
+            if (!arg.isNumericFunction()) {
+              isNoNumericFunction = false;
+              break;
+            }
+          }
+          if (!isNoNumericFunction) {
+            break;
+          }
+        }
+        if (hasInexactNumber && isNoNumericFunction) {
+          // if all elements are numeric stop conversion
+          return null;
+        }
+      }
       final IExpr[][] elements = new IExpr[rowSize][colSize];
       for (int i = 1; i < rowSize + 1; i++) {
         currInRow = (IAST) list.get(i);
@@ -112,6 +149,58 @@ public class Convert {
         }
       }
       return new Array2DRowFieldMatrix<IExpr>(elements, false);
+    }
+    return null;
+  }
+
+  /**
+   * Returns a <code>FieldMatrix<Complex></code> if possible.
+   *
+   * @param expr
+   * @return <code>null</code> if the conversion isn't possible.
+   * @throws ClassCastException
+   * @throws IndexOutOfBoundsException
+   */
+  public static FieldMatrix<Complex> list2ComplexMatrix(IExpr expr)
+      throws ClassCastException, IndexOutOfBoundsException {
+    if (expr == null) {
+      return null;
+    }
+    int[] dim = expr.isMatrix();
+    if (dim == null || dim[0] == 0 || dim[1] == 0) {
+      return null;
+    }
+    if (expr.isSparseArray()) {
+      // TODO optimize for sparse arrays
+      //      ISparseArray array = (ISparseArray) expr;
+      expr = ((ISparseArray) expr).normal(false);
+    }
+    if (expr.isList()) {
+      try {
+        IAST list = (IAST) expr;
+        IAST currInRow = (IAST) list.arg1();
+        if (currInRow.isAST0()) {
+          // special case 0-Matrix
+          Complex[][] array = new Complex[0][0];
+          return new Array2DRowFieldMatrix<Complex>(array, false);
+        }
+        final int rowSize = expr.argSize();
+        final int colSize = currInRow.argSize();
+
+        final Complex[][] elements = new Complex[rowSize][colSize];
+        for (int i = 1; i < rowSize + 1; i++) {
+          currInRow = (IAST) list.get(i);
+          if (currInRow.isVector() < 0 || colSize != currInRow.argSize()) {
+            return null;
+          }
+          for (int j = 1; j < colSize + 1; j++) {
+            elements[i - 1][j - 1] = currInRow.get(j).evalComplex();
+          }
+        }
+        return new Array2DRowFieldMatrix<Complex>(elements, false);
+      } catch (ValidateException vex) {
+        // pass
+      }
     }
     return null;
   }
@@ -284,6 +373,35 @@ public class Convert {
     return null;
   }
 
+  public static FieldVector<Complex> list2ComplexVector(IExpr expr) throws ClassCastException {
+    if (expr == null) {
+      return null;
+    }
+    int dim = expr.isVector();
+    if (dim <= 0) {
+      return null;
+    }
+    if (expr.isSparseArray()) {
+      //	      ISparseArray array = (ISparseArray) expr;
+      //	      return array.toFieldVector(false);
+      expr = ((ISparseArray) expr).normal(false);
+    }
+    if (expr.isList()) {
+      try {
+        final int rowSize = expr.argSize();
+        IAST list = (IAST) expr;
+        final Complex[] elements = new Complex[rowSize];
+        for (int i = 0; i < rowSize; i++) {
+          elements[i] = list.get(i + 1).evalComplex();
+        }
+        return new ArrayFieldVector<Complex>(elements, false);
+      } catch (ValidateException vex) {
+        // pass
+      }
+    }
+    return null;
+  }
+
   public static Complex[] list2Complex(final IAST vector) throws ClassCastException {
     if (vector == null) {
       return null;
@@ -374,6 +492,43 @@ public class Convert {
           currOutRow.append(expr);
           // }
         }
+      }
+    }
+    if (matrixFormat) {
+      // because the rows can contain sub lists the IAST.IS_MATRIX flag cannot be set directly.
+      // isMatrix() must be
+      // used!
+      out.isMatrix(true);
+    }
+    return out;
+  }
+
+  /**
+   * Converts a complex FieldMatrix to the list expression representation.
+   *
+   * @param matrix
+   * @return <code>F.NIL</code> if no conversion was possible
+   */
+  public static IASTAppendable complexMatrix2List(final FieldMatrix<Complex> matrix) {
+    return complexMatrix2List(matrix, true);
+  }
+
+  public static IASTAppendable complexMatrix2List(
+      final FieldMatrix<Complex> matrix, boolean matrixFormat) {
+    if (matrix == null) {
+      return F.NIL;
+    }
+    final int rowSize = matrix.getRowDimension();
+    final int colSize = matrix.getColumnDimension();
+
+    final IASTAppendable out = F.ListAlloc(rowSize);
+    IASTAppendable currOutRow;
+    for (int i = 0; i < rowSize; i++) {
+      currOutRow = F.ListAlloc(colSize);
+      out.append(currOutRow);
+      for (int j = 0; j < colSize; j++) {
+        final Complex expr = matrix.getEntry(i, j);
+        currOutRow.append(F.complexNum(expr));
       }
     }
     if (matrixFormat) {
