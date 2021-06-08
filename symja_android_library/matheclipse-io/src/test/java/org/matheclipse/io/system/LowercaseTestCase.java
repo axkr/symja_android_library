@@ -9491,6 +9491,9 @@ public class LowercaseTestCase extends AbstractTestCase {
         "JacobiSC(10.0,1/3)", //
         "-0.422766");
     check(
+        "JacobiSC(5.2 - 2.5*I, 0.3 + I)", //
+        "0.226068+I*(-0.924148)");
+    check(
         "f(1/2*I*m_):={m}", //
         "");
     check(
@@ -10039,7 +10042,7 @@ public class LowercaseTestCase extends AbstractTestCase {
         "False");
   }
 
-  public void testExcept() {
+  public void testExcept001() {
     check(
         "Cases({x, a, b, x, c}, Except(x))", //
         "{a,b,c}");
@@ -10062,6 +10065,32 @@ public class LowercaseTestCase extends AbstractTestCase {
     check(
         "Cases({1, 1, -5, EulerGamma, r, I, 0, Pi, 1/2}, Except(_Integer))", //
         "{EulerGamma,r,I,Pi,1/2}");
+  }
+
+  public void testExcept002() {
+    // https://github.com/mathics/Mathics/issues/1405
+    check(
+        "f(Except(_(___), x_?NumericQ)) := g(x)", //
+        "");
+    check(
+        "f(f(x_)) := x", //
+        "");
+
+    check(
+        "f(2)", //
+        "g(2)");
+    check(
+        "f(Pi)", //
+        "g(Pi)");
+    check(
+        "f(2*Pi)", //
+        "f(2*Pi)");
+    check(
+        "f(a)", //
+        "f(a)");
+    check(
+        "f(f(a))", //
+        "a");
   }
 
   public void testExists() {
@@ -19363,6 +19392,20 @@ public class LowercaseTestCase extends AbstractTestCase {
   // }
 
   public void testLimit() {
+    // github #230
+    check(
+        "Limit((Sqrt(((t+4)*(t-2)^4))/((3*t)-6)^2),t->2) ", //
+        "Sqrt(2/3)/3");
+    check(
+        "Limit((((t+4)*(t-2)^4) /((3*t)-6)^4),t->2) ", //
+        "2/27");
+    check(
+        "Limit((((t+4)*(t-2)^4) /((3*t)-6) ),t->2) ", //
+        "0");
+    check(
+        "Limit(Sqrt(((t+4)*(t-2)^4)) ,t->2) ", //
+        "0");
+
     check(
         "Limit(Tan(9/7)^x,x->-Infinity)", //
         "0");
@@ -19956,6 +19999,24 @@ public class LowercaseTestCase extends AbstractTestCase {
     check(
         "LinearSolve({1, {2}}, {1, 2})", //
         "LinearSolve({1,{2}},{1,2})");
+  }
+
+  public void testLinearSolveFunction001() {
+    check(
+        "lsf=LinearSolve(HilbertMatrix(6));", //
+        "");
+    check(
+        "lsf[{1,1,1,1,1,1}]", //
+        "{-6,210,-1680,5040,-6300,2772}");
+  }
+
+  public void testLinearSolveFunction002() {
+    check(
+        "lsf=LinearSolve(N(HilbertMatrix(6)));", //
+        "");
+    check(
+        "lsf[{1,1,1,1,1,1}]", //
+        "{-6.0,210.0,-1680.0,5040.0,-6300.0,2772.0}");
   }
 
   public void testLiouvilleLambda() {
@@ -21171,6 +21232,17 @@ public class LowercaseTestCase extends AbstractTestCase {
   }
 
   public void testMatrixRank() {
+    //  github #232
+    check(
+        "RowReduce({{1,2,3,4,5},{2,4,6,8,11},{3,6,9,12,14},{4,8,12,16,20}})", //
+        "{{1,2,3,4,0},\n" //
+            + " {0,0,0,0,1},\n"
+            + " {0,0,0,0,0},\n"
+            + " {0,0,0,0,0}}");
+    check(
+        "MatrixRank({{1,2,3,4,5},{2,4,6,8,11},{3,6,9,12,14},{4,8,12,16,20}})", //
+        "2");
+
     check(
         "MatrixRank({{1, 1, 0}, {1, 0, 1}, {0, 1, 1}})", //
         "3");
@@ -28384,26 +28456,51 @@ public class LowercaseTestCase extends AbstractTestCase {
   }
 
   public void testQRDecomposition() {
+    // TODO https: // github.com/Hipparchus-Math/hipparchus/issues/137
+    //    check(
+    //        "qrd=QRDecomposition({{0.20196127709244793 + 0.925718764963565*I, 0.05384699229616263
+    // + 0.37879682375770196*I, 0.675740491722238 + 0.7581876553357298*I}, \n"
+    //            + "  {0.15034789645557778 + 0.523962371716961*I, 0.12845115500176374 +
+    // 0.8281433754893717*I, 0.8470430157403761 + 0.06803052493562567*I}, \n"
+    //            + "  {0.9842768557114026 + 0.29845479189900503*I, 0.3148161888755976 +
+    // 0.07972894452542922*I, 0.47007587051022437 + 0.3777710615375067*I}})", //
+    //        "{\n" //
+    //            +
+    // "{{-0.78596788157487251+I*(-0.41641150790401054),0.10092416871068+I*0.4748177204221769,0.96092701912128708+I*(-0.39046321623522134)},\n"
+    //            + "
+    // {-0.46670803707619551+I*(-0.20986103141169112),-0.90398884023878067+I*0.10786367156055666,-0.14378183427974028+I*0.0030342822735377611},\n"
+    //            + "
+    // {-0.81059871236446845+I*0.52458743675928043,0.64468678990975258+I*0.07691637615555559,-0.702878251984557+I*(-0.53443527106410859)}},\n"
+    //            +
+    // "{{-0.68788360430750516+I*(-0.81336162840457315),-0.067755213346249981+I*(-0.63308226763918029),-1.1756539332085431+I*(-1.1464338161551266)},\n"
+    //            + "
+    // {0.0,-0.18304460039071709+I*(-0.5953651779713297),-0.79086291949341713+I*0.70693989848929339},\n"
+    //            + " {0.0,0.0,0.69487393799819596+I*(-0.05925237687724915)}}}");
+//    check(
+//        "ConjugateTranspose(qrd[[1]]).qrd[[2]]", //
+//        "");
     check(
         "Together(1-(1+Sqrt(35))/Sqrt(35))", //
         "-1/Sqrt(35)");
-    //    check(
-    //        "QRDecomposition({{1, 2}, {3, 4}, {5, 6}})", //
-    //        "QRDecomposition(Indeterminate)");
+
     check(
         "QRDecomposition(Indeterminate)", //
         "QRDecomposition(Indeterminate)");
     check(
         "QRDecomposition({{1, 2}, {3, 4}, {5, 6}})", //
-        "{{{-0.169031,0.897085,0.408248},\n"
+        "{\n" //
+            + "{{-0.169031,0.897085,0.408248},\n"
             + " {-0.507093,0.276026,-0.816497},\n"
-            + " {-0.845154,-0.345033,0.408248}},{{-5.91608,-7.43736},\n"
+            + " {-0.845154,-0.345033,0.408248}},\n"
+            + "{{-5.91608,-7.43736},\n"
             + " {0.0,0.828079},\n"
             + " {0.0,0.0}}}");
     check(
         "QRDecomposition({{1, 2, 3}, {4, 5, 6}})", //
-        "{{{-0.242536,0.970143},\n"
-            + " {-0.970143,-0.242536}},{{-4.12311,-5.33578,-6.54846},\n"
+        "{\n" //
+            + "{{-0.242536,0.970143},\n"
+            + " {-0.970143,-0.242536}},\n"
+            + "{{-4.12311,-5.33578,-6.54846},\n"
             + " {0.0,0.727607,1.45521}}}");
   }
 
@@ -37744,6 +37841,16 @@ public class LowercaseTestCase extends AbstractTestCase {
     check(
         "$f($h(0)) ^= h0;$f($h(x_)) ^:= 2*$f($h(x - 1));$f($h(10))", //
         "1024*h0");
+
+    check(
+        "a*b_ ^:= c", //
+        "");
+    check(
+        "2*a", //
+        "c");
+    check(
+        "2*a*d", //
+        "c");
   }
 
   public void testValueQ() {
