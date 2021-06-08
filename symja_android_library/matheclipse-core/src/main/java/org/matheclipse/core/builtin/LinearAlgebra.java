@@ -32,6 +32,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.function.Predicate;
 
+import org.hipparchus.complex.Complex;
 import org.hipparchus.exception.MathIllegalArgumentException;
 import org.hipparchus.exception.MathRuntimeException;
 import org.hipparchus.linear.BlockFieldMatrix;
@@ -40,6 +41,7 @@ import org.hipparchus.linear.EigenDecomposition;
 import org.hipparchus.linear.FieldDecompositionSolver;
 import org.hipparchus.linear.FieldLUDecomposition;
 import org.hipparchus.linear.FieldMatrix;
+import org.hipparchus.linear.FieldQRDecomposition;
 import org.hipparchus.linear.FieldVector;
 import org.hipparchus.linear.MatrixUtils;
 import org.hipparchus.linear.RealMatrix;
@@ -62,10 +64,9 @@ import org.matheclipse.core.eval.util.IndexFunctionDiagonal;
 import org.matheclipse.core.eval.util.IndexTableGenerator;
 import org.matheclipse.core.expression.ASTRealMatrix;
 import org.matheclipse.core.expression.ASTRealVector;
-import org.matheclipse.core.expression.ASTSeriesData;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.expression.S;
-import org.matheclipse.core.generic.BinaryBindIth1st;
+import org.matheclipse.core.expression.data.LinearSolveFunctionExpr;
 import org.matheclipse.core.generic.Comparators;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IASTAppendable;
@@ -73,13 +74,10 @@ import org.matheclipse.core.interfaces.IASTMutable;
 import org.matheclipse.core.interfaces.IBuiltInSymbol;
 import org.matheclipse.core.interfaces.IEvalStepListener;
 import org.matheclipse.core.interfaces.IExpr;
-import org.matheclipse.core.interfaces.IInteger;
 import org.matheclipse.core.interfaces.INumber;
 import org.matheclipse.core.interfaces.INumericArray;
-import org.matheclipse.core.interfaces.IRational;
 import org.matheclipse.core.interfaces.ISparseArray;
 import org.matheclipse.core.interfaces.ISymbol;
-import org.matheclipse.core.reflection.system.Derivative;
 import org.matheclipse.parser.client.FEConfig;
 
 public final class LinearAlgebra {
@@ -113,6 +111,7 @@ public final class LinearAlgebra {
       S.JacobiMatrix.setEvaluator(new JacobiMatrix());
       S.LeastSquares.setEvaluator(new LeastSquares());
       S.LinearSolve.setEvaluator(new LinearSolve());
+      S.LinearSolveFunction.setEvaluator(new LinearSolveFunction());
       S.LowerTriangularize.setEvaluator(new LowerTriangularize());
       S.LUDecomposition.setEvaluator(new LUDecomposition());
       S.MatrixMinimalPolynomial.setEvaluator(new MatrixMinimalPolynomial());
@@ -170,7 +169,7 @@ public final class LinearAlgebra {
     }
 
     private final FieldMatrix<IExpr> originalMatrix;
-    private final FieldMatrix<IExpr> rowReducedMatrix;
+    private FieldMatrix<IExpr> rowReducedMatrix;
     private FieldMatrix<IExpr> nullSpaceCache;
     private int matrixRankCache;
 
@@ -186,19 +185,139 @@ public final class LinearAlgebra {
      * Constructor which creates row reduced echelon matrix from the given <code>
      * FieldMatrix&lt;T&gt;</code> matrix.
      *
+     * <p><b>Note:</b> use {@link AbstractMatrix1Expr#POSSIBLE_ZEROQ_TEST} as <code>zeroChecker
+     * </code>,to trigger the simple &quot;numeric&quot; rowReduce method.
+     *
      * @param matrix matrix which will be transformed to a row reduced echelon matrix.
      * @zeroChecker check if an element is 0.
-     * @see #rowReduce()
+     * @see #rowReduceAdvancedZeroTest()
      */
     public FieldReducedRowEchelonForm(FieldMatrix<IExpr> matrix, Predicate<IExpr> zeroChecker) {
       this.originalMatrix = matrix;
-      this.rowReducedMatrix = matrix.copy();
+      this.zeroChecker = zeroChecker;
       this.numRows = matrix.getRowDimension();
       this.numCols = matrix.getColumnDimension();
       this.matrixRankCache = -1;
       this.nullSpaceCache = null;
-      this.zeroChecker = zeroChecker;
-      rowReduce();
+      this.rowReducedMatrix = matrix.copy();
+      if (zeroChecker instanceof AbstractMatrix1Expr.PossibleZeroQTest) {
+        rowReduce();
+      } else {
+        rowReduceAdvancedZeroTest();
+      }
+    }
+
+    /**
+     * Create the &quot;reduced row echelon form&quot; of a matrix.
+     *
+     * <p>See: <a href="http://en.wikipedia.org/wiki/Row_echelon_form">Wikipedia - Row echelon
+     * form</a>.
+     *
+     * @return
+     */
+    public void rowReduce() {
+      int pivotRow = 0;
+      int i;
+
+      // number of rows and columns in matrix
+      int numRows = rowReducedMatrix.getRowDimension();
+      int numColumns = rowReducedMatrix.getColumnDimension();
+
+      for (int k = 0; k < numRows; k++) {
+        if (numColumns <= pivotRow) {
+          break;
+        }
+        i = k;
+        while (isZero(rowReducedMatrix.getEntry(i, pivotRow))) {
+          i++;
+          if (numRows == i) {
+            i = k;
+            pivotRow++;
+            if (numColumns == pivotRow) {
+              pivotRow--;
+              break;
+            }
+          }
+        }
+
+        rowSwap(i, k);
+
+        if (!isZero(rowReducedMatrix.getEntry(k, pivotRow))) {
+          // Force pivot to be 1
+          if (!isOne(rowReducedMatrix.getEntry(k, pivotRow))) {
+            rowScale(k, (rowReducedMatrix.getEntry(k, pivotRow).inverse()));
+          }
+        }
+        for (i = 0; i < numRows; i++) {
+          if (i != k) {
+            rowAddScale(k, i, rowReducedMatrix.getEntry(i, pivotRow).negate());
+          }
+        }
+        pivotRow++;
+      }
+    }
+
+    /**
+     * Swap positions of 2 rows
+     *
+     * @param rowIndex1 first index of row to swap
+     * @param rowIndex2 second index of row to swap
+     */
+    private void rowSwap(int rowIndex1, int rowIndex2) {
+      if (rowIndex1 != rowIndex2) {
+        // number of columns in matrix
+        final int numColumns = rowReducedMatrix.getColumnDimension();
+
+        for (int k = 0; k < numColumns; k++) {
+          IExpr hold = rowReducedMatrix.getEntry(rowIndex2, k);
+          rowReducedMatrix.setEntry(rowIndex2, k, rowReducedMatrix.getEntry(rowIndex1, k));
+          rowReducedMatrix.setEntry(rowIndex1, k, hold);
+        }
+      }
+    }
+
+    /**
+     * Multiplies a row by a scalar.
+     *
+     * @param rowReducedMatrix matrix before row addition
+     * @param rowIndex index of row to be scaled
+     * @param scalar value to scale row by
+     */
+    private void rowScale(int rowIndex, IExpr scalar) {
+      if (!isZero(scalar)) {
+        // number of columns in matrix
+        int numColumns = rowReducedMatrix.getColumnDimension();
+
+        for (int k = 0; k < numColumns; k++) {
+          rowReducedMatrix.setEntry(
+              rowIndex, k, rowReducedMatrix.getEntry(rowIndex, k).multiply(scalar));
+        }
+      }
+    }
+
+    /**
+     * Adds a row by the scalar of another row row2 = row2 + (row1 * scalar)
+     *
+     * @param rowReducedMatrix matrix before row additon
+     * @param rowIndex1 index of row to be added
+     * @param rowIndex2 index or row that row1 is added to
+     * @param scalar value to scale row by
+     */
+    private void rowAddScale(int rowIndex1, int rowIndex2, IExpr scalar) {
+      if (!isZero(scalar)) {
+        // number of columns in matrix
+        int numColumns = rowReducedMatrix.getColumnDimension();
+
+        for (int k = 0; k < numColumns; k++) {
+          //      matrix[rowIndex2][k] += (matrix[rowIndex1][k] * scalar);
+          rowReducedMatrix.setEntry(
+              rowIndex2,
+              k,
+              rowReducedMatrix
+                  .getEntry(rowIndex2, k)
+                  .add(rowReducedMatrix.getEntry(rowIndex1, k).multiply(scalar)));
+        }
+      }
     }
 
     /**
@@ -412,14 +531,15 @@ public final class LinearAlgebra {
     }
 
     /**
-     * Create the &quot;reduced row echelon form&quot; of a matrix.
+     * Create the &quot;reduced row echelon form&quot; of a matrix with an advanced symbolic
+     * ZeroTest
      *
      * <p>See: <a href="http://en.wikipedia.org/wiki/Row_echelon_form">Wikipedia - Row echelon
      * form</a>.
      *
      * @return
      */
-    private FieldMatrix<IExpr> rowReduce() {
+    private FieldMatrix<IExpr> rowReduceAdvancedZeroTest() {
       RowColIndex pivot = new RowColIndex(0, 0);
       int submatrix = 0;
       for (int x = 0; x < numCols; x++) {
@@ -689,10 +809,8 @@ public final class LinearAlgebra {
 
     @Override
     public IExpr evaluate(final IAST ast, EvalEngine engine) {
-      RealMatrix matrix;
       try {
-
-        matrix = ast.arg1().toRealMatrix();
+        RealMatrix matrix = ast.arg1().toRealMatrix();
         if (matrix != null) {
           final org.hipparchus.linear.CholeskyDecomposition dcomposition =
               new org.hipparchus.linear.CholeskyDecomposition(matrix);
@@ -958,7 +1076,8 @@ public final class LinearAlgebra {
       // @since version 1.9
       //      final FieldLUDecomposition<IExpr> lu = new FieldLUDecomposition<IExpr>(matrix,
       // zeroChecker);
-      final FieldLUDecomposition<IExpr> lu = new FieldLUDecomposition<IExpr>(matrix);
+      final FieldLUDecomposition<IExpr> lu =
+          new FieldLUDecomposition<IExpr>(matrix, zeroChecker, false);
       return F.evalExpand(lu.getDeterminant());
     }
 
@@ -2139,7 +2258,8 @@ public final class LinearAlgebra {
       // @since version 1.9
       //  final FieldLUDecomposition<IExpr> lu = new FieldLUDecomposition<IExpr>(matrix,
       // zeroChecker);
-      final FieldLUDecomposition<IExpr> lu = new FieldLUDecomposition<IExpr>(matrix);
+      final FieldLUDecomposition<IExpr> lu =
+          new FieldLUDecomposition<IExpr>(matrix, zeroChecker, false);
       FieldDecompositionSolver<IExpr> solver = lu.getSolver();
       if (!solver.isNonSingular()) {
         // Matrix `1` is singular.
@@ -2380,64 +2500,70 @@ public final class LinearAlgebra {
     @Override
     public IExpr evaluate(final IAST ast, EvalEngine engine) {
       final int[] matrixDims = ast.arg1().isMatrix();
-      if (matrixDims != null && ast.arg2().isVector() >= 0) {
+      if (matrixDims != null) {
         try {
+
+          if (ast.isAST1()) {
+            return createLinearSolveFunction(ast, matrixDims, engine);
+          }
           final FieldMatrix<IExpr> matrix = Convert.list2Matrix(ast.arg1());
-          final FieldVector<IExpr> vector = Convert.list2Vector(ast.arg2());
-          if (matrix != null && vector != null) {
-            if (matrixDims[0] > matrixDims[1]) {
-              if (vector.getDimension() == matrix.getRowDimension()
-                  && vector.getDimension() <= matrix.getColumnDimension()) {
-                return underdeterminedSystem(matrix, vector, engine);
-              }
-              return engine.printMessage("LinearSolve: first argument is not a square matrix.");
-            }
-            if (vector.getDimension() != matrix.getRowDimension()) {
-              return engine.printMessage(
-                  "LinearSolve: matrix row and vector have different dimensions.");
-            }
-            if (matrixDims[0] == 1 && matrixDims[1] >= 1) {
-              IExpr temp = eval1x1Matrix(matrix, vector, engine);
-              if (temp.isPresent()) {
-                return temp;
-              }
-              return underdeterminedSystem(matrix, vector, engine);
-            }
-            if (matrixDims[0] == 2 && matrixDims[1] == 2) {
-              IExpr temp = eval2x2Matrix(matrix, vector, engine);
-              if (temp.isPresent()) {
-                return temp;
-              }
-              return underdeterminedSystem(matrix, vector, engine);
-            }
-            if (matrixDims[0] == 3 && matrixDims[1] == 3) {
-              IExpr temp = eval3x3Matrix(matrix, vector, engine);
-              if (temp.isPresent()) {
-                return temp;
-              }
-              return underdeterminedSystem(matrix, vector, engine);
-            }
-            if (matrixDims[0] != matrixDims[1]) {
-              return underdeterminedSystem(matrix, vector, engine);
-            }
-            Predicate<IExpr> zeroChecker = AbstractMatrix1Expr.optionZeroTest(ast, 3, engine);
-            // @since version 1.9
-            // FieldDecompositionSolver<IExpr> solver =
-            //            new FieldLUDecomposition<IExpr>(matrix, zeroChecker).getSolver();
-            FieldDecompositionSolver<IExpr> solver =
-                new FieldLUDecomposition<IExpr>(matrix).getSolver();
-            if (solver.isNonSingular()) {
-              FieldVector<IExpr> resultVector = solver.solve(vector);
-              for (int i = 0; i < resultVector.getDimension(); i++) {
-                if (resultVector.getEntry(i).isIndeterminate()
-                    || //
-                    resultVector.getEntry(i).isDirectedInfinity()) {
+          if (ast.arg2().isVector() >= 0) {
+            final FieldVector<IExpr> vector = Convert.list2Vector(ast.arg2());
+            if (matrix != null && vector != null) {
+              if (matrixDims[0] > matrixDims[1]) {
+                if (vector.getDimension() == matrix.getRowDimension()
+                    && vector.getDimension() <= matrix.getColumnDimension()) {
                   return underdeterminedSystem(matrix, vector, engine);
                 }
+                return engine.printMessage("LinearSolve: first argument is not a square matrix.");
               }
-              return Convert.vector2List(resultVector);
-            } else {
-              return underdeterminedSystem(matrix, vector, engine);
+              if (vector.getDimension() != matrix.getRowDimension()) {
+                return engine.printMessage(
+                    "LinearSolve: matrix row and vector have different dimensions.");
+              }
+              if (matrixDims[0] == 1 && matrixDims[1] >= 1) {
+                IExpr temp = eval1x1Matrix(matrix, vector, engine);
+                if (temp.isPresent()) {
+                  return temp;
+                }
+                return underdeterminedSystem(matrix, vector, engine);
+              }
+              if (matrixDims[0] == 2 && matrixDims[1] == 2) {
+                IExpr temp = eval2x2Matrix(matrix, vector, engine);
+                if (temp.isPresent()) {
+                  return temp;
+                }
+                return underdeterminedSystem(matrix, vector, engine);
+              }
+              if (matrixDims[0] == 3 && matrixDims[1] == 3) {
+                IExpr temp = eval3x3Matrix(matrix, vector, engine);
+                if (temp.isPresent()) {
+                  return temp;
+                }
+                return underdeterminedSystem(matrix, vector, engine);
+              }
+              if (matrixDims[0] != matrixDims[1]) {
+                return underdeterminedSystem(matrix, vector, engine);
+              }
+              Predicate<IExpr> zeroChecker = AbstractMatrix1Expr.optionZeroTest(ast, 3, engine);
+              // @since version 1.9
+              // FieldDecompositionSolver<IExpr> solver =
+              //            new FieldLUDecomposition<IExpr>(matrix, zeroChecker).getSolver();
+              FieldDecompositionSolver<IExpr> solver =
+                  new FieldLUDecomposition<IExpr>(matrix, zeroChecker, false).getSolver();
+              if (solver.isNonSingular()) {
+                FieldVector<IExpr> resultVector = solver.solve(vector);
+                for (int i = 0; i < resultVector.getDimension(); i++) {
+                  if (resultVector.getEntry(i).isIndeterminate()
+                      || //
+                      resultVector.getEntry(i).isDirectedInfinity()) {
+                    return underdeterminedSystem(matrix, vector, engine);
+                  }
+                }
+                return Convert.vector2List(resultVector);
+              } else {
+                return underdeterminedSystem(matrix, vector, engine);
+              }
             }
           }
         } catch (LimitException le) {
@@ -2452,9 +2578,39 @@ public final class LinearAlgebra {
       return F.NIL;
     }
 
+    private static IExpr createLinearSolveFunction(
+        final IAST ast, final int[] matrixDims, EvalEngine engine) {
+      if (matrixDims[0] > matrixDims[1]) {
+        return engine.printMessage("LinearSolve: first argument is not a square matrix.");
+      }
+
+      final FieldMatrix<IExpr> matrix = Convert.list2Matrix(ast.arg1(), true);
+      if (matrix != null) {
+        Predicate<IExpr> zeroChecker = AbstractMatrix1Expr.optionZeroTest(ast, 2, engine);
+        FieldDecompositionSolver<IExpr> solver =
+            new FieldLUDecomposition<IExpr>(matrix, zeroChecker, false).getSolver();
+        if (solver.isNonSingular()) {
+          return LinearSolveFunctionExpr.createIExpr(solver);
+        }
+        return engine.printMessage("LinearSolve: first argument is a nonsingular matrix.");
+      }
+
+      final FieldMatrix<Complex> complexMatrix = Convert.list2ComplexMatrix(ast.arg1());
+      if (complexMatrix != null) {
+        Predicate<Complex> zeroChecker = c -> F.isZero(c);
+        FieldDecompositionSolver<Complex> solver =
+            new FieldLUDecomposition<Complex>(complexMatrix, zeroChecker, false).getSolver();
+        if (solver.isNonSingular()) {
+          return LinearSolveFunctionExpr.createComplex(solver);
+        }
+      }
+
+      return F.NIL;
+    }
+
     @Override
     public int[] expectedArgSize(IAST ast) {
-      return ARGS_2_3;
+      return ARGS_1_3;
     }
 
     /**
@@ -2666,6 +2822,63 @@ public final class LinearAlgebra {
     }
   }
 
+  private static class LinearSolveFunction extends AbstractFunctionEvaluator {
+
+    @Override
+    public IExpr evaluate(final IAST ast, EvalEngine engine) {
+      if (ast.head() instanceof LinearSolveFunctionExpr && ast.isAST1()) {
+        try {
+          IExpr arg1 = ast.arg1();
+          if (arg1.isVector() < 1) {
+            return F.NIL;
+          }
+          LinearSolveFunctionExpr<?> lsf = (LinearSolveFunctionExpr<?>) ast.head();
+          if (lsf.isComplexNumeric()) {
+            FieldDecompositionSolver<Complex> data =
+                (FieldDecompositionSolver<Complex>) lsf.toData();
+            if (data.isNonSingular()) {
+              final FieldVector<Complex> vector = Convert.list2ComplexVector(arg1);
+              if (vector == null) {
+                return F.NIL;
+              }
+              // see https://github.com/Hipparchus-Math/hipparchus/issues/135
+              //            if (vector.getDimension() != data.getRowDimension()) {
+              //              // Coefficient matrix and target vector or matrix do not have the same
+              // dimensions.
+              //              return IOFunctions.printMessage(ast.topHead(), "lslc", F.List(),
+              // engine);
+              //            }
+              FieldVector<Complex> resultVector = data.solve(vector);
+              return Convert.complexVector2List(resultVector);
+            }
+          } else {
+            FieldDecompositionSolver<IExpr> data = (FieldDecompositionSolver<IExpr>) lsf.toData();
+            if (data.isNonSingular()) {
+              final FieldVector<IExpr> vector = Convert.list2Vector(arg1);
+              if (vector == null) {
+                return F.NIL;
+              }
+              // see https://github.com/Hipparchus-Math/hipparchus/issues/135
+              //            if (vector.getDimension() != data.getRowDimension()) {
+              //              // Coefficient matrix and target vector or matrix do not have the same
+              // dimensions.
+              //              return IOFunctions.printMessage(ast.topHead(), "lslc", F.List(),
+              // engine);
+              //            }
+              FieldVector<IExpr> resultVector = data.solve(vector);
+              return Convert.vector2List(resultVector);
+            }
+          }
+
+        } catch (final ValidateException ve) {
+          // int number validation
+          return engine.printMessage(ast.topHead(), ve);
+        }
+      }
+      return F.NIL;
+    }
+  }
+
   private static class LowerTriangularize extends AbstractFunctionEvaluator {
 
     @Override
@@ -2756,7 +2969,8 @@ public final class LinearAlgebra {
             // @since version 1.9
             // final FieldLUDecomposition<IExpr> lu =  new FieldLUDecomposition<IExpr>(matrix,
             // zeroChecker);
-            final FieldLUDecomposition<IExpr> lu = new FieldLUDecomposition<IExpr>(matrix);
+            final FieldLUDecomposition<IExpr> lu =
+                new FieldLUDecomposition<IExpr>(matrix, zeroChecker, false);
             final FieldMatrix<IExpr> lMatrix = lu.getL();
             final FieldMatrix<IExpr> uMatrix = lu.getU();
             final int[] iArr = lu.getPivot();
@@ -3395,7 +3609,7 @@ public final class LinearAlgebra {
           matrix = Convert.list2Matrix(ast.arg1());
           if (matrix != null) {
             FieldReducedRowEchelonForm fmw =
-                new FieldReducedRowEchelonForm(matrix, x -> x.isPossibleZero(false));
+                new FieldReducedRowEchelonForm(matrix, AbstractMatrix1Expr.POSSIBLE_ZEROQ_TEST);
             FieldMatrix<IExpr> nullspace = fmw.getNullSpace(F.CN1);
             if (nullspace == null) {
               return F.List();
@@ -3677,12 +3891,12 @@ public final class LinearAlgebra {
    *  {0.0,0.0}}}
    * </pre>
    */
-  private static class QRDecomposition extends AbstractMatrix1Expr {
+  private static class QRDecomposition extends AbstractFunctionEvaluator {
 
-    @Override
-    public int[] checkMatrixDimensions(IExpr arg1) {
-      return Convert.checkNonEmptyRectangularMatrix(S.QRDecomposition, arg1);
-    }
+    //    @Override
+    //    public int[] checkMatrixDimensions(IExpr arg1) {
+    //      return Convert.checkNonEmptyRectangularMatrix(S.QRDecomposition, arg1);
+    //    }
 
     @Override
     public IExpr evaluate(final IAST ast, EvalEngine engine) {
@@ -3693,17 +3907,18 @@ public final class LinearAlgebra {
         engine.setTogetherMode(true);
         int[] dim = ast.arg1().isMatrix();
         if (dim != null) {
-          //          matrix = Convert.list2Matrix((IAST) ast.arg1());
-          //          if (matrix != null) {
-          //            FieldQRDecomposition ed =
-          //                new FieldQRDecomposition(matrix, F.C0, x -> x.isPossibleZero(true));
-          //            FieldMatrix<IExpr> q = ed.getQ();
-          //            FieldMatrix<IExpr> r = ed.getR();
-          //            if (Convert.matrix2List(q) != null && Convert.matrix2List(r) != null) {
-          //              return F.List(Convert.matrix2List(q), Convert.matrix2List(r));
-          //            }
-          //            return F.NIL;
-          //          }
+          final FieldMatrix<Complex> complexMatrix = Convert.list2ComplexMatrix(ast.arg1());
+          if (complexMatrix != null) {
+            FieldQRDecomposition<Complex> ed = new FieldQRDecomposition<Complex>(complexMatrix);
+            FieldMatrix<Complex> q = ed.getQ();
+            if (Convert.complexMatrix2List(q) != null) {
+              FieldMatrix<Complex> r = ed.getR();
+              if (Convert.complexMatrix2List(r) != null) {
+                return F.List(Convert.complexMatrix2List(q), Convert.complexMatrix2List(r));
+              }
+            }
+            return F.NIL;
+          }
         }
 
       } catch (final ClassCastException e) {
@@ -3718,25 +3933,33 @@ public final class LinearAlgebra {
         engine.setTogetherMode(togetherMode);
       }
 
-      // switch to numeric calculation
-      return numericEval(ast, engine);
-    }
-
-    @Override
-    public IExpr matrixEval(FieldMatrix<IExpr> matrix, Predicate<IExpr> zeroChecker) {
       return F.NIL;
     }
 
     @Override
-    public IAST realMatrixEval(RealMatrix matrix) {
-      org.hipparchus.linear.QRDecomposition ed = new org.hipparchus.linear.QRDecomposition(matrix);
-      RealMatrix q = ed.getQ();
-      RealMatrix r = ed.getR();
-      if (Convert.realMatrix2List(q) != null && Convert.realMatrix2List(r) != null) {
-        return F.List(Convert.realMatrix2List(q), Convert.realMatrix2List(r));
-      }
-      return F.NIL;
+    public int[] expectedArgSize(IAST ast) {
+      return ARGS_1_1;
     }
+    //    @Override
+    //    public IExpr matrixEval(FieldMatrix<IExpr> matrix, Predicate<IExpr> zeroChecker) {
+    //      return F.NIL;
+    //    }
+
+    //    @Override
+    //    public IAST realMatrixEval(RealMatrix matrix) {
+    //      org.hipparchus.linear.QRDecomposition ed = new
+    // org.hipparchus.linear.QRDecomposition(matrix);
+    //      RealMatrix q = ed.getQ();
+    //      RealMatrix r = ed.getR();
+    //      IASTMutable qMatrix = Convert.realMatrix2List(q);
+    //      if (qMatrix != null) {
+    //        IASTMutable rMatrix = Convert.realMatrix2List(r);
+    //        if (rMatrix != null) {
+    //          return F.List(qMatrix, rMatrix);
+    //        }
+    //      }
+    //      return F.NIL;
+    //    }
   }
 
   private static class RiccatiSolve extends AbstractEvaluator {
@@ -4826,7 +5049,7 @@ public final class LinearAlgebra {
       }
     }
     FieldReducedRowEchelonForm ref =
-        new FieldReducedRowEchelonForm(matrix, x -> x.isPossibleZero(false));
+        new FieldReducedRowEchelonForm(matrix, AbstractMatrix1Expr.POSSIBLE_ZEROQ_TEST);
     FieldMatrix<IExpr> rowReduced = ref.getRowReducedMatrix();
     // System.out.println(rowReduced.toString());
     IExpr lastVarCoefficient = rowReduced.getEntry(rows - 1, cols - 2);
@@ -4880,7 +5103,7 @@ public final class LinearAlgebra {
       return resultList;
     }
     FieldReducedRowEchelonForm ref =
-        new FieldReducedRowEchelonForm(matrix, x -> x.isPossibleZero(false));
+        new FieldReducedRowEchelonForm(matrix, AbstractMatrix1Expr.POSSIBLE_ZEROQ_TEST);
     FieldMatrix<IExpr> rowReduced = ref.getRowReducedMatrix();
     int size = listOfVariables.argSize();
 
