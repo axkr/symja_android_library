@@ -1107,8 +1107,7 @@ public class EllipticIntegrals {
         } catch (ValidateException ve) {
         }
         if (Double.isNaN(zDouble) || Double.isNaN(mDouble)) {
-          //          return F.complexNum(EllipticFunctionsJS.jacobiCD(z.evalComplex(),
-          // m.evalComplex()));
+          return F.complexNum(EllipticFunctionsJS.jacobiCD(z.evalComplex(), m.evalComplex()));
         } else {
           return F.num(EllipticFunctionsJS.jacobiCD(zDouble, mDouble));
         }
@@ -1329,7 +1328,7 @@ public class EllipticIntegrals {
           } catch (ValidateException ve) {
           }
           if (Double.isNaN(zDouble) || Double.isNaN(mDouble)) {
-            // pass
+            return F.complexNum(EllipticFunctionsJS.jacobiSC(z.evalComplex(), m.evalComplex()));
           } else {
             return F.num(EllipticFunctionsJS.jacobiSC(zDouble, mDouble));
           }
@@ -1404,8 +1403,7 @@ public class EllipticIntegrals {
           } catch (ValidateException ve) {
           }
           if (Double.isNaN(zDouble) || Double.isNaN(mDouble)) {
-            //	            return F.complexNum(EllipticFunctionsJS.jacobiSD(z.evalComplex(),
-            // m.evalComplex()));
+            return F.complexNum(EllipticFunctionsJS.jacobiSD(z.evalComplex(), m.evalComplex()));
           } else {
             return F.num(EllipticFunctionsJS.jacobiSD(zDouble, mDouble));
           }

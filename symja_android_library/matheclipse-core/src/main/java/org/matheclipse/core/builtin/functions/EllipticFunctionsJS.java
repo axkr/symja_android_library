@@ -6,6 +6,10 @@ import org.hipparchus.complex.Complex;
 import org.hipparchus.special.elliptic.CopolarC;
 import org.hipparchus.special.elliptic.CopolarD;
 import org.hipparchus.special.elliptic.CopolarN;
+import org.hipparchus.special.elliptic.FieldCopolarC;
+import org.hipparchus.special.elliptic.FieldCopolarD;
+import org.hipparchus.special.elliptic.FieldCopolarN;
+import org.hipparchus.special.elliptic.FieldJacobiElliptic;
 import org.hipparchus.special.elliptic.JacobiElliptic;
 import org.hipparchus.special.elliptic.JacobiEllipticBuilder;
 import org.matheclipse.core.basic.Config;
@@ -268,16 +272,28 @@ public class EllipticFunctionsJS {
         .exp();
   }
 
+  public static Complex jacobiSC(Complex x, Complex m) {
+    final FieldJacobiElliptic<Complex> je = JacobiEllipticBuilder.build(m);
+    final FieldCopolarC<Complex> valuesC = je.valuesC(x);
+    return valuesC.sc();
+  }
+
   public static double jacobiSC(double x, double m) {
     final JacobiElliptic je = JacobiEllipticBuilder.build(m);
     final CopolarC valuesC = je.valuesC(x);
     return valuesC.sc();
   }
 
+  public static Complex jacobiSD(Complex x, Complex m) {
+    final FieldJacobiElliptic<Complex> je = JacobiEllipticBuilder.build(m);
+    final FieldCopolarD<Complex> valuesD = je.valuesD(x);
+    return valuesD.sd();
+  }
+
   public static double jacobiSD(double x, double m) {
     final JacobiElliptic je = JacobiEllipticBuilder.build(m);
-    final CopolarD valuesC = je.valuesD(x);
-    return valuesC.sd();
+    final CopolarD valuesD = je.valuesD(x);
+    return valuesD.sd();
   }
 
   /**
@@ -288,7 +304,9 @@ public class EllipticFunctionsJS {
    * @return
    */
   public static Complex jacobiSN(Complex x, Complex m) {
-
+    //    final FieldJacobiElliptic<Complex> je = JacobiEllipticBuilder.build(m);
+    //    final FieldCopolarN<Complex> valuesN = je.valuesN(x);
+    //    return valuesN.sn();
     Complex q = ellipticNome(m);
 
     // if ( m > 1 || isComplex(x) || isComplex(m) ) {
@@ -300,8 +318,6 @@ public class EllipticFunctionsJS {
     return jacobiTheta(3, Complex.ZERO, q)
         .divide(jacobiTheta(2, Complex.ZERO, q))
         .multiply(jacobiTheta(1, t, q).divide(jacobiTheta(4, t, q)));
-
-    // }
   }
 
   /**
@@ -350,6 +366,9 @@ public class EllipticFunctionsJS {
    * @return
    */
   public static Complex jacobiCN(Complex x, Complex m) {
+    //    final FieldJacobiElliptic<Complex> je = JacobiEllipticBuilder.build(m);
+    //    final FieldCopolarN<Complex> valuesN = je.valuesN(x);
+    //    return valuesN.cn();
     Complex q = ellipticNome(m);
     // if ( m > 1 || isComplex(x) || isComplex(m) ) {
     Complex a2 = jacobiTheta(3, Complex.ZERO, q);
@@ -359,7 +378,6 @@ public class EllipticFunctionsJS {
     return jacobiTheta(4, Complex.ZERO, q)
         .divide(jacobiTheta(2, Complex.ZERO, q))
         .multiply(jacobiTheta(2, t, q).divide(jacobiTheta(4, t, q)));
-    // }
   }
 
   /**
@@ -401,6 +419,12 @@ public class EllipticFunctionsJS {
     //        .multiply(jacobiTheta(2, t, q).divide(jacobiTheta(4, t, q)));
   }
 
+  public static Complex jacobiCD(Complex x, Complex m) {
+    final FieldJacobiElliptic<Complex> je = JacobiEllipticBuilder.build(m);
+    final FieldCopolarD<Complex> valuesD = je.valuesD(x);
+    return valuesD.cd();
+  }
+
   public static double jacobiCD(double x, double m) {
     final JacobiElliptic je = JacobiEllipticBuilder.build(m);
     final CopolarD valuesD = je.valuesD(x);
@@ -415,7 +439,9 @@ public class EllipticFunctionsJS {
    * @return
    */
   public static Complex jacobiDN(Complex x, Complex m) {
-
+    //    final FieldJacobiElliptic<Complex> je = JacobiEllipticBuilder.build(m);
+    //    final FieldCopolarN<Complex> valuesN = je.valuesN(x);
+    //    return valuesN.dn();
     Complex q = ellipticNome(m);
 
     // if ( m > 1 || isComplex(x) || isComplex(m) ) {
@@ -427,8 +453,6 @@ public class EllipticFunctionsJS {
     return jacobiTheta(4, Complex.ZERO, q)
         .divide(jacobiTheta(3, Complex.ZERO, q))
         .multiply(jacobiTheta(3, t, q).divide(jacobiTheta(4, t, q)));
-
-    // }
   }
 
   /**
