@@ -102,16 +102,11 @@
 	</dependencies>
 
 	<build>
-		<resources>
-			<resource>
-				<filtering>true</filtering>
-				<directory>src/main/resources</directory>
-			</resource>
-		</resources>
 		<pluginManagement>
 			<plugins>
 
 				<plugin>
+					<groupId>org.apache.maven.plugins</groupId>
 					<artifactId>maven-assembly-plugin</artifactId>
 					<configuration>
 						<archive>
@@ -137,11 +132,6 @@
 				<plugin>
 					<groupId>org.codehaus.mojo</groupId>
 					<artifactId>exec-maven-plugin</artifactId>
-					<version>1.4.0</version>
-					<configuration>
-						<executable>java</executable>
-						<mainClass>org.matheclipse.io.eval.Console</mainClass>
-					</configuration>
 					<executions>
 						<execution>
 							<id>server</id>

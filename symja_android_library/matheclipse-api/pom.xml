@@ -70,15 +70,6 @@
 		</repository>
 	</repositories>
 
-	<build>
-		<plugins>
-			<plugin>
-				<groupId>org.apache.maven.plugins</groupId>
-				<artifactId>maven-compiler-plugin</artifactId>
-			</plugin>
-		</plugins>
-	</build>
-
 	<profiles>
 		<profile>
 			<id>release</id>
@@ -93,11 +84,6 @@
 					<plugin>
 						<groupId>org.codehaus.mojo</groupId>
 						<artifactId>exec-maven-plugin</artifactId>
-						<version>1.4.0</version>
-						<configuration>
-							<executable>java</executable>
-							<mainClass>org.matheclipse.api.SymjaServer</mainClass>
-						</configuration>
 						<executions>
 							<execution>
 								<id>api</id>
@@ -130,9 +116,6 @@
 						<groupId>org.sonatype.plugins</groupId>
 						<artifactId>nexus-staging-maven-plugin</artifactId>
 					</plugin>
-
-					<!-- <plugin> <groupId>org.apache.maven.plugins</groupId> <artifactId>maven-checkstyle-plugin</artifactId> 
-						<version>${symja.maven-checkstyle-plugin.version}</version> </plugin> -->
 
 				</plugins>
 			</build>

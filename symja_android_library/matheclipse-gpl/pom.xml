@@ -33,16 +33,11 @@
 	</dependencies>
 
 	<build>
-		<resources>
-			<resource>
-				<filtering>true</filtering>
-				<directory>src/main/resources</directory>
-			</resource>
-		</resources>
 		<pluginManagement>
 			<plugins>
 
 				<plugin>
+					<groupId>org.apache.maven.plugins</groupId>
 					<artifactId>maven-assembly-plugin</artifactId>
 					<configuration>
 						<descriptorRefs>
