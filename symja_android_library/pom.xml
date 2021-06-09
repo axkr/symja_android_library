@@ -71,9 +71,320 @@
 	<properties>
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
 		<java.version>8</java.version>
-		<symja.version>2.0.0-SNAPSHOT</symja.version>
-		<hipparchus.version>2.0-SNAPSHOT</hipparchus.version>
 	</properties>
+
+	<dependencyManagement>
+		<dependencies>
+
+			<dependency>
+				<groupId>com.fasterxml.jackson.core</groupId>
+				<artifactId>jackson-databind</artifactId>
+				<version>2.11.0</version>
+			</dependency>
+
+			<dependency>
+				<groupId>com.fasterxml.jackson.datatype</groupId>
+				<artifactId>jackson-datatype-jsr310</artifactId>
+				<version>2.11.0</version>
+			</dependency>
+
+			<dependency>
+				<groupId>com.github.twosigma</groupId>
+				<artifactId>beakerx</artifactId>
+				<version>1.3.0</version>
+			</dependency>
+
+			<dependency>
+				<groupId>com.github.twosigma.beakerx</groupId>
+				<artifactId>beaker-kernel-base</artifactId>
+				<version>1.3.0</version>
+			</dependency>
+
+			<dependency>
+				<groupId>com.github.wnameless.json</groupId>
+				<artifactId>json-flattener</artifactId>
+				<version>0.8.1</version>
+			</dependency>
+
+			<dependency>
+				<groupId>com.google.code.findbugs</groupId>
+				<artifactId>jsr305</artifactId>
+				<version>3.0.0</version>
+			</dependency>
+
+			<dependency>
+				<groupId>com.google.code.gson</groupId>
+				<artifactId>gson</artifactId>
+				<version>2.8.5</version>
+			</dependency>
+
+			<dependency>
+				<groupId>com.google.guava</groupId>
+				<artifactId>failureaccess</artifactId>
+				<version>1.0.1</version>
+			</dependency>
+
+			<dependency>
+				<groupId>com.google.guava</groupId>
+				<artifactId>guava</artifactId>
+				<version>30.1.1-jre</version>
+			</dependency>
+
+			<dependency>
+				<groupId>com.ibm.icu</groupId>
+				<artifactId>icu4j</artifactId>
+				<version>68.2</version>
+			</dependency>
+
+			<dependency>
+				<groupId>com.tngtech.archunit</groupId>
+				<artifactId>archunit</artifactId>
+				<version>0.18.0</version>
+			</dependency>
+
+			<dependency>
+				<groupId>com.tngtech.archunit</groupId>
+				<artifactId>archunit-junit4</artifactId>
+				<version>0.18.0</version>
+			</dependency>
+
+			<dependency>
+				<groupId>com.univocity</groupId>
+				<artifactId>univocity-parsers</artifactId>
+				<version>2.8.4</version>
+			</dependency>
+
+			<dependency>
+				<groupId>commons-codec</groupId>
+				<artifactId>commons-codec</artifactId>
+				<version>1.14</version>
+			</dependency>
+
+			<dependency>
+				<groupId>io.github.classgraph</groupId>
+				<artifactId>classgraph</artifactId>
+				<version>4.8.60</version>
+			</dependency>
+
+			<dependency>
+				<groupId>io.javalin</groupId>
+				<artifactId>javalin</artifactId>
+				<version>1.7.0</version>
+			</dependency>
+
+			<dependency>
+				<groupId>io.pebbletemplates</groupId>
+				<artifactId>pebble</artifactId>
+				<version>3.1.5</version>
+			</dependency>
+
+			<dependency>
+				<groupId>io.undertow</groupId>
+				<artifactId>undertow-core</artifactId>
+				<version>2.1.0.Final</version>
+			</dependency>
+
+			<dependency>
+				<groupId>io.undertow</groupId>
+				<artifactId>undertow-servlet</artifactId>
+				<version>2.1.0.Final</version>
+			</dependency>
+
+			<dependency>
+				<groupId>it.unimi.dsi</groupId>
+				<artifactId>fastutil</artifactId>
+				<version>8.5.2</version>
+			</dependency>
+
+			<dependency>
+				<groupId>org.antlr</groupId>
+				<artifactId>antlr4-runtime</artifactId>
+				<version>4.8-1</version>
+			</dependency>
+
+			<dependency>
+				<groupId>org.apache.commons</groupId>
+				<artifactId>commons-csv</artifactId>
+				<version>1.4</version>
+			</dependency>
+
+			<dependency>
+				<groupId>org.apache.commons</groupId>
+				<artifactId>commons-lang3</artifactId>
+				<version>3.11</version>
+			</dependency>
+
+			<dependency>
+				<groupId>org.apache.commons</groupId>
+				<artifactId>commons-text</artifactId>
+				<version>1.8</version>
+			</dependency>
+
+			<dependency>
+				<groupId>org.apache.logging.log4j</groupId>
+				<artifactId>log4j-api</artifactId>
+				<version>2.13.2</version>
+			</dependency>
+
+			<dependency>
+				<groupId>org.apache.logging.log4j</groupId>
+				<artifactId>log4j-core</artifactId>
+				<version>2.13.2</version>
+			</dependency>
+
+			<dependency>
+				<groupId>org.apache.lucene</groupId>
+				<artifactId>lucene-analyzers-common</artifactId>
+				<version>8.5.1</version>
+			</dependency>
+
+			<dependency>
+				<groupId>org.apache.lucene</groupId>
+				<artifactId>lucene-core</artifactId>
+				<version>8.5.1</version>
+			</dependency>
+
+			<dependency>
+				<groupId>org.apache.poi</groupId>
+				<artifactId>poi-ooxml</artifactId>
+				<version>4.1.1</version>
+			</dependency>
+
+			<!-- <dependency> <groupId>de.uni-mannheim.rz.krum</groupId> <artifactId>jas</artifactId> 
+				<version>2.6.6025</version> </dependency> -->
+
+			<dependency>
+				<groupId>org.apfloat</groupId>
+				<artifactId>apfloat</artifactId>
+				<version>1.10.1-SNAPSHOT</version>
+			</dependency>
+
+			<dependency>
+				<groupId>org.codehaus.janino</groupId>
+				<artifactId>janino</artifactId>
+				<version>3.1.4</version>
+			</dependency>
+
+			<dependency>
+				<groupId>org.commonmark</groupId>
+				<artifactId>commonmark</artifactId>
+				<version>0.17.2</version>
+			</dependency>
+
+			<dependency>
+				<groupId>org.commonmark</groupId>
+				<artifactId>commonmark-ext-gfm-tables</artifactId>
+				<version>0.17.2</version>
+			</dependency>
+
+			<dependency>
+				<groupId>org.gavaghan</groupId>
+				<artifactId>geodesy</artifactId>
+				<version>1.1.3</version>
+			</dependency>
+
+			<dependency>
+				<groupId>org.hipparchus</groupId>
+				<artifactId>hipparchus-clustering</artifactId>
+				<version>2.0-SNAPSHOT</version>
+			</dependency>
+
+			<dependency>
+				<groupId>org.hipparchus</groupId>
+				<artifactId>hipparchus-core</artifactId>
+				<version>2.0-SNAPSHOT</version>
+			</dependency>
+
+			<dependency>
+				<groupId>org.hipparchus</groupId>
+				<artifactId>hipparchus-fft</artifactId>
+				<version>2.0-SNAPSHOT</version>
+			</dependency>
+
+			<dependency>
+				<groupId>org.hipparchus</groupId>
+				<artifactId>hipparchus-fitting</artifactId>
+				<version>2.0-SNAPSHOT</version>
+			</dependency>
+
+			<dependency>
+				<groupId>org.hipparchus</groupId>
+				<artifactId>hipparchus-ode</artifactId>
+				<version>2.0-SNAPSHOT</version>
+			</dependency>
+
+			<dependency>
+				<groupId>org.hipparchus</groupId>
+				<artifactId>hipparchus-optim</artifactId>
+				<version>2.0-SNAPSHOT</version>
+			</dependency>
+
+			<dependency>
+				<groupId>org.hipparchus</groupId>
+				<artifactId>hipparchus-stat</artifactId>
+				<version>2.0-SNAPSHOT</version>
+			</dependency>
+
+			<dependency>
+				<groupId>org.jheaps</groupId>
+				<artifactId>jheaps</artifactId>
+				<version>0.13</version>
+			</dependency>
+
+			<dependency>
+				<groupId>org.jsoup</groupId>
+				<artifactId>jsoup</artifactId>
+				<version>1.12.1</version>
+			</dependency>
+
+			<dependency>
+				<groupId>org.logicng</groupId>
+				<artifactId>logicng</artifactId>
+				<version>2.0.2</version>
+			</dependency>
+
+			<dependency>
+				<groupId>org.owasp.encoder</groupId>
+				<artifactId>encoder</artifactId>
+				<version>1.2.2</version>
+			</dependency>
+
+			<dependency>
+				<groupId>org.roaringbitmap</groupId>
+				<artifactId>RoaringBitmap</artifactId>
+				<version>0.8.12</version>
+			</dependency>
+
+			<dependency>
+				<groupId>org.slf4j</groupId>
+				<artifactId>log4j-over-slf4j</artifactId>
+				<version>1.7.25</version>
+			</dependency>
+
+			<dependency>
+				<groupId>org.slf4j</groupId>
+				<artifactId>slf4j-simple</artifactId>
+				<version>1.7.25</version>
+			</dependency>
+
+		</dependencies>
+	</dependencyManagement>
+
+	<dependencies>
+
+		<dependency>
+			<groupId>org.junit.jupiter</groupId>
+			<artifactId>junit-jupiter-engine</artifactId>
+			<version>5.7.2</version>
+		</dependency>
+
+		<dependency>
+			<groupId>org.junit.vintage</groupId>
+			<artifactId>junit-vintage-engine</artifactId>
+			<version>5.7.2</version>
+		</dependency>
+
+	</dependencies>
 
 	<repositories>
 		<repository>

@@ -27,13 +27,11 @@
 		<dependency>
 			<groupId>org.apache.logging.log4j</groupId>
 			<artifactId>log4j-core</artifactId>
-			<version>2.13.2</version>
 		</dependency>
 
 		<dependency>
 			<groupId>org.apache.logging.log4j</groupId>
 			<artifactId>log4j-api</artifactId>
-			<version>2.13.2</version>
 		</dependency>
 
 		<!-- see github issues #63 -->
@@ -43,75 +41,58 @@
 		<dependency>
 			<groupId>org.slf4j</groupId>
 			<artifactId>slf4j-simple</artifactId>
-			<version>1.7.25</version>
 			<scope>test</scope>
 		</dependency>
 
 		<dependency>
 			<groupId>org.slf4j</groupId>
 			<artifactId>log4j-over-slf4j</artifactId>
-			<version>1.7.25</version>
 		</dependency>
 
 		<dependency>
 			<groupId>com.google.guava</groupId>
 			<artifactId>failureaccess</artifactId>
-			<version>1.0.1</version>
 		</dependency>
 
 		<dependency>
 			<groupId>com.google.guava</groupId>
 			<artifactId>guava</artifactId>
-			<version>30.1.1-jre</version>
 		</dependency>
 
 		<dependency>
 			<groupId>com.fasterxml.jackson.core</groupId>
 			<artifactId>jackson-databind</artifactId>
-			<version>2.11.0</version>
 		</dependency>
 
 		<dependency>
 			<groupId>com.fasterxml.jackson.datatype</groupId>
 			<artifactId>jackson-datatype-jsr310</artifactId>
-			<version>2.11.0</version>
 		</dependency>
 
 		<dependency>
 			<groupId>io.pebbletemplates</groupId>
 			<artifactId>pebble</artifactId>
-			<version>3.1.5</version>
 		</dependency>
 
 		<dependency>
 			<groupId>org.jheaps</groupId>
 			<artifactId>jheaps</artifactId>
-			<version>0.13</version>
 		</dependency>
 
 		<dependency>
 			<groupId>org.antlr</groupId>
 			<artifactId>antlr4-runtime</artifactId>
-			<version>4.8-1</version>
 		</dependency>
 
 		<dependency>
 			<groupId>org.apache.commons</groupId>
 			<artifactId>commons-text</artifactId>
-			<version>1.8</version>
 		</dependency>
 
 		<!-- <dependency> <groupId>edu.stanford.nlp</groupId> <artifactId>stanford-corenlp</artifactId> 
 			<version>4.0.0</version> </dependency> <dependency> <groupId>edu.stanford.nlp</groupId> 
 			<artifactId>stanford-corenlp</artifactId> <version>4.0.0</version> <classifier>models</classifier> 
 			</dependency> -->
-
-		<dependency>
-			<groupId>junit</groupId>
-			<artifactId>junit</artifactId>
-			<version>4.13.1</version>
-			<scope>test</scope>
-		</dependency>
 
 	</dependencies>
 </project>

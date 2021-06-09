@@ -25,9 +25,9 @@
 	<dependencies>
 
 		<dependency>
-			<groupId>org.matheclipse</groupId>
+			<groupId>${project.groupId}</groupId>
 			<artifactId>matheclipse-core</artifactId>
-			<version>${symja.version}</version>
+			<version>${project.version}</version>
 		</dependency>
 
 	</dependencies>
