@@ -122,7 +122,7 @@ public class Figure {
     } catch (IOException e) {
       throw new UncheckedIOException(e);
     }
-    return writer.toString();
+    return writer.toString().replaceAll("\\r\\n", "\n");
   }
 
   protected void buildContext(String divName) {
