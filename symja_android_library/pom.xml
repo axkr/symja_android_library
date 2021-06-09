@@ -9,7 +9,7 @@
 
 	<name>${project.groupId}:${project.artifactId}</name>
 	<description>Symja Java Symbolic Math library.</description>
-	<url>https://github.com/axkr/symja_android_library.git</url>
+	<url>https://github.com/axkr/symja_android_library</url>
 
 	<licenses>
 		<license>
@@ -50,6 +50,7 @@
 		<connection>scm:git:git://github.com/axkr/symja_android_library.git</connection>
 		<developerConnection>scm:git:git@github.com:axkr/symja_android_library.git</developerConnection>
 		<url>https://github.com/axkr/symja_android_library.git</url>
+		<tag>HEAD</tag>
 	</scm>
 
 	<issueManagement>
@@ -59,12 +60,11 @@
 
 	<distributionManagement>
 		<repository>
-			<id>sonatype-oss-staging</id>
-			<url>https://oss.sonatype.org/content/repositories/staging</url>
+			<id>ossrh</id>
+			<url>https://oss.sonatype.org/service/local/staging/deploy/maven2</url>
 		</repository>
 		<snapshotRepository>
-			<uniqueVersion>false</uniqueVersion>
-			<id>sonatype-oss-snapshots</id>
+			<id>ossrh</id>
 			<url>https://oss.sonatype.org/content/repositories/snapshots</url>
 		</snapshotRepository>
 	</distributionManagement>
@@ -467,10 +467,9 @@
 					<groupId>org.sonatype.plugins</groupId>
 					<artifactId>nexus-staging-maven-plugin</artifactId>
 					<version>1.6.8</version>
-					<extensions>true</extensions>
 					<configuration>
+						<serverId>ossrh</serverId>
 						<nexusUrl>https://oss.sonatype.org/</nexusUrl>
-						<serverId>sonatype-oss-staging</serverId>
 					</configuration>
 				</plugin>
 
@@ -500,45 +499,44 @@
 				</executions>
 			</plugin>
 
-			<plugin>
-				<groupId>org.apache.maven.plugins</groupId>
-				<artifactId>maven-javadoc-plugin</artifactId>
-				<executions>
-					<execution>
-						<goals>
-							<goal>jar</goal>
-						</goals>
-						<configuration>
-							<doclint>none</doclint>
-							<quiet>true</quiet> <!-- only show warnings/errors -->
-							<failOnError>false</failOnError>
-						</configuration>
-					</execution>
-				</executions>
-			</plugin>
-
-			<plugin>
-				<groupId>org.apache.maven.plugins</groupId>
-				<artifactId>maven-source-plugin</artifactId>
-				<executions>
-					<execution>
-						<id>attach-sources</id>
-						<goals>
-							<goal>jar-no-fork</goal>
-						</goals>
-					</execution>
-				</executions>
-			</plugin>
-
 		</plugins>
 	</build>
 
 	<profiles>
 
 		<profile>
-			<id>release</id>
+			<id>publish-to-maven-central</id>
 			<build>
 				<plugins>
+					<plugin>
+						<groupId>org.apache.maven.plugins</groupId>
+						<artifactId>maven-javadoc-plugin</artifactId>
+						<executions>
+							<execution>
+								<goals>
+									<goal>jar</goal>
+								</goals>
+								<configuration>
+									<doclint>none</doclint>
+									<quiet>true</quiet> <!-- only show warnings/errors -->
+									<failOnError>false</failOnError>
+								</configuration>
+							</execution>
+						</executions>
+					</plugin>
+
+					<plugin>
+						<groupId>org.apache.maven.plugins</groupId>
+						<artifactId>maven-source-plugin</artifactId>
+						<executions>
+							<execution>
+								<id>attach-sources</id>
+								<goals>
+									<goal>jar-no-fork</goal>
+								</goals>
+							</execution>
+						</executions>
+					</plugin>
 
 					<plugin>
 						<groupId>org.apache.maven.plugins</groupId>
@@ -549,9 +547,17 @@
 								<goals>
 									<goal>sign</goal>
 								</goals>
-								<phase>verify</phase>
 							</execution>
 						</executions>
+					</plugin>
+
+					<plugin>
+						<groupId>org.sonatype.plugins</groupId>
+						<artifactId>nexus-staging-maven-plugin</artifactId>
+						<extensions>true</extensions>
+						<configuration>
+							<autoReleaseAfterClose>false</autoReleaseAfterClose>
+						</configuration>
 					</plugin>
 
 				</plugins>
