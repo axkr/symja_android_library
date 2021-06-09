@@ -18141,6 +18141,16 @@ public class LowercaseTestCase extends AbstractTestCase {
     check(
         "JavaForm(a+b+x^2+I+7+3/4+x+y)", //
         "Plus(CC(31L,4L,1L,1L),a,b,x,Sqr(x),y)");
+
+    check(
+        "JavaForm((x+y)^-1, Prefix->True)", //
+        "F.Power(F.Plus(F.x,F.y),F.CN1)");
+    check(
+        "JavaForm((x+y)^-1, Float)", //
+        "1.0/(x+y)");
+    check(
+        "JavaForm((x+y)^-1, Complex)", //
+        "1.0/(x+y)");
   }
 
   public void testJSForm() {
@@ -18342,6 +18352,9 @@ public class LowercaseTestCase extends AbstractTestCase {
             "board.unsuspendUpdate();\n"
             + //
             "");
+    check(
+        "JSForm((x+y)^-1)", //
+        "1.0/(x+y)");
   }
 
   public void testJoin() {
@@ -28476,9 +28489,9 @@ public class LowercaseTestCase extends AbstractTestCase {
     //            + "
     // {0.0,-0.18304460039071709+I*(-0.5953651779713297),-0.79086291949341713+I*0.70693989848929339},\n"
     //            + " {0.0,0.0,0.69487393799819596+I*(-0.05925237687724915)}}}");
-//    check(
-//        "ConjugateTranspose(qrd[[1]]).qrd[[2]]", //
-//        "");
+    //    check(
+    //        "ConjugateTranspose(qrd[[1]]).qrd[[2]]", //
+    //        "");
     check(
         "Together(1-(1+Sqrt(35))/Sqrt(35))", //
         "-1/Sqrt(35)");
