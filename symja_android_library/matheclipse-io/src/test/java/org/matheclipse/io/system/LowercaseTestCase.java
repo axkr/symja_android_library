@@ -3379,12 +3379,18 @@ public class LowercaseTestCase extends AbstractTestCase {
     check(
         "CarlsonRC(4., 5)", //
         "0.463648");
+    check(
+        "CarlsonRC(Exp(I*Pi/7.0), Exp(I*Pi/3.0))", //
+        "0.918779+I*(-0.414653)");
   }
 
   public void testCarlsonRD() {
     check(
         "CarlsonRD(2., 3.,5.0)", //
         "0.133211");
+    check(
+        "CarlsonRD(1.0+I, 1-2*I, 5.0)", //
+        "0.168723+I*0.0201344");
   }
 
   public void testCarlsonRF() {
@@ -3394,6 +3400,9 @@ public class LowercaseTestCase extends AbstractTestCase {
     check(
         "CarlsonRF(1.,2.,3.)", //
         "0.726946");
+    check(
+        "CarlsonRF(I, 1-2*I, 3.0+I)", //
+        "0.791737+I*(-0.0471835)");
   }
 
   public void testCarlsonRG() {
@@ -3403,12 +3412,18 @@ public class LowercaseTestCase extends AbstractTestCase {
     check(
         "CarlsonRG(3.,5.,11.0)", //
         "2.48078");
+    check(
+        "CarlsonRG(I, 1-2*I, 3.0+I)", //
+        "1.18073+I*0.0126244");
   }
 
   public void testCarlsonRJ() {
     check(
         "CarlsonRJ(2., 3., 5., 7.2)", //
         "0.104459");
+    check(
+        "CarlsonRJ(0.7-0.2*I, 4, 2.0+I/3, 0.7*I)", //
+        "0.533311+I*(-0.52701)");
   }
 
   public void testCarmichaelLambda() {
