@@ -576,7 +576,7 @@ public class JavaScriptFormFactory extends DoubleFormFactory {
     IExpr base = powerAST.base();
     IExpr exponent = powerAST.exponent();
     if (exponent.isMinusOne()) {
-      buf.append("(1.0/");
+      buf.append("1.0/(");
       convertInternal(buf, base);
       buf.append(")");
       return;

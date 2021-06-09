@@ -152,7 +152,7 @@ public class JavaDoubleFormFactory extends DoubleFormFactory {
         IExpr base = function.base();
         IExpr exponent = function.exponent();
         if (exponent.isMinusOne()) {
-          buf.append("(1.0/");
+          buf.append("1.0/(");
           convertInternal(buf, base);
           buf.append(")");
           return;
