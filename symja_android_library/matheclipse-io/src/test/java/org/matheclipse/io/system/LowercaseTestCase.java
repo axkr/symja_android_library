@@ -18105,6 +18105,19 @@ public class LowercaseTestCase extends AbstractTestCase {
   public void testJavaForm() {
     EvalEngine.get().resetModuleCounter4JUnit();
     check(
+        "JavaForm(Sqrt(x), Complex)", //
+        "(x).sqrt()");
+    check(
+        "JavaForm(1/(x+y), Complex)", //
+        "(x.add(y)).reciprocal()");
+    check(
+        "JavaForm(1/Sqrt(x), Complex)", //
+        "(x).reciprocal().sqrt()");
+    check(
+        "JavaForm(x^(-1/2), Complex)", //
+        "(x).reciprocal().sqrt()");
+
+    check(
         "JavaForm((x+1)^2+(x+1)^3+x*y*10*I, Complex)", //
         "Complex f1(Complex x, Complex y) {\n" //
             + "Complex v1 = Complex.valueOf(1.0).add(x);\n"
@@ -18162,9 +18175,6 @@ public class LowercaseTestCase extends AbstractTestCase {
         "F.Power(F.Plus(F.x,F.y),F.CN1)");
     check(
         "JavaForm((x+y)^-1, Float)", //
-        "1.0/(x+y)");
-    check(
-        "JavaForm((x+y)^-1, Complex)", //
         "1.0/(x+y)");
   }
 

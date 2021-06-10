@@ -555,7 +555,7 @@ public final class OutputFunctions {
               return F.$str(buf.toString(), IStringX.APPLICATION_JAVA);
             }
 
-            return F.$str(toJavaDouble(arg1), IStringX.APPLICATION_JAVA);
+            return F.$str(toJavaComplex(arg1), IStringX.APPLICATION_JAVA);
           }
         String resultStr = javaForm(arg1, strictJava, usePrefix);
         return F.$str(resultStr, IStringX.APPLICATION_JAVA);

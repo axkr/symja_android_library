@@ -138,6 +138,26 @@ public class JavaComplexFormFactory extends ComplexFormFactory {
     if (head.isSymbol() && function.size() > 1) {
       String str = functionHead((ISymbol) head);
       if (str != null) {
+        if (function.isPower()) {
+          IExpr base = function.base();
+          IExpr exponent = function.exponent();
+          if (exponent.isNumEqualRational(F.C1D2)) {
+            buf.append("(");
+            convertInternal(buf, base);
+            buf.append(").sqrt()");
+            return;
+          } else if (exponent.isNumEqualRational(F.CN1D2)) {
+            buf.append("(");
+            convertInternal(buf, base);
+            buf.append(").reciprocal().sqrt()");
+            return;
+          } else if (exponent.isMinusOne()) {
+            buf.append("(");
+            convertInternal(buf, base);
+            buf.append(").reciprocal()");
+            return;
+          }
+        }
         //  Complex atan2(Complex x) {
         buf.append("(");
         convertInternal(buf, function.first());
