@@ -165,6 +165,7 @@
 * [Continue](functions/Continue.md)
 * [ContinuedFraction](functions/ContinuedFraction.md)
 * [Convergents](functions/Convergents.md)
+* [CoplanarPoints](functions/CoplanarPoints.md)
 * [CoprimeQ](functions/CoprimeQ.md)
 * [Correlation](functions/Correlation.md)
 * [Cos](functions/Cos.md)
