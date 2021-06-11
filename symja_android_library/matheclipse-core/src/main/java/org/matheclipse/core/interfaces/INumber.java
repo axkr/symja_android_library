@@ -228,7 +228,7 @@ public interface INumber extends IExpr {
    *
    * @return the closest integer to the argument.
    */
-  public IExpr round();
+  public IExpr roundExpr();
 
   /**
    * Return the list <code>{r, theta}</code> of the polar coordinates of this number

@@ -264,10 +264,6 @@ public class ApfloatNum implements INum {
     return false;
   }
 
-  public Apfloat exp() {
-    return ApfloatMath.exp(fApfloat);
-  }
-
   @Override
   public final int hashCode() {
     return fApfloat.hashCode();
@@ -316,10 +312,6 @@ public class ApfloatNum implements INum {
   @Override
   public long leafCountSimplify() {
     return 2;
-  }
-
-  public Apfloat log() {
-    return ApfloatMath.log(fApfloat);
   }
 
   /** @return */
@@ -418,7 +410,7 @@ public class ApfloatNum implements INum {
   }
 
   @Override
-  public IInteger round() {
+  public IInteger roundExpr() {
     Apfloat f = ApfloatMath.round(fApfloat, 1, RoundingMode.HALF_EVEN);
     return F.ZZ(ApfloatMath.floor(f).toBigInteger());
   }
@@ -434,14 +426,8 @@ public class ApfloatNum implements INum {
 
   /** {@inheritDoc} */
   @Override
-  public int sign() {
-    return fApfloat.signum();
-  }
-
-  /** {@inheritDoc} */
-  @Override
   public int complexSign() {
-    return sign();
+    return fApfloat.signum();
   }
 
   /** {@inheritDoc} */
@@ -629,5 +615,10 @@ public class ApfloatNum implements INum {
   @Override
   public double reDoubleValue() {
     return doubleValue();
+  }
+
+  @Override
+  public IExpr ulp() {
+    return valueOf(ApfloatMath.ulp(fApfloat));
   }
 }

@@ -34,7 +34,7 @@ public class ComplexSymTest {
         IExpr val2 = ((IInteger) val1).subtract(c).divide(F.C2).sqrt();
         if (val2.isInteger()) {
           // Sqrt(c + d*I) -> a + b*I
-          IExpr b = ((IInteger) val2).multiply(d.sign());
+          IExpr b = ((IInteger) val2).multiply(d.complexSign());
           assertEquals(expected[1], b);
           return;
         }

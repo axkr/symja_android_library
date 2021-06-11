@@ -404,7 +404,7 @@ public class QuantityImpl extends DataExpr<IUnit> implements IQuantity, External
     return new QuantityImpl(arg1.reciprocal(), fData.negate());
   }
 
-  public IExpr round() {
+  public IExpr roundExpr() {
     return ofUnit(S.Round.of(arg1));
   }
 

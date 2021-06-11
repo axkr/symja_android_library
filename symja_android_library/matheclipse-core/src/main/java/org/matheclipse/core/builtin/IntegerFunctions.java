@@ -1645,7 +1645,7 @@ public class IntegerFunctions {
         }
         INumber number = arg1.evalNumber();
         if (number != null) {
-          return number.round();
+          return number.roundExpr();
         }
         if (arg1.isDirectedInfinity() && arg1.argSize() == 1) {
           return arg1;
@@ -1733,7 +1733,7 @@ public class IntegerFunctions {
           IExpr expr = ast.get(i);
           ISignedNumber temp = expr.evalReal();
           if (temp != null) {
-            if (temp.sign() < 0) {
+            if (temp.complexSign() < 0) {
               return F.C0;
             } else {
               continue;
@@ -1758,8 +1758,8 @@ public class IntegerFunctions {
               if (l.isReal() && u.isReal()) {
                 ISignedNumber min = (ISignedNumber) l;
                 ISignedNumber max = (ISignedNumber) u;
-                if (min.sign() < 0) {
-                  if (max.sign() < 0) {
+                if (min.complexSign() < 0) {
+                  if (max.complexSign() < 0) {
                     return F.Interval(F.List(F.C0, F.C0));
                   } else {
                     if (size == 2) {
@@ -1767,7 +1767,7 @@ public class IntegerFunctions {
                     }
                   }
                 } else {
-                  if (max.sign() < 0) {
+                  if (max.complexSign() < 0) {
                     if (size == 2) {
                       return F.Interval(F.List(F.C1, F.C0));
                     }

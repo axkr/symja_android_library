@@ -7,10 +7,12 @@ import java.math.RoundingMode;
 import java.util.function.Function;
 
 import org.apfloat.Apcomplex;
+import org.apfloat.ApcomplexMath;
 import org.apfloat.Apfloat;
 import org.apfloat.ApfloatRuntimeException;
 import org.hipparchus.complex.Complex;
 import org.hipparchus.exception.NullArgumentException;
+import org.hipparchus.util.FastMath;
 import org.matheclipse.core.basic.Config;
 import org.matheclipse.core.builtin.IOFunctions;
 import org.matheclipse.core.eval.EvalEngine;
@@ -333,7 +335,7 @@ public class ComplexNum implements IComplexNum {
       return null;
     }
   }
-
+  
   /** {@inheritDoc} */
   @Override
   public IExpr dec() {
@@ -545,7 +547,7 @@ public class ComplexNum implements IComplexNum {
   }
 
   @Override
-  public INumber round() throws ArithmeticException {
+  public INumber roundExpr() throws ArithmeticException {
     return F.complex(
         F.ZZ(DoubleMath.roundToBigInteger(fComplex.getReal(), RoundingMode.HALF_EVEN)), //
         F.ZZ(DoubleMath.roundToBigInteger(fComplex.getImaginary(), RoundingMode.HALF_EVEN)));
@@ -892,5 +894,10 @@ public class ComplexNum implements IComplexNum {
     //				(c2.getImaginary() * divisionReal);
     //		return new Complex[] { new Complex(divisionReal, divisionImaginary),
     //				new Complex(remainderReal, remainderImaginary) };
+  }
+
+  @Override
+  public IExpr ulp() {
+    return valueOf(fComplex.ulp());
   }
 }

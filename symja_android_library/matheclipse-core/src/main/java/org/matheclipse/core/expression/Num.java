@@ -202,12 +202,6 @@ public class Num implements INum {
     return ComplexNum.valueOf(doubleValue(), 0.0);
   }
 
-  /** {@inheritDoc} */
-  @Override
-  public int complexSign() {
-    return sign();
-  }
-
   @Override
   public IExpr copy() {
     try {
@@ -218,13 +212,13 @@ public class Num implements INum {
     }
   }
 
-  /**
-   * @param that
-   * @return
-   */
-  public double divide(final double that) {
-    return fDouble / that;
-  }
+  //  /**
+  //   * @param that
+  //   * @return
+  //   */
+  //  public double divide(final double that) {
+  //    return fDouble / that;
+  //  }
 
   @Override
   public ISignedNumber divideBy(ISignedNumber that) {
@@ -313,10 +307,6 @@ public class Num implements INum {
   @Override
   public INumber evalNumber() {
     return this;
-  }
-
-  public double exp() {
-    return Math.exp(fDouble);
   }
 
   /** {@inheritDoc} */
@@ -559,10 +549,6 @@ public class Num implements INum {
     return 2;
   }
 
-  public double log() {
-    return Math.log(fDouble);
-  }
-
   /** @return */
   public long longValue() {
     return (long) fDouble;
@@ -628,22 +614,6 @@ public class Num implements INum {
     return INum.super.plus(that);
   }
 
-  /**
-   * @param that
-   * @return
-   */
-  public double pow(final double that) {
-    return Math.pow(fDouble, that);
-  }
-
-  /**
-   * @param exp
-   * @return
-   */
-  public double pow(final int exp) {
-    return Math.pow(fDouble, exp);
-  }
-
   @Override
   public INum pow(final INum val) {
     return valueOf(Math.pow(fDouble, val.getRealPart()));
@@ -655,7 +625,7 @@ public class Num implements INum {
   }
 
   @Override
-  public IInteger round() {
+  public IInteger roundExpr() {
     return F.ZZ(DoubleMath.roundToBigInteger(fDouble, RoundingMode.HALF_EVEN));
   }
 
@@ -674,7 +644,7 @@ public class Num implements INum {
   }
 
   @Override
-  public int sign() {
+  public int complexSign() {
     return (int) Math.signum(fDouble);
   }
 
@@ -768,5 +738,10 @@ public class Num implements INum {
     StringBuilder buf = new StringBuilder();
     DoubleToMMA.doubleToMMA(buf, fDouble, 5, 7);
     return buf.toString();
+  }
+
+  @Override
+  public IExpr ulp() {
+    return valueOf(Math.ulp(fDouble));
   }
 }

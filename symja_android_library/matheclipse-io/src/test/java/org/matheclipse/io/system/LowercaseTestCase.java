@@ -3370,6 +3370,10 @@ public class LowercaseTestCase extends AbstractTestCase {
   }
 
   public void testCarlsonRC() {
+	  check(
+		        "CarlsonRC(4., 5)", //
+		        "0.463648");
+	  
     check(
         "CarlsonRC(y,y)", //
         "Piecewise({{ComplexInfinity,Re(y)<=0&&Im(y)==0}},1/Sqrt(y))");
@@ -5736,6 +5740,36 @@ public class LowercaseTestCase extends AbstractTestCase {
     check(
         "Convergents({a,b,c,d})", //
         "{a,(1+a*b)/b,(a+c+a*b*c)/(1+b*c),(1+a*b+a*d+c*d+a*b*c*d)/(b+d+b*c*d)}");
+  }
+
+  public void testCoplanarPoints() {
+    check(
+        "CoplanarPoints( {{3,2,-5}, {-1,4,-3}, {-3,8,-5}, {-3,2,1}} )", //
+        "True");
+    check(
+        "CoplanarPoints( {{0,-1,-1}, {4,5,1}, {3,9,4}, {-4,4,3}} )", //
+        "False");
+    check(
+        "CoplanarPoints({{1, a, 1}, {a, 2, 1}, {1, 2, 1}, {2, 3, 4}, {a, b, c}})", //
+        "(1-a)*(-2+a)==0&&(-1+a)*(-5+3*b-c)==0");
+    check(
+        "CoplanarPoints({ {a, 2, 1}, {1, 2, 1}, {2, 3, 4}, {a, b, c} })", //
+        "(-1+a)*(-5+3*b-c)==0");
+    check(
+        "CoplanarPoints({ {a, 2, 1}, {1, 2, 1}, {a, b, c}, {2, 3, 4}})", //
+        "(-1+a)*(5-3*b+c)==0");
+    check(
+        "CoplanarPoints( {{0, 0, 0}, {1, 1, -2}, {-1, 2, -1}, {3, -4, 1}} )", //
+        "True");
+    check(
+        "CoplanarPoints( {{0, 0, 0}, {1, 1, -2}, {-1, 2, -1}, {x,y,z}} )", //
+        "x+y+z==0");
+    check(
+        "CoplanarPoints( {{1,2}, {3,4}, {a,b}, {c,d}})", //
+        "True");
+    check(
+        "CoplanarPoints( {{1,2}, {3,4}, {a,b,r}, {c,d}})", //
+        "CoplanarPoints({{1,2},{3,4},{a,b,r},{c,d}})");
   }
 
   public void testCoprimeQ() {

@@ -763,6 +763,8 @@ public class IOFunctions {
     "Requested precision `1` is smaller than `2`.", //
     "precgt",
     "Requested precision `1` is greater than `2`.", //
+    "pts",
+    "`1` should be a non-empty list of points.", //
     "range",
     "Range specification in `1` does not have appropriate bounds.", //
     "rankl",

@@ -300,12 +300,7 @@ public abstract class AbstractFractionSym implements IFraction {
     }
     return -1;
   }
-
-  /** {@inheritDoc} */
-  @Override
-  public int complexSign() {
-    return sign();
-  }
+ 
 
   @Override
   public IExpr copy() {
@@ -373,16 +368,16 @@ public abstract class AbstractFractionSym implements IFraction {
   public IAST factorSmallPrimes(int numerator, int root) {
     IInteger b = numerator();
     boolean isNegative = false;
-    if (sign() < 0) {
+    if (complexSign() < 0) {
       b = b.negate();
       isNegative = true;
     }
     if (numerator != 1) {
-      b = b.pow(numerator);
+      b = b.powerRational(numerator);
     }
     IInteger d = denominator();
     if (numerator != 1) {
-      d = d.pow(numerator);
+      d = d.powerRational(numerator);
     }
     // SortedMap<Integer, Integer> bMap = new TreeMap<Integer, Integer>();
     Int2IntMap bMap = new Int2IntRBTreeMap();
@@ -454,7 +449,7 @@ public abstract class AbstractFractionSym implements IFraction {
     if (!multiple.isRational()) {
       multiple = F.fraction(multiple.doubleValue(), Config.DOUBLE_EPSILON);
     }
-    IInteger ii = this.divideBy((IRational) multiple).round();
+    IInteger ii = this.divideBy((IRational) multiple).roundExpr();
     return ii.multiply((IRational) multiple);
   }
 
@@ -590,7 +585,7 @@ public abstract class AbstractFractionSym implements IFraction {
 
   /** {@inheritDoc} */
   @Override
-  public final IFraction pow(final long n) throws ArithmeticException {
+  public final IFraction powerRational(final long n) throws ArithmeticException {
     if (n == 0L) {
       if (!this.isZero()) {
         return AbstractFractionSym.ONE;
@@ -648,7 +643,7 @@ public abstract class AbstractFractionSym implements IFraction {
 
   /** {@inheritDoc} */
   @Override
-  public int sign() {
+  public int complexSign() {
     return toBigNumerator().signum();
   }
 

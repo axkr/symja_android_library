@@ -1516,7 +1516,7 @@ public class SeriesFunctions {
       if (exp != Integer.MIN_VALUE) {
         ASTSeriesData series = seriesDataRecursive(base, x, x0, n, engine);
         if (series instanceof ASTSeriesData) {
-          return series.pow(exp);
+          return series.powerSeries(exp);
         }
       }
       return null;

@@ -3530,12 +3530,12 @@ public class ExpTrigsFunctions {
         if (F.isNumIntValue(numericResult)) {
           long symbolicResult = DoubleMath.roundToLong(numericResult, RoundingMode.HALF_UP);
           if (inverse) {
-            if (b.equals(arg.pow(symbolicResult))) {
+            if (b.equals(arg.powerRational(symbolicResult))) {
               // cross checked result
               return F.QQ(1L, symbolicResult);
             }
           } else {
-            if (arg.equals(b.pow(symbolicResult))) {
+            if (arg.equals(b.powerRational(symbolicResult))) {
               // cross checked result
               return F.ZZ(symbolicResult);
             }

@@ -3900,13 +3900,26 @@ public final class LinearAlgebra {
 
     @Override
     public IExpr evaluate(final IAST ast, EvalEngine engine) {
-      FieldMatrix<IExpr> matrix;
       boolean togetherMode = engine.isTogetherMode();
 
       try {
         engine.setTogetherMode(true);
         int[] dim = ast.arg1().isMatrix();
         if (dim != null) {
+          // TODO improve for symbolic calculations
+          // TODO https://github.com/Hipparchus-Math/hipparchus/issues/137
+          //        	final FieldMatrix<IExpr> matrix = Convert.list2Matrix(ast.arg1());
+          //            if (matrix != null) {
+          //              FieldQRDecomposition<IExpr> ed = new FieldQRDecomposition<IExpr>(matrix);
+          //              FieldMatrix<IExpr> q = ed.getQ();
+          //              if (Convert.matrix2List(q) != null) {
+          //                FieldMatrix<IExpr> r = ed.getR();
+          //                if (Convert.matrix2List(r) != null) {
+          //                  return F.List(Convert.matrix2List(q), Convert.matrix2List(r));
+          //                }
+          //              }
+          //              return F.NIL;
+          //            }
           final FieldMatrix<Complex> complexMatrix = Convert.list2ComplexMatrix(ast.arg1());
           if (complexMatrix != null) {
             FieldQRDecomposition<Complex> ed = new FieldQRDecomposition<Complex>(complexMatrix);

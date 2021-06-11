@@ -42,7 +42,7 @@ public interface IComplex extends IBigNumber {
    * @return <code>this<sup>exp</sup></code>
    * @throws ArithmeticException if {@code 0^0} is given.
    */
-  public IComplex pow(long n);
+  public IComplex pow(int n);
 
   public IComplex[] quotientRemainder(final IComplex c2);
 

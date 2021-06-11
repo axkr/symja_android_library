@@ -264,7 +264,7 @@ public class ASTSeriesData extends AbstractAST implements Externalizable {
     for (int n = nMin; n < nMax; n++) {
       IExpr temp = coefficient(n);
       if (!temp.isZero()) {
-        s = x0Term.pow(n);
+        s = x0Term.powerSeries(n);
         s = s.times(temp);
         series = series.plusPS(s);
       }
@@ -986,7 +986,7 @@ public class ASTSeriesData extends AbstractAST implements Externalizable {
     return series;
   }
 
-  public ASTSeriesData pow(final long n) {
+  public ASTSeriesData powerSeries(final long n) {
     if ((n == 0L)) {
       ASTSeriesData series = new ASTSeriesData(x, x0, 0, truncate, denominator);
       series.setCoeff(0, F.C1);

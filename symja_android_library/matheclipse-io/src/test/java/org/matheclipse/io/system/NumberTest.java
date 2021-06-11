@@ -40,10 +40,10 @@ public class NumberTest extends TestCase {
   public void testPower() {
     IFraction f = AbstractFractionSym.valueOf(2, 3);
 
-    assertEquals(f.pow(-2).toString(), "9/4");
+    assertEquals(f.powerRational(-2).toString(), "9/4");
 
     IFraction f0 = AbstractFractionSym.valueOf(5, 14);
-    assertEquals(f0.pow(2).toString(), "25/196");
+    assertEquals(f0.powerRational(2).toString(), "25/196");
   }
 
   /**

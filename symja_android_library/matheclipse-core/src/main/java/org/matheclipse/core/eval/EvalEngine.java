@@ -2303,7 +2303,6 @@ public class EvalEngine implements Serializable {
    * Reset the module counter to <code>0</code>. Used only in unit tests. <b> Don't reset for
    * reusable EvalEngine's!</b>
    *
-   * @return the module counter
    */
   public void resetModuleCounter4JUnit() {
     MODULE_COUNTER = new AtomicLong();

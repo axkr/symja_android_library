@@ -625,14 +625,14 @@ public class FractionSym extends AbstractFractionSym {
 
   /** {@inheritDoc} */
   @Override
-  public IInteger round() {
+  public IInteger roundExpr() {
     BigFraction temp = new BigFraction(fNumerator, fDenominator);
     return AbstractIntegerSym.valueOf(NumberUtil.round(temp, BigDecimal.ROUND_HALF_EVEN));
   }
 
   /** {@inheritDoc} */
   @Override
-  public int sign() {
+  public int complexSign() {
     return fNumerator < 0 ? -1 : fNumerator == 0 ? 0 : 1;
   }
 

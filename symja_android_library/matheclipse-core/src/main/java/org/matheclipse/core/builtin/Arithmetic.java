@@ -2133,7 +2133,7 @@ public final class Arithmetic {
             }
             IRational result = F.C0;
             for (int i = 1; i <= n; i++) {
-              final IInteger pow = F.ZZ(i).pow(exponent);
+              final IInteger pow = F.ZZ(i).powerRational(exponent);
               result = result.add(intArg2 < 0 ? pow : pow.inverse());
               result.checkBitLength();
             }
@@ -3438,7 +3438,7 @@ public final class Arithmetic {
           } else if (base instanceof ASTSeriesData) {
             int exp = exponent.toIntDefault(Integer.MIN_VALUE);
             if (exp != Integer.MIN_VALUE) {
-              return ((ASTSeriesData) base).pow(exp);
+              return ((ASTSeriesData) base).powerSeries(exp);
             }
             return F.NIL;
           }
@@ -3677,7 +3677,7 @@ public final class Arithmetic {
       if (exponent.isNumIntValue()) {
         return base.pow(exponent);
       }
-      if (exponent.sign() < 0) {
+      if (exponent.complexSign() < 0) {
         ApcomplexNum b = base.apcomplexNumValue(base.precision());
         ApcomplexNum e = exponent.apcomplexNumValue(base.precision());
         return b.pow(e);
@@ -3745,7 +3745,7 @@ public final class Arithmetic {
       IInteger exp = exponent.numerator();
       final int expInt = exp.toIntDefault();
       if (expInt != Integer.MIN_VALUE) {
-        return base.pow(expInt);
+        return base.powerRational(expInt);
       }
       if (exp.isNegative()) {
         IInteger negExponent = exp.negate();
@@ -5013,7 +5013,7 @@ public final class Arithmetic {
 
     public static IExpr numberSign(INumber arg1) {
       if (arg1.isReal()) {
-        final int signum = ((ISignedNumber) arg1).sign();
+        final int signum = ((ISignedNumber) arg1).complexSign();
         return F.ZZ(signum);
       } else if (arg1.isComplex()) {
         IComplex c = (IComplex) arg1;

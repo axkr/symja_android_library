@@ -170,7 +170,7 @@ public interface IRational extends ISignedNumber, IBigNumber {
    * @return <code>this<sup>exp</sup></code>
    * @throws ArithmeticException if {@code 0^0} is given.
    */
-  public IRational pow(final long exp) throws ArithmeticException;
+  public IRational powerRational(final long exp) throws ArithmeticException;
 
   @Override
   default IRational reRational() {

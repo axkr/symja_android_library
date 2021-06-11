@@ -553,7 +553,7 @@ public class PolynomialFunctions {
       }
       if (LongMath.isPrime(n)) {
         if (x.isRational()) {
-          return F.sumRational(i -> ((IRational) x).pow(i), 0, n - 1);
+          return F.sumRational(i -> ((IRational) x).powerRational(i), 0, n - 1);
         }
         return F.sum(i -> x.power(i), 0, n - 1);
       }

@@ -51,7 +51,7 @@ public class BigIntegerSym extends AbstractIntegerSym {
       if (c == 1) {
         phi = phi.multiply(q.subtract(F.C1));
       } else {
-        phi = phi.multiply(q.subtract(F.C1).multiply(q.pow(c - 1)));
+        phi = phi.multiply(q.subtract(F.C1).multiply(q.powerRational(c - 1)));
       }
     }
     return phi.toBigNumerator();
@@ -190,11 +190,6 @@ public class BigIntegerSym extends AbstractIntegerSym {
     return ComplexNum.valueOf(doubleValue());
   }
 
-  @Override
-  public int complexSign() {
-    return sign();
-  }
-
   /** {@inheritDoc} */
   @Override
   public IInteger dec() {
@@ -297,7 +292,7 @@ public class BigIntegerSym extends AbstractIntegerSym {
   @Override
   public IExpr exponent(IInteger base) {
     IInteger b = this;
-    if (sign() < 0) {
+    if (complexSign() < 0) {
       b = b.negate();
     } else if (b.isZero()) {
       return F.CInfinity;
@@ -654,9 +649,9 @@ public class BigIntegerSym extends AbstractIntegerSym {
     if (n == 2) {
       return sqrt();
     }
-    if (sign() == 0) {
+    if (complexSign() == 0) {
       return F.C0;
-    } else if (sign() < 0) {
+    } else if (complexSign() < 0) {
       if (n % 2 == 0) {
         // even exponent n
         throw new ArithmeticException();
@@ -670,7 +665,7 @@ public class BigIntegerSym extends AbstractIntegerSym {
       do {
         result = temp;
         temp =
-            divideAndRemainder(temp.pow(((long) n) - 1))[0].add(
+            divideAndRemainder(temp.powerRational(((long) n) - 1))[0].add(
                     temp.multiply(AbstractIntegerSym.valueOf(n - 1)))
                 .divideAndRemainder(AbstractIntegerSym.valueOf(n))[0];
       } while (temp.compareTo(result) < 0);
@@ -732,7 +727,7 @@ public class BigIntegerSym extends AbstractIntegerSym {
   }
 
   @Override
-  public IInteger round() {
+  public IInteger roundExpr() {
     return this;
   }
 
@@ -755,7 +750,7 @@ public class BigIntegerSym extends AbstractIntegerSym {
   }
 
   @Override
-  public int sign() {
+  public int complexSign() {
     return fBigIntValue.signum();
   }
 

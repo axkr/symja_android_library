@@ -151,11 +151,6 @@ public class IntegerSym extends AbstractIntegerSym {
     return ComplexNum.valueOf(doubleValue());
   }
 
-  @Override
-  public int complexSign() {
-    return sign();
-  }
-
   /** {@inheritDoc} */
   @Override
   public IInteger dec() {
@@ -251,7 +246,7 @@ public class IntegerSym extends AbstractIntegerSym {
   @Override
   public IExpr exponent(IInteger base) {
     IInteger b = this;
-    if (sign() < 0) {
+    if (complexSign() < 0) {
       b = b.negate();
     } else if (b.isZero()) {
       return F.CInfinity;
@@ -677,9 +672,9 @@ public class IntegerSym extends AbstractIntegerSym {
     if (n == 2) {
       return sqrt();
     }
-    if (sign() == 0) {
+    if (complexSign() == 0) {
       return F.C0;
-    } else if (sign() < 0) {
+    } else if (complexSign() < 0) {
       if (n % 2 == 0) {
         // even exponent n
         throw new ArithmeticException();
@@ -693,7 +688,7 @@ public class IntegerSym extends AbstractIntegerSym {
       do {
         result = temp;
         temp =
-            divideAndRemainder(temp.pow(((long) n) - 1))[0].add(
+            divideAndRemainder(temp.powerRational(((long) n) - 1))[0].add(
                     temp.multiply(AbstractIntegerSym.valueOf(n - 1)))
                 .divideAndRemainder(AbstractIntegerSym.valueOf(n))[0];
       } while (temp.compareTo(result) < 0);
@@ -704,11 +699,11 @@ public class IntegerSym extends AbstractIntegerSym {
   @Override
   public IInteger[] nthRootSplit(int n) throws ArithmeticException {
     IInteger[] result = new IInteger[2];
-    if (sign() == 0) {
+    if (complexSign() == 0) {
       result[0] = F.C0;
       result[1] = F.C1;
       return result;
-    } else if (sign() < 0) {
+    } else if (complexSign() < 0) {
       if (n % 2 == 0) {
         // even exponent n
         throw new ArithmeticException();
@@ -797,7 +792,7 @@ public class IntegerSym extends AbstractIntegerSym {
   }
 
   @Override
-  public IInteger round() {
+  public IInteger roundExpr() {
     return this;
   }
 
@@ -821,7 +816,7 @@ public class IntegerSym extends AbstractIntegerSym {
   }
 
   @Override
-  public int sign() {
+  public int complexSign() {
     return (fIntValue > 0) ? 1 : (fIntValue == 0) ? 0 : -1;
   }
 
@@ -886,7 +881,7 @@ public class IntegerSym extends AbstractIntegerSym {
   public int toIntDefault(int defaultValue) {
     return fIntValue;
   }
-  
+
   /** {@inheritDoc} */
   @Override
   public long toLongDefault(long defaultValue) {

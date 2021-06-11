@@ -1,6 +1,7 @@
 package org.matheclipse.core.builtin;
 
 import org.hipparchus.complex.Complex;
+import org.hipparchus.special.elliptic.carlson.CarlsonEllipticIntegral;
 import org.matheclipse.core.builtin.functions.EllipticFunctionsJS;
 import org.matheclipse.core.builtin.functions.EllipticIntegralsJS;
 import org.matheclipse.core.convert.Object2Expr;
@@ -97,7 +98,10 @@ public class EllipticIntegrals {
         return F.CComplexInfinity;
       }
 
-      if (engine.isDoubleMode()) {
+      if (engine.isNumericMode()) {
+        //        x = engine.evalN(x);
+        //        y = engine.evalN(y);
+        //        return CarlsonEllipticIntegral.rC(x, y);
         double xd = Double.NaN;
         double yd = Double.NaN;
         try {

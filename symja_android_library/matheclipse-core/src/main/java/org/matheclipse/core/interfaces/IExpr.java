@@ -12,14 +12,19 @@ import java.util.function.Function;
 import java.util.function.Predicate;
 import java.util.function.Supplier;
 
+import org.hipparchus.CalculusFieldElement;
 import org.hipparchus.Field;
-import org.hipparchus.FieldElement;
 import org.hipparchus.complex.Complex;
+import org.hipparchus.exception.MathIllegalArgumentException;
 import org.hipparchus.exception.MathRuntimeException;
 import org.hipparchus.linear.Array2DRowRealMatrix;
 import org.hipparchus.linear.ArrayRealVector;
 import org.hipparchus.linear.RealMatrix;
 import org.hipparchus.linear.RealVector;
+import org.hipparchus.util.FastMath;
+import org.hipparchus.util.FieldSinCos;
+import org.hipparchus.util.FieldSinhCosh;
+import org.hipparchus.util.MathArrays;
 import org.jgrapht.GraphType;
 import org.matheclipse.core.basic.Config;
 import org.matheclipse.core.builtin.BooleanFunctions;
@@ -103,7 +108,7 @@ import edu.jas.structure.GcdRingElem;
  * </pre>
  */
 public interface IExpr
-    extends Comparable<IExpr>, GcdRingElem<IExpr>, Serializable, FieldElement<IExpr> {
+    extends Comparable<IExpr>, GcdRingElem<IExpr>, Serializable, CalculusFieldElement<IExpr> {
 
   /**
    * A three-state &quot;boolean&quot; value. If a comparison can not be evaluated to <code>S.True
@@ -478,7 +483,7 @@ public interface IExpr
    * @return
    */
   default IExpr copySign(ISignedNumber number) {
-    return number.sign() < 0 ? negate() : this;
+    return number.complexSign() < 0 ? negate() : this;
   }
 
   /**
@@ -654,6 +659,11 @@ public interface IExpr
    * @return this expression converted to a Java <code>double</code> value.
    */
   default double getReal() throws ArgumentTypeException {
+    if (isInfinity()) {
+      return Double.POSITIVE_INFINITY;
+    } else if (isNegativeInfinity()) {
+      return Double.NEGATIVE_INFINITY;
+    }
     return evalDouble();
   }
 
@@ -4354,7 +4364,7 @@ public interface IExpr
         return F.Times(timesRest, Sqrt(timesSqrt));
       }
     }
-    return Sqrt(this);
+    return F.Sqrt(this);
   }
 
   @Override
@@ -4652,305 +4662,254 @@ public interface IExpr
     return this;
   }
 
-  //  @Override
-  //  default IExpr acos() {
-  //    // TODO Auto-generated method stub
-  //    return F.NIL;
-  //  }
-  //
-  //  @Override
-  //  default IExpr acosh() {
-  //    // TODO Auto-generated method stub
-  //    return F.NIL;
-  //  }
-  //
-  //  @Override
-  //  default IExpr add(double arg0) {
-  //    // TODO Auto-generated method stub
-  //    return F.NIL;
-  //  }
-  //
-  //  @Override
-  //  default IExpr asin() {
-  //    // TODO Auto-generated method stub
-  //    return F.NIL;
-  //  }
-  //
-  //  @Override
-  //  default IExpr asinh() {
-  //    // TODO Auto-generated method stub
-  //    return F.NIL;
-  //  }
-  //
-  //  @Override
-  //  default IExpr atan() {
-  //    // TODO Auto-generated method stub
-  //    return F.NIL;
-  //  }
-  //
-  //  @Override
-  //  default IExpr atan2(IExpr arg0) throws MathIllegalArgumentException {
-  //    // TODO Auto-generated method stub
-  //    return F.NIL;
-  //  }
-  //
-  //  @Override
-  //  default IExpr atanh() {
-  //    // TODO Auto-generated method stub
-  //    return F.NIL;
-  //  }
-  //
-  //  @Override
-  //  default IExpr cbrt() {
-  //    // TODO Auto-generated method stub
-  //    return F.NIL;
-  //  }
-  //
-  //  @Override
-  //  default IExpr ceil() {
-  //    // TODO Auto-generated method stub
-  //    return F.NIL;
-  //  }
-  //
-  //  @Override
-  //  default IExpr copySign(double arg0) {
-  //    // TODO Auto-generated method stub
-  //    return F.NIL;
-  //  }
-  //
-  //  @Override
-  //  default IExpr copySign(IExpr arg0) {
-  //    // TODO Auto-generated method stub
-  //    return F.NIL;
-  //  }
-  //
-  //  @Override
-  //  default IExpr cos() {
-  //    // TODO Auto-generated method stub
-  //    return F.NIL;
-  //  }
-  //
-  //  @Override
-  //  default IExpr cosh() {
-  //    // TODO Auto-generated method stub
-  //    return F.NIL;
-  //  }
-  //
-  //  @Override
-  //  default IExpr divide(double arg0) {
-  //    // TODO Auto-generated method stub
-  //    return F.NIL;
-  //  }
-  //
-  //  @Override
-  //  default IExpr exp() {
-  //    // TODO Auto-generated method stub
-  //    return F.NIL;
-  //  }
-  //
-  //  @Override
-  //  default IExpr expm1() {
-  //    // TODO Auto-generated method stub
-  //    return F.NIL;
-  //  }
-  //
-  //  @Override
-  //  default IExpr floor() {
-  //    // TODO Auto-generated method stub
-  //    return F.NIL;
-  //  }
-  //
-  //  @Override
-  //  default IExpr hypot(IExpr arg0) throws MathIllegalArgumentException {
-  //    // TODO Auto-generated method stub
-  //    return F.NIL;
-  //  }
-  //
-  //  @Override
-  //  default IExpr linearCombination(
-  //      double arg0,
-  //      IExpr arg1,
-  //      double arg2,
-  //      IExpr arg3,
-  //      double arg4,
-  //      IExpr arg5,
-  //      double arg6,
-  //      IExpr arg7) {
-  //    // TODO Auto-generated method stub
-  //    return F.NIL;
-  //  }
-  //
-  //  @Override
-  //  default IExpr linearCombination(
-  //      double arg0, IExpr arg1, double arg2, IExpr arg3, double arg4, IExpr arg5) {
-  //    // TODO Auto-generated method stub
-  //    return F.NIL;
-  //  }
-  //
-  //  @Override
-  //  default IExpr linearCombination(double arg0, IExpr arg1, double arg2, IExpr arg3) {
-  //    // TODO Auto-generated method stub
-  //    return F.NIL;
-  //  }
-  //
-  //  @Override
-  //  default IExpr linearCombination(double[] arg0, IExpr[] arg1) throws
-  // MathIllegalArgumentException {
-  //    // TODO Auto-generated method stub
-  //    return F.NIL;
-  //  }
-  //
-  //  @Override
-  //  default IExpr linearCombination(
-  //      IExpr arg0,
-  //      IExpr arg1,
-  //      IExpr arg2,
-  //      IExpr arg3,
-  //      IExpr arg4,
-  //      IExpr arg5,
-  //      IExpr arg6,
-  //      IExpr arg7) {
-  //    // TODO Auto-generated method stub
-  //    return F.NIL;
-  //  }
-  //
-  //  @Override
-  //  default IExpr linearCombination(
-  //      IExpr arg0, IExpr arg1, IExpr arg2, IExpr arg3, IExpr arg4, IExpr arg5) {
-  //    // TODO Auto-generated method stub
-  //    return F.NIL;
-  //  }
-  //
-  //  @Override
-  //  default IExpr linearCombination(IExpr arg0, IExpr arg1, IExpr arg2, IExpr arg3) {
-  //    // TODO Auto-generated method stub
-  //    return F.NIL;
-  //  }
-  //
-  //  @Override
-  //  default IExpr linearCombination(IExpr[] arg0, IExpr[] arg1) throws
-  // MathIllegalArgumentException {
-  //    // TODO Auto-generated method stub
-  //    return F.NIL;
-  //  }
-  //
-  //  @Override
-  //  default IExpr log() {
-  //    // TODO Auto-generated method stub
-  //    return F.NIL;
-  //  }
-  //
-  //  @Override
-  //  default IExpr log10() {
-  //    // TODO Auto-generated method stub
-  //    return F.NIL;
-  //  }
-  //
-  //  @Override
-  //  default IExpr log1p() {
-  //    // TODO Auto-generated method stub
-  //    return F.NIL;
-  //  }
-  //
-  //  @Override
-  //  default IExpr multiply(double arg0) {
-  //    // TODO Auto-generated method stub
-  //    return F.NIL;
-  //  }
-  //
-  //  @Override
-  //  default IExpr newInstance(double arg0) {
-  //    // TODO Auto-generated method stub
-  //    return F.NIL;
-  //  }
-  //
-  //  @Override
-  //  default IExpr pow(double arg0) {
-  //    // TODO Auto-generated method stub
-  //    return F.NIL;
-  //  }
-  //
-  //  @Override
-  //  default IExpr pow(IExpr arg0) throws MathIllegalArgumentException {
-  //    // TODO Auto-generated method stub
-  //    return F.NIL;
-  //  }
-  //
-  //  @Override
-  //  default IExpr pow(int arg0) {
-  //    // TODO Auto-generated method stub
-  //    return F.NIL;
-  //  }
-  //
-  //  @Override
-  //  default IExpr remainder(double arg0) {
-  //    // TODO Auto-generated method stub
-  //    return F.NIL;
-  //  }
-  //
-  //  @Override
-  //  default IExpr rint() {
-  //    // TODO Auto-generated method stub
-  //    return F.NIL;
-  //  }
-  //
-  //  @Override
-  //  default IExpr rootN(int arg0) {
-  //    // TODO Auto-generated method stub
-  //    return F.NIL;
-  //  }
-  //
-  //  @Override
-  //  default IExpr scalb(int arg0) {
-  //    // TODO Auto-generated method stub
-  //    return F.NIL;
-  //  }
-  //
-  //  @Override
-  //  default IExpr sin() {
-  //    // TODO Auto-generated method stub
-  //    return F.NIL;
-  //  }
-  //
-  //  @Override
-  //  default FieldSinCos<IExpr> sinCos() {
-  //    // TODO Auto-generated method stub
-  //    return null;
-  //  }
-  //
-  //  @Override
-  //  default IExpr sinh() {
-  //    // TODO Auto-generated method stub
-  //    return F.NIL;
-  //  }
-  //
-  //  @Override
-  //  default FieldSinhCosh<IExpr> sinhCosh() {
-  //    // TODO Auto-generated method stub
-  //    return null;
-  //  }
-  //
-  //  @Override
-  //  default IExpr subtract(double arg0) {
-  //    // TODO Auto-generated method stub
-  //    return F.NIL;
-  //  }
-  //
-  //  @Override
-  //  default IExpr tan() {
-  //    // TODO Auto-generated method stub
-  //    return F.NIL;
-  //  }
-  //
-  //  @Override
-  //  default IExpr tanh() {
-  //    // TODO Auto-generated method stub
-  //    return F.NIL;
-  //  }
-  //
-  //  @Override
-  //  default IExpr ulp() {
-  //    // TODO Auto-generated method stub
-  //    return F.NIL;
-  //  }
+  @Override
+  default IExpr sign() {
+    return S.Sign.of(this);
+  }
+
+  @Override
+  default IExpr acos() {
+    return S.ArcCos.of(this);
+  }
+
+  @Override
+  default IExpr acosh() {
+    return S.ArcCosh.of(this);
+  }
+
+  @Override
+  default IExpr add(double that) {
+    return plus(F.num(that));
+  }
+
+  @Override
+  default IExpr asin() {
+    return S.ArcSin.of(this);
+  }
+
+  @Override
+  default IExpr asinh() {
+    return S.ArcSinh.of(this);
+  }
+
+  @Override
+  default IExpr atan() {
+    return S.ArcTan.of(this);
+  }
+
+  @Override
+  default IExpr atan2(IExpr that) throws MathIllegalArgumentException {
+    return S.ArcTan.of(this, that);
+  }
+
+  @Override
+  default IExpr atanh() {
+    return S.ArcTanh.of(this);
+  }
+
+  @Override
+  default IExpr cbrt() {
+    return S.Power.of(this, F.C1D3);
+  }
+
+  @Override
+  default IExpr ceil() {
+    return S.Ceiling.of(this);
+  }
+
+  @Override
+  default IExpr copySign(double that) {
+    return copySign(F.num(that));
+  }
+
+  @Override
+  default IExpr copySign(IExpr that) {
+    // TODO improve for complex "that"
+    return abs().times(that.sign());
+  }
+
+  @Override
+  default IExpr cos() {
+    return S.Cos.of(this);
+  }
+
+  @Override
+  default IExpr cosh() {
+    return S.Cosh.of(this);
+  }
+
+  @Override
+  default IExpr divide(double arg0) {
+    return times(F.num(arg0));
+  }
+
+  @Override
+  default IExpr exp() {
+    return S.Exp.of(this);
+  }
+
+  @Override
+  default IExpr expm1() {
+    return S.Exp.of(this).subtract(F.C1);
+  }
+
+  @Override
+  default IExpr floor() {
+    return S.Floor.of(this);
+  }
+
+  @Override
+  default IExpr hypot(IExpr y) throws MathIllegalArgumentException {
+    return S.Sqrt.of(F.Plus(F.Sqr(this), F.Sqr(y)));
+  }
+
+  @Override
+  default IExpr linearCombination(
+      double a1, IExpr b1, double a2, IExpr b2, double a3, IExpr b3, double a4, IExpr b4) {
+    return linearCombination(new double[] {a1, a2, a3, a4}, new IExpr[] {b1, b2, b3, b4});
+  }
+
+  @Override
+  default IExpr linearCombination(double a1, IExpr b1, double a2, IExpr b2, double a3, IExpr b3) {
+    return linearCombination(new double[] {a1, a2, a3}, new IExpr[] {b1, b2, b3});
+  }
+
+  @Override
+  default IExpr linearCombination(double a1, IExpr b1, double a2, IExpr b2) {
+    return linearCombination(new double[] {a1, a2}, new IExpr[] {b1, b2});
+  }
+
+  @Override
+  default IExpr linearCombination(double[] a, IExpr[] b) throws MathIllegalArgumentException {
+    IASTAppendable result = F.PlusAlloc(a.length);
+    for (int i = 0; i < a.length; i++) {
+      result.append(F.Times(F.num(a[i]), b[i]));
+    }
+    return result;
+  }
+
+  @Override
+  default IExpr linearCombination(
+      IExpr a1, IExpr b1, IExpr a2, IExpr b2, IExpr a3, IExpr b3, IExpr a4, IExpr b4) {
+    return linearCombination(new IExpr[] {a1, a2, a3, a4}, new IExpr[] {b1, b2, b3, b4});
+  }
+
+  @Override
+  default IExpr linearCombination(IExpr a1, IExpr b1, IExpr a2, IExpr b2, IExpr a3, IExpr b3) {
+    return linearCombination(new IExpr[] {a1, a2, a3}, new IExpr[] {b1, b2, b3});
+  }
+
+  @Override
+  default IExpr linearCombination(IExpr a1, IExpr b1, IExpr a2, IExpr b2) {
+    return linearCombination(new IExpr[] {a1, a2}, new IExpr[] {b1, b2});
+  }
+
+  @Override
+  default IExpr linearCombination(IExpr[] a, IExpr[] b) throws MathIllegalArgumentException {
+    IASTAppendable result = F.PlusAlloc(a.length);
+    for (int i = 0; i < a.length; i++) {
+      result.append(F.Times(a[i], b[i]));
+    }
+    return result;
+  }
+
+  @Override
+  default IExpr log() {
+    return S.Log.of(this);
+  }
+
+  @Override
+  default IExpr log10() {
+    return S.Log.of(F.C10, this);
+  }
+
+  @Override
+  default IExpr log1p() {
+    return F.NIL;
+  }
+
+  @Override
+  default IExpr multiply(double that) {
+    return S.Times.of(this, F.num(that));
+  }
+
+  @Override
+  default IExpr newInstance(double arg0) {
+    return F.num(arg0);
+  }
+
+  @Override
+  default IExpr pow(double n) {
+    return S.Power.of(this, F.num(n));
+  }
+
+  @Override
+  default IExpr pow(IExpr n) throws MathIllegalArgumentException {
+    return S.Power.of(this, n);
+  }
+
+  @Override
+  default IExpr pow(int n) {
+    return S.Power.of(this, F.ZZ(n));
+  }
+
+  @Override
+  default IExpr remainder(double arg0) {
+    return S.FractionalPart.of(this);
+  }
+
+  @Override
+  default IExpr rint() {
+    return S.IntegerPart.of(this);
+  }
+
+  @Override
+  default IExpr rootN(int n) {
+    return S.Power.of(this, F.QQ(1, n));
+  }
+
+  @Override
+  default IExpr scalb(int n) {
+    return times(F.C2.pow(n));
+  }
+
+  @Override
+  default IExpr sin() {
+    return S.Sin.of(this);
+  }
+
+  @Override
+  default FieldSinCos<IExpr> sinCos() {
+    return new FieldSinCos<IExpr>(sin(), cos());
+  }
+
+  @Override
+  default IExpr sinh() {
+    return S.Sinh.of(this);
+  }
+
+  @Override
+  default FieldSinhCosh<IExpr> sinhCosh() {
+    return new FieldSinhCosh<IExpr>(sinh(), cosh());
+  }
+
+  @Override
+  default IExpr subtract(double arg0) {
+    return subtract(F.num(arg0));
+  }
+
+  @Override
+  default IExpr tan() {
+    return S.Tan.of(this);
+  }
+
+  @Override
+  default IExpr tanh() {
+    return S.Tanh.of(this);
+  }
+
+  @Override
+  default IExpr ulp() {
+    return F.C0;
+  }
 }

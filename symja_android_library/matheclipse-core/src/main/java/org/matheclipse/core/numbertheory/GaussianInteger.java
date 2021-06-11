@@ -215,8 +215,8 @@ public final class GaussianInteger {
       throw new IllegalArgumentException("Denominator can not be zero.");
     }
 
-    IInteger divisionReal = numeratorReal.divideBy(denominator).round();
-    IInteger divisionImaginary = numeratorImaginary.divideBy(denominator).round();
+    IInteger divisionReal = numeratorReal.divideBy(denominator).roundExpr();
+    IInteger divisionImaginary = numeratorImaginary.divideBy(denominator).roundExpr();
 
     IInteger remainderReal =
         fReal.subtract(re.multiply(divisionReal)).add(im.multiply(divisionImaginary));

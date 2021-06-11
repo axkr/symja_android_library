@@ -122,7 +122,7 @@ public abstract class AbstractIntegerSym implements IInteger, Externalizable {
         int power = powers.get(i);
         if (power > 0) {
           // multiply entry to divisor
-          divisor = divisor.multiply(primes.get(i).pow(power));
+          divisor = divisor.multiply(primes.get(i).powerRational(power));
         }
       }
       if (divisors.add(divisor)) {
@@ -524,12 +524,12 @@ public abstract class AbstractIntegerSym implements IInteger, Externalizable {
     Int2IntMap map = new Int2IntRBTreeMap();
     IInteger b = this;
     boolean isNegative = false;
-    if (sign() < 0) {
+    if (complexSign() < 0) {
       b = b.negate();
       isNegative = true;
     }
     if (numerator != 1) {
-      b = b.pow(numerator);
+      b = b.powerRational(numerator);
     }
     if (b.isLT(F.C8)) {
       return F.NIL;
@@ -727,14 +727,14 @@ public abstract class AbstractIntegerSym implements IInteger, Externalizable {
     if (!multiple.isRational()) {
       multiple = F.fraction(multiple.doubleValue(), Config.DOUBLE_EPSILON);
     }
-    IInteger ii = this.divideBy((IRational) multiple).round();
+    IInteger ii = this.divideBy((IRational) multiple).roundExpr();
     return ii.multiply((IRational) multiple);
   }
 
   /** {@inheritDoc} */
   @Override
   public IInteger[] sqrtAndRemainder() {
-    if (sign() > 0) {
+    if (complexSign() > 0) {
       BigInteger bignum = toBigNumerator();
       BigInteger s = BigIntegerMath.sqrt(bignum, RoundingMode.FLOOR);
       BigInteger r = bignum.subtract(s.multiply(s));
@@ -888,11 +888,11 @@ public abstract class AbstractIntegerSym implements IInteger, Externalizable {
   @Override
   public IInteger[] nthRootSplit(int n) throws ArithmeticException {
     IInteger[] result = new IInteger[2];
-    if (sign() == 0) {
+    if (complexSign() == 0) {
       result[0] = F.C0;
       result[1] = F.C1;
       return result;
-    } else if (sign() < 0) {
+    } else if (complexSign() < 0) {
       if (n % 2 == 0) {
         // even exponent n
         throw new ArithmeticException();
@@ -935,7 +935,7 @@ public abstract class AbstractIntegerSym implements IInteger, Externalizable {
 
   /** {@inheritDoc} */
   @Override
-  public final IInteger pow(final long exponent) throws ArithmeticException {
+  public final IInteger powerRational(final long exponent) throws ArithmeticException {
     if (exponent < 0L) {
       throw new ArithmeticException("Negative exponent");
     }

@@ -569,7 +569,7 @@ public class ApcomplexNum implements IComplexNum {
 
   /** {@inheritDoc} */
   @Override
-  public INumber round() {
+  public INumber roundExpr() {
     Apfloat re = ApfloatMath.round(fApcomplex.real(), 1, RoundingMode.HALF_EVEN);
     Apfloat im = ApfloatMath.round(fApcomplex.imag(), 1, RoundingMode.HALF_EVEN);
     return F.complex(
@@ -663,5 +663,10 @@ public class ApcomplexNum implements IComplexNum {
   @Override
   public long precision() throws ApfloatRuntimeException {
     return fApcomplex.precision();
+  }
+  
+  @Override
+  public IExpr ulp() {
+    return valueOf(ApcomplexMath.ulp(fApcomplex));
   }
 }

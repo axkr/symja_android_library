@@ -307,7 +307,7 @@ public interface IInteger extends IRational {
   public IInteger[] nthRootSplit(int n);
 
   @Override
-  public IInteger pow(final long exp) throws ArithmeticException;
+  public IInteger powerRational(final long exp) throws ArithmeticException;
 
   /**
    *

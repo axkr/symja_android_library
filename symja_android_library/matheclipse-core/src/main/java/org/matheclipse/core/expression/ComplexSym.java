@@ -267,10 +267,10 @@ public class ComplexSym implements IComplex {
 
   @Override
   public int complexSign() {
-    final int i = fReal.numerator().sign();
+    final int i = fReal.numerator().complexSign();
 
     if (i == 0) {
-      return fImaginary.numerator().sign();
+      return fImaginary.numerator().complexSign();
     }
 
     return i;
@@ -625,8 +625,8 @@ public class ComplexSym implements IComplex {
       throw new IllegalArgumentException("Denominator can not be zero.");
     }
 
-    IInteger divisionReal = numeratorReal.divideBy(denominator).round();
-    IInteger divisionImaginary = numeratorImaginary.divideBy(denominator).round();
+    IInteger divisionReal = numeratorReal.divideBy(denominator).roundExpr();
+    IInteger divisionImaginary = numeratorImaginary.divideBy(denominator).roundExpr();
 
     IRational remainderReal =
         fReal.subtract(re.multiply(divisionReal)).subtract(im.multiply(divisionImaginary).negate());
@@ -702,7 +702,7 @@ public class ComplexSym implements IComplex {
   }
 
   @Override
-  public IComplex pow(final long n) {
+  public IComplex pow(final int n) {
 
     if ((n == 0) && fReal.isZero() && fImaginary.isZero()) {
       throw new ArithmeticException("Indeterminate: 0^0");
@@ -822,8 +822,8 @@ public class ComplexSym implements IComplex {
   }
 
   @Override
-  public INumber round() {
-    return valueOf(fReal.round(), fImaginary.round());
+  public INumber roundExpr() {
+    return valueOf(fReal.roundExpr(), fImaginary.roundExpr());
   }
 
   @Override
@@ -842,7 +842,7 @@ public class ComplexSym implements IComplex {
           IRational b = ((IRational) val2);
           return valueOf( //
               (IRational) a, //
-              (d.sign() >= 0) ? b : b.negate() //
+              (d.complexSign() >= 0) ? b : b.negate() //
               );
         }
       }

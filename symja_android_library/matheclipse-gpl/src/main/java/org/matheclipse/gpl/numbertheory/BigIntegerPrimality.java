@@ -101,7 +101,7 @@ public class BigIntegerPrimality extends Primality {
       return AbstractIntegerSym.factorizeLong(intValue);
     }
     boolean negative = false;
-    if (b.sign() < 0) {
+    if (b.complexSign() < 0) {
       b = b.negate();
       negative = true;
     }

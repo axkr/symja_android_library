@@ -1685,7 +1685,7 @@ public final class NumberTheory {
 
             IInteger sum = F.C0;
             for (int i = 1; i < size; i++) {
-              sum = sum.add(((IInteger) list.get(i)).pow(kl));
+              sum = sum.add(((IInteger) list.get(i)).powerRational(kl));
             }
             return sum;
           } catch (ArithmeticException ae) {
@@ -5356,7 +5356,7 @@ public final class NumberTheory {
 
       IInteger sum = F.C0;
       for (int i = 1; i < list.size(); i++) {
-        sum = sum.add(((IInteger) list.get(i)).pow(kl));
+        sum = sum.add(((IInteger) list.get(i)).powerRational(kl));
       }
       return sum.toBigNumerator();
     }
@@ -5431,7 +5431,7 @@ public final class NumberTheory {
     IInteger sum = F.C0;
     for (int i = 0; i < ki; i++) {
       IInteger bin = binomial(k, F.ZZ(i));
-      IInteger pow = k.add(F.ZZ(-i)).pow(n);
+      IInteger pow = k.add(F.ZZ(-i)).powerRational(n);
       if ((i & 1) == 1) { // isOdd(i) ?
         sum = sum.add(bin.negate().multiply(pow));
       } else {

@@ -69,7 +69,7 @@ public interface IFraction extends IRational {
    * @throws ArithmeticException if {@code 0^0} is given.
    */
   @Override
-  public IFraction pow(final long exp) throws ArithmeticException;
+  public IFraction powerRational(final long exp) throws ArithmeticException;
 
   public IFraction sub(IFraction parm1);
 

@@ -1063,7 +1063,7 @@ public class PredicateQ {
         return false;
       }
       // re^2 + im^2 is probable prime?
-      return reImParts[0].pow(2L).add(reImParts[1].pow(2L)).isProbablePrime();
+      return reImParts[0].powerRational(2L).add(reImParts[1].powerRational(2L)).isProbablePrime();
     }
 
     @Override

@@ -574,13 +574,13 @@ public class BigFractionSym extends AbstractFractionSym {
 
   /** {@inheritDoc} */
   @Override
-  public IInteger round() {
+  public IInteger roundExpr() {
     return AbstractIntegerSym.valueOf(NumberUtil.round(fFraction, BigDecimal.ROUND_HALF_EVEN));
   }
 
   /** {@inheritDoc} */
   @Override
-  public int sign() {
+  public int complexSign() {
     return fFraction.getNumerator().signum();
   }
 

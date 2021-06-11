@@ -25,7 +25,7 @@ public interface ISignedNumber extends INumber {
   /** {@inheritDoc} */
   @Override
   default IExpr complexArg() {
-    if (sign() < 0) {
+    if (complexSign() < 0) {
       return S.Pi;
     }
     return F.C0;
@@ -206,7 +206,7 @@ public interface ISignedNumber extends INumber {
    * @return the closest integer to the argument.
    */
   @Override
-  public IInteger round();
+  public IInteger roundExpr();
 
   /**
    * Round <code>this</code> number to the closest <code>ISignedNumber</code> multiple of the <code>
@@ -226,7 +226,7 @@ public interface ISignedNumber extends INumber {
    *     0 if this is a zero;<br>
    *     -1 if this is a negative number;
    */
-  public int sign();
+  public int complexSign();
 
   /**
    * Subtract <code>that</code> signed number from <code>this</code> signed number
