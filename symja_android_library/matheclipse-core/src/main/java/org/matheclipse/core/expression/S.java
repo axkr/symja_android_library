@@ -1856,6 +1856,9 @@ public class S {
   public static final IBuiltInSymbol ConvexHullMesh =
       F.initFinalSymbol("ConvexHullMesh", ID.ConvexHullMesh);
 
+  public static final IBuiltInSymbol CoplanarPoints =
+      F.initFinalSymbol("CoplanarPoints", ID.CoplanarPoints);
+  
   /**
    * CoprimeQ(x, y) - tests whether `x` and `y` are coprime by computing their greatest common
    * divisor.

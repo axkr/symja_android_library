@@ -463,6 +463,7 @@ public class AST2Expr {
     "ContourPlot",
     "Convergents",
     "ConvexHullMesh",
+    "CoplanarPoints",
     "CoprimeQ",
     "Correlation",
     "Cos",
