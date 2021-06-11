@@ -21,10 +21,8 @@ import org.hipparchus.linear.Array2DRowRealMatrix;
 import org.hipparchus.linear.ArrayRealVector;
 import org.hipparchus.linear.RealMatrix;
 import org.hipparchus.linear.RealVector;
-import org.hipparchus.util.FastMath;
 import org.hipparchus.util.FieldSinCos;
 import org.hipparchus.util.FieldSinhCosh;
-import org.hipparchus.util.MathArrays;
 import org.jgrapht.GraphType;
 import org.matheclipse.core.basic.Config;
 import org.matheclipse.core.builtin.BooleanFunctions;
@@ -46,6 +44,7 @@ import org.matheclipse.core.form.output.WolframFormFactory;
 import org.matheclipse.core.patternmatching.IPatternMatcher;
 import org.matheclipse.core.patternmatching.PatternMatcher;
 import org.matheclipse.core.polynomials.longexponent.ExprRingFactory;
+import org.matheclipse.core.reflection.system.FunctionExpand;
 import org.matheclipse.core.visit.IVisitor;
 import org.matheclipse.core.visit.IVisitorBoolean;
 import org.matheclipse.core.visit.IVisitorInt;
@@ -4343,6 +4342,17 @@ public interface IExpr
     if (isPower()) {
       return F.Power(base(), F.Times(C1D2, exponent()));
     } else {
+      //      if (isAST(S.Plus, 3)) {
+      //        IAST plus = (IAST) this;
+      //        final IExpr arg1 = plus.arg1();
+      //        final IExpr arg2 = plus.arg2();
+      //        if (arg1.isRational()) {
+      //          IExpr temp = FunctionExpand.sqrtDenest((IRational) arg1, arg2);
+      //          if (temp.isPresent()) {
+      //            return temp;
+      //          }
+      //        }
+      //      }
       if (isTimes()) {
         // see github issue #2: Get only real results
         IAST times = (IAST) this;
@@ -4825,7 +4835,7 @@ public interface IExpr
 
   @Override
   default IExpr log1p() {
-    return F.NIL;
+    return S.Log.of(this.inc());
   }
 
   @Override

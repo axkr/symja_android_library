@@ -413,7 +413,7 @@ public class FunctionExpand extends AbstractEvaluator implements FunctionExpandR
    * @param arg2
    * @return <code>F.NIL</code> if no change could be applied
    */
-  private static IExpr sqrtDenest(IRational arg1, IExpr arg2) {
+  public static IExpr sqrtDenest(IRational arg1, IExpr arg2) {
     if (arg1.isNegative()) {
       return sqrtDenest(
               arg1.negate(), //
