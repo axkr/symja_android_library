@@ -3370,10 +3370,10 @@ public class LowercaseTestCase extends AbstractTestCase {
   }
 
   public void testCarlsonRC() {
-	  check(
-		        "CarlsonRC(4., 5)", //
-		        "0.463648");
-	  
+    check(
+        "CarlsonRC(4., 5)", //
+        "0.463648");
+
     check(
         "CarlsonRC(y,y)", //
         "Piecewise({{ComplexInfinity,Re(y)<=0&&Im(y)==0}},1/Sqrt(y))");
@@ -4681,6 +4681,30 @@ public class LowercaseTestCase extends AbstractTestCase {
         "CoefficientRules(-10*x^5*y^4*z^2 + 7*x^2*y^5*z^3 - 10*x^2*y*z^5 - 7*x*y^5*z^4 +  6*x*y^4*z^3 + 6*x*y^3*z^3 + 3*x*y^2*z + y^4*z - 7*y^2*z + 2*z^5, {x, y, z}, NegativeDegreeLexicographic)", //
         "{{0,2,1}->-7,{1,2,1}->3,{0,4,1}->1,{0,0,5}->2,{1,3,3}->6,{2,1,5}->-10,{1,4,3}->6,{\n"
             + "2,5,3}->7,{1,5,4}->-7,{5,4,2}->-10}");
+  }
+
+  public void testCollinearPoints() {
+	  // https://youtu.be/UDt9M8_zxlw
+    check(
+        "CollinearPoints({{1,2,3}, {3,8,1}, {7,20,-3} })", //
+        "True");
+
+    check(
+        "CollinearPoints({{0, 0, 1}, {1, 0, 1}, {0, 1, 1}, {a, b, c}})", //
+        "False");
+    check(
+        "CollinearPoints({{1, 2, 1}, {3, 4, 1}, {5, 6, 1}, {7, 8, 1}})", //
+        "True");
+
+    check(
+        "CollinearPoints({{x1,y1}, {x2,y2}, {px,py}})", //
+        "x2*y1+px*(-y1+y2)==py*(-x1+x2)+x1*y2");
+    check(
+        "CollinearPoints({{0,0}, {1,2}, {2,4}})", //
+        "True");
+    check(
+        "CollinearPoints({{0,1}, {1,2}, {x,y}})", //
+        "1+x==y");
   }
 
   public void testCollect() {

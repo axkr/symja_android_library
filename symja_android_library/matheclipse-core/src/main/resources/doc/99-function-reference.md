@@ -140,6 +140,7 @@
 * [CoefficientList](functions/CoefficientList.md)
 * [CoefficientRules](functions/CoefficientRules.md)
 * [Collect](functions/Collect.md)
+* [CollinearPoints](functions/CollinearPoints.md)
 * [Commonest](functions/Commonest.md)
 * [Compile](functions/Compile.md)
 * [CompiledFunction](functions/CompiledFunction.md)

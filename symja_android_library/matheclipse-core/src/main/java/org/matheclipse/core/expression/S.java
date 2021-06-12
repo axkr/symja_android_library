@@ -1558,6 +1558,9 @@ public class S {
   public static final IBuiltInSymbol CoefficientRules =
       F.initFinalSymbol("CoefficientRules", ID.CoefficientRules);
 
+  public static final IBuiltInSymbol CollinearPoints =
+      F.initFinalSymbol("CollinearPoints", ID.CollinearPoints);
+
   /**
    * Collect(expr, variable) - collect subexpressions in `expr` which belong to the same `variable`.
    *
@@ -1858,7 +1861,7 @@ public class S {
 
   public static final IBuiltInSymbol CoplanarPoints =
       F.initFinalSymbol("CoplanarPoints", ID.CoplanarPoints);
-  
+
   /**
    * CoprimeQ(x, y) - tests whether `x` and `y` are coprime by computing their greatest common
    * divisor.

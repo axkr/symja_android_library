@@ -428,6 +428,7 @@ public class AST2Expr {
     "CoefficientArrays",
     "CoefficientList",
     "CoefficientRules",
+    "CollinearPoints",
     "Colon",
     "ColorData",
     "Column",
