@@ -5,6 +5,7 @@ import java.math.RoundingMode;
 import java.util.function.Function;
 
 import org.apfloat.Apcomplex;
+import org.apfloat.ApcomplexMath;
 import org.apfloat.Apfloat;
 import org.apfloat.ApfloatMath;
 import org.apfloat.ApfloatRuntimeException;
@@ -776,6 +777,14 @@ public class Num implements INum {
   @Override
   public IExpr rootN(int n) {
     return valueOf(Math.pow(fDouble, 1.0 / n));
+  }
+
+  @Override
+  public IExpr sign() {
+    if (isNaN() || isZero()) {
+      return this;
+    }
+    return valueOf(Math.abs(fDouble));
   }
 
   @Override

@@ -5,7 +5,6 @@ import java.math.BigInteger;
 import java.math.RoundingMode;
 
 import org.apfloat.Apcomplex;
-import org.apfloat.ApcomplexMath;
 import org.apfloat.Apfloat;
 import org.apfloat.ApfloatMath;
 import org.apfloat.ApfloatRuntimeException;
@@ -153,18 +152,18 @@ public class ApfloatNum implements INum {
   }
 
   @Override
-  public INum add(final INum val) {
-    return valueOf(fApfloat.add(val.apfloatValue(fApfloat.precision())));
+  public INum add(final INum value) {
+    return valueOf(fApfloat.add(value.apfloatValue(fApfloat.precision())));
   }
 
   @Override
-  public INum multiply(final INum val) {
-    return valueOf(fApfloat.multiply(val.apfloatValue(fApfloat.precision())));
+  public INum multiply(final INum value) {
+    return valueOf(fApfloat.multiply(value.apfloatValue(fApfloat.precision())));
   }
 
   @Override
-  public INum pow(final INum val) {
-    return valueOf(ApfloatMath.pow(fApfloat, val.apfloatValue(fApfloat.precision())));
+  public INum pow(final INum value) {
+    return valueOf(ApfloatMath.pow(fApfloat, value.apfloatValue(fApfloat.precision())));
   }
 
   @Override
@@ -632,20 +631,28 @@ public class ApfloatNum implements INum {
   public IExpr exp() {
     return valueOf(ApfloatMath.exp(fApfloat));
   }
-  
+
   @Override
   public IExpr log() {
     return valueOf(ApfloatMath.log(fApfloat));
   }
-  
+
   @Override
   public IExpr pow(int n) {
     return valueOf(ApfloatMath.pow(fApfloat, n));
   }
-  
+
   @Override
   public IExpr rootN(int n) {
     return valueOf(ApfloatMath.root(fApfloat, n));
+  }
+
+  @Override
+  public IExpr sign() {
+    if (isNaN() || isZero()) {
+      return this;
+    }
+    return valueOf(ApfloatMath.abs(fApfloat));
   }
 
   @Override

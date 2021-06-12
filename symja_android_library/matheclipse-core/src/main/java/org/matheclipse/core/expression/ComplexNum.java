@@ -897,11 +897,6 @@ public class ComplexNum implements IComplexNum {
   }
 
   @Override
-  public IExpr ulp() {
-    return valueOf(fComplex.ulp());
-  }
-
-  @Override
   public IExpr cos() {
     return valueOf(fComplex.cos());
   }
@@ -932,6 +927,14 @@ public class ComplexNum implements IComplexNum {
   }
 
   @Override
+  public IExpr sign() {
+    if (isNaN() || isZero()) {
+      return this;
+    }
+    return valueOf(fComplex.sign());
+  }
+
+  @Override
   public IExpr sin() {
     return valueOf(fComplex.sin());
   }
@@ -949,5 +952,10 @@ public class ComplexNum implements IComplexNum {
   @Override
   public IExpr tanh() {
     return valueOf(fComplex.tanh());
+  }
+
+  @Override
+  public IExpr ulp() {
+    return valueOf(fComplex.ulp());
   }
 }

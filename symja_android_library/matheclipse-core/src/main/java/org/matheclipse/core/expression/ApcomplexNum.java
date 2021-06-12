@@ -684,13 +684,12 @@ public class ApcomplexNum implements IComplexNum {
   public IExpr exp() {
     return valueOf(ApcomplexMath.exp(fApcomplex));
   }
-  
+
   @Override
   public IExpr log() {
     return valueOf(ApcomplexMath.log(fApcomplex));
   }
 
-  
   @Override
   public IExpr pow(int n) {
     return valueOf(ApcomplexMath.pow(fApcomplex, n));
@@ -699,6 +698,14 @@ public class ApcomplexNum implements IComplexNum {
   @Override
   public IExpr rootN(int n) {
     return valueOf(ApcomplexMath.root(fApcomplex, n));
+  }
+
+  @Override
+  public IExpr sign() {
+    if (isNaN() || isZero()) {
+      return this;
+    }
+    return valueOf(fApcomplex.divide(ApcomplexMath.abs(fApcomplex)));
   }
 
   @Override
