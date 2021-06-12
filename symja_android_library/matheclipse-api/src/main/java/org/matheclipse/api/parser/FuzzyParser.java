@@ -51,8 +51,8 @@ import org.matheclipse.parser.client.operator.InfixOperator;
 import org.matheclipse.parser.client.operator.Operator;
 
 /**
- * Create an expression of the <code>ASTNode</code> class-hierarchy from a math formulas string
- * representation
+ * Create an expression of the {@link IExpr} class-hierarchy from a math formula's string
+ * representation.
  *
  * <p>See <a href="http://en.wikipedia.org/wiki/Operator-precedence_parser">Operator -precedence
  * parser</a> for the idea, how to parse the operators depending on their precedence.
@@ -1162,10 +1162,10 @@ public class FuzzyParser extends Scanner {
   }
 
   /**
-   * Parse the given <code>expression</code> String into an IExpr.
+   * Parse the given <code>expression</code> String into an {@link IExpr} based object tree.
    *
    * @param expression a formula string which should be parsed.
-   * @return the parsed IExpr representation of the given formula string
+   * @return the parsed {@link IExpr} representation of the given formula string
    * @throws SyntaxError
    */
   public IExpr parse(final String expression) throws SyntaxError {
