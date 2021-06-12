@@ -5,6 +5,7 @@ import java.math.BigInteger;
 import java.math.RoundingMode;
 
 import org.apfloat.Apcomplex;
+import org.apfloat.ApcomplexMath;
 import org.apfloat.Apfloat;
 import org.apfloat.ApfloatMath;
 import org.apfloat.ApfloatRuntimeException;
@@ -615,6 +616,56 @@ public class ApfloatNum implements INum {
   @Override
   public double reDoubleValue() {
     return doubleValue();
+  }
+
+  @Override
+  public IExpr cos() {
+    return valueOf(ApfloatMath.cos(fApfloat));
+  }
+
+  @Override
+  public IExpr cosh() {
+    return valueOf(ApfloatMath.cosh(fApfloat));
+  }
+
+  @Override
+  public IExpr exp() {
+    return valueOf(ApfloatMath.exp(fApfloat));
+  }
+  
+  @Override
+  public IExpr log() {
+    return valueOf(ApfloatMath.log(fApfloat));
+  }
+  
+  @Override
+  public IExpr pow(int n) {
+    return valueOf(ApfloatMath.pow(fApfloat, n));
+  }
+  
+  @Override
+  public IExpr rootN(int n) {
+    return valueOf(ApfloatMath.root(fApfloat, n));
+  }
+
+  @Override
+  public IExpr sin() {
+    return valueOf(ApfloatMath.sin(fApfloat));
+  }
+
+  @Override
+  public IExpr sinh() {
+    return valueOf(ApfloatMath.sinh(fApfloat));
+  }
+
+  @Override
+  public IExpr tan() {
+    return valueOf(ApfloatMath.tan(fApfloat));
+  }
+
+  @Override
+  public IExpr tanh() {
+    return valueOf(ApfloatMath.tanh(fApfloat));
   }
 
   @Override

@@ -664,9 +664,60 @@ public class ApcomplexNum implements IComplexNum {
   public long precision() throws ApfloatRuntimeException {
     return fApcomplex.precision();
   }
-  
+
   @Override
   public IExpr ulp() {
     return valueOf(ApcomplexMath.ulp(fApcomplex));
+  }
+
+  @Override
+  public IExpr cos() {
+    return valueOf(ApcomplexMath.cos(fApcomplex));
+  }
+
+  @Override
+  public IExpr cosh() {
+    return valueOf(ApcomplexMath.cosh(fApcomplex));
+  }
+
+  @Override
+  public IExpr exp() {
+    return valueOf(ApcomplexMath.exp(fApcomplex));
+  }
+  
+  @Override
+  public IExpr log() {
+    return valueOf(ApcomplexMath.log(fApcomplex));
+  }
+
+  
+  @Override
+  public IExpr pow(int n) {
+    return valueOf(ApcomplexMath.pow(fApcomplex, n));
+  }
+
+  @Override
+  public IExpr rootN(int n) {
+    return valueOf(ApcomplexMath.root(fApcomplex, n));
+  }
+
+  @Override
+  public IExpr sin() {
+    return valueOf(ApcomplexMath.sin(fApcomplex));
+  }
+
+  @Override
+  public IExpr sinh() {
+    return valueOf(ApcomplexMath.sinh(fApcomplex));
+  }
+
+  @Override
+  public IExpr tan() {
+    return valueOf(ApcomplexMath.tan(fApcomplex));
+  }
+
+  @Override
+  public IExpr tanh() {
+    return valueOf(ApcomplexMath.tanh(fApcomplex));
   }
 }

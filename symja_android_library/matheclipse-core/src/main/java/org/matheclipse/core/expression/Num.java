@@ -6,7 +6,10 @@ import java.util.function.Function;
 
 import org.apfloat.Apcomplex;
 import org.apfloat.Apfloat;
+import org.apfloat.ApfloatMath;
 import org.apfloat.ApfloatRuntimeException;
+import org.hipparchus.complex.Complex;
+import org.hipparchus.util.FastMath;
 import org.hipparchus.util.MathUtils;
 import org.matheclipse.core.basic.Config;
 import org.matheclipse.core.eval.EvalEngine;
@@ -743,5 +746,55 @@ public class Num implements INum {
   @Override
   public IExpr ulp() {
     return valueOf(Math.ulp(fDouble));
+  }
+
+  @Override
+  public IExpr cos() {
+    return valueOf(Math.cos(fDouble));
+  }
+
+  @Override
+  public IExpr cosh() {
+    return valueOf(Math.cosh(fDouble));
+  }
+
+  @Override
+  public IExpr exp() {
+    return valueOf(Math.exp(fDouble));
+  }
+
+  @Override
+  public IExpr log() {
+    return valueOf(Math.log(fDouble));
+  }
+
+  @Override
+  public IExpr pow(int n) {
+    return valueOf(Math.pow(fDouble, n));
+  }
+
+  @Override
+  public IExpr rootN(int n) {
+    return valueOf(Math.pow(fDouble, 1.0 / n));
+  }
+
+  @Override
+  public IExpr sin() {
+    return valueOf(Math.sin(fDouble));
+  }
+
+  @Override
+  public IExpr sinh() {
+    return valueOf(Math.sinh(fDouble));
+  }
+
+  @Override
+  public IExpr tan() {
+    return valueOf(Math.tan(fDouble));
+  }
+
+  @Override
+  public IExpr tanh() {
+    return valueOf(Math.tanh(fDouble));
   }
 }

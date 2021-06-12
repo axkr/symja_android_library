@@ -21,6 +21,7 @@ import org.hipparchus.linear.Array2DRowRealMatrix;
 import org.hipparchus.linear.ArrayRealVector;
 import org.hipparchus.linear.RealMatrix;
 import org.hipparchus.linear.RealVector;
+import org.hipparchus.util.FastMath;
 import org.hipparchus.util.FieldSinCos;
 import org.hipparchus.util.FieldSinhCosh;
 import org.jgrapht.GraphType;
@@ -4840,12 +4841,12 @@ public interface IExpr
 
   @Override
   default IExpr multiply(double that) {
-    return S.Times.of(this, F.num(that));
+    return times(F.num(that));
   }
 
   @Override
-  default IExpr newInstance(double arg0) {
-    return F.num(arg0);
+  default IExpr newInstance(double arg) {
+    return F.num(arg);
   }
 
   @Override
@@ -4865,7 +4866,7 @@ public interface IExpr
 
   @Override
   default IExpr remainder(double arg0) {
-    return S.FractionalPart.of(this);
+    return S.Mod.of(this);
   }
 
   @Override

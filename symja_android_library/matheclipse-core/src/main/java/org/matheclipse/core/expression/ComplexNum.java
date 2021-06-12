@@ -335,7 +335,7 @@ public class ComplexNum implements IComplexNum {
       return null;
     }
   }
-  
+
   /** {@inheritDoc} */
   @Override
   public IExpr dec() {
@@ -899,5 +899,55 @@ public class ComplexNum implements IComplexNum {
   @Override
   public IExpr ulp() {
     return valueOf(fComplex.ulp());
+  }
+
+  @Override
+  public IExpr cos() {
+    return valueOf(fComplex.cos());
+  }
+
+  @Override
+  public IExpr cosh() {
+    return valueOf(fComplex.cosh());
+  }
+
+  @Override
+  public IExpr exp() {
+    return valueOf(fComplex.exp());
+  }
+
+  @Override
+  public IExpr log() {
+    return valueOf(fComplex.log());
+  }
+
+  @Override
+  public IExpr pow(int n) {
+    return valueOf(fComplex.pow(n));
+  }
+
+  @Override
+  public IExpr rootN(int n) {
+    return valueOf(fComplex.rootN(n));
+  }
+
+  @Override
+  public IExpr sin() {
+    return valueOf(fComplex.sin());
+  }
+
+  @Override
+  public IExpr sinh() {
+    return valueOf(fComplex.sinh());
+  }
+
+  @Override
+  public IExpr tan() {
+    return valueOf(fComplex.tan());
+  }
+
+  @Override
+  public IExpr tanh() {
+    return valueOf(fComplex.tanh());
   }
 }
