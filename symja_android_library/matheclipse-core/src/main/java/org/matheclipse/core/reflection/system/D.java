@@ -412,7 +412,8 @@ public class D extends AbstractFunctionEvaluator implements DRules {
       final IExpr header = function.head();
       if (function.isPlus()) {
         // D(a_+b_+c_,x_) -> D(a,x)+D(b,x)+D(c,x)
-        return function.mapThread(F.D(F.Slot1, x), 1);
+        IExpr result = function.mapThread(F.D(F.Slot1, x), 1);
+        return engine.evaluate(result);
       } else if (function.isTimes()) {
         return function.map(F.PlusAlloc(16), new BinaryBindIth1st(function, F.D(S.Null, x)));
       } else if (function.isPower()) {
