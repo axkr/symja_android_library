@@ -485,6 +485,9 @@ public final class RulesData implements Serializable {
                   System.out.println(" >>> " + expr.toString() + "  >>>>  " + result.toString());
                 }
               }
+              if (Config.TRACE_REWRITE_RULE) {
+                engine.addTraceStep(expr, result, F.List(expr.topHead(), F.$str("RewriteRule")));
+              }
               return result;
             }
             if (FEConfig.SHOW_STACKTRACE) {
