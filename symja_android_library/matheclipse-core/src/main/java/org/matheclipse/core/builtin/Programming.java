@@ -3038,7 +3038,7 @@ public final class Programming {
           matcher = engine.evalPatternMatcher(ast.arg2());
         }
 
-        return engine.evalTrace(temp, matcher, F.List());
+        return engine.evalTrace(temp, matcher);
       } catch (RuntimeException rex) {
         if (FEConfig.SHOW_STACKTRACE) {
           rex.printStackTrace();
@@ -3345,7 +3345,8 @@ public final class Programming {
 
     @Override
     public int[] expectedArgSize(IAST ast) {
-      // in contrast to `Module` (which only allows 2 arguments), `With` allows multiple initializer blocks
+      // in contrast to `Module` (which only allows 2 arguments), `With` allows multiple initializer
+      // blocks
       return ARGS_2_INFINITY;
     }
 

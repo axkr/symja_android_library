@@ -43,7 +43,7 @@ public class TimeConstrainedEvaluator extends EvalUtilities implements Runnable 
   public void run() {
     try {
       if (fTraceEvaluation) {
-        fEvaluationResult = evalTrace(fParsedExpression, null, F.List());
+        fEvaluationResult = evalTrace(fParsedExpression, null );
       } else {
         fEvaluationResult = evaluate(fParsedExpression);
       }

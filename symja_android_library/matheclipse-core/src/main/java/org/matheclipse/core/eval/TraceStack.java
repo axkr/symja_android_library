@@ -17,10 +17,10 @@ public final class TraceStack extends AbstractEvalStepListener {
   final IAST fList;
   IASTAppendable fTraceList;
 
-  public TraceStack(Predicate<IExpr> matcher, IAST list) {
+  public TraceStack(Predicate<IExpr> matcher) {
     super();
     fMatcher = matcher;
-    fList = list;
+    fList = F.ListAlloc(7);
     pushList();
   }
 
@@ -77,9 +77,7 @@ public final class TraceStack extends AbstractEvalStepListener {
 
   @Override
   public void setUp(IExpr inputExpr, int recursionDepth) {
-    pushList();
-    // addIfEmpty(inputExpr);
-    // add(resultExpr);
+    pushList(); 
   }
 
   @Override
@@ -89,26 +87,13 @@ public final class TraceStack extends AbstractEvalStepListener {
 
   @Override
   public void add(
-      IExpr inputExpr, IExpr resultExpr, int recursionDepth, long iterationCounter, String hint) {
-    if (iterationCounter == 0L) {
+      IExpr inputExpr, IExpr resultExpr, int recursionDepth, long iterationCounter, IExpr hint) {
+    if (iterationCounter <= 0L) {
       addIfEmpty(inputExpr);
       add(resultExpr);
     } else {
       add(resultExpr);
     }
   }
-
-  //	@Override
-  //	public int size() {
-  //		return fStack.size();
-  //	}
-  //
-  //	@Override
-  //	public void resetSize(int fromPosition) {
-  //		if (fromPosition > 1 && fromPosition < fStack.size()) {
-  //			while (fStack.size() > fromPosition) {
-  //				fStack.pop();
-  //			}
-  //		}
-  //	}
+ 
 }

@@ -444,7 +444,8 @@ public class ExprEvaluator {
   }
 
   /**
-   * Parse the given <code>expression String</code> and evaluate it to an IExpr value
+   * Parse the given <code>expression String</code> and evaluate it to an IExpr value. The current
+   * threads associated EvalEngine's internal states will be reset before parsing and evaluation.
    *
    * @param inputExpression
    * @return
@@ -546,10 +547,10 @@ public class ExprEvaluator {
                 if (!executor.awaitTermination(2, TimeUnit.SECONDS)) {
                   fEngine.printMessage("ExprEvaluator: pool did not terminate");
                 }
-              } 
+              }
             } catch (InterruptedException ie) {
-                // (Re-)Cancel if current thread also interrupted
-                executor.shutdownNow();
+              // (Re-)Cancel if current thread also interrupted
+              executor.shutdownNow();
             }
           }
         }

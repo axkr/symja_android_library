@@ -16,9 +16,6 @@ public interface IEvalStepListener {
    */
   public abstract String getHint();
 
-  //	default IASTAppendable getList() {
-  //		return null;
-  //	}
   /**
    * Set an &quot;evaluation step hint&quot; for the evaluation step listener. If defined, this hint
    * could be used in the <code>add()</code> method instead of the <code>add's</code> hint
@@ -27,10 +24,6 @@ public interface IEvalStepListener {
    * @param hint
    */
   public abstract void setHint(String hint);
-
-  //	default void setList(IASTAppendable list) {
-  //		// do nothing
-  //	}
 
   /**
    * Sets up the next evaluation step.
@@ -55,12 +48,15 @@ public interface IEvalStepListener {
    * @param resultExpr the evaluated result expression
    * @param recursionDepth the current recursion depth
    * @param iterationCounter the current iteration counter
-   * @param hint this hint will be used in the listener, if no other hint was set with the <code>
-   *     setHint()</code> method.
+   * @param IAST listOfHints this hints will be used in the listener
    * @see IEvalStepListener#setHint(String)
    */
   public abstract void add(
-      IExpr inputExpr, IExpr resultExpr, int recursionDepth, long iterationCounter, String hint);
+      IExpr inputExpr,
+      IExpr resultExpr,
+      int recursionDepth,
+      long iterationCounter,
+      IExpr listOfHints);
 
   /**
    * Solve a polynomial with degree &lt;= 2.
@@ -72,11 +68,4 @@ public interface IEvalStepListener {
   default IASTAppendable rootsOfQuadraticPolynomial(ExprPolynomial polynomial) {
     return F.NIL;
   }
-
-  //	default int size() {
-  //		return 0;
-  //	}
-  //
-  //	default void resetSize(int fromPosition) {
-  //	}
 }

@@ -11,6 +11,7 @@ import java.util.Set;
 import java.util.concurrent.atomic.AtomicLong;
 import java.util.function.DoubleUnaryOperator;
 import java.util.function.Predicate;
+import java.util.function.Supplier;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -40,6 +41,7 @@ import org.matheclipse.core.expression.F;
 import org.matheclipse.core.expression.ID;
 import org.matheclipse.core.expression.OptionsPattern;
 import org.matheclipse.core.expression.S;
+import org.matheclipse.core.expression.StringX;
 import org.matheclipse.core.integrate.rubi.UtilityFunctionCtors;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IASTAppendable;
@@ -53,6 +55,7 @@ import org.matheclipse.core.interfaces.INumber;
 import org.matheclipse.core.interfaces.IPatternObject;
 import org.matheclipse.core.interfaces.ISignedNumber;
 import org.matheclipse.core.interfaces.ISparseArray;
+import org.matheclipse.core.interfaces.IStringX;
 import org.matheclipse.core.interfaces.ISymbol;
 import org.matheclipse.core.parser.ExprParser;
 import org.matheclipse.core.parser.ExprParserFactory;
@@ -75,6 +78,8 @@ import com.google.common.cache.Cache;
 public class EvalEngine implements Serializable {
 
   private static final Logger logger = LogManager.getLogger(EvalEngine.class);
+
+  private static final IStringX EVALUATION_LOOP = StringX.valueOf("EvalLoop");
 
   /** Stack to manage the <code>OptionsPattern()</code> mappings for a pattern-matching rule. */
   private static class OptionsStack extends ArrayDeque<IdentityHashMap<ISymbol, IASTAppendable>> {
@@ -477,9 +482,42 @@ public class EvalEngine implements Serializable {
     }
   }
 
-  private void beginTrace(Predicate<IExpr> matcher, IAST list) {
+  /**
+   * Add a single step to the currently defined trace stack.
+   *
+   * @param before
+   * @param after
+   * @param listOfHints
+   * @see #setStepListener(IEvalStepListener)
+   */
+  public void addTraceStep(IExpr before, IExpr after, IAST listOfHints) {
+    if (fTraceStack != null) {
+      fTraceStack.add(before, after, getRecursionCounter(), -1, listOfHints);
+    }
+  }
+
+  /**
+   * Add a single step to the currently defined trace stack.
+   *
+   * @param before
+   * @param after
+   * @param listOfHints
+   */
+  public void addTraceStep(Supplier<IExpr> before, Supplier<IExpr> after, IAST listOfHints) {
+    if (fTraceStack != null) {
+      fTraceStack.add(before.get(), after.get(), getRecursionCounter(), -1, listOfHints);
+    }
+  }
+
+  public void addTraceStep(Supplier<IExpr> before, IExpr after, IAST listOfHints) {
+    if (fTraceStack != null) {
+      fTraceStack.add(before.get(), after, getRecursionCounter(), -1, listOfHints);
+    }
+  }
+
+  private void beginTrace(Predicate<IExpr> matcher) {
     setTraceMode(true);
-    fTraceStack = new TraceStack(matcher, list);
+    fTraceStack = new TraceStack(matcher);
   }
 
   /**
@@ -1399,7 +1437,8 @@ public class EvalEngine implements Serializable {
           if (fStopRequested || Thread.currentThread().isInterrupted()) {
             throw TimeoutException.TIMED_OUT;
           }
-          fTraceStack.add(expr, temp, fRecursionCounter, 0L, "Evaluation loop");
+
+          fTraceStack.add(expr, temp, fRecursionCounter, 0L, EVALUATION_LOOP);
           result = temp;
           long iterationCounter = 1;
           while (true) {
@@ -1418,7 +1457,7 @@ public class EvalEngine implements Serializable {
                   IterationLimitExceeded.throwIt(fIterationLimit, result);
                 }
               }
-              fTraceStack.add(result, temp, fRecursionCounter, iterationCounter, "Evaluation loop");
+              fTraceStack.add(result, temp, fRecursionCounter, iterationCounter, EVALUATION_LOOP);
               result = temp;
               if (fIterationLimit >= 0 && fIterationLimit <= ++iterationCounter) {
                 IterationLimitExceeded.throwIt(iterationCounter, result);
@@ -1960,14 +1999,12 @@ public class EvalEngine implements Serializable {
    * @param expr the expression which should be evaluated.
    * @param matcher a filter which determines the expressions which should be traced, If the matcher
    *     is set to <code>null</code>, all expressions are traced.
-   * @param list an IAST object which will be cloned for containing the traced expressions.
-   *     Typically a <code>F.List()</code> will be used.
    * @return
    */
-  public final IAST evalTrace(final IExpr expr, Predicate<IExpr> matcher, IAST list) {
+  public final IAST evalTrace(final IExpr expr, Predicate<IExpr> matcher) {
     IAST traceList = F.List();
     try {
-      beginTrace(matcher, list);
+      beginTrace(matcher);
       evaluate(expr);
     } finally {
       traceList = endTrace();
@@ -2302,7 +2339,6 @@ public class EvalEngine implements Serializable {
   /**
    * Reset the module counter to <code>0</code>. Used only in unit tests. <b> Don't reset for
    * reusable EvalEngine's!</b>
-   *
    */
   public void resetModuleCounter4JUnit() {
     MODULE_COUNTER = new AtomicLong();

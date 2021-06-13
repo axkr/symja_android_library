@@ -197,7 +197,7 @@ public class EvalUtilities extends MathMLUtilities {
    *     Typically a <code>F.List()</code> will be used.
    * @return <code>F.NIL</code> if <code>inputExpression == null</code>
    */
-  public IAST evalTrace(final String inputExpression, Predicate<IExpr> matcher, IAST list) {
+  public IAST evalTrace(final String inputExpression, Predicate<IExpr> matcher) {
 
     if (inputExpression != null) {
       // try {
@@ -205,7 +205,7 @@ public class EvalUtilities extends MathMLUtilities {
       IExpr parsedExpression = fEvalEngine.parse(inputExpression);
       if (parsedExpression != null) {
         // F.join();
-        IAST temp = fEvalEngine.evalTrace(parsedExpression, matcher, list);
+        IAST temp = fEvalEngine.evalTrace(parsedExpression, matcher);
         fEvalEngine.addInOut(parsedExpression, temp);
         return temp;
       }
@@ -220,15 +220,13 @@ public class EvalUtilities extends MathMLUtilities {
    * @param parsedExpression the expression which should be evaluated.
    * @param matcher a filter which determines the expressions which should be traced, If the matcher
    *     is set to <code>null</code>, all expressions are traced.
-   * @param list an IAST object which will be cloned for containing the traced expressions.
-   *     Typically a <code>F.List()</code> will be used.
    * @return
    */
-  public IAST evalTrace(final IExpr parsedExpression, Predicate<IExpr> matcher, IAST list)
+  public IAST evalTrace(final IExpr parsedExpression, Predicate<IExpr> matcher)
       throws RuntimeException {
     if (parsedExpression != null) {
       // F.join();
-      IAST temp = fEvalEngine.evalTrace(parsedExpression, matcher, list);
+      IAST temp = fEvalEngine.evalTrace(parsedExpression, matcher);
       return temp;
     }
     return F.NIL;

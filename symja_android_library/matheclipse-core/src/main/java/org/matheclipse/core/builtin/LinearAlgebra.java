@@ -215,7 +215,7 @@ public final class LinearAlgebra {
      *
      * @return
      */
-    public void rowReduce() {
+    private void rowReduce() {
       int pivotRow = 0;
       int i;
 
@@ -255,6 +255,12 @@ public final class LinearAlgebra {
         }
         pivotRow++;
       }
+
+      EvalEngine.get()
+          .addTraceStep(
+              () -> Convert.matrix2List(originalMatrix),
+              () -> Convert.matrix2List(rowReducedMatrix),
+              F.List(S.RowReduce, F.$str("ReducedRowEchelonForm")));
     }
 
     /**
@@ -539,7 +545,7 @@ public final class LinearAlgebra {
      *
      * @return
      */
-    private FieldMatrix<IExpr> rowReduceAdvancedZeroTest() {
+    private void rowReduceAdvancedZeroTest() {
       RowColIndex pivot = new RowColIndex(0, 0);
       int submatrix = 0;
       for (int x = 0; x < numCols; x++) {
@@ -620,17 +626,11 @@ public final class LinearAlgebra {
 
         pivot.row++;
       }
-      EvalEngine engine = EvalEngine.get();
-      IEvalStepListener listener = engine.getStepListener();
-      if (listener != null) {
-        listener.add(
-            Convert.matrix2List(originalMatrix),
-            Convert.matrix2List(rowReducedMatrix),
-            engine.getRecursionCounter(),
-            -1,
-            "ReducedRowEchelonForm");
-      }
-      return rowReducedMatrix;
+      EvalEngine.get()
+          .addTraceStep(
+              () -> Convert.matrix2List(originalMatrix),
+              () -> Convert.matrix2List(rowReducedMatrix),
+              F.List(S.RowReduce, F.$str("ReducedRowEchelonForm")));
     }
 
     /**

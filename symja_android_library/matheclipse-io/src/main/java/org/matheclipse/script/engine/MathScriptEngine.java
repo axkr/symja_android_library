@@ -115,7 +115,7 @@ public class MathScriptEngine extends AbstractScriptEngine {
       final Object stepwise = get("STEPWISE");
       IExpr result;
       if (Boolean.TRUE.equals(stepwise)) {
-        result = fUtility.evalTrace(script, null, F.List());
+        result = fUtility.evalTrace(script, null);
       } else {
         result = fUtility.evaluate(script);
       }
