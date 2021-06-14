@@ -99,9 +99,14 @@ public class EllipticIntegrals {
       }
 
       if (engine.isNumericMode()) {
-        //        x = engine.evalN(x);
-        //        y = engine.evalN(y);
-        //        return CarlsonEllipticIntegral.rC(x, y);
+        if (engine.isArbitraryMode()) {
+          x = engine.evalN(x);
+          y = engine.evalN(y);
+          if (x.isNumber() && y.isNumber()) {
+            return CarlsonEllipticIntegral.rC(x, y);
+          }
+          return F.NIL;
+        }
         double xd = Double.NaN;
         double yd = Double.NaN;
         try {
