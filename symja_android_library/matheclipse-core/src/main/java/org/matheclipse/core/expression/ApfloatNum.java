@@ -9,6 +9,7 @@ import org.apfloat.Apfloat;
 import org.apfloat.ApfloatMath;
 import org.apfloat.ApfloatRuntimeException;
 import org.apfloat.Apint;
+import org.apfloat.FixedPrecisionApfloatHelper;
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.interfaces.IInteger;
@@ -589,6 +590,11 @@ public class ApfloatNum implements INum {
   }
 
   @Override
+  public ApfloatNum newInstance(double d) {
+    return valueOf(d, fApfloat.precision());
+  }
+
+  @Override
   public Num numValue() {
     return Num.valueOf(doubleValue());
   }
@@ -618,6 +624,61 @@ public class ApfloatNum implements INum {
   }
 
   @Override
+  public IExpr multiply(int value) {
+    return valueOf(fApfloat.multiply(new Apfloat(value, fApfloat.precision())));
+  } 
+
+  @Override
+  public IExpr acos() {
+    return valueOf(ApfloatMath.acos(fApfloat));
+  }
+
+  @Override
+  public IExpr acosh() {
+    return valueOf(ApfloatMath.acosh(fApfloat));
+  }
+
+  @Override
+  public IExpr add(double value) {
+    return valueOf(fApfloat.add(new Apfloat(value, fApfloat.precision())));
+  }
+
+  @Override
+  public IExpr asin() {
+    return valueOf(ApfloatMath.asin(fApfloat));
+  }
+
+  @Override
+  public IExpr asinh() {
+    return valueOf(ApfloatMath.asinh(fApfloat));
+  }
+
+  @Override
+  public IExpr atan() {
+    return valueOf(ApfloatMath.atan(fApfloat));
+  }
+
+  @Override
+  public IExpr atanh() {
+    return valueOf(ApfloatMath.atanh(fApfloat));
+  }
+
+  @Override
+  public IExpr cbrt() {
+    return valueOf(ApfloatMath.cbrt(fApfloat));
+  }
+
+  @Override
+  public IExpr ceil() {
+    return valueOf(ApfloatMath.ceil(fApfloat));
+  }
+
+  @Override
+  public IExpr copySign(double d) {
+    return valueOf(ApfloatMath.copySign(fApfloat, new Apfloat(d, fApfloat.precision())));
+  }
+
+  @Override
   public IExpr cos() {
     return valueOf(ApfloatMath.cos(fApfloat));
   }
@@ -625,6 +686,26 @@ public class ApfloatNum implements INum {
   @Override
   public IExpr cosh() {
     return valueOf(ApfloatMath.cosh(fApfloat));
+  }
+
+  @Override
+  public IExpr divide(double value) {
+    return valueOf(fApfloat.divide(new Apfloat(value, fApfloat.precision())));
+  }
+
+  @Override
+  public IExpr expm1() {
+    return valueOf(ApfloatMath.exp(fApfloat).subtract(new Apfloat(1, fApfloat.precision())));
+  }
+
+  @Override
+  public IExpr floor() {
+    return valueOf(ApfloatMath.floor(fApfloat));
+  }
+
+  @Override
+  public double getReal() {
+    return fApfloat.doubleValue();
   }
 
   @Override
@@ -638,8 +719,48 @@ public class ApfloatNum implements INum {
   }
 
   @Override
+  public IExpr log10() {
+    return valueOf(ApfloatMath.log(fApfloat, new Apfloat(10, fApfloat.precision())));
+  }
+
+  @Override
+  public IExpr log1p() {
+    return valueOf(ApfloatMath.log(fApfloat.add(new Apfloat(1, fApfloat.precision()))));
+  }
+
+  @Override
+  public IExpr multiply(double value) {
+    return valueOf(fApfloat.multiply(new Apfloat(value, fApfloat.precision())));
+  }
+
+  @Override
   public IExpr pow(int n) {
     return valueOf(ApfloatMath.pow(fApfloat, n));
+  }
+
+  @Override
+  public IExpr pow(double value) {
+    return valueOf(ApfloatMath.pow(fApfloat, new Apfloat(value, fApfloat.precision())));
+  }
+
+  @Override
+  public IExpr reciprocal() {
+    return valueOf(ApfloatMath.inverseRoot(fApfloat, 1));
+  }
+
+  @Override
+  public IExpr remainder(double value) {
+    return valueOf(fApfloat.mod(new Apfloat(value, fApfloat.precision())));
+  }
+
+  @Override
+  public IExpr rint() {
+    return valueOf(ApfloatMath.round(fApfloat, fApfloat.precision(), RoundingMode.HALF_EVEN));
+  }
+
+  @Override
+  public IExpr scalb(int n) {
+    return valueOf(fApfloat.multiply(ApfloatMath.pow(new Apfloat(2), n)));
   }
 
   @Override
@@ -666,6 +787,11 @@ public class ApfloatNum implements INum {
   }
 
   @Override
+  public IExpr subtract(double value) {
+    return valueOf(fApfloat.subtract(new Apfloat(value, fApfloat.precision())));
+  }
+
+  @Override
   public IExpr tan() {
     return valueOf(ApfloatMath.tan(fApfloat));
   }
@@ -677,6 +803,8 @@ public class ApfloatNum implements INum {
 
   @Override
   public IExpr ulp() {
-    return valueOf(ApfloatMath.ulp(fApfloat));
+    FixedPrecisionApfloatHelper helper =
+        new FixedPrecisionApfloatHelper(EvalEngine.get().getNumericPrecision());
+    return valueOf(helper.ulp(new Apfloat(1)));
   }
 }

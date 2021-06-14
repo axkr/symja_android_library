@@ -3373,6 +3373,12 @@ public class LowercaseTestCase extends AbstractTestCase {
     check(
         "CarlsonRC(4., 5)", //
         "0.463648");
+    check(
+        "CarlsonRC(3, 1.234567890123456789012345)", //
+        "0.762626353743812501642456");
+    check(
+        "CarlsonRC(3, 1.2345678901234567890123456789012345)", //
+        "0.7626263537438125016424559135836886");
 
     check(
         "CarlsonRC(y,y)", //
@@ -4684,7 +4690,7 @@ public class LowercaseTestCase extends AbstractTestCase {
   }
 
   public void testCollinearPoints() {
-	  // https://youtu.be/UDt9M8_zxlw
+    // https://youtu.be/UDt9M8_zxlw
     check(
         "CollinearPoints({{1,2,3}, {3,8,1}, {7,20,-3} })", //
         "True");

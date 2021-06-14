@@ -7,12 +7,10 @@ import java.math.RoundingMode;
 import java.util.function.Function;
 
 import org.apfloat.Apcomplex;
-import org.apfloat.ApcomplexMath;
 import org.apfloat.Apfloat;
 import org.apfloat.ApfloatRuntimeException;
 import org.hipparchus.complex.Complex;
 import org.hipparchus.exception.NullArgumentException;
-import org.hipparchus.util.FastMath;
 import org.matheclipse.core.basic.Config;
 import org.matheclipse.core.builtin.IOFunctions;
 import org.matheclipse.core.eval.EvalEngine;

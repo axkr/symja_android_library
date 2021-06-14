@@ -9,6 +9,7 @@ import org.apfloat.ApcomplexMath;
 import org.apfloat.Apfloat;
 import org.apfloat.ApfloatMath;
 import org.apfloat.ApfloatRuntimeException;
+import org.apfloat.FixedPrecisionApcomplexHelper;
 import org.hipparchus.complex.Complex;
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.interfaces.IAST;
@@ -666,11 +667,6 @@ public class ApcomplexNum implements IComplexNum {
   }
 
   @Override
-  public IExpr ulp() {
-    return valueOf(ApcomplexMath.ulp(fApcomplex));
-  }
-
-  @Override
   public IExpr cos() {
     return valueOf(ApcomplexMath.cos(fApcomplex));
   }
@@ -688,6 +684,11 @@ public class ApcomplexNum implements IComplexNum {
   @Override
   public IExpr log() {
     return valueOf(ApcomplexMath.log(fApcomplex));
+  }
+  
+  @Override
+  public ApcomplexNum newInstance(double d) {
+    return valueOf(d, fApcomplex.precision());
   }
 
   @Override
@@ -726,5 +727,12 @@ public class ApcomplexNum implements IComplexNum {
   @Override
   public IExpr tanh() {
     return valueOf(ApcomplexMath.tanh(fApcomplex));
+  }
+
+  @Override
+  public IExpr ulp() {
+    FixedPrecisionApcomplexHelper helper =
+        new FixedPrecisionApcomplexHelper(EvalEngine.get().getNumericPrecision());
+    return valueOf(helper.ulp(new Apfloat(1)));
   }
 }
