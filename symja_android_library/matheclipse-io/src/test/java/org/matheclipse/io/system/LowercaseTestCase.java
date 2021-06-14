@@ -3370,6 +3370,16 @@ public class LowercaseTestCase extends AbstractTestCase {
   }
 
   public void testCarlsonRC() {
+    // TODO for complex args
+    //    check(
+    //        "N(CarlsonRC(Exp(I*Pi/7), Exp(I*Pi/3)),30)", //
+    //        "0.918779490030764719521186118777-I*0.414652997036584002880355293518");
+    check(
+        "N( Exp(I*Pi/7) ,30)", //
+        "0.90096886790241912623610231950744+I*0.4338837391175581204757683328483");
+    check(
+        "N( Exp(I*Pi/3) ,30)", //
+        "0.5+I*0.866025403784438646763723170752");
     check(
         "CarlsonRC(4., 5)", //
         "0.463648");
@@ -3379,7 +3389,6 @@ public class LowercaseTestCase extends AbstractTestCase {
     check(
         "CarlsonRC(3, 1.2345678901234567890123456789012345)", //
         "0.7626263537438125016424559135836886");
-
     check(
         "CarlsonRC(y,y)", //
         "Piecewise({{ComplexInfinity,Re(y)<=0&&Im(y)==0}},1/Sqrt(y))");

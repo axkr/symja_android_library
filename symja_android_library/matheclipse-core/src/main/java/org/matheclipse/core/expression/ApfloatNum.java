@@ -590,11 +590,6 @@ public class ApfloatNum implements INum {
   }
 
   @Override
-  public ApfloatNum newInstance(double d) {
-    return valueOf(d, fApfloat.precision());
-  }
-
-  @Override
   public Num numValue() {
     return Num.valueOf(doubleValue());
   }
@@ -626,7 +621,7 @@ public class ApfloatNum implements INum {
   @Override
   public IExpr multiply(int value) {
     return valueOf(fApfloat.multiply(new Apfloat(value, fApfloat.precision())));
-  } 
+  }
 
   @Override
   public IExpr acos() {
@@ -734,6 +729,11 @@ public class ApfloatNum implements INum {
   }
 
   @Override
+  public ApfloatNum newInstance(double d) {
+    return valueOf(d, fApfloat.precision());
+  }
+
+  @Override
   public IExpr pow(int n) {
     return valueOf(ApfloatMath.pow(fApfloat, n));
   }
@@ -760,7 +760,7 @@ public class ApfloatNum implements INum {
 
   @Override
   public IExpr scalb(int n) {
-    return valueOf(fApfloat.multiply(ApfloatMath.pow(new Apfloat(2), n)));
+    return valueOf(fApfloat.multiply(ApfloatMath.pow(new Apfloat(2, fApfloat.precision()), n)));
   }
 
   @Override
