@@ -1,8 +1,9 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project xmlns="http://maven.apache.org/POM/4.0.0"
 	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/xsd/maven-4.0.0.xsd">
 	<modelVersion>4.0.0</modelVersion>
+
 	<parent>
 		<groupId>org.matheclipse</groupId>
 		<artifactId>matheclipse</artifactId>
@@ -22,23 +23,21 @@
 	</licenses>
 
 	<dependencies>
+
 		<dependency>
-			<groupId>org.matheclipse</groupId>
+			<groupId>${project.groupId}</groupId>
 			<artifactId>matheclipse-core</artifactId>
-			<version>${symja.version}</version>
+			<version>${project.version}</version>
 		</dependency>
+
 	</dependencies>
-	
+
 	<build>
-		<resources>
-			<resource>
-				<directory>src/main/resources</directory>
-				<filtering>true</filtering>
-			</resource>
-		</resources>
 		<pluginManagement>
 			<plugins>
+
 				<plugin>
+					<groupId>org.apache.maven.plugins</groupId>
 					<artifactId>maven-assembly-plugin</artifactId>
 					<configuration>
 						<descriptorRefs>
@@ -48,10 +47,10 @@
 					<executions>
 						<execution>
 							<id>make-assembly</id> <!-- this is used for inheritance merges -->
-							<phase>package</phase> <!-- bind to the packaging phase -->
 							<goals>
 								<goal>single</goal>
 							</goals>
+							<phase>package</phase> <!-- bind to the packaging phase -->
 						</execution>
 					</executions>
 				</plugin>
