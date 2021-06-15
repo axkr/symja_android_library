@@ -5,12 +5,14 @@ import java.io.IOException;
 import java.io.ObjectInput;
 import java.io.ObjectOutput;
 
+import org.matheclipse.core.basic.Config;
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.exception.ConditionException;
 import org.matheclipse.core.eval.exception.ReturnException;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.expression.S;
 import org.matheclipse.core.interfaces.IAST;
+import org.matheclipse.core.interfaces.IASTAppendable;
 import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.interfaces.ISymbol;
 import org.matheclipse.parser.client.FEConfig;
@@ -243,20 +245,7 @@ public class PatternMatcherAndEvaluator extends PatternMatcher implements Extern
     if (isRuleWithoutPatterns()) {
       // no patterns found match equally:
       if (fLhsPatternExpr.equals(leftHandSide)) {
-        IExpr result = fRightHandSide;
-        try {
-          if (evaluate) {
-            return engine.evaluate(result);
-          }
-          return result;
-        } catch (final ConditionException e) {
-          if (FEConfig.SHOW_STACKTRACE) {
-            logConditionFalse(leftHandSide, fLhsPatternExpr, fRightHandSide);
-          }
-          return F.NIL;
-        } catch (final ReturnException e) {
-          return e.getValue();
-        }
+        return replaceEqualMatch(leftHandSide, engine, evaluate);
       }
       if (!(fLhsPatternExpr.isOrderlessAST() && leftHandSide.isOrderlessAST())) {
         if (!(fLhsPatternExpr.isFlatAST() && leftHandSide.isFlatAST())) {
@@ -272,39 +261,7 @@ public class PatternMatcherAndEvaluator extends PatternMatcher implements Extern
       patternMap = createPatternMap();
       patternMap.initPattern();
       if (matchExpr(fLhsPatternExpr, leftHandSide, engine, new StackMatcher(engine))) {
-
-        if (RulesData.showSteps) {
-          if (fLhsPatternExpr.head().equals(S.Integrate)) {
-            IExpr rhs = fRightHandSide.orElse(S.Null);
-            System.out.println(
-                "\nCOMPLEX: " + fLhsPatternExpr.toString() + " := " + rhs.toString());
-            System.out.println("\n>>>>> " + toString());
-          }
-        }
-
-        if (fReturnResult.isPresent()) {
-          return fReturnResult;
-        }
-
-        engine.pushOptionsStack();
-        try {
-          engine.setOptionsPattern(fLhsPatternExpr.topHead(), patternMap);
-          IExpr result = patternMap.substituteSymbols(fRightHandSide, F.CEmptySequence);
-          if (evaluate) {
-            return engine.evaluate(result);
-          } else {
-            return result;
-          }
-        } catch (final ConditionException e) {
-          if (FEConfig.SHOW_STACKTRACE) {
-            logConditionFalse(leftHandSide, fLhsPatternExpr, fRightHandSide);
-          }
-          return F.NIL;
-        } catch (final ReturnException e) {
-          return e.getValue();
-        } finally {
-          engine.popOptionsStack();
-        }
+        return replacePatternMatch(leftHandSide, patternMap, engine, evaluate);
       }
     }
 
@@ -313,6 +270,110 @@ public class PatternMatcherAndEvaluator extends PatternMatcher implements Extern
           (IAST) fLhsPatternExpr, (IAST) leftHandSide, fRightHandSide, engine);
     }
     return F.NIL;
+  }
+
+  /**
+   * A match which contains a pattern was found.
+   *
+   * <p>Assumption <code>
+   * matchExpr(fLhsPatternExpr, leftHandSide, engine, new StackMatcher(engine)) == true</code>.
+   *
+   * @param leftHandSide
+   * @param patternMap
+   * @param engine
+   * @param evaluate
+   * @return
+   */
+  private IExpr replacePatternMatch(
+      final IExpr leftHandSide, IPatternMap patternMap, EvalEngine engine, boolean evaluate) {
+    if (RulesData.showSteps) {
+      if (fLhsPatternExpr.head().equals(S.Integrate)) {
+        IExpr rhs = fRightHandSide.orElse(S.Null);
+        System.out.println("\nCOMPLEX: " + fLhsPatternExpr.toString() + " := " + rhs.toString());
+        System.out.println("\n>>>>> " + toString());
+      }
+    }
+
+    if (fReturnResult.isPresent()) {
+      if (Config.TRACE_REWRITE_RULE) {
+        engine.addTraceStep(
+            leftHandSide,
+            fReturnResult,
+            F.List(leftHandSide.topHead(), F.$str("RewriteRule"), fReturnResult));
+      }
+      return fReturnResult;
+    }
+
+    engine.pushOptionsStack();
+    try {
+      engine.setOptionsPattern(fLhsPatternExpr.topHead(), patternMap);
+      IExpr result = patternMap.substituteSymbols(fRightHandSide, F.CEmptySequence);
+      if (evaluate) {
+        if (Config.TRACE_REWRITE_RULE) {
+          return engine.addEvaluatedTraceStep(
+              leftHandSide, result, leftHandSide.topHead(), F.$str("RewriteRule"));
+        }
+        return engine.evaluate(result);
+      } else {
+        return result;
+      }
+    } catch (final ConditionException e) {
+      if (FEConfig.SHOW_STACKTRACE) {
+        logConditionFalse(leftHandSide, fLhsPatternExpr, fRightHandSide);
+      }
+      return F.NIL;
+    } catch (final ReturnException e) {
+      IExpr result = e.getValue();
+      if (evaluate) {
+        if (Config.TRACE_REWRITE_RULE) {
+          return engine.addEvaluatedTraceStep(
+              leftHandSide, result, leftHandSide.topHead(), F.$str("RewriteRule"));
+        }
+        return engine.evaluate(result);
+      }
+      return result;
+    } finally {
+      engine.popOptionsStack();
+    }
+  }
+
+  /**
+   * A match which contains no pattern was found.
+   *
+   * <p>Assumption <code>fLhsPatternExpr.equals(leftHandSide) == true</code>
+   *
+   * @param leftHandSide
+   * @param engine
+   * @param evaluate
+   * @return
+   */
+  private IExpr replaceEqualMatch(final IExpr leftHandSide, EvalEngine engine, boolean evaluate) {
+    IExpr result = fRightHandSide;
+    try {
+      if (evaluate) {
+        if (Config.TRACE_REWRITE_RULE) {
+          return engine.addEvaluatedTraceStep(
+              leftHandSide, result, leftHandSide.topHead(), F.$str("RewriteRule"));
+        }
+        return engine.evaluate(result);
+      }
+      return result;
+    } catch (final ConditionException e) {
+      if (FEConfig.SHOW_STACKTRACE) {
+        logConditionFalse(leftHandSide, fLhsPatternExpr, fRightHandSide);
+      }
+      return F.NIL;
+    } catch (final ReturnException e) {
+      result = e.getValue();
+      if (evaluate) {
+        if (Config.TRACE_REWRITE_RULE) {
+          return engine.addEvaluatedTraceStep(
+              leftHandSide, result, leftHandSide.topHead(), F.$str("RewriteRule"));
+        }
+        return engine.evaluate(result);
+      }
+      return result;
+    }
   }
 
   /**

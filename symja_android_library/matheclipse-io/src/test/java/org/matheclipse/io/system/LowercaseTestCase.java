@@ -3370,7 +3370,7 @@ public class LowercaseTestCase extends AbstractTestCase {
   }
 
   public void testCarlsonRC() {
-    // TODO for complex args
+    // TODO apfloat complex numbers
     //    check(
     //        "N(CarlsonRC(Exp(I*Pi/7), Exp(I*Pi/3)),30)", //
     //        "0.918779490030764719521186118777-I*0.414652997036584002880355293518");

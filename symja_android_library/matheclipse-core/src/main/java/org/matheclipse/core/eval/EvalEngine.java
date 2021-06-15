@@ -483,16 +483,37 @@ public class EvalEngine implements Serializable {
   }
 
   /**
+   * Add a single step to the currently defined trace stack and evaluate the <code>rewrittenExpr
+   * </code> expression.
+   *
+   * @param inputExpr the input expression
+   * @param rewrittenExpr the rewritten expression
+   * @param list
+   * @return
+   */
+  public IExpr addEvaluatedTraceStep(IExpr inputExpr, IExpr rewrittenExpr, IExpr... list) {
+    if (fTraceStack != null) {
+      IASTAppendable listOfHints = F.ast(S.List, list.length + 1, false);
+      listOfHints.appendAll(list, 0, list.length);
+      fTraceStack.add(inputExpr, rewrittenExpr, getRecursionCounter(), -1, listOfHints);
+      IExpr evaluatedResult = evaluate(rewrittenExpr);
+      listOfHints.append(evaluatedResult);
+      return evaluatedResult;
+    }
+    return evaluate(rewrittenExpr);
+  }
+
+  /**
    * Add a single step to the currently defined trace stack.
    *
-   * @param before
-   * @param after
+   * @param inputExpr
+   * @param rewrittenExpr
    * @param listOfHints
    * @see #setStepListener(IEvalStepListener)
    */
-  public void addTraceStep(IExpr before, IExpr after, IAST listOfHints) {
+  public void addTraceStep(IExpr inputExpr, IExpr rewrittenExpr, IAST listOfHints) {
     if (fTraceStack != null) {
-      fTraceStack.add(before, after, getRecursionCounter(), -1, listOfHints);
+      fTraceStack.add(inputExpr, rewrittenExpr, getRecursionCounter(), -1, listOfHints);
     }
   }
 
@@ -500,18 +521,19 @@ public class EvalEngine implements Serializable {
    * Add a single step to the currently defined trace stack.
    *
    * @param before
-   * @param after
+   * @param rewrittenExpr
    * @param listOfHints
    */
-  public void addTraceStep(Supplier<IExpr> before, Supplier<IExpr> after, IAST listOfHints) {
+  public void addTraceStep(
+      Supplier<IExpr> inputExpr, Supplier<IExpr> rewrittenExpr, IAST listOfHints) {
     if (fTraceStack != null) {
-      fTraceStack.add(before.get(), after.get(), getRecursionCounter(), -1, listOfHints);
+      fTraceStack.add(inputExpr.get(), rewrittenExpr.get(), getRecursionCounter(), -1, listOfHints);
     }
   }
 
-  public void addTraceStep(Supplier<IExpr> before, IExpr after, IAST listOfHints) {
+  public void addTraceStep(Supplier<IExpr> inputExpr, IExpr rewrittenExpr, IAST listOfHints) {
     if (fTraceStack != null) {
-      fTraceStack.add(before.get(), after, getRecursionCounter(), -1, listOfHints);
+      fTraceStack.add(inputExpr.get(), rewrittenExpr, getRecursionCounter(), -1, listOfHints);
     }
   }
 

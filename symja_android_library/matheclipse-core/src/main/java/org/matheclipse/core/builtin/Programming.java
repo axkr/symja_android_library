@@ -458,10 +458,7 @@ public final class Programming {
       if (engine.isEvalRHSMode()) {
         if (engine.evalTrue(ast.arg2())) {
           return ast.arg1();
-        }
-        if (FEConfig.SHOW_STACKTRACE) {
-          throw new ConditionException(ast);
-        }
+        } 
         throw ConditionException.CONDITION_NIL;
       }
       return F.NIL;
