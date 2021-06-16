@@ -6601,9 +6601,9 @@ public final class Arithmetic {
   /**
    * (p1Numer/p1Denom)^(p1Exp) * (p2Numer1/p2Denom1)^(p2Exp)
    *
-   * @return
+   * @return {@link F#NIL} if evaluation wasn't possible
    */
-  public static IExpr timesPowerPower(
+  private static IExpr timesPowerPower(
       IInteger p1Numer,
       IInteger p1Denom,
       IExpr p1Exp,
@@ -6697,7 +6697,7 @@ public final class Arithmetic {
    * @param function
    * @param domain if set to <code>F.Reals</code> a function like <code>Abs(x)</code> can be
    *     rewritten.
-   * @return
+   * @return {@link F#NIL} if evaluation wasn't possible
    */
   public static IAST piecewiseExpand(final IAST function, IBuiltInSymbol domain) {
     if (function.size() == 2) {
@@ -6808,7 +6808,7 @@ public final class Arithmetic {
   /**
    * (p1Numer/p1Denom)^(p1Exp)
    *
-   * @return
+   * @return {@link F#NIL} if evaluation wasn't possible
    */
   public static IExpr rationalPower(IInteger p1Numer, IInteger p1Denom, IRational p1Exp) {
     boolean[] evaled = new boolean[] {false};
@@ -6846,7 +6846,7 @@ public final class Arithmetic {
    * <p>See <a href="https://en.wikipedia.org/wiki/Lanczos_approximation">Lanczos approximation</a>
    *
    * @param z
-   * @return
+   * @return the gamma function value
    */
   public static org.hipparchus.complex.Complex lanczosApproxGamma(
       org.hipparchus.complex.Complex z) {

@@ -4901,7 +4901,8 @@ public class Algebra {
    *     F.List</code>)
    * @param gaussianIntegers if <code>true</code> use Gaussian integers
    * @param engine the evaluation engine
-   * @return
+   * @return factorization result AST (typically with head <code>F.Times</code> or <code>
+   *     F.List</code>)
    * @throws JASConversionException
    */
   public static IExpr factorComplex(
@@ -4919,7 +4920,8 @@ public class Algebra {
    * @param numeric2Rational transform numerical values to symbolic rational numbers
    * @param gaussianIntegers if <code>true</code> use Gaussian integers
    * @param engine
-   * @return
+   * @return factorization result AST (typically with head <code>F.Times</code> or <code>
+   *     F.List</code>)
    * @throws JASConversionException
    */
   private static IExpr factorComplex(
@@ -4939,10 +4941,6 @@ public class Algebra {
         JASConvert<BigRational> jas = new JASConvert<BigRational>(varList, BigRational.ZERO);
         GenPolynomial<BigRational> polyRat = jas.expr2JAS(expr, numeric2Rational);
         return factorRational(polyRat, jas, head);
-        // IExpr temp = SymjaRings.FactorOverQ((IAST) expr, false);
-        // if (temp != null && temp.isPresent()) {
-        // return temp;
-        // }
       }
     } catch (RuntimeException rex) {
       if (FEConfig.SHOW_STACKTRACE) {
@@ -5303,74 +5301,15 @@ public class Algebra {
     return parts;
   }
 
-  // public static IExpr partialFractionDecomposition(IExprPartialFractionGenerator pf, IExpr[]
-  // parts, IExpr variable)
-  // {
-  // try {
-  // IAST variableList = F.List(variable);
-  // IExpr exprNumerator = F.evalExpandAll(parts[0]);
-  // IExpr exprDenominator = F.evalExpandAll(parts[1]);
-  // // ASTRange r = new ASTRange(variableList, 1);
-  // // List<IExpr> varList = r;
-  // List<IExpr> varList = variableList.copyTo();
-  //
-  // String[] varListStr = new String[1];
-  // varListStr[0] = variableList.arg1().toString();
-  // // JASConvert<BigRational> jas = new JASConvert<BigRational>(varList, BigRational.ZERO);
-  // // GenPolynomial<BigRational> numerator = jas.expr2JAS(exprNumerator, false);
-  // // GenPolynomial<BigRational> denominator = jas.expr2JAS(exprDenominator, false);
-  // JASIExpr jas = new JASIExpr(varList, ExprRingFactory.CONST);
-  // GenPolynomial<IExpr> numerator = jas.expr2IExprJAS(exprNumerator);
-  // GenPolynomial<IExpr> denominator = jas.expr2IExprJAS(exprDenominator);
-  //
-  // // get factors
-  // FactorAbstract<IExpr> factorAbstract = FactorFactory.getImplementation(ExprRingFactory.CONST);
-  // SortedMap<GenPolynomial<IExpr>, Long> sfactors = factorAbstract.baseFactors(denominator);
-  //
-  // List<GenPolynomial<IExpr>> D = new ArrayList<GenPolynomial<IExpr>>(sfactors.keySet());
-  //
-  // SquarefreeAbstract<IExpr> sqf = SquarefreeFactory.getImplementation(ExprRingFactory.CONST);
-  // List<List<GenPolynomial<IExpr>>> Ai = sqf.basePartialFraction(numerator, sfactors);
-  // // returns [ [Ai0, Ai1,..., Aie_i], i=0,...,k ] with A/prod(D) =
-  // // A0 + sum( sum ( Aij/di^j ) ) with deg(Aij) < deg(di).
-  //
-  // if (Ai.size() > 0) {
-  // // IAST result = F.Plus();
-  // pf.allocPlus(Ai.size() * 2);
-  // pf.setJAS(jas);
-  // if (!Ai.get(0).get(0).isZERO()) {
-  // pf.addNonFractionalPart(Ai.get(0).get(0));
-  // }
-  // for (int i = 1; i < Ai.size(); i++) {
-  // List<GenPolynomial<IExpr>> list = Ai.get(i);
-  // int j = 0;
-  // for (GenPolynomial<IExpr> genPolynomial : list) {
-  // if (!genPolynomial.isZERO()) {
-  // GenPolynomial<IExpr> Di_1 = D.get(i - 1);
-  // pf.addSinglePartialFraction(genPolynomial, Di_1, j);
-  // }
-  // j++;
-  // }
-  //
-  // }
-  // return pf.getResult();
-  // }
-  // } catch (JASConversionException e) {
-  // if (Config.DEBUG) {
-  // e.printStackTrace();
-  // }
-  // }
-  // return F.NIL;
-  // }
-
   /**
-   * If possible returns an AST with head <code>Plus</code>, which contains the partial fraction
+   * If possible returns an AST with head {@link S#Plus}, which contains the partial fraction
    * decomposition of the numerator and denominator parts.
    *
    * @param parts numerator and denominator parts
    * @param variable
    * @param engine
-   * @return
+   * @return an AST with head {@link S#Plus}, which contains the partial fraction decomposition of
+   *     the numerator and denominator parts. Otherwise return {@link F#NIL}
    */
   public static IExpr partsApart(IExpr[] parts, IExpr variable, EvalEngine engine) {
     IExpr temp =
