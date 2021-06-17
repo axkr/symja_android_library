@@ -1557,7 +1557,7 @@ public class EvalEngine implements Serializable {
     } finally {
       stackPop();
       if (fTraceMode) {
-        fTraceStack.tearDown(fRecursionCounter);
+        fTraceStack.tearDown(fRecursionCounter, true);
       }
       fRecursionCounter--;
       if (fStopRequested) {

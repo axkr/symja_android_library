@@ -29,11 +29,11 @@ public final class TraceStack extends AbstractEvalStepListener {
     fStack.push(fTraceList);
   }
 
-  public void popList() {
+  public void popList(boolean commitTraceFrame) {
     IAST traceList = fTraceList;
     fStack.pop();
     fTraceList = fStack.peek();
-    if (traceList.size() > 1) {
+    if (traceList.size() > 1 && commitTraceFrame) {
       fTraceList.append(traceList);
     }
   }
@@ -77,12 +77,12 @@ public final class TraceStack extends AbstractEvalStepListener {
 
   @Override
   public void setUp(IExpr inputExpr, int recursionDepth) {
-    pushList(); 
+    pushList();
   }
 
   @Override
-  public void tearDown(int recursionDepth) {
-    popList();
+  public void tearDown(int recursionDepth, boolean commitTraceFrame) {
+    popList(commitTraceFrame);
   }
 
   @Override
@@ -95,5 +95,4 @@ public final class TraceStack extends AbstractEvalStepListener {
       add(resultExpr);
     }
   }
- 
 }

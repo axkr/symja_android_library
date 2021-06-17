@@ -14,6 +14,28 @@ import org.matheclipse.core.interfaces.IExpr;
 public abstract class IPatternMatcher
     implements Cloneable, Predicate<IExpr>, Serializable { // Comparable<IPatternMatcher>,
 
+  public static class EquivalenceComparator implements Comparator<IPatternMatcher>, Serializable {
+
+    private static final long serialVersionUID = 8357661139299702326L;
+
+    @Override
+    public int compare(final IPatternMatcher o1, final IPatternMatcher o2) {
+      if (o1 == o2) {
+        return 0;
+      }
+      return o1.equivalentTo(o2);
+    }
+  }
+
+  public static class PriorityComparator implements Comparator<IPatternMatcher> {
+    @Override
+    public int compare(IPatternMatcher o1, IPatternMatcher o2) {
+      return o1.getLHSPriority() < o2.getLHSPriority()
+          ? -1
+          : o1.getLHSPriority() > o2.getLHSPriority() ? 1 : 0;
+    }
+  }
+
   public static final int NOFLAG = 0x0000;
 
   /** This rule is defined with the <code>Set[]</code> function */
@@ -43,28 +65,6 @@ public abstract class IPatternMatcher
   /** Serialization mask */
   public static final int SERIALIZATION_MASK = 0x8000;
 
-  public static class EquivalenceComparator implements Comparator<IPatternMatcher>, Serializable {
-
-    private static final long serialVersionUID = 8357661139299702326L;
-
-    @Override
-    public int compare(final IPatternMatcher o1, final IPatternMatcher o2) {
-      if (o1 == o2) {
-        return 0;
-      }
-      return o1.equivalentTo(o2);
-    }
-  }
-
-  public static class PriorityComparator implements Comparator<IPatternMatcher> {
-    @Override
-    public int compare(IPatternMatcher o1, IPatternMatcher o2) {
-      return o1.getLHSPriority() < o2.getLHSPriority()
-          ? -1
-          : o1.getLHSPriority() > o2.getLHSPriority() ? 1 : 0;
-    }
-  }
-
   // Serializable {
   public static final EquivalenceComparator EQUIVALENCE_COMPARATOR = new EquivalenceComparator();
 
@@ -76,18 +76,27 @@ public abstract class IPatternMatcher
   /** Contains the "pattern-matching" expression */
   protected IExpr fLhsPatternExpr;
 
+  /**
+   * Contains the lhs expression which should be matched in a clone of this pattern matcher during
+   * matching
+   */
+  protected transient IExpr fLhsExprToMatch;
+
   protected IPatternMatcher() {
     fLhsPatternExpr = null;
+    fLhsExprToMatch = F.NIL;
   }
 
   public IPatternMatcher(IExpr lhsPatternExpr) {
     fLhsPatternExpr = lhsPatternExpr;
+    fLhsExprToMatch = F.NIL;
   }
 
   @Override
   public Object clone() throws CloneNotSupportedException {
     IPatternMatcher v = (IPatternMatcher) super.clone();
     v.fLhsPatternExpr = fLhsPatternExpr;
+    v.fLhsExprToMatch = fLhsExprToMatch;
     return v;
   }
   // public int determinePatterns() {
@@ -135,12 +144,23 @@ public abstract class IPatternMatcher
   }
 
   /**
+   * During evaluation get the lhs expression which should match the patterns.
+   *
+   * @return {@link F#NIL} if not defined
+   */
+  public IExpr getLHSExprToMatch() {
+    return fLhsExprToMatch;
+  }
+
+  /**
    * Get the priority of the left-and-side of this pattern-matcher. Lower values have higher
    * priorities.
    *
    * @return the priority
    */
   public abstract int getLHSPriority();
+
+  public abstract int getPatternHash();
 
   /**
    * Get the current pattern map of this matcher. If not initialized return <code>null</code>.
@@ -150,8 +170,6 @@ public abstract class IPatternMatcher
   public IPatternMap getPatternMap() {
     return null;
   }
-
-  public abstract int getPatternHash();
 
   /**
    * Returns the matched pattern in the order they appear in the pattern expression.
@@ -199,6 +217,16 @@ public abstract class IPatternMatcher
    * @return <code>true</code>, if the given expression contains no patterns
    */
   public abstract boolean isRuleWithoutPatterns();
+
+  /**
+   * Contains the lhs expression which should be matched in a clone of this pattern matcher during
+   * matching.
+   *
+   * @param lhsExprToMatch
+   */
+  public void setLHSExprToMatch(IExpr lhsExprToMatch) {
+    this.fLhsExprToMatch = lhsExprToMatch;
+  }
 
   /**
    * Return <code>true</code> if the pattern-matchings left-hand-side matches the <code>expr</code>

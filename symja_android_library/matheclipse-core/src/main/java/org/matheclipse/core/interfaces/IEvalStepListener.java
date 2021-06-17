@@ -37,8 +37,9 @@ public interface IEvalStepListener {
    * Tear down this evaluation step (called finally at the evaluation loop).
    *
    * @param recursionDepth the current recursion depth of this evaluation step
+   * @param commitTraceFrame set to <code>true</code> if the current trace frame should be stored.
    */
-  public abstract void tearDown(int recursionDepth);
+  public abstract void tearDown(int recursionDepth, boolean commitTraceFrame);
 
   /**
    * Add a new step in which the <code>inputExpr</code> was evaluated to the new <code>resultExpr

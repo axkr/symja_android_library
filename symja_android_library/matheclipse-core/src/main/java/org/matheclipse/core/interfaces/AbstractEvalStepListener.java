@@ -31,5 +31,5 @@ public abstract class AbstractEvalStepListener implements IEvalStepListener {
 
   /** {@inheritDoc} */
   @Override
-  public void tearDown(int recursionDepth) {}
+  public void tearDown(int recursionDepth, boolean commitTraceFrame) {}
 }

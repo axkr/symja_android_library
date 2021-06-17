@@ -13,6 +13,7 @@ import org.matheclipse.core.expression.F;
 import org.matheclipse.core.expression.S;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IASTAppendable;
+import org.matheclipse.core.interfaces.IEvalStepListener;
 import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.interfaces.ISymbol;
 import org.matheclipse.parser.client.FEConfig;
@@ -216,9 +217,21 @@ public class PatternMatcherAndEvaluator extends PatternMatcher implements Extern
         IExpr rhs = patternMap.substituteSymbols(fRightHandSide, F.CEmptySequence);
 
         engine.pushOptionsStack();
+        IEvalStepListener stepListener = engine.getStepListener();
         try {
           engine.setOptionsPattern(fLhsPatternExpr.topHead(), patternMap);
-          fReturnResult = engine.evaluate(rhs);
+          if (Config.TRACE_REWRITE_RULE && stepListener != null) {
+            IExpr lhs = getLHSExprToMatch();
+            if (lhs.isPresent()) {
+              stepListener.setUp(lhs, 0);
+              fReturnResult =
+                  engine.addEvaluatedTraceStep(lhs, rhs, lhs.topHead(), F.$str("RewriteRule"));
+            } else {
+              fReturnResult = engine.evaluate(rhs);
+            }
+          } else {
+            fReturnResult = engine.evaluate(rhs);
+          }
           matched = true;
         } catch (final ConditionException e) {
           matched = false;
@@ -227,6 +240,9 @@ public class PatternMatcherAndEvaluator extends PatternMatcher implements Extern
           matched = true;
         } finally {
           engine.popOptionsStack();
+        }
+        if (Config.TRACE_REWRITE_RULE && stepListener != null) {
+          stepListener.tearDown(0, matched);
         }
         patternMap.setRHSEvaluated(matched);
         return matched;
@@ -260,6 +276,7 @@ public class PatternMatcherAndEvaluator extends PatternMatcher implements Extern
     } else {
       patternMap = createPatternMap();
       patternMap.initPattern();
+      setLHSExprToMatch(leftHandSide);
       if (matchExpr(fLhsPatternExpr, leftHandSide, engine, new StackMatcher(engine))) {
         return replacePatternMatch(leftHandSide, patternMap, engine, evaluate);
       }
@@ -295,12 +312,6 @@ public class PatternMatcherAndEvaluator extends PatternMatcher implements Extern
     }
 
     if (fReturnResult.isPresent()) {
-      if (Config.TRACE_REWRITE_RULE) {
-        engine.addTraceStep(
-            leftHandSide,
-            fReturnResult,
-            F.List(leftHandSide.topHead(), F.$str("RewriteRule"), fReturnResult));
-      }
       return fReturnResult;
     }
 
