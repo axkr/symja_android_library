@@ -285,9 +285,9 @@ public class Eliminate extends AbstractFunctionEvaluator {
       boolean boolArg2 = arg2.isFree(predicate, true);
       IExpr result = F.NIL;
       if (!boolArg1 && boolArg2) {
-        result = extractVariable(arg1, arg2, predicate, variable, engine);
+        result = extractVariableRecursive(arg1, arg2, predicate, variable, engine);
       } else if (boolArg1 && !boolArg2) {
-        result = extractVariable(arg2, arg1, predicate, variable, engine);
+        result = extractVariableRecursive(arg2, arg1, predicate, variable, engine);
       }
       return result;
     }
@@ -305,7 +305,7 @@ public class Eliminate extends AbstractFunctionEvaluator {
     Predicate<IExpr> predicate = Predicates.in(variable);
     IExpr result = F.NIL;
     if (!expr.isFree(predicate, true)) {
-      result = extractVariable(expr, F.C0, predicate, variable, engine);
+      result = extractVariableRecursive(expr, F.C0, predicate, variable, engine);
     }
     return result;
   }
@@ -318,7 +318,7 @@ public class Eliminate extends AbstractFunctionEvaluator {
    * @param x the variable which should be eliminated.
    * @return <code>F.NIL</code> if we can't find an equation for the given variable <code>x</code>.
    */
-  private static IExpr extractVariable(
+  private static IExpr extractVariableRecursive(
       IExpr exprWithVariable,
       IExpr exprWithoutVariable,
       Predicate<IExpr> predicate,
@@ -336,13 +336,13 @@ public class Eliminate extends AbstractFunctionEvaluator {
             if (exprWithoutVariable.isNonNegativeResult()) {
               // example: Abs(x-1) == 1
               inverseFunction.append(exprWithoutVariable);
-              return extractVariable(ast.arg1(), inverseFunction, predicate, x, engine);
+              return extractVariableRecursive(ast.arg1(), inverseFunction, predicate, x, engine);
             }
             return S.True;
           } else {
             // example: Sin(f(x)) == y -> f(x) == ArcSin(y)
             inverseFunction.append(exprWithoutVariable);
-            return extractVariable(ast.arg1(), inverseFunction, predicate, x, engine);
+            return extractVariableRecursive(ast.arg1(), inverseFunction, predicate, x, engine);
           }
         }
       } else {
@@ -371,7 +371,7 @@ public class Eliminate extends AbstractFunctionEvaluator {
             return F.NIL;
           }
           IExpr value = engine.evaluate(F.Subtract(exprWithoutVariable, plusClone));
-          return extractVariable(rest.oneIdentity0(), value, predicate, x, engine);
+          return extractVariableRecursive(rest.oneIdentity0(), value, predicate, x, engine);
         } else if (ast.isTimes()) {
           // a * b * c....
           IASTAppendable rest = F.TimesAlloc(size);
@@ -409,14 +409,14 @@ public class Eliminate extends AbstractFunctionEvaluator {
             return F.NIL;
           }
           IExpr value = F.Divide(exprWithoutVariable, timesClone);
-          return extractVariable(rest.oneIdentity1(), value, predicate, x, engine);
+          return extractVariableRecursive(rest.oneIdentity1(), value, predicate, x, engine);
         } else if (ast.isPower()) {
           IExpr base = ast.base();
           IExpr exponent = ast.exponent();
           if (exponent.isFree(predicate, true)) {
             // f(x) ^ a
             IExpr value = F.Power(exprWithoutVariable, F.Divide(F.C1, exponent));
-            return extractVariable(base, value, predicate, x, engine);
+            return extractVariableRecursive(base, value, predicate, x, engine);
           } else if (base.isFree(predicate, true)) {
             if (base.isE()) {
               // E ^ f(x)
@@ -427,11 +427,11 @@ public class Eliminate extends AbstractFunctionEvaluator {
                   F.ConditionalExpression(
                       F.Plus(F.Times(F.C2, F.CI, S.Pi, c1), F.Log(exprwovar)),
                       F.Element(c1, S.Integers)); // $$;
-              return extractVariable(exponent, temp, predicate, x, engine);
+              return extractVariableRecursive(exponent, temp, predicate, x, engine);
             }
             // a ^ f(x)
             IExpr value = F.Divide(F.Log(exprWithoutVariable), F.Log(base));
-            return extractVariable(exponent, value, predicate, x, engine);
+            return extractVariableRecursive(exponent, value, predicate, x, engine);
           }
         }
       }
