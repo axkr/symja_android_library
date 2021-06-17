@@ -999,7 +999,13 @@ public class F extends S {
 
     UNARY_INVERSE_FUNCTIONS.put(Erf, InverseErf);
     UNARY_INVERSE_FUNCTIONS.put(Erfc, InverseErfc);
-
+    
+    UNARY_INVERSE_FUNCTIONS.put(Haversine, InverseHaversine);
+    UNARY_INVERSE_FUNCTIONS.put(InverseHaversine, Haversine);
+    
+    UNARY_INVERSE_FUNCTIONS.put(Gudermannian, InverseGudermannian);
+    UNARY_INVERSE_FUNCTIONS.put(InverseGudermannian, Gudermannian);
+    
     UNARY_INVERSE_FUNCTIONS.put(InverseErf, Erf);
     UNARY_INVERSE_FUNCTIONS.put(InverseErfc, Erfc);
   }
