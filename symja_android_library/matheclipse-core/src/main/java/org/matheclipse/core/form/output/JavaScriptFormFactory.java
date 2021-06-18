@@ -132,6 +132,8 @@ public class JavaScriptFormFactory extends DoubleFormFactory {
     FUNCTIONS_STR_MATHCELL.put(S.FresnelS, "fresnelS");
     FUNCTIONS_STR_MATHCELL.put(S.Gudermannian, "gudermannian");
     FUNCTIONS_STR_MATHCELL.put(S.InverseGudermannian, "inverseGudermannian");
+    FUNCTIONS_STR_MATHCELL.put(S.Haversine, "haversine");
+    FUNCTIONS_STR_MATHCELL.put(S.InverseHaversine, "inverseHaversine");
     // PM: Since polylog is a shortened form of the full function name, polylogarithm, the small "l"
     // is
     // more appropriate here:
