@@ -75,8 +75,9 @@ public class DoubleEvaluator {
     }
 
     @Override
-    public double applyAsDouble(double arg1, double arg2) {
-      return Math.atan2(arg1, arg2);
+    public double applyAsDouble(double x, double y) {
+      // the first argument of atan2 is y and the second is x.
+      return Math.atan2(y, x);
     }
   }
 

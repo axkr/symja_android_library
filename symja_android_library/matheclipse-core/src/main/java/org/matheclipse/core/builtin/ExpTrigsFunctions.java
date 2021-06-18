@@ -40,7 +40,9 @@ import org.apfloat.Apfloat;
 import org.apfloat.ApfloatMath;
 import org.apfloat.Apint;
 import org.hipparchus.complex.Complex;
+import org.hipparchus.special.elliptic.carlson.CarlsonEllipticIntegral;
 import org.hipparchus.util.FastMath;
+import org.matheclipse.core.builtin.functions.EllipticIntegralsJS;
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.exception.ValidateException;
 import org.matheclipse.core.eval.interfaces.AbstractArg1;
@@ -994,7 +996,7 @@ public class ExpTrigsFunctions {
     }
 
     @Override
-    public IExpr e2ObjArg(final IExpr x, final IExpr y) {
+    public IExpr e2ObjArg(IExpr x, IExpr y) {
       if (x.isZero() && y.isRealResult()) {
         if (y.isZero()) {
           return S.Indeterminate;
@@ -1029,6 +1031,43 @@ public class ExpTrigsFunctions {
       if (x.isNegativeInfinity()) {
         return F.Times(F.Subtract(F.Times(F.C2, F.UnitStep(F.Re(y))), F.C1), S.Pi);
       }
+      EvalEngine engine = EvalEngine.get();
+      if (engine.isNumericMode()) {
+        if (engine.isArbitraryMode()) {
+          x = engine.evalN(x);
+          y = engine.evalN(y);
+
+          if (x.isReal() && y.isReal()) {
+            long precision = engine.getNumericPrecision();
+            Apfloat xa = ((ISignedNumber) x).apfloatValue(precision);
+            Apfloat ya = ((ISignedNumber) y).apfloatValue(precision);
+            return F.num(ApfloatMath.atan2(ya, xa));
+          }
+          if (x.isNumber() && y.isNumber()) {
+            long precision = engine.getNumericPrecision();
+            x = ((INumber) x).apcomplexNumValue(precision);
+            y = ((INumber) y).apcomplexNumValue(precision);
+            return y.atan2(x);
+          }
+          return F.NIL;
+        }
+        double xd = Double.NaN;
+        double yd = Double.NaN;
+        try {
+          xd = x.evalDouble();
+          yd = y.evalDouble();
+        } catch (ValidateException ve) {
+        }
+        if (Double.isNaN(xd) || Double.isNaN(yd)) {
+          Complex xc = x.evalComplex();
+          Complex yc = y.evalComplex();
+          // the first argument of atan2 is y and the second is x.
+          return F.complexNum(yc.atan2(xc));
+        } else {
+          // the first argument of atan2 is y and the second is x.
+          return F.num(Math.atan2(yd, xd));
+        }
+      }
       return F.NIL;
     }
 
@@ -1053,8 +1092,9 @@ public class ExpTrigsFunctions {
     }
 
     @Override
-    public IExpr e2DblArg(final INum d0, final INum d1) {
-      return F.num(Math.atan2(d0.getRealPart(), d1.getRealPart()));
+    public IExpr e2DblArg(final INum x, final INum y) {
+      // the first argument of atan2 is y and the second is x.
+      return F.num(Math.atan2(y.getRealPart(), x.getRealPart()));
     }
 
     @Override
@@ -1073,7 +1113,8 @@ public class ExpTrigsFunctions {
         throw new UnsupportedOperationException();
       }
       if (size == 2) {
-        return Math.atan2(stack[top - 1], stack[top]);
+        // the first argument of atan2 is y and the second is x.
+        return Math.atan2(stack[top], stack[top - 1]);
       }
 
       return Math.atan(stack[top]);
@@ -2090,17 +2131,29 @@ public class ExpTrigsFunctions {
       if (engine.isNumericMode()) {
         try {
           if (z.isNumber()) {
+            // see https://github.com/paulmasson/math/issues/24
+
             // Re(z)>0  ||  (Re(z)==0&&Im(z)>=0)
             if (((INumber) z).complexSign() >= 0) {
               // (1/2)*(Pi - 4*ArcCot(E^z))
               return F.Times.of(
                   engine, F.C1D2, F.Subtract(S.Pi, F.Times(F.C4, F.ArcCot(F.Power(S.E, z)))));
             }
-            // (1/2)*(-Pi + 4*ArcTan(E^z))
+
+            // 2*ArcTan( Tan( z/2 )
             return F.Times.of(
                 engine,
-                F.C1D2,
-                F.Plus(F.Times(F.CN1, S.Pi), F.Times(F.C4, F.ArcTan(F.Power(S.E, z)))));
+                F.C2,
+                F.ArcTan( //
+                    F.Tanh(F.Times(F.C1D2, z)) //
+                    ));
+
+            //            // (1/2)*(-Pi + 4*ArcTan(E^z))
+            //            return F.Times.of(
+            //                engine,
+            //                F.C1D2,
+            //                F.Plus(F.Times(F.CN1, S.Pi), F.Times(F.C4, F.ArcTan(F.Power(S.E,
+            // z)))));
           }
         } catch (ValidateException ve) {
           if (FEConfig.SHOW_STACKTRACE) {
@@ -2167,11 +2220,14 @@ public class ExpTrigsFunctions {
       if (engine.isNumericMode()) {
         try {
           if (z.isNumber()) {
-            // Log(Tan(Pi/4 + z/2))
-            return F.Log.of(
+            // see https://github.com/paulmasson/math/issues/24
+
+            // 2*ArcTanh( Tan( z/2 )
+            return F.Times.of(
                 engine,
-                F.Tan( //
-                    F.Plus(F.Times(F.C1D4, S.Pi), F.Times(F.C1D2, z)) //
+                F.C2,
+                F.ArcTanh( //
+                    F.Tan(F.Times(F.C1D2, z)) //
                     ));
           }
         } catch (ValidateException ve) {

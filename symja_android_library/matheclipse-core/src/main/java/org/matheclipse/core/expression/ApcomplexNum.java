@@ -24,7 +24,7 @@ import org.matheclipse.core.visit.IVisitor;
 import org.matheclipse.core.visit.IVisitorBoolean;
 import org.matheclipse.core.visit.IVisitorInt;
 import org.matheclipse.core.visit.IVisitorLong;
-import org.matheclipse.parser.client.FEConfig;
+import org.matheclipse.parser.client.FEConfig; 
 
 /**
  * <code>IComplexNum</code> implementation which wraps a <code>
@@ -694,6 +694,30 @@ public class ApcomplexNum implements IComplexNum {
   @Override
   public IExpr atan() {
     return valueOf(ApcomplexMath.atan(fApcomplex));
+  }
+
+  @Override
+  public IExpr atan2(IExpr value) {
+    if (value instanceof ApcomplexNum) { 
+      Apcomplex th = fApcomplex;
+      final long precision = th.precision();
+      Apcomplex x = ((ApcomplexNum)value).fApcomplex;
+
+      // compute r = sqrt(x^2+y^2)
+      final Apcomplex r = ApcomplexMath.sqrt(x.multiply(x).add(th.multiply(th)));
+
+      if (x.real().compareTo(Apfloat.ZERO) >= 0) {
+        // compute atan2(y, x) = 2 atan(y / (r + x))
+        return valueOf(ApcomplexMath.atan(th.divide(r.add(x))).multiply(new Apfloat(2, precision)));
+      } else {
+        // compute atan2(y, x) = +/- pi - 2 atan(y / (r - x))
+        return valueOf(
+            ApcomplexMath.atan(th.divide(r.subtract(x)))
+                .multiply(new Apfloat(-2, precision))
+                .add(ApfloatMath.pi(precision)));
+      }
+    }
+    return IComplexNum.super.atan2(value);
   }
 
   @Override

@@ -1176,6 +1176,33 @@ public class LowercaseTestCase extends AbstractTestCase {
     // github #110 avoid infinite recursion
     // check("ArcTan(Re(Sin(3+I*2)),Im(Sin(3+I*2)))", //
     // "ArcTan(Im(Sin(3+I*2))/Re(Sin(3+I*2)))");
+
+    check(
+        "N(ArcTan(2, 1), 50)", //
+        "0.4636476090008061162142562314612144020285370542861");
+    check(
+        "N(ArcTan(2, 4), 50)", //
+        "1.1071487177940905030170654601785370400700476454014");
+    check(
+        "N(ArcTan(2, I*4), 50)", //
+        "1.5707963267948966192313216916397514420985846996875+I*0.5493061443340548456976226184612628523237452789113");
+    check(
+        "N(ArcTan(I*4, 2), 50)", //
+        "I*(-0.54930614433405484569762261846126285232374527891137)");
+
+    check(
+        "N(ArcTan(2, 1))", //
+        "0.463648");
+    check(
+        "N(ArcTan(2, 4))", //
+        "1.10715");
+    check(
+        "N(ArcTan(I*4, 2))", //
+        "I*(-0.549306)");
+    check(
+        "N(ArcTan(2,I*4 ))", //
+        "1.5708+I*0.549306");
+
     check(
         "ArcTan(y_,x^2)", //
         "ArcTan(y_,x^2)");
@@ -14840,6 +14867,9 @@ public class LowercaseTestCase extends AbstractTestCase {
         "N(Gudermannian(4/3), 50)", //
         "1.055327395759396716725120121987678867953438481189");
     check(
+        "N(Gudermannian(I*Pi+5), 50)", //
+        "1.584272016863742216280221584803507365335847712497");
+    check(
         "Gudermannian(6/4*Pi*I)", //
         "-I*Infinity");
     check(
@@ -14943,6 +14973,12 @@ public class LowercaseTestCase extends AbstractTestCase {
   }
 
   public void testHaversine() {
+    check(
+        "N(Haversine(1/7), 50)", //
+        "0.00509336977669245865213693149328312706298364955021");
+    check(
+        "N(Haversine(798+I), 50)", //
+        "-0.27105513255154801719412701505423122282395758411+I*0.020835467253162356620662405472920178540829827673");
     checkNumeric(
         "Haversine(1.5)", //
         "0.46463139916614854");
@@ -18057,7 +18093,7 @@ public class LowercaseTestCase extends AbstractTestCase {
   public void testInverseGudermannian() {
     check(
         "N(InverseGudermannian(4/3), 50)", //
-        "2.12617609078226939193623627117215618545032512233803");
+        "2.126176090782269391936236271172156185450325122338");
     check(
         "N(InverseGudermannian(4/3-2/3*I), 50)", //
         "1.0709631602353002334250501606064505306184199829854+I*(-1.253841344203559414899366482437511230389585771795)");
@@ -18081,6 +18117,12 @@ public class LowercaseTestCase extends AbstractTestCase {
 
   public void testInverseHaversine() {
 
+    check(
+        "N(InverseHaversine(1/7), 50)", //
+        "0.775193373310361307204093711182473425799817434023");
+    check(
+        "N(InverseHaversine(798+I), 50)", //
+        "3.140338735505235220711482104291646256237738908735+I*8.067776883665043131189388013520931297785865736445");
     checkNumeric(
         "InverseHaversine(0.5)", //
         "1.5707963267948968");
