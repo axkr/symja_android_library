@@ -216,6 +216,7 @@ public abstract class AbstractTestCase extends TestCase {
       synchronized (fScriptManager) {
         ToggleFeature.COMPILE = true;
         IOInit.init();
+        Config.SHORTEN_STRING_LENGTH = 80;
         Config.MAX_AST_SIZE = 20000;
         Config.MAX_MATRIX_DIMENSION_SIZE = 100;
         Config.MAX_BIT_LENGTH = 200000;
