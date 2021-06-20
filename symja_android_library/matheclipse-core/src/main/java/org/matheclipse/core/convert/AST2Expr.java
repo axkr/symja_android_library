@@ -1008,6 +1008,7 @@ public class AST2Expr {
     "PadLeft",
     "PadRight",
     "ParametricPlot",
+    "Parenthesis",
     "Part",
     "Partition",
     "PartitionsP",

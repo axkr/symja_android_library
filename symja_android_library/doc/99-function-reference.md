@@ -609,6 +609,7 @@
 * [PadLeft](functions/PadLeft.md)
 * [PadRight](functions/PadRight.md)
 * [ParametricPlot](functions/ParametricPlot.md)
+* [Parenthesis](functions/Parenthesis.md)
 * [Part](functions/Part.md)
 * [Partition](functions/Partition.md)
 * [PartitionsP](functions/PartitionsP.md)

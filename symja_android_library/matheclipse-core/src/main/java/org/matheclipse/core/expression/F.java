@@ -869,6 +869,7 @@ public class F extends S {
 
       ConstantDefinitions.initialize();
       FunctionDefinitions.initialize();
+      S.Integrate.setEvaluator(org.matheclipse.core.reflection.system.Integrate.CONST);
       IOFunctions.initialize();
       Programming.initialize();
       PatternMatching.initialize();
@@ -922,7 +923,6 @@ public class F extends S {
 
       ComputationalGeometryFunctions.initialize();
 
-      S.Integrate.setEvaluator(org.matheclipse.core.reflection.system.Integrate.CONST);
       COUNT_DOWN_LATCH.countDown();
 
       // long stop = System.currentTimeMillis();
@@ -999,13 +999,13 @@ public class F extends S {
 
     UNARY_INVERSE_FUNCTIONS.put(Erf, InverseErf);
     UNARY_INVERSE_FUNCTIONS.put(Erfc, InverseErfc);
-    
+
     UNARY_INVERSE_FUNCTIONS.put(Haversine, InverseHaversine);
     UNARY_INVERSE_FUNCTIONS.put(InverseHaversine, Haversine);
-    
+
     UNARY_INVERSE_FUNCTIONS.put(Gudermannian, InverseGudermannian);
     UNARY_INVERSE_FUNCTIONS.put(InverseGudermannian, Gudermannian);
-    
+
     UNARY_INVERSE_FUNCTIONS.put(InverseErf, Erf);
     UNARY_INVERSE_FUNCTIONS.put(InverseErfc, Erfc);
   }
@@ -5734,6 +5734,10 @@ public class F extends S {
     return new AST1(Out, a0);
   }
 
+  public static IAST Parenthesis(final IExpr a0) {
+    return new AST1(Parenthesis, a0);
+  }
+  
   /**
    * See: <a
    * href="https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/Part.md">Part</a>

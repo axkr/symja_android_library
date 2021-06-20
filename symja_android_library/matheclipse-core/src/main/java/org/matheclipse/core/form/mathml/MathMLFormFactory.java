@@ -1286,10 +1286,10 @@ public class MathMLFormFactory extends AbstractMathMLFormFactory {
     if (head.isAST() || !fRelaxedSyntax) {
       // append(buf, "[");
       tag(buf, "mo", "[");
-    }else {
-    // append(buf, "(");
-    tag(buf, "mo", "(");
-  }
+    } else {
+      // append(buf, "(");
+      tag(buf, "mo", "(");
+    }
     final int functionSize = function.size();
     if (functionSize > 1) {
       convertInternal(buf, function.arg1(), Integer.MIN_VALUE, false);
@@ -1301,10 +1301,10 @@ public class MathMLFormFactory extends AbstractMathMLFormFactory {
     if (head.isAST() || !fRelaxedSyntax) {
       // append(buf, "]");
       tag(buf, "mo", "]");
-    }else {
-    // append(buf, ")");
-    tag(buf, "mo", ")");
-  }
+    } else {
+      // append(buf, ")");
+      tag(buf, "mo", ")");
+    }
     tagEnd(buf, "mrow");
   }
 
@@ -1392,6 +1392,10 @@ public class MathMLFormFactory extends AbstractMathMLFormFactory {
     }
     if (list.isList() || list instanceof ASTRealVector || list instanceof ASTRealMatrix) {
       convertList(buf, list);
+      return;
+    }
+    if (list.isAST(S.Parenthesis)) {
+      convertArgs(buf, S.Parenthesis, list);
       return;
     }
     if (list.isInterval() && convertInterval(buf, list)) {
@@ -1628,7 +1632,7 @@ public class MathMLFormFactory extends AbstractMathMLFormFactory {
       // <!ENTITY ImaginaryI "&#x2148;"
       tag(buf, "mi", "&#x2148;");
     }
-  tagEnd(buf, "mrow");
+    tagEnd(buf, "mrow");
     if (!isReZero && (Precedence.PLUS < precedence)) {
       tag(buf, "mo", ")");
     }
@@ -2365,7 +2369,7 @@ public class MathMLFormFactory extends AbstractMathMLFormFactory {
       tagStart(buf, "mi");
       buf.append(context.toString() + sym.getSymbolName());
     }
-  tagEnd(buf, "mi");
+    tagEnd(buf, "mi");
   }
 
   public void init() {

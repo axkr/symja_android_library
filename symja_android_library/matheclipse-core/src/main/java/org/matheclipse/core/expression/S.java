@@ -6550,6 +6550,8 @@ public class S {
   public static final IBuiltInSymbol ParametricPlot =
       F.initFinalSymbol("ParametricPlot", ID.ParametricPlot);
 
+  public static final IBuiltInSymbol Parenthesis = F.initFinalSymbol("Parenthesis", ID.Parenthesis);
+  
   /**
    * Part(expr, i) - returns part `i` of `expr`.
    *

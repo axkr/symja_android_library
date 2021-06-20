@@ -621,6 +621,18 @@ public class TeXFormFactory {
     }
   }
 
+  private static final class Parenthesis extends AbstractConverter {
+
+    /** {@inheritDoc} */
+    @Override
+    public boolean convert(final StringBuilder buf, final IAST f, final int precedence) {
+      buf.append("(");
+      fFactory.convertInternal(buf, f.arg1(), 0);
+      buf.append(")");
+      return true;
+    }
+  }
+
   private static final class Part extends AbstractConverter {
 
     /** {@inheritDoc} */
@@ -1948,6 +1960,7 @@ public class TeXFormFactory {
     operTab.put(S.$RealVector, new List());
     operTab.put(S.MatrixForm, new MatrixForm());
     operTab.put(S.TableForm, new TableForm());
+    operTab.put(S.Parenthesis, new Parenthesis());
     operTab.put(S.Part, new Part());
     operTab.put(S.Plus, new Plus());
     operTab.put(S.Power, new Power());

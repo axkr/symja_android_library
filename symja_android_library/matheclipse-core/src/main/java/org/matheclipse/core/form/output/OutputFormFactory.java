@@ -1197,6 +1197,9 @@ public class OutputFormFactory {
                 return;
               }
               break;
+            case ID.Parenthesis:
+                convertArgs(buf,S.Parenthesis, list);
+                return;
             case ID.List:
               convertList(buf, list, false);
               return;

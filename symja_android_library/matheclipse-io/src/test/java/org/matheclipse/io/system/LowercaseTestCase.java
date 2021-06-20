@@ -24738,6 +24738,21 @@ public class LowercaseTestCase extends AbstractTestCase {
         "PadRight({{0}},{{1,0},{0,1}})");
   }
 
+  public void testParenthesis() {
+    check(
+        "x+Parenthesis(a+b+c)", //
+        "x+(a+b+c)");
+    check(
+        "TeXForm(x+Parenthesis(a+b+c))", //
+        "x+(a+b+c)");
+    check(
+        "MathMLForm(x+Parenthesis(a+b+c))", //
+        "<?xml version=\"1.0\"?>\n"
+            + "<!DOCTYPE math PUBLIC \"-//W3C//DTD MathML 2.0//EN\" \"http://www.w3.org/TR/MathML2/dtd/mathml2.dtd\">\n"
+            + "<math mode=\"display\">\n"
+            + "<mrow><mrow><mo>(</mo><mrow><mi>c</mi><mo>+</mo><mi>b</mi><mo>+</mo><mi>a</mi></mrow><mo>)</mo></mrow><mo>+</mo><mi>x</mi></mrow></math>");
+  }
+
   public void testParserFixedPoint() {
     try {
       Parser p = new Parser(true);
