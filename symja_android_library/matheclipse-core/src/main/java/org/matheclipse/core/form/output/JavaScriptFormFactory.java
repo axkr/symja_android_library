@@ -13,6 +13,7 @@ import org.matheclipse.core.expression.F;
 import org.matheclipse.core.expression.ID;
 import org.matheclipse.core.expression.S;
 import org.matheclipse.core.interfaces.IAST;
+import org.matheclipse.core.interfaces.IASTMutable;
 import org.matheclipse.core.interfaces.IComplex;
 import org.matheclipse.core.interfaces.IComplexNum;
 import org.matheclipse.core.interfaces.IExpr;
@@ -399,10 +400,15 @@ public class JavaScriptFormFactory extends DoubleFormFactory {
           throw new ArgumentTypeException("Cannot convert to JavaScript: " + function.toString());
         }
         if (function.isAST(S.ArcTan, 3)) {
+          // swap arguments for atan2() convention in JavaScript
+          IASTMutable arcTan2 = function.copy();
+          arcTan2.set(1, function.arg2());
+          arcTan2.set(2, function.arg1());
           buf.append("Math.atan2");
-        } else {
-          buf.append(str);
+          convertArgs(buf, head, arcTan2);
+          return;
         }
+        buf.append(str);
         convertArgs(buf, head, function);
         return;
       }
