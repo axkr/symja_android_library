@@ -145,7 +145,7 @@ public class Config {
   /** Switch debug mode on/off */
   public static final boolean DEBUG = false;
   
-  public static final boolean TRACE_REWRITE_RULE = false;
+  public static boolean TRACE_REWRITE_RULE = false;
 
   /** Set to true if in fuzz testing mode */
   public static boolean FUZZ_TESTING = false;
