@@ -105,6 +105,7 @@ public class ComplexExpand extends AbstractEvaluator {
       }
       IExpr reX = S.Re.of(fEngine, x);
       IExpr imX = S.Im.of(fEngine, x);
+      IExpr z = F.Plus(reX, F.Times(F.CI, imX));
       if (head.equals(S.Abs)) {
         // Sqrt(reX^2 + imX^2)
         return F.Sqrt(Plus(Power(reX, C2), Power(imX, C2)));
@@ -167,6 +168,23 @@ public class ComplexExpand extends AbstractEvaluator {
       if (head.equals(S.Sin)) {
         // Cosh(Im(x))*Sin(Re(x))+I*Sinh(Im(x))*Cos(Re(x))
         return Plus(Times(Cosh(imX), Sin(reX)), Times(CI, Sinh(imX), Cos(reX)));
+      }
+      if (head.equals(S.ArcTan)) {
+        // https://functions.wolfram.com/ElementaryFunctions/ArcTan/19/
+        return Plus(
+            Times(Times(F.CN1D2, F.Arg(F.Subtract(F.C1, F.Distribute(F.Times(F.CI, z)))))),
+            Times(Times(F.C1D2, F.Arg(F.Plus(F.C1, F.Distribute(F.Times(F.CI, z)))))),
+            Times(
+                F.CI, //
+                Plus(
+                    Times(
+                        Times(
+                            F.CN1D4,
+                            F.Log(F.Plus(F.Sqr(reX), F.Power(F.Subtract(F.C1, imX), F.C2))))),
+                    Times(
+                        Times(
+                            F.C1D4,
+                            F.Log(F.Plus(F.Sqr(reX), F.Power(F.Plus(F.C1, imX), F.C2))))))));
       }
       if (head.equals(S.Tan)) {
         // Sin(2*Re(x))/(Cos(2*Re(x)) + Cosh(2*Im(x))) +
