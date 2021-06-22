@@ -1,7 +1,14 @@
 {
+ ArcCos(Power(x_^(-1))) := ArcSec(x),
+ ArcSec(Power(x_^(-1))) := ArcCos(x),
  ArcCot(Sqrt(x_^2)) := (Sqrt(x^2)*ArcCot(x))/x,
- ArcSin(Sqrt(x_^2)) := (Sqrt(x^2)*ArcSin(x))/x,
+ ArcCot(Power(x_^(-1))) := ArcTan(x),
  ArcTan(Sqrt(x_^2)) := (Sqrt(x^2)*ArcTan(x))/x,
+ ArcTan(Power(x_^(-1))) := ArcCot(x),
+ ArcCsc(Sqrt(x_^2)) := (Sqrt(x^2)*ArcCsc(x))/x ,
+ ArcCsc(Power(x_^(-1))) := ArcSin(x),
+ ArcSin(Sqrt(x_^2)) := (Sqrt(x^2)*ArcSin(x))/x,
+ ArcSin(Power(x_^(-1))) := ArcCsc(x),
  
  BetaRegularized(z_, a_, b_) := (Beta(z, a, b)*Gamma(a + b))/(Gamma(a)*Gamma(b)),
  BetaRegularized(y_, z_, a_, b_) := ((-Beta(y, a, b) + Beta(z, a, b))*Gamma(a + b))/(Gamma(a)*Gamma(b)),
