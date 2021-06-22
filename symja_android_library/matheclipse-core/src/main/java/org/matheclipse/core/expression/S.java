@@ -674,6 +674,8 @@ public class S {
   public static final IBuiltInSymbol Arrow = F.initFinalSymbol("Arrow", ID.Arrow);
 
   public static final IBuiltInSymbol Arrowheads = F.initFinalSymbol("Arrowheads", ID.Arrowheads);
+  
+  public static final IBuiltInSymbol AspectRatio = F.initFinalSymbol("AspectRatio", ID.AspectRatio);
 
   /**
    * AssociateTo(assoc, rule) - append `rule` to the association `assoc` and assign the result to
@@ -1156,6 +1158,8 @@ public class S {
 
   public static final IBuiltInSymbol Boxed = F.initFinalSymbol("Boxed", ID.Boxed);
 
+  public static final IBuiltInSymbol BoxRatios = F.initFinalSymbol("BoxRatios", ID.BoxRatios);
+  
   /**
    * BrayCurtisDistance(u, v) - returns the Bray Curtis distance between `u` and `v`.
    *
@@ -6551,7 +6555,7 @@ public class S {
       F.initFinalSymbol("ParametricPlot", ID.ParametricPlot);
 
   public static final IBuiltInSymbol Parenthesis = F.initFinalSymbol("Parenthesis", ID.Parenthesis);
-  
+
   /**
    * Part(expr, i) - returns part `i` of `expr`.
    *
