@@ -4927,6 +4927,11 @@ public class LowercaseTestCase extends AbstractTestCase {
     // TODO
     // check("ComplexExpand(Sqrt(1+I))", //
     // "");
+
+    check(
+        "ComplexExpand(ArcTan(x+I*y))", //
+        "Arg(1+I*x-y)/2-Arg(1-I*x+y)/2+I*(-Log(x^2+(1-y)^2)/4+Log(x^2+(1+y)^2)/4)");
+
     check(
         "ComplexExpand(ProductLog(x+I*y))", //
         "I*Im(ProductLog(x+I*y))+Re(ProductLog(x+I*y))");
@@ -13983,6 +13988,15 @@ public class LowercaseTestCase extends AbstractTestCase {
   }
 
   public void testFunctionExpand() {
+    check(
+        "FunctionExpand(ArcCot(1/x))", //
+        "ArcTan(x)");
+    check(
+        "FunctionExpand(ArcTan(1/x))", //
+        "ArcCot(x)");
+    check(
+        "FunctionExpand(ArcSin(1/x))", //
+        "ArcCsc(x)");
     check(
         "FunctionExpand(SphericalHarmonicY(3,1,t,p)) ", //
         "(-3*Sqrt(7/2)*E^(I*p)*Sqrt(1-Cos(t))*Sqrt(1+Cos(t))*Hypergeometric2F1(-2,5,2,Sin(t/\n"
@@ -24767,6 +24781,12 @@ public class LowercaseTestCase extends AbstractTestCase {
   }
 
   public void testPart() {
+    check(
+        "(3/2)[[0]]", //
+        "Rational");
+    check(
+        "(atesta)[[0]]", //
+        "Symbol");
     check(
         "x[[]]", //
         "x");
