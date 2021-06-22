@@ -458,7 +458,7 @@ public final class Programming {
       if (engine.isEvalRHSMode()) {
         if (engine.evalTrue(ast.arg2())) {
           return ast.arg1();
-        } 
+        }
         throw ConditionException.CONDITION_NIL;
       }
       return F.NIL;
@@ -2142,9 +2142,6 @@ public final class Programming {
 
     @Override
     public IExpr evaluate(final IAST ast, EvalEngine engine) {
-      //      if (!ast.head().equals(S.Part)) {
-      //        return F.NIL;
-      //      }
       if (ast.isAST1()) {
         return ast.arg1();
       }
@@ -2162,6 +2159,9 @@ public final class Programming {
               if (arg1.isSparseArray()) {
                 return sparseEvaluate(evaledAST, (ISparseArray) arg1, engine).orElse(evaledAST);
               }
+              if (ast.size() == 3 && ast.arg2().isZero()) {
+                return arg1.head();
+              }
               // Part specification `1` is longer than depth of object.
               IOFunctions.printMessage(S.Part, "partd", F.List(evaledAST), engine);
               // return the evaluated result:
@@ -2172,6 +2172,9 @@ public final class Programming {
             if (!arg1.isASTOrAssociation()) {
               if (arg1.isSparseArray()) {
                 return sparseEvaluate(ast, (ISparseArray) arg1, engine);
+              }
+              if (ast.size() == 3 && ast.arg2().isZero()) {
+                return arg1.head();
               }
               // Part specification `1` is longer than depth of object.
               return IOFunctions.printMessage(S.Part, "partd", F.List(ast), engine);
