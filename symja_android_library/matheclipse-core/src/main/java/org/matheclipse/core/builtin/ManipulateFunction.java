@@ -596,17 +596,20 @@ public class ManipulateFunction {
         StringBuilder graphicControl,
         IAST optionPlotRange,
         JavaScriptFormFactory toJS) {
+      double[] rangeXY = null;
       for (int i = 1; i < listOfFunctions.size(); i++) {
         graphicControl.append("var p" + i + " = ");
         graphicControl.append("parametric( (re,im) => [ re, im, z" + i + "(complex(re,im)) ]");
 
-        ManipulateFunction.complexRange(graphicControl, plotRangeX, -1, toJS);
-
-        graphicControl.append(", { complexFunction: 'abs', colormap: '");
-        graphicControl.append("complexArgument");
+        rangeXY = ManipulateFunction.complexRange(graphicControl, plotRangeX, -1, toJS);
+        graphicControl.append(", { complexFunction: 'abs', colormap: 'complexArgument");
         graphicControl.append("' } );\n");
       }
-      graphicControl.append("\n  var config = { type: 'threejs'");
+      graphicControl.append("\n  var config = { type: 'threejs',");
+      if (rangeXY != null) {
+        setBoxRatios(graphicControl, rangeXY);
+      }
+
       if (optionPlotRange.isPresent() && optionPlotRange.second().isAST(S.List, 3)) {
         IAST list = (IAST) optionPlotRange.second();
         // var config = { type: 'svg', yMin: -5, yMax: 5 };
@@ -625,6 +628,26 @@ public class ManipulateFunction {
       }
       graphicControl.append("];\n");
     }
+
+    /**
+     * Set mathcell's <code>aspectRatio</code> parameter to get a "x/y square plot".
+     * 
+     * @param graphicControl
+     * @param rangeXY
+     */
+  private static void setBoxRatios(StringBuilder graphicControl, double[] rangeXY) {
+    graphicControl.append(" aspectRatio: [");
+    if (rangeXY[0] > rangeXY[1]) {
+      double aspectRatio = rangeXY[0] / rangeXY[1];
+      graphicControl.append("1,");
+      graphicControl.append(Double.toString(aspectRatio));
+      graphicControl.append(",1]");
+    } else {
+      double aspectRatio = rangeXY[1] / rangeXY[0];
+      graphicControl.append(Double.toString(aspectRatio));
+      graphicControl.append(",1,1]");
+    }
+  }
 
     /**
      * Evaluate <code>Table( &lt;formula&gt;, &lt;sliderRange&gt; )</code>. If the result is a list,
@@ -940,9 +963,9 @@ public class ManipulateFunction {
           sequenceYValuesListPlot(
               manipulateAST, 1, pointList, toJS, function, boundingbox, colour, engine);
         }
-    return true; // JSXGraph.boundingBox(manipulateAST, boundingbox, function.toString(),
-      // toJS, false,
-      // true);
+        return true; // JSXGraph.boundingBox(manipulateAST, boundingbox, function.toString(),
+        // toJS, false,
+        // true);
       }
       return false;
     }
@@ -1084,8 +1107,9 @@ public class ManipulateFunction {
           } catch (RuntimeException rex) {
           }
         } else if (plotRangeY.isReal()) {
-          if ((plotID == ID.Plot) || (plotID == ID.ParametricPlot //
-          || plotID == ID.PolarPlot)) {
+          if ((plotID == ID.Plot)
+              || (plotID == ID.ParametricPlot //
+                  || plotID == ID.PolarPlot)) {
             try {
               plotRangeYMin = engine.evalDouble(plotRangeY.negate());
               plotRangeYMax = engine.evalDouble(plotRangeY);
@@ -2135,9 +2159,11 @@ public class ManipulateFunction {
    * @param plotRange example <code>{z, -2-2*I, 2+2*I}</code>
    * @param steps an additional step parameter. If less <code>0</code> the parameter will be ignored
    * @param toJS the expression to JavaScript transpiler
+   * @return an array for the x-(real)-range and the y-(imaginary)-range of the 3D plot
    */
-  private static void complexRange(
+  private static double[] complexRange(
       StringBuilder graphicControl, IAST plotRange, int steps, JavaScriptFormFactory toJS) {
+    double[] result = new double[2];
     IExpr zMin = plotRange.arg2();
     IExpr zMax = plotRange.arg3();
     Complex cMin = zMin.evalComplex();
@@ -2159,6 +2185,8 @@ public class ManipulateFunction {
         imMax = imMin;
         imMin = i;
       }
+      result[0] = reMax - reMin;
+      result[1] = imMax - imMin;
       graphicControl.append(", [");
       toJS.convert(graphicControl, F.num(reMin));
       graphicControl.append(", ");
@@ -2177,6 +2205,7 @@ public class ManipulateFunction {
       }
       graphicControl.append("]");
     }
+    return result;
   }
 
   /**
@@ -2619,9 +2648,9 @@ public class ManipulateFunction {
       int bin = (int) ((d - min) / binSize);
       if ((bin < 0) || (bin >= numBins)) {
         /* this data is smaller than min */
-      }else {
-      result[bin] += 1;
-    }
+      } else {
+        result[bin] += 1;
+      }
     }
     return result;
   }
