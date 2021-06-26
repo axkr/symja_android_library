@@ -23,9 +23,8 @@ import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutionException;
 
 import org.apfloat.Apcomplex;
-import org.apfloat.ApcomplexMath;
 import org.apfloat.Apfloat;
-import org.apfloat.ApfloatMath;
+import org.apfloat.FixedPrecisionApfloatHelper;
 import org.hipparchus.complex.Complex;
 import org.hipparchus.exception.MathRuntimeException;
 import org.hipparchus.util.CombinatoricsUtils;
@@ -2119,12 +2118,14 @@ public final class NumberTheory {
 
     @Override
     public IExpr e1ApcomplexArg(Apcomplex c) {
-      return F.complexNum(ApcomplexMath.gamma(c.add(new Apfloat(1L))));
+      FixedPrecisionApfloatHelper h = EvalEngine.getApfloat();
+      return F.complexNum(h.gamma(h.add(c, Apfloat.ONE)));
     }
 
     @Override
     public IExpr e1ApfloatArg(Apfloat d) {
-      return F.num(ApfloatMath.gamma(d.add(new Apfloat(1L))));
+      FixedPrecisionApfloatHelper h = EvalEngine.getApfloat();
+      return F.num(h.gamma(h.add(d, Apfloat.ONE)));
     }
 
     @Override

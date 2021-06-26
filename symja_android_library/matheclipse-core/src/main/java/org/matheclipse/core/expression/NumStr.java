@@ -48,21 +48,23 @@ public final class NumStr extends Num {
   }
 
   @Override
-  public ApfloatNum apfloatNumValue(long precision) {
+  public ApfloatNum apfloatNumValue() {
+    long precision = EvalEngine.getApfloat().precision();
     precision = (fPrecision > precision) ? fPrecision : precision;
     if (fExponent == 0) {
-      return ApfloatNum.valueOf(fFloatStr, precision);
+      return ApfloatNum.valueOf(fFloatStr, fPrecision);
     }
-    return ApfloatNum.valueOf(fFloatStr + "E" + fExponent, precision);
+    return ApfloatNum.valueOf(fFloatStr + "E" + fExponent, fPrecision);
   }
 
   @Override
-  public Apfloat apfloatValue(long precision) {
+  public Apfloat apfloatValue() {
+    long precision = EvalEngine.getApfloat().precision();
     precision = (fPrecision > precision) ? fPrecision : precision;
     if (fExponent == 0) {
-      return new Apfloat(fFloatStr, precision);
+      return new Apfloat(fFloatStr, fPrecision);
     }
-    return new Apfloat(fFloatStr + "E" + fExponent, precision);
+    return new Apfloat(fFloatStr + "E" + fExponent, fPrecision);
   }
 
   /** {@inheritDoc} */
@@ -111,19 +113,18 @@ public final class NumStr extends Num {
       if (that instanceof ApfloatNum) {
         ApfloatNum arg2 = (ApfloatNum) that;
         precision = arg2.precision() < precision ? arg2.precision() : precision;
-        return apfloatNumValue(precision).add(arg2.apfloatNumValue(precision));
+        return apfloatNumValue().add(arg2.apfloatNumValue());
       }
       if (that instanceof Num) {
-        return apfloatNumValue(precision).add(((INum) that).apfloatNumValue(precision));
+        return apfloatNumValue().add(((INum) that).apfloatNumValue());
       }
       if (that instanceof ApcomplexNum) {
         ApcomplexNum arg2 = (ApcomplexNum) that;
         precision = arg2.precision() < precision ? arg2.precision() : precision;
-        return ApcomplexNum.valueOf(apfloatValue(precision)).add((ApcomplexNum) that);
+        return ApcomplexNum.valueOf(apfloatValue()).add((ApcomplexNum) that);
       }
       if (that instanceof ComplexNum) {
-        return ApcomplexNum.valueOf(apfloatValue(precision))
-            .add(((ComplexNum) that).apcomplexNumValue(precision));
+        return ApcomplexNum.valueOf(apfloatValue()).add(((ComplexNum) that).apcomplexNumValue());
       }
     }
     return super.plus(that);
@@ -136,19 +137,19 @@ public final class NumStr extends Num {
       if (that instanceof ApfloatNum) {
         ApfloatNum arg2 = (ApfloatNum) that;
         precision = arg2.precision() < precision ? arg2.precision() : precision;
-        return apfloatNumValue(precision).multiply(arg2.apfloatNumValue(precision));
+        return apfloatNumValue().multiply(arg2.apfloatNumValue());
       }
       if (that instanceof Num) {
-        return apfloatNumValue(precision).multiply(((INum) that).apfloatNumValue(precision));
+        return apfloatNumValue().multiply(((INum) that).apfloatNumValue());
       }
       if (that instanceof ApcomplexNum) {
         ApcomplexNum arg2 = (ApcomplexNum) that;
         precision = arg2.precision() < precision ? arg2.precision() : precision;
-        return ApcomplexNum.valueOf(apfloatValue(precision)).multiply((ApcomplexNum) that);
+        return ApcomplexNum.valueOf(apfloatValue()).multiply((ApcomplexNum) that);
       }
       if (that instanceof ComplexNum) {
-        return ApcomplexNum.valueOf(apfloatValue(precision))
-            .multiply(((ComplexNum) that).apcomplexNumValue(precision));
+        return ApcomplexNum.valueOf(apfloatValue())
+            .multiply(((ComplexNum) that).apcomplexNumValue());
       }
     }
     return super.times(that);

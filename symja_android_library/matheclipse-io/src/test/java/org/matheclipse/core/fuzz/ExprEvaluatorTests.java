@@ -430,7 +430,8 @@ public class ExprEvaluatorTests extends TestCase {
             F.complex(-2.0, -2.0), //
             F.complex(-2.0, 2.0), //
             F.complexNum(new Apfloat("-0.8", 30), new Apfloat("1.2", 30)), //
-            F.complexNum(new Apfloat(Long.MIN_VALUE, 30), new Apfloat(Long.MAX_VALUE, 30)), //
+            //            F.complexNum(new Apfloat(Long.MIN_VALUE, 30), new Apfloat(Long.MAX_VALUE,
+            // 30)), //
             F.num(0.5), //
             F.num(-0.5), //
             F.num(Math.PI * (-0.5)), //
@@ -440,8 +441,8 @@ public class ExprEvaluatorTests extends TestCase {
             F.num(-Math.E), //
             F.num(Math.E), //
             F.num(new Apfloat("-0.8", 30)), //
-            F.num(new Apfloat(Long.MAX_VALUE, 30)), //
-            F.num(new Apfloat(Long.MIN_VALUE, 30)), //
+            //            F.num(new Apfloat(Long.MAX_VALUE, 30)), //
+            //            F.num(new Apfloat(Long.MIN_VALUE, 30)), //
             F.C0, //
             F.C1, //
             F.CN1, //

@@ -14,6 +14,7 @@ import java.util.function.Function;
 
 import org.apfloat.Apcomplex;
 import org.apfloat.Apfloat;
+import org.apfloat.FixedPrecisionApfloatHelper;
 import org.hipparchus.fraction.BigFraction;
 import org.matheclipse.core.basic.Config;
 import org.matheclipse.core.eval.EvalEngine;
@@ -202,17 +203,21 @@ public class ComplexSym implements IComplex {
   }
 
   @Override
-  public ApcomplexNum apcomplexNumValue(long precision) {
-    return ApcomplexNum.valueOf(apcomplexValue(precision));
+  public ApcomplexNum apcomplexNumValue() {
+    return ApcomplexNum.valueOf(apcomplexValue());
   }
 
-  public Apcomplex apcomplexValue(long precision) {
+  public Apcomplex apcomplexValue() {
+    FixedPrecisionApfloatHelper h = EvalEngine.getApfloat();
+    long precision = h.precision();
     Apfloat real =
-        new Apfloat(fReal.toBigNumerator(), precision)
-            .divide(new Apfloat(fReal.toBigDenominator(), precision));
+        h.divide(
+            new Apfloat(fReal.toBigNumerator(), precision),
+            new Apfloat(fReal.toBigDenominator(), precision));
     Apfloat imag =
-        new Apfloat(fImaginary.toBigNumerator(), precision)
-            .divide(new Apfloat(fImaginary.toBigDenominator(), precision));
+        h.divide(
+            new Apfloat(fImaginary.toBigNumerator(), precision),
+            new Apfloat(fImaginary.toBigDenominator(), precision));
     return new Apcomplex(real, imag);
   }
 

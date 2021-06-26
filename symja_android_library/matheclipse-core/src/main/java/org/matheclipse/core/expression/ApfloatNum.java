@@ -44,39 +44,35 @@ public class ApfloatNum implements INum {
    * @param precision
    * @return
    */
-  public static ApfloatNum valueOf(final double value, long precision) {
-    return new ApfloatNum(value, precision);
+  public static ApfloatNum valueOf(final double value) {
+    return valueOf(new Apfloat(value));
   }
 
   public static ApfloatNum valueOf(final Apfloat value) {
     return new ApfloatNum(value);
   }
 
-  public static ApfloatNum valueOf(final BigInteger numerator, long precision) {
-    return new ApfloatNum(numerator, precision);
+  public static ApfloatNum valueOf(final BigInteger numerator) {
+    return new ApfloatNum(numerator);
   }
 
-  public static ApfloatNum valueOf(
-      final BigInteger numerator, final BigInteger denominator, long precision) {
-    Apfloat n = new Apfloat(numerator, precision);
-    Apfloat d = new Apfloat(denominator, precision);
-    return new ApfloatNum(n.divide(d));
+  public static ApfloatNum valueOf(final BigInteger numerator, final BigInteger denominator) {
+    FixedPrecisionApfloatHelper h = EvalEngine.getApfloat();
+    Apfloat n = new Apfloat(numerator, h.precision());
+    Apfloat d = new Apfloat(denominator, h.precision());
+    return new ApfloatNum(h.divide(n, d));
   }
 
   public static ApfloatNum valueOf(final String value, long precision) {
     return new ApfloatNum(value, precision);
   }
 
-  private ApfloatNum(final double value, long precision) {
-    fApfloat = new Apfloat(new BigDecimal(value), precision);
-  }
-
   private ApfloatNum(final String value, long precision) {
     fApfloat = new Apfloat(value, precision);
   }
 
-  private ApfloatNum(final BigInteger value, long precision) {
-    fApfloat = new Apfloat(value, precision);
+  private ApfloatNum(final BigInteger value) {
+    fApfloat = new Apfloat(value, EvalEngine.getApfloat().precision());
   }
 
   private ApfloatNum(final Apfloat value) {
@@ -154,17 +150,17 @@ public class ApfloatNum implements INum {
 
   @Override
   public INum add(final INum value) {
-    return valueOf(fApfloat.add(value.apfloatValue(fApfloat.precision())));
+    return valueOf(EvalEngine.getApfloat().add(fApfloat, value.apfloatValue()));
   }
 
   @Override
   public INum multiply(final INum value) {
-    return valueOf(fApfloat.multiply(value.apfloatValue(fApfloat.precision())));
+    return valueOf(EvalEngine.getApfloat().multiply(fApfloat, value.apfloatValue()));
   }
 
   @Override
   public INum pow(final INum value) {
-    return valueOf(ApfloatMath.pow(fApfloat, value.apfloatValue(fApfloat.precision())));
+    return valueOf(EvalEngine.getApfloat().pow(fApfloat, value.apfloatValue()));
   }
 
   @Override
@@ -175,13 +171,13 @@ public class ApfloatNum implements INum {
   /** {@inheritDoc} */
   @Override
   public ApfloatNum abs() {
-    return valueOf(ApfloatMath.abs(fApfloat));
+    return valueOf(EvalEngine.getApfloat().abs(fApfloat));
   }
 
   /** {@inheritDoc} */
   @Override
   public int compareAbsValueToOne() {
-    return ApfloatMath.abs(fApfloat).compareTo(Apfloat.ONE);
+    return EvalEngine.getApfloat().abs(fApfloat).compareTo(Apfloat.ONE);
   }
 
   /** {@inheritDoc} */
@@ -208,7 +204,7 @@ public class ApfloatNum implements INum {
       return add((ApfloatNum) that);
     }
     if (that instanceof Num) {
-      return add(ApfloatNum.valueOf(((Num) that).getRealPart(), fApfloat.precision()));
+      return add(ApfloatNum.valueOf(((Num) that).getRealPart()));
     }
     if (that instanceof ApcomplexNum) {
       return ApcomplexNum.valueOf(fApfloat).add((ApcomplexNum) that);
@@ -216,19 +212,19 @@ public class ApfloatNum implements INum {
     if (that instanceof ComplexNum) {
       ComplexNum cn = (ComplexNum) that;
       return ApcomplexNum.valueOf(fApfloat)
-          .add(ApcomplexNum.valueOf(cn.getRealPart(), cn.getImaginaryPart(), fApfloat.precision()));
+          .add(ApcomplexNum.valueOf(cn.getRealPart(), cn.getImaginaryPart()));
     }
     return INum.super.plus(that);
   }
 
   @Override
   public ISignedNumber divideBy(ISignedNumber that) {
-    return valueOf(fApfloat.divide(that.apfloatValue(fApfloat.precision())));
+    return valueOf(EvalEngine.getApfloat().divide(fApfloat, that.apfloatValue()));
   }
 
   @Override
   public ISignedNumber subtractFrom(ISignedNumber that) {
-    return valueOf(fApfloat.subtract(that.apfloatValue(fApfloat.precision())));
+    return valueOf(EvalEngine.getApfloat().subtract(fApfloat, that.apfloatValue()));
   }
 
   /** @return */
@@ -238,13 +234,13 @@ public class ApfloatNum implements INum {
   }
 
   @Override
-  public Apfloat apfloatValue(long precision) {
-    return fApfloat;
-  }
-
   public Apfloat apfloatValue() {
     return fApfloat;
   }
+
+  //  public Apfloat apfloatValue() {
+  //    return fApfloat;
+  //  }
 
   @Override
   public boolean equals(final Object arg0) {
@@ -326,7 +322,7 @@ public class ApfloatNum implements INum {
       return multiply((ApfloatNum) that);
     }
     if (that instanceof Num) {
-      return multiply(ApfloatNum.valueOf(((Num) that).getRealPart(), fApfloat.precision()));
+      return multiply(ApfloatNum.valueOf(((Num) that).getRealPart()));
     }
     if (that instanceof ApcomplexNum) {
       return ApcomplexNum.valueOf(fApfloat).multiply((ApcomplexNum) that);
@@ -334,8 +330,7 @@ public class ApfloatNum implements INum {
     if (that instanceof ComplexNum) {
       ComplexNum cn = (ComplexNum) that;
       return ApcomplexNum.valueOf(fApfloat)
-          .multiply(
-              ApcomplexNum.valueOf(cn.getRealPart(), cn.getImaginaryPart(), fApfloat.precision()));
+          .multiply(ApcomplexNum.valueOf(cn.getRealPart(), cn.getImaginaryPart()));
     }
     return INum.super.times(that);
   }
@@ -343,13 +338,13 @@ public class ApfloatNum implements INum {
   /** @return */
   @Override
   public ApfloatNum negate() {
-    return valueOf(fApfloat.negate());
+    return valueOf(EvalEngine.getApfloat().negate(fApfloat));
   }
 
   /** @return */
   @Override
   public ApfloatNum opposite() {
-    return valueOf(fApfloat.negate());
+    return valueOf(EvalEngine.getApfloat().negate(fApfloat));
   }
 
   @Override
@@ -357,12 +352,12 @@ public class ApfloatNum implements INum {
     if (isOne()) {
       return this;
     }
-    return valueOf(ApfloatMath.inverseRoot(fApfloat, 1));
+    return valueOf(EvalEngine.getApfloat().inverseRoot(fApfloat, 1));
   }
 
   @Override
   public IExpr sqrt() {
-    return valueOf(ApfloatMath.sqrt(fApfloat));
+    return valueOf(EvalEngine.getApfloat().sqrt(fApfloat));
   }
 
   @Override
@@ -377,7 +372,7 @@ public class ApfloatNum implements INum {
   /** {@inheritDoc} */
   @Override
   public boolean isE() {
-    return fApfloat.equals(ApfloatMath.exp(new Apfloat(1, fApfloat.precision())));
+    return fApfloat.equals(EvalEngine.getApfloat().exp(Apfloat.ONE));
   }
 
   /** {@inheritDoc} */
@@ -395,13 +390,13 @@ public class ApfloatNum implements INum {
   /** {@inheritDoc} */
   @Override
   public boolean isPi() {
-    return fApfloat.equals(ApfloatMath.pi(fApfloat.precision()));
+    return fApfloat.equals(EvalEngine.getApfloat().pi());
   }
 
   /** {@inheritDoc} */
   @Override
   public boolean isRationalValue(IRational value) {
-    return fApfloat.equals(value.apfloatNumValue(fApfloat.precision()).fApfloat);
+    return fApfloat.equals(value.apfloatNumValue().fApfloat);
   }
 
   /** {@inheritDoc} */
@@ -421,7 +416,7 @@ public class ApfloatNum implements INum {
     throw new ArithmeticException("Apfloat: Round closest not implemented");
     // final long precision = precision();
     // Apfloat factor = multiple.apfloatNumValue(precision).fApfloat;
-    // return F.num(ApfloatMath.round(fApfloat.divide(factor), precision,
+    // return F.num(EvalEngine.getApfloat().round(fApfloat.divide(factor), precision,
     // RoundingMode.HALF_EVEN).multiply(factor));
   }
 
@@ -497,7 +492,7 @@ public class ApfloatNum implements INum {
     }
     if (expr.isNumber()) {
       if (expr.isReal()) {
-        return fApfloat.compareTo(((ISignedNumber) expr).apfloatValue(precision()));
+        return fApfloat.compareTo(((ISignedNumber) expr).apfloatValue());
       }
       int c = this.compareTo(((INumber) expr).re());
       if (c != 0) {
@@ -581,26 +576,26 @@ public class ApfloatNum implements INum {
   }
 
   @Override
-  public ApfloatNum apfloatNumValue(long precision) {
-    return this;
-  }
-
   public ApfloatNum apfloatNumValue() {
     return this;
   }
+
+  //  public ApfloatNum apfloatNumValue() {
+  //    return this;
+  //  }
 
   @Override
   public Num numValue() {
     return Num.valueOf(doubleValue());
   }
 
-  public Apcomplex apcomplexValue(long precision) {
+  public Apcomplex apcomplexValue( ) {
     return new Apcomplex(fApfloat);
   }
 
   @Override
-  public ApcomplexNum apcomplexNumValue(long precision) {
-    return ApcomplexNum.valueOf(fApfloat, new Apfloat(0, fApfloat.precision()));
+  public ApcomplexNum apcomplexNumValue( ) {
+    return ApcomplexNum.valueOf(fApfloat);
   }
 
   @Override
@@ -620,82 +615,83 @@ public class ApfloatNum implements INum {
 
   @Override
   public IExpr multiply(int value) {
-    return valueOf(fApfloat.multiply(new Apfloat(value, fApfloat.precision())));
+    return valueOf(EvalEngine.getApfloat().multiply(fApfloat, new Apfloat(value)));
   }
 
   @Override
   public IExpr acos() {
-    return valueOf(ApfloatMath.acos(fApfloat));
+    return valueOf(EvalEngine.getApfloat().acos(fApfloat));
   }
 
   @Override
   public IExpr acosh() {
-    return valueOf(ApfloatMath.acosh(fApfloat));
+    return valueOf(EvalEngine.getApfloat().acosh(fApfloat));
   }
 
   @Override
   public IExpr add(double value) {
-    return valueOf(fApfloat.add(new Apfloat(value, fApfloat.precision())));
+    return valueOf(EvalEngine.getApfloat().add(fApfloat, new Apfloat(value)));
   }
 
   @Override
   public IExpr asin() {
-    return valueOf(ApfloatMath.asin(fApfloat));
+    return valueOf(EvalEngine.getApfloat().asin(fApfloat));
   }
 
   @Override
   public IExpr asinh() {
-    return valueOf(ApfloatMath.asinh(fApfloat));
+    return valueOf(EvalEngine.getApfloat().asinh(fApfloat));
   }
 
   @Override
   public IExpr atan() {
-    return valueOf(ApfloatMath.atan(fApfloat));
+    return valueOf(EvalEngine.getApfloat().atan(fApfloat));
   }
 
   @Override
   public IExpr atanh() {
-    return valueOf(ApfloatMath.atanh(fApfloat));
+    return valueOf(EvalEngine.getApfloat().atanh(fApfloat));
   }
 
   @Override
   public IExpr cbrt() {
-    return valueOf(ApfloatMath.cbrt(fApfloat));
+    return valueOf(EvalEngine.getApfloat().cbrt(fApfloat));
   }
 
   @Override
   public IExpr ceil() {
-    return valueOf(ApfloatMath.ceil(fApfloat));
+    return valueOf(EvalEngine.getApfloat().ceil(fApfloat));
   }
 
   @Override
   public IExpr copySign(double d) {
-    return valueOf(ApfloatMath.copySign(fApfloat, new Apfloat(d, fApfloat.precision())));
+    return valueOf(EvalEngine.getApfloat().copySign(fApfloat, new Apfloat(d)));
   }
 
   @Override
   public IExpr cos() {
-    return valueOf(ApfloatMath.cos(fApfloat));
+    return valueOf(EvalEngine.getApfloat().cos(fApfloat));
   }
 
   @Override
   public IExpr cosh() {
-    return valueOf(ApfloatMath.cosh(fApfloat));
+    return valueOf(EvalEngine.getApfloat().cosh(fApfloat));
   }
 
   @Override
   public IExpr divide(double value) {
-    return valueOf(fApfloat.divide(new Apfloat(value, fApfloat.precision())));
+    return valueOf(EvalEngine.getApfloat().divide(fApfloat, new Apfloat(value)));
   }
 
   @Override
   public IExpr expm1() {
-    return valueOf(ApfloatMath.exp(fApfloat).subtract(new Apfloat(1, fApfloat.precision())));
+    FixedPrecisionApfloatHelper h = EvalEngine.getApfloat();
+    return valueOf(h.subtract(h.exp(fApfloat), Apfloat.ONE));
   }
 
   @Override
   public IExpr floor() {
-    return valueOf(ApfloatMath.floor(fApfloat));
+    return valueOf(EvalEngine.getApfloat().floor(fApfloat));
   }
 
   @Override
@@ -705,67 +701,80 @@ public class ApfloatNum implements INum {
 
   @Override
   public IExpr exp() {
-    return valueOf(ApfloatMath.exp(fApfloat));
+    return valueOf(EvalEngine.getApfloat().exp(fApfloat));
   }
 
   @Override
   public IExpr log() {
-    return valueOf(ApfloatMath.log(fApfloat));
+    return valueOf(EvalEngine.getApfloat().log(fApfloat));
   }
 
   @Override
   public IExpr log10() {
-    return valueOf(ApfloatMath.log(fApfloat, new Apfloat(10, fApfloat.precision())));
+    FixedPrecisionApfloatHelper h = EvalEngine.getApfloat();
+    return valueOf(h.log(fApfloat, new Apfloat(10)));
   }
 
   @Override
   public IExpr log1p() {
-    return valueOf(ApfloatMath.log(fApfloat.add(new Apfloat(1, fApfloat.precision()))));
+    FixedPrecisionApfloatHelper h = EvalEngine.getApfloat();
+    return valueOf(h.log(h.add(fApfloat, Apfloat.ONE)));
   }
 
   @Override
   public IExpr multiply(double value) {
-    return valueOf(fApfloat.multiply(new Apfloat(value, fApfloat.precision())));
+    return valueOf(EvalEngine.getApfloat().multiply(fApfloat, new Apfloat(value)));
   }
 
   @Override
   public ApfloatNum newInstance(double d) {
-    return valueOf(d, fApfloat.precision());
+    return valueOf(d);
   }
 
   @Override
   public IExpr pow(int n) {
-    return valueOf(ApfloatMath.pow(fApfloat, n));
+    return valueOf(EvalEngine.getApfloat().pow(fApfloat, n));
   }
 
   @Override
   public IExpr pow(double value) {
-    return valueOf(ApfloatMath.pow(fApfloat, new Apfloat(value, fApfloat.precision())));
+    return valueOf(EvalEngine.getApfloat().pow(fApfloat, new Apfloat(value)));
   }
 
   @Override
   public IExpr reciprocal() {
-    return valueOf(ApfloatMath.inverseRoot(fApfloat, 1));
+    return valueOf(EvalEngine.getApfloat().inverseRoot(fApfloat, 1));
   }
 
   @Override
   public IExpr remainder(double value) {
-    return valueOf(fApfloat.mod(new Apfloat(value, fApfloat.precision())));
+    return valueOf(EvalEngine.getApfloat().mod(fApfloat, new Apfloat(value)));
   }
 
   @Override
   public IExpr rint() {
-    return valueOf(ApfloatMath.round(fApfloat, fApfloat.precision(), RoundingMode.HALF_EVEN));
+    return valueOf(apfloatRint(fApfloat));
+  }
+
+  static Apfloat apfloatRint(Apfloat fApfloat) {
+    if (fApfloat.scale() > 0) {
+      return ApfloatMath.round(fApfloat, fApfloat.scale(), RoundingMode.HALF_EVEN);
+    }
+    if (ApfloatMath.abs(fApfloat).compareTo(new Apfloat("0.5")) <= 0) {
+      return Apfloat.ZERO;
+    }
+    return ApfloatMath.copySign(Apfloat.ONE, fApfloat);
   }
 
   @Override
   public IExpr scalb(int n) {
-    return valueOf(fApfloat.multiply(ApfloatMath.pow(new Apfloat(2, fApfloat.precision()), n)));
+    FixedPrecisionApfloatHelper h = EvalEngine.getApfloat();
+    return valueOf(h.multiply(fApfloat, h.pow(new Apfloat(2), n)));
   }
 
   @Override
   public IExpr rootN(int n) {
-    return valueOf(ApfloatMath.root(fApfloat, n));
+    return valueOf(EvalEngine.getApfloat().root(fApfloat, n));
   }
 
   @Override
@@ -773,38 +782,36 @@ public class ApfloatNum implements INum {
     if (isNaN() || isZero()) {
       return this;
     }
-    return valueOf(ApfloatMath.abs(fApfloat));
+    return valueOf(EvalEngine.getApfloat().abs(fApfloat));
   }
 
   @Override
   public IExpr sin() {
-    return valueOf(ApfloatMath.sin(fApfloat));
+    return valueOf(EvalEngine.getApfloat().sin(fApfloat));
   }
 
   @Override
   public IExpr sinh() {
-    return valueOf(ApfloatMath.sinh(fApfloat));
+    return valueOf(EvalEngine.getApfloat().sinh(fApfloat));
   }
 
   @Override
   public IExpr subtract(double value) {
-    return valueOf(fApfloat.subtract(new Apfloat(value, fApfloat.precision())));
+    return valueOf(EvalEngine.getApfloat().subtract(fApfloat, new Apfloat(value)));
   }
 
   @Override
   public IExpr tan() {
-    return valueOf(ApfloatMath.tan(fApfloat));
+    return valueOf(EvalEngine.getApfloat().tan(fApfloat));
   }
 
   @Override
   public IExpr tanh() {
-    return valueOf(ApfloatMath.tanh(fApfloat));
+    return valueOf(EvalEngine.getApfloat().tanh(fApfloat));
   }
 
   @Override
   public IExpr ulp() {
-    FixedPrecisionApfloatHelper helper =
-        new FixedPrecisionApfloatHelper(EvalEngine.get().getNumericPrecision());
-    return valueOf(helper.ulp(new Apfloat(1)));
+    return valueOf(EvalEngine.getApfloat().ulp(Apfloat.ONE));
   }
 }

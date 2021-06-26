@@ -3,7 +3,7 @@ package org.matheclipse.core.expression;
 import java.util.Comparator;
 
 import org.apfloat.Apfloat;
-import org.apfloat.ApfloatMath;
+import org.apfloat.FixedPrecisionApfloatHelper;
 import org.matheclipse.core.builtin.IOFunctions;
 import org.matheclipse.core.eval.EvalAttributes;
 import org.matheclipse.core.eval.EvalEngine;
@@ -145,9 +145,9 @@ public class IntervalSym {
     return F.NIL;
   }
 
-  public static Apfloat[] interval(Apfloat x, long precision) {
-    // x = ApfloatMath.round(x, precision, RoundingMode.HALF_EVEN);
-    return new Apfloat[] {ApfloatMath.nextDown(x), ApfloatMath.nextUp(x)};
+  public static Apfloat[] interval(Apfloat x) {
+    FixedPrecisionApfloatHelper h = EvalEngine.getApfloat();
+    return new Apfloat[] {h.nextDown(x), h.nextUp(x)};
   }
 
   /**
@@ -185,14 +185,8 @@ public class IntervalSym {
     }
     if (arg instanceof INum) {
       if (arg instanceof ApfloatNum) {
-        // if (arg.isZero()) {
-        // test
-        // return F.List(F.num(new Apfloat("-1e-59", 60)), //
-        // F.num(new Apfloat("1e-59", 60)));
-        // }
-        // Apfloat v = ((ApfloatNum) arg).fApfloat;
         Apfloat apfloat = ((ApfloatNum) arg).fApfloat;
-        Apfloat[] values = interval(apfloat, apfloat.precision());
+        Apfloat[] values = interval(apfloat);
         return F.List(
             F.num(values[0]), //
             F.num(values[1]));
@@ -1097,70 +1091,4 @@ public class IntervalSym {
     }
     return F.NIL;
   }
-
-  // /**
-  // * Returns the number adjacent to the first argument in the direction of the second argument,
-  // considering the
-  // scale
-  // * and precision of the first argument. If the precision of the first argument is infinite, the
-  // first argument is
-  // * returned. If both arguments compare as equal then the first argument is returned.
-  // *
-  // * @param start
-  // * The starting value.
-  // * @param direction
-  // * Value indicating which of <code>start</code>'s neighbors or <code>start</code> should be
-  // returned.
-  // *
-  // * @return The number adjacent to <code>start</code> in the direction of <code>direction</code>.
-  // *
-  // * @since 1.10.0
-  // */
-  // public static Apfloat nextAfter(Apfloat start, Apfloat direction) {
-  // return nextInDirection(start, direction.compareTo(start));
-  // }
-  //
-  // /**
-  // * Returns the number adjacent to the argument in the direction of positive infinity,
-  // considering the scale and
-  // * precision of the argument. If the precision of the argument is infinite, the argument is
-  // returned.
-  // *
-  // * @param start
-  // * The starting value.
-  // *
-  // * @return The adjacent value closer to positive infinity.
-  // *
-  // * @since 1.10.0
-  // */
-  //
-  // public static Apfloat nextUp(Apfloat x) {
-  // return nextInDirection(x, 1);
-  // }
-  //
-  // /**
-  // * Returns the number adjacent to the argument in the direction of negative infinity,
-  // considering the scale and
-  // * precision of the argument. If the precision of the argument is infinite, the argument is
-  // returned.
-  // *
-  // * @param start
-  // * The starting value.
-  // *
-  // * @return The adjacent value closer to negative infinity.
-  // *
-  // * @since 1.10.0
-  // */
-  //
-  // public static Apfloat nextDown(Apfloat x) {
-  // return nextInDirection(x, -1);
-  // }
-  //
-  // private static Apfloat nextInDirection(Apfloat x, int direction) {
-  // long scale = x.scale() - x.precision();
-  // if (x.precision() == Apfloat.INFINITE || x.scale() < 0 && scale >= 0) {// Detect overflow
-  // return x;
-  // }
-  // return x.add(ApfloatMath.scale(new Apfloat(direction, 1, x.radix()), scale));
-  // }
 }

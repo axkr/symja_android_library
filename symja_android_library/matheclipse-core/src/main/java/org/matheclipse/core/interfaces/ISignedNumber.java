@@ -18,9 +18,9 @@ public interface ISignedNumber extends INumber {
    * @param precision set the precision of the resulting ApfloatNum
    * @return this signed number represented as an ApfloatNum
    */
-  public ApfloatNum apfloatNumValue(long precision);
+  public ApfloatNum apfloatNumValue( );
 
-  public Apfloat apfloatValue(long precision);
+  public Apfloat apfloatValue( );
 
   /** {@inheritDoc} */
   @Override

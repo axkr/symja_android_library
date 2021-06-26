@@ -10,6 +10,7 @@ import org.apfloat.Apfloat;
 import org.apfloat.ApfloatMath;
 import org.apfloat.ApfloatRuntimeException;
 import org.apfloat.FixedPrecisionApcomplexHelper;
+import org.apfloat.FixedPrecisionApfloatHelper;
 import org.hipparchus.complex.Complex;
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.interfaces.IAST;
@@ -24,7 +25,7 @@ import org.matheclipse.core.visit.IVisitor;
 import org.matheclipse.core.visit.IVisitorBoolean;
 import org.matheclipse.core.visit.IVisitorInt;
 import org.matheclipse.core.visit.IVisitorLong;
-import org.matheclipse.parser.client.FEConfig; 
+import org.matheclipse.parser.client.FEConfig;
 
 /**
  * <code>IComplexNum</code> implementation which wraps a <code>
@@ -45,15 +46,13 @@ public class ApcomplexNum implements IComplexNum {
     return new ApcomplexNum(real, imag);
   }
 
-  public static ApcomplexNum valueOf(final double real, long precision) {
-    return valueOf(new Apcomplex(new Apfloat(new BigDecimal(real), precision)));
+  public static ApcomplexNum valueOf(final double real) {
+    return valueOf(EvalEngine.getApfloat().valueOf(new Apcomplex(new Apfloat(real))));
   }
 
-  public static ApcomplexNum valueOf(final double real, final double imaginary, long precision) {
+  public static ApcomplexNum valueOf(final double real, final double imaginary) {
     return valueOf(
-        new Apcomplex(
-            new Apfloat(new BigDecimal(real), precision),
-            new Apfloat(new BigDecimal(imaginary), precision)));
+        EvalEngine.getApfloat().valueOf(new Apcomplex(new Apfloat(real), new Apfloat(imaginary))));
   }
 
   public static ApcomplexNum valueOf(final Complex c, long precision) {
@@ -78,12 +77,11 @@ public class ApcomplexNum implements IComplexNum {
       final BigInteger realNumerator,
       final BigInteger realDenominator,
       final BigInteger imagNumerator,
-      final BigInteger imagDenominator,
-      long precision) {
-    Apfloat real =
-        new Apfloat(realNumerator, precision).divide(new Apfloat(realDenominator, precision));
-    Apfloat imag =
-        new Apfloat(imagNumerator, precision).divide(new Apfloat(imagDenominator, precision));
+      final BigInteger imagDenominator) {
+    FixedPrecisionApfloatHelper h = EvalEngine.getApfloat();
+    long prec = h.precision();
+    Apfloat real = h.divide(new Apfloat(realNumerator, prec), new Apfloat(realDenominator, prec));
+    Apfloat imag = h.divide(new Apfloat(imagNumerator, prec), new Apfloat(imagDenominator, prec));
     return new ApcomplexNum(real, imag);
   }
 
@@ -101,7 +99,7 @@ public class ApcomplexNum implements IComplexNum {
   public static final ApcomplexNum ONE = new ApcomplexNum(Apcomplex.ONE);
 
   /** A complex number representing "-1.0 + 0.0i" */
-  public static final ApcomplexNum MINUS_ONE = ONE.negate();
+  public static final ApcomplexNum MINUS_ONE = new ApcomplexNum(new Apfloat(-1));
 
   /** A complex number representing "0.0 + 0.0i" */
   public static final ApcomplexNum ZERO = new ApcomplexNum(Apcomplex.ZERO);
@@ -135,13 +133,8 @@ public class ApcomplexNum implements IComplexNum {
   }
 
   @Override
-  public ApcomplexNum apcomplexNumValue(long precision) {
+  public ApcomplexNum apcomplexNumValue() {
     return this;
-  }
-
-  @Override
-  public Apcomplex apcomplexValue(long precision) {
-    return fApcomplex;
   }
 
   @Override
@@ -190,36 +183,27 @@ public class ApcomplexNum implements IComplexNum {
 
   @Override
   public IComplexNum add(final IComplexNum val) {
-    return valueOf(fApcomplex.add(val.apcomplexNumValue(fApcomplex.precision()).fApcomplex));
+    return valueOf(EvalEngine.getApfloat().add(fApcomplex, val.apcomplexValue()));
   }
 
   public ApcomplexNum add(final ApcomplexNum that) {
-    return valueOf(fApcomplex.add(that.fApcomplex));
+    return valueOf(EvalEngine.getApfloat().add(fApcomplex, that.fApcomplex));
   }
 
   @Override
   public IComplexNum multiply(final IComplexNum val) {
-    return valueOf(fApcomplex.multiply(val.apcomplexNumValue(fApcomplex.precision()).fApcomplex));
+    return valueOf(EvalEngine.getApfloat().multiply(fApcomplex, val.apcomplexValue()));
   }
 
   @Override
   public IComplexNum pow(final IComplexNum val) {
-    return valueOf(
-        ApcomplexMath.pow(fApcomplex, val.apcomplexNumValue(fApcomplex.precision()).fApcomplex));
-  }
-
-  /**
-   * @param that
-   * @return
-   */
-  public Apcomplex add(final Apcomplex that) {
-    return fApcomplex.add(that);
+    return valueOf(EvalEngine.getApfloat().pow(fApcomplex, val.apcomplexValue()));
   }
 
   /** @return */
   @Override
   public IComplexNum conjugate() {
-    return valueOf(fApcomplex.conj());
+    return valueOf(EvalEngine.getApfloat().conj(fApcomplex));
   }
 
   @Override
@@ -232,21 +216,13 @@ public class ApcomplexNum implements IComplexNum {
     }
   }
 
-  /**
-   * @param that
-   * @return
-   */
-  public Apcomplex divide(final Apcomplex that) {
-    return fApcomplex.divide(that);
-  }
-
   public ApcomplexNum divide(final ApcomplexNum that) throws ArithmeticException {
-    return valueOf(fApcomplex.divide(that.fApcomplex));
+    return valueOf(EvalEngine.getApfloat().divide(fApcomplex, that.fApcomplex));
   }
 
   @Override
   public IComplexNum divide(final IComplexNum val) {
-    return valueOf(fApcomplex.divide(((ApcomplexNum) val).fApcomplex));
+    return valueOf(EvalEngine.getApfloat().divide(fApcomplex, val.apcomplexValue()));
   }
 
   @Override
@@ -310,7 +286,7 @@ public class ApcomplexNum implements IComplexNum {
 
   @Override
   public IExpr complexArg() {
-    return F.num(ApcomplexMath.arg(fApcomplex));
+    return F.num(EvalEngine.getApfloat().arg(fApcomplex));
   }
 
   /** {@inheritDoc} */
@@ -319,20 +295,6 @@ public class ApcomplexNum implements IComplexNum {
     double temp = dabs();
     return Double.compare(temp, 1.0);
   }
-
-  /** @return */
-  // public Apcomplex exp() {
-  // return fComplex.exp();
-  // }
-  /** @return */
-
-  // public Object export() {
-  // return fComplex.export();
-  // }
-  /** @return */
-  // public float floatValue() {
-  // return fComplex.floatValue();
-  // }
 
   @Override
   public double imDoubleValue() {
@@ -359,19 +321,19 @@ public class ApcomplexNum implements IComplexNum {
    * @return
    */
   public ApcomplexNum multiply(final ApcomplexNum that) {
-    return valueOf(fApcomplex.multiply(that.fApcomplex));
+    return valueOf(EvalEngine.getApfloat().multiply(fApcomplex, that.fApcomplex));
   }
 
   /** @return */
   @Override
   public ApcomplexNum negate() {
-    return valueOf(fApcomplex.negate());
+    return valueOf(EvalEngine.getApfloat().negate(fApcomplex));
   }
 
   /** @return */
   @Override
   public INumber opposite() {
-    return valueOf(fApcomplex.negate());
+    return valueOf(EvalEngine.getApfloat().negate(fApcomplex));
   }
 
   /**
@@ -381,25 +343,24 @@ public class ApcomplexNum implements IComplexNum {
   @Override
   public IExpr plus(final IExpr that) {
     if (that instanceof ApcomplexNum) {
-      return valueOf(fApcomplex.add(((ApcomplexNum) that).fApcomplex));
+      return valueOf(EvalEngine.getApfloat().add(fApcomplex, ((ApcomplexNum) that).fApcomplex));
     }
     if (that instanceof ApfloatNum) {
       return add(ApcomplexNum.valueOf(((ApfloatNum) that).fApfloat, Apcomplex.ZERO));
     }
     if (that instanceof Num) {
-      return add(ApcomplexNum.valueOf(((Num) that).getRealPart(), fApcomplex.precision()));
+      return add(ApcomplexNum.valueOf(((Num) that).getRealPart()));
     }
     if (that instanceof ComplexNum) {
       ComplexNum cn = (ComplexNum) that;
-      return add(
-          ApcomplexNum.valueOf(cn.getRealPart(), cn.getImaginaryPart(), fApcomplex.precision()));
+      return add(ApcomplexNum.valueOf(cn.getRealPart(), cn.getImaginaryPart()));
     }
     return IComplexNum.super.plus(that);
   }
 
   @Override
   public IExpr inverse() {
-    return valueOf(ApcomplexMath.inverseRoot(fApcomplex, 1));
+    return valueOf(EvalEngine.getApfloat().inverseRoot(fApcomplex, 1));
   }
 
   /**
@@ -407,16 +368,16 @@ public class ApcomplexNum implements IComplexNum {
    * @return
    */
   public Apcomplex subtract(final Apcomplex that) {
-    return fApcomplex.subtract(that);
+    return EvalEngine.getApfloat().subtract(fApcomplex, that);
   }
 
   public ApcomplexNum subtract(final ApcomplexNum that) {
-    return valueOf(fApcomplex.subtract(that.fApcomplex));
+    return valueOf(EvalEngine.getApfloat().subtract(fApcomplex, that.fApcomplex));
   }
 
   @Override
   public IComplexNum subtract(final IComplexNum val) {
-    return valueOf(fApcomplex.subtract(((ApcomplexNum) val).fApcomplex));
+    return valueOf(EvalEngine.getApfloat().subtract(fApcomplex, ((ApcomplexNum) val).fApcomplex));
   }
 
   /**
@@ -426,18 +387,18 @@ public class ApcomplexNum implements IComplexNum {
   @Override
   public IExpr times(final IExpr that) {
     if (that instanceof ApcomplexNum) {
-      return valueOf(fApcomplex.multiply(((ApcomplexNum) that).fApcomplex));
+      return valueOf(
+          EvalEngine.getApfloat().multiply(fApcomplex, ((ApcomplexNum) that).fApcomplex));
     }
     if (that instanceof ApfloatNum) {
       return multiply(ApcomplexNum.valueOf(((ApfloatNum) that).fApfloat, Apcomplex.ZERO));
     }
     if (that instanceof Num) {
-      return multiply(ApcomplexNum.valueOf(((Num) that).getRealPart(), fApcomplex.precision()));
+      return multiply(ApcomplexNum.valueOf(((Num) that).getRealPart()));
     }
     if (that instanceof ComplexNum) {
       ComplexNum cn = (ComplexNum) that;
-      return multiply(
-          ApcomplexNum.valueOf(cn.getRealPart(), cn.getImaginaryPart(), fApcomplex.precision()));
+      return multiply(ApcomplexNum.valueOf(cn.getRealPart(), cn.getImaginaryPart()));
     }
     return IComplexNum.super.times(that);
   }
@@ -502,7 +463,7 @@ public class ApcomplexNum implements IComplexNum {
       if (expr instanceof ApcomplexNum) {
         return compareTo(((ApcomplexNum) expr).fApcomplex);
       }
-      Apcomplex apc = ((INumber) expr).apcomplexNumValue(precision()).fApcomplex;
+      Apcomplex apc = ((INumber) expr).apcomplexValue();
       return compareTo(apc);
     }
     return -1;
@@ -574,7 +535,7 @@ public class ApcomplexNum implements IComplexNum {
 
   @Override
   public IExpr sqrt() {
-    return valueOf(ApcomplexMath.sqrt(fApcomplex));
+    return valueOf(EvalEngine.getApfloat().sqrt(fApcomplex));
   }
 
   @Override
@@ -663,58 +624,56 @@ public class ApcomplexNum implements IComplexNum {
 
   @Override
   public IExpr abs() {
-    return valueOf(ApcomplexMath.abs(fApcomplex));
+    return valueOf(EvalEngine.getApfloat().abs(fApcomplex));
   }
 
   @Override
   public IExpr acos() {
-    return valueOf(ApcomplexMath.acos(fApcomplex));
+    return valueOf(EvalEngine.getApfloat().acos(fApcomplex));
   }
 
   @Override
   public IExpr acosh() {
-    return valueOf(ApcomplexMath.acosh(fApcomplex));
+    return valueOf(EvalEngine.getApfloat().acosh(fApcomplex));
   }
 
   @Override
   public IExpr add(double value) {
-    return valueOf(fApcomplex.divide(new Apfloat(value, fApcomplex.precision())));
+    return valueOf(EvalEngine.getApfloat().divide(fApcomplex, new Apfloat(value)));
   }
 
   @Override
   public IExpr asin() {
-    return valueOf(ApcomplexMath.asin(fApcomplex));
+    return valueOf(EvalEngine.getApfloat().asin(fApcomplex));
   }
 
   @Override
   public IExpr asinh() {
-    return valueOf(ApcomplexMath.asinh(fApcomplex));
+    return valueOf(EvalEngine.getApfloat().asinh(fApcomplex));
   }
 
   @Override
   public IExpr atan() {
-    return valueOf(ApcomplexMath.atan(fApcomplex));
+    return valueOf(EvalEngine.getApfloat().atan(fApcomplex));
   }
 
   @Override
   public IExpr atan2(IExpr value) {
-    if (value instanceof ApcomplexNum) { 
+    if (value instanceof ApcomplexNum) {
       Apcomplex th = fApcomplex;
-      final long precision = th.precision();
-      Apcomplex x = ((ApcomplexNum)value).fApcomplex;
+      Apcomplex x = ((ApcomplexNum) value).fApcomplex;
 
       // compute r = sqrt(x^2+y^2)
-      final Apcomplex r = ApcomplexMath.sqrt(x.multiply(x).add(th.multiply(th)));
+      FixedPrecisionApfloatHelper h = EvalEngine.getApfloat();
+      final Apcomplex r = h.sqrt(h.add(h.multiply(x, x), h.multiply(th, th)));
 
       if (x.real().compareTo(Apfloat.ZERO) >= 0) {
         // compute atan2(y, x) = 2 atan(y / (r + x))
-        return valueOf(ApcomplexMath.atan(th.divide(r.add(x))).multiply(new Apfloat(2, precision)));
+        return valueOf(h.multiply(h.atan(h.divide(th, h.add(r, x))), new Apfloat(2)));
       } else {
         // compute atan2(y, x) = +/- pi - 2 atan(y / (r - x))
         return valueOf(
-            ApcomplexMath.atan(th.divide(r.subtract(x)))
-                .multiply(new Apfloat(-2, precision))
-                .add(ApfloatMath.pi(precision)));
+            h.add(h.multiply(h.atan(h.divide(th, h.subtract(r, x))), new Apfloat(-2)), h.pi()));
       }
     }
     return IComplexNum.super.atan2(value);
@@ -722,12 +681,12 @@ public class ApcomplexNum implements IComplexNum {
 
   @Override
   public IExpr atanh() {
-    return valueOf(ApcomplexMath.atanh(fApcomplex));
+    return valueOf(EvalEngine.getApfloat().atanh(fApcomplex));
   }
 
   @Override
   public IExpr cbrt() {
-    return valueOf(ApcomplexMath.cbrt(fApcomplex));
+    return valueOf(EvalEngine.getApfloat().cbrt(fApcomplex));
   }
 
   @Override
@@ -739,30 +698,33 @@ public class ApcomplexNum implements IComplexNum {
 
   @Override
   public IExpr copySign(double d) {
-    Apfloat sign = new Apfloat(d, fApcomplex.precision());
+    FixedPrecisionApfloatHelper h = EvalEngine.getApfloat();
+    Apfloat sign = new Apfloat(d);
     return valueOf(
-        ApfloatMath.copySign(fApcomplex.real(), sign), //
-        ApfloatMath.copySign(fApcomplex.imag(), sign));
+        h.copySign(fApcomplex.real(), sign), //
+        h.copySign(fApcomplex.imag(), sign));
   }
 
   @Override
   public IExpr cos() {
-    return valueOf(ApcomplexMath.cos(fApcomplex));
+    return valueOf(EvalEngine.getApfloat().cos(fApcomplex));
   }
 
   @Override
   public IExpr cosh() {
-    return valueOf(ApcomplexMath.cosh(fApcomplex));
+    return valueOf(EvalEngine.getApfloat().cosh(fApcomplex));
   }
 
   @Override
   public IExpr divide(double value) {
-    return valueOf(fApcomplex.divide(new Apfloat(value, fApcomplex.precision())));
+    return valueOf(EvalEngine.getApfloat().divide(fApcomplex, new Apfloat(value)));
   }
 
+  /** {@inheritDoc} */
   @Override
   public IExpr expm1() {
-    return valueOf(ApcomplexMath.exp(fApcomplex).subtract(new Apfloat(1, fApcomplex.precision())));
+    FixedPrecisionApfloatHelper h = EvalEngine.getApfloat();
+    return valueOf(h.subtract(h.exp(fApcomplex), Apfloat.ONE));
   }
 
   @Override
@@ -779,76 +741,78 @@ public class ApcomplexNum implements IComplexNum {
 
   @Override
   public IExpr exp() {
-    return valueOf(ApcomplexMath.exp(fApcomplex));
+    return valueOf(EvalEngine.getApfloat().exp(fApcomplex));
   }
 
   @Override
   public IExpr log() {
-    return valueOf(ApcomplexMath.log(fApcomplex));
+    return valueOf(EvalEngine.getApfloat().log(fApcomplex));
   }
 
   @Override
   public IExpr log10() {
-    return valueOf(ApcomplexMath.log(fApcomplex, new Apfloat(10, fApcomplex.precision())));
+    return valueOf(EvalEngine.getApfloat().log(fApcomplex, new Apfloat(10)));
   }
 
   @Override
   public IExpr log1p() {
-    return valueOf(ApcomplexMath.log(fApcomplex.add(new Apfloat(1, fApcomplex.precision()))));
+    return valueOf(EvalEngine.getApfloat().log(fApcomplex.add(Apfloat.ONE)));
   }
 
   @Override
   public IExpr multiply(double value) {
-    return valueOf(fApcomplex.multiply(new Apfloat(value, fApcomplex.precision())));
+    return valueOf(EvalEngine.getApfloat().multiply(fApcomplex, new Apfloat(value)));
   }
 
   @Override
   public IExpr multiply(int value) {
-    return valueOf(fApcomplex.multiply(new Apfloat(value, fApcomplex.precision())));
+    return valueOf(EvalEngine.getApfloat().multiply(fApcomplex, new Apfloat(value)));
   }
 
   @Override
   public ApcomplexNum newInstance(double d) {
-    return valueOf(d, fApcomplex.precision());
+    return valueOf(d);
   }
 
   @Override
   public IExpr pow(int n) {
-    return valueOf(ApcomplexMath.pow(fApcomplex, n));
+    return valueOf(EvalEngine.getApfloat().pow(fApcomplex, n));
   }
 
   @Override
   public IExpr pow(double value) {
-    return valueOf(ApcomplexMath.pow(fApcomplex, new Apfloat(value, fApcomplex.precision())));
+    return valueOf(EvalEngine.getApfloat().pow(fApcomplex, new Apfloat(value)));
   }
 
   @Override
   public IExpr reciprocal() {
-    return valueOf(ApcomplexMath.inverseRoot(fApcomplex, 1));
+    return valueOf(EvalEngine.getApfloat().inverseRoot(fApcomplex, 1));
   }
 
   @Override
   public IExpr remainder(double value) {
+    FixedPrecisionApfloatHelper h = EvalEngine.getApfloat();
     return valueOf(
-        fApcomplex.real().mod(new Apfloat(value, fApcomplex.precision())), //
-        fApcomplex.imag().mod(new Apfloat(value, fApcomplex.precision())));
+        h.mod(fApcomplex.real(), new Apfloat(value)), //
+        h.mod(fApcomplex.imag(), new Apfloat(value)));
   }
 
   @Override
   public IExpr rint() {
-    return valueOf(
-        ApfloatMath.round(fApcomplex.real(), fApcomplex.precision(), RoundingMode.HALF_EVEN), //
-        ApfloatMath.round(fApcomplex.imag(), fApcomplex.precision(), RoundingMode.HALF_EVEN));
+    return valueOf( //
+        ApfloatNum.apfloatRint(fApcomplex.real()), //
+        ApfloatNum.apfloatRint(fApcomplex.imag()));
   }
 
   @Override
   public IExpr scalb(int n) {
-    return valueOf(fApcomplex.multiply(ApfloatMath.pow(new Apfloat(2, fApcomplex.precision()), n)));
+    FixedPrecisionApfloatHelper h = EvalEngine.getApfloat();
+    return valueOf(h.multiply(fApcomplex, h.pow(new Apfloat(2), n)));
   }
 
   @Override
   public IExpr rootN(int n) {
-    return valueOf(ApcomplexMath.root(fApcomplex, n));
+    return valueOf(EvalEngine.getApfloat().root(fApcomplex, n));
   }
 
   @Override
@@ -856,38 +820,37 @@ public class ApcomplexNum implements IComplexNum {
     if (isNaN() || isZero()) {
       return this;
     }
-    return valueOf(fApcomplex.divide(ApcomplexMath.abs(fApcomplex)));
+    FixedPrecisionApfloatHelper h = EvalEngine.getApfloat();
+    return valueOf(h.divide(fApcomplex, h.abs(fApcomplex)));
   }
 
   @Override
   public IExpr sin() {
-    return valueOf(ApcomplexMath.sin(fApcomplex));
+    return valueOf(EvalEngine.getApfloat().sin(fApcomplex));
   }
 
   @Override
   public IExpr sinh() {
-    return valueOf(ApcomplexMath.sinh(fApcomplex));
+    return valueOf(EvalEngine.getApfloat().sinh(fApcomplex));
   }
 
   @Override
   public IExpr subtract(double value) {
-    return valueOf(fApcomplex.subtract(new Apfloat(value, fApcomplex.precision())));
+    return valueOf(EvalEngine.getApfloat().subtract(fApcomplex, new Apfloat(value)));
   }
 
   @Override
   public IExpr tan() {
-    return valueOf(ApcomplexMath.tan(fApcomplex));
+    return valueOf(EvalEngine.getApfloat().tan(fApcomplex));
   }
 
   @Override
   public IExpr tanh() {
-    return valueOf(ApcomplexMath.tanh(fApcomplex));
+    return valueOf(EvalEngine.getApfloat().tanh(fApcomplex));
   }
 
   @Override
   public IExpr ulp() {
-    FixedPrecisionApcomplexHelper helper =
-        new FixedPrecisionApcomplexHelper(EvalEngine.get().getNumericPrecision());
-    return valueOf(helper.ulp(new Apfloat(1)));
+    return valueOf(EvalEngine.getApfloat().ulp(Apfloat.ONE));
   }
 }

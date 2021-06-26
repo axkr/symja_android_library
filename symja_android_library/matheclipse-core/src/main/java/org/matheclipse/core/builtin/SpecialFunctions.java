@@ -30,6 +30,7 @@ import org.apfloat.Apcomplex;
 import org.apfloat.ApcomplexMath;
 import org.apfloat.Apfloat;
 import org.apfloat.ApfloatMath;
+import org.apfloat.FixedPrecisionApfloatHelper;
 import org.hipparchus.complex.Complex;
 import org.hipparchus.exception.MathIllegalArgumentException;
 import org.hipparchus.exception.MathIllegalStateException;
@@ -1628,15 +1629,12 @@ public class SpecialFunctions {
         return d;
       }
       try {
-        return F.num(
-            ApfloatMath.w(
-                new Apfloat(new BigDecimal(d.doubleValue()), FEConfig.MACHINE_PRECISION)));
+        return F.num(ApfloatMath.w(new Apfloat(d.doubleValue())).doubleValue());
       } catch (Exception ce) {
 
       }
-      return F.complexNum(
-          ApcomplexMath.w(
-              new Apfloat(new BigDecimal(d.doubleValue()), FEConfig.MACHINE_PRECISION)));
+      Apcomplex c = ApcomplexMath.w(new Apfloat(d.doubleValue()));
+      return F.complexNum(c.real().doubleValue(), c.imag().doubleValue());
     }
 
     @Override
@@ -1651,7 +1649,8 @@ public class SpecialFunctions {
       // if (Config.FUZZ_TESTING) {
       // System.err.println(c.toString());
       // }
-      return F.complexNum(ApcomplexMath.w(c));
+      c = ApcomplexMath.w(c);
+      return F.complexNum(c.real().doubleValue(), c.imag().doubleValue());
     }
 
     @Override
@@ -1659,12 +1658,13 @@ public class SpecialFunctions {
       if (arg1.equals(Apcomplex.ZERO)) {
         return F.C0;
       }
+      FixedPrecisionApfloatHelper h = EvalEngine.getApfloat();
       try {
-        return F.num(ApfloatMath.w(arg1));
+        return F.num(h.w(arg1));
       } catch (Exception ce) {
 
       }
-      return F.complexNum(ApcomplexMath.w(arg1));
+      return F.complexNum(h.w(arg1, 0));
     }
 
     @Override
@@ -1672,7 +1672,8 @@ public class SpecialFunctions {
       if (arg1.equals(Apcomplex.ZERO)) {
         return F.C0;
       }
-      return F.complexNum(ApcomplexMath.w(arg1));
+      FixedPrecisionApfloatHelper h = EvalEngine.getApfloat();
+      return F.complexNum(h.w(arg1, 0));
     }
 
     @Override
@@ -1725,28 +1726,27 @@ public class SpecialFunctions {
         if (z.isNumber()) {
           if (z instanceof IComplexNum) {
             if (z instanceof ApcomplexNum) {
+              FixedPrecisionApfloatHelper h = EvalEngine.getApfloat();
               ApcomplexNum acn = (ApcomplexNum) z;
-              return F.complexNum(ApcomplexMath.w(acn.apcomplexValue(), ki));
+              return F.complexNum(h.w(acn.apcomplexValue(), ki));
             }
             if (z instanceof ComplexNum) {
               ComplexNum cn = (ComplexNum) z;
               Apcomplex c =
-                  new Apcomplex(
-                      new Apfloat(new BigDecimal(cn.getRealPart()), FEConfig.MACHINE_PRECISION),
-                      new Apfloat(
-                          new BigDecimal(cn.getImaginaryPart()), FEConfig.MACHINE_PRECISION));
-              return F.complexNum(ApcomplexMath.w(c, ki));
+                  new Apcomplex(new Apfloat(cn.getRealPart()), new Apfloat(cn.getImaginaryPart()));
+              c = ApcomplexMath.w(c, ki);
+              return F.complexNum(c.real().doubleValue(), c.imag().doubleValue());
             }
           }
           if (z instanceof ApfloatNum) {
+            FixedPrecisionApfloatHelper h = EvalEngine.getApfloat();
             ApfloatNum an = (ApfloatNum) z;
-            return F.complexNum(ApcomplexMath.w(an.apfloatValue(), ki));
+            return F.complexNum(h.w(an.apfloatValue(), ki));
           }
           if (z instanceof Num) {
             Num n = (Num) z;
-            return F.complexNum(
-                ApcomplexMath.w(
-                    new Apfloat(new BigDecimal(n.doubleValue()), FEConfig.MACHINE_PRECISION), ki));
+            Apcomplex c = ApcomplexMath.w(new Apfloat(n.doubleValue()), ki);
+            return F.complexNum(c.real().doubleValue(), c.imag().doubleValue());
           }
         }
       }

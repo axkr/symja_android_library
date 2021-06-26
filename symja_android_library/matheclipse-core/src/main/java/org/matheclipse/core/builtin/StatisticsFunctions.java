@@ -11,6 +11,7 @@ import org.apfloat.Apcomplex;
 import org.apfloat.ApcomplexMath;
 import org.apfloat.Apfloat;
 import org.apfloat.ApfloatMath;
+import org.apfloat.FixedPrecisionApfloatHelper;
 import org.hipparchus.distribution.RealDistribution;
 import org.hipparchus.exception.MathRuntimeException;
 import org.hipparchus.linear.FieldMatrix;
@@ -324,14 +325,14 @@ public class StatisticsFunctions {
     }
 
     @Override
-    public IExpr e2ApfloatArg(final ApfloatNum a, final ApfloatNum b) {
-      return F.num(ApfloatMath.agm(a.apfloatValue(a.precision()), b.apfloatValue(b.precision())));
+    public IExpr e2ApfloatArg(final ApfloatNum a, final ApfloatNum b) { 
+      return F.num(ApfloatMath.agm(a.apfloatValue(), b.apfloatValue()));
     }
 
     @Override
     public IExpr e2DblComArg(final IComplexNum a, final IComplexNum b) {
-      ApcomplexNum a1 = a.apcomplexNumValue(FEConfig.MACHINE_PRECISION);
-      ApcomplexNum b1 = b.apcomplexNumValue(FEConfig.MACHINE_PRECISION);
+      ApcomplexNum a1 = a.apcomplexNumValue( );
+      ApcomplexNum b1 = b.apcomplexNumValue( );
       Apcomplex agm = ApcomplexMath.agm(a1.apcomplexValue(), b1.apcomplexValue());
       return F.complex(agm.real().doubleValue(), agm.imag().doubleValue());
       // IComplexNum a1 = a;

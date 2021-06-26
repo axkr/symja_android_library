@@ -2660,8 +2660,7 @@ public class F extends S {
           realFraction.toBigNumerator(),
           realFraction.toBigDenominator(),
           imagFraction.toBigNumerator(),
-          imagFraction.toBigDenominator(),
-          engine.getNumericPrecision());
+          imagFraction.toBigDenominator() );
     }
     // double precision complex number
     double nr = realFraction.numerator().doubleValue();
@@ -2679,8 +2678,7 @@ public class F extends S {
           value.toBigNumerator(),
           value.toBigDenominator(),
           BigInteger.ZERO,
-          BigInteger.ONE,
-          engine.getNumericPrecision());
+          BigInteger.ONE );
     }
     return complexNum(value.doubleValue(), 0.0d);
   }
@@ -2692,8 +2690,7 @@ public class F extends S {
           value.toBigNumerator(),
           BigInteger.ONE,
           BigInteger.ZERO,
-          BigInteger.ONE,
-          engine.getNumericPrecision());
+          BigInteger.ONE );
     }
     return complexNum(value.doubleValue(), 0.0d);
   }
@@ -5547,7 +5544,7 @@ public class F extends S {
     EvalEngine engine = EvalEngine.get();
     if (engine.isArbitraryMode()) {
       return ApfloatNum.valueOf(
-          value.toBigNumerator(), value.toBigDenominator(), engine.getNumericPrecision());
+          value.toBigNumerator(), value.toBigDenominator());
     }
     final double n = value.toBigNumerator().doubleValue();
     final double d = value.toBigDenominator().doubleValue();
@@ -5557,7 +5554,7 @@ public class F extends S {
   public static INum num(final IInteger value) {
     EvalEngine engine = EvalEngine.get();
     if (engine.isArbitraryMode()) {
-      return ApfloatNum.valueOf(value.toBigNumerator(), engine.getNumericPrecision());
+      return ApfloatNum.valueOf(value.toBigNumerator() );
     }
     return num(value.doubleValue());
   }

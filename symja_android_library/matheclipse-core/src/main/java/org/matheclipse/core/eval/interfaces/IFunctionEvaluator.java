@@ -176,6 +176,8 @@ public interface IFunctionEvaluator extends IEvaluator {
   int[] ARGS_3_3 = new int[] {3, 3};
 
   int[] ARGS_3_4 = new int[] {3, 4};
+  
+  int[] ARGS_3_5 = new int[] {3, 5};
 
   int[] ARGS_4_4 = new int[] {4, 4};
 

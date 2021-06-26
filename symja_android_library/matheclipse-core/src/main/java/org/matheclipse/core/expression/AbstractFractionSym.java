@@ -4,6 +4,7 @@ import java.math.BigInteger;
 
 import org.apfloat.Apcomplex;
 import org.apfloat.Apfloat;
+import org.apfloat.FixedPrecisionApfloatHelper;
 import org.hipparchus.exception.MathIllegalStateException;
 import org.hipparchus.fraction.BigFraction;
 import org.hipparchus.util.ArithmeticUtils;
@@ -265,23 +266,27 @@ public abstract class AbstractFractionSym implements IFraction {
   }
 
   @Override
-  public ApcomplexNum apcomplexNumValue(long precision) {
-    return ApcomplexNum.valueOf(apcomplexValue(precision));
+  public ApcomplexNum apcomplexNumValue() {
+    return ApcomplexNum.valueOf(apcomplexValue());
   }
 
-  public Apcomplex apcomplexValue(long precision) {
+  public Apcomplex apcomplexValue() {
+    FixedPrecisionApfloatHelper h = EvalEngine.getApfloat();
     Apfloat real =
-        new Apfloat(toBigNumerator(), precision).divide(new Apfloat(toBigDenominator(), precision));
+        h.divide(
+            new Apfloat(toBigNumerator(), h.precision()),
+            new Apfloat(toBigDenominator(), h.precision()));
     return new Apcomplex(real);
   }
 
   @Override
-  public ApfloatNum apfloatNumValue(long precision) {
-    return ApfloatNum.valueOf(toBigNumerator(), toBigDenominator(), precision);
+  public ApfloatNum apfloatNumValue() {
+    return ApfloatNum.valueOf(toBigNumerator(), toBigDenominator());
   }
 
   @Override
-  public Apfloat apfloatValue(long precision) {
+  public Apfloat apfloatValue() {
+    long precision = EvalEngine.getApfloat().precision();
     Apfloat n = new Apfloat(toBigNumerator(), precision);
     Apfloat d = new Apfloat(toBigDenominator(), precision);
     return n.divide(d);
@@ -300,7 +305,6 @@ public abstract class AbstractFractionSym implements IFraction {
     }
     return -1;
   }
- 
 
   @Override
   public IExpr copy() {

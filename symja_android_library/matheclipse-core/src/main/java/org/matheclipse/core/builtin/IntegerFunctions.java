@@ -1472,7 +1472,7 @@ public class IntegerFunctions {
           }
 
           if (number instanceof ApfloatNum) {
-            Apfloat apfloat = number.apfloatValue(engine.getNumericPrecision());
+            Apfloat apfloat = number.apfloatValue();
             String str = apfloat.toString();
             IASTAppendable list = F.ListAlloc(str.length() + 1);
             int numberOfLeftDigits = 0;

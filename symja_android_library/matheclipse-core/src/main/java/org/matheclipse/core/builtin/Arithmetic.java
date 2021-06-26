@@ -50,6 +50,7 @@ import org.apfloat.ApcomplexMath;
 import org.apfloat.Apfloat;
 import org.apfloat.ApfloatMath;
 import org.apfloat.ApfloatRuntimeException;
+import org.apfloat.FixedPrecisionApfloatHelper;
 import org.apfloat.InfiniteExpansionException;
 import org.apfloat.LossOfPrecisionException;
 import org.apfloat.OverflowException;
@@ -1681,11 +1682,12 @@ public final class Arithmetic {
 
     @Override
     public IExpr e1ApfloatArg(Apfloat arg1) {
+      FixedPrecisionApfloatHelper h = EvalEngine.getApfloat();
       try {
-        return F.num(ApfloatMath.gamma(arg1));
+        return F.num(h.gamma(arg1));
       } catch (ArithmeticException aex1) {
         try {
-          return F.complexNum(ApcomplexMath.gamma(new Apcomplex(arg1, Apcomplex.ZERO)));
+          return F.complexNum(h.gamma(new Apcomplex(arg1, Apcomplex.ZERO)));
         } catch (ArithmeticException aex2) {
           return F.NIL;
         }
@@ -2448,7 +2450,7 @@ public final class Arithmetic {
           if (arg1 instanceof ApfloatNum) {
             x = ((ApfloatNum) arg1).apfloatValue();
           } else {
-            x = ((ISignedNumber) arg1).apfloatValue(15);
+            x = ((ISignedNumber) arg1).apfloatValue();
           }
           Apfloat mantissa = ApfloatMath.scale(x, -x.scale());
           long exponent = x.scale();
@@ -2983,7 +2985,7 @@ public final class Arithmetic {
             number = number.add((INum) arg);
           } else {
             if (number instanceof ApfloatNum) {
-              number = number.add(((INum) arg).apfloatNumValue(number.precision()));
+              number = number.add(((INum) arg).apfloatNumValue());
             } else {
               number = number.add((INum) arg);
             }
@@ -3002,7 +3004,7 @@ public final class Arithmetic {
       if (number instanceof Num) {
         complexNumber = F.complexNum(((Num) number).doubleValue());
       } else {
-        complexNumber = F.complexNum(number.apfloatValue(number.precision()));
+        complexNumber = F.complexNum(number.apfloatValue());
       }
       for (int i = start; i < ast.size(); i++) {
         final IExpr arg = ast.get(i);
@@ -3011,13 +3013,11 @@ public final class Arithmetic {
           if (number instanceof Num) {
             complexNumber = complexNumber.add(F.complexNum(((Num) number).doubleValue()));
           } else {
-            complexNumber =
-                complexNumber.add(F.complexNum(number.apfloatValue(number.precision())));
+            complexNumber = complexNumber.add(F.complexNum(number.apfloatValue()));
           }
         } else if (arg instanceof IComplexNum) {
           if (complexNumber instanceof ApcomplexNum) {
-            complexNumber =
-                complexNumber.add(((IComplexNum) arg).apcomplexNumValue(complexNumber.precision()));
+            complexNumber = complexNumber.add(((IComplexNum) arg).apcomplexNumValue());
           } else {
             complexNumber = complexNumber.add((IComplexNum) arg);
           }
@@ -3573,17 +3573,11 @@ public final class Arithmetic {
       IExpr result = F.NIL;
       if (o0 instanceof ApcomplexNum) {
         if (o1.isNumber()) {
-          result =
-              e2ApcomplexArg(
-                  (ApcomplexNum) o0,
-                  ((INumber) o1).apcomplexNumValue(((ApcomplexNum) o0).precision()));
+          result = e2ApcomplexArg((ApcomplexNum) o0, ((INumber) o1).apcomplexNumValue());
         }
       } else if (o1 instanceof ApcomplexNum) {
         if (o0.isNumber()) {
-          result =
-              e2ApcomplexArg(
-                  ((INumber) o0).apcomplexNumValue(((ApcomplexNum) o1).precision()),
-                  (ApcomplexNum) o1);
+          result = e2ApcomplexArg(((INumber) o0).apcomplexNumValue(), (ApcomplexNum) o1);
         }
       } else if (o0 instanceof ComplexNum) {
         if (o1.isNumber()) {
@@ -3597,17 +3591,11 @@ public final class Arithmetic {
 
       if (o0 instanceof ApfloatNum) {
         if (o1.isReal()) {
-          result =
-              e2ApfloatArg(
-                  (ApfloatNum) o0,
-                  ((ISignedNumber) o1).apfloatNumValue(((ApfloatNum) o0).precision()));
+          result = e2ApfloatArg((ApfloatNum) o0, ((ISignedNumber) o1).apfloatNumValue());
         }
       } else if (o1 instanceof ApfloatNum) {
         if (o0.isReal()) {
-          result =
-              e2ApfloatArg(
-                  ((ISignedNumber) o0).apfloatNumValue(((ApfloatNum) o1).precision()),
-                  (ApfloatNum) o1);
+          result = e2ApfloatArg(((ISignedNumber) o0).apfloatNumValue(), (ApfloatNum) o1);
         }
       } else if (o0 instanceof Num) {
         if (o1.isReal()) {
@@ -3678,8 +3666,8 @@ public final class Arithmetic {
         return base.pow(exponent);
       }
       if (exponent.complexSign() < 0) {
-        ApcomplexNum b = base.apcomplexNumValue(base.precision());
-        ApcomplexNum e = exponent.apcomplexNumValue(base.precision());
+        ApcomplexNum b = base.apcomplexNumValue();
+        ApcomplexNum e = exponent.apcomplexNumValue();
         return b.pow(e);
       }
 
@@ -5896,7 +5884,7 @@ public final class Arithmetic {
             number = number.multiply((INum) arg);
           } else {
             if (number instanceof ApfloatNum) {
-              number = number.multiply(((INum) arg).apfloatNumValue(number.precision()));
+              number = number.multiply(((INum) arg).apfloatNumValue());
             } else {
               number = number.multiply((INum) arg);
             }
@@ -5915,7 +5903,7 @@ public final class Arithmetic {
       if (number instanceof Num) {
         complexNumber = F.complexNum(((Num) number).doubleValue());
       } else {
-        complexNumber = F.complexNum(number.apfloatValue(number.precision()));
+        complexNumber = F.complexNum(number.apfloatValue());
       }
       for (int i = start; i < ast.size(); i++) {
         final IExpr arg = ast.get(i);
@@ -5924,14 +5912,11 @@ public final class Arithmetic {
           if (number instanceof Num) {
             complexNumber = complexNumber.multiply(F.complexNum(((Num) number).doubleValue()));
           } else {
-            complexNumber =
-                complexNumber.multiply(F.complexNum(number.apfloatValue(number.precision())));
+            complexNumber = complexNumber.multiply(F.complexNum(number.apfloatValue()));
           }
         } else if (arg instanceof IComplexNum) {
           if (complexNumber instanceof ApcomplexNum) {
-            complexNumber =
-                complexNumber.multiply(
-                    ((IComplexNum) arg).apcomplexNumValue(complexNumber.precision()));
+            complexNumber = complexNumber.multiply(((IComplexNum) arg).apcomplexNumValue());
           } else {
             complexNumber = complexNumber.multiply((IComplexNum) arg);
           }

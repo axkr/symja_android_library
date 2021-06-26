@@ -15,6 +15,7 @@ import java.util.function.Supplier;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import org.apfloat.FixedPrecisionApfloatHelper;
 import org.hipparchus.complex.Complex;
 import org.matheclipse.core.basic.Config;
 import org.matheclipse.core.builtin.Arithmetic;
@@ -231,7 +232,9 @@ public class EvalEngine implements Serializable {
   transient String f$InputFileName = "";
 
   /** The precision for numeric operations. */
-  protected long fNumericPrecision;
+  //  protected transient long fNumericPrecision;
+
+  protected transient FixedPrecisionApfloatHelper fApfloatHelper;
 
   /** The number of significant figures in the output expression */
   protected int fSignificantFigures;
@@ -562,7 +565,8 @@ public class EvalEngine implements Serializable {
     engine.fIterationLimit = fIterationLimit;
     engine.fModifiedVariablesList = fModifiedVariablesList;
     engine.fNumericMode = fNumericMode;
-    engine.fNumericPrecision = fNumericPrecision;
+    //    engine.fNumericPrecision = fNumericPrecision;
+    engine.fApfloatHelper = new FixedPrecisionApfloatHelper(getNumericPrecision());
     engine.fSignificantFigures = fSignificantFigures;
     engine.fEvalHistory = fEvalHistory;
     engine.fOptionsStack = fOptionsStack;
@@ -2171,6 +2175,16 @@ public class EvalEngine implements Serializable {
   }
 
   /**
+   * Get the {@link FixedPrecisionApfloatHelper} for fixed precision calculations.
+   *
+   * @return <code>null</code> if the apfloat helper isn't set in {@link #setNumericPrecision(long)}
+   *     or {@link #setNumericMode(boolean, long, int)}
+   */
+  public FixedPrecisionApfloatHelper apfloatHelper() {
+    return fApfloatHelper;
+  }
+
+  /**
    * Get the last result (&quot;answer&quot;) expression of this evaluation engine.
    *
    * @return <code>null</code> if no answer is stored in the evaluation engine.
@@ -2237,7 +2251,10 @@ public class EvalEngine implements Serializable {
   }
 
   public long getNumericPrecision() {
-    return fNumericPrecision;
+    if (fApfloatHelper != null) {
+      return fApfloatHelper.precision();
+    }
+    return FEConfig.MACHINE_PRECISION - 1;
   }
 
   /**
@@ -2381,7 +2398,8 @@ public class EvalEngine implements Serializable {
     fAnswer = null;
     fAssumptions = null;
     S.$Assumptions.clearValue();
-    fNumericPrecision = 15;
+    //    fNumericPrecision = 15;
+    fApfloatHelper = null;
     fSignificantFigures = 6;
     fRecursionCounter = 0;
     fNumericMode = false;
@@ -2436,7 +2454,7 @@ public class EvalEngine implements Serializable {
    * @see #isDoubleMode()
    */
   public final boolean isArbitraryMode() {
-    return fNumericPrecision > FEConfig.MACHINE_PRECISION;
+    return getNumericPrecision() > FEConfig.MACHINE_PRECISION;
   }
 
   /**
@@ -2637,7 +2655,8 @@ public class EvalEngine implements Serializable {
    */
   private void reset() {
     stackBegin();
-    fNumericPrecision = 15;
+    //    fNumericPrecision = 15;
+    fApfloatHelper = null;
     fSignificantFigures = 6;
     fNumericMode = false;
     fEvalLHSMode = false;
@@ -2714,12 +2733,18 @@ public class EvalEngine implements Serializable {
    */
   public void setNumericMode(final boolean b, long precision, int figures) {
     fNumericMode = b;
-    fNumericPrecision = precision;
+    //    fNumericPrecision = precision;
+    setNumericPrecision(precision);
     fSignificantFigures = figures;
   }
 
   public void setNumericPrecision(long precision) {
-    fNumericPrecision = precision;
+    //    fNumericPrecision = precision;
+    if (FEConfig.MACHINE_PRECISION > precision) {
+      fApfloatHelper = null;
+    } else {
+      fApfloatHelper = new FixedPrecisionApfloatHelper(precision);
+    }
   }
 
   public void setSignificantFigures(int figures) {
@@ -2960,5 +2985,28 @@ public class EvalEngine implements Serializable {
     }
     ast.addEvalFlags(IAST.IS_LISTABLE_THREADED);
     return F.NIL;
+  }
+
+  /**
+   * Get the {@link FixedPrecisionApfloatHelper} for fixed precision calculations.
+   *
+   * @return <code>null</code> if the apfloat helper isn't set in {@link #setNumericPrecision(long)}
+   *     or {@link #setNumericMode(boolean, long, int)}
+   */
+  public static FixedPrecisionApfloatHelper getApfloat() {
+    FixedPrecisionApfloatHelper h = get().fApfloatHelper;
+    if (h == null) {
+      h = new FixedPrecisionApfloatHelper(Config.MAX_PRECISION_APFLOAT - 1);
+    }
+    return h;
+  }
+
+  /**
+   * Set the{@link FixedPrecisionApfloatHelper} instance.
+   *
+   * @param helper
+   */
+  public static void setApfloat(final FixedPrecisionApfloatHelper helper) {
+    get().fApfloatHelper = helper;
   }
 }

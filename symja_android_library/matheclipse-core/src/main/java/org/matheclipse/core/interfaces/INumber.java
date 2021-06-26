@@ -23,7 +23,7 @@ public interface INumber extends IExpr {
    * @param precision set the precision of the resulting ApcomplexNum
    * @return this number represented as an ApcomplexNum
    */
-  public ApcomplexNum apcomplexNumValue(long precision);
+  public ApcomplexNum apcomplexNumValue( );
 
   /**
    * Get a <code>Apcomplex</code> object.
@@ -31,7 +31,7 @@ public interface INumber extends IExpr {
    * @param precision set the precision of the resulting Apcomplex
    * @return this number represented as an Apcomplex
    */
-  public Apcomplex apcomplexValue(long precision);
+  public Apcomplex apcomplexValue( );
 
   /**
    * Returns the smallest (closest to negative infinity) <code>IInteger</code> value that is not

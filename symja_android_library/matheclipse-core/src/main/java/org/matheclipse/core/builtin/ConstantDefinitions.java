@@ -12,9 +12,9 @@ import java.util.Locale;
 
 import org.apfloat.Apcomplex;
 import org.apfloat.Apfloat;
-import org.apfloat.ApfloatMath;
 import org.apfloat.Apint;
 import org.apfloat.Aprational;
+import org.apfloat.FixedPrecisionApfloatHelper;
 import org.matheclipse.core.basic.Config;
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.EvalHistory;
@@ -175,7 +175,7 @@ public class ConstantDefinitions {
 
     @Override
     public IExpr evaluateSet(IExpr rightHandSide, boolean setDelayed, final EvalEngine engine) {
-      S.$Assumptions.assignValue(rightHandSide, setDelayed); 
+      S.$Assumptions.assignValue(rightHandSide, setDelayed);
       return rightHandSide;
     }
   }
@@ -764,7 +764,7 @@ public class ConstantDefinitions {
     @Override
     public IExpr apfloatEval(ISymbol symbol, EvalEngine engine) {
       // Pi / 180
-      Apfloat pi = ApfloatMath.pi(engine.getNumericPrecision());
+      Apfloat pi = engine.apfloatHelper().pi();
       return F.num(pi.divide(new Apint(180)));
     }
 
@@ -820,7 +820,7 @@ public class ConstantDefinitions {
 
     @Override
     public IExpr apfloatEval(ISymbol symbol, EvalEngine engine) {
-      return F.num(ApfloatMath.exp(new Apfloat(1, engine.getNumericPrecision())));
+      return F.num(EvalEngine.getApfloat().exp(Apfloat.ONE));
     }
 
     @Override
@@ -846,12 +846,12 @@ public class ConstantDefinitions {
     public IExpr numericEval(final ISymbol symbol, EvalEngine engine) {
       return F.num(EULER_GAMMA);
     }
-    
+
     @Override
     public IExpr apfloatEval(ISymbol symbol, EvalEngine engine) {
-      return F.num(ApfloatMath.euler(engine.getNumericPrecision()));
+      return F.num(engine.apfloatHelper().euler());
     }
-    
+
     @Override
     public double evalReal() {
       return EULER_GAMMA;
@@ -915,9 +915,8 @@ public class ConstantDefinitions {
     @Override
     public IExpr apfloatEval(ISymbol symbol, EvalEngine engine) {
       // (3-Sqrt(5)) * Pi
-      Apfloat pi = ApfloatMath.pi(engine.getNumericPrecision());
-      Apfloat five = new Apfloat(5, engine.getNumericPrecision());
-      return F.num(ApfloatMath.sqrt(five).negate().add(new Apint(3)).multiply(pi));
+      FixedPrecisionApfloatHelper h = EvalEngine.getApfloat();
+      return F.num(h.multiply(h.subtract(new Apfloat(3), h.sqrt(new Apfloat(5))), h.pi()));
     }
 
     @Override
@@ -976,9 +975,8 @@ public class ConstantDefinitions {
     @Override
     public IExpr apfloatEval(ISymbol symbol, EvalEngine engine) {
       // (1/2)*(1+Sqrt(5))
-      Apfloat five = new Apfloat(5, engine.getNumericPrecision());
-      Apfloat half = new Aprational(Apcomplex.ONE, new Apint(2));
-      return F.num(ApfloatMath.sqrt(five).add(Apcomplex.ONE).multiply(half));
+      FixedPrecisionApfloatHelper h = EvalEngine.getApfloat();
+      return F.num(h.multiply(h.add(h.sqrt(new Apfloat(5)), Apfloat.ONE), new Aprational("1/2")));
     }
 
     @Override
@@ -1205,7 +1203,7 @@ public class ConstantDefinitions {
 
     @Override
     public IExpr apfloatEval(ISymbol symbol, EvalEngine engine) {
-      return F.num(ApfloatMath.pi(engine.getNumericPrecision()));
+      return F.num(engine.apfloatHelper().pi());
     }
 
     @Override

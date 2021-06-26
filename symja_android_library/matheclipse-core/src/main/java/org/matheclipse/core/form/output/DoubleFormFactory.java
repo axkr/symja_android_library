@@ -103,7 +103,7 @@ public abstract class DoubleFormFactory {
       convertDoubleString(buf, convertDoubleToFormattedString(doubleValue), precedence, isNegative);
     } else {
       convertDoubleString(
-          buf, convertApfloat(d.apfloatValue(d.precision())), precedence, isNegative);
+          buf, convertApfloat(d.apfloatValue( )), precedence, isNegative);
     }
   }
 

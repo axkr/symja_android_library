@@ -674,7 +674,7 @@ public class S {
   public static final IBuiltInSymbol Arrow = F.initFinalSymbol("Arrow", ID.Arrow);
 
   public static final IBuiltInSymbol Arrowheads = F.initFinalSymbol("Arrowheads", ID.Arrowheads);
-  
+
   public static final IBuiltInSymbol AspectRatio = F.initFinalSymbol("AspectRatio", ID.AspectRatio);
 
   /**
@@ -1159,7 +1159,7 @@ public class S {
   public static final IBuiltInSymbol Boxed = F.initFinalSymbol("Boxed", ID.Boxed);
 
   public static final IBuiltInSymbol BoxRatios = F.initFinalSymbol("BoxRatios", ID.BoxRatios);
-  
+
   /**
    * BrayCurtisDistance(u, v) - returns the Bray Curtis distance between `u` and `v`.
    *
@@ -7198,6 +7198,9 @@ public class S {
    */
   public static final IBuiltInSymbol QRDecomposition =
       F.initFinalSymbol("QRDecomposition", ID.QRDecomposition);
+
+  public static final IBuiltInSymbol QuarticSolve =
+      F.initFinalSymbol("QuarticSolve", ID.QuarticSolve);
 
   /**
    * QuadraticIrrationalQ(expr) - returns `True`, if the `expr` is of the form `(p + s * Sqrt(d)) /

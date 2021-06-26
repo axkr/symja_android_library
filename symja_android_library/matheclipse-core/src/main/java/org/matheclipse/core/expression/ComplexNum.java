@@ -202,20 +202,18 @@ public class ComplexNum implements IComplexNum {
   @Override
   public IComplexNum add(final IComplexNum val) {
     if (val instanceof ApcomplexNum) {
-      return ApcomplexNum.valueOf(fComplex, ((ApcomplexNum) val).precision()).add(val);
+      return apcomplexNumValue().add(val);
     }
     return newInstance(fComplex.add(((ComplexNum) val).fComplex));
   }
 
   @Override
-  public ApcomplexNum apcomplexNumValue(long precision) {
-    return ApcomplexNum.valueOf(apcomplexValue(precision));
+  public ApcomplexNum apcomplexNumValue() {
+    return ApcomplexNum.valueOf(apcomplexValue());
   }
 
-  public Apcomplex apcomplexValue(long precision) {
-    return new Apcomplex(
-        new Apfloat(new BigDecimal(fComplex.getReal()), precision),
-        new Apfloat(new BigDecimal(fComplex.getImaginary()), precision));
+  public Apcomplex apcomplexValue() {
+    return new Apcomplex(new Apfloat(fComplex.getReal()), new Apfloat(fComplex.getImaginary()));
   }
 
   @Override
@@ -291,7 +289,7 @@ public class ComplexNum implements IComplexNum {
       }
       if (expr instanceof ApcomplexNum) {
         ApcomplexNum apcomplexNum = (ApcomplexNum) expr;
-        return -1 * apcomplexNum.compareTo(apcomplexNumValue(apcomplexNum.precision()));
+        return -1 * apcomplexNum.compareTo(apcomplexNumValue());
       }
       return compareTo(
           new Complex(((INumber) expr).reDoubleValue(), ((INumber) expr).imDoubleValue()));
@@ -361,8 +359,7 @@ public class ComplexNum implements IComplexNum {
   @Override
   public IComplexNum divide(final IComplexNum that) {
     if (that instanceof ApcomplexNum) {
-      return ApcomplexNum.valueOf(fComplex, ((ApcomplexNum) that).precision())
-          .divide((ApcomplexNum) that);
+      return apcomplexNumValue().divide(that);
     }
     return newInstance(fComplex.divide(((ComplexNum) that).fComplex));
   }
@@ -403,7 +400,7 @@ public class ComplexNum implements IComplexNum {
       return S.Indeterminate;
     }
     if (engine.isNumericMode() && engine.isArbitraryMode()) {
-      return ApcomplexNum.valueOf(getRealPart(), getImaginaryPart(), engine.getNumericPrecision());
+      return ApcomplexNum.valueOf(getRealPart(), getImaginaryPart());
     }
     // if (F.isZero(getImaginaryPart())) {
     // return F.num(getRealPart());
@@ -672,7 +669,7 @@ public class ComplexNum implements IComplexNum {
   @Override
   public IComplexNum multiply(final IComplexNum val) {
     if (val instanceof ApcomplexNum) {
-      return ApcomplexNum.valueOf(fComplex, ((ApcomplexNum) val).precision()).multiply(val);
+      return apcomplexNumValue().multiply(val);
     }
     return newInstance(fComplex.multiply(((ComplexNum) val).fComplex));
   }
@@ -705,12 +702,11 @@ public class ComplexNum implements IComplexNum {
     }
     if (that instanceof ApcomplexNum) {
       ApcomplexNum acn = (ApcomplexNum) that;
-      return ApcomplexNum.valueOf(getRealPart(), getImaginaryPart(), acn.fApcomplex.precision())
-          .add(acn);
+      return ApcomplexNum.valueOf(getRealPart(), getImaginaryPart()).add(acn);
     }
     if (that instanceof ApfloatNum) {
       ApfloatNum afn = (ApfloatNum) that;
-      return ApcomplexNum.valueOf(getRealPart(), getImaginaryPart(), afn.fApfloat.precision())
+      return ApcomplexNum.valueOf(getRealPart(), getImaginaryPart())
           .add(ApcomplexNum.valueOf(afn.fApfloat, Apcomplex.ZERO));
     }
     if (that instanceof Num) {
@@ -759,8 +755,7 @@ public class ComplexNum implements IComplexNum {
   @Override
   public IComplexNum subtract(final IComplexNum subtrahend) {
     if (subtrahend instanceof ApcomplexNum) {
-      return ApcomplexNum.valueOf(fComplex, ((ApcomplexNum) subtrahend).precision())
-          .subtract(subtrahend);
+      return apcomplexNumValue().subtract(((ApcomplexNum) subtrahend));
     }
     return newInstance(fComplex.subtract(((ComplexNum) subtrahend).fComplex));
   }
@@ -775,14 +770,10 @@ public class ComplexNum implements IComplexNum {
       return newInstance(fComplex.multiply(((ComplexNum) that).fComplex));
     }
     if (that instanceof ApcomplexNum) {
-      ApcomplexNum acn = (ApcomplexNum) that;
-      return ApcomplexNum.valueOf(getRealPart(), getImaginaryPart(), acn.fApcomplex.precision())
-          .multiply(acn);
+      return apcomplexNumValue().multiply(that);
     }
     if (that instanceof ApfloatNum) {
-      ApfloatNum afn = (ApfloatNum) that;
-      return ApcomplexNum.valueOf(getRealPart(), getImaginaryPart(), afn.fApfloat.precision())
-          .multiply(ApcomplexNum.valueOf(afn.fApfloat, Apcomplex.ZERO));
+      return ApcomplexNum.valueOf(getRealPart(), getImaginaryPart()).multiply((ApfloatNum) that);
     }
     if (that instanceof Num) {
       return multiply(ComplexNum.valueOf(((Num) that).getRealPart()));

@@ -39,6 +39,7 @@ import org.apfloat.ApcomplexMath;
 import org.apfloat.Apfloat;
 import org.apfloat.ApfloatMath;
 import org.apfloat.Apint;
+import org.apfloat.FixedPrecisionApfloatHelper;
 import org.hipparchus.complex.Complex;
 import org.hipparchus.special.elliptic.carlson.CarlsonEllipticIntegral;
 import org.hipparchus.util.FastMath;
@@ -491,25 +492,26 @@ public class ExpTrigsFunctions {
 
     @Override
     public IExpr e1ApcomplexArg(Apcomplex arg1) {
+      FixedPrecisionApfloatHelper h = EvalEngine.getApfloat();
       // 1/arg1
-      Apcomplex c = ApcomplexMath.inverseRoot(arg1, 1);
+      Apcomplex c = h.inverseRoot(arg1, 1);
 
       // (1/2) (Log(1 + 1/arg1) - Log(1 - 1/arg1))
       Apcomplex result =
-          ApcomplexMath.log(Apcomplex.ONE.add(c))
-              .subtract(ApcomplexMath.log(Apcomplex.ONE.subtract(c)))
-              .divide(new Apfloat(2));
+          h.divide(
+              h.subtract(h.log(Apcomplex.ONE.add(c)), h.log(Apcomplex.ONE.subtract(c))),
+              new Apfloat(2));
       return F.complexNum(result);
     }
 
     @Override
     public IExpr e1ApfloatArg(Apfloat arg1) {
+      FixedPrecisionApfloatHelper h = EvalEngine.getApfloat();
       if (arg1.equals(Apcomplex.ZERO)) {
         // I*Pi / 2
-        return F.complexNum(
-            new Apcomplex(Apcomplex.ZERO, ApfloatMath.pi(arg1.precision())).divide(new Apfloat(2)));
+        return F.complexNum(h.divide(new Apcomplex(Apcomplex.ZERO, h.pi()), new Apfloat(2)));
       }
-      return F.num(ApfloatMath.atanh(ApfloatMath.inverseRoot(arg1, 1)));
+      return F.num(h.atanh(h.inverseRoot(arg1, 1)));
     }
 
     @Override
@@ -1038,15 +1040,15 @@ public class ExpTrigsFunctions {
           y = engine.evalN(y);
 
           if (x.isReal() && y.isReal()) {
-            long precision = engine.getNumericPrecision();
-            Apfloat xa = ((ISignedNumber) x).apfloatValue(precision);
-            Apfloat ya = ((ISignedNumber) y).apfloatValue(precision);
-            return F.num(ApfloatMath.atan2(ya, xa));
+            //            long precision = engine.getNumericPrecision();
+            Apfloat xa = ((ISignedNumber) x).apfloatValue();
+            Apfloat ya = ((ISignedNumber) y).apfloatValue();
+            return F.num(engine.apfloatHelper().atan2(ya, xa));
           }
           if (x.isNumber() && y.isNumber()) {
-            long precision = engine.getNumericPrecision();
-            x = ((INumber) x).apcomplexNumValue(precision);
-            y = ((INumber) y).apcomplexNumValue(precision);
+//            long precision = engine.getNumericPrecision();
+            x = ((INumber) x).apcomplexNumValue( );
+            y = ((INumber) y).apcomplexNumValue( );
             return y.atan2(x);
           }
           return F.NIL;
@@ -2329,14 +2331,14 @@ public class ExpTrigsFunctions {
 
     @Override
     public IExpr e2ApfloatArg(final ApfloatNum d0, final ApfloatNum d1) {
-      long precision = d0.precision();
-      return F.complexNum(
-          ApcomplexMath.log(d0.apfloatValue(precision), d1.apfloatValue(precision)));
+      FixedPrecisionApfloatHelper h = EvalEngine.getApfloat();
+      return F.complexNum(h.log(d0.apfloatValue(), d1.apfloatValue()));
     }
 
     @Override
     public IExpr e2ApcomplexArg(final ApcomplexNum c0, final ApcomplexNum c1) {
-      return F.complexNum(ApcomplexMath.log(c0.apcomplexValue(), c1.apcomplexValue()));
+      FixedPrecisionApfloatHelper h = EvalEngine.getApfloat();
+      return F.complexNum(h.log(c0.apcomplexValue(), c1.apcomplexValue()));
     }
 
     @Override

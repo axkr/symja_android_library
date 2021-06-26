@@ -116,13 +116,13 @@ public abstract class AbstractArg2 extends AbstractFunctionEvaluator {
           result =
               e2ApcomplexArg(
                   (ApcomplexNum) o0,
-                  ((INumber) o1).apcomplexNumValue(((ApcomplexNum) o0).precision()));
+                  ((INumber) o1).apcomplexNumValue( ));
         }
       } else if (o1 instanceof ApcomplexNum) {
         if (o0.isNumber()) {
           result =
               e2ApcomplexArg(
-                  ((INumber) o0).apcomplexNumValue(((ApcomplexNum) o1).precision()),
+                  ((INumber) o0).apcomplexNumValue( ),
                   (ApcomplexNum) o1);
         }
       } else if (o0 instanceof ComplexNum) {
@@ -140,13 +140,13 @@ public abstract class AbstractArg2 extends AbstractFunctionEvaluator {
           result =
               e2ApfloatArg(
                   (ApfloatNum) o0,
-                  ((ISignedNumber) o1).apfloatNumValue(((ApfloatNum) o0).precision()));
+                  ((ISignedNumber) o1).apfloatNumValue());
         }
       } else if (o1 instanceof ApfloatNum) {
         if (o0.isReal()) {
           result =
               e2ApfloatArg(
-                  ((ISignedNumber) o0).apfloatNumValue(((ApfloatNum) o1).precision()),
+                  ((ISignedNumber) o0).apfloatNumValue(),
                   (ApfloatNum) o1);
         }
       } else if (o0 instanceof Num) {

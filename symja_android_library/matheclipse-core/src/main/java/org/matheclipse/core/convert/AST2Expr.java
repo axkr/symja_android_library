@@ -1092,6 +1092,7 @@ public class AST2Expr {
     "Pyramid",
     "QRDecomposition",
     "QuadraticIrrationalQ",
+    "QuarticSolve",
     "Quantile",
     "Quantity",
     "QuantityDistribution",

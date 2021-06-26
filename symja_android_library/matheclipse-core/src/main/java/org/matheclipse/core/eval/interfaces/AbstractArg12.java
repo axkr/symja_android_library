@@ -44,7 +44,7 @@ public abstract class AbstractArg12 extends AbstractFunctionEvaluator {
         if (hier == IExpr.DOUBLEID) {
           INumber x = ((INumber) arg0).evaluatePrecision(EvalEngine.get());
           if (x instanceof ApfloatNum) {
-            return e1ApfloatArg(((ApfloatNum) x).apfloatValue(((ApfloatNum) x).precision()));
+            return e1ApfloatArg(((ApfloatNum) x).apfloatValue());
           }
           return e1DblArg((INum) x);
         }
@@ -124,15 +124,11 @@ public abstract class AbstractArg12 extends AbstractFunctionEvaluator {
         INumber arg2 = ((INumber) o1).evaluatePrecision(engine);
         if (arg1 instanceof ApcomplexNum) {
           if (arg2.isNumber()) {
-            result =
-                e2ApcomplexArg(
-                    (ApcomplexNum) arg1, arg2.apcomplexNumValue(((ApcomplexNum) arg1).precision()));
+            result = e2ApcomplexArg((ApcomplexNum) arg1, arg2.apcomplexNumValue());
           }
         } else if (arg2 instanceof ApcomplexNum) {
           if (arg1.isNumber()) {
-            result =
-                e2ApcomplexArg(
-                    arg1.apcomplexNumValue(((ApcomplexNum) arg2).precision()), (ApcomplexNum) arg2);
+            result = e2ApcomplexArg(arg1.apcomplexNumValue(), (ApcomplexNum) arg2);
           }
         } else if (arg1 instanceof ComplexNum) {
           if (arg2.isNumber()) {
@@ -146,17 +142,11 @@ public abstract class AbstractArg12 extends AbstractFunctionEvaluator {
 
         if (arg1 instanceof ApfloatNum) {
           if (arg2.isReal()) {
-            result =
-                e2ApfloatArg(
-                    (ApfloatNum) arg1,
-                    ((ISignedNumber) arg2).apfloatNumValue(((ApfloatNum) arg1).precision()));
+            result = e2ApfloatArg((ApfloatNum) arg1, ((ISignedNumber) arg2).apfloatNumValue());
           }
         } else if (arg2 instanceof ApfloatNum) {
           if (arg1.isReal()) {
-            result =
-                e2ApfloatArg(
-                    ((ISignedNumber) arg1).apfloatNumValue(((ApfloatNum) arg2).precision()),
-                    (ApfloatNum) arg2);
+            result = e2ApfloatArg(((ISignedNumber) arg1).apfloatNumValue(), (ApfloatNum) arg2);
           }
         } else if (arg1 instanceof Num) {
           if (arg2.isReal()) {
