@@ -8,7 +8,6 @@ import java.io.IOException;
 import java.math.BigInteger;
 import java.util.HashSet;
 import java.util.IdentityHashMap;
-import java.util.Iterator;
 import java.util.Locale;
 import java.util.Map;
 import java.util.Set;
@@ -20,7 +19,6 @@ import java.util.function.IntFunction;
 import java.util.function.Predicate;
 
 import org.apache.commons.lang3.StringUtils;
-import org.apache.commons.text.StringEscapeUtils;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.apfloat.Apcomplex;
@@ -73,6 +71,7 @@ import org.matheclipse.core.builtin.PredicateQ;
 import org.matheclipse.core.builtin.Programming;
 import org.matheclipse.core.builtin.QuantityFunctions;
 import org.matheclipse.core.builtin.RandomFunctions;
+import org.matheclipse.core.builtin.RootsFunctions;
 import org.matheclipse.core.builtin.SeriesFunctions;
 import org.matheclipse.core.builtin.SimplifyFunctions;
 import org.matheclipse.core.builtin.SourceCodeFunctions;
@@ -135,7 +134,6 @@ import com.google.common.cache.CacheBuilder;
 
 import edu.jas.kern.ComputerThreads;
 import edu.jas.kern.PreemptStatus;
-import edu.jas.ps.OrderedPairlist;
 
 /** Factory for creating Symja predefined function expression objects (interface {@link IAST}). */
 public class F extends S {
@@ -894,6 +892,7 @@ public class F extends S {
       HypergeometricFunctions.initialize();
       EllipticIntegrals.initialize();
       PolynomialFunctions.initialize();
+      RootsFunctions.initialize();
       SeriesFunctions.initialize();
       AssumptionFunctions.initialize();
       ContainsFunctions.initialize();
@@ -2660,7 +2659,7 @@ public class F extends S {
           realFraction.toBigNumerator(),
           realFraction.toBigDenominator(),
           imagFraction.toBigNumerator(),
-          imagFraction.toBigDenominator() );
+          imagFraction.toBigDenominator());
     }
     // double precision complex number
     double nr = realFraction.numerator().doubleValue();
@@ -2675,10 +2674,7 @@ public class F extends S {
     final EvalEngine engine = EvalEngine.get();
     if (engine.isArbitraryMode()) {
       return ApcomplexNum.valueOf(
-          value.toBigNumerator(),
-          value.toBigDenominator(),
-          BigInteger.ZERO,
-          BigInteger.ONE );
+          value.toBigNumerator(), value.toBigDenominator(), BigInteger.ZERO, BigInteger.ONE);
     }
     return complexNum(value.doubleValue(), 0.0d);
   }
@@ -2687,10 +2683,7 @@ public class F extends S {
     final EvalEngine engine = EvalEngine.get();
     if (engine.isArbitraryMode()) {
       return ApcomplexNum.valueOf(
-          value.toBigNumerator(),
-          BigInteger.ONE,
-          BigInteger.ZERO,
-          BigInteger.ONE );
+          value.toBigNumerator(), BigInteger.ONE, BigInteger.ZERO, BigInteger.ONE);
     }
     return complexNum(value.doubleValue(), 0.0d);
   }
@@ -5543,8 +5536,7 @@ public class F extends S {
   public static INum num(final IFraction value) {
     EvalEngine engine = EvalEngine.get();
     if (engine.isArbitraryMode()) {
-      return ApfloatNum.valueOf(
-          value.toBigNumerator(), value.toBigDenominator());
+      return ApfloatNum.valueOf(value.toBigNumerator(), value.toBigDenominator());
     }
     final double n = value.toBigNumerator().doubleValue();
     final double d = value.toBigDenominator().doubleValue();
@@ -5554,7 +5546,7 @@ public class F extends S {
   public static INum num(final IInteger value) {
     EvalEngine engine = EvalEngine.get();
     if (engine.isArbitraryMode()) {
-      return ApfloatNum.valueOf(value.toBigNumerator() );
+      return ApfloatNum.valueOf(value.toBigNumerator());
     }
     return num(value.doubleValue());
   }
@@ -5734,7 +5726,7 @@ public class F extends S {
   public static IAST Parenthesis(final IExpr a0) {
     return new AST1(Parenthesis, a0);
   }
-  
+
   /**
    * See: <a
    * href="https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/Part.md">Part</a>

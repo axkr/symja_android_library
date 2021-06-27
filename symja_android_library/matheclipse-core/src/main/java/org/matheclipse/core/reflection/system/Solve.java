@@ -13,6 +13,7 @@ import org.matheclipse.core.builtin.BooleanFunctions;
 import org.matheclipse.core.builtin.IOFunctions;
 import org.matheclipse.core.builtin.LinearAlgebra;
 import org.matheclipse.core.builtin.PolynomialFunctions;
+import org.matheclipse.core.builtin.RootsFunctions;
 import org.matheclipse.core.convert.Convert;
 import org.matheclipse.core.convert.CreamConvert;
 import org.matheclipse.core.convert.VariablesSet;
@@ -33,7 +34,6 @@ import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IASTAppendable;
 import org.matheclipse.core.interfaces.IASTMutable;
 import org.matheclipse.core.interfaces.IExpr;
-import org.matheclipse.core.interfaces.INumber;
 import org.matheclipse.core.interfaces.ISignedNumber;
 import org.matheclipse.core.interfaces.ISymbol;
 import org.matheclipse.core.polynomials.QuarticSolver;
@@ -949,11 +949,11 @@ public class Solve extends AbstractFunctionEvaluator {
     for (ISymbol sym : exprAnalyzer.getSymbolSet()) {
       IExpr temp = F.NIL;
       if (numerator.isNumericMode() && denominator.isOne()) {
-        temp = PolynomialFunctions.roots(numerator, F.List(sym), engine);
+        temp = RootsFunctions.roots(numerator, F.List(sym), engine);
       }
       if (!temp.isPresent()) {
         temp =
-            PolynomialFunctions.rootsOfVariable(
+            RootsFunctions.rootsOfVariable(
                 numerator, denominator, F.List(sym), numerator.isNumericMode(), engine);
       }
       if (temp.isPresent()) {

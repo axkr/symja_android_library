@@ -640,7 +640,7 @@ public class IOFunctions {
     "lowlen",
     "Required length `1` is smaller than maximum `2` of support of `3`.", //
     "lslc",
-    "Coefficient matrix and target vector or matrix do not have the same dimensions.",//
+    "Coefficient matrix and target vector or matrix do not have the same dimensions.", //
     "lvlist",
     "Local variable specification `1` is not a List.", //
     "lvws",
@@ -1173,9 +1173,7 @@ public class IOFunctions {
   }
 
   /**
-   * Render the template string with the <code>args</code> parameters. Typically the <code>args
-   * </code> are a <code>List</code> or an <code>Association</code> expressiosn, otherwise the
-   * <code>args</code> parameter will be ignored.
+   * Render the template string with the <code>args</code> string parameters.
    *
    * @param templateStr
    * @param args
