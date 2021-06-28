@@ -4358,20 +4358,15 @@ public abstract class AbstractAST implements IASTMutable {
       if (size() == 2) {
         return id == ID.Cos
             || id == ID.ArcCos
-            || //
-            id == ID.Cot
+            || id == ID.Cot
             || id == ID.ArcCot
-            || //
-            id == ID.Csc
+            || id == ID.Csc
             || id == ID.ArcCsc
-            || //
-            id == ID.Sec
+            || id == ID.Sec
             || id == ID.ArcSec
-            || //
-            id == ID.Sin
+            || id == ID.Sin
             || id == ID.ArcSin
-            || //
-            id == ID.Tan
+            || id == ID.Tan
             || id == ID.ArcTan;
       }
       if (size() == 3) {
@@ -4389,20 +4384,15 @@ public abstract class AbstractAST implements IASTMutable {
       if (size() == 2) {
         return id == ID.Cosh
             || id == ID.ArcCosh
-            || //
-            id == ID.Coth
+            || id == ID.Coth
             || id == ID.ArcCoth
-            || //
-            id == ID.Csch
+            || id == ID.Csch
             || id == ID.ArcCsch
-            || //
-            id == ID.Sech
+            || id == ID.Sech
             || id == ID.ArcSech
-            || //
-            id == ID.Sinh
+            || id == ID.Sinh
             || id == ID.ArcSinh
-            || //
-            id == ID.Tanh
+            || id == ID.Tanh
             || id == ID.ArcTanh;
       }
     }
@@ -4418,13 +4408,11 @@ public abstract class AbstractAST implements IASTMutable {
             || id == ID.Literal
             || id == ID.Condition
             || id == ID.Alternatives
-            || //
-            id == ID.Except
+            || id == ID.Except
             || id == ID.Complex
             || id == ID.Rational
             || id == ID.Optional
-            || //
-            id == ID.PatternTest
+            || id == ID.PatternTest
             || id == ID.Repeated
             || id == ID.RepeatedNull;
       }
