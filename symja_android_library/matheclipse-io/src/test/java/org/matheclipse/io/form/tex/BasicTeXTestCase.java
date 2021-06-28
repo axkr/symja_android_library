@@ -594,6 +594,13 @@ public class BasicTeXTestCase extends TestCase {
             + "\\right) ");
   }
 
+  public void testStyle() {
+	    IExpr expr = EvalEngine.get().parse("Style(1/Sqrt(7), Red)");
+	    check(
+	        expr, //
+	        "\\textcolor{red}{\\frac{1}{\\sqrt{7}}}");
+	  }
+  
   public void check(String strEval, String strResult) {
     StringWriter stw = new StringWriter();
     texUtil.toTeX(strEval, stw, true);

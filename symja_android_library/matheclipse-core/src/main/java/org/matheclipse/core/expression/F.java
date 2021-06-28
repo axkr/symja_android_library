@@ -6886,6 +6886,10 @@ public class F extends S {
     return new AST3(StudentTDistribution, a0, a1, a2);
   }
 
+  public static IAST Style(final IExpr a0, final IExpr a1) {
+    return new AST2(Style, a0, a1);
+  }
+
   public static IAST Subdivide(final IExpr a0) {
     return new AST1(Subdivide, a0);
   }

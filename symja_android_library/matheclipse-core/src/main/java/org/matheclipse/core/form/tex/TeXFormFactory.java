@@ -8,6 +8,7 @@ import org.apfloat.Apcomplex;
 import org.apfloat.Apfloat;
 import org.matheclipse.core.basic.Config;
 import org.matheclipse.core.builtin.Algebra;
+import org.matheclipse.core.builtin.Arithmetic.Times;
 import org.matheclipse.core.convert.AST2Expr;
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.exception.ValidateException;
@@ -852,6 +853,33 @@ public class TeXFormFactory {
       buf.append('}');
       precedenceClose(buf, precedence);
       return true;
+    }
+  }
+
+  private static final class Style extends AbstractConverter {
+
+    /** {@inheritDoc} */
+    @Override
+    public boolean convert(final StringBuilder buf, final IAST f, final int precedence) {
+      if (f.size() != 3) {
+        return false;
+      }
+      IExpr arg1 = f.arg1();
+      IExpr arg2 = f.arg2();
+      if (arg2.isBuiltInSymbol()) {
+        if (((IBuiltInSymbol) arg2)
+            .isSymbolID(
+                ID.Black, ID.Brown, ID.Blue, ID.Cyan, ID.Green, ID.Pink, ID.Red, ID.Yellow,
+                ID.White)) {
+          buf.append("\\textcolor{");
+          buf.append(arg2.toString().toLowerCase());
+          buf.append("}{");
+          fFactory.convertInternal(buf, arg1, 0);
+          buf.append("}");
+          return true;
+        }
+      }
+      return false;
     }
   }
 
@@ -1969,6 +1997,7 @@ public class TeXFormFactory {
     operTab.put(S.Slot, new UnaryFunction("\\text{$\\#$", "}"));
     operTab.put(S.SlotSequence, new UnaryFunction("\\text{$\\#\\#$", "}"));
     operTab.put(S.Sqrt, new UnaryFunction("\\sqrt{", "}"));
+    operTab.put(S.Style, new Style());
     operTab.put(S.Subscript, new Subscript());
     operTab.put(S.Subsuperscript, new Subsuperscript());
     operTab.put(S.Sum, new Sum());
