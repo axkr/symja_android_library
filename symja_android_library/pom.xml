@@ -280,43 +280,43 @@
 			<dependency>
 				<groupId>org.hipparchus</groupId>
 				<artifactId>hipparchus-clustering</artifactId>
-				<version>2.0-20210614.200233-32</version>
+				<version>2.0-SNAPSHOT</version>
 			</dependency>
 
 			<dependency>
 				<groupId>org.hipparchus</groupId>
 				<artifactId>hipparchus-core</artifactId>
-				<version>2.0-20210614.200156-32</version>
+				<version>2.0-SNAPSHOT</version>
 			</dependency>
 
 			<dependency>
 				<groupId>org.hipparchus</groupId>
 				<artifactId>hipparchus-fft</artifactId>
-				<version>2.0-20210614.200242-32</version>
+				<version>2.0-SNAPSHOT</version>
 			</dependency>
 
 			<dependency>
 				<groupId>org.hipparchus</groupId>
 				<artifactId>hipparchus-fitting</artifactId>
-				<version>2.0-20210614.200229-32</version>
+				<version>2.0-SNAPSHOT</version>
 			</dependency>
 
 			<dependency>
 				<groupId>org.hipparchus</groupId>
 				<artifactId>hipparchus-ode</artifactId>
-				<version>2.0-20210614.200217-32</version>
+				<version>2.0-SNAPSHOT</version>
 			</dependency>
 
 			<dependency>
 				<groupId>org.hipparchus</groupId>
 				<artifactId>hipparchus-optim</artifactId>
-				<version>2.0-20210614.200223-32</version>
+				<version>2.0-SNAPSHOT</version>
 			</dependency>
 
 			<dependency>
 				<groupId>org.hipparchus</groupId>
 				<artifactId>hipparchus-stat</artifactId>
-				<version>2.0-20210614.200203-32</version>
+				<version>2.0-SNAPSHOT</version>
 			</dependency>
 
 			<dependency>
