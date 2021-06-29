@@ -552,6 +552,9 @@ public class StringFunctionsTest extends AbstractTestCase {
 
   public void testStringSplit() {
     check(
+        "StringSplit(\"a\\nb\\r\\nc\\rd\", WhitespaceCharacter)//InputForm", //
+        "{\"a\",\"b\",\"\",\"c\",\"d\"}");
+    check(
         "StringSplit(\"x\", \"x\")", //
         "{}");
     check(

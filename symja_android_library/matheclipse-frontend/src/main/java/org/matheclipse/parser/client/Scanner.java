@@ -1130,19 +1130,18 @@ public abstract class Scanner {
           switch (fCurrentChar) {
             case '\\':
               ident.append(fCurrentChar);
-
               break;
             case 'n':
               ident.append('\n');
-
+              break;
+            case 'r':
+              ident.append('\r');
               break;
             case 't':
               ident.append('\t');
-
               break;
             case '\"':
               ident.append('\"');
-
               break;
             case '\n':
               fRowCounter++;
