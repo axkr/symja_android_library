@@ -947,4 +947,21 @@ public class ComplexNum implements IComplexNum {
   public IExpr ulp() {
     return valueOf(fComplex.ulp());
   }
+
+  @Override
+  public IExpr getPi() {
+    return F.num(Math.PI);
+  }
+
+  @Override
+  public IExpr toDegrees() {
+    // radians * (180 / Pi)
+    return valueOf(fComplex.toDegrees());
+  }
+
+  @Override
+  public IExpr toRadians() {
+    // degrees * (Pi / 180)
+    return valueOf(fComplex.toRadians());
+  }
 }

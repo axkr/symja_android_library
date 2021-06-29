@@ -796,4 +796,21 @@ public class Num implements INum {
   public IExpr tanh() {
     return valueOf(Math.tanh(fDouble));
   }
+
+  @Override
+  public IExpr getPi() {
+    return F.num(Math.PI);
+  }
+
+  @Override
+  public IExpr toDegrees() {
+    // radians * (180 / Pi)
+    return valueOf(fDouble * 180.0 / Math.PI);
+  }
+
+  @Override
+  public IExpr toRadians() {
+    // degrees * (Pi / 180)
+    return valueOf(fDouble * Math.PI / 180.0);
+  }
 }

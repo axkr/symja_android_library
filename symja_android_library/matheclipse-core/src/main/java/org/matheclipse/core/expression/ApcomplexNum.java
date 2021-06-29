@@ -5,11 +5,9 @@ import java.math.BigInteger;
 import java.math.RoundingMode;
 
 import org.apfloat.Apcomplex;
-import org.apfloat.ApcomplexMath;
 import org.apfloat.Apfloat;
 import org.apfloat.ApfloatMath;
 import org.apfloat.ApfloatRuntimeException;
-import org.apfloat.FixedPrecisionApcomplexHelper;
 import org.apfloat.FixedPrecisionApfloatHelper;
 import org.hipparchus.complex.Complex;
 import org.matheclipse.core.eval.EvalEngine;
@@ -852,5 +850,23 @@ public class ApcomplexNum implements IComplexNum {
   @Override
   public IExpr ulp() {
     return valueOf(EvalEngine.getApfloat().ulp(Apfloat.ONE));
+  }
+
+  public IExpr getPi() {
+    return valueOf(EvalEngine.getApfloat().pi());
+  }
+
+  @Override
+  public IExpr toDegrees() {
+    FixedPrecisionApfloatHelper h = EvalEngine.getApfloat();
+    return valueOf(
+        ApfloatNum.toDegrees(fApcomplex.real(), h), ApfloatNum.toDegrees(fApcomplex.imag(), h));
+  }
+
+  @Override
+  public IExpr toRadians() {
+    FixedPrecisionApfloatHelper h = EvalEngine.getApfloat();
+    return valueOf(
+        ApfloatNum.toRadians(fApcomplex.real(), h), ApfloatNum.toRadians(fApcomplex.imag(), h));
   }
 }

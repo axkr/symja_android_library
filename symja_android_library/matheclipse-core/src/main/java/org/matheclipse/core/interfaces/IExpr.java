@@ -12,6 +12,8 @@ import java.util.function.Function;
 import java.util.function.Predicate;
 import java.util.function.Supplier;
 
+import org.apfloat.Apfloat;
+import org.apfloat.FixedPrecisionApfloatHelper;
 import org.hipparchus.CalculusFieldElement;
 import org.hipparchus.Field;
 import org.hipparchus.complex.Complex;
@@ -530,11 +532,17 @@ public interface IExpr
     if (that.isMinusOne()) {
       return negate();
     }
+
     EvalEngine engine = EvalEngine.get();
+    IExpr inverse = that.inverse();
+    //    if (this.isPlus()) {
+    //      IExpr plusAST = ((IAST) this).mapThread(F.binaryAST2(S.Times, F.Slot1, inverse), 1);
+    //      return engine.evaluate(plusAST);
+    //    }
     if (engine.isTogetherMode() && (this.isPlusTimesPower() || that.isPlusTimesPower())) {
-      return engine.evaluate(F.Together(F.Times(this, that.inverse())));
+      return engine.evaluate(F.Together(F.Times(this, inverse)));
     }
-    return engine.evaluate(F.Times(this, that.inverse()));
+    return engine.evaluate(F.Times(this, inverse));
   }
 
   @Override
@@ -4922,5 +4930,21 @@ public interface IExpr
   @Override
   default IExpr ulp() {
     return F.C0;
+  }
+
+  default IExpr getPi() {
+    return S.Pi;
+  }
+
+  @Override
+  default IExpr toDegrees() {
+    // radians * (180 / Pi)
+    return F.Times(this, F.ZZ(180), F.Inverse(S.Pi));
+  }
+
+  @Override
+  default IExpr toRadians() {
+    // degrees * (Pi / 180)
+    return F.Times(F.QQ(1L, 180L), this, S.Pi);
   }
 }

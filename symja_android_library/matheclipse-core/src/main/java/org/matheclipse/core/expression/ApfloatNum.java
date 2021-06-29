@@ -1,6 +1,5 @@
 package org.matheclipse.core.expression;
 
-import java.math.BigDecimal;
 import java.math.BigInteger;
 import java.math.RoundingMode;
 
@@ -589,12 +588,12 @@ public class ApfloatNum implements INum {
     return Num.valueOf(doubleValue());
   }
 
-  public Apcomplex apcomplexValue( ) {
+  public Apcomplex apcomplexValue() {
     return new Apcomplex(fApfloat);
   }
 
   @Override
-  public ApcomplexNum apcomplexNumValue( ) {
+  public ApcomplexNum apcomplexNumValue() {
     return ApcomplexNum.valueOf(fApfloat);
   }
 
@@ -813,5 +812,45 @@ public class ApfloatNum implements INum {
   @Override
   public IExpr ulp() {
     return valueOf(EvalEngine.getApfloat().ulp(Apfloat.ONE));
+  }
+
+  public IExpr getPi() {
+    return valueOf(EvalEngine.getApfloat().pi());
+  }
+
+  @Override
+  public IExpr toDegrees() {
+    FixedPrecisionApfloatHelper h = EvalEngine.getApfloat();
+    // radians * (180 / Pi)
+    return valueOf(toDegrees(fApfloat, h));
+  }
+
+  @Override
+  public IExpr toRadians() {
+    FixedPrecisionApfloatHelper h = EvalEngine.getApfloat();
+    // degrees * (Pi / 180)
+    return valueOf(toRadians(fApfloat, h));
+  }
+
+  /**
+   * <code>radians * (180 / Pi)</code>
+   *
+   * @param radians
+   * @param h
+   * @return
+   */
+  static Apfloat toDegrees(Apfloat radians, FixedPrecisionApfloatHelper h) {
+    return h.divide(h.multiply(radians, new Apfloat(180)), h.pi());
+  }
+
+  /**
+   * <code>degrees * (Pi / 180)</code>
+   *
+   * @param degrees
+   * @param h
+   * @return
+   */
+  static Apfloat toRadians(Apfloat degrees, FixedPrecisionApfloatHelper h) {
+    return h.divide(h.multiply(degrees, h.pi()), new Apfloat(180));
   }
 }
