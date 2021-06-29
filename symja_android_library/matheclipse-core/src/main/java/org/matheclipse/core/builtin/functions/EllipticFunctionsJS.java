@@ -304,20 +304,20 @@ public class EllipticFunctionsJS {
    * @return
    */
   public static Complex jacobiSN(Complex x, Complex m) {
-    //    final FieldJacobiElliptic<Complex> je = JacobiEllipticBuilder.build(m);
-    //    final FieldCopolarN<Complex> valuesN = je.valuesN(x);
-    //    return valuesN.sn();
-    Complex q = ellipticNome(m);
-
-    // if ( m > 1 || isComplex(x) || isComplex(m) ) {
-
-    Complex a2 = jacobiTheta(3, Complex.ZERO, q);
-    a2 = a2.multiply(a2);
-    Complex t = x.divide(a2);
-
-    return jacobiTheta(3, Complex.ZERO, q)
-        .divide(jacobiTheta(2, Complex.ZERO, q))
-        .multiply(jacobiTheta(1, t, q).divide(jacobiTheta(4, t, q)));
+    final FieldJacobiElliptic<Complex> je = JacobiEllipticBuilder.build(m);
+    final FieldCopolarN<Complex> valuesN = je.valuesN(x);
+    return valuesN.sn();
+    //    Complex q = ellipticNome(m);
+    //
+    //    // if ( m > 1 || isComplex(x) || isComplex(m) ) {
+    //
+    //    Complex a2 = jacobiTheta(3, Complex.ZERO, q);
+    //    a2 = a2.multiply(a2);
+    //    Complex t = x.divide(a2);
+    //
+    //    return jacobiTheta(3, Complex.ZERO, q)
+    //        .divide(jacobiTheta(2, Complex.ZERO, q))
+    //        .multiply(jacobiTheta(1, t, q).divide(jacobiTheta(4, t, q)));
   }
 
   /**
@@ -366,18 +366,18 @@ public class EllipticFunctionsJS {
    * @return
    */
   public static Complex jacobiCN(Complex x, Complex m) {
-    //    final FieldJacobiElliptic<Complex> je = JacobiEllipticBuilder.build(m);
-    //    final FieldCopolarN<Complex> valuesN = je.valuesN(x);
-    //    return valuesN.cn();
-    Complex q = ellipticNome(m);
-    // if ( m > 1 || isComplex(x) || isComplex(m) ) {
-    Complex a2 = jacobiTheta(3, Complex.ZERO, q);
-    a2 = a2.multiply(a2);
-    Complex t = x.divide(a2);
-
-    return jacobiTheta(4, Complex.ZERO, q)
-        .divide(jacobiTheta(2, Complex.ZERO, q))
-        .multiply(jacobiTheta(2, t, q).divide(jacobiTheta(4, t, q)));
+    final FieldJacobiElliptic<Complex> je = JacobiEllipticBuilder.build(m);
+    final FieldCopolarN<Complex> valuesN = je.valuesN(x);
+    return valuesN.cn();
+    //    Complex q = ellipticNome(m);
+    //    // if ( m > 1 || isComplex(x) || isComplex(m) ) {
+    //    Complex a2 = jacobiTheta(3, Complex.ZERO, q);
+    //    a2 = a2.multiply(a2);
+    //    Complex t = x.divide(a2);
+    //
+    //    return jacobiTheta(4, Complex.ZERO, q)
+    //        .divide(jacobiTheta(2, Complex.ZERO, q))
+    //        .multiply(jacobiTheta(2, t, q).divide(jacobiTheta(4, t, q)));
   }
 
   /**
@@ -439,20 +439,20 @@ public class EllipticFunctionsJS {
    * @return
    */
   public static Complex jacobiDN(Complex x, Complex m) {
-    //    final FieldJacobiElliptic<Complex> je = JacobiEllipticBuilder.build(m);
-    //    final FieldCopolarN<Complex> valuesN = je.valuesN(x);
-    //    return valuesN.dn();
-    Complex q = ellipticNome(m);
-
-    // if ( m > 1 || isComplex(x) || isComplex(m) ) {
-
-    Complex a2 = jacobiTheta(3, Complex.ZERO, q);
-    a2 = a2.multiply(a2);
-    Complex t = x.divide(a2);
-
-    return jacobiTheta(4, Complex.ZERO, q)
-        .divide(jacobiTheta(3, Complex.ZERO, q))
-        .multiply(jacobiTheta(3, t, q).divide(jacobiTheta(4, t, q)));
+    final FieldJacobiElliptic<Complex> je = JacobiEllipticBuilder.build(m);
+    final FieldCopolarN<Complex> valuesN = je.valuesN(x);
+    return valuesN.dn();
+    //    Complex q = ellipticNome(m);
+    //
+    //    // if ( m > 1 || isComplex(x) || isComplex(m) ) {
+    //
+    //    Complex a2 = jacobiTheta(3, Complex.ZERO, q);
+    //    a2 = a2.multiply(a2);
+    //    Complex t = x.divide(a2);
+    //
+    //    return jacobiTheta(4, Complex.ZERO, q)
+    //        .divide(jacobiTheta(3, Complex.ZERO, q))
+    //        .multiply(jacobiTheta(3, t, q).divide(jacobiTheta(4, t, q)));
   }
 
   /**
