@@ -53,6 +53,14 @@ public class LinearSolveFunctionExpr<T extends FieldElement<T>>
     return F.NIL;
   }
 
+  public int getColumnDimension() {
+    return fData.getColumnDimension();
+  }
+
+  public int getRowDimension() {
+    return fData.getRowDimension();
+  }
+
   @Override
   public int hashCode() {
     return (fData == null) ? 463 : 463 + fData.hashCode();
@@ -71,5 +79,10 @@ public class LinearSolveFunctionExpr<T extends FieldElement<T>>
   @Override
   public IAST normal(boolean nilIfUnevaluated) {
     return F.NIL;
+  }
+
+  @Override
+  public String toString() {
+    return "Matrix dimensions: {" + getRowDimension() + getColumnDimension() + "}";
   }
 }
