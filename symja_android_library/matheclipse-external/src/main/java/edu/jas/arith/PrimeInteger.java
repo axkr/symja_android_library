@@ -935,7 +935,7 @@ public final class PrimeInteger {
                 return F;
             }
         }
-	// n <= beta
+        // n <= beta
         long s = n.longValue();
         SortedMap<Long, Integer> ff = factors(s); // useless 2nd smallPrimeDiv search
         for (Map.Entry<Long, Integer> m : ff.entrySet()) {

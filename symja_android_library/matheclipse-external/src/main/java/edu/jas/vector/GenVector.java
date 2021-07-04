@@ -8,8 +8,8 @@ package edu.jas.vector;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-import org.apache.logging.log4j.LogManager; 
 
 import edu.jas.kern.PrettyPrint;
 import edu.jas.structure.ModulElem;
@@ -51,6 +51,22 @@ public class GenVector<C extends RingElem<C>> implements ModulElem<GenVector<C>,
         }
         modul = m;
         val = v;
+        logger.debug(modul.cols + " vector constructed");
+    }
+
+
+    /**
+     * Constructor for GenVector.
+     */
+    public GenVector(GenVectorModul<C> m, C[] v) {
+        if (m == null || v == null) {
+            throw new IllegalArgumentException("Empty m or v not allowed, m = " + m + ", v = " + v);
+        }
+        modul = m;
+        val = new ArrayList<C>(v.length);
+        for (int i = 0; i < v.length; i++) {
+            val.add(v[i]);
+        }
         logger.debug(modul.cols + " vector constructed");
     }
 
@@ -196,6 +212,27 @@ public class GenVector<C extends RingElem<C>> implements ModulElem<GenVector<C>,
             }
         }
         return 0;
+    }
+
+
+    /**
+     * get element.
+     * @param i index
+     * @return e with e = this(i).
+     */
+    public C get(int i) {
+        return val.get(i);
+    }
+
+
+    /**
+     * set element, mutate this.
+     * @param i index
+     * @param e value
+     * @return this with this(i) = e.
+     */
+    public C setMutate(int i, C e) {
+        return val.set(i, e);
     }
 
 

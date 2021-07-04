@@ -10,8 +10,8 @@ import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 
+import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-import org.apache.logging.log4j.LogManager; 
 
 import edu.jas.structure.RingElem;
 
@@ -216,6 +216,48 @@ public class BasicLinAlg<C extends RingElem<C>> implements Serializable {
             V.add(pi);
         }
         return V;
+    }
+
+
+    /**
+     * Product of a vector and a matrix of ring elements.
+     * @param G a vectors of ring elements.
+     * @param F a matrix of ring element lists.
+     * @return the left product of G and F.
+     */
+    public GenVector<C> leftProduct(GenVector<C> G, GenMatrix<C> F) {
+        ArrayList<C> sp = new ArrayList<C>(G.val.size());
+        Iterator<ArrayList<C>> jt = F.matrix.iterator();
+        while (jt.hasNext()) {
+            ArrayList<C> pj = jt.next();
+            if (pj == null) {
+                continue;
+            }
+            C s = scalarProduct(G.val, pj);
+            sp.add(s);
+        }
+        return new GenVector<C>(G.modul, sp);
+    }
+
+
+    /**
+     * Product of a vector and a matrix of ring elements.
+     * @param G a vector of element list.
+     * @param F a matrix of ring element lists.
+     * @return the right product of G and F.
+     */
+    public GenVector<C> rightProduct(GenVector<C> G, GenMatrix<C> F) {
+        ArrayList<C> sp = new ArrayList<C>(G.val.size());
+        Iterator<ArrayList<C>> jt = F.matrix.iterator();
+        while (jt.hasNext()) {
+            ArrayList<C> pj = jt.next();
+            if (pj == null) {
+                continue;
+            }
+            C s = scalarProduct(pj, G.val);
+            sp.add(s);
+        }
+        return new GenVector<C>(G.modul, sp);
     }
 
 }

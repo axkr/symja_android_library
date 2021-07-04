@@ -24,7 +24,8 @@ import edu.jas.structure.RingFactory;
  * @see java.math.BigDecimal
  */
 
-public final class BigDecimal implements GcdRingElem<BigDecimal>, RingFactory<BigDecimal> {
+public final class BigDecimal implements GcdRingElem<BigDecimal>, RingFactory<BigDecimal>,
+                                         Rational {
 
 
     /**
@@ -266,6 +267,24 @@ public final class BigDecimal implements GcdRingElem<BigDecimal>, RingFactory<Bi
 
 
     /**
+     * Get the decimal representation.
+     * @return decimal.
+     */
+    public BigDecimal getDecimal() {
+        return this;
+    }
+
+
+    /**
+     * Get the rational representation.
+     * @return rational number.
+     */
+    public BigRational getRational() {
+        return new BigRational(toString());
+    }
+
+
+    /**
      * Query if this ring is commutative.
      * @return true.
      */
@@ -431,7 +450,7 @@ public final class BigDecimal implements GcdRingElem<BigDecimal>, RingFactory<Bi
     public int compareTo(BigDecimal b) {
         //return compareToAbsolute(b);
         //return compareToRelative(b);
-	return val.compareTo(b.val);
+        return val.compareTo(b.val);
     }
 
 
@@ -713,7 +732,16 @@ public final class BigDecimal implements GcdRingElem<BigDecimal>, RingFactory<Bi
      * @return Biginteger from s.
      */
     public BigDecimal parse(String s) {
-        return new BigDecimal(s, context);
+        int i = s.indexOf("/");
+        if (i < 0) { // i = 0 also error
+           return new BigDecimal(s, context);
+        }
+        String sd = s.substring(0,i);
+        String sn = s.substring(i+1);
+        //System.out.println("s = " + s + ", sd = " + sd + ", sn = " + sn);
+        BigDecimal dd = new BigDecimal(sd, context);
+        BigDecimal dn = new BigDecimal(sn, context);
+        return dd.divide(dn);
     }
 
 

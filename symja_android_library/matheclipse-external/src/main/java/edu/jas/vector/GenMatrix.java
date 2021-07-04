@@ -8,8 +8,8 @@ package edu.jas.vector;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-import org.apache.logging.log4j.LogManager; 
 
 import edu.jas.kern.PrettyPrint;
 import edu.jas.structure.AlgebraElem;
@@ -78,6 +78,25 @@ public class GenMatrix<C extends RingElem<C>> implements AlgebraElem<GenMatrix<C
 
 
     /**
+     * Constructor for GenMatrix.
+     * @param r matrix ring
+     * @param m matrix
+     */
+    public GenMatrix(GenMatrixRing<C> r, C[][] m) {
+        ring = r;
+        matrix = new ArrayList<ArrayList<C>>(r.rows);
+        for (C[] row : m) {
+            ArrayList<C> nr = new ArrayList<C>(r.cols);
+            for (int i = 0; i < row.length; i++) {
+                nr.add(row[i]);
+            }
+            matrix.add(nr);
+        }
+        logger.info(ring.rows + " x " + ring.cols + " matrix constructed");
+    }
+
+
+    /**
      * Get element at row i, column j.
      * @param i row index.
      * @param j column index.
@@ -112,6 +131,137 @@ public class GenMatrix<C extends RingElem<C>> implements AlgebraElem<GenMatrix<C
         GenMatrix<C> mat = this.copy();
         mat.setMutate(i, j, el);
         return mat;
+    }
+
+
+    /**
+     * Get column i.
+     * @param i column index.
+     * @return this(*,i) as vector.
+     */
+    public GenVector<C> getColumn(int i) {
+        List<C> cl = new ArrayList<C>(ring.rows);
+        for (int k = 0; k < ring.rows; k++) {
+            cl.add(matrix.get(k).get(i));
+        }
+        GenVectorModul<C> vfac = new GenVectorModul<C>(ring.coFac, ring.rows);
+        GenVector<C> col = new GenVector<C>(vfac, cl);
+        return col;
+    }
+
+
+    /**
+     * Get row i.
+     * @param i row index.
+     * @return this(i,*) as vector.
+     */
+    public GenVector<C> getRow(int i) {
+        List<C> cl = new ArrayList<C>(ring.cols);
+        cl.addAll(matrix.get(i));
+        GenVectorModul<C> vfac = new GenVectorModul<C>(ring.coFac, ring.cols);
+        GenVector<C> row = new GenVector<C>(vfac, cl);
+        return row;
+    }
+
+
+    /**
+     * Get diagonal.
+     * @return diagonal(this) as vector.
+     */
+    public GenVector<C> getDiagonal() {
+        List<C> cl = new ArrayList<C>(ring.rows);
+        for (int i = 0; i < ring.rows; i++) {
+            cl.add(matrix.get(i).get(i));
+        }
+        GenVectorModul<C> vfac = new GenVectorModul<C>(ring.coFac, ring.rows);
+        GenVector<C> dia = new GenVector<C>(vfac, cl);
+        return dia;
+    }
+
+
+    /**
+     * Get upper triangular U matrix.
+     * @return U as matrix with equal length rows.
+     */
+    public GenMatrix<C> getUpper() {
+        final C zero = ring.coFac.getZERO();
+        final C one = ring.coFac.getONE();
+        List<List<C>> cl = new ArrayList<List<C>>(ring.rows);
+        for (int k = 0; k < ring.rows; k++) {
+            List<C> ul = matrix.get(k);
+            List<C> rl = new ArrayList<C>(ring.cols);
+            for (int i = 0; i < ring.cols; i++) {
+                if (i < k) {
+                    rl.add(zero);
+                } else if (i >= k) {
+                    rl.add(ul.get(i));
+                // } else {
+                //     if (ul.get(i).isZERO()) {
+                //         rl.add(zero);
+                //     } else {
+                //         rl.add(one); // mat(k,k).inverse()
+                //     }
+                }
+            }
+            cl.add(rl);
+        }
+        GenMatrix<C> U = new GenMatrix<C>(ring, cl);
+        return U;
+    }
+
+
+    /**
+     * Get upper triangular U matrix with diagonale 1.
+     * @return U as matrix with equal length rows and diagonale 1.
+     */
+    public GenMatrix<C> getUpperScaled() {
+        final C zero = ring.coFac.getZERO();
+        final C one = ring.coFac.getONE();
+        List<List<C>> cl = new ArrayList<List<C>>(ring.rows);
+        for (int k = 0; k < ring.rows; k++) {
+            List<C> ul = matrix.get(k);
+            C kk = ul.get(k);
+            if (kk.isZERO()) {
+                kk = one;
+            } else {
+                kk = kk.inverse();
+            }
+            List<C> rl = new ArrayList<C>(ring.cols);
+            for (int i = 0; i < ring.cols; i++) {
+                if (i < k) {
+                    rl.add(zero);
+                } else { // if (i >= k)
+                    rl.add( ul.get(i).multiply(kk) );
+                }
+            }
+            cl.add(rl);
+        }
+        GenMatrix<C> U = new GenMatrix<C>(ring, cl);
+        return U;
+    }
+
+
+    /**
+     * Get lower triangular L matrix.
+     * @return L as matrix with equal length rows.
+     */
+    public GenMatrix<C> getLower() {
+        final C zero = ring.coFac.getZERO();
+        List<List<C>> cl = new ArrayList<List<C>>(ring.rows);
+        for (int k = 0; k < ring.rows; k++) {
+            List<C> ul = matrix.get(k);
+            List<C> rl = new ArrayList<C>(ring.cols);
+            for (int i = 0; i < ring.cols; i++) {
+                if (i <= k) {
+                    rl.add(ul.get(i)); // can be zero
+                } else if (i > k) {
+                    rl.add(zero);
+                }
+            }
+            cl.add(rl);
+        }
+        GenMatrix<C> L = new GenMatrix<C>(ring, cl);
+        return L;
     }
 
 
@@ -700,9 +850,10 @@ public class GenMatrix<C extends RingElem<C>> implements AlgebraElem<GenMatrix<C
     /**
      * Inverse of this.
      * @return x with this * x = 1, if it exists.
+     * @see edu.jas.vector.LinAlg#inverseLU(edu.jas.vector.GenMatrix,java.util.List)
      */
     public GenMatrix<C> inverse() {
-        throw new UnsupportedOperationException("inverse not yet implemented");
+        throw new UnsupportedOperationException("inverse implemented in LinAlg.inverseLU()");
     }
 
 

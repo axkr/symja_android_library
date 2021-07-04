@@ -746,6 +746,15 @@ public final class BigInteger
 
 
     /**
+     * Get the decimal representation.
+     * @return decimal.
+     */
+    public BigDecimal getDecimal() {
+        return new BigDecimal(val);
+    }
+
+
+    /**
      * Return a BigRational approximation of this Element.
      * @return a BigRational approximation of this.
      */

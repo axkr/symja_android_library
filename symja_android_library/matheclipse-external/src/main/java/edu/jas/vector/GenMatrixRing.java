@@ -13,8 +13,8 @@ import java.util.List;
 import java.util.Random;
 import java.util.function.BiFunction;
 
+import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-import org.apache.logging.log4j.LogManager; 
 
 import edu.jas.kern.StringUtil;
 import edu.jas.structure.AlgebraFactory;
