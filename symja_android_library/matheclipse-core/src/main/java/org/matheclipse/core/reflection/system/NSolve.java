@@ -19,7 +19,7 @@ import org.matheclipse.core.interfaces.ISymbol;
 import org.matheclipse.core.polynomials.QuarticSolver;
 
 /** Try to solve a set of equations (i.e. <code>Equal[...]</code> expressions). */
-public class NSolve extends AbstractFunctionEvaluator {
+public class NSolve extends AbstractFunctionEvaluator { 
   public NSolve() {}
 
   @Override
