@@ -14,6 +14,7 @@ import org.hipparchus.analysis.solvers.RiddersSolver;
 import org.hipparchus.analysis.solvers.SecantSolver;
 import org.hipparchus.exception.MathIllegalArgumentException;
 import org.hipparchus.exception.MathRuntimeException;
+import org.matheclipse.core.basic.Config;
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.exception.ValidateException;
 import org.matheclipse.core.eval.interfaces.AbstractFunctionEvaluator;
@@ -29,7 +30,6 @@ import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.interfaces.ISignedNumber;
 import org.matheclipse.core.interfaces.ISymbol;
-import org.matheclipse.parser.client.FEConfig;
 
 /**
  *
@@ -40,7 +40,8 @@ import org.matheclipse.parser.client.FEConfig;
  *
  * <blockquote>
  *
- * <p>searches for a numerical root of <code>f</code> for the variable <code>x</code>, in the range
+ * <p>
+ * searches for a numerical root of <code>f</code> for the variable <code>x</code>, in the range
  * <code>xmin</code> to <code>xmax</code>.
  *
  * </blockquote>
@@ -51,7 +52,8 @@ import org.matheclipse.parser.client.FEConfig;
  *
  * <blockquote>
  *
- * <p>searches for a numerical root of <code>f</code> for the variable <code>x</code>, with <code>
+ * <p>
+ * searches for a numerical root of <code>f</code> for the variable <code>x</code>, with <code>
  * maxiter</code> iterations. The default maximum iteraton is <code>100</code>.
  *
  * </blockquote>
@@ -62,60 +64,69 @@ import org.matheclipse.parser.client.FEConfig;
  *
  * <blockquote>
  *
- * <p>searches for a numerical root of <code>f</code> for the variable <code>x</code>, with one of
- * the following method names:
+ * <p>
+ * searches for a numerical root of <code>f</code> for the variable <code>x</code>, with one of the
+ * following method names:
  *
  * </blockquote>
  *
  * <h4>Brent</h4>
  *
- * <p>Implements the Brent algorithm for finding zeros of real univariate functions (<code>
+ * <p>
+ * Implements the Brent algorithm for finding zeros of real univariate functions (<code>
  * BracketingNthOrderBrentSolver</code>). The function should be continuous but not necessarily
  * smooth. The solve method returns a zero <code>x</code> of the function <code>f</code> in the
  * given interval <code>[xmin, xmax]</code>.
  *
- * <p>This is the default method, if no <code>method_name</code> is given.
+ * <p>
+ * This is the default method, if no <code>method_name</code> is given.
  *
  * <h4>Newton</h4>
  *
- * <p>Implements Newton's method for finding zeros of real univariate functions. The function should
- * be continuous but not necessarily smooth.
+ * <p>
+ * Implements Newton's method for finding zeros of real univariate functions. The function should be
+ * continuous but not necessarily smooth.
  *
  * <h4>Bisection</h4>
  *
- * <p>Implements the bisection algorithm for finding zeros of univariate real functions. The
- * function should be continuous but not necessarily smooth.
+ * <p>
+ * Implements the bisection algorithm for finding zeros of univariate real functions. The function
+ * should be continuous but not necessarily smooth.
  *
  * <h4>Muller</h4>
  *
- * <p>Implements the Muller's Method for root finding of real univariate functions. For reference,
- * see Elementary Numerical Analysis, ISBN 0070124477, chapter 3. Muller's method applies to both
- * real and complex functions, but here we restrict ourselves to real functions. Muller's original
- * method would have function evaluation at complex point. Since our <code>f(x)</code> is real, we
- * have to find ways to avoid that. Bracketing condition is one way to go: by requiring bracketing
- * in every iteration, the newly computed approximation is guaranteed to be real. Normally Muller's
- * method converges quadratically in the vicinity of a zero, however it may be very slow in regions
- * far away from zeros. For example, <code>FindRoot(Exp(x)-1 == 0,{x,-50,100}, Method-&gt;Muller)
+ * <p>
+ * Implements the Muller's Method for root finding of real univariate functions. For reference, see
+ * Elementary Numerical Analysis, ISBN 0070124477, chapter 3. Muller's method applies to both real
+ * and complex functions, but here we restrict ourselves to real functions. Muller's original method
+ * would have function evaluation at complex point. Since our <code>f(x)</code> is real, we have to
+ * find ways to avoid that. Bracketing condition is one way to go: by requiring bracketing in every
+ * iteration, the newly computed approximation is guaranteed to be real. Normally Muller's method
+ * converges quadratically in the vicinity of a zero, however it may be very slow in regions far
+ * away from zeros. For example, <code>FindRoot(Exp(x)-1 == 0,{x,-50,100}, Method-&gt;Muller)
  * </code>. In such case we use bisection as a safety backup if it performs very poorly. The
  * formulas here use divided differences directly.
  *
  * <h4>Ridders</h4>
  *
- * <p>Implements the Ridders' Method for root finding of real univariate functions. For reference,
- * see C. Ridders, A new algorithm for computing a single root of a real continuous function, IEEE
+ * <p>
+ * Implements the Ridders' Method for root finding of real univariate functions. For reference, see
+ * C. Ridders, A new algorithm for computing a single root of a real continuous function, IEEE
  * Transactions on Circuits and Systems, 26 (1979), 979 - 980. The function should be continuous but
  * not necessarily smooth.
  *
  * <h4>Secant</h4>
  *
- * <p>Implements the Secant method for root-finding (approximating a zero of a univariate real
+ * <p>
+ * Implements the Secant method for root-finding (approximating a zero of a univariate real
  * function). The solution that is maintained is not bracketed, and as such convergence is not
  * guaranteed.
  *
  * <h4>RegulaFalsi</h4>
  *
- * <p>Implements the Regula Falsi or False position method for root-finding (approximating a zero of
- * a univariate real function). It is a modified Secant method. The Regula Falsi method is included
+ * <p>
+ * Implements the Regula Falsi or False position method for root-finding (approximating a zero of a
+ * univariate real function). It is a modified Secant method. The Regula Falsi method is included
  * for completeness, for testing purposes, for educational purposes, for comparison to other
  * algorithms, etc. It is however not intended to be used for actual problems, as one of the bounds
  * often remains fixed, resulting in very slow convergence. Instead, one of the well-known modified
@@ -131,7 +142,8 @@ import org.matheclipse.parser.client.FEConfig;
  *
  * <h4>Illinois</h4>
  *
- * <p>Implements the Illinois method for root-finding (approximating a zero of a univariate real
+ * <p>
+ * Implements the Illinois method for root-finding (approximating a zero of a univariate real
  * function). It is a modified Regula Falsi method. Like the Regula Falsi method, convergence is
  * guaranteed by maintaining a bracketed solution. The Illinois method however, should converge much
  * faster than the original Regula Falsi method. Furthermore, this implementation of the Illinois
@@ -141,7 +153,8 @@ import org.matheclipse.parser.client.FEConfig;
  *
  * <h4>Pegasus</h4>
  *
- * <p>Implements the Pegasus method for root-finding (approximating a zero of a univariate real
+ * <p>
+ * Implements the Pegasus method for root-finding (approximating a zero of a univariate real
  * function). It is a modified Regula Falsi method. Like the Regula Falsi method, convergence is
  * guaranteed by maintaining a bracketed solution. The Pegasus method however, should converge much
  * faster than the original Regula Falsi method. The Pegasus method should converge faster than the
@@ -160,8 +173,9 @@ import org.matheclipse.parser.client.FEConfig;
  *
  * <h3>Related terms</h3>
  *
- * <p><a href="Factor.md">Factor</a>, <a href="Eliminate.md">Eliminate</a>, <a
- * href="NRoots.md">NRoots</a>, <a href="Solve.md">Solve</a>
+ * <p>
+ * <a href="Factor.md">Factor</a>, <a href="Eliminate.md">Eliminate</a>,
+ * <a href="NRoots.md">NRoots</a>, <a href="Solve.md">Solve</a>
  */
 public class FindRoot extends AbstractFunctionEvaluator {
 
@@ -208,21 +222,18 @@ public class FindRoot extends AbstractFunctionEvaluator {
             function = F.Plus(equalAST.arg1(), F.Negate(equalAST.arg2()));
           }
           try {
-            return F.List(
-                F.Rule(
-                    list.arg1(),
-                    Num.valueOf(
-                        findRoot(method, maxIterations, list, min, max, function, engine))));
+            return F.List(F.Rule(list.arg1(),
+                Num.valueOf(findRoot(method, maxIterations, list, min, max, function, engine))));
           } catch (ValidateException ve) {
             return engine.printMessage(ast.topHead(), ve);
           } catch (MathIllegalArgumentException miae) {
-            if (FEConfig.SHOW_STACKTRACE) {
+            if (Config.SHOW_STACKTRACE) {
               miae.printStackTrace();
             }
             engine.printMessage("FindRoot: " + miae.getMessage());
             return F.List();
           } catch (MathRuntimeException mre) {
-            if (FEConfig.SHOW_STACKTRACE) {
+            if (Config.SHOW_STACKTRACE) {
               mre.printStackTrace();
             }
             return engine.printMessage("FindRoot: " + mre.getMessage());
@@ -238,14 +249,8 @@ public class FindRoot extends AbstractFunctionEvaluator {
     return IFunctionEvaluator.ARGS_2_INFINITY;
   }
 
-  private double findRoot(
-      String method,
-      int maxIterations,
-      IAST list,
-      ISignedNumber min,
-      ISignedNumber max,
-      IExpr function,
-      EvalEngine engine) {
+  private double findRoot(String method, int maxIterations, IAST list, ISignedNumber min,
+      ISignedNumber max, IExpr function, EvalEngine engine) {
     ISymbol xVar = (ISymbol) list.arg1();
     IAssumptions oldAssumptions = engine.getAssumptions();
     try {
@@ -288,6 +293,19 @@ public class FindRoot extends AbstractFunctionEvaluator {
           return solver.solve(maxIterations, f, min.doubleValue(), max.doubleValue());
         } catch (MathRuntimeException mex) {
           // org.hipparchus.exception.MathIllegalArgumentException: interval does not bracket a root
+
+          if (mex instanceof org.hipparchus.exception.MathIllegalArgumentException) {
+            if (min != null) {
+              try {
+                NewtonRaphsonSolver nrs = new NewtonRaphsonSolver();
+                if (max == null) {
+                  return nrs.solve(maxIterations, f, min.doubleValue());
+                }
+                return nrs.solve(maxIterations, f, min.doubleValue(), max.doubleValue());
+              } catch (MathRuntimeException mre) {
+              }
+            }
+          }
 
           // switch to BisectionSolver
           solver = new BisectionSolver();
