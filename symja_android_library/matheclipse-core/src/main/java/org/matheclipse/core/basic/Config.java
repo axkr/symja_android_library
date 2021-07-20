@@ -31,6 +31,8 @@ import com.google.common.cache.CacheBuilder;
 
 /** General configuration settings. */
 public class Config {
+  /** Show the stack trace, if an exception is thrown in evaluation */
+  public static final boolean SHOW_STACKTRACE = false;
 
   /** Symja ASCII Art String */
   public static final String SYMJA = //
@@ -46,8 +48,7 @@ public class Config {
   public static final String COPYRIGHT = //
       "\nCopyright (C) 2009 - 2021 - the Symja team.\n"
           + "This program comes with ABSOLUTELY NO WARRANTY.\n"
-          + "Distributed under the GNU Public License.\n"
-          + "See the file license.txt\n\n";
+          + "Distributed under the GNU Public License.\n" + "See the file license.txt\n\n";
 
   /**
    * A global expression cache which compares keys with <code>==</code> object identity instead of
@@ -120,7 +121,8 @@ public class Config {
    * COMPILER switch - set this boolean variable to <code>true</code>, if you would force a direct
    * plot frame creation from the Plot[], Plot3D[] and ParametricPlot[] functions
    *
-   * <p>On the server this switch should be set to <code>false</code>
+   * <p>
+   * On the server this switch should be set to <code>false</code>
    */
   public static boolean SWING_PLOT_FRAME = false;
 
@@ -144,7 +146,7 @@ public class Config {
 
   /** Switch debug mode on/off */
   public static final boolean DEBUG = false;
-  
+
   public static boolean TRACE_REWRITE_RULE = false;
 
   /** Set to true if in fuzz testing mode */
@@ -171,8 +173,8 @@ public class Config {
   public static final Set<ISymbol> SHOW_PATTERN_SYMBOL_STEPS = new HashSet<ISymbol>();
 
   /**
-   * Contains a list of strings. If executed with the <a
-   * href="https://github.com/axkr/symja_android_library/wiki/Console-apps">console apps</a> the
+   * Contains a list of strings. If executed with the
+   * <a href="https://github.com/axkr/symja_android_library/wiki/Console-apps">console apps</a> the
    * executable is the first string followed by the argument strings. If not executed with a console
    * app it returns the empty list.
    */
@@ -220,8 +222,8 @@ public class Config {
   public static double DEFAULT_ROOTS_CHOP_DELTA = 1.0e-5;
 
   /**
-   * Tolerance used in special function algorithms ported from <a
-   * href="https://github.com/paulmasson/math">math.js</a> and in the JavaScript based plot
+   * Tolerance used in special function algorithms ported from
+   * <a href="https://github.com/paulmasson/math">math.js</a> and in the JavaScript based plot
    * functions.
    */
   public static double SPECIAL_FUNCTIONS_TOLERANCE = 1.0e-10;
@@ -241,7 +243,8 @@ public class Config {
   /**
    * Flag for thread usage.
    *
-   * <p><b>Note:</b> introduced because Google app engine does not support threads.
+   * <p>
+   * <b>Note:</b> introduced because Google app engine does not support threads.
    *
    * @see edu.jas.ufd.GCDFactory#getProxy(edu.jas.structure.RingFactory)
    */
@@ -253,7 +256,8 @@ public class Config {
   /**
    * Flag for thread usage in TimeConstrained function.
    *
-   * <p><b>Note:</b> introduced because Google app engine does not support threads.
+   * <p>
+   * <b>Note:</b> introduced because Google app engine does not support threads.
    */
   public static boolean TIMECONSTRAINED_NO_THREAD = false;
 
@@ -261,7 +265,8 @@ public class Config {
    * An object that creates new threads on demand. Using thread factories removes hardwiring of
    * calls to new Thread, enabling applications to use special thread subclasses, priorities, etc.
    *
-   * <p>For example <code>com.google.appengine.api.ThreadManager.currentRequestThreadFactory()
+   * <p>
+   * For example <code>com.google.appengine.api.ThreadManager.currentRequestThreadFactory()
    * </code> can be used on Google appengine.
    */
   public static java.util.concurrent.ThreadFactory THREAD_FACTORY = null;
@@ -271,7 +276,8 @@ public class Config {
    *
    * @deprecated use {@link FEConfig#MACHINE_PRECISION}
    */
-  @Deprecated public static final long MACHINE_PRECISION = FEConfig.MACHINE_PRECISION;
+  @Deprecated
+  public static final long MACHINE_PRECISION = FEConfig.MACHINE_PRECISION;
 
   /** The maximum precision which could be requested from a user for numerical calculations. */
   public static long MAX_PRECISION_APFLOAT = Short.MAX_VALUE;
@@ -301,10 +307,11 @@ public class Config {
   /** Default package mode with which the EvalEngines initially can be started */
   public static boolean PACKAGE_MODE = true;
 
-  public static Consumer<IExpr> PRINT_OUT = x -> {};
+  public static Consumer<IExpr> PRINT_OUT = x -> {
+  };
 
   /** The algorithm which should be used for the factorization of integer numbers. */
-  //  public static Function<IInteger, IAST> FACTOR_INTEGER =  Primality::factorIInteger;
+  // public static Function<IInteger, IAST> FACTOR_INTEGER = Primality::factorIInteger;
   public static IPrimality PRIME_FACTORS = new Primality();
 
   /** Use JavaScript libraries for the <code>Manipulate()</code> function */
@@ -314,177 +321,94 @@ public class Config {
   public static boolean USE_VISJS = false;
 
   public static final String TRACEFORM_PAGE = //
-      "<!doctype html>\n"
-          + "<html>\n"
-          + "	<head>\n"
-          + "       <meta charset=\"utf-8\">\n"
-          + //
-          "		<title>JSLists - Very simple nested list [Example 1]</title>\n"
-          + "		\n"
-          + "<style>\n"
-          + "*, *:before, *:after {box-sizing: border-box;}\n"
-          + "ul, ol {margin: 0; padding: 0;}\n"
-          + "li {list-style: none; line-height: 1.6rem;}\n"
-          + "\n"
-          + "/* List styling */\n"
-          + ".jslists{\n"
-          + "	font-size: 1.3rem;\n"
-          + "	font-family: Arial, Helvetica, sans-serif;\n"
-          + "}\n"
+      "<!doctype html>\n" + "<html>\n" + "	<head>\n" + "       <meta charset=\"utf-8\">\n" + //
+          "		<title>JSLists - Very simple nested list [Example 1]</title>\n" + "		\n"
+          + "<style>\n" + "*, *:before, *:after {box-sizing: border-box;}\n"
+          + "ul, ol {margin: 0; padding: 0;}\n" + "li {list-style: none; line-height: 1.6rem;}\n"
+          + "\n" + "/* List styling */\n" + ".jslists{\n" + "	font-size: 1.3rem;\n"
+          + "	font-family: Arial, Helvetica, sans-serif;\n" + "}\n"
           + ".jslist-ul, .jslist-ol, .jslist-li {margin-left: 12px;}		/* Unordered lists */\n"
-          + ".jsl-collapsed {display: none;}\n"
-          + ".jsl-list-closed {\n"
-          + "	float: left;\n"
-          + "	clear: both;\n"
-          + "	margin: 2px 4px 2px 0px;\n"
-          + "	width: 18px;\n"
-          + "	height: 18px;\n"
-          + "	cursor: pointer;\n"
+          + ".jsl-collapsed {display: none;}\n" + ".jsl-list-closed {\n" + "	float: left;\n"
+          + "	clear: both;\n" + "	margin: 2px 4px 2px 0px;\n" + "	width: 18px;\n"
+          + "	height: 18px;\n" + "	cursor: pointer;\n"
           + "	background-image: url('data:image/svg+xml;utf8,<svg aria-hidden=\"true\" data-prefix=\"far\" data-icon=\"plus-square\" class=\"svg-inline--fa fa-plus-square fa-w-14\" role=\"img\" xmlns=\"http://www.w3.org/2000/svg\" viewBox=\"0 0 448 512\"><path fill=\"currentColor\" d=\"M352 240v32c0 6.6-5.4 12-12 12h-88v88c0 6.6-5.4 12-12 12h-32c-6.6 0-12-5.4-12-12v-88h-88c-6.6 0-12-5.4-12-12v-32c0-6.6 5.4-12 12-12h88v-88c0-6.6 5.4-12 12-12h32c6.6 0 12 5.4 12 12v88h88c6.6 0 12 5.4 12 12zm96-160v352c0 26.5-21.5 48-48 48H48c-26.5 0-48-21.5-48-48V80c0-26.5 21.5-48 48-48h352c26.5 0 48 21.5 48 48zm-48 346V86c0-3.3-2.7-6-6-6H54c-3.3 0-6 2.7-6 6v340c0 3.3 2.7 6 6 6h340c3.3 0 6-2.7 6-6z\"></path></svg>');\n"
-          + "    background-repeat: no-repeat;\n"
-          + "    background-position: center; \n"
-          + "}\n"
+          + "    background-repeat: no-repeat;\n" + "    background-position: center; \n" + "}\n"
           + ".jsl-open {display: block;}\n"
           + ".jsl-list-open {background-image: url('data:image/svg+xml;utf8,<svg aria-hidden=\"true\" data-prefix=\"far\" data-icon=\"minus-square\" class=\"svg-inline--fa fa-minus-square fa-w-14\" role=\"img\" xmlns=\"http://www.w3.org/2000/svg\" viewBox=\"0 0 448 512\"><path fill=\"currentColor\" d=\"M108 284c-6.6 0-12-5.4-12-12v-32c0-6.6 5.4-12 12-12h232c6.6 0 12 5.4 12 12v32c0 6.6-5.4 12-12 12H108zM448 80v352c0 26.5-21.5 48-48 48H48c-26.5 0-48-21.5-48-48V80c0-26.5 21.5-48 48-48h352c26.5 0 48 21.5 48 48zm-48 346V86c0-3.3-2.7-6-6-6H54c-3.3 0-6 2.7-6 6v340c0 3.3 2.7 6 6 6h340c3.3 0 6-2.7 6-6z\"></path></svg>');}\n"
-          + "\n"
-          + "			html, body {\n"
-          + "				width: 100%;\n"
-          + "				height: 100%;\n"
-          + "				margin: 0;\n"
-          + "				padding: 0;\n"
-          + "			}\n"
-          + "			body {\n"
+          + "\n" + "			html, body {\n" + "				width: 100%;\n"
+          + "				height: 100%;\n" + "				margin: 0;\n"
+          + "				padding: 0;\n" + "			}\n" + "			body {\n"
           + "				font-family: Arial, Helvetica, sans-serif;\n"
-          + "				font-size: 16px;\n"
-          + "			}\n"
-          + "			header {\n"
-          + "				position: absolute;\n"
-          + "				top: 0;\n"
-          + "				left: 0;\n"
-          + "				width: 100%;\n"
+          + "				font-size: 16px;\n" + "			}\n" + "			header {\n"
+          + "				position: absolute;\n" + "				top: 0;\n"
+          + "				left: 0;\n" + "				width: 100%;\n"
           + "				height: 90px;\n"
           + "				background-color: rgb(156, 158, 160);\n"
-          + "				padding-left: 18px;\n"
-          + "			}\n"
-          + "			header > div {\n"
-          + "				position: relative;\n"
-          + "				display: inline-block;\n"
-          + "				top: 50%;\n"
-          + "				transform: translateY(-50%);\n"
-          + "				font-size: 3.4rem;\n"
-          + "				font-weight: 900;\n"
-          + "			}\n"
-          + "			main {\n"
-          + "				position: absolute;\n"
-          + "				top: 90px;\n"
-          + "				height: calc(100vh - 90px);\n"
-          + "			}\n"
-          + "			main > div:nth-child(1) {\n"
-          + "				padding: 16px;\n"
-          + "			}\n"
-          + "			main > div:nth-child(2) {\n"
-          + "				padding: 18px;\n"
-          + "</style>\n"
-          + "	</head>\n"
-          + "	<body> \n"
+          + "				padding-left: 18px;\n" + "			}\n"
+          + "			header > div {\n" + "				position: relative;\n"
+          + "				display: inline-block;\n" + "				top: 50%;\n"
+          + "				transform: translateY(-50%);\n" + "				font-size: 3.4rem;\n"
+          + "				font-weight: 900;\n" + "			}\n" + "			main {\n"
+          + "				position: absolute;\n" + "				top: 90px;\n"
+          + "				height: calc(100vh - 90px);\n" + "			}\n"
+          + "			main > div:nth-child(1) {\n" + "				padding: 16px;\n"
+          + "			}\n" + "			main > div:nth-child(2) {\n"
+          + "				padding: 18px;\n" + "</style>\n" + "	</head>\n" + "	<body> \n"
           + "				<ul id='traceform' class='jslists'>\n"
-          + "					<li>TraceForm\n"
-          + "`1`\n"
-          + //
-          "					</li>\n"
-          + "				</ul>\n"
-          + "			</div>\n"
-          + " \n"
-          + "		<script>\n"
-          + "var blackCircle = '&#9679; ';\n"
-          + "var openCircle = '&#9678; ';\n"
-          + "\n"
-          + "(function() {\n"
-          + "	\"use strict\";\n"
-          + "    function define_JSLists() {\n"
-          + "		var JSLists = {};\n"
-          + "\n"
+          + "					<li>TraceForm\n" + "`1`\n" + //
+          "					</li>\n" + "				</ul>\n" + "			</div>\n" + " \n"
+          + "		<script>\n" + "var blackCircle = '&#9679; ';\n"
+          + "var openCircle = '&#9678; ';\n" + "\n" + "(function() {\n" + "	\"use strict\";\n"
+          + "    function define_JSLists() {\n" + "		var JSLists = {};\n" + "\n"
           + "		var JSLists_Error = function(error, alertType) {\n"
-          + "			console.log(error);\n"
-          + "		}\n"
-          + "		var getUl = function(){\n"
-          + "			return document.getElementsByTagName(\"UL\");\n"
-          + "		};\n"
-          + "\n"
+          + "			console.log(error);\n" + "		}\n" + "		var getUl = function(){\n"
+          + "			return document.getElementsByTagName(\"UL\");\n" + "		};\n" + "\n"
           + "		var getOl = function(){\n"
-          + "			return document.getElementsByTagName(\"OL\");\n"
-          + "		};\n"
-          + "\n"
+          + "			return document.getElementsByTagName(\"OL\");\n" + "		};\n" + "\n"
           + "		var getAllLists = function(){\n"
           + "			var olLists = Array.prototype.slice.call(document.getElementsByTagName(\"UL\")),\n"
           + "				ulLists = Array.prototype.slice.call(document.getElementsByTagName(\"OL\"))\n"
-          + "			var gLists = olLists.concat(ulLists);\n"
-          + "			return gLists;\n"
-          + "		}\n"
-          + "\n"
-          + "		JSLists.searchList = function(listId, searchTerm) {\n"
+          + "			var gLists = olLists.concat(ulLists);\n" + "			return gLists;\n"
+          + "		}\n" + "\n" + "		JSLists.searchList = function(listId, searchTerm) {\n"
           + "			var i, j, lilNodes, liItems = document.getElementsByTagName(\"LI\");\n"
           + "			for(i=0; i<liItems.length; i++) {\n"
           + "                if(liItems[i].hasChildNodes()) {\n"
           + "                    for(j=0; j<liItems[i].childNodes.length; j++) {\n"
           + "                        if(liItems[i].childNodes[j].innerHTML == searchTerm) {\n"
-          + "							//?????\n"
-          + "                        }\n"
-          + "                    }\n"
-          + "                }\n"
-          + "			}\n"
-          + "		}\n"
-          + "\n"
-          + "		JSLists.collapseAll = function(listId) {\n"
+          + "							//?????\n" + "                        }\n"
+          + "                    }\n" + "                }\n" + "			}\n" + "		}\n"
+          + "\n" + "		JSLists.collapseAll = function(listId) {\n"
           + "			var i, ulLists = document.getElementsByTagName(\"UL\");\n"
           + "			for(i=0; i<ulLists.length; i++) {\n"
           + "               if(ulLists[i].className == \"jsl-collapsed\") {\n"
           + "                    console.log(ulLists[i].className + '\\n' + '@');\n"
-          + "               }\n"
-          + "			};\n"
-          + "		};\n"
-          + "\n"
+          + "               }\n" + "			};\n" + "		};\n" + "\n"
           + "		JSLists.openAll = function(listId){\n"
           + "			var i, olLists = Array.prototype.slice.call(document.getElementsByTagName(\"UL\")),\n"
           + "				ulLists = Array.prototype.slice.call(document.getElementsByTagName(\"OL\"))\n"
-          + "			var gLists = olLists.concat(ulLists);\n"
-          + "\n"
+          + "			var gLists = olLists.concat(ulLists);\n" + "\n"
           + "			for(i=1; i<gLists.length; i++) {\n"
-          + "				gLists[i].setAttribute('class', 'jsl-open');\n"
-          + "			};\n"
-          + "		};\n"
-          + "\n"
-          + "		JSLists.padUnorderedLists = function(listId) {\n"
+          + "				gLists[i].setAttribute('class', 'jsl-open');\n" + "			};\n"
+          + "		};\n" + "\n" + "		JSLists.padUnorderedLists = function(listId) {\n"
           + "			var i, listItems = document.getElementById(listId).getElementsByTagName(\"UL\");\n"
           + "			for(i=0; i<listItems.length; i++) {\n"
-          + "				listItems[i].classList.add('jslist-ul');\n"
-          + "			}\n"
-          + "		};\n"
-          + "\n"
-          + "		JSLists.padOrderedLists = function(listId) {\n"
+          + "				listItems[i].classList.add('jslist-ul');\n" + "			}\n"
+          + "		};\n" + "\n" + "		JSLists.padOrderedLists = function(listId) {\n"
           + "			var i, listItems = document.getElementById(listId).getElementsByTagName(\"UL\");\n"
           + "			for(i=0; i<listItems.length; i++) {\n"
-          + "				listItems[i].classList.add('jslist-ol');\n"
-          + "			}\n"
-          + "		};\n"
-          + "\n"
-          + "		JSLists.padLists = function(listId) {\n"
+          + "				listItems[i].classList.add('jslist-ol');\n" + "			}\n"
+          + "		};\n" + "\n" + "		JSLists.padLists = function(listId) {\n"
           + "			var i, listItems = document.getElementById(listId).getElementsByTagName(\"LI\");\n"
           + "			for(i=0; i<listItems.length; i++) {\n"
           + "				if(listItems[i].childNodes[0].className != \"jsl-collapsed-arrow\") {\n"
-          + "					listItems[i].classList.add('jslist-li');\n"
-          + "				}\n"
-          + "			}\n"
-          + "			for(i=1; i<listItems.length; i++) {\n"
+          + "					listItems[i].classList.add('jslist-li');\n" + "				}\n"
+          + "			}\n" + "			for(i=1; i<listItems.length; i++) {\n"
           + "				// console.log(listItems[i].childNodes.length);\n"
           + "				if(listItems[i].classList = \"jslist-li\" && listItems[i].childNodes.length < 2) {\n"
           + "					listItems[i].innerHTML = blackCircle + listItems[i].innerHTML\n"
-          + "				}\n"
-          + "			}\n"
+          + "				}\n" + "			}\n"
           + "			this.padUnorderedLists(listId);\n"
-          + "			this.padOrderedLists(listId);\n"
-          + "		};\n"
-          + "\n"
+          + "			this.padOrderedLists(listId);\n" + "		};\n" + "\n"
           + "        JSLists.createTree = function(listId, bulletPoint) {\n"
           + "			document.getElementById(listId).style.display = \"none;\"\n"
           + "			var i, j, curElem, ulCount, olCount, listItems = document.getElementById(listId).getElementsByTagName('LI'); //this should be the main parent\n"
@@ -495,21 +419,18 @@ public class Config {
           + "                    if(ulCount.length > 0){\n"
           + "                        for(j=0; j<ulCount.length; j++) {\n"
           + "                            if(ulCount[j].nodeName == \"UL\") {\n"
-          + "                                break;\n"
-          + "                            }\n"
+          + "                                break;\n" + "                            }\n"
           + "                        }\n"
           + "                        ulCount[j].setAttribute('class', 'jsl-collapsed');\n"
           + "                        var tglDiv = document.createElement(\"div\");\n"
           + "                        tglDiv.setAttribute('class', 'jsl-list-closed');\n"
           + "                        tglDiv.setAttribute(\"id\", listItems[i].id + i +'_tgl');\n"
-          + "                        curElem.insertBefore(tglDiv, curElem.childNodes[0]);\n"
-          + "\n"
+          + "                        curElem.insertBefore(tglDiv, curElem.childNodes[0]);\n" + "\n"
           + "                        document.getElementById(listItems[i].id + i +'_tgl').addEventListener('click', function(e) {\n"
           + "                            document.getElementById(e.target.id).classList.toggle('jsl-list-open');\n"
           + "                            document.getElementById(e.target.id).parentElement.lastElementChild.classList.toggle('jsl-open');\n"
           + "                            e.stopPropagation();\n"
-          + "                        },true);\n"
-          + "                    }\n"
+          + "                        },true);\n" + "                    }\n"
           + "                } else {\n"
           + "					listItems[i].setAttribute(\"id\", listId+\"tmp\"+i);\n"
           + "					curElem = document.getElementById(listId+\"tmp\"+i);\n"
@@ -519,237 +440,131 @@ public class Config {
           + "						for(j=0; j<ulCount.length; j++) {\n"
           + "							if(ulCount[j].nodeName == \"UL\") {\n"
           + "								break; //Multiple UL's? //Set class collapseAll here\n"
-          + "							}\n"
-          + "						}\n"
+          + "							}\n" + "						}\n"
           + "						ulCount[j].setAttribute('class', 'jsl-collapsed');\n"
           + "						var tglDiv = document.createElement(\"div\");\n"
           + "						tglDiv.setAttribute('class', 'jsl-list-closed');\n"
           + "						tglDiv.setAttribute(\"id\", listItems[i].id + i +'_tgl');\n"
-          + "						curElem.insertBefore(tglDiv, curElem.childNodes[0]);\n"
-          + "\n"
+          + "						curElem.insertBefore(tglDiv, curElem.childNodes[0]);\n" + "\n"
           + "						document.getElementById(listItems[i].id + i +'_tgl').addEventListener('click', function(e){\n"
           + "							document.getElementById(e.target.id).classList.toggle('jsl-list-open');\n"
           + "							document.getElementById(e.target.id).parentElement.lastElementChild.classList.toggle('jsl-open');\n"
-          + "							e.stopPropagation();\n"
-          + "						},true);\n"
-          + "					}\n"
-          + "					listItems[i].removeAttribute(\"id\");\n"
-          + "				}\n"
-          + "			}\n"
-          + "			setTimeout(function() {\n"
+          + "							e.stopPropagation();\n" + "						},true);\n"
+          + "					}\n" + "					listItems[i].removeAttribute(\"id\");\n"
+          + "				}\n" + "			}\n" + "			setTimeout(function() {\n"
           + "				document.getElementById(listId).style.display = \"block;\"\n"
-          + "			}, 50); // stops FOUC!\n"
-          + "			this.padLists(listId);\n"
-          + "		};\n"
-          + "\n"
+          + "			}, 50); // stops FOUC!\n" + "			this.padLists(listId);\n"
+          + "		};\n" + "\n"
           + "		// JSLists.applyToList = function(listId, listType, applyIcons, applyTheme, themeNumber){\n"
-          + "		//Check the params here\n"
-          + "		// does the id exist?\n"
+          + "		//Check the params here\n" + "		// does the id exist?\n"
           + "		JSLists.applyToList = function(listId, bulletPoint) {\n"
-          + "            this.createTree(listId, \"UL\");\n"
-          + "		};\n"
-          + "	return JSLists;\n"
-          + "    }\n"
-          + "\n"
+          + "            this.createTree(listId, \"UL\");\n" + "		};\n"
+          + "	return JSLists;\n" + "    }\n" + "\n"
           + "	//define the JSLists library in the global namespace if it doesn't already exist\n"
           + "	if(typeof(JSLists) === 'undefined') {\n"
-          + "		window.JSLists = define_JSLists();\n"
-          + "	}else{\n"
-          + "		console.log(\"JSLists already defined.\");\n"
-          + "	}\n"
-          + "})();		\n"
-          + "		</script>\n"
-          + "		<script> \n"
-          + "			JSLists.createTree(\"traceform\");\n"
-          + "		</script>\n"
-          + "	</body>\n"
-          + "</html>"; //
+          + "		window.JSLists = define_JSLists();\n" + "	}else{\n"
+          + "		console.log(\"JSLists already defined.\");\n" + "	}\n" + "})();		\n"
+          + "		</script>\n" + "		<script> \n"
+          + "			JSLists.createTree(\"traceform\");\n" + "		</script>\n"
+          + "	</body>\n" + "</html>"; //
 
   /** HTML template for the <a href="https://visjs.org/">VIS-network</a> */
   public static final String VISJS_PAGE = //
-      "<html>\n"
-          + //
-          "<head>\n"
-          + //
-          "<meta charset=\"utf-8\">\n"
-          + //
-          "<head>\n"
-          + //
-          "  <title>VIS-Network</title>\n"
-          + //
-          "\n"
-          + //
+      "<html>\n" + //
+          "<head>\n" + //
+          "<meta charset=\"utf-8\">\n" + //
+          "<head>\n" + //
+          "  <title>VIS-Network</title>\n" + //
+          "\n" + //
           "  <script type=\"text/javascript\" src=\"https://cdn.jsdelivr.net/npm/vis-network@6.0.0/dist/vis-network.min.js\"></script>\n"
           + //
-          "  <style type=\"text/css\">\n"
-          + //
-          "    #mynetwork {\n"
-          + //
-          "      width: 600px;\n"
-          + //
-          "      height: 400px;\n"
-          + //
-          "      border: 1px solid lightgray;\n"
-          + //
-          "    }\n"
-          + //
-          "  </style>\n"
-          + //
-          "</head>\n"
-          + //
-          "<body>\n"
-          + //
-          "\n"
-          + //
-          "<h1>VIS-Network</h1>\n"
-          + //
-          "\n"
-          + //
-          "<div id=\"vis\"></div>\n"
-          + //
-          "\n"
-          + //
-          "<script type=\"text/javascript\">\n"
-          + //
-          "`1`\n"
-          + //
-          "  // create a network\n"
-          + //
-          "  var container = document.getElementById('vis');\n"
-          + //
-          "  var data = {\n"
-          + //
-          "    nodes: nodes,\n"
-          + //
-          "    edges: edges\n"
-          + //
-          "  };\n"
-          + //
-          "`2`\n"
-          + //
+          "  <style type=\"text/css\">\n" + //
+          "    #mynetwork {\n" + //
+          "      width: 600px;\n" + //
+          "      height: 400px;\n" + //
+          "      border: 1px solid lightgray;\n" + //
+          "    }\n" + //
+          "  </style>\n" + //
+          "</head>\n" + //
+          "<body>\n" + //
+          "\n" + //
+          "<h1>VIS-Network</h1>\n" + //
+          "\n" + //
+          "<div id=\"vis\"></div>\n" + //
+          "\n" + //
+          "<script type=\"text/javascript\">\n" + //
+          "`1`\n" + //
+          "  // create a network\n" + //
+          "  var container = document.getElementById('vis');\n" + //
+          "  var data = {\n" + //
+          "    nodes: nodes,\n" + //
+          "    edges: edges\n" + //
+          "  };\n" + //
+          "`2`\n" + //
           // " var options = {};\n" + //
-          "  var network = new vis.Network(container, data, options);\n"
-          + //
-          "</script>\n"
-          + //
-          "\n"
-          + //
-          "\n"
-          + //
-          "</body>\n"
-          + //
+          "  var network = new vis.Network(container, data, options);\n" + //
+          "</script>\n" + //
+          "\n" + //
+          "\n" + //
+          "</body>\n" + //
           "</html>"; //
 
   /**
-   * HTML template for the <a href="https://github.com/paulmasson/mathcell">MathCell</a> and <a
-   * href="https://github.com/paulmasson/math">Math</a> JavaScript libraries.
+   * HTML template for the <a href="https://github.com/paulmasson/mathcell">MathCell</a> and
+   * <a href="https://github.com/paulmasson/math">Math</a> JavaScript libraries.
    */
   public static final String MATHCELL_PAGE = //
-      "<html>\n"
-          + "<head>\n"
-          + "<meta charset=\"utf-8\">\n"
-          + "<title>MathCell</title>\n"
-          + "</head>\n"
-          + "\n"
-          + "<body>\n"
+      "<html>\n" + "<head>\n" + "<meta charset=\"utf-8\">\n" + "<title>MathCell</title>\n"
+          + "</head>\n" + "\n" + "<body>\n"
           + "<script src=\"https://cdn.jsdelivr.net/gh/paulmasson/math@1.4.6/build/math.js\"></script>"
           + "<script src=\"https://cdn.jsdelivr.net/gh/paulmasson/mathcell@1.9.2/build/mathcell.js\"></script>\n"
           + "<script src=\"https://cdn.jsdelivr.net/gh/mathjax/MathJax@2.7.5/MathJax.js?config=TeX-AMS_HTML\"></script>"
           + "\n"
           + "<div class=\"mathcell\" style=\"width: 100%; height: 100%; padding: .25in .5in .5in .5in;\">\n"
-          + "<script>\n"
-          + "\n"
-          + "var parent = document.currentScript.parentNode;\n"
-          + "\n"
-          + "var id = generateId();\n"
-          + "parent.id = id;\n"
-          + "\n"
-          + "`1`\n"
-          + "\n"
-          + "parent.update( id );\n"
-          + "\n"
-          + "</script>\n"
-          + "</div>\n"
-          + "\n"
-          + "</body>\n"
+          + "<script>\n" + "\n" + "var parent = document.currentScript.parentNode;\n" + "\n"
+          + "var id = generateId();\n" + "parent.id = id;\n" + "\n" + "`1`\n" + "\n"
+          + "parent.update( id );\n" + "\n" + "</script>\n" + "</div>\n" + "\n" + "</body>\n"
           + "</html>"; //
 
   public static final String GRAPHICS3D_PAGE = //
-      "<html>\n"
-          + "<head>\n"
-          + "<meta charset=\"utf-8\">\n"
-          + "<title>Graphics3D</title>\n"
+      "<html>\n" + "<head>\n" + "<meta charset=\"utf-8\">\n" + "<title>Graphics3D</title>\n"
           + "<script src=https://cdnjs.cloudflare.com/ajax/libs/three.js/r116/three.min.js></script>\n"
           + "<script src=https://cdn.jsdelivr.net/gh/JerryI/Mathematica-ThreeJS-graphics-engine@latest/Mathics/Detector.js></script>\n"
           + "<script src=https://cdn.jsdelivr.net/gh/JerryI/Mathematica-ThreeJS-graphics-engine@latest/graphics3d.js></script>"
-          + "</head>\n"
-          + "\n"
-          + "<body>\n"
-          + "  <div id=\"graphics3d\"></div>\n"
-          + "</body>\n"
-          + "<script>\n"
-          + "var JSONThree = `1`;\n"
-          + "	interpretate(JSONThree);\n"
-          + "</script>"
+          + "</head>\n" + "\n" + "<body>\n" + "  <div id=\"graphics3d\"></div>\n" + "</body>\n"
+          + "<script>\n" + "var JSONThree = `1`;\n" + "	interpretate(JSONThree);\n" + "</script>"
           + "</html>"; //
 
   /** HTML template for JSXGraph */
   public static final String JSXGRAPH_PAGE = //
-      "<html>\n"
-          + "<head>\n"
-          + "<meta charset=\"utf-8\">\n"
-          + "<title>JSXGraph</title>\n"
-          + "</head>\n"
-          + "\n"
-          + "<body>\n"
-          + "\n"
+      "<html>\n" + "<head>\n" + "<meta charset=\"utf-8\">\n" + "<title>JSXGraph</title>\n"
+          + "</head>\n" + "\n" + "<body>\n" + "\n"
           + "<link rel=\"stylesheet\" type=\"text/css\" href=\"https://cdnjs.cloudflare.com/ajax/libs/jsxgraph/1.2.2/jsxgraph.min.css\" />\n"
           + "<script src=\"https://cdn.jsdelivr.net/gh/paulmasson/math@1.4.6/build/math.js\"></script>\n"
           + "<script src=\"https://cdnjs.cloudflare.com/ajax/libs/jsxgraph/1.2.2/jsxgraphcore.min.js\"\n"
           + "        type='text/javascript'></script>\n"
           + "<script src=\"https://cdnjs.cloudflare.com/ajax/libs/jsxgraph/1.2.2/geonext.min.js\"\n"
-          + "        type='text/javascript'></script>\n"
-          + "\n"
+          + "        type='text/javascript'></script>\n" + "\n"
           + "<div id=\"jxgbox\" class=\"jxgbox\" style=\"display: flex; width:99%; height:99%; margin: 0; flex-direction: column; overflow: hidden\">\n"
-          + "<script>\n"
-          +
+          + "<script>\n" +
           // "var board = JXG.JSXGraph.initBoard('jxgbox', {axis:true});\n" +
           // ,boundingbox:[-7.0,5.0,4.0,-3.0]
           // "board.suspendUpdate();\n" +
-          "`1`\n"
-          +
+          "`1`\n" +
           // "board.unsuspendUpdate();\n" +
-          "</script>\n"
-          + "</div>\n"
-          + "\n"
-          + "</body>\n"
-          + "</html>"; //
+          "</script>\n" + "</div>\n" + "\n" + "</body>\n" + "</html>"; //
 
   /** HTML template for Plotly */
   public static final String PLOTLY_PAGE = //
-      "<html>\n"
-          + "<head>\n"
-          + "<meta charset=\"utf-8\">\n"
-          + "<title>Plotly</title>\n"
+      "<html>\n" + "<head>\n" + "<meta charset=\"utf-8\">\n" + "<title>Plotly</title>\n"
           + "    <script src=\"https://cdn.plot.ly/plotly-latest.min.js\"></script>\r\n"
-          + "</head>\r\n"
-          + "<body>\n"
-          + "    <div id='plotly' ></div>"
-          + "`1`\n"
-          + "</body>\n"
+          + "</head>\r\n" + "<body>\n" + "    <div id='plotly' ></div>" + "`1`\n" + "</body>\n"
           + "</html>"; //
 
   /** HTML template */
   public static final String HTML_PAGE = //
-      "<html>\n"
-          + "<head>\n"
-          + "<meta charset=\"utf-8\">\n"
-          + "<title>HTML</title>\n"
-          + "</head>\n"
-          + "<body>\n"
-          + "`1`\n"
-          + "</body>\n"
-          + "</html>"; //
+      "<html>\n" + "<head>\n" + "<meta charset=\"utf-8\">\n" + "<title>HTML</title>\n" + "</head>\n"
+          + "<body>\n" + "`1`\n" + "</body>\n" + "</html>"; //
 
   public static final double DEFAULT_CHOP_DELTA = 1.0e-10;
 
@@ -760,11 +575,8 @@ public class Config {
   public static boolean RUBI_CONVERT_SYMBOLS = false;
 
   public static String getVersion() {
-    InputStream resourceAsStream =
-        new Config()
-            .getClass()
-            .getResourceAsStream(
-                "/META-INF/maven/org.matheclipse/matheclipse-frontend/pom.properties");
+    InputStream resourceAsStream = new Config().getClass()
+        .getResourceAsStream("/META-INF/maven/org.matheclipse/matheclipse-frontend/pom.properties");
     if (resourceAsStream != null) {
       try {
         Properties prop = new Properties();
@@ -779,12 +591,8 @@ public class Config {
 
   /** A trie builder for mapping int[] sequences to IExpr. */
   public static final TrieBuilder<int[], IExpr, ArrayList<IExpr>> TRIE_INT2EXPR_BUILDER =
-      new TrieBuilder<int[], IExpr, ArrayList<IExpr>>(
-          TrieSequencerIntArray.INSTANCE,
-          TrieMatch.EXACT,
-          () -> new ArrayList<IExpr>(),
-          (IExpr) null,
-          false);
+      new TrieBuilder<int[], IExpr, ArrayList<IExpr>>(TrieSequencerIntArray.INSTANCE,
+          TrieMatch.EXACT, () -> new ArrayList<IExpr>(), (IExpr) null, false);
 
   /** A trie builder for mapping strings to IExpr. */
   public static final TrieBuilder<String, IExpr, ArrayList<IExpr>> TRIE_STRING2EXPR_BUILDER =
@@ -795,16 +603,16 @@ public class Config {
       TrieBuilder.create();
 
   /** A trie builder for mapping strings to IStringX. */
-  public static final TrieBuilder<String, IStringX, ArrayList<IStringX>>
-      TRIE_STRING2STRINGX_BUILDER = TrieBuilder.create();
+  public static final TrieBuilder<String, IStringX, ArrayList<IStringX>> TRIE_STRING2STRINGX_BUILDER =
+      TrieBuilder.create();
 
   /** A trie builder for mapping strings to IPattern. */
-  public static final TrieBuilder<String, IPattern, ArrayList<IPattern>>
-      TRIE_STRING2PATTERN_BUILDER = TrieBuilder.create();
+  public static final TrieBuilder<String, IPattern, ArrayList<IPattern>> TRIE_STRING2PATTERN_BUILDER =
+      TrieBuilder.create();
 
   /** A trie builder for mapping strings to IPatternSequence. */
-  public static final TrieBuilder<String, IPatternSequence, ArrayList<IPatternSequence>>
-      TRIE_STRING2PATTERNSEQUENCE_BUILDER = TrieBuilder.create();
+  public static final TrieBuilder<String, IPatternSequence, ArrayList<IPatternSequence>> TRIE_STRING2PATTERNSEQUENCE_BUILDER =
+      TrieBuilder.create();
 
   /** Global switch to make all symbols unprotected if set to {@link ISymbol#NOATTRIBUTE} */
   public static int BUILTIN_PROTECTED = ISymbol.PROTECTED;
