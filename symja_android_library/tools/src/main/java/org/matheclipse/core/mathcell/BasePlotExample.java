@@ -1,16 +1,31 @@
 package org.matheclipse.core.mathcell;
 
+import java.util.Locale;
 import org.apache.commons.lang3.StringUtils;
 import org.matheclipse.core.basic.Config;
+import org.matheclipse.core.basic.ToggleFeature;
 import org.matheclipse.core.eval.ExprEvaluator;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.interfaces.IStringX;
+import org.matheclipse.io.IOInit;
+import org.matheclipse.parser.client.FEConfig;
 import org.matheclipse.parser.client.SyntaxError;
 import org.matheclipse.parser.client.math.MathException;
 
 public abstract class BasePlotExample {
+  static {
+    Locale.setDefault(Locale.US);
+    FEConfig.PARSER_USE_LOWERCASE_SYMBOLS = true;
+    ToggleFeature.COMPILE = true;
+    Config.JAVA_UNSAFE = true;
+    Config.SHORTEN_STRING_LENGTH = 1024;
+    Config.USE_VISJS = true;
+    Config.FILESYSTEM_ENABLED = true;
+
+    IOInit.init();
+  }
 
   public String exampleFunction() {
     return "Manipulate(ListPlot(Table({Sin(t), Cos(t*a)}, {t, 100})), {a,1,4,1})";
