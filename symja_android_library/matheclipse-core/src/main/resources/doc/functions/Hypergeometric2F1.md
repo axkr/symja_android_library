@@ -14,4 +14,4 @@ See:
 
 ### Github
 
-* [Implementation of Hypergeometric2F1](https://github.com/axkr/symja_android_library/blob/master/symja_android_library/matheclipse-core/src/main/java/org/matheclipse/core/builtin/HypergeometricFunctions.java#L966) 
+* [Implementation of Hypergeometric2F1](https://github.com/axkr/symja_android_library/blob/master/symja_android_library/matheclipse-core/src/main/java/org/matheclipse/core/builtin/HypergeometricFunctions.java#L965) 

@@ -62,4 +62,4 @@ Negative part numbers count from the end:
 
 ### Github
 
-* [Implementation of ReplacePart](https://github.com/axkr/symja_android_library/blob/master/symja_android_library/matheclipse-core/src/main/java/org/matheclipse/core/builtin/ListFunctions.java#L5769) 
+* [Implementation of ReplacePart](https://github.com/axkr/symja_android_library/blob/master/symja_android_library/matheclipse-core/src/main/java/org/matheclipse/core/builtin/ListFunctions.java#L5761) 

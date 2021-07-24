@@ -98,4 +98,4 @@ I*3.14159265358979323846264338327
 
 ### Github
 
-* [Implementation of Times](https://github.com/axkr/symja_android_library/blob/master/symja_android_library/matheclipse-core/src/main/java/org/matheclipse/core/builtin/Arithmetic.java#L5487) 
+* [Implementation of Times](https://github.com/axkr/symja_android_library/blob/master/symja_android_library/matheclipse-core/src/main/java/org/matheclipse/core/builtin/Arithmetic.java#L5475) 

@@ -35,4 +35,4 @@ f(x)/x^2+f(x)/x
 
 ### Github
 
-* [Implementation of Together](https://github.com/axkr/symja_android_library/blob/master/symja_android_library/matheclipse-core/src/main/java/org/matheclipse/core/builtin/Algebra.java#L4242) 
+* [Implementation of Together](https://github.com/axkr/symja_android_library/blob/master/symja_android_library/matheclipse-core/src/main/java/org/matheclipse/core/builtin/Algebra.java#L4241) 

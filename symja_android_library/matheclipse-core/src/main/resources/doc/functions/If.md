@@ -42,4 +42,4 @@ You might use comments (inside `(*` and `*)`) to make the branches of `If` more 
 
 ### Github
 
-* [Implementation of If](https://github.com/axkr/symja_android_library/blob/master/symja_android_library/matheclipse-core/src/main/java/org/matheclipse/core/builtin/Programming.java#L1149) 
+* [Implementation of If](https://github.com/axkr/symja_android_library/blob/master/symja_android_library/matheclipse-core/src/main/java/org/matheclipse/core/builtin/Programming.java#L1145) 

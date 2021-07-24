@@ -23,4 +23,4 @@ See
 
 ### Github
 
-* [Implementation of BetweennessCentrality](https://github.com/axkr/symja_android_library/blob/master/symja_android_library/matheclipse-core/src/main/java/org/matheclipse/core/builtin/GraphFunctions.java#L983) 
+* [Implementation of BetweennessCentrality](https://github.com/axkr/symja_android_library/blob/master/symja_android_library/matheclipse-core/src/main/java/org/matheclipse/core/builtin/GraphFunctions.java#L980) 

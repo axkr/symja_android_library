@@ -19,4 +19,4 @@ ComplexInfinity
 
 ### Github
 
-* [Implementation of Coth](https://github.com/axkr/symja_android_library/blob/master/symja_android_library/matheclipse-core/src/main/java/org/matheclipse/core/builtin/ExpTrigsFunctions.java#L1411) 
+* [Implementation of Coth](https://github.com/axkr/symja_android_library/blob/master/symja_android_library/matheclipse-core/src/main/java/org/matheclipse/core/builtin/ExpTrigsFunctions.java#L1454) 

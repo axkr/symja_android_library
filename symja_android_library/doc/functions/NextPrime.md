@@ -31,4 +31,4 @@ NextPrime(5, 10.5)
 
 ### Github
 
-* [Implementation of NextPrime](https://github.com/axkr/symja_android_library/blob/master/symja_android_library/matheclipse-core/src/main/java/org/matheclipse/core/builtin/NumberTheory.java#L3689) 
+* [Implementation of NextPrime](https://github.com/axkr/symja_android_library/blob/master/symja_android_library/matheclipse-core/src/main/java/org/matheclipse/core/builtin/NumberTheory.java#L3696) 

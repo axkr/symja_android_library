@@ -23,3 +23,7 @@ See:
 >> CollinearPoints({{1,2,3}, {3,8,1}, {7,20,-3}}) 
 True
 ```
+
+### Github
+
+* [Implementation of CollinearPoints](https://github.com/axkr/symja_android_library/blob/master/symja_android_library/matheclipse-core/src/main/java/org/matheclipse/core/builtin/ComputationalGeometryFunctions.java#L210) 

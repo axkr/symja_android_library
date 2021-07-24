@@ -17,3 +17,7 @@ True
 >> CoplanarPoints( {{0,-1,-1}, {4,5,1}, {3,9,4}, {-4,4,3}}) 
 False
 ```
+
+### Github
+
+* [Implementation of CoplanarPoints](https://github.com/axkr/symja_android_library/blob/master/symja_android_library/matheclipse-core/src/main/java/org/matheclipse/core/builtin/ComputationalGeometryFunctions.java#L66) 

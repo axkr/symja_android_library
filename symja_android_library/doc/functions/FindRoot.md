@@ -102,4 +102,4 @@ The Pegasus method assumes that the function is continuous, but not necessarily 
 
 ### Github
 
-* [Implementation of FindRoot](https://github.com/axkr/symja_android_library/blob/master/symja_android_library/matheclipse-core/src/main/java/org/matheclipse/core/reflection/system/FindRoot.java#L166) 
+* [Implementation of FindRoot](https://github.com/axkr/symja_android_library/blob/master/symja_android_library/matheclipse-core/src/main/java/org/matheclipse/core/reflection/system/FindRoot.java#L181) 

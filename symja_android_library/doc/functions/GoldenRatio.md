@@ -22,4 +22,4 @@ See
 
 ### Github
 
-* [Implementation of GoldenRatio](https://github.com/axkr/symja_android_library/blob/master/symja_android_library/matheclipse-core/src/main/java/org/matheclipse/core/builtin/ConstantDefinitions.java#L960) 
+* [Implementation of GoldenRatio](https://github.com/axkr/symja_android_library/blob/master/symja_android_library/matheclipse-core/src/main/java/org/matheclipse/core/builtin/ConstantDefinitions.java#L959) 

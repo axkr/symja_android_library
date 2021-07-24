@@ -32,4 +32,4 @@ When given a list of integers, a list is returned:
 
 ### Github
 
-* [Implementation of Prime](https://github.com/axkr/symja_android_library/blob/master/symja_android_library/matheclipse-core/src/main/java/org/matheclipse/core/builtin/NumberTheory.java#L4138) 
+* [Implementation of Prime](https://github.com/axkr/symja_android_library/blob/master/symja_android_library/matheclipse-core/src/main/java/org/matheclipse/core/builtin/NumberTheory.java#L4145) 
