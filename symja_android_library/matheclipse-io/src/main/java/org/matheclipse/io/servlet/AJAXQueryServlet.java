@@ -301,7 +301,7 @@ public class AJAXQueryServlet extends HttpServlet {
                         + html
                         + "\" style=\"display: block; width: 100%; height: 100%; border: none;\" ></iframe>");
               } catch (Exception ex) {
-                if (FEConfig.SHOW_STACKTRACE) {
+                if (Config.SHOW_STACKTRACE) {
                   ex.printStackTrace();
                 }
               }
@@ -357,7 +357,7 @@ public class AJAXQueryServlet extends HttpServlet {
                 //                        + "\" style=\"display: block; width: 100%; height: 100%;
                 // border: none;\" ></iframe>");
               } catch (Exception ex) {
-                if (FEConfig.SHOW_STACKTRACE) {
+                if (Config.SHOW_STACKTRACE) {
                   ex.printStackTrace();
                 }
               }
@@ -366,7 +366,7 @@ public class AJAXQueryServlet extends HttpServlet {
                 return JSONBuilder.createJSONIFrame(
                     JSONBuilder.JSXGRAPH_IFRAME, jsFormData.arg1().toString());
               } catch (Exception ex) {
-                if (FEConfig.SHOW_STACKTRACE) {
+                if (Config.SHOW_STACKTRACE) {
                   ex.printStackTrace();
                 }
               }
@@ -384,7 +384,7 @@ public class AJAXQueryServlet extends HttpServlet {
                 //                        + "\" style=\"display: block; width: 100%; height: 100%;
                 // border: none;\" ></iframe>");
               } catch (Exception ex) {
-                if (FEConfig.SHOW_STACKTRACE) {
+                if (Config.SHOW_STACKTRACE) {
                   ex.printStackTrace();
                 }
               }
@@ -422,7 +422,7 @@ public class AJAXQueryServlet extends HttpServlet {
                         + html
                         + "\" style=\"display: block; width: 100%; height: 100%; border: none;\" ></iframe>");
               } catch (Exception ex) {
-                if (FEConfig.SHOW_STACKTRACE) {
+                if (Config.SHOW_STACKTRACE) {
                   ex.printStackTrace();
                 }
               }

@@ -7668,6 +7668,7 @@ public class S {
 
   public static final IBuiltInSymbol RootOf = F.initFinalSymbol("RootOf", ID.RootOf);
 
+  public static final IBuiltInSymbol RootReduce = F.initFinalSymbol("RootReduce", ID.RootReduce);
   /**
    * Roots(polynomial-equation, var) - determine the roots of a univariate polynomial equation with
    * respect to the variable `var`.
@@ -9832,9 +9833,11 @@ public class S {
    * @return
    */
   public static ISymbol initFinalHiddenSymbol(final String symbolName) {
-    final ISymbol temp = new Symbol(symbolName, org.matheclipse.core.expression.Context.DUMMY);
-    HIDDEN_SYMBOLS_MAP.put(symbolName, temp);
-    return temp;
+    final ISymbol symbol = new Symbol(symbolName, org.matheclipse.core.expression.Context.DUMMY);
+    // TODO make this a real protected symbol
+    //    symbol.setAttributes(ISymbol.PROTECTED);
+    HIDDEN_SYMBOLS_MAP.put(symbolName, symbol);
+    return symbol;
   }
 
   /**

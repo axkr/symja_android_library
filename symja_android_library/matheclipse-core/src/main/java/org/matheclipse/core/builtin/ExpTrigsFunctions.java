@@ -43,6 +43,7 @@ import org.apfloat.FixedPrecisionApfloatHelper;
 import org.hipparchus.complex.Complex;
 import org.hipparchus.special.elliptic.carlson.CarlsonEllipticIntegral;
 import org.hipparchus.util.FastMath;
+import org.matheclipse.core.basic.Config;
 import org.matheclipse.core.builtin.functions.EllipticIntegralsJS;
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.exception.ValidateException;
@@ -99,7 +100,6 @@ import org.matheclipse.core.reflection.system.rules.SincRules;
 import org.matheclipse.core.reflection.system.rules.SinhRules;
 import org.matheclipse.core.reflection.system.rules.TanRules;
 import org.matheclipse.core.reflection.system.rules.TanhRules;
-import org.matheclipse.parser.client.FEConfig;
 
 import com.google.common.math.DoubleMath;
 
@@ -2158,7 +2158,7 @@ public class ExpTrigsFunctions {
             // z)))));
           }
         } catch (ValidateException ve) {
-          if (FEConfig.SHOW_STACKTRACE) {
+          if (Config.SHOW_STACKTRACE) {
             ve.printStackTrace();
           }
         } catch (RuntimeException rex) {
@@ -2233,7 +2233,7 @@ public class ExpTrigsFunctions {
                     ));
           }
         } catch (ValidateException ve) {
-          if (FEConfig.SHOW_STACKTRACE) {
+          if (Config.SHOW_STACKTRACE) {
             ve.printStackTrace();
           }
         } catch (RuntimeException rex) {

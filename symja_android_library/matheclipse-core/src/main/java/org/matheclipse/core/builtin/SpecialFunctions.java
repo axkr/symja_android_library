@@ -156,12 +156,12 @@ public class SpecialFunctions {
             // }
           }
         } catch (ThrowException te) {
-          if (FEConfig.SHOW_STACKTRACE) {
+          if (Config.SHOW_STACKTRACE) {
             te.printStackTrace();
           }
           return te.getValue();
         } catch (ValidateException ve) {
-          if (FEConfig.SHOW_STACKTRACE) {
+          if (Config.SHOW_STACKTRACE) {
             ve.printStackTrace();
           }
         } catch (RuntimeException rex) {
@@ -215,12 +215,12 @@ public class SpecialFunctions {
           return F.C0;
         }
       } catch (ThrowException te) {
-        if (FEConfig.SHOW_STACKTRACE) {
+        if (Config.SHOW_STACKTRACE) {
           te.printStackTrace();
         }
         return te.getValue();
       } catch (ValidateException ve) {
-        if (FEConfig.SHOW_STACKTRACE) {
+        if (Config.SHOW_STACKTRACE) {
           ve.printStackTrace();
         }
       } catch (RuntimeException rex) {
@@ -329,7 +329,7 @@ public class SpecialFunctions {
           return F.Times(F.Power(z, a), sum);
         }
       } catch (RuntimeException rex) {
-        if (FEConfig.SHOW_STACKTRACE) {
+        if (Config.SHOW_STACKTRACE) {
           rex.printStackTrace();
         }
       }
@@ -372,7 +372,7 @@ public class SpecialFunctions {
           }
         }
       } catch (RuntimeException rex) {
-        if (FEConfig.SHOW_STACKTRACE) {
+        if (Config.SHOW_STACKTRACE) {
           rex.printStackTrace();
         }
       }
@@ -684,12 +684,12 @@ public class SpecialFunctions {
             return F.num(GammaJS.gammaRegularized(aDouble, z1Double));
           }
         } catch (ThrowException te) {
-          if (FEConfig.SHOW_STACKTRACE) {
+          if (Config.SHOW_STACKTRACE) {
             te.printStackTrace();
           }
           return te.getValue();
         } catch (ValidateException ve) {
-          if (FEConfig.SHOW_STACKTRACE) {
+          if (Config.SHOW_STACKTRACE) {
             ve.printStackTrace();
           }
           return engine.printMessage(ast.topHead() + ": " + ve.getMessage());
@@ -738,12 +738,12 @@ public class SpecialFunctions {
             return F.num(GammaJS.gammaRegularized(aDouble, z1Double, z2Double));
           }
         } catch (ThrowException te) {
-          if (FEConfig.SHOW_STACKTRACE) {
+          if (Config.SHOW_STACKTRACE) {
             te.printStackTrace();
           }
           return te.getValue();
         } catch (ValidateException ve) {
-          if (FEConfig.SHOW_STACKTRACE) {
+          if (Config.SHOW_STACKTRACE) {
             ve.printStackTrace();
           }
           return engine.printMessage(ast.topHead() + ": " + ve.getMessage());
@@ -873,12 +873,12 @@ public class SpecialFunctions {
             }
           }
         } catch (ThrowException te) {
-          if (FEConfig.SHOW_STACKTRACE) {
+          if (Config.SHOW_STACKTRACE) {
             te.printStackTrace();
           }
           return te.getValue();
         } catch (ValidateException ve) {
-          if (FEConfig.SHOW_STACKTRACE) {
+          if (Config.SHOW_STACKTRACE) {
             ve.printStackTrace();
           }
           return engine.printMessage(ast.topHead() + ": " + ve.getMessage());
@@ -1471,12 +1471,12 @@ public class SpecialFunctions {
               }
             }
           } catch (ThrowException te) {
-            if (FEConfig.SHOW_STACKTRACE) {
+            if (Config.SHOW_STACKTRACE) {
               te.printStackTrace();
             }
             return te.getValue();
           } catch (ValidateException ve) {
-            if (FEConfig.SHOW_STACKTRACE) {
+            if (Config.SHOW_STACKTRACE) {
               ve.printStackTrace();
             }
             return engine.printMessage(ast.topHead() + ": " + ve.getMessage());
@@ -1579,12 +1579,12 @@ public class SpecialFunctions {
           }
 
         } catch (ThrowException te) {
-          if (FEConfig.SHOW_STACKTRACE) {
+          if (Config.SHOW_STACKTRACE) {
             te.printStackTrace();
           }
           return te.getValue();
         } catch (ValidateException ve) {
-          if (FEConfig.SHOW_STACKTRACE) {
+          if (Config.SHOW_STACKTRACE) {
             ve.printStackTrace();
           }
           return engine.printMessage(ast.topHead() + ": " + ve.getMessage());
@@ -1844,7 +1844,7 @@ public class SpecialFunctions {
           }
         }
       } catch (RuntimeException rex) {
-        if (FEConfig.SHOW_STACKTRACE) {
+        if (Config.SHOW_STACKTRACE) {
           rex.printStackTrace();
         }
       }
@@ -1926,7 +1926,7 @@ public class SpecialFunctions {
           }
         }
       } catch (RuntimeException rex) {
-        if (FEConfig.SHOW_STACKTRACE) {
+        if (Config.SHOW_STACKTRACE) {
           rex.printStackTrace();
         }
       }

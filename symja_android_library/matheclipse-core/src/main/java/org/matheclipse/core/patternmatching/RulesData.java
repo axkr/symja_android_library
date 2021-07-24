@@ -20,7 +20,6 @@ import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.interfaces.IStringX;
 import org.matheclipse.core.interfaces.ISymbol;
 import org.matheclipse.core.visit.AbstractVisitor;
-import org.matheclipse.parser.client.FEConfig;
 import org.matheclipse.parser.trie.TrieMatch;
 
 import it.unimi.dsi.fastutil.ints.IntArrayList;
@@ -443,7 +442,7 @@ public final class RulesData implements Serializable {
             // if (pmEvaluator.getLHSPriority() == 6656) {
             // System.out.println("Debug from this line");
             // }
-            if (FEConfig.SHOW_STACKTRACE) {
+            if (Config.SHOW_STACKTRACE) {
               if (isShowPriority(pmEvaluator)) {
                 System.out.print("try: " + pmEvaluator.getLHSPriority() + " - ");
               }
@@ -468,7 +467,7 @@ public final class RulesData implements Serializable {
               //                // }
               //                System.out.println("Result: "+result.toString());
               //              }
-              if (FEConfig.SHOW_STACKTRACE) {
+              if (Config.SHOW_STACKTRACE) {
                 if (isShowPriority(pmEvaluator)) {
                   System.out.println(
                       "matched: " + pmEvaluator.getLHSPriority() + ": " + pmEvaluator.toString());
@@ -487,7 +486,7 @@ public final class RulesData implements Serializable {
               }
               return result;
             }
-            if (FEConfig.SHOW_STACKTRACE) {
+            if (Config.SHOW_STACKTRACE) {
               if (isShowPriority(pmEvaluator)) {
                 System.out.print("not matched: " + pmEvaluator.getLHSPriority() + " ");
               }

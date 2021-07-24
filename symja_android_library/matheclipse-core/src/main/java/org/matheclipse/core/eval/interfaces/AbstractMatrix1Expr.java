@@ -5,6 +5,7 @@ import java.util.function.Predicate;
 import org.hipparchus.exception.MathRuntimeException;
 import org.hipparchus.linear.FieldMatrix;
 import org.hipparchus.linear.RealMatrix;
+import org.matheclipse.core.basic.Config;
 import org.matheclipse.core.convert.Convert;
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.exception.LimitException;
@@ -14,7 +15,6 @@ import org.matheclipse.core.expression.S;
 import org.matheclipse.core.generic.Predicates;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IExpr;
-import org.matheclipse.parser.client.FEConfig;
 
 public abstract class AbstractMatrix1Expr extends AbstractFunctionEvaluator {
   public final static PossibleZeroQTest POSSIBLE_ZEROQ_TEST = new PossibleZeroQTest();
@@ -56,7 +56,7 @@ public abstract class AbstractMatrix1Expr extends AbstractFunctionEvaluator {
       // org.hipparchus.exception.MathIllegalArgumentException: inconsistent dimensions: 0 != 3
       return engine.printMessage(ast.topHead(), mre);
     } catch (final RuntimeException e) {
-      if (FEConfig.SHOW_STACKTRACE) {
+      if (Config.SHOW_STACKTRACE) {
         e.printStackTrace();
       }
       return engine.printMessage(ast.topHead() + ": " + e.getMessage());
@@ -110,7 +110,7 @@ public abstract class AbstractMatrix1Expr extends AbstractFunctionEvaluator {
         // org.hipparchus.exception.MathIllegalArgumentException: inconsistent dimensions: 0 != 3
         return engine.printMessage(ast.topHead(), mre);
       } catch (final RuntimeException e) {
-        if (FEConfig.SHOW_STACKTRACE) {
+        if (Config.SHOW_STACKTRACE) {
           e.printStackTrace();
         }
       }

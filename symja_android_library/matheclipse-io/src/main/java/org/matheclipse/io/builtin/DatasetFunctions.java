@@ -9,7 +9,6 @@ import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IASTDataset;
 import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.io.expression.ASTDataset;
-import org.matheclipse.parser.client.FEConfig;
 
 public class DatasetFunctions {
   /**
@@ -82,7 +81,7 @@ public class DatasetFunctions {
             }
           }
         } catch (RuntimeException rex) {
-          if (FEConfig.SHOW_STACKTRACE) {
+          if (Config.SHOW_STACKTRACE) {
             rex.printStackTrace();
           }
           return engine.printMessage(ast.topHead(), rex);

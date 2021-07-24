@@ -34,7 +34,6 @@ import org.matheclipse.core.interfaces.IRational;
 import org.matheclipse.core.interfaces.IStringX;
 import org.matheclipse.core.interfaces.ISymbol;
 import org.matheclipse.core.tensor.qty.IQuantity;
-import org.matheclipse.parser.client.FEConfig;
 
 import com.google.common.io.ByteStreams;
 
@@ -1132,7 +1131,7 @@ public class WL {
         wo.write(expr);
         return wo.toByteArray();
       } catch (IOException e) {
-        if (FEConfig.SHOW_STACKTRACE) {
+        if (Config.SHOW_STACKTRACE) {
           e.printStackTrace();
         }
       } finally {
@@ -1161,7 +1160,7 @@ public class WL {
         wo.write(expr);
         return wo.toByteArray();
       } catch (IOException e) {
-        if (FEConfig.SHOW_STACKTRACE) {
+        if (Config.SHOW_STACKTRACE) {
           e.printStackTrace();
         }
       } finally {

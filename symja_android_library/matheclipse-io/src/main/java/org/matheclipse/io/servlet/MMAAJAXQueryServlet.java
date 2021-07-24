@@ -302,7 +302,7 @@ public class MMAAJAXQueryServlet extends HttpServlet {
                         + html
                         + "\" style=\"display: block; width: 100%; height: 100%; border: none;\" ></iframe>");
               } catch (Exception ex) {
-                if (FEConfig.SHOW_STACKTRACE) {
+                if (Config.SHOW_STACKTRACE) {
                   ex.printStackTrace();
                 }
               }
@@ -360,7 +360,7 @@ public class MMAAJAXQueryServlet extends HttpServlet {
                 //                        + "\" style=\"display: block; width: 100%; height: 100%;
                 // border: none;\" ></iframe>");
               } catch (Exception ex) {
-                if (FEConfig.SHOW_STACKTRACE) {
+                if (Config.SHOW_STACKTRACE) {
                   ex.printStackTrace();
                 }
               }
@@ -378,7 +378,7 @@ public class MMAAJAXQueryServlet extends HttpServlet {
                 //                        + "\" style=\"display: block; width: 100%; height: 100%;
                 // border: none;\" ></iframe>");
               } catch (Exception ex) {
-                if (FEConfig.SHOW_STACKTRACE) {
+                if (Config.SHOW_STACKTRACE) {
                   ex.printStackTrace();
                 }
               }
@@ -396,7 +396,7 @@ public class MMAAJAXQueryServlet extends HttpServlet {
                 //                        + "\" style=\"display: block; width: 100%; height: 100%;
                 // border: none;\" ></iframe>");
               } catch (Exception ex) {
-                if (FEConfig.SHOW_STACKTRACE) {
+                if (Config.SHOW_STACKTRACE) {
                   ex.printStackTrace();
                 }
               }
@@ -434,7 +434,7 @@ public class MMAAJAXQueryServlet extends HttpServlet {
                         + html
                         + "\" style=\"display: block; width: 100%; height: 100%; border: none;\" ></iframe>");
               } catch (Exception ex) {
-                if (FEConfig.SHOW_STACKTRACE) {
+                if (Config.SHOW_STACKTRACE) {
                   ex.printStackTrace();
                 }
               }

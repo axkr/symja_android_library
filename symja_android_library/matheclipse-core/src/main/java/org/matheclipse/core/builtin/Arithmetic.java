@@ -486,7 +486,7 @@ public final class Arithmetic {
           return F.NIL;
         }
       } catch (ValidateException ve) {
-        if (FEConfig.SHOW_STACKTRACE) {
+        if (Config.SHOW_STACKTRACE) {
           ve.printStackTrace();
         }
         return engine.printMessage(ast.topHead(), ve);
@@ -709,7 +709,7 @@ public final class Arithmetic {
           return F.chopNumber((INumber) arg1, delta);
         }
       } catch (Exception e) {
-        if (FEConfig.SHOW_STACKTRACE) {
+        if (Config.SHOW_STACKTRACE) {
           e.printStackTrace();
         }
       }
@@ -1046,7 +1046,7 @@ public final class Arithmetic {
           // }
         }
       } catch (Exception e) {
-        if (FEConfig.SHOW_STACKTRACE) {
+        if (Config.SHOW_STACKTRACE) {
           e.printStackTrace();
         }
       }
@@ -1340,7 +1340,7 @@ public final class Arithmetic {
           }
         }
       } catch (ValidateException ve) {
-        if (FEConfig.SHOW_STACKTRACE) {
+        if (Config.SHOW_STACKTRACE) {
           ve.printStackTrace();
         }
         return engine.printMessage(ast.topHead(), ve);
@@ -1809,12 +1809,12 @@ public final class Arithmetic {
         }
         return binaryOperator(ast, a, ast.arg2());
       } catch (ApfloatRuntimeException arex) {
-        if (FEConfig.SHOW_STACKTRACE) {
+        if (Config.SHOW_STACKTRACE) {
           arex.printStackTrace();
         }
         return engine.printMessage(ast.topHead(), arex);
       } catch (ValidateException ve) {
-        if (FEConfig.SHOW_STACKTRACE) {
+        if (Config.SHOW_STACKTRACE) {
           ve.printStackTrace();
         }
         return engine.printMessage(ast.topHead(), ve);
@@ -4712,7 +4712,7 @@ public final class Arithmetic {
           // return F.num(numerator.doubleValue() / denominator.doubleValue());
 
         } catch (Exception e) {
-          if (FEConfig.SHOW_STACKTRACE) {
+          if (Config.SHOW_STACKTRACE) {
             e.printStackTrace();
           }
         }
@@ -6430,6 +6430,10 @@ public final class Arithmetic {
      * @return
      */
     private IExpr timesRationalPower(final IRational rationalArg1, IExpr base2, IExpr exponent2) {
+      EvalEngine engine = EvalEngine.get();
+      if (engine.isTogetherMode()) {
+        return F.NIL;
+      }
       if (exponent2.isNegative()) {
         IExpr temp =
             timesPowerPower(

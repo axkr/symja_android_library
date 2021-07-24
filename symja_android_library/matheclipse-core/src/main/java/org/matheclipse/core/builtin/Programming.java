@@ -54,7 +54,6 @@ import org.matheclipse.core.interfaces.ISymbol;
 import org.matheclipse.core.patternmatching.IPatternMatcher;
 import org.matheclipse.core.patternmatching.RulesData;
 import org.matheclipse.core.visit.ModuleReplaceAll;
-import org.matheclipse.parser.client.FEConfig;
 import org.matheclipse.parser.client.SyntaxError;
 
 import com.google.common.util.concurrent.SimpleTimeLimiter;
@@ -2787,7 +2786,7 @@ public final class Programming {
         } catch (final ASTElementLimitExceeded re) {
           throw re;
         } catch (final RuntimeException rex) {
-          if (FEConfig.SHOW_STACKTRACE) {
+          if (Config.SHOW_STACKTRACE) {
             rex.printStackTrace();
           }
           fEngine.printMessage("TimeConstrained: " + rex.getMessage());
@@ -3040,7 +3039,7 @@ public final class Programming {
 
         return engine.evalTrace(temp, matcher);
       } catch (RuntimeException rex) {
-        if (FEConfig.SHOW_STACKTRACE) {
+        if (Config.SHOW_STACKTRACE) {
           rex.printStackTrace();
         }
       }
@@ -3072,7 +3071,7 @@ public final class Programming {
           createTree(jsControl, temp);
           return F.JSFormData(jsControl.toString(), "traceform");
         } catch (RuntimeException rex) {
-          if (FEConfig.SHOW_STACKTRACE) {
+          if (Config.SHOW_STACKTRACE) {
             rex.printStackTrace();
           }
         }

@@ -2,6 +2,7 @@ package org.matheclipse.core.eval.interfaces;
 
 import org.apfloat.Apcomplex;
 import org.apfloat.Apfloat;
+import org.matheclipse.core.basic.Config;
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.exception.LimitException;
 import org.matheclipse.core.eval.exception.ValidateException;
@@ -20,7 +21,6 @@ import org.matheclipse.core.interfaces.INum;
 import org.matheclipse.core.interfaces.INumber;
 import org.matheclipse.core.interfaces.ISignedNumber;
 import org.matheclipse.core.interfaces.ISymbol;
-import org.matheclipse.parser.client.FEConfig;
 
 /** Evaluate a function with 1 or 2 arguments. */
 public abstract class AbstractArg12 extends AbstractFunctionEvaluator {
@@ -164,7 +164,7 @@ public abstract class AbstractArg12 extends AbstractFunctionEvaluator {
         throw le;
       } catch (RuntimeException rex) {
         // EvalEngine.get().printMessage(ast.topHead().toString() + ": " + rex.getMessage());
-        if (FEConfig.SHOW_STACKTRACE) {
+        if (Config.SHOW_STACKTRACE) {
           rex.printStackTrace();
         }
         return F.NIL;
@@ -295,12 +295,12 @@ public abstract class AbstractArg12 extends AbstractFunctionEvaluator {
     } catch (LimitException le) {
       throw le;
     } catch (ValidateException ve) {
-      if (FEConfig.SHOW_STACKTRACE) {
+      if (Config.SHOW_STACKTRACE) {
         ve.printStackTrace();
       }
       return engine.printMessage(ast.topHead(), ve);
     } catch (RuntimeException rex) {
-      if (FEConfig.SHOW_STACKTRACE) {
+      if (Config.SHOW_STACKTRACE) {
         rex.printStackTrace();
       }
       return engine.printMessage(ast.topHead(), rex);

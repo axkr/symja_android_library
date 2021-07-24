@@ -5,6 +5,7 @@ import java.io.StringReader;
 
 import org.apache.commons.csv.CSVFormat;
 import org.apache.commons.csv.CSVRecord;
+import org.matheclipse.core.basic.Config;
 import org.matheclipse.core.convert.AST2Expr;
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.interfaces.AbstractEvaluator;
@@ -15,7 +16,6 @@ import org.matheclipse.core.interfaces.IASTAppendable;
 import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.interfaces.IStringX;
 import org.matheclipse.core.io.Extension;
-import org.matheclipse.parser.client.FEConfig;
 import org.matheclipse.parser.client.Parser;
 import org.matheclipse.parser.client.SyntaxError;
 import org.matheclipse.parser.client.ast.ASTNode;
@@ -70,7 +70,7 @@ public class ImportString extends AbstractEvaluator {
     } catch (SyntaxError se) {
       return engine.printMessage("ImportString: syntax error!");
     } catch (Exception ex) {
-      if (FEConfig.SHOW_STACKTRACE) {
+      if (Config.SHOW_STACKTRACE) {
         ex.printStackTrace();
       }
       return engine.printMessage("ImportString: " + ex.getMessage());

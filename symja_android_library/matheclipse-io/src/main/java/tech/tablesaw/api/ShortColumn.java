@@ -2,6 +2,7 @@ package tech.tablesaw.api;
 
 import com.google.common.base.Preconditions;
 import com.google.common.primitives.Shorts;
+import it.unimi.dsi.fastutil.ints.IntRBTreeSet;
 import it.unimi.dsi.fastutil.shorts.ShortArrayList;
 import it.unimi.dsi.fastutil.shorts.ShortArrays;
 import it.unimi.dsi.fastutil.shorts.ShortComparators;
@@ -17,6 +18,8 @@ import tech.tablesaw.columns.Column;
 import tech.tablesaw.columns.numbers.DoubleColumnType;
 import tech.tablesaw.columns.numbers.NumberColumnFormatter;
 import tech.tablesaw.columns.numbers.ShortColumnType;
+import tech.tablesaw.selection.BitmapBackedSelection;
+import tech.tablesaw.selection.Selection;
 
 public class ShortColumn extends NumberColumn<ShortColumn, Short>
     implements CategoricalColumn<Short> {
@@ -24,7 +27,7 @@ public class ShortColumn extends NumberColumn<ShortColumn, Short>
   private final ShortArrayList data;
 
   protected ShortColumn(final String name, ShortArrayList data) {
-    super(ShortColumnType.instance(), name);
+    super(ShortColumnType.instance(), name, ShortColumnType.DEFAULT_PARSER);
     setPrintFormatter(NumberColumnFormatter.ints());
     this.data = data;
   }
@@ -86,6 +89,24 @@ public class ShortColumn extends NumberColumn<ShortColumn, Short>
       c.append(getShort(row));
     }
     return c;
+  }
+
+  public Selection isIn(final int... numbers) {
+    final Selection results = new BitmapBackedSelection();
+    final IntRBTreeSet intSet = new IntRBTreeSet(numbers);
+    for (int i = 0; i < size(); i++) {
+      if (intSet.contains(getInt(i))) {
+        results.add(i);
+      }
+    }
+    return results;
+  }
+
+  public Selection isNotIn(final int... numbers) {
+    final Selection results = new BitmapBackedSelection();
+    results.addRange(0, size());
+    results.andNot(isIn(numbers));
+    return results;
   }
 
   @Override
@@ -170,6 +191,7 @@ public class ShortColumn extends NumberColumn<ShortColumn, Short>
     return this;
   }
 
+  @Override
   public ShortColumn append(Short val) {
     if (val == null) {
       appendMissing();
@@ -181,12 +203,12 @@ public class ShortColumn extends NumberColumn<ShortColumn, Short>
 
   @Override
   public ShortColumn emptyCopy() {
-    return (ShortColumn) super.emptyCopy();
+    return super.emptyCopy();
   }
 
   @Override
   public ShortColumn emptyCopy(final int rowSize) {
-    return (ShortColumn) super.emptyCopy(rowSize);
+    return super.emptyCopy(rowSize);
   }
 
   @Override
@@ -356,7 +378,7 @@ public class ShortColumn extends NumberColumn<ShortColumn, Short>
   @Override
   public ShortColumn appendCell(final String value) {
     try {
-      return append(ShortColumnType.DEFAULT_PARSER.parseShort(value));
+      return append(parser().parseShort(value));
     } catch (final NumberFormatException e) {
       throw new NumberFormatException(
           "Error adding value to column " + name() + ": " + e.getMessage());

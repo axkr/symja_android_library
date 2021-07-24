@@ -63,7 +63,7 @@ public interface NumberPredicates {
     return valueToTest -> valueToTest != valueToCompareAgainst;
   }
 
-  DoublePredicate isMissing = i -> Double.isNaN(i); 
+  DoublePredicate isMissing = i -> i != i;
 
-  DoublePredicate isNotMissing = i -> !Double.isNaN(i);
+  DoublePredicate isNotMissing = i -> i == i;
 }

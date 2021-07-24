@@ -1385,7 +1385,7 @@ public class Primality implements IPrimality {
       result.append(AbstractIntegerSym.valueOf(rest));
       return result;
     }
-    b = AbstractIntegerSym.valueOf(rest);
+    // b = AbstractIntegerSym.valueOf(rest);
 
     //    SortedMap<BigInteger, Integer> bigMap = new TreeMap<BigInteger, Integer>();
     SortedMap<BigInteger, Integer> bigMap = factorInteger(rest);

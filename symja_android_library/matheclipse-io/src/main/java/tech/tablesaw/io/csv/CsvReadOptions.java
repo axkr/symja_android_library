@@ -17,18 +17,21 @@ package tech.tablesaw.io.csv;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.InputStreamReader;
 import java.io.Reader;
 import java.io.StringReader;
 import java.net.URL;
 import java.time.format.DateTimeFormatter;
+import java.util.List;
 import java.util.Locale;
+import java.util.Map;
+import java.util.Optional;
+import java.util.function.Function;
 import tech.tablesaw.api.ColumnType;
 import tech.tablesaw.io.ReadOptions;
 import tech.tablesaw.io.Source;
 
 public class CsvReadOptions extends ReadOptions {
-
-  private final ColumnType[] columnTypes;
   private final Character separator;
   private final Character quoteChar;
   private final Character escapeChar;
@@ -40,7 +43,6 @@ public class CsvReadOptions extends ReadOptions {
 
   private CsvReadOptions(CsvReadOptions.Builder builder) {
     super(builder);
-    columnTypes = builder.columnTypes;
     separator = builder.separator;
     quoteChar = builder.quoteChar;
     escapeChar = builder.escapeChar;
@@ -101,8 +103,19 @@ public class CsvReadOptions extends ReadOptions {
     return new Builder(reader);
   }
 
+  /**
+   * This method may cause tablesaw to buffer the entire InputStream.
+   *
+   * <p>If you have a large amount of data, you can do one of the following: 1. Use the method
+   * taking a File instead of a reader, or 2. Provide the array of column types as an option. If you
+   * provide the columnType array, we skip type detection and can avoid reading the entire file
+   */
+  public static Builder builder(InputStreamReader reader) {
+    return new Builder(reader);
+  }
+
   public ColumnType[] columnTypes() {
-    return columnTypes;
+    return columnTypeReadOptions.columnTypes();
   }
 
   public Character separator() {
@@ -147,7 +160,6 @@ public class CsvReadOptions extends ReadOptions {
     private Character quoteChar;
     private Character escapeChar;
     private String lineEnding;
-    private ColumnType[] columnTypes;
     private Integer maxNumberOfColumns = 10_000;
     private Character commentPrefix;
     private boolean lineSeparatorDetectionEnabled = true;
@@ -165,6 +177,10 @@ public class CsvReadOptions extends ReadOptions {
       super(file);
     }
 
+    protected Builder(InputStreamReader reader) {
+      super(reader);
+    }
+
     protected Builder(Reader reader) {
       super(reader);
     }
@@ -173,8 +189,27 @@ public class CsvReadOptions extends ReadOptions {
       super(stream);
     }
 
+    @Override
     public Builder columnTypes(ColumnType[] columnTypes) {
-      this.columnTypes = columnTypes;
+      super.columnTypes(columnTypes);
+      return this;
+    }
+
+    @Override
+    public Builder columnTypes(Function<String, ColumnType> columnTypeFunction) {
+      super.columnTypes(columnTypeFunction);
+      return this;
+    }
+
+    @Override
+    public Builder columnTypesPartial(Function<String, Optional<ColumnType>> columnTypeFunction) {
+      super.columnTypesPartial(columnTypeFunction);
+      return this;
+    }
+
+    @Override
+    public Builder columnTypesPartial(Map<String, ColumnType> columnTypeByName) {
+      super.columnTypesPartial(columnTypeByName);
       return this;
     }
 
@@ -237,6 +272,24 @@ public class CsvReadOptions extends ReadOptions {
     @Override
     public Builder header(boolean header) {
       super.header(header);
+      return this;
+    }
+
+    /**
+     * Enable reading of a table with duplicate column names. After the first appearance of a column
+     * name, subsequent appearances will have a number appended.
+     *
+     * @param allow if true, duplicate names will be allowed
+     */
+    @Override
+    public Builder allowDuplicateColumnNames(Boolean allow) {
+      super.allowDuplicateColumnNames(allow);
+      return this;
+    }
+
+    @Override
+    public Builder columnTypesToDetect(List<ColumnType> columnTypesToDetect) {
+      super.columnTypesToDetect(columnTypesToDetect);
       return this;
     }
 
@@ -304,8 +357,8 @@ public class CsvReadOptions extends ReadOptions {
     }
 
     @Override
-    public Builder missingValueIndicator(String missingValueIndicator) {
-      super.missingValueIndicator(missingValueIndicator);
+    public Builder missingValueIndicator(String... missingValueIndicators) {
+      super.missingValueIndicator(missingValueIndicators);
       return this;
     }
 
@@ -318,6 +371,12 @@ public class CsvReadOptions extends ReadOptions {
     @Override
     public Builder ignoreZeroDecimal(boolean ignoreZeroDecimal) {
       super.ignoreZeroDecimal(ignoreZeroDecimal);
+      return this;
+    }
+
+    @Override
+    public Builder skipRowsWithInvalidColumnCount(boolean skipRowsWithInvalidColumnCount) {
+      super.skipRowsWithInvalidColumnCount(skipRowsWithInvalidColumnCount);
       return this;
     }
   }

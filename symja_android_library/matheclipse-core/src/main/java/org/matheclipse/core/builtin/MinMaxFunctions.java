@@ -1,6 +1,7 @@
 package org.matheclipse.core.builtin;
 
-import static org.matheclipse.core.expression.F.Power;
+import static org.matheclipse.core.expression.S.Power;
+
 import java.util.ArrayList;
 import java.util.List;
 
@@ -13,9 +14,11 @@ import org.hipparchus.optim.linear.NonNegativeConstraint;
 import org.hipparchus.optim.linear.PivotSelectionRule;
 import org.hipparchus.optim.linear.SimplexSolver;
 import org.hipparchus.optim.nonlinear.scalar.GoalType;
+import org.matheclipse.core.basic.Config;
 import org.matheclipse.core.convert.Expr2LP;
 import org.matheclipse.core.convert.VariablesSet;
 import org.matheclipse.core.eval.EvalEngine;
+import org.matheclipse.core.eval.exception.JASConversionException;
 import org.matheclipse.core.eval.exception.ValidateException;
 import org.matheclipse.core.eval.interfaces.AbstractCoreFunctionEvaluator;
 import org.matheclipse.core.eval.interfaces.AbstractEvaluator;
@@ -29,8 +32,11 @@ import org.matheclipse.core.interfaces.IBuiltInSymbol;
 import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.interfaces.IFraction;
 import org.matheclipse.core.interfaces.ISymbol;
+import org.matheclipse.core.polynomials.longexponent.ExprMonomial;
+import org.matheclipse.core.polynomials.longexponent.ExprPolynomial;
+import org.matheclipse.core.polynomials.longexponent.ExprPolynomialRing;
+import org.matheclipse.core.polynomials.longexponent.ExprRingFactory;
 import org.matheclipse.core.visit.VisitorExpr;
-import org.matheclipse.parser.client.FEConfig;
 
 public class MinMaxFunctions {
   /**
@@ -208,7 +214,8 @@ public class MinMaxFunctions {
               if (x2.isPositiveResult()) {
                 return F.Interval(F.C0, F.Power(u, x2));
               }
-              if (x2.isEvenResult() || (x2.isFraction() && ((IFraction) x2).denominator().isEven())) {
+              if (x2.isEvenResult()
+                  || (x2.isFraction() && ((IFraction) x2).denominator().isEven())) {
                 return F.Interval(F.C0, F.Power(u, x2));
               }
             }
@@ -270,7 +277,7 @@ public class MinMaxFunctions {
           }
         }
       } catch (RuntimeException rex) {
-        if (FEConfig.SHOW_STACKTRACE) {
+        if (Config.SHOW_STACKTRACE) {
           rex.printStackTrace();
         }
       }
@@ -501,12 +508,12 @@ public class MinMaxFunctions {
           }
         }
       } catch (org.hipparchus.exception.MathRuntimeException mrex) {
-        if (FEConfig.SHOW_STACKTRACE) {
+        if (Config.SHOW_STACKTRACE) {
           mrex.printStackTrace();
         }
         return engine.printMessage(ast.topHead(), mrex);
       } catch (ValidateException ve) {
-        if (FEConfig.SHOW_STACKTRACE) {
+        if (Config.SHOW_STACKTRACE) {
           ve.printStackTrace();
         }
         return engine.printMessage(ast.topHead(), ve);
@@ -602,12 +609,12 @@ public class MinMaxFunctions {
           }
         }
       } catch (org.hipparchus.exception.MathRuntimeException mrex) {
-        if (FEConfig.SHOW_STACKTRACE) {
+        if (Config.SHOW_STACKTRACE) {
           mrex.printStackTrace();
         }
         return engine.printMessage(ast.topHead(), mrex);
       } catch (ValidateException ve) {
-        if (FEConfig.SHOW_STACKTRACE) {
+        if (Config.SHOW_STACKTRACE) {
           ve.printStackTrace();
         }
         return engine.printMessage(ast.topHead(), ve);
@@ -656,99 +663,372 @@ public class MinMaxFunctions {
   }
 
   private static IExpr maximize(ISymbol head, IExpr function, IExpr x, EvalEngine engine) {
-    VariablesSet varSet = new VariablesSet(function);
-    IAST vars = varSet.getVarList();
-    if (vars.size() == 2 && vars.arg1().equals(x)) {
-      try {
-        IExpr yNInf = S.Limit.of(function, F.Rule(x, F.CNInfinity));
-        if (yNInf.isInfinity()) {
-          engine.printMessage(head.toString() + ": the maximum cannot be found.");
-          return F.List(F.CInfinity, F.List(F.Rule(x, F.CNInfinity)));
-        }
-        IExpr yInf = S.Limit.of(function, F.Rule(x, F.CInfinity));
-        if (yInf.isInfinity()) {
-          engine.printMessage(head.toString() + ": the maximum cannot be found.");
-          return F.List(F.CInfinity, F.List(F.Rule(x, F.CInfinity)));
-        }
+    try {
+      IExpr temp = maximizeExprPolynomial(function, F.List(x));
+      if (temp.isPresent()) {
+        return temp;
+      }
 
-        IExpr first_derivative = S.D.of(engine, function, x);
-        IExpr second_derivative = S.D.of(engine, first_derivative, x);
-        IExpr candidates = S.Solve.of(engine, F.Equal(first_derivative, F.C0), x, S.Reals);
-        if (candidates.isFree(S.Solve)) {
-          IExpr maxCandidate = F.NIL;
-          IExpr maxValue = F.CNInfinity;
-          if (candidates.isListOfLists()) {
-            for (int i = 1; i < candidates.size(); i++) {
-              IExpr candidate = ((IAST) candidates).get(i).first().second();
-              IExpr value = engine.evaluate(F.subs(second_derivative, x, candidate));
-              if (value.isNegative()) {
-                IExpr functionValue = engine.evaluate(F.subs(function, x, candidate));
-                if (S.Greater.ofQ(functionValue, maxValue)) {
-                  maxValue = functionValue;
-                  maxCandidate = candidate;
-                }
+      IExpr yNInf = S.Limit.of(function, F.Rule(x, F.CNInfinity));
+      if (yNInf.isInfinity()) {
+        engine.printMessage(head.toString() + ": the maximum cannot be found.");
+        return F.List(F.CInfinity, F.List(F.Rule(x, F.CNInfinity)));
+      }
+      IExpr yInf = S.Limit.of(function, F.Rule(x, F.CInfinity));
+      if (yInf.isInfinity()) {
+        engine.printMessage(head.toString() + ": the maximum cannot be found.");
+        return F.List(F.CInfinity, F.List(F.Rule(x, F.CInfinity)));
+      }
+
+      IExpr first_derivative = S.D.of(engine, function, x);
+      IExpr second_derivative = S.D.of(engine, first_derivative, x);
+      IExpr candidates = S.Solve.of(engine, F.Equal(first_derivative, F.C0), x, S.Reals);
+      if (candidates.isFree(S.Solve)) {
+        IExpr maxCandidate = F.NIL;
+        IExpr maxValue = F.CNInfinity;
+        if (candidates.isListOfLists()) {
+          for (int i = 1; i < candidates.size(); i++) {
+            IExpr candidate = ((IAST) candidates).get(i).first().second();
+            IExpr value = engine.evaluate(F.subs(second_derivative, x, candidate));
+            if (value.isNegative()) {
+              IExpr functionValue = engine.evaluate(F.subs(function, x, candidate));
+              if (S.Greater.ofQ(functionValue, maxValue)) {
+                maxValue = functionValue;
+                maxCandidate = candidate;
               }
             }
-            if (maxCandidate.isPresent()) {
-              return F.List(maxValue, F.List(F.Rule(x, maxCandidate)));
-            }
           }
-          return F.CEmptyList;
+          if (maxCandidate.isPresent()) {
+            return F.List(maxValue, F.List(F.Rule(x, maxCandidate)));
+          }
         }
-      } catch (RuntimeException rex) {
-        return engine.printMessage(head.toString() + ": exception occured:" + rex.getMessage());
+        return F.CEmptyList;
+      }
+    } catch (RuntimeException rex) {
+      return engine.printMessage(head.toString() + ": exception occured:" + rex.getMessage());
+    }
+    return F.NIL;
+  }
+
+  private static IAST maximizeExprPolynomial(final IExpr expr, IAST varList) {
+    IAST result = F.NIL;
+    try {
+      // try to generate a common expression polynomial
+      ExprPolynomialRing ring = new ExprPolynomialRing(ExprRingFactory.CONST, varList);
+      ExprPolynomial ePoly = ring.create(expr, false, false, false);
+      ePoly = ePoly.multiplyByMinimumNegativeExponents();
+      result = maximizeCubicPolynomial(ePoly, varList.arg1());
+
+      //      result = QuarticSolver.sortASTArguments(result);
+      return result;
+    } catch (ArithmeticException | JASConversionException e2) {
+      if (Config.SHOW_STACKTRACE) {
+        e2.printStackTrace();
       }
     }
-    return engine.printMessage(
-        head.toString() + ": only unary functions in " + x + " are supported.");
+    return result;
+  }
+
+  private static IAST maximizeCubicPolynomial(ExprPolynomial polynomial, IExpr x) {
+    long varDegree = polynomial.degree(0);
+    IExpr a;
+    IExpr b;
+    IExpr c;
+    IExpr d;
+    IExpr e;
+    if (varDegree <= 3) {
+      // solve cubic or quadratic maximize:
+      a = F.C0;
+      b = F.C0;
+      c = F.C0;
+      d = F.C0;
+      e = F.C0;
+      for (ExprMonomial monomial : polynomial) {
+        IExpr coeff = monomial.coefficient();
+        long lExp = monomial.exponent().getVal(0);
+        if (lExp == 4) {
+          a = coeff;
+        } else if (lExp == 3) {
+          b = coeff;
+        } else if (lExp == 2) {
+          c = coeff;
+        } else if (lExp == 1) {
+          d = coeff;
+        } else if (lExp == 0) {
+          e = coeff;
+        } else {
+          throw new ArithmeticException("Maximize::Unexpected exponent value: " + lExp);
+        }
+      }
+      if (a.isPossibleZero(false)) {
+        if (b.isPossibleZero(false)) {
+          // quadratic
+          if (c.isPossibleZero(false)) {
+            if (d.isPossibleZero(false)) {
+              return F.List(e, F.List());
+            } else {
+              // linear
+              return F.List(
+                  F.Piecewise(F.List(F.List(e, F.Equal(d, F.C0))), F.CInfinity),
+                  F.List(
+                      F.Rule(
+                          x,
+                          F.Piecewise(F.List(F.List(F.C0, F.Equal(d, F.C0))), S.Indeterminate))));
+            }
+          } else {
+            return F.List(
+                F.Piecewise(
+                    F.List(
+                        F.List(e, F.And(F.Equal(d, 0), F.LessEqual(c, 0))),
+                        F.List(
+                            F.Times(
+                                F.C1D4,
+                                F.Power(c, -1),
+                                F.Plus(F.Times(-1, F.Power(d, 2)), F.Times(4, c, e))),
+                            F.Or(
+                                F.And(F.Greater(d, 0), F.Less(c, 0)),
+                                F.And(F.Less(d, 0), F.Less(c, 0))))),
+                    F.CInfinity),
+                F.List(
+                    F.Rule(
+                        x,
+                        F.Piecewise(
+                            F.List(
+                                F.List(
+                                    F.Times(F.CN1D2, F.Power(c, -1), d),
+                                    F.Or(
+                                        F.And(F.Greater(d, 0), F.Less(c, 0)),
+                                        F.And(F.Less(d, 0), F.Less(c, 0)))),
+                                F.List(F.C0, F.And(F.Equal(d, 0), F.LessEqual(c, 0)))),
+                            S.Indeterminate))));
+          }
+        } else {
+          // cubic
+          return F.List(
+              F.Piecewise(
+                  F.List(
+                      F.List(
+                          e,
+                          F.Or(
+                              F.And(F.Equal(d, F.C0), F.Equal(c, F.C0), F.Equal(b, F.C0)),
+                              F.And(F.Equal(d, F.C0), F.Less(c, F.C0), F.Equal(b, F.C0)))),
+                      F.List(
+                          F.Times(
+                              F.C1D4,
+                              F.Power(c, F.CN1),
+                              F.Plus(F.Negate(F.Sqr(d)), F.Times(F.C4, c, e))),
+                          F.Or(
+                              F.And(F.Greater(d, F.C0), F.Less(c, F.C0), F.Equal(b, F.C0)),
+                              F.And(F.Less(d, F.C0), F.Less(c, F.C0), F.Equal(b, F.C0))))),
+                  F.oo),
+              F.List(
+                  F.Rule(
+                      x,
+                      F.Piecewise(
+                          F.List(
+                              F.List(
+                                  F.Times(F.CN1D2, F.Power(c, F.CN1), d),
+                                  F.Or(
+                                      F.And(F.Greater(d, F.C0), F.Less(c, F.C0), F.Equal(b, F.C0)),
+                                      F.And(F.Less(d, F.C0), F.Less(c, F.C0), F.Equal(b, F.C0)))),
+                              F.List(
+                                  F.C0,
+                                  F.Or(
+                                      F.And(F.Equal(d, F.C0), F.Equal(c, F.C0), F.Equal(b, F.C0)),
+                                      F.And(F.Equal(d, F.C0), F.Less(c, F.C0), F.Equal(b, F.C0))))),
+                          F.Indeterminate))));
+        }
+      }
+    }
+
+    return F.NIL;
   }
 
   private static final IExpr minimize(ISymbol head, IExpr function, IExpr x, EvalEngine engine) {
-    VariablesSet varSet = new VariablesSet(function);
-    IAST vars = varSet.getVarList();
-    if (vars.size() == 2 && vars.arg1().equals(x)) {
-      try {
-        IExpr yNInf = S.Limit.of(function, F.Rule(x, F.CNInfinity));
-        if (yNInf.isNegativeInfinity()) {
-          engine.printMessage(head.toString() + ": the maximum cannot be found.");
-          return F.List(F.CNInfinity, F.List(F.Rule(x, F.CNInfinity)));
-        }
-        IExpr yInf = S.Limit.of(function, F.Rule(x, F.CInfinity));
-        if (yInf.isNegativeInfinity()) {
-          engine.printMessage(head.toString() + ": the maximum cannot be found.");
-          return F.List(F.CNInfinity, F.List(F.Rule(x, F.CInfinity)));
-        }
+    try {
+      IExpr temp = minimizeExprPolynomial(function, F.List(x));
+      if (temp.isPresent()) {
+        return temp;
+      }
 
-        IExpr first_derivative = S.D.of(engine, function, x);
-        IExpr second_derivative = S.D.of(engine, first_derivative, x);
-        IExpr candidates = S.Solve.of(engine, F.Equal(first_derivative, F.C0), x, S.Reals);
-        if (candidates.isFree(S.Solve)) {
-          IExpr minCandidate = F.NIL;
-          IExpr minValue = F.CInfinity;
-          if (candidates.isListOfLists()) {
-            for (int i = 1; i < candidates.size(); i++) {
-              IExpr candidate = ((IAST) candidates).get(i).first().second();
-              IExpr value = engine.evaluate(F.subs(second_derivative, x, candidate));
-              if (value.isPositiveResult()) {
-                IExpr functionValue = engine.evaluate(F.subs(function, x, candidate));
-                if (S.Less.ofQ(functionValue, minValue)) {
-                  minValue = functionValue;
-                  minCandidate = candidate;
-                }
+      IExpr yNInf = S.Limit.of(function, F.Rule(x, F.CNInfinity));
+      if (yNInf.isNegativeInfinity()) {
+        engine.printMessage(head.toString() + ": the maximum cannot be found.");
+        return F.List(F.CNInfinity, F.List(F.Rule(x, F.CNInfinity)));
+      }
+      IExpr yInf = S.Limit.of(function, F.Rule(x, F.CInfinity));
+      if (yInf.isNegativeInfinity()) {
+        engine.printMessage(head.toString() + ": the maximum cannot be found.");
+        return F.List(F.CNInfinity, F.List(F.Rule(x, F.CInfinity)));
+      }
+
+      IExpr first_derivative = S.D.of(engine, function, x);
+      IExpr second_derivative = S.D.of(engine, first_derivative, x);
+      IExpr candidates = S.Solve.of(engine, F.Equal(first_derivative, F.C0), x, S.Reals);
+      if (candidates.isFree(S.Solve)) {
+        IExpr minCandidate = F.NIL;
+        IExpr minValue = F.CInfinity;
+        if (candidates.isListOfLists()) {
+          for (int i = 1; i < candidates.size(); i++) {
+            IExpr candidate = ((IAST) candidates).get(i).first().second();
+            IExpr value = engine.evaluate(F.subs(second_derivative, x, candidate));
+            if (value.isPositiveResult()) {
+              IExpr functionValue = engine.evaluate(F.subs(function, x, candidate));
+              if (S.Less.ofQ(functionValue, minValue)) {
+                minValue = functionValue;
+                minCandidate = candidate;
               }
             }
-            if (minCandidate.isPresent()) {
-              return F.List(minValue, F.List(F.Rule(x, minCandidate)));
-            }
           }
-          return F.CEmptyList;
+          if (minCandidate.isPresent()) {
+            return F.List(minValue, F.List(F.Rule(x, minCandidate)));
+          }
         }
-      } catch (RuntimeException rex) {
-        return engine.printMessage(head.toString() + ": exception occured:" + rex.getMessage());
+        return F.CEmptyList;
+      }
+    } catch (RuntimeException rex) {
+      return engine.printMessage(head.toString() + ": exception occured:" + rex.getMessage());
+    }
+    return F.NIL;
+  }
+
+  private static IAST minimizeExprPolynomial(final IExpr expr, IAST varList) {
+    IAST result = F.NIL;
+    try {
+      // try to generate a common expression polynomial
+      ExprPolynomialRing ring = new ExprPolynomialRing(ExprRingFactory.CONST, varList);
+      ExprPolynomial ePoly = ring.create(expr, false, false, false);
+      ePoly = ePoly.multiplyByMinimumNegativeExponents();
+      result = minimizeCubicPolynomial(ePoly, varList.arg1());
+
+      //      result = QuarticSolver.sortASTArguments(result);
+      return result;
+    } catch (ArithmeticException | JASConversionException e2) {
+      if (Config.SHOW_STACKTRACE) {
+        e2.printStackTrace();
       }
     }
-    return engine.printMessage(
-        head.toString() + ": only unary functions in " + x + " are supported.");
+    return result;
+  }
+
+  private static IAST minimizeCubicPolynomial(ExprPolynomial polynomial, IExpr x) {
+    long varDegree = polynomial.degree(0);
+    IExpr a;
+    IExpr b;
+    IExpr c;
+    IExpr d;
+    IExpr e;
+    if (varDegree <= 3) {
+      // solve cubic or quadratic maximize:
+      a = F.C0;
+      b = F.C0;
+      c = F.C0;
+      d = F.C0;
+      e = F.C0;
+      for (ExprMonomial monomial : polynomial) {
+        IExpr coeff = monomial.coefficient();
+        long lExp = monomial.exponent().getVal(0);
+        if (lExp == 4) {
+          a = coeff;
+        } else if (lExp == 3) {
+          b = coeff;
+        } else if (lExp == 2) {
+          c = coeff;
+        } else if (lExp == 1) {
+          d = coeff;
+        } else if (lExp == 0) {
+          e = coeff;
+        } else {
+          throw new ArithmeticException("Maximize::Unexpected exponent value: " + lExp);
+        }
+      }
+      if (a.isPossibleZero(false)) {
+        if (b.isPossibleZero(false)) {
+          // quadratic
+          if (c.isPossibleZero(false)) {
+            if (d.isPossibleZero(false)) {
+              return F.List(e, F.List());
+            } else {
+              // linear
+              return F.List(
+                  F.Piecewise(F.List(F.List(e, F.Equal(d, F.C0))), F.CNInfinity),
+                  F.List(
+                      F.Rule(
+                          x,
+                          F.Piecewise(F.List(F.List(F.C0, F.Equal(d, F.C0))), S.Indeterminate))));
+            }
+          } else {
+            return F.List(
+                F.Piecewise(
+                    F.List(
+                        F.List(e, F.And(F.Equal(d, 0), F.GreaterEqual(c, 0))),
+                        F.List(
+                            F.Times(
+                                F.C1D4,
+                                F.Power(c, -1),
+                                F.Plus(F.Times(-1, F.Power(d, 2)), F.Times(4, c, e))),
+                            F.Or(
+                                F.And(F.Greater(d, 0), F.Greater(c, 0)),
+                                F.And(F.Less(d, 0), F.Greater(c, 0))))),
+                    F.CNInfinity),
+                F.List(
+                    F.Rule(
+                        x,
+                        F.Piecewise(
+                            F.List(
+                                F.List(
+                                    F.Times(F.CN1D2, F.Power(c, -1), d),
+                                    F.Or(
+                                        F.And(F.Greater(d, 0), F.Greater(c, 0)),
+                                        F.And(F.Less(d, 0), F.Greater(c, 0)))),
+                                F.List(F.C0, F.And(F.Equal(d, 0), F.GreaterEqual(c, 0)))),
+                            S.Indeterminate))));
+          }
+        } else {
+          // cubic
+          return F.List(
+              F.Piecewise(
+                  F.List(
+                      F.List(
+                          e,
+                          F.Or(
+                              F.And(F.Equal(d, F.C0), F.Equal(c, F.C0), F.Equal(b, F.C0)),
+                              F.And(F.Equal(d, F.C0), F.Greater(c, F.C0), F.Equal(b, F.C0)))),
+                      F.List(
+                          F.Times(
+                              F.C1D4,
+                              F.Power(c, F.CN1),
+                              F.Plus(F.Negate(F.Sqr(d)), F.Times(F.C4, c, e))),
+                          F.Or(
+                              F.And(F.Greater(d, F.C0), F.Greater(c, F.C0), F.Equal(b, F.C0)),
+                              F.And(F.Less(d, F.C0), F.Greater(c, F.C0), F.Equal(b, F.C0))))),
+                  F.Noo),
+              F.List(
+                  F.Rule(
+                      x,
+                      F.Piecewise(
+                          F.List(
+                              F.List(
+                                  F.Times(F.CN1D2, F.Power(c, F.CN1), d),
+                                  F.Or(
+                                      F.And(
+                                          F.Greater(d, F.C0), F.Greater(c, F.C0), F.Equal(b, F.C0)),
+                                      F.And(
+                                          F.Less(d, F.C0), F.Greater(c, F.C0), F.Equal(b, F.C0)))),
+                              F.List(
+                                  F.C0,
+                                  F.Or(
+                                      F.And(F.Equal(d, F.C0), F.Equal(c, F.C0), F.Equal(b, F.C0)),
+                                      F.And(
+                                          F.Equal(d, F.C0),
+                                          F.Greater(c, F.C0),
+                                          F.Equal(b, F.C0))))),
+                          F.Indeterminate))));
+        }
+      }
+    }
+
+    return F.NIL;
   }
 
   public static void initialize() {

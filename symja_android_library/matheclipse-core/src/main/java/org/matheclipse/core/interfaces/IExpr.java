@@ -535,11 +535,23 @@ public interface IExpr
 
     EvalEngine engine = EvalEngine.get();
     IExpr inverse = that.inverse();
+    if (this.isOne()) {
+      return inverse;
+    }
+    if (this.isMinusOne()) {
+      return inverse.negate();
+    }
     //    if (this.isPlus()) {
     //      IExpr plusAST = ((IAST) this).mapThread(F.binaryAST2(S.Times, F.Slot1, inverse), 1);
     //      return engine.evaluate(plusAST);
     //    }
-    if (engine.isTogetherMode() && (this.isPlusTimesPower() || that.isPlusTimesPower())) {
+    if (engine.isTogetherMode() && (this.isPlusTimesPower() || inverse.isPlusTimesPower())) {
+      if (this.isNumber() && inverse.isPlus()) {
+        return engine.evaluate(F.Expand(F.Times(this, inverse)));
+      }
+      if (inverse.isNumber() && this.isPlus()) {
+        return engine.evaluate(F.Expand(F.Times(inverse, this)));
+      }
       return engine.evaluate(F.Together(F.Times(this, inverse)));
     }
     return engine.evaluate(F.Times(this, inverse));
@@ -3330,11 +3342,35 @@ public interface IExpr
    * @return
    */
   default boolean isSqrtExpr() {
-    if (isPower() && second().isNumEqualRational(F.C1D2)) {
+    if (isSqrt()) {
       return true;
     }
     if (isTimes() && first().equals(F.CN1) && size() == 3) {
       if (second().isPower() && second().second().isNumEqualRational(F.C1D2)) {
+        return true;
+      }
+    }
+    return false;
+  }
+
+  /**
+   * Test if this expression is the function <code>Power[&lt;arg1&gt;, 1/2]</code> (i.e. <code>
+   * Sqrt[&lt;arg1&gt;]</code>) or <code>-Power[&lt;arg1&gt;, 1/2]</code> (i.e. <code>
+   * -Sqrt[&lt;arg1&gt;]</code>)
+   *
+   * @return
+   */
+  default boolean isFactorSqrtExpr() {
+    if (isSqrt()) {
+      IExpr base = first();
+      if (base.isRational() && base.isPositive()) {
+        return true;
+      }
+      return false;
+    }
+    if (isTimes() && first().isRational() && size() == 3) {
+      IExpr factor2 = second();
+      if (factor2.isSqrt() && factor2.first().isRational() && factor2.first().isPositive()) {
         return true;
       }
     }
@@ -4047,9 +4083,9 @@ public interface IExpr
     }
     EvalEngine engine = EvalEngine.get();
     if (engine.isTogetherMode() && (this.isPlusTimesPower() || that.isPlusTimesPower())) {
-      return S.Together.of(engine, F.Plus(this, that));
+      return engine.evaluate(F.Together(F.Plus(this, that)));
     }
-    return S.Plus.of(engine, this, that);
+    return engine.evaluate(F.Plus(this, that));
   }
 
   /**
@@ -4067,6 +4103,32 @@ public interface IExpr
       }
     } else if (that.isOne()) {
       return this;
+    } else if (that.isMinusOne()) {
+      if (this.isPlus()
+          && this.size() == 3
+          && (this.first().isRational() || this.first().isFactorSqrtExpr())
+          && this.second().isFactorSqrtExpr()) {
+        // rat1 + rat2 * Sqrt( rat3 );
+        // or: rat1 * Sqrt( rat2 ) + rat3 * Sqrt( rat4 );
+        IExpr p1 = first();
+        IExpr p2 = second();
+        IRational denominator = (IRational) F.Subtract.of(F.Sqr(p1), F.Sqr(p2));
+        denominator = denominator.inverse();
+        p1 = denominator.multiply(p1);
+        p2 = denominator.multiply(p2);
+        return p1.subtract(p2);
+      }
+      if (this.isFactorSqrtExpr()) {
+        if (isSqrt()) {
+          return F.Times.of(first().inverse(), this);
+        }
+        if (isTimes()) {
+          // rat1 * Sqrt( rat2 );
+          IRational rat1 = (IRational) first();
+          IRational rat2 = (IRational) second().first();
+          return F.Times.of(rat1.inverse(), rat2.inverse(), second());
+        }
+      }
     }
     EvalEngine engine = EvalEngine.get();
     if (engine.isTogetherMode() && (this.isPlusTimesPower() || that.isPlusTimesPower())) {
@@ -4404,10 +4466,6 @@ public interface IExpr
     return add(that);
   }
 
-  // default Object toData() {
-  // return null;
-  // }
-
   /**
    * Returns an <code>IExpr</code> whose value is <code>(this * that)</code>. Calculates <code>
    * F.eval(F.Times(this, that))</code> in the common case and uses a specialized implementation for
@@ -4425,9 +4483,15 @@ public interface IExpr
     }
     EvalEngine engine = EvalEngine.get();
     if (engine.isTogetherMode() && (this.isPlusTimesPower() || that.isPlusTimesPower())) {
-      return S.Together.of(engine, F.Times(this, that));
+      if (this.isNumber() && that.isPlus()) {
+        return engine.evaluate(F.Expand(F.Times(this, that)));
+      }
+      if (that.isNumber() && this.isPlus()) {
+        return engine.evaluate(F.Expand(F.Times(that, this)));
+      }
+      return engine.evaluate(F.Together(F.Times(this, that)));
     }
-    return S.Times.of(engine, this, that);
+    return engine.evaluate(F.Times(this, that));
   }
 
   /**
@@ -4718,7 +4782,13 @@ public interface IExpr
 
   @Override
   default IExpr atan2(IExpr that) throws MathIllegalArgumentException {
-    return S.ArcTan.of(this, that);
+    // Beware of the order or arguments! As this is based on a two-arguments functions, in order to
+    // be consistent with arguments order, the instance is the first argument and the single
+    // provided argument is the second argument. In order to be consistent with programming
+    // languages Math.atan2, this method computes Math.atan2(y, x).
+
+    // The arguments of the Symja ArcTan() function is defined the other way round
+    return S.ArcTan.of(that, this);
   }
 
   @Override
@@ -4743,7 +4813,6 @@ public interface IExpr
 
   @Override
   default IExpr copySign(IExpr that) {
-    // TODO improve for complex "that"
     return abs().times(that.sign());
   }
 
@@ -4759,7 +4828,7 @@ public interface IExpr
 
   @Override
   default IExpr divide(double arg0) {
-    return times(F.num(arg0));
+    return divide(F.num(arg0));
   }
 
   @Override
@@ -4947,4 +5016,5 @@ public interface IExpr
     // degrees * (Pi / 180)
     return F.Times(F.QQ(1L, 180L), this, S.Pi);
   }
+
 }

@@ -118,15 +118,29 @@ public class Num implements INum {
 
   @Override
   public INum add(final INum val) {
-    // if (val instanceof ApfloatNum) {
-    // return ApfloatNum.valueOf(fDouble, ((ApfloatNum) val).precision()).add(val);
-    // }
     if (val instanceof ApfloatNum) {
       Apfloat arg2 = ((ApfloatNum) val).apfloatValue();
-      return F.num(arg2.add(apfloatValue()));
+      return F.num(EvalEngine.getApfloat().add(apfloatValue(), arg2));
     }
-
     return valueOf(fDouble + val.getRealPart());
+  }
+
+  @Override
+  public INum subtract(final INum val) {
+    if (val instanceof ApfloatNum) {
+      Apfloat arg2 = ((ApfloatNum) val).apfloatValue();
+      return F.num(EvalEngine.getApfloat().subtract(apfloatValue(), arg2));
+    }
+    return valueOf(fDouble - val.getRealPart());
+  }
+
+  @Override
+  public INum divide(final INum val) {
+    if (val instanceof ApfloatNum) {
+      Apfloat arg2 = ((ApfloatNum) val).apfloatValue();
+      return F.num(EvalEngine.getApfloat().divide(apfloatValue(), arg2));
+    }
+    return valueOf(fDouble / val.getRealPart());
   }
 
   @Override
@@ -212,13 +226,13 @@ public class Num implements INum {
     }
   }
 
-  //  /**
-  //   * @param that
-  //   * @return
-  //   */
-  //  public double divide(final double that) {
-  //    return fDouble / that;
-  //  }
+  // /**
+  // * @param that
+  // * @return
+  // */
+  // public double divide(final double that) {
+  // return fDouble / that;
+  // }
 
   @Override
   public ISignedNumber divideBy(ISignedNumber that) {
@@ -413,13 +427,8 @@ public class Num implements INum {
   }
 
   @Override
-  public String internalJavaString(
-      boolean symbolsAsFactoryMethod,
-      int depth,
-      boolean useOperators,
-      boolean usePrefix,
-      boolean noSymbolPrefix,
-      Function<IExpr, String> variables) {
+  public String internalJavaString(boolean symbolsAsFactoryMethod, int depth, boolean useOperators,
+      boolean usePrefix, boolean noSymbolPrefix, Function<IExpr, String> variables) {
     String prefix = usePrefix ? "F." : "";
     if (isZero()) {
       return prefix + "CD0";
@@ -571,7 +580,8 @@ public class Num implements INum {
   @Override
   public INum multiply(final INum val) {
     if (val instanceof ApfloatNum) {
-      return ApfloatNum.valueOf(fDouble).multiply(val);
+      return F
+          .num(EvalEngine.getApfloat().multiply(apfloatValue(), ((ApfloatNum) val).apfloatValue()));
     }
     return valueOf(fDouble * val.getRealPart());
   }
@@ -624,6 +634,32 @@ public class Num implements INum {
   }
 
   @Override
+  public IExpr power(final IExpr that) {
+    if (that instanceof Num) {
+      if (fDouble < 0.0) {
+        return ComplexNum.valueOf(fDouble).power((Num) that);
+      }
+      return valueOf(Math.pow(fDouble, ((Num) that).getRealPart()));
+    }
+    if (that instanceof IComplexNum) {
+      if (that instanceof ApcomplexNum) {
+        return F.complexNum(
+            EvalEngine.getApfloat().pow(apcomplexValue(), ((ApcomplexNum) that).apcomplexValue()));
+      }
+      return ComplexNum.valueOf(fDouble).power((ComplexNum) that);
+    }
+    if (that instanceof ApfloatNum) {
+      if (fDouble < 0.0) {
+        return F.complexNum(
+            EvalEngine.getApfloat().pow(apfloatValue(), ((ApfloatNum) that).apcomplexValue()));
+      }
+      return F.num(EvalEngine.getApfloat().pow(apfloatValue(), ((ApfloatNum) that).apfloatValue()));
+    }
+
+    return INum.super.power(that);
+  }
+
+  @Override
   public long precision() throws ApfloatRuntimeException {
     return 15L;
   }
@@ -637,13 +673,12 @@ public class Num implements INum {
   public ISignedNumber roundClosest(ISignedNumber multiple) {
     if (multiple.isRational()) {
       return F.ZZ(
-              DoubleMath.roundToBigInteger(
-                  fDouble / multiple.doubleValue(), RoundingMode.HALF_EVEN))
+          DoubleMath.roundToBigInteger(fDouble / multiple.doubleValue(), RoundingMode.HALF_EVEN))
           .multiply((IRational) multiple);
     }
     double factor = multiple.doubleValue();
-    return F.num(
-        DoubleMath.roundToBigInteger(fDouble / factor, RoundingMode.HALF_EVEN).doubleValue()
+    return F
+        .num(DoubleMath.roundToBigInteger(fDouble / factor, RoundingMode.HALF_EVEN).doubleValue()
             * factor);
   }
 

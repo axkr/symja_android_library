@@ -7,6 +7,7 @@ import java.io.ObjectOutput;
 import java.util.ArrayDeque;
 import java.util.List;
 
+import org.matheclipse.core.basic.Config;
 import org.matheclipse.core.combinatoric.MultisetPartitionsIterator;
 import org.matheclipse.core.combinatoric.NumberPartitionsIterator;
 import org.matheclipse.core.eval.EvalEngine;
@@ -28,7 +29,6 @@ import org.matheclipse.core.interfaces.IPatternObject;
 import org.matheclipse.core.interfaces.IPatternSequence;
 import org.matheclipse.core.interfaces.IRational;
 import org.matheclipse.core.interfaces.ISymbol;
-import org.matheclipse.parser.client.FEConfig;
 
 public class PatternMatcher extends IPatternMatcher implements Externalizable {
 
@@ -1789,7 +1789,7 @@ public class PatternMatcher extends IPatternMatcher implements Externalizable {
 
     if (lhsPatternAST.size() < lhsEvalAST.size()) {
       if (lhsPatternAST.isOrderlessAST() && lhsPatternAST.isFlatAST()) {
-        if (!matchExpr(lhsPatternAST.head(), lhsEvalAST.head(), engine, new StackMatcher(engine))) {
+        if (!matchHeads(lhsPatternAST, lhsEvalAST, engine)) {
           return F.NIL;
         }
         final OrderlessMatcher foMatcher = new OrderlessMatcher(lhsPatternAST, lhsEvalAST);
@@ -1803,7 +1803,7 @@ public class PatternMatcher extends IPatternMatcher implements Externalizable {
             lhsResultAST.append(result);
             return lhsResultAST;
           } catch (final ConditionException e) {
-            if (FEConfig.SHOW_STACKTRACE) {
+            if (Config.SHOW_STACKTRACE) {
               logConditionFalse(lhsEvalAST, lhsPatternAST, rhsExpr);
             }
             // fall through
@@ -1815,35 +1815,72 @@ public class PatternMatcher extends IPatternMatcher implements Externalizable {
         return F.NIL;
       }
       if (lhsPatternAST.isFlatAST()) {
-        if (!matchExpr(lhsPatternAST.head(), lhsEvalAST.head(), engine, new StackMatcher(engine))) {
+        if (!matchHeads(lhsPatternAST, lhsEvalAST, engine)) {
           return F.NIL;
         }
-        int len = lhsEvalAST.size() - lhsPatternAST.size();
-        for (int i = 0; i < len; i++) {
-          if (matchASTSequence(lhsPatternAST, lhsEvalAST, i, engine, new StackMatcher(engine))) {
-            IASTAppendable lhsResultAST = lhsEvalAST.copyAppendable();
-            for (int j = 1; j < lhsPatternAST.size(); j++) {
-              lhsResultAST.remove(i + 1);
-            }
-            try {
-              IExpr result = fPatternMap.substituteSymbols(rhsExpr, F.CEmptySequence);
-              result = engine.evaluate(result);
-              lhsResultAST.append(i + 1, result);
-              return lhsResultAST;
-            } catch (final ConditionException e) {
-              if (FEConfig.SHOW_STACKTRACE) {
-                logConditionFalse(lhsEvalAST, lhsPatternAST, rhsExpr);
-              }
-            } catch (final ReturnException e) {
-              lhsResultAST.append(i + 1, e.getValue());
-              return lhsResultAST;
-            }
-            return F.NIL;
-          }
-        }
+        return matchFlatSequenceFromIndex(lhsPatternAST, lhsEvalAST, rhsExpr, engine);
       }
     }
 
+    return F.NIL;
+  }
+
+  /**
+   * Match two {@link ISymbol#FLAT} <code>ASTs</code> where the <code>lhsEvalFlatAST</code> sequence
+   * length can be greater equal than the <code>lhsPatternFlatAST</code> sequence length.
+   *
+   * <p>Example:
+   *
+   * <pre>
+   * >> SetAttributes(fl, Flat)
+   *
+   * >> fl(fl(a, b), c)", //
+   * fl(a,b,c)
+   *
+   * >> fl(x_, x_) := fl(x)
+   *
+   * >> fl(b, b, b, c, c)
+   * fl(b,c)
+   *
+   * >> fl(a, a, a, b, b, b, c, c)
+   * fl(a,b,c)
+   * </pre>
+   *
+   * @param lhsPatternFlatAST
+   * @param lhsEvalFlatAST
+   * @param rhsExpr
+   * @param engine
+   * @return
+   */
+  private IExpr matchFlatSequenceFromIndex(
+      final IAST lhsPatternFlatAST,
+      final IAST lhsEvalFlatAST,
+      final IExpr rhsExpr,
+      EvalEngine engine) {
+    final int len = lhsEvalFlatAST.size() - lhsPatternFlatAST.size() + 1;
+    for (int i = 0; i < len; i++) {
+      if (matchASTSequence(
+          lhsPatternFlatAST, lhsEvalFlatAST, i, engine, new StackMatcher(engine))) {
+        IASTAppendable lhsResultAST = lhsEvalFlatAST.copyAppendable();
+        for (int j = 1; j < lhsPatternFlatAST.size(); j++) {
+          lhsResultAST.remove(i + 1);
+        }
+        try {
+          IExpr result = fPatternMap.substituteSymbols(rhsExpr, F.CEmptySequence);
+          result = engine.evaluate(result);
+          lhsResultAST.append(i + 1, result);
+          return lhsResultAST;
+        } catch (final ConditionException e) {
+          if (Config.SHOW_STACKTRACE) {
+            logConditionFalse(lhsEvalFlatAST, lhsPatternFlatAST, rhsExpr);
+          }
+        } catch (final ReturnException e) {
+          lhsResultAST.append(i + 1, e.getValue());
+          return lhsResultAST;
+        }
+        return F.NIL;
+      }
+    }
     return F.NIL;
   }
 

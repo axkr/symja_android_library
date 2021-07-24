@@ -243,6 +243,9 @@ public class StringFunctionsTest extends AbstractTestCase {
 
   public void testStringFreeQ() {
     check(
+        "StringFreeQ(2^x,\"a\")", //
+        "StringFreeQ(2^x,a)");
+    check(
         "StringFreeQ(\"symja\", \"s\" ~~__ ~~\"a\")", //
         "False");
     check(

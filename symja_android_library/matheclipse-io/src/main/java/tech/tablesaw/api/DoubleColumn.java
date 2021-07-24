@@ -1,13 +1,7 @@
 package tech.tablesaw.api;
 
 import com.google.common.base.Preconditions;
-import it.unimi.dsi.fastutil.doubles.DoubleArrayList;
-import it.unimi.dsi.fastutil.doubles.DoubleArrays;
-import it.unimi.dsi.fastutil.doubles.DoubleComparators;
-import it.unimi.dsi.fastutil.doubles.DoubleIterator;
-import it.unimi.dsi.fastutil.doubles.DoubleListIterator;
-import it.unimi.dsi.fastutil.doubles.DoubleOpenHashSet;
-import it.unimi.dsi.fastutil.doubles.DoubleSet;
+import it.unimi.dsi.fastutil.doubles.*;
 import java.math.BigDecimal;
 import java.nio.ByteBuffer;
 import java.util.Collection;
@@ -23,6 +17,7 @@ import tech.tablesaw.columns.numbers.FloatColumnType;
 import tech.tablesaw.columns.numbers.NumberColumnFormatter;
 import tech.tablesaw.columns.numbers.NumberFillers;
 import tech.tablesaw.columns.numbers.fillers.DoubleRangeIterable;
+import tech.tablesaw.selection.BitmapBackedSelection;
 import tech.tablesaw.selection.Selection;
 
 public class DoubleColumn extends NumberColumn<DoubleColumn, Double>
@@ -31,7 +26,7 @@ public class DoubleColumn extends NumberColumn<DoubleColumn, Double>
   private final DoubleArrayList data;
 
   protected DoubleColumn(String name, DoubleArrayList data) {
-    super(DoubleColumnType.instance(), name);
+    super(DoubleColumnType.instance(), name, DoubleColumnType.DEFAULT_PARSER);
     setPrintFormatter(NumberColumnFormatter.floatingPointDefault());
     this.data = data;
   }
@@ -59,13 +54,14 @@ public class DoubleColumn extends NumberColumn<DoubleColumn, Double>
     data.clear();
   }
 
+  @Override
   public DoubleColumn setMissing(int index) {
     set(index, DoubleColumnType.missingValueIndicator());
     return this;
   }
 
   protected DoubleColumn(String name) {
-    super(DoubleColumnType.instance(), name);
+    super(DoubleColumnType.instance(), name, DoubleColumnType.DEFAULT_PARSER);
     setPrintFormatter(NumberColumnFormatter.floatingPointDefault());
     this.data = new DoubleArrayList(DEFAULT_ARRAY_SIZE);
   }
@@ -151,6 +147,24 @@ public class DoubleColumn extends NumberColumn<DoubleColumn, Double>
   @Override
   public DoubleColumn where(Selection selection) {
     return (DoubleColumn) super.where(selection);
+  }
+
+  public Selection isNotIn(final double... doubles) {
+    final Selection results = new BitmapBackedSelection();
+    results.addRange(0, size());
+    results.andNot(isIn(doubles));
+    return results;
+  }
+
+  public Selection isIn(final double... doubles) {
+    final Selection results = new BitmapBackedSelection();
+    final DoubleRBTreeSet doubleSet = new DoubleRBTreeSet(doubles);
+    for (int i = 0; i < size(); i++) {
+      if (doubleSet.contains(getDouble(i))) {
+        results.add(i);
+      }
+    }
+    return results;
   }
 
   @Override
@@ -269,7 +283,7 @@ public class DoubleColumn extends NumberColumn<DoubleColumn, Double>
 
   @Override
   public Iterator<Double> iterator() {
-    return (Iterator<Double>) data.iterator();
+    return data.iterator();
   }
 
   @Override
@@ -422,7 +436,7 @@ public class DoubleColumn extends NumberColumn<DoubleColumn, Double>
   @Override
   public DoubleColumn appendCell(final String value) {
     try {
-      return append(DoubleColumnType.DEFAULT_PARSER.parseDouble(value));
+      return append(parser().parseDouble(value));
     } catch (final NumberFormatException e) {
       throw new NumberFormatException(
           "Error adding value to column " + name() + ": " + e.getMessage());

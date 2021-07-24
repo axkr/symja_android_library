@@ -712,7 +712,7 @@ public class ComplexSym implements IComplex {
     if ((n == 0) && fReal.isZero() && fImaginary.isZero()) {
       throw new ArithmeticException("Indeterminate: 0^0");
     }
-    if (n == Long.MIN_VALUE) {
+    if (n == Integer.MIN_VALUE) {
       throw new java.lang.ArithmeticException();
     }
     if (n == 1) {

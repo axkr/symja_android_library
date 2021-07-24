@@ -40,7 +40,6 @@ import org.matheclipse.core.interfaces.INumber;
 import org.matheclipse.core.interfaces.IRational;
 import org.matheclipse.core.interfaces.ISignedNumber;
 import org.matheclipse.core.interfaces.ISymbol;
-import org.matheclipse.parser.client.FEConfig;
 
 import it.unimi.dsi.fastutil.objects.Object2IntMap;
 import it.unimi.dsi.fastutil.objects.Object2IntOpenHashMap;
@@ -731,7 +730,7 @@ public class IntegerFunctions {
           }
         }
       } catch (RuntimeException rex) {
-        if (FEConfig.SHOW_STACKTRACE) {
+        if (Config.SHOW_STACKTRACE) {
           rex.printStackTrace();
         }
       }
@@ -981,7 +980,7 @@ public class IntegerFunctions {
         }
       } catch (RuntimeException rex) {
         // ISignedNumber#floor() or #ceil() may throw ArithmeticException
-        if (FEConfig.SHOW_STACKTRACE) {
+        if (Config.SHOW_STACKTRACE) {
           rex.printStackTrace();
         }
       }
@@ -1273,11 +1272,11 @@ public class IntegerFunctions {
               return F.num(zDouble / nDouble).floorFraction();
             }
           } catch (ValidateException ve) {
-            if (FEConfig.SHOW_STACKTRACE) {
+            if (Config.SHOW_STACKTRACE) {
               ve.printStackTrace();
             }
           } catch (RuntimeException rex) {
-            if (FEConfig.SHOW_STACKTRACE) {
+            if (Config.SHOW_STACKTRACE) {
               rex.printStackTrace();
             }
             return engine.printMessage(ast.topHead(), rex);
@@ -1413,11 +1412,11 @@ public class IntegerFunctions {
               return F.List(quotient, remainder);
             }
           } catch (ValidateException ve) {
-            if (FEConfig.SHOW_STACKTRACE) {
+            if (Config.SHOW_STACKTRACE) {
               ve.printStackTrace();
             }
           } catch (RuntimeException rex) {
-            if (FEConfig.SHOW_STACKTRACE) {
+            if (Config.SHOW_STACKTRACE) {
               rex.printStackTrace();
             }
             return engine.printMessage(ast.topHead(), rex);

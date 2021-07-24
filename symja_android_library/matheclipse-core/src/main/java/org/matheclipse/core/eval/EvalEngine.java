@@ -679,7 +679,6 @@ public class EvalEngine implements Serializable {
    *     result0[0]</code>. <code>result0[0]</code> should be <code>F.NIL</code> if no evaluation
    *     occured.
    * @param ast the original <code>ast</code> for whixh the arguments should be evaluated
-   * @param evaledArg the i-th evaluated argument of <code>ast</code>, may be <code>F.NIL</code>
    * @param arg the i-th argument of <code>ast</code>
    * @param i <code>arg</code> is the i-th argument of <code>ast</code>
    * @param isNumericFunction if <code>true</code> the <code>NumericFunction</code> attribute is set
@@ -688,11 +687,11 @@ public class EvalEngine implements Serializable {
   public void evalArg(
       final IASTMutable[] result0,
       final IAST ast,
-      final IExpr evaledArg,
       final IExpr arg,
       final int i,
       final boolean isNumericFunction) {
-    // IExpr temp = evalLoop(arg);
+
+    final IExpr evaledArg = evalLoop(arg);
     if (evaledArg.isPresent()) {
       if (!result0[0].isPresent()) {
         result0[0] = ast.copy();
@@ -741,8 +740,7 @@ public class EvalEngine implements Serializable {
         try {
           if (!x.isAST(S.Unevaluated)) {
             selectNumericMode(attr, ISymbol.NHOLDFIRST, localNumericMode);
-            IExpr temp = evalLoop(x);
-            evalArg(rlist, ast, temp, x, 1, isNumericFunction);
+            evalArg(rlist, ast, x, 1, isNumericFunction);
             if (astSize == 2 && rlist[0].isPresent()) {
               return rlist[0];
             }
@@ -758,8 +756,7 @@ public class EvalEngine implements Serializable {
           try {
             if (x.isAST(S.Evaluate)) {
               selectNumericMode(attr, ISymbol.NHOLDFIRST, localNumericMode);
-              IExpr temp = evalLoop(x);
-              evalArg(rlist, ast, temp, x, 1, isNumericFunction);
+              evalArg(rlist, ast, x, 1, isNumericFunction);
               if (astSize == 2 && rlist[0].isPresent()) {
                 return rlist[0];
               }
@@ -783,8 +780,7 @@ public class EvalEngine implements Serializable {
                 astSize,
                 (arg, i) -> {
                   if (!arg.isUnevaluated()) {
-                    IExpr temp = evalLoop(arg);
-                    evalArg(rlist, ast, temp, arg, i, isNumericFunction);
+                    evalArg(rlist, ast, arg, i, isNumericFunction);
                   }
                 });
           } finally {
@@ -803,8 +799,7 @@ public class EvalEngine implements Serializable {
                   astSize,
                   (arg, i) -> {
                     if (arg.isAST(S.Evaluate)) {
-                      IExpr temp = evalLoop(arg);
-                      evalArg(rlist, ast, temp, arg, i, isNumericFunction);
+                      evalArg(rlist, ast, arg, i, isNumericFunction);
                     }
                   });
             } finally {
@@ -978,7 +973,7 @@ public class EvalEngine implements Serializable {
           if (ve instanceof LimitException) {
             throw ve;
           }
-          if (FEConfig.SHOW_STACKTRACE) {
+          if (Config.SHOW_STACKTRACE) {
             ve.printStackTrace();
           }
           return printMessage(ast.topHead(), ve);
@@ -1476,7 +1471,7 @@ public class EvalEngine implements Serializable {
               if (fStopRequested || Thread.currentThread().isInterrupted()) {
                 throw TimeoutException.TIMED_OUT;
               }
-              if (FEConfig.SHOW_STACKTRACE) {
+              if (Config.SHOW_STACKTRACE) {
                 if (temp.equals(result)) {
                   // Endless iteration detected in `1` in evaluation loop.
                   IOFunctions.printMessage(result.topHead(), "itendless", F.List(temp), this);
@@ -1520,7 +1515,7 @@ public class EvalEngine implements Serializable {
               if (fStopRequested || Thread.currentThread().isInterrupted()) {
                 throw TimeoutException.TIMED_OUT;
               }
-              if (FEConfig.SHOW_STACKTRACE) {
+              if (Config.SHOW_STACKTRACE) {
                 if (temp.equals(result)) {
                   // Endless iteration detected in `1` in evaluation loop.
                   IOFunctions.printMessage(result.topHead(), "itendless", F.List(temp), this);
@@ -2059,7 +2054,7 @@ public class EvalEngine implements Serializable {
     try {
       return evaluate(expr).isTrue();
     } catch (MathException fce) {
-      if (FEConfig.SHOW_STACKTRACE) {
+      if (Config.SHOW_STACKTRACE) {
         fce.printStackTrace();
       }
       return false;
@@ -2160,7 +2155,7 @@ public class EvalEngine implements Serializable {
    * @deprecated use {@link #evaluateNIL(IExpr)}
    */
   public final IExpr evaluateNull(final IExpr expr) {
-    return evaluateNull(expr);
+    return evaluateNIL(expr);
   }
 
   /**

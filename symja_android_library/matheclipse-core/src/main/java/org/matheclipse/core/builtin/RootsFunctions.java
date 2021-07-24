@@ -34,7 +34,6 @@ import org.matheclipse.core.polynomials.longexponent.ExprMonomial;
 import org.matheclipse.core.polynomials.longexponent.ExprPolynomial;
 import org.matheclipse.core.polynomials.longexponent.ExprPolynomialRing;
 import org.matheclipse.core.polynomials.longexponent.ExprRingFactory;
-import org.matheclipse.parser.client.FEConfig;
 
 import edu.jas.arith.BigRational;
 import edu.jas.poly.Complex;
@@ -134,11 +133,11 @@ public class RootsFunctions {
         }
         return resultList;
       } catch (InvalidBoundaryException e) {
-        if (FEConfig.SHOW_STACKTRACE) {
+        if (Config.SHOW_STACKTRACE) {
           e.printStackTrace();
         }
       } catch (JASConversionException e) {
-        if (FEConfig.SHOW_STACKTRACE) {
+        if (Config.SHOW_STACKTRACE) {
           e.printStackTrace();
         }
       }
@@ -443,7 +442,7 @@ public class RootsFunctions {
         org.hipparchus.complex.Complex[] roots = solver.solveAllComplex(coefficients, 0);
         return Object2Expr.convertComplex(true, roots);
       } catch (org.hipparchus.exception.MathRuntimeException mrex) {
-        if (FEConfig.SHOW_STACKTRACE) {
+        if (Config.SHOW_STACKTRACE) {
           mrex.printStackTrace();
         }
         return F.NIL;
@@ -571,7 +570,7 @@ public class RootsFunctions {
         return result;
       }
     } catch (JASConversionException e2) {
-      if (FEConfig.SHOW_STACKTRACE) {
+      if (Config.SHOW_STACKTRACE) {
         e2.printStackTrace();
       }
     }
@@ -601,7 +600,7 @@ public class RootsFunctions {
       result = QuarticSolver.sortASTArguments(result);
       return result;
     } catch (JASConversionException e2) {
-      if (FEConfig.SHOW_STACKTRACE) {
+      if (Config.SHOW_STACKTRACE) {
         e2.printStackTrace();
       }
     }

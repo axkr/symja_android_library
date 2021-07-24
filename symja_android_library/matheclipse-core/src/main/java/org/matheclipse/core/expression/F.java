@@ -6,6 +6,7 @@ import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.math.BigInteger;
+import java.util.Collection;
 import java.util.HashSet;
 import java.util.IdentityHashMap;
 import java.util.Locale;
@@ -203,35 +204,151 @@ public class F extends S {
 
   // public final static ISymbol usage = initFinalHiddenSymbol("usage");
 
+  /**
+   * Used to represent a formal pattern <code>a_</code> that will be used only for predefined
+   * pattern-matching rules.
+   */
   public static final IPattern a_ = initPredefinedPattern(a);
+  /**
+   * Used to represent a formal pattern <code>b_</code> that will be used only for predefined
+   * pattern-matching rules.
+   */
   public static final IPattern b_ = initPredefinedPattern(b);
+  /**
+   * Used to represent a formal pattern <code>c_</code> that will be used only for predefined
+   * pattern-matching rules.
+   */
   public static final IPattern c_ = initPredefinedPattern(c);
+  /**
+   * Used to represent a formal pattern <code>d_</code> that will be used only for predefined
+   * pattern-matching rules.
+   */
   public static final IPattern d_ = initPredefinedPattern(d);
+  /**
+   * Used to represent a formal pattern <code>e_</code> that will be used only for predefined
+   * pattern-matching rules.
+   */
   public static final IPattern e_ = initPredefinedPattern(e);
+  /**
+   * Used to represent a formal pattern <code>f_</code> that will be used only for predefined
+   * pattern-matching rules.
+   */
   public static final IPattern f_ = initPredefinedPattern(f);
+  /**
+   * Used to represent a formal pattern <code>g_</code> that will be used only for predefined
+   * pattern-matching rules.
+   */
   public static final IPattern g_ = initPredefinedPattern(g);
+  /**
+   * Used to represent a formal pattern <code>h_</code> that will be used only for predefined
+   * pattern-matching rules.
+   */
   public static final IPattern h_ = initPredefinedPattern(h);
+  /**
+   * Used to represent a formal pattern <code>i_</code> that will be used only for predefined
+   * pattern-matching rules.
+   */
   public static final IPattern i_ = initPredefinedPattern(i);
+  /**
+   * Used to represent a formal pattern <code>j_</code> that will be used only for predefined
+   * pattern-matching rules.
+   */
   public static final IPattern j_ = initPredefinedPattern(j);
+  /**
+   * Used to represent a formal pattern <code>k_</code> that will be used only for predefined
+   * pattern-matching rules.
+   */
   public static final IPattern k_ = initPredefinedPattern(k);
+  /**
+   * Used to represent a formal pattern <code>l_</code> that will be used only for predefined
+   * pattern-matching rules.
+   */
   public static final IPattern l_ = initPredefinedPattern(l);
+  /**
+   * Used to represent a formal pattern <code>m_</code> that will be used only for predefined
+   * pattern-matching rules.
+   */
   public static final IPattern m_ = initPredefinedPattern(m);
+  /**
+   * Used to represent a formal pattern <code>n_</code> that will be used only for predefined
+   * pattern-matching rules.
+   */
   public static final IPattern n_ = initPredefinedPattern(n);
+  /**
+   * Used to represent a formal pattern <code>o_</code> that will be used only for predefined
+   * pattern-matching rules.
+   */
   public static final IPattern o_ = initPredefinedPattern(o);
+  /**
+   * Used to represent a formal pattern <code>p_</code> that will be used only for predefined
+   * pattern-matching rules.
+   */
   public static final IPattern p_ = initPredefinedPattern(p);
+  /**
+   * Used to represent a formal pattern <code>q_</code> that will be used only for predefined
+   * pattern-matching rules.
+   */
   public static final IPattern q_ = initPredefinedPattern(q);
+  /**
+   * Used to represent a formal pattern <code>r_</code> that will be used only for predefined
+   * pattern-matching rules.
+   */
   public static final IPattern r_ = initPredefinedPattern(r);
+  /**
+   * Used to represent a formal pattern <code>s_</code> that will be used only for predefined
+   * pattern-matching rules.
+   */
   public static final IPattern s_ = initPredefinedPattern(s);
+  /**
+   * Used to represent a formal pattern <code>t_</code> that will be used only for predefined
+   * pattern-matching rules.
+   */
   public static final IPattern t_ = initPredefinedPattern(t);
+  /**
+   * Used to represent a formal pattern <code>u_</code> that will be used only for predefined
+   * pattern-matching rules.
+   */
   public static final IPattern u_ = initPredefinedPattern(u);
+  /**
+   * Used to represent a formal pattern <code>v_</code> that will be used only for predefined
+   * pattern-matching rules.
+   */
   public static final IPattern v_ = initPredefinedPattern(v);
+  /**
+   * Used to represent a formal pattern <code>w_</code> that will be used only for predefined
+   * pattern-matching rules.
+   */
   public static final IPattern w_ = initPredefinedPattern(w);
+  /**
+   * Used to represent a formal pattern <code>x_</code> that will be used only for predefined
+   * pattern-matching rules.
+   */
   public static final IPattern x_ = initPredefinedPattern(x);
+  /**
+   * Used to represent a formal pattern <code>y_</code> that will be used only for predefined
+   * pattern-matching rules.
+   */
   public static final IPattern y_ = initPredefinedPattern(y);
+  /**
+   * Used to represent a formal pattern <code>z_</code> that will be used only for predefined
+   * pattern-matching rules.
+   */
   public static final IPattern z_ = initPredefinedPattern(z);
 
+  /**
+   * Used to represent a formal pattern sequence <code>x__</code> that will be used only for
+   * predefined pattern-matching rules.
+   */
   public static final IPatternSequence x__ = initPredefinedPatternSequence(x);
+  /**
+   * Used to represent a formal pattern sequence <code>y__</code> that will be used only for
+   * predefined pattern-matching rules.
+   */
   public static final IPatternSequence y__ = initPredefinedPatternSequence(y);
+  /**
+   * Used to represent a formal pattern sequence <code>z__</code> that will be used only for
+   * predefined pattern-matching rules.
+   */
   public static final IPatternSequence z__ = initPredefinedPatternSequence(z);
 
   public static final IPattern A_ = initPredefinedPattern(ASymbol);
@@ -1911,6 +2028,17 @@ public class F extends S {
     return AST.newInstance(initialCapacity, head, initNull);
   }
 
+  public static IASTAppendable ast(final IExpr head, Collection<? extends IExpr> collection) {
+    return ast(head, collection, 0);
+  }
+
+  public static IASTAppendable ast(
+      final IExpr head, Collection<? extends IExpr> collection, int capacity) {
+    IASTAppendable result = ast(head, collection.size() + capacity, false);
+    result.appendAll(collection);
+    return result;
+  }
+
   /**
    * Create a new <code>List()</code> with <code>copies</code> number of arguments, which are set to
    * <code>value</code>.
@@ -2538,6 +2666,10 @@ public class F extends S {
     return new AST2(CompilePrint, a0, a1);
   }
 
+  public static IAST Complement(final IExpr a0, final IExpr a1) {
+    return new AST2(Complement, a0, a1);
+  }
+
   /**
    * Create a symbolic complex number
    *
@@ -3078,6 +3210,10 @@ public class F extends S {
 
   public static IAST Equal(final IExpr a0, final IExpr a1) {
     return new B2.Equal(a0, a1);
+  }
+
+  public static IAST Equal(final IExpr a0, final int a1) {
+    return new B2.Equal(a0, F.ZZ(a1));
   }
 
   public static IAST Equivalent(final IExpr a0, final IExpr a1) {
@@ -3734,8 +3870,16 @@ public class F extends S {
     return new B2.Greater(a0, a1);
   }
 
+  public static IAST Greater(final IExpr a0, final int a1) {
+    return new B2.Greater(a0, F.ZZ(a1));
+  }
+
   public static IAST GreaterEqual(final IExpr a0, final IExpr a1) {
     return new B2.GreaterEqual(a0, a1);
+  }
+
+  public static IAST GreaterEqual(final IExpr a0, final int a1) {
+    return new B2.GreaterEqual(a0, F.ZZ(a1));
   }
 
   public static IAST Gudermannian(final IExpr a0) {
@@ -4234,6 +4378,10 @@ public class F extends S {
     return result;
   }
 
+  public static IAST Intersection(final IExpr a0, final IExpr a1) {
+    return new AST2(Intersection, a0, a1);
+  }
+
   public static IAST Inverse(final IExpr a0) {
 
     return new AST1(Inverse, a0);
@@ -4639,6 +4787,10 @@ public class F extends S {
     return new B2.Less(a0, a1);
   }
 
+  public static IAST Less(final IExpr a0, final int a1) {
+    return new B2.Less(a0, F.ZZ(a1));
+  }
+
   public static IAST Less(final IExpr a0, final IExpr a1, final IExpr a2) {
     return new AST3(Less, a0, a1, a2);
   }
@@ -4654,6 +4806,10 @@ public class F extends S {
 
   public static IAST LessEqual(final IExpr a0, final IExpr a1) {
     return new B2.LessEqual(a0, a1);
+  }
+
+  public static IAST LessEqual(final IExpr a0, final int a1) {
+    return new B2.LessEqual(a0, F.ZZ(a1));
   }
 
   public static IAST LessEqual(final IExpr a0, final IExpr a1, final IExpr a2) {
@@ -4853,6 +5009,32 @@ public class F extends S {
    */
   public static IASTAppendable ListAlloc(int capacity) {
     return ast(List, capacity, false);
+  }
+
+  /**
+   * Create a new <code>List</code> with the capacity <code>collection.size()</code> and append the
+   * elements of the collection.
+   *
+   * @param collection
+   * @param capacity
+   * @return
+   */
+  public static IASTMutable ListAlloc(Collection<? extends IExpr> collection) {
+    return ListAlloc(collection, 0);
+  }
+
+  /**
+   * Create a new <code>List</code> with the capacity <code>collection.size() + capacity</code> and
+   * append the elements of the collection.
+   *
+   * @param collection
+   * @param capacity
+   * @return
+   */
+  public static IASTAppendable ListAlloc(Collection<? extends IExpr> collection, int capacity) {
+    IASTAppendable result = ast(List, collection.size() + capacity, false);
+    result.appendAll(collection);
+    return result;
   }
 
   /**
@@ -5883,7 +6065,9 @@ public class F extends S {
   }
 
   /**
-   * See: <a
+   * Define a <code>Plus()</code> expression <code>a0 + a1 + a2 ...</code> for addition.
+   *
+   * <p>See: <a
    * href="https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/Plus.md">Plus</a>
    */
   public static IAST Plus(final IExpr... a) {
@@ -5891,7 +6075,9 @@ public class F extends S {
   }
 
   /**
-   * See: <a
+   * Define a <code>Plus()</code> expression <code>a1 + a2</code> for addition.
+   *
+   * <p>See: <a
    * href="https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/Plus.md">Plus</a>
    */
   public static IAST Plus(final IExpr a1, final IExpr a2) {
@@ -5902,7 +6088,9 @@ public class F extends S {
   }
 
   /**
-   * See: <a
+   * Define a <code>Plus()</code> expression <code>a0 + a1 + a2</code> for addition.
+   *
+   * <p>See: <a
    * href="https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/Plus.md">Plus</a>
    */
   public static IAST Plus(final IExpr a0, final IExpr a1, final IExpr a2) {
@@ -5910,7 +6098,9 @@ public class F extends S {
   }
 
   /**
-   * See: <a
+   * Define a <code>Plus()</code> expression <code>num + a0 + a1 + a2 ...</code> for addition.
+   *
+   * <p>See: <a
    * href="https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/Plus.md">Plus</a>
    */
   public static IAST Plus(final long num, final IExpr... a) {
@@ -5972,34 +6162,44 @@ public class F extends S {
     return new AST1(PossibleZeroQ, a0);
   }
 
-  public static IAST pow(final IExpr a0, final IExpr a1) {
-    return new B2.Power(a0, a1);
+  /**
+   * Define a power expression <code>base ^ exponent</code>.
+   *
+   * @param base
+   * @param exponent
+   * @return
+   */
+  public static IAST Power(final IExpr base, final IExpr exponent) {
+    return new B2.Power(base, exponent);
   }
 
-  public static IAST Power(final IExpr a0, final IExpr a1) {
-    return new B2.Power(a0, a1);
-  }
-
-  public static IExpr Power(final IExpr a0, final long exp) {
-    if (exp == 1L) {
-      return a0;
+  /**
+   * Define a power expression <code>base ^ exponent</code>.
+   *
+   * @param base
+   * @param exponent
+   * @return
+   */
+  public static IExpr Power(final IExpr base, final long exponent) {
+    if (exponent == 1L) {
+      return base;
     }
-    if (a0.isNumber()) {
-      if (exp > 0L) {
-        return a0.power(exp);
+    if (base.isNumber()) {
+      if (exponent > 0L) {
+        return base.power(exponent);
       }
-      if (exp == -1L) {
-        if (a0.isZero()) {
+      if (exponent == -1L) {
+        if (base.isZero()) {
           EvalEngine.get().printMessage("Infinite expression 0^(-1)");
           return F.CComplexInfinity;
         }
-        return a0.inverse();
+        return base.inverse();
       }
-      if (exp == 0L && !a0.isZero()) {
+      if (exponent == 0L && !base.isZero()) {
         return C1;
       }
     }
-    return new B2.Power(a0, ZZ(exp));
+    return new B2.Power(base, ZZ(exponent));
   }
 
   public static IAST PowerExpand(final IExpr a0) {
@@ -7211,7 +7411,9 @@ public class F extends S {
   }
 
   /**
-   * See: <a
+   * Define a <code>Times()</code> expression <code>a1 * a2 * ...</code> for multiplication.
+   *
+   * <p>See: <a
    * href="https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/Times.md">Times</a>
    */
   public static IAST Times(final IExpr... a) {
@@ -7219,7 +7421,9 @@ public class F extends S {
   }
 
   /**
-   * See: <a
+   * Define a <code>Times()</code> expression <code>a1 * a2</code> for multiplication.
+   *
+   * <p>See: <a
    * href="https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/Times.md">Times</a>
    */
   public static IASTMutable Times(final IExpr a1, final IExpr a2) {
@@ -7230,7 +7434,9 @@ public class F extends S {
   }
 
   /**
-   * See: <a
+   * Define a <code>Times()</code> expression <code>a0 * a1 * a2</code> for multiplication.
+   *
+   * <p>See: <a
    * href="https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/Times.md">Times</a>
    */
   public static IASTMutable Times(final IExpr a0, final IExpr a1, final IExpr a2) {
@@ -7693,7 +7899,7 @@ public class F extends S {
             html = StringUtils.replace(html, "`1`", jsonStr);
             return openHTMLOnDesktop(html);
           } catch (Exception ex) {
-            if (FEConfig.SHOW_STACKTRACE) {
+            if (Config.SHOW_STACKTRACE) {
               ex.printStackTrace();
             }
           }
@@ -7723,7 +7929,7 @@ public class F extends S {
         return buf.toString();
       }
     } catch (Exception ex) {
-      if (FEConfig.SHOW_STACKTRACE) {
+      if (Config.SHOW_STACKTRACE) {
         ex.printStackTrace();
       }
     }
@@ -7739,7 +7945,7 @@ public class F extends S {
         html = StringUtils.replace(html, "`1`", manipulateStr);
         return openHTMLOnDesktop(html);
       } catch (Exception ex) {
-        if (FEConfig.SHOW_STACKTRACE) {
+        if (Config.SHOW_STACKTRACE) {
           ex.printStackTrace();
         }
       }
@@ -7761,7 +7967,7 @@ public class F extends S {
         html = StringUtils.replace(html, "`1`", manipulateStr);
         return openHTMLOnDesktop(html);
       } catch (Exception ex) {
-        if (FEConfig.SHOW_STACKTRACE) {
+        if (Config.SHOW_STACKTRACE) {
           ex.printStackTrace();
         }
       }
@@ -7772,7 +7978,7 @@ public class F extends S {
         html = StringUtils.replace(html, "`1`", manipulateStr);
         return openHTMLOnDesktop(html);
       } catch (Exception ex) {
-        if (FEConfig.SHOW_STACKTRACE) {
+        if (Config.SHOW_STACKTRACE) {
           ex.printStackTrace();
         }
       }
@@ -7806,7 +8012,7 @@ public class F extends S {
                 );
         return openHTMLOnDesktop(html);
       } catch (Exception ex) {
-        if (FEConfig.SHOW_STACKTRACE) {
+        if (Config.SHOW_STACKTRACE) {
           ex.printStackTrace();
         }
       }
@@ -7817,7 +8023,7 @@ public class F extends S {
         html = StringUtils.replace(html, "`1`", jsStr);
         return openHTMLOnDesktop(html);
       } catch (Exception ex) {
-        if (FEConfig.SHOW_STACKTRACE) {
+        if (Config.SHOW_STACKTRACE) {
           ex.printStackTrace();
         }
       }

@@ -14,7 +14,6 @@ import org.matheclipse.core.interfaces.IASTMutable;
 import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.interfaces.ISparseArray;
 import org.matheclipse.core.interfaces.ISymbol;
-import org.matheclipse.parser.client.FEConfig;
 
 /**
  * Static methods for evaluating <code>ISymbol.FLAT, ISymbol.LISTABLE</code> and <code>
@@ -368,7 +367,7 @@ public class EvalAttributes {
           return sort3Args(ast, false);
         default:
           if (sort(ast, Comparators.CANONICAL_COMPARATOR)) {
-            if (FEConfig.SHOW_STACKTRACE) {
+            if (Config.SHOW_STACKTRACE) {
               checkCachedHashcode(ast);
             }
             return true;
@@ -400,7 +399,7 @@ public class EvalAttributes {
         default:
           if (sort(ast, Comparators.CANONICAL_COMPARATOR)) {
             ast.addEvalFlags(IAST.IS_SORTED);
-            if (FEConfig.SHOW_STACKTRACE) {
+            if (Config.SHOW_STACKTRACE) {
               checkCachedHashcode(ast);
             }
             return true;
@@ -504,7 +503,7 @@ public class EvalAttributes {
       if (setFlag) {
         ast.addEvalFlags(IAST.IS_SORTED);
       }
-      if (FEConfig.SHOW_STACKTRACE) {
+      if (Config.SHOW_STACKTRACE) {
         checkCachedHashcode(ast);
       }
       return true;
@@ -549,7 +548,7 @@ public class EvalAttributes {
       ast.addEvalFlags(IAST.IS_SORTED);
     }
     if (evaled) {
-      if (FEConfig.SHOW_STACKTRACE) {
+      if (Config.SHOW_STACKTRACE) {
         checkCachedHashcode(ast);
       }
     }

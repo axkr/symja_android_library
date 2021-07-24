@@ -16,7 +16,6 @@ import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IASTAppendable;
 import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.interfaces.ISymbol;
-import org.matheclipse.parser.client.FEConfig;
 
 /** Plot a list of Points as a single line */
 public class ListLinePlot extends AbstractEvaluator {
@@ -110,7 +109,7 @@ public class ListLinePlot extends AbstractEvaluator {
         }
 
       } catch (RuntimeException rex) {
-        if (FEConfig.SHOW_STACKTRACE) {
+        if (Config.SHOW_STACKTRACE) {
           rex.printStackTrace();
         }
       }

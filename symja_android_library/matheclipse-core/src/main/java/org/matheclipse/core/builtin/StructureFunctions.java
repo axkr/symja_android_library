@@ -8,6 +8,7 @@ import java.util.List;
 import java.util.Set;
 import java.util.function.Predicate;
 
+import org.matheclipse.core.basic.Config;
 import org.matheclipse.core.convert.Convert;
 import org.matheclipse.core.eval.EvalAttributes;
 import org.matheclipse.core.eval.EvalEngine;
@@ -42,7 +43,6 @@ import org.matheclipse.core.visit.AbstractVisitorLong;
 import org.matheclipse.core.visit.IndexedLevel;
 import org.matheclipse.core.visit.ModuleReplaceAll;
 import org.matheclipse.core.visit.VisitorLevelSpecification;
-import org.matheclipse.parser.client.FEConfig;
 
 public class StructureFunctions {
 
@@ -958,7 +958,7 @@ public class StructureFunctions {
           } catch (final ValidateException ve) {
             return engine.printMessage(ve.getMessage(ast.topHead()));
           } catch (RuntimeException ae) {
-            if (FEConfig.SHOW_STACKTRACE) {
+            if (Config.SHOW_STACKTRACE) {
               ae.printStackTrace();
             }
           }

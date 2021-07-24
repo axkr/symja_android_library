@@ -2,7 +2,6 @@ package org.matheclipse.core.expression;
 
 import static org.matheclipse.core.expression.F.num;
 
-import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.util.function.Function;
 
@@ -330,6 +329,17 @@ public class ComplexNum implements IComplexNum {
       e.printStackTrace();
       return null;
     }
+  }
+
+  @Override
+  public IExpr copySign(IExpr that) {
+    if (that instanceof ComplexNum) {
+      return newInstance(fComplex.copySign(((ComplexNum) that).fComplex));
+    }
+    if (that instanceof Num) {
+      return newInstance(fComplex.copySign(((Num) that).fDouble));
+    }
+    return IComplexNum.super.copySign(that);
   }
 
   /** {@inheritDoc} */
@@ -760,10 +770,7 @@ public class ComplexNum implements IComplexNum {
     return newInstance(fComplex.subtract(((ComplexNum) subtrahend).fComplex));
   }
 
-  /**
-   * @param that
-   * @return
-   */
+  /** {@inheritDoc} */
   @Override
   public IExpr times(final IExpr that) {
     if (that instanceof ComplexNum) {
@@ -773,7 +780,8 @@ public class ComplexNum implements IComplexNum {
       return apcomplexNumValue().multiply(that);
     }
     if (that instanceof ApfloatNum) {
-      return ApcomplexNum.valueOf(getRealPart(), getImaginaryPart()).multiply((ApfloatNum) that);
+      return ApcomplexNum.valueOf(getRealPart(), getImaginaryPart()) //
+          .multiply((ApfloatNum) that);
     }
     if (that instanceof Num) {
       return multiply(ComplexNum.valueOf(((Num) that).getRealPart()));

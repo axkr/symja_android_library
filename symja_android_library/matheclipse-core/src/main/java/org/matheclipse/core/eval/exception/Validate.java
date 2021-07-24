@@ -3,6 +3,7 @@ package org.matheclipse.core.eval.exception;
 import java.io.IOException;
 import java.math.BigInteger;
 
+import org.matheclipse.core.basic.Config;
 import org.matheclipse.core.builtin.IOFunctions;
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.expression.F;
@@ -15,7 +16,6 @@ import org.matheclipse.core.interfaces.IInteger;
 import org.matheclipse.core.interfaces.INum;
 import org.matheclipse.core.interfaces.IStringX;
 import org.matheclipse.core.interfaces.ISymbol;
-import org.matheclipse.parser.client.FEConfig;
 import org.matheclipse.parser.client.Scanner;
 
 /**
@@ -113,7 +113,7 @@ public final class Validate {
           }
           return result;
         } catch (RuntimeException rex) {
-          if (FEConfig.SHOW_STACKTRACE) {
+          if (Config.SHOW_STACKTRACE) {
             rex.printStackTrace();
           }
         }
@@ -165,7 +165,7 @@ public final class Validate {
           }
           return result;
         } catch (RuntimeException rex) {
-          if (FEConfig.SHOW_STACKTRACE) {
+          if (Config.SHOW_STACKTRACE) {
             rex.printStackTrace();
           }
         }
@@ -895,7 +895,7 @@ public final class Validate {
   }
 
   public static void printException(final Appendable buf, final Throwable e) {
-    if (FEConfig.SHOW_STACKTRACE) {
+    if (Config.SHOW_STACKTRACE) {
       e.printStackTrace();
     }
     String msg = e.getMessage();

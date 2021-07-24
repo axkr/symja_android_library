@@ -33,7 +33,6 @@ import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.interfaces.IStringX;
 import org.matheclipse.core.io.Extension;
 import org.matheclipse.io.tensor.io.ImageFormat;
-import org.matheclipse.parser.client.FEConfig;
 import org.matheclipse.parser.client.Parser;
 import org.matheclipse.parser.client.SyntaxError;
 import org.matheclipse.parser.client.ast.ASTNode;
@@ -107,7 +106,7 @@ public class Import extends AbstractEvaluator {
       } catch (SyntaxError se) {
         return engine.printMessage("Import: file " + fileName + " syntax error!");
       } catch (Exception ex) {
-        if (FEConfig.SHOW_STACKTRACE) {
+        if (Config.SHOW_STACKTRACE) {
           ex.printStackTrace();
         }
         return engine.printMessage("Import: file " + fileName + " - " + ex.getMessage());

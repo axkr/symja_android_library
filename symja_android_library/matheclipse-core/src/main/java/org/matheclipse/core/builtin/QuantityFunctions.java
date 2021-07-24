@@ -9,6 +9,7 @@ import java.util.Locale;
 import java.util.function.Function;
 import java.util.function.UnaryOperator;
 
+import org.matheclipse.core.basic.Config;
 import org.matheclipse.core.basic.ToggleFeature;
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.interfaces.AbstractCoreFunctionEvaluator;
@@ -24,7 +25,6 @@ import org.matheclipse.core.interfaces.ISymbol;
 import org.matheclipse.core.tensor.qty.IQuantity;
 import org.matheclipse.core.tensor.qty.IUnit;
 import org.matheclipse.core.tensor.qty.UnitSystem;
-import org.matheclipse.parser.client.FEConfig;
 
 public class QuantityFunctions {
   static final HashMap<String, Function<LocalDateTime, IExpr>> DATEVALUE_MAP =
@@ -117,7 +117,7 @@ public class QuantityFunctions {
           }
         }
       } catch (RuntimeException rex) {
-        if (FEConfig.SHOW_STACKTRACE) {
+        if (Config.SHOW_STACKTRACE) {
           rex.printStackTrace();
         }
         return engine.printMessage(ast.topHead(), rex);
@@ -168,7 +168,7 @@ public class QuantityFunctions {
           return F.NIL;
         }
       } catch (RuntimeException rex) {
-        if (FEConfig.SHOW_STACKTRACE) {
+        if (Config.SHOW_STACKTRACE) {
           rex.printStackTrace();
         }
         return engine.printMessage(ast.topHead(), rex);
@@ -219,7 +219,7 @@ public class QuantityFunctions {
           return F.NIL;
         }
       } catch (RuntimeException rex) {
-        if (FEConfig.SHOW_STACKTRACE) {
+        if (Config.SHOW_STACKTRACE) {
           rex.printStackTrace();
         }
         return engine.printMessage(ast.topHead(), rex);
@@ -274,7 +274,7 @@ public class QuantityFunctions {
           }
         }
       } catch (RuntimeException e) {
-        if (FEConfig.SHOW_STACKTRACE) {
+        if (Config.SHOW_STACKTRACE) {
           e.printStackTrace();
         }
         return engine.printMessage("Quantity: " + e.getMessage());
@@ -337,7 +337,7 @@ public class QuantityFunctions {
           }
         }
       } catch (RuntimeException e) {
-        if (FEConfig.SHOW_STACKTRACE) {
+        if (Config.SHOW_STACKTRACE) {
           e.printStackTrace();
         }
         return engine.printMessage("QuantityMagnitude: " + e.getMessage());
@@ -397,7 +397,7 @@ public class QuantityFunctions {
           }
         }
       } catch (RuntimeException e) {
-        if (FEConfig.SHOW_STACKTRACE) {
+        if (Config.SHOW_STACKTRACE) {
           e.printStackTrace();
         }
         return engine.printMessage("UnitConvert: " + e.getMessage());

@@ -10,6 +10,7 @@ import org.apfloat.ApfloatRuntimeException;
 import org.apfloat.Apint;
 import org.apfloat.FixedPrecisionApfloatHelper;
 import org.matheclipse.core.eval.EvalEngine;
+import org.matheclipse.core.interfaces.IComplexNum;
 import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.interfaces.IInteger;
 import org.matheclipse.core.interfaces.INum;
@@ -153,6 +154,16 @@ public class ApfloatNum implements INum {
   }
 
   @Override
+  public INum subtract(final INum value) {
+    return valueOf(EvalEngine.getApfloat().subtract(fApfloat, value.apfloatValue()));
+  }
+
+  @Override
+  public INum divide(final INum value) {
+    return valueOf(EvalEngine.getApfloat().divide(fApfloat, value.apfloatValue()));
+  }
+
+  @Override
   public INum multiply(final INum value) {
     return valueOf(EvalEngine.getApfloat().multiply(fApfloat, value.apfloatValue()));
   }
@@ -160,6 +171,22 @@ public class ApfloatNum implements INum {
   @Override
   public INum pow(final INum value) {
     return valueOf(EvalEngine.getApfloat().pow(fApfloat, value.apfloatValue()));
+  }
+
+  @Override
+  public IExpr power(final IExpr that) {
+    if (that instanceof IComplexNum) {
+      return F.complexNum(
+          EvalEngine.getApfloat().pow(fApfloat, ((IComplexNum) that).apcomplexValue()));
+    }
+    if (that instanceof INum) {
+      if (fApfloat.compareTo(Apfloat.ZERO) < 0) {
+        return F.complexNum(
+            EvalEngine.getApfloat().pow(fApfloat, ((IComplexNum) that).apcomplexValue()));
+      }
+      return valueOf(EvalEngine.getApfloat().pow(fApfloat, ((INum) that).apfloatValue()));
+    }
+    return INum.super.power(that);
   }
 
   @Override
@@ -499,7 +526,6 @@ public class ApfloatNum implements INum {
       }
     }
     return -1;
-    // return INum.super.compareTo(expr);
   }
 
   @Override
@@ -683,6 +709,25 @@ public class ApfloatNum implements INum {
   }
 
   @Override
+  public IExpr divide(final IExpr that) {
+    if (that instanceof ApfloatNum) {
+      return divide((ApfloatNum) that);
+    }
+    if (that instanceof Num) {
+      return divide(((Num) that).getRealPart());
+    }
+    if (that instanceof ApcomplexNum) {
+      return F.complexNum(
+          EvalEngine.getApfloat().divide(fApfloat, ((ApcomplexNum) that).apcomplexValue()));
+    }
+    if (that instanceof ComplexNum) {
+      return F.complexNum(
+          EvalEngine.getApfloat().divide(fApfloat, ((ComplexNum) that).apcomplexValue()));
+    }
+    return INum.super.divide(that);
+  }
+
+  @Override
   public IExpr expm1() {
     FixedPrecisionApfloatHelper h = EvalEngine.getApfloat();
     return valueOf(h.subtract(h.exp(fApfloat), Apfloat.ONE));
@@ -797,6 +842,25 @@ public class ApfloatNum implements INum {
   @Override
   public IExpr subtract(double value) {
     return valueOf(EvalEngine.getApfloat().subtract(fApfloat, new Apfloat(value)));
+  }
+
+  @Override
+  public IExpr subtract(final IExpr that) {
+    if (that instanceof ApfloatNum) {
+      return subtract((ApfloatNum) that);
+    }
+    if (that instanceof Num) {
+      return subtract(((Num) that).getRealPart());
+    }
+    if (that instanceof ApcomplexNum) {
+      return F.complexNum(
+          EvalEngine.getApfloat().subtract(fApfloat, ((ApcomplexNum) that).apcomplexValue()));
+    }
+    if (that instanceof ComplexNum) {
+      return F.complexNum(
+          EvalEngine.getApfloat().subtract(fApfloat, ((ComplexNum) that).apcomplexValue()));
+    }
+    return INum.super.subtract(that);
   }
 
   @Override

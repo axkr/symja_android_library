@@ -2,6 +2,7 @@ package org.matheclipse.core.builtin;
 
 import org.hipparchus.complex.Complex;
 import org.hipparchus.exception.MathRuntimeException;
+import org.matheclipse.core.basic.Config;
 import org.matheclipse.core.builtin.functions.BesselJS;
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.exception.ValidateException;
@@ -15,7 +16,6 @@ import org.matheclipse.core.interfaces.ISymbol;
 import org.matheclipse.core.reflection.system.rules.BesselIRules;
 import org.matheclipse.core.reflection.system.rules.BesselKRules;
 import org.matheclipse.core.reflection.system.rules.BesselYRules;
-import org.matheclipse.parser.client.FEConfig;
 
 public class BesselFunctions {
 
@@ -70,7 +70,7 @@ public class BesselFunctions {
           }
 
         } catch (ValidateException ve) {
-          if (FEConfig.SHOW_STACKTRACE) {
+          if (Config.SHOW_STACKTRACE) {
             ve.printStackTrace();
           }
         }
@@ -115,7 +115,7 @@ public class BesselFunctions {
           }
 
         } catch (ValidateException ve) {
-          if (FEConfig.SHOW_STACKTRACE) {
+          if (Config.SHOW_STACKTRACE) {
             ve.printStackTrace();
           }
         }
@@ -160,7 +160,7 @@ public class BesselFunctions {
           }
 
         } catch (ValidateException ve) {
-          if (FEConfig.SHOW_STACKTRACE) {
+          if (Config.SHOW_STACKTRACE) {
             ve.printStackTrace();
           }
         }
@@ -205,7 +205,7 @@ public class BesselFunctions {
           }
 
         } catch (ValidateException ve) {
-          if (FEConfig.SHOW_STACKTRACE) {
+          if (Config.SHOW_STACKTRACE) {
             ve.printStackTrace();
           }
         }
@@ -378,7 +378,7 @@ public class BesselFunctions {
           }
 
         } catch (ValidateException ve) {
-          if (FEConfig.SHOW_STACKTRACE) {
+          if (Config.SHOW_STACKTRACE) {
             ve.printStackTrace();
           }
         } catch (RuntimeException rex) {
@@ -446,11 +446,11 @@ public class BesselFunctions {
           } catch (MathRuntimeException mre) {
             // org.hipparchus.exception.MathIllegalArgumentException: interval does not bracket a
             // root
-            if (FEConfig.SHOW_STACKTRACE) {
+            if (Config.SHOW_STACKTRACE) {
               mre.printStackTrace();
             }
           } catch (ValidateException ve) {
-            if (FEConfig.SHOW_STACKTRACE) {
+            if (Config.SHOW_STACKTRACE) {
               ve.printStackTrace();
             }
           }
@@ -554,7 +554,7 @@ public class BesselFunctions {
           }
 
         } catch (ValidateException ve) {
-          if (FEConfig.SHOW_STACKTRACE) {
+          if (Config.SHOW_STACKTRACE) {
             ve.printStackTrace();
           }
         } catch (RuntimeException rex) {
@@ -655,7 +655,7 @@ public class BesselFunctions {
           }
 
         } catch (ValidateException ve) {
-          if (FEConfig.SHOW_STACKTRACE) {
+          if (Config.SHOW_STACKTRACE) {
             ve.printStackTrace();
           }
         } catch (RuntimeException rex) {
@@ -756,7 +756,7 @@ public class BesselFunctions {
           }
 
         } catch (ValidateException ve) {
-          if (FEConfig.SHOW_STACKTRACE) {
+          if (Config.SHOW_STACKTRACE) {
             ve.printStackTrace();
           }
         } catch (RuntimeException rex) {
@@ -796,11 +796,11 @@ public class BesselFunctions {
           }
         } catch (MathRuntimeException mre) {
           // org.hipparchus.exception.MathIllegalArgumentException: interval does not bracket a root
-          if (FEConfig.SHOW_STACKTRACE) {
+          if (Config.SHOW_STACKTRACE) {
             mre.printStackTrace();
           }
         } catch (ValidateException ve) {
-          if (FEConfig.SHOW_STACKTRACE) {
+          if (Config.SHOW_STACKTRACE) {
             ve.printStackTrace();
           }
         }
@@ -844,7 +844,7 @@ public class BesselFunctions {
           }
 
         } catch (ValidateException ve) {
-          if (FEConfig.SHOW_STACKTRACE) {
+          if (Config.SHOW_STACKTRACE) {
             ve.printStackTrace();
           }
         } catch (RuntimeException rex) {
@@ -889,7 +889,7 @@ public class BesselFunctions {
           }
 
         } catch (ValidateException ve) {
-          if (FEConfig.SHOW_STACKTRACE) {
+          if (Config.SHOW_STACKTRACE) {
             ve.printStackTrace();
           }
         } catch (RuntimeException rex) {
@@ -965,7 +965,7 @@ public class BesselFunctions {
           }
 
         } catch (ValidateException ve) {
-          if (FEConfig.SHOW_STACKTRACE) {
+          if (Config.SHOW_STACKTRACE) {
             ve.printStackTrace();
           }
         } catch (RuntimeException rex) {
@@ -1058,7 +1058,7 @@ public class BesselFunctions {
           }
 
         } catch (ValidateException ve) {
-          if (FEConfig.SHOW_STACKTRACE) {
+          if (Config.SHOW_STACKTRACE) {
             ve.printStackTrace();
           }
         } catch (RuntimeException rex) {

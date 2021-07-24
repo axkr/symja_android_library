@@ -16,7 +16,6 @@ import org.matheclipse.core.interfaces.IASTAppendable;
 import org.matheclipse.core.interfaces.IEvalStepListener;
 import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.interfaces.ISymbol;
-import org.matheclipse.parser.client.FEConfig;
 
 public class PatternMatcherAndEvaluator extends PatternMatcher implements Externalizable {
 
@@ -329,7 +328,7 @@ public class PatternMatcherAndEvaluator extends PatternMatcher implements Extern
         return result;
       }
     } catch (final ConditionException e) {
-      if (FEConfig.SHOW_STACKTRACE) {
+      if (Config.SHOW_STACKTRACE) {
         logConditionFalse(leftHandSide, fLhsPatternExpr, fRightHandSide);
       }
       return F.NIL;
@@ -370,7 +369,7 @@ public class PatternMatcherAndEvaluator extends PatternMatcher implements Extern
       }
       return result;
     } catch (final ConditionException e) {
-      if (FEConfig.SHOW_STACKTRACE) {
+      if (Config.SHOW_STACKTRACE) {
         logConditionFalse(leftHandSide, fLhsPatternExpr, fRightHandSide);
       }
       return F.NIL;

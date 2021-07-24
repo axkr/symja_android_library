@@ -3,11 +3,11 @@ package org.matheclipse.core.eval;
 import java.io.IOException;
 import java.io.Writer;
 
+import org.matheclipse.core.basic.Config;
 import org.matheclipse.core.form.tex.TeXFormFactory;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.parser.ExprParser;
-import org.matheclipse.parser.client.FEConfig;
 
 /** Convert an expression into TeX output */
 public class TeXUtilities {
@@ -46,7 +46,7 @@ public class TeXUtilities {
         return toTeX(parsedExpression, out);
         // parsedExpression = AST2Expr.CONST.convert(node);
       } catch (final RuntimeException rex) {
-        if (FEConfig.SHOW_STACKTRACE) {
+        if (Config.SHOW_STACKTRACE) {
           rex.printStackTrace();
         }
       }
@@ -83,7 +83,7 @@ public class TeXUtilities {
       } catch (final IOException ioe) {
         // parsedExpression == null ==> fError occured
       } catch (final RuntimeException rex) {
-        if (FEConfig.SHOW_STACKTRACE) {
+        if (Config.SHOW_STACKTRACE) {
           rex.printStackTrace();
         }
       }

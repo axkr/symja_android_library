@@ -15,6 +15,7 @@ import org.hipparchus.analysis.solvers.SecantSolver;
 import org.hipparchus.exception.MathIllegalArgumentException;
 import org.hipparchus.exception.MathRuntimeException;
 import org.matheclipse.core.basic.Config;
+import org.matheclipse.core.builtin.IOFunctions;
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.exception.ValidateException;
 import org.matheclipse.core.eval.interfaces.AbstractFunctionEvaluator;
@@ -231,7 +232,7 @@ public class FindRoot extends AbstractFunctionEvaluator {
               miae.printStackTrace();
             }
             engine.printMessage("FindRoot: " + miae.getMessage());
-            return F.List();
+            return F.CEmptyList;
           } catch (MathRuntimeException mre) {
             if (Config.SHOW_STACKTRACE) {
               mre.printStackTrace();
@@ -298,9 +299,6 @@ public class FindRoot extends AbstractFunctionEvaluator {
             if (min != null) {
               try {
                 NewtonRaphsonSolver nrs = new NewtonRaphsonSolver();
-                if (max == null) {
-                  return nrs.solve(maxIterations, f, min.doubleValue());
-                }
                 return nrs.solve(maxIterations, f, min.doubleValue(), max.doubleValue());
               } catch (MathRuntimeException mre) {
               }
@@ -311,6 +309,7 @@ public class FindRoot extends AbstractFunctionEvaluator {
           solver = new BisectionSolver();
         }
       }
+
       if (max == null) {
         return solver.solve(maxIterations, f, min.doubleValue());
       }

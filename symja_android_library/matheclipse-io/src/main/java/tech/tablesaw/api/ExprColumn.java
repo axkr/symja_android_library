@@ -62,7 +62,7 @@ public class ExprColumn extends AbstractColumn<ExprColumn, IExpr> {
   private final Comparator<String> descendingStringComparator = Comparator.reverseOrder();
 
   private ExprColumn(String name, Collection<IExpr> collection) {
-    super(ExprColumnType.instance(), name);
+    super(ExprColumnType.instance(), name, ExprColumnType.DEFAULT_PARSER);
     values = new ArrayList<IExpr>(collection.size());
     for (IExpr expr : collection) {
       append(expr);
@@ -70,12 +70,12 @@ public class ExprColumn extends AbstractColumn<ExprColumn, IExpr> {
   }
 
   private ExprColumn(String name) {
-    super(ExprColumnType.instance(), name);
+    super(ExprColumnType.instance(), name, ExprColumnType.DEFAULT_PARSER);
     values = new ArrayList<IExpr>(DEFAULT_ARRAY_SIZE);
   }
 
   private ExprColumn(String name, IExpr[] strings) {
-    super(ExprColumnType.instance(), name);
+    super(ExprColumnType.instance(), name, ExprColumnType.DEFAULT_PARSER);
     values = new ArrayList<IExpr>(strings.length);
     for (IExpr string : strings) {
       append(string);

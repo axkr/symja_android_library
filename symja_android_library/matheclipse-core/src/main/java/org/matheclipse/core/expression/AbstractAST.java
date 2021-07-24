@@ -1753,8 +1753,7 @@ public abstract class AbstractAST implements IASTMutable {
           size(),
           (x, i) -> {
             if (x.isAST(S.Evaluate)) {
-              IExpr temp = engine.evalLoop(x);
-              engine.evalArg(rlist, this, temp, x, i, false);
+              engine.evalArg(rlist, this, x, i, false);
             }
           });
     }
@@ -1864,7 +1863,7 @@ public abstract class AbstractAST implements IASTMutable {
             if (ve instanceof LimitException) {
               throw ve;
             }
-            if (FEConfig.SHOW_STACKTRACE) {
+            if (Config.SHOW_STACKTRACE) {
               ve.printStackTrace();
             }
             return engine.printMessage(topHead(), ve);
@@ -5526,7 +5525,7 @@ public abstract class AbstractAST implements IASTMutable {
         return toFullFormString();
       }
     } catch (RuntimeException e) {
-      if (FEConfig.SHOW_STACKTRACE) {
+      if (Config.SHOW_STACKTRACE) {
         System.out.println(fullFormString());
       }
       throw e;

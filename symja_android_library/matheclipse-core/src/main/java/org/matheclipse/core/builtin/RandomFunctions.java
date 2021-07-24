@@ -24,7 +24,6 @@ import org.matheclipse.core.interfaces.IEvaluator;
 import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.interfaces.IInteger;
 import org.matheclipse.core.interfaces.ISymbol;
-import org.matheclipse.parser.client.FEConfig;
 
 public final class RandomFunctions {
 
@@ -457,7 +456,7 @@ public final class RandomFunctions {
         } catch (ValidateException ve) {
           return engine.printMessage(ast.topHead(), ve);
         } catch (RuntimeException rex) {
-          if (FEConfig.SHOW_STACKTRACE) {
+          if (Config.SHOW_STACKTRACE) {
             rex.printStackTrace();
           }
           // There are no primes in the specified interval.

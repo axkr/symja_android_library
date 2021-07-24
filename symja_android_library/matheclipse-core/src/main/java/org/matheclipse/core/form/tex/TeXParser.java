@@ -18,7 +18,6 @@ import org.matheclipse.core.interfaces.IASTAppendable;
 import org.matheclipse.core.interfaces.IASTMutable;
 import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.interfaces.ISymbol;
-import org.matheclipse.parser.client.FEConfig;
 import org.matheclipse.parser.client.operator.Operator;
 import org.matheclipse.parser.client.operator.Precedence;
 import org.matheclipse.parser.trie.TrieBuilder;
@@ -540,7 +539,7 @@ public class TeXParser {
       }
       return F.integer(text, 10);
     } catch (RuntimeException rex) {
-      if (FEConfig.SHOW_STACKTRACE) {
+      if (Config.SHOW_STACKTRACE) {
         rex.printStackTrace();
       }
     }
@@ -786,7 +785,7 @@ public class TeXParser {
         fEngine.printMessage(errors.get(i).toString());
       }
     } catch (Exception e) {
-      if (FEConfig.SHOW_STACKTRACE) {
+      if (Config.SHOW_STACKTRACE) {
         e.printStackTrace();
       }
     }

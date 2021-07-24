@@ -223,8 +223,7 @@ enum AggregateFunctions implements FunctionMetaData {
         public Double getValue() {
           // This could be faster, but probably does not matter in practice because sliding windows
           // will be small.
-          return queue
-              .stream()
+          return queue.stream()
               .filter(d -> !DoubleColumnType.valueIsMissing(d))
               .mapToDouble(Number::doubleValue)
               .max()
@@ -283,8 +282,7 @@ enum AggregateFunctions implements FunctionMetaData {
         public Double getValue() {
           // This could be faster, but probably does not matter in practice because sliding windows
           // will be small.
-          return queue
-              .stream()
+          return queue.stream()
               .filter(d -> !DoubleColumnType.valueIsMissing(d))
               .mapToDouble(Number::doubleValue)
               .min()

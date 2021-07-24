@@ -5,6 +5,7 @@ import java.util.Map;
 import java.util.function.Function;
 import java.util.function.Predicate;
 
+import org.matheclipse.core.basic.Config;
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.exception.ArgumentTypeException;
 import org.matheclipse.core.eval.exception.ValidateException;
@@ -26,7 +27,6 @@ import org.matheclipse.core.interfaces.IBuiltInSymbol;
 import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.interfaces.IStringX;
 import org.matheclipse.core.interfaces.ISymbol;
-import org.matheclipse.parser.client.FEConfig;
 
 public class AssociationFunctions {
 
@@ -148,7 +148,7 @@ public class AssociationFunctions {
           return assignPartTo(sym, (IAST) leftHandSide, ast, engine);
         }
       } catch (ValidateException ve) {
-        if (FEConfig.SHOW_STACKTRACE) {
+        if (Config.SHOW_STACKTRACE) {
           ve.printStackTrace();
         }
         return engine.printMessage(ast.topHead(), ve);
@@ -280,7 +280,7 @@ public class AssociationFunctions {
           }
           return assoc;
         } catch (ValidateException ve) {
-          if (FEConfig.SHOW_STACKTRACE) {
+          if (Config.SHOW_STACKTRACE) {
             ve.printStackTrace();
           }
           // print no message
@@ -1098,7 +1098,7 @@ public class AssociationFunctions {
       } catch (final ValidateException ve) {
         return engine.printMessage(ast.topHead(), ve);
       } catch (final RuntimeException rex) {
-        if (FEConfig.SHOW_STACKTRACE) {
+        if (Config.SHOW_STACKTRACE) {
           rex.printStackTrace();
         }
       }

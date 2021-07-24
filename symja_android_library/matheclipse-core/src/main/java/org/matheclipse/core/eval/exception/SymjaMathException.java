@@ -1,6 +1,6 @@
 package org.matheclipse.core.eval.exception;
 
-import org.matheclipse.parser.client.FEConfig;
+import org.matheclipse.core.basic.Config;
 import org.matheclipse.parser.client.math.MathException;
 
 public class SymjaMathException extends MathException {
@@ -30,7 +30,7 @@ public class SymjaMathException extends MathException {
    * </code> .
    */
   public SymjaMathException() {
-    super(null, null, false, FEConfig.SHOW_STACKTRACE);
+    super(null, null, false, Config.SHOW_STACKTRACE);
   }
 
   public SymjaMathException(String message) {
@@ -47,7 +47,7 @@ public class SymjaMathException extends MathException {
 
   @Override
   public synchronized Throwable fillInStackTrace() {
-    if (FEConfig.SHOW_STACKTRACE) {
+    if (Config.SHOW_STACKTRACE) {
       // doesn't fill the stack for FlowControlExceptions
       return super.fillInStackTrace();
     } else {

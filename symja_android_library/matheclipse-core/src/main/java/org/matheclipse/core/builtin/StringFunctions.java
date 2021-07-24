@@ -1566,6 +1566,10 @@ public final class StringFunctions {
         if (arg1.isList()) {
           return ((IAST) arg1).mapThread(ast, 1);
         }
+        if (!arg1.isString()) {
+          // String or list of strings expected at position `1` in `2`.
+          return IOFunctions.printMessage(ast.topHead(), "strse", F.List(F.C1, ast), engine);
+        }
 
         IExpr arg2 = ast.arg2();
         if (arg2.isList()) {
@@ -1720,7 +1724,7 @@ public final class StringFunctions {
         return F.$str(buf.toString());
       } catch (RuntimeException rex) {
         // example java.lang.StringIndexOutOfBoundsException
-        if (FEConfig.SHOW_STACKTRACE) {
+        if (Config.SHOW_STACKTRACE) {
           rex.printStackTrace();
         }
         return engine.printMessage(ast.topHead(), rex);
@@ -3048,7 +3052,7 @@ public final class StringFunctions {
             return temp;
           }
         } catch (RuntimeException rex) {
-          if (FEConfig.SHOW_STACKTRACE) {
+          if (Config.SHOW_STACKTRACE) {
             rex.printStackTrace();
           }
           return S.$Aborted;
@@ -3400,7 +3404,7 @@ public final class StringFunctions {
         return buf.toString();
       }
     } catch (RuntimeException rex) {
-      if (FEConfig.SHOW_STACKTRACE) {
+      if (Config.SHOW_STACKTRACE) {
         rex.printStackTrace();
       }
     }
@@ -3413,7 +3417,7 @@ public final class StringFunctions {
 
   private static IExpr regexErrorHandling(
       final IAST ast, IllegalArgumentException iae, EvalEngine engine) {
-    if (FEConfig.SHOW_STACKTRACE) {
+    if (Config.SHOW_STACKTRACE) {
       iae.printStackTrace();
     }
     if (iae instanceof PatternSyntaxException) {

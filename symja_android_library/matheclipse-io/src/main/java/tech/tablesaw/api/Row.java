@@ -15,6 +15,13 @@ import org.matheclipse.core.interfaces.IExpr;
 import tech.tablesaw.columns.Column;
 import tech.tablesaw.table.TableSlice;
 
+/**
+ * Represents a row in a Relation (either a Table or TableSlice), allowing iteration ofover the
+ * relation.
+ *
+ * <p>Implementation Note: The row is always implemented over a TableSlice. If the constructor
+ * argument is a table, it is wrapped by a slice over the whole table.
+ */
 public class Row implements Iterator<Row> {
 
   /**
@@ -178,6 +185,16 @@ public class Row implements Iterator<Row> {
     return getBoolean(columnNames[columnIndex]);
   }
 
+  /** Returns an element from a Boolean column in its internal byte form, avoiding boxing */
+  public byte getBooleanAsByte(int columnIndex) {
+    return getBooleanAsByte(columnNames[columnIndex]);
+  }
+
+  /** Returns an element from a Boolean column in its internal byte form, avoiding boxing */
+  public byte getBooleanAsByte(String columnName) {
+    return booleanColumnMap.get(columnName).getByte(getIndex(rowNumber));
+  }
+
   public Boolean getBoolean(String columnName) {
     return booleanColumnMap.get(columnName).get(getIndex(rowNumber));
   }
@@ -252,6 +269,14 @@ public class Row implements Iterator<Row> {
 
   public int getPackedDate(int columnIndex) {
     return dateColumnMap.get(columnNames[columnIndex]).getIntInternal(getIndex(rowNumber));
+  }
+
+  public long getPackedInstant(int columnIndex) {
+    return instantColumnMap.get(columnNames[columnIndex]).getLongInternal(getIndex(rowNumber));
+  }
+
+  public long getPackedInstant(String columnName) {
+    return instantColumnMap.get(columnName).getLongInternal(getIndex(rowNumber));
   }
 
   public long getPackedDateTime(String columnName) {
@@ -445,7 +470,7 @@ public class Row implements Iterator<Row> {
   }
 
   public double getNumber(String columnName) {
-    return numericColumnMap.get(columnName).getDouble(rowNumber);
+    return numericColumnMap.get(columnName).getDouble(getIndex(rowNumber));
   }
 
   public ColumnType getColumnType(String columnName) {

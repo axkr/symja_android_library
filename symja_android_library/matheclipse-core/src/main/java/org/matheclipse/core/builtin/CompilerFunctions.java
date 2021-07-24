@@ -26,7 +26,6 @@ import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.interfaces.IStringX;
 import org.matheclipse.core.interfaces.ISymbol;
-import org.matheclipse.parser.client.FEConfig;
 
 public class CompilerFunctions {
   /** Template for CompilePrint */
@@ -520,7 +519,7 @@ public class CompilerFunctions {
         try {
           result = compiledFunction.evaluate(ast, engine);
         } catch (RuntimeException rex) {
-          if (FEConfig.SHOW_STACKTRACE) {
+          if (Config.SHOW_STACKTRACE) {
             rex.printStackTrace();
           }
           engine.printMessage("CompiledFunction: " + rex.getMessage());

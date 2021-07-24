@@ -1,13 +1,7 @@
 package tech.tablesaw.api;
 
 import com.google.common.base.Preconditions;
-import it.unimi.dsi.fastutil.longs.LongArrayList;
-import it.unimi.dsi.fastutil.longs.LongArrays;
-import it.unimi.dsi.fastutil.longs.LongComparators;
-import it.unimi.dsi.fastutil.longs.LongIterator;
-import it.unimi.dsi.fastutil.longs.LongListIterator;
-import it.unimi.dsi.fastutil.longs.LongOpenHashSet;
-import it.unimi.dsi.fastutil.longs.LongSet;
+import it.unimi.dsi.fastutil.longs.*;
 import java.nio.ByteBuffer;
 import java.time.Instant;
 import java.time.ZoneOffset;
@@ -18,13 +12,15 @@ import tech.tablesaw.columns.Column;
 import tech.tablesaw.columns.numbers.DoubleColumnType;
 import tech.tablesaw.columns.numbers.LongColumnType;
 import tech.tablesaw.columns.numbers.NumberColumnFormatter;
+import tech.tablesaw.selection.BitmapBackedSelection;
+import tech.tablesaw.selection.Selection;
 
 public class LongColumn extends NumberColumn<LongColumn, Long> implements CategoricalColumn<Long> {
 
   private final LongArrayList data;
 
   private LongColumn(String name, LongArrayList data) {
-    super(LongColumnType.instance(), name);
+    super(LongColumnType.instance(), name, LongColumnType.DEFAULT_PARSER);
     setPrintFormatter(NumberColumnFormatter.ints());
     this.data = data;
   }
@@ -114,6 +110,24 @@ public class LongColumn extends NumberColumn<LongColumn, Long> implements Catego
     return c;
   }
 
+  public Selection isIn(final long... numbers) {
+    final Selection results = new BitmapBackedSelection();
+    final LongRBTreeSet intSet = new LongRBTreeSet(numbers);
+    for (int i = 0; i < size(); i++) {
+      if (intSet.contains(getLong(i))) {
+        results.add(i);
+      }
+    }
+    return results;
+  }
+
+  public Selection isNotIn(final long... numbers) {
+    final Selection results = new BitmapBackedSelection();
+    results.addRange(0, size());
+    results.andNot(isIn(numbers));
+    return results;
+  }
+
   @Override
   public LongColumn unique() {
     final LongSet values = new LongOpenHashSet();
@@ -185,6 +199,7 @@ public class LongColumn extends NumberColumn<LongColumn, Long> implements Catego
     return this;
   }
 
+  @Override
   public LongColumn append(Long val) {
     if (val == null) {
       appendMissing();
@@ -384,7 +399,7 @@ public class LongColumn extends NumberColumn<LongColumn, Long> implements Catego
   @Override
   public LongColumn appendCell(final String value) {
     try {
-      return append(LongColumnType.DEFAULT_PARSER.parseLong(value));
+      return append(parser().parseLong(value));
     } catch (final NumberFormatException e) {
       throw new NumberFormatException(
           "Error adding value to column " + name() + ": " + e.getMessage());

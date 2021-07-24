@@ -1154,7 +1154,7 @@ public class MathMLFormFactory extends AbstractMathMLFormFactory {
       }
       return true;
     } catch (RuntimeException rex) {
-      if (FEConfig.SHOW_STACKTRACE) {
+      if (Config.SHOW_STACKTRACE) {
         rex.printStackTrace();
       }
     } catch (OutOfMemoryError oome) {
@@ -2245,7 +2245,7 @@ public class MathMLFormFactory extends AbstractMathMLFormFactory {
       }
 
     } catch (Exception ex) {
-      if (FEConfig.SHOW_STACKTRACE) {
+      if (Config.SHOW_STACKTRACE) {
         ex.printStackTrace();
       }
       return false;

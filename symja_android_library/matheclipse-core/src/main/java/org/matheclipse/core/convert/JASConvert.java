@@ -7,6 +7,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.SortedMap;
 
+import org.matheclipse.core.basic.Config;
 import org.matheclipse.core.eval.exception.JASConversionException;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.expression.S;
@@ -22,7 +23,6 @@ import org.matheclipse.core.interfaces.INumber;
 import org.matheclipse.core.interfaces.IRational;
 import org.matheclipse.core.interfaces.ISignedNumber;
 import org.matheclipse.core.interfaces.ISymbol;
-import org.matheclipse.parser.client.FEConfig;
 
 import edu.jas.arith.BigRational;
 import edu.jas.arith.ModIntegerRing;
@@ -290,7 +290,7 @@ public class JASConvert<C extends RingElem<C>> {
     } catch (JASConversionException jce) {
       throw jce;
     } catch (RuntimeException rex) {
-      if (FEConfig.SHOW_STACKTRACE) {
+      if (Config.SHOW_STACKTRACE) {
         rex.printStackTrace();
       }
       // System.out.println("expr2JAS"+exprPoly.toString());

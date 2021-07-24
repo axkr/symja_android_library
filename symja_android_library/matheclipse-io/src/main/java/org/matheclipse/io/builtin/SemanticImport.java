@@ -18,9 +18,9 @@ import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.interfaces.IStringX;
 import org.matheclipse.core.io.Extension;
 import org.matheclipse.io.expression.ASTDataset;
-import org.matheclipse.parser.client.FEConfig;
 
 import tech.tablesaw.api.Table;
+import tech.tablesaw.io.csv.CsvReadOptions;
 
 /** Import semantic data into a DataSet */
 public class SemanticImport extends AbstractEvaluator {
@@ -91,7 +91,7 @@ public class SemanticImport extends AbstractEvaluator {
     } catch (ValidateException ve) {
       return engine.printMessage(S.SemanticImport, ve);
     } catch (MalformedURLException mue) {
-      if (FEConfig.SHOW_STACKTRACE) {
+      if (Config.SHOW_STACKTRACE) {
         mue.printStackTrace();
       }
       return engine.printMessage(S.SemanticImport + ": " + mue.getMessage());

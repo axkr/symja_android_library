@@ -5,13 +5,13 @@ import java.util.function.Predicate;
 import org.hipparchus.exception.MathRuntimeException;
 import org.hipparchus.linear.FieldMatrix;
 import org.hipparchus.linear.RealMatrix;
+import org.matheclipse.core.basic.Config;
 import org.matheclipse.core.convert.Convert;
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.exception.LimitException;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IExpr;
-import org.matheclipse.parser.client.FEConfig;
 
 public abstract class AbstractMatrix1Matrix extends AbstractFunctionEvaluator {
 
@@ -37,15 +37,15 @@ public abstract class AbstractMatrix1Matrix extends AbstractFunctionEvaluator {
     } catch (MathRuntimeException mre) {
       return engine.printMessage(ast.topHead(), mre);
     } catch (final ClassCastException e) {
-      if (FEConfig.SHOW_STACKTRACE) {
+      if (Config.SHOW_STACKTRACE) {
         e.printStackTrace();
       }
     } catch (final IndexOutOfBoundsException e) {
-      if (FEConfig.SHOW_STACKTRACE) {
+      if (Config.SHOW_STACKTRACE) {
         e.printStackTrace();
       }
     } catch (final RuntimeException rex) {
-      if (FEConfig.SHOW_STACKTRACE) {
+      if (Config.SHOW_STACKTRACE) {
         rex.printStackTrace();
       }
     } finally {
@@ -92,7 +92,7 @@ public abstract class AbstractMatrix1Matrix extends AbstractFunctionEvaluator {
     } catch (LimitException le) {
       throw le;
     } catch (final RuntimeException rex) {
-      if (FEConfig.SHOW_STACKTRACE) {
+      if (Config.SHOW_STACKTRACE) {
         rex.printStackTrace();
       }
       return engine.printMessage(ast.topHead(), rex);

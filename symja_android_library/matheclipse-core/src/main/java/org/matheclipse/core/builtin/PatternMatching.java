@@ -42,7 +42,6 @@ import org.matheclipse.core.interfaces.ISymbol;
 import org.matheclipse.core.patternmatching.IPatternMatcher;
 import org.matheclipse.core.patternmatching.PatternMatcherEquals;
 import org.matheclipse.core.patternmatching.RulesData;
-import org.matheclipse.parser.client.FEConfig;
 
 public final class PatternMatching {
 
@@ -976,7 +975,7 @@ public final class PatternMatching {
 
               stream.println(symbol.definitionToString());
             } catch (IOException ioe) {
-              if (FEConfig.SHOW_STACKTRACE) {
+              if (Config.SHOW_STACKTRACE) {
                 ioe.printStackTrace();
               }
             }
@@ -984,7 +983,7 @@ public final class PatternMatching {
           return S.Null;
         } catch (RuntimeException rex) {
           //
-          if (FEConfig.SHOW_STACKTRACE) {
+          if (Config.SHOW_STACKTRACE) {
             rex.printStackTrace();
           }
         }

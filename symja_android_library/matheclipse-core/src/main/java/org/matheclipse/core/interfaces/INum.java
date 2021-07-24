@@ -20,6 +20,8 @@ public interface INum extends ISignedNumber {
   @Override
   public IInteger ceilFraction();
 
+  public INum divide(INum val);
+  
   public INum multiply(INum val);
 
   default INum multiply(IRational val) {
@@ -28,6 +30,8 @@ public interface INum extends ISignedNumber {
 
   public INum pow(INum val);
 
+  public INum subtract(INum val);
+  
   /** {@inheritDoc} */
   @Override
   public boolean isNumIntValue();

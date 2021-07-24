@@ -31,7 +31,6 @@ import org.matheclipse.core.interfaces.IAssociation;
 import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.interfaces.IInteger;
 import org.matheclipse.core.interfaces.ISymbol;
-import org.matheclipse.parser.client.FEConfig;
 
 import tech.tablesaw.plotly.components.Figure;
 import tech.tablesaw.plotly.components.Layout;
@@ -49,24 +48,23 @@ public class ManipulateFunction {
   private static final int N = 100;
 
   /** Default plot style colors for functions */
-  private static final RGBColor[] PLOT_COLORS =
-      new RGBColor[] { //
-        new RGBColor(0.368417f, 0.506779f, 0.709798f), //
-        new RGBColor(0.880722f, 0.611041f, 0.142051f), //
-        new RGBColor(0.560181f, 0.691569f, 0.194885f), //
-        new RGBColor(0.922526f, 0.385626f, 0.209179f), //
-        new RGBColor(0.528488f, 0.470624f, 0.701351f), //
-        new RGBColor(0.772079f, 0.431554f, 0.102387f), //
-        new RGBColor(0.363898f, 0.618501f, 0.782349f), //
-        new RGBColor(1.0f, 0.75f, 0.0f), //
-        new RGBColor(0.647624f, 0.37816f, 0.614037f), //
-        new RGBColor(0.571589f, 0.586483f, 0.0f), //
-        new RGBColor(0.915f, 0.3325f, 0.2125f), //
-        new RGBColor(0.40082222609352647f, 0.5220066643438841f, 0.85f), //
-        new RGBColor(0.9728288904374106f, 0.621644452187053f, 0.07336199581899142f), //
-        new RGBColor(0.736782672705901f, 0.358f, 0.5030266573755369f), //
-        new RGBColor(0.28026441037696703f, 0.715f, 0.4292089322474965f) //
-      };
+  private static final RGBColor[] PLOT_COLORS = new RGBColor[] { //
+      new RGBColor(0.368417f, 0.506779f, 0.709798f), //
+      new RGBColor(0.880722f, 0.611041f, 0.142051f), //
+      new RGBColor(0.560181f, 0.691569f, 0.194885f), //
+      new RGBColor(0.922526f, 0.385626f, 0.209179f), //
+      new RGBColor(0.528488f, 0.470624f, 0.701351f), //
+      new RGBColor(0.772079f, 0.431554f, 0.102387f), //
+      new RGBColor(0.363898f, 0.618501f, 0.782349f), //
+      new RGBColor(1.0f, 0.75f, 0.0f), //
+      new RGBColor(0.647624f, 0.37816f, 0.614037f), //
+      new RGBColor(0.571589f, 0.586483f, 0.0f), //
+      new RGBColor(0.915f, 0.3325f, 0.2125f), //
+      new RGBColor(0.40082222609352647f, 0.5220066643438841f, 0.85f), //
+      new RGBColor(0.9728288904374106f, 0.621644452187053f, 0.07336199581899142f), //
+      new RGBColor(0.736782672705901f, 0.358f, 0.5030266573755369f), //
+      new RGBColor(0.28026441037696703f, 0.715f, 0.4292089322474965f) //
+  };
 
   private static final String JSXGRAPH = //
       "`1`\n" + //
@@ -77,26 +75,16 @@ public class ManipulateFunction {
           "";
 
   private static final String MATHCELL = //
-      "MathCell( id, [ `1` ] );\n"
-          + //
-          "\n"
-          + //
-          "parent.update = function( id ) {\n"
-          + //
-          "\n"
-          + //
-          "`2`"
-          + //
-          "\n"
-          + //
-          "`3`"
-          + //
-          "\n"
-          + //
-          "`4`"
-          + //
-          "\n"
-          + //
+      "MathCell( id, [ `1` ] );\n" + //
+          "\n" + //
+          "parent.update = function( id ) {\n" + //
+          "\n" + //
+          "`2`" + //
+          "\n" + //
+          "`3`" + //
+          "\n" + //
+          "`4`" + //
+          "\n" + //
           "}";
 
   /**
@@ -286,8 +274,8 @@ public class ManipulateFunction {
     }
 
     /**
-     * Convert the <code>plot</code> function into a JavaScript mathcell graphic control. See: <a
-     * href="https://github.com/paulmasson/mathcell">github mathcell project</a>
+     * Convert the <code>plot</code> function into a JavaScript mathcell graphic control. See:
+     * <a href="https://github.com/paulmasson/mathcell">github mathcell project</a>
      *
      * @param plot
      * @param plotRangeX
@@ -296,17 +284,15 @@ public class ManipulateFunction {
      * @return
      * @throws IOException
      */
-    private static IExpr sliderWithPlot(
-        IAST plot, IAST plotRangeX, IAST plotRangeY, final IAST manipulateAST, EvalEngine engine) {
+    private static IExpr sliderWithPlot(IAST plot, IAST plotRangeX, IAST plotRangeY,
+        final IAST manipulateAST, EvalEngine engine) {
       JavaScriptFormFactory toJS =
           new JavaScriptFormFactory(true, false, -1, -1, JavaScriptFormFactory.USE_MATHCELL);
 
       int plotID = plot.headID();
       String colorMap = "hot";
       final OptionArgs options;
-      if (plotID == ID.Plot3D
-          || plotID == ID.ComplexPlot3D
-          || plotID == ID.ContourPlot
+      if (plotID == ID.Plot3D || plotID == ID.ComplexPlot3D || plotID == ID.ContourPlot
           || plotID == ID.DensityPlot) {
         if (plotID == ID.ComplexPlot3D) {
           options = new OptionArgs(plot.topHead(), plot, 3, engine);
@@ -339,13 +325,13 @@ public class ManipulateFunction {
             colorMap = "watermelon";
           } else {
             // `2` is not a known entity, class, or tag for `1`.
-            IOFunctions.printMessage(
-                S.ColorData, "notent", F.List(S.ColorData, colorFunction), engine);
+            IOFunctions.printMessage(S.ColorData, "notent", F.List(S.ColorData, colorFunction),
+                engine);
           }
         } else if (colorFunction.isPresent()) {
           // `2` is not a known entity, class, or tag for `1`.
-          IOFunctions.printMessage(
-              S.ColorData, "notent", F.List(S.ColorData, colorFunction), engine);
+          IOFunctions.printMessage(S.ColorData, "notent", F.List(S.ColorData, colorFunction),
+              engine);
         }
       } else {
         options = new OptionArgs(plot.topHead(), plot, 3, engine);
@@ -361,17 +347,15 @@ public class ManipulateFunction {
           } else if (plotID == ID.ListPlot || plotID == ID.ListLinePlot) {
             optionPlotRange = F.List(S.Full, F.List(F.C0, plotRange));
           } else if ((plotID == ID.PolarPlot) || (plotID == ID.ParametricPlot)) {
-            optionPlotRange =
-                F.List(
-                    F.List(plotRange.negate(), plotRange), //
-                    F.List(plotRange.negate(), plotRange));
+            optionPlotRange = F.List(F.List(plotRange.negate(), plotRange), //
+                F.List(plotRange.negate(), plotRange));
           }
         }
         if (!optionPlotRange.isPresent()) {
           // Value of option `1` is not All, Full, Automatic, a positive machine
           // number, or an appropriate list of range specifications.
-          IOFunctions.printMessage(
-              plot.topHead(), "prng", F.List(F.Rule(S.PlotRange, plotRange)), engine);
+          IOFunctions.printMessage(plot.topHead(), "prng", F.List(F.Rule(S.PlotRange, plotRange)),
+              engine);
         }
       }
 
@@ -453,8 +437,7 @@ public class ManipulateFunction {
         }
         complexPlot3D(listOfFunctions, plotRangeX, graphicControl, optionPlotRange, toJS);
       } else {
-        if (plotID == ID.ParametricPlot
-            || //
+        if (plotID == ID.ParametricPlot || //
             plotID == ID.PolarPlot) {
           parametricPlot(listOfFunctions, plotRangeX, plotSymbolX, graphicControl, toJS);
         } else {
@@ -485,10 +468,10 @@ public class ManipulateFunction {
         }
         graphicControl.append("var config = { type: 'svg' ");
         if (optionPlotRange.isPresent()) {
-          IExpr option = optionPlotRange.arg2();
-          if (option.isAST(S.List, 3)) {
-            plotRangeY = F.List(option.first(), option.second());
-          }
+          // IExpr option = optionPlotRange.arg2();
+          // if (option.isAST(S.List, 3)) {
+          // plotRangeY = F.List(option.first(), option.second());
+          // }
         }
         if (optionPlotRange.isPresent() && optionPlotRange.second().isAST(S.List, 3)) {
           IAST list = (IAST) optionPlotRange.second();
@@ -507,13 +490,8 @@ public class ManipulateFunction {
       return F.JSFormData(js, "mathcell");
     }
 
-    public static void contourPlot(
-        IAST listOfFunctions,
-        IAST plotRangeX,
-        IAST plotRangeY,
-        StringBuilder graphicControl,
-        int plotID,
-        JavaScriptFormFactory toJS) {
+    public static void contourPlot(IAST listOfFunctions, IAST plotRangeX, IAST plotRangeY,
+        StringBuilder graphicControl, int plotID, JavaScriptFormFactory toJS) {
       for (int i = 1; i < listOfFunctions.size(); i++) {
         graphicControl.append("var p" + i + " = ");
         if (plotID == ID.DensityPlot) {
@@ -540,13 +518,8 @@ public class ManipulateFunction {
       graphicControl.append("];\n");
     }
 
-    public static void plot3D(
-        IAST listOfFunctions,
-        IAST plotRangeX,
-        IAST plotRangeY,
-        StringBuilder graphicControl,
-        String colorMap,
-        JavaScriptFormFactory toJS) {
+    public static void plot3D(IAST listOfFunctions, IAST plotRangeX, IAST plotRangeY,
+        StringBuilder graphicControl, String colorMap, JavaScriptFormFactory toJS) {
       for (int i = 1; i < listOfFunctions.size(); i++) {
         graphicControl.append("var p" + i + " = ");
         graphicControl.append("parametric( z" + i + ", ");
@@ -568,12 +541,8 @@ public class ManipulateFunction {
       graphicControl.append("];\n");
     }
 
-    public static void parametricPlot(
-        IAST listOfFunctions,
-        IAST plotRangeX,
-        ISymbol plotSymbolX,
-        StringBuilder graphicControl,
-        JavaScriptFormFactory toJS) {
+    public static void parametricPlot(IAST listOfFunctions, IAST plotRangeX, ISymbol plotSymbolX,
+        StringBuilder graphicControl, JavaScriptFormFactory toJS) {
       graphicControl.append("var data = [ parametric( ");
       toJS.convert(graphicControl, plotSymbolX);
       graphicControl.append(" => [");
@@ -590,12 +559,8 @@ public class ManipulateFunction {
       graphicControl.append(" )];\n");
     }
 
-    public static void complexPlot3D(
-        IAST listOfFunctions,
-        IAST plotRangeX,
-        StringBuilder graphicControl,
-        IAST optionPlotRange,
-        JavaScriptFormFactory toJS) {
+    public static void complexPlot3D(IAST listOfFunctions, IAST plotRangeX,
+        StringBuilder graphicControl, IAST optionPlotRange, JavaScriptFormFactory toJS) {
       double[] rangeXY = null;
       for (int i = 1; i < listOfFunctions.size(); i++) {
         graphicControl.append("var p" + i + " = ");
@@ -635,19 +600,19 @@ public class ManipulateFunction {
      * @param graphicControl
      * @param rangeXY
      */
-  private static void setBoxRatios(StringBuilder graphicControl, double[] rangeXY) {
-    graphicControl.append(" aspectRatio: [");
-    if (rangeXY[0] > rangeXY[1]) {
-      double aspectRatio = rangeXY[0] / rangeXY[1];
-      graphicControl.append("1,");
-      graphicControl.append(Double.toString(aspectRatio));
-      graphicControl.append(",1]");
-    } else {
-      double aspectRatio = rangeXY[1] / rangeXY[0];
-      graphicControl.append(Double.toString(aspectRatio));
-      graphicControl.append(",1,1]");
+    private static void setBoxRatios(StringBuilder graphicControl, double[] rangeXY) {
+      graphicControl.append(" aspectRatio: [");
+      if (rangeXY[0] > rangeXY[1]) {
+        double aspectRatio = rangeXY[0] / rangeXY[1];
+        graphicControl.append("1,");
+        graphicControl.append(Double.toString(aspectRatio));
+        graphicControl.append(",1]");
+      } else {
+        double aspectRatio = rangeXY[1] / rangeXY[0];
+        graphicControl.append(Double.toString(aspectRatio));
+        graphicControl.append(",1,1]");
+      }
     }
-  }
 
     /**
      * Evaluate <code>Table( &lt;formula&gt;, &lt;sliderRange&gt; )</code>. If the result is a list,
@@ -745,11 +710,7 @@ public class ManipulateFunction {
       return F.NIL;
     }
 
-    static boolean singleSlider(
-        final IAST ast,
-        int i,
-        StringBuilder slider,
-        StringBuilder variable,
+    static boolean singleSlider(final IAST ast, int i, StringBuilder slider, StringBuilder variable,
         JavaScriptFormFactory toJS) {
       IAST sliderRange = (IAST) ast.get(i);
       if (sliderRange.isAST2() && sliderRange.arg2().isList()) {
@@ -775,8 +736,7 @@ public class ManipulateFunction {
         }
         slider.append("{ type: 'buttons', values: [");
         for (int j = 1; j < listOfButtons.size(); j++) {
-          if (listOfButtons.get(j).isFalse()
-              || //
+          if (listOfButtons.get(j).isFalse() || //
               listOfButtons.get(j).isTrue()) {
             // replace true and false values with 0, 1
             if (listOfButtons.get(j).isFalse()) {
@@ -908,14 +868,8 @@ public class ManipulateFunction {
    */
   static final class JSXGraph {
 
-    private static boolean plot(
-        IAST plot,
-        final IAST manipulateAST,
-        JavaScriptFormFactory toJS,
-        StringBuilder function,
-        double[] boundingbox,
-        int[] colour,
-        EvalEngine engine) {
+    private static boolean plot(IAST plot, final IAST manipulateAST, JavaScriptFormFactory toJS,
+        StringBuilder function, double[] boundingbox, int[] colour, EvalEngine engine) {
       // final OptionArgs options = new OptionArgs(plot.topHead(), plot, 2, engine);
       if (plot.size() < 2) {
         return false;
@@ -936,8 +890,8 @@ public class ManipulateFunction {
           int[] dimension = pointList.isMatrix(false);
           if (dimension != null) {
             if (dimension[1] == 2) {
-              sequencePointListPlot(
-                  manipulateAST, 1, pointList, toJS, function, boundingbox, colour, engine);
+              sequencePointListPlot(manipulateAST, 1, pointList, toJS, function, boundingbox,
+                  colour, engine);
               return true; // JSXGraph.boundingBox(manipulateAST, boundingbox, function.toString(),
               // toJS,
               // false, true);
@@ -949,19 +903,19 @@ public class ManipulateFunction {
             dimension = pointList.isMatrix(false);
             if (dimension != null) {
               if (dimension[1] == 2) {
-                sequencePointListPlot(
-                    manipulateAST, i, pointList, toJS, function, boundingbox, colour, engine);
+                sequencePointListPlot(manipulateAST, i, pointList, toJS, function, boundingbox,
+                    colour, engine);
               } else {
                 return false;
               }
             } else {
-              sequenceYValuesListPlot(
-                  manipulateAST, i, pointList, toJS, function, boundingbox, colour, engine);
+              sequenceYValuesListPlot(manipulateAST, i, pointList, toJS, function, boundingbox,
+                  colour, engine);
             }
           }
         } else {
-          sequenceYValuesListPlot(
-              manipulateAST, 1, pointList, toJS, function, boundingbox, colour, engine);
+          sequenceYValuesListPlot(manipulateAST, 1, pointList, toJS, function, boundingbox, colour,
+              engine);
         }
         return true; // JSXGraph.boundingBox(manipulateAST, boundingbox, function.toString(),
         // toJS, false,
@@ -1003,8 +957,8 @@ public class ManipulateFunction {
                 if (sliderRange.isAST2() && sliderRange.arg2().isList()) {
                   // assumption: buttons should be displayed
                   if (plots.size() == 2) {
-                    return Mathcell.sliderWithPlot(
-                        plot, plotRangeX, plotRangeY, manipulateAST, engine);
+                    return Mathcell.sliderWithPlot(plot, plotRangeX, plotRangeY, manipulateAST,
+                        engine);
                   }
                   return F.NIL;
                 }
@@ -1013,21 +967,21 @@ public class ManipulateFunction {
 
             if (plotRangeX.isAST3() && plotRangeX.arg1().isSymbol()) {
               // return mathcellSliderWithPlot(ast, plot, plotRangeX, plotRangeY, engine);
-              if (!JSXGraph.sliderWithPlot(
-                  plot, plotRangeX, manipulateAST, toJS, function, boundingbox, colour, engine)) {
+              if (!JSXGraph.sliderWithPlot(plot, plotRangeX, manipulateAST, toJS, function,
+                  boundingbox, colour, engine)) {
                 return F.NIL;
               }
             }
           }
         }
       }
-      return JSXGraph.boundingBox(
-          manipulateAST, boundingbox, function.toString(), toJS, false, true);
+      return JSXGraph.boundingBox(manipulateAST, boundingbox, function.toString(), toJS, false,
+          true);
     }
 
     /**
-     * Convert the <code>plot</code> function into a JavaScript JSXGraph graphic control. See: <a
-     * href="http://jsxgraph.uni-bayreuth.de">JSXGraph</a>
+     * Convert the <code>plot</code> function into a JavaScript JSXGraph graphic control. See:
+     * <a href="http://jsxgraph.uni-bayreuth.de">JSXGraph</a>
      *
      * @param plot
      * @param plotRangeX
@@ -1040,21 +994,13 @@ public class ManipulateFunction {
      * @return
      * @throws IOException
      */
-    private static boolean sliderWithPlot(
-        IAST plot,
-        IAST plotRangeX,
-        final IAST manipulateAST,
-        JavaScriptFormFactory toJS,
-        StringBuilder function,
-        double[] boundingbox,
-        int[] colour,
+    private static boolean sliderWithPlot(IAST plot, IAST plotRangeX, final IAST manipulateAST,
+        JavaScriptFormFactory toJS, StringBuilder function, double[] boundingbox, int[] colour,
         EvalEngine engine) {
       int plotID = plot.headID();
 
       final OptionArgs options;
-      if (plotID == ID.Plot3D
-          || plotID == ID.ComplexPlot3D
-          || plotID == ID.ContourPlot
+      if (plotID == ID.Plot3D || plotID == ID.ComplexPlot3D || plotID == ID.ContourPlot
           || plotID == ID.DensityPlot) {
         options = new OptionArgs(plot.topHead(), plot, 4, engine);
         // } else if (plotID == ID.Plot) {
@@ -1107,9 +1053,8 @@ public class ManipulateFunction {
           } catch (RuntimeException rex) {
           }
         } else if (plotRangeY.isReal()) {
-          if ((plotID == ID.Plot)
-              || (plotID == ID.ParametricPlot //
-                  || plotID == ID.PolarPlot)) {
+          if ((plotID == ID.Plot) || (plotID == ID.ParametricPlot //
+              || plotID == ID.PolarPlot)) {
             try {
               plotRangeYMin = engine.evalDouble(plotRangeY.negate());
               plotRangeYMax = engine.evalDouble(plotRangeY);
@@ -1122,8 +1067,8 @@ public class ManipulateFunction {
         if (!plotRangeEvaled) {
           // Value of option `1` is not All, Full, Automatic, a positive machine
           // number, or an appropriate list of range specifications.
-          IOFunctions.printMessage(
-              plot.topHead(), "prng", F.List(F.Rule(S.PlotRange, plotRangeY)), engine);
+          IOFunctions.printMessage(plot.topHead(), "prng", F.List(F.Rule(S.PlotRange, plotRangeY)),
+              engine);
         }
       }
 
@@ -1148,8 +1093,7 @@ public class ManipulateFunction {
       // }
       // }
       if ((plotID == ID.ParametricPlot || plotID == ID.PolarPlot)
-          && plotRangeYMax != Double.MIN_VALUE
-          && plotRangeYMin != Double.MAX_VALUE) {
+          && plotRangeYMax != Double.MIN_VALUE && plotRangeYMin != Double.MAX_VALUE) {
         try {
           plotRangeXMin = plotRangeYMin;
           plotRangeXMax = plotRangeYMax;
@@ -1163,38 +1107,12 @@ public class ManipulateFunction {
       // boundingbox = new double[] { 0.0, Double.MIN_VALUE, listOfFunctions.size(),
       // Double.MAX_VALUE };
       if (plotID == ID.ParametricPlot) {
-        return parametricPlot(
-            plotRangeX,
-            manipulateAST,
-            engine,
-            plotID,
-            plotRangeYMax,
-            plotRangeYMin,
-            plotRangeXMax,
-            plotRangeXMin,
-            plotStyle,
-            boundingbox,
-            toJS,
-            arg1,
-            plotSymbolX,
-            function,
-            colour);
+        return parametricPlot(plotRangeX, manipulateAST, engine, plotID, plotRangeYMax,
+            plotRangeYMin, plotRangeXMax, plotRangeXMin, plotStyle, boundingbox, toJS, arg1,
+            plotSymbolX, function, colour);
       } else if (plotID == ID.PolarPlot) {
-        return polarPlot(
-            plotRangeX,
-            manipulateAST,
-            engine,
-            plotID,
-            plotRangeYMax,
-            plotRangeYMin,
-            plotRangeXMax,
-            plotRangeXMin,
-            plotStyle,
-            boundingbox,
-            toJS,
-            arg1,
-            plotSymbolX,
-            function,
+        return polarPlot(plotRangeX, manipulateAST, engine, plotID, plotRangeYMax, plotRangeYMin,
+            plotRangeXMax, plotRangeXMin, plotStyle, boundingbox, toJS, arg1, plotSymbolX, function,
             colour);
       }
 
@@ -1214,8 +1132,8 @@ public class ManipulateFunction {
         IAST variables = VariablesSet.getVariables(listOfFunctions.get(i));
         if (variables.size() <= 2) {
           Dimensions2D plotRange = new Dimensions2D();
-          unaryPlotParameters(
-              plotSymbolX, plotRangeXMin, plotRangeXMax, listOfFunctions.get(i), plotRange, engine);
+          unaryPlotParameters(plotSymbolX, plotRangeXMin, plotRangeXMax, listOfFunctions.get(i),
+              plotRange, engine);
           xBoundingBoxFunctionRange(boundingbox, plotRange);
           yBoundingBoxFunctionRange(boundingbox, plotRange);
         } else {
@@ -1255,21 +1173,10 @@ public class ManipulateFunction {
       return true;
     }
 
-    private static boolean parametricPlot(
-        IAST plotRangeX,
-        final IAST manipulateAST,
-        EvalEngine engine,
-        int plotID,
-        double plotRangeYMax,
-        double plotRangeYMin,
-        double plotRangeXMax,
-        double plotRangeXMin,
-        IAST plotStyle,
-        double[] boundingbox,
-        JavaScriptFormFactory toJS,
-        IExpr arg,
-        ISymbol plotSymbolX,
-        StringBuilder function,
+    private static boolean parametricPlot(IAST plotRangeX, final IAST manipulateAST,
+        EvalEngine engine, int plotID, double plotRangeYMax, double plotRangeYMin,
+        double plotRangeXMax, double plotRangeXMin, IAST plotStyle, double[] boundingbox,
+        JavaScriptFormFactory toJS, IExpr arg, ISymbol plotSymbolX, StringBuilder function,
         int[] colour) {
       int[] dim = arg.isMatrix(false);
       IAST list;
@@ -1307,14 +1214,9 @@ public class ManipulateFunction {
           IAST variables2 = VariablesSet.getVariables(listOfFunctions.get(2));
           if (variables1.size() <= 2 && variables2.size() <= 2) {
             Dimensions2D plotRange = new Dimensions2D();
-            binaryPlotParameters(
-                plotSymbolX,
-                plotRangeXMin,
-                plotRangeXMax, //
-                listOfFunctions.get(1),
-                listOfFunctions.get(2), //
-                plotRange,
-                engine);
+            binaryPlotParameters(plotSymbolX, plotRangeXMin, plotRangeXMax, //
+                listOfFunctions.get(1), listOfFunctions.get(2), //
+                plotRange, engine);
             xBoundingBoxFunctionRange(boundingbox, plotRange);
             yBoundingBoxFunctionRange(boundingbox, plotRange);
           } else {
@@ -1352,17 +1254,15 @@ public class ManipulateFunction {
         }
       }
 
-      if (!F.isFuzzyEquals(Double.MAX_VALUE, plotRangeXMin, Config.SPECIAL_FUNCTIONS_TOLERANCE)
-          && F.isFuzzyEquals(
-              Double.MAX_VALUE, boundingbox[0], Config.SPECIAL_FUNCTIONS_TOLERANCE)) {
+      if (!F.isFuzzyEquals(Double.MAX_VALUE, plotRangeXMin, Config.SPECIAL_FUNCTIONS_TOLERANCE) && F
+          .isFuzzyEquals(Double.MAX_VALUE, boundingbox[0], Config.SPECIAL_FUNCTIONS_TOLERANCE)) {
         boundingbox[0] = plotRangeXMin;
       }
       if (!F.isFuzzyEquals(Double.MIN_VALUE, plotRangeYMax, Config.SPECIAL_FUNCTIONS_TOLERANCE)) {
         boundingbox[1] = plotRangeYMax;
       }
-      if (!F.isFuzzyEquals(Double.MIN_VALUE, plotRangeXMax, Config.SPECIAL_FUNCTIONS_TOLERANCE)
-          && F.isFuzzyEquals(
-              Double.MIN_VALUE, boundingbox[2], Config.SPECIAL_FUNCTIONS_TOLERANCE)) {
+      if (!F.isFuzzyEquals(Double.MIN_VALUE, plotRangeXMax, Config.SPECIAL_FUNCTIONS_TOLERANCE) && F
+          .isFuzzyEquals(Double.MIN_VALUE, boundingbox[2], Config.SPECIAL_FUNCTIONS_TOLERANCE)) {
         boundingbox[2] = plotRangeXMax;
       }
       if (!F.isFuzzyEquals(Double.MAX_VALUE, plotRangeYMin, Config.SPECIAL_FUNCTIONS_TOLERANCE)) {
@@ -1372,22 +1272,10 @@ public class ManipulateFunction {
       return true;
     }
 
-    private static boolean polarPlot(
-        IAST plotRangeX,
-        final IAST manipulateAST,
-        EvalEngine engine,
-        int plotID,
-        double plotRangeYMax,
-        double plotRangeYMin,
-        double plotRangeXMax,
-        double plotRangeXMin,
-        IAST plotStyle,
-        double[] boundingbox,
-        JavaScriptFormFactory toJS,
-        IExpr arg1,
-        ISymbol plotSymbolX,
-        StringBuilder function,
-        int[] colour) {
+    private static boolean polarPlot(IAST plotRangeX, final IAST manipulateAST, EvalEngine engine,
+        int plotID, double plotRangeYMax, double plotRangeYMin, double plotRangeXMax,
+        double plotRangeXMin, IAST plotStyle, double[] boundingbox, JavaScriptFormFactory toJS,
+        IExpr arg1, ISymbol plotSymbolX, StringBuilder function, int[] colour) {
       IAST listOfFunctions = (IAST) arg1;
       int[] dim = arg1.isMatrix(false);
       if (dim != null) {
@@ -1412,8 +1300,8 @@ public class ManipulateFunction {
         IAST variables = VariablesSet.getVariables(listOfFunctions.get(i));
         if (variables.size() <= 2) {
           Dimensions2D plotRange = new Dimensions2D();
-          polarPlotParameters(
-              plotSymbolX, plotRangeXMin, plotRangeXMax, listOfFunctions.get(i), plotRange, engine);
+          polarPlotParameters(plotSymbolX, plotRangeXMin, plotRangeXMax, listOfFunctions.get(i),
+              plotRange, engine);
           xBoundingBoxFunctionRange(boundingbox, plotRange);
           yBoundingBoxFunctionRange(boundingbox, plotRange);
         } else {
@@ -1452,17 +1340,15 @@ public class ManipulateFunction {
         function.append("} );\n");
       }
 
-      if (!F.isFuzzyEquals(Double.MAX_VALUE, plotRangeXMin, Config.SPECIAL_FUNCTIONS_TOLERANCE)
-          && F.isFuzzyEquals(
-              Double.MAX_VALUE, boundingbox[0], Config.SPECIAL_FUNCTIONS_TOLERANCE)) {
+      if (!F.isFuzzyEquals(Double.MAX_VALUE, plotRangeXMin, Config.SPECIAL_FUNCTIONS_TOLERANCE) && F
+          .isFuzzyEquals(Double.MAX_VALUE, boundingbox[0], Config.SPECIAL_FUNCTIONS_TOLERANCE)) {
         boundingbox[0] = plotRangeXMin;
       }
       if (!F.isFuzzyEquals(Double.MIN_VALUE, plotRangeYMax, Config.SPECIAL_FUNCTIONS_TOLERANCE)) {
         boundingbox[1] = plotRangeYMax;
       }
-      if (!F.isFuzzyEquals(Double.MIN_VALUE, plotRangeXMax, Config.SPECIAL_FUNCTIONS_TOLERANCE)
-          && F.isFuzzyEquals(
-              Double.MIN_VALUE, boundingbox[2], Config.SPECIAL_FUNCTIONS_TOLERANCE)) {
+      if (!F.isFuzzyEquals(Double.MIN_VALUE, plotRangeXMax, Config.SPECIAL_FUNCTIONS_TOLERANCE) && F
+          .isFuzzyEquals(Double.MIN_VALUE, boundingbox[2], Config.SPECIAL_FUNCTIONS_TOLERANCE)) {
         boundingbox[2] = plotRangeXMax;
       }
       if (!F.isFuzzyEquals(Double.MAX_VALUE, plotRangeYMin, Config.SPECIAL_FUNCTIONS_TOLERANCE)) {
@@ -1491,23 +1377,18 @@ public class ManipulateFunction {
      * Create JSXGraph bounding box and sliders.
      *
      * @param ast from position 2 to size()-1 there maybe some <code>Manipulate</code> sliders
-     *     defined
+     *        defined
      * @param boundingbox an array of double values (length 4) which describes the bounding box
-     *     <code>[xMin, yMAx, xMax, yMin]</code>
+     *        <code>[xMin, yMAx, xMax, yMin]</code>
      * @param function the generated JavaScript function
      * @param toJS the Symja to JavaScript converter factory
      * @param fixedBounds if <code>false</code> recalculate <code>boundingbox</code> min and max
-     *     values
+     *        values
      * @param axes define <code>axes: true</code>
      * @return
      */
-    private static IExpr boundingBox(
-        IAST ast,
-        double[] boundingbox,
-        String function,
-        JavaScriptFormFactory toJS,
-        boolean fixedBounds,
-        boolean axes) {
+    private static IExpr boundingBox(IAST ast, double[] boundingbox, String function,
+        JavaScriptFormFactory toJS, boolean fixedBounds, boolean axes) {
       String js = ManipulateFunction.JSXGRAPH;
       if (!fixedBounds) {
         if (F.isFuzzyEquals(Double.MAX_VALUE, boundingbox[0], Config.SPECIAL_FUNCTIONS_TOLERANCE)) {
@@ -1581,8 +1462,8 @@ public class ManipulateFunction {
     // graphicControl.append("]");
     // }
 
-    private static void rangeArgs(
-        StringBuilder graphicControl, IAST plotRange, int steps, JavaScriptFormFactory toJS) {
+    private static void rangeArgs(StringBuilder graphicControl, IAST plotRange, int steps,
+        JavaScriptFormFactory toJS) {
       toJS.convert(graphicControl, plotRange.arg2());
       graphicControl.append(", ");
       toJS.convert(graphicControl, plotRange.arg3());
@@ -1603,13 +1484,8 @@ public class ManipulateFunction {
      * @param toJS the Symja to JavaScript converter factory
      * @return <code>true</code> if successfully generated
      */
-    static boolean singleSlider(
-        final IAST sliderRange,
-        StringBuilder slider,
-        double xPos1Slider,
-        double xPos2Slider,
-        double yPosSlider,
-        JavaScriptFormFactory toJS) {
+    static boolean singleSlider(final IAST sliderRange, StringBuilder slider, double xPos1Slider,
+        double xPos2Slider, double yPosSlider, JavaScriptFormFactory toJS) {
 
       if (sliderRange.isAST3() || sliderRange.size() == 5) {
         IExpr step = null;
@@ -1675,7 +1551,7 @@ public class ManipulateFunction {
      * Add the slider name to the toJS slider names.
      *
      * @param sliderRange a single <code>List(slider-name,...)</code> representing a slider
-     *     definition
+     *        definition
      * @param toJS the Symja to JavaScript converter factory
      * @return
      */
@@ -1702,7 +1578,7 @@ public class ManipulateFunction {
      * Add all slider names to the toJS slider names.
      *
      * @param ast from position 2 to size()-1 there maybe some <code>Manipulate</code> sliders
-     *     defined
+     *        defined
      * @param toJS the Symja to JavaScript converter factory
      */
     private static void sliderNamesFromList(final IAST ast, JavaScriptFormFactory toJS) {
@@ -1725,15 +1601,15 @@ public class ManipulateFunction {
      * Create JSXGraph sliders.
      *
      * @param ast from position 2 to size()-1 there maybe some <code>Manipulate</code> sliders
-     *     defined
+     *        defined
      * @param js the JSXGraph JavaScript template
      * @param boundingbox an array of double values (length 4) which describes the bounding box
-     *     <code>[xMin, yMAx, xMax, yMin]</code>
+     *        <code>[xMin, yMAx, xMax, yMin]</code>
      * @param toJS the Symja to JavaScript converter factory
      * @return
      */
-    private static String slidersFromList(
-        final IAST ast, String js, double[] boundingbox, JavaScriptFormFactory toJS) {
+    private static String slidersFromList(final IAST ast, String js, double[] boundingbox,
+        JavaScriptFormFactory toJS) {
       if (ast.size() >= 3) {
         if (ast.arg2().isList()) {
           double xDelta = (boundingbox[2] - boundingbox[0]) / 10;
@@ -1744,8 +1620,8 @@ public class ManipulateFunction {
           StringBuilder slider = new StringBuilder();
           for (int i = 2; i < ast.size(); i++) {
             if (ast.get(i).isList()) {
-              if (!ManipulateFunction.JSXGraph.singleSlider(
-                  ast.getAST(i), slider, xPos1Slider, xPos2Slider, yPosSlider, toJS)) {
+              if (!ManipulateFunction.JSXGraph.singleSlider(ast.getAST(i), slider, xPos1Slider,
+                  xPos2Slider, yPosSlider, toJS)) {
                 return null;
               }
               yPosSlider -= yDelta;
@@ -1775,10 +1651,10 @@ public class ManipulateFunction {
       if (!arg1.isList()) {
         arg1 = engine.evaluate(arg1);
       }
-      //			if (!arg1.isList()) {
-      //				// example SparseArray
-      //				arg1 = arg1.normal(false);
-      //			}
+      // if (!arg1.isList()) {
+      // // example SparseArray
+      // arg1 = arg1.normal(false);
+      // }
 
       if (plot.isAST(S.DensityHistogram)) {
         return densityHistogram(arg1);
@@ -1900,18 +1776,13 @@ public class ManipulateFunction {
             // }
             double[] vector1 = m.getColumn(0);
             double[] vector2 = m.getColumn(1);
-            if (vector1 != null
-                && vector1.length > 0
-                && //
-                vector2 != null
-                && vector2.length > 0) {
+            if (vector1 != null && vector1.length > 0 && //
+                vector2 != null && vector2.length > 0) {
               Histogram2DBuilder builder = Histogram2DTrace.builder(vector1, vector2);
               // builder.opacity(opacity);
 
-              Figure figure =
-                  new Figure(
-                      Layout.builder("Histogram", "x", "y").autosize(true).build(),
-                      builder.build());
+              Figure figure = new Figure(
+                  Layout.builder("Histogram", "x", "y").autosize(true).build(), builder.build());
               return F.JSFormData(figure.asJavascript("plotly"), "plotly");
             }
           }
@@ -1932,9 +1803,9 @@ public class ManipulateFunction {
   private static final class BoxWhiskerChart extends AbstractEvaluator {
     @Override
     public IExpr evaluate(final IAST ast, EvalEngine engine) {
-      //      "Function `1` not implemented.", //
+      // "Function `1` not implemented.", //
       return IOFunctions.printMessage(ast.topHead(), "zznotimpl", F.List(ast.topHead()), engine);
-      //      return redirectToManipulate(ast, engine);
+      // return redirectToManipulate(ast, engine);
     }
   }
 
@@ -1949,9 +1820,9 @@ public class ManipulateFunction {
 
     @Override
     public IExpr evaluate(final IAST ast, EvalEngine engine) {
-      //      "Function `1` not implemented.", //
+      // "Function `1` not implemented.", //
       return IOFunctions.printMessage(ast.topHead(), "zznotimpl", F.List(ast.topHead()), engine);
-      //      return redirectToManipulate(ast, engine);
+      // return redirectToManipulate(ast, engine);
     }
   }
 
@@ -1959,9 +1830,9 @@ public class ManipulateFunction {
 
     @Override
     public IExpr evaluate(final IAST ast, EvalEngine engine) {
-      //        "Function `1` not implemented.", //
+      // "Function `1` not implemented.", //
       return IOFunctions.printMessage(ast.topHead(), "zznotimpl", F.List(ast.topHead()), engine);
-      //      return redirectToManipulate(ast, engine);
+      // return redirectToManipulate(ast, engine);
     }
   }
 
@@ -2020,14 +1891,10 @@ public class ManipulateFunction {
         IAST listOfSymbols = (IAST) expr;
         for (int i = 1; i < listOfSymbols.size(); i++) {
           IExpr arg = listOfSymbols.get(i);
-          if (arg.isAST(S.ListLinePlot)
-              || //
-              arg.isAST(S.ListPlot)
-              || //
-              arg.isAST(S.Plot)
-              || //
-              arg.isAST(S.ParametricPlot)
-              || //
+          if (arg.isAST(S.ListLinePlot) || //
+              arg.isAST(S.ListPlot) || //
+              arg.isAST(S.Plot) || //
+              arg.isAST(S.ParametricPlot) || //
               arg.isAST(S.PolarPlot)) {
             continue;
           }
@@ -2035,14 +1902,10 @@ public class ManipulateFunction {
         }
         return listOfSymbols;
       } else {
-        if (expr.isAST(S.ListLinePlot)
-            || //
-            expr.isAST(S.ListPlot)
-            || //
-            expr.isAST(S.Plot)
-            || //
-            expr.isAST(S.ParametricPlot)
-            || //
+        if (expr.isAST(S.ListLinePlot) || //
+            expr.isAST(S.ListPlot) || //
+            expr.isAST(S.Plot) || //
+            expr.isAST(S.ParametricPlot) || //
             expr.isAST(S.PolarPlot)) {
           return F.List(expr);
         }
@@ -2064,18 +1927,13 @@ public class ManipulateFunction {
         // F.List(F.ComplexPlot3D, F.stringx("Symja")), engine);
         // }
 
-        if (arg1.isAST(S.BarChart)
-            || arg1.isAST(S.BoxWhiskerChart)
-            || arg1.isAST(S.DensityHistogram)
-            || arg1.isAST(S.Histogram)
-            || arg1.isAST(S.MatrixPlot)
+        if (arg1.isAST(S.BarChart) || arg1.isAST(S.BoxWhiskerChart)
+            || arg1.isAST(S.DensityHistogram) || arg1.isAST(S.Histogram) || arg1.isAST(S.MatrixPlot)
             || arg1.isAST(S.PieChart)) {
           return Plotly.plot((IAST) arg1, manipulateAST, engine);
         }
 
-        if (arg1.isAST(S.Plot3D)
-            || arg1.isAST(S.ComplexPlot3D)
-            || arg1.isAST(S.ContourPlot)
+        if (arg1.isAST(S.Plot3D) || arg1.isAST(S.ComplexPlot3D) || arg1.isAST(S.ContourPlot)
             || arg1.isAST(S.DensityPlot)) {
           IAST plot = (IAST) arg1;
           if (plot.size() >= 3) {
@@ -2091,8 +1949,8 @@ public class ManipulateFunction {
               } else if (!arg1.isAST(S.ComplexPlot3D)) {
                 if (!plot.arg3().isList3() || !plot.arg3().first().isSymbol()) {
                   // Range specification `1` is not of the form {x, xmin, xmax}.
-                  return IOFunctions.printMessage(
-                      plot.topHead(), "pllim", F.List(plot.arg3()), engine);
+                  return IOFunctions.printMessage(plot.topHead(), "pllim", F.List(plot.arg3()),
+                      engine);
                 }
               }
             }
@@ -2112,7 +1970,7 @@ public class ManipulateFunction {
           }
         }
       } catch (RuntimeException rex) {
-        if (FEConfig.SHOW_STACKTRACE) {
+        if (Config.SHOW_STACKTRACE) {
           rex.printStackTrace();
         }
         return IOFunctions.printMessage(S.Manipulate, rex, engine);
@@ -2139,8 +1997,8 @@ public class ManipulateFunction {
    * @param steps an additional step parameter. If less <code>0</code> the parameter will be ignored
    * @param toJS the expression to JavaScript transpiler
    */
-  private static void realRange(
-      StringBuilder graphicControl, IAST plotRange, int steps, JavaScriptFormFactory toJS) {
+  private static void realRange(StringBuilder graphicControl, IAST plotRange, int steps,
+      JavaScriptFormFactory toJS) {
     graphicControl.append("[");
     toJS.convert(graphicControl, plotRange.arg2());
     graphicControl.append(", ");
@@ -2161,8 +2019,8 @@ public class ManipulateFunction {
    * @param toJS the expression to JavaScript transpiler
    * @return an array for the x-(real)-range and the y-(imaginary)-range of the 3D plot
    */
-  private static double[] complexRange(
-      StringBuilder graphicControl, IAST plotRange, int steps, JavaScriptFormFactory toJS) {
+  private static double[] complexRange(StringBuilder graphicControl, IAST plotRange, int steps,
+      JavaScriptFormFactory toJS) {
     double[] result = new double[2];
     IExpr zMin = plotRange.arg2();
     IExpr zMax = plotRange.arg3();
@@ -2218,14 +2076,8 @@ public class ManipulateFunction {
    * @param engine
    * @return
    */
-  private static void sequencePointListPlot(
-      final IAST ast,
-      int arg,
-      IAST pointList,
-      JavaScriptFormFactory toJS,
-      StringBuilder function,
-      double[] boundingbox,
-      int[] colour,
+  private static void sequencePointListPlot(final IAST ast, int arg, IAST pointList,
+      JavaScriptFormFactory toJS, StringBuilder function, double[] boundingbox, int[] colour,
       EvalEngine engine) {
     // plot a list of 2D points
     final RGBColor color = plotStyleColor(colour[0]++, F.NIL);
@@ -2334,14 +2186,8 @@ public class ManipulateFunction {
    * @param engine
    * @return
    */
-  private static void sequenceYValuesListPlot(
-      final IAST ast,
-      int arg,
-      IAST pointList,
-      JavaScriptFormFactory toJS,
-      StringBuilder function,
-      double[] boundingbox,
-      int[] colour,
+  private static void sequenceYValuesListPlot(final IAST ast, int arg, IAST pointList,
+      JavaScriptFormFactory toJS, StringBuilder function, double[] boundingbox, int[] colour,
       EvalEngine engine) {
     final RGBColor color = plotStyleColor(colour[0]++, F.NIL);
     // StringBuilder function = new StringBuilder();
@@ -2434,37 +2280,26 @@ public class ManipulateFunction {
   }
 
   private static boolean isNonReal(IExpr lastPoint) {
-    return lastPoint == S.Indeterminate
-        || //
-        lastPoint == S.None
-        || //
+    return lastPoint == S.Indeterminate || //
+        lastPoint == S.None || //
         lastPoint.isAST(S.Missing);
   }
 
   private static boolean isNonReal(IExpr lastPointX, IExpr lastPointY) {
-    return isNonReal(lastPointX)
-        || //
+    return isNonReal(lastPointX) || //
         isNonReal(lastPointY);
   }
 
-  private static void unaryJSFunction(
-      JavaScriptFormFactory toJS,
-      StringBuilder function,
-      ISymbol plotSymbolX,
-      IAST listOfFunctions,
-      int i) {
+  private static void unaryJSFunction(JavaScriptFormFactory toJS, StringBuilder function,
+      ISymbol plotSymbolX, IAST listOfFunctions, int i) {
     toJS.setVariables(plotSymbolX);
     function.append("{ try { return [");
     toJS.convert(function, listOfFunctions.get(i));
     function.append("];} catch(e) { return Number.NaN;} }\n");
   }
 
-  public static void unaryPlotParameters(
-      final ISymbol xVariable,
-      final double xMin,
-      final double xMax,
-      final IExpr yFunction,
-      Dimensions2D autoPlotRange,
+  public static void unaryPlotParameters(final ISymbol xVariable, final double xMin,
+      final double xMax, final IExpr yFunction, Dimensions2D autoPlotRange,
       final EvalEngine engine) {
     final double step = (xMax - xMin) / N;
     double y;
@@ -2488,13 +2323,8 @@ public class ManipulateFunction {
     autoPlotRange.minMax(xMin, x, vMinMax[0], vMinMax[1]);
   }
 
-  public static void binaryPlotParameters(
-      ISymbol timeVariable,
-      final double timeMin,
-      final double timeMax,
-      final IExpr xFunction,
-      final IExpr yFunction,
-      Dimensions2D plotRange,
+  public static void binaryPlotParameters(ISymbol timeVariable, final double timeMin,
+      final double timeMax, final IExpr xFunction, final IExpr yFunction, Dimensions2D plotRange,
       final EvalEngine engine) {
     final double step = (timeMax - timeMin) / N;
     final UnaryNumerical f1Unary = new UnaryNumerical(xFunction, timeVariable, engine);
@@ -2509,20 +2339,12 @@ public class ManipulateFunction {
     }
     double[] xMinMax = automaticPlotRange(data[0]);
     double[] yMinMax = automaticPlotRange(data[1]);
-    plotRange.minMax(
-        xMinMax[0],
-        xMinMax[1], //
-        yMinMax[0],
-        yMinMax[1]);
+    plotRange.minMax(xMinMax[0], xMinMax[1], //
+        yMinMax[0], yMinMax[1]);
   }
 
-  public static void polarPlotParameters(
-      final ISymbol xVariable,
-      final double xMin,
-      final double xMax,
-      final IExpr yFunction,
-      Dimensions2D plotRange,
-      final EvalEngine engine) {
+  public static void polarPlotParameters(final ISymbol xVariable, final double xMin,
+      final double xMax, final IExpr yFunction, Dimensions2D plotRange, final EvalEngine engine) {
     final double step = (xMax - xMin) / N;
     double y;
 
@@ -2538,11 +2360,8 @@ public class ManipulateFunction {
     }
     double[] xMinMax = automaticPlotRange(data[0]);
     double[] yMinMax = automaticPlotRange(data[1]);
-    plotRange.minMax(
-        xMinMax[0],
-        xMinMax[1], //
-        yMinMax[0],
-        yMinMax[1]);
+    plotRange.minMax(xMinMax[0], xMinMax[1], //
+        yMinMax[0], yMinMax[1]);
   }
 
   /**
@@ -2559,8 +2378,7 @@ public class ManipulateFunction {
     double[] yValues = new double[values.length];
     System.arraycopy(values, 0, yValues, 0, values.length);
     Arrays.sort(yValues);
-    if (Math.abs(yValues[0]) < 100.0
-        && //
+    if (Math.abs(yValues[0]) < 100.0 && //
         Math.abs(yValues[values.length - 1]) < 100.0) {
       return new double[] {yValues[0], yValues[values.length - 1]};
     }
@@ -2664,8 +2482,8 @@ public class ManipulateFunction {
    * @deprecated use Plotly methods
    */
   @Deprecated
-  private static IExpr sequenceBarChart(
-      final IAST ast, IAST pointList, JavaScriptFormFactory toJS, EvalEngine engine) {
+  private static IExpr sequenceBarChart(final IAST ast, IAST pointList, JavaScriptFormFactory toJS,
+      EvalEngine engine) {
     double[] boundingbox;
 
     StringBuilder function = new StringBuilder();
@@ -2776,8 +2594,8 @@ public class ManipulateFunction {
     }
   }
 
-  private static void xBoundingBoxFunctionRange(
-      EvalEngine engine, double[] boundingbox, IExpr functionRange) {
+  private static void xBoundingBoxFunctionRange(EvalEngine engine, double[] boundingbox,
+      IExpr functionRange) {
     if (functionRange.isPresent()) {
       IExpr l = F.NIL;
       IExpr u = F.NIL;
@@ -2824,8 +2642,8 @@ public class ManipulateFunction {
     }
   }
 
-  private static void yBoundingBoxFunctionRange(
-      EvalEngine engine, double[] boundingbox, IExpr functionRange) {
+  private static void yBoundingBoxFunctionRange(EvalEngine engine, double[] boundingbox,
+      IExpr functionRange) {
     if (functionRange.isPresent()) {
       IExpr l = F.NIL;
       IExpr u = F.NIL;

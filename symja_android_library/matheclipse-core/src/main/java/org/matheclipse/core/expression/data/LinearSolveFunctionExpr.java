@@ -3,12 +3,14 @@ package org.matheclipse.core.expression.data;
 import org.hipparchus.FieldElement;
 import org.hipparchus.complex.Complex;
 import org.hipparchus.linear.FieldDecompositionSolver;
+import org.matheclipse.core.basic.Config;
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.expression.DataExpr;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.expression.S;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IExpr;
+import org.matheclipse.parser.client.FEConfig;
 
 public class LinearSolveFunctionExpr<T extends FieldElement<T>>
     extends DataExpr<FieldDecompositionSolver<T>> {
@@ -17,25 +19,28 @@ public class LinearSolveFunctionExpr<T extends FieldElement<T>>
 
   public static LinearSolveFunctionExpr<Complex> createComplex(
       final FieldDecompositionSolver<Complex> solver) {
-    return new LinearSolveFunctionExpr<Complex>(solver, true);
+    return new LinearSolveFunctionExpr<Complex>(solver, true, FEConfig.MACHINE_PRECISION);
   }
 
   public static LinearSolveFunctionExpr<IExpr> createIExpr(
-      final FieldDecompositionSolver<IExpr> solver) {
-    return new LinearSolveFunctionExpr<IExpr>(solver, false);
+      final FieldDecompositionSolver<IExpr> solver, long precision) {
+    return new LinearSolveFunctionExpr<IExpr>(solver, false, precision);
   }
 
   private final boolean complexNumeric;
 
+  private final long precision;
+
   protected LinearSolveFunctionExpr(
-      final FieldDecompositionSolver<T> solver, boolean complexNumeric) {
+      final FieldDecompositionSolver<T> solver, boolean complexNumeric, long precision) {
     super(S.LinearSolveFunction, solver);
     this.complexNumeric = complexNumeric;
+    this.precision = precision;
   }
 
   @Override
   public IExpr copy() {
-    return new LinearSolveFunctionExpr(fData, complexNumeric);
+    return new LinearSolveFunctionExpr(fData, complexNumeric, FEConfig.MACHINE_PRECISION);
   }
 
   @Override
@@ -75,6 +80,10 @@ public class LinearSolveFunctionExpr<T extends FieldElement<T>>
   public boolean isComplexNumeric() {
     return complexNumeric;
   }
+   
+  public long getNumericPrecision() {
+    return precision;
+  }
 
   @Override
   public IAST normal(boolean nilIfUnevaluated) {
@@ -83,6 +92,12 @@ public class LinearSolveFunctionExpr<T extends FieldElement<T>>
 
   @Override
   public String toString() {
-    return "Matrix dimensions: {" + getRowDimension() + getColumnDimension() + "}";
+    StringBuilder buf = new StringBuilder();
+    buf.append("LinearSolveFunction(Matrix dimensions: {");
+    buf.append(getRowDimension());
+    buf.append(",");
+    buf.append(getColumnDimension());
+    buf.append("})");
+    return buf.toString();
   }
 }

@@ -67,7 +67,6 @@ import org.matheclipse.core.interfaces.ISymbol;
 import org.matheclipse.core.numbertheory.GaussianInteger;
 import org.matheclipse.core.numbertheory.Primality;
 import org.matheclipse.core.visit.VisitorExpr;
-import org.matheclipse.parser.client.FEConfig;
 
 import com.google.common.math.BigIntegerMath;
 import com.google.common.math.LongMath;
@@ -282,7 +281,7 @@ public final class NumberTheory {
       } catch (MathRuntimeException mre) {
         return engine.printMessage(ast.topHead(), mre);
       } catch (RuntimeException rex) {
-        if (FEConfig.SHOW_STACKTRACE) {
+        if (Config.SHOW_STACKTRACE) {
           rex.printStackTrace();
         }
         return engine.printMessage(ast.topHead(), rex);
@@ -337,7 +336,7 @@ public final class NumberTheory {
           }
 
         } catch (RuntimeException rex) {
-          if (FEConfig.SHOW_STACKTRACE) {
+          if (Config.SHOW_STACKTRACE) {
             rex.printStackTrace();
           }
         }
@@ -373,7 +372,7 @@ public final class NumberTheory {
             }
           }
         } catch (RuntimeException rex) {
-          if (FEConfig.SHOW_STACKTRACE) {
+          if (Config.SHOW_STACKTRACE) {
             rex.printStackTrace();
           }
         }
@@ -832,7 +831,7 @@ public final class NumberTheory {
         } catch (ValidateException ve) {
           return engine.printMessage(ast.topHead(), ve);
         } catch (ArithmeticException ae) {
-          if (FEConfig.SHOW_STACKTRACE) {
+          if (Config.SHOW_STACKTRACE) {
             ae.printStackTrace();
           }
         }
@@ -856,7 +855,7 @@ public final class NumberTheory {
       try {
         return F.ZZ(chineseRemainders(nBig, aBig));
       } catch (ArithmeticException ae) {
-        if (FEConfig.SHOW_STACKTRACE) {
+        if (Config.SHOW_STACKTRACE) {
           ae.printStackTrace();
         }
       }
@@ -1957,7 +1956,7 @@ public final class NumberTheory {
         // create the output list
         return F.List(F.ZZ(gcd), subList);
       } catch (ArithmeticException ae) {
-        if (FEConfig.SHOW_STACKTRACE) {
+        if (Config.SHOW_STACKTRACE) {
           ae.printStackTrace();
         }
       }
@@ -2775,38 +2774,45 @@ public final class NumberTheory {
       if (ast.arg1().isList()) {
         IAST list = (IAST) ast.arg1();
         if (list.size() > 1) {
-          IExpr period = list.last();
-          if (period.isNonEmptyList()) {
-            if (!((IAST) period).forAll(x -> x.isInteger())) {
+          try {
+            IExpr period = list.last();
+            if (period.isNonEmptyList()) {
+              if (!((IAST) period).forAll(x -> x.isInteger())) {
+                // Unable to determine the appropriate root for the periodic continued fraction.
+                return IOFunctions.printMessage(
+                    S.FromContinuedFraction, "root", F.CEmptyList, engine);
+              }
+              boolean nonNegative = ((IAST) period).forAll(x -> x.isNonNegativeResult());
+
+              ISymbol y = F.Dummy(engine);
+              IASTAppendable periodicPart = ((IAST) period).copyAppendable(1);
+              periodicPart.append(y);
+
+              IExpr periodReduced = continuedFractionReduce(periodicPart, engine);
+              if (periodReduced.isPresent()) {
+                IExpr[] solutions = F.solve(F.Equal(F.Subtract(periodReduced, y), F.C0), y);
+                if (solutions.length > 0) {
+                  IExpr solution = nonNegative ? solutions[solutions.length - 1] : solutions[0];
+                  ISymbol x = F.Dummy(engine);
+                  IASTMutable nonPeriodicPart = list.setAtCopy(list.argSize(), x);
+                  IExpr nonPeriodReduced = continuedFractionReduce(nonPeriodicPart, engine);
+                  if (nonPeriodReduced.isPresent()) {
+                    return radSimplify(
+                        F.subst(nonPeriodReduced, arg -> arg.equals(x) ? solution : F.NIL), engine);
+                  }
+                }
+              }
               // Unable to determine the appropriate root for the periodic continued fraction.
               return IOFunctions.printMessage(
                   S.FromContinuedFraction, "root", F.CEmptyList, engine);
             }
-            boolean nonNegative = ((IAST) period).forAll(x -> x.isNonNegativeResult());
 
-            ISymbol y = F.Dummy(engine);
-            IASTAppendable periodicPart = ((IAST) period).copyAppendable(1);
-            periodicPart.append(y);
-
-            IExpr periodReduced = continuedFractionReduce(periodicPart, engine);
-            if (periodReduced.isPresent()) {
-              IExpr[] solutions = F.solve(F.Equal(F.Subtract(periodReduced, y), F.C0), y);
-              if (solutions.length > 0) {
-                IExpr solution = nonNegative ? solutions[solutions.length - 1] : solutions[0];
-                ISymbol x = F.Dummy(engine);
-                IASTMutable nonPeriodicPart = list.setAtCopy(list.argSize(), x);
-                IExpr nonPeriodReduced = continuedFractionReduce(nonPeriodicPart, engine);
-                if (nonPeriodReduced.isPresent()) {
-                  return radSimplify(
-                      F.subst(nonPeriodReduced, arg -> arg.equals(x) ? solution : F.NIL), engine);
-                }
-              }
-            }
-            // Unable to determine the appropriate root for the periodic continued fraction.
-            return IOFunctions.printMessage(S.FromContinuedFraction, "root", F.CEmptyList, engine);
+            return continuedFractionReduce(list, engine);
+          } catch (ArithmeticException aex) {
+            // java.lang.ArithmeticException: Inverse root of zero
+            // at org.apfloat.ApfloatMath.inverseRoot(ApfloatMath.java:280)
+            return IOFunctions.printMessage(ast.topHead(), aex, engine);
           }
-
-          return continuedFractionReduce(list, engine);
         }
       }
       return F.NIL;
@@ -4153,7 +4159,7 @@ public final class NumberTheory {
         try {
           return F.ZZ(Primality.prime(nthPrime));
         } catch (RuntimeException ae) {
-          if (FEConfig.SHOW_STACKTRACE) {
+          if (Config.SHOW_STACKTRACE) {
             ae.printStackTrace();
           }
           return F.NIL;
@@ -4372,7 +4378,7 @@ public final class NumberTheory {
         } catch (LimitException le) {
           throw le;
         } catch (RuntimeException rex) {
-          if (FEConfig.SHOW_STACKTRACE) {
+          if (Config.SHOW_STACKTRACE) {
             rex.printStackTrace();
           }
         }
@@ -4434,7 +4440,7 @@ public final class NumberTheory {
         } catch (LimitException le) {
           throw le;
         } catch (RuntimeException rex) {
-          if (FEConfig.SHOW_STACKTRACE) {
+          if (Config.SHOW_STACKTRACE) {
             rex.printStackTrace();
           }
         }
@@ -4534,7 +4540,7 @@ public final class NumberTheory {
         // try to convert into a fractional number
         return rationalize(arg1, epsilon).orElse(arg1);
       } catch (Exception e) {
-        if (FEConfig.SHOW_STACKTRACE) {
+        if (Config.SHOW_STACKTRACE) {
           e.printStackTrace();
         }
       }
@@ -4553,6 +4559,44 @@ public final class NumberTheory {
     }
   }
 
+  private static class RootReduce extends AbstractFunctionEvaluator {
+
+    /** {@inheritDoc} */
+    @Override
+    public IExpr evaluate(final IAST ast, EvalEngine engine) {
+      IExpr arg1 = ast.arg1();
+      if (arg1.isPowerReciprocal()) {
+        IExpr base = arg1.base();
+        if (base.isPlus() && base.size() == 3) {
+          IExpr p1 = base.first();
+          IExpr p2 = base.second();
+          if (base.size() == 3 //
+              && (p1.isRational() || p1.isFactorSqrtExpr())
+              && p2.isFactorSqrtExpr()) {
+            IRational denominator = (IRational) F.Subtract.of(F.Sqr(p1), F.Sqr(p2));
+            IAST numerator = F.Subtract(p1, p2);
+            IExpr temp =
+                F.Divide(
+                    numerator, //
+                    denominator);
+            return temp;
+          }
+        }
+      }
+
+      return F.NIL;
+    }
+
+    @Override
+    public int[] expectedArgSize(IAST ast) {
+      return ARGS_1_1;
+    }
+
+    @Override
+    public void setUp(final ISymbol newSymbol) {
+      newSymbol.setAttributes(ISymbol.LISTABLE);
+    }
+  }
   /**
    *
    *
@@ -4607,12 +4651,12 @@ public final class NumberTheory {
         }
         return F.bool(isSquarefree(expr, varList));
       } catch (JASConversionException e) {
-        if (FEConfig.SHOW_STACKTRACE) {
+        if (Config.SHOW_STACKTRACE) {
           e.printStackTrace();
         }
       } catch (RuntimeException e) {
         // JAS may throw RuntimeExceptions
-        if (FEConfig.SHOW_STACKTRACE) {
+        if (Config.SHOW_STACKTRACE) {
           e.printStackTrace();
         }
       }
@@ -5089,6 +5133,7 @@ public final class NumberTheory {
       S.PrimitiveRootList.setEvaluator(new PrimitiveRootList());
       S.QuadraticIrrationalQ.setEvaluator(new QuadraticIrrationalQ());
       S.Rationalize.setEvaluator(new Rationalize());
+      S.RootReduce.setEvaluator(new RootReduce());
       S.SquareFreeQ.setEvaluator(new SquareFreeQ());
       S.StirlingS1.setEvaluator(new StirlingS1());
       S.StirlingS2.setEvaluator(new StirlingS2());

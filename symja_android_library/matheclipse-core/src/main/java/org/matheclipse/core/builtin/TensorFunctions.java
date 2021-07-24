@@ -49,7 +49,8 @@ public class TensorFunctions {
    *
    * <blockquote>
    *
-   * <p>returns the <code>list-of-values</code> elements reshaped as nested list with dimensions
+   * <p>
+   * returns the <code>list-of-values</code> elements reshaped as nested list with dimensions
    * according to the <code>list-of-dimension</code>.
    *
    * </blockquote>
@@ -60,14 +61,16 @@ public class TensorFunctions {
    *
    * <blockquote>
    *
-   * <p>Use <code>expr</code> to fill up elements, if there are too little elements in the <code>
+   * <p>
+   * Use <code>expr</code> to fill up elements, if there are too little elements in the <code>
    * list-of-values</code>.
    *
    * </blockquote>
    *
    * <h3>Examples</h3>
    *
-   * <p>A list of non-negative integers is expected at position 2. The optional third argument
+   * <p>
+   * A list of non-negative integers is expected at position 2. The optional third argument
    * <code>x</code> is used to fill up the structure:
    *
    * <pre>
@@ -75,7 +78,8 @@ public class TensorFunctions {
    * {{{{a,b},{c,d},{e,f}},{{x,x},{x,x},{x,x}},{{x,x},{x,x},{x,x}}},{{{x,x},{x,x},{x,x}},{{x,x},{x,x},{x,x}},{{x,x},{x,x},{x,x}}}}
    * </pre>
    *
-   * <p>Ignore unnecessary elements
+   * <p>
+   * Ignore unnecessary elements
    *
    * <pre>
    * &gt;&gt; ArrayReshape(Range(1000), {3, 2, 2})
@@ -98,7 +102,7 @@ public class TensorFunctions {
 
       /**
        * @param dimensionIndex the dimension[dimensionIndex] which should be used on this recursion
-       *     level.
+       *        level.
        * @return
        */
       public IAST recursiveCall(int dimensionIndex) {
@@ -167,7 +171,8 @@ public class TensorFunctions {
    *
    * <blockquote>
    *
-   * <p>create the convolution of the <code>kernel-list</code> with <code>tensor-list</code>.
+   * <p>
+   * create the convolution of the <code>kernel-list</code> with <code>tensor-list</code>.
    *
    * </blockquote>
    *
@@ -193,8 +198,8 @@ public class TensorFunctions {
           int kernelSize = kernel.size();
           int tensorSize = tensor.size();
           if (kernelSize <= tensorSize) {
-            return ListCorrelate.listCorrelate(
-                ListFunctions.reverse(kernel), kernelSize, tensor, tensorSize);
+            return ListCorrelate.listCorrelate(ListFunctions.reverse(kernel), kernelSize, tensor,
+                tensorSize);
           }
         }
       }
@@ -216,7 +221,8 @@ public class TensorFunctions {
    *
    * <blockquote>
    *
-   * <p>create the correlation of the <code>kernel-list</code> with <code>tensor-list</code>.
+   * <p>
+   * create the correlation of the <code>kernel-list</code> with <code>tensor-list</code>.
    *
    * </blockquote>
    *
@@ -264,8 +270,8 @@ public class TensorFunctions {
       for (int i = 0; i <= diff; i++) {
         IASTAppendable plus = F.ast(fFunction, kernelSize, false);
         fi[0] = i;
-        plus.appendArgs(
-            kernelSize, k -> F.binaryAST2(gFunction, kernel.get(k), tensor.get(k + fi[0])));
+        plus.appendArgs(kernelSize,
+            k -> F.binaryAST2(gFunction, kernel.get(k), tensor.get(k + fi[0])));
         // for (int k = 1; k < kernelSize; k++) {
         // plus.append(F.binaryAST2(gFunction, kernel.get(k), tensor.get(k + i)));
         // }
@@ -284,7 +290,8 @@ public class TensorFunctions {
    *
    * <blockquote>
    *
-   * <p>calculate the permutation list of the elements in the sorted <code>list</code>.
+   * <p>
+   * calculate the permutation list of the elements in the sorted <code>list</code>.
    *
    * </blockquote>
    *
@@ -294,7 +301,8 @@ public class TensorFunctions {
    *
    * <blockquote>
    *
-   * <p>calculate the first <code>n</code> indexes of the permutation list of the elements in the
+   * <p>
+   * calculate the first <code>n</code> indexes of the permutation list of the elements in the
    * sorted <code>list</code>.
    *
    * </blockquote>
@@ -305,8 +313,9 @@ public class TensorFunctions {
    *
    * <blockquote>
    *
-   * <p>calculate the last <code>n</code> indexes of the permutation list of the elements in the
-   * sorted <code>list</code>.
+   * <p>
+   * calculate the last <code>n</code> indexes of the permutation list of the elements in the sorted
+   * <code>list</code>.
    *
    * </blockquote>
    *
@@ -316,7 +325,8 @@ public class TensorFunctions {
    *
    * <blockquote>
    *
-   * <p>calculate the first <code>n</code> indexes of the permutation list of the elements in the
+   * <p>
+   * calculate the first <code>n</code> indexes of the permutation list of the elements in the
    * sorted <code>list</code> using comparator operation <code>head</code>.
    *
    * </blockquote>
@@ -458,8 +468,8 @@ public class TensorFunctions {
      * @param engine
      * @return
      */
-    private static IExpr dotDimensions(
-        final IAST tensorDimensions, Map<IExpr, IAST> tensorAssumptions, EvalEngine engine) {
+    private static IExpr dotDimensions(final IAST tensorDimensions,
+        Map<IExpr, IAST> tensorAssumptions, EvalEngine engine) {
       IAST dotAST = (IAST) tensorDimensions.arg1();
       IExpr lastArg = dotAST.arg1();
 
@@ -479,11 +489,8 @@ public class TensorFunctions {
               if (!dims.second().equals(iDims.first())) {
                 // Dot contraction of `1` and `2` is invalid because dimensions `3` and `4`
                 // are incompatible.
-                return IOFunctions.printMessage(
-                    tensorDimensions.topHead(),
-                    "dotdim",
-                    F.List(lastArg, tempArg, dims.second(), iDims.first()),
-                    engine);
+                return IOFunctions.printMessage(tensorDimensions.topHead(), "dotdim",
+                    F.List(lastArg, tempArg, dims.second(), iDims.first()), engine);
               }
               dims.set(2, iDims.second());
               lastArg = tempArg;
@@ -552,12 +559,12 @@ public class TensorFunctions {
             if (tensorArg1.isAST(S.Vectors)) {
               return F.CEmptyList;
             }
-            if (tensorArg1.isAST(S.Arrays, 3) | tensorArg1.isAST(S.Matrices, 3)) {
+            if (tensorArg1.isAST(S.Arrays, 3) //
+                || tensorArg1.isAST(S.Matrices, 3)) {
               if (tensorArg1.last().isAST()) {
                 IAST arg3 = (IAST) tensorArg1.last();
                 if (arg3.isAST(S.Symmetric, 2) //
-                    || arg3.isAST(S.AntiSymmetric, 2)
-                    || arg3.isAST(S.ZeroSymmetric, 2)) {
+                    || arg3.isAST(S.AntiSymmetric, 2) || arg3.isAST(S.ZeroSymmetric, 2)) {
                   return arg3;
                 }
               }
@@ -582,8 +589,8 @@ public class TensorFunctions {
      * @param engine the evaluation engine
      * @return
      */
-    private static IExpr tensorSymmetrySquareMatrix(
-        IAST squareMatrix, int rowColumnSize, IExpr sameTest, EvalEngine engine) {
+    private static IExpr tensorSymmetrySquareMatrix(IAST squareMatrix, int rowColumnSize,
+        IExpr sameTest, EvalEngine engine) {
       IExpr temp = isZeroSymmetricSquareMatrix(squareMatrix, rowColumnSize);
       if (temp.isPresent()) {
         return temp;
@@ -602,11 +609,9 @@ public class TensorFunctions {
           } else {
 
             for (int j = i + 1; j < rowColumnSize; j++) {
-              if (!engine.evalTrue(
-                  F.binaryAST2(
-                      sameTest, //
-                      squareMatrix.getPart(i, j), //
-                      squareMatrix.getPart(j, i)))) {
+              if (!engine.evalTrue(F.binaryAST2(sameTest, //
+                  squareMatrix.getPart(i, j), //
+                  squareMatrix.getPart(j, i)))) {
                 isSymmetric = false;
                 break;
               }
@@ -627,11 +632,9 @@ public class TensorFunctions {
           } else
             for (int j = i + 1; j < rowColumnSize; j++) {
               temp = squareMatrix.getPart(j, i).negate();
-              if (!engine.evalTrue(
-                  F.binaryAST2(
-                      sameTest, //
-                      squareMatrix.getPart(i, j), //
-                      temp))) {
+              if (!engine.evalTrue(F.binaryAST2(sameTest, //
+                  squareMatrix.getPart(i, j), //
+                  temp))) {
                 isAntiSymmetric = false;
                 break;
               }
@@ -677,11 +680,8 @@ public class TensorFunctions {
 
     @Override
     public void setUp(final ISymbol newSymbol) {
-      setOptions(
-          newSymbol,
-          F.List(
-              F.Rule(S.Assumptions, S.$Assumptions), //
-              F.Rule(S.SameTest, S.Automatic)));
+      setOptions(newSymbol, F.List(F.Rule(S.Assumptions, S.$Assumptions), //
+          F.Rule(S.SameTest, S.Automatic)));
     }
   }
 
@@ -749,10 +749,10 @@ public class TensorFunctions {
      * @param engine
      * @return
      */
-    private static IExpr tensorProduct(
-        final IAST tensor1, final IAST tensor2, int tensor1Depth, EvalEngine engine) {
-      return engine.evaluate(
-          F.Map(F.Function(F.Times(F.Slot1, tensor2)), tensor1, F.List(tensor1Depth)));
+    private static IExpr tensorProduct(final IAST tensor1, final IAST tensor2, int tensor1Depth,
+        EvalEngine engine) {
+      return engine
+          .evaluate(F.Map(F.Function(F.Times(F.Slot1, tensor2)), tensor1, F.List(tensor1Depth)));
     }
 
     @Override
@@ -810,14 +810,13 @@ public class TensorFunctions {
 
     @Override
     public void setUp(final ISymbol newSymbol) {
-      setOptions(
-          newSymbol, //
+      setOptions(newSymbol, //
           F.List(F.Rule(S.Assumptions, S.$Assumptions)));
     }
   }
 
-  private static Map<IExpr, IAST> tensorProperties(
-      IAssumptions oldAssumptions, IExpr assumptionExpr) {
+  private static Map<IExpr, IAST> tensorProperties(IAssumptions oldAssumptions,
+      IExpr assumptionExpr) {
     if (assumptionExpr.isPresent() && assumptionExpr.isAST()) {
       IAssumptions assumptions =
           org.matheclipse.core.eval.util.Assumptions.getInstance(assumptionExpr);

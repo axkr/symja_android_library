@@ -28,7 +28,6 @@ import org.matheclipse.core.polynomials.longexponent.ExprPolynomial;
 import org.matheclipse.core.polynomials.longexponent.ExprPolynomialRing;
 import org.matheclipse.core.reflection.system.rules.LimitRules;
 import org.matheclipse.core.reflection.system.rules.SeriesCoefficientRules;
-import org.matheclipse.parser.client.FEConfig;
 
 public class SeriesFunctions {
 
@@ -627,7 +626,7 @@ public class SeriesFunctions {
           // even degree
           return evalLimitQuiet(F.Times(coeff, F.CInfinity), data);
         } catch (RuntimeException e) {
-          if (FEConfig.SHOW_STACKTRACE) {
+          if (Config.SHOW_STACKTRACE) {
             e.printStackTrace();
           }
         }
@@ -1853,7 +1852,7 @@ public class SeriesFunctions {
         return coefficientPlus.oneIdentity0();
         // }
       } catch (RuntimeException re) {
-        if (FEConfig.SHOW_STACKTRACE) {
+        if (Config.SHOW_STACKTRACE) {
           re.printStackTrace();
         }
       }

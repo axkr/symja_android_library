@@ -44,7 +44,6 @@ import org.matheclipse.core.interfaces.IASTAppendable;
 import org.matheclipse.core.interfaces.IASTMutable;
 import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.interfaces.ISymbol;
-import org.matheclipse.parser.client.FEConfig;
 
 /**
  * HMArrayList is an implementation of a list, backed by an array. All optional operations adding,
@@ -773,7 +772,7 @@ public abstract class HMArrayList extends AbstractAST
 
   @Override
   public IExpr get(int location) {
-    if (FEConfig.SHOW_STACKTRACE) {
+    if (Config.SHOW_STACKTRACE) {
       int index;
       if ((index = firstIndex + location) < lastIndex) {
         return array[index];

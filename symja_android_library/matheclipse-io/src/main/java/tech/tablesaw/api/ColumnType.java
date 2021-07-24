@@ -1,10 +1,8 @@
 package tech.tablesaw.api;
 
+import com.google.common.base.Preconditions;
 import java.util.HashMap;
 import java.util.Map;
-
-import com.google.common.base.Preconditions;
-
 import tech.tablesaw.columns.AbstractColumnParser;
 import tech.tablesaw.columns.Column;
 import tech.tablesaw.columns.SkipColumnType;

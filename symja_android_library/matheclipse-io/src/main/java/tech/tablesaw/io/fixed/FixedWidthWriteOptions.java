@@ -142,6 +142,10 @@ public class FixedWidthWriteOptions extends WriteOptions {
     return normalizedNewline;
   }
 
+  public boolean autoClose() {
+    return autoClose;
+  }
+
   public static Builder builder(Destination destination) throws IOException {
     return new Builder(destination);
   }
@@ -217,7 +221,7 @@ public class FixedWidthWriteOptions extends WriteOptions {
       return this;
     }
 
-    public FixedWidthWriteOptions.Builder header(FixedWidthFields columnSpecs) {
+    public FixedWidthWriteOptions.Builder columnSpecs(FixedWidthFields columnSpecs) {
       this.columnSpecs = columnSpecs;
       return this;
     }

@@ -2,6 +2,7 @@ package org.matheclipse.core.builtin;
 
 import org.hipparchus.complex.Complex;
 import org.hipparchus.special.elliptic.carlson.CarlsonEllipticIntegral;
+import org.matheclipse.core.basic.Config;
 import org.matheclipse.core.builtin.functions.EllipticFunctionsJS;
 import org.matheclipse.core.builtin.functions.EllipticIntegralsJS;
 import org.matheclipse.core.convert.Object2Expr;
@@ -16,7 +17,6 @@ import org.matheclipse.core.interfaces.IRational;
 import org.matheclipse.core.interfaces.ISymbol;
 import org.matheclipse.core.reflection.system.rules.JacobiSCRules;
 import org.matheclipse.core.reflection.system.rules.KleinInvariantJRules;
-import org.matheclipse.parser.client.FEConfig;
 
 public class EllipticIntegrals {
   /**
@@ -303,7 +303,7 @@ public class EllipticIntegrals {
             return F.num(EllipticIntegralsJS.carlsonRG(xd, yd, zd));
           }
         } catch (ValidateException ve) {
-          if (FEConfig.SHOW_STACKTRACE) {
+          if (Config.SHOW_STACKTRACE) {
             ve.printStackTrace();
           }
         } catch (RuntimeException rex) {
@@ -371,7 +371,7 @@ public class EllipticIntegrals {
             return F.num(EllipticIntegralsJS.carlsonRJ(xd, yd, zd, pd));
           }
         } catch (ValidateException ve) {
-          if (FEConfig.SHOW_STACKTRACE) {
+          if (Config.SHOW_STACKTRACE) {
             ve.printStackTrace();
           }
         } catch (RuntimeException rex) {
@@ -464,7 +464,7 @@ public class EllipticIntegrals {
               return F.complexNum(EllipticIntegralsJS.ellipticE(zDouble, mDouble));
             }
           } catch (ValidateException ve) {
-            if (FEConfig.SHOW_STACKTRACE) {
+            if (Config.SHOW_STACKTRACE) {
               ve.printStackTrace();
             }
           } catch (RuntimeException rex) {
@@ -519,7 +519,7 @@ public class EllipticIntegrals {
             return F.complexNum(EllipticIntegralsJS.ellipticE(Math.PI / 2.0, zDouble));
           }
         } catch (ValidateException ve) {
-          if (FEConfig.SHOW_STACKTRACE) {
+          if (Config.SHOW_STACKTRACE) {
             ve.printStackTrace();
           }
         } catch (RuntimeException rex) {
@@ -625,7 +625,7 @@ public class EllipticIntegrals {
             return F.complexNum(EllipticIntegralsJS.ellipticF(zDouble, mDouble));
           }
         } catch (ValidateException ve) {
-          if (FEConfig.SHOW_STACKTRACE) {
+          if (Config.SHOW_STACKTRACE) {
             ve.printStackTrace();
           }
         } catch (RuntimeException rex) {
@@ -732,7 +732,7 @@ public class EllipticIntegrals {
             return F.complexNum(EllipticIntegralsJS.ellipticK(mDouble));
           }
         } catch (ValidateException ve) {
-          if (FEConfig.SHOW_STACKTRACE) {
+          if (Config.SHOW_STACKTRACE) {
             ve.printStackTrace();
           }
         } catch (RuntimeException rex) {
@@ -825,7 +825,7 @@ public class EllipticIntegrals {
               return F.complexNum(EllipticIntegralsJS.ellipticPi(nDouble, zDouble, mDouble));
             }
           } catch (ValidateException ve) {
-            if (FEConfig.SHOW_STACKTRACE) {
+            if (Config.SHOW_STACKTRACE) {
               ve.printStackTrace();
             }
           } catch (RuntimeException rex) {
@@ -885,7 +885,7 @@ public class EllipticIntegrals {
             return F.complexNum(EllipticIntegralsJS.ellipticPi(nDouble, Math.PI / 2.0, mDouble));
           }
         } catch (ValidateException ve) {
-          if (FEConfig.SHOW_STACKTRACE) {
+          if (Config.SHOW_STACKTRACE) {
             ve.printStackTrace();
           }
         } catch (RuntimeException rex) {
@@ -1158,7 +1158,7 @@ public class EllipticIntegrals {
           return F.num(EllipticFunctionsJS.jacobiCD(zDouble, mDouble));
         }
       } catch (ValidateException ve) {
-        if (FEConfig.SHOW_STACKTRACE) {
+        if (Config.SHOW_STACKTRACE) {
           ve.printStackTrace();
         }
       } catch (RuntimeException rex) {
@@ -1230,7 +1230,7 @@ public class EllipticIntegrals {
           return F.num(EllipticFunctionsJS.jacobiCN(zDouble, mDouble));
         }
       } catch (ValidateException ve) {
-        if (FEConfig.SHOW_STACKTRACE) {
+        if (Config.SHOW_STACKTRACE) {
           ve.printStackTrace();
         }
       } catch (RuntimeException rex) {
@@ -1302,7 +1302,7 @@ public class EllipticIntegrals {
           return F.num(EllipticFunctionsJS.jacobiDN(zDouble, mDouble));
         }
       } catch (ValidateException ve) {
-        if (FEConfig.SHOW_STACKTRACE) {
+        if (Config.SHOW_STACKTRACE) {
           ve.printStackTrace();
         }
       } catch (RuntimeException rex) {
@@ -1379,7 +1379,7 @@ public class EllipticIntegrals {
             return F.num(EllipticFunctionsJS.jacobiSC(zDouble, mDouble));
           }
         } catch (ValidateException ve) {
-          if (FEConfig.SHOW_STACKTRACE) {
+          if (Config.SHOW_STACKTRACE) {
             ve.printStackTrace();
           }
         } catch (RuntimeException rex) {
@@ -1454,7 +1454,7 @@ public class EllipticIntegrals {
             return F.num(EllipticFunctionsJS.jacobiSD(zDouble, mDouble));
           }
         } catch (ValidateException ve) {
-          if (FEConfig.SHOW_STACKTRACE) {
+          if (Config.SHOW_STACKTRACE) {
             ve.printStackTrace();
           }
         } catch (RuntimeException rex) {
@@ -1528,7 +1528,7 @@ public class EllipticIntegrals {
             return F.num(EllipticFunctionsJS.jacobiSN(zDouble, mDouble));
           }
         } catch (ValidateException ve) {
-          if (FEConfig.SHOW_STACKTRACE) {
+          if (Config.SHOW_STACKTRACE) {
             ve.printStackTrace();
           }
         } catch (RuntimeException rex) {
@@ -1633,7 +1633,7 @@ public class EllipticIntegrals {
           // unevaluated
           return F.NIL;
         } catch (ValidateException ve) {
-          if (FEConfig.SHOW_STACKTRACE) {
+          if (Config.SHOW_STACKTRACE) {
             ve.printStackTrace();
           }
         } catch (RuntimeException rex) {

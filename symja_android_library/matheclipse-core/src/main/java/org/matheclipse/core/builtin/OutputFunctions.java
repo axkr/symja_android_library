@@ -15,6 +15,7 @@ import java.util.function.Function;
 
 import org.hipparchus.linear.FieldMatrix;
 import org.hipparchus.linear.FieldVector;
+import org.matheclipse.core.basic.Config;
 import org.matheclipse.core.convert.Convert;
 import org.matheclipse.core.convert.VariablesSet;
 import org.matheclipse.core.eval.EvalEngine;
@@ -40,7 +41,6 @@ import org.matheclipse.core.interfaces.IInteger;
 import org.matheclipse.core.interfaces.IStringX;
 import org.matheclipse.core.interfaces.ISymbol;
 import org.matheclipse.core.polynomials.HornerScheme;
-import org.matheclipse.parser.client.FEConfig;
 
 import com.baeldung.algorithms.romannumerals.RomanArabicConverter;
 import com.ibm.icu.text.NumberFormat;
@@ -395,7 +395,7 @@ public final class OutputFunctions {
             }
           }
         } catch (Exception ex) {
-          if (FEConfig.SHOW_STACKTRACE) {
+          if (Config.SHOW_STACKTRACE) {
             ex.printStackTrace();
           }
         }
@@ -560,7 +560,7 @@ public final class OutputFunctions {
         String resultStr = javaForm(arg1, strictJava, usePrefix);
         return F.$str(resultStr, IStringX.APPLICATION_JAVA);
       } catch (Exception rex) {
-        if (FEConfig.SHOW_STACKTRACE) {
+        if (Config.SHOW_STACKTRACE) {
           rex.printStackTrace();
         }
         return engine.printMessage("JavaForm: " + rex.getMessage());
@@ -597,7 +597,7 @@ public final class OutputFunctions {
 
         return F.$str(toJavaScript(arg1, javascriptFlavor), IStringX.APPLICATION_JAVASCRIPT);
       } catch (Exception rex) {
-        if (FEConfig.SHOW_STACKTRACE) {
+        if (Config.SHOW_STACKTRACE) {
           rex.printStackTrace();
         }
         return engine.printMessage("JSForm: " + rex.getMessage());
@@ -669,7 +669,7 @@ public final class OutputFunctions {
           String result = RomanArabicConverter.arabicToRoman(value);
           return F.stringx(result);
         } catch (RuntimeException rex) {
-          if (FEConfig.SHOW_STACKTRACE) {
+          if (Config.SHOW_STACKTRACE) {
             rex.printStackTrace();
           }
         }
@@ -873,7 +873,7 @@ public final class OutputFunctions {
         }
 
       } catch (Exception rex) {
-        if (FEConfig.SHOW_STACKTRACE) {
+        if (Config.SHOW_STACKTRACE) {
           rex.printStackTrace();
         }
         return engine.printMessage("TreeForm: " + rex.getMessage());

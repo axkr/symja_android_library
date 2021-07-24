@@ -3,11 +3,11 @@ package org.matheclipse.core.eval;
 import java.io.Writer;
 import java.util.function.Predicate;
 
+import org.matheclipse.core.basic.Config;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.parser.ExprParser;
-import org.matheclipse.parser.client.FEConfig;
 import org.matheclipse.parser.client.SyntaxError;
 
 /** Utility to evaluate math expressions. */
@@ -241,7 +241,7 @@ public class EvalUtilities extends MathMLUtilities {
         return toMathML(result, out);
       }
     } catch (final RuntimeException rex) {
-      if (FEConfig.SHOW_STACKTRACE) {
+      if (Config.SHOW_STACKTRACE) {
         rex.printStackTrace();
       }
     }

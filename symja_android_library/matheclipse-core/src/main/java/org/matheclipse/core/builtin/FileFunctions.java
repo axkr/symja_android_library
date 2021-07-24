@@ -52,7 +52,6 @@ import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.interfaces.IStringX;
 import org.matheclipse.core.interfaces.ISymbol;
 import org.matheclipse.core.parser.ExprParser;
-import org.matheclipse.parser.client.FEConfig;
 import org.matheclipse.parser.client.Parser;
 import org.matheclipse.parser.client.SyntaxError;
 import org.matheclipse.parser.client.ast.ASTNode;
@@ -153,7 +152,7 @@ public class FileFunctions {
               fis.close();
             }
           } catch (IOException e) {
-            if (FEConfig.SHOW_STACKTRACE) {
+            if (Config.SHOW_STACKTRACE) {
               e.printStackTrace();
             }
           }
@@ -206,7 +205,7 @@ public class FileFunctions {
         } catch (EOFException ex) {
           return S.EndOfFile;
         } catch (IOException | RuntimeException ex) {
-          if (FEConfig.SHOW_STACKTRACE) {
+          if (Config.SHOW_STACKTRACE) {
             ex.printStackTrace();
           }
           engine.printMessage(ast.topHead(), ex);
@@ -288,13 +287,13 @@ public class FileFunctions {
             | IllegalArgumentException
             | RangeException
             | TypeException tex) {
-          if (FEConfig.SHOW_STACKTRACE) {
+          if (Config.SHOW_STACKTRACE) {
             tex.printStackTrace();
           }
           engine.printMessage(ast.topHead(), tex);
           return F.$Failed;
         } catch (IOException | RuntimeException ex) {
-          if (FEConfig.SHOW_STACKTRACE) {
+          if (Config.SHOW_STACKTRACE) {
             ex.printStackTrace();
           }
           engine.printMessage(ast.topHead(), ex);
@@ -340,7 +339,7 @@ public class FileFunctions {
           return F.stringx(in.getStreamName());
         }
       } catch (IOException | RuntimeException ex) {
-        if (FEConfig.SHOW_STACKTRACE) {
+        if (Config.SHOW_STACKTRACE) {
           ex.printStackTrace();
         }
         return engine.printMessage(ast.topHead(), ex);
@@ -376,7 +375,7 @@ public class FileFunctions {
             return F.stringx(path.toString());
           }
         } catch (IOException | RuntimeException ex) {
-          if (FEConfig.SHOW_STACKTRACE) {
+          if (Config.SHOW_STACKTRACE) {
             ex.printStackTrace();
           }
           return engine.printMessage(ast.topHead(), ex);
@@ -404,7 +403,7 @@ public class FileFunctions {
           } else if (ast.isAST1() && ast.arg1() instanceof IStringX) {
           }
         } catch (IOException | RuntimeException ex) {
-          if (FEConfig.SHOW_STACKTRACE) {
+          if (Config.SHOW_STACKTRACE) {
             ex.printStackTrace();
           }
           return engine.printMessage(ast.topHead(), ex);
@@ -535,7 +534,7 @@ public class FileFunctions {
             return FileExpr.newInstance(arg1.toString());
           }
         } catch (FileNotFoundException | RuntimeException ex) {
-          if (FEConfig.SHOW_STACKTRACE) {
+          if (Config.SHOW_STACKTRACE) {
             ex.printStackTrace();
           }
           return engine.printMessage(ast.topHead(), ex);
@@ -597,7 +596,7 @@ public class FileFunctions {
             return S.Null;
 
           } catch (IOException | RuntimeException ex) {
-            if (FEConfig.SHOW_STACKTRACE) {
+            if (Config.SHOW_STACKTRACE) {
               ex.printStackTrace();
             }
             return engine.printMessage(ast.topHead(), ex);
@@ -685,7 +684,7 @@ public class FileFunctions {
         String str = com.google.common.io.Files.asCharSource(file, Charset.defaultCharset()).read();
         return Get.loadPackage(engine, str);
       } catch (IOException e) {
-        if (FEConfig.SHOW_STACKTRACE) {
+        if (Config.SHOW_STACKTRACE) {
           e.printStackTrace();
         }
         // Cannot open `1`.
@@ -708,7 +707,7 @@ public class FileFunctions {
         String str = Resources.toString(url, StandardCharsets.UTF_8);
         return loadPackage(engine, str);
       } catch (IOException e) {
-        if (FEConfig.SHOW_STACKTRACE) {
+        if (Config.SHOW_STACKTRACE) {
           e.printStackTrace();
         }
         // Cannot open `1`.
@@ -745,7 +744,7 @@ public class FileFunctions {
         } catch (ValidateException ve) {
           return engine.printMessage(ast.topHead(), ve);
         } catch (MalformedURLException mue) {
-          if (FEConfig.SHOW_STACKTRACE) {
+          if (Config.SHOW_STACKTRACE) {
             mue.printStackTrace();
           }
           return engine.printMessage(ast.topHead() + ": " + mue.getMessage());
@@ -773,7 +772,7 @@ public class FileFunctions {
             return InputStreamExpr.newInstance(arg1.toString(), "String");
           }
         } catch (FileNotFoundException | RuntimeException ex) {
-          if (FEConfig.SHOW_STACKTRACE) {
+          if (Config.SHOW_STACKTRACE) {
             ex.printStackTrace();
           }
           return engine.printMessage(ast.topHead(), ex);
@@ -814,7 +813,7 @@ public class FileFunctions {
             }
           }
         } catch (FileNotFoundException | RuntimeException ex) {
-          if (FEConfig.SHOW_STACKTRACE) {
+          if (Config.SHOW_STACKTRACE) {
             ex.printStackTrace();
           }
           return engine.printMessage(ast.topHead(), ex);
@@ -856,7 +855,7 @@ public class FileFunctions {
             }
           }
         } catch (IOException | RuntimeException ex) {
-          if (FEConfig.SHOW_STACKTRACE) {
+          if (Config.SHOW_STACKTRACE) {
             ex.printStackTrace();
           }
           return engine.printMessage(ast.topHead(), ex);
@@ -882,7 +881,7 @@ public class FileFunctions {
             return OutputStreamExpr.newInstance(arg1.toString(), false);
           }
         } catch (IOException | RuntimeException ex) {
-          if (FEConfig.SHOW_STACKTRACE) {
+          if (Config.SHOW_STACKTRACE) {
             ex.printStackTrace();
           }
           return engine.printMessage(ast.topHead(), ex);
@@ -1010,7 +1009,7 @@ public class FileFunctions {
             return readTypeOrHold(typeExpr, reader, engine);
           }
         } catch (IOException | RuntimeException ex) {
-          if (FEConfig.SHOW_STACKTRACE) {
+          if (Config.SHOW_STACKTRACE) {
             ex.printStackTrace();
           }
           engine.printMessage(ast.topHead(), ex);
@@ -1245,7 +1244,7 @@ public class FileFunctions {
             str = Resources.toString(url, StandardCharsets.UTF_8);
             return F.stringx(str);
           } catch (IOException ioe) {
-            if (FEConfig.SHOW_STACKTRACE) {
+            if (Config.SHOW_STACKTRACE) {
               ioe.printStackTrace();
             }
             return engine.printMessage(ast.topHead() + ": " + ioe.getMessage());
@@ -1258,7 +1257,7 @@ public class FileFunctions {
                 com.google.common.io.Files.asCharSource(file, Charset.defaultCharset()).read();
             return F.stringx(str);
           } catch (IOException e) {
-            if (FEConfig.SHOW_STACKTRACE) {
+            if (Config.SHOW_STACKTRACE) {
               e.printStackTrace();
             }
             engine.printMessage("ReadString exception: " + e.getMessage());
@@ -1289,12 +1288,12 @@ public class FileFunctions {
             }
           }
         } catch (RuntimeException ex) {
-          if (FEConfig.SHOW_STACKTRACE) {
+          if (Config.SHOW_STACKTRACE) {
             ex.printStackTrace();
           }
           return engine.printMessage(ast.topHead(), ex);
         } catch (IOException ex) {
-          if (FEConfig.SHOW_STACKTRACE) {
+          if (Config.SHOW_STACKTRACE) {
             ex.printStackTrace();
           }
           return engine.printMessage(ast.topHead(), ex);
@@ -1326,7 +1325,7 @@ public class FileFunctions {
           String str = Resources.toString(url, StandardCharsets.UTF_8);
           return F.$s(str);
         } catch (IOException e) {
-          if (FEConfig.SHOW_STACKTRACE) {
+          if (Config.SHOW_STACKTRACE) {
             e.printStackTrace();
           }
           // Cannot open `1`.
@@ -1370,7 +1369,7 @@ public class FileFunctions {
             return S.Null;
           }
         } catch (IOException | RuntimeException ex) {
-          if (FEConfig.SHOW_STACKTRACE) {
+          if (Config.SHOW_STACKTRACE) {
             ex.printStackTrace();
           }
           return engine.printMessage(ast.topHead(), ex);

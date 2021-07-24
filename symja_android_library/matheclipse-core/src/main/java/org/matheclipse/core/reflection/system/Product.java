@@ -5,6 +5,7 @@ import static org.matheclipse.core.expression.F.C1D2;
 import static org.matheclipse.core.expression.F.Plus;
 import static org.matheclipse.core.expression.F.Times;
 
+import org.matheclipse.core.basic.Config;
 import org.matheclipse.core.builtin.ListFunctions;
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.exception.RecursionLimitExceeded;
@@ -20,7 +21,6 @@ import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.interfaces.IIterator;
 import org.matheclipse.core.interfaces.ISymbol;
 import org.matheclipse.core.reflection.system.rules.ProductRules;
-import org.matheclipse.parser.client.FEConfig;
 
 /**
  *
@@ -143,7 +143,7 @@ public class Product extends ListFunctions.Table implements ProductRules {
         return temp;
       }
     } catch (final ValidateException ve) {
-      if (FEConfig.SHOW_STACKTRACE) {
+      if (Config.SHOW_STACKTRACE) {
         ve.printStackTrace();
       }
       return EvalEngine.get().printMessage(ve.getMessage(S.Product));
@@ -258,7 +258,7 @@ public class Product extends ListFunctions.Table implements ProductRules {
           return F.NIL;
         }
       } catch (final ValidateException ve) {
-        if (FEConfig.SHOW_STACKTRACE) {
+        if (Config.SHOW_STACKTRACE) {
           ve.printStackTrace();
         }
         return EvalEngine.get().printMessage(ve.getMessage(S.Product));

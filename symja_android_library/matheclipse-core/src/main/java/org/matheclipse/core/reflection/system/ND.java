@@ -4,6 +4,7 @@ import org.hipparchus.analysis.differentiation.DSFactory;
 import org.hipparchus.analysis.differentiation.FiniteDifferencesDifferentiator;
 import org.hipparchus.analysis.differentiation.UnivariateDifferentiableFunction;
 import org.hipparchus.exception.MathRuntimeException;
+import org.matheclipse.core.basic.Config;
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.exception.ValidateException;
 import org.matheclipse.core.eval.interfaces.AbstractFunctionEvaluator;
@@ -13,7 +14,6 @@ import org.matheclipse.core.generic.UnaryNumerical;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.interfaces.ISymbol;
-import org.matheclipse.parser.client.FEConfig;
 
 /**
  *
@@ -77,12 +77,12 @@ public class ND extends AbstractFunctionEvaluator {
         return partialDerivative(arg1, (ISymbol) arg2, 1, arg3, engine);
       }
     } catch (MathRuntimeException mrex) {
-      if (FEConfig.SHOW_STACKTRACE) {
+      if (Config.SHOW_STACKTRACE) {
         mrex.printStackTrace();
       }
       return engine.printMessage(ast.topHead(), mrex);
     } catch (ValidateException ve) {
-      if (FEConfig.SHOW_STACKTRACE) {
+      if (Config.SHOW_STACKTRACE) {
         ve.printStackTrace();
       }
       return engine.printMessage(ast.topHead(), ve);

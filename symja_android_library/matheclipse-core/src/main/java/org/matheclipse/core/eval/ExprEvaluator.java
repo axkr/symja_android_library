@@ -8,6 +8,7 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
 
+import org.matheclipse.core.basic.Config;
 import org.matheclipse.core.builtin.IOFunctions;
 import org.matheclipse.core.eval.exception.BreakException;
 import org.matheclipse.core.eval.exception.ContinueException;
@@ -23,7 +24,6 @@ import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.interfaces.ISignedNumber;
 import org.matheclipse.core.interfaces.ISymbol;
 import org.matheclipse.core.parser.ExprParser;
-import org.matheclipse.parser.client.FEConfig;
 import org.matheclipse.parser.client.SyntaxError;
 
 import com.google.common.util.concurrent.SimpleTimeLimiter;
@@ -344,7 +344,7 @@ public class ExprEvaluator {
     try {
       return evalTryCatch(expr, engineRef);
     } catch (SymjaMathException sma) {
-      if (FEConfig.SHOW_STACKTRACE) {
+      if (Config.SHOW_STACKTRACE) {
         sma.printStackTrace();
       }
       return expr;
@@ -367,12 +367,12 @@ public class ExprEvaluator {
         temp = engine.evaluate(expr);
       }
     } catch (ReturnException rex) {
-      if (FEConfig.SHOW_STACKTRACE) {
+      if (Config.SHOW_STACKTRACE) {
         rex.printStackTrace();
       }
       return rex.getValue();
     } catch (BreakException | ContinueException conex) {
-      if (FEConfig.SHOW_STACKTRACE) {
+      if (Config.SHOW_STACKTRACE) {
         conex.printStackTrace();
       }
       IAST ast = F.Continue();
@@ -383,7 +383,7 @@ public class ExprEvaluator {
       IOFunctions.printMessage(S.Continue, "nofwd", F.List(ast), engine);
       temp = F.Hold(ast);
     } catch (ThrowException e) {
-      if (FEConfig.SHOW_STACKTRACE) {
+      if (Config.SHOW_STACKTRACE) {
         e.printStackTrace();
       }
       // Uncaught `1` returned to top level.
@@ -391,7 +391,7 @@ public class ExprEvaluator {
       IOFunctions.printMessage(S.Throw, "nocatch", F.List(ast), engine);
       temp = F.Hold(ast);
     } catch (IterationLimitExceeded e) {
-      if (FEConfig.SHOW_STACKTRACE) {
+      if (Config.SHOW_STACKTRACE) {
         e.printStackTrace();
       }
       // Iteration limit of `1` exceeded.
@@ -403,7 +403,7 @@ public class ExprEvaluator {
           engine);
       temp = F.Hold(expr);
     } catch (RecursionLimitExceeded e) {
-      if (FEConfig.SHOW_STACKTRACE) {
+      if (Config.SHOW_STACKTRACE) {
         e.printStackTrace();
       }
       // Recursion depth of `1` exceeded during evaluation of `2`.
@@ -517,7 +517,7 @@ public class ExprEvaluator {
           } catch (org.matheclipse.core.eval.exception.TimeoutException e) {
             return S.$Aborted;
           } catch (java.util.concurrent.TimeoutException e) {
-            if (FEConfig.SHOW_STACKTRACE) {
+            if (Config.SHOW_STACKTRACE) {
               e.printStackTrace();
             }
             // Throwable t = e.getCause();
@@ -532,7 +532,7 @@ public class ExprEvaluator {
             // }
             return S.$Aborted;
           } catch (Exception e) {
-            if (FEConfig.SHOW_STACKTRACE) {
+            if (Config.SHOW_STACKTRACE) {
               e.printStackTrace();
             }
             return S.Null;

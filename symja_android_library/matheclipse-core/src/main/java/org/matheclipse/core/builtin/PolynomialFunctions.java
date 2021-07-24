@@ -59,7 +59,6 @@ import org.matheclipse.core.polynomials.symbolicexponent.SymbolicPolynomialRing;
 import org.matheclipse.core.reflection.system.rules.LegendrePRules;
 import org.matheclipse.core.reflection.system.rules.LegendreQRules;
 import org.matheclipse.core.reflection.system.rules.SphericalHarmonicYRules;
-import org.matheclipse.parser.client.FEConfig;
 
 import com.google.common.math.LongMath;
 
@@ -230,7 +229,7 @@ public class PolynomialFunctions {
       } catch (LimitException le) {
         throw le;
       } catch (RuntimeException ae) {
-        if (FEConfig.SHOW_STACKTRACE) {
+        if (Config.SHOW_STACKTRACE) {
           ae.printStackTrace();
         }
         return F.C0;
@@ -294,7 +293,7 @@ public class PolynomialFunctions {
         ExprPolynomial poly = ring.create(expr, false, true, true);
         return poly.coefficientArrays((int) poly.degree());
       } catch (RuntimeException rex) {
-        if (FEConfig.SHOW_STACKTRACE) {
+        if (Config.SHOW_STACKTRACE) {
           rex.printStackTrace();
         }
       }
@@ -376,7 +375,7 @@ public class PolynomialFunctions {
               }
             } catch (RuntimeException rex) {
               // toInt() conversion failed
-              if (FEConfig.SHOW_STACKTRACE) {
+              if (Config.SHOW_STACKTRACE) {
                 rex.printStackTrace();
               }
             }
@@ -391,7 +390,7 @@ public class PolynomialFunctions {
         ExprPolynomial poly = ring.create(expr, false, true, true);
         return poly.coefficientRules();
       } catch (RuntimeException rex) {
-        if (FEConfig.SHOW_STACKTRACE) {
+        if (Config.SHOW_STACKTRACE) {
           rex.printStackTrace();
         }
       }
@@ -907,11 +906,7 @@ public class PolynomialFunctions {
       if (collector.size() == 0) {
         collector.add(F.C0);
       }
-      IASTAppendable result = F.ast(sym, collector.size(), false);
-      result.appendAll(collector);
-      // for (IExpr exponent : collector) {
-      // result.append(exponent);
-      // }
+      IASTAppendable result = F.ast(sym, collector);
       F.REMEMBER_AST_CACHE.put(ast, result);
       return result;
     }
@@ -1970,7 +1965,7 @@ public class PolynomialFunctions {
                 return monomialListModulus(expr, varList, termOrder, option);
               }
             } catch (RuntimeException rex) {
-              if (FEConfig.SHOW_STACKTRACE) {
+              if (Config.SHOW_STACKTRACE) {
                 rex.printStackTrace();
               }
             }
@@ -1985,7 +1980,7 @@ public class PolynomialFunctions {
         ExprPolynomial poly = ring.create(expr, false, true, true);
         return poly.monomialList();
       } catch (RuntimeException rex) {
-        if (FEConfig.SHOW_STACKTRACE) {
+        if (Config.SHOW_STACKTRACE) {
           rex.printStackTrace();
         }
       }
@@ -2089,11 +2084,11 @@ public class PolynomialFunctions {
       throw le;
     } catch (ClassCastException ex) {
       // org.matheclipse.core.polynomials.longexponent.ExprPolynomialRing.create()
-      if (FEConfig.SHOW_STACKTRACE) {
+      if (Config.SHOW_STACKTRACE) {
         ex.printStackTrace();
       }
     } catch (RuntimeException ex) {
-      if (FEConfig.SHOW_STACKTRACE) {
+      if (Config.SHOW_STACKTRACE) {
         ex.printStackTrace();
       }
     }

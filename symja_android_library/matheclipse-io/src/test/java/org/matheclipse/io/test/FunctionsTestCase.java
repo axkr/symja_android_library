@@ -1,7 +1,6 @@
 package org.matheclipse.io.test;
 
 import org.matheclipse.core.basic.Config;
-import org.matheclipse.io.IOInit;
 
 public class FunctionsTestCase extends AbstractTestCase {
 
@@ -13,18 +12,17 @@ public class FunctionsTestCase extends AbstractTestCase {
     String s = System.getProperty("os.name");
 
     Config.FILESYSTEM_ENABLED = true;
-    // check("ds=SemanticImport(\"./data/color2_data.csv\") //Normal //InputForm", //
-    // "");
+    //     check("ds=SemanticImport(\"./data/color2_data.csv\") //Normal //InputForm", //
+    //     "");
     // check("ds=SemanticImport(\"./data/color2_data.csv\");ds(All, {\"r\",\"g\",\"b\"})//Normal
     // //Values
     // //InputForm", //
     // "");
 
     if (s.contains("Windows")) {
-      //      check(
-      //          "dset =
-      // SemanticImport(\"https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/data/whiskey.csv\")", //
-      //          "");
+//                  check(
+//                      "dset = SemanticImport(\"https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/data/whiskey.csv\")", //
+//                      "");
       check(
           "dset = Dataset({\n"
               + //

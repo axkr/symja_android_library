@@ -30,6 +30,10 @@ import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.interfaces.ISparseArray;
 import org.matheclipse.core.interfaces.IStringX;
 import org.matheclipse.core.interfaces.ISymbol;
+import org.matheclipse.core.polynomials.longexponent.ExprRingFactory;
+
+import edu.jas.vector.GenMatrix;
+import edu.jas.vector.GenMatrixRing;
 
 /** Conversions between an IExpr object and misc other object class types */
 public class Convert {
@@ -134,8 +138,10 @@ public class Convert {
           }
         }
         if (hasInexactNumber && isNoNumericFunction) {
-          // if all elements are numeric stop conversion
-          return null;
+          if (!EvalEngine.get().isArbitraryMode()) {
+            // if all elements are numeric stop conversion
+            return null;
+          }
         }
       }
       final IExpr[][] elements = new IExpr[rowSize][colSize];
@@ -247,6 +253,75 @@ public class Convert {
       elements[i - 1][colSize] = listVector.get(i);
     }
     return new Array2DRowFieldMatrix<IExpr>(elements, false);
+  }
+
+  public static GenMatrix<IExpr> list2GenMatrix(final IExpr expr, boolean ifNumericReturnNull)
+      throws ClassCastException, IndexOutOfBoundsException {
+    if (expr == null) {
+      return null;
+    }
+    int[] dim = expr.isMatrix();
+    if (dim == null || dim[0] == 0 || dim[1] == 0) {
+      return null;
+    }
+    //	    if (expr.isSparseArray()) {
+    //	      ISparseArray array = (ISparseArray) expr;
+    //	      return array.toFieldMatrix(false);
+    //	    }
+    if (expr.isList()) {
+      IAST list = (IAST) expr;
+      IAST currInRow = (IAST) list.arg1();
+      if (currInRow.isAST0()) {
+        // special case 0-Matrix
+        IExpr[][] array = new IExpr[0][0];
+        GenMatrixRing<IExpr> ring = new GenMatrixRing<IExpr>(ExprRingFactory.CONST, 0, 0);
+        return new GenMatrix<IExpr>(ring, array);
+      }
+      final int rowSize = expr.argSize();
+      final int colSize = currInRow.argSize();
+      if (ifNumericReturnNull) {
+        boolean hasInexactNumber = false;
+        boolean isNoNumericFunction = true;
+        for (int i = 1; i < rowSize + 1; i++) {
+          currInRow = (IAST) list.get(i);
+          if (currInRow.isVector() < 0 || colSize != currInRow.argSize()) {
+            return null;
+          }
+          for (int j = 1; j < colSize + 1; j++) {
+            final IExpr arg = currInRow.get(j);
+            if (arg.isInexactNumber()) {
+              hasInexactNumber = true;
+            }
+            if (!arg.isNumericFunction()) {
+              isNoNumericFunction = false;
+              break;
+            }
+          }
+          if (!isNoNumericFunction) {
+            break;
+          }
+        }
+        if (hasInexactNumber && isNoNumericFunction) {
+          if (!EvalEngine.get().isArbitraryMode()) {
+            // if all elements are numeric stop conversion
+            return null;
+          }
+        }
+      }
+      final IExpr[][] elements = new IExpr[rowSize][colSize];
+      for (int i = 1; i < rowSize + 1; i++) {
+        currInRow = (IAST) list.get(i);
+        if (currInRow.isVector() < 0 || colSize != currInRow.argSize()) {
+          return null;
+        }
+        for (int j = 1; j < colSize + 1; j++) {
+          elements[i - 1][j - 1] = currInRow.get(j);
+        }
+      }
+      GenMatrixRing<IExpr> ring = new GenMatrixRing<IExpr>(ExprRingFactory.CONST, rowSize, colSize);
+      return new GenMatrix<IExpr>(ring, elements);
+    }
+    return null;
   }
 
   public static FieldMatrix<IExpr> augmentedFieldMatrix(
@@ -482,6 +557,41 @@ public class Convert {
       out.append(currOutRow);
       for (int j = 0; j < colSize; j++) {
         IExpr expr = matrix.getEntry(i, j);
+        if (expr.isNumber()) {
+          currOutRow.append(expr);
+        } else {
+          // if (expr.isPlusTimesPower()) {
+          // // TODO Performance hotspot
+          // currOutRow.append(F.eval(F.Together(expr)));
+          // } else {
+          currOutRow.append(expr);
+          // }
+        }
+      }
+    }
+    if (matrixFormat) {
+      // because the rows can contain sub lists the IAST.IS_MATRIX flag cannot be set directly.
+      // isMatrix() must be
+      // used!
+      out.isMatrix(true);
+    }
+    return out;
+  }
+
+  public static IASTAppendable genmatrix2List(final GenMatrix<IExpr> matrix, boolean matrixFormat) {
+    if (matrix == null) {
+      return F.NIL;
+    }
+    final int rowSize = matrix.ring.rows;
+    final int colSize = matrix.ring.cols;
+
+    final IASTAppendable out = F.ListAlloc(rowSize);
+    IASTAppendable currOutRow;
+    for (int i = 0; i < rowSize; i++) {
+      currOutRow = F.ListAlloc(colSize);
+      out.append(currOutRow);
+      for (int j = 0; j < colSize; j++) {
+        IExpr expr = matrix.get(i, j);
         if (expr.isNumber()) {
           currOutRow.append(expr);
         } else {

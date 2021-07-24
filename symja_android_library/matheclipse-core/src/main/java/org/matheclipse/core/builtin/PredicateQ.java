@@ -32,7 +32,6 @@ import org.matheclipse.core.patternmatching.IPatternMatcher;
 import org.matheclipse.core.patternmatching.PatternMatcher;
 import org.matheclipse.core.visit.IVisitorBoolean;
 import org.matheclipse.core.visit.VisitorBooleanLevelSpecification;
-import org.matheclipse.parser.client.FEConfig;
 
 public class PredicateQ {
 
@@ -1586,7 +1585,7 @@ public class PredicateQ {
 
       return isZeroTogether(function, engine);
     } catch (ValidateException ve) {
-      if (FEConfig.SHOW_STACKTRACE) {
+      if (Config.SHOW_STACKTRACE) {
         ve.printStackTrace();
       }
     }

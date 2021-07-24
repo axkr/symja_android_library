@@ -38,7 +38,6 @@ import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.interfaces.IInteger;
 import org.matheclipse.core.interfaces.ISymbol;
 import org.matheclipse.core.patternmatching.RulesData;
-import org.matheclipse.parser.client.FEConfig;
 
 import com.google.common.cache.CacheBuilder;
 
@@ -761,7 +760,7 @@ public class Integrate extends AbstractFunctionEvaluator {
             IExpr temp = S.Integrate.evalDownRule(EvalEngine.get(), ast);
             if (temp.isPresent()) {
               if (temp.equals(ast)) {
-                if (FEConfig.SHOW_STACKTRACE) {
+                if (Config.SHOW_STACKTRACE) {
                   engine.setQuietMode(false);
                   IOFunctions.printMessage(S.Integrate, "rubiendless", F.List(temp), engine);
                 }
@@ -779,7 +778,7 @@ public class Integrate extends AbstractFunctionEvaluator {
             engine.setRecursionLimit(limit);
             return engine.printMessage("Integrate(Rubi recursion): " + rle.getMessage());
           } catch (RuntimeException rex) {
-            if (FEConfig.SHOW_STACKTRACE) {
+            if (Config.SHOW_STACKTRACE) {
               rex.printStackTrace();
             }
             engine.setRecursionLimit(limit);

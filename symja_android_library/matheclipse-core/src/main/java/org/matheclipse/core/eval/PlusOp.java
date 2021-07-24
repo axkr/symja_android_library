@@ -5,6 +5,7 @@ import java.util.Iterator;
 import java.util.Map;
 import java.util.Map.Entry;
 
+import org.matheclipse.core.basic.Config;
 import org.matheclipse.core.builtin.IOFunctions;
 import org.matheclipse.core.eval.exception.LimitException;
 import org.matheclipse.core.eval.exception.SymjaMathException;
@@ -18,7 +19,6 @@ import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IASTAppendable;
 import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.tensor.qty.IQuantity;
-import org.matheclipse.parser.client.FEConfig;
 
 /**
  * Plus operator for adding multiple arguments with the <code>plus(argument)</code> method and
@@ -380,17 +380,17 @@ public final class PlusOp {
         evaled = true;
       }
     } catch (ValidateException ve) {
-      if (FEConfig.SHOW_STACKTRACE) {
+      if (Config.SHOW_STACKTRACE) {
         ve.printStackTrace();
       }
       throw ve;
     } catch (LimitException le) {
-      if (FEConfig.SHOW_STACKTRACE) {
+      if (Config.SHOW_STACKTRACE) {
         le.printStackTrace();
       }
       throw le;
     } catch (SymjaMathException sme) {
-      if (FEConfig.SHOW_STACKTRACE) {
+      if (Config.SHOW_STACKTRACE) {
         sme.printStackTrace();
       }
     }

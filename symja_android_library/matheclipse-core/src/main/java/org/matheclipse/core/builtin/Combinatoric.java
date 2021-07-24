@@ -32,7 +32,6 @@ import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.interfaces.IInteger;
 import org.matheclipse.core.interfaces.ISymbol;
 import org.matheclipse.core.reflection.system.FrobeniusSolve;
-import org.matheclipse.parser.client.FEConfig;
 
 public final class Combinatoric {
   /**
@@ -895,7 +894,7 @@ public final class Combinatoric {
         } catch (LimitException le) {
           throw le;
         } catch (RuntimeException rex) {
-          if (FEConfig.SHOW_STACKTRACE) {
+          if (Config.SHOW_STACKTRACE) {
             rex.printStackTrace();
           }
         }

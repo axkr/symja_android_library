@@ -70,7 +70,6 @@ import org.matheclipse.core.reflection.system.Sum;
 import org.matheclipse.core.visit.VisitorLevelSpecification;
 import org.matheclipse.core.visit.VisitorRemoveLevelSpecification;
 import org.matheclipse.core.visit.VisitorReplaceAll;
-import org.matheclipse.parser.client.FEConfig;
 
 public final class ListFunctions {
 
@@ -1202,7 +1201,7 @@ public final class ListFunctions {
         // see level specification and int number validation
         return engine.printMessage(ast.topHead(), ve);
       } catch (final RuntimeException rex) {
-        if (FEConfig.SHOW_STACKTRACE) {
+        if (Config.SHOW_STACKTRACE) {
           rex.printStackTrace();
         }
       }
@@ -1493,7 +1492,6 @@ public final class ListFunctions {
     }
 
     public static IAST complement(final IAST arg1, final IAST arg2) {
-
       Set<IExpr> set2 = arg2.asSet();
       if (set2 != null) {
         Set<IExpr> set3 = new HashSet<IExpr>();
@@ -1503,10 +1501,7 @@ public final class ListFunctions {
                 set3.add(x);
               }
             });
-        IASTAppendable result = F.ListAlloc(set3.size());
-        for (IExpr expr : set3) {
-          result.append(expr);
-        }
+        IASTMutable result = F.ListAlloc(set3);
         EvalAttributes.sort(result);
         return result;
       }
@@ -2315,12 +2310,12 @@ public final class ListFunctions {
       } catch (ValidateException ve) {
         return engine.printMessage(ast.topHead(), ve);
       } catch (final IndexOutOfBoundsException ibe) {
-        if (FEConfig.SHOW_STACKTRACE) {
+        if (Config.SHOW_STACKTRACE) {
           ibe.printStackTrace();
         }
         return engine.printMessage(ast.topHead(), ibe);
       } catch (final NullPointerException npe) {
-        if (FEConfig.SHOW_STACKTRACE) {
+        if (Config.SHOW_STACKTRACE) {
           npe.printStackTrace();
         }
         return engine.printMessage(ast.topHead(), npe);
@@ -2809,7 +2804,7 @@ public final class ListFunctions {
         // see level specification and int number validation
         return engine.printMessage(ast.topHead(), ve);
       } catch (final RuntimeException rex) {
-        if (FEConfig.SHOW_STACKTRACE) {
+        if (Config.SHOW_STACKTRACE) {
           rex.printStackTrace();
         }
       }
@@ -3064,7 +3059,7 @@ public final class ListFunctions {
           return evaluateNestList4(ast, engine);
         }
       } catch (RuntimeException rex) {
-        if (FEConfig.SHOW_STACKTRACE) {
+        if (Config.SHOW_STACKTRACE) {
           rex.printStackTrace();
         }
         return engine.printMessage(ast.topHead(), rex);
@@ -3428,8 +3423,7 @@ public final class ListFunctions {
             IAST arg1 = (IAST) ast.arg1();
             Set<IExpr> set = arg1.asSet();
             if (set != null) {
-              final IASTAppendable result = F.ListAlloc(set.size());
-              result.appendAll(set);
+              final IASTMutable result = F.ListAlloc(set );
               EvalAttributes.sort(result, Comparators.CANONICAL_COMPARATOR);
               return result;
             }
@@ -3446,8 +3440,7 @@ public final class ListFunctions {
           }
           for (int i = 2; i < ast.size(); i++) {
             IAST expr = (IAST) ast.get(i);
-            final IASTAppendable list = F.ListAlloc((result.size() + expr.size()) / 2);
-            result = intersection(result, expr, list);
+            result = intersection(result, expr);
           }
           if (result.size() > 2) {
             EvalAttributes.sort((IASTMutable) result, Comparators.CANONICAL_COMPARATOR);
@@ -3463,13 +3456,13 @@ public final class ListFunctions {
      *
      * @param ast1 first AST set
      * @param ast2 second AST set
-     * @param result the AST where the elements of the union should be appended
      * @return
      */
-    public static IAST intersection(IAST ast1, IAST ast2, final IASTAppendable result) {
+    public static IAST intersection(IAST ast1, IAST ast2) {
       if (ast1.isEmpty() || ast2.isEmpty()) {
         return F.CEmptyList;
       }
+
       Set<IExpr> set1 = new HashSet<IExpr>(ast1.size() + ast2.size() / 10);
       Set<IExpr> set2 = new HashSet<IExpr>(ast1.size() + ast2.size() / 10);
       Set<IExpr> resultSet = new TreeSet<IExpr>();
@@ -3486,8 +3479,7 @@ public final class ListFunctions {
           resultSet.add(expr);
         }
       }
-      result.appendAll(resultSet);
-      return result;
+      return F.ListAlloc(resultSet);
     }
 
     @Override
@@ -4284,7 +4276,7 @@ public final class ListFunctions {
           ASTElementLimitExceeded.throwIt(intialCapacity);
         }
         IASTAppendable result = ast.copyHead((int) intialCapacity);
-        result.appendArgs(0, length, i -> atom); 
+        result.appendArgs(0, length, i -> atom);
         result.appendArgs(ast);
         return result;
       }
@@ -6722,7 +6714,7 @@ public final class ListFunctions {
       } catch (ValidateException ve) {
         return engine.printMessage(ast.topHead(), ve);
       } catch (final ArrayIndexOutOfBoundsException e) {
-        if (FEConfig.SHOW_STACKTRACE) {
+        if (Config.SHOW_STACKTRACE) {
           e.printStackTrace();
         }
       } catch (final NoEvalException e) {
@@ -6750,7 +6742,7 @@ public final class ListFunctions {
           return generator.tableThrow();
         }
       } catch (final ArrayIndexOutOfBoundsException e) {
-        if (FEConfig.SHOW_STACKTRACE) {
+        if (Config.SHOW_STACKTRACE) {
           e.printStackTrace();
         }
       } catch (final NoEvalException e) {
@@ -6785,7 +6777,7 @@ public final class ListFunctions {
                 iterList, resultList, new TableFunction(EvalEngine.get(), expr), defaultValue);
         return generator.table();
       } catch (final ArrayIndexOutOfBoundsException e) {
-        if (FEConfig.SHOW_STACKTRACE) {
+        if (Config.SHOW_STACKTRACE) {
           e.printStackTrace();
         }
       } catch (final ClassCastException e) {
@@ -7090,7 +7082,7 @@ public final class ListFunctions {
       } catch (final ValidateException ve) {
         return engine.printMessage(ast.topHead(), ve);
       } catch (final RuntimeException rex) {
-        if (FEConfig.SHOW_STACKTRACE) {
+        if (Config.SHOW_STACKTRACE) {
           rex.printStackTrace();
         }
       }
@@ -7450,7 +7442,7 @@ public final class ListFunctions {
               engine.setThrowError(true);
               return engine.evaluate(temp);
             } catch (RuntimeException rex) {
-              if (FEConfig.SHOW_STACKTRACE) {
+              if (Config.SHOW_STACKTRACE) {
                 rex.printStackTrace();
               }
               return F.NIL;
@@ -7530,8 +7522,7 @@ public final class ListFunctions {
           IAST result = ((IAST) ast.arg1());
           for (int i = 2; i < ast.size(); i++) {
             IAST expr = (IAST) ast.get(i);
-            final IASTAppendable list = F.ListAlloc(result.size() + expr.size());
-            result = union(result, expr, list);
+            result = union(result, expr);
           }
           if (result.size() > 2) {
             EvalAttributes.sort((IASTMutable) result, Comparators.CANONICAL_COMPARATOR);
@@ -7547,10 +7538,9 @@ public final class ListFunctions {
      *
      * @param ast1 first AST set
      * @param ast2 second AST set
-     * @param result the AST where the elements of the union should be appended
      * @return
      */
-    public static IASTMutable union(IAST ast1, IAST ast2, final IASTAppendable result) {
+    public static IASTMutable union(IAST ast1, IAST ast2) {
       Set<IExpr> resultSet = new TreeSet<IExpr>();
       int size = ast1.size();
       for (int i = 1; i < size; i++) {
@@ -7560,10 +7550,7 @@ public final class ListFunctions {
       for (int i = 1; i < size; i++) {
         resultSet.add(ast2.get(i));
       }
-      for (IExpr expr : resultSet) {
-        result.append(expr);
-      }
-      return result;
+      return F.ListAlloc(resultSet);
     }
 
     @Override

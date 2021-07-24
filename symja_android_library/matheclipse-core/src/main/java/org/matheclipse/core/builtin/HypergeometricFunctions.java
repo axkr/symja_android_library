@@ -36,7 +36,6 @@ import org.matheclipse.core.reflection.system.rules.Hypergeometric2F1Rules;
 import org.matheclipse.core.reflection.system.rules.HypergeometricURules;
 import org.matheclipse.core.reflection.system.rules.WhittakerMRules;
 import org.matheclipse.core.reflection.system.rules.WhittakerWRules;
-import org.matheclipse.parser.client.FEConfig;
 
 public class HypergeometricFunctions {
 
@@ -213,12 +212,12 @@ public class HypergeometricFunctions {
           }
 
         } catch (ThrowException te) {
-          if (FEConfig.SHOW_STACKTRACE) {
+          if (Config.SHOW_STACKTRACE) {
             te.printStackTrace();
           }
           return te.getValue();
         } catch (ValidateException ve) {
-          if (FEConfig.SHOW_STACKTRACE) {
+          if (Config.SHOW_STACKTRACE) {
             ve.printStackTrace();
           }
         } catch (RuntimeException rex) {
@@ -310,12 +309,12 @@ public class HypergeometricFunctions {
           }
 
         } catch (ThrowException te) {
-          if (FEConfig.SHOW_STACKTRACE) {
+          if (Config.SHOW_STACKTRACE) {
             te.printStackTrace();
           }
           return te.getValue();
         } catch (ValidateException ve) {
-          if (FEConfig.SHOW_STACKTRACE) {
+          if (Config.SHOW_STACKTRACE) {
             ve.printStackTrace();
           }
         } catch (RuntimeException rex) {
@@ -376,12 +375,12 @@ public class HypergeometricFunctions {
           }
 
         } catch (ThrowException te) {
-          if (FEConfig.SHOW_STACKTRACE) {
+          if (Config.SHOW_STACKTRACE) {
             te.printStackTrace();
           }
           return te.getValue();
         } catch (ValidateException ve) {
-          if (FEConfig.SHOW_STACKTRACE) {
+          if (Config.SHOW_STACKTRACE) {
             ve.printStackTrace();
           }
         } catch (RuntimeException rex) {
@@ -482,12 +481,12 @@ public class HypergeometricFunctions {
           }
 
         } catch (ThrowException te) {
-          if (FEConfig.SHOW_STACKTRACE) {
+          if (Config.SHOW_STACKTRACE) {
             te.printStackTrace();
           }
           return te.getValue();
         } catch (ValidateException ve) {
-          if (FEConfig.SHOW_STACKTRACE) {
+          if (Config.SHOW_STACKTRACE) {
             ve.printStackTrace();
           }
         } catch (RuntimeException rex) {
@@ -739,7 +738,7 @@ public class HypergeometricFunctions {
       if (zInt > Integer.MIN_VALUE) {
         if (zInt == 0) {
           // 2 * (1/v) * Cos(1/2*Pi*v)
-          return F.Times(F.C2, F.pow(n, F.CN1), F.Cos(F.Times(C1D2, S.Pi, n)));
+          return F.Times(F.C2, F.Power(n, F.CN1), F.Cos(F.Times(C1D2, S.Pi, n)));
         }
         if (zInt == 1) {
           // 2 / v
@@ -747,7 +746,7 @@ public class HypergeometricFunctions {
         }
         if (zInt == -1) {
           // (2/v)*Cos(Pi*v)
-          return F.Times(F.C2, F.pow(n, F.CN1), F.Cos(F.Times(S.Pi, n)));
+          return F.Times(F.C2, F.Power(n, F.CN1), F.Cos(F.Times(S.Pi, n)));
         }
       }
 
@@ -817,7 +816,7 @@ public class HypergeometricFunctions {
           }
 
         } catch (ValidateException ve) {
-          if (FEConfig.SHOW_STACKTRACE) {
+          if (Config.SHOW_STACKTRACE) {
             ve.printStackTrace();
           }
         } catch (RuntimeException rex) {
@@ -942,7 +941,7 @@ public class HypergeometricFunctions {
               F.Times(F.Power(b, -1), F.Power(F.Plus(F.C1, b), -1), F.Sqr(z)));
         }
       } catch (ValidateException ve) {
-        if (FEConfig.SHOW_STACKTRACE) {
+        if (Config.SHOW_STACKTRACE) {
           ve.printStackTrace();
         }
       } catch (RuntimeException rex) {
@@ -1082,12 +1081,12 @@ public class HypergeometricFunctions {
         // }
         // }
       } catch (ResultException te) {
-        if (FEConfig.SHOW_STACKTRACE) {
+        if (Config.SHOW_STACKTRACE) {
           te.printStackTrace();
         }
         return te.getValue();
       } catch (ValidateException ve) {
-        if (FEConfig.SHOW_STACKTRACE) {
+        if (Config.SHOW_STACKTRACE) {
           ve.printStackTrace();
         }
       } catch (RuntimeException rex) {
@@ -1165,7 +1164,7 @@ public class HypergeometricFunctions {
           }
 
         } catch (ValidateException ve) {
-          if (FEConfig.SHOW_STACKTRACE) {
+          if (Config.SHOW_STACKTRACE) {
             ve.printStackTrace();
           }
         } catch (RuntimeException rex) {
@@ -1253,7 +1252,7 @@ public class HypergeometricFunctions {
                 HypergeometricJS.hypergeometricU(
                     new Complex(aDouble), new Complex(bDouble), new Complex(zDouble)));
           } catch (ValidateException ve) {
-            if (FEConfig.SHOW_STACKTRACE) {
+            if (Config.SHOW_STACKTRACE) {
               ve.printStackTrace();
             }
           }
@@ -1263,12 +1262,12 @@ public class HypergeometricFunctions {
           return F.complexNum(HypergeometricJS.hypergeometricU(ac, bc, zc));
         }
       } catch (ThrowException te) {
-        if (FEConfig.SHOW_STACKTRACE) {
+        if (Config.SHOW_STACKTRACE) {
           te.printStackTrace();
         }
         return te.getValue();
       } catch (ValidateException ve) {
-        if (FEConfig.SHOW_STACKTRACE) {
+        if (Config.SHOW_STACKTRACE) {
           ve.printStackTrace();
         }
       } catch (RuntimeException rex) {
@@ -1373,12 +1372,12 @@ public class HypergeometricFunctions {
           }
 
         } catch (ThrowException te) {
-          if (FEConfig.SHOW_STACKTRACE) {
+          if (Config.SHOW_STACKTRACE) {
             te.printStackTrace();
           }
           return te.getValue();
         } catch (ValidateException ve) {
-          if (FEConfig.SHOW_STACKTRACE) {
+          if (Config.SHOW_STACKTRACE) {
             ve.printStackTrace();
           }
         } catch (RuntimeException rex) {
@@ -1473,12 +1472,12 @@ public class HypergeometricFunctions {
           }
 
         } catch (ThrowException te) {
-          if (FEConfig.SHOW_STACKTRACE) {
+          if (Config.SHOW_STACKTRACE) {
             te.printStackTrace();
           }
           return te.getValue();
         } catch (ValidateException ve) {
-          if (FEConfig.SHOW_STACKTRACE) {
+          if (Config.SHOW_STACKTRACE) {
             ve.printStackTrace();
           }
         } catch (RuntimeException rex) {
@@ -1552,12 +1551,12 @@ public class HypergeometricFunctions {
           }
 
         } catch (ThrowException te) {
-          if (FEConfig.SHOW_STACKTRACE) {
+          if (Config.SHOW_STACKTRACE) {
             te.printStackTrace();
           }
           return te.getValue();
         } catch (ValidateException ve) {
-          if (FEConfig.SHOW_STACKTRACE) {
+          if (Config.SHOW_STACKTRACE) {
             ve.printStackTrace();
           }
         } catch (RuntimeException rex) {
@@ -1618,7 +1617,7 @@ public class HypergeometricFunctions {
                 HypergeometricJS.whittakerM(
                     new Complex(kDouble), new Complex(mDouble), new Complex(zDouble)));
           } catch (ValidateException ve) {
-            if (FEConfig.SHOW_STACKTRACE) {
+            if (Config.SHOW_STACKTRACE) {
               ve.printStackTrace();
             }
           }
@@ -1628,12 +1627,12 @@ public class HypergeometricFunctions {
           return F.complexNum(HypergeometricJS.whittakerM(kc, mc, zc));
 
         } catch (ThrowException te) {
-          if (FEConfig.SHOW_STACKTRACE) {
+          if (Config.SHOW_STACKTRACE) {
             te.printStackTrace();
           }
           return te.getValue();
         } catch (ValidateException ve) {
-          if (FEConfig.SHOW_STACKTRACE) {
+          if (Config.SHOW_STACKTRACE) {
             ve.printStackTrace();
           }
         } catch (RuntimeException rex) {

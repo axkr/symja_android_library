@@ -6,14 +6,15 @@ import java.util.HashSet;
 import java.util.Set;
 import java.util.TreeSet;
 import java.util.function.Predicate;
-
 import org.hipparchus.linear.FieldMatrix;
+import org.matheclipse.core.basic.Config;
 import org.matheclipse.core.builtin.Algebra;
 import org.matheclipse.core.builtin.BooleanFunctions;
 import org.matheclipse.core.builtin.IOFunctions;
 import org.matheclipse.core.builtin.LinearAlgebra;
 import org.matheclipse.core.builtin.PolynomialFunctions;
 import org.matheclipse.core.builtin.RootsFunctions;
+import org.matheclipse.core.convert.ChocoConvert;
 import org.matheclipse.core.convert.Convert;
 import org.matheclipse.core.convert.CreamConvert;
 import org.matheclipse.core.convert.VariablesSet;
@@ -37,7 +38,6 @@ import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.interfaces.ISignedNumber;
 import org.matheclipse.core.interfaces.ISymbol;
 import org.matheclipse.core.polynomials.QuarticSolver;
-import org.matheclipse.parser.client.FEConfig;
 
 /**
  *
@@ -1046,22 +1046,43 @@ public class Solve extends AbstractFunctionEvaluator {
           if (domain.equals(S.Integers)) {
             if (!userDefinedVariables.isEmpty()) {
               IAST equationsAndInequations = Validate.checkEquationsAndInequations(ast, 1);
+              if (equationsAndInequations.isEmpty()) {
+                return F.NIL;
+              }
               try {
+                if (equationsAndInequations.isFreeAST(x -> x.equals(S.Power))) {
+                  // call choco solver
+                  try {
+                    IAST resultList =
+                        ChocoConvert.integerSolve(
+                            equationsAndInequations,
+                            equationVariables,
+                            userDefinedVariables,
+                            engine);
+                    if (resultList.isPresent()) {
+                      EvalAttributes.sort((IASTMutable) resultList);
+                      return resultList;
+                    }
+                  } catch (RuntimeException rex) {
+                    // try 2nd solver
+                  }
+                }
                 // call cream solver
-                // ChocoConvert converter = new ChocoConvert();
                 CreamConvert converter = new CreamConvert();
                 IAST resultList =
                     converter.integerSolve(
                         equationsAndInequations, equationVariables, userDefinedVariables, engine);
-                EvalAttributes.sort((IASTMutable) resultList);
-                return resultList;
+                if (resultList.isPresent()) {
+                  EvalAttributes.sort((IASTMutable) resultList);
+                  return resultList;
+                }
               } catch (LimitException le) {
-                if (FEConfig.SHOW_STACKTRACE) {
+                if (Config.SHOW_STACKTRACE) {
                   le.printStackTrace();
                 }
                 throw le;
               } catch (RuntimeException rex) {
-                if (FEConfig.SHOW_STACKTRACE) {
+                if (Config.SHOW_STACKTRACE) {
                   rex.printStackTrace();
                 }
                 return engine.printMessage(
@@ -1096,18 +1117,18 @@ public class Solve extends AbstractFunctionEvaluator {
         return checkDomain(result, domain);
       }
     } catch (LimitException le) {
-      if (FEConfig.SHOW_STACKTRACE) {
+      if (Config.SHOW_STACKTRACE) {
         le.printStackTrace();
       }
       return IOFunctions.printMessage(S.Solve, le, engine);
     } catch (ValidateException ve) {
-      if (FEConfig.SHOW_STACKTRACE) {
+      if (Config.SHOW_STACKTRACE) {
         ve.printStackTrace();
       }
       return IOFunctions.printMessage(S.Solve, ve, engine);
       //      return engine.printMessage(S.Solve, ve);
     } catch (RuntimeException rex) {
-      if (FEConfig.SHOW_STACKTRACE) {
+      if (Config.SHOW_STACKTRACE) {
         rex.printStackTrace();
       }
     }
@@ -1309,7 +1330,7 @@ public class Solve extends AbstractFunctionEvaluator {
         termsEqualZeroList = list;
       }
     } catch (JASConversionException e) {
-      if (FEConfig.SHOW_STACKTRACE) {
+      if (Config.SHOW_STACKTRACE) {
         e.printStackTrace();
       }
     }
@@ -1467,18 +1488,16 @@ public class Solve extends AbstractFunctionEvaluator {
         }
       }
       if (subSolutionSet.size() > 0) {
-        IASTAppendable list = F.ListAlloc(subSolutionSet.size());
-        list.appendAll(subSolutionSet);
-        return list;
+        return F.ListAlloc(subSolutionSet);
       }
       return resultList;
     } catch (LimitException le) {
-      if (FEConfig.SHOW_STACKTRACE) {
+      if (Config.SHOW_STACKTRACE) {
         le.printStackTrace();
       }
       throw le;
     } catch (RuntimeException rex) {
-      if (FEConfig.SHOW_STACKTRACE) {
+      if (Config.SHOW_STACKTRACE) {
         rex.printStackTrace();
       }
     }

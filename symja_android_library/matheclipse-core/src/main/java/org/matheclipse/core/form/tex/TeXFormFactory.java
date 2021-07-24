@@ -1381,7 +1381,7 @@ public class TeXFormFactory {
       }
       return true;
     } catch (RuntimeException rex) {
-      if (FEConfig.SHOW_STACKTRACE) {
+      if (Config.SHOW_STACKTRACE) {
         rex.printStackTrace();
       }
     } catch (OutOfMemoryError oome) {

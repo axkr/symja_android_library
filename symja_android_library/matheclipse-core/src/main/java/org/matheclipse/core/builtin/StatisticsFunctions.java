@@ -56,7 +56,6 @@ import org.matheclipse.core.interfaces.IStringX;
 import org.matheclipse.core.interfaces.ISymbol;
 import org.matheclipse.core.reflection.system.rules.QuantileRules;
 import org.matheclipse.core.reflection.system.rules.StandardDeviationRules;
-import org.matheclipse.parser.client.FEConfig;
 
 public class StatisticsFunctions {
   // avoid result -Infinity when reference is close to 1.0
@@ -242,7 +241,7 @@ public class StatisticsFunctions {
             }
           }
         } catch (Exception ex) {
-          if (FEConfig.SHOW_STACKTRACE) {
+          if (Config.SHOW_STACKTRACE) {
             ex.printStackTrace();
           }
         }
@@ -472,7 +471,7 @@ public class StatisticsFunctions {
             }
           }
         } catch (Exception ex) {
-          if (FEConfig.SHOW_STACKTRACE) {
+          if (Config.SHOW_STACKTRACE) {
             ex.printStackTrace();
           }
         }
@@ -905,7 +904,7 @@ public class StatisticsFunctions {
       } catch (ValidateException ve) {
         return engine.printMessage(ast.topHead(), ve);
       } catch (ArithmeticException rex) {
-        if (FEConfig.SHOW_STACKTRACE) {
+        if (Config.SHOW_STACKTRACE) {
           rex.printStackTrace();
         }
       }
@@ -3111,7 +3110,7 @@ public class StatisticsFunctions {
       } catch (final ValidateException ve) {
         return engine.printMessage(ast.topHead(), ve);
       } catch (final IndexOutOfBoundsException e) {
-        if (FEConfig.SHOW_STACKTRACE) {
+        if (Config.SHOW_STACKTRACE) {
           e.printStackTrace();
         }
       }
@@ -3630,7 +3629,7 @@ public class StatisticsFunctions {
             }
           }
         } catch (Exception ex) {
-          if (FEConfig.SHOW_STACKTRACE) {
+          if (Config.SHOW_STACKTRACE) {
             ex.printStackTrace();
           }
         }
@@ -4302,7 +4301,7 @@ public class StatisticsFunctions {
           return getDistribution(arg1).mean((IAST) arg1);
         }
       } catch (Exception ex) {
-        if (FEConfig.SHOW_STACKTRACE) {
+        if (Config.SHOW_STACKTRACE) {
           ex.printStackTrace();
         }
       }
@@ -5114,7 +5113,7 @@ public class StatisticsFunctions {
             }
           }
         } catch (Exception ex) {
-          if (FEConfig.SHOW_STACKTRACE) {
+          if (Config.SHOW_STACKTRACE) {
             ex.printStackTrace();
           }
         }
@@ -5218,7 +5217,7 @@ public class StatisticsFunctions {
             }
           }
         } catch (Exception ex) {
-          if (FEConfig.SHOW_STACKTRACE) {
+          if (Config.SHOW_STACKTRACE) {
             ex.printStackTrace();
           }
         }
@@ -5508,7 +5507,7 @@ public class StatisticsFunctions {
                 }
               }
             } catch (ArithmeticException ae) {
-              if (FEConfig.SHOW_STACKTRACE) {
+              if (Config.SHOW_STACKTRACE) {
                 ae.printStackTrace();
               }
             }
@@ -5629,7 +5628,7 @@ public class StatisticsFunctions {
           } catch (ValidateException ve) {
             return engine.printMessage(ast.topHead(), ve);
           } catch (RuntimeException ex) {
-            if (FEConfig.SHOW_STACKTRACE) {
+            if (Config.SHOW_STACKTRACE) {
               ex.printStackTrace();
             }
             return engine.printMessage("RandomVariate: " + ex.getMessage());
@@ -6512,7 +6511,7 @@ public class StatisticsFunctions {
             }
           }
         } catch (Exception ex) {
-          if (FEConfig.SHOW_STACKTRACE) {
+          if (Config.SHOW_STACKTRACE) {
             ex.printStackTrace();
           }
         }

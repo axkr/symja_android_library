@@ -16,6 +16,7 @@ import org.matheclipse.core.interfaces.IComplex;
 import org.matheclipse.core.interfaces.IComplexNum;
 import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.interfaces.IInteger;
+import org.matheclipse.core.interfaces.INum;
 import org.matheclipse.core.interfaces.INumber;
 import org.matheclipse.core.interfaces.ISignedNumber;
 import org.matheclipse.core.interfaces.ISymbol;
@@ -194,10 +195,34 @@ public class ApcomplexNum implements IComplexNum {
   }
 
   @Override
-  public IComplexNum pow(final IComplexNum val) {
-    return valueOf(EvalEngine.getApfloat().pow(fApcomplex, val.apcomplexValue()));
+  public IExpr multiply(final IExpr that) {
+    if (that instanceof IComplexNum) {
+      return valueOf(
+          EvalEngine.getApfloat().multiply(fApcomplex, ((IComplexNum) that).apcomplexValue()));
+    }
+    if (that instanceof INum) {
+      return valueOf(EvalEngine.getApfloat().multiply(fApcomplex, ((INum) that).apcomplexValue()));
+    }
+    return IComplexNum.super.multiply(that);
   }
 
+  @Override
+  public IComplexNum pow(final IComplexNum val) {
+    return valueOf(EvalEngine.getApfloat().pow(fApcomplex, val.apcomplexValue()));
+  } 
+
+  @Override
+  public IExpr power(final IExpr that) {
+    if (that instanceof IComplexNum) {
+      return valueOf(
+          EvalEngine.getApfloat().pow(fApcomplex, ((IComplexNum) that).apcomplexValue()));
+    }
+    if (that instanceof INum) {
+      return valueOf(EvalEngine.getApfloat().pow(fApcomplex, ((INum) that).apcomplexValue()));
+    }
+    return IComplexNum.super.power(that);
+  }
+  
   /** @return */
   @Override
   public IComplexNum conjugate() {
@@ -221,6 +246,18 @@ public class ApcomplexNum implements IComplexNum {
   @Override
   public IComplexNum divide(final IComplexNum val) {
     return valueOf(EvalEngine.getApfloat().divide(fApcomplex, val.apcomplexValue()));
+  }
+
+  @Override
+  public IExpr divide(final IExpr that) {
+    if (that instanceof IComplexNum) {
+      return valueOf(
+          EvalEngine.getApfloat().divide(fApcomplex, ((IComplexNum) that).apcomplexValue()));
+    }
+    if (that instanceof INum) {
+      return valueOf(EvalEngine.getApfloat().divide(fApcomplex, ((INum) that).apcomplexValue()));
+    }
+    return IComplexNum.super.divide(that);
   }
 
   @Override
@@ -340,18 +377,12 @@ public class ApcomplexNum implements IComplexNum {
    */
   @Override
   public IExpr plus(final IExpr that) {
-    if (that instanceof ApcomplexNum) {
-      return valueOf(EvalEngine.getApfloat().add(fApcomplex, ((ApcomplexNum) that).fApcomplex));
+    if (that instanceof IComplexNum) {
+      return valueOf(
+          EvalEngine.getApfloat().add(fApcomplex, ((IComplexNum) that).apcomplexValue()));
     }
-    if (that instanceof ApfloatNum) {
-      return add(ApcomplexNum.valueOf(((ApfloatNum) that).fApfloat, Apcomplex.ZERO));
-    }
-    if (that instanceof Num) {
-      return add(ApcomplexNum.valueOf(((Num) that).getRealPart()));
-    }
-    if (that instanceof ComplexNum) {
-      ComplexNum cn = (ComplexNum) that;
-      return add(ApcomplexNum.valueOf(cn.getRealPart(), cn.getImaginaryPart()));
+    if (that instanceof INum) {
+      return valueOf(EvalEngine.getApfloat().add(fApcomplex, ((INum) that).apcomplexValue()));
     }
     return IComplexNum.super.plus(that);
   }
@@ -395,8 +426,8 @@ public class ApcomplexNum implements IComplexNum {
       return multiply(ApcomplexNum.valueOf(((Num) that).getRealPart()));
     }
     if (that instanceof ComplexNum) {
-      ComplexNum cn = (ComplexNum) that;
-      return multiply(ApcomplexNum.valueOf(cn.getRealPart(), cn.getImaginaryPart()));
+      return valueOf(
+          EvalEngine.getApfloat().multiply(fApcomplex, ((ComplexNum) that).apcomplexValue()));
     }
     return IComplexNum.super.times(that);
   }
@@ -461,8 +492,7 @@ public class ApcomplexNum implements IComplexNum {
       if (expr instanceof ApcomplexNum) {
         return compareTo(((ApcomplexNum) expr).fApcomplex);
       }
-      Apcomplex apc = ((INumber) expr).apcomplexValue();
-      return compareTo(apc);
+      return compareTo(((INumber) expr).apcomplexValue());
     }
     return -1;
     // return IComplexNum.super.compareTo(expr);
@@ -835,6 +865,18 @@ public class ApcomplexNum implements IComplexNum {
   @Override
   public IExpr subtract(double value) {
     return valueOf(EvalEngine.getApfloat().subtract(fApcomplex, new Apfloat(value)));
+  }
+
+  @Override
+  public IExpr subtract(final IExpr that) {
+    if (that instanceof IComplexNum) {
+      return valueOf(
+          EvalEngine.getApfloat().subtract(fApcomplex, ((IComplexNum) that).apcomplexValue()));
+    }
+    if (that instanceof INum) {
+      return valueOf(EvalEngine.getApfloat().subtract(fApcomplex, ((INum) that).apcomplexValue()));
+    }
+    return IComplexNum.super.subtract(that);
   }
 
   @Override

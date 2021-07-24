@@ -903,7 +903,7 @@ public class ExprEvaluatorTests extends TestCase {
           running.set(false);
         }
         if (running.get()) {
-          System.err.println("SLOW: " + str);
+          System.err.println("SLOW: " + str); 
         }
       }
     }

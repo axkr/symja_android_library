@@ -21,7 +21,6 @@ import org.matheclipse.core.expression.F;
 import org.matheclipse.core.expression.S;
 import org.matheclipse.core.form.output.OutputFormFactory;
 import org.matheclipse.core.interfaces.IExpr;
-import org.matheclipse.parser.client.FEConfig;
 import org.matheclipse.parser.client.SyntaxError;
 import org.matheclipse.parser.client.math.MathException;
 
@@ -75,7 +74,7 @@ public class MathScriptEngine extends AbstractScriptEngine {
   public Object eval(final String script, final ScriptContext context) throws ScriptException {
     // final ArrayList<ISymbol> list = new ArrayList<ISymbol>();
     boolean relaxedSyntax = false;
-    boolean showStackTrace = FEConfig.SHOW_STACKTRACE;
+    boolean showStackTrace = Config.SHOW_STACKTRACE;
     final Object enableStackTraceBoolean = get("PRINT_STACKTRACE");
     if (Boolean.TRUE.equals(enableStackTraceBoolean)) {
       showStackTrace = true;

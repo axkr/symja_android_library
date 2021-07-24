@@ -213,6 +213,8 @@ public class ASTDataset extends AbstractAST
       return F.num(dValue);
     } else if (t.equals(ColumnType.STRING)) {
       return F.stringx((String) obj);
+    } else if (t.equals(ColumnType.EXPR)) {
+      return (IExpr) obj;
       // } else if (t.equals(ColumnType.SKIP)) {
       // ruleCache(cache, assoc, F.Rule(colName, F.Missing));
     }

@@ -15,7 +15,11 @@
 package tech.tablesaw.io.csv;
 
 import com.univocity.parsers.csv.CsvWriterSettings;
+import java.time.format.DateTimeFormatter;
 import javax.annotation.concurrent.Immutable;
+import tech.tablesaw.api.ColumnType;
+import tech.tablesaw.api.DateColumn;
+import tech.tablesaw.api.DateTimeColumn;
 import tech.tablesaw.api.Table;
 import tech.tablesaw.io.DataWriter;
 import tech.tablesaw.io.Destination;
@@ -46,26 +50,50 @@ public final class CsvWriter implements DataWriter<CsvWriteOptions> {
       csvWriter =
           new com.univocity.parsers.csv.CsvWriter(options.destination().createWriter(), settings);
 
-      if (options.header()) {
-        String[] header = new String[table.columnCount()];
-        for (int c = 0; c < table.columnCount(); c++) {
-          header[c] = table.column(c).name();
-        }
-        csvWriter.writeHeaders(header);
-      }
+      writeHeader(table, options, csvWriter);
       for (int r = 0; r < table.rowCount(); r++) {
         String[] entries = new String[table.columnCount()];
         for (int c = 0; c < table.columnCount(); c++) {
-          table.get(r, c);
-          entries[c] = table.getUnformatted(r, c);
+          writeValues(table, options, r, entries, c);
         }
         csvWriter.writeRow(entries);
       }
     } finally {
       if (csvWriter != null) {
         csvWriter.flush();
-        csvWriter.close();
+        if (options.autoClose()) csvWriter.close();
       }
+    }
+  }
+
+  private void writeValues(Table table, CsvWriteOptions options, int r, String[] entries, int c) {
+    DateTimeFormatter dateFormatter = options.dateFormatter();
+    DateTimeFormatter dateTimeFormatter = options.dateTimeFormatter();
+    ColumnType columnType = table.column(c).type();
+    if (dateFormatter != null && columnType.equals(ColumnType.LOCAL_DATE)) {
+      DateColumn dc = (DateColumn) table.column(c);
+      entries[c] = options.dateFormatter().format(dc.get(r));
+    } else if (dateTimeFormatter != null && columnType.equals(ColumnType.LOCAL_DATE_TIME)) {
+      DateTimeColumn dc = (DateTimeColumn) table.column(c);
+      entries[c] = options.dateTimeFormatter().format(dc.get(r));
+    } else {
+      if (options.usePrintFormatters()) {
+        entries[c] = table.getString(r, c);
+      } else {
+        entries[c] = table.getUnformatted(r, c);
+      }
+    }
+  }
+
+  private void writeHeader(
+      Table table, CsvWriteOptions options, com.univocity.parsers.csv.CsvWriter csvWriter) {
+    if (options.header()) {
+      String[] header = new String[table.columnCount()];
+      for (int c = 0; c < table.columnCount(); c++) {
+        String name = table.column(c).name();
+        header[c] = options.columnNameMap().getOrDefault(name, name);
+      }
+      csvWriter.writeHeaders(header);
     }
   }
 

@@ -19,8 +19,8 @@ public class IExprParser extends AbstractColumnParser<IExpr> {
 
   public IExprParser(ExprColumnType exprColumnType, ReadOptions readOptions) {
     super(exprColumnType);
-    if (readOptions.missingValueIndicator() != null) {
-      missingValueStrings = Lists.newArrayList(readOptions.missingValueIndicator());
+    if (readOptions.missingValueIndicators() != null) {
+      missingValueStrings = Lists.newArrayList(readOptions.missingValueIndicators());
     }
   }
 

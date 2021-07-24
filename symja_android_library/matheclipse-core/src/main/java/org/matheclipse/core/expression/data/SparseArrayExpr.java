@@ -38,7 +38,6 @@ import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.interfaces.ISparseArray;
 import org.matheclipse.core.patternmatching.IPatternMap;
 import org.matheclipse.core.patternmatching.PatternMatcherAndEvaluator;
-import org.matheclipse.parser.client.FEConfig;
 import org.matheclipse.parser.trie.Trie;
 import org.matheclipse.parser.trie.TrieNode;
 
@@ -964,7 +963,7 @@ public class SparseArrayExpr extends DataExpr<Trie<int[], IExpr>>
         }
         return result;
       } catch (RuntimeException rex) {
-        if (FEConfig.SHOW_STACKTRACE) {
+        if (Config.SHOW_STACKTRACE) {
           rex.printStackTrace();
         }
       }

@@ -7,7 +7,6 @@ import org.matheclipse.parser.trie.TrieBuilder;
 
 /** Frontend configuration */
 public class FEConfig {
-
   /** Show the stack trace, if an exception is thrown in evaluation */
   public static final boolean SHOW_STACKTRACE = false;
 

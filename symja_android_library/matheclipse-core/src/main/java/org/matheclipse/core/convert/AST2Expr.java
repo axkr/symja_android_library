@@ -1148,6 +1148,7 @@ public class AST2Expr {
     "RootIntervals",
     "Root",
     "RootOf",
+    "RootReduce",
     "Roots",
     "RotateLeft",
     "RotateRight",
@@ -1855,7 +1856,7 @@ public class AST2Expr {
           break;
       }
     } catch (ValidateException ve) {
-      if (FEConfig.SHOW_STACKTRACE) {
+      if (Config.SHOW_STACKTRACE) {
         ve.printStackTrace();
       }
     }

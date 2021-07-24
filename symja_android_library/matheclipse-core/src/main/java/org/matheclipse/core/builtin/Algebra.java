@@ -65,7 +65,6 @@ import org.matheclipse.core.polynomials.longexponent.ExprPolynomial;
 import org.matheclipse.core.polynomials.longexponent.ExprPolynomialRing;
 import org.matheclipse.core.polynomials.longexponent.ExprRingFactory;
 import org.matheclipse.core.visit.VisitorExpr;
-import org.matheclipse.parser.client.FEConfig;
 
 import com.google.common.math.LongMath;
 
@@ -715,7 +714,7 @@ public class Algebra {
           }
           return result;
         } catch (JASConversionException e) {
-          if (FEConfig.SHOW_STACKTRACE) {
+          if (Config.SHOW_STACKTRACE) {
             e.printStackTrace();
           }
         }
@@ -903,7 +902,7 @@ public class Algebra {
           }
           return arg1;
         } catch (Exception e) {
-          if (FEConfig.SHOW_STACKTRACE) {
+          if (Config.SHOW_STACKTRACE) {
             e.printStackTrace();
           }
         }
@@ -2227,7 +2226,7 @@ public class Algebra {
           }
         } catch (RuntimeException rex) {
           // System.out.println("Factor failed: " + expr.toString());
-          if (FEConfig.SHOW_STACKTRACE) {
+          if (Config.SHOW_STACKTRACE) {
             rex.printStackTrace();
           }
           return expr;
@@ -2902,7 +2901,7 @@ public class Algebra {
           }
           return F.NIL;
         } catch (RuntimeException rex) {
-          if (FEConfig.SHOW_STACKTRACE) {
+          if (Config.SHOW_STACKTRACE) {
             rex.printStackTrace();
           }
         }
@@ -3233,7 +3232,7 @@ public class Algebra {
             return jas.integerPoly2Expr(poly.monic());
           }
         } catch (ClassCastException | JASConversionException e) {
-          if (FEConfig.SHOW_STACKTRACE) {
+          if (Config.SHOW_STACKTRACE) {
             e.printStackTrace();
           }
           IAST list = ast.setAtCopy(0, S.List);
@@ -3498,7 +3497,7 @@ public class Algebra {
         } catch (LimitException le) {
           throw le;
         } catch (RuntimeException rex) {
-          if (FEConfig.SHOW_STACKTRACE) {
+          if (Config.SHOW_STACKTRACE) {
             rex.printStackTrace();
           }
         }
@@ -3570,7 +3569,7 @@ public class Algebra {
         F.REMEMBER_AST_CACHE.put(ast, result);
         return result;
       } catch (RuntimeException rex) {
-        if (FEConfig.SHOW_STACKTRACE) {
+        if (Config.SHOW_STACKTRACE) {
           rex.printStackTrace();
         }
         return F.NIL;
@@ -3685,7 +3684,7 @@ public class Algebra {
         }
         return result[1];
       } catch (RuntimeException rex) {
-        if (FEConfig.SHOW_STACKTRACE) {
+        if (Config.SHOW_STACKTRACE) {
           rex.printStackTrace();
         }
         return F.NIL;
@@ -4176,7 +4175,7 @@ public class Algebra {
               }
             }
           } catch (JASConversionException e2) {
-            if (FEConfig.SHOW_STACKTRACE) {
+            if (Config.SHOW_STACKTRACE) {
               e2.printStackTrace();
             }
           }
@@ -4757,7 +4756,7 @@ public class Algebra {
       result[2] = substitutions.replaceBackward(result[2]);
       return result;
     } catch (RuntimeException e) {
-      if (FEConfig.SHOW_STACKTRACE) {
+      if (Config.SHOW_STACKTRACE) {
         e.printStackTrace();
       }
     }
@@ -4943,7 +4942,7 @@ public class Algebra {
         return factorRational(polyRat, jas, head);
       }
     } catch (RuntimeException rex) {
-      if (FEConfig.SHOW_STACKTRACE) {
+      if (Config.SHOW_STACKTRACE) {
         rex.printStackTrace();
       }
     }

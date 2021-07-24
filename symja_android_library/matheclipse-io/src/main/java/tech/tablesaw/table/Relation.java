@@ -14,14 +14,13 @@
 
 package tech.tablesaw.table;
 
+import it.unimi.dsi.fastutil.ints.IntArrays;
+import it.unimi.dsi.fastutil.ints.IntComparators;
 import java.io.ByteArrayOutputStream;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.stream.Collectors;
-
-import it.unimi.dsi.fastutil.ints.IntArrays;
-import it.unimi.dsi.fastutil.ints.IntComparators;
 import tech.tablesaw.api.BooleanColumn;
 import tech.tablesaw.api.CategoricalColumn;
 import tech.tablesaw.api.ColumnType;
@@ -304,15 +303,13 @@ public abstract class Relation implements Iterable<Row> {
   }
 
   public StringColumn[] stringColumns() {
-    return columns()
-        .stream()
+    return columns().stream()
         .filter(e -> e.type() == ColumnType.STRING)
         .toArray(StringColumn[]::new);
   }
 
   public NumericColumn<?>[] numberColumns() {
-    return columns()
-        .stream()
+    return columns().stream()
         .filter(e -> e instanceof NumericColumn<?>)
         .toArray(NumericColumn[]::new);
   }
@@ -343,36 +340,31 @@ public abstract class Relation implements Iterable<Row> {
   }
 
   public BooleanColumn[] booleanColumns() {
-    return columns()
-        .stream()
+    return columns().stream()
         .filter(e -> e.type() == ColumnType.BOOLEAN)
         .toArray(BooleanColumn[]::new);
   }
 
   public DateColumn[] dateColumns() {
-    return columns()
-        .stream()
+    return columns().stream()
         .filter(e -> e.type() == ColumnType.LOCAL_DATE)
         .toArray(DateColumn[]::new);
   }
 
   public DateTimeColumn[] dateTimeColumns() {
-    return columns()
-        .stream()
+    return columns().stream()
         .filter(e -> e.type() == ColumnType.LOCAL_DATE_TIME)
         .toArray(DateTimeColumn[]::new);
   }
 
   public InstantColumn[] instantColumns() {
-    return columns()
-        .stream()
+    return columns().stream()
         .filter(e -> e.type() == ColumnType.INSTANT)
         .toArray(InstantColumn[]::new);
   }
 
   public TimeColumn[] timeColumns() {
-    return columns()
-        .stream()
+    return columns().stream()
         .filter(e -> e.type() == ColumnType.LOCAL_TIME)
         .toArray(TimeColumn[]::new);
   }
@@ -496,9 +488,9 @@ public abstract class Relation implements Iterable<Row> {
     return new TableConverter(this);
   }
 
-  // public SmileConverter smile() {
-  // return new SmileConverter(this);
-  // }
+//  public SmileConverter smile() {
+//    return new SmileConverter(this);
+//  }
 
   /**
    * Returns a string representation of the value at the given row and column indexes

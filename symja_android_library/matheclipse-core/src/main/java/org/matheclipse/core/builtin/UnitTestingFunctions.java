@@ -25,7 +25,6 @@ import org.matheclipse.core.interfaces.IAssociation;
 import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.interfaces.IStringX;
 import org.matheclipse.core.interfaces.ISymbol;
-import org.matheclipse.parser.client.FEConfig;
 import org.matheclipse.parser.client.ast.ASTNode;
 
 import com.google.common.io.Files;
@@ -80,7 +79,7 @@ public class UnitTestingFunctions {
             url = new URL(arg1);
             return getURL(url, ast, engine);
           } catch (MalformedURLException mue) {
-            if (FEConfig.SHOW_STACKTRACE) {
+            if (Config.SHOW_STACKTRACE) {
               mue.printStackTrace();
             }
             // Cannot open `1`.
@@ -110,7 +109,7 @@ public class UnitTestingFunctions {
         String str = Files.asCharSource(file, Charset.defaultCharset()).read();
         return runTests(engine, str);
       } catch (IOException e) {
-        if (FEConfig.SHOW_STACKTRACE) {
+        if (Config.SHOW_STACKTRACE) {
           e.printStackTrace();
         }
         // Cannot open `1`.
@@ -127,7 +126,7 @@ public class UnitTestingFunctions {
         String str = Resources.toString(url, StandardCharsets.UTF_8);
         return runTests(engine, str);
       } catch (IOException e) {
-        if (FEConfig.SHOW_STACKTRACE) {
+        if (Config.SHOW_STACKTRACE) {
           e.printStackTrace();
         }
         // Cannot open `1`.
@@ -259,7 +258,7 @@ public class UnitTestingFunctions {
         assoc.appendRule(F.Rule("TestID", testID));
         return TestResultObjectExpr.newInstance(assoc);
       } catch (Exception ex) {
-        if (FEConfig.SHOW_STACKTRACE) {
+        if (Config.SHOW_STACKTRACE) {
           ex.printStackTrace();
         }
       }

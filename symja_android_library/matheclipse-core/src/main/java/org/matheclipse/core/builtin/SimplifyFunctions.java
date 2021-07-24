@@ -33,7 +33,6 @@ import org.matheclipse.core.patternmatching.hash.HashedOrderlessMatcherPlus;
 import org.matheclipse.core.patternmatching.hash.HashedPatternRules;
 import org.matheclipse.core.visit.AbstractVisitorBoolean;
 import org.matheclipse.core.visit.VisitorExpr;
-import org.matheclipse.parser.client.FEConfig;
 
 public class SimplifyFunctions {
   /**
@@ -740,7 +739,7 @@ public class SimplifyFunctions {
             }
 
           } catch (RuntimeException rex) {
-            if (FEConfig.SHOW_STACKTRACE) {
+            if (Config.SHOW_STACKTRACE) {
               rex.printStackTrace();
             }
           }

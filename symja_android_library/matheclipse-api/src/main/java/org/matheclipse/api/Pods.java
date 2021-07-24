@@ -46,7 +46,6 @@ import org.matheclipse.core.interfaces.IInteger;
 import org.matheclipse.core.interfaces.IStringX;
 import org.matheclipse.core.interfaces.ISymbol;
 import org.matheclipse.core.parser.ExprParser;
-import org.matheclipse.parser.client.FEConfig;
 import org.matheclipse.parser.client.SyntaxError;
 import org.matheclipse.parser.trie.Trie;
 import org.matheclipse.parser.trie.TrieBuilder;
@@ -659,7 +658,7 @@ public class Pods {
                   + "\" style=\"display: block; width: 100%; height: 100%; border: none;\" ></iframe>";
           json.put(MATHCELL_STR, html);
         } catch (Exception ex) {
-          if (FEConfig.SHOW_STACKTRACE) {
+          if (Config.SHOW_STACKTRACE) {
             ex.printStackTrace();
           }
         }
@@ -680,7 +679,7 @@ public class Pods {
                   + "\" style=\"display: block; width: 100%; height: 100%; border: none;\" ></iframe>";
           json.put(JSXGRAPH_STR, html);
         } catch (Exception ex) {
-          if (FEConfig.SHOW_STACKTRACE) {
+          if (Config.SHOW_STACKTRACE) {
             ex.printStackTrace();
           }
         }
@@ -702,7 +701,7 @@ public class Pods {
                   + "\" style=\"display: block; width: 100%; height: 100%; border: none;\" ></iframe>";
           json.put(PLOTLY_STR, html);
         } catch (Exception ex) {
-          if (FEConfig.SHOW_STACKTRACE) {
+          if (Config.SHOW_STACKTRACE) {
             ex.printStackTrace();
           }
         }
@@ -747,7 +746,7 @@ public class Pods {
                   + "\" style=\"display: block; width: 100%; height: 100%; border: none;\" ></iframe>";
           json.put(VISJS_STR, html);
         } catch (Exception ex) {
-          if (FEConfig.SHOW_STACKTRACE) {
+          if (Config.SHOW_STACKTRACE) {
             ex.printStackTrace();
           }
         }
@@ -866,7 +865,7 @@ public class Pods {
         }
       } catch (SyntaxError serr) {
         // this includes syntax errors
-        if (FEConfig.SHOW_STACKTRACE) {
+        if (Config.SHOW_STACKTRACE) {
           serr.printStackTrace();
         }
         return errorJSON("0", serr.getMessage());
@@ -1236,10 +1235,9 @@ public class Pods {
                 if (outExpr.isAST(S.Equal, 3)) {
                   IExpr arg1 = outExpr.first();
                   IExpr arg2 = outExpr.second();
-                  if (arg1.isNumericFunction(varSet)
-                      && //
-                      arg2.isNumericFunction(varSet)) {
-                    if (variables.size() == 2) {
+                  if (arg1.isNumericFunction(varSet) //
+                      && arg2.isNumericFunction(varSet)) {
+                    if (variables.argSize() == 1) {
                       IExpr plot2D =
                           F.Plot(
                               F.List(arg1, arg2), F.List(variables.arg1(), F.num(-20), F.num(20)));
@@ -1358,10 +1356,8 @@ public class Pods {
                     inExpr = F.Minimize(outExpr, x);
                     podOut = engine.evaluate(inExpr);
                     if (podOut.isAST(S.List, 3)
-                        && //
-                        podOut.first().isNumber()
-                        && //
-                        podOut.second().isAST(S.List, 2)) {
+                        && podOut.first().isNumber()
+                        && podOut.second().isAST(S.List, 2)) {
                       IExpr rule = podOut.second().first();
                       if (rule.isRule()) {
                         StringBuilder buf = new StringBuilder();
@@ -1389,10 +1385,8 @@ public class Pods {
                     inExpr = F.Maximize(outExpr, x);
                     podOut = engine.evaluate(inExpr);
                     if (podOut.isAST(S.List, 3)
-                        && //
-                        podOut.first().isNumber()
-                        && //
-                        podOut.second().isAST(S.List, 2)) {
+                        && podOut.first().isNumber()
+                        && podOut.second().isAST(S.List, 2)) {
                       IExpr rule = podOut.second().first();
                       if (rule.isRule()) {
                         StringBuilder buf = new StringBuilder();
@@ -1930,7 +1924,7 @@ public class Pods {
       inExpr = parser.parseFuzzyList(inputStr);
     } catch (SyntaxError serr) {
       // this includes syntax errors
-      if (FEConfig.SHOW_STACKTRACE) {
+      if (Config.SHOW_STACKTRACE) {
         serr.printStackTrace();
       }
       TeXParser texConverter = new TeXParser(engine);
@@ -2144,7 +2138,7 @@ public class Pods {
               + "\" style=\"display: block; width: 100%; height: 100%; border: none;\" ></iframe>";
       return html;
     } catch (Exception ex) {
-      if (FEConfig.SHOW_STACKTRACE) {
+      if (Config.SHOW_STACKTRACE) {
         ex.printStackTrace();
       }
     }

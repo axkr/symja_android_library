@@ -1017,7 +1017,7 @@ public class OutputFormFactory {
     try {
       convert(buf, o, Integer.MIN_VALUE, false);
     } catch (IOException e) {
-      if (FEConfig.SHOW_STACKTRACE) {
+      if (Config.SHOW_STACKTRACE) {
         e.printStackTrace();
       }
     }
@@ -1035,7 +1035,7 @@ public class OutputFormFactory {
       return true;
     } catch (IOException ioe) {
     } catch (RuntimeException rex) {
-      if (FEConfig.SHOW_STACKTRACE) {
+      if (Config.SHOW_STACKTRACE) {
         rex.printStackTrace();
       }
     } catch (OutOfMemoryError oome) {
@@ -1198,8 +1198,8 @@ public class OutputFormFactory {
               }
               break;
             case ID.Parenthesis:
-                convertArgs(buf,S.Parenthesis, list);
-                return;
+              convertArgs(buf, S.Parenthesis, list);
+              return;
             case ID.List:
               convertList(buf, list, false);
               return;
@@ -1287,6 +1287,46 @@ public class OutputFormFactory {
                 convert(buf, list.arg1(), Integer.MIN_VALUE, false);
                 buf.append(":");
                 convert(buf, list.arg2(), Integer.MIN_VALUE, false);
+                return;
+              }
+              break;
+            case ID.Complex:
+              if (list.isAST2()) {
+                // used for visual comparison of steps
+                boolean isZeroRealPart = list.arg1().isZero();
+                final int prec = isZeroRealPart ? Precedence.TIMES : Precedence.PLUS;
+                if (prec < precedence) {
+                  append(buf, "(");
+                }
+                if (isZeroRealPart) {
+                	buf.append("I*");
+                    convert(buf, list.arg2(), Precedence.TIMES, false);
+                } else {
+                  convert(buf, list.arg1(), Precedence.PLUS, false);
+                  buf.append("+I*");
+                  convert(buf, list.arg2(), Precedence.TIMES, false);
+                }
+                if (prec < precedence) {
+                  append(buf, ")");
+                }
+                return;
+              }
+              break;
+            case ID.Rational:
+              if (list.isAST2()) {
+                // used for visual comparison of steps
+                IExpr numerator = list.arg1();
+                final boolean isNegative = numerator.isNegative();
+                final int prec = isNegative ? Precedence.PLUS : Precedence.TIMES;
+                if (prec < precedence) {
+                  append(buf, "(");
+                }
+                convert(buf, list.arg1(), Precedence.DIVIDE, false);
+                buf.append("/");
+                convert(buf, list.arg2(), Precedence.DIVIDE, false);
+                if (prec < precedence) {
+                  append(buf, ")");
+                }
                 return;
               }
               break;
