@@ -1086,11 +1086,49 @@ public class Solve extends AbstractFunctionEvaluator {
                   rex.printStackTrace();
                 }
                 return engine.printMessage(
-                    "Solve: " + "Integer solution not found: " + rex.getMessage());
+                    "Solve: " + "Integers solution not found: " + rex.getMessage());
               }
             }
             return F.NIL;
           }
+
+//          if (domain.equals(S.Reals)) {
+//            if (!userDefinedVariables.isEmpty()) {
+//              IAST equationsAndInequations = Validate.checkEquationsAndInequations(ast, 1);
+//              if (!equationsAndInequations.isEmpty()) {
+//                try {
+//                  // call choco solver
+//                  try {
+//                    IAST resultList =
+//                        ChocoConvert.realSolve(
+//                            equationsAndInequations,
+//                            equationVariables,
+//                            userDefinedVariables,
+//                            engine);
+//                    if (resultList.isPresent()) {
+//                      EvalAttributes.sort((IASTMutable) resultList);
+//                      return resultList;
+//                    }
+//                  } catch (RuntimeException rex) {
+//                    // try 2nd solver
+//                    rex.printStackTrace();
+//                  }
+//                } catch (LimitException le) {
+//                  if (Config.SHOW_STACKTRACE) {
+//                    le.printStackTrace();
+//                  }
+//                  throw le;
+//                } catch (RuntimeException rex) {
+//                  if (Config.SHOW_STACKTRACE) {
+//                    rex.printStackTrace();
+//                  }
+//                  return engine.printMessage(
+//                      "Solve: " + "Reals solution not found: " + rex.getMessage());
+//                }
+//              }
+//            }
+//          }
+
           if (!domain.equals(S.Reals) && !domain.equals(S.Complexes)) {
             return engine.printMessage(
                 ast.topHead()

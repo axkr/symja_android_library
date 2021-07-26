@@ -16607,10 +16607,9 @@ public class LowercaseTestCase extends AbstractTestCase {
   }
 
   public void testIntegrate() {
-    // TODO parsing - similar: \[Sqrt]x
-    // check(
-    // "\\[Integral]x^2 \\[DifferentialD]x", //
-    // "Integrate(Tan(x),Cos(x))");
+    check(
+        "Integrate(Cos(x^3), x)", //
+        "(-x*Gamma(1/3,-I*x^3))/(6*(-I*x^3)^(1/3))+(-x*Gamma(1/3,I*x^3))/(6*(I*x^3)^(1/3))");
     check(
         "Integrate(Round(1.235512+1.23787m, 0.01),m)", //
         "100000/123787*Rubi`subst[Integrate(Round(m,1/100),m),m,154439/125000+123787/\n"
@@ -33989,9 +33988,9 @@ public class LowercaseTestCase extends AbstractTestCase {
     check(
         "Solve(2 x + 3 y - 5 z == 1 && 3 x - 4 y + 7 z == 3, {x, y, z}, Integers)", //
         "{{x->-1129,y->32763,z->19206},{x->-1128,y->32734,z->19189},{x->-1127,y->32705,z->\n"
-        + "19172},{x->-1126,y->32676,z->19155},{x->-1125,y->32647,z->19138},{x->-1124,y-><<SHORT>>",
+            + "19172},{x->-1126,y->32676,z->19155},{x->-1125,y->32647,z->19138},{x->-1124,y-><<SHORT>>",
         160);
-  
+
     // check("Roots(x^4 == 1 - I, x)", //
     // "x==-(-1+I)^(1/4)||x==(-1+I)^(1/4)||x==I*(-1+I)^(1/4)||x==-I*(-1+I)^(1/4)");
     // check("Solve(x^3 == 1 - I, x)", //
@@ -34020,6 +34019,21 @@ public class LowercaseTestCase extends AbstractTestCase {
         "Solve({2*x + 3*y == 4, 3*x - 4*y <= 5,x - 2*y > -21}, {x,  y}, Integers)", //
         "{{x->-7,y->6},{x->-4,y->4},{x->-1,y->2}}");
   }
+
+//  public void testSolveReals() {
+//    check(
+//        "Solve(x^3 == 1, x, Reals)", //
+//        "{{x->1.0}}");
+//    check(
+//        "Solve({x > 0, y > 0, x^2 + 2*y^3 == 3681}, {x, y}, Reals)", //
+//        "{{x->26.43562,y->11.4244}}");
+//    check(
+//        "Solve({2*x + 3*y == 4, 3*x - 4*y <= 5,x - 2*y > -21}, {x,  y}, Reals)", //
+//        "{{x->0.666667,y->0.888889}}");
+//    check(
+//        "Solve(2*x + 3*y - 5*z == 1 && 3*x - 4*y + 7*z == 3, {x, y, z}, Reals)", //
+//        "{{x->0.745995,y->0.366124,z->0.318073}}");
+//  }
 
   public void testSolveIssue130() {
     check(
