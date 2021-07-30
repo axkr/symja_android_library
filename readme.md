@@ -1,5 +1,9 @@
 ## Symja Library - Java Symbolic Math System for Android NCalc calculator
 
+<p align="left">
+<a href="https://discord.gg/tYknzr2qam" target="blank"><img src="https://img.shields.io/discord/869895703718166529.svg?color=7289da&label=Symja&logo=discord&style=for-the-badge" alt="Symja" />
+</p>
+
 [![Join the chat at https://gitter.im/symja_android_library/Lobby](https://badges.gitter.im/symja_android_library/Lobby.svg)](https://gitter.im/symja_android_library/Lobby?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge) [![LGTM Alerts](https://img.shields.io/lgtm/alerts/bitbucket/axelclk/symja_android_library)](https://lgtm.com/projects/b/axelclk/symja_android_library) [![Gitpod ready-to-code](https://img.shields.io/badge/Gitpod-ready--to--code-blue?logo=gitpod)](https://gitpod.io/#https://github.com/axkr/symja_android_library)
 
 **Note**: this repository contains the **Java 8** version of the project. The [NCalc](https://github.com/tranleduy2000/ncalc) Android calculator project 
