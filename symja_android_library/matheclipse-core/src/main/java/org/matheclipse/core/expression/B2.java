@@ -1173,6 +1173,11 @@ public abstract class B2 extends AbstractAST implements Externalizable, RandomAc
     return SIZE;
   }
 
+  @Override
+  public final ISymbol topHead() {
+    return head();
+  }
+
   /**
    * Returns a new array containing all elements contained in this {@code ArrayList}.
    *

@@ -412,9 +412,6 @@ public class ComplexNum implements IComplexNum {
     if (engine.isNumericMode() && engine.isArbitraryMode()) {
       return ApcomplexNum.valueOf(getRealPart(), getImaginaryPart());
     }
-    // if (F.isZero(getImaginaryPart())) {
-    // return F.num(getRealPart());
-    // }
     return F.NIL;
   }
 

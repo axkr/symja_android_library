@@ -252,7 +252,7 @@ public abstract class B1 extends AbstractAST implements Externalizable, RandomAc
   }
 
   /**
-   * Create a function with two arguments (i.e. <code>head[arg1, arg2]</code> ).
+   * Create a function with one argument (i.e. <code>head[arg1, arg2]</code> ).
    *
    * @param arg1 the first argument of the function
    */
@@ -745,6 +745,11 @@ public abstract class B1 extends AbstractAST implements Externalizable, RandomAc
   @Override
   public IExpr[] toArray() {
     return new IExpr[] {head(), arg1};
+  }
+
+  @Override
+  public final ISymbol topHead() {
+    return head();
   }
 
   @Override
