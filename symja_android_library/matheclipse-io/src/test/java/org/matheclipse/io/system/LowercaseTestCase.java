@@ -3415,7 +3415,7 @@ public class LowercaseTestCase extends AbstractTestCase {
         "0.762626353743812501642456");
     check(
         "CarlsonRC(3, 1.2345678901234567890123456789012345)", //
-        "0.7626263537438125016424559135836887");
+        "0.76262635374381250164245591358368867");
     check(
         "CarlsonRC(y,y)", //
         "Piecewise({{ComplexInfinity,Re(y)<=0&&Im(y)==0}},1/Sqrt(y))");
@@ -22387,13 +22387,13 @@ public class LowercaseTestCase extends AbstractTestCase {
 
     check(
         "{Module({x}, x), Module({x}, x)}", //
-        "{x$15,x$16}");
+        "{x$14,x$15}");
     check(
         "Module({e = Expand((1 + x)^5)}, Function(x, e))", //
-        "Function(x$17,e$17)");
+        "Function(x$16,e$16)");
     check(
         "Module({a,b}, Block({c}, c+a))", //
-        "a$18+c");
+        "a$17+c");
 
     if (Config.SERVER_MODE == false) {
       check(
@@ -22436,7 +22436,7 @@ public class LowercaseTestCase extends AbstractTestCase {
         "6");
     check(
         "Module({x},Function(y,x+y))", //
-        "Function(y$26,x$26+y$26)");
+        "Function(y$25,x$25+y$25)");
     // check("Module({y},Function(y,x+y))",//
     // "x$22$23+y");
 
