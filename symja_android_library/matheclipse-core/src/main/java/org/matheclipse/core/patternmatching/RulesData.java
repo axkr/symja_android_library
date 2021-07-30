@@ -7,7 +7,6 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
-
 import org.matheclipse.core.basic.Config;
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.util.OpenIntToIExprHashMap;
@@ -17,11 +16,11 @@ import org.matheclipse.core.expression.S;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IASTAppendable;
 import org.matheclipse.core.interfaces.IExpr;
+import org.matheclipse.core.interfaces.IPatternObject;
 import org.matheclipse.core.interfaces.IStringX;
 import org.matheclipse.core.interfaces.ISymbol;
 import org.matheclipse.core.visit.AbstractVisitor;
 import org.matheclipse.parser.trie.TrieMatch;
-
 import it.unimi.dsi.fastutil.ints.IntArrayList;
 
 /**
@@ -67,11 +66,7 @@ public final class RulesData implements Serializable {
   }
 
   private static boolean isComplicatedPatternExpr(IExpr a1) {
-    if (a1.isBlank()) {
-      return true;
-    } else if (a1.isPattern()) {
-      return true;
-    } else if (a1.isPatternSequence(false)) {
+    if (a1 instanceof IPatternObject) {
       return true;
     } else if (a1.isASTOrAssociation()) {
 

@@ -11,8 +11,7 @@ import org.matheclipse.core.expression.F;
 import org.matheclipse.core.interfaces.IExpr;
 
 /** Interface for the pattern matcher */
-public abstract class IPatternMatcher
-    implements Cloneable, Predicate<IExpr>, Serializable { // Comparable<IPatternMatcher>,
+public abstract class IPatternMatcher implements Cloneable, Predicate<IExpr>, Serializable {
 
   public static class EquivalenceComparator implements Comparator<IPatternMatcher>, Serializable {
 
@@ -99,9 +98,6 @@ public abstract class IPatternMatcher
     v.fLhsExprToMatch = fLhsExprToMatch;
     return v;
   }
-  // public int determinePatterns() {
-  // return PatternMap.DEFAULT_RULE_PRIORITY;
-  // }
 
   @Override
   public boolean equals(Object obj) {
@@ -186,16 +182,6 @@ public abstract class IPatternMatcher
    */
   public IExpr getRHS() {
     return F.NIL;
-  }
-
-  /**
-   * Get the priority of the left-and-side of this pattern-matcher. Lower values have higher
-   * priorities.
-   *
-   * @return the priority
-   */
-  public long getRHSleafCountSimplify() {
-    return Long.MAX_VALUE;
   }
 
   @Override

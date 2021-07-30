@@ -1656,15 +1656,8 @@ public interface IPatternMap {
       int treeLevel) {
 
     int[] listEvalFlags = new int[] {IAST.NO_FLAG};
-    if (lhsPatternExpr.isAlternatives()
-        || //
-        lhsPatternExpr.isExcept()
-        || //
-        lhsPatternExpr.isRepeated()) {
+    if (lhsPatternExpr.isAlternatives() || lhsPatternExpr.isExcept()) {
       ruleWithoutPattern[0] = false;
-      if (lhsPatternExpr.isRepeated()) {
-        listEvalFlags[0] = IAST.CONTAINS_PATTERN_SEQUENCE;
-      }
     }
 
     lhsPatternExpr.forEach(

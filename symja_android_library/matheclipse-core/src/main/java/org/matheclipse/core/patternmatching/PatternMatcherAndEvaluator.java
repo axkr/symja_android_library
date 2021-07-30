@@ -4,7 +4,6 @@ import java.io.Externalizable;
 import java.io.IOException;
 import java.io.ObjectInput;
 import java.io.ObjectOutput;
-
 import org.matheclipse.core.basic.Config;
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.exception.ConditionException;
@@ -12,7 +11,6 @@ import org.matheclipse.core.eval.exception.ReturnException;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.expression.S;
 import org.matheclipse.core.interfaces.IAST;
-import org.matheclipse.core.interfaces.IASTAppendable;
 import org.matheclipse.core.interfaces.IEvalStepListener;
 import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.interfaces.ISymbol;
@@ -25,12 +23,6 @@ public class PatternMatcherAndEvaluator extends PatternMatcher implements Extern
   protected IExpr fRightHandSide;
 
   protected transient IExpr fReturnResult = F.NIL;
-
-  /**
-   * Leaf count of the right-hand-side of this matcher if it's a <code>Condition()</code> or <code>
-   * Module(...,Condition()) or With(...,Condition())</code> expression.
-   */
-  protected transient long fRHSleafCountSimplify;
 
   private int fSetFlags;
 
@@ -70,9 +62,9 @@ public class PatternMatcherAndEvaluator extends PatternMatcher implements Extern
     fSetFlags = setSymbol;
     fRightHandSide = rightHandSide;
     fPatterHash = patternHash;
-    if (initAll) {
-      initRHSleafCountSimplify();
-    }
+    //    if (initAll) {
+    //      initRHSleafCountSimplify();
+    //    }
   }
 
   /**
@@ -106,22 +98,6 @@ public class PatternMatcherAndEvaluator extends PatternMatcher implements Extern
   @Override
   public boolean isPatternHashAllowed(int patternHash) {
     return fPatterHash == 0 || fPatterHash == patternHash;
-  }
-
-  /**
-   * Calculate the leaf count of the right-hand-side of this matcher if it's a <code>Condition()
-   * </code> or <code>Module(...,Condition()) or With(...,Condition())</code> expression.
-   */
-  private void initRHSleafCountSimplify() {
-    fRHSleafCountSimplify = Long.MIN_VALUE;
-    if (fRightHandSide != null) {
-      if (fRightHandSide.isCondition()) {
-        fRHSleafCountSimplify = fRightHandSide.second().leafCountSimplify();
-      } else if (fRightHandSide.isModuleOrWithCondition()) {
-        IAST condition = (IAST) fRightHandSide.last();
-        fRHSleafCountSimplify = condition.second().leafCountSimplify();
-      }
-    }
   }
 
   @Override
@@ -400,17 +376,6 @@ public class PatternMatcherAndEvaluator extends PatternMatcher implements Extern
     return IExpr.ofNullable(fRightHandSide);
   }
 
-  /**
-   * Get the leaf count of the right-hand-side of this matcher if it's a <code>Condition()</code> or
-   * <code>Module(...,Condition()) or With(...,Condition())</code> expression.
-   *
-   * @return the leaf count
-   */
-  @Override
-  public long getRHSleafCountSimplify() {
-    return fRHSleafCountSimplify;
-  }
-
   public IAST getAsAST() {
     ISymbol setSymbol = getSetSymbol();
     IAST temp = F.binaryAST2(setSymbol, getLHS(), getRHS());
@@ -450,39 +415,6 @@ public class PatternMatcherAndEvaluator extends PatternMatcher implements Extern
     return null;
   }
 
-  @Override
-  int equivalent(final IPatternMatcher obj) {
-    // don't compare fSetSymbol here
-    int comp = super.equivalent(obj);
-    if (comp == 0) {
-      if (obj instanceof PatternMatcherAndEvaluator) {
-        // if (fLhsPatternExpr.equals(obj.fLhsPatternExpr)) {
-        // return 0;
-        // }
-        PatternMatcherAndEvaluator pm = (PatternMatcherAndEvaluator) obj;
-        if (fRightHandSide != null && pm.fRightHandSide != null) {
-          if (fRightHandSide.isCondition() || fRightHandSide.isModuleOrWithCondition()) {
-            if (pm.fRightHandSide.isCondition() || pm.fRightHandSide.isModuleOrWithCondition()) {
-              if (getRHSleafCountSimplify() < pm.getRHSleafCountSimplify()) {
-                return -1;
-              }
-              if (getRHSleafCountSimplify() > pm.getRHSleafCountSimplify()) {
-                return 1;
-              }
-              return equivalentRHS(
-                  fRightHandSide, pm.fRightHandSide, createPatternMap(), pm.createPatternMap());
-            }
-            return 1;
-          } else if (pm.fRightHandSide.isModuleOrWithCondition()
-              || pm.fRightHandSide.isCondition()) {
-            return -1;
-          }
-        }
-      }
-    }
-    return comp;
-  }
-
   /**
    * Set the evaluation flags for this list (i.e. replace all existing flags).
    *
@@ -517,7 +449,6 @@ public class PatternMatcherAndEvaluator extends PatternMatcher implements Extern
       int[] priority = new int[] {IPatternMap.DEFAULT_RULE_PRIORITY};
       this.fPatternMap = IPatternMap.determinePatterns(fLhsPatternExpr, priority, null);
     }
-    initRHSleafCountSimplify();
   }
 
   @Override

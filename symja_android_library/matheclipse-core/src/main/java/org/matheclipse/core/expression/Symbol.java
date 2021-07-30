@@ -881,12 +881,11 @@ public class Symbol implements ISymbol, Serializable {
       final IExpr rightHandSide,
       final int priority,
       boolean packageMode) {
-    EvalEngine engine = EvalEngine.get();
     if (!packageMode) {
       if (isLocked(packageMode)) {
         throw new RuleCreationError(leftHandSide);
       }
-      engine.addModifiedVariable(this);
+      EvalEngine.get().addModifiedVariable(this);
     }
     if (leftHandSide.isSymbol()) {
       assignValue(rightHandSide, false);
