@@ -287,43 +287,43 @@
 			<dependency>
 				<groupId>org.hipparchus</groupId>
 				<artifactId>hipparchus-clustering</artifactId>
-				<version>2.0-20210727.203307-57</version>
+				<version>2.0-20210730.210325-58</version>
 			</dependency>
 
 			<dependency>
 				<groupId>org.hipparchus</groupId>
 				<artifactId>hipparchus-core</artifactId>
-				<version>2.0-20210727.203216-57</version>
+				<version>2.0-20210730.210246-58</version>
 			</dependency>
 
 			<dependency>
 				<groupId>org.hipparchus</groupId>
 				<artifactId>hipparchus-fft</artifactId>
-				<version>2.0-20210727.203319-57</version>
+				<version>2.0-20210730.210334-58</version>
 			</dependency>
 
 			<dependency>
 				<groupId>org.hipparchus</groupId>
 				<artifactId>hipparchus-fitting</artifactId>
-				<version>2.0-20210727.203300-57</version>
+				<version>2.0-20210730.210319-58</version>
 			</dependency>
 
 			<dependency>
 				<groupId>org.hipparchus</groupId>
 				<artifactId>hipparchus-ode</artifactId>
-				<version>2.0-20210727.203244-57</version>
+				<version>2.0-20210730.210307-58</version>
 			</dependency>
 
 			<dependency>
 				<groupId>org.hipparchus</groupId>
 				<artifactId>hipparchus-optim</artifactId>
-				<version>2.0-20210727.203252-57</version>
+				<version>2.0-20210730.210313-58</version>
 			</dependency>
 
 			<dependency>
 				<groupId>org.hipparchus</groupId>
 				<artifactId>hipparchus-stat</artifactId>
-				<version>2.0-20210727.203225-57</version>
+				<version>2.0-20210730.210253-58</version>
 			</dependency>
 
 			<dependency>

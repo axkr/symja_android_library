@@ -23340,7 +23340,7 @@ public class LowercaseTestCase extends AbstractTestCase {
     // wrong result
     checkNumeric(
         "NIntegrate(1/x, {x,0,5}, Method->LegendreGauss)", //
-        "10.374755035279318");
+        "10.374755035279286");
 
     // github #61
     // these methods correctly show "NIntegrate(method=method-nsme) maximal count (xxxxx) exceeded"

@@ -2133,10 +2133,10 @@ public class MainTestCase extends AbstractTestCase {
     // to low max points
     checkNumeric(
         "NIntegrate(1/(x^2), {x, 1, 1000}, Method->LegendreGauss, MaxPoints->7)", //
-        "0.1045310822478283");
+        "0.1045310822478281");
     checkNumeric(
         "NIntegrate(1/(x^2), {x, 1, 1000}, Method->LegendreGauss, MaxPoints->100)", //
-        "0.9988852159737868");
+        "0.9988852159737875");
 
     checkNumeric(
         "NIntegrate((x-1)*(x-0.5)*x*(x+0.5)*(x+1),{x,0,1},Method->Trapezoid)", //
