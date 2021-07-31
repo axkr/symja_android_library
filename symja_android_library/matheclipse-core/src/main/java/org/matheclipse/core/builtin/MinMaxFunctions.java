@@ -919,7 +919,7 @@ public class MinMaxFunctions {
     IExpr d;
     IExpr e;
     if (varDegree <= 3) {
-      // solve cubic or quadratic maximize:
+      // solve cubic or quadratic minimize:
       a = F.C0;
       b = F.C0;
       c = F.C0;
@@ -939,7 +939,7 @@ public class MinMaxFunctions {
         } else if (lExp == 0) {
           e = coeff;
         } else {
-          throw new ArithmeticException("Maximize::Unexpected exponent value: " + lExp);
+          throw new ArithmeticException("Minimize::Unexpected exponent value: " + lExp);
         }
       }
       if (a.isPossibleZero(false)) {
