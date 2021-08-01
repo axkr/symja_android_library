@@ -224,6 +224,7 @@ public class LinAlg<C extends RingElem<C>> implements Serializable {
         ArrayList<ArrayList<C>> mat = A.matrix;
         ArrayList<ArrayList<C>> imat = inv.matrix;
         for (int j = 0; j < N; j++) {
+            // transform right hand vector with L matrix
             for (int i = 0; i < N; i++) {
                 //IA[i][j] = P[i] == j ? 1.0 : 0.0;
                 C e = (P.get(i) == j) ? ring.coFac.getONE() : ring.coFac.getZERO();
@@ -236,6 +237,7 @@ public class LinAlg<C extends RingElem<C>> implements Serializable {
                 }
                 imat.get(i).set(j, b);
             }
+            // solve inverse matrix column with U matrix
             for (int i = N - 1; i >= 0; i--) {
                 C b = imat.get(i).get(j);
                 for (int k = i + 1; k < N; k++) {
@@ -391,7 +393,7 @@ public class LinAlg<C extends RingElem<C>> implements Serializable {
 
     /**
      * Matrix row echelon form construction. Matrix A is replaced by its row
-     * echelon form.
+     * echelon form, an upper triangle matrix.
      * @param A a n&times;m matrix.
      * @return A row echelon form of A, matrix A is modified.
      */
@@ -412,6 +414,7 @@ public class LinAlg<C extends RingElem<C>> implements Serializable {
         for (i = 0; i < N;) {
             imax = i;
             maxA = ring.coFac.getZERO();
+            // search non-zero rows
             for (int k = i; k < N; k++) {
                 // absA = fabs(A[k][i])
                 absA = mat.get(k).get(kmax).abs();
@@ -423,7 +426,6 @@ public class LinAlg<C extends RingElem<C>> implements Serializable {
             }
             if (maxA.isZERO()) {
                 //System.out.println("matrix is zero at col " + kmax);
-                //mat.get(i).set(i, ring.coFac.getZERO());
                 kmax++;
                 if (kmax >= M) {
                     break;
@@ -432,7 +434,7 @@ public class LinAlg<C extends RingElem<C>> implements Serializable {
             }
             //System.out.println("matrix is non zero at row " + imax);
             if (imax != i) {
-                //pivoting rows of A
+                //swap pivoting rows of A
                 ArrayList<C> ptr = mat.get(i);
                 mat.set(i, mat.get(imax));
                 mat.set(imax, ptr);
@@ -445,12 +447,14 @@ public class LinAlg<C extends RingElem<C>> implements Serializable {
             }
             for (int j = i + 1; j < N; j++) {
                 for (int k = kmax; k < M; k++) {
-                    // A[j][k] -= A[j][i] * A[i][k];
+                    // A[j][k] -= A[j][k] * A[i][k];
                     C a = mat.get(j).get(k).multiply(mat.get(i).get(k));
+                    if (a.isZERO()) {
+                        continue;
+                    }
                     mat.get(j).set(k, mat.get(j).get(k).subtract(a));
                 }
             }
-            //System.out.println("i = " + i + " " + kmax);
             mat.get(i).set(kmax, ring.coFac.getONE());
             i++;
             kmax++;
@@ -474,6 +478,7 @@ public class LinAlg<C extends RingElem<C>> implements Serializable {
         long n = A.ring.rows;
         long m = A.ring.cols;
         ArrayList<ArrayList<C>> mat = A.matrix;
+        // count non-zero rows
         long r = 0;
         for (int i = 0; i < n; i++) {
             ArrayList<C> row = mat.get(i);
@@ -485,6 +490,69 @@ public class LinAlg<C extends RingElem<C>> implements Serializable {
             }
         }
         return r;
+    }
+
+
+    /**
+     * Matrix row echelon form construction. Matrix A is replaced by
+     * its row echelon form, an upper triangle matrix with less
+     * non-zero entries. No column swaps and transforms are performed
+     * as with the Gauss-Jordan algorithm.
+     * @param A a n&times;m matrix.
+     * @return A sparse row echelon form of A, matrix A is modified.
+     */
+    public GenMatrix<C> rowEchelonFormSparse(GenMatrix<C> A) {
+        if (A == null) {
+            return null;
+        }
+        GenMatrixRing<C> ring = A.ring;
+        int N = ring.rows;
+        int M = ring.cols;
+        if (N != M) {
+            logger.warn("nosquare matrix");
+        }
+        int i, imax, kmax;
+        C maxA, absA;
+        ArrayList<ArrayList<C>> mat = A.matrix;
+        for (i = N - 1; i > 0; i--) {
+            imax = i;
+            maxA = ring.coFac.getZERO();
+            //System.out.println("matrix row " + A.getRow(i));
+            kmax = -1;
+            // search non-zero entry in row i
+            for (int k = i; k < M; k++) {
+                // absA = fabs(A[i][k])
+                absA = mat.get(i).get(k).abs();
+                if (absA.compareTo(maxA) > 0) {
+                    //System.out.println("absA(" + i +"," + k + ") = " + absA);
+                    maxA = absA;
+                    kmax = k;
+                    break; // first
+                }
+            }
+            if (maxA.isZERO()) {
+                continue;
+            }
+            // reduce upper rows
+            for (int j = imax - 1; j >= 0; j--) {
+                for (int k = kmax; k < M; k++) {
+                    // A[j,k] -= A[j,k] * A[imax,k]
+                    C mjk = mat.get(j).get(k);
+                    if (mjk.isZERO()) {
+                        continue;
+                    }
+                    C mk = mat.get(imax).get(k);
+                    if (mk.isZERO()) {
+                        continue;
+                    }
+                    C a = mk.multiply(mjk);
+                    //System.out.println("mjk(" + j +"," + k + ") = " + mjk + ", mk = " + mk);
+                    mjk = mjk.subtract(a);
+                    mat.get(j).set(k,mjk);
+                }
+            }
+        }
+        return A;
     }
 
 }

@@ -24,7 +24,10 @@ import edu.jas.poly.GenPolynomial;
 import edu.jas.poly.GenPolynomialRing;
 import edu.jas.poly.PolyUtil;
 import edu.jas.poly.TermOrderByName;
+import edu.jas.ps.UnivPowerSeries;
+import edu.jas.ps.UnivPowerSeriesRing;
 import edu.jas.structure.GcdRingElem;
+import edu.jas.structure.Power;
 import edu.jas.structure.RingElem;
 import edu.jas.structure.RingFactory;
 import edu.jas.structure.UnaryFunctor;
@@ -300,6 +303,7 @@ public class PolyUfdUtil {
 
 
     //------------------------------
+
 
     /**
      * BigInteger from BigRational coefficients. Represent as polynomial with
@@ -581,7 +585,7 @@ public class PolyUfdUtil {
 
     /**
      * Construct a random irreducible univariate polynomial of degree d.
-     * @param cfac coefficient ring.
+     * @param cfac coefficient polynomial ring.
      * @param degree of random polynomial.
      * @return irreducible univariate polynomial.
      */
@@ -591,9 +595,24 @@ public class PolyUfdUtil {
             throw new IllegalArgumentException("coefficient ring must be a field " + cfac);
         }
         GenPolynomialRing<C> ring = new GenPolynomialRing<C>(cfac, 1, TermOrderByName.INVLEX);
+        return randomIrreduciblePolynomial(ring, degree);
+    }
+
+
+    /**
+     * Construct a random irreducible univariate polynomial of degree d.
+     * @param ring coefficient ring.
+     * @param degree of random polynomial.
+     * @return irreducible univariate polynomial.
+     */
+    public static <C extends GcdRingElem<C>> GenPolynomial<C> randomIrreduciblePolynomial(
+                    GenPolynomialRing<C> ring, int degree) {
+        if (!ring.coFac.isField()) {
+            throw new IllegalArgumentException("coefficient ring must be a field " + ring.coFac);
+        }
         Factorization<C> eng = FactorFactory.<C> getImplementation(ring);
         GenPolynomial<C> mod = ring.getZERO();
-        int k = cfac.characteristic().bitLength(); // log
+        int k = ring.coFac.characteristic().bitLength(); // log
         if (k < 3) {
             k = 7;
         }
@@ -630,6 +649,74 @@ public class PolyUfdUtil {
         GenPolynomial<C> mod = randomIrreduciblePolynomial(cfac, degree);
         AlgebraicNumberRing<C> afac = new AlgebraicNumberRing<C>(mod, true);
         return afac;
+    }
+
+
+    /**
+     * Construct an algebraic number field of degree d. Uses a random
+     * irreducible polynomial of degree d as modulus of the algebraic number
+     * ring.
+     * @param ring coefficient polynomial ring.
+     * @param degree of random polynomial.
+     * @return algebraic number field.
+     */
+    public static <C extends GcdRingElem<C>> AlgebraicNumberRing<C> algebraicNumberField(
+                    GenPolynomialRing<C> ring, int degree) {
+        GenPolynomial<C> mod = randomIrreduciblePolynomial(ring, degree);
+        AlgebraicNumberRing<C> afac = new AlgebraicNumberRing<C>(mod, true);
+        return afac;
+    }
+
+
+    /**
+     * Construct Berlekamp Q matrix.
+     * @param A univariate modular polynomial.
+     * @return Q matrix.
+     */
+    public static <C extends GcdRingElem<C>> ArrayList<ArrayList<C>> constructQmatrix(GenPolynomial<C> A) {
+        ArrayList<ArrayList<C>> Q = new ArrayList<ArrayList<C>>();
+        if (A == null || A.isZERO()) {
+            return Q;
+        }
+        GenPolynomialRing<C> pfac = A.ring;
+        //System.out.println("pfac = " + pfac.toScript());
+        java.math.BigInteger q = pfac.coFac.characteristic(); //.longValueExact();
+        int lq = q.bitLength(); //Power.logarithm(2, q);
+        if (pfac.coFac instanceof AlgebraicNumberRing) {
+            lq = (int) ((AlgebraicNumberRing) pfac.coFac).extensionDegree();
+            q = q.pow(lq); //Power.power(q, lq);
+        }
+        logger.info("Q matrix for cfac = " + q);
+        long d = A.degree(0);
+        GenPolynomial<C> x = pfac.univariate(0);
+        //System.out.println("x = " + x.toScript());
+        GenPolynomial<C> r = pfac.getONE();
+        //System.out.println("r = " + r.toScript());
+        List<GenPolynomial<C>> Qp = new ArrayList<GenPolynomial<C>>();
+        Qp.add(r);
+        GenPolynomial<C> pow = Power.<GenPolynomial<C>> modPositivePower(x, q, A);
+        //System.out.println("pow = " + pow.toScript());
+        Qp.add(pow);
+        r = pow;
+        for (int i = 2; i < d; i++) {
+            r = r.multiply(pow).remainder(A);
+            Qp.add(r);
+        }
+        //System.out.println("Qp = " + Qp);
+        UnivPowerSeriesRing<C> psfac = new UnivPowerSeriesRing<C>(pfac);
+        //System.out.println("psfac = " + psfac.toScript());
+        for (GenPolynomial<C> p : Qp) {
+            UnivPowerSeries<C> ps = psfac.fromPolynomial(p);
+            //System.out.println("ps = " + ps.toScript());
+            ArrayList<C> pr = new ArrayList<C>();
+            for (int i = 0; i < d; i++) {
+                C c = ps.coefficient(i);
+                pr.add(c);
+            }
+            Q.add(pr);
+        }
+        //System.out.println("Q = " + Q);
+        return Q;
     }
 
 

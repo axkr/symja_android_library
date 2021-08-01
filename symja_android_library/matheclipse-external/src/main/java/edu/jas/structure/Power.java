@@ -141,6 +141,37 @@ public class Power<C extends RingElem<C>> {
 
 
     /**
+     * power of a to the n-th, n positive, modulo m.
+     * @param a element.
+     * @param n big integer exponent &ge; 0.
+     * @param m modulus.
+     * @return a^n mod m.
+     */
+    public static <C extends RingElem<C>> C modPositivePower(C a, java.math.BigInteger n, C m) {
+        if (n.signum() <= 0) {
+            throw new IllegalArgumentException("only positive n allowed");
+        }
+        if (a.isZERO() || a.isONE()) {
+            return a;
+        }
+
+        C b = a.remainder(m);
+        java.math.BigInteger i = n.subtract(java.math.BigInteger.ONE);
+        C p = b;
+        do {
+            if (i.testBit(0)) { // i % 2 == 1
+                p = p.multiply(b).remainder(m);
+            }
+            i = i.shiftRight(1); // / 2;
+            if (i.signum() > 0) {
+                b = b.multiply(b).remainder(m);
+            }
+        } while (i.signum() > 0);
+        return p;
+    }
+
+
+    /**
      * power of a to the n-th.
      * @param a element.
      * @param n integer exponent.
@@ -376,7 +407,7 @@ public class Power<C extends RingElem<C>> {
      * Logarithm.
      * @param p logarithm base.
      * @param a element.
-     * @return k &ge; 1 minimal with p^k &ge; b.
+     * @return k &ge; 1 minimal with p^k &ge; a.
      */
     public static <C extends RingElem<C>> long logarithm(C p, C a) {
         //if ( p.compareTo(a) < 0 ) {
@@ -386,6 +417,23 @@ public class Power<C extends RingElem<C>> {
         C m = p;
         while (m.compareTo(a) < 0) {
             m = m.multiply(p);
+            k++;
+        }
+        return k;
+    }
+
+
+    /**
+     * Logarithm.
+     * @param p logarithm base.
+     * @param a element.
+     * @return k &ge; 1 minimal with p^k &ge; a.
+     */
+    public static <C extends RingElem<C>> long logarithm(long p, long a) {
+        long k = 1;
+        long m = p;
+        while (m < a) {
+            m = m * p;
             k++;
         }
         return k;

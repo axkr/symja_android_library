@@ -317,10 +317,21 @@ public final class PrimeInteger {
      */
     public static boolean isPrime(long n) {
         java.math.BigInteger N = java.math.BigInteger.valueOf(n);
+        return isPrime(N);
+    }
+
+
+    /**
+     * Integer primality test. n is a positive integer. r is true, if n is
+     * prime, else false.
+     * @param N integer to test.
+     * @return true if N is prime, else false.
+     */
+    public static boolean isPrime(java.math.BigInteger N) {
         if (N.isProbablePrime(N.bitLength())) {
             return true;
         }
-        SortedMap<Long, Integer> F = factors(n);
+        SortedMap<java.math.BigInteger, Integer> F = factors(N);
         return (F.size() == 1) && F.values().contains(1);
     }
 

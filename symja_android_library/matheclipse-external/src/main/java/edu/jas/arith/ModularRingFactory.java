@@ -5,6 +5,8 @@
 package edu.jas.arith;
 
 
+import java.lang.Iterable;
+
 import edu.jas.structure.RingElem;
 import edu.jas.structure.RingFactory;
 
@@ -15,7 +17,7 @@ import edu.jas.structure.RingFactory;
  * @author Heinz Kredel
  */
 
-public interface ModularRingFactory<C extends RingElem<C> & Modular> extends RingFactory<C> {
+public interface ModularRingFactory<C extends RingElem<C> & Modular> extends RingFactory<C>, Iterable<C> {
 
 
     /**

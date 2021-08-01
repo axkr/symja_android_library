@@ -393,7 +393,7 @@ public class FactorInteger<MOD extends GcdRingElem<MOD> & Modular> extends Facto
     /**
      * BitSet for factor degree list.
      * @param E exponent vector list.
-     * @return b_0,...,b_k} a BitSet of possible factor degrees.
+     * @return {b_0,...,b_k} a BitSet of possible factor degrees.
      */
     public BitSet factorDegrees(List<ExpVector> E, int deg) {
         BitSet D = new BitSet(deg + 1);

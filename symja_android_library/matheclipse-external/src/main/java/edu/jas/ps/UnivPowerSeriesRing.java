@@ -17,6 +17,7 @@ import edu.jas.poly.GenPolynomialRing;
 import edu.jas.poly.Monomial;
 import edu.jas.structure.RingElem;
 import edu.jas.structure.RingFactory;
+import edu.jas.vector.GenVector;
 
 
 /**
@@ -451,6 +452,32 @@ public class UnivPowerSeriesRing<C extends RingElem<C>> implements RingFactory<U
         for (Monomial<C> m : a) {
             long e = m.exponent().getVal(0);
             cache.put((int) e, m.coefficient());
+        }
+        return new UnivPowerSeries<C>(this, new Coefficients<C>(cache) {
+
+
+            @Override
+            public C generate(int i) {
+                // cached coefficients returned by get
+                return coFac.getZERO();
+            }
+        });
+    }
+
+
+    /**
+     * Get a UnivPowerSeries&lt;C&gt; from a GenVector&lt;C&gt;.
+     * @param a GenVector&lt;C&gt;.
+     * @return a UnivPowerSeries&lt;C&gt;.
+     */
+    public UnivPowerSeries<C> fromVector(GenVector<C> a) {
+        if (a == null || a.isZERO()) {
+            return ZERO;
+        }
+        HashMap<Integer, C> cache = new HashMap<Integer, C>(a.val.size());
+        int i = 0;
+        for (C m : a.val) {
+            cache.put(i++, m);
         }
         return new UnivPowerSeries<C>(this, new Coefficients<C>(cache) {
 

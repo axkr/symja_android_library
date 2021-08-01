@@ -310,6 +310,16 @@ public class GenVector<C extends RingElem<C>> implements ModulElem<GenVector<C>,
      * @param s scalar.
      * @return this*s
      */
+    public GenVector<C> multiply(C s) {
+        return scalarMultiply(s);
+    }
+
+
+    /**
+     * Product of this vector with scalar.
+     * @param s scalar.
+     * @return this*s
+     */
     public GenVector<C> scalarMultiply(C s) {
         ArrayList<C> a = new ArrayList<C>(modul.cols);
         for (C c : val) {

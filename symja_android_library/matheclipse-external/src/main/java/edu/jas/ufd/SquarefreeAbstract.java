@@ -256,6 +256,9 @@ public abstract class SquarefreeAbstract<C extends GcdRingElem<C>> implements Sq
         if (P == null || F == null) {
             throw new IllegalArgumentException("P and F may not be null");
         }
+        if (P.isZERO() && F.size() == 0) {
+            return true;
+        }
         GenPolynomial<C> t = P.ring.getONE();
         for (GenPolynomial<C> f : F) {
             t = t.multiply(f);

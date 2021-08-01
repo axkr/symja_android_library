@@ -233,9 +233,11 @@ public class AlgebraicNumberRing<C extends RingElem<C>>
 
 
     /**
-     * Get a AlgebraicNumber element from a BigInteger value.
+     * Get an AlgebraicNumber element from a BigInteger value.
+     * If a = a_k p^k + ... + a_0 p^0 then b = a_k x^k + ... + a_0 x^0,
+     * where p = characteristic( this ).
      * @param a BigInteger.
-     * @return a AlgebraicNumber.
+     * @return b an AlgebraicNumber.
      */
     public AlgebraicNumber<C> fillFromInteger(java.math.BigInteger a) {
         if (characteristic().signum() == 0) {

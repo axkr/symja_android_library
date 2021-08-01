@@ -14,6 +14,7 @@ import java.util.Arrays;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Random;
+import java.util.SortedMap;
 import java.util.concurrent.atomic.AtomicLong;
 
 import org.apache.logging.log4j.LogManager;
@@ -28,6 +29,7 @@ import edu.jas.structure.RingFactory;
 import edu.jas.util.CartesianProduct;
 import edu.jas.util.CartesianProductInfinite;
 import edu.jas.util.LongIterable;
+import edu.jas.vector.GenVector;
 
 
 /**
@@ -631,6 +633,33 @@ public class GenPolynomialRing<C extends RingElem<C>>
      */
     public GenPolynomial<C> fromInteger(BigInteger a) {
         return new GenPolynomial<C>(this, coFac.fromInteger(a), evzero);
+    }
+
+
+    /**
+     * Get a GenPolynomial&lt;C&gt; from a GenVector&lt;C&gt;.
+     * @param a GenVector&lt;C&gt;.
+     * @return a GenPolynomial&lt;C&gt;.
+     */
+    public GenPolynomial<C> fromVector(GenVector<C> a) {
+        if (a == null || a.isZERO()) {
+            return ZERO;
+        }
+        if (nvar != 1) {
+            throw new IllegalArgumentException("no univariate polynomial ring");
+        }
+        GenPolynomial<C> ret = copy(ZERO);
+        SortedMap<ExpVector, C> tm = ret.val;
+        long i = -1;
+        for (C m : a.val) {
+            i++;
+            if (m.isZERO()) {
+                continue;
+            }
+            ExpVector e = ExpVector.create(1, 0, i);
+            tm.put(e, m);
+        }
+        return ret;
     }
 
 

@@ -137,9 +137,15 @@ public class FactorFactory {
      * @param <C> coefficient type, e.g. BigRational, ModInteger.
      * @return factorization algorithm implementation.
      */
+    @SuppressWarnings("unchecked")
     public static <C extends GcdRingElem<C>> FactorAbstract<AlgebraicNumber<C>> getImplementation(
                     AlgebraicNumberRing<C> fac) {
-        return new FactorAlgebraic<C>(fac);
+        int s = fac.characteristic().signum();
+        if (s > 0) {
+            return new FactorModularBerlekamp/*<AlgebraicNumberRing<C>>*/((RingFactory)fac);
+        } else {
+            return new FactorAlgebraic<C>(fac);
+        }
     }
 
 
@@ -188,7 +194,7 @@ public class FactorFactory {
      * @param fac RingFactory&lt;C&gt;.
      * @return factorization algorithm implementation.
      */
-    @SuppressWarnings({ "unchecked", "cast" })
+    @SuppressWarnings( "unchecked" )
     public static <C extends GcdRingElem<C>> FactorAbstract<C> getImplementation(RingFactory<C> fac) {
         logger.info("factor factory = " + fac.getClass().getName());
         //System.out.println("fac_o_ufd = " + fac.getClass().getName());
@@ -215,7 +221,12 @@ public class FactorFactory {
             //System.out.println("afac_o = " + ofac);
             afac = (AlgebraicNumberRing) ofac;
             //ofac = afac.ring.coFac;
-            ufd = new FactorAlgebraic/*raw <C>*/(afac);
+            int s = afac.characteristic().signum();
+            if (s > 0) {
+                ufd = new FactorModularBerlekamp/*raw <C>*/(afac);
+            } else {
+                ufd = new FactorAlgebraic/*raw <C>*/(afac);
+            }
         } else if (ofac instanceof QuotientRing) {
             //System.out.println("qfac_o = " + ofac);
             qfac = (QuotientRing) ofac;
