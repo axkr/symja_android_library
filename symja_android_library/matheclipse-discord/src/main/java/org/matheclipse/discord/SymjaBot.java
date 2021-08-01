@@ -24,7 +24,6 @@ import discord4j.core.DiscordClientBuilder;
 import discord4j.core.GatewayDiscordClient;
 import discord4j.core.event.domain.lifecycle.ReadyEvent;
 import discord4j.core.event.domain.message.MessageCreateEvent;
-import discord4j.core.event.domain.message.MessageUpdateEvent;
 import discord4j.core.object.entity.Message;
 import discord4j.core.object.entity.User;
 import discord4j.core.object.entity.channel.MessageChannel;
@@ -41,6 +40,8 @@ public class SymjaBot {
     Config.FILESYSTEM_ENABLED = false;
     Config.PRIME_FACTORS = new BigIntegerPrimality();
 
+    // example help call
+    //    System.out.println(interpreter("?VectorAngle"));
     GatewayDiscordClient client =
         DiscordClientBuilder.create("YOUR-TOKEN-HERE").build().login().block();
     client
@@ -61,15 +62,6 @@ public class SymjaBot {
                 createMessage(message);
               }
             });
-    //    client
-    //    .on(MessageUpdateEvent.class)
-    //    .subscribe(
-    //        event -> {
-    //          final Message message = event.getMessage().;
-    //          if (filterMessage(message)) {
-    //            createMessage(message);
-    //          }
-    //        });
     client.onDisconnect().block();
   }
 
@@ -112,14 +104,24 @@ public class SymjaBot {
     final StringWriter buf = new StringWriter();
     try {
       if (trimmedInput.length() > 1 && trimmedInput.charAt(0) == '?') {
-        IExpr doc = Documentation.findDocumentation(trimmedInput);
-        return printResult(doc);
+        StringBuilder docBuf = new StringBuilder();
+        Documentation.getMarkdown(docBuf, trimmedInput.substring(1));
+        String docString = docBuf.toString();
+        if (docString.length() > 0) {
+          int indx = docString.indexOf("### Github");
+          if (indx > 0) {
+            docString = docString.substring(0, indx);
+          }
+          return docString;
+        }
+        return "No help page found";
       }
+      System.out.println(trimmedInput);
 
       result =
           evaluator.evaluateWithTimeout(
               trimmedInput,
-              5,
+              30,
               TimeUnit.SECONDS,
               true,
               new EvalControlledCallable(evaluator.getEvalEngine()));
@@ -177,13 +179,6 @@ public class SymjaBot {
       return "";
     }
     return buf.toString();
-  }
-
-  private static String printResult(IExpr result) {
-    if (result.isPresent()) {
-      return result.toString();
-    }
-    return "Null";
   }
 
   private static String printResultShortened(IExpr result) {
