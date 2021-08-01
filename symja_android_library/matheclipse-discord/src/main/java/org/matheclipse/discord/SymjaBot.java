@@ -7,6 +7,7 @@ import org.matheclipse.core.basic.Config;
 import org.matheclipse.core.basic.ToggleFeature;
 import org.matheclipse.core.builtin.IOFunctions;
 import org.matheclipse.core.eval.EvalControlledCallable;
+import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.ExprEvaluator;
 import org.matheclipse.core.eval.exception.AbortException;
 import org.matheclipse.core.eval.exception.FailedException;
@@ -31,38 +32,55 @@ import discord4j.core.object.entity.channel.MessageChannel;
 public class SymjaBot {
 
   public static void main(String[] args) {
-    Locale.setDefault(Locale.US);
-    FEConfig.PARSER_USE_LOWERCASE_SYMBOLS = true;
-    ToggleFeature.COMPILE = false;
-    Config.JAVA_UNSAFE = true;
-    Config.SHORTEN_STRING_LENGTH = 512;
-    Config.USE_VISJS = true;
-    Config.FILESYSTEM_ENABLED = false;
-    Config.PRIME_FACTORS = new BigIntegerPrimality();
+    if (args.length > 0) {
+      Locale.setDefault(Locale.US);
+      FEConfig.PARSER_USE_LOWERCASE_SYMBOLS = true;
+      ToggleFeature.COMPILE = false;
+      Config.JAVA_UNSAFE = true;
+      Config.SHORTEN_STRING_LENGTH = 512;
+      Config.USE_VISJS = true;
+      Config.FILESYSTEM_ENABLED = false;
+      Config.FUZZY_PARSER = true;
+      Config.UNPROTECT_ALLOWED = false;
+      Config.USE_MANIPULATE_JS = true;
+      Config.JAS_NO_THREADS = true;
+      Config.MATHML_TRIG_LOWERCASE = false;
+      Config.MAX_AST_SIZE = 10000;
+      Config.MAX_OUTPUT_SIZE = 10000;
+      Config.MAX_BIT_LENGTH = 200000;
+      Config.MAX_POLYNOMIAL_DEGREE = 100;
+      Config.MAX_INPUT_LEAVES = 100L;
+      Config.MAX_MATRIX_DIMENSION_SIZE = 100;
+      Config.PRIME_FACTORS = new BigIntegerPrimality();
+      EvalEngine.get().setPackageMode(true);
 
-    // example help call
-    //    System.out.println(interpreter("?VectorAngle"));
-    GatewayDiscordClient client =
-        DiscordClientBuilder.create("YOUR-TOKEN-HERE").build().login().block();
-    client
-        .getEventDispatcher()
-        .on(ReadyEvent.class)
-        .subscribe(
-            event -> {
-              final User self = event.getSelf();
-              System.out.println(
-                  String.format("Logged in as %s#%s", self.getUsername(), self.getDiscriminator()));
-            });
-    client
-        .on(MessageCreateEvent.class)
-        .subscribe(
-            event -> {
-              final Message message = event.getMessage();
-              if (filterMessage(message)) {
-                createMessage(message);
-              }
-            });
-    client.onDisconnect().block();
+      String theDiscordToken = args[0];
+      GatewayDiscordClient client =
+          DiscordClientBuilder.create(theDiscordToken).build().login().block();
+
+      client
+          .getEventDispatcher()
+          .on(ReadyEvent.class)
+          .subscribe(
+              event -> {
+                final User self = event.getSelf();
+                System.out.println(
+                    String.format(
+                        "Logged in as %s#%s", self.getUsername(), self.getDiscriminator()));
+              });
+      client
+          .on(MessageCreateEvent.class)
+          .subscribe(
+              event -> {
+                final Message message = event.getMessage();
+                if (filterMessage(message)) {
+                  createMessage(message);
+                }
+              });
+      client.onDisconnect().block();
+    } else {
+      System.out.println("The discord bot token has to be set as the first argument.");
+    }
   }
 
   private static void createMessage(final Message message) {
@@ -116,7 +134,7 @@ public class SymjaBot {
         }
         return "No help page found";
       }
-      System.out.println(trimmedInput);
+      //      System.out.println(trimmedInput);
 
       result =
           evaluator.evaluateWithTimeout(
