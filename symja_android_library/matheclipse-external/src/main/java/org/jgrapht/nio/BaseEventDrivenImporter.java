@@ -1,5 +1,5 @@
 /*
- * (C) Copyright 2019-2020, by Dimitrios Michail and Contributors.
+ * (C) Copyright 2019-2021, by Dimitrios Michail and Contributors.
  *
  * JGraphT : a free Java graph-theory library
  *
@@ -37,7 +37,9 @@ public abstract class BaseEventDrivenImporter<V, E>
     private List<Consumer<Integer>> vertexCountConsumers;
     private List<Consumer<Integer>> edgeCountConsumers;
     private List<Consumer<V>> vertexConsumers;
+    private List<BiConsumer<V, Map<String, Attribute>>> vertexWithAttributesConsumers;
     private List<Consumer<E>> edgeConsumers;
+    private List<BiConsumer<E, Map<String, Attribute>>> edgeWithAttributesConsumers;
     private List<BiConsumer<String, Attribute>> graphAttributeConsumers;
     private List<BiConsumer<Pair<V, String>, Attribute>> vertexAttributeConsumers;
     private List<BiConsumer<Pair<E, String>, Attribute>> edgeAttributeConsumers;
@@ -51,7 +53,9 @@ public abstract class BaseEventDrivenImporter<V, E>
         this.vertexCountConsumers = new ArrayList<>();
         this.edgeCountConsumers = new ArrayList<>();
         this.vertexConsumers = new ArrayList<>();
+        this.vertexWithAttributesConsumers = new ArrayList<>();
         this.edgeConsumers = new ArrayList<>();
+        this.edgeWithAttributesConsumers = new ArrayList<>();
         this.graphAttributeConsumers = new ArrayList<>();
         this.vertexAttributeConsumers = new ArrayList<>();
         this.edgeAttributeConsumers = new ArrayList<>();
@@ -199,6 +203,26 @@ public abstract class BaseEventDrivenImporter<V, E>
     }
 
     /**
+     * Add a vertex with attributes consumer.
+     * 
+     * @param consumer the consumer
+     */
+    public void addVertexWithAttributesConsumer(BiConsumer<V, Map<String, Attribute>> consumer)
+    {
+        vertexWithAttributesConsumers.add(consumer);
+    }
+
+    /**
+     * Remove a vertex with attributes consumer
+     * 
+     * @param consumer the consumer
+     */
+    public void removeVertexWithAttributesConsumer(BiConsumer<V, Map<String, Attribute>> consumer)
+    {
+        vertexWithAttributesConsumers.remove(consumer);
+    }
+
+    /**
      * Add an edge attribute consumer.
      * 
      * @param consumer the consumer
@@ -216,6 +240,26 @@ public abstract class BaseEventDrivenImporter<V, E>
     public void removeEdgeAttributeConsumer(BiConsumer<Pair<E, String>, Attribute> consumer)
     {
         edgeAttributeConsumers.remove(consumer);
+    }
+
+    /**
+     * Add an edge with attributes consumer.
+     * 
+     * @param consumer the consumer
+     */
+    public void addEdgeWithAttributesConsumer(BiConsumer<E, Map<String, Attribute>> consumer)
+    {
+        edgeWithAttributesConsumers.add(consumer);
+    }
+
+    /**
+     * Remove an edge with attributes consumer
+     * 
+     * @param consumer the consumer
+     */
+    public void removeEdgeWithAttributesConsumer(BiConsumer<E, Map<String, Attribute>> consumer)
+    {
+        edgeWithAttributesConsumers.remove(consumer);
     }
 
     /**
@@ -249,6 +293,17 @@ public abstract class BaseEventDrivenImporter<V, E>
     }
 
     /**
+     * Notify for a vertex with attributes.
+     * 
+     * @param v the vertex
+     * @param attrs the attributes
+     */
+    protected void notifyVertexWithAttributes(V v, Map<String, Attribute> attrs)
+    {
+        vertexWithAttributesConsumers.forEach(c -> c.accept(v, attrs));
+    }
+
+    /**
      * Notify for an edge.
      * 
      * @param e the edge
@@ -256,6 +311,17 @@ public abstract class BaseEventDrivenImporter<V, E>
     protected void notifyEdge(E e)
     {
         edgeConsumers.forEach(c -> c.accept(e));
+    }
+
+    /**
+     * Notify for an edge with attributes.
+     * 
+     * @param e the edge
+     * @param attrs the attributes
+     */
+    protected void notifyEdgeWithAttributes(E e, Map<String, Attribute> attrs)
+    {
+        edgeWithAttributesConsumers.forEach(c -> c.accept(e, attrs));
     }
 
     /**

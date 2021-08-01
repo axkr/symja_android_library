@@ -1,5 +1,5 @@
 /*
- * (C) Copyright 2018-2020, by Alexandru Valeanu and Contributors.
+ * (C) Copyright 2018-2021, by Alexandru Valeanu and Contributors.
  *
  * JGraphT : a free Java graph-theory library
  *
@@ -124,9 +124,6 @@ public class BarabasiAlbertForestGenerator<V, E>
         if (!target.vertexSet().isEmpty()) {
             throw new IllegalArgumentException("target graph is not empty");
         }
-
-        assert target.vertexSet().isEmpty();
-        assert target.edgeSet().isEmpty();
 
         List<V> nodes = new ArrayList<>();
 

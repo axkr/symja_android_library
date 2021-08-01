@@ -1,5 +1,5 @@
 /*
- * (C) Copyright 2018-2020, by Christoph Grüne and Contributors.
+ * (C) Copyright 2018-2021, by Christoph Grüne and Contributors.
  *
  * JGraphT : a free Java graph-theory library
  *
@@ -152,7 +152,7 @@ public interface CapacitatedSpanningTreeAlgorithm<V, E>
             // check demands and number of vertices
             int numberOfNodesExplored = 0;
             for (Pair<Set<V>, Double> set1 : this.getPartition().values()) {
-                int currentCapacity = 0;
+                double currentCapacity = 0;
                 for (V v : set1.getFirst()) {
                     currentCapacity += demands.get(v);
                     numberOfNodesExplored++;

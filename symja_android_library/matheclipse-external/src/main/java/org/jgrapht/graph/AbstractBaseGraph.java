@@ -1,5 +1,5 @@
 /*
- * (C) Copyright 2003-2020, by Barak Naveh and Contributors.
+ * (C) Copyright 2003-2021, by Barak Naveh and Contributors.
  *
  * JGraphT : a free Java graph-theory library
  *
@@ -39,6 +39,18 @@ import java.util.function.*;
  * set ordering (via {@link LinkedHashMap} and {@link LinkedHashSet}). The defaults are reasonable
  * for most use-cases, only change if you know what you are doing.
  *
+ * <p>
+ * The default graph implementations are not safe for concurrent reads and writes from different
+ * threads. If an application attempts to modify a graph in one thread while another thread is
+ * reading or writing the same graph, undefined behavior will result. However, concurrent reads
+ * against the same graph from different threads are safe. (Note that the {@link org.jgrapht.Graph
+ * Graph interface} itself makes no such guarantee, so for non-default implementations, different
+ * rules may apply.)
+ *
+ * <p>
+ * If you need support for concurrent reads and writes, consider using the
+ * {@link org.jgrapht.graph.concurrent.AsSynchronizedGraph AsSynchronizedGraph wrapper}.
+ *
  * @param <V> the graph vertex type
  * @param <E> the graph edge type
  *
@@ -77,6 +89,8 @@ public abstract class AbstractBaseGraph<V, E>
     private Specifics<V, E> specifics;
     private IntrusiveEdgesSpecifics<V, E> intrusiveEdgesSpecifics;
     private GraphSpecificsStrategy<V, E> graphSpecificsStrategy;
+
+    private transient GraphIterables<V, E> graphIterables = null;
 
     /**
      * Construct a new graph.
@@ -124,6 +138,7 @@ public abstract class AbstractBaseGraph<V, E>
             .requireNonNull(
                 graphSpecificsStrategy.getIntrusiveEdgesSpecificsFactory().apply(type),
                 GRAPH_SPECIFICS_MUST_NOT_BE_NULL);
+
     }
 
     /**
@@ -227,8 +242,19 @@ public abstract class AbstractBaseGraph<V, E>
         if (!type.isAllowingMultipleEdges()) {
             E e = specifics
                 .createEdgeToTouchingVerticesIfAbsent(sourceVertex, targetVertex, edgeSupplier);
-            if (e != null && intrusiveEdgesSpecifics.add(e, sourceVertex, targetVertex)) {
-                return e;
+            if (e != null) {
+                boolean edgeAdded = false;
+                try {
+                    edgeAdded = intrusiveEdgesSpecifics.add(e, sourceVertex, targetVertex);
+                } finally {
+                    if (!edgeAdded) {
+                        // edge was already present or adding threw an exception -> revert add
+                        specifics.removeEdgeFromTouchingVertices(sourceVertex, targetVertex, e);
+                    }
+                }
+                if (edgeAdded) {
+                    return e;
+                }
             }
         } else {
             E e = edgeSupplier.get();
@@ -258,16 +284,20 @@ public abstract class AbstractBaseGraph<V, E>
         }
 
         if (!type.isAllowingMultipleEdges()) {
-            // check that second operation will succeed
-            if (intrusiveEdgesSpecifics.containsEdge(e)) {
-                return false;
-            }
+
             if (!specifics.addEdgeToTouchingVerticesIfAbsent(sourceVertex, targetVertex, e)) {
                 return false;
             }
-            // cannot fail due to first check
-            intrusiveEdgesSpecifics.add(e, sourceVertex, targetVertex);
-            return true;
+            boolean edgeAdded = false;
+            try {
+                edgeAdded = intrusiveEdgesSpecifics.add(e, sourceVertex, targetVertex);
+            } finally {
+                if (!edgeAdded) {
+                    // edge was already present or adding threw an exception -> revert add
+                    specifics.removeEdgeFromTouchingVertices(sourceVertex, targetVertex, e);
+                }
+            }
+            return edgeAdded;
         } else {
             if (intrusiveEdgesSpecifics.add(e, sourceVertex, targetVertex)) {
                 specifics.addEdgeToTouchingVertices(sourceVertex, targetVertex, e);
@@ -356,6 +386,8 @@ public abstract class AbstractBaseGraph<V, E>
                 .getSpecificsFactory().apply(newGraph, newGraph.type);
             newGraph.intrusiveEdgesSpecifics = newGraph.graphSpecificsStrategy
                 .getIntrusiveEdgesSpecificsFactory().apply(newGraph.type);
+
+            newGraph.graphIterables = null;
 
             Graphs.addGraph(newGraph, this);
 
@@ -555,5 +587,15 @@ public abstract class AbstractBaseGraph<V, E>
     public GraphType getType()
     {
         return type;
+    }
+
+    @Override
+    public GraphIterables<V, E> iterables()
+    {
+        // override interface to avoid instantiating frequently
+        if (graphIterables == null) {
+            graphIterables = new DefaultGraphIterables<>(this);
+        }
+        return graphIterables;
     }
 }

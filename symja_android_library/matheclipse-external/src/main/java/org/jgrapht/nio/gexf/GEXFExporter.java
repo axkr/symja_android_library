@@ -1,5 +1,5 @@
 /*
- * (C) Copyright 2020-2020, by Dimitrios Michail and Contributors.
+ * (C) Copyright 2020-2021, by Dimitrios Michail and Contributors.
  *
  * JGraphT : a free Java graph-theory library
  *
@@ -55,23 +55,11 @@ public class GEXFExporter<V, E>
     private static final String WEIGHT_ATTRIBUTE_NAME = "weight";
     private static final String TYPE_ATTRIBUTE_NAME = "type";
 
-    private static final Set<String> VERTEX_RESERVED_ATTRIBUTES = new HashSet<String>();
-//        Set.of("id", LABEL_ATTRIBUTE_NAME);
-    private static final Set<String> EDGE_RESERVED_ATTRIBUTES = new HashSet<String>();
-//        Set.of("id", "type", LABEL_ATTRIBUTE_NAME, "source", "target", WEIGHT_ATTRIBUTE_NAME);
+    private static final Set<String> VERTEX_RESERVED_ATTRIBUTES =
+        Set.of("id", LABEL_ATTRIBUTE_NAME);
+    private static final Set<String> EDGE_RESERVED_ATTRIBUTES =
+        Set.of("id", "type", LABEL_ATTRIBUTE_NAME, "source", "target", WEIGHT_ATTRIBUTE_NAME);
 
-    static {
-    	VERTEX_RESERVED_ATTRIBUTES.add("id");
-    	VERTEX_RESERVED_ATTRIBUTES.add(LABEL_ATTRIBUTE_NAME);
-    	
-    	EDGE_RESERVED_ATTRIBUTES.add("id");
-    	EDGE_RESERVED_ATTRIBUTES.add("type");
-    	EDGE_RESERVED_ATTRIBUTES.add(LABEL_ATTRIBUTE_NAME);
-    	EDGE_RESERVED_ATTRIBUTES.add("source");
-    	EDGE_RESERVED_ATTRIBUTES.add("target");
-    	EDGE_RESERVED_ATTRIBUTES.add(WEIGHT_ATTRIBUTE_NAME);
-      }
-    
     private int totalVertexAttributes = 0;
     private Map<String, AttributeDetails> registeredVertexAttributes;
     private int totalEdgeAttributes = 0;

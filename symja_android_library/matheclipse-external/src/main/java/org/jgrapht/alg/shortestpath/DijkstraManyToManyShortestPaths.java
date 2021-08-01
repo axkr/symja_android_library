@@ -1,5 +1,5 @@
 /*
- * (C) Copyright 2019-2020, by Semen Chudakov and Contributors.
+ * (C) Copyright 2019-2021, by Semen Chudakov and Contributors.
  *
  * JGraphT : a free Java graph-theory library
  *
@@ -35,11 +35,21 @@ import java.util.*;
  * <p>
  * For each source vertex a single source shortest paths search is performed, which is stopped as
  * soon as all target vertices are reached. Shortest paths trees are constructed using
- * {@link DijkstraClosestFirstIterator}.
+ * {@link DijkstraClosestFirstIterator}. In case $|T| > |S|$ the searches are performed on the
+ * reversed graph using $|T|$ as source vertices and $|S|$ as target vertices. This allows to reduce
+ * the total number of searches from $|S|$ to $min(|S|,|T|)$.
+ *
+ * <p>
+ * The main bottleneck of this algorithm is the memory usage to store individual shortest paths
+ * trees for every source vertex, as they may take a lot of space. Considering this, the typical use
+ * case of this algorithm are small graphs or large graphs with small total number of source and
+ * target vertices.
  *
  * @param <V> the graph vertex type
  * @param <E> the graph edge type
  * @author Semen Chudakov
+ * @see DefaultManyToManyShortestPaths
+ * @see CHManyToManyShortestPaths
  */
 public class DijkstraManyToManyShortestPaths<V, E>
     extends
@@ -147,6 +157,9 @@ public class DijkstraManyToManyShortestPaths<V, E>
         public double getWeight(V source, V target)
         {
             assertCorrectSourceAndTarget(source, target);
+            if (reversed) {
+                return searchSpaces.get(target).getWeight(source);
+            }
             return searchSpaces.get(source).getWeight(target);
         }
     }

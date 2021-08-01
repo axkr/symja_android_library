@@ -1,5 +1,5 @@
 /*
- * (C) Copyright 2003-2020, by Linda Buisman and Contributors.
+ * (C) Copyright 2003-2021, by Linda Buisman and Contributors.
  *
  * JGraphT : a free Java graph-theory library
  *
@@ -86,7 +86,7 @@ public class EdgeBasedTwoApproxVCImpl<V, E>
         Graph<V, E> sg = new AsSubgraph<>(graph, null, null);
 
         // while E' is non-empty
-        while (!sg.edgeSet().isEmpty()) {
+        while (sg.edgeSet().size() != 0) {
             // let (u,v) be an arbitrary edge of E'
             E e = sg.edgeSet().iterator().next();
 

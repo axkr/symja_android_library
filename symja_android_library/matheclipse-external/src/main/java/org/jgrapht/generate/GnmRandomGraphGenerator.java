@@ -1,5 +1,5 @@
 /*
- * (C) Copyright 2005-2020, by Assaf Lehr, Dimitrios Michail and Contributors.
+ * (C) Copyright 2005-2021, by Assaf Lehr, Dimitrios Michail and Contributors.
  *
  * JGraphT : a free Java graph-theory library
  *
@@ -18,7 +18,6 @@
 package org.jgrapht.generate;
 
 import org.jgrapht.*;
-import org.jgrapht.util.*;
 
 import java.util.*;
 
@@ -176,10 +175,10 @@ public class GnmRandomGraphGenerator<V, E>
         }
 
         // create vertices
-        Map<Integer, V> vertices = CollectionUtil.newHashMapWithExpectedSize(n);
+        List<V> vertices = new ArrayList<>(n);
         int previousVertexSetSize = target.vertexSet().size();
         for (int i = 0; i < n; i++) {
-            vertices.put(i, target.addVertex());
+            vertices.add(target.addVertex());
         }
 
         if (target.vertexSet().size() != previousVertexSetSize + n) {
@@ -242,7 +241,7 @@ public class GnmRandomGraphGenerator<V, E>
      * @param createMultipleEdges if multiple (parallel) edges are allowed
      * @return the number of maximum edges
      */
-    static <V, E> int computeMaximumAllowedEdges(
+    static int computeMaximumAllowedEdges(
         int n, boolean isDirected, boolean createLoops, boolean createMultipleEdges)
     {
         if (n == 0) {

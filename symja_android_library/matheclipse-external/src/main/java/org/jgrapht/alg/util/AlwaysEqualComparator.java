@@ -1,5 +1,5 @@
 /*
- * (C) Copyright 2015-2020, by Fabian Späh and Contributors.
+ * (C) Copyright 2015-2021, by Fabian Späh and Contributors.
  *
  * JGraphT : a free Java graph-theory library
  *
@@ -21,10 +21,11 @@ import java.util.*;
 
 /**
  * A default implementation for a check on equality (that always holds)
- * 
+ *
  * @param <T> type of elements to be compared
- * 
+ * @deprecated use a lambda like {@code (t1,t2) -> 0} instead
  */
+@Deprecated(forRemoval = true, since = "1.5.1")
 public class AlwaysEqualComparator<T>
     implements
     Comparator<T>

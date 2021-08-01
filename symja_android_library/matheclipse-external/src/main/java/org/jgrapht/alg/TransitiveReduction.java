@@ -1,5 +1,5 @@
 /*
- * (C) Copyright 2015-2020, by Christophe Thiebaud and Contributors.
+ * (C) Copyright 2015-2021, by Christophe Thiebaud and Contributors.
  *
  * JGraphT : a free Java graph-theory library
  *
@@ -150,8 +150,7 @@ public class TransitiveReduction
         // cf. http://docs.oracle.com/javase/7/docs/api/java/util/BitSet.html
 
         // initialize matrix with edges
-        final Set<E> edges = directedGraph.edgeSet();
-        for (final E edge : edges) {
+        for (final E edge : directedGraph.edgeSet()) {
             final V v1 = directedGraph.getEdgeSource(edge);
             final V v2 = directedGraph.getEdgeTarget(edge);
 

@@ -1,5 +1,5 @@
 /*
- * (C) Copyright 2016-2020, by Joris Kinable and Contributors.
+ * (C) Copyright 2016-2021, by Joris Kinable and Contributors.
  *
  * JGraphT : a free Java graph-theory library
  *
@@ -133,7 +133,7 @@ public class PadbergRaoOddMinimumCutset<V, E>
             throw new IllegalArgumentException("There needs to be an even number of odd vertices");
         assert network.vertexSet().containsAll(oddVertices); // All odd vertices must be contained
         // in the graph
-        // all edge weights mucht be non-negative
+        // all edge weights must be non-negative
         assert network.edgeSet().stream().noneMatch(e -> network.getEdgeWeight(e) < 0);
 
         gomoryHuTree = gusfieldGomoryHuCutTreeAlgorithm.getGomoryHuTree();

@@ -1,5 +1,5 @@
 /*
- * (C) Copyright 2015-2020, by Alexey Kudinkin, Joris Kinable and Contributors.
+ * (C) Copyright 2015-2021, by Alexey Kudinkin, Joris Kinable and Contributors.
  *
  * JGraphT : a free Java graph-theory library
  *
@@ -311,6 +311,11 @@ public abstract class MaximumFlowAlgorithmBase<V, E>
         public boolean hasCapacity()
         {
             return comparator.compare(capacity, flow) > 0;
+        }
+
+        public double getResidualCapacity()
+        {
+            return capacity - flow;
         }
 
         @Override

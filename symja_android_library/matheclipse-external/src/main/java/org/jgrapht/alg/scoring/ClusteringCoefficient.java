@@ -1,5 +1,5 @@
 /*
- * (C) Copyright 2018-2020, by Alexandru Valeanu and Contributors.
+ * (C) Copyright 2018-2021, by Alexandru Valeanu and Contributors.
  *
  * JGraphT : a free Java graph-theory library
  *
@@ -130,7 +130,7 @@ public class ClusteringCoefficient<V, E>
      */
     public double getAverageClusteringCoefficient()
     {
-        if (graph.vertexSet().size() == 0)
+        if (graph.vertexSet().isEmpty())
             return 0;
 
         if (!computedAverage) {

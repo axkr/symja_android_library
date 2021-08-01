@@ -1,5 +1,5 @@
 /*
- * (C) Copyright 2019-2020, by Semen Chudakov and Contributors.
+ * (C) Copyright 2019-2021, by Semen Chudakov and Contributors.
  *
  * JGraphT : a free Java graph-theory library
  *
@@ -20,10 +20,12 @@ package org.jgrapht.alg.shortestpath;
 import org.jgrapht.*;
 import org.jgrapht.alg.util.*;
 import org.jgrapht.graph.*;
+import org.jgrapht.util.ConcurrencyUtil;
 import org.jheaps.*;
 import org.jheaps.tree.*;
 
 import java.util.*;
+import java.util.concurrent.ThreadPoolExecutor;
 import java.util.function.*;
 
 import static org.jgrapht.alg.shortestpath.BidirectionalDijkstraShortestPath.DijkstraSearchFrontier;
@@ -66,6 +68,17 @@ import static org.jgrapht.alg.shortestpath.ContractionHierarchyPrecomputation.*;
  * no means to ensure that the specified contraction is correct, nor to fail-fast. If algorithm uses
  * an incorrect contraction, the results of the search are unpredictable.
  *
+ * <p>
+ * Comparing to usual shortest path algorithm, as {@link DijkstraShortestPath},
+ * {@link AStarShortestPath}, etc., this algorithm spends time for computing contraction hierarchy
+ * but offers significant speedup in shortest path query performance. Therefore it is efficient to
+ * use it in order to compute many shortest path on a single graph. Furthermore, on small graphs
+ * (i.e with less than 1.000 vertices) the overhead of precomputation is higher than the speed at
+ * the stage of computing shortest paths. Typically this algorithm is used to gain speedup for
+ * shortest path queries on graphs of middle and large size (i.e. starting at 1.000 vertices). If a
+ * further query performance improvement is needed take a look at
+ * {@link TransitNodeRoutingShortestPath}.
+ *
  * @param <V> the graph vertex type
  * @param <E> the graph edge type
  * @author Semen Chudakov
@@ -105,10 +118,29 @@ public class ContractionHierarchyBidirectionalDijkstra<V, E>
      * Constructs a new instance of the algorithm for a given {@code graph}.
      *
      * @param graph the graph
+     * @deprecated replaced with
+     *             {@link #ContractionHierarchyBidirectionalDijkstra(Graph, ThreadPoolExecutor)}
      */
+    @Deprecated
     public ContractionHierarchyBidirectionalDijkstra(Graph<V, E> graph)
     {
         this(new ContractionHierarchyPrecomputation<>(graph).computeContractionHierarchy());
+    }
+
+    /**
+     * Constructs a new instance of the algorithm for a given {@code graph} and {@code executor}. It
+     * is up to a user of this algorithm to handle the creation and termination of the provided
+     * {@code executor}. For utility methods to manage a {@code ThreadPoolExecutor} see
+     * {@link ConcurrencyUtil}.
+     *
+     * @param graph the graph
+     * @param executor executor which is used for computing the {@link ContractionHierarchy}
+     */
+    public ContractionHierarchyBidirectionalDijkstra(Graph<V, E> graph, ThreadPoolExecutor executor)
+    {
+        this(
+            new ContractionHierarchyPrecomputation<>(graph, executor)
+                .computeContractionHierarchy());
     }
 
     /**

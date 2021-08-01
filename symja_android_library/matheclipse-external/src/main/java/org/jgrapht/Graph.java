@@ -1,5 +1,5 @@
 /*
- * (C) Copyright 2003-2020, by Barak Naveh and Contributors.
+ * (C) Copyright 2003-2021, by Barak Naveh and Contributors.
  *
  * JGraphT : a free Java graph-theory library
  *
@@ -17,8 +17,11 @@
  */
 package org.jgrapht;
 
-import java.util.*;
-import java.util.function.*;
+import java.util.Collection;
+import java.util.Set;
+import java.util.function.Supplier;
+
+import org.jgrapht.graph.DefaultGraphIterables;
 
 /**
  * The root interface in the graph hierarchy. A mathematical graph-theory graph object
@@ -327,6 +330,7 @@ public interface Graph<V, E>
      *
      * @throws IllegalArgumentException if vertex is not found in the graph.
      * @throws NullPointerException if vertex is <code>null</code>.
+     * @throws ArithmeticException if the result overflows an int
      */
     int degreeOf(V vertex);
 
@@ -359,6 +363,7 @@ public interface Graph<V, E>
      *
      * @throws IllegalArgumentException if vertex is not found in the graph.
      * @throws NullPointerException if vertex is <code>null</code>.
+     * @throws ArithmeticException if the result overflows an int
      */
     int inDegreeOf(V vertex);
 
@@ -394,6 +399,7 @@ public interface Graph<V, E>
      *
      * @throws IllegalArgumentException if vertex is not found in the graph.
      * @throws NullPointerException if vertex is <code>null</code>.
+     * @throws ArithmeticException if the result overflows an int
      */
     int outDegreeOf(V vertex);
 
@@ -594,6 +600,18 @@ public interface Graph<V, E>
     default void setEdgeWeight(V sourceVertex, V targetVertex, double weight)
     {
         this.setEdgeWeight(this.getEdge(sourceVertex, targetVertex), weight);
+    }
+
+    /**
+     * Access the graph using the {@link GraphIterables} interface. This allows accessing graphs
+     * without the restrictions imposed by 32-bit arithmetic. Moreover, graph implementations are
+     * free to implement this interface without explicitly materializing intermediate results.
+     * 
+     * @return the graph iterables
+     */
+    default GraphIterables<V, E> iterables()
+    {
+        return new DefaultGraphIterables<V, E>(this);
     }
 
 }

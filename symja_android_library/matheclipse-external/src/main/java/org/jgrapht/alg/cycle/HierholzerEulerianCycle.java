@@ -1,5 +1,5 @@
 /*
- * (C) Copyright 2016-2020, by Dimitrios Michail and Contributors.
+ * (C) Copyright 2016-2021, by Dimitrios Michail and Contributors.
  *
  * JGraphT : a free Java graph-theory library
  *
@@ -146,7 +146,7 @@ public class HierholzerEulerianCycle<V, E>
     {
         if (!isEulerian(g)) {
             throw new IllegalArgumentException("Graph is not Eulerian");
-        } else if (g.vertexSet().size() == 0) {
+        } else if (g.vertexSet().isEmpty()) {
             throw new IllegalArgumentException("Null graph not permitted");
         } else if (GraphTests.isEmpty(g)) {
             return GraphWalk.emptyWalk(g);

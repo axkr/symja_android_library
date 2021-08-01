@@ -1,5 +1,5 @@
 /*
- * (C) Copyright 2016-2020, by Assaf Mizrachi and Contributors.
+ * (C) Copyright 2016-2021, by Assaf Mizrachi and Contributors.
  *
  * JGraphT : a free Java graph-theory library
  *
@@ -20,13 +20,16 @@ package org.jgrapht.alg.shortestpath;
 import org.jgrapht.*;
 
 /**
- * May be used to provide external path validations in addition to the basic validations done by
- * {@link KShortestSimplePaths} - that the path is from source to target and that it does not
- * contain loops.
- * 
+ * Path validator for shortest path algorithms. Shortest path algorithms typically maintain a set of
+ * partial paths which are iteratively extended until some stopping criterion is met, e.g. the
+ * target vertex is reached. A path validator can be used to enforce additional criteria as to the
+ * validity of a given path. A partial path can only be extended by another edge if the path
+ * validator deems this extension feasible. As per example, a path validator can be used to enforce
+ * that a path connecting a source to a terminal vertex visits at least $n$ vertices.
+ *
  * @param <V> the graph vertex type
  * @param <E> the graph edge type
- * 
+ *
  * @author Assaf Mizrachi
  *
  */
@@ -35,10 +38,10 @@ public interface PathValidator<V, E>
 
     /**
      * Checks if an edge can be added to a previous path element.
-     * 
+     *
      * @param partialPath the path from source vertex up to the current vertex.
      * @param edge the new edge to be added to the path.
-     * 
+     *
      * @return <code>true</code> if edge can be added, <code>false</code> otherwise.
      */
     public boolean isValidPath(GraphPath<V, E> partialPath, E edge);

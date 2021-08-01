@@ -1,5 +1,5 @@
 /*
- * (C) Copyright 2016-2020, by Assaf Mizrachi and Contributors.
+ * (C) Copyright 2016-2021, by Assaf Mizrachi and Contributors.
  *
  * JGraphT : a free Java graph-theory library
  *
@@ -48,7 +48,9 @@ import java.util.*;
  *
  * @param <V> vertex type
  * @param <E> edge type
+ * @deprecated Use {@link RandomWalkVertexIterator} instead.
  */
+@Deprecated
 public class RandomWalkIterator<V, E>
     extends
     AbstractGraphIterator<V, E>
