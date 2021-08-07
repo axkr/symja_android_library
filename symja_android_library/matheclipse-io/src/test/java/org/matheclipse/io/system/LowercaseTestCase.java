@@ -33462,6 +33462,14 @@ public class LowercaseTestCase extends AbstractTestCase {
   }
 
   public void testSolve() {
+    // github #247
+    check(
+        "Solve((k+3)/(4)==(k)/2,{k})", //
+        "{{k->3}}");
+    check(
+        "Solve(k+3/(4)==(k)/2,{k})", //
+        "{{k->-3/2}}");
+    
     check(
         "Solve({{x,y}=={3,4}},{x,y})", //
         "{{x->3,y->4}}");

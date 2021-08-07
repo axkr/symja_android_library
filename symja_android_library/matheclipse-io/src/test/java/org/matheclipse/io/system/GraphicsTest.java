@@ -34,6 +34,15 @@ public class GraphicsTest extends AbstractTestCase {
         "8*Pi");
   }
 
+  public void testRGBColor() {
+    check(
+        "Black", //
+        "RGBColor(0.0,0.0,0.0)");
+    check(
+        "Blue", //
+        "RGBColor(0.0,0.0,1.0)");
+  }
+  
   /** The JUnit setup method */
   @Override
   protected void setUp() {
