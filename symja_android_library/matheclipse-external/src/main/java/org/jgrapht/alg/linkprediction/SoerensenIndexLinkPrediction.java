@@ -50,7 +50,7 @@ import org.jgrapht.alg.util.Pair;
  * 
  * @author Dimitrios Michail
  */
-public class SørensenIndexLinkPrediction<V, E>
+public class SoerensenIndexLinkPrediction<V, E>
     implements
     LinkPredictionAlgorithm<V, E>
 {
@@ -61,7 +61,7 @@ public class SørensenIndexLinkPrediction<V, E>
      * 
      * @param graph the input graph
      */
-    public SørensenIndexLinkPrediction(Graph<V, E> graph)
+    public SoerensenIndexLinkPrediction(Graph<V, E> graph)
     {
         this.graph = Objects.requireNonNull(graph);
     }
