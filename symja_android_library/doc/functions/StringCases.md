@@ -15,7 +15,7 @@ StringCases(string, pattern)
 >> StringCases("a#ä_123", WordCharacter) 
 {a,ä,1,2,3}
 
-StringCases("a#ä_123", LetterCharacter)
+>> StringCases("a#ä_123", LetterCharacter)
 {a,ä}
 ```
 
