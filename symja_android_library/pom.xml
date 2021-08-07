@@ -41,6 +41,7 @@
 		<module>matheclipse-gpl</module>
 		<module>matheclipse-api</module>
 		<module>matheclipse-io</module>
+	<!--	<module>matheclipse-jar</module> -->
 		<module>matheclipse-beakerx</module>
 		<module>matheclipse-discord</module>
 	</modules>
@@ -251,25 +252,25 @@
 			<dependency>
 				<groupId>org.apfloat</groupId>
 				<artifactId>apfloat</artifactId>
-				<version>1.10.1-SNAPSHOT</version>
+				<version>1.10.1</version>
 			</dependency>
 
 			<dependency>
 				<groupId>org.codehaus.janino</groupId>
 				<artifactId>janino</artifactId>
-				<version>3.1.4</version>
+				<version>3.1.6</version>
 			</dependency>
 
 			<dependency>
 				<groupId>org.commonmark</groupId>
 				<artifactId>commonmark</artifactId>
-				<version>0.17.2</version>
+				<version>0.18.0</version>
 			</dependency>
 
 			<dependency>
 				<groupId>org.commonmark</groupId>
 				<artifactId>commonmark-ext-gfm-tables</artifactId>
-				<version>0.17.2</version>
+				<version>0.18.0</version>
 			</dependency>
 
 			<dependency>
@@ -329,13 +330,13 @@
 			<dependency>
 				<groupId>org.jheaps</groupId>
 				<artifactId>jheaps</artifactId>
-				<version>0.13</version>
+				<version>0.14</version>
 			</dependency>
 
 			<dependency>
 				<groupId>org.jsoup</groupId>
 				<artifactId>jsoup</artifactId>
-				<version>1.12.1</version>
+				<version>1.14.1</version>
 			</dependency>
 
 			<dependency>
