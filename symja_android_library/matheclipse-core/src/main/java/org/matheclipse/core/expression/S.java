@@ -5123,6 +5123,8 @@ public class S {
   public static final IBuiltInSymbol Lexicographic =
       F.initFinalSymbol("Lexicographic", ID.Lexicographic);
 
+  public static final IBuiltInSymbol Lighting = F.initFinalSymbol("Lighting", ID.Lighting);
+
   public static final IBuiltInSymbol LightBlue = F.initFinalSymbol("LightBlue", ID.LightBlue);
 
   public static final IBuiltInSymbol LightBrown = F.initFinalSymbol("LightBrown", ID.LightBrown);

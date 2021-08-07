@@ -1,6 +1,7 @@
 package org.matheclipse.core.expression;
 
 import org.matheclipse.core.eval.EvalEngine;
+import org.matheclipse.core.form.output.WolframFormFactory;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.interfaces.ISymbol;
@@ -146,5 +147,17 @@ public class RepeatedPattern extends PatternSequence {
       buffer.append("..");
     }
     return buffer.toString();
+  }
+  
+  @Override
+  public  String toWolframString() {
+    final StringBuilder buffer = new StringBuilder();
+    buffer.append(WolframFormFactory.get().toString(fRepeatedExpr));
+    if (fZeroArgsAllowed) {
+      buffer.append("...");
+    } else {
+      buffer.append("..");
+    }
+    return buffer.toString(); 
   }
 }

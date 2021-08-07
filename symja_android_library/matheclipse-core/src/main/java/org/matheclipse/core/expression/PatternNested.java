@@ -1,5 +1,6 @@
 package org.matheclipse.core.expression;
 
+import org.matheclipse.core.form.output.WolframFormFactory;
 import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.interfaces.IPattern;
 import org.matheclipse.core.interfaces.IPatternObject;
@@ -156,6 +157,19 @@ public class PatternNested extends Pattern {
     buffer.append(fSymbol.toString());
     buffer.append(':');
     buffer.append(fPatternExpr.toString());
+    buffer.append(')');
+
+    return buffer.toString();
+  }
+
+  @Override
+  public String toWolframString() {
+    final StringBuilder buffer = new StringBuilder();
+
+    buffer.append('(');
+    buffer.append(fSymbol.toString());
+    buffer.append(':');
+    buffer.append(WolframFormFactory.get().toString(fPatternExpr));
     buffer.append(')');
 
     return buffer.toString();

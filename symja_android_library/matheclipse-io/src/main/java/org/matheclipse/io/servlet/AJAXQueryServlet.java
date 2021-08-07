@@ -6,13 +6,11 @@ import java.io.PrintWriter;
 import java.io.StringWriter;
 import java.util.HashMap;
 import java.util.Map;
-
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpSession;
-
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.text.StringEscapeUtils;
 import org.apache.logging.log4j.LogManager;
@@ -20,6 +18,8 @@ import org.apache.logging.log4j.Logger;
 import org.matheclipse.core.basic.Config;
 import org.matheclipse.core.basic.ToggleFeature;
 import org.matheclipse.core.builtin.GraphFunctions;
+import org.matheclipse.core.builtin.GraphicsFunctions;
+import org.matheclipse.core.convert.ExpressionJSONConvert;
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.ExprEvaluator;
 // import org.matheclipse.core.eval.LastCalculationsHistory;
@@ -43,6 +43,7 @@ import org.matheclipse.io.expression.ASTDataset;
 import org.matheclipse.parser.client.FEConfig;
 import org.matheclipse.parser.client.SyntaxError;
 import org.matheclipse.parser.client.math.MathException;
+import com.fasterxml.jackson.databind.JsonNode;
 
 public class AJAXQueryServlet extends HttpServlet {
 
@@ -59,19 +60,17 @@ public class AJAXQueryServlet extends HttpServlet {
           + "<head>\n"
           + "<meta charset=\"utf-8\">\n"
           + "<title>Graphics3D</title>\n"
-          + "<script src=https://cdnjs.cloudflare.com/ajax/libs/three.js/r116/three.min.js></script>\n"
-          + "<script src=https://cdn.jsdelivr.net/gh/JerryI/Mathematica-ThreeJS-graphics-engine@latest/Mathics/Detector.js></script>\n"
-          + "<script src=https://cdn.jsdelivr.net/gh/JerryI/Mathematica-ThreeJS-graphics-engine@latest/graphics3d.js></script>"
+          + "<script src=\"https://cdn.jsdelivr.net/npm/@mathicsorg/mathics-threejs-backend@latest/bundle/index.js\"></script>\n"
           + "</head>\n"
           + "\n"
           + "<body>\n"
-          + "  <div id=\"graphics3d\"></div>\n"
-          + "</body>\n"
-          + "<script>\n"
-          + "var JSONThree = `1`;\n"
-          + "	interpretate(JSONThree);\n"
-          + "</script>"
-          + "</html>"; //
+          + "    <main id=\"graphics3d\"></main>\n"
+          + "\n"
+          + "    <script type=\"module\"> \n"
+          + "        drawGraphics3d(\n"
+          + "            document.getElementById('graphics3d'),`1`);\n" 
+          + "    </script>\n"
+          + "</body>"; //
 
   protected static final String VISJS_IFRAME = //
       "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n"
@@ -149,6 +148,7 @@ public class AJAXQueryServlet extends HttpServlet {
   @Override
   protected void doPost(HttpServletRequest req, HttpServletResponse res)
       throws ServletException, IOException {
+    //    System.out.println("/ajax/query");
     res.setContentType("text/html; charset=UTF-8");
     res.setCharacterEncoding("UTF-8");
     res.setHeader("Cache-Control", "no-cache");
@@ -287,11 +287,10 @@ public class AJAXQueryServlet extends HttpServlet {
         if (outExpr != null) {
           if (outExpr.isAST(S.Graphics)) {
             outExpr = F.Show(outExpr);
-          } else if (outExpr.isAST(S.Graphics3D)) {
-            IExpr expressionJSON =
-                engine.evaluate(F.ExportString(F.N(outExpr), F.stringx("ExpressionJSON")));
-            if (expressionJSON.isString()) {
-              String jsonStr = expressionJSON.toString();
+          } else if (outExpr.isASTSizeGE(S.Graphics3D, 2)) {
+            StringBuilder buf = new StringBuilder();
+            if (GraphicsFunctions.renderGraphics3D(buf, (IAST) outExpr, engine)) {
+              String jsonStr = buf.toString();
               try {
                 String html = GRAPHICS3D_IFRAME;
                 html = StringUtils.replace(html, "`1`", jsonStr);

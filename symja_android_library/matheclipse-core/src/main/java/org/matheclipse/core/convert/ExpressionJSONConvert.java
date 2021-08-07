@@ -1,17 +1,20 @@
 package org.matheclipse.core.convert;
 
+import static org.matheclipse.core.expression.F.CD0;
+import static org.matheclipse.core.expression.F.RGBColor;
 import java.io.IOException;
-import java.io.StringWriter;
-
 import org.apfloat.Apfloat;
 import org.matheclipse.core.expression.ApfloatNum;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.expression.Num;
+import org.matheclipse.core.expression.S;
+import org.matheclipse.core.graphics.IGraphics3D;
 import org.matheclipse.core.interfaces.IAST;
+import org.matheclipse.core.interfaces.IBuiltInSymbol;
 import org.matheclipse.core.interfaces.IComplexNum;
+import org.matheclipse.core.interfaces.IEvaluator;
 import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.interfaces.IStringX;
-
 import com.fasterxml.jackson.core.JsonGenerationException;
 import com.fasterxml.jackson.databind.JsonMappingException;
 import com.fasterxml.jackson.databind.JsonNode;
@@ -21,7 +24,7 @@ import com.fasterxml.jackson.databind.node.ArrayNode;
 /** Export an expression to <code>ExpressionJSON</code> format. */
 public class ExpressionJSONConvert {
 
-  static final ObjectMapper objectMapper = new ObjectMapper();
+  public static final ObjectMapper JSON_OBJECT_MAPPER = new ObjectMapper();
 
   public ExpressionJSONConvert() {}
 
@@ -66,13 +69,13 @@ public class ExpressionJSONConvert {
       throws IOException, JsonGenerationException, JsonMappingException {
     if (expr.isASTOrAssociation()) {
       IAST ast = (IAST) expr;
-      ArrayNode temp = objectMapper.createArrayNode();
+      ArrayNode temp = JSON_OBJECT_MAPPER.createArrayNode();
       temp.add(ast.head().toString());
       for (int i = 1; i < ast.size(); i++) {
         IExpr arg = ast.getRule(i);
         if (arg.isComplexNumeric()) {
           IComplexNum complexNum = (IComplexNum) arg;
-          ArrayNode complexJson = objectMapper.createArrayNode();
+          ArrayNode complexJson = JSON_OBJECT_MAPPER.createArrayNode();
           complexJson.add("Complex");
           complexJson.add(complexNum.reDoubleValue());
           complexJson.add(complexNum.imDoubleValue());
@@ -96,7 +99,74 @@ public class ExpressionJSONConvert {
       }
       return temp;
     }
-    ArrayNode temp = objectMapper.createArrayNode();
+    ArrayNode temp = JSON_OBJECT_MAPPER.createArrayNode();
+    temp.add(temp.toString());
+    return temp;
+  }
+
+  public static boolean exportGraphics3D(StringBuilder buf, IExpr data3D) {
+    if (data3D.isList()) {
+      boolean first = true;
+      IAST rgbColor = F.NIL;
+      IExpr opacity = F.num(0.75);
+      IAST list = (IAST) data3D;
+      for (int i = 1; i < list.size(); i++) {
+        IExpr arg = list.getAST(i);
+        if (arg.isAST()) {
+          IAST ast = (IAST) arg;
+          if (ast.isAST(S.RGBColor, 4)) {
+            rgbColor = ast;
+            continue;
+          }
+          if (ast.isAST(S.Opacity, 2)) {
+            opacity = ast.arg1();
+            continue;
+          }
+          if (ast.head().isBuiltInSymbol()) {
+            IBuiltInSymbol symbol = (IBuiltInSymbol) ast.head();
+            IEvaluator evaluator = symbol.getEvaluator();
+            if (evaluator instanceof IGraphics3D) {
+              if (!first) {
+                buf.append(",");
+              }
+              first = false;
+
+              if (!((IGraphics3D) evaluator).graphics3D(buf, (IAST) ast, rgbColor, opacity)) {
+                return false;
+              }
+              continue;
+            }
+          }
+        }
+      }
+      return true;
+    }
+    return false;
+  }
+
+  private static JsonNode exportGraphics3DJSON(IExpr data3D)
+      throws IOException, JsonGenerationException, JsonMappingException {
+    if (data3D.isList()) {
+      IAST list = (IAST) data3D;
+      ArrayNode temp = JSON_OBJECT_MAPPER.createArrayNode();
+      for (int i = 1; i < list.size(); i++) {
+        IExpr arg = list.getAST(i);
+        if (arg.isAST()) {
+          IAST ast = (IAST) arg;
+          if (ast.head().isBuiltInSymbol()) {
+            StringBuilder buf = new StringBuilder();
+            IBuiltInSymbol symbol = (IBuiltInSymbol) ast.head();
+            IEvaluator evaluator = symbol.getEvaluator();
+            if (evaluator instanceof IGraphics3D) {
+              //              JsonNode n = ((IGraphics3D) evaluator).graphics3D(buf, (IAST) ast);
+              //              temp.add(n);
+            }
+          }
+        }
+      }
+      return temp;
+    }
+    ArrayNode temp = JSON_OBJECT_MAPPER.createArrayNode();
     temp.add(temp.toString());
     return temp;
   }

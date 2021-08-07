@@ -177,4 +177,16 @@ public class OptionsPattern extends PatternSequence {
     }
     return buffer.toString();
   }
+  
+  @Override
+  public String toWolframString() {
+    final StringBuilder buffer = new StringBuilder();
+    if (fSymbol == null) {
+      buffer.append("OptionsPattern[]");
+    } else {
+      buffer.append(fSymbol.toString());
+      buffer.append(":OptionsPattern[]");
+    }
+    return buffer.toString();
+  }
 }

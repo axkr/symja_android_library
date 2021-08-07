@@ -4558,6 +4558,14 @@ public interface IExpr
     return toDoubleVector();
   }
 
+  default double toDoubleDefault() throws ArgumentTypeException {
+    return EvalEngine.get().evalDouble(this, Double.MIN_VALUE);
+  }
+
+  default double toDoubleDefault(double defaultValue) {
+    return EvalEngine.get().evalDouble(this, defaultValue);
+  }
+
   /**
    * Converts this number to an <code>int</code> value; unlike {@link #intValue} this method returns
    * <code>Integer.MIN_VALUE</code> if the value of this integer isn't in the range <code>
@@ -5016,5 +5024,8 @@ public interface IExpr
     // degrees * (Pi / 180)
     return F.Times(F.QQ(1L, 180L), this, S.Pi);
   }
-
+   
+  default String toWolframString() {
+    return toString( );
+  }
 }

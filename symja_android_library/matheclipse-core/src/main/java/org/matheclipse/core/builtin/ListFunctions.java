@@ -2705,6 +2705,10 @@ public final class ListFunctions {
         // default value
         return ast.arg2();
       }
+      if (ast.arg1().size() == 1) {
+        // `1` has zero length and no first element.
+        return IOFunctions.printMessage(ast.topHead(), "nofirst", F.List(ast.arg1()), engine);
+      }
       // Nonatomic expression expected at position `1` in `2`.
       return IOFunctions.printMessage(ast.topHead(), "normal", F.List(F.C1, ast), engine);
     }
@@ -3423,7 +3427,7 @@ public final class ListFunctions {
             IAST arg1 = (IAST) ast.arg1();
             Set<IExpr> set = arg1.asSet();
             if (set != null) {
-              final IASTMutable result = F.ListAlloc(set );
+              final IASTMutable result = F.ListAlloc(set);
               EvalAttributes.sort(result, Comparators.CANONICAL_COMPARATOR);
               return result;
             }
@@ -3737,6 +3741,10 @@ public final class ListFunctions {
       if (ast.isAST2()) {
         // default value
         return ast.arg2();
+      }
+      if (ast.arg1().size() == 1) {
+        // `1` has zero length and no last element.
+        return IOFunctions.printMessage(ast.topHead(), "nolast", F.List(ast.arg1()), engine);
       }
       // Nonatomic expression expected at position `1` in `2`.
       return IOFunctions.printMessage(ast.topHead(), "normal", F.List(F.C1, ast), engine);
@@ -4053,7 +4061,7 @@ public final class ListFunctions {
         if (arg1.argSize() > 0) {
           return ((IAST) arg1).most();
         }
-        // `1` has zero length and no last element.
+        // Cannot take Most of expression `1` with length zero.
         return IOFunctions.printMessage(ast.topHead(), "nomost", F.List(arg1), engine);
       }
       // Nonatomic expression expected at position `1` in `2`.

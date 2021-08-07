@@ -167,6 +167,7 @@ public class AST2Expr {
     "Left",
     "LetterCharacter",
     "Lexicographic",
+    "Lighting",
     "LightBlue",
     "LightBrown",
     "LightCyan",

@@ -6488,6 +6488,10 @@ public class F extends S {
     return new AST3(RGBColor, a0, a1, a2);
   }
 
+  public static IAST RGBColor(final double a0, final double a1, final double a2) {
+    return new AST3(RGBColor, F.num(a0), F.num(a1), F.num(a2));
+  }
+
   /**
    * Get or create a user defined symbol which is retrieved from the evaluation engines context
    * path.

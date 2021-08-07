@@ -1243,6 +1243,19 @@ public class EvalEngine implements Serializable {
         "conversion into a machine-size double numeric value is not possible!");
   }
 
+  public final double evalDouble(final IExpr expr, double defaultValue) {
+    if (expr.isReal()) {
+      return ((ISignedNumber) expr).doubleValue();
+    }
+    if (expr.isNumericFunction(true)) {
+      IExpr result = evalN(expr);
+      if (result.isReal()) {
+        return ((ISignedNumber) result).doubleValue();
+      }
+    }
+    return defaultValue;
+  }
+
   public final int evalInt(final IExpr expr) throws ArgumentTypeException {
     int result = Integer.MIN_VALUE;
     if (expr.isReal()) {

@@ -5,6 +5,7 @@ import java.io.IOException;
 import org.matheclipse.core.convert.AST2Expr;
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.expression.Context;
+import org.matheclipse.core.interfaces.IPatternObject;
 import org.matheclipse.core.interfaces.ISymbol;
 
 public class WolframFormFactory extends OutputFormFactory {
@@ -37,6 +38,11 @@ public class WolframFormFactory extends OutputFormFactory {
     } else {
       append(buf, context.completeContextName() + symbol.getSymbolName());
     }
+  }
+
+  public void convertPattern(final Appendable buf, final IPatternObject pattern)
+      throws IOException {
+    append(buf, pattern.toWolframString());
   }
 
   /**

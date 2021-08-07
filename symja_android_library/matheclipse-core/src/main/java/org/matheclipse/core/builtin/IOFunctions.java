@@ -714,7 +714,9 @@ public class IOFunctions {
     "optb",
     "Optional object `1` in `2` is not a single blank.", //
     "optnf",
-    "Option name `2` not found in defaults for `1`", //
+    "Option name `2` not found in defaults for `1`.", //
+    "opttf",
+    "Value of option `1`->`2` should be True or False.", //
     "optx",
     "Unknown option `1` in `2`.", //
     "ovfl",
