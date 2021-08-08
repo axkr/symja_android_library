@@ -4,8 +4,8 @@ import java.io.IOException;
 import java.net.URL;
 import java.net.URLClassLoader;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Map;
-
 import org.codehaus.commons.compiler.CompileException;
 import org.codehaus.janino.SimpleCompiler;
 import org.matheclipse.core.basic.Config;
@@ -38,6 +38,7 @@ public class CompilerFunctions {
           + "import org.matheclipse.core.eval.interfaces.AbstractFunctionEvaluator;     \n"
           + "import org.matheclipse.core.interfaces.*;                                  \n"
           + "import org.matheclipse.core.eval.EvalEngine;                               \n"
+          + "import org.matheclipse.core.expression.ExprTrie;                           \n"
           + "import org.matheclipse.core.expression.S;                                  \n"
           + "import static org.matheclipse.core.expression.S.*;                         \n"
           + "import org.matheclipse.core.expression.F;                                  \n"
@@ -46,6 +47,7 @@ public class CompilerFunctions {
           + "public class CompiledFunction extends AbstractFunctionEvaluator {          \n"
           + "  EvalEngine engine;\n"
           + "  IASTAppendable stack;\n"
+          + "  ExprTrie vars;\n"
           + "  int top=1;\n"
           + "    public IExpr evaluate(final IAST ast, EvalEngine engine){              \n"
           + "        if (ast.argSize()!={$size}) { return print(ast,{$size},engine); }  \n"
@@ -192,11 +194,11 @@ public class CompilerFunctions {
           StringBuilder subMethods = new StringBuilder();
           for (int i = 1; i < f.size() - 1; i++) {
             expressions = new StringBuilder();
-            fFactory.convert(expressions, subMethods, f.get(i));
+            fFactory.convert(expressions, subMethods, f.get(i), true);
             methods.append(expressions.toString() + ";\n");
           }
           expressions = new StringBuilder();
-          fFactory.convert(expressions, subMethods, f.last());
+          fFactory.convert(expressions, subMethods, f.last(), true);
           methods.append("return " + expressions.toString() + ";\n");
           tryEnd(methods);
           methods.append("}\n\n");
@@ -253,7 +255,7 @@ public class CompilerFunctions {
         if (f.arg2().isNumericFunction(fFactory.numericVariables)) {
 
           StringBuilder numericBuffer = new StringBuilder();
-          int type = fFactory.convertNumeric(numericBuffer, f.arg2(), 1);
+          int type = fFactory.convertNumeric(numericBuffer, f.arg2(), fFactory.defaultNumericType);
           if (type > 0) {
             if (type == 1) {
               parentBuffer.append("INum " + variable + " = ");
@@ -268,8 +270,8 @@ public class CompilerFunctions {
         }
 
         parentBuffer.append("IExpr " + variable + " = ");
-        fFactory.convert(parentBuffer, methods, f.arg2());
-        parentBuffer.append(")");
+        fFactory.convert(parentBuffer, methods, f.arg2(), true);
+        //        parentBuffer.append(")");
         return true;
       }
     }
@@ -295,17 +297,17 @@ public class CompilerFunctions {
           methods.append("public IExpr ifExpression" + m + "() {\n");
           StringBuilder expression = new StringBuilder();
           StringBuilder subMethods = new StringBuilder();
-          fFactory.convert(expression, subMethods, f.arg1());
+          fFactory.convert(expression, subMethods, f.arg1(), true);
           methods.append("if(engine.evalTrue(" + expression.toString() + ")){\n");
           expression = new StringBuilder();
-          fFactory.convert(expression, subMethods, f.arg2());
+          fFactory.convert(expression, subMethods, f.arg2(), true);
           methods.append("return ");
           methods.append(expression);
           methods.append(";\n");
           if (f.size() == 4) {
             methods.append("} else {\n");
             expression = new StringBuilder();
-            fFactory.convert(expression, subMethods, f.arg3());
+            fFactory.convert(expression, subMethods, f.arg3(), true);
             methods.append("return ");
             methods.append(expression);
             methods.append(";\n");
@@ -331,32 +333,54 @@ public class CompilerFunctions {
         }
         fFactory.variables.push();
         fFactory.numericVariables.push();
+        HashSet<String> oldLocalVariables = fFactory.localVariables;
         try {
+          HashSet<String> localVariables = (HashSet<String>) fFactory.localVariables.clone();
+          fFactory.localVariables = localVariables;
           IAST variableList = (IAST) f.arg1();
           int m = fFactory.module++;
           methods.append("public IExpr moduleExpression" + m + "() {\n");
+          methods.append("ExprTrie oldVars = vars;");
           tryBegin(methods);
+          methods.append("vars = vars.copy();\n");
           StringBuilder expressions;
           for (int i = 1; i < variableList.size(); i++) {
             IExpr arg = variableList.get(i);
-            if (!arg.isAST(S.Set, 3)) {
+            if (arg.isSymbol()) {
+
+              methods.append(
+                  "ISymbol " + arg.toString() + " = F.Dummy(\"" + arg.toString() + "\");\n");
+              localVariables.add(arg.toString());
+              methods.append("vars.put(\"" + arg.toString() + "\"," + arg.toString() + ");\n");
+              continue;
+            }
+
+            if (!arg.isAST(S.Set, 3) && !arg.first().isSymbol()) {
               return false;
             }
+            String symbolName = arg.first().toString();
+            localVariables.add(symbolName.toString());
+            methods.append("ISymbol " + symbolName + " = F.Dummy(\"" + symbolName + "\");\n");
+            localVariables.add(arg.toString());
+            methods.append("vars.put(\"" + symbolName + "\"," + symbolName + ");\n");
             expressions = new StringBuilder();
-            fFactory.convert(expressions, methods, arg);
-            methods.append(expressions.toString() + ";\n");
+            fFactory.convert(expressions, methods, arg.second(), false);
+            methods.append("F.eval(F.Set(" + symbolName + "," + expressions.toString() + "));\n");
           }
 
           expressions = new StringBuilder();
           StringBuilder subMethods = new StringBuilder();
-          fFactory.convert(expressions, subMethods, f.arg2());
+          fFactory.convert(expressions, subMethods, f.arg2(), true);
           methods.append("return " + expressions.toString() + ";\n");
-          tryEnd(methods);
+          //          tryEnd
+          methods.append("} finally {top = oldTop; vars = oldVars;}\n");
+
           methods.append("}\n\n");
           methods.append(subMethods);
 
           parentBuffer.append("moduleExpression" + m + "()");
         } finally {
+          fFactory.localVariables = oldLocalVariables;
           fFactory.variables.pop();
           fFactory.numericVariables.pop();
         }
@@ -381,22 +405,40 @@ public class CompilerFunctions {
       CONVERTERS.put(S.Module, new ModuleConverter());
     }
 
+    int defaultNumericType;
+    HashSet<String> localVariables;
     VariableManager numericVariables;
     VariableManager variables;
     int topOfStack;
     final IAST types;
 
     public CompileFactory(
-        VariableManager numericVariables, VariableManager variables, IAST types, int topOfStack) {
+        VariableManager numericVariables,
+        VariableManager variables,
+        IAST types,
+        int topOfStack,
+        int defaultNumericType) {
+      this.localVariables = new HashSet<String>();
       this.numericVariables = numericVariables;
       this.variables = variables;
       this.types = types;
       this.topOfStack = topOfStack;
+      this.defaultNumericType = defaultNumericType;
     }
 
-    public void convert(StringBuilder buf, StringBuilder methods, IExpr expression) {
+    /**
+     * Write <code>expression</code> into the <code>buf</code> string builder.
+     *
+     * @param buf
+     * @param methods
+     * @param expression
+     * @param addEval if <code>true</code> wrap the expression with a <code>F.eval( ... )</code>
+     *     statement.
+     */
+    public void convert(
+        StringBuilder buf, StringBuilder methods, IExpr expression, boolean addEval) {
       if (expression.isNumericFunction(numericVariables)) {
-        int type = convertNumeric(buf, expression, 1);
+        int type = convertNumeric(buf, expression, defaultNumericType);
         if (type > 0) {
           return;
         }
@@ -417,9 +459,13 @@ public class CompilerFunctions {
           }
         }
       }
-      buf.append("F.eval(");
-      convertSymbolic(buf, expression);
-      buf.append(")");
+      if (addEval) {
+        buf.append("F.eval(");
+        convertSymbolic(buf, expression);
+        buf.append(")");
+      } else {
+        convertSymbolic(buf, expression);
+      }
     }
 
     /**
@@ -457,7 +503,7 @@ public class CompilerFunctions {
       }
       try {
         StringBuilder buf = new StringBuilder();
-        JavaComplexFormFactory factory = JavaComplexFormFactory.get(true, false);
+        JavaComplexFormFactory factory = JavaComplexFormFactory.get(true, false,-1,-1,true);
         buf.append("F.complexNum(");
         expression =
             F.subst(
@@ -485,6 +531,11 @@ public class CompilerFunctions {
         buf.append(
             expression.internalJavaString(
                 x -> {
+                  if (x.isSymbol()) {
+                    if (localVariables.contains(x.toString())) {
+                      return "vars.get(\"" + x.toString() + "\")";
+                    }
+                  }
                   String str = numericVariables.apply(x);
                   if (x.isSymbol() && str != null) {
                     return str;
@@ -612,6 +663,8 @@ public class CompilerFunctions {
     int top = 1;
     StringBuilder variablesBuf = new StringBuilder();
     variablesBuf.append("stack  = F.ast(S.List, 100, true);\n");
+    variablesBuf.append("vars = new ExprTrie();\n");
+    int defaultNumericType = 1;
     for (int i = 1; i < variables.size(); i++) {
       IExpr argType = types.get(i);
       IExpr variable = variables.get(i);
@@ -635,6 +688,7 @@ public class CompilerFunctions {
         variablesBuf.append("stack.set(top++, F.ZZ(" + variable + "i));\n");
         top++;
       } else if (argType.equals(S.Complex)) {
+        defaultNumericType = 2;
         variablesBuf.append("IExpr " + variable + " = ast.get(" + i + ");\n");
         variablesBuf.append("Complex " + variable + "c = engine.evalComplex(" + variable + ");\n");
         symbolicVariables.put(variable, variable.toString());
@@ -658,9 +712,10 @@ public class CompilerFunctions {
     VariableManager numericVars = new VariableManager(numericVariables);
     VariableManager symbolicVars = new VariableManager(symbolicVariables);
     CompilerFunctions.CompileFactory cf =
-        new CompilerFunctions.CompileFactory(numericVars, symbolicVars, types, top);
+        new CompilerFunctions.CompileFactory(
+            numericVars, symbolicVars, types, top, defaultNumericType);
     //    buf.append("\n");
-    cf.convert(buf, methods, expression);
+    cf.convert(buf, methods, expression, true);
     buf.append(";\n");
     String source = JAVA_SOURCE_CODE.replace("{$variables}", variablesBuf.toString());
     source = source.replace("{$methods}", methods.toString());

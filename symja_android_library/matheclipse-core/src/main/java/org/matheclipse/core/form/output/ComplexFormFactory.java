@@ -64,16 +64,19 @@ public abstract class ComplexFormFactory {
   // private int fColumnCounter;
   private int fExponentFigures;
   private int fSignificantFigures;
+  private boolean fPackagePrefix;
 
   public ComplexFormFactory(
       final boolean relaxedSyntax,
       final boolean reversed,
       int exponentFigures,
-      int significantFigures) {
+      int significantFigures,
+      boolean packagePrefix) {
     fRelaxedSyntax = relaxedSyntax;
     fPlusReversed = reversed;
     fExponentFigures = exponentFigures;
     fSignificantFigures = significantFigures;
+    fPackagePrefix = packagePrefix;
   }
 
   public void reset() {
@@ -103,8 +106,7 @@ public abstract class ComplexFormFactory {
     if (d instanceof Num) {
       convertDoubleString(buf, convertDoubleToFormattedString(doubleValue), precedence, isNegative);
     } else {
-      convertDoubleString(
-          buf, convertApfloat(d.apfloatValue( )), precedence, isNegative);
+      convertDoubleString(buf, convertApfloat(d.apfloatValue()), precedence, isNegative);
     }
   }
 
@@ -633,12 +635,18 @@ public abstract class ComplexFormFactory {
     }
     if (o instanceof ISignedNumber) {
       double d = o.evalDouble();
+      if (fPackagePrefix) {
+        buf.append("org.hipparchus.complex.");
+      }
       buf.append("Complex.valueOf(" + d + ")");
       return;
     }
     if (o instanceof INumber) {
       Complex c = o.evalComplex();
       if (c != null) {
+        if (fPackagePrefix) {
+          buf.append("org.hipparchus.complex.");
+        }
         buf.append("Complex.valueOf(" + c.getReal() + ", " + c.getImaginary() + ")");
       } else {
         buf.append("Complex.valueOf(" + o.toString() + ")");

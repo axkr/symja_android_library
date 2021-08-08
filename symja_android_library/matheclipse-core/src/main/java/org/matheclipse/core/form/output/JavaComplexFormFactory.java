@@ -44,7 +44,16 @@ public class JavaComplexFormFactory extends ComplexFormFactory {
       final boolean reversed,
       int exponentFigures,
       int significantFigures) {
-    super(relaxedSyntax, reversed, exponentFigures, significantFigures);
+    this(relaxedSyntax, reversed, exponentFigures, significantFigures, false);
+  }
+
+  private JavaComplexFormFactory(
+      final boolean relaxedSyntax,
+      final boolean reversed,
+      int exponentFigures,
+      int significantFigures,
+      boolean packagePrefix) {
+    super(relaxedSyntax, reversed, exponentFigures, significantFigures, packagePrefix);
   }
 
   /**
@@ -75,7 +84,7 @@ public class JavaComplexFormFactory extends ComplexFormFactory {
    */
   public static JavaComplexFormFactory get(
       final boolean relaxedSyntax, final boolean plusReversed) {
-    return get(relaxedSyntax, plusReversed, -1, -1);
+    return get(relaxedSyntax, plusReversed, -1, -1, false);
   }
 
   /**
@@ -90,15 +99,17 @@ public class JavaComplexFormFactory extends ComplexFormFactory {
    *     be printed in reversed order
    * @param exponentFigures
    * @param significantFigures
+   * @param packagePrefix
    * @return
    */
   public static JavaComplexFormFactory get(
       final boolean relaxedSyntax,
       final boolean plusReversed,
       int exponentFigures,
-      int significantFigures) {
+      int significantFigures,
+      boolean packagePrefix) {
     return new JavaComplexFormFactory(
-        relaxedSyntax, plusReversed, exponentFigures, significantFigures);
+        relaxedSyntax, plusReversed, exponentFigures, significantFigures, packagePrefix);
   }
 
   @Override

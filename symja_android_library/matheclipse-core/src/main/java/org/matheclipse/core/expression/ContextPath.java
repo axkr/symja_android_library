@@ -141,7 +141,7 @@ public final class ContextPath implements Iterable<Context> {
     return fContextMap.get(Context.GLOBAL_CONTEXT_NAME);
   }
 
-  public ISymbol getSymbol(String symbolName, final Context context, boolean relaxedSyntax) {
+  public static ISymbol getSymbol(String symbolName, final Context context, boolean relaxedSyntax) {
     String name = symbolName;
     if (relaxedSyntax) {
       if (symbolName.length() == 1) {
