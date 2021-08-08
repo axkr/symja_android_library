@@ -135,7 +135,7 @@
 			<dependency>
 				<groupId>com.ibm.icu</groupId>
 				<artifactId>icu4j</artifactId>
-				<version>68.2</version>
+				<version>69.1</version>
 			</dependency>
 
 			<dependency>
@@ -282,7 +282,7 @@
 			<dependency>
 				<groupId>org.choco-solver</groupId>
 				<artifactId>choco-solver</artifactId>
-				<version>4.10.7-SNAPSHOT</version>
+				<version>4.10.6</version>
 			</dependency>
 
 			<dependency>
@@ -390,16 +390,9 @@
 
 	</dependencies>
 
-	<repositories>
-		<repository>
-			<id>orekit</id>
-			<url>https://packages.orekit.org/repository/maven-public/</url>
-		</repository>
-		<repository>
-			<id>sonatype</id>
-			<url>https://oss.sonatype.org/content/groups/public/</url>
-		</repository>
-	</repositories>
+	<!-- <repositories> <repository> <id>orekit</id> <url>https://packages.orekit.org/repository/maven-public/</url> 
+		</repository> <repository> <id>sonatype</id> <url>https://oss.sonatype.org/content/groups/public/</url> 
+		</repository> </repositories> -->
 
 	<build>
 		<pluginManagement>
@@ -564,7 +557,7 @@
 				</plugins>
 			</build>
 		</profile>
-
+<!-- 
 		<profile>
 			<id>fixerrors</id>
 			<build>
@@ -584,6 +577,6 @@
 				</plugins>
 			</build>
 		</profile>
-
+ -->
 	</profiles>
 </project>
