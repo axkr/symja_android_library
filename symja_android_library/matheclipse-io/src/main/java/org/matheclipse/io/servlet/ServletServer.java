@@ -4,10 +4,9 @@ import static io.undertow.Handlers.resource;
 import static io.undertow.servlet.Servlets.defaultContainer;
 import static io.undertow.servlet.Servlets.deployment;
 import static io.undertow.servlet.Servlets.servlet;
-
 import java.awt.Desktop;
+import java.net.InetAddress;
 import java.net.URI;
-
 import javax.servlet.Servlet;
 import org.matheclipse.core.basic.Config;
 import org.matheclipse.core.eval.exception.ReturnException;
@@ -37,16 +36,14 @@ public class ServletServer {
     String deploymentName = "symja.war";
     Class<AJAXQueryServlet> ajaxServlet = AJAXQueryServlet.class;
     ClassLoader classLoader = serverClass.getClassLoader();
-    String host = "localhost";
 
-    ServletServer.runServer(deploymentName, classLoader, ajaxServlet, host, PORT, "index.html");
+    ServletServer.runServer(deploymentName, classLoader, ajaxServlet, PORT, "index.html");
   }
 
   /**
    * @param deploymentName the <code>*.war</code> deployment name.
    * @param classLoader the current class loader
    * @param ajaxServlet the name of the AJAX servlet class
-   * @param host typical <code>localhost</code>
    * @param port typical port <code>8080</code>
    * @param welcomeFile TODO
    */
@@ -54,11 +51,11 @@ public class ServletServer {
       String deploymentName,
       ClassLoader classLoader,
       Class<? extends Servlet> ajaxServlet,
-      String host,
       int port,
       String welcomeFile) {
     try {
-
+      // https://stackoverflow.com/a/41652378/24819
+      String host = InetAddress.getLocalHost().getHostAddress();
       DeploymentInfo servletBuilder =
           deployment()
               .setClassLoader(classLoader)
