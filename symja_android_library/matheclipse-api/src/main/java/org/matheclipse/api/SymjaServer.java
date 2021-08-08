@@ -3,6 +3,7 @@ package org.matheclipse.api;
 import static io.undertow.Handlers.resource;
 
 import java.awt.Desktop;
+import java.net.InetAddress;
 import java.net.URI;
 import java.util.Deque;
 import java.util.Map;
@@ -26,6 +27,8 @@ import io.undertow.util.Headers;
 import io.undertow.util.HttpString;
 
 public class SymjaServer {
+  /** If <code>true</code>, use localhost string */
+  public static boolean LOCALHOST_STRING = false;
 
   static int PORT = 8080;
 
@@ -105,20 +108,22 @@ public class SymjaServer {
                               SymjaServer.class.getClassLoader(), SymjaServer.class.getPackage()))
                       .addWelcomeFiles("indexapi.html"))
               .addExactPath("/v1/api", apiHandler);
-
-      Undertow server =
-          Undertow.builder().addHttpListener(PORT, "localhost").setHandler(path).build();
+      // https://stackoverflow.com/a/41652378/24819
+      String host = LOCALHOST_STRING ? "localhost" : InetAddress.getLocalHost().getHostAddress();
+      Undertow server = Undertow.builder().addHttpListener(PORT, host).setHandler(path).build();
       server.start();
 
       System.out.println("\n>>> JSON API server started. <<<");
-      System.out.println("Waiting for API calls at http://localhost:" + PORT + "/v1/api");
+      System.out.println("Waiting for API calls at http://" + host + ":" + PORT + "/v1/api");
       System.out.println("Example client call:");
       System.out.println(
-          "http://localhost:"
+          "http://"
+              + host
+              + ":"
               + PORT
               + "/v1/api?i=D(Sin(x)%2Cx)&f=latex&f=plaintext&f=sinput&appid=DEMO");
 
-      URI uri = new URI("http://localhost:" + PORT + "/indexapi.html");
+      URI uri = new URI("http://" + host + ":" + PORT + "/indexapi.html");
 
       System.out.println();
       System.out.println("To test the JSON API open page: " + uri.toString() + " in your browser.");
@@ -135,7 +140,9 @@ public class SymjaServer {
     for (int i = 0; i < args.length; i++) {
       final String arg = args[i];
 
-      if (arg.equals("-port") || arg.equals("-p")) {
+      if (arg.equals("-localhost") || arg.equals("-l")) {
+        LOCALHOST_STRING = true;
+      } else if (arg.equals("-port") || arg.equals("-p")) {
         if (i + 1 >= args.length) {
           System.out.println("You must specify a port number when using the -port argument");
           throw ReturnException.RETURN_FALSE;
@@ -177,6 +184,8 @@ public class SymjaServer {
     msg.append(lineSeparator);
     msg.append("Program arguments: " + lineSeparator);
     msg.append("  -h or -help print usage messages" + lineSeparator);
+    msg.append("  -l or -localhost set the name to \"localhost\"" + lineSeparator);
+    msg.append("         in the browser; the default is the IP address" + lineSeparator);
     msg.append("  -p or -port set the port (default port is 8080)" + lineSeparator);
     msg.append("  -t or -test open JSON API test page in browser " + lineSeparator);
     msg.append("****+****+****+****+****+****+****+****+****+****+****+****+");

@@ -19,7 +19,10 @@ import io.undertow.servlet.api.DeploymentInfo;
 import io.undertow.servlet.api.DeploymentManager;
 
 public class ServletServer {
-  /** The port for running JSON API. Default is 8080 */
+  /** If <code>true</code>, use localhost string */
+  public static boolean LOCALHOST_STRING = false;
+
+  /** The port for running the Symja notebook interface. Default is 8080 */
   public static int PORT = 8080;
 
   public static final String MYAPP = "/";
@@ -55,7 +58,7 @@ public class ServletServer {
       String welcomeFile) {
     try {
       // https://stackoverflow.com/a/41652378/24819
-      String host = InetAddress.getLocalHost().getHostAddress();
+      String host = LOCALHOST_STRING ? "localhost" : InetAddress.getLocalHost().getHostAddress();
       DeploymentInfo servletBuilder =
           deployment()
               .setClassLoader(classLoader)
@@ -96,7 +99,9 @@ public class ServletServer {
     for (int i = 0; i < args.length; i++) {
       final String arg = args[i];
 
-      if (arg.equals("-port") || arg.equals("-p")) {
+      if (arg.equals("-localhost") || arg.equals("-l")) {
+        LOCALHOST_STRING = true;
+      } else if (arg.equals("-port") || arg.equals("-p")) {
         if (i + 1 >= args.length) {
           System.out.println("You must specify a port number when using the -port argument");
           throw ReturnException.RETURN_FALSE;
@@ -136,6 +141,8 @@ public class ServletServer {
     msg.append(lineSeparator);
     msg.append("Program arguments: " + lineSeparator);
     msg.append("  -h or -help print usage messages" + lineSeparator);
+    msg.append("  -l or -localhost set the name to \"localhost\"" + lineSeparator);
+    msg.append("         in the browser; the default is the IP address" + lineSeparator);
     msg.append("  -p or -port set the port (default port is 8080)" + lineSeparator);
     msg.append("****+****+****+****+****+****+****+****+****+****+****+****+");
 
