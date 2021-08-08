@@ -8,13 +8,14 @@ import java.util.TreeSet;
 import java.util.function.Predicate;
 import org.hipparchus.linear.FieldMatrix;
 import org.matheclipse.core.basic.Config;
+import org.matheclipse.core.basic.ToggleFeature;
 import org.matheclipse.core.builtin.Algebra;
 import org.matheclipse.core.builtin.BooleanFunctions;
 import org.matheclipse.core.builtin.IOFunctions;
 import org.matheclipse.core.builtin.LinearAlgebra;
 import org.matheclipse.core.builtin.PolynomialFunctions;
 import org.matheclipse.core.builtin.RootsFunctions;
-import org.matheclipse.core.convert.ChocoConvert;
+ import org.matheclipse.core.convert.ChocoConvert;
 import org.matheclipse.core.convert.Convert;
 import org.matheclipse.core.convert.CreamConvert;
 import org.matheclipse.core.convert.VariablesSet;
@@ -1050,21 +1051,23 @@ public class Solve extends AbstractFunctionEvaluator {
                 return F.NIL;
               }
               try {
-                if (equationsAndInequations.isFreeAST(x -> x.equals(S.Power))) {
-                  // call choco solver
-                  try {
-                    IAST resultList =
-                        ChocoConvert.integerSolve(
-                            equationsAndInequations,
-                            equationVariables,
-                            userDefinedVariables,
-                            engine);
-                    if (resultList.isPresent()) {
-                      EvalAttributes.sort((IASTMutable) resultList);
-                      return resultList;
+                if (ToggleFeature.CHOCO_SOLVER) {
+                  // try calling choco solver
+                  if (equationsAndInequations.isFreeAST(x -> x.equals(S.Power))) {
+                    try {
+                      IAST resultList =
+                          ChocoConvert.integerSolve(
+                              equationsAndInequations,
+                              equationVariables,
+                              userDefinedVariables,
+                              engine);
+                      if (resultList.isPresent()) {
+                        EvalAttributes.sort((IASTMutable) resultList);
+                        return resultList;
+                      }
+                    } catch (RuntimeException rex) {
+                      // try 2nd solver
                     }
-                  } catch (RuntimeException rex) {
-                    // try 2nd solver
                   }
                 }
                 // call cream solver
@@ -1092,42 +1095,43 @@ public class Solve extends AbstractFunctionEvaluator {
             return F.NIL;
           }
 
-//          if (domain.equals(S.Reals)) {
-//            if (!userDefinedVariables.isEmpty()) {
-//              IAST equationsAndInequations = Validate.checkEquationsAndInequations(ast, 1);
-//              if (!equationsAndInequations.isEmpty()) {
-//                try {
-//                  // call choco solver
-//                  try {
-//                    IAST resultList =
-//                        ChocoConvert.realSolve(
-//                            equationsAndInequations,
-//                            equationVariables,
-//                            userDefinedVariables,
-//                            engine);
-//                    if (resultList.isPresent()) {
-//                      EvalAttributes.sort((IASTMutable) resultList);
-//                      return resultList;
-//                    }
-//                  } catch (RuntimeException rex) {
-//                    // try 2nd solver
-//                    rex.printStackTrace();
-//                  }
-//                } catch (LimitException le) {
-//                  if (Config.SHOW_STACKTRACE) {
-//                    le.printStackTrace();
-//                  }
-//                  throw le;
-//                } catch (RuntimeException rex) {
-//                  if (Config.SHOW_STACKTRACE) {
-//                    rex.printStackTrace();
-//                  }
-//                  return engine.printMessage(
-//                      "Solve: " + "Reals solution not found: " + rex.getMessage());
-//                }
-//              }
-//            }
-//          }
+          //          if (domain.equals(S.Reals)) {
+          //            if (!userDefinedVariables.isEmpty()) {
+          //              IAST equationsAndInequations = Validate.checkEquationsAndInequations(ast,
+          // 1);
+          //              if (!equationsAndInequations.isEmpty()) {
+          //                try {
+          //                  // call choco solver
+          //                  try {
+          //                    IAST resultList =
+          //                        ChocoConvert.realSolve(
+          //                            equationsAndInequations,
+          //                            equationVariables,
+          //                            userDefinedVariables,
+          //                            engine);
+          //                    if (resultList.isPresent()) {
+          //                      EvalAttributes.sort((IASTMutable) resultList);
+          //                      return resultList;
+          //                    }
+          //                  } catch (RuntimeException rex) {
+          //                    // try 2nd solver
+          //                    rex.printStackTrace();
+          //                  }
+          //                } catch (LimitException le) {
+          //                  if (Config.SHOW_STACKTRACE) {
+          //                    le.printStackTrace();
+          //                  }
+          //                  throw le;
+          //                } catch (RuntimeException rex) {
+          //                  if (Config.SHOW_STACKTRACE) {
+          //                    rex.printStackTrace();
+          //                  }
+          //                  return engine.printMessage(
+          //                      "Solve: " + "Reals solution not found: " + rex.getMessage());
+          //                }
+          //              }
+          //            }
+          //          }
 
           if (!domain.equals(S.Reals) && !domain.equals(S.Complexes)) {
             return engine.printMessage(

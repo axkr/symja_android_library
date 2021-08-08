@@ -8,16 +8,19 @@ package org.matheclipse.core.basic;
  */
 public class ToggleFeature {
 
+  /** If <code>true</code>, enable choco solver in <code>Solve()</code> function. */
+  public static boolean CHOCO_SOLVER = true;
+
   /**
    * If <code>true</code>, enable <code>org.matheclipse.core.builtin.function.Compile</code>
-   * function. A JDK must be installed to let this feature work.
+   * function.
    */
   public static boolean COMPILE = false;
 
   /**
    * If <code>true</code>, enable <code>org.matheclipse.core.builtin.function.Defer</code> function.
    */
-//  public static boolean DEFER = true;
+  //  public static boolean DEFER = true;
 
   /**
    * If <code>true</code>, enable <code>org.matheclipse.core.reflection.system.ReplaceList</code>
