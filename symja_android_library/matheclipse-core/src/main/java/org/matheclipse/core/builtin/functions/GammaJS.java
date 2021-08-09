@@ -326,6 +326,7 @@ public class GammaJS {
       // return taylorSeries( t => gamma(t,y), mul( x, delta/x.abs( ) ), 2.0)(x);
     }
 
+    // dlmf.nist.gov/8.4.15
     double xRe = x.getReal();
     if (xRe < 0.0 && F.isNumIntValue(xRe) && F.isZero(x.getImaginary())) {
       // x is a negative integer
@@ -341,9 +342,9 @@ public class GammaJS {
                       0.0,
                       n - 1.0,
                       iterationLimit));
-
+      // dlmf.nist.gov/8.4.4
       final double plusMinusOne = Math.pow(-1.0, n);
-      return expIntegralE(Complex.ONE, y).subtract(t).multiply(plusMinusOne / factorialInt(n));
+      return gamma(Complex.ZERO, y).subtract(t).multiply(plusMinusOne / factorialInt(n));
     }
 
     return Arithmetic.lanczosApproxGamma(x).subtract(gamma(x, 0.0, y));
