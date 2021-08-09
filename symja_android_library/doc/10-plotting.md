@@ -71,6 +71,7 @@ For the generation of these controls, Symja uses the following JavaScript librar
 - [MathCell](https://github.com/paulmasson/mathcell) for displaying 3D function plots
 - [vis-network](https://github.com/visjs/vis-network) for (graph) network views
 
+You can get the HTML source code of the generated controls in most browser by doing a right-mouse-click on the control and selecting menu: `This Frame -> View Frame Source` and save the HTML source code as standalone example on your file system.
 
 ## Generating JavaScript output
 
