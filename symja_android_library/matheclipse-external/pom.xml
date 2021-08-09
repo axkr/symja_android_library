@@ -12,6 +12,9 @@
 
 	<artifactId>matheclipse-external</artifactId>
 	<packaging>jar</packaging>
+	<name>${project.groupId}:${project.artifactId}</name>
+	<description>The Symja external module</description>
+
 
 	<licenses>
 		<license>

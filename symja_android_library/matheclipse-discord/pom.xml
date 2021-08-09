@@ -12,6 +12,8 @@
 
 	<artifactId>matheclipse-discord</artifactId>
 	<packaging>jar</packaging>
+	<name>${project.groupId}:${project.artifactId}</name>
+	<description>The Symja discord module</description>
 
 	<licenses>
 		<license>

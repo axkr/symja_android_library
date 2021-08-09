@@ -9,6 +9,7 @@
 	<version>2.0.0-SNAPSHOT</version>
 	<packaging>pom</packaging>
 
+	<name>${project.groupId}:${project.artifactId}</name>
 	<description>Symja Java Symbolic Math library.</description>
 	<url>https://github.com/axkr/symja_android_library.git</url>
 
@@ -29,8 +30,10 @@
 
 	<developers>
 		<developer>
-			<id>axelclk</id>
 			<name>Axel Kramer</name>
+			<email>axelclk@gmail.com</email>
+			<organization>Symja.org</organization>
+			<organizationUrl>https://github.com/axkr</organizationUrl>
 		</developer>
 	</developers>
 
@@ -49,7 +52,6 @@
 	<scm>
 		<connection>scm:git:git://github.com/axkr/symja_android_library.git</connection>
 		<developerConnection>scm:git:git@github.com:axkr/symja_android_library.git</developerConnection>
-		<tag>master</tag>
 		<url>https://github.com/axkr/symja_android_library.git</url>
 	</scm>
 
@@ -557,26 +559,6 @@
 				</plugins>
 			</build>
 		</profile>
-<!-- 
-		<profile>
-			<id>fixerrors</id>
-			<build>
-				<plugins>
 
-					<plugin>
-						<groupId>org.apache.maven.plugins</groupId>
-						<artifactId>maven-compiler-plugin</artifactId>
-						<configuration>
-							<compilerArgs combine.children="append">
-								<compilerArg>-XepPatchLocation:${basedir}</compilerArg>
-								<compilerArg>-XepPatchChecks:DeadException,GetClassOnClass</compilerArg>
-							</compilerArgs>
-						</configuration>
-					</plugin>
-
-				</plugins>
-			</build>
-		</profile>
- -->
 	</profiles>
 </project>

@@ -12,7 +12,9 @@
 
 	<artifactId>matheclipse-core</artifactId>
 	<packaging>jar</packaging>
-
+	<name>${project.groupId}:${project.artifactId}</name>
+	<description>The Symja core module</description>
+	
 	<licenses>
 		<license>
 			<name>GNU Lesser General Public License, Version 3</name>
