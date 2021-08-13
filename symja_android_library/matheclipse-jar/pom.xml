@@ -1,0 +1,133 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/xsd/maven-4.0.0.xsd">
+	<modelVersion>4.0.0</modelVersion>
+
+	<parent>
+		<groupId>org.matheclipse</groupId>
+		<artifactId>matheclipse</artifactId>
+		<version>2.0.0-SNAPSHOT</version>
+	</parent>
+
+	<artifactId>matheclipse-jar</artifactId>
+	<packaging>jar</packaging>
+	<name>${project.groupId}:${project.artifactId}</name>
+	<description>The Symja docker integration module</description>
+
+	<licenses>
+		<license>
+			<name>GNU General Public License, Version 3</name>
+			<url>http://www.gnu.org/licenses/gpl-3.0.html</url>
+			<distribution>repo</distribution>
+			<comments>A free, copyleft license for software and other kinds of works</comments>
+		</license>
+	</licenses>
+
+	<dependencies>
+
+		<dependency>
+			<groupId>${project.groupId}</groupId>
+			<artifactId>matheclipse-io</artifactId>
+			<version>${project.version}</version>
+		</dependency>
+
+	</dependencies>
+
+	<build>
+		<pluginManagement>
+			<plugins>
+				<plugin>
+					<groupId>com.google.cloud.tools</groupId>
+					<artifactId>jib-maven-plugin</artifactId>
+					<version>3.1.2</version>
+					<configuration>
+						<from>
+							<image>openjdk:8-alpine</image>
+						</from>
+						<to>
+							<image>registry.hub.docker.com/symja/symja-2.0</image>
+						</to>
+						<container>
+							<mainClass>org.matheclipse.io.servlet.ServletServer</mainClass>
+							<ports>
+								<port>8080</port>
+							</ports>
+							<environment>
+								<application.title>symja</application.title>
+								<application.version>${project.version}</application.version>
+							</environment>
+						</container>
+					</configuration>
+				</plugin>
+				<plugin>
+					<groupId>org.apache.maven.plugins</groupId>
+					<artifactId>maven-assembly-plugin</artifactId>
+					<configuration>
+						<archive>
+							<manifest>
+								<mainClass>org.matheclipse.io.eval.Console</mainClass>
+							</manifest>
+						</archive>
+						<descriptorRefs>
+							<descriptorRef>jar-with-dependencies</descriptorRef>
+						</descriptorRefs>
+					</configuration>
+					<executions>
+						<execution>
+							<id>make-assembly</id> <!-- this is used for inheritance merges -->
+							<goals>
+								<goal>single</goal>
+							</goals>
+							<phase>package</phase> <!-- bind to the packaging phase -->
+						</execution>
+					</executions>
+				</plugin>
+
+				<plugin>
+					<groupId>org.codehaus.mojo</groupId>
+					<artifactId>exec-maven-plugin</artifactId>
+					<executions>
+						<execution>
+							<id>server</id>
+							<goals>
+								<goal>java</goal>
+							</goals>
+							<configuration>
+								<mainClass>org.matheclipse.io.servlet.ServletServer</mainClass>
+							</configuration>
+						</execution>
+						<execution>
+							<id>mmaserver</id>
+							<goals>
+								<goal>java</goal>
+							</goals>
+							<configuration>
+								<mainClass>org.matheclipse.io.servlet.MMAServletServer</mainClass>
+							</configuration>
+						</execution>
+						<execution>
+							<id>symja</id>
+							<goals>
+								<goal>java</goal>
+							</goals>
+							<configuration>
+								<mainClass>org.matheclipse.io.eval.Console</mainClass>
+							</configuration>
+						</execution>
+						<execution>
+							<id>mma</id>
+							<goals>
+								<goal>java</goal>
+							</goals>
+							<configuration>
+								<mainClass>org.matheclipse.io.eval.MMAConsole</mainClass>
+							</configuration>
+						</execution>
+					</executions>
+				</plugin>
+
+			</plugins>
+		</pluginManagement>
+	</build>
+</project>
