@@ -35,6 +35,12 @@ See
 
 >> Quantile(NormalDistribution(m, s), q) 
 ConditionalExpression(m-Sqrt(2)*s*InverseErfc(2*q),0<=q<=1)
+
+>> Quantile(Range(11), 1/3)
+4
+
+>> Quantile(Range(17), 1/4)
+5
 ```
 
 ### Related terms 
