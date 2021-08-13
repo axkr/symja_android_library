@@ -32,8 +32,9 @@ public class Show3D2ThreeJS {
    * @param ast
    * @param buf
    * @throws IOException
+   * @deprecated
    */
-  protected static void graphics3dToSVG(IAST ast, StringBuilder buf) {
+  private static void graphics3dToSVG(IAST ast, StringBuilder buf) {
     EvalEngine engine = EvalEngine.get();
     IAST numericAST = (IAST) engine.evalN(ast);
     double[] viewpoints = new double[] {1.3, -2.4, 2.0};

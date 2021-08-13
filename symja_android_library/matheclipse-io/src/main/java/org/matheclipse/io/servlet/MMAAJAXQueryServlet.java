@@ -49,29 +49,6 @@ public class MMAAJAXQueryServlet extends HttpServlet {
 
   static final Map<String, EvalEngine> ENGINES = new HashMap<String, EvalEngine>();
 
-  protected static final String GRAPHICS3D_IFRAME = //
-      "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n"
-          + "\n"
-          + "<!DOCTYPE html PUBLIC\n"
-          + "  \"-//W3C//DTD XHTML 1.1 plus MathML 2.0 plus SVG 1.1//EN\"\n"
-          + "  \"http://www.w3.org/2002/04/xhtml-math-svg/xhtml-math-svg.dtd\">\n"
-          + "\n"
-          + "<html xmlns=\"http://www.w3.org/1999/xhtml\" style=\"width: 100%; height: 100%; margin: 0; padding: 0\">\n"
-          + "<head>\n"
-          + "<meta charset=\"utf-8\">\n"
-          + "<title>Graphics3D</title>\n"
-          + "<script src=\"https://cdn.jsdelivr.net/npm/@mathicsorg/mathics-threejs-backend@latest/bundle/index.js\"></script>\n"
-          + "</head>\n"
-          + "\n"
-          + "<body>\n"
-          + "    <main id=\"graphics3d\"></main>\n"
-          + "\n"
-          + "    <script type=\"module\"> \n"
-          + "        drawGraphics3d(\n"
-          + "            document.getElementById('graphics3d'),`1`);\n"
-          + "    </script>\n"
-          + "</body>"; //
-
   protected static final String VISJS_IFRAME = //
       "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n"
           + "\n"
@@ -287,13 +264,28 @@ public class MMAAJAXQueryServlet extends HttpServlet {
 
         if (outExpr != null) {
           if (outExpr.isAST(S.Graphics)) {
-            outExpr = F.Show(outExpr);
+            //            outExpr = F.Show(outExpr);
+            try {
+              String html = Config.SVG_PAGE;
+              StringBuilder stw = new StringBuilder();
+              GraphicsFunctions.graphicsToSVG((IAST)outExpr, stw); 
+              html = StringUtils.replace(html, "`1`", stw.toString());
+              html = StringEscapeUtils.escapeHtml4(html);
+              return JSONBuilder.createJSONJavaScript(
+                  "<iframe srcdoc=\""
+                      + html
+                      + "\" style=\"display: block; width: 100%; height: 100%; border: none;\" ></iframe>");
+            } catch (Exception ex) {
+              if (Config.SHOW_STACKTRACE) {
+                ex.printStackTrace();
+              }
+            }
           } else if (outExpr.isASTSizeGE(S.Graphics3D, 2)) {
             StringBuilder buf = new StringBuilder();
             if (GraphicsFunctions.renderGraphics3D(buf, (IAST) outExpr, engine)) {
               String jsonStr = buf.toString();
               try {
-                String html = GRAPHICS3D_IFRAME;
+                String html = Config.GRAPHICS3D_PAGE;
                 html = StringUtils.replace(html, "`1`", jsonStr);
                 html = StringEscapeUtils.escapeHtml4(html);
                 return JSONBuilder.createJSONJavaScript(

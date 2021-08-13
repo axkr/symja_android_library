@@ -12,6 +12,7 @@ import javax.script.ScriptEngine;
 import javax.script.ScriptEngineManager;
 
 import org.matheclipse.core.basic.Config;
+import org.matheclipse.core.builtin.GraphicsFunctions;
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.TimeConstrainedEvaluator;
 import org.matheclipse.core.expression.F;
@@ -165,9 +166,9 @@ public abstract class AbstractTestCase extends TestCase {
           .getContext()
           .setAttribute("RETURN_OBJECT", Boolean.TRUE, ScriptContext.ENGINE_SCOPE);
       IExpr result = (IExpr) scriptEngine.eval(evalString);
-      if (result.isAST()) {
+      if (result.isAST() && result.size() > 1 && result.first().isAST()) {
         StringBuilder buf = new StringBuilder(2048);
-        Show2SVG.toSVG((IAST) result, buf);
+        GraphicsFunctions.graphicsToSVG((IAST) ((IAST) result).arg1(), buf);
         assertEquals(expectedResult, buf.toString());
       } else {
         assertEquals("", "1");

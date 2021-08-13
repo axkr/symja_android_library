@@ -23,7 +23,7 @@ import java.io.StringWriter;
 import java.lang.reflect.InvocationTargetException;
 import java.util.concurrent.Callable;
 import java.util.concurrent.TimeUnit;
-
+import org.matheclipse.core.builtin.GraphicsFunctions;
 import org.matheclipse.core.eval.EvalControlledCallable;
 import org.matheclipse.core.eval.ExprEvaluator;
 import org.matheclipse.core.eval.exception.AbortException;
@@ -57,7 +57,10 @@ class SymjaMMACodeRunner implements Callable<TryResult> {
 
   private String createSVGOutput(IAST show) throws IOException {
     StringBuilder svgData = new StringBuilder();
-    Show2SVG.toSVG(show, svgData);
+    if (show.isAST() && show.size() > 1 && show.first().isAST()) {
+      StringBuilder buf = new StringBuilder(2048);
+      GraphicsFunctions.graphicsToSVG((IAST) ((IAST) show).arg1(), svgData);
+    }
     return svgData.toString();
   }
 

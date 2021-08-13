@@ -2,16 +2,15 @@ package org.matheclipse.io.servlet;
 
 import java.io.IOException;
 import java.io.StringWriter;
-
 import org.apache.commons.text.StringEscapeUtils;
 import org.matheclipse.core.basic.Config;
+import org.matheclipse.core.builtin.GraphicsFunctions;
 import org.matheclipse.core.builtin.IOFunctions;
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.MathMLUtilities;
-import org.matheclipse.core.graphics.Show2SVG;
+import org.matheclipse.core.expression.S;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IExpr;
-
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
@@ -122,7 +121,10 @@ public class JSONBuilder {
   public static String[] createJSONShow(EvalEngine engine, IAST show) throws IOException {
     StringBuilder stw = new StringBuilder();
     stw.append("<math><mtable><mtr><mtd>");
-    Show2SVG.toSVG(show, stw);
+    if (show.isAST() && show.size() > 1 && show.arg1().isAST(S.Graphics,2)) {
+      StringBuilder buf = new StringBuilder(2048);
+      GraphicsFunctions.graphicsToSVG((IAST) ((IAST) show).arg1(), stw);
+    }
     stw.append("</mtd></mtr></mtable></math>");
 
     ObjectNode resultsJSON = JSON_OBJECT_MAPPER.createObjectNode();

@@ -630,35 +630,16 @@ public final class RulesData implements Serializable {
     final PatternMatcherAndEvaluator pmEvaluator;
     int patternHash = 0;
     if (!isComplicatedPatternRule(leftHandSide) && !leftHandSide.isCondition()) {
-      //            if (leftHandSide.isAST(S.Sum)) {
-      //              System.out.println(leftHandSide.toString());
-      //            }
       patternHash = ((IAST) leftHandSide).patternHashCode();
     }
-    if (leftHandSide.isAST(S.Integrate)) {
-
-      pmEvaluator =
-          new PatternMatcherAndEvaluator(
-              setSymbol, leftHandSide, rightHandSide, false, patternHash);
-      // keep Integrate rules in order predefined by Rubi project
-      pmEvaluator.setLHSPriority(priority);
-      if (fPatternDownRules == null) {
-        fPatternDownRules = new ArrayList<IPatternMatcher>(7000);
-        fPriorityDownRules = new IntArrayList(7000);
-      }
-      fPatternDownRules.add(pmEvaluator);
-      fPriorityDownRules.add(priority);
-      return pmEvaluator;
-    } else {
-      pmEvaluator =
-          new PatternMatcherAndEvaluator(setSymbol, leftHandSide, rightHandSide, true, patternHash);
-      if (pmEvaluator.isRuleWithoutPatterns()) {
-        fEqualDownRules = getEqualDownRules();
-        PatternMatcherEquals pmEquals =
-            new PatternMatcherEquals(setSymbol, leftHandSide, rightHandSide);
-        fEqualDownRules.put(leftHandSide, pmEquals);
-        return pmEquals;
-      }
+    pmEvaluator =
+        new PatternMatcherAndEvaluator(setSymbol, leftHandSide, rightHandSide, true, patternHash);
+    if (pmEvaluator.isRuleWithoutPatterns()) {
+      fEqualDownRules = getEqualDownRules();
+      PatternMatcherEquals pmEquals =
+          new PatternMatcherEquals(setSymbol, leftHandSide, rightHandSide);
+      fEqualDownRules.put(leftHandSide, pmEquals);
+      return pmEquals;
     }
 
     if (IPatternMap.DEFAULT_RULE_PRIORITY != priority) {
@@ -666,6 +647,25 @@ public final class RulesData implements Serializable {
     }
 
     return insertMatcher(pmEvaluator);
+  }
+
+  public final IPatternMatcher integrate(
+      final IExpr leftHandSide, final IExpr rightHandSide, final int priority) {
+    int patternHash = 0;
+    if (!isComplicatedPatternRule(leftHandSide)) {
+      patternHash = ((IAST) leftHandSide).patternHashCode();
+    }
+    final PatternMatcherAndEvaluator pmEvaluator =
+        new PatternMatcherAndEvaluator(
+            IPatternMatcher.SET_DELAYED, leftHandSide, rightHandSide, false, patternHash);
+    pmEvaluator.setLHSPriority(priority);
+    if (fPatternDownRules == null) {
+      fPatternDownRules = new ArrayList<IPatternMatcher>(7000);
+      fPriorityDownRules = new IntArrayList(7000);
+    }
+    fPatternDownRules.add(pmEvaluator);
+    fPriorityDownRules.add(priority);
+    return pmEvaluator;
   }
 
   /**

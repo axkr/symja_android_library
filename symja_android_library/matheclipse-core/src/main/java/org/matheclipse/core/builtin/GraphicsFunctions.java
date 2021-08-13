@@ -1,43 +1,30 @@
 package org.matheclipse.core.builtin;
 
+import java.text.DecimalFormat;
+import java.text.DecimalFormatSymbols;
+import java.util.Locale;
 import org.matheclipse.core.basic.Config;
-import org.matheclipse.core.convert.ExpressionJSONConvert;
+import org.matheclipse.core.convert.RGBColor;
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.interfaces.AbstractEvaluator;
 import org.matheclipse.core.eval.util.OptionArgs;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.expression.S;
+import org.matheclipse.core.graphics.Dimensions2D;
 import org.matheclipse.core.graphics.IGraphics3D;
+import org.matheclipse.core.graphics.Show2SVG;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IASTMutable;
+import org.matheclipse.core.interfaces.IBuiltInSymbol;
+import org.matheclipse.core.interfaces.IEvaluator;
 import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.interfaces.IInteger;
+import org.matheclipse.core.interfaces.ISignedNumber;
 import org.matheclipse.core.interfaces.ISymbol;
 
 public class GraphicsFunctions {
-  /**
-   * See <a href="https://pangin.pro/posts/computation-in-static-initializer">Beware of computation
-   * in static initializer</a>
-   */
-  private static class Initializer {
-
-    private static void init() {
-      S.Arrow.setEvaluator(new Arrow());
-      S.BernsteinBasis.setEvaluator(new BernsteinBasis());
-      S.Cuboid.setEvaluator(new Cuboid());
-      S.Cylinder.setEvaluator(new Cylinder());
-      S.Dodecahedron.setEvaluator(new Dodecahedron());
-      S.Icosahedron.setEvaluator(new Icosahedron());
-      S.Line.setEvaluator(new Line());
-      S.Octahedron.setEvaluator(new Octahedron());
-      S.Point.setEvaluator(new Point());
-      S.Polygon.setEvaluator(new Polygon());
-      S.Sphere.setEvaluator(new Sphere());
-      S.Tetrahedron.setEvaluator(new Tetrahedron());
-
-      S.Volume.setEvaluator(new Volume());
-    }
-  }
+  private static final DecimalFormatSymbols US_SYMBOLS = new DecimalFormatSymbols(Locale.US);
+  protected static final DecimalFormat FORMATTER = new DecimalFormat("0.0####", US_SYMBOLS);
 
   private static class Arrow extends AbstractEvaluator implements IGraphics3D {
 
@@ -117,6 +104,157 @@ public class GraphicsFunctions {
     public void setUp(final ISymbol newSymbol) {
       newSymbol.setAttributes(ISymbol.LISTABLE | ISymbol.NHOLDALL | ISymbol.NUMERICFUNCTION);
     }
+  }
+
+  private static class Circle extends AbstractEvaluator implements IGraphics3D {
+
+    @Override
+    public IExpr evaluate(final IAST ast, EvalEngine engine) {
+      return F.NIL;
+    }
+
+    @Override
+    public int[] expectedArgSize(IAST ast) {
+      return ARGS_1_INFINITY;
+    }
+
+    @Override
+    public boolean graphics2DDimension(IAST ast, Dimensions2D dim) {
+      if (ast.size() == 1) {
+        double cx = 1.0;
+        double cy = 1.0;
+        double rx = 1.0;
+        double ry = 1.0;
+        dim.minMax(cx - rx, cx + rx, cy - ry, cy + ry);
+        return true;
+      } else if (ast.size() == 2) {
+        if (ast.arg1().isAST(S.List, 3)) {
+          IAST list1 = (IAST) ast.arg1();
+
+          double cx = ((ISignedNumber) list1.arg1()).doubleValue();
+          double cy = ((ISignedNumber) list1.arg2()).doubleValue();
+          double rx = 1.0;
+          double ry = 1.0;
+
+          dim.minMax(cx - rx, cx + rx, cy - ry, cy + ry);
+          return true;
+        }
+      } else if (ast.size() == 3 && ast.arg1().isAST(S.List, 3) && ast.arg2().isAST(S.List, 3)) {
+        IAST list1 = (IAST) ast.arg1();
+        IAST list2 = (IAST) ast.arg2();
+
+        double cx = ((ISignedNumber) list1.arg1()).doubleValue();
+        double cy = ((ISignedNumber) list1.arg2()).doubleValue();
+        double rx = ((ISignedNumber) list2.arg1()).doubleValue();
+        double ry = ((ISignedNumber) list2.arg2()).doubleValue();
+
+        dim.minMax(cx - rx, cx + rx, cy - ry, cy + ry);
+        return true;
+      }
+
+      return false;
+    }
+
+    @Override
+    public boolean graphics2D(
+        StringBuilder buf, IAST ast, Dimensions2D dim, IAST color, IExpr opacity) {
+      try {
+
+        //  <svg width=\"350.66666666666674px\" height=\"350.66666666666674px\"
+        // xmlns:svg=\"http://www.w3.org/2000/svg\"
+        //     xmlns=\"http://www.w3.org/2000/svg\"
+        //    version=\"1.1\
+        //   viewBox=\"-0.333333 -0.333333 350.666667 350.666667\">
+        //   <ellipse cx=\"175.000000\" cy=\"175.000000\" rx=\"175.000000\" ry=\"175.000000\"
+        // style=\"stroke: rgb(0.000000%, 0.000000%, 0.000000%); stroke-opacity: 1; stroke-width:
+        // 0.666667px; fill: none; opacity: 1.0\" />"
+
+        int width = dim.width;
+        int height = dim.height;
+        double xMin = dim.xMin;
+        double xMax = dim.xMax;
+        double yMin = dim.yMin;
+        double yMax = dim.yMax;
+        if (ast.size() == 1) {
+          buf.append("<ellipse ");
+          double xAxisScalingFactor = width / (xMax - xMin);
+          double yAxisScalingFactor = height / (yMax - yMin);
+
+          double cx = 1.0;
+          double cy = 1.0;
+          double rx = 1.0;
+          double ry = 1.0;
+          // x="0.000000" y="0.000000" width="350.000000" height="350.000000"
+          buf.append("cx=\"");
+          buf.append(FORMATTER.format(cx * xAxisScalingFactor));
+          buf.append("\" cy=\"");
+          buf.append(FORMATTER.format(cy * yAxisScalingFactor));
+          buf.append("\" rx=\"");
+          buf.append(FORMATTER.format(rx * xAxisScalingFactor));
+          buf.append("\" ry=\"");
+          buf.append(FORMATTER.format(ry * yAxisScalingFactor));
+          return true;
+
+        } else if (ast.size() == 2) {
+          if (ast.arg1().isAST(S.List, 3)) {
+            IAST list1 = (IAST) ast.arg1();
+            buf.append("<ellipse ");
+            double xAxisScalingFactor = width / (xMax - xMin);
+            double yAxisScalingFactor = height / (yMax - yMin);
+
+            double cx = ((ISignedNumber) list1.arg1()).doubleValue();
+            double cy = ((ISignedNumber) list1.arg2()).doubleValue();
+            double rx = 1.0;
+            double ry = 1.0;
+            // x="0.000000" y="0.000000" width="350.000000" height="350.000000"
+            buf.append("cx=\"");
+            buf.append(FORMATTER.format(cx * xAxisScalingFactor));
+            buf.append("\" cy=\"");
+            buf.append(FORMATTER.format(cy * yAxisScalingFactor));
+            buf.append("\" rx=\"");
+            buf.append(FORMATTER.format(rx * xAxisScalingFactor));
+            buf.append("\" ry=\"");
+            buf.append(FORMATTER.format(ry * yAxisScalingFactor));
+            return true;
+          }
+        } else if (ast.size() == 3 && ast.arg1().isAST(S.List, 3) && ast.arg2().isAST(S.List, 3)) {
+          IAST list1 = (IAST) ast.arg1();
+          IAST list2 = (IAST) ast.arg2();
+          buf.append("<ellipse ");
+          double xAxisScalingFactor = width / (xMax - xMin);
+          double yAxisScalingFactor = height / (yMax - yMin);
+
+          double cx = ((ISignedNumber) list1.arg1()).doubleValue();
+          double cy = ((ISignedNumber) list1.arg2()).doubleValue();
+          double rx = ((ISignedNumber) list2.arg1()).doubleValue();
+          double ry = ((ISignedNumber) list2.arg2()).doubleValue();
+
+          buf.append("cx=\"");
+          buf.append(FORMATTER.format(cx * xAxisScalingFactor));
+          buf.append("\" cy=\"");
+          buf.append(FORMATTER.format(cy * yAxisScalingFactor));
+          buf.append("\" rx=\"");
+          buf.append(FORMATTER.format(rx * xAxisScalingFactor));
+          buf.append("\" ry=\"");
+          buf.append(FORMATTER.format(ry * yAxisScalingFactor));
+          return true;
+        }
+
+      } catch (RuntimeException ex) {
+        // catch cast exceptions for example
+        ex.printStackTrace();
+      } finally {
+        buf.append("\" \n      style=\"stroke: none; stroke-width: 0.000000px; ");
+        buf.append("fill: rgb(");
+        dim.getColorRGB(buf);
+        buf.append("); ");
+        buf.append("stroke-opacity: 1; stroke-width: 0.666667px; fill-opacity: 1\" />\n");
+      }
+      return false;
+    }
+
+    @Override
+    public void setUp(final ISymbol newSymbol) {}
   }
 
   private static class Cuboid extends AbstractEvaluator implements IGraphics3D {
@@ -234,6 +372,11 @@ public class GraphicsFunctions {
   private static class Dodecahedron extends Tetrahedron {
 
     @Override
+    protected void addSubtypeThreejs(StringBuilder buf) {
+      buf.append("subType: \'dodecahedron\',");
+    }
+
+    @Override
     public IExpr evaluate(final IAST ast, EvalEngine engine) {
       return F.NIL;
     }
@@ -241,11 +384,6 @@ public class GraphicsFunctions {
     @Override
     public int[] expectedArgSize(IAST ast) {
       return ARGS_0_INFINITY;
-    }
-
-    @Override
-    protected void addSubtypeThreejs(StringBuilder buf) {
-      buf.append("subType: \'dodecahedron\',");
     }
 
     @Override
@@ -255,6 +393,11 @@ public class GraphicsFunctions {
   private static class Icosahedron extends Tetrahedron {
 
     @Override
+    protected void addSubtypeThreejs(StringBuilder buf) {
+      buf.append("subType: \'icosahedron\',");
+    }
+
+    @Override
     public IExpr evaluate(final IAST ast, EvalEngine engine) {
       return F.NIL;
     }
@@ -265,12 +408,33 @@ public class GraphicsFunctions {
     }
 
     @Override
-    protected void addSubtypeThreejs(StringBuilder buf) {
-      buf.append("subType: \'icosahedron\',");
-    }
-
-    @Override
     public void setUp(final ISymbol newSymbol) {}
+  }
+
+  /**
+   * See <a href="https://pangin.pro/posts/computation-in-static-initializer">Beware of computation
+   * in static initializer</a>
+   */
+  private static class Initializer {
+
+    private static void init() {
+      S.Arrow.setEvaluator(new Arrow());
+      S.BernsteinBasis.setEvaluator(new BernsteinBasis());
+      S.Circle.setEvaluator(new Circle());
+      S.Cuboid.setEvaluator(new Cuboid());
+      S.Cylinder.setEvaluator(new Cylinder());
+      S.Dodecahedron.setEvaluator(new Dodecahedron());
+      S.Icosahedron.setEvaluator(new Icosahedron());
+      S.Line.setEvaluator(new Line());
+      S.Octahedron.setEvaluator(new Octahedron());
+      S.Point.setEvaluator(new Point());
+      S.Polygon.setEvaluator(new Polygon());
+      S.Rectangle.setEvaluator(new Rectangle());
+      S.Sphere.setEvaluator(new Sphere());
+      S.Tetrahedron.setEvaluator(new Tetrahedron());
+
+      S.Volume.setEvaluator(new Volume());
+    }
   }
 
   private static class Line extends AbstractEvaluator implements IGraphics3D {
@@ -283,6 +447,93 @@ public class GraphicsFunctions {
     @Override
     public int[] expectedArgSize(IAST ast) {
       return ARGS_1_INFINITY;
+    }
+
+    @Override
+    public boolean graphics2DDimension(IAST ast, Dimensions2D dim) {
+      if (ast.arg1().isList()) {
+        IAST pointList = (IAST) ast.arg1();
+        double x[], y[];
+        int numberOfPoints = pointList.argSize();
+
+        double xMin = Double.MAX_VALUE;
+        double xMax = Double.MIN_VALUE;
+        double yMin = Double.MAX_VALUE;
+        double yMax = Double.MIN_VALUE;
+        x = new double[numberOfPoints];
+        y = new double[numberOfPoints];
+        IExpr point;
+        for (int i = 0; i < numberOfPoints; i++) {
+          point = pointList.get(i + 1);
+          if (point.isList() && point.isAST2()) {
+            x[i] = ((ISignedNumber) point.first()).doubleValue();
+            if (x[i] < xMin) {
+              xMin = x[i];
+            }
+            if (x[i] > xMax) {
+              xMax = x[i];
+            }
+            y[i] = ((ISignedNumber) point.second()).doubleValue();
+            if (y[i] < yMin) {
+              yMin = y[i];
+            }
+            if (y[i] > yMax) {
+              yMax = y[i];
+            }
+          }
+        }
+        dim.minMax(xMin, xMax, yMin, yMax);
+        return true;
+      }
+      return false;
+    }
+
+    @Override
+    public boolean graphics2D(
+        StringBuilder buf, IAST ast, Dimensions2D dim, IAST color, IExpr opacity) {
+      try {
+        if (ast.arg1().isList()) {
+          buf.append("<polyline points=\"");
+          IAST pointList = (IAST) ast.arg1();
+          double x[], y[];
+          int numberOfPoints = pointList.argSize();
+
+          int width = dim.width;
+          int height = dim.height;
+          double xMin = dim.xMin;
+          double xMax = dim.xMax;
+          double yMin = dim.yMin;
+          double yMax = dim.yMax;
+          x = new double[numberOfPoints];
+          y = new double[numberOfPoints];
+          IExpr point;
+          for (int i = 0; i < numberOfPoints; i++) {
+            point = pointList.get(i + 1);
+            if (point.isList() && ((IAST) point).isAST2()) {
+              x[i] = ((ISignedNumber) point.first()).doubleValue();
+              y[i] = ((ISignedNumber) point.second()).doubleValue();
+            }
+          }
+          double xAxisScalingFactor = width / (xMax - xMin);
+          double yAxisScalingFactor = height / (yMax - yMin);
+          for (int i = 0; i < numberOfPoints; i++) {
+            buf.append(FORMATTER.format(((x[i] - xMin) * xAxisScalingFactor)));
+            buf.append(",");
+            buf.append(FORMATTER.format(height - ((y[i] - yMin) * yAxisScalingFactor)));
+            if (i < numberOfPoints - 1) {
+              buf.append(" ");
+            }
+          }
+          return true;
+        }
+      } catch (RuntimeException ex) {
+        // catch cast exceptions for example
+        ex.printStackTrace();
+      } finally {
+        buf.append(
+            "\" \n style=\"stroke: rgb(0.000000%, 0.000000%, 0.000000%); stroke-opacity: 1; stroke-width: 0.666667px; fill: none\" />");
+      }
+      return false;
     }
 
     @Override
@@ -307,6 +558,11 @@ public class GraphicsFunctions {
   private static class Octahedron extends Tetrahedron {
 
     @Override
+    protected void addSubtypeThreejs(StringBuilder buf) {
+      buf.append("subType: \'octahedron\',");
+    }
+
+    @Override
     public IExpr evaluate(final IAST ast, EvalEngine engine) {
       return F.NIL;
     }
@@ -314,11 +570,6 @@ public class GraphicsFunctions {
     @Override
     public int[] expectedArgSize(IAST ast) {
       return ARGS_0_INFINITY;
-    }
-
-    @Override
-    protected void addSubtypeThreejs(StringBuilder buf) {
-      buf.append("subType: \'octahedron\',");
     }
 
     @Override
@@ -335,6 +586,92 @@ public class GraphicsFunctions {
     @Override
     public int[] expectedArgSize(IAST ast) {
       return ARGS_1_INFINITY;
+    }
+
+    private static void singlePointToSVG(IAST point, StringBuilder buf, Dimensions2D dim) {
+      try {
+        double xMin = dim.xMin;
+        double yMax = dim.yMax;
+        buf.append("<circle ");
+        double xAxisScalingFactor = dim.getXScale();
+        double yAxisScalingFactor = dim.getYScale();
+        double x1 = ((ISignedNumber) point.arg1()).doubleValue();
+        double y1 = ((ISignedNumber) point.arg2()).doubleValue();
+        double r = 2.166667;
+        // x="0.000000" y="0.000000" width="350.000000" height="350.000000"
+        double cx = (x1 - xMin) * xAxisScalingFactor;
+        double cy = (yMax - y1) * yAxisScalingFactor;
+        buf.append("cx=\"");
+        buf.append(FORMATTER.format(cx));
+        buf.append("\" cy=\"");
+        buf.append(FORMATTER.format(cy));
+        buf.append("\" r=\"");
+        buf.append(FORMATTER.format(r));
+      } catch (RuntimeException ex) {
+        // catch cast exceptions for example
+        ex.printStackTrace();
+      } finally {
+        buf.append("\" \n      style=\"stroke: none; stroke-width: 0.000000px; ");
+        buf.append("fill: rgb(");
+        dim.getColorRGB(buf);
+        buf.append("); ");
+        buf.append("fill-opacity: 1\" />\n");
+      }
+    }
+
+    private static void singlePointDimensions(IAST point, Dimensions2D dim) {
+      double x1 = ((ISignedNumber) point.arg1()).doubleValue();
+      double y1 = ((ISignedNumber) point.arg2()).doubleValue();
+
+      dim.minMax(
+          x1 - Config.DOUBLE_TOLERANCE,
+          x1 + Config.DOUBLE_TOLERANCE,
+          y1 - Config.DOUBLE_TOLERANCE,
+          y1 + Config.DOUBLE_TOLERANCE);
+    }
+
+    @Override
+    public boolean graphics2DDimension(IAST ast, Dimensions2D dim) {
+      if (ast.size() == 2) {
+        IExpr arg1 = ast.arg1();
+        if (arg1.isListOfLists()) {
+          IAST list = (IAST) arg1;
+          for (int i = 1; i < list.size(); i++) {
+            if (list.get(i).isAST(S.List, 3)) {
+              IAST point = (IAST) list.get(i);
+              singlePointDimensions(point, dim);
+            }
+          }
+        } else if (arg1.isAST(S.List, 3)) {
+          IAST point = (IAST) ast.arg1();
+
+          singlePointDimensions(point, dim);
+        }
+      }
+      return false;
+    }
+
+    @Override
+    public boolean graphics2D(
+        StringBuilder buf, IAST ast, Dimensions2D dim, IAST color, IExpr opacity) {
+      if (ast.size() == 2) {
+        IExpr arg1 = ast.arg1();
+        if (arg1.isListOfLists()) {
+          IAST list = (IAST) arg1;
+          for (int i = 1; i < list.size(); i++) {
+            if (list.get(i).isAST(S.List, 3)) {
+              IAST point = (IAST) list.get(i);
+              singlePointToSVG(point, buf, dim);
+              return true;
+            }
+          }
+        } else if (arg1.isAST(S.List, 3)) {
+          IAST point = (IAST) arg1;
+          singlePointToSVG(point, buf, dim);
+          return true;
+        }
+      }
+      return false;
     }
 
     @Override
@@ -387,6 +724,120 @@ public class GraphicsFunctions {
     public void setUp(final ISymbol newSymbol) {}
   }
 
+  private static class Rectangle extends AbstractEvaluator implements IGraphics3D {
+
+    @Override
+    public IExpr evaluate(final IAST ast, EvalEngine engine) {
+      return F.NIL;
+    }
+
+    @Override
+    public int[] expectedArgSize(IAST ast) {
+      return ARGS_1_INFINITY;
+    }
+
+    @Override
+    public boolean graphics2DDimension(IAST ast, Dimensions2D dim) {
+      if (ast.size() == 2) {
+        if (ast.arg1().isList2()) {
+          IAST list1 = (IAST) ast.arg1();
+
+          double x1 = ((ISignedNumber) list1.arg1()).doubleValue();
+          double y1 = ((ISignedNumber) list1.arg2()).doubleValue();
+          double x2 = x1 + 1.0;
+          double y2 = y1 + 1.0;
+
+          dim.minMax(x1, x2, y1, y2);
+          return true;
+        }
+      } else if (ast.size() == 3 && ast.arg1().isList2() && ast.arg2().isList2()) {
+        IAST list1 = (IAST) ast.arg1();
+        IAST list2 = (IAST) ast.arg2();
+
+        double x1 = ((ISignedNumber) list1.arg1()).doubleValue();
+        double y1 = ((ISignedNumber) list1.arg2()).doubleValue();
+        double x2 = ((ISignedNumber) list2.arg1()).doubleValue();
+        double y2 = ((ISignedNumber) list2.arg2()).doubleValue();
+
+        dim.minMax(x1, x2, y1, y2);
+        return true;
+      }
+      return false;
+    }
+
+    @Override
+    public boolean graphics2D(
+        StringBuilder buf, IAST ast, Dimensions2D dim, IAST color, IExpr opacity) {
+      try {
+        int width = dim.width;
+        int height = dim.height;
+        double xMin = dim.xMin;
+        double xMax = dim.xMax;
+        double yMin = dim.yMin;
+        double yMax = dim.yMax;
+        if (ast.size() == 2) {
+          if (ast.arg1().isAST(S.List, 3)) {
+            IAST list1 = (IAST) ast.arg1();
+            buf.append("<rect ");
+            double xAxisScalingFactor = width / (xMax - xMin);
+            double yAxisScalingFactor = height / (yMax - yMin);
+
+            double x1 = ((ISignedNumber) list1.arg1()).doubleValue();
+            double y1 = ((ISignedNumber) list1.arg2()).doubleValue();
+            double w = 1.0;
+            double h = 1.0;
+            // x="0.000000" y="0.000000" width="350.000000" height="350.000000"
+            buf.append("x=\"");
+            buf.append(FORMATTER.format((x1 - xMin) * xAxisScalingFactor));
+            buf.append("\" y=\"");
+            buf.append(FORMATTER.format((yMax - y1 - 1) * yAxisScalingFactor));
+            buf.append("\" width=\"");
+            buf.append(FORMATTER.format(w * xAxisScalingFactor));
+            buf.append("\" height=\"");
+            buf.append(FORMATTER.format(h * yAxisScalingFactor));
+            return true;
+          }
+        } else if (ast.size() == 3 && ast.arg1().isAST(S.List, 3) && ast.arg2().isAST(S.List, 3)) {
+          IAST list1 = (IAST) ast.arg1();
+          IAST list2 = (IAST) ast.arg2();
+          buf.append("<rect ");
+          double xAxisScalingFactor = width / (xMax - xMin);
+          double yAxisScalingFactor = height / (yMax - yMin);
+
+          double x1 = ((ISignedNumber) list1.arg1()).doubleValue();
+          double y1 = ((ISignedNumber) list1.arg2()).doubleValue();
+          double x2 = ((ISignedNumber) list2.arg1()).doubleValue();
+          double y2 = ((ISignedNumber) list2.arg2()).doubleValue();
+          double w = x2 - x1;
+          double h = y2 - y1;
+          buf.append("x=\"");
+          buf.append(FORMATTER.format((x1 - xMin) * xAxisScalingFactor));
+          buf.append("\" y=\"");
+          buf.append(FORMATTER.format((yMax - y1 - h) * yAxisScalingFactor));
+          buf.append("\" width=\"");
+          buf.append(FORMATTER.format(w * xAxisScalingFactor));
+          buf.append("\" height=\"");
+          buf.append(FORMATTER.format(h * yAxisScalingFactor));
+          return true;
+        }
+
+      } catch (RuntimeException ex) {
+        // catch cast exceptions for example
+        ex.printStackTrace();
+      } finally {
+        buf.append("\" \n      style=\"stroke: none; stroke-width: 0.000000px; ");
+        buf.append("fill: rgb(");
+        dim.getColorRGB(buf);
+        buf.append("); ");
+        buf.append("stroke-opacity: 1; stroke-width: 0.666667px; fill-opacity: 1\" />\n");
+      }
+      return false;
+    }
+
+    @Override
+    public void setUp(final ISymbol newSymbol) {}
+  }
+
   private static class Sphere extends AbstractEvaluator implements IGraphics3D {
 
     @Override
@@ -405,18 +856,43 @@ public class GraphicsFunctions {
       return ARGS_0_2;
     }
 
+    private boolean extracted(
+        StringBuilder buf, IAST sphereCoords, double sphereRadius, IAST color, IExpr opacity) {
+      buf.append("{type: \'sphere\',");
+      setColor(buf, color, color, true);
+      setOpacity(buf, opacity);
+      buf.append("radius: " + sphereRadius + ",");
+      if (sphereCoords.isList3() && graphics3DCoords(buf, F.List(sphereCoords))) {
+        buf.append("}");
+        return true;
+      }
+      return false;
+    }
+
     @Override
     public boolean graphics3D(StringBuilder buf, IAST ast, IAST color, IExpr opacity) {
       if (ast.argSize() > 0 && ast.arg1().isList()) {
+        double radius = 1.0;
+        if (ast.argSize() == 2) {
+          radius = ast.arg2().toDoubleDefault(1.0);
+        }
         IAST list = (IAST) ast.arg1();
-        buf.append("{type: \'sphere\',");
-        setColor(buf, color, color, true);
-        setOpacity(buf, opacity);
-        buf.append("radius: 1,");
-        if (list.isList3() && graphics3DCoords(buf, F.List(list))) {
-          buf.append("}");
+        if (list.isListOfLists()) {
+          for (int i = 1; i < list.size(); i++) {
+            IExpr arg = list.get(i);
+            if (!arg.isList3()) {
+              return false;
+            }
+            if (!extracted(buf, (IAST) arg, radius, color, opacity)) {
+              return false;
+            }
+            if (i < list.size() - 1) {
+              buf.append(",");
+            }
+          }
           return true;
         }
+        return extracted(buf, list, radius, color, opacity);
       }
       return false;
     }
@@ -426,6 +902,10 @@ public class GraphicsFunctions {
   }
 
   private static class Tetrahedron extends AbstractEvaluator implements IGraphics3D {
+
+    protected void addSubtypeThreejs(StringBuilder buf) {
+      buf.append("subType: \'tetrahedron\',");
+    }
 
     @Override
     public IExpr evaluate(final IAST ast, EvalEngine engine) {
@@ -454,10 +934,6 @@ public class GraphicsFunctions {
       }
 
       return false;
-    }
-
-    protected void addSubtypeThreejs(StringBuilder buf) {
-      buf.append("subType: \'tetrahedron\',");
     }
 
     @Override
@@ -508,44 +984,85 @@ public class GraphicsFunctions {
     public void setUp(final ISymbol newSymbol) {}
   }
 
-  private static void setColor(StringBuilder buf, IAST color, IAST defaultColor, boolean setComma) {
-    if (color.isAST(S.RGBColor, 4)) {
-      double red = color.arg1().toDoubleDefault(0.0);
-      double green = color.arg2().toDoubleDefault(0.0);
-      double blue = color.arg3().toDoubleDefault(0.0);
-      buf.append("color: [");
-      buf.append(red);
-      buf.append(",");
-      buf.append(green);
-      buf.append(",");
-      buf.append(blue);
-      buf.append("]");
-    } else {
-      if (defaultColor.isAST(S.RGBColor, 4)) {
-        double red = defaultColor.arg1().toDoubleDefault(0.0);
-        double green = defaultColor.arg2().toDoubleDefault(0.0);
-        double blue = defaultColor.arg3().toDoubleDefault(0.0);
-        buf.append("color: [");
-        buf.append(red);
-        buf.append(",");
-        buf.append(green);
-        buf.append(",");
-        buf.append(blue);
-        buf.append("]");
-      } else {
-        buf.append("color: [0.0,0.0, 0.0]");
+  public static boolean exportGraphicsSVG(StringBuilder buf, IAST data2D, Dimensions2D dim) {
+    if (data2D.isList()) {
+      boolean first = true;
+      IAST rgbColor = F.NIL;
+      IExpr opacity = F.num(0.75);
+
+      for (int i = 1; i < data2D.size(); i++) {
+        IExpr arg = data2D.get(i);
+        if (arg.isAST()) {
+          IAST primitive = (IAST) arg;
+          if (primitive.isAST(S.RGBColor, 4)) {
+            rgbColor = primitive;
+            continue;
+          }
+          if (primitive.isAST(S.Opacity, 2)) {
+            opacity = primitive.arg1();
+            continue;
+          }
+
+          if (primitive.head().isBuiltInSymbol()) {
+            IBuiltInSymbol symbol = (IBuiltInSymbol) primitive.head();
+            IEvaluator evaluator = symbol.getEvaluator();
+            if (evaluator instanceof IGraphics3D) {
+              if (!first) {
+                buf.append(",");
+              }
+              first = false;
+
+              if (!((IGraphics3D) evaluator).graphics2D(buf, (IAST) primitive, dim, rgbColor, opacity)) {
+                return false;
+              }
+              continue;
+            }
+          }
+        } 
       }
+      return true;
     }
-    if (setComma) {
-      buf.append(",");
-    }
+    return false;
   }
 
-  private static void setOpacity(StringBuilder buf, IExpr opacityExpr) {
-    double opacity = opacityExpr.toDoubleDefault(1.0);
-    buf.append("opacity: ");
-    buf.append(opacity);
-    buf.append(",");
+  public static boolean exportGraphics3D(StringBuilder buf, IAST data3D) {
+    if (data3D.isList()) {
+      boolean first = true;
+      IAST rgbColor = F.NIL;
+      IExpr opacity = F.num(0.75);
+      IAST list = (IAST) data3D;
+      for (int i = 1; i < list.size(); i++) {
+        IExpr arg = list.get(i);
+        if (arg.isAST()) {
+          IAST ast = (IAST) arg;
+          if (ast.isAST(S.RGBColor, 4)) {
+            rgbColor = ast;
+            continue;
+          }
+          if (ast.isAST(S.Opacity, 2)) {
+            opacity = ast.arg1();
+            continue;
+          }
+          if (ast.head().isBuiltInSymbol()) {
+            IBuiltInSymbol symbol = (IBuiltInSymbol) ast.head();
+            IEvaluator evaluator = symbol.getEvaluator();
+            if (evaluator instanceof IGraphics3D) {
+              if (!first) {
+                buf.append(",");
+              }
+              first = false;
+
+              if (!((IGraphics3D) evaluator).graphics3D(buf, (IAST) ast, rgbColor, opacity)) {
+                return false;
+              }
+              continue;
+            }
+          }
+        }
+      }
+      return true;
+    }
+    return false;
   }
 
   private static boolean graphics3DCoords(StringBuilder buf, IAST ast) {
@@ -590,6 +1107,10 @@ public class GraphicsFunctions {
     return true;
   }
 
+  public static void initialize() {
+    Initializer.init();
+  }
+
   public static boolean renderGraphics3D(
       StringBuilder graphics3DBuffer, IAST graphics3DAST, EvalEngine engine) {
     IExpr arg1 = graphics3DAST.first();
@@ -610,7 +1131,7 @@ public class GraphicsFunctions {
     IExpr data3D = engine.evaluate(F.N(arg1));
     if (data3D.isAST() && data3D.head().isBuiltInSymbol()) {
       StringBuilder jsonPrimitives = new StringBuilder();
-      if (ExpressionJSONConvert.exportGraphics3D(jsonPrimitives, data3D)) {
+      if (GraphicsFunctions.exportGraphics3D(jsonPrimitives, (IAST) data3D)) {
         try {
           graphics3DBuffer.append("{");
           graphics3DBuffer.append("\naxes: {},");
@@ -692,9 +1213,135 @@ public class GraphicsFunctions {
     return false;
   }
 
-  public static void initialize() {
-    Initializer.init();
+  private static void setColor(StringBuilder buf, IAST color, IAST defaultColor, boolean setComma) {
+    if (color.isAST(S.RGBColor, 4)) {
+      double red = color.arg1().toDoubleDefault(0.0);
+      double green = color.arg2().toDoubleDefault(0.0);
+      double blue = color.arg3().toDoubleDefault(0.0);
+      buf.append("color: [");
+      buf.append(red);
+      buf.append(",");
+      buf.append(green);
+      buf.append(",");
+      buf.append(blue);
+      buf.append("]");
+    } else {
+      if (defaultColor.isAST(S.RGBColor, 4)) {
+        double red = defaultColor.arg1().toDoubleDefault(0.0);
+        double green = defaultColor.arg2().toDoubleDefault(0.0);
+        double blue = defaultColor.arg3().toDoubleDefault(0.0);
+        buf.append("color: [");
+        buf.append(red);
+        buf.append(",");
+        buf.append(green);
+        buf.append(",");
+        buf.append(blue);
+        buf.append("]");
+      } else {
+        buf.append("color: [0.0,0.0, 0.0]");
+      }
+    }
+    if (setComma) {
+      buf.append(",");
+    }
+  }
+
+  private static void setOpacity(StringBuilder buf, IExpr opacityExpr) {
+    double opacity = opacityExpr.toDoubleDefault(1.0);
+    buf.append("opacity: ");
+    buf.append(opacity);
+    buf.append(",");
   }
 
   private GraphicsFunctions() {}
+
+  public static boolean primitivesDimension(IAST list, Dimensions2D dim) {
+    for (int i = 1; i < list.size(); i++) {
+      if (list.get(i).isAST()) {
+        IAST primitive = (IAST) list.get(i);
+        if (primitive.head().isBuiltInSymbol()) {
+          IBuiltInSymbol symbol = (IBuiltInSymbol) primitive.head();
+          IEvaluator evaluator = symbol.getEvaluator();
+          if (evaluator instanceof IGraphics3D) {
+            if (!((IGraphics3D) evaluator).graphics2DDimension(primitive, dim)) {
+              //                return false;
+            }
+          }
+        }
+      }
+    }
+    return true;
+  }
+
+  public static void graphicsToSVG(IAST ast, StringBuilder buf) {
+    EvalEngine engine = EvalEngine.get();
+    IAST numericAST = (IAST) engine.evalN(ast);
+    Dimensions2D dim = new Dimensions2D(350, 350);
+    // set a default value
+    dim.color = RGBColor.BLUE;
+    if (numericAST.size() > 2) {
+      final OptionArgs options = new OptionArgs(numericAST.topHead(), numericAST, 2, engine);
+      IExpr option = options.getOption(S.PlotRange);
+      if (option.isListOfLists() && option.size() == 3) {
+        IAST list = (IAST) option;
+        dim.setPlotRange(list.getAST(1), list.getAST(2));
+      }
+      option = options.getOption(S.Axes);
+      if (option.isTrue()) {
+        dim.setAxes(true);
+      }
+    }
+  
+    try {
+      int width = dim.width;
+      int height = dim.height;
+  
+      if (ast.size() > 1) {
+        IExpr arg1 = ast.arg1();
+        if (!arg1.isList()) {
+          arg1 = F.List(arg1);
+        }
+        primitivesDimension((IAST) arg1, dim);
+  
+        exportGraphicsSVG(buf, (IAST) arg1, dim);
+      }
+  
+      if (dim.isAxes()) {
+        double xScale = width / (dim.xMax - dim.xMin);
+        double yScale = height / (dim.yMax - dim.yMin);
+        double x1 = 0;
+  
+        // vertical axe
+        // + "0.000000,233.333333 6.666667,233.333333");
+        buf.append("<polyline points=\"");
+  
+        buf.append(Show2SVG.FORMATTER.format((x1 - dim.xMin) * xScale));
+        buf.append(",");
+        buf.append(Show2SVG.FORMATTER.format(0.0));
+        buf.append(" ");
+        buf.append(Show2SVG.FORMATTER.format((x1 - dim.xMin) * xScale));
+        buf.append(",");
+        buf.append(Show2SVG.FORMATTER.format(height));
+  
+        buf.append(
+            "\" style=\"stroke: rgb(0.000000%, 0.000000%, 0.000000%); stroke-opacity: 1; stroke-width: 0.666667px; fill: none\"/>\n");
+  
+        // horizontals axe
+        double y1 = (-dim.yMin) * yScale;
+        buf.append("<polyline points=\"");
+  
+        buf.append(Show2SVG.FORMATTER.format(0));
+        buf.append(",");
+        buf.append(Show2SVG.FORMATTER.format(y1));
+        buf.append(" ");
+        buf.append(Show2SVG.FORMATTER.format(width));
+        buf.append(",");
+        buf.append(Show2SVG.FORMATTER.format(y1));
+  
+        buf.append(
+            "\" style=\"stroke: rgb(0.000000%, 0.000000%, 0.000000%); stroke-opacity: 1; stroke-width: 0.666667px; fill: none\"/>\n");
+      }
+    } finally {
+    }
+  }
 }

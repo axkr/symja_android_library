@@ -18,8 +18,8 @@ import java.util.function.BiPredicate;
 import java.util.function.Function;
 import java.util.function.IntFunction;
 import java.util.function.Predicate;
-
 import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.text.StringEscapeUtils;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.apfloat.Apcomplex;
@@ -99,7 +99,6 @@ import org.matheclipse.core.expression.data.GraphExpr;
 import org.matheclipse.core.expression.data.SparseArrayExpr;
 import org.matheclipse.core.form.Documentation;
 import org.matheclipse.core.generic.Functors;
-import org.matheclipse.core.graphics.Show2SVG;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IASTAppendable;
 import org.matheclipse.core.interfaces.IASTMutable;
@@ -129,10 +128,8 @@ import org.matheclipse.core.visit.VisitorLevelSpecification;
 import org.matheclipse.parser.client.FEConfig;
 import org.matheclipse.parser.client.SyntaxError;
 import org.matheclipse.parser.trie.TrieMatch;
-
 import com.google.common.cache.Cache;
 import com.google.common.cache.CacheBuilder;
-
 import edu.jas.kern.ComputerThreads;
 import edu.jas.kern.PreemptStatus;
 
@@ -4470,8 +4467,8 @@ public class F extends S {
 
   public static IExpr IIntegrate(int priority, final IAST lhs, final IExpr rhs) {
     lhs.setEvalFlags(lhs.getEvalFlags() | IAST.IS_FLATTENED_OR_SORTED_MASK);
-    org.matheclipse.core.reflection.system.Integrate.INTEGRATE_RULES_DATA.putDownRule(
-        IPatternMatcher.SET_DELAYED, false, lhs, rhs, priority);
+    org.matheclipse.core.reflection.system.Integrate.INTEGRATE_RULES_DATA.integrate(
+        lhs, rhs, priority);
     return F.NIL;
   }
 
@@ -7894,10 +7891,9 @@ public class F extends S {
           return openSVGOnDesktop(show);
         }
       } else if (expr.isAST(S.Graphics3D)) {
-        IExpr expressionJSON =
-            EvalEngine.get().evaluate(F.ExportString(F.N(expr), F.stringx("ExpressionJSON")));
-        if (expressionJSON.isString()) {
-          String jsonStr = expressionJSON.toString();
+        StringBuilder buf = new StringBuilder();
+        if (GraphicsFunctions.renderGraphics3D(buf, (IAST) expr, EvalEngine.get())) {
+          String jsonStr = buf.toString();
           try {
             String html = Config.GRAPHICS3D_PAGE;
             html = StringUtils.replace(html, "`1`", jsonStr);
@@ -8036,11 +8032,13 @@ public class F extends S {
   }
 
   public static String openSVGOnDesktop(IAST show) throws IOException {
+    String html = Config.SVG_PAGE;
     StringBuilder stw = new StringBuilder();
-    Show2SVG.graphicsToSVG(show.getAST(1), stw);
+    GraphicsFunctions.graphicsToSVG(show.getAST(1), stw);
+    html = StringUtils.replace(html, "`1`", stw.toString());
     File temp = java.io.File.createTempFile("tempfile", ".svg");
     BufferedWriter bw = new BufferedWriter(new FileWriter(temp));
-    bw.write(stw.toString());
+    bw.write(html);
     bw.close();
     if (Desktop.isDesktopSupported()) {
       Desktop.getDesktop().open(temp);
