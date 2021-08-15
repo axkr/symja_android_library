@@ -579,7 +579,7 @@ public class MMAConsole {
         default:
           if (Desktop.isDesktopSupported()) {
             IExpr outExpr = result;
-            if (result.isAST(S.Graphics)) { // || result.isAST(F.Graphics3D)) {
+            if (result.isAST(S.Graphics)  || result.isAST(F.Graphics3D)) {
               outExpr = F.Show(outExpr);
             } 
             String html = F.show(outExpr);

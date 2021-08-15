@@ -430,6 +430,7 @@ public class GraphicsFunctions {
       S.Point.setEvaluator(new Point());
       S.Polygon.setEvaluator(new Polygon());
       S.Rectangle.setEvaluator(new Rectangle());
+      S.Scaled.setEvaluator(new Scaled());
       S.Sphere.setEvaluator(new Sphere());
       S.Tetrahedron.setEvaluator(new Tetrahedron());
 
@@ -724,6 +725,26 @@ public class GraphicsFunctions {
     public void setUp(final ISymbol newSymbol) {}
   }
 
+  private static class Scaled extends AbstractEvaluator {
+
+    @Override
+    public IExpr evaluate(final IAST ast, EvalEngine engine) {
+      // TODO make this dependent on the graphics environment
+      if (ast.isAST1() && ast.arg1().isList()) {
+        return ast.arg1();
+      }
+      return F.NIL;
+    }
+
+    @Override
+    public int[] expectedArgSize(IAST ast) {
+      return ARGS_1_2;
+    }
+
+    @Override
+    public void setUp(final ISymbol newSymbol) {}
+  }
+
   private static class Rectangle extends AbstractEvaluator implements IGraphics3D {
 
     @Override
@@ -856,7 +877,7 @@ public class GraphicsFunctions {
       return ARGS_0_2;
     }
 
-    private boolean extracted(
+    private boolean sphere(
         StringBuilder buf, IAST sphereCoords, double sphereRadius, IAST color, IExpr opacity) {
       buf.append("{type: \'sphere\',");
       setColor(buf, color, color, true);
@@ -883,7 +904,7 @@ public class GraphicsFunctions {
             if (!arg.isList3()) {
               return false;
             }
-            if (!extracted(buf, (IAST) arg, radius, color, opacity)) {
+            if (!sphere(buf, (IAST) arg, radius, color, opacity)) {
               return false;
             }
             if (i < list.size() - 1) {
@@ -892,7 +913,7 @@ public class GraphicsFunctions {
           }
           return true;
         }
-        return extracted(buf, list, radius, color, opacity);
+        return sphere(buf, list, radius, color, opacity);
       }
       return false;
     }
@@ -1012,13 +1033,14 @@ public class GraphicsFunctions {
               }
               first = false;
 
-              if (!((IGraphics3D) evaluator).graphics2D(buf, (IAST) primitive, dim, rgbColor, opacity)) {
+              if (!((IGraphics3D) evaluator)
+                  .graphics2D(buf, (IAST) primitive, dim, rgbColor, opacity)) {
                 return false;
               }
               continue;
             }
           }
-        } 
+        }
       }
       return true;
     }
@@ -1132,7 +1154,7 @@ public class GraphicsFunctions {
     if (data3D.isAST() && data3D.head().isBuiltInSymbol()) {
       StringBuilder jsonPrimitives = new StringBuilder();
       if (GraphicsFunctions.exportGraphics3D(jsonPrimitives, (IAST) data3D)) {
-        try {
+        try { 
           graphics3DBuffer.append("{");
           graphics3DBuffer.append("\naxes: {},");
           graphics3DBuffer.append("\nelements: [");
@@ -1200,7 +1222,7 @@ public class GraphicsFunctions {
             graphics3DBuffer.append("}");
             graphics3DBuffer.append("],");
           }
-          graphics3DBuffer.append("\nviewpoint: [2,-4,4]");
+          graphics3DBuffer.append("\nviewpoint: [1.3,-2.4,2.0]");
           graphics3DBuffer.append("}");
           return true;
         } catch (Exception ex) {
@@ -1291,30 +1313,30 @@ public class GraphicsFunctions {
         dim.setAxes(true);
       }
     }
-  
+
     try {
       int width = dim.width;
       int height = dim.height;
-  
+
       if (ast.size() > 1) {
         IExpr arg1 = ast.arg1();
         if (!arg1.isList()) {
           arg1 = F.List(arg1);
         }
         primitivesDimension((IAST) arg1, dim);
-  
+
         exportGraphicsSVG(buf, (IAST) arg1, dim);
       }
-  
+
       if (dim.isAxes()) {
         double xScale = width / (dim.xMax - dim.xMin);
         double yScale = height / (dim.yMax - dim.yMin);
         double x1 = 0;
-  
+
         // vertical axe
         // + "0.000000,233.333333 6.666667,233.333333");
         buf.append("<polyline points=\"");
-  
+
         buf.append(Show2SVG.FORMATTER.format((x1 - dim.xMin) * xScale));
         buf.append(",");
         buf.append(Show2SVG.FORMATTER.format(0.0));
@@ -1322,14 +1344,14 @@ public class GraphicsFunctions {
         buf.append(Show2SVG.FORMATTER.format((x1 - dim.xMin) * xScale));
         buf.append(",");
         buf.append(Show2SVG.FORMATTER.format(height));
-  
+
         buf.append(
             "\" style=\"stroke: rgb(0.000000%, 0.000000%, 0.000000%); stroke-opacity: 1; stroke-width: 0.666667px; fill: none\"/>\n");
-  
+
         // horizontals axe
         double y1 = (-dim.yMin) * yScale;
         buf.append("<polyline points=\"");
-  
+
         buf.append(Show2SVG.FORMATTER.format(0));
         buf.append(",");
         buf.append(Show2SVG.FORMATTER.format(y1));
@@ -1337,7 +1359,7 @@ public class GraphicsFunctions {
         buf.append(Show2SVG.FORMATTER.format(width));
         buf.append(",");
         buf.append(Show2SVG.FORMATTER.format(y1));
-  
+
         buf.append(
             "\" style=\"stroke: rgb(0.000000%, 0.000000%, 0.000000%); stroke-opacity: 1; stroke-width: 0.666667px; fill: none\"/>\n");
       }

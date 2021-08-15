@@ -7887,10 +7887,22 @@ public class F extends S {
     try {
       if (expr.isSameHeadSizeGE(Show, 2)) {
         IAST show = (IAST) expr;
-        if (show.size() > 1 && show.arg1().isSameHeadSizeGE(Graphics, 2)) {
-          return openSVGOnDesktop(show);
-        }
-      } else if (expr.isAST(S.Graphics3D)) {
+        return showGraphic(show.arg1());
+      }
+      return showGraphic(expr);
+    } catch (Exception ex) {
+      if (Config.SHOW_STACKTRACE) {
+        ex.printStackTrace();
+      }
+    }
+    return null;
+  }
+
+  public static String showGraphic(IExpr expr) {
+    try {
+      if (expr.isSameHeadSizeGE(Graphics, 2)) {
+        return openSVGOnDesktop((IAST) expr);
+      } else if (expr.isSameHeadSizeGE(Graphics3D, 2)) {
         StringBuilder buf = new StringBuilder();
         if (GraphicsFunctions.renderGraphics3D(buf, (IAST) expr, EvalEngine.get())) {
           String jsonStr = buf.toString();
