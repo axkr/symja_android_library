@@ -1093,8 +1093,7 @@ public final class LinearAlgebra {
     @Override
     public IExpr evaluate(final IAST ast, EvalEngine engine) {
       IExpr arg1 = ast.arg1();
-      final int[] dim = arg1.isMatrix();
-      if (dim != null) {
+      if (arg1.isList() || arg1.isSparseArray()) {
         int diff = 0;
         if (ast.size() > 2) {
           diff = ast.arg2().toIntDefault(Integer.MIN_VALUE);
@@ -1102,28 +1101,41 @@ public final class LinearAlgebra {
             return F.NIL;
           }
         }
-        if (arg1.isAST()) {
-          final IAST matrix = (IAST) arg1;
-          int rowLength = dim[0];
-          int columnLength = dim[1];
-          IAST row;
-          IASTAppendable result = F.ListAlloc(rowLength);
-          for (int i = 1; i <= rowLength; i++) {
-            row = (IAST) matrix.get(i);
-            int indx = i + diff;
-            if (indx > 0 && indx <= columnLength) {
-              result.append(row.get(indx));
+        if (arg1.isList()) {
+          IAST list = (IAST) arg1;
+          IASTAppendable result = F.ListAlloc(list.argSize());
+          for (int i = 1; i < list.size(); i++) {
+            IExpr arg = list.get(i);
+            if (arg.isList()) {
+              IAST subList = (IAST) arg;
+              int indx = i + diff;
+              if (indx > 0 && indx <= subList.argSize()) {
+                result.append(subList.get(indx));
+              }
+            } else {
+              break;
             }
           }
           return result;
-        } else {
-          FieldMatrix<IExpr> matrix = Convert.list2Matrix(arg1);
-          if (matrix != null) {
-            IASTAppendable result = F.ListAlloc(dim[0]);
-            for (int i = 0; i < dim[0]; i++) {
-              int indx = i + diff;
-              if (indx >= 0 && indx < dim[1]) {
-                result.append(matrix.getEntry(i, indx));
+        } else if (arg1.isSparseArray()) {
+          ISparseArray sparseArray = (ISparseArray) arg1;
+          int[] dims = sparseArray.getDimension();
+          if (dims.length == 1) {
+            return F.CEmptyList;
+          } else if (dims.length >= 2) {
+            int rowLength = dims[0];
+            int colLength = dims[1];
+            IASTAppendable result = F.ListAlloc(rowLength);
+            for (int i = 1; i <= rowLength; i++) {
+              IExpr arg = sparseArray.get(i);
+              if (arg.isSparseArray()) {
+                ISparseArray subList = (ISparseArray) arg;
+                int indx = i + diff;
+                if (indx > 0 && indx <= colLength) {
+                  result.append(subList.get(indx));
+                }
+              } else {
+                break;
               }
             }
             return result;

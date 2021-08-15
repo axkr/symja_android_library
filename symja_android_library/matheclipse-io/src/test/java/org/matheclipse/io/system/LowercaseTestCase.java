@@ -7719,6 +7719,7 @@ public class LowercaseTestCase extends AbstractTestCase {
   }
 
   public void testDiagonal() {
+
     check(
         "Diagonal(SparseArray({{1,2,3},{4,5,6},{7,8,9}}))", //
         "{1,5,9}");
@@ -7729,9 +7730,16 @@ public class LowercaseTestCase extends AbstractTestCase {
         "Diagonal(SparseArray({{1,2,3},{4,5,6},{7,8,9}}), -1)", //
         "{4,8}");
 
+    
+    check(
+        "Diagonal({{{0}, 1}, {2, 3}, {4, 5}})", //
+        "{{0},3}");
+    check(
+        "Diagonal({1, 2, 3, 4})", //
+        "{}");
     check(
         "Diagonal({{1,0}, {0,1},0})", //
-        "Diagonal({{1,0},{0,1},0})");
+        "{1,1}");
     check(
         "Diagonal({{1,2,3},{4,5,6},{7,8,9}})", //
         "{1,5,9}");
@@ -33469,7 +33477,7 @@ public class LowercaseTestCase extends AbstractTestCase {
     check(
         "Solve(k+3/(4)==(k)/2,{k})", //
         "{{k->-3/2}}");
-    
+
     check(
         "Solve({{x,y}=={3,4}},{x,y})", //
         "{{x->3,y->4}}");
@@ -34028,20 +34036,20 @@ public class LowercaseTestCase extends AbstractTestCase {
         "{{x->-7,y->6},{x->-4,y->4},{x->-1,y->2}}");
   }
 
-//  public void testSolveReals() {
-//    check(
-//        "Solve(x^3 == 1, x, Reals)", //
-//        "{{x->1.0}}");
-//    check(
-//        "Solve({x > 0, y > 0, x^2 + 2*y^3 == 3681}, {x, y}, Reals)", //
-//        "{{x->26.43562,y->11.4244}}");
-//    check(
-//        "Solve({2*x + 3*y == 4, 3*x - 4*y <= 5,x - 2*y > -21}, {x,  y}, Reals)", //
-//        "{{x->0.666667,y->0.888889}}");
-//    check(
-//        "Solve(2*x + 3*y - 5*z == 1 && 3*x - 4*y + 7*z == 3, {x, y, z}, Reals)", //
-//        "{{x->0.745995,y->0.366124,z->0.318073}}");
-//  }
+  //  public void testSolveReals() {
+  //    check(
+  //        "Solve(x^3 == 1, x, Reals)", //
+  //        "{{x->1.0}}");
+  //    check(
+  //        "Solve({x > 0, y > 0, x^2 + 2*y^3 == 3681}, {x, y}, Reals)", //
+  //        "{{x->26.43562,y->11.4244}}");
+  //    check(
+  //        "Solve({2*x + 3*y == 4, 3*x - 4*y <= 5,x - 2*y > -21}, {x,  y}, Reals)", //
+  //        "{{x->0.666667,y->0.888889}}");
+  //    check(
+  //        "Solve(2*x + 3*y - 5*z == 1 && 3*x - 4*y + 7*z == 3, {x, y, z}, Reals)", //
+  //        "{{x->0.745995,y->0.366124,z->0.318073}}");
+  //  }
 
   public void testSolveIssue130() {
     check(
