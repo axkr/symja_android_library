@@ -1,7 +1,7 @@
 ## Symja Library - Java Symbolic Math System for Android NCalc calculator
 
 <p align="left">
-<a href="https://discord.gg/tYknzr2qam" target="blank"><img src="https://img.shields.io/discord/869895703718166529.svg?color=7289da&label=Symja&logo=discord&style=for-the-badge" alt="Symja" />&nbsp;
+<a href="https://discord.gg/tYknzr2qam" target="blank"><img src="https://img.shields.io/discord/869895703718166529.svg?color=7289da&label=Join our Discord&logo=discord&style=for-the-badge" alt="Join our Discord" />&nbsp;
 <a href="https://hub.docker.com/r/symja/symja-2.0" target="blank"><img src="https://img.shields.io/docker/pulls/symja/symja-2.0?logo=docker&style=for-the-badge" alt="Symja" />
 </p>
  
