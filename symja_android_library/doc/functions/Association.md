@@ -9,7 +9,7 @@ Association(list-of-rules)
 ### Examples
 
 ```
->> Association({ahey->avalue, bkey->bvalue, ckey->cvalue}) 
+>> Association({akey->avalue, bkey->bvalue, ckey->cvalue}) 
 <|akey->avalue,bkey->bvalue,ckey->cvalue|> 
 ```
 
