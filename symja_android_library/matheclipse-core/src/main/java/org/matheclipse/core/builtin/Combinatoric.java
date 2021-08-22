@@ -1,12 +1,12 @@
 package org.matheclipse.core.builtin;
 
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-
 import org.matheclipse.core.basic.Config;
 import org.matheclipse.core.combinatoric.KSubsets;
 import org.matheclipse.core.eval.EvalAttributes;
@@ -2126,8 +2126,12 @@ public final class Combinatoric {
       }
 
       final KPermutationsList perm = new KPermutationsList(list, parts, F.ast(list.head()), 1);
+      Set<IAST> set = new HashSet<IAST>();
       for (IAST temp : perm) {
-        result.append(temp);
+        if (!set.contains(temp)) {
+          result.append(temp);
+          set.add(temp);
+        }
       }
       return result;
     }

@@ -247,6 +247,12 @@ public class CombinatoricTestCase extends AbstractTestCase {
         "6");
   }
 
+  public void testPermutatins() {
+    check(
+        "Permutations({1,2,1})", //
+        "{{1,2,1},{1,1,2},{2,1,1}}");
+  }
+
   public void testRosenIterator() {
     IAST lhsPatternAST = F.Plus(F.x_, F.y_, F.z_);
     IAST lhsEvalAST = F.Plus(F.a, F.b, F.c, F.d);
