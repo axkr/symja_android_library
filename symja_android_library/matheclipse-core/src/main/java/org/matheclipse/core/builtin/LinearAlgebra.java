@@ -27,11 +27,9 @@ import static org.matheclipse.core.expression.F.Sqr;
 import static org.matheclipse.core.expression.F.Sqrt;
 import static org.matheclipse.core.expression.F.Subtract;
 import static org.matheclipse.core.expression.F.Times;
-
 import java.util.ArrayList;
 import java.util.List;
 import java.util.function.Predicate;
-
 import org.hipparchus.complex.Complex;
 import org.hipparchus.exception.MathIllegalArgumentException;
 import org.hipparchus.exception.MathRuntimeException;
@@ -74,6 +72,7 @@ import org.matheclipse.core.interfaces.IASTAppendable;
 import org.matheclipse.core.interfaces.IASTMutable;
 import org.matheclipse.core.interfaces.IBuiltInSymbol;
 import org.matheclipse.core.interfaces.IExpr;
+import org.matheclipse.core.interfaces.IFraction;
 import org.matheclipse.core.interfaces.INumber;
 import org.matheclipse.core.interfaces.INumericArray;
 import org.matheclipse.core.interfaces.ISparseArray;
@@ -122,6 +121,7 @@ public final class LinearAlgebra {
       S.Normalize.setEvaluator(new Normalize());
       S.NullSpace.setEvaluator(new NullSpace());
       S.Orthogonalize.setEvaluator(new Orthogonalize());
+      S.PauliMatrix.setEvaluator(new PauliMatrix());
       S.PseudoInverse.setEvaluator(PseudoInverse.CONST);
       S.Projection.setEvaluator(new Projection());
       S.QRDecomposition.setEvaluator(new QRDecomposition());
@@ -939,6 +939,7 @@ public final class LinearAlgebra {
           final IAST v1 = (IAST) arg1.normal(false);
           return List(Negate(v1.arg2()), v1.arg1());
         }
+        return IOFunctions.printMessage(ast.topHead(), "nonn1", F.List(), engine);
       } else if (ast.size() > 3) {
         int dim1 = arg1.isVector();
         if (dim1 == ast.size()) {
@@ -1270,15 +1271,6 @@ public final class LinearAlgebra {
    */
   private static class Dimensions extends AbstractFunctionEvaluator {
 
-    private static IAST getDimensions(final IAST ast, int maximumLevel) {
-      IAST list = (IAST) ast.arg1();
-      IExpr header = list.head();
-      ArrayList<Integer> dims = dimensions(list, header, maximumLevel - 1);
-      int dimsSize = dims.size();
-      IASTAppendable res = F.ListAlloc(dimsSize);
-      return res.appendArgs(0, dimsSize, i -> F.ZZ(dims.get(i).intValue()));
-    }
-
     @Override
     public IExpr evaluate(final IAST ast, EvalEngine engine) {
       int maximumLevel = Integer.MAX_VALUE;
@@ -1305,6 +1297,15 @@ public final class LinearAlgebra {
       }
 
       return F.CEmptyList;
+    }
+
+    private static IAST getDimensions(final IAST ast, int maximumLevel) {
+      IAST list = (IAST) ast.arg1();
+      IExpr header = list.head();
+      ArrayList<Integer> dims = dimensions(list, header, maximumLevel - 1);
+      int dimsSize = dims.size();
+      IASTAppendable res = F.ListAlloc(dimsSize);
+      return res.appendArgs(0, dimsSize, i -> F.ZZ(dims.get(i).intValue()));
     }
 
     private IExpr getDimensions(int[] dims, int maximumLevel) {
@@ -1401,67 +1402,65 @@ public final class LinearAlgebra {
           return temp;
         }
 
-        FieldMatrix<IExpr> matrix0;
-        FieldMatrix<IExpr> matrix1;
-        FieldVector<IExpr> vector0;
-        FieldVector<IExpr> vector1;
+        ArrayList<Integer> dimensions1 = dimensions(arg1, S.List, Integer.MAX_VALUE, true);
+        if (dimensions1.size() == 0) {
+          return F.NIL;
+        }
+        ArrayList<Integer> dimensions2 = dimensions(arg2, S.List, Integer.MAX_VALUE, true);
+        if (dimensions2.size() == 0) {
+          return F.NIL;
+        }
+        if (dimensions1.get(dimensions1.size() - 1) != dimensions2.get(0)) {
+          // Tensors `1` and `2` have incompatible shapes.
+          return IOFunctions.printMessage(ast.topHead(), "dotsh", F.List(arg1, arg2), engine);
+        }
 
-        int[] dim1 = arg1.isMatrix();
-        if (dim1 != null && dim1[1] != 0) {
-
+        if (dimensions1.size() == 2) {
+          FieldMatrix<IExpr> matrix0;
           matrix0 = Convert.list2Matrix(arg1);
           if (matrix0 != null) {
-            if (arg2.isMatrix() != null) {
-
-              matrix1 = Convert.list2Matrix(arg2);
+            if (dimensions2.size() == 2) {
+              FieldMatrix<IExpr> matrix1 = Convert.list2Matrix(arg2);
               if (matrix1 != null) {
                 return Convert.matrix2Expr(matrix0.multiply(matrix1));
               }
-            } else if (arg2.isVector() != (-1)) {
-
-              vector1 = Convert.list2Vector(arg2);
+            } else if (dimensions2.size() == 1) {
+              FieldVector<IExpr> vector1 = Convert.list2Vector(arg2);
               if (vector1 != null) {
                 return Convert.vector2Expr(matrix0.operate(vector1));
               }
             }
           }
-          return F.NIL;
-          // return engine.printMessage(ast.topHead() + ": Error in matrix");
         } else {
-          int dim = arg1.isVector();
-          if (dim != (-1)) {
+          if (dimensions1.size() == 2) {
+            int dim = dimensions1.get(0);
             if (dim == 0) {
               if (arg2.isVector() == 0) {
                 return F.C0;
               }
             } else {
-              vector0 = Convert.list2Vector(arg1);
+              FieldVector<IExpr> vector0 = Convert.list2Vector(arg1);
               if (vector0 != null) {
-                if (arg2.isMatrix() != null) {
-                  matrix1 = Convert.list2Matrix(arg2);
+                if (dimensions2.size() == 2) {
+                  FieldMatrix<IExpr> matrix1 = Convert.list2Matrix(arg2);
                   if (matrix1 != null) {
                     return Convert.vector2Expr(matrix1.preMultiply(vector0));
                   }
-                } else if (arg2.isVector() != (-1)) {
-                  vector1 = Convert.list2Vector(arg2);
+                } else if (dimensions2.size() == 1) {
+                  FieldVector<IExpr> vector1 = Convert.list2Vector(arg2);
                   if (vector1 != null) {
                     return vector0.dotProduct(vector1);
                   }
                 }
               }
-              return engine.printMessage(ast.topHead() + ": Error in vector");
             }
           }
         }
 
-        // } catch (final ClassCastException e) {
-        // if (Config.SHOW_STACKTRACE) {
-        // e.printStackTrace();
-        // }
-        // } catch (final IndexOutOfBoundsException e) {
-        // if (Config.SHOW_STACKTRACE) {
-        // e.printStackTrace();
-        // }
+        return S.Inner.ofNIL(EvalEngine.get(), S.Times, arg1, arg2, S.Plus);
+      } catch (IllegalArgumentException iae) {
+        // print message: Nonrectangular tensor encountered
+        return IOFunctions.printMessage(ast.topHead(), "rect", F.List(ast), engine);
       } catch (final MathRuntimeException mre) {
         // org.hipparchus.exception.MathIllegalArgumentException: inconsistent dimensions: 0 != 3
         return engine.printMessage(ast.topHead(), mre);
@@ -2167,10 +2166,13 @@ public final class LinearAlgebra {
 
     @Override
     public IExpr evaluate(final IAST ast, EvalEngine engine) {
-      if (ast.arg2().isAST() && ast.arg3().isAST()) {
+      IExpr arg2 = ast.arg2();
+      IExpr arg3 = ast.arg3();
+      if ((arg2.isAST() || arg2.isSparseArray()) //
+          && (arg3.isAST() || arg3.isSparseArray())) {
         IExpr f = ast.arg1();
-        IAST list1 = (IAST) ast.arg2().normal(false);
-        IAST list2 = (IAST) ast.arg3().normal(false);
+        IAST list1 = (IAST) arg2.normal(false);
+        IAST list2 = (IAST) arg3.normal(false);
         IExpr g;
         if (ast.isAST3()) {
           g = S.Plus;
@@ -2202,10 +2204,10 @@ public final class LinearAlgebra {
               F.List(F.ZZ(dimSize1), F.ZZ(dim1.size()), list1, F.C1, F.ZZ(dimSize2), list2),
               EvalEngine.get());
         }
-        if (list1.size() == list2.size()) {
-          InnerAlgorithm ic = new InnerAlgorithm(f, list1, list2, g);
-          return ic.inner();
-        }
+        //        if (list1.size() == list2.size()) {
+        InnerAlgorithm ic = new InnerAlgorithm(f, list1, list2, g);
+        return ic.inner();
+        //        }
       }
       return F.NIL;
     }
@@ -3385,21 +3387,22 @@ public final class LinearAlgebra {
           IAST vector = (IAST) arg1;
           if (ast.isAST2()) {
             IExpr p = ast.arg2();
-            if (p.isInfinity()) {
+            if (p.isString("Frobenius")) {
+              return F.Norm(vector);
+            } else if (p.isInfinity()) {
               return vector.map(S.Max, x -> F.Abs(x));
-            } else {
-              if (p.isSymbol() || p.isReal()) {
-                if (p.isZero()) {
-                  engine.printMessage("Norm: 0 not allowed as second argument!");
-                  return F.NIL;
-                }
-                if (p.isReal() && p.lessThan(F.C1).isTrue()) {
-                  engine.printMessage("Norm: Second argument is < 1!");
-                  return F.NIL;
-                }
-                return F.Power(vector.map(S.Plus, x -> F.Power(F.Abs(x), p)), p.inverse());
+            } else if (p.isSymbol() || p.isReal()) {
+              if (p.isZero()) {
+                engine.printMessage("Norm: 0 not allowed as second argument!");
+                return F.NIL;
               }
+              if (p.isReal() && p.lessThan(F.C1).isTrue()) {
+                engine.printMessage("Norm: Second argument is < 1!");
+                return F.NIL;
+              }
+              return F.Power(vector.map(S.Plus, x -> F.Power(F.Abs(x), p)), p.inverse());
             }
+
             return F.NIL;
           }
           return F.Sqrt(vector.map(S.Plus, x -> F.Sqr(F.Abs(x))));
@@ -3416,7 +3419,7 @@ public final class LinearAlgebra {
         try {
           matrix = arg1.toRealMatrix();
           if (matrix != null) {
-            if (ast.size() > 2 && ast.arg2().isString("Frobenius")) {
+            if (ast.isAST2() && ast.arg2().isString("Frobenius")) {
               return F.Norm(F.Flatten(arg1));
             }
             if (matrixDim[0] < matrixDim[1]) {
@@ -3684,6 +3687,46 @@ public final class LinearAlgebra {
 
     @Override
     public void setUp(final ISymbol newSymbol) {}
+  }
+
+  private static class PauliMatrix extends AbstractFunctionEvaluator {
+
+    @Override
+    public IExpr evaluate(final IAST ast, EvalEngine engine) {
+      if (ast.arg1().isInteger()) {
+        int m = ast.arg1().toIntDefault(Integer.MIN_VALUE);
+        if (m < 0) {
+          return F.NIL;
+        }
+        switch (m) {
+          case 0:
+            // identity matrix
+            return F.List(F.List(F.C1, F.C0), F.List(F.C0, F.C1));
+          case 1:
+            return F.List(F.List(F.C0, F.C1), F.List(F.C1, F.C0));
+          case 2:
+            return F.List(F.List(F.C0, F.CNI), F.List(F.CI, F.C0));
+          case 3:
+            return F.List(F.List(F.C1, F.C0), F.List(F.C0, F.CN1));
+          case 4:
+            // identity matrix
+            return F.List(F.List(F.C1, F.C0), F.List(F.C0, F.C1));
+          default:
+            break;
+        }
+      }
+      return F.NIL;
+    }
+
+    @Override
+    public int[] expectedArgSize(IAST ast) {
+      return ARGS_1_1;
+    }
+
+    @Override
+    public void setUp(final ISymbol newSymbol) {
+      newSymbol.setAttributes(ISymbol.LISTABLE);
+    }
   }
 
   /**
@@ -4408,57 +4451,114 @@ public final class LinearAlgebra {
 
     @Override
     public IExpr evaluate(final IAST ast, EvalEngine engine) {
-      // TODO generalize for tensors
       IExpr arg1 = ast.arg1();
       IExpr header = S.Plus;
+      int level = -1;
       if (ast.size() > 2) {
         header = ast.arg2();
       }
 
-      final int[] dim = arg1.isMatrix();
-      if (dim != null) {
-        if (arg1.isAST()) {
-          final IAST mat = (IAST) arg1;
-          int len = dim[0] < dim[1] ? dim[0] : dim[1];
-          IASTAppendable tr = F.ast(header, len, true);
-          mat.forEach(1, len + 1, (x, i) -> tr.set(i, ((IAST) x).get(i)));
-          return tr;
-        } else {
-          FieldMatrix<IExpr> matrix = Convert.list2Matrix(arg1);
-          if (matrix != null) {
-            int len = dim[0] < dim[1] ? dim[0] : dim[1];
-            IASTAppendable tr = F.ast(header, len, true);
-            for (int i = 0; i < len; i++) {
-              tr.set(i + 1, matrix.getEntry(i, i));
-            }
-            return tr;
-          }
+      try {
+        ArrayList<Integer> dimensions = dimensions(arg1, S.List, Integer.MAX_VALUE, true);
+        if (dimensions.size() == 0) {
+          return F.NIL;
         }
-      }
 
-      final int len = arg1.isVector();
-      if (len >= 0) {
-        if (arg1.isAST()) {
-          IASTAppendable tr = F.ast(header, len, true);
-          ((IAST) arg1).forEach(1, len + 1, (x, i) -> tr.set(i, x));
-          return tr;
-        } else {
-          FieldVector<IExpr> vector = Convert.list2Vector(arg1);
-          if (vector != null) {
-            IASTAppendable tr = F.ast(header, len, true);
-            for (int i = 0; i < len; i++) {
-              tr.set(i + 1, vector.getEntry(i));
-            }
-            return tr;
+        if (ast.isAST3()) {
+          level = ast.arg3().toIntDefault();
+          if (level == Integer.MIN_VALUE) {
+            return F.NIL;
+          }
+
+          // TODO calculate for level restriction
+          return F.NIL;
+        }
+
+        //      if (level < 0) {
+        //        if (dimensions.size() == 2) {
+        //          int rowLength = dimensions.get(0);
+        //          int columnLength = dimensions.get(1);
+        //          if (arg1.isAST()) {
+        //            final IAST mat = (IAST) arg1;
+        //            int len = rowLength < columnLength ? rowLength : columnLength;
+        //            IASTAppendable tr = F.ast(header, len, true);
+        //            mat.forEach(1, len + 1, (x, i) -> tr.set(i, ((IAST) x).get(i)));
+        //            return tr;
+        //          } else {
+        //            FieldMatrix<IExpr> matrix = Convert.list2Matrix(arg1);
+        //            if (matrix != null) {
+        //              int len = rowLength < columnLength ? rowLength : columnLength;
+        //              IASTAppendable tr = F.ast(header, len, true);
+        //              for (int i = 0; i < len; i++) {
+        //                tr.set(i + 1, matrix.getEntry(i, i));
+        //              }
+        //              return tr;
+        //            }
+        //          }
+        //          return F.NIL;
+        //        }
+        //
+        //        if (dimensions.size() == 1) {
+        //          int length = dimensions.get(0);
+        //          if (arg1.isAST()) {
+        //            IASTAppendable tr = F.ast(header, length, true);
+        //            ((IAST) arg1).forEach(1, length + 1, (x, i) -> tr.set(i, x));
+        //            return tr;
+        //          } else {
+        //            FieldVector<IExpr> vector = Convert.list2Vector(arg1);
+        //            if (vector != null) {
+        //              IASTAppendable tr = F.ast(header, length, true);
+        //              for (int i = 0; i < length; i++) {
+        //                tr.set(i + 1, vector.getEntry(i));
+        //              }
+        //              return tr;
+        //            }
+        //          }
+        //          return F.NIL;
+        //        }
+        //      }
+
+        // determine the sum of elements with equal indices for tensors
+        int minLength = Integer.MAX_VALUE;
+        for (int i = 0; i < dimensions.size(); i++) {
+          if (minLength > dimensions.get(i)) {
+            minLength = dimensions.get(i);
           }
         }
+        if (arg1.isSparseArray()) {
+          final ISparseArray tensor = (ISparseArray) arg1;
+          int[] part = new int[dimensions.size()];
+          IASTAppendable tr = F.ast(header, minLength++, true);
+          for (int d = 1; d < minLength; d++) {
+            for (int i = 0; i < dimensions.size(); i++) {
+              part[i] = d;
+            }
+            tr.set(d, tensor.getIndex(part));
+          }
+
+          return tr;
+        }
+
+        final IAST tensor = (IAST) arg1.normal(false);
+        int[] part = new int[dimensions.size()];
+        IASTAppendable tr = F.ast(header, minLength++, true);
+        for (int d = 1; d < minLength; d++) {
+          for (int i = 0; i < dimensions.size(); i++) {
+            part[i] = d;
+          }
+          tr.set(d, tensor.getPart(part));
+        }
+
+        return tr;
+      } catch (IllegalArgumentException iae) {
+        // print message: Nonrectangular tensor encountered
+        return IOFunctions.printMessage(ast.topHead(), "rect", F.List(ast), engine);
       }
-      return F.NIL;
     }
 
     @Override
     public int[] expectedArgSize(IAST ast) {
-      return ARGS_1_2;
+      return ARGS_1_3;
     }
 
     @Override
@@ -4581,6 +4681,9 @@ public final class LinearAlgebra {
           return transposedMatrix;
           // return transpose(originalMatrix, dim[0], dim[1]);
         }
+        if (dim[1] == 0) {
+          return F.CEmptyList;
+        }
       }
       return F.NIL;
     }
@@ -4667,18 +4770,23 @@ public final class LinearAlgebra {
 
     @Override
     public IExpr evaluate(final IAST ast, EvalEngine engine) {
+      IExpr arg1 = ast.arg1();
       if (ast.isAST2()) {
-        int n = ast.arg1().toIntDefault(Integer.MIN_VALUE);
-        if (n < 0) {
-          return F.NIL;
-          // Positive integer (less equal 2147483647) expected at position `2` in `1`.
-          // return IOFunctions.printMessage(F.UnitVector, "intpm", F.List(ast, F.C1), engine);
+        int n = arg1.toIntDefault();
+        if (n <= 0) {
+          if (n == Integer.MIN_VALUE && !arg1.isInteger()) {
+            return F.NIL;
+          }
+          // Positive machine-sized integer expected at position `2` in `1`.
+          return IOFunctions.printMessage(S.UnitVector, "intpm", F.List(ast, F.C1), engine);
         }
-        int k = ast.arg2().toIntDefault(Integer.MIN_VALUE);
-        if (k < 0) {
-          return F.NIL;
-          // Positive integer (less equal 2147483647) expected at position `2` in `1`.
-          // return IOFunctions.printMessage(F.UnitVector, "intpm", F.List(ast, F.C2), engine);
+        int k = ast.arg2().toIntDefault();
+        if (k <= 0) {
+          if (n == Integer.MIN_VALUE) {
+            return F.NIL;
+          }
+          // Positive machine-sized integer expected at position `2` in `1`.
+          return IOFunctions.printMessage(S.UnitVector, "intpm", F.List(ast, F.C2), engine);
         }
 
         if (k <= n) {
@@ -4690,10 +4798,10 @@ public final class LinearAlgebra {
         return F.NIL;
       }
 
-      if (ast.arg1().isInteger()) {
-        int k = ast.arg1().toIntDefault(Integer.MIN_VALUE);
-        if (k < 0) {
-          // Positive integer (less equal 2147483647) expected at position `2` in `1`.
+      if (arg1.isInteger()) {
+        int k = arg1.toIntDefault(Integer.MIN_VALUE);
+        if (k <= 0) {
+          // Positive machine-sized integer expected at position `2` in `1`.
           return IOFunctions.printMessage(S.UnitVector, "intpm", F.List(ast, F.C1), engine);
         }
         if (k == 1) {
@@ -5009,7 +5117,7 @@ public final class LinearAlgebra {
   }
 
   public static ArrayList<Integer> dimensions(IAST ast) {
-    return dimensionsRecursive(ast, ast.head(), Integer.MAX_VALUE, new ArrayList<Integer>());
+    return dimensionsRecursive(ast, ast.head(), Integer.MAX_VALUE, false, new ArrayList<Integer>());
   }
 
   public static ArrayList<Integer> dimensions(IAST ast, IExpr header) {
@@ -5017,73 +5125,113 @@ public final class LinearAlgebra {
   }
 
   public static ArrayList<Integer> dimensions(IAST ast, IExpr header, int maxLevel) {
-    return dimensionsRecursive(ast, header, maxLevel, new ArrayList<Integer>());
+    return dimensionsRecursive(ast, header, maxLevel, false, new ArrayList<Integer>());
+  }
+
+  public static ArrayList<Integer> dimensions(
+      IExpr expr, IExpr header, int maxLevel, boolean throwIllegalArgumentException) {
+    if (expr.isAST()) {
+      return dimensionsRecursive(
+          (IAST) expr, header, maxLevel, throwIllegalArgumentException, new ArrayList<Integer>());
+    }
+    if (expr.isSparseArray()) {
+      int[] dims = ((ISparseArray) expr).getDimension();
+
+      if (dims.length > maxLevel) {
+        ArrayList<Integer> list = new ArrayList<Integer>(maxLevel);
+        if (throwIllegalArgumentException) {
+          throw new IllegalArgumentException();
+        }
+        for (int i = 0; i < maxLevel; i++) {
+          list.add(dims[i]);
+        }
+        return list;
+      }
+      ArrayList<Integer> list = new ArrayList<Integer>(dims.length);
+      for (int i = 0; i < dims.length; i++) {
+        list.add(dims[i]);
+      }
+      return list;
+    }
+
+    return new ArrayList<Integer>();
   }
 
   private static ArrayList<Integer> dimensionsRecursive(
-      IAST ast, IExpr header, int maxLevel, ArrayList<Integer> dims) {
+      IAST ast,
+      IExpr header,
+      int maxLevel,
+      boolean throwIllegalArgumentException,
+      ArrayList<Integer> dims)
+      throws IllegalArgumentException {
 
     int size = ast.size();
-    dims.add(size - 1);
-    if (size > 1 && ast.arg1().isAST()) {
-      IAST arg1AST = (IAST) ast.arg1();
-      int arg1Size = arg1AST.size();
-      if (header.equals(S.List)) {
-        if (!arg1AST.isSparseArray() && !header.equals(arg1AST.head())) {
-          return dims;
-        }
-      } else if (!header.equals(arg1AST.head())) {
-        return dims;
-      }
-      if (maxLevel > 0) {
-        for (int i = 2; i < size; i++) {
-          IExpr arg = ast.get(i);
+    if (header.equals(ast.head())) {
+      dims.add(size - 1);
+      if (size > 1) {
+
+        if (ast.arg1().isAST()) {
+          IAST arg1AST = (IAST) ast.arg1();
+          int arg1Size = arg1AST.size();
           if (header.equals(S.List)) {
-            if (!arg.isSparseArray() && !header.equals(arg.head())) {
-              return dims;
+            if (!arg1AST.isSparseArray() && !header.equals(arg1AST.head())) {
+              return checkRectangularDimensions(ast, header, throwIllegalArgumentException, dims);
             }
-          } else if (!header.equals(arg.head())) {
-            return dims;
+          } else if (!header.equals(arg1AST.head())) {
+            return checkRectangularDimensions(ast, header, throwIllegalArgumentException, dims);
           }
-          if (arg.isAST() || arg.isSparseArray()) {
-            if (arg1Size == arg.size()) {
-              continue;
+          if (maxLevel > 0) {
+            for (int i = 2; i < size; i++) {
+              IExpr arg = ast.get(i);
+              if (header.equals(S.List)) {
+                if (!arg.isSparseArray() && !header.equals(arg.head())) {
+                  return checkRectangularDimensions(
+                      ast, header, throwIllegalArgumentException, dims);
+                }
+              } else if (!header.equals(arg.head())) {
+                return checkRectangularDimensions(ast, header, throwIllegalArgumentException, dims);
+              }
+              if (arg.isAST() || arg.isSparseArray()) {
+                if (arg1Size == arg.size()) {
+                  continue;
+                }
+              }
+              return checkRectangularDimensions(ast, header, throwIllegalArgumentException, dims);
             }
+            return dimensionsRecursive(
+                arg1AST, header, maxLevel - 1, throwIllegalArgumentException, dims);
           }
-          return dims;
         }
-        dimensionsRecursive(arg1AST, header, maxLevel - 1, dims);
+        return checkRectangularDimensions(ast, header, throwIllegalArgumentException, dims);
       }
     }
     return dims;
   }
 
-  //  private static ArrayList<Integer> arrayDepthRecursive(
-  //      IAST ast, IExpr header, ArrayList<Integer> dims) {
-  //    int size = ast.size();
-  //    dims.add(size - 1);
-  //    if (size > 1) {
-  //      int arg1Size = ast.arg1().size();
-  //      for (int i = 2; i < size; i++) {
-  //        IExpr arg = ast.get(i);
-  //        if (arg1Size != arg.size()) {
-  //          return dims;
-  //        }
-  //      }
-  //      IExpr arg1 = ast.arg1();
-  //      if (arg1.isAST()) {
-  //        arrayDepthRecursive((IAST) arg1, header, dims);
-  //      }
-  //      if (arg1.isSparseArray() || arg1.isNumericArray()) {
-  //        arg1 = arg1.normal(false);
-  //        if (arg1.isAST()) {
-  //          arrayDepthRecursive((IAST) arg1, header, dims);
-  //        }
-  //      }
-  //    }
-  //
-  //    return dims;
-  //  }
+  /**
+   * If <code>throwIllegalArgumentException</code> is <code>true</code> the arguments of <code>ast
+   * </code> are tested if they contain a list, sparse array or numeric array.
+   *
+   * @param ast
+   * @param throwIllegalArgumentException
+   * @param dims
+   * @return
+   */
+  private static ArrayList<Integer> checkRectangularDimensions(
+      IAST ast, IExpr header, boolean throwIllegalArgumentException, ArrayList<Integer> dims)
+      throws IllegalArgumentException {
+    if (throwIllegalArgumentException) {
+      for (int i = 1; i < ast.size(); i++) {
+        IExpr arg = ast.get(i);
+        if (arg.isSparseArray() && arg.isList() || arg.isNumericArray()) {
+          throw new IllegalArgumentException();
+        } else if (header.equals(arg.head())) {
+          throw new IllegalArgumentException();
+        }
+      }
+    }
+    return dims;
+  }
 
   public static void initialize() {
     Initializer.init();

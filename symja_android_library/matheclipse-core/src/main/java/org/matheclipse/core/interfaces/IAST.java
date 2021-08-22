@@ -921,13 +921,13 @@ public interface IAST extends IExpr, Iterable<IExpr> {
   public INumber getNumber(int index);
 
   /**
-   * Returns the element at the specified positions in the nested ASTs.
+   * Returns the element at the specified positions in the nested ASTs. 
    *
    * @param positions index of the element to return
-   * @return the element at the specified positions in this nested AST
+   * @return the element at the specified positions in this nested AST or {@link F#NIL}
    * @throws IndexOutOfBoundsException if one of the positions are out of range
    */
-  public IExpr getPart(final int... positions);
+  public IExpr getPart(final int... positions) throws IndexOutOfBoundsException;
 
   /**
    * Returns the element at the specified positions in the nested ASTs.

@@ -1,5 +1,6 @@
 package org.matheclipse.io.system;
 
+import org.hipparchus.distribution.continuous.NakagamiDistribution;
 import org.matheclipse.core.basic.Config;
 import org.matheclipse.core.basic.ToggleFeature;
 import org.matheclipse.core.eval.EvalEngine;
@@ -6357,6 +6358,10 @@ public class LowercaseTestCase extends AbstractTestCase {
   }
 
   public void testCross() {
+    check(
+        "Cross({x, y, z})", //
+        "Cross({x,y,z})");
+
     // check("Cross({a1, b1, c1, d1}, {a2, b2, c2, d2}, {a3, b3, c3, d3})",
     // "{b3 c2 d1-b2 c3 d1-b3 c1 d2+b1 c3 d2+b2 c1 d3-b1 c2 d3,"
     // + "-a3 c2 d1+a2 c3 d1+a3 c1 d2-a1 c3 d2-a2 c1 d3+a1 c2 d3,"
@@ -7730,7 +7735,6 @@ public class LowercaseTestCase extends AbstractTestCase {
         "Diagonal(SparseArray({{1,2,3},{4,5,6},{7,8,9}}), -1)", //
         "{4,8}");
 
-    
     check(
         "Diagonal({{{0}, 1}, {2, 3}, {4, 5}})", //
         "{{0},3}");
@@ -8617,16 +8621,42 @@ public class LowercaseTestCase extends AbstractTestCase {
 
   public void testDot() {
     check(
-        "(1+(-1)*1).{}.{x,5,-3}.-I", //
-        "0.{}.{x,5,-3}.-I");
+        "#1.#123 // FullForm", //
+        "Dot(Slot(1), Slot(123))");
+    //  github #121 - print error
+
+    // message Dot: Nonrectangular tensor encountered
     check(
-        "{}.{{}}", //
-        "{}.\n" + //
-            "{{}}");
+        "Dot({{0,2},{-8,2}},{{{0},0},{0,3}})", //
+        "{{0,2},\n" + " {-8,2}}.{{{0},0},{0,3}}");
+
+    // message Dot: Tensors {{}} and {{}} have incompatible shapes.
     check(
         "{{}}.{{}}", //
-        "{{}}.\n" + //
-            "{{}}");
+        "{{}}.\n" + "{{}}");
+
+    // only 1 arg
+    check(
+        "Dot({a,b,c})", //
+        "{a,b,c}");
+    check(
+        "Dot({{1, 2}, {3, 4}, {5, 6}})", //
+        "{{1,2},{3,4},{5,6}}");
+
+    check(
+        "a=RandomInteger(9, {2, 3, 4});\n" //
+            + "b=RandomInteger(9, {4, 5, 2});\n"
+            + "c=RandomInteger(9, {2});", //
+        "");
+    check(
+        "Dimensions(a.b)", //
+        "{2,3,5,2}");
+    check(
+        "Dimensions(c.a.b.c)", //
+        "{3,5}");
+    check(
+        "{}.{{}}", //
+        "{}.\n" + "{{}}");
     check(
         "{}.{ }", //
         "0");
@@ -8636,24 +8666,6 @@ public class LowercaseTestCase extends AbstractTestCase {
     check(
         "0.17583681.41125407852.0 // HoldForm // FullForm", //
         "HoldForm(Times(Times(0.17583681`, 0.41125407852`), 0.0`))");
-
-    check(
-        "Dot({a,b,c})", //
-        "{a,b,c}");
-    check(
-        "Dot({{1, 2}, {3, 4}, {5, 6}})", //
-        "{{1,2},{3,4},{5,6}}");
-
-    // github #121 - print error
-    check(
-        "Dot({{0,2},{-8,2}},{{{0},0},{0,3}})", //
-        "{{0,2},\n"
-            + //
-            " {-8,2}}.{{{0},0},{0,3}}");
-
-    check(
-        "#1.#123 // FullForm", //
-        "Dot(Slot(1), Slot(123))");
 
     check(
         "{{1, 2}, {3.0, 4}, {5, 6}}.{1,1}", //
@@ -8686,6 +8698,50 @@ public class LowercaseTestCase extends AbstractTestCase {
     check(
         "{1,2,3}.{4,5,6}", //
         "32");
+
+    check(
+        "a = {{{8, 0}, {4, 2}}, {{0, 7}, {5, 6}}}", //
+        "{{{8,0},{4,2}},{{0,7},{5,6}}}");
+    check(
+        "x = {1, 2};\n" //
+            + "y = {1/2, 1/3};\n"
+            + "z = {-1, 1};", //
+        "");
+    check(
+        "a.x.y.z", //
+        "6");
+    check(
+        "a.z.y.x", //
+        "3");
+
+    check(
+        "a = {{1, 2},{3, 4},{5, 6}}", //
+        "{{1,2},{3,4},{5,6}}");
+    check(
+        "a.{1, 1}", //
+        "{3,7,11}");
+    check(
+        "a.{{1}, {1}}", //
+        "{{3},\n" + " {7},\n" + " {11}}");
+    check(
+        "{1,1,1}.a", //
+        "{9,12}");
+    check(
+        "{{1,1,1}}.a", //
+        "{{9,12}}");
+
+    check(
+        "a = {1+I, 2-I, -1-2*I}", //
+        "{1+I,2-I,-1-I*2}");
+    check(
+        "a.a", //
+        "I*2");
+    check(
+        "Conjugate(a).a", //
+        "12");
+    check(
+        "Norm(a)^2", //
+        "12");
   }
 
   public void testDownValues() {
@@ -13303,6 +13359,24 @@ public class LowercaseTestCase extends AbstractTestCase {
             + " {1/2,I*1/2,-1/2,-I*1/2},\n"
             + " {1/2,-1/2,1/2,-1/2},\n"
             + " {1/2,-I*1/2,-1/2,I*1/2}}");
+    check(
+        "FourierMatrix(8)", //
+        "{{1/(2*Sqrt(2)),1/(2*Sqrt(2)),1/(2*Sqrt(2)),1/(2*Sqrt(2)),1/(2*Sqrt(2)),1/(2*Sqrt(\n"
+            + "2)),1/(2*Sqrt(2)),1/(2*Sqrt(2))},\n"
+            + " {1/(2*Sqrt(2)),1/4+I*1/4,(I*1/2)/Sqrt(2),-1/4+I*1/4,-1/(2*Sqrt(2)),-1/4-I*1/4,(-\n"
+            + "I*1/2)/Sqrt(2),1/4-I*1/4},\n"
+            + " {1/(2*Sqrt(2)),(I*1/2)/Sqrt(2),-1/(2*Sqrt(2)),(-I*1/2)/Sqrt(2),1/(2*Sqrt(2)),(\n"
+            + "I*1/2)/Sqrt(2),-1/(2*Sqrt(2)),(-I*1/2)/Sqrt(2)},\n"
+            + " {1/(2*Sqrt(2)),-1/4+I*1/4,(-I*1/2)/Sqrt(2),1/4+I*1/4,-1/(2*Sqrt(2)),1/4-I*1/4,(\n"
+            + "I*1/2)/Sqrt(2),-1/4-I*1/4},\n"
+            + " {1/(2*Sqrt(2)),-1/(2*Sqrt(2)),1/(2*Sqrt(2)),-1/(2*Sqrt(2)),1/(2*Sqrt(2)),-1/(2*Sqrt(\n"
+            + "2)),1/(2*Sqrt(2)),-1/(2*Sqrt(2))},\n"
+            + " {1/(2*Sqrt(2)),-1/4-I*1/4,(I*1/2)/Sqrt(2),1/4-I*1/4,-1/(2*Sqrt(2)),1/4+I*1/4,(-\n"
+            + "I*1/2)/Sqrt(2),-1/4+I*1/4},\n"
+            + " {1/(2*Sqrt(2)),(-I*1/2)/Sqrt(2),-1/(2*Sqrt(2)),(I*1/2)/Sqrt(2),1/(2*Sqrt(2)),(-\n"
+            + "I*1/2)/Sqrt(2),-1/(2*Sqrt(2)),(I*1/2)/Sqrt(2)},\n"
+            + " {1/(2*Sqrt(2)),1/4-I*1/4,(-I*1/2)/Sqrt(2),-1/4-I*1/4,-1/(2*Sqrt(2)),-1/4+I*1/4,(\n"
+            + "I*1/2)/Sqrt(2),1/4+I*1/4}}");
   }
 
   public void testFractionalPart() {
@@ -16903,6 +16977,57 @@ public class LowercaseTestCase extends AbstractTestCase {
         "{1,2,3,5,8,5}");
   }
 
+  public void testInterquartileRange() {
+    // https://en.wikipedia.org/wiki/Interquartile_range
+    check(
+        "InterquartileRange({7,7,31,31,47,75,87,115,116,119,119,155,177})", //
+        "88");
+    check(
+        "InterquartileRange({1, 3, 4, 2, 5, 6})", //
+        "3");
+
+    check(
+        "InterquartileRange(BernoulliDistribution(x))", //
+        "Piecewise({{1,1/4<x&&x<=3/4}},0)");
+    check(
+        "InterquartileRange(CauchyDistribution(x,y))", //
+        "2*y");
+    check(
+        "InterquartileRange(ErlangDistribution(x,y))", //
+        "-InverseGammaRegularized(x,0,1/4)/y+InverseGammaRegularized(x,0,3/4)/y");
+    check(
+        "InterquartileRange(ExponentialDistribution(x))", //
+        "Log(3)/x");
+    check(
+        "InterquartileRange(FrechetDistribution(x,y))", //
+        "y/Log(4/3)^(1/x)-y/Log(4)^(1/x)");
+    check(
+        "InterquartileRange(GammaDistribution(x,y))", //
+        "-y*InverseGammaRegularized(x,0,1/4)+y*InverseGammaRegularized(x,0,3/4)");
+    check(
+        "InterquartileRange(GumbelDistribution( ))", //
+        "Log(Log(4)/Log(4/3))");
+    check(
+        "InterquartileRange(GumbelDistribution(x,y))", //
+        "y*Log(Log(4)/Log(4/3))");
+    check(
+        "InterquartileRange(LogNormalDistribution(x,y))", //
+        "-E^(x-Sqrt(2)*y*InverseErfc(1/2))+E^(x-Sqrt(2)*y*InverseErfc(3/2))");
+    check(
+        "InterquartileRange(NakagamiDistribution(x,y))", //
+        "-Sqrt((y*InverseGammaRegularized(x,0,1/4))/x)+Sqrt((y*InverseGammaRegularized(x,\n"
+            + "0,3/4))/x)");
+    check(
+        "InterquartileRange(NormalDistribution(x,y))", //
+        "2*Sqrt(2)*y*InverseErfc(1/2)");
+    check(
+        "InterquartileRange(StudentTDistribution(x))", //
+        "2*Sqrt(x)*Sqrt(-1+1/InverseBetaRegularized(1/2,x/2,1/2))");
+    check(
+        "InterquartileRange(WeibullDistribution(x,y))", //
+        "-y*Log(4/3)^(1/x)+y*Log(4)^(1/x)");
+  }
+
   public void testInequality() {
     // check("Inequality(-1,Less,0,Lest,1)", //
     // "Inequality(0,Lest,1)");
@@ -17924,6 +18049,10 @@ public class LowercaseTestCase extends AbstractTestCase {
     check(
         "InverseCDF(BetaDistribution(2,3), 0.9)", //
         "0.679539");
+    check(
+        "InverseCDF(CauchyDistribution(a, b), x)", //
+        "ConditionalExpression(Piecewise({{a+b*Tan(Pi*(-1/2+x)),0<x<1},{-Infinity,x<=0}},Infinity),\n"
+            + "0<=x<=1)");
     check(
         "InverseCDF(ChiSquareDistribution(3), 0.1)", //
         "0.584374");
@@ -22792,7 +22921,7 @@ public class LowercaseTestCase extends AbstractTestCase {
 
     check(
         "Names(\"Int*\" )", //
-        "{Integer,IntegerDigits,IntegerExponent,IntegerLength,IntegerName,IntegerPart,IntegerPartitions,IntegerQ,Integers,Integrate,InterpolatingFunction,InterpolatingPolynomial,Interpolation,Interrupt,IntersectingQ,Intersection,Interval,IntervalIntersection,IntervalMemberQ,IntervalUnion}");
+        "{Integer,IntegerDigits,IntegerExponent,IntegerLength,IntegerName,IntegerPart,IntegerPartitions,IntegerQ,Integers,Integrate,InterpolatingFunction,InterpolatingPolynomial,Interpolation,InterquartileRange,Interrupt,IntersectingQ,Intersection,Interval,IntervalIntersection,IntervalMemberQ,IntervalUnion}");
     check(
         "Names(\"Integer*\" )", //
         "{Integer,IntegerDigits,IntegerExponent,IntegerLength,IntegerName,IntegerPart,IntegerPartitions,IntegerQ,Integers}");
@@ -23534,6 +23663,7 @@ public class LowercaseTestCase extends AbstractTestCase {
   }
 
   public void testNorm() {
+
     // message Power: BigInteger bit length XXX exceeded
     check(
         "Norm({10,100,200},10007)", //
@@ -23560,6 +23690,9 @@ public class LowercaseTestCase extends AbstractTestCase {
     check(
         "Norm(mat,\"Frobenius\")", //
         "13.58384");
+    check(
+        "Norm({a,b,c}, \"Frobenius\")", //
+        "Sqrt(Abs(a)^2+Abs(b)^2+Abs(c)^2)");
 
     check(
         "Norm(0)", //
@@ -25554,6 +25687,18 @@ public class LowercaseTestCase extends AbstractTestCase {
         "{{a,b}}");
   }
 
+  public void testPauliMatrix() {
+    check(
+        "PauliMatrix(0)", //
+        "{{1,0},{0,1}}");
+    check(
+        "PauliMatrix(2)", //
+        "{{0,-I},{I,0}}");
+    check(
+        "Table(PauliMatrix(k), {k, 3})", //
+        "{{{0,1},{1,0}},{{0,-I},{I,0}},{{1,0},{0,-1}}}");
+  }
+
   public void testPDF() {
     check(
         "PDF(BetaDistribution(2,3), 0.1)", //
@@ -25564,6 +25709,9 @@ public class LowercaseTestCase extends AbstractTestCase {
     check(
         "PDF(ChiSquareDistribution(3), 0.1)", //
         "0.120004");
+    check(
+        "PDF(CauchyDistribution(a, b), x)", //
+        "1/(b*Pi*(1+(-a+x)^2/b^2))");
     check(
         "PDF(ChiSquareDistribution(3), 0.9)", //
         "0.241323");
@@ -29297,6 +29445,12 @@ public class LowercaseTestCase extends AbstractTestCase {
     check(
         "RandomInteger({0,2147483647})", //
         "RandomInteger({0,2147483647})");
+//  check("RandomReal(ChiSquareDistribution(5),5)", //
+//     "{2.7438,5.29649,4.31937,6.46195,6.40548}");
+    //  check("RandomReal(WeibullDistribution(10,6),5)", //
+    //  "{6.04801,4.26361,5.57834,5.60149,5.86845}");
+    //     check("RandomReal(CauchyDistribution(10,6),5)", //
+    //     "{25.46486,10.17115,9.24139,6.02044,-3.21386}");
     // check("RandomReal(NormalDistribution(10,6),5)", //
     // "{15.39771,18.15348,3.84502,4.17546,13.37926}");
     // check("RandomReal(7,{5,4,2,3})", //
@@ -29584,6 +29738,9 @@ public class LowercaseTestCase extends AbstractTestCase {
 
   public void testRationalize() {
     check(
+        "Rationalize(-11.5,1)", //
+        "-11");
+    check(
         "Rationalize(x+E)", //
         "E+x");
     check(
@@ -29611,11 +29768,17 @@ public class LowercaseTestCase extends AbstractTestCase {
         "Rationalize(1.2 + 6.7*x)", //
         "6/5+67/10*x");
     check(
+        "Rationalize(-1.2 - 6.7*x)", //
+        "-6/5-67/10*x");
+    check(
         "Rationalize(Exp(Sqrt(2)), 2^-12)", //
         "218/53");
     check(
         "Rationalize(6.75)", //
         "27/4");
+    check(
+        "Rationalize(-6.75)", //
+        "-27/4");
     check(
         "Rationalize(Pi)", //
         "Pi");
@@ -36818,13 +36981,21 @@ public class LowercaseTestCase extends AbstractTestCase {
         "ToeplitzMatrix(-3)");
     check(
         "ToeplitzMatrix(3)", //
-        "{{1,2,3},\n" + " {2,1,2},\n" + " {3,2,1}}");
+        "{{1,2,3},\n" //
+            + " {2,1,2},\n"
+            + " {3,2,1}}");
     check(
         "ToeplitzMatrix({a,b,c,d})", //
-        "{{a,b,c,d},\n" + " {b,a,b,c},\n" + " {c,b,a,b},\n" + " {d,c,b,a}}");
+        "{{a,b,c,d},\n" //
+            + " {b,a,b,c},\n"
+            + " {c,b,a,b},\n"
+            + " {d,c,b,a}}");
     check(
         "ToeplitzMatrix(4)", //
-        "{{1,2,3,4},\n" + " {2,1,2,3},\n" + " {3,2,1,2},\n" + " {4,3,2,1}}");
+        "{{1,2,3,4},\n" //
+            + " {2,1,2,3},\n"
+            + " {3,2,1,2},\n"
+            + " {4,3,2,1}}");
   }
 
   public void testTogether() {
@@ -37327,6 +37498,9 @@ public class LowercaseTestCase extends AbstractTestCase {
 
   public void testTranspose() {
     check(
+        "Transpose({{},{},{}})", //
+        "{}");
+    check(
         "Transpose(SparseArray({{1, 2, 3}, {4, 5, 6}})) // Normal", //
         "{{1,4},\n" //
             + " {2,5},\n"
@@ -37391,6 +37565,19 @@ public class LowercaseTestCase extends AbstractTestCase {
   }
 
   public void testTr() {
+    // TODO calculate for levels
+    //    check(
+    //        "Tr(Array(a, {4, 3, 2}), f, 2)", //
+    //        "");
+    check(
+        "Tr(Array(a,{4,3,2}))", //
+        "a(1,1,1)+a(2,2,2)");
+    check(
+        "Tr(Array(a,{4,7,3}),f)", //
+        "f(a(1,1,1),a(2,2,2),a(3,3,3))");
+    check(
+        "Tr(Array(a,{4,7,0}),f)", //
+        "f()");
     check(
         "Tr(SparseArray({1,2,3}))", //
         "6");
@@ -38071,6 +38258,11 @@ public class LowercaseTestCase extends AbstractTestCase {
   }
 
   public void testUnitVector() {
+    // message: UnitVector: Positive machine-sized integer expected at position 2 in
+    // UnitVector(4,0).
+    check(
+        "UnitVector(4,0)", //
+        "UnitVector(4,0)");
     check(
         "UnitVector(-3)", //
         "UnitVector(-3)");

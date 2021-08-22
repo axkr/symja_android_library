@@ -2306,7 +2306,7 @@ public abstract class AbstractAST implements IASTMutable {
         return expr;
       }
     }
-    return null;
+    return F.NIL;
   }
 
   @Override

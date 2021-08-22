@@ -1780,6 +1780,58 @@ public class SparseArrayExpr extends DataExpr<Trie<int[], IExpr>>
     return IOFunctions.printMessage(S.Part, "partd", F.List(ast), EvalEngine.get());
   }
 
+  public IExpr getPart(final int... partIndex) {
+    int[] dims = getDimension();
+
+    final int partSize = partIndex.length;
+    if (dims.length >= partSize) {
+
+      int len = 0;
+      int count = 0; 
+      for (int i = partSize; i < dims.length; i++) {
+        partIndex[i] = -1;
+        count++;
+      }
+      if (count == 0 && partSize == dims.length) {
+        return getIndex(partIndex);
+      }
+      int[] newDimension = new int[count];
+      count = 0;
+      for (int i = 0; i < partIndex.length; i++) {
+        if (partIndex[i] == (-1)) {
+          len++;
+          newDimension[count++] = dims[i];
+        }
+      }
+      final Trie<int[], IExpr> value = Config.TRIE_INT2EXPR_BUILDER.build();
+      for (TrieNode<int[], IExpr> entry : fData.nodeSet()) {
+        int[] key = entry.getKey();
+        boolean evaled = true;
+        for (int i = 0; i < partIndex.length; i++) {
+          if (partIndex[i] == (-1)) {
+            continue;
+          }
+          if (partIndex[i] != key[i]) {
+            evaled = false;
+            break;
+          }
+        }
+        if (evaled) {
+          int[] newKey = new int[len];
+          int j = 0;
+          for (int i = 0; i < partIndex.length; i++) {
+            if (partIndex[i] == (-1)) {
+              newKey[j++] = key[i];
+            }
+          }
+          value.put(newKey, entry.getValue());
+        }
+      }
+      return new SparseArrayExpr(value, newDimension, fDefaultValue.orElse(F.C0), false);
+    }
+    return F.NIL;
+  }
+
   @Override
   public int hashCode() {
     return (fData == null) ? 541 : 541 + fData.size() + fDefaultValue.hashCode();

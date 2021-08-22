@@ -531,6 +531,8 @@ public class IOFunctions {
     "Input value `1` lies outside the range of data in the interpolating function. Extrapolation will be used.",
     "dotdim",
     "Dot contraction of `1` and `2` is invalid because dimensions `3` and `4` are incompatible.",
+    "dotsh",
+    "Tensors `1` and `2` have incompatible shapes.",//
     "drop",
     "Cannot drop positions `1` through `2` in `3`.", //
     "dvar",
@@ -577,20 +579,20 @@ public class IOFunctions {
     "Java int value greater equal `1` expected instead of `2`.", //
     "intlevel",
     "Level specification value greater equal `1` expected instead of `2`.", //
-    "intp",
-    "Positive integer expected.", //
-    "intpp",
-    "Positive integer argument expected in `1`.", //
     "intnn",
     "Non-negative integer expected.", //
     "intnm",
     "Non-negative machine-sized integer expected at position `2` in `1`.", //
     "intm",
     "Machine-sized integer expected at position `2` in `1`.", //
+    "intp",
+    "Positive integer expected.", //
     "intpm",
     "Positive machine-sized integer expected at position `2` in `1`.", //
     "intpoint",
     "`1` is expected to contain a list of lists of integers.", //
+    "intpp",
+    "Positive integer argument expected in `1`.", //
     "intrange",
     "Integer expected in range `1` to `2`.", //
     "inv",
@@ -681,6 +683,8 @@ public class IOFunctions {
     "`1` has zero length and no last element.", //
     "nomost",
     "Cannot take Most of expression `1` with length zero.", //
+    "nonn1",
+    "The arguments are expected to be vectors of equal length, and the number of arguments is expected to be 1 less than their length.", //
     "noopen",
     "Cannot open `1`.", //
     "nonopt",
@@ -775,6 +779,8 @@ public class IOFunctions {
     "The value `1` is not a real number.", //
     "reclim2",
     "Recursion depth of `1` exceeded during evaluation of `2`.", //
+    "rect",
+    "Nonrectangular tensor encountered", //
     "rectt",
     "Rectangular array expected at position `1` in `2`.", //
     "reppoint",

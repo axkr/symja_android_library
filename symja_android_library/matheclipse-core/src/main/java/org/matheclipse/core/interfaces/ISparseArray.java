@@ -32,14 +32,32 @@ public interface ISparseArray extends IDataExpr<Trie<int[], IExpr>> {
   public IExpr get(int position);
 
   /**
+   * Low level access. It is assumed that <code>positions</code> is a full index within the dimensions of
+   * this sparse array.
+   *
+   * @param positions
+   * @return
+   */
+  public IExpr getIndex(int... positions);
+
+  /**
    * Get the <code>Part(-ISparseArray-,...)</code> of a sparse array, with index being an integer
-   * number or symbol <code>All</code>.
+   * number or symbol <code>All</code>. Low level access.  
    *
    * @param ast
    * @param startPosition
    * @return
    */
-  public IExpr getPart(IAST ast, int startPosition);
+  public IExpr getPart(IAST ast, int startPosition) throws IndexOutOfBoundsException;
+
+  /**
+   * Returns the element at the specified positions in the nested ASTs.
+   *
+   * @param positions index of the element to return
+   * @return the element at the specified positions in this nested AST or {@link F#NIL}
+   * @throws IndexOutOfBoundsException if one of the positions are out of range
+   */
+  public IExpr getPart(final int... positions) throws IndexOutOfBoundsException;
 
   /**
    * Convert this sparse array to Symja rules.

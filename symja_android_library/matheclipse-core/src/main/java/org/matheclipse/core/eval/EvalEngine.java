@@ -2971,14 +2971,17 @@ public class EvalEngine implements Serializable {
               head[0] = S.SparseArray;
             }
             ISparseArray sp = (ISparseArray) x;
-            if (listLength[0] < 0) {
-              listLength[0] = sp.getDimension()[0];
-            } else {
-              if (listLength[0] != sp.getDimension()[0]) {
-                // Objects of unequal length in `1` cannot be combined.
-                IOFunctions.printMessage(S.Thread, "tdlen", F.List(ast), EvalEngine.get());
-                // ast.addEvalFlags(IAST.IS_LISTABLE_THREADED);
-                return true;
+            int[] dimensions = sp.getDimension();
+            if (dimensions.length > 0) {
+              if (listLength[0] < 0) {
+                listLength[0] = dimensions[0];
+              } else {
+                if (listLength[0] != dimensions[0]) {
+                  // Objects of unequal length in `1` cannot be combined.
+                  IOFunctions.printMessage(S.Thread, "tdlen", F.List(ast), EvalEngine.get());
+                  // ast.addEvalFlags(IAST.IS_LISTABLE_THREADED);
+                  return true;
+                }
               }
             }
           }
