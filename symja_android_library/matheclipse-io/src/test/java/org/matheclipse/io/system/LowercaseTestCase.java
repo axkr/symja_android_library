@@ -13992,6 +13992,10 @@ public class LowercaseTestCase extends AbstractTestCase {
   public void testFunction() {
     EvalEngine.get().resetModuleCounter4JUnit();
     check(
+        "g = (#1 + #2) &[3,4]", //
+        "7");
+
+    check(
         "(4*# + (2*# &)[a] &)[b]", //
         "2*a+4*b");
     check(
@@ -29445,8 +29449,8 @@ public class LowercaseTestCase extends AbstractTestCase {
     check(
         "RandomInteger({0,2147483647})", //
         "RandomInteger({0,2147483647})");
-//  check("RandomReal(ChiSquareDistribution(5),5)", //
-//     "{2.7438,5.29649,4.31937,6.46195,6.40548}");
+    //  check("RandomReal(ChiSquareDistribution(5),5)", //
+    //     "{2.7438,5.29649,4.31937,6.46195,6.40548}");
     //  check("RandomReal(WeibullDistribution(10,6),5)", //
     //  "{6.04801,4.26361,5.57834,5.60149,5.86845}");
     //     check("RandomReal(CauchyDistribution(10,6),5)", //

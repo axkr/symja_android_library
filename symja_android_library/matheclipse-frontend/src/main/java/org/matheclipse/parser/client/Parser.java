@@ -1268,7 +1268,7 @@ public class Parser extends Scanner {
     while (true) {
       final int lookahead = fToken;
       if (fToken == TT_NEWLINE) {
-        return rhs;
+        break;
       }
       if ((fToken == TT_LIST_OPEN)
           || (fToken == TT_PRECEDENCE_OPEN)
@@ -1325,6 +1325,9 @@ public class Parser extends Scanner {
         }
       }
       break;
+    }
+    if (fToken == TT_ARGUMENTS_OPEN) {
+      rhs = parseArguments(rhs);
     }
     return rhs;
   }
