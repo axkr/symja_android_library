@@ -2425,6 +2425,10 @@ public class F extends S {
     return new AST1(Catch, a);
   }
 
+  public static IAST CauchyDistribution(final IExpr a0, final IExpr a1) {
+    return new AST2(CauchyDistribution, a0, a1);
+  }
+
   /**
    * Create a symbolic complex number
    *
@@ -4260,6 +4264,10 @@ public class F extends S {
     return new AST2(InterpolatingPolynomial, a0, a1);
   }
 
+  public static IAST InterquartileRange(final IExpr a) {
+    return new AST1(InterquartileRange, a);
+  }
+
   /**
    * Create a new <code>List</code> with the given <code>capacity</code>.
    *
@@ -4815,6 +4823,10 @@ public class F extends S {
 
   public static IAST LessEqual(final IExpr a0, final IExpr a1, final IExpr a2, final IExpr a3) {
     return quaternary(LessEqual, a0, a1, a2, a3);
+  }
+
+  public static IAST LeviCivitaTensor(final IExpr a0) {
+    return new AST1(LeviCivitaTensor, a0);
   }
 
   public static IAST Limit(final IExpr a0, final IExpr a1) {
@@ -6356,6 +6368,10 @@ public class F extends S {
     return new AST2(QuantityMagnitude, a0, a1);
   }
 
+  public static IAST Quartiles(final IExpr a0) {
+    return new AST1(Quartiles, a0);
+  }
+
   public static IAST Quiet(final IExpr a0) {
     return new AST1(Quiet, a0);
   }
@@ -6853,6 +6869,10 @@ public class F extends S {
 
   public static IAST Sign(final IExpr a) {
     return new AST1(Sign, a);
+  }
+
+  public static IAST Signature(final IExpr a) {
+    return new AST1(Signature, a);
   }
 
   public static IAST SignCmp(final IExpr a0) {
@@ -7794,7 +7814,7 @@ public class F extends S {
   }
 
   /**
-   * Generate a <code>n x m</code> matrix.
+   * Generate a <code>n x m</code> matrix. The indices start in Java convention with <code>0</code>.
    *
    * @param biFunction
    * @param n the number of rows of the matrix.

@@ -4,14 +4,13 @@ import java.util.Arrays;
 import java.util.Comparator;
 import java.util.Random;
 import java.util.concurrent.ThreadLocalRandom;
+import java.util.function.DoubleUnaryOperator;
 import java.util.function.Predicate;
 import java.util.function.Supplier;
-
 import org.apfloat.Apcomplex;
 import org.apfloat.ApcomplexMath;
 import org.apfloat.Apfloat;
 import org.apfloat.ApfloatMath;
-import org.apfloat.FixedPrecisionApfloatHelper;
 import org.hipparchus.distribution.RealDistribution;
 import org.hipparchus.exception.MathRuntimeException;
 import org.hipparchus.linear.FieldMatrix;
@@ -54,6 +53,7 @@ import org.matheclipse.core.interfaces.INum;
 import org.matheclipse.core.interfaces.ISignedNumber;
 import org.matheclipse.core.interfaces.IStringX;
 import org.matheclipse.core.interfaces.ISymbol;
+import org.matheclipse.core.reflection.system.rules.InterquartileRangeRules;
 import org.matheclipse.core.reflection.system.rules.QuantileRules;
 import org.matheclipse.core.reflection.system.rules.StandardDeviationRules;
 
@@ -80,6 +80,7 @@ public class StatisticsFunctions {
       S.ChiSquareDistribution.setEvaluator(new ChiSquareDistribution());
       S.Correlation.setEvaluator(new Correlation());
       S.Covariance.setEvaluator(new Covariance());
+      S.CauchyDistribution.setEvaluator(new CauchyDistribution());
       S.DiscreteUniformDistribution.setEvaluator(new DiscreteUniformDistribution());
       S.ErlangDistribution.setEvaluator(new ErlangDistribution());
       S.Expectation.setEvaluator(new Expectation());
@@ -94,6 +95,7 @@ public class StatisticsFunctions {
       S.GumbelDistribution.setEvaluator(new GumbelDistribution());
       S.HarmonicMean.setEvaluator(new HarmonicMean());
       S.HypergeometricDistribution.setEvaluator(new HypergeometricDistribution());
+      S.InterquartileRange.setEvaluator(new InterquartileRange());
       S.InverseCDF.setEvaluator(new InverseCDF());
       S.KolmogorovSmirnovTest.setEvaluator(new KolmogorovSmirnovTest());
       S.Kurtosis.setEvaluator(new Kurtosis());
@@ -324,14 +326,14 @@ public class StatisticsFunctions {
     }
 
     @Override
-    public IExpr e2ApfloatArg(final ApfloatNum a, final ApfloatNum b) { 
+    public IExpr e2ApfloatArg(final ApfloatNum a, final ApfloatNum b) {
       return F.num(ApfloatMath.agm(a.apfloatValue(), b.apfloatValue()));
     }
 
     @Override
     public IExpr e2DblComArg(final IComplexNum a, final IComplexNum b) {
-      ApcomplexNum a1 = a.apcomplexNumValue( );
-      ApcomplexNum b1 = b.apcomplexNumValue( );
+      ApcomplexNum a1 = a.apcomplexNumValue();
+      ApcomplexNum b1 = b.apcomplexNumValue();
       Apcomplex agm = ApcomplexMath.agm(a1.apcomplexValue(), b1.apcomplexValue());
       return F.complex(agm.real().doubleValue(), agm.imag().doubleValue());
       // IComplexNum a1 = a;
@@ -1252,7 +1254,7 @@ public class StatisticsFunctions {
   }
 
   private static final class ChiSquareDistribution extends AbstractEvaluator
-      implements ICDF, IDistribution, IPDF, IStatistics {
+      implements ICDF, IDistribution, IPDF, IStatistics, IRandomVariate {
 
     @Override
     public IExpr evaluate(final IAST ast, EvalEngine engine) {
@@ -1393,6 +1395,20 @@ public class StatisticsFunctions {
     }
 
     @Override
+    public IExpr randomVariate(Random random, IAST dist, int size) {
+      if (dist.isAST1()) {
+        double v = dist.arg1().evalDouble();
+        // see exception handling in RandonmVariate() function
+        RandomDataGenerator rdg = new RandomDataGenerator();
+        double[] vector =
+            rdg.nextDeviates(
+                new org.hipparchus.distribution.continuous.ChiSquaredDistribution(v), size);
+        return new ASTRealVector(vector, false);
+      }
+      return F.NIL;
+    }
+
+    @Override
     public IExpr skewness(IAST dist) {
       if (dist.isAST1()) {
         IExpr s = dist.arg1();
@@ -1495,6 +1511,155 @@ public class StatisticsFunctions {
     }
   }
 
+  private static final class CauchyDistribution extends AbstractEvaluator
+      implements ICDF, IDistribution, IPDF, IStatistics, IRandomVariate {
+
+    @Override
+    public IExpr evaluate(final IAST ast, EvalEngine engine) {
+      return F.NIL;
+    }
+
+    @Override
+    public int[] expectedArgSize(IAST ast) {
+      return ARGS_0_2;
+    }
+
+    @Override
+    public IExpr mean(IAST dist) {
+      if (dist.isAST0() || dist.isAST2()) {
+        return S.Indeterminate;
+      }
+      return F.NIL;
+    }
+
+    @Override
+    public IExpr median(IAST dist) {
+      if (dist.isAST0() || dist.isAST2()) {
+        IExpr a = F.C0;
+        if (dist.isAST2()) {
+          a = dist.arg1();
+        }
+        return a;
+      }
+      return F.NIL;
+    }
+
+    @Override
+    public IExpr cdf(IAST dist, IExpr k, EvalEngine engine) {
+      if (dist.isAST0() || dist.isAST2()) {
+        IExpr a = F.C0;
+        IExpr b = F.C1;
+        if (dist.isAST2()) {
+          a = dist.arg1();
+          b = dist.arg2();
+        }
+        IExpr function =
+            // [$ 1/2+ArcTan((-a+#)/b)/Pi & $]
+            F.Function(
+                F.Plus(
+                    F.C1D2,
+                    F.Times(
+                        F.Power(F.Pi, F.CN1),
+                        F.ArcTan(
+                            F.Times(F.Power(b, F.CN1), F.Plus(F.Negate(a), F.Slot1)))))); // $$;
+        return callFunction(function, k);
+      }
+      return F.NIL;
+    }
+
+    @Override
+    public IExpr inverseCDF(IAST dist, IExpr k, EvalEngine engine) {
+      if (dist.isAST0() || dist.isAST2()) {
+        IExpr a = F.C0;
+        IExpr b = F.C1;
+        if (dist.isAST2()) {
+          a = dist.arg1();
+          b = dist.arg2();
+        }
+        IExpr function =
+            // [$ (  ConditionalExpression( Piecewise({{a+b*Tan((-(1/2)+#)*Pi), 0 <#< 1},
+            // {-Infinity,#<= 0}}, Infinity), 0 <=#<= 1) & ) $]
+            F.Function(
+                F.ConditionalExpression(
+                    F.Piecewise(
+                        F.List(
+                            F.List(
+                                F.Plus(
+                                    a, F.Times(b, F.Tan(F.Times(F.Plus(F.CN1D2, F.Slot1), F.Pi)))),
+                                F.Less(F.C0, F.Slot1, F.C1)),
+                            F.List(F.Negate(F.oo), F.LessEqual(F.Slot1, F.C0))),
+                        F.oo),
+                    F.LessEqual(F.C0, F.Slot1, F.C1))); // $$;
+        return callFunction(function, k);
+      }
+      return F.NIL;
+    }
+
+    @Override
+    public IExpr pdf(IAST dist, IExpr k, EvalEngine engine) {
+      if (dist.isAST0() || dist.isAST2()) {
+        IExpr a = F.C0;
+        IExpr b = F.C1;
+        if (dist.isAST2()) {
+          a = dist.arg1();
+          b = dist.arg2();
+        }
+        IExpr function =
+            // [$ 1/(b*Pi*(1+(-a+#)^2/b^2))& $]
+            F.Function(
+                F.Power(
+                    F.Times(
+                        b,
+                        F.Pi,
+                        F.Plus(
+                            F.C1, F.Times(F.Power(b, F.CN2), F.Sqr(F.Plus(F.Negate(a), F.Slot1))))),
+                    F.CN1)); // $$;
+        return callFunction(function, k);
+      }
+      return F.NIL;
+    }
+
+    @Override
+    public IExpr variance(IAST dist) {
+      if (dist.isAST0() || dist.isAST2()) {
+        return S.Indeterminate;
+      }
+      return F.NIL;
+    }
+
+    @Override
+    public IExpr skewness(IAST dist) {
+      if (dist.isAST0() || dist.isAST2()) {
+        return S.Indeterminate;
+      }
+      return F.NIL;
+    }
+
+    @Override
+    public IExpr randomVariate(Random random, IAST dist, int size) {
+      if (dist.isAST0() || dist.isAST2()) {
+        IExpr a = F.C0;
+        IExpr b = F.C1;
+        if (dist.isAST2()) {
+          a = dist.arg1();
+          b = dist.arg2();
+        }
+        // see exception handling in RandonmVariate() function
+        double ad = a.evalDouble();
+        double bd = b.evalDouble();
+        RandomDataGenerator rdg = new RandomDataGenerator();
+        double[] vector =
+            rdg.nextDeviates(
+                new org.hipparchus.distribution.continuous.CauchyDistribution(ad, bd), size);
+        return new ASTRealVector(vector, false);
+      }
+      return F.NIL;
+    }
+
+    @Override
+    public void setUp(final ISymbol newSymbol) {}
+  }
+
   /**
    *
    *
@@ -1595,7 +1760,7 @@ public class StatisticsFunctions {
         // [$ Piecewise({{m/(-2 + m), m > 2}}, Indeterminate) $]
         F.Piecewise(
             F.List(F.List(F.Times(F.Power(F.Plus(F.CN2, m), F.CN1), m), F.Greater(m, F.C2))),
-            S.Indeterminate); // $$;
+            F.Indeterminate); // $$;
       }
       return F.NIL;
     }
@@ -1754,7 +1919,7 @@ public class StatisticsFunctions {
                         F.Plus(F.CN2, m, n),
                         F.Power(F.Times(F.Plus(F.CN4, m), F.Sqr(F.Plus(F.CN2, m)), n), F.CN1)),
                     F.Greater(m, F.C4))),
-            S.Indeterminate); // $$;
+            F.Indeterminate); // $$;
       }
       return F.NIL;
     }
@@ -1780,7 +1945,7 @@ public class StatisticsFunctions {
                             F.Times(F.Plus(F.CN6, m), F.Sqrt(n), F.Sqrt(F.Plus(F.CN2, m, n))),
                             F.CN1)),
                     F.Greater(m, F.C6))),
-            S.Indeterminate); // $$;
+            F.Indeterminate); // $$;
       }
       return F.NIL;
     }
@@ -2543,15 +2708,15 @@ public class StatisticsFunctions {
             F.Exp(n),
             F.Power(F.Times(F.C6, F.Sqr(m)), F.CN1),
             F.Plus(
-                F.Times(F.CN6, F.Sqr(S.EulerGamma)),
-                F.Negate(F.Sqr(S.Pi)),
+                F.Times(F.CN6, F.Sqr(F.EulerGamma)),
+                F.Negate(F.Sqr(F.Pi)),
                 F.Times(F.C6, F.Exp(n), F.Sqr(F.ExpIntegralEi(F.Negate(n)))),
                 F.Times(
                     F.ZZ(12L),
                     n,
                     F.HypergeometricPFQ(
                         F.List(F.C1, F.C1, F.C1), F.List(F.C2, F.C2, F.C2), F.Negate(n))),
-                F.Times(F.ZZ(-12L), S.EulerGamma, F.Log(n)),
+                F.Times(F.ZZ(-12L), F.EulerGamma, F.Log(n)),
                 F.Times(F.CN6, F.Sqr(F.Log(n))))); // $$;
       }
       return F.NIL;
@@ -2770,7 +2935,7 @@ public class StatisticsFunctions {
       if (dist.isAST2()) {
         return
         // [$ -((12*Sqrt(6)*Zeta(3))/Pi^3) $]
-        F.Times(F.CN1, F.ZZ(12L), F.CSqrt6, F.Power(S.Pi, F.CN3), F.Zeta(F.C3)); // $$;
+        F.Times(F.CN1, F.ZZ(12L), F.CSqrt6, F.Power(F.Pi, F.CN3), F.Zeta(F.C3)); // $$;
       }
       return F.NIL;
     }
@@ -3797,6 +3962,44 @@ public class StatisticsFunctions {
 
     @Override
     public void setUp(final ISymbol newSymbol) {}
+  }
+
+  private static final class InterquartileRange extends AbstractFunctionEvaluator
+      implements InterquartileRangeRules {
+
+    @Override
+    public IAST getRuleAST() {
+      return RULES;
+    }
+
+    @Override
+    public IExpr evaluate(final IAST ast, EvalEngine engine) {
+      IExpr arg1 = ast.arg1();
+      try {
+        int length = arg1.isVector();
+        if (length > 0) {
+          IExpr resultQuartiles = engine.evaluate(F.Quartiles(arg1));
+          if (resultQuartiles.isList3()) {
+            return F.Subtract(resultQuartiles.getAt(3), resultQuartiles.getAt(1));
+          }
+        } else if (arg1.isDistribution()) {
+          return F.Subtract(F.Quantile(arg1, F.C3D4), F.Quantile(arg1, F.C1D4));
+        }
+      } catch (ValidateException ve) {
+        return engine.printMessage(ast.topHead(), ve);
+      }
+      return F.NIL;
+    }
+
+    @Override
+    public int[] expectedArgSize(IAST ast) {
+      return ARGS_1_1;
+    }
+
+    @Override
+    public void setUp(final ISymbol newSymbol) {
+      super.setUp(newSymbol);
+    }
   }
 
   /**
@@ -6552,7 +6755,7 @@ public class StatisticsFunctions {
    * href="StandardDeviation.md">StandardDeviation</a>, <a href="Variance.md">Variance</a>
    */
   private static final class WeibullDistribution extends AbstractEvaluator
-      implements ICDF, IDistribution, IPDF, IStatistics {
+      implements ICDF, IDistribution, IPDF, IStatistics, IRandomVariate {
 
     @Override
     public IExpr evaluate(final IAST ast, EvalEngine engine) {
@@ -6728,6 +6931,21 @@ public class StatisticsFunctions {
     }
 
     @Override
+    public IExpr randomVariate(Random random, IAST dist, int size) {
+      if (dist.isAST2()) {
+        double n = dist.arg1().evalDouble();
+        double m = dist.arg2().evalDouble();
+        // see exception handling in RandonmVariate() function
+        RandomDataGenerator rdg = new RandomDataGenerator();
+        double[] vector =
+            rdg.nextDeviates(
+                new org.hipparchus.distribution.continuous.WeibullDistribution(n, m), size);
+        return new ASTRealVector(vector, false);
+      }
+      return F.NIL;
+    }
+
+    @Override
     public IExpr skewness(IAST dist) {
       if (dist.isAST2()) {
         IExpr n = dist.arg1();
@@ -6755,6 +6973,22 @@ public class StatisticsFunctions {
 
     @Override
     public void setUp(final ISymbol newSymbol) {}
+  }
+
+  /**
+   * Returns an array of random deviates from the given unary function.
+   *
+   * @param function the unary function to sample from
+   * @param size the number of values to return
+   * @return an array of {@code size} values following the given unary function distribution
+   */
+  private static double[] nextDeviates(Random random, DoubleUnaryOperator function, int size) {
+    double[] out = new double[size];
+    for (int i = 0; i < size; i++) {
+      double p = random.nextDouble();
+      out[i] = function.applyAsDouble(p);
+    }
+    return out;
   }
 
   public static void initialize() {

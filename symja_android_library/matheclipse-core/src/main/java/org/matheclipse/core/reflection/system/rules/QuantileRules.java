@@ -13,13 +13,16 @@ public interface QuantileRules {
    * <li>index 0 - number of equal rules in <code>RULES</code></li>
 	 * </ul>
 	 */
-  final public static int[] SIZES = { 0, 15 };
+  final public static int[] SIZES = { 0, 16 };
 
   final public static IAST RULES = List(
     IInit(Quantile, SIZES),
     // Quantile(BernoulliDistribution(x_)):=ConditionalExpression(Piecewise({{1,#1>1-x}},0),0<=#1<=1)&
     ISetDelayed(Quantile(BernoulliDistribution(x_)),
       Function(ConditionalExpression(Piecewise(List(List(C1,Greater(Slot1,Subtract(C1,x)))),C0),LessEqual(C0,Slot1,C1)))),
+    // Quantile(CauchyDistribution(a_,b_)):=ConditionalExpression(Piecewise({{a+b*Tan((-1/2+#1)*Pi),0<#1<1},{-Infinity,#1<=0}},Infinity),0<=#1<=1)&
+    ISetDelayed(Quantile(CauchyDistribution(a_,b_)),
+      Function(ConditionalExpression(Piecewise(List(List(Plus(a,Times(b,Tan(Times(Plus(CN1D2,Slot1),Pi)))),Less(C0,Slot1,C1)),List(Negate(oo),LessEqual(Slot1,C0))),oo),LessEqual(C0,Slot1,C1)))),
     // Quantile(ErlangDistribution(k_,l_)):=ConditionalExpression(Piecewise({{InverseGammaRegularized(k,0,#1)/l,0<#1<1},{0,#1<=0}},Infinity),0<=#1<=1)&
     ISetDelayed(Quantile(ErlangDistribution(k_,l_)),
       Function(ConditionalExpression(Piecewise(List(List(Times(Power(l,CN1),InverseGammaRegularized(k,C0,Slot1)),Less(C0,Slot1,C1)),List(C0,LessEqual(Slot1,C0))),oo),LessEqual(C0,Slot1,C1)))),

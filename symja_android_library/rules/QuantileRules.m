@@ -1,10 +1,12 @@
 {
 Quantile(BernoulliDistribution(x_)) :=
   (ConditionalExpression(Piecewise({{1, # > 1 - x}}, 0), 0 <= # <= 1)&),
+Quantile(CauchyDistribution(a_, b_)) :=
+  (ConditionalExpression(Piecewise({{a+b*Tan((-(1/2)+#)*Pi),0<#<1},{-Infinity,#<= 0}},Infinity),0<=#<=1)&), 
 Quantile(ErlangDistribution(k_, l_)) :=
   (ConditionalExpression(Piecewise({{InverseGammaRegularized(k, 0, #)/l, 0 < # < 1}, {0, # <= 0}}, Infinity), 0 <= # <= 1)&),
 Quantile(ExponentialDistribution(n_)) :=
-  (ConditionalExpression(Piecewise({{-(Log(1 - #)/n), # < 1}}, Infinity), 0 <= # <= 1)&),
+  (ConditionalExpression(Piecewise({{-(Log(1-#)/n), #<1}}, Infinity), 0<=#<= 1)&),
 Quantile(FrechetDistribution(n_, m_)) :=
   (ConditionalExpression(Piecewise({{m/(-Log(#))^n^(-1), 0 < # < 1}, {0, # <= 0}}, Infinity), 0 <= # <= 1)&),
 Quantile(GammaDistribution(a_, b_)) :=

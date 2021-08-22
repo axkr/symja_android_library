@@ -1327,6 +1327,9 @@ public class S {
    */
   public static final IBuiltInSymbol Catenate = F.initFinalSymbol("Catenate", ID.Catenate);
 
+  public static final IBuiltInSymbol CauchyDistribution =
+      F.initFinalSymbol("CauchyDistribution", ID.CauchyDistribution);
+
   /**
    * Ceiling(expr) - gives the first integer greater than or equal `expr`.
    *
@@ -4034,6 +4037,8 @@ public class S {
    */
   public static final IBuiltInSymbol Histogram = F.initFinalSymbol("Histogram", ID.Histogram);
 
+  public static final IBuiltInSymbol HodgeDual = F.initFinalSymbol("HodgeDual", ID.HodgeDual);
+
   /**
    * Hold(expr) - `Hold` doesn't evaluate `expr`. `Hold` evaluates `UpValues`for its arguments.
    * `HoldComplete` doesn't evaluate `UpValues`.
@@ -4504,6 +4509,8 @@ public class S {
   public static final IBuiltInSymbol Interpolation =
       F.initFinalSymbol("Interpolation", ID.Interpolation);
 
+  public static final IBuiltInSymbol InterquartileRange =
+      F.initFinalSymbol("InterquartileRange", ID.InterquartileRange);
   /**
    * Interrupt( ) - Interrupt an evaluation and returns `$Aborted`.
    *
@@ -5119,6 +5126,9 @@ public class S {
    *     documentation</a>
    */
   public static final IBuiltInSymbol LevelQ = F.initFinalSymbol("LevelQ", ID.LevelQ);
+
+  public static final IBuiltInSymbol LeviCivitaTensor =
+      F.initFinalSymbol("LeviCivitaTensor", ID.LeviCivitaTensor);
 
   public static final IBuiltInSymbol Lexicographic =
       F.initFinalSymbol("Lexicographic", ID.Lexicographic);
@@ -6611,6 +6621,8 @@ public class S {
    *     documentation</a>
    */
   public static final IBuiltInSymbol PatternTest = F.initFinalSymbol("PatternTest", ID.PatternTest);
+
+  public static final IBuiltInSymbol PauliMatrix = F.initFinalSymbol("PauliMatrix", ID.PauliMatrix);
 
   /**
    * Pause(seconds) - pause the thread for the number of `seconds`.
