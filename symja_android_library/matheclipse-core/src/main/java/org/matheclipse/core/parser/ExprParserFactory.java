@@ -310,6 +310,7 @@ public class ExprParserFactory implements IParserFactory {
     "ReplaceAll",
     "TagSet",
     "Composition",
+    "RightComposition",
     "StringExpression",
     "TwoWayRule",
     "TwoWayRule",
@@ -330,7 +331,7 @@ public class ExprParserFactory implements IParserFactory {
     "::", "<<", "?", "??", "?", "//@", "*=", "+", "^=", ";", "@", "/@", "=.", "@@", "@@@", "//.",
     "<", "&&", "/", "=", "++", "!!", "<=", "**", "!", "*", "^", ".", "!", "-", "===", ":>", ">=",
     "/;", ":", "//", "/=", "||", ";;", "==", "<>", "!=", "--", "-=", "+", "...", "=!=", "->", "^:=",
-    "++", "&", ">", "--", "-", ":=", "|", "+=", "..", "/.", "/:", "@*", "~~", //
+    "++", "&", ">", "--", "-", ":=", "|", "+=", "..", "/.", "/:", "@*","/*", "~~", //
     "<->", // TwoWayRule
     "\uF120", // TwoWayRule
     "\uF3D5", // DirectedEdge
@@ -466,6 +467,7 @@ public class ExprParserFactory implements IParserFactory {
                 "/.", "ReplaceAll", Precedence.REPLACEALL, InfixExprOperator.LEFT_ASSOCIATIVE), //
             TAG_SET_OPERATOR, //
             new InfixExprOperator("@*", "Composition", Precedence.COMPOSITION, InfixOperator.NONE),
+            new InfixExprOperator("/*", "RightComposition", Precedence.RIGHTCOMPOSITION, InfixOperator.NONE),
             new InfixExprOperator(
                 "~~", "StringExpression", Precedence.STRINGEXPRESSION, InfixOperator.NONE),
             new InfixExprOperator(

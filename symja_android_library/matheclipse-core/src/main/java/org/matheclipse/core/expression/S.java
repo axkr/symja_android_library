@@ -7651,6 +7651,8 @@ public class S {
 
   public static final IBuiltInSymbol Right = F.initFinalSymbol("Right", ID.Right);
 
+  public static final IBuiltInSymbol RightComposition = F.initFinalSymbol("RightComposition", ID.RightComposition);
+  
   /**
    * RogersTanimotoDissimilarity(u, v) - returns the Rogers-Tanimoto dissimilarity between the two
    * boolean 1-D lists `u` and `v`, which is defined as `R / (c_tt + c_ff + R)` where n is `len(u)`,

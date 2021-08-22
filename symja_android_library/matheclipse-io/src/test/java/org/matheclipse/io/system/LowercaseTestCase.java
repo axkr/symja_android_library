@@ -18233,6 +18233,13 @@ public class LowercaseTestCase extends AbstractTestCase {
 
   public void testInverseFunction() {
     check(
+        "InverseFunction(Composition(f, g, h))[x]", //
+        "InverseFunction(h)[InverseFunction(g)[InverseFunction(f)[x]]]");
+    check(
+        "Sin @* InverseFunction(Tan)", //
+        "Sin@*ArcTan");
+
+    check(
         "D(InverseFunction(Sin)[x],x)", //
         "1/Sqrt(1-x^2)");
     check(
@@ -18259,6 +18266,13 @@ public class LowercaseTestCase extends AbstractTestCase {
     check(
         "InverseFunction(Sin)", //
         "ArcSin");
+
+    check(
+        "f = 2 # & @*Cases(_Symbol)", //
+        "(2*#1&)@*Cases(_Symbol)");
+    check(
+        "f({a, \"b\", c, d, \"e\", 5})", //
+        "{2*a,2*c,2*d}");
   }
 
   public void testInverseGammaRegularized() {
@@ -22911,7 +22925,7 @@ public class LowercaseTestCase extends AbstractTestCase {
         "");
     check(
         "Select(sysnames, MemberQ(Attributes(#), OneIdentity) &) // InputForm", //
-        "{\"And\",\"Composition\",\"Dot\",\"GCD\",\"Intersection\",\"Join\",\"Max\",\"Min\",\"Or\",\"Plus\",\"Power\",\"StringExpression\",\"StringJoin\",\"TensorProduct\",\"Times\",\"Union\",\"Xor\"}");
+        "{\"And\",\"Composition\",\"Dot\",\"GCD\",\"Intersection\",\"Join\",\"Max\",\"Min\",\"Or\",\"Plus\",\"Power\",\"RightComposition\",\"StringExpression\",\"StringJoin\",\"TensorProduct\",\"Times\",\"Union\",\"Xor\"}");
 
     check(
         "Names(\"System`\" ~~ _ ~~ _) // InputForm", //
@@ -31278,6 +31292,22 @@ public class LowercaseTestCase extends AbstractTestCase {
         "{{0.589517,1.82157},\n"
             + //
             " {1.82157,8.81884}}");
+  }
+
+  public void testRightComposition() {
+      check(
+          "Hold[f @ g@@h] // FullForm", //
+          "Hold(Apply(f(g), h))");
+  
+    check(
+        "RightComposition(f, g, h)[x, y]", //
+        "h(g(f(x,y)))");
+    check(
+        "f /* g /* h@x", //
+        "h(g(f(x)))");
+    check(
+        "(f /* g /* h)@x", //
+        "h(g(f(x)))");
   }
 
   public void testRiffle() {

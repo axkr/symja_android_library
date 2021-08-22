@@ -200,6 +200,7 @@ public final class ListFunctions {
       S.ReplaceList.setEvaluator(new ReplaceList());
       S.ReplacePart.setEvaluator(new ReplacePart());
       S.ReplaceRepeated.setEvaluator(new ReplaceRepeated());
+      S.RightComposition.setEvaluator(new RightComposition());
       S.Riffle.setEvaluator(new Riffle());
       S.RotateLeft.setEvaluator(new RotateLeft());
       S.RotateRight.setEvaluator(new RotateRight());
@@ -1534,6 +1535,9 @@ public final class ListFunctions {
     @Override
     public IExpr evaluate(final IAST ast, EvalEngine engine) {
       if (ast.head().equals(S.Composition)) {
+        if (ast.isAST0()) {
+          return S.Identity;
+        }
         return ast.remove(x -> x.equals(S.Identity));
       }
       if (ast.head().isAST()) {
@@ -6011,6 +6015,41 @@ public final class ListFunctions {
     @Override
     public int[] expectedArgSize(IAST ast) {
       return ARGS_1_1;
+    }
+  }
+
+  private static final class RightComposition extends AbstractFunctionEvaluator {
+
+    @Override
+    public IExpr evaluate(final IAST ast, EvalEngine engine) {
+      if (ast.head().equals(S.RightComposition)) {
+        if (ast.isAST0()) {
+          return S.Identity;
+        }
+        return ast.remove(x -> x.equals(S.Identity));
+      }
+      if (ast.head().isAST()) {
+
+        IAST headList = (IAST) ast.head();
+        if (headList.size() > 1) {
+          IASTAppendable inner = F.ast(headList.last());
+          IAST result = inner;
+          IASTAppendable temp;
+          for (int i = headList.size() - 2; i >= 1; i--) {
+            temp = F.ast(headList.get(i));
+            inner.append(temp);
+            inner = temp;
+          }
+          inner.appendArgs(ast);
+          return result;
+        }
+      }
+      return F.NIL;
+    }
+
+    @Override
+    public void setUp(final ISymbol newSymbol) {
+      newSymbol.setAttributes(ISymbol.FLAT | ISymbol.ONEIDENTITY);
     }
   }
 

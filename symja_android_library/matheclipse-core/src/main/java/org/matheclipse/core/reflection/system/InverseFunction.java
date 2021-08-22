@@ -54,6 +54,15 @@ public class InverseFunction extends AbstractFunctionEvaluator {
       if (temp != null) {
         return temp;
       }
+    } else if (arg1.isASTSizeGE(S.Composition, 2) || arg1.isASTSizeGE(S.RightComposition, 2)) {
+      IAST composition = (IAST) arg1;
+      if (composition.forAll(x -> x.isSymbol())) {
+        IASTAppendable result = F.ast(composition.head(), composition.size(), false);
+        for (int i = composition.size() - 1; i >= 1; i--) {
+          result.append(F.InverseFunction(composition.get(i)));
+        }
+        return result;
+      }
     }
     return F.NIL;
   }

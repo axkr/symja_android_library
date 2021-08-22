@@ -274,6 +274,7 @@ public class ASTNodeFactory implements INodeParserFactory {
     "ReplaceAll",
     "TagSet",
     "Composition",
+    "RightComposition",
     "StringExpression",
     "TwoWayRule",
     "TwoWayRule",
@@ -350,6 +351,7 @@ public class ASTNodeFactory implements INodeParserFactory {
     "/.",
     "/:",
     "@*",
+    "/*",
     "~~", // StringExpression
     "<->", // TwoWayRule
     "\uF120", // TwoWayRule
@@ -474,6 +476,7 @@ public class ASTNodeFactory implements INodeParserFactory {
                 "/.", "ReplaceAll", Precedence.REPLACEALL, InfixOperator.LEFT_ASSOCIATIVE), //
             TAG_SET_OPERATOR, //
             new InfixOperator("@*", "Composition", Precedence.COMPOSITION, InfixOperator.NONE),
+            new InfixOperator("/*", "RightComposition", Precedence.RIGHTCOMPOSITION, InfixOperator.NONE),
             new InfixOperator(
                 "~~", "StringExpression", Precedence.STRINGEXPRESSION, InfixOperator.NONE),
             new InfixOperator(

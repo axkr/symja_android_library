@@ -1149,6 +1149,7 @@ public class AST2Expr {
     "RGBColor",
     "RiccatiSolve",
     "Riffle",
+    "RightComposition",
     "RogersTanimotoDissimilarity",
     "RomanNumeral",
     "RootIntervals",
