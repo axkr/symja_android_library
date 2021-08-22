@@ -211,8 +211,13 @@ public abstract class AbstractFractionSym implements IFraction {
   public static IFraction valueOfEpsilon(final double value, final double epsilon) {
     BigFraction fraction;
     try {
-      fraction = new BigFraction(value, epsilon, 200);
-      return valueOf(fraction);
+      if (value < 0.0) {
+        fraction = new BigFraction(-value, epsilon, 200);
+        return valueOf(fraction.negate());
+      } else {
+        fraction = new BigFraction(value, epsilon, 200);
+        return valueOf(fraction);
+      }
     } catch (MathIllegalStateException e) {
       fraction = new BigFraction(value);
     }
