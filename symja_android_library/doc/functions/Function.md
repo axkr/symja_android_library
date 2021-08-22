@@ -26,6 +26,7 @@ or
 
 See:  
 * [Wikipedia - Pure function](https://en.wikipedia.org/wiki/Pure_function)
+* [Wikipedia - Lambda calculus](https://en.wikipedia.org/wiki/Lambda_calculus)
   
 ### Examples
 
