@@ -32,6 +32,13 @@
 			<version>${project.version}</version>
 		</dependency>
 
+		<!-- logging dependencies -->
+
+		<dependency> <!-- bridge from log4j-1 to log4j-2 -->
+			<groupId>org.apache.logging.log4j</groupId>
+			<artifactId>log4j-1.2-api</artifactId>
+		</dependency>
+
 	</dependencies>
 
 	<build>

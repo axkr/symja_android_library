@@ -1,7 +1,5 @@
 package org.matheclipse.core.numbertheory;
 
-import org.apache.log4j.Logger;
-
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
@@ -10,6 +8,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.SortedSet;
 import java.util.TreeMap;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 
 /**
  * A sorted set of elements with multiple occurrences, sorted biggest elements first. Sorting is due
@@ -24,7 +24,7 @@ public class SortedMultiset_TopDown<T extends Comparable<T>> extends TreeMap<T, 
   private static final long serialVersionUID = -6604624351619809213L;
 
   @SuppressWarnings("unused")
-  private static final Logger LOG = Logger.getLogger(SortedMultiset_TopDown.class);
+  private static final Logger LOG = LogManager.getLogger(SortedMultiset_TopDown.class);
 
   /**
    * Constructor for an empty multiset, sorted biggest elements first. This sort order is
