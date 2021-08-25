@@ -33,12 +33,6 @@
 		</dependency>
 
 		<dependency>
-			<groupId>com.github.twosigma</groupId>
-			<artifactId>beakerx</artifactId>
-			<scope>provided</scope>
-		</dependency>
-
-		<dependency>
 			<groupId>com.github.twosigma.beakerx</groupId>
 			<artifactId>beaker-kernel-base</artifactId>
 		</dependency>
