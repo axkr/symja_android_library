@@ -7,7 +7,6 @@ import java.io.ObjectOutput;
 import java.io.ObjectStreamException;
 import java.util.Set;
 import java.util.StringTokenizer;
-
 import org.matheclipse.core.basic.Config;
 import org.matheclipse.core.eval.exception.ASTElementLimitExceeded;
 import org.matheclipse.core.interfaces.IAST;
@@ -227,6 +226,15 @@ public class AST extends HMArrayList implements Externalizable {
     return ast;
   }
 
+  public static AST newInstance(final int initialCapacity, final IExpr head) {
+    if (Config.MAX_AST_SIZE < initialCapacity || initialCapacity < 0) {
+      ASTElementLimitExceeded.throwIt(initialCapacity);
+    }
+    AST ast = new AST(initialCapacity);
+    ast.append(head);
+    return ast;
+  }
+
   /**
    * Create a new function expression (AST - abstract syntax tree), where all arguments are Java
    * {@link ComplexNum} values.
@@ -370,8 +378,8 @@ public class AST extends HMArrayList implements Externalizable {
     super(0);
   }
 
-  /* package private */ AST(IExpr head, IExpr... es) {
-    super(head, es);
+  /* package private */ AST(IExpr head, IExpr... exprs) {
+    super(head, exprs);
   }
 
   /**
@@ -379,8 +387,8 @@ public class AST extends HMArrayList implements Externalizable {
    *
    * @param es
    */
-  /* package private */ AST(IExpr[] es) {
-    super(es);
+  /* package private */ AST(IExpr[] exprs) {
+    super(exprs);
   }
 
   /**
@@ -393,6 +401,10 @@ public class AST extends HMArrayList implements Externalizable {
   protected AST(final int initialCapacity, final boolean setLength) {
     super(initialCapacity + 1);
     lastIndex += (setLength ? initialCapacity + 1 : 0);
+  }
+
+  protected AST(final int initialCapacity) {
+    super(initialCapacity + 1);
   }
 
   /** {@inheritDoc} */

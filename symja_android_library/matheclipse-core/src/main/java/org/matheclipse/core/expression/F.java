@@ -1675,8 +1675,8 @@ public class F extends S {
   }
 
   // --- generated source codes:
-  public static IAST Abs(final IExpr a0) {
-    return new AST1(Abs, a0);
+  public static IAST Abs(final IExpr z) {
+    return new AST1(Abs, z);
   }
 
   public static IAST AbsoluteCorrelation(final IExpr a0, final IExpr a1) {
@@ -1808,61 +1808,61 @@ public class F extends S {
     return new AST1(Arrays, a0);
   }
 
-  public static IAST ArcCos(final IExpr a0) {
-    return new AST1(ArcCos, a0);
+  public static IAST ArcCos(final IExpr z) {
+    return new AST1(ArcCos, z);
   }
 
-  public static IAST ArcCosh(final IExpr a0) {
-    return new AST1(ArcCosh, a0);
+  public static IAST ArcCosh(final IExpr z) {
+    return new AST1(ArcCosh, z);
   }
 
-  public static IAST ArcCot(final IExpr a0) {
-    return new AST1(ArcCot, a0);
+  public static IAST ArcCot(final IExpr z) {
+    return new AST1(ArcCot, z);
   }
 
-  public static IAST ArcCoth(final IExpr a0) {
-    return new AST1(ArcCoth, a0);
+  public static IAST ArcCoth(final IExpr z) {
+    return new AST1(ArcCoth, z);
   }
 
-  public static IAST ArcCsc(final IExpr a0) {
-    return new AST1(ArcCsc, a0);
+  public static IAST ArcCsc(final IExpr z) {
+    return new AST1(ArcCsc, z);
   }
 
-  public static IAST ArcCsch(final IExpr a0) {
-    return new AST1(ArcCsch, a0);
+  public static IAST ArcCsch(final IExpr z) {
+    return new AST1(ArcCsch, z);
   }
 
-  public static IAST ArcSec(final IExpr a0) {
-    return new AST1(ArcSec, a0);
+  public static IAST ArcSec(final IExpr z) {
+    return new AST1(ArcSec, z);
   }
 
-  public static IAST ArcSech(final IExpr a0) {
-    return new AST1(ArcSech, a0);
+  public static IAST ArcSech(final IExpr z) {
+    return new AST1(ArcSech, z);
   }
 
-  public static IAST ArcSin(final IExpr a0) {
+  public static IAST ArcSin(final IExpr z) {
 
-    return new AST1(ArcSin, a0);
+    return new AST1(ArcSin, z);
   }
 
-  public static IAST ArcSinh(final IExpr a0) {
-    return new AST1(ArcSinh, a0);
+  public static IAST ArcSinh(final IExpr z) {
+    return new AST1(ArcSinh, z);
   }
 
-  public static IAST ArcTan(final IExpr a0) {
-    return new AST1(ArcTan, a0);
+  public static IAST ArcTan(final IExpr z) {
+    return new AST1(ArcTan, z);
   }
 
-  public static IAST ArcTan(final IExpr a0, final IExpr a1) {
-    return new AST2(ArcTan, a0, a1);
+  public static IAST ArcTan(final IExpr x, final IExpr y) {
+    return new AST2(ArcTan, x, y);
   }
 
-  public static IAST ArcTanh(final IExpr a0) {
-    return new AST1(ArcTanh, a0);
+  public static IAST ArcTanh(final IExpr z) {
+    return new AST1(ArcTanh, z);
   }
 
-  public static IAST Arg(final IExpr a0) {
-    return new AST1(Arg, a0);
+  public static IAST Arg(final IExpr z) {
+    return new AST1(Arg, z);
   }
 
   /**
@@ -2010,6 +2010,20 @@ public class F extends S {
   }
 
   /**
+   * Create a new abstract syntax tree (AST). Elements can be added to the end of the created AST
+   * instance with the {@link IASTAppendable#append(IExpr)} method.
+   *
+   * @param head the header expression of the function. If the ast represents a function like <code>
+   *     f[x,y], Sin[x],...</code>, the <code>head</code> will be an instance of type ISymbol.
+   * @param initialCapacity the initial capacity (i.e. number of arguments without the header
+   *     element) of the list.
+   * @return
+   */
+  public static IASTAppendable ast(final IExpr head, final int initialCapacity) {
+    return AST.newInstance(initialCapacity, head);
+  }
+
+  /**
    * Create a new abstract syntax tree (AST).
    *
    * @param head the header expression of the function. If the ast represents a function like <code>
@@ -2018,21 +2032,55 @@ public class F extends S {
    *     element) of the list.
    * @param initNull initialize all elements with <code>null</code>.
    * @return
+   * @deprecated use {@link #ast(IExpr, int)} or {@link #astMutable(IExpr, int)}
    */
   public static IASTAppendable ast(
       final IExpr head, final int initialCapacity, final boolean initNull) {
     return AST.newInstance(initialCapacity, head, initNull);
   }
 
+  /**
+   * Create a new abstract syntax tree (AST). Elements can be added at the end of the created AST
+   * instance with the {@link IASTAppendable#append(IExpr)} method.
+   *
+   * @param head the header expression of the function. If the ast represents a function like <code>
+   *     f[x,y], Sin[x],...</code>, the <code>head</code> will be an instance of type ISymbol.
+   * @param initialCapacity the initial capacity (i.e. number of arguments without the header
+   *     element) of the list.
+   * @return
+   */
   public static IASTAppendable ast(final IExpr head, Collection<? extends IExpr> collection) {
     return ast(head, collection, 0);
   }
 
+  /**
+   * @param head the header expression of the function. If the ast represents a function like <code>
+   *     f[x,y], Sin[x],...</code>, the <code>head</code> will be an instance of type ISymbol.
+   * @param collection the collection which holds the elements which should be appended
+   * @param initialCapacity the additional capacity added to the collections size (i.e. number of
+   *     arguments without the header element) of the list.
+   * @return
+   */
   public static IASTAppendable ast(
-      final IExpr head, Collection<? extends IExpr> collection, int capacity) {
-    IASTAppendable result = ast(head, collection.size() + capacity, false);
+      final IExpr head, Collection<? extends IExpr> collection, int initialCapacity) {
+    IASTAppendable result = ast(head, collection.size() + initialCapacity);
     result.appendAll(collection);
     return result;
+  }
+
+  /**
+   * Create a new abstract syntax tree (AST) with pre- allocated elements set to <code>null</code>.
+   * Elements can be set in the created AST instance with the {@link IASTMutable#set(int, IExpr)}
+   * method.
+   *
+   * @param head the header expression of the function. If the ast represents a function like <code>
+   *     f[x,y], Sin[x],...</code>, the <code>head</code> will be an instance of type ISymbol.
+   * @param initialCapacity the initial capacity (i.e. number of arguments without the header
+   *     element) of the list.
+   * @return
+   */
+  public static IASTMutable astMutable(final IExpr head, final int initialCapacity) {
+    return AST.newInstance(initialCapacity, head, true);
   }
 
   /**
@@ -2474,8 +2522,8 @@ public class F extends S {
     return new AST2(CDF, a0, a1);
   }
 
-  public static IAST Ceiling(final IExpr a0) {
-    return new AST1(Ceiling, a0);
+  public static IAST Ceiling(final IExpr z) {
+    return new AST1(Ceiling, z);
   }
 
   public static IAST ChebyshevT(final IExpr a0, final IExpr a1) {
@@ -2881,28 +2929,28 @@ public class F extends S {
     return new AST2(CoprimeQ, a0, a1);
   }
 
-  public static IAST Cos(final IExpr a0) {
-    return new B1.Cos(a0);
+  public static IAST Cos(final IExpr z) {
+    return new B1.Cos(z);
   }
 
-  public static IAST Cosh(final IExpr a0) {
-    return new AST1(Cosh, a0);
+  public static IAST Cosh(final IExpr z) {
+    return new AST1(Cosh, z);
   }
 
-  public static IAST CoshIntegral(final IExpr a) {
-    return new AST1(CoshIntegral, a);
+  public static IAST CoshIntegral(final IExpr z) {
+    return new AST1(CoshIntegral, z);
   }
 
-  public static IAST CosIntegral(final IExpr a) {
-    return new AST1(CosIntegral, a);
+  public static IAST CosIntegral(final IExpr z) {
+    return new AST1(CosIntegral, z);
   }
 
-  public static IAST Cot(final IExpr a0) {
-    return new AST1(Cot, a0);
+  public static IAST Cot(final IExpr z) {
+    return new AST1(Cot, z);
   }
 
-  public static IAST Coth(final IExpr a0) {
-    return new AST1(Coth, a0);
+  public static IAST Coth(final IExpr z) {
+    return new AST1(Coth, z);
   }
 
   public static IAST Count(final IExpr a0, final IExpr a1, final IExpr a2) {
@@ -2917,16 +2965,21 @@ public class F extends S {
     return new AST2(Cross, a0, a1);
   }
 
-  public static IAST Csc(final IExpr a0) {
-    return new AST1(Csc, a0);
+  public static IAST Csc(final IExpr z) {
+    return new AST1(Csc, z);
   }
 
-  public static IAST Csch(final IExpr a0) {
-    return new AST1(Csch, a0);
+  public static IAST Csch(final IExpr z) {
+    return new AST1(Csch, z);
   }
 
-  public static IAST Cuboid(final IExpr a0, final IExpr a1) {
-    return new AST2(Cuboid, a0, a1);
+  /**
+   * @param pMin lower corner
+   * @param pMax upper corner
+   * @return
+   */
+  public static IAST Cuboid(final IExpr pMin, final IExpr pMax) {
+    return new AST2(Cuboid, pMin, pMax);
   }
 
   public static IAST Cycles(final IExpr a0) {
@@ -2941,8 +2994,8 @@ public class F extends S {
     return ast(D);
   }
 
-  public static IAST D(final IExpr a0, final IExpr a1) {
-    return new AST2(D, a0, a1);
+  public static IAST D(final IExpr f, final IExpr x) {
+    return new AST2(D, f, x);
   }
 
   public static IAST Decrement(final IExpr a) {
@@ -2961,9 +3014,8 @@ public class F extends S {
     return function(DeleteCases, a);
   }
 
-  public static IAST Denominator(final IExpr a0) {
-
-    return new AST1(Denominator, a0);
+  public static IAST Denominator(final IExpr expr) {
+    return new AST1(Denominator, expr);
   }
 
   public static IAST Depth(final IExpr a0) {
@@ -3168,56 +3220,59 @@ public class F extends S {
     return new AST3(DSolve, a0, a1, a2);
   }
 
-  public static IAST Element(final IExpr a0, final IExpr a1) {
-    return new AST2(Element, a0, a1);
+  public static IAST Element(final IExpr x, final IExpr domain) {
+    return new AST2(Element, x, domain);
   }
 
-  public static IAST ElementData(final IExpr a0) {
-    return new AST1(ElementData, a0);
+  /**
+   * Property of a <code>name</code> chemical element.
+   *
+   * @param name
+   * @param property
+   * @return
+   */
+  public static IAST ElementData(final IExpr name, final IExpr property) {
+    return new AST2(ElementData, name, property);
   }
 
-  public static IAST ElementData(final IExpr a0, final IExpr a1) {
-    return new AST2(ElementData, a0, a1);
+  public static IAST EllipticE(final IExpr m) {
+    return new AST1(EllipticE, m);
   }
 
-  public static IAST EllipticE(final IExpr a0) {
-    return new AST1(EllipticE, a0);
+  public static IAST EllipticE(final IExpr phi, final IExpr m) {
+    return new AST2(EllipticE, phi, m);
   }
 
-  public static IAST EllipticE(final IExpr a0, final IExpr a1) {
-    return new AST2(EllipticE, a0, a1);
+  public static IAST EllipticF(final IExpr phi, final IExpr m) {
+    return new AST2(EllipticF, phi, m);
   }
 
-  public static IAST EllipticF(final IExpr a0, final IExpr a1) {
-    return new AST2(EllipticF, a0, a1);
+  public static IAST EllipticK(final IExpr m) {
+    return new AST1(EllipticK, m);
   }
 
-  public static IAST EllipticK(final IExpr a0) {
-    return new AST1(EllipticK, a0);
+  public static IAST EllipticPi(final IExpr n, final IExpr m) {
+    return new AST2(EllipticPi, n, m);
   }
 
-  public static IAST EllipticPi(final IExpr a0, final IExpr a1) {
-    return new AST2(EllipticPi, a0, a1);
-  }
-
-  public static IAST EllipticPi(final IExpr a0, final IExpr a1, final IExpr a2) {
-    return new AST3(EllipticPi, a0, a1, a2);
+  public static IAST EllipticPi(final IExpr n, final IExpr phi, final IExpr m) {
+    return new AST3(EllipticPi, n, phi, m);
   }
 
   public static IAST Equal(final IExpr... a) {
     return function(Equal, a);
   }
 
-  public static IAST Equal(final IExpr a0, final IExpr a1) {
-    return new B2.Equal(a0, a1);
+  public static IAST Equal(final IExpr lhs, final IExpr rhs) {
+    return new B2.Equal(lhs, rhs);
   }
 
-  public static IAST Equal(final IExpr a0, final int a1) {
-    return new B2.Equal(a0, F.ZZ(a1));
+  public static IAST Equal(final IExpr lhs, final int rhs) {
+    return new B2.Equal(lhs, F.ZZ(rhs));
   }
 
-  public static IAST Equivalent(final IExpr a0, final IExpr a1) {
-    return new AST2(Equivalent, a0, a1);
+  public static IAST Equivalent(final IExpr lhs, final IExpr rhs) {
+    return new AST2(Equivalent, lhs, rhs);
   }
 
   public static IAST Erf(final IExpr a) {
@@ -3576,12 +3631,12 @@ public class F extends S {
     return new AST2(Extract, a0, a1);
   }
 
-  public static IAST Factor(final IExpr a0) {
-    return new AST1(Factor, a0);
+  public static IAST Factor(final IExpr poly) {
+    return new AST1(Factor, poly);
   }
 
-  public static IAST FactorTerms(final IExpr a0) {
-    return new AST1(FactorTerms, a0);
+  public static IAST FactorTerms(final IExpr poly) {
+    return new AST1(FactorTerms, poly);
   }
 
   public static IAST Factorial(final IExpr a0) {
@@ -3656,8 +3711,8 @@ public class F extends S {
     return new AST2(Flatten, a0, a1);
   }
 
-  public static IAST Floor(final IExpr a0) {
-    return new AST1(Floor, a0);
+  public static IAST Floor(final IExpr z) {
+    return new AST1(Floor, z);
   }
 
   public static IAST Fold(final IExpr a0, final IExpr a1, final IExpr a2) {
@@ -3733,8 +3788,8 @@ public class F extends S {
     return new AST1(FractionalPart, a);
   }
 
-  public static IAST FreeQ(final IExpr a0, final IExpr a1) {
-    return new B2.FreeQ(a0, a1);
+  public static IAST FreeQ(final IExpr expr, final IExpr form) {
+    return new B2.FreeQ(expr, form);
   }
 
   public static IAST FrechetDistribution(final IExpr a0, final IExpr a1) {
@@ -3866,20 +3921,20 @@ public class F extends S {
     return ast(Graphics);
   }
 
-  public static IAST Greater(final IExpr a0, final IExpr a1) {
-    return new B2.Greater(a0, a1);
+  public static IAST Greater(final IExpr x, final IExpr y) {
+    return new B2.Greater(x, y);
   }
 
-  public static IAST Greater(final IExpr a0, final int a1) {
-    return new B2.Greater(a0, F.ZZ(a1));
+  public static IAST Greater(final IExpr x, final int y) {
+    return new B2.Greater(x, F.ZZ(y));
   }
 
-  public static IAST GreaterEqual(final IExpr a0, final IExpr a1) {
-    return new B2.GreaterEqual(a0, a1);
+  public static IAST GreaterEqual(final IExpr x, final IExpr y) {
+    return new B2.GreaterEqual(x, y);
   }
 
-  public static IAST GreaterEqual(final IExpr a0, final int a1) {
-    return new B2.GreaterEqual(a0, F.ZZ(a1));
+  public static IAST GreaterEqual(final IExpr x, final int y) {
+    return new B2.GreaterEqual(x, F.ZZ(y));
   }
 
   public static IAST Gudermannian(final IExpr a0) {
@@ -4251,8 +4306,8 @@ public class F extends S {
     return new B1.IntegerQ(a);
   }
 
-  public static IAST Integrate(final IExpr a0, final IExpr a1) {
-    return new B2.Integrate(a0, a1);
+  public static IAST Integrate(final IExpr f, final IExpr x) {
+    return new B2.Integrate(f, x);
   }
 
   public static IAST Interpolation(final IExpr list) {
@@ -4275,7 +4330,7 @@ public class F extends S {
    * @return
    */
   public static IASTAppendable IntervalAlloc(int capacity) {
-    return ast(Interval, capacity, false);
+    return ast(Interval, capacity);
   }
 
   /**
@@ -4317,7 +4372,7 @@ public class F extends S {
       final int from,
       final int to,
       final int step) {
-    IASTAppendable result = F.ast(head, to - from + 1, false);
+    IASTAppendable result = F.ast(head, to - from + 1);
     long numberOfLeaves = 0;
     for (int i = from; i <= to; i += step) {
       IExpr temp = function.apply(F.ZZ(i));
@@ -4366,7 +4421,7 @@ public class F extends S {
       final int from,
       final int to,
       final int step) {
-    IASTAppendable result = F.ast(head, to - from + 1, false);
+    IASTAppendable result = F.ast(head, to - from + 1);
     for (int i = from; i <= to; i += step) {
       result.append(function.apply(i));
     }
@@ -4375,7 +4430,7 @@ public class F extends S {
 
   public static IAST intIterator(
       ISymbol head, final Function<IExpr, IExpr> function, final IAST list) {
-    IASTAppendable result = F.ast(head, list.size(), false);
+    IASTAppendable result = F.ast(head, list.size());
     for (int i = 1; i < list.size(); i++) {
       result.append(function.apply(list.get(i)));
     }
@@ -4779,20 +4834,20 @@ public class F extends S {
     return new AST3(LegendreQ, a0, a1, a2);
   }
 
-  public static IAST LeafCount(final IExpr a0) {
-    return new AST1(LeafCount, a0);
+  public static IAST LeafCount(final IExpr expr) {
+    return new AST1(LeafCount, expr);
   }
 
-  public static IAST Length(final IExpr a) {
-    return new AST1(Length, a);
+  public static IAST Length(final IExpr expr) {
+    return new AST1(Length, expr);
   }
 
-  public static IAST Less(final IExpr a0, final IExpr a1) {
-    return new B2.Less(a0, a1);
+  public static IAST Less(final IExpr x, final IExpr y) {
+    return new B2.Less(x, y);
   }
 
-  public static IAST Less(final IExpr a0, final int a1) {
-    return new B2.Less(a0, F.ZZ(a1));
+  public static IAST Less(final IExpr x, final int y) {
+    return new B2.Less(x, F.ZZ(y));
   }
 
   public static IAST Less(final IExpr a0, final IExpr a1, final IExpr a2) {
@@ -4808,12 +4863,12 @@ public class F extends S {
     return quinary(Less, a0, a1, a2, a3, a4);
   }
 
-  public static IAST LessEqual(final IExpr a0, final IExpr a1) {
-    return new B2.LessEqual(a0, a1);
+  public static IAST LessEqual(final IExpr x, final IExpr y) {
+    return new B2.LessEqual(x, y);
   }
 
-  public static IAST LessEqual(final IExpr a0, final int a1) {
-    return new B2.LessEqual(a0, F.ZZ(a1));
+  public static IAST LessEqual(final IExpr x, final int y) {
+    return new B2.LessEqual(x, F.ZZ(y));
   }
 
   public static IAST LessEqual(final IExpr a0, final IExpr a1, final IExpr a2) {
@@ -4824,16 +4879,16 @@ public class F extends S {
     return quaternary(LessEqual, a0, a1, a2, a3);
   }
 
-  public static IAST LeviCivitaTensor(final IExpr a0) {
-    return new AST1(LeviCivitaTensor, a0);
+  public static IAST LeviCivitaTensor(final IExpr d) {
+    return new AST1(LeviCivitaTensor, d);
   }
 
-  public static IAST Limit(final IExpr a0, final IExpr a1) {
-    return new AST2(Limit, a0, a1);
+  public static IAST Limit(final IExpr f, final IExpr rule) {
+    return new AST2(Limit, f, rule);
   }
 
-  public static IAST Limit(final IExpr a0, final IExpr a1, final IExpr a2) {
-    return new AST3(Limit, a0, a1, a2);
+  public static IAST Limit(final IExpr f, final IExpr rule, final IExpr direction) {
+    return new AST3(Limit, f, rule, direction);
   }
 
   public static IASTAppendable Line() {
@@ -5005,18 +5060,18 @@ public class F extends S {
    * @see {@link #List()} to create an empty unmodifiable AST
    */
   public static IASTAppendable ListAlloc() {
-    return ast(List, 3, false);
+    return ast(List, 3);
   }
 
   /**
-   * Create a new <code>List</code> with the given <code>capacity</code>.
+   * Create a new <code>List</code> with the given <code>initial capacity</code>.
    *
-   * @param capacity the assumed number of arguments (+ 1 for the header expression is added
+   * @param initialCapacity the assumed number of arguments (+ 1 for the header expression is added
    *     internally).
    * @return
    */
-  public static IASTAppendable ListAlloc(int capacity) {
-    return ast(List, capacity, false);
+  public static IASTAppendable ListAlloc(int initialCapacity) {
+    return ast(List, initialCapacity);
   }
 
   /**
@@ -5040,7 +5095,7 @@ public class F extends S {
    * @return
    */
   public static IASTAppendable ListAlloc(Collection<? extends IExpr> collection, int capacity) {
-    IASTAppendable result = ast(List, collection.size() + capacity, false);
+    IASTAppendable result = ast(List, collection.size() + capacity);
     result.appendAll(collection);
     return result;
   }
@@ -5067,6 +5122,7 @@ public class F extends S {
   public static IAST TensorDimensions(final IExpr a0) {
     return new AST1(TensorDimensions, a0);
   }
+
   /**
    * For positive n, add the first n elements of <code>numbers</code> to the list.For negative n,
    * add the last n elements of <code>numbers</code> to the list.
@@ -5382,38 +5438,36 @@ public class F extends S {
     return new AST2(Manipulate, a0, a1);
   }
 
-  public static IAST Map(final IExpr a0) {
-
-    return new AST1(Map, a0);
+  public static IAST Map(final IExpr f) {
+    return new AST1(Map, f);
   }
 
-  public static IAST Map(final IExpr a0, final IExpr a1) {
-    return new AST2(Map, a0, a1);
+  public static IAST Map(final IExpr f, final IExpr expr) {
+    return new AST2(Map, f, expr);
   }
 
-  public static IAST Map(final IExpr a0, final IExpr a1, final IExpr a2) {
-    return new AST3(Map, a0, a1, a2);
+  public static IAST Map(final IExpr f, final IExpr expr, final IExpr levelspec) {
+    return new AST3(Map, f, expr, levelspec);
   }
 
-  public static IAST MapThread(final IExpr a0, final IExpr a1) {
-    return new AST2(MapThread, a0, a1);
+  public static IAST MapThread(final IExpr f, final IExpr expr) {
+    return new AST2(MapThread, f, expr);
   }
 
   public static IAST MapAll(final IExpr a0) {
-
     return new AST1(MapAll, a0);
   }
 
-  public static IAST MatchQ(final IExpr a0, final IExpr a1) {
-    return new AST2(MatchQ, a0, a1);
+  public static IAST MatchQ(final IExpr expr, final IExpr form) {
+    return new AST2(MatchQ, expr, form);
   }
 
-  public static IAST MathMLForm(final IExpr a0) {
-    return new AST1(MathMLForm, a0);
+  public static IAST MathMLForm(final IExpr expr) {
+    return new AST1(MathMLForm, expr);
   }
 
-  public static IAST MatrixD(final IExpr a0, final IExpr a1) {
-    return new AST2(MatrixD, a0, a1);
+  public static IAST MatrixD(final IExpr expr, final IExpr x) {
+    return new AST2(MatrixD, expr, x);
   }
 
   public static IAST MatrixExp(final IExpr a0) {
@@ -5428,9 +5482,8 @@ public class F extends S {
     return new AST1(MatrixForm, a0);
   }
 
-  public static IAST MatrixPower(final IExpr a0, final IExpr a1) {
-
-    return new AST2(MatrixPower, a0, a1);
+  public static IAST MatrixPower(final IExpr matrix, final IExpr n) {
+    return new AST2(MatrixPower, matrix, n);
   }
 
   public static IASTAppendable Max() {
@@ -5453,24 +5506,24 @@ public class F extends S {
     return new AST2(Maximize, a0, a1);
   }
 
-  public static IAST Mean(final IExpr a0) {
-    return new AST1(Mean, a0);
+  public static IAST Mean(final IExpr list) {
+    return new AST1(Mean, list);
   }
 
-  public static IAST MeanDeviation(final IExpr a0) {
-    return new AST1(MeanDeviation, a0);
+  public static IAST MeanDeviation(final IExpr list) {
+    return new AST1(MeanDeviation, list);
   }
 
-  public static IAST Median(final IExpr a0) {
-    return new AST1(Median, a0);
+  public static IAST Median(final IExpr list) {
+    return new AST1(Median, list);
   }
 
   public static IAST MeijerG(final IExpr a0, final IExpr a1, final IExpr a2) {
     return new AST3(MeijerG, a0, a1, a2);
   }
 
-  public static IAST MemberQ(final IExpr a0, final IExpr a1) {
-    return new B2.MemberQ(a0, a1);
+  public static IAST MemberQ(final IExpr list, final IExpr form) {
+    return new B2.MemberQ(list, form);
   }
 
   public static IAST MessageName(final IExpr a0, final IExpr a1) {
@@ -5649,8 +5702,8 @@ public class F extends S {
     return new B2.Times(CN1, x);
   }
 
-  public static IAST Negative(final IExpr a0) {
-    return new AST1(Negative, a0);
+  public static IAST Negative(final IExpr x) {
+    return new AST1(Negative, x);
   }
 
   public static IAST Nest(final IExpr a0, final IExpr a1, final int n) {
@@ -5701,8 +5754,8 @@ public class F extends S {
     return new B1.Not(a);
   }
 
-  public static IAST NotElement(final IExpr a0, final IExpr a1) {
-    return new AST2(NotElement, a0, a1);
+  public static IAST NotElement(final IExpr x, final IExpr domain) {
+    return new AST2(NotElement, x, domain);
   }
 
   public static IAST NullSpace(final IExpr a0) {
@@ -5786,8 +5839,8 @@ public class F extends S {
     return new AST1(NumberQ, a0);
   }
 
-  public static IAST Numerator(final IExpr a0) {
-    return new AST1(Numerator, a0);
+  public static IAST Numerator(final IExpr expr) {
+    return new AST1(Numerator, expr);
   }
 
   /**
@@ -5954,7 +6007,7 @@ public class F extends S {
    * href="https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/Part.md">Part</a>
    */
   public static IASTAppendable Part(final int extraSize, final IExpr... a) {
-    IASTAppendable part = F.ast(Part, a.length + extraSize + 1, false);
+    IASTAppendable part = F.ast(Part, a.length + extraSize + 1);
     for (int i = 0; i < a.length; i++) {
       part.append(a[i]);
     }
@@ -6057,11 +6110,11 @@ public class F extends S {
    * See: <a
    * href="https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/Plus.md">Plus</a>
    *
-   * @param size
+   * @param initialCapacity the initialCapacity of this AST
    * @return
    */
-  public static IASTAppendable PlusAlloc(int size) {
-    return ast(Plus, size, false);
+  public static IASTAppendable PlusAlloc(int initialCapacity) {
+    return ast(Plus, initialCapacity);
   }
 
   /**
@@ -6088,11 +6141,11 @@ public class F extends S {
    * <p>See: <a
    * href="https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/Plus.md">Plus</a>
    */
-  public static IAST Plus(final IExpr a1, final IExpr a2) {
-    if (a1 != null && a2 != null) {
-      return binaryASTOrderless(IExpr::isPlus, S.Plus, a1, a2);
+  public static IAST Plus(final IExpr x, final IExpr y) {
+    if (x != null && y != null) {
+      return binaryASTOrderless(IExpr::isPlus, S.Plus, x, y);
     }
-    return new B2.Plus(a1, a2);
+    return new B2.Plus(x, y);
   }
 
   /**
@@ -6101,8 +6154,8 @@ public class F extends S {
    * <p>See: <a
    * href="https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/Plus.md">Plus</a>
    */
-  public static IAST Plus(final IExpr a0, final IExpr a1, final IExpr a2) {
-    return new AST3(Plus, a0, a1, a2);
+  public static IAST Plus(final IExpr x, final IExpr y, final IExpr z) {
+    return new AST3(Plus, x, y, z);
   }
 
   /**
@@ -6112,7 +6165,7 @@ public class F extends S {
    * href="https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/Plus.md">Plus</a>
    */
   public static IAST Plus(final long num, final IExpr... a) {
-    IASTAppendable ast = ast(Plus, a.length + 1, false);
+    IASTAppendable ast = ast(Plus, a.length + 1);
     ast.append(ZZ(num));
     ast.appendAll(a, 0, a.length);
     return ast;
@@ -6751,36 +6804,36 @@ public class F extends S {
     return new AST2(Roots, a0, a1);
   }
 
-  public static IAST Round(final IExpr a0) {
-    return new AST1(Round, a0);
+  public static IAST Round(final IExpr x) {
+    return new AST1(Round, x);
   }
 
-  public static IAST RowReduce(final IExpr a0) {
-    return new AST1(RowReduce, a0);
+  public static IAST RowReduce(final IExpr m) {
+    return new AST1(RowReduce, m);
   }
 
-  public static IAST Rule(final String str, final IExpr a1) {
-    return new B2.Rule(F.$str(str), a1);
+  public static IAST Rule(final String lhsStr, final IExpr rhs) {
+    return new B2.Rule(F.$str(lhsStr), rhs);
   }
 
-  public static IAST Rule(final String str0, final String str1) {
-    return new B2.Rule(F.$str(str0), F.$str(str1));
+  public static IAST Rule(final String lhsStr, final String rhsStr) {
+    return new B2.Rule(F.$str(lhsStr), F.$str(rhsStr));
   }
 
-  public static IAST Rule(final IExpr a0, final IExpr a1) {
-    return new B2.Rule(a0, a1);
+  public static IAST Rule(final IExpr lhs, final IExpr rhs) {
+    return new B2.Rule(lhs, rhs);
   }
 
-  public static IAST Rule(final IExpr a0, final String str1) {
-    return new B2.Rule(a0, F.$str(str1));
+  public static IAST Rule(final IExpr lhs, final String rhsStr) {
+    return new B2.Rule(lhs, F.$str(rhsStr));
   }
 
-  public static IAST RuleDelayed(final IExpr a0, final IExpr a1) {
-    return new B2.RuleDelayed(a0, a1);
+  public static IAST RuleDelayed(final IExpr lhs, final IExpr rhs) {
+    return new B2.RuleDelayed(lhs, rhs);
   }
 
-  public static IAST SameQ(final IExpr a0, final IExpr a1) {
-    return new B2.SameQ(a0, a1);
+  public static IAST SameQ(final IExpr lhs, final IExpr rhs) {
+    return new B2.SameQ(lhs, rhs);
   }
 
   public static IAST SatisfiabilityInstances(final IExpr a0, final IExpr a1, final IExpr a2) {
@@ -6795,12 +6848,12 @@ public class F extends S {
     return new AST2(Scan, a0, a1);
   }
 
-  public static IAST Sec(final IExpr a0) {
-    return new AST1(Sec, a0);
+  public static IAST Sec(final IExpr z) {
+    return new AST1(Sec, z);
   }
 
-  public static IAST Sech(final IExpr a0) {
-    return new AST1(Sech, a0);
+  public static IAST Sech(final IExpr z) {
+    return new AST1(Sech, z);
   }
 
   public static IAST Select(final IExpr a0, final IExpr a1, final IExpr a2) {
@@ -6846,61 +6899,61 @@ public class F extends S {
     return function(SeriesData, a);
   }
 
-  public static IAST Set(final IExpr a0, final IExpr a1) {
-    return new B2.B2Set(a0, a1);
+  public static IAST Set(final IExpr lhs, final IExpr rhs) {
+    return new B2.B2Set(lhs, rhs);
   }
 
-  public static IAST SetAttributes(final IExpr a0) {
-    return new AST1(SetAttributes, a0);
+  public static IAST SetAttributes(final IExpr symbol, final IExpr attribute) {
+    return new AST2(SetAttributes, symbol, attribute);
   }
 
-  public static IAST SetAttributes(final IExpr a0, final IExpr a1) {
-    return new AST2(SetAttributes, a0, a1);
-  }
-
-  public static IAST SetDelayed(final IExpr a0, final IExpr a1) {
-    return new AST2(SetDelayed, a0, a1);
+  public static IAST SetDelayed(final IExpr lhs, final IExpr rhs) {
+    return new AST2(SetDelayed, lhs, rhs);
   }
 
   public static IAST Show(final IExpr a0) {
     return new AST1(Show, a0);
   }
 
-  public static IAST Sign(final IExpr a) {
-    return new AST1(Sign, a);
+  public static IAST Sign(final IExpr z) {
+    return new AST1(Sign, z);
   }
 
   public static IAST Signature(final IExpr a) {
     return new AST1(Signature, a);
   }
 
-  public static IAST SignCmp(final IExpr a0) {
-    return new AST1(SignCmp, a0);
+  public static IAST SignCmp(final IExpr z) {
+    return new AST1(SignCmp, z);
   }
 
-  public static IAST Simplify(final IExpr a0) {
-    return new AST1(S.Simplify, a0);
+  public static IAST Simplify(final IExpr expr) {
+    return new AST1(S.Simplify, expr);
   }
 
-  public static IAST Sin(final IExpr a0) {
-    return new B1.Sin(a0);
+  public static IAST Simplify(final IExpr expr, final IExpr assum) {
+    return new AST2(Simplify, expr, assum);
   }
 
-  public static IAST Sinc(final IExpr a0) {
-    return new AST1(Sinc, a0);
+  public static IAST Sin(final IExpr z) {
+    return new B1.Sin(z);
   }
 
-  public static IAST Sinh(final IExpr a0) {
-
-    return new AST1(Sinh, a0);
+  public static IAST Sinc(final IExpr z) {
+    return new AST1(Sinc, z);
   }
 
-  public static IAST SinhIntegral(final IExpr a) {
-    return new AST1(SinhIntegral, a);
+  public static IAST Sinh(final IExpr z) {
+
+    return new AST1(Sinh, z);
   }
 
-  public static IAST SinIntegral(final IExpr a) {
-    return new AST1(SinIntegral, a);
+  public static IAST SinhIntegral(final IExpr z) {
+    return new AST1(SinhIntegral, z);
+  }
+
+  public static IAST SinIntegral(final IExpr z) {
+    return new AST1(SinIntegral, z);
   }
 
   public static IAST Skewness(final IExpr a0) {
@@ -7027,12 +7080,12 @@ public class F extends S {
     return new AST2(StieltjesGamma, a0, a1);
   }
 
-  public static IAST StirlingS1(final IExpr a0, final IExpr a1) {
-    return new AST2(StirlingS1, a0, a1);
+  public static IAST StirlingS1(final IExpr n, final IExpr m) {
+    return new AST2(StirlingS1, n, m);
   }
 
-  public static IAST StirlingS2(final IExpr a0, final IExpr a1) {
-    return new AST2(StirlingS2, a0, a1);
+  public static IAST StirlingS2(final IExpr n, final IExpr m) {
+    return new AST2(StirlingS2, n, m);
   }
 
   public static IAST StringJoin(final IExpr a) {
@@ -7126,8 +7179,8 @@ public class F extends S {
     return new AST1(Subfactorial, a0);
   }
 
-  public static IAST Subscript(final IExpr a0, final IExpr a1) {
-    return new AST2(Subscript, a0, a1);
+  public static IAST Subscript(final IExpr x, final IExpr y) {
+    return new AST2(Subscript, x, y);
   }
 
   /**
@@ -7266,8 +7319,8 @@ public class F extends S {
     return intIterator(S.Plus, function, iMin, iMax, iStep);
   }
 
-  public static IAST Superscript(final IExpr a0, final IExpr a1) {
-    return new AST2(Superscript, a0, a1);
+  public static IAST Superscript(final IExpr x, final IExpr y) {
+    return new AST2(Superscript, x, y);
   }
 
   public static IASTAppendable SurfaceGraphics() {
@@ -7307,16 +7360,16 @@ public class F extends S {
    * See <a href=
    * "https://github.com/axkr/symja_android_library/blob/master/symja_android_library/doc/functions/Tan.md">Tan</a>
    */
-  public static IAST Tan(final IExpr a0) {
-    return new B1.Tan(a0);
+  public static IAST Tan(final IExpr z) {
+    return new B1.Tan(z);
   }
 
   /**
    * See <a href=
    * "https://github.com/axkr/symja_android_library/blob/master/symja_android_library/doc/functions/Tanh.md">Tanh</a>
    */
-  public static IAST Tanh(final IExpr a0) {
-    return new AST1(Tanh, a0);
+  public static IAST Tanh(final IExpr z) {
+    return new AST1(Tanh, z);
   }
 
   public static IAST Taylor(final IExpr a0, final IExpr a1) {
@@ -7339,13 +7392,8 @@ public class F extends S {
    * See <a href=
    * "https://github.com/axkr/symja_android_library/blob/master/symja_android_library/doc/functions/TeXForm.md">TeXForm</a>
    */
-  public static IAST TeXForm(final IExpr a0) {
-    return new AST1(TeXForm, a0);
-  }
-
-  public static final IASTMutable ternary(
-      final IExpr head, final IExpr a0, final IExpr a1, final IExpr a2) {
-    return new AST(new IExpr[] {head, a0, a1, a2});
+  public static IAST TeXForm(final IExpr expr) {
+    return new AST1(TeXForm, expr);
   }
 
   /**
@@ -7415,19 +7463,19 @@ public class F extends S {
    * Create a Times() function with allocated space for size elements. See: <a
    * href="https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/Times.md">Times</a>
    *
-   * @param size
+   * @param initialCapacity the initialCapacity of this AST
    * @return
    */
-  public static IASTAppendable TimesAlloc(int size) {
-    return ast(Times, size, false);
+  public static IASTAppendable TimesAlloc(int initialCapacity) {
+    return ast(Times, initialCapacity);
   }
 
   /**
    * See: <a
    * href="https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/Times.md">Times</a>
    */
-  public static IASTAppendable Times(final IExpr a0) {
-    return unary(Times, a0);
+  public static IASTAppendable Times(final IExpr x) {
+    return unary(Times, x);
   }
 
   /**
@@ -7441,16 +7489,16 @@ public class F extends S {
   }
 
   /**
-   * Define a <code>Times()</code> expression <code>a1 * a2</code> for multiplication.
+   * Define a <code>Times()</code> expression <code>x * y</code> for multiplication.
    *
    * <p>See: <a
    * href="https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/Times.md">Times</a>
    */
-  public static IASTMutable Times(final IExpr a1, final IExpr a2) {
-    if (a1 != null && a2 != null) {
-      return binaryASTOrderless(IExpr::isTimes, S.Times, a1, a2);
+  public static IASTMutable Times(final IExpr x, final IExpr y) {
+    if (x != null && y != null) {
+      return binaryASTOrderless(IExpr::isTimes, S.Times, x, y);
     }
-    return new B2.Times(a1, a2);
+    return new B2.Times(x, y);
   }
 
   /**
@@ -7459,8 +7507,8 @@ public class F extends S {
    * <p>See: <a
    * href="https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/Times.md">Times</a>
    */
-  public static IASTMutable Times(final IExpr a0, final IExpr a1, final IExpr a2) {
-    return new AST3(Times, a0, a1, a2);
+  public static IASTMutable Times(final IExpr x, final IExpr y, final IExpr z) {
+    return new AST3(Times, x, y, z);
   }
 
   private static IASTMutable binaryASTOrderless(
@@ -7470,7 +7518,7 @@ public class F extends S {
     if (test1 || test2) {
       int size = test1 ? a1.size() : 1;
       size += test2 ? a2.size() : 1;
-      IASTAppendable result = ast(symbol, size, false);
+      IASTAppendable result = ast(symbol, size);
       if (test1) {
         result.appendArgs((IAST) a1);
       } else {
@@ -7496,7 +7544,7 @@ public class F extends S {
    * href="https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/Times.md">Times</a>
    */
   public static IAST Times(final long num, final IExpr... a) {
-    IASTAppendable ast = ast(Times, a.length + 1, false);
+    IASTAppendable ast = ast(Times, a.length + 1);
     ast.append(ZZ(num));
     ast.appendAll(a, 0, a.length);
     return ast;
@@ -7542,40 +7590,40 @@ public class F extends S {
    * See <a href=
    * "https://github.com/axkr/symja_android_library/blob/master/symja_android_library/doc/functions/Transpose.md">Transpose</a>
    */
-  public static IAST Transpose(final IExpr a0) {
-    return new AST1(Transpose, a0);
+  public static IAST Transpose(final IExpr list) {
+    return new AST1(Transpose, list);
   }
 
   /**
    * See <a href=
    * "https://github.com/axkr/symja_android_library/blob/master/symja_android_library/doc/functions/TrigExpand.md">TrigExpand</a>
    */
-  public static IAST TrigExpand(final IExpr a0) {
-    return new AST1(TrigExpand, a0);
+  public static IAST TrigExpand(final IExpr expr) {
+    return new AST1(TrigExpand, expr);
   }
 
   /**
    * See <a href=
    * "https://github.com/axkr/symja_android_library/blob/master/symja_android_library/doc/functions/TrigReduce.md">TrigReduce</a>
    */
-  public static IAST TrigReduce(final IExpr v) {
-    return new AST1(TrigReduce, v);
+  public static IAST TrigReduce(final IExpr expr) {
+    return new AST1(TrigReduce, expr);
   }
 
   /**
    * See <a href=
    * "https://github.com/axkr/symja_android_library/blob/master/symja_android_library/doc/functions/TrigToExp.md">TrigToExp</a>
    */
-  public static IAST TrigToExp(final IExpr a0) {
-    return new AST1(TrigToExp, a0);
+  public static IAST TrigToExp(final IExpr expr) {
+    return new AST1(TrigToExp, expr);
   }
 
   /**
    * See <a href=
    * "https://github.com/axkr/symja_android_library/blob/master/symja_android_library/doc/functions/TrueQ.md">TrueQ</a>
    */
-  public static IAST TrueQ(final IExpr a0) {
-    return new AST1(TrueQ, a0);
+  public static IAST TrueQ(final IExpr expr) {
+    return new AST1(TrueQ, expr);
   }
 
   /**
@@ -7605,20 +7653,20 @@ public class F extends S {
     return new B2.UndirectedEdge(a0, a1);
   }
 
-  public static IAST Unequal(final IExpr a0, final IExpr a1) {
-    return new AST2(Unequal, a0, a1);
+  public static IAST Unequal(final IExpr lhs, final IExpr rhs) {
+    return new AST2(Unequal, lhs, rhs);
   }
 
   public static IAST Unevaluated(final IExpr a0) {
     return new AST1(Unevaluated, a0);
   }
 
-  public static IAST Union(final IExpr a0) {
-    return new AST1(Union, a0);
+  public static IAST Union(final IExpr list1) {
+    return new AST1(Union, list1);
   }
 
-  public static IAST Union(final IExpr a0, final IExpr a1) {
-    return new AST2(Union, a0, a1);
+  public static IAST Union(final IExpr list1, final IExpr list2) {
+    return new AST2(Union, list1, list2);
   }
 
   public static IAST Unique(final IExpr a0) {
@@ -7637,8 +7685,8 @@ public class F extends S {
     return new AST1(UnitStep, a0);
   }
 
-  public static IAST UnsameQ(final IExpr a0, final IExpr a1) {
-    return new AST2(UnsameQ, a0, a1);
+  public static IAST UnsameQ(final IExpr lhs, final IExpr rhs) {
+    return new AST2(UnsameQ, lhs, rhs);
   }
 
   public static IAST Unset(final IExpr a0) {
@@ -7695,12 +7743,12 @@ public class F extends S {
     return new AST1(ZeroSymmetric, a0);
   }
 
-  public static IAST Zeta(final IExpr a0) {
-    return new AST1(Zeta, a0);
+  public static IAST Zeta(final IExpr s) {
+    return new AST1(Zeta, s);
   }
 
-  public static IAST Zeta(final IExpr a0, final IExpr a1) {
-    return new AST2(Zeta, a0, a1);
+  public static IAST Zeta(final IExpr s, final IExpr a) {
+    return new AST2(Zeta, s, a);
   }
 
   /**
@@ -7759,7 +7807,7 @@ public class F extends S {
         case 3:
           return new AST3(ast1.topHead(), ast1.arg1(), head.arg1(), head.arg2());
         default:
-          IASTAppendable result = F.ast(ast1.topHead(), head.size() + 1, false);
+          IASTAppendable result = F.ast(ast1.topHead(), head.size() + 1);
           result.append(ast1.arg1());
           result.appendArgs(head);
           return result;
@@ -8111,7 +8159,7 @@ public class F extends S {
           if (x.isSequence()) {
             IAST seq = (IAST) x;
             if (!seqResult[0].isPresent()) {
-              seqResult[0] = ast(list.head(), list.size() + seq.size(), false);
+              seqResult[0] = ast(list.head(), list.size() + seq.size());
               seqResult[0].appendArgs(list, i);
             }
             seqResult[0].appendArgs(seq);
@@ -8119,7 +8167,7 @@ public class F extends S {
           } else if (x.equals(S.Nothing)) {
             if ((ISymbol.HOLDALL & attr) == ISymbol.NOATTRIBUTE) {
               if (!seqResult[0].isPresent()) {
-                seqResult[0] = ast(list.head(), list.size() - 1, false);
+                seqResult[0] = ast(list.head(), list.size() - 1);
                 seqResult[0].appendArgs(list, i);
               }
               return;
