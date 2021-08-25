@@ -209,11 +209,11 @@ public class MainTestCase extends AbstractTestCase {
 
   public void testBeep() {
     String s = System.getProperty("os.name");
-    if (s.contains("Windows")) {
-      //      check(
-      //          "Beep()", //
-      //          "");
-    }
+    //    if (s.contains("Windows")) {
+    //      check(
+    //          "Beep()", //
+    //          "");
+    //    }
   }
 
   public void testQuit() {
