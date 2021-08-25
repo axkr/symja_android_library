@@ -312,13 +312,13 @@ public class Derivative extends AbstractFunctionEvaluator implements DerivativeR
         }
       }
     } else {
-      temp = engine.evalLoop(newFunction);
+      temp = engine.evaluateNIL(newFunction);
       if (temp.isPresent()) {
         doEval = true;
       }
     }
     if (doEval) {
-      dExpr = F.ast(S.D, list.size() + 1, false);
+      dExpr = F.ast(S.D, list.size() + 1);
       dExpr.append(temp);
       dExpr.appendArgs(list); // w.r.t these symbols
       return F.Function(engine.evaluate(dExpr));

@@ -12,7 +12,6 @@ import java.util.concurrent.atomic.AtomicLong;
 import java.util.function.DoubleUnaryOperator;
 import java.util.function.Predicate;
 import java.util.function.Supplier;
-
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.apfloat.FixedPrecisionApfloatHelper;
@@ -68,7 +67,6 @@ import org.matheclipse.core.patternmatching.RulesData;
 import org.matheclipse.core.visit.ModuleReplaceAll;
 import org.matheclipse.parser.client.FEConfig;
 import org.matheclipse.parser.client.math.MathException;
-
 import com.google.common.cache.Cache;
 
 /**
@@ -496,7 +494,7 @@ public class EvalEngine implements Serializable {
    */
   public IExpr addEvaluatedTraceStep(IExpr inputExpr, IExpr rewrittenExpr, IExpr... list) {
     if (fTraceStack != null) {
-      IASTAppendable listOfHints = F.ast(S.List, list.length + 1, false);
+      IASTAppendable listOfHints = F.ast(S.List, list.length + 1);
       listOfHints.appendAll(list, 0, list.length);
       fTraceStack.add(inputExpr, rewrittenExpr, getRecursionCounter(), -1, listOfHints);
       IExpr evaluatedResult = evaluate(rewrittenExpr);
@@ -1436,9 +1434,10 @@ public class EvalEngine implements Serializable {
    *
    * @param expr the expression which should be evaluated
    * @return the evaluated expression or <code>F.NIL</code> if evaluation isn't possible
-   * @see EvalEngine#evalWithoutNumericReset(IExpr)
+   * @see #evalWithoutNumericReset(IExpr)
+   * @see #evaluateNIL(IExpr)
    */
-  public final IExpr evalLoop(final IExpr expr) {
+  private final IExpr evalLoop(final IExpr expr) {
     if (expr == null || !expr.isPresent()) {
       if (Config.FUZZ_TESTING) {
         throw new NullPointerException();
