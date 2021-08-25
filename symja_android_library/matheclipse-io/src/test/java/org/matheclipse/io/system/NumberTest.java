@@ -1,6 +1,5 @@
 package org.matheclipse.io.system;
 
-import java.io.IOException;
 import java.math.BigInteger;
 import java.text.DecimalFormat;
 import java.text.DecimalFormatSymbols;

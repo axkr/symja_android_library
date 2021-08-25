@@ -4,8 +4,6 @@ import org.matheclipse.core.basic.Config;
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.io.system.AbstractTestCase;
 
-import com.fasterxml.jackson.databind.node.ObjectNode;
-
 /** Tests for string functions */
 public class ExportImportFunctionsJUnit extends AbstractTestCase {
 

@@ -5,7 +5,6 @@ import org.matheclipse.core.interfaces.IExpr;
 
 import tech.tablesaw.api.ColumnType;
 import tech.tablesaw.api.ExprColumn;
-import tech.tablesaw.api.TextColumn;
 import tech.tablesaw.columns.AbstractColumnType;
 import tech.tablesaw.columns.numbers.IExprParser;
 import tech.tablesaw.io.ReadOptions;

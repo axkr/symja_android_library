@@ -1,7 +1,6 @@
 package org.matheclipse.core.builtin;
 
 import java.util.HashMap;
-import java.util.Iterator;
 import java.util.Map;
 import java.util.function.Function;
 

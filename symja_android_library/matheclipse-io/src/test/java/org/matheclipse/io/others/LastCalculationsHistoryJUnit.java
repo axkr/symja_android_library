@@ -1,7 +1,5 @@
 package org.matheclipse.io.others;
 
-import static org.junit.Assert.assertEquals;
-
 import org.matheclipse.core.eval.EvalHistory;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.parser.client.FEConfig;

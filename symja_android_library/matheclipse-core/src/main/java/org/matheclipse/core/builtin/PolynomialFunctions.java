@@ -1,24 +1,15 @@
 package org.matheclipse.core.builtin;
 
-import static org.matheclipse.core.expression.F.C0;
-import static org.matheclipse.core.expression.F.evalExpandAll;
-
 import java.math.BigInteger;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
 import java.util.TreeSet;
 
-import org.hipparchus.analysis.solvers.LaguerreSolver;
-import org.hipparchus.linear.Array2DRowRealMatrix;
-import org.hipparchus.linear.EigenDecomposition;
-import org.hipparchus.linear.RealMatrix;
 import org.matheclipse.core.basic.Config;
-import org.matheclipse.core.convert.Expr2Object;
 import org.matheclipse.core.convert.JASConvert;
 import org.matheclipse.core.convert.JASIExpr;
 import org.matheclipse.core.convert.JASModInteger;
-import org.matheclipse.core.convert.Object2Expr;
 import org.matheclipse.core.convert.VariablesSet;
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.exception.ASTElementLimitExceeded;
@@ -35,20 +26,15 @@ import org.matheclipse.core.expression.F;
 import org.matheclipse.core.expression.S;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IASTAppendable;
-import org.matheclipse.core.interfaces.IASTMutable;
-import org.matheclipse.core.interfaces.IEvalStepListener;
 import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.interfaces.IInteger;
-import org.matheclipse.core.interfaces.INumber;
 import org.matheclipse.core.interfaces.IRational;
 import org.matheclipse.core.interfaces.ISignedNumber;
 import org.matheclipse.core.interfaces.ISymbol;
 import org.matheclipse.core.numbertheory.Primality;
 import org.matheclipse.core.patternmatching.IPatternMatcher;
 import org.matheclipse.core.polynomials.PolynomialsUtils;
-import org.matheclipse.core.polynomials.QuarticSolver;
 import org.matheclipse.core.polynomials.longexponent.ExpVectorLong;
-import org.matheclipse.core.polynomials.longexponent.ExprMonomial;
 import org.matheclipse.core.polynomials.longexponent.ExprPolynomial;
 import org.matheclipse.core.polynomials.longexponent.ExprPolynomialRing;
 import org.matheclipse.core.polynomials.longexponent.ExprRingFactory;
@@ -68,8 +54,6 @@ import edu.jas.arith.ModLong;
 import edu.jas.arith.ModLongRing;
 import edu.jas.gb.GroebnerBaseAbstract;
 import edu.jas.gbufd.GroebnerBasePartial;
-import edu.jas.poly.Complex;
-import edu.jas.poly.ComplexRing;
 import edu.jas.poly.ExpVector;
 import edu.jas.poly.GenPolynomial;
 import edu.jas.poly.Monomial;
@@ -77,15 +61,9 @@ import edu.jas.poly.OptimizedPolynomialList;
 import edu.jas.poly.OrderedPolynomialList;
 import edu.jas.poly.TermOrder;
 import edu.jas.poly.TermOrderByName;
-import edu.jas.root.ComplexRootsAbstract;
-import edu.jas.root.ComplexRootsSturm;
-import edu.jas.root.InvalidBoundaryException;
-import edu.jas.root.Rectangle;
 import edu.jas.ufd.GCDFactory;
 import edu.jas.ufd.GreatestCommonDivisor;
 import edu.jas.ufd.GreatestCommonDivisorAbstract;
-import edu.jas.ufd.Squarefree;
-import edu.jas.ufd.SquarefreeFactory;
 
 public class PolynomialFunctions {
 

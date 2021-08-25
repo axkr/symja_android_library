@@ -1,9 +1,5 @@
 package org.matheclipse.core.rubi;
 
-import org.matheclipse.core.eval.EvalEngine;
-import org.matheclipse.core.eval.ExprEvaluator;
-import org.matheclipse.core.expression.F;
-
 public class Logarithms extends AbstractRubiTestCase {
   static boolean init = true;
 

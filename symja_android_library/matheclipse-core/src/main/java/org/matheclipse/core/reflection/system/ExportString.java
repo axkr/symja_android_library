@@ -29,8 +29,6 @@ import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.interfaces.IStringX;
 import org.matheclipse.core.io.Extension;
 
-import com.fasterxml.jackson.databind.JsonNode;
-
 /** Export some data into a string representation */
 public class ExportString extends AbstractEvaluator {
 

@@ -1,9 +1,5 @@
 package org.matheclipse.io.system;
 
-import java.util.Locale;
-import java.util.Map;
-import java.util.TreeMap;
-
 import org.matheclipse.core.basic.Config;
 import org.matheclipse.core.eval.EvalEngine;
 

@@ -3,7 +3,6 @@ package org.matheclipse.core.expression.data;
 import org.hipparchus.FieldElement;
 import org.hipparchus.complex.Complex;
 import org.hipparchus.linear.FieldDecompositionSolver;
-import org.matheclipse.core.basic.Config;
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.expression.DataExpr;
 import org.matheclipse.core.expression.F;

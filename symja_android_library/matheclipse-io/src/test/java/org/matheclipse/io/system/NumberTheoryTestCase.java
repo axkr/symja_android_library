@@ -4,9 +4,6 @@ import java.math.BigInteger;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.SortedMap;
-import java.util.TreeMap;
-
-import org.matheclipse.core.basic.Config;
 import org.matheclipse.core.numbertheory.IPrimality;
 import org.matheclipse.core.numbertheory.Primality;
 import org.matheclipse.gpl.numbertheory.BigIntegerPrimality;

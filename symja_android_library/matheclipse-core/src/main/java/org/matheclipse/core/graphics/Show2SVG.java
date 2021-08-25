@@ -3,9 +3,6 @@ package org.matheclipse.core.graphics;
 import java.text.DecimalFormat;
 import java.text.DecimalFormatSymbols;
 import java.util.Locale;
-import org.matheclipse.core.builtin.GraphicsFunctions;
-import org.matheclipse.core.expression.S;
-import org.matheclipse.core.interfaces.IAST;
 
 public class Show2SVG {
 

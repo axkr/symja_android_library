@@ -1,7 +1,5 @@
 package org.matheclipse.core.patternmatching;
 
-import static org.matheclipse.core.patternmatching.IPatternMap.addOptionsPattern;
-
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Arrays;

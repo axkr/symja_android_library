@@ -1,16 +1,9 @@
 package org.matheclipse.io.others;
 
-import static org.apfloat.internal.LongRadixConstants.BASE_DIGITS;
-
-import java.io.IOException;
-import java.io.StringWriter;
-import java.io.Writer;
 import java.math.RoundingMode;
 
 import org.apfloat.Apfloat;
 import org.apfloat.ApfloatMath;
-import org.apfloat.ApfloatRuntimeException;
-import org.apfloat.spi.DataStorage;
 
 public class ApfloatOutput {
   public static void main(String[] args) {

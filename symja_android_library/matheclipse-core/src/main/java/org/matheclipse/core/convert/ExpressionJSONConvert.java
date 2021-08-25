@@ -1,7 +1,5 @@
 package org.matheclipse.core.convert;
 
-import static org.matheclipse.core.expression.F.CD0;
-import static org.matheclipse.core.expression.F.RGBColor;
 import java.io.IOException;
 import org.apfloat.Apfloat;
 import org.matheclipse.core.expression.ApfloatNum;

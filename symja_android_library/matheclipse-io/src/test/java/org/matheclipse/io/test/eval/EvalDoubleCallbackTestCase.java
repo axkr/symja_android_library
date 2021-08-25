@@ -5,7 +5,6 @@ import java.util.HashSet;
 
 import org.junit.Assert;
 import org.matheclipse.core.eval.CoreCallbackFunction;
-import org.matheclipse.core.eval.exception.SymjaMathException;
 import org.matheclipse.parser.client.FEConfig;
 import org.matheclipse.parser.client.eval.BooleanVariable;
 import org.matheclipse.parser.client.eval.DoubleEvaluator;

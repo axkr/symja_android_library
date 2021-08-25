@@ -1,7 +1,6 @@
 package org.matheclipse.io.system;
 
 import org.junit.jupiter.api.Disabled;
-import org.matheclipse.io.system.AbstractTestCase;
 
 /** View with: http://www.rapidtables.com/web/tools/svg-viewer-editor.htm */
 public class Graphics3DTestCase extends AbstractTestCase {

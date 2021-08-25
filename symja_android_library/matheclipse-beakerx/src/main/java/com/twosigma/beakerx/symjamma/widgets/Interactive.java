@@ -15,14 +15,9 @@
  */
 package com.twosigma.beakerx.symjamma.widgets;
 
-import com.twosigma.beakerx.message.Message;
 import com.twosigma.beakerx.widget.InteractiveBase;
-import com.twosigma.beakerx.widget.ValueWidget;
-import com.twosigma.beakerx.widget.Widget;
 import com.twosigma.beakerx.widget.Label;
 
-import java.util.ArrayList;
-import java.util.List;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 

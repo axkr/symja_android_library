@@ -1,7 +1,5 @@
 package org.matheclipse.core.eval.interfaces;
 
-import java.util.Iterator;
-
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.interfaces.IAST;
@@ -9,8 +7,6 @@ import org.matheclipse.core.interfaces.IASTAppendable;
 import org.matheclipse.core.interfaces.IBuiltInSymbol;
 import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.interfaces.ISymbol;
-import org.matheclipse.core.patternmatching.IPatternMap;
-import org.matheclipse.core.patternmatching.IPatternMatcher;
 
 public abstract class AbstractCoreFunctionOptionEvaluator extends AbstractCoreFunctionEvaluator {
   protected IBuiltInSymbol[] optionSymbols = null;

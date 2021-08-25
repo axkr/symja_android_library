@@ -1,12 +1,8 @@
 package org.matheclipse.core.reflection.system;
 
 import org.hipparchus.complex.Complex;
-import org.hipparchus.transform.DftNormalization;
-import org.hipparchus.transform.FastFourierTransformer;
-import org.hipparchus.transform.TransformType;
 import org.matheclipse.core.builtin.IOFunctions;
 import org.matheclipse.core.convert.Convert;
-import org.matheclipse.core.convert.Object2Expr;
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.interfaces.AbstractFunctionEvaluator;
 import org.matheclipse.core.eval.interfaces.IFunctionEvaluator;

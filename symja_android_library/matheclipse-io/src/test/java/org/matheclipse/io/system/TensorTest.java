@@ -1,10 +1,7 @@
 package org.matheclipse.io.system;
 
 import org.matheclipse.core.basic.Config;
-import org.matheclipse.core.basic.ToggleFeature;
 import org.matheclipse.core.eval.EvalEngine;
-import org.matheclipse.core.expression.F;
-import org.matheclipse.script.engine.MathScriptEngine;
 
 /** Tests for tensor functions */
 public class TensorTest extends AbstractTestCase {

@@ -1,8 +1,6 @@
 package org.matheclipse.io.others;
 
 import org.matheclipse.core.form.ApfloatToMMA;
-import org.matheclipse.core.form.DoubleToMMA;
-
 import junit.framework.TestCase;
 
 /** Convert a <code>Apfloat</code> value into a string similar to the Mathematica output format. */
