@@ -1,8 +1,5 @@
 package org.matheclipse.core.rubi.independent;
 
-import org.matheclipse.core.eval.EvalEngine;
-import org.matheclipse.core.eval.ExprEvaluator;
-import org.matheclipse.core.expression.F;
 import org.matheclipse.core.rubi.AbstractRubiTestCase;
 
 public class TimofeevProblemsTests extends AbstractRubiTestCase {

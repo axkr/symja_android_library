@@ -10,7 +10,6 @@ import java.time.LocalDateTime;
 import java.util.Calendar;
 import java.util.Locale;
 
-import org.apfloat.Apcomplex;
 import org.apfloat.Apfloat;
 import org.apfloat.Apint;
 import org.apfloat.Aprational;
@@ -21,8 +20,6 @@ import org.matheclipse.core.eval.EvalHistory;
 import org.matheclipse.core.eval.interfaces.AbstractSymbolEvaluator;
 import org.matheclipse.core.eval.interfaces.ISetValueEvaluator;
 import org.matheclipse.core.eval.interfaces.ISignedNumberConstant;
-import org.matheclipse.core.eval.util.Assumptions;
-import org.matheclipse.core.eval.util.IAssumptions;
 import org.matheclipse.core.expression.ContextPath;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.expression.S;

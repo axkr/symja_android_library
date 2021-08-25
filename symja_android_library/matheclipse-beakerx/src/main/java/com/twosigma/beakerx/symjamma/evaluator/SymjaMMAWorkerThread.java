@@ -15,7 +15,6 @@
  */
 package com.twosigma.beakerx.symjamma.evaluator;
 
-import com.twosigma.beakerx.NamespaceClient;
 import com.twosigma.beakerx.TryResult;
 import com.twosigma.beakerx.evaluator.JobDescriptor;
 import org.slf4j.Logger;

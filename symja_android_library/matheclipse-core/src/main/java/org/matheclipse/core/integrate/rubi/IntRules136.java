@@ -3,7 +3,6 @@ package org.matheclipse.core.integrate.rubi;
 
 import static org.matheclipse.core.expression.F.*;
 import static org.matheclipse.core.integrate.rubi.UtilityFunctionCtors.*;
-import static org.matheclipse.core.integrate.rubi.UtilityFunctions.*;
 import org.matheclipse.core.interfaces.IAST;
 
 /** 

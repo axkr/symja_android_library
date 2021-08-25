@@ -1,7 +1,5 @@
 package org.matheclipse.core.reflection.system;
 
-import java.util.Iterator;
-
 import org.matheclipse.core.builtin.IOFunctions;
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.interfaces.AbstractFunctionEvaluator;

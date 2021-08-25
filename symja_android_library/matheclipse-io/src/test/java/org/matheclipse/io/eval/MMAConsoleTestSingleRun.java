@@ -3,7 +3,6 @@ package org.matheclipse.io.eval;
 import java.io.ByteArrayOutputStream;
 import java.io.PrintStream;
 
-import org.matheclipse.io.eval.MMAConsole;
 import org.matheclipse.parser.client.FEConfig;
 
 import junit.framework.TestCase;

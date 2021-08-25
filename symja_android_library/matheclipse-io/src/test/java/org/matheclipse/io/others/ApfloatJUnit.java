@@ -9,7 +9,6 @@ import org.matheclipse.core.interfaces.IComplexNum;
 import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.interfaces.INum;
 import org.matheclipse.io.system.AbstractTestCase;
-import org.matheclipse.parser.client.FEConfig;
 
 public class ApfloatJUnit extends AbstractTestCase {
 

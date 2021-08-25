@@ -20,7 +20,6 @@ import org.matheclipse.core.io.Extension;
 import org.matheclipse.io.expression.ASTDataset;
 
 import tech.tablesaw.api.Table;
-import tech.tablesaw.io.csv.CsvReadOptions;
 
 /** Import semantic data into a DataSet */
 public class SemanticImport extends AbstractEvaluator {

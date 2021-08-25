@@ -2,7 +2,6 @@ package org.matheclipse.io;
 
 import org.matheclipse.core.basic.Config;
 import org.matheclipse.core.expression.S;
-import org.matheclipse.core.numbertheory.Primality;
 import org.matheclipse.gpl.numbertheory.BigIntegerPrimality;
 import org.matheclipse.io.builtin.DatasetFunctions;
 import org.matheclipse.io.builtin.DynamicSwingFunctions;

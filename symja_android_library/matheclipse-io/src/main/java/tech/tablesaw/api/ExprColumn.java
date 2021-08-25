@@ -33,12 +33,8 @@ import it.unimi.dsi.fastutil.ints.IntComparator;
 import tech.tablesaw.columns.AbstractColumn;
 import tech.tablesaw.columns.AbstractColumnParser;
 import tech.tablesaw.columns.Column;
-import tech.tablesaw.columns.booleans.BooleanColumnType;
-import tech.tablesaw.columns.booleans.BooleanColumnUtils;
 import tech.tablesaw.columns.expr.ExprColumnFormatter;
 import tech.tablesaw.columns.expr.ExprColumnType;
-import tech.tablesaw.columns.strings.StringColumnFormatter;
-import tech.tablesaw.filtering.predicates.BytePredicate;
 import tech.tablesaw.selection.BitmapBackedSelection;
 import tech.tablesaw.selection.Selection;
 

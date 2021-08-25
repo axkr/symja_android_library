@@ -4,18 +4,12 @@ import org.matheclipse.core.builtin.IOFunctions;
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.exception.ValidateException;
 import org.matheclipse.core.eval.interfaces.AbstractFunctionEvaluator;
-import org.matheclipse.core.expression.ASTSeriesData;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.expression.S;
 import org.matheclipse.core.generic.BinaryBindIth1st;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IASTAppendable;
-import org.matheclipse.core.interfaces.IASTMutable;
 import org.matheclipse.core.interfaces.IExpr;
-import org.matheclipse.core.interfaces.IInteger;
-import org.matheclipse.core.interfaces.IRational;
-import org.matheclipse.core.interfaces.ISymbol;
-import org.matheclipse.core.reflection.system.rules.DRules;
 import org.matheclipse.core.reflection.system.rules.MatrixDRules;
 
 public class MatrixD extends AbstractFunctionEvaluator implements MatrixDRules {

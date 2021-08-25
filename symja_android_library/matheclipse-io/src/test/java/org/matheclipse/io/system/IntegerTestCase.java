@@ -2,7 +2,6 @@ package org.matheclipse.io.system;
 
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.interfaces.IInteger;
-import org.matheclipse.core.interfaces.IRational;
 
 /**
  * Tests for the Java port of the <a href="http://www.apmaths.uwo.ca/~arich/">Rubi - rule-based

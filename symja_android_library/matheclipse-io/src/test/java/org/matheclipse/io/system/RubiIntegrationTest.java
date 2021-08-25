@@ -32,8 +32,6 @@ import static org.matheclipse.core.expression.F.b_DEFAULT;
 import static org.matheclipse.core.expression.F.fraction;
 import static org.matheclipse.core.expression.S.I;
 import static org.matheclipse.core.expression.S.Pi;
-import static org.matheclipse.core.expression.S.Plus;
-import static org.matheclipse.core.expression.S.Sin;
 import static org.matheclipse.core.expression.S.a;
 import static org.matheclipse.core.expression.S.b;
 import static org.matheclipse.core.expression.S.c;

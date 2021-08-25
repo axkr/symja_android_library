@@ -19,7 +19,6 @@ import org.matheclipse.core.basic.Config;
 import org.matheclipse.core.basic.ToggleFeature;
 import org.matheclipse.core.builtin.GraphFunctions;
 import org.matheclipse.core.builtin.GraphicsFunctions;
-import org.matheclipse.core.convert.ExpressionJSONConvert;
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.ExprEvaluator;
 // import org.matheclipse.core.eval.LastCalculationsHistory;
@@ -43,7 +42,6 @@ import org.matheclipse.io.expression.ASTDataset;
 import org.matheclipse.parser.client.FEConfig;
 import org.matheclipse.parser.client.SyntaxError;
 import org.matheclipse.parser.client.math.MathException;
-import com.fasterxml.jackson.databind.JsonNode;
 
 public class AJAXQueryServlet extends HttpServlet {
 

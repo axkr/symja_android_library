@@ -16,13 +16,8 @@
 package com.twosigma.beakerx.symjamma.evaluator;
 
 import static com.twosigma.beakerx.symjamma.evaluator.EnvVariablesFilter.envVariablesFilter;
-import static org.matheclipse.core.expression.S.SemanticImport;
-import static org.matheclipse.core.expression.S.SemanticImportString;
-
 import java.io.File;
 import java.io.IOException;
-import java.text.DecimalFormat;
-import java.text.DecimalFormatSymbols;
 import java.util.Locale;
 import java.util.concurrent.Executors;
 
@@ -43,7 +38,6 @@ import com.twosigma.beakerx.evaluator.BaseEvaluator;
 import com.twosigma.beakerx.evaluator.JobDescriptor;
 import com.twosigma.beakerx.evaluator.TempFolderFactory;
 import com.twosigma.beakerx.evaluator.TempFolderFactoryImpl;
-import com.twosigma.beakerx.jvm.classloader.BeakerXUrlClassLoader;
 import com.twosigma.beakerx.jvm.object.SimpleEvaluationObject;
 import com.twosigma.beakerx.jvm.threads.BeakerCellExecutor;
 import com.twosigma.beakerx.jvm.threads.CellExecutor;

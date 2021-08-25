@@ -2,16 +2,11 @@ package org.matheclipse.io.others;
 
 import java.util.SortedMap;
 
-import org.matheclipse.core.convert.JASConvert;
-import org.matheclipse.core.interfaces.IExpr;
-import org.matheclipse.core.polynomials.longexponent.ExprRingFactory;
-
 import edu.jas.arith.BigRational;
 import edu.jas.poly.Complex;
 import edu.jas.poly.ComplexRing;
 import edu.jas.poly.GenPolynomial;
 import edu.jas.poly.GenPolynomialRing;
-import edu.jas.poly.PolyUtil;
 import edu.jas.poly.TermOrderByName;
 import edu.jas.ufd.FactorComplex;
 import edu.jas.ufd.GCDFactory;

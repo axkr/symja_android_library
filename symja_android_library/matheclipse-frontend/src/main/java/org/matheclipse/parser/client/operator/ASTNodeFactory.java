@@ -21,7 +21,6 @@ import java.util.Map;
 
 import org.matheclipse.parser.client.FEConfig;
 import org.matheclipse.parser.client.Scanner;
-import org.matheclipse.parser.client.SyntaxError;
 import org.matheclipse.parser.client.ast.ASTNode;
 import org.matheclipse.parser.client.ast.FloatNode;
 import org.matheclipse.parser.client.ast.FractionNode;
