@@ -52,7 +52,7 @@ public class ExprTrie {
     return exprMap.containsKey(key);
   }
 
-  public boolean containsValue(String value) {
+  public boolean containsValue(IExpr value) {
     return exprMap.containsValue(value);
   }
 
@@ -69,7 +69,10 @@ public class ExprTrie {
   }
 
   public boolean equals(Object obj) {
-    return exprMap.equals(obj);
+    if (obj instanceof ExprTrie) {
+      return exprMap.equals(((ExprTrie) obj).exprMap);
+    }
+    return false;
   }
 
   public void forEach(BiConsumer<? super String, ? super IExpr> action) {
