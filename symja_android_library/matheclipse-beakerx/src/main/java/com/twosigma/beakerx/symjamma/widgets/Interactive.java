@@ -15,17 +15,17 @@
  */
 package com.twosigma.beakerx.symjamma.widgets;
 
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import com.twosigma.beakerx.widget.InteractiveBase;
 import com.twosigma.beakerx.widget.Label;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 public class Interactive extends InteractiveBase {
 
   private static Label label;
 
-  private static final Logger logger = LoggerFactory.getLogger(Interactive.class);
+  private static final Logger logger = LogManager.getLogger(Interactive.class);
 
   //  @SuppressWarnings("unchecked")
   //  public static void interact(MethodClosure function, Object... parameters) {

@@ -13,7 +13,7 @@ import org.matheclipse.core.polynomials.longexponent.ExpVectorLong;
  */
 public class SymbolicTermOrderByName {
 
-  // private static final Logger logger = Logger.getLogger(ExprTermOrderByName.class);
+  // private static final Logger logger = LogManager.getLogger(ExprTermOrderByName.class);
 
   /** ExpVectorTermOrder named LEX. */
   public static final SymbolicTermOrder LEX = new SymbolicTermOrder(SymbolicTermOrder.LEX);

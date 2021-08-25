@@ -83,6 +83,20 @@
 			<artifactId>poi-ooxml</artifactId>
 		</dependency>
 
+		<!-- logging dependencies -->
+
+		<dependency> <!-- provide the logging-framework implementation -->
+			<groupId>org.apache.logging.log4j</groupId>
+			<artifactId>log4j-core</artifactId>
+			<scope>runtime</scope>
+		</dependency>
+
+		<dependency> <!-- bind slf4j to log4j-2-core -->
+			<groupId>org.apache.logging.log4j</groupId>
+			<artifactId>log4j-slf4j-impl</artifactId>
+			<scope>runtime</scope>
+		</dependency>
+
 		<!-- test dependencies -->
 
 		<dependency>

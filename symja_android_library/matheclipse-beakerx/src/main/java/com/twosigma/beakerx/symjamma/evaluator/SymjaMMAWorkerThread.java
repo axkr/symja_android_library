@@ -15,17 +15,15 @@
  */
 package com.twosigma.beakerx.symjamma.evaluator;
 
+import java.util.concurrent.Callable;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import com.twosigma.beakerx.TryResult;
 import com.twosigma.beakerx.evaluator.JobDescriptor;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
-import java.util.concurrent.Callable;
 
 class SymjaMMAWorkerThread implements Callable<TryResult> {
 
-  private static final Logger logger =
-      LoggerFactory.getLogger(SymjaMMAWorkerThread.class.getName());
+  private static final Logger logger = LogManager.getLogger(SymjaMMAWorkerThread.class.getName());
   private final JobDescriptor j;
   protected SymjaMMAEvaluator symjaEvaluator;
 
