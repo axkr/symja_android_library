@@ -11,12 +11,11 @@ import java.util.function.Consumer;
 import java.util.function.Function;
 import java.util.function.ObjIntConsumer;
 import java.util.function.Predicate;
-// import java.util.stream.Stream;
 import java.util.stream.Stream;
 
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.exception.RecursionLimitExceeded;
-import org.matheclipse.core.expression.F; 
+import org.matheclipse.core.expression.F;
 import org.matheclipse.core.generic.ObjIntPredicate;
 import org.matheclipse.core.visit.IVisitor;
 
