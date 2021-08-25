@@ -39,6 +39,11 @@
 		</dependency>
 
 		<dependency>
+			<groupId>de.uni-mannheim.rz.krum</groupId>
+			<artifactId>jas</artifactId>
+		</dependency>
+
+		<dependency>
 			<groupId>org.apfloat</groupId>
 			<artifactId>apfloat</artifactId>
 		</dependency>
