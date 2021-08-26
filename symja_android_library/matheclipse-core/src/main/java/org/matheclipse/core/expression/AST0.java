@@ -499,7 +499,7 @@ public class AST0 extends AbstractAST implements Externalizable, RandomAccess {
     byte attributeFlags = (byte) 0;
 
     Short exprIDObj = S.GLOBAL_IDS_MAP.get(head());
-    if (exprIDObj >= 0) {
+    if (exprIDObj != null) {
       short exprID = exprIDObj;
       // short exprID = temp.getExprID();
       if (exprID <= Short.MAX_VALUE) {
