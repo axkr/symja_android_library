@@ -4962,8 +4962,8 @@ public abstract class AbstractAST implements IASTMutable {
 
   @Override
   public IExpr optional() {
-    short id = S.GLOBAL_IDS_MAP.getShort(this);
-    if (id >= 0) {
+    Short id = S.GLOBAL_IDS_MAP.get(this);
+    if (id != null) {
       return new ExprID(id);
     }
     return this;

@@ -1020,8 +1020,8 @@ public class WL {
 
     @Override
     public void write(IExpr arg1) throws IOException {
-      short exprID = S.GLOBAL_IDS_MAP.getShort(arg1);
-      if (exprID >= 0) {
+      Short exprID = S.GLOBAL_IDS_MAP.get(arg1);
+      if (exprID != null) {
         stream.write(WXF_CONSTANTS.InternalExprID);
         stream.write(varintBytes(exprID));
         return;

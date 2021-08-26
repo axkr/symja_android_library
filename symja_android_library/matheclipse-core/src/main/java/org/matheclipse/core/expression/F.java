@@ -952,7 +952,6 @@ public class F extends S {
             G_DEFAULT
           };
       short exprID = EXPRID_MAX_BUILTIN_LENGTH;
-      GLOBAL_IDS_MAP.defaultReturnValue((short) -1);
       for (short i = 0; i < COMMON_IDS.length; i++) {
         GLOBAL_IDS_MAP.put(COMMON_IDS[i], exprID++);
       }

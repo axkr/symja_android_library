@@ -1,15 +1,13 @@
 package org.matheclipse.core.expression;
 
+import java.util.HashMap;
 import java.util.Map;
-
 import org.matheclipse.core.basic.Config;
 import org.matheclipse.core.interfaces.IBuiltInSymbol;
 import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.interfaces.ISymbol;
 import org.matheclipse.parser.client.FEConfig;
 import org.matheclipse.parser.trie.TrieMatch;
-
-import it.unimi.dsi.fastutil.objects.Object2ShortOpenHashMap;
 
 /**
  * Class for creating the static Symja built-in symbols (interface {@link IBuiltInSymbol}). The
@@ -31,8 +29,8 @@ public class S {
    * the internal table of predefined constant expressions {@link #COMMON_IDS} mapped to the
    * corresponding expressions.
    */
-  public static final Object2ShortOpenHashMap<IExpr> GLOBAL_IDS_MAP =
-      new Object2ShortOpenHashMap<IExpr>(EXPRID_MAX_BUILTIN_LENGTH + 1000);
+  public static final Map<IExpr, Short> GLOBAL_IDS_MAP =
+      new HashMap<>((EXPRID_MAX_BUILTIN_LENGTH + 1000) * 4 / 3 + 1);
 
   public static final Map<String, ISymbol> HIDDEN_SYMBOLS_MAP =
       Config.TRIE_STRING2SYMBOL_BUILDER.withMatch(TrieMatch.EXACT).build(); // Tries.forStrings();
@@ -7652,7 +7650,7 @@ public class S {
   public static final IBuiltInSymbol Right = F.initFinalSymbol("Right", ID.Right);
 
   public static final IBuiltInSymbol RightComposition = F.initFinalSymbol("RightComposition", ID.RightComposition);
-  
+
   /**
    * RogersTanimotoDissimilarity(u, v) - returns the Rogers-Tanimoto dissimilarity between the two
    * boolean 1-D lists `u` and `v`, which is defined as `R / (c_tt + c_ff + R)` where n is `len(u)`,
@@ -9872,8 +9870,8 @@ public class S {
   }
 
   public static IExpr exprID(IExpr expr) {
-    short id = S.GLOBAL_IDS_MAP.getShort(expr);
-    if (id >= 0) {
+    Short id = S.GLOBAL_IDS_MAP.get(expr);
+    if (id != null) {
       return new ExprID(id);
     }
     return expr;
