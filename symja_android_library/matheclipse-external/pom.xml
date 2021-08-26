@@ -15,7 +15,6 @@
 	<name>${project.groupId}:${project.artifactId}</name>
 	<description>The Symja external module</description>
 
-
 	<licenses>
 		<license>
 			<name>GNU Lesser General Public License, Version 3</name>
@@ -40,18 +39,6 @@
 		<dependency>
 			<groupId>io.pebbletemplates</groupId>
 			<artifactId>pebble</artifactId>
-		</dependency>
-
-		<!-- <dependency> <groupId>edu.stanford.nlp</groupId> <artifactId>stanford-corenlp</artifactId>
-			<version>4.0.0</version> </dependency> <dependency> <groupId>edu.stanford.nlp</groupId>
-			<artifactId>stanford-corenlp</artifactId> <version>4.0.0</version> <classifier>models</classifier>
-			</dependency> -->
-
-		<!-- logging dependencies -->
-
-		<dependency>
-			<groupId>org.apache.logging.log4j</groupId>
-			<artifactId>log4j-api</artifactId>
 		</dependency>
 
 	</dependencies>
