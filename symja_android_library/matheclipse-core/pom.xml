@@ -39,6 +39,18 @@
 		</dependency>
 
 		<dependency>
+			<groupId>de.uni-mannheim.rz.krum</groupId>
+			<artifactId>jas</artifactId>
+			<exclusions>
+				<exclusion>
+					<!-- Don't force users into using the log4j-2 framework -->
+					<groupId>org.apache.logging.log4j</groupId>
+					<artifactId>log4j-core</artifactId>
+				</exclusion>
+			</exclusions>
+		</dependency>
+
+		<dependency>
 			<groupId>org.apfloat</groupId>
 			<artifactId>apfloat</artifactId>
 		</dependency>
