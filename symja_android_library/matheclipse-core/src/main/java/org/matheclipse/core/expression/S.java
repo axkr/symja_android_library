@@ -1,15 +1,13 @@
 package org.matheclipse.core.expression;
 
+import java.util.HashMap;
 import java.util.Map;
-
 import org.matheclipse.core.basic.Config;
 import org.matheclipse.core.interfaces.IBuiltInSymbol;
 import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.interfaces.ISymbol;
 import org.matheclipse.parser.client.FEConfig;
 import org.matheclipse.parser.trie.TrieMatch;
-
-import it.unimi.dsi.fastutil.objects.Object2ShortOpenHashMap;
 
 /**
  * Class for creating the static Symja built-in symbols (interface {@link IBuiltInSymbol}). The
@@ -31,8 +29,8 @@ public class S {
    * the internal table of predefined constant expressions {@link #COMMON_IDS} mapped to the
    * corresponding expressions.
    */
-  static final Object2ShortOpenHashMap<IExpr> GLOBAL_IDS_MAP =
-      new Object2ShortOpenHashMap<IExpr>(EXPRID_MAX_BUILTIN_LENGTH + 1000);
+  static final Map<IExpr, Short> GLOBAL_IDS_MAP =
+      new HashMap<>((EXPRID_MAX_BUILTIN_LENGTH + 1000) * 4 / 3 + 1);
 
   static final Map<String, ISymbol> HIDDEN_SYMBOLS_MAP =
       Config.TRIE_STRING2SYMBOL_BUILDER.withMatch(TrieMatch.EXACT).build(); // Tries.forStrings();
@@ -9872,8 +9870,8 @@ public class S {
   }
 
   public static IExpr exprID(IExpr expr) {
-    short id = S.GLOBAL_IDS_MAP.getShort(expr);
-    if (id >= 0) {
+    Short id = S.GLOBAL_IDS_MAP.get(expr);
+    if (id != null) {
       return new ExprID(id);
     }
     return expr;

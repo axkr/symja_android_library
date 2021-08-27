@@ -110,8 +110,9 @@
 		</dependency>
 
 		<dependency>
+			<!-- require only the smallest fastuil module -->
 			<groupId>it.unimi.dsi</groupId>
-			<artifactId>fastutil</artifactId>
+			<artifactId>fastutil-core</artifactId>
 		</dependency>
 
 		<dependency>
