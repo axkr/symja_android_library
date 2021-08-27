@@ -2946,7 +2946,7 @@ public interface IExpr
   }
 
   /**
-   * Test if this expression is a polynomial of <code>maxDegree</code> (i.e. the maximum exponent <=
+   * Test if this expression is a polynomial of <code>maxDegree</code> (i.e. the maximum exponent &lt;=
    * maxDegree) for the given <code>variable</code>.
    *
    * @param variable the variable of the polynomial

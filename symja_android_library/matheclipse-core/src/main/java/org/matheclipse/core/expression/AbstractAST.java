@@ -5069,7 +5069,7 @@ public abstract class AbstractAST implements IASTMutable {
 
   /**
    * Associates the specified value with the specified property in the associated <code>
-   * EnumMap<PROPERTY, Object></code> map. If the map previously contained a mapping for this key,
+   * EnumMap&lt;PROPERTY, Object&gt;</code> map. If the map previously contained a mapping for this key,
    * the old value is replaced.
    *
    * @param key

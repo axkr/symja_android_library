@@ -81,7 +81,6 @@ public class ApfloatNum implements INum {
 
   @Override
   public int hierarchy() {
-    // TODO check this ID
     return DOUBLEID;
   }
 
