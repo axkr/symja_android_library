@@ -29,10 +29,10 @@ public class S {
    * the internal table of predefined constant expressions {@link #COMMON_IDS} mapped to the
    * corresponding expressions.
    */
-  public static final Map<IExpr, Short> GLOBAL_IDS_MAP =
+  static final Map<IExpr, Short> GLOBAL_IDS_MAP =
       new HashMap<>((EXPRID_MAX_BUILTIN_LENGTH + 1000) * 4 / 3 + 1);
 
-  public static final Map<String, ISymbol> HIDDEN_SYMBOLS_MAP =
+  static final Map<String, ISymbol> HIDDEN_SYMBOLS_MAP =
       Config.TRIE_STRING2SYMBOL_BUILDER.withMatch(TrieMatch.EXACT).build(); // Tries.forStrings();
 
   public static IBuiltInSymbol symbol(int id) {

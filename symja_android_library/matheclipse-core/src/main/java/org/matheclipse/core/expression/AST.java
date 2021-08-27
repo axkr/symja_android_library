@@ -598,39 +598,30 @@ public class AST extends HMArrayList implements Externalizable {
     int size = size();
     byte attributeFlags = (byte) 0;
     if (size > 0 && size < 128) {
-      Short exprIDObj = S.GLOBAL_IDS_MAP.get(head());
-      if (exprIDObj != null) {
-        short exprID = exprIDObj;
-        if (exprID <= Short.MAX_VALUE) {
-          int exprIDSize = 1;
-          short[] exprIDArray = new short[size];
-          exprIDArray[0] = exprID;
-          for (int i = 1; i < size; i++) {
-            exprIDObj = S.GLOBAL_IDS_MAP.get(get(i));
-            if (exprIDObj == null) {
-              break;
-            }
-            exprID = exprIDObj;
-            // exprID = temp.getExprID();
-            if (exprID <= Short.MAX_VALUE) {
-              exprIDArray[i] = exprID;
-              exprIDSize++;
-            } else {
-              break;
-            }
+      Short exprID = S.GLOBAL_IDS_MAP.get(head());
+      if (exprID != null) {
+        int exprIDSize = 1;
+        short[] exprIDArray = new short[size];
+        exprIDArray[0] = exprID;
+        for (int i = 1; i < size; i++) {
+          exprID = S.GLOBAL_IDS_MAP.get(get(i));
+          if (exprID == null) {
+            break;
           }
-          // optimized path
-          attributeFlags = (byte) size;
-          objectOutput.writeByte(attributeFlags);
-          objectOutput.writeByte((byte) exprIDSize);
-          for (int i = 0; i < exprIDSize; i++) {
-            objectOutput.writeShort(exprIDArray[i]);
-          }
-          for (int i = exprIDSize; i < size; i++) {
-            objectOutput.writeObject(get(i));
-          }
-          return;
+          exprIDArray[i] = exprID;
+          exprIDSize++;
         }
+        // optimized path
+        attributeFlags = (byte) size;
+        objectOutput.writeByte(attributeFlags);
+        objectOutput.writeByte((byte) exprIDSize);
+        for (int i = 0; i < exprIDSize; i++) {
+          objectOutput.writeShort(exprIDArray[i]);
+        }
+        for (int i = exprIDSize; i < size; i++) {
+          objectOutput.writeObject(get(i));
+        }
+        return;
       }
     }
 
