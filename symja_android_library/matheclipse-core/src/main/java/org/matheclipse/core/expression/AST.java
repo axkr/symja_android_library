@@ -600,35 +600,28 @@ public class AST extends HMArrayList implements Externalizable {
     if (size > 0 && size < 128) {
       short exprID = S.GLOBAL_IDS_MAP.getShort(head());
       if (exprID >= 0) {
-        if (exprID <= Short.MAX_VALUE) {
-          int exprIDSize = 1;
-          short[] exprIDArray = new short[size];
-          exprIDArray[0] = exprID;
-          for (int i = 1; i < size; i++) {
-            exprID = S.GLOBAL_IDS_MAP.getShort(get(i));
-            if (exprID < 0) {
-              break;
-            }
-            // exprID = temp.getExprID();
-            if (exprID <= Short.MAX_VALUE) {
-              exprIDArray[i] = exprID;
-              exprIDSize++;
-            } else {
-              break;
-            }
+        int exprIDSize = 1;
+        short[] exprIDArray = new short[size];
+        exprIDArray[0] = exprID;
+        for (int i = 1; i < size; i++) {
+          exprID = S.GLOBAL_IDS_MAP.getShort(get(i));
+          if (exprID < 0) {
+            break;
           }
-          // optimized path
-          attributeFlags = (byte) size;
-          objectOutput.writeByte(attributeFlags);
-          objectOutput.writeByte((byte) exprIDSize);
-          for (int i = 0; i < exprIDSize; i++) {
-            objectOutput.writeShort(exprIDArray[i]);
-          }
-          for (int i = exprIDSize; i < size; i++) {
-            objectOutput.writeObject(get(i));
-          }
-          return;
+          exprIDArray[i] = exprID;
+          exprIDSize++;
         }
+        // optimized path
+        attributeFlags = (byte) size;
+        objectOutput.writeByte(attributeFlags);
+        objectOutput.writeByte((byte) exprIDSize);
+        for (int i = 0; i < exprIDSize; i++) {
+          objectOutput.writeShort(exprIDArray[i]);
+        }
+        for (int i = exprIDSize; i < size; i++) {
+          objectOutput.writeObject(get(i));
+        }
+        return;
       }
     }
 

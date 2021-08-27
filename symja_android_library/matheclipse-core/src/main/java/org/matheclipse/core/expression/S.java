@@ -31,10 +31,10 @@ public class S {
    * the internal table of predefined constant expressions {@link #COMMON_IDS} mapped to the
    * corresponding expressions.
    */
-  public static final Object2ShortOpenHashMap<IExpr> GLOBAL_IDS_MAP =
+  static final Object2ShortOpenHashMap<IExpr> GLOBAL_IDS_MAP =
       new Object2ShortOpenHashMap<IExpr>(EXPRID_MAX_BUILTIN_LENGTH + 1000);
 
-  public static final Map<String, ISymbol> HIDDEN_SYMBOLS_MAP =
+  static final Map<String, ISymbol> HIDDEN_SYMBOLS_MAP =
       Config.TRIE_STRING2SYMBOL_BUILDER.withMatch(TrieMatch.EXACT).build(); // Tries.forStrings();
 
   public static IBuiltInSymbol symbol(int id) {
@@ -7652,7 +7652,7 @@ public class S {
   public static final IBuiltInSymbol Right = F.initFinalSymbol("Right", ID.Right);
 
   public static final IBuiltInSymbol RightComposition = F.initFinalSymbol("RightComposition", ID.RightComposition);
-  
+
   /**
    * RogersTanimotoDissimilarity(u, v) - returns the Rogers-Tanimoto dissimilarity between the two
    * boolean 1-D lists `u` and `v`, which is defined as `R / (c_tt + c_ff + R)` where n is `len(u)`,
