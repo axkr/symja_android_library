@@ -2095,6 +2095,8 @@ public class S {
 
   public static final IBuiltInSymbol DateObject = F.initFinalSymbol("DateObject", ID.DateObject);
 
+  public static final IBuiltInSymbol DateString = F.initFinalSymbol("DateString", ID.DateString);
+
   public static final IBuiltInSymbol DateValue = F.initFinalSymbol("DateValue", ID.DateValue);
 
   /**

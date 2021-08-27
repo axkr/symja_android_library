@@ -7244,6 +7244,15 @@ public class LowercaseTestCase extends AbstractTestCase {
         "2018-08-08T13:15");
   }
 
+  public void testDateString() { 
+        check(
+            "DateString(3155673600)", //
+            "Sat 01 Jan 2000 00:00:00");
+//        check(
+//            "DateString( )", //
+//            "Thu 26 Aug 2021 22:15:13");
+  }
+
   public void testDateValue() {
     check(
         "DateValue(DateObject({2016,8,1}), {\"Year\",\"Month\",\"Day\"})", //
@@ -13774,6 +13783,7 @@ public class LowercaseTestCase extends AbstractTestCase {
   }
 
   public void testFromDigits() {
+
     // https://oeis.org/A023391
     check(
         "NestList(FromDigits(IntegerDigits(#, 8), 9) &, 8, 50)", //
@@ -23387,6 +23397,9 @@ public class LowercaseTestCase extends AbstractTestCase {
 
   public void testNestList() {
     check(
+        "NestList(4*#*(1 - #) &, 1/3, 5)", //
+        "{1/3,8/9,32/81,6272/6561,7250432/43046721,1038154236987392/1853020188851841}");
+    check(
         "Length(NestList(#2,{},50))", //
         "51");
     check(
@@ -31294,10 +31307,10 @@ public class LowercaseTestCase extends AbstractTestCase {
   }
 
   public void testRightComposition() {
-      check(
-          "Hold[f @ g@@h] // FullForm", //
-          "Hold(Apply(f(g), h))");
-  
+    check(
+        "Hold[f @ g@@h] // FullForm", //
+        "Hold(Apply(f(g), h))");
+
     check(
         "RightComposition(f, g, h)[x, y]", //
         "h(g(f(x,y)))");

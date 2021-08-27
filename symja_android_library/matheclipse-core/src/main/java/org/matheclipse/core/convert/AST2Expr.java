@@ -495,6 +495,7 @@ public class AST2Expr {
     "Cylinder",
     "Dataset",
     "DateObject",
+    "DateString",
     "DateValue",
     "Decrement",
     "Default",

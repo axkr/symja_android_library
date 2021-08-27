@@ -1,14 +1,18 @@
 package org.matheclipse.core.builtin;
 
+import java.time.Instant;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
+import java.time.Month;
+import java.time.ZoneOffset;
+import java.time.format.DateTimeFormatter;
 import java.time.format.TextStyle;
 import java.util.HashMap;
 import java.util.Locale;
+import java.util.TimeZone;
 import java.util.function.Function;
 import java.util.function.UnaryOperator;
-
 import org.matheclipse.core.basic.Config;
 import org.matheclipse.core.basic.ToggleFeature;
 import org.matheclipse.core.eval.EvalEngine;
@@ -37,6 +41,7 @@ public class QuantityFunctions {
 
     private static void init() {
       S.DateObject.setEvaluator(new DateObject());
+      S.DateString.setEvaluator(new DateString());
       S.DateValue.setEvaluator(new DateValue());
 
       S.TimeObject.setEvaluator(new TimeObject());
@@ -113,6 +118,44 @@ public class QuantityFunctions {
             LocalDate ld = ((DateObjectExpr) ast.arg1()).toData().toLocalDate();
             LocalTime lt = ((TimeObjectExpr) ast.arg2()).toData();
             return DateObjectExpr.newInstance(LocalDateTime.of(ld, lt));
+          }
+        }
+      } catch (RuntimeException rex) {
+        if (Config.SHOW_STACKTRACE) {
+          rex.printStackTrace();
+        }
+        return engine.printMessage(ast.topHead(), rex);
+      }
+
+      return F.NIL;
+    }
+
+    @Override
+    public int[] expectedArgSize(IAST ast) {
+      return ARGS_0_2;
+    }
+  }
+
+  private static final class DateString extends AbstractFunctionEvaluator {
+
+    @Override
+    public IExpr evaluate(final IAST ast, EvalEngine engine) {
+      try {
+        if (ast.isAST0()) {
+          LocalDateTime now = LocalDateTime.now();
+          String dateString = now.format(DateTimeFormatter.ofPattern("EEE dd MMM yyyy HH:mm:ss"));
+          return F.stringx(dateString);
+        }
+        if (ast.isAST1()) {
+          long secondsSince1900 = ast.arg1().toLongDefault();
+          if (secondsSince1900 >= 0) {
+            Instant base =
+                LocalDate.of(1900, Month.JANUARY, 1).atStartOfDay(ZoneOffset.UTC).toInstant();
+            LocalDateTime date =
+                LocalDateTime.ofInstant(base.plusSeconds(secondsSince1900), ZoneOffset.UTC);
+            String dateString =
+                date.format(DateTimeFormatter.ofPattern("EEE dd MMM yyyy HH:mm:ss"));
+            return F.stringx(dateString);
           }
         }
       } catch (RuntimeException rex) {
