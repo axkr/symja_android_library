@@ -104,10 +104,14 @@ public final class BooleanFunctions {
       S.ForAll.setEvaluator(new ForAll());
       S.Greater.setEvaluator(CONST_GREATER);
       S.GreaterEqual.setEvaluator(new GreaterEqual());
+      S.GreaterEqualThan.setEvaluator(new CompareOperator(S.GreaterEqualThan, S.GreaterEqual));
+      S.GreaterThan.setEvaluator(new CompareOperator(S.GreaterThan, S.Greater));
       S.Implies.setEvaluator(new Implies());
       S.Inequality.setEvaluator(new Inequality());
       S.Less.setEvaluator(CONST_LESS);
       S.LessEqual.setEvaluator(new LessEqual());
+      S.LessEqualThan.setEvaluator(new CompareOperator(S.LessEqualThan, S.LessEqual));
+      S.LessThan.setEvaluator(new CompareOperator(S.LessThan, S.Less));
       S.LogicalExpand.setEvaluator(new LogicalExpand());
       S.Max.setEvaluator(new Max());
       S.Min.setEvaluator(new Min());
@@ -2424,6 +2428,35 @@ public final class BooleanFunctions {
       // swap arguments
       return super.compareTernary(a1, a0);
     }
+  }
+
+  private static class CompareOperator extends AbstractFunctionEvaluator {
+    IBuiltInSymbol operatorHead;
+    IBuiltInSymbol comparatorHead;
+
+    public CompareOperator(IBuiltInSymbol operatorHead, IBuiltInSymbol comparatorHead) {
+      this.operatorHead = operatorHead;
+      this.comparatorHead = comparatorHead;
+    }
+
+    @Override
+    public IExpr evaluate(final IAST ast, EvalEngine engine) {
+      if (ast.isAST1()) {
+        IExpr head = ast.head();
+        if (head.isAST(operatorHead, 2)) {
+          return F.binaryAST2(comparatorHead, ast.arg1(), head.first());
+        }
+      }
+      return F.NIL;
+    }
+
+    @Override
+    public int[] expectedArgSize(IAST ast) {
+      return ARGS_0_1_0;
+    }
+
+    @Override
+    public void setUp(final ISymbol newSymbol) {}
   }
 
   private static class LogicalExpand extends AbstractFunctionEvaluator {

@@ -7244,13 +7244,13 @@ public class LowercaseTestCase extends AbstractTestCase {
         "2018-08-08T13:15");
   }
 
-  public void testDateString() { 
-        check(
-            "DateString(3155673600)", //
-            "Sat 01 Jan 2000 00:00:00");
-//        check(
-//            "DateString( )", //
-//            "Thu 26 Aug 2021 22:15:13");
+  public void testDateString() {
+    check(
+        "DateString(3155673600)", //
+        "Sat 01 Jan 2000 00:00:00");
+    //        check(
+    //            "DateString( )", //
+    //            "Thu 26 Aug 2021 22:15:13");
   }
 
   public void testDateValue() {
@@ -19523,6 +19523,49 @@ public class LowercaseTestCase extends AbstractTestCase {
     check(
         "(-2*x+5)<=(5^(1/2))", //
         "x>=1/2*(5-Sqrt(5))");
+  }
+
+  public void testGreaterThan() {
+    check(
+        "GreaterThan(42)[2]", //
+        "False");
+    check(
+        "GreaterThan(y)[x]", //
+        "x>y");
+  }
+
+  public void testGreaterEqualThan() {
+    check(
+        "GreaterEqualThan(42)[2]", //
+        "False");
+    check(
+        "GreaterEqualThan(y)[x]", //
+        "x>=y");
+
+    check(
+        " Select({0, 5, 10, 15}, GreaterEqualThan(10))", //
+        "{10,15}");
+    check(
+        " Select({0, 5, 10, 15}, GreaterEqual(#,10)&)", //
+        "{10,15}");
+  }
+
+  public void testLessThan() {
+    check(
+        "LessThan(42)[2]", //
+        "True");
+    check(
+        "LessThan(y)[x]", //
+        "x<y");
+  }
+
+  public void testLessEqualThan() {
+    check(
+        "LessEqualThan(42)[2]", //
+        "True");
+    check(
+        "LessEqualThan(y)[x]", //
+        "x<=y");
   }
 
   public void testLetterCounts() {

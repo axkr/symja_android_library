@@ -3870,6 +3870,11 @@ public class S {
   public static final IBuiltInSymbol GreaterEqual =
       F.initFinalSymbol("GreaterEqual", ID.GreaterEqual);
 
+  public static final IBuiltInSymbol GreaterEqualThan =
+      F.initFinalSymbol("GreaterEqualThan", ID.GreaterEqualThan);
+
+  public static final IBuiltInSymbol GreaterThan = F.initFinalSymbol("GreaterThan", ID.GreaterThan);
+
   public static final IBuiltInSymbol Green = F.initFinalSymbol("Green", ID.Green);
 
   /**
@@ -5067,6 +5072,11 @@ public class S {
    *     documentation</a>
    */
   public static final IBuiltInSymbol LessEqual = F.initFinalSymbol("LessEqual", ID.LessEqual);
+
+  public static final IBuiltInSymbol LessEqualThan =
+      F.initFinalSymbol("LessEqualThan", ID.LessEqualThan);
+
+  public static final IBuiltInSymbol LessThan = F.initFinalSymbol("LessThan", ID.LessThan);
 
   /**
    * LetterCharacter - represents letters..
@@ -7651,7 +7661,8 @@ public class S {
 
   public static final IBuiltInSymbol Right = F.initFinalSymbol("Right", ID.Right);
 
-  public static final IBuiltInSymbol RightComposition = F.initFinalSymbol("RightComposition", ID.RightComposition);
+  public static final IBuiltInSymbol RightComposition =
+      F.initFinalSymbol("RightComposition", ID.RightComposition);
 
   /**
    * RogersTanimotoDissimilarity(u, v) - returns the Rogers-Tanimoto dissimilarity between the two
