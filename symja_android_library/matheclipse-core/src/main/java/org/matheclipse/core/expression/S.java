@@ -2781,6 +2781,8 @@ public class S {
    */
   public static final IBuiltInSymbol Equal = F.initFinalSymbol("Equal", ID.Equal);
 
+  public static final IBuiltInSymbol EqualTo = F.initFinalSymbol("EqualTo", ID.EqualTo);
+
   /**
    * Equivalent(arg1, arg2, ...) - Equivalence relation. `Equivalent(A, B)` is `True` iff `A` and
    * `B` are both `True` or both `False`. Returns `True` if all of the arguments are logically
@@ -9302,6 +9304,8 @@ public class S {
    *     documentation</a>
    */
   public static final IBuiltInSymbol Unequal = F.initFinalSymbol("Unequal", ID.Unequal);
+
+  public static final IBuiltInSymbol UnequalTo = F.initFinalSymbol("UnequalTo", ID.UnequalTo);
 
   /**
    * Unevaluated(expr) - temporarily leaves `expr` in an unevaluated form when it appears as a

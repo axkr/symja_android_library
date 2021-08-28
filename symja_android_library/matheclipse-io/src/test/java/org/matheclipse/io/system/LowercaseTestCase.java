@@ -19525,6 +19525,18 @@ public class LowercaseTestCase extends AbstractTestCase {
         "x>=1/2*(5-Sqrt(5))");
   }
 
+  public void testEqualTo() {
+    check(
+        "Select({0, 0., 0.1, 0.001}, EqualTo(0))", //
+        "{0,0.0}");
+  }
+
+  public void testUnequalTo() {
+    check(
+        "Select({0, 0., 0.1, 0.001}, UnequalTo(0))", //
+        "{0.1,0.001}");
+  }
+
   public void testGreaterThan() {
     check(
         "GreaterThan(42)[2]", //

@@ -99,6 +99,7 @@ public final class BooleanFunctions {
       S.BooleanTable.setEvaluator(new BooleanTable());
       S.BooleanVariables.setEvaluator(new BooleanVariables());
       S.Equal.setEvaluator(CONST_EQUAL);
+      S.EqualTo.setEvaluator(new CompareOperator(S.EqualTo, S.Equal));
       S.Equivalent.setEvaluator(new Equivalent());
       S.Exists.setEvaluator(new Exists());
       S.ForAll.setEvaluator(new ForAll());
@@ -132,6 +133,7 @@ public final class BooleanFunctions {
       S.TautologyQ.setEvaluator(new TautologyQ());
       S.TrueQ.setEvaluator(new TrueQ());
       S.Unequal.setEvaluator(new Unequal());
+      S.UnequalTo.setEvaluator(new CompareOperator(S.UnequalTo, S.Unequal));
       S.UnsameQ.setEvaluator(new UnsameQ());
       S.Xor.setEvaluator(new Xor());
     }
