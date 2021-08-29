@@ -21933,6 +21933,10 @@ public class LowercaseTestCase extends AbstractTestCase {
   }
 
   public void testMeanDeviation() {
+    //    Config.MAX_AST_SIZE=Integer.MAX_VALUE;
+    //    check(
+    //        "MeanDeviation(RandomReal(1, 10^4))", //
+    //        "0.243758");
     check(
         "MeanDeviation(SparseArray({{1, 2}, {4, 8}, {5, 3}, {2, 15}}))", //
         "{3/2,9/2}");

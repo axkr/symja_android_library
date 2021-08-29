@@ -1,7 +1,6 @@
 package org.matheclipse.core.builtin;
 
 import static org.matheclipse.core.expression.F.List;
-
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Comparator;
@@ -18,7 +17,7 @@ import java.util.function.BiPredicate;
 import java.util.function.Consumer;
 import java.util.function.Function;
 import java.util.function.Predicate;
-
+import org.hipparchus.stat.StatUtils;
 import org.matheclipse.core.basic.Config;
 import org.matheclipse.core.basic.ToggleFeature;
 import org.matheclipse.core.convert.Convert;
@@ -43,6 +42,7 @@ import org.matheclipse.core.eval.util.LevelSpecification;
 import org.matheclipse.core.eval.util.OptionArgs;
 import org.matheclipse.core.eval.util.Sequence;
 import org.matheclipse.core.expression.ASTAssociation;
+import org.matheclipse.core.expression.ASTRealVector;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.expression.S;
 import org.matheclipse.core.expression.data.DispatchExpr;
@@ -1368,8 +1368,18 @@ public final class ListFunctions {
 
     @Override
     public IExpr evaluate(final IAST ast, EvalEngine engine) {
-      IAST list = Validate.checkListType(ast, 1, engine);
-      if (list.isPresent()) {
+      IExpr arg1 = ast.arg1();
+      if (arg1.isRealVector()) {
+        double[] values = arg1.toDoubleVector();
+        if (values == null) {
+          return F.NIL;
+        }
+        // The mode of a set of data is implemented as Commonest(data).
+        return new ASTRealVector(StatUtils.mode(values), false);
+      }
+      //      IAST list = Validate.checkListType(ast, 1, engine);
+      if (arg1.isList()) {
+        IAST list = (IAST) arg1;
         int n = -1;
         if (ast.isAST2()) {
           n = Validate.checkIntType(S.Commonest, ast.arg2(), 0, engine);
@@ -4166,7 +4176,7 @@ public final class ListFunctions {
         if (head.isAST(operatorHead, 2)) {
           return F.binaryAST2(comparatorHead, ast.arg1(), head.first());
         } else if (head.isAST(operatorHead, 3)) {
-          return F.ternaryAST3(comparatorHead, ast.arg1(), head.first(),head.second());
+          return F.ternaryAST3(comparatorHead, ast.arg1(), head.first(), head.second());
         }
       }
       return F.NIL;

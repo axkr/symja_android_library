@@ -2,6 +2,7 @@ package org.matheclipse.core.builtin;
 
 import java.util.Arrays;
 import java.util.Comparator;
+import java.util.Iterator;
 import java.util.Random;
 import java.util.concurrent.ThreadLocalRandom;
 import java.util.function.DoubleUnaryOperator;
@@ -18,6 +19,7 @@ import org.hipparchus.linear.RealMatrix;
 import org.hipparchus.random.RandomDataGenerator;
 import org.hipparchus.stat.StatUtils;
 import org.hipparchus.stat.correlation.PearsonsCorrelation;
+import org.hipparchus.stat.descriptive.DescriptiveStatistics;
 import org.hipparchus.util.MathUtils;
 import org.matheclipse.core.basic.Config;
 import org.matheclipse.core.convert.Convert;
@@ -4532,6 +4534,20 @@ public class StatisticsFunctions {
 
       int length = arg1.isVector();
       if (length > 0) {
+
+        if (arg1.isRealVector()) {
+          double[] values = arg1.toDoubleVector();
+          if (values == null) {
+            return F.NIL;
+          }
+          double mean = StatUtils.mean(values);
+          double[] newValues = new double[length];
+          for (int i = 0; i < length; i++) {
+            newValues[i] = Math.abs(values[i] - mean);
+          }
+          return F.num(StatUtils.mean(newValues));
+        }
+
         arg1 = arg1.normal(false);
         if (arg1.isList()) {
           IAST vector = (IAST) arg1;
@@ -6090,8 +6106,21 @@ public class StatisticsFunctions {
       if (ast.arg1().isList()) {
         IAST arg1 = (IAST) ast.arg1();
         int[] dim = arg1.isMatrix();
-        if (dim == null && arg1.isListOfLists()) {
-          return F.NIL;
+        if (dim == null) {
+          int length = arg1.isVector();
+          if (length > 0) {
+            if (arg1.isRealVector()) {
+              double[] values = arg1.toDoubleVector();
+              if (values == null) {
+                return F.NIL;
+              }
+              org.hipparchus.stat.descriptive.moment.StandardDeviation sd =
+                  new org.hipparchus.stat.descriptive.moment.StandardDeviation();
+              return F.num(sd.evaluate(values));
+            }
+          } else {
+            return F.NIL;
+          }
         }
         if (dim != null) {
           return arg1.mapMatrixColumns(dim, x -> F.StandardDeviation(x));
