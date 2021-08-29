@@ -186,6 +186,7 @@ public final class ListFunctions {
       S.Level.setEvaluator(new Level());
       S.Most.setEvaluator(new Most());
       S.Nearest.setEvaluator(new Nearest());
+      S.NearestTo.setEvaluator(new NearestTo());
       S.PadLeft.setEvaluator(new PadLeft());
       S.PadRight.setEvaluator(new PadRight());
       S.Pick.setEvaluator(new Pick());
@@ -4147,6 +4148,37 @@ public final class ListFunctions {
       }
       return F.NIL;
     }
+  }
+
+  private static class NearestTo extends AbstractFunctionEvaluator {
+    IBuiltInSymbol operatorHead;
+    IBuiltInSymbol comparatorHead;
+
+    public NearestTo() {
+      this.operatorHead = S.NearestTo;
+      this.comparatorHead = S.Nearest;
+    }
+
+    @Override
+    public IExpr evaluate(final IAST ast, EvalEngine engine) {
+      if (ast.isAST1()) {
+        IExpr head = ast.head();
+        if (head.isAST(operatorHead, 2)) {
+          return F.binaryAST2(comparatorHead, ast.arg1(), head.first());
+        } else if (head.isAST(operatorHead, 3)) {
+          return F.ternaryAST3(comparatorHead, ast.arg1(), head.first(),head.second());
+        }
+      }
+      return F.NIL;
+    }
+
+    @Override
+    public int[] expectedArgSize(IAST ast) {
+      return ARGS_0_2_0;
+    }
+
+    @Override
+    public void setUp(final ISymbol newSymbol) {}
   }
 
   /**

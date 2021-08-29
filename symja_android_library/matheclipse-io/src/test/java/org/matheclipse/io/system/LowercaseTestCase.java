@@ -23417,6 +23417,16 @@ public class LowercaseTestCase extends AbstractTestCase {
         "{16,24}");
   }
 
+  public void testNearestTo() {
+    check(
+        "NearestTo(20)[{1, 2, 4, 8, 16, 32}]", //
+        "{16}");
+    // TODO improve Nearest
+    check(
+        "NearestTo(20,3)[{1, 2, 4, 8, 16, 32}]", //
+        "Nearest({1,2,4,8,16,32},20,3)");
+  }
+
   public void testNeeds() {
     check(
         "Needs({-1/2,{{1}},3})", //

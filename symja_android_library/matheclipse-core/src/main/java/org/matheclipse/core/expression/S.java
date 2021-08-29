@@ -6046,6 +6046,8 @@ public class S {
 
   public static final IBuiltInSymbol Nearest = F.initFinalSymbol("Nearest", ID.Nearest);
 
+  public static final IBuiltInSymbol NearestTo = F.initFinalSymbol("NearestTo", ID.NearestTo);
+
   public static final IBuiltInSymbol Needs = F.initFinalSymbol("Needs", ID.Needs);
 
   /**

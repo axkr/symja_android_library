@@ -958,6 +958,7 @@ public class AST2Expr {
     "ND",
     "NDSolve",
     "Nearest",
+    "NearestTo",
     "Needs",
     "Negative",
     "Nest",
