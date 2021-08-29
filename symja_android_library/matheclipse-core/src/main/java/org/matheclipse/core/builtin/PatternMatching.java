@@ -214,13 +214,18 @@ public final class PatternMatching {
 
     @Override
     public IExpr evaluate(final IAST ast, EvalEngine engine) {
+      IASTMutable mutable = ast.copyAST();
       for (int i = 1; i < ast.size(); i++) {
-        IExpr expr = ast.get(i);
-        if (!expr.isSymbol() || ((ISymbol) expr).isProtected()) {
+        IExpr x = Validate.checkIdentifierHoldPattern(ast.get(i), ast, engine);
+        if (!x.isPresent()) {
+          return F.NIL;
+        }
+        if (((ISymbol) x).isProtected()) {
           // Symbol `1` is Protected.
-          IOFunctions.printMessage(ast.topHead(), "wrsym", F.List(expr), engine);
+          IOFunctions.printMessage(ast.topHead(), "wrsym", F.List(x), engine);
           return S.Null;
         }
+        mutable.set(i, x);
       }
       Lambda.forEach(ast, x -> x.isSymbol(), x -> ((ISymbol) x).clear(engine));
       return S.Null;
@@ -249,16 +254,21 @@ public final class PatternMatching {
 
     @Override
     public IExpr evaluate(final IAST ast, EvalEngine engine) {
+      IASTMutable mutable = ast.copyAST();
       for (int i = 1; i < ast.size(); i++) {
-        IExpr expr = ast.get(i);
-        if (!expr.isSymbol() || ((ISymbol) expr).isProtected()) {
+        IExpr x = Validate.checkIdentifierHoldPattern(ast.get(i), ast, engine);
+        if (!x.isPresent()) {
+          return F.NIL;
+        }
+        if (((ISymbol) x).isProtected()) {
           // Symbol `1` is Protected.
-          IOFunctions.printMessage(ast.topHead(), "wrsym", F.List(expr), engine);
+          IOFunctions.printMessage(ast.topHead(), "wrsym", F.List(x), engine);
           return S.Null;
         }
+        mutable.set(i, x);
       }
 
-      Lambda.forEach(ast, x -> x.isSymbol(), x -> ((ISymbol) x).clearAll(engine));
+      Lambda.forEach(mutable, x -> x.isSymbol(), x -> ((ISymbol) x).clearAll(engine));
       return S.Null;
     }
 
@@ -1906,23 +1916,23 @@ public final class PatternMatching {
 
   private static final class SetSystemOptions extends AbstractFunctionEvaluator {
 
-	    @Override
-	    public IExpr evaluate(final IAST ast, EvalEngine engine) {
-	      // stub implementation 
-	      if (ast.isAST1() && ast.arg1().isString()) {
-	      
-	      }
-	      return S.Null;
-	    }
+    @Override
+    public IExpr evaluate(final IAST ast, EvalEngine engine) {
+      // stub implementation
+      if (ast.isAST1() && ast.arg1().isString()) {}
 
-	    @Override
-	    public int[] expectedArgSize(IAST ast) {
-	      return ARGS_1_1;
-	    }
+      return S.Null;
+    }
 
-	    @Override
-	    public void setUp(final ISymbol newSymbol) {}
-	  }
+    @Override
+    public int[] expectedArgSize(IAST ast) {
+      return ARGS_1_1;
+    }
+
+    @Override
+    public void setUp(final ISymbol newSymbol) {}
+  }
+
   private static final class SystemOptions extends AbstractFunctionEvaluator {
 
     @Override

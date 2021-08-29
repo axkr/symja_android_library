@@ -406,7 +406,7 @@ public class IOFunctions {
       }
 
       IExpr arg1 = ast.arg1();
-      boolean ignoreCase = FEConfig.PARSER_USE_LOWERCASE_SYMBOLS ? true : false;
+      boolean ignoreCase = FEConfig.PARSER_USE_LOWERCASE_SYMBOLS;
       if (ast.size() > 2) {
         final OptionArgs options = new OptionArgs(ast.topHead(), ast, 2, engine, true);
         IExpr option = options.getOption(S.IgnoreCase);
@@ -414,9 +414,11 @@ public class IOFunctions {
           ignoreCase = true;
         }
       }
-
-      if (arg1.isString() && arg1.toString().indexOf("`") < 0) {
-        arg1 = F.$str("System`" + arg1.toString());
+      if (arg1.isString()) {
+        int indx = arg1.toString().indexOf("`");
+        if (indx < 0) {
+          arg1 = F.$str("System`" + arg1.toString());
+        }
       }
 
       Map<ISymbol, String> groups = new HashMap<ISymbol, String>();
@@ -529,7 +531,7 @@ public class IOFunctions {
     "dotdim",
     "Dot contraction of `1` and `2` is invalid because dimensions `3` and `4` are incompatible.",
     "dotsh",
-    "Tensors `1` and `2` have incompatible shapes.",//
+    "Tensors `1` and `2` have incompatible shapes.", //
     "drop",
     "Cannot drop positions `1` through `2` in `3`.", //
     "dvar",
@@ -1201,11 +1203,14 @@ public class IOFunctions {
   }
 
   public static IAST getNamesByPattern(java.util.regex.Pattern pattern, EvalEngine engine) {
-    ContextPath cp = engine.getContextPath();
+    ContextPath contextPath = engine.getContextPath();
+
+    Map<String, Context> contextMap = contextPath.getContextMap();
     IASTAppendable list = F.ListAlloc(31);
-    for (Context context : cp) {
+    for (Map.Entry<String, Context> mapEntry : contextMap.entrySet()) {
+      Context context = mapEntry.getValue();
       for (Map.Entry<String, ISymbol> entry : context.entrySet()) {
-        String fullName = context.getContextName() + entry.getKey();
+        String fullName = context.completeContextName() + entry.getKey();
         // System.out.println(fullName);
         java.util.regex.Matcher matcher = pattern.matcher(fullName);
         if (matcher.matches()) {
@@ -1216,7 +1221,12 @@ public class IOFunctions {
               continue;
             }
           }
-          list.append(F.$str(entry.getKey()));
+          ISymbol value = entry.getValue();
+          if (context.isGlobal() || context.isSystem()) {
+            list.append(F.$str(value.toString()));
+          } else {
+            list.append(F.$str(fullName));
+          }
         }
       }
     }

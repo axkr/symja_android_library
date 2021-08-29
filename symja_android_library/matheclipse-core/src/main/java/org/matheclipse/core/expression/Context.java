@@ -137,6 +137,10 @@ public class Context implements Serializable {
     return contextName.equals(Context.GLOBAL_CONTEXT_NAME);
   }
 
+  public boolean isSystem() {
+    return contextName.equals(Context.SYSTEM_CONTEXT_NAME);
+  }
+
   // private static int counter = 0;
 
   public ISymbol put(String key, ISymbol value) {

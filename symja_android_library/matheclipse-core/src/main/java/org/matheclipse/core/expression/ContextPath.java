@@ -122,6 +122,10 @@ public final class ContextPath implements Iterable<Context> {
     return context;
   }
 
+  public Map<String, Context> getContextMap() {
+    return fContextMap;
+  }
+
   public Context getContext(String contextName, Context parentContext) {
     String name = contextName;
     if (parentContext != null) {

@@ -22987,7 +22987,12 @@ public class LowercaseTestCase extends AbstractTestCase {
   }
 
   public void testNames() {
-
+    check(
+        "foo`f = 42", //
+        "42");
+    check(
+        "Names(\"foo`*\")", //
+        "{foo`f}");
     check(
         "sysnames = Names(\"System`*\");", //
         "");
