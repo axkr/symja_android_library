@@ -132,6 +132,15 @@ public class SymjaBot {
           }
           return docString;
         }
+        Documentation.usageDocumentation(docBuf, trimmedInput.substring(1));
+        docString = docBuf.toString();
+        if (docString.length() > 0) {
+          int indx = docString.indexOf("### Github");
+          if (indx > 0) {
+            docString = docString.substring(0, indx);
+          }
+          return docString;
+        }
         return "No help page found";
       }
       //      System.out.println(trimmedInput);
