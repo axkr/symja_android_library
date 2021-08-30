@@ -8,14 +8,12 @@ import java.util.TreeSet;
 import java.util.function.Predicate;
 import org.hipparchus.linear.FieldMatrix;
 import org.matheclipse.core.basic.Config;
-import org.matheclipse.core.basic.ToggleFeature;
 import org.matheclipse.core.builtin.Algebra;
 import org.matheclipse.core.builtin.BooleanFunctions;
 import org.matheclipse.core.builtin.IOFunctions;
 import org.matheclipse.core.builtin.LinearAlgebra;
 import org.matheclipse.core.builtin.PolynomialFunctions;
 import org.matheclipse.core.builtin.RootsFunctions;
- import org.matheclipse.core.convert.ChocoConvert;
 import org.matheclipse.core.convert.Convert;
 import org.matheclipse.core.convert.CreamConvert;
 import org.matheclipse.core.convert.VariablesSet;
@@ -1051,25 +1049,25 @@ public class Solve extends AbstractFunctionEvaluator {
                 return F.NIL;
               }
               try {
-                if (ToggleFeature.CHOCO_SOLVER) {
-                  // try calling choco solver
-                  if (equationsAndInequations.isFreeAST(x -> x.equals(S.Power))) {
-                    try {
-                      IAST resultList =
-                          ChocoConvert.integerSolve(
-                              equationsAndInequations,
-                              equationVariables,
-                              userDefinedVariables,
-                              engine);
-                      if (resultList.isPresent()) {
-                        EvalAttributes.sort((IASTMutable) resultList);
-                        return resultList;
-                      }
-                    } catch (RuntimeException rex) {
-                      // try 2nd solver
-                    }
-                  }
-                }
+                //                if (ToggleFeature.CHOCO_SOLVER) {
+                //                  // try calling choco solver
+                //                  if (equationsAndInequations.isFreeAST(x -> x.equals(S.Power))) {
+                //                    try {
+                //                      IAST resultList =
+                //                          ChocoConvert.integerSolve(
+                //                              equationsAndInequations,
+                //                              equationVariables,
+                //                              userDefinedVariables,
+                //                              engine);
+                //                      if (resultList.isPresent()) {
+                //                        EvalAttributes.sort((IASTMutable) resultList);
+                //                        return resultList;
+                //                      }
+                //                    } catch (RuntimeException rex) {
+                //                      // try 2nd solver
+                //                    }
+                //                  }
+                //                }
                 // call cream solver
                 CreamConvert converter = new CreamConvert();
                 IAST resultList =

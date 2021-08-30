@@ -60,11 +60,6 @@
 		</dependency>
 
 		<dependency>
-			<groupId>org.choco-solver</groupId>
-			<artifactId>choco-solver</artifactId>
-		</dependency>
-
-		<dependency>
 			<groupId>org.hipparchus</groupId>
 			<artifactId>hipparchus-clustering</artifactId>
 		</dependency>
