@@ -42,7 +42,7 @@
 					<version>3.1.2</version>
 					<configuration>
 						<from>
-							<image>openjdk:11-slim-buster</image>
+							<image>openjdk:8-alpine</image>
 						</from>
 						<to>
 							<image>registry.hub.docker.com/symja/symja-2.0</image>
