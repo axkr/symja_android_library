@@ -3662,7 +3662,7 @@ public final class Arithmetic {
       if (exponent.isNumIntValue()) {
         return base.pow(exponent);
       }
-      if (exponent.complexSign() < 0) {
+      if (base.isNegative()) {
         ApcomplexNum b = base.apcomplexNumValue();
         ApcomplexNum e = exponent.apcomplexNumValue();
         return b.pow(e);
