@@ -1204,9 +1204,8 @@ public class IOFunctions {
 
   public static IAST getNamesByPattern(java.util.regex.Pattern pattern, EvalEngine engine) {
     ContextPath contextPath = engine.getContextPath();
-
-    Map<String, Context> contextMap = contextPath.getContextMap();
     IASTAppendable list = F.ListAlloc(31);
+    Map<String, Context> contextMap = contextPath.getContextMap();
     for (Map.Entry<String, Context> mapEntry : contextMap.entrySet()) {
       Context context = mapEntry.getValue();
       for (Map.Entry<String, ISymbol> entry : context.entrySet()) {
@@ -1226,6 +1225,32 @@ public class IOFunctions {
             list.append(F.$str(value.toString()));
           } else {
             list.append(F.$str(fullName));
+          }
+        }
+      }
+    }
+
+    for (Context context : contextPath) {
+      String completeContextName = context.completeContextName();
+      if (!contextMap.containsKey(completeContextName)) {
+        for (Map.Entry<String, ISymbol> entry : context.entrySet()) {
+          String fullName = completeContextName + entry.getKey();
+          // System.out.println(fullName);
+          java.util.regex.Matcher matcher = pattern.matcher(fullName);
+          if (matcher.matches()) {
+            if (FEConfig.PARSER_USE_LOWERCASE_SYMBOLS && context.equals(Context.SYSTEM)) {
+              String str = AST2Expr.PREDEFINED_SYMBOLS_MAP.get(entry.getValue().getSymbolName());
+              if (str != null) {
+                list.append(F.$str(str));
+                continue;
+              }
+            }
+            ISymbol value = entry.getValue();
+            if (context.isGlobal() || context.isSystem()) {
+              list.append(F.$str(value.toString()));
+            } else {
+              list.append(F.$str(fullName));
+            }
           }
         }
       }

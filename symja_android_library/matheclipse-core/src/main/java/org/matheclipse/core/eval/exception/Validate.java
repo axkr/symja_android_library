@@ -6,6 +6,8 @@ import java.math.BigInteger;
 import org.matheclipse.core.basic.Config;
 import org.matheclipse.core.builtin.IOFunctions;
 import org.matheclipse.core.eval.EvalEngine;
+import org.matheclipse.core.expression.Context;
+import org.matheclipse.core.expression.ContextPath;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.expression.IntegerSym;
 import org.matheclipse.core.expression.S;
@@ -128,7 +130,7 @@ public final class Validate {
    * Check the argument, if it's an {@code IAST} of {@code int} values in the range
    * [Integer.MIN_VALUE+1, Integer.MAX_VALUE]
    *
-   * @param ast 
+   * @param ast
    * @param arg the non-empty list of integer values
    * @param nonNegative chek if all values are greater or equal 0
    * @param quiet print no error message
@@ -968,7 +970,14 @@ public final class Validate {
         // Argument `1` at position `2` is expected to be a symbol.
         return IOFunctions.printMessage(ast.topHead(), "sym", F.List(expr, F.C1), engine);
       }
-      sym = F.symbol(identifier, engine);
+      int indx = identifier.lastIndexOf('`');
+      if (indx > 0) {
+        ContextPath contextPath = engine.getContextPath();
+        Context context = contextPath.getContext(identifier.substring(0, indx + 1));
+        sym = contextPath.symbol(identifier.substring(indx + 1), context, engine.isRelaxedSyntax());
+      } else {
+        sym = F.symbol(identifier, engine);
+      }
     } else if (expr.isSymbol()) {
       sym = (ISymbol) expr;
     } else if (expr.isAST(S.HoldPattern, 2) && expr.first().isSymbol()) {

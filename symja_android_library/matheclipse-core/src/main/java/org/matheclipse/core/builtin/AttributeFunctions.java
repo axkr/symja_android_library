@@ -287,15 +287,16 @@ public class AttributeFunctions {
         mutable.set(i, x);
       }
       final IASTAppendable result = F.ListAlloc(mutable.size());
-      mutable.forEach(
-          x -> {
-            ISymbol symbol = (ISymbol) x;
-            if (!symbol.isProtected()) {
-              symbol.addAttributes(ISymbol.PROTECTED);
-              result.append(x);
-            }
-          });
+      mutable.forEach(x -> protect(x, result));
       return result;
+    }
+
+    private static void protect(IExpr x, final IASTAppendable result) {
+      ISymbol symbol = (ISymbol) x;
+      if (!symbol.isProtected()) {
+        symbol.addAttributes(ISymbol.PROTECTED);
+        result.append(x);
+      }
     }
 
     @Override
@@ -319,18 +320,19 @@ public class AttributeFunctions {
         }
 
         final IASTAppendable result = F.ListAlloc(mutable.size());
-        mutable.forEach(
-            x -> {
-              ISymbol symbol = (ISymbol) x;
-              if (symbol.isProtected()) {
-                symbol.clearAttributes(ISymbol.PROTECTED);
-                result.append(x);
-              }
-            });
+        mutable.forEach(x -> unprotect(x, result));
         return result;
       }
       return engine.printMessage(
           "Unprotect: not allowed. Set Config.UNPROTECT_ALLOWED if necessary");
+    }
+
+    private static void unprotect(IExpr x, final IASTAppendable result) {
+      ISymbol symbol = (ISymbol) x;
+      if (symbol.isProtected()) {
+        symbol.clearAttributes(ISymbol.PROTECTED);
+        result.append(x);
+      }
     }
 
     @Override

@@ -117,6 +117,12 @@ public final class ContextPath implements Iterable<Context> {
     if (context != null) {
       return context;
     }
+    for (int i = 0; i < path.size(); i++) {
+      Context ctxt = path.get(i);
+      if (ctxt.completeContextName().equals(contextName)) {
+        return ctxt;
+      }
+    }
     context = new Context(contextName);
     fContextMap.put(contextName, context);
     return context;
