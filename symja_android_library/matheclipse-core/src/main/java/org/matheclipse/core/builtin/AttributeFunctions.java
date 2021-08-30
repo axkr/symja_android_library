@@ -13,6 +13,7 @@ import org.matheclipse.core.expression.ID;
 import org.matheclipse.core.expression.S;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IASTAppendable;
+import org.matheclipse.core.interfaces.IASTMutable;
 import org.matheclipse.core.interfaces.IBuiltInSymbol;
 import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.interfaces.ISymbol;
@@ -277,11 +278,16 @@ public class AttributeFunctions {
 
     @Override
     public IExpr evaluate(final IAST ast, EvalEngine engine) {
-      if (ast.exists(x -> !x.isSymbol())) {
-        return F.NIL;
+      IASTMutable mutable = ast.copyAST();
+      for (int i = 1; i < ast.size(); i++) {
+        IExpr x = Validate.checkIdentifierHoldPattern(ast.get(i), ast, engine);
+        if (!x.isPresent()) {
+          return F.NIL;
+        }
+        mutable.set(i, x);
       }
-      final IASTAppendable result = F.ListAlloc(ast.size());
-      ast.forEach(
+      final IASTAppendable result = F.ListAlloc(mutable.size());
+      mutable.forEach(
           x -> {
             ISymbol symbol = (ISymbol) x;
             if (!symbol.isProtected()) {
@@ -303,12 +309,17 @@ public class AttributeFunctions {
     @Override
     public IExpr evaluate(final IAST ast, EvalEngine engine) {
       if (Config.UNPROTECT_ALLOWED) {
-        if (ast.exists(x -> !x.isSymbol())) {
-          return F.NIL;
+        IASTMutable mutable = ast.copyAST();
+        for (int i = 1; i < ast.size(); i++) {
+          IExpr x = Validate.checkIdentifierHoldPattern(ast.get(i), ast, engine);
+          if (!x.isPresent()) {
+            return F.NIL;
+          }
+          mutable.set(i, x);
         }
 
-        final IASTAppendable result = F.ListAlloc(ast.size());
-        ast.forEach(
+        final IASTAppendable result = F.ListAlloc(mutable.size());
+        mutable.forEach(
             x -> {
               ISymbol symbol = (ISymbol) x;
               if (symbol.isProtected()) {
