@@ -281,7 +281,7 @@ public abstract class Scanner {
    * <ul>
    *   <li><code>0</code> - means all bracket levels are balanced
    *   <li><code>-1</code> - means a closing bracket is missing
-   *   <li><code>1</code> - means an opening bracket is missing and there are too much closing
+   *   <li><code>1</code> - means the brackets are not balanced
    *       brackets
    * </ul>
    *
@@ -311,7 +311,7 @@ public abstract class Scanner {
           }
           ch = openBracketStack.pop();
           if (ch != '{') {
-            return -1;
+            return 1;
           }
           break;
         case ')':
@@ -320,7 +320,7 @@ public abstract class Scanner {
           }
           ch = openBracketStack.pop();
           if (ch != '(') {
-            return -1;
+            return 1;
           }
           break;
         case ']':
@@ -329,7 +329,7 @@ public abstract class Scanner {
           }
           ch = openBracketStack.pop();
           if (ch != '[') {
-            return -1;
+            return 1;
           }
           break;
         case '|':
@@ -339,7 +339,7 @@ public abstract class Scanner {
             }
             ch = openBracketStack.pop();
             if (ch != '<') {
-              return -1;
+              return 1;
             }
           }
           break;

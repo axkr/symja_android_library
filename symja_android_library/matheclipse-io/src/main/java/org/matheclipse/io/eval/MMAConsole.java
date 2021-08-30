@@ -10,7 +10,6 @@ import java.io.StringWriter;
 import java.nio.charset.StandardCharsets;
 import java.util.Locale;
 import java.util.concurrent.TimeUnit;
-
 import org.matheclipse.core.basic.Config;
 import org.matheclipse.core.basic.ToggleFeature;
 import org.matheclipse.core.builtin.IOFunctions;
@@ -30,6 +29,7 @@ import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.interfaces.ISymbol;
 import org.matheclipse.io.IOInit;
 import org.matheclipse.parser.client.FEConfig;
+import org.matheclipse.parser.client.Scanner;
 import org.matheclipse.parser.client.SyntaxError;
 import org.matheclipse.parser.client.math.MathException;
 
@@ -202,6 +202,11 @@ public class MMAConsole {
           // continue;
           // }
           // console.interpreter(trimmedInput);
+          String postfix = Scanner.balanceCode(trimmedInput);
+          if (postfix != null && postfix.length() > 0) {
+            stderr.println("Automatically closing brackets: " + postfix);
+            trimmedInput = trimmedInput + postfix;
+          }
           stdout.println("In[" + COUNTER + "]:= " + trimmedInput);
           stdout.flush();
           // if (outputExpression.length() > 0) {
@@ -614,7 +619,7 @@ public class MMAConsole {
    * @param out Description of Parameter
    * @return the input string (without the newline)
    */
-  private String readString(final PrintWriter out) {
+  private String readString() {
     final StringBuilder input = new StringBuilder();
     final BufferedReader in =
         new BufferedReader(new InputStreamReader(System.in, StandardCharsets.UTF_8));
@@ -657,7 +662,7 @@ public class MMAConsole {
    */
   private String readString(final PrintWriter out, final String prompt) {
     printPrompt(out, prompt);
-    return readString(out);
+    return readString();
   }
 
   /**
