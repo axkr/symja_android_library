@@ -33753,6 +33753,11 @@ public class LowercaseTestCase extends AbstractTestCase {
   }
 
   public void testSolve() {
+    // github #261 - JUnit test for Apfloat switching to complex Power calculation
+    check(
+        "Solve(0.00004244131815783 == x^5 , x)", //
+        "{{x->0.13352351997457149},{x->0.04126103682090533+I*0.12698841375048231},{x->0.04126103682090533+I*(-0.12698841375048231)}," //
+            + "{x->-0.10802279680819108+I*0.07848315587523257},{x->-0.10802279680819108+I*(-0.07848315587523258)}}");
     // github #247
     check(
         "Solve((k+3)/(4)==(k)/2,{k})", //
