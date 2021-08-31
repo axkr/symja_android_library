@@ -13,7 +13,7 @@ public interface DRules {
    * <li>index 0 - number of equal rules in <code>RULES</code></li>
 	 * </ul>
 	 */
-  final public static int[] SIZES = { 0, 135 };
+  final public static int[] SIZES = { 0, 137 };
 
   final public static IAST RULES = List(
     IInit(D, SIZES),
@@ -170,6 +170,12 @@ public interface DRules {
     // D(Csch(f_),x_?NotListQ):=D(f,x)*(-1)*Coth(f)*Csch(f)
     ISetDelayed(D(Csch(f_),PatternTest(x_,NotListQ)),
       Times(D(f,x),CN1,Coth(f),Csch(f))),
+    // D(RealAbs(f_),x_?NotListQ):=(f*D(f,x))/RealAbs(f)
+    ISetDelayed(D(RealAbs(f_),PatternTest(x_,NotListQ)),
+      Times(f,D(f,x),Power(RealAbs(f),CN1))),
+    // D(RealSign(f_),x_?NotListQ):=D(f,x)*Piecewise({{0,f!=0}},Indeterminate)
+    ISetDelayed(D(RealSign(f_),PatternTest(x_,NotListQ)),
+      Times(D(f,x),Piecewise(List(List(C0,Unequal(f,C0))),Indeterminate))),
     // D(Round(f_),x_?NotListQ):=D(f,x)*Piecewise({{0,NotElement(-1/2+Re(f),Integers)&&NotElement(-1/2+Im(f),Integers)}},Indeterminate)
     ISetDelayed(D(Round(f_),PatternTest(x_,NotListQ)),
       Times(D(f,x),Piecewise(List(List(C0,And(NotElement(Plus(CN1D2,Re(f)),Integers),NotElement(Plus(CN1D2,Im(f)),Integers)))),Indeterminate))),

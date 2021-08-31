@@ -426,6 +426,15 @@ public class Integrate extends AbstractFunctionEvaluator {
    */
   private static IExpr integrateAbs(IExpr function, final IExpr x) {
     IExpr constant = F.C0;
+    if (function.isAST1() && function.first().equals(x)) {
+      IAST f1 = (IAST) function;
+      IExpr head = f1.head();
+      if (head.equals(S.RealAbs)) {
+        return F.Times(F.C1D2, x, F.RealAbs(x));
+      } else if (head.equals(S.RealSign)) {
+        return F.RealAbs(x);
+      }
+    }
 
     if (x.isRealResult()) {
       if (function.isAbs()) {

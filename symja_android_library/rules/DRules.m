@@ -51,6 +51,8 @@
   D(Cosh(f_),x_?NotListQ):=D(f,x)*Sinh(f),
   D(Csc(f_),x_?NotListQ):=D(f,x)*(-1)*Cot(f)*Csc(f),
   D(Csch(f_),x_?NotListQ):=D(f,x)*(-1)*Coth(f)*Csch(f),
+  D(RealAbs(f_),x_?NotListQ):=(D(f,x)*f)/RealAbs(f),
+  D(RealSign(f_),x_?NotListQ):=D(f,x)*Piecewise({{0, f!=0}}, Indeterminate),
   D(Round(f_),x_?NotListQ):=D(f,x)*Piecewise({{0, NotElement(-(1/2)+Re(f), Integers) && NotElement(-(1/2)+Im(f), Integers)}}, Indeterminate),
   D(Sin(f_),x_?NotListQ):=D(f,x)*Cos(f),
   D(Sinc(f_),x_?NotListQ):=D(f,x)*(Cos(f)/f-(Sin(f)/f^2)),

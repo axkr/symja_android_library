@@ -23722,6 +23722,12 @@ public class LowercaseTestCase extends AbstractTestCase {
     check(
         "{Positive(0), NonNegative(0)}", //
         "{False,True}");
+    check(
+        "NonNegative({1.6, 3/4, Pi, 0, -5, 1 + I, Sin(10^5)})", //
+        "{True,True,True,True,False,False,True}");
+    check(
+        "NonNegative({x, Sin(y)})", //
+        "{NonNegative(x),NonNegative(Sin(y))}");
   }
 
   public void testNonPositive() {
@@ -23737,6 +23743,9 @@ public class LowercaseTestCase extends AbstractTestCase {
     check(
         "{Negative(0), NonPositive(0)}", //
         "{False,True}");
+    check(
+        "NonPositive({1.6, 3/4, Pi, 0, -5, 1 + I, Sin(10^5)})", //
+        "{False,False,False,True,True,False,False}");
   }
 
   public void testNor() {
@@ -29997,6 +30006,54 @@ public class LowercaseTestCase extends AbstractTestCase {
     check(
         "RealNumberQ(0.0*I)", //
         "False");
+  }
+
+  public void testRealAbs() {
+    check(
+        "RealAbs(Indeterminate)", //
+        "Indeterminate");
+    check(
+        "RealAbs(-Infinity)", //
+        "Infinity");
+    check(
+        "RealAbs({1.2, 1.5, 0})", //
+        "{1.2,1.5,0.0}");
+    check(
+        "RealAbs(Interval({-1, 2}))", //
+        "Interval({0,2})");
+    check(
+        "D(RealAbs(x),x)", //
+        "x/RealAbs(x)");
+    check(
+        "Integrate(RealAbs(x),x)", //
+        "1/2*x*RealAbs(x)");
+  }
+
+  public void testRealSign() {
+    check(
+        "RealSign(-Infinity)", //
+        "-1");
+    check(
+        "RealSign({3, -5, 2 + 5 I})", //
+        "{1,-1,RealSign(2+I*5)}");
+    check(
+        "Sign({3, -5, 2 + 5 I})", //
+        "{1,-1,(2+I*5)/Sqrt(29)}");
+    check(
+        "RealSign(0``200)", //
+        "0");
+    check(
+        "RealSign({\n" //
+            + "   {1, u},\n"
+            + "   {v, -1}\n"
+            + "  })", //
+        "{{1,RealSign(u)},{RealSign(v),-1}}");
+    check(
+        "D(RealSign(x),x)", //
+        "Piecewise({{0,x!=0}},Indeterminate)");
+    check(
+        "Integrate(RealSign(x),x)", //
+        "RealAbs(x)");
   }
 
   public void testReap() {

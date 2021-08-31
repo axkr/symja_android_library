@@ -196,6 +196,8 @@ public final class Arithmetic {
       S.PreIncrement.setEvaluator(new PreIncrement());
       S.Rational.setEvaluator(CONST_RATIONAL);
       S.Re.setEvaluator(new Re());
+      S.RealAbs.setEvaluator(new RealAbs());
+      S.RealSign.setEvaluator(new RealSign());
       S.Sign.setEvaluator(new Sign());
       S.SignCmp.setEvaluator(new SignCmp());
       S.Subtract.setEvaluator(new Subtract());
@@ -4855,6 +4857,112 @@ public final class Arithmetic {
     }
   }
 
+  private static final class RealAbs extends AbstractEvaluator {
+    private static final class AbsNumericFunction implements DoubleFunction<IExpr> {
+      final ISymbol symbol;
+
+      public AbsNumericFunction(ISymbol symbol) {
+        this.symbol = symbol;
+      }
+
+      @Override
+      public IExpr apply(double value) {
+        if (value < Integer.MAX_VALUE && value > Integer.MIN_VALUE) {
+          double result = Math.abs(value);
+          if (result > 0.0) {
+            return symbol;
+          }
+        }
+        return F.NIL;
+      }
+    }
+
+    @Override
+    public IExpr evaluate(final IAST ast, EvalEngine engine) {
+      IExpr arg1 = ast.arg1();
+      if (arg1.isInfinity() || arg1.isNegativeInfinity()) {
+        return F.CInfinity;
+      }
+      if (arg1.isNumber()) {
+        if (arg1.isReal()) {
+          return arg1.abs();
+        }
+        return F.NIL;
+      }
+      if (arg1.isNumericFunction(true)) {
+        IExpr temp = engine.evalN(arg1);
+        if (temp.isReal()) {
+          return temp.abs();
+        }
+        if (temp.isNumber()) {
+          return F.NIL;
+        }
+      }
+      if (arg1.isNegativeResult()) {
+        return F.Negate(arg1);
+      }
+      if (arg1.isNonNegativeResult()) {
+        return arg1;
+      }
+      if (arg1.isSymbol()) {
+        ISymbol sym = (ISymbol) arg1;
+        return sym.mapConstantDouble(new AbsNumericFunction(sym));
+      }
+
+      if (arg1.isInterval()) {
+        return IntervalSym.abs((IAST) arg1);
+      }
+      return F.NIL;
+    }
+
+    @Override
+    public int[] expectedArgSize(IAST ast) {
+      return ARGS_1_1;
+    }
+
+    @Override
+    public void setUp(final ISymbol newSymbol) {
+      newSymbol.setAttributes(ISymbol.LISTABLE | ISymbol.NUMERICFUNCTION);
+      super.setUp(newSymbol);
+    }
+  }
+
+  private static final class RealSign extends AbstractEvaluator {
+
+    @Override
+    public IExpr evaluate(final IAST ast, EvalEngine engine) {
+      IExpr arg1 = ast.arg1();
+      if (arg1.isReal()) {
+        return arg1.sign();
+      }
+      if (arg1.isNumericFunction(true)) {
+        IExpr temp = engine.evalN(arg1);
+        if (temp.isReal()) {
+          return temp.sign();
+        }
+        if (temp.isNumber()) {
+          return F.NIL;
+        }
+      }
+      if (arg1.isInfinity()) {
+        return F.C1;
+      }
+      if (arg1.isNegativeInfinity()) {
+        return F.CN1;
+      }
+      return F.NIL;
+    }
+
+    @Override
+    public int[] expectedArgSize(IAST ast) {
+      return ARGS_1_1;
+    }
+
+    @Override
+    public void setUp(final ISymbol newSymbol) {
+      newSymbol.setAttributes(ISymbol.LISTABLE | ISymbol.NUMERICFUNCTION);
+    }
+  }
   /**
    *
    *

@@ -7457,6 +7457,8 @@ public class S {
    */
   public static final IBuiltInSymbol Real = F.initFinalSymbol("Real", ID.Real);
 
+  public static final IBuiltInSymbol RealAbs = F.initFinalSymbol("RealAbs", ID.RealAbs);
+
   public static final IBuiltInSymbol RealDigits = F.initFinalSymbol("RealDigits", ID.RealDigits);
 
   /**
@@ -7476,6 +7478,8 @@ public class S {
    *     documentation</a>
    */
   public static final IBuiltInSymbol Reals = F.initFinalSymbol("Reals", ID.Reals);
+
+  public static final IBuiltInSymbol RealSign = F.initFinalSymbol("RealSign", ID.RealSign);
 
   /**
    * Reap(expr) - gives the result of evaluating `expr`, together with all values sown during this
