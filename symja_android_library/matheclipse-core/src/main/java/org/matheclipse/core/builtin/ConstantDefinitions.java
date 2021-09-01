@@ -663,6 +663,13 @@ public class ConstantDefinitions {
     }
 
     @Override
+    public IExpr apfloatEval(ISymbol symbol, EvalEngine engine) {
+      // `1` currently not supported in `2`.
+      return IOFunctions.printMessage(
+          S.Catalan, "unsupported", F.List(S.Catalan, F.$str("Apfloat")), engine);
+    }
+
+    @Override
     public double evalReal() {
       return CATALAN;
     }
@@ -885,6 +892,12 @@ public class ConstantDefinitions {
     @Override
     public IExpr numericEval(final ISymbol symbol, EvalEngine engine) {
       return F.num(GLAISHER);
+    }
+
+    public IExpr apfloatEval(ISymbol symbol, EvalEngine engine) {
+      // `1` currently not supported in `2`.
+      return IOFunctions.printMessage(
+          S.Glaisher, "unsupported", F.List(S.Glaisher, F.$str("Apfloat")), engine);
     }
 
     @Override
@@ -1163,6 +1176,12 @@ public class ConstantDefinitions {
     @Override
     public double evalReal() {
       return KHINCHIN;
+    }
+
+    public IExpr apfloatEval(ISymbol symbol, EvalEngine engine) {
+      // `1` currently not supported in `2`.
+      return IOFunctions.printMessage(
+          S.Khinchin, "unsupported", F.List(S.Khinchin, F.$str("Apfloat")), engine);
     }
   }
 
