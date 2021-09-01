@@ -30031,6 +30031,10 @@ public class LowercaseTestCase extends AbstractTestCase {
     check(
         "N(RealAbs(Pi - Catalan), 50)", //
         "RealAbs(3.1415926535897932384626433832795028841971693993751-Catalan)");
+
+    check(
+        "PiecewiseExpand(RealAbs(x))", //
+        "Piecewise({{-x,x<0}},x)");
   }
 
   public void testRealSign() {
@@ -30058,6 +30062,9 @@ public class LowercaseTestCase extends AbstractTestCase {
     check(
         "Integrate(RealSign(x),x)", //
         "RealAbs(x)");
+    check(
+        "PiecewiseExpand(RealSign(x))", //
+        "Piecewise({{-1,x<0},{1,x>0}},0)");
   }
 
   public void testReap() {

@@ -6794,16 +6794,16 @@ public final class Arithmetic {
    * @return {@link F#NIL} if evaluation wasn't possible
    */
   public static IAST piecewiseExpand(final IAST function, IBuiltInSymbol domain) {
-    if (function.size() == 2) {
+    if (function.argSize() == 1) {
       IExpr x = function.arg1();
       if ((domain.equals(S.Reals) || function.arg1().isRealResult())) {
-        if (function.isAST(S.Abs)) {
+        if (function.isAST(S.Abs) || function.isAST(S.RealAbs)) {
           return F.Piecewise(F.List(F.List(F.Negate(x), F.Less(x, F.C0))), x);
         }
         if (function.isAST(S.Arg)) {
           return F.Piecewise(F.List(F.List(S.Pi, F.Less(x, F.C0))), F.C0);
         }
-        if (function.isAST(S.Sign)) {
+        if (function.isAST(S.Sign) || function.isAST(S.RealSign)) {
           return F.Piecewise(
               F.List(
                   F.List(F.CN1, F.Less(x, F.C0)), //
@@ -6835,6 +6835,15 @@ public final class Arithmetic {
                       F.GreaterEqual(n, F.C0),
                       F.GreaterEqual(F.Subtract(d, n), F.C0),
                       F.Less(F.C0, x, F.C1)))),
+          F.C0);
+    }
+    if (function.isAST(S.RealAbs, 2)) {
+      return F.Piecewise(F.List(F.List(F.Negate(x), F.Less(x, F.C0))), x);
+    } else if (function.isAST(S.RealSign, 2)) {
+      return F.Piecewise(
+          F.List(
+              F.List(F.CN1, F.Less(x, F.C0)), //
+              F.List(F.C1, F.Greater(x, F.C0))),
           F.C0);
     }
     if (function.isAST(S.Clip, 2)) {
