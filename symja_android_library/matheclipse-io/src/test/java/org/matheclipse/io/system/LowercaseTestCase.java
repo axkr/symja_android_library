@@ -13103,6 +13103,13 @@ public class LowercaseTestCase extends AbstractTestCase {
   }
 
   public void testFlatten() {
+    check(
+        "Flatten(RandomReal(1, {3, 5, 7}), {{2, 3}, {1}})", //
+        "Flatten(RandomReal(1,{3,5,7}),{{2,3},{1}})");
+
+    check(
+        "Flatten(3.14)", //
+        "Flatten(3.14)");
     // https://oeis.org/A049615
     check(
         "Table(Length(Select(Flatten(Table({x, y}, {x, 0, n - k}, {y, 0, k}), 1), GCD @@ # > 1 &)), {n, 0, 11}, {k, 0, n}) // Flatten", //
