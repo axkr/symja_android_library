@@ -466,7 +466,7 @@ public class TensorFunctions {
           if (arg2.equals(S.All)) {
           } else if (arg2.isReal()) {
             ISignedNumber sn = (ISignedNumber) arg2;
-            n = sn.toIntDefault(Integer.MIN_VALUE);
+            n = sn.toIntDefault();
           }
         }
         if (n == Integer.MIN_VALUE) {

@@ -57,12 +57,12 @@ public class FindInstance extends Solve {
       boolean formula = false;
       int maxChoices = 1;
       if (ast.size() == 4) {
-        maxChoices = ast.arg3().toIntDefault(Integer.MIN_VALUE);
+        maxChoices = ast.arg3().toIntDefault();
         if (maxChoices < 0) {
           maxChoices = 1;
         }
       } else if (ast.size() >= 3) {
-        maxChoices = ast.arg2().toIntDefault(Integer.MIN_VALUE);
+        maxChoices = ast.arg2().toIntDefault();
         if (maxChoices < 0) {
           maxChoices = 1;
         }

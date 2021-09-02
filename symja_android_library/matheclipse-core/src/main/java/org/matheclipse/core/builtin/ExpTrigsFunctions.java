@@ -1246,7 +1246,7 @@ public class ExpTrigsFunctions {
           // Argument `1` should be a real non-negative number.
           return IOFunctions.printMessage(ast.topHead(), "noneg", F.List(arg1), engine);
         }
-        int i = arg1.toIntDefault(Integer.MIN_VALUE);
+        int i = arg1.toIntDefault();
         if (i > 0) {
           // Pi/i - Pi/2
           final IExpr start =

@@ -314,7 +314,7 @@ public class BesselFunctions {
     public IExpr evaluate(final IAST ast, EvalEngine engine) {
       IExpr n = ast.arg1();
       IExpr z = ast.arg2();
-      final int order = n.toIntDefault(Integer.MIN_VALUE);
+      final int order = n.toIntDefault();
       if (z.isZero()) {
         if (n.isZero()) {
           // (0, 0)
@@ -435,7 +435,7 @@ public class BesselFunctions {
     public IExpr evaluate(final IAST ast, EvalEngine engine) {
       IExpr n = ast.arg1();
       IExpr z = ast.arg2();
-      final int k = z.toIntDefault(Integer.MIN_VALUE);
+      final int k = z.toIntDefault();
       if (n.isReal()) {
         if (k > 0 && engine.isDoubleMode()) {
           try {
@@ -510,7 +510,7 @@ public class BesselFunctions {
     public IExpr evaluate(final IAST ast, EvalEngine engine) {
       IExpr n = ast.arg1();
       IExpr z = ast.arg2();
-      // final int order = n.toIntDefault(Integer.MIN_VALUE);
+      // final int order = n.toIntDefault();
       if (z.isZero()) {
         if (n.isZero()) {
           return F.C1;
@@ -617,7 +617,7 @@ public class BesselFunctions {
     public IExpr evaluate(final IAST ast, EvalEngine engine) {
       IExpr n = ast.arg1();
       IExpr z = ast.arg2();
-      // final int order = n.toIntDefault(Integer.MIN_VALUE);
+      // final int order = n.toIntDefault();
       if (z.isZero()) {
         if (n.isZero()) {
           return F.CInfinity;
@@ -717,7 +717,7 @@ public class BesselFunctions {
     public IExpr evaluate(final IAST ast, EvalEngine engine) {
       IExpr n = ast.arg1();
       IExpr z = ast.arg2();
-      // final int order = n.toIntDefault(Integer.MIN_VALUE);
+      // final int order = n.toIntDefault();
 
       if (z.isZero()) {
         if (n.isZero()) {
@@ -786,7 +786,7 @@ public class BesselFunctions {
     public IExpr evaluate(final IAST ast, EvalEngine engine) {
       IExpr n = ast.arg1();
       IExpr z = ast.arg2();
-      final int k = z.toIntDefault(Integer.MIN_VALUE);
+      final int k = z.toIntDefault();
 
       if (k > 0 && engine.isDoubleMode()) {
         try {

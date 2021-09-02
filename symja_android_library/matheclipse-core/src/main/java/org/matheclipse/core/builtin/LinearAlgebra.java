@@ -1096,7 +1096,7 @@ public final class LinearAlgebra {
       if (arg1.isList() || arg1.isSparseArray()) {
         int diff = 0;
         if (ast.size() > 2) {
-          diff = ast.arg2().toIntDefault(Integer.MIN_VALUE);
+          diff = ast.arg2().toIntDefault();
           if (diff == Integer.MIN_VALUE) {
             return F.NIL;
           }
@@ -1274,7 +1274,7 @@ public final class LinearAlgebra {
     public IExpr evaluate(final IAST ast, EvalEngine engine) {
       int maximumLevel = Integer.MAX_VALUE;
       if (ast.isAST2() && ast.arg2().isInteger()) {
-        maximumLevel = ast.arg2().toIntDefault(Integer.MIN_VALUE);
+        maximumLevel = ast.arg2().toIntDefault();
         if (maximumLevel < 0) {
           // Positive integer (less equal 2147483647) expected at position `2` in `1`.
           return IOFunctions.printMessage(S.Dimensions, "intpm", F.List(ast, F.C2), engine);
@@ -1820,7 +1820,7 @@ public final class LinearAlgebra {
     @Override
     public IExpr evaluate(final IAST ast, EvalEngine engine) {
       if (ast.arg1().isInteger()) {
-        final int m = ast.arg1().toIntDefault(Integer.MIN_VALUE);
+        final int m = ast.arg1().toIntDefault();
         if (m <= 0) {
           // Positive integer (less equal 2147483647) expected at position `2` in `1`.
           return IOFunctions.printMessage(S.FourierMatrix, "intpm", F.List(ast, F.C1), engine);
@@ -1958,19 +1958,19 @@ public final class LinearAlgebra {
       int rowSize = 0;
       int columnSize = 0;
       if (ast.isAST1() && ast.arg1().isInteger()) {
-        rowSize = ast.arg1().toIntDefault(Integer.MIN_VALUE);
+        rowSize = ast.arg1().toIntDefault();
         if (rowSize < 0) {
           // Positive integer (less equal 2147483647) expected at position `2` in `1`.
           return IOFunctions.printMessage(S.HilbertMatrix, "intpm", F.List(ast, F.C1), engine);
         }
         columnSize = rowSize;
       } else if (ast.isAST2() && ast.arg1().isInteger() && ast.arg2().isInteger()) {
-        rowSize = ast.arg1().toIntDefault(Integer.MIN_VALUE);
+        rowSize = ast.arg1().toIntDefault();
         if (rowSize < 0) {
           // Positive integer (less equal 2147483647) expected at position `2` in `1`.
           return IOFunctions.printMessage(S.HilbertMatrix, "intpm", F.List(ast, F.C1), engine);
         }
-        columnSize = ast.arg2().toIntDefault(Integer.MIN_VALUE);
+        columnSize = ast.arg2().toIntDefault();
         if (columnSize < 0) {
           // Positive integer (less equal 2147483647) expected at position `2` in `1`.
           return IOFunctions.printMessage(S.HilbertMatrix, "intpm", F.List(ast, F.C2), engine);
@@ -2012,7 +2012,7 @@ public final class LinearAlgebra {
     @Override
     public IExpr evaluate(final IAST ast, EvalEngine engine) {
       if (ast.arg1().isInteger()) {
-        int m = ast.arg1().toIntDefault(Integer.MIN_VALUE);
+        int m = ast.arg1().toIntDefault();
         if (m < 0) {
           // Positive integer (less equal 2147483647) expected at position `2` in `1`.
           return IOFunctions.printMessage(S.IdentityMatrix, "intpm", F.List(ast, F.C1), engine);
@@ -3155,7 +3155,7 @@ public final class LinearAlgebra {
           if (matrix == null) {
             return F.NIL;
           }
-          int p = ast.arg2().toIntDefault(Integer.MIN_VALUE);
+          int p = ast.arg2().toIntDefault();
           if (p == Integer.MIN_VALUE) {
             return F.NIL;
           }
@@ -3693,7 +3693,7 @@ public final class LinearAlgebra {
     @Override
     public IExpr evaluate(final IAST ast, EvalEngine engine) {
       if (ast.arg1().isInteger()) {
-        int m = ast.arg1().toIntDefault(Integer.MIN_VALUE);
+        int m = ast.arg1().toIntDefault();
         if (m < 0) {
           return F.NIL;
         }
@@ -4311,7 +4311,7 @@ public final class LinearAlgebra {
       }
 
       if (ast.arg1().isInteger()) {
-        int m = ast.arg1().toIntDefault(Integer.MIN_VALUE);
+        int m = ast.arg1().toIntDefault();
         if (m < 0) {
           // Positive integer (less equal 2147483647) expected at position `2` in `1`.
           return IOFunctions.printMessage(S.ToeplitzMatrix, "intpm", F.List(ast, F.C1), engine);
@@ -4798,7 +4798,7 @@ public final class LinearAlgebra {
       }
 
       if (arg1.isInteger()) {
-        int k = arg1.toIntDefault(Integer.MIN_VALUE);
+        int k = arg1.toIntDefault();
         if (k <= 0) {
           // Positive machine-sized integer expected at position `2` in `1`.
           return IOFunctions.printMessage(S.UnitVector, "intpm", F.List(ast, F.C1), engine);

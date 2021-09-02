@@ -1396,7 +1396,7 @@ public final class Programming {
     public IExpr evaluate(final IAST ast, EvalEngine engine) {
       IExpr arg3 = engine.evaluate(ast.arg3());
       if (arg3.isInteger()) {
-        int n = arg3.toIntDefault(Integer.MIN_VALUE);
+        int n = arg3.toIntDefault();
         if (n < 0) {
           // Positive integer (less equal 2147483647) expected at position `2` in `1`.
           return IOFunctions.printMessage(S.Nest, "intpm", F.List(ast, F.C3), engine);
@@ -1451,7 +1451,7 @@ public final class Programming {
     public IExpr evaluate(final IAST ast, EvalEngine engine) {
       IExpr arg3 = engine.evaluate(ast.arg3());
       if (arg3.isInteger()) {
-        int n = arg3.toIntDefault(Integer.MIN_VALUE);
+        int n = arg3.toIntDefault();
         if (n < 0) {
           // Positive integer (less equal 2147483647) expected at position `2` in `1`.
           return IOFunctions.printMessage(S.Nest, "intpm", F.List(ast, F.C3), engine);
@@ -3640,7 +3640,7 @@ public final class Programming {
     } else if (arg2.equals(S.All)) {
       return spanPart(ast, pos, arg1, arg2, 1, arg1.size() - 1, 1, p1, engine);
     } else if (arg2.isReal()) {
-      final int indx = ast.get(pos).toIntDefault(Integer.MIN_VALUE);
+      final int indx = ast.get(pos).toIntDefault();
       if (indx == Integer.MIN_VALUE) {
         // Part `1` of `2` does not exist.
         return IOFunctions.printMessage(S.Part, "partw", F.List(ast.get(pos), arg1), engine);
@@ -3668,7 +3668,7 @@ public final class Programming {
         for (int i = 1; i < list.size(); i++) {
           final IExpr listArg = list.get(i);
           if (listArg.isReal()) {
-            final int indx = listArg.toIntDefault(Integer.MIN_VALUE);
+            final int indx = listArg.toIntDefault();
             if (indx == Integer.MIN_VALUE) {
               // Part `1` of `2` does not exist.
               return IOFunctions.printMessage(S.Part, "partw", F.List(listArg, arg1), engine);
@@ -3729,7 +3729,7 @@ public final class Programming {
       for (int i = 1; i < list.size(); i++) {
         final IExpr listArg = list.get(i);
         if (listArg.isReal()) {
-          final int indx = listArg.toIntDefault(Integer.MIN_VALUE);
+          final int indx = listArg.toIntDefault();
           if (indx == Integer.MIN_VALUE) {
             // Part `1` of `2` does not exist.
             return IOFunctions.printMessage(S.Part, "partw", F.List(listArg, arg1), engine);

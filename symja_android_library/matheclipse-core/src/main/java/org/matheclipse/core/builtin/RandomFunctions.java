@@ -136,7 +136,7 @@ public final class RandomFunctions {
                     },
                     dimension);
               }
-              int n = arg2.toIntDefault(Integer.MIN_VALUE);
+              int n = arg2.toIntDefault();
               if (n > 0) {
                 IASTAppendable result = F.ListAlloc(n);
                 int[] chosen = sampler.sample(n);
@@ -175,7 +175,7 @@ public final class RandomFunctions {
                   },
                   dimension);
             }
-            int n = arg2.toIntDefault(Integer.MIN_VALUE);
+            int n = arg2.toIntDefault();
             if (n > 0) {
               IASTAppendable result = F.ListAlloc(n);
               for (int i = 0; i < n; i++) {
@@ -326,7 +326,7 @@ public final class RandomFunctions {
                 final int max2 = max;
                 return Tensors.build(() -> F.ZZ(tlr.nextInt((max2 - min2) + 1) + min2), dimension);
               }
-              int size = arg2.toIntDefault(Integer.MIN_VALUE);
+              int size = arg2.toIntDefault();
               if (size >= 0) {
                 IASTAppendable list = F.ListAlloc(size);
                 for (int i = 0; i < size; i++) {
@@ -361,7 +361,7 @@ public final class RandomFunctions {
               final boolean negative2 = negative;
               return Tensors.build(() -> randomBigInteger(upperLimit2, negative2, tlr), dimension);
             }
-            int size = arg2.toIntDefault(Integer.MIN_VALUE);
+            int size = arg2.toIntDefault();
             if (size >= 0) {
               IASTAppendable list = F.ListAlloc(size);
               for (int i = 0; i < size; i++) {
@@ -696,7 +696,7 @@ public final class RandomFunctions {
     @Override
     public IExpr evaluate(final IAST ast, EvalEngine engine) {
       if (ast.arg1().isList()) {
-        int n = ast.isAST2() ? ast.arg2().toIntDefault(Integer.MIN_VALUE) : Integer.MAX_VALUE;
+        int n = ast.isAST2() ? ast.arg2().toIntDefault() : Integer.MAX_VALUE;
         if (n >= 0) {
           return shuffle((IAST) ast.arg1(), n);
         }

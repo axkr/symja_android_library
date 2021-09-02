@@ -3528,8 +3528,8 @@ public class StatisticsFunctions {
     public IExpr randomVariate(Random random, IAST dist, int size) {
       IExpr[] minMax = minmax(dist);
       if (minMax != null) {
-        int min = minMax[0].toIntDefault(Integer.MIN_VALUE);
-        int max = minMax[1].toIntDefault(Integer.MIN_VALUE);
+        int min = minMax[0].toIntDefault();
+        int max = minMax[1].toIntDefault();
         if (min < max && min != Integer.MIN_VALUE) {
           RandomDataGenerator rdg = new RandomDataGenerator();
           int[] vector =
@@ -5688,7 +5688,7 @@ public class StatisticsFunctions {
                     // x = a + (length + b) * q
                     IExpr x = q.isZero() ? a : S.Plus.of(engine, a, F.Times(F.Plus(length, b), q));
                     if (x.isNumIntValue()) {
-                      int index = x.toIntDefault(Integer.MIN_VALUE);
+                      int index = x.toIntDefault();
                       if (index != Integer.MIN_VALUE) {
                         if (index < 1) {
                           index = 1;
@@ -5834,7 +5834,7 @@ public class StatisticsFunctions {
                     return createArray(
                         indx, 1, list, () -> variate.randomVariate(random, dist, sampleSize));
                   } else {
-                    int n = arg2.toIntDefault(Integer.MIN_VALUE);
+                    int n = arg2.toIntDefault();
                     if (n >= 0) {
                       return variate.randomVariate(random, dist, n);
                     }

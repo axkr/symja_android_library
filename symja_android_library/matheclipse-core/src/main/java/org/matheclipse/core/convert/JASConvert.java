@@ -342,7 +342,7 @@ public class JASConvert<C extends RingElem<C>> {
           return result;
         } else if (ast.isPower() && ast.base().isSymbol()) {
           final ISymbol base = (ISymbol) ast.base();
-          int exponent = ast.exponent().toIntDefault(Integer.MIN_VALUE);
+          int exponent = ast.exponent().toIntDefault();
           if (exponent < 0) {
             throw new JASConversionException();
             // "JASConvert:expr2Poly - invalid exponent: " + ast.arg2().toString());
@@ -354,7 +354,7 @@ public class JASConvert<C extends RingElem<C>> {
           }
         } else if (ast.isPower() && ast.arg1().isSlot()) {
           final IAST base = (IAST) ast.arg1();
-          int exponent = ast.exponent().toIntDefault(Integer.MIN_VALUE);
+          int exponent = ast.exponent().toIntDefault();
           if (exponent < 0) {
             throw new JASConversionException();
             // throw new ArithmeticException(

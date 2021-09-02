@@ -1167,7 +1167,7 @@ public class PolynomialFunctions {
 
     @Override
     public IExpr evaluate(final IAST ast, EvalEngine engine) {
-      //      int degree = ast.arg1().toIntDefault(Integer.MIN_VALUE);
+      //      int degree = ast.arg1().toIntDefault();
       //      if (degree >= 0) {
       //        if (degree > Config.MAX_POLYNOMIAL_DEGREE) {
       //          PolynomialDegreeLimitExceeded.throwIt(degree);
@@ -1231,7 +1231,7 @@ public class PolynomialFunctions {
         return F.Cos.of(engine, F.Times(n, F.ArcCos(z)));
       }
 
-      int degree = n.toIntDefault(Integer.MIN_VALUE);
+      int degree = n.toIntDefault();
       if (degree != Integer.MIN_VALUE) {
         if (degree < 0) {
           degree *= -1;
@@ -1307,7 +1307,7 @@ public class PolynomialFunctions {
             F.Sin(F.Times(F.Plus(F.C1, n), F.ArcCos(z))));
       }
 
-      int degree = n.toIntDefault(Integer.MIN_VALUE);
+      int degree = n.toIntDefault();
       if (degree != Integer.MIN_VALUE) {
         if (degree < 0) {
           if (degree == (-1)) {
@@ -1424,8 +1424,8 @@ public class PolynomialFunctions {
         return F.NIL;
       }
       if (arg1.isInteger() && ast.arg2().isInteger()) {
-        int n = arg1.toIntDefault(Integer.MIN_VALUE);
-        int k = ast.arg2().toIntDefault(Integer.MIN_VALUE);
+        int n = arg1.toIntDefault();
+        int k = ast.arg2().toIntDefault();
         if (n < 0
             || k < 0
             || //
@@ -1620,7 +1620,7 @@ public class PolynomialFunctions {
 
     @Override
     public IExpr evaluate(final IAST ast, EvalEngine engine) {
-      int degree = ast.arg1().toIntDefault(Integer.MIN_VALUE);
+      int degree = ast.arg1().toIntDefault();
       if (degree >= 0) {
         return PolynomialsUtils.createHermitePolynomial(degree, ast.arg2());
       }
@@ -1664,7 +1664,7 @@ public class PolynomialFunctions {
 
     @Override
     public IExpr evaluate(final IAST ast, EvalEngine engine) {
-      int degree = ast.arg1().toIntDefault(Integer.MIN_VALUE);
+      int degree = ast.arg1().toIntDefault();
       if (degree != Integer.MIN_VALUE) {
         if (degree > Config.MAX_POLYNOMIAL_DEGREE) {
           PolynomialDegreeLimitExceeded.throwIt(degree);
@@ -1798,7 +1798,7 @@ public class PolynomialFunctions {
 
     @Override
     public IExpr evaluate(final IAST ast, EvalEngine engine) {
-      int degree = ast.arg1().toIntDefault(Integer.MIN_VALUE);
+      int degree = ast.arg1().toIntDefault();
       if (degree >= 0) {
         if (degree > Config.MAX_POLYNOMIAL_DEGREE) {
           PolynomialDegreeLimitExceeded.throwIt(degree);

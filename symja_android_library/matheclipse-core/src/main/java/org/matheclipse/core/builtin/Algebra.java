@@ -761,11 +761,11 @@ public class Algebra {
         long denominatorExponent = 1L;
         IExpr denom = parts[1];
         if (numer.isPower()) {
-          numerExponent = numer.exponent().toIntDefault(Integer.MIN_VALUE);
+          numerExponent = numer.exponent().toIntDefault();
           numer = numer.base();
         }
         if (denom.isPower()) {
-          denominatorExponent = denom.exponent().toIntDefault(Integer.MIN_VALUE);
+          denominatorExponent = denom.exponent().toIntDefault();
           denom = denom.base();
         }
         if (numerExponent > 0 && denominatorExponent > 0) {
@@ -1656,7 +1656,7 @@ public class Algebra {
             }
           }
 
-          int exp = exponent.toIntDefault(Integer.MIN_VALUE);
+          int exp = exponent.toIntDefault();
           if (exp == Integer.MIN_VALUE) {
             addExpanded(powerAST);
             return F.NIL;
@@ -4124,7 +4124,7 @@ public class Algebra {
         if (expr.isFunction()) {
           expr = expr.first();
           try {
-            int k = ast.arg2().toIntDefault(Integer.MIN_VALUE);
+            int k = ast.arg2().toIntDefault();
             if (k < 0) {
               return F.NIL;
             }

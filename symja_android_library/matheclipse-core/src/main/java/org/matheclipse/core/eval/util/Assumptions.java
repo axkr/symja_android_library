@@ -828,9 +828,9 @@ public class Assumptions extends AbstractAssumptions {
       boolean evaled = false;
       ISignedNumber num = rr.getLess();
       if (num != null) {
-        int i = num.toIntDefault(Integer.MIN_VALUE);
+        int i = num.toIntDefault();
         if (i == Integer.MIN_VALUE) {
-          i = num.ceilFraction().toIntDefault(Integer.MIN_VALUE);
+          i = num.ceilFraction().toIntDefault();
         }
         if (i != Integer.MIN_VALUE) {
           if (newXRange[1] >= i) {
@@ -841,9 +841,9 @@ public class Assumptions extends AbstractAssumptions {
       }
       num = rr.getLessEqual();
       if (num != null) {
-        int i = num.toIntDefault(Integer.MIN_VALUE);
+        int i = num.toIntDefault();
         if (i == Integer.MIN_VALUE) {
-          i = num.floorFraction().toIntDefault(Integer.MIN_VALUE);
+          i = num.floorFraction().toIntDefault();
         }
         if (i != Integer.MIN_VALUE) {
           if (newXRange[1] > i) {
@@ -854,9 +854,9 @@ public class Assumptions extends AbstractAssumptions {
       }
       num = rr.getGreater();
       if (num != null) {
-        int i = num.toIntDefault(Integer.MIN_VALUE);
+        int i = num.toIntDefault();
         if (i == Integer.MIN_VALUE) {
-          i = num.floorFraction().toIntDefault(Integer.MIN_VALUE);
+          i = num.floorFraction().toIntDefault();
         }
         if (i != Integer.MIN_VALUE) {
           if (newXRange[0] <= i) {
@@ -867,9 +867,9 @@ public class Assumptions extends AbstractAssumptions {
       }
       num = rr.getGreaterEqual();
       if (num != null) {
-        int i = num.toIntDefault(Integer.MIN_VALUE);
+        int i = num.toIntDefault();
         if (i == Integer.MIN_VALUE) {
-          i = num.ceilFraction().toIntDefault(Integer.MIN_VALUE);
+          i = num.ceilFraction().toIntDefault();
         }
         if (i != Integer.MIN_VALUE) {
           if (newXRange[0] < i) {
@@ -880,9 +880,9 @@ public class Assumptions extends AbstractAssumptions {
       }
       num = rr.getEquals();
       if (num != null) {
-        int i = num.toIntDefault(Integer.MIN_VALUE);
+        int i = num.toIntDefault();
         if (i == Integer.MIN_VALUE) {
-          i = num.ceilFraction().toIntDefault(Integer.MIN_VALUE);
+          i = num.ceilFraction().toIntDefault();
         }
         if (i != Integer.MIN_VALUE) {
           if (newXRange[0] < i) {

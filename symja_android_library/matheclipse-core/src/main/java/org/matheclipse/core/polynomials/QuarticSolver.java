@@ -93,7 +93,7 @@ public class QuarticSolver {
           if (arg.isPower()) {
             final IExpr base = arg.base();
             if (x.equals(base)) {
-              exponent = arg.exponent().toIntDefault(Integer.MIN_VALUE);
+              exponent = arg.exponent().toIntDefault();
               if (exponent < 0 || exponent > 4) {
                 return false;
               }
@@ -111,7 +111,7 @@ public class QuarticSolver {
       } else if (ast.isPower()) {
         final IExpr temp = ast.arg1();
         if (x.equals(temp)) {
-          int exponent = ast.exponent().toIntDefault(Integer.MIN_VALUE);
+          int exponent = ast.exponent().toIntDefault();
           if (exponent < 0 || exponent > 4) {
             return false;
           }

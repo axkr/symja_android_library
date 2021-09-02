@@ -665,7 +665,7 @@ public class HypergeometricFunctions {
           return F.LegendreP(n, z);
         }
 
-        int lInt = l.toIntDefault(Integer.MIN_VALUE);
+        int lInt = l.toIntDefault();
         if (lInt >= 0) {
           switch (lInt) {
             case 0:
@@ -685,7 +685,7 @@ public class HypergeometricFunctions {
         if (n.isZero()) {
           return F.C1;
         }
-        int nInt = n.toIntDefault(Integer.MIN_VALUE);
+        int nInt = n.toIntDefault();
         if (nInt > 0) {
           // Sum(((-1)^k*Pochhammer(l, n - k)*(2*z)^(n - 2*k))/(k!*(n - 2*k)!), {k, 0, Floor(n/2)})
           return F.sum(
@@ -703,7 +703,7 @@ public class HypergeometricFunctions {
       }
       // GegenbauerC(n, z)
       IExpr z = ast.arg2();
-      int nInt = n.toIntDefault(Integer.MIN_VALUE);
+      int nInt = n.toIntDefault();
       if (nInt > Integer.MIN_VALUE) {
         if (nInt == 0) {
           return F.CComplexInfinity;
@@ -734,7 +734,7 @@ public class HypergeometricFunctions {
         }
       }
 
-      int zInt = z.toIntDefault(Integer.MIN_VALUE);
+      int zInt = z.toIntDefault();
       if (zInt > Integer.MIN_VALUE) {
         if (zInt == 0) {
           // 2 * (1/v) * Cos(1/2*Pi*v)

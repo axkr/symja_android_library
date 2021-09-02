@@ -758,7 +758,7 @@ public class SymbolicPolynomialRing implements RingFactory<SymbolicPolynomial> {
         for (int i = 1; i < vars.size(); i++) {
           IExpr variable = vars.get(i);
           if (variable.equals(base)) {
-            int exponent = ast.exponent().toIntDefault(Integer.MIN_VALUE);
+            int exponent = ast.exponent().toIntDefault();
             if (exponent < 0) {
               return false;
             }

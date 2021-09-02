@@ -1152,7 +1152,7 @@ public class SeriesFunctions {
         IAST list = (IAST) ast.arg2();
         IExpr x = list.arg1();
         IExpr x0 = list.arg2();
-        final int n = list.arg3().toIntDefault(Integer.MIN_VALUE);
+        final int n = list.arg3().toIntDefault();
         if (n == Integer.MIN_VALUE) {
           return F.NIL;
         }
@@ -1487,8 +1487,8 @@ public class SeriesFunctions {
         if (exponent.isPower() && exponent.base().equals(x) && exponent.exponent().isRational()) {
           IRational rat = (IRational) exponent.exponent();
           if (rat.isPositive()) {
-            int numerator = rat.numerator().toIntDefault(Integer.MIN_VALUE);
-            int denominator = rat.denominator().toIntDefault(Integer.MIN_VALUE);
+            int numerator = rat.numerator().toIntDefault();
+            int denominator = rat.denominator().toIntDefault();
             if (denominator != Integer.MIN_VALUE) {
               IExpr temp = seriesDataRecursive(F.Power(base, x), x, x0, n * denominator, engine);
               if (temp instanceof ASTSeriesData) {
@@ -1510,7 +1510,7 @@ public class SeriesFunctions {
           return temp;
         }
       }
-      int exp = exponent.toIntDefault(Integer.MIN_VALUE);
+      int exp = exponent.toIntDefault();
       if (exp != Integer.MIN_VALUE) {
         ASTSeriesData series = seriesDataRecursive(base, x, x0, n, engine);
         if (series instanceof ASTSeriesData) {
@@ -1544,7 +1544,7 @@ public class SeriesFunctions {
           continue;
         }
         IExpr exp = entry.getKey();
-        int exponent = exp.toIntDefault(Integer.MIN_VALUE);
+        int exponent = exp.toIntDefault();
         if (exponent == Integer.MIN_VALUE) {
           rest.append(F.Times(coefficient, F.Power(x, exp)));
         } else {
@@ -1592,7 +1592,7 @@ public class SeriesFunctions {
       if (ast.isAST2()) {
         if (ast.arg1() instanceof ASTSeriesData && ast.arg2().isInteger()) {
           ASTSeriesData series = (ASTSeriesData) ast.arg1();
-          int n = ast.arg2().toIntDefault(Integer.MIN_VALUE);
+          int n = ast.arg2().toIntDefault();
           if (n >= 0) {
             int order = series.order();
             if (order > n) {
@@ -1715,7 +1715,7 @@ public class SeriesFunctions {
       }
 
       if (x0.isReal()) {
-        final int lowerLimit = x0.toIntDefault(Integer.MIN_VALUE);
+        final int lowerLimit = x0.toIntDefault();
         if (lowerLimit != 0) {
           // TODO support other cases than 0
           return F.NIL;
@@ -1723,7 +1723,7 @@ public class SeriesFunctions {
         x0 = F.ZZ(lowerLimit);
       }
 
-      final int degree = n.toIntDefault(Integer.MIN_VALUE);
+      final int degree = n.toIntDefault();
       if (degree < 0) {
         return F.NIL;
       }
@@ -1782,7 +1782,7 @@ public class SeriesFunctions {
             IAST powerPart = F.Power(x0, exp);
             comparator = F.Greater(n, F.C0);
             IAST bin;
-            int k = exp.toIntDefault(Integer.MIN_VALUE);
+            int k = exp.toIntDefault();
             if (k != Integer.MIN_VALUE) {
               if (k < 0) {
                 // powerPart = F.Power(x0.negate(), exp);

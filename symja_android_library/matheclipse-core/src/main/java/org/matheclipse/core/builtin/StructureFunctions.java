@@ -570,7 +570,7 @@ public class StructureFunctions {
         int[] positions = null;
         if (arg2.isInteger()) {
           positions = new int[1];
-          positions[0] = ((IInteger) arg2).toIntDefault(Integer.MIN_VALUE);
+          positions[0] = ((IInteger) arg2).toIntDefault();
           if (positions[0] == Integer.MIN_VALUE) {
             return F.NIL;
           }
@@ -1478,7 +1478,7 @@ public class StructureFunctions {
           return engine.printMessage("Non-negative integer expected at position 3 in Operate()");
         }
 
-        headDepth = depth.toIntDefault(Integer.MIN_VALUE);
+        headDepth = depth.toIntDefault();
         if (headDepth == Integer.MIN_VALUE) {
           return F.NIL;
         }

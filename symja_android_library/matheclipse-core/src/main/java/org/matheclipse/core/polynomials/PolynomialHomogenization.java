@@ -220,7 +220,7 @@ public class PolynomialHomogenization {
     IExpr first = timesExponent.first();
     if (first.isComplex() && ((IComplex) first).reRational().isZero()) {
       IRational pureImPart = ((IComplex) first).imRational();
-      int exponent = pureImPart.toIntDefault(Integer.MIN_VALUE);
+      int exponent = pureImPart.toIntDefault();
       if (exponent == Integer.MIN_VALUE) {
         replaceExpressionLCM(ast, F.C1);
         return;
@@ -232,7 +232,7 @@ public class PolynomialHomogenization {
       replaceExpressionLCM(ast, F.C1);
       return;
     }
-    int exponent = first.toIntDefault(Integer.MIN_VALUE);
+    int exponent = first.toIntDefault();
     if (exponent == Integer.MIN_VALUE) {
       replaceExpressionLCM(ast, F.C1);
       return;
@@ -309,7 +309,7 @@ public class PolynomialHomogenization {
     IExpr first = exp.first();
     if (first.isComplex() && ((IComplex) first).reRational().isZero()) {
       IRational imPart = ((IComplex) first).imRational();
-      int exponent = imPart.toIntDefault(Integer.MIN_VALUE);
+      int exponent = imPart.toIntDefault();
       if (exponent == Integer.MIN_VALUE) {
         return replaceExpression(ast).orElse(ast);
       } else if (exponent > 0) {
@@ -318,7 +318,7 @@ public class PolynomialHomogenization {
       }
       return replaceExpression(ast);
     }
-    int exponent = first.toIntDefault(Integer.MIN_VALUE);
+    int exponent = first.toIntDefault();
     if (exponent == Integer.MIN_VALUE) {
       return replaceExpression(ast);
     } else if (exponent > 0) {
@@ -385,7 +385,7 @@ public class PolynomialHomogenization {
       IRational rat = exp.rationalFactor();
       if (rat != null) {
         IInteger intExp = rat.multiply(lcm).numerator();
-        int exponent = intExp.toIntDefault(Integer.MIN_VALUE);
+        int exponent = intExp.toIntDefault();
         if (exponent != Integer.MIN_VALUE) {
           if (exponent == 1) {
             return symbol;

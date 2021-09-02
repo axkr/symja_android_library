@@ -305,7 +305,7 @@ public class SpecialFunctions {
             // from org.matheclipse.core.eval.EvalEngine.evalDouble()
           }
         }
-        int ni = n.toIntDefault(Integer.MIN_VALUE);
+        int ni = n.toIntDefault();
         if (ni != Integer.MIN_VALUE) {
           if (ni < 0) {
             // for n>=0; BetaRegularized(z, a, -n)=0

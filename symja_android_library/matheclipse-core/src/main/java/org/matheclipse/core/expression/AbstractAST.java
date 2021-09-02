@@ -2198,7 +2198,7 @@ public abstract class AbstractAST implements IASTMutable {
 
   @Override
   public IExpr get(IInteger location) {
-    return get(location.toIntDefault(Integer.MIN_VALUE));
+    return get(location.toIntDefault());
   }
 
   /**

@@ -239,7 +239,7 @@ public final class NumberTheory {
     public IExpr evaluate(final IAST ast, EvalEngine engine) {
       try {
         IExpr arg1 = ast.arg1();
-        int n = arg1.toIntDefault(Integer.MIN_VALUE);
+        int n = arg1.toIntDefault();
         if (n < 0) {
           if (arg1.isNumber()) {
             return IOFunctions.printMessage(S.BellB, "intnm", F.List(ast, F.C1), engine);
@@ -434,9 +434,9 @@ public final class NumberTheory {
         // use e2IntArg() method
         return F.NIL;
       }
-      int ni = n.toIntDefault(Integer.MIN_VALUE);
+      int ni = n.toIntDefault();
       if (ni != Integer.MIN_VALUE) {
-        int ki = k.toIntDefault(Integer.MIN_VALUE);
+        int ki = k.toIntDefault();
         if (ki != Integer.MIN_VALUE) {
           return binomial(F.ZZ(ni), F.ZZ(ki));
         }
@@ -455,7 +455,7 @@ public final class NumberTheory {
           if (k.isNegative()) {
             return F.C0;
           }
-          int ki = k.toIntDefault(Integer.MIN_VALUE);
+          int ki = k.toIntDefault();
           if (ki >= 1 && ki <= 5) {
             return S.Infinity;
           }
@@ -463,7 +463,7 @@ public final class NumberTheory {
           if (k.isNegative()) {
             return F.C0;
           }
-          int ki = k.toIntDefault(Integer.MIN_VALUE);
+          int ki = k.toIntDefault();
           if (ki >= 1 && ki <= 5) {
             if (ki % 2 == 0) {
               return F.CInfinity;
@@ -1101,7 +1101,7 @@ public final class NumberTheory {
       int maxIterations = Integer.MAX_VALUE;
       if (ast.isAST2()) {
         if (ast.arg2().isNumber()) {
-          maxIterations = ast.arg2().toIntDefault(Integer.MIN_VALUE);
+          maxIterations = ast.arg2().toIntDefault();
           if (maxIterations <= 0) {
             // Positive integer (less equal 2147483647) expected at position `2` in `1`.
             return IOFunctions.printMessage(
@@ -2583,7 +2583,7 @@ public final class NumberTheory {
     public IExpr evaluate(final IAST ast, EvalEngine engine) {
       IExpr arg1 = ast.arg1();
       if (arg1.isInteger()) {
-        int n = ((IInteger) arg1).toIntDefault(Integer.MIN_VALUE);
+        int n = ((IInteger) arg1).toIntDefault();
         if (n > Integer.MIN_VALUE) {
           if (ast.isAST2()) {
             if (ast.arg2().isSymbol()
@@ -3172,7 +3172,7 @@ public final class NumberTheory {
     public IExpr evaluate(final IAST ast, EvalEngine engine) {
       IExpr arg1 = ast.arg1();
       if (arg1.isInteger()) {
-        int n = ((IInteger) arg1).toIntDefault(Integer.MIN_VALUE);
+        int n = ((IInteger) arg1).toIntDefault();
         if (n > Integer.MIN_VALUE) {
           if (ast.isAST2()) {
             return lucasLPolynomialIterative(n, ast.arg2(), ast, engine);
@@ -3544,7 +3544,7 @@ public final class NumberTheory {
       IInteger[] k = new IInteger[ast.argSize()];
       for (int i = 1; i < ast.size(); i++) {
         IExpr temp = ast.get(i);
-        int value = temp.toIntDefault(Integer.MIN_VALUE);
+        int value = temp.toIntDefault();
         if (value != Integer.MIN_VALUE) {
           k[i - 1] = F.ZZ(value);
         } else {
@@ -3710,7 +3710,7 @@ public final class NumberTheory {
           // Non-negative integer expected.
           return IOFunctions.printMessage(S.NextPrime, "intnn", F.List(), engine);
         }
-        final int n = ast.arg2().toIntDefault(Integer.MIN_VALUE);
+        final int n = ast.arg2().toIntDefault();
         if (n < 0) {
           // Positive integer (less equal 2147483647) expected at position `2` in `1`.
           return IOFunctions.printMessage(S.NextPrime, "intpm", F.List(ast, F.C2), engine);
@@ -3869,7 +3869,7 @@ public final class NumberTheory {
      * @return
      */
     private static IExpr sumPartitionsP(EvalEngine engine, IInteger n) {
-      int i = n.toIntDefault(Integer.MIN_VALUE);
+      int i = n.toIntDefault();
       if (i >= 0) {
         if (i < Integer.MAX_VALUE - 3) {
           BigIntegerPartitionsP bipp = new BigIntegerPartitionsP();
@@ -3995,7 +3995,7 @@ public final class NumberTheory {
 
     private static IExpr sumPartitionsQ1(EvalEngine engine, IInteger n) {
 
-      int nInt = n.toIntDefault(Integer.MIN_VALUE);
+      int nInt = n.toIntDefault();
       if (nInt >= 0) {
         int iterationLimit = EvalEngine.get().getIterationLimit();
         if (iterationLimit >= 0 && iterationLimit <= nInt) {
@@ -4147,7 +4147,7 @@ public final class NumberTheory {
     @Override
     public IExpr evaluate(IAST ast, EvalEngine engine) {
       if (ast.arg1().isInteger()) {
-        int nthPrime = ((IInteger) ast.arg1()).toIntDefault(Integer.MIN_VALUE);
+        int nthPrime = ((IInteger) ast.arg1()).toIntDefault();
         if (nthPrime <= 0) {
           // Positive integer argument expected in `1`.
           return IOFunctions.printMessage(ast.topHead(), "intpp", F.List(ast), engine);
@@ -4205,7 +4205,7 @@ public final class NumberTheory {
       if (x.isInteger() && x.isPositive()) {
         // TODO improve performance by caching some values?
 
-        int maxK = ((IInteger) x).toIntDefault(Integer.MIN_VALUE);
+        int maxK = ((IInteger) x).toIntDefault();
         if (maxK >= 0) {
           int result = 0;
           BigInteger max = BigInteger.valueOf(maxK);
@@ -4783,7 +4783,7 @@ public final class NumberTheory {
 
       IInteger nTimes2Subtractm = n.add(n.subtract(m));
 
-      int counter = nSubtractm.toIntDefault(Integer.MIN_VALUE);
+      int counter = nSubtractm.toIntDefault();
       if (counter > Integer.MIN_VALUE) {
         counter++;
         IInteger value;
@@ -5438,12 +5438,12 @@ public final class NumberTheory {
     for (int i = 0; i < k.length; i++) {
       n = n.add(k[i]);
     }
-    int ni = n.toIntDefault(Integer.MIN_VALUE);
+    int ni = n.toIntDefault();
     if (ni > 0) {
       int[] ki = new int[k.length];
       boolean evaled = true;
       for (int i = 0; i < k.length; i++) {
-        ki[i] = k[i].toIntDefault(Integer.MIN_VALUE);
+        ki[i] = k[i].toIntDefault();
         if (ki[i] < 0) {
           evaled = false;
           break;

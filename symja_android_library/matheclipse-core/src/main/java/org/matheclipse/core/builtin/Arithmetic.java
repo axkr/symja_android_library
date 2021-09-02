@@ -1777,7 +1777,7 @@ public final class Arithmetic {
           return F.Gamma(o0);
         }
       }
-      int n = o0.toIntDefault(Integer.MIN_VALUE);
+      int n = o0.toIntDefault();
       if (n > 0 && z.isNumericFunction(true)) {
         //
         // Gamma(n,z) = ((n - 1)! * Sum(z^k/k!, {k, 0, n - 1}))/E^z
@@ -3184,7 +3184,7 @@ public final class Arithmetic {
       if (n.isOne()) {
         return a;
       }
-      int ni = n.toIntDefault(Integer.MIN_VALUE);
+      int ni = n.toIntDefault();
       if (a.isRational() && ni > Integer.MIN_VALUE) {
         BigFraction bf = ((IRational) a).toBigFraction();
         return pochhammer(bf, ni, ast);
@@ -3435,7 +3435,7 @@ public final class Arithmetic {
             // return F.NIL;
             // }
           } else if (base instanceof ASTSeriesData) {
-            int exp = exponent.toIntDefault(Integer.MIN_VALUE);
+            int exp = exponent.toIntDefault();
             if (exp != Integer.MIN_VALUE) {
               return ((ASTSeriesData) base).powerSeries(exp);
             }
@@ -3627,7 +3627,7 @@ public final class Arithmetic {
     //			if (a.isOne() || a.isMinusOne()) {
     //				return null;
     //			}
-    //			int n = root.toIntDefault(Integer.MIN_VALUE);
+    //			int n = root.toIntDefault();
     //			if (n > 0) {
     //				IInteger[] result = a.nthRootSplit(n);
     //				if (result[1].equals(a)) {
@@ -3874,7 +3874,7 @@ public final class Arithmetic {
                 return F.CInfinity;
               }
             } else {
-              int exp = realExponent.toIntDefault(Integer.MIN_VALUE);
+              int exp = realExponent.toIntDefault();
               if (exp != Integer.MIN_VALUE) {
                 if ((exp & 0x1) == 0x1) {
                   return F.CNInfinity;
@@ -4079,11 +4079,11 @@ public final class Arithmetic {
           IRational num = ((IRational) base);
           IInteger expNumerator = ((IFraction) exponent).numerator();
           IInteger expDenominator = ((IFraction) exponent).denominator();
-          int denominator = expDenominator.toIntDefault(Integer.MIN_VALUE);
+          int denominator = expDenominator.toIntDefault();
           if (denominator > 1) {
             int numerator = 1;
             if (!expNumerator.isOne()) {
-              numerator = expNumerator.toIntDefault(Integer.MIN_VALUE);
+              numerator = expNumerator.toIntDefault();
             }
             if (numerator > 0) {
               IExpr temp = num.factorSmallPrimes(numerator, denominator);

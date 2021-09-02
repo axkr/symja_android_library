@@ -28,7 +28,7 @@ public class VisitorReplaceSlots extends VisitorExpr {
   }
 
   private IExpr getSlot(IInteger ii) {
-    int i = ii.toIntDefault(Integer.MIN_VALUE);
+    int i = ii.toIntDefault();
     if (i >= 0 && i < astSlots.size()) {
       return astSlots.get(i);
     }
@@ -50,7 +50,7 @@ public class VisitorReplaceSlots extends VisitorExpr {
   }
 
   private IExpr getSlotSequence(IntegerSym ii) {
-    int i = ii.toIntDefault(Integer.MIN_VALUE);
+    int i = ii.toIntDefault();
     if (i >= 0 && i <= astSlots.size()) {
       IASTAppendable result = F.ast(S.Sequence, astSlots.size());
       for (int j = i; j < astSlots.size(); j++) {
@@ -62,7 +62,7 @@ public class VisitorReplaceSlots extends VisitorExpr {
   }
 
   private int getSlotSequence(IASTAppendable ast, int pos, IntegerSym ii) {
-    int i = ii.toIntDefault(Integer.MIN_VALUE);
+    int i = ii.toIntDefault();
     if (i >= 0 && i < astSlots.size()) {
       ast.remove(pos);
       for (int j = i; j < astSlots.size(); j++) {

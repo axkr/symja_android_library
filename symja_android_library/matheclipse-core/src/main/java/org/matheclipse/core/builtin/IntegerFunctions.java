@@ -415,7 +415,7 @@ public class IntegerFunctions {
         }
       }
       if (ast.size() >= 4) {
-        padLeftZeros = ast.arg3().toIntDefault(Integer.MIN_VALUE);
+        padLeftZeros = ast.arg3().toIntDefault();
         if (padLeftZeros < 0) {
           return F.NIL;
         }

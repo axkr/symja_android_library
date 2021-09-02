@@ -645,7 +645,7 @@ public final class StringFunctions {
       char ch;
       for (int i = 1; i < charList.size(); i++) {
         if (charList.get(i).isInteger()) {
-          int unicode = charList.get(i).toIntDefault(Integer.MIN_VALUE);
+          int unicode = charList.get(i).toIntDefault();
           if (unicode < 0 || unicode >= 1114112) {
             // A character unicode, which should be a non-negative integer less than 1114112, is
             // expected at

@@ -2547,7 +2547,7 @@ public final class ListFunctions {
           arg3 = ast.arg3();
         }
         if (ast.arg2().isInteger()) {
-          int indx = ast.arg2().toIntDefault(Integer.MIN_VALUE);
+          int indx = ast.arg2().toIntDefault();
           if (indx == Integer.MIN_VALUE) {
             return F.NIL;
           }
@@ -5273,7 +5273,7 @@ public final class ListFunctions {
       }
 
       if (ast.isAST1() && ast.arg1().isReal()) {
-        int size = ast.arg1().toIntDefault(Integer.MIN_VALUE);
+        int size = ast.arg1().toIntDefault();
         if (size != Integer.MIN_VALUE) {
           return range(size);
         }

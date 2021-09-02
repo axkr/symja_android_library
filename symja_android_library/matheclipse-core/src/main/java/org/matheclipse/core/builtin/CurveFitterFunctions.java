@@ -309,7 +309,7 @@ public class CurveFitterFunctions {
     @Override
     public IExpr numericEval(final IAST ast, EvalEngine engine) {
       if (ast.arg1().isList() && ast.arg2().isReal() && ast.arg3().isSymbol()) {
-        int polynomialDegree = ast.arg2().toIntDefault(Integer.MIN_VALUE);
+        int polynomialDegree = ast.arg2().toIntDefault();
         if (polynomialDegree > 0) {
           if (Config.MAX_AST_SIZE < polynomialDegree) {
             ASTElementLimitExceeded.throwIt(polynomialDegree);
