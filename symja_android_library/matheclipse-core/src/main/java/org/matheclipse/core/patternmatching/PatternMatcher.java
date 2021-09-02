@@ -1265,7 +1265,7 @@ public class PatternMatcher extends IPatternMatcher implements Externalizable {
     }
     while (lhsEvalIndex <= lhsEvalSize) {
       try {
-        IASTAppendable seq = F.ast(S.Sequence, lhsEvalIndex - startPosition, false);
+        IASTAppendable seq = F.ast(S.Sequence, lhsEvalIndex - startPosition);
         seq.appendAll(lhsEvalAST, startPosition, lhsEvalIndex);
 
         if (patternSequence.matchPatternSequence(seq, fPatternMap, lhsPatternAST.topHead())) {
@@ -1319,7 +1319,7 @@ public class PatternMatcher extends IPatternMatcher implements Externalizable {
    */
   private IExpr matchDefaultArgumentsAST(
       ISymbol symbolWithDefaultValue, IAST lhsPatternAST, EvalEngine engine) {
-    IASTAppendable cloned = F.ast(lhsPatternAST.head(), lhsPatternAST.size(), false);
+    IASTAppendable cloned = F.ast(lhsPatternAST.head(), lhsPatternAST.size());
     boolean[] defaultValueMatched = new boolean[] {false};
     if (lhsPatternAST.exists(
         (temp, i) -> {
@@ -1620,7 +1620,7 @@ public class PatternMatcher extends IPatternMatcher implements Externalizable {
   private IExpr matchOptionalArgumentsAST(
       ISymbol symbolWithDefaultValue, IAST lhsPatternAST, IAST lhsEvalAST, EvalEngine engine) {
     int lhsSize = lhsEvalAST.size();
-    IASTAppendable cloned = F.ast(lhsPatternAST.head(), lhsPatternAST.size(), false);
+    IASTAppendable cloned = F.ast(lhsPatternAST.head(), lhsPatternAST.size());
     boolean defaultValueMatched = false;
     for (int i = 1; i < lhsPatternAST.size(); i++) {
       IExpr temp = lhsPatternAST.get(i);

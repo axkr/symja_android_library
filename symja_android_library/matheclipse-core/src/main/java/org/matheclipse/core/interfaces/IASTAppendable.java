@@ -86,7 +86,7 @@ public interface IASTAppendable extends IASTMutable {
    */
   public static Collector<IExpr, ?, IASTAppendable> toAST(
       final IExpr head, final int initialCapacity) {
-    final Supplier<IASTAppendable> supplier = () -> F.ast(head, initialCapacity, false);
+    final Supplier<IASTAppendable> supplier = () -> F.ast(head, initialCapacity);
     return new CollectorImpl<IExpr, IASTAppendable, IASTAppendable>(
         supplier,
         IASTAppendable::append,
@@ -158,7 +158,7 @@ public interface IASTAppendable extends IASTMutable {
   default boolean append(double value) {
     return append(F.num(value));
   }
-  
+
   /**
    * Adds the specified string value at the end of this {@code List}.
    *
@@ -171,7 +171,7 @@ public interface IASTAppendable extends IASTMutable {
   default boolean append(String value) {
     return append(F.stringx(value));
   }
-  
+
   /**
    * Adds the specified character value at the end of this {@code List}.
    *
@@ -197,7 +197,7 @@ public interface IASTAppendable extends IASTMutable {
   default boolean append(boolean value) {
     return append(F.bool(value));
   }
-  
+
   /**
    * Inserts the specified object into this {@code List} at the specified location. The object is
    * inserted before the current element at the specified location. If the location is equal to the

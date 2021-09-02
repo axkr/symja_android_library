@@ -209,7 +209,7 @@ public class Object2Expr {
       return List();
     } else {
       int size = lst.size();
-      IASTAppendable list = F.ast(S.List, size, false);
+      IASTAppendable list = F.ast(S.List, size);
       for (Object element : lst) {
         list.append(convert(element, parseString, javaObject));
       }

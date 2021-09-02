@@ -28,14 +28,14 @@ public class CreateTensor {
     final int size2 = dims[position + 1];
     for (int i = 1; i <= size; i++) {
       index[position] = i;
-      IASTAppendable currentList = F.ast(S.List, size2, true);
+      IASTMutable currentList = F.ast(S.List, size2);
       list.set(i, currentList);
       createTensorRecursive(currentList, dims, position + 1, index);
     }
   }
 
-  private IASTAppendable createTensorAppendable(IExpr head, int[] dims) {
-    IASTAppendable list = F.ast(head, dims[0], true);
+  private IASTMutable createTensorMutable(IExpr head, int[] dims) {
+    IASTMutable list = F.ast(head, dims[0]);
     int[] index = new int[dims.length];
     for (int i = 0; i < index.length; i++) {
       index[i] = 1;
@@ -49,6 +49,6 @@ public class CreateTensor {
     for (int i = 0; i < dims.length; i++) {
       dims[i] = dimension[i];
     }
-    return createTensorAppendable(S.List, dims);
+    return createTensorMutable(S.List, dims);
   }
 }

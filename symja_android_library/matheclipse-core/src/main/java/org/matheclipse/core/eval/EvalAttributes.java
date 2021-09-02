@@ -155,7 +155,7 @@ public class EvalAttributes {
         });
 
     if (flattened[0]) {
-      IASTAppendable result = F.ast(ast.head(), newSize[0], false);
+      IASTAppendable result = F.ast(ast.head(), newSize[0]);
       ast.forEach(
           expr -> {
             if (expr.isAST(head)) {
@@ -187,19 +187,20 @@ public class EvalAttributes {
 
     ast.forEach(
         expr -> {
-          if (expr.isAST(head) || (expr.isUnevaluated()
-          && expr.first().head().equals(head)
-          && expr.first().isAST())) {
+          if (expr.isAST(head)
+              || (expr.isUnevaluated()
+                  && expr.first().head().equals(head)
+                  && expr.first().isAST())) {
             flattened[0] = true;
             int temp = ((IAST) expr).argSize(); // flattenAlloc(head, (IAST) expr);
             newSize[0] += temp;
           } else {
-        newSize[0]++;
-      }
+            newSize[0]++;
+          }
         });
 
     if (flattened[0]) {
-      IASTAppendable result = F.ast(ast.head(), newSize[0], false);
+      IASTAppendable result = F.ast(ast.head(), newSize[0]);
       ast.forEach(
           expr -> {
             if (expr.isAST(head)) {
@@ -245,7 +246,7 @@ public class EvalAttributes {
       }
     }
     if (flattened) {
-      IASTAppendable result = F.ast(ast.head(), newSize, false);
+      IASTAppendable result = F.ast(ast.head(), newSize);
       for (int i = 1; i < astSize; i++) {
         expr = ast.get(i);
         if (expr.isAST() && containsPosition(i, positions)) {
@@ -573,7 +574,7 @@ public class EvalAttributes {
     IASTMutable result = F.NIL;
     final int listSize = ast.size();
     for (int j = 1; j < listLength + 1; j++) {
-      final IASTAppendable subResult = F.ast(argHead, listSize - 1, true);
+      final IASTMutable subResult = F.astMutable(argHead, listSize - 1);
       for (int i = 1; i < listSize; i++) {
         if (listHead == S.List
             && //
@@ -621,7 +622,7 @@ public class EvalAttributes {
             result = F.ternaryAST3(head, F.Slot1, F.Slot2, F.Slot3);
             break;
           default:
-            result = F.ast(head, listLength, true);
+            result = F.astMutable(head, listLength);
         }
       }
       result.set(j, subResult);

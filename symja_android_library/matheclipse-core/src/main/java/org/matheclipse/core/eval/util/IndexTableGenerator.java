@@ -36,7 +36,7 @@ public class IndexTableGenerator {
       final int iter = fIndexArray[fIndex];
       final int index = fIndex++;
       try {
-        final IASTAppendable result = F.ast(fHead, iter, false);
+        final IASTAppendable result = F.ast(fHead, iter);
         for (int i = 0; i < iter; i++) {
           fCurrentIndex[index] = i;
           result.append(table());

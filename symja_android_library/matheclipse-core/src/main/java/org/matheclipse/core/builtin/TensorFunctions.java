@@ -335,7 +335,7 @@ public class TensorFunctions {
       IASTAppendable resultList = F.ListAlloc(tensorSize - 1);
       final int[] fi = new int[1];
       for (int i = 0; i <= diff; i++) {
-        IASTAppendable plus = F.ast(fFunction, kernelSize, false);
+        IASTAppendable plus = F.ast(fFunction, kernelSize);
         fi[0] = i;
         plus.appendArgs(
             kernelSize, k -> F.binaryAST2(gFunction, kernel.get(k), tensor.get(k + fi[0])));

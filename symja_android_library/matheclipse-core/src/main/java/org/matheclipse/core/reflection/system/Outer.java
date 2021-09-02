@@ -87,7 +87,7 @@ public class Outer extends AbstractFunctionEvaluator {
       if (expr.isAST() && head.equals(expr.head())) {
         IAST list = (IAST) expr;
         int size = list.size();
-        IASTAppendable result = F.ast(head, size, false);
+        IASTAppendable result = F.ast(head, size);
         return result.appendArgs(size, i -> outer(astPosition, list.get(i), current));
       }
 
@@ -124,7 +124,7 @@ public class Outer extends AbstractFunctionEvaluator {
       }
     }
     OuterAlgorithm algorithm = new OuterAlgorithm(ast, head);
-    return algorithm.outer(3, ast.arg2(), F.ast(S.List, ast.argSize(), false));
+    return algorithm.outer(3, ast.arg2(), F.ast(S.List, ast.argSize()));
   }
 
   @Override

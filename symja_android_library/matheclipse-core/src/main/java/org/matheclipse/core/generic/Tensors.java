@@ -32,14 +32,14 @@ public class Tensors {
       int size1 = dimension[position];
       int size2 = dimension[position + 1];
       for (int i = 1; i <= size1; i++) {
-        IASTAppendable currentList = F.ast(S.List, size2, true);
+        IASTMutable currentList = F.astMutable(S.List, size2);
         list.set(i, currentList);
         createArrayRecursive(currentList, position + 1);
       }
     }
 
-    private IASTAppendable createArray(IExpr head) {
-      IASTAppendable list = F.ast(head, dimension[0], true);
+    private IASTMutable createArray(IExpr head) {
+      IASTMutable list = F.astMutable(head, dimension[0]);
       createArrayRecursive(list, 0);
       return list;
     }
@@ -66,14 +66,14 @@ public class Tensors {
       final int size2 = dimension[position + 1];
       for (int i = 1; i <= size; i++) {
         index[position] = i;
-        IASTAppendable currentList = F.ast(S.List, size2, true);
+        IASTMutable currentList = F.astMutable(S.List, size2);
         list.set(i, currentList);
         createArrayRecursive(currentList, position + 1, index);
       }
     }
 
-    private IASTAppendable createArray(IExpr head) {
-      IASTAppendable list = F.ast(head, dimension[0], true);
+    private IASTMutable createArray(IExpr head) {
+      IASTMutable list = F.astMutable(head, dimension[0]);
       int[] index = startIndex();
       createArrayRecursive(list, 0, index);
       return list;

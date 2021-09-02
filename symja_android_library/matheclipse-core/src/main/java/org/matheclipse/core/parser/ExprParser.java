@@ -808,7 +808,7 @@ public class ExprParser extends Scanner {
     }
 
     int size = determineSize(head, 10);
-    final IASTAppendable function = F.ast(head, size, false);
+    final IASTAppendable function = F.ast(head, size);
     fRecursionDepth++;
     try {
       getArguments(function);
@@ -1526,7 +1526,7 @@ public class ExprParser extends Scanner {
   private IExpr parseInequality(final IAST ast, final InfixExprOperator infixOperator) {
     // rewrite to Inequality
     IBuiltInSymbol head = (IBuiltInSymbol) ast.head();
-    IASTAppendable result = F.ast(S.Inequality, ast.size() + 8, false);
+    IASTAppendable result = F.ast(S.Inequality, ast.size() + 8);
     ast.forEach(
         x -> {
           result.append(x);

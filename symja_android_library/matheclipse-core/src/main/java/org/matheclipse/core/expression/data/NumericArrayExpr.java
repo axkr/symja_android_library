@@ -686,7 +686,7 @@ public class NumericArrayExpr extends DataExpr<Object> implements INumericArray,
     }
     int size2 = dimension[position + 1];
     for (int i = 1; i <= size; i++) {
-      IASTAppendable currentList = F.ast(S.List, size2, true);
+      IASTMutable currentList = F.astMutable(S.List, size2);
       list.set(i, currentList);
       normalRecursive(floatArray, currentList, dimension, position + 1, index);
     }
@@ -703,7 +703,7 @@ public class NumericArrayExpr extends DataExpr<Object> implements INumericArray,
     }
     int size2 = dimension[position + 1];
     for (int i = 1; i <= size; i++) {
-      IASTAppendable currentList = F.ast(S.List, size2, true);
+      IASTMutable currentList = F.astMutable(S.List, size2);
       list.set(i, currentList);
       normalRecursive(doubleArray, currentList, dimension, position + 1, index);
     }
@@ -720,7 +720,7 @@ public class NumericArrayExpr extends DataExpr<Object> implements INumericArray,
     }
     int size2 = dimension[position + 1];
     for (int i = 1; i <= size; i++) {
-      IASTAppendable currentList = F.ast(S.List, size2, true);
+      IASTMutable currentList = F.astMutable(S.List, size2);
       list.set(i, currentList);
       normalRecursiveComplex(floatArray, currentList, dimension, position + 1, index);
     }
@@ -737,7 +737,7 @@ public class NumericArrayExpr extends DataExpr<Object> implements INumericArray,
     }
     int size2 = dimension[position + 1];
     for (int i = 1; i <= size; i++) {
-      IASTAppendable currentList = F.ast(S.List, size2, true);
+      IASTMutable currentList = F.astMutable(S.List, size2);
       list.set(i, currentList);
       normalRecursiveComplex(doubleArray, currentList, dimension, position + 1, index);
     }
@@ -763,7 +763,7 @@ public class NumericArrayExpr extends DataExpr<Object> implements INumericArray,
     }
     int size2 = dimension[position + 1];
     for (int i = 1; i <= size; i++) {
-      IASTAppendable currentList = F.ast(S.List, size2, true);
+      IASTMutable currentList = F.astMutable(S.List, size2);
       list.set(i, currentList);
       normalRecursive(byteArray, unsigned, currentList, dimension, position + 1, index);
     }
@@ -789,7 +789,7 @@ public class NumericArrayExpr extends DataExpr<Object> implements INumericArray,
     }
     int size2 = dimension[position + 1];
     for (int i = 1; i <= size; i++) {
-      IASTAppendable currentList = F.ast(S.List, size2, true);
+      IASTMutable currentList = F.astMutable(S.List, size2);
       list.set(i, currentList);
       normalRecursive(shortArray, unsigned, currentList, dimension, position + 1, index);
     }
@@ -815,7 +815,7 @@ public class NumericArrayExpr extends DataExpr<Object> implements INumericArray,
     }
     int size2 = dimension[position + 1];
     for (int i = 1; i <= size; i++) {
-      IASTAppendable currentList = F.ast(S.List, size2, true);
+      IASTMutable currentList = F.astMutable(S.List, size2);
       list.set(i, currentList);
       normalRecursive(intArray, unsigned, currentList, dimension, position + 1, index);
     }
@@ -841,7 +841,7 @@ public class NumericArrayExpr extends DataExpr<Object> implements INumericArray,
     }
     int size2 = dimension[position + 1];
     for (int i = 1; i <= size; i++) {
-      IASTAppendable currentList = F.ast(S.List, size2, true);
+      IASTMutable currentList = F.astMutable(S.List, size2);
       list.set(i, currentList);
       normalRecursive(longArray, unsigned, currentList, dimension, position + 1, index);
     }
@@ -1001,8 +1001,8 @@ public class NumericArrayExpr extends DataExpr<Object> implements INumericArray,
     return normalAppendable(S.List, dims);
   }
 
-  private IASTAppendable normalAppendable(IExpr head, int[] dims) {
-    IASTAppendable list = F.ast(head, dims[0], true);
+  private IASTMutable normalAppendable(IExpr head, int[] dims) {
+    IASTMutable list = F.astMutable(head, dims[0]);
     int[] index = new int[1];
     switch (fType) {
       case Integer8:

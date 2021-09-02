@@ -264,7 +264,7 @@ public class PolynomialHomogenizationNew {
     if (expression instanceof IAST) {
       final IAST ast = (IAST) expression;
       if (ast.isPlus() || ast.isTimes()) {
-        IASTAppendable newAST = F.ast(ast.head(), ast.size(), false);
+        IASTAppendable newAST = F.ast(ast.head(), ast.size());
         IExpr temp = ast.arg1();
         newAST.append(replaceForwardRecursive(temp));
         for (int i = 2; i < ast.size(); i++) {

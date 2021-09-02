@@ -48,7 +48,7 @@ public class ListLinePlot extends AbstractEvaluator {
           if (allPoints != null && allPoints.length > 0) {
             xMaxD = 1.0;
             xMaxD = allPoints.length;
-            points = F.ast(S.List, allPoints.length, false);
+            points = F.ast(S.List, allPoints.length);
 
             for (int i = 0; i < allPoints.length; i++) {
               if (allPoints[i] > yMaxD) {
@@ -66,7 +66,7 @@ public class ListLinePlot extends AbstractEvaluator {
             double[][] allPoints = ast.arg1().toDoubleMatrix();
             if (allPoints != null && allPoints.length > 0) {
               xMaxD = allPoints.length;
-              points = F.ast(S.List, allPoints.length, false);
+              points = F.ast(S.List, allPoints.length);
 
               for (int i = 0; i < allPoints.length; i++) {
                 for (int j = 0; j < allPoints[i].length; j++) {

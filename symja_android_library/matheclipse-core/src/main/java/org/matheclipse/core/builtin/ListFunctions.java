@@ -529,7 +529,7 @@ public final class ListFunctions {
       if (arg1.isASTOrAssociation()) {
         IAST list = (IAST) arg1;
         int size = list.size();
-        IASTAppendable resultList = F.ast(list.head(), size, false);
+        IASTAppendable resultList = F.ast(list.head(), size);
         return foldLeft(null, list, 1, size, (x, y) -> F.binaryAST2(S.Plus, x, y), resultList);
       }
       return F.NIL;
@@ -1283,7 +1283,7 @@ public final class ListFunctions {
         IAST list = (IAST) ast.arg1();
         int[] calculatedAllocSize = {1};
         if (list.forAll(isListOrAssociation(calculatedAllocSize))) {
-          IASTAppendable resultList = F.ast(S.List, calculatedAllocSize[0], false);
+          IASTAppendable resultList = F.ast(S.List, calculatedAllocSize[0]);
           list.forEach(x -> resultList.appendArgs((IAST) x));
           return resultList;
         }
@@ -3094,7 +3094,7 @@ public final class ListFunctions {
         if (list.isEmpty() || list.size() == 2) {
           return list;
         }
-        final IASTAppendable resultList = F.ast(list.head(), list.size(), false);
+        final IASTAppendable resultList = F.ast(list.head(), list.size());
         IExpr arg2 = list.arg1();
         list = list.rest();
         return foldLeft(arg2, list, 1, list.size(), (x, y) -> F.binaryAST2(arg1, x, y), resultList);
@@ -3112,7 +3112,7 @@ public final class ListFunctions {
         if (list.isEmpty()) {
           return F.unaryAST1(list.head(), arg2);
         }
-        final IASTAppendable resultList = F.ast(list.head(), list.size(), false);
+        final IASTAppendable resultList = F.ast(list.head(), list.size());
         return foldLeft(arg2, list, 1, list.size(), (x, y) -> F.binaryAST2(arg1, x, y), resultList);
       }
       return F.NIL;
@@ -3692,7 +3692,7 @@ public final class ListFunctions {
         }
         return result;
       }
-      final IASTAppendable result = F.ast(head, size, false);
+      final IASTAppendable result = F.ast(head, size);
       for (int i = 1; i < ast.size(); i++) {
         IExpr arg = ast.get(i);
         if (arg.isSparseArray()) {
@@ -3952,7 +3952,7 @@ public final class ListFunctions {
           int allocSize = F.allocMin32(arg1.argSize() * 8);
           IASTAppendable resultList;
           IExpr head = (argSize == 3) ? ast.arg3() : S.List;
-          resultList = F.ast(head, allocSize, false);
+          resultList = F.ast(head, allocSize);
           final VisitorLevelSpecification level =
               new VisitorLevelSpecification(
                   x -> {
@@ -4428,7 +4428,7 @@ public final class ListFunctions {
         if (subList.isPresent()) {
           subResult = subList.copyHead(subLength);
         } else {
-          subResult = F.ast(mainHead, subLength, false);
+          subResult = F.ast(mainHead, subLength);
         }
         if (!padLeftASTList(
             originalAST, mainHead, subList, x, levels, position, subLength, subResult)) {
@@ -4656,7 +4656,7 @@ public final class ListFunctions {
         if (subList.isPresent()) {
           subResult = subList.copyHead(subLength);
         } else {
-          subResult = F.ast(mainHead, subLength, false);
+          subResult = F.ast(mainHead, subLength);
         }
         if (!padRightASTList(
             originalAST, mainHead, subList, x, levels, position, subLength, subResult)) {
@@ -6230,7 +6230,7 @@ public final class ListFunctions {
         IAST list = (IAST) arg1;
 
         if (ast.isAST1()) {
-          final IASTAppendable result = F.ast(list.head(), list.size() + 1, false);
+          final IASTAppendable result = F.ast(list.head(), list.size() + 1);
           list.rotateLeft(result, 1);
           return result;
         } else {
@@ -6241,7 +6241,7 @@ public final class ListFunctions {
               return F.NIL;
             }
             n = n % argSize;
-            final IASTAppendable result = F.ast(list.head(), list.size() + n, false);
+            final IASTAppendable result = F.ast(list.head(), list.size() + n);
             list.rotateLeft(result, n);
             return result;
           }
@@ -6305,7 +6305,7 @@ public final class ListFunctions {
         IAST list = (IAST) arg1;
 
         if (ast.isAST1()) {
-          final IASTAppendable result = F.ast(list.head(), list.size() + 1, false);
+          final IASTAppendable result = F.ast(list.head(), list.size() + 1);
           list.rotateRight(result, 1);
           return result;
         } else {
@@ -6316,7 +6316,7 @@ public final class ListFunctions {
               return F.NIL;
             }
             n = n % argSize;
-            final IASTAppendable result = F.ast(list.head(), list.size() + n, false);
+            final IASTAppendable result = F.ast(list.head(), list.size() + n);
             list.rotateRight(result, n);
             return result;
           }
@@ -7734,7 +7734,7 @@ public final class ListFunctions {
    * @return
    */
   public static IAST reverse(IAST list) {
-    return list.reverse(F.ast(list.head(), list.size(), false));
+    return list.reverse(F.ast(list.head(), list.size()));
   }
 
   public static void initialize() {

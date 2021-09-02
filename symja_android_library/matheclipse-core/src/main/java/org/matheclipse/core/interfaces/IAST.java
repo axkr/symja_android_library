@@ -1349,7 +1349,7 @@ public interface IAST extends IExpr, Iterable<IExpr> {
       if (fromPosition == size()) {
         return this;
       }
-      IASTAppendable ast = F.ast(head(), fromPosition, false);
+      IASTAppendable ast = F.ast(head(), fromPosition);
       ast.appendArgs(this, fromPosition);
       return ast;
     } else {
@@ -1510,7 +1510,7 @@ public interface IAST extends IExpr, Iterable<IExpr> {
    */
   default IASTAppendable slice(int start, int end) {
     if (0 < start && start <= size() && start < end && end <= size()) {
-      IASTAppendable ast = F.ast(head(), end - start, false);
+      IASTAppendable ast = F.ast(head(), end - start);
       for (int i = start; i < end; i++) {
         ast.append(get(i));
       }

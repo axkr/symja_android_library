@@ -1599,7 +1599,7 @@ public class SparseArrayExpr extends DataExpr<Trie<int[], IExpr>>
 
   public IASTAppendable fullForm() {
     IAST dimensionList = F.ast(S.List, fDimension);
-    IASTAppendable result = F.ast(S.SparseArray, 6, false);
+    IASTAppendable result = F.ast(S.SparseArray, 6);
     result.append(S.Automatic);
     result.append(dimensionList);
     result.append(fDefaultValue);
@@ -1787,7 +1787,7 @@ public class SparseArrayExpr extends DataExpr<Trie<int[], IExpr>>
     if (dims.length >= partSize) {
 
       int len = 0;
-      int count = 0; 
+      int count = 0;
       for (int i = partSize; i < dims.length; i++) {
         partIndex[i] = -1;
         count++;
@@ -2147,7 +2147,7 @@ public class SparseArrayExpr extends DataExpr<Trie<int[], IExpr>>
       }
       return result;
     }
-    IASTAppendable result = F.ast(head, totalSize(fDimension), false);
+    IASTAppendable result = F.ast(head, totalSize(fDimension));
     return totalAppendable(result);
   }
 

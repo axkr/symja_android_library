@@ -493,7 +493,7 @@ public class StructureFunctions {
 
             int level = Validate.checkIntLevelType(arg2);
             if (level > 0) {
-              IASTAppendable resultList = F.ast(arg1AST.topHead(), arg1AST.size(), false);
+              IASTAppendable resultList = F.ast(arg1AST.topHead(), arg1AST.size());
               if (EvalAttributes.flatten(arg1AST.topHead(), (IAST) arg1, resultList, 0, level)) {
                 return resultList;
               }
@@ -1864,7 +1864,7 @@ public class StructureFunctions {
 
             EvalAttributes.sort(sortAST);
 
-            IASTAppendable result = F.ast(arg1.head(), arg1.size(), false);
+            IASTAppendable result = F.ast(arg1.head(), arg1.size());
             for (int i = 1; i < arg1.size(); i++) {
               int sortedIndex = sortAST.get(i).second().toIntDefault(-1);
               if (sortedIndex < 0) {

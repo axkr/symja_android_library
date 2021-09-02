@@ -1473,7 +1473,7 @@ public final class Programming {
         final Function<IExpr, IExpr> fn,
         final IExpr resultHead,
         EvalEngine engine) {
-      IASTAppendable resultList = F.ast(resultHead, n + 1, false);
+      IASTAppendable resultList = F.ast(resultHead, n + 1);
       IExpr temp = expr;
       resultList.append(temp);
       for (int i = 0; i < n; i++) {
@@ -3724,7 +3724,7 @@ public final class Programming {
     } else if (arg2.isList()) {
       IExpr temp = null;
       final IAST list = (IAST) arg2;
-      final IASTAppendable result = F.ast(arg1.head(), list.size(), false);
+      final IASTAppendable result = F.ast(arg1.head(), list.size());
 
       for (int i = 1; i < list.size(); i++) {
         final IExpr listArg = list.get(i);

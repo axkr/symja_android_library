@@ -25,7 +25,7 @@ public class CoreCallbackFunction implements IDoubleCallbackFunction {
     if (node instanceof SymbolNode) {
       AST2Expr ast2Expr = new AST2Expr();
       IExpr head = ast2Expr.convert(node);
-      IASTAppendable fun = F.ast(head, args.length, false);
+      IASTAppendable fun = F.ast(head, args.length);
       fun.appendArgs(0, args.length, i -> F.num(args[i]));
       // for (int i = 0; i < args.length; i++) {
       // fun.append(args[i]);

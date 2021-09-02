@@ -272,7 +272,7 @@ public class IntervalFunctions {
     }
 
     private IAST intersection(final IAST interval1, final IAST interval2, EvalEngine engine) {
-      IASTAppendable result = F.ast(S.Interval, 3, false);
+      IASTAppendable result = F.ast(S.Interval, 3);
       for (int i = 1; i < interval1.size(); i++) {
         IAST list1 = (IAST) interval1.get(i);
         IExpr min1 = list1.arg1();
@@ -364,7 +364,7 @@ public class IntervalFunctions {
           }
         }
       }
-      IASTAppendable result = F.ast(S.Interval, size, false);
+      IASTAppendable result = F.ast(S.Interval, size);
       for (int i = 1; i < ast.size(); i++) {
         IAST interval = (IAST) ast.get(i);
         for (int j = 1; j < interval.size(); j++) {

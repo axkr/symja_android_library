@@ -412,7 +412,7 @@ public class RootsFunctions {
       IExpr variable = variables.arg1();
       IAST list = roots(arg1, false, variables, engine);
       if (list.isPresent()) {
-        IASTAppendable or = F.ast(S.Or, list.size(), false);
+        IASTAppendable or = F.ast(S.Or, list.size());
         for (int i = 1; i < list.size(); i++) {
           or.append(F.Equal(variable, list.get(i)));
         }

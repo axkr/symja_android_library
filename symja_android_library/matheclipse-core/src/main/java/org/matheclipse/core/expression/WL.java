@@ -193,20 +193,14 @@ public class WL {
           return readSymbol();
         case WXF_CONSTANTS.Function:
           length = parseLength(); // (int) array[position++];
-          IASTAppendable ast = F.ast(F.NIL, length, false);
+          IASTAppendable ast = F.ast(F.NIL, length);
           ast.set(0, read());
           for (int i = 0; i < length; i++) {
             ast.append(read());
           }
           // System.out.println(ast.toString());
           IExpr head = ast.head();
-          if (head == S.Complex
-              || //
-              head == S.Rational
-              || //
-              head == S.Pattern
-              || //
-              head == S.Optional) {
+          if (head == S.Complex || head == S.Rational || head == S.Pattern || head == S.Optional) {
             // head == F.Blank || //
             // head == F.BlankSequence || //
             // head == F.BlankNullSequence) {

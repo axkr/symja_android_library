@@ -2097,7 +2097,7 @@ public final class LinearAlgebra {
           List<Integer> list2RestDimensions) {
         if (list1RestDimensions.size() > 0) {
           int size = list1RestDimensions.get(0) + 1;
-          IASTAppendable newResult = F.ast(head, size, false);
+          IASTAppendable newResult = F.ast(head, size);
           for (int i = 1; i < size; i++) {
             ArrayList<Integer> list1CurClone = (ArrayList<Integer>) list1Cur.clone();
             list1CurClone.add(i);
@@ -2116,7 +2116,7 @@ public final class LinearAlgebra {
           return newResult;
         } else if (list2RestDimensions.size() > 0) {
           int size = list2RestDimensions.get(0) + 1;
-          IASTAppendable newResult = F.ast(head, size, false);
+          IASTAppendable newResult = F.ast(head, size);
           for (int i = 1; i < size; i++) {
             ArrayList<Integer> list2CurClone = (ArrayList<Integer>) list2Cur.clone();
             list2CurClone.add(i);
@@ -2136,7 +2136,7 @@ public final class LinearAlgebra {
         } else {
           try {
             int size = list2Dim0 + 1;
-            IASTAppendable part = F.ast(g, size, false);
+            IASTAppendable part = F.ast(g, size);
             return part.appendArgs(size, i -> summand(list1Cur, list2Cur, i));
             // for (int i = 1; i < size; i++) {
             // part.append(summand(list1Cur, list2Cur, i));
@@ -2152,7 +2152,7 @@ public final class LinearAlgebra {
 
       @SuppressWarnings("unchecked")
       private IAST summand(ArrayList<Integer> list1Cur, ArrayList<Integer> list2Cur, final int i) {
-        IASTAppendable result = F.ast(f, 2, false);
+        IASTAppendable result = F.ast(f, 2);
         ArrayList<Integer> list1CurClone = (ArrayList<Integer>) list1Cur.clone();
         list1CurClone.add(i);
         result.append(list1.getPart(list1CurClone));
@@ -3430,7 +3430,7 @@ public final class LinearAlgebra {
             final org.hipparchus.linear.SingularValueDecomposition svd =
                 new org.hipparchus.linear.SingularValueDecomposition(matrix);
             RealMatrix sSVD = svd.getS();
-            IASTAppendable result = F.ast(S.Max, matrixDim[1], false);
+            IASTAppendable result = F.ast(S.Max, matrixDim[1]);
             for (int i = 0; i < matrixDim[1]; i++) {
               result.append(sSVD.getEntry(i, i));
             }
@@ -4527,7 +4527,7 @@ public final class LinearAlgebra {
         if (arg1.isSparseArray()) {
           final ISparseArray tensor = (ISparseArray) arg1;
           int[] part = new int[dimensions.size()];
-          IASTAppendable tr = F.ast(header, minLength++, true);
+          IASTMutable tr = F.astMutable(header, minLength++);
           for (int d = 1; d < minLength; d++) {
             for (int i = 0; i < dimensions.size(); i++) {
               part[i] = d;
@@ -4540,7 +4540,7 @@ public final class LinearAlgebra {
 
         final IAST tensor = (IAST) arg1.normal(false);
         int[] part = new int[dimensions.size()];
-        IASTAppendable tr = F.ast(header, minLength++, true);
+        IASTMutable tr = F.astMutable(header, minLength++);
         for (int d = 1; d < minLength; d++) {
           for (int i = 0; i < dimensions.size(); i++) {
             part[i] = d;
@@ -4705,8 +4705,8 @@ public final class LinearAlgebra {
      * @return
      */
     private IAST transpose(final IAST matrix, int rows, int cols) {
-      final IASTAppendable transposedMatrix = F.ast(S.List, cols, true);
-      transposedMatrix.setArgs(cols + 1, i -> F.ast(S.List, rows, true));
+      final IASTMutable transposedMatrix = F.astMutable(S.List, cols);
+      transposedMatrix.setArgs(cols + 1, i -> F.astMutable(S.List, rows));
       // for (int i = 1; i <= cols; i++) {
       // transposedMatrix.set(i, F.ast(F.List, rows, true));
       // }

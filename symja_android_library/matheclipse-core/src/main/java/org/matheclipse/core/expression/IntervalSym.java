@@ -221,7 +221,7 @@ public class IntervalSym {
   public static IExpr max(final IAST ast) {
     IAST interval = normalize(ast);
     if (interval.isPresent()) {
-      IASTAppendable result = F.ast(S.Max, interval.size(), false);
+      IASTAppendable result = F.ast(S.Max, interval.size());
       // EvalEngine engine = EvalEngine.get();
       for (int i = 1; i < interval.size(); i++) {
         IAST list = (IAST) interval.get(i);
@@ -254,7 +254,7 @@ public class IntervalSym {
   public static IExpr min(final IAST ast) {
     IAST interval = normalize(ast);
     if (interval.isPresent()) {
-      IASTAppendable result = F.ast(S.Min, interval.size(), false);
+      IASTAppendable result = F.ast(S.Min, interval.size());
       for (int i = 1; i < interval.size(); i++) {
         IAST list = (IAST) interval.get(i);
         result.append(list.arg1());
