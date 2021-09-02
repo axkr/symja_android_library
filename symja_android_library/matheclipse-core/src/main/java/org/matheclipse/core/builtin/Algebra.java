@@ -582,7 +582,7 @@ public class Algebra {
      */
     private static IExpr[] cancelPlusIntegerGCD(IAST numeratorPlus, IInteger denominatorInt) {
       IASTAppendable plus = numeratorPlus.copyAppendable();
-      IASTAppendable gcd = F.ast(S.GCD, plus.size() + 1, false);
+      IASTAppendable gcd = F.ast(S.GCD, plus.size() + 1);
       gcd.append(denominatorInt);
       boolean evaled = !plus.exists((IExpr x) -> plusExtractGCD(x, gcd));
       if (evaled) {
@@ -1332,9 +1332,9 @@ public class Algebra {
         IASTAppendable stepResult;
         final int stepSize = arg1.size();
         if (ast.size() >= 6) {
-          stepResult = F.ast(ast.arg5(), stepSize, false);
+          stepResult = F.ast(ast.arg5(), stepSize);
         } else {
-          stepResult = F.ast(arg1.head(), stepSize, false);
+          stepResult = F.ast(arg1.head(), stepSize);
         }
         distributePositionRecursive(stepResult, 1);
         return evaled;
@@ -1384,9 +1384,9 @@ public class Algebra {
         IASTAppendable resultCollector;
         final int resultSize = ast.argSize() > 127 ? ast.argSize() : 127;
         if (ast.size() >= 5) {
-          resultCollector = F.ast(ast.arg4(), resultSize, false);
+          resultCollector = F.ast(ast.arg4(), resultSize);
         } else {
-          resultCollector = F.ast(head, resultSize, false);
+          resultCollector = F.ast(head, resultSize);
         }
         DistributeAlgorithm algorithm = new DistributeAlgorithm(resultCollector, head, list);
         if (algorithm.distribute(ast)) {
@@ -1702,7 +1702,7 @@ public class Algebra {
         if (numberOfTerms >= Integer.MAX_VALUE || numberOfTerms > Config.MAX_AST_SIZE) {
           throw new ASTElementLimitExceeded(numberOfTerms);
         }
-        final IASTAppendable expandedResult = F.ast(S.Plus, (int) numberOfTerms, false);
+        final IASTAppendable expandedResult = F.ast(S.Plus, (int) numberOfTerms);
         Expand.NumberPartititon part = new Expand.NumberPartititon(plusAST, n, expandedResult);
         part.partition();
         return flattenOneIdentity(expandedResult, F.C0);
@@ -1790,7 +1790,7 @@ public class Algebra {
         if (numberOfTerms > Config.MAX_AST_SIZE) {
           throw new ASTElementLimitExceeded(numberOfTerms);
         }
-        final IASTAppendable result = F.ast(S.Plus, (int) numberOfTerms, false);
+        final IASTAppendable result = F.ast(S.Plus, (int) numberOfTerms);
         plusAST0.forEach(
             x -> {
               plusAST1.forEach(
@@ -1811,7 +1811,7 @@ public class Algebra {
        * @return
        */
       private IExpr expandExprTimesPlus(final IExpr expr1, final IAST plusAST) {
-        final IASTAppendable result = F.ast(S.Plus, plusAST.argSize(), false);
+        final IASTAppendable result = F.ast(S.Plus, plusAST.argSize());
         plusAST.forEach(
             x -> {
               // evaluate to flatten out Times() exprs
@@ -4345,8 +4345,8 @@ public class Algebra {
       if (plusAST.size() <= 2) {
         return F.NIL;
       }
-      IASTAppendable numerator = F.ast(S.Plus, plusAST.size(), false);
-      IASTAppendable denominator = F.ast(S.Times, plusAST.size(), false);
+      IASTAppendable numerator = F.ast(S.Plus, plusAST.size());
+      IASTAppendable denominator = F.ast(S.Times, plusAST.size());
       boolean[] evaled = new boolean[1];
       plusAST.forEach((IExpr x, int i) -> togetherPlusArg(x, i, numerator, denominator, evaled));
       if (!evaled[0]) {
@@ -4845,7 +4845,7 @@ public class Algebra {
     if (head.isAST()) {
       temp =
           expandAll((IAST) head, patt, expandNegativePowers, distributePlus, factorTerms, engine);
-      temp.ifPresent(x -> result[0] = F.ast(x, localASTSize, false));
+      temp.ifPresent(x -> result[0] = F.ast(x, localASTSize));
     }
     final IAST localASTFinal = localAST;
     localAST.forEach(
@@ -4860,7 +4860,7 @@ public class Algebra {
                 if (t.isAST()) {
                   size += ((IAST) t).size();
                 }
-                result[0] = F.ast(head, size, false);
+                result[0] = F.ast(head, size);
                 result[0].appendArgs(localASTFinal, i);
               }
               appendPlus(result[0], t);
@@ -4966,7 +4966,7 @@ public class Algebra {
     FactorComplex<BigRational> factorAbstract = new FactorComplex<BigRational>(cfac);
     SortedMap<GenPolynomial<Complex<BigRational>>, Long> map = factorAbstract.factors(polynomial);
 
-    IASTAppendable result = F.ast(head, map.size(), false);
+    IASTAppendable result = F.ast(head, map.size());
     for (SortedMap.Entry<GenPolynomial<Complex<BigRational>>, Long> entry : map.entrySet()) {
       if (entry.getKey().isONE() && entry.getValue().equals(1L)) {
         continue;
@@ -5044,7 +5044,7 @@ public class Algebra {
         FactorFactory.getImplementation(edu.jas.arith.BigInteger.ONE);
     SortedMap<GenPolynomial<edu.jas.arith.BigInteger>, Long> map;
     map = factorAbstract.factors(poly);
-    IASTAppendable result = F.ast(head, map.size() + 1, false);
+    IASTAppendable result = F.ast(head, map.size() + 1);
     java.math.BigInteger gcd = (java.math.BigInteger) objects[0];
     java.math.BigInteger lcm = (java.math.BigInteger) objects[1];
     if (!gcd.equals(java.math.BigInteger.ONE) || !lcm.equals(java.math.BigInteger.ONE)) {

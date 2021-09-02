@@ -407,7 +407,7 @@ public class AssociationFunctions {
       }
       if (arg2.isAssociation()) {
         IAssociation list2 = (IAssociation) arg2;
-        IASTAppendable result = F.ast(S.Association, list2.size(), false);
+        IASTAppendable result = F.ast(S.Association, list2.size());
         for (int i = 1; i < list2.size(); i++) {
           final IExpr function = engine.evaluate(F.unaryAST1(arg1, list2.getRule(i)));
           result.appendRule(function);
@@ -664,7 +664,7 @@ public class AssociationFunctions {
       } else if (arg1.isList()) {
         if (arg1.isListOfRules(true)) {
           IAST listOfRules = (IAST) arg1;
-          IASTAppendable list = F.ast(S.List, listOfRules.argSize(), false);
+          IASTAppendable list = F.ast(S.List, listOfRules.argSize());
           for (int i = 1; i < listOfRules.size(); i++) {
             final IExpr rule = listOfRules.get(i);
             if (rule.isRuleAST()) {
@@ -1190,7 +1190,7 @@ public class AssociationFunctions {
       } else if (arg1.isList()) {
         if (arg1.isListOfRules(true)) {
           IAST listOfRules = (IAST) arg1;
-          IASTAppendable list = F.ast(S.List, listOfRules.argSize(), false);
+          IASTAppendable list = F.ast(S.List, listOfRules.argSize());
           for (int i = 1; i < listOfRules.size(); i++) {
             final IExpr rule = listOfRules.get(i);
             if (rule.isRuleAST()) {

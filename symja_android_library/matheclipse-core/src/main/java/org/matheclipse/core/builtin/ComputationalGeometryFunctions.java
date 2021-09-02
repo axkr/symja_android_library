@@ -82,7 +82,7 @@ public class ComputationalGeometryFunctions {
             && listOfPoints.arg2().isList3()
             && listOfPoints.arg3().isList3()) {
 
-          IASTAppendable result = F.ast(S.And, listOfPoints.size() - 3, false);
+          IASTAppendable result = F.ast(S.And, listOfPoints.size() - 3);
           for (int i = 4; i < listOfPoints.size(); i++) {
             IAST p1 = (IAST) listOfPoints.get(i - 3);
             IAST p2 = (IAST) listOfPoints.get(i - 2);
@@ -214,7 +214,7 @@ public class ComputationalGeometryFunctions {
             && listOfPoints.arg1().isList2()
             && listOfPoints.arg2().isList2()) {
 
-          IASTAppendable result = F.ast(S.And, listOfPoints.size() - 2, false);
+          IASTAppendable result = F.ast(S.And, listOfPoints.size() - 2);
           for (int i = 3; i < listOfPoints.size(); i++) {
             IAST p1 = (IAST) listOfPoints.get(i - 2);
             IAST p2 = (IAST) listOfPoints.get(i - 1);
@@ -236,7 +236,7 @@ public class ComputationalGeometryFunctions {
             && listOfPoints.arg2().isList3()
             && listOfPoints.arg3().isList3()) {
 
-          IASTAppendable result = F.ast(S.And, listOfPoints.size() - 3, false);
+          IASTAppendable result = F.ast(S.And, listOfPoints.size() - 3);
           for (int i = 3; i < listOfPoints.size(); i++) {
             IAST p1 = (IAST) listOfPoints.get(i - 2);
             IAST p2 = (IAST) listOfPoints.get(i - 1);
@@ -308,7 +308,7 @@ public class ComputationalGeometryFunctions {
       IExpr fx = F.C0;
       IExpr fy = F.C0;
       IExpr fz = F.C0;
-      IASTAppendable equalAST = F.ast(S.Equal, 3, false);
+      IASTAppendable equalAST = F.ast(S.Equal, 3);
       if (!x21.isZero()) {
         fx = x31.divide(x21);
         equalAST.append(fx);

@@ -467,7 +467,7 @@ public final class BooleanFunctions {
      * @return
      */
     public IAST literals2BooleanList(final SortedSet<Literal> literals, Map<String, Integer> map) {
-      IASTAppendable list = F.ast(S.List, map.size(), true);
+      IASTMutable list = F.astMutable(S.List, map.size());
 
       // initialize all list elements with Null
       for (int i = 0; i < map.size(); i++) {
@@ -488,7 +488,7 @@ public final class BooleanFunctions {
     }
 
     public IAST literals2VariableList(final SortedSet<Literal> literals, Map<String, Integer> map) {
-      IASTAppendable list = F.ast(S.List, map.size(), true);
+      IASTMutable list = F.astMutable(S.List, map.size());
 
       // initialize all list elements with Null
       for (int i = 0; i < map.size(); i++) {
@@ -2570,7 +2570,7 @@ public final class BooleanFunctions {
       }
 
       int allocSize = F.allocLevel1(ast, x -> x.isList());
-      IASTAppendable result = F.ast(S.Max, allocSize, false);
+      IASTAppendable result = F.ast(S.Max, allocSize);
       boolean evaled = flattenListRecursive(ast, result);
       return maximum(result, evaled);
     }
@@ -2706,7 +2706,7 @@ public final class BooleanFunctions {
         return IntervalSym.min((IAST) ast.arg1());
       }
       int allocSize = F.allocLevel1(ast, x -> x.isList());
-      IASTAppendable result = F.ast(S.Min, allocSize, false);
+      IASTAppendable result = F.ast(S.Min, allocSize);
       boolean evaled = flattenListRecursive(ast, result);
       return minimum(result, evaled);
     }
@@ -4271,7 +4271,7 @@ public final class BooleanFunctions {
 
       IExpr result = ast.arg1();
       int size = ast.size();
-      IASTAppendable xor = F.ast(S.Xor, size - 1, false);
+      IASTAppendable xor = F.ast(S.Xor, size - 1);
       boolean evaled = false;
       for (int i = 2; i < size; i++) {
         final IExpr arg = ast.get(i);
@@ -4608,7 +4608,7 @@ public final class BooleanFunctions {
             singleBit <<= 1;
           }
           if ((count & 1) == 1) {
-            IASTMutable andAST = F.ast(S.And, size, true);
+            IASTMutable andAST = F.astMutable(S.And, size);
             singleBit = 0b1;
             int startPos = 1;
             int startNotPos = count + 1;

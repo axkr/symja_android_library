@@ -6117,7 +6117,7 @@ public final class Arithmetic {
 
             if (!binaryResult.isPresent()) {
               if (!result.isPresent()) {
-                result = F.ast(sym, astTimes.size() - i + 1, false);
+                result = F.ast(sym, astTimes.size() - i + 1);
               }
               result.append(tempArg1);
               if (i == astTimes.argSize()) {
@@ -6134,7 +6134,7 @@ public final class Arithmetic {
 
             if (i == astTimes.argSize()) {
               if (!result.isPresent()) {
-                result = F.ast(sym, astTimes.size() - i + 1, false);
+                result = F.ast(sym, astTimes.size() - i + 1);
               }
               result.append(tempArg1);
             }
@@ -6875,7 +6875,7 @@ public final class Arithmetic {
     if (function.isAST(S.UnitStep) && function.size() > 1) {
       // Piecewise[{{1, x >= 0 && y >= 0 && z >= 0}}, 0]
       final int size = function.size();
-      IASTAppendable andAST = F.ast(S.And, size, false);
+      IASTAppendable andAST = F.ast(S.And, size);
       for (int i = 1; i < size; i++) {
         andAST.append(F.GreaterEqual(function.get(i), F.C0));
       }
@@ -6887,7 +6887,7 @@ public final class Arithmetic {
         if (function.size() == 2) {
           return F.Piecewise(F.List(F.List(F.C1, F.Equal(function.arg1(), F.C0))), F.C0);
         }
-        IASTAppendable andAST = F.ast(S.And, function.argSize(), false);
+        IASTAppendable andAST = F.ast(S.And, function.argSize());
         function.forEach(x -> andAST.append(F.Equal(x, F.C0)));
         return F.Piecewise(F.List(F.List(F.C1, andAST)), F.C0);
       }
@@ -6895,7 +6895,7 @@ public final class Arithmetic {
         if (function.size() == 2) {
           return F.Piecewise(F.List(F.List(F.C1, F.Equal(function.arg1(), F.C0))), F.C0);
         }
-        IASTAppendable andAST = F.ast(S.And, function.argSize() - 1, false);
+        IASTAppendable andAST = F.ast(S.And, function.argSize() - 1);
         IExpr last = function.arg1();
         for (int i = 2; i < function.size(); i++) {
           final IExpr arg = function.get(i);

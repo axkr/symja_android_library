@@ -1443,7 +1443,7 @@ public final class Combinatoric {
           }
           if (offset > 0) {
             final int allocSize = f.argSize() / offset + 1;
-            final IASTAppendable resultListOfPartitions = F.ast(f.head(), allocSize, false);
+            final IASTAppendable resultListOfPartitions = F.ast(f.head(), allocSize);
             while (true) {
 
               IASTAppendable singlePartition = F.ast(f.head());

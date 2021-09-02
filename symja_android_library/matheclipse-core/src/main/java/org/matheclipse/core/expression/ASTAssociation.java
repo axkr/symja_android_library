@@ -244,15 +244,13 @@ public class ASTAssociation extends AST implements IAssociation {
   /** {@inheritDoc} */
   @Override
   public IASTAppendable copyHead() {
-    return F.ast(S.Association, size(), false);
-    // return new ASTAssociation(size(), false);
+    return F.ast(S.Association, size());
   }
 
   /** {@inheritDoc} */
   @Override
   public IASTAppendable copyHead(final int intialCapacity) {
-    return F.ast(S.Association, intialCapacity, false);
-    //    return new ASTAssociation(intialCapacity, false);
+    return F.ast(S.Association, intialCapacity);
   }
 
   // public boolean appendAllRules(ASTAssociation ast, int startPosition, int endPosition) {
@@ -618,9 +616,8 @@ public class ASTAssociation extends AST implements IAssociation {
   }
 
   protected IASTMutable keys(IBuiltInSymbol symbol) {
-    IASTMutable list = F.ast(symbol, argSize(), true);
+    IASTMutable list = F.astMutable(symbol, argSize());
     for (Object2IntMap.Entry<IExpr> element : keyToIndexMap.object2IntEntrySet()) {
-      // for (Map.Entry<IExpr, Integer> element : keyToIndexMap.entrySet()) {
       int value = element.getIntValue();
       if (value < 0) {
         value *= -1;

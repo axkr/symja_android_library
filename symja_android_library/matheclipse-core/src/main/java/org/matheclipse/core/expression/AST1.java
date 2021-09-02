@@ -119,7 +119,7 @@ public class AST1 extends AST0 {
 
   @Override
   public IASTAppendable copyAppendable(int additionalCapacity) {
-    IASTAppendable result = F.ast(arg0, additionalCapacity + 1, false);
+    IASTAppendable result = F.ast(arg0, additionalCapacity + 1);
     result.append(arg1);
     return result;
   }

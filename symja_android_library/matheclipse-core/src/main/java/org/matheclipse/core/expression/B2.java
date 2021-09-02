@@ -740,7 +740,7 @@ public abstract class B2 extends AbstractAST implements Externalizable, RandomAc
 
   @Override
   public IASTAppendable copyAppendable(int additionalCapacity) {
-    IASTAppendable result = F.ast(head(), additionalCapacity + 2, false);
+    IASTAppendable result = F.ast(head(), additionalCapacity + 2);
     result.append(arg1);
     result.append(arg2);
     return result;

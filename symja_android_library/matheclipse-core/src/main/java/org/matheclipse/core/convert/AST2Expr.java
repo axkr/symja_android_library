@@ -1637,7 +1637,7 @@ public class AST2Expr {
           break;
         default:
           IASTAppendable appendableAST =
-              F.ast(convertNode(functionNode.get(0)), functionNode.size(), false);
+              F.ast(convertNode(functionNode.get(0)), functionNode.size());
           for (int i = 1; i < functionNode.size(); i++) {
             appendableAST.append(convertNode(functionNode.get(i)));
           }

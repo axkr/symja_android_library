@@ -1286,7 +1286,7 @@ public abstract class AbstractAST implements IASTMutable {
 
   @Override
   public IAST apply(final IExpr head, final int start, final int end) {
-    final IASTAppendable ast = F.ast(head, end - start, false);
+    final IASTAppendable ast = F.ast(head, end - start);
     ast.appendArgs(start, end, i -> get(i));
     // for (int i = start; i < end; i++) {
     // ast.append(get(i));
@@ -4984,7 +4984,7 @@ public abstract class AbstractAST implements IASTMutable {
       ISymbol combiner,
       ISymbol action) {
     if (head().equals(operator)) {
-      IASTAppendable result = F.ast(action, 3, false);
+      IASTAppendable result = F.ast(action, 3);
       final int size = size();
       int newSize = size / 2;
       if (newSize <= 4) {
@@ -4992,8 +4992,8 @@ public abstract class AbstractAST implements IASTMutable {
       } else {
         newSize += 4;
       }
-      IASTAppendable yesAST = F.ast(combiner, newSize, false);
-      IASTAppendable noAST = F.ast(combiner, newSize, false);
+      IASTAppendable yesAST = F.ast(combiner, newSize);
+      IASTAppendable noAST = F.ast(combiner, newSize);
       forEach(
           size,
           x -> {

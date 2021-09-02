@@ -808,7 +808,7 @@ public class BuiltInDummy implements IBuiltInSymbol, Serializable {
   /** {@inheritDoc} */
   @Override
   public IExpr of1(EvalEngine engine, IExpr arg, IExpr... parts) {
-    IASTAppendable ast = F.ast(this, 1 + parts.length, false);
+    IASTAppendable ast = F.ast(this, 1 + parts.length);
     ast.append(arg);
     ast.appendAll(parts, 0, parts.length);
     return engine.evaluate(ast);
