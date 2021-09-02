@@ -92,16 +92,16 @@ public class ND extends AbstractFunctionEvaluator {
   }
 
   private IExpr partialDerivative(
-      IExpr arg1, ISymbol arg2, int order, IExpr arg3, EvalEngine engine) {
+      IExpr function, ISymbol variable, int order, IExpr value, EvalEngine engine) {
     double a3Double = Double.NaN;
     try {
-      a3Double = arg3.evalDouble();
+      a3Double = value.evalDouble();
     } catch (ValidateException ve) {
     }
 
     if (Double.isNaN(a3Double)) {
       Complex a3Complex = Complex.NaN;
-      a3Complex = arg3.evalComplex();
+      a3Complex = value.evalComplex();
       if (a3Complex != null) {
         //        FDSFactory<Complex> factory = new FDSFactory<Complex>(ComplexField.getInstance(),
         // 1, order);
@@ -118,7 +118,7 @@ public class ND extends AbstractFunctionEvaluator {
       FiniteDifferencesDifferentiator differentiator =
           new FiniteDifferencesDifferentiator(15, 0.01);
       UnivariateDifferentiableFunction f =
-          differentiator.differentiate(new UnaryNumerical(arg1, arg2, EvalEngine.get()));
+          differentiator.differentiate(new UnaryNumerical(function, variable, EvalEngine.get()));
       return F.num(f.value(factory.variable(0, a3Double)).getPartialDerivative(order));
     }
     return F.NIL;
