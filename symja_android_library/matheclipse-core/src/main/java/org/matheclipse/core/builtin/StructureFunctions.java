@@ -515,6 +515,9 @@ public class StructureFunctions {
           // see level specification
           return engine.printMessage(ve.getMessage(ast.topHead()));
         }
+      } else {
+        // Nonatomic expression expected at position `1` in `2`. 
+        return IOFunctions.printMessage(ast.topHead(), "normal", F.List(F.C1, ast), engine);
       }
       return F.NIL;
     }
