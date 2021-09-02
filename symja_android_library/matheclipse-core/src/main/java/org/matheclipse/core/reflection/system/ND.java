@@ -3,6 +3,7 @@ package org.matheclipse.core.reflection.system;
 import org.hipparchus.analysis.differentiation.DSFactory;
 import org.hipparchus.analysis.differentiation.FiniteDifferencesDifferentiator;
 import org.hipparchus.analysis.differentiation.UnivariateDifferentiableFunction;
+import org.hipparchus.complex.Complex;
 import org.hipparchus.exception.MathRuntimeException;
 import org.matheclipse.core.basic.Config;
 import org.matheclipse.core.eval.EvalEngine;
@@ -99,14 +100,25 @@ public class ND extends AbstractFunctionEvaluator {
     }
 
     if (Double.isNaN(a3Double)) {
-
+      Complex a3Complex = Complex.NaN;
+      a3Complex = arg3.evalComplex();
+      if (a3Complex != null) {
+        //        FDSFactory<Complex> factory = new FDSFactory<Complex>(ComplexField.getInstance(),
+        // 1, order);
+        //        //        FieldDerivativeStructure<Complex> f = factory.variable(0, a3Complex);
+        //        FiniteDifferencesDifferentiator differentiator =
+        //            new FiniteDifferencesDifferentiator(15, 0.01);
+        //        UnivariateDifferentiableFunction f =
+        //            differentiator.differentiate(new UnaryNumerical(arg1, arg2,
+        // EvalEngine.get()));
+        //        //       return F.complexNum(f.getPartialDerivative(order));
+      }
     } else {
       DSFactory factory = new DSFactory(1, order);
       FiniteDifferencesDifferentiator differentiator =
           new FiniteDifferencesDifferentiator(15, 0.01);
       UnivariateDifferentiableFunction f =
           differentiator.differentiate(new UnaryNumerical(arg1, arg2, EvalEngine.get()));
-
       return F.num(f.value(factory.variable(0, a3Double)).getPartialDerivative(order));
     }
     return F.NIL;
