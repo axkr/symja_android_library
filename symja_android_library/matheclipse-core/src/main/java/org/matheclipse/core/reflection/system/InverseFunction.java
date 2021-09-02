@@ -89,14 +89,20 @@ public class InverseFunction extends AbstractFunctionEvaluator {
    *
    * @param ast the AST which represents a function (i.e. <code>Cos(x), Sin(x), ArcSin(x),...</code>
    *     )
+   * @param realAbs return inverse for <code>RealBas()</code> function
    * @return <code>null</code> if there is no inverse function defined.
    */
-  public static IASTAppendable getUnaryInverseFunction(IAST ast) {
+  public static IASTAppendable getUnaryInverseFunction(IAST ast, boolean realAbs) {
     IExpr expr = ast.head();
     if (expr.isSymbol()) {
       IExpr inverseSymbol = F.UNARY_INVERSE_FUNCTIONS.get(expr);
       if (inverseSymbol != null) {
         return F.ast(inverseSymbol);
+      }
+      if (realAbs) {
+        if (ast.isAST(S.RealAbs, 2)) {
+          return F.ast(F.Function(F.Times(F.CN1, F.Slot1)));
+        }
       }
     }
     return F.NIL;

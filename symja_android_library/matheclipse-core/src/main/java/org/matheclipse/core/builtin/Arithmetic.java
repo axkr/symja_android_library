@@ -3001,7 +3001,7 @@ public final class Arithmetic {
       }
       IComplexNum complexNumber;
       if (number instanceof Num) {
-        complexNumber = F.complexNum(((Num) number).doubleValue());
+        complexNumber = F.complexNum(number.doubleValue());
       } else {
         complexNumber = F.complexNum(number.apfloatValue());
       }

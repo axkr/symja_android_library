@@ -30009,6 +30009,15 @@ public class LowercaseTestCase extends AbstractTestCase {
   }
 
   public void testRealAbs() {
+
+    check(
+        "xval = Solve(RealAbs(x) == 2, x)", //
+        "{{x->-2},{x->2}}");
+    // message: Catalan currently not supported in "Apfloat" `
+    check(
+        "N(RealAbs(Pi - Catalan), 50)", //
+        "RealAbs(3.1415926535897932384626433832795028841971693993751-Catalan)");
+
     check(
         "RealAbs(Indeterminate)", //
         "Indeterminate");
@@ -30027,10 +30036,6 @@ public class LowercaseTestCase extends AbstractTestCase {
     check(
         "Integrate(RealAbs(x),x)", //
         "1/2*x*RealAbs(x)");
-    // message: Catalan currently not supported in "Apfloat" `
-    check(
-        "N(RealAbs(Pi - Catalan), 50)", //
-        "RealAbs(3.1415926535897932384626433832795028841971693993751-Catalan)");
 
     check(
         "PiecewiseExpand(RealAbs(x))", //

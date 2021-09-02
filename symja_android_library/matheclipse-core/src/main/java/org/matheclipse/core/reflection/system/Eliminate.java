@@ -330,7 +330,7 @@ public class Eliminate extends AbstractFunctionEvaluator {
     if (exprWithVariable.isAST()) {
       IAST ast = (IAST) exprWithVariable;
       if (ast.isAST1()) {
-        IASTAppendable inverseFunction = InverseFunction.getUnaryInverseFunction(ast);
+        IASTAppendable inverseFunction = InverseFunction.getUnaryInverseFunction(ast, true);
         if (inverseFunction.isPresent()) {
           if (exprWithVariable.isAbs()) {
             if (exprWithoutVariable.isNonNegativeResult()) {

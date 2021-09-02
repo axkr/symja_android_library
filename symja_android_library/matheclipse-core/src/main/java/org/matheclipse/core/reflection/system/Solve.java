@@ -405,13 +405,13 @@ public class Solve extends AbstractFunctionEvaluator {
      * @return
      */
     private IExpr rewriteInverseFunction(IAST ast, IExpr arg1) {
-      if (ast.isAbs()) {
+      if (ast.isAbs() || ast.isAST(S.RealAbs, 2)) {
         return fEngine.evaluate(
             F.Expand(
                 F.Times(
                     F.Subtract(ast.arg1(), F.Times(F.CN1, arg1)), F.Subtract(ast.arg1(), arg1))));
       } else if (ast.isAST1()) {
-        IASTAppendable inverseFunction = InverseFunction.getUnaryInverseFunction(ast);
+        IASTAppendable inverseFunction = InverseFunction.getUnaryInverseFunction(ast, true);
         if (inverseFunction.isPresent()) {
           fEngine.printMessage("Solve: using of inverse functions may omit some solutions.");
           // rewrite fNumer
@@ -431,7 +431,7 @@ public class Solve extends AbstractFunctionEvaluator {
           && ast.first().isNumericFunction(true)
           && ast.second().isAST1()) {
         IAST timesArg2 = (IAST) ast.second();
-        IASTAppendable inverseFunction = InverseFunction.getUnaryInverseFunction(timesArg2);
+        IASTAppendable inverseFunction = InverseFunction.getUnaryInverseFunction(timesArg2, true);
         if (inverseFunction.isPresent()) {
           fEngine.printMessage("Solve: using of inverse functions may omit some solutions.");
           // rewrite fNumer
@@ -454,7 +454,7 @@ public class Solve extends AbstractFunctionEvaluator {
     private IExpr rewriteInverseFunction(IAST plusAST, int position) {
       IAST ast = (IAST) plusAST.get(position);
       IExpr plus = plusAST.splice(position).oneIdentity0();
-      if (ast.isAbs()) {
+      if (ast.isAbs() || ast.isAST(S.RealAbs, 2)) {
         if (plus.isNegative() || plus.isZero()) {
           if (plus.isFree(Predicates.in(fListOfVariables), true)) {
             return rewriteInverseFunction(ast, F.Negate(plus));
@@ -482,8 +482,8 @@ public class Solve extends AbstractFunctionEvaluator {
 
         if (expr.isAST()) {
           IAST function = (IAST) expr;
-          IAST inverseFunction = InverseFunction.getUnaryInverseFunction(function);
-          if (inverseFunction.isPresent()) {
+          IAST inverseFunction = InverseFunction.getUnaryInverseFunction(function, true);
+          if (inverseFunction.isPresent()  ) {
             IExpr temp = rewriteInverseFunction(plusAST, i);
             if (temp.isPresent()) {
               return temp;
@@ -505,7 +505,7 @@ public class Solve extends AbstractFunctionEvaluator {
               }
             } else if (function.arg2().isAST1()) {
               IAST inverseTimesFunction =
-                  InverseFunction.getUnaryInverseFunction((IAST) function.arg2());
+                  InverseFunction.getUnaryInverseFunction((IAST) function.arg2(), true);
               if (inverseTimesFunction.isPresent()) {
                 IExpr temp = rewriteInverseFunction(plusAST, i);
                 if (temp.isPresent()) {
