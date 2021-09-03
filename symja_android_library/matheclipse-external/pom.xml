@@ -28,22 +28,6 @@
 	<dependencies>
 
 		<dependency>
-			<groupId>org.apache.logging.log4j</groupId>
-			<artifactId>log4j-core</artifactId>
-		</dependency>
-
-		<dependency>
-			<groupId>org.slf4j</groupId>
-			<artifactId>slf4j-simple</artifactId>
-			<scope>test</scope>
-		</dependency>
-
-		<dependency>
-			<groupId>org.slf4j</groupId>
-			<artifactId>log4j-over-slf4j</artifactId>
-		</dependency>
-
-		<dependency>
 			<groupId>com.google.guava</groupId>
 			<artifactId>guava</artifactId>
 		</dependency>
@@ -73,10 +57,28 @@
 			<artifactId>commons-text</artifactId>
 		</dependency>
 
-		<!-- <dependency> <groupId>edu.stanford.nlp</groupId> <artifactId>stanford-corenlp</artifactId> 
-			<version>4.0.0</version> </dependency> <dependency> <groupId>edu.stanford.nlp</groupId> 
-			<artifactId>stanford-corenlp</artifactId> <version>4.0.0</version> <classifier>models</classifier> 
+		<!-- <dependency> <groupId>edu.stanford.nlp</groupId> <artifactId>stanford-corenlp</artifactId>
+			<version>4.0.0</version> </dependency> <dependency> <groupId>edu.stanford.nlp</groupId>
+			<artifactId>stanford-corenlp</artifactId> <version>4.0.0</version> <classifier>models</classifier>
 			</dependency> -->
+
+		<!-- logging dependencies -->
+
+		<dependency>
+			<groupId>org.apache.logging.log4j</groupId>
+			<artifactId>log4j-core</artifactId>
+		</dependency>
+
+		<dependency>
+			<groupId>org.slf4j</groupId>
+			<artifactId>slf4j-simple</artifactId>
+			<scope>test</scope>
+		</dependency>
+
+		<dependency>
+			<groupId>org.slf4j</groupId>
+			<artifactId>log4j-over-slf4j</artifactId>
+		</dependency>
 
 	</dependencies>
 </project>
