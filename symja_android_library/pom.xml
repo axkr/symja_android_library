@@ -207,12 +207,6 @@
 			</dependency>
 
 			<dependency>
-				<groupId>org.apache.logging.log4j</groupId>
-				<artifactId>log4j-core</artifactId>
-				<version>2.13.2</version>
-			</dependency>
-
-			<dependency>
 				<groupId>org.apache.lucene</groupId>
 				<artifactId>lucene-analyzers-common</artifactId>
 				<version>8.5.1</version>
@@ -224,7 +218,7 @@
 				<version>4.1.1</version>
 			</dependency>
 
-			<!-- <dependency> <groupId>de.uni-mannheim.rz.krum</groupId> <artifactId>jas</artifactId> 
+			<!-- <dependency> <groupId>de.uni-mannheim.rz.krum</groupId> <artifactId>jas</artifactId>
 				<version>2.6.6025</version> </dependency> -->
 
 			<dependency>
@@ -249,7 +243,7 @@
 				<groupId>org.gavaghan</groupId>
 				<artifactId>geodesy</artifactId>
 				<version>1.1.3</version>
-			</dependency> 
+			</dependency>
 
 			<dependency>
 				<groupId>org.hipparchus</groupId>
@@ -305,6 +299,14 @@
 				<version>0.8.12</version>
 			</dependency>
 
+			<!-- logging dependencies -->
+
+			<dependency>
+				<groupId>org.apache.logging.log4j</groupId>
+				<artifactId>log4j-core</artifactId>
+				<version>2.13.2</version>
+			</dependency>
+
 			<dependency>
 				<groupId>org.slf4j</groupId>
 				<artifactId>log4j-over-slf4j</artifactId>
@@ -338,8 +340,8 @@
 
 	</dependencies>
 
-	<!-- <repositories> <repository> <id>orekit</id> <url>https://packages.orekit.org/repository/maven-public/</url> 
-		</repository> <repository> <id>sonatype</id> <url>https://oss.sonatype.org/content/groups/public/</url> 
+	<!-- <repositories> <repository> <id>orekit</id> <url>https://packages.orekit.org/repository/maven-public/</url>
+		</repository> <repository> <id>sonatype</id> <url>https://oss.sonatype.org/content/groups/public/</url>
 		</repository> </repositories> -->
 
 	<build>
@@ -429,9 +431,9 @@
 					</configuration>
 				</plugin>
 
-				<!-- <plugin> <groupId>com.google.cloud.tools</groupId> <artifactId>jib-maven-plugin</artifactId> 
-					<version>2.7.0</version> <configuration> <to> <image>servletserver</image> 
-					</to> <container> <mainClass>org.matheclipse.io.servlet.ServletServer</mainClass> 
+				<!-- <plugin> <groupId>com.google.cloud.tools</groupId> <artifactId>jib-maven-plugin</artifactId>
+					<version>2.7.0</version> <configuration> <to> <image>servletserver</image>
+					</to> <container> <mainClass>org.matheclipse.io.servlet.ServletServer</mainClass>
 					</container> </configuration> </plugin> -->
 
 			</plugins>

@@ -83,6 +83,8 @@
 			<artifactId>poi-ooxml</artifactId>
 		</dependency>
 
+		<!-- test dependencies -->
+
 		<dependency>
 			<groupId>com.tngtech.archunit</groupId>
 			<artifactId>archunit-junit4</artifactId>
