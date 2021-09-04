@@ -18,7 +18,6 @@ package org.matheclipse.parser.client.operator;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
-
 import org.matheclipse.parser.client.FEConfig;
 import org.matheclipse.parser.client.Scanner;
 import org.matheclipse.parser.client.ast.ASTNode;
@@ -117,6 +116,38 @@ public class ASTNodeFactory implements INodeParserFactory {
           factory.createSymbol("Times"),
           lhs,
           factory.createFunction(factory.createSymbol("Power"), rhs, factory.createInteger(-1)));
+    }
+  }
+
+  private static class PatternOperator extends InfixOperator {
+    public PatternOperator(
+        final String oper, final String functionName, final int precedence, final int grouping) {
+      super(oper, functionName, precedence, grouping);
+    }
+
+    @Override
+    public ASTNode createFunction(
+        final INodeParserFactory factory, final ASTNode lhs, final ASTNode rhs) {
+
+      if (lhs instanceof SymbolNode) {
+        if (rhs instanceof FunctionNode) {
+          FunctionNode pn1 = (FunctionNode) rhs;
+          if (pn1.size() == 3
+              && pn1.get(0).equals(factory.createSymbol("Pattern"))
+              && (pn1.get(1) instanceof SymbolNode)
+              && (pn1.get(2) instanceof FunctionNode)) {
+            FunctionNode pn2 = (FunctionNode) pn1.get(2);
+            if (pn2.size() == 3 && pn2.get(0).equals(factory.createSymbol("Pattern"))) {
+              return factory.createFunction(
+                  factory.createSymbol("Optional"),
+                  factory.createFunction(factory.createSymbol("Pattern"), lhs, pn1.get(1)),
+                  pn2); 
+            }
+          }
+        }
+        return factory.createFunction(factory.createSymbol("Pattern"), lhs, rhs);
+      }
+      return factory.createFunction(factory.createSymbol("Optional"), lhs, rhs);
     }
   }
 
@@ -275,6 +306,7 @@ public class ASTNodeFactory implements INodeParserFactory {
     "Composition",
     "RightComposition",
     "StringExpression",
+    "Pattern",
     "TwoWayRule",
     "TwoWayRule",
     "DirectedEdge",
@@ -352,6 +384,7 @@ public class ASTNodeFactory implements INodeParserFactory {
     "@*",
     "/*",
     "~~", // StringExpression
+    ":", // Pattern
     "<->", // TwoWayRule
     "\uF120", // TwoWayRule
     "\uF3D5", // DirectedEdge
@@ -475,9 +508,11 @@ public class ASTNodeFactory implements INodeParserFactory {
                 "/.", "ReplaceAll", Precedence.REPLACEALL, InfixOperator.LEFT_ASSOCIATIVE), //
             TAG_SET_OPERATOR, //
             new InfixOperator("@*", "Composition", Precedence.COMPOSITION, InfixOperator.NONE),
-            new InfixOperator("/*", "RightComposition", Precedence.RIGHTCOMPOSITION, InfixOperator.NONE),
+            new InfixOperator(
+                "/*", "RightComposition", Precedence.RIGHTCOMPOSITION, InfixOperator.NONE),
             new InfixOperator(
                 "~~", "StringExpression", Precedence.STRINGEXPRESSION, InfixOperator.NONE),
+            new PatternOperator(":", "Pattern", Precedence.PATTERN, InfixOperator.NONE),
             new InfixOperator(
                 "<->", "TwoWayRule", Precedence.TWOWAYRULE, InfixOperator.RIGHT_ASSOCIATIVE),
             new InfixOperator(

@@ -47,6 +47,7 @@ import org.matheclipse.parser.client.FEConfig;
 import org.matheclipse.parser.client.Scanner;
 import org.matheclipse.parser.client.SyntaxError;
 import org.matheclipse.parser.client.ast.IParserFactory;
+import org.matheclipse.parser.client.ast.SymbolNode;
 import org.matheclipse.parser.client.operator.InfixOperator;
 import org.matheclipse.parser.client.operator.Operator;
 
@@ -411,20 +412,22 @@ public class ExprParser extends Scanner {
         temp = getSymbol();
         if (temp.isSymbol()) {
           ISymbol symbol = (ISymbol) temp;
-          if (fToken == TT_COLON) {
-            getNextToken();
-            if (fToken == TT_IDENTIFIER) {
-              temp = getSymbol();
-              temp = parseArguments(temp);
-              return F.Pattern(symbol, temp);
-            } else {
-              temp = getFactor(0);
-            }
-            temp = F.Pattern(symbol, temp);
-          } else if (fToken >= TT_BLANK && fToken <= TT_BLANK_COLON) {
+          //          if (fToken == TT_COLON) {
+          //            getNextToken();
+          //            if (fToken == TT_IDENTIFIER) {
+          //              temp = getSymbol();
+          //              temp = parseArguments(temp);
+          //              return F.Pattern(symbol, temp);
+          //            } else {
+          //              temp = getFactor(0);
+          //            }
+          //            temp = F.Pattern(symbol, temp);
+          //          } else
+          if (fToken >= TT_BLANK && fToken <= TT_BLANK_COLON) {
             temp = getBlankPatterns(symbol);
           }
         }
+        //        }
         return parseArguments(temp);
 
       case TT_PRECEDENCE_OPEN:
@@ -1074,10 +1077,6 @@ public class ExprParser extends Scanner {
   private IExpr getPart(final int min_precedence) throws SyntaxError {
     IASTAppendable function = null;
     IExpr temp = getFactor(min_precedence);
-    if (fToken == TT_COLON) {
-      getNextToken();
-      return F.Optional(temp, parseExpression());
-    }
     if (fToken != TT_PARTOPEN) {
       return temp;
     }
@@ -1600,6 +1599,7 @@ public class ExprParser extends Scanner {
         InfixExprOperator infixOperator = determineBinaryOperator();
         if (infixOperator != null) {
           if (infixOperator.getPrecedence() > min_precedence
+              || (fOperatorString.equals(":") && rhs.isSymbol())
               || ((infixOperator.getPrecedence() == min_precedence)
                   && (infixOperator.getGrouping() == InfixExprOperator.RIGHT_ASSOCIATIVE))) {
             // if (infixOperator.isOperator(";")) {

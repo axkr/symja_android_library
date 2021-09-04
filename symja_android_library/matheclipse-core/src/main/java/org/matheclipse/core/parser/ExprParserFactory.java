@@ -18,8 +18,8 @@ package org.matheclipse.core.parser;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
-
 import org.matheclipse.core.expression.F;
+import org.matheclipse.core.expression.PatternNested;
 import org.matheclipse.core.expression.S;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IASTAppendable;
@@ -167,6 +167,32 @@ public class ExprParserFactory implements IParserFactory {
     }
   }
 
+  private static class PatternExprOperator extends InfixExprOperator {
+    public PatternExprOperator(
+        final String oper, final String functionName, final int precedence, final int grouping) {
+      super(oper, functionName, precedence, grouping);
+    }
+
+    @Override
+    public IASTMutable createFunction(
+        final IParserFactory factory, ExprParser parser, final IExpr lhs, final IExpr rhs) {
+
+      if (lhs.isSymbol()) {
+
+        if (rhs instanceof PatternNested) {
+          PatternNested pn = (PatternNested) rhs;
+          IExpr subPattern = pn.getPatternExpr();
+          if (subPattern instanceof PatternNested && pn.getSymbol() != null) {
+            return F.binaryAST2(
+                S.Optional, F.binaryAST2(S.Pattern, lhs, pn.getSymbol()), subPattern);
+          }
+        }
+        return F.binaryAST2(S.Pattern, lhs, rhs);
+      }
+      return F.binaryAST2(S.Optional, lhs, rhs);
+    }
+  }
+
   private static class PreMinusExprOperator extends PrefixExprOperator {
 
     public PreMinusExprOperator(
@@ -280,7 +306,7 @@ public class ExprParserFactory implements IParserFactory {
     "RuleDelayed",
     "GreaterEqual",
     "Condition",
-    "Colon",
+    //    "Colon",
     "//",
     "DivideBy",
     "Or",
@@ -309,6 +335,7 @@ public class ExprParserFactory implements IParserFactory {
     "Composition",
     "RightComposition",
     "StringExpression",
+    "Pattern",
     "TwoWayRule",
     "TwoWayRule",
     "DirectedEdge",
@@ -327,8 +354,9 @@ public class ExprParserFactory implements IParserFactory {
   static final String[] OPERATOR_STRINGS = {
     "::", "<<", "?", "??", "?", "//@", "*=", "+", "^=", ";", "@", "/@", "=.", "@@", "@@@", "//.",
     "<", "&&", "/", "=", "++", "!!", "<=", "**", "!", "*", "^", ".", "!", "-", "===", ":>", ">=",
-    "/;", ":", "//", "/=", "||", ";;", "==", "<>", "!=", "--", "-=", "+", "...", "=!=", "->", "^:=",
-    "++", "&", ">", "--", "-", ":=", "|", "+=", "..", "/.", "/:", "@*","/*", "~~", //
+    "/;", "//", "/=", "||", ";;", "==", "<>", "!=", "--", "-=", "+", "...", "=!=", "->", "^:=",
+    "++", "&", ">", "--", "-", ":=", "|", "+=", "..", "/.", "/:", "@*", "/*", "~~", //
+    ":", // Pattern
     "<->", // TwoWayRule
     "\uF120", // TwoWayRule
     "\uF3D5", // DirectedEdge
@@ -421,7 +449,7 @@ public class ExprParserFactory implements IParserFactory {
                 ">=", "GreaterEqual", Precedence.GREATEREQUAL, InfixExprOperator.NONE), //
             new InfixExprOperator(
                 "/;", "Condition", Precedence.CONDITION, InfixExprOperator.LEFT_ASSOCIATIVE), //
-            new InfixExprOperator(":", "Colon", Precedence.COLON, InfixExprOperator.NONE), //
+            // new InfixExprOperator(":", "Colon", Precedence.COLON,InfixExprOperator.NONE), //
             new InfixExprOperator("//", "//", 70, InfixExprOperator.LEFT_ASSOCIATIVE), //
             new InfixExprOperator(
                 "/=", "DivideBy", Precedence.DIVIDEBY, InfixExprOperator.RIGHT_ASSOCIATIVE), //
@@ -464,9 +492,11 @@ public class ExprParserFactory implements IParserFactory {
                 "/.", "ReplaceAll", Precedence.REPLACEALL, InfixExprOperator.LEFT_ASSOCIATIVE), //
             TAG_SET_OPERATOR, //
             new InfixExprOperator("@*", "Composition", Precedence.COMPOSITION, InfixOperator.NONE),
-            new InfixExprOperator("/*", "RightComposition", Precedence.RIGHTCOMPOSITION, InfixOperator.NONE),
+            new InfixExprOperator(
+                "/*", "RightComposition", Precedence.RIGHTCOMPOSITION, InfixOperator.NONE),
             new InfixExprOperator(
                 "~~", "StringExpression", Precedence.STRINGEXPRESSION, InfixOperator.NONE),
+            new PatternExprOperator(":", "Pattern", Precedence.PATTERN, InfixOperator.NONE),
             new InfixExprOperator(
                 "<->", "TwoWayRule", Precedence.TWOWAYRULE, InfixOperator.RIGHT_ASSOCIATIVE), //
             new InfixExprOperator(

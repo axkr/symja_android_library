@@ -1120,4 +1120,88 @@ public class ParserTestCase extends TestCase {
       assertEquals("", e.getMessage());
     }
   }
+
+  public void testParser73() {
+    try {
+      Parser p = new Parser();
+      ASTNode obj = p.parse("y:r_^n_");
+      // Pattern[y,Power[Pattern[r,Blank[]],Pattern[n,Blank[]]]]
+      assertEquals(
+          obj.toString(), //
+          "Pattern(y, Power(r_, n_))");
+    } catch (Exception e) {
+      e.printStackTrace();
+      assertEquals("", e.getMessage());
+    }
+  }
+
+  public void testParser74() {
+    try {
+      Parser p = new Parser();
+      ASTNode obj = p.parse("Cases[e, y:(a_. x + b_.)^n_ /; FreeQ[{a,b}, x] ]");
+      // Cases[e,Condition[Pattern[y,Power[Plus[Times[Optional[Pattern[a,Blank[]]],x],Optional[Pattern[b,Blank[]]]],Pattern[n,Blank[]]]],FreeQ[List[a,b],x]]]
+      assertEquals(
+          obj.toString(), //
+          "Cases(e, Condition(Pattern(y, Power(Plus(Times(a_., x), b_.), n_)), FreeQ(List(a, b), x)))");
+    } catch (Exception e) {
+      e.printStackTrace();
+      assertEquals("", e.getMessage());
+    }
+  }
+
+  public void testParser75() {
+    try {
+      Parser p = new Parser();
+      ASTNode obj = p.parse("Cases[e, t:{__Integer} :> t^2]");
+      assertEquals(
+          obj.toString(), //
+          "Cases(e, RuleDelayed(Pattern(t, List(__Integer)), Power(t, 2)))");
+    } catch (Exception e) {
+      e.printStackTrace();
+      assertEquals("", e.getMessage());
+    }
+  }
+
+  // Hold[Cases[e, y:(a_. x + b_.)^n_ /;  FreeQ[{a,b}, x] && Head[n] == Rational :> {y, a x + b,
+  // Numerator[n], Denominator[n], a, b}, {0, Infinity}]]//FullForm
+  public void testParser76() {
+    try {
+      Parser p = new Parser();
+      ASTNode obj =
+          p.parse(
+              "Cases[e, y:(a_. x + b_.)^n_ /;  FreeQ[{a,b}, x] && Head[n] == Rational :> {y, a x + b, Numerator[n], Denominator[n], a, b}, {0, Infinity}]");
+      assertEquals(
+          obj.toString(), //
+          "Cases(e, RuleDelayed(Condition(Pattern(y, Power(Plus(Times(a_., x), b_.), n_)), And(FreeQ(List(a, b), x), Equal(Head(n), Rational))), List(y, Plus(Times(a, x), b), Numerator(n), Denominator(n), a, b)), List(0, Infinity))");
+    } catch (Exception e) {
+      e.printStackTrace();
+      assertEquals("", e.getMessage());
+    }
+  }
+
+  public void testParser77() {
+    try {
+      Parser p = new Parser();
+      ASTNode obj = p.parse("a_+b:Power[c_,_Rational]");
+      assertEquals(
+          obj.toString(), //
+          "Plus(a_, Pattern(b, Power(c_, _Rational)))");
+    } catch (Exception e) {
+      e.printStackTrace();
+      assertEquals("", e.getMessage());
+    }
+  }
+
+  public void testParser78() {
+    try {
+      Parser p = new Parser();
+      ASTNode obj = p.parse("WordBoundary ~~ x:DigitCharacter.. ~~ WordBoundary");
+      assertEquals(
+          obj.toString(), //
+          "StringExpression(WordBoundary, Pattern(x, Repeated(DigitCharacter)), WordBoundary)");
+    } catch (Exception e) {
+      e.printStackTrace();
+      assertEquals("", e.getMessage());
+    }
+  }
 }

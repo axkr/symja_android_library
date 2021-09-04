@@ -17,7 +17,6 @@ package org.matheclipse.parser.client;
 
 import java.util.List;
 import java.util.Stack;
-
 import org.matheclipse.parser.client.operator.Operator;
 
 public abstract class Scanner {
@@ -60,9 +59,6 @@ public abstract class Scanner {
 
   /** Token type: operator found in input string */
   protected static final int TT_OPERATOR = 31;
-
-  /** ':' operator */
-  protected static final int TT_COLON = 133;
 
   /** ',' operator */
   protected static final int TT_COMMA = 134;
@@ -281,8 +277,7 @@ public abstract class Scanner {
    * <ul>
    *   <li><code>0</code> - means all bracket levels are balanced
    *   <li><code>-1</code> - means a closing bracket is missing
-   *   <li><code>1</code> - means the brackets are not balanced
-   *       brackets
+   *   <li><code>1</code> - means the brackets are not balanced brackets
    * </ul>
    *
    * @param sourceCode
@@ -743,15 +738,11 @@ public abstract class Scanner {
 
             break;
           case ':':
-            if (isValidPosition()) {
-              char ch = charAtPosition();
-              if (isOperatorCharacters(ch)) {
-                fOperList = getOperator();
-                fToken = TT_OPERATOR;
-                return;
-              }
+            if (isOperatorCharacters()) {
+              fOperList = getOperator();
+              fToken = TT_OPERATOR;
+              return;
             }
-            fToken = TT_COLON;
             break;
           case ';':
             if (isValidPosition()) {
@@ -843,27 +834,25 @@ public abstract class Scanner {
               fToken = TT_OPERATOR;
               return;
             }
-            // if (fCurrentChar == '.') {
-            // if (isValidPosition()) {
-            // if (Character.isDigit(fCurrentChar)) {
-            // // don't increment fCurrentPosition (see
-            // // getNumberString())
-            // fToken = TT_DIGIT; // floating-point number
-            // break;
-            // }
-            // }
-            // break;
-            // } else {
             if (Characters.CharacterNamesMap.containsKey(String.valueOf(fCurrentChar))) {
               fToken = TT_IDENTIFIER;
               return;
+            }
+            if (isValidPosition()) {
+              int codePoint = Character.codePointAt(fInputString, fCurrentPosition - 1);
+              String str = Characters.unicodePoint(codePoint);
+              if (str != null) {
+                throwSyntaxError("unexpected (named unicode) character: '\\[" + str + "]'");
+                //                fCurrentPosition++;
+                //                fToken = TT_IDENTIFIER;
+                //                return;
+              }
             }
             String str = Characters.unicodeName(fCurrentChar);
             if (str != null) {
               throwSyntaxError("unexpected (named unicode) character: '\\[" + str + "]'");
             }
             throwSyntaxError("unexpected character: '" + fCurrentChar + "'");
-            // }
         }
 
         if (fToken == TT_EOF) {
@@ -1547,8 +1536,6 @@ public abstract class Scanner {
         return "TT_SPAN";
       case TT_OPERATOR:
         return "TT_OPERATOR";
-      case TT_COLON:
-        return "TT_COLON";
       case TT_COMMA:
         return "TT_COMMA";
       case TT_PERCENT:

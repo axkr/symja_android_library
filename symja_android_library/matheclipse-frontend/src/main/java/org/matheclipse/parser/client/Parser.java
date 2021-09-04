@@ -190,25 +190,90 @@ public class Parser extends Scanner {
     switch (fToken) {
       case TT_IDENTIFIER:
         final SymbolNode symbol = getSymbol();
-        if (fToken == TT_COLON) {
-          getNextToken();
-          if (fToken == TT_IDENTIFIER) {
-            temp = getSymbol();
-            temp = parseArguments(temp);
-            final FunctionNode pattern =
-                fFactory.createFunction(fFactory.createSymbol(IConstantOperators.Pattern));
-            pattern.add(symbol);
-            pattern.add(temp);
-            return pattern;
-          } else {
-            temp = getFactor(0);
-          }
-          final FunctionNode pattern =
-              fFactory.createFunction(fFactory.createSymbol(IConstantOperators.Pattern));
-          pattern.add(symbol);
-          pattern.add(temp);
-          temp = pattern;
-        } else if (fToken >= TT_BLANK && fToken <= TT_BLANK_COLON) {
+        //        if (fToken == TT_OPERATOR && fOperatorString.equals(":")) {
+        //          getNextToken();
+        //          temp = parseExpression();
+        //          final FunctionNode pattern =
+        //              fFactory.createFunction(fFactory.createSymbol(IConstantOperators.Pattern));
+        //          pattern.add(symbol);
+        //          pattern.add(temp);
+        //          return pattern;
+        //        }
+
+        //          return symbol;
+        //          getNextToken();
+        //          temp = parseExpression();
+        //          final FunctionNode pattern =
+        //
+        // fFactory.createFunction(fFactory.createSymbol(IConstantOperators.Pattern));
+        //          pattern.add(symbol);
+        //          pattern.add(temp);
+        //          return pattern;
+        //
+        //          //          if (fToken == TT_IDENTIFIER) {
+        //          //            temp = getSymbol();
+        //          //
+        //          //            if (fRelaxedSyntax) {
+        //          //              if (fToken == TT_ARGUMENTS_OPEN) {
+        //          //                temp = parseArguments(temp);
+        //          //                final FunctionNode pattern =
+        //          //
+        //          // fFactory.createFunction(fFactory.createSymbol(IConstantOperators.Pattern));
+        //          //                pattern.add(symbol);
+        //          //                pattern.add(temp);
+        //          //                return pattern;
+        //          //              } else if (fToken == TT_PRECEDENCE_OPEN) {
+        //          //                temp = parseArguments(temp);
+        //          //                final FunctionNode pattern =
+        //          //
+        //          // fFactory.createFunction(fFactory.createSymbol(IConstantOperators.Pattern));
+        //          //                pattern.add(symbol);
+        //          //                pattern.add(temp);
+        //          //                return pattern;
+        //          //              }
+        //          //            } else {
+        //          //              if (fToken == TT_ARGUMENTS_OPEN) {
+        //          //                temp = parseArguments(temp);
+        //          //                final FunctionNode pattern =
+        //          //
+        //          // fFactory.createFunction(fFactory.createSymbol(IConstantOperators.Pattern));
+        //          //                pattern.add(symbol);
+        //          //                pattern.add(temp);
+        //          //                return pattern;
+        //          //              }
+        //          //            }
+        //          //
+        //          //            if (fToken == TT_COLON) {
+        //          //              temp = parseArguments(temp);
+        //          //              final FunctionNode pattern =
+        //          //
+        //          // fFactory.createFunction(fFactory.createSymbol(IConstantOperators.Pattern));
+        //          //              pattern.add(symbol);
+        //          //              pattern.add(temp);
+        //          //              return pattern;
+        //          //            }
+        //          //            if (fToken >= TT_BLANK && fToken <= TT_BLANK_COLON) {
+        //          //              temp = getBlankPatterns((SymbolNode) temp);
+        //          //            }
+        //          //            temp = parseExpression(temp, 150);
+        //          //            final FunctionNode pattern =
+        //          //
+        //          // fFactory.createFunction(fFactory.createSymbol(IConstantOperators.Pattern));
+        //          //            pattern.add(symbol);
+        //          //            pattern.add(temp);
+        //          //            return pattern;
+        //          //
+        //          //          } else {
+        //          //            temp = getFactor(0);
+        //          //          }
+        //          //          final FunctionNode pattern =
+        //          //
+        //          // fFactory.createFunction(fFactory.createSymbol(IConstantOperators.Pattern));
+        //          //          pattern.add(symbol);
+        //          //          pattern.add(temp);
+        //          //          temp = pattern;
+        //        } else
+        if (fToken >= TT_BLANK && fToken <= TT_BLANK_COLON) {
           temp = getBlankPatterns(symbol);
         } else {
           temp = symbol;
@@ -804,12 +869,13 @@ public class Parser extends Scanner {
   private ASTNode getPart(final int min_precedence) throws SyntaxError {
     FunctionNode function = null;
     ASTNode temp = getFactor(min_precedence);
-    if (fToken == TT_COLON) {
-      getNextToken();
-      function = fFactory.createFunction(fFactory.createSymbol(IConstantOperators.Optional), temp);
-      function.add(parseExpression());
-      return function;
-    }
+    //    if (fToken == TT_COLON) {
+    //      getNextToken();
+    //      function = fFactory.createFunction(fFactory.createSymbol(IConstantOperators.Optional),
+    // temp);
+    //      function.add(parseExpression());
+    //      return function;
+    //    }
     if (fToken != TT_PARTOPEN) {
       return temp;
     }
@@ -997,9 +1063,8 @@ public class Parser extends Scanner {
         return span;
       } else if (fToken == TT_OPERATOR) {
         InfixOperator infixOperator = determineBinaryOperator();
-        if (infixOperator != null
-            && //
-            infixOperator.getOperatorString().equals(";")) {
+        if (infixOperator != null //
+            && infixOperator.getOperatorString().equals(";")) {
           span.add(fFactory.createSymbol(IConstantOperators.All));
           getNextToken();
           ASTNode compoundExpressionNull = parseCompoundExpressionNull(infixOperator, span);
@@ -1298,6 +1363,7 @@ public class Parser extends Scanner {
         InfixOperator infixOperator = determineBinaryOperator();
         if (infixOperator != null) {
           if (infixOperator.getPrecedence() > min_precedence
+              || (fOperatorString.equals(":") && (rhs instanceof SymbolNode))
               || ((infixOperator.getPrecedence() == min_precedence)
                   && (infixOperator.getGrouping() == InfixOperator.RIGHT_ASSOCIATIVE))) {
             if (infixOperator.isOperator(";")) {

@@ -3509,6 +3509,14 @@ public class LowercaseTestCase extends AbstractTestCase {
   }
 
   public void testCases() {
+    //    check(
+    //        " t : {__Integer} :> t^2", //
+    //        "(t:{__Integer}):>t^2");
+    check(
+        "Cases({(c*x+d)^(1/3)}, " //
+            + "y:(a_. x + b_.)^n_ /;  FreeQ({a,b}, x) && Head(n) == Rational :> {y, a*x + b, Numerator(n), Denominator(n), a, b}, {0, Infinity})", //
+        "{{(d+c*x)^(1/3),d+c*x,1,3,c,d}}");
+
     check(
         "Cases({b, 6, \\[Pi]}, _Symbol, Heads->True)", //
         "{List,b,Pi}");
@@ -25643,10 +25651,15 @@ public class LowercaseTestCase extends AbstractTestCase {
   }
 
   public void testPattern() {
+    // TODO parse this as Optional(Pattern(a,b),Pattern(c,d))
+    check(
+        "a:b:c:d", //
+        "Optional(a:b,(c:d))");
+
     // Pattern: First element in Pattern(3,3) is not a valid pattern name.
     check(
         "Pattern(3,3)", //
-        "Pattern(3,3)");
+        "3:3");
 
     check(
         "me:f(___,_Plus,___):={Unevaluated(me),Plus}", //
@@ -25671,9 +25684,9 @@ public class LowercaseTestCase extends AbstractTestCase {
     check(
         "x y : z", //
         "x*(y:z)");
-    check(
-        "a:b:c:d", //
-        "Optional(Pattern(a,b),Pattern(c,d))");
+    //    check(
+    //        "a:b:c:d", //
+    //        "Optional(Pattern(a,b),Pattern(c,d))");
 
     check(
         "Options(f) = { a  -> 1, b  -> 2 }", //
