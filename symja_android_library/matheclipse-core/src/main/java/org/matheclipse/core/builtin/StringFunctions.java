@@ -12,7 +12,6 @@ import java.util.function.Predicate;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.regex.PatternSyntaxException;
-
 import org.apache.commons.text.similarity.LevenshteinDistance;
 import org.matheclipse.core.basic.Config;
 import org.matheclipse.core.eval.EvalEngine;
@@ -25,6 +24,7 @@ import org.matheclipse.core.eval.interfaces.AbstractFunctionOptionEvaluator;
 import org.matheclipse.core.eval.util.OptionArgs;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.expression.ID;
+import org.matheclipse.core.expression.PatternNested;
 import org.matheclipse.core.expression.PatternSequence;
 import org.matheclipse.core.expression.RepeatedPattern;
 import org.matheclipse.core.expression.S;
@@ -44,7 +44,6 @@ import org.matheclipse.core.interfaces.IStringX;
 import org.matheclipse.core.interfaces.ISymbol;
 import org.matheclipse.core.parser.ExprParser;
 import org.matheclipse.parser.client.FEConfig;
-
 import com.google.common.base.CharMatcher;
 import com.ibm.icu.text.Transliterator;
 import com.univocity.parsers.csv.CsvFormat;
@@ -3604,6 +3603,14 @@ public final class StringFunctions {
         // see github #221 - use Java regex - named capturing groups
         final String groupName = symbol.toString();
         groups.put(symbol, groupName);
+        if (pattern instanceof PatternNested) {
+          PatternNested pn = (PatternNested) pattern;
+          IExpr subPattern = pn.getPatternExpr();
+          String subPatternRegex =
+              toRegexString(
+                  subPattern, abbreviatedPatterns, stringFunction, shortestLongest, groups, engine);
+          return "(?<" + groupName + ">" + subPatternRegex + ")";
+        }
         return "(?<" + groupName + ">(.|\\n))";
       }
     } else if (partOfRegex.isAST(S.Pattern, 3) && partOfRegex.first().isSymbol()) {
