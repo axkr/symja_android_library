@@ -2331,6 +2331,7 @@ public final class Programming {
    * </blockquote>
    */
   private static class Quiet extends AbstractCoreFunctionEvaluator {
+
     @Override
     public IExpr evaluate(final IAST ast, EvalEngine engine) {
 
@@ -2345,7 +2346,7 @@ public final class Programming {
 
     @Override
     public int[] expectedArgSize(IAST ast) {
-      return ARGS_1_1;
+      return ARGS_1_2;
     }
 
     @Override
