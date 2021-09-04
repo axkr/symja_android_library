@@ -7,7 +7,7 @@ import java.util.Map;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
-
+import org.hipparchus.complex.Complex;
 import org.matheclipse.core.basic.Config;
 import org.matheclipse.core.builtin.IOFunctions;
 import org.matheclipse.core.eval.exception.BreakException;
@@ -25,7 +25,6 @@ import org.matheclipse.core.interfaces.ISignedNumber;
 import org.matheclipse.core.interfaces.ISymbol;
 import org.matheclipse.core.parser.ExprParser;
 import org.matheclipse.parser.client.SyntaxError;
-
 import com.google.common.util.concurrent.SimpleTimeLimiter;
 import com.google.common.util.concurrent.TimeLimiter;
 
@@ -628,7 +627,7 @@ public class ExprEvaluator {
    * Evaluate an expression to a double value.
    *
    * @param expr a Symja expression
-   * @return <code>Double.NaN</code> if no <code>double</code> value could be evaluated
+   * @return {@link Double#NaN} if no <code>double</code> value could be evaluated
    */
   public double evalf(final IExpr expr) {
     EvalEngine.setReset(fEngine);
@@ -637,6 +636,35 @@ public class ExprEvaluator {
       return ((ISignedNumber) temp).doubleValue();
     }
     return Double.NaN;
+  }
+
+  /**
+   * Evaluate an expression to a {@link Complex} value.
+   *
+   * @param expr a Symja expression
+   * @return {@link Complex#NaN} if no <code>double</code> value could be evaluated
+   */
+  public Complex evalComplex(final IExpr expr) {
+    EvalEngine.setReset(fEngine);
+    IExpr temp = eval(F.N(expr));
+    if (temp.isNumber()) {
+      return temp.evalComplex();
+    }
+    return Complex.NaN;
+  }
+  
+  public Complex evalComplex(final String inputExpression) {
+    if (inputExpression != null) {
+      EvalEngine.setReset(fEngine);
+      fExpr = fEngine.parse(inputExpression);
+      if (fExpr != null) {
+        IExpr temp = eval(F.N(fExpr));
+        if (temp.isNumber()) {
+          return temp.evalComplex();
+        }
+      }
+    }
+    return Complex.NaN;
   }
 
   /**

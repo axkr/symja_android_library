@@ -4,11 +4,10 @@ import static org.matheclipse.core.expression.F.Cos;
 import static org.matheclipse.core.expression.F.D;
 import static org.matheclipse.core.expression.F.Sin;
 import static org.matheclipse.core.expression.F.Times;
-import static org.matheclipse.core.expression.F.x;
-
+import static org.matheclipse.core.expression.S.x;
 import java.io.StringWriter;
 import java.math.BigInteger;
-
+import org.hipparchus.complex.Complex;
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.ExprEvaluator;
 import org.matheclipse.core.expression.F;
@@ -23,7 +22,6 @@ import org.matheclipse.core.polynomials.longexponent.ExprRingFactory;
 import org.matheclipse.core.polynomials.longexponent.ExprTermOrderByName;
 import org.matheclipse.parser.client.SyntaxError;
 import org.matheclipse.parser.client.math.MathException;
-
 import junit.framework.TestCase;
 
 public class ExprEvaluatorTest extends TestCase {
@@ -330,5 +328,25 @@ public class ExprEvaluatorTest extends TestCase {
     } catch (final OutOfMemoryError oome) {
       assertTrue(false);
     }
+  }
+
+  public void testEvalF() {
+    EvalEngine engine = new EvalEngine(true);
+    ExprEvaluator eval = new ExprEvaluator(engine, true, (short) 20);
+
+    String str = "Sqrt(2)*Pi";
+    double d = eval.evalf(str);
+
+    assertEquals("4.442882938158366", Double.toString(d));
+  }
+
+  public void testEvalComplex() {
+    EvalEngine engine = new EvalEngine(true);
+    ExprEvaluator eval = new ExprEvaluator(engine, true, (short) 20);
+
+    String str = "1/(Pi + I)";
+    Complex c = eval.evalComplex(str);
+
+    assertEquals("(0.2890254822222363, -0.09199966835037525)", c.toString());
   }
 }
