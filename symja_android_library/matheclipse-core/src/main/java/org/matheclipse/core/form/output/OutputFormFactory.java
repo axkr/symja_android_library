@@ -517,6 +517,9 @@ public class OutputFormFactory {
       try {
         if (im.isNegative()) {
           if (isReZero && (Precedence.TIMES < precedence)) {
+            if (caller == PLUS_CALL) {
+              append(buf, fInputForm ? " + " : "+");
+            }
             append(buf, "(");
           }
           append(buf, fInputForm ? " - " : "-");
