@@ -1765,7 +1765,7 @@ public class Characters {
     "ScriptCapitalM",
     "\u2133",
     "ScriptCapitalN",
-    "\uF77D",
+    new StringBuilder().appendCodePoint(0x01D4A9).toString(), // "\uF77D",
     "ScriptCapitalO",
     "\uF77E",
     "ScriptCapitalP",
@@ -2161,6 +2161,17 @@ public class Characters {
     return ReversedNamedCharactersMap.get(str);
   }
 
+  public static String unicodePoint(int codePoint) {
+    String str = new String(Character.toChars(codePoint));
+    if (ReversedNamedCharactersMap.size() == 0) {
+      // create unicode to name map
+      for (int i = 0; i < NamedCharacters.length; i += 2) {
+        ReversedNamedCharactersMap.put(NamedCharacters[i + 1], NamedCharacters[i]);
+      }
+    }
+    return ReversedNamedCharactersMap.get(str);
+  }
+
   /**
    * Substitute all named (unicode-) characters in a string with their unicode value For example
    * <code>\[Alpha], \[Phi], \[Pi]</code> will be replaced with unicode characters:
@@ -2273,8 +2284,8 @@ public class Characters {
               String subString = str.substring(startPosition + 2, endPosition - 1);
               String namedCh = Characters.NamedCharactersMap.get(subString);
               if (namedCh != null) {
-                currentChar = namedCh.charAt(0);
-                buf.append(currentChar);
+                //                currentChar = namedCh.charAt(0);
+                buf.append(namedCh);
                 continue; // while (currentPosition < strLength)
               }
               buf.append("\\[");
