@@ -273,6 +273,7 @@ public class VisitorReplaceAll extends VisitorExpr {
     } else if (arg2.isAssociation()) {
       visitor = new VisitorReplaceAll((IAST) arg2.normal(false));
     } else {
+      // (`1`) is neither a list of replacement nor a valid dispatch table and cannot be used for replacing.
       String str = IOFunctions.getMessage("reps", F.List(arg2));
       throw new ArgumentTypeException(str);
     }
