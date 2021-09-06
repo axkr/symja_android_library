@@ -35,6 +35,7 @@ import org.matheclipse.core.builtin.AssumptionFunctions;
 import org.matheclipse.core.builtin.AttributeFunctions;
 import org.matheclipse.core.builtin.BesselFunctions;
 import org.matheclipse.core.builtin.BooleanFunctions;
+import org.matheclipse.core.builtin.BoxesFunctions;
 import org.matheclipse.core.builtin.ClusteringFunctions;
 import org.matheclipse.core.builtin.Combinatoric;
 import org.matheclipse.core.builtin.CompilerFunctions;
@@ -1027,6 +1028,7 @@ public class F extends S {
       SourceCodeFunctions.initialize();
       SparseArrayFunctions.initialize();
       UnitTestingFunctions.initialize();
+      BoxesFunctions.initialize();
       NumericArrayFunctions.initialize();
       GraphicsFunctions.initialize();
       CompilerFunctions.initialize();
@@ -3783,6 +3785,10 @@ public class F extends S {
     return AbstractFractionSym.valueOf(numerator, denominator);
   }
 
+  public static IAST FractionBox(final IExpr a0, final IExpr a1) {
+    return new AST2(FractionBox, a0, a1);
+  }
+  
   public static IAST FractionalPart(final IExpr a) {
     return new AST1(FractionalPart, a);
   }
@@ -6813,6 +6819,10 @@ public class F extends S {
 
   public static IAST Round(final IExpr x) {
     return new AST1(Round, x);
+  }
+
+  public static IAST RowBox(final IAST list) {
+    return new AST1(RowBox, list);
   }
 
   public static IAST RowReduce(final IExpr m) {

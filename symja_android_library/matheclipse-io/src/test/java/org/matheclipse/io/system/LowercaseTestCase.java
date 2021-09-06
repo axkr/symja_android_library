@@ -4863,6 +4863,11 @@ public class LowercaseTestCase extends AbstractTestCase {
   }
 
   public void testComplex() {
+    // github #267
+    check(
+        "1/(I*2*Pi*5000*25*10^-6)+10", //
+        "10+(-I*4)/Pi");
+
     check(
         "2.0000000000072014`*^-144+I*2.1 // FullForm", //
         "Complex(2.0000000000072015`*^-144,2.1`)");

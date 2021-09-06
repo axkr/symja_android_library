@@ -1051,7 +1051,7 @@ public class GraphicsFunctions {
     if (data3D.isList()) {
       boolean first = true;
       IAST rgbColor = F.NIL;
-      IExpr opacity = F.num(0.75);
+      IExpr opacity = F.CD1;
       IAST list = (IAST) data3D;
       for (int i = 1; i < list.size(); i++) {
         IExpr arg = list.get(i);
@@ -1154,7 +1154,7 @@ public class GraphicsFunctions {
     if (data3D.isAST() && data3D.head().isBuiltInSymbol()) {
       StringBuilder jsonPrimitives = new StringBuilder();
       if (GraphicsFunctions.exportGraphics3D(jsonPrimitives, (IAST) data3D)) {
-        try { 
+        try {
           graphics3DBuffer.append("{");
           graphics3DBuffer.append("\naxes: {},");
           graphics3DBuffer.append("\nelements: [");
