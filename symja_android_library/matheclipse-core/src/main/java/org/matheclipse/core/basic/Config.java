@@ -677,21 +677,17 @@ public class Config {
   public static boolean RUBI_CONVERT_SYMBOLS = false;
 
   public static String getVersion() {
-    InputStream resourceAsStream =
-        new Config()
-            .getClass()
-            .getResourceAsStream(
-                "/META-INF/maven/org.matheclipse/matheclipse-parser/pom.properties");
-    if (resourceAsStream != null) {
-      try {
+    try (InputStream resourceAsStream = Config.class.getResourceAsStream(
+        "/META-INF/maven/org.matheclipse/matheclipse-core/pom.properties")) {
+      if (resourceAsStream != null) {
         Properties prop = new Properties();
         prop.load(resourceAsStream);
-        return prop.get("version").toString();
-      } catch (IOException e) {
-        LOGGER.error("Config.getVersion() failed", e);
+        return prop.getProperty("version");
       }
+    } catch (IOException e) {
+      LOGGER.error("Config.getVersion() failed", e);
     }
-    return "2.0.0-SNAPSHOT";
+    throw new IllegalStateException("Failed to read Symja version");
   }
 
   /** A trie builder for mapping int[] sequences to IExpr. */
