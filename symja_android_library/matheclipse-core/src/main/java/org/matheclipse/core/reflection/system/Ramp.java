@@ -15,17 +15,10 @@ public class Ramp extends AbstractEvaluator {
   @Override
   public IExpr evaluate(final IAST ast, EvalEngine engine) {
     IExpr expr = ast.arg1();
-
-    if (expr.isPositiveResult()
-        || //
-        expr.isInfinity()) {
+    if (expr.isPositiveResult() || expr.isInfinity()) {
       return expr;
     }
-    if (expr.isNegativeResult()
-        || //
-        expr.isNegativeInfinity()
-        || //
-        expr.isZero()) {
+    if (expr.isNegativeResult() || expr.isNegativeInfinity() || expr.isZero()) {
       return F.C0;
     }
     return F.NIL;
