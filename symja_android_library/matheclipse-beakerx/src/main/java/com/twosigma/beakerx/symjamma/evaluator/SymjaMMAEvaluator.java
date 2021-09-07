@@ -28,7 +28,7 @@ import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.interfaces.IExpr.SourceCodeProperties;
 import org.matheclipse.core.interfaces.IExpr.SourceCodeProperties.Prefix;
 import org.matheclipse.io.IOInit;
-import org.matheclipse.parser.client.FEConfig;
+import org.matheclipse.parser.client.ParserConfig;
 import com.twosigma.beakerx.BeakerXClient;
 import com.twosigma.beakerx.TryResult;
 import com.twosigma.beakerx.autocomplete.AutocompleteResult;
@@ -65,7 +65,7 @@ public class SymjaMMAEvaluator extends BaseEvaluator {
 
   static {
     // distinguish between lower- and uppercase identifiers
-    FEConfig.PARSER_USE_LOWERCASE_SYMBOLS = false;
+    ParserConfig.PARSER_USE_LOWERCASE_SYMBOLS = false;
     F.initSymbols();
     IOInit.init();
   }

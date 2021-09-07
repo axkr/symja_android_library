@@ -39,7 +39,7 @@ import org.matheclipse.core.parser.ExprParser;
 import org.matheclipse.io.IOInit;
 import org.matheclipse.io.expression.ASTDataset;
 import org.matheclipse.logging.ThreadLocalNotifyingAppender.ThreadLocalNotifierClosable;
-import org.matheclipse.parser.client.FEConfig;
+import org.matheclipse.parser.client.ParserConfig;
 import org.matheclipse.parser.client.SyntaxError;
 import org.matheclipse.parser.client.math.MathException;
 
@@ -601,7 +601,7 @@ public class AJAXQueryServlet extends HttpServlet {
       return;
     }
     INITIALIZED = true;
-    FEConfig.PARSER_USE_LOWERCASE_SYMBOLS = true;
+    ParserConfig.PARSER_USE_LOWERCASE_SYMBOLS = true;
     ToggleFeature.COMPILE = true;
     Config.UNPROTECT_ALLOWED = false;
     Config.USE_MANIPULATE_JS = true;

@@ -23,7 +23,7 @@ import org.matheclipse.core.visit.IVisitor;
 import org.matheclipse.core.visit.IVisitorBoolean;
 import org.matheclipse.core.visit.IVisitorInt;
 import org.matheclipse.core.visit.IVisitorLong;
-import org.matheclipse.parser.client.FEConfig;
+import org.matheclipse.parser.client.ParserConfig;
 
 /**
  * <code>INum</code> implementation which wraps a <code>Apfloat</code> value to represent a numeric
@@ -482,7 +482,7 @@ public class ApfloatNum implements INum {
   public static String fullFormString(Apfloat apfloat) {
     String str = apfloat.toString();
     long precision = apfloat.precision();
-    if (!FEConfig.EXPLICIT_TIMES_OPERATOR) {
+    if (!ParserConfig.EXPLICIT_TIMES_OPERATOR) {
       int indx = str.indexOf("e");
       if (indx > 0) {
         str = str.substring(0, indx) + "`" + precision + "*^" + str.substring(indx + 1);
@@ -552,7 +552,7 @@ public class ApfloatNum implements INum {
   @Override
   public String toString() {
     String str = fApfloat.toString();
-    if (FEConfig.EXPLICIT_TIMES_OPERATOR) {
+    if (ParserConfig.EXPLICIT_TIMES_OPERATOR) {
       return str.replace("e", "E");
     }
     int index = str.indexOf('e');

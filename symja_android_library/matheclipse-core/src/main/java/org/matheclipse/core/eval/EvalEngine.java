@@ -70,7 +70,7 @@ import org.matheclipse.core.patternmatching.PatternMatcher;
 import org.matheclipse.core.patternmatching.PatternMatcherAndEvaluator;
 import org.matheclipse.core.patternmatching.RulesData;
 import org.matheclipse.core.visit.ModuleReplaceAll;
-import org.matheclipse.parser.client.FEConfig;
+import org.matheclipse.parser.client.ParserConfig;
 import org.matheclipse.parser.client.math.MathException;
 import com.google.common.cache.Cache;
 
@@ -150,7 +150,7 @@ public class EvalEngine implements Serializable {
    * @see ApcomplexNum
    */
   public static boolean isApfloat(long precision) {
-    return precision > FEConfig.MACHINE_PRECISION;
+    return precision > ParserConfig.MACHINE_PRECISION;
   }
 
   /**
@@ -2478,7 +2478,7 @@ public class EvalEngine implements Serializable {
     if (fApfloatHelper != null) {
       return fApfloatHelper.precision();
     }
-    return FEConfig.MACHINE_PRECISION - 1;
+    return ParserConfig.MACHINE_PRECISION - 1;
   }
 
   /**
@@ -2686,7 +2686,7 @@ public class EvalEngine implements Serializable {
    * @see #isDoubleMode()
    */
   public final boolean isArbitraryMode() {
-    return getNumericPrecision() > FEConfig.MACHINE_PRECISION;
+    return getNumericPrecision() > ParserConfig.MACHINE_PRECISION;
   }
 
   /**
@@ -2805,7 +2805,7 @@ public class EvalEngine implements Serializable {
    * @throws org.matheclipse.parser.client.SyntaxError if a parsing error occurs
    */
   public final IExpr parse(String expression) {
-    return parse(expression, FEConfig.EXPLICIT_TIMES_OPERATOR);
+    return parse(expression, ParserConfig.EXPLICIT_TIMES_OPERATOR);
   }
 
   /**
@@ -2940,7 +2940,7 @@ public class EvalEngine implements Serializable {
   }
 
   public void setNumericPrecision(long precision) {
-    if (FEConfig.MACHINE_PRECISION > precision) {
+    if (ParserConfig.MACHINE_PRECISION > precision) {
       fApfloatHelper = null;
     } else {
       fApfloatHelper = new FixedPrecisionApfloatHelper(precision);

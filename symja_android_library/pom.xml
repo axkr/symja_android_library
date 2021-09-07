@@ -47,7 +47,7 @@
 
 		<!-- Deployed modules -->
 		<module>matheclipse-external</module>
-		<module>matheclipse-frontend</module>
+		<module>matheclipse-parser</module>
 		<module>matheclipse-core</module>
 		<module>matheclipse-gpl</module>
 		<module>matheclipse-api</module>

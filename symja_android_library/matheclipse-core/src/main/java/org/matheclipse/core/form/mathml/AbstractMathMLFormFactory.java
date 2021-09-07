@@ -9,7 +9,7 @@ import org.matheclipse.core.interfaces.IInteger;
 import org.matheclipse.core.interfaces.INum;
 import org.matheclipse.core.interfaces.IRational;
 import org.matheclipse.core.interfaces.ISymbol;
-import org.matheclipse.parser.client.FEConfig;
+import org.matheclipse.parser.client.ParserConfig;
 import org.matheclipse.parser.trie.TrieMatch;
 
 /** Abstract Factory for generating MathML output */
@@ -18,7 +18,7 @@ public abstract class AbstractMathMLFormFactory {
   public static final boolean USE_IDENTIFIERS = false;
 
   public static final Map<String, String> ENTITY_TABLE =
-      FEConfig.TRIE_STRING2STRING_BUILDER.withMatch(TrieMatch.EXACT).build(); // Tries.forStrings();
+      ParserConfig.TRIE_STRING2STRING_BUILDER.withMatch(TrieMatch.EXACT).build(); // Tries.forStrings();
 
   protected NumberFormat fNumberFormat = null;
 

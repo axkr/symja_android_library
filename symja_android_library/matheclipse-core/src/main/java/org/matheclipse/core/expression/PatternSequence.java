@@ -19,7 +19,7 @@ import org.matheclipse.core.visit.IVisitor;
 import org.matheclipse.core.visit.IVisitorBoolean;
 import org.matheclipse.core.visit.IVisitorInt;
 import org.matheclipse.core.visit.IVisitorLong;
-import org.matheclipse.parser.client.FEConfig;
+import org.matheclipse.parser.client.ParserConfig;
 
 /** A concrete pattern sequence implementation (i.e. x__) */
 public class PatternSequence implements IPatternSequence {
@@ -308,18 +308,18 @@ public class PatternSequence implements IPatternSequence {
     StringBuilder buf = new StringBuilder();
     if (fSymbol == null) {
       buf.append(fZeroArgsAllowed ? "BlankNullSequence" : "BlankSequence");
-      buf.append(FEConfig.PARSER_USE_LOWERCASE_SYMBOLS ? '(' : '[');
+      buf.append(ParserConfig.PARSER_USE_LOWERCASE_SYMBOLS ? '(' : '[');
       if (fHeadTest != null) {
         buf.append(fHeadTest.fullFormString());
       }
-      buf.append(FEConfig.PARSER_USE_LOWERCASE_SYMBOLS ? ')' : ']');
+      buf.append(ParserConfig.PARSER_USE_LOWERCASE_SYMBOLS ? ')' : ']');
     } else {
       buf.append("PatternSequence");
-      buf.append(FEConfig.PARSER_USE_LOWERCASE_SYMBOLS ? '(' : '[');
+      buf.append(ParserConfig.PARSER_USE_LOWERCASE_SYMBOLS ? '(' : '[');
       buf.append(fSymbol.toString());
       buf.append(", ");
       buf.append(fZeroArgsAllowed ? "BlankNullSequence" : "BlankSequence");
-      if (FEConfig.PARSER_USE_LOWERCASE_SYMBOLS) {
+      if (ParserConfig.PARSER_USE_LOWERCASE_SYMBOLS) {
         buf.append('(');
       } else {
         buf.append('[');
@@ -327,7 +327,7 @@ public class PatternSequence implements IPatternSequence {
       if (fHeadTest != null) {
         buf.append(fHeadTest.fullFormString());
       }
-      buf.append(FEConfig.PARSER_USE_LOWERCASE_SYMBOLS ? "))" : "]]");
+      buf.append(ParserConfig.PARSER_USE_LOWERCASE_SYMBOLS ? "))" : "]]");
     }
 
     return buf.toString();

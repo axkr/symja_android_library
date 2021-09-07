@@ -44,7 +44,7 @@ import org.matheclipse.core.interfaces.IPredicate;
 import org.matheclipse.core.interfaces.IStringX;
 import org.matheclipse.core.interfaces.ISymbol;
 import org.matheclipse.core.parser.ExprParser;
-import org.matheclipse.parser.client.FEConfig;
+import org.matheclipse.parser.client.ParserConfig;
 import com.google.common.base.CharMatcher;
 import com.ibm.icu.text.Transliterator;
 import com.univocity.parsers.csv.CsvFormat;
@@ -3394,7 +3394,7 @@ public final class StringFunctions {
   }
 
   public static String inputForm(final IExpr expression) {
-    return StringFunctions.inputForm(expression, FEConfig.PARSER_USE_LOWERCASE_SYMBOLS);
+    return StringFunctions.inputForm(expression, ParserConfig.PARSER_USE_LOWERCASE_SYMBOLS);
   }
 
   private static IExpr regexErrorHandling(

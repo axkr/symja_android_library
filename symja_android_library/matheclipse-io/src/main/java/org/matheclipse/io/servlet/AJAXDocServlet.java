@@ -44,7 +44,7 @@ import org.matheclipse.core.form.output.WolframFormFactory;
 import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.interfaces.ISymbol;
 import org.matheclipse.core.parser.ExprParser;
-import org.matheclipse.parser.client.FEConfig;
+import org.matheclipse.parser.client.ParserConfig;
 import org.matheclipse.parser.client.SyntaxError;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ObjectNode;
@@ -177,7 +177,7 @@ public class AJAXDocServlet extends HttpServlet {
                 endOfLine = code.length();
               }
               String exampleCommand = code.substring(index + 3, endOfLine);
-              if (!FEConfig.PARSER_USE_LOWERCASE_SYMBOLS) {
+              if (!ParserConfig.PARSER_USE_LOWERCASE_SYMBOLS) {
                 // Convert documentation examples from Symja to MMA syntax
                 try {
                   ExprParser parser = new ExprParser(engine, true);

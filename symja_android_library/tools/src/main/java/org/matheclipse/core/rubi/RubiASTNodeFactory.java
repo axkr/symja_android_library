@@ -3,7 +3,7 @@ package org.matheclipse.core.rubi;
 import org.matheclipse.core.basic.Config;
 import org.matheclipse.core.convert.AST2Expr;
 import org.matheclipse.core.expression.F;
-import org.matheclipse.parser.client.FEConfig;
+import org.matheclipse.parser.client.ParserConfig;
 import org.matheclipse.parser.client.ast.SymbolNode;
 import org.matheclipse.parser.client.operator.ASTNodeFactory;
 
@@ -32,7 +32,7 @@ public class RubiASTNodeFactory extends ASTNodeFactory {
   }
 
   private static String toRubiString(final String nodeStr) {
-    if (!FEConfig.PARSER_USE_LOWERCASE_SYMBOLS) {
+    if (!ParserConfig.PARSER_USE_LOWERCASE_SYMBOLS) {
       if (nodeStr.length() == 1) {
         return nodeStr;
       }

@@ -44,7 +44,7 @@ import org.matheclipse.core.interfaces.IASTAppendable;
 import org.matheclipse.core.interfaces.IBuiltInSymbol;
 import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.interfaces.ISymbol;
-import org.matheclipse.parser.client.FEConfig;
+import org.matheclipse.parser.client.ParserConfig;
 import org.matheclipse.parser.trie.SuggestTree;
 import org.matheclipse.parser.trie.SuggestTree.Node;
 
@@ -649,7 +649,7 @@ public class SwingFunctions {
       exact = false;
     }
     SuggestTree suggestTree = AST2Expr.getSuggestTree();
-    name = FEConfig.PARSER_USE_LOWERCASE_SYMBOLS ? name.toLowerCase() : name;
+    name = ParserConfig.PARSER_USE_LOWERCASE_SYMBOLS ? name.toLowerCase() : name;
     Node n = suggestTree.getAutocompleteSuggestions(name);
     if (n != null) {
       IASTAppendable list = F.ListAlloc(n.listLength());
@@ -673,7 +673,7 @@ public class SwingFunctions {
       return list;
     }
     SuggestTree suggestTree = AST2Expr.getSuggestTree();
-    namePrefix = FEConfig.PARSER_USE_LOWERCASE_SYMBOLS ? namePrefix.toLowerCase() : namePrefix;
+    namePrefix = ParserConfig.PARSER_USE_LOWERCASE_SYMBOLS ? namePrefix.toLowerCase() : namePrefix;
     Node n = suggestTree.getAutocompleteSuggestions(namePrefix);
     if (n != null) {
       for (int i = 0; i < n.listLength(); i++) {

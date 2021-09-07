@@ -70,7 +70,7 @@ import org.matheclipse.core.reflection.system.rules.ProductLogRules;
 import org.matheclipse.core.reflection.system.rules.StieltjesGammaRules;
 import org.matheclipse.core.reflection.system.rules.StruveHRules;
 import org.matheclipse.core.reflection.system.rules.StruveLRules;
-import org.matheclipse.parser.client.FEConfig;
+import org.matheclipse.parser.client.ParserConfig;
 
 public class SpecialFunctions {
   private static final Logger LOGGER = LogManager.getLogger();
@@ -1596,8 +1596,8 @@ public class SpecialFunctions {
       }
       Apcomplex c =
           new Apcomplex(
-              new Apfloat(new BigDecimal(arg1.getRealPart()), FEConfig.MACHINE_PRECISION),
-              new Apfloat(new BigDecimal(arg1.getImaginaryPart()), FEConfig.MACHINE_PRECISION));
+              new Apfloat(new BigDecimal(arg1.getRealPart()), ParserConfig.MACHINE_PRECISION),
+              new Apfloat(new BigDecimal(arg1.getImaginaryPart()), ParserConfig.MACHINE_PRECISION));
       // if (Config.FUZZ_TESTING) {
       // LOGGER.error(c);
       // }

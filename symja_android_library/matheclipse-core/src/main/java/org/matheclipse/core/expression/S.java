@@ -6,7 +6,7 @@ import org.matheclipse.core.basic.Config;
 import org.matheclipse.core.interfaces.IBuiltInSymbol;
 import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.interfaces.ISymbol;
-import org.matheclipse.parser.client.FEConfig;
+import org.matheclipse.parser.client.ParserConfig;
 import org.matheclipse.parser.trie.TrieMatch;
 
 /**
@@ -10519,7 +10519,7 @@ public class S {
    */
   public static IBuiltInSymbol initFinalSymbol(final String symbolName, int ordinal) {
     String str;
-    if (FEConfig.PARSER_USE_LOWERCASE_SYMBOLS) {
+    if (ParserConfig.PARSER_USE_LOWERCASE_SYMBOLS) {
       str = (symbolName.length() == 1) ? symbolName : symbolName.toLowerCase();
     } else {
       str = symbolName;

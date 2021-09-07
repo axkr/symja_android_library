@@ -127,7 +127,7 @@ import org.matheclipse.core.patternmatching.IPatternMap;
 import org.matheclipse.core.patternmatching.IPatternMatcher;
 import org.matheclipse.core.tensor.QuantityParser;
 import org.matheclipse.core.visit.VisitorLevelSpecification;
-import org.matheclipse.parser.client.FEConfig;
+import org.matheclipse.parser.client.ParserConfig;
 import org.matheclipse.parser.client.SyntaxError;
 import org.matheclipse.parser.trie.TrieMatch;
 import com.google.common.cache.Cache;
@@ -178,7 +178,7 @@ public class F extends S {
    * The map for predefined strings for the {@link IExpr#internalFormString(boolean, int)} method.
    */
   public static final Map<String, String> PREDEFINED_INTERNAL_FORM_STRINGS =
-      FEConfig.TRIE_STRING2STRING_BUILDER.withMatch(TrieMatch.EXACT).build();
+      ParserConfig.TRIE_STRING2STRING_BUILDER.withMatch(TrieMatch.EXACT).build();
 
   public static String getPredefinedInternalFormString(String key) {
     return PREDEFINED_INTERNAL_FORM_STRINGS.get(key);
@@ -1466,7 +1466,7 @@ public class F extends S {
    */
   public static ISymbol $s(final String symbolName) {
     String name = symbolName;
-    if (FEConfig.PARSER_USE_LOWERCASE_SYMBOLS) {
+    if (ParserConfig.PARSER_USE_LOWERCASE_SYMBOLS) {
       if (symbolName.length() != 1) {
         name = symbolName.toLowerCase(Locale.ENGLISH);
       }
@@ -1480,7 +1480,7 @@ public class F extends S {
       return symbol;
     }
     if (Config.SERVER_MODE) {
-      if (FEConfig.PARSER_USE_LOWERCASE_SYMBOLS
+      if (ParserConfig.PARSER_USE_LOWERCASE_SYMBOLS
           || java.lang.Character.isUpperCase(name.charAt(0))) {
         if (SYMBOL_OBSERVER.createPredefinedSymbol(name)) {
           // second try, because the symbol may now be added to
@@ -1532,7 +1532,7 @@ public class F extends S {
   }
 
   public static String symbolNameNormalized(final String symbolName) {
-    return FEConfig.PARSER_USE_LOWERCASE_SYMBOLS
+    return ParserConfig.PARSER_USE_LOWERCASE_SYMBOLS
         ? (symbolName.length() == 1 ? symbolName : symbolName.toLowerCase(Locale.ENGLISH))
         : symbolName;
   }
@@ -4423,7 +4423,7 @@ public class F extends S {
         }
         try {
           String autoload = ".\\Autoload";
-          if (FEConfig.PARSER_USE_LOWERCASE_SYMBOLS) {
+          if (ParserConfig.PARSER_USE_LOWERCASE_SYMBOLS) {
             autoload = ".\\AutoloadSymja";
           }
           File sourceLocation = new File(autoload);
@@ -6787,7 +6787,7 @@ public class F extends S {
       return temp;
     }
     String lcSymbolName = symbolName;
-    if (FEConfig.PARSER_USE_LOWERCASE_SYMBOLS) {
+    if (ParserConfig.PARSER_USE_LOWERCASE_SYMBOLS) {
       if (symbolName.length() > 1) {
         // use the lower case string here to use it as associated class
         // name
@@ -7269,7 +7269,7 @@ public class F extends S {
    */
   public static ISymbol Dummy(final String symbolName) {
     String name = symbolName;
-    if (FEConfig.PARSER_USE_LOWERCASE_SYMBOLS) {
+    if (ParserConfig.PARSER_USE_LOWERCASE_SYMBOLS) {
       if (symbolName.length() != 1) {
         name = symbolName.toLowerCase(Locale.ENGLISH);
       }

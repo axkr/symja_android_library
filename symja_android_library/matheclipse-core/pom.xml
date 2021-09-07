@@ -32,7 +32,7 @@
 
 		<dependency>
 			<groupId>${project.groupId}</groupId>
-			<artifactId>matheclipse-frontend</artifactId>
+			<artifactId>matheclipse-parser</artifactId>
 			<version>${project.version}</version>
 		</dependency>
 

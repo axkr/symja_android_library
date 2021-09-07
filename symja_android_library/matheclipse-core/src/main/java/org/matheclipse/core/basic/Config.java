@@ -22,7 +22,7 @@ import org.matheclipse.core.interfaces.IStringX;
 import org.matheclipse.core.interfaces.ISymbol;
 import org.matheclipse.core.numbertheory.IPrimality;
 import org.matheclipse.core.numbertheory.Primality;
-import org.matheclipse.parser.client.FEConfig;
+import org.matheclipse.parser.client.ParserConfig;
 import org.matheclipse.parser.trie.TrieBuilder;
 import org.matheclipse.parser.trie.TrieMatch;
 import org.matheclipse.parser.trie.TrieSequencerIntArray;
@@ -280,9 +280,9 @@ public class Config {
   /**
    * Use <code>Num</code> objects for numeric calculations up to 16 digits precision.
    *
-   * @deprecated use {@link FEConfig#MACHINE_PRECISION}
+   * @deprecated use {@link ParserConfig#MACHINE_PRECISION}
    */
-  @Deprecated public static final long MACHINE_PRECISION = FEConfig.MACHINE_PRECISION;
+  @Deprecated public static final long MACHINE_PRECISION = ParserConfig.MACHINE_PRECISION;
 
   /** The maximum precision which could be requested from a user for numerical calculations. */
   public static long MAX_PRECISION_APFLOAT = Short.MAX_VALUE;
@@ -681,7 +681,7 @@ public class Config {
         new Config()
             .getClass()
             .getResourceAsStream(
-                "/META-INF/maven/org.matheclipse/matheclipse-frontend/pom.properties");
+                "/META-INF/maven/org.matheclipse/matheclipse-parser/pom.properties");
     if (resourceAsStream != null) {
       try {
         Properties prop = new Properties();

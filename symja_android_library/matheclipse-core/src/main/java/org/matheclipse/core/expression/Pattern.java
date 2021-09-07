@@ -10,7 +10,7 @@ import org.matheclipse.core.interfaces.IPattern;
 import org.matheclipse.core.interfaces.IPatternObject;
 import org.matheclipse.core.interfaces.ISymbol;
 import org.matheclipse.core.patternmatching.IPatternMap;
-import org.matheclipse.parser.client.FEConfig;
+import org.matheclipse.parser.client.ParserConfig;
 
 /** A pattern with assigned &quot;pattern name&quot; (i.e. <code>x_</code>) */
 public class Pattern extends Blank {
@@ -179,20 +179,20 @@ public class Pattern extends Blank {
     StringBuilder buf = new StringBuilder();
     if (fDefault) {
       buf.append("Optional");
-      buf.append(FEConfig.PARSER_USE_LOWERCASE_SYMBOLS ? '(' : '[');
+      buf.append(ParserConfig.PARSER_USE_LOWERCASE_SYMBOLS ? '(' : '[');
     }
     buf.append("Pattern");
-    buf.append(FEConfig.PARSER_USE_LOWERCASE_SYMBOLS ? '(' : '[');
+    buf.append(ParserConfig.PARSER_USE_LOWERCASE_SYMBOLS ? '(' : '[');
     buf.append(fSymbol.toString());
     buf.append(", ");
     buf.append("Blank");
-    buf.append(FEConfig.PARSER_USE_LOWERCASE_SYMBOLS ? '(' : '[');
+    buf.append(ParserConfig.PARSER_USE_LOWERCASE_SYMBOLS ? '(' : '[');
     if (fHeadTest != null) {
       buf.append(fHeadTest.fullFormString());
     }
-    buf.append(FEConfig.PARSER_USE_LOWERCASE_SYMBOLS ? "))" : "]]");
+    buf.append(ParserConfig.PARSER_USE_LOWERCASE_SYMBOLS ? "))" : "]]");
     if (fDefault) {
-      buf.append(FEConfig.PARSER_USE_LOWERCASE_SYMBOLS ? ')' : ']');
+      buf.append(ParserConfig.PARSER_USE_LOWERCASE_SYMBOLS ? ')' : ']');
     }
     return buf.toString();
   }

@@ -9,7 +9,7 @@ import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.interfaces.ISymbol;
 import org.matheclipse.core.patternmatching.IPatternMap;
 import org.matheclipse.core.patternmatching.IPatternMatcher;
-import org.matheclipse.parser.client.FEConfig;
+import org.matheclipse.parser.client.ParserConfig;
 
 public class RepeatedPattern extends PatternSequence {
   private static final Logger LOGGER = LogManager.getLogger();
@@ -105,9 +105,9 @@ public class RepeatedPattern extends PatternSequence {
     } else {
       buf.append("Repeated");
     }
-    buf.append(FEConfig.PARSER_USE_LOWERCASE_SYMBOLS ? '(' : '[');
+    buf.append(ParserConfig.PARSER_USE_LOWERCASE_SYMBOLS ? '(' : '[');
     buf.append(fRepeatedExpr.fullFormString());
-    buf.append(FEConfig.PARSER_USE_LOWERCASE_SYMBOLS ? ')' : ']');
+    buf.append(ParserConfig.PARSER_USE_LOWERCASE_SYMBOLS ? ')' : ']');
     return buf.toString();
   }
 

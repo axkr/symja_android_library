@@ -7,7 +7,7 @@ import org.matheclipse.core.expression.F;
 import org.matheclipse.core.expression.S;
 import org.matheclipse.core.interfaces.ISymbol;
 import org.matheclipse.io.IOInit;
-import org.matheclipse.parser.client.FEConfig;
+import org.matheclipse.parser.client.ParserConfig;
 
 public class MMAAJAXQueryServlet extends AJAXQueryServlet {
 
@@ -25,7 +25,7 @@ public class MMAAJAXQueryServlet extends AJAXQueryServlet {
       return;
     }
     INITIALIZED = true;
-    FEConfig.PARSER_USE_LOWERCASE_SYMBOLS = false;
+    ParserConfig.PARSER_USE_LOWERCASE_SYMBOLS = false;
     ToggleFeature.COMPILE = true;
     Config.UNPROTECT_ALLOWED = false;
     Config.USE_MANIPULATE_JS = true;
@@ -47,7 +47,7 @@ public class MMAAJAXQueryServlet extends AJAXQueryServlet {
     EvalEngine engine = new EvalEngine(isRelaxedSyntax());
     EvalEngine.set(engine);
     // engine.setPackageMode(true);
-    FEConfig.PARSER_USE_LOWERCASE_SYMBOLS = false;
+    ParserConfig.PARSER_USE_LOWERCASE_SYMBOLS = false;
     Config.FILESYSTEM_ENABLED = true;
     F.initSymbols();
     IOInit.init();

@@ -11,7 +11,7 @@ import org.matheclipse.core.interfaces.IFraction;
 import org.matheclipse.core.interfaces.IInteger;
 import org.matheclipse.core.interfaces.IRational;
 import org.matheclipse.core.interfaces.ISignedNumber;
-import org.matheclipse.parser.client.FEConfig;
+import org.matheclipse.parser.client.ParserConfig;
 
 /**
  * IFraction implementation which reimplements methods of the Apache <code>
@@ -326,7 +326,7 @@ public class FractionSym extends AbstractFractionSym {
   @Override
   public String fullFormString() {
     StringBuilder buf = new StringBuilder("Rational");
-    if (FEConfig.PARSER_USE_LOWERCASE_SYMBOLS) {
+    if (ParserConfig.PARSER_USE_LOWERCASE_SYMBOLS) {
       buf.append('(');
     } else {
       buf.append('[');
@@ -334,7 +334,7 @@ public class FractionSym extends AbstractFractionSym {
     buf.append(Integer.toString(fNumerator));
     buf.append(',');
     buf.append(Integer.toString(fDenominator));
-    if (FEConfig.PARSER_USE_LOWERCASE_SYMBOLS) {
+    if (ParserConfig.PARSER_USE_LOWERCASE_SYMBOLS) {
       buf.append(')');
     } else {
       buf.append(']');

@@ -38,7 +38,7 @@ import org.matheclipse.core.visit.IVisitor;
 import org.matheclipse.core.visit.IVisitorBoolean;
 import org.matheclipse.core.visit.IVisitorInt;
 import org.matheclipse.core.visit.IVisitorLong;
-import org.matheclipse.parser.client.FEConfig;
+import org.matheclipse.parser.client.ParserConfig;
 
 public class BuiltInDummy implements IBuiltInSymbol, Serializable {
   private static final Logger LOGGER = LogManager.getLogger();
@@ -428,7 +428,7 @@ public class BuiltInDummy implements IBuiltInSymbol, Serializable {
   /** {@inheritDoc} */
   @Override
   public String fullFormString() {
-    if (FEConfig.PARSER_USE_LOWERCASE_SYMBOLS) {
+    if (ParserConfig.PARSER_USE_LOWERCASE_SYMBOLS) {
       String str = AST2Expr.PREDEFINED_SYMBOLS_MAP.get(fSymbolName);
       if (str != null) {
         return str;
@@ -563,7 +563,7 @@ public class BuiltInDummy implements IBuiltInSymbol, Serializable {
     if (properties.symbolsAsFactoryMethod) {
       return new StringBuilder(prefix).append(internalJavaStringAsFactoryMethod());
     }
-    if (FEConfig.PARSER_USE_LOWERCASE_SYMBOLS) {
+    if (ParserConfig.PARSER_USE_LOWERCASE_SYMBOLS) {
       String name;
       if (fSymbolName.length() == 1) {
         name = AST2Expr.PREDEFINED_SYMBOLS_MAP.get(fSymbolName);
@@ -765,7 +765,7 @@ public class BuiltInDummy implements IBuiltInSymbol, Serializable {
 
   @Override
   public final boolean isSymbolName(String name) {
-    if (FEConfig.PARSER_USE_LOWERCASE_SYMBOLS) {
+    if (ParserConfig.PARSER_USE_LOWERCASE_SYMBOLS) {
       if (fSymbolName.length() == 1) {
         return fSymbolName.equals(name);
       }

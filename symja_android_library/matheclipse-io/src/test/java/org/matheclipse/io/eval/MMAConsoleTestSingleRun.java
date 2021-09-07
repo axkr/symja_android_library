@@ -2,13 +2,13 @@ package org.matheclipse.io.eval;
 
 import java.io.ByteArrayOutputStream;
 import java.io.PrintStream;
-import org.matheclipse.parser.client.FEConfig;
+import org.matheclipse.parser.client.ParserConfig;
 import junit.framework.TestCase;
 
 /**
  * Test <code>org.matheclipse.core.eval.MMAConsole</code> app.
  *
- * <p>Configure <code>org.matheclipse.parser.client.FEConfig.PARSER_USE_LOWERCASE_SYMBOLS = false;
+ * <p>Configure <code>org.matheclipse.parser.client.ParserConfig.PARSER_USE_LOWERCASE_SYMBOLS = false;
  * </code> in the sources for running Symja in MMA mode, before running this test!
  */
 public class MMAConsoleTestSingleRun extends TestCase {
@@ -16,9 +16,9 @@ public class MMAConsoleTestSingleRun extends TestCase {
 
   public MMAConsoleTestSingleRun(String name) {
     super(name);
-    if (FEConfig.PARSER_USE_LOWERCASE_SYMBOLS) {
+    if (ParserConfig.PARSER_USE_LOWERCASE_SYMBOLS) {
       System.out.println(
-          "MMAConsoleTestSingleRun - configure org.matheclipse.parser.client.FEConfig.PARSER_USE_LOWERCASE_SYMBOLS = false"
+          "MMAConsoleTestSingleRun - configure org.matheclipse.parser.client.ParserConfig.PARSER_USE_LOWERCASE_SYMBOLS = false"
               + //
               " in the sources for running Symja in MMA mode, before running this test!");
     }

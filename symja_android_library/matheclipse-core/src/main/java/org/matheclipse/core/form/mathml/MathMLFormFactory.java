@@ -46,7 +46,7 @@ import org.matheclipse.core.interfaces.IRational;
 import org.matheclipse.core.interfaces.ISignedNumber;
 import org.matheclipse.core.interfaces.ISymbol;
 import org.matheclipse.parser.client.Characters;
-import org.matheclipse.parser.client.FEConfig;
+import org.matheclipse.parser.client.ParserConfig;
 import org.matheclipse.parser.client.operator.ASTNodeFactory;
 import org.matheclipse.parser.client.operator.InfixOperator;
 import org.matheclipse.parser.client.operator.PostfixOperator;
@@ -1832,7 +1832,7 @@ public class MathMLFormFactory extends AbstractMathMLFormFactory {
   public void convertHead(final StringBuilder buf, final IExpr obj) {
     if (obj instanceof ISymbol) {
       String headStr = ((ISymbol) obj).getSymbolName();
-      if (FEConfig.PARSER_USE_LOWERCASE_SYMBOLS) {
+      if (ParserConfig.PARSER_USE_LOWERCASE_SYMBOLS) {
         String str = AST2Expr.PREDEFINED_SYMBOLS_MAP.get(headStr);
         if (str != null) {
           headStr = str;
@@ -2336,7 +2336,7 @@ public class MathMLFormFactory extends AbstractMathMLFormFactory {
     }
     String headStr = sym.getSymbolName();
     if (context.equals(Context.SYSTEM) || context.isGlobal()) {
-      if (FEConfig.PARSER_USE_LOWERCASE_SYMBOLS) {
+      if (ParserConfig.PARSER_USE_LOWERCASE_SYMBOLS) {
         String str = AST2Expr.PREDEFINED_SYMBOLS_MAP.get(headStr);
         if (str != null) {
           headStr = str;

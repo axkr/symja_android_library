@@ -84,7 +84,7 @@ import org.matheclipse.core.visit.IVisitorBoolean;
 import org.matheclipse.core.visit.IVisitorInt;
 import org.matheclipse.core.visit.IVisitorLong;
 import org.matheclipse.core.visit.VisitorReplaceAll;
-import org.matheclipse.parser.client.FEConfig;
+import org.matheclipse.parser.client.ParserConfig;
 import com.google.common.base.Suppliers;
 import com.google.common.cache.Cache;
 import com.google.common.cache.CacheBuilder;
@@ -1611,7 +1611,7 @@ public abstract class AbstractAST implements IASTMutable {
         return determinedPrecision;
       }
       int p = arg2().toIntDefault();
-      if (p >= FEConfig.MACHINE_PRECISION) {
+      if (p >= ParserConfig.MACHINE_PRECISION) {
         precision = p;
       }
       return precision;
@@ -2178,7 +2178,7 @@ public abstract class AbstractAST implements IASTMutable {
     } else {
       text.append(head.fullFormString());
     }
-    if (FEConfig.PARSER_USE_LOWERCASE_SYMBOLS && head.isSymbol()) {
+    if (ParserConfig.PARSER_USE_LOWERCASE_SYMBOLS && head.isSymbol()) {
       text.append('(');
     } else {
       text.append('[');
@@ -2194,7 +2194,7 @@ public abstract class AbstractAST implements IASTMutable {
         }
       }
     }
-    if (FEConfig.PARSER_USE_LOWERCASE_SYMBOLS && head.isSymbol()) {
+    if (ParserConfig.PARSER_USE_LOWERCASE_SYMBOLS && head.isSymbol()) {
       text.append(')');
     } else {
       text.append(']');
@@ -2593,7 +2593,7 @@ public abstract class AbstractAST implements IASTMutable {
     if (temp.isSymbol()) {
       ISymbol sym = (ISymbol) temp;
       String name = null;
-      if (FEConfig.PARSER_USE_LOWERCASE_SYMBOLS) {
+      if (ParserConfig.PARSER_USE_LOWERCASE_SYMBOLS) {
         name = sym.toString();
         if (name.length() > 0) {
           name = name.toLowerCase(Locale.ENGLISH);
@@ -2859,7 +2859,7 @@ public abstract class AbstractAST implements IASTMutable {
   /** {@inheritDoc} */
   @Override
   public boolean isAST(final String symbol) {
-    if (FEConfig.PARSER_USE_LOWERCASE_SYMBOLS) {
+    if (ParserConfig.PARSER_USE_LOWERCASE_SYMBOLS) {
       String name = symbol;
       if (name.length() > 0) {
         name = symbol.toLowerCase(Locale.ENGLISH);
@@ -2876,7 +2876,7 @@ public abstract class AbstractAST implements IASTMutable {
   /** {@inheritDoc} */
   @Override
   public boolean isAST(final String symbol, final int length) {
-    if (FEConfig.PARSER_USE_LOWERCASE_SYMBOLS) {
+    if (ParserConfig.PARSER_USE_LOWERCASE_SYMBOLS) {
       String name = symbol;
       if (name.length() > 0) {
         name = symbol.toLowerCase(Locale.ENGLISH);
@@ -5403,7 +5403,7 @@ public abstract class AbstractAST implements IASTMutable {
     } else {
       text = new StringBuilder(temp.toString());
     }
-    if (FEConfig.PARSER_USE_LOWERCASE_SYMBOLS) {
+    if (ParserConfig.PARSER_USE_LOWERCASE_SYMBOLS) {
       text.append('(');
     } else {
       text.append('[');
@@ -5415,7 +5415,7 @@ public abstract class AbstractAST implements IASTMutable {
         text.append(sep);
       }
     }
-    if (FEConfig.PARSER_USE_LOWERCASE_SYMBOLS) {
+    if (ParserConfig.PARSER_USE_LOWERCASE_SYMBOLS) {
       text.append(')');
     } else {
       text.append(']');

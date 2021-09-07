@@ -6,7 +6,7 @@ import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.interfaces.IExpr.SourceCodeProperties;
 import org.matheclipse.core.interfaces.IExpr.SourceCodeProperties.Prefix;
 import org.matheclipse.core.parser.ExprParser;
-import org.matheclipse.parser.client.FEConfig;
+import org.matheclipse.parser.client.ParserConfig;
 import org.matheclipse.tools.AbstractCodeGenerator;
 
 /**
@@ -31,7 +31,7 @@ public class ExprPreprocessor extends AbstractCodeGenerator {
 
   public static void main(String[] args) {
     AbstractCodeGenerator epp = new ExprPreprocessor();
-    FEConfig.EXPLICIT_TIMES_OPERATOR = true;
+    ParserConfig.EXPLICIT_TIMES_OPERATOR = true;
     F.initSymbols();
 
     System.out.println("Input qualified Java file for converting Symja expressions to Java source");

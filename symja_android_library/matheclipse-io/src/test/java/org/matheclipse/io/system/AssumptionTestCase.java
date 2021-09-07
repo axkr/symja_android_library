@@ -12,7 +12,7 @@ import org.matheclipse.core.expression.S;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.interfaces.ISymbol;
-import org.matheclipse.parser.client.FEConfig;
+import org.matheclipse.parser.client.ParserConfig;
 import junit.framework.TestCase;
 
 public class AssumptionTestCase extends TestCase {
@@ -79,7 +79,7 @@ public class AssumptionTestCase extends TestCase {
 
   public void testGreaterZeroOrInteger001() {
     // don't distinguish between lower- and uppercase identifiers
-    FEConfig.PARSER_USE_LOWERCASE_SYMBOLS = true;
+    ParserConfig.PARSER_USE_LOWERCASE_SYMBOLS = true;
 
     EvalUtilities util = new EvalUtilities(false, true);
     util.getEvalEngine().setAssumptions(new XGreaterZeroOrYInteger());
@@ -102,7 +102,7 @@ public class AssumptionTestCase extends TestCase {
 
   public void testSqrt001() {
     // don't distinguish between lower- and uppercase identifiers
-    FEConfig.PARSER_USE_LOWERCASE_SYMBOLS = true;
+    ParserConfig.PARSER_USE_LOWERCASE_SYMBOLS = true;
 
     EvalUtilities util = new EvalUtilities(false, true);
 
@@ -118,7 +118,7 @@ public class AssumptionTestCase extends TestCase {
 
   public void testFloor001() {
     // don't distinguish between lower- and uppercase identifiers
-    FEConfig.PARSER_USE_LOWERCASE_SYMBOLS = true;
+    ParserConfig.PARSER_USE_LOWERCASE_SYMBOLS = true;
 
     EvalUtilities util = new EvalUtilities(false, true);
 
@@ -133,7 +133,7 @@ public class AssumptionTestCase extends TestCase {
 
   public void testTensorDimensions001() {
     // don't distinguish between lower- and uppercase identifiers
-    FEConfig.PARSER_USE_LOWERCASE_SYMBOLS = true;
+    ParserConfig.PARSER_USE_LOWERCASE_SYMBOLS = true;
 
     EvalUtilities util = new EvalUtilities(false, true);
 

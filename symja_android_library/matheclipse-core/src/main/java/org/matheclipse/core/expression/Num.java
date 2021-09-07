@@ -24,7 +24,7 @@ import org.matheclipse.core.visit.IVisitor;
 import org.matheclipse.core.visit.IVisitorBoolean;
 import org.matheclipse.core.visit.IVisitorInt;
 import org.matheclipse.core.visit.IVisitorLong;
-import org.matheclipse.parser.client.FEConfig;
+import org.matheclipse.parser.client.ParserConfig;
 import com.google.common.math.DoubleMath;
 
 /**
@@ -339,7 +339,7 @@ public class Num implements INum {
 
   public static String fullFormString(double d) {
     String result = Double.toString(d);
-    if (!FEConfig.EXPLICIT_TIMES_OPERATOR) {
+    if (!ParserConfig.EXPLICIT_TIMES_OPERATOR) {
       int indx = result.indexOf("E");
       if (indx > 0) {
         result = result.replace("E", "`*^");
@@ -463,7 +463,7 @@ public class Num implements INum {
   /** {@inheritDoc} */
   @Override
   public long determinePrecision() {
-    return FEConfig.MACHINE_PRECISION;
+    return ParserConfig.MACHINE_PRECISION;
   }
 
   /** {@inheritDoc} */
@@ -762,7 +762,7 @@ public class Num implements INum {
   /** {@inheritDoc} */
   @Override
   public String toString() {
-    if (FEConfig.EXPLICIT_TIMES_OPERATOR) {
+    if (ParserConfig.EXPLICIT_TIMES_OPERATOR) {
       return Double.toString(fDouble);
     }
     StringBuilder buf = new StringBuilder();

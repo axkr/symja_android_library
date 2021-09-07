@@ -13,7 +13,7 @@ import org.matheclipse.core.interfaces.IExpr.SourceCodeProperties;
 import org.matheclipse.core.interfaces.IExpr.SourceCodeProperties.Prefix;
 import org.matheclipse.core.tensor.qty.IQuantity;
 import org.matheclipse.core.tensor.qty.IUnit;
-import org.matheclipse.parser.client.FEConfig;
+import org.matheclipse.parser.client.ParserConfig;
 
 /** */
 public class JavaFormTestCase extends AbstractTestCase {
@@ -23,7 +23,7 @@ public class JavaFormTestCase extends AbstractTestCase {
 
   public void testJavaForm001() {
     // don't distinguish between lower- and uppercase identifiers
-    FEConfig.PARSER_USE_LOWERCASE_SYMBOLS = true;
+    ParserConfig.PARSER_USE_LOWERCASE_SYMBOLS = true;
     EvalUtilities util = new EvalUtilities(false, true);
 
     IAST function = Sinc(Times(CI, CInfinity));
@@ -42,7 +42,7 @@ public class JavaFormTestCase extends AbstractTestCase {
 
   public void testJavaForm002() {
     // don't distinguish between lower- and uppercase identifiers
-    FEConfig.PARSER_USE_LOWERCASE_SYMBOLS = true;
+    ParserConfig.PARSER_USE_LOWERCASE_SYMBOLS = true;
     EvalUtilities util = new EvalUtilities(false, true);
 
     IAST function = Sinc(Times(CI, CInfinity));
@@ -58,7 +58,7 @@ public class JavaFormTestCase extends AbstractTestCase {
 
   public void testJavaForm002_fullyQualifiedName() {
     // don't distinguish between lower- and uppercase identifiers
-    FEConfig.PARSER_USE_LOWERCASE_SYMBOLS = true;
+    ParserConfig.PARSER_USE_LOWERCASE_SYMBOLS = true;
     EvalUtilities util = new EvalUtilities(false, true);
     IAST function = Sinc(Times(CI, CInfinity));
 

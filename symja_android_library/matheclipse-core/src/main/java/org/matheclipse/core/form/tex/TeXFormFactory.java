@@ -40,7 +40,7 @@ import org.matheclipse.core.interfaces.IRational;
 import org.matheclipse.core.interfaces.ISignedNumber;
 import org.matheclipse.core.interfaces.ISymbol;
 import org.matheclipse.parser.client.Characters;
-import org.matheclipse.parser.client.FEConfig;
+import org.matheclipse.parser.client.ParserConfig;
 import org.matheclipse.parser.client.operator.ASTNodeFactory;
 import org.matheclipse.parser.client.operator.Precedence;
 import org.matheclipse.parser.trie.TrieMatch;
@@ -1280,7 +1280,7 @@ public class TeXFormFactory {
 
   /** Table for constant symbols */
   public static final Map<String, String> CONSTANT_SYMBOLS =
-      FEConfig.TRIE_STRING2STRING_BUILDER.withMatch(TrieMatch.EXACT).build(); // Tries.forStrings();
+      ParserConfig.TRIE_STRING2STRING_BUILDER.withMatch(TrieMatch.EXACT).build(); // Tries.forStrings();
 
   /** Table for constant expressions */
   public static final HashMap<IExpr, String> CONSTANT_EXPRS = new HashMap<IExpr, String>(199);
@@ -1855,7 +1855,7 @@ public class TeXFormFactory {
     } else {
       buf.append("\\text{");
       String header = str;
-      if (FEConfig.PARSER_USE_LOWERCASE_SYMBOLS) {
+      if (ParserConfig.PARSER_USE_LOWERCASE_SYMBOLS) {
         str = AST2Expr.PREDEFINED_SYMBOLS_MAP.get(header);
         if (str != null) {
           header = str;
@@ -1923,7 +1923,7 @@ public class TeXFormFactory {
       }
     }
     if (context.equals(Context.SYSTEM) || context.isGlobal()) {
-      if (FEConfig.PARSER_USE_LOWERCASE_SYMBOLS && context.equals(Context.SYSTEM)) {
+      if (ParserConfig.PARSER_USE_LOWERCASE_SYMBOLS && context.equals(Context.SYSTEM)) {
         String str = AST2Expr.PREDEFINED_SYMBOLS_MAP.get(headStr);
         if (str != null) {
           headStr = str;

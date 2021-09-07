@@ -124,7 +124,7 @@ import org.matheclipse.core.reflection.system.rules.GammaRules;
 import org.matheclipse.core.reflection.system.rules.PowerRules;
 import org.matheclipse.core.tensor.qty.IQuantity;
 import org.matheclipse.core.visit.VisitorExpr;
-import org.matheclipse.parser.client.FEConfig;
+import org.matheclipse.parser.client.ParserConfig;
 import org.matheclipse.parser.client.math.MathException;
 
 public final class Arithmetic {
@@ -2720,8 +2720,8 @@ public final class Arithmetic {
       final int maxSize =
           (Config.MAX_OUTPUT_SIZE > Short.MAX_VALUE) ? Short.MAX_VALUE : Config.MAX_OUTPUT_SIZE;
       int significantFigures = (nDigitPrecision > maxSize) ? maxSize : (int) nDigitPrecision;
-      if (nDigitPrecision < FEConfig.MACHINE_PRECISION) {
-        nDigitPrecision = FEConfig.MACHINE_PRECISION;
+      if (nDigitPrecision < ParserConfig.MACHINE_PRECISION) {
+        nDigitPrecision = ParserConfig.MACHINE_PRECISION;
       }
 
       // after symbolic evaluation do numeric evaluation with n-digit precision

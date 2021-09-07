@@ -19,7 +19,7 @@ import org.matheclipse.core.interfaces.IEvaluator;
 import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.interfaces.IPredicate;
 import org.matheclipse.core.interfaces.ISymbol;
-import org.matheclipse.parser.client.FEConfig;
+import org.matheclipse.parser.client.ParserConfig;
 
 /** Implements Symbols for function, constant and variable names */
 public class BuiltInSymbol extends Symbol implements IBuiltInSymbol {
@@ -87,7 +87,7 @@ public class BuiltInSymbol extends Symbol implements IBuiltInSymbol {
     super(symbolName, Context.SYSTEM);
     fEvaluator = DUMMY_EVALUATOR;
     fOrdinal = ordinal;
-    if ((symbolName.charAt(0) != '$') || FEConfig.PARSER_USE_LOWERCASE_SYMBOLS) {
+    if ((symbolName.charAt(0) != '$') || ParserConfig.PARSER_USE_LOWERCASE_SYMBOLS) {
       fAttributes = Config.BUILTIN_PROTECTED;
     }
   }

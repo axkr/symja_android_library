@@ -25,7 +25,7 @@ import org.matheclipse.core.expression.data.JavaObjectExpr;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.interfaces.ISymbol;
-import org.matheclipse.parser.client.FEConfig;
+import org.matheclipse.parser.client.ParserConfig;
 
 public class JavaFunctions {
   private static final Logger LOGGER = LogManager.getLogger();
@@ -38,7 +38,7 @@ public class JavaFunctions {
 
     private static void init() {
       if (!Config.FUZZY_PARSER) {
-        if (!FEConfig.PARSER_USE_LOWERCASE_SYMBOLS) {
+        if (!ParserConfig.PARSER_USE_LOWERCASE_SYMBOLS) {
           S.AddToClassPath.setEvaluator(new AddToClassPath());
           S.InstanceOf.setEvaluator(new InstanceOf());
           S.JavaNew.setEvaluator(new JavaNew());

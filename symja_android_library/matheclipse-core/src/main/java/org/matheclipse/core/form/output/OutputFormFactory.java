@@ -43,7 +43,7 @@ import org.matheclipse.core.interfaces.ISignedNumber;
 import org.matheclipse.core.interfaces.ISymbol;
 import org.matheclipse.core.tensor.qty.IQuantity;
 import org.matheclipse.parser.client.Characters;
-import org.matheclipse.parser.client.FEConfig;
+import org.matheclipse.parser.client.ParserConfig;
 import org.matheclipse.parser.client.operator.ASTNodeFactory;
 import org.matheclipse.parser.client.operator.InfixOperator;
 import org.matheclipse.parser.client.operator.Operator;
@@ -1443,7 +1443,7 @@ public class OutputFormFactory {
 
   public static Operator getOperator(ISymbol head) {
     String headerStr = head.getSymbolName();
-    if (FEConfig.PARSER_USE_LOWERCASE_SYMBOLS && head.getContext().equals(Context.SYSTEM)) {
+    if (ParserConfig.PARSER_USE_LOWERCASE_SYMBOLS && head.getContext().equals(Context.SYSTEM)) {
       String str = AST2Expr.PREDEFINED_SYMBOLS_MAP.get(headerStr);
       if (str != null) {
         headerStr = str;
