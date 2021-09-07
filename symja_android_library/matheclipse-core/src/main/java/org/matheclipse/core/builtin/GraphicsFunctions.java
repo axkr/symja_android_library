@@ -44,7 +44,7 @@ public class GraphicsFunctions {
         IAST list = (IAST) ast.arg1();
         buf.append("{type: \'arrow\',");
         setColor(buf, color, F.NIL, true);
-        setOpacity(buf, opacity);
+        setOpacity(buf, opacity.orElse(F.C1));
         if (list.isListOfLists() && graphics3DCoords(buf, (IAST) list)) {
           buf.append("}");
           return true;
@@ -322,8 +322,50 @@ public class GraphicsFunctions {
       if (ast.argSize() > 0 && ast.arg1().isList()) {
         buf.append("{type: \'cuboid\',");
         setColor(buf, color, F.NIL, true);
-        setOpacity(buf, opacity);
+        setOpacity(buf, opacity.orElse(F.C1D2));
         if (graphics3DCoords(buf, ast)) {
+          buf.append("}");
+          return true;
+        }
+      }
+      return false;
+    }
+
+    @Override
+    public void setUp(final ISymbol newSymbol) {}
+  }
+
+  private static class Cone extends AbstractEvaluator implements IGraphics3D {
+
+    @Override
+    public IExpr evaluate(final IAST ast, EvalEngine engine) {
+      if (ast.isAST0()) {
+        return F.Cone(F.List(F.List(0, 0, -1), F.List(0, 0, 1)), F.C1);
+      }
+      if (ast.isAST1()) {
+        return F.Cone(ast.arg1(), F.C1);
+      }
+      return F.NIL;
+    }
+
+    @Override
+    public int[] expectedArgSize(IAST ast) {
+      return ARGS_0_2;
+    }
+
+    @Override
+    public boolean graphics3D(StringBuilder buf, IAST ast, IAST color, IExpr opacity) {
+      if (ast.argSize() > 0 && ast.arg1().isList()) {
+        double radius = 1.0;
+        if (ast.argSize() == 2) {
+          radius = ast.arg2().toDoubleDefault(1.0);
+        }
+        IAST list = (IAST) ast.arg1();
+        buf.append("{type: \'cone\',");
+        setColor(buf, color, F.NIL, true);
+        setOpacity(buf, opacity.orElse(F.C1D2));
+        buf.append("radius: " + radius + ",");
+        if (list.isListOfLists() && graphics3DCoords(buf, (IAST) list)) {
           buf.append("}");
           return true;
         }
@@ -340,7 +382,10 @@ public class GraphicsFunctions {
     @Override
     public IExpr evaluate(final IAST ast, EvalEngine engine) {
       if (ast.isAST0()) {
-        return F.Cylinder(F.List(F.List(0, 0, -1), F.List(0, 0, 1)));
+        return F.Cylinder(F.List(F.List(0, 0, -1), F.List(0, 0, 1)), F.C1);
+      }
+      if (ast.isAST1()) {
+        return F.Cylinder(ast.arg1(), F.C1);
       }
       return F.NIL;
     }
@@ -353,10 +398,15 @@ public class GraphicsFunctions {
     @Override
     public boolean graphics3D(StringBuilder buf, IAST ast, IAST color, IExpr opacity) {
       if (ast.argSize() > 0 && ast.arg1().isList()) {
+        double radius = 1.0;
+        if (ast.argSize() == 2) {
+          radius = ast.arg2().toDoubleDefault(1.0);
+        }
         IAST list = (IAST) ast.arg1();
         buf.append("{type: \'cylinder\',");
         setColor(buf, color, F.NIL, true);
-        setOpacity(buf, opacity);
+        setOpacity(buf, opacity.orElse(F.C1D2));
+        buf.append("radius: " + radius + ",");
         if (list.isListOfLists() && graphics3DCoords(buf, (IAST) list)) {
           buf.append("}");
           return true;
@@ -421,6 +471,7 @@ public class GraphicsFunctions {
       S.Arrow.setEvaluator(new Arrow());
       S.BernsteinBasis.setEvaluator(new BernsteinBasis());
       S.Circle.setEvaluator(new Circle());
+      S.Cone.setEvaluator(new Cone());
       S.Cuboid.setEvaluator(new Cuboid());
       S.Cylinder.setEvaluator(new Cylinder());
       S.Dodecahedron.setEvaluator(new Dodecahedron());
@@ -543,7 +594,7 @@ public class GraphicsFunctions {
         IAST list = (IAST) ast.arg1();
         buf.append("{type: \'line\',");
         setColor(buf, color, F.NIL, true);
-        setOpacity(buf, opacity);
+        setOpacity(buf, opacity.orElse(F.C1));
         if (list.isListOfLists() && graphics3DCoords(buf, (IAST) list)) {
           buf.append("}");
           return true;
@@ -681,7 +732,7 @@ public class GraphicsFunctions {
         IAST list = (IAST) ast.arg1();
         buf.append("{type: \'point\',");
         setColor(buf, color, F.NIL, true);
-        setOpacity(buf, opacity);
+        setOpacity(buf, opacity.orElse(F.C1));
         if (list.isListOfLists() && graphics3DCoords(buf, (IAST) list)) {
           buf.append(",pointSize: 0.03}");
           return true;
@@ -712,7 +763,7 @@ public class GraphicsFunctions {
         IAST list = (IAST) ast.arg1();
         buf.append("{type: \'polygon\',");
         setColor(buf, color, F.NIL, true);
-        setOpacity(buf, opacity);
+        setOpacity(buf, opacity.orElse(F.C1));
         if (list.isListOfLists() && graphics3DCoords(buf, (IAST) list)) {
           buf.append("}");
           return true;
@@ -881,7 +932,7 @@ public class GraphicsFunctions {
         StringBuilder buf, IAST sphereCoords, double sphereRadius, IAST color, IExpr opacity) {
       buf.append("{type: \'sphere\',");
       setColor(buf, color, color, true);
-      setOpacity(buf, opacity);
+      setOpacity(buf, opacity.orElse(F.C1D2));
       buf.append("radius: " + sphereRadius + ",");
       if (sphereCoords.isList3() && graphics3DCoords(buf, F.List(sphereCoords))) {
         buf.append("}");
@@ -947,7 +998,7 @@ public class GraphicsFunctions {
       }
       buf.append("{type: \'uniformPolyhedron\',");
       setColor(buf, color, F.NIL, true);
-      setOpacity(buf, opacity);
+      setOpacity(buf, opacity.orElse(F.C1D2));
       addSubtypeThreejs(buf);
       if (list.isListOfLists() && graphics3DCoords(buf, (IAST) list)) {
         buf.append("}");
@@ -1051,7 +1102,7 @@ public class GraphicsFunctions {
     if (data3D.isList()) {
       boolean first = true;
       IAST rgbColor = F.NIL;
-      IExpr opacity = F.CD1;
+      IExpr opacity = F.NIL;
       IAST list = (IAST) data3D;
       for (int i = 1; i < list.size(); i++) {
         IExpr arg = list.get(i);

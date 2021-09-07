@@ -2902,6 +2902,14 @@ public class F extends S {
     return new AST2(ConditionalExpression, a0, a1);
   }
 
+  public static IAST Cone(final IExpr matrix) {
+    return new AST1(Cone, matrix);
+  }
+
+  public static IAST Cone(final IExpr matrix, final IExpr radius) {
+    return new AST2(Cone, matrix, radius);
+  }
+
   public static IAST Conjugate(final IExpr a0) {
     return new AST1(Conjugate, a0);
   }
@@ -2987,8 +2995,12 @@ public class F extends S {
     return new AST1(Cycles, a0);
   }
 
-  public static IAST Cylinder(final IExpr a0) {
-    return new AST1(Cylinder, a0);
+  public static IAST Cylinder(final IExpr matrix) {
+    return new AST1(Cylinder, matrix);
+  }
+
+  public static IAST Cylinder(final IExpr matrix, final IExpr radius) {
+    return new AST2(Cylinder, matrix, radius);
   }
 
   public static IAST D() {
@@ -3788,7 +3800,7 @@ public class F extends S {
   public static IAST FractionBox(final IExpr a0, final IExpr a1) {
     return new AST2(FractionBox, a0, a1);
   }
-  
+
   public static IAST FractionalPart(final IExpr a) {
     return new AST1(FractionalPart, a);
   }
@@ -7048,8 +7060,8 @@ public class F extends S {
     return function(Span, a);
   }
 
-  public static IAST Sphere(final IExpr a0, final IExpr a1) {
-    return new AST2(Sphere, a0, a1);
+  public static IAST Sphere(final IExpr vector, final IExpr radius) {
+    return new AST2(Sphere, vector, radius);
   }
 
   public static IAST SphericalHarmonicY(
