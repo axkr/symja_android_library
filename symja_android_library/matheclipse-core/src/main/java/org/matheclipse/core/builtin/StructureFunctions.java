@@ -7,7 +7,6 @@ import java.util.IdentityHashMap;
 import java.util.List;
 import java.util.Set;
 import java.util.function.Predicate;
-
 import org.matheclipse.core.basic.Config;
 import org.matheclipse.core.convert.Convert;
 import org.matheclipse.core.eval.EvalAttributes;
@@ -516,7 +515,7 @@ public class StructureFunctions {
           return engine.printMessage(ve.getMessage(ast.topHead()));
         }
       } else {
-        // Nonatomic expression expected at position `1` in `2`. 
+        // Nonatomic expression expected at position `1` in `2`.
         return IOFunctions.printMessage(ast.topHead(), "normal", F.List(F.C1, ast), engine);
       }
       return F.NIL;
@@ -1583,9 +1582,10 @@ public class StructureFunctions {
               "",
               engine.getRecursionLimit(),
               engine.getIterationLimit(),
-              engine.getOutPrintStream(),
-              engine.getErrorPrintStream(),
+              null,
+              null,
               engine.isRelaxedSyntax());
+      engine.setPrintStreamsOf(engine);
 
       EvalHistory lch = engine.getEvalHistory();
       if (lch != null) {

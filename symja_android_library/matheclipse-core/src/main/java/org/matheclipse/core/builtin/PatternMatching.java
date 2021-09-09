@@ -2,14 +2,12 @@ package org.matheclipse.core.builtin;
 
 import static org.matheclipse.core.expression.F.Rule;
 import static org.matheclipse.core.expression.F.RuleDelayed;
-
 import java.io.IOException;
 import java.io.PrintStream;
 import java.io.StringWriter;
 import java.util.IdentityHashMap;
 import java.util.Iterator;
 import java.util.Map;
-
 import org.matheclipse.core.basic.Config;
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.exception.ConditionException;
@@ -489,11 +487,7 @@ public final class PatternMatching {
       IExpr arg1 = Validate.checkSymbolType(ast, 1, engine);
       if (arg1.isPresent()) {
         ISymbol symbol = (ISymbol) arg1;
-        PrintStream stream;
-        stream = engine.getOutPrintStream();
-        if (stream == null) {
-          stream = System.out;
-        }
+        PrintStream stream = engine.getOutPrintStream();
         try {
           String definitionString;
           if (symbol.equals(S.In)) {
@@ -960,13 +954,7 @@ public final class PatternMatching {
           } else {
             symbol = (ISymbol) ast.arg1();
           }
-          final PrintStream s = engine.getOutPrintStream();
-          final PrintStream stream;
-          if (s == null) {
-            stream = System.out;
-          } else {
-            stream = s;
-          }
+          final PrintStream stream = engine.getOutPrintStream();
 
           // Set[MessageName(f,"usage"),"text")
           IExpr temp = symbol.evalMessage("usage");
