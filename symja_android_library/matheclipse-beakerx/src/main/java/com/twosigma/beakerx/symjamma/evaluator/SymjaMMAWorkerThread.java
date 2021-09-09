@@ -23,7 +23,7 @@ import com.twosigma.beakerx.evaluator.JobDescriptor;
 
 class SymjaMMAWorkerThread implements Callable<TryResult> {
 
-  private static final Logger logger = LogManager.getLogger(SymjaMMAWorkerThread.class.getName());
+  private static final Logger LOGGER = LogManager.getLogger();
   private final JobDescriptor j;
   protected SymjaMMAEvaluator symjaEvaluator;
 
@@ -45,7 +45,7 @@ class SymjaMMAWorkerThread implements Callable<TryResult> {
               j.getExecutionOptions());
     } catch (Throwable e) {
       if (e instanceof SymjaMMANotFoundException) {
-        logger.warn(e.getLocalizedMessage());
+        LOGGER.warn(e.getLocalizedMessage());
         r = TryResult.createError(e.getLocalizedMessage());
       } else {
         e.printStackTrace();

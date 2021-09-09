@@ -136,7 +136,7 @@ import edu.jas.kern.PreemptStatus;
 /** Factory for creating Symja predefined function expression objects (interface {@link IAST}). */
 public class F extends S {
 
-  private static final Logger logger = LogManager.getLogger(F.class);
+  private static final Logger LOGGER = LogManager.getLogger();
 
   /**
    * In computing, memoization or memoisation is an optimization technique used primarily to speed
@@ -4211,9 +4211,9 @@ public class F extends S {
           }
         } catch (java.security.AccessControlException acex) {
           // no read access for current user
-          logger.warn("Cannot read packages in autoload folder:", acex);
+          LOGGER.warn("Cannot read packages in autoload folder:", acex);
         } catch (RuntimeException ex) {
-          logger.error(ex);
+          LOGGER.error(ex);
         }
         // if (!noPackageLoading) {
         // Reader reader = null;

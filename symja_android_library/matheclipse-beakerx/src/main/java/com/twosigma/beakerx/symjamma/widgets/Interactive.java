@@ -25,7 +25,7 @@ public class Interactive extends InteractiveBase {
 
   private static Label label;
 
-  private static final Logger logger = LogManager.getLogger(Interactive.class);
+  private static final Logger LOGGER = LogManager.getLogger();
 
   //  @SuppressWarnings("unchecked")
   //  public static void interact(MethodClosure function, Object... parameters) {
