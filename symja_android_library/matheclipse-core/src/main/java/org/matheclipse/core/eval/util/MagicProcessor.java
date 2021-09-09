@@ -1,7 +1,7 @@
 package org.matheclipse.core.eval.util;
 
-import org.apache.logging.log4j.Logger;
 import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.matheclipse.core.eval.MathUtils;
 import org.matheclipse.core.expression.S;
 import org.matheclipse.core.expression.Symbol;
@@ -10,20 +10,20 @@ import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.interfaces.ISymbol;
 
 public class MagicProcessor {
-  private static final Logger Log = LogManager.getLogger(MagicProcessor.class);
+  private static final Logger LOGGER = LogManager.getLogger();
 
   String outPut = null;
   String err = null;
 
   public String magicSolve(String q, final String function) {
     outPut = q;
-    Log.debug("Input '" + outPut + "'");
+    LOGGER.debug("Input '" + outPut + "'");
     // If user gave single "=" in solve, replace it with "=="
     boolean isSysOfEq = outPut.contains("Solve");
     if (isSysOfEq) {
       String pattern = "([^=])(=)([^=])";
       outPut = outPut.replaceAll(pattern, "$1==$3");
-      Log.debug("Input has Solve so after replacing all = with == we have '" + outPut + "'");
+      LOGGER.debug("Input has Solve so after replacing all = with == we have '" + outPut + "'");
     }
 
     String processedQ = preProcessQues();
@@ -65,14 +65,14 @@ public class MagicProcessor {
 
     IExpr ques = MathUtils.parse(outPut, null);
     if (ques == null) return outPut;
-    Log.debug("ques = " + ques.toString());
+    LOGGER.debug("ques = " + ques.toString());
 
     if (wrtArgumentMising(ques, S.Solve)) {
       IExpr equations = getArg1(ques);
       String vars = solve_get_arg_if_missing(equations);
       if (vars != null && err == null) {
         outPut = ((Symbol) S.Solve).toString() + "(" + equations.toString() + "," + vars + ")";
-        Log.debug(" Result after eq processing " + outPut);
+        LOGGER.debug(" Result after eq processing " + outPut);
       }
     }
 
@@ -97,7 +97,7 @@ public class MagicProcessor {
       outPut = ((Symbol) S.Integrate).toString() + "(" + fn.toString() + "," + var + ")";
     }
 
-    Log.debug("Processed q = " + outPut);
+    LOGGER.debug("Processed q = " + outPut);
 
     return (err == null) ? outPut : err;
   }
@@ -124,7 +124,7 @@ public class MagicProcessor {
       // If equations is AST and num_equations = num variables
       if (equations.isAST() && eVar.isSize(num_equations)) {
         String vars = getVarString(eVar, false);
-        Log.debug("\t list of var = " + vars);
+        LOGGER.debug("\t list of var = " + vars);
         return vars;
       } else {
         // Number of equations and variables are different
@@ -143,7 +143,7 @@ public class MagicProcessor {
 
     ISymbol s = isSymbol(expr.head());
     if (s != null && s == fun) {
-      Log.debug(expr.toString() + "is instanceof" + fun.toString());
+      LOGGER.debug(expr.toString() + "is instanceof" + fun.toString());
       if (expr.isAST()) {
         IAST ast = (IAST) expr;
         if (ast.isAST1()) {

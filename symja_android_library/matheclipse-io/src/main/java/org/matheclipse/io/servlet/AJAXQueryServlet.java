@@ -105,7 +105,7 @@ public class AJAXQueryServlet extends HttpServlet {
 
   private static final long serialVersionUID = 6265703737413093134L;
 
-  private static final Logger logger = LogManager.getLogger(AJAXQueryServlet.class);
+  private static final Logger LOGGER = LogManager.getLogger();
 
   public static final String UTF8 = "utf-8";
 
@@ -189,7 +189,7 @@ public class AJAXQueryServlet extends HttpServlet {
     PrintStream errors = null;
     HttpSession session = request.getSession();
     try {
-      logger.warn("(" + session.getId() + ") In::" + expression);
+      LOGGER.warn("(" + session.getId() + ") In::" + expression);
       final StringWriter outWriter = new StringWriter();
       WriterOutputStream wouts = new WriterOutputStream(outWriter);
       outs = new PrintStream(wouts);

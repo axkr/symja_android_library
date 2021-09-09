@@ -76,7 +76,7 @@ import com.google.common.cache.Cache;
  */
 public class EvalEngine implements Serializable {
 
-  private static final Logger logger = LogManager.getLogger(EvalEngine.class);
+  private static final Logger LOGGER = LogManager.getLogger();
 
   private static final IStringX EVALUATION_LOOP = StringX.valueOf("EvalLoop");
 
@@ -2616,7 +2616,7 @@ public class EvalEngine implements Serializable {
   public IAST printMessage(String str) throws ArgumentTypeException {
     if (!isQuietMode()) {
       PrintStream stream = getErrorPrintStream();
-      logger.warn(str);
+      LOGGER.warn(str);
       stream.println(str);
     }
     if (fThrowError) {

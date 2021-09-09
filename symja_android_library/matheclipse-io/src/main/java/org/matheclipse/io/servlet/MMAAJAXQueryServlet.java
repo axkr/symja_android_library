@@ -6,13 +6,11 @@ import java.io.PrintWriter;
 import java.io.StringWriter;
 import java.util.HashMap;
 import java.util.Map;
-
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpSession;
-
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.text.StringEscapeUtils;
 import org.apache.logging.log4j.LogManager;
@@ -107,7 +105,7 @@ public class MMAAJAXQueryServlet extends HttpServlet {
 
   private static final long serialVersionUID = 6265703737413093134L;
 
-  private static final Logger logger = LogManager.getLogger(MMAAJAXQueryServlet.class);
+  private static final Logger LOGGER = LogManager.getLogger();
 
   public static final String UTF8 = "utf-8";
 
@@ -190,7 +188,7 @@ public class MMAAJAXQueryServlet extends HttpServlet {
     PrintStream errors = null;
     HttpSession session = request.getSession();
     try {
-      logger.warn("(" + session.getId() + ") In::" + expression);
+      LOGGER.warn("(" + session.getId() + ") In::" + expression);
       final StringWriter outWriter = new StringWriter();
       WriterOutputStream wouts = new WriterOutputStream(outWriter);
       outs = new PrintStream(wouts);
@@ -267,7 +265,7 @@ public class MMAAJAXQueryServlet extends HttpServlet {
             try {
               String html = Config.SVG_PAGE;
               StringBuilder stw = new StringBuilder();
-              GraphicsFunctions.graphicsToSVG((IAST)outExpr, stw); 
+              GraphicsFunctions.graphicsToSVG((IAST)outExpr, stw);
               html = StringUtils.replace(html, "`1`", stw.toString());
               html = StringEscapeUtils.escapeHtml4(html);
               return JSONBuilder.createJSONJavaScript(

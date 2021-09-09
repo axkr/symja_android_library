@@ -24,7 +24,7 @@ public class SortedMultiset_BottomUp<T extends Comparable<T>> extends TreeMap<T,
   private static final long serialVersionUID = -6604624351619809213L;
 
   @SuppressWarnings("unused")
-  private static final Logger LOG = LogManager.getLogger(SortedMultiset_BottomUp.class);
+  private static final Logger LOGGER = LogManager.getLogger();
 
   /**
    * Constructor for an empty multiset, sorted smallest elements first. This sort order is

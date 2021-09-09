@@ -2,7 +2,8 @@ package org.matheclipse.core.eval;
 
 import java.io.StringWriter;
 import java.util.concurrent.Callable;
-
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.matheclipse.core.basic.Config;
 import org.matheclipse.core.builtin.IOFunctions;
 import org.matheclipse.core.eval.exception.IterationLimitExceeded;
@@ -15,6 +16,9 @@ import org.matheclipse.parser.client.SyntaxError;
 import org.matheclipse.parser.client.math.MathException;
 
 public class EvalControlledCallable implements Callable<IExpr> {
+
+  private static final Logger LOGGER = LogManager.getLogger();
+
   protected final EvalEngine fEngine;
   private IExpr fExpr;
 
