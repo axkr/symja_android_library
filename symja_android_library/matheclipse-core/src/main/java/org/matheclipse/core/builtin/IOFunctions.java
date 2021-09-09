@@ -8,7 +8,6 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-
 import org.apache.commons.lang3.StringUtils;
 import org.matheclipse.core.basic.Config;
 import org.matheclipse.core.convert.AST2Expr;
@@ -34,7 +33,6 @@ import org.matheclipse.core.patternmatching.RulesData;
 import org.matheclipse.parser.client.FEConfig;
 import org.matheclipse.parser.trie.SuggestTree;
 import org.matheclipse.parser.trie.SuggestTree.Node;
-
 import com.mitchellbosecke.pebble.PebbleEngine;
 import com.mitchellbosecke.pebble.cache.PebbleCache;
 import com.mitchellbosecke.pebble.node.BodyNode;
@@ -136,13 +134,7 @@ public class IOFunctions {
 
     @Override
     public IExpr evaluate(final IAST ast, EvalEngine engine) {
-      final PrintStream s = engine.getOutPrintStream();
-      final PrintStream stream;
-      if (s == null) {
-        stream = System.out;
-      } else {
-        stream = s;
-      }
+      final PrintStream stream = engine.getOutPrintStream();
       final StringBuilder buf = new StringBuilder();
       OutputFormFactory out = OutputFormFactory.get(engine.isRelaxedSyntax());
       boolean[] convert = new boolean[] {true};
@@ -251,13 +243,7 @@ public class IOFunctions {
     }
 
     private static IExpr echo(final IExpr arg1, IExpr headFirst, EvalEngine engine) {
-      final PrintStream s = engine.getOutPrintStream();
-      final PrintStream stream;
-      if (s == null) {
-        stream = System.out;
-      } else {
-        stream = s;
-      }
+      final PrintStream stream = engine.getOutPrintStream();
       final StringBuilder buf = new StringBuilder();
       OutputFormFactory out = OutputFormFactory.get(engine.isRelaxedSyntax());
       boolean[] convert = new boolean[] {true};
@@ -442,13 +428,7 @@ public class IOFunctions {
 
     @Override
     public IExpr evaluate(final IAST ast, EvalEngine engine) {
-      final PrintStream s = engine.getOutPrintStream();
-      final PrintStream stream;
-      if (s == null) {
-        stream = System.out;
-      } else {
-        stream = s;
-      }
+      final PrintStream stream = engine.getOutPrintStream();
       final StringBuilder buf = new StringBuilder();
       OutputFormFactory out = OutputFormFactory.get(engine.isRelaxedSyntax());
       boolean[] convert = new boolean[] {true};

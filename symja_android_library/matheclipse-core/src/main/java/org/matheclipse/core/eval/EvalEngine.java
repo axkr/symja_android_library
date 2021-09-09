@@ -1597,9 +1597,6 @@ public class EvalEngine implements Serializable {
         }
       }
       PrintStream stream = getOutPrintStream();
-      if (stream == null) {
-        stream = System.out;
-      }
       stream.println("  " + unevaledExpr.toString() + " --> " + evaledExpr.toString() + "\n");
     }
   }
@@ -2234,7 +2231,7 @@ public class EvalEngine implements Serializable {
   }
 
   public PrintStream getErrorPrintStream() {
-    return fErrorPrintStream;
+    return fErrorPrintStream != null ? fErrorPrintStream : System.err;
   }
 
   public int getIterationLimit() {
@@ -2291,7 +2288,7 @@ public class EvalEngine implements Serializable {
   }
 
   public PrintStream getOutPrintStream() {
-    return fOutPrintStream;
+    return fOutPrintStream != null ? fOutPrintStream : System.out;
   }
 
   /**
@@ -2619,9 +2616,6 @@ public class EvalEngine implements Serializable {
   public IAST printMessage(String str) throws ArgumentTypeException {
     if (!isQuietMode()) {
       PrintStream stream = getErrorPrintStream();
-      if (stream == null) {
-        stream = System.err;
-      }
       logger.warn(str);
       stream.println(str);
     }
@@ -2640,9 +2634,6 @@ public class EvalEngine implements Serializable {
     String message = exception.getMessage();
     if (!isQuietMode()) {
       PrintStream stream = getErrorPrintStream();
-      if (stream == null) {
-        stream = System.err;
-      }
       if (message != null) {
         stream.println(symbol + ": " + message);
       } else {
@@ -2826,6 +2817,11 @@ public class EvalEngine implements Serializable {
 
   public void setOutPrintStream(final PrintStream outPrintStream) {
     fOutPrintStream = outPrintStream;
+  }
+
+  public void setPrintStreamsOf(EvalEngine engine) {
+    this.fOutPrintStream = engine.fOutPrintStream;
+    this.fErrorPrintStream = engine.fErrorPrintStream;
   }
 
   public void setPackageMode(boolean packageMode) {

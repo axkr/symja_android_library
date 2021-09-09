@@ -25,7 +25,6 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.List;
-
 import org.matheclipse.core.basic.Config;
 import org.matheclipse.core.convert.AST2Expr;
 import org.matheclipse.core.eval.EvalEngine;
@@ -56,7 +55,6 @@ import org.matheclipse.parser.client.Parser;
 import org.matheclipse.parser.client.SyntaxError;
 import org.matheclipse.parser.client.ast.ASTNode;
 import org.matheclipse.parser.client.ast.FunctionNode;
-
 import com.google.common.io.CharStreams;
 import com.google.common.io.Resources;
 
@@ -558,13 +556,7 @@ public class FileFunctions {
 
         if (arg1.isString()) {
           try (BufferedReader br = new BufferedReader(new FileReader(arg1.toString()))) {
-            final PrintStream s = engine.getOutPrintStream();
-            final PrintStream stream;
-            if (s == null) {
-              stream = System.out;
-            } else {
-              stream = s;
-            }
+            final PrintStream stream = engine.getOutPrintStream();
             String line;
             int numberOfLines = Integer.MAX_VALUE;
             if (ast.isAST2()) {
