@@ -88,7 +88,6 @@ import edu.jas.ufd.SquarefreeAbstract;
 import edu.jas.ufd.SquarefreeFactory;
 
 public class Algebra {
-  public static boolean DEBUG = false;
 
   /**
    * See <a href="https://pangin.pro/posts/computation-in-static-initializer">Beware of computation
