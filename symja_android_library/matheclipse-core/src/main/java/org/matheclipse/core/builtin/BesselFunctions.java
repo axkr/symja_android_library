@@ -1,5 +1,7 @@
 package org.matheclipse.core.builtin;
 
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.hipparchus.complex.Complex;
 import org.hipparchus.exception.MathRuntimeException;
 import org.matheclipse.core.basic.Config;
@@ -18,6 +20,7 @@ import org.matheclipse.core.reflection.system.rules.BesselKRules;
 import org.matheclipse.core.reflection.system.rules.BesselYRules;
 
 public class BesselFunctions {
+  private static final Logger LOGGER = LogManager.getLogger();
 
   /**
    * See <a href="https://pangin.pro/posts/computation-in-static-initializer">Beware of computation
@@ -53,8 +56,9 @@ public class BesselFunctions {
             try {
               return F.complexNum(BesselJS.airyAi(z.evalDouble()));
             } catch (NegativeArraySizeException nae) {
-              return engine.printMessage(
-                  "AiryAi: " + ast.toString() + " caused NegativeArraySizeException");
+              LOGGER.log(engine.getLogLevel(), "AiryAi: {} caused NegativeArraySizeException", ast,
+                  nae);
+              return F.NIL;
             } catch (RuntimeException rex) {
               //
             }
@@ -63,12 +67,11 @@ public class BesselFunctions {
           try {
             return F.complexNum(BesselJS.airyAi(z.evalComplex()));
           } catch (NegativeArraySizeException nae) {
-            return engine.printMessage(
-                "AiryAi: " + ast.toString() + " caused NegativeArraySizeException");
+            LOGGER.log(engine.getLogLevel(), "AiryAi: {} caused NegativeArraySizeException", ast);
           } catch (RuntimeException rex) {
-            return engine.printMessage(ast.topHead(), rex);
+            LOGGER.log(engine.getLogLevel(), ast.topHead(), rex);
           }
-
+          return F.NIL;
         } catch (ValidateException ve) {
           if (Config.SHOW_STACKTRACE) {
             ve.printStackTrace();
@@ -99,8 +102,9 @@ public class BesselFunctions {
             try {
               return F.complexNum(BesselJS.airyAiPrime(z.evalDouble()));
             } catch (NegativeArraySizeException nae) {
-              return engine.printMessage(
-                  "AiryAiPrime: " + ast.toString() + " caused NegativeArraySizeException");
+              LOGGER.log(engine.getLogLevel(), "AiryAiPrime: {} caused NegativeArraySizeException",
+                  ast);
+              return F.NIL;
             } catch (RuntimeException rex) {
             }
           }
@@ -108,12 +112,12 @@ public class BesselFunctions {
           try {
             return F.complexNum(BesselJS.airyAiPrime(z.evalComplex()));
           } catch (NegativeArraySizeException nae) {
-            return engine.printMessage(
-                "AiryAiPrime: " + ast.toString() + " caused NegativeArraySizeException");
+            LOGGER.log(engine.getLogLevel(), "AiryAiPrime: {} caused NegativeArraySizeException",
+                ast);
           } catch (RuntimeException rex) {
-            return engine.printMessage(ast.topHead(), rex);
+            LOGGER.log(engine.getLogLevel(), ast.topHead(), rex);
           }
-
+          return F.NIL;
         } catch (ValidateException ve) {
           if (Config.SHOW_STACKTRACE) {
             ve.printStackTrace();
@@ -144,8 +148,8 @@ public class BesselFunctions {
             try {
               return F.complexNum(BesselJS.airyBi(z.evalDouble()));
             } catch (NegativeArraySizeException nae) {
-              return engine.printMessage(
-                  "AiryBi: " + ast.toString() + " caused NegativeArraySizeException");
+              LOGGER.log(engine.getLogLevel(), "AiryBi: {} caused NegativeArraySizeException", ast);
+              return F.NIL;
             } catch (RuntimeException rex) {
             }
           }
@@ -153,12 +157,11 @@ public class BesselFunctions {
           try {
             return F.complexNum(BesselJS.airyBi(z.evalComplex()));
           } catch (NegativeArraySizeException nae) {
-            return engine.printMessage(
-                "AiryBi: " + ast.toString() + " caused NegativeArraySizeException");
+            LOGGER.log(engine.getLogLevel(), "AiryBi: {} caused NegativeArraySizeException", ast);
           } catch (RuntimeException rex) {
-            return engine.printMessage(ast.topHead(), rex);
+            LOGGER.log(engine.getLogLevel(), ast.topHead(), rex);
           }
-
+          return F.NIL;
         } catch (ValidateException ve) {
           if (Config.SHOW_STACKTRACE) {
             ve.printStackTrace();
@@ -189,8 +192,9 @@ public class BesselFunctions {
             try {
               return F.complexNum(BesselJS.airyBiPrime(z.evalDouble()));
             } catch (NegativeArraySizeException nae) {
-              return engine.printMessage(
-                  "AiryBiPrime: " + ast.toString() + " caused NegativeArraySizeException");
+              LOGGER.log(engine.getLogLevel(), "AiryBiPrime: {} caused NegativeArraySizeException",
+                  ast, nae);
+              return F.NIL;
             } catch (RuntimeException rex) {
             }
           }
@@ -198,10 +202,12 @@ public class BesselFunctions {
           try {
             return F.complexNum(BesselJS.airyBiPrime(z.evalComplex()));
           } catch (NegativeArraySizeException nae) {
-            return engine.printMessage(
-                "AiryBiPrime: " + ast.toString() + " caused NegativeArraySizeException");
+            LOGGER.log(engine.getLogLevel(), "AiryBiPrime: {} caused NegativeArraySizeException",
+                ast, nae);
+            return F.NIL;
           } catch (RuntimeException rex) {
-            return engine.printMessage(ast.topHead(), rex);
+            LOGGER.log(engine.getLogLevel(), ast.topHead(), rex);
+            return F.NIL;
           }
 
         } catch (ValidateException ve) {
@@ -382,11 +388,9 @@ public class BesselFunctions {
             ve.printStackTrace();
           }
         } catch (RuntimeException rex) {
-          // rex.printStackTrace();
-          return engine.printMessage(ast.topHead(), rex);
+          LOGGER.log(engine.getLogLevel(), ast.topHead(), rex);
         }
       }
-
       return F.NIL;
     }
 
@@ -554,11 +558,9 @@ public class BesselFunctions {
             ve.printStackTrace();
           }
         } catch (RuntimeException rex) {
-          // rex.printStackTrace();
-          return engine.printMessage(ast.topHead(), rex);
+          LOGGER.log(engine.getLogLevel(), ast.topHead(), rex);
         }
       }
-
       return F.NIL;
     }
 
@@ -655,8 +657,7 @@ public class BesselFunctions {
             ve.printStackTrace();
           }
         } catch (RuntimeException rex) {
-          // rex.printStackTrace();
-          return engine.printMessage(ast.topHead(), rex);
+          LOGGER.log(engine.getLogLevel(), ast.topHead(), rex);
         }
       }
       return F.NIL;
@@ -756,11 +757,9 @@ public class BesselFunctions {
             ve.printStackTrace();
           }
         } catch (RuntimeException rex) {
-          // rex.printStackTrace();
-          return engine.printMessage(ast.topHead(), rex);
+          LOGGER.log(engine.getLogLevel(), ast.topHead(), rex);
         }
       }
-
       return F.NIL;
     }
 
@@ -840,8 +839,7 @@ public class BesselFunctions {
             ve.printStackTrace();
           }
         } catch (RuntimeException rex) {
-          // rex.printStackTrace();
-          return engine.printMessage(ast.topHead(), rex);
+          LOGGER.log(engine.getLogLevel(), ast.topHead(), rex);
         }
       }
       return F.NIL;
@@ -885,8 +883,7 @@ public class BesselFunctions {
             ve.printStackTrace();
           }
         } catch (RuntimeException rex) {
-          // rex.printStackTrace();
-          return engine.printMessage(ast.topHead(), rex);
+          LOGGER.log(engine.getLogLevel(), ast.topHead(), rex);
         }
       }
       return F.NIL;
@@ -961,8 +958,8 @@ public class BesselFunctions {
             ve.printStackTrace();
           }
         } catch (RuntimeException rex) {
-          // rex.printStackTrace();
-          return engine.printMessage(ast.topHead(), rex);
+          LOGGER.log(engine.getLogLevel(), ast.topHead(), rex);
+          return F.NIL;
         }
       }
       // if (n.isReal() && z.isReal()) {
@@ -1054,8 +1051,7 @@ public class BesselFunctions {
             ve.printStackTrace();
           }
         } catch (RuntimeException rex) {
-          // rex.printStackTrace();
-          return engine.printMessage(ast.topHead(), rex);
+          LOGGER.log(engine.getLogLevel(), ast.topHead(), rex);
         }
       }
       return F.NIL;

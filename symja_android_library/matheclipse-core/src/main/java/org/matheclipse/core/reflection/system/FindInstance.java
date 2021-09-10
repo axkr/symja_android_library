@@ -1,5 +1,7 @@
 package org.matheclipse.core.reflection.system;
 
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.matheclipse.core.basic.Config;
 import org.matheclipse.core.builtin.BooleanFunctions;
 import org.matheclipse.core.eval.EvalEngine;
@@ -38,6 +40,7 @@ import org.matheclipse.core.interfaces.IExpr;
  * <p><a href="Solve.md">Solve</a>
  */
 public class FindInstance extends Solve {
+  private static final Logger LOGGER = LogManager.getLogger();
 
   public FindInstance() {
     // empty constructor
@@ -82,23 +85,21 @@ public class FindInstance extends Solve {
         if (ast.arg3().equals(S.Booleans) || formula) {
           return BooleanFunctions.solveInstances(ast.arg1(), vars, maxChoices);
         }
-        return engine.printMessage(
-            ast.topHead()
-                + ": Booleans domain expected at position 3 instead of "
-                + ast.arg3().toString());
+        LOGGER.log(engine.getLogLevel(), "{}: Booleans domain expected at position 3 instead of {}",
+            ast.topHead(), ast.arg3());
+        return F.NIL;
       }
       IASTMutable termsEqualZeroList = Validate.checkEquations(ast, 1);
 
       return solveEquations(termsEqualZeroList, F.List(), vars, maxChoices, engine);
     } catch (final ValidateException ve) {
       // int number validation
-      return engine.printMessage(ve.getMessage(ast.topHead()));
+      LOGGER.log(engine.getLogLevel(), ve.getMessage(ast.topHead()), ve);
     } catch (RuntimeException rex) {
       if (Config.SHOW_STACKTRACE) {
         rex.printStackTrace();
       }
     }
-
     return F.NIL;
   }
 

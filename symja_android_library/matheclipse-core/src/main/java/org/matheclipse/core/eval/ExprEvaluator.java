@@ -7,6 +7,8 @@ import java.util.Map;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.hipparchus.complex.Complex;
 import org.matheclipse.core.basic.Config;
 import org.matheclipse.core.builtin.IOFunctions;
@@ -128,6 +130,8 @@ import com.google.common.util.concurrent.TimeLimiter;
  * </pre>
  */
 public class ExprEvaluator {
+  private static final Logger LOGGER = LogManager.getLogger();
+
   static {
     F.initSymbols(null, null, true);
   }
@@ -534,7 +538,7 @@ public class ExprEvaluator {
                 executor.shutdownNow(); // Cancel currently executing tasks
                 // Wait a while for tasks to respond to being cancelled
                 if (!executor.awaitTermination(2, TimeUnit.SECONDS)) {
-                  fEngine.printMessage("ExprEvaluator: pool did not terminate");
+                  LOGGER.log(fEngine.getLogLevel(), "ExprEvaluator: pool did not terminate");
                 }
               }
             } catch (InterruptedException ie) {

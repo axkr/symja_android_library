@@ -1,11 +1,12 @@
 package org.matheclipse.core.reflection.system;
 
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.hipparchus.ode.AbstractIntegrator;
 import org.hipparchus.ode.ODEState;
 import org.hipparchus.ode.ODEStateAndDerivative;
 import org.hipparchus.ode.OrdinaryDifferentialEquation;
 import org.hipparchus.ode.nonstiff.DormandPrince853Integrator;
-import org.matheclipse.core.basic.Config;
 import org.matheclipse.core.basic.ToggleFeature;
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.exception.LimitException;
@@ -24,6 +25,7 @@ import org.matheclipse.core.interfaces.ISymbol;
  * differential equation</a>
  */
 public class NDSolve extends AbstractFunctionEvaluator {
+  private static final Logger LOGGER = LogManager.getLogger();
 
   private static class FirstODE implements OrdinaryDifferentialEquation {
     private final EvalEngine fEngine;
@@ -170,10 +172,7 @@ public class NDSolve extends AbstractFunctionEvaluator {
       } catch (LimitException le) {
         throw le;
       } catch (RuntimeException rex) {
-        if (Config.SHOW_STACKTRACE) {
-          rex.printStackTrace();
-        }
-        return engine.printMessage(ast.topHead(), rex);
+        LOGGER.log(engine.getLogLevel(), ast.topHead(), rex);
       }
     }
     return F.NIL;

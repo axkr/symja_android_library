@@ -1,5 +1,7 @@
 package org.matheclipse.core.eval.interfaces;
 
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.apfloat.Apcomplex;
 import org.apfloat.Apfloat;
 import org.matheclipse.core.basic.Config;
@@ -23,6 +25,7 @@ import org.matheclipse.core.interfaces.ISymbol;
 
 /** Evaluate a function with 1 or 2 arguments. */
 public abstract class AbstractArg12 extends AbstractFunctionEvaluator {
+  private static final Logger LOGGER = LogManager.getLogger();
 
   public IExpr unaryOperator(final IExpr arg0) {
     IExpr result = e1ObjArg(arg0);
@@ -294,14 +297,9 @@ public abstract class AbstractArg12 extends AbstractFunctionEvaluator {
     } catch (LimitException le) {
       throw le;
     } catch (RuntimeException rex) {
-      if (Config.SHOW_STACKTRACE) {
-        rex.printStackTrace();
-      }
-      return engine.printMessage(ast.topHead(), rex);
+      LOGGER.log(engine.getLogLevel(), ast.topHead(), rex);
     }
     return F.NIL;
-    // return engine.printMessage(ast.topHead() + ": " + ast.topHead()
-    // + " function requires 1 or 2 arguments, but number of args equals: " + ast.argSize());
   }
 
   @Override

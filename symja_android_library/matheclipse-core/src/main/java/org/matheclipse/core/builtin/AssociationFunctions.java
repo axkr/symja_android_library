@@ -4,6 +4,8 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.function.Function;
 import java.util.function.Predicate;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.matheclipse.core.basic.Config;
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.exception.ArgumentTypeException;
@@ -28,6 +30,7 @@ import org.matheclipse.core.interfaces.IStringX;
 import org.matheclipse.core.interfaces.ISymbol;
 
 public class AssociationFunctions {
+  private static final Logger LOGGER = LogManager.getLogger();
 
   /**
    * See <a href="https://pangin.pro/posts/computation-in-static-initializer">Beware of computation
@@ -147,10 +150,8 @@ public class AssociationFunctions {
           return assignPartTo(sym, (IAST) leftHandSide, ast, engine);
         }
       } catch (ValidateException ve) {
-        if (Config.SHOW_STACKTRACE) {
-          ve.printStackTrace();
-        }
-        return engine.printMessage(ast.topHead(), ve);
+        LOGGER.log(engine.getLogLevel(), ast.topHead(), ve);
+        return F.NIL;
       }
       // `1` is not a variable with a value, so its value cannot be changed.
       return IOFunctions.printMessage(ast.topHead(), "rvalue", F.List(leftHandSide), engine);
@@ -323,12 +324,8 @@ public class AssociationFunctions {
               return rightHandSide;
             }
           } catch (ValidateException ve) {
-            return engine.printMessage(builtinSymbol, ve);
-            // } catch (RuntimeException rex) {
-            // if (FEConfig.SHOW_STACKTRACE) {
-            // rex.printStackTrace();
-            // }
-            // return engine.printMessage(F.Set, rex);
+            LOGGER.log(engine.getLogLevel(), builtinSymbol, ve);
+            return F.NIL;
           }
         }
       }
@@ -548,7 +545,7 @@ public class AssociationFunctions {
           }
           return assoc;
         } catch (ValidateException ve) {
-          return engine.printMessage(ast.topHead(), ve);
+          LOGGER.log(engine.getLogLevel(), ast.topHead(), ve);
         }
       }
       return F.NIL;
@@ -743,7 +740,7 @@ public class AssociationFunctions {
           // The argument `1` is not a valid Association or a list of rules.
           return IOFunctions.printMessage(ast.topHead(), "invrl", F.List(arg1), engine);
         } catch (final ValidateException ve) {
-          return engine.printMessage(ve.getMessage(ast.topHead()));
+          LOGGER.log(engine.getLogLevel(), ve.getMessage(ast.topHead()), ve);
         }
       }
       return F.NIL;
@@ -890,7 +887,7 @@ public class AssociationFunctions {
           }
           return assoc;
         } catch (ValidateException ve) {
-          return engine.printMessage(ast.topHead(), ve);
+          LOGGER.log(engine.getLogLevel(), ast.topHead(), ve);
         }
       }
       return F.NIL;
@@ -1091,17 +1088,16 @@ public class AssociationFunctions {
           }
           return keyTake(arg1, (IAST) arg2);
         } else {
-          return engine.printMessage(
+          LOGGER.log(engine.getLogLevel(),
               "KeyTake: Association or list of rules expected at position 1.");
         }
       } catch (final ValidateException ve) {
-        return engine.printMessage(ast.topHead(), ve);
+        LOGGER.log(engine.getLogLevel(), ast.topHead(), ve);
       } catch (final RuntimeException rex) {
         if (Config.SHOW_STACKTRACE) {
           rex.printStackTrace();
         }
       }
-
       return F.NIL;
     }
 

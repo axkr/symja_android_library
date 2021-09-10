@@ -25,6 +25,8 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.List;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.matheclipse.core.basic.Config;
 import org.matheclipse.core.convert.AST2Expr;
 import org.matheclipse.core.eval.EvalEngine;
@@ -59,6 +61,8 @@ import com.google.common.io.CharStreams;
 import com.google.common.io.Resources;
 
 public class FileFunctions {
+  private static final Logger LOGGER = LogManager.getLogger();
+
   /**
    * See <a href="https://pangin.pro/posts/computation-in-static-initializer">Beware of computation
    * in static initializer</a>
@@ -107,7 +111,8 @@ public class FileFunctions {
         org.matheclipse.core.expression.Context context = engine.begin(contextName, pack);
         return F.stringx(context.completeContextName());
       } catch (ValidateException ve) {
-        return engine.printMessage(ve.getMessage(ast.topHead()));
+        LOGGER.log(engine.getLogLevel(), ve.getMessage(ast.topHead()), ve);
+        return F.NIL;
       }
     }
 
@@ -155,7 +160,8 @@ public class FileFunctions {
         return S.Null;
 
       } catch (ValidateException ve) {
-        return engine.printMessage(ve.getMessage(ast.topHead()));
+        LOGGER.log(engine.getLogLevel(), ve.getMessage(ast.topHead()), ve);
+        return F.NIL;
       }
     }
 
@@ -200,10 +206,7 @@ public class FileFunctions {
         } catch (EOFException ex) {
           return S.EndOfFile;
         } catch (IOException | RuntimeException ex) {
-          if (Config.SHOW_STACKTRACE) {
-            ex.printStackTrace();
-          }
-          engine.printMessage(ast.topHead(), ex);
+          LOGGER.log(engine.getLogLevel(), ast.topHead(), ex);
           return S.$Failed;
         }
       }
@@ -279,10 +282,7 @@ public class FileFunctions {
           writeType(dataOutput, arg2, typeByte);
           return S.Null;
         } catch (RuntimeException | RangeException | TypeException | IOException e) {
-          if (Config.SHOW_STACKTRACE) {
-            e.printStackTrace();
-          }
-          engine.printMessage(ast.topHead(), e);
+          LOGGER.log(engine.getLogLevel(), ast.topHead(), e);
           return F.$Failed;
         }
       }
@@ -325,12 +325,8 @@ public class FileFunctions {
           return F.stringx(in.getStreamName());
         }
       } catch (IOException | RuntimeException ex) {
-        if (Config.SHOW_STACKTRACE) {
-          ex.printStackTrace();
-        }
-        return engine.printMessage(ast.topHead(), ex);
+        LOGGER.log(engine.getLogLevel(), ast.topHead(), ex);
       }
-
       return F.NIL;
     }
 
@@ -358,10 +354,7 @@ public class FileFunctions {
             return F.stringx(path.toString());
           }
         } catch (IOException | RuntimeException ex) {
-          if (Config.SHOW_STACKTRACE) {
-            ex.printStackTrace();
-          }
-          return engine.printMessage(ast.topHead(), ex);
+          LOGGER.log(engine.getLogLevel(), ast.topHead(), ex);
         }
       }
       return F.NIL;
@@ -386,10 +379,7 @@ public class FileFunctions {
           } else if (ast.isAST1() && ast.arg1() instanceof IStringX) {
           }
         } catch (IOException | RuntimeException ex) {
-          if (Config.SHOW_STACKTRACE) {
-            ex.printStackTrace();
-          }
-          return engine.printMessage(ast.topHead(), ex);
+          LOGGER.log(engine.getLogLevel(), ast.topHead(), ex);
         }
       }
       return F.NIL;
@@ -517,10 +507,7 @@ public class FileFunctions {
             return FileExpr.newInstance(arg1.toString());
           }
         } catch (RuntimeException ex) {
-          if (Config.SHOW_STACKTRACE) {
-            ex.printStackTrace();
-          }
-          return engine.printMessage(ast.topHead(), ex);
+          LOGGER.log(engine.getLogLevel(), ast.topHead(), ex);
         }
       }
       return F.NIL;
@@ -573,10 +560,7 @@ public class FileFunctions {
             return S.Null;
 
           } catch (IOException | RuntimeException ex) {
-            if (Config.SHOW_STACKTRACE) {
-              ex.printStackTrace();
-            }
-            return engine.printMessage(ast.topHead(), ex);
+            LOGGER.log(engine.getLogLevel(), ast.topHead(), ex);
           }
         }
       }
@@ -711,10 +695,8 @@ public class FileFunctions {
           }
           Validate.checkContextName(ast, 1);
         } catch (ValidateException | MalformedURLException e) {
-          if (Config.SHOW_STACKTRACE) {
-            e.printStackTrace();
-          }
-          return engine.printMessage(ast.topHead(), e);
+          LOGGER.log(engine.getLogLevel(), ast.topHead(), e);
+          return F.NIL;
         }
         // Cannot open `1`.
         return IOFunctions.printMessage(ast.topHead(), "noopen", F.List(ast.arg1()), engine);
@@ -739,10 +721,7 @@ public class FileFunctions {
             return InputStreamExpr.newInstance(arg1.toString(), "String");
           }
         } catch (FileNotFoundException | RuntimeException ex) {
-          if (Config.SHOW_STACKTRACE) {
-            ex.printStackTrace();
-          }
-          return engine.printMessage(ast.topHead(), ex);
+          LOGGER.log(engine.getLogLevel(), ast.topHead(), ex);
         }
       }
       return F.NIL;
@@ -780,10 +759,7 @@ public class FileFunctions {
             }
           }
         } catch (FileNotFoundException | RuntimeException ex) {
-          if (Config.SHOW_STACKTRACE) {
-            ex.printStackTrace();
-          }
-          return engine.printMessage(ast.topHead(), ex);
+          LOGGER.log(engine.getLogLevel(), ast.topHead(), ex);
         }
       }
       return F.NIL;
@@ -822,10 +798,7 @@ public class FileFunctions {
             }
           }
         } catch (IOException | RuntimeException ex) {
-          if (Config.SHOW_STACKTRACE) {
-            ex.printStackTrace();
-          }
-          return engine.printMessage(ast.topHead(), ex);
+          LOGGER.log(engine.getLogLevel(), ast.topHead(), ex);
         }
       }
       return F.NIL;
@@ -848,10 +821,7 @@ public class FileFunctions {
             return OutputStreamExpr.newInstance(arg1.toString(), false);
           }
         } catch (IOException | RuntimeException ex) {
-          if (Config.SHOW_STACKTRACE) {
-            ex.printStackTrace();
-          }
-          return engine.printMessage(ast.topHead(), ex);
+          LOGGER.log(engine.getLogLevel(), ast.topHead(), ex);
         }
       }
       return F.NIL;
@@ -873,7 +843,8 @@ public class FileFunctions {
         }
         return S.Null;
       } catch (ValidateException ve) {
-        return engine.printMessage(ast.topHead(), ve);
+        LOGGER.log(engine.getLogLevel(), ast.topHead(), ve);
+        return F.NIL;
       }
     }
 
@@ -904,7 +875,8 @@ public class FileFunctions {
         for (int i = 1; i < argSize; i++) {
           IExpr temp = engine.evaluate(ast.get(i));
           if (!OutputFormFactory.get().convert(buf, temp)) {
-            return engine.printMessage("Put: file " + fileName.toString() + "ERROR-IN_OUTPUTFORM");
+            LOGGER.log(engine.getLogLevel(), "Put: file {} ERROR-IN_OUTPUTFORM", fileName);
+            return F.NIL;
           }
           buf.append('\n');
           if (i < argSize - 1) {
@@ -914,7 +886,8 @@ public class FileFunctions {
         try (FileWriter writer = new FileWriter(fileName.toString())) {
           writer.write(buf.toString());
         } catch (IOException e) {
-          return engine.printMessage("Put: file " + fileName.toString() + " I/O exception !");
+          LOGGER.log(engine.getLogLevel(), "Put: file {} I/O exception !", fileName, e);
+          return F.NIL;
         }
         return S.Null;
       }
@@ -964,10 +937,7 @@ public class FileFunctions {
             return readTypeOrHold(typeExpr, reader, engine);
           }
         } catch (IOException | RuntimeException ex) {
-          if (Config.SHOW_STACKTRACE) {
-            ex.printStackTrace();
-          }
-          engine.printMessage(ast.topHead(), ex);
+          LOGGER.log(engine.getLogLevel(), ast.topHead(), ex);
           return S.$Failed;
         }
       }
@@ -1199,10 +1169,8 @@ public class FileFunctions {
             str = Resources.toString(url, StandardCharsets.UTF_8);
             return F.stringx(str);
           } catch (IOException ioe) {
-            if (Config.SHOW_STACKTRACE) {
-              ioe.printStackTrace();
-            }
-            return engine.printMessage(ast.topHead() + ": " + ioe.getMessage());
+            LOGGER.log(engine.getLogLevel(), ast.topHead(), ioe);
+            return F.NIL;
           }
         }
         File file = new File(arg1);
@@ -1212,10 +1180,7 @@ public class FileFunctions {
                 com.google.common.io.Files.asCharSource(file, Charset.defaultCharset()).read();
             return F.stringx(str);
           } catch (IOException e) {
-            if (Config.SHOW_STACKTRACE) {
-              e.printStackTrace();
-            }
-            engine.printMessage("ReadString exception: " + e.getMessage());
+            LOGGER.log(engine.getLogLevel(), "ReadString exception", e);
           }
           return S.Null;
         }
@@ -1243,10 +1208,7 @@ public class FileFunctions {
             }
           }
         } catch (RuntimeException | IOException ex) {
-          if (Config.SHOW_STACKTRACE) {
-            ex.printStackTrace();
-          }
-          return engine.printMessage(ast.topHead(), ex);
+          LOGGER.log(engine.getLogLevel(), ast.topHead(), ex);
         }
       }
       return F.NIL;
@@ -1319,10 +1281,7 @@ public class FileFunctions {
             return S.Null;
           }
         } catch (IOException | RuntimeException ex) {
-          if (Config.SHOW_STACKTRACE) {
-            ex.printStackTrace();
-          }
-          return engine.printMessage(ast.topHead(), ex);
+          LOGGER.log(engine.getLogLevel(), ast.topHead(), ex);
         }
       }
       return F.NIL;
@@ -1353,8 +1312,8 @@ public class FileFunctions {
         try (FileWriter writer = new FileWriter(fileName.toString())) {
           writer.write(str.toString());
         } catch (IOException e) {
-          return engine.printMessage(
-              ast.topHead() + ": file " + fileName.toString() + " I/O exception !");
+          LOGGER.log(engine.getLogLevel(), "{}: file {} I/O exception", ast.topHead(), fileName, e);
+          return F.NIL;
         }
         return S.Null;
       }

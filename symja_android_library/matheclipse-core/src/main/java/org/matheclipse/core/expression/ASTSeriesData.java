@@ -4,6 +4,9 @@ import java.io.Externalizable;
 import java.io.IOException;
 import java.io.ObjectInput;
 import java.io.ObjectOutput;
+import org.apache.logging.log4j.Level;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.hipparchus.util.ArithmeticUtils;
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.util.OpenIntToIExprHashMap;
@@ -15,6 +18,7 @@ import org.matheclipse.core.interfaces.IInteger;
 import org.matheclipse.core.interfaces.INumber;
 
 public class ASTSeriesData extends AbstractAST implements Externalizable {
+  private static final Logger LOGGER = LogManager.getLogger();
 
   /** A map of the truncated power series coefficients <code>value != 0</code> */
   OpenIntToIExprHashMap<IExpr> coefficientValues;
@@ -238,17 +242,9 @@ public class ASTSeriesData extends AbstractAST implements Externalizable {
   public ASTSeriesData compose(ASTSeriesData series2) {
     IExpr coeff0 = series2.coefficient(0);
     if (!coeff0.equals(x0)) {
-      EvalEngine.get()
-          .printMessage(
-              "Constant "
-                  + coeff0.toString()
-                  + " of series "
-                  + this.toString()
-                  + //
-                  " unequals point "
-                  + x0.toString()
-                  + " of series "
-                  + series2.toString());
+      Level logLevel = EvalEngine.get().getLogLevel();
+      LOGGER.log(logLevel, "Constant {} of series {} unequals point {} of series {}", coeff0, this,
+          x0, series2);
       return null;
     }
     ASTSeriesData series =

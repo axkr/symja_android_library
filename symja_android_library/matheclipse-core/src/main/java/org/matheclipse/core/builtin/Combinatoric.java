@@ -6,6 +6,8 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.matheclipse.core.basic.Config;
 import org.matheclipse.core.combinatoric.KSubsets;
 import org.matheclipse.core.eval.EvalAttributes;
@@ -33,6 +35,8 @@ import org.matheclipse.core.interfaces.ISymbol;
 import org.matheclipse.core.reflection.system.FrobeniusSolve;
 
 public final class Combinatoric {
+  private static final Logger LOGGER = LogManager.getLogger();
+
   /**
    * See <a href="https://pangin.pro/posts/computation-in-static-initializer">Beware of computation
    * in static initializer</a>
@@ -2594,7 +2598,7 @@ public final class Combinatoric {
           return result;
         } catch (final ValidateException ve) {
           // see level specification
-          return engine.printMessage(ast.topHead(), ve);
+          LOGGER.log(engine.getLogLevel(), ast.topHead(), ve);
         }
       }
       return F.NIL;

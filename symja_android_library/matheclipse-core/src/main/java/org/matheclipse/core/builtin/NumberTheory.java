@@ -20,6 +20,8 @@ import java.util.Map;
 import java.util.SortedMap;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutionException;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.apfloat.Apcomplex;
 import org.apfloat.Apfloat;
 import org.apfloat.FixedPrecisionApfloatHelper;
@@ -76,6 +78,7 @@ import edu.jas.ufd.FactorAbstract;
 import edu.jas.ufd.FactorFactory;
 
 public final class NumberTheory {
+  private static final Logger LOGGER = LogManager.getLogger();
 
   private static final int[] FIBONACCI_45 = {
     0,
@@ -275,10 +278,7 @@ public final class NumberTheory {
           }
         }
       } catch (RuntimeException rex) {
-        if (Config.SHOW_STACKTRACE) {
-          rex.printStackTrace();
-        }
-        return engine.printMessage(ast.topHead(), rex);
+        LOGGER.log(engine.getLogLevel(), ast.topHead(), rex);
       }
       return F.NIL;
     }
@@ -823,7 +823,7 @@ public final class NumberTheory {
             return chineseRemainderBigInteger(ast, engine);
           }
         } catch (ValidateException ve) {
-          return engine.printMessage(ast.topHead(), ve);
+          LOGGER.log(engine.getLogLevel(), ast.topHead(), ve);
         } catch (ArithmeticException ae) {
           if (Config.SHOW_STACKTRACE) {
             ae.printStackTrace();
@@ -1175,8 +1175,9 @@ public final class NumberTheory {
       continuedFractionList.append(aNow);
       for (int i = 0; i < iterationLimit - 1; i++) {
         if (i >= 99) {
-          return engine.printMessage(
+          LOGGER.log(engine.getLogLevel(),
               "ContinuedFraction: calculations of double number values require a iteration limit less equal 100.");
+          return F.NIL;
         }
         double rec = 1.0 / tNow;
         aNext = (int) rec;
@@ -2805,7 +2806,7 @@ public final class NumberTheory {
           } catch (ArithmeticException aex) {
             // java.lang.ArithmeticException: Inverse root of zero
             // at org.apfloat.ApfloatMath.inverseRoot(ApfloatMath.java:280)
-            return engine.printMessage(ast.topHead(), aex);
+            LOGGER.log(engine.getLogLevel(), ast.topHead(), aex);
           }
         }
       }
@@ -2870,7 +2871,8 @@ public final class NumberTheory {
         }
         return result;
       } catch (ValidateException ve) {
-        return engine.printMessage(S.FromContinuedFraction, ve);
+        LOGGER.log(engine.getLogLevel(), S.FromContinuedFraction, ve);
+        return F.NIL;
       }
     }
 
@@ -3831,8 +3833,7 @@ public final class NumberTheory {
               return result;
             }
           } catch (ValidateException ve) {
-            // e.printStackTrace();
-            return engine.printMessage(ast.topHead(), ve);
+            LOGGER.log(engine.getLogLevel(), ast.topHead(), ve);
           } catch (UncheckedExecutionException e) {
             Throwable th = e.getCause();
             if (th instanceof LimitException) {
@@ -3939,8 +3940,7 @@ public final class NumberTheory {
               }
             }
           } catch (ValidateException ve) {
-            // e.printStackTrace();
-            return engine.printMessage(ast.topHead(), ve);
+            LOGGER.log(engine.getLogLevel(), ast.topHead(), ve);
           } catch (UncheckedExecutionException e) {
             Throwable th = e.getCause();
             if (th instanceof LimitException) {
@@ -4633,8 +4633,9 @@ public final class NumberTheory {
         }
       }
       if (!eVar.isSize(1)) {
-        return engine.printMessage(
-            ast.topHead() + ": only implemented for univariate polynomials at position 1");
+        LOGGER.log(engine.getLogLevel(),
+            "{}: only implemented for univariate polynomials at position 1", ast.topHead());
+        return F.NIL;
       }
       try {
         IExpr expr = F.evalExpandAll(ast.arg1(), engine);
@@ -4907,7 +4908,7 @@ public final class NumberTheory {
           }
         }
       } catch (MathRuntimeException mre) {
-        return engine.printMessage(ast.topHead(), mre);
+        LOGGER.log(engine.getLogLevel(), ast.topHead(), mre);
       }
       return F.NIL;
     }
@@ -4999,7 +5000,7 @@ public final class NumberTheory {
           long n = ((IInteger) arg1).toLong();
           return subFactorial(n);
         } catch (ArithmeticException ae) {
-          return engine.printMessage("Subfactorial: argument n is to big.");
+          LOGGER.log(engine.getLogLevel(), "Subfactorial: argument n is to big.");
         }
       }
       return F.NIL;

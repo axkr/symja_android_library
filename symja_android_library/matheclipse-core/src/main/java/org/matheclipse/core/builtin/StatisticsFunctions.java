@@ -7,6 +7,8 @@ import java.util.concurrent.ThreadLocalRandom;
 import java.util.function.DoubleUnaryOperator;
 import java.util.function.Predicate;
 import java.util.function.Supplier;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.apfloat.Apcomplex;
 import org.apfloat.ApcomplexMath;
 import org.apfloat.Apfloat;
@@ -58,6 +60,8 @@ import org.matheclipse.core.reflection.system.rules.QuantileRules;
 import org.matheclipse.core.reflection.system.rules.StandardDeviationRules;
 
 public class StatisticsFunctions {
+  private static final Logger LOGGER = LogManager.getLogger();
+
   // avoid result -Infinity when reference is close to 1.0
   private static final double NEXTDOWNONE = Math.nextDown(1.0);
 
@@ -904,7 +908,7 @@ public class StatisticsFunctions {
           }
         }
       } catch (ValidateException ve) {
-        return engine.printMessage(ast.topHead(), ve);
+        LOGGER.log(engine.getLogLevel(), ast.topHead(), ve);
       } catch (ArithmeticException rex) {
         if (Config.SHOW_STACKTRACE) {
           rex.printStackTrace();
@@ -1498,10 +1502,10 @@ public class StatisticsFunctions {
               F.Covariance(arg1, arg2),
               F.Times(F.StandardDeviation(arg1), F.StandardDeviation(arg2)));
         }
-        return F.NIL;
       } catch (MathRuntimeException mrex) {
-        return engine.printMessage(ast.topHead(), mrex);
+        LOGGER.log(engine.getLogLevel(), ast.topHead(), mrex);
       }
+      return F.NIL;
     }
 
     @Override
@@ -3270,9 +3274,9 @@ public class StatisticsFunctions {
         }
       } catch (final MathRuntimeException mre) {
         // org.hipparchus.exception.MathIllegalArgumentException: inconsistent dimensions: 0 != 3
-        return engine.printMessage(S.Covariance, mre);
+        LOGGER.log(engine.getLogLevel(), S.Covariance, mre);
       } catch (final ValidateException ve) {
-        return engine.printMessage(ast.topHead(), ve);
+        LOGGER.log(engine.getLogLevel(), ast.topHead(), ve);
       } catch (final IndexOutOfBoundsException e) {
         if (Config.SHOW_STACKTRACE) {
           e.printStackTrace();
@@ -3985,7 +3989,7 @@ public class StatisticsFunctions {
           return F.Subtract(F.Quantile(arg1, F.C3D4), F.Quantile(arg1, F.C1D4));
         }
       } catch (ValidateException ve) {
-        return engine.printMessage(ast.topHead(), ve);
+        LOGGER.log(engine.getLogLevel(), ast.topHead(), ve);
       }
       return F.NIL;
     }
@@ -4150,7 +4154,7 @@ public class StatisticsFunctions {
           }
         }
       } catch (MathRuntimeException mre) {
-        return engine.printMessage(ast.topHead(), mre);
+        LOGGER.log(engine.getLogLevel(), ast.topHead(), mre);
       }
       return F.NIL;
     }
@@ -5738,7 +5742,7 @@ public class StatisticsFunctions {
           }
         }
       } catch (ValidateException ve) {
-        return engine.printMessage(ast.topHead(), ve);
+        LOGGER.log(engine.getLogLevel(), ast.topHead(), ve);
       }
       return F.NIL;
     }
@@ -5852,16 +5856,12 @@ public class StatisticsFunctions {
               return printMessageUdist(head, ast, dist, engine);
             }
           } catch (ValidateException ve) {
-            return engine.printMessage(ast.topHead(), ve);
+            LOGGER.log(engine.getLogLevel(), ast.topHead(), ve);
           } catch (RuntimeException ex) {
-            if (Config.SHOW_STACKTRACE) {
-              ex.printStackTrace();
-            }
-            return engine.printMessage("RandomVariate: " + ex.getMessage());
+            LOGGER.log(engine.getLogLevel(), "RandomVariate", ex);
           }
         }
       }
-
       return F.NIL;
     }
 

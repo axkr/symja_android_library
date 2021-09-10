@@ -15,6 +15,8 @@ import static org.matheclipse.core.expression.F.Sum;
 import static org.matheclipse.core.expression.F.Times;
 import static org.matheclipse.core.expression.S.k;
 import java.util.function.Predicate;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.matheclipse.core.builtin.IOFunctions;
 import org.matheclipse.core.builtin.ListFunctions;
 import org.matheclipse.core.convert.VariablesSet;
@@ -133,6 +135,7 @@ import org.matheclipse.core.reflection.system.rules.SumRules;
  * </pre>
  */
 public class Sum extends ListFunctions.Table implements SumRules {
+  private static final Logger LOGGER = LogManager.getLogger();
 
   @Override
   public IAST getRuleAST() {
@@ -291,7 +294,7 @@ public class Sum extends ListFunctions.Table implements SumRules {
           }
         }
       } catch (ValidateException ve) {
-        return engine.printMessage(ast.topHead(), ve);
+        LOGGER.log(engine.getLogLevel(), ast.topHead(), ve);
       }
     }
     return F.NIL;
@@ -423,7 +426,8 @@ public class Sum extends ListFunctions.Table implements SumRules {
           return temp;
         }
       } catch (RecursionLimitExceeded rle) {
-        return engine.printMessage("Sum: Recursionlimit exceeded");
+        LOGGER.log(engine.getLogLevel(), "Recursionlimit exceeded");
+        return F.NIL;
       }
       // try {
       // iterator.setUp();

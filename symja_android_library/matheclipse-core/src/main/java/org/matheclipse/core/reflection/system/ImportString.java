@@ -3,7 +3,8 @@ package org.matheclipse.core.reflection.system;
 import java.io.StringReader;
 import org.apache.commons.csv.CSVFormat;
 import org.apache.commons.csv.CSVRecord;
-import org.matheclipse.core.basic.Config;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.matheclipse.core.convert.AST2Expr;
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.interfaces.AbstractEvaluator;
@@ -20,6 +21,7 @@ import org.matheclipse.parser.client.ast.ASTNode;
 
 /** Import some data from a given string. */
 public class ImportString extends AbstractEvaluator {
+  private static final Logger LOGGER = LogManager.getLogger();
 
   public ImportString() {}
 
@@ -66,14 +68,10 @@ public class ImportString extends AbstractEvaluator {
       }
 
     } catch (SyntaxError se) {
-      return engine.printMessage("ImportString: syntax error!");
+      LOGGER.log(engine.getLogLevel(), "ImportString: syntax error!", se);
     } catch (Exception ex) {
-      if (Config.SHOW_STACKTRACE) {
-        ex.printStackTrace();
-      }
-      return engine.printMessage("ImportString: " + ex.getMessage());
+      LOGGER.log(engine.getLogLevel(), "ImportString", ex);
     }
-
     return F.NIL;
   }
 

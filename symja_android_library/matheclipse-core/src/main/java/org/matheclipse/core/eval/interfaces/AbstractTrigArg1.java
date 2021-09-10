@@ -1,5 +1,7 @@
 package org.matheclipse.core.eval.interfaces;
 
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.hipparchus.complex.Complex;
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.exception.LimitException;
@@ -19,6 +21,8 @@ import org.matheclipse.core.interfaces.INumber;
  * <i>NumericFunction</i>
  */
 public abstract class AbstractTrigArg1 extends AbstractArg1 {
+  private static final Logger LOGGER = LogManager.getLogger();
+
 
   @Override
   public IExpr evaluate(final IAST ast, final EvalEngine engine) {
@@ -44,7 +48,7 @@ public abstract class AbstractTrigArg1 extends AbstractArg1 {
     } catch (LimitException le) {
       throw le;
     } catch (RuntimeException rex) {
-      EvalEngine.get().printMessage(ast.topHead().toString() + ": " + rex.getMessage());
+      LOGGER.log(EvalEngine.get().getLogLevel(), ast.topHead(), rex);
       return F.NIL;
     }
     return evaluateArg1(arg1, engine);

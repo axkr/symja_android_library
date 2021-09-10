@@ -30,6 +30,8 @@ import static org.matheclipse.core.expression.F.Times;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.function.Predicate;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.hipparchus.complex.Complex;
 import org.hipparchus.exception.MathIllegalArgumentException;
 import org.hipparchus.exception.MathRuntimeException;
@@ -78,6 +80,7 @@ import org.matheclipse.core.interfaces.ISparseArray;
 import org.matheclipse.core.interfaces.ISymbol;
 
 public final class LinearAlgebra {
+  private static final Logger LOGGER = LogManager.getLogger();
 
   /**
    * See <a href="https://pangin.pro/posts/computation-in-static-initializer">Beware of computation
@@ -817,16 +820,12 @@ public final class LinearAlgebra {
         }
       } catch (final MathRuntimeException | ValidateException e) {
         // org.hipparchus.exception.MathIllegalArgumentException: inconsistent dimensions: 0 != 3
-        if (Config.SHOW_STACKTRACE) {
-          e.printStackTrace();
-        }
-        return engine.printMessage(ast.topHead(), e);
+        LOGGER.log(engine.getLogLevel(), ast.topHead(), e);
       } catch (final IndexOutOfBoundsException e) {
         if (Config.SHOW_STACKTRACE) {
           e.printStackTrace();
         }
       }
-
       return F.NIL;
     }
 
@@ -1205,7 +1204,7 @@ public final class LinearAlgebra {
         }
       } catch (final ValidateException ve) {
         // int number validation
-        return engine.printMessage(ast.topHead(), ve);
+        LOGGER.log(engine.getLogLevel(), ast.topHead(), ve);
       }
       return F.NIL;
     }
@@ -1459,14 +1458,7 @@ public final class LinearAlgebra {
         // print message: Nonrectangular tensor encountered
         return IOFunctions.printMessage(ast.topHead(), "rect", F.List(ast), engine);
       } catch (final RuntimeException e) {
-        if (Config.SHOW_STACKTRACE) {
-          e.printStackTrace();
-        }
-        engine.printMessage(ast.topHead() + ": " + e.getMessage());
-        // } catch (final org.hipparchus.exception.MathRuntimeException e) {
-        // if (Config.SHOW_STACKTRACE) {
-        // e.printStackTrace();
-        // }
+        LOGGER.log(engine.getLogLevel(), ast.topHead(), e);
       } finally {
         engine.setTogetherMode(togetherMode);
       }
@@ -1753,7 +1745,8 @@ public final class LinearAlgebra {
           }
         } catch (final MathRuntimeException mre) {
           // org.hipparchus.exception.MathIllegalArgumentException: inconsistent dimensions: 0 != 3
-          return engine.printMessage(ast.topHead(), mre);
+          LOGGER.log(engine.getLogLevel(), ast.topHead(), mre);
+          return F.NIL;
         } catch (final ClassCastException | IndexOutOfBoundsException e) {
           if (Config.SHOW_STACKTRACE) {
             e.printStackTrace();
@@ -2409,7 +2402,8 @@ public final class LinearAlgebra {
           } catch (final MathRuntimeException mre) {
             // org.hipparchus.exception.MathIllegalArgumentException: inconsistent dimensions: 0 !=
             // 3
-            return engine.printMessage(ast.topHead(), mre);
+            LOGGER.log(engine.getLogLevel(), ast.topHead(), mre);
+            return F.NIL;
           } catch (final ClassCastException | IndexOutOfBoundsException e) {
             if (Config.SHOW_STACKTRACE) {
               e.printStackTrace();
@@ -2528,11 +2522,14 @@ public final class LinearAlgebra {
                     && vector.getDimension() <= matrix.getColumnDimension()) {
                   return underdeterminedSystem(matrix, vector, engine);
                 }
-                return engine.printMessage("LinearSolve: first argument is not a square matrix.");
+                LOGGER.log(engine.getLogLevel(),
+                    "LinearSolve: first argument is not a square matrix.");
+                return F.NIL;
               }
               if (vector.getDimension() != matrix.getRowDimension()) {
-                return engine.printMessage(
+                LOGGER.log(engine.getLogLevel(),
                     "LinearSolve: matrix row and vector have different dimensions.");
+                return F.NIL;
               }
               if (matrixDims[0] == 1 && matrixDims[1] >= 1) {
                 IExpr temp = eval1x1Matrix(matrix, vector, engine);
@@ -2594,7 +2591,8 @@ public final class LinearAlgebra {
     private static IExpr createLinearSolveFunction(
         final IAST ast, final int[] matrixDims, EvalEngine engine) {
       if (matrixDims[0] > matrixDims[1]) {
-        return engine.printMessage("LinearSolve: first argument is not a square matrix.");
+        LOGGER.log(engine.getLogLevel(), "LinearSolve: first argument is not a square matrix.");
+        return F.NIL;
       }
 
       final FieldMatrix<IExpr> matrix = Convert.list2Matrix(ast.arg1(), true);
@@ -2605,7 +2603,8 @@ public final class LinearAlgebra {
         if (solver.isNonSingular()) {
           return LinearSolveFunctionExpr.createIExpr(solver, engine.getNumericPrecision());
         }
-        return engine.printMessage("LinearSolve: first argument is a nonsingular matrix.");
+        LOGGER.log(engine.getLogLevel(), "LinearSolve: first argument is not a square matrix.");
+        return F.NIL;
       }
 
       final FieldMatrix<Complex> complexMatrix = Convert.list2ComplexMatrix(ast.arg1());
@@ -2846,7 +2845,7 @@ public final class LinearAlgebra {
           return linearSolve(lsf, arg1, ast, engine);
         } catch (final ValidateException ve) {
           // int number validation
-          return engine.printMessage(ast.topHead(), ve);
+          LOGGER.log(engine.getLogLevel(), ast.topHead(), ve);
         }
       }
       return F.NIL;
@@ -2878,7 +2877,8 @@ public final class LinearAlgebra {
 
       } catch (final ValidateException ve) {
         // int number validation
-        return engine.printMessage(ast.topHead(), ve);
+        LOGGER.log(engine.getLogLevel(), ast.topHead(), ve);
+        return F.NIL;
       }
     }
 
@@ -3179,10 +3179,8 @@ public final class LinearAlgebra {
         }
         return F.NIL;
       } catch (final RuntimeException e) {
-        if (Config.SHOW_STACKTRACE) {
-          e.printStackTrace();
-        }
-        return engine.printMessage(ast.topHead(), e);
+        LOGGER.log(engine.getLogLevel(), ast.topHead(), e);
+        return F.NIL;
       } finally {
         engine.setTogetherMode(togetherMode);
       }
@@ -3371,11 +3369,11 @@ public final class LinearAlgebra {
               return vector.map(S.Max, x -> F.Abs(x));
             } else if (p.isSymbol() || p.isReal()) {
               if (p.isZero()) {
-                engine.printMessage("Norm: 0 not allowed as second argument!");
+                LOGGER.log(engine.getLogLevel(), "Norm: 0 not allowed as second argument!");
                 return F.NIL;
               }
               if (p.isReal() && p.lessThan(F.C1).isTrue()) {
-                engine.printMessage("Norm: Second argument is < 1!");
+                LOGGER.log(engine.getLogLevel(), "Norm: Second argument is < 1!");
                 return F.NIL;
               }
               return F.Power(vector.map(S.Plus, x -> F.Power(F.Abs(x), p)), p.inverse());
@@ -3417,10 +3415,8 @@ public final class LinearAlgebra {
           }
 
         } catch (final ValidateException ve) {
-          if (Config.SHOW_STACKTRACE) {
-            ve.printStackTrace();
-          }
-          return engine.printMessage(ast.topHead(), ve);
+          LOGGER.log(engine.getLogLevel(), ast.topHead(), ve);
+          return F.NIL;
         } catch (final IndexOutOfBoundsException e) {
           if (Config.SHOW_STACKTRACE) {
             e.printStackTrace();
@@ -3783,7 +3779,7 @@ public final class LinearAlgebra {
               v.mapMultiply(u.dotProduct(vConjugate).divide(v.dotProduct(vConjugate))));
         }
       } catch (ValidateException ve) {
-        return engine.printMessage(ast.topHead(), ve);
+        LOGGER.log(engine.getLogLevel(), ast.topHead(), ve);
       }
       return F.NIL;
     }
@@ -4019,7 +4015,7 @@ public final class LinearAlgebra {
             }
           }
         } catch (MathRuntimeException mrex) {
-          engine.printMessage(ast.topHead(), mrex);
+          LOGGER.log(engine.getLogLevel(), ast.topHead(), mrex);
         }
       }
       return F.NIL;
@@ -4230,16 +4226,12 @@ public final class LinearAlgebra {
         }
 
       } catch (final ValidateException ve) {
-        if (Config.SHOW_STACKTRACE) {
-          ve.printStackTrace();
-        }
-        return engine.printMessage(ast.topHead(), ve);
+        LOGGER.log(engine.getLogLevel(), ast.topHead(), ve);
       } catch (final IndexOutOfBoundsException e) {
         if (Config.SHOW_STACKTRACE) {
           e.printStackTrace();
         }
       }
-
       return F.NIL;
     }
 
@@ -4804,7 +4796,8 @@ public final class LinearAlgebra {
         return F.matrix((i, j) -> i <= j - k ? matrix.getEntry(i, j) : F.C0, m, n);
       } catch (final ValidateException ve) {
         // int number validation
-        return engine.printMessage(ast.topHead(), ve);
+        LOGGER.log(engine.getLogLevel(), ast.topHead(), ve);
+        return F.NIL;
       }
     }
 
@@ -4953,7 +4946,8 @@ public final class LinearAlgebra {
     IExpr denominator = determinant2x2(matrix);
     if (denominator.isZero()) {
       if (!quiet) {
-        return engine.printMessage("Row reduced linear equations have no solution.");
+        LOGGER.log(engine.getLogLevel(), "Row reduced linear equations have no solution.");
+        return F.NIL;
       }
       return F.NIL;
     }
@@ -4991,7 +4985,8 @@ public final class LinearAlgebra {
     IExpr denominator = determinant3x3(denominatorMatrix);
     if (denominator.isZero()) {
       if (!quiet) {
-        return engine.printMessage("Row reduced linear equations have no solution.");
+        LOGGER.log(engine.getLogLevel(), "Row reduced linear equations have no solution.");
+        return F.NIL;
       }
       return F.NIL;
     }
@@ -5330,7 +5325,8 @@ public final class LinearAlgebra {
     IExpr lastVarCoefficient = rowReduced.getEntry(rows - 1, cols - 2);
     if (lastVarCoefficient.isZero()) {
       if (!rowReduced.getEntry(rows - 1, cols - 1).isZero()) {
-        return engine.printMessage("Row reduced linear equations have no solution.");
+        LOGGER.log(engine.getLogLevel(), "Row reduced linear equations have no solution.");
+        return F.NIL;
       }
     }
     IASTAppendable list = F.ListAlloc(rows < cols - 1 ? cols - 1 : rows);

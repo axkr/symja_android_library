@@ -13,6 +13,8 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.regex.PatternSyntaxException;
 import org.apache.commons.text.similarity.LevenshteinDistance;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.matheclipse.core.basic.Config;
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.exception.Validate;
@@ -51,6 +53,7 @@ import com.univocity.parsers.csv.CsvParser;
 import com.univocity.parsers.csv.CsvParserSettings;
 
 public final class StringFunctions {
+  private static final Logger LOGGER = LogManager.getLogger();
 
   /**
    * Index <code>0</code> in {@link REGEX_LONGEST} and {@link REGEX_SHORTEST}. The plus quantifier
@@ -534,7 +537,7 @@ public final class StringFunctions {
             ast.topHead(), "take", F.List(F.ZZ(from), F.ZZ(to), arg1), engine);
       } catch (final ValidateException ve) {
         // int number validation
-        return engine.printMessage(ve.getMessage(ast.topHead()));
+        LOGGER.log(engine.getLogLevel(), ve.getMessage(ast.topHead()), ve);
       }
       return F.NIL;
     }
@@ -581,7 +584,7 @@ public final class StringFunctions {
             ast.topHead(), "take", F.List(F.ZZ(from), F.ZZ(to), arg1), engine);
       } catch (final ValidateException ve) {
         // int number validation
-        return engine.printMessage(ve.getMessage(ast.topHead()));
+        LOGGER.log(engine.getLogLevel(), ve.getMessage(ast.topHead()), ve);
       }
       return F.NIL;
     }
@@ -1474,7 +1477,7 @@ public final class StringFunctions {
             ast.topHead(), "drop", F.List(F.ZZ(from - 1), F.ZZ(to), ast.arg1()), engine);
       } catch (final ValidateException ve) {
         // int number validation
-        return engine.printMessage(ve.getMessage(ast.topHead()));
+        LOGGER.log(engine.getLogLevel(), ve.getMessage(ast.topHead()), ve);
       }
       return F.NIL;
     }
@@ -1723,10 +1726,8 @@ public final class StringFunctions {
         return F.$str(buf.toString());
       } catch (RuntimeException rex) {
         // example java.lang.StringIndexOutOfBoundsException
-        if (Config.SHOW_STACKTRACE) {
-          rex.printStackTrace();
-        }
-        return engine.printMessage(ast.topHead(), rex);
+        LOGGER.log(engine.getLogLevel(), ast.topHead(), rex);
+        return F.NIL;
       }
     }
 
@@ -2353,7 +2354,8 @@ public final class StringFunctions {
         buf.append(right);
         return F.stringx(buf.toString());
       }
-      return engine.printMessage("StringRiffle: list expected as first argument");
+      LOGGER.log(engine.getLogLevel(), "StringRiffle: list expected as first argument");
+      return F.NIL;
     }
 
     @Override
@@ -2624,7 +2626,8 @@ public final class StringFunctions {
             ast.topHead(), "take", F.List(F.ZZ(from), F.ZZ(to), arg1), engine);
       } catch (final ValidateException ve) {
         // int number validation
-        return engine.printMessage(ve.getMessage(ast.topHead()));
+        LOGGER.log(engine.getLogLevel(), ve.getMessage(ast.topHead()), ve);
+        return F.NIL;
       }
     }
 
@@ -3422,7 +3425,8 @@ public final class StringFunctions {
           F.List(F.$str(pse.getPattern()), F.$str(pse.getMessage())),
           engine);
     } else {
-      return engine.printMessage(ast.topHead(), iae);
+      LOGGER.log(engine.getLogLevel(), ast.topHead(), iae);
+      return F.NIL;
     }
   }
 

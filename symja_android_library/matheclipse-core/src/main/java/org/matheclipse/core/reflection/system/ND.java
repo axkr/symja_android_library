@@ -1,11 +1,12 @@
 package org.matheclipse.core.reflection.system;
 
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.hipparchus.analysis.differentiation.DSFactory;
 import org.hipparchus.analysis.differentiation.FiniteDifferencesDifferentiator;
 import org.hipparchus.analysis.differentiation.UnivariateDifferentiableFunction;
 import org.hipparchus.complex.Complex;
 import org.hipparchus.exception.MathRuntimeException;
-import org.matheclipse.core.basic.Config;
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.exception.ValidateException;
 import org.matheclipse.core.eval.interfaces.AbstractFunctionEvaluator;
@@ -59,6 +60,7 @@ import org.matheclipse.core.interfaces.ISymbol;
  * href="NIntegrate.md">NIntegrate</a>
  */
 public class ND extends AbstractFunctionEvaluator {
+  private static final Logger LOGGER = LogManager.getLogger();
 
   public ND() {}
 
@@ -78,10 +80,7 @@ public class ND extends AbstractFunctionEvaluator {
         return partialDerivative(arg1, (ISymbol) arg2, 1, arg3, engine);
       }
     } catch (MathRuntimeException | ValidateException e) {
-      if (Config.SHOW_STACKTRACE) {
-        e.printStackTrace();
-      }
-      return engine.printMessage(ast.topHead(), e);
+      LOGGER.log(engine.getLogLevel(), ast.topHead(), e);
     }
     return F.NIL;
   }

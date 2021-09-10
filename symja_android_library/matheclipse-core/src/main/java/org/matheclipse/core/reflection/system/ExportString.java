@@ -5,6 +5,8 @@ import java.io.Writer;
 import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.function.Function;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.jgrapht.Graph;
 import org.jgrapht.graph.DefaultEdge;
 import org.jgrapht.nio.Attribute;
@@ -28,6 +30,7 @@ import org.matheclipse.core.io.Extension;
 
 /** Export some data into a string representation */
 public class ExportString extends AbstractEvaluator {
+  private static final Logger LOGGER = LogManager.getLogger();
 
   public ExportString() {}
 
@@ -95,8 +98,8 @@ public class ExportString extends AbstractEvaluator {
       // } catch (IOException ioe) {
       // return engine.printMessage("ExportString: " + arg1.toString() + " not found!");
     } catch (Exception ex) {
-      return engine.printMessage(
-          "ExportString: format: " + arg1.toString() + " - " + ex.getMessage());
+      LOGGER.log(engine.getLogLevel(), "format: {}", arg1, ex);
+      return F.NIL;
     }
     return F.NIL;
   }

@@ -9,6 +9,8 @@ import static org.matheclipse.core.expression.F.Plus;
 import static org.matheclipse.core.expression.F.Power;
 import static org.matheclipse.core.expression.F.Times;
 import java.util.function.DoubleUnaryOperator;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.hipparchus.complex.Complex;
 import org.matheclipse.core.basic.Config;
 import org.matheclipse.core.builtin.functions.GammaJS;
@@ -36,6 +38,7 @@ import org.matheclipse.core.reflection.system.rules.WhittakerMRules;
 import org.matheclipse.core.reflection.system.rules.WhittakerWRules;
 
 public class HypergeometricFunctions {
+  private static final Logger LOGGER = LogManager.getLogger();
 
   /**
    * See <a href="https://pangin.pro/posts/computation-in-static-initializer">Beware of computation
@@ -219,8 +222,7 @@ public class HypergeometricFunctions {
             ve.printStackTrace();
           }
         } catch (RuntimeException rex) {
-          // rex.printStackTrace();
-          return engine.printMessage(ast.topHead(), rex);
+          LOGGER.log(engine.getLogLevel(), ast.topHead(), rex);
         }
       }
       return F.NIL;
@@ -316,11 +318,9 @@ public class HypergeometricFunctions {
             ve.printStackTrace();
           }
         } catch (RuntimeException rex) {
-          // rex.printStackTrace();
-          return engine.printMessage(ast.topHead(), rex);
+          LOGGER.log(engine.getLogLevel(), ast.topHead(), rex);
         }
       }
-
       return F.NIL;
     }
 
@@ -382,8 +382,7 @@ public class HypergeometricFunctions {
             ve.printStackTrace();
           }
         } catch (RuntimeException rex) {
-          // rex.printStackTrace();
-          return engine.printMessage(ast.topHead(), rex);
+          LOGGER.log(engine.getLogLevel(), ast.topHead(), rex);
         }
       }
       return F.NIL;
@@ -488,8 +487,7 @@ public class HypergeometricFunctions {
             ve.printStackTrace();
           }
         } catch (RuntimeException rex) {
-          // rex.printStackTrace();
-          return engine.printMessage(ast.topHead(), rex);
+          LOGGER.log(engine.getLogLevel(), ast.topHead(), rex);
         }
       }
       return F.NIL;
@@ -818,8 +816,7 @@ public class HypergeometricFunctions {
             ve.printStackTrace();
           }
         } catch (RuntimeException rex) {
-          // rex.printStackTrace();
-          return engine.printMessage(ast.topHead(), rex);
+          LOGGER.log(engine.getLogLevel(), ast.topHead(), rex);
         }
       }
       return F.NIL;
@@ -943,8 +940,7 @@ public class HypergeometricFunctions {
           ve.printStackTrace();
         }
       } catch (RuntimeException rex) {
-        // rex.printStackTrace();
-        return engine.printMessage(ast.topHead(), rex);
+        LOGGER.log(engine.getLogLevel(), ast.topHead(), rex);
       }
       return F.NIL;
     }
@@ -1088,8 +1084,7 @@ public class HypergeometricFunctions {
           ve.printStackTrace();
         }
       } catch (RuntimeException rex) {
-        // rex.printStackTrace();
-        return engine.printMessage(ast.topHead(), rex);
+        LOGGER.log(engine.getLogLevel(), ast.topHead(), rex);
       }
       return F.NIL;
     }
@@ -1166,8 +1161,7 @@ public class HypergeometricFunctions {
             ve.printStackTrace();
           }
         } catch (RuntimeException rex) {
-          // rex.printStackTrace();
-          return engine.printMessage(ast.topHead(), rex);
+          LOGGER.log(engine.getLogLevel(), ast.topHead(), rex);
         }
       }
       return F.NIL;
@@ -1269,8 +1263,7 @@ public class HypergeometricFunctions {
           ve.printStackTrace();
         }
       } catch (RuntimeException rex) {
-        // rex.printStackTrace();
-        return engine.printMessage(ast.topHead(), rex);
+        LOGGER.log(engine.getLogLevel(), ast.topHead(), rex);
       }
       return F.NIL;
     }
@@ -1379,8 +1372,7 @@ public class HypergeometricFunctions {
             ve.printStackTrace();
           }
         } catch (RuntimeException rex) {
-          // rex.printStackTrace();
-          return engine.printMessage(ast.topHead(), rex);
+          LOGGER.log(engine.getLogLevel(), ast.topHead(), rex);
         }
       }
       return F.NIL;
@@ -1479,8 +1471,8 @@ public class HypergeometricFunctions {
             ve.printStackTrace();
           }
         } catch (RuntimeException rex) {
-          // rex.printStackTrace();
-          return engine.printMessage(ast.topHead(), rex);
+          LOGGER.log(engine.getLogLevel(), ast.topHead(), rex);
+          return F.NIL;
         }
       }
       IExpr negExpr = AbstractFunctionEvaluator.getNormalizedNegativeExpression(z);
@@ -1558,8 +1550,8 @@ public class HypergeometricFunctions {
             ve.printStackTrace();
           }
         } catch (RuntimeException rex) {
-          // rex.printStackTrace();
-          return engine.printMessage(ast.topHead(), rex);
+          LOGGER.log(engine.getLogLevel(), ast.topHead(), rex);
+          return F.NIL;
         }
       }
       if (z.isTimes() && z.first().isComplex() && z.first().re().isZero()) {
@@ -1634,8 +1626,7 @@ public class HypergeometricFunctions {
             ve.printStackTrace();
           }
         } catch (RuntimeException rex) {
-          // rex.printStackTrace();
-          return engine.printMessage(ast.topHead(), rex);
+          LOGGER.log(engine.getLogLevel(), ast.topHead(), rex);
         }
       }
       return F.NIL;

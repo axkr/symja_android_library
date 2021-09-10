@@ -24,6 +24,8 @@ import java.util.function.IntFunction;
 import java.util.function.Predicate;
 import java.util.function.Supplier;
 import java.util.stream.Stream;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.hipparchus.complex.Complex;
 import org.hipparchus.linear.Array2DRowRealMatrix;
 import org.hipparchus.linear.RealMatrix;
@@ -83,6 +85,8 @@ import com.google.common.cache.Cache;
 import com.google.common.cache.CacheBuilder;
 
 public abstract class AbstractAST implements IASTMutable {
+  private static final Logger LOGGER = LogManager.getLogger();
+
   protected static final class ASTIterator implements ListIterator<IExpr> {
 
     private int _currentIndex;
@@ -1857,10 +1861,8 @@ public abstract class AbstractAST implements IASTMutable {
           } catch (FlowControlException | LimitException e) {
             throw e;
           } catch (SymjaMathException ve) {
-            if (Config.SHOW_STACKTRACE) {
-              ve.printStackTrace();
-            }
-            return engine.printMessage(topHead(), ve);
+            LOGGER.log(engine.getLogLevel(), topHead(), ve);
+            return F.NIL;
           }
         }
       }

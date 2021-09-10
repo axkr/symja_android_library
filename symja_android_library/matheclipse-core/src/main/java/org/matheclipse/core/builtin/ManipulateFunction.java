@@ -4,6 +4,8 @@ import java.io.IOException;
 import java.io.StringWriter;
 import java.util.Arrays;
 import org.apache.commons.lang3.StringUtils;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.hipparchus.complex.Complex;
 import org.hipparchus.linear.RealMatrix;
 import org.hipparchus.stat.StatUtils;
@@ -42,6 +44,7 @@ import tech.tablesaw.plotly.traces.HistogramTrace;
 import tech.tablesaw.plotly.traces.PieTrace;
 
 public class ManipulateFunction {
+  private static final Logger LOGGER = LogManager.getLogger();
 
   private static final int N = 100;
 
@@ -1967,10 +1970,7 @@ public class ManipulateFunction {
           }
         }
       } catch (RuntimeException rex) {
-        if (Config.SHOW_STACKTRACE) {
-          rex.printStackTrace();
-        }
-        return engine.printMessage(S.Manipulate, rex);
+        LOGGER.log(engine.getLogLevel(), S.Manipulate, rex);
       }
       return F.NIL;
     }

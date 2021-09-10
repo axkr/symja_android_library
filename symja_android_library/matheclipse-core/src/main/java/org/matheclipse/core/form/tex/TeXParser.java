@@ -6,6 +6,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.function.BiFunction;
 import java.util.function.Function;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.matheclipse.core.basic.Config;
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.exception.AbortException;
@@ -30,6 +32,8 @@ import uk.ac.ed.ph.snuggletex.SnuggleInput;
 import uk.ac.ed.ph.snuggletex.SnuggleSession;
 
 public class TeXParser {
+  private static final Logger LOGGER = LogManager.getLogger();
+
   static class BinaryOperator extends Operator {
     BiFunction<IExpr, IExpr, IExpr> binaryFunction;
 
@@ -780,7 +784,7 @@ public class TeXParser {
       }
       List<InputError> errors = session.getErrors();
       for (int i = 0; i < errors.size(); i++) {
-        fEngine.printMessage(errors.get(i).toString());
+        LOGGER.log(fEngine.getLogLevel(), errors.get(i));
       }
     } catch (Exception e) {
       if (Config.SHOW_STACKTRACE) {

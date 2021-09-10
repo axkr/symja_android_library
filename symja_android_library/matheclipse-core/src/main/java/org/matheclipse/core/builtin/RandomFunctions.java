@@ -2,6 +2,8 @@ package org.matheclipse.core.builtin;
 
 import java.math.BigInteger;
 import java.util.concurrent.ThreadLocalRandom;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.hipparchus.complex.Complex;
 import org.hipparchus.random.RandomDataGenerator;
 import org.hipparchus.util.MathArrays;
@@ -25,6 +27,7 @@ import org.matheclipse.core.interfaces.IInteger;
 import org.matheclipse.core.interfaces.ISymbol;
 
 public final class RandomFunctions {
+  private static final Logger LOGGER = LogManager.getLogger();
 
   /**
    * See <a href="https://pangin.pro/posts/computation-in-static-initializer">Beware of computation
@@ -187,7 +190,7 @@ public final class RandomFunctions {
           }
         }
       } catch (ValidateException ve) {
-        return engine.printMessage(ast.topHead(), ve);
+        LOGGER.log(engine.getLogLevel(), ast.topHead(), ve);
       }
       return F.NIL;
     }
@@ -256,7 +259,7 @@ public final class RandomFunctions {
           }
         }
       } catch (ValidateException ve) {
-        return engine.printMessage(ast.topHead(), ve);
+        LOGGER.log(engine.getLogLevel(), ast.topHead(), ve);
       } catch (RuntimeException rex) {
         //
       }
@@ -375,7 +378,7 @@ public final class RandomFunctions {
           }
         }
       } catch (ValidateException ve) {
-        return engine.printMessage(ast.topHead(), ve);
+        LOGGER.log(engine.getLogLevel(), ast.topHead(), ve);
       }
       return F.NIL;
     }
@@ -424,7 +427,7 @@ public final class RandomFunctions {
         }
 
       } catch (ValidateException ve) {
-        return engine.printMessage(ast.topHead(), ve);
+        LOGGER.log(engine.getLogLevel(), ast.topHead(), ve);
       }
       return F.NIL;
     }
@@ -494,7 +497,7 @@ public final class RandomFunctions {
           }
           return randomPrime(lowerLimit, upperLimit, ast, engine);
         } catch (ValidateException ve) {
-          return engine.printMessage(ast.topHead(), ve);
+          LOGGER.log(engine.getLogLevel(), ast.topHead(), ve);
         } catch (RuntimeException rex) {
           if (Config.SHOW_STACKTRACE) {
             rex.printStackTrace();
@@ -594,7 +597,7 @@ public final class RandomFunctions {
           }
         }
       } catch (ValidateException ve) {
-        return engine.printMessage(ast.topHead(), ve);
+        LOGGER.log(engine.getLogLevel(), ast.topHead(), ve);
       }
       return F.NIL;
     }

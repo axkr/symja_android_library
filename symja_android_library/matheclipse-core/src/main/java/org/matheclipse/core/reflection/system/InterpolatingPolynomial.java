@@ -1,5 +1,7 @@
 package org.matheclipse.core.reflection.system;
 
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.hipparchus.exception.LocalizedCoreFormats;
 import org.hipparchus.exception.MathIllegalArgumentException;
 import org.hipparchus.exception.MathRuntimeException;
@@ -47,6 +49,7 @@ import org.matheclipse.core.interfaces.ISymbol;
  * </pre>
  */
 public class InterpolatingPolynomial extends AbstractEvaluator {
+  private static final Logger LOGGER = LogManager.getLogger();
 
   public InterpolatingPolynomial() {}
 
@@ -244,7 +247,7 @@ public class InterpolatingPolynomial extends AbstractEvaluator {
 
           return value;
         } catch (MathRuntimeException mrex) {
-          return engine.printMessage(ast.topHead(), mrex);
+          LOGGER.log(engine.getLogLevel(), ast.topHead(), mrex);
         }
       }
     }

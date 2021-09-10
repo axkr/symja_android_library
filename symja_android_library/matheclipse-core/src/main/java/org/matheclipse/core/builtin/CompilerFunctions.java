@@ -6,6 +6,8 @@ import java.net.URLClassLoader;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.codehaus.commons.compiler.CompileException;
 import org.codehaus.janino.SimpleCompiler;
 import org.matheclipse.core.basic.Config;
@@ -28,6 +30,8 @@ import org.matheclipse.core.interfaces.IStringX;
 import org.matheclipse.core.interfaces.ISymbol;
 
 public class CompilerFunctions {
+  private static final Logger LOGGER = LogManager.getLogger();
+
   /** Template for CompilePrint */
   public static final String JAVA_SOURCE_CODE = //
       "/* an in-memory compiled function */                                      \n"
@@ -136,11 +140,11 @@ public class CompilerFunctions {
         }
         return F.NIL;
       } catch (ValidateException ve) {
-        return engine.printMessage(ast.topHead(), ve);
+        LOGGER.log(engine.getLogLevel(), ast.topHead(), ve);
       } catch (CompileException | ClassNotFoundException | RuntimeException e) {
-        e.printStackTrace();
-        return engine.printMessage("Compile: " + e.getMessage());
+        LOGGER.log(engine.getLogLevel(), "Compile", e);
       }
+      return F.NIL;
     }
 
     @Override
@@ -558,10 +562,7 @@ public class CompilerFunctions {
         try {
           result = compiledFunction.evaluate(ast, engine);
         } catch (RuntimeException rex) {
-          if (Config.SHOW_STACKTRACE) {
-            rex.printStackTrace();
-          }
-          engine.printMessage("CompiledFunction: " + rex.getMessage());
+          LOGGER.log(engine.getLogLevel(), "CompiledFunction", rex);
         }
         if (result.isPresent()) {
           result = engine.evaluate(result);
@@ -606,7 +607,8 @@ public class CompilerFunctions {
         }
         return F.NIL;
       } catch (ValidateException ve) {
-        return engine.printMessage(ast.topHead(), ve);
+        LOGGER.log(engine.getLogLevel(), ast.topHead(), ve);
+        return F.NIL;
       }
     }
 

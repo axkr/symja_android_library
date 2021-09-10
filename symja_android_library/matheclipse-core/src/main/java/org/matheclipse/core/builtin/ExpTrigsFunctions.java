@@ -32,6 +32,8 @@ import static org.matheclipse.core.expression.F.num;
 import static org.matheclipse.core.expression.S.Pi;
 import java.math.RoundingMode;
 import java.util.function.DoubleUnaryOperator;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.apfloat.Apcomplex;
 import org.apfloat.ApcomplexMath;
 import org.apfloat.Apfloat;
@@ -99,6 +101,8 @@ import org.matheclipse.core.reflection.system.rules.TanhRules;
 import com.google.common.math.DoubleMath;
 
 public class ExpTrigsFunctions {
+  private static final Logger LOGGER = LogManager.getLogger();
+
   /**
    * See <a href="https://pangin.pro/posts/computation-in-static-initializer">Beware of computation
    * in static initializer</a>
@@ -2157,7 +2161,7 @@ public class ExpTrigsFunctions {
             ve.printStackTrace();
           }
         } catch (RuntimeException rex) {
-          return engine.printMessage(ast.topHead(), rex);
+          LOGGER.log(engine.getLogLevel(), ast.topHead(), rex);
         }
       }
       return F.NIL;
@@ -2232,7 +2236,7 @@ public class ExpTrigsFunctions {
             ve.printStackTrace();
           }
         } catch (RuntimeException rex) {
-          return engine.printMessage(ast.topHead(), rex);
+          LOGGER.log(engine.getLogLevel(), ast.topHead(), rex);
         }
       }
       return F.NIL;

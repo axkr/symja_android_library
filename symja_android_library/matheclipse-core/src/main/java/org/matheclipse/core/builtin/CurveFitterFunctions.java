@@ -1,5 +1,7 @@
 package org.matheclipse.core.builtin;
 
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.hipparchus.analysis.ParametricUnivariateFunction;
 import org.hipparchus.exception.MathIllegalArgumentException;
 import org.hipparchus.fitting.AbstractCurveFitter;
@@ -23,6 +25,8 @@ import org.matheclipse.core.interfaces.ISignedNumber;
 import org.matheclipse.core.interfaces.ISymbol;
 
 public class CurveFitterFunctions {
+  private static final Logger LOGGER = LogManager.getLogger();
+
   /**
    * See <a href="https://pangin.pro/posts/computation-in-static-initializer">Beware of computation
    * in static initializer</a>
@@ -269,7 +273,7 @@ public class CurveFitterFunctions {
               }
             }
           } catch (RuntimeException rex) {
-            return engine.printMessage(ast.topHead(), rex);
+            LOGGER.log(engine.getLogLevel(), ast.topHead(), rex);
           }
         }
       }
@@ -322,12 +326,11 @@ public class CurveFitterFunctions {
               return Convert.polynomialFunction2Expr(
                   fitter.fit(obs.toList()), (ISymbol) ast.arg3());
             } catch (RuntimeException rex) {
-              return engine.printMessage(ast.topHead(), rex);
+              LOGGER.log(engine.getLogLevel(), ast.topHead(), rex);
             }
           }
         }
       }
-
       return F.NIL;
     }
 

@@ -1,6 +1,8 @@
 package org.matheclipse.core.eval.interfaces;
 
 import java.util.function.Predicate;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.hipparchus.exception.MathRuntimeException;
 import org.hipparchus.linear.FieldMatrix;
 import org.hipparchus.linear.RealMatrix;
@@ -13,6 +15,7 @@ import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IExpr;
 
 public abstract class AbstractMatrix1Matrix extends AbstractFunctionEvaluator {
+  private static final Logger LOGGER = LogManager.getLogger();
 
   public AbstractMatrix1Matrix() {}
 
@@ -34,7 +37,7 @@ public abstract class AbstractMatrix1Matrix extends AbstractFunctionEvaluator {
     } catch (LimitException le) {
       throw le;
     } catch (MathRuntimeException mre) {
-      return engine.printMessage(ast.topHead(), mre);
+      LOGGER.log(engine.getLogLevel(), ast.topHead(), mre);
     } catch (final RuntimeException rex) {
       if (Config.SHOW_STACKTRACE) {
         rex.printStackTrace();
@@ -42,7 +45,6 @@ public abstract class AbstractMatrix1Matrix extends AbstractFunctionEvaluator {
     } finally {
       engine.setTogetherMode(togetherMode);
     }
-
     return F.NIL;
   }
 
@@ -83,10 +85,8 @@ public abstract class AbstractMatrix1Matrix extends AbstractFunctionEvaluator {
     } catch (LimitException le) {
       throw le;
     } catch (final RuntimeException rex) {
-      if (Config.SHOW_STACKTRACE) {
-        rex.printStackTrace();
-      }
-      return engine.printMessage(ast.topHead(), rex);
+      LOGGER.log(engine.getLogLevel(), ast.topHead(), rex);
+      return F.NIL;
     } finally {
       engine.setTogetherMode(togetherMode);
     }

@@ -2,6 +2,8 @@ package org.matheclipse.core.builtin;
 
 import java.util.ArrayList;
 import java.util.List;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.hipparchus.clustering.Cluster;
 import org.hipparchus.clustering.Clusterer;
 import org.hipparchus.clustering.DBSCANClusterer;
@@ -25,6 +27,7 @@ import org.matheclipse.core.interfaces.IEvaluator;
 import org.matheclipse.core.interfaces.IExpr;
 
 public class ClusteringFunctions {
+  private static final Logger LOGGER = LogManager.getLogger();
 
   private abstract static class AbstractDistance extends AbstractEvaluator
       implements DistanceMeasure {
@@ -417,7 +420,7 @@ public class ClusteringFunctions {
           }
         }
       } catch (MathRuntimeException mrex) {
-        return engine.printMessage(ast.topHead(), mrex);
+        LOGGER.log(engine.getLogLevel(), ast.topHead(), mrex);
       }
       return F.NIL;
     }

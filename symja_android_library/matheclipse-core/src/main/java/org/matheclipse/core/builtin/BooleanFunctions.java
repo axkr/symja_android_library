@@ -8,6 +8,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.SortedSet;
 import java.util.function.Function;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.logicng.datastructures.Assignment;
 import org.logicng.datastructures.Tristate;
 import org.logicng.formulas.CFalse;
@@ -58,6 +60,8 @@ import org.matheclipse.core.interfaces.ITernaryComparator;
 import org.matheclipse.core.tensor.qty.IQuantity;
 
 public final class BooleanFunctions {
+  private static final Logger LOGGER = LogManager.getLogger();
+
   public static final Equal CONST_EQUAL = new Equal();
   public static final Greater CONST_GREATER = new Greater();
   public static final Less CONST_LESS = new Less();
@@ -941,7 +945,8 @@ public final class BooleanFunctions {
         return booleanConvert(ast, engine);
       } catch (final ValidateException ve) {
         // int number validation
-        return engine.printMessage(ast.topHead(), ve);
+        LOGGER.log(engine.getLogLevel(), ast.topHead(), ve);
+        return F.NIL;
       }
     }
 
@@ -1000,7 +1005,7 @@ public final class BooleanFunctions {
         return result;
       } catch (final ValidateException ve) {
         // int number validation
-        engine.printMessage(ast.topHead(), ve);
+        LOGGER.log(engine.getLogLevel(), ast.topHead(), ve);
       } catch (RuntimeException rex) {
 
       }
@@ -1106,7 +1111,8 @@ public final class BooleanFunctions {
         BooleanTableParameter btp = new BooleanTableParameter(variables, engine);
         return btp.booleanTable(ast.arg1(), 1);
       } catch (ValidateException ve) {
-        return engine.printMessage(ast.topHead(), ve);
+        LOGGER.log(engine.getLogLevel(), ast.topHead(), ve);
+        return F.NIL;
       }
     }
 
@@ -2250,7 +2256,8 @@ public final class BooleanFunctions {
 
         // return inequality(ast, engine);
       } catch (ValidateException ve) {
-        return engine.printMessage(ast.topHead(), ve);
+        LOGGER.log(engine.getLogLevel(), ast.topHead(), ve);
+        return F.NIL;
       }
     }
   }
@@ -3647,7 +3654,8 @@ public final class BooleanFunctions {
         return logicNGSatisfiabilityCount(arg1, userDefinedVariables);
       } catch (final ValidateException ve) {
         // int number validation
-        return engine.printMessage(ast.topHead(), ve);
+        LOGGER.log(engine.getLogLevel(), ast.topHead(), ve);
+        return F.NIL;
       }
     }
 
@@ -3759,7 +3767,8 @@ public final class BooleanFunctions {
         return satisfiabilityInstances(arg1, userDefinedVariables, maxChoices);
       } catch (final ValidateException ve) {
         // int number validation
-        return engine.printMessage(ast.topHead(), ve);
+        LOGGER.log(engine.getLogLevel(), ast.topHead(), ve);
+        return F.NIL;
       }
     }
 
@@ -3827,7 +3836,8 @@ public final class BooleanFunctions {
 
       } catch (final ValidateException ve) {
         // int number validation
-        return engine.printMessage(ast.topHead(), ve);
+        LOGGER.log(engine.getLogLevel(), ast.topHead(), ve);
+        return F.NIL;
       }
     }
 
@@ -3947,7 +3957,8 @@ public final class BooleanFunctions {
         return bruteForceTautologyQ(arg1, userDefinedVariables, 1) ? S.True : S.False;
       } catch (final ValidateException ve) {
         // int number validation
-        return engine.printMessage(ast.topHead(), ve);
+        LOGGER.log(engine.getLogLevel(), ast.topHead(), ve);
+        return F.NIL;
       }
     }
 

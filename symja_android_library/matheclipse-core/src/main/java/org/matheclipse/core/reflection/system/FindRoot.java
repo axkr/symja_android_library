@@ -1,5 +1,7 @@
 package org.matheclipse.core.reflection.system;
 
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.hipparchus.analysis.UnivariateFunction;
 import org.hipparchus.analysis.differentiation.UnivariateDifferentiableFunction;
 import org.hipparchus.analysis.solvers.BaseAbstractUnivariateSolver;
@@ -14,7 +16,6 @@ import org.hipparchus.analysis.solvers.RiddersSolver;
 import org.hipparchus.analysis.solvers.SecantSolver;
 import org.hipparchus.exception.MathIllegalArgumentException;
 import org.hipparchus.exception.MathRuntimeException;
-import org.matheclipse.core.basic.Config;
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.exception.ValidateException;
 import org.matheclipse.core.eval.interfaces.AbstractFunctionEvaluator;
@@ -178,6 +179,7 @@ import org.matheclipse.core.interfaces.ISymbol;
  * <a href="NRoots.md">NRoots</a>, <a href="Solve.md">Solve</a>
  */
 public class FindRoot extends AbstractFunctionEvaluator {
+  private static final Logger LOGGER = LogManager.getLogger();
 
   public FindRoot() {}
 
@@ -225,18 +227,12 @@ public class FindRoot extends AbstractFunctionEvaluator {
             return F.List(F.Rule(list.arg1(),
                 Num.valueOf(findRoot(method, maxIterations, list, min, max, function, engine))));
           } catch (ValidateException ve) {
-            return engine.printMessage(ast.topHead(), ve);
+            LOGGER.log(engine.getLogLevel(), ast.topHead(), ve);
           } catch (MathIllegalArgumentException miae) {
-            if (Config.SHOW_STACKTRACE) {
-              miae.printStackTrace();
-            }
-            engine.printMessage("FindRoot: " + miae.getMessage());
+            LOGGER.log(engine.getLogLevel(), "FindRoot", miae);
             return F.CEmptyList;
           } catch (MathRuntimeException mre) {
-            if (Config.SHOW_STACKTRACE) {
-              mre.printStackTrace();
-            }
-            return engine.printMessage("FindRoot: " + mre.getMessage());
+            LOGGER.log(engine.getLogLevel(), "FindRoot", mre);
           }
         }
       }

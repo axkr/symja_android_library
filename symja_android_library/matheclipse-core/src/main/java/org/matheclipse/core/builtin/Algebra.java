@@ -27,6 +27,8 @@ import java.util.Map.Entry;
 import java.util.SortedMap;
 import java.util.function.BiPredicate;
 import java.util.function.Predicate;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.matheclipse.core.basic.Config;
 import org.matheclipse.core.builtin.Combinatoric.KPermutationsIterable;
 import org.matheclipse.core.convert.JASConvert;
@@ -88,6 +90,7 @@ import edu.jas.ufd.SquarefreeAbstract;
 import edu.jas.ufd.SquarefreeFactory;
 
 public class Algebra {
+  private static final Logger LOGGER = LogManager.getLogger();
 
   /**
    * See <a href="https://pangin.pro/posts/computation-in-static-initializer">Beware of computation
@@ -2865,7 +2868,7 @@ public class Algebra {
             list.append(subList);
             return list;
           } catch (ArithmeticException aex) {
-            return engine.printMessage(S.PolynomialExtendedGCD, aex);
+            LOGGER.log(engine.getLogLevel(), S.PolynomialExtendedGCD, aex);
           } catch (JASConversionException e) {
             if (Config.DEBUG) {
               e.printStackTrace();
@@ -3023,7 +3026,8 @@ public class Algebra {
           // return jas.rationalPoly2Expr(poly.monic(), true);
           return jas.integerPoly2Expr(poly.monic());
         } catch (ArithmeticException aex) {
-          return engine.printMessage(S.PolynomialGCD, aex);
+          LOGGER.log(engine.getLogLevel(), S.PolynomialGCD, aex);
+          return F.NIL;
         } catch (JASConversionException e) {
           try {
             if (eVar.size() == 0) {
@@ -3203,7 +3207,8 @@ public class Algebra {
               // return jas.modLongPoly2Expr(poly.monic());
 
             } catch (ArithmeticException aex) {
-              return engine.printMessage(S.PolynomialLCM, aex);
+              LOGGER.log(engine.getLogLevel(), S.PolynomialLCM, aex);
+              return F.NIL;
             } catch (JASConversionException e) {
               try {
                 if (eVar.size() == 0) {
@@ -3448,7 +3453,7 @@ public class Algebra {
 
         } catch (ArithmeticException aex) {
           // division by zero
-          return engine.printMessage(S.PolynomialQuotient, aex);
+          LOGGER.log(engine.getLogLevel(), S.PolynomialQuotient, aex);
         }
       }
       return F.NIL;
@@ -3600,13 +3605,13 @@ public class Algebra {
         return result;
       } catch (ArithmeticException aex) {
         // division by zero
-        return engine.printMessage(S.PolynomialQuotientRemainder, aex);
+        LOGGER.log(engine.getLogLevel(), S.PolynomialQuotientRemainder, aex);
       } catch (RuntimeException rex) {
         if (Config.SHOW_STACKTRACE) {
           rex.printStackTrace();
         }
-        return F.NIL;
       }
+      return F.NIL;
     }
 
     @Override
@@ -3718,13 +3723,13 @@ public class Algebra {
         return result[1];
       } catch (ArithmeticException aex) {
         // division by zero
-        return engine.printMessage(S.PolynomialRemainder, aex);
+        LOGGER.log(engine.getLogLevel(), S.PolynomialRemainder, aex);
       } catch (RuntimeException rex) {
         if (Config.SHOW_STACKTRACE) {
           rex.printStackTrace();
         }
-        return F.NIL;
       }
+      return F.NIL;
     }
 
     @Override

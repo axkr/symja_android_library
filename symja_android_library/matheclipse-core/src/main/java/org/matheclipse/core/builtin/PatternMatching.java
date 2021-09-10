@@ -8,6 +8,8 @@ import java.io.StringWriter;
 import java.util.IdentityHashMap;
 import java.util.Iterator;
 import java.util.Map;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.matheclipse.core.basic.Config;
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.exception.ConditionException;
@@ -42,6 +44,7 @@ import org.matheclipse.core.patternmatching.PatternMatcherEquals;
 import org.matheclipse.core.patternmatching.RulesData;
 
 public final class PatternMatching {
+  private static final Logger LOGGER = LogManager.getLogger();
 
   /**
    * See <a href="https://pangin.pro/posts/computation-in-static-initializer">Beware of computation
@@ -487,7 +490,6 @@ public final class PatternMatching {
       IExpr arg1 = Validate.checkSymbolType(ast, 1, engine);
       if (arg1.isPresent()) {
         ISymbol symbol = (ISymbol) arg1;
-        PrintStream stream = engine.getOutPrintStream();
         try {
           String definitionString;
           if (symbol.equals(S.In)) {
@@ -501,10 +503,7 @@ public final class PatternMatching {
           }
           return F.stringx(definitionString);
         } catch (IOException e) {
-          stream.println(e.getMessage());
-          if (Config.DEBUG) {
-            e.printStackTrace();
-          }
+          LOGGER.error("Definition.evaluate()", e);
         }
       }
       return S.Null;
@@ -947,8 +946,9 @@ public final class PatternMatching {
               return arg1;
             }
             if (!arg1.isSymbol()) {
-              return engine.printMessage(
-                  ast.topHead() + ": symbol expected at position 1 instead of " + arg1.toString());
+              LOGGER.log(engine.getLogLevel(), "{}: symbol expected at position 1 instead of {}",
+                  ast.topHead(), arg1);
+              return F.NIL;
             }
             symbol = (ISymbol) arg1;
           } else {
@@ -1004,8 +1004,9 @@ public final class PatternMatching {
       // Here we only validate the arguments
       // The assignment of the message is handled in the Set() function
       if (!ast.arg1().isSymbol()) {
-        return engine.printMessage(
-            ast.topHead() + ": symbol expected at position 1 instead of " + ast.arg1().toString());
+        LOGGER.log(engine.getLogLevel(), "{}: symbol expected at position 1 instead of {}",
+            ast.topHead(), ast.arg1());
+        return F.NIL;
       }
       if (ast.arg2().isString()) {
         return F.NIL;
@@ -2118,7 +2119,7 @@ public final class PatternMatching {
               createPatternMatcher(symbol, leftHandSide, rightHandSide, false, S.TagSet, engine);
           return (IExpr) result[1];
         } catch (final ValidateException ve) {
-          engine.printMessage(ve.getMessage(ast.topHead()));
+          LOGGER.log(engine.getLogLevel(), ve.getMessage(ast.topHead()), ve);
           return rightHandSide;
         }
       }
@@ -2221,7 +2222,7 @@ public final class PatternMatching {
           createPatternMatcher(symbol, leftHandSide, rightHandSide, false, S.TagSetDelayed, engine);
           return S.Null;
         } catch (final ValidateException ve) {
-          engine.printMessage(ve.getMessage(ast.topHead()));
+          LOGGER.log(engine.getLogLevel(), ve.getMessage(ast.topHead()), ve);
           return S.Null;
         }
       }
@@ -2437,7 +2438,7 @@ public final class PatternMatching {
     }
 
     private static void printAssignmentNotFound(final IExpr leftHandSide) {
-      EvalEngine.get().printMessage("Assignment not found for: " + leftHandSide.toString());
+      LOGGER.log(EvalEngine.get().getLogLevel(), "Assignment not found for: {}", leftHandSide);
     }
 
     @Override
@@ -2470,7 +2471,8 @@ public final class PatternMatching {
         Object[] result = createPatternMatcher(leftHandSide, rightHandSide, false, engine);
         return (IExpr) result[1];
       } catch (final ValidateException ve) {
-        return engine.printMessage(ve.getMessage(ast.topHead()));
+        LOGGER.log(engine.getLogLevel(), ve.getMessage(ast.topHead()), ve);
+        return F.NIL;
       }
     }
 
@@ -2538,7 +2540,8 @@ public final class PatternMatching {
 
         return S.Null;
       } catch (final ValidateException ve) {
-        return engine.printMessage(ve.getMessage(ast.topHead()));
+        LOGGER.log(engine.getLogLevel(), ve.getMessage(ast.topHead()), ve);
+        return F.NIL;
       }
     }
 

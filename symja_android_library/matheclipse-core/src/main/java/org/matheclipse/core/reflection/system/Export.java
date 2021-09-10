@@ -8,6 +8,8 @@ import java.nio.charset.Charset;
 import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.function.Function;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.jgrapht.Graph;
 import org.jgrapht.graph.DefaultEdge;
 import org.jgrapht.nio.Attribute;
@@ -32,6 +34,7 @@ import org.matheclipse.core.io.Extension;
 
 /** Export some data from file system. */
 public class Export extends AbstractEvaluator {
+  private static final Logger LOGGER = LogManager.getLogger();
 
   public Export() {}
 
@@ -98,9 +101,9 @@ public class Export extends AbstractEvaluator {
         }
 
       } catch (IOException ioe) {
-        return engine.printMessage("Export: file " + arg1.toString() + " not found!");
+        LOGGER.log(engine.getLogLevel(), "Export: file {} not found!", arg1, ioe);
       } catch (Exception ex) {
-        return engine.printMessage("Export: file " + arg1.toString() + " - " + ex.getMessage());
+        LOGGER.log(engine.getLogLevel(), "Export: file {}", arg1, ex);
       }
     }
     return F.NIL;

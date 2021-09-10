@@ -11,6 +11,8 @@ import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 import java.util.function.Function;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.hipparchus.linear.FieldMatrix;
 import org.hipparchus.linear.FieldVector;
 import org.matheclipse.core.basic.Config;
@@ -44,6 +46,7 @@ import com.ibm.icu.text.NumberFormat;
 import com.ibm.icu.text.RuleBasedNumberFormat;
 
 public final class OutputFunctions {
+  private static final Logger LOGGER = LogManager.getLogger();
 
   /**
    * See <a href="https://pangin.pro/posts/computation-in-static-initializer">Beware of computation
@@ -557,10 +560,8 @@ public final class OutputFunctions {
         String resultStr = javaForm(arg1, strictJava, usePrefix);
         return F.$str(resultStr, IStringX.APPLICATION_JAVA);
       } catch (Exception rex) {
-        if (Config.SHOW_STACKTRACE) {
-          rex.printStackTrace();
-        }
-        return engine.printMessage("JavaForm: " + rex.getMessage());
+        LOGGER.log(engine.getLogLevel(), "JavaForm", rex);
+        return F.NIL;
       }
     }
 
@@ -594,10 +595,8 @@ public final class OutputFunctions {
 
         return F.$str(toJavaScript(arg1, javascriptFlavor), IStringX.APPLICATION_JAVASCRIPT);
       } catch (Exception rex) {
-        if (Config.SHOW_STACKTRACE) {
-          rex.printStackTrace();
-        }
-        return engine.printMessage("JSForm: " + rex.getMessage());
+        LOGGER.log(engine.getLogLevel(), "JSForm", rex);
+        return F.NIL;
       }
     }
 
@@ -870,10 +869,8 @@ public final class OutputFunctions {
         }
 
       } catch (Exception rex) {
-        if (Config.SHOW_STACKTRACE) {
-          rex.printStackTrace();
-        }
-        return engine.printMessage("TreeForm: " + rex.getMessage());
+        LOGGER.log(engine.getLogLevel(), "TreeForm", rex);
+        return F.NIL;
       }
     }
 

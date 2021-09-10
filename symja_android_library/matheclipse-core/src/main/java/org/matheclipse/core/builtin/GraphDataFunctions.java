@@ -5,6 +5,8 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.function.Supplier;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.jgrapht.Graph;
 import org.jgrapht.generate.GeneralizedPetersenGraphGenerator;
 import org.jgrapht.generate.StarGraphGenerator;
@@ -27,6 +29,7 @@ import org.matheclipse.parser.trie.TrieMatch;
 
 /** Functions for graph theory algorithms. */
 public class GraphDataFunctions {
+  private static final Logger LOGGER = LogManager.getLogger();
   private static final TrieBuilder<String, Supplier<Graph>, ArrayList<Supplier<Graph>>>
       TRIE_STRING2GRAPH_BUILDER = TrieBuilder.create();
   private static Map<String, Supplier<Graph>> GRAPH_MAP =
@@ -75,8 +78,8 @@ public class GraphDataFunctions {
               Graph<IExpr, ExprEdge> g = supplier.get();
               return GraphExpr.newInstance(g);
             }
-            return engine.printMessage(
-                "GraphData: no value associated with the specified graph name: " + graphName);
+            LOGGER.log(engine.getLogLevel(),
+                "GraphData: no value associated with the specified graph name: {}", graphName);
           }
         }
       } catch (RuntimeException rex) {

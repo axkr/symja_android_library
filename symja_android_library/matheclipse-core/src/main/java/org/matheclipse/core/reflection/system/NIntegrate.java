@@ -1,5 +1,7 @@
 package org.matheclipse.core.reflection.system;
 
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.hipparchus.analysis.UnivariateFunction;
 import org.hipparchus.analysis.integration.RombergIntegrator;
 import org.hipparchus.analysis.integration.SimpsonIntegrator;
@@ -12,7 +14,6 @@ import org.hipparchus.exception.MathIllegalArgumentException;
 import org.hipparchus.exception.MathIllegalStateException;
 import org.hipparchus.exception.MathRuntimeException;
 import org.hipparchus.util.Precision;
-import org.matheclipse.core.basic.Config;
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.interfaces.AbstractFunctionEvaluator;
 import org.matheclipse.core.eval.interfaces.IFunctionEvaluator;
@@ -71,6 +72,7 @@ import org.matheclipse.core.interfaces.ISymbol;
  * </pre>
  */
 public class NIntegrate extends AbstractFunctionEvaluator {
+  private static final Logger LOGGER = LogManager.getLogger();
 
   public static final int DEFAULT_MAX_POINTS = 100;
   public static final int DEFAULT_MAX_ITERATIONS = 10000;
@@ -157,8 +159,8 @@ public class NIntegrate extends AbstractFunctionEvaluator {
       if (option.isReal()) {
         maxPoints = ((ISignedNumber) option).toIntDefault(-1);
         if (maxPoints <= 0) {
-          engine.printMessage(
-              "NIntegrate: " + "Error in option MaxPoints. Using default value: " + maxPoints);
+          LOGGER.log(engine.getLogLevel(),
+              "NIntegrate: Error in option MaxPoints. Using default value: {}", maxPoints);
           maxPoints = DEFAULT_MAX_POINTS;
         }
       }
@@ -173,10 +175,8 @@ public class NIntegrate extends AbstractFunctionEvaluator {
       if (option.isReal()) {
         precisionGoal = ((ISignedNumber) option).toIntDefault(-1);
         if (precisionGoal <= 0) {
-          engine.printMessage(
-              "NIntegrate: "
-                  + "Error in option PrecisionGoal. Using default value: "
-                  + precisionGoal);
+          LOGGER.log(engine.getLogLevel(),
+              "NIntegrate: Error in option PrecisionGoal. Using default value: {}", precisionGoal);
           precisionGoal = 16;
         }
       }
@@ -206,13 +206,9 @@ public class NIntegrate extends AbstractFunctionEvaluator {
             result = Precision.round(result, precisionGoal);
             return Num.valueOf(result);
           } catch (MathRuntimeException mre) {
-            engine.printMessage(ast.topHead(), mre);
+            LOGGER.log(engine.getLogLevel(), ast.topHead(), mre);
           } catch (Exception e) {
-            if (Config.SHOW_STACKTRACE) {
-              e.printStackTrace();
-            }
-            engine.printMessage("NIntegrate: " + "(method=" + method + ") " + e.getMessage());
-            // throw new WrappedException(e);
+            LOGGER.log(engine.getLogLevel(), "NIntegrate: (method={}) ", method, e);
           }
         }
       }

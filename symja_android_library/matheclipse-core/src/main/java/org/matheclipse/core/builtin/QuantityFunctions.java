@@ -12,7 +12,8 @@ import java.util.HashMap;
 import java.util.Locale;
 import java.util.function.Function;
 import java.util.function.UnaryOperator;
-import org.matheclipse.core.basic.Config;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.matheclipse.core.basic.ToggleFeature;
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.interfaces.AbstractCoreFunctionEvaluator;
@@ -29,6 +30,8 @@ import org.matheclipse.core.tensor.qty.IUnit;
 import org.matheclipse.core.tensor.qty.UnitSystem;
 
 public class QuantityFunctions {
+  private static final Logger LOGGER = LogManager.getLogger();
+
   static final HashMap<String, Function<LocalDateTime, IExpr>> DATEVALUE_MAP =
       new HashMap<String, Function<LocalDateTime, IExpr>>();
 
@@ -120,12 +123,8 @@ public class QuantityFunctions {
           }
         }
       } catch (RuntimeException rex) {
-        if (Config.SHOW_STACKTRACE) {
-          rex.printStackTrace();
-        }
-        return engine.printMessage(ast.topHead(), rex);
+        LOGGER.log(engine.getLogLevel(), ast.topHead(), rex);
       }
-
       return F.NIL;
     }
 
@@ -158,12 +157,8 @@ public class QuantityFunctions {
           }
         }
       } catch (RuntimeException rex) {
-        if (Config.SHOW_STACKTRACE) {
-          rex.printStackTrace();
-        }
-        return engine.printMessage(ast.topHead(), rex);
+        LOGGER.log(engine.getLogLevel(), ast.topHead(), rex);
       }
-
       return F.NIL;
     }
 
@@ -209,12 +204,8 @@ public class QuantityFunctions {
           return F.NIL;
         }
       } catch (RuntimeException rex) {
-        if (Config.SHOW_STACKTRACE) {
-          rex.printStackTrace();
-        }
-        return engine.printMessage(ast.topHead(), rex);
+        LOGGER.log(engine.getLogLevel(), ast.topHead(), rex);
       }
-
       return F.NIL;
     }
 
@@ -260,12 +251,8 @@ public class QuantityFunctions {
           return F.NIL;
         }
       } catch (RuntimeException rex) {
-        if (Config.SHOW_STACKTRACE) {
-          rex.printStackTrace();
-        }
-        return engine.printMessage(ast.topHead(), rex);
+        LOGGER.log(engine.getLogLevel(), ast.topHead(), rex);
       }
-
       return F.NIL;
     }
 
@@ -315,12 +302,8 @@ public class QuantityFunctions {
           }
         }
       } catch (RuntimeException e) {
-        if (Config.SHOW_STACKTRACE) {
-          e.printStackTrace();
-        }
-        return engine.printMessage("Quantity: " + e.getMessage());
+        LOGGER.log(engine.getLogLevel(), "Quantity", e);
       }
-
       return F.NIL;
     }
 
@@ -378,12 +361,8 @@ public class QuantityFunctions {
           }
         }
       } catch (RuntimeException e) {
-        if (Config.SHOW_STACKTRACE) {
-          e.printStackTrace();
-        }
-        return engine.printMessage("QuantityMagnitude: " + e.getMessage());
+        LOGGER.log(engine.getLogLevel(), "QuantityMagnitude", e);
       }
-
       return F.NIL;
     }
 
@@ -438,12 +417,8 @@ public class QuantityFunctions {
           }
         }
       } catch (RuntimeException e) {
-        if (Config.SHOW_STACKTRACE) {
-          e.printStackTrace();
-        }
-        return engine.printMessage("UnitConvert: " + e.getMessage());
+        LOGGER.log(engine.getLogLevel(), "UnitConvert", e);
       }
-
       return F.NIL;
     }
 
