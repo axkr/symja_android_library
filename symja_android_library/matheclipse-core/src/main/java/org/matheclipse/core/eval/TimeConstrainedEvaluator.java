@@ -1,6 +1,8 @@
 package org.matheclipse.core.eval;
 
 import java.io.Writer;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.matheclipse.core.basic.Config;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.expression.S;
@@ -9,6 +11,7 @@ import org.matheclipse.core.interfaces.IExpr;
 
 /** Run the evaluation of a given math formula <code>String</code> in a time limited thread */
 public class TimeConstrainedEvaluator extends EvalUtilities implements Runnable {
+  private static final Logger LOGGER = LogManager.getLogger();
 
   protected IExpr fEvaluationResult;
 
@@ -47,22 +50,14 @@ public class TimeConstrainedEvaluator extends EvalUtilities implements Runnable 
         fEvaluationResult = evaluate(fParsedExpression);
       }
     } catch (final Exception e) {
-      if (Config.DEBUG) {
-        e.printStackTrace();
-      }
+      LOGGER.debug("TimeConstrainedEvaluator.run() failed", e);
       fException = e;
     } catch (final OutOfMemoryError e) {
-      if (Config.DEBUG) {
-        e.printStackTrace();
-      }
+      LOGGER.debug("TimeConstrainedEvaluator.run()", e);
       fEvaluationResult = F.$str("OutOfMemoryError");
-      // fException = e;
     } catch (final StackOverflowError e) {
-      if (Config.DEBUG) {
-        e.printStackTrace();
-      }
+      LOGGER.debug("TimeConstrainedEvaluator.run()", e);
       fEvaluationResult = F.$str("StackOverflowError");
-      // fException = e;
     }
   }
 

@@ -14,7 +14,6 @@ import org.hipparchus.optim.linear.NonNegativeConstraint;
 import org.hipparchus.optim.linear.PivotSelectionRule;
 import org.hipparchus.optim.linear.SimplexSolver;
 import org.hipparchus.optim.nonlinear.scalar.GoalType;
-import org.matheclipse.core.basic.Config;
 import org.matheclipse.core.convert.Expr2LP;
 import org.matheclipse.core.convert.VariablesSet;
 import org.matheclipse.core.eval.EvalEngine;
@@ -279,9 +278,7 @@ public class MinMaxFunctions {
           }
         }
       } catch (RuntimeException rex) {
-        if (Config.SHOW_STACKTRACE) {
-          rex.printStackTrace();
-        }
+        LOGGER.debug("FunctionRange.evaluate() failed", rex);
       }
       return F.NIL;
     }
@@ -708,9 +705,7 @@ public class MinMaxFunctions {
       //      result = QuarticSolver.sortASTArguments(result);
       return result;
     } catch (ArithmeticException | JASConversionException e2) {
-      if (Config.SHOW_STACKTRACE) {
-        e2.printStackTrace();
-      }
+      LOGGER.debug("MinMaxFunctions.maximizeExprPolynomial() failed", e2);
     }
     return result;
   }
@@ -890,9 +885,7 @@ public class MinMaxFunctions {
       //      result = QuarticSolver.sortASTArguments(result);
       return result;
     } catch (ArithmeticException | JASConversionException e2) {
-      if (Config.SHOW_STACKTRACE) {
-        e2.printStackTrace();
-      }
+      LOGGER.debug("MinMaxFunctions.minimizeExprPolynomial() failed", e2);
     }
     return result;
   }

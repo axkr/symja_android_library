@@ -9,6 +9,8 @@ import java.nio.charset.StandardCharsets;
 import java.nio.file.FileSystems;
 import java.util.List;
 import java.util.function.Consumer;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.matheclipse.core.basic.Config;
 import org.matheclipse.core.convert.AST2Expr;
 import org.matheclipse.core.eval.EvalEngine;
@@ -29,7 +31,7 @@ import com.google.common.io.Files;
 import com.google.common.io.Resources;
 
 public class UnitTestingFunctions {
-  static final boolean DEBUG = false;
+  private static final Logger LOGGER = LogManager.getLogger();
 
   /**
    * See <a href="https://pangin.pro/posts/computation-in-static-initializer">Beware of computation
@@ -77,9 +79,7 @@ public class UnitTestingFunctions {
             url = new URL(arg1);
             return getURL(url, ast, engine);
           } catch (MalformedURLException mue) {
-            if (Config.SHOW_STACKTRACE) {
-              mue.printStackTrace();
-            }
+            LOGGER.debug("TestReport.evaluate() failed", mue);
             // Cannot open `1`.
             return IOFunctions.printMessage(ast.topHead(), "noopen", F.List(ast.arg1()), engine);
           }
@@ -107,9 +107,7 @@ public class UnitTestingFunctions {
         String str = Files.asCharSource(file, Charset.defaultCharset()).read();
         return runTests(engine, str);
       } catch (IOException e) {
-        if (Config.SHOW_STACKTRACE) {
-          e.printStackTrace();
-        }
+        LOGGER.debug("TestReport.getFile() failed", e);
         // Cannot open `1`.
         return IOFunctions.printMessage(ast.topHead(), "noopen", F.List(ast.arg1()), engine);
       } finally {
@@ -124,9 +122,7 @@ public class UnitTestingFunctions {
         String str = Resources.toString(url, StandardCharsets.UTF_8);
         return runTests(engine, str);
       } catch (IOException e) {
-        if (Config.SHOW_STACKTRACE) {
-          e.printStackTrace();
-        }
+        LOGGER.debug("TestReport.getURL() failed", e);
         // Cannot open `1`.
         return IOFunctions.printMessage(ast.topHead(), "noopen", F.List(ast.arg1()), engine);
       } finally {
@@ -201,9 +197,7 @@ public class UnitTestingFunctions {
       option = options.getOption(S.TestID);
       if (option.isPresent()) {
         testID = engine.evaluate(option);
-        if (DEBUG) {
-          System.out.print("\n\n>>>" + testID.toString());
-        }
+        LOGGER.debug("\n\n>>>{}", testID);
       }
 
       IExpr input = ast.arg1();
@@ -213,9 +207,7 @@ public class UnitTestingFunctions {
         actualOutput = engine.evaluate(input);
 
       } catch (Exception ex) {
-        if (DEBUG) {
-          ex.printStackTrace();
-        }
+        LOGGER.debug("VerificationTest.evaluate", ex);
         actualOutput = S.None;
       }
 
@@ -256,25 +248,19 @@ public class UnitTestingFunctions {
         assoc.appendRule(F.Rule("TestID", testID));
         return TestResultObjectExpr.newInstance(assoc);
       } catch (Exception ex) {
-        if (Config.SHOW_STACKTRACE) {
-          ex.printStackTrace();
-        }
+        LOGGER.debug("VerificationTest.evaluate() failed", ex);
       }
       return F.NIL;
     }
 
     private static void failure(IAssociation assoc) {
       assoc.appendRule(F.Rule("Outcome", "Failure"));
-      if (DEBUG) {
-        System.out.print(" - Failure");
-      }
+      LOGGER.debug(" - Failure");
     }
 
     private static void success(IAssociation assoc) {
       assoc.appendRule(F.Rule("Outcome", "Success"));
-      if (DEBUG) {
-        System.out.print(" - Success");
-      }
+      LOGGER.debug(" - Success");
     }
 
     @Override

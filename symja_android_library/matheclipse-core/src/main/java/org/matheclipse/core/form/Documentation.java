@@ -5,6 +5,8 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.nio.charset.StandardCharsets;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.matheclipse.core.builtin.IOFunctions;
 import org.matheclipse.core.builtin.SourceCodeFunctions;
 import org.matheclipse.core.expression.F;
@@ -15,6 +17,7 @@ import org.matheclipse.core.interfaces.ISymbol;
 import org.matheclipse.parser.client.Scanner;
 
 public class Documentation {
+  private static final Logger LOGGER = LogManager.getLogger();
 
   /**
    * Get the pure <code>markdown</code> formatted information about the <code>builinFunctionName
@@ -51,7 +54,7 @@ public class Documentation {
         return true;
       }
     } catch (IOException e) {
-      e.printStackTrace();
+      LOGGER.error("Documentation.getMarkdown() failed", e);
     }
     return false;
   }
@@ -151,7 +154,7 @@ public class Documentation {
         return true;
       }
     } catch (IOException e) {
-      e.printStackTrace();
+      LOGGER.error("Documentation.printDocumentation() failed", e);
     }
     return false;
   }
@@ -209,7 +212,7 @@ public class Documentation {
       }
 
     } catch (IOException e) {
-      e.printStackTrace();
+      LOGGER.error("Documentation.extraxtJavadoc() failed", e);
     }
     return -1;
   }

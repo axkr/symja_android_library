@@ -15,7 +15,6 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.hipparchus.linear.FieldMatrix;
 import org.hipparchus.linear.FieldVector;
-import org.matheclipse.core.basic.Config;
 import org.matheclipse.core.convert.Convert;
 import org.matheclipse.core.convert.VariablesSet;
 import org.matheclipse.core.eval.EvalEngine;
@@ -395,9 +394,7 @@ public final class OutputFunctions {
             }
           }
         } catch (Exception ex) {
-          if (Config.SHOW_STACKTRACE) {
-            ex.printStackTrace();
-          }
+          LOGGER.debug("IntegerName.evaluate() failed", ex);
         }
       }
       return F.NIL;
@@ -665,9 +662,7 @@ public final class OutputFunctions {
           String result = RomanArabicConverter.arabicToRoman(value);
           return F.stringx(result);
         } catch (RuntimeException rex) {
-          if (Config.SHOW_STACKTRACE) {
-            rex.printStackTrace();
-          }
+          LOGGER.debug("RomanNumeral.evaluate() failed", rex);
         }
       }
       return F.NIL;

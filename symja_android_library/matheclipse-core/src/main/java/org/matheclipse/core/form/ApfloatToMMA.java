@@ -4,10 +4,13 @@ import java.io.FilterWriter;
 import java.io.IOException;
 import java.io.StringWriter;
 import java.io.Writer;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.apfloat.Apfloat;
 
 /** Convert a <code>Apfloat</code> value into a string similar to the Mathematica output format. */
 public class ApfloatToMMA {
+  private static final Logger LOGGER = LogManager.getLogger();
 
   private static final class FormattingWriter extends FilterWriter {
     private long count;
@@ -144,8 +147,7 @@ public class ApfloatToMMA {
         buf.append(stw.toString());
         return;
       } catch (IOException e) {
-        // TODO Auto-generated catch block
-        e.printStackTrace();
+        LOGGER.error("ApfloatToMMA.apfloatToMMA() failed", e);
       }
       // String exponentStr = str.substring(index + 1);
       // String result = str.substring(0, index);
@@ -243,7 +245,7 @@ public class ApfloatToMMA {
     try {
       apfloatToMMA(buf, value, exponent, significantFigures, OutputStyle.OUTPUT);
     } catch (IOException ioex) {
-      ioex.printStackTrace();
+      LOGGER.error("ApfloatToMMA.apfloatToMMA() failed", ioex);
     }
   }
 
@@ -252,7 +254,7 @@ public class ApfloatToMMA {
     try {
       apfloatToMMA(buf, value, exponent, significantFigures, OutputStyle.TEX);
     } catch (IOException ioex) {
-      ioex.printStackTrace();
+      LOGGER.error("ApfloatToMMA.apfloatToTeX() failed", ioex);
     }
   }
 
@@ -261,7 +263,7 @@ public class ApfloatToMMA {
     try {
       apfloatToMMA(buf, value, exponent, significantFigures, OutputStyle.MATHML);
     } catch (IOException ioex) {
-      ioex.printStackTrace();
+      LOGGER.error("ApfloatToMMA.apfloatToMathML() failed", ioex);
     }
   }
 

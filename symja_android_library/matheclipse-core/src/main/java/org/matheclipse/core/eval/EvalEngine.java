@@ -1448,9 +1448,7 @@ public class EvalEngine implements Serializable {
       throw AbortException.ABORTED;
     }
     if ((fRecursionLimit > 0) && (fRecursionCounter > fRecursionLimit)) {
-      if (Config.DEBUG) {
-        System.out.println(expr.toString());
-      }
+      LOGGER.debug(expr);
       RecursionLimitExceeded.throwIt(fRecursionLimit, expr);
     }
     if (fStopRequested || Thread.currentThread().isInterrupted()) {
@@ -1485,7 +1483,7 @@ public class EvalEngine implements Serializable {
               if (fStopRequested || Thread.currentThread().isInterrupted()) {
                 throw TimeoutException.TIMED_OUT;
               }
-              if (Config.SHOW_STACKTRACE) {
+              if (LOGGER.isDebugEnabled()) {
                 if (temp.equals(result)) {
                   // Endless iteration detected in `1` in evaluation loop.
                   IOFunctions.printMessage(result.topHead(), "itendless", F.List(temp), this);
@@ -1529,7 +1527,7 @@ public class EvalEngine implements Serializable {
               if (fStopRequested || Thread.currentThread().isInterrupted()) {
                 throw TimeoutException.TIMED_OUT;
               }
-              if (Config.SHOW_STACKTRACE) {
+              if (LOGGER.isDebugEnabled()) {
                 if (temp.equals(result)) {
                   // Endless iteration detected in `1` in evaluation loop.
                   IOFunctions.printMessage(result.topHead(), "itendless", F.List(temp), this);
@@ -2056,9 +2054,7 @@ public class EvalEngine implements Serializable {
     try {
       return evaluate(expr).isTrue();
     } catch (MathException fce) {
-      if (Config.SHOW_STACKTRACE) {
-        fce.printStackTrace();
-      }
+      LOGGER.debug("EvalEngine.evalTrue() failed", fce);
       return false;
     }
   }

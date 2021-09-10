@@ -2695,6 +2695,7 @@ public final class StringFunctions {
             }
           } catch (IllegalArgumentException iae) {
             // for example java.util.regex.PatternSyntaxException
+            LOGGER.debug("StringTrim.evaluate() failed", iae);
             return regexErrorHandling(ast, iae, engine);
           }
         }
@@ -2989,7 +2990,7 @@ public final class StringFunctions {
       }
       return list;
       //      } catch (final UnsupportedEncodingException e) {
-      //        e.printStackTrace();
+      //        LOGGER.error("ToCharacterCode.toCharacterCode() failed", e);
       //      }
       //      return F.NIL;
     }
@@ -3054,9 +3055,7 @@ public final class StringFunctions {
             return temp;
           }
         } catch (RuntimeException rex) {
-          if (Config.SHOW_STACKTRACE) {
-            rex.printStackTrace();
-          }
+          LOGGER.debug("ToExpression.evaluate() failed", rex);
           return S.$Aborted;
         }
       } else {
@@ -3207,7 +3206,7 @@ public final class StringFunctions {
       }
       unicodeString = unicodeStringBuilder.toString();
       //      } catch (final UnsupportedEncodingException e) {
-      //        e.printStackTrace();
+      //        LOGGER.error("ToUnicode.toUnicodeString() failed", e);
       //      }
       return unicodeString;
     }
@@ -3400,9 +3399,7 @@ public final class StringFunctions {
         return buf.toString();
       }
     } catch (RuntimeException rex) {
-      if (Config.SHOW_STACKTRACE) {
-        rex.printStackTrace();
-      }
+      LOGGER.debug("StringFunctions.inputForm() failed", rex);
     }
     return null;
   }
@@ -3413,9 +3410,6 @@ public final class StringFunctions {
 
   private static IExpr regexErrorHandling(
       final IAST ast, IllegalArgumentException iae, EvalEngine engine) {
-    if (Config.SHOW_STACKTRACE) {
-      iae.printStackTrace();
-    }
     if (iae instanceof PatternSyntaxException) {
       PatternSyntaxException pse = (PatternSyntaxException) iae;
       // Regex expression `1` error message: `2`
@@ -3481,6 +3475,7 @@ public final class StringFunctions {
         return pattern;
       } catch (IllegalArgumentException iae) {
         // for example java.util.regex.PatternSyntaxException
+        LOGGER.debug("StringFunctions.toRegexPattern() failed", iae);
         regexErrorHandling(stringFunction, iae, engine);
       }
     }

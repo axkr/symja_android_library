@@ -6,6 +6,8 @@ import java.io.InputStream;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.util.Locale;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.matheclipse.core.basic.Config;
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.expression.F;
@@ -26,6 +28,7 @@ import org.matheclipse.core.patternmatching.PatternMatcherAndInvoker;
  * to the <code>evaluate()</code>
  */
 public abstract class AbstractFunctionEvaluator extends AbstractEvaluator {
+  private static final Logger LOGGER = LogManager.getLogger();
 
   /**
    * Check if the expression has a complex number factor I.
@@ -637,7 +640,7 @@ public abstract class AbstractFunctionEvaluator extends AbstractEvaluator {
       // BufferedInputStream(in));
       symbol.readRules(ois);
     } catch (IOException | ClassNotFoundException e) {
-      e.printStackTrace();
+      LOGGER.error("AbstractFunctionEvaluator.initSerializedRules() failed", e);
     } finally {
       engine.setPackageMode(oldPackageMode);
       engine.setTraceMode(oldTraceMode);
@@ -702,7 +705,7 @@ public abstract class AbstractFunctionEvaluator extends AbstractEvaluator {
           ObjectOutputStream oos = new ObjectOutputStream(out);) {
         newSymbol.writeRules(oos);
       } catch (IOException e) {
-        e.printStackTrace();
+        LOGGER.error("AbstractFunctionEvaluator.setUp() failed", e);
       }
     }
   }

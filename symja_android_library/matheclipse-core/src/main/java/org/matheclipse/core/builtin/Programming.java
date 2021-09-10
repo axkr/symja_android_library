@@ -2835,18 +2835,16 @@ public final class Programming {
       } catch (org.matheclipse.core.eval.exception.TimeoutException
           | java.util.concurrent.TimeoutException
           | com.google.common.util.concurrent.UncheckedTimeoutException e) {
+        LOGGER.debug("TimeConstrained.evaluate() timed out: {}", ast.arg1(), e);
         if (ast.isAST3()) {
           return ast.arg3();
         }
         return S.$Aborted;
       } catch (Exception e) {
         // Appengine example: com.google.apphosting.api.DeadlineExceededException
+        LOGGER.debug("TimeConstrained.evaluate() failed: {}", ast.arg1(), e);
         if (ast.isAST3()) {
-          // e.printStackTrace();
           return ast.arg3();
-        }
-        if (Config.DEBUG) {
-          e.printStackTrace();
         }
         return S.Null;
       } finally {
@@ -2999,9 +2997,7 @@ public final class Programming {
 
         return engine.evalTrace(temp, matcher);
       } catch (RuntimeException rex) {
-        if (Config.SHOW_STACKTRACE) {
-          rex.printStackTrace();
-        }
+        LOGGER.debug("Trace.evaluate() failed", rex);
       }
       return F.NIL;
     }
@@ -3031,9 +3027,7 @@ public final class Programming {
           createTree(jsControl, temp);
           return F.JSFormData(jsControl.toString(), "traceform");
         } catch (RuntimeException rex) {
-          if (Config.SHOW_STACKTRACE) {
-            rex.printStackTrace();
-          }
+          LOGGER.debug("TraceForm.evaluate() failed", rex);
         }
       }
       return F.NIL;

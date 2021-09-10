@@ -83,9 +83,7 @@ public class GraphDataFunctions {
           }
         }
       } catch (RuntimeException rex) {
-        if (Config.SHOW_STACKTRACE) {
-          rex.printStackTrace();
-        }
+        LOGGER.debug("GraphData.evaluate() failed", rex);
       }
       return F.NIL;
     }
@@ -153,9 +151,7 @@ public class GraphDataFunctions {
           gpgg.generateGraph(target);
           return GraphExpr.newInstance(target);
         } catch (RuntimeException rex) {
-          if (Config.SHOW_STACKTRACE) {
-            rex.printStackTrace();
-          }
+          LOGGER.debug("PetersenGraph.evaluate() failed", rex);
         }
       }
       return F.NIL;
@@ -196,9 +192,7 @@ public class GraphDataFunctions {
         gen.generateGraph(target);
         return GraphExpr.newInstance(target);
       } catch (RuntimeException rex) {
-        if (Config.SHOW_STACKTRACE) {
-          rex.printStackTrace();
-        }
+        LOGGER.debug("StarGraph.evaluate() failed", rex);
       }
       return F.NIL;
     }

@@ -2,7 +2,6 @@ package org.matheclipse.core.reflection.system;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-import org.matheclipse.core.basic.Config;
 import org.matheclipse.core.builtin.BooleanFunctions;
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.exception.Validate;
@@ -96,9 +95,7 @@ public class FindInstance extends Solve {
       // int number validation
       LOGGER.log(engine.getLogLevel(), ve.getMessage(ast.topHead()), ve);
     } catch (RuntimeException rex) {
-      if (Config.SHOW_STACKTRACE) {
-        rex.printStackTrace();
-      }
+      LOGGER.debug("FindInstance.evaluate() failed", rex);
     }
     return F.NIL;
   }

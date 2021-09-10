@@ -9,6 +9,8 @@ import java.util.Set;
 import java.util.SortedSet;
 import java.util.Stack;
 import java.util.TreeSet;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.apfloat.Apcomplex;
 import org.apfloat.Apfloat;
 import org.hipparchus.exception.MathRuntimeException;
@@ -45,6 +47,8 @@ import it.unimi.dsi.fastutil.ints.Int2IntRBTreeMap;
  * @see BigIntegerSym
  */
 public abstract class AbstractIntegerSym implements IInteger, Externalizable {
+  private static final Logger LOGGER = LogManager.getLogger();
+
   static final int low = -128;
   static final int high = 128;
   static final IntegerSym cache[];
@@ -386,7 +390,7 @@ public abstract class AbstractIntegerSym implements IInteger, Externalizable {
     try {
       return (IExpr) clone();
     } catch (CloneNotSupportedException e) {
-      e.printStackTrace();
+      LOGGER.error("AbstractIntegerSym.copy() failed", e);
       return null;
     }
   }

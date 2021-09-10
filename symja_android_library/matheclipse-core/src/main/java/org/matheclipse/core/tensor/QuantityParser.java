@@ -1,6 +1,8 @@
 // code by jph
 package org.matheclipse.core.tensor;
 
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.interfaces.IExpr;
@@ -8,6 +10,7 @@ import org.matheclipse.core.tensor.qty.IQuantity;
 import org.matheclipse.core.tensor.qty.IUnit;
 
 public class QuantityParser {
+  private static final Logger LOGGER = LogManager.getLogger();
 
   /**
    * Example: "9.81[m*s^-2]" -> Quantity.of(9.81, "m*s^-2")
@@ -29,8 +32,8 @@ public class QuantityParser {
       EvalEngine engine = new EvalEngine(true);
       return engine.evaluate(string, true);
     } catch (RuntimeException rex) {
-      rex.printStackTrace();
-      throw new IllegalArgumentException(string);
+      LOGGER.error("QuantityParser.of() failed", rex);
+      throw new IllegalArgumentException(string, rex);
     }
   }
 }

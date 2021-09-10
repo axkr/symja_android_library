@@ -154,7 +154,7 @@ public class MMAAJAXQueryServlet extends HttpServlet {
       String result = evaluate(req, value, numericModeValue, functionValue, 0);
       out.println(result);
     } catch (Exception e) {
-      e.printStackTrace();
+      LOGGER.error("MMAAJAXQueryServlet.doPost() failed", e);
       String msg = e.getMessage();
       if (msg != null) {
         out.println(JSONBuilder.createJSONErrorString("Exception: " + msg));
@@ -262,9 +262,7 @@ public class MMAAJAXQueryServlet extends HttpServlet {
                       + html
                       + "\" style=\"display: block; width: 100%; height: 100%; border: none;\" ></iframe>");
             } catch (Exception ex) {
-              if (Config.SHOW_STACKTRACE) {
-                ex.printStackTrace();
-              }
+              LOGGER.debug("MMAAJAXQueryServlet.evaluateString() failed", ex);
             }
           } else if (outExpr.isASTSizeGE(S.Graphics3D, 2)) {
             StringBuilder buf = new StringBuilder();
@@ -279,9 +277,7 @@ public class MMAAJAXQueryServlet extends HttpServlet {
                         + html
                         + "\" style=\"display: block; width: 100%; height: 100%; border: none;\" ></iframe>");
               } catch (Exception ex) {
-                if (Config.SHOW_STACKTRACE) {
-                  ex.printStackTrace();
-                }
+                LOGGER.debug("MMAAJAXQueryServlet.evaluateString() failed", ex);
               }
             }
           }
@@ -337,9 +333,7 @@ public class MMAAJAXQueryServlet extends HttpServlet {
                 //                        + "\" style=\"display: block; width: 100%; height: 100%;
                 // border: none;\" ></iframe>");
               } catch (Exception ex) {
-                if (Config.SHOW_STACKTRACE) {
-                  ex.printStackTrace();
-                }
+                LOGGER.debug("MMAAJAXQueryServlet.evaluateString() failed", ex);
               }
             } else if (jsFormData.arg2().toString().equals("jsxgraph")) {
               try {
@@ -355,9 +349,7 @@ public class MMAAJAXQueryServlet extends HttpServlet {
                 //                        + "\" style=\"display: block; width: 100%; height: 100%;
                 // border: none;\" ></iframe>");
               } catch (Exception ex) {
-                if (Config.SHOW_STACKTRACE) {
-                  ex.printStackTrace();
-                }
+                LOGGER.debug("MMAAJAXQueryServlet.evaluateString() failed", ex);
               }
             } else if (jsFormData.arg2().toString().equals("plotly")) {
               try {
@@ -373,9 +365,7 @@ public class MMAAJAXQueryServlet extends HttpServlet {
                 //                        + "\" style=\"display: block; width: 100%; height: 100%;
                 // border: none;\" ></iframe>");
               } catch (Exception ex) {
-                if (Config.SHOW_STACKTRACE) {
-                  ex.printStackTrace();
-                }
+                LOGGER.debug("MMAAJAXQueryServlet.evaluateString() failed", ex);
               }
             } else if (jsFormData.arg2().toString().equals("treeform")) {
               try {
@@ -411,9 +401,7 @@ public class MMAAJAXQueryServlet extends HttpServlet {
                         + html
                         + "\" style=\"display: block; width: 100%; height: 100%; border: none;\" ></iframe>");
               } catch (Exception ex) {
-                if (Config.SHOW_STACKTRACE) {
-                  ex.printStackTrace();
-                }
+                LOGGER.debug("MMAAJAXQueryServlet.evaluateString() failed", ex);
               }
             }
           } else if (outExpr.isString()) {
@@ -451,9 +439,7 @@ public class MMAAJAXQueryServlet extends HttpServlet {
       return JSONBuilder.createJSONError("IOException occured");
     } catch (Exception e) {
       // error message
-      // if (Config.SHOW_STACKTRACE) {
-      e.printStackTrace();
-      // }
+      LOGGER.error("MMAAJAXQueryServlet.evaluateString() failed", e);
       String msg = e.getMessage();
       if (msg != null) {
         return JSONBuilder.createJSONError("Error in evaluateString: " + msg);
@@ -581,9 +567,7 @@ public class MMAAJAXQueryServlet extends HttpServlet {
   //
   // }
   // } catch (Exception e) {
-  // if (Config.SHOW_STACKTRACE) {
-  // e.printStackTrace();
-  // }
+  // LOGGER.debug("MMAAJAXQueryServlet.getFromMemcache() failed", e);
   // }
   // return null;
   // }
@@ -606,9 +590,7 @@ public class MMAAJAXQueryServlet extends HttpServlet {
   // return true;
   // }
   // } catch (Exception e) {
-  // if (Config.SHOW_STACKTRACE) {
-  // e.printStackTrace();
-  // }
+  // LOGGER.debug("MMAAJAXQueryServlet.getFromMemcache() failed", e);
   // }
   // return false;
   // }

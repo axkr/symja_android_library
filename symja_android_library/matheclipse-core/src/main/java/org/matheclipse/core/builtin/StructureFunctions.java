@@ -9,7 +9,6 @@ import java.util.Set;
 import java.util.function.Predicate;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-import org.matheclipse.core.basic.Config;
 import org.matheclipse.core.convert.Convert;
 import org.matheclipse.core.eval.EvalAttributes;
 import org.matheclipse.core.eval.EvalEngine;
@@ -963,9 +962,7 @@ public class StructureFunctions {
           } catch (final ValidateException ve) {
             LOGGER.log(engine.getLogLevel(), ve.getMessage(ast.topHead()), ve);
           } catch (RuntimeException ae) {
-            if (Config.SHOW_STACKTRACE) {
-              ae.printStackTrace();
-            }
+            LOGGER.debug("MapAt.evaluate() failed", ae);
           }
         }
       }
@@ -1787,9 +1784,7 @@ public class StructureFunctions {
           }
           return shallowCopy;
         } catch (RuntimeException rex) {
-          // if (Config.SHOW_STACKTRACE) {
-          rex.printStackTrace();
-          // }
+          LOGGER.error("Sort.evaluate() failed", rex);
         }
       }
 

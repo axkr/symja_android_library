@@ -5,6 +5,8 @@ import java.io.Reader;
 import java.math.BigInteger;
 import java.util.List;
 import java.util.Random;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.expression.S;
@@ -14,6 +16,8 @@ import edu.jas.structure.RingFactory;
 
 /** Singleton ring factory class. */
 public class ExprRingFactory implements RingFactory<IExpr> {
+  private static final Logger LOGGER = LogManager.getLogger();
+
   /** */
   private static final long serialVersionUID = -6146597389011632638L;
 
@@ -91,7 +95,7 @@ public class ExprRingFactory implements RingFactory<IExpr> {
       s = CharStreams.toString(r);
       return EvalEngine.get().parse(s);
     } catch (IOException e) {
-      e.printStackTrace();
+      LOGGER.error("ExprRingFactory.parse() failed", e);
     }
     return S.Undefined;
   }

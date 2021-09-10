@@ -6,7 +6,8 @@ import java.io.ObjectInput;
 import java.io.ObjectOutput;
 import java.util.ArrayDeque;
 import java.util.List;
-import org.matheclipse.core.basic.Config;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.matheclipse.core.combinatoric.MultisetPartitionsIterator;
 import org.matheclipse.core.combinatoric.NumberPartitionsIterator;
 import org.matheclipse.core.eval.EvalEngine;
@@ -30,6 +31,7 @@ import org.matheclipse.core.interfaces.IRational;
 import org.matheclipse.core.interfaces.ISymbol;
 
 public class PatternMatcher extends IPatternMatcher implements Externalizable {
+  private static final Logger LOGGER = LogManager.getLogger();
 
   /**
    * There are two kinds of matching <code>Entry</code> pairs in the {@link StackMatcher}.
@@ -1800,7 +1802,7 @@ public class PatternMatcher extends IPatternMatcher implements Externalizable {
             lhsResultAST.append(result);
             return lhsResultAST;
           } catch (final ConditionException e) {
-            if (Config.SHOW_STACKTRACE) {
+            if (LOGGER.isDebugEnabled()) {
               logConditionFalse(lhsEvalAST, lhsPatternAST, rhsExpr);
             }
             // fall through
@@ -1868,7 +1870,7 @@ public class PatternMatcher extends IPatternMatcher implements Externalizable {
           lhsResultAST.append(i + 1, result);
           return lhsResultAST;
         } catch (final ConditionException e) {
-          if (Config.SHOW_STACKTRACE) {
+          if (LOGGER.isDebugEnabled()) {
             logConditionFalse(lhsEvalFlatAST, lhsPatternFlatAST, rhsExpr);
           }
         } catch (final ReturnException e) {

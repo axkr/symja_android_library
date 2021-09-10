@@ -215,9 +215,7 @@ public class Sum extends ListFunctions.Table implements SumRules {
 
         }
         // } catch (final ValidateException ve) {
-        // if (FEConfig.SHOW_STACKTRACE) {
-        // ve.printStackTrace();
-        // }
+        // LOGGER.debug("Sum.evaluate() failed", ve);
         // // see level specification
         // return engine.printMessage(ve.getMessage(ast.topHead()));
         // }
@@ -445,9 +443,7 @@ public class Sum extends ListFunctions.Table implements SumRules {
       // engine.printMessage("Sum: Recursionlimit exceeded");
       // return F.NIL;
       // } catch (RuntimeException rex) {
-      // if (Config.SHOW_STACKTRACE) {
-      // rex.printStackTrace();
-      // }
+      // LOGGER.debug("Sum.definiteSum() failed", rex);
       // }finally {
       // iterator.tearDown();
       // }

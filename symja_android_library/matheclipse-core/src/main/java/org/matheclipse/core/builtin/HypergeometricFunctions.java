@@ -120,16 +120,12 @@ public class HypergeometricFunctions {
       //            if (engine.isDoubleMode()) {
       //              try {
       //              } catch (ThrowException te) {
-      //                if (FEConfig.SHOW_STACKTRACE) {
-      //                  te.printStackTrace();
-      //                }
+      //                LOGGER.debug("AppellF1.evaluate() failed", te);
       //                return te.getValue();
       //              } catch (ValidateException ve) {
-      //                if (FEConfig.SHOW_STACKTRACE) {
-      //                  ve.printStackTrace();
-      //                }
+      //                LOGGER.debug("AppellF1.evaluate() failed", ve);
       //              } catch (RuntimeException rex) {
-      //                // rex.printStackTrace();
+      //                LOGGER.error("AppellF1.evaluate() failed", rex);
       //                return engine.printMessage(ast.topHead(), rex);
       //              }
       //            }
@@ -213,14 +209,10 @@ public class HypergeometricFunctions {
           }
 
         } catch (ThrowException te) {
-          if (Config.SHOW_STACKTRACE) {
-            te.printStackTrace();
-          }
+          LOGGER.debug("CosIntegral.evaluate() failed", te);
           return te.getValue();
         } catch (ValidateException ve) {
-          if (Config.SHOW_STACKTRACE) {
-            ve.printStackTrace();
-          }
+          LOGGER.debug("CosIntegral.evaluate() failed", ve);
         } catch (RuntimeException rex) {
           LOGGER.log(engine.getLogLevel(), ast.topHead(), rex);
         }
@@ -309,14 +301,10 @@ public class HypergeometricFunctions {
           }
 
         } catch (ThrowException te) {
-          if (Config.SHOW_STACKTRACE) {
-            te.printStackTrace();
-          }
+          LOGGER.debug("CoshIntegral.evaluate() failed", te);
           return te.getValue();
         } catch (ValidateException ve) {
-          if (Config.SHOW_STACKTRACE) {
-            ve.printStackTrace();
-          }
+          LOGGER.debug("CoshIntegral.evaluate() failed", ve);
         } catch (RuntimeException rex) {
           LOGGER.log(engine.getLogLevel(), ast.topHead(), rex);
         }
@@ -373,14 +361,10 @@ public class HypergeometricFunctions {
           }
 
         } catch (ThrowException te) {
-          if (Config.SHOW_STACKTRACE) {
-            te.printStackTrace();
-          }
+          LOGGER.debug("ExpIntegralE.evaluate() failed", te);
           return te.getValue();
         } catch (ValidateException ve) {
-          if (Config.SHOW_STACKTRACE) {
-            ve.printStackTrace();
-          }
+          LOGGER.debug("ExpIntegralE.evaluate() failed", ve);
         } catch (RuntimeException rex) {
           LOGGER.log(engine.getLogLevel(), ast.topHead(), rex);
         }
@@ -478,14 +462,10 @@ public class HypergeometricFunctions {
           }
 
         } catch (ThrowException te) {
-          if (Config.SHOW_STACKTRACE) {
-            te.printStackTrace();
-          }
+          LOGGER.debug("ExpIntegralEi.evaluate() failed", te);
           return te.getValue();
         } catch (ValidateException ve) {
-          if (Config.SHOW_STACKTRACE) {
-            ve.printStackTrace();
-          }
+          LOGGER.debug("ExpIntegralEi.evaluate() failed", ve);
         } catch (RuntimeException rex) {
           LOGGER.log(engine.getLogLevel(), ast.topHead(), rex);
         }
@@ -812,9 +792,7 @@ public class HypergeometricFunctions {
           }
 
         } catch (ValidateException ve) {
-          if (Config.SHOW_STACKTRACE) {
-            ve.printStackTrace();
-          }
+          LOGGER.debug("Hypergeometric0F1.evaluate() failed", ve);
         } catch (RuntimeException rex) {
           LOGGER.log(engine.getLogLevel(), ast.topHead(), rex);
         }
@@ -936,9 +914,7 @@ public class HypergeometricFunctions {
               F.Times(F.Power(b, -1), F.Power(F.Plus(F.C1, b), -1), F.Sqr(z)));
         }
       } catch (ValidateException ve) {
-        if (Config.SHOW_STACKTRACE) {
-          ve.printStackTrace();
-        }
+        LOGGER.debug("Hypergeometric1F1.evaluate() failed", ve);
       } catch (RuntimeException rex) {
         LOGGER.log(engine.getLogLevel(), ast.topHead(), rex);
       }
@@ -1075,14 +1051,10 @@ public class HypergeometricFunctions {
         // }
         // }
       } catch (ResultException te) {
-        if (Config.SHOW_STACKTRACE) {
-          te.printStackTrace();
-        }
+        LOGGER.debug("Hypergeometric2F1.evaluate() failed", te);
         return te.getValue();
       } catch (ValidateException ve) {
-        if (Config.SHOW_STACKTRACE) {
-          ve.printStackTrace();
-        }
+        LOGGER.debug("Hypergeometric2F1.evaluate() failed", ve);
       } catch (RuntimeException rex) {
         LOGGER.log(engine.getLogLevel(), ast.topHead(), rex);
       }
@@ -1157,9 +1129,7 @@ public class HypergeometricFunctions {
           }
 
         } catch (ValidateException ve) {
-          if (Config.SHOW_STACKTRACE) {
-            ve.printStackTrace();
-          }
+          LOGGER.debug("HypergeometricPFQ.evaluate() failed", ve);
         } catch (RuntimeException rex) {
           LOGGER.log(engine.getLogLevel(), ast.topHead(), rex);
         }
@@ -1244,9 +1214,7 @@ public class HypergeometricFunctions {
                 HypergeometricJS.hypergeometricU(
                     new Complex(aDouble), new Complex(bDouble), new Complex(zDouble)));
           } catch (ValidateException ve) {
-            if (Config.SHOW_STACKTRACE) {
-              ve.printStackTrace();
-            }
+            LOGGER.debug("HypergeometricU.evaluate() failed", ve);
           }
           Complex ac = a.evalComplex();
           Complex bc = b.evalComplex();
@@ -1254,14 +1222,10 @@ public class HypergeometricFunctions {
           return F.complexNum(HypergeometricJS.hypergeometricU(ac, bc, zc));
         }
       } catch (ThrowException te) {
-        if (Config.SHOW_STACKTRACE) {
-          te.printStackTrace();
-        }
+        LOGGER.debug("HypergeometricU.evaluate() failed", te);
         return te.getValue();
       } catch (ValidateException ve) {
-        if (Config.SHOW_STACKTRACE) {
-          ve.printStackTrace();
-        }
+        LOGGER.debug("HypergeometricU.evaluate() failed", ve);
       } catch (RuntimeException rex) {
         LOGGER.log(engine.getLogLevel(), ast.topHead(), rex);
       }
@@ -1363,14 +1327,10 @@ public class HypergeometricFunctions {
           }
 
         } catch (ThrowException te) {
-          if (Config.SHOW_STACKTRACE) {
-            te.printStackTrace();
-          }
+          LOGGER.debug("LogIntegral.evaluate() failed", te);
           return te.getValue();
         } catch (ValidateException ve) {
-          if (Config.SHOW_STACKTRACE) {
-            ve.printStackTrace();
-          }
+          LOGGER.debug("LogIntegral.evaluate() failed", ve);
         } catch (RuntimeException rex) {
           LOGGER.log(engine.getLogLevel(), ast.topHead(), rex);
         }
@@ -1462,14 +1422,10 @@ public class HypergeometricFunctions {
           }
 
         } catch (ThrowException te) {
-          if (Config.SHOW_STACKTRACE) {
-            te.printStackTrace();
-          }
+          LOGGER.debug("SinIntegral.evaluate() failed", te);
           return te.getValue();
         } catch (ValidateException ve) {
-          if (Config.SHOW_STACKTRACE) {
-            ve.printStackTrace();
-          }
+          LOGGER.debug("SinIntegral.evaluate() failed", ve);
         } catch (RuntimeException rex) {
           LOGGER.log(engine.getLogLevel(), ast.topHead(), rex);
           return F.NIL;
@@ -1541,14 +1497,10 @@ public class HypergeometricFunctions {
           }
 
         } catch (ThrowException te) {
-          if (Config.SHOW_STACKTRACE) {
-            te.printStackTrace();
-          }
+          LOGGER.debug("SinhIntegral.evaluate() failed", te);
           return te.getValue();
         } catch (ValidateException ve) {
-          if (Config.SHOW_STACKTRACE) {
-            ve.printStackTrace();
-          }
+          LOGGER.debug("SinhIntegral.evaluate() failed", ve);
         } catch (RuntimeException rex) {
           LOGGER.log(engine.getLogLevel(), ast.topHead(), rex);
           return F.NIL;
@@ -1607,9 +1559,7 @@ public class HypergeometricFunctions {
                 HypergeometricJS.whittakerM(
                     new Complex(kDouble), new Complex(mDouble), new Complex(zDouble)));
           } catch (ValidateException ve) {
-            if (Config.SHOW_STACKTRACE) {
-              ve.printStackTrace();
-            }
+            LOGGER.debug("WhittakerM.evaluate() failed", ve);
           }
           Complex kc = k.evalComplex();
           Complex mc = m.evalComplex();
@@ -1617,14 +1567,10 @@ public class HypergeometricFunctions {
           return F.complexNum(HypergeometricJS.whittakerM(kc, mc, zc));
 
         } catch (ThrowException te) {
-          if (Config.SHOW_STACKTRACE) {
-            te.printStackTrace();
-          }
+          LOGGER.debug("WhittakerM.evaluate() failed", te);
           return te.getValue();
         } catch (ValidateException ve) {
-          if (Config.SHOW_STACKTRACE) {
-            ve.printStackTrace();
-          }
+          LOGGER.debug("WhittakerM.evaluate() failed", ve);
         } catch (RuntimeException rex) {
           LOGGER.log(engine.getLogLevel(), ast.topHead(), rex);
         }
@@ -1669,9 +1615,7 @@ public class HypergeometricFunctions {
       // return F.complexNum(HypergeometricJS.whittakerW(new Complex(kDouble), new Complex(mDouble),
       // new Complex(zDouble)));
       // } catch (ValidateException ve) {
-      // if (FEConfig.SHOW_STACKTRACE) {
-      // ve.printStackTrace();
-      // }
+      // LOGGER.debug("WhittakerW.evaluate() failed", ve);
       // }
       // Complex kc = k.evalComplex();
       // Complex mc = m.evalComplex();
@@ -1679,16 +1623,12 @@ public class HypergeometricFunctions {
       // return F.complexNum(HypergeometricJS.whittakerW(kc, mc, zc));
       //
       // } catch (ThrowException te) {
-      // if (FEConfig.SHOW_STACKTRACE) {
-      // te.printStackTrace();
-      // }
+      // LOGGER.debug("WhittakerW.evaluate() failed", te);
       // return te.getValue();
       // } catch (ValidateException ve) {
-      // if (FEConfig.SHOW_STACKTRACE) {
-      // ve.printStackTrace();
-      // }
+      // LOGGER.debug("WhittakerW.evaluate() failed", ve);
       // } catch (RuntimeException rex) {
-      // // rex.printStackTrace();
+      // LOGGER.error("WhittakerW.evaluate() failed", rex);
       // return engine.printMessage(ast.topHead(), rex);
       // }
       // }

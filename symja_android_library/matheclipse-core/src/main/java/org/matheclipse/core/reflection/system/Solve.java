@@ -10,7 +10,6 @@ import org.apache.logging.log4j.Level;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.hipparchus.linear.FieldMatrix;
-import org.matheclipse.core.basic.Config;
 import org.matheclipse.core.builtin.Algebra;
 import org.matheclipse.core.builtin.BooleanFunctions;
 import org.matheclipse.core.builtin.IOFunctions;
@@ -1082,9 +1081,7 @@ public class Solve extends AbstractFunctionEvaluator {
                   return resultList;
                 }
               } catch (LimitException le) {
-                if (Config.SHOW_STACKTRACE) {
-                  le.printStackTrace();
-                }
+                LOGGER.debug("Solve.of() failed", le);
                 throw le;
               } catch (RuntimeException rex) {
                 LOGGER.log(engine.getLogLevel(), "Integers solution not found", rex);
@@ -1114,17 +1111,13 @@ public class Solve extends AbstractFunctionEvaluator {
           //                    }
           //                  } catch (RuntimeException rex) {
           //                    // try 2nd solver
-          //                    rex.printStackTrace();
+          //                    LOGGER.error("Solve.of() failed", rex);
           //                  }
           //                } catch (LimitException le) {
-          //                  if (Config.SHOW_STACKTRACE) {
-          //                    le.printStackTrace();
-          //                  }
+          //                  LOGGER.debug("Solve.of() failed", le);
           //                  throw le;
           //                } catch (RuntimeException rex) {
-          //                  if (Config.SHOW_STACKTRACE) {
-          //                    rex.printStackTrace();
-          //                  }
+          //                  LOGGER.debug("Solve.of() failed", rex);
           //                  return engine.printMessage(
           //                      "Solve: " + "Reals solution not found: " + rex.getMessage());
           //                }
@@ -1160,9 +1153,7 @@ public class Solve extends AbstractFunctionEvaluator {
     } catch (LimitException | ValidateException e) {
       LOGGER.log(engine.getLogLevel(), S.Solve, e);
     } catch (RuntimeException rex) {
-      if (Config.SHOW_STACKTRACE) {
-        rex.printStackTrace();
-      }
+      LOGGER.debug("Solve.of() failed() failed", rex);
     }
     return F.NIL;
   }
@@ -1361,9 +1352,7 @@ public class Solve extends AbstractFunctionEvaluator {
         termsEqualZeroList = list;
       }
     } catch (JASConversionException e) {
-      if (Config.SHOW_STACKTRACE) {
-        e.printStackTrace();
-      }
+      LOGGER.debug("Solve.solveEquations() failed", e);
     }
 
     // rewrite some special expressions
@@ -1523,14 +1512,10 @@ public class Solve extends AbstractFunctionEvaluator {
       }
       return resultList;
     } catch (LimitException le) {
-      if (Config.SHOW_STACKTRACE) {
-        le.printStackTrace();
-      }
+      LOGGER.debug("Solve.solveTimesEquationsRecursively() failed", le);
       throw le;
     } catch (RuntimeException rex) {
-      if (Config.SHOW_STACKTRACE) {
-        rex.printStackTrace();
-      }
+      LOGGER.debug("Solve.solveTimesEquationsRecursively() failed", rex);
     }
     return F.NIL;
   }

@@ -8,6 +8,8 @@ import java.util.HashSet;
 import java.util.Properties;
 import java.util.Set;
 import java.util.function.Consumer;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.hipparchus.util.Precision;
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.expression.F;
@@ -29,6 +31,8 @@ import com.google.common.cache.CacheBuilder;
 
 /** General configuration settings. */
 public class Config {
+  private static final Logger LOGGER = LogManager.getLogger();
+
   /** Show the stack trace, if an exception is thrown in evaluation */
   public static final boolean SHOW_STACKTRACE = false;
 
@@ -778,7 +782,7 @@ public class Config {
         prop.load(resourceAsStream);
         return prop.get("version").toString();
       } catch (IOException e) {
-        e.printStackTrace();
+        LOGGER.error("Config.getVersion() failed", e);
       }
     }
     return "2.0.0-SNAPSHOT";

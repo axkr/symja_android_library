@@ -4,7 +4,6 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.hipparchus.complex.Complex;
 import org.hipparchus.exception.MathRuntimeException;
-import org.matheclipse.core.basic.Config;
 import org.matheclipse.core.builtin.functions.BesselJS;
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.exception.ValidateException;
@@ -73,9 +72,7 @@ public class BesselFunctions {
           }
           return F.NIL;
         } catch (ValidateException ve) {
-          if (Config.SHOW_STACKTRACE) {
-            ve.printStackTrace();
-          }
+          LOGGER.debug("AiryAi.evaluate() failed", ve);
         }
       }
       return F.NIL;
@@ -119,9 +116,7 @@ public class BesselFunctions {
           }
           return F.NIL;
         } catch (ValidateException ve) {
-          if (Config.SHOW_STACKTRACE) {
-            ve.printStackTrace();
-          }
+          LOGGER.debug("AiryAiPrime.evaluate() failed", ve);
         }
       }
       return F.NIL;
@@ -163,9 +158,7 @@ public class BesselFunctions {
           }
           return F.NIL;
         } catch (ValidateException ve) {
-          if (Config.SHOW_STACKTRACE) {
-            ve.printStackTrace();
-          }
+          LOGGER.debug("AiryBi.evaluate() failed", ve);
         }
       }
       return F.NIL;
@@ -211,9 +204,7 @@ public class BesselFunctions {
           }
 
         } catch (ValidateException ve) {
-          if (Config.SHOW_STACKTRACE) {
-            ve.printStackTrace();
-          }
+          LOGGER.debug("AiryBiPrime.evaluate() failed", ve);
         }
       }
       return F.NIL;
@@ -384,9 +375,7 @@ public class BesselFunctions {
           }
 
         } catch (ValidateException ve) {
-          if (Config.SHOW_STACKTRACE) {
-            ve.printStackTrace();
-          }
+          LOGGER.debug("BesselJ.evaluate() failed", ve);
         } catch (RuntimeException rex) {
           LOGGER.log(engine.getLogLevel(), ast.topHead(), rex);
         }
@@ -450,9 +439,7 @@ public class BesselFunctions {
           } catch (MathRuntimeException | ValidateException e) {
             // org.hipparchus.exception.MathIllegalArgumentException: interval does not bracket a
             // root
-            if (Config.SHOW_STACKTRACE) {
-              e.printStackTrace();
-            }
+            LOGGER.debug("BesselJZero.evaluate() failed", e);
           }
         }
       }
@@ -554,9 +541,7 @@ public class BesselFunctions {
           }
 
         } catch (ValidateException ve) {
-          if (Config.SHOW_STACKTRACE) {
-            ve.printStackTrace();
-          }
+          LOGGER.debug("BesselI.evaluate() failed", ve);
         } catch (RuntimeException rex) {
           LOGGER.log(engine.getLogLevel(), ast.topHead(), rex);
         }
@@ -653,9 +638,7 @@ public class BesselFunctions {
           }
 
         } catch (ValidateException ve) {
-          if (Config.SHOW_STACKTRACE) {
-            ve.printStackTrace();
-          }
+          LOGGER.debug("BesselK.evaluate() failed", ve);
         } catch (RuntimeException rex) {
           LOGGER.log(engine.getLogLevel(), ast.topHead(), rex);
         }
@@ -753,9 +736,7 @@ public class BesselFunctions {
           }
 
         } catch (ValidateException ve) {
-          if (Config.SHOW_STACKTRACE) {
-            ve.printStackTrace();
-          }
+          LOGGER.debug("BesselY.evaluate() failed", ve);
         } catch (RuntimeException rex) {
           LOGGER.log(engine.getLogLevel(), ast.topHead(), rex);
         }
@@ -791,9 +772,7 @@ public class BesselFunctions {
           }
         } catch (MathRuntimeException | ValidateException e) {
           // org.hipparchus.exception.MathIllegalArgumentException: interval does not bracket a root
-          if (Config.SHOW_STACKTRACE) {
-            e.printStackTrace();
-          }
+          LOGGER.debug("BesselYZero.evaluate() failed", e);
         }
       }
 
@@ -835,9 +814,7 @@ public class BesselFunctions {
           }
 
         } catch (ValidateException ve) {
-          if (Config.SHOW_STACKTRACE) {
-            ve.printStackTrace();
-          }
+          LOGGER.debug("HankelH1.evaluate() failed", ve);
         } catch (RuntimeException rex) {
           LOGGER.log(engine.getLogLevel(), ast.topHead(), rex);
         }
@@ -879,9 +856,7 @@ public class BesselFunctions {
           }
 
         } catch (ValidateException ve) {
-          if (Config.SHOW_STACKTRACE) {
-            ve.printStackTrace();
-          }
+          LOGGER.debug("HankelH2.evaluate() failed", ve);
         } catch (RuntimeException rex) {
           LOGGER.log(engine.getLogLevel(), ast.topHead(), rex);
         }
@@ -954,9 +929,7 @@ public class BesselFunctions {
           }
 
         } catch (ValidateException ve) {
-          if (Config.SHOW_STACKTRACE) {
-            ve.printStackTrace();
-          }
+          LOGGER.debug("SphericalBesselJ.evaluate() failed", ve);
         } catch (RuntimeException rex) {
           LOGGER.log(engine.getLogLevel(), ast.topHead(), rex);
           return F.NIL;
@@ -1047,9 +1020,7 @@ public class BesselFunctions {
           }
 
         } catch (ValidateException ve) {
-          if (Config.SHOW_STACKTRACE) {
-            ve.printStackTrace();
-          }
+          LOGGER.debug("SphericalBesselY.evaluate() failed", ve);
         } catch (RuntimeException rex) {
           LOGGER.log(engine.getLogLevel(), ast.topHead(), rex);
         }

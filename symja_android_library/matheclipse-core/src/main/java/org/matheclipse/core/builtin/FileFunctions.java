@@ -151,9 +151,7 @@ public class FileFunctions {
                     new BufferedReader(new InputStreamReader(fis, StandardCharsets.UTF_8));) {
               Get.loadPackage(engine, reader);
             } catch (IOException e) {
-              if (Config.SHOW_STACKTRACE) {
-                e.printStackTrace();
-              }
+              LOGGER.debug("BeginPackage.evaluate() failed", e);
             }
           }
         }
@@ -588,7 +586,7 @@ public class FileFunctions {
         final List<ASTNode> node = parseReader(is, engine);
         return evaluatePackage(node, engine);
       } catch (final Exception e) {
-        e.printStackTrace();
+        LOGGER.error("Get.loadPackage() failed", e);
       }
       return S.Null;
     }
@@ -621,7 +619,7 @@ public class FileFunctions {
 
         return evaluatePackage(node, engine);
       } catch (final Exception e) {
-        e.printStackTrace();
+        LOGGER.error("FileFunctions.Get.loadPackage", e);
       }
       return S.Null;
     }
@@ -637,9 +635,7 @@ public class FileFunctions {
         String str = com.google.common.io.Files.asCharSource(file, Charset.defaultCharset()).read();
         return Get.loadPackage(engine, str);
       } catch (IOException e) {
-        if (Config.SHOW_STACKTRACE) {
-          e.printStackTrace();
-        }
+        LOGGER.debug("Get.getFile() failed", e);
         // Cannot open `1`.
         return IOFunctions.printMessage(ast.topHead(), "noopen", F.List(ast.arg1()), engine);
       } finally {
@@ -660,9 +656,7 @@ public class FileFunctions {
         String str = Resources.toString(url, StandardCharsets.UTF_8);
         return loadPackage(engine, str);
       } catch (IOException e) {
-        if (Config.SHOW_STACKTRACE) {
-          e.printStackTrace();
-        }
+        LOGGER.debug("FileFunctions.Get.getURL() failed", e);
         // Cannot open `1`.
         return IOFunctions.printMessage(ast.topHead(), "noopen", F.List(ast.arg1()), engine);
       } finally {
@@ -1237,9 +1231,7 @@ public class FileFunctions {
           String str = Resources.toString(url, StandardCharsets.UTF_8);
           return F.$s(str);
         } catch (IOException e) {
-          if (Config.SHOW_STACKTRACE) {
-            e.printStackTrace();
-          }
+          LOGGER.debug("URLFetch.evaluate() failed", e);
           // Cannot open `1`.
           return IOFunctions.printMessage(ast.topHead(), "noopen", F.List(ast.arg1()), engine);
         }

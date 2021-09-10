@@ -897,9 +897,7 @@ public final class Combinatoric {
         } catch (LimitException le) {
           throw le;
         } catch (RuntimeException rex) {
-          if (Config.SHOW_STACKTRACE) {
-            rex.printStackTrace();
-          }
+          LOGGER.debug("IntegerPartitions.frobeniusPartition() failed", rex);
         }
       }
       return F.NIL;

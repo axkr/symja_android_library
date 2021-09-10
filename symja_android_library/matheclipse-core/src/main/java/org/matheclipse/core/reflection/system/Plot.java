@@ -6,6 +6,8 @@ import static org.matheclipse.core.expression.F.List;
 import static org.matheclipse.core.expression.F.Rule;
 import static org.matheclipse.core.expression.F.Show;
 import java.util.Arrays;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.hipparchus.stat.descriptive.moment.Mean;
 import org.hipparchus.stat.descriptive.moment.StandardDeviation;
 import org.matheclipse.core.basic.Config;
@@ -25,6 +27,8 @@ import org.matheclipse.core.interfaces.ISymbol;
 
 /** Plots x/y functions */
 public class Plot extends AbstractEvaluator {
+  private static final Logger LOGGER = LogManager.getLogger();
+
   /** Constructor for the singleton */
   public static final Plot CONST = new Plot();
 
@@ -116,9 +120,7 @@ public class Plot extends AbstractEvaluator {
           return Show(graphics);
         }
       } catch (RuntimeException rex) {
-        if (Config.SHOW_STACKTRACE) {
-          rex.printStackTrace();
-        }
+        LOGGER.debug("Plot.evaluate() failed", rex);
       }
     }
     return F.NIL;

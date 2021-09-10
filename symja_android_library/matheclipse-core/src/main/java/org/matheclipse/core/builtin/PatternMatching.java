@@ -973,17 +973,12 @@ public final class PatternMatching {
 
               stream.println(symbol.definitionToString());
             } catch (IOException ioe) {
-              if (Config.SHOW_STACKTRACE) {
-                ioe.printStackTrace();
-              }
+              LOGGER.debug("Information.evaluate() failed", ioe);
             }
           }
           return S.Null;
         } catch (RuntimeException rex) {
-          //
-          if (Config.SHOW_STACKTRACE) {
-            rex.printStackTrace();
-          }
+          LOGGER.debug("Information.evaluate() failed", rex);
         }
       }
       return F.NIL;

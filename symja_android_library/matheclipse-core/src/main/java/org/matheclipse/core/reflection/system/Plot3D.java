@@ -4,6 +4,8 @@ import static org.matheclipse.core.expression.F.List;
 import static org.matheclipse.core.expression.F.Rule;
 import static org.matheclipse.core.expression.F.Show;
 import static org.matheclipse.core.expression.F.SurfaceGraphics;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.matheclipse.core.basic.Config;
 import org.matheclipse.core.convert.Object2Expr;
 import org.matheclipse.core.eval.EvalEngine;
@@ -24,6 +26,8 @@ import org.matheclipse.core.interfaces.ISymbol;
  * @see org.matheclipse.core.eval.util.OptionArgs
  */
 public class Plot3D extends AbstractEvaluator {
+  private static final Logger LOGGER = LogManager.getLogger();
+
   /** Constructor for the singleton */
   public static final Plot3D CONST = new Plot3D();
 
@@ -103,9 +107,7 @@ public class Plot3D extends AbstractEvaluator {
           return Show(graphics);
         }
       } catch (RuntimeException rex) {
-        if (Config.SHOW_STACKTRACE) {
-          rex.printStackTrace();
-        }
+        LOGGER.debug("Plot3D.evaluate() failed", rex);
       }
     }
     return F.NIL;

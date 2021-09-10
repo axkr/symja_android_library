@@ -1,5 +1,7 @@
 package org.matheclipse.core.expression.data;
 
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.interfaces.AbstractFunctionEvaluator;
 import org.matheclipse.core.expression.DataExpr;
@@ -9,6 +11,7 @@ import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IExpr;
 
 public class CompiledFunctionExpr extends DataExpr<Class<?>> {
+  private static final Logger LOGGER = LogManager.getLogger();
 
   private static final long serialVersionUID = 3098987741558862963L;
 
@@ -52,7 +55,7 @@ public class CompiledFunctionExpr extends DataExpr<Class<?>> {
       fun = (AbstractFunctionEvaluator) fData.getDeclaredConstructor().newInstance();
       return fun.evaluate(ast, engine);
     } catch (ReflectiveOperationException rex) {
-      rex.printStackTrace();
+      LOGGER.error("CompiledFunctionExpr.evaluate() failed", rex);
     }
     return F.NIL;
   }

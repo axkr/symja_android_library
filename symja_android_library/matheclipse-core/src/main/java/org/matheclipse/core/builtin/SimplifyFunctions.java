@@ -6,6 +6,8 @@ import static org.matheclipse.core.expression.S.Log;
 import static org.matheclipse.core.expression.S.x;
 import java.util.List;
 import java.util.function.Function;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.matheclipse.core.basic.Config;
 import org.matheclipse.core.convert.VariablesSet;
 import org.matheclipse.core.eval.EvalEngine;
@@ -34,6 +36,8 @@ import org.matheclipse.core.visit.AbstractVisitorBoolean;
 import org.matheclipse.core.visit.VisitorExpr;
 
 public class SimplifyFunctions {
+  private static final Logger LOGGER = LogManager.getLogger();
+
   /**
    * See <a href="https://pangin.pro/posts/computation-in-static-initializer">Beware of computation
    * in static initializer</a>
@@ -737,9 +741,7 @@ public class SimplifyFunctions {
             }
 
           } catch (RuntimeException rex) {
-            if (Config.SHOW_STACKTRACE) {
-              rex.printStackTrace();
-            }
+            LOGGER.debug("SimplifyVisitor.visitTimes() failed", rex);
           }
         }
 

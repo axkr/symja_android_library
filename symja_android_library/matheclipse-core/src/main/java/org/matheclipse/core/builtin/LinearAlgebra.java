@@ -48,7 +48,6 @@ import org.hipparchus.linear.RealMatrix;
 import org.hipparchus.linear.RealVector;
 import org.hipparchus.linear.RiccatiEquationSolver;
 import org.hipparchus.linear.RiccatiEquationSolverImpl;
-import org.matheclipse.core.basic.Config;
 import org.matheclipse.core.convert.Convert;
 import org.matheclipse.core.eval.EvalAttributes;
 import org.matheclipse.core.eval.EvalEngine;
@@ -822,9 +821,7 @@ public final class LinearAlgebra {
         // org.hipparchus.exception.MathIllegalArgumentException: inconsistent dimensions: 0 != 3
         LOGGER.log(engine.getLogLevel(), ast.topHead(), e);
       } catch (final IndexOutOfBoundsException e) {
-        if (Config.SHOW_STACKTRACE) {
-          e.printStackTrace();
-        }
+        LOGGER.debug("CholeskyDecomposition.evaluate() failed", e);
       }
       return F.NIL;
     }
@@ -1619,9 +1616,7 @@ public final class LinearAlgebra {
           }
 
         } catch (final RuntimeException e) {
-          if (Config.SHOW_STACKTRACE) {
-            e.printStackTrace();
-          }
+          LOGGER.debug("Eigenvalues.evaluate() failed", e);
         }
       }
       // switch to numeric calculation
@@ -1748,9 +1743,7 @@ public final class LinearAlgebra {
           LOGGER.log(engine.getLogLevel(), ast.topHead(), mre);
           return F.NIL;
         } catch (final ClassCastException | IndexOutOfBoundsException e) {
-          if (Config.SHOW_STACKTRACE) {
-            e.printStackTrace();
-          }
+          LOGGER.debug("Eigenvectors.evaluate() failed", e);
         }
       }
 
@@ -2405,9 +2398,7 @@ public final class LinearAlgebra {
             LOGGER.log(engine.getLogLevel(), ast.topHead(), mre);
             return F.NIL;
           } catch (final ClassCastException | IndexOutOfBoundsException e) {
-            if (Config.SHOW_STACKTRACE) {
-              e.printStackTrace();
-            }
+            LOGGER.debug("LeastSquares.evaluate() failed", e);
           }
           try {
             IAST matrixTransposed = (IAST) S.ConjugateTranspose.of(engine, matrix);
@@ -2416,9 +2407,7 @@ public final class LinearAlgebra {
                     F.ConjugateTranspose(F.Dot(matrixTransposed, matrix)),
                     F.Dot(matrixTransposed, vector)));
           } catch (final ClassCastException | IndexOutOfBoundsException e) {
-            if (Config.SHOW_STACKTRACE) {
-              e.printStackTrace();
-            }
+            LOGGER.debug("LeastSquares.evaluate() failed", e);
           }
         }
       }
@@ -2506,9 +2495,7 @@ public final class LinearAlgebra {
             return linearSolve(lsf, ast.arg2(), ast, engine);
           }
         } catch (final RuntimeException e) {
-          if (Config.SHOW_STACKTRACE) {
-            e.printStackTrace();
-          }
+          LOGGER.debug("LinearSolve.evaluate() failed", e);
         } finally {
           engine.setTogetherMode(togetherMode);
         }
@@ -2579,9 +2566,7 @@ public final class LinearAlgebra {
         } catch (LimitException le) {
           throw le;
         } catch (final RuntimeException e) {
-          if (Config.SHOW_STACKTRACE) {
-            e.printStackTrace();
-          }
+          LOGGER.debug("LinearSolve.evaluate() failed", e);
         }
       }
 
@@ -2963,9 +2948,7 @@ public final class LinearAlgebra {
           }
         }
       } catch (IndexOutOfBoundsException | ClassCastException e) {
-        if (Config.SHOW_STACKTRACE) {
-          e.printStackTrace();
-        }
+        LOGGER.debug("LUDecomposition.evaluate() failed", e);
       } finally {
         engine.setTogetherMode(togetherMode);
       }
@@ -3248,9 +3231,7 @@ public final class LinearAlgebra {
         }
 
       } catch (final ClassCastException | IndexOutOfBoundsException e) {
-        if (Config.SHOW_STACKTRACE) {
-          e.printStackTrace();
-        }
+        LOGGER.debug("MatrixRank.evaluate() failed", e);
       }
 
       return F.NIL;
@@ -3418,9 +3399,7 @@ public final class LinearAlgebra {
           LOGGER.log(engine.getLogLevel(), ast.topHead(), ve);
           return F.NIL;
         } catch (final IndexOutOfBoundsException e) {
-          if (Config.SHOW_STACKTRACE) {
-            e.printStackTrace();
-          }
+          LOGGER.debug("Norm.evaluate() failed", e);
         }
       }
       if (arg1.isNumber()) {
@@ -3590,9 +3569,7 @@ public final class LinearAlgebra {
         }
       } catch (final MathRuntimeException | ClassCastException | IndexOutOfBoundsException e) {
         // org.hipparchus.exception.MathIllegalArgumentException
-        if (Config.SHOW_STACKTRACE) {
-          e.printStackTrace();
-        }
+        LOGGER.debug("NullSpace.evaluate() failed", e);
       } finally {
         engine.setTogetherMode(togetherMode);
       }
@@ -3951,9 +3928,7 @@ public final class LinearAlgebra {
         }
 
       } catch (final ClassCastException | IndexOutOfBoundsException e) {
-        if (Config.SHOW_STACKTRACE) {
-          e.printStackTrace();
-        }
+        LOGGER.debug("QRDecomposition.evaluate() failed", e);
       } finally {
         engine.setTogetherMode(togetherMode);
       }
@@ -4108,9 +4083,7 @@ public final class LinearAlgebra {
           }
         }
       } catch (final ClassCastException | IndexOutOfBoundsException e) {
-        if (Config.SHOW_STACKTRACE) {
-          e.printStackTrace();
-        }
+        LOGGER.debug("RowReduce.evaluate() failed", e);
       } finally {
         engine.setTogetherMode(togetherMode);
       }
@@ -4131,13 +4104,9 @@ public final class LinearAlgebra {
       //          }
       //        }
       //      } catch (final ClassCastException e) {
-      //        if (FEConfig.SHOW_STACKTRACE) {
-      //          e.printStackTrace();
-      //        }
+      //        LOGGER.debug("RowReduce.evaluate() failed", e);
       //      } catch (final IndexOutOfBoundsException e) {
-      //        if (FEConfig.SHOW_STACKTRACE) {
-      //          e.printStackTrace();
-      //        }
+      //        LOGGER.debug("RowReduce.evaluate() failed", e);
       //      } finally {
       //        engine.setTogetherMode(togetherMode);
       //      }
@@ -4228,9 +4197,7 @@ public final class LinearAlgebra {
       } catch (final ValidateException ve) {
         LOGGER.log(engine.getLogLevel(), ast.topHead(), ve);
       } catch (final IndexOutOfBoundsException e) {
-        if (Config.SHOW_STACKTRACE) {
-          e.printStackTrace();
-        }
+        LOGGER.debug("SingularValueDecomposition.evaluate() failed", e);
       }
       return F.NIL;
     }

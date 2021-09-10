@@ -627,9 +627,7 @@ public class SeriesFunctions {
           // even degree
           return evalLimitQuiet(F.Times(coeff, F.CInfinity), data);
         } catch (RuntimeException e) {
-          if (Config.SHOW_STACKTRACE) {
-            e.printStackTrace();
-          }
+          LOGGER.debug("Limit.plusLimit() failed", e);
         }
       }
       return data.mapLimit(arg1);
@@ -840,9 +838,7 @@ public class SeriesFunctions {
             return limitsInfinityOfRationalFunctions(
                 numeratorPoly, denominatorPoly, symbol, limit, data);
           } catch (RuntimeException e) {
-            if (Config.DEBUG) {
-              e.printStackTrace();
-            }
+            LOGGER.debug("Limit.timesLimit() failed", e);
           }
         }
 
@@ -1859,9 +1855,7 @@ public class SeriesFunctions {
         return coefficientPlus.oneIdentity0();
         // }
       } catch (RuntimeException re) {
-        if (Config.SHOW_STACKTRACE) {
-          re.printStackTrace();
-        }
+        LOGGER.debug("SeriesCoefficient.polynomialSeriesCoefficient() failed", re);
       }
       return F.NIL;
     }

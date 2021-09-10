@@ -6,7 +6,6 @@ import org.apache.logging.log4j.Logger;
 import org.hipparchus.exception.MathRuntimeException;
 import org.hipparchus.linear.FieldMatrix;
 import org.hipparchus.linear.RealMatrix;
-import org.matheclipse.core.basic.Config;
 import org.matheclipse.core.convert.Convert;
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.exception.LimitException;
@@ -109,9 +108,7 @@ public abstract class AbstractMatrix1Expr extends AbstractFunctionEvaluator {
         // org.hipparchus.exception.MathIllegalArgumentException: inconsistent dimensions: 0 != 3
         LOGGER.log(engine.getLogLevel(), ast.topHead(), mre);
       } catch (final RuntimeException e) {
-        if (Config.SHOW_STACKTRACE) {
-          e.printStackTrace();
-        }
+        LOGGER.debug("AbstractMatrix1Expr.numericEval() failed", e);
       }
     }
     return F.NIL;

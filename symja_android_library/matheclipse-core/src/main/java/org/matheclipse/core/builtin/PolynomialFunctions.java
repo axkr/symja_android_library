@@ -207,9 +207,7 @@ public class PolynomialFunctions {
       } catch (LimitException le) {
         throw le;
       } catch (RuntimeException ae) {
-        if (Config.SHOW_STACKTRACE) {
-          ae.printStackTrace();
-        }
+        LOGGER.debug("Coefficient.evaluate() failed", ae);
         return F.C0;
       }
     }
@@ -271,9 +269,7 @@ public class PolynomialFunctions {
         ExprPolynomial poly = ring.create(expr, false, true, true);
         return poly.coefficientArrays((int) poly.degree());
       } catch (RuntimeException rex) {
-        if (Config.SHOW_STACKTRACE) {
-          rex.printStackTrace();
-        }
+        LOGGER.debug("CoefficientArrays.evaluate() failed", rex);
       }
       // default mapping
       IASTAppendable ruleList = F.ListAlloc(symbolList.size());
@@ -353,9 +349,7 @@ public class PolynomialFunctions {
               }
             } catch (RuntimeException rex) {
               // toInt() conversion failed
-              if (Config.SHOW_STACKTRACE) {
-                rex.printStackTrace();
-              }
+              LOGGER.debug("CoefficientRules.evaluate() failed", rex);
             }
           }
           return F.NIL;
@@ -368,9 +362,7 @@ public class PolynomialFunctions {
         ExprPolynomial poly = ring.create(expr, false, true, true);
         return poly.coefficientRules();
       } catch (RuntimeException rex) {
-        if (Config.SHOW_STACKTRACE) {
-          rex.printStackTrace();
-        }
+        LOGGER.debug("CoefficientRules.evaluate() failed", rex);
       }
       // default mapping
       IASTAppendable ruleList = F.ListAlloc(symbolList.size());
@@ -442,10 +434,7 @@ public class PolynomialFunctions {
         }
         return resultList;
       } catch (ArithmeticException ae) {
-        // toInt() conversion failed
-        if (Config.DEBUG) {
-          ae.printStackTrace();
-        }
+        LOGGER.debug("CoefficientRules.coefficientRulesModulus() failed", ae);
       }
       return F.NIL;
     }
@@ -1076,9 +1065,7 @@ public class PolynomialFunctions {
           p1 = factory.resultant(p1, p2);
           return jas.exprPoly2Expr(p1);
         } catch (RuntimeException rex) {
-          if (Config.DEBUG) {
-            rex.printStackTrace();
-          }
+          LOGGER.debug("Resultant.jasResultant() failed", rex);
         }
       }
       return F.NIL;
@@ -1941,9 +1928,7 @@ public class PolynomialFunctions {
                 return monomialListModulus(expr, varList, termOrder, option);
               }
             } catch (RuntimeException rex) {
-              if (Config.SHOW_STACKTRACE) {
-                rex.printStackTrace();
-              }
+              LOGGER.debug("MonomialList.evaluate() failed", rex);
             }
           }
           return F.NIL;
@@ -1956,9 +1941,7 @@ public class PolynomialFunctions {
         ExprPolynomial poly = ring.create(expr, false, true, true);
         return poly.monomialList();
       } catch (RuntimeException rex) {
-        if (Config.SHOW_STACKTRACE) {
-          rex.printStackTrace();
-        }
+        LOGGER.debug("MonomialList.evaluate() failed", rex);
       }
       // default mapping
       return F.List(expr);
@@ -1997,9 +1980,7 @@ public class PolynomialFunctions {
         return list;
       } catch (ArithmeticException ae) {
         // toInt() conversion failed
-        if (Config.DEBUG) {
-          ae.printStackTrace();
-        }
+        LOGGER.debug("MonomialList.monomialListModulus() failed", ae);
       }
       return F.NIL;
     }
@@ -2060,9 +2041,7 @@ public class PolynomialFunctions {
       throw le;
     } catch (RuntimeException ex) {
       // org.matheclipse.core.polynomials.longexponent.ExprPolynomialRing.create()
-      if (Config.SHOW_STACKTRACE) {
-        ex.printStackTrace();
-      }
+      LOGGER.debug("PolynomialFunctions.coefficientList() failed", ex);
     }
     if (listOfVariables.argSize() > 0) {
       return F.Nest(S.List, expr, listOfVariables.argSize());

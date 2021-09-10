@@ -716,9 +716,7 @@ public class Algebra {
           }
           return result;
         } catch (JASConversionException e) {
-          if (Config.SHOW_STACKTRACE) {
-            e.printStackTrace();
-          }
+          LOGGER.debug("Cancel.cancelQuotientRemainder() failed", e);
         }
       }
       return null;
@@ -814,9 +812,7 @@ public class Algebra {
         }
 
       } catch (JASConversionException jce) {
-        if (Config.DEBUG) {
-          jce.printStackTrace();
-        }
+        LOGGER.debug("Cancle failed", jce);
       }
       return F.NIL;
     }
@@ -904,9 +900,7 @@ public class Algebra {
           }
           return arg1;
         } catch (Exception e) {
-          if (Config.SHOW_STACKTRACE) {
-            e.printStackTrace();
-          }
+          LOGGER.debug("Collect.evaluate() failed", e);
         }
       }
       return F.NIL;
@@ -2129,9 +2123,7 @@ public class Algebra {
                 F.REMEMBER_AST_CACHE.put(ast, F.NIL);
               }
             } catch (JASConversionException e) {
-              if (Config.DEBUG) {
-                e.printStackTrace();
-              }
+              LOGGER.debug("Factor.evaluate() failed", e);
             }
             return ast.arg1();
           }
@@ -2151,9 +2143,7 @@ public class Algebra {
           return temp;
         }
       } catch (JASConversionException e) {
-        if (Config.DEBUG) {
-          e.printStackTrace();
-        }
+        LOGGER.debug("Factor.evaluate() failed", e);
       }
       return ast.arg1();
     }
@@ -2251,10 +2241,7 @@ public class Algebra {
             map = factorAbstract.factors(poly);
           }
         } catch (RuntimeException rex) {
-          // System.out.println("Factor failed: " + expr.toString());
-          if (Config.SHOW_STACKTRACE) {
-            rex.printStackTrace();
-          }
+          LOGGER.debug("Factor.factor() failed", rex);
           return expr;
         }
         IASTAppendable result = F.TimesAlloc(map.size() + 1);
@@ -2458,9 +2445,7 @@ public class Algebra {
 
       } catch (JASConversionException jce) {
         // toInt() conversion failed
-        if (Config.DEBUG) {
-          jce.printStackTrace();
-        }
+        LOGGER.debug("FactorSquareFree.evaluate() failed", jce);
       }
       return ast.arg1();
     }
@@ -2511,9 +2496,7 @@ public class Algebra {
 
       } catch (JASConversionException jce) {
         // toInt() conversion failed
-        if (Config.DEBUG) {
-          jce.printStackTrace();
-        }
+        LOGGER.debug("FactorSquareFreeList.evaluate() failed", jce);
       }
       return F.NIL;
     }
@@ -2666,13 +2649,7 @@ public class Algebra {
         // }
         // }
         // } catch (JASConversionException e2) {
-        // if (Config.SHOW_STACKTRACE) {
-        // e2.printStackTrace();
-        // }
-        // } catch (JASConversionException e2) {
-        // if (Config.SHOW_STACKTRACE) {
-        // e2.printStackTrace();
-        // }
+        // LOGGER.debug("FactorTerms.evaluate() failed", e2);
         // }
 
       }
@@ -2870,9 +2847,7 @@ public class Algebra {
           } catch (ArithmeticException aex) {
             LOGGER.log(engine.getLogLevel(), S.PolynomialExtendedGCD, aex);
           } catch (JASConversionException e) {
-            if (Config.DEBUG) {
-              e.printStackTrace();
-            }
+            LOGGER.debug("PolynomialExtendedGCD.evaluate() failed", e);
           }
           return F.NIL;
         }
@@ -2927,9 +2902,7 @@ public class Algebra {
           }
           return F.NIL;
         } catch (RuntimeException rex) {
-          if (Config.SHOW_STACKTRACE) {
-            rex.printStackTrace();
-          }
+          LOGGER.debug("PolynomialExtendedGCD.evaluate() failed", rex);
         }
       }
 
@@ -3064,9 +3037,7 @@ public class Algebra {
             // }
             // return jas.exprPoly2Expr(p1);
           } catch (RuntimeException rex) {
-            if (Config.DEBUG) {
-              e.printStackTrace();
-            }
+            LOGGER.debug("PolynomialGCD.evaluate() failed", rex);
           }
         }
         IAST list = ast.setAtCopy(0, S.List);
@@ -3117,9 +3088,7 @@ public class Algebra {
         }
         return Algebra.factorModulus(jas, modIntegerRing, poly, false);
       } catch (JASConversionException e) {
-        if (Config.DEBUG) {
-          e.printStackTrace();
-        }
+        LOGGER.debug("PolynomialGCD.modulusGCD() failed", e);
       }
       return F.NIL;
     }
@@ -3233,9 +3202,7 @@ public class Algebra {
                 }
                 return jas.exprPoly2Expr(p1);
               } catch (RuntimeException rex) {
-                if (Config.DEBUG) {
-                  e.printStackTrace();
-                }
+                LOGGER.debug("PolynomialLCM.evaluate() failed", rex);
               }
             }
             return F.NIL;
@@ -3265,9 +3232,7 @@ public class Algebra {
             return jas.integerPoly2Expr(poly.monic());
           }
         } catch (ClassCastException | JASConversionException e) {
-          if (Config.SHOW_STACKTRACE) {
-            e.printStackTrace();
-          }
+          LOGGER.debug("PolynomialLCM.evaluate() failed", e);
           IAST list = ast.setAtCopy(0, S.List);
           IExpr[] result = InternalFindCommonFactorPlus.findCommonFactors(list, true);
           if (result != null) {
@@ -3532,9 +3497,7 @@ public class Algebra {
         } catch (LimitException le) {
           throw le;
         } catch (RuntimeException rex) {
-          if (Config.SHOW_STACKTRACE) {
-            rex.printStackTrace();
-          }
+          LOGGER.debug("PolynomialQuotientRemainder.quotientRemainder() failed", rex);
         }
       }
       return null;
@@ -3607,9 +3570,7 @@ public class Algebra {
         // division by zero
         LOGGER.log(engine.getLogLevel(), S.PolynomialQuotientRemainder, aex);
       } catch (RuntimeException rex) {
-        if (Config.SHOW_STACKTRACE) {
-          rex.printStackTrace();
-        }
+        LOGGER.debug("PolynomialQuotientRemainder.evaluate() failed", rex);
       }
       return F.NIL;
     }
@@ -3633,9 +3594,7 @@ public class Algebra {
         result[1] = jas.modLongPoly2Expr(divRem[1]);
         return result;
       } catch (JASConversionException e) {
-        if (Config.DEBUG) {
-          e.printStackTrace();
-        }
+        LOGGER.debug("PolynomialQuotientRemainder.quotientRemainderModInteger() failed", e);
       }
       return null;
     }
@@ -3725,9 +3684,7 @@ public class Algebra {
         // division by zero
         LOGGER.log(engine.getLogLevel(), S.PolynomialRemainder, aex);
       } catch (RuntimeException rex) {
-        if (Config.SHOW_STACKTRACE) {
-          rex.printStackTrace();
-        }
+        LOGGER.debug("PolynomialRemainder.evaluate() failed", rex);
       }
       return F.NIL;
     }
@@ -4216,9 +4173,7 @@ public class Algebra {
               }
             }
           } catch (JASConversionException e2) {
-            if (Config.SHOW_STACKTRACE) {
-              e2.printStackTrace();
-            }
+            LOGGER.debug("ToRadicals.rootToRadicals() failed", e2);
           }
         }
       }
@@ -4430,9 +4385,7 @@ public class Algebra {
           }
           return F.Times(exprNumerator, F.Power(denom, -1));
         } catch (JASConversionException jce) {
-          if (Config.DEBUG) {
-            jce.printStackTrace();
-          }
+          LOGGER.debug("Together.togetherPlus()", jce);
         }
         return F.Times(exprNumerator, F.Power(denom, F.CN1));
       }
@@ -4519,12 +4472,9 @@ public class Algebra {
           }
           return Cancel.togetherPowerTimes(ast);
         } catch (JASConversionException jce) {
-          if (Config.DEBUG) {
-            jce.printStackTrace();
-          }
+          LOGGER.debug("Together.togetherPlusTimesPower() failed", jce);
         }
       }
-
       return F.NIL;
     }
 
@@ -4797,9 +4747,7 @@ public class Algebra {
       result[2] = substitutions.replaceBackward(result[2]);
       return result;
     } catch (RuntimeException e) {
-      if (Config.SHOW_STACKTRACE) {
-        e.printStackTrace();
-      }
+      LOGGER.debug("Algebra.cancelGCD() failed", e);
     }
     return null;
   }
@@ -4983,9 +4931,7 @@ public class Algebra {
         return factorRational(polyRat, jas, head);
       }
     } catch (RuntimeException rex) {
-      if (Config.SHOW_STACKTRACE) {
-        rex.printStackTrace();
-      }
+      LOGGER.debug("Algebra.factorComplex() failed", rex);
     }
     return expr;
   }
@@ -5036,9 +4982,7 @@ public class Algebra {
       return factorModulus(jas, modIntegerRing, poly, factorSquareFree);
     } catch (ArithmeticException ae) {
       // toInt() conversion failed
-      if (Config.DEBUG) {
-        ae.printStackTrace();
-      }
+      LOGGER.debug("Algebra.factorModulus() failed", ae);
     }
     return F.NIL;
   }
@@ -5503,9 +5447,7 @@ public class Algebra {
       }
     } catch (RuntimeException e) {
       // JAS may throw JASConversionException and RuntimeExceptions
-      if (Config.DEBUG) {
-        e.printStackTrace();
-      }
+      LOGGER.debug("Algebra.partialFractionDecompositionRational() failed", e);
     }
     return F.NIL;
   }

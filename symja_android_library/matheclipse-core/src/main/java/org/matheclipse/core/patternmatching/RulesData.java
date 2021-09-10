@@ -437,9 +437,9 @@ public final class RulesData implements Serializable {
             // if (pmEvaluator.getLHSPriority() == 6656) {
             // System.out.println("Debug from this line");
             // }
-            if (Config.SHOW_STACKTRACE) {
+            if (LOGGER.isDebugEnabled()) {
               if (isShowPriority(pmEvaluator)) {
-                System.out.print("try: " + pmEvaluator.getLHSPriority() + " - ");
+                LOGGER.debug("try: {} - ", pmEvaluator.getLHSPriority());
               }
               // if (pmEvaluator.getLHSPriority() == 432) {
               // System.out.println(pmEvaluator.toString());
@@ -462,10 +462,9 @@ public final class RulesData implements Serializable {
               //                // }
               //                System.out.println("Result: "+result.toString());
               //              }
-              if (Config.SHOW_STACKTRACE) {
+              if (LOGGER.isDebugEnabled()) {
                 if (isShowPriority(pmEvaluator)) {
-                  System.out.println(
-                      "matched: " + pmEvaluator.getLHSPriority() + ": " + pmEvaluator.toString());
+                  LOGGER.debug("matched: {}: {}", pmEvaluator.getLHSPriority(), pmEvaluator);
                 }
               }
               if (showSteps) {
@@ -481,16 +480,16 @@ public final class RulesData implements Serializable {
               }
               return result;
             }
-            if (Config.SHOW_STACKTRACE) {
+            if (LOGGER.isDebugEnabled()) {
               if (isShowPriority(pmEvaluator)) {
-                System.out.print("not matched: " + pmEvaluator.getLHSPriority() + " ");
+                LOGGER.debug("not matched: {}", pmEvaluator.getLHSPriority());
               }
             }
           }
         }
       }
     } catch (CloneNotSupportedException cnse) {
-      cnse.printStackTrace();
+      LOGGER.error("RulesData.evalDownRule() failed", cnse);
     } finally {
       engine.setEvalRHSMode(evalRHSMode);
     }
@@ -532,7 +531,7 @@ public final class RulesData implements Serializable {
         }
       }
     } catch (CloneNotSupportedException cnse) {
-      cnse.printStackTrace();
+      LOGGER.error("RulesData.evalUpRule() failed", cnse);
     }
     return F.NIL;
   }

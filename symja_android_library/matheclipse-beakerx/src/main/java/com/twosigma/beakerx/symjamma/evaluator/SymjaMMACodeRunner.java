@@ -21,6 +21,8 @@ import java.io.StringWriter;
 import java.lang.reflect.InvocationTargetException;
 import java.util.concurrent.Callable;
 import java.util.concurrent.TimeUnit;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.matheclipse.core.builtin.GraphicsFunctions;
 import org.matheclipse.core.eval.EvalControlledCallable;
 import org.matheclipse.core.eval.ExprEvaluator;
@@ -36,6 +38,7 @@ import com.twosigma.beakerx.symjamma.output.MarkdownNotebookOutput;
 import com.twosigma.beakerx.symjamma.output.SVGImageNotebookOutput;
 
 class SymjaMMACodeRunner implements Callable<TryResult> {
+  private static final Logger LOGGER = LogManager.getLogger();
 
   public static final String SCRIPT_NAME = "script";
   SymjaMMAEvaluator symjammaEvaluator;
@@ -89,7 +92,7 @@ class SymjaMMACodeRunner implements Callable<TryResult> {
         }
       }
     } catch (final Exception e) {
-      e.printStackTrace();
+      LOGGER.error("SymjaMMACodeRunner.interpreter() failed", e);
     }
     return new MarkdownNotebookOutput(buf.toString());
   }

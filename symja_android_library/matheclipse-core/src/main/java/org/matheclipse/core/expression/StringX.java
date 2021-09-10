@@ -6,6 +6,8 @@ import java.nio.charset.StandardCharsets;
 import java.text.Collator;
 import java.util.Locale;
 import java.util.function.Function;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.interfaces.IStringX;
 import org.matheclipse.core.interfaces.ISymbol;
@@ -20,6 +22,7 @@ import org.matheclipse.core.visit.IVisitorLong;
  * @see org.matheclipse.core.interfaces.IStringX
  */
 public class StringX implements IStringX {
+  private static final Logger LOGGER = LogManager.getLogger();
 
   public static final Collator US_COLLATOR = Collator.getInstance(Locale.US);
   /** */
@@ -256,7 +259,7 @@ public class StringX implements IStringX {
     try {
       return (IExpr) clone();
     } catch (CloneNotSupportedException e) {
-      e.printStackTrace();
+      LOGGER.error("StringX.copy() failed", e);
       return null;
     }
   }

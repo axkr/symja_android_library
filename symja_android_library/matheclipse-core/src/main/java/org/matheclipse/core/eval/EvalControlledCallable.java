@@ -4,7 +4,6 @@ import java.io.StringWriter;
 import java.util.concurrent.Callable;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-import org.matheclipse.core.basic.Config;
 import org.matheclipse.core.builtin.IOFunctions;
 import org.matheclipse.core.eval.exception.IterationLimitExceeded;
 import org.matheclipse.core.eval.exception.RecursionLimitExceeded;
@@ -16,7 +15,6 @@ import org.matheclipse.parser.client.SyntaxError;
 import org.matheclipse.parser.client.math.MathException;
 
 public class EvalControlledCallable implements Callable<IExpr> {
-
   private static final Logger LOGGER = LogManager.getLogger();
 
   protected final EvalEngine fEngine;
@@ -86,9 +84,7 @@ public class EvalControlledCallable implements Callable<IExpr> {
       System.err.println(buf.toString());
       System.err.flush();
     } catch (final Exception | OutOfMemoryError | StackOverflowError e) {
-      if (Config.SHOW_STACKTRACE) {
-        e.printStackTrace();
-      }
+      LOGGER.debug("EvalControlledCallable.call() failed", e);
       Validate.printException(buf, e);
       System.err.println(buf.toString());
       System.err.flush();

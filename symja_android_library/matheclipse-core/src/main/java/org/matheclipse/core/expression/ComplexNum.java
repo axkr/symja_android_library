@@ -3,6 +3,8 @@ package org.matheclipse.core.expression;
 import static org.matheclipse.core.expression.F.num;
 import java.math.RoundingMode;
 import java.util.function.Function;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.apfloat.Apcomplex;
 import org.apfloat.Apfloat;
 import org.apfloat.ApfloatRuntimeException;
@@ -35,6 +37,7 @@ import com.google.common.math.DoubleMath;
  * floating-point number.
  */
 public class ComplexNum implements IComplexNum {
+  private static final Logger LOGGER = LogManager.getLogger();
 
   /** */
   private static final long serialVersionUID = -6033055105824482264L;
@@ -323,7 +326,7 @@ public class ComplexNum implements IComplexNum {
     try {
       return (IExpr) clone();
     } catch (CloneNotSupportedException e) {
-      e.printStackTrace();
+      LOGGER.error("ComplexNum.copy() failed", e);
       return null;
     }
   }

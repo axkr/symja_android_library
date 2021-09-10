@@ -2,6 +2,8 @@ package org.matheclipse.core.expression;
 
 import java.math.RoundingMode;
 import java.util.function.Function;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.apfloat.Apcomplex;
 import org.apfloat.Apfloat;
 import org.apfloat.ApfloatRuntimeException;
@@ -32,6 +34,8 @@ import com.google.common.math.DoubleMath;
 public class Num implements INum {
   /** */
   private static final long serialVersionUID = 188084692735007429L;
+
+  private static final Logger LOGGER = LogManager.getLogger();
 
   /**
    * Returns a {@code Num} instance representing the specified {@code double} value. If a new {@code
@@ -219,7 +223,7 @@ public class Num implements INum {
     try {
       return (IExpr) clone();
     } catch (CloneNotSupportedException e) {
-      e.printStackTrace();
+      LOGGER.error("Num.copy() failed", e);
       return null;
     }
   }

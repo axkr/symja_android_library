@@ -4,7 +4,8 @@ import java.lang.reflect.Method;
 import java.lang.reflect.Type;
 import java.util.ArrayList;
 import java.util.List;
-import org.matheclipse.core.basic.Config;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.exception.ValidateException;
 import org.matheclipse.core.eval.interfaces.IFunctionEvaluator;
@@ -14,6 +15,8 @@ import org.matheclipse.core.parser.ExprParser;
 
 public class PatternMatcherAndInvoker extends PatternMatcher {
   private static final long serialVersionUID = -2448717771259975643L;
+
+  private static final Logger LOGGER = LogManager.getLogger();
 
   private transient Method fMethod;
   private transient Type[] fTypes;
@@ -98,9 +101,7 @@ public class PatternMatcherAndInvoker extends PatternMatcher {
       try {
         result = (IExpr) fMethod.invoke(fInstance);
       } catch (ValidateException | IllegalArgumentException | ReflectiveOperationException e) {
-        if (Config.SHOW_STACKTRACE) {
-          e.printStackTrace();
-        }
+        LOGGER.debug("PatternMatcherAndInvoker.eval() failed", e);
       }
       return result != null ? result : F.NIL;
     }
@@ -118,9 +119,7 @@ public class PatternMatcherAndInvoker extends PatternMatcher {
           return result != null ? result : F.NIL;
         }
       } catch (IllegalArgumentException | ReflectiveOperationException e) {
-        if (Config.SHOW_STACKTRACE) {
-          e.printStackTrace();
-        }
+        LOGGER.debug("PatternMatcherAndInvoker.eval() failed", e);
       }
     }
     return F.NIL;
