@@ -2,7 +2,8 @@ package org.matheclipse.core.eval.exception;
 
 import java.io.IOException;
 import java.math.BigInteger;
-import org.matheclipse.core.basic.Config;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.matheclipse.core.builtin.IOFunctions;
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.expression.Context;
@@ -24,6 +25,8 @@ import org.matheclipse.parser.client.Scanner;
  * </code> methods to verify correct arguments and state.
  */
 public final class Validate {
+  private static final Logger LOGGER = LogManager.getLogger();
+
 
   /** Check the argument, if it's a Java {@code int} value in the range [0, Integer.MAX_VALUE] */
   public static int checkIntType(IAST ast, int pos) {
@@ -114,9 +117,7 @@ public final class Validate {
           }
           return result;
         } catch (RuntimeException rex) {
-          if (Config.SHOW_STACKTRACE) {
-            rex.printStackTrace();
-          }
+          LOGGER.debug("Validate.checkListOfBigIntegers() failed", rex);
         }
       }
     }
@@ -166,9 +167,7 @@ public final class Validate {
           }
           return result;
         } catch (RuntimeException rex) {
-          if (Config.SHOW_STACKTRACE) {
-            rex.printStackTrace();
-          }
+          LOGGER.debug("Validate.checkListOfInts() failed", rex);
         }
       }
     }
@@ -896,9 +895,7 @@ public final class Validate {
   }
 
   public static void printException(final Appendable buf, final Throwable e) {
-    if (Config.SHOW_STACKTRACE) {
-      e.printStackTrace();
-    }
+    LOGGER.debug("Exception encountered", e);
     String msg = e.getMessage();
     try {
       if (msg != null) {

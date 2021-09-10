@@ -65,7 +65,6 @@ public class ConstantDefinitions {
       // MINUTE = Integer.parseInt(TIMESTAMP.substring(10, 12));
       // SECOND = Integer.parseInt(TIMESTAMP.substring(12, 14));
       // } catch (NumberFormatException nfe) {
-      // nfe.printStackTrace();
       // }
       // }
 

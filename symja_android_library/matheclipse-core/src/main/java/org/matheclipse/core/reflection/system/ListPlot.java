@@ -4,6 +4,8 @@ import static org.matheclipse.core.expression.F.Graphics;
 import static org.matheclipse.core.expression.F.List;
 import static org.matheclipse.core.expression.F.Rule;
 import static org.matheclipse.core.expression.F.Show;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.matheclipse.core.basic.Config;
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.interfaces.AbstractEvaluator;
@@ -18,6 +20,8 @@ import org.matheclipse.core.interfaces.ISymbol;
 
 /** Plot a list of Points */
 public class ListPlot extends AbstractEvaluator {
+  private static final Logger LOGGER = LogManager.getLogger();
+
   /** Constructor for the singleton */
   // public final static ListPlot CONST = new ListPlot();
 
@@ -108,9 +112,7 @@ public class ListPlot extends AbstractEvaluator {
         }
 
       } catch (RuntimeException rex) {
-        if (Config.SHOW_STACKTRACE) {
-          rex.printStackTrace();
-        }
+        LOGGER.debug("ListPlot.evaluate() failed", rex);
       }
     }
     return F.NIL;

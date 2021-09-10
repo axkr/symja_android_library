@@ -764,7 +764,7 @@ public class Integrate extends AbstractFunctionEvaluator {
             IExpr temp = S.Integrate.evalDownRule(EvalEngine.get(), ast);
             if (temp.isPresent()) {
               if (temp.equals(ast)) {
-                if (Config.SHOW_STACKTRACE) {
+                if (LOGGER.isDebugEnabled()) {
                   engine.setQuietMode(false);
                   IOFunctions.printMessage(S.Integrate, "rubiendless", F.List(temp), engine);
                 }
@@ -791,13 +791,9 @@ public class Integrate extends AbstractFunctionEvaluator {
           }
 
         } catch (AbortException ae) {
-          if (Config.DEBUG) {
-            ae.printStackTrace();
-          }
+          LOGGER.debug("Integrate.integrateByRubiRules() aborted", ae);
         } catch (final FailedException fe) {
-          if (Config.DEBUG) {
-            fe.printStackTrace();
-          }
+          LOGGER.debug("Integrate.integrateByRubiRules() failed", fe);
         } finally {
           engine.setRecursionLimit(limit);
           if (newCache) {

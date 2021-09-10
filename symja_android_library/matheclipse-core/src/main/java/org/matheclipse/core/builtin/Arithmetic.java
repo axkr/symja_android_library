@@ -711,9 +711,7 @@ public final class Arithmetic {
           return F.chopNumber((INumber) arg1, delta);
         }
       } catch (Exception e) {
-        if (Config.SHOW_STACKTRACE) {
-          e.printStackTrace();
-        }
+        LOGGER.debug("Chop.evaluate() failed", e);
       }
 
       return arg1;
@@ -1048,9 +1046,7 @@ public final class Arithmetic {
           // }
         }
       } catch (Exception e) {
-        if (Config.SHOW_STACKTRACE) {
-          e.printStackTrace();
-        }
+        LOGGER.debug("Complex.evaluate() failed", e);
       }
 
       return F.NIL;
@@ -2048,11 +2044,9 @@ public final class Arithmetic {
       // }
       //
       // } catch (ValidateException ve) {
-      // if (FEConfig.SHOW_STACKTRACE) {
-      // ve.printStackTrace();
-      // }
+      //   LOGGER.debug("HarmonicNumber.harmonic() failed", ve);
       // } catch (RuntimeException rex) {
-      // // rex.printStackTrace();
+      // // LOGGER.error("HarmonicNumber.harmonic() failed", rex);
       // return engine.printMessage(ast.topHead(), rex);
       // }
       // }
@@ -4716,9 +4710,7 @@ public final class Arithmetic {
           // return F.num(numerator.doubleValue() / denominator.doubleValue());
 
         } catch (Exception e) {
-          if (Config.SHOW_STACKTRACE) {
-            e.printStackTrace();
-          }
+          LOGGER.debug("Rational.evaluate() failed", e);
         }
       }
       return F.NIL;

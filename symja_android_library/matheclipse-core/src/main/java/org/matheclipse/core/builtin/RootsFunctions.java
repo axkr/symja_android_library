@@ -131,9 +131,7 @@ public class RootsFunctions {
         }
         return resultList;
       } catch (InvalidBoundaryException | JASConversionException e) {
-        if (Config.SHOW_STACKTRACE) {
-          e.printStackTrace();
-        }
+        LOGGER.debug("RootIntervals.croots() failed", e);
       }
       return F.NIL;
     }
@@ -439,9 +437,7 @@ public class RootsFunctions {
         org.hipparchus.complex.Complex[] roots = solver.solveAllComplex(coefficients, 0);
         return Object2Expr.convertComplex(true, roots);
       } catch (org.hipparchus.exception.MathRuntimeException mrex) {
-        if (Config.SHOW_STACKTRACE) {
-          mrex.printStackTrace();
-        }
+        LOGGER.debug("RootsFunctions.roots() failed", mrex);
         return F.NIL;
       }
     }
@@ -567,9 +563,7 @@ public class RootsFunctions {
         return result;
       }
     } catch (JASConversionException e2) {
-      if (Config.SHOW_STACKTRACE) {
-        e2.printStackTrace();
-      }
+      LOGGER.debug("RootsFunctions.rootsOfExprPolynomial() failed", e2);
     }
     return F.NIL;
   }
@@ -597,9 +591,7 @@ public class RootsFunctions {
       result = QuarticSolver.sortASTArguments(result);
       return result;
     } catch (JASConversionException e2) {
-      if (Config.SHOW_STACKTRACE) {
-        e2.printStackTrace();
-      }
+      LOGGER.debug("RootsFunctions.rootsOfQuadraticExprPolynomial() failed", e2);
     }
     return result;
   }

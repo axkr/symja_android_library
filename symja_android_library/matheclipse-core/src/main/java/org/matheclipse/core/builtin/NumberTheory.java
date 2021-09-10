@@ -330,9 +330,7 @@ public final class NumberTheory {
           }
 
         } catch (RuntimeException rex) {
-          if (Config.SHOW_STACKTRACE) {
-            rex.printStackTrace();
-          }
+          LOGGER.debug("BernoulliB.evaluate() failed", rex);
         }
         return F.NIL;
       }
@@ -366,9 +364,7 @@ public final class NumberTheory {
             }
           }
         } catch (RuntimeException rex) {
-          if (Config.SHOW_STACKTRACE) {
-            rex.printStackTrace();
-          }
+          LOGGER.debug("BernoulliB.evaluate() failed", rex);
         }
       }
       return F.NIL;
@@ -825,9 +821,7 @@ public final class NumberTheory {
         } catch (ValidateException ve) {
           LOGGER.log(engine.getLogLevel(), ast.topHead(), ve);
         } catch (ArithmeticException ae) {
-          if (Config.SHOW_STACKTRACE) {
-            ae.printStackTrace();
-          }
+          LOGGER.debug("ChineseRemainder.evaluate() failed", ae);
         }
       }
       return F.NIL;
@@ -849,9 +843,7 @@ public final class NumberTheory {
       try {
         return F.ZZ(chineseRemainders(nBig, aBig));
       } catch (ArithmeticException ae) {
-        if (Config.SHOW_STACKTRACE) {
-          ae.printStackTrace();
-        }
+        LOGGER.debug("ChineseRemainder.chineseRemainderBigInteger() failed", ae);
       }
       return F.NIL;
     }
@@ -1951,9 +1943,7 @@ public final class NumberTheory {
         // create the output list
         return F.List(F.ZZ(gcd), subList);
       } catch (ArithmeticException ae) {
-        if (Config.SHOW_STACKTRACE) {
-          ae.printStackTrace();
-        }
+        LOGGER.debug("ExtendedGCD.evaluate() failed", ae);
       }
       return F.NIL;
     }
@@ -3840,7 +3830,7 @@ public final class NumberTheory {
               throw (LimitException) th;
             }
           } catch (ExecutionException e) {
-            // e.printStackTrace();
+            // LOGGER.error("PartitionsP.evaluate() failed", e);
           }
           return F.NIL;
         }
@@ -3947,7 +3937,7 @@ public final class NumberTheory {
               throw (LimitException) th;
             }
           } catch (ExecutionException e) {
-            // e.printStackTrace();
+            // LOGGER.error("PartitionsQ.evaluate() failed", e);
           }
           return F.NIL;
         }
@@ -4153,13 +4143,9 @@ public final class NumberTheory {
         try {
           return F.ZZ(Primality.prime(nthPrime));
         } catch (RuntimeException ae) {
-          if (Config.SHOW_STACKTRACE) {
-            ae.printStackTrace();
-          }
-          return F.NIL;
+          LOGGER.debug("Prime.evaluate() failed", ae);
         }
       }
-
       return F.NIL;
     }
 
@@ -4372,9 +4358,7 @@ public final class NumberTheory {
         } catch (LimitException le) {
           throw le;
         } catch (RuntimeException rex) {
-          if (Config.SHOW_STACKTRACE) {
-            rex.printStackTrace();
-          }
+          LOGGER.debug("PrimitiveRoot.evaluate() failed", rex);
         }
       }
       return F.NIL;
@@ -4434,9 +4418,7 @@ public final class NumberTheory {
         } catch (LimitException le) {
           throw le;
         } catch (RuntimeException rex) {
-          if (Config.SHOW_STACKTRACE) {
-            rex.printStackTrace();
-          }
+          LOGGER.debug("PrimitiveRootList.evaluateArg1() failed", rex);
         }
       }
       return F.NIL;
@@ -4534,9 +4516,7 @@ public final class NumberTheory {
         // try to convert into a fractional number
         return rationalize(arg1, epsilon).orElse(arg1);
       } catch (Exception e) {
-        if (Config.SHOW_STACKTRACE) {
-          e.printStackTrace();
-        }
+        LOGGER.debug("Rationalize.evaluate() failed", e);
       }
 
       return F.NIL;
@@ -4647,9 +4627,7 @@ public final class NumberTheory {
         return F.bool(isSquarefree(expr, varList));
       } catch (RuntimeException e) {
         // JAS may throw RuntimeExceptions
-        if (Config.SHOW_STACKTRACE) {
-          e.printStackTrace();
-        }
+        LOGGER.debug("SquareFreeQ.evaluate() failed", e);
       }
       return F.NIL;
     }
@@ -4715,9 +4693,7 @@ public final class NumberTheory {
       // return result;
       // } catch (ArithmeticException ae) {
       // // toInt() conversion failed
-      // if (Config.DEBUG) {
-      // ae.printStackTrace();
-      // }
+      // LOGGER.debug("SquareFreeQ.isSquarefreeWithOption() failed", ae);
       // return null; // no evaluation
       // }
       // }

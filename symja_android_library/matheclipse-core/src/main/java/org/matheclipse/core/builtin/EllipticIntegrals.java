@@ -4,7 +4,6 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.hipparchus.complex.Complex;
 import org.hipparchus.special.elliptic.carlson.CarlsonEllipticIntegral;
-import org.matheclipse.core.basic.Config;
 import org.matheclipse.core.builtin.functions.EllipticFunctionsJS;
 import org.matheclipse.core.builtin.functions.EllipticIntegralsJS;
 import org.matheclipse.core.convert.Object2Expr;
@@ -307,9 +306,7 @@ public class EllipticIntegrals {
             return F.num(EllipticIntegralsJS.carlsonRG(xd, yd, zd));
           }
         } catch (ValidateException ve) {
-          if (Config.SHOW_STACKTRACE) {
-            ve.printStackTrace();
-          }
+          LOGGER.debug("CarlsonRG.evaluate() failed", ve);
         } catch (RuntimeException rex) {
           LOGGER.log(engine.getLogLevel(), ast.topHead(), rex);
         }
@@ -375,9 +372,7 @@ public class EllipticIntegrals {
             return F.num(EllipticIntegralsJS.carlsonRJ(xd, yd, zd, pd));
           }
         } catch (ValidateException ve) {
-          if (Config.SHOW_STACKTRACE) {
-            ve.printStackTrace();
-          }
+          LOGGER.debug("CarlsonRJ.evaluate() failed", ve);
         } catch (RuntimeException rex) {
           LOGGER.log(engine.getLogLevel(), ast.topHead(), rex);
         }
@@ -468,9 +463,7 @@ public class EllipticIntegrals {
               return F.complexNum(EllipticIntegralsJS.ellipticE(zDouble, mDouble));
             }
           } catch (ValidateException ve) {
-            if (Config.SHOW_STACKTRACE) {
-              ve.printStackTrace();
-            }
+            LOGGER.debug("EllipticE.evaluate() failed", ve);
           } catch (RuntimeException rex) {
             LOGGER.log(engine.getLogLevel(), ast.topHead(), rex);
             return F.NIL;
@@ -524,9 +517,7 @@ public class EllipticIntegrals {
             return F.complexNum(EllipticIntegralsJS.ellipticE(Math.PI / 2.0, zDouble));
           }
         } catch (ValidateException ve) {
-          if (Config.SHOW_STACKTRACE) {
-            ve.printStackTrace();
-          }
+          LOGGER.debug("EllipticE.evaluate() failed", ve);
         } catch (RuntimeException rex) {
           LOGGER.log(engine.getLogLevel(), ast.topHead(), rex);
           return F.NIL;
@@ -631,9 +622,7 @@ public class EllipticIntegrals {
             return F.complexNum(EllipticIntegralsJS.ellipticF(zDouble, mDouble));
           }
         } catch (ValidateException ve) {
-          if (Config.SHOW_STACKTRACE) {
-            ve.printStackTrace();
-          }
+          LOGGER.debug("EllipticF.evaluate() failed", ve);
         } catch (RuntimeException rex) {
           LOGGER.log(engine.getLogLevel(), ast.topHead(), rex);
           return F.NIL;
@@ -739,9 +728,7 @@ public class EllipticIntegrals {
             return F.complexNum(EllipticIntegralsJS.ellipticK(mDouble));
           }
         } catch (ValidateException ve) {
-          if (Config.SHOW_STACKTRACE) {
-            ve.printStackTrace();
-          }
+          LOGGER.debug("EllipticK.evaluate() failed", ve);
         } catch (RuntimeException rex) {
           LOGGER.log(engine.getLogLevel(), ast.topHead(), rex);
           return F.NIL;
@@ -833,9 +820,7 @@ public class EllipticIntegrals {
               return F.complexNum(EllipticIntegralsJS.ellipticPi(nDouble, zDouble, mDouble));
             }
           } catch (ValidateException ve) {
-            if (Config.SHOW_STACKTRACE) {
-              ve.printStackTrace();
-            }
+            LOGGER.debug("EllipticPi.evaluate() failed", ve);
           } catch (RuntimeException rex) {
             LOGGER.log(engine.getLogLevel(), ast.topHead(), rex);
             return F.NIL;
@@ -894,9 +879,7 @@ public class EllipticIntegrals {
             return F.complexNum(EllipticIntegralsJS.ellipticPi(nDouble, Math.PI / 2.0, mDouble));
           }
         } catch (ValidateException ve) {
-          if (Config.SHOW_STACKTRACE) {
-            ve.printStackTrace();
-          }
+          LOGGER.debug("EllipticPi.evaluate() failed", ve);
         } catch (RuntimeException rex) {
           LOGGER.log(engine.getLogLevel(), ast.topHead(), rex);
           return F.NIL;
@@ -1169,9 +1152,7 @@ public class EllipticIntegrals {
           return F.num(EllipticFunctionsJS.jacobiCD(zDouble, mDouble));
         }
       } catch (ValidateException ve) {
-        if (Config.SHOW_STACKTRACE) {
-          ve.printStackTrace();
-        }
+        LOGGER.debug("JacobiCD.evaluate() failed", ve);
       } catch (RuntimeException rex) {
         LOGGER.log(engine.getLogLevel(), ast.topHead(), rex);
       }
@@ -1241,9 +1222,7 @@ public class EllipticIntegrals {
           return F.num(EllipticFunctionsJS.jacobiCN(zDouble, mDouble));
         }
       } catch (ValidateException ve) {
-        if (Config.SHOW_STACKTRACE) {
-          ve.printStackTrace();
-        }
+        LOGGER.debug("JacobiCN.evaluate() failed", ve);
       } catch (RuntimeException rex) {
         LOGGER.log(engine.getLogLevel(), ast.topHead(), rex);
       }
@@ -1313,9 +1292,7 @@ public class EllipticIntegrals {
           return F.num(EllipticFunctionsJS.jacobiDN(zDouble, mDouble));
         }
       } catch (ValidateException ve) {
-        if (Config.SHOW_STACKTRACE) {
-          ve.printStackTrace();
-        }
+        LOGGER.debug("JacobiDN.evaluate() failed", ve);
       } catch (RuntimeException rex) {
         LOGGER.log(engine.getLogLevel(), ast.topHead(), rex);
       }
@@ -1390,9 +1367,7 @@ public class EllipticIntegrals {
             return F.num(EllipticFunctionsJS.jacobiSC(zDouble, mDouble));
           }
         } catch (ValidateException ve) {
-          if (Config.SHOW_STACKTRACE) {
-            ve.printStackTrace();
-          }
+          LOGGER.debug("JacobiSC.evaluate() failed", ve);
         } catch (RuntimeException rex) {
           LOGGER.log(engine.getLogLevel(), ast.topHead(), rex);
         }
@@ -1464,9 +1439,7 @@ public class EllipticIntegrals {
             return F.num(EllipticFunctionsJS.jacobiSD(zDouble, mDouble));
           }
         } catch (ValidateException ve) {
-          if (Config.SHOW_STACKTRACE) {
-            ve.printStackTrace();
-          }
+          LOGGER.debug("JacobiSD.evaluate() failed", ve);
         } catch (RuntimeException rex) {
           LOGGER.log(engine.getLogLevel(), ast.topHead(), rex);
         }
@@ -1538,9 +1511,7 @@ public class EllipticIntegrals {
             return F.num(EllipticFunctionsJS.jacobiSN(zDouble, mDouble));
           }
         } catch (ValidateException ve) {
-          if (Config.SHOW_STACKTRACE) {
-            ve.printStackTrace();
-          }
+          LOGGER.debug("JacobiSN.evaluate() failed", ve);
         } catch (RuntimeException rex) {
           LOGGER.log(engine.getLogLevel(), ast.topHead(), rex);
         }
@@ -1643,9 +1614,7 @@ public class EllipticIntegrals {
           // unevaluated
           return F.NIL;
         } catch (ValidateException ve) {
-          if (Config.SHOW_STACKTRACE) {
-            ve.printStackTrace();
-          }
+          LOGGER.debug("KleinInvariantJ.evaluate() failed", ve);
         } catch (RuntimeException rex) {
           LOGGER.log(engine.getLogLevel(), ast.topHead(), rex);
         }

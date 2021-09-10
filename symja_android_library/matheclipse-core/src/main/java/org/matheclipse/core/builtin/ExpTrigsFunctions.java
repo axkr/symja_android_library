@@ -42,7 +42,6 @@ import org.apfloat.Apint;
 import org.apfloat.FixedPrecisionApfloatHelper;
 import org.hipparchus.complex.Complex;
 import org.hipparchus.util.FastMath;
-import org.matheclipse.core.basic.Config;
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.exception.ValidateException;
 import org.matheclipse.core.eval.interfaces.AbstractArg1;
@@ -2157,9 +2156,7 @@ public class ExpTrigsFunctions {
             // z)))));
           }
         } catch (ValidateException ve) {
-          if (Config.SHOW_STACKTRACE) {
-            ve.printStackTrace();
-          }
+          LOGGER.debug("Gudermannian.evaluate() failed", ve);
         } catch (RuntimeException rex) {
           LOGGER.log(engine.getLogLevel(), ast.topHead(), rex);
         }
@@ -2232,9 +2229,7 @@ public class ExpTrigsFunctions {
                     ));
           }
         } catch (ValidateException ve) {
-          if (Config.SHOW_STACKTRACE) {
-            ve.printStackTrace();
-          }
+          LOGGER.debug("InverseGudermannian.evaluate() failed", ve);
         } catch (RuntimeException rex) {
           LOGGER.log(engine.getLogLevel(), ast.topHead(), rex);
         }

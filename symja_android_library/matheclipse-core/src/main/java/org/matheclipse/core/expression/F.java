@@ -1081,7 +1081,7 @@ public class F extends S {
       COUNT_DOWN_LATCH.countDown();
 
     } catch (Throwable th) {
-      th.printStackTrace();
+      LOGGER.error("F-class initilaization failed", th);
     }
   }
 
@@ -4522,7 +4522,7 @@ public class F extends S {
         // try {
         // reader = new InputStreamReader(new FileInputStream(fileName), "UTF-8");
         // } catch (FileNotFoundException e) {
-        // e.printStackTrace();
+        // LOGGER.error("F.initSymbols() failed", e);
         // }
         // }
         // if (reader == null) {
@@ -4538,7 +4538,7 @@ public class F extends S {
 
         isSystemInitialized = true;
       } catch (Throwable th) {
-        th.printStackTrace();
+        LOGGER.error("F.initSymbols() failed", th);
       }
     }
   }
@@ -8746,9 +8746,7 @@ public class F extends S {
       }
       return showGraphic(expr);
     } catch (Exception ex) {
-      if (Config.SHOW_STACKTRACE) {
-        ex.printStackTrace();
-      }
+      LOGGER.debug("F.show() failed", ex);
     }
     return null;
   }
@@ -8766,9 +8764,7 @@ public class F extends S {
             html = StringUtils.replace(html, "`1`", jsonStr);
             return openHTMLOnDesktop(html);
           } catch (Exception ex) {
-            if (Config.SHOW_STACKTRACE) {
-              ex.printStackTrace();
-            }
+            LOGGER.debug("F.showGraphic() failed", ex);
           }
         }
       } else if (expr instanceof GraphExpr) {
@@ -8796,9 +8792,7 @@ public class F extends S {
         return buf.toString();
       }
     } catch (Exception ex) {
-      if (Config.SHOW_STACKTRACE) {
-        ex.printStackTrace();
-      }
+      LOGGER.debug("F.showGraphic() failed", ex);
     }
     return null;
   }
@@ -8812,9 +8806,7 @@ public class F extends S {
         html = StringUtils.replace(html, "`1`", manipulateStr);
         return openHTMLOnDesktop(html);
       } catch (Exception ex) {
-        if (Config.SHOW_STACKTRACE) {
-          ex.printStackTrace();
-        }
+        LOGGER.debug("F.printJSFormData() failed", ex);
       }
       //    } else if (jsFormData.arg2().toString().equals("graphics3d")) {
       //      try {
@@ -8823,9 +8815,7 @@ public class F extends S {
       //        html = StringUtils.replace(html, "`1`", graphics3dStr);
       //        return openHTMLOnDesktop(html);
       //      } catch (Exception ex) {
-      //        if (FEConfig.SHOW_STACKTRACE) {
-      //          ex.printStackTrace();
-      //        }
+      //        LOGGER.debug("F.printJSFormData() failed", ex);
       //      }
     } else if (jsFormData.arg2().toString().equals("jsxgraph")) {
       try {
@@ -8834,9 +8824,7 @@ public class F extends S {
         html = StringUtils.replace(html, "`1`", manipulateStr);
         return openHTMLOnDesktop(html);
       } catch (Exception ex) {
-        if (Config.SHOW_STACKTRACE) {
-          ex.printStackTrace();
-        }
+        LOGGER.debug("F.printJSFormData() failed", ex);
       }
     } else if (jsFormData.arg2().toString().equals("plotly")) {
       try {
@@ -8845,9 +8833,7 @@ public class F extends S {
         html = StringUtils.replace(html, "`1`", manipulateStr);
         return openHTMLOnDesktop(html);
       } catch (Exception ex) {
-        if (Config.SHOW_STACKTRACE) {
-          ex.printStackTrace();
-        }
+        LOGGER.debug("F.printJSFormData() failed", ex);
       }
     } else if (jsFormData.arg2().toString().equals("treeform")) {
       try {
@@ -8879,9 +8865,7 @@ public class F extends S {
                 );
         return openHTMLOnDesktop(html);
       } catch (Exception ex) {
-        if (Config.SHOW_STACKTRACE) {
-          ex.printStackTrace();
-        }
+        LOGGER.debug("F.printJSFormData() failed", ex);
       }
     } else if (jsFormData.arg2().toString().equals("traceform")) {
       try {
@@ -8890,9 +8874,7 @@ public class F extends S {
         html = StringUtils.replace(html, "`1`", jsStr);
         return openHTMLOnDesktop(html);
       } catch (Exception ex) {
-        if (Config.SHOW_STACKTRACE) {
-          ex.printStackTrace();
-        }
+        LOGGER.debug("F.printJSFormData() failed", ex);
       }
     }
     return null;

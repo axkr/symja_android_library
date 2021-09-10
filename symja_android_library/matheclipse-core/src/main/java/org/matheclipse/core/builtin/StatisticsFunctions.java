@@ -247,9 +247,7 @@ public class StatisticsFunctions {
             }
           }
         } catch (Exception ex) {
-          if (Config.SHOW_STACKTRACE) {
-            ex.printStackTrace();
-          }
+          LOGGER.debug("InverseCDF.evaluate() failed", ex);
         }
       }
 
@@ -477,9 +475,7 @@ public class StatisticsFunctions {
             }
           }
         } catch (Exception ex) {
-          if (Config.SHOW_STACKTRACE) {
-            ex.printStackTrace();
-          }
+          LOGGER.debug("CDF.evaluate() failed", ex);
         }
       }
 
@@ -910,9 +906,7 @@ public class StatisticsFunctions {
       } catch (ValidateException ve) {
         LOGGER.log(engine.getLogLevel(), ast.topHead(), ve);
       } catch (ArithmeticException rex) {
-        if (Config.SHOW_STACKTRACE) {
-          rex.printStackTrace();
-        }
+        LOGGER.debug("BinCounts.evaluate() failed", rex);
       }
       return F.NIL;
     }
@@ -3278,9 +3272,7 @@ public class StatisticsFunctions {
       } catch (final ValidateException ve) {
         LOGGER.log(engine.getLogLevel(), ast.topHead(), ve);
       } catch (final IndexOutOfBoundsException e) {
-        if (Config.SHOW_STACKTRACE) {
-          e.printStackTrace();
-        }
+        LOGGER.debug("Covariance.evaluate() failed", e);
       }
       return F.NIL;
     }
@@ -3797,9 +3789,7 @@ public class StatisticsFunctions {
             }
           }
         } catch (Exception ex) {
-          if (Config.SHOW_STACKTRACE) {
-            ex.printStackTrace();
-          }
+          LOGGER.debug("Expectation.evaluate() failed", ex);
         }
       }
       return F.NIL;
@@ -4507,9 +4497,7 @@ public class StatisticsFunctions {
           return getDistribution(arg1).mean((IAST) arg1);
         }
       } catch (Exception ex) {
-        if (Config.SHOW_STACKTRACE) {
-          ex.printStackTrace();
-        }
+        LOGGER.debug("Mean.evaluateArg1() failed", ex);
       }
       return F.NIL;
     }
@@ -5333,9 +5321,7 @@ public class StatisticsFunctions {
             }
           }
         } catch (Exception ex) {
-          if (Config.SHOW_STACKTRACE) {
-            ex.printStackTrace();
-          }
+          LOGGER.debug("Probability.evaluate() failed", ex);
         }
       }
       return F.NIL;
@@ -5437,9 +5423,7 @@ public class StatisticsFunctions {
             }
           }
         } catch (Exception ex) {
-          if (Config.SHOW_STACKTRACE) {
-            ex.printStackTrace();
-          }
+          LOGGER.debug("PDF.evaluate() failed", ex);
         }
       }
       return F.NIL;
@@ -5727,9 +5711,7 @@ public class StatisticsFunctions {
                 }
               }
             } catch (ArithmeticException ae) {
-              if (Config.SHOW_STACKTRACE) {
-                ae.printStackTrace();
-              }
+              LOGGER.debug("Quantile.evaluate() failed", ae);
             }
           }
         } else if (arg1.isDistribution() && ast.size() >= 3) {
@@ -6773,9 +6755,7 @@ public class StatisticsFunctions {
             }
           }
         } catch (Exception ex) {
-          if (Config.SHOW_STACKTRACE) {
-            ex.printStackTrace();
-          }
+          LOGGER.debug("Variance.evaluate() failed", ex);
         }
       }
       return F.NIL;

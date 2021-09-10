@@ -7,6 +7,8 @@ import java.io.ObjectOutput;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.function.Function;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.hipparchus.Field;
 import org.hipparchus.FieldElement;
 import org.hipparchus.exception.LocalizedCoreFormats;
@@ -46,6 +48,8 @@ import org.matheclipse.parser.trie.TrieNode;
  */
 public class SparseArrayExpr extends DataExpr<Trie<int[], IExpr>>
     implements ISparseArray, Externalizable {
+  private static final Logger LOGGER = LogManager.getLogger();
+
   /**
    * This class implements the {@link FieldMatrix} interface with a {@link SparseArrayExpr} backing
    * store.
@@ -962,9 +966,7 @@ public class SparseArrayExpr extends DataExpr<Trie<int[], IExpr>>
         }
         return result;
       } catch (RuntimeException rex) {
-        if (Config.SHOW_STACKTRACE) {
-          rex.printStackTrace();
-        }
+        LOGGER.debug("SparseArrayExpr.checkPositions() failed", rex);
       }
     }
     return null;

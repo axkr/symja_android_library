@@ -1233,9 +1233,7 @@ public final class ListFunctions {
         // see level specification and int number validation
         LOGGER.log(engine.getLogLevel(), ast.topHead(), ve);
       } catch (final RuntimeException rex) {
-        if (Config.SHOW_STACKTRACE) {
-          rex.printStackTrace();
-        }
+        LOGGER.debug("Cases.evaluate() failed", rex);
       }
       return F.NIL;
     }
@@ -2838,9 +2836,7 @@ public final class ListFunctions {
         // see level specification and int number validation
         LOGGER.log(engine.getLogLevel(), ast.topHead(), ve);
       } catch (final RuntimeException rex) {
-        if (Config.SHOW_STACKTRACE) {
-          rex.printStackTrace();
-        }
+        LOGGER.debug("FirstCase.evaluate() failed", rex);
       }
       return F.NIL;
     }
@@ -3567,9 +3563,7 @@ public final class ListFunctions {
             return arg1AST.appendAtClone(i, arg2);
           }
         } catch (final IndexOutOfBoundsException e) {
-          if (Config.DEBUG) {
-            e.printStackTrace();
-          }
+          LOGGER.debug("Insert.evaluate() failed", e);
         }
       }
       return F.NIL;
@@ -6929,9 +6923,7 @@ public final class ListFunctions {
       } catch (ValidateException ve) {
         LOGGER.log(engine.getLogLevel(), ast.topHead(), ve);
       } catch (final ArrayIndexOutOfBoundsException e) {
-        if (Config.SHOW_STACKTRACE) {
-          e.printStackTrace();
-        }
+        LOGGER.debug("Table.evaluateTable() failed", e);
       } catch (final NoEvalException | ClassCastException | ArithmeticException e) {
         // ClassCastException: the iterators are generated only from IASTs
         // ArithmeticException example: division / by zero if step==-1
@@ -6955,9 +6947,7 @@ public final class ListFunctions {
           return generator.tableThrow();
         }
       } catch (final ArrayIndexOutOfBoundsException e) {
-        if (Config.SHOW_STACKTRACE) {
-          e.printStackTrace();
-        }
+        LOGGER.debug("Table.evaluateTableThrow() failed", e);
       } catch (final NoEvalException | ClassCastException | ArithmeticException e) {
         // ClassCastException: the iterators are generated only from IASTs
         // ArithmeticException example: division / by zero if step==-1
@@ -6988,9 +6978,7 @@ public final class ListFunctions {
                 iterList, resultList, new TableFunction(EvalEngine.get(), expr), defaultValue);
         return generator.table();
       } catch (final ArrayIndexOutOfBoundsException e) {
-        if (Config.SHOW_STACKTRACE) {
-          e.printStackTrace();
-        }
+        LOGGER.debug("Table.evaluateLast() failed", e);
       } catch (final NoEvalException | ClassCastException | ArithmeticException e) {
         // ClassCastException: the iterators are generated only from IASTs
         // ArithmeticException example: division / by zero if step==-1
@@ -7292,9 +7280,7 @@ public final class ListFunctions {
       } catch (final ValidateException ve) {
         LOGGER.log(engine.getLogLevel(), ast.topHead(), ve);
       } catch (final RuntimeException rex) {
-        if (Config.SHOW_STACKTRACE) {
-          rex.printStackTrace();
-        }
+        LOGGER.debug("Take.evaluate() failed", rex);
       }
       return F.NIL;
     }
@@ -7761,9 +7747,7 @@ public final class ListFunctions {
               }
               return engine.evaluate(temp);
             } catch (RuntimeException rex) {
-              if (Config.SHOW_STACKTRACE) {
-                rex.printStackTrace();
-              }
+              LOGGER.debug("Total.evaluate() failed", rex);
               return F.NIL;
             }
           }

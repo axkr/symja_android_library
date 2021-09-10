@@ -21,10 +21,14 @@ import java.io.FileWriter;
 import java.io.IOException;
 import java.lang.reflect.Type;
 import java.util.HashMap;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import com.google.gson.Gson;
 import com.google.gson.reflect.TypeToken;
 
 public class SerializeInspect {
+  private static final Logger LOGGER = LogManager.getLogger();
+
   private Gson gson = new Gson();
 
   public String toJson(HashMap<String, ClassInspect> object) {
@@ -38,7 +42,7 @@ public class SerializeInspect {
       fileWriter.write(json);
       fileWriter.flush();
     } catch (IOException e) {
-      e.printStackTrace();
+      LOGGER.error("SerializeInspect.saveToFile() failed", e);
     }
   }
 

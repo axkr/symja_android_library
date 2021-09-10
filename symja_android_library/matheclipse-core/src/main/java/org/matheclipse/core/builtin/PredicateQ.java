@@ -1579,9 +1579,7 @@ public class PredicateQ {
 
       return isZeroTogether(function, engine);
     } catch (ValidateException ve) {
-      if (Config.SHOW_STACKTRACE) {
-        ve.printStackTrace();
-      }
+      LOGGER.debug("PredicateQ.isPossibleZeroQ() failed", ve);
     }
     return false;
   }

@@ -6,7 +6,6 @@ import java.util.function.Function;
 import java.util.function.Predicate;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-import org.matheclipse.core.basic.Config;
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.exception.ArgumentTypeException;
 import org.matheclipse.core.eval.exception.ValidateException;
@@ -280,9 +279,7 @@ public class AssociationFunctions {
           }
           return assoc;
         } catch (ValidateException ve) {
-          if (Config.SHOW_STACKTRACE) {
-            ve.printStackTrace();
-          }
+          LOGGER.debug("Association.evaluate() failed", ve);
           // print no message
         }
         return evaled ? assocList : F.NIL;
@@ -1094,9 +1091,7 @@ public class AssociationFunctions {
       } catch (final ValidateException ve) {
         LOGGER.log(engine.getLogLevel(), ast.topHead(), ve);
       } catch (final RuntimeException rex) {
-        if (Config.SHOW_STACKTRACE) {
-          rex.printStackTrace();
-        }
+        LOGGER.debug("KeyTake.evaluate() failed", rex);
       }
       return F.NIL;
     }

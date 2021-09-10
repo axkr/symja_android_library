@@ -3,6 +3,8 @@ package org.matheclipse.core.builtin;
 import java.text.DecimalFormat;
 import java.text.DecimalFormatSymbols;
 import java.util.Locale;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.matheclipse.core.basic.Config;
 import org.matheclipse.core.convert.RGBColor;
 import org.matheclipse.core.eval.EvalEngine;
@@ -23,6 +25,8 @@ import org.matheclipse.core.interfaces.ISignedNumber;
 import org.matheclipse.core.interfaces.ISymbol;
 
 public class GraphicsFunctions {
+  private static final Logger LOGGER = LogManager.getLogger();
+
   private static final DecimalFormatSymbols US_SYMBOLS = new DecimalFormatSymbols(Locale.US);
   protected static final DecimalFormat FORMATTER = new DecimalFormat("0.0####", US_SYMBOLS);
 
@@ -242,7 +246,7 @@ public class GraphicsFunctions {
 
       } catch (RuntimeException ex) {
         // catch cast exceptions for example
-        ex.printStackTrace();
+        LOGGER.error("Circle.graphics2D() failed", ex);
       } finally {
         buf.append("\" \n      style=\"stroke: none; stroke-width: 0.000000px; ");
         buf.append("fill: rgb(");
@@ -580,7 +584,7 @@ public class GraphicsFunctions {
         }
       } catch (RuntimeException ex) {
         // catch cast exceptions for example
-        ex.printStackTrace();
+        LOGGER.error("Line.graphics2D() failed", ex);
       } finally {
         buf.append(
             "\" \n style=\"stroke: rgb(0.000000%, 0.000000%, 0.000000%); stroke-opacity: 1; stroke-width: 0.666667px; fill: none\" />");
@@ -661,7 +665,7 @@ public class GraphicsFunctions {
         buf.append(FORMATTER.format(r));
       } catch (RuntimeException ex) {
         // catch cast exceptions for example
-        ex.printStackTrace();
+        LOGGER.error("Point.singlePointToSVG() failed", ex);
       } finally {
         buf.append("\" \n      style=\"stroke: none; stroke-width: 0.000000px; ");
         buf.append("fill: rgb(");
@@ -895,7 +899,7 @@ public class GraphicsFunctions {
 
       } catch (RuntimeException ex) {
         // catch cast exceptions for example
-        ex.printStackTrace();
+        LOGGER.error("Rectangle.graphics2D() failed", ex);
       } finally {
         buf.append("\" \n      style=\"stroke: none; stroke-width: 0.000000px; ");
         buf.append("fill: rgb(");
@@ -1313,9 +1317,7 @@ public class GraphicsFunctions {
           graphics3DBuffer.append("}");
           return true;
         } catch (Exception ex) {
-          if (Config.SHOW_STACKTRACE) {
-            ex.printStackTrace();
-          }
+          LOGGER.debug("GraphicsFunctions.renderGraphics3D() failed", ex);
         }
       }
     }

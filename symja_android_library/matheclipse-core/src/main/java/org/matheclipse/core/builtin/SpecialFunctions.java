@@ -156,14 +156,10 @@ public class SpecialFunctions {
             // }
           }
         } catch (ThrowException te) {
-          if (Config.SHOW_STACKTRACE) {
-            te.printStackTrace();
-          }
+          LOGGER.debug("Beta.evaluate() failed", te);
           return te.getValue();
         } catch (ValidateException ve) {
-          if (Config.SHOW_STACKTRACE) {
-            ve.printStackTrace();
-          }
+          LOGGER.debug("Beta.evaluate() failed", ve);
         } catch (RuntimeException rex) {
           LOGGER.log(engine.getLogLevel(), ast.topHead(), rex);
         }
@@ -214,14 +210,10 @@ public class SpecialFunctions {
           return F.C0;
         }
       } catch (ThrowException te) {
-        if (Config.SHOW_STACKTRACE) {
-          te.printStackTrace();
-        }
+        LOGGER.debug("Beta.evaluate() failed", te);
         return te.getValue();
       } catch (ValidateException ve) {
-        if (Config.SHOW_STACKTRACE) {
-          ve.printStackTrace();
-        }
+        LOGGER.debug("Beta.evaluate() failed", ve);
       } catch (RuntimeException rex) {
         LOGGER.log(engine.getLogLevel(), ast.topHead(), rex);
       }
@@ -325,9 +317,7 @@ public class SpecialFunctions {
           return F.Times(F.Power(z, a), sum);
         }
       } catch (RuntimeException rex) {
-        if (Config.SHOW_STACKTRACE) {
-          rex.printStackTrace();
-        }
+        LOGGER.debug("BetaRegularized.betaRegularized3() failed", rex);
       }
       return F.NIL;
     }
@@ -367,9 +357,7 @@ public class SpecialFunctions {
           }
         }
       } catch (RuntimeException rex) {
-        if (Config.SHOW_STACKTRACE) {
-          rex.printStackTrace();
-        }
+        LOGGER.debug("BetaRegularized.betaRegularized4() failed", rex);
       }
       return F.NIL;
     }
@@ -679,9 +667,7 @@ public class SpecialFunctions {
             return F.num(GammaJS.gammaRegularized(aDouble, z1Double));
           }
         } catch (ThrowException te) {
-          if (Config.SHOW_STACKTRACE) {
-            te.printStackTrace();
-          }
+          LOGGER.debug("GammaRegularized.gammaRegularized2() failed", te);
           return te.getValue();
         } catch (ValidateException ve) {
           LOGGER.log(engine.getLogLevel(), ast.topHead(), ve);
@@ -731,9 +717,7 @@ public class SpecialFunctions {
             return F.num(GammaJS.gammaRegularized(aDouble, z1Double, z2Double));
           }
         } catch (ThrowException te) {
-          if (Config.SHOW_STACKTRACE) {
-            te.printStackTrace();
-          }
+          LOGGER.debug("GammaRegularized.gammaRegularzed3() failed", te);
           return te.getValue();
         } catch (ValidateException ve) {
           LOGGER.log(engine.getLogLevel(), ast.topHead(), ve);
@@ -864,9 +848,7 @@ public class SpecialFunctions {
             }
           }
         } catch (ThrowException te) {
-          if (Config.SHOW_STACKTRACE) {
-            te.printStackTrace();
-          }
+          LOGGER.debug("HurwitzZeta.evaluate() failed", te);
           return te.getValue();
         } catch (RuntimeException rex) {
           LOGGER.log(engine.getLogLevel(), ast.topHead(), rex);
@@ -1456,9 +1438,7 @@ public class SpecialFunctions {
               }
             }
           } catch (ThrowException te) {
-            if (Config.SHOW_STACKTRACE) {
-              te.printStackTrace();
-            }
+            LOGGER.debug("PolyGamma.evaluate() failed", te);
             return te.getValue();
           } catch (RuntimeException rex) {
             LOGGER.log(engine.getLogLevel(), ast.topHead(), rex);
@@ -1558,9 +1538,7 @@ public class SpecialFunctions {
           }
 
         } catch (ThrowException te) {
-          if (Config.SHOW_STACKTRACE) {
-            te.printStackTrace();
-          }
+          LOGGER.debug("PolyLog.evaluate() failed", te);
           return te.getValue();
         } catch (RuntimeException rex) {
           LOGGER.log(engine.getLogLevel(), ast.topHead(), rex);
@@ -1817,9 +1795,7 @@ public class SpecialFunctions {
           }
         }
       } catch (RuntimeException rex) {
-        if (Config.SHOW_STACKTRACE) {
-          rex.printStackTrace();
-        }
+        LOGGER.debug("StruveH.evaluate() failed", rex);
       }
       return F.NIL;
     }
@@ -1899,9 +1875,7 @@ public class SpecialFunctions {
           }
         }
       } catch (RuntimeException rex) {
-        if (Config.SHOW_STACKTRACE) {
-          rex.printStackTrace();
-        }
+        LOGGER.debug("StruveL.evaluate() failed", rex);
       }
       return F.NIL;
     }

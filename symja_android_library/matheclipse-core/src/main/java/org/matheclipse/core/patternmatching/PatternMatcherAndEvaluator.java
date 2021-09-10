@@ -4,6 +4,8 @@ import java.io.Externalizable;
 import java.io.IOException;
 import java.io.ObjectInput;
 import java.io.ObjectOutput;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.matheclipse.core.basic.Config;
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.exception.ConditionException;
@@ -16,6 +18,7 @@ import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.interfaces.ISymbol;
 
 public class PatternMatcherAndEvaluator extends PatternMatcher implements Externalizable {
+  private static final Logger LOGGER = LogManager.getLogger();
 
   /** */
   private static final long serialVersionUID = 2241135467123931061L;
@@ -304,7 +307,7 @@ public class PatternMatcherAndEvaluator extends PatternMatcher implements Extern
         return result;
       }
     } catch (final ConditionException e) {
-      if (Config.SHOW_STACKTRACE) {
+      if (LOGGER.isDebugEnabled()) {
         logConditionFalse(leftHandSide, fLhsPatternExpr, fRightHandSide);
       }
       return F.NIL;
@@ -345,7 +348,7 @@ public class PatternMatcherAndEvaluator extends PatternMatcher implements Extern
       }
       return result;
     } catch (final ConditionException e) {
-      if (Config.SHOW_STACKTRACE) {
+      if (LOGGER.isDebugEnabled()) {
         logConditionFalse(leftHandSide, fLhsPatternExpr, fRightHandSide);
       }
       return F.NIL;

@@ -3,6 +3,8 @@ package org.matheclipse.core.reflection.system;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.function.Predicate;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.matheclipse.core.builtin.Algebra;
 import org.matheclipse.core.builtin.BooleanFunctions;
 import org.matheclipse.core.builtin.IOFunctions;
@@ -58,6 +60,7 @@ import org.matheclipse.core.visit.AbstractVisitorBoolean;
  * </pre>
  */
 public class Eliminate extends AbstractFunctionEvaluator {
+  private static final Logger LOGGER = LogManager.getLogger();
 
   private static class VariableCounterVisitor extends AbstractVisitorBoolean
       implements Comparable<VariableCounterVisitor> {
@@ -542,7 +545,7 @@ public class Eliminate extends AbstractFunctionEvaluator {
       }
       return resultAsAndEquations(result);
     } catch (Exception ex) {
-      ex.printStackTrace();
+      LOGGER.error("QuantityParser.of() failed", ex);
     }
     return F.NIL;
   }

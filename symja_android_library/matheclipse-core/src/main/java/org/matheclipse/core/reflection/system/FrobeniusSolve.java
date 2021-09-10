@@ -1,5 +1,7 @@
 package org.matheclipse.core.reflection.system;
 
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.matheclipse.core.basic.Config;
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.exception.ASTElementLimitExceeded;
@@ -51,6 +53,7 @@ import org.matheclipse.core.interfaces.ISymbol;
  * </pre>
  */
 public class FrobeniusSolve extends AbstractEvaluator {
+  private static final Logger LOGGER = LogManager.getLogger();
 
   public FrobeniusSolve() {
     // default ctor
@@ -86,9 +89,7 @@ public class FrobeniusSolve extends AbstractEvaluator {
       } catch (LimitException le) {
         throw le;
       } catch (RuntimeException rex) {
-        if (Config.SHOW_STACKTRACE) {
-          rex.printStackTrace();
-        }
+        LOGGER.debug("FrobeniusSolve.evaluate() failed", rex);
       }
     }
     return F.NIL;

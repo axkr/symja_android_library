@@ -1383,9 +1383,7 @@ public class TeXFormFactory {
       }
       return true;
     } catch (RuntimeException rex) {
-      if (Config.SHOW_STACKTRACE) {
-        rex.printStackTrace();
-      }
+      LOGGER.debug("TeXFormFactory.convert() failed", rex);
     } catch (OutOfMemoryError oome) {
     }
     return false;
@@ -1812,7 +1810,7 @@ public class TeXFormFactory {
         DoubleToMMA.doubleToMMA(buf, dValue, fExponentFigures, fSignificantFigures, true);
         return buf.toString();
       } catch (IOException ioex) {
-        ioex.printStackTrace();
+        LOGGER.error("TeXFormFactory.convertDoubleToFormattedString() failed", ioex);
       }
     }
     return Double.toString(dValue);

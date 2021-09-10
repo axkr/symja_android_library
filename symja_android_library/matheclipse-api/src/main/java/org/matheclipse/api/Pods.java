@@ -14,6 +14,8 @@ import org.apache.commons.codec.language.Soundex;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.text.StringEscapeUtils;
 import org.apache.commons.text.similarity.LevenshteinDistance;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.apache.lucene.analysis.TokenStream;
 import org.apache.lucene.analysis.en.PorterStemFilter;
 import org.apache.lucene.analysis.standard.StandardTokenizer;
@@ -57,6 +59,7 @@ import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.google.common.base.Suppliers;
 
 public class Pods {
+  private static final Logger LOGGER = LogManager.getLogger();
 
   public static final String JSON = "JSON";
 
@@ -650,9 +653,7 @@ public class Pods {
                   + "\" style=\"display: block; width: 100%; height: 100%; border: none;\" ></iframe>";
           json.put(MATHCELL_STR, html);
         } catch (Exception ex) {
-          if (Config.SHOW_STACKTRACE) {
-            ex.printStackTrace();
-          }
+          LOGGER.debug("Pods.createJSONFormat() failed", ex);
         }
 
       } else {
@@ -671,9 +672,8 @@ public class Pods {
                   + "\" style=\"display: block; width: 100%; height: 100%; border: none;\" ></iframe>";
           json.put(JSXGRAPH_STR, html);
         } catch (Exception ex) {
-          if (Config.SHOW_STACKTRACE) {
-            ex.printStackTrace();
-          }
+          LOGGER.debug("ChineseRemainder.chineseRemainderBigInteger() failed", ex);
+
         }
 
       } else {
@@ -693,9 +693,7 @@ public class Pods {
                   + "\" style=\"display: block; width: 100%; height: 100%; border: none;\" ></iframe>";
           json.put(PLOTLY_STR, html);
         } catch (Exception ex) {
-          if (Config.SHOW_STACKTRACE) {
-            ex.printStackTrace();
-          }
+          LOGGER.debug("Pods.createJSONFormat() failed", ex);
         }
 
       } else {
@@ -738,9 +736,7 @@ public class Pods {
                   + "\" style=\"display: block; width: 100%; height: 100%; border: none;\" ></iframe>";
           json.put(VISJS_STR, html);
         } catch (Exception ex) {
-          if (Config.SHOW_STACKTRACE) {
-            ex.printStackTrace();
-          }
+          LOGGER.debug("Pods.createJSONFormat() failed", ex);
         }
 
       } else {
@@ -857,9 +853,8 @@ public class Pods {
         }
       } catch (SyntaxError serr) {
         // this includes syntax errors
-        if (Config.SHOW_STACKTRACE) {
-          serr.printStackTrace();
-        }
+        LOGGER.debug("Pods.createResult() failed", serr);
+
         return errorJSON("0", serr.getMessage());
       }
       queryresult.put("error", error ? "true" : "false");
@@ -1904,9 +1899,7 @@ public class Pods {
       inExpr = parser.parseFuzzyList(inputStr);
     } catch (SyntaxError serr) {
       // this includes syntax errors
-      if (Config.SHOW_STACKTRACE) {
-        serr.printStackTrace();
-      }
+      LOGGER.debug("Pods.parseInput() failed", serr);
       TeXParser texConverter = new TeXParser(engine);
       inExpr = texConverter.toExpression(inputStr);
     }
@@ -2118,9 +2111,7 @@ public class Pods {
               + "\" style=\"display: block; width: 100%; height: 100%; border: none;\" ></iframe>";
       return html;
     } catch (Exception ex) {
-      if (Config.SHOW_STACKTRACE) {
-        ex.printStackTrace();
-      }
+      LOGGER.debug("Pods.toHighligthedCode() failed", ex);
     }
     return sourceCode;
   }

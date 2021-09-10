@@ -9,6 +9,8 @@ import java.util.Locale;
 import java.util.Map;
 import java.util.function.Function;
 import java.util.function.Predicate;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.hipparchus.complex.Complex;
 import org.matheclipse.core.basic.Config;
 import org.matheclipse.core.builtin.AttributeFunctions;
@@ -40,6 +42,7 @@ import org.matheclipse.core.visit.IVisitorLong;
 import org.matheclipse.parser.client.FEConfig;
 
 public class BuiltInDummy implements IBuiltInSymbol, Serializable {
+  private static final Logger LOGGER = LogManager.getLogger();
 
   private static final Collator US_COLLATOR = Collator.getInstance(Locale.US);
 
@@ -233,7 +236,7 @@ public class BuiltInDummy implements IBuiltInSymbol, Serializable {
     try {
       return (IExpr) clone();
     } catch (CloneNotSupportedException e) {
-      e.printStackTrace();
+      LOGGER.error("BuiltInDummy.copy() failed", e);
       return null;
     }
   }

@@ -950,7 +950,7 @@ public class IOFunctions {
         engine.setMessageShortcut(messageShortcut);
         LOGGER.log(engine.getLogLevel(), "{}: {}", symbol, message);
       } catch (IOException e) {
-        e.printStackTrace();
+        LOGGER.error("IOFunctions.printMessage() failed", e);
       }
     }
     return F.NIL;
@@ -1155,7 +1155,7 @@ public class IOFunctions {
       templateApply(templateStr, writer, context);
       return writer.toString();
     } catch (IOException e) {
-      e.printStackTrace();
+      LOGGER.error("IOFunctions.templateRender()", e);
     }
     return templateStr;
   }
@@ -1178,7 +1178,7 @@ public class IOFunctions {
       templateApply(templateStr, writer, context);
       return writer.toString();
     } catch (IOException e) {
-      e.printStackTrace();
+      LOGGER.error("IOFunctions.templateRender() failed", e);
     }
     return templateStr;
   }

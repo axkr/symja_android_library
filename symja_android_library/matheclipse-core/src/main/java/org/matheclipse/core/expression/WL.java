@@ -8,6 +8,8 @@ import java.math.BigInteger;
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
 import java.util.Locale;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.apfloat.Apfloat;
 import org.hipparchus.linear.RealMatrix;
 import org.hipparchus.linear.RealVector;
@@ -42,6 +44,7 @@ import com.google.common.io.ByteStreams;
  * Format Description</a>
  */
 public class WL {
+  private static final Logger LOGGER = LogManager.getLogger();
 
   /** The list of all the WXF tokens. */
   private static class WXF_CONSTANTS {
@@ -1070,7 +1073,7 @@ public class WL {
         return deserializeInternal(byteArray);
       }
     } catch (IOException ex) {
-      ex.printStackTrace();
+      LOGGER.error("WL.deserializeResource() failed", ex);
     }
     return F.NIL;
   }
@@ -1121,9 +1124,7 @@ public class WL {
         wo.write(expr);
         return wo.toByteArray();
       } catch (IOException e) {
-        if (Config.SHOW_STACKTRACE) {
-          e.printStackTrace();
-        }
+        LOGGER.debug("WL.serialize() failed", e);
       }
     }
     return null;
@@ -1144,9 +1145,7 @@ public class WL {
         wo.write(expr);
         return wo.toByteArray();
       } catch (IOException e) {
-        if (Config.SHOW_STACKTRACE) {
-          e.printStackTrace();
-        }
+        LOGGER.debug("WL.serializeInternal() failed", e);
       }
     }
     return null;

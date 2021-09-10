@@ -4,6 +4,8 @@ import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 import java.util.function.Function;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.hipparchus.util.Pair;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IExpr;
@@ -21,6 +23,8 @@ import org.matheclipse.parser.client.FEConfig;
 
 /** A concrete pattern sequence implementation (i.e. x__) */
 public class PatternSequence implements IPatternSequence {
+  private static final Logger LOGGER = LogManager.getLogger();
+
 
   /** */
   private static final long serialVersionUID = 2773651826316158627L;
@@ -389,7 +393,7 @@ public class PatternSequence implements IPatternSequence {
     try {
       return (IExpr) clone();
     } catch (CloneNotSupportedException e) {
-      e.printStackTrace();
+      LOGGER.error("PatternSequence.copy() failed", e);
       return null;
     }
   }

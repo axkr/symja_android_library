@@ -4,11 +4,15 @@ import java.io.IOException;
 import java.text.DecimalFormat;
 import java.text.DecimalFormatSymbols;
 import java.util.Locale;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 
 /**
  * Convert a Java <code>double</code> value into a string similar to the Mathematica output format.
  */
 public class DoubleToMMA {
+  private static final Logger LOGGER = LogManager.getLogger();
+
   private static final String HASH_STR = "##############################";
 
   /**
@@ -116,7 +120,7 @@ public class DoubleToMMA {
     try {
       doubleToMMA(buf, value, exponent, significantFigures, false);
     } catch (IOException ioex) {
-      ioex.printStackTrace();
+      LOGGER.error("DoubleToMMA.doubleToMMA() failed", ioex);
     }
   }
 
@@ -169,7 +173,7 @@ public class DoubleToMMA {
     try {
       doubleToScientific(buf, value, significantFigures, Integer.MIN_VALUE, false);
     } catch (IOException ioex) {
-      ioex.printStackTrace();
+      LOGGER.error("DoubleToMMA.doubleToScientific() failed", ioex);
     }
   }
 

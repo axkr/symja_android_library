@@ -9,6 +9,9 @@ import javax.script.Bindings;
 import javax.script.ScriptContext;
 import javax.script.ScriptEngineFactory;
 import javax.script.ScriptException;
+import org.apache.logging.log4j.Level;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.apfloat.ApfloatRuntimeException;
 import org.matheclipse.core.basic.Config;
 import org.matheclipse.core.eval.EvalEngine;
@@ -21,6 +24,7 @@ import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.parser.client.math.MathException;
 
 public class MathScriptEngine extends AbstractScriptEngine {
+  private static final Logger LOGGER = LogManager.getLogger();
   public static final String RETURN_OBJECT = "RETURN_OBJECT";
 
   private EvalUtilities fUtility;
@@ -61,7 +65,7 @@ public class MathScriptEngine extends AbstractScriptEngine {
       }
       return eval(buff.toString());
     } catch (final IOException e) {
-      e.printStackTrace();
+      LOGGER.catching(e);
     }
     return null;
   }
@@ -70,11 +74,8 @@ public class MathScriptEngine extends AbstractScriptEngine {
   public Object eval(final String script, final ScriptContext context) {
     // final ArrayList<ISymbol> list = new ArrayList<ISymbol>();
     boolean relaxedSyntax = false;
-    boolean showStackTrace = Config.SHOW_STACKTRACE;
     final Object enableStackTraceBoolean = get("PRINT_STACKTRACE");
-    if (Boolean.TRUE.equals(enableStackTraceBoolean)) {
-      showStackTrace = true;
-    }
+    Level stackLogLevel = Boolean.TRUE.equals(enableStackTraceBoolean) ? Level.ERROR : Level.DEBUG;
 
     try {
       // first assign the EvalEngine to the current thread:
@@ -127,46 +128,26 @@ public class MathScriptEngine extends AbstractScriptEngine {
       }
 
     } catch (final AbortException e) {
-      if (showStackTrace) {
-        e.printStackTrace();
-      }
+      LOGGER.log(stackLogLevel, "Aborted", e);
       return printResult(S.$Aborted, relaxedSyntax);
     } catch (final FailedException e) {
-      if (showStackTrace) {
-        e.printStackTrace();
-      }
+      LOGGER.log(stackLogLevel, "Failed", e);
       return printResult(S.$Failed, relaxedSyntax);
     } catch (final MathException e) { // catches parser errors as well
-      if (showStackTrace) {
-        e.printStackTrace();
-      }
+      LOGGER.log(stackLogLevel, "evaluation failed", e);
       return e.getMessage();
     } catch (final ApfloatRuntimeException e) {
-      if (showStackTrace) {
-        e.printStackTrace();
-      }
+      LOGGER.log(stackLogLevel, "ApFloat error", e);
       // catch parser errors here
       return "Apfloat: " + e.getMessage();
     } catch (final Exception e) {
-      // if (e instanceof ExceptionContextProvider) {
-      // if (Config.DEBUG) {
-      // e.printStackTrace();
-      // }
-      // return e.getMessage();
-      // }
-      if (showStackTrace) {
-        e.printStackTrace();
-      }
+      LOGGER.log(stackLogLevel, "Exception", e);
       return "Exception: " + e.getMessage();
     } catch (final OutOfMemoryError e) {
-      if (showStackTrace) {
-        e.printStackTrace();
-      }
+      LOGGER.log(stackLogLevel, "Out of memory", e);
       return "OutOfMemoryError";
     } catch (final StackOverflowError e) {
-      if (showStackTrace) {
-        e.printStackTrace();
-      }
+      LOGGER.log(stackLogLevel, "Stack overflow", e);
       return "StackOverflowError";
     } finally {
       // if (list.size() > 0) {

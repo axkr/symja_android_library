@@ -2,7 +2,8 @@ package org.matheclipse.core.eval;
 
 import java.io.IOException;
 import java.io.Writer;
-import org.matheclipse.core.basic.Config;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.matheclipse.core.form.tex.TeXFormFactory;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IExpr;
@@ -10,6 +11,8 @@ import org.matheclipse.core.parser.ExprParser;
 
 /** Convert an expression into TeX output */
 public class TeXUtilities {
+  private static final Logger LOGGER = LogManager.getLogger();
+
   protected EvalEngine fEvalEngine;
 
   ExprParser fParser;
@@ -45,9 +48,7 @@ public class TeXUtilities {
         return toTeX(parsedExpression, out);
         // parsedExpression = AST2Expr.CONST.convert(node);
       } catch (final RuntimeException rex) {
-        if (Config.SHOW_STACKTRACE) {
-          rex.printStackTrace();
-        }
+        LOGGER.debug("TeXUtilities.toTeX() failed", rex);
       }
     }
     return false;
@@ -82,9 +83,7 @@ public class TeXUtilities {
       } catch (final IOException ioe) {
         // parsedExpression == null ==> fError occured
       } catch (final RuntimeException rex) {
-        if (Config.SHOW_STACKTRACE) {
-          rex.printStackTrace();
-        }
+        LOGGER.debug("TeXUtilities.toTeX() failed", rex);
       }
       return false;
     }

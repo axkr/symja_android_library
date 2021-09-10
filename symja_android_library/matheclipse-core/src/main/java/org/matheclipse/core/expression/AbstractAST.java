@@ -32,7 +32,6 @@ import org.hipparchus.linear.RealMatrix;
 import org.jgrapht.GraphType;
 import org.jgrapht.graph.DefaultGraphType;
 import org.jgrapht.graph.DefaultGraphType.Builder;
-import org.matheclipse.core.basic.Config;
 import org.matheclipse.core.builtin.BooleanFunctions;
 import org.matheclipse.core.builtin.JavaFunctions;
 import org.matheclipse.core.builtin.PredicateQ;
@@ -1764,9 +1763,7 @@ public abstract class AbstractAST implements IASTMutable {
   /** {@inheritDoc} */
   @Override
   public IExpr evaluate(EvalEngine engine) {
-    if (Config.DEBUG) {
-      System.out.println(toString());
-    }
+    LOGGER.debug("Evaluate {}", this);
     final IExpr head = head();
     final int argSize = argSize();
     if (head instanceof ISymbol) {
@@ -5500,9 +5497,7 @@ public abstract class AbstractAST implements IASTMutable {
         return toFullFormString();
       }
     } catch (RuntimeException e) {
-      if (Config.SHOW_STACKTRACE) {
-        System.out.println(fullFormString());
-      }
+      LOGGER.debug("AbstractAST.toString() failed for: {}", () -> fullFormString());
       throw e;
     }
   }

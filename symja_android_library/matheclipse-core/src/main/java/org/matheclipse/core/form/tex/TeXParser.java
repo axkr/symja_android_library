@@ -209,7 +209,7 @@ public class TeXParser {
       }
       unicodeString = unicodeStringBuilder.toString();
     } catch (final UnsupportedEncodingException e) {
-      e.printStackTrace();
+      LOGGER.error("TeXParser.toUnicodeString() failed", e);
     }
     return unicodeString;
   }
@@ -541,9 +541,7 @@ public class TeXParser {
       }
       return F.integer(text, 10);
     } catch (RuntimeException rex) {
-      if (Config.SHOW_STACKTRACE) {
-        rex.printStackTrace();
-      }
+      LOGGER.debug("TeXParser.mn() failed", rex);
     }
     throw new AbortException();
   }
@@ -787,9 +785,7 @@ public class TeXParser {
         LOGGER.log(fEngine.getLogLevel(), errors.get(i));
       }
     } catch (Exception e) {
-      if (Config.SHOW_STACKTRACE) {
-        e.printStackTrace();
-      }
+      LOGGER.debug("TeXParser.toExpression() failed", e);
     }
     return S.$Aborted;
   }

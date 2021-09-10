@@ -1,6 +1,8 @@
 package org.matheclipse.core.expression;
 
 import java.math.BigInteger;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.apfloat.Apcomplex;
 import org.apfloat.Apfloat;
 import org.apfloat.FixedPrecisionApfloatHelper;
@@ -37,6 +39,7 @@ import it.unimi.dsi.fastutil.ints.Int2IntRBTreeMap;
  * @see BigFractionSym
  */
 public abstract class AbstractFractionSym implements IFraction {
+  private static final Logger LOGGER = LogManager.getLogger();
 
   public static final FractionSym ZERO = new FractionSym(0, 1);
 
@@ -314,7 +317,7 @@ public abstract class AbstractFractionSym implements IFraction {
     try {
       return (IExpr) clone();
     } catch (CloneNotSupportedException e) {
-      e.printStackTrace();
+      LOGGER.error("AbstractFractionSym.copy() failed", e);
       return null;
     }
   }

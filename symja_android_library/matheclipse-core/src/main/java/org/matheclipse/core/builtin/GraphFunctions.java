@@ -191,9 +191,7 @@ public class GraphFunctions {
           }
         }
       } catch (RuntimeException rex) {
-        if (Config.SHOW_STACKTRACE) {
-          rex.printStackTrace();
-        }
+        LOGGER.debug("GraphCTor.evaluate() failed", rex);
       }
       return F.NIL;
     }
@@ -249,9 +247,7 @@ public class GraphFunctions {
         IASTMutable list = F.ListAlloc(centerSet);
         return list;
       } catch (RuntimeException rex) {
-        if (Config.SHOW_STACKTRACE) {
-          rex.printStackTrace();
-        }
+        LOGGER.debug("GraphCenter.evaluate() failed", rex);
       }
       return F.NIL;
     }
@@ -306,9 +302,7 @@ public class GraphFunctions {
         }
         return diameter;
       } catch (RuntimeException rex) {
-        if (Config.SHOW_STACKTRACE) {
-          rex.printStackTrace();
-        }
+        LOGGER.debug("GraphDiameter.evaluate() failed", rex);
       }
       return F.NIL;
     }
@@ -360,9 +354,7 @@ public class GraphFunctions {
         Set<IExpr> centerSet = graphMeasurer.getGraphPeriphery();
         return F.ListAlloc(centerSet);
       } catch (RuntimeException rex) {
-        if (Config.SHOW_STACKTRACE) {
-          rex.printStackTrace();
-        }
+        LOGGER.debug("GraphPeriphery.evaluate() failed", rex);
       }
       return F.NIL;
     }
@@ -418,9 +410,7 @@ public class GraphFunctions {
           }
         }
       } catch (RuntimeException rex) {
-        if (Config.SHOW_STACKTRACE) {
-          rex.printStackTrace();
-        }
+        LOGGER.debug("GraphQ.evaluate() failed", rex);
       }
       return S.False;
     }
@@ -473,9 +463,7 @@ public class GraphFunctions {
         }
         return radius;
       } catch (RuntimeException rex) {
-        if (Config.SHOW_STACKTRACE) {
-          rex.printStackTrace();
-        }
+        LOGGER.debug("GraphRadius.evaluate() failed", rex);
       }
       return F.NIL;
     }
@@ -507,9 +495,7 @@ public class GraphFunctions {
       //        AsGraphUnion<IExpr, ExprEdge> gu = new AsGraphUnion<IExpr, ExprEdge>(g1, g2);
       //        return GraphExpr.newInstance(gu);
       //      } catch (RuntimeException rex) {
-      //        if (FEConfig.SHOW_STACKTRACE) {
-      //          rex.printStackTrace();
-      //        }
+      //        LOGGER.debug("GraphUnion.evaluate() failed", rex);
       //      }
       return F.NIL;
     }
@@ -661,9 +647,7 @@ public class GraphFunctions {
           }
         }
       } catch (RuntimeException rex) {
-        // if (Config.SHOW_STACKTRACE) {
-        rex.printStackTrace();
-        // }
+        LOGGER.error("FindShortestTour..evaluate() failed", rex);
       }
       return F.NIL;
     }
@@ -733,9 +717,7 @@ public class GraphFunctions {
           }
         }
       } catch (RuntimeException rex) {
-        if (Config.SHOW_STACKTRACE) {
-          rex.printStackTrace();
-        }
+        LOGGER.debug("FindSpanningTree.evaluate() failed", rex);
       }
       return F.NIL;
     }
@@ -795,9 +777,7 @@ public class GraphFunctions {
           }
         }
       } catch (RuntimeException rex) {
-        if (Config.SHOW_STACKTRACE) {
-          rex.printStackTrace();
-        }
+        LOGGER.debug("AdjacencyMatrix.evaluate() failed", rex);
       }
       return F.NIL;
     }
@@ -850,9 +830,7 @@ public class GraphFunctions {
           return edgesToIExpr(g)[0];
         }
       } catch (RuntimeException rex) {
-        if (Config.SHOW_STACKTRACE) {
-          rex.printStackTrace();
-        }
+        LOGGER.debug("EdgeList.evaluate() failed", rex);
       }
       return F.NIL;
     }
@@ -909,9 +887,7 @@ public class GraphFunctions {
           }
         }
       } catch (RuntimeException rex) {
-        if (Config.SHOW_STACKTRACE) {
-          rex.printStackTrace();
-        }
+        LOGGER.debug("EdgeQ.evaluate() failed", rex);
       }
       return S.False;
     }
@@ -966,9 +942,7 @@ public class GraphFunctions {
         }
         return list;
       } catch (RuntimeException rex) {
-        if (Config.SHOW_STACKTRACE) {
-          rex.printStackTrace();
-        }
+        LOGGER.debug("ClosenessCentrality.evaluate() failed", rex);
       }
       return F.NIL;
     }
@@ -1035,9 +1009,7 @@ public class GraphFunctions {
           //          }
         }
       } catch (RuntimeException rex) {
-        if (Config.SHOW_STACKTRACE) {
-          rex.printStackTrace();
-        }
+        LOGGER.debug("EulerianGraphQ.evaluate() failed", rex);
       }
       return S.False;
     }
@@ -1098,9 +1070,7 @@ public class GraphFunctions {
           }
         }
       } catch (RuntimeException rex) {
-        if (Config.SHOW_STACKTRACE) {
-          rex.printStackTrace();
-        }
+        LOGGER.debug("HamiltonianGraphQ.evaluate() failed", rex);
       }
       return S.False;
     }
@@ -1169,9 +1139,7 @@ public class GraphFunctions {
           return list;
         }
       } catch (RuntimeException rex) {
-        if (Config.SHOW_STACKTRACE) {
-          rex.printStackTrace();
-        }
+        LOGGER.debug("FindEulerianCycle.evaluate() failed", rex);
       }
       return F.NIL;
     }
@@ -1235,9 +1203,7 @@ public class GraphFunctions {
           return list;
         }
       } catch (RuntimeException rex) {
-        if (Config.SHOW_STACKTRACE) {
-          rex.printStackTrace();
-        }
+        LOGGER.debug("FindHamiltonianCycle.evaluate() failed", rex);
       }
       return F.NIL;
     }
@@ -1302,9 +1268,7 @@ public class GraphFunctions {
       } catch (IllegalArgumentException iae) {
         LOGGER.log(engine.getLogLevel(), "Graph must be undirected");
       } catch (RuntimeException rex) {
-        if (Config.SHOW_STACKTRACE) {
-          rex.printStackTrace();
-        }
+        LOGGER.debug("FindVertexCover.evaluate() failed", rex);
       }
       return F.NIL;
     }
@@ -1356,9 +1320,7 @@ public class GraphFunctions {
 
         return Object2Expr.convertList(path.getVertexList(), true, false);
       } catch (RuntimeException rex) {
-        if (Config.SHOW_STACKTRACE) {
-          rex.printStackTrace();
-        }
+        LOGGER.debug("FindShortestPath.evaluate() failed", rex);
       }
       return F.NIL;
     }
@@ -1386,9 +1348,7 @@ public class GraphFunctions {
       //        lgc.convertToLineGraph(target);
       //        //	              return GraphExpr.newInstance(target);
       //      } catch (RuntimeException rex) {
-      //        if (FEConfig.SHOW_STACKTRACE) {
-      //          rex.printStackTrace();
-      //        }
+      //        LOGGER.debug("LineGraph.evaluate() failed", rex);
       //      }
       return F.NIL;
     }
@@ -1423,9 +1383,7 @@ public class GraphFunctions {
           }
         }
       } catch (RuntimeException rex) {
-        if (Config.SHOW_STACKTRACE) {
-          rex.printStackTrace();
-        }
+        LOGGER.debug("PlanarGraphQ.evaluate() failed", rex);
       }
       return S.False;
     }
@@ -1486,9 +1444,7 @@ public class GraphFunctions {
         }
 
       } catch (RuntimeException rex) {
-        if (Config.SHOW_STACKTRACE) {
-          rex.printStackTrace();
-        }
+        LOGGER.debug("VertexEccentricity.evaluate() failed", rex);
       }
       return F.NIL;
     }
@@ -1548,9 +1504,7 @@ public class GraphFunctions {
           // return result;
         }
       } catch (RuntimeException rex) {
-        if (Config.SHOW_STACKTRACE) {
-          rex.printStackTrace();
-        }
+        LOGGER.debug("VertexList.evaluate() failed", rex);
       }
       return F.NIL;
     }
@@ -1605,9 +1559,7 @@ public class GraphFunctions {
           }
         }
       } catch (RuntimeException rex) {
-        if (Config.SHOW_STACKTRACE) {
-          rex.printStackTrace();
-        }
+        LOGGER.debug("VertexQ.evaluate() failed", rex);
       }
       return S.False;
     }
@@ -1636,9 +1588,7 @@ public class GraphFunctions {
           }
         }
       } catch (RuntimeException rex) {
-        if (Config.SHOW_STACKTRACE) {
-          rex.printStackTrace();
-        }
+        LOGGER.debug("WeightedAdjacencyMatrix.evaluate() failed", rex);
       }
       return F.NIL;
     }
@@ -1661,9 +1611,7 @@ public class GraphFunctions {
           }
         }
       } catch (RuntimeException rex) {
-        if (Config.SHOW_STACKTRACE) {
-          rex.printStackTrace();
-        }
+        LOGGER.debug("WeightedGraphQ.evaluate() failed", rex);
       }
       return S.False;
     }

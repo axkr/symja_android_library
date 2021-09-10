@@ -2,6 +2,8 @@ package org.matheclipse.core.expression;
 
 import java.math.BigInteger;
 import java.math.RoundingMode;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.apfloat.Apcomplex;
 import org.apfloat.Apfloat;
 import org.apfloat.ApfloatMath;
@@ -28,6 +30,7 @@ import org.matheclipse.parser.client.FEConfig;
  * floating-point number.
  */
 public class ApfloatNum implements INum {
+  private static final Logger LOGGER = LogManager.getLogger();
 
   /** */
   private static final long serialVersionUID = 2500259920655377884L;
@@ -461,7 +464,7 @@ public class ApfloatNum implements INum {
     try {
       return (IExpr) clone();
     } catch (CloneNotSupportedException e) {
-      e.printStackTrace();
+      LOGGER.error("ApfloatNum.copy() failed", e);
       return null;
     }
   }

@@ -730,9 +730,7 @@ public class IntegerFunctions {
           }
         }
       } catch (RuntimeException rex) {
-        if (Config.SHOW_STACKTRACE) {
-          rex.printStackTrace();
-        }
+        LOGGER.debug("FractionalPart.evaluate() failed", rex);
       }
       return F.NIL;
     }
@@ -981,9 +979,7 @@ public class IntegerFunctions {
         }
       } catch (RuntimeException rex) {
         // ISignedNumber#floor() or #ceil() may throw ArithmeticException
-        if (Config.SHOW_STACKTRACE) {
-          rex.printStackTrace();
-        }
+        LOGGER.debug("IntegerPart.evaluate() failed", rex);
       }
       return F.NIL;
     }
@@ -1274,9 +1270,7 @@ public class IntegerFunctions {
               return F.num(zDouble / nDouble).floorFraction();
             }
           } catch (ValidateException ve) {
-            if (Config.SHOW_STACKTRACE) {
-              ve.printStackTrace();
-            }
+            LOGGER.debug("Quotient.evaluate() failed", ve);
           } catch (RuntimeException rex) {
             LOGGER.log(engine.getLogLevel(), ast.topHead(), rex);
           }
@@ -1412,9 +1406,7 @@ public class IntegerFunctions {
               return F.List(quotient, remainder);
             }
           } catch (ValidateException ve) {
-            if (Config.SHOW_STACKTRACE) {
-              ve.printStackTrace();
-            }
+            LOGGER.debug("QuotientRemainder.evaluate() failed", ve);
           } catch (RuntimeException rex) {
             LOGGER.log(engine.getLogLevel(), ast.topHead(), rex);
           }

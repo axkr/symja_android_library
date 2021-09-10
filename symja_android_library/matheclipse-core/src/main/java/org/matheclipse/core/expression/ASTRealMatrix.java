@@ -10,6 +10,8 @@ import java.util.Set;
 import java.util.function.DoubleUnaryOperator;
 import java.util.function.Function;
 import java.util.function.Predicate;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.hipparchus.linear.Array2DRowRealMatrix;
 import org.hipparchus.linear.RealMatrix;
 import org.matheclipse.core.basic.Config;
@@ -44,6 +46,7 @@ import org.matheclipse.core.interfaces.ISymbol;
  * @see AST
  */
 public class ASTRealMatrix extends AbstractAST implements Externalizable, RandomAccess {
+  private static final Logger LOGGER = LogManager.getLogger();
 
   public ASTRealMatrix() {
     // When Externalizable objects are deserialized, they first need to be constructed by invoking
@@ -548,9 +551,7 @@ public class ASTRealMatrix extends AbstractAST implements Externalizable, Random
       }
       buf.append('}');
     } catch (IOException e) {
-      if (Config.DEBUG) {
-        e.printStackTrace();
-      }
+      LOGGER.debug("ASTRealMatrix.toString() failed", e);
     }
   }
 

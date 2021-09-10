@@ -1,5 +1,7 @@
 package org.matheclipse.core.expression;
 
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.form.output.WolframFormFactory;
 import org.matheclipse.core.interfaces.IAST;
@@ -10,6 +12,8 @@ import org.matheclipse.core.patternmatching.IPatternMatcher;
 import org.matheclipse.parser.client.FEConfig;
 
 public class RepeatedPattern extends PatternSequence {
+  private static final Logger LOGGER = LogManager.getLogger();
+
 
   private static final long serialVersionUID = 1086461999754718513L;
 
@@ -64,7 +68,7 @@ public class RepeatedPattern extends PatternSequence {
     try {
       return (IExpr) clone();
     } catch (CloneNotSupportedException e) {
-      e.printStackTrace();
+      LOGGER.error("RepeatedPattern.copy() failed", e);
       return null;
     }
   }

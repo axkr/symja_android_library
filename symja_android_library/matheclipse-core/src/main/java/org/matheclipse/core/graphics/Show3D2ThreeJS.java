@@ -1,6 +1,8 @@
 package org.matheclipse.core.graphics;
 
 import java.io.IOException;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.util.OptionArgs;
 import org.matheclipse.core.expression.S;
@@ -11,6 +13,8 @@ import com.google.common.escape.Escaper;
 import com.google.common.html.HtmlEscapers;
 
 public class Show3D2ThreeJS {
+  private static final Logger LOGGER = LogManager.getLogger();
+
 
   /**
    * A 3D Graphics command like
@@ -168,7 +172,7 @@ public class Show3D2ThreeJS {
       }
     } catch (RuntimeException ex) {
       // catch cast exceptions for example
-      ex.printStackTrace();
+      LOGGER.error("Show3D2ThreeJS.elements() failed", ex);
     }
   }
 

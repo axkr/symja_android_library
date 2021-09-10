@@ -4,7 +4,8 @@ import java.math.BigInteger;
 import java.text.DecimalFormat;
 import java.text.DecimalFormatSymbols;
 import java.util.Locale;
-import org.matheclipse.core.basic.Config;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.matheclipse.core.expression.AbstractFractionSym;
 import org.matheclipse.core.expression.ComplexNum;
 import org.matheclipse.core.expression.F;
@@ -14,6 +15,7 @@ import org.matheclipse.core.interfaces.IFraction;
 import junit.framework.TestCase;
 
 public class NumberTest extends TestCase {
+  private static final Logger LOGGER = LogManager.getLogger();
 
   public void testComplexNum() {
     // test for Android bug:
@@ -62,9 +64,7 @@ public class NumberTest extends TestCase {
         fail();
       }
     } catch (RuntimeException rex) {
-      if (Config.SHOW_STACKTRACE) {
-        rex.printStackTrace();
-      }
+      LOGGER.debug("NumberTest.testNumberFormat() failed", rex);
     }
     assertEquals(buf.toString(), "12345.12");
   }

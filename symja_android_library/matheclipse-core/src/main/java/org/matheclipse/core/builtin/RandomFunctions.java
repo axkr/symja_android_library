@@ -499,9 +499,7 @@ public final class RandomFunctions {
         } catch (ValidateException ve) {
           LOGGER.log(engine.getLogLevel(), ast.topHead(), ve);
         } catch (RuntimeException rex) {
-          if (Config.SHOW_STACKTRACE) {
-            rex.printStackTrace();
-          }
+          LOGGER.debug("RandomPrime.evaluate() failed", rex);
           // There are no primes in the specified interval.
           return IOFunctions.printMessage(ast.topHead(), "noprime", F.List(), engine);
         }

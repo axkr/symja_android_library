@@ -3,6 +3,8 @@ package org.matheclipse.core.form.output;
 import java.io.IOException;
 import java.math.BigInteger;
 import java.util.ArrayList;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.apfloat.Apcomplex;
 import org.apfloat.Apfloat;
 import org.hipparchus.linear.RealMatrix;
@@ -50,6 +52,8 @@ import org.matheclipse.parser.client.operator.PrefixOperator;
 
 /** Converts an internal <code>IExpr</code> into a user readable string. */
 public class OutputFormFactory {
+  private static final Logger LOGGER = LogManager.getLogger();
+
   /** The conversion wasn't called with an operator preceding the <code>IExpr</code> object. */
   public static final boolean NO_PLUS_CALL = false;
 
@@ -358,8 +362,7 @@ public class OutputFormFactory {
   // FormattingWriter.toMMA(num, stw, 15, false);
   // return stw.toString();
   // } catch (IOException e) {
-  // // TODO Auto-generated catch block
-  // e.printStackTrace();
+  // LOGGER.error("OutputFormFactory.convertApfloat() failed", e);
   // }
   // // String exponentStr = str.substring(index + 1);
   // // String result = str.substring(0, index);
@@ -1019,9 +1022,7 @@ public class OutputFormFactory {
     try {
       convert(buf, o, Integer.MIN_VALUE, false);
     } catch (IOException e) {
-      if (Config.SHOW_STACKTRACE) {
-        e.printStackTrace();
-      }
+      LOGGER.debug("OutputFormFactory.toString() failed", e);
     }
     return buf.toString();
   }
@@ -1036,9 +1037,7 @@ public class OutputFormFactory {
       }
       return true;
     } catch (IOException | RuntimeException | OutOfMemoryError rex) {
-      if (Config.SHOW_STACKTRACE) {
-        rex.printStackTrace();
-      }
+      LOGGER.debug("OutputFormFactory.convert() failed", rex);
     }
     return false;
   }
@@ -1527,9 +1526,7 @@ public class OutputFormFactory {
         }
         buf.append('}');
       } catch (IOException e) {
-        if (Config.DEBUG) {
-          e.printStackTrace();
-        }
+        LOGGER.debug("OutputFormFactory.convertList() failed", e);
       }
       return;
     }
@@ -1559,9 +1556,7 @@ public class OutputFormFactory {
         }
         buf.append('}');
       } catch (IOException e) {
-        if (Config.DEBUG) {
-          e.printStackTrace();
-        }
+        LOGGER.debug("OutputFormFactory.convertList() failed", e);
       }
       return;
     }

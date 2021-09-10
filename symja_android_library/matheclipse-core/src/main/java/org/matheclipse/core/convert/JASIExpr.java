@@ -175,7 +175,6 @@ public class JASIExpr {
     try {
       return expr2IExprPoly(exprPoly);
     } catch (Exception ae) {
-      // ae.printStackTrace();
       throw new JASConversionException();
     }
   }

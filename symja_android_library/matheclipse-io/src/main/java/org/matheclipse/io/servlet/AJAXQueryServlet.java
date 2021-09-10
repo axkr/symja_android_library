@@ -260,9 +260,7 @@ public class AJAXQueryServlet extends HttpServlet {
                       + html
                       + "\" style=\"display: block; width: 100%; height: 100%; border: none;\" ></iframe>");
             } catch (Exception ex) {
-              if (Config.SHOW_STACKTRACE) {
-                ex.printStackTrace();
-              }
+              LOGGER.debug("AJAXQueryServlet.evaluateString() failed", ex);
             }
           } else if (outExpr.isASTSizeGE(S.Graphics3D, 2)) {
             StringBuilder buf = new StringBuilder();
@@ -277,9 +275,7 @@ public class AJAXQueryServlet extends HttpServlet {
                         + html
                         + "\" style=\"display: block; width: 100%; height: 100%; border: none;\" ></iframe>");
               } catch (Exception ex) {
-                if (Config.SHOW_STACKTRACE) {
-                  ex.printStackTrace();
-                }
+                LOGGER.debug("AJAXQueryServlet.evaluateString() failed", ex);
               }
             }
           }
@@ -333,18 +329,14 @@ public class AJAXQueryServlet extends HttpServlet {
                 //                        + "\" style=\"display: block; width: 100%; height: 100%;
                 // border: none;\" ></iframe>");
               } catch (Exception ex) {
-                if (Config.SHOW_STACKTRACE) {
-                  ex.printStackTrace();
-                }
+                LOGGER.debug("AJAXQueryServlet.evaluateString() failed", ex);
               }
             } else if (jsFormData.arg2().toString().equals("jsxgraph")) {
               try {
                 return JSONBuilder.createJSONIFrame(
                     JSONBuilder.JSXGRAPH_IFRAME, jsFormData.arg1().toString());
               } catch (Exception ex) {
-                if (Config.SHOW_STACKTRACE) {
-                  ex.printStackTrace();
-                }
+                LOGGER.debug("AJAXQueryServlet.evaluateString() failed", ex);
               }
             } else if (jsFormData.arg2().toString().equals("plotly")) {
               try {
@@ -360,9 +352,7 @@ public class AJAXQueryServlet extends HttpServlet {
                 //                        + "\" style=\"display: block; width: 100%; height: 100%;
                 // border: none;\" ></iframe>");
               } catch (Exception ex) {
-                if (Config.SHOW_STACKTRACE) {
-                  ex.printStackTrace();
-                }
+                LOGGER.debug("AJAXQueryServlet.evaluateString() failed", ex);
               }
             } else if (jsFormData.arg2().toString().equals("treeform")) {
               try {
@@ -398,9 +388,7 @@ public class AJAXQueryServlet extends HttpServlet {
                         + html
                         + "\" style=\"display: block; width: 100%; height: 100%; border: none;\" ></iframe>");
               } catch (Exception ex) {
-                if (Config.SHOW_STACKTRACE) {
-                  ex.printStackTrace();
-                }
+                LOGGER.debug("AJAXQueryServlet.evaluateString() failed", ex);
               }
             }
           } else if (outExpr.isString()) {
@@ -438,9 +426,7 @@ public class AJAXQueryServlet extends HttpServlet {
       return JSONBuilder.createJSONError("IOException occured");
     } catch (Exception e) {
       // error message
-      // if (Config.SHOW_STACKTRACE) {
-      e.printStackTrace();
-      // }
+      LOGGER.error("AJAXQueryServlet.evaluateString() failed", e);
       String msg = e.getMessage();
       if (msg != null) {
         return JSONBuilder.createJSONError("Error in evaluateString: " + msg);
@@ -547,9 +533,7 @@ public class AJAXQueryServlet extends HttpServlet {
   //
   // }
   // } catch (Exception e) {
-  // if (Config.SHOW_STACKTRACE) {
-  // e.printStackTrace();
-  // }
+  // LOGGER.debug("AJAXQueryServlet.getFromMemcache() failed", e);
   // }
   // return null;
   // }
@@ -572,9 +556,7 @@ public class AJAXQueryServlet extends HttpServlet {
   // return true;
   // }
   // } catch (Exception e) {
-  // if (Config.SHOW_STACKTRACE) {
-  // e.printStackTrace();
-  // }
+  // LOGGER.debug("AJAXQueryServlet.putToMemcache() failed", e);
   // }
   // return false;
   // }

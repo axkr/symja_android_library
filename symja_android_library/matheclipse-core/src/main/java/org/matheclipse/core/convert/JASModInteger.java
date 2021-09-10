@@ -78,7 +78,6 @@ public class JASModInteger {
     try {
       return expr2Poly(exprPoly, false);
     } catch (Exception ae) {
-      // ae.printStackTrace();
       throw new JASConversionException();
     }
   }
@@ -97,7 +96,6 @@ public class JASModInteger {
     try {
       return numericExpr2Poly(exprPoly);
     } catch (Exception ae) {
-      // ae.printStackTrace();
       throw new JASConversionException();
     }
   }
@@ -115,7 +113,6 @@ public class JASModInteger {
     try {
       return expr2IExprPoly(exprPoly);
     } catch (Exception ae) {
-      // ae.printStackTrace();
       throw new JASConversionException();
     }
   }

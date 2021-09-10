@@ -34,6 +34,8 @@ import java.util.function.IntFunction;
 import java.util.function.ObjIntConsumer;
 import java.util.function.Predicate;
 import java.util.stream.Stream;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.matheclipse.core.basic.Config;
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.exception.ASTElementLimitExceeded;
@@ -52,6 +54,8 @@ public abstract class HMArrayList extends AbstractAST
     implements IASTAppendable, Serializable, RandomAccess {
 
   private static final long serialVersionUID = 8683452581122892189L;
+
+  private static final Logger LOGGER = LogManager.getLogger();
 
   protected transient IExpr[] array;
 
@@ -588,7 +592,7 @@ public abstract class HMArrayList extends AbstractAST
   // ast.lastIndex = lastIndex;
   // return ast;
   // } catch (CloneNotSupportedException e) {
-  // e.printStackTrace();
+  // LOGGER.error("HMArrayList.clone() failed", e);
   // }
   // return null;
   // }
@@ -771,7 +775,7 @@ public abstract class HMArrayList extends AbstractAST
 
   @Override
   public IExpr get(int location) {
-    if (Config.SHOW_STACKTRACE) {
+    if (LOGGER.isDebugEnabled()) {
       int index;
       if ((index = firstIndex + location) < lastIndex) {
         return array[index];

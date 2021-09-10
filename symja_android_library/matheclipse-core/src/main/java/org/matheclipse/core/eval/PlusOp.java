@@ -6,7 +6,6 @@ import java.util.Map;
 import java.util.Map.Entry;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-import org.matheclipse.core.basic.Config;
 import org.matheclipse.core.builtin.IOFunctions;
 import org.matheclipse.core.eval.exception.LimitException;
 import org.matheclipse.core.eval.exception.SymjaMathException;
@@ -383,14 +382,10 @@ public final class PlusOp {
         evaled = true;
       }
     } catch (ValidateException | LimitException e) {
-      if (Config.SHOW_STACKTRACE) {
-        e.printStackTrace();
-      }
+      LOGGER.debug("PlusOp.plus() failed", e);
       throw e;
     } catch (SymjaMathException sme) {
-      if (Config.SHOW_STACKTRACE) {
-        sme.printStackTrace();
-      }
+      LOGGER.debug("PlusOp.plus() failed", sme);
     }
     return F.NIL;
   }
