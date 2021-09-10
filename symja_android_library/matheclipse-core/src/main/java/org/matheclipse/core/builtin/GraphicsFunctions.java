@@ -484,7 +484,7 @@ public class GraphicsFunctions {
       S.Scaled.setEvaluator(new Scaled());
       S.Sphere.setEvaluator(new Sphere());
       S.Tetrahedron.setEvaluator(new Tetrahedron());
-
+      S.Tube.setEvaluator(new Tube());
       S.Volume.setEvaluator(new Volume());
     }
   }
@@ -498,7 +498,7 @@ public class GraphicsFunctions {
 
     @Override
     public int[] expectedArgSize(IAST ast) {
-      return ARGS_1_INFINITY;
+      return ARGS_1_1;
     }
 
     @Override
@@ -1012,6 +1012,42 @@ public class GraphicsFunctions {
     public void setUp(final ISymbol newSymbol) {}
   }
 
+  
+  private static class Tube extends AbstractEvaluator implements IGraphics3D {
+
+    @Override
+    public IExpr evaluate(final IAST ast, EvalEngine engine) {
+      return F.NIL;
+    }
+
+    @Override
+    public int[] expectedArgSize(IAST ast) {
+      return ARGS_1_2;
+    }
+    @Override
+    public boolean graphics3D(StringBuilder buf, IAST ast, IAST color, IExpr opacity) {
+      if (ast.argSize() > 0 && ast.arg1().isList()) {
+        double radius = 0.01;
+        if (ast.argSize() == 2) {
+          radius = ast.arg2().toDoubleDefault(1.0);
+        }
+        IAST list = (IAST) ast.arg1();
+        buf.append("{type: \'tube\',");
+        setColor(buf, color, F.NIL, true);
+        setOpacity(buf, opacity.orElse(F.C1));
+        buf.append("radius: " + radius + ",");
+        if (list.isListOfLists() && graphics3DCoords(buf, (IAST) list)) {
+          buf.append("}");
+          return true;
+        }
+      }
+      return false;
+    }
+
+    @Override
+    public void setUp(final ISymbol newSymbol) {}
+  }
+  
   private static class Volume extends AbstractEvaluator {
 
     @Override
