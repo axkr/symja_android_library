@@ -56,8 +56,8 @@ public class EvalHistory implements Serializable {
    * Add a new calculation to the history. Only the last <code>N</code> calculations are stored in
    * the history. It may be that the last <code>N+1</code> entry will be overriden by the new entry.
    *
-   * @param inExpr TODO
-   * @param outExpr
+   * @param inExpr the input expression
+   * @param outExpr the output expression, which is the result of the <code>inExpr</code>
    */
   public void addInOut(IExpr inExpr, IExpr outExpr) {
     int deletePosition = fIndex - fHistoryLength + 1;

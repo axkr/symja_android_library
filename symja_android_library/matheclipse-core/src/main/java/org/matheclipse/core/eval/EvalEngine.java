@@ -429,8 +429,8 @@ public class EvalEngine implements Serializable {
    * Add an expression to the <code>Out[]</code> list. To avoid memory leaks you can disable the
    * appending of expressions to the output history.
    *
-   * @param inExpr TODO
-   * @param outExpr
+   * @param inExpr the input expression
+   * @param outExpr the output expression, which is the result of the <code>inExpr</code>
    */
   public void addInOut(IExpr inExpr, IExpr outExpr) {
     // remember the last result
@@ -952,9 +952,7 @@ public class EvalEngine implements Serializable {
           if (!ast.isPresent()) {
             return F.NIL;
           }
-          if (!fNumericMode
-              && ((ast.getEvalFlags() & IAST.BUILT_IN_EVALED) == IAST.BUILT_IN_EVALED)
-              && fAssumptions == null) {
+          if (isSymbolicMode(attr) && ast.isEvalFlagOn(IAST.BUILT_IN_EVALED)) {
             return F.NIL;
           }
           IExpr result =
@@ -981,9 +979,7 @@ public class EvalEngine implements Serializable {
           IExpr temp = evalArgs(ast, ISymbol.NOATTRIBUTE).orElse(ast);
           return symbol.evalDownRule(this, temp);
         } else {
-          if (!fNumericMode
-              && fAssumptions == null
-              && (((ISymbol.HOLDALLCOMPLETE | ISymbol.NHOLDALL) & attr) == ISymbol.NOATTRIBUTE)) {
+          if (isSymbolicMode(attr)) {
             ast.addEvalFlags(IAST.BUILT_IN_EVALED);
             return F.NIL;
           }
@@ -991,6 +987,19 @@ public class EvalEngine implements Serializable {
       }
     }
     return F.NIL;
+  }
+
+  /**
+   * The engine is in &quot;symbolic evaluation mode&quot;, no assumptions are set and the head
+   * contains no &quot;HOLD....&quot; attribute.
+   *
+   * @param headAttributes the attributes of the built-in header function which should be evaluated
+   * @return <code>true</code> if the engine is in symbolic mode evaluation
+   */
+  private final boolean isSymbolicMode(final int headAttributes) {
+    return !fNumericMode
+        && fAssumptions == null
+        && ((ISymbol.HOLDALLCOMPLETE & headAttributes) == ISymbol.NOATTRIBUTE);
   }
 
   /**
@@ -1416,7 +1425,7 @@ public class EvalEngine implements Serializable {
    *
    * @param ast
    * @param noEvaluation (sub-)expressions which contain no patterns should not be evaluated
-   * @param evalNumericFunction TODO
+   * @param evalNumericFunction evaluate in numeric mode
    * @return <code>ast</code> if no evaluation was executed.
    */
   public IExpr evalHoldPattern(IAST ast, boolean noEvaluation, boolean evalNumericFunction) {
@@ -2367,23 +2376,29 @@ public class EvalEngine implements Serializable {
   }
 
   /**
-   * Increment the module counter by 1 and return the result.
+   * Increment the {@link S#Module} variables counter by 1 and return the result.
    *
    * @return the module counter
    */
-  public long incModuleCounter() {
+  public static long incModuleCounter() {
     return MODULE_COUNTER.incrementAndGet();
   }
 
-  public String uniqueName(String prefix) {
+  /**
+   * Increment the {@link S#Module} variables counter by 1 and append it to the given prefix.
+   *
+   * @param prefix
+   * @return
+   */
+  public static String uniqueName(String prefix) {
     return prefix + MODULE_COUNTER.incrementAndGet();
   }
 
   /**
-   * Reset the module counter to <code>0</code>. Used only in unit tests. <b> Don't reset for
-   * reusable EvalEngine's!</b>
+   * Reset thethe {@link S#Module} variables counter to <code>0</code>. Used only in unit tests. <b>
+   * Don't reset for reusable EvalEngine's!</b>
    */
-  public void resetModuleCounter4JUnit() {
+  public static void resetModuleCounter4JUnit() {
     MODULE_COUNTER = new AtomicLong();
   }
 
@@ -2573,14 +2588,6 @@ public class EvalEngine implements Serializable {
     return fTraceMode;
   }
 
-  // public final int traceSize() {
-  // return fTraceStack.size();
-  // }
-  //
-  // public final void resetSize(int fromPosition) {
-  // fTraceStack.resetSize(fromPosition);
-  // }
-
   /**
    * Parse the given <code>expression String</code> into an IExpr without evaluation.
    *
@@ -2731,13 +2738,11 @@ public class EvalEngine implements Serializable {
    */
   public void setNumericMode(final boolean b, long precision, int figures) {
     fNumericMode = b;
-    //    fNumericPrecision = precision;
     setNumericPrecision(precision);
     fSignificantFigures = figures;
   }
 
   public void setNumericPrecision(long precision) {
-    //    fNumericPrecision = precision;
     if (FEConfig.MACHINE_PRECISION > precision) {
       fApfloatHelper = null;
     } else {
