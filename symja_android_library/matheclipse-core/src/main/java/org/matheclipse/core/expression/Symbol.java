@@ -1,7 +1,6 @@
 package org.matheclipse.core.expression;
 
 import java.io.IOException;
-import java.io.ObjectStreamException;
 import java.io.Serializable;
 import java.io.StringWriter;
 import java.util.Collection;
@@ -289,7 +288,7 @@ public class Symbol implements ISymbol, Serializable {
 
   /** {@inheritDoc} */
   @Override
-  public String definitionToString() throws IOException {
+  public String definitionToString() {
     StringWriter buf = new StringWriter();
     IAST attributesList = AttributeFunctions.attributesList(this);
     if (attributesList.size() > 1) {
@@ -985,7 +984,7 @@ public class Symbol implements ISymbol, Serializable {
     }
   }
 
-  public Object readResolve() throws ObjectStreamException {
+  public Object readResolve() {
     return fContext == Context.DUMMY ? this : fContext.get(fSymbolName);
   }
 
@@ -1156,7 +1155,7 @@ public class Symbol implements ISymbol, Serializable {
     }
   }
 
-  private Object writeReplace() throws ObjectStreamException {
+  private Object writeReplace() {
     return optional();
   }
 

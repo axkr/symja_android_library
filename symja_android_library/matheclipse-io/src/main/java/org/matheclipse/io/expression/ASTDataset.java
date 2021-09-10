@@ -132,7 +132,7 @@ public class ASTDataset extends AbstractAST
   }
 
   @Override
-  public void csv(Writer writer) throws IOException {
+  public void csv(Writer writer) {
     fTable.write().csv(writer);
   }
 
@@ -691,12 +691,12 @@ public class ASTDataset extends AbstractAST
   }
 
   @Override
-  public ASTDataset clone() throws CloneNotSupportedException {
+  public ASTDataset clone() {
     return copy();
   }
 
   @Override
-  public void readExternal(ObjectInput objectInput) throws IOException, ClassNotFoundException {
+  public void readExternal(ObjectInput objectInput) throws IOException {
     String str = objectInput.readUTF();
     this.fTable = Table.read().csv(new StringReader(str));
   }

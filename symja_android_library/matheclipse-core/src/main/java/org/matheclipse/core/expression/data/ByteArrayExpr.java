@@ -83,7 +83,7 @@ public class ByteArrayExpr extends DataExpr<byte[]> implements Externalizable {
   }
 
   @Override
-  public void readExternal(ObjectInput in) throws IOException, ClassNotFoundException {
+  public void readExternal(ObjectInput in) throws IOException {
     final int len = in.readInt();
     fData = new byte[len];
     in.read(fData);

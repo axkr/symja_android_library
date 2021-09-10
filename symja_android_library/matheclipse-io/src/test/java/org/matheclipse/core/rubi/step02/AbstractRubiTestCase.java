@@ -1,6 +1,5 @@
 package org.matheclipse.core.rubi.step02;
 
-import java.io.IOException;
 import java.io.StringWriter;
 import java.util.concurrent.TimeUnit;
 
@@ -37,8 +36,7 @@ public abstract class AbstractRubiTestCase extends TestCase {
     FEConfig.PARSER_USE_LOWERCASE_SYMBOLS = isRelaxedSyntax;
   }
 
-  private String printResult(IExpr result, String expectedResult, String manuallyCheckedResult)
-      throws IOException {
+  private String printResult(IExpr result, String expectedResult, String manuallyCheckedResult) {
     // if (result.equals(F.Null)) {
     // return "";
     // }
@@ -115,23 +113,9 @@ public abstract class AbstractRubiTestCase extends TestCase {
         return printResult(result, expectedResult, manuallyCheckedResult);
       }
     } catch (final AbortException re) {
-      try {
-        return printResult(F.$Aborted, expectedResult, manuallyCheckedResult);
-      } catch (IOException e) {
-        Validate.printException(buf, e);
-        System.err.println(buf.toString());
-        System.err.flush();
-        return "";
-      }
+      return printResult(F.$Aborted, expectedResult, manuallyCheckedResult);
     } catch (final FailedException re) {
-      try {
-        return printResult(F.$Failed, expectedResult, manuallyCheckedResult);
-      } catch (IOException e) {
-        Validate.printException(buf, e);
-        System.err.println(buf.toString());
-        System.err.flush();
-        return "";
-      }
+      return printResult(F.$Failed, expectedResult, manuallyCheckedResult);
     } catch (final SyntaxError se) {
       String msg = se.getMessage();
       System.err.println(msg);

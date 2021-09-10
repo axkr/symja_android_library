@@ -483,23 +483,9 @@ public class MMAConsole {
         return printResult(result);
       }
     } catch (final AbortException re) {
-      try {
-        return printResult(S.$Aborted);
-      } catch (IOException e) {
-        Validate.printException(buf, e);
-        stderr.println(buf.toString());
-        stderr.flush();
-        return "";
-      }
+      return printResult(S.$Aborted);
     } catch (final FailedException re) {
-      try {
-        return printResult(S.$Failed);
-      } catch (IOException e) {
-        Validate.printException(buf, e);
-        stderr.println(buf.toString());
-        stderr.flush();
-        return "";
-      }
+      return printResult(S.$Failed);
     } catch (final SyntaxError se) {
       String msg = se.getMessage();
       stderr.println(msg);
@@ -546,7 +532,7 @@ public class MMAConsole {
     out.flush();
   }
 
-  private String printResult(IExpr result) throws IOException {
+  private String printResult(IExpr result) {
     EvalEngine engine = fEvaluator.getEvalEngine();
     EvalEngine.setReset(engine);
     try {

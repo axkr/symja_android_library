@@ -114,14 +114,12 @@ public class MMAAJAXQueryServlet extends HttpServlet {
   public static volatile boolean INITIALIZED = false;
 
   @Override
-  public void doGet(HttpServletRequest req, HttpServletResponse res)
-      throws ServletException, IOException {
+  public void doGet(HttpServletRequest req, HttpServletResponse res) throws IOException {
     doPost(req, res);
   }
 
   @Override
-  protected void doPost(HttpServletRequest req, HttpServletResponse res)
-      throws ServletException, IOException {
+  protected void doPost(HttpServletRequest req, HttpServletResponse res) throws IOException {
     res.setContentType("text/html; charset=UTF-8");
     res.setCharacterEncoding("UTF-8");
     res.setHeader("Cache-Control", "no-cache");
@@ -475,7 +473,7 @@ public class MMAAJAXQueryServlet extends HttpServlet {
   }
 
   private static IExpr evalTopLevel(
-      EvalEngine engine, final StringWriter buf, final IExpr parsedExpression) throws IOException {
+      EvalEngine engine, final StringWriter buf, final IExpr parsedExpression) {
     IExpr result;
     EvalEngine[] engineRef = new EvalEngine[] {engine};
     result = ExprEvaluator.evalTopLevel(parsedExpression, engineRef);
@@ -524,7 +522,7 @@ public class MMAAJAXQueryServlet extends HttpServlet {
   }
 
   private static String[] createOutput(
-      StringWriter buffer, IExpr rhsExpr, EvalEngine engine, String function) throws IOException {
+      StringWriter buffer, IExpr rhsExpr, EvalEngine engine, String function) {
 
     boolean textEval = true;
     // if (rhsExpr != null && rhsExpr instanceof IAST &&

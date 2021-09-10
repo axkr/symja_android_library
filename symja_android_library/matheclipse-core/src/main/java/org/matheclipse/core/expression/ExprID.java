@@ -1,7 +1,5 @@
 package org.matheclipse.core.expression;
 
-import java.io.ObjectStreamException;
-
 import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.interfaces.ISymbol;
 import org.matheclipse.core.visit.IVisitor;
@@ -106,9 +104,8 @@ import org.matheclipse.core.visit.IVisitorLong;
    * In the deserialization process return the <code>F.GLOBAL_IDS[ExprID]</code> expression.
    *
    * @return the <code>F.GLOBAL_IDS[ExprID]</code> expression
-   * @throws ObjectStreamException
    */
-  public Object readResolve() throws ObjectStreamException {
+  public Object readResolve() {
     return S.exprID(fExprID); // F.GLOBAL_IDS[fExprID];
   }
 }

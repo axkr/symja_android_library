@@ -241,10 +241,8 @@ public class SymjaMMAEvaluator extends BaseEvaluator {
    * @param symjaMMACodeRunner
    * @param result
    * @return
-   * @throws IOException
    */
-  TryResult printForm(final SymjaMMACodeRunner symjaMMACodeRunner, final Object result)
-      throws IOException {
+  TryResult printForm(final SymjaMMACodeRunner symjaMMACodeRunner, final Object result) {
     switch (fUsedForm) {
       case SymjaMMAEvaluator.JAVAFORM:
         return TryResult.createResult(

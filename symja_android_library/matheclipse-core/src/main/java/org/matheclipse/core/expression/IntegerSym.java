@@ -3,7 +3,6 @@ package org.matheclipse.core.expression;
 import java.io.IOException;
 import java.io.ObjectInput;
 import java.io.ObjectOutput;
-import java.io.ObjectStreamException;
 import java.math.BigInteger;
 import java.math.RoundingMode;
 import java.util.function.Function;
@@ -756,7 +755,7 @@ public class IntegerSym extends AbstractIntegerSym {
   }
 
   @Override
-  public void readExternal(ObjectInput objectInput) throws IOException, ClassNotFoundException {
+  public void readExternal(ObjectInput objectInput) throws IOException {
     byte attributeFlags = objectInput.readByte();
     int value;
     switch (attributeFlags) {
@@ -923,7 +922,7 @@ public class IntegerSym extends AbstractIntegerSym {
     objectOutput.writeInt(fIntValue);
   }
 
-  private Object writeReplace() throws ObjectStreamException {
+  private Object writeReplace() {
     return optional();
   }
 }

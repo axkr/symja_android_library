@@ -18,7 +18,6 @@ package com.twosigma.beakerx.symjamma.evaluator;
 import static com.twosigma.beakerx.evaluator.BaseEvaluator.INTERUPTED_MSG;
 import static com.twosigma.beakerx.symjamma.evaluator.SymjaMMAStackTracePrettyPrinter.printStacktrace;
 
-import java.io.IOException;
 import java.io.StringWriter;
 import java.lang.reflect.InvocationTargetException;
 import java.util.concurrent.Callable;
@@ -54,7 +53,7 @@ class SymjaMMACodeRunner implements Callable<TryResult> {
     theOutput = out;
   }
 
-  private String createSVGOutput(IAST show) throws IOException {
+  private String createSVGOutput(IAST show) {
     StringBuilder svgData = new StringBuilder();
     if (show.isAST() && show.size() > 1 && show.first().isAST()) {
       StringBuilder buf = new StringBuilder(2048);

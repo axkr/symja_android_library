@@ -1,7 +1,6 @@
 package org.matheclipse.core.expression;
 
 import java.io.IOException;
-import java.io.ObjectStreamException;
 import java.util.function.DoubleFunction;
 import java.util.function.Predicate;
 
@@ -145,7 +144,7 @@ public class BuiltInSymbol extends Symbol implements IBuiltInSymbol {
 
   /** {@inheritDoc} */
   @Override
-  public String definitionToString() throws IOException {
+  public String definitionToString() {
     // dummy call to ensure, that the associated rules are loaded:
     getEvaluator();
     return super.definitionToString();
@@ -397,13 +396,12 @@ public class BuiltInSymbol extends Symbol implements IBuiltInSymbol {
     fEvaluator = new PredicateEvaluator(predicate);
   }
 
-  private void readObject(java.io.ObjectInputStream stream)
-      throws IOException, ClassNotFoundException {
+  private void readObject(java.io.ObjectInputStream stream) throws IOException {
     fOrdinal = stream.readInt();
   }
 
   @Override
-  public Object readResolve() throws ObjectStreamException {
+  public Object readResolve() {
     return S.symbol(fOrdinal);
   }
 

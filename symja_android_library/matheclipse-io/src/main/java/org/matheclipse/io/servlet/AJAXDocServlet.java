@@ -13,7 +13,6 @@ import java.util.Map;
 import java.util.Set;
 
 import javax.management.RuntimeErrorException;
-import javax.servlet.ServletException;
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
@@ -315,14 +314,12 @@ public class AJAXDocServlet extends HttpServlet {
   }
 
   @Override
-  public void doGet(HttpServletRequest req, HttpServletResponse res)
-      throws ServletException, IOException {
+  public void doGet(HttpServletRequest req, HttpServletResponse res) throws IOException {
     doPost(req, res);
   }
 
   @Override
-  protected void doPost(HttpServletRequest req, HttpServletResponse res)
-      throws ServletException, IOException {
+  protected void doPost(HttpServletRequest req, HttpServletResponse res) throws IOException {
     res.setContentType("text/html; charset=UTF-8");
     res.setCharacterEncoding("UTF-8");
     res.setHeader("Cache-Control", "no-cache");

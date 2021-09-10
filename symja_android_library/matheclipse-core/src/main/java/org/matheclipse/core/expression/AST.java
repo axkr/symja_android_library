@@ -632,7 +632,7 @@ public class AST extends HMArrayList implements Externalizable {
     }
   }
 
-  private Object writeReplace() throws ObjectStreamException {
+  private Object writeReplace() {
     return optional();
   }
 }

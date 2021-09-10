@@ -90,9 +90,8 @@ public class ImportString extends AbstractEvaluator {
    * @param file
    * @param engine
    * @return
-   * @throws IOException
    */
-  public static IExpr ofString(String str, EvalEngine engine) throws IOException {
+  public static IExpr ofString(String str, EvalEngine engine) {
     AST2Expr ast2Expr = new AST2Expr(engine.isRelaxedSyntax(), engine);
     final Parser parser = new Parser(engine.isRelaxedSyntax(), true);
     final ASTNode node = parser.parse(str);
@@ -105,9 +104,8 @@ public class ImportString extends AbstractEvaluator {
    * @param file
    * @param engine
    * @return
-   * @throws IOException
    */
-  public static IExpr ofText(String str, EvalEngine engine) throws IOException {
+  public static IExpr ofText(String str, EvalEngine engine) {
     return F.stringx(str);
   }
 }

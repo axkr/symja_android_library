@@ -1,6 +1,5 @@
 package org.matheclipse.core.builtin;
 
-import java.io.IOException;
 import java.io.StringWriter;
 import java.math.BigInteger;
 import java.util.AbstractMap.SimpleImmutableEntry;
@@ -1161,14 +1160,14 @@ public final class OutputFunctions {
     return false;
   }
 
-  public static String toJavaDouble(final IExpr arg1) throws IOException {
+  public static String toJavaDouble(final IExpr arg1) {
     DoubleFormFactory factory = JavaDoubleFormFactory.get(true, false);
     StringBuilder buf = new StringBuilder();
     factory.convert(buf, arg1);
     return buf.toString();
   }
 
-  public static String toJavaComplex(final IExpr arg1) throws IOException {
+  public static String toJavaComplex(final IExpr arg1) {
     JavaComplexFormFactory factory = JavaComplexFormFactory.get(true, false);
     StringBuilder buf = new StringBuilder();
     factory.convert(buf, arg1);

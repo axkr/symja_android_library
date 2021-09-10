@@ -1,7 +1,6 @@
 package org.matheclipse.core.expression;
 
 import java.io.IOException;
-import java.io.ObjectStreamException;
 import java.io.Serializable;
 import java.util.HashMap;
 import java.util.Map;
@@ -191,7 +190,7 @@ public class Context implements Serializable {
     return contextName;
   }
 
-  private Object readResolve() throws ObjectStreamException {
+  private Object readResolve() {
     if (contextName.equals(DUMMY_CONTEXT_NAME)) {
       return DUMMY;
     } else if (contextName.equals(SYSTEM_CONTEXT_NAME)) {

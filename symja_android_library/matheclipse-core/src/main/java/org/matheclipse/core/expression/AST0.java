@@ -4,7 +4,6 @@ import java.io.Externalizable;
 import java.io.IOException;
 import java.io.ObjectInput;
 import java.io.ObjectOutput;
-import java.io.ObjectStreamException;
 import java.util.HashSet;
 import java.util.RandomAccess;
 import java.util.Set;
@@ -531,7 +530,7 @@ public class AST0 extends AbstractAST implements Externalizable, RandomAccess {
     }
   }
 
-  private Object writeReplace() throws ObjectStreamException {
+  private Object writeReplace() {
     return optional();
   }
 }

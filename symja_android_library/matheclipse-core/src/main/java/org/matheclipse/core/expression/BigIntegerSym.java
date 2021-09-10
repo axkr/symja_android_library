@@ -3,7 +3,6 @@ package org.matheclipse.core.expression;
 import java.io.IOException;
 import java.io.ObjectInput;
 import java.io.ObjectOutput;
-import java.io.ObjectStreamException;
 import java.math.BigInteger;
 import java.math.RoundingMode;
 import java.util.function.Function;
@@ -861,7 +860,7 @@ public class BigIntegerSym extends AbstractIntegerSym {
     objectOutput.writeObject(fBigIntValue);
   }
 
-  private Object writeReplace() throws ObjectStreamException {
+  private Object writeReplace() {
     return optional();
   }
 }
