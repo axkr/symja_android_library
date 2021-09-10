@@ -4,6 +4,8 @@ import java.io.File;
 import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.URL;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.matheclipse.core.basic.Config;
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.exception.ValidateException;
@@ -20,6 +22,7 @@ import tech.tablesaw.api.Table;
 
 /** Import semantic data into a DataSet */
 public class SemanticImport extends AbstractEvaluator {
+  private static final Logger LOGGER = LogManager.getLogger();
 
   public SemanticImport() {}
 
@@ -52,13 +55,13 @@ public class SemanticImport extends AbstractEvaluator {
         Table table = Table.read().csv(file);
         return ASTDataset.newTablesawTable(table);
       }
-      return engine.printMessage("SemanticImport: file " + fileName + " does not exist!");
+      LOGGER.log(engine.getLogLevel(), "file {} does not exist!", fileName);
     } catch (IOException ioe) {
-      return engine.printMessage("SemanticImport: file " + fileName + " not found!");
+      LOGGER.log(engine.getLogLevel(), "file {} not found!", fileName);
     } catch (RuntimeException rex) {
-      return engine.printMessage("SemanticImport: file " + fileName + " - " + rex.getMessage());
-    } finally {
+      LOGGER.log(engine.getLogLevel(), "file {}", fileName, rex);
     }
+    return F.NIL;
   }
 
   /**
@@ -83,15 +86,11 @@ public class SemanticImport extends AbstractEvaluator {
         return ASTDataset.newTablesawTable(table);
       }
     } catch (ValidateException | MalformedURLException e) {
-      if (Config.SHOW_STACKTRACE) {
-        e.printStackTrace();
-      }
-      return engine.printMessage(S.SemanticImport, e);
+      LOGGER.log(engine.getLogLevel(), S.SemanticImport, e);
     } catch (IOException ioe) {
-      return engine.printMessage("SemanticImport: URL " + urlName + " not found!");
+      LOGGER.log(engine.getLogLevel(), "SemanticImport: URL {} not found!", urlName);
     } catch (RuntimeException rex) {
-      return engine.printMessage("SemanticImport: URL " + urlName + " - " + rex.getMessage());
-    } finally {
+      LOGGER.log(engine.getLogLevel(), "SemanticImport: URL {}", urlName, rex);
     }
     return F.NIL;
   }

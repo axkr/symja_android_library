@@ -3,6 +3,8 @@ package org.matheclipse.core.builtin;
 import static org.matheclipse.core.expression.S.Power;
 import java.util.ArrayList;
 import java.util.List;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.hipparchus.optim.OptimizationData;
 import org.hipparchus.optim.PointValuePair;
 import org.hipparchus.optim.linear.LinearConstraint;
@@ -37,6 +39,8 @@ import org.matheclipse.core.polynomials.longexponent.ExprRingFactory;
 import org.matheclipse.core.visit.VisitorExpr;
 
 public class MinMaxFunctions {
+  private static final Logger LOGGER = LogManager.getLogger();
+
   /**
    * See <a href="https://pangin.pro/posts/computation-in-static-initializer">Beware of computation
    * in static initializer</a>
@@ -506,10 +510,7 @@ public class MinMaxFunctions {
           }
         }
       } catch (org.hipparchus.exception.MathRuntimeException | ValidateException e) {
-        if (Config.SHOW_STACKTRACE) {
-          e.printStackTrace();
-        }
-        return engine.printMessage(ast.topHead(), e);
+        LOGGER.log(engine.getLogLevel(), ast.topHead(), e);
       }
       return F.NIL;
     }
@@ -602,10 +603,7 @@ public class MinMaxFunctions {
           }
         }
       } catch (org.hipparchus.exception.MathRuntimeException | ValidateException e) {
-        if (Config.SHOW_STACKTRACE) {
-          e.printStackTrace();
-        }
-        return engine.printMessage(ast.topHead(), e);
+        LOGGER.log(engine.getLogLevel(), ast.topHead(), e);
       }
       return F.NIL;
     }
@@ -659,12 +657,12 @@ public class MinMaxFunctions {
 
       IExpr yNInf = S.Limit.of(function, F.Rule(x, F.CNInfinity));
       if (yNInf.isInfinity()) {
-        engine.printMessage(head.toString() + ": the maximum cannot be found.");
+        LOGGER.log(engine.getLogLevel(), "{}: the maximum cannot be found.", head);
         return F.List(F.CInfinity, F.List(F.Rule(x, F.CNInfinity)));
       }
       IExpr yInf = S.Limit.of(function, F.Rule(x, F.CInfinity));
       if (yInf.isInfinity()) {
-        engine.printMessage(head.toString() + ": the maximum cannot be found.");
+        LOGGER.log(engine.getLogLevel(), "{}: the maximum cannot be found.", head);
         return F.List(F.CInfinity, F.List(F.Rule(x, F.CInfinity)));
       }
 
@@ -693,7 +691,7 @@ public class MinMaxFunctions {
         return F.CEmptyList;
       }
     } catch (RuntimeException rex) {
-      return engine.printMessage(head.toString() + ": exception occured:" + rex.getMessage());
+      LOGGER.log(engine.getLogLevel(), head, rex);
     }
     return F.NIL;
   }
@@ -841,12 +839,12 @@ public class MinMaxFunctions {
 
       IExpr yNInf = S.Limit.of(function, F.Rule(x, F.CNInfinity));
       if (yNInf.isNegativeInfinity()) {
-        engine.printMessage(head.toString() + ": the maximum cannot be found.");
+        LOGGER.log(engine.getLogLevel(), "{}: the maximum cannot be found.", head);
         return F.List(F.CNInfinity, F.List(F.Rule(x, F.CNInfinity)));
       }
       IExpr yInf = S.Limit.of(function, F.Rule(x, F.CInfinity));
       if (yInf.isNegativeInfinity()) {
-        engine.printMessage(head.toString() + ": the maximum cannot be found.");
+        LOGGER.log(engine.getLogLevel(), "{}: the maximum cannot be found.", head);
         return F.List(F.CNInfinity, F.List(F.Rule(x, F.CInfinity)));
       }
 
@@ -875,7 +873,7 @@ public class MinMaxFunctions {
         return F.CEmptyList;
       }
     } catch (RuntimeException rex) {
-      return engine.printMessage(head.toString() + ": exception occured:" + rex.getMessage());
+      LOGGER.log(engine.getLogLevel(), head, rex);
     }
     return F.NIL;
   }

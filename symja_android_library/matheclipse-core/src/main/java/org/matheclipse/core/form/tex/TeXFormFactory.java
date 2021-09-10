@@ -3,6 +3,8 @@ package org.matheclipse.core.form.tex;
 import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.apfloat.Apcomplex;
 import org.apfloat.Apfloat;
 import org.matheclipse.core.basic.Config;
@@ -44,6 +46,8 @@ import org.matheclipse.parser.trie.TrieMatch;
 
 /** Generates TeX presentation output */
 public class TeXFormFactory {
+  private static final Logger LOGGER = LogManager.getLogger();
+
   /** The conversion wasn't called with an operator preceding the <code>IExpr</code> object. */
   public static final boolean NO_PLUS_CALL = false;
 
@@ -985,7 +989,7 @@ public class TeXFormFactory {
             return true;
           }
         } catch (final ValidateException ve) {
-          EvalEngine.get().printMessage(ve.getMessage(S.Sum));
+          LOGGER.log(EvalEngine.get().getLogLevel(), ve.getMessage(S.Sum), ve);
         }
         return false;
       } else if (f.get(i).isSymbol()) {
@@ -1884,10 +1888,10 @@ public class TeXFormFactory {
     String text = str.replaceAll("\\&", "\\\\&");
     text = text.replaceAll("\\#", "\\\\#");
     text = text.replaceAll("\\%", "\\\\%");
-    text = text.replaceAll("\\$", "\\\\\\$");
+    text = text.replace("$", "\\$");
     text = text.replaceAll("\\_", "\\\\_");
-    text = text.replaceAll("\\{", "\\\\{");
-    text = text.replaceAll("\\}", "\\\\}");
+    text = text.replace("{", "\\{");
+    text = text.replace("}", "\\}");
     text = text.replaceAll("\\<", "\\$<\\$");
     text = text.replaceAll("\\>", "\\$>\\$");
     buf.append(text);

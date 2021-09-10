@@ -9,6 +9,8 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import org.apache.commons.lang3.StringUtils;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.matheclipse.core.basic.Config;
 import org.matheclipse.core.convert.AST2Expr;
 import org.matheclipse.core.eval.EvalEngine;
@@ -46,6 +48,7 @@ import com.mitchellbosecke.pebble.template.PebbleTemplate;
 import com.mitchellbosecke.pebble.template.PebbleTemplateImpl;
 
 public class IOFunctions {
+  private static final Logger LOGGER = LogManager.getLogger();
 
   private static PebbleEngine PEBBLE_ENGINE = new PebbleEngine.Builder().build();
   /**
@@ -932,7 +935,7 @@ public class IOFunctions {
     if (message == null) {
       message = "Undefined message shortcut: " + messageShortcut;
       engine.setMessageShortcut(messageShortcut);
-      engine.printMessage(symbol + ": " + message);
+      LOGGER.log(engine.getLogLevel(), "{}: {}", symbol, message);
     } else {
       try {
         Writer writer = new StringWriter();
@@ -945,7 +948,7 @@ public class IOFunctions {
 
         templateApply(message, writer, context);
         engine.setMessageShortcut(messageShortcut);
-        engine.printMessage(symbol + ": " + writer);
+        LOGGER.log(engine.getLogLevel(), "{}: {}", symbol, message);
       } catch (IOException e) {
         e.printStackTrace();
       }

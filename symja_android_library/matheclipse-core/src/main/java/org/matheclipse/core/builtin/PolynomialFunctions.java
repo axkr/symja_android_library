@@ -5,6 +5,8 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
 import java.util.TreeSet;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.matheclipse.core.basic.Config;
 import org.matheclipse.core.convert.JASConvert;
 import org.matheclipse.core.convert.JASIExpr;
@@ -63,6 +65,7 @@ import edu.jas.ufd.GreatestCommonDivisor;
 import edu.jas.ufd.GreatestCommonDivisorAbstract;
 
 public class PolynomialFunctions {
+  private static final Logger LOGGER = LogManager.getLogger();
 
   /**
    * See <a href="https://pangin.pro/posts/computation-in-static-initializer">Beware of computation
@@ -751,10 +754,9 @@ public class PolynomialFunctions {
                 F.Resultant(poly.getExpr(), polyDiff.getExpr(), arg2)),
             fN);
       } catch (RuntimeException ex) {
-        return engine.printMessage(
-            ast.topHead()
-                + ": polynomial expected at position 1 instead of "
-                + ast.arg1().toString());
+        LOGGER.log(engine.getLogLevel(), "{}: polynomial expected at position 1 instead of {}",
+            ast.topHead(), ast.arg1());
+        return F.NIL;
       }
     }
 

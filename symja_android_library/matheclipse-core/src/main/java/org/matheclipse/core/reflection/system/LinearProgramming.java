@@ -2,6 +2,8 @@ package org.matheclipse.core.reflection.system;
 
 import java.util.ArrayList;
 import java.util.Collection;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.hipparchus.exception.MathRuntimeException;
 import org.hipparchus.optim.PointValuePair;
 import org.hipparchus.optim.linear.LinearConstraint;
@@ -68,6 +70,7 @@ import org.matheclipse.core.interfaces.ISignedNumber;
  * </pre>
  */
 public class LinearProgramming extends AbstractFunctionEvaluator {
+  private static final Logger LOGGER = LogManager.getLogger();
 
   public LinearProgramming() {
     super();
@@ -128,12 +131,13 @@ public class LinearProgramming extends AbstractFunctionEvaluator {
                 if (sn != null) {
                   constraints.add(new LinearConstraint(arg2D, Relationship.GEQ, sn.doubleValue()));
                 } else {
-                  return engine.printMessage(
-                      "LinearProgramming: numeric vector or number expected!");
+                  LOGGER.log(engine.getLogLevel(), "Numeric vector or number expected!");
+                  return F.NIL;
                 }
               }
             } else {
-              return engine.printMessage("LinearProgramming: numeric vector expected!");
+              LOGGER.log(engine.getLogLevel(), "Numeric vector expected!");
+              return F.NIL;
             }
           }
           SimplexSolver solver = new SimplexSolver();
@@ -150,13 +154,8 @@ public class LinearProgramming extends AbstractFunctionEvaluator {
         }
       }
     } catch (MathRuntimeException mre) {
-      // throw new WrappedException(oe);
-      return engine.printMessage(ast.topHead(), mre);
-      // if (Config.SHOW_STACKTRACE) {
-      // mre.printStackTrace();
-      // }
+      LOGGER.log(engine.getLogLevel(), ast.topHead(), mre);
     }
-
     return F.NIL;
   }
 

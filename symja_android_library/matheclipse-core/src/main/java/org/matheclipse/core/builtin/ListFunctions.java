@@ -17,6 +17,8 @@ import java.util.function.BiPredicate;
 import java.util.function.Consumer;
 import java.util.function.Function;
 import java.util.function.Predicate;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.hipparchus.stat.StatUtils;
 import org.matheclipse.core.basic.Config;
 import org.matheclipse.core.basic.ToggleFeature;
@@ -72,6 +74,7 @@ import org.matheclipse.core.visit.VisitorRemoveLevelSpecification;
 import org.matheclipse.core.visit.VisitorReplaceAll;
 
 public final class ListFunctions {
+  private static final Logger LOGGER = LogManager.getLogger();
 
   /**
    * See <a href="https://stackoverflow.com/a/4859279/24819">Get the indices of an array after
@@ -892,11 +895,8 @@ public final class ListFunctions {
               final IAST dimIter = (IAST) ast.arg2(); // dimensions
               final IAST originIter = (IAST) ast.arg3(); // origins
               if (dimIter.size() != originIter.size()) {
-                engine.printMessage(
-                    dimIter.toString()
-                        + " and "
-                        + originIter.toString()
-                        + " should have the same length.");
+                LOGGER.log(engine.getLogLevel(), "{} and {} should have the same length.", dimIter,
+                    originIter);
                 return F.NIL;
               }
               for (int i = 1; i < dimIter.size(); i++) {
@@ -925,7 +925,7 @@ public final class ListFunctions {
         }
       } catch (final ValidateException ve) {
         // int number validation
-        return engine.printMessage(ast.topHead(), ve);
+        LOGGER.log(engine.getLogLevel(), ast.topHead(), ve);
       } catch (final ClassCastException | ArithmeticException e) {
         // ClassCastException: the iterators are generated only from IASTs
         // ArithmeticException: the toInt() function throws ArithmeticExceptions
@@ -1231,7 +1231,7 @@ public final class ListFunctions {
         }
       } catch (final ValidateException ve) {
         // see level specification and int number validation
-        return engine.printMessage(ast.topHead(), ve);
+        LOGGER.log(engine.getLogLevel(), ast.topHead(), ve);
       } catch (final RuntimeException rex) {
         if (Config.SHOW_STACKTRACE) {
           rex.printStackTrace();
@@ -1737,7 +1737,7 @@ public final class ListFunctions {
         }
       } catch (final ValidateException ve) {
         // int number validation
-        return engine.printMessage(ast.topHead(), ve);
+        LOGGER.log(engine.getLogLevel(), ast.topHead(), ve);
       } catch (final ClassCastException | ArithmeticException e) {
         // ClassCastException: the iterators are generated only from IASTs
         // ArithmeticException: the toInt() function throws ArithmeticExceptions
@@ -1829,7 +1829,8 @@ public final class ListFunctions {
         return F.ZZ(mf.getCounter());
       } catch (final ValidateException ve) {
         // see level specification
-        return engine.printMessage(ast.topHead(), ve);
+        LOGGER.log(engine.getLogLevel(), ast.topHead(), ve);
+        return F.NIL;
       }
     }
 
@@ -1905,13 +1906,9 @@ public final class ListFunctions {
             }
             return list.splice(indx);
           } catch (final ValidateException ve) {
-            return engine.printMessage(ast.topHead(), ve);
+            LOGGER.log(engine.getLogLevel(), ast.topHead(), ve);
           } catch (final RuntimeException rex) {
-            if (Config.DEBUG) {
-              rex.printStackTrace();
-            }
-            return engine.printMessage(
-                "Cannot delete position " + arg2.toString() + " in " + arg1.toString());
+            LOGGER.log(engine.getLogLevel(), "Cannot delete position {} in {}", arg2, arg1, rex);
           }
         } else if (arg2.isList()) {
           final IAST indxList = (IAST) arg2;
@@ -1953,11 +1950,9 @@ public final class ListFunctions {
         }
         return deletePartRecursive(list, indx, 0);
       } catch (final RuntimeException rex) {
-        if (Config.DEBUG) {
-          rex.printStackTrace();
-        }
-        return engine.printMessage(
-            "Cannot delete position " + listOfIntPositions.toString() + " in " + list.toString());
+        LOGGER.log(engine.getLogLevel(), "Cannot delete position {} in {}", listOfIntPositions,
+            list, rex);
+        return F.NIL;
       }
     }
 
@@ -2074,7 +2069,8 @@ public final class ListFunctions {
             // reached maximum number of results
           } catch (final ValidateException ve) {
             // see level specification
-            return engine.printMessage(ast.topHead(), ve);
+            LOGGER.log(engine.getLogLevel(), ast.topHead(), ve);
+            return F.NIL;
           }
 
           return arg1RemoveClone;
@@ -2352,10 +2348,7 @@ public final class ListFunctions {
           }
         }
       } catch (ValidateException | IndexOutOfBoundsException | NullPointerException e) {
-        if (Config.SHOW_STACKTRACE) {
-          e.printStackTrace();
-        }
-        return engine.printMessage(ast.topHead(), e);
+        LOGGER.log(engine.getLogLevel(), ast.topHead(), e);
       }
       return F.NIL;
     }
@@ -2843,7 +2836,7 @@ public final class ListFunctions {
         return frex.getValue();
       } catch (final ValidateException ve) {
         // see level specification and int number validation
-        return engine.printMessage(ast.topHead(), ve);
+        LOGGER.log(engine.getLogLevel(), ast.topHead(), ve);
       } catch (final RuntimeException rex) {
         if (Config.SHOW_STACKTRACE) {
           rex.printStackTrace();
@@ -3010,7 +3003,7 @@ public final class ListFunctions {
         return frex.getValue();
       } catch (final ValidateException ve) {
         // see level specification
-        return engine.printMessage(ve.getMessage(ast.topHead()));
+        LOGGER.log(engine.getLogLevel(), ve.getMessage(ast.topHead()), ve);
       }
       return F.NIL;
     }
@@ -3116,10 +3109,7 @@ public final class ListFunctions {
           return evaluateNestList4(ast, engine);
         }
       } catch (RuntimeException rex) {
-        if (Config.SHOW_STACKTRACE) {
-          rex.printStackTrace();
-        }
-        return engine.printMessage(ast.topHead(), rex);
+        LOGGER.log(engine.getLogLevel(), ast.topHead(), rex);
       }
       return F.NIL;
     }
@@ -3368,7 +3358,7 @@ public final class ListFunctions {
             }
           }
         } catch (ValidateException ve) {
-          return engine.printMessage(ast.topHead(), ve);
+          LOGGER.log(engine.getLogLevel(), ast.topHead(), ve);
         }
       }
       return F.NIL;
@@ -4009,7 +3999,8 @@ public final class ListFunctions {
         return F.List();
       } catch (final ValidateException ve) {
         // see level specification
-        return engine.printMessage(ve.getMessage(ast.topHead()));
+        LOGGER.log(engine.getLogLevel(), ve.getMessage(ast.topHead()), ve);
+        return F.NIL;
       }
     }
 
@@ -4352,7 +4343,8 @@ public final class ListFunctions {
 
       } catch (final ValidateException ve) {
         // int number validation
-        return engine.printMessage(ve.getMessage(ast.topHead()));
+        LOGGER.log(engine.getLogLevel(), ve.getMessage(ast.topHead()), ve);
+        return F.NIL;
       }
     }
 
@@ -4598,7 +4590,8 @@ public final class ListFunctions {
 
       } catch (final ValidateException ve) {
         // int number validation
-        return engine.printMessage(ve.getMessage(ast.topHead()));
+        LOGGER.log(engine.getLogLevel(), ve.getMessage(ast.topHead()), ve);
+        return F.NIL;
       }
     }
 
@@ -4994,7 +4987,7 @@ public final class ListFunctions {
       if (ast.size() >= 5) {
         maxResults = engine.evaluate(ast.arg4()).toIntDefault();
         if (maxResults < 0) {
-          engine.printMessage(
+          LOGGER.log(engine.getLogLevel(),
               "Position: non-negative integer for maximum number of objects expected.");
           return F.NIL;
         }
@@ -5030,7 +5023,7 @@ public final class ListFunctions {
             return position((IAST) arg1, arg2, level, maxResults, engine);
           } catch (final ValidateException ve) {
             // see level specification
-            return engine.printMessage(ve.getMessage(ast.topHead()));
+            LOGGER.log(engine.getLogLevel(), ve.getMessage(ast.topHead()), ve);
           }
         }
       }
@@ -5316,10 +5309,9 @@ public final class ListFunctions {
         if (size != Integer.MIN_VALUE) {
           return range(size);
         }
-        engine.printMessage(
-            "Range: argument "
-                + ast.arg1()
-                + " is greater than Javas Integer.MAX_VALUE or no integer number.");
+        LOGGER.log(engine.getLogLevel(),
+            "Range: argument {} is greater than Javas Integer.MAX_VALUE or no integer number.",
+            ast.arg1());
         return F.NIL;
       }
       if (ast.isAST3()) {
@@ -5341,8 +5333,8 @@ public final class ListFunctions {
      */
     public static IAST range(int size) {
       if (size > Integer.MAX_VALUE - 3) {
-        EvalEngine.get()
-            .printMessage("Range: argument " + size + " is greater than Javas Integer.MAX_VALUE-3");
+        LOGGER.log(EvalEngine.get().getLogLevel(),
+            "Range: argument {} is greater than Javas Integer.MAX_VALUE-3", size);
         return F.NIL;
       }
       return range(1, size + 1);
@@ -5677,7 +5669,8 @@ public final class ListFunctions {
         }
         return replaceExpr(ast, arg1, rules, engine);
       } catch (ValidateException ve) {
-        return engine.printMessage(ast.topHead(), ve);
+        LOGGER.log(engine.getLogLevel(), ast.topHead(), ve);
+        return F.NIL;
       }
     }
 
@@ -5747,7 +5740,7 @@ public final class ListFunctions {
           VisitorReplaceAll visitor = VisitorReplaceAll.createVisitor(arg1, arg2, ast);
           return arg1.replaceAll(visitor).orElse(arg1);
         } catch (ValidateException ve) {
-          return engine.printMessage(ast.topHead(), ve);
+          LOGGER.log(engine.getLogLevel(), ast.topHead(), ve);
         }
       }
       return F.NIL;
@@ -5852,9 +5845,9 @@ public final class ListFunctions {
           IASTAppendable result = F.ListAlloc();
           return replaceExpr(ast, arg1, rules, result, maxNumberOfResults, engine);
         } catch (ValidateException ve) {
-          return engine.printMessage(ast.topHead(), ve);
+          LOGGER.log(engine.getLogLevel(), ast.topHead(), ve);
         } catch (ArithmeticException ae) {
-          return engine.printMessage("ReplaceList: " + ae.getMessage());
+          LOGGER.log(engine.getLogLevel(), "ReplaceList", ae);
         }
       }
       return F.NIL;
@@ -5987,7 +5980,8 @@ public final class ListFunctions {
         }
         return result;
       } catch (ValidateException ve) {
-        return engine.printMessage(ast.topHead(), ve);
+        LOGGER.log(engine.getLogLevel(), ast.topHead(), ve);
+        return F.NIL;
       }
     }
 
@@ -6073,7 +6067,8 @@ public final class ListFunctions {
         VisitorReplaceAll visitor = VisitorReplaceAll.createVisitor(arg1, arg2, ast);
         return arg1.replaceRepeated(visitor, maxIterations);
       } catch (ValidateException ve) {
-        return engine.printMessage(ast.topHead(), ve);
+        LOGGER.log(engine.getLogLevel(), ast.topHead(), ve);
+        return F.NIL;
       }
     }
 
@@ -6518,7 +6513,7 @@ public final class ListFunctions {
             }
           }
         } catch (final ValidateException ve) {
-          return engine.printMessage(ve.getMessage(ast.topHead()));
+          LOGGER.log(engine.getLogLevel(), ve.getMessage(ast.topHead()), ve);
         }
       }
       return F.NIL;
@@ -6555,7 +6550,7 @@ public final class ListFunctions {
           }
         }
       } catch (final ValidateException ve) {
-        return engine.printMessage(ve.getMessage(ast.topHead()));
+        LOGGER.log(engine.getLogLevel(), ve.getMessage(ast.topHead()), ve);
       }
       return F.NIL;
     }
@@ -6764,7 +6759,8 @@ public final class ListFunctions {
       if (ast.size() == 2) {
         int n = arg1.toIntDefault(-1);
         if (n < 0 || n == 0) {
-          return engine.printMessage("Subdivide: argument 1 should be a positive integer.");
+          LOGGER.log(engine.getLogLevel(), "Subdivide: argument 1 should be a positive integer.");
+          return F.NIL;
         }
         return Range.range(0, n + 1).map(x -> x.divide(arg1), 1);
       }
@@ -6772,7 +6768,8 @@ public final class ListFunctions {
       if (ast.size() == 3) {
         int n = arg2.toIntDefault(-1);
         if (n < 0 || n == 0) {
-          return engine.printMessage("Subdivide: argument 2 should be a positive integer.");
+          LOGGER.log(engine.getLogLevel(), "Subdivide: argument 2 should be a positive integer.");
+          return F.NIL;
         }
         IAST factorList = Range.range(0, n + 1).map(x -> x.divide(arg2), 1);
         return factorList.map(x -> arg1.times(x), 1);
@@ -6786,7 +6783,8 @@ public final class ListFunctions {
       IExpr arg3 = ast.arg3();
       int n = arg3.toIntDefault(-1);
       if (n < 0 || n == 0) {
-        return engine.printMessage("Subdivide: argument 3 should be a positive integer.");
+        LOGGER.log(engine.getLogLevel(), "Subdivide: argument 3 should be a positive integer.");
+        return F.NIL;
       }
       IAST factorList = Range.range(0, n + 1).map(x -> x.divide(arg3), 1);
       return factorList.map(x -> arg1.plus(arg2.times(x).subtract(arg1.times(x))), 1);
@@ -6929,7 +6927,7 @@ public final class ListFunctions {
           return generator.table();
         }
       } catch (ValidateException ve) {
-        return engine.printMessage(ast.topHead(), ve);
+        LOGGER.log(engine.getLogLevel(), ast.topHead(), ve);
       } catch (final ArrayIndexOutOfBoundsException e) {
         if (Config.SHOW_STACKTRACE) {
           e.printStackTrace();
@@ -7288,16 +7286,16 @@ public final class ListFunctions {
             return take(arg1, 0, sequ);
           }
         } else {
-          return engine.printMessage("Take: Nonatomic expression expected at position 1");
+          LOGGER.log(engine.getLogLevel(), "Take: Nonatomic expression expected at position 1");
+          return F.NIL;
         }
       } catch (final ValidateException ve) {
-        return engine.printMessage(ast.topHead(), ve);
+        LOGGER.log(engine.getLogLevel(), ast.topHead(), ve);
       } catch (final RuntimeException rex) {
         if (Config.SHOW_STACKTRACE) {
           rex.printStackTrace();
         }
       }
-
       return F.NIL;
     }
 
@@ -7487,7 +7485,7 @@ public final class ListFunctions {
             }
           }
         } catch (RuntimeException rex) {
-          return engine.printMessage(ast.topHead(), rex);
+          LOGGER.log(engine.getLogLevel(), ast.topHead(), rex);
         }
       }
       return F.NIL;
@@ -7537,7 +7535,7 @@ public final class ListFunctions {
             }
           }
         } catch (RuntimeException rex) {
-          return engine.printMessage(ast.topHead(), rex);
+          LOGGER.log(engine.getLogLevel(), ast.topHead(), rex);
         }
       }
       return F.NIL;
@@ -7579,7 +7577,7 @@ public final class ListFunctions {
             }
           }
         } catch (RuntimeException rex) {
-          return engine.printMessage(ast.topHead(), rex);
+          LOGGER.log(engine.getLogLevel(), ast.topHead(), rex);
         }
       }
       return F.NIL;
@@ -7629,7 +7627,7 @@ public final class ListFunctions {
             }
           }
         } catch (RuntimeException rex) {
-          return engine.printMessage(ast.topHead(), rex);
+          LOGGER.log(engine.getLogLevel(), ast.topHead(), rex);
         }
       }
       return F.NIL;
@@ -7772,10 +7770,7 @@ public final class ListFunctions {
         }
       } catch (final ValidateException ve) {
         // see level specification
-        return engine.printMessage(ve.getMessage(ast.topHead()));
-        // } catch (final RuntimeException rex) {
-        // // ArgumentTypeException from VisitorLevelSpecification level specification checks
-        // return engine.printMessage("Total: " + rex.getMessage());
+        LOGGER.log(engine.getLogLevel(), ve.getMessage(ast.topHead()), ve);
       }
       return F.NIL;
     }

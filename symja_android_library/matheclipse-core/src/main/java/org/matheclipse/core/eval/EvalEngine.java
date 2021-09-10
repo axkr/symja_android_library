@@ -12,6 +12,7 @@ import java.util.concurrent.atomic.AtomicLong;
 import java.util.function.DoubleUnaryOperator;
 import java.util.function.Predicate;
 import java.util.function.Supplier;
+import org.apache.logging.log4j.Level;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.apfloat.FixedPrecisionApfloatHelper;
@@ -959,10 +960,8 @@ public class EvalEngine implements Serializable {
         } catch (FlowControlException | LimitException e) {
           throw e;
         } catch (SymjaMathException ve) {
-          if (Config.SHOW_STACKTRACE) {
-            ve.printStackTrace();
-          }
-          return printMessage(ast.topHead(), ve);
+          LOGGER.log(getLogLevel(), ast.topHead(), ve);
+          return F.NIL;
         }
         if (((ISymbol.DELAYED_RULE_EVALUATION & attr) == ISymbol.DELAYED_RULE_EVALUATION)) {
           // evaluate args especially for Sum() and Product(), although they have HOLDALL attribute
@@ -1444,7 +1443,8 @@ public class EvalEngine implements Serializable {
       if (Config.FUZZ_TESTING) {
         throw new NullPointerException();
       }
-      printMessage("Evaluation aborted in EvalEngine#evalLoop() because of undefined expression!");
+      LOGGER.log(getLogLevel(),
+          "Evaluation aborted in EvalEngine#evalLoop() because of undefined expression!");
       throw AbortException.ABORTED;
     }
     if ((fRecursionLimit > 0) && (fRecursionCounter > fRecursionLimit)) {
@@ -1556,7 +1556,7 @@ public class EvalEngine implements Serializable {
       if (Config.FUZZ_TESTING) {
         throw new NullPointerException();
       }
-      printMessage("Evaluation aborted: " + result.toString());
+      LOGGER.log(getLogLevel(), "Evaluation aborted: {}", result);
       throw AbortException.ABORTED;
     } finally {
       stackPop();
@@ -2595,36 +2595,17 @@ public class EvalEngine implements Serializable {
   }
 
   /**
-   * Print a message to the <code>Out</code> stream, if the engine is not in &quot;quiet mode&quot;.
-   *
-   * @param str the message which should be printed
-   * @return <code>F.NIL</code>
+   * Returns the level with which messages associated to this engine should be logged.
+   * <p>
+   * Returns {@link Level#ERROR} unless this engine is in {@link #isQuietMode() quiet-mode}, then
+   * {@link Level#DEBUG} is returned.
+   * </p>
+   * 
+   * @return the logger-level of this engine. ERROR by default and DEBUG if this engine is in
+   *         quite-mode.
    */
-  public IAST printMessage(String str) throws ArgumentTypeException {
-    if (!isQuietMode()) {
-      PrintStream stream = getErrorPrintStream();
-      LOGGER.warn(str);
-      stream.println(str);
-    }
-    return F.NIL;
-  }
-
-  /**
-   * Print a message to the <code>Out</code> stream, if the engine is not in &quot;quiet mode&quot;.
-   *
-   * @param exception the RuntimeException which should be printed
-   */
-  public IAST printMessage(ISymbol symbol, Exception exception) {
-    String message = exception.getMessage();
-    if (!isQuietMode()) {
-      PrintStream stream = getErrorPrintStream();
-      if (message != null) {
-        stream.println(symbol + ": " + message);
-      } else {
-        stream.println(symbol + ": " + exception.getClass().getSimpleName());
-      }
-    }
-    return F.NIL;
+  public Level getLogLevel() {
+    return isQuietMode() ? Level.DEBUG : Level.ERROR;
   }
 
   /**

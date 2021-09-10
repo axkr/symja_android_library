@@ -1,5 +1,7 @@
 package org.matheclipse.core.builtin;
 
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.matheclipse.core.basic.Config;
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.exception.FailedException;
@@ -19,6 +21,8 @@ import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.interfaces.ISymbol;
 
 public class AttributeFunctions {
+  private static final Logger LOGGER = LogManager.getLogger();
+
   /**
    * See <a href="https://pangin.pro/posts/computation-in-static-initializer">Beware of computation
    * in static initializer</a>
@@ -323,8 +327,9 @@ public class AttributeFunctions {
         mutable.forEach(x -> unprotect(x, result));
         return result;
       }
-      return engine.printMessage(
+      LOGGER.log(engine.getLogLevel(),
           "Unprotect: not allowed. Set Config.UNPROTECT_ALLOWED if necessary");
+      return F.NIL;
     }
 
     private static void unprotect(IExpr x, final IASTAppendable result) {

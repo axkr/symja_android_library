@@ -12,6 +12,8 @@ import java.util.Set;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.function.Predicate;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.matheclipse.core.basic.Config;
 import org.matheclipse.core.builtin.Algebra;
 import org.matheclipse.core.builtin.IOFunctions;
@@ -76,6 +78,7 @@ import com.google.common.cache.CacheBuilder;
  * </pre>
  */
 public class Integrate extends AbstractFunctionEvaluator {
+  private static final Logger LOGGER = LogManager.getLogger();
   private static Thread INIT_THREAD = null;
 
   private static final CountDownLatch COUNT_DOWN_LATCH = new CountDownLatch(1);
@@ -577,13 +580,13 @@ public class Integrate extends AbstractFunctionEvaluator {
     }
     IExpr lowerLimit = F.Limit.of(engine, function, F.Rule(x, lower), lowerDirection);
     if (!lowerLimit.isFree(S.DirectedInfinity, true) || !lowerLimit.isFree(S.Indeterminate, true)) {
-      return engine.printMessage(
-          "Not integrable: " + function + " for limit " + x + " -> " + lower);
+      LOGGER.log(engine.getLogLevel(), "Not integrable: {} for limit {} -> {}", function, x, lower);
+      return F.NIL;
     }
     IExpr upperLimit = F.Limit.of(engine, function, F.Rule(x, upper), upperDirection);
     if (!upperLimit.isFree(S.DirectedInfinity, true) || !upperLimit.isFree(S.Indeterminate, true)) {
-      return engine.printMessage(
-          "Not integrable: " + function + " for limit " + x + " -> " + upper);
+      LOGGER.log(engine.getLogLevel(), "Not integrable: {} for limit {} -> {}", function, x, upper);
+      return F.NIL;
     }
 
     //    if (lower.isNegativeResult() && upper.isPositiveResult()) {
@@ -777,17 +780,14 @@ public class Integrate extends AbstractFunctionEvaluator {
             // Config.INTEGRATE_RUBI_RULES_RECURSION_LIMIT
             // + " exceeded: " + ast.toString());
             engine.setRecursionLimit(limit);
-            return engine.printMessage("Integrate(Rubi recursion): " + rle.getMessage());
+            LOGGER.log(engine.getLogLevel(), "Integrate(Rubi recursion)", rle);
+            return F.NIL;
           } catch (RuntimeException rex) {
-            if (Config.SHOW_STACKTRACE) {
-              rex.printStackTrace();
-            }
             engine.setRecursionLimit(limit);
-            return engine.printMessage(
-                "Integrate Rubi recursion limit "
-                    + Config.INTEGRATE_RUBI_RULES_RECURSION_LIMIT
-                    + " RuntimeException: "
-                    + ast.toString());
+            LOGGER.log(engine.getLogLevel(),
+                "Integrate Rubi recursion limit {} RuntimeException: {}",
+                Config.INTEGRATE_RUBI_RULES_RECURSION_LIMIT, ast, rex);
+            return F.NIL;
           }
 
         } catch (AbortException ae) {

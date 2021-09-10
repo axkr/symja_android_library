@@ -1,5 +1,7 @@
 package org.matheclipse.core.builtin;
 
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.hipparchus.complex.Complex;
 import org.hipparchus.special.elliptic.carlson.CarlsonEllipticIntegral;
 import org.matheclipse.core.basic.Config;
@@ -19,6 +21,8 @@ import org.matheclipse.core.reflection.system.rules.JacobiSCRules;
 import org.matheclipse.core.reflection.system.rules.KleinInvariantJRules;
 
 public class EllipticIntegrals {
+  private static final Logger LOGGER = LogManager.getLogger();
+
   /**
    * See <a href="https://pangin.pro/posts/computation-in-static-initializer">Beware of computation
    * in static initializer</a>
@@ -307,7 +311,7 @@ public class EllipticIntegrals {
             ve.printStackTrace();
           }
         } catch (RuntimeException rex) {
-          return engine.printMessage(ast.topHead(), rex);
+          LOGGER.log(engine.getLogLevel(), ast.topHead(), rex);
         }
       }
       return F.NIL;
@@ -375,7 +379,7 @@ public class EllipticIntegrals {
             ve.printStackTrace();
           }
         } catch (RuntimeException rex) {
-          return engine.printMessage(ast.topHead(), rex);
+          LOGGER.log(engine.getLogLevel(), ast.topHead(), rex);
         }
       }
       return F.NIL;
@@ -468,7 +472,8 @@ public class EllipticIntegrals {
               ve.printStackTrace();
             }
           } catch (RuntimeException rex) {
-            return engine.printMessage(ast.topHead(), rex);
+            LOGGER.log(engine.getLogLevel(), ast.topHead(), rex);
+            return F.NIL;
           }
         }
 
@@ -523,7 +528,8 @@ public class EllipticIntegrals {
             ve.printStackTrace();
           }
         } catch (RuntimeException rex) {
-          return engine.printMessage(ast.topHead(), rex);
+          LOGGER.log(engine.getLogLevel(), ast.topHead(), rex);
+          return F.NIL;
         }
       }
 
@@ -629,7 +635,8 @@ public class EllipticIntegrals {
             ve.printStackTrace();
           }
         } catch (RuntimeException rex) {
-          return engine.printMessage(ast.topHead(), rex);
+          LOGGER.log(engine.getLogLevel(), ast.topHead(), rex);
+          return F.NIL;
         }
       }
 
@@ -736,7 +743,8 @@ public class EllipticIntegrals {
             ve.printStackTrace();
           }
         } catch (RuntimeException rex) {
-          return engine.printMessage(ast.topHead(), rex);
+          LOGGER.log(engine.getLogLevel(), ast.topHead(), rex);
+          return F.NIL;
         }
       }
       if (m.isNumber()) {
@@ -829,7 +837,8 @@ public class EllipticIntegrals {
               ve.printStackTrace();
             }
           } catch (RuntimeException rex) {
-            return engine.printMessage(ast.topHead(), rex);
+            LOGGER.log(engine.getLogLevel(), ast.topHead(), rex);
+            return F.NIL;
           }
         }
         if (z.equals(F.CPiHalf)) {
@@ -889,7 +898,8 @@ public class EllipticIntegrals {
             ve.printStackTrace();
           }
         } catch (RuntimeException rex) {
-          return engine.printMessage(ast.topHead(), rex);
+          LOGGER.log(engine.getLogLevel(), ast.topHead(), rex);
+          return F.NIL;
         }
       }
 
@@ -954,14 +964,14 @@ public class EllipticIntegrals {
               return F.complexNum(
                   EllipticFunctionsJS.jacobiTheta(a, x.evalDouble(), m.evalDouble()));
             } catch (RuntimeException rex) {
-              return engine.printMessage(ast.topHead(), rex);
+              LOGGER.log(engine.getLogLevel(), ast.topHead(), rex);
             }
           } else if (x.isInexactNumber() && m.isInexactNumber()) {
             try {
               return F.complexNum(
                   EllipticFunctionsJS.jacobiTheta(a, x.evalComplex(), m.evalComplex()));
             } catch (RuntimeException rex) {
-              return engine.printMessage(ast.topHead(), rex);
+              LOGGER.log(engine.getLogLevel(), ast.topHead(), rex);
             }
           }
         }
@@ -984,7 +994,7 @@ public class EllipticIntegrals {
           try {
             return F.complexNum(EllipticFunctionsJS.jacobiTheta(a, 0.0, m.evalDouble()));
           } catch (RuntimeException rex) {
-            return engine.printMessage(ast.topHead(), rex);
+            LOGGER.log(engine.getLogLevel(), ast.topHead(), rex);
           }
         } else if (m.isInexactNumber()) {
           try {
@@ -992,7 +1002,7 @@ public class EllipticIntegrals {
                 EllipticFunctionsJS.jacobiTheta(
                     a, org.hipparchus.complex.Complex.ZERO, m.evalComplex()));
           } catch (RuntimeException rex) {
-            return engine.printMessage(ast.topHead(), rex);
+            LOGGER.log(engine.getLogLevel(), ast.topHead(), rex);
           }
         }
       }
@@ -1088,7 +1098,8 @@ public class EllipticIntegrals {
           return F.complexNum(
               EllipticFunctionsJS.jacobiAmplitude(z.evalComplex(), m.evalComplex()));
         } catch (RuntimeException rex) {
-          return engine.printMessage(ast.topHead(), rex);
+          LOGGER.log(engine.getLogLevel(), ast.topHead(), rex);
+          return F.NIL;
         }
       }
       IExpr negExpr = AbstractFunctionEvaluator.getNormalizedNegativeExpression(z);
@@ -1162,7 +1173,7 @@ public class EllipticIntegrals {
           ve.printStackTrace();
         }
       } catch (RuntimeException rex) {
-        return engine.printMessage(ast.topHead(), rex);
+        LOGGER.log(engine.getLogLevel(), ast.topHead(), rex);
       }
       return F.NIL;
     }
@@ -1234,7 +1245,7 @@ public class EllipticIntegrals {
           ve.printStackTrace();
         }
       } catch (RuntimeException rex) {
-        return engine.printMessage(ast.topHead(), rex);
+        LOGGER.log(engine.getLogLevel(), ast.topHead(), rex);
       }
       return F.NIL;
     }
@@ -1306,7 +1317,7 @@ public class EllipticIntegrals {
           ve.printStackTrace();
         }
       } catch (RuntimeException rex) {
-        return engine.printMessage(ast.topHead(), rex);
+        LOGGER.log(engine.getLogLevel(), ast.topHead(), rex);
       }
       return F.NIL;
     }
@@ -1383,10 +1394,9 @@ public class EllipticIntegrals {
             ve.printStackTrace();
           }
         } catch (RuntimeException rex) {
-          return engine.printMessage(ast.topHead(), rex);
+          LOGGER.log(engine.getLogLevel(), ast.topHead(), rex);
         }
       }
-
       return F.NIL;
     }
 
@@ -1458,7 +1468,7 @@ public class EllipticIntegrals {
             ve.printStackTrace();
           }
         } catch (RuntimeException rex) {
-          return engine.printMessage(ast.topHead(), rex);
+          LOGGER.log(engine.getLogLevel(), ast.topHead(), rex);
         }
       }
       return F.NIL;
@@ -1532,7 +1542,7 @@ public class EllipticIntegrals {
             ve.printStackTrace();
           }
         } catch (RuntimeException rex) {
-          return engine.printMessage(ast.topHead(), rex);
+          LOGGER.log(engine.getLogLevel(), ast.topHead(), rex);
         }
       }
       return F.NIL;
@@ -1637,7 +1647,7 @@ public class EllipticIntegrals {
             ve.printStackTrace();
           }
         } catch (RuntimeException rex) {
-          return engine.printMessage(ast.topHead(), rex);
+          LOGGER.log(engine.getLogLevel(), ast.topHead(), rex);
         }
       }
       return F.NIL;
@@ -1669,11 +1679,10 @@ public class EllipticIntegrals {
                 EllipticFunctionsJS.weierstrassHalfPeriods(g2.evalComplex(), g3.evalComplex());
             return Object2Expr.convertComplex(false, invariants);
           } catch (RuntimeException rex) {
-            return engine.printMessage(ast.topHead(), rex);
+            LOGGER.log(engine.getLogLevel(), ast.topHead(), rex);
           }
         }
       }
-
       return F.NIL;
     }
 
@@ -1703,11 +1712,10 @@ public class EllipticIntegrals {
                 EllipticFunctionsJS.weierstrassInvariants(g2.evalComplex(), g3.evalComplex());
             return Object2Expr.convertComplex(false, invariants);
           } catch (RuntimeException rex) {
-            return engine.printMessage(ast.topHead(), rex);
+            LOGGER.log(engine.getLogLevel(), ast.topHead(), rex);
           }
         }
       }
-
       return F.NIL;
     }
 
@@ -1748,11 +1756,10 @@ public class EllipticIntegrals {
                 EllipticFunctionsJS.weierstrassP(
                     u.evalComplex(), g2.evalComplex(), g3.evalComplex()));
           } catch (RuntimeException rex) {
-            return engine.printMessage(ast.topHead(), rex);
+            LOGGER.log(engine.getLogLevel(), ast.topHead(), rex);
           }
         }
       }
-
       return F.NIL;
     }
 
@@ -1797,11 +1804,10 @@ public class EllipticIntegrals {
                 EllipticFunctionsJS.weierstrassPPrime(
                     u.evalComplex(), g2.evalComplex(), g3.evalComplex()));
           } catch (RuntimeException rex) {
-            return engine.printMessage(ast.topHead(), rex);
+            LOGGER.log(engine.getLogLevel(), ast.topHead(), rex);
           }
         }
       }
-
       return F.NIL;
     }
 

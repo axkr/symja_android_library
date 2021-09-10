@@ -43,6 +43,9 @@ import static org.matheclipse.core.expression.S.y;
 import java.util.function.DoubleFunction;
 import java.util.function.DoubleUnaryOperator;
 import java.util.function.Function;
+import org.apache.logging.log4j.Level;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.apfloat.Apcomplex;
 import org.apfloat.ApcomplexMath;
 import org.apfloat.Apfloat;
@@ -124,6 +127,7 @@ import org.matheclipse.parser.client.FEConfig;
 import org.matheclipse.parser.client.math.MathException;
 
 public final class Arithmetic {
+  private static final Logger LOGGER = LogManager.getLogger();
 
   private static int g = 7;
   // private static double[] p = { 0.99999999999980993, 676.5203681218851, -1259.1392167224028,
@@ -486,10 +490,8 @@ public final class Arithmetic {
           return F.NIL;
         }
       } catch (ValidateException ve) {
-        if (Config.SHOW_STACKTRACE) {
-          ve.printStackTrace();
-        }
-        return engine.printMessage(ast.topHead(), ve);
+        LOGGER.log(engine.getLogLevel(), ast.topHead(), ve);
+        return F.NIL;
       }
       // `1` is not a variable with a value, so its value cannot be changed.
       return IOFunctions.printMessage(getFunctionSymbol(), "rvalue", F.List(leftHandSide), engine);
@@ -1340,10 +1342,7 @@ public final class Arithmetic {
           }
         }
       } catch (ValidateException ve) {
-        if (Config.SHOW_STACKTRACE) {
-          ve.printStackTrace();
-        }
-        return engine.printMessage(ast.topHead(), ve);
+        LOGGER.log(engine.getLogLevel(), ast.topHead(), ve);
       }
       return F.NIL;
     }
@@ -1821,10 +1820,8 @@ public final class Arithmetic {
         }
         return binaryOperator(ast, a, ast.arg2());
       } catch (ApfloatRuntimeException | ValidateException e) {
-        if (Config.SHOW_STACKTRACE) {
-          e.printStackTrace();
-        }
-        return engine.printMessage(ast.topHead(), e);
+        LOGGER.log(engine.getLogLevel(), ast.topHead(), e);
+        return F.NIL;
       }
     }
 
@@ -2013,7 +2010,8 @@ public final class Arithmetic {
         return harmonic(arg1, ast, engine);
       } catch (final ValidateException ve) {
         // int number validation
-        return engine.printMessage(ast.topHead(), ve);
+        LOGGER.log(engine.getLogLevel(), ast.topHead(), ve);
+        return F.NIL;
       }
     }
 
@@ -2700,8 +2698,9 @@ public final class Arithmetic {
           }
           return F.C0;
         }
-        return engine.printMessage(
+        LOGGER.log(engine.getLogLevel(),
             "Piecewise: Matrix with row-dimension > 0 and column-dimension == 2 expected!");
+        return F.NIL;
       }
       IAST matrix = (IAST) arg1;
       IExpr defaultValue = F.C0;
@@ -4526,7 +4525,8 @@ public final class Arithmetic {
       if (arg1 instanceof IComplexNum) {
         return F.ZZ(((IComplexNum) arg1).precision());
       }
-      return engine.printMessage("Precision: Numeric expression expected");
+      LOGGER.log(engine.getLogLevel(), "Precision: Numeric expression expected");
+      return F.NIL;
     }
 
     @Override
@@ -4684,11 +4684,8 @@ public final class Arithmetic {
           IInteger numerator = (IInteger) numeratorExpr;
           IInteger denominator = (IInteger) denominatorExpr;
           if (denominator.isZero()) {
-            engine.printMessage(
-                "Division by zero expression: "
-                    + numerator.toString()
-                    + "/"
-                    + denominator.toString());
+            LOGGER.log(engine.getLogLevel(), "Division by zero expression: {}/{}", numerator,
+                denominator);
             if (numerator.isZero()) {
               // 0^0
               return S.Indeterminate;
@@ -5250,7 +5247,7 @@ public final class Arithmetic {
     public IExpr e2ApfloatArg(final ApfloatNum af0, final ApfloatNum af1) {
       if (af1.isZero()) {
         EvalEngine ee = EvalEngine.get();
-        ee.printMessage("Surd(a,b) division by zero");
+        LOGGER.log(ee.getLogLevel(), "Surd(a,b) division by zero");
         return S.Indeterminate;
       }
       if (af0.isNegative()) {
@@ -5275,11 +5272,12 @@ public final class Arithmetic {
       if (base.isNumber() && root.isInteger()) {
         EvalEngine engine = EvalEngine.get();
         if (base.isComplex() || base.isComplexNumeric()) {
-          return engine.printMessage("Surd(a,b) - \"a\" should be a real value.");
+          LOGGER.log(engine.getLogLevel(), "Surd(a,b) - \"a\" should be a real value.");
+          return F.NIL;
         }
 
         if (root.isZero()) {
-          engine.printMessage("Surd(a,b) division by zero");
+          LOGGER.log(engine.getLogLevel(), "Surd(a,b) division by zero");
           return S.Indeterminate;
         }
         if (base.isNegative()) {
@@ -5316,7 +5314,7 @@ public final class Arithmetic {
     private static double doubleSurd(double val, double r) {
       if (r == 0.0d) {
         EvalEngine ee = EvalEngine.get();
-        ee.printMessage("Surd(a,b) division by zero");
+        LOGGER.log(ee.getLogLevel(), "Surd(a,b) division by zero");
         return Double.NaN;
       }
       if (val < 0.0d) {
@@ -5325,8 +5323,8 @@ public final class Arithmetic {
           // integer type
           int iRoot = (int) root;
           if ((iRoot & 0x0001) == 0x0000) {
-            EvalEngine ee = EvalEngine.get();
-            ee.printMessage("Surd(a,b) - undefined for negative \"a\" and even \"b\" values");
+            Level level = EvalEngine.get().getLogLevel();
+            LOGGER.log(level, "Surd(a,b) - undefined for negative \"a\" and even \"b\" values");
             return Double.NaN;
           }
           return -Math.pow(Math.abs(val), 1.0d / r);

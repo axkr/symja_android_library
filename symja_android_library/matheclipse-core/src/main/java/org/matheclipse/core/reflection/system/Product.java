@@ -4,7 +4,8 @@ import static org.matheclipse.core.expression.F.C1;
 import static org.matheclipse.core.expression.F.C1D2;
 import static org.matheclipse.core.expression.F.Plus;
 import static org.matheclipse.core.expression.F.Times;
-import org.matheclipse.core.basic.Config;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.matheclipse.core.builtin.ListFunctions;
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.exception.RecursionLimitExceeded;
@@ -93,6 +94,7 @@ import org.matheclipse.core.reflection.system.rules.ProductRules;
  * </pre>
  */
 public class Product extends ListFunctions.Table implements ProductRules {
+  private static final Logger LOGGER = LogManager.getLogger();
 
   public Product() {}
 
@@ -142,10 +144,8 @@ public class Product extends ListFunctions.Table implements ProductRules {
         return temp;
       }
     } catch (final ValidateException ve) {
-      if (Config.SHOW_STACKTRACE) {
-        ve.printStackTrace();
-      }
-      return EvalEngine.get().printMessage(ve.getMessage(S.Product));
+      LOGGER.log(engine.getLogLevel(), ve.getMessage(S.Product), ve);
+      return F.NIL;
     }
     // arg1 = evalBlockExpandWithoutReap(arg1,
     // determineIteratorVariables(ast));
@@ -257,12 +257,11 @@ public class Product extends ListFunctions.Table implements ProductRules {
           return F.NIL;
         }
       } catch (final ValidateException ve) {
-        if (Config.SHOW_STACKTRACE) {
-          ve.printStackTrace();
-        }
-        return EvalEngine.get().printMessage(ve.getMessage(S.Product));
+        LOGGER.log(engine.getLogLevel(), ve.getMessage(S.Product), ve);
+        return F.NIL;
       } catch (RecursionLimitExceeded rle) {
-        return engine.printMessage("Product: Recursionlimit exceeded");
+        LOGGER.log(engine.getLogLevel(), "Product: Recursionlimit exceeded");
+        return F.NIL;
       }
       if (ast.isAST2()) {
         return temp;

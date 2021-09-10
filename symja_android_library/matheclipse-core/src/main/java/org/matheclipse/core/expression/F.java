@@ -6764,7 +6764,7 @@ public class F extends S {
       }
       if (exponent == -1L) {
         if (base.isZero()) {
-          EvalEngine.get().printMessage("Infinite expression 0^(-1)");
+          LOGGER.log(EvalEngine.get().getLogLevel(), "Infinite expression 0^(-1)");
           return F.CComplexInfinity;
         }
         return base.inverse();

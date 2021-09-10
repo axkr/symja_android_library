@@ -12,6 +12,8 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
 import java.util.function.Function;
 import org.apache.commons.text.StringEscapeUtils;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.matheclipse.core.basic.Config;
 import org.matheclipse.core.convert.VariablesSet;
 import org.matheclipse.core.eval.EvalEngine;
@@ -53,6 +55,7 @@ import com.google.common.util.concurrent.SimpleTimeLimiter;
 import com.google.common.util.concurrent.TimeLimiter;
 
 public final class Programming {
+  private static final Logger LOGGER = LogManager.getLogger();
 
   /**
    * See <a href="https://pangin.pro/posts/computation-in-static-initializer">Beware of computation
@@ -663,7 +666,7 @@ public final class Programming {
         final DoIterator generator = new DoIterator(iterList, engine);
         return generator.doIt(ast.arg1());
       } catch (final ValidateException ve) {
-        return engine.printMessage(ve.getMessage(ast.topHead()));
+        LOGGER.log(engine.getLogLevel(), ve.getMessage(ast.topHead()), ve);
       } catch (final NoEvalException | ClassCastException e) {
         // ClassCastException: the iterators are generated only from IASTs
       }
@@ -821,7 +824,8 @@ public final class Programming {
         }
 
       } catch (final ValidateException ve) {
-        return engine.printMessage(ve.getMessage(ast.topHead()));
+        LOGGER.log(engine.getLogLevel(), ve.getMessage(ast.topHead()), ve);
+        return F.NIL;
       } finally {
         engine.setNumericMode(numericMode);
       }
@@ -952,7 +956,8 @@ public final class Programming {
           return list;
         }
       } catch (final ValidateException ve) {
-        return engine.printMessage(ve.getMessage(ast.topHead()));
+        LOGGER.log(engine.getLogLevel(), ve.getMessage(ast.topHead()), ve);
+        return F.NIL;
       } finally {
         engine.setNumericMode(numericMode);
       }
@@ -1791,9 +1796,9 @@ public final class Programming {
       }
 
       if (ast.isAST1()) {
-        return engine.printMessage("Off: " + ast + " - disabling messages currently not supported");
+        LOGGER.log(engine.getLogLevel(), "Off: {} - disabling messages currently not supported",
+            ast);
       }
-
       return F.NIL;
     }
 
@@ -2192,7 +2197,7 @@ public final class Programming {
           }
           return part(arg1AST, ast, 2, engine);
         } catch (ValidateException ve) {
-          return engine.printMessage(ast.topHead(), ve);
+          LOGGER.log(engine.getLogLevel(), ast.topHead(), ve);
         }
       }
       return F.NIL;
@@ -2264,9 +2269,8 @@ public final class Programming {
                 return rightHandSide;
               }
             } catch (SymjaMathException sme) {
-              // engine.printMessage("Set: " + npe.getMessage());
-              return engine.printMessage(builtinSymbol, sme);
-              // return rightHandSide;
+              LOGGER.log(engine.getLogLevel(), builtinSymbol, sme);
+              return F.NIL;
             }
           }
         } else {
@@ -2718,7 +2722,8 @@ public final class Programming {
     @Override
     public IExpr evaluate(final IAST ast, EvalEngine engine) {
       if ((ast.size() & 0x0001) != 0x0000) {
-        return engine.printMessage("Switch: number of arguments must be odd");
+        LOGGER.log(engine.getLogLevel(), "Switch: number of arguments must be odd");
+        return F.NIL;
       }
       if (ast.size() > 3) {
         final IExpr arg1 = engine.evaluate(ast.arg1());
@@ -2773,10 +2778,7 @@ public final class Programming {
         } catch (final RecursionLimitExceeded | ASTElementLimitExceeded re) {
           throw re;
         } catch (Exception | OutOfMemoryError | StackOverflowError e) {
-          if (Config.SHOW_STACKTRACE) {
-            e.printStackTrace();
-          }
-          fEngine.printMessage("TimeConstrained: " + e.getMessage());
+          LOGGER.log(fEngine.getLogLevel(), "TimeConstrained", e);
         } finally {
           fEngine.setTimeConstrainedMillis(-1);
           EvalEngine.remove();
@@ -2856,7 +2858,7 @@ public final class Programming {
             executor.shutdownNow(); // Cancel currently executing tasks
             // Wait a while for tasks to respond to being cancelled
             if (!executor.awaitTermination(1, TimeUnit.SECONDS)) {
-              engine.printMessage("TimeConstrained: pool did not terminate");
+              LOGGER.log(engine.getLogLevel(), "TimeConstrained: pool did not terminate");
             }
           }
         } catch (InterruptedException ie) {
@@ -3164,7 +3166,8 @@ public final class Programming {
     @Override
     public IExpr evaluate(final IAST ast, EvalEngine engine) {
       if (((ast.argSize()) & 0x0001) == 0x0001) {
-        return engine.printMessage("Which: number of arguments must be even");
+        LOGGER.log(engine.getLogLevel(), "Which: number of arguments must be even");
+        return F.NIL;
       }
       for (int i = 1; i < ast.size(); i += 2) {
         IExpr temp = engine.evaluate(ast.get(i));
@@ -3396,13 +3399,13 @@ public final class Programming {
             variablesMap.put(oldSymbol, newSymbol);
             newSymbol.assignValue(engine.evaluate(setFun.arg2()));
           } else {
-            engine.printMessage(
-                "Module: expression requires symbol variable: " + setFun.toString());
+            LOGGER.log(engine.getLogLevel(), "Module: expression requires symbol variable: {}",
+                setFun);
             return false;
           }
         } else {
-          engine.printMessage(
-              "Module: expression requires symbol variable: " + variablesList.get(i).toString());
+          LOGGER.log(engine.getLogLevel(), "Module: expression requires symbol variable: {}",
+              variablesList.get(i));
           return false;
         }
       }

@@ -1,6 +1,7 @@
 package org.matheclipse.core.eval.interfaces;
 
-import org.matheclipse.core.basic.Config;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.exception.LimitException;
 import org.matheclipse.core.expression.ApfloatNum;
@@ -19,6 +20,7 @@ import org.matheclipse.core.patternmatching.hash.HashedPatternRules;
 
 /** */
 public abstract class AbstractArgMultiple extends AbstractArg2 {
+  private static final Logger LOGGER = LogManager.getLogger();
 
   @Override
   public IExpr evaluate(final IAST ast, final EvalEngine engine) {
@@ -275,10 +277,7 @@ public abstract class AbstractArgMultiple extends AbstractArg2 {
     } catch (LimitException le) {
       throw le;
     } catch (RuntimeException rex) {
-      if (Config.SHOW_STACKTRACE) {
-        rex.printStackTrace();
-      }
-      return engine.printMessage(ast.topHead(), rex);
+      LOGGER.log(engine.getLogLevel(), ast.topHead(), rex);
     }
     return F.NIL;
   }

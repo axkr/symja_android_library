@@ -8,6 +8,8 @@ import static org.matheclipse.core.expression.F.Negate;
 import static org.matheclipse.core.expression.F.Round;
 import java.math.BigInteger;
 import java.util.function.Function;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.apfloat.Apfloat;
 import org.hipparchus.complex.Complex;
 import org.matheclipse.core.basic.Config;
@@ -42,6 +44,7 @@ import it.unimi.dsi.fastutil.objects.Object2IntMap;
 import it.unimi.dsi.fastutil.objects.Object2IntOpenHashMap;
 
 public class IntegerFunctions {
+  private static final Logger LOGGER = LogManager.getLogger();
 
   /**
    * See <a href="https://pangin.pro/posts/computation-in-static-initializer">Beware of computation
@@ -888,7 +891,8 @@ public class IntegerFunctions {
           }
         }
         if (radix.isLT(F.C2)) {
-          return engine.printMessage("IntegerLength: The base must be greater than 1");
+          LOGGER.log(engine.getLogLevel(), "IntegerLength: The base must be greater than 1");
+          return F.NIL;
         }
         IInteger iArg1 = (IInteger) ast.arg1();
         if (iArg1.isZero()) {
@@ -1157,7 +1161,8 @@ public class IntegerFunctions {
         }
         return arg1.modPow(arg2, arg3);
       } catch (ArithmeticException ae) {
-        return engine.printMessage(ast.topHead(), ae);
+        LOGGER.log(engine.getLogLevel(), ast.topHead(), ae);
+        return F.NIL;
       }
     }
 
@@ -1216,7 +1221,7 @@ public class IntegerFunctions {
       IExpr z = engine.evaluate(ast.arg1());
       IExpr n = engine.evaluate(ast.arg2());
       if (n.isZero()) {
-        EvalEngine.get().printMessage("Quotient: division by zero");
+        LOGGER.log(engine.getLogLevel(), "Quotient: division by zero");
         return F.CComplexInfinity;
       }
       if (ast.isAST2()) {
@@ -1273,10 +1278,7 @@ public class IntegerFunctions {
               ve.printStackTrace();
             }
           } catch (RuntimeException rex) {
-            if (Config.SHOW_STACKTRACE) {
-              rex.printStackTrace();
-            }
-            return engine.printMessage(ast.topHead(), rex);
+            LOGGER.log(engine.getLogLevel(), ast.topHead(), rex);
           }
         }
         return F.NIL;
@@ -1351,7 +1353,8 @@ public class IntegerFunctions {
           final IInteger i0 = (IInteger) arg1;
           final IInteger i1 = (IInteger) arg2;
           if (i1.isZero()) {
-            return EvalEngine.get().printMessage("QuotientRemainder: division by zero");
+            LOGGER.log(engine.getLogLevel(), "QuotientRemainder: division by zero");
+            return F.NIL;
           }
           IASTMutable list = F.ListAlloc(S.Null, S.Null);
 
@@ -1413,14 +1416,11 @@ public class IntegerFunctions {
               ve.printStackTrace();
             }
           } catch (RuntimeException rex) {
-            if (Config.SHOW_STACKTRACE) {
-              rex.printStackTrace();
-            }
-            return engine.printMessage(ast.topHead(), rex);
+            LOGGER.log(engine.getLogLevel(), ast.topHead(), rex);
           }
         }
       } catch (RuntimeException rex) {
-        return EvalEngine.get().printMessage("QuotientRemainder: " + rex.getMessage());
+        LOGGER.log(engine.getLogLevel(), "QuotientRemainder", rex);
       }
       return F.NIL;
     }
@@ -1513,7 +1513,8 @@ public class IntegerFunctions {
           }
         }
       } catch (NumberFormatException | ArgumentTypeException atex) {
-        return engine.printMessage(ast.topHead(), atex);
+        LOGGER.log(engine.getLogLevel(), ast.topHead(), atex);
+        return F.NIL;
       }
 
       if (arg1.isNumber()) {

@@ -24,6 +24,8 @@ import static org.matheclipse.core.expression.F.Zeta;
 import static org.matheclipse.core.expression.S.Pi;
 import java.math.BigDecimal;
 import java.util.function.DoubleUnaryOperator;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.apfloat.Apcomplex;
 import org.apfloat.ApcomplexMath;
 import org.apfloat.Apfloat;
@@ -71,6 +73,7 @@ import org.matheclipse.core.reflection.system.rules.StruveLRules;
 import org.matheclipse.parser.client.FEConfig;
 
 public class SpecialFunctions {
+  private static final Logger LOGGER = LogManager.getLogger();
 
   /**
    * See <a href="https://pangin.pro/posts/computation-in-static-initializer">Beware of computation
@@ -162,8 +165,7 @@ public class SpecialFunctions {
             ve.printStackTrace();
           }
         } catch (RuntimeException rex) {
-          // rex.printStackTrace();
-          return engine.printMessage(ast.topHead() + ": " + rex.getMessage());
+          LOGGER.log(engine.getLogLevel(), ast.topHead(), rex);
         }
         return F.NIL;
       }
@@ -221,8 +223,7 @@ public class SpecialFunctions {
           ve.printStackTrace();
         }
       } catch (RuntimeException rex) {
-        // rex.printStackTrace();
-        return engine.printMessage(ast.topHead() + ": " + rex.getMessage());
+        LOGGER.log(engine.getLogLevel(), ast.topHead(), rex);
       }
       return F.NIL;
     }
@@ -683,13 +684,11 @@ public class SpecialFunctions {
           }
           return te.getValue();
         } catch (ValidateException ve) {
-          if (Config.SHOW_STACKTRACE) {
-            ve.printStackTrace();
-          }
-          return engine.printMessage(ast.topHead() + ": " + ve.getMessage());
+          LOGGER.log(engine.getLogLevel(), ast.topHead(), ve);
+          return F.NIL;
         } catch (RuntimeException rex) {
-          // rex.printStackTrace();
-          return engine.printMessage(ast.topHead() + ": " + rex.getMessage());
+          LOGGER.log(engine.getLogLevel(), ast.topHead(), rex);
+          return F.NIL;
         }
       }
       if (z1.isZero()) {
@@ -737,13 +736,11 @@ public class SpecialFunctions {
           }
           return te.getValue();
         } catch (ValidateException ve) {
-          if (Config.SHOW_STACKTRACE) {
-            ve.printStackTrace();
-          }
-          return engine.printMessage(ast.topHead() + ": " + ve.getMessage());
+          LOGGER.log(engine.getLogLevel(), ast.topHead(), ve);
+          return F.NIL;
         } catch (RuntimeException rex) {
-          // rex.printStackTrace();
-          return engine.printMessage(ast.topHead() + ": " + rex.getMessage());
+          LOGGER.log(engine.getLogLevel(), ast.topHead(), rex);
+          return F.NIL;
         }
       }
 
@@ -872,13 +869,9 @@ public class SpecialFunctions {
           }
           return te.getValue();
         } catch (RuntimeException rex) {
-          if (Config.SHOW_STACKTRACE) {
-            rex.printStackTrace();
-          }
-          return engine.printMessage(ast.topHead(), rex);
+          LOGGER.log(engine.getLogLevel(), ast.topHead(), rex);
         }
       }
-
       return NIL;
     }
 
@@ -1238,7 +1231,8 @@ public class SpecialFunctions {
                         switch (q) {
                           case 0:
                             // 0,0,0,0
-                            return engine.printMessage("MeijerG: " + ast + "not available.");
+                            LOGGER.log(engine.getLogLevel(), "MeijerG: {} not available.", ast);
+                            return F.NIL;
                         }
                         break;
                       case 1:
@@ -1467,10 +1461,7 @@ public class SpecialFunctions {
             }
             return te.getValue();
           } catch (RuntimeException rex) {
-            if (Config.SHOW_STACKTRACE) {
-              rex.printStackTrace();
-            }
-            return engine.printMessage(ast.topHead(), rex);
+            LOGGER.log(engine.getLogLevel(), ast.topHead(), rex);
           }
         }
       }
@@ -1572,10 +1563,7 @@ public class SpecialFunctions {
           }
           return te.getValue();
         } catch (RuntimeException rex) {
-          if (Config.SHOW_STACKTRACE) {
-            rex.printStackTrace();
-          }
-          return engine.printMessage(ast.topHead(), rex);
+          LOGGER.log(engine.getLogLevel(), ast.topHead(), rex);
         }
       }
       return F.NIL;

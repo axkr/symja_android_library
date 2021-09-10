@@ -1,5 +1,7 @@
 package org.matheclipse.core.reflection.system;
 
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.hipparchus.analysis.UnivariateFunction;
 import org.hipparchus.transform.DftNormalization;
 import org.hipparchus.transform.FastFourierTransformer;
@@ -17,6 +19,7 @@ import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.interfaces.ISymbol;
 
 public class NFourierTransform extends AbstractFunctionEvaluator {
+  private static final Logger LOGGER = LogManager.getLogger();
 
   public NFourierTransform() {}
 
@@ -42,7 +45,7 @@ public class NFourierTransform extends AbstractFunctionEvaluator {
         return Object2Expr.convertComplex(true, result);
       }
     } catch (ValidateException ve) {
-      return engine.printMessage(ast.topHead(), ve);
+      LOGGER.log(engine.getLogLevel(), ast.topHead(), ve);
     }
     return F.NIL;
   }

@@ -3,6 +3,8 @@ package org.matheclipse.core.builtin;
 import static org.matheclipse.core.expression.F.C0;
 import static org.matheclipse.core.expression.F.evalExpandAll;
 import java.util.List;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.hipparchus.analysis.solvers.LaguerreSolver;
 import org.hipparchus.linear.Array2DRowRealMatrix;
 import org.hipparchus.linear.EigenDecomposition;
@@ -44,6 +46,7 @@ import edu.jas.ufd.Squarefree;
 import edu.jas.ufd.SquarefreeFactory;
 
 public class RootsFunctions {
+  private static final Logger LOGGER = LogManager.getLogger();
   /**
    * See <a href="https://pangin.pro/posts/computation-in-static-initializer">Beware of computation
    * in static initializer</a>
@@ -185,10 +188,10 @@ public class RootsFunctions {
         }
       } else {
         if (!arg1.isPolynomialStruct()) {
-          return engine.printMessage(
-              ast.topHead()
-                  + ": Equal() expression expected at position 1 instead of "
-                  + ast.arg1().toString());
+          LOGGER.log(engine.getLogLevel(),
+              "{}: Equal() expression expected at position 1 instead of {}", ast.topHead(),
+              ast.arg1());
+          return F.NIL;
         }
       }
       IAST variables;
@@ -196,8 +199,9 @@ public class RootsFunctions {
         VariablesSet eVar = new VariablesSet(ast.arg1());
         if (!eVar.isSize(1)) {
           // factor only possible for univariate polynomials
-          return engine.printMessage(
+          LOGGER.log(engine.getLogLevel(),
               "NRoots: factorization only possible for univariate polynomials");
+          return F.NIL;
         }
         variables = eVar.getVarList();
       } else {
@@ -379,10 +383,10 @@ public class RootsFunctions {
           arg1 = engine.evaluate(F.Subtract(equalAST.arg1(), equalAST.arg2()));
         }
       } else {
-        return engine.printMessage(
-            ast.topHead()
-                + ": Equal() expression expected at position 1 instead of "
-                + ast.arg1().toString());
+        LOGGER.log(engine.getLogLevel(),
+            "{}: Equal() expression expected at position 1 instead of {}", ast.topHead(),
+            ast.arg1());
+        return F.NIL;
       }
       VariablesSet eVar = null;
       if (ast.arg2().isList()) {
@@ -394,10 +398,10 @@ public class RootsFunctions {
       if (!eVar.isSize(1)) {
         // factorization only possible for univariate polynomials
 
-        return engine.printMessage(
-            ast.topHead()
-                + ": factorization only possible for univariate polynomials at position 2 instead of "
-                + ast.arg2().toString());
+        LOGGER.log(engine.getLogLevel(),
+            "{}: factorization only possible for univariate polynomials at position 2 instead of {}",
+            ast.topHead(), ast.arg2());
+        return F.NIL;
       }
       IAST variables = eVar.getVarList();
       IExpr variable = variables.arg1();
@@ -421,7 +425,9 @@ public class RootsFunctions {
   public static IAST roots(final IExpr arg1, IAST variables, EvalEngine engine) {
     if (variables.size() != 2) {
       // factor only possible for univariate polynomials
-      return engine.printMessage("NRoots: factorization only possible for univariate polynomials");
+      LOGGER.log(engine.getLogLevel(),
+          "NRoots: factorization only possible for univariate polynomials");
+      return F.NIL;
     }
     IExpr expr = evalExpandAll(arg1, engine);
 

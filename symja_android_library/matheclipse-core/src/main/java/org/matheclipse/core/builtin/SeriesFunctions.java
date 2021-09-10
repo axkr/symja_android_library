@@ -3,6 +3,8 @@ package org.matheclipse.core.builtin;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.function.Function;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.matheclipse.core.basic.Config;
 import org.matheclipse.core.basic.ToggleFeature;
 import org.matheclipse.core.convert.VariablesSet;
@@ -28,6 +30,7 @@ import org.matheclipse.core.reflection.system.rules.LimitRules;
 import org.matheclipse.core.reflection.system.rules.SeriesCoefficientRules;
 
 public class SeriesFunctions {
+  private static final Logger LOGGER = LogManager.getLogger();
 
   /**
    * See <a href="https://pangin.pro/posts/computation-in-static-initializer">Beware of computation
@@ -895,13 +898,16 @@ public class SeriesFunctions {
       IExpr arg1 = ast.arg1();
       IExpr arg2 = ast.arg2();
       if (!arg2.isRuleAST()) {
-        return engine.printMessage(ast.topHead() + ": rule definition expected at position 2!");
+        LOGGER.log(engine.getLogLevel(), "{}: rule definition expected at position 2!",
+            ast.topHead());
+        return F.NIL;
       }
       IAST rule = (IAST) arg2;
 
       if (!(rule.arg1().isSymbol())) {
-        return engine.printMessage(
-            ast.topHead() + ": variable symbol for rule definition expected at position 2!");
+        LOGGER.log(engine.getLogLevel(),
+            "{}: variable symbol for rule definition expected at position 2!", ast.topHead());
+        return F.NIL;
       }
       if (arg1.isList()) {
         // IASTMutable clone = ast.copy();
@@ -925,12 +931,14 @@ public class SeriesFunctions {
                 option.equals(S.Reals)) {
               direction = Direction.TWO_SIDED;
             } else {
-              return engine.printMessage(
-                  ast.topHead() + ": direction option expected at position 2!");
+              LOGGER.log(engine.getLogLevel(), "{}: direction option expected at position 2!",
+                  ast.topHead());
+              return F.NIL;
             }
           } else {
-            return engine.printMessage(
-                ast.topHead() + ": direction option expected at position 2!");
+            LOGGER.log(engine.getLogLevel(), "{}: direction option expected at position 2!",
+                ast.topHead());
+            return F.NIL;
           }
           if (direction == Direction.TWO_SIDED) {
             IExpr temp = S.Limit.evalDownRule(engine, F.Limit(arg1, arg2));
@@ -944,8 +952,9 @@ public class SeriesFunctions {
         if (rule.isFreeAt(2, symbol)) {
           limit = rule.arg2();
         } else {
-          return engine.printMessage(
-              ast.topHead() + ": limit value is not free of variable symbol at position 2!");
+          LOGGER.log(engine.getLogLevel(),
+              "{}: limit value is not free of variable symbol at position 2!", ast.topHead());
+          return F.NIL;
         }
 
         LimitData data = new LimitData(symbol, limit, rule, direction);

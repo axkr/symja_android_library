@@ -6,6 +6,9 @@ import java.util.HashSet;
 import java.util.Set;
 import java.util.TreeSet;
 import java.util.function.Predicate;
+import org.apache.logging.log4j.Level;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.hipparchus.linear.FieldMatrix;
 import org.matheclipse.core.basic.Config;
 import org.matheclipse.core.builtin.Algebra;
@@ -82,6 +85,7 @@ import org.matheclipse.core.polynomials.QuarticSolver;
  * href="NRoots.md">NRoots</a>
  */
 public class Solve extends AbstractFunctionEvaluator {
+  private static final Logger LOGGER = LogManager.getLogger();
 
   /** Analyze an expression, if it has linear, polynomial or other form. */
   protected static class ExprAnalyzer implements Comparable<ExprAnalyzer> {
@@ -413,7 +417,7 @@ public class Solve extends AbstractFunctionEvaluator {
       } else if (ast.isAST1()) {
         IASTAppendable inverseFunction = InverseFunction.getUnaryInverseFunction(ast, true);
         if (inverseFunction.isPresent()) {
-          fEngine.printMessage("Solve: using of inverse functions may omit some solutions.");
+          LOGGER.log(fEngine.getLogLevel(), "Using inverse functions may omit some solutions.");
           // rewrite fNumer
           inverseFunction.append(arg1);
           return fEngine.evaluate(F.Subtract(ast.arg1(), inverseFunction));
@@ -422,7 +426,7 @@ public class Solve extends AbstractFunctionEvaluator {
       } else if (ast.isPower() && ast.base().isSymbol() && ast.exponent().isNumber()) {
         int position = fListOfVariables.indexOf(ast.base());
         if (position > 0) {
-          fEngine.printMessage("Solve: using of inverse functions may omit some solutions.");
+          LOGGER.log(fEngine.getLogLevel(), "Using inverse functions may omit some solutions.");
           IAST inverseFunction = F.Power(arg1, ast.exponent().inverse());
           return fEngine.evaluate(F.Subtract(ast.base(), inverseFunction));
         }
@@ -433,7 +437,7 @@ public class Solve extends AbstractFunctionEvaluator {
         IAST timesArg2 = (IAST) ast.second();
         IASTAppendable inverseFunction = InverseFunction.getUnaryInverseFunction(timesArg2, true);
         if (inverseFunction.isPresent()) {
-          fEngine.printMessage("Solve: using of inverse functions may omit some solutions.");
+          LOGGER.log(fEngine.getLogLevel(), "Using inverse functions may omit some solutions.");
           // rewrite fNumer
           inverseFunction.append(F.Divide(arg1, ast.first()));
           return fEngine.evaluate(F.Subtract(timesArg2.arg1(), inverseFunction));
@@ -519,7 +523,7 @@ public class Solve extends AbstractFunctionEvaluator {
             if (position > 0
                 && function.arg1().isFree(fListOfVariables)
                 && temp.isFree(fListOfVariables)) {
-              fEngine.printMessage("Solve: using of inverse functions may omit some solutions.");
+              LOGGER.log(fEngine.getLogLevel(), "Using inverse functions may omit some solutions.");
               return fEngine.evaluate(F.InverseGammaRegularized(function.arg1(), temp.negate()));
             }
           }
@@ -1032,10 +1036,10 @@ public class Solve extends AbstractFunctionEvaluator {
         ISymbol domain = S.Complexes;
         if (ast.isAST3()) {
           if (!ast.arg3().isSymbol()) {
-            return engine.printMessage(
-                ast.topHead()
-                    + ": domain definition expected at position 3 instead of "
-                    + ast.arg3().toString());
+            LOGGER.log(engine.getLogLevel(),
+                "{}: domain definition expected at position 3 instead of {}", ast.topHead(),
+                ast.arg3());
+            return F.NIL;
           }
           domain = (ISymbol) ast.arg3();
           if (domain.equals(S.Booleans)) {
@@ -1083,11 +1087,8 @@ public class Solve extends AbstractFunctionEvaluator {
                 }
                 throw le;
               } catch (RuntimeException rex) {
-                if (Config.SHOW_STACKTRACE) {
-                  rex.printStackTrace();
-                }
-                return engine.printMessage(
-                    "Solve: " + "Integers solution not found: " + rex.getMessage());
+                LOGGER.log(engine.getLogLevel(), "Integers solution not found", rex);
+                return F.NIL;
               }
             }
             return F.NIL;
@@ -1132,10 +1133,10 @@ public class Solve extends AbstractFunctionEvaluator {
           //          }
 
           if (!domain.equals(S.Reals) && !domain.equals(S.Complexes)) {
-            return engine.printMessage(
-                ast.topHead()
-                    + ": domain definition expected at position 3 instead of "
-                    + domain.toString());
+            Level level = engine.getLogLevel();
+            LOGGER.log(level, "{}: domain definition expected at position 3 instead of {}",
+                ast.topHead(), domain);
+            return F.NIL;
           }
         }
         IAST termsList = Validate.checkEquationsAndInequations(ast, 1);
@@ -1157,16 +1158,12 @@ public class Solve extends AbstractFunctionEvaluator {
         return checkDomain(result, domain);
       }
     } catch (LimitException | ValidateException e) {
-      if (Config.SHOW_STACKTRACE) {
-        e.printStackTrace();
-      }
-      return engine.printMessage(S.Solve, e);
+      LOGGER.log(engine.getLogLevel(), S.Solve, e);
     } catch (RuntimeException rex) {
       if (Config.SHOW_STACKTRACE) {
         rex.printStackTrace();
       }
     }
-
     return F.NIL;
   }
 
@@ -1396,8 +1393,8 @@ public class Solve extends AbstractFunctionEvaluator {
     // collect linear and univariate polynomial equations:
     for (IExpr expr : termsEqualZeroList) {
       if (expr.has(predicate, true)) {
-        engine.printMessage(
-            "Solve: the system contains the wrong object: " + predicate.getWrongExpr().toString());
+        LOGGER.log(engine.getLogLevel(), "Solve: the system contains the wrong object: {}",
+            predicate.getWrongExpr());
         throw new NoEvalException();
       }
       exprAnalyzer = new ExprAnalyzer(expr, variables, engine);

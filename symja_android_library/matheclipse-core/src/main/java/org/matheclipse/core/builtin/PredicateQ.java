@@ -2,6 +2,8 @@ package org.matheclipse.core.builtin;
 
 import java.util.concurrent.ThreadLocalRandom;
 import java.util.function.Predicate;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.hipparchus.linear.FieldMatrix;
 import org.hipparchus.linear.FieldVector;
 import org.matheclipse.core.basic.Config;
@@ -32,6 +34,7 @@ import org.matheclipse.core.visit.IVisitorBoolean;
 import org.matheclipse.core.visit.VisitorBooleanLevelSpecification;
 
 public class PredicateQ {
+  private static final Logger LOGGER = LogManager.getLogger();
 
   /** Constructor for the unary predicate */
   // public final static AtomQ ATOMQ = new AtomQ();
@@ -720,7 +723,7 @@ public class PredicateQ {
         }
       } catch (final ValidateException ve) {
         // see level specification
-        return engine.printMessage(ve.getMessage(ast.topHead()));
+        LOGGER.log(engine.getLogLevel(), ve.getMessage(ast.topHead()), ve);
       }
       return F.NIL;
     } 

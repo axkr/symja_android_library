@@ -1,5 +1,7 @@
 package org.matheclipse.io.builtin;
 
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.interfaces.AbstractEvaluator;
 import org.matheclipse.core.eval.interfaces.IFunctionEvaluator;
@@ -13,6 +15,7 @@ import tech.tablesaw.io.csv.CsvReadOptions;
 
 /** Import semantic data into a DataSet */
 public class SemanticImportString extends AbstractEvaluator {
+  private static final Logger LOGGER = LogManager.getLogger();
 
   public SemanticImportString() {}
 
@@ -32,8 +35,8 @@ public class SemanticImportString extends AbstractEvaluator {
       Table table = Table.read().usingOptions(options);
       return ASTDataset.newTablesawTable(table);
     } catch (Exception rex) {
-      return engine.printMessage("SemanticImportString: " + " - " + rex.getMessage());
-    } finally {
+      LOGGER.log(engine.getLogLevel(), "SemanticImportString ", rex);
+      return F.NIL;
     }
   }
 

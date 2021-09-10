@@ -7,6 +7,8 @@ import java.util.IdentityHashMap;
 import java.util.List;
 import java.util.Set;
 import java.util.function.Predicate;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.matheclipse.core.basic.Config;
 import org.matheclipse.core.convert.Convert;
 import org.matheclipse.core.eval.EvalAttributes;
@@ -44,6 +46,7 @@ import org.matheclipse.core.visit.ModuleReplaceAll;
 import org.matheclipse.core.visit.VisitorLevelSpecification;
 
 public class StructureFunctions {
+  private static final Logger LOGGER = LogManager.getLogger();
 
   private static final Set<ISymbol> LOGIC_EQUATION_HEADS =
       Collections.newSetFromMap(new IdentityHashMap<ISymbol, Boolean>(29));
@@ -247,7 +250,8 @@ public class StructureFunctions {
         }
       } catch (final ValidateException ve) {
         // see level specification
-        return engine.printMessage(ve.getMessage(S.Apply));
+        LOGGER.log(engine.getLogLevel(), ve.getMessage(S.Apply));
+        return F.NIL;
       }
       return F.NIL;
     }
@@ -512,7 +516,7 @@ public class StructureFunctions {
           }
         } catch (final ValidateException ve) {
           // see level specification
-          return engine.printMessage(ve.getMessage(ast.topHead()));
+          LOGGER.log(engine.getLogLevel(), ve.getMessage(ast.topHead()), ve);
         }
       } else {
         // Nonatomic expression expected at position `1` in `2`.
@@ -884,9 +888,8 @@ public class StructureFunctions {
         return arg2.accept(level).orElse(arg2);
       } catch (final ValidateException ve) {
         // see level specification
-        return engine.printMessage(ve.getMessage(ast.topHead()));
-        // } catch (final RuntimeException e) {
-        // return engine.printMessage("Map: " + e.getMessage());
+        LOGGER.log(engine.getLogLevel(), ve.getMessage(ast.topHead()), ve);
+        return F.NIL;
       }
     }
 
@@ -958,7 +961,7 @@ public class StructureFunctions {
               return arg2;
             }
           } catch (final ValidateException ve) {
-            return engine.printMessage(ve.getMessage(ast.topHead()));
+            LOGGER.log(engine.getLogLevel(), ve.getMessage(ast.topHead()), ve);
           } catch (RuntimeException ae) {
             if (Config.SHOW_STACKTRACE) {
               ae.printStackTrace();
@@ -1133,7 +1136,8 @@ public class StructureFunctions {
         return arg2;
       } catch (final RuntimeException rex) {
         // ArgumentTypeException from IndexedLevel level specification checks
-        return engine.printMessage("MapIndexed: " + rex.getMessage());
+        LOGGER.log(engine.getLogLevel(), "MapIndexed", rex);
+        return F.NIL;
       }
     }
 
@@ -1286,7 +1290,7 @@ public class StructureFunctions {
         if (tensor.isEmptyList()) {
           return tensor;
         }
-        return engine.printMessage("MapThread: argument 2 dimensions less than level.");
+        LOGGER.log(engine.getLogLevel(), "MapThread: argument 2 dimensions less than level.");
       }
       return F.NIL;
     }
@@ -1477,7 +1481,9 @@ public class StructureFunctions {
         }
         IInteger depth = (IInteger) ast.arg3();
         if (depth.isNegative()) {
-          return engine.printMessage("Non-negative integer expected at position 3 in Operate()");
+          LOGGER.log(engine.getLogLevel(),
+              "Non-negative integer expected at position 3 in Operate()");
+          return F.NIL;
         }
 
         headDepth = depth.toIntDefault();
@@ -1704,7 +1710,8 @@ public class StructureFunctions {
           return S.Null;
         } catch (final ValidateException ve) {
           // see level specification
-          return engine.printMessage(ve.getMessage(ast.topHead()));
+          LOGGER.log(engine.getLogLevel(), ve.getMessage(ast.topHead()), ve);
+          return F.NIL;
         } catch (final ReturnException e) {
           return e.getValue();
           // don't catch Throw[] here !
@@ -1878,10 +1885,9 @@ public class StructureFunctions {
             return result;
           }
         } catch (RuntimeException rex) {
-          return engine.printMessage(ast.topHead(), rex);
+          LOGGER.log(engine.getLogLevel(), ast.topHead(), rex);
         }
       }
-
       return F.NIL;
     }
 

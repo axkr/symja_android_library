@@ -4,6 +4,8 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.gavaghan.geodesy.Ellipsoid;
 import org.gavaghan.geodesy.GeodeticCalculator;
 import org.gavaghan.geodesy.GeodeticMeasurement;
@@ -55,6 +57,7 @@ import org.matheclipse.parser.trie.Trie;
 
 /** Functions for graph theory algorithms. */
 public class GraphFunctions {
+  private static final Logger LOGGER = LogManager.getLogger();
 
   /**
    * See <a href="https://pangin.pro/posts/computation-in-static-initializer">Beware of computation
@@ -1297,7 +1300,7 @@ public class GraphFunctions {
           return result;
         }
       } catch (IllegalArgumentException iae) {
-        return engine.printMessage("Graph must be undirected");
+        LOGGER.log(engine.getLogLevel(), "Graph must be undirected");
       } catch (RuntimeException rex) {
         if (Config.SHOW_STACKTRACE) {
           rex.printStackTrace();

@@ -10,6 +10,8 @@ import java.util.Map;
 import javax.imageio.ImageIO;
 import org.apache.commons.csv.CSVFormat;
 import org.apache.commons.csv.CSVRecord;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.jgrapht.Graph;
 import org.jgrapht.graph.DefaultDirectedGraph;
 import org.jgrapht.nio.Attribute;
@@ -38,6 +40,7 @@ import org.matheclipse.parser.client.ast.ASTNode;
 
 /** Import some data from file system. */
 public class Import extends AbstractEvaluator {
+  private static final Logger LOGGER = LogManager.getLogger();
 
   public Import() {}
 
@@ -101,14 +104,11 @@ public class Import extends AbstractEvaluator {
           default:
         }
       } catch (IOException ioe) {
-        return engine.printMessage("Import: file " + fileName + " not found!");
+        LOGGER.log(engine.getLogLevel(), "Import: file {} not found!", fileName, ioe);
       } catch (SyntaxError se) {
-        return engine.printMessage("Import: file " + fileName + " syntax error!");
+        LOGGER.log(engine.getLogLevel(), "Import: file {} syntax error!", fileName, se);
       } catch (Exception ex) {
-        if (Config.SHOW_STACKTRACE) {
-          ex.printStackTrace();
-        }
-        return engine.printMessage("Import: file " + fileName + " - " + ex.getMessage());
+        LOGGER.log(engine.getLogLevel(), "Import: file {} ", fileName, ex);
       } finally {
         if (reader != null) {
           try {

@@ -1,5 +1,7 @@
 package org.matheclipse.core.reflection.system;
 
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.matheclipse.core.builtin.IOFunctions;
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.exception.ValidateException;
@@ -13,6 +15,7 @@ import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.reflection.system.rules.MatrixDRules;
 
 public class MatrixD extends AbstractFunctionEvaluator implements MatrixDRules {
+  private static final Logger LOGGER = LogManager.getLogger();
 
   public MatrixD() {}
 
@@ -116,7 +119,8 @@ public class MatrixD extends AbstractFunctionEvaluator implements MatrixDRules {
       return binaryMatrixD(fx, x);
     } catch (final ValidateException ve) {
       // int number validation
-      return engine.printMessage(ve.getMessage(ast.topHead()));
+      LOGGER.log(engine.getLogLevel(), ve.getMessage(ast.topHead()), ve);
+      return F.NIL;
     }
   }
 

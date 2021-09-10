@@ -4,6 +4,8 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
 import java.util.Map.Entry;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.matheclipse.core.basic.Config;
 import org.matheclipse.core.builtin.IOFunctions;
 import org.matheclipse.core.eval.exception.LimitException;
@@ -27,6 +29,8 @@ import org.matheclipse.core.tensor.qty.IQuantity;
  * Simplification</a>
  */
 public final class PlusOp {
+  private static final Logger LOGGER = LogManager.getLogger();
+
   /** Merge IExpr keys by adding their values into this map. */
   private Map<IExpr, IExpr> plusMap;
 
@@ -135,7 +139,7 @@ public final class PlusOp {
 
   private IExpr negativeInfinityPlus(final IExpr o1) {
     if (o1.isInfinity()) {
-      EvalEngine.get().printMessage("Indeterminate expression Infinity-Infinity");
+      LOGGER.log(EvalEngine.get().getLogLevel(), "Indeterminate expression Infinity-Infinity");
       return S.Indeterminate;
     } else if (o1.isNegativeInfinity()) {
       return F.CNInfinity;
