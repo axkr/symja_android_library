@@ -3462,6 +3462,10 @@ public abstract class AbstractAST implements IASTMutable {
     return isSameHeadSizeGE(S.List, 1);
   }
 
+  public final boolean isListableAST() {
+    return topHead().hasListableAttribute();
+  }
+  
   /** {@inheritDoc} */
   @Override
   public boolean isList(Predicate<IExpr> pred) {

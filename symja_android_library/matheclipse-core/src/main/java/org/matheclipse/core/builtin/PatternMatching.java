@@ -2097,7 +2097,7 @@ public final class PatternMatching {
         if (symbol.isProtected()) {
           // Tag `1` in `2` is Protected.
           IOFunctions.printMessage(
-              S.SetDelayed, "write", F.List(symbol, leftHandSide), EvalEngine.get());
+              S.TagSet, "write", F.List(symbol, leftHandSide), EvalEngine.get());
           throw new FailedException();
         }
 
@@ -2108,7 +2108,9 @@ public final class PatternMatching {
           } catch (final ReturnException e) {
             rightHandSide = e.getValue();
           }
-          IExpr temp = engine.threadASTListArgs(F.TagSet(symbol, leftHandSide, rightHandSide));
+          IExpr temp =
+              engine.threadASTListArgs(
+                  F.TagSet(symbol, leftHandSide, rightHandSide), S.TagSet, "tdlen");
           if (temp.isPresent()) {
             return engine.evaluate(temp);
           }
@@ -2368,7 +2370,8 @@ public final class PatternMatching {
       try {
         if (leftHandSide.isList()) {
           // thread over lists
-          IExpr temp = engine.threadASTListArgs((IASTMutable) F.Unset(leftHandSide));
+          IExpr temp =
+              engine.threadASTListArgs((IASTMutable) F.Unset(leftHandSide), S.Unset, "tdlen");
           if (temp.isPresent()) {
             return engine.evaluate(temp);
           }
@@ -2459,7 +2462,9 @@ public final class PatternMatching {
           } catch (final ReturnException e) {
             rightHandSide = e.getValue();
           }
-          IExpr temp = engine.threadASTListArgs((IASTMutable) F.UpSet(leftHandSide, rightHandSide));
+          IExpr temp =
+              engine.threadASTListArgs(
+                  (IASTMutable) F.UpSet(leftHandSide, rightHandSide), S.UpSet, "tdlen");
           if (temp.isPresent()) {
             return engine.evaluate(temp);
           }

@@ -1270,7 +1270,7 @@ public final class Programming {
         EvalEngine engine) {
       if (leftHandSide.isList()) {
         // thread over lists
-        IExpr temp = engine.threadASTListArgs((IASTMutable) F.Set(leftHandSide, rightHandSide));
+        IExpr temp = engine.threadASTListArgs((IASTMutable) F.Set(leftHandSide, rightHandSide), S.Thread, "tdlen");
         if (temp.isPresent()) {
           return engine.evaluate(temp);
         }

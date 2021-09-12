@@ -515,7 +515,12 @@ public class Symbol implements ISymbol, Serializable {
   public final boolean hasHoldAllCompleteAttribute() {
     return ISymbol.hasHoldAllCompleteAttribute(fAttributes);
   }
-
+  
+  @Override
+  public final boolean hasListableAttribute() {
+    return ISymbol.hasListableAttribute(fAttributes);
+  }
+  
   /** {@inheritDoc} */
   @Override
   public int hashCode() {

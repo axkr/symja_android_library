@@ -504,6 +504,11 @@ public class BuiltInDummy implements IBuiltInSymbol, Serializable {
     return ISymbol.hasHoldAllCompleteAttribute(fAttributes);
   }
 
+  @Override
+  public final boolean hasListableAttribute() {
+    return ISymbol.hasListableAttribute(fAttributes);
+  }
+  
   /** {@inheritDoc} */
   @Override
   public int hashCode() {

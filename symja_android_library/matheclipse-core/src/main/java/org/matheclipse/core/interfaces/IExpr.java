@@ -2141,6 +2141,20 @@ public interface IExpr
   }
 
   /**
+   * Test if this expression is an {@link IAST} list, which contains a <b>header element</b> (i.e. a
+   * function symbol at index position <code>0</code> and some optional <b>argument elements</b> at
+   * the index positions <code>1..n</code>. Examples for <code>Listable</code> functions are <code>
+   * Cos[], Plus[] or Times[]
+   * </code>. Therefore this expression is no <b>atomic expression</b>.
+   *
+   * @return
+   * @see #isAtom()
+   */
+  default boolean isListableAST() {
+    return false;
+  }
+
+  /**
    * Test if this expression is a list (i.e. an AST with head List) with all arguments fulfill the
    * predicate.
    *
@@ -2946,8 +2960,8 @@ public interface IExpr
   }
 
   /**
-   * Test if this expression is a polynomial of <code>maxDegree</code> (i.e. the maximum exponent &lt;=
-   * maxDegree) for the given <code>variable</code>.
+   * Test if this expression is a polynomial of <code>maxDegree</code> (i.e. the maximum exponent
+   * &lt;= maxDegree) for the given <code>variable</code>.
    *
    * @param variable the variable of the polynomial
    * @param maxDegree the maximum degree of the polynomial; maxDegree must be greater 0
@@ -4835,6 +4849,19 @@ public interface IExpr
     return divide(F.num(arg0));
   }
 
+  /**
+   * If this expr is an {@link IAST}, check all elements by applying the <code>predicate</code> to
+   * each argument in this {@link IAST} and return <code>true</code> if <b>one</b> of the arguments
+   * starting from index <code>1</code> satisfy the predicate.
+   *
+   * @param predicate the predicate which filters each argument in this <code>AST</code>
+   * @return the <code>true</code> if the predicate is true the first time or <code>false</code>
+   *     otherwise
+   */
+  default boolean exists(Predicate<? super IExpr> predicate) {
+    return false;
+  }
+
   @Override
   default IExpr exp() {
     return S.Exp.of(this);
@@ -4848,6 +4875,19 @@ public interface IExpr
   @Override
   default IExpr floor() {
     return S.Floor.of(this);
+  }
+
+  /**
+   * If this expr is an {@link IAST}, check all elements by applying the <code>predicate</code> to
+   * each argument in this {@link IAST} and return <code>true</code> if <b>all</b> of the arguments
+   * starting from index <code>1</code> satisfy the predicate.
+   *
+   * @param predicate the predicate which filters each argument in this <code>AST</code>
+   * @return <code>true</code> if the predicate is true for <b>all</b elements or <code>false</code>
+   *     otherwise
+   */
+  default boolean forAll(Predicate<? super IExpr> predicate) {
+    return false;
   }
 
   @Override
@@ -5020,8 +5060,8 @@ public interface IExpr
     // degrees * (Pi / 180)
     return F.Times(F.QQ(1L, 180L), this, S.Pi);
   }
-   
+
   default String toWolframString() {
-    return toString( );
+    return toString();
   }
 }

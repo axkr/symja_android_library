@@ -332,6 +332,14 @@ public interface ISymbol extends IExpr {
   boolean hasHoldAllCompleteAttribute();
 
   /**
+   * Does this symbols attribute set contains the <code>Listable</code> attribute?
+   *
+   * @return <code>true</code> if this symbols attribute set contains {@link Theta} <code>Listable
+   *     </code> attribute.
+   */
+  boolean hasListableAttribute();
+  
+  /**
    * Does the attributes flag set contains the {@link ISymbol#FLAT} bit set?
    *
    * @return <code>true</code> if this attribute set contains the <code>ISymbol.Flat</code>
@@ -351,6 +359,16 @@ public interface ISymbol extends IExpr {
     return (attributes & HOLDALLCOMPLETE) == HOLDALLCOMPLETE;
   }
 
+  /**
+   * Does the attributes flag set contains the {@link ISymbol#LISTABLE} bit set?
+   *
+   * @param attributes
+   * @return
+   */
+  public static boolean hasListableAttribute(int attributes) {
+    return (attributes & LISTABLE) == LISTABLE;
+  }
+  
   /**
    * Does this symbols attribute set contains the <code>Orderless</code> attribute?
    *

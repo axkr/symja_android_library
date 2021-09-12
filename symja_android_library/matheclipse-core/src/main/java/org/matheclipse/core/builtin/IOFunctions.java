@@ -798,14 +798,16 @@ public class IOFunctions {
     "String or list of strings expected at position `1` in `2`.", //
     "sym",
     "Argument `1` at position `2` is expected to be a symbol.", //
-    "tdlen",
-    "Objects of unequal length in `1` cannot be combined.", //
     "tag",
     "Rule for `1` can only be attached to `2`.", //
     "tagnf",
     "Tag `1` not found in `2`.", //
     "take",
     "Cannot take positions `1` through `2` in `3`.", //
+    "tdlen",
+    "Objects of unequal length in `1` cannot be combined.", //
+    "tllen",
+    "Lists of unequal length in `1` cannot be added.", //
     "toggle",
     "ToggleFeature `1` is disabled.", //
     "unsupported",
