@@ -692,7 +692,7 @@ public class Config {
           + "<head>\n"
           + "<meta charset=\"utf-8\">\n"
           + "<title>Graphics3D</title>\n"
-          + "<script src=\"https://cdn.jsdelivr.net/npm/@mathicsorg/mathics-threejs-backend@latest/bundle/index.js\"></script>\n"
+          + "<script src=\"https://cdn.jsdelivr.net/npm/@mathicsorg/mathics-threejs-backend\"></script>\n"
           + "</head>\n"
           + "\n"
           + "<body>\n"
