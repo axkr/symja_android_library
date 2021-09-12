@@ -7526,17 +7526,22 @@ public final class ListFunctions {
           level.incCurrentLevel();
           IExpr temp = ((IAST) arg1).copyAST().accept(level);
           if (temp.isPresent()) {
-            boolean te = engine.isThrowError();
             try {
-              engine.setThrowError(true);
+              if (temp.isListableAST() && temp.exists(x -> x.isList())) {
+                IAST total = (IAST) temp;
+                IAST resultList = engine.threadASTListArgs(total, S.Total, "tllen");
+                if (resultList.isPresent()) {
+                  return engine.evaluate(resultList);
+                } else {
+                  return F.NIL;
+                }
+              }
               return engine.evaluate(temp);
             } catch (RuntimeException rex) {
               if (Config.SHOW_STACKTRACE) {
                 rex.printStackTrace();
               }
               return F.NIL;
-            } finally {
-              engine.setThrowError(te);
             }
           }
         }

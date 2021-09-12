@@ -318,12 +318,7 @@ public class EvalEngine implements Serializable {
    * @see org.matheclipse.core.builtin.function.Quiet
    */
   transient boolean fQuietMode = false;
-
-  /**
-   * If <code>true</code> the engine throws an error if an error message is printed during
-   * evaluation.
-   */
-  transient boolean fThrowError = false;
+ 
 
   /**
    * A single <code>EvalEngine</code> is associated with the current thread through a <a
@@ -583,7 +578,6 @@ public class EvalEngine implements Serializable {
     engine.fSeconds = fSeconds;
     engine.fSessionID = fSessionID;
     engine.fStopRequested = false;
-    engine.fThrowError = fThrowError;
     engine.fTogetherMode = fTogetherMode;
     engine.fTraceMode = fTraceMode;
     engine.fTraceStack = fTraceStack;
@@ -1100,7 +1094,7 @@ public class EvalEngine implements Serializable {
       if ((ISymbol.LISTABLE & attr) == ISymbol.LISTABLE
           && !((tempAST.getEvalFlags() & IAST.IS_LISTABLE_THREADED) == IAST.IS_LISTABLE_THREADED)) {
         // thread over the lists
-        resultList = threadASTListArgs(tempAST);
+        resultList = threadASTListArgs(tempAST, S.Thread, "tdlen");
         if (resultList.isPresent()) {
           return evalArgs(resultList, ISymbol.NOATTRIBUTE).orElse(resultList);
         }
@@ -2570,10 +2564,6 @@ public class EvalEngine implements Serializable {
     return fStopRequested;
   }
 
-  public final boolean isThrowError() {
-    return fThrowError;
-  }
-
   public final boolean isTogetherMode() {
     return fTogetherMode;
   }
@@ -2625,10 +2615,7 @@ public class EvalEngine implements Serializable {
       PrintStream stream = getErrorPrintStream();
       LOGGER.warn(str);
       stream.println(str);
-    }
-    if (fThrowError) {
-      throw new ArgumentTypeException(str);
-    }
+    } 
     return F.NIL;
   }
 
@@ -2646,10 +2633,7 @@ public class EvalEngine implements Serializable {
       } else {
         stream.println(symbol + ": " + exception.getClass().getSimpleName());
       }
-    }
-    if (fThrowError) {
-      throw new ArgumentTypeException(message);
-    }
+    } 
     return F.NIL;
   }
 
@@ -2907,16 +2891,6 @@ public class EvalEngine implements Serializable {
     fCopiedEngine = null;
   }
 
-  /**
-   * Throw an <code>IllegalArgument</code> exception if an error message is printed in method <code>
-   * printMessage()</code>.
-   *
-   * @param throwError
-   */
-  public void setThrowError(boolean throwError) {
-    this.fThrowError = throwError;
-  }
-
   public void setTogetherMode(boolean fTogetherMode) {
     this.fTogetherMode = fTogetherMode;
   }
@@ -2944,10 +2918,13 @@ public class EvalEngine implements Serializable {
    * <code>ISymbol.LISTABLE</code>) example: <code>Sin[{2,x,Pi}] ==> {Sin[2],Sin[x],Sin[Pi]}</code>
    *
    * @param ast
+   * @param commandHead TODO
+   * @param messageShortcut TODO
    * @return the resulting ast with the <code>argHead</code> threaded into each ast argument or
    *     <code>F.NIL</code>
    */
-  public IASTMutable threadASTListArgs(final IASTMutable ast) {
+  public IASTMutable threadASTListArgs(
+      final IAST ast, ISymbol commandHead, String messageShortcut) {
     ISymbol[] head = new ISymbol[] {null};
     int[] listLength = new int[] {-1};
     if (ast.exists(
@@ -2960,8 +2937,8 @@ public class EvalEngine implements Serializable {
               listLength[0] = ((IAST) x).argSize();
             } else {
               if (listLength[0] != ((IAST) x).argSize()) {
-                // Objects of unequal length in `1` cannot be combined.
-                IOFunctions.printMessage(S.Thread, "tdlen", F.List(ast), EvalEngine.get());
+                // tdlen: Objects of unequal length in `1` cannot be combined.
+                IOFunctions.printMessage(commandHead, messageShortcut, F.List(ast), EvalEngine.get());
                 // ast.addEvalFlags(IAST.IS_LISTABLE_THREADED);
                 return true;
               }
