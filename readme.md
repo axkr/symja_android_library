@@ -13,8 +13,9 @@ maintains a **[Java 7 Android branch](https://github.com/tranleduy2000/symja_and
 Try the Android or iOS apps:
 
 <a href="https://play.google.com/store/apps/details?id=com.duy.calculator.free">
-	<img src="en_badge_web_generic.png" alt="Google Play" width="200"></a>
-<a href="https://itunes.apple.com/us/app/ncalc-scientific-calculator/id1449106995">App Store</a>
+	<img src="https://raw.githubusercontent.com/axkr/symja_android_library/master/screenshots/google_playstore_badge.png" alt="Google Play" width="200"></a>
+<a href="https://itunes.apple.com/us/app/ncalc-scientific-calculator/id1449106995">
+    <img src="https://raw.githubusercontent.com/axkr/symja_android_library/master/screenshots/appstore_badge.png" alt="App Store" width="200"></a>
 
 or help testing the latest [Android BETA version](https://github.com/axkr/symja_android_library/wiki/BETA-tests) or the web demo at [matheclipse.org](http://matheclipse.org/).
 
