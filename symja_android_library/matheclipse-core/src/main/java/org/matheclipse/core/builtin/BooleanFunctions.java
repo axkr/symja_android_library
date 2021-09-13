@@ -2145,7 +2145,7 @@ public final class BooleanFunctions {
         if (e.equals(S.Less) || e.equals(S.LessEqual)) {
           return -1;
         }
-        if (e.equals(S.Equal)) {
+        if (e.equals(S.Equal) || e.equals(S.Unequal)) {
           return 0;
         }
         if (e.equals(S.Greater) || e.equals(S.GreaterEqual)) {
