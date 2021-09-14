@@ -2140,19 +2140,28 @@ public final class BooleanFunctions {
       F.Equal, F.Greater, F.GreaterEqual, F.Less, F.LessEqual, F.Unequal
     };
 
-    private int getCompSign(IExpr e) {
+    private static final int UNKNOWN = -3;
+    private static final int UNEQUAL = -2;
+    private static final int LESS_OR_LESSEQUAL = -1;
+    private static final int EQUAL = 2;
+    private static final int GREATER_OR_GREATEREQUAL = 1;
+
+    private static int getCompSign(IExpr e) {
       if (e.isSymbol()) {
         if (e.equals(S.Less) || e.equals(S.LessEqual)) {
-          return -1;
+          return LESS_OR_LESSEQUAL;
         }
-        if (e.equals(S.Equal) || e.equals(S.Unequal)) {
-          return 0;
+        if (e.equals(S.Equal)) {
+          return EQUAL;
         }
         if (e.equals(S.Greater) || e.equals(S.GreaterEqual)) {
-          return 1;
+          return GREATER_OR_GREATEREQUAL;
+        }
+        if (e.equals(S.Unequal)) {
+          return UNEQUAL;
         }
       }
-      return -2;
+      return UNKNOWN;
     }
 
     @Override
@@ -2178,31 +2187,31 @@ public final class BooleanFunctions {
           return F.NIL;
         }
         int firstSign = getCompSign(ast.arg2());
-        if (firstSign == -2) {
+        if (firstSign == UNKNOWN) {
           return F.NIL;
         }
-        if (firstSign != 0) {
-          for (int i = 4; i < ast.size(); i += 2) {
-            final int thisSign = getCompSign(ast.get(i));
-            if (thisSign == -2) {
-              return F.NIL;
-            }
-            if (thisSign == -firstSign) {
-              IASTAppendable firstIneq = F.ast(S.Inequality);
-              IASTAppendable secondIneq = F.ast(S.Inequality);
-              for (int j = 1; j < ast.size(); j++) {
-                final IExpr arg = ast.get(j);
-                if (j < i) {
-                  firstIneq.append(arg);
-                }
-                if (j > (i - 2)) {
-                  secondIneq.append(arg);
-                }
+
+        for (int i = 4; i < ast.size(); i += 2) {
+          final int thisSign = getCompSign(ast.get(i));
+          if (thisSign == UNKNOWN) {
+            return F.NIL;
+          }
+          if (thisSign == -firstSign || thisSign == UNEQUAL || firstSign == UNEQUAL) {
+            IASTAppendable firstIneq = F.ast(S.Inequality);
+            IASTAppendable secondIneq = F.ast(S.Inequality);
+            for (int j = 1; j < ast.size(); j++) {
+              final IExpr arg = ast.get(j);
+              if (j < i) {
+                firstIneq.append(arg);
               }
-              return F.And(firstIneq, secondIneq);
+              if (j > (i - 2)) {
+                secondIneq.append(arg);
+              }
             }
+            return F.And(firstIneq, secondIneq);
           }
         }
+
         IASTAppendable res = F.ast(S.Inequality);
         IExpr lastOp = F.NIL;
         for (int i = 0; i < (ast.size() - 1) / 2; i++) {
